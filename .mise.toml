@@ -1,0 +1,64 @@
+[tools]
+python = "3.14"
+uv = "latest"
+bun = "latest"
+dbmate = "latest"
+
+[env]
+DATABASE_URL = "postgres://warehouse:warehouse@localhost:5432/warehouse_dev?sslmode=disable"
+
+[tasks.db-up]
+description = "Start PostgreSQL container"
+run = "docker compose up -d postgres"
+
+[tasks.db-down]
+description = "Stop PostgreSQL container"
+run = "docker compose down"
+
+[tasks.migrate]
+description = "Run database migrations"
+depends = ["db-up"]
+run = "dbmate -d backend/db/migrations up"
+
+[tasks.migrate-new]
+description = "Create new migration"
+run = "dbmate -d backend/db/migrations new"
+
+[tasks.dev]
+description = "Run backend dev server"
+depends = ["db-up"]
+run = "cd backend && uv run granian --interface asgi warehouse.app:app --reload"
+
+[tasks.test]
+description = "Run all tests"
+run = "cd backend && uv run pytest"
+
+[tasks.test-unit]
+description = "Run unit tests only"
+run = "cd backend && uv run pytest src/"
+
+[tasks.test-e2e]
+description = "Run e2e tests"
+depends = ["db-up"]
+run = "cd backend && uv run pytest e2e/"
+
+[tasks.lint]
+description = "Run linter"
+run = "cd backend && uv run ruff check ."
+
+[tasks.format]
+description = "Format code"
+run = "cd backend && uv run ruff format ."
+
+[tasks.fe-dev]
+description = "Run frontend dev server"
+run = "cd frontend && bun run dev"
+
+[tasks.fe-build]
+description = "Build frontend"
+run = "cd frontend && bun run build"
+
+[tasks.fe-install]
+description = "Install frontend dependencies"
+run = "cd frontend && bun install"
+
