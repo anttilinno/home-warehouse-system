@@ -15,6 +15,10 @@ CREATE TYPE warehouse.tag_type_enum AS ENUM (
     'RFID', 'NFC', 'QR'
 );
 
+CREATE TYPE warehouse.category_type_enum AS ENUM (
+    'MAIN', 'SUB'
+);
+
 -- Auth schema tables
 CREATE TABLE auth.users (
     id UUID PRIMARY KEY DEFAULT uuidv7(),
@@ -32,9 +36,13 @@ CREATE TABLE auth.users (
 CREATE TABLE warehouse.categories (
     id UUID PRIMARY KEY DEFAULT uuidv7(),
     name VARCHAR(100) NOT NULL,
+    category_type warehouse.category_type_enum NOT NULL,
     description TEXT,
-    created_at TIMESTAMPTZ DEFAULT now()
+    created_at TIMESTAMPTZ DEFAULT now(),
+    updated_at TIMESTAMPTZ DEFAULT now()
 );
+
+CREATE INDEX ix_categories_name ON warehouse.categories(name);
 
 CREATE TABLE warehouse.locations (
     id UUID PRIMARY KEY DEFAULT uuidv7(),
@@ -70,7 +78,7 @@ CREATE TABLE warehouse.items (
     name VARCHAR(200) NOT NULL,
     description TEXT,
     category_id UUID REFERENCES warehouse.categories(id),
-    subcategory VARCHAR(100),
+    subcategory_id UUID REFERENCES warehouse.categories(id),
     brand VARCHAR(100),
     model VARCHAR(100),
     image_url VARCHAR(500),
@@ -80,7 +88,7 @@ CREATE TABLE warehouse.items (
 
 CREATE INDEX ix_items_name ON warehouse.items(name);
 CREATE INDEX ix_items_category_id ON warehouse.items(category_id);
-CREATE INDEX ix_items_subcategory ON warehouse.items(subcategory);
+CREATE INDEX ix_items_subcategory_id ON warehouse.items(subcategory_id);
 
 CREATE TABLE warehouse.item_tags (
     item_id UUID NOT NULL REFERENCES warehouse.items(id) ON DELETE CASCADE,
@@ -98,7 +106,7 @@ CREATE TABLE warehouse.inventory (
     condition warehouse.item_condition_enum,
     status warehouse.item_status_enum,
     date_acquired DATE,
-    purchase_price DOUBLE PRECISION,
+    purchase_price INTEGER,
     warranty_expires DATE,
     expiration_date DATE,
     notes TEXT,
