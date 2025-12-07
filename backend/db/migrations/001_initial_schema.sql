@@ -19,7 +19,21 @@ CREATE TYPE warehouse.category_type_enum AS ENUM (
     'MAIN', 'SUB'
 );
 
+CREATE TYPE warehouse.attachment_type_enum AS ENUM (
+    'PHOTO', 'MANUAL', 'RECEIPT', 'WARRANTY', 'OTHER'
+);
+
+CREATE TYPE auth.resource_type_enum AS ENUM ('LOCATION', 'CATEGORY', 'ITEM');
+
 -- Auth schema tables
+CREATE TABLE auth.groups (
+    id UUID PRIMARY KEY DEFAULT uuidv7(),
+    name VARCHAR(100) NOT NULL UNIQUE,
+    description TEXT,
+    created_at TIMESTAMPTZ DEFAULT now(),
+    updated_at TIMESTAMPTZ DEFAULT now()
+);
+
 CREATE TABLE auth.users (
     id UUID PRIMARY KEY DEFAULT uuidv7(),
     username VARCHAR(50) UNIQUE NOT NULL,
@@ -28,9 +42,26 @@ CREATE TABLE auth.users (
     password_hash VARCHAR(255) NOT NULL,
     is_active BOOLEAN DEFAULT true,
     is_superuser BOOLEAN DEFAULT false,
+    group_id UUID REFERENCES auth.groups(id),
     created_at TIMESTAMPTZ DEFAULT now(),
     updated_at TIMESTAMPTZ DEFAULT now()
 );
+
+CREATE TABLE auth.group_permissions (
+    id UUID PRIMARY KEY DEFAULT uuidv7(),
+    group_id UUID NOT NULL REFERENCES auth.groups(id) ON DELETE CASCADE,
+    resource_type auth.resource_type_enum NOT NULL,
+    resource_id UUID NOT NULL,
+    can_create BOOLEAN DEFAULT false,
+    can_read BOOLEAN DEFAULT false,
+    can_update BOOLEAN DEFAULT false,
+    can_delete BOOLEAN DEFAULT false,
+    created_at TIMESTAMPTZ DEFAULT now(),
+    UNIQUE (group_id, resource_type, resource_id)
+);
+
+CREATE INDEX ix_group_permissions_group ON auth.group_permissions(group_id);
+CREATE INDEX ix_group_permissions_resource ON auth.group_permissions(resource_type, resource_id);
 
 -- Warehouse schema tables
 CREATE TABLE warehouse.categories (
@@ -72,6 +103,17 @@ CREATE TABLE warehouse.containers (
 CREATE INDEX ix_containers_name ON warehouse.containers(name);
 CREATE INDEX ix_containers_location_id ON warehouse.containers(location_id);
 
+CREATE TABLE warehouse.companies (
+    id UUID PRIMARY KEY DEFAULT uuidv7(),
+    name VARCHAR(200) NOT NULL UNIQUE,
+    website VARCHAR(500),
+    notes TEXT,
+    created_at TIMESTAMPTZ DEFAULT now(),
+    updated_at TIMESTAMPTZ DEFAULT now()
+);
+
+CREATE INDEX ix_companies_name ON warehouse.companies(name);
+
 CREATE TABLE warehouse.items (
     id UUID PRIMARY KEY DEFAULT uuidv7(),
     sku VARCHAR(50) UNIQUE NOT NULL,
@@ -82,6 +124,13 @@ CREATE TABLE warehouse.items (
     brand VARCHAR(100),
     model VARCHAR(100),
     image_url VARCHAR(500),
+    serial_number VARCHAR(100),
+    manufacturer VARCHAR(100),
+    is_insured BOOLEAN DEFAULT false,
+    is_archived BOOLEAN DEFAULT false,
+    lifetime_warranty BOOLEAN DEFAULT false,
+    warranty_details TEXT,
+    purchased_from UUID REFERENCES warehouse.companies(id),
     created_at TIMESTAMPTZ DEFAULT now(),
     updated_at TIMESTAMPTZ DEFAULT now()
 );
@@ -97,6 +146,48 @@ CREATE TABLE warehouse.item_tags (
 );
 
 CREATE INDEX ix_item_tags_tag ON warehouse.item_tags(tag);
+
+CREATE TABLE warehouse.labels (
+    id UUID PRIMARY KEY DEFAULT uuidv7(),
+    name VARCHAR(100) NOT NULL UNIQUE,
+    color VARCHAR(7),
+    description TEXT,
+    created_at TIMESTAMPTZ DEFAULT now(),
+    updated_at TIMESTAMPTZ DEFAULT now()
+);
+
+CREATE TABLE warehouse.item_labels (
+    item_id UUID NOT NULL REFERENCES warehouse.items(id) ON DELETE CASCADE,
+    label_id UUID NOT NULL REFERENCES warehouse.labels(id) ON DELETE CASCADE,
+    PRIMARY KEY (item_id, label_id)
+);
+
+CREATE TABLE warehouse.files (
+    id UUID PRIMARY KEY DEFAULT uuidv7(),
+    original_name VARCHAR(255) NOT NULL,
+    extension VARCHAR(10),
+    mime_type VARCHAR(100),
+    size_bytes BIGINT,
+    checksum VARCHAR(64),
+    uploaded_by UUID REFERENCES auth.users(id),
+    created_at TIMESTAMPTZ DEFAULT now()
+);
+
+CREATE TABLE warehouse.attachments (
+    id UUID PRIMARY KEY DEFAULT uuidv7(),
+    item_id UUID NOT NULL REFERENCES warehouse.items(id) ON DELETE CASCADE,
+    file_id UUID NOT NULL REFERENCES warehouse.files(id) ON DELETE CASCADE,
+    attachment_type warehouse.attachment_type_enum NOT NULL,
+    title VARCHAR(200),
+    is_primary BOOLEAN DEFAULT false,
+    created_at TIMESTAMPTZ DEFAULT now()
+);
+
+COMMENT ON COLUMN warehouse.attachments.title IS 
+    'Optional short description. Falls back to file.original_name if not provided.';
+
+CREATE INDEX ix_attachments_item ON warehouse.attachments(item_id);
+CREATE INDEX ix_attachments_file ON warehouse.attachments(file_id);
 
 CREATE TABLE warehouse.inventory (
     id UUID PRIMARY KEY DEFAULT uuidv7(),
