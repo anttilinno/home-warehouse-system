@@ -38,7 +38,7 @@ class BorrowerResponse(msgspec.Struct):
 class LoanCreate(msgspec.Struct):
     """Schema for creating a loan."""
 
-    item_id: UUID
+    inventory_id: UUID
     borrower_id: UUID
     quantity: int = 1
     due_date: date | None = None
@@ -55,7 +55,7 @@ class LoanResponse(msgspec.Struct):
     """Schema for loan response."""
 
     id: UUID
-    item_id: UUID
+    inventory_id: UUID
     borrower_id: UUID
     quantity: int
     loaned_at: datetime
@@ -64,4 +64,11 @@ class LoanResponse(msgspec.Struct):
     notes: str | None
     created_at: datetime
     updated_at: datetime
+
+
+class LoanCreateResponse(msgspec.Struct):
+    """Schema for loan creation response."""
+
+    job_id: str
+    status: str
 

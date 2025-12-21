@@ -3,14 +3,13 @@
 from datetime import date, datetime
 from uuid import UUID
 
-from advanced_alchemy.base import UUIDPrimaryKey
-from sqlalchemy import Date, ForeignKey, Integer, String, Text, func
+from sqlalchemy import Date, DateTime, ForeignKey, Integer, String, Text, func
 from sqlalchemy.orm import Mapped, mapped_column
 
-from warehouse.lib.base import TimestampMixin
+from warehouse.lib.base import Base, TimestampMixin, UUIDPKMixin, WorkspaceMixin
 
 
-class Borrower(UUIDPrimaryKey):
+class Borrower(Base, UUIDPKMixin, WorkspaceMixin):
     """Borrower model."""
 
     __tablename__ = "borrowers"
@@ -20,28 +19,36 @@ class Borrower(UUIDPrimaryKey):
     email: Mapped[str | None] = mapped_column(String(255), nullable=True)
     phone: Mapped[str | None] = mapped_column(String(50), nullable=True)
     notes: Mapped[str | None] = mapped_column(Text, nullable=True)
-    created_at: Mapped[datetime] = mapped_column(server_default=func.now())
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
 
 
-class Loan(UUIDPrimaryKey, TimestampMixin):
+class Loan(Base, UUIDPKMixin, WorkspaceMixin, TimestampMixin):
     """Loan model."""
 
     __tablename__ = "loans"
     __table_args__ = {"schema": "warehouse"}
 
-    item_id: Mapped[UUID] = mapped_column(
-        ForeignKey("warehouse.items.id"), nullable=False
+    inventory_id: Mapped[UUID] = mapped_column(
+        ForeignKey("warehouse.inventory.id"), nullable=False
     )
     borrower_id: Mapped[UUID] = mapped_column(
         ForeignKey("warehouse.borrowers.id"), nullable=False
     )
     quantity: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
-    loaned_at: Mapped[datetime] = mapped_column(server_default=func.now())
+    loaned_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
     due_date: Mapped[date | None] = mapped_column(Date, nullable=True)
-    returned_at: Mapped[datetime | None] = mapped_column(nullable=True)
+    returned_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
     notes: Mapped[str | None] = mapped_column(Text, nullable=True)
-    created_at: Mapped[datetime] = mapped_column(server_default=func.now())
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
     updated_at: Mapped[datetime] = mapped_column(
-        server_default=func.now(), onupdate=func.now()
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
     )
 

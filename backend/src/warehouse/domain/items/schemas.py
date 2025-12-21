@@ -10,6 +10,15 @@ class CategoryCreate(msgspec.Struct):
     """Schema for creating a category."""
 
     name: str
+    parent_category_id: UUID | None = None
+    description: str | None = None
+
+
+class CategoryUpdate(msgspec.Struct):
+    """Schema for updating a category."""
+
+    name: str | None = None
+    parent_category_id: UUID | None = None
     description: str | None = None
 
 
@@ -18,6 +27,7 @@ class CategoryResponse(msgspec.Struct):
 
     id: UUID
     name: str
+    parent_category_id: UUID | None
     description: str | None
     created_at: datetime
 

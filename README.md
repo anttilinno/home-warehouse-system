@@ -19,9 +19,9 @@ A home warehouse management system for tracking inventory, locations, containers
    mise install
    ```
 
-3. Start the database:
+3. Start the database and Redis:
    ```bash
-   mise run db-up
+   mise run dc-up
    ```
 
 4. Run database migrations:
@@ -38,14 +38,14 @@ A home warehouse management system for tracking inventory, locations, containers
 
 ### Database Commands
 
-- **Start PostgreSQL container:**
+- **Start all containers (PostgreSQL + Redis):**
   ```bash
-  mise run db-up
+  mise run dc-up
   ```
 
-- **Stop PostgreSQL container:**
+- **Stop all containers:**
   ```bash
-  mise run db-down
+  mise run dc-down
   ```
 
 - **Run database migrations:**
@@ -56,6 +56,16 @@ A home warehouse management system for tracking inventory, locations, containers
 - **Create new migration:**
   ```bash
   mise run migrate-new
+  ```
+
+- **Reset database (drop and recreate with fresh migrations):**
+  ```bash
+  mise run db-reset
+  ```
+
+- **Fresh database (complete reset including data volume):**
+  ```bash
+  mise run db-fresh
   ```
 
 ### Backend Commands
@@ -93,9 +103,33 @@ The backend is built with Litestar and runs on Granian ASGI server.
   mise run format
   ```
 
+- **Run RQ worker for loan jobs:**
+  ```bash
+  mise run rq-worker
+  ```
+
+- **Seed database with sample data:**
+  ```bash
+  mise run seed
+  ```
+
+### Test Coverage
+
+Backend test coverage: **93%** (163 tests, 4 skipped)
+
+| Module | Coverage |
+|--------|----------|
+| Auth | 96-100% |
+| Inventory | 100% |
+| Items | 97-100% |
+| Loans | 100% (services/controllers) |
+| Locations | 100% |
+| Containers | 27-56% (needs tests) |
+| Dashboard | 26-86% (needs tests) |
+
 ### Frontend Commands
 
-The frontend is built with Vue 3, PrimeVue, and Tailwind CSS.
+The frontend is built with Next.js 16, React 19, shadcn/ui, and Tailwind CSS 4.
 
 - **Install frontend dependencies:**
   ```bash
@@ -121,9 +155,11 @@ The frontend is built with Vue 3, PrimeVue, and Tailwind CSS.
 
 ## Environment Variables
 
-The following environment variable is set by mise:
+The following environment variables are set by mise:
 
-- `DATABASE_URL` - PostgreSQL connection string (default: `postgres://warehouse:warehouse@localhost:5432/warehouse_dev?sslmode=disable`)
+- `DATABASE_URL` - PostgreSQL connection string for async driver (default: `postgresql+asyncpg://wh:wh@localhost:5432/warehouse_dev`)
+- `DBMATE_DATABASE_URL` - PostgreSQL connection string for dbmate migrations
+- `APP_DEBUG` - Enable debug mode
 
 ## Project Structure
 
@@ -133,6 +169,48 @@ The following environment variable is set by mise:
 │   ├── src/         # Source code
 │   ├── db/          # Database migrations
 │   └── e2e/         # End-to-end tests
-├── frontend/        # Vue.js frontend
+├── frontend/        # Next.js frontend
 └── docker-compose.yml  # PostgreSQL service
 ```
+
+
+## TODO
+
+[x] Workspaces for multi-user usage
+[ ] Export/backup of data
+    - Excel (.xlsx) with one sheet per entity, foreign keys resolved to names
+    - JSON for migration/re-import
+    - Endpoint: `GET /workspaces/{id}/export?format=xlsx|json`
+    - Tracks exports in `auth.workspace_exports` for audit
+[ ] Integration with Docspell (document management)
+    - Link items to Docspell documents (receipts, manuals, warranties)
+    - Store Docspell document ID in `warehouse.attachments`
+    - Search Docspell from warehouse UI via REST API
+    - Auto-link: match item SKU/name with OCR-extracted text
+    - Sync tags between warehouse labels and Docspell tags
+[ ] Quick access features
+    - Favorites: pin frequently accessed items/locations
+    - Recently modified: quick view of recent changes
+    - Location breadcrumbs: display "Garage → Shelf A → Box 3"
+[ ] Bulk operations
+    - CSV/Excel import for bulk adding items
+    - Barcode lookup: scan product barcode → fetch info from Open Food Facts / UPC database
+    - Item templates: "Add another like this"
+[ ] SSO authentication
+    - Google, Facebook, GitHub OAuth providers
+    - Link external accounts to existing users
+[ ] Email notifications (Resend)
+    - Password reset, loan reminders, alerts
+    - 3,000 emails/month free tier
+[ ] Obsidian integration
+    - Link items to Obsidian notes (detailed descriptions, usage guides, project logs)
+    - Store Obsidian vault path + note path in item metadata
+    - Deep link to open note directly in Obsidian
+[ ] Tracking & alerts
+    - Total value: sum of purchase_price per location/workspace
+    - Activity log: who changed what, when
+    - Consumables list: items needing restocking (quantity = 0)
+    - Low stock alerts: notify when quantity < threshold
+    - Expiration alerts: items expiring soon
+    - Warranty expiring: reminder before warranty ends
+    - Overdue loans: loans past due_date
