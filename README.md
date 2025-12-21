@@ -5,7 +5,7 @@ A home warehouse management system for tracking inventory, locations, containers
 ## Prerequisites
 
 - [mise](https://mise.jdx.dev/) - Tool version manager
-- Docker - For running PostgreSQL database
+- Docker - For running PostgreSQL and Redis
 
 ## Setup
 
@@ -156,13 +156,20 @@ The frontend is built with Next.js 16, React 19, shadcn/ui, and Tailwind CSS 4.
 
 ## Environment Variables
 
-The following environment variables are set by mise:
+The following environment variables are set by mise (for local development):
 
-- `DATABASE_URL` - PostgreSQL connection string for async driver (default: `postgresql+asyncpg://wh:wh@localhost:5432/warehouse_dev`)
+- `DATABASE_URL` - PostgreSQL connection string (default: `postgresql+asyncpg://wh:wh@localhost:5432/warehouse_dev`)
 - `DBMATE_DATABASE_URL` - PostgreSQL connection string for dbmate migrations
 - `APP_DEBUG` - Enable debug mode
 
-> **Note:** All credentials in this repository (database passwords, secret keys, seed user passwords) are examples for local development only. Do not use in production.
+Additional environment variables (see `backend/.env.example`):
+
+- `REDIS_URL` - Redis connection string (default: `redis://localhost:6379/0`)
+- `SECRET_KEY` - JWT signing key (**must change in production**)
+- `JWT_ALGORITHM` - JWT algorithm (default: `HS256`)
+- `JWT_EXPIRATION_HOURS` - Token expiration time (default: `24`)
+
+> **Note:** All credentials in this repository are examples for local development only. Do not use in production.
 
 ## Project Structure
 
@@ -173,47 +180,47 @@ The following environment variables are set by mise:
 │   ├── db/          # Database migrations
 │   └── e2e/         # End-to-end tests
 ├── frontend/        # Next.js frontend
-└── docker-compose.yml  # PostgreSQL service
+└── docker-compose.yml  # PostgreSQL + Redis
 ```
 
 
 ## TODO
 
-[x] Workspaces for multi-user usage
-[ ] Export/backup of data
-    - Excel (.xlsx) with one sheet per entity, foreign keys resolved to names
-    - JSON for migration/re-import
-    - Endpoint: `GET /workspaces/{id}/export?format=xlsx|json`
-    - Tracks exports in `auth.workspace_exports` for audit
-[ ] Integration with Docspell (document management)
-    - Link items to Docspell documents (receipts, manuals, warranties)
-    - Store Docspell document ID in `warehouse.attachments`
-    - Search Docspell from warehouse UI via REST API
-    - Auto-link: match item SKU/name with OCR-extracted text
-    - Sync tags between warehouse labels and Docspell tags
-[ ] Quick access features
-    - Favorites: pin frequently accessed items/locations
-    - Recently modified: quick view of recent changes
-    - Location breadcrumbs: display "Garage → Shelf A → Box 3"
-[ ] Bulk operations
-    - CSV/Excel import for bulk adding items
-    - Barcode lookup: scan product barcode → fetch info from Open Food Facts / UPC database
-    - Item templates: "Add another like this"
-[ ] SSO authentication
-    - Google, Facebook, GitHub OAuth providers
-    - Link external accounts to existing users
-[ ] Email notifications (Resend)
-    - Password reset, loan reminders, alerts
-    - 3,000 emails/month free tier
-[ ] Obsidian integration
-    - Link items to Obsidian notes (detailed descriptions, usage guides, project logs)
-    - Store Obsidian vault path + note path in item metadata
-    - Deep link to open note directly in Obsidian
-[ ] Tracking & alerts
-    - Total value: sum of purchase_price per location/workspace
-    - Activity log: who changed what, when
-    - Consumables list: items needing restocking (quantity = 0)
-    - Low stock alerts: notify when quantity < threshold
-    - Expiration alerts: items expiring soon
-    - Warranty expiring: reminder before warranty ends
-    - Overdue loans: loans past due_date
+- [x] Workspaces for multi-user usage
+- [ ] Export/backup of data
+  - Excel (.xlsx) with one sheet per entity, foreign keys resolved to names
+  - JSON for migration/re-import
+  - Endpoint: `GET /workspaces/{id}/export?format=xlsx|json`
+  - Tracks exports in `auth.workspace_exports` for audit
+- [ ] Integration with Docspell (document management)
+  - Link items to Docspell documents (receipts, manuals, warranties)
+  - Store Docspell document ID in `warehouse.attachments`
+  - Search Docspell from warehouse UI via REST API
+  - Auto-link: match item SKU/name with OCR-extracted text
+  - Sync tags between warehouse labels and Docspell tags
+- [ ] Quick access features
+  - Favorites: pin frequently accessed items/locations
+  - Recently modified: quick view of recent changes
+  - Location breadcrumbs: display "Garage → Shelf A → Box 3"
+- [ ] Bulk operations
+  - CSV/Excel import for bulk adding items
+  - Barcode lookup: scan product barcode → fetch info from Open Food Facts / UPC database
+  - Item templates: "Add another like this"
+- [ ] SSO authentication
+  - Google, Facebook, GitHub OAuth providers
+  - Link external accounts to existing users
+- [ ] Email notifications (Resend)
+  - Password reset, loan reminders, alerts
+  - 3,000 emails/month free tier
+- [ ] Obsidian integration
+  - Link items to Obsidian notes (detailed descriptions, usage guides, project logs)
+  - Store Obsidian vault path + note path in item metadata
+  - Deep link to open note directly in Obsidian
+- [ ] Tracking & alerts
+  - Total value: sum of purchase_price per location/workspace
+  - Activity log: who changed what, when
+  - Consumables list: items needing restocking (quantity = 0)
+  - Low stock alerts: notify when quantity < threshold
+  - Expiration alerts: items expiring soon
+  - Warranty expiring: reminder before warranty ends
+  - Overdue loans: loans past due_date
