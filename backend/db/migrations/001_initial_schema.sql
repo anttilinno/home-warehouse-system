@@ -1,8 +1,26 @@
+-- migrate:up
+
+-- ============================================================================
+-- Home Warehouse System - Initial Schema
+-- ============================================================================
+
 -- Create schemas
 CREATE SCHEMA IF NOT EXISTS auth;
 CREATE SCHEMA IF NOT EXISTS warehouse;
 
--- Create ENUM types
+-- ============================================================================
+-- ENUM Types
+-- ============================================================================
+
+-- Auth enums
+CREATE TYPE auth.workspace_role_enum AS ENUM (
+    'owner',    -- Full control, can delete workspace and manage members
+    'admin',    -- Can manage all data, cannot delete workspace or manage owner
+    'member',   -- Can CRUD inventory data
+    'viewer'    -- Read-only access
+);
+
+-- Warehouse enums
 CREATE TYPE warehouse.item_condition_enum AS ENUM (
     'NEW', 'EXCELLENT', 'GOOD', 'FAIR', 'POOR', 'DAMAGED', 'FOR_REPAIR'
 );
@@ -15,112 +33,220 @@ CREATE TYPE warehouse.tag_type_enum AS ENUM (
     'RFID', 'NFC', 'QR'
 );
 
-CREATE TYPE warehouse.category_type_enum AS ENUM (
-    'MAIN', 'SUB'
-);
-
 CREATE TYPE warehouse.attachment_type_enum AS ENUM (
     'PHOTO', 'MANUAL', 'RECEIPT', 'WARRANTY', 'OTHER'
 );
 
-CREATE TYPE auth.resource_type_enum AS ENUM ('LOCATION', 'CATEGORY', 'ITEM');
+CREATE TYPE warehouse.favorite_type_enum AS ENUM (
+    'ITEM', 'LOCATION', 'CONTAINER'
+);
 
--- Auth schema tables
-CREATE TABLE auth.groups (
-    id UUID PRIMARY KEY DEFAULT uuidv7(),
-    name VARCHAR(100) NOT NULL UNIQUE,
+CREATE TYPE warehouse.activity_action_enum AS ENUM (
+    'CREATE', 'UPDATE', 'DELETE', 'MOVE', 'LOAN', 'RETURN'
+);
+
+CREATE TYPE warehouse.activity_entity_enum AS ENUM (
+    'ITEM', 'INVENTORY', 'LOCATION', 'CONTAINER', 'CATEGORY', 'LABEL', 'LOAN', 'BORROWER'
+);
+
+-- ============================================================================
+-- Auth Schema Tables
+-- ============================================================================
+
+-- Workspaces (isolated environments)
+CREATE TABLE auth.workspaces (
+    id uuid DEFAULT uuidv7() PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    slug VARCHAR(50) NOT NULL UNIQUE,
     description TEXT,
     created_at TIMESTAMPTZ DEFAULT now(),
     updated_at TIMESTAMPTZ DEFAULT now()
 );
 
+COMMENT ON TABLE auth.workspaces IS
+'Isolated environments for organizing inventory. Each workspace has its own locations, items, etc.';
+
+COMMENT ON COLUMN auth.workspaces.slug IS
+'URL-friendly identifier (e.g., "my-home", "office"). Used in URLs like /w/my-home/items';
+
+CREATE INDEX ix_workspaces_slug ON auth.workspaces(slug);
+
+-- Users
 CREATE TABLE auth.users (
-    id UUID PRIMARY KEY DEFAULT uuidv7(),
-    username VARCHAR(50) UNIQUE NOT NULL,
+    id uuid DEFAULT uuidv7() PRIMARY KEY,
     email VARCHAR(255) UNIQUE NOT NULL,
-    full_name VARCHAR(100),
+    full_name VARCHAR(100) NOT NULL,
     password_hash VARCHAR(255) NOT NULL,
     is_active BOOLEAN DEFAULT true,
     is_superuser BOOLEAN DEFAULT false,
-    group_id UUID REFERENCES auth.groups(id),
     created_at TIMESTAMPTZ DEFAULT now(),
     updated_at TIMESTAMPTZ DEFAULT now()
 );
 
-CREATE TABLE auth.group_permissions (
-    id UUID PRIMARY KEY DEFAULT uuidv7(),
-    group_id UUID NOT NULL REFERENCES auth.groups(id) ON DELETE CASCADE,
-    resource_type auth.resource_type_enum NOT NULL,
-    resource_id UUID NOT NULL,
-    can_create BOOLEAN DEFAULT false,
-    can_read BOOLEAN DEFAULT false,
-    can_update BOOLEAN DEFAULT false,
-    can_delete BOOLEAN DEFAULT false,
+-- Workspace membership
+CREATE TABLE auth.workspace_members (
+    id uuid DEFAULT uuidv7() PRIMARY KEY,
+    workspace_id uuid NOT NULL REFERENCES auth.workspaces(id) ON DELETE CASCADE,
+    user_id uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+    role auth.workspace_role_enum NOT NULL DEFAULT 'member',
+    invited_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
     created_at TIMESTAMPTZ DEFAULT now(),
-    UNIQUE (group_id, resource_type, resource_id)
+    updated_at TIMESTAMPTZ DEFAULT now(),
+    UNIQUE (workspace_id, user_id)
 );
 
-CREATE INDEX ix_group_permissions_group ON auth.group_permissions(group_id);
-CREATE INDEX ix_group_permissions_resource ON auth.group_permissions(resource_type, resource_id);
+COMMENT ON TABLE auth.workspace_members IS
+'Links users to workspaces with role-based access control.';
 
--- Warehouse schema tables
+CREATE INDEX ix_workspace_members_user ON auth.workspace_members(user_id);
+CREATE INDEX ix_workspace_members_workspace ON auth.workspace_members(workspace_id);
+
+-- OAuth accounts for SSO
+CREATE TABLE auth.user_oauth_accounts (
+    id uuid DEFAULT uuidv7() PRIMARY KEY,
+    user_id uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+    provider VARCHAR(20) NOT NULL,
+    provider_user_id VARCHAR(255) NOT NULL,
+    email VARCHAR(255),
+    display_name VARCHAR(100),
+    avatar_url VARCHAR(500),
+    access_token TEXT,
+    refresh_token TEXT,
+    token_expires_at TIMESTAMPTZ,
+    created_at TIMESTAMPTZ DEFAULT now(),
+    updated_at TIMESTAMPTZ DEFAULT now(),
+    UNIQUE (provider, provider_user_id)
+);
+
+COMMENT ON TABLE auth.user_oauth_accounts IS
+'External OAuth provider accounts linked to local users for SSO.';
+
+COMMENT ON COLUMN auth.user_oauth_accounts.access_token IS
+'OAuth access token. Must be encrypted at application layer.';
+
+CREATE INDEX ix_oauth_accounts_user ON auth.user_oauth_accounts(user_id);
+CREATE INDEX ix_oauth_accounts_provider ON auth.user_oauth_accounts(provider, provider_user_id);
+
+-- Export tracking for audit
+CREATE TABLE auth.workspace_exports (
+    id uuid DEFAULT uuidv7() PRIMARY KEY,
+    workspace_id uuid NOT NULL REFERENCES auth.workspaces(id) ON DELETE CASCADE,
+    exported_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
+    format VARCHAR(10) NOT NULL,
+    file_size_bytes BIGINT,
+    record_counts JSONB,
+    created_at TIMESTAMPTZ DEFAULT now()
+);
+
+COMMENT ON TABLE auth.workspace_exports IS
+'Audit log of workspace data exports for backup or migration.';
+
+COMMENT ON COLUMN auth.workspace_exports.record_counts IS
+'Snapshot of how many records were exported per table, stored as JSON.';
+
+CREATE INDEX ix_workspace_exports_workspace ON auth.workspace_exports(workspace_id);
+CREATE INDEX ix_workspace_exports_user ON auth.workspace_exports(exported_by);
+
+-- ============================================================================
+-- Warehouse Schema Tables
+-- ============================================================================
+
+-- Categories (hierarchical)
 CREATE TABLE warehouse.categories (
-    id UUID PRIMARY KEY DEFAULT uuidv7(),
+    id uuid DEFAULT uuidv7() PRIMARY KEY,
+    workspace_id uuid NOT NULL REFERENCES auth.workspaces(id) ON DELETE CASCADE,
     name VARCHAR(100) NOT NULL,
-    category_type warehouse.category_type_enum NOT NULL,
+    parent_category_id uuid REFERENCES warehouse.categories(id) ON DELETE SET NULL,
     description TEXT,
     created_at TIMESTAMPTZ DEFAULT now(),
     updated_at TIMESTAMPTZ DEFAULT now()
 );
 
+CREATE INDEX ix_categories_workspace ON warehouse.categories(workspace_id);
 CREATE INDEX ix_categories_name ON warehouse.categories(name);
+CREATE INDEX ix_categories_parent ON warehouse.categories(parent_category_id);
 
+-- Locations (hierarchical)
 CREATE TABLE warehouse.locations (
-    id UUID PRIMARY KEY DEFAULT uuidv7(),
+    id uuid DEFAULT uuidv7() PRIMARY KEY,
+    workspace_id uuid NOT NULL REFERENCES auth.workspaces(id) ON DELETE CASCADE,
     name VARCHAR(100) NOT NULL,
-    parent_location UUID REFERENCES warehouse.locations(id) ON DELETE SET NULL,
+    parent_location uuid REFERENCES warehouse.locations(id) ON DELETE SET NULL,
     zone VARCHAR(50),
     shelf VARCHAR(50),
     bin VARCHAR(50),
     description TEXT,
+    short_code VARCHAR(8) UNIQUE,
     created_at TIMESTAMPTZ DEFAULT now(),
     updated_at TIMESTAMPTZ DEFAULT now()
 );
 
+COMMENT ON COLUMN warehouse.locations.short_code IS
+'Short alphanumeric code for QR labels. Enables compact URLs for small label printers.';
+
+CREATE INDEX ix_locations_workspace ON warehouse.locations(workspace_id);
 CREATE INDEX ix_locations_name ON warehouse.locations(name);
 CREATE INDEX ix_locations_parent_location ON warehouse.locations(parent_location);
+CREATE INDEX ix_locations_short_code ON warehouse.locations(short_code);
 
+-- Containers
 CREATE TABLE warehouse.containers (
-    id UUID PRIMARY KEY DEFAULT uuidv7(),
+    id uuid DEFAULT uuidv7() PRIMARY KEY,
+    workspace_id uuid NOT NULL REFERENCES auth.workspaces(id) ON DELETE CASCADE,
     name VARCHAR(200) NOT NULL,
-    location_id UUID NOT NULL REFERENCES warehouse.locations(id) ON DELETE CASCADE,
+    location_id uuid NOT NULL REFERENCES warehouse.locations(id) ON DELETE CASCADE,
     description TEXT,
     capacity VARCHAR(100),
+    short_code VARCHAR(8) UNIQUE,
     created_at TIMESTAMPTZ DEFAULT now(),
     updated_at TIMESTAMPTZ DEFAULT now()
 );
 
+COMMENT ON COLUMN warehouse.containers.short_code IS
+'Short alphanumeric code for QR labels. Enables compact URLs for small label printers.';
+
+CREATE INDEX ix_containers_workspace ON warehouse.containers(workspace_id);
 CREATE INDEX ix_containers_name ON warehouse.containers(name);
 CREATE INDEX ix_containers_location_id ON warehouse.containers(location_id);
+CREATE INDEX ix_containers_short_code ON warehouse.containers(short_code);
 
+-- Companies (vendors/stores)
 CREATE TABLE warehouse.companies (
-    id UUID PRIMARY KEY DEFAULT uuidv7(),
-    name VARCHAR(200) NOT NULL UNIQUE,
+    id uuid DEFAULT uuidv7() PRIMARY KEY,
+    workspace_id uuid NOT NULL REFERENCES auth.workspaces(id) ON DELETE CASCADE,
+    name VARCHAR(200) NOT NULL,
     website VARCHAR(500),
     notes TEXT,
     created_at TIMESTAMPTZ DEFAULT now(),
-    updated_at TIMESTAMPTZ DEFAULT now()
+    updated_at TIMESTAMPTZ DEFAULT now(),
+    UNIQUE (workspace_id, name)
 );
 
+CREATE INDEX ix_companies_workspace ON warehouse.companies(workspace_id);
 CREATE INDEX ix_companies_name ON warehouse.companies(name);
 
+-- Labels
+CREATE TABLE warehouse.labels (
+    id uuid DEFAULT uuidv7() PRIMARY KEY,
+    workspace_id uuid NOT NULL REFERENCES auth.workspaces(id) ON DELETE CASCADE,
+    name VARCHAR(100) NOT NULL,
+    color VARCHAR(7),
+    description TEXT,
+    created_at TIMESTAMPTZ DEFAULT now(),
+    updated_at TIMESTAMPTZ DEFAULT now(),
+    UNIQUE (workspace_id, name)
+);
+
+CREATE INDEX ix_labels_workspace ON warehouse.labels(workspace_id);
+
+-- Items
 CREATE TABLE warehouse.items (
-    id UUID PRIMARY KEY DEFAULT uuidv7(),
-    sku VARCHAR(50) UNIQUE NOT NULL,
+    id uuid DEFAULT uuidv7() PRIMARY KEY,
+    workspace_id uuid NOT NULL REFERENCES auth.workspaces(id) ON DELETE CASCADE,
+    sku VARCHAR(50) NOT NULL,
     name VARCHAR(200) NOT NULL,
     description TEXT,
-    category_id UUID REFERENCES warehouse.categories(id),
-    subcategory_id UUID REFERENCES warehouse.categories(id),
+    category_id uuid REFERENCES warehouse.categories(id) ON DELETE SET NULL,
     brand VARCHAR(100),
     model VARCHAR(100),
     image_url VARCHAR(500),
@@ -130,74 +256,91 @@ CREATE TABLE warehouse.items (
     is_archived BOOLEAN DEFAULT false,
     lifetime_warranty BOOLEAN DEFAULT false,
     warranty_details TEXT,
-    purchased_from UUID REFERENCES warehouse.companies(id),
+    purchased_from uuid REFERENCES warehouse.companies(id) ON DELETE SET NULL,
+    short_code VARCHAR(8) UNIQUE,
+    search_vector tsvector GENERATED ALWAYS AS (
+        setweight(to_tsvector('english', coalesce(name, '')), 'A') ||
+        setweight(to_tsvector('english', coalesce(brand, '')), 'B') ||
+        setweight(to_tsvector('english', coalesce(model, '')), 'B') ||
+        setweight(to_tsvector('english', coalesce(description, '')), 'C')
+    ) STORED,
     created_at TIMESTAMPTZ DEFAULT now(),
-    updated_at TIMESTAMPTZ DEFAULT now()
+    updated_at TIMESTAMPTZ DEFAULT now(),
+    UNIQUE (workspace_id, sku)
 );
 
+COMMENT ON COLUMN warehouse.items.short_code IS
+'Short alphanumeric code for QR labels. Enables compact URLs for small label printers.';
+
+CREATE INDEX ix_items_workspace ON warehouse.items(workspace_id);
 CREATE INDEX ix_items_name ON warehouse.items(name);
 CREATE INDEX ix_items_category_id ON warehouse.items(category_id);
-CREATE INDEX ix_items_subcategory_id ON warehouse.items(subcategory_id);
+CREATE INDEX ix_items_short_code ON warehouse.items(short_code);
+CREATE INDEX ix_items_search ON warehouse.items USING gin(search_vector);
 
-CREATE TABLE warehouse.item_tags (
-    item_id UUID NOT NULL REFERENCES warehouse.items(id) ON DELETE CASCADE,
-    tag VARCHAR(100) NOT NULL,
-    PRIMARY KEY (item_id, tag)
-);
-
-CREATE INDEX ix_item_tags_tag ON warehouse.item_tags(tag);
-
-CREATE TABLE warehouse.labels (
-    id UUID PRIMARY KEY DEFAULT uuidv7(),
-    name VARCHAR(100) NOT NULL UNIQUE,
-    color VARCHAR(7),
-    description TEXT,
-    created_at TIMESTAMPTZ DEFAULT now(),
-    updated_at TIMESTAMPTZ DEFAULT now()
-);
-
+-- Item labels (many-to-many)
 CREATE TABLE warehouse.item_labels (
-    item_id UUID NOT NULL REFERENCES warehouse.items(id) ON DELETE CASCADE,
-    label_id UUID NOT NULL REFERENCES warehouse.labels(id) ON DELETE CASCADE,
+    item_id uuid NOT NULL REFERENCES warehouse.items(id) ON DELETE CASCADE,
+    label_id uuid NOT NULL REFERENCES warehouse.labels(id) ON DELETE CASCADE,
     PRIMARY KEY (item_id, label_id)
 );
 
+-- Files (uploaded files storage metadata)
 CREATE TABLE warehouse.files (
-    id UUID PRIMARY KEY DEFAULT uuidv7(),
+    id uuid DEFAULT uuidv7() PRIMARY KEY,
+    workspace_id uuid NOT NULL REFERENCES auth.workspaces(id) ON DELETE CASCADE,
     original_name VARCHAR(255) NOT NULL,
     extension VARCHAR(10),
     mime_type VARCHAR(100),
     size_bytes BIGINT,
     checksum VARCHAR(64),
-    uploaded_by UUID REFERENCES auth.users(id),
-    created_at TIMESTAMPTZ DEFAULT now()
+    uploaded_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ DEFAULT now(),
+    updated_at TIMESTAMPTZ DEFAULT now()
 );
 
+CREATE INDEX ix_files_workspace ON warehouse.files(workspace_id);
+
+-- Attachments (links files/docspell docs to items)
 CREATE TABLE warehouse.attachments (
-    id UUID PRIMARY KEY DEFAULT uuidv7(),
-    item_id UUID NOT NULL REFERENCES warehouse.items(id) ON DELETE CASCADE,
-    file_id UUID NOT NULL REFERENCES warehouse.files(id) ON DELETE CASCADE,
+    id uuid DEFAULT uuidv7() PRIMARY KEY,
+    item_id uuid NOT NULL REFERENCES warehouse.items(id) ON DELETE CASCADE,
+    file_id uuid REFERENCES warehouse.files(id) ON DELETE CASCADE,
     attachment_type warehouse.attachment_type_enum NOT NULL,
     title VARCHAR(200),
     is_primary BOOLEAN DEFAULT false,
-    created_at TIMESTAMPTZ DEFAULT now()
+    docspell_item_id VARCHAR(50),
+    created_at TIMESTAMPTZ DEFAULT now(),
+    updated_at TIMESTAMPTZ DEFAULT now(),
+    CONSTRAINT attachments_has_reference CHECK (
+        file_id IS NOT NULL OR docspell_item_id IS NOT NULL
+    )
 );
 
-COMMENT ON COLUMN warehouse.attachments.title IS 
-    'Optional short description. Falls back to file.original_name if not provided.';
+COMMENT ON COLUMN warehouse.attachments.title IS
+'Optional short description. Falls back to file.original_name if not provided.';
+
+COMMENT ON COLUMN warehouse.attachments.docspell_item_id IS
+'Reference to Docspell item ID. When set, document is managed by Docspell and file_id may be NULL.';
 
 CREATE INDEX ix_attachments_item ON warehouse.attachments(item_id);
 CREATE INDEX ix_attachments_file ON warehouse.attachments(file_id);
+CREATE INDEX ix_attachments_docspell ON warehouse.attachments(docspell_item_id)
+WHERE docspell_item_id IS NOT NULL;
 
+-- Inventory (physical instances of items)
 CREATE TABLE warehouse.inventory (
-    id UUID PRIMARY KEY DEFAULT uuidv7(),
-    item_id UUID NOT NULL REFERENCES warehouse.items(id) ON DELETE CASCADE,
-    container_id UUID NOT NULL REFERENCES warehouse.containers(id) ON DELETE CASCADE,
+    id uuid DEFAULT uuidv7() PRIMARY KEY,
+    workspace_id uuid NOT NULL REFERENCES auth.workspaces(id) ON DELETE CASCADE,
+    item_id uuid NOT NULL REFERENCES warehouse.items(id) ON DELETE CASCADE,
+    location_id uuid NOT NULL REFERENCES warehouse.locations(id) ON DELETE CASCADE,
+    container_id uuid REFERENCES warehouse.containers(id) ON DELETE SET NULL,
     quantity INTEGER NOT NULL DEFAULT 1 CHECK (quantity >= 0),
     condition warehouse.item_condition_enum,
-    status warehouse.item_status_enum,
+    status warehouse.item_status_enum DEFAULT 'AVAILABLE',
     date_acquired DATE,
     purchase_price INTEGER,
+    currency_code VARCHAR(3) DEFAULT 'EUR',
     warranty_expires DATE,
     expiration_date DATE,
     notes TEXT,
@@ -205,39 +348,136 @@ CREATE TABLE warehouse.inventory (
     updated_at TIMESTAMPTZ DEFAULT now()
 );
 
+CREATE INDEX ix_inventory_workspace ON warehouse.inventory(workspace_id);
 CREATE INDEX ix_inventory_item_id ON warehouse.inventory(item_id);
+CREATE INDEX ix_inventory_location_id ON warehouse.inventory(location_id);
 CREATE INDEX ix_inventory_container_id ON warehouse.inventory(container_id);
 
+-- Container tags (RFID/NFC/QR)
 CREATE TABLE warehouse.container_tags (
-    id UUID PRIMARY KEY DEFAULT uuidv7(),
-    container_id UUID NOT NULL REFERENCES warehouse.containers(id) ON DELETE CASCADE,
+    id uuid DEFAULT uuidv7() PRIMARY KEY,
+    container_id uuid NOT NULL REFERENCES warehouse.containers(id) ON DELETE CASCADE,
     tag_type warehouse.tag_type_enum NOT NULL,
     tag_value VARCHAR(255) NOT NULL UNIQUE,
-    created_at TIMESTAMPTZ DEFAULT now()
+    created_at TIMESTAMPTZ DEFAULT now(),
+    updated_at TIMESTAMPTZ DEFAULT now()
 );
 
 CREATE INDEX ix_container_tags_container_id ON warehouse.container_tags(container_id);
 
+-- Borrowers
 CREATE TABLE warehouse.borrowers (
-    id UUID PRIMARY KEY DEFAULT uuidv7(),
+    id uuid DEFAULT uuidv7() PRIMARY KEY,
+    workspace_id uuid NOT NULL REFERENCES auth.workspaces(id) ON DELETE CASCADE,
     name VARCHAR(200) NOT NULL,
     email VARCHAR(255),
     phone VARCHAR(50),
     notes TEXT,
-    created_at TIMESTAMPTZ DEFAULT now()
+    created_at TIMESTAMPTZ DEFAULT now(),
+    updated_at TIMESTAMPTZ DEFAULT now()
 );
 
+CREATE INDEX ix_borrowers_workspace ON warehouse.borrowers(workspace_id);
+
+-- Loans (tracks inventory loans)
 CREATE TABLE warehouse.loans (
-    id UUID PRIMARY KEY DEFAULT uuidv7(),
-    item_id UUID NOT NULL REFERENCES warehouse.items(id),
-    borrower_id UUID NOT NULL REFERENCES warehouse.borrowers(id),
+    id uuid DEFAULT uuidv7() PRIMARY KEY,
+    workspace_id uuid NOT NULL REFERENCES auth.workspaces(id) ON DELETE CASCADE,
+    inventory_id uuid NOT NULL REFERENCES warehouse.inventory(id) ON DELETE CASCADE,
+    borrower_id uuid NOT NULL REFERENCES warehouse.borrowers(id) ON DELETE RESTRICT,
     quantity INTEGER NOT NULL DEFAULT 1,
     loaned_at TIMESTAMPTZ DEFAULT now(),
     due_date DATE,
     returned_at TIMESTAMPTZ,
     notes TEXT,
+    created_at TIMESTAMPTZ DEFAULT now(),
+    updated_at TIMESTAMPTZ DEFAULT now()
+);
+
+CREATE INDEX ix_loans_workspace ON warehouse.loans(workspace_id);
+CREATE INDEX ix_loans_inventory_id ON warehouse.loans(inventory_id);
+CREATE INDEX ix_loans_borrower_id ON warehouse.loans(borrower_id);
+
+-- Prevent multiple active loans for same inventory
+CREATE UNIQUE INDEX ix_loans_active_inventory
+ON warehouse.loans(inventory_id)
+WHERE returned_at IS NULL;
+
+-- Inventory movements (history)
+CREATE TABLE warehouse.inventory_movements (
+    id uuid DEFAULT uuidv7() PRIMARY KEY,
+    workspace_id uuid NOT NULL REFERENCES auth.workspaces(id) ON DELETE CASCADE,
+    inventory_id uuid NOT NULL REFERENCES warehouse.inventory(id) ON DELETE CASCADE,
+    from_location_id uuid REFERENCES warehouse.locations(id) ON DELETE SET NULL,
+    from_container_id uuid REFERENCES warehouse.containers(id) ON DELETE SET NULL,
+    to_location_id uuid REFERENCES warehouse.locations(id) ON DELETE SET NULL,
+    to_container_id uuid REFERENCES warehouse.containers(id) ON DELETE SET NULL,
+    quantity INTEGER NOT NULL DEFAULT 1,
+    moved_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
+    reason TEXT,
     created_at TIMESTAMPTZ DEFAULT now()
 );
 
-CREATE INDEX ix_loans_item_id ON warehouse.loans(item_id);
-CREATE INDEX ix_loans_borrower_id ON warehouse.loans(borrower_id);
+CREATE INDEX ix_inventory_movements_workspace ON warehouse.inventory_movements(workspace_id);
+CREATE INDEX ix_inventory_movements_inventory ON warehouse.inventory_movements(inventory_id);
+CREATE INDEX ix_inventory_movements_date ON warehouse.inventory_movements(created_at);
+
+-- Favorites
+CREATE TABLE warehouse.favorites (
+    id uuid DEFAULT uuidv7() PRIMARY KEY,
+    user_id uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+    workspace_id uuid NOT NULL REFERENCES auth.workspaces(id) ON DELETE CASCADE,
+    favorite_type warehouse.favorite_type_enum NOT NULL,
+    item_id uuid REFERENCES warehouse.items(id) ON DELETE CASCADE,
+    location_id uuid REFERENCES warehouse.locations(id) ON DELETE CASCADE,
+    container_id uuid REFERENCES warehouse.containers(id) ON DELETE CASCADE,
+    created_at TIMESTAMPTZ DEFAULT now(),
+    CONSTRAINT favorites_has_target CHECK (
+        (favorite_type = 'ITEM' AND item_id IS NOT NULL) OR
+        (favorite_type = 'LOCATION' AND location_id IS NOT NULL) OR
+        (favorite_type = 'CONTAINER' AND container_id IS NOT NULL)
+    ),
+    CONSTRAINT favorites_unique_item UNIQUE (user_id, item_id),
+    CONSTRAINT favorites_unique_location UNIQUE (user_id, location_id),
+    CONSTRAINT favorites_unique_container UNIQUE (user_id, container_id)
+);
+
+COMMENT ON TABLE warehouse.favorites IS
+'User-pinned items, locations, or containers for quick access.';
+
+CREATE INDEX ix_favorites_user ON warehouse.favorites(user_id);
+CREATE INDEX ix_favorites_workspace ON warehouse.favorites(workspace_id);
+
+-- Activity log (audit trail)
+CREATE TABLE warehouse.activity_log (
+    id uuid DEFAULT uuidv7() PRIMARY KEY,
+    workspace_id uuid NOT NULL REFERENCES auth.workspaces(id) ON DELETE CASCADE,
+    user_id uuid REFERENCES auth.users(id) ON DELETE SET NULL,
+    action warehouse.activity_action_enum NOT NULL,
+    entity_type warehouse.activity_entity_enum NOT NULL,
+    entity_id uuid NOT NULL,
+    entity_name VARCHAR(200),
+    changes JSONB,
+    metadata JSONB,
+    created_at TIMESTAMPTZ DEFAULT now()
+);
+
+COMMENT ON TABLE warehouse.activity_log IS
+'Audit trail of all changes to warehouse data.';
+
+COMMENT ON COLUMN warehouse.activity_log.entity_name IS
+'Cached name of entity for display even after deletion.';
+
+COMMENT ON COLUMN warehouse.activity_log.changes IS
+'JSON object with changed fields: {"field": {"old": "value", "new": "value"}}';
+
+CREATE INDEX ix_activity_log_workspace ON warehouse.activity_log(workspace_id);
+CREATE INDEX ix_activity_log_user ON warehouse.activity_log(user_id);
+CREATE INDEX ix_activity_log_entity ON warehouse.activity_log(entity_type, entity_id);
+CREATE INDEX ix_activity_log_created ON warehouse.activity_log(created_at DESC);
+
+
+-- migrate:down
+
+DROP SCHEMA IF EXISTS warehouse CASCADE;
+DROP SCHEMA IF EXISTS auth CASCADE;

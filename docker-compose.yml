@@ -1,16 +1,25 @@
 services:
   postgres:
-    image: postgres:latest
+    image: postgres:18
     container_name: warehouse-postgres
     environment:
-      POSTGRES_USER: warehouse
-      POSTGRES_PASSWORD: warehouse
+      POSTGRES_USER: wh
+      POSTGRES_PASSWORD: wh
       POSTGRES_DB: warehouse_dev
     ports:
       - "5432:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql
+
+  redis:
+    image: redis:latest
+    container_name: warehouse-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
 
 volumes:
   postgres_data:
+  redis_data:
 

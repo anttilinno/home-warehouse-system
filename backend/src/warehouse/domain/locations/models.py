@@ -2,14 +2,13 @@
 
 from datetime import datetime
 
-from advanced_alchemy.base import UUIDPrimaryKey
-from sqlalchemy import String, Text, func
+from sqlalchemy import DateTime, String, Text, func
 from sqlalchemy.orm import Mapped, mapped_column
 
-from warehouse.lib.base import TimestampMixin
+from warehouse.lib.base import Base, TimestampMixin, UUIDPKMixin, WorkspaceMixin
 
 
-class Location(UUIDPrimaryKey, TimestampMixin):
+class Location(Base, UUIDPKMixin, WorkspaceMixin, TimestampMixin):
     """Location model."""
 
     __tablename__ = "locations"
@@ -20,5 +19,7 @@ class Location(UUIDPrimaryKey, TimestampMixin):
     shelf: Mapped[str | None] = mapped_column(String(50), nullable=True)
     bin: Mapped[str | None] = mapped_column(String(50), nullable=True)
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
-    created_at: Mapped[datetime] = mapped_column(server_default=func.now())
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
 
