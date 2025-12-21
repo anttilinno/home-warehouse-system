@@ -152,6 +152,7 @@ The frontend is built with Next.js 16, React 19, shadcn/ui, and Tailwind CSS 4.
 - uv - Python package manager
 - bun - JavaScript runtime and package manager
 - dbmate - Database migration tool
+- [Claude Code](https://claude.ai/code) - AI coding assistant (see `.claude/CLAUDE.md` for project context)
 
 ## Environment Variables
 
@@ -160,6 +161,8 @@ The following environment variables are set by mise:
 - `DATABASE_URL` - PostgreSQL connection string for async driver (default: `postgresql+asyncpg://wh:wh@localhost:5432/warehouse_dev`)
 - `DBMATE_DATABASE_URL` - PostgreSQL connection string for dbmate migrations
 - `APP_DEBUG` - Enable debug mode
+
+> **Note:** All credentials in this repository (database passwords, secret keys, seed user passwords) are examples for local development only. Do not use in production.
 
 ## Project Structure
 
