@@ -4,40 +4,43 @@ import {
   Package,
   MapPin,
   Users,
-  Archive
+  Archive,
+  DollarSign,
+  AlertTriangle,
+  Clock,
+  Shield,
+  AlertCircle,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth";
-import { useRouter, usePathname } from "@/navigation";
+import { useRouter } from "@/navigation";
 import { useEffect, useState } from "react";
-import { dashboardApi, DashboardStats, tokenStorage } from "@/lib/api";
-import { Header } from "@/components/header";
+import {
+  dashboardApi,
+  DashboardExtendedStats,
+  InventorySummary,
+  tokenStorage,
+} from "@/lib/api";
 import { useTranslations } from "next-intl";
+import { AlertCard } from "@/components/dashboard/alert-card";
 
 export default function DashboardPage() {
   const { isAuthenticated, isLoading: authLoading } = useAuth();
   const router = useRouter();
-  const t = useTranslations('dashboard');
-  const [stats, setStats] = useState<DashboardStats | null>(null);
+  const t = useTranslations("dashboard");
+  const [stats, setStats] = useState<DashboardExtendedStats | null>(null);
+  const [recentItems, setRecentItems] = useState<InventorySummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Don't automatically redirect on authentication state changes
-  // Logout handlers will manage redirects appropriately
-  // Initial unauthenticated access is handled by catch-all routes
-
-  // Also handle the case where authentication fails during API calls
   useEffect(() => {
-    if (isAuthenticated && error && error.includes('Authentication required')) {
-      // If we get an auth error, redirect to login (next-intl adds locale)
+    if (isAuthenticated && error?.includes("Authentication required")) {
       router.push("/login");
     }
   }, [error, isAuthenticated, router]);
 
-  // Also handle JWT token expiration or invalid tokens
   useEffect(() => {
     if (isAuthenticated && error) {
-      // If we get an authentication error, redirect to login
-      if (error.includes('401') || error.includes('Unauthorized') || error.includes('token')) {
+      if (error.includes("401") || error.includes("Unauthorized")) {
         tokenStorage.removeToken();
         router.push("/login");
       }
@@ -46,37 +49,39 @@ export default function DashboardPage() {
 
   useEffect(() => {
     if (isAuthenticated) {
-      fetchStats();
+      fetchData();
     }
   }, [isAuthenticated]);
 
-  const fetchStats = async () => {
+  const fetchData = async () => {
     try {
       setLoading(true);
-      const data = await dashboardApi.getStats();
-      setStats(data);
-      setError(null); // Clear any previous errors
+      const [statsData, recentData] = await Promise.all([
+        dashboardApi.getExtendedStats(),
+        dashboardApi.getRecentlyModified(5),
+      ]);
+      setStats(statsData);
+      setRecentItems(recentData);
+      setError(null);
     } catch (err) {
-      console.error('Failed to fetch dashboard stats:', err);
-      const errorMessage = err instanceof Error ? err.message : 'Failed to load dashboard data';
+      console.error("Failed to fetch dashboard data:", err);
+      const errorMessage =
+        err instanceof Error ? err.message : "Failed to load dashboard data";
       setError(errorMessage);
-
-      // If it's an authentication error, the API client will handle the redirect
-      if (errorMessage.includes('Authentication required')) {
-        return;
-      }
     } finally {
       setLoading(false);
     }
   };
 
   if (authLoading || loading) {
-    return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        Loading...
+      </div>
+    );
   }
 
-  if (!isAuthenticated) {
-    return null;
-  }
+  if (!isAuthenticated) return null;
 
   if (error) {
     return (
@@ -84,89 +89,157 @@ export default function DashboardPage() {
         <div className="text-center">
           <p className="text-red-500 mb-4">{error}</p>
           <button
-            onClick={fetchStats}
+            onClick={fetchData}
             className="px-4 py-2 bg-primary text-primary-foreground rounded-lg"
           >
-            {t('tryAgain')}
+            {t("tryAgain")}
           </button>
         </div>
       </div>
     );
   }
 
+  const formatCurrency = (cents: number, currency: string) => {
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: currency,
+    }).format(cents / 100);
+  };
+
+  const formatRelativeTime = (dateString: string) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+
+    if (diffMins < 60) return `${diffMins}m ago`;
+    if (diffHours < 24) return `${diffHours}h ago`;
+    return `${diffDays}d ago`;
+  };
+
   const statCards = [
-    {
-      name: t('totalItems'),
-      value: stats?.total_items.toLocaleString() || "0",
-      change: "+0", // TODO: Calculate actual change from previous period
-      changeType: "neutral" as const,
-      icon: Package,
-    },
-    {
-      name: t('locations'),
-      value: stats?.total_locations.toString() || "0",
-      change: "+0", // TODO: Calculate actual change from previous period
-      changeType: "neutral" as const,
-      icon: MapPin,
-    },
-    {
-      name: t('activeLoans'),
-      value: stats?.active_loans.toString() || "0",
-      change: "+0", // TODO: Calculate actual change from previous period
-      changeType: "neutral" as const,
-      icon: Users,
-    },
-    {
-      name: t('categories'),
-      value: stats?.total_categories.toString() || "0",
-      change: "+0", // TODO: Calculate actual change from previous period
-      changeType: "neutral" as const,
-      icon: Archive,
-    },
+    { name: t("totalItems"), value: stats?.total_items.toLocaleString() || "0", icon: Package },
+    { name: t("locations"), value: stats?.total_locations.toString() || "0", icon: MapPin },
+    { name: t("activeLoans"), value: stats?.active_loans.toString() || "0", icon: Users },
+    { name: t("categories"), value: stats?.total_categories.toString() || "0", icon: Archive },
   ];
+
+  const hasAlerts =
+    (stats?.low_stock_count || 0) > 0 ||
+    (stats?.expiring_soon_count || 0) > 0 ||
+    (stats?.warranty_expiring_count || 0) > 0 ||
+    (stats?.overdue_loans_count || 0) > 0;
 
   return (
     <>
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-foreground">{t('title')}</h1>
-        <p className="text-muted-foreground mt-2">
-          {t('subtitle')}
-        </p>
+        <h1 className="text-3xl font-bold text-foreground">{t("title")}</h1>
+        <p className="text-muted-foreground mt-2">{t("subtitle")}</p>
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-8">
         {statCards.map((stat) => {
           const Icon = stat.icon;
           return (
-            <div key={stat.name} className="bg-card p-6 rounded-lg border shadow-sm">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">
-                    {stat.name}
-                  </p>
-                  <p className="text-3xl font-bold text-foreground mt-1">
-                    {stat.value}
-                  </p>
-                </div>
-                <Icon className="w-8 h-8 text-primary" />
+            <div
+              key={stat.name}
+              title={stat.name}
+              className="bg-card p-4 rounded-lg border shadow-sm cursor-default"
+            >
+              <div className="flex items-center justify-center gap-3">
+                <Icon className="w-6 h-6 text-primary flex-shrink-0" />
+                <p className="text-2xl font-bold text-foreground">{stat.value}</p>
               </div>
             </div>
           );
         })}
+        {/* Total Value Card */}
+        <div
+          title={t("totalValue")}
+          className="bg-card p-4 rounded-lg border shadow-sm cursor-default"
+        >
+          <div className="flex items-center justify-center gap-3">
+            <DollarSign className="w-6 h-6 text-primary flex-shrink-0" />
+            <p className="text-2xl font-bold text-foreground">
+              {stats ? formatCurrency(stats.total_inventory_value, stats.currency_code) : "€0"}
+            </p>
+          </div>
+        </div>
       </div>
 
-      {/* Debug info - can be removed in production */}
-      {process.env.NODE_ENV === 'development' && (
-        <div className="text-center text-muted-foreground mt-8">
-          <p className="text-sm">
-            Debug: Items: {stats?.total_items} |
-            Locations: {stats?.total_locations} |
-            Loans: {stats?.active_loans} |
-            Categories: {stats?.total_categories}
-          </p>
+      {/* Alerts Section */}
+      {hasAlerts && (
+        <div className="mb-8">
+          <div className="flex flex-wrap justify-center gap-4">
+            {(stats?.low_stock_count || 0) > 0 && (
+              <AlertCard
+                icon={AlertTriangle}
+                title={t("lowStock")}
+                count={stats?.low_stock_count || 0}
+                variant="warning"
+                href="/dashboard/inventory?filter=low-stock"
+              />
+            )}
+            {(stats?.expiring_soon_count || 0) > 0 && (
+              <AlertCard
+                icon={Clock}
+                title={t("expiringSoon")}
+                count={stats?.expiring_soon_count || 0}
+                variant="warning"
+                href="/dashboard/inventory?filter=expiring"
+              />
+            )}
+            {(stats?.warranty_expiring_count || 0) > 0 && (
+              <AlertCard
+                icon={Shield}
+                title={t("warrantyExpiring")}
+                count={stats?.warranty_expiring_count || 0}
+                variant="info"
+                href="/dashboard/inventory?filter=warranty"
+              />
+            )}
+            {(stats?.overdue_loans_count || 0) > 0 && (
+              <AlertCard
+                icon={AlertCircle}
+                title={t("overdueLoans")}
+                count={stats?.overdue_loans_count || 0}
+                variant="destructive"
+                href="/dashboard/loans?filter=overdue"
+              />
+            )}
+          </div>
         </div>
       )}
+
+      {/* Recently Modified Section */}
+      <div className="bg-card p-6 rounded-lg border shadow-sm">
+        <h2 className="text-lg font-semibold mb-4">{t("recentlyModified")}</h2>
+        {recentItems.length === 0 ? (
+          <p className="text-muted-foreground">{t("noRecentItems")}</p>
+        ) : (
+          <div className="space-y-3">
+            {recentItems.map((item) => (
+              <div key={item.id} className="flex justify-between items-center py-2 border-b last:border-0">
+                <div>
+                  <p className="font-medium">{item.item_name}</p>
+                  <p className="text-sm text-muted-foreground">
+                    {item.location_name} · {item.item_sku}
+                  </p>
+                </div>
+                <div className="text-right">
+                  <p className="font-mono text-lg">{item.quantity}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {formatRelativeTime(item.updated_at)}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
     </>
   );
 }

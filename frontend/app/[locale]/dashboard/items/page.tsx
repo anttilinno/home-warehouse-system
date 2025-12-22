@@ -20,6 +20,7 @@ import {
   X,
   Tag,
   Archive,
+  Copy,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { CategorySelect } from "@/components/ui/category-select";
@@ -41,6 +42,7 @@ export default function ItemsPage() {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState<Item | null>(null);
+  const [templateItem, setTemplateItem] = useState<Item | null>(null);
 
   // Lookup map for category names
   const categoryMap = useMemo(
@@ -86,6 +88,11 @@ export default function ItemsPage() {
   const handleDelete = (item: Item) => {
     setSelectedItem(item);
     setIsDeleteModalOpen(true);
+  };
+
+  const handleDuplicate = (item: Item) => {
+    setTemplateItem(item);
+    setIsCreateModalOpen(true);
   };
 
   if (authLoading || loading) {
@@ -200,6 +207,13 @@ export default function ItemsPage() {
                   <td className="px-4 py-3 text-right">
                     <div className="flex justify-end gap-2">
                       <button
+                        onClick={() => handleDuplicate(item)}
+                        title={t("duplicate")}
+                        className="p-1.5 rounded hover:bg-muted transition-colors"
+                      >
+                        <Copy className="w-4 h-4 text-muted-foreground hover:text-foreground" />
+                      </button>
+                      <button
                         onClick={() => handleEdit(item)}
                         title={t("edit")}
                         className="p-1.5 rounded hover:bg-muted transition-colors"
@@ -225,11 +239,16 @@ export default function ItemsPage() {
       {/* Create Modal */}
       <CreateEditModal
         isOpen={isCreateModalOpen}
-        onClose={() => setIsCreateModalOpen(false)}
+        onClose={() => {
+          setIsCreateModalOpen(false);
+          setTemplateItem(null);
+        }}
         onSuccess={() => {
           setIsCreateModalOpen(false);
+          setTemplateItem(null);
           fetchData();
         }}
+        template={templateItem}
         categories={categories}
         t={t}
         te={te}
@@ -281,6 +300,7 @@ function CreateEditModal({
   onClose,
   onSuccess,
   item,
+  template,
   categories,
   t,
   te,
@@ -289,11 +309,13 @@ function CreateEditModal({
   onClose: () => void;
   onSuccess: () => void;
   item?: Item | null;
+  template?: Item | null;
   categories: Category[];
   t: (key: string) => string;
   te: (key: string) => string;
 }) {
   const isEdit = !!item;
+  const isDuplicate = !isEdit && !!template;
   const [formData, setFormData] = useState<ItemCreate>({
     sku: "",
     name: "",
@@ -305,13 +327,23 @@ function CreateEditModal({
 
   useEffect(() => {
     if (item) {
+      // Edit mode
       setFormData({
         sku: item.sku,
         name: item.name,
         description: item.description,
         category_id: item.category_id,
       });
+    } else if (template) {
+      // Duplicate mode - pre-fill from template
+      setFormData({
+        sku: "",
+        name: `${template.name} (Copy)`,
+        description: template.description,
+        category_id: template.category_id,
+      });
     } else {
+      // Create mode
       setFormData({
         sku: "",
         name: "",
@@ -320,7 +352,13 @@ function CreateEditModal({
       });
     }
     setError(null);
-  }, [item, isOpen]);
+  }, [item, template, isOpen]);
+
+  const getModalTitle = () => {
+    if (isEdit) return t("editItem");
+    if (isDuplicate) return t("duplicateItem");
+    return t("addItem");
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -360,9 +398,7 @@ function CreateEditModal({
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between p-4 border-b">
-          <h2 className="text-lg font-semibold">
-            {isEdit ? t("editItem") : t("addItem")}
-          </h2>
+          <h2 className="text-lg font-semibold">{getModalTitle()}</h2>
           <button onClick={onClose} className="p-1 rounded hover:bg-muted">
             <X className="w-5 h-5" />
           </button>

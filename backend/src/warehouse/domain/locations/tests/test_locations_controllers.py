@@ -55,6 +55,7 @@ def _location(**overrides) -> SimpleNamespace:
         "bin": "B",
         "description": "desc",
         "created_at": datetime(2024, 1, 1, 0, 0, 0),
+        "parent_location_id": None,
     }
     defaults.update(overrides)
     return SimpleNamespace(**defaults)

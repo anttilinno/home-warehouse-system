@@ -1,8 +1,9 @@
 """Locations domain models."""
 
 from datetime import datetime
+from uuid import UUID
 
-from sqlalchemy import DateTime, String, Text, func
+from sqlalchemy import DateTime, ForeignKey, String, Text, func
 from sqlalchemy.orm import Mapped, mapped_column
 
 from warehouse.lib.base import Base, TimestampMixin, UUIDPKMixin, WorkspaceMixin
@@ -15,6 +16,11 @@ class Location(Base, UUIDPKMixin, WorkspaceMixin, TimestampMixin):
     __table_args__ = {"schema": "warehouse"}
 
     name: Mapped[str] = mapped_column(String(100), nullable=False)
+    parent_location_id: Mapped[UUID | None] = mapped_column(
+        "parent_location",
+        ForeignKey("warehouse.locations.id", ondelete="SET NULL"),
+        nullable=True,
+    )
     zone: Mapped[str | None] = mapped_column(String(50), nullable=True)
     shelf: Mapped[str | None] = mapped_column(String(50), nullable=True)
     bin: Mapped[str | None] = mapped_column(String(50), nullable=True)

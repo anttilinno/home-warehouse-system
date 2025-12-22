@@ -293,9 +293,79 @@ export interface DashboardStats {
   total_categories: number;
 }
 
+export interface DashboardExtendedStats {
+  total_items: number;
+  total_locations: number;
+  active_loans: number;
+  total_categories: number;
+  total_inventory_value: number;
+  currency_code: string;
+  out_of_stock_count: number;
+  low_stock_count: number;
+  expiring_soon_count: number;
+  warranty_expiring_count: number;
+  overdue_loans_count: number;
+}
+
+export interface InventorySummary {
+  id: string;
+  item_name: string;
+  item_sku: string;
+  location_name: string;
+  quantity: number;
+  updated_at: string;
+}
+
+export interface InventoryAlertItem {
+  id: string;
+  item_name: string;
+  item_sku: string;
+  location_name: string;
+  quantity: number;
+  expiration_date?: string | null;
+  warranty_expires?: string | null;
+}
+
+export interface OverdueLoan {
+  id: string;
+  borrower_name: string;
+  item_name: string;
+  quantity: number;
+  due_date: string;
+  days_overdue: number;
+}
+
 export const dashboardApi = {
   getStats: async (): Promise<DashboardStats> => {
     return apiClient.get<DashboardStats>('/dashboard/stats');
+  },
+
+  getExtendedStats: async (): Promise<DashboardExtendedStats> => {
+    return apiClient.get<DashboardExtendedStats>('/dashboard/stats/extended');
+  },
+
+  getRecentlyModified: async (limit: number = 10): Promise<InventorySummary[]> => {
+    return apiClient.get<InventorySummary[]>(`/dashboard/recent?limit=${limit}`);
+  },
+
+  getOutOfStock: async (limit: number = 10): Promise<InventorySummary[]> => {
+    return apiClient.get<InventorySummary[]>(`/dashboard/alerts/out-of-stock?limit=${limit}`);
+  },
+
+  getLowStock: async (limit: number = 10): Promise<InventorySummary[]> => {
+    return apiClient.get<InventorySummary[]>(`/dashboard/alerts/low-stock?limit=${limit}`);
+  },
+
+  getExpiringSoon: async (limit: number = 10): Promise<InventoryAlertItem[]> => {
+    return apiClient.get<InventoryAlertItem[]>(`/dashboard/alerts/expiring?limit=${limit}`);
+  },
+
+  getWarrantyExpiring: async (limit: number = 10): Promise<InventoryAlertItem[]> => {
+    return apiClient.get<InventoryAlertItem[]>(`/dashboard/alerts/warranty-expiring?limit=${limit}`);
+  },
+
+  getOverdueLoans: async (limit: number = 10): Promise<OverdueLoan[]> => {
+    return apiClient.get<OverdueLoan[]>(`/dashboard/alerts/overdue-loans?limit=${limit}`);
   },
 };
 
@@ -393,6 +463,7 @@ export interface Location {
   bin: string | null;
   description: string | null;
   created_at: string;
+  parent_location_id?: string | null;
 }
 
 export interface LocationCreate {
@@ -401,6 +472,7 @@ export interface LocationCreate {
   shelf?: string | null;
   bin?: string | null;
   description?: string | null;
+  parent_location_id?: string | null;
 }
 
 export interface LocationUpdate {
@@ -409,6 +481,12 @@ export interface LocationUpdate {
   shelf?: string | null;
   bin?: string | null;
   description?: string | null;
+  parent_location_id?: string | null;
+}
+
+export interface BreadcrumbItem {
+  id: string;
+  name: string;
 }
 
 export const locationsApi = {
@@ -431,7 +509,16 @@ export const locationsApi = {
   delete: async (id: string): Promise<void> => {
     return apiClient.delete(`/locations/${id}`);
   },
+
+  getBreadcrumb: async (id: string): Promise<BreadcrumbItem[]> => {
+    return apiClient.get<BreadcrumbItem[]>(`/locations/${id}/breadcrumb`);
+  },
 };
+
+// Utility function to format breadcrumb path
+export function formatLocationBreadcrumb(breadcrumb: BreadcrumbItem[]): string {
+  return breadcrumb.map(item => item.name).join(' → ');
+}
 
 // Container interfaces and API
 export interface Container {
