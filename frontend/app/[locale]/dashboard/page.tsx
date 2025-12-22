@@ -1,16 +1,7 @@
 "use client";
 
-import {
-  Package,
-  MapPin,
-  Users,
-  Archive,
-  DollarSign,
-  AlertTriangle,
-  Clock,
-  Shield,
-  AlertCircle,
-} from "lucide-react";
+import { Icon } from "@/components/icons";
+import type * as LucideIcons from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { useRouter } from "@/navigation";
 import { useEffect, useState } from "react";
@@ -22,6 +13,8 @@ import {
 } from "@/lib/api";
 import { useTranslations } from "next-intl";
 import { AlertCard } from "@/components/dashboard/alert-card";
+
+type IconName = keyof typeof LucideIcons;
 
 export default function DashboardPage() {
   const { isAuthenticated, isLoading: authLoading } = useAuth();
@@ -119,11 +112,11 @@ export default function DashboardPage() {
     return `${diffDays}d ago`;
   };
 
-  const statCards = [
-    { name: t("totalItems"), value: stats?.total_items.toLocaleString() || "0", icon: Package },
-    { name: t("locations"), value: stats?.total_locations.toString() || "0", icon: MapPin },
-    { name: t("activeLoans"), value: stats?.active_loans.toString() || "0", icon: Users },
-    { name: t("categories"), value: stats?.total_categories.toString() || "0", icon: Archive },
+  const statCards: { name: string; value: string; iconName: IconName }[] = [
+    { name: t("totalItems"), value: stats?.total_items.toLocaleString() || "0", iconName: "Package" },
+    { name: t("locations"), value: stats?.total_locations.toString() || "0", iconName: "MapPin" },
+    { name: t("activeLoans"), value: stats?.active_loans.toString() || "0", iconName: "Users" },
+    { name: t("categories"), value: stats?.total_categories.toString() || "0", iconName: "Archive" },
   ];
 
   const hasAlerts =
@@ -141,28 +134,25 @@ export default function DashboardPage() {
 
       {/* Stats Grid */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-8">
-        {statCards.map((stat) => {
-          const Icon = stat.icon;
-          return (
-            <div
-              key={stat.name}
-              title={stat.name}
-              className="bg-card p-4 rounded-lg border shadow-sm cursor-default"
-            >
-              <div className="flex items-center justify-center gap-3">
-                <Icon className="w-6 h-6 text-primary flex-shrink-0" />
-                <p className="text-2xl font-bold text-foreground">{stat.value}</p>
-              </div>
+        {statCards.map((stat) => (
+          <div
+            key={stat.name}
+            title={stat.name}
+            className="bg-card p-4 rounded-lg border shadow-sm cursor-default"
+          >
+            <div className="flex items-center justify-center gap-3">
+              <Icon name={stat.iconName} className="w-6 h-6 text-primary flex-shrink-0" />
+              <p className="text-2xl font-bold text-foreground">{stat.value}</p>
             </div>
-          );
-        })}
+          </div>
+        ))}
         {/* Total Value Card */}
         <div
           title={t("totalValue")}
           className="bg-card p-4 rounded-lg border shadow-sm cursor-default"
         >
           <div className="flex items-center justify-center gap-3">
-            <DollarSign className="w-6 h-6 text-primary flex-shrink-0" />
+            <Icon name="DollarSign" className="w-6 h-6 text-primary flex-shrink-0" />
             <p className="text-2xl font-bold text-foreground">
               {stats ? formatCurrency(stats.total_inventory_value, stats.currency_code) : "€0"}
             </p>
@@ -176,7 +166,7 @@ export default function DashboardPage() {
           <div className="flex flex-wrap justify-center gap-4">
             {(stats?.low_stock_count || 0) > 0 && (
               <AlertCard
-                icon={AlertTriangle}
+                iconName="AlertTriangle"
                 title={t("lowStock")}
                 count={stats?.low_stock_count || 0}
                 variant="warning"
@@ -185,7 +175,7 @@ export default function DashboardPage() {
             )}
             {(stats?.expiring_soon_count || 0) > 0 && (
               <AlertCard
-                icon={Clock}
+                iconName="Clock"
                 title={t("expiringSoon")}
                 count={stats?.expiring_soon_count || 0}
                 variant="warning"
@@ -194,7 +184,7 @@ export default function DashboardPage() {
             )}
             {(stats?.warranty_expiring_count || 0) > 0 && (
               <AlertCard
-                icon={Shield}
+                iconName="Shield"
                 title={t("warrantyExpiring")}
                 count={stats?.warranty_expiring_count || 0}
                 variant="info"
@@ -203,7 +193,7 @@ export default function DashboardPage() {
             )}
             {(stats?.overdue_loans_count || 0) > 0 && (
               <AlertCard
-                icon={AlertCircle}
+                iconName="AlertCircle"
                 title={t("overdueLoans")}
                 count={stats?.overdue_loans_count || 0}
                 variant="destructive"

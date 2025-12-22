@@ -1,11 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { LucideIcon } from "lucide-react";
+import { Icon } from "@/components/icons";
+import type * as LucideIcons from "lucide-react";
 import { cn } from "@/lib/utils";
 
+type IconName = keyof typeof LucideIcons;
+
 interface AlertCardProps {
-  icon: LucideIcon;
+  iconName: IconName;
   title: string;
   count: number;
   variant: "warning" | "destructive" | "info";
@@ -18,7 +21,7 @@ const variantStyles = {
   info: "border-l-blue-500 bg-blue-50 dark:bg-blue-900/20 text-blue-800 dark:text-blue-200",
 };
 
-export function AlertCard({ icon: Icon, title, count, variant, href }: AlertCardProps) {
+export function AlertCard({ iconName, title, count, variant, href }: AlertCardProps) {
   return (
     <Link
       href={href}
@@ -27,7 +30,7 @@ export function AlertCard({ icon: Icon, title, count, variant, href }: AlertCard
         variantStyles[variant]
       )}
     >
-      <Icon className="w-5 h-5 flex-shrink-0" />
+      <Icon name={iconName} className="w-5 h-5 flex-shrink-0" />
       <div className="min-w-0">
         <p className="text-sm font-medium truncate">{title}</p>
         <p className="text-xl font-bold">{count}</p>
