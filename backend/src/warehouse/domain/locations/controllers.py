@@ -9,7 +9,12 @@ from litestar.status_codes import HTTP_201_CREATED
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from warehouse.domain.locations.repository import LocationRepository
-from warehouse.domain.locations.schemas import LocationCreate, LocationResponse, LocationUpdate
+from warehouse.domain.locations.schemas import (
+    BreadcrumbItem,
+    LocationCreate,
+    LocationResponse,
+    LocationUpdate,
+)
 from warehouse.domain.locations.service import LocationService
 from warehouse.errors import AppError
 from warehouse.lib.workspace import WorkspaceContext, get_workspace_context
@@ -47,6 +52,7 @@ class LocationController(Controller):
             bin=location.bin,
             description=location.description,
             created_at=location.created_at,
+            parent_location_id=location.parent_location_id,
         )
 
     @get("/")
@@ -66,6 +72,7 @@ class LocationController(Controller):
                 bin=loc.bin,
                 description=loc.description,
                 created_at=loc.created_at,
+                parent_location_id=loc.parent_location_id,
             )
             for loc in locations
         ]
@@ -79,7 +86,9 @@ class LocationController(Controller):
     ) -> LocationResponse:
         """Get location by ID."""
         try:
-            location = await location_service.get_location(location_id, workspace.workspace_id)
+            location = await location_service.get_location(
+                location_id, workspace.workspace_id
+            )
         except AppError as exc:
             raise exc.to_http_exception()
         return LocationResponse(
@@ -90,7 +99,23 @@ class LocationController(Controller):
             bin=location.bin,
             description=location.description,
             created_at=location.created_at,
+            parent_location_id=location.parent_location_id,
         )
+
+    @get("/{location_id:uuid}/breadcrumb")
+    async def get_location_breadcrumb(
+        self,
+        location_id: UUID,
+        location_service: LocationService,
+        workspace: WorkspaceContext,
+    ) -> list[BreadcrumbItem]:
+        """Get location breadcrumb path."""
+        try:
+            return await location_service.get_location_breadcrumb(
+                location_id, workspace.workspace_id
+            )
+        except AppError as exc:
+            raise exc.to_http_exception()
 
     @patch("/{location_id:uuid}")
     async def update_location(
@@ -115,6 +140,7 @@ class LocationController(Controller):
             bin=location.bin,
             description=location.description,
             created_at=location.created_at,
+            parent_location_id=location.parent_location_id,
         )
 
     @delete("/{location_id:uuid}")

@@ -14,6 +14,7 @@ class LocationCreate(msgspec.Struct):
     shelf: str | None = None
     bin: str | None = None
     description: str | None = None
+    parent_location_id: UUID | None = None
 
 
 class LocationUpdate(msgspec.Struct):
@@ -24,6 +25,7 @@ class LocationUpdate(msgspec.Struct):
     shelf: str | None = None
     bin: str | None = None
     description: str | None = None
+    parent_location_id: UUID | None = None
 
 
 class LocationResponse(msgspec.Struct):
@@ -36,4 +38,12 @@ class LocationResponse(msgspec.Struct):
     bin: str | None
     description: str | None
     created_at: datetime
+    parent_location_id: UUID | None = None
+
+
+class BreadcrumbItem(msgspec.Struct):
+    """Single item in a location breadcrumb path."""
+
+    id: UUID
+    name: str
 

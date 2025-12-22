@@ -4,7 +4,7 @@ from uuid import UUID
 
 from warehouse.domain.locations.models import Location
 from warehouse.domain.locations.repository import LocationRepository
-from warehouse.domain.locations.schemas import LocationCreate, LocationUpdate
+from warehouse.domain.locations.schemas import BreadcrumbItem, LocationCreate, LocationUpdate
 from warehouse.errors import AppError, ErrorCode
 
 
@@ -26,6 +26,7 @@ class LocationService:
             shelf=location_data.shelf,
             bin=location_data.bin,
             description=location_data.description,
+            parent_location_id=location_data.parent_location_id,
         )
         location = await self.repository.add(location)
         await self.repository.session.commit()
@@ -64,6 +65,8 @@ class LocationService:
             location.bin = location_data.bin
         if location_data.description is not None:
             location.description = location_data.description
+        if location_data.parent_location_id is not None:
+            location.parent_location_id = location_data.parent_location_id
 
         location = await self.repository.update(location)
         await self.repository.session.commit()
@@ -80,4 +83,24 @@ class LocationService:
         await self.repository.session.delete(location)
         await self.repository.session.commit()
         return True
+
+    async def get_location_breadcrumb(
+        self, location_id: UUID, workspace_id: UUID
+    ) -> list[BreadcrumbItem]:
+        """Build breadcrumb path for a location (from root to current)."""
+        breadcrumb = []
+        current_id = location_id
+        visited = set()  # Prevent infinite loops from circular references
+
+        while current_id and current_id not in visited:
+            visited.add(current_id)
+            location = await self.repository.get_one_or_none(
+                id=current_id, workspace_id=workspace_id
+            )
+            if not location:
+                break
+            breadcrumb.insert(0, BreadcrumbItem(id=location.id, name=location.name))
+            current_id = location.parent_location_id
+
+        return breadcrumb
 
