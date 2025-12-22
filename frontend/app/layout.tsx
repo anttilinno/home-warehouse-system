@@ -1,4 +1,4 @@
-import { Inter as FontSans } from "next/font/google"
+import { Inter as FontSans, VT323 } from "next/font/google"
 
 import "@/styles/globals.css"
 import { siteConfig } from "@/config/site"
@@ -12,6 +12,12 @@ import { ErrorProvider } from "@/components/ui/error-modal"
 const fontSans = FontSans({
   subsets: ["latin"],
   variable: "--font-sans",
+})
+
+const fontPixel = VT323({
+  weight: "400",
+  subsets: ["latin"],
+  variable: "--font-pixel",
 })
 
 interface RootLayoutProps {
@@ -99,10 +105,16 @@ export default function RootLayout({ children }: RootLayoutProps) {
       <body
         className={cn(
           "min-h-screen bg-background font-sans antialiased",
-          fontSans.variable
+          fontSans.variable,
+          fontPixel.variable
         )}
       >
-        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          themes={["light", "dark", "retro-light", "retro-dark"]}
+        >
           <AuthProvider>
             <ErrorProvider>
               {children}

@@ -1,24 +1,10 @@
 "use client";
 
 import { useTransition, useCallback } from "react";
-import {
-  Settings,
-  Palette,
-  Globe,
-  Building2,
-  Sun,
-  Moon,
-  Monitor,
-  Check,
-  Plus,
-  Users,
-  UserPlus,
-  X,
-  Crown,
-  Shield,
-  User,
-  Eye,
-} from "lucide-react";
+import { Icon } from "@/components/icons";
+import type * as LucideIcons from "lucide-react";
+
+type IconName = keyof typeof LucideIcons;
 import { useAuth } from "@/lib/auth";
 import { useTranslations } from "next-intl";
 import { useTheme } from "next-themes";
@@ -34,17 +20,18 @@ const languageNames: Record<Locale, string> = {
   ru: "Русский",
 };
 
-const themeIcons = {
-  light: Sun,
-  dark: Moon,
-  system: Monitor,
-};
+const themeOptions: { value: string; iconName: IconName; labelKey: string }[] = [
+  { value: "light", iconName: "Sun", labelKey: "themeLight" },
+  { value: "dark", iconName: "Moon", labelKey: "themeDark" },
+  { value: "retro-light", iconName: "Gamepad2", labelKey: "themeRetroLight" },
+  { value: "retro-dark", iconName: "Gamepad2", labelKey: "themeRetroDark" },
+];
 
-const roleIcons: Record<string, typeof Crown> = {
-  owner: Crown,
-  admin: Shield,
-  member: User,
-  viewer: Eye,
+const roleIconNames: Record<string, IconName> = {
+  owner: "Crown",
+  admin: "Shield",
+  member: "User",
+  viewer: "Eye",
 };
 
 export default function SettingsPage() {
@@ -249,34 +236,33 @@ export default function SettingsPage() {
         {/* Appearance */}
         <div className="bg-card p-6 rounded-lg border shadow-sm">
           <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
-            <Palette className="w-5 h-5" />
+            <Icon name="Palette" className="w-5 h-5" />
             {t("appearance")}
           </h3>
           <p className="text-sm text-muted-foreground mb-4">
             {t("appearanceDescription")}
           </p>
 
-          <div className="grid grid-cols-3 gap-3">
-            {(["light", "dark", "system"] as const).map((themeOption) => {
-              const Icon = themeIcons[themeOption];
-              const isActive = mounted && theme === themeOption;
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            {themeOptions.map((themeOption) => {
+              const isActive = mounted && theme === themeOption.value;
 
               return (
                 <button
-                  key={themeOption}
-                  onClick={() => setTheme(themeOption)}
+                  key={themeOption.value}
+                  onClick={() => setTheme(themeOption.value)}
                   className={`flex flex-col items-center gap-2 p-4 rounded-lg border-2 transition-colors ${
                     isActive
                       ? "border-primary bg-primary/5"
                       : "border-border hover:border-primary/50"
                   }`}
                 >
-                  <Icon className={`w-6 h-6 ${isActive ? "text-primary" : "text-muted-foreground"}`} />
-                  <span className={`text-sm font-medium ${isActive ? "text-primary" : "text-foreground"}`}>
-                    {t(`theme${themeOption.charAt(0).toUpperCase() + themeOption.slice(1)}`)}
+                  <Icon name={themeOption.iconName} className={`w-6 h-6 ${isActive ? "text-primary" : "text-muted-foreground"}`} />
+                  <span className={`text-sm font-medium text-center ${isActive ? "text-primary" : "text-foreground"}`}>
+                    {t(themeOption.labelKey)}
                   </span>
                   {isActive && (
-                    <Check className="w-4 h-4 text-primary" />
+                    <Icon name="Check" className="w-4 h-4 text-primary" />
                   )}
                 </button>
               );
@@ -287,7 +273,7 @@ export default function SettingsPage() {
         {/* Language */}
         <div className="bg-card p-6 rounded-lg border shadow-sm">
           <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
-            <Globe className="w-5 h-5" />
+            <Icon name="Globe" className="w-5 h-5" />
             {t("language")}
           </h3>
           <p className="text-sm text-muted-foreground mb-4">
@@ -316,7 +302,7 @@ export default function SettingsPage() {
                     {languageNames[l]}
                   </span>
                   {isActive && (
-                    <Check className="w-4 h-4 text-primary" />
+                    <Icon name="Check" className="w-4 h-4 text-primary" />
                   )}
                 </button>
               );
@@ -328,14 +314,14 @@ export default function SettingsPage() {
         <div className="bg-card p-6 rounded-lg border shadow-sm">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-semibold text-foreground flex items-center gap-2">
-              <Building2 className="w-5 h-5" />
+              <Icon name="Building2" className="w-5 h-5" />
               {t("workspace")}
             </h3>
             <button
               onClick={() => setShowCreateModal(true)}
               className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-primary hover:text-primary/80 border border-primary/30 hover:border-primary rounded-lg transition-colors"
             >
-              <Plus className="w-4 h-4" />
+              <Icon name="Plus" className="w-4 h-4" />
               {t("createWorkspace")}
             </button>
           </div>
@@ -371,7 +357,7 @@ export default function SettingsPage() {
                     onClick={handleShowMembers}
                     className="flex items-center gap-2 text-sm font-medium text-primary hover:text-primary/80 transition-colors"
                   >
-                    <Users className="w-4 h-4" />
+                    <Icon name="Users" className="w-4 h-4" />
                     {t("manageMembers")}
                   </button>
                 </div>
@@ -415,7 +401,7 @@ export default function SettingsPage() {
         {/* About */}
         <div className="bg-card p-6 rounded-lg border shadow-sm">
           <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
-            <Settings className="w-5 h-5" />
+            <Icon name="Settings" className="w-5 h-5" />
             {t("about")}
           </h3>
           <div className="space-y-2 text-sm">
@@ -441,7 +427,7 @@ export default function SettingsPage() {
                 onClick={() => setShowCreateModal(false)}
                 className="text-muted-foreground hover:text-foreground"
               >
-                <X className="w-5 h-5" />
+                <Icon name="X" className="w-5 h-5" />
               </button>
             </div>
 
@@ -508,7 +494,7 @@ export default function SettingsPage() {
                 onClick={() => setShowMembersModal(false)}
                 className="text-muted-foreground hover:text-foreground"
               >
-                <X className="w-5 h-5" />
+                <Icon name="X" className="w-5 h-5" />
               </button>
             </div>
 
@@ -517,7 +503,7 @@ export default function SettingsPage() {
                 onClick={handleOpenInviteModal}
                 className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-primary-foreground bg-primary hover:bg-primary/90 rounded-lg transition-colors"
               >
-                <UserPlus className="w-4 h-4" />
+                <Icon name="UserPlus" className="w-4 h-4" />
                 {t("inviteMember")}
               </button>
             </div>
@@ -529,7 +515,7 @@ export default function SettingsPage() {
             ) : (
               <div className="space-y-2 max-h-80 overflow-y-auto">
                 {members.map((member) => {
-                  const RoleIcon = roleIcons[member.role] || User;
+                  const roleIconName = roleIconNames[member.role] || "User";
                   return (
                     <div
                       key={member.id}
@@ -540,7 +526,7 @@ export default function SettingsPage() {
                         <p className="text-sm text-muted-foreground">{member.email}</p>
                       </div>
                       <div className="flex items-center gap-2 px-2 py-1 bg-background rounded text-sm">
-                        <RoleIcon className="w-4 h-4 text-muted-foreground" />
+                        <Icon name={roleIconName} className="w-4 h-4 text-muted-foreground" />
                         <span className="text-foreground">
                           {t(`role${member.role.charAt(0).toUpperCase() + member.role.slice(1)}`)}
                         </span>
@@ -573,7 +559,7 @@ export default function SettingsPage() {
                 onClick={() => setShowInviteModal(false)}
                 className="text-muted-foreground hover:text-foreground"
               >
-                <X className="w-5 h-5" />
+                <Icon name="X" className="w-5 h-5" />
               </button>
             </div>
 
@@ -593,7 +579,7 @@ export default function SettingsPage() {
                       onClick={handleClearSelection}
                       className="text-muted-foreground hover:text-foreground"
                     >
-                      <X className="w-4 h-4" />
+                      <Icon name="X" className="w-4 h-4" />
                     </button>
                   </div>
                 ) : (
@@ -659,7 +645,7 @@ export default function SettingsPage() {
                       onClick={() => setInviteEmail("")}
                       className="text-muted-foreground hover:text-foreground"
                     >
-                      <X className="w-4 h-4" />
+                      <Icon name="X" className="w-4 h-4" />
                     </button>
                   </div>
                 )}

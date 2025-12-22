@@ -3,36 +3,20 @@
 import { useState, useEffect } from "react";
 import { Link, usePathname, useRouter } from "@/navigation";
 import { useTranslations } from "next-intl";
-import {
-  Package,
-  MapPin,
-  Settings,
-  Home,
-  BarChart3,
-  Archive,
-  User,
-  LogOut,
-  ChevronUp,
-  ChevronDown,
-  ChevronRight,
-  Box,
-  Tag,
-  HandCoins,
-  Contact,
-  Bell,
-  Layers,
-  Warehouse,
-} from "lucide-react";
+import { Icon } from "@/components/icons";
+import type * as LucideIcons from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/lib/auth";
 import { notificationsApi } from "@/lib/api";
+
+type IconName = keyof typeof LucideIcons;
 
 interface SidebarProps {
   className?: string;
 }
 
-type NavItem = { type: 'item'; name: string; href: string; icon: React.ComponentType<{ className?: string }> };
-type NavGroup = { type: 'group'; name: string; icon: React.ComponentType<{ className?: string }>; items: Omit<NavItem, 'type'>[] };
+type NavItem = { type: 'item'; name: string; href: string; iconName: IconName };
+type NavGroup = { type: 'group'; name: string; iconName: IconName; items: Omit<NavItem, 'type'>[] };
 type NavEntry = NavItem | NavGroup;
 
 export function Sidebar({ className }: SidebarProps) {
@@ -69,52 +53,52 @@ export function Sidebar({ className }: SidebarProps) {
       type: 'item',
       name: t('dashboard'),
       href: "/dashboard",
-      icon: Home,
+      iconName: "Home",
     },
     {
       type: 'item',
       name: t('inventory'),
       href: "/dashboard/inventory",
-      icon: Package,
+      iconName: "Package",
     },
     {
       type: 'group',
       name: t('catalog'),
-      icon: Layers,
+      iconName: "Layers",
       items: [
-        { name: t('items'), href: "/dashboard/items", icon: Tag },
-        { name: t('categories'), href: "/dashboard/categories", icon: Archive },
+        { name: t('items'), href: "/dashboard/items", iconName: "Tag" },
+        { name: t('categories'), href: "/dashboard/categories", iconName: "Archive" },
       ],
     },
     {
       type: 'group',
       name: t('storage'),
-      icon: Warehouse,
+      iconName: "Warehouse",
       items: [
-        { name: t('locations'), href: "/dashboard/locations", icon: MapPin },
-        { name: t('containers'), href: "/dashboard/containers", icon: Box },
+        { name: t('locations'), href: "/dashboard/locations", iconName: "MapPin" },
+        { name: t('containers'), href: "/dashboard/containers", iconName: "Box" },
       ],
     },
     {
       type: 'group',
       name: t('loansGroup'),
-      icon: HandCoins,
+      iconName: "HandCoins",
       items: [
-        { name: t('loans'), href: "/dashboard/loans", icon: HandCoins },
-        { name: t('borrowers'), href: "/dashboard/borrowers", icon: Contact },
+        { name: t('loans'), href: "/dashboard/loans", iconName: "HandCoins" },
+        { name: t('borrowers'), href: "/dashboard/borrowers", iconName: "Contact" },
       ],
     },
     {
       type: 'item',
       name: t('analytics'),
       href: "/dashboard/analytics",
-      icon: BarChart3,
+      iconName: "BarChart3",
     },
     {
       type: 'item',
       name: t('settings'),
       href: "/dashboard/settings",
-      icon: Settings,
+      iconName: "Settings",
     },
   ];
 
@@ -170,7 +154,7 @@ export function Sidebar({ className }: SidebarProps) {
           onClick={() => setIsCollapsed(!isCollapsed)}
           className="flex items-center space-x-2 hover:opacity-80 transition-opacity"
         >
-          <Package className="w-5 h-5 text-primary" />
+          <Icon name="Package" className="w-5 h-5 text-primary" />
           {!isCollapsed && (
             <h2 className="text-lg font-semibold text-foreground">HMS</h2>
           )}
@@ -183,7 +167,6 @@ export function Sidebar({ className }: SidebarProps) {
           {navigationItems.map((entry) => {
             if (entry.type === 'item') {
               const isActive = pathname === entry.href;
-              const Icon = entry.icon;
 
               return (
                 <li key={entry.name}>
@@ -198,7 +181,7 @@ export function Sidebar({ className }: SidebarProps) {
                         : "text-muted-foreground hover:text-foreground"
                     )}
                   >
-                    <Icon className="w-4 h-4 flex-shrink-0" />
+                    <Icon name={entry.iconName} className="w-4 h-4 flex-shrink-0" />
                     {!isCollapsed && <span>{entry.name}</span>}
                   </Link>
                 </li>
@@ -208,7 +191,6 @@ export function Sidebar({ className }: SidebarProps) {
             // Group
             const isExpanded = expandedGroups.has(entry.name);
             const hasActiveChild = entry.items.some(item => pathname === item.href);
-            const Icon = entry.icon;
 
             return (
               <li key={entry.name}>
@@ -230,11 +212,12 @@ export function Sidebar({ className }: SidebarProps) {
                       : "text-muted-foreground hover:text-foreground"
                   )}
                 >
-                  <Icon className="w-4 h-4 flex-shrink-0" />
+                  <Icon name={entry.iconName} className="w-4 h-4 flex-shrink-0" />
                   {!isCollapsed && (
                     <>
                       <span className="flex-1 text-left">{entry.name}</span>
-                      <ChevronRight
+                      <Icon
+                        name="ChevronRight"
                         className={cn(
                           "w-4 h-4 transition-transform duration-200",
                           isExpanded && "rotate-90"
@@ -247,7 +230,6 @@ export function Sidebar({ className }: SidebarProps) {
                   <ul className="mt-1 space-y-1">
                     {entry.items.map((item) => {
                       const isActive = pathname === item.href;
-                      const ItemIcon = item.icon;
 
                       return (
                         <li key={item.name}>
@@ -261,7 +243,7 @@ export function Sidebar({ className }: SidebarProps) {
                                 : "text-muted-foreground hover:text-foreground"
                             )}
                           >
-                            <ItemIcon className="w-4 h-4 flex-shrink-0" />
+                            <Icon name={item.iconName} className="w-4 h-4 flex-shrink-0" />
                             <span>{item.name}</span>
                           </Link>
                         </li>
@@ -309,9 +291,9 @@ export function Sidebar({ className }: SidebarProps) {
                   </p>
                 </div>
                 {isUserMenuOpen ? (
-                  <ChevronUp className="w-4 h-4 text-muted-foreground" />
+                  <Icon name="ChevronUp" className="w-4 h-4 text-muted-foreground" />
                 ) : (
-                  <ChevronDown className="w-4 h-4 text-muted-foreground" />
+                  <Icon name="ChevronDown" className="w-4 h-4 text-muted-foreground" />
                 )}
               </>
             )}
@@ -325,7 +307,7 @@ export function Sidebar({ className }: SidebarProps) {
                 onClick={() => setIsUserMenuOpen(false)}
                 className="w-full flex items-center gap-3 px-3 py-2 text-sm hover:bg-muted transition-colors"
               >
-                <User className="w-4 h-4" />
+                <Icon name="User" className="w-4 h-4" />
                 <span>{t('profile')}</span>
               </Link>
               <Link
@@ -333,7 +315,7 @@ export function Sidebar({ className }: SidebarProps) {
                 onClick={() => setIsUserMenuOpen(false)}
                 className="w-full flex items-center gap-3 px-3 py-2 text-sm hover:bg-muted transition-colors"
               >
-                <Bell className="w-4 h-4" />
+                <Icon name="Bell" className="w-4 h-4" />
                 <span>{t('notifications')}</span>
               </Link>
               <button
@@ -344,7 +326,7 @@ export function Sidebar({ className }: SidebarProps) {
                 }}
                 className="w-full flex items-center gap-3 px-3 py-2 text-sm hover:bg-muted transition-colors"
               >
-                <LogOut className="w-4 h-4" />
+                <Icon name="LogOut" className="w-4 h-4" />
                 <span>{t('logout')}</span>
               </button>
             </div>

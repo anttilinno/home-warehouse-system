@@ -1,7 +1,7 @@
 "use client";
 
 import { useTransition } from "react";
-import { Globe } from "lucide-react";
+import { Icon } from "@/components/icons";
 import { locales, type Locale } from "@/i18n";
 import { usePathname, useRouter } from "@/navigation";
 import { useLocale } from "next-intl";
@@ -27,7 +27,7 @@ export function LanguageSwitcher() {
   return (
     <div className="relative">
       <div className="flex items-center space-x-1">
-        <Globe className="w-4 h-4 text-muted-foreground" />
+        <Icon name="Globe" className="w-4 h-4 text-muted-foreground" />
         <select
           value={locale}
           onChange={(e) => switchLanguage(e.target.value as Locale)}
