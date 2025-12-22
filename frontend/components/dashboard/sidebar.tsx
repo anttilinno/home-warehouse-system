@@ -6,10 +6,7 @@ import { useTranslations } from "next-intl";
 import {
   Package,
   MapPin,
-  Users,
   Settings,
-  Menu,
-  X,
   Home,
   BarChart3,
   Archive,
@@ -17,11 +14,14 @@ import {
   LogOut,
   ChevronUp,
   ChevronDown,
+  ChevronRight,
   Box,
   Tag,
   HandCoins,
   Contact,
   Bell,
+  Layers,
+  Warehouse,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/lib/auth";
@@ -31,10 +31,15 @@ interface SidebarProps {
   className?: string;
 }
 
+type NavItem = { type: 'item'; name: string; href: string; icon: React.ComponentType<{ className?: string }> };
+type NavGroup = { type: 'group'; name: string; icon: React.ComponentType<{ className?: string }>; items: Omit<NavItem, 'type'>[] };
+type NavEntry = NavItem | NavGroup;
+
 export function Sidebar({ className }: SidebarProps) {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
   const router = useRouter();
   const pathname = usePathname();
   const t = useTranslations('nav');
@@ -59,58 +64,84 @@ export function Sidebar({ className }: SidebarProps) {
     return () => clearInterval(interval);
   }, [isAuthenticated]);
 
-  const navigationItems = [
+  const navigationItems: NavEntry[] = [
     {
+      type: 'item',
       name: t('dashboard'),
       href: "/dashboard",
       icon: Home,
     },
     {
+      type: 'item',
       name: t('inventory'),
       href: "/dashboard/inventory",
       icon: Package,
     },
     {
-      name: t('locations'),
-      href: "/dashboard/locations",
-      icon: MapPin,
+      type: 'group',
+      name: t('catalog'),
+      icon: Layers,
+      items: [
+        { name: t('items'), href: "/dashboard/items", icon: Tag },
+        { name: t('categories'), href: "/dashboard/categories", icon: Archive },
+      ],
     },
     {
-      name: t('containers'),
-      href: "/dashboard/containers",
-      icon: Box,
+      type: 'group',
+      name: t('storage'),
+      icon: Warehouse,
+      items: [
+        { name: t('locations'), href: "/dashboard/locations", icon: MapPin },
+        { name: t('containers'), href: "/dashboard/containers", icon: Box },
+      ],
     },
     {
-      name: t('items'),
-      href: "/dashboard/items",
-      icon: Tag,
-    },
-    {
-      name: t('borrowers'),
-      href: "/dashboard/borrowers",
-      icon: Contact,
-    },
-    {
-      name: t('loans'),
-      href: "/dashboard/loans",
+      type: 'group',
+      name: t('loansGroup'),
       icon: HandCoins,
+      items: [
+        { name: t('loans'), href: "/dashboard/loans", icon: HandCoins },
+        { name: t('borrowers'), href: "/dashboard/borrowers", icon: Contact },
+      ],
     },
     {
-      name: t('categories'),
-      href: "/dashboard/categories",
-      icon: Archive,
-    },
-    {
+      type: 'item',
       name: t('analytics'),
       href: "/dashboard/analytics",
       icon: BarChart3,
     },
     {
+      type: 'item',
       name: t('settings'),
       href: "/dashboard/settings",
       icon: Settings,
     },
   ];
+
+  // Auto-expand group containing active page
+  useEffect(() => {
+    for (const entry of navigationItems) {
+      if (entry.type === 'group') {
+        const hasActiveChild = entry.items.some(item => pathname === item.href);
+        if (hasActiveChild) {
+          setExpandedGroups(prev => new Set(prev).add(entry.name));
+          break;
+        }
+      }
+    }
+  }, [pathname]);
+
+  const toggleGroup = (groupName: string) => {
+    setExpandedGroups(prev => {
+      const next = new Set(prev);
+      if (next.has(groupName)) {
+        next.delete(groupName);
+      } else {
+        next.add(groupName);
+      }
+      return next;
+    });
+  };
 
   // Get user initials for avatar
   const getUserInitials = (fullName: string | undefined | null) => {
@@ -147,28 +178,97 @@ export function Sidebar({ className }: SidebarProps) {
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 p-2">
+      <nav className="flex-1 p-2 overflow-y-auto">
         <ul className="space-y-1">
-          {navigationItems.map((item) => {
-            const isActive = pathname === item.href;
-            const Icon = item.icon;
+          {navigationItems.map((entry) => {
+            if (entry.type === 'item') {
+              const isActive = pathname === entry.href;
+              const Icon = entry.icon;
+
+              return (
+                <li key={entry.name}>
+                  <Link
+                    href={entry.href}
+                    className={cn(
+                      "flex items-center rounded-md text-sm font-medium transition-colors hover:bg-muted min-h-[40px]",
+                      isCollapsed ? "justify-center px-2" : "gap-3 px-3",
+                      "py-2",
+                      isActive
+                        ? "bg-primary text-primary-foreground hover:bg-primary/90"
+                        : "text-muted-foreground hover:text-foreground"
+                    )}
+                  >
+                    <Icon className="w-4 h-4 flex-shrink-0" />
+                    {!isCollapsed && <span>{entry.name}</span>}
+                  </Link>
+                </li>
+              );
+            }
+
+            // Group
+            const isExpanded = expandedGroups.has(entry.name);
+            const hasActiveChild = entry.items.some(item => pathname === item.href);
+            const Icon = entry.icon;
 
             return (
-              <li key={item.name}>
-                <Link
-                  href={item.href}
+              <li key={entry.name}>
+                <button
+                  onClick={() => {
+                    if (isCollapsed) {
+                      setIsCollapsed(false);
+                      setExpandedGroups(prev => new Set(prev).add(entry.name));
+                    } else {
+                      toggleGroup(entry.name);
+                    }
+                  }}
                   className={cn(
-                    "flex items-center rounded-md text-sm font-medium transition-colors hover:bg-muted min-h-[40px]",
+                    "w-full flex items-center rounded-md text-sm font-medium transition-colors hover:bg-muted min-h-[40px]",
                     isCollapsed ? "justify-center px-2" : "gap-3 px-3",
                     "py-2",
-                    isActive
-                      ? "bg-primary text-primary-foreground hover:bg-primary/90"
+                    hasActiveChild
+                      ? "text-primary"
                       : "text-muted-foreground hover:text-foreground"
                   )}
                 >
                   <Icon className="w-4 h-4 flex-shrink-0" />
-                  {!isCollapsed && <span>{item.name}</span>}
-                </Link>
+                  {!isCollapsed && (
+                    <>
+                      <span className="flex-1 text-left">{entry.name}</span>
+                      <ChevronRight
+                        className={cn(
+                          "w-4 h-4 transition-transform duration-200",
+                          isExpanded && "rotate-90"
+                        )}
+                      />
+                    </>
+                  )}
+                </button>
+                {!isCollapsed && isExpanded && (
+                  <ul className="mt-1 space-y-1">
+                    {entry.items.map((item) => {
+                      const isActive = pathname === item.href;
+                      const ItemIcon = item.icon;
+
+                      return (
+                        <li key={item.name}>
+                          <Link
+                            href={item.href}
+                            className={cn(
+                              "flex items-center rounded-md text-sm font-medium transition-colors hover:bg-muted min-h-[36px]",
+                              "gap-3 pl-7 pr-3 py-1.5",
+                              isActive
+                                ? "bg-primary text-primary-foreground hover:bg-primary/90"
+                                : "text-muted-foreground hover:text-foreground"
+                            )}
+                          >
+                            <ItemIcon className="w-4 h-4 flex-shrink-0" />
+                            <span>{item.name}</span>
+                          </Link>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                )}
               </li>
             );
           })}

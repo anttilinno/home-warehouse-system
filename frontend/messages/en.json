@@ -2,6 +2,9 @@
   "nav": {
     "dashboard": "Dashboard",
     "inventory": "Inventory",
+    "catalog": "Catalog",
+    "storage": "Storage",
+    "loansGroup": "Loans",
     "locations": "Locations",
     "containers": "Containers",
     "items": "Items",

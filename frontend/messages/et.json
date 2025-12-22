@@ -2,7 +2,13 @@
   "nav": {
     "dashboard": "Töölaud",
     "inventory": "Inventuur",
+    "catalog": "Kataloog",
+    "storage": "Ladustamine",
+    "loansGroup": "Laenud",
     "locations": "Asukohad",
+    "containers": "Konteinerid",
+    "items": "Esemed",
+    "borrowers": "Laenajad",
     "loans": "Laenud",
     "categories": "Kategooriad",
     "analytics": "Analüütika",
