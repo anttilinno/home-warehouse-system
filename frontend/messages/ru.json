@@ -2,7 +2,13 @@
   "nav": {
     "dashboard": "Панель управления",
     "inventory": "Инвентарь",
+    "catalog": "Каталог",
+    "storage": "Хранение",
+    "loansGroup": "Займы",
     "locations": "Расположения",
+    "containers": "Контейнеры",
+    "items": "Предметы",
+    "borrowers": "Заёмщики",
     "loans": "Займы",
     "categories": "Категории",
     "analytics": "Аналитика",
