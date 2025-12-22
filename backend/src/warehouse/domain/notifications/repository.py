@@ -56,6 +56,9 @@ class NotificationRepository(BaseRepository[Notification]):
         self, user_id: UUID, notification_ids: list[UUID] | None = None
     ) -> int:
         """Mark notifications as read. If notification_ids is None, mark all as read."""
+        # TODO: Fix timezone mismatch - datetime.now(UTC) returns timezone-aware datetime
+        # but read_at column is TIMESTAMP WITHOUT TIME ZONE. Use datetime.utcnow() or
+        # change the column to TIMESTAMP WITH TIME ZONE.
         now = datetime.now(UTC)
         stmt = (
             update(Notification)

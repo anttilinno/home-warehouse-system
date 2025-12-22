@@ -9,7 +9,7 @@ from litestar.status_codes import HTTP_400_BAD_REQUEST, HTTP_500_INTERNAL_SERVER
 from sqlalchemy.exc import IntegrityError
 
 from warehouse import app as app_module
-from warehouse.app import create_app, integrity_error_handler, general_exception_handler
+from warehouse.app import create_app, integrity_error_handler, general_exception_handler, http_exception_handler
 from warehouse.config import Config
 from warehouse.database import get_db_config
 from warehouse.domain.auth.controllers import AuthController
@@ -136,11 +136,41 @@ class TestGeneralExceptionHandler:
         assert "ValueError" in response.content["traceback"]
         assert response.content["exception_type"] == "ValueError"
 
-    def test_http_exception_passthrough(self):
+    def test_http_exception_treated_as_generic(self):
+        """HTTPExceptions reaching general_exception_handler return 500.
+
+        Note: In the actual app, HTTPExceptions are handled by http_exception_handler.
+        This test verifies that if an HTTPException somehow reaches general_exception_handler,
+        it is treated as a generic exception and returns 500.
+        """
         request = MagicMock()
         exc = HTTPException(status_code=404, detail="Not found")
 
         response = general_exception_handler(request, exc)
 
+        # general_exception_handler always returns 500 for any exception
+        assert response.status_code == HTTP_500_INTERNAL_SERVER_ERROR
+
+
+class TestHttpExceptionHandler:
+    """Tests for HTTP exception handling."""
+
+    def test_http_exception_preserves_status_code(self):
+        """HTTP exceptions preserve their original status code."""
+        request = MagicMock()
+        exc = HTTPException(status_code=404, detail="Not found")
+
+        response = http_exception_handler(request, exc)
+
         assert response.status_code == 404
         assert response.content["detail"] == "Not found"
+
+    def test_http_exception_with_different_status_codes(self):
+        """HTTP exceptions with various status codes are handled correctly."""
+        request = MagicMock()
+
+        for status_code, detail in [(400, "Bad request"), (403, "Forbidden"), (409, "Conflict")]:
+            exc = HTTPException(status_code=status_code, detail=detail)
+            response = http_exception_handler(request, exc)
+            assert response.status_code == status_code
+            assert response.content["detail"] == detail

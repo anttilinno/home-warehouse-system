@@ -1,11 +1,14 @@
 """End-to-end tests for loan flow against the real app."""
 
+import asyncio
 import time
-from uuid import uuid7
+from uuid import uuid7, UUID
 
 import pytest
 from redis import Redis
 from rq import Queue
+
+from warehouse.domain.loans.jobs import create_loan_job
 
 
 @pytest.mark.asyncio
@@ -202,4 +205,159 @@ async def test_loan_negative_paths(client, test_workspace_id):
     assert first_return.status_code == 200
     second_return = await client.patch(f"/loans/{loan_id}/return", json={"notes": "second"})
     assert second_return.status_code == 400
+
+
+@pytest.mark.asyncio
+async def test_create_loan_job_direct(client, test_workspace_id):
+    """Test create_loan_job function directly with real database (bypasses RQ queue)."""
+    suffix = uuid7().hex
+
+    # Setup: Create borrower
+    borrower_resp = await client.post(
+        "/borrowers/",
+        json={"name": f"JobBorrower-{suffix}", "email": f"{suffix}@job.test", "phone": "555", "notes": None},
+    )
+    assert borrower_resp.status_code == 201
+    borrower_id = borrower_resp.json()["id"]
+
+    # Setup: Create category and item
+    category_resp = await client.post(
+        "/categories/",
+        json={"name": f"JobCategory-{suffix}", "description": "for job test"},
+    )
+    assert category_resp.status_code == 201
+    category_id = category_resp.json()["id"]
+
+    item_resp = await client.post(
+        "/items/",
+        json={
+            "sku": f"SKU-JOB-{suffix}",
+            "name": "JobItem",
+            "description": "item for job test",
+            "category_id": category_id,
+        },
+    )
+    assert item_resp.status_code == 201
+    item_id = item_resp.json()["id"]
+
+    # Setup: Create location and inventory
+    loc_resp = await client.post(
+        "/locations/",
+        json={"name": f"JobLoc-{suffix}", "zone": "J", "shelf": "1", "bin": "1", "description": None},
+    )
+    assert loc_resp.status_code == 201
+    location_id = loc_resp.json()["id"]
+
+    inv_resp = await client.post(
+        "/inventory/",
+        json={"item_id": item_id, "location_id": location_id, "quantity": 20},
+    )
+    assert inv_resp.status_code == 201
+    inventory_id = inv_resp.json()["id"]
+
+    # Call create_loan_job directly (bypassing RQ queue)
+    loan_data = {
+        "workspace_id": test_workspace_id,
+        "inventory_id": inventory_id,
+        "borrower_id": borrower_id,
+        "quantity": 3,
+        "due_date": None,
+        "notes": "Created via job test",
+    }
+
+    loan_id = await create_loan_job(loan_data)
+
+    # Verify loan was created
+    assert loan_id is not None
+    assert UUID(loan_id)  # Valid UUID
+
+    # Verify loan exists in database via API
+    get_resp = await client.get(f"/loans/{loan_id}")
+    assert get_resp.status_code == 200
+    loan = get_resp.json()
+    assert loan["id"] == loan_id
+    assert loan["borrower_id"] == borrower_id
+    assert loan["inventory_id"] == inventory_id
+    assert loan["quantity"] == 3
+    assert loan["notes"] == "Created via job test"
+    assert loan["returned_at"] is None
+
+
+@pytest.mark.asyncio
+async def test_create_loan_job_invalid_borrower(client, test_workspace_id):
+    """Test create_loan_job with non-existent borrower fails."""
+    suffix = uuid7().hex
+
+    # Setup: Create category, item, location, inventory (but no borrower)
+    category_resp = await client.post(
+        "/categories/",
+        json={"name": f"JobInvCat-{suffix}", "description": "invalid test"},
+    )
+    category_id = category_resp.json()["id"]
+
+    item_resp = await client.post(
+        "/items/",
+        json={
+            "sku": f"SKU-JOBINV-{suffix}",
+            "name": "JobInvItem",
+            "description": None,
+            "category_id": category_id,
+        },
+    )
+    item_id = item_resp.json()["id"]
+
+    loc_resp = await client.post(
+        "/locations/",
+        json={"name": f"JobInvLoc-{suffix}", "zone": "X", "shelf": "1", "bin": "1", "description": None},
+    )
+    location_id = loc_resp.json()["id"]
+
+    inv_resp = await client.post(
+        "/inventory/",
+        json={"item_id": item_id, "location_id": location_id, "quantity": 10},
+    )
+    inventory_id = inv_resp.json()["id"]
+
+    # Call create_loan_job with non-existent borrower
+    fake_borrower_id = str(uuid7())
+    loan_data = {
+        "workspace_id": test_workspace_id,
+        "inventory_id": inventory_id,
+        "borrower_id": fake_borrower_id,
+        "quantity": 1,
+        "due_date": None,
+        "notes": None,
+    }
+
+    # Should raise an exception due to FK constraint
+    with pytest.raises(Exception):
+        await create_loan_job(loan_data)
+
+
+@pytest.mark.asyncio
+async def test_create_loan_job_invalid_inventory(client, test_workspace_id):
+    """Test create_loan_job with non-existent inventory fails."""
+    suffix = uuid7().hex
+
+    # Setup borrower only (no inventory)
+    borrower_resp = await client.post(
+        "/borrowers/",
+        json={"name": f"InvBorrower-{suffix}", "email": f"{suffix}@inv.test", "phone": "999", "notes": None},
+    )
+    borrower_id = borrower_resp.json()["id"]
+
+    # Call create_loan_job with non-existent inventory
+    fake_inventory_id = str(uuid7())
+    loan_data = {
+        "workspace_id": test_workspace_id,
+        "inventory_id": fake_inventory_id,
+        "borrower_id": borrower_id,
+        "quantity": 1,
+        "due_date": None,
+        "notes": None,
+    }
+
+    # Should raise an exception due to FK constraint on inventory
+    with pytest.raises(Exception):
+        await create_loan_job(loan_data)
 
