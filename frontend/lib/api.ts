@@ -31,6 +31,7 @@ export interface Workspace {
   slug: string;
   description: string | null;
   role: string;
+  is_personal?: boolean;
 }
 
 export interface TokenResponse {
@@ -267,12 +268,20 @@ export const workspacesApi = {
     return apiClient.post<Workspace>('/auth/workspaces', data);
   },
 
+  delete: async (workspaceId: string): Promise<void> => {
+    return apiClient.delete(`/auth/workspaces/${workspaceId}`);
+  },
+
   getMembers: async (workspaceId: string): Promise<WorkspaceMember[]> => {
     return apiClient.get<WorkspaceMember[]>(`/auth/workspaces/${workspaceId}/members`);
   },
 
   inviteMember: async (workspaceId: string, data: WorkspaceMemberInvite): Promise<WorkspaceMember> => {
     return apiClient.post<WorkspaceMember>(`/auth/workspaces/${workspaceId}/members`, data);
+  },
+
+  removeMember: async (workspaceId: string, memberId: string): Promise<void> => {
+    return apiClient.delete(`/auth/workspaces/${workspaceId}/members/${memberId}`);
   },
 
   searchUsers: async (workspaceId: string, query?: string): Promise<UserSearchResult[]> => {
@@ -908,6 +917,9 @@ export const getTranslatedErrorMessage = (errorMessage: string, t: (key: string)
     'Access to workspace denied': 'WORKSPACE_ACCESS_DENIED',
     'Permission denied for this workspace': 'WORKSPACE_PERMISSION_DENIED',
     'User is already a member of this workspace': 'WORKSPACE_MEMBER_EXISTS',
+    'Personal workspace cannot be deleted': 'WORKSPACE_PROTECTED',
+    'Workspace owner cannot be removed': 'WORKSPACE_OWNER_CANNOT_BE_REMOVED',
+    'Workspace member not found': 'WORKSPACE_MEMBER_NOT_FOUND',
     'User not found': 'USER_NOT_FOUND',
   };
 

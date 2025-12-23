@@ -80,6 +80,7 @@ class AuthService:
                 name=workspace_name,
                 slug=slug,
                 description="Personal workspace",
+                is_personal=True,
             )
             workspace = await self.workspace_repository.add(workspace)
 
@@ -121,6 +122,7 @@ class AuthService:
                 slug=membership.workspace.slug,
                 description=membership.workspace.description,
                 role=membership.role.value,
+                is_personal=membership.workspace.is_personal,
             )
             for membership in user.workspace_memberships
         ]
@@ -231,6 +233,7 @@ class AuthService:
             slug=workspace.slug,
             description=workspace.description,
             role=WorkspaceRole.OWNER.value,
+            is_personal=workspace.is_personal,
         )
 
     async def get_workspace_members(self, workspace_id: UUID, user_id: UUID) -> list[WorkspaceMemberResponse]:
@@ -368,4 +371,58 @@ class AuthService:
             }
             for user in users
         ]
+
+    async def delete_workspace(self, workspace_id: UUID, user_id: UUID) -> None:
+        """Delete a workspace. Only owner or admin can delete, and personal workspaces cannot be deleted."""
+        if not self.workspace_repository or not self.workspace_member_repository:
+            raise AppError(ErrorCode.GENERAL_BAD_REQUEST, status_code=500)
+
+        # Get workspace
+        workspace = await self.workspace_repository.get_one_or_none(id=workspace_id)
+        if not workspace:
+            raise AppError(ErrorCode.WORKSPACE_NOT_FOUND, status_code=404)
+
+        # Check if personal workspace (protected)
+        if workspace.is_personal:
+            raise AppError(ErrorCode.WORKSPACE_PROTECTED, status_code=403)
+
+        # Verify user has owner or admin role
+        membership = await self.workspace_member_repository.get_one_or_none(
+            workspace_id=workspace_id, user_id=user_id
+        )
+        if not membership:
+            raise AppError(ErrorCode.WORKSPACE_NOT_FOUND, status_code=404)
+        if membership.role not in [WorkspaceRole.OWNER, WorkspaceRole.ADMIN]:
+            raise AppError(ErrorCode.WORKSPACE_PERMISSION_DENIED, status_code=403)
+
+        # Delete workspace (CASCADE handles members)
+        await self.workspace_repository.delete(workspace_id)
+        await self.repository.session.commit()
+
+    async def remove_member(self, workspace_id: UUID, member_id: UUID, remover_id: UUID) -> None:
+        """Remove a member from a workspace. Owner/Admin can remove, but owner cannot be removed."""
+        if not self.workspace_member_repository:
+            raise AppError(ErrorCode.GENERAL_BAD_REQUEST, status_code=500)
+
+        # Verify remover has owner or admin role
+        remover_membership = await self.workspace_member_repository.get_one_or_none(
+            workspace_id=workspace_id, user_id=remover_id
+        )
+        if not remover_membership:
+            raise AppError(ErrorCode.WORKSPACE_NOT_FOUND, status_code=404)
+        if remover_membership.role not in [WorkspaceRole.OWNER, WorkspaceRole.ADMIN]:
+            raise AppError(ErrorCode.WORKSPACE_PERMISSION_DENIED, status_code=403)
+
+        # Get target member
+        target_membership = await self.workspace_member_repository.get_one_or_none(id=member_id)
+        if not target_membership or target_membership.workspace_id != workspace_id:
+            raise AppError(ErrorCode.WORKSPACE_MEMBER_NOT_FOUND, status_code=404)
+
+        # Cannot remove owner
+        if target_membership.role == WorkspaceRole.OWNER:
+            raise AppError(ErrorCode.WORKSPACE_OWNER_CANNOT_BE_REMOVED, status_code=403)
+
+        # Delete membership
+        await self.workspace_member_repository.delete(member_id)
+        await self.repository.session.commit()
 

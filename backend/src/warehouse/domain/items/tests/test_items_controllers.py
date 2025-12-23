@@ -8,6 +8,7 @@ from unittest.mock import AsyncMock
 import pytest
 from litestar.exceptions import NotFoundException
 
+from warehouse.domain.auth.models import WorkspaceRole
 from warehouse.domain.items.controllers import CategoryController, ItemController
 from warehouse.domain.items.schemas import CategoryCreate, CategoryUpdate, ItemCreate, ItemUpdate
 from warehouse.lib.workspace import WorkspaceContext
@@ -20,9 +21,19 @@ def workspace_id() -> UUID:
 
 
 @pytest.fixture
-def workspace(workspace_id: UUID) -> WorkspaceContext:
-    """Workspace context for tests."""
-    return WorkspaceContext(workspace_id=workspace_id)
+def user_id() -> UUID:
+    """A sample user ID."""
+    return uuid7()
+
+
+@pytest.fixture
+def workspace(workspace_id: UUID, user_id: UUID) -> WorkspaceContext:
+    """Workspace context for tests (with member role for write access)."""
+    return WorkspaceContext(
+        workspace_id=workspace_id,
+        user_id=user_id,
+        user_role=WorkspaceRole.MEMBER,
+    )
 
 
 @pytest.fixture

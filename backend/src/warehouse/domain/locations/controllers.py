@@ -17,7 +17,7 @@ from warehouse.domain.locations.schemas import (
 )
 from warehouse.domain.locations.service import LocationService
 from warehouse.errors import AppError
-from warehouse.lib.workspace import WorkspaceContext, get_workspace_context
+from warehouse.lib.workspace import WorkspaceContext, get_workspace_context, require_write_permission
 
 
 def get_location_service(db_session: AsyncSession) -> LocationService:
@@ -43,6 +43,7 @@ class LocationController(Controller):
         workspace: WorkspaceContext,
     ) -> LocationResponse:
         """Create a new location."""
+        require_write_permission(workspace)
         location = await location_service.create_location(data, workspace.workspace_id)
         return LocationResponse(
             id=location.id,
@@ -126,6 +127,7 @@ class LocationController(Controller):
         workspace: WorkspaceContext,
     ) -> LocationResponse:
         """Update a location."""
+        require_write_permission(workspace)
         try:
             location = await location_service.update_location(
                 location_id, data, workspace.workspace_id
@@ -151,6 +153,7 @@ class LocationController(Controller):
         workspace: WorkspaceContext,
     ) -> None:
         """Delete a location."""
+        require_write_permission(workspace)
         try:
             await location_service.delete_location(location_id, workspace.workspace_id)
         except AppError as exc:

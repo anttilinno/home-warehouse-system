@@ -37,6 +37,7 @@ interface AuthContextType {
   user: User | null;
   currentWorkspace: Workspace | null;
   workspaces: Workspace[];
+  canEdit: boolean;
   login: (token: string, user: User, workspaces: Workspace[]) => void;
   logout: () => void;
   setCurrentWorkspace: (workspace: Workspace) => void;
@@ -157,8 +158,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // The setCurrentWorkspace function above already handles adding new workspaces to the list
   };
 
+  // Viewers cannot edit (owner, admin, member can edit)
+  const canEdit = currentWorkspace?.role !== "viewer";
+
   return (
-    <AuthContext.Provider value={{ isAuthenticated, isLoading, user, currentWorkspace, workspaces, login, logout, setCurrentWorkspace, refreshWorkspaces }}>
+    <AuthContext.Provider value={{ isAuthenticated, isLoading, user, currentWorkspace, workspaces, canEdit, login, logout, setCurrentWorkspace, refreshWorkspaces }}>
       {children}
     </AuthContext.Provider>
   );

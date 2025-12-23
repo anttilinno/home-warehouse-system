@@ -17,7 +17,7 @@ from warehouse.domain.inventory.schemas import (
 )
 from warehouse.domain.inventory.service import InventoryService
 from warehouse.errors import AppError
-from warehouse.lib.workspace import WorkspaceContext, get_workspace_context
+from warehouse.lib.workspace import WorkspaceContext, get_workspace_context, require_write_permission
 
 
 def get_inventory_service(db_session: AsyncSession) -> InventoryService:
@@ -43,6 +43,7 @@ class InventoryController(Controller):
         workspace: WorkspaceContext,
     ) -> InventoryResponse:
         """Create a new inventory record."""
+        require_write_permission(workspace)
         try:
             inventory = await inventory_service.create_inventory(
                 data, workspace.workspace_id
@@ -112,6 +113,7 @@ class InventoryController(Controller):
         workspace: WorkspaceContext,
     ) -> InventoryResponse:
         """Update inventory quantity."""
+        require_write_permission(workspace)
         try:
             inventory = await inventory_service.update_inventory(
                 inventory_id, data, workspace.workspace_id
@@ -136,6 +138,7 @@ class InventoryController(Controller):
         workspace: WorkspaceContext,
     ) -> InventoryResponse:
         """Adjust stock quantity."""
+        require_write_permission(workspace)
         try:
             inventory = await inventory_service.adjust_stock(
                 inventory_id, data, workspace.workspace_id
@@ -159,6 +162,7 @@ class InventoryController(Controller):
         workspace: WorkspaceContext,
     ) -> None:
         """Delete an inventory record."""
+        require_write_permission(workspace)
         try:
             await inventory_service.delete_inventory(inventory_id, workspace.workspace_id)
         except AppError as exc:

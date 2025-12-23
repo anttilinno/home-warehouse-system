@@ -2,7 +2,7 @@
 
 from uuid import UUID
 
-from litestar import get, patch, post, Request
+from litestar import delete, get, patch, post, Request
 from litestar.controller import Controller
 from litestar.di import Provide
 from litestar.exceptions import NotAuthorizedException
@@ -228,4 +228,28 @@ class AuthController(Controller):
         except AppError as exc:
             raise exc.to_http_exception()
         return member
+
+    @delete("/workspaces/{workspace_id:uuid}")
+    async def delete_workspace(
+        self, request: Request, workspace_id: UUID, auth_service: AuthService
+    ) -> None:
+        """Delete a workspace. Only owner/admin can delete, personal workspaces cannot be deleted."""
+        token = self._extract_token(request)
+        try:
+            user = await auth_service.get_current_user(token)
+            await auth_service.delete_workspace(workspace_id, user.id)
+        except AppError as exc:
+            raise exc.to_http_exception()
+
+    @delete("/workspaces/{workspace_id:uuid}/members/{member_id:uuid}")
+    async def remove_member(
+        self, request: Request, workspace_id: UUID, member_id: UUID, auth_service: AuthService
+    ) -> None:
+        """Remove a member from a workspace. Owner/Admin can remove, but owner cannot be removed."""
+        token = self._extract_token(request)
+        try:
+            user = await auth_service.get_current_user(token)
+            await auth_service.remove_member(workspace_id, member_id, user.id)
+        except AppError as exc:
+            raise exc.to_http_exception()
 

@@ -25,7 +25,7 @@ import {
 import { cn } from "@/lib/utils";
 
 export default function InventoryPage() {
-  const { isAuthenticated, isLoading: authLoading } = useAuth();
+  const { isAuthenticated, isLoading: authLoading, canEdit } = useAuth();
   const router = useRouter();
   const t = useTranslations("inventory");
   const te = useTranslations("errors");
@@ -148,13 +148,15 @@ export default function InventoryPage() {
           <h1 className="text-3xl font-bold text-foreground">{t("title")}</h1>
           <p className="text-muted-foreground mt-2">{t("subtitle")}</p>
         </div>
-        <button
-          onClick={() => setIsCreateModalOpen(true)}
-          className="px-4 py-2 bg-primary text-primary-foreground rounded-lg flex items-center gap-2 hover:bg-primary/90 transition-colors"
-        >
-          <Plus className="w-4 h-4" />
-          {t("addInventory")}
-        </button>
+        {canEdit && (
+          <button
+            onClick={() => setIsCreateModalOpen(true)}
+            className="px-4 py-2 bg-primary text-primary-foreground rounded-lg flex items-center gap-2 hover:bg-primary/90 transition-colors"
+          >
+            <Plus className="w-4 h-4" />
+            {t("addInventory")}
+          </button>
+        )}
       </div>
 
       {/* Table */}
@@ -162,13 +164,15 @@ export default function InventoryPage() {
         <div className="bg-card border rounded-lg p-12 text-center">
           <Package className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
           <p className="text-muted-foreground">{t("noInventory")}</p>
-          <button
-            onClick={() => setIsCreateModalOpen(true)}
-            className="mt-4 px-4 py-2 bg-primary text-primary-foreground rounded-lg inline-flex items-center gap-2 hover:bg-primary/90 transition-colors"
-          >
-            <Plus className="w-4 h-4" />
-            {t("addInventory")}
-          </button>
+          {canEdit && (
+            <button
+              onClick={() => setIsCreateModalOpen(true)}
+              className="mt-4 px-4 py-2 bg-primary text-primary-foreground rounded-lg inline-flex items-center gap-2 hover:bg-primary/90 transition-colors"
+            >
+              <Plus className="w-4 h-4" />
+              {t("addInventory")}
+            </button>
+          )}
         </div>
       ) : (
         <div className="bg-card border rounded-lg shadow-sm overflow-hidden">
@@ -209,29 +213,31 @@ export default function InventoryPage() {
                     {inv.quantity}
                   </td>
                   <td className="px-4 py-3 text-right">
-                    <div className="flex justify-end gap-2">
-                      <button
-                        onClick={() => handleAdjust(inv)}
-                        title={t("adjustStock")}
-                        className="p-1.5 rounded hover:bg-muted transition-colors"
-                      >
-                        <ArrowUpDown className="w-4 h-4 text-muted-foreground hover:text-foreground" />
-                      </button>
-                      <button
-                        onClick={() => handleEdit(inv)}
-                        title={t("edit")}
-                        className="p-1.5 rounded hover:bg-muted transition-colors"
-                      >
-                        <Pencil className="w-4 h-4 text-muted-foreground hover:text-foreground" />
-                      </button>
-                      <button
-                        onClick={() => handleDelete(inv)}
-                        title={t("delete")}
-                        className="p-1.5 rounded hover:bg-muted transition-colors"
-                      >
-                        <Trash2 className="w-4 h-4 text-muted-foreground hover:text-destructive" />
-                      </button>
-                    </div>
+                    {canEdit && (
+                      <div className="flex justify-end gap-2">
+                        <button
+                          onClick={() => handleAdjust(inv)}
+                          title={t("adjustStock")}
+                          className="p-1.5 rounded hover:bg-muted transition-colors"
+                        >
+                          <ArrowUpDown className="w-4 h-4 text-muted-foreground hover:text-foreground" />
+                        </button>
+                        <button
+                          onClick={() => handleEdit(inv)}
+                          title={t("edit")}
+                          className="p-1.5 rounded hover:bg-muted transition-colors"
+                        >
+                          <Pencil className="w-4 h-4 text-muted-foreground hover:text-foreground" />
+                        </button>
+                        <button
+                          onClick={() => handleDelete(inv)}
+                          title={t("delete")}
+                          className="p-1.5 rounded hover:bg-muted transition-colors"
+                        >
+                          <Trash2 className="w-4 h-4 text-muted-foreground hover:text-destructive" />
+                        </button>
+                      </div>
+                    )}
                   </td>
                 </tr>
               ))}

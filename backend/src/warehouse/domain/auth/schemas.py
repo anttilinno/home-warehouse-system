@@ -40,6 +40,7 @@ class WorkspaceResponse(msgspec.Struct):
     slug: str
     description: str | None
     role: str
+    is_personal: bool = False
 
 
 class TokenResponse(msgspec.Struct):

@@ -19,7 +19,7 @@ from warehouse.domain.items.schemas import (
 )
 from warehouse.domain.items.service import CategoryService, ItemService
 from warehouse.errors import AppError
-from warehouse.lib.workspace import WorkspaceContext, get_workspace_context
+from warehouse.lib.workspace import WorkspaceContext, get_workspace_context, require_write_permission
 
 
 def get_category_service(db_session: AsyncSession) -> CategoryService:
@@ -51,6 +51,7 @@ class CategoryController(Controller):
         workspace: WorkspaceContext,
     ) -> CategoryResponse:
         """Create a new category."""
+        require_write_permission(workspace)
         category = await category_service.create_category(data, workspace.workspace_id)
         return CategoryResponse(
             id=category.id,
@@ -88,6 +89,7 @@ class CategoryController(Controller):
         workspace: WorkspaceContext,
     ) -> CategoryResponse:
         """Update a category."""
+        require_write_permission(workspace)
         try:
             category = await category_service.update_category(
                 category_id, data, workspace.workspace_id
@@ -110,6 +112,7 @@ class CategoryController(Controller):
         workspace: WorkspaceContext,
     ) -> None:
         """Delete a category."""
+        require_write_permission(workspace)
         try:
             await category_service.delete_category(category_id, workspace.workspace_id)
         except AppError as exc:
@@ -133,6 +136,7 @@ class ItemController(Controller):
         workspace: WorkspaceContext,
     ) -> ItemResponse:
         """Create a new item."""
+        require_write_permission(workspace)
         try:
             item = await item_service.create_item(data, workspace.workspace_id)
         except AppError as exc:
@@ -199,6 +203,7 @@ class ItemController(Controller):
         workspace: WorkspaceContext,
     ) -> ItemResponse:
         """Update an item."""
+        require_write_permission(workspace)
         try:
             item = await item_service.update_item(item_id, data, workspace.workspace_id)
         except AppError as exc:
@@ -221,6 +226,7 @@ class ItemController(Controller):
         workspace: WorkspaceContext,
     ) -> None:
         """Delete an item."""
+        require_write_permission(workspace)
         try:
             await item_service.delete_item(item_id, workspace.workspace_id)
         except AppError as exc:
