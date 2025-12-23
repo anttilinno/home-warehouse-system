@@ -9,6 +9,10 @@ DATABASE_URL = "postgresql+asyncpg://wh:wh@localhost:5432/warehouse_dev"
 DBMATE_DATABASE_URL = "postgresql://wh:wh@localhost:5432/warehouse_dev?sslmode=disable"
 APP_DEBUG = "true"
 
+# Staging database URLs
+STAGING_DATABASE_URL = "postgresql+asyncpg://wh:wh@localhost:5432/warehouse_staging"
+STAGING_DBMATE_URL = "postgresql://wh:wh@localhost:5432/warehouse_staging?sslmode=disable"
+
 [tasks.dc-up]
 description = "Start all containers (PostgreSQL + Redis)"
 run = "docker compose up -d"
@@ -82,3 +86,23 @@ run = "cd backend && uv run rq worker loans"
 description = "Seed database with sample data"
 depends = ["dc-up"]
 run = "cd backend && uv run python scripts/seed.py"
+
+# Staging database tasks
+[tasks.staging-init]
+description = "Create staging database (run once)"
+depends = ["dc-up"]
+run = "docker exec warehouse-postgres psql -U wh -d postgres -c \"CREATE DATABASE warehouse_staging;\" 2>/dev/null || echo 'Database already exists'"
+
+[tasks.migrate-staging]
+description = "Run migrations on staging database"
+depends = ["dc-up"]
+run = "DATABASE_URL=$STAGING_DBMATE_URL dbmate -d backend/db/migrations up"
+
+[tasks.dev-staging]
+description = "Run backend dev server against staging database"
+depends = ["dc-up"]
+run = "cd backend && DATABASE_URL=$STAGING_DATABASE_URL uv run granian --interface asgi warehouse.app:app --reload"
+
+[tasks.staging-status]
+description = "Check staging database status"
+run = "DATABASE_URL=$STAGING_DBMATE_URL dbmate -d backend/db/migrations status"
