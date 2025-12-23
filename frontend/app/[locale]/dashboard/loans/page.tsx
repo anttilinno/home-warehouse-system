@@ -34,7 +34,7 @@ import { cn } from "@/lib/utils";
 import { SearchableSelect, type SearchableSelectOption } from "@/components/ui/searchable-select";
 
 export default function LoansPage() {
-  const { isAuthenticated, isLoading: authLoading } = useAuth();
+  const { isAuthenticated, isLoading: authLoading, canEdit } = useAuth();
   const router = useRouter();
   const t = useTranslations("loans");
   const te = useTranslations("errors");
@@ -188,13 +188,15 @@ export default function LoansPage() {
           >
             {showActiveOnly ? t("showActive") : t("showAll")}
           </button>
-          <button
-            onClick={() => setIsCreateModalOpen(true)}
-            className="px-4 py-2 bg-primary text-primary-foreground rounded-lg flex items-center gap-2 hover:bg-primary/90 transition-colors"
-          >
-            <Plus className="w-4 h-4" />
-            {t("addLoan")}
-          </button>
+          {canEdit && (
+            <button
+              onClick={() => setIsCreateModalOpen(true)}
+              className="px-4 py-2 bg-primary text-primary-foreground rounded-lg flex items-center gap-2 hover:bg-primary/90 transition-colors"
+            >
+              <Plus className="w-4 h-4" />
+              {t("addLoan")}
+            </button>
+          )}
         </div>
       </div>
 
@@ -203,13 +205,15 @@ export default function LoansPage() {
         <div className="bg-card border rounded-lg p-12 text-center">
           <HandCoins className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
           <p className="text-muted-foreground">{t("noLoans")}</p>
-          <button
-            onClick={() => setIsCreateModalOpen(true)}
-            className="mt-4 px-4 py-2 bg-primary text-primary-foreground rounded-lg inline-flex items-center gap-2 hover:bg-primary/90 transition-colors"
-          >
-            <Plus className="w-4 h-4" />
-            {t("addLoan")}
-          </button>
+          {canEdit && (
+            <button
+              onClick={() => setIsCreateModalOpen(true)}
+              className="mt-4 px-4 py-2 bg-primary text-primary-foreground rounded-lg inline-flex items-center gap-2 hover:bg-primary/90 transition-colors"
+            >
+              <Plus className="w-4 h-4" />
+              {t("addLoan")}
+            </button>
+          )}
         </div>
       ) : (
         <div className="bg-card border rounded-lg shadow-sm overflow-hidden">
@@ -271,7 +275,7 @@ export default function LoansPage() {
                       {loan.due_date ? formatDate(loan.due_date) : t("noDueDate")}
                     </td>
                     <td className="px-4 py-3 text-right">
-                      {status !== "returned" && (
+                      {canEdit && status !== "returned" && (
                         <button
                           onClick={() => handleReturn(loan)}
                           title={t("return")}

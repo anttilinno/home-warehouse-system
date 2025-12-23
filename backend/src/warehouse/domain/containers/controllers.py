@@ -12,7 +12,7 @@ from warehouse.domain.containers.repository import ContainerRepository
 from warehouse.domain.containers.schemas import ContainerCreate, ContainerResponse, ContainerUpdate
 from warehouse.domain.containers.service import ContainerService
 from warehouse.errors import AppError
-from warehouse.lib.workspace import WorkspaceContext, get_workspace_context
+from warehouse.lib.workspace import WorkspaceContext, get_workspace_context, require_write_permission
 
 
 def get_container_service(db_session: AsyncSession) -> ContainerService:
@@ -38,6 +38,7 @@ class ContainerController(Controller):
         workspace: WorkspaceContext,
     ) -> ContainerResponse:
         """Create a new container."""
+        require_write_permission(workspace)
         container = await container_service.create_container(data, workspace.workspace_id)
         return ContainerResponse(
             id=container.id,
@@ -107,6 +108,7 @@ class ContainerController(Controller):
         workspace: WorkspaceContext,
     ) -> ContainerResponse:
         """Update a container."""
+        require_write_permission(workspace)
         try:
             container = await container_service.update_container(
                 container_id, data, workspace.workspace_id
@@ -133,6 +135,7 @@ class ContainerController(Controller):
         workspace: WorkspaceContext,
     ) -> None:
         """Delete a container."""
+        require_write_permission(workspace)
         try:
             await container_service.delete_container(container_id, workspace.workspace_id)
         except AppError as exc:

@@ -225,6 +225,16 @@
     "invite": "Kutsu",
     "inviting": "Kutsumine...",
     "close": "Sulge",
+    "removeMember": "Eemalda liige",
+    "removing": "Eemaldamine...",
+    "confirm": "Kinnita",
+    "dangerZone": "Ohuala",
+    "dangerZoneDescription": "Pöördumatud ja destruktiivsed toimingud",
+    "deleteWorkspace": "Kustuta tööruum",
+    "deleteWorkspaceWarning": "See kustutab tööruumi ja kõik selle andmed jäädavalt. Seda toimingut ei saa tagasi võtta.",
+    "deleteWorkspaceConfirmMessage": "See toiming on lõplik ja seda ei saa tagasi võtta. Kõik esemed, inventuur, asukohad ja muud andmed selles tööruumis kustutatakse.",
+    "deleteWorkspaceConfirmTypeName": "Kustutamise kinnitamiseks sisesta \"{name}\":",
+    "deleting": "Kustutamine...",
     "about": "Teave",
     "appName": "Rakendus",
     "version": "Versioon"
@@ -293,6 +303,9 @@
     "WORKSPACE_ACCESS_DENIED": "Juurdepääs tööruumile keelatud",
     "WORKSPACE_PERMISSION_DENIED": "Selle tööruumi jaoks puuduvad õigused",
     "WORKSPACE_MEMBER_EXISTS": "Kasutaja on juba selle tööruumi liige",
+    "WORKSPACE_PROTECTED": "Isiklikku tööruumi ei saa kustutada",
+    "WORKSPACE_OWNER_CANNOT_BE_REMOVED": "Tööruumi omanikku ei saa eemaldada",
+    "WORKSPACE_MEMBER_NOT_FOUND": "Tööruumi liiget ei leitud",
     "USER_NOT_FOUND": "Kasutajat ei leitud",
     "UNKNOWN_ERROR": "Tekkis ootamatu viga"
   }

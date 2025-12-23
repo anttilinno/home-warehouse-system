@@ -25,7 +25,7 @@ from warehouse.domain.loans.schemas import (
 from warehouse.domain.loans.service import BorrowerService, LoanService
 from warehouse.errors import AppError
 from warehouse.lib.rq import get_queue
-from warehouse.lib.workspace import WorkspaceContext, get_workspace_context
+from warehouse.lib.workspace import WorkspaceContext, get_workspace_context, require_write_permission
 
 
 def get_borrower_service(db_session: AsyncSession) -> BorrowerService:
@@ -62,6 +62,7 @@ class BorrowerController(Controller):
         workspace: WorkspaceContext,
     ) -> BorrowerResponse:
         """Create a new borrower."""
+        require_write_permission(workspace)
         borrower = await borrower_service.create_borrower(data, workspace.workspace_id)
         return BorrowerResponse(
             id=borrower.id,
@@ -124,6 +125,7 @@ class BorrowerController(Controller):
         workspace: WorkspaceContext,
     ) -> BorrowerResponse:
         """Update a borrower."""
+        require_write_permission(workspace)
         try:
             borrower = await borrower_service.update_borrower(
                 borrower_id, data, workspace.workspace_id
@@ -147,6 +149,7 @@ class BorrowerController(Controller):
         workspace: WorkspaceContext,
     ) -> None:
         """Delete a borrower."""
+        require_write_permission(workspace)
         try:
             await borrower_service.delete_borrower(borrower_id, workspace.workspace_id)
         except AppError as exc:
@@ -171,6 +174,7 @@ class LoanController(Controller):
         workspace: WorkspaceContext,
     ) -> LoanCreateResponse:
         """Create a new loan asynchronously."""
+        require_write_permission(workspace)
         import msgspec
 
         loan_data = msgspec.to_builtins(data)
@@ -289,6 +293,7 @@ class LoanController(Controller):
         workspace: WorkspaceContext,
     ) -> LoanResponse:
         """Return a loan."""
+        require_write_permission(workspace)
         try:
             loan = await loan_service.return_loan(loan_id, data, workspace.workspace_id)
         except AppError as exc:

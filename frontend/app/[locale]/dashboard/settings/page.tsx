@@ -72,6 +72,16 @@ export default function SettingsPage() {
   const [showDropdown, setShowDropdown] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
+  // Remove member state
+  const [removingMemberId, setRemovingMemberId] = useState<string | null>(null);
+  const [showRemoveConfirm, setShowRemoveConfirm] = useState<string | null>(null);
+
+  // Delete workspace state
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [deleteConfirmText, setDeleteConfirmText] = useState("");
+
   // Prevent hydration mismatch
   useEffect(() => {
     setMounted(true);
@@ -212,6 +222,44 @@ export default function SettingsPage() {
   };
 
   const canManageMembers = currentWorkspace?.role === "owner" || currentWorkspace?.role === "admin";
+  const canDeleteWorkspace = canManageMembers && currentWorkspace && !currentWorkspace.is_personal;
+
+  const handleRemoveMember = async (memberId: string) => {
+    if (!currentWorkspace) return;
+    setRemovingMemberId(memberId);
+    try {
+      await workspacesApi.removeMember(currentWorkspace.id, memberId);
+      setShowRemoveConfirm(null);
+      loadMembers();
+    } catch (err) {
+      console.error("Failed to remove member:", err);
+    } finally {
+      setRemovingMemberId(null);
+    }
+  };
+
+  const handleDeleteWorkspace = async () => {
+    if (!currentWorkspace || currentWorkspace.is_personal) return;
+    if (deleteConfirmText !== currentWorkspace.name) return;
+
+    setIsDeleting(true);
+    setDeleteError(null);
+
+    try {
+      await workspacesApi.delete(currentWorkspace.id);
+      // Refresh workspaces and switch to another one
+      await refreshWorkspaces();
+      const remainingWorkspaces = workspaces.filter(w => w.id !== currentWorkspace.id);
+      if (remainingWorkspaces.length > 0) {
+        setCurrentWorkspace(remainingWorkspaces[0]);
+      }
+      window.location.reload();
+    } catch (err) {
+      setDeleteError(getTranslatedErrorMessage(err instanceof Error ? err.message : "Unknown error", (key) => tErrors(key)));
+    } finally {
+      setIsDeleting(false);
+    }
+  };
 
   if (authLoading) {
     return (
@@ -398,6 +446,36 @@ export default function SettingsPage() {
           )}
         </div>
 
+        {/* Danger Zone - only show for non-personal workspaces where user is owner/admin */}
+        {canDeleteWorkspace && (
+          <div className="bg-card p-6 rounded-lg border border-destructive/30 shadow-sm">
+            <h3 className="text-lg font-semibold text-destructive mb-4 flex items-center gap-2">
+              <Icon name="AlertTriangle" className="w-5 h-5" />
+              {t("dangerZone")}
+            </h3>
+            <p className="text-sm text-muted-foreground mb-4">
+              {t("dangerZoneDescription")}
+            </p>
+
+            <div className="p-4 bg-destructive/5 rounded-lg border border-destructive/20">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <p className="font-medium text-foreground">{t("deleteWorkspace")}</p>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    {t("deleteWorkspaceWarning")}
+                  </p>
+                </div>
+                <button
+                  onClick={() => setShowDeleteConfirm(true)}
+                  className="px-4 py-2 text-sm font-medium text-destructive-foreground bg-destructive hover:bg-destructive/90 rounded-lg transition-colors whitespace-nowrap"
+                >
+                  {t("deleteWorkspace")}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* About */}
         <div className="bg-card p-6 rounded-lg border shadow-sm">
           <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
@@ -516,6 +594,8 @@ export default function SettingsPage() {
               <div className="space-y-2 max-h-80 overflow-y-auto">
                 {members.map((member) => {
                   const roleIconName = roleIconNames[member.role] || "User";
+                  const canRemove = canManageMembers && member.role !== "owner";
+                  const isRemoving = removingMemberId === member.id;
                   return (
                     <div
                       key={member.id}
@@ -525,11 +605,40 @@ export default function SettingsPage() {
                         <p className="font-medium text-foreground">{member.full_name}</p>
                         <p className="text-sm text-muted-foreground">{member.email}</p>
                       </div>
-                      <div className="flex items-center gap-2 px-2 py-1 bg-background rounded text-sm">
-                        <Icon name={roleIconName} className="w-4 h-4 text-muted-foreground" />
-                        <span className="text-foreground">
-                          {t(`role${member.role.charAt(0).toUpperCase() + member.role.slice(1)}`)}
-                        </span>
+                      <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-2 px-2 py-1 bg-background rounded text-sm">
+                          <Icon name={roleIconName} className="w-4 h-4 text-muted-foreground" />
+                          <span className="text-foreground">
+                            {t(`role${member.role.charAt(0).toUpperCase() + member.role.slice(1)}`)}
+                          </span>
+                        </div>
+                        {canRemove && (
+                          showRemoveConfirm === member.id ? (
+                            <div className="flex items-center gap-1">
+                              <button
+                                onClick={() => handleRemoveMember(member.id)}
+                                disabled={isRemoving}
+                                className="px-2 py-1 text-xs font-medium text-destructive-foreground bg-destructive hover:bg-destructive/90 rounded transition-colors disabled:opacity-50"
+                              >
+                                {isRemoving ? t("removing") : t("confirm")}
+                              </button>
+                              <button
+                                onClick={() => setShowRemoveConfirm(null)}
+                                className="px-2 py-1 text-xs font-medium text-foreground bg-muted hover:bg-muted/80 rounded transition-colors"
+                              >
+                                {t("cancel")}
+                              </button>
+                            </div>
+                          ) : (
+                            <button
+                              onClick={() => setShowRemoveConfirm(member.id)}
+                              className="text-muted-foreground hover:text-destructive transition-colors"
+                              title={t("removeMember")}
+                            >
+                              <Icon name="UserMinus" className="w-4 h-4" />
+                            </button>
+                          )
+                        )}
                       </div>
                     </div>
                   );
@@ -690,6 +799,72 @@ export default function SettingsPage() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Workspace Confirmation Modal */}
+      {showDeleteConfirm && currentWorkspace && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="bg-card rounded-lg shadow-lg w-full max-w-md mx-4 p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-destructive flex items-center gap-2">
+                <Icon name="AlertTriangle" className="w-5 h-5" />
+                {t("deleteWorkspace")}
+              </h3>
+              <button
+                onClick={() => {
+                  setShowDeleteConfirm(false);
+                  setDeleteConfirmText("");
+                  setDeleteError(null);
+                }}
+                className="text-muted-foreground hover:text-foreground"
+              >
+                <Icon name="X" className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              <p className="text-sm text-foreground">
+                {t("deleteWorkspaceConfirmMessage")}
+              </p>
+              <p className="text-sm text-muted-foreground">
+                {t("deleteWorkspaceConfirmTypeName", { name: currentWorkspace.name })}
+              </p>
+
+              <input
+                type="text"
+                value={deleteConfirmText}
+                onChange={(e) => setDeleteConfirmText(e.target.value)}
+                className="w-full px-3 py-2 border border-border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-destructive/50"
+                placeholder={currentWorkspace.name}
+              />
+
+              {deleteError && (
+                <p className="text-sm text-destructive">{deleteError}</p>
+              )}
+
+              <div className="flex justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowDeleteConfirm(false);
+                    setDeleteConfirmText("");
+                    setDeleteError(null);
+                  }}
+                  className="px-4 py-2 text-sm font-medium text-foreground bg-muted hover:bg-muted/80 rounded-lg transition-colors"
+                >
+                  {t("cancel")}
+                </button>
+                <button
+                  onClick={handleDeleteWorkspace}
+                  disabled={isDeleting || deleteConfirmText !== currentWorkspace.name}
+                  className="px-4 py-2 text-sm font-medium text-destructive-foreground bg-destructive hover:bg-destructive/90 rounded-lg transition-colors disabled:opacity-50"
+                >
+                  {isDeleting ? t("deleting") : t("deleteWorkspace")}
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}

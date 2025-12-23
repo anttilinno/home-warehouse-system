@@ -225,6 +225,16 @@
     "invite": "Пригласить",
     "inviting": "Приглашение...",
     "close": "Закрыть",
+    "removeMember": "Удалить участника",
+    "removing": "Удаление...",
+    "confirm": "Подтвердить",
+    "dangerZone": "Опасная зона",
+    "dangerZoneDescription": "Необратимые и деструктивные действия",
+    "deleteWorkspace": "Удалить пространство",
+    "deleteWorkspaceWarning": "Это навсегда удалит пространство и все его данные. Это действие нельзя отменить.",
+    "deleteWorkspaceConfirmMessage": "Это действие необратимо. Все предметы, инвентарь, расположения и другие данные в этом пространстве будут удалены.",
+    "deleteWorkspaceConfirmTypeName": "Введите \"{name}\" для подтверждения удаления:",
+    "deleting": "Удаление...",
     "about": "О программе",
     "appName": "Приложение",
     "version": "Версия"
@@ -293,6 +303,9 @@
     "WORKSPACE_ACCESS_DENIED": "Доступ к рабочему пространству запрещен",
     "WORKSPACE_PERMISSION_DENIED": "Недостаточно прав для этого пространства",
     "WORKSPACE_MEMBER_EXISTS": "Пользователь уже является участником этого пространства",
+    "WORKSPACE_PROTECTED": "Личное пространство нельзя удалить",
+    "WORKSPACE_OWNER_CANNOT_BE_REMOVED": "Владельца пространства нельзя удалить",
+    "WORKSPACE_MEMBER_NOT_FOUND": "Участник пространства не найден",
     "USER_NOT_FOUND": "Пользователь не найден",
     "UNKNOWN_ERROR": "Произошла непредвиденная ошибка"
   }
