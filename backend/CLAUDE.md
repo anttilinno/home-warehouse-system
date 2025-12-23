@@ -109,19 +109,54 @@ async def provide_workspace_context(request: Request) -> WorkspaceContext:
 
 ## Testing
 
+### Test Coverage
+
+**Overall: 94%** (189 tests)
+
+| Module | Coverage | Notes |
+|--------|----------|-------|
+| items | 100% | Models, repository, service, controllers |
+| inventory | 100% | Full coverage |
+| loans | 100% | Including background jobs |
+| containers | 95% | Minor gaps in service |
+| locations | 79-92% | Hierarchy operations need coverage |
+| dashboard | 100% | Stats and summaries |
+| analytics | 98% | Full coverage |
+| auth | 49% | Workspace management paths uncovered |
+| notifications | 49-90% | Bulk operations uncovered |
+
 ### Running Tests
 ```bash
-mise run test           # All tests
-mise run test-unit      # Unit tests only (no DB)
-mise run test-e2e       # E2E tests (requires PostgreSQL)
+mise run test           # All tests (unit + e2e)
+mise run test-unit      # Unit tests only (no DB required)
+mise run test-e2e       # E2E tests (requires PostgreSQL + Redis)
 ```
 
 ### Test Structure
-- **Unit tests**: `src/warehouse/domain/<module>/tests/` - Mock dependencies
-- **Core tests**: `src/warehouse/tests/` and `src/warehouse/lib/tests/`
-- **E2E tests**: `e2e/` - Full integration with real database
 
-### Writing Tests
+**Unit Tests** (`src/warehouse/domain/<module>/tests/`)
+- Test services with mocked repositories
+- Test controllers by invoking handlers directly
+- Test schemas and validation
+- No database required
+
+**E2E Tests** (`e2e/`)
+- Full integration tests with real PostgreSQL
+- Test complete API flows (auth → CRUD → cleanup)
+- Each test file covers one domain:
+  - `test_auth_flow.py` - Registration, login, workspace management
+  - `test_items_flow.py` - Item CRUD operations
+  - `test_inventory_flow.py` - Inventory management
+  - `test_locations_flow.py` - Location hierarchy
+  - `test_containers_flow.py` - Container operations
+  - `test_loan_flow.py` - Loan lifecycle
+  - `test_borrowers_flow.py` - Borrower management
+  - `test_categories_flow.py` - Category hierarchy
+  - `test_dashboard_flow.py` - Dashboard stats
+  - `test_analytics_flow.py` - Analytics endpoints
+  - `test_notifications_flow.py` - Notification system
+
+### Writing Unit Tests
 ```python
 import pytest
 from unittest.mock import AsyncMock
@@ -133,6 +168,22 @@ def mock_repository():
 async def test_create_item(mock_repository):
     service = ItemService(repository=mock_repository)
     # Test service logic with mocked repository
+```
+
+### Writing E2E Tests
+```python
+import pytest
+from litestar.testing import AsyncTestClient
+
+@pytest.fixture
+async def auth_client(test_client: AsyncTestClient):
+    # Register and login, return authenticated client
+    ...
+
+async def test_create_item_flow(auth_client):
+    # Test full API flow
+    response = await auth_client.post("/api/items", json={...})
+    assert response.status_code == 201
 ```
 
 ## Database
