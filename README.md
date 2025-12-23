@@ -218,9 +218,16 @@ Additional environment variables (see `backend/.env.example`):
   - Deep link to open note directly in Obsidian
 - [ ] Tracking & alerts
   - Total value: sum of purchase_price per location/workspace
-  - Activity log: who changed what, when
+  - Activity log: who changed what, when. So there is no need for soft delete
   - Consumables list: items needing restocking (quantity = 0)
   - Low stock alerts: notify when quantity < threshold
   - Expiration alerts: items expiring soon
   - Warranty expiring: reminder before warranty ends
   - Overdue loans: loans past due_date
+- [ ] Companion app for bar codes, QR codes. Adding and identifying container, items
+- [ ] Approval pipeline for member role
+  - Members' create/update/delete operations require owner/admin approval
+  - Pending changes table: entity type, action, JSON payload, requester, status
+  - Review queue UI for owner/admin to approve/reject
+  - Notifications when changes need review
+  - Members see "Pending approval" status instead of immediate success
