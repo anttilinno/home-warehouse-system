@@ -54,7 +54,7 @@ class User(Base, UUIDPKMixin, TimestampMixin):
     )
 
     workspace_memberships: Mapped[list["WorkspaceMember"]] = relationship(
-        "WorkspaceMember", back_populates="user"
+        "WorkspaceMember", back_populates="user", foreign_keys="[WorkspaceMember.user_id]"
     )
 
 
@@ -81,11 +81,16 @@ class WorkspaceMember(Base, UUIDPKMixin, TimestampMixin):
         nullable=False,
         default=WorkspaceRole.MEMBER,
     )
+    invited_by: Mapped[UUID | None] = mapped_column(
+        ForeignKey("auth.users.id", ondelete="SET NULL"), nullable=True
+    )
     created_at: Mapped[datetime] = mapped_column(server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(
         server_default=func.now(), onupdate=func.now()
     )
 
     workspace: Mapped["Workspace"] = relationship("Workspace", back_populates="members")
-    user: Mapped["User"] = relationship("User", back_populates="workspace_memberships")
+    user: Mapped["User"] = relationship(
+        "User", back_populates="workspace_memberships", foreign_keys=[user_id]
+    )
 

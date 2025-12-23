@@ -111,7 +111,7 @@ async def provide_workspace_context(request: Request) -> WorkspaceContext:
 
 ### Test Coverage
 
-**Overall: 94%** (189 tests)
+**Overall: 99%** (248 tests)
 
 | Module | Coverage | Notes |
 |--------|----------|-------|
@@ -119,11 +119,12 @@ async def provide_workspace_context(request: Request) -> WorkspaceContext:
 | inventory | 100% | Full coverage |
 | loans | 100% | Including background jobs |
 | containers | 95% | Minor gaps in service |
-| locations | 79-92% | Hierarchy operations need coverage |
+| locations | 98% | Including breadcrumb hierarchy |
 | dashboard | 100% | Stats and summaries |
 | analytics | 98% | Full coverage |
-| auth | 49% | Workspace management paths uncovered |
-| notifications | 49-90% | Bulk operations uncovered |
+| auth | 86-93% | Workspace, profile, controllers |
+| notifications | 90-100% | Service, repository, controllers |
+| lib/workspace | 100% | Workspace context utilities |
 
 ### Running Tests
 ```bash

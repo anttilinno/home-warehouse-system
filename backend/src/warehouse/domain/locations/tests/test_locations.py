@@ -251,3 +251,128 @@ async def test_update_location_updates_optional_fields(service: LocationService,
     assert sample_location.shelf == "S"
     assert sample_location.bin == "BIN"
     assert result is sample_location
+
+
+class TestGetLocationBreadcrumb:
+    """Tests for get_location_breadcrumb method."""
+
+    @pytest.mark.asyncio
+    async def test_breadcrumb_single_level(
+        self, service: LocationService, repository_mock: AsyncMock, workspace_id: UUID
+    ):
+        """Test breadcrumb for root location with no parent."""
+        root_location = Location(
+            id=uuid7(),
+            workspace_id=workspace_id,
+            name="Root",
+            parent_location_id=None,
+        )
+        repository_mock.get_one_or_none.return_value = root_location
+
+        result = await service.get_location_breadcrumb(root_location.id, workspace_id)
+
+        assert len(result) == 1
+        assert result[0].id == root_location.id
+        assert result[0].name == "Root"
+
+    @pytest.mark.asyncio
+    async def test_breadcrumb_multi_level(
+        self, service: LocationService, repository_mock: AsyncMock, workspace_id: UUID
+    ):
+        """Test breadcrumb for nested locations returns full path."""
+        root_id = uuid7()
+        middle_id = uuid7()
+        leaf_id = uuid7()
+
+        root = Location(id=root_id, workspace_id=workspace_id, name="Root", parent_location_id=None)
+        middle = Location(id=middle_id, workspace_id=workspace_id, name="Middle", parent_location_id=root_id)
+        leaf = Location(id=leaf_id, workspace_id=workspace_id, name="Leaf", parent_location_id=middle_id)
+
+        # Repository returns locations based on which ID is requested
+        async def mock_get(id, workspace_id):
+            if id == leaf_id:
+                return leaf
+            elif id == middle_id:
+                return middle
+            elif id == root_id:
+                return root
+            return None
+
+        repository_mock.get_one_or_none.side_effect = mock_get
+
+        result = await service.get_location_breadcrumb(leaf_id, workspace_id)
+
+        assert len(result) == 3
+        assert result[0].name == "Root"
+        assert result[1].name == "Middle"
+        assert result[2].name == "Leaf"
+
+    @pytest.mark.asyncio
+    async def test_breadcrumb_prevents_circular_reference(
+        self, service: LocationService, repository_mock: AsyncMock, workspace_id: UUID
+    ):
+        """Test breadcrumb handles circular references gracefully."""
+        location_a_id = uuid7()
+        location_b_id = uuid7()
+
+        # Circular reference: A -> B -> A
+        location_a = Location(
+            id=location_a_id, workspace_id=workspace_id, name="A", parent_location_id=location_b_id
+        )
+        location_b = Location(
+            id=location_b_id, workspace_id=workspace_id, name="B", parent_location_id=location_a_id
+        )
+
+        async def mock_get(id, workspace_id):
+            if id == location_a_id:
+                return location_a
+            elif id == location_b_id:
+                return location_b
+            return None
+
+        repository_mock.get_one_or_none.side_effect = mock_get
+
+        result = await service.get_location_breadcrumb(location_a_id, workspace_id)
+
+        # Should stop at visited set, returning [B, A] (A's parent is B, but B's parent A was visited)
+        assert len(result) == 2
+        # The order is: we start at A, add A, go to parent B, add B, try to go to A but it's visited
+        assert result[0].name == "B"
+        assert result[1].name == "A"
+
+    @pytest.mark.asyncio
+    async def test_breadcrumb_missing_parent(
+        self, service: LocationService, repository_mock: AsyncMock, workspace_id: UUID
+    ):
+        """Test breadcrumb handles missing parent gracefully."""
+        missing_parent_id = uuid7()
+        child_id = uuid7()
+
+        child = Location(
+            id=child_id, workspace_id=workspace_id, name="Child", parent_location_id=missing_parent_id
+        )
+
+        async def mock_get(id, workspace_id):
+            if id == child_id:
+                return child
+            return None  # Parent doesn't exist
+
+        repository_mock.get_one_or_none.side_effect = mock_get
+
+        result = await service.get_location_breadcrumb(child_id, workspace_id)
+
+        # Should return only the child since parent was not found
+        assert len(result) == 1
+        assert result[0].name == "Child"
+
+    @pytest.mark.asyncio
+    async def test_breadcrumb_nonexistent_location(
+        self, service: LocationService, repository_mock: AsyncMock, workspace_id: UUID
+    ):
+        """Test breadcrumb for nonexistent location returns empty list."""
+        nonexistent_id = uuid7()
+        repository_mock.get_one_or_none.return_value = None
+
+        result = await service.get_location_breadcrumb(nonexistent_id, workspace_id)
+
+        assert result == []

@@ -1,0 +1,260 @@
+"""Tests for the notifications domain service."""
+
+from uuid import uuid7
+from unittest.mock import AsyncMock
+
+import pytest
+
+from warehouse.domain.notifications.models import Notification, NotificationType
+from warehouse.domain.notifications.service import NotificationService
+
+
+@pytest.fixture
+def user_id():
+    """A sample user ID."""
+    return uuid7()
+
+
+@pytest.fixture
+def workspace_id():
+    """A sample workspace ID."""
+    return uuid7()
+
+
+@pytest.fixture
+def notification_repository_mock():
+    """Mock notification repository."""
+    repo = AsyncMock()
+    repo.add = AsyncMock()
+    repo.mark_as_read = AsyncMock()
+    repo.delete_old_read = AsyncMock()
+    repo.session = AsyncMock()
+    repo.session.commit = AsyncMock()
+    return repo
+
+
+@pytest.fixture
+def service(notification_repository_mock):
+    """Notification service with mocked repository."""
+    return NotificationService(repository=notification_repository_mock)
+
+
+@pytest.fixture
+def sample_notification(user_id, workspace_id):
+    """A sample notification."""
+    return Notification(
+        id=uuid7(),
+        user_id=user_id,
+        workspace_id=workspace_id,
+        notification_type=NotificationType.SYSTEM,
+        title="Test Notification",
+        message="This is a test notification",
+        is_read=False,
+        data=None,
+    )
+
+
+class TestNotificationServiceMarkAsRead:
+    """Tests for mark_as_read method."""
+
+    async def test_mark_as_read_all(self, service, notification_repository_mock, user_id):
+        """Test marking all notifications as read."""
+        notification_repository_mock.mark_as_read.return_value = 5
+
+        result = await service.mark_as_read(user_id, notification_ids=None)
+
+        assert result == 5
+        notification_repository_mock.mark_as_read.assert_awaited_once_with(user_id, None)
+        notification_repository_mock.session.commit.assert_awaited_once()
+
+    async def test_mark_as_read_specific_ids(
+        self, service, notification_repository_mock, user_id
+    ):
+        """Test marking specific notifications as read."""
+        notification_ids = [uuid7(), uuid7()]
+        notification_repository_mock.mark_as_read.return_value = 2
+
+        result = await service.mark_as_read(user_id, notification_ids=notification_ids)
+
+        assert result == 2
+        notification_repository_mock.mark_as_read.assert_awaited_once_with(
+            user_id, notification_ids
+        )
+        notification_repository_mock.session.commit.assert_awaited_once()
+
+
+class TestNotificationServiceCreate:
+    """Tests for create_notification method."""
+
+    async def test_create_notification_success(
+        self, service, notification_repository_mock, user_id, workspace_id
+    ):
+        """Test creating a notification."""
+        expected_notification = Notification(
+            id=uuid7(),
+            user_id=user_id,
+            workspace_id=workspace_id,
+            notification_type=NotificationType.SYSTEM,
+            title="Test",
+            message="Test message",
+            data={"key": "value"},
+        )
+        notification_repository_mock.add.return_value = expected_notification
+
+        result = await service.create_notification(
+            user_id=user_id,
+            notification_type=NotificationType.SYSTEM,
+            title="Test",
+            message="Test message",
+            workspace_id=workspace_id,
+            metadata={"key": "value"},
+        )
+
+        assert result == expected_notification
+        notification_repository_mock.add.assert_awaited_once()
+        notification_repository_mock.session.commit.assert_awaited_once()
+
+        # Verify the notification passed to add has correct attributes
+        added_notification = notification_repository_mock.add.call_args[0][0]
+        assert added_notification.user_id == user_id
+        assert added_notification.workspace_id == workspace_id
+        assert added_notification.notification_type == NotificationType.SYSTEM
+        assert added_notification.title == "Test"
+        assert added_notification.message == "Test message"
+        assert added_notification.data == {"key": "value"}
+
+
+class TestNotificationServiceSpecializedMethods:
+    """Tests for specialized notification creation methods."""
+
+    async def test_send_workspace_invite_notification(
+        self, service, notification_repository_mock, user_id, workspace_id
+    ):
+        """Test sending workspace invite notification."""
+        notification_repository_mock.add.return_value = Notification(
+            id=uuid7(),
+            user_id=user_id,
+            workspace_id=workspace_id,
+            notification_type=NotificationType.WORKSPACE_INVITE,
+            title="Invited to Test Workspace",
+            message="John Doe invited you to join 'Test Workspace' as admin.",
+            data={
+                "workspace_id": str(workspace_id),
+                "workspace_name": "Test Workspace",
+                "role": "admin",
+                "invited_by": "John Doe",
+            },
+        )
+
+        result = await service.send_workspace_invite_notification(
+            user_id=user_id,
+            workspace_id=workspace_id,
+            workspace_name="Test Workspace",
+            role="admin",
+            invited_by_name="John Doe",
+        )
+
+        notification_repository_mock.add.assert_awaited_once()
+        added = notification_repository_mock.add.call_args[0][0]
+        assert added.notification_type == NotificationType.WORKSPACE_INVITE
+        assert "Invited to Test Workspace" in added.title
+        assert "John Doe" in added.message
+        assert added.data["role"] == "admin"
+
+    async def test_send_member_joined_notification(
+        self, service, notification_repository_mock, user_id, workspace_id
+    ):
+        """Test sending member joined notification."""
+        notification_repository_mock.add.return_value = Notification(
+            id=uuid7(),
+            user_id=user_id,
+            workspace_id=workspace_id,
+            notification_type=NotificationType.MEMBER_JOINED,
+            title="New member in Test Workspace",
+            message="Jane Doe joined 'Test Workspace' as member.",
+            data={
+                "workspace_id": str(workspace_id),
+                "workspace_name": "Test Workspace",
+                "new_member": "Jane Doe",
+                "role": "member",
+            },
+        )
+
+        result = await service.send_member_joined_notification(
+            user_id=user_id,
+            workspace_id=workspace_id,
+            workspace_name="Test Workspace",
+            new_member_name="Jane Doe",
+            role="member",
+        )
+
+        notification_repository_mock.add.assert_awaited_once()
+        added = notification_repository_mock.add.call_args[0][0]
+        assert added.notification_type == NotificationType.MEMBER_JOINED
+        assert "New member" in added.title
+        assert "Jane Doe" in added.message
+
+    async def test_send_loan_due_notification(
+        self, service, notification_repository_mock, user_id, workspace_id
+    ):
+        """Test sending loan due notification."""
+        notification_repository_mock.add.return_value = Notification(
+            id=uuid7(),
+            user_id=user_id,
+            workspace_id=workspace_id,
+            notification_type=NotificationType.LOAN_DUE_SOON,
+            title="Loan Due Soon",
+            message="'Hammer' loaned to Bob is due on 2024-12-25.",
+            data={
+                "item_name": "Hammer",
+                "borrower_name": "Bob",
+                "due_date": "2024-12-25",
+            },
+        )
+
+        result = await service.send_loan_due_notification(
+            user_id=user_id,
+            workspace_id=workspace_id,
+            item_name="Hammer",
+            borrower_name="Bob",
+            due_date="2024-12-25",
+        )
+
+        notification_repository_mock.add.assert_awaited_once()
+        added = notification_repository_mock.add.call_args[0][0]
+        assert added.notification_type == NotificationType.LOAN_DUE_SOON
+        assert added.title == "Loan Due Soon"
+        assert "Hammer" in added.message
+        assert "Bob" in added.message
+
+    async def test_send_loan_overdue_notification(
+        self, service, notification_repository_mock, user_id, workspace_id
+    ):
+        """Test sending loan overdue notification."""
+        notification_repository_mock.add.return_value = Notification(
+            id=uuid7(),
+            user_id=user_id,
+            workspace_id=workspace_id,
+            notification_type=NotificationType.LOAN_OVERDUE,
+            title="Loan Overdue",
+            message="'Drill' loaned to Alice was due on 2024-12-20.",
+            data={
+                "item_name": "Drill",
+                "borrower_name": "Alice",
+                "due_date": "2024-12-20",
+            },
+        )
+
+        result = await service.send_loan_overdue_notification(
+            user_id=user_id,
+            workspace_id=workspace_id,
+            item_name="Drill",
+            borrower_name="Alice",
+            due_date="2024-12-20",
+        )
+
+        notification_repository_mock.add.assert_awaited_once()
+        added = notification_repository_mock.add.call_args[0][0]
+        assert added.notification_type == NotificationType.LOAN_OVERDUE
+        assert added.title == "Loan Overdue"
+        assert "was due on" in added.message
