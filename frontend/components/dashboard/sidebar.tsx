@@ -140,23 +140,25 @@ export function Sidebar({ className }: SidebarProps) {
   return (
     <div
       className={cn(
-        "flex flex-col h-full bg-card border-r border-border transition-all duration-300",
+        "flex flex-col h-full bg-sidebar border-r border-sidebar-border transition-all duration-300",
         isCollapsed ? "w-16" : "w-64",
         className
       )}
     >
       {/* Header */}
       <div className={cn(
-        "flex items-center border-b border-border min-h-[61px]",
-        isCollapsed ? "justify-center p-2" : "p-4"
+        "flex items-center border-b-2 border-border min-h-[61px]",
+        isCollapsed ? "justify-center p-2" : "p-4 gap-3"
       )}>
         <button
           onClick={() => setIsCollapsed(!isCollapsed)}
-          className="flex items-center space-x-2 hover:opacity-80 transition-opacity"
+          className="flex items-center gap-3 hover:opacity-80 transition-opacity"
         >
-          <Icon name="Package" className="w-5 h-5 text-primary" />
+          <div className="w-10 h-10 bg-primary shadow-sm flex items-center justify-center text-primary-foreground text-2xl border-2 border-foreground font-bold">
+            H
+          </div>
           {!isCollapsed && (
-            <h2 className="text-lg font-semibold text-foreground">HMS</h2>
+            <h1 className="text-3xl font-bold text-foreground tracking-wide">HMS</h1>
           )}
         </button>
       </div>
@@ -177,7 +179,7 @@ export function Sidebar({ className }: SidebarProps) {
                       isCollapsed ? "justify-center px-2" : "gap-3 px-3",
                       "py-2",
                       isActive
-                        ? "bg-primary text-primary-foreground hover:bg-primary/90"
+                        ? "bg-sidebar-accent text-sidebar-accent-foreground hover:bg-sidebar-accent/90"
                         : "text-muted-foreground hover:text-foreground"
                     )}
                   >
@@ -239,7 +241,7 @@ export function Sidebar({ className }: SidebarProps) {
                               "flex items-center rounded-md text-sm font-medium transition-colors hover:bg-muted min-h-[36px]",
                               "gap-3 pl-7 pr-3 py-1.5",
                               isActive
-                                ? "bg-primary text-primary-foreground hover:bg-primary/90"
+                                ? "bg-sidebar-accent text-sidebar-accent-foreground hover:bg-sidebar-accent/90"
                                 : "text-muted-foreground hover:text-foreground"
                             )}
                           >
@@ -258,24 +260,22 @@ export function Sidebar({ className }: SidebarProps) {
       </nav>
 
       {/* Footer */}
-      <div className="border-t border-border">
+      <div className="border-t-2 border-border bg-background">
         <div className="relative">
           <button
             onClick={() => !isCollapsed && setIsUserMenuOpen(!isUserMenuOpen)}
             className={cn(
-              "w-full flex items-center py-2 hover:bg-muted transition-colors",
-              isCollapsed ? "justify-center px-2" : "gap-3 px-3"
+              "w-full flex items-center py-4 hover:bg-muted transition-colors",
+              isCollapsed ? "justify-center px-2" : "gap-3 px-4"
             )}
             disabled={isCollapsed}
           >
             <div className="relative">
-              <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center flex-shrink-0">
-                <span className="text-xs font-semibold text-primary-foreground">
-                  {user ? getUserInitials(user.full_name) : '?'}
-                </span>
+              <div className="w-10 h-10 bg-primary shadow-sm flex items-center justify-center flex-shrink-0 text-primary-foreground text-xl border-2 border-foreground font-bold">
+                {user ? getUserInitials(user.full_name) : '?'}
               </div>
               {unreadCount > 0 && (
-                <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+                <span className="absolute -top-2 -right-2 w-5 h-5 bg-destructive text-white text-[10px] font-bold flex items-center justify-center border-2 border-foreground shadow-sm">
                   {unreadCount > 9 ? '9+' : unreadCount}
                 </span>
               )}
@@ -283,18 +283,14 @@ export function Sidebar({ className }: SidebarProps) {
             {!isCollapsed && (
               <>
                 <div className="flex-1 min-w-0 text-left">
-                  <p className="text-sm font-medium text-foreground truncate">
+                  <p className="text-sm font-bold text-foreground truncate">
                     {user?.full_name || 'User'}
                   </p>
-                  <p className="text-xs text-muted-foreground truncate">
+                  <p className="text-[10px] text-muted-foreground truncate uppercase tracking-tight">
                     {user?.email || ''}
                   </p>
                 </div>
-                {isUserMenuOpen ? (
-                  <Icon name="ChevronUp" className="w-4 h-4 text-muted-foreground" />
-                ) : (
-                  <Icon name="ChevronDown" className="w-4 h-4 text-muted-foreground" />
-                )}
+                <Icon name="ChevronDown" className="w-5 h-5 text-muted-foreground" />
               </>
             )}
           </button>

@@ -3,78 +3,95 @@
 import { useTheme } from "next-themes";
 import { useEffect, useState, ComponentType } from "react";
 import * as LucideIcons from "lucide-react";
-import * as PhosphorIcons from "@phosphor-icons/react";
 
-// Map Lucide icon names to Phosphor equivalents
-const iconMap: Record<string, string> = {
+// Map Lucide icon names to Material Symbols names
+const materialIconMap: Record<string, string> = {
   // Navigation & Layout
-  Home: "House",
-  Package: "Package",
-  Tag: "Tag",
-  Archive: "Archive",
-  MapPin: "MapPin",
-  Box: "Cube",
-  HandCoins: "HandCoins",
-  Contact: "AddressBook",
-  BarChart3: "ChartBar",
-  Settings: "Gear",
-  Bell: "Bell",
-  User: "User",
-  Users: "Users",
-  Layers: "Stack",
-  Warehouse: "Warehouse",
+  Home: "home",
+  Package: "package_2",
+  Tag: "sell",
+  Archive: "layers",
+  MapPin: "location_on",
+  Box: "deployed_code",
+  HandCoins: "sync_alt",
+  Contact: "person",
+  BarChart3: "bar_chart_4_bars",
+  Settings: "settings",
+  Bell: "notifications",
+  User: "person",
+  Users: "group",
+  Layers: "menu_book",
+  Warehouse: "warehouse",
 
   // Chevrons
-  ChevronUp: "CaretUp",
-  ChevronDown: "CaretDown",
-  ChevronRight: "CaretRight",
-  ChevronLeft: "CaretLeft",
+  ChevronUp: "expand_less",
+  ChevronDown: "expand_more",
+  ChevronRight: "chevron_right",
+  ChevronLeft: "chevron_left",
 
   // Actions
-  Plus: "Plus",
-  Search: "MagnifyingGlass",
-  X: "X",
-  Pencil: "Pencil",
-  Trash2: "Trash",
-  Copy: "Copy",
-  Check: "Check",
+  Plus: "add",
+  Search: "search",
+  X: "close",
+  Pencil: "edit",
+  Trash2: "delete",
+  Copy: "content_copy",
+  Check: "check",
 
   // Auth
-  LogIn: "SignIn",
-  LogOut: "SignOut",
-  Globe: "Globe",
+  LogIn: "login",
+  LogOut: "logout",
+  Globe: "language",
 
   // Dashboard
-  DollarSign: "CurrencyDollar",
-  AlertTriangle: "Warning",
-  AlertCircle: "WarningCircle",
-  Clock: "Clock",
-  Shield: "Shield",
+  DollarSign: "payments",
+  AlertTriangle: "warning",
+  AlertCircle: "error",
+  Clock: "schedule",
+  Shield: "shield",
+  History: "history",
 
   // Misc
-  Palette: "Palette",
-  Moon: "Moon",
-  Sun: "Sun",
-  Gamepad2: "GameController",
-  MoreVertical: "DotsThreeVertical",
-  MoreHorizontal: "DotsThree",
-  ExternalLink: "ArrowSquareOut",
-  Eye: "Eye",
-  EyeOff: "EyeSlash",
-  Filter: "Funnel",
-  Download: "Download",
-  Upload: "Upload",
-  Loader2: "CircleNotch",
-  RefreshCw: "ArrowsClockwise",
-  Building2: "Buildings",
-  Crown: "Crown",
-  UserPlus: "UserPlus",
+  Palette: "palette",
+  Moon: "dark_mode",
+  Sun: "light_mode",
+  Gamepad2: "sports_esports",
+  MoreVertical: "more_vert",
+  MoreHorizontal: "more_horiz",
+  ExternalLink: "open_in_new",
+  Eye: "visibility",
+  EyeOff: "visibility_off",
+  Filter: "filter_list",
+  Download: "download",
+  Upload: "upload",
+  Loader2: "progress_activity",
+  RefreshCw: "sync",
+  Building2: "apartment",
+  Crown: "workspace_premium",
+  UserPlus: "person_add",
+  FolderTree: "folder_open",
 };
 
 interface IconProps {
   name: keyof typeof LucideIcons;
   className?: string;
   size?: number;
+}
+
+// Material Symbol component for retro themes
+function MaterialIcon({ name, className }: { name: string; className?: string }) {
+  return (
+    <span
+      className={`material-symbols-outlined ${className || ''}`}
+      style={{
+        fontSize: 'inherit',
+        lineHeight: 1,
+        verticalAlign: 'middle',
+      }}
+    >
+      {name}
+    </span>
+  );
 }
 
 export function Icon({ name, className, size }: IconProps) {
@@ -99,27 +116,11 @@ export function Icon({ name, className, size }: IconProps) {
   const isRetro = theme?.startsWith("retro");
 
   if (isRetro) {
-    const phosphorName = iconMap[name as string] || name;
-    const PhosphorIcon = (PhosphorIcons as unknown as Record<string, ComponentType<{ className?: string; size?: number; weight?: string }>>)[phosphorName];
-
-    if (PhosphorIcon) {
-      return <PhosphorIcon className={className} size={size} weight="bold" />;
+    const materialName = materialIconMap[name as string];
+    if (materialName) {
+      return <MaterialIcon name={materialName} className={className} />;
     }
   }
 
   return <LucideIcon className={className} size={size} />;
 }
-
-// Export individual themed icons for convenience
-export function createThemedIcon(lucideName: keyof typeof LucideIcons) {
-  return function ThemedIcon(props: Omit<IconProps, "name">) {
-    return <Icon name={lucideName} {...props} />;
-  };
-}
-
-// Pre-built themed icons for common usage
-export const ThemedPackage = createThemedIcon("Package");
-export const ThemedHome = createThemedIcon("Home");
-export const ThemedSettings = createThemedIcon("Settings");
-export const ThemedUser = createThemedIcon("User");
-export const ThemedBell = createThemedIcon("Bell");

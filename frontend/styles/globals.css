@@ -115,80 +115,153 @@
   --sidebar-ring: oklch(0.556 0 0);
 }
 
-/* Retro Light Theme */
+/* Retro Light Theme - matching prototype exactly */
 .retro-light {
-  --background: oklch(0.97 0.01 90);
-  --foreground: oklch(0.25 0.02 50);
-  --card: oklch(0.95 0.015 85);
-  --card-foreground: oklch(0.25 0.02 50);
-  --popover: oklch(0.95 0.015 85);
-  --popover-foreground: oklch(0.25 0.02 50);
-  --primary: oklch(0.65 0.12 15);
-  --primary-foreground: oklch(0.98 0.01 90);
-  --secondary: oklch(0.85 0.05 145);
-  --secondary-foreground: oklch(0.25 0.02 50);
-  --muted: oklch(0.92 0.03 145);
-  --muted-foreground: oklch(0.45 0.02 50);
-  --accent: oklch(0.75 0.1 55);
-  --accent-foreground: oklch(0.25 0.02 50);
-  --destructive: oklch(0.6 0.15 25);
-  --border: oklch(0.88 0.02 90);
-  --input: oklch(0.90 0.02 90);
-  --ring: oklch(0.65 0.12 15);
-  --chart-1: oklch(0.65 0.12 15);
+  /* #EFE9D9 beige background */
+  --background: oklch(0.93 0.02 85);
+  --foreground: oklch(0.25 0.01 50);
+  /* #F7F2E6 cream paper */
+  --card: oklch(0.96 0.015 85);
+  --card-foreground: oklch(0.25 0.01 50);
+  --popover: oklch(0.96 0.015 85);
+  --popover-foreground: oklch(0.25 0.01 50);
+  /* #EF4444 red primary */
+  --primary: oklch(0.63 0.24 27);
+  --primary-foreground: oklch(0.98 0 0);
+  --secondary: oklch(0.90 0.02 85);
+  --secondary-foreground: oklch(0.25 0.01 50);
+  --muted: oklch(0.88 0.02 85);
+  --muted-foreground: oklch(0.45 0.01 50);
+  --accent: oklch(0.90 0.02 85);
+  --accent-foreground: oklch(0.25 0.01 50);
+  --destructive: oklch(0.55 0.22 27);
+  /* #333333 dark border */
+  --border: oklch(0.30 0 0);
+  --input: oklch(0.93 0.02 85);
+  --ring: oklch(0.63 0.24 27);
+  --chart-1: oklch(0.63 0.24 27);
   --chart-2: oklch(0.75 0.1 55);
   --chart-3: oklch(0.70 0.08 145);
   --chart-4: oklch(0.60 0.15 25);
   --chart-5: oklch(0.55 0.10 200);
-  --sidebar: oklch(0.94 0.015 85);
-  --sidebar-foreground: oklch(0.25 0.02 50);
-  --sidebar-primary: oklch(0.65 0.12 15);
-  --sidebar-primary-foreground: oklch(0.98 0.01 90);
-  --sidebar-accent: oklch(0.90 0.03 145);
-  --sidebar-accent-foreground: oklch(0.25 0.02 50);
-  --sidebar-border: oklch(0.85 0.02 90);
-  --sidebar-ring: oklch(0.65 0.12 15);
+  /* #F5F0E6 sidebar */
+  --sidebar: oklch(0.95 0.015 85);
+  --sidebar-foreground: oklch(0.45 0.01 50);
+  --sidebar-primary: oklch(0.63 0.24 27);
+  --sidebar-primary-foreground: oklch(0.98 0 0);
+  --sidebar-accent: oklch(0.63 0.24 27);
+  --sidebar-accent-foreground: oklch(0.98 0 0);
+  --sidebar-border: oklch(0.30 0 0);
+  --sidebar-ring: oklch(0.63 0.24 27);
+  /* Sharp corners */
+  --radius: 0px;
 }
 
-/* Retro Dark Theme */
+/* Retro Dark Theme - matching prototype exactly */
 .retro-dark {
-  --background: oklch(0.18 0.02 50);
-  --foreground: oklch(0.92 0.01 90);
-  --card: oklch(0.25 0.02 55);
-  --card-foreground: oklch(0.92 0.01 90);
-  --popover: oklch(0.25 0.02 55);
-  --popover-foreground: oklch(0.92 0.01 90);
-  --primary: oklch(0.75 0.1 15);
-  --primary-foreground: oklch(0.18 0.02 50);
-  --secondary: oklch(0.35 0.04 145);
-  --secondary-foreground: oklch(0.92 0.01 90);
-  --muted: oklch(0.30 0.03 145);
-  --muted-foreground: oklch(0.65 0.02 90);
-  --accent: oklch(0.65 0.12 55);
-  --accent-foreground: oklch(0.92 0.01 90);
-  --destructive: oklch(0.7 0.12 25);
-  --border: oklch(0.35 0.02 55);
-  --input: oklch(0.30 0.02 55);
-  --ring: oklch(0.75 0.1 15);
-  --chart-1: oklch(0.75 0.1 15);
-  --chart-2: oklch(0.65 0.12 55);
-  --chart-3: oklch(0.55 0.08 145);
-  --chart-4: oklch(0.70 0.12 25);
-  --chart-5: oklch(0.50 0.10 200);
-  --sidebar: oklch(0.22 0.02 55);
-  --sidebar-foreground: oklch(0.92 0.01 90);
-  --sidebar-primary: oklch(0.75 0.1 15);
-  --sidebar-primary-foreground: oklch(0.18 0.02 50);
-  --sidebar-accent: oklch(0.30 0.03 145);
-  --sidebar-accent-foreground: oklch(0.92 0.01 90);
-  --sidebar-border: oklch(0.35 0.02 55);
-  --sidebar-ring: oklch(0.75 0.1 15);
+  /* #18181b zinc-900 deep black background */
+  --background: #18181b;
+  --foreground: #e4e4e7;
+  /* #27272a zinc-800 dark grey for cards */
+  --card: #27272a;
+  --card-foreground: #e4e4e7;
+  --popover: #27272a;
+  --popover-foreground: #e4e4e7;
+  /* #EF4444 red primary */
+  --primary: #EF4444;
+  --primary-foreground: #ffffff;
+  --secondary: #27272a;
+  --secondary-foreground: #e4e4e7;
+  --muted: #3f3f46;
+  --muted-foreground: #a1a1aa;
+  --accent: #3f3f46;
+  --accent-foreground: #e4e4e7;
+  --destructive: #dc2626;
+  /* #71717a zinc-500 lighter grey borders */
+  --border: #71717a;
+  --input: #27272a;
+  --ring: #EF4444;
+  --chart-1: #EF4444;
+  --chart-2: #f97316;
+  --chart-3: #84cc16;
+  --chart-4: #a855f7;
+  --chart-5: #06b6d4;
+  /* #27272a zinc-800 sidebar */
+  --sidebar: #27272a;
+  --sidebar-foreground: #a1a1aa;
+  --sidebar-primary: #EF4444;
+  --sidebar-primary-foreground: #ffffff;
+  /* #991b1b dark red-800 for active state */
+  --sidebar-accent: #991b1b;
+  --sidebar-accent-foreground: #ffffff;
+  --sidebar-border: #71717a;
+  --sidebar-ring: #EF4444;
+  /* Sharp corners */
+  --radius: 0px;
 }
 
-/* Apply pixel font to retro themes */
+/* Retro theme fonts - Space Mono for body, VT323 for display */
 .retro-light,
 .retro-dark {
-  font-family: var(--font-pixel), monospace;
+  font-family: var(--font-mono-retro), 'Space Mono', monospace;
+}
+
+/* VT323 for headings in retro themes */
+.retro-light h1, .retro-light h2, .retro-light h3,
+.retro-dark h1, .retro-dark h2, .retro-dark h3 {
+  font-family: var(--font-pixel), 'VT323', monospace;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+/* Material Symbols styling for retro themes */
+.retro-light .material-symbols-outlined,
+.retro-dark .material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
+
+/* Retro shadow utilities */
+.retro-light .shadow-retro {
+  box-shadow: 4px 4px 0px 0px rgba(0, 0, 0, 1);
+}
+.retro-light .shadow-retro-sm {
+  box-shadow: 2px 2px 0px 0px rgba(0, 0, 0, 1);
+}
+.retro-dark .shadow-retro {
+  box-shadow: 4px 4px 0px 0px rgba(0, 0, 0, 1);
+}
+.retro-dark .shadow-retro-sm {
+  box-shadow: 2px 2px 0px 0px rgba(0, 0, 0, 1);
+}
+
+/* Override default shadows in retro themes */
+.retro-light .shadow-sm,
+.retro-light .shadow {
+  box-shadow: 4px 4px 0px 0px rgba(0, 0, 0, 1);
+}
+.retro-dark .shadow-sm,
+.retro-dark .shadow {
+  box-shadow: 4px 4px 0px 0px rgba(0, 0, 0, 1);
+}
+
+/* Thicker borders in retro themes */
+.retro-light .border,
+.retro-dark .border {
+  border-width: 2px;
+}
+
+/* Scanline effect for retro themes */
+.retro-light .scanlines,
+.retro-dark .scanlines {
+  background: linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0),
+    rgba(255, 255, 255, 0) 50%,
+    rgba(0, 0, 0, 0.02) 50%,
+    rgba(0, 0, 0, 0.02)
+  );
+  background-size: 100% 4px;
+  pointer-events: none;
 }
 
 @layer base {
