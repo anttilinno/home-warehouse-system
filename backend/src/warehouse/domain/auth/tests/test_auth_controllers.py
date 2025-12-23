@@ -345,3 +345,140 @@ async def test_invite_member_sends_notification(controller: AuthController, auth
     assert call_kwargs["user_id"] == invited_member.user_id
     assert call_kwargs["workspace_name"] == "Test Workspace"
     assert call_kwargs["role"] == "admin"
+
+
+# Error path tests for exception handling coverage
+
+
+@pytest.mark.asyncio
+async def test_register_email_exists_raises(controller: AuthController, auth_service_mock: AsyncMock):
+    """Test register raises HTTPException when email already exists."""
+    auth_service_mock.create_user.side_effect = AppError(ErrorCode.AUTH_EMAIL_EXISTS, status_code=400)
+    payload = UserCreate(email="existing@example.com", full_name="Test", password="pw")
+
+    with pytest.raises(HTTPException) as exc_info:
+        await _call(controller.register, controller, data=payload, auth_service=auth_service_mock)
+
+    assert exc_info.value.status_code == 400
+
+
+@pytest.mark.asyncio
+async def test_get_me_invalid_token_raises(controller: AuthController, auth_service_mock: AsyncMock):
+    """Test get_me raises HTTPException when token is invalid."""
+    auth_service_mock.get_current_user.side_effect = AppError(ErrorCode.AUTH_INVALID_TOKEN, status_code=401)
+    request = _make_request_mock()
+
+    with pytest.raises(HTTPException) as exc_info:
+        await _call(controller.get_me, controller, request=request, auth_service=auth_service_mock)
+
+    assert exc_info.value.status_code == 401
+
+
+@pytest.mark.asyncio
+async def test_update_me_error_raises(controller: AuthController, auth_service_mock: AsyncMock):
+    """Test update_me raises HTTPException on profile update error."""
+    user = _make_user_response()
+    auth_service_mock.get_current_user.return_value = user
+    auth_service_mock.update_profile.side_effect = AppError(ErrorCode.AUTH_EMAIL_EXISTS, status_code=400)
+    request = _make_request_mock()
+    data = ProfileUpdate(full_name=None, email="taken@example.com")
+
+    with pytest.raises(HTTPException) as exc_info:
+        await _call(controller.update_me, controller, request=request, data=data, auth_service=auth_service_mock)
+
+    assert exc_info.value.status_code == 400
+
+
+@pytest.mark.asyncio
+async def test_change_password_error_raises(controller: AuthController, auth_service_mock: AsyncMock):
+    """Test change_password raises HTTPException on wrong current password."""
+    user = _make_user_response()
+    auth_service_mock.get_current_user.return_value = user
+    auth_service_mock.change_password.side_effect = AppError(ErrorCode.AUTH_INVALID_CREDENTIALS, status_code=400)
+    request = _make_request_mock()
+    data = PasswordChange(current_password="wrong", new_password="new")
+
+    with pytest.raises(HTTPException) as exc_info:
+        await _call(controller.change_password, controller, request=request, data=data, auth_service=auth_service_mock)
+
+    assert exc_info.value.status_code == 400
+
+
+@pytest.mark.asyncio
+async def test_create_workspace_error_raises(controller: AuthController, auth_service_mock: AsyncMock):
+    """Test create_workspace raises HTTPException on error."""
+    user = _make_user_response()
+    auth_service_mock.get_current_user.return_value = user
+    auth_service_mock.create_workspace.side_effect = AppError(ErrorCode.GENERAL_BAD_REQUEST, status_code=500)
+    request = _make_request_mock()
+    data = WorkspaceCreate(name="Test", description=None)
+
+    with pytest.raises(HTTPException) as exc_info:
+        await _call(controller.create_workspace, controller, request=request, data=data, auth_service=auth_service_mock)
+
+    assert exc_info.value.status_code == 500
+
+
+@pytest.mark.asyncio
+async def test_get_workspace_members_error_raises(controller: AuthController, auth_service_mock: AsyncMock):
+    """Test get_workspace_members raises HTTPException when not found."""
+    user = _make_user_response()
+    auth_service_mock.get_current_user.return_value = user
+    auth_service_mock.get_workspace_members.side_effect = AppError(ErrorCode.WORKSPACE_NOT_FOUND, status_code=404)
+    request = _make_request_mock()
+    workspace_id = uuid7()
+
+    with pytest.raises(HTTPException) as exc_info:
+        await _call(
+            controller.get_workspace_members,
+            controller,
+            request=request,
+            workspace_id=workspace_id,
+            auth_service=auth_service_mock,
+        )
+
+    assert exc_info.value.status_code == 404
+
+
+@pytest.mark.asyncio
+async def test_search_users_error_raises(controller: AuthController, auth_service_mock: AsyncMock):
+    """Test search_users raises HTTPException on auth error."""
+    auth_service_mock.get_current_user.side_effect = AppError(ErrorCode.AUTH_INVALID_TOKEN, status_code=401)
+    request = _make_request_mock()
+
+    with pytest.raises(HTTPException) as exc_info:
+        await _call(
+            controller.search_users,
+            controller,
+            request=request,
+            auth_service=auth_service_mock,
+            q="test",
+            workspace_id=None,
+        )
+
+    assert exc_info.value.status_code == 401
+
+
+@pytest.mark.asyncio
+async def test_invite_member_error_raises(controller: AuthController, auth_service_mock: AsyncMock):
+    """Test invite_member raises HTTPException on permission denied."""
+    inviter = _make_user_response()
+    auth_service_mock.get_current_user.return_value = inviter
+    auth_service_mock.invite_member.side_effect = AppError(ErrorCode.WORKSPACE_PERMISSION_DENIED, status_code=403)
+    notification_service_mock = AsyncMock()
+    request = _make_request_mock()
+    workspace_id = uuid7()
+    data = WorkspaceMemberInvite(email="bob@example.com", role="member")
+
+    with pytest.raises(HTTPException) as exc_info:
+        await _call(
+            controller.invite_member,
+            controller,
+            request=request,
+            workspace_id=workspace_id,
+            data=data,
+            auth_service=auth_service_mock,
+            notification_service=notification_service_mock,
+        )
+
+    assert exc_info.value.status_code == 403

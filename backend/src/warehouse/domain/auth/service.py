@@ -176,6 +176,7 @@ class AuthService:
         if full_name is not None:
             user.full_name = full_name
 
+        user.updated_at = datetime.now(UTC).replace(tzinfo=None)
         await self.repository.session.commit()
         await self.repository.session.refresh(user)
         return user
@@ -190,6 +191,7 @@ class AuthService:
             raise AppError(ErrorCode.AUTH_INVALID_CREDENTIALS, status_code=400)
 
         user.password_hash = self.hash_password(new_password)
+        user.updated_at = datetime.now(UTC).replace(tzinfo=None)
         await self.repository.session.commit()
         await self.repository.session.refresh(user)
         return user
