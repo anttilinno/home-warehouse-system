@@ -215,7 +215,7 @@ export default function DashboardPage() {
         ) : (
           <div className="space-y-3">
             {recentItems.map((item) => (
-              <div key={item.id} className="border-2 border-border bg-background p-3 hover:bg-muted transition-colors cursor-pointer flex flex-col md:flex-row md:items-center justify-between gap-2 shadow-sm">
+              <div key={item.id} onClick={() => router.push(`/dashboard/inventory/${item.id}`)} className="border-2 border-border bg-background p-3 hover:bg-muted transition-colors cursor-pointer flex flex-col md:flex-row md:items-center justify-between gap-2 shadow-sm">
                 <div className="flex-1">
                   <h4 className="font-bold text-base uppercase tracking-tight hover:text-primary transition-colors">
                     {item.item_name}

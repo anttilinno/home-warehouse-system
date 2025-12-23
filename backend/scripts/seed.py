@@ -186,39 +186,111 @@ async def create_categories(session: AsyncSession, workspace_id: str) -> list[st
 
 
 async def create_locations(session: AsyncSession, workspace_id: str) -> list[str]:
-    """Create locations."""
+    """Create hierarchical locations."""
     print("Creating locations...")
 
     location_ids = []
+    location_map = {}  # name -> id for parent references
 
-    locations = [
-        ("Garage", "North Wall", "Top Shelf", None, "Main garage storage area"),
-        ("Garage", "North Wall", "Middle Shelf", None, "Power tools and equipment"),
-        ("Garage", "South Wall", "Workbench", None, "Workbench and small tools"),
-        ("Kitchen", "Pantry", "Top Shelf", None, "Rarely used items"),
-        ("Kitchen", "Pantry", "Middle Shelf", None, "Frequently used items"),
-        ("Kitchen", "Under Sink", None, None, "Cleaning supplies"),
-        ("Bedroom", "Closet", "Top Shelf", None, "Seasonal storage"),
-        ("Bedroom", "Closet", "Dresser", None, "Daily items"),
-        ("Office", "Desk", "Drawer 1", None, "Office supplies"),
-        ("Office", "Bookshelf", "Shelf 1", None, "Books and documents"),
-        ("Basement", "Storage Room", "Rack A", "Bin 1", "Long-term storage"),
-        ("Basement", "Storage Room", "Rack A", "Bin 2", "Holiday decorations"),
-        ("Basement", "Storage Room", "Rack B", "Bin 1", "Sports equipment"),
-        ("Attic", None, None, None, "Attic storage space"),
-        ("Shed", "Tool Wall", None, None, "Garden tools"),
+    # Root locations (no parent) - short_code max 8 chars
+    root_locations = [
+        ("Garage", "Main garage with shelves and storage", "GAR"),
+        ("Kitchen", "Kitchen storage areas", "KIT"),
+        ("Bedroom", "Bedroom storage", "BED"),
+        ("Office", "Home office", "OFF"),
+        ("Basement", "Basement storage room", "BAS"),
+        ("Attic", "Attic storage space", "ATT"),
+        ("Shed", "Garden shed", "SHD"),
     ]
 
-    for name, zone, shelf, bin_, desc in locations:
+    for name, desc, short_code in root_locations:
         result = await session.execute(
             text("""
-                INSERT INTO warehouse.locations (workspace_id, name, zone, shelf, bin, description)
-                VALUES (:workspace_id, :name, :zone, :shelf, :bin, :description)
+                INSERT INTO warehouse.locations (workspace_id, name, description, short_code)
+                VALUES (:workspace_id, :name, :description, :short_code)
                 RETURNING id
             """),
-            {"workspace_id": workspace_id, "name": name, "zone": zone, "shelf": shelf, "bin": bin_, "description": desc}
+            {"workspace_id": workspace_id, "name": name, "description": desc, "short_code": short_code}
         )
-        location_ids.append(str(result.scalar_one()))
+        loc_id = str(result.scalar_one())
+        location_ids.append(loc_id)
+        location_map[name] = loc_id
+
+    # Level 1 children (parent_name, name, description, short_code)
+    level1_locations = [
+        ("Garage", "North Wall", "North wall shelving", "GARNW"),
+        ("Garage", "South Wall", "South wall and workbench", "GARSW"),
+        ("Kitchen", "Pantry", "Kitchen pantry", "KITPA"),
+        ("Kitchen", "Under Sink", "Under sink cabinet", "KITUS"),
+        ("Bedroom", "Closet", "Bedroom closet", "BEDCL"),
+        ("Office", "Desk", "Office desk", "OFFDK"),
+        ("Office", "Bookshelf", "Office bookshelf", "OFFBS"),
+        ("Basement", "Storage Room", "Main storage room", "BASSR"),
+        ("Shed", "Tool Wall", "Wall-mounted tool storage", "SHDTW"),
+    ]
+
+    for parent_name, name, desc, short_code in level1_locations:
+        parent_id = location_map.get(parent_name)
+        result = await session.execute(
+            text("""
+                INSERT INTO warehouse.locations (workspace_id, name, description, short_code, parent_location)
+                VALUES (:workspace_id, :name, :description, :short_code, :parent_id)
+                RETURNING id
+            """),
+            {"workspace_id": workspace_id, "name": name, "description": desc, "short_code": short_code, "parent_id": parent_id}
+        )
+        loc_id = str(result.scalar_one())
+        location_ids.append(loc_id)
+        location_map[f"{parent_name}/{name}"] = loc_id
+
+    # Level 2 children (grandparent/parent path, name, description, short_code)
+    level2_locations = [
+        ("Garage/North Wall", "Shelf 1", "Top shelf", "GARNWS1"),
+        ("Garage/North Wall", "Shelf 2", "Middle shelf", "GARNWS2"),
+        ("Garage/South Wall", "Workbench", "Workbench area", "GARSWWB"),
+        ("Kitchen/Pantry", "Top Shelf", "Pantry top shelf", "KITPATS"),
+        ("Kitchen/Pantry", "Middle Shelf", "Pantry middle shelf", "KITPAMS"),
+        ("Bedroom/Closet", "Top Shelf", "Closet top shelf", "BEDCLTS"),
+        ("Bedroom/Closet", "Dresser", "Dresser drawers", "BEDCLDR"),
+        ("Office/Desk", "Drawer 1", "Desk drawer", "OFFDKD1"),
+        ("Office/Bookshelf", "Shelf 1", "Bookshelf top", "OFFBSS1"),
+        ("Basement/Storage Room", "Rack A", "Storage rack A", "BASSRRA"),
+        ("Basement/Storage Room", "Rack B", "Storage rack B", "BASSRRB"),
+    ]
+
+    for parent_path, name, desc, short_code in level2_locations:
+        parent_id = location_map.get(parent_path)
+        result = await session.execute(
+            text("""
+                INSERT INTO warehouse.locations (workspace_id, name, description, short_code, parent_location)
+                VALUES (:workspace_id, :name, :description, :short_code, :parent_id)
+                RETURNING id
+            """),
+            {"workspace_id": workspace_id, "name": name, "description": desc, "short_code": short_code, "parent_id": parent_id}
+        )
+        loc_id = str(result.scalar_one())
+        location_ids.append(loc_id)
+        location_map[f"{parent_path}/{name}"] = loc_id
+
+    # Level 3 children (for deeply nested bins)
+    level3_locations = [
+        ("Basement/Storage Room/Rack A", "Bin 1", "Long-term storage bin", "BASRAB1"),
+        ("Basement/Storage Room/Rack A", "Bin 2", "Holiday decorations", "BASRAB2"),
+        ("Basement/Storage Room/Rack B", "Bin 1", "Sports equipment", "BASRBB1"),
+    ]
+
+    for parent_path, name, desc, short_code in level3_locations:
+        parent_id = location_map.get(parent_path)
+        result = await session.execute(
+            text("""
+                INSERT INTO warehouse.locations (workspace_id, name, description, short_code, parent_location)
+                VALUES (:workspace_id, :name, :description, :short_code, :parent_id)
+                RETURNING id
+            """),
+            {"workspace_id": workspace_id, "name": name, "description": desc, "short_code": short_code, "parent_id": parent_id}
+        )
+        loc_id = str(result.scalar_one())
+        location_ids.append(loc_id)
 
     await session.commit()
     return location_ids
