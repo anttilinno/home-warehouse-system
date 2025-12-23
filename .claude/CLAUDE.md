@@ -45,7 +45,7 @@ mise run db-fresh       # Complete reset including data volume
 
 # Backend
 mise run dev            # Run backend dev server (with auto-reload)
-mise run test           # Run all tests (94% coverage)
+mise run test           # Run all tests (99% coverage)
 mise run test-unit      # Run unit tests only
 mise run test-e2e       # Run E2E tests
 mise run lint           # Run linter
