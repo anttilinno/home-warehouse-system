@@ -14,14 +14,30 @@ Home Warehouse System - a multi-tenant home inventory management system for trac
 - **Package Management**: uv (Python), bun (JavaScript)
 - **Tool Management**: mise
 
+See `backend/CLAUDE.md` and `frontend/CLAUDE.md` for detailed documentation.
+
+## Project Structure
+
+```
+.
+├── backend/              # Python backend (Litestar) - see backend/CLAUDE.md
+│   ├── src/             # Source code
+│   ├── db/migrations/   # Database migrations (dbmate)
+│   └── e2e/             # End-to-end tests
+├── frontend/            # Next.js frontend - see frontend/CLAUDE.md
+└── docker-compose.yml   # PostgreSQL + Redis services
+```
+
 ## Common Commands
 
 All commands are run via mise:
 
 ```bash
-# Database
+# Infrastructure
 mise run dc-up          # Start all containers (PostgreSQL + Redis)
 mise run dc-down        # Stop all containers
+
+# Database
 mise run migrate        # Run database migrations
 mise run migrate-new    # Create new migration
 mise run db-reset       # Drop and recreate database with fresh migrations
@@ -29,7 +45,7 @@ mise run db-fresh       # Complete reset including data volume
 
 # Backend
 mise run dev            # Run backend dev server (with auto-reload)
-mise run test           # Run all tests
+mise run test           # Run all tests (94% coverage)
 mise run test-unit      # Run unit tests only
 mise run test-e2e       # Run E2E tests
 mise run lint           # Run linter
@@ -78,28 +94,18 @@ Key entities:
 
 All tables use UUIDv7 for primary keys. See DATABASE.md for full schema documentation.
 
-## Testing
+## Environment Variables
 
-- **99% coverage** on backend
-- Unit tests: Domain services, repositories, schemas, controllers under `src/warehouse/domain/**/tests/`
-- Core tests: `src/warehouse/tests/` and `src/warehouse/lib/tests/`
-- E2E tests: `e2e/` directory (requires running Postgres)
-- Controllers tested by invoking handlers directly with mocked services
+```bash
+# Database
+DATABASE_URL=postgresql+asyncpg://wh:wh@localhost:5432/warehouse_dev
+DBMATE_DATABASE_URL=postgresql://wh:wh@localhost:5432/warehouse_dev
 
-## Environment
+# Backend
+JWT_SECRET=your-secret-key
+APP_DEBUG=true
+REDIS_URL=redis://localhost:6379
 
-- `DATABASE_URL`: PostgreSQL connection string for async driver (default: `postgresql+asyncpg://wh:wh@localhost:5432/warehouse_dev`)
-- `DBMATE_DATABASE_URL`: PostgreSQL connection string for dbmate migrations
-- `APP_DEBUG`: Enable debug mode
-
-## Project Structure
-
-```
-.
-├── backend/              # Python backend (Litestar)
-│   ├── src/             # Source code
-│   ├── db/migrations/   # Database migrations (dbmate)
-│   └── e2e/             # End-to-end tests
-├── frontend/            # Next.js frontend
-└── docker-compose.yml   # PostgreSQL service
+# Frontend
+NEXT_PUBLIC_API_URL=http://localhost:8000
 ```
