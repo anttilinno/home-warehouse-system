@@ -113,7 +113,7 @@ export default function DashboardPage() {
   };
 
   const statCards: { name: string; value: string; iconName: IconName }[] = [
-    { name: t("totalItems"), value: stats?.total_items.toLocaleString() || "0", iconName: "Package" },
+    { name: t("totalItems"), value: stats?.total_items.toLocaleString() || "0", iconName: "Box" },
     { name: t("locations"), value: stats?.total_locations.toString() || "0", iconName: "MapPin" },
     { name: t("activeLoans"), value: stats?.active_loans.toString() || "0", iconName: "Users" },
     { name: t("categories"), value: stats?.total_categories.toString() || "0", iconName: "Archive" },
@@ -127,29 +127,29 @@ export default function DashboardPage() {
 
   return (
     <>
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-foreground">{t("title")}</h1>
-        <p className="text-muted-foreground mt-2">{t("subtitle")}</p>
+      <div className="mb-8 border-l-4 border-primary pl-4 py-1">
+        <h1 className="text-4xl font-bold text-foreground leading-none">{t("title")}</h1>
+        <p className="text-sm text-muted-foreground mt-1">{t("subtitle")}</p>
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-8">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
         {statCards.map((stat) => (
           <div
             key={stat.name}
             title={stat.name}
-            className="bg-card p-4 rounded-lg border shadow-sm cursor-default"
+            className="bg-card p-3 border-2 border-border shadow-sm cursor-default h-20 flex items-center justify-center"
           >
             <div className="flex items-center justify-center gap-3">
               <Icon name={stat.iconName} className="w-6 h-6 text-primary flex-shrink-0" />
-              <p className="text-2xl font-bold text-foreground">{stat.value}</p>
+              <p className="text-3xl font-bold text-foreground">{stat.value}</p>
             </div>
           </div>
         ))}
         {/* Total Value Card */}
         <div
           title={t("totalValue")}
-          className="bg-card p-4 rounded-lg border shadow-sm cursor-default"
+          className="bg-card p-3 border-2 border-border shadow-sm cursor-default h-20 flex items-center justify-center col-span-2 md:col-span-1"
         >
           <div className="flex items-center justify-center gap-3">
             <Icon name="DollarSign" className="w-6 h-6 text-primary flex-shrink-0" />
@@ -205,25 +205,32 @@ export default function DashboardPage() {
       )}
 
       {/* Recently Modified Section */}
-      <div className="bg-card p-6 rounded-lg border shadow-sm">
-        <h2 className="text-lg font-semibold mb-4">{t("recentlyModified")}</h2>
+      <div className="bg-card p-6 border-2 border-border shadow-sm">
+        <h3 className="text-xl font-bold mb-6 uppercase border-b-2 border-dashed border-muted-foreground/40 pb-2 flex items-center gap-2">
+          <Icon name="History" className="w-5 h-5" />
+          {t("recentlyModified")}
+        </h3>
         {recentItems.length === 0 ? (
           <p className="text-muted-foreground">{t("noRecentItems")}</p>
         ) : (
           <div className="space-y-3">
             {recentItems.map((item) => (
-              <div key={item.id} className="flex justify-between items-center py-2 border-b last:border-0">
-                <div>
-                  <p className="font-medium">{item.item_name}</p>
-                  <p className="text-sm text-muted-foreground">
-                    {item.location_name} · {item.item_sku}
-                  </p>
+              <div key={item.id} className="border-2 border-border bg-background p-3 hover:bg-muted transition-colors cursor-pointer flex flex-col md:flex-row md:items-center justify-between gap-2 shadow-sm">
+                <div className="flex-1">
+                  <h4 className="font-bold text-base uppercase tracking-tight hover:text-primary transition-colors">
+                    {item.item_name}
+                  </h4>
+                  <div className="text-[10px] uppercase text-muted-foreground flex gap-3 mt-1">
+                    <span>{item.location_name}</span>
+                    <span className="text-muted-foreground/50">•</span>
+                    <span>{item.item_sku}</span>
+                  </div>
                 </div>
-                <div className="text-right">
-                  <p className="font-mono text-lg">{item.quantity}</p>
-                  <p className="text-xs text-muted-foreground">
+                <div className="flex items-end md:items-center justify-between md:justify-end gap-4">
+                  <span className="text-2xl font-bold leading-none">{item.quantity}</span>
+                  <span className="text-[10px] uppercase text-muted-foreground">
                     {formatRelativeTime(item.updated_at)}
-                  </p>
+                  </span>
                 </div>
               </div>
             ))}

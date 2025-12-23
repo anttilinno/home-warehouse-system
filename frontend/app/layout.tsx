@@ -1,4 +1,4 @@
-import { Inter as FontSans, VT323 } from "next/font/google"
+import { Inter as FontSans, VT323, Space_Mono } from "next/font/google"
 
 import "@/styles/globals.css"
 import { siteConfig } from "@/config/site"
@@ -18,6 +18,12 @@ const fontPixel = VT323({
   weight: "400",
   subsets: ["latin"],
   variable: "--font-pixel",
+})
+
+const fontMono = Space_Mono({
+  weight: ["400", "700"],
+  subsets: ["latin"],
+  variable: "--font-mono-retro",
 })
 
 interface RootLayoutProps {
@@ -74,6 +80,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
+        <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
         <style dangerouslySetInnerHTML={{
           __html: `
             /* Hide Next.js dev portal elements that interfere with UI */
@@ -106,7 +113,8 @@ export default function RootLayout({ children }: RootLayoutProps) {
         className={cn(
           "min-h-screen bg-background font-sans antialiased",
           fontSans.variable,
-          fontPixel.variable
+          fontPixel.variable,
+          fontMono.variable
         )}
       >
         <ThemeProvider
