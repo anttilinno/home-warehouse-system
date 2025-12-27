@@ -64,6 +64,8 @@ def _inventory(**overrides) -> SimpleNamespace:
         "item_id": uuid7(),
         "location_id": uuid7(),
         "quantity": 5,
+        "expiration_date": None,
+        "warranty_expires": None,
         "created_at": datetime.datetime(2024, 1, 1, 0, 0, 0),
         "updated_at": datetime.datetime(2024, 1, 2, 0, 0, 0),
     }

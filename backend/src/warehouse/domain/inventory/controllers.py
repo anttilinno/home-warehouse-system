@@ -55,6 +55,8 @@ class InventoryController(Controller):
             item_id=inventory.item_id,
             location_id=inventory.location_id,
             quantity=inventory.quantity,
+            expiration_date=inventory.expiration_date,
+            warranty_expires=inventory.warranty_expires,
             created_at=inventory.created_at,
             updated_at=inventory.updated_at,
         )
@@ -75,6 +77,8 @@ class InventoryController(Controller):
                 item_id=i.item_id,
                 location_id=i.location_id,
                 quantity=i.quantity,
+                expiration_date=i.expiration_date,
+                warranty_expires=i.warranty_expires,
                 created_at=i.created_at,
                 updated_at=i.updated_at,
             )
@@ -100,6 +104,8 @@ class InventoryController(Controller):
             item_id=inventory.item_id,
             location_id=inventory.location_id,
             quantity=inventory.quantity,
+            expiration_date=inventory.expiration_date,
+            warranty_expires=inventory.warranty_expires,
             created_at=inventory.created_at,
             updated_at=inventory.updated_at,
         )
@@ -125,6 +131,8 @@ class InventoryController(Controller):
             item_id=inventory.item_id,
             location_id=inventory.location_id,
             quantity=inventory.quantity,
+            expiration_date=inventory.expiration_date,
+            warranty_expires=inventory.warranty_expires,
             created_at=inventory.created_at,
             updated_at=inventory.updated_at,
         )
@@ -150,6 +158,8 @@ class InventoryController(Controller):
             item_id=inventory.item_id,
             location_id=inventory.location_id,
             quantity=inventory.quantity,
+            expiration_date=inventory.expiration_date,
+            warranty_expires=inventory.warranty_expires,
             created_at=inventory.created_at,
             updated_at=inventory.updated_at,
         )

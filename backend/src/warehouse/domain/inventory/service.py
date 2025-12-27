@@ -31,6 +31,8 @@ class InventoryService:
             item_id=inventory_data.item_id,
             location_id=inventory_data.location_id,
             quantity=inventory_data.quantity,
+            expiration_date=inventory_data.expiration_date,
+            warranty_expires=inventory_data.warranty_expires,
         )
         inventory = await self.repository.add(inventory)
         await self.repository.session.commit()
@@ -69,7 +71,12 @@ class InventoryService:
         if not inventory:
             raise AppError(ErrorCode.INVENTORY_NOT_FOUND, status_code=404)
 
-        inventory.quantity = inventory_data.quantity
+        if inventory_data.quantity is not None:
+            inventory.quantity = inventory_data.quantity
+        if inventory_data.expiration_date is not None:
+            inventory.expiration_date = inventory_data.expiration_date
+        if inventory_data.warranty_expires is not None:
+            inventory.warranty_expires = inventory_data.warranty_expires
         inventory.updated_at = datetime.now(UTC)
         inventory = await self.repository.update(inventory)
         await self.repository.session.commit()

@@ -1,6 +1,6 @@
 """Inventory domain schemas."""
 
-from datetime import datetime
+from datetime import date, datetime
 from uuid import UUID
 
 import msgspec
@@ -12,12 +12,16 @@ class InventoryCreate(msgspec.Struct):
     item_id: UUID
     location_id: UUID
     quantity: int = 0
+    expiration_date: date | None = None
+    warranty_expires: date | None = None
 
 
 class InventoryUpdate(msgspec.Struct):
     """Schema for updating inventory."""
 
-    quantity: int
+    quantity: int | None = None
+    expiration_date: date | None = None
+    warranty_expires: date | None = None
 
 
 class StockAdjustment(msgspec.Struct):
@@ -33,6 +37,8 @@ class InventoryResponse(msgspec.Struct):
     item_id: UUID
     location_id: UUID
     quantity: int
+    expiration_date: date | None
+    warranty_expires: date | None
     created_at: datetime
     updated_at: datetime
 
