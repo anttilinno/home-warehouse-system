@@ -12,6 +12,7 @@ export interface User {
   full_name: string;
   is_active: boolean;
   date_format: string;
+  language: string;
   created_at: string;
   updated_at: string;
 }
@@ -20,6 +21,7 @@ export interface ProfileUpdate {
   full_name?: string | null;
   email?: string;
   date_format?: string;
+  language?: string;
 }
 
 export interface PasswordChange {
@@ -222,6 +224,7 @@ export const authApi = {
     email: string;
     full_name: string;
     password: string;
+    language?: string;
   }) => {
     return apiClient.post('/auth/register', userData);
   },
@@ -236,6 +239,17 @@ export const authApi = {
 
   changePassword: async (data: PasswordChange): Promise<User> => {
     return apiClient.post<User>('/auth/me/password', data);
+  },
+
+  requestPasswordReset: async (email: string): Promise<{ message: string }> => {
+    return apiClient.post<{ message: string }>('/auth/password-reset/request', { email });
+  },
+
+  confirmPasswordReset: async (token: string, newPassword: string): Promise<{ message: string }> => {
+    return apiClient.post<{ message: string }>('/auth/password-reset/confirm', {
+      token,
+      new_password: newPassword,
+    });
   },
 };
 
@@ -428,6 +442,9 @@ export interface Item {
   category_id: string | null;
   created_at: string;
   updated_at: string;
+  obsidian_vault_path: string | null;
+  obsidian_note_path: string | null;
+  obsidian_url: string | null;
 }
 
 export interface ItemCreate {
@@ -435,12 +452,16 @@ export interface ItemCreate {
   name: string;
   description?: string | null;
   category_id?: string | null;
+  obsidian_vault_path?: string | null;
+  obsidian_note_path?: string | null;
 }
 
 export interface ItemUpdate {
   name?: string | null;
   description?: string | null;
   category_id?: string | null;
+  obsidian_vault_path?: string | null;
+  obsidian_note_path?: string | null;
 }
 
 export const itemsApi = {
@@ -956,6 +977,82 @@ export const exportApi = {
     a.click();
     document.body.removeChild(a);
     window.URL.revokeObjectURL(url);
+  },
+};
+
+// Import API
+export type EntityType = 'categories' | 'locations' | 'containers' | 'items' | 'borrowers' | 'inventory';
+
+export interface ImportError {
+  row: number;
+  field: string | null;
+  message: string;
+}
+
+export interface ImportResult {
+  entity_type: string;
+  total_rows: number;
+  created: number;
+  updated: number;
+  skipped: number;
+  errors: ImportError[];
+}
+
+export interface BarcodeProduct {
+  barcode: string;
+  name: string | null;
+  brand: string | null;
+  category: string | null;
+  description: string | null;
+  image_url: string | null;
+  source: string;
+}
+
+export interface BarcodeNotFound {
+  barcode: string;
+  found: false;
+  message: string;
+}
+
+export const importsApi = {
+  upload: async (file: File, entityType: EntityType): Promise<ImportResult> => {
+    const token = tokenStorage.getToken();
+    const workspaceId = workspaceStorage.getWorkspaceId();
+
+    if (!token || !workspaceId) {
+      throw new Error('Authentication required');
+    }
+
+    const formData = new FormData();
+    formData.append('data', file);
+    formData.append('entity_type', entityType);
+
+    const response = await fetch(`${API_BASE_URL}/imports/upload`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'X-Workspace-ID': workspaceId,
+      },
+      body: formData,
+    });
+
+    if (!response.ok) {
+      if (response.status === 401) {
+        tokenStorage.removeToken();
+        if (typeof window !== 'undefined') {
+          window.location.href = '/en/login';
+        }
+        throw new Error('Authentication required');
+      }
+      const errorData = await response.json().catch(() => ({ detail: 'Import failed' }));
+      throw new Error(errorData.detail || `HTTP ${response.status}`);
+    }
+
+    return response.json();
+  },
+
+  lookupBarcode: async (barcode: string): Promise<BarcodeProduct | BarcodeNotFound> => {
+    return apiClient.get<BarcodeProduct | BarcodeNotFound>(`/imports/barcode/${barcode}`);
   },
 };
 

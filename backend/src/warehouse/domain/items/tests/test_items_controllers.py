@@ -93,6 +93,8 @@ def _item(**overrides) -> SimpleNamespace:
         "category_id": uuid7(),
         "created_at": datetime.datetime(2024, 1, 2, 0, 0, 0),
         "updated_at": datetime.datetime(2024, 1, 3, 0, 0, 0),
+        "obsidian_vault_path": None,
+        "obsidian_note_path": None,
     }
     defaults.update(overrides)
     return SimpleNamespace(**defaults)

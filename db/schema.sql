@@ -1,4 +1,4 @@
-\restrict IrvZBWL577UpA5gLFu7Q5A5hEf0osdRt4kuliQ41zLZzYIjku6nbE01djQwThh1
+\restrict nRQYm9PnrzpFWoM5RUXsnp8LjxTT9nzDW8G489q964d0VJaqlfprV1gyTZ6ZAb8
 
 -- Dumped from database version 18.1 (Debian 18.1-1.pgdg13+2)
 -- Dumped by pg_dump version 18.1
@@ -188,6 +188,27 @@ COMMENT ON COLUMN auth.notifications.metadata IS 'Additional data like entity ID
 
 
 --
+-- Name: password_reset_tokens; Type: TABLE; Schema: auth; Owner: -
+--
+
+CREATE TABLE auth.password_reset_tokens (
+    id uuid DEFAULT uuidv7() NOT NULL,
+    user_id uuid NOT NULL,
+    token_hash character varying(64) NOT NULL,
+    expires_at timestamp with time zone NOT NULL,
+    used_at timestamp with time zone,
+    created_at timestamp with time zone DEFAULT now()
+);
+
+
+--
+-- Name: TABLE password_reset_tokens; Type: COMMENT; Schema: auth; Owner: -
+--
+
+COMMENT ON TABLE auth.password_reset_tokens IS 'Password reset tokens with expiration and one-time use';
+
+
+--
 -- Name: user_oauth_accounts; Type: TABLE; Schema: auth; Owner: -
 --
 
@@ -234,7 +255,8 @@ CREATE TABLE auth.users (
     is_superuser boolean DEFAULT false,
     created_at timestamp with time zone DEFAULT now(),
     updated_at timestamp with time zone DEFAULT now(),
-    date_format character varying(20) DEFAULT 'DD.MM.YYYY'::character varying
+    date_format character varying(20) DEFAULT 'DD.MM.YYYY'::character varying,
+    language character varying(5) DEFAULT 'en'::character varying NOT NULL
 );
 
 
@@ -602,7 +624,9 @@ CREATE TABLE warehouse.items (
     short_code character varying(8),
     search_vector tsvector GENERATED ALWAYS AS ((((setweight(to_tsvector('english'::regconfig, (COALESCE(name, ''::character varying))::text), 'A'::"char") || setweight(to_tsvector('english'::regconfig, (COALESCE(brand, ''::character varying))::text), 'B'::"char")) || setweight(to_tsvector('english'::regconfig, (COALESCE(model, ''::character varying))::text), 'B'::"char")) || setweight(to_tsvector('english'::regconfig, COALESCE(description, ''::text)), 'C'::"char"))) STORED,
     created_at timestamp with time zone DEFAULT now(),
-    updated_at timestamp with time zone DEFAULT now()
+    updated_at timestamp with time zone DEFAULT now(),
+    obsidian_vault_path character varying(500),
+    obsidian_note_path character varying(500)
 );
 
 
@@ -611,6 +635,20 @@ CREATE TABLE warehouse.items (
 --
 
 COMMENT ON COLUMN warehouse.items.short_code IS 'Short alphanumeric code for QR labels. Enables compact URLs for small label printers.';
+
+
+--
+-- Name: COLUMN items.obsidian_vault_path; Type: COMMENT; Schema: warehouse; Owner: -
+--
+
+COMMENT ON COLUMN warehouse.items.obsidian_vault_path IS 'Local path to Obsidian vault';
+
+
+--
+-- Name: COLUMN items.obsidian_note_path; Type: COMMENT; Schema: warehouse; Owner: -
+--
+
+COMMENT ON COLUMN warehouse.items.obsidian_note_path IS 'Relative path to note within vault';
 
 
 --
@@ -679,6 +717,14 @@ COMMENT ON COLUMN warehouse.locations.short_code IS 'Short alphanumeric code for
 
 ALTER TABLE ONLY auth.notifications
     ADD CONSTRAINT notifications_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: password_reset_tokens password_reset_tokens_pkey; Type: CONSTRAINT; Schema: auth; Owner: -
+--
+
+ALTER TABLE ONLY auth.password_reset_tokens
+    ADD CONSTRAINT password_reset_tokens_pkey PRIMARY KEY (id);
 
 
 --
@@ -1009,6 +1055,20 @@ CREATE INDEX ix_oauth_accounts_provider ON auth.user_oauth_accounts USING btree 
 --
 
 CREATE INDEX ix_oauth_accounts_user ON auth.user_oauth_accounts USING btree (user_id);
+
+
+--
+-- Name: ix_password_reset_tokens_hash; Type: INDEX; Schema: auth; Owner: -
+--
+
+CREATE INDEX ix_password_reset_tokens_hash ON auth.password_reset_tokens USING btree (token_hash);
+
+
+--
+-- Name: ix_password_reset_tokens_user; Type: INDEX; Schema: auth; Owner: -
+--
+
+CREATE INDEX ix_password_reset_tokens_user ON auth.password_reset_tokens USING btree (user_id);
 
 
 --
@@ -1354,6 +1414,14 @@ ALTER TABLE ONLY auth.notifications
 
 ALTER TABLE ONLY auth.notifications
     ADD CONSTRAINT notifications_workspace_id_fkey FOREIGN KEY (workspace_id) REFERENCES auth.workspaces(id) ON DELETE CASCADE;
+
+
+--
+-- Name: password_reset_tokens password_reset_tokens_user_id_fkey; Type: FK CONSTRAINT; Schema: auth; Owner: -
+--
+
+ALTER TABLE ONLY auth.password_reset_tokens
+    ADD CONSTRAINT password_reset_tokens_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE;
 
 
 --
@@ -1728,7 +1796,7 @@ ALTER TABLE ONLY warehouse.locations
 -- PostgreSQL database dump complete
 --
 
-\unrestrict IrvZBWL577UpA5gLFu7Q5A5hEf0osdRt4kuliQ41zLZzYIjku6nbE01djQwThh1
+\unrestrict nRQYm9PnrzpFWoM5RUXsnp8LjxTT9nzDW8G489q964d0VJaqlfprV1gyTZ6ZAb8
 
 
 --
@@ -1739,4 +1807,7 @@ INSERT INTO public.schema_migrations (version) VALUES
     ('001'),
     ('002'),
     ('20251223201614'),
-    ('20251227121316');
+    ('20251227121316'),
+    ('20251227142407'),
+    ('20251227143353'),
+    ('20251227173251');

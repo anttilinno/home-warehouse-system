@@ -12,6 +12,7 @@ class UserCreate(msgspec.Struct):
     email: str
     full_name: str
     password: str
+    language: str = "en"
 
 
 class UserResponse(msgspec.Struct):
@@ -22,6 +23,7 @@ class UserResponse(msgspec.Struct):
     full_name: str
     is_active: bool
     date_format: str
+    language: str
     created_at: datetime
     updated_at: datetime
 
@@ -59,6 +61,7 @@ class ProfileUpdate(msgspec.Struct):
     full_name: str | None = None
     email: str | None = None
     date_format: str | None = None
+    language: str | None = None
 
 
 class PasswordChange(msgspec.Struct):
@@ -99,4 +102,23 @@ class UserSearchResult(msgspec.Struct):
     id: str
     email: str
     full_name: str
+
+
+class PasswordResetRequest(msgspec.Struct):
+    """Schema for requesting password reset."""
+
+    email: str
+
+
+class PasswordResetConfirm(msgspec.Struct):
+    """Schema for confirming password reset with new password."""
+
+    token: str
+    new_password: str
+
+
+class MessageResponse(msgspec.Struct):
+    """Schema for simple message responses."""
+
+    message: str
 

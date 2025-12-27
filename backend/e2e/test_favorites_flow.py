@@ -223,16 +223,16 @@ async def test_favorites_remove_directly(client, test_workspace_id):
 
 
 @pytest.mark.asyncio
-async def test_favorites_requires_auth(client, test_workspace_id):
+async def test_favorites_requires_auth(unauth_client, test_workspace_id):
     """Test that favorites endpoints require authentication."""
     # List favorites without auth
-    resp = await client.get("/favorites/")
+    resp = await unauth_client.get("/favorites/")
     assert resp.status_code == 401
 
     # Toggle without auth
-    resp = await client.post(f"/favorites/toggle/ITEM/{uuid7()}")
+    resp = await unauth_client.post(f"/favorites/toggle/ITEM/{uuid7()}")
     assert resp.status_code == 401
 
     # Check without auth
-    resp = await client.get(f"/favorites/check/ITEM/{uuid7()}")
+    resp = await unauth_client.get(f"/favorites/check/ITEM/{uuid7()}")
     assert resp.status_code == 401

@@ -182,6 +182,7 @@ def test_schema_user_create_and_response():
         full_name="Alice Smith",
         is_active=True,
         date_format="DD.MM.YYYY HH:mm",
+        language="en",
         created_at=now,
         updated_at=now,
     )

@@ -1,15 +1,17 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter, Link, usePathname } from "@/navigation";
+import { useRouter, Link } from "@/navigation";
 import { Eye, EyeOff, Mail, Lock } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { authApi, getTranslatedErrorMessage } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
+import { type Locale } from "@/i18n";
 
 export default function LoginPage() {
   const t = useTranslations('auth');
   const te = useTranslations(); // For error translations
+  const currentLocale = useLocale() as Locale;
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -29,8 +31,14 @@ export default function LoginPage() {
       // Use auth context to handle login with user data and workspaces
       login(response.access_token, response.user, response.workspaces);
 
-      // Redirect to dashboard (next-intl will add current locale automatically)
-      router.push("/dashboard");
+      // Redirect to dashboard with user's preferred locale
+      const userLocale = (response.user.language || "en") as Locale;
+      if (userLocale !== currentLocale) {
+        // Switch to user's preferred language
+        router.replace("/dashboard", { locale: userLocale });
+      } else {
+        router.push("/dashboard");
+      }
     } catch (err) {
       console.error('Login error:', err);
 

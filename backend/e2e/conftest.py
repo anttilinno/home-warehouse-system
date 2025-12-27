@@ -71,47 +71,140 @@ async def test_workspace_id() -> str:
 
 
 class WorkspaceHeaderClient:
-    """Wrapper that adds X-Workspace-ID header to all requests."""
+    """Wrapper that adds X-Workspace-ID header to all requests (no auth)."""
 
     def __init__(self, client, workspace_id: str):
         self._client = client
         self._workspace_id = workspace_id
 
-    async def get(self, url: str, **kwargs):
+    def _merge_headers(self, kwargs):
+        """Merge workspace header with any provided headers."""
         headers = kwargs.pop("headers", {})
         headers["X-Workspace-ID"] = self._workspace_id
+        return headers
+
+    async def get(self, url: str, **kwargs):
+        headers = self._merge_headers(kwargs)
         return await self._client.get(url, headers=headers, **kwargs)
 
     async def post(self, url: str, **kwargs):
-        headers = kwargs.pop("headers", {})
-        headers["X-Workspace-ID"] = self._workspace_id
+        headers = self._merge_headers(kwargs)
         return await self._client.post(url, headers=headers, **kwargs)
 
     async def patch(self, url: str, **kwargs):
-        headers = kwargs.pop("headers", {})
-        headers["X-Workspace-ID"] = self._workspace_id
+        headers = self._merge_headers(kwargs)
         return await self._client.patch(url, headers=headers, **kwargs)
 
     async def delete(self, url: str, **kwargs):
-        headers = kwargs.pop("headers", {})
-        headers["X-Workspace-ID"] = self._workspace_id
+        headers = self._merge_headers(kwargs)
         return await self._client.delete(url, headers=headers, **kwargs)
 
     async def put(self, url: str, **kwargs):
-        headers = kwargs.pop("headers", {})
-        headers["X-Workspace-ID"] = self._workspace_id
+        headers = self._merge_headers(kwargs)
         return await self._client.put(url, headers=headers, **kwargs)
 
 
+class AuthenticatedWorkspaceClient:
+    """Wrapper that adds X-Workspace-ID and Authorization headers to all requests."""
+
+    def __init__(self, client, workspace_id: str, auth_token: str):
+        self._client = client
+        self._workspace_id = workspace_id
+        self._auth_token = auth_token
+
+    def _merge_headers(self, kwargs):
+        """Merge workspace and auth headers with any provided headers.
+
+        Explicitly provided headers take precedence over default ones.
+        """
+        headers = kwargs.pop("headers", {})
+        # Only set workspace ID if not explicitly provided
+        if "X-Workspace-ID" not in headers:
+            headers["X-Workspace-ID"] = self._workspace_id
+        # Only set Authorization if not explicitly provided
+        if "Authorization" not in headers:
+            headers["Authorization"] = f"Bearer {self._auth_token}"
+        return headers
+
+    async def get(self, url: str, **kwargs):
+        headers = self._merge_headers(kwargs)
+        return await self._client.get(url, headers=headers, **kwargs)
+
+    async def post(self, url: str, **kwargs):
+        headers = self._merge_headers(kwargs)
+        return await self._client.post(url, headers=headers, **kwargs)
+
+    async def patch(self, url: str, **kwargs):
+        headers = self._merge_headers(kwargs)
+        return await self._client.patch(url, headers=headers, **kwargs)
+
+    async def delete(self, url: str, **kwargs):
+        headers = self._merge_headers(kwargs)
+        return await self._client.delete(url, headers=headers, **kwargs)
+
+    async def put(self, url: str, **kwargs):
+        headers = self._merge_headers(kwargs)
+        return await self._client.put(url, headers=headers, **kwargs)
+
+
+async def _register_and_get_token(http_client, workspace_id: str) -> str:
+    """Register a test user, add them to the workspace, and return their JWT token."""
+    unique = uuid4().hex
+    email = f"e2e-{unique}@test.local"
+    password = "testpassword123"
+
+    # Register user
+    register_resp = await http_client.post(
+        "/auth/register",
+        json={"email": email, "full_name": f"E2E User {unique}", "password": password},
+    )
+    if register_resp.status_code != 201:
+        raise RuntimeError(f"Failed to register test user: {register_resp.text}")
+
+    user_id = register_resp.json()["id"]
+
+    # Login to get token
+    login_resp = await http_client.post(
+        "/auth/login",
+        json={"email": email, "password": password},
+    )
+    if login_resp.status_code not in (200, 201):
+        raise RuntimeError(f"Failed to login test user: {login_resp.text}")
+
+    token = login_resp.json()["access_token"]
+
+    # Add user to the test workspace with 'owner' role using raw SQL
+    db_url = os.environ.get("DATABASE_URL", DEFAULT_DB_URL)
+    engine = create_async_engine(db_url)
+    session_factory = async_sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
+
+    async with session_factory() as session:
+        await session.execute(
+            text("""
+                INSERT INTO auth.workspace_members (id, workspace_id, user_id, role)
+                VALUES (:id, :workspace_id, :user_id, 'owner')
+                ON CONFLICT (workspace_id, user_id) DO NOTHING
+            """),
+            {
+                "id": str(uuid4()),
+                "workspace_id": workspace_id,
+                "user_id": user_id,
+            },
+        )
+        await session.commit()
+
+    await engine.dispose()
+
+    return token
+
+
 @pytest_asyncio.fixture(scope="session")
-async def client(_remote_base_url: str | None, test_workspace_id: str):
+async def unauth_client(_remote_base_url: str | None, test_workspace_id: str):
     """
-    Use a real app against the real database.
+    Unauthenticated client for testing auth requirements.
 
-    - If E2E_BASE_URL is set, hit the running backend service.
-    - Otherwise, use the in-process ASGI app (still talking to the real DB via env DATABASE_URL).
-
-    All requests include the X-Workspace-ID header for multi-tenancy.
+    Only includes X-Workspace-ID header, no Authorization header.
+    Use this for tests that verify 401 responses.
     """
     _ensure_env()
 
@@ -123,3 +216,28 @@ async def client(_remote_base_url: str | None, test_workspace_id: str):
     else:
         async with AsyncTestClient(app=create_app()) as http_client:
             yield WorkspaceHeaderClient(http_client, test_workspace_id)
+
+
+@pytest_asyncio.fixture(scope="session")
+async def client(_remote_base_url: str | None, test_workspace_id: str):
+    """
+    Use a real app against the real database.
+
+    - If E2E_BASE_URL is set, hit the running backend service.
+    - Otherwise, use the in-process ASGI app (still talking to the real DB via env DATABASE_URL).
+
+    All requests include the X-Workspace-ID header and Authorization header for multi-tenancy
+    and authentication.
+    """
+    _ensure_env()
+
+    if _remote_base_url:
+        async with httpx.AsyncClient(
+            base_url=_remote_base_url, timeout=15.0
+        ) as http_client:
+            token = await _register_and_get_token(http_client, test_workspace_id)
+            yield AuthenticatedWorkspaceClient(http_client, test_workspace_id, token)
+    else:
+        async with AsyncTestClient(app=create_app()) as http_client:
+            token = await _register_and_get_token(http_client, test_workspace_id)
+            yield AuthenticatedWorkspaceClient(http_client, test_workspace_id, token)

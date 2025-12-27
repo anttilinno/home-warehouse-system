@@ -1,14 +1,17 @@
 """Authentication domain service."""
 
+import hashlib
 import re
+import secrets
 from datetime import UTC, datetime, timedelta
 from uuid import UUID
 
 import jwt
 from passlib.context import CryptContext
+from sqlalchemy import select
 
 from warehouse.config import Config
-from warehouse.domain.auth.models import User, Workspace, WorkspaceMember, WorkspaceRole
+from warehouse.domain.auth.models import PasswordResetToken, User, Workspace, WorkspaceMember, WorkspaceRole
 from warehouse.domain.auth.repository import UserRepository, WorkspaceRepository, WorkspaceMemberRepository
 from warehouse.domain.auth.schemas import LoginRequest, UserCreate, WorkspaceCreate, WorkspaceMemberInvite, WorkspaceMemberResponse, WorkspaceResponse
 from warehouse.errors import AppError, ErrorCode
@@ -61,6 +64,7 @@ class AuthService:
             email=user_data.email,
             full_name=user_data.full_name,
             password_hash=hashed_password,
+            language=user_data.language,
         )
         user = await self.repository.add(user)
 
@@ -169,6 +173,7 @@ class AuthService:
         full_name: str | None = None,
         email: str | None = None,
         date_format: str | None = None,
+        language: str | None = None,
     ) -> User:
         """Update user profile fields."""
         user = await self.repository.get_one_or_none(id=user_id)
@@ -186,6 +191,9 @@ class AuthService:
 
         if date_format is not None:
             user.date_format = date_format
+
+        if language is not None:
+            user.language = language
 
         user.updated_at = datetime.now(UTC).replace(tzinfo=None)
         await self.repository.session.commit()
@@ -434,4 +442,72 @@ class AuthService:
         # Delete membership
         await self.workspace_member_repository.delete(member_id)
         await self.repository.session.commit()
+
+    async def request_password_reset(self, email: str) -> tuple[str, str] | None:
+        """Generate a password reset token for the user.
+
+        Args:
+            email: User's email address
+
+        Returns:
+            Tuple of (reset token, user language) if user exists, None otherwise
+        """
+        user = await self.repository.get_by_email(email)
+        if not user:
+            return None
+
+        # Generate a secure random token
+        token = secrets.token_urlsafe(32)
+        token_hash = hashlib.sha256(token.encode()).hexdigest()
+        expires_at = datetime.now(UTC) + timedelta(hours=1)
+
+        # Store the token hash in the database
+        reset_token = PasswordResetToken(
+            user_id=user.id,
+            token_hash=token_hash,
+            expires_at=expires_at,
+        )
+        self.repository.session.add(reset_token)
+        await self.repository.session.commit()
+
+        return (token, user.language)
+
+    async def reset_password(self, token: str, new_password: str) -> bool:
+        """Reset user password using a reset token.
+
+        Args:
+            token: The reset token received via email
+            new_password: The new password to set
+
+        Returns:
+            True if password was reset successfully, False otherwise
+        """
+        token_hash = hashlib.sha256(token.encode()).hexdigest()
+
+        # Find valid token
+        stmt = (
+            select(PasswordResetToken)
+            .where(PasswordResetToken.token_hash == token_hash)
+            .where(PasswordResetToken.expires_at > datetime.now(UTC))
+            .where(PasswordResetToken.used_at.is_(None))
+        )
+        result = await self.repository.session.execute(stmt)
+        reset_token = result.scalar_one_or_none()
+
+        if not reset_token:
+            return False
+
+        # Get user and update password
+        user = await self.repository.get_one_or_none(id=reset_token.user_id)
+        if not user:
+            return False
+
+        user.password_hash = self.hash_password(new_password)
+        user.updated_at = datetime.now(UTC).replace(tzinfo=None)
+
+        # Mark token as used
+        reset_token.used_at = datetime.now(UTC)
+
+        await self.repository.session.commit()
+        return True
 

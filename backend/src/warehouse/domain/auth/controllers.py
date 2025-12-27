@@ -13,7 +13,10 @@ from warehouse.config import Config
 from warehouse.domain.auth.repository import UserRepository, WorkspaceRepository, WorkspaceMemberRepository
 from warehouse.domain.auth.schemas import (
     LoginRequest,
+    MessageResponse,
     PasswordChange,
+    PasswordResetConfirm,
+    PasswordResetRequest,
     ProfileUpdate,
     TokenResponse,
     UserCreate,
@@ -24,6 +27,7 @@ from warehouse.domain.auth.schemas import (
     WorkspaceMemberResponse,
     WorkspaceResponse,
 )
+from warehouse.domain.email.service import EmailService
 from warehouse.domain.auth.service import AuthService
 from warehouse.domain.notifications.repository import NotificationRepository
 from warehouse.domain.notifications.service import NotificationService
@@ -49,6 +53,11 @@ def get_notification_service(db_session: AsyncSession) -> NotificationService:
     return NotificationService(notification_repository)
 
 
+def get_email_service(config: Config) -> EmailService:
+    """Dependency for email service."""
+    return EmailService(config)
+
+
 class AuthController(Controller):
     """Authentication controller."""
 
@@ -56,6 +65,7 @@ class AuthController(Controller):
     dependencies = {
         "auth_service": Provide(get_auth_service, sync_to_thread=False),
         "notification_service": Provide(get_notification_service, sync_to_thread=False),
+        "email_service": Provide(get_email_service, sync_to_thread=False),
     }
 
     @post("/register", status_code=HTTP_201_CREATED)
@@ -73,6 +83,7 @@ class AuthController(Controller):
             full_name=user.full_name,
             is_active=user.is_active,
             date_format=user.date_format,
+            language=user.language,
             created_at=user.created_at,
             updated_at=user.updated_at,
         )
@@ -92,6 +103,7 @@ class AuthController(Controller):
             full_name=user.full_name,
             is_active=user.is_active,
             date_format=user.date_format,
+            language=user.language,
             created_at=user.created_at,
             updated_at=user.updated_at,
         )
@@ -113,6 +125,7 @@ class AuthController(Controller):
             full_name=user.full_name,
             is_active=user.is_active,
             date_format=user.date_format,
+            language=user.language,
             created_at=user.created_at,
             updated_at=user.updated_at,
         )
@@ -124,7 +137,11 @@ class AuthController(Controller):
         try:
             user = await auth_service.get_current_user(token)
             user = await auth_service.update_profile(
-                user.id, full_name=data.full_name, email=data.email, date_format=data.date_format
+                user.id,
+                full_name=data.full_name,
+                email=data.email,
+                date_format=data.date_format,
+                language=data.language,
             )
         except AppError as exc:
             raise exc.to_http_exception()
@@ -135,6 +152,7 @@ class AuthController(Controller):
             full_name=user.full_name,
             is_active=user.is_active,
             date_format=user.date_format,
+            language=user.language,
             created_at=user.created_at,
             updated_at=user.updated_at,
         )
@@ -155,6 +173,7 @@ class AuthController(Controller):
             full_name=user.full_name,
             is_active=user.is_active,
             date_format=user.date_format,
+            language=user.language,
             created_at=user.created_at,
             updated_at=user.updated_at,
         )
@@ -213,6 +232,7 @@ class AuthController(Controller):
         data: WorkspaceMemberInvite,
         auth_service: AuthService,
         notification_service: NotificationService,
+        email_service: EmailService,
     ) -> WorkspaceMemberResponse:
         """Invite a user to a workspace."""
         token = self._extract_token(request)
@@ -224,13 +244,20 @@ class AuthController(Controller):
             if auth_service.workspace_repository:
                 workspace = await auth_service.workspace_repository.get_one_or_none(id=workspace_id)
                 if workspace:
-                    # Send notification to the invited user
+                    # Send in-app notification to the invited user
                     await notification_service.send_workspace_invite_notification(
                         user_id=member.user_id,
                         workspace_id=workspace_id,
                         workspace_name=workspace.name,
                         role=member.role,
                         invited_by_name=inviter.full_name,
+                    )
+                    # Send email notification
+                    await email_service.send_workspace_invite(
+                        to=data.email,
+                        inviter_name=inviter.full_name,
+                        workspace_name=workspace.name,
+                        role=member.role,
                     )
         except AppError as exc:
             raise exc.to_http_exception()
@@ -257,6 +284,43 @@ class AuthController(Controller):
         try:
             user = await auth_service.get_current_user(token)
             await auth_service.remove_member(workspace_id, member_id, user.id)
+        except AppError as exc:
+            raise exc.to_http_exception()
+
+    @post("/password-reset/request")
+    async def request_password_reset(
+        self,
+        data: PasswordResetRequest,
+        auth_service: AuthService,
+        email_service: EmailService,
+        config: Config,
+    ) -> MessageResponse:
+        """Request a password reset email.
+
+        Always returns success message to prevent email enumeration.
+        """
+        result = await auth_service.request_password_reset(data.email)
+
+        if result:
+            token, language = result
+            # Build reset URL using user's preferred language for locale prefix
+            reset_url = f"{config.app_url}/{language}/reset-password?token={token}"
+            await email_service.send_password_reset(data.email, reset_url, language)
+
+        # Always return success to prevent email enumeration
+        return MessageResponse(message="If an account exists with this email, a reset link has been sent.")
+
+    @post("/password-reset/confirm")
+    async def confirm_password_reset(
+        self, data: PasswordResetConfirm, auth_service: AuthService
+    ) -> MessageResponse:
+        """Confirm password reset with token and new password."""
+        try:
+            success = await auth_service.reset_password(data.token, data.new_password)
+            if success:
+                return MessageResponse(message="Password has been reset successfully.")
+            else:
+                raise AppError(ErrorCode.AUTH_INVALID_TOKEN, "Invalid or expired reset token", status_code=400)
         except AppError as exc:
             raise exc.to_http_exception()
 

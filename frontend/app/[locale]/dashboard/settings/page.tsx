@@ -1,6 +1,6 @@
 "use client";
 
-import { useTransition, useCallback } from "react";
+import { useCallback } from "react";
 import { Icon } from "@/components/icons";
 import type * as LucideIcons from "lucide-react";
 
@@ -8,17 +8,8 @@ type IconName = keyof typeof LucideIcons;
 import { useAuth } from "@/lib/auth";
 import { useTranslations } from "next-intl";
 import { useTheme } from "next-themes";
-import { locales, type Locale } from "@/i18n";
-import { usePathname, useRouter } from "@/navigation";
-import { useLocale } from "next-intl";
 import { useEffect, useState } from "react";
 import { workspacesApi, WorkspaceMember, UserSearchResult, getTranslatedErrorMessage } from "@/lib/api";
-
-const languageNames: Record<Locale, string> = {
-  en: "English",
-  et: "Eesti",
-  ru: "Русский",
-};
 
 const themeOptions: { value: string; iconName: IconName; labelKey: string }[] = [
   { value: "light", iconName: "Sun", labelKey: "themeLight" },
@@ -38,11 +29,7 @@ export default function SettingsPage() {
   const { isAuthenticated, isLoading: authLoading, currentWorkspace, workspaces, setCurrentWorkspace, refreshWorkspaces } = useAuth();
   const t = useTranslations("settings");
   const tErrors = useTranslations();
-  const { theme, setTheme, resolvedTheme } = useTheme();
-  const router = useRouter();
-  const pathname = usePathname();
-  const locale = useLocale() as Locale;
-  const [isPending, startTransition] = useTransition();
+  const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
   // Workspace creation modal state
@@ -86,12 +73,6 @@ export default function SettingsPage() {
   useEffect(() => {
     setMounted(true);
   }, []);
-
-  const switchLanguage = (newLocale: Locale) => {
-    startTransition(() => {
-      router.replace(pathname, { locale: newLocale });
-    });
-  };
 
   const handleWorkspaceChange = (workspaceId: string) => {
     const workspace = workspaces.find((w) => w.id === workspaceId);
@@ -308,46 +289,6 @@ export default function SettingsPage() {
                   <Icon name={themeOption.iconName} className={`w-6 h-6 ${isActive ? "text-primary" : "text-muted-foreground"}`} />
                   <span className={`text-sm font-medium text-center ${isActive ? "text-primary" : "text-foreground"}`}>
                     {t(themeOption.labelKey)}
-                  </span>
-                  {isActive && (
-                    <Icon name="Check" className="w-4 h-4 text-primary" />
-                  )}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Language */}
-        <div className="bg-card p-6 rounded-lg border shadow-sm">
-          <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
-            <Icon name="Globe" className="w-5 h-5" />
-            {t("language")}
-          </h3>
-          <p className="text-sm text-muted-foreground mb-4">
-            {t("languageDescription")}
-          </p>
-
-          <div className="grid grid-cols-3 gap-3">
-            {locales.map((l) => {
-              const isActive = locale === l;
-
-              return (
-                <button
-                  key={l}
-                  onClick={() => switchLanguage(l)}
-                  disabled={isPending}
-                  className={`flex flex-col items-center gap-2 p-4 rounded-lg border-2 transition-colors disabled:opacity-50 ${
-                    isActive
-                      ? "border-primary bg-primary/5"
-                      : "border-border hover:border-primary/50"
-                  }`}
-                >
-                  <span className={`text-lg font-medium ${isActive ? "text-primary" : "text-foreground"}`}>
-                    {l.toUpperCase()}
-                  </span>
-                  <span className={`text-sm ${isActive ? "text-primary" : "text-muted-foreground"}`}>
-                    {languageNames[l]}
                   </span>
                   {isActive && (
                     <Icon name="Check" className="w-4 h-4 text-primary" />

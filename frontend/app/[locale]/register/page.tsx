@@ -3,15 +3,17 @@
 import { useState } from "react";
 import { useRouter, Link } from "@/navigation";
 import { Eye, EyeOff, Mail, Lock, User, UserCheck, Check, X } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { authApi, getTranslatedErrorMessage } from "@/lib/api";
 import { checkPasswordStrength, PasswordStrength, useAuth } from "@/lib/auth";
+import { type Locale } from "@/i18n";
 
 export default function RegisterPage() {
   const t = useTranslations('auth');
   const tv = useTranslations('validation');
   const te = useTranslations(); // For error translations
   const tp = useTranslations('passwordStrength');
+  const currentLocale = useLocale() as Locale;
 
   const [formData, setFormData] = useState({
     firstName: "",
@@ -70,11 +72,12 @@ export default function RegisterPage() {
     setIsLoading(true);
 
     try {
-      // Register the user
+      // Register the user with current locale as their preferred language
       await authApi.register({
         email: formData.email,
         full_name: `${formData.firstName} ${formData.lastName}`.trim(),
         password: formData.password,
+        language: currentLocale,
       });
 
       // Show redirecting state
@@ -86,7 +89,7 @@ export default function RegisterPage() {
       // Use auth context to handle login with workspaces
       login(loginResponse.access_token, loginResponse.user, loginResponse.workspaces);
 
-      // Redirect to dashboard
+      // Redirect to dashboard (stay in current locale since we just registered with it)
       router.push("/dashboard");
     } catch (err) {
       console.error('Registration error:', err);

@@ -26,6 +26,7 @@ from warehouse.domain.inventory.controllers import InventoryController
 from warehouse.domain.loans.controllers import BorrowerController, LoanController
 from warehouse.domain.analytics.controllers import AnalyticsController
 from warehouse.domain.favorites.controllers import FavoriteController
+from warehouse.domain.imports.controllers import ImportController
 from warehouse.domain.notifications.controllers import NotificationController
 
 logger = logging.getLogger(__name__)
@@ -131,6 +132,7 @@ def create_app(config: Config | None = None) -> Litestar:
             ExportController,
             CategoryController,
             FavoriteController,
+            ImportController,
             ItemController,
             LocationController,
             InventoryController,

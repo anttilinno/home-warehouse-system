@@ -39,6 +39,8 @@ class ItemCreate(msgspec.Struct):
     name: str
     description: str | None = None
     category_id: UUID | None = None
+    obsidian_vault_path: str | None = None
+    obsidian_note_path: str | None = None
 
 
 class ItemUpdate(msgspec.Struct):
@@ -47,6 +49,8 @@ class ItemUpdate(msgspec.Struct):
     name: str | None = None
     description: str | None = None
     category_id: UUID | None = None
+    obsidian_vault_path: str | None = None
+    obsidian_note_path: str | None = None
 
 
 class ItemResponse(msgspec.Struct):
@@ -59,4 +63,7 @@ class ItemResponse(msgspec.Struct):
     category_id: UUID | None
     created_at: datetime
     updated_at: datetime
+    obsidian_vault_path: str | None = None
+    obsidian_note_path: str | None = None
+    obsidian_url: str | None = None
 

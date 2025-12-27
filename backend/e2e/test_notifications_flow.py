@@ -121,18 +121,18 @@ async def test_notifications_mark_as_read_endpoint_exists(client, test_workspace
 
 
 @pytest.mark.asyncio
-async def test_notifications_without_auth(client):
+async def test_notifications_without_auth(unauth_client):
     """Test that notifications endpoints require authentication."""
     # Get notifications without token
-    resp = await client.get("/notifications/")
+    resp = await unauth_client.get("/notifications/")
     assert resp.status_code == 401
 
     # Get unread count without token
-    resp = await client.get("/notifications/unread-count")
+    resp = await unauth_client.get("/notifications/unread-count")
     assert resp.status_code == 401
 
     # Mark as read without token
-    resp = await client.post(
+    resp = await unauth_client.post(
         "/notifications/mark-read",
         json={"notification_ids": None},
     )
@@ -140,9 +140,9 @@ async def test_notifications_without_auth(client):
 
 
 @pytest.mark.asyncio
-async def test_notifications_with_invalid_token(client):
+async def test_notifications_with_invalid_token(unauth_client):
     """Test that notifications endpoints reject invalid tokens."""
-    resp = await client.get(
+    resp = await unauth_client.get(
         "/notifications/",
         headers={"Authorization": "Bearer invalid-token"},
     )

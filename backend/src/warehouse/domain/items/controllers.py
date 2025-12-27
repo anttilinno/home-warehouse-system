@@ -17,7 +17,7 @@ from warehouse.domain.items.schemas import (
     ItemResponse,
     ItemUpdate,
 )
-from warehouse.domain.items.service import CategoryService, ItemService
+from warehouse.domain.items.service import CategoryService, ItemService, item_to_response
 from warehouse.errors import AppError
 from warehouse.lib.workspace import WorkspaceContext, get_workspace_context, require_write_permission
 
@@ -141,15 +141,7 @@ class ItemController(Controller):
             item = await item_service.create_item(data, workspace.workspace_id)
         except AppError as exc:
             raise exc.to_http_exception()
-        return ItemResponse(
-            id=item.id,
-            sku=item.sku,
-            name=item.name,
-            description=item.description,
-            category_id=item.category_id,
-            created_at=item.created_at,
-            updated_at=item.updated_at,
-        )
+        return item_to_response(item)
 
     @get("/")
     async def list_items(
@@ -159,18 +151,7 @@ class ItemController(Controller):
     ) -> list[ItemResponse]:
         """List all items."""
         items = await item_service.get_all_items(workspace.workspace_id)
-        return [
-            ItemResponse(
-                id=i.id,
-                sku=i.sku,
-                name=i.name,
-                description=i.description,
-                category_id=i.category_id,
-                created_at=i.created_at,
-                updated_at=i.updated_at,
-            )
-            for i in items
-        ]
+        return [item_to_response(i) for i in items]
 
     @get("/{item_id:uuid}")
     async def get_item(
@@ -184,15 +165,7 @@ class ItemController(Controller):
             item = await item_service.get_item(item_id, workspace.workspace_id)
         except AppError as exc:
             raise exc.to_http_exception()
-        return ItemResponse(
-            id=item.id,
-            sku=item.sku,
-            name=item.name,
-            description=item.description,
-            category_id=item.category_id,
-            created_at=item.created_at,
-            updated_at=item.updated_at,
-        )
+        return item_to_response(item)
 
     @patch("/{item_id:uuid}")
     async def update_item(
@@ -208,15 +181,7 @@ class ItemController(Controller):
             item = await item_service.update_item(item_id, data, workspace.workspace_id)
         except AppError as exc:
             raise exc.to_http_exception()
-        return ItemResponse(
-            id=item.id,
-            sku=item.sku,
-            name=item.name,
-            description=item.description,
-            category_id=item.category_id,
-            created_at=item.created_at,
-            updated_at=item.updated_at,
-        )
+        return item_to_response(item)
 
     @delete("/{item_id:uuid}")
     async def delete_item(

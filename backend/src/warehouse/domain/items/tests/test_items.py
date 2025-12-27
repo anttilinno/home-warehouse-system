@@ -84,6 +84,8 @@ def sample_item(sample_category: Category, workspace_id: UUID) -> Item:
         category_id=sample_category.id,
         created_at=datetime.datetime(2024, 1, 2, 0, 0, 0),
         updated_at=datetime.datetime(2024, 1, 3, 0, 0, 0),
+        obsidian_vault_path=None,
+        obsidian_note_path=None,
     )
 
 

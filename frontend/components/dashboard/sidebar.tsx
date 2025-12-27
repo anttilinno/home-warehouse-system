@@ -102,6 +102,12 @@ export function Sidebar({ className }: SidebarProps) {
     },
     {
       type: 'item',
+      name: t('import'),
+      href: "/dashboard/import",
+      iconName: "Upload",
+    },
+    {
+      type: 'item',
       name: t('settings'),
       href: "/dashboard/settings",
       iconName: "Settings",

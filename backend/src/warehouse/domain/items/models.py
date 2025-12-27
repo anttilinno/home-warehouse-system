@@ -41,6 +41,8 @@ class Item(Base, UUIDPKMixin, WorkspaceMixin, TimestampMixin):
     sku: Mapped[str] = mapped_column(String(50), nullable=False)
     name: Mapped[str] = mapped_column(String(200), nullable=False)
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
+    obsidian_vault_path: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    obsidian_note_path: Mapped[str | None] = mapped_column(String(500), nullable=True)
     category_id: Mapped[UUID | None] = mapped_column(
         ForeignKey("warehouse.categories.id"), nullable=True
     )

@@ -21,6 +21,7 @@ import {
   Tag,
   Archive,
   Copy,
+  FileText,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { CategorySelect } from "@/components/ui/category-select";
@@ -217,6 +218,15 @@ export default function ItemsPage() {
                         size="sm"
                         className="p-1.5"
                       />
+                      {item.obsidian_url && (
+                        <a
+                          href={item.obsidian_url}
+                          title={t("openInObsidian")}
+                          className="p-1.5 rounded hover:bg-muted transition-colors"
+                        >
+                          <FileText className="w-4 h-4 text-purple-500 hover:text-purple-600" />
+                        </a>
+                      )}
                       {canEdit && (
                         <>
                           <button
@@ -336,6 +346,8 @@ function CreateEditModal({
     name: "",
     description: null,
     category_id: null,
+    obsidian_vault_path: null,
+    obsidian_note_path: null,
   });
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -348,6 +360,8 @@ function CreateEditModal({
         name: item.name,
         description: item.description,
         category_id: item.category_id,
+        obsidian_vault_path: item.obsidian_vault_path,
+        obsidian_note_path: item.obsidian_note_path,
       });
     } else if (template) {
       // Duplicate mode - pre-fill from template
@@ -356,6 +370,8 @@ function CreateEditModal({
         name: `${template.name} (Copy)`,
         description: template.description,
         category_id: template.category_id,
+        obsidian_vault_path: template.obsidian_vault_path,
+        obsidian_note_path: template.obsidian_note_path,
       });
     } else {
       // Create mode
@@ -364,6 +380,8 @@ function CreateEditModal({
         name: "",
         description: null,
         category_id: null,
+        obsidian_vault_path: null,
+        obsidian_note_path: null,
       });
     }
     setError(null);
@@ -386,6 +404,8 @@ function CreateEditModal({
           name: formData.name,
           description: formData.description,
           category_id: formData.category_id,
+          obsidian_vault_path: formData.obsidian_vault_path,
+          obsidian_note_path: formData.obsidian_note_path,
         };
         await itemsApi.update(item.id, updateData);
       } else {
@@ -496,6 +516,50 @@ function CreateEditModal({
               rows={3}
               className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent resize-none"
             />
+          </div>
+
+          {/* Obsidian Integration */}
+          <div className="border-t pt-4 mt-4">
+            <div className="flex items-center gap-2 mb-3">
+              <FileText className="w-4 h-4 text-purple-500" />
+              <span className="text-sm font-medium text-foreground">{t("obsidianIntegration")}</span>
+            </div>
+            <div className="space-y-3">
+              <div>
+                <label className="block text-sm font-medium text-muted-foreground mb-1">
+                  {t("obsidianVaultPath")}
+                </label>
+                <input
+                  type="text"
+                  value={formData.obsidian_vault_path || ""}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      obsidian_vault_path: e.target.value || null,
+                    }))
+                  }
+                  placeholder={t("obsidianVaultPlaceholder")}
+                  className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm font-mono"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-muted-foreground mb-1">
+                  {t("obsidianNotePath")}
+                </label>
+                <input
+                  type="text"
+                  value={formData.obsidian_note_path || ""}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      obsidian_note_path: e.target.value || null,
+                    }))
+                  }
+                  placeholder={t("obsidianNotePlaceholder")}
+                  className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm font-mono"
+                />
+              </div>
+            </div>
           </div>
 
           <div className="flex justify-end gap-3 pt-4">

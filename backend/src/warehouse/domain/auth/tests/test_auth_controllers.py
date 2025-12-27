@@ -50,6 +50,7 @@ async def test_register_maps_response(controller: AuthController, auth_service_m
         full_name="Alice Smith",
         is_active=True,
         date_format="DD.MM.YYYY HH:mm",
+        language="en",
         created_at=now,
         updated_at=now,
     )
@@ -76,6 +77,7 @@ async def test_login_success(controller: AuthController, auth_service_mock: Asyn
         full_name="Alice Smith",
         is_active=True,
         date_format="DD.MM.YYYY HH:mm",
+        language="en",
         created_at=now,
         updated_at=now,
     )
@@ -119,6 +121,7 @@ def _make_user_response():
         full_name="Alice Smith",
         is_active=True,
         date_format="DD.MM.YYYY HH:mm",
+        language="en",
         created_at=now,
         updated_at=now,
     )
@@ -166,7 +169,7 @@ async def test_update_me_success(controller: AuthController, auth_service_mock: 
     )
 
     auth_service_mock.update_profile.assert_awaited_once_with(
-        user.id, full_name="Alice Johnson", email=None, date_format=None
+        user.id, full_name="Alice Johnson", email=None, date_format=None, language=None
     )
     assert resp.full_name == "Alice Johnson"
 
@@ -290,6 +293,7 @@ async def test_invite_member_success(controller: AuthController, auth_service_mo
     auth_service_mock.workspace_repository = None  # Skip notification for simplicity
 
     notification_service_mock = AsyncMock()
+    email_service_mock = AsyncMock()
     request = _make_request_mock()
     data = WorkspaceMemberInvite(email="bob@example.com", role="member")
 
@@ -301,6 +305,7 @@ async def test_invite_member_success(controller: AuthController, auth_service_mo
         data=data,
         auth_service=auth_service_mock,
         notification_service=notification_service_mock,
+        email_service=email_service_mock,
     )
 
     auth_service_mock.invite_member.assert_awaited_once_with(workspace_id, inviter.id, data)
@@ -310,7 +315,7 @@ async def test_invite_member_success(controller: AuthController, auth_service_mo
 
 @pytest.mark.asyncio
 async def test_invite_member_sends_notification(controller: AuthController, auth_service_mock: AsyncMock):
-    """Test invite_member sends notification when workspace found."""
+    """Test invite_member sends notification and email when workspace found."""
     inviter = _make_user_response()
     workspace_id = uuid7()
     now = datetime.now(UTC)
@@ -330,6 +335,7 @@ async def test_invite_member_sends_notification(controller: AuthController, auth
     auth_service_mock.workspace_repository.get_one_or_none.return_value = workspace
 
     notification_service_mock = AsyncMock()
+    email_service_mock = AsyncMock()
     request = _make_request_mock()
     data = WorkspaceMemberInvite(email="bob@example.com", role="admin")
 
@@ -341,6 +347,7 @@ async def test_invite_member_sends_notification(controller: AuthController, auth
         data=data,
         auth_service=auth_service_mock,
         notification_service=notification_service_mock,
+        email_service=email_service_mock,
     )
 
     notification_service_mock.send_workspace_invite_notification.assert_awaited_once()
@@ -348,6 +355,14 @@ async def test_invite_member_sends_notification(controller: AuthController, auth
     assert call_kwargs["user_id"] == invited_member.user_id
     assert call_kwargs["workspace_name"] == "Test Workspace"
     assert call_kwargs["role"] == "admin"
+
+    # Also verify email was sent
+    email_service_mock.send_workspace_invite.assert_awaited_once_with(
+        to="bob@example.com",
+        inviter_name=inviter.full_name,
+        workspace_name="Test Workspace",
+        role="admin",
+    )
 
 
 # Error path tests for exception handling coverage
@@ -469,6 +484,7 @@ async def test_invite_member_error_raises(controller: AuthController, auth_servi
     auth_service_mock.get_current_user.return_value = inviter
     auth_service_mock.invite_member.side_effect = AppError(ErrorCode.WORKSPACE_PERMISSION_DENIED, status_code=403)
     notification_service_mock = AsyncMock()
+    email_service_mock = AsyncMock()
     request = _make_request_mock()
     workspace_id = uuid7()
     data = WorkspaceMemberInvite(email="bob@example.com", role="member")
@@ -482,6 +498,7 @@ async def test_invite_member_error_raises(controller: AuthController, auth_servi
             data=data,
             auth_service=auth_service_mock,
             notification_service=notification_service_mock,
+            email_service=email_service_mock,
         )
 
     assert exc_info.value.status_code == 403

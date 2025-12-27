@@ -202,32 +202,37 @@ Additional environment variables (see `backend/.env.example`):
   - Favorites: pin frequently accessed items/locations
   - Recently modified: quick view of recent changes
   - Location breadcrumbs: display "Garage → Shelf A → Box 3"
-- [ ] Bulk operations
+- [x] Bulk operations
   - CSV/Excel import for bulk adding items
   - Barcode lookup: scan product barcode → fetch info from Open Food Facts / UPC database
-  - Item templates: "Add another like this"
+  - Item duplicate: "Add another like this"
 - [ ] SSO authentication
   - Google, Facebook, GitHub OAuth providers
   - Link external accounts to existing users
-- [ ] Email notifications (Resend)
-  - Password reset, loan reminders, alerts
-  - 3,000 emails/month free tier
-- [ ] Obsidian integration
+- [x] Email notifications (Resend)
+  - Password reset (multi-language: EN, ET, RU)
+  - Loan reminders
+  - Multi-language email templates
+- [x] Obsidian integration
   - Link items to Obsidian notes (detailed descriptions, usage guides, project logs)
   - Store Obsidian vault path + note path in item metadata
   - Deep link to open note directly in Obsidian
+- [x] User language preference
+  - Language stored in database (profile page)
+  - Emails sent in user's preferred language
+  - Auto-redirect to user's language on login
 - [ ] Companion app for bar codes, QR codes. Adding and identifying container, items
 
 ### Phase 2
 
-- [ ] Tracking & alerts
-  - Total value: sum of purchase_price per location/workspace
-  - Activity log: who changed what, when. So there is no need for soft delete
-  - Consumables list: items needing restocking (quantity = 0)
-  - Low stock alerts: notify when quantity < threshold
-  - Expiration alerts: items expiring soon
-  - Warranty expiring: reminder before warranty ends
-  - Overdue loans: loans past due_date
+- [x] Tracking & alerts (partial)
+  - [x] Total value: sum of purchase_price per location/workspace
+  - [ ] Activity log: who changed what, when. So there is no need for soft delete
+  - [ ] Consumables list: items needing restocking (quantity = 0)
+  - [x] Low stock alerts: notify when quantity < threshold
+  - [x] Expiration alerts: items expiring soon (expiration_date field)
+  - [x] Warranty expiring: reminder before warranty ends (warranty_expires field)
+  - [x] Overdue loans: loans past due_date
 - [ ] Approval pipeline for member role
   - Members' create/update/delete operations require owner/admin approval
   - Pending changes table: entity type, action, JSON payload, requester, status

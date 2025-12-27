@@ -4,7 +4,7 @@ from datetime import datetime
 from enum import Enum
 from uuid import UUID
 
-from sqlalchemy import BigInteger, Boolean, Enum as SAEnum, ForeignKey, String, Text, func
+from sqlalchemy import BigInteger, Boolean, DateTime, Enum as SAEnum, ForeignKey, String, Text, func
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -51,6 +51,7 @@ class User(Base, UUIDPKMixin, TimestampMixin):
     password_hash: Mapped[str] = mapped_column(String(255), nullable=False)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
     date_format: Mapped[str] = mapped_column(String(30), default="DD.MM.YYYY HH:mm", nullable=False)
+    language: Mapped[str] = mapped_column(String(5), default="en", nullable=False)
     created_at: Mapped[datetime] = mapped_column(server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(server_default=func.now())
 
@@ -111,5 +112,20 @@ class WorkspaceExport(Base, UUIDPKMixin):
     format: Mapped[str] = mapped_column(String(10), nullable=False)
     file_size_bytes: Mapped[int | None] = mapped_column(BigInteger, nullable=True)
     record_counts: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(server_default=func.now())
+
+
+class PasswordResetToken(Base, UUIDPKMixin):
+    """Password reset token with expiration and one-time use."""
+
+    __tablename__ = "password_reset_tokens"
+    __table_args__ = {"schema": "auth"}
+
+    user_id: Mapped[UUID] = mapped_column(
+        ForeignKey("auth.users.id", ondelete="CASCADE"), nullable=False
+    )
+    token_hash: Mapped[str] = mapped_column(String(64), nullable=False)
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    used_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     created_at: Mapped[datetime] = mapped_column(server_default=func.now())
 
