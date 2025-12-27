@@ -198,7 +198,7 @@ Additional environment variables (see `backend/.env.example`):
   - Search Docspell from warehouse UI via REST API
   - Auto-link: match item SKU/name with OCR-extracted text
   - Sync tags between warehouse labels and Docspell tags
-- [ ] Quick access features
+- [x] Quick access features
   - Favorites: pin frequently accessed items/locations
   - Recently modified: quick view of recent changes
   - Location breadcrumbs: display "Garage → Shelf A → Box 3"
@@ -216,6 +216,10 @@ Additional environment variables (see `backend/.env.example`):
   - Link items to Obsidian notes (detailed descriptions, usage guides, project logs)
   - Store Obsidian vault path + note path in item metadata
   - Deep link to open note directly in Obsidian
+- [ ] Companion app for bar codes, QR codes. Adding and identifying container, items
+
+### Phase 2
+
 - [ ] Tracking & alerts
   - Total value: sum of purchase_price per location/workspace
   - Activity log: who changed what, when. So there is no need for soft delete
@@ -224,7 +228,6 @@ Additional environment variables (see `backend/.env.example`):
   - Expiration alerts: items expiring soon
   - Warranty expiring: reminder before warranty ends
   - Overdue loans: loans past due_date
-- [ ] Companion app for bar codes, QR codes. Adding and identifying container, items
 - [ ] Approval pipeline for member role
   - Members' create/update/delete operations require owner/admin approval
   - Pending changes table: entity type, action, JSON payload, requester, status

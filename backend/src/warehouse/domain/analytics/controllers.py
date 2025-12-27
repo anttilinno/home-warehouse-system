@@ -21,7 +21,7 @@ class AnalyticsController(Controller):
     path = "/analytics"
     dependencies = {
         "analytics_service": Provide(get_analytics_service, sync_to_thread=False),
-        "workspace": Provide(get_workspace_context, sync_to_thread=False),
+        "workspace": Provide(get_workspace_context),
     }
 
     @get("/")

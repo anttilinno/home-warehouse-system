@@ -40,7 +40,7 @@ class CategoryController(Controller):
     path = "/categories"
     dependencies = {
         "category_service": Provide(get_category_service, sync_to_thread=False),
-        "workspace": Provide(get_workspace_context, sync_to_thread=False),
+        "workspace": Provide(get_workspace_context),
     }
 
     @post("/", status_code=HTTP_201_CREATED)
@@ -125,7 +125,7 @@ class ItemController(Controller):
     path = "/items"
     dependencies = {
         "item_service": Provide(get_item_service, sync_to_thread=False),
-        "workspace": Provide(get_workspace_context, sync_to_thread=False),
+        "workspace": Provide(get_workspace_context),
     }
 
     @post("/", status_code=HTTP_201_CREATED)

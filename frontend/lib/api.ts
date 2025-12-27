@@ -845,6 +845,57 @@ export const notificationsApi = {
   },
 };
 
+// Favorites interfaces and API
+export interface FavoriteWithDetails {
+  id: string;
+  favorite_type: 'ITEM' | 'LOCATION' | 'CONTAINER';
+  entity_id: string;
+  entity_name: string;
+  entity_description: string | null;
+  created_at: string;
+}
+
+export interface ToggleFavoriteResponse {
+  is_favorited: boolean;
+  favorite_id: string | null;
+}
+
+export interface CheckFavoriteResponse {
+  is_favorited: boolean;
+}
+
+export const favoritesApi = {
+  list: async (): Promise<FavoriteWithDetails[]> => {
+    return apiClient.get<FavoriteWithDetails[]>('/favorites');
+  },
+
+  toggle: async (
+    favoriteType: 'ITEM' | 'LOCATION' | 'CONTAINER',
+    entityId: string
+  ): Promise<ToggleFavoriteResponse> => {
+    return apiClient.post<ToggleFavoriteResponse>(
+      `/favorites/toggle/${favoriteType}/${entityId}`,
+      {}
+    );
+  },
+
+  check: async (
+    favoriteType: 'ITEM' | 'LOCATION' | 'CONTAINER',
+    entityId: string
+  ): Promise<CheckFavoriteResponse> => {
+    return apiClient.get<CheckFavoriteResponse>(
+      `/favorites/check/${favoriteType}/${entityId}`
+    );
+  },
+
+  remove: async (
+    favoriteType: 'ITEM' | 'LOCATION' | 'CONTAINER',
+    entityId: string
+  ): Promise<void> => {
+    return apiClient.delete(`/favorites/${favoriteType}/${entityId}`);
+  },
+};
+
 // Token storage utilities
 export const tokenStorage = {
   setToken: (token: string) => {

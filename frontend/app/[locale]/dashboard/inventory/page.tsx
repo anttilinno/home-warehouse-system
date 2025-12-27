@@ -2,6 +2,7 @@
 
 import { useAuth } from "@/lib/auth";
 import { useRouter } from "@/navigation";
+import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useEffect, useState, useMemo } from "react";
 import {
@@ -27,8 +28,13 @@ import { cn } from "@/lib/utils";
 export default function InventoryPage() {
   const { isAuthenticated, isLoading: authLoading, canEdit } = useAuth();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const t = useTranslations("inventory");
+  const td = useTranslations("dashboard");
   const te = useTranslations("errors");
+
+  // Get filter from URL
+  const urlFilter = searchParams.get("filter");
 
   // Data state
   const [inventory, setInventory] = useState<Inventory[]>([]);
@@ -36,6 +42,7 @@ export default function InventoryPage() {
   const [locations, setLocations] = useState<Location[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showLowStockOnly, setShowLowStockOnly] = useState(urlFilter === "low-stock");
 
   // Modal state
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -69,6 +76,13 @@ export default function InventoryPage() {
     if (loc.bin) parts.push(loc.bin);
     return parts.join(" / ");
   };
+
+  // Filter inventory for low stock (quantity <= 5)
+  const LOW_STOCK_THRESHOLD = 5;
+  const filteredInventory = useMemo(() => {
+    if (!showLowStockOnly) return inventory;
+    return inventory.filter((inv) => inv.quantity <= LOW_STOCK_THRESHOLD && inv.quantity > 0);
+  }, [inventory, showLowStockOnly]);
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -148,19 +162,32 @@ export default function InventoryPage() {
           <h1 className="text-3xl font-bold text-foreground">{t("title")}</h1>
           <p className="text-muted-foreground mt-2">{t("subtitle")}</p>
         </div>
-        {canEdit && (
+        <div className="flex items-center gap-3">
           <button
-            onClick={() => setIsCreateModalOpen(true)}
-            className="px-4 py-2 bg-primary text-primary-foreground rounded-lg flex items-center gap-2 hover:bg-primary/90 transition-colors"
+            onClick={() => setShowLowStockOnly(!showLowStockOnly)}
+            className={cn(
+              "px-4 py-2 rounded-lg border transition-colors",
+              showLowStockOnly
+                ? "bg-amber-500 text-white border-amber-500"
+                : "bg-background text-foreground border-border hover:bg-muted"
+            )}
           >
-            <Plus className="w-4 h-4" />
-            {t("addInventory")}
+            {td("lowStock")}
           </button>
-        )}
+          {canEdit && (
+            <button
+              onClick={() => setIsCreateModalOpen(true)}
+              className="px-4 py-2 bg-primary text-primary-foreground rounded-lg flex items-center gap-2 hover:bg-primary/90 transition-colors"
+            >
+              <Plus className="w-4 h-4" />
+              {t("addInventory")}
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Table */}
-      {inventory.length === 0 ? (
+      {filteredInventory.length === 0 ? (
         <div className="bg-card border rounded-lg p-12 text-center">
           <Package className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
           <p className="text-muted-foreground">{t("noInventory")}</p>
@@ -194,7 +221,7 @@ export default function InventoryPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
-              {inventory.map((inv) => (
+              {filteredInventory.map((inv) => (
                 <tr key={inv.id} className="hover:bg-muted/30 transition-colors">
                   <td className="px-4 py-3">
                     <div>

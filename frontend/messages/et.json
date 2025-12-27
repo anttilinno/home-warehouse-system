@@ -14,6 +14,7 @@
     "analytics": "Analüütika",
     "settings": "Seaded",
     "profile": "Profiil",
+    "favorites": "Lemmikud",
     "notifications": "Teavitused",
     "logout": "Logi välja"
   },
@@ -280,6 +281,21 @@
     "noNotificationsDescription": "Oled kõigega kursis! Uued teavitused ilmuvad siia.",
     "unread": "lugemata",
     "showingCount": "Näidatakse {showing} / {total} teavitustest"
+  },
+  "favorites": {
+    "title": "Lemmikud",
+    "subtitle": "Sinu kinnitatud esemed, asukohad ja konteinerid",
+    "loading": "Lemmikute laadimine...",
+    "loadError": "Lemmikute laadimine ebaõnnestus",
+    "tryAgain": "Proovi uuesti",
+    "refresh": "Värskenda",
+    "noFavorites": "Lemmikuid pole veel",
+    "noFavoritesDescription": "Alusta esemete, asukohtade või konteinerite kinnitamisega kiireks juurdepääsuks.",
+    "typeItem": "Ese",
+    "typeLocation": "Asukoht",
+    "typeContainer": "Konteiner",
+    "addedOn": "Lisatud",
+    "remove": "Eemalda lemmikutest"
   },
   "errors": {
     "AUTH_USERNAME_EXISTS": "Kasutajanimi on juba olemas",

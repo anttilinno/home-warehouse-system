@@ -51,7 +51,7 @@ class BorrowerController(Controller):
     path = "/borrowers"
     dependencies = {
         "borrower_service": Provide(get_borrower_service, sync_to_thread=False),
-        "workspace": Provide(get_workspace_context, sync_to_thread=False),
+        "workspace": Provide(get_workspace_context),
     }
 
     @post("/", status_code=HTTP_201_CREATED)
@@ -163,7 +163,7 @@ class LoanController(Controller):
     dependencies = {
         "loan_service": Provide(get_loan_service, sync_to_thread=False),
         "loan_queue": Provide(get_loan_queue, sync_to_thread=False),
-        "workspace": Provide(get_workspace_context, sync_to_thread=False),
+        "workspace": Provide(get_workspace_context),
     }
 
     @post("/", status_code=HTTP_202_ACCEPTED)

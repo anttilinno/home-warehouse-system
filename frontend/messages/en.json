@@ -14,6 +14,7 @@
     "analytics": "Analytics",
     "settings": "Settings",
     "profile": "Profile",
+    "favorites": "Favorites",
     "notifications": "Notifications",
     "logout": "Logout"
   },
@@ -494,6 +495,21 @@
     "noNotificationsDescription": "You're all caught up! New notifications will appear here.",
     "unread": "unread",
     "showingCount": "Showing {showing} of {total} notifications"
+  },
+  "favorites": {
+    "title": "Favorites",
+    "subtitle": "Your pinned items, locations, and containers",
+    "loading": "Loading favorites...",
+    "loadError": "Failed to load favorites",
+    "tryAgain": "Try Again",
+    "refresh": "Refresh",
+    "noFavorites": "No favorites yet",
+    "noFavoritesDescription": "Start pinning items, locations, or containers for quick access.",
+    "typeItem": "Item",
+    "typeLocation": "Location",
+    "typeContainer": "Container",
+    "addedOn": "Added on",
+    "remove": "Remove from favorites"
   },
   "errors": {
     "AUTH_USERNAME_EXISTS": "Username already exists",
