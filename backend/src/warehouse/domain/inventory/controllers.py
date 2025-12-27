@@ -32,7 +32,7 @@ class InventoryController(Controller):
     path = "/inventory"
     dependencies = {
         "inventory_service": Provide(get_inventory_service, sync_to_thread=False),
-        "workspace": Provide(get_workspace_context, sync_to_thread=False),
+        "workspace": Provide(get_workspace_context),
     }
 
     @post("/", status_code=HTTP_201_CREATED)

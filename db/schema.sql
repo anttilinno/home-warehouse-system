@@ -1,4 +1,4 @@
-\restrict sO52JypyHYLyUWCfn7IhvLDqfYhyxk2mTGT3ABUYdI4anHpzprqFDnzrR6QRHj3
+\restrict emgVrGdfshqPQc2LW6Q8USjoArqSIlrCBPTkEr1ehkDKwbEwxaRVBK2ZSJ5Ryuf
 
 -- Dumped from database version 18.1 (Debian 18.1-1.pgdg13+2)
 -- Dumped by pg_dump version 18.1
@@ -298,7 +298,8 @@ CREATE TABLE auth.workspaces (
     slug character varying(50) NOT NULL,
     description text,
     created_at timestamp with time zone DEFAULT now(),
-    updated_at timestamp with time zone DEFAULT now()
+    updated_at timestamp with time zone DEFAULT now(),
+    is_personal boolean DEFAULT false NOT NULL
 );
 
 
@@ -1726,7 +1727,7 @@ ALTER TABLE ONLY warehouse.locations
 -- PostgreSQL database dump complete
 --
 
-\unrestrict sO52JypyHYLyUWCfn7IhvLDqfYhyxk2mTGT3ABUYdI4anHpzprqFDnzrR6QRHj3
+\unrestrict emgVrGdfshqPQc2LW6Q8USjoArqSIlrCBPTkEr1ehkDKwbEwxaRVBK2ZSJ5Ryuf
 
 
 --
@@ -1735,4 +1736,5 @@ ALTER TABLE ONLY warehouse.locations
 
 INSERT INTO public.schema_migrations (version) VALUES
     ('001'),
-    ('002');
+    ('002'),
+    ('20251223201614');

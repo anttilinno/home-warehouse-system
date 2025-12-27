@@ -27,7 +27,7 @@ class DashboardController(Controller):
     path = "/dashboard"
     dependencies = {
         "dashboard_service": Provide(get_dashboard_service, sync_to_thread=False),
-        "workspace": Provide(get_workspace_context, sync_to_thread=False),
+        "workspace": Provide(get_workspace_context),
     }
 
     @get("/stats")

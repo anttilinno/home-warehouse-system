@@ -307,6 +307,14 @@ export function Sidebar({ className }: SidebarProps) {
                 <span>{t('profile')}</span>
               </Link>
               <Link
+                href="/dashboard/favorites"
+                onClick={() => setIsUserMenuOpen(false)}
+                className="w-full flex items-center gap-3 px-3 py-2 text-sm hover:bg-muted transition-colors"
+              >
+                <Icon name="Heart" className="w-4 h-4" />
+                <span>{t('favorites')}</span>
+              </Link>
+              <Link
                 href="/dashboard/notifications"
                 onClick={() => setIsUserMenuOpen(false)}
                 className="w-full flex items-center gap-3 px-3 py-2 text-sm hover:bg-muted transition-colors"

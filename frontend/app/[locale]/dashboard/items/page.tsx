@@ -24,6 +24,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { CategorySelect } from "@/components/ui/category-select";
+import { FavoriteButton } from "@/components/ui/favorite-button";
 
 export default function ItemsPage() {
   const { isAuthenticated, isLoading: authLoading, canEdit } = useAuth();
@@ -209,31 +210,39 @@ export default function ItemsPage() {
                     {item.description || t("noDescription")}
                   </td>
                   <td className="px-4 py-3 text-right">
-                    {canEdit && (
-                      <div className="flex justify-end gap-2">
-                        <button
-                          onClick={() => handleDuplicate(item)}
-                          title={t("duplicate")}
-                          className="p-1.5 rounded hover:bg-muted transition-colors"
-                        >
-                          <Copy className="w-4 h-4 text-muted-foreground hover:text-foreground" />
-                        </button>
-                        <button
-                          onClick={() => handleEdit(item)}
-                          title={t("edit")}
-                          className="p-1.5 rounded hover:bg-muted transition-colors"
-                        >
-                          <Pencil className="w-4 h-4 text-muted-foreground hover:text-foreground" />
-                        </button>
-                        <button
-                          onClick={() => handleDelete(item)}
-                          title={t("delete")}
-                          className="p-1.5 rounded hover:bg-muted transition-colors"
-                        >
-                          <Trash2 className="w-4 h-4 text-muted-foreground hover:text-destructive" />
-                        </button>
-                      </div>
-                    )}
+                    <div className="flex justify-end gap-2">
+                      <FavoriteButton
+                        entityType="ITEM"
+                        entityId={item.id}
+                        size="sm"
+                        className="p-1.5"
+                      />
+                      {canEdit && (
+                        <>
+                          <button
+                            onClick={() => handleDuplicate(item)}
+                            title={t("duplicate")}
+                            className="p-1.5 rounded hover:bg-muted transition-colors"
+                          >
+                            <Copy className="w-4 h-4 text-muted-foreground hover:text-foreground" />
+                          </button>
+                          <button
+                            onClick={() => handleEdit(item)}
+                            title={t("edit")}
+                            className="p-1.5 rounded hover:bg-muted transition-colors"
+                          >
+                            <Pencil className="w-4 h-4 text-muted-foreground hover:text-foreground" />
+                          </button>
+                          <button
+                            onClick={() => handleDelete(item)}
+                            title={t("delete")}
+                            className="p-1.5 rounded hover:bg-muted transition-colors"
+                          >
+                            <Trash2 className="w-4 h-4 text-muted-foreground hover:text-destructive" />
+                          </button>
+                        </>
+                      )}
+                    </div>
                   </td>
                 </tr>
               ))}

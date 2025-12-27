@@ -32,7 +32,7 @@ class LocationController(Controller):
     path = "/locations"
     dependencies = {
         "location_service": Provide(get_location_service, sync_to_thread=False),
-        "workspace": Provide(get_workspace_context, sync_to_thread=False),
+        "workspace": Provide(get_workspace_context),
     }
 
     @post("/", status_code=HTTP_201_CREATED)

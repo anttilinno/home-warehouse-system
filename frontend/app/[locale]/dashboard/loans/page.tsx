@@ -2,6 +2,7 @@
 
 import { useAuth } from "@/lib/auth";
 import { useRouter } from "@/navigation";
+import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useEffect, useState, useMemo } from "react";
 import {
@@ -36,8 +37,12 @@ import { SearchableSelect, type SearchableSelectOption } from "@/components/ui/s
 export default function LoansPage() {
   const { isAuthenticated, isLoading: authLoading, canEdit } = useAuth();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const t = useTranslations("loans");
   const te = useTranslations("errors");
+
+  // Get filter from URL
+  const urlFilter = searchParams.get("filter");
 
   // Data state
   const [loans, setLoans] = useState<Loan[]>([]);
@@ -47,7 +52,8 @@ export default function LoansPage() {
   const [locations, setLocations] = useState<Location[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [showActiveOnly, setShowActiveOnly] = useState(true);
+  const [showActiveOnly, setShowActiveOnly] = useState(urlFilter !== "overdue");
+  const [showOverdueOnly, setShowOverdueOnly] = useState(urlFilter === "overdue");
 
   // Modal state
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -75,6 +81,17 @@ export default function LoansPage() {
   const getBorrowerName = (borrowerId: string) => {
     return borrowerMap.get(borrowerId)?.name || "Unknown";
   };
+
+  // Filter loans for overdue
+  const filteredLoans = useMemo(() => {
+    if (!showOverdueOnly) return loans;
+    const now = new Date();
+    return loans.filter((loan) => {
+      if (loan.returned_at) return false;
+      if (!loan.due_date) return false;
+      return new Date(loan.due_date) < now;
+    });
+  }, [loans, showOverdueOnly]);
 
   const getInventoryDisplay = (inventoryId: string) => {
     const inv = inventoryMap.get(inventoryId);
@@ -178,7 +195,24 @@ export default function LoansPage() {
         </div>
         <div className="flex items-center gap-3">
           <button
-            onClick={() => setShowActiveOnly(!showActiveOnly)}
+            onClick={() => {
+              setShowOverdueOnly(!showOverdueOnly);
+              if (!showOverdueOnly) setShowActiveOnly(false);
+            }}
+            className={cn(
+              "px-4 py-2 rounded-lg border transition-colors",
+              showOverdueOnly
+                ? "bg-destructive text-destructive-foreground border-destructive"
+                : "bg-background text-foreground border-border hover:bg-muted"
+            )}
+          >
+            {t("overdue")}
+          </button>
+          <button
+            onClick={() => {
+              setShowActiveOnly(!showActiveOnly);
+              if (!showActiveOnly) setShowOverdueOnly(false);
+            }}
             className={cn(
               "px-4 py-2 rounded-lg border transition-colors",
               showActiveOnly
@@ -201,7 +235,7 @@ export default function LoansPage() {
       </div>
 
       {/* Table */}
-      {loans.length === 0 ? (
+      {filteredLoans.length === 0 ? (
         <div className="bg-card border rounded-lg p-12 text-center">
           <HandCoins className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
           <p className="text-muted-foreground">{t("noLoans")}</p>
@@ -244,7 +278,7 @@ export default function LoansPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
-              {loans.map((loan) => {
+              {filteredLoans.map((loan) => {
                 const status = getLoanStatus(loan);
                 return (
                   <tr key={loan.id} className="hover:bg-muted/30 transition-colors">

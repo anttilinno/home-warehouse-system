@@ -16,6 +16,8 @@ import {
 import { ArrowLeft, Package, MapPin, Save } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { LocationSelect } from "@/components/ui/location-select";
+import { LocationBreadcrumb } from "@/components/ui/location-breadcrumb";
+import { FavoriteButton } from "@/components/ui/favorite-button";
 
 export default function InventoryEditPage() {
   const { isAuthenticated, isLoading: authLoading } = useAuth();
@@ -157,10 +159,24 @@ export default function InventoryEditPage() {
             <Package className="w-8 h-8 text-primary" />
           </div>
           <div className="flex-1">
-            <h2 className="text-xl font-semibold">{item?.name || "Unknown Item"}</h2>
+            <div className="flex items-start justify-between">
+              <h2 className="text-xl font-semibold">{item?.name || "Unknown Item"}</h2>
+              {inventory.item_id && (
+                <FavoriteButton
+                  entityType="ITEM"
+                  entityId={inventory.item_id}
+                  size="lg"
+                />
+              )}
+            </div>
             <p className="text-muted-foreground text-sm">{item?.sku}</p>
             {item?.description && (
               <p className="text-muted-foreground mt-2">{item.description}</p>
+            )}
+            {inventory.location_id && (
+              <div className="mt-3 pt-3 border-t border-border">
+                <LocationBreadcrumb locationId={inventory.location_id} />
+              </div>
             )}
           </div>
         </div>
