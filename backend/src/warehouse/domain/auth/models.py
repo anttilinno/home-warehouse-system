@@ -4,7 +4,8 @@ from datetime import datetime
 from enum import Enum
 from uuid import UUID
 
-from sqlalchemy import Boolean, Enum as SAEnum, ForeignKey, String, Text, func
+from sqlalchemy import BigInteger, Boolean, Enum as SAEnum, ForeignKey, String, Text, func
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from warehouse.lib.base import Base, TimestampMixin, UUIDPKMixin
@@ -49,6 +50,7 @@ class User(Base, UUIDPKMixin, TimestampMixin):
     full_name: Mapped[str] = mapped_column(String(100), nullable=False)
     password_hash: Mapped[str] = mapped_column(String(255), nullable=False)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+    date_format: Mapped[str] = mapped_column(String(30), default="DD.MM.YYYY HH:mm", nullable=False)
     created_at: Mapped[datetime] = mapped_column(server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(server_default=func.now())
 
@@ -92,4 +94,22 @@ class WorkspaceMember(Base, UUIDPKMixin, TimestampMixin):
     user: Mapped["User"] = relationship(
         "User", back_populates="workspace_memberships", foreign_keys=[user_id]
     )
+
+
+class WorkspaceExport(Base, UUIDPKMixin):
+    """Workspace export audit log."""
+
+    __tablename__ = "workspace_exports"
+    __table_args__ = {"schema": "auth"}
+
+    workspace_id: Mapped[UUID] = mapped_column(
+        ForeignKey("auth.workspaces.id", ondelete="CASCADE"), nullable=False
+    )
+    exported_by: Mapped[UUID | None] = mapped_column(
+        ForeignKey("auth.users.id", ondelete="SET NULL"), nullable=True
+    )
+    format: Mapped[str] = mapped_column(String(10), nullable=False)
+    file_size_bytes: Mapped[int | None] = mapped_column(BigInteger, nullable=True)
+    record_counts: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(server_default=func.now())
 

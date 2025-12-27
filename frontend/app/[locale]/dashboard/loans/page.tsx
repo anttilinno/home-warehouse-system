@@ -33,9 +33,10 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { SearchableSelect, type SearchableSelectOption } from "@/components/ui/searchable-select";
+import { formatDate as formatDateUtil, formatDateTime as formatDateTimeUtil } from "@/lib/date-utils";
 
 export default function LoansPage() {
-  const { isAuthenticated, isLoading: authLoading, canEdit } = useAuth();
+  const { isAuthenticated, isLoading: authLoading, canEdit, user } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
   const t = useTranslations("loans");
@@ -150,11 +151,11 @@ export default function LoansPage() {
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString();
+    return formatDateUtil(dateString, user?.date_format);
   };
 
   const formatDateTime = (dateString: string) => {
-    return new Date(dateString).toLocaleString();
+    return formatDateTimeUtil(dateString, user?.date_format);
   };
 
   if (authLoading || loading) {

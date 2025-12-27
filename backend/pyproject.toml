@@ -20,6 +20,7 @@ dependencies = [
     "rocketry>=2.5.0",
     "rq>=1.16.0",
     "python-dotenv>=1.0.0",
+    "openpyxl>=3.1.0",
 ]
 
 [project.optional-dependencies]

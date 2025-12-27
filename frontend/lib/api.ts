@@ -11,6 +11,7 @@ export interface User {
   email: string;
   full_name: string;
   is_active: boolean;
+  date_format: string;
   created_at: string;
   updated_at: string;
 }
@@ -18,6 +19,7 @@ export interface User {
 export interface ProfileUpdate {
   full_name?: string | null;
   email?: string;
+  date_format?: string;
 }
 
 export interface PasswordChange {
@@ -586,6 +588,8 @@ export interface Inventory {
   item_id: string;
   location_id: string;
   quantity: number;
+  expiration_date: string | null;
+  warranty_expires: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -594,10 +598,14 @@ export interface InventoryCreate {
   item_id: string;
   location_id: string;
   quantity: number;
+  expiration_date?: string | null;
+  warranty_expires?: string | null;
 }
 
 export interface InventoryUpdate {
-  quantity: number;
+  quantity?: number;
+  expiration_date?: string | null;
+  warranty_expires?: string | null;
 }
 
 export interface StockAdjustment {
@@ -893,6 +901,61 @@ export const favoritesApi = {
     entityId: string
   ): Promise<void> => {
     return apiClient.delete(`/favorites/${favoriteType}/${entityId}`);
+  },
+};
+
+// Export API
+export type ExportFormat = 'xlsx' | 'json';
+
+export const exportApi = {
+  downloadExport: async (format: ExportFormat = 'xlsx'): Promise<void> => {
+    const token = tokenStorage.getToken();
+    const workspaceId = workspaceStorage.getWorkspaceId();
+
+    if (!token || !workspaceId) {
+      throw new Error('Authentication required');
+    }
+
+    const response = await fetch(`${API_BASE_URL}/exports/workspace?format=${format}`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'X-Workspace-ID': workspaceId,
+      },
+    });
+
+    if (!response.ok) {
+      if (response.status === 401) {
+        tokenStorage.removeToken();
+        if (typeof window !== 'undefined') {
+          window.location.href = '/en/login';
+        }
+        throw new Error('Authentication required');
+      }
+      const errorData = await response.json().catch(() => ({ detail: 'Export failed' }));
+      throw new Error(errorData.detail || `HTTP ${response.status}`);
+    }
+
+    // Get filename from Content-Disposition header
+    const contentDisposition = response.headers.get('Content-Disposition');
+    let filename = `warehouse_export.${format}`;
+    if (contentDisposition) {
+      const match = contentDisposition.match(/filename="(.+)"/);
+      if (match) {
+        filename = match[1];
+      }
+    }
+
+    // Download file
+    const blob = await response.blob();
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
   },
 };
 
