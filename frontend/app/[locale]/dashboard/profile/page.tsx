@@ -5,6 +5,7 @@ import { User, Save, Lock, Mail, Calendar } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { authApi, User as UserType } from "@/lib/api";
 import { useTranslations } from "next-intl";
+import { formatDate as formatDateUtil } from "@/lib/date-utils";
 
 export default function ProfilePage() {
   const { isAuthenticated, isLoading: authLoading, user: authUser } = useAuth();
@@ -19,6 +20,7 @@ export default function ProfilePage() {
   // Profile form
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
+  const [dateFormat, setDateFormat] = useState("DD.MM.YYYY HH:mm");
 
   // Password form
   const [currentPassword, setCurrentPassword] = useState("");
@@ -41,6 +43,7 @@ export default function ProfilePage() {
       setProfile(data);
       setFullName(data.full_name || "");
       setEmail(data.email);
+      setDateFormat(data.date_format || "DD.MM.YYYY HH:mm");
       setError(null);
     } catch (err) {
       console.error('Failed to fetch profile:', err);
@@ -60,6 +63,7 @@ export default function ProfilePage() {
       const updated = await authApi.updateProfile({
         full_name: fullName || null,
         email: email !== profile?.email ? email : undefined,
+        date_format: dateFormat,
       });
       setProfile(updated);
       setSuccess(t('profileUpdated'));
@@ -71,6 +75,7 @@ export default function ProfilePage() {
           const userData = JSON.parse(storedUser);
           userData.full_name = updated.full_name;
           userData.email = updated.email;
+          userData.date_format = updated.date_format;
           localStorage.setItem('user', JSON.stringify(userData));
         }
       }
@@ -129,11 +134,7 @@ export default function ProfilePage() {
   }
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString(undefined, {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    });
+    return formatDateUtil(dateString, authUser?.date_format);
   };
 
   return (
@@ -214,6 +215,24 @@ export default function ProfilePage() {
                   required
                   className="w-full pl-10 pr-3 py-2 border border-border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
                 />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-1">
+                {t('dateTimeFormat')}
+              </label>
+              <div className="relative">
+                <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <select
+                  value={dateFormat}
+                  onChange={(e) => setDateFormat(e.target.value)}
+                  className="w-full pl-10 pr-3 py-2 border border-border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary appearance-none"
+                >
+                  <option value="DD.MM.YYYY HH:mm">DD.MM.YYYY HH:mm (31.12.2024 14:30)</option>
+                  <option value="MM/DD/YYYY h:mm A">MM/DD/YYYY h:mm A (12/31/2024 2:30 PM)</option>
+                  <option value="YYYY-MM-DD HH:mm">YYYY-MM-DD HH:mm (2024-12-31 14:30)</option>
+                </select>
               </div>
             </div>
 

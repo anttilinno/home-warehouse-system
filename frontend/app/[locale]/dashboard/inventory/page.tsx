@@ -22,8 +22,14 @@ import {
   ArrowUpDown,
   X,
   Package,
+  Search,
+  ChevronUp,
+  ChevronDown,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+
+type SortColumn = "item" | "location" | "quantity";
+type SortDirection = "asc" | "desc";
 
 export default function InventoryPage() {
   const { isAuthenticated, isLoading: authLoading, canEdit } = useAuth();
@@ -31,10 +37,11 @@ export default function InventoryPage() {
   const searchParams = useSearchParams();
   const t = useTranslations("inventory");
   const td = useTranslations("dashboard");
+  const tl = useTranslations("loans");
   const te = useTranslations("errors");
 
   // Get filter from URL
-  const urlFilter = searchParams.get("filter");
+  const urlFilter = searchParams.get("filter") as "low-stock" | "expiring" | "warranty" | null;
 
   // Data state
   const [inventory, setInventory] = useState<Inventory[]>([]);
@@ -42,7 +49,10 @@ export default function InventoryPage() {
   const [locations, setLocations] = useState<Location[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [showLowStockOnly, setShowLowStockOnly] = useState(urlFilter === "low-stock");
+  const [activeFilter, setActiveFilter] = useState<"low-stock" | "expiring" | "warranty" | null>(urlFilter);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [sortColumn, setSortColumn] = useState<SortColumn>("item");
+  const [sortDirection, setSortDirection] = useState<SortDirection>("asc");
 
   // Modal state
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -77,12 +87,74 @@ export default function InventoryPage() {
     return parts.join(" / ");
   };
 
-  // Filter inventory for low stock (quantity <= 5)
+  // Filter inventory based on active filter and search term
   const LOW_STOCK_THRESHOLD = 5;
+  const EXPIRING_SOON_DAYS = 30;
   const filteredInventory = useMemo(() => {
-    if (!showLowStockOnly) return inventory;
-    return inventory.filter((inv) => inv.quantity <= LOW_STOCK_THRESHOLD && inv.quantity > 0);
-  }, [inventory, showLowStockOnly]);
+    let result = inventory;
+
+    // Apply search filter
+    if (searchTerm.trim()) {
+      const term = searchTerm.toLowerCase();
+      result = result.filter((inv) => {
+        const item = itemMap.get(inv.item_id);
+        const location = locationMap.get(inv.location_id);
+        const itemName = item?.name?.toLowerCase() || "";
+        const itemSku = item?.sku?.toLowerCase() || "";
+        const locationName = location?.name?.toLowerCase() || "";
+        return itemName.includes(term) || itemSku.includes(term) || locationName.includes(term);
+      });
+    }
+
+    // Apply status filter
+    if (activeFilter) {
+      const now = new Date();
+      const expiringThreshold = new Date(now.getTime() + EXPIRING_SOON_DAYS * 24 * 60 * 60 * 1000);
+
+      switch (activeFilter) {
+        case "low-stock":
+          result = result.filter((inv) => inv.quantity <= LOW_STOCK_THRESHOLD && inv.quantity > 0);
+          break;
+        case "expiring":
+          result = result.filter((inv) => {
+            if (!inv.expiration_date) return false;
+            const expDate = new Date(inv.expiration_date);
+            return expDate <= expiringThreshold && expDate >= now;
+          });
+          break;
+        case "warranty":
+          result = result.filter((inv) => {
+            if (!inv.warranty_expires) return false;
+            const warrantyDate = new Date(inv.warranty_expires);
+            return warrantyDate <= expiringThreshold && warrantyDate >= now;
+          });
+          break;
+      }
+    }
+
+    // Apply sorting
+    const sorted = [...result].sort((a, b) => {
+      let comparison = 0;
+      switch (sortColumn) {
+        case "item":
+          const itemA = itemMap.get(a.item_id)?.name?.toLowerCase() || "";
+          const itemB = itemMap.get(b.item_id)?.name?.toLowerCase() || "";
+          comparison = itemA.localeCompare(itemB);
+          break;
+        case "location":
+          const locA = locationMap.get(a.location_id)?.name?.toLowerCase() || "";
+          const locB = locationMap.get(b.location_id)?.name?.toLowerCase() || "";
+          comparison = locA.localeCompare(locB);
+          break;
+        case "quantity":
+          comparison = a.quantity - b.quantity;
+          break;
+      }
+      return sortDirection === "asc" ? comparison : -comparison;
+    });
+
+    return sorted;
+  }, [inventory, activeFilter, searchTerm, itemMap, locationMap, sortColumn, sortDirection]);
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -126,6 +198,26 @@ export default function InventoryPage() {
     setIsDeleteModalOpen(true);
   };
 
+  const handleSort = (column: SortColumn) => {
+    if (sortColumn === column) {
+      setSortDirection((prev) => (prev === "asc" ? "desc" : "asc"));
+    } else {
+      setSortColumn(column);
+      setSortDirection("asc");
+    }
+  };
+
+  const SortIcon = ({ column }: { column: SortColumn }) => {
+    if (sortColumn !== column) {
+      return <ChevronUp className="w-4 h-4 opacity-0 group-hover:opacity-30" />;
+    }
+    return sortDirection === "asc" ? (
+      <ChevronUp className="w-4 h-4" />
+    ) : (
+      <ChevronDown className="w-4 h-4" />
+    );
+  };
+
   if (authLoading || loading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
@@ -157,23 +249,12 @@ export default function InventoryPage() {
   return (
     <>
       {/* Header */}
-      <div className="mb-8 flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground">{t("title")}</h1>
-          <p className="text-muted-foreground mt-2">{t("subtitle")}</p>
-        </div>
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => setShowLowStockOnly(!showLowStockOnly)}
-            className={cn(
-              "px-4 py-2 rounded-lg border transition-colors",
-              showLowStockOnly
-                ? "bg-amber-500 text-white border-amber-500"
-                : "bg-background text-foreground border-border hover:bg-muted"
-            )}
-          >
-            {td("lowStock")}
-          </button>
+      <div className="mb-8 flex flex-col gap-4">
+        <div className="flex justify-between items-center">
+          <div>
+            <h1 className="text-3xl font-bold text-foreground">{t("title")}</h1>
+            <p className="text-muted-foreground mt-2">{t("subtitle")}</p>
+          </div>
           {canEdit && (
             <button
               onClick={() => setIsCreateModalOpen(true)}
@@ -183,6 +264,51 @@ export default function InventoryPage() {
               {t("addInventory")}
             </button>
           )}
+        </div>
+        <div className="flex items-center gap-3 flex-wrap">
+          <div className="relative flex-1 min-w-[200px] max-w-md">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <input
+              type="text"
+              placeholder={tl("searchInventory")}
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-10 pr-4 py-2 border border-border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+            />
+          </div>
+          <button
+            onClick={() => setActiveFilter(activeFilter === "low-stock" ? null : "low-stock")}
+            className={cn(
+              "px-4 py-2 rounded-lg border transition-colors",
+              activeFilter === "low-stock"
+                ? "bg-amber-500 text-white border-amber-500"
+                : "bg-background text-foreground border-border hover:bg-muted"
+            )}
+          >
+            {td("lowStock")}
+          </button>
+          <button
+            onClick={() => setActiveFilter(activeFilter === "expiring" ? null : "expiring")}
+            className={cn(
+              "px-4 py-2 rounded-lg border transition-colors",
+              activeFilter === "expiring"
+                ? "bg-amber-500 text-white border-amber-500"
+                : "bg-background text-foreground border-border hover:bg-muted"
+            )}
+          >
+            {td("expiringSoon")}
+          </button>
+          <button
+            onClick={() => setActiveFilter(activeFilter === "warranty" ? null : "warranty")}
+            className={cn(
+              "px-4 py-2 rounded-lg border transition-colors",
+              activeFilter === "warranty"
+                ? "bg-blue-500 text-white border-blue-500"
+                : "bg-background text-foreground border-border hover:bg-muted"
+            )}
+          >
+            {td("warrantyExpiring")}
+          </button>
         </div>
       </div>
 
@@ -206,14 +332,32 @@ export default function InventoryPage() {
           <table className="w-full">
             <thead className="bg-muted/50 border-b">
               <tr>
-                <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
-                  {t("item")}
+                <th
+                  className="px-4 py-3 text-left text-sm font-medium text-muted-foreground cursor-pointer hover:text-foreground transition-colors group"
+                  onClick={() => handleSort("item")}
+                >
+                  <div className="flex items-center gap-1">
+                    {t("item")}
+                    <SortIcon column="item" />
+                  </div>
                 </th>
-                <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
-                  {t("location")}
+                <th
+                  className="px-4 py-3 text-left text-sm font-medium text-muted-foreground cursor-pointer hover:text-foreground transition-colors group"
+                  onClick={() => handleSort("location")}
+                >
+                  <div className="flex items-center gap-1">
+                    {t("location")}
+                    <SortIcon column="location" />
+                  </div>
                 </th>
-                <th className="px-4 py-3 text-right text-sm font-medium text-muted-foreground">
-                  {t("quantity")}
+                <th
+                  className="px-4 py-3 text-right text-sm font-medium text-muted-foreground cursor-pointer hover:text-foreground transition-colors group"
+                  onClick={() => handleSort("quantity")}
+                >
+                  <div className="flex items-center justify-end gap-1">
+                    {t("quantity")}
+                    <SortIcon column="quantity" />
+                  </div>
                 </th>
                 <th className="px-4 py-3 text-right text-sm font-medium text-muted-foreground">
                   {t("actions")}
@@ -222,10 +366,14 @@ export default function InventoryPage() {
             </thead>
             <tbody className="divide-y divide-border">
               {filteredInventory.map((inv) => (
-                <tr key={inv.id} className="hover:bg-muted/30 transition-colors">
+                <tr
+                  key={inv.id}
+                  className="hover:bg-muted/30 transition-colors cursor-pointer"
+                  onClick={() => router.push(`/dashboard/inventory/${inv.id}`)}
+                >
                   <td className="px-4 py-3">
                     <div>
-                      <div className="font-medium text-foreground">
+                      <div className="font-medium text-foreground hover:text-primary">
                         {getItemName(inv.item_id)}
                       </div>
                       <div className="text-sm text-muted-foreground">
@@ -241,7 +389,7 @@ export default function InventoryPage() {
                   </td>
                   <td className="px-4 py-3 text-right">
                     {canEdit && (
-                      <div className="flex justify-end gap-2">
+                      <div className="flex justify-end gap-2" onClick={(e) => e.stopPropagation()}>
                         <button
                           onClick={() => handleAdjust(inv)}
                           title={t("adjustStock")}

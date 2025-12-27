@@ -1,7 +1,8 @@
 "use client";
 
 import { useAuth } from "@/lib/auth";
-import { useRouter, useParams } from "next/navigation";
+import { useRouter } from "@/navigation";
+import { useParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useEffect, useState, useMemo } from "react";
 import {
@@ -18,9 +19,10 @@ import { useToast } from "@/components/ui/use-toast";
 import { LocationSelect } from "@/components/ui/location-select";
 import { LocationBreadcrumb } from "@/components/ui/location-breadcrumb";
 import { FavoriteButton } from "@/components/ui/favorite-button";
+import { formatDateTime } from "@/lib/date-utils";
 
 export default function InventoryEditPage() {
-  const { isAuthenticated, isLoading: authLoading } = useAuth();
+  const { isAuthenticated, isLoading: authLoading, user } = useAuth();
   const router = useRouter();
   const params = useParams();
   const inventoryId = params.id as string;
@@ -221,11 +223,11 @@ export default function InventoryEditPage() {
           <div className="grid grid-cols-2 gap-4 text-sm text-muted-foreground">
             <div>
               <span className="font-medium">{t("createdAt")}:</span>{" "}
-              {new Date(inventory.created_at).toLocaleString()}
+              {formatDateTime(inventory.created_at, user?.date_format)}
             </div>
             <div>
               <span className="font-medium">{t("updatedAt")}:</span>{" "}
-              {new Date(inventory.updated_at).toLocaleString()}
+              {formatDateTime(inventory.updated_at, user?.date_format)}
             </div>
           </div>
         </div>

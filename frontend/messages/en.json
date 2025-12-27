@@ -16,6 +16,7 @@
     "profile": "Profile",
     "favorites": "Favorites",
     "notifications": "Notifications",
+    "export": "Export Data",
     "logout": "Logout"
   },
   "auth": {
@@ -384,6 +385,7 @@
     "fullName": "Full Name",
     "fullNamePlaceholder": "Enter your full name",
     "email": "Email",
+    "dateTimeFormat": "Date and Time Format",
     "saveChanges": "Save Changes",
     "saving": "Saving...",
     "profileUpdated": "Profile updated successfully",
@@ -510,6 +512,27 @@
     "typeContainer": "Container",
     "addedOn": "Added on",
     "remove": "Remove from favorites"
+  },
+  "export": {
+    "title": "Export Data",
+    "subtitle": "Download your workspace data for backup or migration",
+    "excelTitle": "Excel Export",
+    "excelDescription": "Human-readable spreadsheet format",
+    "excelFeature1": "One sheet per entity type",
+    "excelFeature2": "Foreign keys resolved to names",
+    "excelFeature3": "Perfect for viewing and analysis",
+    "jsonTitle": "JSON Export",
+    "jsonDescription": "Machine-readable format for migration",
+    "jsonFeature1": "Complete data structure",
+    "jsonFeature2": "Suitable for re-import",
+    "jsonFeature3": "Ideal for backups",
+    "downloadExcel": "Download Excel",
+    "downloadJson": "Download JSON",
+    "exporting": "Exporting...",
+    "exportSuccess": "Export downloaded successfully",
+    "exportError": "Failed to export data",
+    "includedData": "What's included",
+    "includedDataDescription": "Categories, locations, containers, items, borrowers, inventory records, and loans."
   },
   "errors": {
     "AUTH_USERNAME_EXISTS": "Username already exists",

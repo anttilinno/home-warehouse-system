@@ -16,6 +16,7 @@
     "profile": "Profiil",
     "favorites": "Lemmikud",
     "notifications": "Teavitused",
+    "export": "Ekspordi andmed",
     "logout": "Logi välja"
   },
   "auth": {
@@ -171,6 +172,7 @@
     "fullName": "Täisnimi",
     "fullNamePlaceholder": "Sisesta oma täisnimi",
     "email": "E-post",
+    "dateTimeFormat": "Kuupäeva ja kellaaja vorming",
     "saveChanges": "Salvesta muudatused",
     "saving": "Salvestamine...",
     "profileUpdated": "Profiil edukalt uuendatud",
@@ -296,6 +298,27 @@
     "typeContainer": "Konteiner",
     "addedOn": "Lisatud",
     "remove": "Eemalda lemmikutest"
+  },
+  "export": {
+    "title": "Ekspordi andmed",
+    "subtitle": "Laadi alla oma tööruumi andmed varundamiseks või migreerimiseks",
+    "excelTitle": "Exceli eksport",
+    "excelDescription": "Inimloetav tabelivorming",
+    "excelFeature1": "Üks leht iga olemi tüübi kohta",
+    "excelFeature2": "Võõrvõtmed lahendatud nimedeks",
+    "excelFeature3": "Ideaalne vaatamiseks ja analüüsiks",
+    "jsonTitle": "JSON eksport",
+    "jsonDescription": "Masinloetav vorming migreerimiseks",
+    "jsonFeature1": "Täielik andmestruktuur",
+    "jsonFeature2": "Sobib taasimportimiseks",
+    "jsonFeature3": "Ideaalne varundamiseks",
+    "downloadExcel": "Laadi alla Excel",
+    "downloadJson": "Laadi alla JSON",
+    "exporting": "Eksportimine...",
+    "exportSuccess": "Eksport edukalt alla laaditud",
+    "exportError": "Andmete eksportimine ebaõnnestus",
+    "includedData": "Mida sisaldab",
+    "includedDataDescription": "Kategooriad, asukohad, konteinerid, esemed, laenajad, inventuurikirjed ja laenud."
   },
   "errors": {
     "AUTH_USERNAME_EXISTS": "Kasutajanimi on juba olemas",

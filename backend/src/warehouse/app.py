@@ -19,6 +19,7 @@ from warehouse.database import get_db_config
 from warehouse.domain.auth.controllers import AuthController
 from warehouse.domain.containers.controllers import ContainerController
 from warehouse.domain.dashboard.controllers import DashboardController
+from warehouse.domain.exports.controllers import ExportController
 from warehouse.domain.items.controllers import CategoryController, ItemController
 from warehouse.domain.locations.controllers import LocationController
 from warehouse.domain.inventory.controllers import InventoryController
@@ -127,6 +128,7 @@ def create_app(config: Config | None = None) -> Litestar:
             AuthController,
             ContainerController,
             DashboardController,
+            ExportController,
             CategoryController,
             FavoriteController,
             ItemController,

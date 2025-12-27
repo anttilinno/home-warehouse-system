@@ -187,10 +187,10 @@ Additional environment variables (see `backend/.env.example`):
 ## TODO
 
 - [x] Workspaces for multi-user usage
-- [ ] Export/backup of data
+- [x] Export/backup of data
   - Excel (.xlsx) with one sheet per entity, foreign keys resolved to names
   - JSON for migration/re-import
-  - Endpoint: `GET /workspaces/{id}/export?format=xlsx|json`
+  - Endpoint: `GET /exports/workspace?format=xlsx|json`
   - Tracks exports in `auth.workspace_exports` for audit
 - [ ] Integration with Docspell (document management)
   - Link items to Docspell documents (receipts, manuals, warranties)

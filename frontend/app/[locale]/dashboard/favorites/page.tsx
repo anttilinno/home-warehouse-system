@@ -6,9 +6,10 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth";
 import { Heart, RefreshCw, Package, MapPin, Box, Trash2 } from "lucide-react";
 import { favoritesApi, FavoriteWithDetails } from "@/lib/api";
+import { formatDate as formatDateUtil } from "@/lib/date-utils";
 
 export default function FavoritesPage() {
-  const { isAuthenticated, isLoading: authLoading } = useAuth();
+  const { isAuthenticated, isLoading: authLoading, user } = useAuth();
   const t = useTranslations("favorites");
   const router = useRouter();
   const [favorites, setFavorites] = useState<FavoriteWithDetails[]>([]);
@@ -88,8 +89,7 @@ export default function FavoritesPage() {
   };
 
   const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString();
+    return formatDateUtil(dateString, user?.date_format);
   };
 
   if (authLoading || loading) {

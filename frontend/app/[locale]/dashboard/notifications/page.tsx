@@ -5,9 +5,10 @@ import { useTranslations } from "next-intl";
 import { useAuth } from "@/lib/auth";
 import { Bell, Check, CheckCheck, RefreshCw, Crown, Shield, User, Eye, Mail } from "lucide-react";
 import { notificationsApi, Notification } from "@/lib/api";
+import { formatDate as formatDateUtil } from "@/lib/date-utils";
 
 export default function NotificationsPage() {
-  const { isAuthenticated, isLoading: authLoading } = useAuth();
+  const { isAuthenticated, isLoading: authLoading, user } = useAuth();
   const t = useTranslations("notifications");
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
@@ -96,7 +97,7 @@ export default function NotificationsPage() {
     if (diffMins < 60) return t("minutesAgo", { count: diffMins });
     if (diffHours < 24) return t("hoursAgo", { count: diffHours });
     if (diffDays < 7) return t("daysAgo", { count: diffDays });
-    return date.toLocaleDateString();
+    return formatDateUtil(dateString, user?.date_format);
   };
 
   if (authLoading || loading) {
