@@ -53,6 +53,7 @@ def _make_user(**kwargs) -> User:
         "full_name": "Alice Smith",
         "password_hash": "hashed",
         "is_active": True,
+        "date_format": "DD.MM.YYYY HH:mm",
     }
     defaults.update(kwargs)
     return User(**defaults)
@@ -180,6 +181,7 @@ def test_schema_user_create_and_response():
         email="a@example.com",
         full_name="Alice Smith",
         is_active=True,
+        date_format="DD.MM.YYYY HH:mm",
         created_at=now,
         updated_at=now,
     )

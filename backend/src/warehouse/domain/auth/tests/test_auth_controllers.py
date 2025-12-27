@@ -49,6 +49,7 @@ async def test_register_maps_response(controller: AuthController, auth_service_m
         email="alice@example.com",
         full_name="Alice Smith",
         is_active=True,
+        date_format="DD.MM.YYYY HH:mm",
         created_at=now,
         updated_at=now,
     )
@@ -74,6 +75,7 @@ async def test_login_success(controller: AuthController, auth_service_mock: Asyn
         email="alice@example.com",
         full_name="Alice Smith",
         is_active=True,
+        date_format="DD.MM.YYYY HH:mm",
         created_at=now,
         updated_at=now,
     )
@@ -116,6 +118,7 @@ def _make_user_response():
         email="alice@example.com",
         full_name="Alice Smith",
         is_active=True,
+        date_format="DD.MM.YYYY HH:mm",
         created_at=now,
         updated_at=now,
     )
@@ -163,7 +166,7 @@ async def test_update_me_success(controller: AuthController, auth_service_mock: 
     )
 
     auth_service_mock.update_profile.assert_awaited_once_with(
-        user.id, full_name="Alice Johnson", email=None
+        user.id, full_name="Alice Johnson", email=None, date_format=None
     )
     assert resp.full_name == "Alice Johnson"
 

@@ -1,4 +1,4 @@
-\restrict emgVrGdfshqPQc2LW6Q8USjoArqSIlrCBPTkEr1ehkDKwbEwxaRVBK2ZSJ5Ryuf
+\restrict IrvZBWL577UpA5gLFu7Q5A5hEf0osdRt4kuliQ41zLZzYIjku6nbE01djQwThh1
 
 -- Dumped from database version 18.1 (Debian 18.1-1.pgdg13+2)
 -- Dumped by pg_dump version 18.1
@@ -233,7 +233,8 @@ CREATE TABLE auth.users (
     is_active boolean DEFAULT true,
     is_superuser boolean DEFAULT false,
     created_at timestamp with time zone DEFAULT now(),
-    updated_at timestamp with time zone DEFAULT now()
+    updated_at timestamp with time zone DEFAULT now(),
+    date_format character varying(20) DEFAULT 'DD.MM.YYYY'::character varying
 );
 
 
@@ -1727,7 +1728,7 @@ ALTER TABLE ONLY warehouse.locations
 -- PostgreSQL database dump complete
 --
 
-\unrestrict emgVrGdfshqPQc2LW6Q8USjoArqSIlrCBPTkEr1ehkDKwbEwxaRVBK2ZSJ5Ryuf
+\unrestrict IrvZBWL577UpA5gLFu7Q5A5hEf0osdRt4kuliQ41zLZzYIjku6nbE01djQwThh1
 
 
 --
@@ -1737,4 +1738,5 @@ ALTER TABLE ONLY warehouse.locations
 INSERT INTO public.schema_migrations (version) VALUES
     ('001'),
     ('002'),
-    ('20251223201614');
+    ('20251223201614'),
+    ('20251227121316');

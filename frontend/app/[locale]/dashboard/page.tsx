@@ -3,7 +3,7 @@
 import { Icon } from "@/components/icons";
 import type * as LucideIcons from "lucide-react";
 import { useAuth } from "@/lib/auth";
-import { useRouter } from "@/navigation";
+import { Link, useRouter } from "@/navigation";
 import { useEffect, useState } from "react";
 import {
   dashboardApi,
@@ -112,11 +112,11 @@ export default function DashboardPage() {
     return `${diffDays}d ago`;
   };
 
-  const statCards: { name: string; value: string; iconName: IconName }[] = [
-    { name: t("totalItems"), value: stats?.total_items.toLocaleString() || "0", iconName: "Box" },
-    { name: t("locations"), value: stats?.total_locations.toString() || "0", iconName: "MapPin" },
-    { name: t("activeLoans"), value: stats?.active_loans.toString() || "0", iconName: "Users" },
-    { name: t("categories"), value: stats?.total_categories.toString() || "0", iconName: "Archive" },
+  const statCards: { name: string; value: string; iconName: IconName; href: string }[] = [
+    { name: t("totalItems"), value: stats?.total_items.toLocaleString() || "0", iconName: "Box", href: "/dashboard/inventory" },
+    { name: t("locations"), value: stats?.total_locations.toString() || "0", iconName: "MapPin", href: "/dashboard/locations" },
+    { name: t("activeLoans"), value: stats?.active_loans.toString() || "0", iconName: "Users", href: "/dashboard/loans" },
+    { name: t("categories"), value: stats?.total_categories.toString() || "0", iconName: "Archive", href: "/dashboard/categories" },
   ];
 
   const hasAlerts =
@@ -135,21 +135,23 @@ export default function DashboardPage() {
       {/* Stats Grid */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
         {statCards.map((stat) => (
-          <div
+          <Link
             key={stat.name}
+            href={stat.href}
             title={stat.name}
-            className="bg-card p-3 border-2 border-border shadow-sm cursor-default h-20 flex items-center justify-center"
+            className="bg-card p-3 border-2 border-border shadow-sm h-20 flex items-center justify-center hover:bg-muted hover:border-primary transition-colors"
           >
             <div className="flex items-center justify-center gap-3">
               <Icon name={stat.iconName} className="w-6 h-6 text-primary flex-shrink-0" />
               <p className="text-3xl font-bold text-foreground">{stat.value}</p>
             </div>
-          </div>
+          </Link>
         ))}
         {/* Total Value Card */}
-        <div
+        <Link
+          href="/dashboard/inventory"
           title={t("totalValue")}
-          className="bg-card p-3 border-2 border-border shadow-sm cursor-default h-20 flex items-center justify-center col-span-2 md:col-span-1"
+          className="bg-card p-3 border-2 border-border shadow-sm h-20 flex items-center justify-center col-span-2 md:col-span-1 hover:bg-muted hover:border-primary transition-colors"
         >
           <div className="flex items-center justify-center gap-3">
             <Icon name="DollarSign" className="w-6 h-6 text-primary flex-shrink-0" />
@@ -157,7 +159,7 @@ export default function DashboardPage() {
               {stats ? formatCurrency(stats.total_inventory_value, stats.currency_code) : "€0"}
             </p>
           </div>
-        </div>
+        </Link>
       </div>
 
       {/* Alerts Section */}

@@ -21,6 +21,7 @@ class UserResponse(msgspec.Struct):
     email: str
     full_name: str
     is_active: bool
+    date_format: str
     created_at: datetime
     updated_at: datetime
 
@@ -57,6 +58,7 @@ class ProfileUpdate(msgspec.Struct):
 
     full_name: str | None = None
     email: str | None = None
+    date_format: str | None = None
 
 
 class PasswordChange(msgspec.Struct):
