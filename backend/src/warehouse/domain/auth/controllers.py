@@ -72,6 +72,7 @@ class AuthController(Controller):
             email=user.email,
             full_name=user.full_name,
             is_active=user.is_active,
+            date_format=user.date_format,
             created_at=user.created_at,
             updated_at=user.updated_at,
         )
@@ -90,6 +91,7 @@ class AuthController(Controller):
             email=user.email,
             full_name=user.full_name,
             is_active=user.is_active,
+            date_format=user.date_format,
             created_at=user.created_at,
             updated_at=user.updated_at,
         )
@@ -110,6 +112,7 @@ class AuthController(Controller):
             email=user.email,
             full_name=user.full_name,
             is_active=user.is_active,
+            date_format=user.date_format,
             created_at=user.created_at,
             updated_at=user.updated_at,
         )
@@ -120,7 +123,9 @@ class AuthController(Controller):
         token = self._extract_token(request)
         try:
             user = await auth_service.get_current_user(token)
-            user = await auth_service.update_profile(user.id, full_name=data.full_name, email=data.email)
+            user = await auth_service.update_profile(
+                user.id, full_name=data.full_name, email=data.email, date_format=data.date_format
+            )
         except AppError as exc:
             raise exc.to_http_exception()
 
@@ -129,6 +134,7 @@ class AuthController(Controller):
             email=user.email,
             full_name=user.full_name,
             is_active=user.is_active,
+            date_format=user.date_format,
             created_at=user.created_at,
             updated_at=user.updated_at,
         )
@@ -148,6 +154,7 @@ class AuthController(Controller):
             email=user.email,
             full_name=user.full_name,
             is_active=user.is_active,
+            date_format=user.date_format,
             created_at=user.created_at,
             updated_at=user.updated_at,
         )

@@ -163,7 +163,13 @@ class AuthService:
 
         return user
 
-    async def update_profile(self, user_id: UUID, full_name: str | None = None, email: str | None = None) -> User:
+    async def update_profile(
+        self,
+        user_id: UUID,
+        full_name: str | None = None,
+        email: str | None = None,
+        date_format: str | None = None,
+    ) -> User:
         """Update user profile fields."""
         user = await self.repository.get_one_or_none(id=user_id)
         if not user:
@@ -177,6 +183,9 @@ class AuthService:
 
         if full_name is not None:
             user.full_name = full_name
+
+        if date_format is not None:
+            user.date_format = date_format
 
         user.updated_at = datetime.now(UTC).replace(tzinfo=None)
         await self.repository.session.commit()
