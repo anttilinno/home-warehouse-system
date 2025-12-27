@@ -262,6 +262,8 @@ def test_inventory_schemas():
         item_id=item_id,
         location_id=loc_id,
         quantity=4,
+        expiration_date=None,
+        warranty_expires=None,
         created_at=datetime.datetime(2024, 1, 1, 0, 0, 0),
         updated_at=datetime.datetime(2024, 1, 2, 0, 0, 0),
     )
@@ -270,6 +272,8 @@ def test_inventory_schemas():
     assert update.quantity == 4
     assert adjustment.quantity_change == -1
     assert response.id == inv_id
+    assert response.expiration_date is None
+    assert response.warranty_expires is None
 
     with pytest.raises(TypeError):
         InventoryCreate()  # type: ignore[call-arg]

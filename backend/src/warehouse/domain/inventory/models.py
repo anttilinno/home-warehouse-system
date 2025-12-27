@@ -1,9 +1,9 @@
 """Inventory domain models."""
 
-from datetime import datetime
+from datetime import date, datetime
 from uuid import UUID
 
-from sqlalchemy import DateTime, ForeignKey, Integer, UniqueConstraint, func
+from sqlalchemy import Date, DateTime, ForeignKey, Integer, UniqueConstraint, func
 from sqlalchemy.orm import Mapped, mapped_column
 
 from warehouse.lib.base import Base, TimestampMixin, UUIDPKMixin, WorkspaceMixin
@@ -25,6 +25,8 @@ class Inventory(Base, UUIDPKMixin, WorkspaceMixin, TimestampMixin):
         ForeignKey("warehouse.locations.id"), nullable=False
     )
     quantity: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    expiration_date: Mapped[date | None] = mapped_column(Date, nullable=True)
+    warranty_expires: Mapped[date | None] = mapped_column(Date, nullable=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
     )
