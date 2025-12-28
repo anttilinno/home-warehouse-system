@@ -10,6 +10,7 @@ import { useTranslations } from "next-intl";
 import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
 import { workspacesApi, WorkspaceMember, UserSearchResult, getTranslatedErrorMessage } from "@/lib/api";
+import { Link } from "@/navigation";
 
 const themeOptions: { value: string; iconName: IconName; labelKey: string }[] = [
   { value: "light", iconName: "Sun", labelKey: "themeLight" },
@@ -416,6 +417,33 @@ export default function SettingsPage() {
             </div>
           </div>
         )}
+
+        {/* Integrations */}
+        <div className="bg-card p-6 rounded-lg border shadow-sm">
+          <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
+            <Icon name="Plug" className="w-5 h-5" />
+            {t("integrations")}
+          </h3>
+          <p className="text-sm text-muted-foreground mb-4">
+            {t("integrationsDescription")}
+          </p>
+
+          <Link
+            href="/dashboard/settings/docspell"
+            className="flex items-center justify-between p-4 rounded-lg border border-border hover:border-primary/50 hover:bg-muted/50 transition-colors"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                <Icon name="FileText" className="w-5 h-5 text-primary" />
+              </div>
+              <div>
+                <p className="font-medium text-foreground">{t("docspellTitle")}</p>
+                <p className="text-sm text-muted-foreground">{t("docspellDescription")}</p>
+              </div>
+            </div>
+            <Icon name="ChevronRight" className="w-5 h-5 text-muted-foreground" />
+          </Link>
+        </div>
 
         {/* About */}
         <div className="bg-card p-6 rounded-lg border shadow-sm">

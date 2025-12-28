@@ -165,7 +165,6 @@ class ImportService:
                 zone=row.get("zone"),
                 shelf=row.get("shelf"),
                 bin=row.get("bin"),
-                short_code=row.get("short_code"),
                 parent_location_id=parent_id,
             )
             self.session.add(location)
@@ -304,11 +303,6 @@ class ImportService:
                 name=name,
                 description=row.get("description"),
                 category_id=category_id,
-                brand=row.get("brand"),
-                model=row.get("model"),
-                serial_number=row.get("serial_number"),
-                manufacturer=row.get("manufacturer"),
-                short_code=row.get("short_code"),
                 obsidian_vault_path=row.get("obsidian_vault_path"),
                 obsidian_note_path=row.get("obsidian_note_path"),
             )

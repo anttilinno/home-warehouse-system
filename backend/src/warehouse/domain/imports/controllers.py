@@ -4,7 +4,7 @@ from litestar import Controller, get, post, Request
 from litestar.datastructures import UploadFile
 from litestar.di import Provide
 from litestar.enums import RequestEncodingType
-from litestar.params import Body
+from litestar.params import Body, Parameter
 from litestar.status_codes import HTTP_200_OK
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -41,7 +41,7 @@ class ImportController(Controller):
         import_service: ImportService,
         workspace: WorkspaceContext,
         data: UploadFile = Body(media_type=RequestEncodingType.MULTI_PART),
-        entity_type: str = Body(media_type=RequestEncodingType.MULTI_PART),
+        entity_type: str = Parameter(query="entity_type"),
     ) -> ImportResult:
         """Upload and import a CSV or Excel file.
 

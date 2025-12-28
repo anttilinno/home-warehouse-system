@@ -26,6 +26,7 @@ import {
 import { cn } from "@/lib/utils";
 import { CategorySelect } from "@/components/ui/category-select";
 import { FavoriteButton } from "@/components/ui/favorite-button";
+import { LinkedDocuments } from "@/components/docspell";
 
 export default function ItemsPage() {
   const { isAuthenticated, isLoading: authLoading, canEdit } = useAuth();
@@ -429,17 +430,17 @@ function CreateEditModal({
     <div className="fixed inset-0 z-50 flex items-center justify-center" onClick={onClose}>
       <div className="absolute inset-0 bg-black/50" />
       <div
-        className="relative z-10 w-full max-w-md m-4 bg-background border rounded-lg shadow-xl"
+        className="relative z-10 w-full max-w-lg m-4 bg-background border rounded-lg shadow-xl max-h-[90vh] flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between p-4 border-b">
           <h2 className="text-lg font-semibold">{getModalTitle()}</h2>
-          <button onClick={onClose} className="p-1 rounded hover:bg-muted">
+          <button type="button" onClick={onClose} className="p-1 rounded hover:bg-muted">
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-4 space-y-4">
+        <form onSubmit={handleSubmit} className="p-4 space-y-4 overflow-y-auto flex-1">
           {error && (
             <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md">
               <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
@@ -561,6 +562,13 @@ function CreateEditModal({
               </div>
             </div>
           </div>
+
+          {/* Docspell Linked Documents - only show in edit mode */}
+          {isEdit && item && (
+            <div className="border-t pt-4 mt-4">
+              <LinkedDocuments itemId={item.id} itemName={item.name} />
+            </div>
+          )}
 
           <div className="flex justify-end gap-3 pt-4">
             <button

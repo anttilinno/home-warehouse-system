@@ -1104,6 +1104,157 @@ export const workspaceStorage = {
   },
 };
 
+// Docspell interfaces and API
+export interface DocspellSettings {
+  id: string;
+  workspace_id: string;
+  base_url: string;
+  collective_name: string;
+  username: string;
+  sync_tags_enabled: boolean;
+  is_enabled: boolean;
+  last_sync_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface DocspellSettingsCreate {
+  base_url: string;
+  collective_name: string;
+  username: string;
+  password: string;
+  sync_tags_enabled?: boolean;
+}
+
+export interface DocspellSettingsUpdate {
+  base_url?: string;
+  collective_name?: string;
+  username?: string;
+  password?: string;
+  sync_tags_enabled?: boolean;
+  is_enabled?: boolean;
+}
+
+export interface DocspellConnectionTest {
+  success: boolean;
+  message: string;
+  version: string | null;
+}
+
+export interface DocspellDocument {
+  id: string;
+  name: string;
+  date: string | null;
+  correspondent: string | null;
+  tags: string[];
+  folder: string | null;
+}
+
+export interface DocspellSearchResult {
+  items: DocspellDocument[];
+  total: number;
+}
+
+export interface DocspellTag {
+  id: string;
+  name: string;
+  category: string | null;
+}
+
+export interface TagSyncResult {
+  tags_created_in_warehouse: number;
+  tags_created_in_docspell: number;
+  tags_matched: number;
+}
+
+export interface ItemAttachment {
+  id: string;
+  item_id: string;
+  attachment_type: 'PHOTO' | 'MANUAL' | 'RECEIPT' | 'WARRANTY' | 'OTHER';
+  title: string | null;
+  is_primary: boolean;
+  docspell_item_id: string | null;
+  created_at: string;
+  updated_at: string;
+  docspell_document: DocspellDocument | null;
+}
+
+export interface LinkDocumentRequest {
+  docspell_item_id: string;
+  attachment_type?: 'PHOTO' | 'MANUAL' | 'RECEIPT' | 'WARRANTY' | 'OTHER';
+  title?: string;
+}
+
+export const docspellApi = {
+  getSettings: async (): Promise<DocspellSettings | null> => {
+    try {
+      return await apiClient.get<DocspellSettings>('/docspell/settings');
+    } catch (error) {
+      // Return null if not configured (404)
+      if (error instanceof Error && error.message.includes('not found')) {
+        return null;
+      }
+      throw error;
+    }
+  },
+
+  createSettings: async (data: DocspellSettingsCreate): Promise<DocspellSettings> => {
+    return apiClient.post<DocspellSettings>('/docspell/settings', data);
+  },
+
+  updateSettings: async (data: DocspellSettingsUpdate): Promise<DocspellSettings> => {
+    return apiClient.patch<DocspellSettings>('/docspell/settings', data);
+  },
+
+  deleteSettings: async (): Promise<void> => {
+    return apiClient.delete('/docspell/settings');
+  },
+
+  testConnection: async (): Promise<DocspellConnectionTest> => {
+    return apiClient.get<DocspellConnectionTest>('/docspell/test');
+  },
+
+  searchDocuments: async (query: string, limit: number = 20, offset: number = 0): Promise<DocspellSearchResult> => {
+    const params = new URLSearchParams();
+    params.append('q', query);
+    params.append('limit', limit.toString());
+    params.append('offset', offset.toString());
+    return apiClient.get<DocspellSearchResult>(`/docspell/search?${params.toString()}`);
+  },
+
+  getDocument: async (documentId: string): Promise<DocspellDocument | null> => {
+    try {
+      return await apiClient.get<DocspellDocument>(`/docspell/documents/${documentId}`);
+    } catch (error) {
+      if (error instanceof Error && error.message.includes('not found')) {
+        return null;
+      }
+      throw error;
+    }
+  },
+
+  getTags: async (): Promise<DocspellTag[]> => {
+    return apiClient.get<DocspellTag[]>('/docspell/tags');
+  },
+
+  syncTags: async (direction: 'to_docspell' | 'from_docspell' | 'both' = 'both'): Promise<TagSyncResult> => {
+    return apiClient.post<TagSyncResult>('/docspell/tags/sync', { direction });
+  },
+
+  // Item attachment methods
+  getItemAttachments: async (itemId: string): Promise<ItemAttachment[]> => {
+    return apiClient.get<ItemAttachment[]>(`/docspell/items/${itemId}/attachments`);
+  },
+
+  linkDocument: async (itemId: string, data: LinkDocumentRequest): Promise<ItemAttachment> => {
+    return apiClient.post<ItemAttachment>(`/docspell/items/${itemId}/attachments`, data);
+  },
+
+  unlinkDocument: async (itemId: string, attachmentId: string): Promise<void> => {
+    return apiClient.delete(`/docspell/items/${itemId}/attachments/${attachmentId}`);
+  },
+};
+
 // Error translation utilities
 export const getTranslatedErrorMessage = (errorMessage: string, t: (key: string) => string): string => {
   // Map common backend error messages to error codes

@@ -19,6 +19,7 @@ from warehouse.database import get_db_config
 from warehouse.domain.auth.controllers import AuthController
 from warehouse.domain.containers.controllers import ContainerController
 from warehouse.domain.dashboard.controllers import DashboardController
+from warehouse.domain.docspell.controllers import DocspellController
 from warehouse.domain.exports.controllers import ExportController
 from warehouse.domain.items.controllers import CategoryController, ItemController
 from warehouse.domain.locations.controllers import LocationController
@@ -126,19 +127,20 @@ def create_app(config: Config | None = None) -> Litestar:
 
     return Litestar(
         route_handlers=[
+            AnalyticsController,
             AuthController,
+            BorrowerController,
+            CategoryController,
             ContainerController,
             DashboardController,
+            DocspellController,
             ExportController,
-            CategoryController,
             FavoriteController,
             ImportController,
-            ItemController,
-            LocationController,
             InventoryController,
-            BorrowerController,
+            ItemController,
             LoanController,
-            AnalyticsController,
+            LocationController,
             NotificationController,
         ],
         plugins=[SQLAlchemyPlugin(db_config)],

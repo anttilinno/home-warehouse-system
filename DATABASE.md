@@ -122,6 +122,27 @@ User notifications for various events in the system.
 - `ix_notifications_workspace` on `workspace_id`
 - `ix_notifications_created` on `created_at DESC`
 
+#### `auth.workspace_docspell_settings`
+Per-workspace Docspell integration configuration. Each workspace can connect to a different Docspell instance.
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `id` | UUID | Primary key (uuidv7) |
+| `workspace_id` | UUID | Reference to `auth.workspaces` (CASCADE delete, unique) |
+| `base_url` | VARCHAR(500) | Docspell instance URL (e.g., https://docs.example.com) |
+| `collective_name` | VARCHAR(100) | Docspell collective name (tenant/organization) |
+| `username` | VARCHAR(100) | Docspell username |
+| `password_encrypted` | TEXT | Encrypted password (Fernet encryption at application layer) |
+| `sync_tags_enabled` | BOOLEAN | Enable tag synchronization (default: false) |
+| `is_enabled` | BOOLEAN | Enable/disable integration (default: true) |
+| `last_sync_at` | TIMESTAMPTZ | Last tag synchronization timestamp |
+| `created_at` | TIMESTAMPTZ | Creation timestamp |
+| `updated_at` | TIMESTAMPTZ | Last update timestamp |
+
+**Indexes:**
+- `ix_workspace_docspell_settings_workspace` on `workspace_id`
+- Unique constraint on `workspace_id`
+
 ### Warehouse Schema
 
 > **Note:** All warehouse tables include a `workspace_id` column for multi-tenant isolation.
@@ -603,6 +624,20 @@ erDiagram
         timestamptz created_at
     }
 
+    auth_workspace_docspell_settings {
+        uuid id PK
+        uuid workspace_id FK
+        varchar_500 base_url
+        varchar_100 collective_name
+        varchar_100 username
+        text password_encrypted
+        boolean sync_tags_enabled
+        boolean is_enabled
+        timestamptz last_sync_at
+        timestamptz created_at
+        timestamptz updated_at
+    }
+
     warehouse_categories {
         uuid id PK
         uuid workspace_id FK
@@ -748,6 +783,7 @@ erDiagram
     auth_workspaces ||--o{ auth_workspace_exports : "workspace_id"
     auth_users ||--o{ auth_notifications : "user_id"
     auth_workspaces ||--o{ auth_notifications : "workspace_id"
+    auth_workspaces ||--o| auth_workspace_docspell_settings : "workspace_id"
     auth_workspaces ||--o{ warehouse_locations : "workspace_id"
     auth_workspaces ||--o{ warehouse_items : "workspace_id"
     auth_workspaces ||--o{ warehouse_companies : "workspace_id"
@@ -776,22 +812,23 @@ erDiagram
 3. **Users** → **OAuth Accounts**: Users can have linked external OAuth accounts
 4. **Workspaces** → **Workspace Exports**: Track data exports for audit
 5. **Users** → **Notifications**: Users receive notifications
-6. **Workspaces** → **All warehouse tables**: Complete data isolation per workspace
-7. **Categories** → **Categories** (self-referencing): Hierarchical category structure
-8. **Locations** → **Locations** (self-referencing): Hierarchical location structure
-9. **Locations** → **Containers**: Containers belong to locations
-10. **Categories** → **Items**: Items belong to categories (any level)
-11. **Companies** → **Items**: Items can be linked to where they were purchased
-12. **Items** ↔ **Labels**: Many-to-many via `item_labels` junction table
-13. **Items** → **Attachments**: Items can have attached files or Docspell documents
-14. **Files** → **Attachments**: Uploaded files are linked via attachments
-15. **Items** → **Inventory**: Inventory entries reference items
-16. **Locations** → **Inventory**: Inventory entries reference locations
-17. **Containers** → **Inventory**: Inventory entries can optionally be in containers
-18. **Containers** → **Container Tags**: Containers can have RFID/NFC/QR tags
-19. **Inventory** → **Loans**: Loans reference specific inventory entries
-20. **Borrowers** → **Loans**: Loans reference borrowers
-21. **Inventory** → **Inventory Movements**: Movement history for inventory
-22. **Users** → **Inventory Movements**: Track who moved items
-23. **Users** → **Favorites**: Users can pin items, locations, or containers
-24. **Users** → **Activity Log**: Track who made changes
+6. **Workspaces** → **Docspell Settings**: Each workspace can have one Docspell integration
+7. **Workspaces** → **All warehouse tables**: Complete data isolation per workspace
+8. **Categories** → **Categories** (self-referencing): Hierarchical category structure
+9. **Locations** → **Locations** (self-referencing): Hierarchical location structure
+10. **Locations** → **Containers**: Containers belong to locations
+11. **Categories** → **Items**: Items belong to categories (any level)
+12. **Companies** → **Items**: Items can be linked to where they were purchased
+13. **Items** ↔ **Labels**: Many-to-many via `item_labels` junction table
+14. **Items** → **Attachments**: Items can have attached files or Docspell documents
+15. **Files** → **Attachments**: Uploaded files are linked via attachments
+16. **Items** → **Inventory**: Inventory entries reference items
+17. **Locations** → **Inventory**: Inventory entries reference locations
+18. **Containers** → **Inventory**: Inventory entries can optionally be in containers
+19. **Containers** → **Container Tags**: Containers can have RFID/NFC/QR tags
+20. **Inventory** → **Loans**: Loans reference specific inventory entries
+21. **Borrowers** → **Loans**: Loans reference borrowers
+22. **Inventory** → **Inventory Movements**: Movement history for inventory
+23. **Users** → **Inventory Movements**: Track who moved items
+24. **Users** → **Favorites**: Users can pin items, locations, or containers
+25. **Users** → **Activity Log**: Track who made changes

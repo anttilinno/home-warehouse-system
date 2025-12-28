@@ -1,4 +1,4 @@
-\restrict nRQYm9PnrzpFWoM5RUXsnp8LjxTT9nzDW8G489q964d0VJaqlfprV1gyTZ6ZAb8
+\restrict TbB5g3KR5o1vLqgZc3jJamltXYg3g9QuVWo2nHjqTGTgwaGmBOZ6GVcS3YPBQO4
 
 -- Dumped from database version 18.1 (Debian 18.1-1.pgdg13+2)
 -- Dumped by pg_dump version 18.1
@@ -258,6 +258,46 @@ CREATE TABLE auth.users (
     date_format character varying(20) DEFAULT 'DD.MM.YYYY'::character varying,
     language character varying(5) DEFAULT 'en'::character varying NOT NULL
 );
+
+
+--
+-- Name: workspace_docspell_settings; Type: TABLE; Schema: auth; Owner: -
+--
+
+CREATE TABLE auth.workspace_docspell_settings (
+    id uuid DEFAULT uuidv7() NOT NULL,
+    workspace_id uuid NOT NULL,
+    base_url character varying(500) NOT NULL,
+    collective_name character varying(100) NOT NULL,
+    username character varying(100) NOT NULL,
+    password_encrypted text NOT NULL,
+    sync_tags_enabled boolean DEFAULT false,
+    is_enabled boolean DEFAULT true,
+    last_sync_at timestamp with time zone,
+    created_at timestamp with time zone DEFAULT now(),
+    updated_at timestamp with time zone DEFAULT now()
+);
+
+
+--
+-- Name: TABLE workspace_docspell_settings; Type: COMMENT; Schema: auth; Owner: -
+--
+
+COMMENT ON TABLE auth.workspace_docspell_settings IS 'Per-workspace Docspell integration configuration. Each workspace can connect to a different Docspell instance.';
+
+
+--
+-- Name: COLUMN workspace_docspell_settings.collective_name; Type: COMMENT; Schema: auth; Owner: -
+--
+
+COMMENT ON COLUMN auth.workspace_docspell_settings.collective_name IS 'Docspell collective name - equivalent to a tenant/organization in Docspell.';
+
+
+--
+-- Name: COLUMN workspace_docspell_settings.password_encrypted; Type: COMMENT; Schema: auth; Owner: -
+--
+
+COMMENT ON COLUMN auth.workspace_docspell_settings.password_encrypted IS 'Encrypted password for Docspell authentication. Encrypted at application layer using Fernet.';
 
 
 --
@@ -760,6 +800,22 @@ ALTER TABLE ONLY auth.users
 
 
 --
+-- Name: workspace_docspell_settings workspace_docspell_settings_pkey; Type: CONSTRAINT; Schema: auth; Owner: -
+--
+
+ALTER TABLE ONLY auth.workspace_docspell_settings
+    ADD CONSTRAINT workspace_docspell_settings_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: workspace_docspell_settings workspace_docspell_settings_workspace_id_key; Type: CONSTRAINT; Schema: auth; Owner: -
+--
+
+ALTER TABLE ONLY auth.workspace_docspell_settings
+    ADD CONSTRAINT workspace_docspell_settings_workspace_id_key UNIQUE (workspace_id);
+
+
+--
 -- Name: workspace_exports workspace_exports_pkey; Type: CONSTRAINT; Schema: auth; Owner: -
 --
 
@@ -1069,6 +1125,13 @@ CREATE INDEX ix_password_reset_tokens_hash ON auth.password_reset_tokens USING b
 --
 
 CREATE INDEX ix_password_reset_tokens_user ON auth.password_reset_tokens USING btree (user_id);
+
+
+--
+-- Name: ix_workspace_docspell_settings_workspace; Type: INDEX; Schema: auth; Owner: -
+--
+
+CREATE INDEX ix_workspace_docspell_settings_workspace ON auth.workspace_docspell_settings USING btree (workspace_id);
 
 
 --
@@ -1430,6 +1493,14 @@ ALTER TABLE ONLY auth.password_reset_tokens
 
 ALTER TABLE ONLY auth.user_oauth_accounts
     ADD CONSTRAINT user_oauth_accounts_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE;
+
+
+--
+-- Name: workspace_docspell_settings workspace_docspell_settings_workspace_id_fkey; Type: FK CONSTRAINT; Schema: auth; Owner: -
+--
+
+ALTER TABLE ONLY auth.workspace_docspell_settings
+    ADD CONSTRAINT workspace_docspell_settings_workspace_id_fkey FOREIGN KEY (workspace_id) REFERENCES auth.workspaces(id) ON DELETE CASCADE;
 
 
 --
@@ -1796,7 +1867,7 @@ ALTER TABLE ONLY warehouse.locations
 -- PostgreSQL database dump complete
 --
 
-\unrestrict nRQYm9PnrzpFWoM5RUXsnp8LjxTT9nzDW8G489q964d0VJaqlfprV1gyTZ6ZAb8
+\unrestrict TbB5g3KR5o1vLqgZc3jJamltXYg3g9QuVWo2nHjqTGTgwaGmBOZ6GVcS3YPBQO4
 
 
 --
@@ -1810,4 +1881,5 @@ INSERT INTO public.schema_migrations (version) VALUES
     ('20251227121316'),
     ('20251227142407'),
     ('20251227143353'),
-    ('20251227173251');
+    ('20251227173251'),
+    ('20251228125630');

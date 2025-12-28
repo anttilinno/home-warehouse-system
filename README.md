@@ -115,17 +115,43 @@ The backend is built with Litestar and runs on Granian ASGI server.
 
 ### Test Coverage
 
-Backend test coverage: **93%** (163 tests, 4 skipped)
+#### Unit Tests
 
-| Module | Coverage |
-|--------|----------|
-| Auth | 96-100% |
-| Inventory | 100% |
-| Items | 97-100% |
-| Loans | 100% (services/controllers) |
-| Locations | 100% |
-| Containers | 27-56% (needs tests) |
-| Dashboard | 26-86% (needs tests) |
+| Domain | Test Files | Status |
+|--------|------------|--------|
+| auth | 5 | Complete |
+| inventory | 3 | Complete |
+| items (+ categories) | 3 | Complete |
+| loans (+ borrowers) | 3 | Complete |
+| locations | 2 | Complete |
+| notifications | 3 | Complete |
+| favorites | 1 | Complete |
+| analytics | 2 | Complete |
+| containers | 2 | Complete |
+| dashboard | 2 | Complete |
+| email | 2 | Complete |
+| exports | 2 | Complete |
+| imports | 4 | Complete |
+
+#### E2E Tests
+
+| Feature | Test File | Status |
+|---------|-----------|--------|
+| auth | test_auth_flow.py | Complete |
+| analytics | test_analytics_flow.py | Complete |
+| borrowers | test_borrowers_flow.py | Complete |
+| categories | test_categories_flow.py | Complete |
+| containers | test_containers_flow.py | Complete |
+| dashboard | test_dashboard_flow.py | Complete |
+| favorites | test_favorites_flow.py | Complete |
+| inventory | test_inventory_flow.py | Complete |
+| items | test_items_flow.py | Complete |
+| loans | test_loan_flow.py | Complete |
+| locations | test_locations_flow.py | Complete |
+| notifications | test_notifications_flow.py | Complete |
+| exports | test_exports_flow.py | Complete |
+| imports | test_imports_flow.py | Complete |
+| password reset | test_password_reset_flow.py | Complete |
 
 ### Frontend Commands
 

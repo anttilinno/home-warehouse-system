@@ -14,6 +14,8 @@ DEFAULT_DB_URL = "postgresql+asyncpg://wh:wh@localhost:5432/warehouse_dev"
 DEFAULT_REDIS_URL = "redis://localhost:6379/0"
 DEFAULT_SECRET_KEY = "e2e-secret-key"
 DEFAULT_APP_DEBUG = "true"
+# Fernet key for encryption (generate with: from cryptography.fernet import Fernet; Fernet.generate_key())
+DEFAULT_ENCRYPTION_KEY = "zKRYz0DXaJL-rqLN1rJJKVSv-7zVJnM1gBg7gBxKe8Y="
 
 
 def _ensure_env() -> None:
@@ -22,6 +24,7 @@ def _ensure_env() -> None:
     os.environ.setdefault("REDIS_URL", DEFAULT_REDIS_URL)
     os.environ.setdefault("SECRET_KEY", DEFAULT_SECRET_KEY)
     os.environ.setdefault("APP_DEBUG", DEFAULT_APP_DEBUG)
+    os.environ.setdefault("ENCRYPTION_KEY", DEFAULT_ENCRYPTION_KEY)
 
 
 @pytest.fixture(scope="session")

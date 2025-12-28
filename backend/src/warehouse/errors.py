@@ -48,6 +48,16 @@ class ErrorCode(Enum):
 
     USER_NOT_FOUND = ("USER_NOT_FOUND", "User not found")
 
+    DOCSPELL_SETTINGS_EXISTS = ("DOCSPELL_SETTINGS_EXISTS", "Docspell settings already exist for this workspace")
+    DOCSPELL_SETTINGS_NOT_FOUND = ("DOCSPELL_SETTINGS_NOT_FOUND", "Docspell settings not found")
+    DOCSPELL_NOT_CONFIGURED = ("DOCSPELL_NOT_CONFIGURED", "Docspell is not configured for this workspace")
+    DOCSPELL_DISABLED = ("DOCSPELL_DISABLED", "Docspell integration is disabled")
+    DOCSPELL_CONNECTION_FAILED = ("DOCSPELL_CONNECTION_FAILED", "Failed to connect to Docspell")
+    DOCSPELL_TAG_SYNC_DISABLED = ("DOCSPELL_TAG_SYNC_DISABLED", "Tag synchronization is disabled")
+    DOCSPELL_DOCUMENT_NOT_FOUND = ("DOCSPELL_DOCUMENT_NOT_FOUND", "Document not found in Docspell")
+
+    ATTACHMENT_NOT_FOUND = ("ATTACHMENT_NOT_FOUND", "Attachment not found")
+
     GENERAL_BAD_REQUEST = ("BAD_REQUEST", "Request is invalid")
 
     @property

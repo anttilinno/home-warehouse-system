@@ -20,7 +20,60 @@ services:
     volumes:
       - redis_data:/data
 
+  # Docspell PostgreSQL (separate database)
+  docspell-postgres:
+    image: postgres:18
+    container_name: warehouse-docspell-postgres
+    environment:
+      POSTGRES_USER: docspell
+      POSTGRES_PASSWORD: docspell
+      POSTGRES_DB: docspell
+    ports:
+      - "5433:5432"
+    volumes:
+      - docspell_postgres_data:/var/lib/postgresql
+
+  # Docspell REST Server
+  docspell-restserver:
+    image: docspell/restserver:latest
+    container_name: warehouse-docspell-restserver
+    depends_on:
+      - docspell-postgres
+    environment:
+      DOCSPELL_SERVER_BIND_ADDRESS: "0.0.0.0"
+      DOCSPELL_SERVER_INTERNAL_URL: "http://docspell-restserver:7880"
+      DOCSPELL_SERVER_ADMIN_ENDPOINT_SECRET: "admin-secret-change-me"
+      DOCSPELL_SERVER_BACKEND_SIGNUP_MODE: "open"
+      DOCSPELL_SERVER_BACKEND_JDBC_URL: "jdbc:postgresql://docspell-postgres:5432/docspell"
+      DOCSPELL_SERVER_BACKEND_JDBC_USER: "docspell"
+      DOCSPELL_SERVER_BACKEND_JDBC_PASSWORD: "docspell"
+      DOCSPELL_SERVER_AUTH_SERVER_SECRET: "b64:EirgOHnTqkYhwAmEOep73O8XjbwQBqyh1EW="
+    ports:
+      - "7880:7880"
+    volumes:
+      - docspell_data:/opt/docspell
+
+  # Docspell JOEX (Job Executor)
+  docspell-joex:
+    image: docspell/joex:latest
+    container_name: warehouse-docspell-joex
+    depends_on:
+      - docspell-restserver
+    environment:
+      DOCSPELL_JOEX_APP_ID: "joex-1"
+      DOCSPELL_JOEX_BIND_ADDRESS: "0.0.0.0"
+      DOCSPELL_JOEX_BASE_URL: "http://docspell-joex:7878"
+      DOCSPELL_JOEX_JDBC_URL: "jdbc:postgresql://docspell-postgres:5432/docspell"
+      DOCSPELL_JOEX_JDBC_USER: "docspell"
+      DOCSPELL_JOEX_JDBC_PASSWORD: "docspell"
+    ports:
+      - "7878:7878"
+    volumes:
+      - docspell_data:/opt/docspell
+
 volumes:
   postgres_data:
   redis_data:
+  docspell_postgres_data:
+  docspell_data:
 
