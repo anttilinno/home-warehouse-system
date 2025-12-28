@@ -12,9 +12,17 @@ from warehouse.domain.oauth.models import UserOAuthAccount
 from warehouse.domain.oauth.repository import OAuthAccountRepository
 from warehouse.domain.oauth.schemas import OAuthAccountResponse
 
+# Singleton OAuth service to persist state across requests
+_oauth_service: OAuthService | None = None
+
 
 def create_oauth_service(config: Config) -> OAuthService:
-    """Create configured OAuth service with providers."""
+    """Get or create the singleton OAuth service with providers."""
+    global _oauth_service
+
+    if _oauth_service is not None:
+        return _oauth_service
+
     service = OAuthService()
 
     # Register Google provider if configured
@@ -33,6 +41,7 @@ def create_oauth_service(config: Config) -> OAuthService:
         )
         service.register(github)
 
+    _oauth_service = service
     return service
 
 
@@ -150,7 +159,7 @@ class OAuthAccountService:
     ) -> UserOAuthAccount:
         """Create OAuth account for user."""
         display_name = self._get_display_name(user_info)
-        return await self.repository.create(
+        account = await self.repository.create(
             user_id=user_id,
             provider=provider,
             provider_user_id=user_info.oauth_id,
@@ -158,6 +167,9 @@ class OAuthAccountService:
             display_name=display_name,
             avatar_url=user_info.avatar_url,
         )
+        # Commit immediately to ensure OAuth account is persisted before redirect
+        await self.session.commit()
+        return account
 
     async def _create_oauth_user(self, email: str, full_name: str) -> User:
         """Create new user from OAuth info."""
@@ -192,6 +204,9 @@ class OAuthAccountService:
         )
         self.session.add(membership)
         await self.session.flush()
+
+        # Commit to ensure new user is persisted before redirect
+        await self.session.commit()
 
         return user
 

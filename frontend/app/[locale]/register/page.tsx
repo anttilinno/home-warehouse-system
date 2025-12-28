@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter, Link } from "@/navigation";
 import { Eye, EyeOff, Mail, Lock, User, UserCheck, Check, X } from "lucide-react";
 import { useTranslations, useLocale } from "next-intl";
+import { useSearchParams } from "next/navigation";
 import { authApi, oauthApi, getTranslatedErrorMessage } from "@/lib/api";
 import { checkPasswordStrength, PasswordStrength, useAuth } from "@/lib/auth";
 import { type Locale } from "@/i18n";
@@ -14,6 +15,7 @@ export default function RegisterPage() {
   const te = useTranslations(); // For error translations
   const tp = useTranslations('passwordStrength');
   const currentLocale = useLocale() as Locale;
+  const searchParams = useSearchParams();
 
   const [formData, setFormData] = useState({
     firstName: "",
@@ -29,8 +31,73 @@ export default function RegisterPage() {
   const [passwordStrength, setPasswordStrength] = useState<PasswordStrength | null>(null);
   const [isRedirecting, setIsRedirecting] = useState(false);
   const [availableProviders, setAvailableProviders] = useState<string[]>([]);
+  // Initialize to true if there's a token in URL to prevent form flash
+  const [isProcessingOAuth, setIsProcessingOAuth] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return new URLSearchParams(window.location.search).has('token');
+    }
+    return false;
+  });
+  const oauthProcessingRef = useRef(false);
   const router = useRouter();
   const { login } = useAuth();
+
+  // Handle OAuth callback token
+  useEffect(() => {
+    // Guard against multiple executions
+    if (oauthProcessingRef.current) return;
+
+    const oauthError = searchParams.get('error');
+    if (oauthError === 'oauth_denied') {
+      setErrors({ general: t('oauthDenied') });
+      return;
+    } else if (oauthError) {
+      setErrors({ general: t('oauthError') });
+      return;
+    }
+
+    // Handle OAuth callback token
+    const token = searchParams.get('token');
+    const language = searchParams.get('language');
+    if (token) {
+      // Mark as processing to prevent re-execution
+      oauthProcessingRef.current = true;
+      setIsProcessingOAuth(true);
+
+      const completeOAuthLogin = async () => {
+        try {
+          const { tokenStorage } = await import('@/lib/api');
+          tokenStorage.setToken(token);
+
+          // Fetch user data and workspaces
+          const [userData, workspacesData] = await Promise.all([
+            authApi.getProfile(),
+            authApi.getWorkspaces(),
+          ]);
+
+          // Complete login with all data
+          login(token, userData, workspacesData);
+
+          // Redirect to dashboard with correct locale
+          const userLocale = (userData.language || language || 'en') as Locale;
+          if (userLocale !== currentLocale) {
+            router.replace("/dashboard", { locale: userLocale });
+          } else {
+            router.push("/dashboard");
+          }
+        } catch (err) {
+          console.error('OAuth registration completion failed:', err);
+          setErrors({ general: t('oauthError') });
+          setIsProcessingOAuth(false);
+          oauthProcessingRef.current = false;
+          const { tokenStorage } = await import('@/lib/api');
+          tokenStorage.removeToken();
+        }
+      };
+
+      completeOAuthLogin();
+    }
+  }, [searchParams, t, router, currentLocale, login]);
 
   // Fetch available OAuth providers
   useEffect(() => {
@@ -46,7 +113,8 @@ export default function RegisterPage() {
   }, []);
 
   const handleOAuthLogin = (provider: string) => {
-    const loginUrl = oauthApi.getLoginUrl(provider, `${window.location.origin}/${currentLocale}/dashboard`);
+    // Redirect back to register page to process the token, then redirect to dashboard
+    const loginUrl = oauthApi.getLoginUrl(provider, `${window.location.origin}/${currentLocale}/register`);
     window.location.href = loginUrl;
   };
 
@@ -138,6 +206,18 @@ export default function RegisterPage() {
       setErrors(prev => ({ ...prev, [field]: "" }));
     }
   };
+
+  // Show loading screen while processing OAuth (check both state and URL param)
+  if (isProcessingOAuth || searchParams.get('token')) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background px-4 py-8">
+        <div className="text-center">
+          <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-muted-foreground">{t('signingIn')}</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background px-4 py-8">

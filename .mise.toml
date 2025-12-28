@@ -9,7 +9,7 @@ DATABASE_URL = "postgresql+asyncpg://wh:wh@localhost:5432/warehouse_dev"
 DBMATE_DATABASE_URL = "postgresql://wh:wh@localhost:5432/warehouse_dev?sslmode=disable"
 APP_DEBUG = "true"
 
-# OAuth providers (uncomment and fill in to enable social login)
+# OAuth providers - add credentials to .mise.local.toml (ignored by git)
 # Get Google credentials: https://console.cloud.google.com/apis/credentials
 # GOOGLE_CLIENT_ID = ""
 # GOOGLE_CLIENT_SECRET = ""

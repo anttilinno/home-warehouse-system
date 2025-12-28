@@ -130,6 +130,16 @@ class AuthController(Controller):
             updated_at=user.updated_at,
         )
 
+    @get("/me/workspaces")
+    async def get_my_workspaces(self, request: Request, auth_service: AuthService) -> list[WorkspaceResponse]:
+        """Get current user's workspaces."""
+        token = self._extract_token(request)
+        try:
+            user = await auth_service.get_current_user(token)
+            return await auth_service.get_user_workspaces(user.id)
+        except AppError as exc:
+            raise exc.to_http_exception()
+
     @patch("/me")
     async def update_me(self, request: Request, data: ProfileUpdate, auth_service: AuthService) -> UserResponse:
         """Update current user profile."""

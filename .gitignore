@@ -52,6 +52,7 @@ htmlcov/
 
 # Mise
 .mise/
+.mise.local.toml
 
 # Docker
 *.log

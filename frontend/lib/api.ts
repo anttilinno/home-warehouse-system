@@ -233,6 +233,10 @@ export const authApi = {
     return apiClient.get<User>('/auth/me');
   },
 
+  getWorkspaces: async (): Promise<Workspace[]> => {
+    return apiClient.get<Workspace[]>('/auth/me/workspaces');
+  },
+
   updateProfile: async (data: ProfileUpdate): Promise<User> => {
     return apiClient.patch<User>('/auth/me', data);
   },

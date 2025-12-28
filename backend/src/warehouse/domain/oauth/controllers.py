@@ -80,7 +80,7 @@ class OAuthController(Controller):
         """Initiate OAuth login flow."""
         try:
             # Callback URL on the backend
-            callback_url = f"{config.app_url.rstrip('/')}/api/auth/oauth/{provider}/callback"
+            callback_url = f"{config.backend_url.rstrip('/')}/auth/oauth/{provider}/callback"
 
             auth_url = await oauth_service.get_authorization_url(
                 provider_name=provider,

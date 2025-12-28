@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter, Link } from "@/navigation";
 import { Eye, EyeOff, Mail, Lock } from "lucide-react";
 import { useTranslations, useLocale } from "next-intl";
@@ -20,31 +20,76 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [availableProviders, setAvailableProviders] = useState<string[]>([]);
+  // Initialize to true if there's a token in URL to prevent form flash
+  const [isProcessingOAuth, setIsProcessingOAuth] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return new URLSearchParams(window.location.search).has('token');
+    }
+    return false;
+  });
+  const oauthProcessingRef = useRef(false);
   const router = useRouter();
   const { login } = useAuth();
 
-  // Check for OAuth errors in URL
+  // Check for OAuth errors and handle OAuth callback token
   useEffect(() => {
+    // Guard against multiple executions
+    if (oauthProcessingRef.current) return;
+
     const oauthError = searchParams.get('error');
     if (oauthError === 'oauth_denied') {
       setError(t('oauthDenied'));
+      return;
     } else if (oauthError) {
       setError(t('oauthError'));
+      return;
     }
 
     // Handle OAuth callback token
     const token = searchParams.get('token');
     const language = searchParams.get('language');
     if (token) {
-      // OAuth login succeeded - redirect to dashboard
-      const userLocale = (language || 'en') as Locale;
-      if (userLocale !== currentLocale) {
-        router.replace("/dashboard", { locale: userLocale });
-      } else {
-        router.push("/dashboard");
-      }
+      // Mark as processing to prevent re-execution
+      oauthProcessingRef.current = true;
+      setIsProcessingOAuth(true);
+
+      // OAuth login succeeded - need to fetch user data and complete login
+      const completeOAuthLogin = async () => {
+        try {
+          // Temporarily set token to make API calls
+          const { tokenStorage } = await import('@/lib/api');
+          tokenStorage.setToken(token);
+
+          // Fetch user data and workspaces
+          const [userData, workspacesData] = await Promise.all([
+            authApi.getProfile(),
+            authApi.getWorkspaces(),
+          ]);
+
+          // Complete login with all data
+          login(token, userData, workspacesData);
+
+          // Redirect to dashboard with correct locale
+          const userLocale = (userData.language || language || 'en') as Locale;
+          if (userLocale !== currentLocale) {
+            router.replace("/dashboard", { locale: userLocale });
+          } else {
+            router.push("/dashboard");
+          }
+        } catch (err) {
+          console.error('OAuth login completion failed:', err);
+          setError(t('oauthError'));
+          setIsProcessingOAuth(false);
+          oauthProcessingRef.current = false;
+          // Clear the invalid token
+          const { tokenStorage } = await import('@/lib/api');
+          tokenStorage.removeToken();
+        }
+      };
+
+      completeOAuthLogin();
     }
-  }, [searchParams, t, router, currentLocale]);
+  }, [searchParams, t, router, currentLocale, login]);
 
   // Fetch available OAuth providers
   useEffect(() => {
@@ -60,7 +105,8 @@ export default function LoginPage() {
   }, []);
 
   const handleOAuthLogin = (provider: string) => {
-    const loginUrl = oauthApi.getLoginUrl(provider, `${window.location.origin}/${currentLocale}/dashboard`);
+    // Redirect back to login page to process the token, then login page will redirect to dashboard
+    const loginUrl = oauthApi.getLoginUrl(provider, `${window.location.origin}/${currentLocale}/login`);
     window.location.href = loginUrl;
   };
 
@@ -97,6 +143,18 @@ export default function LoginPage() {
       setIsLoading(false);
     }
   };
+
+  // Show loading screen while processing OAuth (check both state and URL param)
+  if (isProcessingOAuth || searchParams.get('token')) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background px-4">
+        <div className="text-center">
+          <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-muted-foreground">{t('signingIn')}</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background px-4">

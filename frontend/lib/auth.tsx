@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import { createContext, useContext, useEffect, useState, useCallback, ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
 import { tokenStorage, workspaceStorage, User, Workspace, authApi } from './api';
 
@@ -113,7 +113,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  const login = (token: string, userData: User, userWorkspaces: Workspace[]) => {
+  const login = useCallback((token: string, userData: User, userWorkspaces: Workspace[]) => {
     tokenStorage.setToken(token);
     localStorage.setItem('user', JSON.stringify(userData));
     localStorage.setItem('workspaces', JSON.stringify(userWorkspaces));
@@ -126,9 +126,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setCurrentWorkspaceState(userWorkspaces[0]);
       workspaceStorage.setWorkspaceId(userWorkspaces[0].id);
     }
-  };
+  }, []);
 
-  const logout = () => {
+  const logout = useCallback(() => {
     tokenStorage.removeToken();
     workspaceStorage.removeWorkspaceId();
     localStorage.removeItem('user');
@@ -139,24 +139,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsAuthenticated(false);
     // Don't redirect here - let the calling component handle the redirect
     // to maintain the current locale
-  };
+  }, []);
 
-  const setCurrentWorkspace = (workspace: Workspace) => {
+  const setCurrentWorkspace = useCallback((workspace: Workspace) => {
     setCurrentWorkspaceState(workspace);
     workspaceStorage.setWorkspaceId(workspace.id);
     // Also add to workspaces list if not already there
-    if (!workspaces.find(w => w.id === workspace.id)) {
-      const newWorkspaces = [...workspaces, workspace];
-      setWorkspaces(newWorkspaces);
-      localStorage.setItem('workspaces', JSON.stringify(newWorkspaces));
-    }
-  };
+    setWorkspaces(prev => {
+      if (!prev.find(w => w.id === workspace.id)) {
+        const newWorkspaces = [...prev, workspace];
+        localStorage.setItem('workspaces', JSON.stringify(newWorkspaces));
+        return newWorkspaces;
+      }
+      return prev;
+    });
+  }, []);
 
-  const refreshWorkspaces = async () => {
+  const refreshWorkspaces = useCallback(async () => {
     // Re-fetch workspaces from the auth/me endpoint would require a new backend endpoint
     // For now, this is a placeholder that can be called after creating a workspace
     // The setCurrentWorkspace function above already handles adding new workspaces to the list
-  };
+  }, []);
 
   // Viewers cannot edit (owner, admin, member can edit)
   const canEdit = currentWorkspace?.role !== "viewer";
