@@ -218,12 +218,12 @@ Additional environment variables (see `backend/.env.example`):
   - JSON for migration/re-import
   - Endpoint: `GET /exports/workspace?format=xlsx|json`
   - Tracks exports in `auth.workspace_exports` for audit
-- [ ] Integration with Docspell (document management)
+- [x] Integration with Docspell (document management)
   - Link items to Docspell documents (receipts, manuals, warranties)
   - Store Docspell document ID in `warehouse.attachments`
-  - Search Docspell from warehouse UI via REST API
-  - Auto-link: match item SKU/name with OCR-extracted text
+  - Search Docspell from warehouse UI via REST API (fulltext search)
   - Sync tags between warehouse labels and Docspell tags
+  - Per-workspace configuration with encrypted credentials
 - [x] Quick access features
   - Favorites: pin frequently accessed items/locations
   - Recently modified: quick view of recent changes
