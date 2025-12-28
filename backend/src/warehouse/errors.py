@@ -58,6 +58,11 @@ class ErrorCode(Enum):
 
     ATTACHMENT_NOT_FOUND = ("ATTACHMENT_NOT_FOUND", "Attachment not found")
 
+    OAUTH_PROVIDER_ERROR = ("OAUTH_PROVIDER_ERROR", "OAuth provider error")
+    OAUTH_STATE_INVALID = ("OAUTH_STATE_INVALID", "Invalid OAuth state")
+    OAUTH_STATE_EXPIRED = ("OAUTH_STATE_EXPIRED", "OAuth state expired")
+    OAUTH_UNLINK_FAILED = ("OAUTH_UNLINK_FAILED", "Cannot unlink OAuth account")
+
     GENERAL_BAD_REQUEST = ("BAD_REQUEST", "Request is invalid")
 
     @property

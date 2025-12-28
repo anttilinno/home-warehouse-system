@@ -29,6 +29,7 @@ from warehouse.domain.analytics.controllers import AnalyticsController
 from warehouse.domain.favorites.controllers import FavoriteController
 from warehouse.domain.imports.controllers import ImportController
 from warehouse.domain.notifications.controllers import NotificationController
+from warehouse.domain.oauth.controllers import OAuthController, OAuthAccountController
 
 logger = logging.getLogger(__name__)
 
@@ -142,6 +143,8 @@ def create_app(config: Config | None = None) -> Litestar:
             LoanController,
             LocationController,
             NotificationController,
+            OAuthController,
+            OAuthAccountController,
         ],
         plugins=[SQLAlchemyPlugin(db_config)],
         cors_config=cors_config,

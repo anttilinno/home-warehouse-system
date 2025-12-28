@@ -32,6 +32,11 @@ class Config:
     resend_api_key: str = ""
     email_from_address: str = "noreply@example.com"
     app_url: str = "http://localhost:3000"
+    # OAuth configuration
+    google_client_id: str = ""
+    google_client_secret: str = ""
+    github_client_id: str = ""
+    github_client_secret: str = ""
 
     @classmethod
     def from_env(cls) -> "Config":
@@ -45,6 +50,10 @@ class Config:
             resend_api_key=os.getenv("RESEND_API_KEY", ""),
             email_from_address=os.getenv("EMAIL_FROM_ADDRESS", "noreply@example.com"),
             app_url=os.getenv("APP_URL", "http://localhost:3000"),
+            google_client_id=os.getenv("GOOGLE_CLIENT_ID", ""),
+            google_client_secret=os.getenv("GOOGLE_CLIENT_SECRET", ""),
+            github_client_id=os.getenv("GITHUB_CLIENT_ID", ""),
+            github_client_secret=os.getenv("GITHUB_CLIENT_SECRET", ""),
         )
 
 

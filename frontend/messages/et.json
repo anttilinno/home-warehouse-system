@@ -62,7 +62,20 @@
     "john": "Jaan",
     "doe": "Tamm",
     "johnDoeExample": "jaan.tamm@näide.ee",
-    "backToHome": "← Tagasi koju"
+    "backToHome": "← Tagasi koju",
+    "orContinueWith": "või jätka kasutades",
+    "continueWithGoogle": "Jätka Google'iga",
+    "continueWithGithub": "Jätka GitHubiga",
+    "oauthError": "Autentimine ebaõnnestus. Palun proovi uuesti.",
+    "oauthDenied": "Autentimine tühistati.",
+    "linkedAccounts": "Ühendatud kontod",
+    "linkedAccountsDescription": "Halda oma ühendatud sotsiaalmeedia kontosid",
+    "noLinkedAccounts": "Ühendatud kontod puuduvad",
+    "linkAccount": "Ühenda konto",
+    "unlinkAccount": "Eemalda",
+    "unlinkSuccess": "Konto edukalt eemaldatud",
+    "unlinkFailed": "Konto eemaldamine ebaõnnestus",
+    "lastAccountWarning": "See on sinu ainus ühendatud konto. Sa ei saa seda eemaldada enne, kui oled parooli määranud."
   },
   "landing": {
     "title": "Kodulattu Haldamise Süsteem",
@@ -421,7 +434,12 @@
     "changing": "Muutmine...",
     "passwordChanged": "Parool edukalt muudetud",
     "passwordsDoNotMatch": "Paroolid ei kattu",
-    "passwordTooShort": "Parool peab olema vähemalt 8 tähemärki"
+    "passwordTooShort": "Parool peab olema vähemalt 8 tähemärki",
+    "linkedAccounts": "Ühendatud kontod",
+    "linkedAccountsDescription": "Halda oma ühendatud sotsiaalmeedia kontosid kiireks sisselogimiseks",
+    "noLinkedAccounts": "Ühendatud kontod puuduvad",
+    "linkAccount": "Ühenda",
+    "unlinkAccount": "Eemalda"
   },
   "settings": {
     "title": "Seaded",

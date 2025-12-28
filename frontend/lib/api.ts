@@ -253,6 +253,43 @@ export const authApi = {
   },
 };
 
+// OAuth types and API
+export interface OAuthAccount {
+  id: string;
+  provider: string;
+  email: string | null;
+  display_name: string | null;
+  avatar_url: string | null;
+  created_at: string;
+}
+
+export interface OAuthProvider {
+  provider: string;
+  enabled: boolean;
+}
+
+export const oauthApi = {
+  getProviders: async (): Promise<OAuthProvider[]> => {
+    return apiClient.get<OAuthProvider[]>('/auth/oauth/providers');
+  },
+
+  getLoginUrl: (provider: string, nextUrl?: string): string => {
+    const base = `${API_BASE_URL}/auth/oauth/${provider}/login`;
+    if (nextUrl) {
+      return `${base}?next=${encodeURIComponent(nextUrl)}`;
+    }
+    return base;
+  },
+
+  getLinkedAccounts: async (): Promise<OAuthAccount[]> => {
+    return apiClient.get<OAuthAccount[]>('/auth/me/oauth-accounts');
+  },
+
+  unlinkAccount: async (accountId: string): Promise<void> => {
+    return apiClient.delete(`/auth/me/oauth-accounts/${accountId}`);
+  },
+};
+
 // Workspace management interfaces and API
 export interface WorkspaceCreate {
   name: string;

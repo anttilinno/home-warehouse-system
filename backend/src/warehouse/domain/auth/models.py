@@ -2,6 +2,7 @@
 
 from datetime import datetime
 from enum import Enum
+from typing import TYPE_CHECKING
 from uuid import UUID
 
 from sqlalchemy import BigInteger, Boolean, DateTime, Enum as SAEnum, ForeignKey, String, Text, func
@@ -9,6 +10,9 @@ from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from warehouse.lib.base import Base, TimestampMixin, UUIDPKMixin
+
+if TYPE_CHECKING:
+    from warehouse.domain.oauth.models import UserOAuthAccount
 
 
 class WorkspaceRole(str, Enum):
@@ -57,6 +61,9 @@ class User(Base, UUIDPKMixin, TimestampMixin):
 
     workspace_memberships: Mapped[list["WorkspaceMember"]] = relationship(
         "WorkspaceMember", back_populates="user", foreign_keys="[WorkspaceMember.user_id]"
+    )
+    oauth_accounts: Mapped[list["UserOAuthAccount"]] = relationship(
+        "UserOAuthAccount", back_populates="user", foreign_keys="[UserOAuthAccount.user_id]"
     )
 
 

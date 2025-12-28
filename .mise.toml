@@ -9,6 +9,14 @@ DATABASE_URL = "postgresql+asyncpg://wh:wh@localhost:5432/warehouse_dev"
 DBMATE_DATABASE_URL = "postgresql://wh:wh@localhost:5432/warehouse_dev?sslmode=disable"
 APP_DEBUG = "true"
 
+# OAuth providers (uncomment and fill in to enable social login)
+# Get Google credentials: https://console.cloud.google.com/apis/credentials
+# GOOGLE_CLIENT_ID = ""
+# GOOGLE_CLIENT_SECRET = ""
+# Get GitHub credentials: https://github.com/settings/developers
+# GITHUB_CLIENT_ID = ""
+# GITHUB_CLIENT_SECRET = ""
+
 # Staging database URLs
 STAGING_DATABASE_URL = "postgresql+asyncpg://wh:wh@localhost:5432/warehouse_staging"
 STAGING_DBMATE_URL = "postgresql://wh:wh@localhost:5432/warehouse_staging?sslmode=disable"
@@ -67,7 +75,7 @@ run = "cd backend && uv run ruff format ."
 
 [tasks.fe-dev]
 description = "Run frontend dev server"
-run = "cd frontend && bun run dev"
+run = "cd frontend && rm -rf .next && bun run dev"
 
 [tasks.fe-build]
 description = "Build frontend"

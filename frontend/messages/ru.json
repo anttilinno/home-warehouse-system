@@ -62,7 +62,20 @@
     "john": "Иван",
     "doe": "Иванов",
     "johnDoeExample": "ivan.ivanov@primer.ru",
-    "backToHome": "← Вернуться на главную"
+    "backToHome": "← Вернуться на главную",
+    "orContinueWith": "или продолжить с",
+    "continueWithGoogle": "Продолжить с Google",
+    "continueWithGithub": "Продолжить с GitHub",
+    "oauthError": "Аутентификация не удалась. Пожалуйста, попробуйте снова.",
+    "oauthDenied": "Аутентификация была отменена.",
+    "linkedAccounts": "Привязанные аккаунты",
+    "linkedAccountsDescription": "Управляйте привязанными социальными аккаунтами",
+    "noLinkedAccounts": "Привязанные аккаунты отсутствуют",
+    "linkAccount": "Привязать аккаунт",
+    "unlinkAccount": "Отвязать",
+    "unlinkSuccess": "Аккаунт успешно отвязан",
+    "unlinkFailed": "Не удалось отвязать аккаунт",
+    "lastAccountWarning": "Это ваш единственный привязанный аккаунт. Вы не можете отвязать его, пока не установите пароль."
   },
   "landing": {
     "title": "Система управления домашним складом",
@@ -421,7 +434,12 @@
     "changing": "Изменение...",
     "passwordChanged": "Пароль успешно изменен",
     "passwordsDoNotMatch": "Пароли не совпадают",
-    "passwordTooShort": "Пароль должен быть не менее 8 символов"
+    "passwordTooShort": "Пароль должен быть не менее 8 символов",
+    "linkedAccounts": "Привязанные аккаунты",
+    "linkedAccountsDescription": "Управляйте привязанными социальными аккаунтами для быстрого входа",
+    "noLinkedAccounts": "Привязанные аккаунты отсутствуют",
+    "linkAccount": "Привязать",
+    "unlinkAccount": "Отвязать"
   },
   "settings": {
     "title": "Настройки",

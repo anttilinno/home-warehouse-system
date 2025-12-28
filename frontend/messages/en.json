@@ -62,7 +62,20 @@
     "john": "John",
     "doe": "Doe",
     "johnDoeExample": "john.doe@example.com",
-    "backToHome": "← Back to home"
+    "backToHome": "← Back to home",
+    "orContinueWith": "or continue with",
+    "continueWithGoogle": "Continue with Google",
+    "continueWithGithub": "Continue with GitHub",
+    "oauthError": "Authentication failed. Please try again.",
+    "oauthDenied": "Authentication was cancelled.",
+    "linkedAccounts": "Linked Accounts",
+    "linkedAccountsDescription": "Manage your connected social accounts",
+    "noLinkedAccounts": "No linked accounts yet",
+    "linkAccount": "Link Account",
+    "unlinkAccount": "Unlink",
+    "unlinkSuccess": "Account unlinked successfully",
+    "unlinkFailed": "Failed to unlink account",
+    "lastAccountWarning": "This is your only linked account. You cannot unlink it unless you set a password first."
   },
   "landing": {
     "title": "Home Warehouse Management System",
@@ -421,7 +434,12 @@
     "changing": "Changing...",
     "passwordChanged": "Password changed successfully",
     "passwordsDoNotMatch": "Passwords do not match",
-    "passwordTooShort": "Password must be at least 8 characters"
+    "passwordTooShort": "Password must be at least 8 characters",
+    "linkedAccounts": "Linked Accounts",
+    "linkedAccountsDescription": "Manage your connected social accounts for quick sign-in",
+    "noLinkedAccounts": "No linked accounts yet",
+    "linkAccount": "Link",
+    "unlinkAccount": "Unlink"
   },
   "settings": {
     "title": "Settings",
