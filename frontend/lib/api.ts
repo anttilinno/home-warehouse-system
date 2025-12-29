@@ -13,6 +13,7 @@ export interface User {
   is_active: boolean;
   date_format: string;
   language: string;
+  theme: string;
   created_at: string;
   updated_at: string;
 }
@@ -22,6 +23,7 @@ export interface ProfileUpdate {
   email?: string;
   date_format?: string;
   language?: string;
+  theme?: string;
 }
 
 export interface PasswordChange {

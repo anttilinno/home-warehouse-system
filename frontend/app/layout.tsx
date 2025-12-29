@@ -8,6 +8,7 @@ import { TailwindIndicator } from "@/components/tailwind-indicator"
 import { ThemeProvider } from "@/components/theme-provider"
 import { AuthProvider } from "@/lib/auth"
 import { ErrorProvider } from "@/components/ui/error-modal"
+import { ThemeSync } from "@/components/theme-sync"
 
 const fontSans = FontSans({
   subsets: ["latin"],
@@ -124,6 +125,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
           themes={["light", "dark", "retro-light", "retro-dark"]}
         >
           <AuthProvider>
+            <ThemeSync />
             <ErrorProvider>
               {children}
               <Toaster />

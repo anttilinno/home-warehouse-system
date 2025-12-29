@@ -21,6 +21,14 @@ APP_DEBUG = "true"
 STAGING_DATABASE_URL = "postgresql+asyncpg://wh:wh@localhost:5432/warehouse_staging"
 STAGING_DBMATE_URL = "postgresql://wh:wh@localhost:5432/warehouse_staging?sslmode=disable"
 
+[tasks.setup]
+description = "Setup hint"
+run = "echo 'No setup needed. Run: mise trust && mise install'"
+
+[tasks.sync]
+description = "Sync Python dependencies including dev extras"
+run = "cd backend && uv sync --extra dev"
+
 [tasks.start]
 description = "Start all services (containers, backend, frontend)"
 depends = ["dc-up", "migrate"]
@@ -28,7 +36,7 @@ run = "mise run dev & mise run fe-dev"
 
 [tasks.dc-up]
 description = "Start all containers (PostgreSQL + Redis)"
-run = "docker compose up -d"
+run = "docker compose up -d --wait"
 
 [tasks.dc-down]
 description = "Stop all containers"
@@ -37,11 +45,11 @@ run = "docker compose down"
 [tasks.db-reset]
 description = "Drop and recreate database with fresh migrations"
 depends = ["dc-down"]
-run = "docker compose down -v && docker compose up -d postgres && sleep 3 && DATABASE_URL=$DBMATE_DATABASE_URL dbmate -d backend/db/migrations up"
+run = "docker compose down -v && docker compose up -d postgres --wait && DATABASE_URL=$DBMATE_DATABASE_URL dbmate -d backend/db/migrations up"
 
 [tasks.db-fresh]
 description = "Complete database reset: drop data volume, recreate database, run migrations"
-run = "docker compose down -v && docker compose up -d && sleep 3 && DATABASE_URL=$DBMATE_DATABASE_URL dbmate -d backend/db/migrations up"
+run = "docker compose down -v && docker compose up -d --wait && DATABASE_URL=$DBMATE_DATABASE_URL dbmate -d backend/db/migrations up"
 
 [tasks.migrate]
 description = "Run database migrations"

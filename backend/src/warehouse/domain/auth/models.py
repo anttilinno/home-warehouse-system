@@ -56,6 +56,7 @@ class User(Base, UUIDPKMixin, TimestampMixin):
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
     date_format: Mapped[str] = mapped_column(String(30), default="DD.MM.YYYY HH:mm", nullable=False)
     language: Mapped[str] = mapped_column(String(5), default="en", nullable=False)
+    theme: Mapped[str] = mapped_column(String(20), default="system", nullable=False)
     created_at: Mapped[datetime] = mapped_column(server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(server_default=func.now())
 

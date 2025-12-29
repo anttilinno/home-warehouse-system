@@ -7,17 +7,9 @@ import type * as LucideIcons from "lucide-react";
 type IconName = keyof typeof LucideIcons;
 import { useAuth } from "@/lib/auth";
 import { useTranslations } from "next-intl";
-import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
 import { workspacesApi, WorkspaceMember, UserSearchResult, getTranslatedErrorMessage } from "@/lib/api";
 import { Link } from "@/navigation";
-
-const themeOptions: { value: string; iconName: IconName; labelKey: string }[] = [
-  { value: "light", iconName: "Sun", labelKey: "themeLight" },
-  { value: "dark", iconName: "Moon", labelKey: "themeDark" },
-  { value: "retro-light", iconName: "Gamepad2", labelKey: "themeRetroLight" },
-  { value: "retro-dark", iconName: "Gamepad2", labelKey: "themeRetroDark" },
-];
 
 const roleIconNames: Record<string, IconName> = {
   owner: "Crown",
@@ -30,8 +22,6 @@ export default function SettingsPage() {
   const { isAuthenticated, isLoading: authLoading, currentWorkspace, workspaces, setCurrentWorkspace, refreshWorkspaces } = useAuth();
   const t = useTranslations("settings");
   const tErrors = useTranslations();
-  const { theme, setTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
 
   // Workspace creation modal state
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -69,11 +59,6 @@ export default function SettingsPage() {
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const [deleteConfirmText, setDeleteConfirmText] = useState("");
-
-  // Prevent hydration mismatch
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   const handleWorkspaceChange = (workspaceId: string) => {
     const workspace = workspaces.find((w) => w.id === workspaceId);
@@ -263,43 +248,6 @@ export default function SettingsPage() {
       </div>
 
       <div className="grid gap-6 max-w-2xl">
-        {/* Appearance */}
-        <div className="bg-card p-6 rounded-lg border shadow-sm">
-          <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
-            <Icon name="Palette" className="w-5 h-5" />
-            {t("appearance")}
-          </h3>
-          <p className="text-sm text-muted-foreground mb-4">
-            {t("appearanceDescription")}
-          </p>
-
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            {themeOptions.map((themeOption) => {
-              const isActive = mounted && theme === themeOption.value;
-
-              return (
-                <button
-                  key={themeOption.value}
-                  onClick={() => setTheme(themeOption.value)}
-                  className={`flex flex-col items-center gap-2 p-4 rounded-lg border-2 transition-colors ${
-                    isActive
-                      ? "border-primary bg-primary/5"
-                      : "border-border hover:border-primary/50"
-                  }`}
-                >
-                  <Icon name={themeOption.iconName} className={`w-6 h-6 ${isActive ? "text-primary" : "text-muted-foreground"}`} />
-                  <span className={`text-sm font-medium text-center ${isActive ? "text-primary" : "text-foreground"}`}>
-                    {t(themeOption.labelKey)}
-                  </span>
-                  {isActive && (
-                    <Icon name="Check" className="w-4 h-4 text-primary" />
-                  )}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
         {/* Workspace */}
         <div className="bg-card p-6 rounded-lg border shadow-sm">
           <div className="flex items-center justify-between mb-4">

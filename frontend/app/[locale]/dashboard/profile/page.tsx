@@ -8,6 +8,18 @@ import { useTranslations, useLocale } from "next-intl";
 import { formatDate as formatDateUtil } from "@/lib/date-utils";
 import { useRouter, usePathname } from "@/navigation";
 import { locales, type Locale } from "@/i18n";
+import { useTheme } from "next-themes";
+import { Icon } from "@/components/icons";
+import type * as LucideIcons from "lucide-react";
+
+type IconName = keyof typeof LucideIcons;
+
+const themeOptions: { value: string; iconName: IconName; labelKey: string }[] = [
+  { value: "light", iconName: "Sun", labelKey: "themeLight" },
+  { value: "dark", iconName: "Moon", labelKey: "themeDark" },
+  { value: "retro-light", iconName: "Gamepad2", labelKey: "themeRetroLight" },
+  { value: "retro-dark", iconName: "Gamepad2", labelKey: "themeRetroDark" },
+];
 
 const languageNames: Record<Locale, string> = {
   en: "English",
@@ -18,10 +30,13 @@ const languageNames: Record<Locale, string> = {
 export default function ProfilePage() {
   const { isAuthenticated, isLoading: authLoading, user: authUser } = useAuth();
   const t = useTranslations('profile');
+  const tSettings = useTranslations('settings');
   const router = useRouter();
   const pathname = usePathname();
   const currentLocale = useLocale() as Locale;
   const [isPending, startTransition] = useTransition();
+  const { theme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
 
   const [profile, setProfile] = useState<UserType | null>(null);
   const [loading, setLoading] = useState(true);
@@ -34,6 +49,7 @@ export default function ProfilePage() {
   const [email, setEmail] = useState("");
   const [dateFormat, setDateFormat] = useState("DD.MM.YYYY HH:mm");
   const [language, setLanguage] = useState<Locale>("en");
+  const [selectedTheme, setSelectedTheme] = useState("system");
 
   // Password form
   const [currentPassword, setCurrentPassword] = useState("");
@@ -48,6 +64,11 @@ export default function ProfilePage() {
   const [oauthLoading, setOauthLoading] = useState(true);
   const [availableProviders, setAvailableProviders] = useState<string[]>([]);
   const [unlinkingId, setUnlinkingId] = useState<string | null>(null);
+
+  // Prevent hydration mismatch
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -98,6 +119,11 @@ export default function ProfilePage() {
       setEmail(data.email);
       setDateFormat(data.date_format || "DD.MM.YYYY HH:mm");
       setLanguage((data.language as Locale) || "en");
+      setSelectedTheme(data.theme || "system");
+      // Apply saved theme from profile
+      if (data.theme && data.theme !== "system") {
+        setTheme(data.theme);
+      }
       setError(null);
     } catch (err) {
       console.error('Failed to fetch profile:', err);
@@ -121,6 +147,7 @@ export default function ProfilePage() {
         email: email !== profile?.email ? email : undefined,
         date_format: dateFormat,
         language: language,
+        theme: selectedTheme,
       });
       setProfile(updated);
       setSuccess(t('profileUpdated'));
@@ -134,6 +161,7 @@ export default function ProfilePage() {
           userData.email = updated.email;
           userData.date_format = updated.date_format;
           userData.language = updated.language;
+          userData.theme = updated.theme;
           localStorage.setItem('user', JSON.stringify(userData));
         }
       }
@@ -319,6 +347,45 @@ export default function ProfilePage() {
                     </option>
                   ))}
                 </select>
+              </div>
+            </div>
+
+            {/* Theme Selection */}
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-2">
+                {tSettings('appearance')}
+              </label>
+              <p className="text-sm text-muted-foreground mb-3">
+                {tSettings('appearanceDescription')}
+              </p>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                {themeOptions.map((themeOption) => {
+                  const isActive = mounted && selectedTheme === themeOption.value;
+
+                  return (
+                    <button
+                      key={themeOption.value}
+                      type="button"
+                      onClick={() => {
+                        setSelectedTheme(themeOption.value);
+                        setTheme(themeOption.value);
+                      }}
+                      className={`flex flex-col items-center gap-2 p-4 rounded-lg border-2 transition-colors ${
+                        isActive
+                          ? "border-primary bg-primary/5"
+                          : "border-border hover:border-primary/50"
+                      }`}
+                    >
+                      <Icon name={themeOption.iconName} className={`w-6 h-6 ${isActive ? "text-primary" : "text-muted-foreground"}`} />
+                      <span className={`text-sm font-medium text-center ${isActive ? "text-primary" : "text-foreground"}`}>
+                        {tSettings(themeOption.labelKey)}
+                      </span>
+                      {isActive && (
+                        <Icon name="Check" className="w-4 h-4 text-primary" />
+                      )}
+                    </button>
+                  );
+                })}
               </div>
             </div>
 

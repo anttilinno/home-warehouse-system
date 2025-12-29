@@ -84,6 +84,7 @@ class AuthController(Controller):
             is_active=user.is_active,
             date_format=user.date_format,
             language=user.language,
+            theme=user.theme,
             created_at=user.created_at,
             updated_at=user.updated_at,
         )
@@ -104,6 +105,7 @@ class AuthController(Controller):
             is_active=user.is_active,
             date_format=user.date_format,
             language=user.language,
+            theme=user.theme,
             created_at=user.created_at,
             updated_at=user.updated_at,
         )
@@ -126,6 +128,7 @@ class AuthController(Controller):
             is_active=user.is_active,
             date_format=user.date_format,
             language=user.language,
+            theme=user.theme,
             created_at=user.created_at,
             updated_at=user.updated_at,
         )
@@ -152,6 +155,7 @@ class AuthController(Controller):
                 email=data.email,
                 date_format=data.date_format,
                 language=data.language,
+                theme=data.theme,
             )
         except AppError as exc:
             raise exc.to_http_exception()
@@ -163,6 +167,7 @@ class AuthController(Controller):
             is_active=user.is_active,
             date_format=user.date_format,
             language=user.language,
+            theme=user.theme,
             created_at=user.created_at,
             updated_at=user.updated_at,
         )
@@ -184,6 +189,7 @@ class AuthController(Controller):
             is_active=user.is_active,
             date_format=user.date_format,
             language=user.language,
+            theme=user.theme,
             created_at=user.created_at,
             updated_at=user.updated_at,
         )

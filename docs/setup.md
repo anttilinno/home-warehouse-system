@@ -20,10 +20,13 @@
    curl https://mise.run | sh
    ```
 
-2. Install project dependencies:
+2. Trust and install project tools:
    ```bash
+   mise trust
    mise install
    ```
+
+   > `mise trust` allows mise to load the project's `.mise.toml` configuration. This is required once per project for security.
 
 3. Start the database and Redis:
    ```bash

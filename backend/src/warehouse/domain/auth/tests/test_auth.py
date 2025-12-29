@@ -54,6 +54,8 @@ def _make_user(**kwargs) -> User:
         "password_hash": "hashed",
         "is_active": True,
         "date_format": "DD.MM.YYYY HH:mm",
+        "language": "en",
+        "theme": "system",
     }
     defaults.update(kwargs)
     return User(**defaults)
@@ -183,6 +185,7 @@ def test_schema_user_create_and_response():
         is_active=True,
         date_format="DD.MM.YYYY HH:mm",
         language="en",
+        theme="system",
         created_at=now,
         updated_at=now,
     )

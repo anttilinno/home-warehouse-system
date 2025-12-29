@@ -1,0 +1,104 @@
+import * as SecureStore from 'expo-secure-store';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { ApiError } from './types';
+
+const DEFAULT_API_URL = 'http://localhost:8000';
+
+class ApiClient {
+  private async getBaseUrl(): Promise<string> {
+    const customUrl = await AsyncStorage.getItem('api_base_url');
+    return customUrl || DEFAULT_API_URL;
+  }
+
+  private async getAuthHeaders(): Promise<Record<string, string>> {
+    const token = await SecureStore.getItemAsync('auth_token');
+    const workspaceId = await AsyncStorage.getItem('workspace_id');
+
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
+
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    if (workspaceId) {
+      headers['X-Workspace-ID'] = workspaceId;
+    }
+
+    return headers;
+  }
+
+  async get<T>(endpoint: string): Promise<T> {
+    const baseUrl = await this.getBaseUrl();
+    const response = await fetch(`${baseUrl}${endpoint}`, {
+      method: 'GET',
+      headers: await this.getAuthHeaders(),
+    });
+
+    return this.handleResponse<T>(response);
+  }
+
+  async post<T>(endpoint: string, data: any): Promise<T> {
+    const baseUrl = await this.getBaseUrl();
+    const response = await fetch(`${baseUrl}${endpoint}`, {
+      method: 'POST',
+      headers: await this.getAuthHeaders(),
+      body: JSON.stringify(data),
+    });
+
+    return this.handleResponse<T>(response);
+  }
+
+  async patch<T>(endpoint: string, data: any): Promise<T> {
+    const baseUrl = await this.getBaseUrl();
+    const response = await fetch(`${baseUrl}${endpoint}`, {
+      method: 'PATCH',
+      headers: await this.getAuthHeaders(),
+      body: JSON.stringify(data),
+    });
+
+    return this.handleResponse<T>(response);
+  }
+
+  async delete(endpoint: string): Promise<void> {
+    const baseUrl = await this.getBaseUrl();
+    const response = await fetch(`${baseUrl}${endpoint}`, {
+      method: 'DELETE',
+      headers: await this.getAuthHeaders(),
+    });
+
+    if (!response.ok) {
+      await this.handleError(response);
+    }
+  }
+
+  private async handleResponse<T>(response: Response): Promise<T> {
+    if (!response.ok) {
+      await this.handleError(response);
+    }
+
+    // Handle 204 No Content
+    if (response.status === 204) {
+      return {} as T;
+    }
+
+    return response.json();
+  }
+
+  private async handleError(response: Response): Promise<never> {
+    if (response.status === 401) {
+      // Clear invalid token
+      await SecureStore.deleteItemAsync('auth_token');
+      throw new Error('AUTH_REQUIRED');
+    }
+
+    const errorData: ApiError = await response.json().catch(() => ({
+      detail: 'Unknown error',
+    }));
+
+    throw new Error(errorData.detail || `HTTP ${response.status}`);
+  }
+}
+
+export const apiClient = new ApiClient();

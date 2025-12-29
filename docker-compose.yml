@@ -9,8 +9,13 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - ./.data/postgres:/var/lib/postgresql
       - ./docker/postgres:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U wh -d warehouse_dev"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
   redis:
     image: redis:latest
@@ -18,7 +23,7 @@ services:
     ports:
       - "6379:6379"
     volumes:
-      - redis_data:/data
+      - ./.data/redis:/data
 
   # Docspell PostgreSQL (separate database)
   docspell-postgres:
@@ -31,14 +36,20 @@ services:
     ports:
       - "5433:5432"
     volumes:
-      - docspell_postgres_data:/var/lib/postgresql
+      - ./.data/docspell-postgres:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U docspell -d docspell"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
   # Docspell REST Server
   docspell-restserver:
     image: docspell/restserver:latest
     container_name: warehouse-docspell-restserver
     depends_on:
-      - docspell-postgres
+      docspell-postgres:
+        condition: service_healthy
     environment:
       DOCSPELL_SERVER_BIND_ADDRESS: "0.0.0.0"
       DOCSPELL_SERVER_INTERNAL_URL: "http://docspell-restserver:7880"
@@ -51,7 +62,7 @@ services:
     ports:
       - "7880:7880"
     volumes:
-      - docspell_data:/opt/docspell
+      - ./.data/docspell:/opt/docspell
 
   # Docspell JOEX (Job Executor)
   docspell-joex:
@@ -69,11 +80,5 @@ services:
     ports:
       - "7878:7878"
     volumes:
-      - docspell_data:/opt/docspell
-
-volumes:
-  postgres_data:
-  redis_data:
-  docspell_postgres_data:
-  docspell_data:
+      - ./.data/docspell:/opt/docspell
 

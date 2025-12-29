@@ -174,6 +174,7 @@ class AuthService:
         email: str | None = None,
         date_format: str | None = None,
         language: str | None = None,
+        theme: str | None = None,
     ) -> User:
         """Update user profile fields."""
         user = await self.repository.get_one_or_none(id=user_id)
@@ -194,6 +195,9 @@ class AuthService:
 
         if language is not None:
             user.language = language
+
+        if theme is not None:
+            user.theme = theme
 
         user.updated_at = datetime.now(UTC).replace(tzinfo=None)
         await self.repository.session.commit()
