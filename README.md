@@ -31,4 +31,6 @@ See [docs/database.md](docs/database.md) for database schema documentation.
 
 See [docs/docspell.md](docs/docspell.md) for Docspell integration setup.
 
+See [docs/codebase-health.md](docs/codebase-health.md) for code quality verification.
+
 See [docs/roadmap.md](docs/roadmap.md) for planned features.
