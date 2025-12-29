@@ -57,6 +57,31 @@ Additional environment variables (see `backend/.env.example`):
 
 > **Note:** All credentials in this repository are examples for local development only. Do not use in production.
 
+### OAuth Providers (optional)
+
+For Google/GitHub login, add credentials to `.mise.local.toml` (git-ignored):
+
+```toml
+[env]
+GOOGLE_CLIENT_ID = "your-client-id"
+GOOGLE_CLIENT_SECRET = "your-client-secret"
+GITHUB_CLIENT_ID = "your-client-id"
+GITHUB_CLIENT_SECRET = "your-client-secret"
+```
+
+Get credentials from:
+- Google: https://console.cloud.google.com/apis/credentials
+- GitHub: https://github.com/settings/developers
+
+### Local Configuration
+
+Mise automatically merges `.mise.local.toml` with `.mise.toml`. Use it for:
+- API keys and secrets (OAuth, Resend, etc.)
+- Personal overrides (different ports, debug settings)
+- Machine-specific configuration
+
+This file is git-ignored, keeping secrets out of version control.
+
 ## Project Structure
 
 ```
