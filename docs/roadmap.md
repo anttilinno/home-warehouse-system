@@ -75,6 +75,11 @@
   - Surface items not accessed/moved in 12+ months
   - Suggest donate, sell, or dispose
   - Track declutter decisions and outcomes
+- [ ] Mobile app i18n
+  - Multi-language support for companion app
+  - Use expo-localization + i18n-js
+  - Share translation keys with frontend where applicable
+  - Auto-detect device language, allow manual override
 
 ## Phase 3
 

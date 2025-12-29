@@ -7,9 +7,12 @@ import type * as LucideIcons from "lucide-react";
 type IconName = keyof typeof LucideIcons;
 import { useAuth } from "@/lib/auth";
 import { useTranslations } from "next-intl";
+import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
 import { workspacesApi, WorkspaceMember, UserSearchResult, getTranslatedErrorMessage } from "@/lib/api";
 import { Link } from "@/navigation";
+import { cn } from "@/lib/utils";
+import { NES_GREEN, NES_BLUE, NES_RED, NES_YELLOW } from "@/lib/nes-colors";
 
 const roleIconNames: Record<string, IconName> = {
   owner: "Crown",
@@ -22,6 +25,8 @@ export default function SettingsPage() {
   const { isAuthenticated, isLoading: authLoading, currentWorkspace, workspaces, setCurrentWorkspace, refreshWorkspaces } = useAuth();
   const t = useTranslations("settings");
   const tErrors = useTranslations();
+  const { theme } = useTheme();
+  const isRetro = theme?.startsWith("retro");
 
   // Workspace creation modal state
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -230,14 +235,581 @@ export default function SettingsPage() {
 
   if (authLoading) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      <div className={cn(
+        "flex items-center justify-center min-h-[400px]",
+        isRetro && "retro-body"
+      )}>
+        {isRetro ? (
+          <div className="retro-small uppercase text-muted-foreground">{t("title")}...</div>
+        ) : (
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        )}
       </div>
     );
   }
 
   if (!isAuthenticated) {
     return null;
+  }
+
+  // Retro theme UI
+  if (isRetro) {
+    return (
+      <>
+        {/* Header */}
+        <div className="mb-8">
+          <div className="bg-primary p-4 border-4 border-border retro-shadow">
+            <h1 className="text-lg font-bold text-white uppercase retro-heading">
+              {t("title")}
+            </h1>
+            <p className="text-white/80 retro-body retro-small uppercase mt-1">
+              {t("subtitle")}
+            </p>
+          </div>
+        </div>
+
+        <div className="grid gap-6 max-w-2xl">
+          {/* Workspace Card */}
+          <div className="bg-card p-6 border-4 border-border retro-shadow">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-sm font-bold uppercase retro-heading text-foreground flex items-center gap-2">
+                <Icon name="Building2" className="w-5 h-5" />
+                {t("workspace")}
+              </h3>
+              <button
+                onClick={() => setShowCreateModal(true)}
+                className="flex items-center gap-2 px-3 py-1.5 border-4 border-border bg-muted text-primary retro-small uppercase font-bold retro-body retro-shadow-sm hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
+              >
+                <Icon name="Plus" className="w-4 h-4" />
+                {t("createWorkspace")}
+              </button>
+            </div>
+            <p className="retro-small uppercase text-muted-foreground mb-4 retro-body">
+              {t("workspaceDescription")}
+            </p>
+
+            {currentWorkspace && (
+              <div className="mb-4 p-4 bg-muted/50 border-4 border-dashed border-border">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="font-bold text-foreground retro-body retro-small">
+                      {currentWorkspace.name}
+                    </p>
+                    <p className="retro-small uppercase text-muted-foreground retro-body">
+                      {t("role")}: {t(`role${currentWorkspace.role.charAt(0).toUpperCase() + currentWorkspace.role.slice(1)}`)}
+                    </p>
+                  </div>
+                  <div className="px-2 py-1 border-4 border-border retro-small font-bold uppercase retro-body" style={{ backgroundColor: NES_GREEN, color: 'white' }}>
+                    {t("current")}
+                  </div>
+                </div>
+                {currentWorkspace.description && (
+                  <p className="mt-2 retro-small text-muted-foreground retro-body">
+                    {currentWorkspace.description}
+                  </p>
+                )}
+
+                {canManageMembers && (
+                  <div className="mt-4 pt-4 border-t-4 border-dashed border-border">
+                    <button
+                      onClick={handleShowMembers}
+                      className="flex items-center gap-2 retro-small uppercase font-bold retro-body text-primary hover:text-primary/80 transition-colors"
+                    >
+                      <Icon name="Users" className="w-4 h-4" />
+                      {t("manageMembers")}
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {workspaces.length > 1 && (
+              <>
+                <p className="retro-small uppercase font-bold text-foreground mb-2 retro-body">
+                  {t("switchWorkspace")}
+                </p>
+                <div className="space-y-2">
+                  {workspaces
+                    .filter((w) => w.id !== currentWorkspace?.id)
+                    .map((workspace) => (
+                      <button
+                        key={workspace.id}
+                        onClick={() => handleWorkspaceChange(workspace.id)}
+                        className="w-full p-3 text-left border-4 border-border hover:bg-muted/50 transition-colors"
+                      >
+                        <p className="font-bold text-foreground retro-body retro-small">
+                          {workspace.name}
+                        </p>
+                        <p className="retro-small uppercase text-muted-foreground retro-body">
+                          {t("role")}: {t(`role${workspace.role.charAt(0).toUpperCase() + workspace.role.slice(1)}`)}
+                        </p>
+                      </button>
+                    ))}
+                </div>
+              </>
+            )}
+
+            {workspaces.length <= 1 && (
+              <p className="retro-small uppercase text-muted-foreground italic retro-body">
+                {t("singleWorkspace")}
+              </p>
+            )}
+          </div>
+
+          {/* Danger Zone */}
+          {canDeleteWorkspace && (
+            <div className="bg-card p-6 border-4 retro-shadow" style={{ borderColor: NES_RED }}>
+              <h3 className="text-sm font-bold uppercase retro-heading mb-4 flex items-center gap-2" style={{ color: NES_RED }}>
+                <Icon name="AlertTriangle" className="w-5 h-5" />
+                {t("dangerZone")}
+              </h3>
+              <p className="retro-small uppercase text-muted-foreground mb-4 retro-body">
+                {t("dangerZoneDescription")}
+              </p>
+
+              <div className="p-4 border-4 border-dashed" style={{ borderColor: NES_RED, backgroundColor: 'rgba(206, 55, 43, 0.1)' }}>
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <p className="font-bold text-foreground retro-body retro-small">{t("deleteWorkspace")}</p>
+                    <p className="retro-small uppercase text-muted-foreground mt-1 retro-body">
+                      {t("deleteWorkspaceWarning")}
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => setShowDeleteConfirm(true)}
+                    className="px-4 py-2 border-4 border-border text-white retro-small uppercase font-bold retro-body retro-shadow-sm hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all whitespace-nowrap"
+                    style={{ backgroundColor: NES_RED }}
+                  >
+                    {t("deleteWorkspace")}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Integrations Card */}
+          <div className="bg-card p-6 border-4 border-border retro-shadow">
+            <h3 className="text-sm font-bold uppercase retro-heading text-foreground mb-4 flex items-center gap-2">
+              <Icon name="Plug" className="w-5 h-5" />
+              {t("integrations")}
+            </h3>
+            <p className="retro-small uppercase text-muted-foreground mb-4 retro-body">
+              {t("integrationsDescription")}
+            </p>
+
+            <Link
+              href="/dashboard/settings/docspell"
+              className="flex items-center justify-between p-4 border-4 border-border hover:bg-muted/50 transition-colors"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 border-4 border-border flex items-center justify-center" style={{ backgroundColor: NES_BLUE }}>
+                  <Icon name="FileText" className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <p className="font-bold text-foreground retro-body retro-small">{t("docspellTitle")}</p>
+                  <p className="retro-small uppercase text-muted-foreground retro-body">{t("docspellDescription")}</p>
+                </div>
+              </div>
+              <Icon name="ChevronRight" className="w-5 h-5 text-muted-foreground" />
+            </Link>
+          </div>
+
+          {/* About Card */}
+          <div className="bg-card p-6 border-4 border-border retro-shadow">
+            <h3 className="text-sm font-bold uppercase retro-heading text-foreground mb-4 flex items-center gap-2">
+              <Icon name="Settings" className="w-5 h-5" />
+              {t("about")}
+            </h3>
+            <div className="space-y-2">
+              <div className="flex justify-between retro-small uppercase">
+                <span className="text-muted-foreground">{t("appName")}</span>
+                <span className="text-foreground font-bold">Home Warehouse System</span>
+              </div>
+              <div className="flex justify-between retro-small uppercase">
+                <span className="text-muted-foreground">{t("version")}</span>
+                <span className="text-foreground font-bold">1.0.0</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Create Workspace Modal */}
+        {showCreateModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+            <div className="bg-card border-4 border-border retro-shadow w-full max-w-md mx-4 p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-sm font-bold uppercase retro-heading text-foreground">{t("createWorkspace")}</h3>
+                <button
+                  onClick={() => setShowCreateModal(false)}
+                  className="text-muted-foreground hover:text-foreground"
+                >
+                  <Icon name="X" className="w-5 h-5" />
+                </button>
+              </div>
+
+              <form onSubmit={handleCreateWorkspace} className="space-y-4">
+                <div>
+                  <label className="block retro-small uppercase font-bold text-foreground mb-1 retro-body">
+                    {t("workspaceName")} *
+                  </label>
+                  <input
+                    type="text"
+                    value={newWorkspaceName}
+                    onChange={(e) => setNewWorkspaceName(e.target.value)}
+                    required
+                    className="w-full px-3 py-2 border-4 border-border bg-background text-foreground retro-body retro-small focus:outline-none"
+                    placeholder={t("workspaceNamePlaceholder")}
+                  />
+                </div>
+
+                <div>
+                  <label className="block retro-small uppercase font-bold text-foreground mb-1 retro-body">
+                    {t("workspaceDescriptionLabel")}
+                  </label>
+                  <textarea
+                    value={newWorkspaceDescription}
+                    onChange={(e) => setNewWorkspaceDescription(e.target.value)}
+                    rows={3}
+                    className="w-full px-3 py-2 border-4 border-border bg-background text-foreground retro-body retro-small focus:outline-none resize-none"
+                    placeholder={t("workspaceDescriptionPlaceholder")}
+                  />
+                </div>
+
+                {createError && (
+                  <p className="retro-small uppercase retro-body" style={{ color: NES_RED }}>{createError}</p>
+                )}
+
+                <div className="flex justify-end gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setShowCreateModal(false)}
+                    className="px-4 py-2 border-4 border-border bg-muted text-foreground retro-small uppercase font-bold retro-body retro-shadow-sm hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
+                  >
+                    {t("cancel")}
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isCreating || !newWorkspaceName.trim()}
+                    className="px-4 py-2 border-4 border-border bg-primary text-white retro-small uppercase font-bold retro-body retro-shadow-sm hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all disabled:opacity-50"
+                  >
+                    {isCreating ? t("creating") : t("create")}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {/* Members Modal */}
+        {showMembersModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+            <div className="bg-card border-4 border-border retro-shadow w-full max-w-lg mx-4 p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-sm font-bold uppercase retro-heading text-foreground">{t("workspaceMembers")}</h3>
+                <button
+                  onClick={() => setShowMembersModal(false)}
+                  className="text-muted-foreground hover:text-foreground"
+                >
+                  <Icon name="X" className="w-5 h-5" />
+                </button>
+              </div>
+
+              <div className="mb-4">
+                <button
+                  onClick={handleOpenInviteModal}
+                  className="flex items-center gap-2 px-3 py-2 border-4 border-border bg-primary text-white retro-small uppercase font-bold retro-body retro-shadow-sm hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
+                >
+                  <Icon name="UserPlus" className="w-4 h-4" />
+                  {t("inviteMember")}
+                </button>
+              </div>
+
+              {isLoadingMembers ? (
+                <div className="flex justify-center py-8">
+                  <div className="retro-small uppercase text-muted-foreground retro-body">Loading...</div>
+                </div>
+              ) : (
+                <div className="space-y-2 max-h-80 overflow-y-auto">
+                  {members.map((member) => {
+                    const roleIconName = roleIconNames[member.role] || "User";
+                    const canRemove = canManageMembers && member.role !== "owner";
+                    const isRemoving = removingMemberId === member.id;
+                    return (
+                      <div
+                        key={member.id}
+                        className="flex items-center justify-between p-3 bg-muted/50 border-4 border-dashed border-border"
+                      >
+                        <div>
+                          <p className="font-bold text-foreground retro-body retro-small">{member.full_name}</p>
+                          <p className="retro-small text-muted-foreground retro-body">{member.email}</p>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <div className="flex items-center gap-2 px-2 py-1 border-4 border-border bg-background retro-small uppercase retro-body">
+                            <Icon name={roleIconName} className="w-4 h-4 text-muted-foreground" />
+                            <span className="text-foreground">
+                              {t(`role${member.role.charAt(0).toUpperCase() + member.role.slice(1)}`)}
+                            </span>
+                          </div>
+                          {canRemove && (
+                            showRemoveConfirm === member.id ? (
+                              <div className="flex items-center gap-1">
+                                <button
+                                  onClick={() => handleRemoveMember(member.id)}
+                                  disabled={isRemoving}
+                                  className="px-2 py-1 border-4 border-border text-white text-xs uppercase font-bold retro-body disabled:opacity-50"
+                                  style={{ backgroundColor: NES_RED }}
+                                >
+                                  {isRemoving ? t("removing") : t("confirm")}
+                                </button>
+                                <button
+                                  onClick={() => setShowRemoveConfirm(null)}
+                                  className="px-2 py-1 border-4 border-border bg-muted text-foreground text-xs uppercase font-bold retro-body"
+                                >
+                                  {t("cancel")}
+                                </button>
+                              </div>
+                            ) : (
+                              <button
+                                onClick={() => setShowRemoveConfirm(member.id)}
+                                className="text-muted-foreground hover:text-destructive transition-colors"
+                                title={t("removeMember")}
+                              >
+                                <Icon name="UserMinus" className="w-4 h-4" />
+                              </button>
+                            )
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+
+              <div className="flex justify-end mt-4">
+                <button
+                  onClick={() => setShowMembersModal(false)}
+                  className="px-4 py-2 border-4 border-border bg-muted text-foreground retro-small uppercase font-bold retro-body retro-shadow-sm hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
+                >
+                  {t("close")}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Invite Member Modal */}
+        {showInviteModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+            <div className="bg-card border-4 border-border retro-shadow w-full max-w-md mx-4 p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-sm font-bold uppercase retro-heading text-foreground">{t("inviteMember")}</h3>
+                <button
+                  onClick={() => setShowInviteModal(false)}
+                  className="text-muted-foreground hover:text-foreground"
+                >
+                  <Icon name="X" className="w-5 h-5" />
+                </button>
+              </div>
+
+              <form onSubmit={handleInviteMember} className="space-y-4">
+                <div className="relative">
+                  <label className="block retro-small uppercase font-bold text-foreground mb-1 retro-body">
+                    {t("email")} *
+                  </label>
+                  {selectedUser ? (
+                    <div className="flex items-center gap-2 px-3 py-2 border-4 border-border bg-muted/50">
+                      <div className="flex-1">
+                        <p className="font-bold text-foreground retro-body retro-small">{selectedUser.full_name}</p>
+                        <p className="retro-small text-muted-foreground retro-body">{selectedUser.email}</p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={handleClearSelection}
+                        className="text-muted-foreground hover:text-foreground"
+                      >
+                        <Icon name="X" className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="relative">
+                      <input
+                        type="text"
+                        value={searchQuery}
+                        onChange={(e) => {
+                          setSearchQuery(e.target.value);
+                          setShowDropdown(true);
+                        }}
+                        onFocus={() => setShowDropdown(true)}
+                        className="w-full px-3 py-2 border-4 border-border bg-background text-foreground retro-body retro-small focus:outline-none"
+                        placeholder={t("searchOrEnterEmail")}
+                      />
+                      {isLoadingUsers && (
+                        <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                          <div className="retro-small text-muted-foreground retro-body">...</div>
+                        </div>
+                      )}
+                      {showDropdown && !isLoadingUsers && (
+                        <div className="absolute z-10 w-full mt-1 bg-card border-4 border-border retro-shadow max-h-48 overflow-y-auto">
+                          {filteredUsers.length > 0 ? (
+                            filteredUsers.map((user) => (
+                              <button
+                                key={user.id}
+                                type="button"
+                                onClick={() => handleSelectUser(user)}
+                                className="w-full px-3 py-2 text-left hover:bg-muted/50 transition-colors border-b-4 border-dashed border-border last:border-b-0"
+                              >
+                                <p className="font-bold text-foreground retro-body retro-small">{user.full_name}</p>
+                                <p className="retro-small text-muted-foreground retro-body">{user.email}</p>
+                              </button>
+                            ))
+                          ) : availableUsers.length === 0 ? (
+                            <div className="px-3 py-2 retro-small uppercase text-muted-foreground retro-body">
+                              {t("noUsersToInvite")}
+                            </div>
+                          ) : searchQuery ? (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setInviteEmail(searchQuery);
+                                setShowDropdown(false);
+                              }}
+                              className="w-full px-3 py-2 text-left hover:bg-muted/50 transition-colors"
+                            >
+                              <p className="font-bold text-foreground retro-body retro-small">{t("useEmail")}: {searchQuery}</p>
+                              <p className="retro-small text-muted-foreground retro-body">{t("userNotRegistered")}</p>
+                            </button>
+                          ) : null}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                  {!selectedUser && inviteEmail && (
+                    <div className="mt-2 flex items-center gap-2 px-3 py-2 border-4 border-dashed" style={{ borderColor: NES_GREEN, backgroundColor: 'rgba(146, 204, 65, 0.1)' }}>
+                      <div className="flex-1">
+                        <p className="retro-small text-foreground retro-body">{t("willInvite")}: <span className="font-bold">{inviteEmail}</span></p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setInviteEmail("")}
+                        className="text-muted-foreground hover:text-foreground"
+                      >
+                        <Icon name="X" className="w-4 h-4" />
+                      </button>
+                    </div>
+                  )}
+                  <p className="mt-1 text-xs uppercase text-muted-foreground retro-body">
+                    {t("searchUsersHint")}
+                  </p>
+                </div>
+
+                <div>
+                  <label className="block retro-small uppercase font-bold text-foreground mb-1 retro-body">
+                    {t("role")}
+                  </label>
+                  <select
+                    value={inviteRole}
+                    onChange={(e) => setInviteRole(e.target.value)}
+                    className="w-full px-3 py-2 border-4 border-border bg-background text-foreground retro-body retro-small focus:outline-none"
+                  >
+                    <option value="admin">{t("roleAdmin")}</option>
+                    <option value="member">{t("roleMember")}</option>
+                    <option value="viewer">{t("roleViewer")}</option>
+                  </select>
+                </div>
+
+                {inviteError && (
+                  <p className="retro-small uppercase retro-body" style={{ color: NES_RED }}>{inviteError}</p>
+                )}
+
+                <div className="flex justify-end gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setShowInviteModal(false)}
+                    className="px-4 py-2 border-4 border-border bg-muted text-foreground retro-small uppercase font-bold retro-body retro-shadow-sm hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
+                  >
+                    {t("cancel")}
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isInviting || !inviteEmail.trim()}
+                    className="px-4 py-2 border-4 border-border bg-primary text-white retro-small uppercase font-bold retro-body retro-shadow-sm hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all disabled:opacity-50"
+                  >
+                    {isInviting ? t("inviting") : t("invite")}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {/* Delete Workspace Confirmation Modal */}
+        {showDeleteConfirm && currentWorkspace && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+            <div className="bg-card border-4 border-border retro-shadow w-full max-w-md mx-4 p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-sm font-bold uppercase retro-heading flex items-center gap-2" style={{ color: NES_RED }}>
+                  <Icon name="AlertTriangle" className="w-5 h-5" />
+                  {t("deleteWorkspace")}
+                </h3>
+                <button
+                  onClick={() => {
+                    setShowDeleteConfirm(false);
+                    setDeleteConfirmText("");
+                    setDeleteError(null);
+                  }}
+                  className="text-muted-foreground hover:text-foreground"
+                >
+                  <Icon name="X" className="w-5 h-5" />
+                </button>
+              </div>
+
+              <div className="space-y-4">
+                <p className="retro-small uppercase text-foreground retro-body">
+                  {t("deleteWorkspaceConfirmMessage")}
+                </p>
+                <p className="retro-small uppercase text-muted-foreground retro-body">
+                  {t("deleteWorkspaceConfirmTypeName", { name: currentWorkspace.name })}
+                </p>
+
+                <input
+                  type="text"
+                  value={deleteConfirmText}
+                  onChange={(e) => setDeleteConfirmText(e.target.value)}
+                  className="w-full px-3 py-2 border-4 border-border bg-background text-foreground retro-body retro-small focus:outline-none"
+                  placeholder={currentWorkspace.name}
+                />
+
+                {deleteError && (
+                  <p className="retro-small uppercase retro-body" style={{ color: NES_RED }}>{deleteError}</p>
+                )}
+
+                <div className="flex justify-end gap-3">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowDeleteConfirm(false);
+                      setDeleteConfirmText("");
+                      setDeleteError(null);
+                    }}
+                    className="px-4 py-2 border-4 border-border bg-muted text-foreground retro-small uppercase font-bold retro-body retro-shadow-sm hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
+                  >
+                    {t("cancel")}
+                  </button>
+                  <button
+                    onClick={handleDeleteWorkspace}
+                    disabled={isDeleting || deleteConfirmText !== currentWorkspace.name}
+                    className="px-4 py-2 border-4 border-border text-white retro-small uppercase font-bold retro-body retro-shadow-sm hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all disabled:opacity-50"
+                    style={{ backgroundColor: NES_RED }}
+                  >
+                    {isDeleting ? t("deleting") : t("deleteWorkspace")}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </>
+    );
   }
 
   return (

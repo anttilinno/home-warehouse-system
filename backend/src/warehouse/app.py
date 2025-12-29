@@ -4,7 +4,7 @@ import logging
 import os
 import traceback
 
-from litestar import Litestar, Request
+from litestar import Litestar, Request, get
 from litestar.config.cors import CORSConfig
 from litestar.di import Provide
 from litestar.exceptions import HTTPException
@@ -32,6 +32,12 @@ from warehouse.domain.notifications.controllers import NotificationController
 from warehouse.domain.oauth.controllers import OAuthController, OAuthAccountController
 
 logger = logging.getLogger(__name__)
+
+
+@get("/health", sync_to_thread=False)
+def health_check() -> dict[str, str]:
+    """Health check endpoint for mobile app connectivity."""
+    return {"status": "ok"}
 
 
 def integrity_error_handler(request: Request, exc: IntegrityError) -> Response:
@@ -120,14 +126,16 @@ def create_app(config: Config | None = None) -> Litestar:
     debug = os.getenv("APP_DEBUG", "false").lower() == "true"
 
     # Configure logging to suppress noisy Litestar exception logs for expected HTTP errors
+    # Set to CRITICAL to avoid traceback spam for 4xx errors (our custom handlers still work)
     logging_config = LoggingConfig(
         loggers={
-            "litestar": {"level": "WARNING", "handlers": ["console"]},
+            "litestar": {"level": "CRITICAL", "handlers": ["console"]},
         }
     )
 
     return Litestar(
         route_handlers=[
+            health_check,
             AnalyticsController,
             AuthController,
             BorrowerController,

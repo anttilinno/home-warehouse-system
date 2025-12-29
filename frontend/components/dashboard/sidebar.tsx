@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link, usePathname, useRouter } from "@/navigation";
 import { useTranslations } from "next-intl";
 import { Icon } from "@/components/icons";
@@ -9,6 +9,7 @@ import { cn } from "@/lib/utils";
 import { useAuth } from "@/lib/auth";
 import { notificationsApi } from "@/lib/api";
 import { useTheme } from "next-themes";
+import { NES_GREEN, NES_BLUE, NES_RED } from "@/lib/nes-colors";
 
 type IconName = keyof typeof LucideIcons;
 
@@ -32,9 +33,23 @@ export function Sidebar({ className }: SidebarProps) {
   const { logout, user, isAuthenticated } = useAuth();
   const { theme } = useTheme();
   const isRetro = theme?.startsWith("retro");
+  const userMenuRef = useRef<HTMLDivElement>(null);
+
+  // Close user menu when clicking outside
+  useEffect(() => {
+    if (!isUserMenuOpen) return;
+
+    const handleClickOutside = (event: MouseEvent) => {
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
+        setIsUserMenuOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [isUserMenuOpen]);
 
   // NES color constants (Tailwind can't resolve CSS vars in arbitrary values)
-  const NES_BLUE = "#209cee";
 
   // Fetch unread notification count
   useEffect(() => {
@@ -177,7 +192,7 @@ export function Sidebar({ className }: SidebarProps) {
             onClick={() => setIsCollapsed(!isCollapsed)}
             className="flex items-center gap-4 hover:opacity-80 transition-opacity"
           >
-            <div className="w-12 h-12 bg-white flex items-center justify-center border-4 border-border shadow-[4px_4px_0px_0px_rgba(0,0,0,0.5)]">
+            <div className="w-12 h-12 bg-white flex items-center justify-center border-4 border-border retro-shadow">
               <Icon name="Gamepad2" className="w-6 h-6 text-foreground" />
             </div>
             {!isCollapsed && (
@@ -194,7 +209,7 @@ export function Sidebar({ className }: SidebarProps) {
               return (
                 <div key={`divider-${index}`} className="pt-4 pb-2 px-4 flex items-center gap-2">
                   <div className="h-[2px] flex-1 bg-foreground/20" />
-                  <p className="text-[10px] text-muted-foreground uppercase font-bold font-[family-name:var(--font-nes)]">{entry.label}</p>
+                  <p className="retro-small text-muted-foreground uppercase font-bold font-[family-name:var(--font-nes)]">{entry.label}</p>
                   <div className="h-[2px] flex-1 bg-foreground/20" />
                 </div>
               );
@@ -211,8 +226,8 @@ export function Sidebar({ className }: SidebarProps) {
                     "flex items-center gap-3 px-4 py-3 transition-all relative",
                     isCollapsed && "justify-center px-2",
                     isActive
-                      ? "bg-card border-4 border-border shadow-[4px_4px_0px_0px_var(--border)]"
-                      : "border-4 border-transparent hover:bg-card hover:border-border hover:shadow-[4px_4px_0px_0px_var(--border)]"
+                      ? "bg-card border-4 border-border retro-shadow"
+                      : "border-4 border-transparent hover:bg-card hover:border-border hover:retro-shadow"
                   )}
                 >
                   {isActive && !isCollapsed && (
@@ -227,7 +242,7 @@ export function Sidebar({ className }: SidebarProps) {
                   />
                   {!isCollapsed && (
                     <span className={cn(
-                      "text-[8px] uppercase font-bold font-[family-name:var(--font-nes)]",
+                      "retro-small uppercase font-bold font-[family-name:var(--font-nes)]",
                       isActive ? "text-foreground" : "text-muted-foreground"
                     )}>
                       {entry.name}
@@ -255,7 +270,7 @@ export function Sidebar({ className }: SidebarProps) {
                   className={cn(
                     "w-full flex items-center gap-3 px-4 py-2 transition-all",
                     isCollapsed && "justify-center px-2",
-                    "border-4 border-transparent hover:bg-card hover:border-border hover:shadow-[4px_4px_0px_0px_var(--border)]"
+                    "border-4 border-transparent hover:bg-card hover:border-border hover:retro-shadow"
                   )}
                 >
                   <Icon
@@ -268,7 +283,7 @@ export function Sidebar({ className }: SidebarProps) {
                   {!isCollapsed && (
                     <>
                       <span className={cn(
-                        "flex-1 text-left text-[10px] uppercase font-bold pt-0.5 font-[family-name:var(--font-nes)]",
+                        "flex-1 text-left retro-small uppercase font-bold pt-0.5 font-[family-name:var(--font-nes)]",
                         hasActiveChild ? "text-primary" : "text-muted-foreground"
                       )}>
                         {entry.name}
@@ -295,8 +310,8 @@ export function Sidebar({ className }: SidebarProps) {
                           className={cn(
                             "flex items-center gap-3 px-4 py-2 transition-all relative",
                             isActive
-                              ? "bg-card border-4 border-border shadow-[4px_4px_0px_0px_var(--border)]"
-                              : "border-4 border-transparent hover:bg-card hover:border-border hover:shadow-[4px_4px_0px_0px_var(--border)]"
+                              ? "bg-card border-4 border-border retro-shadow"
+                              : "border-4 border-transparent hover:bg-card hover:border-border hover:retro-shadow"
                           )}
                         >
                           {isActive && (
@@ -310,7 +325,7 @@ export function Sidebar({ className }: SidebarProps) {
                             )}
                           />
                           <span className={cn(
-                            "text-[10px] uppercase font-bold pt-0.5 font-[family-name:var(--font-nes)]",
+                            "retro-small uppercase font-bold pt-0.5 font-[family-name:var(--font-nes)]",
                             isActive ? "text-foreground" : "text-muted-foreground"
                           )}>
                             {item.name}
@@ -327,7 +342,7 @@ export function Sidebar({ className }: SidebarProps) {
 
         {/* Footer - User area */}
         <div className="border-t-4 border-border bg-card p-4">
-          <div className="relative">
+          <div className="relative" ref={userMenuRef}>
             <button
               onClick={() => !isCollapsed && setIsUserMenuOpen(!isUserMenuOpen)}
               className={cn(
@@ -338,13 +353,13 @@ export function Sidebar({ className }: SidebarProps) {
             >
               <div className="relative">
                 <div
-                  className="w-10 h-10 text-white text-[8px] font-bold flex items-center justify-center border-4 border-border font-[family-name:var(--font-nes)]"
+                  className="w-10 h-10 text-white text-xs font-bold flex items-center justify-center border-4 border-border font-[family-name:var(--font-nes)]"
                   style={{ backgroundColor: NES_BLUE }}
                 >
                   P1
                 </div>
                 {unreadCount > 0 && (
-                  <div className="absolute -top-2 -right-2 w-5 h-5 bg-primary text-white text-[8px] flex items-center justify-center font-bold border-2 border-card font-[family-name:var(--font-nes)]">
+                  <div className="absolute -top-2 -right-2 w-5 h-5 bg-primary text-white text-xs flex items-center justify-center font-bold border-2 border-card font-[family-name:var(--font-nes)]">
                     {unreadCount > 9 ? '9+' : unreadCount}
                   </div>
                 )}
@@ -352,7 +367,7 @@ export function Sidebar({ className }: SidebarProps) {
               {!isCollapsed && (
                 <>
                   <div className="flex-1 min-w-0 text-left">
-                    <p className="text-[10px] font-bold truncate pt-1 font-[family-name:var(--font-nes)] uppercase">
+                    <p className="retro-small font-bold truncate pt-1 font-[family-name:var(--font-nes)] uppercase">
                       {user?.full_name || 'Player 1'}
                     </p>
                     <p className="text-xs text-muted-foreground truncate font-[family-name:var(--font-pixel)]">
@@ -366,11 +381,11 @@ export function Sidebar({ className }: SidebarProps) {
 
             {/* User Menu Dropdown */}
             {!isCollapsed && isUserMenuOpen && (
-              <div className="absolute bottom-full left-0 right-0 mb-1 bg-card border-4 border-border shadow-[4px_4px_0px_0px_var(--border)]">
+              <div className="absolute bottom-full left-0 right-0 mb-1 bg-card border-4 border-border retro-shadow">
                 <Link
                   href="/dashboard/profile"
                   onClick={() => setIsUserMenuOpen(false)}
-                  className="w-full flex items-center gap-3 px-3 py-2 text-[10px] uppercase font-bold hover:bg-muted transition-colors border-b-2 border-dashed border-muted font-[family-name:var(--font-nes)]"
+                  className="w-full flex items-center gap-3 px-3 py-2 retro-small uppercase font-bold hover:bg-muted transition-colors border-b-2 border-dashed border-muted font-[family-name:var(--font-nes)]"
                 >
                   <Icon name="User" className="w-4 h-4" />
                   <span className="pt-0.5">{t('profile')}</span>
@@ -378,12 +393,12 @@ export function Sidebar({ className }: SidebarProps) {
                 <Link
                   href="/dashboard/notifications"
                   onClick={() => setIsUserMenuOpen(false)}
-                  className="w-full flex items-center gap-3 px-3 py-2 text-[10px] uppercase font-bold hover:bg-muted transition-colors border-b-2 border-dashed border-muted font-[family-name:var(--font-nes)]"
+                  className="w-full flex items-center gap-3 px-3 py-2 retro-small uppercase font-bold hover:bg-muted transition-colors border-b-2 border-dashed border-muted font-[family-name:var(--font-nes)]"
                 >
                   <Icon name="Bell" className="w-4 h-4" />
                   <span className="pt-0.5">{t('notifications')}</span>
                   {unreadCount > 0 && (
-                    <span className="ml-auto bg-primary text-white text-[8px] px-1.5 py-0.5 font-bold">
+                    <span className="ml-auto bg-primary text-white text-xs px-1.5 py-0.5 font-bold">
                       {unreadCount}
                     </span>
                   )}
@@ -391,7 +406,7 @@ export function Sidebar({ className }: SidebarProps) {
                 <Link
                   href="/dashboard/export"
                   onClick={() => setIsUserMenuOpen(false)}
-                  className="w-full flex items-center gap-3 px-3 py-2 text-[10px] uppercase font-bold hover:bg-muted transition-colors border-b-2 border-dashed border-muted font-[family-name:var(--font-nes)]"
+                  className="w-full flex items-center gap-3 px-3 py-2 retro-small uppercase font-bold hover:bg-muted transition-colors border-b-2 border-dashed border-muted font-[family-name:var(--font-nes)]"
                 >
                   <Icon name="Download" className="w-4 h-4" />
                   <span className="pt-0.5">{t('export')}</span>
@@ -402,7 +417,7 @@ export function Sidebar({ className }: SidebarProps) {
                     router.push("/login");
                     setIsUserMenuOpen(false);
                   }}
-                  className="w-full flex items-center gap-3 px-3 py-2 text-[10px] uppercase font-bold hover:bg-muted transition-colors text-primary font-[family-name:var(--font-nes)]"
+                  className="w-full flex items-center gap-3 px-3 py-2 retro-small uppercase font-bold hover:bg-muted transition-colors text-primary font-[family-name:var(--font-nes)]"
                 >
                   <Icon name="LogOut" className="w-4 h-4" />
                   <span className="pt-0.5">{t('logout')}</span>
@@ -544,7 +559,7 @@ export function Sidebar({ className }: SidebarProps) {
 
       {/* Footer */}
       <div className="border-t-2 border-border bg-background">
-        <div className="relative">
+        <div className="relative" ref={userMenuRef}>
           <button
             onClick={() => !isCollapsed && setIsUserMenuOpen(!isUserMenuOpen)}
             className={cn(
@@ -558,7 +573,7 @@ export function Sidebar({ className }: SidebarProps) {
                 {user ? getUserInitials(user.full_name) : '?'}
               </div>
               {unreadCount > 0 && (
-                <span className="absolute -top-2 -right-2 w-5 h-5 bg-destructive text-white text-[10px] font-bold flex items-center justify-center border-2 border-foreground shadow-sm rounded-full">
+                <span className="absolute -top-2 -right-2 w-5 h-5 bg-destructive text-white retro-small font-bold flex items-center justify-center border-2 border-foreground shadow-sm rounded-full">
                   {unreadCount > 9 ? '9+' : unreadCount}
                 </span>
               )}
@@ -569,7 +584,7 @@ export function Sidebar({ className }: SidebarProps) {
                   <p className="text-sm font-bold text-foreground truncate">
                     {user?.full_name || 'User'}
                   </p>
-                  <p className="text-[10px] text-muted-foreground truncate uppercase tracking-tight">
+                  <p className="retro-small text-muted-foreground truncate uppercase tracking-tight">
                     {user?.email || ''}
                   </p>
                 </div>

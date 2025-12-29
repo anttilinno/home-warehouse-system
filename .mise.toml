@@ -62,8 +62,8 @@ run = "DATABASE_URL=$DBMATE_DATABASE_URL dbmate -d backend/db/migrations new"
 
 [tasks.dev]
 description = "Run backend dev server"
-depends = ["dc-up"]
-run = "cd backend && uv run granian --interface asgi warehouse.app:app --reload"
+depends = ["dc-up", "sync"]
+run = "cd backend && uv run granian --interface asgi warehouse.app:app --reload --host 0.0.0.0 --port 8000"
 
 [tasks.test]
 description = "Run all tests"
@@ -98,6 +98,27 @@ run = "cd frontend && bun run build"
 description = "Install frontend dependencies"
 run = "cd frontend && bun install"
 
+# Mobile app tasks
+[tasks.app-install]
+description = "Install mobile app dependencies"
+run = "cd app && npm install"
+
+[tasks.app-dev]
+description = "Run mobile app dev server (Expo)"
+run = "cd app && npm start"
+
+[tasks.app-android]
+description = "Run mobile app on Android"
+run = "cd app && npm run android"
+
+[tasks.app-ios]
+description = "Run mobile app on iOS"
+run = "cd app && npm run ios"
+
+[tasks.app-web]
+description = "Run mobile app in web browser"
+run = "cd app && npm run web"
+
 [tasks.rq-worker]
 description = "Run RQ worker for loan jobs"
 depends = ["dc-up"]
@@ -122,7 +143,7 @@ run = "DATABASE_URL=$STAGING_DBMATE_URL dbmate -d backend/db/migrations up"
 [tasks.dev-staging]
 description = "Run backend dev server against staging database"
 depends = ["dc-up"]
-run = "cd backend && DATABASE_URL=$STAGING_DATABASE_URL uv run granian --interface asgi warehouse.app:app --reload"
+run = "cd backend && DATABASE_URL=$STAGING_DATABASE_URL uv run granian --interface asgi warehouse.app:app --reload --host 0.0.0.0 --port 8000"
 
 [tasks.staging-status]
 description = "Check staging database status"

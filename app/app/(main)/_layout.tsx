@@ -1,4 +1,4 @@
-import { Tabs } from 'expo-router';
+import { Tabs, router } from 'expo-router';
 import { View, Text, StyleSheet } from 'react-native';
 import { useSync } from '../../contexts/SyncContext';
 
@@ -46,6 +46,13 @@ export default function MainLayout() {
             </View>
           ),
         }}
+        listeners={{
+          tabPress: (e) => {
+            // Always navigate to inventory index when tab pressed
+            e.preventDefault();
+            router.replace('/(main)/inventory');
+          },
+        }}
       />
       <Tabs.Screen
         name="containers"
@@ -55,6 +62,12 @@ export default function MainLayout() {
           tabBarIcon: ({ color }) => (
             <Text style={{ fontSize: 24, color }}>🗃️</Text>
           ),
+        }}
+        listeners={{
+          tabPress: (e) => {
+            e.preventDefault();
+            router.replace('/(main)/containers');
+          },
         }}
       />
       <Tabs.Screen

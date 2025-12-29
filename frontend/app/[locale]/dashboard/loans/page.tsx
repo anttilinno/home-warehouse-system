@@ -4,6 +4,7 @@ import { useAuth } from "@/lib/auth";
 import { useRouter } from "@/navigation";
 import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
+import { useTheme } from "next-themes";
 import { useEffect, useState, useMemo } from "react";
 import {
   loansApi,
@@ -19,13 +20,13 @@ import {
   Item,
   Location,
 } from "@/lib/api";
+import { Icon } from "@/components/icons";
 import {
   Plus,
   X,
   HandCoins,
   Contact,
   Package,
-  MapPin,
   RotateCcw,
   Clock,
   CheckCircle,
@@ -34,6 +35,7 @@ import {
 import { cn } from "@/lib/utils";
 import { SearchableSelect, type SearchableSelectOption } from "@/components/ui/searchable-select";
 import { formatDate as formatDateUtil, formatDateTime as formatDateTimeUtil } from "@/lib/date-utils";
+import { NES_GREEN, NES_BLUE, NES_RED } from "@/lib/nes-colors";
 
 export default function LoansPage() {
   const { isAuthenticated, isLoading: authLoading, canEdit, user } = useAuth();
@@ -41,6 +43,8 @@ export default function LoansPage() {
   const searchParams = useSearchParams();
   const t = useTranslations("loans");
   const te = useTranslations("errors");
+  const { theme } = useTheme();
+  const isRetro = theme?.startsWith("retro");
 
   // Get filter from URL
   const urlFilter = searchParams.get("filter");
@@ -160,8 +164,14 @@ export default function LoansPage() {
 
   if (authLoading || loading) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="text-muted-foreground">{t("loading")}</div>
+      <div className={cn(
+        "flex items-center justify-center min-h-[400px]",
+        isRetro && "retro-body"
+      )}>
+        <div className={cn(
+          "text-muted-foreground",
+          isRetro && "retro-small uppercase"
+        )}>{t("loading")}</div>
       </div>
     );
   }
@@ -172,17 +182,229 @@ export default function LoansPage() {
 
   if (error) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
+      <div className={cn(
+        "flex items-center justify-center min-h-[400px]",
+        isRetro && "retro-body"
+      )}>
         <div className="text-center">
-          <p className="text-red-500 mb-4">{error}</p>
+          <p className={cn(
+            "text-red-500 mb-4",
+            isRetro && "retro-small uppercase"
+          )} style={isRetro ? { color: NES_RED } : undefined}>{error}</p>
           <button
             onClick={fetchData}
-            className="px-4 py-2 bg-primary text-primary-foreground rounded-lg"
+            className={cn(
+              isRetro
+                ? "px-4 py-2 border-4 border-border bg-primary text-white retro-small uppercase retro-shadow hover:retro-shadow-sm hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
+                : "px-4 py-2 bg-primary text-primary-foreground rounded-lg"
+            )}
           >
             {t("tryAgain")}
           </button>
         </div>
       </div>
+    );
+  }
+
+  // Retro theme UI
+  if (isRetro) {
+    return (
+      <>
+        {/* Header */}
+        <div className="mb-8 bg-primary p-4 border-4 border-border retro-shadow">
+          <div className="flex justify-between items-center">
+            <div>
+              <h1 className="text-lg font-bold text-white uppercase retro-heading">
+                {t("title")}
+              </h1>
+              <p className="text-white/80 retro-body retro-small uppercase mt-1">
+                {t("subtitle")}
+              </p>
+            </div>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => {
+                  setShowOverdueOnly(!showOverdueOnly);
+                  if (!showOverdueOnly) setShowActiveOnly(false);
+                }}
+                className={cn(
+                  "px-3 py-2 border-4 border-border retro-small uppercase font-bold retro-body transition-all",
+                  showOverdueOnly
+                    ? "bg-background text-foreground retro-shadow-sm"
+                    : "bg-white/20 text-white retro-shadow hover:retro-shadow-sm hover:translate-x-[2px] hover:translate-y-[2px]"
+                )}
+              >
+                {t("overdue")}
+              </button>
+              <button
+                onClick={() => {
+                  setShowActiveOnly(!showActiveOnly);
+                  if (!showActiveOnly) setShowOverdueOnly(false);
+                }}
+                className={cn(
+                  "px-3 py-2 border-4 border-border retro-small uppercase font-bold retro-body transition-all",
+                  showActiveOnly
+                    ? "bg-background text-foreground retro-shadow-sm"
+                    : "bg-white/20 text-white retro-shadow hover:retro-shadow-sm hover:translate-x-[2px] hover:translate-y-[2px]"
+                )}
+              >
+                {showActiveOnly ? t("showActive") : t("showAll")}
+              </button>
+              {canEdit && (
+                <button
+                  onClick={() => setIsCreateModalOpen(true)}
+                  className="px-3 py-2 bg-background text-foreground border-4 border-border retro-small uppercase font-bold retro-body retro-shadow hover:retro-shadow-sm hover:translate-x-[2px] hover:translate-y-[2px] transition-all flex items-center gap-2"
+                >
+                  <Icon name="Plus" className="w-4 h-4" />
+                  {t("addLoan")}
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Empty State */}
+        {filteredLoans.length === 0 ? (
+          <div className="bg-card border-4 border-border p-12 text-center retro-shadow">
+            <Icon name="HandCoins" className="w-12 h-12 mx-auto mb-4" style={{ color: NES_BLUE }} />
+            <p className="retro-small uppercase font-bold retro-body text-muted-foreground">
+              {t("noLoans")}
+            </p>
+            {canEdit && (
+              <button
+                onClick={() => setIsCreateModalOpen(true)}
+                className="mt-4 px-4 py-2 bg-primary text-white border-4 border-border retro-small uppercase font-bold retro-body retro-shadow hover:retro-shadow-sm hover:translate-x-[2px] hover:translate-y-[2px] transition-all inline-flex items-center gap-2"
+              >
+                <Icon name="Plus" className="w-4 h-4" />
+                {t("addLoan")}
+              </button>
+            )}
+          </div>
+        ) : (
+          <div className="bg-card border-4 border-border retro-shadow overflow-hidden">
+            <table className="w-full">
+              <thead className="bg-muted border-b-4 border-border">
+                <tr>
+                  <th className="px-4 py-3 text-left retro-small uppercase font-bold retro-body text-muted-foreground">
+                    {t("status")}
+                  </th>
+                  <th className="px-4 py-3 text-left retro-small uppercase font-bold retro-body text-muted-foreground">
+                    {t("inventory")}
+                  </th>
+                  <th className="px-4 py-3 text-left retro-small uppercase font-bold retro-body text-muted-foreground">
+                    {t("borrower")}
+                  </th>
+                  <th className="px-4 py-3 text-left retro-small uppercase font-bold retro-body text-muted-foreground">
+                    {t("quantity")}
+                  </th>
+                  <th className="px-4 py-3 text-left retro-small uppercase font-bold retro-body text-muted-foreground">
+                    {t("loanedAt")}
+                  </th>
+                  <th className="px-4 py-3 text-left retro-small uppercase font-bold retro-body text-muted-foreground">
+                    {t("dueDate")}
+                  </th>
+                  <th className="px-4 py-3 text-right retro-small uppercase font-bold retro-body text-muted-foreground">
+                    {t("actions")}
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredLoans.map((loan, idx) => {
+                  const status = getLoanStatus(loan);
+                  return (
+                    <tr
+                      key={loan.id}
+                      className={cn(
+                        "hover:bg-muted/50 transition-colors",
+                        idx < filteredLoans.length - 1 && "border-b-2 border-dashed border-border"
+                      )}
+                    >
+                      <td className="px-4 py-3">
+                        <RetroStatusBadge status={status} t={t} />
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-2">
+                          <Icon name="Package" className="w-4 h-4 text-muted-foreground" />
+                          <span className="retro-body retro-small uppercase text-foreground">
+                            {getInventoryDisplay(loan.inventory_id)}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-2 retro-body retro-small uppercase text-foreground">
+                          <Icon name="Contact" className="w-4 h-4 text-muted-foreground" />
+                          {getBorrowerName(loan.borrower_id)}
+                        </div>
+                      </td>
+                      <td className="px-4 py-3 retro-body retro-small text-foreground">
+                        {loan.quantity}
+                      </td>
+                      <td className="px-4 py-3 retro-body retro-small uppercase text-muted-foreground">
+                        {formatDateTime(loan.loaned_at)}
+                      </td>
+                      <td className="px-4 py-3 retro-body retro-small uppercase text-muted-foreground">
+                        {loan.due_date ? formatDate(loan.due_date) : t("noDueDate")}
+                      </td>
+                      <td className="px-4 py-3 text-right">
+                        {canEdit && status !== "returned" && (
+                          <button
+                            onClick={() => handleReturn(loan)}
+                            title={t("return")}
+                            className="px-3 py-1.5 border-4 border-border retro-small uppercase font-bold retro-body retro-shadow-sm hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all inline-flex items-center gap-1.5"
+                            style={{ backgroundColor: NES_GREEN, color: "white" }}
+                          >
+                            <Icon name="RotateCcw" className="w-4 h-4" />
+                            {t("return")}
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
+
+        {/* Create Modal */}
+        <CreateLoanModal
+          isOpen={isCreateModalOpen}
+          onClose={() => setIsCreateModalOpen(false)}
+          onSuccess={() => {
+            setIsCreateModalOpen(false);
+            fetchData();
+          }}
+          borrowers={borrowers}
+          inventory={inventory}
+          items={items}
+          locations={locations}
+          t={t}
+          te={te}
+          isRetro={isRetro}
+        />
+
+        {/* Return Modal */}
+        {selectedLoan && (
+          <ReturnLoanModal
+            isOpen={isReturnModalOpen}
+            onClose={() => {
+              setIsReturnModalOpen(false);
+              setSelectedLoan(null);
+            }}
+            onSuccess={() => {
+              setIsReturnModalOpen(false);
+              setSelectedLoan(null);
+              fetchData();
+            }}
+            loan={selectedLoan}
+            getBorrowerName={getBorrowerName}
+            getInventoryDisplay={getInventoryDisplay}
+            t={t}
+            te={te}
+            isRetro={isRetro}
+          />
+        )}
+      </>
     );
   }
 
@@ -343,6 +565,7 @@ export default function LoansPage() {
         locations={locations}
         t={t}
         te={te}
+        isRetro={false}
       />
 
       {/* Return Confirmation Modal */}
@@ -363,9 +586,31 @@ export default function LoansPage() {
           getInventoryDisplay={getInventoryDisplay}
           t={t}
           te={te}
+          isRetro={false}
         />
       )}
     </>
+  );
+}
+
+// Retro Status Badge Component
+function RetroStatusBadge({ status, t }: { status: "active" | "returned" | "overdue"; t: (key: string) => string }) {
+  const config = {
+    active: { color: NES_BLUE, icon: "Clock" as const },
+    returned: { color: NES_GREEN, icon: "CheckCircle" as const },
+    overdue: { color: NES_RED, icon: "AlertTriangle" as const },
+  };
+
+  const { color, icon } = config[status];
+
+  return (
+    <span
+      className="px-2 py-1 border-2 border-border text-xs uppercase font-bold retro-body inline-flex items-center gap-1"
+      style={{ backgroundColor: color, color: "white" }}
+    >
+      <Icon name={icon} className="w-3 h-3" />
+      {t(status)}
+    </span>
   );
 }
 
@@ -386,11 +631,11 @@ function StatusBadge({ status, t }: { status: "active" | "returned" | "overdue";
     },
   };
 
-  const { icon: Icon, className } = config[status];
+  const { icon: StatusIcon, className } = config[status];
 
   return (
     <span className={cn("px-2 py-1 rounded-full text-xs font-medium inline-flex items-center gap-1", className)}>
-      <Icon className="w-3 h-3" />
+      <StatusIcon className="w-3 h-3" />
       {t(status)}
     </span>
   );
@@ -407,6 +652,7 @@ function CreateLoanModal({
   locations,
   t,
   te,
+  isRetro,
 }: {
   isOpen: boolean;
   onClose: () => void;
@@ -417,6 +663,7 @@ function CreateLoanModal({
   locations: Location[];
   t: (key: string) => string;
   te: (key: string) => string;
+  isRetro: boolean;
 }) {
   const [formData, setFormData] = useState<LoanCreate>({
     inventory_id: "",
@@ -524,31 +771,70 @@ function CreateLoanModal({
     <div className="fixed inset-0 z-50 flex items-center justify-center" onClick={onClose}>
       <div className="absolute inset-0 bg-black/50" />
       <div
-        className="relative z-10 w-full max-w-md m-4 bg-background border rounded-lg shadow-xl"
+        className={cn(
+          "relative z-10 w-full max-w-md m-4 bg-background",
+          isRetro
+            ? "border-4 border-border retro-shadow"
+            : "border rounded-lg shadow-xl"
+        )}
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between p-4 border-b">
-          <h2 className="text-lg font-semibold">{t("addLoan")}</h2>
-          <button onClick={onClose} className="p-1 rounded hover:bg-muted">
-            <X className="w-5 h-5" />
+        <div className={cn(
+          "flex items-center justify-between p-4",
+          isRetro ? "border-b-4 border-border bg-primary" : "border-b"
+        )}>
+          <h2 className={cn(
+            isRetro
+              ? "text-sm font-bold text-white uppercase retro-heading"
+              : "text-lg font-semibold"
+          )}>{t("addLoan")}</h2>
+          <button onClick={onClose} className={cn(
+            isRetro
+              ? "p-1 border-2 border-white/50 hover:bg-white/20"
+              : "p-1 rounded hover:bg-muted"
+          )}>
+            {isRetro ? <Icon name="X" className="w-5 h-5 text-white" /> : <X className="w-5 h-5" />}
           </button>
         </div>
 
         <form onSubmit={handleSubmit} className="p-4 space-y-4">
           {error && (
-            <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md">
-              <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+            <div className={cn(
+              "p-3",
+              isRetro
+                ? "border-4 border-border bg-background"
+                : "bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md"
+            )}>
+              <p className={cn(
+                isRetro
+                  ? "retro-small uppercase font-bold retro-body"
+                  : "text-sm text-red-600 dark:text-red-400"
+              )} style={isRetro ? { color: NES_RED } : undefined}>{error}</p>
             </div>
           )}
 
           {jobStatus && !error && (
-            <div className="p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-md">
-              <p className="text-sm text-blue-600 dark:text-blue-400">{jobStatus}</p>
+            <div className={cn(
+              "p-3",
+              isRetro
+                ? "border-4 border-border bg-background"
+                : "bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-md"
+            )}>
+              <p className={cn(
+                isRetro
+                  ? "retro-small uppercase font-bold retro-body"
+                  : "text-sm text-blue-600 dark:text-blue-400"
+              )} style={isRetro ? { color: NES_BLUE } : undefined}>{jobStatus}</p>
             </div>
           )}
 
           <div>
-            <label className="block text-sm font-medium text-foreground mb-2">
+            <label className={cn(
+              "block mb-2",
+              isRetro
+                ? "retro-small uppercase font-bold retro-body text-foreground"
+                : "text-sm font-medium text-foreground"
+            )}>
               {t("inventory")}
             </label>
             <SearchableSelect
@@ -568,7 +854,12 @@ function CreateLoanModal({
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-foreground mb-2">
+            <label className={cn(
+              "block mb-2",
+              isRetro
+                ? "retro-small uppercase font-bold retro-body text-foreground"
+                : "text-sm font-medium text-foreground"
+            )}>
               {t("borrower")}
             </label>
             <SearchableSelect
@@ -588,7 +879,12 @@ function CreateLoanModal({
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-foreground mb-2">
+            <label className={cn(
+              "block mb-2",
+              isRetro
+                ? "retro-small uppercase font-bold retro-body text-foreground"
+                : "text-sm font-medium text-foreground"
+            )}>
               {t("quantity")}
             </label>
             <input
@@ -601,14 +897,24 @@ function CreateLoanModal({
                   quantity: parseInt(e.target.value) || 1,
                 }))
               }
-              className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+              className={cn(
+                "w-full px-3 py-2 bg-background text-foreground",
+                isRetro
+                  ? "border-4 border-border retro-body retro-small uppercase focus:outline-none"
+                  : "border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+              )}
               required
               disabled={submitting}
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-foreground mb-2">
+            <label className={cn(
+              "block mb-2",
+              isRetro
+                ? "retro-small uppercase font-bold retro-body text-foreground"
+                : "text-sm font-medium text-foreground"
+            )}>
               {t("dueDate")}
             </label>
             <input
@@ -620,13 +926,23 @@ function CreateLoanModal({
                   due_date: e.target.value || null,
                 }))
               }
-              className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+              className={cn(
+                "w-full px-3 py-2 bg-background text-foreground",
+                isRetro
+                  ? "border-4 border-border retro-body retro-small uppercase focus:outline-none"
+                  : "border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+              )}
               disabled={submitting}
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-foreground mb-2">
+            <label className={cn(
+              "block mb-2",
+              isRetro
+                ? "retro-small uppercase font-bold retro-body text-foreground"
+                : "text-sm font-medium text-foreground"
+            )}>
               {t("notes")}
             </label>
             <textarea
@@ -639,7 +955,12 @@ function CreateLoanModal({
               }
               placeholder={t("notesPlaceholder")}
               rows={3}
-              className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent resize-none"
+              className={cn(
+                "w-full px-3 py-2 bg-background text-foreground resize-none",
+                isRetro
+                  ? "border-4 border-border retro-body retro-small focus:outline-none"
+                  : "border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+              )}
               disabled={submitting}
             />
           </div>
@@ -648,7 +969,11 @@ function CreateLoanModal({
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 border border-border rounded-md hover:bg-muted transition-colors"
+              className={cn(
+                isRetro
+                  ? "px-4 py-2 border-4 border-border bg-muted text-foreground retro-small uppercase font-bold retro-body retro-shadow-sm hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
+                  : "px-4 py-2 border border-border rounded-md hover:bg-muted transition-colors"
+              )}
               disabled={submitting}
             >
               {t("cancel")}
@@ -656,7 +981,11 @@ function CreateLoanModal({
             <button
               type="submit"
               disabled={submitting}
-              className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors disabled:opacity-50"
+              className={cn(
+                isRetro
+                  ? "px-4 py-2 border-4 border-border bg-primary text-white retro-small uppercase font-bold retro-body retro-shadow-sm hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all disabled:opacity-50"
+                  : "px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors disabled:opacity-50"
+              )}
             >
               {submitting ? t("saving") : t("save")}
             </button>
@@ -677,6 +1006,7 @@ function ReturnLoanModal({
   getInventoryDisplay,
   t,
   te,
+  isRetro,
 }: {
   isOpen: boolean;
   onClose: () => void;
@@ -686,6 +1016,7 @@ function ReturnLoanModal({
   getInventoryDisplay: (id: string) => string;
   t: (key: string) => string;
   te: (key: string) => string;
+  isRetro: boolean;
 }) {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -720,43 +1051,90 @@ function ReturnLoanModal({
     <div className="fixed inset-0 z-50 flex items-center justify-center" onClick={onClose}>
       <div className="absolute inset-0 bg-black/50" />
       <div
-        className="relative z-10 w-full max-w-md m-4 bg-background border rounded-lg shadow-xl"
+        className={cn(
+          "relative z-10 w-full max-w-md m-4 bg-background",
+          isRetro
+            ? "border-4 border-border retro-shadow"
+            : "border rounded-lg shadow-xl"
+        )}
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between p-4 border-b">
-          <h2 className="text-lg font-semibold text-green-600 dark:text-green-400">
+        <div className={cn(
+          "flex items-center justify-between p-4",
+          isRetro ? "border-b-4 border-border" : "border-b"
+        )} style={isRetro ? { backgroundColor: NES_GREEN } : undefined}>
+          <h2 className={cn(
+            isRetro
+              ? "text-sm font-bold text-white uppercase retro-heading"
+              : "text-lg font-semibold text-green-600 dark:text-green-400"
+          )}>
             {t("returnConfirmTitle")}
           </h2>
-          <button onClick={onClose} className="p-1 rounded hover:bg-muted">
-            <X className="w-5 h-5" />
+          <button onClick={onClose} className={cn(
+            isRetro
+              ? "p-1 border-2 border-white/50 hover:bg-white/20"
+              : "p-1 rounded hover:bg-muted"
+          )}>
+            {isRetro ? <Icon name="X" className="w-5 h-5 text-white" /> : <X className="w-5 h-5" />}
           </button>
         </div>
 
         <div className="p-4 space-y-4">
           {error && (
-            <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md">
-              <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+            <div className={cn(
+              "p-3",
+              isRetro
+                ? "border-4 border-border bg-background"
+                : "bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md"
+            )}>
+              <p className={cn(
+                isRetro
+                  ? "retro-small uppercase font-bold retro-body"
+                  : "text-sm text-red-600 dark:text-red-400"
+              )} style={isRetro ? { color: NES_RED } : undefined}>{error}</p>
             </div>
           )}
 
-          <p className="text-muted-foreground">{t("returnConfirmMessage")}</p>
+          <p className={cn(
+            "text-muted-foreground",
+            isRetro && "retro-small uppercase retro-body"
+          )}>{t("returnConfirmMessage")}</p>
 
-          <div className="p-3 bg-muted rounded-md space-y-2">
+          <div className={cn(
+            "p-3 space-y-2",
+            isRetro
+              ? "border-4 border-border bg-muted"
+              : "bg-muted rounded-md"
+          )}>
             <div className="flex items-center gap-2">
-              <Package className="w-4 h-4 text-muted-foreground" />
-              <span className="font-medium">{getInventoryDisplay(loan.inventory_id)}</span>
+              {isRetro ? <Icon name="Package" className="w-4 h-4 text-muted-foreground" /> : <Package className="w-4 h-4 text-muted-foreground" />}
+              <span className={cn(
+                "font-medium",
+                isRetro && "retro-small uppercase retro-body"
+              )}>{getInventoryDisplay(loan.inventory_id)}</span>
             </div>
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Contact className="w-3 h-3" />
+            <div className={cn(
+              "flex items-center gap-2 text-muted-foreground",
+              isRetro ? "retro-small uppercase retro-body" : "text-sm"
+            )}>
+              {isRetro ? <Icon name="Contact" className="w-3 h-3" /> : <Contact className="w-3 h-3" />}
               {getBorrowerName(loan.borrower_id)}
             </div>
-            <div className="text-sm text-muted-foreground">
+            <div className={cn(
+              "text-muted-foreground",
+              isRetro ? "retro-small uppercase retro-body" : "text-sm"
+            )}>
               Qty: {loan.quantity}
             </div>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-foreground mb-2">
+            <label className={cn(
+              "block mb-2",
+              isRetro
+                ? "retro-small uppercase font-bold retro-body text-foreground"
+                : "text-sm font-medium text-foreground"
+            )}>
               {t("notes")}
             </label>
             <textarea
@@ -764,7 +1142,12 @@ function ReturnLoanModal({
               onChange={(e) => setNotes(e.target.value)}
               placeholder={t("notesPlaceholder")}
               rows={2}
-              className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent resize-none"
+              className={cn(
+                "w-full px-3 py-2 bg-background text-foreground resize-none",
+                isRetro
+                  ? "border-4 border-border retro-body retro-small focus:outline-none"
+                  : "border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+              )}
             />
           </div>
 
@@ -772,7 +1155,11 @@ function ReturnLoanModal({
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 border border-border rounded-md hover:bg-muted transition-colors"
+              className={cn(
+                isRetro
+                  ? "px-4 py-2 border-4 border-border bg-muted text-foreground retro-small uppercase font-bold retro-body retro-shadow-sm hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
+                  : "px-4 py-2 border border-border rounded-md hover:bg-muted transition-colors"
+              )}
             >
               {t("cancel")}
             </button>
@@ -780,7 +1167,12 @@ function ReturnLoanModal({
               type="button"
               onClick={handleReturn}
               disabled={submitting}
-              className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors disabled:opacity-50"
+              className={cn(
+                isRetro
+                  ? "px-4 py-2 border-4 border-border text-white retro-small uppercase font-bold retro-body retro-shadow-sm hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all disabled:opacity-50"
+                  : "px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors disabled:opacity-50"
+              )}
+              style={isRetro ? { backgroundColor: NES_GREEN } : undefined}
             >
               {submitting ? t("returning") : t("returnConfirmButton")}
             </button>

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -8,7 +8,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { CameraView, useCameraPermissions, BarcodeScanningResult } from 'expo-camera';
-import { router } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 import { useSync } from '../../contexts/SyncContext';
 import { cache } from '../../lib/storage/cache';
 import { barcodeApi, Container, Item } from '../../lib/api';
@@ -46,26 +46,55 @@ export default function ScanScreen() {
   const [permission, requestPermission] = useCameraPermissions();
   const [scanned, setScanned] = useState(false);
   const [processing, setProcessing] = useState(false);
+  const [isFocused, setIsFocused] = useState(true);
   const { isOnline, pendingCount, isSyncing, sync } = useSync();
 
+  // Restart camera when screen comes into focus
+  useFocusEffect(
+    useCallback(() => {
+      console.log('[SCAN] Screen focused - activating camera');
+      setIsFocused(true);
+      setScanned(false);
+
+      return () => {
+        console.log('[SCAN] Screen unfocused - deactivating camera');
+        setIsFocused(false);
+      };
+    }, [])
+  );
+
+  useEffect(() => {
+    console.log('[SCAN] Component mounted');
+    console.log('[SCAN] Camera permission:', permission);
+  }, [permission]);
+
   const handleBarCodeScanned = async ({ data, type }: BarcodeScanningResult) => {
-    if (scanned || processing) return;
+    console.log('[SCAN] Barcode detected:', { data, type, scanned, processing });
+
+    if (scanned || processing) {
+      console.log('[SCAN] Ignoring - already scanned or processing');
+      return;
+    }
 
     setScanned(true);
     setProcessing(true);
 
     try {
       const result = parseScan(data, type);
+      console.log('[SCAN] Parsed result:', result);
 
       if (result.type === 'container') {
+        console.log('[SCAN] Handling as container:', result.value);
         await handleContainerScan(result.value);
       } else if (result.type === 'product') {
+        console.log('[SCAN] Handling as product:', result.value);
         await handleProductScan(result.value);
       } else {
+        console.log('[SCAN] Unknown barcode type');
         Alert.alert('Unknown Barcode', `Scanned: ${data}`);
       }
     } catch (error) {
-      console.error('Scan error:', error);
+      console.error('[SCAN] Error:', error);
       Alert.alert('Error', 'Failed to process barcode');
     } finally {
       setProcessing(false);
@@ -170,14 +199,15 @@ export default function ScanScreen() {
         )}
       </View>
 
-      {/* Camera */}
-      <CameraView
-        style={styles.camera}
-        barcodeScannerSettings={{
-          barcodeTypes: ['ean13', 'ean8', 'upc_a', 'upc_e', 'qr', 'code128', 'code39'],
-        }}
-        onBarcodeScanned={scanned ? undefined : handleBarCodeScanned}
-      >
+      {/* Camera - only render when focused */}
+      {isFocused ? (
+        <CameraView
+          style={styles.camera}
+          barcodeScannerSettings={{
+            barcodeTypes: ['ean13', 'ean8', 'upc_a', 'upc_e', 'qr', 'code128', 'code39'],
+          }}
+          onBarcodeScanned={scanned ? undefined : handleBarCodeScanned}
+        >
         {/* Scan overlay */}
         <View style={styles.overlay}>
           <View style={styles.scanArea}>
@@ -190,7 +220,12 @@ export default function ScanScreen() {
             {processing ? 'Processing...' : 'Point camera at barcode or QR code'}
           </Text>
         </View>
-      </CameraView>
+        </CameraView>
+      ) : (
+        <View style={[styles.camera, styles.cameraInactive]}>
+          <Text style={styles.hint}>Camera paused</Text>
+        </View>
+      )}
     </View>
   );
 }
@@ -202,6 +237,11 @@ const styles = StyleSheet.create({
   },
   camera: {
     flex: 1,
+  },
+  cameraInactive: {
+    backgroundColor: '#1a1a1a',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   message: {
     color: '#fff',

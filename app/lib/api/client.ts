@@ -1,8 +1,33 @@
 import * as SecureStore from 'expo-secure-store';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Platform } from 'react-native';
 import { ApiError } from './types';
 
 const DEFAULT_API_URL = 'http://localhost:8000';
+
+// SecureStore doesn't work on web, use AsyncStorage as fallback
+const secureStorage = {
+  getItem: async (key: string): Promise<string | null> => {
+    if (Platform.OS === 'web') {
+      return AsyncStorage.getItem(key);
+    }
+    return SecureStore.getItemAsync(key);
+  },
+  setItem: async (key: string, value: string): Promise<void> => {
+    if (Platform.OS === 'web') {
+      await AsyncStorage.setItem(key, value);
+    } else {
+      await SecureStore.setItemAsync(key, value);
+    }
+  },
+  deleteItem: async (key: string): Promise<void> => {
+    if (Platform.OS === 'web') {
+      await AsyncStorage.removeItem(key);
+    } else {
+      await SecureStore.deleteItemAsync(key);
+    }
+  },
+};
 
 class ApiClient {
   private async getBaseUrl(): Promise<string> {
@@ -11,7 +36,7 @@ class ApiClient {
   }
 
   private async getAuthHeaders(): Promise<Record<string, string>> {
-    const token = await SecureStore.getItemAsync('auth_token');
+    const token = await secureStorage.getItem('auth_token');
     const workspaceId = await AsyncStorage.getItem('workspace_id');
 
     const headers: Record<string, string> = {
@@ -87,15 +112,20 @@ class ApiClient {
   }
 
   private async handleError(response: Response): Promise<never> {
-    if (response.status === 401) {
-      // Clear invalid token
-      await SecureStore.deleteItemAsync('auth_token');
-      throw new Error('AUTH_REQUIRED');
-    }
-
     const errorData: ApiError = await response.json().catch(() => ({
       detail: 'Unknown error',
     }));
+
+    if (response.status === 401) {
+      // Check if there's a token to clear (not a login attempt)
+      const token = await secureStorage.getItem('auth_token');
+      if (token) {
+        await secureStorage.deleteItem('auth_token');
+        throw new Error('AUTH_REQUIRED');
+      }
+      // Login failure - show the actual error message
+      throw new Error(errorData.detail || 'Invalid credentials');
+    }
 
     throw new Error(errorData.detail || `HTTP ${response.status}`);
   }

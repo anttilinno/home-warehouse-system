@@ -11,10 +11,11 @@ import {
   InventorySummary,
   tokenStorage,
   locationsApi,
-  LocationSummary,
+  Location,
 } from "@/lib/api";
 import { useTranslations } from "next-intl";
 import { useTheme } from "next-themes";
+import { NES_GREEN, NES_BLUE, NES_RED, NES_YELLOW } from "@/lib/nes-colors";
 
 type IconName = keyof typeof LucideIcons;
 
@@ -26,7 +27,7 @@ export default function DashboardPage() {
   const isRetro = theme?.startsWith("retro");
   const [stats, setStats] = useState<DashboardExtendedStats | null>(null);
   const [recentItems, setRecentItems] = useState<InventorySummary[]>([]);
-  const [locations, setLocations] = useState<LocationSummary[]>([]);
+  const [locations, setLocations] = useState<Location[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -125,9 +126,6 @@ export default function DashboardPage() {
     (stats?.overdue_loans_count || 0) > 0;
 
   // NES color constants (Tailwind can't resolve CSS vars in arbitrary values)
-  const NES_GREEN = "#92cc41";
-  const NES_BLUE = "#209cee";
-  const NES_RED = "#ce372b";
 
   // NES-style dashboard for retro themes
   if (isRetro) {
@@ -144,18 +142,18 @@ export default function DashboardPage() {
           <div className="flex items-center gap-2">
             <button
               onClick={() => setTheme(theme === "retro-dark" ? "retro-light" : "retro-dark")}
-              className="h-8 w-8 flex items-center justify-center bg-card border-4 border-border shadow-[3px_3px_0px_0px_var(--border)] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-[1px_1px_0px_0px_var(--border)] transition-all"
+              className="h-8 w-8 flex items-center justify-center bg-card border-4 border-border retro-shadow-md hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-[1px_1px_0px_0px_var(--border)] transition-all"
               title={theme === "retro-dark" ? "Switch to light mode" : "Switch to dark mode"}
             >
               <Icon name={theme === "retro-dark" ? "Sun" : "Moon"} className="w-4 h-4" />
             </button>
             <Link
               href="/dashboard/inventory/new"
-              className="h-8 px-3 flex items-center gap-2 text-white border-4 border-border shadow-[3px_3px_0px_0px_var(--border)] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-[1px_1px_0px_0px_var(--border)] transition-all text-[10px] font-bold uppercase"
+              className="h-8 px-3 flex items-center gap-2 text-white border-4 border-border retro-shadow-md hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-[1px_1px_0px_0px_var(--border)] transition-all retro-small font-bold uppercase"
               style={{ backgroundColor: NES_BLUE }}
             >
               <Icon name="Plus" className="w-3 h-3" />
-              <span className="font-[family-name:var(--font-nes)]">{t("newItem")}</span>
+              <span className="retro-heading">{t("newItem")}</span>
             </Link>
           </div>
         </header>
@@ -165,19 +163,19 @@ export default function DashboardPage() {
           {/* Total Items */}
           <Link
             href="/dashboard/inventory"
-            className="bg-card border-4 border-border p-3 shadow-[3px_3px_0px_0px_var(--border)] flex flex-col justify-between h-24 relative group hover:-translate-y-0.5 transition-transform"
+            className="bg-card border-4 border-border p-3 retro-shadow-md flex flex-col justify-between h-24 relative group hover:-translate-y-0.5 transition-transform"
           >
             <div className="absolute top-1 right-1 opacity-20">
               <Icon name="Package" className="w-5 h-5" />
             </div>
-            <div className="text-[7px] uppercase text-muted-foreground border-b-2 border-muted pb-1 font-[family-name:var(--font-nes)]">
+            <div className="retro-small text-muted-foreground border-b-2 border-muted pb-1">
               {t("totalItems")}
             </div>
             <div>
-              <span className="text-2xl font-bold block font-[family-name:var(--font-pixel)]">
+              <span className="text-2xl font-bold block retro-body">
                 {stats?.total_items.toLocaleString() || "0"}
               </span>
-              <span className="text-[10px] font-bold font-[family-name:var(--font-nes)]" style={{ color: NES_GREEN }}>
+              <span className="retro-small" style={{ color: NES_GREEN }}>
                 ▲ {t("inStock")}
               </span>
             </div>
@@ -186,20 +184,20 @@ export default function DashboardPage() {
           {/* Low Stock */}
           <Link
             href="/dashboard/inventory?filter=low-stock"
-            className="bg-card border-4 border-border p-3 shadow-[3px_3px_0px_0px_var(--border)] flex flex-col justify-between h-24 relative group hover:-translate-y-0.5 transition-transform"
+            className="bg-card border-4 border-border p-3 retro-shadow-md flex flex-col justify-between h-24 relative group hover:-translate-y-0.5 transition-transform"
           >
             <div className="absolute top-1 right-1 opacity-20">
               <Icon name="AlertTriangle" className="w-5 h-5 text-primary" />
             </div>
-            <div className="text-[7px] uppercase text-muted-foreground border-b-2 border-muted pb-1 font-[family-name:var(--font-nes)]">
+            <div className="retro-small text-muted-foreground border-b-2 border-muted pb-1">
               {t("lowStock")}
             </div>
             <div>
-              <span className="text-2xl font-bold text-primary block font-[family-name:var(--font-pixel)]">
+              <span className="text-2xl font-bold text-primary block retro-body">
                 {stats?.low_stock_count || 0}
               </span>
               {(stats?.low_stock_count || 0) > 0 && (
-                <span className="text-[8px] text-primary font-bold animate-pulse font-[family-name:var(--font-nes)]">
+                <span className="retro-small text-primary animate-pulse">
                   !!! {t("urgent")} !!!
                 </span>
               )}
@@ -209,19 +207,19 @@ export default function DashboardPage() {
           {/* Active Loans */}
           <Link
             href="/dashboard/loans"
-            className="bg-card border-4 border-border p-3 shadow-[3px_3px_0px_0px_var(--border)] flex flex-col justify-between h-24 relative group hover:-translate-y-0.5 transition-transform"
+            className="bg-card border-4 border-border p-3 retro-shadow-md flex flex-col justify-between h-24 relative group hover:-translate-y-0.5 transition-transform"
           >
             <div className="absolute top-1 right-1 opacity-20">
               <Icon name="Users" className="w-5 h-5" />
             </div>
-            <div className="text-[7px] uppercase text-muted-foreground border-b-2 border-muted pb-1 font-[family-name:var(--font-nes)]">
+            <div className="retro-small text-muted-foreground border-b-2 border-muted pb-1">
               {t("activeLoans")}
             </div>
             <div>
-              <span className="text-2xl font-bold block font-[family-name:var(--font-pixel)]">
+              <span className="text-2xl font-bold block retro-body">
                 {stats?.active_loans || 0}
               </span>
-              <span className="text-[10px] text-muted-foreground font-[family-name:var(--font-nes)]">
+              <span className="retro-small text-muted-foreground">
                 {t("dueSoon")}
               </span>
             </div>
@@ -230,19 +228,19 @@ export default function DashboardPage() {
           {/* Total Value */}
           <Link
             href="/dashboard/analytics"
-            className="bg-card border-4 border-border p-3 shadow-[3px_3px_0px_0px_var(--border)] flex flex-col justify-between h-24 relative group hover:-translate-y-0.5 transition-transform"
+            className="bg-card border-4 border-border p-3 retro-shadow-md flex flex-col justify-between h-24 relative group hover:-translate-y-0.5 transition-transform"
           >
             <div className="absolute top-1 right-1 opacity-20">
               <Icon name="DollarSign" className="w-5 h-5" />
             </div>
-            <div className="text-[7px] uppercase text-muted-foreground border-b-2 border-muted pb-1 font-[family-name:var(--font-nes)]">
+            <div className="retro-small text-muted-foreground border-b-2 border-muted pb-1">
               {t("score")}
             </div>
             <div>
-              <span className="text-2xl font-bold block font-[family-name:var(--font-pixel)]">
+              <span className="text-2xl font-bold block retro-body">
                 {stats ? formatCurrency(stats.total_inventory_value, stats.currency_code) : "€0"}
               </span>
-              <span className="text-[10px] text-muted-foreground font-[family-name:var(--font-nes)]">
+              <span className="retro-small text-muted-foreground">
                 {t("credits")}
               </span>
             </div>
@@ -254,20 +252,20 @@ export default function DashboardPage() {
           {/* Left Column - Recent Activity & Alert */}
           <div className="lg:col-span-2 space-y-4">
             {/* Recent Activity Table */}
-            <div className="bg-card border-4 border-border shadow-[3px_3px_0px_0px_var(--border)]">
+            <div className="bg-card border-4 border-border retro-shadow-md">
               <div className="border-b-4 border-border px-3 py-2 bg-secondary flex justify-between items-center">
                 <div className="flex items-center gap-2">
                   <Icon name="History" className="w-3 h-3" />
-                  <h2 className="font-bold uppercase text-[10px] font-[family-name:var(--font-nes)]">{t("recentActivity")}</h2>
+                  <h2 className="retro-heading">{t("recentActivity")}</h2>
                 </div>
-                <Link href="/dashboard/inventory" className="text-[10px] font-bold hover:text-primary underline font-[family-name:var(--font-nes)]">
+                <Link href="/dashboard/inventory" className="retro-small hover:text-primary underline">
                   {t("viewAll")}
                 </Link>
               </div>
               <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse text-sm">
                   <thead>
-                    <tr className="border-b-4 border-border text-[8px] uppercase text-muted-foreground bg-muted font-[family-name:var(--font-nes)]">
+                    <tr className="border-b-4 border-border retro-small text-muted-foreground bg-muted">
                       <th className="px-3 py-2 font-bold">{t("item")}</th>
                       <th className="px-3 py-2 font-bold">{t("action")}</th>
                       <th className="px-3 py-2 font-bold">{t("location")}</th>
@@ -299,7 +297,7 @@ export default function DashboardPage() {
                           </td>
                           <td className="px-3 py-2">
                             <span
-                              className="px-2 py-0.5 text-[8px] font-bold border-2 border-border uppercase text-white font-[family-name:var(--font-nes)]"
+                              className="px-2 py-0.5 retro-small border-2 border-border text-white"
                               style={{
                                 backgroundColor: index % 3 === 0 ? NES_GREEN : index % 3 === 1 ? NES_RED : "#6c757d"
                               }}
@@ -323,13 +321,13 @@ export default function DashboardPage() {
 
             {/* Alert Box - Boss Battle Style */}
             {hasAlerts && (
-              <div className="border-4 border-primary bg-primary/10 p-3 shadow-[3px_3px_0px_0px_var(--border)]">
+              <div className="border-4 border-primary bg-primary/10 p-3 retro-shadow-md">
                 <div className="flex items-center gap-3 mb-3">
                   <div className="w-10 h-10 bg-primary flex-shrink-0 border-4 border-border flex items-center justify-center">
                     <Icon name="AlertTriangle" className="w-5 h-5 text-white animate-pulse" />
                   </div>
                   <div className="flex-1">
-                    <h3 className="font-bold text-primary uppercase text-[10px] font-[family-name:var(--font-nes)]">
+                    <h3 className="retro-heading text-primary">
                       ! {t("bossAlert")} !
                     </h3>
                     <p className="text-xs text-foreground">
@@ -345,7 +343,7 @@ export default function DashboardPage() {
                 </div>
                 <Link
                   href="/dashboard/inventory?filter=low-stock"
-                  className="inline-block bg-primary hover:bg-primary/80 text-white text-[8px] font-bold px-3 py-1.5 uppercase border-2 border-border shadow-[2px_2px_0px_0px_var(--border)] active:shadow-none active:translate-y-[2px] active:translate-x-[2px] transition-all font-[family-name:var(--font-nes)]"
+                  className="inline-block bg-primary hover:bg-primary/80 text-white retro-small px-3 py-1.5 border-2 border-border retro-shadow-sm active:shadow-none active:translate-y-[2px] active:translate-x-[2px] transition-all"
                 >
                   {t("startAudit")}
                 </Link>
@@ -356,8 +354,8 @@ export default function DashboardPage() {
           {/* Right Column - Quick Actions & Storage */}
           <div className="space-y-4">
             {/* Quick Actions */}
-            <div className="bg-card border-4 border-border shadow-[3px_3px_0px_0px_var(--border)] p-3">
-              <h2 className="font-bold uppercase text-[10px] mb-3 flex items-center gap-2 border-b-2 border-border pb-2 font-[family-name:var(--font-nes)]">
+            <div className="bg-card border-4 border-border retro-shadow-md p-3">
+              <h2 className="retro-heading mb-3 flex items-center gap-2 border-b-2 border-border pb-2">
                 <Icon name="Zap" className="w-3 h-3" style={{ color: NES_BLUE }} />
                 {t("quickActions")}
               </h2>
@@ -370,7 +368,7 @@ export default function DashboardPage() {
                   onMouseLeave={(e) => e.currentTarget.style.backgroundColor = ""}
                 >
                   <Icon name="QrCode" className="w-5 h-5 mb-1" />
-                  <span className="text-[8px] font-bold uppercase font-[family-name:var(--font-nes)]">{t("scan")}</span>
+                  <span className="retro-small">{t("scan")}</span>
                 </Link>
                 <Link
                   href="/dashboard/analytics"
@@ -379,14 +377,14 @@ export default function DashboardPage() {
                   onMouseLeave={(e) => e.currentTarget.style.backgroundColor = ""}
                 >
                   <Icon name="FileText" className="w-5 h-5 mb-1" />
-                  <span className="text-[8px] font-bold uppercase font-[family-name:var(--font-nes)]">{t("report")}</span>
+                  <span className="retro-small">{t("report")}</span>
                 </Link>
                 <Link
                   href="/dashboard/items/new"
                   className="flex flex-col items-center justify-center p-2 border-4 border-border hover:bg-muted transition-colors group bg-card"
                 >
                   <Icon name="Upload" className="w-5 h-5 mb-1" />
-                  <span className="text-[8px] font-bold uppercase font-[family-name:var(--font-nes)]">{t("import")}</span>
+                  <span className="retro-small">{t("import")}</span>
                 </Link>
                 <Link
                   href="/dashboard/borrowers/new"
@@ -395,22 +393,22 @@ export default function DashboardPage() {
                   onMouseLeave={(e) => e.currentTarget.style.backgroundColor = ""}
                 >
                   <Icon name="UserPlus" className="w-5 h-5 mb-1" />
-                  <span className="text-[8px] font-bold uppercase font-[family-name:var(--font-nes)]">{t("invite")}</span>
+                  <span className="retro-small">{t("invite")}</span>
                 </Link>
               </div>
             </div>
 
             {/* Storage HP */}
-            <div className="bg-card border-4 border-border shadow-[3px_3px_0px_0px_var(--border)]">
+            <div className="bg-card border-4 border-border retro-shadow-md">
               <div className="border-b-4 border-border px-3 py-2 bg-secondary flex justify-between items-center">
-                <h2 className="font-bold uppercase text-[10px] font-[family-name:var(--font-nes)]">{t("storageHP")}</h2>
-                <span className="bg-primary text-white text-[8px] px-1.5 py-0.5 border-2 border-border font-bold font-[family-name:var(--font-nes)]">
+                <h2 className="retro-heading">{t("storageHP")}</h2>
+                <span className="bg-primary text-white retro-small px-1.5 py-0.5 border-2 border-border">
                   HQ
                 </span>
               </div>
               <div className="p-3 space-y-3">
                 {locations.length === 0 ? (
-                  <p className="text-xs text-muted-foreground font-[family-name:var(--font-pixel)]">{t("noLocations")}</p>
+                  <p className="retro-small text-muted-foreground">{t("noLocations")}</p>
                 ) : (
                   locations.map((location, index) => {
                     const capacity = 100;
@@ -420,9 +418,9 @@ export default function DashboardPage() {
 
                     return (
                       <div key={location.id}>
-                        <div className="flex justify-between text-[10px] mb-1 font-bold font-[family-name:var(--font-nes)]">
+                        <div className="flex justify-between retro-small mb-1">
                           <span className="truncate max-w-[100px]">{location.name}</span>
-                          <span className="font-[family-name:var(--font-pixel)]">{used}/{capacity}</span>
+                          <span className="retro-body">{used}/{capacity}</span>
                         </div>
                         <div className="h-4 w-full border-4 border-border bg-card relative">
                           <div
@@ -444,7 +442,7 @@ export default function DashboardPage() {
                     );
                   })
                 )}
-                <p className="text-[10px] text-muted-foreground border-t border-dashed border-muted pt-2 font-[family-name:var(--font-pixel)]">
+                <p className="retro-small text-muted-foreground border-t border-dashed border-muted pt-2">
                   &gt; TIP: {t("storageTip")}
                 </p>
               </div>
@@ -452,7 +450,7 @@ export default function DashboardPage() {
 
             {/* Footer */}
             <div className="text-center pt-2">
-              <p className="text-[8px] text-muted-foreground uppercase tracking-widest font-bold font-[family-name:var(--font-nes)]">
+              <p className="retro-small text-muted-foreground tracking-widest">
                 INSERT COIN TO CONTINUE<br/>
                 © 2024 HMS CORP
               </p>

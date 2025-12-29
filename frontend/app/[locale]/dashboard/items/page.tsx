@@ -4,6 +4,8 @@ import { useAuth } from "@/lib/auth";
 import { useRouter } from "@/navigation";
 import { useTranslations } from "next-intl";
 import { useEffect, useState, useMemo } from "react";
+import { useTheme } from "next-themes";
+import { Icon } from "@/components/icons";
 import {
   itemsApi,
   categoriesApi,
@@ -13,16 +15,6 @@ import {
   ItemUpdate,
   Category,
 } from "@/lib/api";
-import {
-  Plus,
-  Pencil,
-  Trash2,
-  X,
-  Tag,
-  Archive,
-  Copy,
-  FileText,
-} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { CategorySelect } from "@/components/ui/category-select";
 import { FavoriteButton } from "@/components/ui/favorite-button";
@@ -33,6 +25,8 @@ export default function ItemsPage() {
   const router = useRouter();
   const t = useTranslations("items");
   const te = useTranslations("errors");
+  const { theme } = useTheme();
+  const isRetro = theme?.startsWith("retro");
 
   // Data state
   const [items, setItems] = useState<Item[]>([]);
@@ -99,6 +93,15 @@ export default function ItemsPage() {
   };
 
   if (authLoading || loading) {
+    if (isRetro) {
+      return (
+        <div className="flex items-center justify-center min-h-[400px]">
+          <p className="retro-small uppercase font-bold animate-pulse retro-heading">
+            Loading...
+          </p>
+        </div>
+      );
+    }
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-muted-foreground">{t("loading")}</div>
@@ -111,6 +114,21 @@ export default function ItemsPage() {
   }
 
   if (error) {
+    if (isRetro) {
+      return (
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="text-center">
+            <p className="text-primary mb-4 retro-body">{error}</p>
+            <button
+              onClick={fetchData}
+              className="px-4 py-2 bg-primary text-white border-4 border-border retro-shadow hover:translate-x-[2px] hover:translate-y-[2px] hover:retro-shadow-sm transition-all retro-heading"
+            >
+              {t("tryAgain")}
+            </button>
+          </div>
+        </div>
+      );
+    }
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center">
@@ -126,6 +144,217 @@ export default function ItemsPage() {
     );
   }
 
+  // Retro NES theme
+  if (isRetro) {
+    return (
+      <>
+        {/* Header */}
+        <div className="mb-8 bg-primary p-4 border-4 border-border retro-shadow">
+          <div className="flex justify-between items-center">
+            <div>
+              <h1 className="text-lg font-bold text-white uppercase retro-heading">
+                {t("title")}
+              </h1>
+              <p className="text-white/80 retro-small mt-1">
+                &gt; {items.length} ITEMS IN CATALOG
+              </p>
+            </div>
+            {canEdit && (
+              <button
+                onClick={() => setIsCreateModalOpen(true)}
+                className="px-4 py-2 bg-white/20 text-white border-2 border-white/50 hover:bg-white/30 transition-colors flex items-center gap-2 retro-small uppercase"
+              >
+                <Icon name="Plus" className="w-4 h-4" />
+                {t("addItem")}
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Table */}
+        {items.length === 0 ? (
+          <div className="bg-card border-4 border-border retro-shadow p-12 text-center">
+            <Icon name="Tag" className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+            <p className="text-muted-foreground retro-body">{t("noItems")}</p>
+            {canEdit && (
+              <button
+                onClick={() => setIsCreateModalOpen(true)}
+                className="mt-4 px-4 py-2 bg-primary text-white border-4 border-border retro-shadow hover:translate-x-[2px] hover:translate-y-[2px] hover:retro-shadow-sm transition-all inline-flex items-center gap-2 retro-heading"
+              >
+                <Icon name="Plus" className="w-4 h-4" />
+                {t("addItem")}
+              </button>
+            )}
+          </div>
+        ) : (
+          <div className="bg-card border-4 border-border retro-shadow overflow-hidden">
+            <table className="w-full">
+              <thead className="bg-muted border-b-4 border-border">
+                <tr>
+                  <th className="px-4 py-3 text-left retro-small font-bold text-foreground uppercase retro-heading">
+                    {t("sku")}
+                  </th>
+                  <th className="px-4 py-3 text-left retro-small font-bold text-foreground uppercase retro-heading">
+                    {t("name")}
+                  </th>
+                  <th className="px-4 py-3 text-left retro-small font-bold text-foreground uppercase retro-heading">
+                    {t("category")}
+                  </th>
+                  <th className="px-4 py-3 text-right retro-small font-bold text-foreground uppercase retro-heading">
+                    {t("actions")}
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {items.map((item, index) => (
+                  <tr
+                    key={item.id}
+                    className={cn(
+                      "hover:bg-muted/50 transition-colors",
+                      index < items.length - 1 && "border-b-2 border-dashed border-border"
+                    )}
+                  >
+                    <td className="px-4 py-3">
+                      <span className="px-2 py-1 bg-muted border-2 border-border retro-small font-mono retro-body">
+                        {item.sku}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-2">
+                        <Icon name="Tag" className="w-4 h-4 text-muted-foreground" />
+                        <span className="retro-body text-foreground">
+                          {item.name}
+                        </span>
+                      </div>
+                    </td>
+                    <td className="px-4 py-3">
+                      {item.category_id ? (
+                        <div className="flex items-center gap-2 retro-body text-foreground">
+                          <Icon name="Archive" className="w-4 h-4 text-muted-foreground" />
+                          {getCategoryName(item.category_id)}
+                        </div>
+                      ) : (
+                        <span className="text-muted-foreground retro-body">{t("noCategory")}</span>
+                      )}
+                    </td>
+                    <td className="px-4 py-3 text-right">
+                      <div className="flex justify-end gap-2">
+                        <button
+                          onClick={() => router.push(`/dashboard/items/${item.id}`)}
+                          title={t("view")}
+                          className="p-2 border-2 border-border hover:bg-muted transition-colors"
+                        >
+                          <Icon name="Eye" className="w-4 h-4 text-muted-foreground hover:text-foreground" />
+                        </button>
+                        <FavoriteButton
+                          entityType="ITEM"
+                          entityId={item.id}
+                          size="sm"
+                          className="p-2 border-2 border-border"
+                        />
+                        {item.obsidian_url && (
+                          <a
+                            href={item.obsidian_url}
+                            title={t("openInObsidian")}
+                            className="p-2 border-2 border-border hover:bg-muted transition-colors"
+                          >
+                            <Icon name="FileText" className="w-4 h-4 text-purple-500" />
+                          </a>
+                        )}
+                        {canEdit && (
+                          <>
+                            <button
+                              onClick={() => handleDuplicate(item)}
+                              title={t("duplicate")}
+                              className="p-2 border-2 border-border hover:bg-muted transition-colors"
+                            >
+                              <Icon name="Copy" className="w-4 h-4 text-muted-foreground hover:text-foreground" />
+                            </button>
+                            <button
+                              onClick={() => handleEdit(item)}
+                              title={t("edit")}
+                              className="p-2 border-2 border-border hover:bg-muted transition-colors"
+                            >
+                              <Icon name="Pencil" className="w-4 h-4 text-muted-foreground hover:text-foreground" />
+                            </button>
+                            <button
+                              onClick={() => handleDelete(item)}
+                              title={t("delete")}
+                              className="p-2 border-2 border-border hover:bg-primary hover:text-white transition-colors"
+                            >
+                              <Icon name="Trash2" className="w-4 h-4" />
+                            </button>
+                          </>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+
+        {/* Modals */}
+        <CreateEditModal
+          isOpen={isCreateModalOpen}
+          onClose={() => {
+            setIsCreateModalOpen(false);
+            setTemplateItem(null);
+          }}
+          onSuccess={() => {
+            setIsCreateModalOpen(false);
+            setTemplateItem(null);
+            fetchData();
+          }}
+          template={templateItem}
+          categories={categories}
+          t={t}
+          te={te}
+          isRetro={isRetro}
+        />
+
+        <CreateEditModal
+          isOpen={isEditModalOpen}
+          onClose={() => {
+            setIsEditModalOpen(false);
+            setSelectedItem(null);
+          }}
+          onSuccess={() => {
+            setIsEditModalOpen(false);
+            setSelectedItem(null);
+            fetchData();
+          }}
+          item={selectedItem}
+          categories={categories}
+          t={t}
+          te={te}
+          isRetro={isRetro}
+        />
+
+        {selectedItem && (
+          <DeleteConfirmModal
+            isOpen={isDeleteModalOpen}
+            onClose={() => {
+              setIsDeleteModalOpen(false);
+              setSelectedItem(null);
+            }}
+            onSuccess={() => {
+              setIsDeleteModalOpen(false);
+              setSelectedItem(null);
+              fetchData();
+            }}
+            item={selectedItem}
+            t={t}
+            te={te}
+            isRetro={isRetro}
+          />
+        )}
+      </>
+    );
+  }
+
+  // Standard theme
   return (
     <>
       {/* Header */}
@@ -139,7 +368,7 @@ export default function ItemsPage() {
             onClick={() => setIsCreateModalOpen(true)}
             className="px-4 py-2 bg-primary text-primary-foreground rounded-lg flex items-center gap-2 hover:bg-primary/90 transition-colors"
           >
-            <Plus className="w-4 h-4" />
+            <Icon name="Plus" className="w-4 h-4" />
             {t("addItem")}
           </button>
         )}
@@ -148,14 +377,14 @@ export default function ItemsPage() {
       {/* Table */}
       {items.length === 0 ? (
         <div className="bg-card border rounded-lg p-12 text-center">
-          <Tag className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+          <Icon name="Tag" className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
           <p className="text-muted-foreground">{t("noItems")}</p>
           {canEdit && (
             <button
               onClick={() => setIsCreateModalOpen(true)}
               className="mt-4 px-4 py-2 bg-primary text-primary-foreground rounded-lg inline-flex items-center gap-2 hover:bg-primary/90 transition-colors"
             >
-              <Plus className="w-4 h-4" />
+              <Icon name="Plus" className="w-4 h-4" />
               {t("addItem")}
             </button>
           )}
@@ -192,7 +421,7 @@ export default function ItemsPage() {
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2">
-                      <Tag className="w-4 h-4 text-muted-foreground" />
+                      <Icon name="Tag" className="w-4 h-4 text-muted-foreground" />
                       <span className="font-medium text-foreground">
                         {item.name}
                       </span>
@@ -201,7 +430,7 @@ export default function ItemsPage() {
                   <td className="px-4 py-3">
                     {item.category_id ? (
                       <div className="flex items-center gap-2 text-foreground">
-                        <Archive className="w-4 h-4 text-muted-foreground" />
+                        <Icon name="Archive" className="w-4 h-4 text-muted-foreground" />
                         {getCategoryName(item.category_id)}
                       </div>
                     ) : (
@@ -213,6 +442,13 @@ export default function ItemsPage() {
                   </td>
                   <td className="px-4 py-3 text-right">
                     <div className="flex justify-end gap-2">
+                      <button
+                        onClick={() => router.push(`/dashboard/items/${item.id}`)}
+                        title={t("view")}
+                        className="p-1.5 rounded hover:bg-muted transition-colors"
+                      >
+                        <Icon name="Eye" className="w-4 h-4 text-muted-foreground hover:text-foreground" />
+                      </button>
                       <FavoriteButton
                         entityType="ITEM"
                         entityId={item.id}
@@ -225,7 +461,7 @@ export default function ItemsPage() {
                           title={t("openInObsidian")}
                           className="p-1.5 rounded hover:bg-muted transition-colors"
                         >
-                          <FileText className="w-4 h-4 text-purple-500 hover:text-purple-600" />
+                          <Icon name="FileText" className="w-4 h-4 text-purple-500 hover:text-purple-600" />
                         </a>
                       )}
                       {canEdit && (
@@ -235,21 +471,21 @@ export default function ItemsPage() {
                             title={t("duplicate")}
                             className="p-1.5 rounded hover:bg-muted transition-colors"
                           >
-                            <Copy className="w-4 h-4 text-muted-foreground hover:text-foreground" />
+                            <Icon name="Copy" className="w-4 h-4 text-muted-foreground hover:text-foreground" />
                           </button>
                           <button
                             onClick={() => handleEdit(item)}
                             title={t("edit")}
                             className="p-1.5 rounded hover:bg-muted transition-colors"
                           >
-                            <Pencil className="w-4 h-4 text-muted-foreground hover:text-foreground" />
+                            <Icon name="Pencil" className="w-4 h-4 text-muted-foreground hover:text-foreground" />
                           </button>
                           <button
                             onClick={() => handleDelete(item)}
                             title={t("delete")}
                             className="p-1.5 rounded hover:bg-muted transition-colors"
                           >
-                            <Trash2 className="w-4 h-4 text-muted-foreground hover:text-destructive" />
+                            <Icon name="Trash2" className="w-4 h-4 text-muted-foreground hover:text-destructive" />
                           </button>
                         </>
                       )}
@@ -262,7 +498,7 @@ export default function ItemsPage() {
         </div>
       )}
 
-      {/* Create Modal */}
+      {/* Modals */}
       <CreateEditModal
         isOpen={isCreateModalOpen}
         onClose={() => {
@@ -278,9 +514,9 @@ export default function ItemsPage() {
         categories={categories}
         t={t}
         te={te}
+        isRetro={false}
       />
 
-      {/* Edit Modal */}
       <CreateEditModal
         isOpen={isEditModalOpen}
         onClose={() => {
@@ -296,9 +532,9 @@ export default function ItemsPage() {
         categories={categories}
         t={t}
         te={te}
+        isRetro={false}
       />
 
-      {/* Delete Confirmation Modal */}
       {selectedItem && (
         <DeleteConfirmModal
           isOpen={isDeleteModalOpen}
@@ -314,6 +550,7 @@ export default function ItemsPage() {
           item={selectedItem}
           t={t}
           te={te}
+          isRetro={false}
         />
       )}
     </>
@@ -330,6 +567,7 @@ function CreateEditModal({
   categories,
   t,
   te,
+  isRetro,
 }: {
   isOpen: boolean;
   onClose: () => void;
@@ -339,6 +577,7 @@ function CreateEditModal({
   categories: Category[];
   t: (key: string) => string;
   te: (key: string) => string;
+  isRetro: boolean;
 }) {
   const isEdit = !!item;
   const isDuplicate = !isEdit && !!template;
@@ -347,6 +586,13 @@ function CreateEditModal({
     name: "",
     description: null,
     category_id: null,
+    brand: null,
+    model: null,
+    manufacturer: null,
+    serial_number: null,
+    is_insured: false,
+    lifetime_warranty: false,
+    warranty_details: null,
     obsidian_vault_path: null,
     obsidian_note_path: null,
   });
@@ -355,32 +601,50 @@ function CreateEditModal({
 
   useEffect(() => {
     if (item) {
-      // Edit mode
       setFormData({
         sku: item.sku,
         name: item.name,
         description: item.description,
         category_id: item.category_id,
+        brand: item.brand,
+        model: item.model,
+        manufacturer: item.manufacturer,
+        serial_number: item.serial_number,
+        is_insured: item.is_insured,
+        lifetime_warranty: item.lifetime_warranty,
+        warranty_details: item.warranty_details,
         obsidian_vault_path: item.obsidian_vault_path,
         obsidian_note_path: item.obsidian_note_path,
       });
     } else if (template) {
-      // Duplicate mode - pre-fill from template
       setFormData({
         sku: "",
         name: `${template.name} (Copy)`,
         description: template.description,
         category_id: template.category_id,
+        brand: template.brand,
+        model: template.model,
+        manufacturer: template.manufacturer,
+        serial_number: null,
+        is_insured: template.is_insured,
+        lifetime_warranty: template.lifetime_warranty,
+        warranty_details: template.warranty_details,
         obsidian_vault_path: template.obsidian_vault_path,
         obsidian_note_path: template.obsidian_note_path,
       });
     } else {
-      // Create mode
       setFormData({
         sku: "",
         name: "",
         description: null,
         category_id: null,
+        brand: null,
+        model: null,
+        manufacturer: null,
+        serial_number: null,
+        is_insured: false,
+        lifetime_warranty: false,
+        warranty_details: null,
         obsidian_vault_path: null,
         obsidian_note_path: null,
       });
@@ -405,6 +669,13 @@ function CreateEditModal({
           name: formData.name,
           description: formData.description,
           category_id: formData.category_id,
+          brand: formData.brand,
+          model: formData.model,
+          manufacturer: formData.manufacturer,
+          serial_number: formData.serial_number,
+          is_insured: formData.is_insured,
+          lifetime_warranty: formData.lifetime_warranty,
+          warranty_details: formData.warranty_details,
           obsidian_vault_path: formData.obsidian_vault_path,
           obsidian_note_path: formData.obsidian_note_path,
         };
@@ -426,6 +697,211 @@ function CreateEditModal({
 
   if (!isOpen) return null;
 
+  if (isRetro) {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center" onClick={onClose}>
+        <div className="absolute inset-0 bg-black/70" />
+        <div
+          className="relative z-10 w-full max-w-lg m-4 bg-card border-4 border-border retro-shadow max-h-[90vh] flex flex-col"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div className="flex items-center justify-between p-4 border-b-4 border-border bg-primary">
+            <h2 className="retro-small font-bold text-white uppercase retro-heading">
+              {getModalTitle()}
+            </h2>
+            <button onClick={onClose} className="p-1 hover:bg-white/20 text-white">
+              <Icon name="X" className="w-5 h-5" />
+            </button>
+          </div>
+
+          <form onSubmit={handleSubmit} className="p-4 space-y-4 overflow-y-auto flex-1">
+            {error && (
+              <div className="p-3 bg-primary/10 border-4 border-primary">
+                <p className="text-sm text-primary retro-body">{error}</p>
+              </div>
+            )}
+
+            <div>
+              <label className="block retro-small font-bold text-foreground mb-2 uppercase retro-heading">
+                {t("sku")}
+              </label>
+              <input
+                type="text"
+                value={formData.sku}
+                onChange={(e) => setFormData((prev) => ({ ...prev, sku: e.target.value }))}
+                placeholder={t("skuPlaceholder")}
+                className={cn(
+                  "w-full px-3 py-2 border-4 border-border bg-background text-foreground font-mono retro-body focus:outline-none focus:border-primary",
+                  isEdit && "bg-muted cursor-not-allowed"
+                )}
+                required
+                disabled={isEdit}
+              />
+            </div>
+
+            <div>
+              <label className="block retro-small font-bold text-foreground mb-2 uppercase retro-heading">
+                {t("name")}
+              </label>
+              <input
+                type="text"
+                value={formData.name}
+                onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
+                placeholder={t("namePlaceholder")}
+                className="w-full px-3 py-2 border-4 border-border bg-background text-foreground retro-body focus:outline-none focus:border-primary"
+                required
+              />
+            </div>
+
+            <div>
+              <label className="block retro-small font-bold text-foreground mb-2 uppercase retro-heading">
+                {t("category")}
+              </label>
+              <CategorySelect
+                categories={categories}
+                value={formData.category_id ?? null}
+                onChange={(value) => setFormData((prev) => ({ ...prev, category_id: value }))}
+                placeholder={t("selectCategory")}
+                allowNone={true}
+              />
+            </div>
+
+            <div>
+              <label className="block retro-small font-bold text-foreground mb-2 uppercase retro-heading">
+                {t("description")}
+              </label>
+              <textarea
+                value={formData.description || ""}
+                onChange={(e) => setFormData((prev) => ({ ...prev, description: e.target.value || null }))}
+                placeholder={t("descriptionPlaceholder")}
+                rows={2}
+                className="w-full px-3 py-2 border-4 border-border bg-background text-foreground retro-body focus:outline-none focus:border-primary resize-none"
+              />
+            </div>
+
+            {/* Brand, Model, Manufacturer row */}
+            <div className="grid grid-cols-3 gap-3">
+              <div>
+                <label className="block retro-small font-bold text-foreground mb-2 uppercase retro-heading">
+                  {t("brand")}
+                </label>
+                <input
+                  type="text"
+                  value={formData.brand || ""}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, brand: e.target.value || null }))}
+                  placeholder={t("brandPlaceholder")}
+                  className="w-full px-3 py-2 border-4 border-border bg-background text-foreground retro-body focus:outline-none focus:border-primary"
+                />
+              </div>
+              <div>
+                <label className="block retro-small font-bold text-foreground mb-2 uppercase retro-heading">
+                  {t("model")}
+                </label>
+                <input
+                  type="text"
+                  value={formData.model || ""}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, model: e.target.value || null }))}
+                  placeholder={t("modelPlaceholder")}
+                  className="w-full px-3 py-2 border-4 border-border bg-background text-foreground retro-body focus:outline-none focus:border-primary"
+                />
+              </div>
+              <div>
+                <label className="block retro-small font-bold text-foreground mb-2 uppercase retro-heading">
+                  {t("manufacturer")}
+                </label>
+                <input
+                  type="text"
+                  value={formData.manufacturer || ""}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, manufacturer: e.target.value || null }))}
+                  placeholder={t("manufacturerPlaceholder")}
+                  className="w-full px-3 py-2 border-4 border-border bg-background text-foreground retro-body focus:outline-none focus:border-primary"
+                />
+              </div>
+            </div>
+
+            {/* Serial Number */}
+            <div>
+              <label className="block retro-small font-bold text-foreground mb-2 uppercase retro-heading">
+                {t("serialNumber")}
+              </label>
+              <input
+                type="text"
+                value={formData.serial_number || ""}
+                onChange={(e) => setFormData((prev) => ({ ...prev, serial_number: e.target.value || null }))}
+                placeholder={t("serialNumberPlaceholder")}
+                className="w-full px-3 py-2 border-4 border-border bg-background text-foreground font-mono retro-body focus:outline-none focus:border-primary"
+              />
+            </div>
+
+            {/* Warranty & Insurance */}
+            <div className="border-t-4 border-border pt-4 space-y-3">
+              <div className="flex items-center gap-3">
+                <input
+                  type="checkbox"
+                  id="is_insured"
+                  checked={formData.is_insured || false}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, is_insured: e.target.checked }))}
+                  className="w-5 h-5 border-4 border-border bg-background accent-primary"
+                />
+                <label htmlFor="is_insured" className="retro-small font-bold text-foreground uppercase retro-heading">
+                  {t("isInsured")}
+                </label>
+              </div>
+              <div className="flex items-center gap-3">
+                <input
+                  type="checkbox"
+                  id="lifetime_warranty"
+                  checked={formData.lifetime_warranty || false}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, lifetime_warranty: e.target.checked }))}
+                  className="w-5 h-5 border-4 border-border bg-background accent-primary"
+                />
+                <label htmlFor="lifetime_warranty" className="retro-small font-bold text-foreground uppercase retro-heading">
+                  {t("lifetimeWarranty")}
+                </label>
+              </div>
+              <div>
+                <label className="block retro-small font-bold text-foreground mb-2 uppercase retro-heading">
+                  {t("warrantyDetails")}
+                </label>
+                <textarea
+                  value={formData.warranty_details || ""}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, warranty_details: e.target.value || null }))}
+                  placeholder={t("warrantyDetailsPlaceholder")}
+                  rows={2}
+                  className="w-full px-3 py-2 border-4 border-border bg-background text-foreground retro-body focus:outline-none focus:border-primary resize-none"
+                />
+              </div>
+            </div>
+
+            {/* Docspell Linked Documents - only show in edit mode */}
+            {isEdit && item && (
+              <div className="border-t-4 border-border pt-4 mt-4">
+                <LinkedDocuments itemId={item.id} itemName={item.name} />
+              </div>
+            )}
+
+            <div className="flex justify-end gap-3 pt-4">
+              <button
+                type="button"
+                onClick={onClose}
+                className="px-4 py-2 border-4 border-border hover:bg-muted transition-colors retro-heading"
+              >
+                {t("cancel")}
+              </button>
+              <button
+                type="submit"
+                disabled={submitting}
+                className="px-4 py-2 bg-primary text-white border-4 border-border retro-shadow hover:translate-x-[2px] hover:translate-y-[2px] hover:retro-shadow-sm transition-all disabled:opacity-50 retro-heading"
+              >
+                {submitting ? t("saving") : t("save")}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center" onClick={onClose}>
       <div className="absolute inset-0 bg-black/50" />
@@ -436,7 +912,7 @@ function CreateEditModal({
         <div className="flex items-center justify-between p-4 border-b">
           <h2 className="text-lg font-semibold">{getModalTitle()}</h2>
           <button type="button" onClick={onClose} className="p-1 rounded hover:bg-muted">
-            <X className="w-5 h-5" />
+            <Icon name="X" className="w-5 h-5" />
           </button>
         </div>
 
@@ -448,15 +924,11 @@ function CreateEditModal({
           )}
 
           <div>
-            <label className="block text-sm font-medium text-foreground mb-2">
-              {t("sku")}
-            </label>
+            <label className="block text-sm font-medium text-foreground mb-2">{t("sku")}</label>
             <input
               type="text"
               value={formData.sku}
-              onChange={(e) =>
-                setFormData((prev) => ({ ...prev, sku: e.target.value }))
-              }
+              onChange={(e) => setFormData((prev) => ({ ...prev, sku: e.target.value }))}
               placeholder={t("skuPlaceholder")}
               className={cn(
                 "w-full px-3 py-2 border border-border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent font-mono",
@@ -468,15 +940,11 @@ function CreateEditModal({
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-foreground mb-2">
-              {t("name")}
-            </label>
+            <label className="block text-sm font-medium text-foreground mb-2">{t("name")}</label>
             <input
               type="text"
               value={formData.name}
-              onChange={(e) =>
-                setFormData((prev) => ({ ...prev, name: e.target.value }))
-              }
+              onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
               placeholder={t("namePlaceholder")}
               className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
               required
@@ -484,82 +952,108 @@ function CreateEditModal({
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-foreground mb-2">
-              {t("category")}
-            </label>
+            <label className="block text-sm font-medium text-foreground mb-2">{t("category")}</label>
             <CategorySelect
               categories={categories}
               value={formData.category_id ?? null}
-              onChange={(value) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  category_id: value,
-                }))
-              }
+              onChange={(value) => setFormData((prev) => ({ ...prev, category_id: value }))}
               placeholder={t("selectCategory")}
               allowNone={true}
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-foreground mb-2">
-              {t("description")}
-            </label>
+            <label className="block text-sm font-medium text-foreground mb-2">{t("description")}</label>
             <textarea
               value={formData.description || ""}
-              onChange={(e) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  description: e.target.value || null,
-                }))
-              }
+              onChange={(e) => setFormData((prev) => ({ ...prev, description: e.target.value || null }))}
               placeholder={t("descriptionPlaceholder")}
               rows={3}
               className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent resize-none"
             />
           </div>
 
-          {/* Obsidian Integration */}
-          <div className="border-t pt-4 mt-4">
-            <div className="flex items-center gap-2 mb-3">
-              <FileText className="w-4 h-4 text-purple-500" />
-              <span className="text-sm font-medium text-foreground">{t("obsidianIntegration")}</span>
+          {/* Brand, Model, Manufacturer row */}
+          <div className="grid grid-cols-3 gap-3">
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-2">{t("brand")}</label>
+              <input
+                type="text"
+                value={formData.brand || ""}
+                onChange={(e) => setFormData((prev) => ({ ...prev, brand: e.target.value || null }))}
+                placeholder={t("brandPlaceholder")}
+                className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+              />
             </div>
-            <div className="space-y-3">
-              <div>
-                <label className="block text-sm font-medium text-muted-foreground mb-1">
-                  {t("obsidianVaultPath")}
-                </label>
-                <input
-                  type="text"
-                  value={formData.obsidian_vault_path || ""}
-                  onChange={(e) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      obsidian_vault_path: e.target.value || null,
-                    }))
-                  }
-                  placeholder={t("obsidianVaultPlaceholder")}
-                  className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm font-mono"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-muted-foreground mb-1">
-                  {t("obsidianNotePath")}
-                </label>
-                <input
-                  type="text"
-                  value={formData.obsidian_note_path || ""}
-                  onChange={(e) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      obsidian_note_path: e.target.value || null,
-                    }))
-                  }
-                  placeholder={t("obsidianNotePlaceholder")}
-                  className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm font-mono"
-                />
-              </div>
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-2">{t("model")}</label>
+              <input
+                type="text"
+                value={formData.model || ""}
+                onChange={(e) => setFormData((prev) => ({ ...prev, model: e.target.value || null }))}
+                placeholder={t("modelPlaceholder")}
+                className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-2">{t("manufacturer")}</label>
+              <input
+                type="text"
+                value={formData.manufacturer || ""}
+                onChange={(e) => setFormData((prev) => ({ ...prev, manufacturer: e.target.value || null }))}
+                placeholder={t("manufacturerPlaceholder")}
+                className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+              />
+            </div>
+          </div>
+
+          {/* Serial Number */}
+          <div>
+            <label className="block text-sm font-medium text-foreground mb-2">{t("serialNumber")}</label>
+            <input
+              type="text"
+              value={formData.serial_number || ""}
+              onChange={(e) => setFormData((prev) => ({ ...prev, serial_number: e.target.value || null }))}
+              placeholder={t("serialNumberPlaceholder")}
+              className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground font-mono focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+            />
+          </div>
+
+          {/* Warranty & Insurance */}
+          <div className="border-t pt-4 space-y-3">
+            <div className="flex items-center gap-3">
+              <input
+                type="checkbox"
+                id="is_insured_standard"
+                checked={formData.is_insured || false}
+                onChange={(e) => setFormData((prev) => ({ ...prev, is_insured: e.target.checked }))}
+                className="w-4 h-4 rounded border-border bg-background accent-primary"
+              />
+              <label htmlFor="is_insured_standard" className="text-sm font-medium text-foreground">
+                {t("isInsured")}
+              </label>
+            </div>
+            <div className="flex items-center gap-3">
+              <input
+                type="checkbox"
+                id="lifetime_warranty_standard"
+                checked={formData.lifetime_warranty || false}
+                onChange={(e) => setFormData((prev) => ({ ...prev, lifetime_warranty: e.target.checked }))}
+                className="w-4 h-4 rounded border-border bg-background accent-primary"
+              />
+              <label htmlFor="lifetime_warranty_standard" className="text-sm font-medium text-foreground">
+                {t("lifetimeWarranty")}
+              </label>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-2">{t("warrantyDetails")}</label>
+              <textarea
+                value={formData.warranty_details || ""}
+                onChange={(e) => setFormData((prev) => ({ ...prev, warranty_details: e.target.value || null }))}
+                placeholder={t("warrantyDetailsPlaceholder")}
+                rows={2}
+                className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent resize-none"
+              />
             </div>
           </div>
 
@@ -600,6 +1094,7 @@ function DeleteConfirmModal({
   item,
   t,
   te,
+  isRetro,
 }: {
   isOpen: boolean;
   onClose: () => void;
@@ -607,6 +1102,7 @@ function DeleteConfirmModal({
   item: Item;
   t: (key: string) => string;
   te: (key: string) => string;
+  isRetro: boolean;
 }) {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -635,6 +1131,67 @@ function DeleteConfirmModal({
 
   if (!isOpen) return null;
 
+  if (isRetro) {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center" onClick={onClose}>
+        <div className="absolute inset-0 bg-black/70" />
+        <div
+          className="relative z-10 w-full max-w-md m-4 bg-card border-4 border-border retro-shadow"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div className="flex items-center justify-between p-4 border-b-4 border-border bg-primary">
+            <h2 className="retro-small font-bold text-white uppercase retro-heading">
+              {t("deleteConfirmTitle")}
+            </h2>
+            <button onClick={onClose} className="p-1 hover:bg-white/20 text-white">
+              <Icon name="X" className="w-5 h-5" />
+            </button>
+          </div>
+
+          <div className="p-4 space-y-4">
+            {error && (
+              <div className="p-3 bg-primary/10 border-4 border-primary">
+                <p className="text-sm text-primary retro-body">{error}</p>
+              </div>
+            )}
+
+            <p className="text-muted-foreground retro-body">{t("deleteConfirmMessage")}</p>
+
+            <div className="p-3 bg-muted border-4 border-border">
+              <div className="flex items-center gap-2 mb-1">
+                <span className="px-2 py-0.5 bg-background border-2 border-border retro-small font-mono retro-body">
+                  {item.sku}
+                </span>
+              </div>
+              <p className="retro-heading">{item.name}</p>
+              {item.description && (
+                <p className="text-sm text-muted-foreground mt-1 retro-body">{item.description}</p>
+              )}
+            </div>
+
+            <div className="flex justify-end gap-3 pt-4">
+              <button
+                type="button"
+                onClick={onClose}
+                className="px-4 py-2 border-4 border-border hover:bg-muted transition-colors retro-heading"
+              >
+                {t("cancel")}
+              </button>
+              <button
+                type="button"
+                onClick={handleDelete}
+                disabled={submitting}
+                className="px-4 py-2 bg-primary text-white border-4 border-border retro-shadow hover:translate-x-[2px] hover:translate-y-[2px] hover:retro-shadow-sm transition-all disabled:opacity-50 retro-heading"
+              >
+                {submitting ? t("deleting") : t("deleteConfirmButton")}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center" onClick={onClose}>
       <div className="absolute inset-0 bg-black/50" />
@@ -643,11 +1200,9 @@ function DeleteConfirmModal({
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between p-4 border-b">
-          <h2 className="text-lg font-semibold text-destructive">
-            {t("deleteConfirmTitle")}
-          </h2>
+          <h2 className="text-lg font-semibold text-destructive">{t("deleteConfirmTitle")}</h2>
           <button onClick={onClose} className="p-1 rounded hover:bg-muted">
-            <X className="w-5 h-5" />
+            <Icon name="X" className="w-5 h-5" />
           </button>
         </div>
 
@@ -662,9 +1217,7 @@ function DeleteConfirmModal({
 
           <div className="p-3 bg-muted rounded-md">
             <div className="flex items-center gap-2 mb-1">
-              <span className="px-2 py-0.5 bg-background rounded text-xs font-mono">
-                {item.sku}
-              </span>
+              <span className="px-2 py-0.5 bg-background rounded text-xs font-mono">{item.sku}</span>
             </div>
             <p className="font-medium">{item.name}</p>
             {item.description && (

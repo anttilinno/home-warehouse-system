@@ -1,10 +1,35 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import * as SecureStore from 'expo-secure-store';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Platform } from 'react-native';
 import { router } from 'expo-router';
 import { authApi, User, Workspace } from '../lib/api';
 import { cache } from '../lib/storage/cache';
 import { offlineQueue } from '../lib/storage/offline-queue';
+
+// SecureStore doesn't work on web, use AsyncStorage as fallback
+const secureStorage = {
+  getItem: async (key: string): Promise<string | null> => {
+    if (Platform.OS === 'web') {
+      return AsyncStorage.getItem(key);
+    }
+    return SecureStore.getItemAsync(key);
+  },
+  setItem: async (key: string, value: string): Promise<void> => {
+    if (Platform.OS === 'web') {
+      await AsyncStorage.setItem(key, value);
+    } else {
+      await SecureStore.setItemAsync(key, value);
+    }
+  },
+  deleteItem: async (key: string): Promise<void> => {
+    if (Platform.OS === 'web') {
+      await AsyncStorage.removeItem(key);
+    } else {
+      await SecureStore.deleteItemAsync(key);
+    }
+  },
+};
 
 interface AuthContextType {
   isAuthenticated: boolean;
@@ -32,7 +57,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const checkAuth = async () => {
     try {
-      const token = await SecureStore.getItemAsync('auth_token');
+      const token = await secureStorage.getItem('auth_token');
       const storedUser = await AsyncStorage.getItem('user');
       const storedWorkspaces = await AsyncStorage.getItem('workspaces');
       const workspaceId = await AsyncStorage.getItem('workspace_id');
@@ -65,7 +90,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const response = await authApi.login({ email, password });
 
     // Store credentials
-    await SecureStore.setItemAsync('auth_token', response.access_token);
+    await secureStorage.setItem('auth_token', response.access_token);
     await AsyncStorage.setItem('user', JSON.stringify(response.user));
     await AsyncStorage.setItem('workspaces', JSON.stringify(response.workspaces));
 
@@ -81,7 +106,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const logout = async () => {
     // Clear all stored data
-    await SecureStore.deleteItemAsync('auth_token');
+    await secureStorage.deleteItem('auth_token');
     await AsyncStorage.multiRemove(['user', 'workspaces', 'workspace_id']);
     await cache.clear();
     await offlineQueue.clear();

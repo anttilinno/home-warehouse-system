@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
+import React, { createContext, useContext, useEffect, useState, useCallback, useRef } from 'react';
 import NetInfo, { NetInfoState } from '@react-native-community/netinfo';
 import {
   itemsApi,
@@ -123,6 +123,12 @@ export function SyncProvider({ children }: { children: React.ReactNode }) {
     }
   }, [isOnline, isSyncing, isAuthenticated, processQueue, pullData]);
 
+  // Use ref to avoid re-subscribing to NetInfo when sync changes
+  const syncRef = useRef(sync);
+  useEffect(() => {
+    syncRef.current = sync;
+  }, [sync]);
+
   // Monitor network status
   useEffect(() => {
     const unsubscribe = NetInfo.addEventListener((state: NetInfoState) => {
@@ -131,12 +137,12 @@ export function SyncProvider({ children }: { children: React.ReactNode }) {
 
       // Auto-sync when coming back online
       if (online && isAuthenticated) {
-        sync();
+        syncRef.current();
       }
     });
 
     return () => unsubscribe();
-  }, [isAuthenticated, sync]);
+  }, [isAuthenticated]);
 
   // Initial sync on auth
   useEffect(() => {

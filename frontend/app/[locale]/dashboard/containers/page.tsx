@@ -4,6 +4,8 @@ import { useAuth } from "@/lib/auth";
 import { useRouter } from "@/navigation";
 import { useTranslations } from "next-intl";
 import { useEffect, useState, useMemo } from "react";
+import { useTheme } from "next-themes";
+import { Icon } from "@/components/icons";
 import {
   containersApi,
   locationsApi,
@@ -13,14 +15,6 @@ import {
   ContainerUpdate,
   Location,
 } from "@/lib/api";
-import {
-  Plus,
-  Pencil,
-  Trash2,
-  X,
-  Box,
-  MapPin,
-} from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export default function ContainersPage() {
@@ -28,6 +22,8 @@ export default function ContainersPage() {
   const router = useRouter();
   const t = useTranslations("containers");
   const te = useTranslations("errors");
+  const { theme } = useTheme();
+  const isRetro = theme?.startsWith("retro");
 
   // Data state
   const [containers, setContainers] = useState<Container[]>([]);
@@ -87,6 +83,15 @@ export default function ContainersPage() {
   };
 
   if (authLoading || loading) {
+    if (isRetro) {
+      return (
+        <div className="flex items-center justify-center min-h-[400px]">
+          <p className="retro-small uppercase font-bold animate-pulse retro-heading">
+            Loading...
+          </p>
+        </div>
+      );
+    }
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-muted-foreground">{t("loading")}</div>
@@ -99,6 +104,21 @@ export default function ContainersPage() {
   }
 
   if (error) {
+    if (isRetro) {
+      return (
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="text-center">
+            <p className="text-primary mb-4 retro-body">{error}</p>
+            <button
+              onClick={fetchData}
+              className="px-4 py-2 bg-primary text-white border-4 border-border retro-shadow hover:translate-x-[2px] hover:translate-y-[2px] hover:retro-shadow-sm transition-all retro-heading"
+            >
+              {t("tryAgain")}
+            </button>
+          </div>
+        </div>
+      );
+    }
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center">
@@ -114,6 +134,187 @@ export default function ContainersPage() {
     );
   }
 
+  // Retro NES theme
+  if (isRetro) {
+    return (
+      <>
+        {/* Header */}
+        <div className="mb-8 bg-primary p-4 border-4 border-border retro-shadow">
+          <div className="flex justify-between items-center">
+            <div>
+              <h1 className="text-lg font-bold text-white uppercase retro-heading">
+                {t("title")}
+              </h1>
+              <p className="text-white/80 retro-small mt-1">
+                &gt; {containers.length} STORAGE CONTAINERS
+              </p>
+            </div>
+            {canEdit && (
+              <button
+                onClick={() => setIsCreateModalOpen(true)}
+                className="px-4 py-2 bg-white/20 text-white border-2 border-white/50 hover:bg-white/30 transition-colors flex items-center gap-2 retro-small uppercase"
+              >
+                <Icon name="Plus" className="w-4 h-4" />
+                {t("addContainer")}
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Table */}
+        {containers.length === 0 ? (
+          <div className="bg-card border-4 border-border retro-shadow p-12 text-center">
+            <Icon name="Box" className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+            <p className="text-muted-foreground retro-body">{t("noContainers")}</p>
+            {canEdit && (
+              <button
+                onClick={() => setIsCreateModalOpen(true)}
+                className="mt-4 px-4 py-2 bg-primary text-white border-4 border-border retro-shadow hover:translate-x-[2px] hover:translate-y-[2px] hover:retro-shadow-sm transition-all inline-flex items-center gap-2 retro-heading"
+              >
+                <Icon name="Plus" className="w-4 h-4" />
+                {t("addContainer")}
+              </button>
+            )}
+          </div>
+        ) : (
+          <div className="bg-card border-4 border-border retro-shadow overflow-hidden">
+            <table className="w-full">
+              <thead className="bg-muted border-b-4 border-border">
+                <tr>
+                  <th className="px-4 py-3 text-left retro-small font-bold text-foreground uppercase retro-heading">
+                    {t("name")}
+                  </th>
+                  <th className="px-4 py-3 text-left retro-small font-bold text-foreground uppercase retro-heading">
+                    {t("location")}
+                  </th>
+                  <th className="px-4 py-3 text-left retro-small font-bold text-foreground uppercase retro-heading">
+                    {t("capacity")}
+                  </th>
+                  <th className="px-4 py-3 text-left retro-small font-bold text-foreground uppercase retro-heading">
+                    {t("shortCode")}
+                  </th>
+                  <th className="px-4 py-3 text-right retro-small font-bold text-foreground uppercase retro-heading">
+                    {t("actions")}
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {containers.map((container, index) => (
+                  <tr
+                    key={container.id}
+                    className={cn(
+                      "hover:bg-muted/50 transition-colors",
+                      index < containers.length - 1 && "border-b-2 border-dashed border-border"
+                    )}
+                  >
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-2">
+                        <Icon name="Box" className="w-4 h-4 text-muted-foreground" />
+                        <span className="retro-body text-foreground">
+                          {container.name}
+                        </span>
+                      </div>
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-2 retro-body text-foreground">
+                        <Icon name="MapPin" className="w-4 h-4 text-muted-foreground" />
+                        {container.location_name || getLocationName(container.location_id)}
+                      </div>
+                    </td>
+                    <td className="px-4 py-3 text-muted-foreground retro-body">
+                      {container.capacity || t("noCapacity")}
+                    </td>
+                    <td className="px-4 py-3">
+                      {container.short_code ? (
+                        <span className="px-2 py-1 bg-muted border-2 border-border retro-small font-mono retro-body">
+                          {container.short_code}
+                        </span>
+                      ) : (
+                        <span className="text-muted-foreground retro-body">{t("noShortCode")}</span>
+                      )}
+                    </td>
+                    <td className="px-4 py-3 text-right">
+                      {canEdit && (
+                        <div className="flex justify-end gap-2">
+                          <button
+                            onClick={() => handleEdit(container)}
+                            title={t("edit")}
+                            className="p-2 border-2 border-border hover:bg-muted transition-colors"
+                          >
+                            <Icon name="Pencil" className="w-4 h-4 text-muted-foreground hover:text-foreground" />
+                          </button>
+                          <button
+                            onClick={() => handleDelete(container)}
+                            title={t("delete")}
+                            className="p-2 border-2 border-border hover:bg-primary hover:text-white transition-colors"
+                          >
+                            <Icon name="Trash2" className="w-4 h-4" />
+                          </button>
+                        </div>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+
+        {/* Modals */}
+        <CreateEditModal
+          isOpen={isCreateModalOpen}
+          onClose={() => setIsCreateModalOpen(false)}
+          onSuccess={() => {
+            setIsCreateModalOpen(false);
+            fetchData();
+          }}
+          locations={locations}
+          t={t}
+          te={te}
+          isRetro={isRetro}
+        />
+
+        <CreateEditModal
+          isOpen={isEditModalOpen}
+          onClose={() => {
+            setIsEditModalOpen(false);
+            setSelectedContainer(null);
+          }}
+          onSuccess={() => {
+            setIsEditModalOpen(false);
+            setSelectedContainer(null);
+            fetchData();
+          }}
+          container={selectedContainer}
+          locations={locations}
+          t={t}
+          te={te}
+          isRetro={isRetro}
+        />
+
+        {selectedContainer && (
+          <DeleteConfirmModal
+            isOpen={isDeleteModalOpen}
+            onClose={() => {
+              setIsDeleteModalOpen(false);
+              setSelectedContainer(null);
+            }}
+            onSuccess={() => {
+              setIsDeleteModalOpen(false);
+              setSelectedContainer(null);
+              fetchData();
+            }}
+            container={selectedContainer}
+            t={t}
+            te={te}
+            isRetro={isRetro}
+          />
+        )}
+      </>
+    );
+  }
+
+  // Standard theme
   return (
     <>
       {/* Header */}
@@ -127,7 +328,7 @@ export default function ContainersPage() {
             onClick={() => setIsCreateModalOpen(true)}
             className="px-4 py-2 bg-primary text-primary-foreground rounded-lg flex items-center gap-2 hover:bg-primary/90 transition-colors"
           >
-            <Plus className="w-4 h-4" />
+            <Icon name="Plus" className="w-4 h-4" />
             {t("addContainer")}
           </button>
         )}
@@ -136,14 +337,14 @@ export default function ContainersPage() {
       {/* Table */}
       {containers.length === 0 ? (
         <div className="bg-card border rounded-lg p-12 text-center">
-          <Box className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+          <Icon name="Box" className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
           <p className="text-muted-foreground">{t("noContainers")}</p>
           {canEdit && (
             <button
               onClick={() => setIsCreateModalOpen(true)}
               className="mt-4 px-4 py-2 bg-primary text-primary-foreground rounded-lg inline-flex items-center gap-2 hover:bg-primary/90 transition-colors"
             >
-              <Plus className="w-4 h-4" />
+              <Icon name="Plus" className="w-4 h-4" />
               {t("addContainer")}
             </button>
           )}
@@ -178,7 +379,7 @@ export default function ContainersPage() {
                 <tr key={container.id} className="hover:bg-muted/30 transition-colors">
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2">
-                      <Box className="w-4 h-4 text-muted-foreground" />
+                      <Icon name="Box" className="w-4 h-4 text-muted-foreground" />
                       <span className="font-medium text-foreground">
                         {container.name}
                       </span>
@@ -186,7 +387,7 @@ export default function ContainersPage() {
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2 text-foreground">
-                      <MapPin className="w-4 h-4 text-muted-foreground" />
+                      <Icon name="MapPin" className="w-4 h-4 text-muted-foreground" />
                       {container.location_name || getLocationName(container.location_id)}
                     </div>
                   </td>
@@ -213,14 +414,14 @@ export default function ContainersPage() {
                           title={t("edit")}
                           className="p-1.5 rounded hover:bg-muted transition-colors"
                         >
-                          <Pencil className="w-4 h-4 text-muted-foreground hover:text-foreground" />
+                          <Icon name="Pencil" className="w-4 h-4 text-muted-foreground hover:text-foreground" />
                         </button>
                         <button
                           onClick={() => handleDelete(container)}
                           title={t("delete")}
                           className="p-1.5 rounded hover:bg-muted transition-colors"
                         >
-                          <Trash2 className="w-4 h-4 text-muted-foreground hover:text-destructive" />
+                          <Icon name="Trash2" className="w-4 h-4 text-muted-foreground hover:text-destructive" />
                         </button>
                       </div>
                     )}
@@ -232,7 +433,7 @@ export default function ContainersPage() {
         </div>
       )}
 
-      {/* Create Modal */}
+      {/* Modals */}
       <CreateEditModal
         isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
@@ -243,9 +444,9 @@ export default function ContainersPage() {
         locations={locations}
         t={t}
         te={te}
+        isRetro={false}
       />
 
-      {/* Edit Modal */}
       <CreateEditModal
         isOpen={isEditModalOpen}
         onClose={() => {
@@ -261,9 +462,9 @@ export default function ContainersPage() {
         locations={locations}
         t={t}
         te={te}
+        isRetro={false}
       />
 
-      {/* Delete Confirmation Modal */}
       {selectedContainer && (
         <DeleteConfirmModal
           isOpen={isDeleteModalOpen}
@@ -279,6 +480,7 @@ export default function ContainersPage() {
           container={selectedContainer}
           t={t}
           te={te}
+          isRetro={false}
         />
       )}
     </>
@@ -294,6 +496,7 @@ function CreateEditModal({
   locations,
   t,
   te,
+  isRetro,
 }: {
   isOpen: boolean;
   onClose: () => void;
@@ -302,6 +505,7 @@ function CreateEditModal({
   locations: Location[];
   t: (key: string) => string;
   te: (key: string) => string;
+  isRetro: boolean;
 }) {
   const isEdit = !!container;
   const [formData, setFormData] = useState<ContainerCreate>({
@@ -367,6 +571,123 @@ function CreateEditModal({
 
   if (!isOpen) return null;
 
+  if (isRetro) {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center" onClick={onClose}>
+        <div className="absolute inset-0 bg-black/70" />
+        <div
+          className="relative z-10 w-full max-w-md m-4 bg-card border-4 border-border retro-shadow"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div className="flex items-center justify-between p-4 border-b-4 border-border bg-primary">
+            <h2 className="retro-small font-bold text-white uppercase retro-heading">
+              {isEdit ? t("editContainer") : t("addContainer")}
+            </h2>
+            <button onClick={onClose} className="p-1 hover:bg-white/20 text-white">
+              <Icon name="X" className="w-5 h-5" />
+            </button>
+          </div>
+
+          <form onSubmit={handleSubmit} className="p-4 space-y-4">
+            {error && (
+              <div className="p-3 bg-primary/10 border-4 border-primary">
+                <p className="text-sm text-primary retro-body">{error}</p>
+              </div>
+            )}
+
+            <div>
+              <label className="block retro-small font-bold text-foreground mb-2 uppercase retro-heading">
+                {t("name")}
+              </label>
+              <input
+                type="text"
+                value={formData.name}
+                onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
+                placeholder={t("namePlaceholder")}
+                className="w-full px-3 py-2 border-4 border-border bg-background text-foreground retro-body focus:outline-none focus:border-primary"
+                required
+              />
+            </div>
+
+            <div>
+              <label className="block retro-small font-bold text-foreground mb-2 uppercase retro-heading">
+                {t("location")}
+              </label>
+              <select
+                value={formData.location_id}
+                onChange={(e) => setFormData((prev) => ({ ...prev, location_id: e.target.value }))}
+                className="w-full px-3 py-2 border-4 border-border bg-background text-foreground retro-body focus:outline-none focus:border-primary"
+                required
+              >
+                <option value="" disabled>{t("selectLocation")}</option>
+                {locations.map((loc) => (
+                  <option key={loc.id} value={loc.id}>{loc.name}</option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block retro-small font-bold text-foreground mb-2 uppercase retro-heading">
+                {t("capacity")}
+              </label>
+              <input
+                type="text"
+                value={formData.capacity || ""}
+                onChange={(e) => setFormData((prev) => ({ ...prev, capacity: e.target.value || null }))}
+                placeholder={t("capacityPlaceholder")}
+                className="w-full px-3 py-2 border-4 border-border bg-background text-foreground retro-body focus:outline-none focus:border-primary"
+              />
+            </div>
+
+            <div>
+              <label className="block retro-small font-bold text-foreground mb-2 uppercase retro-heading">
+                {t("shortCode")}
+              </label>
+              <input
+                type="text"
+                value={formData.short_code || ""}
+                onChange={(e) => setFormData((prev) => ({ ...prev, short_code: e.target.value || null }))}
+                placeholder={t("shortCodePlaceholder")}
+                maxLength={8}
+                className="w-full px-3 py-2 border-4 border-border bg-background text-foreground font-mono retro-body focus:outline-none focus:border-primary"
+              />
+            </div>
+
+            <div>
+              <label className="block retro-small font-bold text-foreground mb-2 uppercase retro-heading">
+                {t("description")}
+              </label>
+              <textarea
+                value={formData.description || ""}
+                onChange={(e) => setFormData((prev) => ({ ...prev, description: e.target.value || null }))}
+                placeholder={t("descriptionPlaceholder")}
+                rows={3}
+                className="w-full px-3 py-2 border-4 border-border bg-background text-foreground retro-body focus:outline-none focus:border-primary resize-none"
+              />
+            </div>
+
+            <div className="flex justify-end gap-3 pt-4">
+              <button
+                type="button"
+                onClick={onClose}
+                className="px-4 py-2 border-4 border-border hover:bg-muted transition-colors retro-heading"
+              >
+                {t("cancel")}
+              </button>
+              <button
+                type="submit"
+                disabled={submitting}
+                className="px-4 py-2 bg-primary text-white border-4 border-border retro-shadow hover:translate-x-[2px] hover:translate-y-[2px] hover:retro-shadow-sm transition-all disabled:opacity-50 retro-heading"
+              >
+                {submitting ? t("saving") : t("save")}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center" onClick={onClose}>
       <div className="absolute inset-0 bg-black/50" />
@@ -379,7 +700,7 @@ function CreateEditModal({
             {isEdit ? t("editContainer") : t("addContainer")}
           </h2>
           <button onClick={onClose} className="p-1 rounded hover:bg-muted">
-            <X className="w-5 h-5" />
+            <Icon name="X" className="w-5 h-5" />
           </button>
         </div>
 
@@ -391,15 +712,11 @@ function CreateEditModal({
           )}
 
           <div>
-            <label className="block text-sm font-medium text-foreground mb-2">
-              {t("name")}
-            </label>
+            <label className="block text-sm font-medium text-foreground mb-2">{t("name")}</label>
             <input
               type="text"
               value={formData.name}
-              onChange={(e) =>
-                setFormData((prev) => ({ ...prev, name: e.target.value }))
-              }
+              onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
               placeholder={t("namePlaceholder")}
               className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
               required
@@ -407,60 +724,37 @@ function CreateEditModal({
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-foreground mb-2">
-              {t("location")}
-            </label>
+            <label className="block text-sm font-medium text-foreground mb-2">{t("location")}</label>
             <select
               value={formData.location_id}
-              onChange={(e) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  location_id: e.target.value,
-                }))
-              }
+              onChange={(e) => setFormData((prev) => ({ ...prev, location_id: e.target.value }))}
               className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
               required
             >
               <option value="" disabled>{t("selectLocation")}</option>
               {locations.map((loc) => (
-                <option key={loc.id} value={loc.id}>
-                  {loc.name}
-                </option>
+                <option key={loc.id} value={loc.id}>{loc.name}</option>
               ))}
             </select>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-foreground mb-2">
-              {t("capacity")}
-            </label>
+            <label className="block text-sm font-medium text-foreground mb-2">{t("capacity")}</label>
             <input
               type="text"
               value={formData.capacity || ""}
-              onChange={(e) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  capacity: e.target.value || null,
-                }))
-              }
+              onChange={(e) => setFormData((prev) => ({ ...prev, capacity: e.target.value || null }))}
               placeholder={t("capacityPlaceholder")}
               className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-foreground mb-2">
-              {t("shortCode")}
-            </label>
+            <label className="block text-sm font-medium text-foreground mb-2">{t("shortCode")}</label>
             <input
               type="text"
               value={formData.short_code || ""}
-              onChange={(e) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  short_code: e.target.value || null,
-                }))
-              }
+              onChange={(e) => setFormData((prev) => ({ ...prev, short_code: e.target.value || null }))}
               placeholder={t("shortCodePlaceholder")}
               maxLength={8}
               className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent font-mono"
@@ -468,17 +762,10 @@ function CreateEditModal({
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-foreground mb-2">
-              {t("description")}
-            </label>
+            <label className="block text-sm font-medium text-foreground mb-2">{t("description")}</label>
             <textarea
               value={formData.description || ""}
-              onChange={(e) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  description: e.target.value || null,
-                }))
-              }
+              onChange={(e) => setFormData((prev) => ({ ...prev, description: e.target.value || null }))}
               placeholder={t("descriptionPlaceholder")}
               rows={3}
               className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent resize-none"
@@ -515,6 +802,7 @@ function DeleteConfirmModal({
   container,
   t,
   te,
+  isRetro,
 }: {
   isOpen: boolean;
   onClose: () => void;
@@ -522,6 +810,7 @@ function DeleteConfirmModal({
   container: Container;
   t: (key: string) => string;
   te: (key: string) => string;
+  isRetro: boolean;
 }) {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -550,6 +839,68 @@ function DeleteConfirmModal({
 
   if (!isOpen) return null;
 
+  if (isRetro) {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center" onClick={onClose}>
+        <div className="absolute inset-0 bg-black/70" />
+        <div
+          className="relative z-10 w-full max-w-md m-4 bg-card border-4 border-border retro-shadow"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div className="flex items-center justify-between p-4 border-b-4 border-border bg-primary">
+            <h2 className="retro-small font-bold text-white uppercase retro-heading">
+              {t("deleteConfirmTitle")}
+            </h2>
+            <button onClick={onClose} className="p-1 hover:bg-white/20 text-white">
+              <Icon name="X" className="w-5 h-5" />
+            </button>
+          </div>
+
+          <div className="p-4 space-y-4">
+            {error && (
+              <div className="p-3 bg-primary/10 border-4 border-primary">
+                <p className="text-sm text-primary retro-body">{error}</p>
+              </div>
+            )}
+
+            <p className="text-muted-foreground retro-body">{t("deleteConfirmMessage")}</p>
+
+            <div className="p-3 bg-muted border-4 border-border">
+              <p className="retro-heading">{container.name}</p>
+              {container.location_name && (
+                <p className="text-sm text-muted-foreground flex items-center gap-1 retro-body">
+                  <Icon name="MapPin" className="w-3 h-3" />
+                  {container.location_name}
+                </p>
+              )}
+              {container.description && (
+                <p className="text-sm text-muted-foreground mt-1 retro-body">{container.description}</p>
+              )}
+            </div>
+
+            <div className="flex justify-end gap-3 pt-4">
+              <button
+                type="button"
+                onClick={onClose}
+                className="px-4 py-2 border-4 border-border hover:bg-muted transition-colors retro-heading"
+              >
+                {t("cancel")}
+              </button>
+              <button
+                type="button"
+                onClick={handleDelete}
+                disabled={submitting}
+                className="px-4 py-2 bg-primary text-white border-4 border-border retro-shadow hover:translate-x-[2px] hover:translate-y-[2px] hover:retro-shadow-sm transition-all disabled:opacity-50 retro-heading"
+              >
+                {submitting ? t("deleting") : t("deleteConfirmButton")}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center" onClick={onClose}>
       <div className="absolute inset-0 bg-black/50" />
@@ -558,11 +909,9 @@ function DeleteConfirmModal({
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between p-4 border-b">
-          <h2 className="text-lg font-semibold text-destructive">
-            {t("deleteConfirmTitle")}
-          </h2>
+          <h2 className="text-lg font-semibold text-destructive">{t("deleteConfirmTitle")}</h2>
           <button onClick={onClose} className="p-1 rounded hover:bg-muted">
-            <X className="w-5 h-5" />
+            <Icon name="X" className="w-5 h-5" />
           </button>
         </div>
 
@@ -579,7 +928,7 @@ function DeleteConfirmModal({
             <p className="font-medium">{container.name}</p>
             {container.location_name && (
               <p className="text-sm text-muted-foreground flex items-center gap-1">
-                <MapPin className="w-3 h-3" />
+                <Icon name="MapPin" className="w-3 h-3" />
                 {container.location_name}
               </p>
             )}

@@ -4,6 +4,7 @@ import { useAuth } from "@/lib/auth";
 import { useRouter } from "@/navigation";
 import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
+import { useTheme } from "next-themes";
 import { useEffect, useState, useMemo } from "react";
 import {
   inventoryApi,
@@ -15,6 +16,7 @@ import {
   Location,
   InventoryCreate,
 } from "@/lib/api";
+import { Icon } from "@/components/icons";
 import {
   Plus,
   Pencil,
@@ -27,6 +29,7 @@ import {
   ChevronDown,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { NES_GREEN, NES_BLUE, NES_RED, NES_AMBER } from "@/lib/nes-colors";
 
 type SortColumn = "item" | "location" | "quantity";
 type SortDirection = "asc" | "desc";
@@ -39,6 +42,8 @@ export default function InventoryPage() {
   const td = useTranslations("dashboard");
   const tl = useTranslations("loans");
   const te = useTranslations("errors");
+  const { theme } = useTheme();
+  const isRetro = theme?.startsWith("retro");
 
   // Get filter from URL
   const urlFilter = searchParams.get("filter") as "low-stock" | "expiring" | "warranty" | null;
@@ -220,8 +225,14 @@ export default function InventoryPage() {
 
   if (authLoading || loading) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="text-muted-foreground">Loading...</div>
+      <div className={cn(
+        "flex items-center justify-center min-h-[400px]",
+        isRetro && "retro-body"
+      )}>
+        <div className={cn(
+          "text-muted-foreground",
+          isRetro && "retro-small uppercase"
+        )}>Loading...</div>
       </div>
     );
   }
@@ -232,17 +243,309 @@ export default function InventoryPage() {
 
   if (error) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
+      <div className={cn(
+        "flex items-center justify-center min-h-[400px]",
+        isRetro && "retro-body"
+      )}>
         <div className="text-center">
-          <p className="text-red-500 mb-4">{error}</p>
+          <p className={cn(
+            "text-red-500 mb-4",
+            isRetro && "retro-small uppercase"
+          )} style={isRetro ? { color: NES_RED } : undefined}>{error}</p>
           <button
             onClick={fetchData}
-            className="px-4 py-2 bg-primary text-primary-foreground rounded-lg"
+            className={cn(
+              isRetro
+                ? "px-4 py-2 border-4 border-border bg-primary text-white retro-small uppercase retro-shadow hover:retro-shadow-sm hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
+                : "px-4 py-2 bg-primary text-primary-foreground rounded-lg"
+            )}
           >
             {t("tryAgain")}
           </button>
         </div>
       </div>
+    );
+  }
+
+  // Retro Sort Icon
+  const RetroSortIcon = ({ column }: { column: SortColumn }) => {
+    if (sortColumn !== column) {
+      return <Icon name="ChevronUp" className="w-3 h-3 opacity-0 group-hover:opacity-30" />;
+    }
+    return sortDirection === "asc" ? (
+      <Icon name="ChevronUp" className="w-3 h-3" />
+    ) : (
+      <Icon name="ChevronDown" className="w-3 h-3" />
+    );
+  };
+
+  // Retro theme UI
+  if (isRetro) {
+    return (
+      <>
+        {/* Header */}
+        <div className="mb-8 bg-primary p-4 border-4 border-border retro-shadow">
+          <div className="flex justify-between items-center">
+            <div>
+              <h1 className="text-lg font-bold text-white uppercase retro-heading">
+                {t("title")}
+              </h1>
+              <p className="text-white/80 retro-body retro-small uppercase mt-1">
+                {t("subtitle")}
+              </p>
+            </div>
+            {canEdit && (
+              <button
+                onClick={() => setIsCreateModalOpen(true)}
+                className="px-3 py-2 bg-background text-foreground border-4 border-border retro-small uppercase font-bold retro-body retro-shadow hover:retro-shadow-sm hover:translate-x-[2px] hover:translate-y-[2px] transition-all flex items-center gap-2"
+              >
+                <Icon name="Plus" className="w-4 h-4" />
+                {t("addInventory")}
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Filters */}
+        <div className="mb-6 flex items-center gap-3 flex-wrap">
+          <div className="relative flex-1 min-w-[200px] max-w-md">
+            <Icon name="Search" className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <input
+              type="text"
+              placeholder={tl("searchInventory")}
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-10 pr-4 py-2 border-4 border-border bg-background text-foreground retro-body retro-small uppercase focus:outline-none"
+            />
+          </div>
+          <button
+            onClick={() => setActiveFilter(activeFilter === "low-stock" ? null : "low-stock")}
+            className={cn(
+              "px-3 py-2 border-4 border-border retro-small uppercase font-bold retro-body transition-all",
+              activeFilter === "low-stock"
+                ? "text-black retro-shadow-sm"
+                : "bg-background text-foreground retro-shadow hover:retro-shadow-sm hover:translate-x-[2px] hover:translate-y-[2px]"
+            )}
+            style={activeFilter === "low-stock" ? { backgroundColor: NES_AMBER } : undefined}
+          >
+            {td("lowStock")}
+          </button>
+          <button
+            onClick={() => setActiveFilter(activeFilter === "expiring" ? null : "expiring")}
+            className={cn(
+              "px-3 py-2 border-4 border-border retro-small uppercase font-bold retro-body transition-all",
+              activeFilter === "expiring"
+                ? "text-black retro-shadow-sm"
+                : "bg-background text-foreground retro-shadow hover:retro-shadow-sm hover:translate-x-[2px] hover:translate-y-[2px]"
+            )}
+            style={activeFilter === "expiring" ? { backgroundColor: NES_AMBER } : undefined}
+          >
+            {td("expiringSoon")}
+          </button>
+          <button
+            onClick={() => setActiveFilter(activeFilter === "warranty" ? null : "warranty")}
+            className={cn(
+              "px-3 py-2 border-4 border-border retro-small uppercase font-bold retro-body transition-all",
+              activeFilter === "warranty"
+                ? "text-white retro-shadow-sm"
+                : "bg-background text-foreground retro-shadow hover:retro-shadow-sm hover:translate-x-[2px] hover:translate-y-[2px]"
+            )}
+            style={activeFilter === "warranty" ? { backgroundColor: NES_BLUE } : undefined}
+          >
+            {td("warrantyExpiring")}
+          </button>
+        </div>
+
+        {/* Empty State */}
+        {filteredInventory.length === 0 ? (
+          <div className="bg-card border-4 border-border p-12 text-center retro-shadow">
+            <Icon name="Package" className="w-12 h-12 mx-auto mb-4" style={{ color: NES_BLUE }} />
+            <p className="retro-small uppercase font-bold retro-body text-muted-foreground">
+              {t("noInventory")}
+            </p>
+            {canEdit && (
+              <button
+                onClick={() => setIsCreateModalOpen(true)}
+                className="mt-4 px-4 py-2 bg-primary text-white border-4 border-border retro-small uppercase font-bold retro-body retro-shadow hover:retro-shadow-sm hover:translate-x-[2px] hover:translate-y-[2px] transition-all inline-flex items-center gap-2"
+              >
+                <Icon name="Plus" className="w-4 h-4" />
+                {t("addInventory")}
+              </button>
+            )}
+          </div>
+        ) : (
+          <div className="bg-card border-4 border-border retro-shadow overflow-hidden">
+            <table className="w-full">
+              <thead className="bg-muted border-b-4 border-border">
+                <tr>
+                  <th
+                    className="px-4 py-3 text-left retro-small uppercase font-bold retro-body text-muted-foreground cursor-pointer hover:text-foreground transition-colors group"
+                    onClick={() => handleSort("item")}
+                  >
+                    <div className="flex items-center gap-1">
+                      {t("item")}
+                      <RetroSortIcon column="item" />
+                    </div>
+                  </th>
+                  <th
+                    className="px-4 py-3 text-left retro-small uppercase font-bold retro-body text-muted-foreground cursor-pointer hover:text-foreground transition-colors group"
+                    onClick={() => handleSort("location")}
+                  >
+                    <div className="flex items-center gap-1">
+                      {t("location")}
+                      <RetroSortIcon column="location" />
+                    </div>
+                  </th>
+                  <th
+                    className="px-4 py-3 text-right retro-small uppercase font-bold retro-body text-muted-foreground cursor-pointer hover:text-foreground transition-colors group"
+                    onClick={() => handleSort("quantity")}
+                  >
+                    <div className="flex items-center justify-end gap-1">
+                      {t("quantity")}
+                      <RetroSortIcon column="quantity" />
+                    </div>
+                  </th>
+                  <th className="px-4 py-3 text-right retro-small uppercase font-bold retro-body text-muted-foreground">
+                    {t("actions")}
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredInventory.map((inv, idx) => (
+                  <tr
+                    key={inv.id}
+                    className={cn(
+                      "hover:bg-muted/50 transition-colors cursor-pointer",
+                      idx < filteredInventory.length - 1 && "border-b-2 border-dashed border-border"
+                    )}
+                    onClick={() => router.push(`/dashboard/inventory/${inv.id}`)}
+                  >
+                    <td className="px-4 py-3">
+                      <div>
+                        <div className="retro-body retro-small uppercase text-foreground hover:text-primary">
+                          {getItemName(inv.item_id)}
+                        </div>
+                        <div className="retro-body text-xs uppercase text-muted-foreground">
+                          {getItemSku(inv.item_id)}
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-4 py-3 retro-body retro-small uppercase text-foreground">
+                      {getLocationName(inv.location_id)}
+                    </td>
+                    <td className="px-4 py-3 text-right retro-body retro-small text-foreground">
+                      {inv.quantity}
+                    </td>
+                    <td className="px-4 py-3 text-right">
+                      {canEdit && (
+                        <div className="flex justify-end gap-2" onClick={(e) => e.stopPropagation()}>
+                          <button
+                            onClick={() => handleAdjust(inv)}
+                            title={t("adjustStock")}
+                            className="p-1.5 border-2 border-border hover:bg-muted transition-colors"
+                          >
+                            <Icon name="ArrowUpDown" className="w-4 h-4 text-muted-foreground hover:text-foreground" />
+                          </button>
+                          <button
+                            onClick={() => handleEdit(inv)}
+                            title={t("edit")}
+                            className="p-1.5 border-2 border-border hover:bg-muted transition-colors"
+                          >
+                            <Icon name="Pencil" className="w-4 h-4 text-muted-foreground hover:text-foreground" />
+                          </button>
+                          <button
+                            onClick={() => handleDelete(inv)}
+                            title={t("delete")}
+                            className="p-1.5 border-2 border-border hover:bg-muted transition-colors"
+                          >
+                            <Icon name="Trash2" className="w-4 h-4 text-muted-foreground" style={{ color: NES_RED }} />
+                          </button>
+                        </div>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+
+        {/* Modals */}
+        <CreateEditModal
+          isOpen={isCreateModalOpen}
+          onClose={() => setIsCreateModalOpen(false)}
+          onSuccess={() => {
+            setIsCreateModalOpen(false);
+            fetchData();
+          }}
+          items={items}
+          locations={locations}
+          t={t}
+          te={te}
+          isRetro={isRetro}
+        />
+
+        <CreateEditModal
+          isOpen={isEditModalOpen}
+          onClose={() => {
+            setIsEditModalOpen(false);
+            setSelectedInventory(null);
+          }}
+          onSuccess={() => {
+            setIsEditModalOpen(false);
+            setSelectedInventory(null);
+            fetchData();
+          }}
+          inventory={selectedInventory}
+          items={items}
+          locations={locations}
+          t={t}
+          te={te}
+          isRetro={isRetro}
+        />
+
+        {selectedInventory && (
+          <AdjustStockModal
+            isOpen={isAdjustModalOpen}
+            onClose={() => {
+              setIsAdjustModalOpen(false);
+              setSelectedInventory(null);
+            }}
+            onSuccess={() => {
+              setIsAdjustModalOpen(false);
+              setSelectedInventory(null);
+              fetchData();
+            }}
+            inventory={selectedInventory}
+            itemName={getItemName(selectedInventory.item_id)}
+            locationName={getLocationName(selectedInventory.location_id)}
+            t={t}
+            te={te}
+            isRetro={isRetro}
+          />
+        )}
+
+        {selectedInventory && (
+          <DeleteConfirmModal
+            isOpen={isDeleteModalOpen}
+            onClose={() => {
+              setIsDeleteModalOpen(false);
+              setSelectedInventory(null);
+            }}
+            onSuccess={() => {
+              setIsDeleteModalOpen(false);
+              setSelectedInventory(null);
+              fetchData();
+            }}
+            inventory={selectedInventory}
+            itemName={getItemName(selectedInventory.item_id)}
+            locationName={getLocationName(selectedInventory.location_id)}
+            t={t}
+            te={te}
+            isRetro={isRetro}
+          />
+        )}
+      </>
     );
   }
 
@@ -433,6 +736,7 @@ export default function InventoryPage() {
         locations={locations}
         t={t}
         te={te}
+        isRetro={false}
       />
 
       {/* Edit Modal */}
@@ -452,6 +756,7 @@ export default function InventoryPage() {
         locations={locations}
         t={t}
         te={te}
+        isRetro={false}
       />
 
       {/* Stock Adjustment Modal */}
@@ -472,6 +777,7 @@ export default function InventoryPage() {
           locationName={getLocationName(selectedInventory.location_id)}
           t={t}
           te={te}
+          isRetro={false}
         />
       )}
 
@@ -493,6 +799,7 @@ export default function InventoryPage() {
           locationName={getLocationName(selectedInventory.location_id)}
           t={t}
           te={te}
+          isRetro={false}
         />
       )}
     </>
@@ -509,6 +816,7 @@ function CreateEditModal({
   locations,
   t,
   te,
+  isRetro,
 }: {
   isOpen: boolean;
   onClose: () => void;
@@ -518,6 +826,7 @@ function CreateEditModal({
   locations: Location[];
   t: (key: string) => string;
   te: (key: string) => string;
+  isRetro: boolean;
 }) {
   const isEdit = !!inventory;
   const [formData, setFormData] = useState<InventoryCreate>({
@@ -570,27 +879,57 @@ function CreateEditModal({
     <div className="fixed inset-0 z-50 flex items-center justify-center" onClick={onClose}>
       <div className="absolute inset-0 bg-black/50" />
       <div
-        className="relative z-10 w-full max-w-md m-4 bg-background border rounded-lg shadow-xl"
+        className={cn(
+          "relative z-10 w-full max-w-md m-4 bg-background",
+          isRetro
+            ? "border-4 border-border retro-shadow"
+            : "border rounded-lg shadow-xl"
+        )}
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between p-4 border-b">
-          <h2 className="text-lg font-semibold">
+        <div className={cn(
+          "flex items-center justify-between p-4",
+          isRetro ? "border-b-4 border-border bg-primary" : "border-b"
+        )}>
+          <h2 className={cn(
+            isRetro
+              ? "text-sm font-bold text-white uppercase retro-heading"
+              : "text-lg font-semibold"
+          )}>
             {isEdit ? t("editInventory") : t("addInventory")}
           </h2>
-          <button onClick={onClose} className="p-1 rounded hover:bg-muted">
-            <X className="w-5 h-5" />
+          <button onClick={onClose} className={cn(
+            isRetro
+              ? "p-1 border-2 border-white/50 hover:bg-white/20"
+              : "p-1 rounded hover:bg-muted"
+          )}>
+            {isRetro ? <Icon name="X" className="w-5 h-5 text-white" /> : <X className="w-5 h-5" />}
           </button>
         </div>
 
         <form onSubmit={handleSubmit} className="p-4 space-y-4">
           {error && (
-            <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md">
-              <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+            <div className={cn(
+              "p-3",
+              isRetro
+                ? "border-4 border-border bg-background"
+                : "bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md"
+            )}>
+              <p className={cn(
+                isRetro
+                  ? "retro-small uppercase font-bold retro-body"
+                  : "text-sm text-red-600 dark:text-red-400"
+              )} style={isRetro ? { color: NES_RED } : undefined}>{error}</p>
             </div>
           )}
 
           <div>
-            <label className="block text-sm font-medium text-foreground mb-2">
+            <label className={cn(
+              "block mb-2",
+              isRetro
+                ? "retro-small uppercase font-bold retro-body text-foreground"
+                : "text-sm font-medium text-foreground"
+            )}>
               {t("item")}
             </label>
             <select
@@ -600,8 +939,10 @@ function CreateEditModal({
               }
               disabled={isEdit}
               className={cn(
-                "w-full px-3 py-2 border border-border rounded-md bg-background text-foreground",
-                "focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent",
+                "w-full px-3 py-2 bg-background text-foreground",
+                isRetro
+                  ? "border-4 border-border retro-body retro-small uppercase focus:outline-none"
+                  : "border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent",
                 isEdit && "opacity-50 cursor-not-allowed"
               )}
               required
@@ -616,7 +957,12 @@ function CreateEditModal({
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-foreground mb-2">
+            <label className={cn(
+              "block mb-2",
+              isRetro
+                ? "retro-small uppercase font-bold retro-body text-foreground"
+                : "text-sm font-medium text-foreground"
+            )}>
               {t("location")}
             </label>
             <select
@@ -626,8 +972,10 @@ function CreateEditModal({
               }
               disabled={isEdit}
               className={cn(
-                "w-full px-3 py-2 border border-border rounded-md bg-background text-foreground",
-                "focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent",
+                "w-full px-3 py-2 bg-background text-foreground",
+                isRetro
+                  ? "border-4 border-border retro-body retro-small uppercase focus:outline-none"
+                  : "border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent",
                 isEdit && "opacity-50 cursor-not-allowed"
               )}
               required
@@ -645,7 +993,12 @@ function CreateEditModal({
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-foreground mb-2">
+            <label className={cn(
+              "block mb-2",
+              isRetro
+                ? "retro-small uppercase font-bold retro-body text-foreground"
+                : "text-sm font-medium text-foreground"
+            )}>
               {t("quantity")}
             </label>
             <input
@@ -658,7 +1011,12 @@ function CreateEditModal({
                   quantity: parseInt(e.target.value) || 0,
                 }))
               }
-              className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+              className={cn(
+                "w-full px-3 py-2 bg-background text-foreground",
+                isRetro
+                  ? "border-4 border-border retro-body retro-small uppercase focus:outline-none"
+                  : "border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+              )}
               required
             />
           </div>
@@ -667,14 +1025,22 @@ function CreateEditModal({
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 border border-border rounded-md hover:bg-muted transition-colors"
+              className={cn(
+                isRetro
+                  ? "px-4 py-2 border-4 border-border bg-muted text-foreground retro-small uppercase font-bold retro-body retro-shadow-sm hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
+                  : "px-4 py-2 border border-border rounded-md hover:bg-muted transition-colors"
+              )}
             >
               {t("cancel")}
             </button>
             <button
               type="submit"
               disabled={submitting}
-              className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors disabled:opacity-50"
+              className={cn(
+                isRetro
+                  ? "px-4 py-2 border-4 border-border bg-primary text-white retro-small uppercase font-bold retro-body retro-shadow-sm hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all disabled:opacity-50"
+                  : "px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors disabled:opacity-50"
+              )}
             >
               {submitting ? t("saving") : t("save")}
             </button>
@@ -695,6 +1061,7 @@ function AdjustStockModal({
   locationName,
   t,
   te,
+  isRetro,
 }: {
   isOpen: boolean;
   onClose: () => void;
@@ -704,6 +1071,7 @@ function AdjustStockModal({
   locationName: string;
   t: (key: string) => string;
   te: (key: string) => string;
+  isRetro: boolean;
 }) {
   const [adjustment, setAdjustment] = useState(0);
   const [submitting, setSubmitting] = useState(false);
@@ -742,46 +1110,92 @@ function AdjustStockModal({
 
   if (!isOpen) return null;
 
+  const adjustBtnClass = isRetro
+    ? "px-3 py-2 border-4 border-border bg-muted text-foreground retro-small font-bold retro-body retro-shadow-sm hover:shadow-none hover:translate-x-[1px] hover:translate-y-[1px] transition-all"
+    : "px-3 py-2 border border-border rounded-md hover:bg-muted transition-colors";
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center" onClick={onClose}>
       <div className="absolute inset-0 bg-black/50" />
       <div
-        className="relative z-10 w-full max-w-md m-4 bg-background border rounded-lg shadow-xl"
+        className={cn(
+          "relative z-10 w-full max-w-md m-4 bg-background",
+          isRetro
+            ? "border-4 border-border retro-shadow"
+            : "border rounded-lg shadow-xl"
+        )}
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between p-4 border-b">
-          <h2 className="text-lg font-semibold">{t("adjustStockTitle")}</h2>
-          <button onClick={onClose} className="p-1 rounded hover:bg-muted">
-            <X className="w-5 h-5" />
+        <div className={cn(
+          "flex items-center justify-between p-4",
+          isRetro ? "border-b-4 border-border bg-primary" : "border-b"
+        )}>
+          <h2 className={cn(
+            isRetro
+              ? "text-sm font-bold text-white uppercase retro-heading"
+              : "text-lg font-semibold"
+          )}>{t("adjustStockTitle")}</h2>
+          <button onClick={onClose} className={cn(
+            isRetro
+              ? "p-1 border-2 border-white/50 hover:bg-white/20"
+              : "p-1 rounded hover:bg-muted"
+          )}>
+            {isRetro ? <Icon name="X" className="w-5 h-5 text-white" /> : <X className="w-5 h-5" />}
           </button>
         </div>
 
         <form onSubmit={handleSubmit} className="p-4 space-y-4">
           {error && (
-            <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md">
-              <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+            <div className={cn(
+              "p-3",
+              isRetro
+                ? "border-4 border-border bg-background"
+                : "bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md"
+            )}>
+              <p className={cn(
+                isRetro
+                  ? "retro-small uppercase font-bold retro-body"
+                  : "text-sm text-red-600 dark:text-red-400"
+              )} style={isRetro ? { color: NES_RED } : undefined}>{error}</p>
             </div>
           )}
 
-          <div className="text-sm text-muted-foreground">
+          <div className={cn(
+            "text-muted-foreground",
+            isRetro ? "retro-small uppercase retro-body" : "text-sm"
+          )}>
             <p>
-              <span className="font-medium text-foreground">{itemName}</span>
+              <span className={cn(
+                "font-medium text-foreground",
+                isRetro && "font-bold"
+              )}>{itemName}</span>
             </p>
             <p>{locationName}</p>
           </div>
 
           <div className="grid grid-cols-2 gap-4 py-2">
             <div>
-              <p className="text-sm text-muted-foreground">{t("currentQuantity")}</p>
-              <p className="text-2xl font-bold">{inventory.quantity}</p>
+              <p className={cn(
+                "text-muted-foreground",
+                isRetro ? "retro-small uppercase retro-body" : "text-sm"
+              )}>{t("currentQuantity")}</p>
+              <p className={cn(
+                "font-bold",
+                isRetro ? "text-xl retro-heading" : "text-2xl"
+              )}>{inventory.quantity}</p>
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">{t("newQuantity")}</p>
+              <p className={cn(
+                "text-muted-foreground",
+                isRetro ? "retro-small uppercase retro-body" : "text-sm"
+              )}>{t("newQuantity")}</p>
               <p
                 className={cn(
-                  "text-2xl font-bold",
+                  "font-bold",
+                  isRetro ? "text-xl retro-heading" : "text-2xl",
                   newQuantity < 0 && "text-destructive"
                 )}
+                style={newQuantity < 0 && isRetro ? { color: NES_RED } : undefined}
               >
                 {newQuantity}
               </p>
@@ -789,21 +1203,26 @@ function AdjustStockModal({
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-foreground mb-2">
+            <label className={cn(
+              "block mb-2",
+              isRetro
+                ? "retro-small uppercase font-bold retro-body text-foreground"
+                : "text-sm font-medium text-foreground"
+            )}>
               {t("adjustment")}
             </label>
             <div className="flex gap-2">
               <button
                 type="button"
                 onClick={() => setAdjustment((a) => a - 10)}
-                className="px-3 py-2 border border-border rounded-md hover:bg-muted transition-colors"
+                className={adjustBtnClass}
               >
                 -10
               </button>
               <button
                 type="button"
                 onClick={() => setAdjustment((a) => a - 1)}
-                className="px-3 py-2 border border-border rounded-md hover:bg-muted transition-colors"
+                className={adjustBtnClass}
               >
                 -1
               </button>
@@ -811,19 +1230,24 @@ function AdjustStockModal({
                 type="number"
                 value={adjustment}
                 onChange={(e) => setAdjustment(parseInt(e.target.value) || 0)}
-                className="flex-1 px-3 py-2 border border-border rounded-md bg-background text-foreground text-center focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                className={cn(
+                  "flex-1 px-3 py-2 bg-background text-foreground text-center",
+                  isRetro
+                    ? "border-4 border-border retro-body retro-small focus:outline-none"
+                    : "border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                )}
               />
               <button
                 type="button"
                 onClick={() => setAdjustment((a) => a + 1)}
-                className="px-3 py-2 border border-border rounded-md hover:bg-muted transition-colors"
+                className={adjustBtnClass}
               >
                 +1
               </button>
               <button
                 type="button"
                 onClick={() => setAdjustment((a) => a + 10)}
-                className="px-3 py-2 border border-border rounded-md hover:bg-muted transition-colors"
+                className={adjustBtnClass}
               >
                 +10
               </button>
@@ -834,14 +1258,22 @@ function AdjustStockModal({
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 border border-border rounded-md hover:bg-muted transition-colors"
+              className={cn(
+                isRetro
+                  ? "px-4 py-2 border-4 border-border bg-muted text-foreground retro-small uppercase font-bold retro-body retro-shadow-sm hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
+                  : "px-4 py-2 border border-border rounded-md hover:bg-muted transition-colors"
+              )}
             >
               {t("cancel")}
             </button>
             <button
               type="submit"
               disabled={submitting || newQuantity < 0}
-              className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors disabled:opacity-50"
+              className={cn(
+                isRetro
+                  ? "px-4 py-2 border-4 border-border bg-primary text-white retro-small uppercase font-bold retro-body retro-shadow-sm hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all disabled:opacity-50"
+                  : "px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors disabled:opacity-50"
+              )}
             >
               {submitting ? t("saving") : t("apply")}
             </button>
@@ -862,6 +1294,7 @@ function DeleteConfirmModal({
   locationName,
   t,
   te,
+  isRetro,
 }: {
   isOpen: boolean;
   onClose: () => void;
@@ -871,6 +1304,7 @@ function DeleteConfirmModal({
   locationName: string;
   t: (key: string) => string;
   te: (key: string) => string;
+  isRetro: boolean;
 }) {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -903,31 +1337,73 @@ function DeleteConfirmModal({
     <div className="fixed inset-0 z-50 flex items-center justify-center" onClick={onClose}>
       <div className="absolute inset-0 bg-black/50" />
       <div
-        className="relative z-10 w-full max-w-md m-4 bg-background border rounded-lg shadow-xl"
+        className={cn(
+          "relative z-10 w-full max-w-md m-4 bg-background",
+          isRetro
+            ? "border-4 border-border retro-shadow"
+            : "border rounded-lg shadow-xl"
+        )}
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between p-4 border-b">
-          <h2 className="text-lg font-semibold text-destructive">
+        <div className={cn(
+          "flex items-center justify-between p-4",
+          isRetro ? "border-b-4 border-border" : "border-b"
+        )} style={isRetro ? { backgroundColor: NES_RED } : undefined}>
+          <h2 className={cn(
+            isRetro
+              ? "text-sm font-bold text-white uppercase retro-heading"
+              : "text-lg font-semibold text-destructive"
+          )}>
             {t("deleteConfirmTitle")}
           </h2>
-          <button onClick={onClose} className="p-1 rounded hover:bg-muted">
-            <X className="w-5 h-5" />
+          <button onClick={onClose} className={cn(
+            isRetro
+              ? "p-1 border-2 border-white/50 hover:bg-white/20"
+              : "p-1 rounded hover:bg-muted"
+          )}>
+            {isRetro ? <Icon name="X" className="w-5 h-5 text-white" /> : <X className="w-5 h-5" />}
           </button>
         </div>
 
         <div className="p-4 space-y-4">
           {error && (
-            <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md">
-              <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+            <div className={cn(
+              "p-3",
+              isRetro
+                ? "border-4 border-border bg-background"
+                : "bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md"
+            )}>
+              <p className={cn(
+                isRetro
+                  ? "retro-small uppercase font-bold retro-body"
+                  : "text-sm text-red-600 dark:text-red-400"
+              )} style={isRetro ? { color: NES_RED } : undefined}>{error}</p>
             </div>
           )}
 
-          <p className="text-muted-foreground">{t("deleteConfirmMessage")}</p>
+          <p className={cn(
+            "text-muted-foreground",
+            isRetro && "retro-small uppercase retro-body"
+          )}>{t("deleteConfirmMessage")}</p>
 
-          <div className="p-3 bg-muted rounded-md">
-            <p className="font-medium">{itemName}</p>
-            <p className="text-sm text-muted-foreground">{locationName}</p>
-            <p className="text-sm text-muted-foreground">
+          <div className={cn(
+            "p-3",
+            isRetro
+              ? "border-4 border-border bg-muted"
+              : "bg-muted rounded-md"
+          )}>
+            <p className={cn(
+              "font-medium",
+              isRetro && "retro-small uppercase font-bold retro-body"
+            )}>{itemName}</p>
+            <p className={cn(
+              "text-muted-foreground",
+              isRetro ? "retro-small uppercase retro-body" : "text-sm"
+            )}>{locationName}</p>
+            <p className={cn(
+              "text-muted-foreground",
+              isRetro ? "retro-small uppercase retro-body" : "text-sm"
+            )}>
               {t("quantity")}: {inventory.quantity}
             </p>
           </div>
@@ -936,7 +1412,11 @@ function DeleteConfirmModal({
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 border border-border rounded-md hover:bg-muted transition-colors"
+              className={cn(
+                isRetro
+                  ? "px-4 py-2 border-4 border-border bg-muted text-foreground retro-small uppercase font-bold retro-body retro-shadow-sm hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
+                  : "px-4 py-2 border border-border rounded-md hover:bg-muted transition-colors"
+              )}
             >
               {t("cancel")}
             </button>
@@ -944,7 +1424,12 @@ function DeleteConfirmModal({
               type="button"
               onClick={handleDelete}
               disabled={submitting}
-              className="px-4 py-2 bg-destructive text-destructive-foreground rounded-md hover:bg-destructive/90 transition-colors disabled:opacity-50"
+              className={cn(
+                isRetro
+                  ? "px-4 py-2 border-4 border-border text-white retro-small uppercase font-bold retro-body retro-shadow-sm hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all disabled:opacity-50"
+                  : "px-4 py-2 bg-destructive text-destructive-foreground rounded-md hover:bg-destructive/90 transition-colors disabled:opacity-50"
+              )}
+              style={isRetro ? { backgroundColor: NES_RED } : undefined}
             >
               {submitting ? t("deleting") : t("deleteConfirmButton")}
             </button>

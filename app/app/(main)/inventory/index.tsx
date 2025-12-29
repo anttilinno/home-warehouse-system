@@ -146,11 +146,19 @@ export default function InventoryListScreen() {
           <View style={styles.empty}>
             <Text style={styles.emptyText}>No inventory found</Text>
             <Text style={styles.emptyHint}>
-              Scan a barcode to add items
+              Tap + to add items manually
             </Text>
           </View>
         }
       />
+
+      {/* Floating Add Button */}
+      <TouchableOpacity
+        style={styles.fab}
+        onPress={() => router.push('/(main)/inventory/add')}
+      >
+        <Text style={styles.fabText}>+</Text>
+      </TouchableOpacity>
     </View>
   );
 }
@@ -238,5 +246,27 @@ const styles = StyleSheet.create({
   emptyHint: {
     fontSize: 14,
     color: '#999',
+  },
+  fab: {
+    position: 'absolute',
+    bottom: 24,
+    right: 24,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: '#0066cc',
+    justifyContent: 'center',
+    alignItems: 'center',
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+  },
+  fabText: {
+    color: '#fff',
+    fontSize: 32,
+    fontWeight: '300',
+    marginTop: -2,
   },
 });

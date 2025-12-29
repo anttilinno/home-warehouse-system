@@ -1,7 +1,10 @@
 'use client';
 
 import { useState } from 'react';
+import { useTheme } from 'next-themes';
 import { ChevronRight, ChevronDown, Plus, Pencil, Trash2 } from 'lucide-react';
+import { Icon } from '@/components/icons';
+import { cn } from '@/lib/utils';
 
 // Generic tree node interface
 export interface TreeNode {
@@ -28,6 +31,7 @@ interface TreeNodeComponentProps<T extends TreeNode> {
   onAddChild?: (parentId: string) => void;
   expandedByDefault?: boolean;
   disabled?: boolean;
+  isRetro?: boolean;
 }
 
 function TreeNodeComponent<T extends TreeNode>({
@@ -37,6 +41,7 @@ function TreeNodeComponent<T extends TreeNode>({
   onAddChild,
   expandedByDefault = true,
   disabled = false,
+  isRetro = false,
 }: TreeNodeComponentProps<T>) {
   const [isExpanded, setIsExpanded] = useState(expandedByDefault);
   const hasChildren = node.children.length > 0;
@@ -44,17 +49,26 @@ function TreeNodeComponent<T extends TreeNode>({
   return (
     <div>
       <div
-        className="group flex items-center gap-2 py-2 px-2 rounded-md hover:bg-muted/50 transition-colors"
+        className={cn(
+          "group flex items-center gap-2 py-2 px-2 transition-colors",
+          isRetro ? "hover:bg-muted/30" : "rounded-md hover:bg-muted/50"
+        )}
         style={{ paddingLeft: `${node.depth * 1.5 + 0.5}rem` }}
       >
         {/* Expand/Collapse Toggle */}
         <button
           type="button"
           onClick={() => setIsExpanded(!isExpanded)}
-          className={`p-0.5 rounded hover:bg-muted ${!hasChildren ? 'invisible' : ''}`}
+          className={cn(
+            "p-0.5",
+            !hasChildren && "invisible",
+            isRetro ? "hover:bg-muted" : "rounded hover:bg-muted"
+          )}
           aria-label={isExpanded ? 'Collapse' : 'Expand'}
         >
-          {isExpanded ? (
+          {isRetro ? (
+            <Icon name={isExpanded ? "ChevronDown" : "ChevronRight"} className="h-4 w-4 text-muted-foreground" />
+          ) : isExpanded ? (
             <ChevronDown className="h-4 w-4 text-muted-foreground" />
           ) : (
             <ChevronRight className="h-4 w-4 text-muted-foreground" />
@@ -63,9 +77,15 @@ function TreeNodeComponent<T extends TreeNode>({
 
         {/* Node Name & Description */}
         <div className="flex-1 min-w-0">
-          <span className="font-medium text-foreground">{node.name}</span>
+          <span className={cn(
+            "text-foreground",
+            isRetro ? "retro-body font-bold" : "font-medium"
+          )}>{node.name}</span>
           {node.description && (
-            <span className="ml-2 text-sm text-muted-foreground truncate">
+            <span className={cn(
+              "ml-2 text-muted-foreground truncate",
+              isRetro ? "retro-body" : "text-sm"
+            )}>
               — {node.description}
             </span>
           )}
@@ -78,30 +98,39 @@ function TreeNodeComponent<T extends TreeNode>({
               <button
                 type="button"
                 onClick={() => onAddChild(node.id)}
-                className="p-1.5 rounded hover:bg-muted text-muted-foreground hover:text-foreground"
+                className={cn(
+                  "text-muted-foreground hover:text-foreground flex items-center justify-center",
+                  isRetro ? "w-7 h-7 hover:bg-muted border-2 border-transparent hover:border-border" : "p-1.5 rounded hover:bg-muted"
+                )}
                 title="Add child"
               >
-                <Plus className="h-4 w-4" />
+                {isRetro ? <Icon name="Plus" className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
               </button>
             )}
             {onEdit && (
               <button
                 type="button"
                 onClick={() => onEdit(node)}
-                className="p-1.5 rounded hover:bg-muted text-muted-foreground hover:text-foreground"
+                className={cn(
+                  "text-muted-foreground hover:text-foreground flex items-center justify-center",
+                  isRetro ? "w-7 h-7 hover:bg-muted border-2 border-transparent hover:border-border" : "p-1.5 rounded hover:bg-muted"
+                )}
                 title="Edit"
               >
-                <Pencil className="h-4 w-4" />
+                {isRetro ? <Icon name="Pencil" className="h-4 w-4" /> : <Pencil className="h-4 w-4" />}
               </button>
             )}
             {onDelete && (
               <button
                 type="button"
                 onClick={() => onDelete(node)}
-                className="p-1.5 rounded hover:bg-muted text-muted-foreground hover:text-destructive"
+                className={cn(
+                  "text-muted-foreground hover:text-destructive flex items-center justify-center",
+                  isRetro ? "w-7 h-7 hover:bg-muted border-2 border-transparent hover:border-border" : "p-1.5 rounded hover:bg-muted"
+                )}
                 title="Delete"
               >
-                <Trash2 className="h-4 w-4" />
+                {isRetro ? <Icon name="Trash2" className="h-4 w-4" /> : <Trash2 className="h-4 w-4" />}
               </button>
             )}
           </div>
@@ -120,6 +149,7 @@ function TreeNodeComponent<T extends TreeNode>({
               onAddChild={onAddChild}
               expandedByDefault={expandedByDefault}
               disabled={disabled}
+              isRetro={isRetro}
             />
           ))}
         </div>
@@ -136,12 +166,18 @@ export function TreeView<T extends TreeNode>({
   expandedByDefault = true,
   disabled = false,
 }: TreeViewProps<T>) {
+  const { theme } = useTheme();
+  const isRetro = theme?.startsWith('retro');
+
   if (items.length === 0) {
     return null;
   }
 
   return (
-    <div className="border border-border rounded-lg divide-y divide-border">
+    <div className={cn(
+      "divide-y divide-border",
+      isRetro ? "border-4 border-border" : "border border-border rounded-lg"
+    )}>
       {items.map((item) => (
         <TreeNodeComponent
           key={item.id}
@@ -151,6 +187,7 @@ export function TreeView<T extends TreeNode>({
           onAddChild={onAddChild}
           expandedByDefault={expandedByDefault}
           disabled={disabled}
+          isRetro={isRetro}
         />
       ))}
     </div>

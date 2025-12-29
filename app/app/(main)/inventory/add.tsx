@@ -38,6 +38,15 @@ export default function AddInventoryScreen() {
   const [itemSku, setItemSku] = useState(params.barcode || '');
   const [categoryId, setCategoryId] = useState<string>('');
 
+  // Update form when params change (from scanner)
+  useEffect(() => {
+    console.log('[ADD] Params changed:', params);
+    if (params.name) setItemName(params.name);
+    if (params.brand) setItemBrand(params.brand);
+    if (params.description) setItemDescription(params.description);
+    if (params.barcode) setItemSku(params.barcode);
+  }, [params.name, params.brand, params.description, params.barcode]);
+
   // Inventory fields
   const [quantity, setQuantity] = useState('1');
   const [locationId, setLocationId] = useState<string>('');
@@ -319,18 +328,28 @@ export default function AddInventoryScreen() {
         />
       </View>
 
-      {/* Save Button */}
-      <TouchableOpacity
-        style={[styles.saveButton, saving && styles.saveButtonDisabled]}
-        onPress={handleSave}
-        disabled={saving}
-      >
-        {saving ? (
-          <ActivityIndicator color="#fff" />
-        ) : (
-          <Text style={styles.saveButtonText}>Add to Inventory</Text>
-        )}
-      </TouchableOpacity>
+      {/* Buttons */}
+      <View style={styles.buttonRow}>
+        <TouchableOpacity
+          style={styles.cancelButton}
+          onPress={() => router.back()}
+          disabled={saving}
+        >
+          <Text style={styles.cancelButtonText}>Cancel</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[styles.saveButton, saving && styles.saveButtonDisabled]}
+          onPress={handleSave}
+          disabled={saving}
+        >
+          {saving ? (
+            <ActivityIndicator color="#fff" />
+          ) : (
+            <Text style={styles.saveButtonText}>Save</Text>
+          )}
+        </TouchableOpacity>
+      </View>
 
       <View style={styles.footer} />
     </ScrollView>
@@ -398,8 +417,28 @@ const styles = StyleSheet.create({
     backgroundColor: '#fafafa',
     overflow: 'hidden',
   },
-  saveButton: {
+  buttonRow: {
+    flexDirection: 'row',
     margin: 16,
+    gap: 12,
+  },
+  cancelButton: {
+    flex: 1,
+    height: 52,
+    backgroundColor: '#f5f5f5',
+    borderRadius: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#e0e0e0',
+  },
+  cancelButtonText: {
+    color: '#666',
+    fontSize: 18,
+    fontWeight: '600',
+  },
+  saveButton: {
+    flex: 2,
     height: 52,
     backgroundColor: '#0066cc',
     borderRadius: 8,

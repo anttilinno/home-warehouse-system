@@ -3,6 +3,7 @@
 import { useAuth } from "@/lib/auth";
 import { useRouter } from "@/navigation";
 import { useTranslations } from "next-intl";
+import { useTheme } from "next-themes";
 import { useEffect, useState, useMemo } from "react";
 import {
   categoriesApi,
@@ -11,11 +12,14 @@ import {
   CategoryCreate,
   CategoryUpdate,
 } from "@/lib/api";
+import { Icon } from "@/components/icons";
 import { Plus, X, FolderTree } from "lucide-react";
 import { TreeView } from "@/components/ui/tree-view";
 import { CategorySelect } from "@/components/ui/category-select";
 import { buildCategoryTree, type CategoryNode } from "@/lib/category-utils";
 import { useToast } from "@/components/ui/use-toast";
+import { cn } from "@/lib/utils";
+import { NES_GREEN, NES_BLUE, NES_RED } from "@/lib/nes-colors";
 
 export default function CategoriesPage() {
   const { isAuthenticated, isLoading: authLoading, canEdit } = useAuth();
@@ -23,6 +27,8 @@ export default function CategoriesPage() {
   const t = useTranslations("categories");
   const te = useTranslations("errors");
   const { toast } = useToast();
+  const { theme } = useTheme();
+  const isRetro = theme?.startsWith("retro");
 
   // Data state
   const [categories, setCategories] = useState<Category[]>([]);
@@ -85,8 +91,14 @@ export default function CategoriesPage() {
 
   if (authLoading || loading) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="text-muted-foreground">{t("loading")}</div>
+      <div className={cn(
+        "flex items-center justify-center min-h-[400px]",
+        isRetro && "retro-body"
+      )}>
+        <div className={cn(
+          "text-muted-foreground",
+          isRetro && "retro-small uppercase"
+        )}>{t("loading")}</div>
       </div>
     );
   }
@@ -97,17 +109,145 @@ export default function CategoriesPage() {
 
   if (error) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
+      <div className={cn(
+        "flex items-center justify-center min-h-[400px]",
+        isRetro && "retro-body"
+      )}>
         <div className="text-center">
-          <p className="text-red-500 mb-4">{error}</p>
+          <p className={cn(
+            "text-red-500 mb-4",
+            isRetro && "retro-small uppercase"
+          )} style={isRetro ? { color: NES_RED } : undefined}>{error}</p>
           <button
             onClick={fetchData}
-            className="px-4 py-2 bg-primary text-primary-foreground rounded-lg"
+            className={cn(
+              isRetro
+                ? "px-4 py-2 border-4 border-border bg-primary text-white retro-small uppercase retro-shadow hover:retro-shadow-sm hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
+                : "px-4 py-2 bg-primary text-primary-foreground rounded-lg"
+            )}
           >
             {t("tryAgain")}
           </button>
         </div>
       </div>
+    );
+  }
+
+  // Retro theme UI
+  if (isRetro) {
+    return (
+      <>
+        {/* Header */}
+        <div className="mb-8 bg-primary p-4 border-4 border-border retro-shadow">
+          <div className="flex justify-between items-center">
+            <div>
+              <h1 className="text-lg font-bold text-white uppercase retro-heading">
+                {t("title")}
+              </h1>
+              <p className="text-white/80 retro-body retro-small uppercase mt-1">
+                {t("subtitle")}
+              </p>
+            </div>
+            {canEdit && (
+              <button
+                onClick={handleCreateNew}
+                className="px-3 py-2 bg-background text-foreground border-4 border-border retro-small uppercase font-bold retro-body retro-shadow hover:retro-shadow-sm hover:translate-x-[2px] hover:translate-y-[2px] transition-all flex items-center gap-2"
+              >
+                <Icon name="Plus" className="w-4 h-4" />
+                {t("addCategory")}
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Empty State or Tree */}
+        {categories.length === 0 ? (
+          <div className="bg-card border-4 border-border p-12 text-center retro-shadow">
+            <Icon name="FolderTree" className="w-12 h-12 mx-auto mb-4" style={{ color: NES_BLUE }} />
+            <p className="retro-small uppercase font-bold retro-body text-muted-foreground">
+              {t("noCategories")}
+            </p>
+            {canEdit && (
+              <button
+                onClick={handleCreateNew}
+                className="mt-4 px-4 py-2 bg-primary text-white border-4 border-border retro-small uppercase font-bold retro-body retro-shadow hover:retro-shadow-sm hover:translate-x-[2px] hover:translate-y-[2px] transition-all inline-flex items-center gap-2"
+              >
+                <Icon name="Plus" className="w-4 h-4" />
+                {t("addCategory")}
+              </button>
+            )}
+          </div>
+        ) : (
+          <div className="bg-card retro-shadow overflow-hidden">
+            <TreeView
+              items={categoryTree}
+              onEdit={handleEdit}
+              onDelete={handleDelete}
+              onAddChild={handleAddChild}
+              disabled={!canEdit}
+            />
+          </div>
+        )}
+
+        {/* Modals */}
+        <CreateEditModal
+          isOpen={isCreateModalOpen}
+          onClose={() => {
+            setIsCreateModalOpen(false);
+            setDefaultParentId(null);
+          }}
+          onSuccess={(name: string) => {
+            setIsCreateModalOpen(false);
+            setDefaultParentId(null);
+            fetchData();
+            toast({ title: t("created"), description: name });
+          }}
+          categories={categories}
+          defaultParentId={defaultParentId}
+          t={t}
+          te={te}
+          isRetro={isRetro}
+        />
+
+        <CreateEditModal
+          isOpen={isEditModalOpen}
+          onClose={() => {
+            setIsEditModalOpen(false);
+            setSelectedCategory(null);
+          }}
+          onSuccess={(name: string) => {
+            setIsEditModalOpen(false);
+            setSelectedCategory(null);
+            fetchData();
+            toast({ title: t("updated"), description: name });
+          }}
+          category={selectedCategory}
+          categories={categories}
+          t={t}
+          te={te}
+          isRetro={isRetro}
+        />
+
+        {selectedCategory && (
+          <DeleteConfirmModal
+            isOpen={isDeleteModalOpen}
+            onClose={() => {
+              setIsDeleteModalOpen(false);
+              setSelectedCategory(null);
+            }}
+            onSuccess={(deletedName: string) => {
+              setIsDeleteModalOpen(false);
+              setSelectedCategory(null);
+              fetchData();
+              toast({ title: t("deleted"), description: deletedName });
+            }}
+            category={selectedCategory}
+            t={t}
+            te={te}
+            isRetro={isRetro}
+          />
+        )}
+      </>
     );
   }
 
@@ -146,7 +286,7 @@ export default function CategoriesPage() {
           )}
         </div>
       ) : (
-        <div className="bg-card border rounded-lg shadow-sm overflow-hidden">
+        <div className="bg-card shadow-sm overflow-hidden">
           <TreeView
             items={categoryTree}
             onEdit={handleEdit}
@@ -177,6 +317,7 @@ export default function CategoriesPage() {
         defaultParentId={defaultParentId}
         t={t}
         te={te}
+        isRetro={false}
       />
 
       {/* Edit Modal */}
@@ -199,6 +340,7 @@ export default function CategoriesPage() {
         categories={categories}
         t={t}
         te={te}
+        isRetro={false}
       />
 
       {/* Delete Confirmation Modal */}
@@ -221,6 +363,7 @@ export default function CategoriesPage() {
           category={selectedCategory}
           t={t}
           te={te}
+          isRetro={false}
         />
       )}
     </>
@@ -237,6 +380,7 @@ function CreateEditModal({
   defaultParentId,
   t,
   te,
+  isRetro,
 }: {
   isOpen: boolean;
   onClose: () => void;
@@ -246,6 +390,7 @@ function CreateEditModal({
   defaultParentId?: string | null;
   t: (key: string) => string;
   te: (key: string) => string;
+  isRetro: boolean;
 }) {
   const isEdit = !!category;
   const [formData, setFormData] = useState<CategoryCreate>({
@@ -313,27 +458,57 @@ function CreateEditModal({
     <div className="fixed inset-0 z-50 flex items-center justify-center" onClick={onClose}>
       <div className="absolute inset-0 bg-black/50" />
       <div
-        className="relative z-10 w-full max-w-md m-4 bg-background border rounded-lg shadow-xl"
+        className={cn(
+          "relative z-10 w-full max-w-md m-4 bg-background",
+          isRetro
+            ? "border-4 border-border retro-shadow"
+            : "border rounded-lg shadow-xl"
+        )}
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between p-4 border-b">
-          <h2 className="text-lg font-semibold">
+        <div className={cn(
+          "flex items-center justify-between p-4",
+          isRetro ? "border-b-4 border-border bg-primary" : "border-b"
+        )}>
+          <h2 className={cn(
+            isRetro
+              ? "text-sm font-bold text-white uppercase retro-heading"
+              : "text-lg font-semibold"
+          )}>
             {isEdit ? t("editCategory") : t("addCategory")}
           </h2>
-          <button onClick={onClose} className="p-1 rounded hover:bg-muted">
-            <X className="w-5 h-5" />
+          <button onClick={onClose} className={cn(
+            isRetro
+              ? "p-1 border-2 border-white/50 hover:bg-white/20"
+              : "p-1 rounded hover:bg-muted"
+          )}>
+            {isRetro ? <Icon name="X" className="w-5 h-5 text-white" /> : <X className="w-5 h-5" />}
           </button>
         </div>
 
         <form onSubmit={handleSubmit} className="p-4 space-y-4">
           {error && (
-            <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md">
-              <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+            <div className={cn(
+              "p-3",
+              isRetro
+                ? "border-4 border-border bg-background"
+                : "bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md"
+            )}>
+              <p className={cn(
+                isRetro
+                  ? "retro-small uppercase font-bold retro-body"
+                  : "text-sm text-red-600 dark:text-red-400"
+              )} style={isRetro ? { color: NES_RED } : undefined}>{error}</p>
             </div>
           )}
 
           <div>
-            <label className="block text-sm font-medium text-foreground mb-2">
+            <label className={cn(
+              "block mb-2",
+              isRetro
+                ? "retro-small uppercase font-bold retro-body text-foreground"
+                : "text-sm font-medium text-foreground"
+            )}>
               {t("name")}
             </label>
             <input
@@ -343,13 +518,23 @@ function CreateEditModal({
                 setFormData((prev) => ({ ...prev, name: e.target.value }))
               }
               placeholder={t("namePlaceholder")}
-              className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+              className={cn(
+                "w-full px-3 py-2 bg-background text-foreground",
+                isRetro
+                  ? "border-4 border-border retro-body retro-small uppercase focus:outline-none"
+                  : "border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+              )}
               required
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-foreground mb-2">
+            <label className={cn(
+              "block mb-2",
+              isRetro
+                ? "retro-small uppercase font-bold retro-body text-foreground"
+                : "text-sm font-medium text-foreground"
+            )}>
               {t("parentCategory")}
             </label>
             <CategorySelect
@@ -368,7 +553,12 @@ function CreateEditModal({
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-foreground mb-2">
+            <label className={cn(
+              "block mb-2",
+              isRetro
+                ? "retro-small uppercase font-bold retro-body text-foreground"
+                : "text-sm font-medium text-foreground"
+            )}>
               {t("description")}
             </label>
             <textarea
@@ -381,7 +571,12 @@ function CreateEditModal({
               }
               placeholder={t("descriptionPlaceholder")}
               rows={3}
-              className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent resize-none"
+              className={cn(
+                "w-full px-3 py-2 bg-background text-foreground resize-none",
+                isRetro
+                  ? "border-4 border-border retro-body retro-small focus:outline-none"
+                  : "border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+              )}
             />
           </div>
 
@@ -389,14 +584,22 @@ function CreateEditModal({
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 border border-border rounded-md hover:bg-muted transition-colors"
+              className={cn(
+                isRetro
+                  ? "px-4 py-2 border-4 border-border bg-muted text-foreground retro-small uppercase font-bold retro-body retro-shadow-sm hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
+                  : "px-4 py-2 border border-border rounded-md hover:bg-muted transition-colors"
+              )}
             >
               {t("cancel")}
             </button>
             <button
               type="submit"
               disabled={submitting}
-              className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors disabled:opacity-50"
+              className={cn(
+                isRetro
+                  ? "px-4 py-2 border-4 border-border bg-primary text-white retro-small uppercase font-bold retro-body retro-shadow-sm hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all disabled:opacity-50"
+                  : "px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors disabled:opacity-50"
+              )}
             >
               {submitting ? t("saving") : t("save")}
             </button>
@@ -415,6 +618,7 @@ function DeleteConfirmModal({
   category,
   t,
   te,
+  isRetro,
 }: {
   isOpen: boolean;
   onClose: () => void;
@@ -422,6 +626,7 @@ function DeleteConfirmModal({
   category: Category;
   t: (key: string) => string;
   te: (key: string) => string;
+  isRetro: boolean;
 }) {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -454,31 +659,70 @@ function DeleteConfirmModal({
     <div className="fixed inset-0 z-50 flex items-center justify-center" onClick={onClose}>
       <div className="absolute inset-0 bg-black/50" />
       <div
-        className="relative z-10 w-full max-w-md m-4 bg-background border rounded-lg shadow-xl"
+        className={cn(
+          "relative z-10 w-full max-w-md m-4 bg-background",
+          isRetro
+            ? "border-4 border-border retro-shadow"
+            : "border rounded-lg shadow-xl"
+        )}
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between p-4 border-b">
-          <h2 className="text-lg font-semibold text-destructive">
+        <div className={cn(
+          "flex items-center justify-between p-4",
+          isRetro ? "border-b-4 border-border" : "border-b"
+        )} style={isRetro ? { backgroundColor: NES_RED } : undefined}>
+          <h2 className={cn(
+            isRetro
+              ? "text-sm font-bold text-white uppercase retro-heading"
+              : "text-lg font-semibold text-destructive"
+          )}>
             {t("deleteConfirmTitle")}
           </h2>
-          <button onClick={onClose} className="p-1 rounded hover:bg-muted">
-            <X className="w-5 h-5" />
+          <button onClick={onClose} className={cn(
+            isRetro
+              ? "p-1 border-2 border-white/50 hover:bg-white/20"
+              : "p-1 rounded hover:bg-muted"
+          )}>
+            {isRetro ? <Icon name="X" className="w-5 h-5 text-white" /> : <X className="w-5 h-5" />}
           </button>
         </div>
 
         <div className="p-4 space-y-4">
           {error && (
-            <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md">
-              <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+            <div className={cn(
+              "p-3",
+              isRetro
+                ? "border-4 border-border bg-background"
+                : "bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md"
+            )}>
+              <p className={cn(
+                isRetro
+                  ? "retro-small uppercase font-bold retro-body"
+                  : "text-sm text-red-600 dark:text-red-400"
+              )} style={isRetro ? { color: NES_RED } : undefined}>{error}</p>
             </div>
           )}
 
-          <p className="text-muted-foreground">{t("deleteConfirmMessage")}</p>
+          <p className={cn(
+            "text-muted-foreground",
+            isRetro && "retro-small uppercase retro-body"
+          )}>{t("deleteConfirmMessage")}</p>
 
-          <div className="p-3 bg-muted rounded-md">
-            <p className="font-medium">{category.name}</p>
+          <div className={cn(
+            "p-3",
+            isRetro
+              ? "border-4 border-border bg-muted"
+              : "bg-muted rounded-md"
+          )}>
+            <p className={cn(
+              "font-medium",
+              isRetro && "retro-small uppercase font-bold retro-body"
+            )}>{category.name}</p>
             {category.description && (
-              <p className="text-sm text-muted-foreground">{category.description}</p>
+              <p className={cn(
+                "text-muted-foreground",
+                isRetro ? "retro-small retro-body" : "text-sm"
+              )}>{category.description}</p>
             )}
           </div>
 
@@ -486,7 +730,11 @@ function DeleteConfirmModal({
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 border border-border rounded-md hover:bg-muted transition-colors"
+              className={cn(
+                isRetro
+                  ? "px-4 py-2 border-4 border-border bg-muted text-foreground retro-small uppercase font-bold retro-body retro-shadow-sm hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
+                  : "px-4 py-2 border border-border rounded-md hover:bg-muted transition-colors"
+              )}
             >
               {t("cancel")}
             </button>
@@ -494,7 +742,12 @@ function DeleteConfirmModal({
               type="button"
               onClick={handleDelete}
               disabled={submitting}
-              className="px-4 py-2 bg-destructive text-destructive-foreground rounded-md hover:bg-destructive/90 transition-colors disabled:opacity-50"
+              className={cn(
+                isRetro
+                  ? "px-4 py-2 border-4 border-border text-white retro-small uppercase font-bold retro-body retro-shadow-sm hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all disabled:opacity-50"
+                  : "px-4 py-2 bg-destructive text-destructive-foreground rounded-md hover:bg-destructive/90 transition-colors disabled:opacity-50"
+              )}
+              style={isRetro ? { backgroundColor: NES_RED } : undefined}
             >
               {submitting ? t("deleting") : t("deleteConfirmButton")}
             </button>

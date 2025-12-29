@@ -104,17 +104,20 @@ class ApiClient {
     });
 
     if (!response.ok) {
-      // Handle authentication errors
-      if (response.status === 401) {
-        // Clear invalid token and redirect to login
-        tokenStorage.removeToken();
-        if (typeof window !== 'undefined') {
-          window.location.href = '/en/login';
-        }
-        throw new Error('Authentication required');
-      }
-
       const errorData: ApiError = await response.json().catch(() => ({ detail: 'Unknown error' }));
+
+      // Handle authentication errors - but only redirect if we had a token (session expired)
+      // For login attempts (no token), pass through the actual error message
+      if (response.status === 401) {
+        const hadToken = !!tokenStorage.getToken();
+        tokenStorage.removeToken();
+        if (hadToken && typeof window !== 'undefined') {
+          window.location.href = '/en/login';
+          throw new Error('Authentication required');
+        }
+        // No token = login attempt failed, pass through actual error
+        throw new Error(errorData.detail || 'Invalid credentials');
+      }
 
       // Show error modal for 500 errors in development
       if (response.status >= 500) {
@@ -483,6 +486,16 @@ export interface Item {
   name: string;
   description: string | null;
   category_id: string | null;
+  brand: string | null;
+  model: string | null;
+  manufacturer: string | null;
+  serial_number: string | null;
+  image_url: string | null;
+  is_insured: boolean;
+  is_archived: boolean;
+  lifetime_warranty: boolean;
+  warranty_details: string | null;
+  short_code: string | null;
   created_at: string;
   updated_at: string;
   obsidian_vault_path: string | null;
@@ -495,6 +508,14 @@ export interface ItemCreate {
   name: string;
   description?: string | null;
   category_id?: string | null;
+  brand?: string | null;
+  model?: string | null;
+  manufacturer?: string | null;
+  serial_number?: string | null;
+  image_url?: string | null;
+  is_insured?: boolean;
+  lifetime_warranty?: boolean;
+  warranty_details?: string | null;
   obsidian_vault_path?: string | null;
   obsidian_note_path?: string | null;
 }
@@ -503,6 +524,15 @@ export interface ItemUpdate {
   name?: string | null;
   description?: string | null;
   category_id?: string | null;
+  brand?: string | null;
+  model?: string | null;
+  manufacturer?: string | null;
+  serial_number?: string | null;
+  image_url?: string | null;
+  is_insured?: boolean;
+  is_archived?: boolean;
+  lifetime_warranty?: boolean;
+  warranty_details?: string | null;
   obsidian_vault_path?: string | null;
   obsidian_note_path?: string | null;
 }
@@ -539,6 +569,7 @@ export interface Location {
   description: string | null;
   created_at: string;
   parent_location_id?: string | null;
+  inventory_count?: number;
 }
 
 export interface LocationCreate {

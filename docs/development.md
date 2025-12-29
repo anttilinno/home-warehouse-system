@@ -39,3 +39,7 @@ See [backend.md](backend.md) for backend commands.
 ## Frontend
 
 See [frontend.md](frontend.md) for frontend commands.
+
+## Mobile App
+
+See [mobile.md](mobile.md) for mobile app commands.

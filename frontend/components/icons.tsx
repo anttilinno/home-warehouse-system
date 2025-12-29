@@ -76,17 +76,39 @@ interface IconProps {
   name: keyof typeof LucideIcons;
   className?: string;
   size?: number;
+  style?: React.CSSProperties;
+}
+
+// Parse Tailwind size class to pixels for Material Symbols
+function parseSizeClass(className?: string): number | null {
+  if (!className) return null;
+  // Match h-X or w-X patterns (Tailwind size classes)
+  const match = className.match(/[hw]-(\d+)/);
+  if (match) {
+    const size = parseInt(match[1], 10);
+    // Tailwind spacing is 4px per unit, but Material Symbols have
+    // built-in optical padding, so we scale up by 1.5x to match Lucide visually
+    return size * 6;
+  }
+  return null;
 }
 
 // Material Symbol component for retro themes
-function MaterialIcon({ name, className }: { name: string; className?: string }) {
+function MaterialIcon({ name, className, style }: { name: string; className?: string; style?: React.CSSProperties }) {
+  const sizeInPx = parseSizeClass(className);
+
   return (
     <span
       className={`material-symbols-outlined ${className || ''}`}
       style={{
-        fontSize: 'inherit',
+        fontSize: sizeInPx ? `${sizeInPx}px` : 'inherit',
         lineHeight: 1,
-        verticalAlign: 'middle',
+        width: sizeInPx ? `${sizeInPx}px` : undefined,
+        height: sizeInPx ? `${sizeInPx}px` : undefined,
+        display: 'inline-flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        ...style,
       }}
     >
       {name}
@@ -94,7 +116,7 @@ function MaterialIcon({ name, className }: { name: string; className?: string })
   );
 }
 
-export function Icon({ name, className, size }: IconProps) {
+export function Icon({ name, className, size, style }: IconProps) {
   const { theme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
@@ -103,12 +125,12 @@ export function Icon({ name, className, size }: IconProps) {
   }, []);
 
   // Get the Lucide icon
-  const LucideIcon = LucideIcons[name] as ComponentType<{ className?: string; size?: number }>;
+  const LucideIcon = LucideIcons[name] as ComponentType<{ className?: string; size?: number; style?: React.CSSProperties }>;
 
   // Before mounting, render Lucide to avoid hydration mismatch
   if (!mounted || !LucideIcon) {
     if (LucideIcon) {
-      return <LucideIcon className={className} size={size} />;
+      return <LucideIcon className={className} size={size} style={style} />;
     }
     return null;
   }
@@ -118,9 +140,9 @@ export function Icon({ name, className, size }: IconProps) {
   if (isRetro) {
     const materialName = materialIconMap[name as string];
     if (materialName) {
-      return <MaterialIcon name={materialName} className={className} />;
+      return <MaterialIcon name={materialName} className={className} style={style} />;
     }
   }
 
-  return <LucideIcon className={className} size={size} />;
+  return <LucideIcon className={className} size={size} style={style} />;
 }
