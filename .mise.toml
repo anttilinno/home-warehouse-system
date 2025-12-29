@@ -21,6 +21,11 @@ APP_DEBUG = "true"
 STAGING_DATABASE_URL = "postgresql+asyncpg://wh:wh@localhost:5432/warehouse_staging"
 STAGING_DBMATE_URL = "postgresql://wh:wh@localhost:5432/warehouse_staging?sslmode=disable"
 
+[tasks.start]
+description = "Start all services (containers, backend, frontend)"
+depends = ["dc-up", "migrate"]
+run = "mise run dev & mise run fe-dev"
+
 [tasks.dc-up]
 description = "Start all containers (PostgreSQL + Redis)"
 run = "docker compose up -d"
