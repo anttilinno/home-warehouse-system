@@ -27,4 +27,8 @@ This starts PostgreSQL, Redis, runs migrations, and launches both backend and fr
 
 See [docs/development.md](docs/development.md) for development commands.
 
+See [docs/database.md](docs/database.md) for database schema documentation.
+
+See [docs/docspell.md](docs/docspell.md) for Docspell integration setup.
+
 See [docs/roadmap.md](docs/roadmap.md) for planned features.
