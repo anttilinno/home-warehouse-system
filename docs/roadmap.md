@@ -22,9 +22,9 @@
   - CSV/Excel import for bulk adding items
   - Barcode lookup: scan product barcode → fetch info from Open Food Facts / UPC database
   - Item duplicate: "Add another like this"
-- [ ] SSO authentication
-  - Google, Facebook, GitHub OAuth providers
-  - Link external accounts to existing users
+- [x] SSO authentication
+  - Google and GitHub OAuth providers (via litestar-oauth)
+  - Link/unlink external accounts to existing users
 - [x] Email notifications (Resend)
   - Password reset (multi-language: EN, ET, RU)
   - Loan reminders
@@ -42,6 +42,10 @@
   - Upload photos for items
   - Multiple photos per item
   - Thumbnail generation
+- [ ] Theme settings
+  - Move from settings to profile page
+  - Save theme preference to database
+  - Retro theme needs redesign (awaiting brainstorming in Stitch)
 
 ## Phase 2
 
