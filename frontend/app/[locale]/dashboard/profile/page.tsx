@@ -120,10 +120,8 @@ export default function ProfilePage() {
       setDateFormat(data.date_format || "DD.MM.YYYY HH:mm");
       setLanguage((data.language as Locale) || "en");
       setSelectedTheme(data.theme || "system");
-      // Apply saved theme from profile
-      if (data.theme && data.theme !== "system") {
-        setTheme(data.theme);
-      }
+      // Note: Theme is applied by ThemeSync component on initial load
+      // Don't call setTheme here to avoid overriding user's UI selections
       setError(null);
     } catch (err) {
       console.error('Failed to fetch profile:', err);

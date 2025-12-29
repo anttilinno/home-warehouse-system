@@ -115,103 +115,135 @@
   --sidebar-ring: oklch(0.556 0 0);
 }
 
-/* Retro Light Theme - matching prototype exactly */
+/* Retro Light Theme - NES Console Style */
 .retro-light {
-  /* #EFE9D9 beige background */
-  --background: oklch(0.93 0.02 85);
-  --foreground: oklch(0.25 0.01 50);
-  /* #F7F2E6 cream paper */
-  --card: oklch(0.96 0.015 85);
-  --card-foreground: oklch(0.25 0.01 50);
-  --popover: oklch(0.96 0.015 85);
-  --popover-foreground: oklch(0.25 0.01 50);
-  /* #EF4444 red primary */
-  --primary: oklch(0.63 0.24 27);
-  --primary-foreground: oklch(0.98 0 0);
-  --secondary: oklch(0.90 0.02 85);
-  --secondary-foreground: oklch(0.25 0.01 50);
-  --muted: oklch(0.88 0.02 85);
-  --muted-foreground: oklch(0.45 0.01 50);
-  --accent: oklch(0.90 0.02 85);
-  --accent-foreground: oklch(0.25 0.01 50);
-  --destructive: oklch(0.55 0.22 27);
-  /* #333333 dark border */
-  --border: oklch(0.30 0 0);
-  --input: oklch(0.93 0.02 85);
-  --ring: oklch(0.63 0.24 27);
-  --chart-1: oklch(0.63 0.24 27);
-  --chart-2: oklch(0.75 0.1 55);
-  --chart-3: oklch(0.70 0.08 145);
-  --chart-4: oklch(0.60 0.15 25);
-  --chart-5: oklch(0.55 0.10 200);
-  /* #F5F0E6 sidebar */
-  --sidebar: oklch(0.95 0.015 85);
-  --sidebar-foreground: oklch(0.45 0.01 50);
-  --sidebar-primary: oklch(0.63 0.24 27);
-  --sidebar-primary-foreground: oklch(0.98 0 0);
-  --sidebar-accent: oklch(0.63 0.24 27);
-  --sidebar-accent-foreground: oklch(0.98 0 0);
-  --sidebar-border: oklch(0.30 0 0);
-  --sidebar-ring: oklch(0.63 0.24 27);
-  /* Sharp corners */
-  --radius: 0px;
-}
-
-/* Retro Dark Theme - matching prototype exactly */
-.retro-dark {
-  /* #18181b zinc-900 deep black background */
-  --background: #18181b;
-  --foreground: #e4e4e7;
-  /* #27272a zinc-800 dark grey for cards */
-  --card: #27272a;
-  --card-foreground: #e4e4e7;
-  --popover: #27272a;
-  --popover-foreground: #e4e4e7;
-  /* #EF4444 red primary */
-  --primary: #EF4444;
+  /* #f0f0f0 light gray background like NES console plastic */
+  --background: #f0f0f0;
+  /* #212529 dark text */
+  --foreground: #212529;
+  /* #ffffff white cards/surfaces */
+  --card: #ffffff;
+  --card-foreground: #212529;
+  --popover: #ffffff;
+  --popover-foreground: #212529;
+  /* #ce372b NES red primary */
+  --primary: #ce372b;
   --primary-foreground: #ffffff;
-  --secondary: #27272a;
-  --secondary-foreground: #e4e4e7;
-  --muted: #3f3f46;
-  --muted-foreground: #a1a1aa;
-  --accent: #3f3f46;
-  --accent-foreground: #e4e4e7;
-  --destructive: #dc2626;
-  /* #71717a zinc-500 lighter grey borders */
-  --border: #71717a;
-  --input: #27272a;
-  --ring: #EF4444;
-  --chart-1: #EF4444;
-  --chart-2: #f97316;
-  --chart-3: #84cc16;
-  --chart-4: #a855f7;
-  --chart-5: #06b6d4;
-  /* #27272a zinc-800 sidebar */
-  --sidebar: #27272a;
-  --sidebar-foreground: #a1a1aa;
-  --sidebar-primary: #EF4444;
+  --secondary: #e4e4e4;
+  --secondary-foreground: #212529;
+  --muted: #e4e4e4;
+  --muted-foreground: #6c757d;
+  --accent: #209cee;
+  --accent-foreground: #ffffff;
+  --destructive: #ce372b;
+  /* #000000 black borders */
+  --border: #000000;
+  --input: #ffffff;
+  --ring: #ce372b;
+  /* NES accent colors for charts - red, blue, green, gray */
+  --chart-1: #ce372b;
+  --chart-2: #209cee;
+  --chart-3: #92cc41;
+  --chart-4: #6c757d;
+  --chart-5: #495057;
+  /* #e4e4e4 darker gray sidebar */
+  --sidebar: #e4e4e4;
+  --sidebar-foreground: #212529;
+  --sidebar-primary: #ce372b;
   --sidebar-primary-foreground: #ffffff;
-  /* #991b1b dark red-800 for active state */
-  --sidebar-accent: #991b1b;
-  --sidebar-accent-foreground: #ffffff;
-  --sidebar-border: #71717a;
-  --sidebar-ring: #EF4444;
+  --sidebar-accent: #ffffff;
+  --sidebar-accent-foreground: #212529;
+  --sidebar-border: #000000;
+  --sidebar-ring: #ce372b;
   /* Sharp corners */
   --radius: 0px;
+  /* NES accent color variables - red, blue, green */
+  --nes-red: #ce372b;
+  --nes-blue: #209cee;
+  --nes-green: #92cc41;
+  /* Tailwind color- prefix versions */
+  --color-nes-red: #ce372b;
+  --color-nes-blue: #209cee;
+  --color-nes-green: #92cc41;
 }
 
-/* Retro theme fonts - Space Mono for body, VT323 for display */
+/* Retro Dark Theme - NES Console Style Dark */
+.retro-dark {
+  /* #212529 dark background */
+  --background: #212529;
+  --foreground: #ffffff;
+  /* #000000 black for cards - like NES cartridge */
+  --card: #000000;
+  --card-foreground: #ffffff;
+  --popover: #000000;
+  --popover-foreground: #ffffff;
+  /* #ce372b NES red primary */
+  --primary: #ce372b;
+  --primary-foreground: #ffffff;
+  --secondary: #343a40;
+  --secondary-foreground: #ffffff;
+  --muted: #343a40;
+  --muted-foreground: #adb5bd;
+  --accent: #209cee;
+  --accent-foreground: #ffffff;
+  --destructive: #ce372b;
+  /* #ffffff white borders for dark theme */
+  --border: #ffffff;
+  --input: #000000;
+  --ring: #ce372b;
+  /* NES accent colors for charts - red, blue, green, gray */
+  --chart-1: #ce372b;
+  --chart-2: #209cee;
+  --chart-3: #92cc41;
+  --chart-4: #adb5bd;
+  --chart-5: #6c757d;
+  /* #000000 black sidebar */
+  --sidebar: #000000;
+  --sidebar-foreground: #adb5bd;
+  --sidebar-primary: #ce372b;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #343a40;
+  --sidebar-accent-foreground: #ffffff;
+  --sidebar-border: #ffffff;
+  --sidebar-ring: #ce372b;
+  /* Sharp corners */
+  --radius: 0px;
+  /* NES accent color variables - red, blue, green */
+  --nes-red: #ce372b;
+  --nes-blue: #209cee;
+  --nes-green: #92cc41;
+  /* Tailwind color- prefix versions */
+  --color-nes-red: #ce372b;
+  --color-nes-blue: #209cee;
+  --color-nes-green: #92cc41;
+}
+
+/* Retro theme fonts - VT323 for body text */
 .retro-light,
 .retro-dark {
-  font-family: var(--font-mono-retro), 'Space Mono', monospace;
+  font-family: var(--font-pixel), 'VT323', monospace;
+  font-size: 1.25rem;
+  line-height: 1.4;
 }
 
-/* VT323 for headings in retro themes */
+/* Press Start 2P for headings in retro themes - authentic NES style */
 .retro-light h1, .retro-light h2, .retro-light h3,
 .retro-dark h1, .retro-dark h2, .retro-dark h3 {
-  font-family: var(--font-pixel), 'VT323', monospace;
+  font-family: var(--font-nes), 'Press Start 2P', cursive;
   text-transform: uppercase;
   letter-spacing: 0.02em;
+  line-height: 1.6;
+}
+
+/* Smaller text size for NES font headings */
+.retro-light h1, .retro-dark h1 {
+  font-size: 1.5rem;
+}
+.retro-light h2, .retro-dark h2 {
+  font-size: 1rem;
+}
+.retro-light h3, .retro-dark h3 {
+  font-size: 0.75rem;
 }
 
 /* Material Symbols styling for retro themes */
@@ -220,48 +252,82 @@
   font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
 }
 
-/* Retro shadow utilities */
-.retro-light .shadow-retro {
-  box-shadow: 4px 4px 0px 0px rgba(0, 0, 0, 1);
+/* NES-style shadow utilities */
+.retro-light .shadow-retro,
+.retro-light .shadow-nes {
+  box-shadow: 4px 4px 0px 0px #000000;
 }
-.retro-light .shadow-retro-sm {
-  box-shadow: 2px 2px 0px 0px rgba(0, 0, 0, 1);
+.retro-light .shadow-retro-sm,
+.retro-light .shadow-nes-hover {
+  box-shadow: 2px 2px 0px 0px #000000;
 }
-.retro-dark .shadow-retro {
-  box-shadow: 4px 4px 0px 0px rgba(0, 0, 0, 1);
+.retro-dark .shadow-retro,
+.retro-dark .shadow-nes {
+  box-shadow: 4px 4px 0px 0px #ffffff;
 }
-.retro-dark .shadow-retro-sm {
-  box-shadow: 2px 2px 0px 0px rgba(0, 0, 0, 1);
+.retro-dark .shadow-retro-sm,
+.retro-dark .shadow-nes-hover {
+  box-shadow: 2px 2px 0px 0px #ffffff;
 }
 
-/* Override default shadows in retro themes */
+/* Override default shadows in retro themes - NES style */
 .retro-light .shadow-sm,
 .retro-light .shadow {
-  box-shadow: 4px 4px 0px 0px rgba(0, 0, 0, 1);
+  box-shadow: 4px 4px 0px 0px #000000;
 }
 .retro-dark .shadow-sm,
 .retro-dark .shadow {
-  box-shadow: 4px 4px 0px 0px rgba(0, 0, 0, 1);
+  box-shadow: 4px 4px 0px 0px #000000;
 }
 
-/* Thicker borders in retro themes */
+/* Thicker borders in retro themes - NES style 4px */
 .retro-light .border,
 .retro-dark .border {
-  border-width: 2px;
+  border-width: 4px;
 }
 
-/* Scanline effect for retro themes */
-.retro-light .scanlines,
-.retro-dark .scanlines {
-  background: linear-gradient(
-    to bottom,
-    rgba(255, 255, 255, 0),
-    rgba(255, 255, 255, 0) 50%,
-    rgba(0, 0, 0, 0.02) 50%,
-    rgba(0, 0, 0, 0.02)
-  );
-  background-size: 100% 4px;
-  pointer-events: none;
+/* NES-style scrollbar for retro-light */
+.retro-light ::-webkit-scrollbar {
+  width: 16px;
+}
+.retro-light ::-webkit-scrollbar-track {
+  background: #e4e4e4;
+  border-left: 4px solid #000;
+}
+.retro-light ::-webkit-scrollbar-thumb {
+  background: #ce372b;
+  border: 4px solid #000;
+}
+
+/* NES-style scrollbar for retro-dark */
+.retro-dark ::-webkit-scrollbar {
+  width: 16px;
+}
+.retro-dark ::-webkit-scrollbar-track {
+  background: #212529;
+  border-left: 4px solid #fff;
+}
+.retro-dark ::-webkit-scrollbar-thumb {
+  background: #ce372b;
+  border: 4px solid #fff;
+}
+
+/* NES-style button interactions for retro themes */
+.retro-light button:active,
+.retro-dark button:active {
+  transform: translate(4px, 4px);
+  box-shadow: none !important;
+}
+
+/* Blink animation for retro themes */
+@keyframes blink {
+  0% { opacity: 1; }
+  50% { opacity: 0; }
+  100% { opacity: 1; }
+}
+.retro-light .blink,
+.retro-dark .blink {
+  animation: blink 1s infinite;
 }
 
 @layer base {

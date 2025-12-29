@@ -1,4 +1,4 @@
-import { Inter as FontSans, VT323, Space_Mono } from "next/font/google"
+import { Inter as FontSans, VT323, Space_Mono, Press_Start_2P } from "next/font/google"
 
 import "@/styles/globals.css"
 import { siteConfig } from "@/config/site"
@@ -25,6 +25,12 @@ const fontMono = Space_Mono({
   weight: ["400", "700"],
   subsets: ["latin"],
   variable: "--font-mono-retro",
+})
+
+const fontNes = Press_Start_2P({
+  weight: "400",
+  subsets: ["latin"],
+  variable: "--font-nes",
 })
 
 interface RootLayoutProps {
@@ -115,7 +121,8 @@ export default function RootLayout({ children }: RootLayoutProps) {
           "min-h-screen bg-background font-sans antialiased",
           fontSans.variable,
           fontPixel.variable,
-          fontMono.variable
+          fontMono.variable,
+          fontNes.variable
         )}
       >
         <ThemeProvider
