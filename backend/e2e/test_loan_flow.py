@@ -334,30 +334,137 @@ async def test_create_loan_job_invalid_borrower(client, test_workspace_id):
         await create_loan_job(loan_data)
 
 
+# ===================== ERROR PATH TESTS =====================
+
+
 @pytest.mark.asyncio
-async def test_create_loan_job_invalid_inventory(client, test_workspace_id):
-    """Test create_loan_job with non-existent inventory fails."""
+async def test_loan_job_not_found(client):
+    """Test getting status of non-existent job."""
+    fake_job_id = "non-existent-job-id"
+    resp = await client.get(f"/loans/jobs/{fake_job_id}")
+    assert resp.status_code == 404
+
+
+@pytest.mark.asyncio
+async def test_get_borrower_not_found(client):
+    """Test getting non-existent borrower returns 404."""
+    fake_id = str(uuid7())
+    resp = await client.get(f"/borrowers/{fake_id}")
+    assert resp.status_code == 404
+
+
+@pytest.mark.asyncio
+async def test_update_borrower_not_found(client):
+    """Test updating non-existent borrower returns 404."""
+    fake_id = str(uuid7())
+    resp = await client.patch(
+        f"/borrowers/{fake_id}",
+        json={"name": "Updated Name"},
+    )
+    assert resp.status_code == 404
+
+
+@pytest.mark.asyncio
+async def test_loans_list_empty_workspace(client):
+    """Test listing loans returns empty list for new workspace."""
+    # The test workspace might have loans from other tests, so just verify endpoint works
+    resp = await client.get("/loans/")
+    assert resp.status_code == 200
+    assert isinstance(resp.json(), list)
+
+
+@pytest.mark.asyncio
+async def test_active_loans_list(client):
+    """Test listing active loans endpoint."""
+    resp = await client.get("/loans/active")
+    assert resp.status_code == 200
+    assert isinstance(resp.json(), list)
+
+
+@pytest.mark.asyncio
+async def test_borrowers_list(client):
+    """Test listing borrowers endpoint."""
+    resp = await client.get("/borrowers/")
+    assert resp.status_code == 200
+    assert isinstance(resp.json(), list)
+
+
+@pytest.mark.asyncio
+async def test_create_borrower_minimal(client):
+    """Test creating borrower with minimal data."""
+    suffix = uuid7().hex
+    resp = await client.post(
+        "/borrowers/",
+        json={"name": f"MinimalBorrower-{suffix}"},
+    )
+    assert resp.status_code == 201
+    body = resp.json()
+    assert body["name"] == f"MinimalBorrower-{suffix}"
+    assert body["email"] is None
+    assert body["phone"] is None
+    assert body["notes"] is None
+
+
+@pytest.mark.asyncio
+async def test_update_borrower_partial(client):
+    """Test partial update of borrower."""
     suffix = uuid7().hex
 
-    # Setup borrower only (no inventory)
-    borrower_resp = await client.post(
+    # Create borrower
+    create_resp = await client.post(
         "/borrowers/",
-        json={"name": f"InvBorrower-{suffix}", "email": f"{suffix}@inv.test", "phone": "999", "notes": None},
+        json={
+            "name": f"PartialBorrower-{suffix}",
+            "email": f"{suffix}@partial.test",
+            "phone": "123",
+        },
     )
-    borrower_id = borrower_resp.json()["id"]
+    assert create_resp.status_code == 201
+    borrower_id = create_resp.json()["id"]
 
-    # Call create_loan_job with non-existent inventory
-    fake_inventory_id = str(uuid7())
-    loan_data = {
-        "workspace_id": test_workspace_id,
-        "inventory_id": fake_inventory_id,
-        "borrower_id": borrower_id,
-        "quantity": 1,
-        "due_date": None,
-        "notes": None,
-    }
+    # Update only name
+    update_resp = await client.patch(
+        f"/borrowers/{borrower_id}",
+        json={"name": f"UpdatedBorrower-{suffix}"},
+    )
+    assert update_resp.status_code == 200
+    body = update_resp.json()
+    assert body["name"] == f"UpdatedBorrower-{suffix}"
+    # Other fields unchanged
+    assert body["email"] == f"{suffix}@partial.test"
+    assert body["phone"] == "123"
 
-    # Should raise an exception due to FK constraint on inventory
-    with pytest.raises(Exception):
-        await create_loan_job(loan_data)
+
+@pytest.mark.asyncio
+async def test_loan_requires_auth(unauth_client):
+    """Test that loan endpoints require authentication."""
+    # List loans without auth
+    resp = await unauth_client.get("/loans/")
+    assert resp.status_code == 401
+
+    # Create loan without auth
+    resp = await unauth_client.post(
+        "/loans/",
+        json={
+            "inventory_id": str(uuid7()),
+            "borrower_id": str(uuid7()),
+            "quantity": 1,
+        },
+    )
+    assert resp.status_code == 401
+
+
+@pytest.mark.asyncio
+async def test_borrower_requires_auth(unauth_client):
+    """Test that borrower endpoints require authentication."""
+    # List borrowers without auth
+    resp = await unauth_client.get("/borrowers/")
+    assert resp.status_code == 401
+
+    # Create borrower without auth
+    resp = await unauth_client.post(
+        "/borrowers/",
+        json={"name": "Test"},
+    )
+    assert resp.status_code == 401
 

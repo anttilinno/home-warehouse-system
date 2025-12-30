@@ -250,3 +250,178 @@ async def test_search_users_flow(client):
     # Should find at least the current user
     assert len(results) >= 1
 
+
+# ===================== ERROR PATH TESTS =====================
+
+
+@pytest.mark.asyncio
+async def test_get_me_invalid_token(client):
+    """Test getting current user with invalid token."""
+    resp = await client.get(
+        "/auth/me",
+        headers={"Authorization": "Bearer invalid-token"},
+    )
+    assert resp.status_code == 401
+
+
+@pytest.mark.asyncio
+async def test_get_my_workspaces_invalid_token(client):
+    """Test getting workspaces with invalid token."""
+    resp = await client.get(
+        "/auth/me/workspaces",
+        headers={"Authorization": "Bearer invalid-token"},
+    )
+    assert resp.status_code == 401
+
+
+@pytest.mark.asyncio
+async def test_change_password_wrong_current(client):
+    """Test changing password with wrong current password."""
+    token, user, payload = await _register_and_login(client)
+
+    resp = await client.post(
+        "/auth/me/password",
+        json={"current_password": "wrongpassword", "new_password": "newpassword"},
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    # Wrong current password returns 400 (bad request)
+    assert resp.status_code == 400
+
+
+@pytest.mark.asyncio
+async def test_update_profile_invalid_token(client):
+    """Test updating profile with invalid token."""
+    resp = await client.patch(
+        "/auth/me",
+        json={"full_name": "New Name"},
+        headers={"Authorization": "Bearer invalid-token"},
+    )
+    assert resp.status_code == 401
+
+
+@pytest.mark.asyncio
+async def test_login_nonexistent_user(client):
+    """Test login with non-existent email."""
+    resp = await client.post(
+        "/auth/login",
+        json={"email": "nonexistent@example.com", "password": "password"},
+    )
+    assert resp.status_code == 401
+
+
+@pytest.mark.asyncio
+async def test_get_workspace_members_not_found(client):
+    """Test getting members of non-existent workspace."""
+    token, _, _ = await _register_and_login(client)
+    fake_id = str(uuid7())
+
+    resp = await client.get(
+        f"/auth/workspaces/{fake_id}/members",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    assert resp.status_code == 404
+
+
+@pytest.mark.asyncio
+async def test_invite_nonexistent_user(client):
+    """Test inviting non-existent user to workspace."""
+    token, _, _ = await _register_and_login(client)
+
+    # Create workspace
+    workspace_resp = await client.post(
+        "/auth/workspaces",
+        json={"name": f"Invite Test {uuid7().hex[:8]}"},
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    workspace_id = workspace_resp.json()["id"]
+
+    # Try to invite non-existent user
+    resp = await client.post(
+        f"/auth/workspaces/{workspace_id}/members",
+        json={"email": "nonexistent@example.com", "role": "member"},
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    assert resp.status_code == 404
+
+
+@pytest.mark.asyncio
+async def test_invite_already_member(client):
+    """Test inviting user who is already a member."""
+    owner_token, owner_user, _ = await _register_and_login(client)
+    member_token, member_user, _ = await _register_and_login(client)
+
+    # Create workspace and invite member
+    workspace_resp = await client.post(
+        "/auth/workspaces",
+        json={"name": f"Already Member Test {uuid7().hex[:8]}"},
+        headers={"Authorization": f"Bearer {owner_token}"},
+    )
+    workspace_id = workspace_resp.json()["id"]
+
+    # First invite
+    first_invite = await client.post(
+        f"/auth/workspaces/{workspace_id}/members",
+        json={"email": member_user["email"], "role": "member"},
+        headers={"Authorization": f"Bearer {owner_token}"},
+    )
+    assert first_invite.status_code == 201
+
+    # Second invite - already a member
+    second_invite = await client.post(
+        f"/auth/workspaces/{workspace_id}/members",
+        json={"email": member_user["email"], "role": "admin"},
+        headers={"Authorization": f"Bearer {owner_token}"},
+    )
+    assert second_invite.status_code == 400
+
+
+@pytest.mark.asyncio
+async def test_remove_member_not_found(client):
+    """Test removing non-existent member from workspace."""
+    token, _, _ = await _register_and_login(client)
+
+    # Create workspace
+    workspace_resp = await client.post(
+        "/auth/workspaces",
+        json={"name": f"Remove Test {uuid7().hex[:8]}"},
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    workspace_id = workspace_resp.json()["id"]
+
+    # Try to remove non-existent member
+    fake_user_id = str(uuid7())
+    resp = await client.delete(
+        f"/auth/workspaces/{workspace_id}/members/{fake_user_id}",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    assert resp.status_code == 404
+
+
+
+
+@pytest.mark.asyncio
+async def test_auth_endpoints_require_token(unauth_client):
+    """Test that protected auth endpoints require token."""
+    # Get me without auth
+    resp = await unauth_client.get("/auth/me")
+    assert resp.status_code == 401
+
+    # Get workspaces without auth
+    resp = await unauth_client.get("/auth/me/workspaces")
+    assert resp.status_code == 401
+
+    # Update profile without auth
+    resp = await unauth_client.patch("/auth/me", json={"full_name": "Test"})
+    assert resp.status_code == 401
+
+    # Change password without auth
+    resp = await unauth_client.post(
+        "/auth/me/password",
+        json={"current_password": "old", "new_password": "new"},
+    )
+    assert resp.status_code == 401
+
+    # Create workspace without auth
+    resp = await unauth_client.post("/auth/workspaces", json={"name": "Test"})
+    assert resp.status_code == 401
+
