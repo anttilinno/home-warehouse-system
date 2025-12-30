@@ -1,0 +1,357 @@
+/* ==========================================================================
+   Retro Theme
+   NES-style theme variables, typography, shadows, and effects
+   ========================================================================== */
+
+/* ==========================================================================
+   Theme Variables
+   ========================================================================== */
+
+/* Retro Light Theme - NES Console Style */
+.retro-light {
+  /* #f0f0f0 light gray background like NES console plastic */
+  --background: #f0f0f0;
+  /* #212529 dark text */
+  --foreground: #212529;
+  /* #ffffff white cards/surfaces */
+  --card: #ffffff;
+  --card-foreground: #212529;
+  --popover: #ffffff;
+  --popover-foreground: #212529;
+  /* #ce372b NES red primary */
+  --primary: #ce372b;
+  --primary-foreground: #ffffff;
+  --secondary: #e4e4e4;
+  --secondary-foreground: #212529;
+  --muted: #e4e4e4;
+  --muted-foreground: #6c757d;
+  --accent: #209cee;
+  --accent-foreground: #ffffff;
+  --destructive: #ce372b;
+  /* #000000 black borders */
+  --border: #000000;
+  --input: #ffffff;
+  --ring: #ce372b;
+  /* NES accent colors for charts */
+  --chart-1: #ce372b;
+  --chart-2: #209cee;
+  --chart-3: #92cc41;
+  --chart-4: #6c757d;
+  --chart-5: #495057;
+  /* #e4e4e4 darker gray sidebar */
+  --sidebar: #e4e4e4;
+  --sidebar-foreground: #212529;
+  --sidebar-primary: #ce372b;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #ffffff;
+  --sidebar-accent-foreground: #212529;
+  --sidebar-border: #000000;
+  --sidebar-ring: #ce372b;
+  /* Sharp corners */
+  --radius: 0px;
+  /* NES accent color variables */
+  --nes-red: #ce372b;
+  --nes-blue: #209cee;
+  --nes-green: #92cc41;
+  --nes-yellow: #f7d51d;
+  /* Tailwind color- prefix versions */
+  --color-nes-red: #ce372b;
+  --color-nes-blue: #209cee;
+  --color-nes-green: #92cc41;
+  --color-nes-yellow: #f7d51d;
+}
+
+/* Retro Dark Theme - NES Console Style Dark */
+.retro-dark {
+  /* #212529 dark background */
+  --background: #212529;
+  --foreground: #ffffff;
+  /* #000000 black for cards - like NES cartridge */
+  --card: #000000;
+  --card-foreground: #ffffff;
+  --popover: #000000;
+  --popover-foreground: #ffffff;
+  /* #ce372b NES red primary */
+  --primary: #ce372b;
+  --primary-foreground: #ffffff;
+  --secondary: #343a40;
+  --secondary-foreground: #ffffff;
+  --muted: #343a40;
+  --muted-foreground: #adb5bd;
+  --accent: #209cee;
+  --accent-foreground: #ffffff;
+  --destructive: #ce372b;
+  /* #ffffff white borders for dark theme */
+  --border: #ffffff;
+  --input: #000000;
+  --ring: #ce372b;
+  /* NES accent colors for charts */
+  --chart-1: #ce372b;
+  --chart-2: #209cee;
+  --chart-3: #92cc41;
+  --chart-4: #adb5bd;
+  --chart-5: #6c757d;
+  /* #000000 black sidebar */
+  --sidebar: #000000;
+  --sidebar-foreground: #adb5bd;
+  --sidebar-primary: #ce372b;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #343a40;
+  --sidebar-accent-foreground: #ffffff;
+  --sidebar-border: #ffffff;
+  --sidebar-ring: #ce372b;
+  /* Sharp corners */
+  --radius: 0px;
+  /* NES accent color variables */
+  --nes-red: #ce372b;
+  --nes-blue: #209cee;
+  --nes-green: #92cc41;
+  --nes-yellow: #f7d51d;
+  /* Tailwind color- prefix versions */
+  --color-nes-red: #ce372b;
+  --color-nes-blue: #209cee;
+  --color-nes-green: #92cc41;
+  --color-nes-yellow: #f7d51d;
+}
+
+/* ==========================================================================
+   Retro Typography
+   ========================================================================== */
+
+/* Base font for retro themes - VT323 for body text */
+.retro-light,
+.retro-dark {
+  font-family: var(--font-pixel), 'VT323', monospace;
+  font-size: 1.25rem;
+  line-height: 1.4;
+}
+
+/* Press Start 2P for headings - authentic NES style */
+.retro-light h1, .retro-light h2, .retro-light h3,
+.retro-dark h1, .retro-dark h2, .retro-dark h3 {
+  font-family: var(--font-nes), 'Press Start 2P', cursive;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  line-height: 1.6;
+}
+
+/* Heading sizes */
+.retro-light h1, .retro-dark h1 {
+  font-size: 1.5rem;
+}
+.retro-light h2, .retro-dark h2 {
+  font-size: 1rem;
+}
+.retro-light h3, .retro-dark h3 {
+  font-size: 0.75rem;
+}
+
+/* ==========================================================================
+   Typography Utility Classes
+   Using Tailwind CSS 4 @utility directive for @apply support
+   ========================================================================== */
+
+@utility retro-heading {
+  font-family: var(--font-pixel);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  font-weight: bold;
+}
+
+@utility retro-body {
+  font-family: var(--font-pixel);
+  font-size: 1rem;
+}
+
+@utility retro-small {
+  font-family: var(--font-pixel);
+  font-size: 0.875rem;
+}
+
+@utility retro-caption {
+  font-family: var(--font-pixel);
+  font-size: 0.75rem;
+}
+
+@utility retro-title {
+  font-family: var(--font-nes);
+  font-size: 1.125rem;
+  text-transform: uppercase;
+  font-weight: bold;
+}
+
+@utility retro-nav {
+  font-family: var(--font-nes);
+  font-size: 0.625rem;
+  text-transform: uppercase;
+  font-weight: bold;
+}
+
+@utility retro-divider {
+  font-family: var(--font-nes);
+  font-size: 0.5rem;
+  text-transform: uppercase;
+  font-weight: bold;
+}
+
+@utility retro-stat {
+  font-family: var(--font-pixel);
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+
+@utility retro-badge {
+  font-family: var(--font-pixel);
+  font-size: 0.625rem;
+  text-transform: uppercase;
+}
+
+@utility retro-button {
+  font-family: var(--font-pixel);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  font-weight: bold;
+}
+
+/* ==========================================================================
+   Shadow Utilities
+   ========================================================================== */
+
+.retro-shadow {
+  box-shadow: 4px 4px 0px 0px var(--border);
+}
+
+.retro-shadow-md {
+  box-shadow: 3px 3px 0px 0px var(--border);
+}
+
+.retro-shadow-sm {
+  box-shadow: 2px 2px 0px 0px var(--border);
+}
+
+/* NES-style shadow utilities */
+.retro-light .shadow-retro,
+.retro-light .shadow-nes {
+  box-shadow: 4px 4px 0px 0px #000000;
+}
+.retro-light .shadow-retro-sm,
+.retro-light .shadow-nes-hover {
+  box-shadow: 2px 2px 0px 0px #000000;
+}
+.retro-dark .shadow-retro,
+.retro-dark .shadow-nes {
+  box-shadow: 4px 4px 0px 0px #ffffff;
+}
+.retro-dark .shadow-retro-sm,
+.retro-dark .shadow-nes-hover {
+  box-shadow: 2px 2px 0px 0px #ffffff;
+}
+
+/* Override default shadows in retro themes */
+.retro-light .shadow-sm,
+.retro-light .shadow {
+  box-shadow: 4px 4px 0px 0px #000000;
+}
+.retro-dark .shadow-sm,
+.retro-dark .shadow {
+  box-shadow: 4px 4px 0px 0px #000000;
+}
+
+/* ==========================================================================
+   Hover & Interaction Effects
+   ========================================================================== */
+
+.retro-hover {
+  transition: all 150ms ease;
+}
+
+.retro-hover:hover {
+  transform: translate(2px, 2px);
+  box-shadow: 2px 2px 0px 0px var(--border);
+}
+
+.retro-hover:active {
+  transform: translate(4px, 4px);
+  box-shadow: none;
+}
+
+/* NES-style button interactions */
+.retro-light button:active,
+.retro-dark button:active {
+  transform: translate(4px, 4px);
+  box-shadow: none !important;
+}
+
+/* ==========================================================================
+   Border Overrides
+   ========================================================================== */
+
+/* Thicker borders in retro themes - NES style 4px */
+.retro-light .border,
+.retro-dark .border {
+  border-width: 4px;
+}
+
+/* ==========================================================================
+   Scrollbars
+   ========================================================================== */
+
+/* NES-style scrollbar for retro-light */
+.retro-light ::-webkit-scrollbar {
+  width: 16px;
+}
+.retro-light ::-webkit-scrollbar-track {
+  background: #e4e4e4;
+  border-left: 4px solid #000;
+}
+.retro-light ::-webkit-scrollbar-thumb {
+  background: #ce372b;
+  border: 4px solid #000;
+}
+
+/* NES-style scrollbar for retro-dark */
+.retro-dark ::-webkit-scrollbar {
+  width: 16px;
+}
+.retro-dark ::-webkit-scrollbar-track {
+  background: #212529;
+  border-left: 4px solid #fff;
+}
+.retro-dark ::-webkit-scrollbar-thumb {
+  background: #ce372b;
+  border: 4px solid #fff;
+}
+
+/* ==========================================================================
+   Material Symbols (Icons)
+   ========================================================================== */
+
+.retro-light .material-symbols-outlined,
+.retro-dark .material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
+
+/* ==========================================================================
+   Animations
+   ========================================================================== */
+
+@keyframes blink {
+  0% { opacity: 1; }
+  50% { opacity: 0; }
+  100% { opacity: 1; }
+}
+
+.retro-light .blink,
+.retro-dark .blink {
+  animation: blink 1s infinite;
+}
+
+/* ==========================================================================
+   Base Card Style
+   ========================================================================== */
+
+.retro-card {
+  background-color: var(--card);
+  border: 4px solid var(--border);
+  box-shadow: 4px 4px 0px 0px var(--border);
+}

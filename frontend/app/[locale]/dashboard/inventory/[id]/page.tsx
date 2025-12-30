@@ -171,7 +171,7 @@ export default function InventoryEditPage() {
   // Retro theme UI
   if (isRetro) {
     return (
-      <div className="max-w-2xl mx-auto">
+      <div className="w-full">
         {/* Header */}
         <div className="mb-8">
           <button
@@ -287,7 +287,7 @@ export default function InventoryEditPage() {
   }
 
   return (
-    <div className="max-w-2xl mx-auto">
+    <div className="w-full">
       {/* Header */}
       <div className="mb-8">
         <button

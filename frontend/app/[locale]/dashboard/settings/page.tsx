@@ -13,6 +13,17 @@ import { workspacesApi, WorkspaceMember, UserSearchResult, getTranslatedErrorMes
 import { Link } from "@/navigation";
 import { cn } from "@/lib/utils";
 import { NES_GREEN, NES_BLUE, NES_RED, NES_YELLOW } from "@/lib/nes-colors";
+import {
+  RetroPageHeader,
+  RetroButton,
+  RetroModal,
+  RetroFormGroup,
+  RetroLabel,
+  RetroInput,
+  RetroTextarea,
+  RetroSelect,
+  RetroError,
+} from "@/components/retro";
 
 const roleIconNames: Record<string, IconName> = {
   owner: "Crown",
@@ -256,19 +267,12 @@ export default function SettingsPage() {
   if (isRetro) {
     return (
       <>
-        {/* Header */}
-        <div className="mb-8">
-          <div className="bg-primary p-4 border-4 border-border retro-shadow">
-            <h1 className="text-lg font-bold text-white uppercase retro-heading">
-              {t("title")}
-            </h1>
-            <p className="text-white/80 retro-body retro-small uppercase mt-1">
-              {t("subtitle")}
-            </p>
-          </div>
-        </div>
+        <RetroPageHeader
+          title={t("title")}
+          subtitle={t("subtitle")}
+        />
 
-        <div className="grid gap-6 max-w-2xl">
+        <div className="grid gap-6 w-full">
           {/* Workspace Card */}
           <div className="bg-card p-6 border-4 border-border retro-shadow">
             <div className="flex items-center justify-between mb-4">
@@ -434,379 +438,295 @@ export default function SettingsPage() {
         </div>
 
         {/* Create Workspace Modal */}
-        {showCreateModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-            <div className="bg-card border-4 border-border retro-shadow w-full max-w-md mx-4 p-6">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-sm font-bold uppercase retro-heading text-foreground">{t("createWorkspace")}</h3>
-                <button
-                  onClick={() => setShowCreateModal(false)}
-                  className="text-muted-foreground hover:text-foreground"
-                >
-                  <Icon name="X" className="w-5 h-5" />
-                </button>
-              </div>
+        <RetroModal open={showCreateModal} onClose={() => setShowCreateModal(false)}>
+          <RetroModal.Header title={t("createWorkspace")} onClose={() => setShowCreateModal(false)} />
+          <form onSubmit={handleCreateWorkspace}>
+            <RetroModal.Body>
+              <RetroFormGroup>
+                <RetroLabel>{t("workspaceName")} *</RetroLabel>
+                <RetroInput
+                  type="text"
+                  value={newWorkspaceName}
+                  onChange={(e) => setNewWorkspaceName(e.target.value)}
+                  required
+                  placeholder={t("workspaceNamePlaceholder")}
+                />
+              </RetroFormGroup>
 
-              <form onSubmit={handleCreateWorkspace} className="space-y-4">
-                <div>
-                  <label className="block retro-small uppercase font-bold text-foreground mb-1 retro-body">
-                    {t("workspaceName")} *
-                  </label>
-                  <input
-                    type="text"
-                    value={newWorkspaceName}
-                    onChange={(e) => setNewWorkspaceName(e.target.value)}
-                    required
-                    className="w-full px-3 py-2 border-4 border-border bg-background text-foreground retro-body retro-small focus:outline-none"
-                    placeholder={t("workspaceNamePlaceholder")}
-                  />
-                </div>
+              <RetroFormGroup>
+                <RetroLabel>{t("workspaceDescriptionLabel")}</RetroLabel>
+                <RetroTextarea
+                  value={newWorkspaceDescription}
+                  onChange={(e) => setNewWorkspaceDescription(e.target.value)}
+                  rows={3}
+                  placeholder={t("workspaceDescriptionPlaceholder")}
+                />
+              </RetroFormGroup>
 
-                <div>
-                  <label className="block retro-small uppercase font-bold text-foreground mb-1 retro-body">
-                    {t("workspaceDescriptionLabel")}
-                  </label>
-                  <textarea
-                    value={newWorkspaceDescription}
-                    onChange={(e) => setNewWorkspaceDescription(e.target.value)}
-                    rows={3}
-                    className="w-full px-3 py-2 border-4 border-border bg-background text-foreground retro-body retro-small focus:outline-none resize-none"
-                    placeholder={t("workspaceDescriptionPlaceholder")}
-                  />
-                </div>
-
-                {createError && (
-                  <p className="retro-small uppercase retro-body" style={{ color: NES_RED }}>{createError}</p>
-                )}
-
-                <div className="flex justify-end gap-3">
-                  <button
-                    type="button"
-                    onClick={() => setShowCreateModal(false)}
-                    className="px-4 py-2 border-4 border-border bg-muted text-foreground retro-small uppercase font-bold retro-body retro-shadow-sm hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
-                  >
-                    {t("cancel")}
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={isCreating || !newWorkspaceName.trim()}
-                    className="px-4 py-2 border-4 border-border bg-primary text-white retro-small uppercase font-bold retro-body retro-shadow-sm hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all disabled:opacity-50"
-                  >
-                    {isCreating ? t("creating") : t("create")}
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
-        )}
+              {createError && <RetroError>{createError}</RetroError>}
+            </RetroModal.Body>
+            <RetroModal.Footer>
+              <RetroButton type="button" variant="secondary" onClick={() => setShowCreateModal(false)}>
+                {t("cancel")}
+              </RetroButton>
+              <RetroButton type="submit" variant="primary" disabled={isCreating || !newWorkspaceName.trim()}>
+                {isCreating ? t("creating") : t("create")}
+              </RetroButton>
+            </RetroModal.Footer>
+          </form>
+        </RetroModal>
 
         {/* Members Modal */}
-        {showMembersModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-            <div className="bg-card border-4 border-border retro-shadow w-full max-w-lg mx-4 p-6">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-sm font-bold uppercase retro-heading text-foreground">{t("workspaceMembers")}</h3>
-                <button
-                  onClick={() => setShowMembersModal(false)}
-                  className="text-muted-foreground hover:text-foreground"
-                >
-                  <Icon name="X" className="w-5 h-5" />
-                </button>
-              </div>
-
-              <div className="mb-4">
-                <button
-                  onClick={handleOpenInviteModal}
-                  className="flex items-center gap-2 px-3 py-2 border-4 border-border bg-primary text-white retro-small uppercase font-bold retro-body retro-shadow-sm hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
-                >
-                  <Icon name="UserPlus" className="w-4 h-4" />
-                  {t("inviteMember")}
-                </button>
-              </div>
-
-              {isLoadingMembers ? (
-                <div className="flex justify-center py-8">
-                  <div className="retro-small uppercase text-muted-foreground retro-body">Loading...</div>
-                </div>
-              ) : (
-                <div className="space-y-2 max-h-80 overflow-y-auto">
-                  {members.map((member) => {
-                    const roleIconName = roleIconNames[member.role] || "User";
-                    const canRemove = canManageMembers && member.role !== "owner";
-                    const isRemoving = removingMemberId === member.id;
-                    return (
-                      <div
-                        key={member.id}
-                        className="flex items-center justify-between p-3 bg-muted/50 border-4 border-dashed border-border"
-                      >
-                        <div>
-                          <p className="font-bold text-foreground retro-body retro-small">{member.full_name}</p>
-                          <p className="retro-small text-muted-foreground retro-body">{member.email}</p>
-                        </div>
-                        <div className="flex items-center gap-3">
-                          <div className="flex items-center gap-2 px-2 py-1 border-4 border-border bg-background retro-small uppercase retro-body">
-                            <Icon name={roleIconName} className="w-4 h-4 text-muted-foreground" />
-                            <span className="text-foreground">
-                              {t(`role${member.role.charAt(0).toUpperCase() + member.role.slice(1)}`)}
-                            </span>
-                          </div>
-                          {canRemove && (
-                            showRemoveConfirm === member.id ? (
-                              <div className="flex items-center gap-1">
-                                <button
-                                  onClick={() => handleRemoveMember(member.id)}
-                                  disabled={isRemoving}
-                                  className="px-2 py-1 border-4 border-border text-white text-xs uppercase font-bold retro-body disabled:opacity-50"
-                                  style={{ backgroundColor: NES_RED }}
-                                >
-                                  {isRemoving ? t("removing") : t("confirm")}
-                                </button>
-                                <button
-                                  onClick={() => setShowRemoveConfirm(null)}
-                                  className="px-2 py-1 border-4 border-border bg-muted text-foreground text-xs uppercase font-bold retro-body"
-                                >
-                                  {t("cancel")}
-                                </button>
-                              </div>
-                            ) : (
-                              <button
-                                onClick={() => setShowRemoveConfirm(member.id)}
-                                className="text-muted-foreground hover:text-destructive transition-colors"
-                                title={t("removeMember")}
-                              >
-                                <Icon name="UserMinus" className="w-4 h-4" />
-                              </button>
-                            )
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-
-              <div className="flex justify-end mt-4">
-                <button
-                  onClick={() => setShowMembersModal(false)}
-                  className="px-4 py-2 border-4 border-border bg-muted text-foreground retro-small uppercase font-bold retro-body retro-shadow-sm hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
-                >
-                  {t("close")}
-                </button>
-              </div>
+        <RetroModal open={showMembersModal} onClose={() => setShowMembersModal(false)} size="lg">
+          <RetroModal.Header title={t("workspaceMembers")} onClose={() => setShowMembersModal(false)} />
+          <RetroModal.Body>
+            <div className="mb-4">
+              <RetroButton variant="primary" onClick={handleOpenInviteModal}>
+                <Icon name="UserPlus" className="w-4 h-4" />
+                {t("inviteMember")}
+              </RetroButton>
             </div>
-          </div>
-        )}
+
+            {isLoadingMembers ? (
+              <div className="flex justify-center py-8">
+                <div className="retro-body text-muted-foreground">Loading...</div>
+              </div>
+            ) : (
+              <div className="space-y-2 max-h-80 overflow-y-auto">
+                {members.map((member) => {
+                  const roleIconName = roleIconNames[member.role] || "User";
+                  const canRemove = canManageMembers && member.role !== "owner";
+                  const isRemoving = removingMemberId === member.id;
+                  return (
+                    <div
+                      key={member.id}
+                      className="flex items-center justify-between p-3 bg-muted/50 border-4 border-dashed border-border"
+                    >
+                      <div>
+                        <p className="font-bold text-foreground retro-body">{member.full_name}</p>
+                        <p className="retro-body text-sm text-muted-foreground">{member.email}</p>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-2 px-2 py-1 border-4 border-border bg-background retro-body text-sm">
+                          <Icon name={roleIconName} className="w-4 h-4 text-muted-foreground" />
+                          <span className="text-foreground">
+                            {t(`role${member.role.charAt(0).toUpperCase() + member.role.slice(1)}`)}
+                          </span>
+                        </div>
+                        {canRemove && (
+                          showRemoveConfirm === member.id ? (
+                            <div className="flex items-center gap-1">
+                              <RetroButton
+                                size="xs"
+                                variant="danger"
+                                onClick={() => handleRemoveMember(member.id)}
+                                disabled={isRemoving}
+                              >
+                                {isRemoving ? t("removing") : t("confirm")}
+                              </RetroButton>
+                              <RetroButton
+                                size="xs"
+                                variant="secondary"
+                                onClick={() => setShowRemoveConfirm(null)}
+                              >
+                                {t("cancel")}
+                              </RetroButton>
+                            </div>
+                          ) : (
+                            <button
+                              onClick={() => setShowRemoveConfirm(member.id)}
+                              className="retro-icon-btn retro-icon-btn--danger"
+                              title={t("removeMember")}
+                            >
+                              <Icon name="UserMinus" className="w-4 h-4" />
+                            </button>
+                          )
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </RetroModal.Body>
+          <RetroModal.Footer>
+            <RetroButton variant="secondary" onClick={() => setShowMembersModal(false)}>
+              {t("close")}
+            </RetroButton>
+          </RetroModal.Footer>
+        </RetroModal>
 
         {/* Invite Member Modal */}
-        {showInviteModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-            <div className="bg-card border-4 border-border retro-shadow w-full max-w-md mx-4 p-6">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-sm font-bold uppercase retro-heading text-foreground">{t("inviteMember")}</h3>
-                <button
-                  onClick={() => setShowInviteModal(false)}
-                  className="text-muted-foreground hover:text-foreground"
-                >
-                  <Icon name="X" className="w-5 h-5" />
-                </button>
-              </div>
-
-              <form onSubmit={handleInviteMember} className="space-y-4">
-                <div className="relative">
-                  <label className="block retro-small uppercase font-bold text-foreground mb-1 retro-body">
-                    {t("email")} *
-                  </label>
-                  {selectedUser ? (
-                    <div className="flex items-center gap-2 px-3 py-2 border-4 border-border bg-muted/50">
-                      <div className="flex-1">
-                        <p className="font-bold text-foreground retro-body retro-small">{selectedUser.full_name}</p>
-                        <p className="retro-small text-muted-foreground retro-body">{selectedUser.email}</p>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={handleClearSelection}
-                        className="text-muted-foreground hover:text-foreground"
-                      >
-                        <Icon name="X" className="w-4 h-4" />
-                      </button>
+        <RetroModal open={showInviteModal} onClose={() => setShowInviteModal(false)}>
+          <RetroModal.Header title={t("inviteMember")} onClose={() => setShowInviteModal(false)} />
+          <form onSubmit={handleInviteMember}>
+            <RetroModal.Body>
+              <RetroFormGroup>
+                <RetroLabel>{t("email")} *</RetroLabel>
+                {selectedUser ? (
+                  <div className="flex items-center gap-2 px-3 py-2 border-4 border-border bg-muted/50">
+                    <div className="flex-1">
+                      <p className="font-bold text-foreground retro-body">{selectedUser.full_name}</p>
+                      <p className="retro-body text-sm text-muted-foreground">{selectedUser.email}</p>
                     </div>
-                  ) : (
-                    <div className="relative">
-                      <input
-                        type="text"
-                        value={searchQuery}
-                        onChange={(e) => {
-                          setSearchQuery(e.target.value);
-                          setShowDropdown(true);
-                        }}
-                        onFocus={() => setShowDropdown(true)}
-                        className="w-full px-3 py-2 border-4 border-border bg-background text-foreground retro-body retro-small focus:outline-none"
-                        placeholder={t("searchOrEnterEmail")}
-                      />
-                      {isLoadingUsers && (
-                        <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                          <div className="retro-small text-muted-foreground retro-body">...</div>
-                        </div>
-                      )}
-                      {showDropdown && !isLoadingUsers && (
-                        <div className="absolute z-10 w-full mt-1 bg-card border-4 border-border retro-shadow max-h-48 overflow-y-auto">
-                          {filteredUsers.length > 0 ? (
-                            filteredUsers.map((user) => (
-                              <button
-                                key={user.id}
-                                type="button"
-                                onClick={() => handleSelectUser(user)}
-                                className="w-full px-3 py-2 text-left hover:bg-muted/50 transition-colors border-b-4 border-dashed border-border last:border-b-0"
-                              >
-                                <p className="font-bold text-foreground retro-body retro-small">{user.full_name}</p>
-                                <p className="retro-small text-muted-foreground retro-body">{user.email}</p>
-                              </button>
-                            ))
-                          ) : availableUsers.length === 0 ? (
-                            <div className="px-3 py-2 retro-small uppercase text-muted-foreground retro-body">
-                              {t("noUsersToInvite")}
-                            </div>
-                          ) : searchQuery ? (
+                    <button
+                      type="button"
+                      onClick={handleClearSelection}
+                      className="text-muted-foreground hover:text-foreground"
+                    >
+                      <Icon name="X" className="w-4 h-4" />
+                    </button>
+                  </div>
+                ) : (
+                  <div className="relative">
+                    <RetroInput
+                      type="text"
+                      value={searchQuery}
+                      onChange={(e) => {
+                        setSearchQuery(e.target.value);
+                        setShowDropdown(true);
+                      }}
+                      onFocus={() => setShowDropdown(true)}
+                      placeholder={t("searchOrEnterEmail")}
+                    />
+                    {isLoadingUsers && (
+                      <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                        <div className="retro-body text-muted-foreground">...</div>
+                      </div>
+                    )}
+                    {showDropdown && !isLoadingUsers && (
+                      <div className="absolute z-10 w-full mt-1 bg-card border-4 border-border retro-shadow max-h-48 overflow-y-auto">
+                        {filteredUsers.length > 0 ? (
+                          filteredUsers.map((user) => (
                             <button
+                              key={user.id}
                               type="button"
-                              onClick={() => {
-                                setInviteEmail(searchQuery);
-                                setShowDropdown(false);
-                              }}
-                              className="w-full px-3 py-2 text-left hover:bg-muted/50 transition-colors"
+                              onClick={() => handleSelectUser(user)}
+                              className="w-full px-3 py-2 text-left hover:bg-muted/50 transition-colors border-b-4 border-dashed border-border last:border-b-0"
                             >
-                              <p className="font-bold text-foreground retro-body retro-small">{t("useEmail")}: {searchQuery}</p>
-                              <p className="retro-small text-muted-foreground retro-body">{t("userNotRegistered")}</p>
+                              <p className="font-bold text-foreground retro-body">{user.full_name}</p>
+                              <p className="retro-body text-sm text-muted-foreground">{user.email}</p>
                             </button>
-                          ) : null}
-                        </div>
-                      )}
-                    </div>
-                  )}
-                  {!selectedUser && inviteEmail && (
-                    <div className="mt-2 flex items-center gap-2 px-3 py-2 border-4 border-dashed" style={{ borderColor: NES_GREEN, backgroundColor: 'rgba(146, 204, 65, 0.1)' }}>
-                      <div className="flex-1">
-                        <p className="retro-small text-foreground retro-body">{t("willInvite")}: <span className="font-bold">{inviteEmail}</span></p>
+                          ))
+                        ) : availableUsers.length === 0 ? (
+                          <div className="px-3 py-2 retro-body text-muted-foreground">
+                            {t("noUsersToInvite")}
+                          </div>
+                        ) : searchQuery ? (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setInviteEmail(searchQuery);
+                              setShowDropdown(false);
+                            }}
+                            className="w-full px-3 py-2 text-left hover:bg-muted/50 transition-colors"
+                          >
+                            <p className="font-bold text-foreground retro-body">{t("useEmail")}: {searchQuery}</p>
+                            <p className="retro-body text-sm text-muted-foreground">{t("userNotRegistered")}</p>
+                          </button>
+                        ) : null}
                       </div>
-                      <button
-                        type="button"
-                        onClick={() => setInviteEmail("")}
-                        className="text-muted-foreground hover:text-foreground"
-                      >
-                        <Icon name="X" className="w-4 h-4" />
-                      </button>
-                    </div>
-                  )}
-                  <p className="mt-1 text-xs uppercase text-muted-foreground retro-body">
-                    {t("searchUsersHint")}
-                  </p>
-                </div>
-
-                <div>
-                  <label className="block retro-small uppercase font-bold text-foreground mb-1 retro-body">
-                    {t("role")}
-                  </label>
-                  <select
-                    value={inviteRole}
-                    onChange={(e) => setInviteRole(e.target.value)}
-                    className="w-full px-3 py-2 border-4 border-border bg-background text-foreground retro-body retro-small focus:outline-none"
-                  >
-                    <option value="admin">{t("roleAdmin")}</option>
-                    <option value="member">{t("roleMember")}</option>
-                    <option value="viewer">{t("roleViewer")}</option>
-                  </select>
-                </div>
-
-                {inviteError && (
-                  <p className="retro-small uppercase retro-body" style={{ color: NES_RED }}>{inviteError}</p>
+                    )}
+                  </div>
                 )}
+                {!selectedUser && inviteEmail && (
+                  <div className="mt-2 flex items-center gap-2 px-3 py-2 border-4 border-dashed" style={{ borderColor: NES_GREEN, backgroundColor: 'rgba(146, 204, 65, 0.1)' }}>
+                    <div className="flex-1">
+                      <p className="retro-body text-foreground">{t("willInvite")}: <span className="font-bold">{inviteEmail}</span></p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setInviteEmail("")}
+                      className="text-muted-foreground hover:text-foreground"
+                    >
+                      <Icon name="X" className="w-4 h-4" />
+                    </button>
+                  </div>
+                )}
+                <p className="mt-1 text-xs text-muted-foreground retro-body">
+                  {t("searchUsersHint")}
+                </p>
+              </RetroFormGroup>
 
-                <div className="flex justify-end gap-3">
-                  <button
-                    type="button"
-                    onClick={() => setShowInviteModal(false)}
-                    className="px-4 py-2 border-4 border-border bg-muted text-foreground retro-small uppercase font-bold retro-body retro-shadow-sm hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
-                  >
-                    {t("cancel")}
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={isInviting || !inviteEmail.trim()}
-                    className="px-4 py-2 border-4 border-border bg-primary text-white retro-small uppercase font-bold retro-body retro-shadow-sm hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all disabled:opacity-50"
-                  >
-                    {isInviting ? t("inviting") : t("invite")}
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
-        )}
+              <RetroFormGroup>
+                <RetroLabel>{t("role")}</RetroLabel>
+                <RetroSelect
+                  value={inviteRole}
+                  onChange={(e) => setInviteRole(e.target.value)}
+                >
+                  <option value="admin">{t("roleAdmin")}</option>
+                  <option value="member">{t("roleMember")}</option>
+                  <option value="viewer">{t("roleViewer")}</option>
+                </RetroSelect>
+              </RetroFormGroup>
+
+              {inviteError && <RetroError>{inviteError}</RetroError>}
+            </RetroModal.Body>
+            <RetroModal.Footer>
+              <RetroButton type="button" variant="secondary" onClick={() => setShowInviteModal(false)}>
+                {t("cancel")}
+              </RetroButton>
+              <RetroButton type="submit" variant="primary" disabled={isInviting || !inviteEmail.trim()}>
+                {isInviting ? t("inviting") : t("invite")}
+              </RetroButton>
+            </RetroModal.Footer>
+          </form>
+        </RetroModal>
 
         {/* Delete Workspace Confirmation Modal */}
-        {showDeleteConfirm && currentWorkspace && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-            <div className="bg-card border-4 border-border retro-shadow w-full max-w-md mx-4 p-6">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-sm font-bold uppercase retro-heading flex items-center gap-2" style={{ color: NES_RED }}>
-                  <Icon name="AlertTriangle" className="w-5 h-5" />
-                  {t("deleteWorkspace")}
-                </h3>
-                <button
-                  onClick={() => {
-                    setShowDeleteConfirm(false);
-                    setDeleteConfirmText("");
-                    setDeleteError(null);
-                  }}
-                  className="text-muted-foreground hover:text-foreground"
-                >
-                  <Icon name="X" className="w-5 h-5" />
-                </button>
-              </div>
+        {currentWorkspace && (
+          <RetroModal open={showDeleteConfirm} onClose={() => {
+            setShowDeleteConfirm(false);
+            setDeleteConfirmText("");
+            setDeleteError(null);
+          }}>
+            <RetroModal.Header
+              title={t("deleteWorkspace")}
+              onClose={() => {
+                setShowDeleteConfirm(false);
+                setDeleteConfirmText("");
+                setDeleteError(null);
+              }}
+              variant="danger"
+            />
+            <RetroModal.Body>
+              <p className="retro-body text-foreground">
+                {t("deleteWorkspaceConfirmMessage")}
+              </p>
+              <p className="retro-body text-muted-foreground">
+                {t("deleteWorkspaceConfirmTypeName", { name: currentWorkspace.name })}
+              </p>
 
-              <div className="space-y-4">
-                <p className="retro-small uppercase text-foreground retro-body">
-                  {t("deleteWorkspaceConfirmMessage")}
-                </p>
-                <p className="retro-small uppercase text-muted-foreground retro-body">
-                  {t("deleteWorkspaceConfirmTypeName", { name: currentWorkspace.name })}
-                </p>
+              <RetroInput
+                type="text"
+                value={deleteConfirmText}
+                onChange={(e) => setDeleteConfirmText(e.target.value)}
+                placeholder={currentWorkspace.name}
+              />
 
-                <input
-                  type="text"
-                  value={deleteConfirmText}
-                  onChange={(e) => setDeleteConfirmText(e.target.value)}
-                  className="w-full px-3 py-2 border-4 border-border bg-background text-foreground retro-body retro-small focus:outline-none"
-                  placeholder={currentWorkspace.name}
-                />
-
-                {deleteError && (
-                  <p className="retro-small uppercase retro-body" style={{ color: NES_RED }}>{deleteError}</p>
-                )}
-
-                <div className="flex justify-end gap-3">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setShowDeleteConfirm(false);
-                      setDeleteConfirmText("");
-                      setDeleteError(null);
-                    }}
-                    className="px-4 py-2 border-4 border-border bg-muted text-foreground retro-small uppercase font-bold retro-body retro-shadow-sm hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
-                  >
-                    {t("cancel")}
-                  </button>
-                  <button
-                    onClick={handleDeleteWorkspace}
-                    disabled={isDeleting || deleteConfirmText !== currentWorkspace.name}
-                    className="px-4 py-2 border-4 border-border text-white retro-small uppercase font-bold retro-body retro-shadow-sm hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all disabled:opacity-50"
-                    style={{ backgroundColor: NES_RED }}
-                  >
-                    {isDeleting ? t("deleting") : t("deleteWorkspace")}
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
+              {deleteError && <RetroError>{deleteError}</RetroError>}
+            </RetroModal.Body>
+            <RetroModal.Footer>
+              <RetroButton
+                type="button"
+                variant="secondary"
+                onClick={() => {
+                  setShowDeleteConfirm(false);
+                  setDeleteConfirmText("");
+                  setDeleteError(null);
+                }}
+              >
+                {t("cancel")}
+              </RetroButton>
+              <RetroButton
+                variant="danger"
+                onClick={handleDeleteWorkspace}
+                disabled={isDeleting || deleteConfirmText !== currentWorkspace.name}
+              >
+                {isDeleting ? t("deleting") : t("deleteWorkspace")}
+              </RetroButton>
+            </RetroModal.Footer>
+          </RetroModal>
         )}
       </>
     );
@@ -819,7 +739,7 @@ export default function SettingsPage() {
         <p className="text-muted-foreground mt-2">{t("subtitle")}</p>
       </div>
 
-      <div className="grid gap-6 max-w-2xl">
+      <div className="grid gap-6 w-full">
         {/* Workspace */}
         <div className="bg-card p-6 rounded-lg border shadow-sm">
           <div className="flex items-center justify-between mb-4">

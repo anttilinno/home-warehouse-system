@@ -140,6 +140,20 @@ class DashboardService:
         )
         overdue_loans_count = overdue_result.scalar() or 0
 
+        # Due soon loans count (within next 7 days, not overdue)
+        due_soon_query = text("""
+            SELECT COUNT(*) FROM warehouse.loans
+            WHERE workspace_id = :workspace_id
+              AND returned_at IS NULL
+              AND due_date IS NOT NULL
+              AND due_date >= CURRENT_DATE
+              AND due_date < CURRENT_DATE + INTERVAL '7 days'
+        """)
+        due_soon_result = await self.db_session.execute(
+            due_soon_query, {"workspace_id": workspace_id}
+        )
+        due_soon_loans_count = due_soon_result.scalar() or 0
+
         return DashboardExtendedStats(
             total_items=basic_stats.total_items,
             total_locations=basic_stats.total_locations,
@@ -152,6 +166,7 @@ class DashboardService:
             expiring_soon_count=expiring_soon_count,
             warranty_expiring_count=warranty_expiring_count,
             overdue_loans_count=overdue_loans_count,
+            due_soon_loans_count=due_soon_loans_count,
         )
 
     async def get_recently_modified(

@@ -29,6 +29,7 @@ class DashboardExtendedStats(msgspec.Struct):
     expiring_soon_count: int
     warranty_expiring_count: int
     overdue_loans_count: int
+    due_soon_loans_count: int
 
 
 class InventorySummary(msgspec.Struct):

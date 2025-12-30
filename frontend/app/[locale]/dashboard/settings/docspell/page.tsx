@@ -225,7 +225,7 @@ export default function DocspellSettingsPage() {
           <RetroPageHeader title={t("title")} subtitle={t("subtitle")} />
         </div>
 
-        <div className="grid gap-6 max-w-2xl">
+        <div className="grid gap-6 w-full">
           {isLoadingSettings ? (
             <div className="flex items-center justify-center py-12">
               <div className="retro-small uppercase text-muted-foreground retro-body">Loading...</div>
@@ -503,7 +503,7 @@ export default function DocspellSettingsPage() {
         <p className="text-muted-foreground mt-2">{t("subtitle")}</p>
       </div>
 
-      <div className="grid gap-6 max-w-2xl">
+      <div className="grid gap-6 w-full">
         {isLoadingSettings ? (
           <div className="flex items-center justify-center py-12">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>

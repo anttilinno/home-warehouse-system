@@ -15,6 +15,18 @@ import {
 } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import { NES_GREEN, NES_BLUE, NES_RED, NES_YELLOW } from "@/lib/nes-colors";
+import {
+  RetroPageHeader,
+  RetroButton,
+  RetroTable,
+  RetroEmptyState,
+  RetroModal,
+  RetroFormGroup,
+  RetroLabel,
+  RetroInput,
+  RetroTextarea,
+  RetroError,
+} from "@/components/retro";
 
 // Avatar colors for borrowers
 const AVATAR_COLORS = [
@@ -123,12 +135,9 @@ export default function BorrowersPage() {
         <div className="flex items-center justify-center min-h-[400px]">
           <div className="text-center">
             <p className="text-primary mb-4 retro-body">{error}</p>
-            <button
-              onClick={fetchData}
-              className="px-4 py-2 bg-primary text-white border-4 border-border retro-shadow hover:translate-x-[2px] hover:translate-y-[2px] hover:retro-shadow-sm transition-all retro-heading"
-            >
+            <RetroButton variant="primary" onClick={fetchData}>
               {t("tryAgain")}
-            </button>
+            </RetroButton>
           </div>
         </div>
       );
@@ -153,135 +162,111 @@ export default function BorrowersPage() {
     return (
       <>
         {/* Header */}
-        <div className="mb-8 bg-primary p-4 border-4 border-border retro-shadow">
-          <div className="flex justify-between items-center">
-            <div>
-              <h1 className="text-lg font-bold text-white uppercase retro-heading">
-                {t("title")}
-              </h1>
-              <p className="text-white/80 retro-small mt-1">
-                &gt; {borrowers.length} REGISTERED BORROWERS
-              </p>
-            </div>
-            {canEdit && (
-              <button
+        <RetroPageHeader
+          title={t("title")}
+          subtitle={`${borrowers.length} REGISTERED BORROWERS`}
+          actions={
+            canEdit && (
+              <RetroButton
+                variant="secondary"
+                icon="Plus"
                 onClick={() => setIsCreateModalOpen(true)}
-                className="px-4 py-2 bg-white/20 text-white border-2 border-white/50 hover:bg-white/30 transition-colors flex items-center gap-2 retro-small uppercase"
               >
-                <Icon name="Plus" className="w-4 h-4" />
                 {t("addBorrower")}
-              </button>
-            )}
-          </div>
-        </div>
+              </RetroButton>
+            )
+          }
+        />
 
         {/* Table */}
         {borrowers.length === 0 ? (
-          <div className="bg-card border-4 border-border retro-shadow p-12 text-center">
-            <Icon name="Contact" className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-            <p className="text-muted-foreground retro-body">{t("noBorrowers")}</p>
-            {canEdit && (
-              <button
-                onClick={() => setIsCreateModalOpen(true)}
-                className="mt-4 px-4 py-2 bg-primary text-white border-4 border-border retro-shadow hover:translate-x-[2px] hover:translate-y-[2px] hover:retro-shadow-sm transition-all inline-flex items-center gap-2 retro-heading"
-              >
-                <Icon name="Plus" className="w-4 h-4" />
-                {t("addBorrower")}
-              </button>
-            )}
-          </div>
+          <RetroEmptyState
+            icon="Contact"
+            message={t("noBorrowers")}
+            action={
+              canEdit
+                ? {
+                    label: t("addBorrower"),
+                    onClick: () => setIsCreateModalOpen(true),
+                    icon: "Plus",
+                  }
+                : undefined
+            }
+          />
         ) : (
-          <div className="bg-card border-4 border-border retro-shadow overflow-hidden">
-            <table className="w-full">
-              <thead className="bg-muted border-b-4 border-border">
-                <tr>
-                  <th className="px-4 py-3 text-left retro-small font-bold text-foreground uppercase retro-heading">
-                    {t("name")}
-                  </th>
-                  <th className="px-4 py-3 text-left retro-small font-bold text-foreground uppercase retro-heading">
-                    {t("email")}
-                  </th>
-                  <th className="px-4 py-3 text-left retro-small font-bold text-foreground uppercase retro-heading">
-                    {t("phone")}
-                  </th>
-                  <th className="px-4 py-3 text-left retro-small font-bold text-foreground uppercase retro-heading">
-                    {t("notes")}
-                  </th>
-                  <th className="px-4 py-3 text-right retro-small font-bold text-foreground uppercase retro-heading">
-                    {t("actions")}
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {borrowers.map((borrower, index) => (
-                  <tr
-                    key={borrower.id}
-                    className={cn(
-                      "hover:bg-muted/50 transition-colors",
-                      index < borrowers.length - 1 && "border-b-2 border-dashed border-border"
-                    )}
-                  >
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-3">
-                        <div
-                          className="w-8 h-8 flex items-center justify-center border-2 border-border text-white text-xs font-bold"
-                          style={{ backgroundColor: getAvatarColor(borrower.name), fontFamily: "var(--font-pixel)" }}
-                        >
-                          {getInitials(borrower.name)}
-                        </div>
-                        <span className="retro-body text-foreground font-bold">
-                          {borrower.name}
-                        </span>
+          <RetroTable>
+            <RetroTable.Head>
+              <RetroTable.Row>
+                <RetroTable.Th>{t("name")}</RetroTable.Th>
+                <RetroTable.Th>{t("email")}</RetroTable.Th>
+                <RetroTable.Th>{t("phone")}</RetroTable.Th>
+                <RetroTable.Th>{t("notes")}</RetroTable.Th>
+                <RetroTable.Th align="right">{t("actions")}</RetroTable.Th>
+              </RetroTable.Row>
+            </RetroTable.Head>
+            <RetroTable.Body>
+              {borrowers.map((borrower) => (
+                <RetroTable.Row key={borrower.id}>
+                  <RetroTable.Td>
+                    <div className="flex items-center gap-3">
+                      <div
+                        className="w-8 h-8 flex items-center justify-center border-2 border-border text-white text-xs font-bold"
+                        style={{ backgroundColor: getAvatarColor(borrower.name), fontFamily: "var(--font-pixel)" }}
+                      >
+                        {getInitials(borrower.name)}
                       </div>
-                    </td>
-                    <td className="px-4 py-3">
-                      {borrower.email ? (
-                        <div className="flex items-center gap-2 retro-body text-foreground">
-                          <Icon name="Mail" className="w-4 h-4 text-muted-foreground" />
-                          {borrower.email}
-                        </div>
-                      ) : (
-                        <span className="text-muted-foreground retro-body">{t("noEmail")}</span>
-                      )}
-                    </td>
-                    <td className="px-4 py-3">
-                      {borrower.phone ? (
-                        <div className="flex items-center gap-2 retro-body text-foreground">
-                          <Icon name="Phone" className="w-4 h-4 text-muted-foreground" />
-                          {borrower.phone}
-                        </div>
-                      ) : (
-                        <span className="text-muted-foreground retro-body">{t("noPhone")}</span>
-                      )}
-                    </td>
-                    <td className="px-4 py-3 text-muted-foreground retro-body">
-                      {borrower.notes || t("noNotes")}
-                    </td>
-                    <td className="px-4 py-3 text-right">
-                      {canEdit && (
-                        <div className="flex justify-end gap-2">
-                          <button
-                            onClick={() => handleEdit(borrower)}
-                            title={t("edit")}
-                            className="p-2 border-2 border-border hover:bg-muted transition-colors"
-                          >
-                            <Icon name="Pencil" className="w-4 h-4 text-muted-foreground hover:text-foreground" />
-                          </button>
-                          <button
-                            onClick={() => handleDelete(borrower)}
-                            title={t("delete")}
-                            className="p-2 border-2 border-border hover:bg-primary hover:text-white transition-colors"
-                          >
-                            <Icon name="Trash2" className="w-4 h-4" />
-                          </button>
-                        </div>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                      <span className="retro-body text-foreground font-bold">
+                        {borrower.name}
+                      </span>
+                    </div>
+                  </RetroTable.Td>
+                  <RetroTable.Td>
+                    {borrower.email ? (
+                      <div className="flex items-center gap-2 retro-body text-foreground">
+                        <Icon name="Mail" className="w-4 h-4 text-muted-foreground" />
+                        {borrower.email}
+                      </div>
+                    ) : (
+                      <span className="text-muted-foreground retro-body">{t("noEmail")}</span>
+                    )}
+                  </RetroTable.Td>
+                  <RetroTable.Td>
+                    {borrower.phone ? (
+                      <div className="flex items-center gap-2 retro-body text-foreground">
+                        <Icon name="Phone" className="w-4 h-4 text-muted-foreground" />
+                        {borrower.phone}
+                      </div>
+                    ) : (
+                      <span className="text-muted-foreground retro-body">{t("noPhone")}</span>
+                    )}
+                  </RetroTable.Td>
+                  <RetroTable.Td muted>
+                    {borrower.notes || t("noNotes")}
+                  </RetroTable.Td>
+                  <RetroTable.Td align="right">
+                    {canEdit && (
+                      <div className="retro-td__actions">
+                        <button
+                          onClick={() => handleEdit(borrower)}
+                          title={t("edit")}
+                          className="retro-icon-btn"
+                        >
+                          <Icon name="Pencil" className="w-4 h-4 text-muted-foreground hover:text-foreground" />
+                        </button>
+                        <button
+                          onClick={() => handleDelete(borrower)}
+                          title={t("delete")}
+                          className="retro-icon-btn retro-icon-btn--danger"
+                        >
+                          <Icon name="Trash2" className="w-4 h-4" />
+                        </button>
+                      </div>
+                    )}
+                  </RetroTable.Td>
+                </RetroTable.Row>
+              ))}
+            </RetroTable.Body>
+          </RetroTable>
         )}
 
         {/* Modals */}
@@ -584,105 +569,83 @@ function CreateEditModal({
 
   if (!isOpen) return null;
 
+  // Retro Modal
   if (isRetro) {
     return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center" onClick={onClose}>
-        <div className="absolute inset-0 bg-black/70" />
-        <div
-          className="relative z-10 w-full max-w-md m-4 bg-card border-4 border-border retro-shadow"
-          onClick={(e) => e.stopPropagation()}
-        >
-          <div className="flex items-center justify-between p-4 border-b-4 border-border bg-primary">
-            <h2 className="retro-small font-bold text-white uppercase retro-heading">
-              {isEdit ? t("editBorrower") : t("addBorrower")}
-            </h2>
-            <button onClick={onClose} className="p-1 hover:bg-white/20 text-white">
-              <Icon name="X" className="w-5 h-5" />
-            </button>
-          </div>
-
-          <form onSubmit={handleSubmit} className="p-4 space-y-4">
+      <RetroModal open={isOpen} onClose={onClose} size="md">
+        <RetroModal.Header title={isEdit ? t("editBorrower") : t("addBorrower")} />
+        <RetroModal.Body>
+          <form id="borrower-form" onSubmit={handleSubmit} className="space-y-4">
             {error && (
-              <div className="p-3 bg-primary/10 border-4 border-primary">
-                <p className="text-sm text-primary retro-body">{error}</p>
+              <div className="retro-card p-3">
+                <RetroError>{error}</RetroError>
               </div>
             )}
 
-            <div>
-              <label className="block retro-small font-bold text-foreground mb-2 uppercase retro-heading">
-                {t("name")}
-              </label>
-              <input
+            <RetroFormGroup>
+              <RetroLabel htmlFor="name" required>{t("name")}</RetroLabel>
+              <RetroInput
+                id="name"
                 type="text"
                 value={formData.name}
                 onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
                 placeholder={t("namePlaceholder")}
-                className="w-full px-3 py-2 border-4 border-border bg-background text-foreground retro-body focus:outline-none focus:border-primary"
                 required
               />
-            </div>
+            </RetroFormGroup>
 
-            <div>
-              <label className="block retro-small font-bold text-foreground mb-2 uppercase retro-heading">
-                {t("email")}
-              </label>
-              <input
+            <RetroFormGroup>
+              <RetroLabel htmlFor="email">{t("email")}</RetroLabel>
+              <RetroInput
+                id="email"
                 type="email"
                 value={formData.email || ""}
                 onChange={(e) => setFormData((prev) => ({ ...prev, email: e.target.value || null }))}
                 placeholder={t("emailPlaceholder")}
-                className="w-full px-3 py-2 border-4 border-border bg-background text-foreground retro-body focus:outline-none focus:border-primary"
               />
-            </div>
+            </RetroFormGroup>
 
-            <div>
-              <label className="block retro-small font-bold text-foreground mb-2 uppercase retro-heading">
-                {t("phone")}
-              </label>
-              <input
+            <RetroFormGroup>
+              <RetroLabel htmlFor="phone">{t("phone")}</RetroLabel>
+              <RetroInput
+                id="phone"
                 type="tel"
                 value={formData.phone || ""}
                 onChange={(e) => setFormData((prev) => ({ ...prev, phone: e.target.value || null }))}
                 placeholder={t("phonePlaceholder")}
-                className="w-full px-3 py-2 border-4 border-border bg-background text-foreground retro-body focus:outline-none focus:border-primary"
               />
-            </div>
+            </RetroFormGroup>
 
-            <div>
-              <label className="block retro-small font-bold text-foreground mb-2 uppercase retro-heading">
-                {t("notes")}
-              </label>
-              <textarea
+            <RetroFormGroup>
+              <RetroLabel htmlFor="notes">{t("notes")}</RetroLabel>
+              <RetroTextarea
+                id="notes"
                 value={formData.notes || ""}
                 onChange={(e) => setFormData((prev) => ({ ...prev, notes: e.target.value || null }))}
                 placeholder={t("notesPlaceholder")}
                 rows={3}
-                className="w-full px-3 py-2 border-4 border-border bg-background text-foreground retro-body focus:outline-none focus:border-primary resize-none"
               />
-            </div>
-
-            <div className="flex justify-end gap-3 pt-4">
-              <button
-                type="button"
-                onClick={onClose}
-                className="px-4 py-2 border-4 border-border hover:bg-muted transition-colors retro-heading"
-              >
-                {t("cancel")}
-              </button>
-              <button
-                type="submit"
-                disabled={submitting}
-                className="px-4 py-2 bg-primary text-white border-4 border-border retro-shadow hover:translate-x-[2px] hover:translate-y-[2px] hover:retro-shadow-sm transition-all disabled:opacity-50 retro-heading"
-              >
-                {submitting ? t("saving") : t("save")}
-              </button>
-            </div>
+            </RetroFormGroup>
           </form>
-        </div>
-      </div>
+        </RetroModal.Body>
+        <RetroModal.Footer>
+          <RetroButton variant="secondary" onClick={onClose}>
+            {t("cancel")}
+          </RetroButton>
+          <RetroButton
+            variant="primary"
+            type="submit"
+            form="borrower-form"
+            loading={submitting}
+          >
+            {t("save")}
+          </RetroButton>
+        </RetroModal.Footer>
+      </RetroModal>
     );
   }
 
+  // Standard Modal
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center" onClick={onClose}>
       <div className="absolute inset-0 bg-black/50" />
@@ -818,71 +781,53 @@ function DeleteConfirmModal({
 
   if (!isOpen) return null;
 
+  // Retro Modal
   if (isRetro) {
     return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center" onClick={onClose}>
-        <div className="absolute inset-0 bg-black/70" />
-        <div
-          className="relative z-10 w-full max-w-md m-4 bg-card border-4 border-border retro-shadow"
-          onClick={(e) => e.stopPropagation()}
-        >
-          <div className="flex items-center justify-between p-4 border-b-4 border-border bg-primary">
-            <h2 className="retro-small font-bold text-white uppercase retro-heading">
-              {t("deleteConfirmTitle")}
-            </h2>
-            <button onClick={onClose} className="p-1 hover:bg-white/20 text-white">
-              <Icon name="X" className="w-5 h-5" />
-            </button>
-          </div>
+      <RetroModal open={isOpen} onClose={onClose} size="md">
+        <RetroModal.Header title={t("deleteConfirmTitle")} variant="danger" />
+        <RetroModal.Body>
+          {error && (
+            <div className="retro-card p-3 mb-4">
+              <RetroError>{error}</RetroError>
+            </div>
+          )}
 
-          <div className="p-4 space-y-4">
-            {error && (
-              <div className="p-3 bg-primary/10 border-4 border-primary">
-                <p className="text-sm text-primary retro-body">{error}</p>
-              </div>
+          <p className="retro-body text-muted-foreground mb-4">{t("deleteConfirmMessage")}</p>
+
+          <RetroModal.Preview>
+            <p className="retro-heading">{borrower.name}</p>
+            {borrower.email && (
+              <p className="text-sm text-muted-foreground flex items-center gap-1 retro-body">
+                <Icon name="Mail" className="w-3 h-3" />
+                {borrower.email}
+              </p>
             )}
-
-            <p className="text-muted-foreground retro-body">{t("deleteConfirmMessage")}</p>
-
-            <div className="p-3 bg-muted border-4 border-border">
-              <p className="retro-heading">{borrower.name}</p>
-              {borrower.email && (
-                <p className="text-sm text-muted-foreground flex items-center gap-1 retro-body">
-                  <Icon name="Mail" className="w-3 h-3" />
-                  {borrower.email}
-                </p>
-              )}
-              {borrower.phone && (
-                <p className="text-sm text-muted-foreground flex items-center gap-1 retro-body">
-                  <Icon name="Phone" className="w-3 h-3" />
-                  {borrower.phone}
-                </p>
-              )}
-            </div>
-
-            <div className="flex justify-end gap-3 pt-4">
-              <button
-                type="button"
-                onClick={onClose}
-                className="px-4 py-2 border-4 border-border hover:bg-muted transition-colors retro-heading"
-              >
-                {t("cancel")}
-              </button>
-              <button
-                type="button"
-                onClick={handleDelete}
-                disabled={submitting}
-                className="px-4 py-2 bg-primary text-white border-4 border-border retro-shadow hover:translate-x-[2px] hover:translate-y-[2px] hover:retro-shadow-sm transition-all disabled:opacity-50 retro-heading"
-              >
-                {submitting ? t("deleting") : t("deleteConfirmButton")}
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
+            {borrower.phone && (
+              <p className="text-sm text-muted-foreground flex items-center gap-1 retro-body">
+                <Icon name="Phone" className="w-3 h-3" />
+                {borrower.phone}
+              </p>
+            )}
+          </RetroModal.Preview>
+        </RetroModal.Body>
+        <RetroModal.Footer>
+          <RetroButton variant="secondary" onClick={onClose}>
+            {t("cancel")}
+          </RetroButton>
+          <RetroButton
+            variant="danger"
+            onClick={handleDelete}
+            loading={submitting}
+          >
+            {t("deleteConfirmButton")}
+          </RetroButton>
+        </RetroModal.Footer>
+      </RetroModal>
     );
   }
 
+  // Standard Modal
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center" onClick={onClose}>
       <div className="absolute inset-0 bg-black/50" />

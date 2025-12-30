@@ -20,6 +20,17 @@ import { buildCategoryTree, type CategoryNode } from "@/lib/category-utils";
 import { useToast } from "@/components/ui/use-toast";
 import { cn } from "@/lib/utils";
 import { NES_GREEN, NES_BLUE, NES_RED } from "@/lib/nes-colors";
+import {
+  RetroPageHeader,
+  RetroButton,
+  RetroEmptyState,
+  RetroModal,
+  RetroFormGroup,
+  RetroLabel,
+  RetroInput,
+  RetroTextarea,
+  RetroError,
+} from "@/components/retro";
 
 export default function CategoriesPage() {
   const { isAuthenticated, isLoading: authLoading, canEdit } = useAuth();
@@ -137,48 +148,36 @@ export default function CategoriesPage() {
   if (isRetro) {
     return (
       <>
-        {/* Header */}
-        <div className="mb-8 bg-primary p-4 border-4 border-border retro-shadow">
-          <div className="flex justify-between items-center">
-            <div>
-              <h1 className="text-lg font-bold text-white uppercase retro-heading">
-                {t("title")}
-              </h1>
-              <p className="text-white/80 retro-body retro-small uppercase mt-1">
-                {t("subtitle")}
-              </p>
-            </div>
-            {canEdit && (
-              <button
-                onClick={handleCreateNew}
-                className="px-3 py-2 bg-background text-foreground border-4 border-border retro-small uppercase font-bold retro-body retro-shadow hover:retro-shadow-sm hover:translate-x-[2px] hover:translate-y-[2px] transition-all flex items-center gap-2"
-              >
+        <RetroPageHeader
+          title={t("title")}
+          subtitle={t("subtitle")}
+          actions={
+            canEdit && (
+              <RetroButton variant="secondary" onClick={handleCreateNew}>
                 <Icon name="Plus" className="w-4 h-4" />
                 {t("addCategory")}
-              </button>
-            )}
-          </div>
-        </div>
+              </RetroButton>
+            )
+          }
+        />
 
         {/* Empty State or Tree */}
         {categories.length === 0 ? (
-          <div className="bg-card border-4 border-border p-12 text-center retro-shadow">
-            <Icon name="FolderTree" className="w-12 h-12 mx-auto mb-4" style={{ color: NES_BLUE }} />
-            <p className="retro-small uppercase font-bold retro-body text-muted-foreground">
-              {t("noCategories")}
-            </p>
-            {canEdit && (
-              <button
-                onClick={handleCreateNew}
-                className="mt-4 px-4 py-2 bg-primary text-white border-4 border-border retro-small uppercase font-bold retro-body retro-shadow hover:retro-shadow-sm hover:translate-x-[2px] hover:translate-y-[2px] transition-all inline-flex items-center gap-2"
-              >
-                <Icon name="Plus" className="w-4 h-4" />
-                {t("addCategory")}
-              </button>
-            )}
-          </div>
+          <RetroEmptyState
+            icon={<Icon name="FolderTree" className="w-8 h-8 text-white" />}
+            iconBgColor={NES_BLUE}
+            message={t("noCategories")}
+            action={
+              canEdit && (
+                <RetroButton variant="primary" onClick={handleCreateNew}>
+                  <Icon name="Plus" className="w-4 h-4" />
+                  {t("addCategory")}
+                </RetroButton>
+              )
+            }
+          />
         ) : (
-          <div className="bg-card retro-shadow overflow-hidden">
+          <div className="retro-card retro-card--shadow overflow-hidden">
             <TreeView
               items={categoryTree}
               onEdit={handleEdit}
@@ -190,7 +189,7 @@ export default function CategoriesPage() {
         )}
 
         {/* Modals */}
-        <CreateEditModal
+        <RetroCategoryCreateEditModal
           isOpen={isCreateModalOpen}
           onClose={() => {
             setIsCreateModalOpen(false);
@@ -206,10 +205,9 @@ export default function CategoriesPage() {
           defaultParentId={defaultParentId}
           t={t}
           te={te}
-          isRetro={isRetro}
         />
 
-        <CreateEditModal
+        <RetroCategoryCreateEditModal
           isOpen={isEditModalOpen}
           onClose={() => {
             setIsEditModalOpen(false);
@@ -225,11 +223,10 @@ export default function CategoriesPage() {
           categories={categories}
           t={t}
           te={te}
-          isRetro={isRetro}
         />
 
         {selectedCategory && (
-          <DeleteConfirmModal
+          <RetroCategoryDeleteModal
             isOpen={isDeleteModalOpen}
             onClose={() => {
               setIsDeleteModalOpen(false);
@@ -244,7 +241,6 @@ export default function CategoriesPage() {
             category={selectedCategory}
             t={t}
             te={te}
-            isRetro={isRetro}
           />
         )}
       </>
@@ -755,5 +751,218 @@ function DeleteConfirmModal({
         </div>
       </div>
     </div>
+  );
+}
+
+// Retro Create/Edit Modal Component
+function RetroCategoryCreateEditModal({
+  isOpen,
+  onClose,
+  onSuccess,
+  category,
+  categories,
+  defaultParentId,
+  t,
+  te,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  onSuccess: (name: string) => void;
+  category?: Category | null;
+  categories: Category[];
+  defaultParentId?: string | null;
+  t: (key: string) => string;
+  te: (key: string) => string;
+}) {
+  const isEdit = !!category;
+  const [formData, setFormData] = useState<CategoryCreate>({
+    name: "",
+    parent_category_id: null,
+    description: null,
+  });
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // IDs to exclude from parent dropdown (current category and its descendants)
+  const excludeIds = useMemo(() => {
+    if (!category) return [];
+    return [category.id];
+  }, [category]);
+
+  useEffect(() => {
+    if (category) {
+      setFormData({
+        name: category.name,
+        parent_category_id: category.parent_category_id,
+        description: category.description,
+      });
+    } else {
+      setFormData({
+        name: "",
+        parent_category_id: defaultParentId || null,
+        description: null,
+      });
+    }
+    setError(null);
+  }, [category, defaultParentId, isOpen]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSubmitting(true);
+    setError(null);
+
+    try {
+      if (isEdit && category) {
+        const updateData: CategoryUpdate = {
+          name: formData.name,
+          parent_category_id: formData.parent_category_id,
+          description: formData.description,
+        };
+        await categoriesApi.update(category.id, updateData);
+      } else {
+        await categoriesApi.create(formData);
+      }
+      onSuccess(formData.name);
+    } catch (err) {
+      const errorMessage =
+        err instanceof Error
+          ? getTranslatedErrorMessage(err.message, te)
+          : te("UNKNOWN_ERROR");
+      setError(errorMessage);
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <RetroModal open={isOpen} onClose={onClose}>
+      <RetroModal.Header title={isEdit ? t("editCategory") : t("addCategory")} onClose={onClose} />
+      <form onSubmit={handleSubmit}>
+        <RetroModal.Body>
+          {error && <RetroError>{error}</RetroError>}
+
+          <RetroFormGroup>
+            <RetroLabel>{t("name")}</RetroLabel>
+            <RetroInput
+              type="text"
+              value={formData.name}
+              onChange={(e) =>
+                setFormData((prev) => ({ ...prev, name: e.target.value }))
+              }
+              placeholder={t("namePlaceholder")}
+              required
+            />
+          </RetroFormGroup>
+
+          <RetroFormGroup>
+            <RetroLabel>{t("parentCategory")}</RetroLabel>
+            <CategorySelect
+              categories={categories}
+              value={formData.parent_category_id ?? null}
+              onChange={(value) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  parent_category_id: value,
+                }))
+              }
+              excludeIds={excludeIds}
+              placeholder={t("selectParent")}
+              allowNone={true}
+            />
+          </RetroFormGroup>
+
+          <RetroFormGroup>
+            <RetroLabel>{t("description")}</RetroLabel>
+            <RetroTextarea
+              value={formData.description || ""}
+              onChange={(e) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  description: e.target.value || null,
+                }))
+              }
+              placeholder={t("descriptionPlaceholder")}
+              rows={3}
+            />
+          </RetroFormGroup>
+        </RetroModal.Body>
+        <RetroModal.Footer>
+          <RetroButton type="button" variant="secondary" onClick={onClose}>
+            {t("cancel")}
+          </RetroButton>
+          <RetroButton type="submit" variant="primary" disabled={submitting}>
+            {submitting ? t("saving") : t("save")}
+          </RetroButton>
+        </RetroModal.Footer>
+      </form>
+    </RetroModal>
+  );
+}
+
+// Retro Delete Confirmation Modal Component
+function RetroCategoryDeleteModal({
+  isOpen,
+  onClose,
+  onSuccess,
+  category,
+  t,
+  te,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  onSuccess: (name: string) => void;
+  category: Category;
+  t: (key: string) => string;
+  te: (key: string) => string;
+}) {
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    setError(null);
+  }, [isOpen]);
+
+  const handleDelete = async () => {
+    setSubmitting(true);
+    setError(null);
+
+    try {
+      await categoriesApi.delete(category.id);
+      onSuccess(category.name);
+    } catch (err) {
+      const errorMessage =
+        err instanceof Error
+          ? getTranslatedErrorMessage(err.message, te)
+          : te("UNKNOWN_ERROR");
+      setError(errorMessage);
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <RetroModal open={isOpen} onClose={onClose}>
+      <RetroModal.Header title={t("deleteConfirmTitle")} onClose={onClose} variant="danger" />
+      <RetroModal.Body>
+        {error && <RetroError>{error}</RetroError>}
+
+        <p className="retro-body text-muted-foreground">{t("deleteConfirmMessage")}</p>
+
+        <div className="retro-card p-3 bg-muted">
+          <p className="retro-body font-medium">{category.name}</p>
+          {category.description && (
+            <p className="retro-body text-muted-foreground text-sm">{category.description}</p>
+          )}
+        </div>
+      </RetroModal.Body>
+      <RetroModal.Footer>
+        <RetroButton type="button" variant="secondary" onClick={onClose}>
+          {t("cancel")}
+        </RetroButton>
+        <RetroButton type="button" variant="danger" onClick={handleDelete} disabled={submitting}>
+          {submitting ? t("deleting") : t("deleteConfirmButton")}
+        </RetroButton>
+      </RetroModal.Footer>
+    </RetroModal>
   );
 }

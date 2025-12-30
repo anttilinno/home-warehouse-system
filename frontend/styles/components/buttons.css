@@ -1,0 +1,178 @@
+/* ==========================================================================
+   Button Components
+   Button styles and variants for retro theme
+   ========================================================================== */
+
+@layer components {
+  /* Base button */
+  .retro-btn {
+    @apply inline-flex items-center;
+    gap: 0.4rem;
+    @apply border-4 border-border;
+    @apply retro-button;
+    @apply transition-all;
+    @apply cursor-pointer;
+    @apply whitespace-nowrap;
+  }
+
+  .retro-btn:disabled {
+    @apply opacity-50 cursor-not-allowed;
+  }
+
+  /* Button sizes */
+  .retro-btn--xs {
+    @apply px-1.5 py-0.5 text-xs;
+  }
+
+  .retro-btn--sm {
+    @apply px-2 py-1;
+  }
+
+  .retro-btn--md {
+    @apply py-2;
+    padding-left: 20px;
+    padding-right: 30px;
+  }
+
+  .retro-btn--lg {
+    @apply px-6 py-3;
+  }
+
+  .retro-btn--icon {
+    @apply p-2;
+  }
+
+  .retro-btn--icon-sm {
+    @apply p-1.5;
+  }
+
+  /* Button variants */
+  .retro-btn--primary {
+    @apply bg-primary text-white;
+    box-shadow: 4px 4px 0px 0px var(--border);
+  }
+
+  .retro-btn--primary:hover:not(:disabled) {
+    @apply translate-x-[2px] translate-y-[2px];
+    box-shadow: 2px 2px 0px 0px var(--border);
+  }
+
+  .retro-btn--primary:active:not(:disabled) {
+    @apply translate-x-[4px] translate-y-[4px] shadow-none;
+  }
+
+  .retro-btn--secondary {
+    @apply bg-card hover:bg-muted;
+  }
+
+  .retro-btn--success {
+    @apply text-white;
+    background-color: var(--nes-green);
+    box-shadow: 4px 4px 0px 0px var(--border);
+  }
+
+  .retro-btn--success:hover:not(:disabled) {
+    @apply translate-x-[2px] translate-y-[2px];
+    box-shadow: 2px 2px 0px 0px var(--border);
+  }
+
+  .retro-btn--success:active:not(:disabled) {
+    @apply translate-x-[4px] translate-y-[4px] shadow-none;
+  }
+
+  .retro-btn--danger {
+    @apply bg-primary text-white;
+    box-shadow: 4px 4px 0px 0px var(--border);
+  }
+
+  .retro-btn--danger:hover:not(:disabled) {
+    @apply translate-x-[2px] translate-y-[2px];
+    box-shadow: 2px 2px 0px 0px var(--border);
+  }
+
+  .retro-btn--danger:active:not(:disabled) {
+    @apply translate-x-[4px] translate-y-[4px] shadow-none;
+  }
+
+  .retro-btn--info {
+    @apply text-white;
+    background-color: var(--nes-blue);
+    box-shadow: 4px 4px 0px 0px var(--border);
+    padding-right: 5px !important;
+  }
+
+  .retro-btn--info:hover:not(:disabled) {
+    @apply translate-x-[2px] translate-y-[2px];
+    box-shadow: 2px 2px 0px 0px var(--border);
+  }
+
+  .retro-btn--info:active:not(:disabled) {
+    @apply translate-x-[4px] translate-y-[4px] shadow-none;
+  }
+
+  .retro-btn--ghost {
+    @apply bg-transparent border-transparent;
+  }
+
+  .retro-btn--ghost:hover:not(:disabled) {
+    @apply bg-muted border-border;
+  }
+
+  .retro-btn--muted {
+    @apply bg-muted text-muted-foreground;
+  }
+
+  .retro-btn--muted:hover:not(:disabled) {
+    @apply bg-muted/80;
+  }
+
+  /* Full width */
+  .retro-btn--full {
+    @apply w-full;
+  }
+
+  /* Button with only border (outline style) */
+  .retro-btn--outline {
+    @apply bg-transparent;
+  }
+
+  .retro-btn--outline:hover:not(:disabled) {
+    @apply bg-muted;
+  }
+
+  /* Icon button - no text, just icon */
+  .retro-icon-btn {
+    @apply p-2 border-2 border-border;
+    @apply hover:bg-muted transition-colors;
+    @apply inline-flex items-center justify-center;
+  }
+
+  .retro-icon-btn--primary {
+    @apply text-primary hover:text-primary;
+  }
+
+  .retro-icon-btn--danger {
+    @apply hover:bg-primary hover:text-white;
+  }
+
+  /* Link styled as button */
+  .retro-btn-link {
+    @apply inline-flex items-center justify-center gap-2;
+    @apply border-4 border-border;
+    @apply retro-button;
+    @apply transition-all cursor-pointer no-underline;
+  }
+
+  /* Button group */
+  .retro-btn-group {
+    @apply flex gap-2;
+  }
+
+  .retro-btn-group--end {
+    @apply justify-end;
+  }
+
+  .retro-btn-group--between {
+    @apply justify-between;
+  }
+}

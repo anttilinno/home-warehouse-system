@@ -1,0 +1,183 @@
+/* ==========================================================================
+   Table Components
+   Table styles for retro theme
+   ========================================================================== */
+
+@layer components {
+  /* Table wrapper/container */
+  .retro-table-wrap {
+    @apply bg-card border-4 border-border overflow-hidden;
+    box-shadow: 4px 4px 0px 0px var(--border);
+  }
+
+  .retro-table-wrap--scroll {
+    @apply overflow-x-auto;
+  }
+
+  /* Table element */
+  .retro-table {
+    @apply w-full retro-body;
+    border-collapse: collapse;
+  }
+
+  .retro-table--fixed {
+    table-layout: fixed;
+  }
+
+  /* Table header */
+  .retro-thead {
+    @apply bg-muted border-b-4 border-border;
+  }
+
+  /* Table header row */
+  .retro-thead .retro-tr {
+    @apply border-b-0;
+  }
+
+  /* Table header cell */
+  .retro-th {
+    @apply px-4 py-3 text-left;
+    @apply retro-heading text-muted-foreground;
+  }
+
+  .retro-th--right {
+    @apply text-right;
+  }
+
+  .retro-th--center {
+    @apply text-center;
+  }
+
+  .retro-th--sortable {
+    @apply cursor-pointer hover:text-foreground transition-colors;
+  }
+
+  .retro-th--sortable:hover {
+    @apply bg-muted/50;
+  }
+
+  .retro-th--active {
+    @apply text-foreground;
+  }
+
+  .retro-th--compact {
+    @apply px-2 py-2;
+  }
+
+  /* Sort indicator container */
+  .retro-th__sort {
+    @apply inline-flex items-center gap-1;
+  }
+
+  .retro-th__sort-icon {
+    @apply w-3 h-3 opacity-50;
+  }
+
+  .retro-th--active .retro-th__sort-icon {
+    @apply opacity-100;
+  }
+
+  /* Table body */
+  .retro-tbody {
+  }
+
+  /* Table row */
+  .retro-tr {
+    @apply border-b-2 border-dashed border-border;
+    @apply hover:bg-muted/50 transition-colors;
+  }
+
+  .retro-tr:last-child {
+    @apply border-b-0;
+  }
+
+  .retro-tr--clickable {
+    @apply cursor-pointer;
+  }
+
+  .retro-tr--selected {
+    @apply bg-muted;
+  }
+
+  .retro-tr--highlight {
+    @apply bg-primary/5;
+  }
+
+  /* Table cell */
+  .retro-td {
+    @apply px-4 py-3 align-middle;
+  }
+
+  .retro-td--right {
+    @apply text-right;
+  }
+
+  .retro-td--center {
+    @apply text-center;
+  }
+
+  .retro-td--muted {
+    @apply text-muted-foreground;
+  }
+
+  .retro-td--compact {
+    @apply px-2 py-2;
+  }
+
+  .retro-td--nowrap {
+    @apply whitespace-nowrap;
+  }
+
+  .retro-td--truncate {
+    @apply truncate max-w-[200px];
+  }
+
+  /* Table cell with icon */
+  .retro-td__with-icon {
+    @apply flex items-center gap-2;
+  }
+
+  .retro-td__icon {
+    @apply w-4 h-4 text-muted-foreground flex-shrink-0;
+  }
+
+  /* Actions cell */
+  .retro-td--actions {
+    @apply text-right;
+  }
+
+  .retro-td__actions {
+    @apply flex justify-end gap-2;
+  }
+
+  /* Empty table state */
+  .retro-table__empty {
+    @apply py-12 text-center;
+  }
+
+  .retro-table__empty-icon {
+    @apply w-12 h-12 text-muted-foreground mx-auto mb-4;
+  }
+
+  .retro-table__empty-text {
+    @apply text-muted-foreground retro-body;
+  }
+
+  /* Table footer */
+  .retro-tfoot {
+    @apply border-t-4 border-border bg-muted;
+  }
+
+  .retro-tfoot .retro-td {
+    @apply font-bold;
+  }
+
+  /* Responsive table wrapper */
+  .retro-table-responsive {
+    @apply -mx-4 md:mx-0;
+  }
+
+  .retro-table-responsive .retro-table-wrap {
+    @apply border-x-0 md:border-x-4;
+  }
+}

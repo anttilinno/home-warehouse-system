@@ -2,6 +2,8 @@
 
 A multi-tenant home inventory management system for organizing everything you own.
 
+![Dashboard Preview](docs/images/dashboard-preview.png)
+
 ## Features
 
 - **Inventory tracking** - Items, locations, containers with hierarchical organization

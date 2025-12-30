@@ -16,6 +16,7 @@ from sqlalchemy.exc import IntegrityError
 
 from warehouse.config import Config
 from warehouse.database import get_db_config
+from warehouse.errors import AppError
 from warehouse.domain.auth.controllers import AuthController
 from warehouse.domain.containers.controllers import ContainerController
 from warehouse.domain.dashboard.controllers import DashboardController
@@ -78,6 +79,14 @@ def http_exception_handler(request: Request, exc: HTTPException) -> Response:
     """Handle HTTP exceptions without logging (expected errors)."""
     return Response(
         {"detail": exc.detail},
+        status_code=exc.status_code,
+    )
+
+
+def app_error_handler(request: Request, exc: AppError) -> Response:
+    """Handle AppError exceptions without logging (expected domain errors)."""
+    return Response(
+        {"detail": exc.message, "code": exc.code.code},
         status_code=exc.status_code,
     )
 
@@ -158,6 +167,7 @@ def create_app(config: Config | None = None) -> Litestar:
         cors_config=cors_config,
         dependencies=app_dependencies,
         exception_handlers={
+            AppError: app_error_handler,
             HTTPException: http_exception_handler,
             IntegrityError: integrity_error_handler,
             Exception: general_exception_handler,

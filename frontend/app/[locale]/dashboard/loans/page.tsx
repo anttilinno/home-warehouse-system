@@ -36,6 +36,18 @@ import { cn } from "@/lib/utils";
 import { SearchableSelect, type SearchableSelectOption } from "@/components/ui/searchable-select";
 import { formatDate as formatDateUtil, formatDateTime as formatDateTimeUtil } from "@/lib/date-utils";
 import { NES_GREEN, NES_BLUE, NES_RED } from "@/lib/nes-colors";
+import {
+  RetroPageHeader,
+  RetroButton,
+  RetroTable,
+  RetroEmptyState,
+  RetroModal,
+  RetroFormGroup,
+  RetroLabel,
+  RetroInput,
+  RetroTextarea,
+  RetroError,
+} from "@/components/retro";
 
 export default function LoansPage() {
   const { isAuthenticated, isLoading: authLoading, canEdit, user } = useAuth();
@@ -191,16 +203,18 @@ export default function LoansPage() {
             "text-red-500 mb-4",
             isRetro && "retro-small uppercase"
           )} style={isRetro ? { color: NES_RED } : undefined}>{error}</p>
-          <button
-            onClick={fetchData}
-            className={cn(
-              isRetro
-                ? "px-4 py-2 border-4 border-border bg-primary text-white retro-small uppercase retro-shadow hover:retro-shadow-sm hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
-                : "px-4 py-2 bg-primary text-primary-foreground rounded-lg"
-            )}
-          >
-            {t("tryAgain")}
-          </button>
+          {isRetro ? (
+            <RetroButton variant="primary" onClick={fetchData}>
+              {t("tryAgain")}
+            </RetroButton>
+          ) : (
+            <button
+              onClick={fetchData}
+              className="px-4 py-2 bg-primary text-primary-foreground rounded-lg"
+            >
+              {t("tryAgain")}
+            </button>
+          )}
         </div>
       </div>
     );
@@ -211,16 +225,10 @@ export default function LoansPage() {
     return (
       <>
         {/* Header */}
-        <div className="mb-8 bg-primary p-4 border-4 border-border retro-shadow">
-          <div className="flex justify-between items-center">
-            <div>
-              <h1 className="text-lg font-bold text-white uppercase retro-heading">
-                {t("title")}
-              </h1>
-              <p className="text-white/80 retro-body retro-small uppercase mt-1">
-                {t("subtitle")}
-              </p>
-            </div>
+        <RetroPageHeader
+          title={t("title")}
+          subtitle={t("subtitle")}
+          actions={
             <div className="flex items-center gap-3">
               <button
                 onClick={() => {
@@ -228,10 +236,10 @@ export default function LoansPage() {
                   if (!showOverdueOnly) setShowActiveOnly(false);
                 }}
                 className={cn(
-                  "px-3 py-2 border-4 border-border retro-small uppercase font-bold retro-body transition-all",
+                  "retro-btn retro-btn--sm",
                   showOverdueOnly
-                    ? "bg-background text-foreground retro-shadow-sm"
-                    : "bg-white/20 text-white retro-shadow hover:retro-shadow-sm hover:translate-x-[2px] hover:translate-y-[2px]"
+                    ? "retro-btn--danger"
+                    : "retro-btn--secondary"
                 )}
               >
                 {t("overdue")}
@@ -242,128 +250,103 @@ export default function LoansPage() {
                   if (!showActiveOnly) setShowOverdueOnly(false);
                 }}
                 className={cn(
-                  "px-3 py-2 border-4 border-border retro-small uppercase font-bold retro-body transition-all",
+                  "retro-btn retro-btn--sm",
                   showActiveOnly
-                    ? "bg-background text-foreground retro-shadow-sm"
-                    : "bg-white/20 text-white retro-shadow hover:retro-shadow-sm hover:translate-x-[2px] hover:translate-y-[2px]"
+                    ? "retro-btn--primary"
+                    : "retro-btn--secondary"
                 )}
               >
                 {showActiveOnly ? t("showActive") : t("showAll")}
               </button>
               {canEdit && (
-                <button
+                <RetroButton
+                  variant="secondary"
+                  icon="Plus"
                   onClick={() => setIsCreateModalOpen(true)}
-                  className="px-3 py-2 bg-background text-foreground border-4 border-border retro-small uppercase font-bold retro-body retro-shadow hover:retro-shadow-sm hover:translate-x-[2px] hover:translate-y-[2px] transition-all flex items-center gap-2"
                 >
-                  <Icon name="Plus" className="w-4 h-4" />
                   {t("addLoan")}
-                </button>
+                </RetroButton>
               )}
             </div>
-          </div>
-        </div>
+          }
+        />
 
-        {/* Empty State */}
+        {/* Empty State or Table */}
         {filteredLoans.length === 0 ? (
-          <div className="bg-card border-4 border-border p-12 text-center retro-shadow">
-            <Icon name="HandCoins" className="w-12 h-12 mx-auto mb-4" style={{ color: NES_BLUE }} />
-            <p className="retro-small uppercase font-bold retro-body text-muted-foreground">
-              {t("noLoans")}
-            </p>
-            {canEdit && (
-              <button
-                onClick={() => setIsCreateModalOpen(true)}
-                className="mt-4 px-4 py-2 bg-primary text-white border-4 border-border retro-small uppercase font-bold retro-body retro-shadow hover:retro-shadow-sm hover:translate-x-[2px] hover:translate-y-[2px] transition-all inline-flex items-center gap-2"
-              >
-                <Icon name="Plus" className="w-4 h-4" />
-                {t("addLoan")}
-              </button>
-            )}
-          </div>
+          <RetroEmptyState
+            icon="HandCoins"
+            message={t("noLoans")}
+            action={
+              canEdit
+                ? {
+                    label: t("addLoan"),
+                    onClick: () => setIsCreateModalOpen(true),
+                    icon: "Plus",
+                  }
+                : undefined
+            }
+          />
         ) : (
-          <div className="bg-card border-4 border-border retro-shadow overflow-hidden">
-            <table className="w-full">
-              <thead className="bg-muted border-b-4 border-border">
-                <tr>
-                  <th className="px-4 py-3 text-left retro-small uppercase font-bold retro-body text-muted-foreground">
-                    {t("status")}
-                  </th>
-                  <th className="px-4 py-3 text-left retro-small uppercase font-bold retro-body text-muted-foreground">
-                    {t("inventory")}
-                  </th>
-                  <th className="px-4 py-3 text-left retro-small uppercase font-bold retro-body text-muted-foreground">
-                    {t("borrower")}
-                  </th>
-                  <th className="px-4 py-3 text-left retro-small uppercase font-bold retro-body text-muted-foreground">
-                    {t("quantity")}
-                  </th>
-                  <th className="px-4 py-3 text-left retro-small uppercase font-bold retro-body text-muted-foreground">
-                    {t("loanedAt")}
-                  </th>
-                  <th className="px-4 py-3 text-left retro-small uppercase font-bold retro-body text-muted-foreground">
-                    {t("dueDate")}
-                  </th>
-                  <th className="px-4 py-3 text-right retro-small uppercase font-bold retro-body text-muted-foreground">
-                    {t("actions")}
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredLoans.map((loan, idx) => {
-                  const status = getLoanStatus(loan);
-                  return (
-                    <tr
-                      key={loan.id}
-                      className={cn(
-                        "hover:bg-muted/50 transition-colors",
-                        idx < filteredLoans.length - 1 && "border-b-2 border-dashed border-border"
+          <RetroTable>
+            <RetroTable.Head>
+              <RetroTable.Row>
+                <RetroTable.Th>{t("status")}</RetroTable.Th>
+                <RetroTable.Th>{t("inventory")}</RetroTable.Th>
+                <RetroTable.Th>{t("borrower")}</RetroTable.Th>
+                <RetroTable.Th>{t("quantity")}</RetroTable.Th>
+                <RetroTable.Th>{t("loanedAt")}</RetroTable.Th>
+                <RetroTable.Th>{t("dueDate")}</RetroTable.Th>
+                <RetroTable.Th align="right">{t("actions")}</RetroTable.Th>
+              </RetroTable.Row>
+            </RetroTable.Head>
+            <RetroTable.Body>
+              {filteredLoans.map((loan) => {
+                const status = getLoanStatus(loan);
+                return (
+                  <RetroTable.Row key={loan.id}>
+                    <RetroTable.Td>
+                      <RetroStatusBadge status={status} t={t} />
+                    </RetroTable.Td>
+                    <RetroTable.Td>
+                      <div className="flex items-center gap-2">
+                        <Icon name="Package" className="w-4 h-4 text-muted-foreground" />
+                        <span className="retro-body retro-small uppercase text-foreground">
+                          {getInventoryDisplay(loan.inventory_id)}
+                        </span>
+                      </div>
+                    </RetroTable.Td>
+                    <RetroTable.Td>
+                      <div className="flex items-center gap-2 retro-body retro-small uppercase text-foreground">
+                        <Icon name="Contact" className="w-4 h-4 text-muted-foreground" />
+                        {getBorrowerName(loan.borrower_id)}
+                      </div>
+                    </RetroTable.Td>
+                    <RetroTable.Td>
+                      {loan.quantity}
+                    </RetroTable.Td>
+                    <RetroTable.Td muted>
+                      {formatDateTime(loan.loaned_at)}
+                    </RetroTable.Td>
+                    <RetroTable.Td muted>
+                      {loan.due_date ? formatDate(loan.due_date) : t("noDueDate")}
+                    </RetroTable.Td>
+                    <RetroTable.Td align="right">
+                      {canEdit && status !== "returned" && (
+                        <RetroButton
+                          variant="success"
+                          size="sm"
+                          icon="RotateCcw"
+                          onClick={() => handleReturn(loan)}
+                        >
+                          {t("return")}
+                        </RetroButton>
                       )}
-                    >
-                      <td className="px-4 py-3">
-                        <RetroStatusBadge status={status} t={t} />
-                      </td>
-                      <td className="px-4 py-3">
-                        <div className="flex items-center gap-2">
-                          <Icon name="Package" className="w-4 h-4 text-muted-foreground" />
-                          <span className="retro-body retro-small uppercase text-foreground">
-                            {getInventoryDisplay(loan.inventory_id)}
-                          </span>
-                        </div>
-                      </td>
-                      <td className="px-4 py-3">
-                        <div className="flex items-center gap-2 retro-body retro-small uppercase text-foreground">
-                          <Icon name="Contact" className="w-4 h-4 text-muted-foreground" />
-                          {getBorrowerName(loan.borrower_id)}
-                        </div>
-                      </td>
-                      <td className="px-4 py-3 retro-body retro-small text-foreground">
-                        {loan.quantity}
-                      </td>
-                      <td className="px-4 py-3 retro-body retro-small uppercase text-muted-foreground">
-                        {formatDateTime(loan.loaned_at)}
-                      </td>
-                      <td className="px-4 py-3 retro-body retro-small uppercase text-muted-foreground">
-                        {loan.due_date ? formatDate(loan.due_date) : t("noDueDate")}
-                      </td>
-                      <td className="px-4 py-3 text-right">
-                        {canEdit && status !== "returned" && (
-                          <button
-                            onClick={() => handleReturn(loan)}
-                            title={t("return")}
-                            className="px-3 py-1.5 border-4 border-border retro-small uppercase font-bold retro-body retro-shadow-sm hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all inline-flex items-center gap-1.5"
-                            style={{ backgroundColor: NES_GREEN, color: "white" }}
-                          >
-                            <Icon name="RotateCcw" className="w-4 h-4" />
-                            {t("return")}
-                          </button>
-                        )}
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
+                    </RetroTable.Td>
+                  </RetroTable.Row>
+                );
+              })}
+            </RetroTable.Body>
+          </RetroTable>
         )}
 
         {/* Create Modal */}
@@ -605,7 +588,7 @@ function RetroStatusBadge({ status, t }: { status: "active" | "returned" | "over
 
   return (
     <span
-      className="px-2 py-1 border-2 border-border text-xs uppercase font-bold retro-body inline-flex items-center gap-1"
+      className="retro-loan-status"
       style={{ backgroundColor: color, color: "white" }}
     >
       <Icon name={icon} className="w-3 h-3" />
@@ -679,12 +662,6 @@ function CreateLoanModal({
   // Lookup maps
   const itemMap = useMemo(() => new Map(items.map((i) => [i.id, i])), [items]);
   const locationMap = useMemo(() => new Map(locations.map((l) => [l.id, l])), [locations]);
-
-  const getInventoryDisplay = (inv: Inventory) => {
-    const item = itemMap.get(inv.item_id);
-    const location = locationMap.get(inv.location_id);
-    return `${item?.name || "Unknown"} @ ${location?.name || "Unknown"} (qty: ${inv.quantity})`;
-  };
 
   // Options for searchable selects
   const inventoryOptions: SearchableSelectOption[] = useMemo(
@@ -767,74 +744,162 @@ function CreateLoanModal({
 
   if (!isOpen) return null;
 
+  // Retro Modal
+  if (isRetro) {
+    return (
+      <RetroModal open={isOpen} onClose={onClose} size="md">
+        <RetroModal.Header title={t("addLoan")} />
+        <RetroModal.Body>
+          <form id="loan-form" onSubmit={handleSubmit} className="space-y-4">
+            {error && (
+              <div className="retro-card p-3">
+                <RetroError>{error}</RetroError>
+              </div>
+            )}
+
+            {jobStatus && !error && (
+              <div className="retro-card p-3" style={{ borderColor: NES_BLUE }}>
+                <p className="retro-small uppercase font-bold retro-body" style={{ color: NES_BLUE }}>
+                  {jobStatus}
+                </p>
+              </div>
+            )}
+
+            <RetroFormGroup>
+              <RetroLabel htmlFor="inventory" required>{t("inventory")}</RetroLabel>
+              <SearchableSelect
+                options={inventoryOptions}
+                value={formData.inventory_id}
+                onChange={(value) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    inventory_id: value,
+                  }))
+                }
+                placeholder={t("selectInventory")}
+                searchPlaceholder={t("searchInventory")}
+                disabled={submitting}
+                required
+              />
+            </RetroFormGroup>
+
+            <RetroFormGroup>
+              <RetroLabel htmlFor="borrower" required>{t("borrower")}</RetroLabel>
+              <SearchableSelect
+                options={borrowerOptions}
+                value={formData.borrower_id}
+                onChange={(value) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    borrower_id: value,
+                  }))
+                }
+                placeholder={t("selectBorrower")}
+                searchPlaceholder={t("searchBorrower")}
+                disabled={submitting}
+                required
+              />
+            </RetroFormGroup>
+
+            <RetroFormGroup>
+              <RetroLabel htmlFor="quantity" required>{t("quantity")}</RetroLabel>
+              <RetroInput
+                id="quantity"
+                type="number"
+                min="1"
+                value={formData.quantity}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    quantity: parseInt(e.target.value) || 1,
+                  }))
+                }
+                required
+                disabled={submitting}
+              />
+            </RetroFormGroup>
+
+            <RetroFormGroup>
+              <RetroLabel htmlFor="due_date">{t("dueDate")}</RetroLabel>
+              <RetroInput
+                id="due_date"
+                type="date"
+                value={formData.due_date || ""}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    due_date: e.target.value || null,
+                  }))
+                }
+                disabled={submitting}
+              />
+            </RetroFormGroup>
+
+            <RetroFormGroup>
+              <RetroLabel htmlFor="notes">{t("notes")}</RetroLabel>
+              <RetroTextarea
+                id="notes"
+                value={formData.notes || ""}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    notes: e.target.value || null,
+                  }))
+                }
+                placeholder={t("notesPlaceholder")}
+                rows={3}
+                disabled={submitting}
+              />
+            </RetroFormGroup>
+          </form>
+        </RetroModal.Body>
+        <RetroModal.Footer>
+          <RetroButton variant="secondary" onClick={onClose} disabled={submitting}>
+            {t("cancel")}
+          </RetroButton>
+          <RetroButton
+            variant="primary"
+            type="submit"
+            form="loan-form"
+            loading={submitting}
+          >
+            {t("save")}
+          </RetroButton>
+        </RetroModal.Footer>
+      </RetroModal>
+    );
+  }
+
+  // Standard Modal
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center" onClick={onClose}>
       <div className="absolute inset-0 bg-black/50" />
       <div
-        className={cn(
-          "relative z-10 w-full max-w-md m-4 bg-background",
-          isRetro
-            ? "border-4 border-border retro-shadow"
-            : "border rounded-lg shadow-xl"
-        )}
+        className="relative z-10 w-full max-w-md m-4 bg-background border rounded-lg shadow-xl"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className={cn(
-          "flex items-center justify-between p-4",
-          isRetro ? "border-b-4 border-border bg-primary" : "border-b"
-        )}>
-          <h2 className={cn(
-            isRetro
-              ? "text-sm font-bold text-white uppercase retro-heading"
-              : "text-lg font-semibold"
-          )}>{t("addLoan")}</h2>
-          <button onClick={onClose} className={cn(
-            isRetro
-              ? "p-1 border-2 border-white/50 hover:bg-white/20"
-              : "p-1 rounded hover:bg-muted"
-          )}>
-            {isRetro ? <Icon name="X" className="w-5 h-5 text-white" /> : <X className="w-5 h-5" />}
+        <div className="flex items-center justify-between p-4 border-b">
+          <h2 className="text-lg font-semibold">{t("addLoan")}</h2>
+          <button onClick={onClose} className="p-1 rounded hover:bg-muted">
+            <X className="w-5 h-5" />
           </button>
         </div>
 
         <form onSubmit={handleSubmit} className="p-4 space-y-4">
           {error && (
-            <div className={cn(
-              "p-3",
-              isRetro
-                ? "border-4 border-border bg-background"
-                : "bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md"
-            )}>
-              <p className={cn(
-                isRetro
-                  ? "retro-small uppercase font-bold retro-body"
-                  : "text-sm text-red-600 dark:text-red-400"
-              )} style={isRetro ? { color: NES_RED } : undefined}>{error}</p>
+            <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md p-3">
+              <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
             </div>
           )}
 
           {jobStatus && !error && (
-            <div className={cn(
-              "p-3",
-              isRetro
-                ? "border-4 border-border bg-background"
-                : "bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-md"
-            )}>
-              <p className={cn(
-                isRetro
-                  ? "retro-small uppercase font-bold retro-body"
-                  : "text-sm text-blue-600 dark:text-blue-400"
-              )} style={isRetro ? { color: NES_BLUE } : undefined}>{jobStatus}</p>
+            <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-md p-3">
+              <p className="text-sm text-blue-600 dark:text-blue-400">{jobStatus}</p>
             </div>
           )}
 
           <div>
-            <label className={cn(
-              "block mb-2",
-              isRetro
-                ? "retro-small uppercase font-bold retro-body text-foreground"
-                : "text-sm font-medium text-foreground"
-            )}>
+            <label className="block mb-2 text-sm font-medium text-foreground">
               {t("inventory")}
             </label>
             <SearchableSelect
@@ -854,12 +919,7 @@ function CreateLoanModal({
           </div>
 
           <div>
-            <label className={cn(
-              "block mb-2",
-              isRetro
-                ? "retro-small uppercase font-bold retro-body text-foreground"
-                : "text-sm font-medium text-foreground"
-            )}>
+            <label className="block mb-2 text-sm font-medium text-foreground">
               {t("borrower")}
             </label>
             <SearchableSelect
@@ -879,12 +939,7 @@ function CreateLoanModal({
           </div>
 
           <div>
-            <label className={cn(
-              "block mb-2",
-              isRetro
-                ? "retro-small uppercase font-bold retro-body text-foreground"
-                : "text-sm font-medium text-foreground"
-            )}>
+            <label className="block mb-2 text-sm font-medium text-foreground">
               {t("quantity")}
             </label>
             <input
@@ -897,24 +952,14 @@ function CreateLoanModal({
                   quantity: parseInt(e.target.value) || 1,
                 }))
               }
-              className={cn(
-                "w-full px-3 py-2 bg-background text-foreground",
-                isRetro
-                  ? "border-4 border-border retro-body retro-small uppercase focus:outline-none"
-                  : "border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-              )}
+              className="w-full px-3 py-2 bg-background text-foreground border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
               required
               disabled={submitting}
             />
           </div>
 
           <div>
-            <label className={cn(
-              "block mb-2",
-              isRetro
-                ? "retro-small uppercase font-bold retro-body text-foreground"
-                : "text-sm font-medium text-foreground"
-            )}>
+            <label className="block mb-2 text-sm font-medium text-foreground">
               {t("dueDate")}
             </label>
             <input
@@ -926,23 +971,13 @@ function CreateLoanModal({
                   due_date: e.target.value || null,
                 }))
               }
-              className={cn(
-                "w-full px-3 py-2 bg-background text-foreground",
-                isRetro
-                  ? "border-4 border-border retro-body retro-small uppercase focus:outline-none"
-                  : "border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-              )}
+              className="w-full px-3 py-2 bg-background text-foreground border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
               disabled={submitting}
             />
           </div>
 
           <div>
-            <label className={cn(
-              "block mb-2",
-              isRetro
-                ? "retro-small uppercase font-bold retro-body text-foreground"
-                : "text-sm font-medium text-foreground"
-            )}>
+            <label className="block mb-2 text-sm font-medium text-foreground">
               {t("notes")}
             </label>
             <textarea
@@ -955,12 +990,7 @@ function CreateLoanModal({
               }
               placeholder={t("notesPlaceholder")}
               rows={3}
-              className={cn(
-                "w-full px-3 py-2 bg-background text-foreground resize-none",
-                isRetro
-                  ? "border-4 border-border retro-body retro-small focus:outline-none"
-                  : "border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-              )}
+              className="w-full px-3 py-2 bg-background text-foreground border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent resize-none"
               disabled={submitting}
             />
           </div>
@@ -969,11 +999,7 @@ function CreateLoanModal({
             <button
               type="button"
               onClick={onClose}
-              className={cn(
-                isRetro
-                  ? "px-4 py-2 border-4 border-border bg-muted text-foreground retro-small uppercase font-bold retro-body retro-shadow-sm hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
-                  : "px-4 py-2 border border-border rounded-md hover:bg-muted transition-colors"
-              )}
+              className="px-4 py-2 border border-border rounded-md hover:bg-muted transition-colors"
               disabled={submitting}
             >
               {t("cancel")}
@@ -981,11 +1007,7 @@ function CreateLoanModal({
             <button
               type="submit"
               disabled={submitting}
-              className={cn(
-                isRetro
-                  ? "px-4 py-2 border-4 border-border bg-primary text-white retro-small uppercase font-bold retro-body retro-shadow-sm hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all disabled:opacity-50"
-                  : "px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors disabled:opacity-50"
-              )}
+              className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors disabled:opacity-50"
             >
               {submitting ? t("saving") : t("save")}
             </button>
@@ -1047,94 +1069,103 @@ function ReturnLoanModal({
 
   if (!isOpen) return null;
 
+  // Retro Modal
+  if (isRetro) {
+    return (
+      <RetroModal open={isOpen} onClose={onClose} size="md">
+        <RetroModal.Header title={t("returnConfirmTitle")} variant="success" />
+        <RetroModal.Body>
+          {error && (
+            <div className="retro-card p-3 mb-4">
+              <RetroError>{error}</RetroError>
+            </div>
+          )}
+
+          <p className="retro-body text-muted-foreground mb-4">{t("returnConfirmMessage")}</p>
+
+          <RetroModal.Preview>
+            <div className="flex items-center gap-2">
+              <Icon name="Package" className="w-4 h-4 text-muted-foreground" />
+              <span className="retro-heading">{getInventoryDisplay(loan.inventory_id)}</span>
+            </div>
+            <div className="flex items-center gap-2 text-muted-foreground mt-2">
+              <Icon name="Contact" className="w-3 h-3" />
+              {getBorrowerName(loan.borrower_id)}
+            </div>
+            <div className="text-muted-foreground mt-1">
+              Qty: {loan.quantity}
+            </div>
+          </RetroModal.Preview>
+
+          <RetroFormGroup className="mt-4">
+            <RetroLabel htmlFor="return_notes">{t("notes")}</RetroLabel>
+            <RetroTextarea
+              id="return_notes"
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              placeholder={t("notesPlaceholder")}
+              rows={2}
+            />
+          </RetroFormGroup>
+        </RetroModal.Body>
+        <RetroModal.Footer>
+          <RetroButton variant="secondary" onClick={onClose}>
+            {t("cancel")}
+          </RetroButton>
+          <RetroButton
+            variant="success"
+            onClick={handleReturn}
+            loading={submitting}
+          >
+            {t("returnConfirmButton")}
+          </RetroButton>
+        </RetroModal.Footer>
+      </RetroModal>
+    );
+  }
+
+  // Standard Modal
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center" onClick={onClose}>
       <div className="absolute inset-0 bg-black/50" />
       <div
-        className={cn(
-          "relative z-10 w-full max-w-md m-4 bg-background",
-          isRetro
-            ? "border-4 border-border retro-shadow"
-            : "border rounded-lg shadow-xl"
-        )}
+        className="relative z-10 w-full max-w-md m-4 bg-background border rounded-lg shadow-xl"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className={cn(
-          "flex items-center justify-between p-4",
-          isRetro ? "border-b-4 border-border" : "border-b"
-        )} style={isRetro ? { backgroundColor: NES_GREEN } : undefined}>
-          <h2 className={cn(
-            isRetro
-              ? "text-sm font-bold text-white uppercase retro-heading"
-              : "text-lg font-semibold text-green-600 dark:text-green-400"
-          )}>
+        <div className="flex items-center justify-between p-4 border-b">
+          <h2 className="text-lg font-semibold text-green-600 dark:text-green-400">
             {t("returnConfirmTitle")}
           </h2>
-          <button onClick={onClose} className={cn(
-            isRetro
-              ? "p-1 border-2 border-white/50 hover:bg-white/20"
-              : "p-1 rounded hover:bg-muted"
-          )}>
-            {isRetro ? <Icon name="X" className="w-5 h-5 text-white" /> : <X className="w-5 h-5" />}
+          <button onClick={onClose} className="p-1 rounded hover:bg-muted">
+            <X className="w-5 h-5" />
           </button>
         </div>
 
         <div className="p-4 space-y-4">
           {error && (
-            <div className={cn(
-              "p-3",
-              isRetro
-                ? "border-4 border-border bg-background"
-                : "bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md"
-            )}>
-              <p className={cn(
-                isRetro
-                  ? "retro-small uppercase font-bold retro-body"
-                  : "text-sm text-red-600 dark:text-red-400"
-              )} style={isRetro ? { color: NES_RED } : undefined}>{error}</p>
+            <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md p-3">
+              <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
             </div>
           )}
 
-          <p className={cn(
-            "text-muted-foreground",
-            isRetro && "retro-small uppercase retro-body"
-          )}>{t("returnConfirmMessage")}</p>
+          <p className="text-muted-foreground">{t("returnConfirmMessage")}</p>
 
-          <div className={cn(
-            "p-3 space-y-2",
-            isRetro
-              ? "border-4 border-border bg-muted"
-              : "bg-muted rounded-md"
-          )}>
+          <div className="p-3 bg-muted rounded-md space-y-2">
             <div className="flex items-center gap-2">
-              {isRetro ? <Icon name="Package" className="w-4 h-4 text-muted-foreground" /> : <Package className="w-4 h-4 text-muted-foreground" />}
-              <span className={cn(
-                "font-medium",
-                isRetro && "retro-small uppercase retro-body"
-              )}>{getInventoryDisplay(loan.inventory_id)}</span>
+              <Package className="w-4 h-4 text-muted-foreground" />
+              <span className="font-medium">{getInventoryDisplay(loan.inventory_id)}</span>
             </div>
-            <div className={cn(
-              "flex items-center gap-2 text-muted-foreground",
-              isRetro ? "retro-small uppercase retro-body" : "text-sm"
-            )}>
-              {isRetro ? <Icon name="Contact" className="w-3 h-3" /> : <Contact className="w-3 h-3" />}
+            <div className="flex items-center gap-2 text-muted-foreground text-sm">
+              <Contact className="w-3 h-3" />
               {getBorrowerName(loan.borrower_id)}
             </div>
-            <div className={cn(
-              "text-muted-foreground",
-              isRetro ? "retro-small uppercase retro-body" : "text-sm"
-            )}>
+            <div className="text-muted-foreground text-sm">
               Qty: {loan.quantity}
             </div>
           </div>
 
           <div>
-            <label className={cn(
-              "block mb-2",
-              isRetro
-                ? "retro-small uppercase font-bold retro-body text-foreground"
-                : "text-sm font-medium text-foreground"
-            )}>
+            <label className="block mb-2 text-sm font-medium text-foreground">
               {t("notes")}
             </label>
             <textarea
@@ -1142,12 +1173,7 @@ function ReturnLoanModal({
               onChange={(e) => setNotes(e.target.value)}
               placeholder={t("notesPlaceholder")}
               rows={2}
-              className={cn(
-                "w-full px-3 py-2 bg-background text-foreground resize-none",
-                isRetro
-                  ? "border-4 border-border retro-body retro-small focus:outline-none"
-                  : "border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-              )}
+              className="w-full px-3 py-2 bg-background text-foreground border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent resize-none"
             />
           </div>
 
@@ -1155,11 +1181,7 @@ function ReturnLoanModal({
             <button
               type="button"
               onClick={onClose}
-              className={cn(
-                isRetro
-                  ? "px-4 py-2 border-4 border-border bg-muted text-foreground retro-small uppercase font-bold retro-body retro-shadow-sm hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
-                  : "px-4 py-2 border border-border rounded-md hover:bg-muted transition-colors"
-              )}
+              className="px-4 py-2 border border-border rounded-md hover:bg-muted transition-colors"
             >
               {t("cancel")}
             </button>
@@ -1167,12 +1189,7 @@ function ReturnLoanModal({
               type="button"
               onClick={handleReturn}
               disabled={submitting}
-              className={cn(
-                isRetro
-                  ? "px-4 py-2 border-4 border-border text-white retro-small uppercase font-bold retro-body retro-shadow-sm hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all disabled:opacity-50"
-                  : "px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors disabled:opacity-50"
-              )}
-              style={isRetro ? { backgroundColor: NES_GREEN } : undefined}
+              className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors disabled:opacity-50"
             >
               {submitting ? t("returning") : t("returnConfirmButton")}
             </button>

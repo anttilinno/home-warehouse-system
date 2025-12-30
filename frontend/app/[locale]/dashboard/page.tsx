@@ -4,7 +4,7 @@ import { Icon } from "@/components/icons";
 import type * as LucideIcons from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { Link, useRouter } from "@/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import {
   dashboardApi,
   DashboardExtendedStats,
@@ -12,17 +12,32 @@ import {
   tokenStorage,
   locationsApi,
   Location,
+  workspacesApi,
+  UserSearchResult,
+  getTranslatedErrorMessage,
 } from "@/lib/api";
 import { useTranslations } from "next-intl";
 import { useTheme } from "next-themes";
 import { NES_GREEN, NES_BLUE, NES_RED, NES_YELLOW } from "@/lib/nes-colors";
+import {
+  RetroTable,
+  RetroModal,
+  RetroButton,
+  RetroFormGroup,
+  RetroLabel,
+  RetroInput,
+  RetroSelect,
+  RetroBadge,
+} from "@/components/retro";
 
 type IconName = keyof typeof LucideIcons;
 
 export default function DashboardPage() {
-  const { isAuthenticated, isLoading: authLoading } = useAuth();
+  const { isAuthenticated, isLoading: authLoading, currentWorkspace } = useAuth();
   const router = useRouter();
   const t = useTranslations("dashboard");
+  const tSettings = useTranslations("settings");
+  const tErrors = useTranslations("errors");
   const { theme, setTheme } = useTheme();
   const isRetro = theme?.startsWith("retro");
   const [stats, setStats] = useState<DashboardExtendedStats | null>(null);
@@ -30,6 +45,91 @@ export default function DashboardPage() {
   const [locations, setLocations] = useState<Location[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Invite member state
+  const [showInviteModal, setShowInviteModal] = useState(false);
+  const [inviteEmail, setInviteEmail] = useState("");
+  const [inviteRole, setInviteRole] = useState("member");
+  const [isInviting, setIsInviting] = useState(false);
+  const [inviteError, setInviteError] = useState<string | null>(null);
+  const [availableUsers, setAvailableUsers] = useState<UserSearchResult[]>([]);
+  const [filteredUsers, setFilteredUsers] = useState<UserSearchResult[]>([]);
+  const [selectedUser, setSelectedUser] = useState<UserSearchResult | null>(null);
+  const [isLoadingUsers, setIsLoadingUsers] = useState(false);
+  const [showDropdown, setShowDropdown] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+
+  // Invite member handlers (must be before conditional returns)
+  const loadAvailableUsers = useCallback(async () => {
+    if (!currentWorkspace) return;
+    setIsLoadingUsers(true);
+    try {
+      const users = await workspacesApi.searchUsers(currentWorkspace.id);
+      setAvailableUsers(users);
+      setFilteredUsers(users);
+    } catch (err) {
+      console.error("Failed to load users:", err);
+      setAvailableUsers([]);
+      setFilteredUsers([]);
+    } finally {
+      setIsLoadingUsers(false);
+    }
+  }, [currentWorkspace]);
+
+  useEffect(() => {
+    if (!searchQuery) {
+      setFilteredUsers(availableUsers);
+      return;
+    }
+    const query = searchQuery.toLowerCase();
+    const filtered = availableUsers.filter(
+      (user) =>
+        user.full_name.toLowerCase().includes(query) ||
+        user.email.toLowerCase().includes(query)
+    );
+    setFilteredUsers(filtered);
+  }, [searchQuery, availableUsers]);
+
+  const handleSelectUser = (user: UserSearchResult) => {
+    setSelectedUser(user);
+    setInviteEmail(user.email);
+    setShowDropdown(false);
+    setSearchQuery("");
+  };
+
+  const handleClearSelection = () => {
+    setSelectedUser(null);
+    setInviteEmail("");
+    setSearchQuery("");
+  };
+
+  const handleOpenInviteModal = () => {
+    setShowInviteModal(true);
+    loadAvailableUsers();
+  };
+
+  const handleInviteMember = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!currentWorkspace) return;
+    setIsInviting(true);
+    setInviteError(null);
+
+    try {
+      await workspacesApi.inviteMember(currentWorkspace.id, {
+        email: inviteEmail,
+        role: inviteRole,
+      });
+      setShowInviteModal(false);
+      setInviteEmail("");
+      setInviteRole("member");
+      setSelectedUser(null);
+      setSearchQuery("");
+    } catch (err) {
+      setInviteError(getTranslatedErrorMessage(err instanceof Error ? err.message : "Unknown error", (key) => tErrors(key)));
+    } finally {
+      setIsInviting(false);
+    }
+  };
 
   useEffect(() => {
     if (isAuthenticated && error?.includes("Authentication required")) {
@@ -57,7 +157,7 @@ export default function DashboardPage() {
       setLoading(true);
       const [statsData, recentData, locationsData] = await Promise.all([
         dashboardApi.getExtendedStats(),
-        dashboardApi.getRecentlyModified(5),
+        dashboardApi.getRecentlyModified(10),
         locationsApi.list().catch(() => []),
       ]);
       setStats(statsData);
@@ -121,10 +221,6 @@ export default function DashboardPage() {
     return `${diffDays}d ago`;
   };
 
-  const hasAlerts =
-    (stats?.low_stock_count || 0) > 0 ||
-    (stats?.overdue_loans_count || 0) > 0;
-
   // NES color constants (Tailwind can't resolve CSS vars in arbitrary values)
 
   // NES-style dashboard for retro themes
@@ -132,72 +228,61 @@ export default function DashboardPage() {
     return (
       <>
         {/* Header */}
-        <header className="mb-4 flex flex-col md:flex-row md:items-end justify-between gap-2">
+        <header className="dashboard-header">
           <div>
-            <h1 className="text-xl font-bold mb-1">{t("title")}</h1>
-            <p className="text-muted-foreground font-mono text-xs">
+            <h1 className="dashboard-header__title">{t("title")}</h1>
+            <p className="dashboard-header__subtitle">
               &gt; SELECT * FROM INVENTORY WHERE STATUS = 'ACTIVE'
             </p>
           </div>
-          <div className="flex items-center gap-2">
-            <button
+          <div className="dashboard-header__actions">
+            <RetroButton
+              variant="secondary"
+              size="icon"
               onClick={() => setTheme(theme === "retro-dark" ? "retro-light" : "retro-dark")}
-              className="h-8 w-8 flex items-center justify-center bg-card border-4 border-border retro-shadow-md hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-[1px_1px_0px_0px_var(--border)] transition-all"
               title={theme === "retro-dark" ? "Switch to light mode" : "Switch to dark mode"}
             >
               <Icon name={theme === "retro-dark" ? "Sun" : "Moon"} className="w-4 h-4" />
-            </button>
-            <Link
-              href="/dashboard/inventory/new"
-              className="h-8 px-3 flex items-center gap-2 text-white border-4 border-border retro-shadow-md hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-[1px_1px_0px_0px_var(--border)] transition-all retro-small font-bold uppercase"
-              style={{ backgroundColor: NES_BLUE }}
-            >
-              <Icon name="Plus" className="w-3 h-3" />
-              <span className="retro-heading">{t("newItem")}</span>
+            </RetroButton>
+            <Link href="/dashboard/inventory/new">
+              <RetroButton variant="info">
+                <Icon name="Plus" className="w-3 h-3" />
+                <span>{t("newItem")}</span>
+              </RetroButton>
             </Link>
           </div>
         </header>
 
         {/* Stats Grid - NES Style */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
+        <div className="dashboard-stats">
           {/* Total Items */}
-          <Link
-            href="/dashboard/inventory"
-            className="bg-card border-4 border-border p-3 retro-shadow-md flex flex-col justify-between h-24 relative group hover:-translate-y-0.5 transition-transform"
-          >
-            <div className="absolute top-1 right-1 opacity-20">
+          <Link href="/dashboard/inventory" className="dashboard-stat">
+            <div className="retro-stat-card__icon">
               <Icon name="Package" className="w-5 h-5" />
             </div>
-            <div className="retro-small text-muted-foreground border-b-2 border-muted pb-1">
-              {t("totalItems")}
-            </div>
+            <div className="dashboard-stat__label">{t("totalItems")}</div>
             <div>
-              <span className="text-2xl font-bold block retro-body">
+              <span className="dashboard-stat__value">
                 {stats?.total_items.toLocaleString() || "0"}
               </span>
-              <span className="retro-small" style={{ color: NES_GREEN }}>
+              <span className="dashboard-stat__indicator dashboard-stat__indicator--positive">
                 ▲ {t("inStock")}
               </span>
             </div>
           </Link>
 
           {/* Low Stock */}
-          <Link
-            href="/dashboard/inventory?filter=low-stock"
-            className="bg-card border-4 border-border p-3 retro-shadow-md flex flex-col justify-between h-24 relative group hover:-translate-y-0.5 transition-transform"
-          >
-            <div className="absolute top-1 right-1 opacity-20">
+          <Link href="/dashboard/inventory?filter=low-stock" className="dashboard-stat">
+            <div className="retro-stat-card__icon">
               <Icon name="AlertTriangle" className="w-5 h-5 text-primary" />
             </div>
-            <div className="retro-small text-muted-foreground border-b-2 border-muted pb-1">
-              {t("lowStock")}
-            </div>
+            <div className="dashboard-stat__label">{t("lowStock")}</div>
             <div>
-              <span className="text-2xl font-bold text-primary block retro-body">
+              <span className="dashboard-stat__value text-primary">
                 {stats?.low_stock_count || 0}
               </span>
               {(stats?.low_stock_count || 0) > 0 && (
-                <span className="retro-small text-primary animate-pulse">
+                <span className="dashboard-stat__indicator dashboard-stat__indicator--negative animate-pulse">
                   !!! {t("urgent")} !!!
                 </span>
               )}
@@ -205,42 +290,47 @@ export default function DashboardPage() {
           </Link>
 
           {/* Active Loans */}
-          <Link
-            href="/dashboard/loans"
-            className="bg-card border-4 border-border p-3 retro-shadow-md flex flex-col justify-between h-24 relative group hover:-translate-y-0.5 transition-transform"
-          >
-            <div className="absolute top-1 right-1 opacity-20">
+          <Link href="/dashboard/loans" className="dashboard-stat">
+            <div className="retro-stat-card__icon">
               <Icon name="Users" className="w-5 h-5" />
             </div>
-            <div className="retro-small text-muted-foreground border-b-2 border-muted pb-1">
-              {t("activeLoans")}
-            </div>
+            <div className="dashboard-stat__label">{t("activeLoans")}</div>
             <div>
-              <span className="text-2xl font-bold block retro-body">
+              <span className="dashboard-stat__value">
                 {stats?.active_loans || 0}
               </span>
-              <span className="retro-small text-muted-foreground">
-                {t("dueSoon")}
-              </span>
+              {(stats?.overdue_loans_count || 0) > 0 || (stats?.due_soon_loans_count || 0) > 0 ? (
+                <div className="flex gap-1 flex-wrap">
+                  {(stats?.overdue_loans_count || 0) > 0 && (
+                    <RetroBadge variant="danger" size="sm">
+                      {stats?.overdue_loans_count} {t("overdue")}
+                    </RetroBadge>
+                  )}
+                  {(stats?.due_soon_loans_count || 0) > 0 && (
+                    <RetroBadge variant="warning" size="sm">
+                      {stats?.due_soon_loans_count} {t("dueSoon")}
+                    </RetroBadge>
+                  )}
+                </div>
+              ) : (
+                <RetroBadge variant="success" size="sm">
+                  ▲ {t("allGood")}
+                </RetroBadge>
+              )}
             </div>
           </Link>
 
           {/* Total Value */}
-          <Link
-            href="/dashboard/analytics"
-            className="bg-card border-4 border-border p-3 retro-shadow-md flex flex-col justify-between h-24 relative group hover:-translate-y-0.5 transition-transform"
-          >
-            <div className="absolute top-1 right-1 opacity-20">
+          <Link href="/dashboard/analytics" className="dashboard-stat">
+            <div className="retro-stat-card__icon">
               <Icon name="DollarSign" className="w-5 h-5" />
             </div>
-            <div className="retro-small text-muted-foreground border-b-2 border-muted pb-1">
-              {t("score")}
-            </div>
+            <div className="dashboard-stat__label">{t("score")}</div>
             <div>
-              <span className="text-2xl font-bold block retro-body">
+              <span className="dashboard-stat__value">
                 {stats ? formatCurrency(stats.total_inventory_value, stats.currency_code) : "€0"}
               </span>
-              <span className="retro-small text-muted-foreground">
+              <span className="dashboard-stat__indicator text-muted-foreground">
                 {t("credits")}
               </span>
             </div>
@@ -248,12 +338,12 @@ export default function DashboardPage() {
         </div>
 
         {/* Main Content Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-          {/* Left Column - Recent Activity & Alert */}
-          <div className="lg:col-span-2 space-y-4">
+        <div className="dashboard-content">
+          {/* Left Column - Recent Activity */}
+          <div className="dashboard-main">
             {/* Recent Activity Table */}
-            <div className="bg-card border-4 border-border retro-shadow-md">
-              <div className="border-b-4 border-border px-3 py-2 bg-secondary flex justify-between items-center">
+            <div className="dashboard-activity">
+              <div className="dashboard-activity__header">
                 <div className="flex items-center gap-2">
                   <Icon name="History" className="w-3 h-3" />
                   <h2 className="retro-heading">{t("recentActivity")}</h2>
@@ -262,151 +352,98 @@ export default function DashboardPage() {
                   {t("viewAll")}
                 </Link>
               </div>
-              <div className="overflow-x-auto">
-                <table className="w-full text-left border-collapse text-sm">
-                  <thead>
-                    <tr className="border-b-4 border-border retro-small text-muted-foreground bg-muted">
-                      <th className="px-3 py-2 font-bold">{t("item")}</th>
-                      <th className="px-3 py-2 font-bold">{t("action")}</th>
-                      <th className="px-3 py-2 font-bold">{t("location")}</th>
-                      <th className="px-3 py-2 font-bold text-right">{t("time")}</th>
-                    </tr>
-                  </thead>
-                  <tbody>
+              <div className="dashboard-activity__body">
+                <RetroTable>
+                  <RetroTable.Head>
+                    <RetroTable.Row>
+                      <RetroTable.Th compact>{t("item")}</RetroTable.Th>
+                      <RetroTable.Th compact>{t("action")}</RetroTable.Th>
+                      <RetroTable.Th compact>{t("location")}</RetroTable.Th>
+                      <RetroTable.Th compact align="right">{t("time")}</RetroTable.Th>
+                    </RetroTable.Row>
+                  </RetroTable.Head>
+                  <RetroTable.Body>
                     {recentItems.length === 0 ? (
-                      <tr>
-                        <td colSpan={4} className="p-3 text-center text-muted-foreground text-xs">
+                      <RetroTable.Row>
+                        <RetroTable.Td colSpan={4} muted className="text-center">
                           {t("noRecentItems")}
-                        </td>
-                      </tr>
+                        </RetroTable.Td>
+                      </RetroTable.Row>
                     ) : (
                       recentItems.map((item, index) => (
-                        <tr
+                        <RetroTable.Row
                           key={item.id}
+                          clickable
                           onClick={() => router.push(`/dashboard/inventory/${item.id}`)}
-                          className="border-b border-dashed border-muted hover:bg-muted/50 cursor-pointer"
                         >
-                          <td className="px-3 py-2 font-medium flex items-center gap-2">
-                            <div
-                              className="w-6 h-6 border-2 border-border flex items-center justify-center"
-                              style={{ backgroundColor: `${NES_BLUE}30` }}
-                            >
-                              <Icon name="Package" className="w-3 h-3" style={{ color: NES_BLUE }} />
+                          <RetroTable.Td compact>
+                            <div className="flex items-center gap-2">
+                              <div className="retro-item-icon retro-item-icon--blue">
+                                <Icon name="Package" className="w-3 h-3" />
+                              </div>
+                              <span className="truncate max-w-[120px] text-xs">{item.item_name}</span>
                             </div>
-                            <span className="truncate max-w-[120px] text-xs">{item.item_name}</span>
-                          </td>
-                          <td className="px-3 py-2">
-                            <span
-                              className="px-2 py-0.5 retro-small border-2 border-border text-white"
-                              style={{
-                                backgroundColor: index % 3 === 0 ? NES_GREEN : index % 3 === 1 ? NES_RED : "#6c757d"
-                              }}
+                          </RetroTable.Td>
+                          <RetroTable.Td compact>
+                            <RetroBadge
+                              variant={index % 3 === 0 ? "success" : index % 3 === 1 ? "danger" : "muted"}
+                              size="sm"
                             >
                               {index % 3 === 0 ? t("checkIn") : index % 3 === 1 ? t("loaned") : t("added")}
-                            </span>
-                          </td>
-                          <td className="px-3 py-2 text-muted-foreground text-xs truncate max-w-[80px]">
+                            </RetroBadge>
+                          </RetroTable.Td>
+                          <RetroTable.Td compact muted truncate>
                             {item.location_name}
-                          </td>
-                          <td className="px-3 py-2 text-right text-muted-foreground text-xs">
+                          </RetroTable.Td>
+                          <RetroTable.Td compact muted align="right">
                             {formatRelativeTime(item.updated_at)}
-                          </td>
-                        </tr>
+                          </RetroTable.Td>
+                        </RetroTable.Row>
                       ))
                     )}
-                  </tbody>
-                </table>
+                  </RetroTable.Body>
+                </RetroTable>
               </div>
             </div>
-
-            {/* Alert Box - Boss Battle Style */}
-            {hasAlerts && (
-              <div className="border-4 border-primary bg-primary/10 p-3 retro-shadow-md">
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="w-10 h-10 bg-primary flex-shrink-0 border-4 border-border flex items-center justify-center">
-                    <Icon name="AlertTriangle" className="w-5 h-5 text-white animate-pulse" />
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="retro-heading text-primary">
-                      ! {t("bossAlert")} !
-                    </h3>
-                    <p className="text-xs text-foreground">
-                      {(stats?.low_stock_count || 0) > 0 && (
-                        <span>{stats?.low_stock_count} {t("itemsLowStock")}. </span>
-                      )}
-                      {(stats?.overdue_loans_count || 0) > 0 && (
-                        <span>{stats?.overdue_loans_count} {t("overdueLoans")}. </span>
-                      )}
-                      {t("completeOrLose")}
-                    </p>
-                  </div>
-                </div>
-                <Link
-                  href="/dashboard/inventory?filter=low-stock"
-                  className="inline-block bg-primary hover:bg-primary/80 text-white retro-small px-3 py-1.5 border-2 border-border retro-shadow-sm active:shadow-none active:translate-y-[2px] active:translate-x-[2px] transition-all"
-                >
-                  {t("startAudit")}
-                </Link>
-              </div>
-            )}
           </div>
 
           {/* Right Column - Quick Actions & Storage */}
-          <div className="space-y-4">
+          <div className="dashboard-aside">
             {/* Quick Actions */}
-            <div className="bg-card border-4 border-border retro-shadow-md p-3">
-              <h2 className="retro-heading mb-3 flex items-center gap-2 border-b-2 border-border pb-2">
+            <div className="retro-section">
+              <div className="retro-card__header">
                 <Icon name="Zap" className="w-3 h-3" style={{ color: NES_BLUE }} />
-                {t("quickActions")}
-              </h2>
-              <div className="grid grid-cols-2 gap-2">
-                <Link
-                  href="/dashboard/inventory/new"
-                  className="flex flex-col items-center justify-center p-2 border-4 border-border hover:text-white transition-colors group bg-card"
-                  style={{ ["--hover-bg" as string]: NES_BLUE }}
-                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = NES_BLUE}
-                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = ""}
-                >
-                  <Icon name="QrCode" className="w-5 h-5 mb-1" />
-                  <span className="retro-small">{t("scan")}</span>
-                </Link>
-                <Link
-                  href="/dashboard/analytics"
-                  className="flex flex-col items-center justify-center p-2 border-4 border-border hover:text-white transition-colors group bg-card"
-                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = NES_GREEN}
-                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = ""}
-                >
-                  <Icon name="FileText" className="w-5 h-5 mb-1" />
-                  <span className="retro-small">{t("report")}</span>
-                </Link>
-                <Link
-                  href="/dashboard/items/new"
-                  className="flex flex-col items-center justify-center p-2 border-4 border-border hover:bg-muted transition-colors group bg-card"
-                >
-                  <Icon name="Upload" className="w-5 h-5 mb-1" />
-                  <span className="retro-small">{t("import")}</span>
-                </Link>
-                <Link
-                  href="/dashboard/borrowers/new"
-                  className="flex flex-col items-center justify-center p-2 border-4 border-border hover:text-white transition-colors group bg-card"
-                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = NES_RED}
-                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = ""}
-                >
-                  <Icon name="UserPlus" className="w-5 h-5 mb-1" />
-                  <span className="retro-small">{t("invite")}</span>
-                </Link>
+                <h2 className="retro-heading">{t("quickActions")}</h2>
+              </div>
+              <div className="retro-card__body">
+                <div className="grid grid-cols-2 gap-2">
+                  <Link href="/dashboard/app" className="retro-action-card retro-action-card--info">
+                    <Icon name="QrCode" className="dashboard-action__icon" />
+                    <span className="retro-small">{t("scan")}</span>
+                  </Link>
+                  <Link href="/dashboard/analytics" className="retro-action-card retro-action-card--success">
+                    <Icon name="FileText" className="dashboard-action__icon" />
+                    <span className="retro-small">{t("report")}</span>
+                  </Link>
+                  <Link href="/dashboard/import" className="retro-action-card">
+                    <Icon name="Upload" className="dashboard-action__icon" />
+                    <span className="retro-small">{t("import")}</span>
+                  </Link>
+                  <button onClick={handleOpenInviteModal} className="retro-action-card retro-action-card--danger">
+                    <Icon name="UserPlus" className="dashboard-action__icon" />
+                    <span className="retro-small">{t("invite")}</span>
+                  </button>
+                </div>
               </div>
             </div>
 
             {/* Storage HP */}
-            <div className="bg-card border-4 border-border retro-shadow-md">
-              <div className="border-b-4 border-border px-3 py-2 bg-secondary flex justify-between items-center">
+            <div className="dashboard-gauge">
+              <div className="dashboard-gauge__header">
                 <h2 className="retro-heading">{t("storageHP")}</h2>
-                <span className="bg-primary text-white retro-small px-1.5 py-0.5 border-2 border-border">
-                  HQ
-                </span>
+                <RetroBadge variant="primary" size="sm">HQ</RetroBadge>
               </div>
-              <div className="p-3 space-y-3">
+              <div className="dashboard-gauge__body">
                 {locations.length === 0 ? (
                   <p className="retro-small text-muted-foreground">{t("noLocations")}</p>
                 ) : (
@@ -414,28 +451,20 @@ export default function DashboardPage() {
                     const capacity = 100;
                     const used = Math.min((location.inventory_count || 0), capacity);
                     const percentage = Math.round((used / capacity) * 100);
-                    const barColor = index === 0 ? NES_GREEN : index === 1 ? NES_BLUE : NES_RED;
+                    const fillClass = index === 0 ? "dashboard-gauge__fill--healthy" :
+                                      index === 1 ? "dashboard-gauge__fill--warning" :
+                                      "dashboard-gauge__fill--critical";
 
                     return (
-                      <div key={location.id}>
-                        <div className="flex justify-between retro-small mb-1">
+                      <div key={location.id} className="mb-3">
+                        <div className="dashboard-gauge__label">
                           <span className="truncate max-w-[100px]">{location.name}</span>
-                          <span className="retro-body">{used}/{capacity}</span>
+                          <span>{used}/{capacity}</span>
                         </div>
-                        <div className="h-4 w-full border-4 border-border bg-card relative">
+                        <div className="dashboard-gauge__bar">
                           <div
-                            className="h-full absolute top-0 left-0 transition-all"
-                            style={{
-                              width: `${percentage}%`,
-                              backgroundColor: barColor,
-                            }}
-                          />
-                          <div
-                            className="w-full h-full absolute top-0 left-0"
-                            style={{
-                              backgroundImage: "linear-gradient(90deg, transparent 50%, rgba(0,0,0,0.1) 50%)",
-                              backgroundSize: "6px 100%",
-                            }}
+                            className={`dashboard-gauge__fill ${fillClass}`}
+                            style={{ width: `${percentage}%` }}
                           />
                         </div>
                       </div>
@@ -447,16 +476,134 @@ export default function DashboardPage() {
                 </p>
               </div>
             </div>
-
-            {/* Footer */}
-            <div className="text-center pt-2">
-              <p className="retro-small text-muted-foreground tracking-widest">
-                INSERT COIN TO CONTINUE<br/>
-                © 2024 HMS CORP
-              </p>
-            </div>
           </div>
         </div>
+
+        {/* Invite Member Modal */}
+        <RetroModal open={showInviteModal} onClose={() => setShowInviteModal(false)} size="md">
+          <RetroModal.Header title={tSettings("inviteMember")} />
+          <RetroModal.Body>
+            <form onSubmit={handleInviteMember} className="space-y-4" id="invite-form">
+              <RetroFormGroup>
+                <RetroLabel required>{tSettings("email")}</RetroLabel>
+                {selectedUser ? (
+                  <div className="retro-selected-user">
+                    <div className="flex-1">
+                      <p className="font-bold retro-small">{selectedUser.full_name}</p>
+                      <p className="retro-small text-muted-foreground">{selectedUser.email}</p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleClearSelection}
+                      className="text-muted-foreground hover:text-foreground"
+                    >
+                      <Icon name="X" className="w-4 h-4" />
+                    </button>
+                  </div>
+                ) : (
+                  <div className="relative">
+                    <RetroInput
+                      type="text"
+                      value={searchQuery}
+                      onChange={(e) => {
+                        setSearchQuery(e.target.value);
+                        setShowDropdown(true);
+                      }}
+                      onFocus={() => setShowDropdown(true)}
+                      placeholder={tSettings("searchOrEnterEmail")}
+                    />
+                    {isLoadingUsers && (
+                      <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                        <span className="retro-small text-muted-foreground">...</span>
+                      </div>
+                    )}
+                    {showDropdown && !isLoadingUsers && (
+                      <div className="retro-dropdown">
+                        {filteredUsers.length > 0 ? (
+                          filteredUsers.map((user) => (
+                            <button
+                              key={user.id}
+                              type="button"
+                              onClick={() => handleSelectUser(user)}
+                              className="retro-dropdown__item"
+                            >
+                              <p className="font-bold retro-small">{user.full_name}</p>
+                              <p className="retro-small text-muted-foreground">{user.email}</p>
+                            </button>
+                          ))
+                        ) : availableUsers.length === 0 ? (
+                          <div className="retro-dropdown__empty">
+                            {tSettings("noUsersToInvite")}
+                          </div>
+                        ) : searchQuery ? (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setInviteEmail(searchQuery);
+                              setShowDropdown(false);
+                            }}
+                            className="retro-dropdown__item"
+                          >
+                            <p className="font-bold retro-small">{tSettings("useEmail")}: {searchQuery}</p>
+                            <p className="retro-small text-muted-foreground">{tSettings("userNotRegistered")}</p>
+                          </button>
+                        ) : null}
+                      </div>
+                    )}
+                  </div>
+                )}
+                {!selectedUser && inviteEmail && (
+                  <div className="retro-selected-preview">
+                    <div className="flex-1">
+                      <p className="retro-small">{tSettings("willInvite")}: <span className="font-bold">{inviteEmail}</span></p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setInviteEmail("")}
+                      className="text-muted-foreground hover:text-foreground"
+                    >
+                      <Icon name="X" className="w-4 h-4" />
+                    </button>
+                  </div>
+                )}
+                <p className="retro-hint">{tSettings("searchUsersHint")}</p>
+              </RetroFormGroup>
+
+              <RetroFormGroup>
+                <RetroLabel>{tSettings("role")}</RetroLabel>
+                <RetroSelect
+                  value={inviteRole}
+                  onChange={(e) => setInviteRole(e.target.value)}
+                >
+                  <option value="admin">{tSettings("roleAdmin")}</option>
+                  <option value="member">{tSettings("roleMember")}</option>
+                  <option value="viewer">{tSettings("roleViewer")}</option>
+                </RetroSelect>
+              </RetroFormGroup>
+
+              {inviteError && (
+                <p className="retro-error">{inviteError}</p>
+              )}
+            </form>
+          </RetroModal.Body>
+          <RetroModal.Footer>
+            <RetroButton
+              type="button"
+              variant="secondary"
+              onClick={() => setShowInviteModal(false)}
+            >
+              {tSettings("cancel")}
+            </RetroButton>
+            <RetroButton
+              type="submit"
+              form="invite-form"
+              variant="primary"
+              disabled={isInviting || !inviteEmail.trim()}
+            >
+              {isInviting ? tSettings("inviting") : tSettings("invite")}
+            </RetroButton>
+          </RetroModal.Footer>
+        </RetroModal>
       </>
     );
   }

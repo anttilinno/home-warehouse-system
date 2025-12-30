@@ -156,7 +156,7 @@ export default function ItemDetailPage() {
   // Retro theme UI
   if (isRetro) {
     return (
-      <div className="max-w-4xl mx-auto">
+      <div className="w-full">
         {/* Header */}
         <div className="mb-8">
           <button
@@ -368,7 +368,7 @@ export default function ItemDetailPage() {
 
   // Standard theme UI
   return (
-    <div className="max-w-4xl mx-auto">
+    <div className="w-full">
       {/* Header */}
       <div className="mb-8">
         <button

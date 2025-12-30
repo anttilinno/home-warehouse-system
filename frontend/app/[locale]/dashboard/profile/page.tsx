@@ -251,7 +251,7 @@ export default function ProfilePage() {
           </p>
         </div>
 
-        <div className="grid gap-4 max-w-2xl">
+        <div className="grid gap-4 w-full">
           {/* Player Card */}
           <div className="bg-card border-4 border-border p-4 retro-shadow">
             <div className="flex items-center gap-4 mb-4">
@@ -283,7 +283,7 @@ export default function ProfilePage() {
           {/* Edit Profile Form */}
           <div className="bg-card border-4 border-border retro-shadow">
             <div className="border-b-4 border-border px-4 py-2 bg-secondary flex items-center gap-2">
-              <Icon name="User" className="w-4 h-4" />
+              <Icon name="Save" className="w-4 h-4" />
               <h3 className="retro-heading">{t('editProfile')}</h3>
             </div>
 
@@ -374,7 +374,7 @@ export default function ProfilePage() {
                   <label className="block retro-small font-bold uppercase mb-2 retro-heading">
                     {tSettings('appearance')}
                   </label>
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="grid grid-cols-4 gap-2">
                     {themeOptions.map((themeOption) => {
                       const isActive = mounted && selectedTheme === themeOption.value;
 
@@ -387,18 +387,18 @@ export default function ProfilePage() {
                             setTheme(themeOption.value);
                           }}
                           className={cn(
-                            "flex flex-col items-center gap-2 p-3 border-4 transition-all",
+                            "flex flex-col items-center gap-1 p-2 border-4 transition-all",
                             isActive
                               ? "border-primary bg-primary/10 retro-shadow"
                               : "border-border hover:border-primary/50 bg-card"
                           )}
                         >
-                          <Icon name={themeOption.iconName} className={cn("w-5 h-5", isActive ? "text-primary" : "text-muted-foreground")} />
-                          <span className={cn("text-xs font-bold uppercase retro-heading", isActive ? "text-primary" : "text-foreground")}>
+                          <Icon name={themeOption.iconName} className={cn("w-4 h-4", isActive ? "text-primary" : "text-muted-foreground")} />
+                          <span className={cn("text-[10px] font-bold uppercase retro-heading", isActive ? "text-primary" : "text-foreground")}>
                             {tSettings(themeOption.labelKey)}
                           </span>
                           {isActive && (
-                            <Icon name="Check" className="w-4 h-4 text-primary" />
+                            <Icon name="Check" className="w-3 h-3 text-primary" />
                           )}
                         </button>
                       );
@@ -589,14 +589,6 @@ export default function ProfilePage() {
               </div>
             </div>
           )}
-
-          {/* Footer */}
-          <div className="text-center pt-2">
-            <p className="text-xs text-muted-foreground uppercase tracking-widest font-bold retro-heading">
-              PRESS START TO SAVE<br/>
-              © 2024 HMS CORP
-            </p>
-          </div>
         </div>
       </>
     );
@@ -612,7 +604,7 @@ export default function ProfilePage() {
         </p>
       </div>
 
-      <div className="grid gap-6 max-w-2xl">
+      <div className="grid gap-6 w-full">
         {/* Profile Information */}
         <div className="bg-card p-6 rounded-lg border shadow-sm">
           <div className="flex items-center gap-4 mb-6">
@@ -638,7 +630,7 @@ export default function ProfilePage() {
         {/* Edit Profile Form */}
         <div className="bg-card p-6 rounded-lg border shadow-sm">
           <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
-            <User className="w-5 h-5" />
+            <Save className="w-5 h-5" />
             {t('editProfile')}
           </h3>
 
@@ -731,7 +723,7 @@ export default function ProfilePage() {
               <p className="text-sm text-muted-foreground mb-3">
                 {tSettings('appearanceDescription')}
               </p>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              <div className="grid grid-cols-4 gap-2">
                 {themeOptions.map((themeOption) => {
                   const isActive = mounted && selectedTheme === themeOption.value;
 
@@ -743,18 +735,18 @@ export default function ProfilePage() {
                         setSelectedTheme(themeOption.value);
                         setTheme(themeOption.value);
                       }}
-                      className={`flex flex-col items-center gap-2 p-4 rounded-lg border-2 transition-colors ${
+                      className={`flex flex-col items-center gap-1 p-2 rounded-lg border-2 transition-colors ${
                         isActive
                           ? "border-primary bg-primary/5"
                           : "border-border hover:border-primary/50"
                       }`}
                     >
-                      <Icon name={themeOption.iconName} className={`w-6 h-6 ${isActive ? "text-primary" : "text-muted-foreground"}`} />
-                      <span className={`text-sm font-medium text-center ${isActive ? "text-primary" : "text-foreground"}`}>
+                      <Icon name={themeOption.iconName} className={`w-5 h-5 ${isActive ? "text-primary" : "text-muted-foreground"}`} />
+                      <span className={`text-xs font-medium text-center ${isActive ? "text-primary" : "text-foreground"}`}>
                         {tSettings(themeOption.labelKey)}
                       </span>
                       {isActive && (
-                        <Icon name="Check" className="w-4 h-4 text-primary" />
+                        <Icon name="Check" className="w-3 h-3 text-primary" />
                       )}
                     </button>
                   );

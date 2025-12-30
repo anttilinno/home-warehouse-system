@@ -37,12 +37,11 @@
   - Language stored in database (profile page)
   - Emails sent in user's preferred language
   - Auto-redirect to user's language on login
-- [ ] Companion app for bar codes, QR codes. Adding and identifying container, items
-- [ ] Item photos
-  - Upload photos for items
-  - Multiple photos per item
-  - Thumbnail generation
-- [ ] Theme settings
+- [x] Companion app prototype
+  - Basic barcode/QR code scanning
+  - Identify containers and items
+  - Minimal viable functionality
+- [x] Theme settings
   - Move from settings to profile page
   - Save theme preference to database
   - Retro theme needs redesign (awaiting brainstorming in Stitch)
@@ -75,11 +74,27 @@
   - Surface items not accessed/moved in 12+ months
   - Suggest donate, sell, or dispose
   - Track declutter decisions and outcomes
+- [ ] Companion app (refined)
+  - Polished UI/UX
+  - Add/edit items and containers
+  - Inventory management
+  - Loan tracking
 - [ ] Mobile app i18n
   - Multi-language support for companion app
   - Use expo-localization + i18n-js
   - Share translation keys with frontend where applicable
   - Auto-detect device language, allow manual override
+- [ ] Progressive Web App (PWA)
+  - Installable on iOS/Android without app store
+  - Offline support with service worker caching
+  - QR code scanning (camera API)
+  - Barcode scanning for item lookup
+  - Background sync for offline changes
+  - Push notifications support
+- [ ] Item photos
+  - Upload photos for items
+  - Multiple photos per item
+  - Thumbnail generation
 
 ## Phase 3
 

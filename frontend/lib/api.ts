@@ -376,6 +376,7 @@ export interface DashboardExtendedStats {
   expiring_soon_count: number;
   warranty_expiring_count: number;
   overdue_loans_count: number;
+  due_soon_loans_count: number;
 }
 
 export interface InventorySummary {

@@ -20,6 +20,17 @@ import { buildLocationTree, type LocationNode } from "@/lib/location-utils";
 import { useToast } from "@/components/ui/use-toast";
 import { cn } from "@/lib/utils";
 import { NES_GREEN, NES_BLUE, NES_RED } from "@/lib/nes-colors";
+import {
+  RetroPageHeader,
+  RetroButton,
+  RetroEmptyState,
+  RetroModal,
+  RetroFormGroup,
+  RetroLabel,
+  RetroInput,
+  RetroTextarea,
+  RetroError,
+} from "@/components/retro";
 
 export default function LocationsPage() {
   const { isAuthenticated, isLoading: authLoading, canEdit } = useAuth();
@@ -137,48 +148,36 @@ export default function LocationsPage() {
   if (isRetro) {
     return (
       <>
-        {/* Header */}
-        <div className="mb-8">
-          <div className="bg-primary p-4 border-4 border-border retro-shadow flex justify-between items-center">
-            <div>
-              <h1 className="text-lg font-bold text-white uppercase retro-heading">
-                {t("title")}
-              </h1>
-              <p className="text-white/80 retro-body retro-small uppercase mt-1">
-                {t("subtitle")}
-              </p>
-            </div>
-            {canEdit && (
-              <button
-                onClick={handleCreateNew}
-                className="px-4 py-2 border-4 border-white bg-white text-primary retro-small uppercase font-bold retro-body shadow-[2px_2px_0px_0px_rgba(0,0,0,0.3)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all flex items-center gap-2"
-              >
+        <RetroPageHeader
+          title={t("title")}
+          subtitle={t("subtitle")}
+          actions={
+            canEdit && (
+              <RetroButton variant="secondary" onClick={handleCreateNew}>
                 <Icon name="Plus" className="w-4 h-4" />
                 {t("addLocation")}
-              </button>
-            )}
-          </div>
-        </div>
+              </RetroButton>
+            )
+          }
+        />
 
         {/* Location Tree */}
         {locations.length === 0 ? (
-          <div className="bg-card border-4 border-border p-12 text-center retro-shadow">
-            <div className="w-16 h-16 mx-auto mb-4 border-4 border-border flex items-center justify-center" style={{ backgroundColor: NES_BLUE }}>
-              <Icon name="MapPin" className="w-8 h-8 text-white" />
-            </div>
-            <p className="text-muted-foreground retro-body retro-small uppercase">{t("noLocations")}</p>
-            {canEdit && (
-              <button
-                onClick={handleCreateNew}
-                className="mt-4 px-4 py-2 border-4 border-border bg-primary text-white retro-small uppercase font-bold retro-body retro-shadow-sm hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all inline-flex items-center gap-2"
-              >
-                <Icon name="Plus" className="w-4 h-4" />
-                {t("addLocation")}
-              </button>
-            )}
-          </div>
+          <RetroEmptyState
+            icon={<Icon name="MapPin" className="w-8 h-8 text-white" />}
+            iconBgColor={NES_BLUE}
+            message={t("noLocations")}
+            action={
+              canEdit && (
+                <RetroButton variant="primary" onClick={handleCreateNew}>
+                  <Icon name="Plus" className="w-4 h-4" />
+                  {t("addLocation")}
+                </RetroButton>
+              )
+            }
+          />
         ) : (
-          <div className="bg-card border-4 border-border retro-shadow overflow-hidden">
+          <div className="retro-card retro-card--shadow overflow-hidden">
             <TreeView
               items={locationTree}
               onEdit={handleEdit}
@@ -190,7 +189,7 @@ export default function LocationsPage() {
         )}
 
         {/* Create Modal */}
-        <CreateEditModal
+        <RetroCreateEditModal
           isOpen={isCreateModalOpen}
           onClose={() => {
             setIsCreateModalOpen(false);
@@ -209,11 +208,10 @@ export default function LocationsPage() {
           defaultParentId={defaultParentId}
           t={t}
           te={te}
-          isRetro={true}
         />
 
         {/* Edit Modal */}
-        <CreateEditModal
+        <RetroCreateEditModal
           isOpen={isEditModalOpen}
           onClose={() => {
             setIsEditModalOpen(false);
@@ -232,12 +230,11 @@ export default function LocationsPage() {
           locations={locations}
           t={t}
           te={te}
-          isRetro={true}
         />
 
         {/* Delete Confirmation Modal */}
         {selectedLocation && (
-          <DeleteConfirmModal
+          <RetroDeleteConfirmModal
             isOpen={isDeleteModalOpen}
             onClose={() => {
               setIsDeleteModalOpen(false);
@@ -255,7 +252,6 @@ export default function LocationsPage() {
             location={selectedLocation}
             t={t}
             te={te}
-            isRetro={true}
           />
         )}
       </>
@@ -758,5 +754,218 @@ function DeleteConfirmModal({
         </div>
       </div>
     </div>
+  );
+}
+
+// Retro Create/Edit Modal Component
+function RetroCreateEditModal({
+  isOpen,
+  onClose,
+  onSuccess,
+  location,
+  locations,
+  defaultParentId,
+  t,
+  te,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  onSuccess: (name: string) => void;
+  location?: Location | null;
+  locations: Location[];
+  defaultParentId?: string | null;
+  t: (key: string) => string;
+  te: (key: string) => string;
+}) {
+  const isEdit = !!location;
+  const [formData, setFormData] = useState<LocationCreate>({
+    name: "",
+    parent_location_id: null,
+    description: null,
+  });
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // IDs to exclude from parent dropdown (current location and its descendants)
+  const excludeIds = useMemo(() => {
+    if (!location) return [];
+    return [location.id];
+  }, [location]);
+
+  useEffect(() => {
+    if (location) {
+      setFormData({
+        name: location.name,
+        parent_location_id: location.parent_location_id,
+        description: location.description,
+      });
+    } else {
+      setFormData({
+        name: "",
+        parent_location_id: defaultParentId || null,
+        description: null,
+      });
+    }
+    setError(null);
+  }, [location, defaultParentId, isOpen]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSubmitting(true);
+    setError(null);
+
+    try {
+      if (isEdit && location) {
+        const updateData: LocationUpdate = {
+          name: formData.name,
+          parent_location_id: formData.parent_location_id,
+          description: formData.description,
+        };
+        await locationsApi.update(location.id, updateData);
+      } else {
+        await locationsApi.create(formData);
+      }
+      onSuccess(formData.name);
+    } catch (err) {
+      const errorMessage =
+        err instanceof Error
+          ? getTranslatedErrorMessage(err.message, te)
+          : te("UNKNOWN_ERROR");
+      setError(errorMessage);
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <RetroModal open={isOpen} onClose={onClose}>
+      <RetroModal.Header title={isEdit ? t("editLocation") : t("addLocation")} onClose={onClose} />
+      <form onSubmit={handleSubmit}>
+        <RetroModal.Body>
+          {error && <RetroError>{error}</RetroError>}
+
+          <RetroFormGroup>
+            <RetroLabel>{t("name")}</RetroLabel>
+            <RetroInput
+              type="text"
+              value={formData.name}
+              onChange={(e) =>
+                setFormData((prev) => ({ ...prev, name: e.target.value }))
+              }
+              placeholder={t("namePlaceholder")}
+              required
+            />
+          </RetroFormGroup>
+
+          <RetroFormGroup>
+            <RetroLabel>{t("parentLocation")}</RetroLabel>
+            <LocationSelect
+              locations={locations}
+              value={formData.parent_location_id ?? null}
+              onChange={(value) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  parent_location_id: value,
+                }))
+              }
+              excludeIds={excludeIds}
+              placeholder={t("selectParent")}
+              allowNone={true}
+            />
+          </RetroFormGroup>
+
+          <RetroFormGroup>
+            <RetroLabel>{t("description")}</RetroLabel>
+            <RetroTextarea
+              value={formData.description || ""}
+              onChange={(e) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  description: e.target.value || null,
+                }))
+              }
+              placeholder={t("descriptionPlaceholder")}
+              rows={3}
+            />
+          </RetroFormGroup>
+        </RetroModal.Body>
+        <RetroModal.Footer>
+          <RetroButton type="button" variant="secondary" onClick={onClose}>
+            {t("cancel")}
+          </RetroButton>
+          <RetroButton type="submit" variant="primary" disabled={submitting}>
+            {submitting ? t("saving") : t("save")}
+          </RetroButton>
+        </RetroModal.Footer>
+      </form>
+    </RetroModal>
+  );
+}
+
+// Retro Delete Confirmation Modal Component
+function RetroDeleteConfirmModal({
+  isOpen,
+  onClose,
+  onSuccess,
+  location,
+  t,
+  te,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  onSuccess: (name: string) => void;
+  location: Location;
+  t: (key: string) => string;
+  te: (key: string) => string;
+}) {
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    setError(null);
+  }, [isOpen]);
+
+  const handleDelete = async () => {
+    setSubmitting(true);
+    setError(null);
+
+    try {
+      await locationsApi.delete(location.id);
+      onSuccess(location.name);
+    } catch (err) {
+      const errorMessage =
+        err instanceof Error
+          ? getTranslatedErrorMessage(err.message, te)
+          : te("UNKNOWN_ERROR");
+      setError(errorMessage);
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <RetroModal open={isOpen} onClose={onClose}>
+      <RetroModal.Header title={t("deleteConfirmTitle")} onClose={onClose} variant="danger" />
+      <RetroModal.Body>
+        {error && <RetroError>{error}</RetroError>}
+
+        <p className="retro-body text-muted-foreground">{t("deleteConfirmMessage")}</p>
+
+        <div className="retro-card p-3 bg-muted">
+          <p className="retro-body font-medium">{location.name}</p>
+          {location.description && (
+            <p className="retro-body text-muted-foreground text-sm">{location.description}</p>
+          )}
+        </div>
+      </RetroModal.Body>
+      <RetroModal.Footer>
+        <RetroButton type="button" variant="secondary" onClick={onClose}>
+          {t("cancel")}
+        </RetroButton>
+        <RetroButton type="button" variant="danger" onClick={handleDelete} disabled={submitting}>
+          {submitting ? t("deleting") : t("deleteConfirmButton")}
+        </RetroButton>
+      </RetroModal.Footer>
+    </RetroModal>
   );
 }

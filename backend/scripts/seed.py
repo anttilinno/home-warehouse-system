@@ -470,13 +470,25 @@ async def create_loans(session: AsyncSession, workspace_id: str, inventory_ids: 
     print("Creating loans...")
 
     # Use unique inventory IDs for active loans to avoid constraint violation
-    active_loan_inventory = random.sample(inventory_ids, min(5, len(inventory_ids)))
+    active_loan_inventory = random.sample(inventory_ids, min(8, len(inventory_ids)))
 
-    # Create some active loans
-    for inventory_id in active_loan_inventory:
+    # Specific due dates to ensure we have overdue and due soon loans
+    due_dates = [
+        -3,  # Overdue by 3 days
+        -1,  # Overdue by 1 day
+        1,   # Due tomorrow (due soon)
+        3,   # Due in 3 days (due soon)
+        5,   # Due in 5 days (due soon)
+        10,  # Due in 10 days (not due soon)
+        14,  # Due in 14 days (not due soon)
+        30,  # Due in 30 days (not due soon)
+    ]
+
+    # Create active loans with specific due dates
+    for i, inventory_id in enumerate(active_loan_inventory):
         borrower_id = random.choice(borrower_ids)
         loaned_days_ago = random.randint(1, 30)
-        due_in_days = random.randint(-5, 14)  # Some overdue
+        due_in_days = due_dates[i] if i < len(due_dates) else random.randint(-5, 14)
 
         await session.execute(
             text("""
@@ -651,7 +663,7 @@ async def main():
     print(f"  - Items: {len(item_ids)}")
     print(f"  - Inventory records: {len(inventory_ids)}")
     print(f"  - Borrowers: {len(borrower_ids)}")
-    print(f"  - Loans: 13 (5 active, 8 returned)")
+    print(f"  - Loans: 16 (8 active: 2 overdue, 3 due soon, 3 normal; 8 returned)")
     print(f"  - Notifications: {notification_count} (3 unread, 2 read)")
     print()
     print("=" * 60)

@@ -1,0 +1,226 @@
+/* ==========================================================================
+   Badge Components
+   Status badges, tags, and label styles
+   ========================================================================== */
+
+@layer components {
+  /* Base badge - uses retro-badge typography utility for font styling */
+  .retro-badge-component {
+    @apply inline-flex items-center px-2 py-0.5;
+    @apply border-2 border-border;
+    @apply retro-badge;
+  }
+
+  /* Badge sizes */
+  .retro-badge--sm {
+    @apply px-1.5 py-0 text-xs;
+  }
+
+  .retro-badge--lg {
+    @apply px-3 py-1;
+  }
+
+  /* Badge variants */
+  .retro-badge--default {
+    @apply bg-muted text-foreground;
+  }
+
+  .retro-badge--primary {
+    @apply bg-primary text-white;
+  }
+
+  .retro-badge--success {
+    @apply text-white;
+    background-color: var(--nes-green);
+  }
+
+  .retro-badge--warning {
+    @apply text-black;
+    background-color: var(--nes-yellow, #f7d51d);
+  }
+
+  .retro-badge--danger {
+    @apply text-white bg-primary;
+  }
+
+  .retro-badge--info {
+    @apply text-white;
+    background-color: var(--nes-blue);
+  }
+
+  .retro-badge--muted {
+    @apply bg-muted text-muted-foreground;
+  }
+
+  /* Outline variants */
+  .retro-badge--outline {
+    @apply bg-transparent border-current;
+  }
+
+  .retro-badge--outline-primary {
+    @apply text-primary border-primary bg-transparent;
+  }
+
+  .retro-badge--outline-success {
+    @apply border-2 bg-transparent;
+    color: var(--nes-green);
+    border-color: var(--nes-green);
+  }
+
+  /* Interactive badge (clickable/hoverable) */
+  .retro-badge--interactive {
+    @apply cursor-pointer transition-colors;
+  }
+
+  .retro-badge--interactive:hover {
+    @apply opacity-80;
+  }
+
+  /* Status indicators */
+  .retro-status {
+    @apply inline-flex items-center gap-1.5;
+  }
+
+  .retro-status__dot {
+    @apply w-2 h-2 border border-current;
+  }
+
+  .retro-status__dot--active {
+    @apply bg-current;
+  }
+
+  .retro-status--online .retro-status__dot {
+    color: var(--nes-green);
+    @apply bg-current;
+  }
+
+  .retro-status--offline .retro-status__dot {
+    @apply text-muted-foreground;
+  }
+
+  .retro-status--busy .retro-status__dot {
+    color: var(--nes-yellow, #f7d51d);
+    @apply bg-current;
+  }
+
+  .retro-status--error .retro-status__dot {
+    @apply text-primary bg-primary;
+  }
+
+  /* Tag (removable badge) */
+  .retro-tag {
+    @apply inline-flex items-center px-2 py-0.5 gap-1;
+    @apply border-2 border-border;
+    @apply retro-badge;
+  }
+
+  .retro-tag__remove {
+    @apply w-3 h-3 cursor-pointer opacity-70;
+    @apply hover:opacity-100 transition-opacity;
+  }
+
+  /* Label with color indicator */
+  .retro-label-tag {
+    @apply inline-flex items-center gap-2 px-2 py-1;
+    @apply border-2 border-border bg-card;
+  }
+
+  .retro-label-tag__color {
+    @apply w-3 h-3 border border-border;
+  }
+
+  .retro-label-tag__text {
+    @apply retro-small;
+  }
+
+  /* Count badge (notification-style) */
+  .retro-count {
+    @apply inline-flex items-center justify-center;
+    @apply min-w-5 h-5 px-1;
+    @apply bg-primary text-white;
+    @apply text-xs font-bold;
+    @apply border-2 border-border;
+  }
+
+  .retro-count--sm {
+    @apply min-w-4 h-4 text-[10px];
+  }
+
+  .retro-count--lg {
+    @apply min-w-6 h-6 text-sm;
+  }
+
+  /* Condition badges */
+  .retro-condition {
+    @apply inline-flex items-center px-2 py-0.5;
+    @apply border-2 border-border;
+    @apply retro-badge;
+  }
+
+  .retro-condition--new {
+    @apply text-white;
+    background-color: var(--nes-green);
+  }
+
+  .retro-condition--excellent {
+    @apply text-white;
+    background-color: var(--nes-blue);
+  }
+
+  .retro-condition--good {
+    @apply bg-muted text-foreground;
+  }
+
+  .retro-condition--fair {
+    @apply text-black;
+    background-color: var(--nes-yellow, #f7d51d);
+  }
+
+  .retro-condition--poor {
+    @apply text-white bg-primary;
+  }
+
+  /* Loan status badges */
+  .retro-loan-status {
+    @apply inline-flex items-center px-2 py-0.5;
+    @apply border-2 border-border;
+    @apply retro-badge;
+  }
+
+  .retro-loan-status--active {
+    @apply text-white;
+    background-color: var(--nes-green);
+  }
+
+  .retro-loan-status--overdue {
+    @apply text-white bg-primary;
+  }
+
+  .retro-loan-status--due-soon {
+    @apply text-black;
+    background-color: var(--nes-yellow, #f7d51d);
+  }
+
+  .retro-loan-status--returned {
+    @apply bg-muted text-muted-foreground;
+  }
+
+  /* Chip (filter-style badge) */
+  .retro-chip {
+    @apply inline-flex items-center gap-1 px-2 py-1;
+    @apply border-4 border-border bg-card;
+    @apply cursor-pointer transition-colors;
+  }
+
+  .retro-chip:hover {
+    @apply bg-muted;
+  }
+
+  .retro-chip--selected {
+    @apply bg-primary text-white;
+  }
+
+  .retro-chip__icon {
+    @apply w-4 h-4;
+  }
+}

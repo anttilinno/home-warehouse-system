@@ -42,7 +42,7 @@ class NotificationController(Controller):
         """Extract JWT token from Authorization header."""
         auth_header = request.headers.get("Authorization", "")
         if not auth_header.startswith("Bearer "):
-            raise AppError(ErrorCode.AUTH_INVALID_TOKEN, status_code=401).to_http_exception()
+            raise AppError(ErrorCode.AUTH_INVALID_TOKEN, status_code=401)
         return auth_header[7:]
 
     @get("/")
@@ -57,10 +57,7 @@ class NotificationController(Controller):
     ) -> NotificationListResponse:
         """Get notifications for the current user."""
         token = self._extract_token(request)
-        try:
-            user = await auth_service.get_current_user(token)
-        except AppError as exc:
-            raise exc.to_http_exception()
+        user = await auth_service.get_current_user(token)
 
         return await notification_service.get_notifications(
             user_id=user.id,
@@ -78,10 +75,7 @@ class NotificationController(Controller):
     ) -> dict:
         """Get unread notification count for the current user."""
         token = self._extract_token(request)
-        try:
-            user = await auth_service.get_current_user(token)
-        except AppError as exc:
-            raise exc.to_http_exception()
+        user = await auth_service.get_current_user(token)
 
         count = await notification_service.get_unread_count(user.id)
         return {"unread_count": count}
@@ -96,10 +90,7 @@ class NotificationController(Controller):
     ) -> dict:
         """Mark notifications as read."""
         token = self._extract_token(request)
-        try:
-            user = await auth_service.get_current_user(token)
-        except AppError as exc:
-            raise exc.to_http_exception()
+        user = await auth_service.get_current_user(token)
 
         count = await notification_service.mark_as_read(
             user_id=user.id,
