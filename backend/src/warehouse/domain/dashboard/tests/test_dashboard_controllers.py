@@ -90,6 +90,7 @@ def _mock_extended_stats() -> DashboardExtendedStats:
         expiring_soon_count=2,
         warranty_expiring_count=4,
         overdue_loans_count=1,
+        due_soon_loans_count=2,
     )
 
 

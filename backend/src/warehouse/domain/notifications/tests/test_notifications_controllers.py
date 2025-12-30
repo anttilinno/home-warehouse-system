@@ -6,7 +6,6 @@ from uuid import uuid7
 from unittest.mock import AsyncMock, Mock
 
 import pytest
-from litestar.exceptions import HTTPException
 
 from warehouse.domain.notifications.controllers import NotificationController
 from warehouse.domain.notifications.schemas import NotificationMarkReadRequest, NotificationListResponse
@@ -98,13 +97,13 @@ class TestGetNotifications:
     async def test_get_notifications_auth_error(
         self, controller, auth_service_mock, notification_service_mock
     ):
-        """Test get_notifications raises HTTPException on auth error."""
+        """Test get_notifications raises AppError on auth error."""
         auth_service_mock.get_current_user.side_effect = AppError(
             ErrorCode.AUTH_INVALID_TOKEN, status_code=401
         )
         request = _make_request_mock()
 
-        with pytest.raises(HTTPException) as exc_info:
+        with pytest.raises(AppError) as exc_info:
             await _call(
                 controller.get_notifications,
                 controller,
@@ -148,13 +147,13 @@ class TestGetUnreadCount:
     async def test_get_unread_count_auth_error(
         self, controller, auth_service_mock, notification_service_mock
     ):
-        """Test get_unread_count raises HTTPException on auth error."""
+        """Test get_unread_count raises AppError on auth error."""
         auth_service_mock.get_current_user.side_effect = AppError(
             ErrorCode.AUTH_INVALID_TOKEN, status_code=401
         )
         request = _make_request_mock()
 
-        with pytest.raises(HTTPException) as exc_info:
+        with pytest.raises(AppError) as exc_info:
             await _call(
                 controller.get_unread_count,
                 controller,
@@ -225,14 +224,14 @@ class TestMarkAsRead:
     async def test_mark_as_read_auth_error(
         self, controller, auth_service_mock, notification_service_mock
     ):
-        """Test mark_as_read raises HTTPException on auth error."""
+        """Test mark_as_read raises AppError on auth error."""
         auth_service_mock.get_current_user.side_effect = AppError(
             ErrorCode.AUTH_INVALID_TOKEN, status_code=401
         )
         request = _make_request_mock()
         data = NotificationMarkReadRequest(notification_ids=None)
 
-        with pytest.raises(HTTPException) as exc_info:
+        with pytest.raises(AppError) as exc_info:
             await _call(
                 controller.mark_as_read,
                 controller,
@@ -252,11 +251,11 @@ class TestExtractToken:
     async def test_missing_token_raises(
         self, controller, auth_service_mock, notification_service_mock
     ):
-        """Test missing Authorization header raises HTTPException."""
+        """Test missing Authorization header raises AppError."""
         request = Mock()
         request.headers = {}
 
-        with pytest.raises(HTTPException) as exc_info:
+        with pytest.raises(AppError) as exc_info:
             await _call(
                 controller.get_notifications,
                 controller,

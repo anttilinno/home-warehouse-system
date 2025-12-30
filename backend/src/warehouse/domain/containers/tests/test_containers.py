@@ -217,6 +217,26 @@ async def test_update_container_partial(
 
 
 @pytest.mark.asyncio
+async def test_update_container_location_and_short_code(
+    service: ContainerService,
+    repository_mock: AsyncMock,
+    sample_container: Container,
+    workspace_id: UUID,
+):
+    """Test updating location_id and short_code fields."""
+    new_location_id = uuid7()
+    new_short_code = "NEW-CODE"
+    repository_mock.get_one_or_none.return_value = sample_container
+    repository_mock.update.return_value = sample_container
+    update_data = ContainerUpdate(location_id=new_location_id, short_code=new_short_code)
+
+    await service.update_container(sample_container.id, update_data, workspace_id)
+
+    assert sample_container.location_id == new_location_id
+    assert sample_container.short_code == new_short_code
+
+
+@pytest.mark.asyncio
 async def test_update_container_not_found(
     service: ContainerService,
     repository_mock: AsyncMock,

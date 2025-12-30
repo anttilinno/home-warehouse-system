@@ -7,7 +7,16 @@ from uuid import uuid7
 import pytest
 
 from warehouse.config import Config
+import warehouse.domain.oauth.service as oauth_service_module
 from warehouse.domain.oauth.service import OAuthAccountService, create_oauth_service
+
+
+@pytest.fixture
+def reset_oauth_singleton():
+    """Reset the OAuth service singleton before each test."""
+    oauth_service_module._oauth_service = None
+    yield
+    oauth_service_module._oauth_service = None
 
 
 @pytest.fixture
@@ -381,6 +390,11 @@ class TestGetAvailableProviders:
 
 class TestCreateOAuthService:
     """Tests for create_oauth_service factory function."""
+
+    @pytest.fixture(autouse=True)
+    def _reset_singleton(self, reset_oauth_singleton):
+        """Reset OAuth singleton before each test."""
+        pass
 
     def test_creates_service_without_providers(self):
         """Test creates service when no providers configured."""

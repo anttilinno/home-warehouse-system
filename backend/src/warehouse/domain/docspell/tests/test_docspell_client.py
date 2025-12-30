@@ -206,7 +206,8 @@ class TestDocspellClientSearch:
 
         with patch("httpx.AsyncClient") as mock_client_class:
             mock_client = AsyncMock()
-            mock_client.get.return_value = search_response
+            # search uses POST, not GET
+            mock_client.post.return_value = search_response
             mock_client.__aenter__.return_value = mock_client
             mock_client.__aexit__.return_value = None
             mock_client_class.return_value = mock_client

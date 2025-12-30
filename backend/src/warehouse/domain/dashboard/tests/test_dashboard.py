@@ -154,6 +154,9 @@ class TestGetExtendedStats:
         overdue_result = MagicMock()
         overdue_result.scalar.return_value = 1
 
+        due_soon_result = MagicMock()
+        due_soon_result.scalar.return_value = 2
+
         db_session_mock.execute.side_effect = [
             # Basic stats
             items_result,
@@ -167,6 +170,7 @@ class TestGetExtendedStats:
             expiring_result,
             warranty_result,
             overdue_result,
+            due_soon_result,
         ]
 
         result = await service.get_extended_stats(workspace_id)
@@ -183,6 +187,7 @@ class TestGetExtendedStats:
         assert result.expiring_soon_count == 2
         assert result.warranty_expiring_count == 4
         assert result.overdue_loans_count == 1
+        assert result.due_soon_loans_count == 2
 
 
 class TestGetRecentlyModified:
@@ -384,10 +389,12 @@ class TestDashboardSchemas:
             expiring_soon_count=2,
             warranty_expiring_count=4,
             overdue_loans_count=1,
+            due_soon_loans_count=2,
         )
         assert stats.total_inventory_value == 100000
         assert stats.currency_code == "EUR"
         assert stats.out_of_stock_count == 3
+        assert stats.due_soon_loans_count == 2
 
     def test_inventory_summary_schema(self):
         summary = InventorySummary(
