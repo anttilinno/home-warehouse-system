@@ -94,6 +94,73 @@ class TestFavoriteServiceAddFavorite:
         favorite_repository_mock.session.commit.assert_called_once()
         assert result.item_id == item_id
 
+    async def test_add_favorite_location(
+        self, service, favorite_repository_mock, user_id, workspace_id
+    ):
+        """Test adding a location to favorites."""
+        location_id = uuid7()
+        data = FavoriteCreate(favorite_type="LOCATION", location_id=location_id)
+
+        favorite_repository_mock.add.return_value = MagicMock(
+            id=uuid7(),
+            user_id=user_id,
+            workspace_id=workspace_id,
+            favorite_type=FavoriteType.LOCATION,
+            location_id=location_id,
+        )
+
+        result = await service.add_favorite(data, user_id, workspace_id)
+
+        favorite_repository_mock.add.assert_called_once()
+        assert result.location_id == location_id
+
+    async def test_add_favorite_container(
+        self, service, favorite_repository_mock, user_id, workspace_id
+    ):
+        """Test adding a container to favorites."""
+        container_id = uuid7()
+        data = FavoriteCreate(favorite_type="CONTAINER", container_id=container_id)
+
+        favorite_repository_mock.add.return_value = MagicMock(
+            id=uuid7(),
+            user_id=user_id,
+            workspace_id=workspace_id,
+            favorite_type=FavoriteType.CONTAINER,
+            container_id=container_id,
+        )
+
+        result = await service.add_favorite(data, user_id, workspace_id)
+
+        favorite_repository_mock.add.assert_called_once()
+        assert result.container_id == container_id
+
+    async def test_add_favorite_invalid_type(
+        self, service, user_id, workspace_id
+    ):
+        """Test adding favorite with invalid type raises error."""
+        from warehouse.errors import AppError, ErrorCode
+
+        data = FavoriteCreate(favorite_type="INVALID")
+
+        with pytest.raises(AppError) as exc_info:
+            await service.add_favorite(data, user_id, workspace_id)
+
+        assert exc_info.value.code == ErrorCode.GENERAL_BAD_REQUEST
+
+    async def test_add_favorite_missing_entity_id(
+        self, service, user_id, workspace_id
+    ):
+        """Test adding favorite with missing entity_id raises error."""
+        from warehouse.errors import AppError, ErrorCode
+
+        # ITEM type but no item_id
+        data = FavoriteCreate(favorite_type="ITEM", item_id=None)
+
+        with pytest.raises(AppError) as exc_info:
+            await service.add_favorite(data, user_id, workspace_id)
+
+        assert exc_info.value.code == ErrorCode.GENERAL_BAD_REQUEST
+
     async def test_add_favorite_already_exists(
         self, service, favorite_repository_mock, sample_favorite, user_id, workspace_id, item_id
     ):
@@ -106,6 +173,45 @@ class TestFavoriteServiceAddFavorite:
         # Should return existing, not add new
         favorite_repository_mock.add.assert_not_called()
         assert result == sample_favorite
+
+
+class TestFavoriteServiceRemoveFavorite:
+    """Tests for remove_favorite method."""
+
+    async def test_remove_favorite_success(
+        self, service, favorite_repository_mock, sample_favorite, user_id, workspace_id, item_id
+    ):
+        """Test removing a favorite successfully."""
+        favorite_repository_mock.get_by_user_and_entity.return_value = sample_favorite
+
+        result = await service.remove_favorite("ITEM", item_id, user_id, workspace_id)
+
+        assert result is True
+        favorite_repository_mock.delete.assert_called_once_with(sample_favorite.id)
+        favorite_repository_mock.session.commit.assert_called_once()
+
+    async def test_remove_favorite_not_found(
+        self, service, favorite_repository_mock, user_id, workspace_id, item_id
+    ):
+        """Test removing a favorite that doesn't exist returns False."""
+        favorite_repository_mock.get_by_user_and_entity.return_value = None
+
+        result = await service.remove_favorite("ITEM", item_id, user_id, workspace_id)
+
+        assert result is False
+        favorite_repository_mock.delete.assert_not_called()
+
+    async def test_remove_favorite_wrong_workspace(
+        self, service, favorite_repository_mock, sample_favorite, user_id, item_id
+    ):
+        """Test removing a favorite from wrong workspace returns False."""
+        different_workspace_id = uuid7()
+        favorite_repository_mock.get_by_user_and_entity.return_value = sample_favorite
+
+        result = await service.remove_favorite("ITEM", item_id, user_id, different_workspace_id)
+
+        assert result is False
+        favorite_repository_mock.delete.assert_not_called()
 
 
 class TestFavoriteServiceToggleFavorite:
@@ -191,3 +297,73 @@ class TestFavoriteServiceListFavorites:
 
         assert len(result) == 1
         assert result[0] == sample_favorite
+
+
+class TestFavoriteServiceGetFavoritesWithDetails:
+    """Tests for get_favorites_with_details method."""
+
+    async def test_get_favorites_with_details_empty(
+        self, service, db_session_mock, user_id, workspace_id
+    ):
+        """Test get_favorites_with_details returns empty list."""
+        result_mock = MagicMock()
+        result_mock.fetchall.return_value = []
+        db_session_mock.execute.return_value = result_mock
+
+        result = await service.get_favorites_with_details(user_id, workspace_id)
+
+        assert result == []
+        db_session_mock.execute.assert_called_once()
+
+    async def test_get_favorites_with_details_with_items(
+        self, service, db_session_mock, user_id, workspace_id
+    ):
+        """Test get_favorites_with_details returns favorites with entity details."""
+        favorite_id = uuid7()
+        entity_id = uuid7()
+        created_at = datetime.now(timezone.utc)
+
+        row = MagicMock()
+        row.id = favorite_id
+        row.favorite_type = "ITEM"
+        row.entity_id = entity_id
+        row.entity_name = "Test Item"
+        row.entity_description = "A test item"
+        row.created_at = created_at
+
+        result_mock = MagicMock()
+        result_mock.fetchall.return_value = [row]
+        db_session_mock.execute.return_value = result_mock
+
+        result = await service.get_favorites_with_details(user_id, workspace_id)
+
+        assert len(result) == 1
+        assert result[0].id == favorite_id
+        assert result[0].favorite_type == "ITEM"
+        assert result[0].entity_name == "Test Item"
+        assert result[0].entity_description == "A test item"
+
+    async def test_get_favorites_with_details_missing_entity_name(
+        self, service, db_session_mock, user_id, workspace_id
+    ):
+        """Test get_favorites_with_details handles missing entity name."""
+        favorite_id = uuid7()
+        entity_id = uuid7()
+        created_at = datetime.now(timezone.utc)
+
+        row = MagicMock()
+        row.id = favorite_id
+        row.favorite_type = "ITEM"
+        row.entity_id = entity_id
+        row.entity_name = None  # Missing entity name
+        row.entity_description = None
+        row.created_at = created_at
+
+        result_mock = MagicMock()
+        result_mock.fetchall.return_value = [row]
+        db_session_mock.execute.return_value = result_mock
+
+        result = await service.get_favorites_with_details(user_id, workspace_id)
+
+        assert len(result) == 1
+        assert result[0].entity_name == "Unknown"  # Should default to "Unknown"

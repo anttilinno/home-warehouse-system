@@ -54,6 +54,81 @@ def sample_notification(user_id, workspace_id):
     )
 
 
+class TestNotificationServiceGetNotifications:
+    """Tests for get_notifications method."""
+
+    async def test_get_notifications_success(
+        self, service, notification_repository_mock, sample_notification, user_id
+    ):
+        """Test getting notifications for a user."""
+        notification_repository_mock.get_for_user = AsyncMock(return_value=[sample_notification])
+        notification_repository_mock.count_unread = AsyncMock(return_value=1)
+        notification_repository_mock.count_total = AsyncMock(return_value=1)
+
+        result = await service.get_notifications(user_id, limit=50, offset=0, unread_only=False)
+
+        notification_repository_mock.get_for_user.assert_awaited_once_with(
+            user_id=user_id, limit=50, offset=0, unread_only=False
+        )
+        notification_repository_mock.count_unread.assert_awaited_once_with(user_id)
+        notification_repository_mock.count_total.assert_awaited_once_with(user_id)
+        assert result.total_count == 1
+        assert result.unread_count == 1
+        assert len(result.notifications) == 1
+        assert result.notifications[0].title == "Test Notification"
+
+    async def test_get_notifications_empty(
+        self, service, notification_repository_mock, user_id
+    ):
+        """Test getting notifications when none exist."""
+        notification_repository_mock.get_for_user = AsyncMock(return_value=[])
+        notification_repository_mock.count_unread = AsyncMock(return_value=0)
+        notification_repository_mock.count_total = AsyncMock(return_value=0)
+
+        result = await service.get_notifications(user_id, limit=50, offset=0, unread_only=False)
+
+        assert result.total_count == 0
+        assert result.unread_count == 0
+        assert len(result.notifications) == 0
+
+    async def test_get_notifications_unread_only(
+        self, service, notification_repository_mock, sample_notification, user_id
+    ):
+        """Test getting only unread notifications."""
+        notification_repository_mock.get_for_user = AsyncMock(return_value=[sample_notification])
+        notification_repository_mock.count_unread = AsyncMock(return_value=1)
+        notification_repository_mock.count_total = AsyncMock(return_value=5)
+
+        result = await service.get_notifications(user_id, limit=50, offset=0, unread_only=True)
+
+        notification_repository_mock.get_for_user.assert_awaited_once_with(
+            user_id=user_id, limit=50, offset=0, unread_only=True
+        )
+        assert result.unread_count == 1
+        assert result.total_count == 5
+
+
+class TestNotificationServiceGetUnreadCount:
+    """Tests for get_unread_count method."""
+
+    async def test_get_unread_count(self, service, notification_repository_mock, user_id):
+        """Test getting unread notification count."""
+        notification_repository_mock.count_unread = AsyncMock(return_value=3)
+
+        result = await service.get_unread_count(user_id)
+
+        assert result == 3
+        notification_repository_mock.count_unread.assert_awaited_once_with(user_id)
+
+    async def test_get_unread_count_zero(self, service, notification_repository_mock, user_id):
+        """Test getting unread count when no unread notifications."""
+        notification_repository_mock.count_unread = AsyncMock(return_value=0)
+
+        result = await service.get_unread_count(user_id)
+
+        assert result == 0
+
+
 class TestNotificationServiceMarkAsRead:
     """Tests for mark_as_read method."""
 
