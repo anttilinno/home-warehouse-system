@@ -419,3 +419,98 @@ async def test_update_item_updates_category_and_description(item_service: ItemSe
     assert sample_item.category_id == new_category
     assert sample_item.description == "Updated desc"
     assert result is sample_item
+
+
+@pytest.mark.asyncio
+async def test_update_item_updates_obsidian_paths(
+    item_service: ItemService,
+    item_repository_mock: AsyncMock,
+    sample_item: Item,
+    workspace_id: UUID,
+):
+    """Test updating obsidian vault and note paths."""
+    item_repository_mock.get_one_or_none.return_value = sample_item
+    item_repository_mock.update.return_value = sample_item
+    payload = ItemUpdate(
+        obsidian_vault_path="/path/to/vault",
+        obsidian_note_path="items/hammer.md",
+    )
+
+    result = await item_service.update_item(sample_item.id, payload, workspace_id)
+
+    assert sample_item.obsidian_vault_path == "/path/to/vault"
+    assert sample_item.obsidian_note_path == "items/hammer.md"
+    assert result is sample_item
+
+
+class TestGenerateObsidianUrl:
+    """Tests for generate_obsidian_url function."""
+
+    def test_generate_obsidian_url_valid_paths(self):
+        """Test generating Obsidian URL with valid paths."""
+        from warehouse.domain.items.service import generate_obsidian_url
+
+        result = generate_obsidian_url(
+            vault_path="/Users/test/Documents/MyVault",
+            note_path="items/hammer.md",
+        )
+
+        assert result == "obsidian://open?vault=MyVault&file=items%2Fhammer"
+
+    def test_generate_obsidian_url_windows_path(self):
+        """Test generating Obsidian URL with Windows-style paths."""
+        from warehouse.domain.items.service import generate_obsidian_url
+
+        result = generate_obsidian_url(
+            vault_path="C:\\Users\\test\\Documents\\MyVault",
+            note_path="items/hammer.md",
+        )
+
+        assert result == "obsidian://open?vault=MyVault&file=items%2Fhammer"
+
+    def test_generate_obsidian_url_trailing_slash(self):
+        """Test generating Obsidian URL with trailing slash."""
+        from warehouse.domain.items.service import generate_obsidian_url
+
+        result = generate_obsidian_url(
+            vault_path="/path/to/vault/",
+            note_path="notes/test.md",
+        )
+
+        assert result == "obsidian://open?vault=vault&file=notes%2Ftest"
+
+    def test_generate_obsidian_url_special_characters(self):
+        """Test generating Obsidian URL with special characters in paths."""
+        from warehouse.domain.items.service import generate_obsidian_url
+
+        result = generate_obsidian_url(
+            vault_path="/path/My Vault",
+            note_path="items & tools/hammer.md",
+        )
+
+        assert "vault=My%20Vault" in result
+        assert "file=items%20%26%20tools%2Fhammer" in result
+
+    def test_generate_obsidian_url_missing_vault_path(self):
+        """Test generate_obsidian_url returns None when vault_path is missing."""
+        from warehouse.domain.items.service import generate_obsidian_url
+
+        result = generate_obsidian_url(vault_path=None, note_path="items/hammer.md")
+
+        assert result is None
+
+    def test_generate_obsidian_url_missing_note_path(self):
+        """Test generate_obsidian_url returns None when note_path is missing."""
+        from warehouse.domain.items.service import generate_obsidian_url
+
+        result = generate_obsidian_url(vault_path="/path/to/vault", note_path=None)
+
+        assert result is None
+
+    def test_generate_obsidian_url_both_paths_missing(self):
+        """Test generate_obsidian_url returns None when both paths are missing."""
+        from warehouse.domain.items.service import generate_obsidian_url
+
+        result = generate_obsidian_url(vault_path=None, note_path=None)
+
+        assert result is None
