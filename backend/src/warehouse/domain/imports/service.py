@@ -369,37 +369,97 @@ class ImportService:
             errors=errors,
         )
 
-    async def _import_inventory(
-        self, rows: list[dict[str, Any]], workspace_id: UUID
-    ) -> ImportResult:
-        """Import inventory records."""
-        errors = []
-        created = 0
-        skipped = 0
+    async def _build_inventory_lookups(
+        self, workspace_id: UUID
+    ) -> tuple[dict[str, UUID], dict[str, UUID], dict[str, UUID], set[tuple[UUID, UUID]]]:
+        """Build lookup dictionaries for inventory import.
 
-        # Build item SKU/name -> id mapping
+        Returns:
+            Tuple of (item_sku_map, item_name_map, location_map, existing_inventory_set)
+        """
         existing_items = await self.session.execute(
             select(Item).where(Item.workspace_id == workspace_id)
         )
         items = list(existing_items.scalars())
-        item_sku_to_id: dict[str, UUID] = {item.sku.lower(): item.id for item in items}
-        item_name_to_id: dict[str, UUID] = {item.name.lower(): item.id for item in items}
+        item_sku_to_id = {item.sku.lower(): item.id for item in items}
+        item_name_to_id = {item.name.lower(): item.id for item in items}
 
-        # Build location name -> id mapping
         existing_locs = await self.session.execute(
             select(Location).where(Location.workspace_id == workspace_id)
         )
-        loc_name_to_id: dict[str, UUID] = {loc.name.lower(): loc.id for loc in existing_locs.scalars()}
+        loc_name_to_id = {loc.name.lower(): loc.id for loc in existing_locs.scalars()}
 
-        # Build existing inventory (item_id, location_id) -> id mapping
         existing = await self.session.execute(
             select(Inventory).where(Inventory.workspace_id == workspace_id)
         )
-        existing_set: set[tuple[UUID, UUID]] = {
-            (inv.item_id, inv.location_id) for inv in existing.scalars()
-        }
+        existing_set = {(inv.item_id, inv.location_id) for inv in existing.scalars()}
+
+        return item_sku_to_id, item_name_to_id, loc_name_to_id, existing_set
+
+    def _resolve_item_id(
+        self,
+        row: dict[str, Any],
+        item_sku_map: dict[str, UUID],
+        item_name_map: dict[str, UUID],
+    ) -> tuple[UUID | None, str | None]:
+        """Resolve item reference to ID.
+
+        Assumes item_ref has already been validated as non-empty.
+
+        Returns:
+            Tuple of (item_id, error_message). One will be None.
+        """
+        item_ref = row.get("item") or row.get("sku") or row.get("item_name")
+        item_id = item_sku_map.get(item_ref.lower()) or item_name_map.get(item_ref.lower())
+        if not item_id:
+            return None, f"Item '{item_ref}' not found"
+        return item_id, None
+
+    def _resolve_location_id(
+        self, row: dict[str, Any], loc_map: dict[str, UUID]
+    ) -> tuple[UUID | None, str | None]:
+        """Resolve location name to ID.
+
+        Assumes location_name has already been validated as non-empty.
+
+        Returns:
+            Tuple of (location_id, error_message). One will be None.
+        """
+        location_name = row.get("location")
+        location_id = loc_map.get(location_name.lower())
+        if not location_id:
+            return None, f"Location '{location_name}' not found"
+        return location_id, None
+
+    def _parse_quantity(self, row: dict[str, Any]) -> tuple[int | None, str | None]:
+        """Parse quantity from row.
+
+        Returns:
+            Tuple of (quantity, error_message). One will be None.
+        """
+        qty_str = row.get("quantity")
+        if not qty_str:
+            return 1, None
+
+        try:
+            return int(qty_str), None
+        except ValueError:
+            return None, f"Invalid quantity: {qty_str}"
+
+    async def _import_inventory(
+        self, rows: list[dict[str, Any]], workspace_id: UUID
+    ) -> ImportResult:
+        """Import inventory records."""
+        errors: list[ImportError] = []
+        created = 0
+        skipped = 0
+
+        item_sku_map, item_name_map, loc_map, existing_set = await self._build_inventory_lookups(
+            workspace_id
+        )
 
         for idx, row in enumerate(rows, start=2):
+            # Validate required fields first (before resolution)
             item_ref = row.get("item") or row.get("sku") or row.get("item_name")
             location_name = row.get("location")
 
@@ -411,38 +471,25 @@ class ImportService:
                 errors.append(ImportError(row=idx, field="location", message="Location is required"))
                 continue
 
-            # Resolve item by SKU or name
-            item_id = item_sku_to_id.get(item_ref.lower()) or item_name_to_id.get(item_ref.lower())
-            if not item_id:
-                errors.append(
-                    ImportError(row=idx, field="item", message=f"Item '{item_ref}' not found")
-                )
+            # Resolve item and location
+            item_id, item_error = self._resolve_item_id(row, item_sku_map, item_name_map)
+            if item_error:
+                errors.append(ImportError(row=idx, field="item", message=item_error))
                 continue
 
-            # Resolve location
-            location_id = loc_name_to_id.get(location_name.lower())
-            if not location_id:
-                errors.append(
-                    ImportError(row=idx, field="location", message=f"Location '{location_name}' not found")
-                )
+            location_id, loc_error = self._resolve_location_id(row, loc_map)
+            if loc_error:
+                errors.append(ImportError(row=idx, field="location", message=loc_error))
                 continue
 
-            # Check for duplicate
             if (item_id, location_id) in existing_set:
                 skipped += 1
                 continue
 
-            # Parse quantity
-            quantity = 1
-            qty_str = row.get("quantity")
-            if qty_str:
-                try:
-                    quantity = int(qty_str)
-                except ValueError:
-                    errors.append(
-                        ImportError(row=idx, field="quantity", message=f"Invalid quantity: {qty_str}")
-                    )
-                    continue
+            quantity, qty_error = self._parse_quantity(row)
+            if qty_error:
+                errors.append(ImportError(row=idx, field="quantity", message=qty_error))
+                continue
 
             inventory = Inventory(
                 workspace_id=workspace_id,

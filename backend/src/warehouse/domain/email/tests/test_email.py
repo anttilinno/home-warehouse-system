@@ -5,6 +5,11 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import httpx
 import pytest
 
+from conftest import (
+    TEST_ITEM_POWER_DRILL,
+    TEST_USER_JOHN_DOE,
+    TEST_WORKSPACE_HOME,
+)
 from warehouse.config import Config
 from warehouse.domain.email.service import EmailService
 
@@ -236,8 +241,8 @@ class TestSendLoanReminder:
 
             result = await service_with_api_key.send_loan_reminder(
                 to="borrower@example.com",
-                borrower_name="John Doe",
-                item_name="Power Drill",
+                borrower_name=TEST_USER_JOHN_DOE,
+                item_name=TEST_ITEM_POWER_DRILL,
                 due_date="2024-01-15",
                 is_overdue=True,
                 language="en",
@@ -246,7 +251,7 @@ class TestSendLoanReminder:
             assert result is True
             call_args = mock_send.call_args
             assert "Loan Overdue" in call_args.kwargs["subject"]
-            assert "Power Drill" in call_args.kwargs["subject"]
+            assert TEST_ITEM_POWER_DRILL in call_args.kwargs["subject"]
 
     @pytest.mark.asyncio
     async def test_sends_due_soon_reminder(self, service_with_api_key):
@@ -279,8 +284,8 @@ class TestSendLoanReminder:
 
             await service_with_api_key.send_loan_reminder(
                 to="borrower@example.com",
-                borrower_name="John Doe",
-                item_name="Power Drill",
+                borrower_name=TEST_USER_JOHN_DOE,
+                item_name=TEST_ITEM_POWER_DRILL,
                 due_date="2024-01-15",
                 is_overdue=True,
                 language="et",
@@ -303,8 +308,8 @@ class TestSendWorkspaceInvite:
 
             result = await service_with_api_key.send_workspace_invite(
                 to="invitee@example.com",
-                inviter_name="John Doe",
-                workspace_name="Home Workshop",
+                inviter_name=TEST_USER_JOHN_DOE,
+                workspace_name=TEST_WORKSPACE_HOME,
                 role="member",
                 language="en",
             )
@@ -312,7 +317,7 @@ class TestSendWorkspaceInvite:
             assert result is True
             call_args = mock_send.call_args
             assert "invited" in call_args.kwargs["subject"]
-            assert "Home Workshop" in call_args.kwargs["subject"]
+            assert TEST_WORKSPACE_HOME in call_args.kwargs["subject"]
 
     @pytest.mark.asyncio
     async def test_workspace_invite_estonian(self, service_with_api_key):
@@ -324,8 +329,8 @@ class TestSendWorkspaceInvite:
 
             await service_with_api_key.send_workspace_invite(
                 to="invitee@example.com",
-                inviter_name="John Doe",
-                workspace_name="Home Workshop",
+                inviter_name=TEST_USER_JOHN_DOE,
+                workspace_name=TEST_WORKSPACE_HOME,
                 role="member",
                 language="et",
             )
@@ -343,8 +348,8 @@ class TestSendWorkspaceInvite:
 
             await service_with_api_key.send_workspace_invite(
                 to="invitee@example.com",
-                inviter_name="John Doe",
-                workspace_name="Home Workshop",
+                inviter_name=TEST_USER_JOHN_DOE,
+                workspace_name=TEST_WORKSPACE_HOME,
                 role="member",
                 language="ru",
             )

@@ -229,14 +229,11 @@ class DocspellService:
         client = self._get_client(settings)
         return await client.get_tags()
 
-    async def sync_tags(
-        self, workspace_id: UUID, direction: str = "both"
-    ) -> TagSyncResult:
+    async def sync_tags(self, workspace_id: UUID) -> TagSyncResult:
         """Synchronize tags between Warehouse labels and Docspell tags.
 
         Args:
             workspace_id: Workspace ID
-            direction: Sync direction ("to_docspell", "from_docspell", "both")
 
         Returns:
             Sync result with counts

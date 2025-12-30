@@ -6,6 +6,7 @@ from datetime import UTC, datetime, timedelta
 
 import httpx
 
+from warehouse.domain.docspell.exceptions import DocspellAuthenticationError, DocspellTimeoutError
 from warehouse.domain.docspell.schemas import DocspellDocument, DocspellSearchResult, DocspellTag
 
 logger = logging.getLogger(__name__)
@@ -44,7 +45,8 @@ class DocspellClient:
             Valid authentication token
 
         Raises:
-            Exception: If authentication fails
+            DocspellAuthenticationError: If authentication fails
+            DocspellTimeoutError: If connection times out
         """
         now = datetime.now(UTC)
 
@@ -65,7 +67,7 @@ class DocspellClient:
                 response = await client.post(url, json=payload, timeout=10.0)
                 if response.status_code != 200:
                     logger.error(f"Docspell auth failed: {response.status_code}")
-                    raise Exception("Docspell authentication failed")
+                    raise DocspellAuthenticationError("Docspell authentication failed")
 
                 data = response.json()
                 self._token = DocspellAuthToken(
@@ -77,7 +79,7 @@ class DocspellClient:
 
         except httpx.TimeoutException:
             logger.error("Docspell auth timeout")
-            raise Exception("Docspell authentication timeout")
+            raise DocspellTimeoutError("Docspell authentication timeout")
 
     async def _request(
         self, method: str, endpoint: str, **kwargs

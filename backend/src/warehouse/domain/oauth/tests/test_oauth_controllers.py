@@ -527,7 +527,7 @@ class TestDependencyFactories:
         with patch("warehouse.domain.oauth.controllers.create_oauth_service") as mock_create:
             mock_create.return_value = MagicMock()
 
-            result = get_oauth_service(mock_config)
+            get_oauth_service(mock_config)
 
             mock_create.assert_called_once_with(mock_config)
 
@@ -535,7 +535,7 @@ class TestDependencyFactories:
         """Test get_oauth_account_service creates service."""
         mock_session = AsyncMock()
 
-        with patch("warehouse.domain.oauth.controllers.create_oauth_service") as mock_create, patch(
+        with patch("warehouse.domain.oauth.controllers.create_oauth_service"), patch(
             "warehouse.domain.oauth.controllers.OAuthAccountRepository"
         ):
             result = get_oauth_account_service(mock_session, mock_config)

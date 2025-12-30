@@ -125,7 +125,7 @@ class TestCreate:
 
     async def test_creates_account_with_all_fields(self, repository, mock_session, user_id):
         """Test creates account with all provided fields."""
-        result = await repository.create(
+        await repository.create(
             user_id=user_id,
             provider="google",
             provider_user_id="google-123",
@@ -148,7 +148,7 @@ class TestCreate:
 
     async def test_creates_account_with_minimal_fields(self, repository, mock_session, user_id):
         """Test creates account with only required fields."""
-        result = await repository.create(
+        await repository.create(
             user_id=user_id,
             provider="github",
             provider_user_id="github-456",
@@ -183,7 +183,7 @@ class TestUpdateTokens:
         mock_account.access_token = "old-access"
         mock_account.refresh_token = "old-refresh"
 
-        result = await repository.update_tokens(mock_account, access_token="new-access")
+        await repository.update_tokens(mock_account, access_token="new-access")
 
         assert mock_account.access_token == "new-access"
         assert mock_account.refresh_token == "old-refresh"
@@ -193,7 +193,7 @@ class TestUpdateTokens:
         """Test updates both tokens when provided."""
         mock_account = MagicMock()
 
-        result = await repository.update_tokens(
+        await repository.update_tokens(
             mock_account, access_token="new-access", refresh_token="new-refresh"
         )
 
@@ -206,7 +206,7 @@ class TestUpdateTokens:
         mock_account.access_token = "original-access"
         mock_account.refresh_token = "original-refresh"
 
-        result = await repository.update_tokens(mock_account)
+        await repository.update_tokens(mock_account)
 
         # Should not change values when None passed
         assert mock_account.access_token == "original-access"

@@ -6,6 +6,60 @@ from typing import Any
 
 import openpyxl
 
+# Supported encodings for CSV files
+_CSV_ENCODINGS = ["utf-8", "utf-8-sig", "latin-1", "cp1252"]
+
+
+def _detect_encoding(content: bytes) -> str:
+    """Detect encoding for file content.
+
+    Args:
+        content: Raw bytes to decode
+
+    Returns:
+        Detected encoding name
+
+    Raises:
+        ValueError: If no supported encoding works
+    """
+    for encoding in _CSV_ENCODINGS:
+        try:
+            content.decode(encoding)
+            return encoding
+        except UnicodeDecodeError:
+            continue
+    raise ValueError("Unable to decode file with supported encodings")
+
+
+def _normalize_header(header: Any, index: int) -> str:
+    """Normalize a column header.
+
+    Args:
+        header: Header value (may be None or any type)
+        index: Column index for fallback naming
+
+    Returns:
+        Normalized header string (lowercase, underscores for spaces)
+    """
+    if header is None or str(header).strip() == "":
+        return f"column_{index}"
+    return str(header).strip().lower().replace(" ", "_")
+
+
+def _normalize_value(value: Any) -> str | None:
+    """Normalize a cell value.
+
+    Args:
+        value: Cell value (may be None or any type)
+
+    Returns:
+        Normalized string or None for empty values
+    """
+    if value is None:
+        return None
+    clean = str(value).strip()
+    return clean if clean else None
+
 
 def parse_csv(file_content: bytes) -> list[dict[str, Any]]:
     """Parse CSV file content into list of dictionaries.
@@ -16,33 +70,17 @@ def parse_csv(file_content: bytes) -> list[dict[str, Any]]:
     Returns:
         List of dictionaries, one per row, with header names as keys
     """
-    # Try to decode with different encodings
-    content = None
-    for encoding in ["utf-8", "utf-8-sig", "latin-1", "cp1252"]:
-        try:
-            content = file_content.decode(encoding)
-            break
-        except UnicodeDecodeError:
-            continue
-
-    if content is None:
-        raise ValueError("Unable to decode CSV file with supported encodings")
-
+    encoding = _detect_encoding(file_content)
+    content = file_content.decode(encoding)
     reader = csv.DictReader(io.StringIO(content))
-    rows = []
 
+    rows = []
     for row in reader:
-        # Clean up keys and values
-        cleaned = {}
-        for key, value in row.items():
-            if key is None:
-                continue
-            clean_key = key.strip().lower().replace(" ", "_")
-            clean_value = value.strip() if value else None
-            # Convert empty strings to None
-            if clean_value == "":
-                clean_value = None
-            cleaned[clean_key] = clean_value
+        cleaned = {
+            _normalize_header(key, i): _normalize_value(value)
+            for i, (key, value) in enumerate(row.items())
+            if key is not None
+        }
         rows.append(cleaned)
 
     return rows
@@ -67,29 +105,18 @@ def parse_excel(file_content: bytes) -> list[dict[str, Any]]:
     if len(rows) < 2:
         return []
 
-    # First row is headers
-    headers = [
-        str(h).strip().lower().replace(" ", "_") if h else f"column_{i}"
-        for i, h in enumerate(rows[0])
-    ]
+    headers = [_normalize_header(h, i) for i, h in enumerate(rows[0])]
 
     result = []
     for row in rows[1:]:
         if all(cell is None for cell in row):
-            continue  # Skip empty rows
+            continue
 
-        row_dict = {}
-        for i, value in enumerate(row):
-            if i < len(headers):
-                key = headers[i]
-                # Convert to string if needed, None stays None
-                if value is not None:
-                    clean_value = str(value).strip()
-                    if clean_value == "":
-                        clean_value = None
-                else:
-                    clean_value = None
-                row_dict[key] = clean_value
+        row_dict = {
+            headers[i]: _normalize_value(value)
+            for i, value in enumerate(row)
+            if i < len(headers)
+        }
         result.append(row_dict)
 
     return result

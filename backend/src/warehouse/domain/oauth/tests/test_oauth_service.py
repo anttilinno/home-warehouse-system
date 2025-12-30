@@ -285,8 +285,6 @@ class TestHandleOAuthCallback:
         mock_session.execute.return_value = mock_result
 
         # Mock flush to set user.id (simulating what DB does)
-        created_user_id = uuid7()
-
         async def side_effect_flush():
             # Get the last added object (user, workspace, or membership)
             if mock_session.add.call_count > 0:
@@ -408,7 +406,7 @@ class TestCreateOAuthService:
             mock_service = MagicMock()
             MockOAuthService.return_value = mock_service
 
-            result = create_oauth_service(config)
+            create_oauth_service(config)
 
             MockOAuthService.assert_called_once()
             mock_service.register.assert_not_called()
@@ -429,7 +427,7 @@ class TestCreateOAuthService:
             mock_google_provider = MagicMock()
             MockGoogle.return_value = mock_google_provider
 
-            result = create_oauth_service(config)
+            create_oauth_service(config)
 
             MockGoogle.assert_called_once_with(
                 client_id="google-client-id",
@@ -453,7 +451,7 @@ class TestCreateOAuthService:
             mock_service = MagicMock()
             MockOAuthService.return_value = mock_service
 
-            result = create_oauth_service(config)
+            create_oauth_service(config)
 
             MockGoogle.assert_called_once()
             MockGitHub.assert_called_once()

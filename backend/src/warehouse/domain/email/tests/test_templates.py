@@ -2,6 +2,11 @@
 
 import pytest
 
+from conftest import (
+    TEST_ITEM_POWER_DRILL,
+    TEST_USER_JOHN_DOE,
+    TEST_WORKSPACE_HOME,
+)
 from warehouse.domain.email.templates import (
     TRANSLATIONS,
     get_translations,
@@ -88,30 +93,30 @@ class TestLoanReminderTemplate:
     def test_contains_borrower_name(self):
         """Test that template contains borrower name."""
         html = loan_reminder_template(
-            borrower_name="John Doe",
-            item_name="Power Drill",
+            borrower_name=TEST_USER_JOHN_DOE,
+            item_name=TEST_ITEM_POWER_DRILL,
             due_date="2024-01-15",
             is_overdue=False,
             language="en",
         )
-        assert "John Doe" in html
+        assert TEST_USER_JOHN_DOE in html
 
     def test_contains_item_name(self):
         """Test that template contains item name."""
         html = loan_reminder_template(
-            borrower_name="John Doe",
-            item_name="Power Drill",
+            borrower_name=TEST_USER_JOHN_DOE,
+            item_name=TEST_ITEM_POWER_DRILL,
             due_date="2024-01-15",
             is_overdue=False,
             language="en",
         )
-        assert "Power Drill" in html
+        assert TEST_ITEM_POWER_DRILL in html
 
     def test_contains_due_date(self):
         """Test that template contains due date."""
         html = loan_reminder_template(
-            borrower_name="John Doe",
-            item_name="Power Drill",
+            borrower_name=TEST_USER_JOHN_DOE,
+            item_name=TEST_ITEM_POWER_DRILL,
             due_date="2024-01-15",
             is_overdue=False,
             language="en",
@@ -121,8 +126,8 @@ class TestLoanReminderTemplate:
     def test_shows_overdue_status(self):
         """Test that template shows overdue status."""
         html = loan_reminder_template(
-            borrower_name="John Doe",
-            item_name="Power Drill",
+            borrower_name=TEST_USER_JOHN_DOE,
+            item_name=TEST_ITEM_POWER_DRILL,
             due_date="2024-01-15",
             is_overdue=True,
             language="en",
@@ -134,8 +139,8 @@ class TestLoanReminderTemplate:
     def test_shows_due_soon_status(self):
         """Test that template shows due soon status."""
         html = loan_reminder_template(
-            borrower_name="John Doe",
-            item_name="Power Drill",
+            borrower_name=TEST_USER_JOHN_DOE,
+            item_name=TEST_ITEM_POWER_DRILL,
             due_date="2024-01-20",
             is_overdue=False,
             language="en",
@@ -147,8 +152,8 @@ class TestLoanReminderTemplate:
     def test_estonian_overdue(self):
         """Test Estonian overdue text."""
         html = loan_reminder_template(
-            borrower_name="John Doe",
-            item_name="Power Drill",
+            borrower_name=TEST_USER_JOHN_DOE,
+            item_name=TEST_ITEM_POWER_DRILL,
             due_date="2024-01-15",
             is_overdue=True,
             language="et",
@@ -158,8 +163,8 @@ class TestLoanReminderTemplate:
     def test_russian_overdue(self):
         """Test Russian overdue text."""
         html = loan_reminder_template(
-            borrower_name="John Doe",
-            item_name="Power Drill",
+            borrower_name=TEST_USER_JOHN_DOE,
+            item_name=TEST_ITEM_POWER_DRILL,
             due_date="2024-01-15",
             is_overdue=True,
             language="ru",
@@ -173,30 +178,30 @@ class TestWorkspaceInviteTemplate:
     def test_contains_inviter_name(self):
         """Test that template contains inviter name."""
         html = workspace_invite_template(
-            inviter_name="John Doe",
-            workspace_name="Home Workshop",
+            inviter_name=TEST_USER_JOHN_DOE,
+            workspace_name=TEST_WORKSPACE_HOME,
             role="member",
             app_url="https://app.example.com",
             language="en",
         )
-        assert "John Doe" in html
+        assert TEST_USER_JOHN_DOE in html
 
     def test_contains_workspace_name(self):
         """Test that template contains workspace name."""
         html = workspace_invite_template(
-            inviter_name="John Doe",
-            workspace_name="Home Workshop",
+            inviter_name=TEST_USER_JOHN_DOE,
+            workspace_name=TEST_WORKSPACE_HOME,
             role="member",
             app_url="https://app.example.com",
             language="en",
         )
-        assert "Home Workshop" in html
+        assert TEST_WORKSPACE_HOME in html
 
     def test_contains_role(self):
         """Test that template contains role."""
         html = workspace_invite_template(
-            inviter_name="John Doe",
-            workspace_name="Home Workshop",
+            inviter_name=TEST_USER_JOHN_DOE,
+            workspace_name=TEST_WORKSPACE_HOME,
             role="admin",
             app_url="https://app.example.com",
             language="en",
@@ -206,8 +211,8 @@ class TestWorkspaceInviteTemplate:
     def test_contains_dashboard_link(self):
         """Test that template contains dashboard link."""
         html = workspace_invite_template(
-            inviter_name="John Doe",
-            workspace_name="Home Workshop",
+            inviter_name=TEST_USER_JOHN_DOE,
+            workspace_name=TEST_WORKSPACE_HOME,
             role="member",
             app_url="https://app.example.com",
             language="en",
@@ -217,8 +222,8 @@ class TestWorkspaceInviteTemplate:
     def test_estonian_content(self):
         """Test Estonian invitation content."""
         html = workspace_invite_template(
-            inviter_name="John Doe",
-            workspace_name="Home Workshop",
+            inviter_name=TEST_USER_JOHN_DOE,
+            workspace_name=TEST_WORKSPACE_HOME,
             role="member",
             app_url="https://app.example.com",
             language="et",
@@ -229,8 +234,8 @@ class TestWorkspaceInviteTemplate:
     def test_russian_content(self):
         """Test Russian invitation content."""
         html = workspace_invite_template(
-            inviter_name="John Doe",
-            workspace_name="Home Workshop",
+            inviter_name=TEST_USER_JOHN_DOE,
+            workspace_name=TEST_WORKSPACE_HOME,
             role="member",
             app_url="https://app.example.com",
             language="ru",
