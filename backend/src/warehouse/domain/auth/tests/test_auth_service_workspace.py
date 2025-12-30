@@ -385,10 +385,11 @@ class TestDeleteWorkspace:
     """Tests for delete_workspace method."""
 
     async def test_delete_workspace_success_owner(
-        self, service, workspace_repository_mock, workspace_member_repository_mock
+        self, service, workspace_repository_mock, workspace_member_repository_mock, user_repository_mock
     ):
         """Test owner can delete non-protected workspace."""
         workspace_id = uuid7()
+        other_workspace_id = uuid7()
         user_id = uuid7()
 
         workspace = _make_workspace(id=workspace_id, is_personal=False)
@@ -397,18 +398,27 @@ class TestDeleteWorkspace:
         membership = _make_membership(
             workspace_id=workspace_id, user_id=user_id, role=WorkspaceRole.OWNER
         )
+        other_membership = _make_membership(
+            workspace_id=other_workspace_id, user_id=user_id, role=WorkspaceRole.OWNER
+        )
         workspace_member_repository_mock.get_one_or_none.return_value = membership
-        workspace_repository_mock.delete = AsyncMock()
+        # User has 2 workspaces so delete is allowed
+        workspace_member_repository_mock.list.return_value = [membership, other_membership]
+
+        # Mock session.execute for raw SQL delete
+        user_repository_mock.session.execute = AsyncMock()
+        user_repository_mock.session.commit = AsyncMock()
 
         await service.delete_workspace(workspace_id, user_id)
 
-        workspace_repository_mock.delete.assert_awaited_once_with(workspace_id)
+        user_repository_mock.session.execute.assert_awaited_once()
 
     async def test_delete_workspace_success_admin(
-        self, service, workspace_repository_mock, workspace_member_repository_mock
+        self, service, workspace_repository_mock, workspace_member_repository_mock, user_repository_mock
     ):
         """Test admin can delete non-protected workspace."""
         workspace_id = uuid7()
+        other_workspace_id = uuid7()
         user_id = uuid7()
 
         workspace = _make_workspace(id=workspace_id, is_personal=False)
@@ -417,12 +427,20 @@ class TestDeleteWorkspace:
         membership = _make_membership(
             workspace_id=workspace_id, user_id=user_id, role=WorkspaceRole.ADMIN
         )
+        other_membership = _make_membership(
+            workspace_id=other_workspace_id, user_id=user_id, role=WorkspaceRole.OWNER
+        )
         workspace_member_repository_mock.get_one_or_none.return_value = membership
-        workspace_repository_mock.delete = AsyncMock()
+        # User has 2 workspaces so delete is allowed
+        workspace_member_repository_mock.list.return_value = [membership, other_membership]
+
+        # Mock session.execute for raw SQL delete
+        user_repository_mock.session.execute = AsyncMock()
+        user_repository_mock.session.commit = AsyncMock()
 
         await service.delete_workspace(workspace_id, user_id)
 
-        workspace_repository_mock.delete.assert_awaited_once_with(workspace_id)
+        user_repository_mock.session.execute.assert_awaited_once()
 
     async def test_delete_workspace_protected_fails(
         self, service, workspace_repository_mock
@@ -508,6 +526,28 @@ class TestDeleteWorkspace:
             await service.delete_workspace(workspace_id, user_id)
 
         assert exc_info.value.code == ErrorCode.WORKSPACE_NOT_FOUND
+
+    async def test_delete_workspace_last_workspace_fails(
+        self, service, workspace_repository_mock, workspace_member_repository_mock
+    ):
+        """Test cannot delete last workspace."""
+        workspace_id = uuid7()
+        user_id = uuid7()
+
+        workspace = _make_workspace(id=workspace_id, is_personal=False)
+        workspace_repository_mock.get_one_or_none.return_value = workspace
+
+        membership = _make_membership(
+            workspace_id=workspace_id, user_id=user_id, role=WorkspaceRole.OWNER
+        )
+        workspace_member_repository_mock.get_one_or_none.return_value = membership
+        # User has only 1 workspace - this is their last one
+        workspace_member_repository_mock.list.return_value = [membership]
+
+        with pytest.raises(AppError) as exc_info:
+            await service.delete_workspace(workspace_id, user_id)
+
+        assert exc_info.value.code == ErrorCode.WORKSPACE_LAST
 
 
 class TestRemoveMember:

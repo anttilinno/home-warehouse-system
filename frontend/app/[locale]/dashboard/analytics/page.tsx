@@ -689,15 +689,13 @@ function RetroStatCard({
   value: string;
 }) {
   return (
-    <div className="bg-card p-6 border-4 border-border retro-shadow">
-      <div className="flex items-center justify-between">
-        <div>
-          <p className="retro-small uppercase font-bold text-muted-foreground">{label}</p>
-          <p className="text-3xl font-bold text-foreground mt-1" style={{ fontFamily: "var(--font-pixel)" }}>{value}</p>
-        </div>
-        <div className="w-12 h-12 border-4 border-border flex items-center justify-center" style={{ backgroundColor: NES_BLUE }}>
-          <Icon name={iconName} className="w-6 h-6 text-white" />
-        </div>
+    <div className="bg-card p-4 border-4 border-border retro-shadow flex items-center justify-between gap-3">
+      <div>
+        <p className="retro-small uppercase font-bold text-muted-foreground hidden xl:block">{label}</p>
+        <p className="text-2xl font-bold text-foreground" style={{ fontFamily: "var(--font-pixel)" }}>{value}</p>
+      </div>
+      <div className="w-10 h-10 border-4 border-border flex items-center justify-center flex-shrink-0" style={{ backgroundColor: NES_BLUE }} title={label}>
+        <Icon name={iconName} className="w-5 h-5 text-white" />
       </div>
     </div>
   );

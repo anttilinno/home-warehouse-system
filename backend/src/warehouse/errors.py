@@ -43,6 +43,7 @@ class ErrorCode(Enum):
     WORKSPACE_PERMISSION_DENIED = ("WORKSPACE_PERMISSION_DENIED", "Permission denied for this workspace")
     WORKSPACE_MEMBER_EXISTS = ("WORKSPACE_MEMBER_EXISTS", "User is already a member of this workspace")
     WORKSPACE_PROTECTED = ("WORKSPACE_PROTECTED", "Personal workspace cannot be deleted")
+    WORKSPACE_LAST = ("WORKSPACE_LAST", "Cannot delete your last workspace")
     WORKSPACE_OWNER_CANNOT_BE_REMOVED = ("WORKSPACE_OWNER_CANNOT_BE_REMOVED", "Workspace owner cannot be removed")
     WORKSPACE_MEMBER_NOT_FOUND = ("WORKSPACE_MEMBER_NOT_FOUND", "Workspace member not found")
 

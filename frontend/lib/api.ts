@@ -49,9 +49,21 @@ export interface TokenResponse {
 
 export interface ApiError {
   detail: string;
+  code?: string;  // Error code from backend (e.g., "WORKSPACE_PROTECTED")
   error_type?: string;
   traceback?: string;
   exception_type?: string;
+}
+
+// Custom error class that includes the backend error code
+export class ApiErrorWithCode extends Error {
+  code?: string;
+
+  constructor(message: string, code?: string) {
+    super(message);
+    this.code = code;
+    this.name = 'ApiErrorWithCode';
+  }
 }
 
 // Global error handler for showing 500 errors in development
@@ -113,10 +125,10 @@ class ApiClient {
         tokenStorage.removeToken();
         if (hadToken && typeof window !== 'undefined') {
           window.location.href = '/en/login';
-          throw new Error('Authentication required');
+          throw new ApiErrorWithCode('Authentication required');
         }
         // No token = login attempt failed, pass through actual error
-        throw new Error(errorData.detail || 'Invalid credentials');
+        throw new ApiErrorWithCode(errorData.detail || 'Invalid credentials', errorData.code);
       }
 
       // Show error modal for 500 errors in development
@@ -124,7 +136,7 @@ class ApiClient {
         showServerError(errorData);
       }
 
-      throw new Error(errorData.detail || `HTTP ${response.status}`);
+      throw new ApiErrorWithCode(errorData.detail || `HTTP ${response.status}`, errorData.code);
     }
 
     return response.json();
@@ -144,7 +156,7 @@ class ApiClient {
         if (typeof window !== 'undefined') {
           window.location.href = '/en/login';
         }
-        throw new Error('Authentication required');
+        throw new ApiErrorWithCode('Authentication required');
       }
 
       const errorData: ApiError = await response.json().catch(() => ({ detail: 'Unknown error' }));
@@ -154,7 +166,7 @@ class ApiClient {
         showServerError(errorData);
       }
 
-      throw new Error(errorData.detail || `HTTP ${response.status}`);
+      throw new ApiErrorWithCode(errorData.detail || `HTTP ${response.status}`, errorData.code);
     }
 
     return response.json();
@@ -173,7 +185,7 @@ class ApiClient {
         if (typeof window !== 'undefined') {
           window.location.href = '/en/login';
         }
-        throw new Error('Authentication required');
+        throw new ApiErrorWithCode('Authentication required');
       }
 
       const errorData: ApiError = await response.json().catch(() => ({ detail: 'Unknown error' }));
@@ -182,7 +194,7 @@ class ApiClient {
         showServerError(errorData);
       }
 
-      throw new Error(errorData.detail || `HTTP ${response.status}`);
+      throw new ApiErrorWithCode(errorData.detail || `HTTP ${response.status}`, errorData.code);
     }
 
     return response.json();
@@ -200,7 +212,7 @@ class ApiClient {
         if (typeof window !== 'undefined') {
           window.location.href = '/en/login';
         }
-        throw new Error('Authentication required');
+        throw new ApiErrorWithCode('Authentication required');
       }
 
       const errorData: ApiError = await response.json().catch(() => ({ detail: 'Unknown error' }));
@@ -209,7 +221,7 @@ class ApiClient {
         showServerError(errorData);
       }
 
-      throw new Error(errorData.detail || `HTTP ${response.status}`);
+      throw new ApiErrorWithCode(errorData.detail || `HTTP ${response.status}`, errorData.code);
     }
   }
 }
@@ -1331,7 +1343,20 @@ export const docspellApi = {
 };
 
 // Error translation utilities
-export const getTranslatedErrorMessage = (errorMessage: string, t: (key: string) => string): string => {
+export const getTranslatedErrorMessage = (errorMessage: string, t: (key: string) => string, errorCode?: string): string => {
+  // If we have a direct error code from the backend, try to use it first
+  if (errorCode) {
+    try {
+      const translated = t(`errors.${errorCode}`);
+      // Check if translation exists (next-intl returns the key if not found)
+      if (translated && translated !== `errors.${errorCode}`) {
+        return translated;
+      }
+    } catch {
+      // Translation key not found, fall through to message matching
+    }
+  }
+
   // Map common backend error messages to error codes
   const errorMappings: Record<string, string> = {
     'Username already exists': 'AUTH_USERNAME_EXISTS',
@@ -1355,19 +1380,23 @@ export const getTranslatedErrorMessage = (errorMessage: string, t: (key: string)
     'Permission denied for this workspace': 'WORKSPACE_PERMISSION_DENIED',
     'User is already a member of this workspace': 'WORKSPACE_MEMBER_EXISTS',
     'Personal workspace cannot be deleted': 'WORKSPACE_PROTECTED',
+    'Cannot delete your last workspace': 'WORKSPACE_LAST',
     'Workspace owner cannot be removed': 'WORKSPACE_OWNER_CANNOT_BE_REMOVED',
     'Workspace member not found': 'WORKSPACE_MEMBER_NOT_FOUND',
     'User not found': 'USER_NOT_FOUND',
+    // Advanced Alchemy / database errors
+    'data validation error': 'DATABASE_CONSTRAINT_ERROR',
+    'foreign key': 'DATABASE_FOREIGN_KEY_ERROR',
   };
 
   // Find the error code from the message
-  const errorCode = Object.keys(errorMappings).find(key =>
+  const messageKey = Object.keys(errorMappings).find(key =>
     errorMessage.toLowerCase().includes(key.toLowerCase())
   );
 
-  if (errorCode) {
+  if (messageKey) {
     try {
-      return t(`errors.${errorMappings[errorCode]}`);
+      return t(`errors.${errorMappings[messageKey]}`);
     } catch {
       // Translation key not found, return original message
       return errorMessage;

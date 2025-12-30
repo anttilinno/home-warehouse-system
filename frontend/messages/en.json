@@ -789,9 +789,12 @@
     "WORKSPACE_PERMISSION_DENIED": "Permission denied for this workspace",
     "WORKSPACE_MEMBER_EXISTS": "User is already a member of this workspace",
     "WORKSPACE_PROTECTED": "Personal workspace cannot be deleted",
+    "WORKSPACE_LAST": "Cannot delete your last workspace",
     "WORKSPACE_OWNER_CANNOT_BE_REMOVED": "Workspace owner cannot be removed",
     "WORKSPACE_MEMBER_NOT_FOUND": "Workspace member not found",
     "USER_NOT_FOUND": "User not found",
+    "DATABASE_CONSTRAINT_ERROR": "Cannot complete this operation due to existing related data",
+    "DATABASE_FOREIGN_KEY_ERROR": "Referenced record does not exist or cannot be deleted",
     "UNKNOWN_ERROR": "An unexpected error occurred"
   }
 }

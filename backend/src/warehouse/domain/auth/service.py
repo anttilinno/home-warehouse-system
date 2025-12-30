@@ -394,7 +394,7 @@ class AuthService:
         ]
 
     async def delete_workspace(self, workspace_id: UUID, user_id: UUID) -> None:
-        """Delete a workspace. Only owner or admin can delete, and personal workspaces cannot be deleted."""
+        """Delete a workspace and all related data. Cannot delete personal or last workspace."""
         if not self.workspace_repository or not self.workspace_member_repository:
             raise AppError(ErrorCode.GENERAL_BAD_REQUEST, status_code=500)
 
@@ -416,8 +416,15 @@ class AuthService:
         if membership.role not in [WorkspaceRole.OWNER, WorkspaceRole.ADMIN]:
             raise AppError(ErrorCode.WORKSPACE_PERMISSION_DENIED, status_code=403)
 
-        # Delete workspace (CASCADE handles members)
-        await self.workspace_repository.delete(workspace_id)
+        # Check if this is the user's last workspace
+        user_memberships = await self.workspace_member_repository.list(user_id=user_id)
+        if len(user_memberships) <= 1:
+            raise AppError(ErrorCode.WORKSPACE_LAST, status_code=400)
+
+        # Delete workspace using raw SQL to ensure CASCADE works properly
+        from sqlalchemy import delete
+        delete_stmt = delete(Workspace).where(Workspace.id == workspace_id)
+        await self.repository.session.execute(delete_stmt)
         await self.repository.session.commit()
 
     async def remove_member(self, workspace_id: UUID, member_id: UUID, remover_id: UUID) -> None:

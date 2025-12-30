@@ -11,5 +11,6 @@ def get_db_config(config: Config) -> SQLAlchemyAsyncConfig:
     return SQLAlchemyAsyncConfig(
         connection_string=config.database_url,
         session_config=AsyncSessionConfig(expire_on_commit=False),
+        set_default_exception_handler=False,  # Use our custom handlers instead
     )
 

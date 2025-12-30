@@ -292,10 +292,10 @@ export default function LoansPage() {
               <RetroTable.Row>
                 <RetroTable.Th>{t("status")}</RetroTable.Th>
                 <RetroTable.Th>{t("inventory")}</RetroTable.Th>
-                <RetroTable.Th>{t("borrower")}</RetroTable.Th>
-                <RetroTable.Th>{t("quantity")}</RetroTable.Th>
-                <RetroTable.Th>{t("loanedAt")}</RetroTable.Th>
-                <RetroTable.Th>{t("dueDate")}</RetroTable.Th>
+                <RetroTable.Th className="hidden xl:table-cell">{t("borrower")}</RetroTable.Th>
+                <RetroTable.Th className="hidden 2xl:table-cell">{t("quantity")}</RetroTable.Th>
+                <RetroTable.Th className="hidden 2xl:table-cell">{t("loanedAt")}</RetroTable.Th>
+                <RetroTable.Th className="hidden lg:table-cell">{t("dueDate")}</RetroTable.Th>
                 <RetroTable.Th align="right">{t("actions")}</RetroTable.Th>
               </RetroTable.Row>
             </RetroTable.Head>
@@ -315,19 +315,19 @@ export default function LoansPage() {
                         </span>
                       </div>
                     </RetroTable.Td>
-                    <RetroTable.Td>
+                    <RetroTable.Td className="hidden xl:table-cell">
                       <div className="flex items-center gap-2 retro-body retro-small uppercase text-foreground">
                         <Icon name="Contact" className="w-4 h-4 text-muted-foreground" />
                         {getBorrowerName(loan.borrower_id)}
                       </div>
                     </RetroTable.Td>
-                    <RetroTable.Td>
+                    <RetroTable.Td className="hidden 2xl:table-cell">
                       {loan.quantity}
                     </RetroTable.Td>
-                    <RetroTable.Td muted>
+                    <RetroTable.Td className="hidden 2xl:table-cell" muted>
                       {formatDateTime(loan.loaned_at)}
                     </RetroTable.Td>
-                    <RetroTable.Td muted>
+                    <RetroTable.Td className="hidden lg:table-cell" muted>
                       {loan.due_date ? formatDate(loan.due_date) : t("noDueDate")}
                     </RetroTable.Td>
                     <RetroTable.Td align="right">

@@ -59,14 +59,61 @@ interface RetroTableTdProps extends React.TdHTMLAttributes<HTMLTableCellElement>
   truncate?: boolean;
 }
 
-// Table wrapper
+// Table wrapper with sticky scrollbar
 function RetroTableRoot({ children, scroll = false, className, ...props }: RetroTableProps) {
+  const tableRef = React.useRef<HTMLDivElement>(null);
+  const scrollbarRef = React.useRef<HTMLDivElement>(null);
+  const [showStickyScrollbar, setShowStickyScrollbar] = React.useState(false);
+  const [scrollWidth, setScrollWidth] = React.useState(0);
+  const [clientWidth, setClientWidth] = React.useState(0);
+
+  React.useEffect(() => {
+    const table = tableRef.current;
+    if (!table) return;
+
+    const checkOverflow = () => {
+      const hasOverflow = table.scrollWidth > table.clientWidth;
+      setShowStickyScrollbar(hasOverflow);
+      setScrollWidth(table.scrollWidth);
+      setClientWidth(table.clientWidth);
+    };
+
+    checkOverflow();
+    const resizeObserver = new ResizeObserver(checkOverflow);
+    resizeObserver.observe(table);
+    return () => resizeObserver.disconnect();
+  }, [children]);
+
+  const syncScroll = (source: "table" | "scrollbar") => {
+    const table = tableRef.current;
+    const scrollbar = scrollbarRef.current;
+    if (!table || !scrollbar) return;
+
+    if (source === "table") {
+      scrollbar.scrollLeft = table.scrollLeft;
+    } else {
+      table.scrollLeft = scrollbar.scrollLeft;
+    }
+  };
+
   return (
-    <div
-      className={cn("retro-table-wrap", scroll && "retro-table-wrap--scroll", className)}
-      {...props}
-    >
-      <table className="retro-table">{children}</table>
+    <div className={cn("retro-table-container", className)} {...props}>
+      <div
+        ref={tableRef}
+        className="retro-table-wrap"
+        onScroll={() => syncScroll("table")}
+      >
+        <table className="retro-table">{children}</table>
+      </div>
+      {showStickyScrollbar && (
+        <div
+          ref={scrollbarRef}
+          className="retro-table-sticky-scrollbar"
+          onScroll={() => syncScroll("scrollbar")}
+        >
+          <div style={{ width: scrollWidth, height: 1 }} />
+        </div>
+      )}
     </div>
   );
 }

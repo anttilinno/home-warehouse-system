@@ -26,6 +26,10 @@
     @apply min-h-[64px] p-4 gap-4;
   }
 
+  .retro-sidebar--collapsed .retro-sidebar__header {
+    @apply min-h-0 p-0 justify-center w-16 h-16;
+  }
+
   .retro-sidebar__logo {
     @apply w-10 h-10 flex items-center justify-center;
     @apply border-4 border-white/30;
@@ -73,9 +77,19 @@
   }
 
   /* Collapsed sidebar - icon only */
-  .retro-sidebar--collapsed .retro-nav-item {
-    @apply justify-center px-2;
+  .retro-sidebar--collapsed .retro-nav-item,
+  .retro-sidebar--collapsed .retro-nav-group__header {
+    @apply justify-center p-0 mx-auto;
+    width: 40px !important;
+    height: 40px !important;
   }
+
+  .retro-sidebar--collapsed .retro-nav-item:hover,
+  .retro-sidebar--collapsed .retro-nav-item--active,
+  .retro-sidebar--collapsed .retro-nav-group__header:hover {
+    box-shadow: 2px 2px 0px 0px var(--border);
+  }
+
 
   .retro-nav-item__icon {
     @apply w-5 h-5 flex-shrink-0;

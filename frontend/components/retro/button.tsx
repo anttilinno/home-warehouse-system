@@ -31,7 +31,7 @@ export function RetroButton({
   ...props
 }: RetroButtonProps) {
   const variantClass = `retro-btn--${variant}`;
-  const sizeClass = size !== "md" ? `retro-btn--${size}` : "";
+  const sizeClass = `retro-btn--${size}`;
 
   const baseClasses = cn(
     "retro-btn",

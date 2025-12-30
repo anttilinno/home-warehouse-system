@@ -16,6 +16,11 @@
     @apply px-1.5 py-0 text-xs;
   }
 
+  /* Fixed-width badge for action labels (CHECK-IN, LOANED, ADDED, etc.) */
+  .retro-badge--action {
+    @apply min-w-16 justify-center;
+  }
+
   .retro-badge--lg {
     @apply px-3 py-1;
   }

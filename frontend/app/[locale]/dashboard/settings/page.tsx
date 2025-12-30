@@ -9,7 +9,7 @@ import { useAuth } from "@/lib/auth";
 import { useTranslations } from "next-intl";
 import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
-import { workspacesApi, WorkspaceMember, UserSearchResult, getTranslatedErrorMessage } from "@/lib/api";
+import { workspacesApi, WorkspaceMember, UserSearchResult, getTranslatedErrorMessage, ApiErrorWithCode } from "@/lib/api";
 import { Link } from "@/navigation";
 import { cn } from "@/lib/utils";
 import { NES_GREEN, NES_BLUE, NES_RED, NES_YELLOW } from "@/lib/nes-colors";
@@ -103,7 +103,8 @@ export default function SettingsPage() {
       setCurrentWorkspace(workspace);
       window.location.reload();
     } catch (err) {
-      setCreateError(getTranslatedErrorMessage(err instanceof Error ? err.message : "Unknown error", (key) => tErrors(key)));
+      const errorCode = err instanceof ApiErrorWithCode ? err.code : undefined;
+      setCreateError(getTranslatedErrorMessage(err instanceof Error ? err.message : "Unknown error", (key) => tErrors(key), errorCode));
     } finally {
       setIsCreating(false);
     }
@@ -198,7 +199,8 @@ export default function SettingsPage() {
       // Refresh members list
       loadMembers();
     } catch (err) {
-      setInviteError(getTranslatedErrorMessage(err instanceof Error ? err.message : "Unknown error", (key) => tErrors(key)));
+      const errorCode = err instanceof ApiErrorWithCode ? err.code : undefined;
+      setInviteError(getTranslatedErrorMessage(err instanceof Error ? err.message : "Unknown error", (key) => tErrors(key), errorCode));
     } finally {
       setIsInviting(false);
     }
@@ -238,7 +240,8 @@ export default function SettingsPage() {
       }
       window.location.reload();
     } catch (err) {
-      setDeleteError(getTranslatedErrorMessage(err instanceof Error ? err.message : "Unknown error", (key) => tErrors(key)));
+      const errorCode = err instanceof ApiErrorWithCode ? err.code : undefined;
+      setDeleteError(getTranslatedErrorMessage(err instanceof Error ? err.message : "Unknown error", (key) => tErrors(key), errorCode));
     } finally {
       setIsDeleting(false);
     }

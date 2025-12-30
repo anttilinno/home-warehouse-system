@@ -789,9 +789,12 @@
     "WORKSPACE_PERMISSION_DENIED": "Selle tööruumi jaoks puuduvad õigused",
     "WORKSPACE_MEMBER_EXISTS": "Kasutaja on juba selle tööruumi liige",
     "WORKSPACE_PROTECTED": "Isiklikku tööruumi ei saa kustutada",
+    "WORKSPACE_LAST": "Viimast tööruumi ei saa kustutada",
     "WORKSPACE_OWNER_CANNOT_BE_REMOVED": "Tööruumi omanikku ei saa eemaldada",
     "WORKSPACE_MEMBER_NOT_FOUND": "Tööruumi liiget ei leitud",
     "USER_NOT_FOUND": "Kasutajat ei leitud",
+    "DATABASE_CONSTRAINT_ERROR": "Seda toimingut ei saa lõpule viia seotud andmete tõttu",
+    "DATABASE_FOREIGN_KEY_ERROR": "Viidatud kirjet ei eksisteeri või seda ei saa kustutada",
     "UNKNOWN_ERROR": "Tekkis ootamatu viga"
   }
 }

@@ -4,14 +4,33 @@
    ========================================================================== */
 
 @layer components {
-  /* Table wrapper/container */
-  .retro-table-wrap {
-    @apply bg-card border-4 border-border overflow-hidden;
-    box-shadow: 4px 4px 0px 0px var(--border);
+  /* Table container */
+  .retro-table-container {
+    @apply relative;
   }
 
-  .retro-table-wrap--scroll {
+  /* Table wrapper/container */
+  .retro-table-wrap {
+    @apply bg-card border-4 border-border overflow-x-auto;
+    box-shadow: 4px 4px 0px 0px var(--border);
+    /* Hide scrollbar when sticky scrollbar is shown */
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  .retro-table-wrap::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Sticky scrollbar at bottom of viewport */
+  .retro-table-sticky-scrollbar {
     @apply overflow-x-auto;
+    position: sticky;
+    bottom: 0;
+    height: 12px;
+    background: var(--muted);
+    border: 2px solid var(--border);
+    margin-top: -4px;
   }
 
   /* Table element */

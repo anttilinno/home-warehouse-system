@@ -22,6 +22,11 @@ const materialIconMap: Record<string, string> = {
   Users: "group",
   Layers: "menu_book",
   Warehouse: "warehouse",
+  Star: "star",
+  Smartphone: "smartphone",
+  FileText: "description",
+  QrCode: "qr_code_2",
+  Zap: "bolt",
 
   // Chevrons
   ChevronUp: "expand_less",

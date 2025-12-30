@@ -32,6 +32,8 @@ import {
   RetroTextarea,
   RetroCheckbox,
   RetroError,
+  RetroActionsMenu,
+  type ActionItem,
 } from "@/components/retro";
 
 export default function ItemsPage() {
@@ -198,7 +200,7 @@ export default function ItemsPage() {
                 <RetroTable.Th>{t("sku")}</RetroTable.Th>
                 <RetroTable.Th>{t("name")}</RetroTable.Th>
                 <RetroTable.Th>{t("category")}</RetroTable.Th>
-                <RetroTable.Th align="right">{t("actions")}</RetroTable.Th>
+                <RetroTable.Th align="right" className="w-0">{t("actions")}</RetroTable.Th>
               </RetroTable.Row>
             </RetroTable.Head>
             <RetroTable.Body>
@@ -231,56 +233,48 @@ export default function ItemsPage() {
                       <span className="text-muted-foreground retro-body">{t("noCategory")}</span>
                     )}
                   </RetroTable.Td>
-                  <RetroTable.Td align="right">
-                    <div className="retro-td__actions">
-                      <button
-                        onClick={() => router.push(`/dashboard/items/${item.id}`)}
-                        title={t("view")}
-                        className="retro-icon-btn"
-                      >
-                        <Icon name="Eye" className="w-4 h-4 text-muted-foreground hover:text-foreground" />
-                      </button>
+                  <RetroTable.Td align="right" className="w-0">
+                    <RetroActionsMenu
+                      actions={[
+                        {
+                          icon: "Eye",
+                          label: t("view"),
+                          onClick: () => router.push(`/dashboard/items/${item.id}`),
+                        },
+                        {
+                          icon: "FileText",
+                          label: t("openInObsidian"),
+                          onClick: () => item.obsidian_url && window.open(item.obsidian_url, "_blank"),
+                          hidden: !item.obsidian_url,
+                        },
+                        {
+                          icon: "Copy",
+                          label: t("duplicate"),
+                          onClick: () => handleDuplicate(item),
+                          hidden: !canEdit,
+                        },
+                        {
+                          icon: "Pencil",
+                          label: t("edit"),
+                          onClick: () => handleEdit(item),
+                          hidden: !canEdit,
+                        },
+                        {
+                          icon: "Trash2",
+                          label: t("delete"),
+                          onClick: () => handleDelete(item),
+                          variant: "danger",
+                          hidden: !canEdit,
+                        },
+                      ]}
+                    >
                       <FavoriteButton
                         entityType="ITEM"
                         entityId={item.id}
                         size="sm"
                         className="retro-icon-btn"
                       />
-                      {item.obsidian_url && (
-                        <a
-                          href={item.obsidian_url}
-                          title={t("openInObsidian")}
-                          className="retro-icon-btn"
-                        >
-                          <Icon name="FileText" className="w-4 h-4 text-purple-500" />
-                        </a>
-                      )}
-                      {canEdit && (
-                        <>
-                          <button
-                            onClick={() => handleDuplicate(item)}
-                            title={t("duplicate")}
-                            className="retro-icon-btn"
-                          >
-                            <Icon name="Copy" className="w-4 h-4 text-muted-foreground hover:text-foreground" />
-                          </button>
-                          <button
-                            onClick={() => handleEdit(item)}
-                            title={t("edit")}
-                            className="retro-icon-btn"
-                          >
-                            <Icon name="Pencil" className="w-4 h-4 text-muted-foreground hover:text-foreground" />
-                          </button>
-                          <button
-                            onClick={() => handleDelete(item)}
-                            title={t("delete")}
-                            className="retro-icon-btn retro-icon-btn--danger"
-                          >
-                            <Icon name="Trash2" className="w-4 h-4" />
-                          </button>
-                        </>
-                      )}
-                    </div>
+                    </RetroActionsMenu>
                   </RetroTable.Td>
                 </RetroTable.Row>
               ))}

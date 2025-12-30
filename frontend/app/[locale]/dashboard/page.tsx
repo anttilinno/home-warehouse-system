@@ -157,11 +157,11 @@ export default function DashboardPage() {
       setLoading(true);
       const [statsData, recentData, locationsData] = await Promise.all([
         dashboardApi.getExtendedStats(),
-        dashboardApi.getRecentlyModified(10),
+        dashboardApi.getRecentlyModified(5),
         locationsApi.list().catch(() => []),
       ]);
       setStats(statsData);
-      setRecentItems(recentData);
+      setRecentItems(recentData.slice(0, 5));
       setLocations(locationsData.slice(0, 3));
       setError(null);
     } catch (err) {
@@ -303,12 +303,12 @@ export default function DashboardPage() {
                 <div className="flex gap-1 flex-wrap">
                   {(stats?.overdue_loans_count || 0) > 0 && (
                     <RetroBadge variant="danger" size="sm">
-                      {stats?.overdue_loans_count} {t("overdue")}
+                      {stats?.overdue_loans_count}<span className="dashboard-stat__badge-text"> {t("overdue")}</span>
                     </RetroBadge>
                   )}
                   {(stats?.due_soon_loans_count || 0) > 0 && (
                     <RetroBadge variant="warning" size="sm">
-                      {stats?.due_soon_loans_count} {t("dueSoon")}
+                      {stats?.due_soon_loans_count}<span className="dashboard-stat__badge-text"> {t("dueSoon")}</span>
                     </RetroBadge>
                   )}
                 </div>
@@ -379,7 +379,7 @@ export default function DashboardPage() {
                           <RetroTable.Td compact>
                             <div className="flex items-center gap-2">
                               <div className="retro-item-icon retro-item-icon--blue">
-                                <Icon name="Package" className="w-3 h-3" />
+                                <Icon name="Package" className="w-4 h-4" />
                               </div>
                               <span className="truncate max-w-[120px] text-xs">{item.item_name}</span>
                             </div>
@@ -388,6 +388,7 @@ export default function DashboardPage() {
                             <RetroBadge
                               variant={index % 3 === 0 ? "success" : index % 3 === 1 ? "danger" : "muted"}
                               size="sm"
+                              className="retro-badge--action"
                             >
                               {index % 3 === 0 ? t("checkIn") : index % 3 === 1 ? t("loaned") : t("added")}
                             </RetroBadge>

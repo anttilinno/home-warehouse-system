@@ -53,7 +53,9 @@
   /* Section card - Content sections */
   .retro-section {
     @apply bg-card border-4 border-border;
-    box-shadow: 3px 3px 0px 0px var(--border);
+    box-shadow: 4px 4px 0px 0px var(--border);
+    margin-bottom: 4px;
+    margin-right: 4px;
   }
 
   /* Quick action card */
@@ -89,7 +91,7 @@
 
   /* Item icon (used in tables and lists) */
   .retro-item-icon {
-    @apply w-6 h-6 border-2 border-border flex items-center justify-center;
+    @apply w-8 h-8 border-2 border-border flex items-center justify-center;
   }
 
   .retro-item-icon--blue {

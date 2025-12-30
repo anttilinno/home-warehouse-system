@@ -216,16 +216,19 @@ export function Sidebar({ className }: SidebarProps) {
         )}
       >
         {/* Header - Red background with HMS logo */}
-        <div className={cn(
-          "retro-sidebar__header",
-          isCollapsed && "justify-center p-2"
-        )}>
+        <div className="retro-sidebar__header">
           <button
             onClick={() => setIsCollapsed(!isCollapsed)}
-            className="flex items-center gap-4 hover:opacity-80 transition-opacity"
+            className={cn(
+              "flex items-center hover:opacity-80 transition-opacity",
+              isCollapsed ? "justify-center" : "gap-4"
+            )}
           >
-            <div className="w-12 h-12 bg-white flex items-center justify-center border-4 border-border retro-shadow">
-              <Icon name="Gamepad2" className="w-6 h-6 text-foreground" />
+            <div className={cn(
+              "bg-white flex items-center justify-center border-border",
+              isCollapsed ? "w-8 h-8 border-2" : "w-12 h-12 border-4 retro-shadow"
+            )}>
+              <Icon name="Gamepad2" className={cn(isCollapsed ? "w-4 h-4" : "w-6 h-6", "text-foreground")} />
             </div>
             {!isCollapsed && (
               <span className="retro-sidebar__brand">HMS</span>
@@ -263,7 +266,6 @@ export function Sidebar({ className }: SidebarProps) {
                   href={entry.href}
                   className={cn(
                     "retro-nav-item",
-                    isCollapsed && "justify-center px-2",
                     isActive && "retro-nav-item--active"
                   )}
                 >
@@ -301,10 +303,7 @@ export function Sidebar({ className }: SidebarProps) {
                       toggleGroup(entry.name);
                     }
                   }}
-                  className={cn(
-                    "retro-nav-group__header w-full",
-                    isCollapsed && "justify-center px-2"
-                  )}
+                  className="retro-nav-group__header w-full"
                 >
                   <Icon
                     name={entry.iconName}

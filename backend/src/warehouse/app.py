@@ -12,6 +12,7 @@ from litestar.logging import LoggingConfig
 from litestar.response import Response
 from litestar.status_codes import HTTP_400_BAD_REQUEST, HTTP_500_INTERNAL_SERVER_ERROR
 from advanced_alchemy.extensions.litestar import SQLAlchemyPlugin
+from advanced_alchemy.exceptions import RepositoryError as AARepositoryError
 from sqlalchemy.exc import IntegrityError
 
 from warehouse.config import Config
@@ -91,6 +92,18 @@ def app_error_handler(request: Request, exc: AppError) -> Response:
     )
 
 
+def aa_repository_error_handler(request: Request, exc: AARepositoryError) -> Response:
+    """Handle Advanced Alchemy RepositoryError exceptions."""
+    detail = str(exc.detail) if exc.detail else "A database error occurred"
+    logger.error(f"Advanced Alchemy repository error: {type(exc).__name__}: {detail}")
+    logger.error(f"Full exception: {exc}")
+    logger.error(f"Exception args: {exc.args}")
+    return Response(
+        {"detail": detail, "error_type": "repository_error"},
+        status_code=HTTP_400_BAD_REQUEST,
+    )
+
+
 def general_exception_handler(request: Request, exc: Exception) -> Response:
     """Handle unhandled exceptions with logging."""
     logger.exception(f"Unhandled exception: {exc}")
@@ -132,8 +145,6 @@ def create_app(config: Config | None = None) -> Litestar:
         "config": Provide(Config.from_env, sync_to_thread=False),
     }
 
-    debug = os.getenv("APP_DEBUG", "false").lower() == "true"
-
     # Configure logging to suppress noisy Litestar exception logs for expected HTTP errors
     # Set to CRITICAL to avoid traceback spam for 4xx errors (our custom handlers still work)
     logging_config = LoggingConfig(
@@ -170,10 +181,11 @@ def create_app(config: Config | None = None) -> Litestar:
             AppError: app_error_handler,
             HTTPException: http_exception_handler,
             IntegrityError: integrity_error_handler,
+            AARepositoryError: aa_repository_error_handler,
             Exception: general_exception_handler,
         },
         logging_config=logging_config,
-        debug=debug,
+        debug=False,  # Keep False to avoid traceback spam; APP_DEBUG controls response details
     )
 
 

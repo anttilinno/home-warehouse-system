@@ -29,9 +29,7 @@
   }
 
   .retro-btn--md {
-    @apply py-2;
-    padding-left: 20px;
-    padding-right: 30px;
+    @apply py-2 px-4;
   }
 
   .retro-btn--lg {
@@ -98,7 +96,6 @@
     @apply text-white;
     background-color: var(--nes-blue);
     box-shadow: 4px 4px 0px 0px var(--border);
-    padding-right: 5px !important;
   }
 
   .retro-btn--info:hover:not(:disabled) {
@@ -142,7 +139,7 @@
 
   /* Icon button - no text, just icon */
   .retro-icon-btn {
-    @apply p-2 border-2 border-border;
+    @apply w-8 h-8 border-2 border-border;
     @apply hover:bg-muted transition-colors;
     @apply inline-flex items-center justify-center;
   }
@@ -163,6 +160,11 @@
     @apply transition-all cursor-pointer no-underline;
   }
 
+  /* Fix for buttons inside links */
+  a:has(> .retro-btn) {
+    @apply inline-flex;
+  }
+
   /* Button group */
   .retro-btn-group {
     @apply flex gap-2;
@@ -174,5 +176,32 @@
 
   .retro-btn-group--between {
     @apply justify-between;
+  }
+
+  /* ==========================================================================
+     Actions Menu - Three-dot dropdown with optional visible children
+     ========================================================================== */
+
+  .retro-actions-menu {
+    @apply relative flex items-center gap-1;
+  }
+
+  /* Dropdown panel */
+  .retro-actions-menu__panel {
+    @apply absolute right-0 top-full mt-1 z-50;
+    @apply bg-card border-4 border-border;
+    @apply min-w-[140px];
+    box-shadow: 4px 4px 0px 0px var(--border);
+  }
+
+  .retro-actions-menu__item {
+    @apply w-full flex items-center gap-2 px-3 py-2;
+    @apply text-left retro-small uppercase;
+    @apply hover:bg-muted transition-colors;
+    @apply border-b-2 border-dashed border-muted last:border-b-0;
+  }
+
+  .retro-actions-menu__item--danger {
+    @apply text-primary hover:bg-primary hover:text-white;
   }
 }

@@ -789,9 +789,12 @@
     "WORKSPACE_PERMISSION_DENIED": "Недостаточно прав для этого пространства",
     "WORKSPACE_MEMBER_EXISTS": "Пользователь уже является участником этого пространства",
     "WORKSPACE_PROTECTED": "Личное пространство нельзя удалить",
+    "WORKSPACE_LAST": "Нельзя удалить последнее пространство",
     "WORKSPACE_OWNER_CANNOT_BE_REMOVED": "Владельца пространства нельзя удалить",
     "WORKSPACE_MEMBER_NOT_FOUND": "Участник пространства не найден",
     "USER_NOT_FOUND": "Пользователь не найден",
+    "DATABASE_CONSTRAINT_ERROR": "Невозможно выполнить операцию из-за связанных данных",
+    "DATABASE_FOREIGN_KEY_ERROR": "Связанная запись не существует или не может быть удалена",
     "UNKNOWN_ERROR": "Произошла непредвиденная ошибка"
   }
 }
