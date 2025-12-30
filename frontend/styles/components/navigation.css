@@ -93,6 +93,9 @@
 
   .retro-nav-item__icon {
     @apply w-5 h-5 flex-shrink-0;
+    /* Ensure consistent icon width for optical alignment across different Material Symbols */
+    min-width: 20px;
+    text-align: center;
   }
 
   .retro-nav-item__label {
@@ -113,9 +116,12 @@
   }
 
   .retro-nav-group__header {
-    @apply flex items-center gap-3 px-4 py-3;
+    @apply flex items-center px-4 py-3;
     @apply cursor-pointer transition-all;
     @apply border-4 border-transparent;
+    @apply text-left;
+    /* Use same gap as nav-item for consistency */
+    gap: 12px;
   }
 
   .retro-nav-group__header:hover {

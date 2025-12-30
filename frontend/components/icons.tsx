@@ -13,15 +13,15 @@ const materialIconMap: Record<string, string> = {
   Archive: "layers",
   MapPin: "location_on",
   Box: "deployed_code",
-  HandCoins: "sync_alt",
+  HandCoins: "swap_horiz",
   Contact: "person",
   BarChart3: "bar_chart_4_bars",
   Settings: "settings",
   Bell: "notifications",
   User: "person",
   Users: "group",
-  Layers: "menu_book",
-  Warehouse: "warehouse",
+  Layers: "auto_stories",
+  Warehouse: "inventory_2",
   Star: "star",
   Smartphone: "smartphone",
   FileText: "description",
@@ -99,8 +99,9 @@ function parseSizeClass(className?: string): number | null {
 }
 
 // Material Symbol component for retro themes
-function MaterialIcon({ name, className, style }: { name: string; className?: string; style?: React.CSSProperties }) {
-  const sizeInPx = parseSizeClass(className);
+function MaterialIcon({ name, className, size, style }: { name: string; className?: string; size?: number; style?: React.CSSProperties }) {
+  // Use explicit size prop first, then try to parse from className
+  const sizeInPx = size ? size * 6 : parseSizeClass(className);
 
   return (
     <span
@@ -113,6 +114,8 @@ function MaterialIcon({ name, className, style }: { name: string; className?: st
         display: 'inline-flex',
         alignItems: 'center',
         justifyContent: 'center',
+        // Use consistent optical size and weight for uniform icon appearance
+        fontVariationSettings: "'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24",
         ...style,
       }}
     >
@@ -145,7 +148,7 @@ export function Icon({ name, className, size, style }: IconProps) {
   if (isRetro) {
     const materialName = materialIconMap[name as string];
     if (materialName) {
-      return <MaterialIcon name={materialName} className={className} style={style} />;
+      return <MaterialIcon name={materialName} className={className} size={size} style={style} />;
     }
   }
 

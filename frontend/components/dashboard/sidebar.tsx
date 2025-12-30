@@ -272,7 +272,7 @@ export function Sidebar({ className }: SidebarProps) {
                   <Icon
                     name={entry.iconName}
                     className={cn(
-                      "retro-nav-item__icon",
+                      "retro-nav-item__icon w-5 h-5",
                       isActive ? "text-foreground" : "text-muted-foreground"
                     )}
                   />
@@ -308,7 +308,7 @@ export function Sidebar({ className }: SidebarProps) {
                   <Icon
                     name={entry.iconName}
                     className={cn(
-                      "retro-nav-item__icon",
+                      "retro-nav-item__icon w-5 h-5",
                       hasActiveChild ? "text-primary" : "text-muted-foreground"
                     )}
                   />
