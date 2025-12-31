@@ -6,6 +6,12 @@ from unittest.mock import AsyncMock
 
 import pytest
 
+from conftest import (
+    TEST_CONTAINER_BOX_A,
+    TEST_CONTAINER_BOX_B,
+    TEST_CONTAINER_CAPACITY,
+    TEST_CONTAINER_UPDATED_DESC,
+)
 from warehouse.domain.containers.models import Container
 from warehouse.domain.containers.schemas import (
     ContainerCreate,
@@ -34,10 +40,10 @@ def sample_container(workspace_id: UUID, location_id: UUID) -> Container:
     return Container(
         id=uuid7(),
         workspace_id=workspace_id,
-        name="Box A",
+        name=TEST_CONTAINER_BOX_A,
         location_id=location_id,
         description="Storage box",
-        capacity="10 items",
+        capacity=TEST_CONTAINER_CAPACITY,
         short_code="BOX-A",
         created_at=datetime(2024, 1, 1, 12, 0, 0),
         updated_at=datetime(2024, 1, 1, 12, 0, 0),
@@ -118,7 +124,7 @@ async def test_get_all_containers(
     another_container = Container(
         id=uuid7(),
         workspace_id=workspace_id,
-        name="Box B",
+        name=TEST_CONTAINER_BOX_B,
         location_id=uuid7(),
         description=None,
         capacity=None,
@@ -181,7 +187,7 @@ async def test_update_container(
     """Test updating a container."""
     repository_mock.get_one_or_none.return_value = sample_container
     repository_mock.update.return_value = sample_container
-    update_data = ContainerUpdate(name="Updated Box", description="Updated desc")
+    update_data = ContainerUpdate(name="Updated Box", description=TEST_CONTAINER_UPDATED_DESC)
 
     result = await service.update_container(sample_container.id, update_data, workspace_id)
 
@@ -303,10 +309,10 @@ class TestContainerSchemas:
     def test_container_create_schema(self):
         location_id = uuid7()
         create = ContainerCreate(
-            name="Box A",
+            name=TEST_CONTAINER_BOX_A,
             location_id=location_id,
             description="A box",
-            capacity="10 items",
+            capacity=TEST_CONTAINER_CAPACITY,
             short_code="BOX-A",
         )
         assert create.name == "Box A"
@@ -317,7 +323,7 @@ class TestContainerSchemas:
 
     def test_container_create_schema_minimal(self):
         location_id = uuid7()
-        create = ContainerCreate(name="Box B", location_id=location_id)
+        create = ContainerCreate(name=TEST_CONTAINER_BOX_B, location_id=location_id)
         assert create.name == "Box B"
         assert create.location_id == location_id
         assert create.description is None
@@ -337,7 +343,7 @@ class TestContainerSchemas:
         update = ContainerUpdate(
             name="Updated",
             location_id=location_id,
-            description="Updated desc",
+            description=TEST_CONTAINER_UPDATED_DESC,
         )
         assert update.name == "Updated"
         assert update.location_id == location_id

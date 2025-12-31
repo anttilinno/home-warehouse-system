@@ -144,7 +144,7 @@ class TestExportWorkspace:
         record_counts = {}
         export_service_mock.export_workspace_json.return_value = (export_data, record_counts)
 
-        result = await _call(
+        await _call(
             controller.export_workspace,
             controller,
             export_service=export_service_mock,

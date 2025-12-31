@@ -5,8 +5,13 @@ from unittest.mock import AsyncMock
 
 import pytest
 
+from conftest import TEST_USER_JANE_DOE, TEST_USER_JOHN_DOE, TEST_WORKSPACE_NAME
 from warehouse.domain.notifications.models import Notification, NotificationType
 from warehouse.domain.notifications.service import NotificationService
+
+# Test constants
+_TEST_NOTIFICATION_TITLE = "Test Notification"
+_TEST_NOTIFICATION_MESSAGE = "This is a test notification"
 
 
 @pytest.fixture
@@ -47,8 +52,8 @@ def sample_notification(user_id, workspace_id):
         user_id=user_id,
         workspace_id=workspace_id,
         notification_type=NotificationType.SYSTEM,
-        title="Test Notification",
-        message="This is a test notification",
+        title=_TEST_NOTIFICATION_TITLE,
+        message=_TEST_NOTIFICATION_MESSAGE,
         is_read=False,
         data=None,
     )
@@ -75,7 +80,7 @@ class TestNotificationServiceGetNotifications:
         assert result.total_count == 1
         assert result.unread_count == 1
         assert len(result.notifications) == 1
-        assert result.notifications[0].title == "Test Notification"
+        assert result.notifications[0].title == _TEST_NOTIFICATION_TITLE
 
     async def test_get_notifications_empty(
         self, service, notification_repository_mock, user_id
@@ -211,29 +216,29 @@ class TestNotificationServiceSpecializedMethods:
             user_id=user_id,
             workspace_id=workspace_id,
             notification_type=NotificationType.WORKSPACE_INVITE,
-            title="Invited to Test Workspace",
-            message="John Doe invited you to join 'Test Workspace' as admin.",
+            title=f"Invited to {TEST_WORKSPACE_NAME}",
+            message=f"{TEST_USER_JOHN_DOE} invited you to join '{TEST_WORKSPACE_NAME}' as admin.",
             data={
                 "workspace_id": str(workspace_id),
-                "workspace_name": "Test Workspace",
+                "workspace_name": TEST_WORKSPACE_NAME,
                 "role": "admin",
-                "invited_by": "John Doe",
+                "invited_by": TEST_USER_JOHN_DOE,
             },
         )
 
-        result = await service.send_workspace_invite_notification(
+        await service.send_workspace_invite_notification(
             user_id=user_id,
             workspace_id=workspace_id,
-            workspace_name="Test Workspace",
+            workspace_name=TEST_WORKSPACE_NAME,
             role="admin",
-            invited_by_name="John Doe",
+            invited_by_name=TEST_USER_JOHN_DOE,
         )
 
         notification_repository_mock.add.assert_awaited_once()
         added = notification_repository_mock.add.call_args[0][0]
         assert added.notification_type == NotificationType.WORKSPACE_INVITE
-        assert "Invited to Test Workspace" in added.title
-        assert "John Doe" in added.message
+        assert f"Invited to {TEST_WORKSPACE_NAME}" in added.title
+        assert TEST_USER_JOHN_DOE in added.message
         assert added.data["role"] == "admin"
 
     async def test_send_member_joined_notification(
@@ -245,21 +250,21 @@ class TestNotificationServiceSpecializedMethods:
             user_id=user_id,
             workspace_id=workspace_id,
             notification_type=NotificationType.MEMBER_JOINED,
-            title="New member in Test Workspace",
-            message="Jane Doe joined 'Test Workspace' as member.",
+            title=f"New member in {TEST_WORKSPACE_NAME}",
+            message=f"{TEST_USER_JANE_DOE} joined '{TEST_WORKSPACE_NAME}' as member.",
             data={
                 "workspace_id": str(workspace_id),
-                "workspace_name": "Test Workspace",
-                "new_member": "Jane Doe",
+                "workspace_name": TEST_WORKSPACE_NAME,
+                "new_member": TEST_USER_JANE_DOE,
                 "role": "member",
             },
         )
 
-        result = await service.send_member_joined_notification(
+        await service.send_member_joined_notification(
             user_id=user_id,
             workspace_id=workspace_id,
-            workspace_name="Test Workspace",
-            new_member_name="Jane Doe",
+            workspace_name=TEST_WORKSPACE_NAME,
+            new_member_name=TEST_USER_JANE_DOE,
             role="member",
         )
 
@@ -267,7 +272,7 @@ class TestNotificationServiceSpecializedMethods:
         added = notification_repository_mock.add.call_args[0][0]
         assert added.notification_type == NotificationType.MEMBER_JOINED
         assert "New member" in added.title
-        assert "Jane Doe" in added.message
+        assert TEST_USER_JANE_DOE in added.message
 
     async def test_send_loan_due_notification(
         self, service, notification_repository_mock, user_id, workspace_id
@@ -287,7 +292,7 @@ class TestNotificationServiceSpecializedMethods:
             },
         )
 
-        result = await service.send_loan_due_notification(
+        await service.send_loan_due_notification(
             user_id=user_id,
             workspace_id=workspace_id,
             item_name="Hammer",
@@ -320,7 +325,7 @@ class TestNotificationServiceSpecializedMethods:
             },
         )
 
-        result = await service.send_loan_overdue_notification(
+        await service.send_loan_overdue_notification(
             user_id=user_id,
             workspace_id=workspace_id,
             item_name="Drill",

@@ -14,6 +14,10 @@ from warehouse.lib.base import Base, TimestampMixin, UUIDPKMixin
 if TYPE_CHECKING:
     from warehouse.domain.oauth.models import UserOAuthAccount
 
+# Foreign key reference constants
+FK_AUTH_USERS = "auth.users.id"
+FK_AUTH_WORKSPACES = "auth.workspaces.id"
+
 
 class WorkspaceRole(str, Enum):
     """Workspace role enum."""
@@ -75,10 +79,10 @@ class WorkspaceMember(Base, UUIDPKMixin, TimestampMixin):
     __table_args__ = {"schema": "auth"}
 
     workspace_id: Mapped[UUID] = mapped_column(
-        ForeignKey("auth.workspaces.id", ondelete="CASCADE"), nullable=False
+        ForeignKey(FK_AUTH_WORKSPACES, ondelete="CASCADE"), nullable=False
     )
     user_id: Mapped[UUID] = mapped_column(
-        ForeignKey("auth.users.id", ondelete="CASCADE"), nullable=False
+        ForeignKey(FK_AUTH_USERS, ondelete="CASCADE"), nullable=False
     )
     role: Mapped[WorkspaceRole] = mapped_column(
         SAEnum(
@@ -92,7 +96,7 @@ class WorkspaceMember(Base, UUIDPKMixin, TimestampMixin):
         default=WorkspaceRole.MEMBER,
     )
     invited_by: Mapped[UUID | None] = mapped_column(
-        ForeignKey("auth.users.id", ondelete="SET NULL"), nullable=True
+        ForeignKey(FK_AUTH_USERS, ondelete="SET NULL"), nullable=True
     )
     created_at: Mapped[datetime] = mapped_column(server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(
@@ -112,10 +116,10 @@ class WorkspaceExport(Base, UUIDPKMixin):
     __table_args__ = {"schema": "auth"}
 
     workspace_id: Mapped[UUID] = mapped_column(
-        ForeignKey("auth.workspaces.id", ondelete="CASCADE"), nullable=False
+        ForeignKey(FK_AUTH_WORKSPACES, ondelete="CASCADE"), nullable=False
     )
     exported_by: Mapped[UUID | None] = mapped_column(
-        ForeignKey("auth.users.id", ondelete="SET NULL"), nullable=True
+        ForeignKey(FK_AUTH_USERS, ondelete="SET NULL"), nullable=True
     )
     format: Mapped[str] = mapped_column(String(10), nullable=False)
     file_size_bytes: Mapped[int | None] = mapped_column(BigInteger, nullable=True)
@@ -130,7 +134,7 @@ class PasswordResetToken(Base, UUIDPKMixin):
     __table_args__ = {"schema": "auth"}
 
     user_id: Mapped[UUID] = mapped_column(
-        ForeignKey("auth.users.id", ondelete="CASCADE"), nullable=False
+        ForeignKey(FK_AUTH_USERS, ondelete="CASCADE"), nullable=False
     )
     token_hash: Mapped[str] = mapped_column(String(64), nullable=False)
     expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)

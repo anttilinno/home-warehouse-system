@@ -31,87 +31,91 @@ class ExportService:
         data = await self._fetch_all_data(workspace_id)
 
         wb = Workbook()
-        # Remove default sheet
         wb.remove(wb.active)
 
-        # Categories sheet
+        self._add_categories_sheet(wb, data["categories"])
+        self._add_locations_sheet(wb, data["locations"])
+        self._add_containers_sheet(wb, data["containers"])
+        self._add_items_sheet(wb, data["items"])
+        self._add_borrowers_sheet(wb, data["borrowers"])
+        self._add_inventory_sheet(wb, data["inventory"])
+        self._add_loans_sheet(wb, data["loans"])
+
+        output = io.BytesIO()
+        wb.save(output)
+        file_bytes = output.getvalue()
+
+        record_counts = {key: len(items) for key, items in data.items()}
+        await self._log_export(workspace_id, user_id, "xlsx", len(file_bytes), record_counts)
+
+        return file_bytes, record_counts
+
+    def _add_categories_sheet(self, wb: Workbook, categories: list[dict]) -> None:
+        """Add categories sheet to workbook."""
         self._add_sheet(wb, "Categories", [
             ["ID", "Name", "Parent Category", "Description"],
         ] + [
             [str(c["id"]), c["name"], c["parent_name"] or "", c["description"] or ""]
-            for c in data["categories"]
+            for c in categories
         ])
 
-        # Locations sheet
+    def _add_locations_sheet(self, wb: Workbook, locations: list[dict]) -> None:
+        """Add locations sheet to workbook."""
         self._add_sheet(wb, "Locations", [
             ["ID", "Name", "Parent Location", "Zone", "Shelf", "Bin", "Description"],
         ] + [
             [str(loc["id"]), loc["name"], loc["parent_name"] or "",
              loc["zone"] or "", loc["shelf"] or "", loc["bin"] or "", loc["description"] or ""]
-            for loc in data["locations"]
+            for loc in locations
         ])
 
-        # Containers sheet
+    def _add_containers_sheet(self, wb: Workbook, containers: list[dict]) -> None:
+        """Add containers sheet to workbook."""
         self._add_sheet(wb, "Containers", [
             ["ID", "Name", "Location", "Description", "Capacity", "Short Code"],
         ] + [
             [str(c["id"]), c["name"], c["location_name"],
              c["description"] or "", c["capacity"] or "", c["short_code"] or ""]
-            for c in data["containers"]
+            for c in containers
         ])
 
-        # Items sheet
+    def _add_items_sheet(self, wb: Workbook, items: list[dict]) -> None:
+        """Add items sheet to workbook."""
         self._add_sheet(wb, "Items", [
             ["ID", "SKU", "Name", "Category", "Description"],
         ] + [
             [str(i["id"]), i["sku"], i["name"], i["category_name"] or "", i["description"] or ""]
-            for i in data["items"]
+            for i in items
         ])
 
-        # Borrowers sheet
+    def _add_borrowers_sheet(self, wb: Workbook, borrowers: list[dict]) -> None:
+        """Add borrowers sheet to workbook."""
         self._add_sheet(wb, "Borrowers", [
             ["ID", "Name", "Email", "Phone", "Notes"],
         ] + [
             [str(b["id"]), b["name"], b["email"] or "", b["phone"] or "", b["notes"] or ""]
-            for b in data["borrowers"]
+            for b in borrowers
         ])
 
-        # Inventory sheet
+    def _add_inventory_sheet(self, wb: Workbook, inventory: list[dict]) -> None:
+        """Add inventory sheet to workbook."""
         self._add_sheet(wb, "Inventory", [
             ["ID", "Item", "SKU", "Location", "Quantity", "Expiration Date", "Warranty Expires"],
         ] + [
             [str(inv["id"]), inv["item_name"], inv["item_sku"], inv["location_name"],
              inv["quantity"], inv["expiration_date"] or "", inv["warranty_expires"] or ""]
-            for inv in data["inventory"]
+            for inv in inventory
         ])
 
-        # Loans sheet
+    def _add_loans_sheet(self, wb: Workbook, loans: list[dict]) -> None:
+        """Add loans sheet to workbook."""
         self._add_sheet(wb, "Loans", [
             ["ID", "Item", "Borrower", "Quantity", "Loaned At", "Due Date", "Returned At", "Notes"],
         ] + [
             [str(loan["id"]), loan["item_name"], loan["borrower_name"], loan["quantity"],
              loan["loaned_at"], loan["due_date"] or "", loan["returned_at"] or "", loan["notes"] or ""]
-            for loan in data["loans"]
+            for loan in loans
         ])
-
-        # Save to bytes
-        output = io.BytesIO()
-        wb.save(output)
-        file_bytes = output.getvalue()
-
-        # Log export
-        record_counts = {
-            "categories": len(data["categories"]),
-            "locations": len(data["locations"]),
-            "containers": len(data["containers"]),
-            "items": len(data["items"]),
-            "borrowers": len(data["borrowers"]),
-            "inventory": len(data["inventory"]),
-            "loans": len(data["loans"]),
-        }
-        await self._log_export(workspace_id, user_id, "xlsx", len(file_bytes), record_counts)
-
-        return file_bytes, record_counts
 
     async def export_workspace_json(
         self, workspace_id: UUID, user_id: UUID

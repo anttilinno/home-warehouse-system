@@ -70,6 +70,23 @@ class Item(Base, UUIDPKMixin, WorkspaceMixin, TimestampMixin):
     )
 
 
+class Label(Base, UUIDPKMixin, WorkspaceMixin):
+    """Label model for tagging items with colors."""
+
+    __tablename__ = "labels"
+    __table_args__ = {"schema": "warehouse"}
+
+    name: Mapped[str] = mapped_column(String(100), nullable=False)
+    color: Mapped[str | None] = mapped_column(String(7), nullable=True)
+    description: Mapped[str | None] = mapped_column(Text, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
+    )
+
+
 class Attachment(Base, UUIDPKMixin):
     """Attachment model for linking files or Docspell documents to items."""
 

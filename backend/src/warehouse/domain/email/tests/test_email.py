@@ -6,12 +6,22 @@ import httpx
 import pytest
 
 from conftest import (
+    MOCK_HTTPX_ASYNC_CLIENT,
+    TEST_EMAIL_USER,
     TEST_ITEM_POWER_DRILL,
     TEST_USER_JOHN_DOE,
     TEST_WORKSPACE_HOME,
 )
 from warehouse.config import Config
 from warehouse.domain.email.service import EmailService
+
+# Test constants
+_TEST_EMAIL = "test@example.com"
+_TEST_SUBJECT = "Test Subject"
+_TEST_HTML = "<p>Test</p>"
+_RESET_URL = "https://app.example.com/reset?token=abc123"
+_BORROWER_EMAIL = "borrower@example.com"
+_INVITEE_EMAIL = "invitee@example.com"
 
 
 @pytest.fixture
@@ -65,9 +75,9 @@ class TestSendEmail:
     async def test_returns_false_when_disabled(self, service_without_api_key):
         """Test that send_email returns False when service is disabled."""
         result = await service_without_api_key.send_email(
-            to="test@example.com",
-            subject="Test Subject",
-            html="<p>Test</p>",
+            to=_TEST_EMAIL,
+            subject=_TEST_SUBJECT,
+            html=_TEST_HTML,
         )
         assert result is False
 
@@ -83,11 +93,11 @@ class TestSendEmail:
         mock_client.__aenter__ = AsyncMock(return_value=mock_client)
         mock_client.__aexit__ = AsyncMock(return_value=None)
 
-        with patch("httpx.AsyncClient", return_value=mock_client):
+        with patch(MOCK_HTTPX_ASYNC_CLIENT, return_value=mock_client):
             result = await service_with_api_key.send_email(
-                to="test@example.com",
-                subject="Test Subject",
-                html="<p>Test</p>",
+                to=_TEST_EMAIL,
+                subject=_TEST_SUBJECT,
+                html=_TEST_HTML,
                 text="Test",
             )
 
@@ -106,11 +116,11 @@ class TestSendEmail:
         mock_client.__aenter__ = AsyncMock(return_value=mock_client)
         mock_client.__aexit__ = AsyncMock(return_value=None)
 
-        with patch("httpx.AsyncClient", return_value=mock_client):
+        with patch(MOCK_HTTPX_ASYNC_CLIENT, return_value=mock_client):
             result = await service_with_api_key.send_email(
-                to="test@example.com",
-                subject="Test Subject",
-                html="<p>Test</p>",
+                to=_TEST_EMAIL,
+                subject=_TEST_SUBJECT,
+                html=_TEST_HTML,
             )
 
         assert result is False
@@ -123,11 +133,11 @@ class TestSendEmail:
         mock_client.__aenter__ = AsyncMock(return_value=mock_client)
         mock_client.__aexit__ = AsyncMock(return_value=None)
 
-        with patch("httpx.AsyncClient", return_value=mock_client):
+        with patch(MOCK_HTTPX_ASYNC_CLIENT, return_value=mock_client):
             result = await service_with_api_key.send_email(
-                to="test@example.com",
-                subject="Test Subject",
-                html="<p>Test</p>",
+                to=_TEST_EMAIL,
+                subject=_TEST_SUBJECT,
+                html=_TEST_HTML,
             )
 
         assert result is False
@@ -140,11 +150,11 @@ class TestSendEmail:
         mock_client.__aenter__ = AsyncMock(return_value=mock_client)
         mock_client.__aexit__ = AsyncMock(return_value=None)
 
-        with patch("httpx.AsyncClient", return_value=mock_client):
+        with patch(MOCK_HTTPX_ASYNC_CLIENT, return_value=mock_client):
             result = await service_with_api_key.send_email(
-                to="test@example.com",
-                subject="Test Subject",
-                html="<p>Test</p>",
+                to=_TEST_EMAIL,
+                subject=_TEST_SUBJECT,
+                html=_TEST_HTML,
             )
 
         assert result is False
@@ -162,15 +172,15 @@ class TestSendPasswordReset:
             mock_send.return_value = True
 
             result = await service_with_api_key.send_password_reset(
-                to="user@example.com",
-                reset_url="https://app.example.com/reset?token=abc123",
+                to=TEST_EMAIL_USER,
+                reset_url=_RESET_URL,
                 language="en",
             )
 
             assert result is True
             mock_send.assert_awaited_once()
             call_args = mock_send.call_args
-            assert call_args.kwargs["to"] == "user@example.com"
+            assert call_args.kwargs["to"] == TEST_EMAIL_USER
             assert "Reset your password" in call_args.kwargs["subject"]
 
     @pytest.mark.asyncio
@@ -182,8 +192,8 @@ class TestSendPasswordReset:
             mock_send.return_value = True
 
             result = await service_with_api_key.send_password_reset(
-                to="user@example.com",
-                reset_url="https://app.example.com/reset?token=abc123",
+                to=TEST_EMAIL_USER,
+                reset_url=_RESET_URL,
                 language="et",
             )
 
@@ -200,8 +210,8 @@ class TestSendPasswordReset:
             mock_send.return_value = True
 
             result = await service_with_api_key.send_password_reset(
-                to="user@example.com",
-                reset_url="https://app.example.com/reset?token=abc123",
+                to=TEST_EMAIL_USER,
+                reset_url=_RESET_URL,
                 language="ru",
             )
 
@@ -218,8 +228,8 @@ class TestSendPasswordReset:
             mock_send.return_value = True
 
             result = await service_with_api_key.send_password_reset(
-                to="user@example.com",
-                reset_url="https://app.example.com/reset?token=abc123",
+                to=TEST_EMAIL_USER,
+                reset_url=_RESET_URL,
                 language="fr",  # Not supported, should fall back to English
             )
 
@@ -240,7 +250,7 @@ class TestSendLoanReminder:
             mock_send.return_value = True
 
             result = await service_with_api_key.send_loan_reminder(
-                to="borrower@example.com",
+                to=_BORROWER_EMAIL,
                 borrower_name=TEST_USER_JOHN_DOE,
                 item_name=TEST_ITEM_POWER_DRILL,
                 due_date="2024-01-15",
@@ -262,7 +272,7 @@ class TestSendLoanReminder:
             mock_send.return_value = True
 
             result = await service_with_api_key.send_loan_reminder(
-                to="borrower@example.com",
+                to=_BORROWER_EMAIL,
                 borrower_name="Jane Doe",
                 item_name="Hammer",
                 due_date="2024-01-20",
@@ -283,7 +293,7 @@ class TestSendLoanReminder:
             mock_send.return_value = True
 
             await service_with_api_key.send_loan_reminder(
-                to="borrower@example.com",
+                to=_BORROWER_EMAIL,
                 borrower_name=TEST_USER_JOHN_DOE,
                 item_name=TEST_ITEM_POWER_DRILL,
                 due_date="2024-01-15",
@@ -307,7 +317,7 @@ class TestSendWorkspaceInvite:
             mock_send.return_value = True
 
             result = await service_with_api_key.send_workspace_invite(
-                to="invitee@example.com",
+                to=_INVITEE_EMAIL,
                 inviter_name=TEST_USER_JOHN_DOE,
                 workspace_name=TEST_WORKSPACE_HOME,
                 role="member",
@@ -328,7 +338,7 @@ class TestSendWorkspaceInvite:
             mock_send.return_value = True
 
             await service_with_api_key.send_workspace_invite(
-                to="invitee@example.com",
+                to=_INVITEE_EMAIL,
                 inviter_name=TEST_USER_JOHN_DOE,
                 workspace_name=TEST_WORKSPACE_HOME,
                 role="member",
@@ -347,7 +357,7 @@ class TestSendWorkspaceInvite:
             mock_send.return_value = True
 
             await service_with_api_key.send_workspace_invite(
-                to="invitee@example.com",
+                to=_INVITEE_EMAIL,
                 inviter_name=TEST_USER_JOHN_DOE,
                 workspace_name=TEST_WORKSPACE_HOME,
                 role="member",

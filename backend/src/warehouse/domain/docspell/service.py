@@ -21,7 +21,7 @@ from warehouse.domain.docspell.schemas import (
     ItemDocspellLink,
     TagSyncResult,
 )
-from warehouse.domain.items.models import Attachment, AttachmentType, Item
+from warehouse.domain.items.models import Attachment, AttachmentType, Item, Label
 from warehouse.errors import AppError, ErrorCode
 
 
@@ -245,16 +245,51 @@ class DocspellService:
         if not settings.sync_tags_enabled:
             raise AppError(ErrorCode.DOCSPELL_TAG_SYNC_DISABLED, status_code=400)
 
+        client = self._get_client(settings)
+
+        # Get existing labels from warehouse
+        labels_result = await self.repository.session.execute(
+            select(Label).where(Label.workspace_id == workspace_id)
+        )
+        warehouse_labels = {label.name.lower(): label for label in labels_result.scalars()}
+
+        # Get tags from Docspell
+        docspell_tags = await client.get_tags()
+        docspell_tag_names = {tag.name.lower(): tag for tag in docspell_tags}
+
+        tags_created_in_warehouse = 0
+        tags_created_in_docspell = 0
+        tags_matched = 0
+
+        # Create labels in warehouse for Docspell tags that don't exist
+        for tag in docspell_tags:
+            if tag.name.lower() not in warehouse_labels:
+                new_label = Label(
+                    workspace_id=workspace_id,
+                    name=tag.name,
+                    description=f"Synced from Docspell (category: {tag.category})"
+                    if tag.category
+                    else "Synced from Docspell",
+                )
+                self.repository.session.add(new_label)
+                tags_created_in_warehouse += 1
+            else:
+                tags_matched += 1
+
+        # Create tags in Docspell for warehouse labels that don't exist
+        for label in warehouse_labels.values():
+            if label.name.lower() not in docspell_tag_names:
+                await client.create_tag(label.name, category="Warehouse")
+                tags_created_in_docspell += 1
+
         # Update last sync time
         settings.last_sync_at = datetime.now(UTC)
         await self.repository.session.commit()
 
-        # TODO: Implement actual tag sync when labels repository is available
-        # For now, return empty result
         return TagSyncResult(
-            tags_created_in_warehouse=0,
-            tags_created_in_docspell=0,
-            tags_matched=0,
+            tags_created_in_warehouse=tags_created_in_warehouse,
+            tags_created_in_docspell=tags_created_in_docspell,
+            tags_matched=tags_matched,
         )
 
     async def _get_enabled_settings(

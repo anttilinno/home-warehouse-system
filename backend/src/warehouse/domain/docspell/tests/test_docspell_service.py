@@ -170,7 +170,7 @@ class TestDocspellServiceUpdateSettings:
                 sync_tags_enabled=True,
             )
 
-            result = await service.update_settings(workspace_id, data)
+            await service.update_settings(workspace_id, data)
 
             assert sample_settings.base_url == "http://new-url:7880"
             assert sample_settings.sync_tags_enabled is True

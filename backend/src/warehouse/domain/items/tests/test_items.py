@@ -6,6 +6,7 @@ from unittest.mock import AsyncMock
 
 import pytest
 
+from conftest import TEST_ITEM_HAMMER, TEST_NOTE_PATH, TEST_VAULT_PATH
 from warehouse.domain.items.models import Category, Item
 from warehouse.domain.items.schemas import (
     CategoryCreate,
@@ -80,7 +81,7 @@ def sample_item(sample_category: Category, workspace_id: UUID) -> Item:
         workspace_id=workspace_id,
         sku="SKU-1",
         name="Hammer",
-        description="A hammer",
+        description=TEST_ITEM_HAMMER,
         category_id=sample_category.id,
         created_at=datetime.datetime(2024, 1, 2, 0, 0, 0),
         updated_at=datetime.datetime(2024, 1, 3, 0, 0, 0),
@@ -232,13 +233,13 @@ async def test_create_item(item_service: ItemService, item_repository_mock: Asyn
         workspace_id=workspace_id,
         sku="SKU-1",
         name="Hammer",
-        description="A hammer",
+        description=TEST_ITEM_HAMMER,
         category_id=sample_category.id,
         created_at=datetime.datetime(2024, 1, 2, 0, 0, 0),
         updated_at=datetime.datetime(2024, 1, 3, 0, 0, 0),
     )
     item_repository_mock.add.return_value = created
-    data = ItemCreate(sku="SKU-1", name="Hammer", description="A hammer", category_id=sample_category.id)
+    data = ItemCreate(sku="SKU-1", name="Hammer", description=TEST_ITEM_HAMMER, category_id=sample_category.id)
 
     result = await item_service.create_item(data, workspace_id)
 
@@ -255,7 +256,7 @@ async def test_create_item(item_service: ItemService, item_repository_mock: Asyn
 @pytest.mark.asyncio
 async def test_create_item_duplicate_sku(item_service: ItemService, item_repository_mock: AsyncMock, sample_item: Item, workspace_id: UUID):
     item_repository_mock.get_by_sku.return_value = sample_item
-    data = ItemCreate(sku="SKU-1", name="Hammer", description="A hammer", category_id=sample_item.category_id)
+    data = ItemCreate(sku="SKU-1", name="Hammer", description=TEST_ITEM_HAMMER, category_id=sample_item.category_id)
 
     from warehouse.errors import AppError, ErrorCode
 
@@ -432,14 +433,14 @@ async def test_update_item_updates_obsidian_paths(
     item_repository_mock.get_one_or_none.return_value = sample_item
     item_repository_mock.update.return_value = sample_item
     payload = ItemUpdate(
-        obsidian_vault_path="/path/to/vault",
-        obsidian_note_path="items/hammer.md",
+        obsidian_vault_path=TEST_VAULT_PATH,
+        obsidian_note_path=TEST_NOTE_PATH,
     )
 
     result = await item_service.update_item(sample_item.id, payload, workspace_id)
 
-    assert sample_item.obsidian_vault_path == "/path/to/vault"
-    assert sample_item.obsidian_note_path == "items/hammer.md"
+    assert sample_item.obsidian_vault_path == TEST_VAULT_PATH
+    assert sample_item.obsidian_note_path == TEST_NOTE_PATH
     assert result is sample_item
 
 

@@ -6,6 +6,13 @@ from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
+from conftest import (
+    TEST_EMAIL_ALICE,
+    TEST_EMAIL_BOB,
+    TEST_USER_ALICE_SMITH,
+    TEST_WORKSPACE_DESC,
+    TEST_WORKSPACE_NAME,
+)
 from warehouse.config import Config
 from warehouse.domain.auth.models import User, Workspace, WorkspaceMember, WorkspaceRole
 from warehouse.domain.auth.schemas import WorkspaceCreate, WorkspaceMemberInvite
@@ -75,8 +82,8 @@ def _make_user(**kwargs) -> User:
     """Helper to construct a User instance."""
     defaults = {
         "id": uuid7(),
-        "email": "alice@example.com",
-        "full_name": "Alice Smith",
+        "email": TEST_EMAIL_ALICE,
+        "full_name": TEST_USER_ALICE_SMITH,
         "password_hash": "hashed",
         "is_active": True,
     }
@@ -88,9 +95,9 @@ def _make_workspace(**kwargs) -> Workspace:
     """Helper to construct a Workspace instance."""
     defaults = {
         "id": uuid7(),
-        "name": "Test Workspace",
+        "name": TEST_WORKSPACE_NAME,
         "slug": "test-workspace",
-        "description": "A test workspace",
+        "description": TEST_WORKSPACE_DESC,
     }
     defaults.update(kwargs)
     return Workspace(**defaults)
@@ -137,10 +144,10 @@ class TestCreateWorkspace:
         workspace_repository_mock.get_by_slug.return_value = None
         workspace_repository_mock.add.return_value = workspace
 
-        data = WorkspaceCreate(name="Test Workspace", description="A test workspace")
+        data = WorkspaceCreate(name=TEST_WORKSPACE_NAME, description=TEST_WORKSPACE_DESC)
         result = await service.create_workspace(user_id, data)
 
-        assert result.name == "Test Workspace"
+        assert result.name == TEST_WORKSPACE_NAME
         assert result.role == "owner"
         workspace_repository_mock.add.assert_awaited_once()
         workspace_member_repository_mock.add.assert_awaited_once()
@@ -158,8 +165,8 @@ class TestCreateWorkspace:
         workspace = _make_workspace(slug="test-workspace-1")
         workspace_repository_mock.add.return_value = workspace
 
-        data = WorkspaceCreate(name="Test Workspace", description="A test workspace")
-        result = await service.create_workspace(user_id, data)
+        data = WorkspaceCreate(name=TEST_WORKSPACE_NAME, description=TEST_WORKSPACE_DESC)
+        await service.create_workspace(user_id, data)
 
         assert workspace_repository_mock.get_by_slug.await_count == 2
 
@@ -182,7 +189,7 @@ class TestGetWorkspaceMembers:
         member1 = _make_membership(workspace_id=workspace_id, role=WorkspaceRole.OWNER)
         member1.user = _make_user(id=member1.user_id)
         member2 = _make_membership(workspace_id=workspace_id, role=WorkspaceRole.MEMBER)
-        member2.user = _make_user(id=member2.user_id, email="bob@example.com", full_name="Bob")
+        member2.user = _make_user(id=member2.user_id, email=TEST_EMAIL_BOB, full_name="Bob")
 
         mock_result = MagicMock()
         mock_result.scalars.return_value.all.return_value = [member1, member2]
@@ -216,7 +223,7 @@ class TestInviteMember:
         """Test inviting a member as owner/admin."""
         workspace_id = uuid7()
         inviter_id = uuid7()
-        invitee = _make_user(email="bob@example.com")
+        invitee = _make_user(email=TEST_EMAIL_BOB)
 
         # Inviter is owner
         inviter_membership = _make_membership(
@@ -236,10 +243,10 @@ class TestInviteMember:
         new_membership.user = invitee
         workspace_member_repository_mock.add.return_value = new_membership
 
-        data = WorkspaceMemberInvite(email="bob@example.com", role="member")
+        data = WorkspaceMemberInvite(email=TEST_EMAIL_BOB, role="member")
         result = await service.invite_member(workspace_id, inviter_id, data)
 
-        assert result.email == "bob@example.com"
+        assert result.email == TEST_EMAIL_BOB
         assert result.role == "member"
 
     async def test_invite_member_not_authorized(
@@ -255,7 +262,7 @@ class TestInviteMember:
         )
         workspace_member_repository_mock.get_one_or_none.return_value = inviter_membership
 
-        data = WorkspaceMemberInvite(email="bob@example.com", role="member")
+        data = WorkspaceMemberInvite(email=TEST_EMAIL_BOB, role="member")
 
         with pytest.raises(AppError) as exc_info:
             await service.invite_member(workspace_id, inviter_id, data)
@@ -268,7 +275,7 @@ class TestInviteMember:
         """Test invite fails when user is already a member."""
         workspace_id = uuid7()
         inviter_id = uuid7()
-        invitee = _make_user(email="bob@example.com")
+        invitee = _make_user(email=TEST_EMAIL_BOB)
 
         inviter_membership = _make_membership(
             workspace_id=workspace_id, user_id=inviter_id, role=WorkspaceRole.OWNER
@@ -282,7 +289,7 @@ class TestInviteMember:
         ]
         user_repository_mock.get_by_email.return_value = invitee
 
-        data = WorkspaceMemberInvite(email="bob@example.com", role="member")
+        data = WorkspaceMemberInvite(email=TEST_EMAIL_BOB, role="member")
 
         with pytest.raises(AppError) as exc_info:
             await service.invite_member(workspace_id, inviter_id, data)
@@ -295,7 +302,7 @@ class TestInviteMember:
         """Test invite fails with invalid role."""
         workspace_id = uuid7()
         inviter_id = uuid7()
-        invitee = _make_user(email="bob@example.com")
+        invitee = _make_user(email=TEST_EMAIL_BOB)
 
         inviter_membership = _make_membership(
             workspace_id=workspace_id, user_id=inviter_id, role=WorkspaceRole.OWNER
@@ -306,7 +313,7 @@ class TestInviteMember:
         ]
         user_repository_mock.get_by_email.return_value = invitee
 
-        data = WorkspaceMemberInvite(email="bob@example.com", role="invalid_role")
+        data = WorkspaceMemberInvite(email=TEST_EMAIL_BOB, role="invalid_role")
 
         with pytest.raises(AppError) as exc_info:
             await service.invite_member(workspace_id, inviter_id, data)
@@ -319,7 +326,7 @@ class TestInviteMember:
         """Test cannot invite someone as owner."""
         workspace_id = uuid7()
         inviter_id = uuid7()
-        invitee = _make_user(email="bob@example.com")
+        invitee = _make_user(email=TEST_EMAIL_BOB)
 
         inviter_membership = _make_membership(
             workspace_id=workspace_id, user_id=inviter_id, role=WorkspaceRole.OWNER
@@ -330,7 +337,7 @@ class TestInviteMember:
         ]
         user_repository_mock.get_by_email.return_value = invitee
 
-        data = WorkspaceMemberInvite(email="bob@example.com", role="owner")
+        data = WorkspaceMemberInvite(email=TEST_EMAIL_BOB, role="owner")
 
         with pytest.raises(AppError) as exc_info:
             await service.invite_member(workspace_id, inviter_id, data)
@@ -343,7 +350,7 @@ class TestSearchUsers:
 
     async def test_search_users_by_email(self, service, user_repository_mock):
         """Test searching users by email."""
-        users = [_make_user(email="alice@example.com")]
+        users = [_make_user(email=TEST_EMAIL_ALICE)]
         mock_result = MagicMock()
         mock_result.scalars.return_value.all.return_value = users
         user_repository_mock.session.execute.return_value = mock_result
@@ -351,11 +358,11 @@ class TestSearchUsers:
         result = await service.search_users(query="alice")
 
         assert len(result) == 1
-        assert result[0]["email"] == "alice@example.com"
+        assert result[0]["email"] == TEST_EMAIL_ALICE
 
     async def test_search_users_by_name(self, service, user_repository_mock):
         """Test searching users by name."""
-        users = [_make_user(full_name="Alice Smith")]
+        users = [_make_user(full_name=TEST_USER_ALICE_SMITH)]
         mock_result = MagicMock()
         mock_result.scalars.return_value.all.return_value = users
         user_repository_mock.session.execute.return_value = mock_result
@@ -363,7 +370,7 @@ class TestSearchUsers:
         result = await service.search_users(query="Smith")
 
         assert len(result) == 1
-        assert result[0]["full_name"] == "Alice Smith"
+        assert result[0]["full_name"] == TEST_USER_ALICE_SMITH
 
     async def test_search_users_excludes_workspace_members(
         self, service, user_repository_mock, workspace_member_repository_mock

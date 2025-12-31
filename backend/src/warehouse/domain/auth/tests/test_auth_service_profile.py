@@ -5,6 +5,13 @@ from unittest.mock import AsyncMock
 
 import pytest
 
+from conftest import (
+    TEST_EMAIL_ALICE,
+    TEST_EMAIL_ALICE_NEW,
+    TEST_EMAIL_BOB,
+    TEST_USER_ALICE_JOHNSON,
+    TEST_USER_ALICE_SMITH,
+)
 from warehouse.config import Config
 from warehouse.domain.auth.models import User
 from warehouse.domain.auth.service import AuthService
@@ -48,8 +55,8 @@ def _make_user(**kwargs) -> User:
     """Helper to construct a User instance."""
     defaults = {
         "id": uuid7(),
-        "email": "alice@example.com",
-        "full_name": "Alice Smith",
+        "email": TEST_EMAIL_ALICE,
+        "full_name": TEST_USER_ALICE_SMITH,
         "password_hash": "$argon2id$v=19$m=65536,t=3,p=4$test$hash",
         "is_active": True,
     }
@@ -63,48 +70,48 @@ class TestUpdateProfile:
     async def test_update_profile_success_full_name(self, service, user_repository_mock):
         """Test updating full name only."""
         user_id = uuid7()
-        user = _make_user(id=user_id, full_name="Alice Smith")
+        user = _make_user(id=user_id, full_name=TEST_USER_ALICE_SMITH)
         user_repository_mock.get_one_or_none.return_value = user
 
-        result = await service.update_profile(user_id, full_name="Alice Johnson")
+        await service.update_profile(user_id, full_name=TEST_USER_ALICE_JOHNSON)
 
-        assert user.full_name == "Alice Johnson"
+        assert user.full_name == TEST_USER_ALICE_JOHNSON
         user_repository_mock.session.commit.assert_awaited_once()
         user_repository_mock.session.refresh.assert_awaited_once_with(user)
 
     async def test_update_profile_success_email(self, service, user_repository_mock):
         """Test updating email."""
         user_id = uuid7()
-        user = _make_user(id=user_id, email="alice@example.com")
+        user = _make_user(id=user_id, email=TEST_EMAIL_ALICE)
         user_repository_mock.get_one_or_none.return_value = user
         user_repository_mock.get_by_email.return_value = None  # No existing user
 
-        result = await service.update_profile(user_id, email="alice.new@example.com")
+        await service.update_profile(user_id, email=TEST_EMAIL_ALICE_NEW)
 
-        assert user.email == "alice.new@example.com"
-        user_repository_mock.get_by_email.assert_awaited_once_with("alice.new@example.com")
+        assert user.email == TEST_EMAIL_ALICE_NEW
+        user_repository_mock.get_by_email.assert_awaited_once_with(TEST_EMAIL_ALICE_NEW)
         user_repository_mock.session.commit.assert_awaited_once()
 
     async def test_update_profile_duplicate_email(self, service, user_repository_mock):
         """Test updating email fails when email already exists."""
         user_id = uuid7()
-        user = _make_user(id=user_id, email="alice@example.com")
-        existing_user = _make_user(email="bob@example.com")
+        user = _make_user(id=user_id, email=TEST_EMAIL_ALICE)
+        existing_user = _make_user(email=TEST_EMAIL_BOB)
         user_repository_mock.get_one_or_none.return_value = user
         user_repository_mock.get_by_email.return_value = existing_user
 
         with pytest.raises(AppError) as exc_info:
-            await service.update_profile(user_id, email="bob@example.com")
+            await service.update_profile(user_id, email=TEST_EMAIL_BOB)
 
         assert exc_info.value.code == ErrorCode.AUTH_EMAIL_EXISTS
 
     async def test_update_profile_same_email_skips_check(self, service, user_repository_mock):
         """Test updating to same email doesn't trigger duplicate check."""
         user_id = uuid7()
-        user = _make_user(id=user_id, email="alice@example.com")
+        user = _make_user(id=user_id, email=TEST_EMAIL_ALICE)
         user_repository_mock.get_one_or_none.return_value = user
 
-        result = await service.update_profile(user_id, email="alice@example.com")
+        await service.update_profile(user_id, email=TEST_EMAIL_ALICE)
 
         # Should not check for duplicates when email is the same
         user_repository_mock.get_by_email.assert_not_awaited()
@@ -122,16 +129,16 @@ class TestUpdateProfile:
     async def test_update_profile_both_fields(self, service, user_repository_mock):
         """Test updating both email and full name."""
         user_id = uuid7()
-        user = _make_user(id=user_id, email="alice@example.com", full_name="Alice Smith")
+        user = _make_user(id=user_id, email=TEST_EMAIL_ALICE, full_name=TEST_USER_ALICE_SMITH)
         user_repository_mock.get_one_or_none.return_value = user
         user_repository_mock.get_by_email.return_value = None
 
-        result = await service.update_profile(
-            user_id, full_name="Alice Johnson", email="alice.new@example.com"
+        await service.update_profile(
+            user_id, full_name=TEST_USER_ALICE_JOHNSON, email=TEST_EMAIL_ALICE_NEW
         )
 
-        assert user.full_name == "Alice Johnson"
-        assert user.email == "alice.new@example.com"
+        assert user.full_name == TEST_USER_ALICE_JOHNSON
+        assert user.email == TEST_EMAIL_ALICE_NEW
 
 
 class TestChangePassword:
@@ -145,7 +152,7 @@ class TestChangePassword:
         user = _make_user(id=user_id, password_hash=original_hash)
         user_repository_mock.get_one_or_none.return_value = user
 
-        result = await service.change_password(user_id, "oldpassword123", "newpassword456")
+        await service.change_password(user_id, "oldpassword123", "newpassword456")
 
         # Password hash should have changed
         assert user.password_hash != original_hash

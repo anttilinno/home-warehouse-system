@@ -16,6 +16,9 @@ from warehouse.domain.locations.models import Location
 
 logger = logging.getLogger(__name__)
 
+# Error message constants
+ERR_NAME_REQUIRED = "Name is required"
+
 
 class ImportService:
     """Service for importing data from CSV/Excel files."""
@@ -83,7 +86,7 @@ class ImportService:
         for idx, row in enumerate(rows, start=2):  # Start at 2 (header is row 1)
             name = row.get("name")
             if not name:
-                errors.append(ImportError(row=idx, field="name", message="Name is required"))
+                errors.append(ImportError(row=idx, field="name", message=ERR_NAME_REQUIRED))
                 continue
 
             # Check if already exists
@@ -141,7 +144,7 @@ class ImportService:
         for idx, row in enumerate(rows, start=2):
             name = row.get("name")
             if not name:
-                errors.append(ImportError(row=idx, field="name", message="Name is required"))
+                errors.append(ImportError(row=idx, field="name", message=ERR_NAME_REQUIRED))
                 continue
 
             if name.lower() in name_to_id:
@@ -206,7 +209,7 @@ class ImportService:
         for idx, row in enumerate(rows, start=2):
             name = row.get("name")
             if not name:
-                errors.append(ImportError(row=idx, field="name", message="Name is required"))
+                errors.append(ImportError(row=idx, field="name", message=ERR_NAME_REQUIRED))
                 continue
 
             if name.lower() in name_to_id:
@@ -279,7 +282,7 @@ class ImportService:
                 continue
 
             if not name:
-                errors.append(ImportError(row=idx, field="name", message="Name is required"))
+                errors.append(ImportError(row=idx, field="name", message=ERR_NAME_REQUIRED))
                 continue
 
             if sku.lower() in sku_to_id:
@@ -339,7 +342,7 @@ class ImportService:
         for idx, row in enumerate(rows, start=2):
             name = row.get("name")
             if not name:
-                errors.append(ImportError(row=idx, field="name", message="Name is required"))
+                errors.append(ImportError(row=idx, field="name", message=ERR_NAME_REQUIRED))
                 continue
 
             if name.lower() in name_to_id:

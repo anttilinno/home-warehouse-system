@@ -5,6 +5,14 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import httpx
 import pytest
 
+from conftest import (
+    MOCK_HTTPX_ASYNC_CLIENT,
+    MOCK_LOOKUP_OPENFOODFACTS,
+    MOCK_LOOKUP_UPCITEMDB,
+    TEST_BRAND,
+    TEST_IMAGE_URL,
+    TEST_PRODUCT_NAME,
+)
 from warehouse.domain.imports.barcode import (
     lookup_barcode,
     lookup_openfoodfacts,
@@ -24,11 +32,11 @@ class TestLookupOpenFoodFacts:
         mock_response.json.return_value = {
             "status": 1,
             "product": {
-                "product_name": "Test Product",
-                "brands": "Test Brand",
+                "product_name": TEST_PRODUCT_NAME,
+                "brands": TEST_BRAND,
                 "categories": "Category A, Category B",
                 "generic_name": "Generic description",
-                "image_url": "https://example.com/image.jpg",
+                "image_url": TEST_IMAGE_URL,
             },
         }
 
@@ -37,13 +45,13 @@ class TestLookupOpenFoodFacts:
         mock_client.__aenter__ = AsyncMock(return_value=mock_client)
         mock_client.__aexit__ = AsyncMock(return_value=None)
 
-        with patch("httpx.AsyncClient", return_value=mock_client):
+        with patch(MOCK_HTTPX_ASYNC_CLIENT, return_value=mock_client):
             result = await lookup_openfoodfacts("1234567890123")
 
         assert isinstance(result, BarcodeProduct)
         assert result.barcode == "1234567890123"
-        assert result.name == "Test Product"
-        assert result.brand == "Test Brand"
+        assert result.name == TEST_PRODUCT_NAME
+        assert result.brand == TEST_BRAND
         assert result.category == "Category A"
         assert result.source == "openfoodfacts"
 
@@ -59,7 +67,7 @@ class TestLookupOpenFoodFacts:
         mock_client.__aenter__ = AsyncMock(return_value=mock_client)
         mock_client.__aexit__ = AsyncMock(return_value=None)
 
-        with patch("httpx.AsyncClient", return_value=mock_client):
+        with patch(MOCK_HTTPX_ASYNC_CLIENT, return_value=mock_client):
             result = await lookup_openfoodfacts("0000000000000")
 
         assert result is None
@@ -75,7 +83,7 @@ class TestLookupOpenFoodFacts:
         mock_client.__aenter__ = AsyncMock(return_value=mock_client)
         mock_client.__aexit__ = AsyncMock(return_value=None)
 
-        with patch("httpx.AsyncClient", return_value=mock_client):
+        with patch(MOCK_HTTPX_ASYNC_CLIENT, return_value=mock_client):
             result = await lookup_openfoodfacts("1234567890123")
 
         assert result is None
@@ -88,7 +96,7 @@ class TestLookupOpenFoodFacts:
         mock_client.__aenter__ = AsyncMock(return_value=mock_client)
         mock_client.__aexit__ = AsyncMock(return_value=None)
 
-        with patch("httpx.AsyncClient", return_value=mock_client):
+        with patch(MOCK_HTTPX_ASYNC_CLIENT, return_value=mock_client):
             result = await lookup_openfoodfacts("1234567890123")
 
         assert result is None
@@ -101,7 +109,7 @@ class TestLookupOpenFoodFacts:
         mock_client.__aenter__ = AsyncMock(return_value=mock_client)
         mock_client.__aexit__ = AsyncMock(return_value=None)
 
-        with patch("httpx.AsyncClient", return_value=mock_client):
+        with patch(MOCK_HTTPX_ASYNC_CLIENT, return_value=mock_client):
             result = await lookup_openfoodfacts("1234567890123")
 
         assert result is None
@@ -114,7 +122,7 @@ class TestLookupOpenFoodFacts:
         mock_response.json.return_value = {
             "status": 1,
             "product": {
-                "product_name": "Test Product",
+                "product_name": TEST_PRODUCT_NAME,
                 "categories": "",
             },
         }
@@ -124,7 +132,7 @@ class TestLookupOpenFoodFacts:
         mock_client.__aenter__ = AsyncMock(return_value=mock_client)
         mock_client.__aexit__ = AsyncMock(return_value=None)
 
-        with patch("httpx.AsyncClient", return_value=mock_client):
+        with patch(MOCK_HTTPX_ASYNC_CLIENT, return_value=mock_client):
             result = await lookup_openfoodfacts("1234567890123")
 
         assert result.category is None
@@ -155,13 +163,13 @@ class TestLookupUPCItemDB:
         mock_client.__aenter__ = AsyncMock(return_value=mock_client)
         mock_client.__aexit__ = AsyncMock(return_value=None)
 
-        with patch("httpx.AsyncClient", return_value=mock_client):
+        with patch(MOCK_HTTPX_ASYNC_CLIENT, return_value=mock_client):
             result = await lookup_upcitemdb("1234567890123")
 
         assert isinstance(result, BarcodeProduct)
         assert result.barcode == "1234567890123"
-        assert result.name == "Test Product"
-        assert result.brand == "Test Brand"
+        assert result.name == TEST_PRODUCT_NAME
+        assert result.brand == TEST_BRAND
         assert result.category == "Electronics"
         assert result.source == "upcitemdb"
 
@@ -177,7 +185,7 @@ class TestLookupUPCItemDB:
         mock_client.__aenter__ = AsyncMock(return_value=mock_client)
         mock_client.__aexit__ = AsyncMock(return_value=None)
 
-        with patch("httpx.AsyncClient", return_value=mock_client):
+        with patch(MOCK_HTTPX_ASYNC_CLIENT, return_value=mock_client):
             result = await lookup_upcitemdb("0000000000000")
 
         assert result is None
@@ -201,7 +209,7 @@ class TestLookupUPCItemDB:
         mock_client.__aenter__ = AsyncMock(return_value=mock_client)
         mock_client.__aexit__ = AsyncMock(return_value=None)
 
-        with patch("httpx.AsyncClient", return_value=mock_client):
+        with patch(MOCK_HTTPX_ASYNC_CLIENT, return_value=mock_client):
             result = await lookup_upcitemdb("1234567890123")
 
         assert result.image_url is None
@@ -224,7 +232,7 @@ class TestLookupBarcode:
         )
 
         with patch(
-            "warehouse.domain.imports.barcode.lookup_openfoodfacts",
+            MOCK_LOOKUP_OPENFOODFACTS,
             new_callable=AsyncMock,
         ) as mock_off:
             mock_off.return_value = off_product
@@ -248,10 +256,10 @@ class TestLookupBarcode:
         )
 
         with patch(
-            "warehouse.domain.imports.barcode.lookup_openfoodfacts",
+            MOCK_LOOKUP_OPENFOODFACTS,
             new_callable=AsyncMock,
         ) as mock_off, patch(
-            "warehouse.domain.imports.barcode.lookup_upcitemdb",
+            MOCK_LOOKUP_UPCITEMDB,
             new_callable=AsyncMock,
         ) as mock_upc:
             mock_off.return_value = None
@@ -266,10 +274,10 @@ class TestLookupBarcode:
     async def test_returns_not_found_when_both_fail(self):
         """Test that BarcodeNotFound is returned when both APIs fail."""
         with patch(
-            "warehouse.domain.imports.barcode.lookup_openfoodfacts",
+            MOCK_LOOKUP_OPENFOODFACTS,
             new_callable=AsyncMock,
         ) as mock_off, patch(
-            "warehouse.domain.imports.barcode.lookup_upcitemdb",
+            MOCK_LOOKUP_UPCITEMDB,
             new_callable=AsyncMock,
         ) as mock_upc:
             mock_off.return_value = None
@@ -285,10 +293,10 @@ class TestLookupBarcode:
     async def test_strips_barcode_whitespace(self):
         """Test that barcode whitespace is stripped."""
         with patch(
-            "warehouse.domain.imports.barcode.lookup_openfoodfacts",
+            MOCK_LOOKUP_OPENFOODFACTS,
             new_callable=AsyncMock,
         ) as mock_off, patch(
-            "warehouse.domain.imports.barcode.lookup_upcitemdb",
+            MOCK_LOOKUP_UPCITEMDB,
             new_callable=AsyncMock,
         ) as mock_upc:
             mock_off.return_value = None

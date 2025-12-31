@@ -5,6 +5,7 @@ import io
 import pytest
 from openpyxl import Workbook
 
+from conftest import ERR_UNSUPPORTED_FILE, TEST_DESC_A, TEST_ITEM_A
 from warehouse.domain.imports.parsers import (
     detect_file_type,
     parse_csv,
@@ -22,8 +23,8 @@ class TestParseCSV:
         result = parse_csv(content)
 
         assert len(result) == 2
-        assert result[0]["name"] == "Item A"
-        assert result[0]["description"] == "Desc A"
+        assert result[0]["name"] == TEST_ITEM_A
+        assert result[0]["description"] == TEST_DESC_A
         assert result[0]["quantity"] == "10"
 
     def test_handles_utf8_bom(self):
@@ -34,7 +35,7 @@ class TestParseCSV:
         assert len(result) == 1
         # BOM might be stripped or included in header depending on encoding handling
         # Check that we have exactly one row with the data values
-        assert "Item A" in result[0].values()
+        assert TEST_ITEM_A in result[0].values()
 
     def test_normalizes_column_names(self):
         """Test that column names are normalized to lowercase with underscores."""
@@ -50,7 +51,7 @@ class TestParseCSV:
         content = b"Name,Description\nItem A,\nItem B,"
         result = parse_csv(content)
 
-        assert result[0]["name"] == "Item A"
+        assert result[0]["name"] == TEST_ITEM_A
         assert result[0]["description"] is None
         assert result[1]["description"] is None
 
@@ -98,12 +99,12 @@ class TestParseExcel:
         """Test parsing a basic Excel file."""
         content = self._create_excel_bytes(
             ["Name", "Description", "Quantity"],
-            [["Item A", "Desc A", 10], ["Item B", "Desc B", 20]],
+            [[TEST_ITEM_A, TEST_DESC_A, 10], ["Item B", "Desc B", 20]],
         )
         result = parse_excel(content)
 
         assert len(result) == 2
-        assert result[0]["name"] == "Item A"
+        assert result[0]["name"] == TEST_ITEM_A
         assert result[0]["quantity"] == "10"
 
     def test_normalizes_column_names(self):
@@ -131,7 +132,7 @@ class TestParseExcel:
         """Test that empty rows are skipped."""
         content = self._create_excel_bytes(
             ["Name", "Description"],
-            [["Item A", "Desc A"], [None, None], ["Item B", "Desc B"]],
+            [[TEST_ITEM_A, TEST_DESC_A], [None, None], ["Item B", "Desc B"]],
         )
         result = parse_excel(content)
 
@@ -158,7 +159,7 @@ class TestParseExcel:
         """Test that numeric values are converted to strings."""
         content = self._create_excel_bytes(
             ["Name", "Quantity", "Price"],
-            [["Item A", 10, 19.99]],
+            [[TEST_ITEM_A, 10, 19.99]],
         )
         result = parse_excel(content)
 
@@ -185,10 +186,10 @@ class TestDetectFileType:
 
     def test_raises_for_unsupported_type(self):
         """Test that unsupported file types raise ValueError."""
-        with pytest.raises(ValueError, match="Unsupported file type"):
+        with pytest.raises(ValueError, match=ERR_UNSUPPORTED_FILE):
             detect_file_type("data.txt")
 
-        with pytest.raises(ValueError, match="Unsupported file type"):
+        with pytest.raises(ValueError, match=ERR_UNSUPPORTED_FILE):
             detect_file_type("data.json")
 
 
@@ -212,20 +213,20 @@ class TestParseFile:
         result = parse_file(content, "data.csv")
 
         assert len(result) == 1
-        assert result[0]["name"] == "Item A"
+        assert result[0]["name"] == TEST_ITEM_A
 
     def test_parses_excel_by_extension(self):
         """Test that Excel files are parsed correctly."""
         content = self._create_excel_bytes(
             ["Name", "Description"],
-            [["Item A", "Desc A"]],
+            [[TEST_ITEM_A, TEST_DESC_A]],
         )
         result = parse_file(content, "data.xlsx")
 
         assert len(result) == 1
-        assert result[0]["name"] == "Item A"
+        assert result[0]["name"] == TEST_ITEM_A
 
     def test_raises_for_unsupported_extension(self):
         """Test that unsupported extensions raise ValueError."""
-        with pytest.raises(ValueError, match="Unsupported file type"):
+        with pytest.raises(ValueError, match=ERR_UNSUPPORTED_FILE):
             parse_file(b"content", "data.txt")

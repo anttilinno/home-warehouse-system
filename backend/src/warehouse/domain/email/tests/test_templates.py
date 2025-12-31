@@ -15,6 +15,11 @@ from warehouse.domain.email.templates import (
     workspace_invite_template,
 )
 
+# Test constants
+_EXAMPLE_URL = "https://example.com"
+_APP_URL = "https://app.example.com"
+_RESET_URL = f"{_APP_URL}/reset?token=abc123"
+
 
 class TestGetTranslations:
     """Tests for get_translations helper."""
@@ -55,31 +60,30 @@ class TestPasswordResetTemplate:
 
     def test_contains_reset_url(self):
         """Test that template contains the reset URL."""
-        reset_url = "https://app.example.com/reset?token=abc123"
-        html = password_reset_template(reset_url, "en")
-        assert reset_url in html
+        html = password_reset_template(_RESET_URL, "en")
+        assert _RESET_URL in html
 
     def test_contains_english_content(self):
         """Test that English template contains correct content."""
-        html = password_reset_template("https://example.com", "en")
+        html = password_reset_template(_EXAMPLE_URL, "en")
         assert "Reset Your Password" in html
         assert "Reset Password" in html
         assert "1 hour" in html
 
     def test_contains_estonian_content(self):
         """Test that Estonian template contains correct content."""
-        html = password_reset_template("https://example.com", "et")
+        html = password_reset_template(_EXAMPLE_URL, "et")
         assert "Lähtesta oma parool" in html
         assert "Lähtesta parool" in html
 
     def test_contains_russian_content(self):
         """Test that Russian template contains correct content."""
-        html = password_reset_template("https://example.com", "ru")
+        html = password_reset_template(_EXAMPLE_URL, "ru")
         assert "Сбросить пароль" in html
 
     def test_is_valid_html(self):
         """Test that template is valid HTML structure."""
-        html = password_reset_template("https://example.com", "en")
+        html = password_reset_template(_EXAMPLE_URL, "en")
         assert html.startswith("\n<!DOCTYPE html>")
         assert "<html>" in html
         assert "</html>" in html
@@ -181,7 +185,7 @@ class TestWorkspaceInviteTemplate:
             inviter_name=TEST_USER_JOHN_DOE,
             workspace_name=TEST_WORKSPACE_HOME,
             role="member",
-            app_url="https://app.example.com",
+            app_url=_APP_URL,
             language="en",
         )
         assert TEST_USER_JOHN_DOE in html
@@ -192,7 +196,7 @@ class TestWorkspaceInviteTemplate:
             inviter_name=TEST_USER_JOHN_DOE,
             workspace_name=TEST_WORKSPACE_HOME,
             role="member",
-            app_url="https://app.example.com",
+            app_url=_APP_URL,
             language="en",
         )
         assert TEST_WORKSPACE_HOME in html
@@ -203,7 +207,7 @@ class TestWorkspaceInviteTemplate:
             inviter_name=TEST_USER_JOHN_DOE,
             workspace_name=TEST_WORKSPACE_HOME,
             role="admin",
-            app_url="https://app.example.com",
+            app_url=_APP_URL,
             language="en",
         )
         assert "admin" in html
@@ -214,10 +218,10 @@ class TestWorkspaceInviteTemplate:
             inviter_name=TEST_USER_JOHN_DOE,
             workspace_name=TEST_WORKSPACE_HOME,
             role="member",
-            app_url="https://app.example.com",
+            app_url=_APP_URL,
             language="en",
         )
-        assert "https://app.example.com/dashboard" in html
+        assert f"{_APP_URL}/dashboard" in html
 
     def test_estonian_content(self):
         """Test Estonian invitation content."""
@@ -225,7 +229,7 @@ class TestWorkspaceInviteTemplate:
             inviter_name=TEST_USER_JOHN_DOE,
             workspace_name=TEST_WORKSPACE_HOME,
             role="member",
-            app_url="https://app.example.com",
+            app_url=_APP_URL,
             language="et",
         )
         assert "Sind on kutsutud!" in html
@@ -237,7 +241,7 @@ class TestWorkspaceInviteTemplate:
             inviter_name=TEST_USER_JOHN_DOE,
             workspace_name=TEST_WORKSPACE_HOME,
             role="member",
-            app_url="https://app.example.com",
+            app_url=_APP_URL,
             language="ru",
         )
         assert "Вас пригласили!" in html

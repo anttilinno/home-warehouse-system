@@ -8,6 +8,15 @@ from unittest.mock import AsyncMock, Mock
 import pytest
 from litestar.exceptions import NotAuthorizedException, HTTPException
 
+from conftest import (
+    TEST_EMAIL_ALICE,
+    TEST_EMAIL_BOB,
+    TEST_USER_ALICE_JOHNSON,
+    TEST_USER_ALICE_SMITH,
+    TEST_USER_BOB_JONES,
+    TEST_WORKSPACE_DESC,
+    TEST_WORKSPACE_NAME,
+)
 from warehouse.domain.auth.controllers import AuthController
 from warehouse.domain.auth.schemas import (
     LoginRequest,
@@ -46,8 +55,8 @@ async def test_register_maps_response(controller: AuthController, auth_service_m
     now = datetime.now(UTC)
     user = SimpleNamespace(
         id=uuid7(),
-        email="alice@example.com",
-        full_name="Alice Smith",
+        email=TEST_EMAIL_ALICE,
+        full_name=TEST_USER_ALICE_SMITH,
         is_active=True,
         date_format="DD.MM.YYYY HH:mm",
         language="en",
@@ -56,14 +65,14 @@ async def test_register_maps_response(controller: AuthController, auth_service_m
         updated_at=now,
     )
     auth_service_mock.create_user.return_value = user
-    payload = UserCreate(email="alice@example.com", full_name="Alice Smith", password="pw")
+    payload = UserCreate(email=TEST_EMAIL_ALICE, full_name=TEST_USER_ALICE_SMITH, password="pw")
 
     resp = await _call(controller.register, controller, data=payload, auth_service=auth_service_mock)
 
     auth_service_mock.create_user.assert_awaited_once_with(payload)
     assert resp.id == user.id
-    assert resp.email == "alice@example.com"
-    assert resp.full_name == "Alice Smith"
+    assert resp.email == TEST_EMAIL_ALICE
+    assert resp.full_name == TEST_USER_ALICE_SMITH
     assert resp.is_active is True
     assert resp.created_at == now
     assert resp.updated_at == now
@@ -74,8 +83,8 @@ async def test_login_success(controller: AuthController, auth_service_mock: Asyn
     now = datetime.now(UTC)
     user = SimpleNamespace(
         id=uuid7(),
-        email="alice@example.com",
-        full_name="Alice Smith",
+        email=TEST_EMAIL_ALICE,
+        full_name=TEST_USER_ALICE_SMITH,
         is_active=True,
         date_format="DD.MM.YYYY HH:mm",
         language="en",
@@ -85,7 +94,7 @@ async def test_login_success(controller: AuthController, auth_service_mock: Asyn
     )
     auth_service_mock.authenticate.return_value = user
     auth_service_mock.create_access_token.return_value = "token"
-    payload = LoginRequest(email="alice@example.com", password="pw")
+    payload = LoginRequest(email=TEST_EMAIL_ALICE, password="pw")
 
     resp = await _call(controller.login, controller, data=payload, auth_service=auth_service_mock)
 
@@ -93,13 +102,13 @@ async def test_login_success(controller: AuthController, auth_service_mock: Asyn
     auth_service_mock.create_access_token.assert_called_once_with(user.id)
     assert resp.access_token == "token"
     assert resp.token_type == "bearer"
-    assert resp.user.email == "alice@example.com"
+    assert resp.user.email == TEST_EMAIL_ALICE
 
 
 @pytest.mark.asyncio
 async def test_login_invalid_credentials_raises(controller: AuthController, auth_service_mock: AsyncMock):
     auth_service_mock.authenticate.side_effect = AppError(ErrorCode.AUTH_INVALID_CREDENTIALS, status_code=401)
-    payload = LoginRequest(email="alice@example.com", password="wrong")
+    payload = LoginRequest(email=TEST_EMAIL_ALICE, password="wrong")
 
     with pytest.raises(HTTPException, match="401"):
         await _call(controller.login, controller, data=payload, auth_service=auth_service_mock)
@@ -119,8 +128,8 @@ def _make_user_response():
     now = datetime.now(UTC)
     return SimpleNamespace(
         id=uuid7(),
-        email="alice@example.com",
-        full_name="Alice Smith",
+        email=TEST_EMAIL_ALICE,
+        full_name=TEST_USER_ALICE_SMITH,
         is_active=True,
         date_format="DD.MM.YYYY HH:mm",
         language="en",
@@ -141,7 +150,7 @@ async def test_get_me_success(controller: AuthController, auth_service_mock: Asy
 
     auth_service_mock.get_current_user.assert_awaited_once_with("valid-token")
     assert resp.id == user.id
-    assert resp.email == "alice@example.com"
+    assert resp.email == TEST_EMAIL_ALICE
 
 
 @pytest.mark.asyncio
@@ -161,20 +170,20 @@ async def test_update_me_success(controller: AuthController, auth_service_mock: 
     """Test update_me updates user profile."""
     user = _make_user_response()
     updated_user = _make_user_response()
-    updated_user.full_name = "Alice Johnson"
+    updated_user.full_name = TEST_USER_ALICE_JOHNSON
     auth_service_mock.get_current_user.return_value = user
     auth_service_mock.update_profile.return_value = updated_user
     request = _make_request_mock()
-    data = ProfileUpdate(full_name="Alice Johnson", email=None)
+    data = ProfileUpdate(full_name=TEST_USER_ALICE_JOHNSON, email=None)
 
     resp = await _call(
         controller.update_me, controller, request=request, data=data, auth_service=auth_service_mock
     )
 
     auth_service_mock.update_profile.assert_awaited_once_with(
-        user.id, full_name="Alice Johnson", email=None, date_format=None, language=None, theme=None
+        user.id, full_name=TEST_USER_ALICE_JOHNSON, email=None, date_format=None, language=None, theme=None
     )
-    assert resp.full_name == "Alice Johnson"
+    assert resp.full_name == TEST_USER_ALICE_JOHNSON
 
 
 @pytest.mark.asyncio
@@ -200,22 +209,22 @@ async def test_create_workspace_success(controller: AuthController, auth_service
     user = _make_user_response()
     workspace = WorkspaceResponse(
         id=uuid7(),
-        name="Test Workspace",
+        name=TEST_WORKSPACE_NAME,
         slug="test-workspace",
-        description="A test workspace",
+        description=TEST_WORKSPACE_DESC,
         role="owner",
     )
     auth_service_mock.get_current_user.return_value = user
     auth_service_mock.create_workspace.return_value = workspace
     request = _make_request_mock()
-    data = WorkspaceCreate(name="Test Workspace", description="A test workspace")
+    data = WorkspaceCreate(name=TEST_WORKSPACE_NAME, description=TEST_WORKSPACE_DESC)
 
     resp = await _call(
         controller.create_workspace, controller, request=request, data=data, auth_service=auth_service_mock
     )
 
     auth_service_mock.create_workspace.assert_awaited_once_with(user.id, data)
-    assert resp.name == "Test Workspace"
+    assert resp.name == TEST_WORKSPACE_NAME
     assert resp.role == "owner"
 
 
@@ -228,8 +237,8 @@ async def test_get_workspace_members_success(controller: AuthController, auth_se
         WorkspaceMemberResponse(
             id=uuid7(),
             user_id=user.id,
-            email="alice@example.com",
-            full_name="Alice Smith",
+            email=TEST_EMAIL_ALICE,
+            full_name=TEST_USER_ALICE_SMITH,
             role="owner",
             created_at=datetime.now(UTC),
         )
@@ -248,7 +257,7 @@ async def test_get_workspace_members_success(controller: AuthController, auth_se
 
     auth_service_mock.get_workspace_members.assert_awaited_once_with(workspace_id, user.id)
     assert len(resp) == 1
-    assert resp[0].email == "alice@example.com"
+    assert resp[0].email == TEST_EMAIL_ALICE
 
 
 @pytest.mark.asyncio
@@ -256,7 +265,7 @@ async def test_search_users_success(controller: AuthController, auth_service_moc
     """Test search_users endpoint."""
     user = _make_user_response()
     search_results = [
-        {"id": str(uuid7()), "email": "bob@example.com", "full_name": "Bob Jones"}
+        {"id": str(uuid7()), "email": TEST_EMAIL_BOB, "full_name": TEST_USER_BOB_JONES}
     ]
     auth_service_mock.get_current_user.return_value = user
     auth_service_mock.search_users.return_value = search_results
@@ -273,7 +282,7 @@ async def test_search_users_success(controller: AuthController, auth_service_moc
 
     auth_service_mock.search_users.assert_awaited_once_with("bob", None)
     assert len(resp) == 1
-    assert resp[0].email == "bob@example.com"
+    assert resp[0].email == TEST_EMAIL_BOB
 
 
 @pytest.mark.asyncio
@@ -285,8 +294,8 @@ async def test_invite_member_success(controller: AuthController, auth_service_mo
     invited_member = WorkspaceMemberResponse(
         id=uuid7(),
         user_id=uuid7(),
-        email="bob@example.com",
-        full_name="Bob Jones",
+        email=TEST_EMAIL_BOB,
+        full_name=TEST_USER_BOB_JONES,
         role="member",
         created_at=now,
     )
@@ -298,7 +307,7 @@ async def test_invite_member_success(controller: AuthController, auth_service_mo
     notification_service_mock = AsyncMock()
     email_service_mock = AsyncMock()
     request = _make_request_mock()
-    data = WorkspaceMemberInvite(email="bob@example.com", role="member")
+    data = WorkspaceMemberInvite(email=TEST_EMAIL_BOB, role="member")
 
     resp = await _call(
         controller.invite_member,
@@ -312,7 +321,7 @@ async def test_invite_member_success(controller: AuthController, auth_service_mo
     )
 
     auth_service_mock.invite_member.assert_awaited_once_with(workspace_id, inviter.id, data)
-    assert resp.email == "bob@example.com"
+    assert resp.email == TEST_EMAIL_BOB
     assert resp.role == "member"
 
 
@@ -325,12 +334,12 @@ async def test_invite_member_sends_notification(controller: AuthController, auth
     invited_member = WorkspaceMemberResponse(
         id=uuid7(),
         user_id=uuid7(),
-        email="bob@example.com",
-        full_name="Bob Jones",
+        email=TEST_EMAIL_BOB,
+        full_name=TEST_USER_BOB_JONES,
         role="admin",
         created_at=now,
     )
-    workspace = SimpleNamespace(id=workspace_id, name="Test Workspace")
+    workspace = SimpleNamespace(id=workspace_id, name=TEST_WORKSPACE_NAME)
 
     auth_service_mock.get_current_user.return_value = inviter
     auth_service_mock.invite_member.return_value = invited_member
@@ -340,9 +349,9 @@ async def test_invite_member_sends_notification(controller: AuthController, auth
     notification_service_mock = AsyncMock()
     email_service_mock = AsyncMock()
     request = _make_request_mock()
-    data = WorkspaceMemberInvite(email="bob@example.com", role="admin")
+    data = WorkspaceMemberInvite(email=TEST_EMAIL_BOB, role="admin")
 
-    resp = await _call(
+    await _call(
         controller.invite_member,
         controller,
         request=request,
@@ -356,14 +365,14 @@ async def test_invite_member_sends_notification(controller: AuthController, auth
     notification_service_mock.send_workspace_invite_notification.assert_awaited_once()
     call_kwargs = notification_service_mock.send_workspace_invite_notification.call_args.kwargs
     assert call_kwargs["user_id"] == invited_member.user_id
-    assert call_kwargs["workspace_name"] == "Test Workspace"
+    assert call_kwargs["workspace_name"] == TEST_WORKSPACE_NAME
     assert call_kwargs["role"] == "admin"
 
     # Also verify email was sent
     email_service_mock.send_workspace_invite.assert_awaited_once_with(
-        to="bob@example.com",
+        to=TEST_EMAIL_BOB,
         inviter_name=inviter.full_name,
-        workspace_name="Test Workspace",
+        workspace_name=TEST_WORKSPACE_NAME,
         role="admin",
     )
 
@@ -490,7 +499,7 @@ async def test_invite_member_error_raises(controller: AuthController, auth_servi
     email_service_mock = AsyncMock()
     request = _make_request_mock()
     workspace_id = uuid7()
-    data = WorkspaceMemberInvite(email="bob@example.com", role="member")
+    data = WorkspaceMemberInvite(email=TEST_EMAIL_BOB, role="member")
 
     with pytest.raises(HTTPException) as exc_info:
         await _call(

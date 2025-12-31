@@ -7,6 +7,7 @@ from unittest.mock import AsyncMock
 import jwt
 import pytest
 
+from conftest import TEST_EMAIL_A, TEST_EMAIL_ALICE, TEST_USER_ALICE_SMITH
 from warehouse.config import Config
 from warehouse.domain.auth.models import User
 from warehouse.domain.auth.schemas import (
@@ -49,8 +50,8 @@ def _make_user(**kwargs) -> User:
     """Helper to construct a User instance."""
     defaults = {
         "id": uuid7(),
-        "email": "alice@example.com",
-        "full_name": "Alice Smith",
+        "email": TEST_EMAIL_ALICE,
+        "full_name": TEST_USER_ALICE_SMITH,
         "password_hash": "hashed",
         "is_active": True,
         "date_format": "DD.MM.YYYY HH:mm",
@@ -75,7 +76,7 @@ async def test_create_user_success(service: AuthService, repository_mock: AsyncM
     repository_mock.get_by_email.return_value = None
     new_user = _make_user()
     repository_mock.add.return_value = new_user
-    user_data = UserCreate(email="alice@example.com", full_name="Alice Smith", password="pw")
+    user_data = UserCreate(email=TEST_EMAIL_ALICE, full_name=TEST_USER_ALICE_SMITH, password="pw")
 
     result = await service.create_user(user_data)
 
@@ -91,7 +92,7 @@ async def test_create_user_success(service: AuthService, repository_mock: AsyncM
 @pytest.mark.asyncio
 async def test_create_user_duplicate_email(service: AuthService, repository_mock: AsyncMock):
     repository_mock.get_by_email.return_value = _make_user()
-    user_data = UserCreate(email="alice@example.com", full_name="Alice Smith", password="pw")
+    user_data = UserCreate(email=TEST_EMAIL_ALICE, full_name=TEST_USER_ALICE_SMITH, password="pw")
 
     from warehouse.errors import AppError, ErrorCode
 
@@ -177,11 +178,11 @@ def test_create_access_token(service: AuthService, config: Config):
 def test_schema_user_create_and_response():
     user_id = uuid7()
     now = datetime.now(UTC)
-    create = UserCreate(email="a@example.com", full_name="Alice Smith", password="pw")
+    create = UserCreate(email="TEST_EMAIL_A", full_name=TEST_USER_ALICE_SMITH, password="pw")
     resp = UserResponse(
         id=user_id,
-        email="a@example.com",
-        full_name="Alice Smith",
+        email="TEST_EMAIL_A",
+        full_name=TEST_USER_ALICE_SMITH,
         is_active=True,
         date_format="DD.MM.YYYY HH:mm",
         language="en",
@@ -191,13 +192,13 @@ def test_schema_user_create_and_response():
     )
     token = TokenResponse(access_token="token", user=resp, workspaces=[])
 
-    assert create.email == "a@example.com"
+    assert create.email == "TEST_EMAIL_A"
     assert resp.id == user_id
     assert resp.is_active is True
     assert token.token_type == "bearer"
-    assert token.user.email == "a@example.com"
+    assert token.user.email == "TEST_EMAIL_A"
     assert token.workspaces == []
 
     with pytest.raises(TypeError):
-        UserCreate(email="a@example.com")  # type: ignore[call-arg]
+        UserCreate(email="TEST_EMAIL_A")  # type: ignore[call-arg]
 

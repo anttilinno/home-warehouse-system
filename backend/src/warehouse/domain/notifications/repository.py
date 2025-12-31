@@ -56,10 +56,8 @@ class NotificationRepository(BaseRepository[Notification]):
         self, user_id: UUID, notification_ids: list[UUID] | None = None
     ) -> int:
         """Mark notifications as read. If notification_ids is None, mark all as read."""
-        # TODO: Fix timezone mismatch - datetime.now(UTC) returns timezone-aware datetime
-        # but read_at column is TIMESTAMP WITHOUT TIME ZONE. Use datetime.utcnow() or
-        # change the column to TIMESTAMP WITH TIME ZONE.
-        now = datetime.now(UTC)
+        # Use timezone-naive UTC datetime to match TIMESTAMP WITHOUT TIME ZONE column
+        now = datetime.now(UTC).replace(tzinfo=None)
         stmt = (
             update(Notification)
             .where(Notification.user_id == user_id)
@@ -76,7 +74,8 @@ class NotificationRepository(BaseRepository[Notification]):
         from sqlalchemy import delete
         from datetime import timedelta
 
-        cutoff = datetime.now(UTC) - timedelta(days=days)
+        # Use timezone-naive UTC datetime to match TIMESTAMP WITHOUT TIME ZONE column
+        cutoff = datetime.now(UTC).replace(tzinfo=None) - timedelta(days=days)
         stmt = (
             delete(Notification)
             .where(Notification.user_id == user_id)
