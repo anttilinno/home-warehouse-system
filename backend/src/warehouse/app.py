@@ -18,6 +18,7 @@ from sqlalchemy.exc import IntegrityError
 from warehouse.config import Config
 from warehouse.database import get_db_config
 from warehouse.errors import AppError
+from warehouse.domain.activity_log.controllers import ActivityLogController
 from warehouse.domain.auth.controllers import AuthController
 from warehouse.domain.containers.controllers import ContainerController
 from warehouse.domain.dashboard.controllers import DashboardController
@@ -156,6 +157,7 @@ def create_app(config: Config | None = None) -> Litestar:
     return Litestar(
         route_handlers=[
             health_check,
+            ActivityLogController,
             AnalyticsController,
             AuthController,
             BorrowerController,

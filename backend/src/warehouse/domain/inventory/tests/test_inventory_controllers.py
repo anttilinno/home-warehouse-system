@@ -49,6 +49,13 @@ def inventory_service_mock() -> AsyncMock:
 
 
 @pytest.fixture
+def activity_service_mock() -> AsyncMock:
+    svc = AsyncMock()
+    svc.log_action = AsyncMock()
+    return svc
+
+
+@pytest.fixture
 def controller() -> InventoryController:
     return InventoryController(owner=None)
 
@@ -75,13 +82,13 @@ def _inventory(**overrides) -> SimpleNamespace:
 
 @pytest.mark.asyncio
 async def test_create_inventory_maps_response(
-    controller: InventoryController, inventory_service_mock: AsyncMock, workspace: WorkspaceContext
+    controller: InventoryController, inventory_service_mock: AsyncMock, activity_service_mock: AsyncMock, workspace: WorkspaceContext
 ):
     inv = _inventory(quantity=3)
     inventory_service_mock.create_inventory.return_value = inv
     payload = InventoryCreate(item_id=inv.item_id, location_id=inv.location_id, quantity=3)
 
-    resp = await _call(controller.create_inventory, controller, data=payload, inventory_service=inventory_service_mock, workspace=workspace)
+    resp = await _call(controller.create_inventory, controller, data=payload, inventory_service=inventory_service_mock, activity_service=activity_service_mock, workspace=workspace)
 
     inventory_service_mock.create_inventory.assert_awaited_once_with(payload, workspace.workspace_id)
     assert resp.id == inv.id
@@ -130,8 +137,9 @@ async def test_get_inventory_not_found_raises(controller: InventoryController, i
 
 
 @pytest.mark.asyncio
-async def test_update_inventory_success(controller: InventoryController, inventory_service_mock: AsyncMock, workspace: WorkspaceContext):
+async def test_update_inventory_success(controller: InventoryController, inventory_service_mock: AsyncMock, activity_service_mock: AsyncMock, workspace: WorkspaceContext):
     inv = _inventory(quantity=5)
+    inventory_service_mock.get_inventory.return_value = _inventory(quantity=3)
     inventory_service_mock.update_inventory.return_value = inv
     payload = InventoryUpdate(quantity=9)
 
@@ -141,6 +149,7 @@ async def test_update_inventory_success(controller: InventoryController, invento
         inventory_id=inv.id,
         data=payload,
         inventory_service=inventory_service_mock,
+        activity_service=activity_service_mock,
         workspace=workspace,
     )
 
@@ -149,12 +158,12 @@ async def test_update_inventory_success(controller: InventoryController, invento
 
 
 @pytest.mark.asyncio
-async def test_update_inventory_not_found(controller: InventoryController, inventory_service_mock: AsyncMock, workspace: WorkspaceContext):
+async def test_update_inventory_not_found(controller: InventoryController, inventory_service_mock: AsyncMock, activity_service_mock: AsyncMock, workspace: WorkspaceContext):
     from warehouse.errors import AppError, ErrorCode
     from litestar.exceptions import HTTPException
 
     missing_id = uuid7()
-    inventory_service_mock.update_inventory.side_effect = AppError(ErrorCode.INVENTORY_NOT_FOUND, status_code=404)
+    inventory_service_mock.get_inventory.side_effect = AppError(ErrorCode.INVENTORY_NOT_FOUND, status_code=404)
     payload = InventoryUpdate(quantity=9)
 
     with pytest.raises(HTTPException, match="404"):
@@ -164,13 +173,15 @@ async def test_update_inventory_not_found(controller: InventoryController, inven
             inventory_id=missing_id,
             data=payload,
             inventory_service=inventory_service_mock,
+            activity_service=activity_service_mock,
             workspace=workspace,
         )
 
 
 @pytest.mark.asyncio
-async def test_adjust_stock_success(controller: InventoryController, inventory_service_mock: AsyncMock, workspace: WorkspaceContext):
+async def test_adjust_stock_success(controller: InventoryController, inventory_service_mock: AsyncMock, activity_service_mock: AsyncMock, workspace: WorkspaceContext):
     inv = _inventory(quantity=10)
+    inventory_service_mock.get_inventory.return_value = _inventory(quantity=12)
     inventory_service_mock.adjust_stock.return_value = inv
     payload = StockAdjustment(quantity_change=-2)
 
@@ -180,6 +191,7 @@ async def test_adjust_stock_success(controller: InventoryController, inventory_s
         inventory_id=inv.id,
         data=payload,
         inventory_service=inventory_service_mock,
+        activity_service=activity_service_mock,
         workspace=workspace,
     )
 
@@ -188,12 +200,12 @@ async def test_adjust_stock_success(controller: InventoryController, inventory_s
 
 
 @pytest.mark.asyncio
-async def test_adjust_stock_not_found(controller: InventoryController, inventory_service_mock: AsyncMock, workspace: WorkspaceContext):
+async def test_adjust_stock_not_found(controller: InventoryController, inventory_service_mock: AsyncMock, activity_service_mock: AsyncMock, workspace: WorkspaceContext):
     from warehouse.errors import AppError, ErrorCode
     from litestar.exceptions import HTTPException
 
     missing_id = uuid7()
-    inventory_service_mock.adjust_stock.side_effect = AppError(ErrorCode.INVENTORY_NOT_FOUND, status_code=404)
+    inventory_service_mock.get_inventory.side_effect = AppError(ErrorCode.INVENTORY_NOT_FOUND, status_code=404)
     payload = StockAdjustment(quantity_change=1)
 
     with pytest.raises(HTTPException, match="404"):
@@ -203,17 +215,20 @@ async def test_adjust_stock_not_found(controller: InventoryController, inventory
             inventory_id=missing_id,
             data=payload,
             inventory_service=inventory_service_mock,
+            activity_service=activity_service_mock,
             workspace=workspace,
         )
 
 
 @pytest.mark.asyncio
-async def test_delete_inventory_success(controller: InventoryController, inventory_service_mock: AsyncMock, workspace: WorkspaceContext):
+async def test_delete_inventory_success(controller: InventoryController, inventory_service_mock: AsyncMock, activity_service_mock: AsyncMock, workspace: WorkspaceContext):
     inv_id = uuid7()
+    inv = _inventory(id=inv_id)
+    inventory_service_mock.get_inventory.return_value = inv
     inventory_service_mock.delete_inventory.return_value = True
 
     result = await _call(
-        controller.delete_inventory, controller, inventory_id=inv_id, inventory_service=inventory_service_mock, workspace=workspace
+        controller.delete_inventory, controller, inventory_id=inv_id, inventory_service=inventory_service_mock, activity_service=activity_service_mock, workspace=workspace
     )
 
     inventory_service_mock.delete_inventory.assert_awaited_once_with(inv_id, workspace.workspace_id)
@@ -221,14 +236,14 @@ async def test_delete_inventory_success(controller: InventoryController, invento
 
 
 @pytest.mark.asyncio
-async def test_delete_inventory_not_found(controller: InventoryController, inventory_service_mock: AsyncMock, workspace: WorkspaceContext):
+async def test_delete_inventory_not_found(controller: InventoryController, inventory_service_mock: AsyncMock, activity_service_mock: AsyncMock, workspace: WorkspaceContext):
     from warehouse.errors import AppError, ErrorCode
     from litestar.exceptions import HTTPException
 
     inv_id = uuid7()
-    inventory_service_mock.delete_inventory.side_effect = AppError(ErrorCode.INVENTORY_NOT_FOUND, status_code=404)
+    inventory_service_mock.get_inventory.side_effect = AppError(ErrorCode.INVENTORY_NOT_FOUND, status_code=404)
 
     with pytest.raises(HTTPException, match="404"):
         await _call(
-            controller.delete_inventory, controller, inventory_id=inv_id, inventory_service=inventory_service_mock, workspace=workspace
+            controller.delete_inventory, controller, inventory_id=inv_id, inventory_service=inventory_service_mock, activity_service=activity_service_mock, workspace=workspace
         )

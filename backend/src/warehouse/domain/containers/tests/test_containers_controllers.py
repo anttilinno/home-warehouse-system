@@ -56,6 +56,14 @@ def container_service_mock() -> AsyncMock:
 
 
 @pytest.fixture
+def activity_service_mock() -> AsyncMock:
+    """Mocked activity log service."""
+    svc = AsyncMock()
+    svc.log_action = AsyncMock()
+    return svc
+
+
+@pytest.fixture
 def controller() -> ContainerController:
     """Container controller instance."""
     return ContainerController(owner=None)
@@ -88,6 +96,7 @@ def _container(location_id: UUID, **overrides) -> SimpleNamespace:
 async def test_create_container(
     controller: ContainerController,
     container_service_mock: AsyncMock,
+    activity_service_mock: AsyncMock,
     workspace: WorkspaceContext,
     location_id: UUID,
 ):
@@ -107,6 +116,7 @@ async def test_create_container(
         controller,
         data=payload,
         container_service=container_service_mock,
+        activity_service=activity_service_mock,
         workspace=workspace,
     )
 
@@ -197,11 +207,13 @@ async def test_get_container_not_found(
 async def test_update_container(
     controller: ContainerController,
     container_service_mock: AsyncMock,
+    activity_service_mock: AsyncMock,
     workspace: WorkspaceContext,
     location_id: UUID,
 ):
     """Test updating a container."""
     container = _container(location_id, name="Updated Box")
+    container_service_mock.get_container.return_value = _container(location_id, name="Old Name")
     container_service_mock.update_container.return_value = container
     payload = ContainerUpdate(name="Updated Box")
 
@@ -211,6 +223,7 @@ async def test_update_container(
         container_id=container.id,
         data=payload,
         container_service=container_service_mock,
+        activity_service=activity_service_mock,
         workspace=workspace,
     )
 
@@ -224,10 +237,11 @@ async def test_update_container(
 async def test_update_container_not_found(
     controller: ContainerController,
     container_service_mock: AsyncMock,
+    activity_service_mock: AsyncMock,
     workspace: WorkspaceContext,
 ):
     """Test updating a non-existent container returns 404."""
-    container_service_mock.update_container.side_effect = AppError(
+    container_service_mock.get_container.side_effect = AppError(
         ErrorCode.CONTAINER_NOT_FOUND, status_code=404
     )
     missing_id = uuid7()
@@ -240,6 +254,7 @@ async def test_update_container_not_found(
             container_id=missing_id,
             data=payload,
             container_service=container_service_mock,
+            activity_service=activity_service_mock,
             workspace=workspace,
         )
 
@@ -248,17 +263,22 @@ async def test_update_container_not_found(
 async def test_delete_container(
     controller: ContainerController,
     container_service_mock: AsyncMock,
+    activity_service_mock: AsyncMock,
     workspace: WorkspaceContext,
+    location_id: UUID,
 ):
     """Test deleting a container."""
-    container_service_mock.delete_container.return_value = True
     container_id = uuid7()
+    container = _container(location_id, id=container_id)
+    container_service_mock.get_container.return_value = container
+    container_service_mock.delete_container.return_value = True
 
     result = await _call(
         controller.delete_container,
         controller,
         container_id=container_id,
         container_service=container_service_mock,
+        activity_service=activity_service_mock,
         workspace=workspace,
     )
 
@@ -272,10 +292,11 @@ async def test_delete_container(
 async def test_delete_container_not_found(
     controller: ContainerController,
     container_service_mock: AsyncMock,
+    activity_service_mock: AsyncMock,
     workspace: WorkspaceContext,
 ):
     """Test deleting a non-existent container returns 404."""
-    container_service_mock.delete_container.side_effect = AppError(
+    container_service_mock.get_container.side_effect = AppError(
         ErrorCode.CONTAINER_NOT_FOUND, status_code=404
     )
     container_id = uuid7()
@@ -286,6 +307,7 @@ async def test_delete_container_not_found(
             controller,
             container_id=container_id,
             container_service=container_service_mock,
+            activity_service=activity_service_mock,
             workspace=workspace,
         )
 

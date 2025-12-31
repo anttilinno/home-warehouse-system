@@ -8,6 +8,9 @@ from litestar.di import Provide
 from litestar.status_codes import HTTP_201_CREATED
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from warehouse.domain.activity_log.models import ActivityAction, ActivityEntity
+from warehouse.domain.activity_log.repository import ActivityLogRepository
+from warehouse.domain.activity_log.service import ActivityLogService
 from warehouse.domain.items.repository import CategoryRepository, ItemRepository
 from warehouse.domain.items.schemas import (
     CategoryCreate,
@@ -34,12 +37,19 @@ def get_item_service(db_session: AsyncSession) -> ItemService:
     return ItemService(repository)
 
 
+def get_activity_log_service(db_session: AsyncSession) -> ActivityLogService:
+    """Dependency for activity log service."""
+    repository = ActivityLogRepository(session=db_session)
+    return ActivityLogService(repository)
+
+
 class CategoryController(Controller):
     """Category controller."""
 
     path = "/categories"
     dependencies = {
         "category_service": Provide(get_category_service, sync_to_thread=False),
+        "activity_service": Provide(get_activity_log_service, sync_to_thread=False),
         "workspace": Provide(get_workspace_context),
     }
 
@@ -48,11 +58,22 @@ class CategoryController(Controller):
         self,
         data: CategoryCreate,
         category_service: CategoryService,
+        activity_service: ActivityLogService,
         workspace: WorkspaceContext,
     ) -> CategoryResponse:
         """Create a new category."""
         require_write_permission(workspace)
         category = await category_service.create_category(data, workspace.workspace_id)
+
+        await activity_service.log_action(
+            workspace_id=workspace.workspace_id,
+            user_id=workspace.user_id,
+            action=ActivityAction.CREATE,
+            entity_type=ActivityEntity.CATEGORY,
+            entity_id=category.id,
+            entity_name=category.name,
+        )
+
         return CategoryResponse(
             id=category.id,
             name=category.name,
@@ -86,13 +107,35 @@ class CategoryController(Controller):
         category_id: UUID,
         data: CategoryUpdate,
         category_service: CategoryService,
+        activity_service: ActivityLogService,
         workspace: WorkspaceContext,
     ) -> CategoryResponse:
         """Update a category."""
         require_write_permission(workspace)
         try:
+            # Get old values for change tracking
+            old_category = await category_service.get_category(
+                category_id, workspace.workspace_id
+            )
+            old_name = old_category.name if old_category else None
+
             category = await category_service.update_category(
                 category_id, data, workspace.workspace_id
+            )
+
+            # Track changes
+            changes = {}
+            if data.name is not None and data.name != old_name:
+                changes["name"] = {"old": old_name, "new": data.name}
+
+            await activity_service.log_action(
+                workspace_id=workspace.workspace_id,
+                user_id=workspace.user_id,
+                action=ActivityAction.UPDATE,
+                entity_type=ActivityEntity.CATEGORY,
+                entity_id=category.id,
+                entity_name=category.name,
+                changes=changes if changes else None,
             )
         except AppError as exc:
             raise exc.to_http_exception()
@@ -109,12 +152,28 @@ class CategoryController(Controller):
         self,
         category_id: UUID,
         category_service: CategoryService,
+        activity_service: ActivityLogService,
         workspace: WorkspaceContext,
     ) -> None:
         """Delete a category."""
         require_write_permission(workspace)
         try:
+            # Get category details before deletion for logging
+            category = await category_service.get_category(
+                category_id, workspace.workspace_id
+            )
+            category_name = category.name if category else None
+
             await category_service.delete_category(category_id, workspace.workspace_id)
+
+            await activity_service.log_action(
+                workspace_id=workspace.workspace_id,
+                user_id=workspace.user_id,
+                action=ActivityAction.DELETE,
+                entity_type=ActivityEntity.CATEGORY,
+                entity_id=category_id,
+                entity_name=category_name,
+            )
         except AppError as exc:
             raise exc.to_http_exception()
 
@@ -125,6 +184,7 @@ class ItemController(Controller):
     path = "/items"
     dependencies = {
         "item_service": Provide(get_item_service, sync_to_thread=False),
+        "activity_service": Provide(get_activity_log_service, sync_to_thread=False),
         "workspace": Provide(get_workspace_context),
     }
 
@@ -133,12 +193,22 @@ class ItemController(Controller):
         self,
         data: ItemCreate,
         item_service: ItemService,
+        activity_service: ActivityLogService,
         workspace: WorkspaceContext,
     ) -> ItemResponse:
         """Create a new item."""
         require_write_permission(workspace)
         try:
             item = await item_service.create_item(data, workspace.workspace_id)
+
+            await activity_service.log_action(
+                workspace_id=workspace.workspace_id,
+                user_id=workspace.user_id,
+                action=ActivityAction.CREATE,
+                entity_type=ActivityEntity.ITEM,
+                entity_id=item.id,
+                entity_name=item.name,
+            )
         except AppError as exc:
             raise exc.to_http_exception()
         return item_to_response(item)
@@ -173,12 +243,32 @@ class ItemController(Controller):
         item_id: UUID,
         data: ItemUpdate,
         item_service: ItemService,
+        activity_service: ActivityLogService,
         workspace: WorkspaceContext,
     ) -> ItemResponse:
         """Update an item."""
         require_write_permission(workspace)
         try:
+            # Get old values for change tracking
+            old_item = await item_service.get_item(item_id, workspace.workspace_id)
+            old_name = old_item.name
+
             item = await item_service.update_item(item_id, data, workspace.workspace_id)
+
+            # Track changes
+            changes = {}
+            if data.name is not None and data.name != old_name:
+                changes["name"] = {"old": old_name, "new": data.name}
+
+            await activity_service.log_action(
+                workspace_id=workspace.workspace_id,
+                user_id=workspace.user_id,
+                action=ActivityAction.UPDATE,
+                entity_type=ActivityEntity.ITEM,
+                entity_id=item.id,
+                entity_name=item.name,
+                changes=changes if changes else None,
+            )
         except AppError as exc:
             raise exc.to_http_exception()
         return item_to_response(item)
@@ -188,12 +278,26 @@ class ItemController(Controller):
         self,
         item_id: UUID,
         item_service: ItemService,
+        activity_service: ActivityLogService,
         workspace: WorkspaceContext,
     ) -> None:
         """Delete an item."""
         require_write_permission(workspace)
         try:
+            # Get item details before deletion for logging
+            item = await item_service.get_item(item_id, workspace.workspace_id)
+            item_name = item.name
+
             await item_service.delete_item(item_id, workspace.workspace_id)
+
+            await activity_service.log_action(
+                workspace_id=workspace.workspace_id,
+                user_id=workspace.user_id,
+                action=ActivityAction.DELETE,
+                entity_type=ActivityEntity.ITEM,
+                entity_id=item_id,
+                entity_name=item_name,
+            )
         except AppError as exc:
             raise exc.to_http_exception()
 

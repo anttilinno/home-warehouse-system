@@ -8,6 +8,9 @@ from litestar.di import Provide
 from litestar.status_codes import HTTP_201_CREATED
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from warehouse.domain.activity_log.models import ActivityAction, ActivityEntity
+from warehouse.domain.activity_log.repository import ActivityLogRepository
+from warehouse.domain.activity_log.service import ActivityLogService
 from warehouse.domain.containers.repository import ContainerRepository
 from warehouse.domain.containers.schemas import ContainerCreate, ContainerResponse, ContainerUpdate
 from warehouse.domain.containers.service import ContainerService
@@ -21,12 +24,19 @@ def get_container_service(db_session: AsyncSession) -> ContainerService:
     return ContainerService(repository)
 
 
+def get_activity_log_service(db_session: AsyncSession) -> ActivityLogService:
+    """Dependency for activity log service."""
+    repository = ActivityLogRepository(session=db_session)
+    return ActivityLogService(repository)
+
+
 class ContainerController(Controller):
     """Container controller."""
 
     path = "/containers"
     dependencies = {
         "container_service": Provide(get_container_service, sync_to_thread=False),
+        "activity_service": Provide(get_activity_log_service, sync_to_thread=False),
         "workspace": Provide(get_workspace_context),
     }
 
@@ -35,11 +45,22 @@ class ContainerController(Controller):
         self,
         data: ContainerCreate,
         container_service: ContainerService,
+        activity_service: ActivityLogService,
         workspace: WorkspaceContext,
     ) -> ContainerResponse:
         """Create a new container."""
         require_write_permission(workspace)
         container = await container_service.create_container(data, workspace.workspace_id)
+
+        await activity_service.log_action(
+            workspace_id=workspace.workspace_id,
+            user_id=workspace.user_id,
+            action=ActivityAction.CREATE,
+            entity_type=ActivityEntity.CONTAINER,
+            entity_id=container.id,
+            entity_name=container.name,
+        )
+
         return ContainerResponse(
             id=container.id,
             name=container.name,
@@ -105,13 +126,35 @@ class ContainerController(Controller):
         container_id: UUID,
         data: ContainerUpdate,
         container_service: ContainerService,
+        activity_service: ActivityLogService,
         workspace: WorkspaceContext,
     ) -> ContainerResponse:
         """Update a container."""
         require_write_permission(workspace)
         try:
+            # Get old values for change tracking
+            old_container = await container_service.get_container(
+                container_id, workspace.workspace_id
+            )
+            old_name = old_container.name
+
             container = await container_service.update_container(
                 container_id, data, workspace.workspace_id
+            )
+
+            # Track changes
+            changes = {}
+            if data.name is not None and data.name != old_name:
+                changes["name"] = {"old": old_name, "new": data.name}
+
+            await activity_service.log_action(
+                workspace_id=workspace.workspace_id,
+                user_id=workspace.user_id,
+                action=ActivityAction.UPDATE,
+                entity_type=ActivityEntity.CONTAINER,
+                entity_id=container.id,
+                entity_name=container.name,
+                changes=changes if changes else None,
             )
         except AppError as exc:
             raise exc.to_http_exception()
@@ -132,11 +175,27 @@ class ContainerController(Controller):
         self,
         container_id: UUID,
         container_service: ContainerService,
+        activity_service: ActivityLogService,
         workspace: WorkspaceContext,
     ) -> None:
         """Delete a container."""
         require_write_permission(workspace)
         try:
+            # Get container details before deletion
+            container = await container_service.get_container(
+                container_id, workspace.workspace_id
+            )
+            container_name = container.name
+
             await container_service.delete_container(container_id, workspace.workspace_id)
+
+            await activity_service.log_action(
+                workspace_id=workspace.workspace_id,
+                user_id=workspace.user_id,
+                action=ActivityAction.DELETE,
+                entity_type=ActivityEntity.CONTAINER,
+                entity_id=container_id,
+                entity_name=container_name,
+            )
         except AppError as exc:
             raise exc.to_http_exception()

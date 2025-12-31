@@ -58,6 +58,13 @@ def item_service_mock() -> AsyncMock:
 
 
 @pytest.fixture
+def activity_service_mock() -> AsyncMock:
+    svc = AsyncMock()
+    svc.log_action = AsyncMock()
+    return svc
+
+
+@pytest.fixture
 def category_controller() -> CategoryController:
     return CategoryController(owner=None)
 
@@ -101,7 +108,7 @@ def _item(**overrides) -> SimpleNamespace:
 
 
 @pytest.mark.asyncio
-async def test_create_category(category_controller: CategoryController, category_service_mock: AsyncMock, workspace: WorkspaceContext):
+async def test_create_category(category_controller: CategoryController, category_service_mock: AsyncMock, activity_service_mock: AsyncMock, workspace: WorkspaceContext):
     cat = _category()
     category_service_mock.create_category.return_value = cat
     payload = CategoryCreate(name="Tools")
@@ -111,6 +118,7 @@ async def test_create_category(category_controller: CategoryController, category
         category_controller,
         data=payload,
         category_service=category_service_mock,
+        activity_service=activity_service_mock,
         workspace=workspace,
     )
 
@@ -134,8 +142,10 @@ async def test_list_categories(category_controller: CategoryController, category
 
 
 @pytest.mark.asyncio
-async def test_delete_category_success(category_controller: CategoryController, category_service_mock: AsyncMock, workspace: WorkspaceContext):
+async def test_delete_category_success(category_controller: CategoryController, category_service_mock: AsyncMock, activity_service_mock: AsyncMock, workspace: WorkspaceContext):
     cat_id = uuid7()
+    cat = _category(id=cat_id)
+    category_service_mock.get_category.return_value = cat
     category_service_mock.delete_category.return_value = True
 
     result = await _call(
@@ -143,6 +153,7 @@ async def test_delete_category_success(category_controller: CategoryController, 
         category_controller,
         category_id=cat_id,
         category_service=category_service_mock,
+        activity_service=activity_service_mock,
         workspace=workspace,
     )
 
@@ -151,12 +162,12 @@ async def test_delete_category_success(category_controller: CategoryController, 
 
 
 @pytest.mark.asyncio
-async def test_delete_category_not_found(category_controller: CategoryController, category_service_mock: AsyncMock, workspace: WorkspaceContext):
+async def test_delete_category_not_found(category_controller: CategoryController, category_service_mock: AsyncMock, activity_service_mock: AsyncMock, workspace: WorkspaceContext):
     from warehouse.errors import AppError, ErrorCode
     from litestar.exceptions import HTTPException
 
     cat_id = uuid7()
-    category_service_mock.delete_category.side_effect = AppError(ErrorCode.CATEGORY_NOT_FOUND, status_code=404)
+    category_service_mock.get_category.side_effect = AppError(ErrorCode.CATEGORY_NOT_FOUND, status_code=404)
 
     with pytest.raises(HTTPException, match="404"):
         await _call(
@@ -164,13 +175,15 @@ async def test_delete_category_not_found(category_controller: CategoryController
             category_controller,
             category_id=cat_id,
             category_service=category_service_mock,
+            activity_service=activity_service_mock,
             workspace=workspace,
         )
 
 
 @pytest.mark.asyncio
-async def test_update_category(category_controller: CategoryController, category_service_mock: AsyncMock, workspace: WorkspaceContext):
+async def test_update_category(category_controller: CategoryController, category_service_mock: AsyncMock, activity_service_mock: AsyncMock, workspace: WorkspaceContext):
     cat = _category(name="Updated Name", description="Updated description")
+    category_service_mock.get_category.return_value = _category(name="Old Name")
     category_service_mock.update_category.return_value = cat
     payload = CategoryUpdate(name="Updated Name", description="Updated description")
 
@@ -180,6 +193,7 @@ async def test_update_category(category_controller: CategoryController, category
         category_id=cat.id,
         data=payload,
         category_service=category_service_mock,
+        activity_service=activity_service_mock,
         workspace=workspace,
     )
 
@@ -191,12 +205,12 @@ async def test_update_category(category_controller: CategoryController, category
 
 
 @pytest.mark.asyncio
-async def test_update_category_not_found(category_controller: CategoryController, category_service_mock: AsyncMock, workspace: WorkspaceContext):
+async def test_update_category_not_found(category_controller: CategoryController, category_service_mock: AsyncMock, activity_service_mock: AsyncMock, workspace: WorkspaceContext):
     from warehouse.errors import AppError, ErrorCode
     from litestar.exceptions import HTTPException
 
     cat_id = uuid7()
-    category_service_mock.update_category.side_effect = AppError(ErrorCode.CATEGORY_NOT_FOUND, status_code=404)
+    category_service_mock.get_category.side_effect = AppError(ErrorCode.CATEGORY_NOT_FOUND, status_code=404)
     payload = CategoryUpdate(name="New Name")
 
     with pytest.raises(HTTPException, match="404"):
@@ -206,17 +220,18 @@ async def test_update_category_not_found(category_controller: CategoryController
             category_id=cat_id,
             data=payload,
             category_service=category_service_mock,
+            activity_service=activity_service_mock,
             workspace=workspace,
         )
 
 
 @pytest.mark.asyncio
-async def test_create_item(item_controller: ItemController, item_service_mock: AsyncMock, workspace: WorkspaceContext):
+async def test_create_item(item_controller: ItemController, item_service_mock: AsyncMock, activity_service_mock: AsyncMock, workspace: WorkspaceContext):
     item = _item()
     item_service_mock.create_item.return_value = item
     payload = ItemCreate(sku="SKU1", name="Hammer", description="d", category_id=item.category_id)
 
-    resp = await _call(item_controller.create_item, item_controller, data=payload, item_service=item_service_mock, workspace=workspace)
+    resp = await _call(item_controller.create_item, item_controller, data=payload, item_service=item_service_mock, activity_service=activity_service_mock, workspace=workspace)
 
     item_service_mock.create_item.assert_awaited_once_with(payload, workspace.workspace_id)
     assert resp.id == item.id
@@ -259,13 +274,14 @@ async def test_get_item_not_found(item_controller: ItemController, item_service_
 
 
 @pytest.mark.asyncio
-async def test_update_item(item_controller: ItemController, item_service_mock: AsyncMock, workspace: WorkspaceContext):
+async def test_update_item(item_controller: ItemController, item_service_mock: AsyncMock, activity_service_mock: AsyncMock, workspace: WorkspaceContext):
     item = _item()
+    item_service_mock.get_item.return_value = _item(name="Old Name")
     item_service_mock.update_item.return_value = item
     payload = ItemUpdate(name="New")
 
     resp = await _call(
-        item_controller.update_item, item_controller, item_id=item.id, data=payload, item_service=item_service_mock, workspace=workspace
+        item_controller.update_item, item_controller, item_id=item.id, data=payload, item_service=item_service_mock, activity_service=activity_service_mock, workspace=workspace
     )
 
     item_service_mock.update_item.assert_awaited_once_with(item.id, payload, workspace.workspace_id)
@@ -273,27 +289,29 @@ async def test_update_item(item_controller: ItemController, item_service_mock: A
 
 
 @pytest.mark.asyncio
-async def test_update_item_not_found(item_controller: ItemController, item_service_mock: AsyncMock, workspace: WorkspaceContext):
+async def test_update_item_not_found(item_controller: ItemController, item_service_mock: AsyncMock, activity_service_mock: AsyncMock, workspace: WorkspaceContext):
     from warehouse.errors import AppError, ErrorCode
     from litestar.exceptions import HTTPException
 
     item_id = uuid7()
-    item_service_mock.update_item.side_effect = AppError(ErrorCode.ITEM_NOT_FOUND, status_code=404)
+    item_service_mock.get_item.side_effect = AppError(ErrorCode.ITEM_NOT_FOUND, status_code=404)
     payload = ItemUpdate(name="New")
 
     with pytest.raises(HTTPException, match="404"):
         await _call(
-            item_controller.update_item, item_controller, item_id=item_id, data=payload, item_service=item_service_mock, workspace=workspace
+            item_controller.update_item, item_controller, item_id=item_id, data=payload, item_service=item_service_mock, activity_service=activity_service_mock, workspace=workspace
         )
 
 
 @pytest.mark.asyncio
-async def test_delete_item_success(item_controller: ItemController, item_service_mock: AsyncMock, workspace: WorkspaceContext):
+async def test_delete_item_success(item_controller: ItemController, item_service_mock: AsyncMock, activity_service_mock: AsyncMock, workspace: WorkspaceContext):
     item_id = uuid7()
+    item = _item(id=item_id)
+    item_service_mock.get_item.return_value = item
     item_service_mock.delete_item.return_value = True
 
     result = await _call(
-        item_controller.delete_item, item_controller, item_id=item_id, item_service=item_service_mock, workspace=workspace
+        item_controller.delete_item, item_controller, item_id=item_id, item_service=item_service_mock, activity_service=activity_service_mock, workspace=workspace
     )
 
     item_service_mock.delete_item.assert_awaited_once_with(item_id, workspace.workspace_id)
@@ -301,14 +319,14 @@ async def test_delete_item_success(item_controller: ItemController, item_service
 
 
 @pytest.mark.asyncio
-async def test_delete_item_not_found(item_controller: ItemController, item_service_mock: AsyncMock, workspace: WorkspaceContext):
+async def test_delete_item_not_found(item_controller: ItemController, item_service_mock: AsyncMock, activity_service_mock: AsyncMock, workspace: WorkspaceContext):
     from warehouse.errors import AppError, ErrorCode
     from litestar.exceptions import HTTPException
 
     item_id = uuid7()
-    item_service_mock.delete_item.side_effect = AppError(ErrorCode.ITEM_NOT_FOUND, status_code=404)
+    item_service_mock.get_item.side_effect = AppError(ErrorCode.ITEM_NOT_FOUND, status_code=404)
 
     with pytest.raises(HTTPException, match="404"):
         await _call(
-            item_controller.delete_item, item_controller, item_id=item_id, item_service=item_service_mock, workspace=workspace
+            item_controller.delete_item, item_controller, item_id=item_id, item_service=item_service_mock, activity_service=activity_service_mock, workspace=workspace
         )

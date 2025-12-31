@@ -152,6 +152,12 @@ export function Sidebar({ className }: SidebarProps) {
     },
     {
       type: 'item',
+      name: t('activity'),
+      href: "/dashboard/activity",
+      iconName: "History",
+    },
+    {
+      type: 'item',
       name: t('app'),
       href: "/dashboard/app",
       iconName: "Smartphone",

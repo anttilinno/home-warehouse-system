@@ -961,6 +961,52 @@ export const notificationsApi = {
   },
 };
 
+// Activity Log interfaces and API
+export interface ActivityLogResponse {
+  id: string;
+  action: string;
+  entity_type: string;
+  entity_id: string;
+  entity_name: string | null;
+  changes: Record<string, { old: unknown; new: unknown }> | null;
+  metadata: Record<string, unknown> | null;
+  user_id: string | null;
+  user_name: string | null;
+  created_at: string;
+}
+
+export interface ActivityListResponse {
+  items: ActivityLogResponse[];
+  total: number;
+  limit: number;
+  offset: number;
+}
+
+export const activityApi = {
+  list: async (params?: {
+    limit?: number;
+    offset?: number;
+    entity_type?: string;
+    action?: string;
+  }): Promise<ActivityListResponse> => {
+    const searchParams = new URLSearchParams();
+    if (params?.limit) searchParams.append('limit', params.limit.toString());
+    if (params?.offset) searchParams.append('offset', params.offset.toString());
+    if (params?.entity_type) searchParams.append('entity_type', params.entity_type);
+    if (params?.action) searchParams.append('action', params.action);
+    const queryString = searchParams.toString();
+    return apiClient.get<ActivityListResponse>(`/activity${queryString ? `?${queryString}` : ''}`);
+  },
+
+  get: async (id: string): Promise<ActivityLogResponse> => {
+    return apiClient.get<ActivityLogResponse>(`/activity/${id}`);
+  },
+
+  getByEntity: async (entityType: string, entityId: string): Promise<ActivityLogResponse[]> => {
+    return apiClient.get<ActivityLogResponse[]>(`/activity/entity/${entityType}/${entityId}`);
+  },
+};
+
 // Favorites interfaces and API
 export interface FavoriteWithDetails {
   id: string;

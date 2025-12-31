@@ -72,6 +72,14 @@ def loan_queue_mock():
 
 
 @pytest.fixture
+def activity_service_mock() -> AsyncMock:
+    """Mocked activity log service."""
+    svc = AsyncMock()
+    svc.log_action = AsyncMock()
+    return svc
+
+
+@pytest.fixture
 def borrower_controller() -> BorrowerController:
     return BorrowerController(owner=None)
 
@@ -117,13 +125,13 @@ def _loan(**overrides) -> SimpleNamespace:
 
 
 @pytest.mark.asyncio
-async def test_create_borrower(borrower_controller: BorrowerController, borrower_service_mock: AsyncMock, workspace: WorkspaceContext):
+async def test_create_borrower(borrower_controller: BorrowerController, borrower_service_mock: AsyncMock, activity_service_mock: AsyncMock, workspace: WorkspaceContext):
     borrower = _borrower()
     borrower_service_mock.create_borrower.return_value = borrower
     payload = BorrowerCreate(name="Alice", email=borrower.email, phone="123", notes=None)
 
     resp = await _call(
-        borrower_controller.create_borrower, borrower_controller, data=payload, borrower_service=borrower_service_mock, workspace=workspace
+        borrower_controller.create_borrower, borrower_controller, data=payload, borrower_service=borrower_service_mock, activity_service=activity_service_mock, workspace=workspace
     )
 
     borrower_service_mock.create_borrower.assert_awaited_once_with(payload, workspace.workspace_id)
@@ -175,8 +183,9 @@ async def test_get_borrower_not_found(borrower_controller: BorrowerController, b
 
 
 @pytest.mark.asyncio
-async def test_update_borrower(borrower_controller: BorrowerController, borrower_service_mock: AsyncMock, workspace: WorkspaceContext):
+async def test_update_borrower(borrower_controller: BorrowerController, borrower_service_mock: AsyncMock, activity_service_mock: AsyncMock, workspace: WorkspaceContext):
     borrower = _borrower()
+    borrower_service_mock.get_borrower.return_value = _borrower(name="Old Name")
     borrower_service_mock.update_borrower.return_value = borrower
     payload = BorrowerUpdate(email="new@example.com")
 
@@ -186,6 +195,7 @@ async def test_update_borrower(borrower_controller: BorrowerController, borrower
         borrower_id=borrower.id,
         data=payload,
         borrower_service=borrower_service_mock,
+        activity_service=activity_service_mock,
         workspace=workspace,
     )
 
@@ -194,10 +204,10 @@ async def test_update_borrower(borrower_controller: BorrowerController, borrower
 
 
 @pytest.mark.asyncio
-async def test_update_borrower_not_found(borrower_controller: BorrowerController, borrower_service_mock: AsyncMock, workspace: WorkspaceContext):
+async def test_update_borrower_not_found(borrower_controller: BorrowerController, borrower_service_mock: AsyncMock, activity_service_mock: AsyncMock, workspace: WorkspaceContext):
     from warehouse.errors import AppError, ErrorCode
 
-    borrower_service_mock.update_borrower.side_effect = AppError(ErrorCode.BORROWER_NOT_FOUND, status_code=404)
+    borrower_service_mock.get_borrower.side_effect = AppError(ErrorCode.BORROWER_NOT_FOUND, status_code=404)
     payload = BorrowerUpdate(name="Missing")
     missing_id = uuid7()
 
@@ -208,20 +218,24 @@ async def test_update_borrower_not_found(borrower_controller: BorrowerController
             borrower_id=missing_id,
             data=payload,
             borrower_service=borrower_service_mock,
+            activity_service=activity_service_mock,
             workspace=workspace,
         )
 
 
 @pytest.mark.asyncio
-async def test_delete_borrower_success(borrower_controller: BorrowerController, borrower_service_mock: AsyncMock, workspace: WorkspaceContext):
-    borrower_service_mock.delete_borrower.return_value = True
+async def test_delete_borrower_success(borrower_controller: BorrowerController, borrower_service_mock: AsyncMock, activity_service_mock: AsyncMock, workspace: WorkspaceContext):
     borrower_id = uuid7()
+    borrower = _borrower(id=borrower_id)
+    borrower_service_mock.get_borrower.return_value = borrower
+    borrower_service_mock.delete_borrower.return_value = True
 
     result = await _call(
         borrower_controller.delete_borrower,
         borrower_controller,
         borrower_id=borrower_id,
         borrower_service=borrower_service_mock,
+        activity_service=activity_service_mock,
         workspace=workspace,
     )
 
@@ -230,10 +244,10 @@ async def test_delete_borrower_success(borrower_controller: BorrowerController, 
 
 
 @pytest.mark.asyncio
-async def test_delete_borrower_not_found(borrower_controller: BorrowerController, borrower_service_mock: AsyncMock, workspace: WorkspaceContext):
+async def test_delete_borrower_not_found(borrower_controller: BorrowerController, borrower_service_mock: AsyncMock, activity_service_mock: AsyncMock, workspace: WorkspaceContext):
     from warehouse.errors import AppError, ErrorCode
 
-    borrower_service_mock.delete_borrower.side_effect = AppError(ErrorCode.BORROWER_NOT_FOUND, status_code=404)
+    borrower_service_mock.get_borrower.side_effect = AppError(ErrorCode.BORROWER_NOT_FOUND, status_code=404)
     borrower_id = uuid7()
 
     with pytest.raises(HTTPException, match="404"):
@@ -242,6 +256,7 @@ async def test_delete_borrower_not_found(borrower_controller: BorrowerController
             borrower_controller,
             borrower_id=borrower_id,
             borrower_service=borrower_service_mock,
+            activity_service=activity_service_mock,
             workspace=workspace,
         )
 
@@ -378,19 +393,19 @@ async def test_get_loan_not_found(loan_controller: LoanController, loan_service_
 
 
 @pytest.mark.asyncio
-async def test_return_loan_success(loan_controller: LoanController, loan_service_mock: AsyncMock, workspace: WorkspaceContext):
+async def test_return_loan_success(loan_controller: LoanController, loan_service_mock: AsyncMock, activity_service_mock: AsyncMock, workspace: WorkspaceContext):
     loan = _loan(returned_at=None)
     loan_service_mock.return_loan.return_value = loan
     payload = LoanReturn(notes="Returned")
 
-    resp = await _call(loan_controller.return_loan, loan_controller, loan_id=loan.id, data=payload, loan_service=loan_service_mock, workspace=workspace)
+    resp = await _call(loan_controller.return_loan, loan_controller, loan_id=loan.id, data=payload, loan_service=loan_service_mock, activity_service=activity_service_mock, workspace=workspace)
 
     loan_service_mock.return_loan.assert_awaited_once_with(loan.id, payload, workspace.workspace_id)
     assert resp.notes == "Returned" or resp.notes == loan.notes
 
 
 @pytest.mark.asyncio
-async def test_return_loan_not_found(loan_controller: LoanController, loan_service_mock: AsyncMock, workspace: WorkspaceContext):
+async def test_return_loan_not_found(loan_controller: LoanController, loan_service_mock: AsyncMock, activity_service_mock: AsyncMock, workspace: WorkspaceContext):
     from warehouse.errors import AppError, ErrorCode
 
     loan_service_mock.return_loan.side_effect = AppError(ErrorCode.LOAN_NOT_FOUND, status_code=404)
@@ -404,5 +419,6 @@ async def test_return_loan_not_found(loan_controller: LoanController, loan_servi
             loan_id=missing_id,
             data=payload,
             loan_service=loan_service_mock,
+            activity_service=activity_service_mock,
             workspace=workspace,
         )

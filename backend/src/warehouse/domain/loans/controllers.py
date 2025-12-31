@@ -11,6 +11,9 @@ from rq import Queue
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from warehouse.config import Config
+from warehouse.domain.activity_log.models import ActivityAction, ActivityEntity
+from warehouse.domain.activity_log.repository import ActivityLogRepository
+from warehouse.domain.activity_log.service import ActivityLogService
 from warehouse.domain.loans.jobs import create_loan_job
 from warehouse.domain.loans.repository import BorrowerRepository, LoanRepository
 from warehouse.domain.loans.schemas import (
@@ -45,12 +48,19 @@ def get_loan_queue(config: Config) -> Queue:
     return get_queue(config, "loans")
 
 
+def get_activity_log_service(db_session: AsyncSession) -> ActivityLogService:
+    """Dependency for activity log service."""
+    repository = ActivityLogRepository(session=db_session)
+    return ActivityLogService(repository)
+
+
 class BorrowerController(Controller):
     """Borrower controller."""
 
     path = "/borrowers"
     dependencies = {
         "borrower_service": Provide(get_borrower_service, sync_to_thread=False),
+        "activity_service": Provide(get_activity_log_service, sync_to_thread=False),
         "workspace": Provide(get_workspace_context),
     }
 
@@ -59,11 +69,22 @@ class BorrowerController(Controller):
         self,
         data: BorrowerCreate,
         borrower_service: BorrowerService,
+        activity_service: ActivityLogService,
         workspace: WorkspaceContext,
     ) -> BorrowerResponse:
         """Create a new borrower."""
         require_write_permission(workspace)
         borrower = await borrower_service.create_borrower(data, workspace.workspace_id)
+
+        await activity_service.log_action(
+            workspace_id=workspace.workspace_id,
+            user_id=workspace.user_id,
+            action=ActivityAction.CREATE,
+            entity_type=ActivityEntity.BORROWER,
+            entity_id=borrower.id,
+            entity_name=borrower.name,
+        )
+
         return BorrowerResponse(
             id=borrower.id,
             name=borrower.name,
@@ -122,13 +143,35 @@ class BorrowerController(Controller):
         borrower_id: UUID,
         data: BorrowerUpdate,
         borrower_service: BorrowerService,
+        activity_service: ActivityLogService,
         workspace: WorkspaceContext,
     ) -> BorrowerResponse:
         """Update a borrower."""
         require_write_permission(workspace)
         try:
+            # Get old values for change tracking
+            old_borrower = await borrower_service.get_borrower(
+                borrower_id, workspace.workspace_id
+            )
+            old_name = old_borrower.name
+
             borrower = await borrower_service.update_borrower(
                 borrower_id, data, workspace.workspace_id
+            )
+
+            # Track changes
+            changes = {}
+            if data.name is not None and data.name != old_name:
+                changes["name"] = {"old": old_name, "new": data.name}
+
+            await activity_service.log_action(
+                workspace_id=workspace.workspace_id,
+                user_id=workspace.user_id,
+                action=ActivityAction.UPDATE,
+                entity_type=ActivityEntity.BORROWER,
+                entity_id=borrower.id,
+                entity_name=borrower.name,
+                changes=changes if changes else None,
             )
         except AppError as exc:
             raise exc.to_http_exception()
@@ -146,12 +189,28 @@ class BorrowerController(Controller):
         self,
         borrower_id: UUID,
         borrower_service: BorrowerService,
+        activity_service: ActivityLogService,
         workspace: WorkspaceContext,
     ) -> None:
         """Delete a borrower."""
         require_write_permission(workspace)
         try:
+            # Get borrower details before deletion
+            borrower = await borrower_service.get_borrower(
+                borrower_id, workspace.workspace_id
+            )
+            borrower_name = borrower.name
+
             await borrower_service.delete_borrower(borrower_id, workspace.workspace_id)
+
+            await activity_service.log_action(
+                workspace_id=workspace.workspace_id,
+                user_id=workspace.user_id,
+                action=ActivityAction.DELETE,
+                entity_type=ActivityEntity.BORROWER,
+                entity_id=borrower_id,
+                entity_name=borrower_name,
+            )
         except AppError as exc:
             raise exc.to_http_exception()
 
@@ -163,6 +222,7 @@ class LoanController(Controller):
     dependencies = {
         "loan_service": Provide(get_loan_service, sync_to_thread=False),
         "loan_queue": Provide(get_loan_queue, sync_to_thread=False),
+        "activity_service": Provide(get_activity_log_service, sync_to_thread=False),
         "workspace": Provide(get_workspace_context),
     }
 
@@ -290,12 +350,26 @@ class LoanController(Controller):
         loan_id: UUID,
         data: LoanReturn,
         loan_service: LoanService,
+        activity_service: ActivityLogService,
         workspace: WorkspaceContext,
     ) -> LoanResponse:
         """Return a loan."""
         require_write_permission(workspace)
         try:
             loan = await loan_service.return_loan(loan_id, data, workspace.workspace_id)
+
+            await activity_service.log_action(
+                workspace_id=workspace.workspace_id,
+                user_id=workspace.user_id,
+                action=ActivityAction.RETURN,
+                entity_type=ActivityEntity.LOAN,
+                entity_id=loan.id,
+                extra_data={
+                    "inventory_id": str(loan.inventory_id),
+                    "borrower_id": str(loan.borrower_id),
+                    "returned_at": loan.returned_at.isoformat() if loan.returned_at else None,
+                },
+            )
         except AppError as exc:
             raise exc.to_http_exception()
         return LoanResponse(

@@ -59,6 +59,8 @@ class ErrorCode(Enum):
 
     ATTACHMENT_NOT_FOUND = ("ATTACHMENT_NOT_FOUND", "Attachment not found")
 
+    ACTIVITY_NOT_FOUND = ("ACTIVITY_NOT_FOUND", "Activity log entry not found")
+
     OAUTH_PROVIDER_ERROR = ("OAUTH_PROVIDER_ERROR", "OAuth provider error")
     OAUTH_STATE_INVALID = ("OAUTH_STATE_INVALID", "Invalid OAuth state")
     OAUTH_STATE_EXPIRED = ("OAUTH_STATE_EXPIRED", "OAuth state expired")

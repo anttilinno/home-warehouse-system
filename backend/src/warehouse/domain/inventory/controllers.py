@@ -8,6 +8,9 @@ from litestar.di import Provide
 from litestar.status_codes import HTTP_201_CREATED
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from warehouse.domain.activity_log.models import ActivityAction, ActivityEntity
+from warehouse.domain.activity_log.repository import ActivityLogRepository
+from warehouse.domain.activity_log.service import ActivityLogService
 from warehouse.domain.inventory.repository import InventoryRepository
 from warehouse.domain.inventory.schemas import (
     InventoryCreate,
@@ -26,12 +29,19 @@ def get_inventory_service(db_session: AsyncSession) -> InventoryService:
     return InventoryService(repository)
 
 
+def get_activity_log_service(db_session: AsyncSession) -> ActivityLogService:
+    """Dependency for activity log service."""
+    repository = ActivityLogRepository(session=db_session)
+    return ActivityLogService(repository)
+
+
 class InventoryController(Controller):
     """Inventory controller."""
 
     path = "/inventory"
     dependencies = {
         "inventory_service": Provide(get_inventory_service, sync_to_thread=False),
+        "activity_service": Provide(get_activity_log_service, sync_to_thread=False),
         "workspace": Provide(get_workspace_context),
     }
 
@@ -40,6 +50,7 @@ class InventoryController(Controller):
         self,
         data: InventoryCreate,
         inventory_service: InventoryService,
+        activity_service: ActivityLogService,
         workspace: WorkspaceContext,
     ) -> InventoryResponse:
         """Create a new inventory record."""
@@ -47,6 +58,19 @@ class InventoryController(Controller):
         try:
             inventory = await inventory_service.create_inventory(
                 data, workspace.workspace_id
+            )
+
+            await activity_service.log_action(
+                workspace_id=workspace.workspace_id,
+                user_id=workspace.user_id,
+                action=ActivityAction.CREATE,
+                entity_type=ActivityEntity.INVENTORY,
+                entity_id=inventory.id,
+                extra_data={
+                    "item_id": str(inventory.item_id),
+                    "location_id": str(inventory.location_id) if inventory.location_id else None,
+                    "quantity": inventory.quantity,
+                },
             )
         except AppError as exc:
             raise exc.to_http_exception()
@@ -116,13 +140,34 @@ class InventoryController(Controller):
         inventory_id: UUID,
         data: InventoryUpdate,
         inventory_service: InventoryService,
+        activity_service: ActivityLogService,
         workspace: WorkspaceContext,
     ) -> InventoryResponse:
         """Update inventory quantity."""
         require_write_permission(workspace)
         try:
+            # Get old values for change tracking
+            old_inventory = await inventory_service.get_inventory(
+                inventory_id, workspace.workspace_id
+            )
+            old_quantity = old_inventory.quantity
+
             inventory = await inventory_service.update_inventory(
                 inventory_id, data, workspace.workspace_id
+            )
+
+            # Track changes
+            changes = {}
+            if data.quantity is not None and data.quantity != old_quantity:
+                changes["quantity"] = {"old": old_quantity, "new": data.quantity}
+
+            await activity_service.log_action(
+                workspace_id=workspace.workspace_id,
+                user_id=workspace.user_id,
+                action=ActivityAction.UPDATE,
+                entity_type=ActivityEntity.INVENTORY,
+                entity_id=inventory.id,
+                changes=changes if changes else None,
             )
         except AppError as exc:
             raise exc.to_http_exception()
@@ -143,13 +188,34 @@ class InventoryController(Controller):
         inventory_id: UUID,
         data: StockAdjustment,
         inventory_service: InventoryService,
+        activity_service: ActivityLogService,
         workspace: WorkspaceContext,
     ) -> InventoryResponse:
         """Adjust stock quantity."""
         require_write_permission(workspace)
         try:
+            # Get old quantity for change tracking
+            old_inventory = await inventory_service.get_inventory(
+                inventory_id, workspace.workspace_id
+            )
+            old_quantity = old_inventory.quantity
+
             inventory = await inventory_service.adjust_stock(
                 inventory_id, data, workspace.workspace_id
+            )
+
+            await activity_service.log_action(
+                workspace_id=workspace.workspace_id,
+                user_id=workspace.user_id,
+                action=ActivityAction.UPDATE,
+                entity_type=ActivityEntity.INVENTORY,
+                entity_id=inventory.id,
+                changes={
+                    "quantity": {"old": old_quantity, "new": inventory.quantity},
+                },
+                extra_data={
+                    "quantity_change": data.quantity_change,
+                },
             )
         except AppError as exc:
             raise exc.to_http_exception()
@@ -169,12 +235,30 @@ class InventoryController(Controller):
         self,
         inventory_id: UUID,
         inventory_service: InventoryService,
+        activity_service: ActivityLogService,
         workspace: WorkspaceContext,
     ) -> None:
         """Delete an inventory record."""
         require_write_permission(workspace)
         try:
+            # Get inventory details before deletion
+            inventory = await inventory_service.get_inventory(
+                inventory_id, workspace.workspace_id
+            )
+
             await inventory_service.delete_inventory(inventory_id, workspace.workspace_id)
+
+            await activity_service.log_action(
+                workspace_id=workspace.workspace_id,
+                user_id=workspace.user_id,
+                action=ActivityAction.DELETE,
+                entity_type=ActivityEntity.INVENTORY,
+                entity_id=inventory_id,
+                extra_data={
+                    "item_id": str(inventory.item_id),
+                    "location_id": str(inventory.location_id) if inventory.location_id else None,
+                },
+            )
         except AppError as exc:
             raise exc.to_http_exception()
 

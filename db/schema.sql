@@ -1,4 +1,4 @@
-\restrict 2eCS6wtT4YmgemD91JJ8rQfRkEfkR5z5ULeRgqsqR0zRo4D8CVoBBH2tEZPhcbi
+\restrict NM9hF6PWAA35n76PogCk1ZTcReBhjGyMPh93l7akte232CjR19Pdsxm6x6A4TJa
 
 -- Dumped from database version 18.1 (Debian 18.1-1.pgdg13+2)
 -- Dumped by pg_dump version 18.1
@@ -1171,6 +1171,34 @@ CREATE INDEX ix_workspaces_slug ON auth.workspaces USING btree (slug);
 
 
 --
+-- Name: idx_activity_log_created_at; Type: INDEX; Schema: warehouse; Owner: -
+--
+
+CREATE INDEX idx_activity_log_created_at ON warehouse.activity_log USING btree (created_at DESC);
+
+
+--
+-- Name: idx_activity_log_entity; Type: INDEX; Schema: warehouse; Owner: -
+--
+
+CREATE INDEX idx_activity_log_entity ON warehouse.activity_log USING btree (entity_type, entity_id);
+
+
+--
+-- Name: idx_activity_log_user_id; Type: INDEX; Schema: warehouse; Owner: -
+--
+
+CREATE INDEX idx_activity_log_user_id ON warehouse.activity_log USING btree (user_id);
+
+
+--
+-- Name: idx_activity_log_workspace_id; Type: INDEX; Schema: warehouse; Owner: -
+--
+
+CREATE INDEX idx_activity_log_workspace_id ON warehouse.activity_log USING btree (workspace_id);
+
+
+--
 -- Name: ix_activity_log_created; Type: INDEX; Schema: warehouse; Owner: -
 --
 
@@ -1868,7 +1896,7 @@ ALTER TABLE ONLY warehouse.locations
 -- PostgreSQL database dump complete
 --
 
-\unrestrict 2eCS6wtT4YmgemD91JJ8rQfRkEfkR5z5ULeRgqsqR0zRo4D8CVoBBH2tEZPhcbi
+\unrestrict NM9hF6PWAA35n76PogCk1ZTcReBhjGyMPh93l7akte232CjR19Pdsxm6x6A4TJa
 
 
 --
@@ -1884,4 +1912,5 @@ INSERT INTO public.schema_migrations (version) VALUES
     ('20251227143353'),
     ('20251227173251'),
     ('20251228125630'),
-    ('20251229140244');
+    ('20251229140244'),
+    ('20251231234334');

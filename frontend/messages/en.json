@@ -18,6 +18,7 @@
     "profile": "Profile",
     "favorites": "Favorites",
     "notifications": "Notifications",
+    "activity": "Activity Log",
     "export": "Export Data",
     "logout": "Logout"
   },
@@ -608,6 +609,52 @@
     "typeContainer": "Container",
     "addedOn": "Added on",
     "remove": "Remove from favorites"
+  },
+  "activity": {
+    "title": "Activity Log",
+    "subtitle": "Track all changes in your workspace",
+    "loading": "Loading activity...",
+    "loadError": "Failed to load activity",
+    "tryAgain": "Try Again",
+    "refresh": "Refresh",
+    "noActivity": "No activity yet",
+    "noActivityDescription": "Activity will appear here as changes are made to your workspace.",
+    "filters": {
+      "allTypes": "All Types",
+      "allActions": "All Actions"
+    },
+    "actions": {
+      "CREATE": "Created",
+      "UPDATE": "Updated",
+      "DELETE": "Deleted",
+      "MOVE": "Moved",
+      "LOAN": "Loaned",
+      "RETURN": "Returned"
+    },
+    "entities": {
+      "ITEM": "Item",
+      "INVENTORY": "Inventory",
+      "LOCATION": "Location",
+      "CONTAINER": "Container",
+      "CATEGORY": "Category",
+      "LABEL": "Label",
+      "LOAN": "Loan",
+      "BORROWER": "Borrower"
+    },
+    "table": {
+      "action": "Action",
+      "entity": "Entity",
+      "user": "User",
+      "date": "Date",
+      "changes": "Changes"
+    },
+    "changes": {
+      "from": "From",
+      "to": "To",
+      "noChanges": "No field changes recorded"
+    },
+    "showingCount": "Showing {showing} of {total} activities",
+    "unknownUser": "System"
   },
   "export": {
     "title": "Export Data",

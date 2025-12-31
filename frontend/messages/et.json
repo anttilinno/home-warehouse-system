@@ -18,6 +18,7 @@
     "profile": "Profiil",
     "favorites": "Lemmikud",
     "notifications": "Teavitused",
+    "activity": "Tegevuslogi",
     "export": "Ekspordi andmed",
     "logout": "Logi välja"
   },
@@ -608,6 +609,52 @@
     "typeContainer": "Konteiner",
     "addedOn": "Lisatud",
     "remove": "Eemalda lemmikutest"
+  },
+  "activity": {
+    "title": "Tegevuslogi",
+    "subtitle": "Jälgi kõiki muudatusi oma tööruumis",
+    "loading": "Tegevuste laadimine...",
+    "loadError": "Tegevuste laadimine ebaõnnestus",
+    "tryAgain": "Proovi uuesti",
+    "refresh": "Värskenda",
+    "noActivity": "Tegevusi pole veel",
+    "noActivityDescription": "Tegevused ilmuvad siia, kui tööruumis tehakse muudatusi.",
+    "filters": {
+      "allTypes": "Kõik tüübid",
+      "allActions": "Kõik tegevused"
+    },
+    "actions": {
+      "CREATE": "Loodud",
+      "UPDATE": "Uuendatud",
+      "DELETE": "Kustutatud",
+      "MOVE": "Liigutatud",
+      "LOAN": "Laenatud",
+      "RETURN": "Tagastatud"
+    },
+    "entities": {
+      "ITEM": "Ese",
+      "INVENTORY": "Inventar",
+      "LOCATION": "Asukoht",
+      "CONTAINER": "Konteiner",
+      "CATEGORY": "Kategooria",
+      "LABEL": "Silt",
+      "LOAN": "Laen",
+      "BORROWER": "Laenaja"
+    },
+    "table": {
+      "action": "Tegevus",
+      "entity": "Üksus",
+      "user": "Kasutaja",
+      "date": "Kuupäev",
+      "changes": "Muudatused"
+    },
+    "changes": {
+      "from": "Enne",
+      "to": "Pärast",
+      "noChanges": "Väljadel muudatusi pole"
+    },
+    "showingCount": "Näidatakse {showing}/{total} tegevust",
+    "unknownUser": "Süsteem"
   },
   "export": {
     "title": "Ekspordi andmed",

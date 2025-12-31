@@ -48,6 +48,13 @@ def location_service_mock() -> AsyncMock:
 
 
 @pytest.fixture
+def activity_service_mock() -> AsyncMock:
+    svc = AsyncMock()
+    svc.log_action = AsyncMock()
+    return svc
+
+
+@pytest.fixture
 def controller() -> LocationController:
     return LocationController(owner=None)
 
@@ -73,12 +80,12 @@ def _location(**overrides) -> SimpleNamespace:
 
 
 @pytest.mark.asyncio
-async def test_create_location(controller: LocationController, location_service_mock: AsyncMock, workspace: WorkspaceContext):
+async def test_create_location(controller: LocationController, location_service_mock: AsyncMock, activity_service_mock: AsyncMock, workspace: WorkspaceContext):
     loc = _location()
     location_service_mock.create_location.return_value = loc
     payload = LocationCreate(name="Main", zone="A", shelf="1", bin="B", description="desc")
 
-    resp = await _call(controller.create_location, controller, data=payload, location_service=location_service_mock, workspace=workspace)
+    resp = await _call(controller.create_location, controller, data=payload, location_service=location_service_mock, activity_service=activity_service_mock, workspace=workspace)
 
     location_service_mock.create_location.assert_awaited_once_with(payload, workspace.workspace_id)
     assert resp.id == loc.id
@@ -120,13 +127,14 @@ async def test_get_location_not_found(controller: LocationController, location_s
 
 
 @pytest.mark.asyncio
-async def test_update_location(controller: LocationController, location_service_mock: AsyncMock, workspace: WorkspaceContext):
+async def test_update_location(controller: LocationController, location_service_mock: AsyncMock, activity_service_mock: AsyncMock, workspace: WorkspaceContext):
     loc = _location()
+    location_service_mock.get_location.return_value = _location(name="Old Name")
     location_service_mock.update_location.return_value = loc
     payload = LocationUpdate(name="Updated")
 
     resp = await _call(
-        controller.update_location, controller, location_id=loc.id, data=payload, location_service=location_service_mock, workspace=workspace
+        controller.update_location, controller, location_id=loc.id, data=payload, location_service=location_service_mock, activity_service=activity_service_mock, workspace=workspace
     )
 
     location_service_mock.update_location.assert_awaited_once_with(loc.id, payload, workspace.workspace_id)
@@ -134,11 +142,11 @@ async def test_update_location(controller: LocationController, location_service_
 
 
 @pytest.mark.asyncio
-async def test_update_location_not_found(controller: LocationController, location_service_mock: AsyncMock, workspace: WorkspaceContext):
+async def test_update_location_not_found(controller: LocationController, location_service_mock: AsyncMock, activity_service_mock: AsyncMock, workspace: WorkspaceContext):
     from warehouse.errors import AppError, ErrorCode
     from litestar.exceptions import HTTPException
 
-    location_service_mock.update_location.side_effect = AppError(ErrorCode.LOCATION_NOT_FOUND, status_code=404)
+    location_service_mock.get_location.side_effect = AppError(ErrorCode.LOCATION_NOT_FOUND, status_code=404)
     missing_id = uuid7()
     payload = LocationUpdate(name="Updated")
 
@@ -149,28 +157,31 @@ async def test_update_location_not_found(controller: LocationController, locatio
             location_id=missing_id,
             data=payload,
             location_service=location_service_mock,
+            activity_service=activity_service_mock,
             workspace=workspace,
         )
 
 
 @pytest.mark.asyncio
-async def test_delete_location(controller: LocationController, location_service_mock: AsyncMock, workspace: WorkspaceContext):
-    location_service_mock.delete_location.return_value = True
+async def test_delete_location(controller: LocationController, location_service_mock: AsyncMock, activity_service_mock: AsyncMock, workspace: WorkspaceContext):
     loc_id = uuid7()
+    loc = _location(id=loc_id)
+    location_service_mock.get_location.return_value = loc
+    location_service_mock.delete_location.return_value = True
 
-    result = await _call(controller.delete_location, controller, location_id=loc_id, location_service=location_service_mock, workspace=workspace)
+    result = await _call(controller.delete_location, controller, location_id=loc_id, location_service=location_service_mock, activity_service=activity_service_mock, workspace=workspace)
 
     location_service_mock.delete_location.assert_awaited_once_with(loc_id, workspace.workspace_id)
     assert result is None
 
 
 @pytest.mark.asyncio
-async def test_delete_location_not_found(controller: LocationController, location_service_mock: AsyncMock, workspace: WorkspaceContext):
+async def test_delete_location_not_found(controller: LocationController, location_service_mock: AsyncMock, activity_service_mock: AsyncMock, workspace: WorkspaceContext):
     from warehouse.errors import AppError, ErrorCode
     from litestar.exceptions import HTTPException
 
-    location_service_mock.delete_location.side_effect = AppError(ErrorCode.LOCATION_NOT_FOUND, status_code=404)
+    location_service_mock.get_location.side_effect = AppError(ErrorCode.LOCATION_NOT_FOUND, status_code=404)
     loc_id = uuid7()
 
     with pytest.raises(HTTPException, match="404"):
-        await _call(controller.delete_location, controller, location_id=loc_id, location_service=location_service_mock, workspace=workspace)
+        await _call(controller.delete_location, controller, location_id=loc_id, location_service=location_service_mock, activity_service=activity_service_mock, workspace=workspace)
