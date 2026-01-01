@@ -33,6 +33,8 @@ from warehouse.domain.favorites.controllers import FavoriteController
 from warehouse.domain.imports.controllers import ImportController
 from warehouse.domain.notifications.controllers import NotificationController
 from warehouse.domain.oauth.controllers import OAuthController, OAuthAccountController
+from warehouse.domain.redirect.controllers import RedirectController
+from warehouse.domain.sync.controllers import SyncController
 
 logger = logging.getLogger(__name__)
 
@@ -175,6 +177,8 @@ def create_app(config: Config | None = None) -> Litestar:
             NotificationController,
             OAuthController,
             OAuthAccountController,
+            RedirectController,
+            SyncController,
         ],
         plugins=[SQLAlchemyPlugin(db_config)],
         cors_config=cors_config,
@@ -191,5 +195,21 @@ def create_app(config: Config | None = None) -> Litestar:
     )
 
 
-app = create_app()
+_app: Litestar | None = None
+
+
+def get_app() -> Litestar:
+    """Get or create the application instance (lazy singleton)."""
+    global _app
+    if _app is None:
+        _app = create_app()
+    return _app
+
+
+# Module-level __getattr__ for lazy 'app' attribute access
+# ASGI servers (granian, uvicorn) import 'app' directly, this delays creation
+def __getattr__(name: str):
+    if name == "app":
+        return get_app()
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
 

@@ -95,6 +95,12 @@
   - Upload photos for items
   - Multiple photos per item
   - Thumbnail generation
+- [ ] Background import processing (RQ + SSE)
+  - Large file imports processed asynchronously via RQ
+  - Real-time progress via SSE (`GET /imports/jobs/{job_id}/stream`)
+  - Progress events: rows processed, errors so far, completion
+  - Import history/audit log per workspace
+  - Email notification on import completion (optional)
 
 ## Phase 3
 

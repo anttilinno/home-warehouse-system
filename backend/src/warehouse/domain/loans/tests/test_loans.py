@@ -376,6 +376,7 @@ def test_borrower_and_loan_schemas():
         phone=None,
         notes=None,
         created_at=created,
+        updated_at=updated,
     )
     loan_create = LoanCreate(inventory_id=inventory_id, borrower_id=borrower_id, quantity=1, due_date=None, notes=None)
     loan_return = LoanReturn(notes="Done")

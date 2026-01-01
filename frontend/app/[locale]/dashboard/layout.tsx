@@ -1,4 +1,6 @@
 import { Sidebar } from "@/components/dashboard/sidebar";
+import { InstallPrompt } from "@/components/pwa";
+import { ScanButton } from "@/components/scanner";
 
 export default function DashboardLayout({
   children,
@@ -13,6 +15,8 @@ export default function DashboardLayout({
           {children}
         </div>
       </main>
+      <InstallPrompt />
+      <ScanButton />
     </div>
   );
 }

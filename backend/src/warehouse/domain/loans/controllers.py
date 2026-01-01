@@ -92,6 +92,7 @@ class BorrowerController(Controller):
             phone=borrower.phone,
             notes=borrower.notes,
             created_at=borrower.created_at,
+            updated_at=borrower.updated_at,
         )
 
     @get("/")
@@ -110,6 +111,7 @@ class BorrowerController(Controller):
                 phone=b.phone,
                 notes=b.notes,
                 created_at=b.created_at,
+                updated_at=b.updated_at,
             )
             for b in borrowers
         ]
@@ -135,6 +137,7 @@ class BorrowerController(Controller):
             phone=borrower.phone,
             notes=borrower.notes,
             created_at=borrower.created_at,
+            updated_at=borrower.updated_at,
         )
 
     @patch("/{borrower_id:uuid}")
@@ -182,6 +185,7 @@ class BorrowerController(Controller):
             phone=borrower.phone,
             notes=borrower.notes,
             created_at=borrower.created_at,
+            updated_at=borrower.updated_at,
         )
 
     @delete("/{borrower_id:uuid}")

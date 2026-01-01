@@ -1,0 +1,8 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Maskable icon with safe zone padding (10% on each side = 51.2px) -->
+  <rect width="512" height="512" fill="#0f172a"/>
+  <rect x="102" y="166" width="308" height="180" rx="24" fill="#3b82f6" stroke="#1e40af" stroke-width="12"/>
+  <rect x="150" y="206" width="212" height="100" fill="#ffffff" opacity="0.9"/>
+  <rect x="174" y="230" width="52" height="52" fill="#3b82f6"/>
+  <rect x="286" y="230" width="52" height="52" fill="#3b82f6"/>
+</svg>

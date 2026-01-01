@@ -10,6 +10,7 @@ import { useAuth } from "@/lib/auth";
 import { notificationsApi } from "@/lib/api";
 import { useTheme } from "next-themes";
 import { NES_GREEN, NES_BLUE, NES_RED } from "@/lib/nes-colors";
+import { OfflineIndicator } from "@/components/pwa";
 
 type IconName = keyof typeof LucideIcons;
 
@@ -379,6 +380,7 @@ export function Sidebar({ className }: SidebarProps) {
 
         {/* Footer - User area */}
         <div className="retro-sidebar__footer bg-card">
+          {!isCollapsed && <OfflineIndicator className="mx-4 mb-2" />}
           <div className="retro-user-menu" ref={userMenuRef}>
             <button
               onClick={() => !isCollapsed && setIsUserMenuOpen(!isUserMenuOpen)}
@@ -610,6 +612,7 @@ export function Sidebar({ className }: SidebarProps) {
 
       {/* Footer */}
       <div className="border-t-2 border-border bg-background">
+        {!isCollapsed && <OfflineIndicator className="mx-4 mt-3" />}
         <div className="relative" ref={userMenuRef}>
           <button
             onClick={() => !isCollapsed && setIsUserMenuOpen(!isUserMenuOpen)}

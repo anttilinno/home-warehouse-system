@@ -1,4 +1,4 @@
-\restrict NM9hF6PWAA35n76PogCk1ZTcReBhjGyMPh93l7akte232CjR19Pdsxm6x6A4TJa
+\restrict EhUqdUSQjPuPgpuJrlrNLSaJ2vfbovhhvXF3r0aSbFQG1KBPATe0wVtout1g02c
 
 -- Dumped from database version 18.1 (Debian 18.1-1.pgdg13+2)
 -- Dumped by pg_dump version 18.1
@@ -546,6 +546,27 @@ COMMENT ON COLUMN warehouse.containers.short_code IS 'Short alphanumeric code fo
 
 
 --
+-- Name: deleted_records; Type: TABLE; Schema: warehouse; Owner: -
+--
+
+CREATE TABLE warehouse.deleted_records (
+    id uuid DEFAULT uuidv7() NOT NULL,
+    workspace_id uuid NOT NULL,
+    entity_type warehouse.activity_entity_enum NOT NULL,
+    entity_id uuid NOT NULL,
+    deleted_at timestamp with time zone DEFAULT now() NOT NULL,
+    deleted_by uuid
+);
+
+
+--
+-- Name: TABLE deleted_records; Type: COMMENT; Schema: warehouse; Owner: -
+--
+
+COMMENT ON TABLE warehouse.deleted_records IS 'Tombstone table tracking hard-deleted records for PWA offline sync.';
+
+
+--
 -- Name: favorites; Type: TABLE; Schema: warehouse; Owner: -
 --
 
@@ -945,6 +966,14 @@ ALTER TABLE ONLY warehouse.containers
 
 
 --
+-- Name: deleted_records deleted_records_pkey; Type: CONSTRAINT; Schema: warehouse; Owner: -
+--
+
+ALTER TABLE ONLY warehouse.deleted_records
+    ADD CONSTRAINT deleted_records_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: favorites favorites_pkey; Type: CONSTRAINT; Schema: warehouse; Owner: -
 --
 
@@ -1196,6 +1225,20 @@ CREATE INDEX idx_activity_log_user_id ON warehouse.activity_log USING btree (use
 --
 
 CREATE INDEX idx_activity_log_workspace_id ON warehouse.activity_log USING btree (workspace_id);
+
+
+--
+-- Name: idx_deleted_records_workspace; Type: INDEX; Schema: warehouse; Owner: -
+--
+
+CREATE INDEX idx_deleted_records_workspace ON warehouse.deleted_records USING btree (workspace_id);
+
+
+--
+-- Name: idx_deleted_records_workspace_since; Type: INDEX; Schema: warehouse; Owner: -
+--
+
+CREATE INDEX idx_deleted_records_workspace_since ON warehouse.deleted_records USING btree (workspace_id, deleted_at);
 
 
 --
@@ -1661,6 +1704,22 @@ ALTER TABLE ONLY warehouse.containers
 
 
 --
+-- Name: deleted_records deleted_records_deleted_by_fkey; Type: FK CONSTRAINT; Schema: warehouse; Owner: -
+--
+
+ALTER TABLE ONLY warehouse.deleted_records
+    ADD CONSTRAINT deleted_records_deleted_by_fkey FOREIGN KEY (deleted_by) REFERENCES auth.users(id) ON DELETE SET NULL;
+
+
+--
+-- Name: deleted_records deleted_records_workspace_id_fkey; Type: FK CONSTRAINT; Schema: warehouse; Owner: -
+--
+
+ALTER TABLE ONLY warehouse.deleted_records
+    ADD CONSTRAINT deleted_records_workspace_id_fkey FOREIGN KEY (workspace_id) REFERENCES auth.workspaces(id) ON DELETE CASCADE;
+
+
+--
 -- Name: favorites favorites_container_id_fkey; Type: FK CONSTRAINT; Schema: warehouse; Owner: -
 --
 
@@ -1896,7 +1955,7 @@ ALTER TABLE ONLY warehouse.locations
 -- PostgreSQL database dump complete
 --
 
-\unrestrict NM9hF6PWAA35n76PogCk1ZTcReBhjGyMPh93l7akte232CjR19Pdsxm6x6A4TJa
+\unrestrict EhUqdUSQjPuPgpuJrlrNLSaJ2vfbovhhvXF3r0aSbFQG1KBPATe0wVtout1g02c
 
 
 --
@@ -1913,4 +1972,5 @@ INSERT INTO public.schema_migrations (version) VALUES
     ('20251227173251'),
     ('20251228125630'),
     ('20251229140244'),
-    ('20251231234334');
+    ('20251231234334'),
+    ('20260101203200');

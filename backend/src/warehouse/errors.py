@@ -68,6 +68,11 @@ class ErrorCode(Enum):
 
     GENERAL_BAD_REQUEST = ("BAD_REQUEST", "Request is invalid")
 
+    # Sync errors
+    SYNC_CONFLICT = ("SYNC_CONFLICT", "Record was modified on server since last sync")
+    VALIDATION_ERROR = ("VALIDATION_ERROR", "Validation error")
+    NOT_FOUND = ("NOT_FOUND", "Resource not found")
+
     @property
     def code(self) -> str:
         return self.value[0]

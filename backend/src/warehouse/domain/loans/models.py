@@ -9,7 +9,7 @@ from sqlalchemy.orm import Mapped, mapped_column
 from warehouse.lib.base import Base, TimestampMixin, UUIDPKMixin, WorkspaceMixin
 
 
-class Borrower(Base, UUIDPKMixin, WorkspaceMixin):
+class Borrower(Base, UUIDPKMixin, WorkspaceMixin, TimestampMixin):
     """Borrower model."""
 
     __tablename__ = "borrowers"
@@ -21,6 +21,9 @@ class Borrower(Base, UUIDPKMixin, WorkspaceMixin):
     notes: Mapped[str | None] = mapped_column(Text, nullable=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
     )
 
 

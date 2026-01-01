@@ -1388,6 +1388,95 @@ export const docspellApi = {
   },
 };
 
+// Sync API types and methods
+export type SyncEntityType = 'item' | 'location' | 'container' | 'category' | 'inventory' | 'loan' | 'borrower';
+
+export interface DeletedRecord {
+  entity_type: string;
+  entity_id: string;
+  deleted_at: string;
+}
+
+export interface SyncMetadata {
+  server_time: string;
+  has_more: boolean;
+  next_cursor: string | null;
+}
+
+export interface SyncDeltaResponse {
+  metadata: SyncMetadata;
+  items: Item[];
+  locations: Location[];
+  containers: Container[];
+  categories: Category[];
+  inventory: Inventory[];
+  loans: Loan[];
+  borrowers: Borrower[];
+  deleted: DeletedRecord[];
+}
+
+export interface BatchOperation {
+  operation: 'create' | 'update' | 'delete';
+  entity_type: SyncEntityType;
+  id?: string;
+  data?: Record<string, unknown>;
+  updated_at?: string; // For conflict detection
+}
+
+export interface BatchRequest {
+  operations: BatchOperation[];
+  allow_partial?: boolean;
+}
+
+export interface BatchOperationResult {
+  index: number;
+  success: boolean;
+  id: string | null;
+  error: string | null;
+  error_code: string | null;
+  conflict_data: Record<string, unknown> | null;
+}
+
+export interface BatchResponse {
+  success: boolean;
+  results: BatchOperationResult[];
+  succeeded_count: number;
+  failed_count: number;
+}
+
+export const syncApi = {
+  /**
+   * Get delta changes since a given timestamp.
+   * If no timestamp provided, returns all entities (initial sync).
+   */
+  getDelta: async (params?: {
+    modifiedSince?: string;
+    entityTypes?: SyncEntityType[];
+    limit?: number;
+  }): Promise<SyncDeltaResponse> => {
+    const searchParams = new URLSearchParams();
+    if (params?.modifiedSince) {
+      searchParams.append('modified_since', params.modifiedSince);
+    }
+    if (params?.entityTypes && params.entityTypes.length > 0) {
+      searchParams.append('entity_types', params.entityTypes.join(','));
+    }
+    if (params?.limit) {
+      searchParams.append('limit', params.limit.toString());
+    }
+    const queryString = searchParams.toString();
+    return apiClient.get<SyncDeltaResponse>(`/sync/delta${queryString ? `?${queryString}` : ''}`);
+  },
+
+  /**
+   * Process batch operations (create, update, delete).
+   * Supports conflict detection via updated_at field.
+   */
+  batch: async (request: BatchRequest): Promise<BatchResponse> => {
+    return apiClient.post<BatchResponse>('/sync/batch', request);
+  },
+};
+
 // Error translation utilities
 export const getTranslatedErrorMessage = (errorMessage: string, t: (key: string) => string, errorCode?: string): string => {
   // If we have a direct error code from the backend, try to use it first

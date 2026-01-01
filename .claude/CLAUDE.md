@@ -9,7 +9,7 @@ Home Warehouse System - a multi-tenant home inventory management system for trac
 ## Tech Stack
 
 - **Backend**: Python 3.14, Litestar framework, Granian ASGI server
-- **Frontend**: Next.js 16, React 19, shadcn/ui, Tailwind CSS 4
+- **Frontend**: Next.js 16, React 19, shadcn/ui, Tailwind CSS 4, PWA (Serwist)
 - **Database**: PostgreSQL with dbmate migrations
 - **Package Management**: uv (Python), bun (JavaScript)
 - **Tool Management**: mise

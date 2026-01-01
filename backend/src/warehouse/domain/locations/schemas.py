@@ -14,6 +14,7 @@ class LocationCreate(msgspec.Struct):
     shelf: str | None = None
     bin: str | None = None
     description: str | None = None
+    short_code: str | None = None
     parent_location_id: UUID | None = None
 
 
@@ -25,6 +26,7 @@ class LocationUpdate(msgspec.Struct):
     shelf: str | None = None
     bin: str | None = None
     description: str | None = None
+    short_code: str | None = None
     parent_location_id: UUID | None = None
 
 
@@ -38,6 +40,7 @@ class LocationResponse(msgspec.Struct):
     bin: str | None
     description: str | None
     created_at: datetime
+    short_code: str | None = None
     parent_location_id: UUID | None = None
 
 

@@ -43,6 +43,7 @@ def item_to_response(item: Item) -> ItemResponse:
         name=item.name,
         description=item.description,
         category_id=item.category_id,
+        short_code=item.short_code,
         created_at=item.created_at,
         updated_at=item.updated_at,
         obsidian_vault_path=item.obsidian_vault_path,

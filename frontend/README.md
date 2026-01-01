@@ -1,36 +1,116 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Home Warehouse System - Frontend
+
+A Progressive Web App (PWA) frontend for the Home Warehouse System, built with Next.js 16.
+
+## Features
+
+- **Progressive Web App** - Installable on mobile and desktop, works offline
+- **Barcode/QR Scanning** - Scan barcodes and QR codes with device camera
+- **Multi-language** - English, Estonian, and Russian
+- **Multiple Themes** - Light, Dark, Retro Light, and Retro Dark
+- **Offline Support** - Browse cached data and queue changes for sync
+
+## Tech Stack
+
+- Next.js 16 with App Router
+- React 19
+- TypeScript 5
+- Tailwind CSS 4
+- shadcn/ui components
+- Serwist (PWA/Service Worker)
+- Dexie.js (IndexedDB)
+- html5-qrcode (Barcode scanning)
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
+
+- [mise](https://mise.jdx.dev/) - Tool version manager
+- [bun](https://bun.sh/) - JavaScript runtime and package manager
+
+### Installation
 
 ```bash
-npm run dev
+# Install dependencies
+mise run fe-install
 # or
-yarn dev
-# or
-pnpm dev
+bun install
+```
+
+### Development
+
+```bash
+# Start development server
+mise run fe-dev
 # or
 bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Production Build
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+# Build for production
+mise run fe-build
+# or
+bun run build
+```
 
-## Learn More
+**Note**: The build uses `--webpack` flag due to Serwist/Turbopack incompatibility.
 
-To learn more about Next.js, take a look at the following resources:
+## Project Structure
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```
+frontend/
+├── app/                    # Next.js App Router pages
+│   ├── sw.ts              # Service worker entry
+│   └── [locale]/          # Localized routes
+├── components/
+│   ├── ui/                # shadcn/ui components
+│   ├── pwa/               # PWA install prompt, offline indicator
+│   └── scanner/           # Barcode scanner components
+├── lib/
+│   ├── api.ts             # Backend API client
+│   ├── pwa/               # PWA utilities (IndexedDB, sync)
+│   └── scanner/           # Scanner hook
+├── hooks/                 # React hooks
+├── messages/              # i18n translations (en, et, ru)
+├── public/
+│   ├── manifest.json      # PWA manifest
+│   └── icons/             # PWA icons
+└── styles/                # Global CSS and themes
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Environment Variables
 
-## Deploy on Vercel
+```bash
+NEXT_PUBLIC_API_URL=http://localhost:8000  # Backend API URL
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## PWA Features
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### Installation
+
+The app can be installed from:
+- Chrome/Edge: Click install icon in address bar
+- Safari iOS: Share > Add to Home Screen
+- Android: Browser menu > Install app
+
+### Offline Support
+
+- Cached pages work offline
+- Data is stored in IndexedDB
+- Changes are queued and synced when back online
+
+### Barcode Scanner
+
+Access via the floating scan button (bottom-right) on the dashboard. Supports:
+- QR Codes
+- EAN-13, EAN-8
+- UPC-A, UPC-E
+- Code-128, Code-39
+
+## Documentation
+
+See [CLAUDE.md](./CLAUDE.md) for detailed development documentation.

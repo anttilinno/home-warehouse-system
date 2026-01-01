@@ -25,7 +25,11 @@ class Location(Base, UUIDPKMixin, WorkspaceMixin, TimestampMixin):
     shelf: Mapped[str | None] = mapped_column(String(50), nullable=True)
     bin: Mapped[str | None] = mapped_column(String(50), nullable=True)
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
+    short_code: Mapped[str | None] = mapped_column(String(8), unique=True, nullable=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
     )
 

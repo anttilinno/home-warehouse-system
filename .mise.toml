@@ -66,17 +66,17 @@ depends = ["dc-up", "sync"]
 run = "cd backend && uv run granian --interface asgi warehouse.app:app --reload --host 0.0.0.0 --port 8000"
 
 [tasks.test]
-description = "Run all tests"
-run = "cd backend && uv run pytest"
+description = "Run all tests (memory limited to 20GB)"
+run = "cd backend && systemd-run --scope -p MemoryMax=20G --user uv run pytest"
 
 [tasks.test-unit]
-description = "Run unit tests only"
-run = "cd backend && uv run pytest src/"
+description = "Run unit tests only (memory limited to 20GB)"
+run = "cd backend && systemd-run --scope -p MemoryMax=20G --user uv run pytest src/"
 
 [tasks.test-e2e]
-description = "Run e2e tests"
+description = "Run e2e tests (memory limited to 20GB)"
 depends = ["dc-up"]
-run = "cd backend && uv run pytest e2e/"
+run = "cd backend && systemd-run --scope -p MemoryMax=20G --user uv run pytest e2e/"
 
 [tasks.lint]
 description = "Run linter"

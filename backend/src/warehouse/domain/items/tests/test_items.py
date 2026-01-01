@@ -385,6 +385,7 @@ def test_item_and_category_schemas():
         parent_category_id=parent_id,
         description=None,
         created_at=created,
+        updated_at=updated,
     )
     item_response = ItemResponse(
         id=item_id,
@@ -392,6 +393,7 @@ def test_item_and_category_schemas():
         name="Name",
         description=None,
         category_id=cat_id,
+        short_code=None,
         created_at=created,
         updated_at=updated,
     )

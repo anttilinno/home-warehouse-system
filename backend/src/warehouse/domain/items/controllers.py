@@ -80,6 +80,7 @@ class CategoryController(Controller):
             parent_category_id=category.parent_category_id,
             description=category.description,
             created_at=category.created_at,
+            updated_at=category.updated_at,
         )
 
     @get("/")
@@ -97,6 +98,7 @@ class CategoryController(Controller):
                 parent_category_id=c.parent_category_id,
                 description=c.description,
                 created_at=c.created_at,
+                updated_at=c.updated_at,
             )
             for c in categories
         ]
@@ -145,6 +147,7 @@ class CategoryController(Controller):
             parent_category_id=category.parent_category_id,
             description=category.description,
             created_at=category.created_at,
+            updated_at=category.updated_at,
         )
 
     @delete("/{category_id:uuid}")

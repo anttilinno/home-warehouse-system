@@ -30,6 +30,7 @@ class CategoryResponse(msgspec.Struct):
     parent_category_id: UUID | None
     description: str | None
     created_at: datetime
+    updated_at: datetime
 
 
 class ItemCreate(msgspec.Struct):
@@ -39,6 +40,7 @@ class ItemCreate(msgspec.Struct):
     name: str
     description: str | None = None
     category_id: UUID | None = None
+    short_code: str | None = None
     obsidian_vault_path: str | None = None
     obsidian_note_path: str | None = None
 
@@ -49,6 +51,7 @@ class ItemUpdate(msgspec.Struct):
     name: str | None = None
     description: str | None = None
     category_id: UUID | None = None
+    short_code: str | None = None
     obsidian_vault_path: str | None = None
     obsidian_note_path: str | None = None
 
@@ -63,6 +66,7 @@ class ItemResponse(msgspec.Struct):
     category_id: UUID | None
     created_at: datetime
     updated_at: datetime
+    short_code: str | None = None
     obsidian_vault_path: str | None = None
     obsidian_note_path: str | None = None
     obsidian_url: str | None = None

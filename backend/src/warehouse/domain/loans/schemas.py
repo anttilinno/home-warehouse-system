@@ -33,6 +33,7 @@ class BorrowerResponse(msgspec.Struct):
     phone: str | None
     notes: str | None
     created_at: datetime
+    updated_at: datetime
 
 
 class LoanCreate(msgspec.Struct):

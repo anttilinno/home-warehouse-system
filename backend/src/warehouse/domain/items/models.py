@@ -20,7 +20,7 @@ class AttachmentType(enum.Enum):
     OTHER = "OTHER"
 
 
-class Category(Base, UUIDPKMixin, WorkspaceMixin):
+class Category(Base, UUIDPKMixin, WorkspaceMixin, TimestampMixin):
     """Category model for hierarchical item organization."""
 
     __tablename__ = "categories"
@@ -32,6 +32,9 @@ class Category(Base, UUIDPKMixin, WorkspaceMixin):
     )
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
+    )
 
     items: Mapped[list["Item"]] = relationship("Item", back_populates="category")
     parent: Mapped["Category | None"] = relationship(
@@ -57,6 +60,7 @@ class Item(Base, UUIDPKMixin, WorkspaceMixin, TimestampMixin):
     category_id: Mapped[UUID | None] = mapped_column(
         ForeignKey("warehouse.categories.id"), nullable=True
     )
+    short_code: Mapped[str | None] = mapped_column(String(8), unique=True, nullable=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
     )
