@@ -1,0 +1,987 @@
+/* ==========================================================================
+   Unified Themed Components
+   CSS-only theming - standard styles as default, retro overrides via parent selectors
+   ========================================================================== */
+
+@layer components {
+  /* ==========================================================================
+     Button Component
+     ========================================================================== */
+
+  .themed-btn {
+    @apply inline-flex items-center justify-center font-medium transition-colors;
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2;
+    @apply disabled:pointer-events-none disabled:opacity-50;
+    @apply rounded-md;
+    gap: 0.5rem;
+  }
+
+  /* Retro button base */
+  :is(.retro-light, .retro-dark) .themed-btn {
+    @apply border-4 border-border;
+    @apply retro-button;
+    @apply rounded-none;
+    gap: 0.4rem;
+  }
+
+  /* Button sizes - standard */
+  .themed-btn--xs { @apply h-7 px-2 text-xs; gap: 0.25rem; }
+  .themed-btn--sm { @apply h-8 px-3 text-sm; gap: 0.375rem; }
+  .themed-btn--md { @apply h-10 px-4 text-sm; gap: 0.5rem; }
+  .themed-btn--lg { @apply h-11 px-6 text-base; gap: 0.5rem; }
+  .themed-btn--icon { @apply h-10 w-10 p-0; }
+  .themed-btn--icon-sm { @apply h-8 w-8 p-0; }
+
+  /* Button sizes - retro */
+  :is(.retro-light, .retro-dark) .themed-btn--xs { @apply px-1.5 py-0.5 text-xs h-auto; }
+  :is(.retro-light, .retro-dark) .themed-btn--sm { @apply px-2 py-1 h-auto; }
+  :is(.retro-light, .retro-dark) .themed-btn--md { @apply py-2 px-4 h-auto; }
+  :is(.retro-light, .retro-dark) .themed-btn--lg { @apply px-6 py-3 h-auto; }
+  :is(.retro-light, .retro-dark) .themed-btn--icon { @apply p-2 h-auto w-auto; }
+  :is(.retro-light, .retro-dark) .themed-btn--icon-sm { @apply p-1.5 h-auto w-auto; }
+
+  /* Button variants - standard */
+  .themed-btn--primary { @apply bg-primary text-primary-foreground hover:bg-primary/90; }
+  .themed-btn--secondary { @apply bg-secondary text-secondary-foreground hover:bg-secondary/80; }
+  .themed-btn--success { @apply bg-green-600 text-white hover:bg-green-700; }
+  .themed-btn--danger { @apply bg-red-600 text-white hover:bg-red-700; }
+  .themed-btn--info { @apply bg-blue-600 text-white hover:bg-blue-700; }
+  .themed-btn--muted { @apply bg-muted text-muted-foreground hover:bg-muted/80; }
+  .themed-btn--ghost { @apply bg-transparent hover:bg-accent hover:text-accent-foreground; }
+
+  /* Button variants - retro */
+  :is(.retro-light, .retro-dark) .themed-btn--primary {
+    @apply bg-primary text-white;
+    box-shadow: 4px 4px 0px 0px var(--border);
+  }
+  :is(.retro-light, .retro-dark) .themed-btn--primary:hover:not(:disabled) {
+    @apply translate-x-[2px] translate-y-[2px];
+    box-shadow: 2px 2px 0px 0px var(--border);
+  }
+  :is(.retro-light, .retro-dark) .themed-btn--primary:active:not(:disabled) {
+    @apply translate-x-[4px] translate-y-[4px] shadow-none;
+  }
+
+  :is(.retro-light, .retro-dark) .themed-btn--secondary {
+    @apply bg-card hover:bg-muted;
+  }
+
+  :is(.retro-light, .retro-dark) .themed-btn--success {
+    @apply text-white;
+    background-color: var(--nes-green);
+    box-shadow: 4px 4px 0px 0px var(--border);
+  }
+  :is(.retro-light, .retro-dark) .themed-btn--success:hover:not(:disabled) {
+    @apply translate-x-[2px] translate-y-[2px];
+    box-shadow: 2px 2px 0px 0px var(--border);
+  }
+  :is(.retro-light, .retro-dark) .themed-btn--success:active:not(:disabled) {
+    @apply translate-x-[4px] translate-y-[4px] shadow-none;
+  }
+
+  :is(.retro-light, .retro-dark) .themed-btn--danger {
+    @apply bg-primary text-white;
+    box-shadow: 4px 4px 0px 0px var(--border);
+  }
+  :is(.retro-light, .retro-dark) .themed-btn--danger:hover:not(:disabled) {
+    @apply translate-x-[2px] translate-y-[2px];
+    box-shadow: 2px 2px 0px 0px var(--border);
+  }
+  :is(.retro-light, .retro-dark) .themed-btn--danger:active:not(:disabled) {
+    @apply translate-x-[4px] translate-y-[4px] shadow-none;
+  }
+
+  :is(.retro-light, .retro-dark) .themed-btn--info {
+    @apply text-white;
+    background-color: var(--nes-blue);
+    box-shadow: 4px 4px 0px 0px var(--border);
+  }
+  :is(.retro-light, .retro-dark) .themed-btn--info:hover:not(:disabled) {
+    @apply translate-x-[2px] translate-y-[2px];
+    box-shadow: 2px 2px 0px 0px var(--border);
+  }
+  :is(.retro-light, .retro-dark) .themed-btn--info:active:not(:disabled) {
+    @apply translate-x-[4px] translate-y-[4px] shadow-none;
+  }
+
+  :is(.retro-light, .retro-dark) .themed-btn--muted {
+    @apply bg-muted text-muted-foreground;
+  }
+  :is(.retro-light, .retro-dark) .themed-btn--muted:hover:not(:disabled) {
+    @apply bg-muted/80;
+  }
+
+  :is(.retro-light, .retro-dark) .themed-btn--ghost {
+    @apply bg-transparent border-transparent;
+  }
+  :is(.retro-light, .retro-dark) .themed-btn--ghost:hover:not(:disabled) {
+    @apply bg-muted border-border;
+  }
+
+  .themed-btn--full { @apply w-full; }
+
+  /* ==========================================================================
+     Card Component
+     ========================================================================== */
+
+  .themed-card {
+    @apply bg-card rounded-lg border;
+  }
+  :is(.retro-light, .retro-dark) .themed-card {
+    @apply rounded-none border-4 border-border;
+    box-shadow: 4px 4px 0px 0px var(--border);
+  }
+
+  .themed-card--no-shadow {}
+  :is(.retro-light, .retro-dark) .themed-card--no-shadow {
+    box-shadow: none;
+  }
+
+  .themed-card--interactive {
+    @apply hover:bg-muted/50 transition-colors cursor-pointer;
+  }
+  :is(.retro-light, .retro-dark) .themed-card--interactive {
+    @apply hover:bg-muted transition-colors cursor-pointer;
+  }
+
+  .themed-card__header {
+    @apply flex items-center gap-2 p-4 border-b;
+  }
+  :is(.retro-light, .retro-dark) .themed-card__header {
+    @apply border-b-4 border-border px-3 py-2 bg-secondary;
+  }
+
+  .themed-card__header--secondary {
+    @apply bg-secondary;
+  }
+
+  .themed-card__header--primary {
+    @apply bg-primary text-primary-foreground;
+  }
+
+  .themed-card__header--muted {
+    @apply bg-muted;
+  }
+
+  .themed-card__header--success {
+    @apply bg-green-600 text-white;
+  }
+  :is(.retro-light, .retro-dark) .themed-card__header--success {
+    background-color: var(--nes-green);
+  }
+
+  .themed-card__header--info {
+    @apply bg-blue-600 text-white;
+  }
+  :is(.retro-light, .retro-dark) .themed-card__header--info {
+    background-color: var(--nes-blue);
+  }
+
+  .themed-card__header--danger {
+    @apply bg-red-600 text-white;
+  }
+  :is(.retro-light, .retro-dark) .themed-card__header--danger {
+    background-color: var(--nes-red, var(--primary));
+  }
+
+  .themed-card__header--warning {
+    @apply bg-yellow-500 text-black;
+  }
+  :is(.retro-light, .retro-dark) .themed-card__header--warning {
+    background-color: var(--nes-yellow);
+  }
+
+  .themed-card__title {
+    @apply font-semibold;
+  }
+  :is(.retro-light, .retro-dark) .themed-card__title {
+    @apply retro-heading flex-1;
+  }
+
+  .themed-card__body {
+    @apply p-4;
+  }
+  :is(.retro-light, .retro-dark) .themed-card__body {
+    @apply p-4;
+  }
+
+  .themed-card__body--flush {
+    @apply p-0;
+  }
+
+  .themed-card__footer {
+    @apply p-4 border-t;
+  }
+  :is(.retro-light, .retro-dark) .themed-card__footer {
+    @apply p-4 border-t-4 border-border;
+  }
+
+  .themed-card__footer--actions {
+    @apply flex justify-end gap-3;
+  }
+
+  /* ==========================================================================
+     Page Header Component
+     ========================================================================== */
+
+  .themed-page-header {
+    @apply mb-6;
+  }
+  :is(.retro-light, .retro-dark) .themed-page-header {
+    @apply mb-8 bg-primary p-4 border-4 border-border;
+    box-shadow: 4px 4px 0px 0px var(--border);
+  }
+
+  .themed-page-header__top {
+    @apply flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between;
+  }
+
+  .themed-page-header__title-group {
+    @apply flex flex-col gap-1;
+  }
+
+  .themed-page-header__title {
+    @apply text-2xl font-bold tracking-tight;
+  }
+  :is(.retro-light, .retro-dark) .themed-page-header__title {
+    @apply text-lg text-white uppercase retro-heading;
+  }
+
+  .themed-page-header__subtitle {
+    @apply text-muted-foreground;
+  }
+  :is(.retro-light, .retro-dark) .themed-page-header__subtitle {
+    @apply retro-small text-white/80 mt-1;
+  }
+
+  /* For retro theme, prepend > to subtitle using ::before */
+  :is(.retro-light, .retro-dark) .themed-page-header__subtitle::before {
+    content: "> ";
+  }
+
+  .themed-page-header__actions {
+    @apply flex flex-wrap gap-2;
+  }
+
+  /* ==========================================================================
+     Empty State Component
+     ========================================================================== */
+
+  .themed-empty-state {
+    @apply flex flex-col items-center justify-center py-12 text-center;
+  }
+  :is(.retro-light, .retro-dark) .themed-empty-state {
+    @apply bg-card border-4 border-border p-12 text-center;
+    box-shadow: 4px 4px 0px 0px var(--border);
+  }
+
+  .themed-empty-state__icon-wrapper {
+    @apply w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center;
+    background-color: #3b82f6;
+  }
+  :is(.retro-light, .retro-dark) .themed-empty-state__icon-wrapper {
+    @apply rounded-none border-4 border-border;
+    background-color: var(--nes-blue);
+  }
+
+  .themed-empty-state__icon {
+    @apply w-8 h-8 text-white;
+  }
+
+  .themed-empty-state__title {
+    @apply text-lg font-medium mb-2;
+  }
+  :is(.retro-light, .retro-dark) .themed-empty-state__title {
+    @apply retro-heading mb-2;
+  }
+
+  .themed-empty-state__text {
+    @apply text-muted-foreground;
+  }
+  :is(.retro-light, .retro-dark) .themed-empty-state__text {
+    @apply retro-body text-muted-foreground;
+  }
+
+  .themed-empty-state__action {
+    @apply mt-4;
+  }
+
+  /* ==========================================================================
+     Actions Menu Component
+     ========================================================================== */
+
+  .themed-actions-menu {
+    @apply relative flex items-center gap-1;
+  }
+
+  .themed-actions-menu__trigger {
+    @apply p-2 rounded-md hover:bg-muted transition-colors;
+  }
+  :is(.retro-light, .retro-dark) .themed-actions-menu__trigger {
+    @apply rounded-none w-8 h-8 border-2 border-border;
+    @apply inline-flex items-center justify-center;
+  }
+
+  .themed-actions-menu__panel {
+    @apply absolute right-0 top-full mt-1 z-50;
+    @apply bg-card rounded-md border shadow-lg;
+    @apply min-w-[140px] py-1;
+  }
+  :is(.retro-light, .retro-dark) .themed-actions-menu__panel {
+    @apply rounded-none border-4 border-border;
+    box-shadow: 4px 4px 0px 0px var(--border);
+    padding: 0;
+  }
+
+  .themed-actions-menu__item {
+    @apply w-full flex items-center gap-2 px-3 py-2;
+    @apply text-sm text-left;
+    @apply hover:bg-muted transition-colors;
+  }
+  :is(.retro-light, .retro-dark) .themed-actions-menu__item {
+    @apply retro-small uppercase;
+    @apply border-b-2 border-dashed border-muted last:border-b-0;
+  }
+
+  .themed-actions-menu__item--danger {
+    @apply text-destructive hover:bg-destructive hover:text-white;
+  }
+  :is(.retro-light, .retro-dark) .themed-actions-menu__item--danger {
+    @apply text-primary hover:bg-primary hover:text-white;
+  }
+
+  /* ==========================================================================
+     Badge Components
+     ========================================================================== */
+
+  /* Base badge */
+  .themed-badge {
+    @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium;
+    @apply border;
+  }
+  :is(.retro-light, .retro-dark) .themed-badge {
+    @apply rounded-none border-2 border-border px-2 py-0.5;
+    @apply retro-badge;
+  }
+
+  /* Badge variants */
+  .themed-badge--default { @apply bg-secondary text-secondary-foreground; }
+  .themed-badge--primary { @apply bg-primary text-primary-foreground border-transparent; }
+  .themed-badge--success { @apply bg-green-100 text-green-800 border-green-200; }
+  .themed-badge--danger { @apply bg-red-100 text-red-800 border-red-200; }
+  .themed-badge--warning { @apply bg-yellow-100 text-yellow-800 border-yellow-200; }
+  .themed-badge--info { @apply bg-blue-100 text-blue-800 border-blue-200; }
+  .themed-badge--muted { @apply bg-muted text-muted-foreground border-muted; }
+
+  :is(.retro-light, .retro-dark) .themed-badge--success {
+    background-color: color-mix(in srgb, var(--nes-green) 20%, transparent);
+    color: var(--nes-green);
+  }
+  :is(.retro-light, .retro-dark) .themed-badge--danger {
+    background-color: color-mix(in srgb, var(--primary) 20%, transparent);
+    color: var(--primary);
+  }
+  :is(.retro-light, .retro-dark) .themed-badge--warning {
+    background-color: color-mix(in srgb, var(--nes-yellow) 20%, transparent);
+    color: #a08000;
+  }
+  :is(.retro-light, .retro-dark) .themed-badge--info {
+    background-color: color-mix(in srgb, var(--nes-blue) 20%, transparent);
+    color: var(--nes-blue);
+  }
+
+  /* Tag (smaller badge with optional remove) */
+  .themed-tag {
+    @apply inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs;
+    @apply bg-muted;
+  }
+  :is(.retro-light, .retro-dark) .themed-tag {
+    @apply rounded-none border-2 border-border px-1.5;
+    @apply retro-badge;
+  }
+
+  /* Status dot badge */
+  .themed-status {
+    @apply inline-flex items-center gap-1.5 text-sm;
+  }
+  :is(.retro-light, .retro-dark) .themed-status {
+    @apply retro-small uppercase;
+  }
+
+  .themed-status__dot {
+    @apply w-2 h-2 rounded-full;
+  }
+  :is(.retro-light, .retro-dark) .themed-status__dot {
+    @apply rounded-none w-2 h-2;
+  }
+
+  .themed-status--success .themed-status__dot { @apply bg-green-500; }
+  .themed-status--danger .themed-status__dot { @apply bg-red-500; }
+  .themed-status--warning .themed-status__dot { @apply bg-yellow-500; }
+  .themed-status--info .themed-status__dot { @apply bg-blue-500; }
+  .themed-status--muted .themed-status__dot { @apply bg-gray-400; }
+
+  :is(.retro-light, .retro-dark) .themed-status--success .themed-status__dot { background-color: var(--nes-green); }
+  :is(.retro-light, .retro-dark) .themed-status--danger .themed-status__dot { background-color: var(--primary); }
+  :is(.retro-light, .retro-dark) .themed-status--warning .themed-status__dot { background-color: var(--nes-yellow); }
+  :is(.retro-light, .retro-dark) .themed-status--info .themed-status__dot { background-color: var(--nes-blue); }
+
+  /* Count badge */
+  .themed-count {
+    @apply inline-flex items-center justify-center min-w-[1.25rem] h-5 px-1;
+    @apply rounded-full text-xs font-medium;
+    @apply bg-muted text-muted-foreground;
+  }
+  :is(.retro-light, .retro-dark) .themed-count {
+    @apply rounded-none border-2 border-border;
+    @apply retro-badge;
+  }
+
+  .themed-count--primary { @apply bg-primary text-primary-foreground; }
+  :is(.retro-light, .retro-dark) .themed-count--primary { @apply bg-primary text-white; }
+
+  /* Label tag with color dot */
+  .themed-label-tag {
+    @apply inline-flex items-center gap-1.5 px-2 py-0.5;
+    @apply rounded-full text-xs bg-muted;
+  }
+  :is(.retro-light, .retro-dark) .themed-label-tag {
+    @apply rounded-none border-2 border-border;
+    @apply retro-badge;
+  }
+
+  .themed-label-tag__dot {
+    @apply w-2 h-2 rounded-full;
+  }
+  :is(.retro-light, .retro-dark) .themed-label-tag__dot {
+    @apply rounded-none;
+  }
+
+  /* Chip (interactive badge with optional icon) */
+  .themed-chip {
+    @apply inline-flex items-center gap-1.5 px-3 py-1;
+    @apply rounded-full text-sm font-medium;
+    @apply bg-secondary hover:bg-secondary/80 transition-colors cursor-pointer;
+  }
+  :is(.retro-light, .retro-dark) .themed-chip {
+    @apply rounded-none border-2 border-border;
+    @apply retro-small uppercase;
+  }
+
+  .themed-chip--active {
+    @apply bg-primary text-primary-foreground hover:bg-primary/90;
+  }
+  :is(.retro-light, .retro-dark) .themed-chip--active {
+    @apply bg-primary text-white;
+  }
+
+  /* Additional badge variants */
+  .themed-badge--outline {
+    @apply border border-border bg-transparent;
+  }
+  .themed-badge--outline-primary {
+    @apply border border-primary text-primary bg-transparent;
+  }
+  .themed-badge--outline-success {
+    @apply border border-green-600 text-green-600 bg-transparent;
+  }
+
+  .themed-badge--sm { @apply px-1.5 py-0.5 text-xs; }
+  .themed-badge--lg { @apply px-3 py-1 text-sm; }
+  .themed-badge--interactive { @apply cursor-pointer hover:opacity-80; }
+
+  /* Tag with remove button */
+  .themed-tag__remove {
+    @apply ml-1 rounded-full hover:bg-black/10 p-0.5;
+  }
+  :is(.retro-light, .retro-dark) .themed-tag__remove {
+    @apply rounded-none;
+  }
+
+  /* Tag variants */
+  .themed-tag--default { @apply bg-muted; }
+  .themed-tag--primary { @apply bg-primary text-primary-foreground; }
+  .themed-tag--success { @apply bg-green-100 text-green-800; }
+  .themed-tag--danger { @apply bg-red-100 text-red-800; }
+  .themed-tag--warning { @apply bg-yellow-100 text-yellow-800; }
+  .themed-tag--info { @apply bg-blue-100 text-blue-800; }
+
+  :is(.retro-light, .retro-dark) .themed-tag--success {
+    background-color: color-mix(in srgb, var(--nes-green) 20%, transparent);
+    color: var(--nes-green);
+  }
+  :is(.retro-light, .retro-dark) .themed-tag--danger {
+    background-color: color-mix(in srgb, var(--primary) 20%, transparent);
+    color: var(--primary);
+  }
+  :is(.retro-light, .retro-dark) .themed-tag--warning {
+    background-color: color-mix(in srgb, var(--nes-yellow) 20%, transparent);
+    color: #a08000;
+  }
+  :is(.retro-light, .retro-dark) .themed-tag--info {
+    background-color: color-mix(in srgb, var(--nes-blue) 20%, transparent);
+    color: var(--nes-blue);
+  }
+
+  /* Status variants - map online/offline/busy/error to our color system */
+  .themed-status--online .themed-status__dot { @apply bg-green-500; }
+  .themed-status--offline .themed-status__dot { @apply bg-gray-400; }
+  .themed-status--busy .themed-status__dot { @apply bg-yellow-500; }
+  .themed-status--error .themed-status__dot { @apply bg-red-500; }
+
+  :is(.retro-light, .retro-dark) .themed-status--online .themed-status__dot { background-color: var(--nes-green); }
+  :is(.retro-light, .retro-dark) .themed-status--offline .themed-status__dot { @apply bg-gray-400; }
+  :is(.retro-light, .retro-dark) .themed-status--busy .themed-status__dot { background-color: var(--nes-yellow); }
+  :is(.retro-light, .retro-dark) .themed-status--error .themed-status__dot { background-color: var(--primary); }
+
+  /* Count sizes */
+  .themed-count--sm { @apply min-w-4 h-4 text-[10px]; }
+  .themed-count--lg { @apply min-w-6 h-6 text-sm; }
+
+  /* Condition badge */
+  .themed-condition {
+    @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium;
+  }
+  :is(.retro-light, .retro-dark) .themed-condition {
+    @apply rounded-none border-2 border-border px-2 py-0.5 retro-badge;
+  }
+
+  .themed-condition--new { @apply bg-green-100 text-green-800; }
+  .themed-condition--excellent { @apply bg-emerald-100 text-emerald-800; }
+  .themed-condition--good { @apply bg-blue-100 text-blue-800; }
+  .themed-condition--fair { @apply bg-yellow-100 text-yellow-800; }
+  .themed-condition--poor { @apply bg-orange-100 text-orange-800; }
+  .themed-condition--damaged { @apply bg-red-100 text-red-800; }
+  .themed-condition--for-repair { @apply bg-yellow-100 text-yellow-800; }
+
+  :is(.retro-light, .retro-dark) .themed-condition--new,
+  :is(.retro-light, .retro-dark) .themed-condition--excellent {
+    background-color: color-mix(in srgb, var(--nes-green) 20%, transparent);
+    color: var(--nes-green);
+  }
+  :is(.retro-light, .retro-dark) .themed-condition--good {
+    background-color: color-mix(in srgb, var(--nes-blue) 20%, transparent);
+    color: var(--nes-blue);
+  }
+  :is(.retro-light, .retro-dark) .themed-condition--fair,
+  :is(.retro-light, .retro-dark) .themed-condition--for-repair {
+    background-color: color-mix(in srgb, var(--nes-yellow) 20%, transparent);
+    color: #a08000;
+  }
+  :is(.retro-light, .retro-dark) .themed-condition--poor,
+  :is(.retro-light, .retro-dark) .themed-condition--damaged {
+    background-color: color-mix(in srgb, var(--primary) 20%, transparent);
+    color: var(--primary);
+  }
+
+  /* Loan status badge */
+  .themed-loan-status {
+    @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium;
+  }
+  :is(.retro-light, .retro-dark) .themed-loan-status {
+    @apply rounded-none border-2 border-border px-2 py-0.5 retro-badge;
+  }
+
+  .themed-loan-status--active { @apply bg-blue-100 text-blue-800; }
+  .themed-loan-status--overdue { @apply bg-red-100 text-red-800; }
+  .themed-loan-status--due-soon { @apply bg-yellow-100 text-yellow-800; }
+  .themed-loan-status--returned { @apply bg-green-100 text-green-800; }
+
+  :is(.retro-light, .retro-dark) .themed-loan-status--active {
+    background-color: color-mix(in srgb, var(--nes-blue) 20%, transparent);
+    color: var(--nes-blue);
+  }
+  :is(.retro-light, .retro-dark) .themed-loan-status--overdue {
+    background-color: color-mix(in srgb, var(--primary) 20%, transparent);
+    color: var(--primary);
+  }
+  :is(.retro-light, .retro-dark) .themed-loan-status--due-soon {
+    background-color: color-mix(in srgb, var(--nes-yellow) 20%, transparent);
+    color: #a08000;
+  }
+  :is(.retro-light, .retro-dark) .themed-loan-status--returned {
+    background-color: color-mix(in srgb, var(--nes-green) 20%, transparent);
+    color: var(--nes-green);
+  }
+
+  /* ==========================================================================
+     Form Components
+     ========================================================================== */
+
+  .themed-form {
+    @apply space-y-4;
+  }
+  :is(.retro-light, .retro-dark) .themed-form {
+    @apply space-y-4;
+  }
+
+  .themed-form-group {
+    @apply space-y-2;
+  }
+  :is(.retro-light, .retro-dark) .themed-form-group {
+    @apply space-y-2;
+  }
+
+  .themed-form-row {
+    @apply grid gap-4;
+  }
+  .themed-form-row--2 { @apply sm:grid-cols-2; }
+  .themed-form-row--3 { @apply sm:grid-cols-3; }
+  .themed-form-row--4 { @apply sm:grid-cols-4; }
+
+  .themed-label {
+    @apply text-sm font-medium leading-none;
+    @apply peer-disabled:cursor-not-allowed peer-disabled:opacity-70;
+  }
+  :is(.retro-light, .retro-dark) .themed-label {
+    @apply retro-small uppercase;
+  }
+
+  .themed-label__required {
+    @apply text-red-500 ml-1;
+  }
+  :is(.retro-light, .retro-dark) .themed-label__required {
+    @apply text-primary;
+  }
+
+  .themed-input {
+    @apply flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm;
+    @apply ring-offset-background;
+    @apply file:border-0 file:bg-transparent file:text-sm file:font-medium;
+    @apply placeholder:text-muted-foreground;
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2;
+    @apply disabled:cursor-not-allowed disabled:opacity-50;
+  }
+  :is(.retro-light, .retro-dark) .themed-input {
+    @apply rounded-none border-4 border-border bg-card;
+    @apply retro-body;
+    @apply focus-visible:ring-0 focus-visible:ring-offset-0;
+  }
+
+  .themed-input--error {
+    @apply border-red-500 focus-visible:ring-red-500;
+  }
+  :is(.retro-light, .retro-dark) .themed-input--error {
+    @apply border-primary;
+  }
+
+  .themed-input--mono {
+    @apply font-mono;
+  }
+
+  .themed-textarea {
+    @apply flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm;
+    @apply ring-offset-background;
+    @apply placeholder:text-muted-foreground;
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2;
+    @apply disabled:cursor-not-allowed disabled:opacity-50;
+  }
+  :is(.retro-light, .retro-dark) .themed-textarea {
+    @apply rounded-none border-4 border-border bg-card;
+    @apply retro-body;
+    @apply focus-visible:ring-0 focus-visible:ring-offset-0;
+  }
+
+  .themed-textarea--error {
+    @apply border-red-500 focus-visible:ring-red-500;
+  }
+  :is(.retro-light, .retro-dark) .themed-textarea--error {
+    @apply border-primary;
+  }
+
+  .themed-textarea--resizable {
+    @apply resize-y;
+  }
+
+  .themed-select {
+    @apply flex h-10 w-full items-center justify-between rounded-md;
+    @apply border border-input bg-background px-3 py-2 text-sm;
+    @apply ring-offset-background;
+    @apply placeholder:text-muted-foreground;
+    @apply focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2;
+    @apply disabled:cursor-not-allowed disabled:opacity-50;
+  }
+  :is(.retro-light, .retro-dark) .themed-select {
+    @apply rounded-none border-4 border-border bg-card;
+    @apply retro-body;
+    @apply focus:ring-0 focus:ring-offset-0;
+  }
+
+  .themed-select--error {
+    @apply border-red-500 focus:ring-red-500;
+  }
+  :is(.retro-light, .retro-dark) .themed-select--error {
+    @apply border-primary;
+  }
+
+  .themed-checkbox {
+    @apply h-4 w-4 shrink-0 rounded-sm border border-primary;
+    @apply ring-offset-background;
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2;
+    @apply disabled:cursor-not-allowed disabled:opacity-50;
+    @apply data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground;
+  }
+  :is(.retro-light, .retro-dark) .themed-checkbox {
+    @apply rounded-none border-4 border-border;
+    @apply focus-visible:ring-0 focus-visible:ring-offset-0;
+  }
+
+  .themed-checkbox-wrapper {
+    @apply flex items-center gap-2;
+  }
+  :is(.retro-light, .retro-dark) .themed-checkbox-wrapper {
+    @apply items-start;
+  }
+
+  .themed-checkbox-label {
+    @apply text-sm font-medium leading-none;
+  }
+  :is(.retro-light, .retro-dark) .themed-checkbox-label {
+    @apply retro-small;
+  }
+
+  .themed-error {
+    @apply text-sm text-destructive;
+  }
+  :is(.retro-light, .retro-dark) .themed-error {
+    @apply retro-small text-primary;
+  }
+
+  .themed-hint {
+    @apply text-sm text-muted-foreground;
+  }
+  :is(.retro-light, .retro-dark) .themed-hint {
+    @apply retro-small;
+  }
+
+  .themed-form-divider {
+    @apply border-t pt-4;
+  }
+  :is(.retro-light, .retro-dark) .themed-form-divider {
+    @apply border-t-4 border-dashed border-border;
+  }
+
+  /* ==========================================================================
+     Modal Components
+     ========================================================================== */
+
+  .themed-modal-overlay {
+    @apply fixed inset-0 z-50 bg-black/50;
+  }
+  :is(.retro-light, .retro-dark) .themed-modal-overlay {
+    background-color: rgba(0, 0, 0, 0.7);
+  }
+
+  .themed-modal {
+    @apply fixed inset-0 z-50 flex items-center justify-center p-4;
+  }
+
+  .themed-modal__content {
+    @apply bg-background rounded-lg shadow-lg max-h-[90vh] overflow-hidden;
+    @apply w-full max-w-lg;
+  }
+  :is(.retro-light, .retro-dark) .themed-modal__content {
+    @apply rounded-none border-4 border-border;
+    box-shadow: 8px 8px 0px 0px var(--border);
+  }
+
+  .themed-modal__content--sm { @apply max-w-sm; }
+  .themed-modal__content--md { @apply max-w-md; }
+  .themed-modal__content--lg { @apply max-w-lg; }
+  .themed-modal__content--xl { @apply max-w-xl; }
+  .themed-modal__content--2xl { @apply max-w-2xl; }
+  .themed-modal__content--full { @apply max-w-[95vw]; }
+
+  .themed-modal__header {
+    @apply flex items-center justify-between p-4 border-b;
+  }
+  :is(.retro-light, .retro-dark) .themed-modal__header {
+    @apply border-b-4 border-border bg-secondary px-3 py-2;
+  }
+
+  .themed-modal__header--default {
+    @apply bg-background;
+  }
+  .themed-modal__header--secondary {
+    @apply bg-secondary;
+  }
+  .themed-modal__header--danger {
+    @apply bg-red-600 text-white;
+  }
+  :is(.retro-light, .retro-dark) .themed-modal__header--danger {
+    background-color: var(--primary);
+  }
+  .themed-modal__header--success {
+    @apply bg-green-600 text-white;
+  }
+  :is(.retro-light, .retro-dark) .themed-modal__header--success {
+    background-color: var(--nes-green);
+  }
+
+  .themed-modal__title {
+    @apply text-lg font-semibold;
+  }
+  :is(.retro-light, .retro-dark) .themed-modal__title {
+    @apply retro-heading;
+  }
+
+  .themed-modal__close {
+    @apply p-1 rounded-md hover:bg-muted transition-colors;
+  }
+  :is(.retro-light, .retro-dark) .themed-modal__close {
+    @apply rounded-none border-2 border-border hover:bg-muted;
+  }
+
+  .themed-modal__body {
+    @apply p-4 overflow-y-auto flex-1;
+  }
+
+  .themed-modal__body--flush {
+    @apply p-0;
+  }
+
+  .themed-modal__body--compact {
+    @apply px-6 py-3;
+  }
+
+  .themed-modal__footer {
+    @apply flex items-center gap-3 p-4 border-t;
+  }
+  :is(.retro-light, .retro-dark) .themed-modal__footer {
+    @apply border-t-4 border-border;
+  }
+
+  .themed-modal__footer--start { @apply justify-start; }
+  .themed-modal__footer--center { @apply justify-center; }
+  .themed-modal__footer--end { @apply justify-end; }
+  .themed-modal__footer--between { @apply justify-between; }
+
+  .themed-modal__loading {
+    @apply flex flex-col items-center justify-center py-12 gap-2;
+  }
+
+  .themed-modal__loading-text {
+    @apply text-sm text-muted-foreground;
+  }
+  :is(.retro-light, .retro-dark) .themed-modal__loading-text {
+    @apply retro-small;
+  }
+
+  .themed-modal__preview {
+    @apply flex justify-center p-4 bg-muted/50;
+  }
+  :is(.retro-light, .retro-dark) .themed-modal__preview {
+    @apply bg-muted border-b-4 border-border;
+  }
+
+  /* ==========================================================================
+     Table Components
+     ========================================================================== */
+
+  .themed-table-container {
+    @apply rounded-lg border bg-card;
+  }
+  :is(.retro-light, .retro-dark) .themed-table-container {
+    @apply rounded-none border-4 border-border;
+    box-shadow: 4px 4px 0px 0px var(--border);
+    margin-bottom: 4px;
+    margin-right: 4px;
+  }
+
+  .themed-table-wrap {
+    @apply overflow-x-auto;
+  }
+
+  .themed-table {
+    @apply w-full;
+  }
+
+  .themed-thead {
+    @apply bg-muted/50;
+  }
+  :is(.retro-light, .retro-dark) .themed-thead {
+    @apply bg-secondary;
+    @apply border-b-4 border-border;
+  }
+
+  .themed-tbody {
+    @apply divide-y;
+  }
+  :is(.retro-light, .retro-dark) .themed-tbody {
+    @apply divide-y-0;
+  }
+
+  .themed-tr {
+    @apply transition-colors;
+  }
+  :is(.retro-light, .retro-dark) .themed-tr {
+    @apply border-b-2 border-dashed border-muted last:border-b-0;
+  }
+
+  .themed-tr--clickable {
+    @apply cursor-pointer hover:bg-muted/50;
+  }
+  :is(.retro-light, .retro-dark) .themed-tr--clickable {
+    @apply hover:bg-muted;
+  }
+
+  .themed-tr--selected {
+    @apply bg-muted;
+  }
+
+  .themed-th {
+    @apply px-4 py-3 text-sm font-medium text-muted-foreground text-left;
+  }
+  :is(.retro-light, .retro-dark) .themed-th {
+    @apply px-3 py-2 retro-small uppercase;
+    @apply whitespace-nowrap;
+  }
+
+  .themed-th--right { @apply text-right; }
+  .themed-th--center { @apply text-center; }
+  .themed-th--sortable { @apply cursor-pointer select-none hover:text-foreground; }
+  .themed-th--active { @apply text-foreground; }
+  .themed-th--compact { @apply px-2 py-2; }
+  :is(.retro-light, .retro-dark) .themed-th--compact { @apply px-1.5 py-1; }
+
+  .themed-td {
+    @apply px-4 py-3 text-sm;
+  }
+  :is(.retro-light, .retro-dark) .themed-td {
+    @apply px-3 py-2 retro-body;
+  }
+
+  .themed-td--right { @apply text-right; }
+  .themed-td--center { @apply text-center; }
+  .themed-td--muted { @apply text-muted-foreground; }
+  .themed-td--compact { @apply px-2 py-2; }
+  :is(.retro-light, .retro-dark) .themed-td--compact { @apply px-1.5 py-1; }
+  .themed-td--nowrap { @apply whitespace-nowrap; }
+  .themed-td--truncate { @apply max-w-[200px] truncate; }
+
+  .themed-table__empty {
+    @apply flex flex-col items-center justify-center py-12 text-center;
+  }
+  :is(.retro-light, .retro-dark) .themed-table__empty {
+    @apply py-8;
+  }
+
+  .themed-table__empty-icon {
+    @apply mb-4 text-muted-foreground;
+  }
+
+  .themed-table__empty-text {
+    @apply text-muted-foreground;
+  }
+  :is(.retro-light, .retro-dark) .themed-table__empty-text {
+    @apply retro-body;
+  }
+
+  /* Retro sticky scrollbar for tables */
+  :is(.retro-light, .retro-dark) .themed-table-sticky-scrollbar {
+    @apply sticky bottom-0 overflow-x-auto;
+    height: 16px;
+    background: var(--card);
+    border-top: 4px solid var(--border);
+  }
+}

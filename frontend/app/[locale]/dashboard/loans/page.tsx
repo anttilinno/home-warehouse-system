@@ -4,7 +4,6 @@ import { useAuth } from "@/lib/auth";
 import { useRouter } from "@/navigation";
 import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { useTheme } from "next-themes";
 import { useEffect, useState, useMemo } from "react";
 import {
   loansApi,
@@ -21,33 +20,11 @@ import {
   Location,
 } from "@/lib/api";
 import { Icon } from "@/components/icons";
-import {
-  Plus,
-  X,
-  HandCoins,
-  Contact,
-  Package,
-  RotateCcw,
-  Clock,
-  CheckCircle,
-  AlertTriangle,
-} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { SearchableSelect, type SearchableSelectOption } from "@/components/ui/searchable-select";
 import { formatDate as formatDateUtil, formatDateTime as formatDateTimeUtil } from "@/lib/date-utils";
-import { NES_GREEN, NES_BLUE, NES_RED } from "@/lib/nes-colors";
-import {
-  RetroPageHeader,
-  RetroButton,
-  RetroTable,
-  RetroEmptyState,
-  RetroModal,
-  RetroFormGroup,
-  RetroLabel,
-  RetroInput,
-  RetroTextarea,
-  RetroError,
-} from "@/components/retro";
+import { NES_BLUE } from "@/lib/nes-colors";
+import { useThemed, useThemedClasses, type ThemedComponents } from "@/lib/themed";
 
 export default function LoansPage() {
   const { isAuthenticated, isLoading: authLoading, canEdit, user } = useAuth();
@@ -55,8 +32,10 @@ export default function LoansPage() {
   const searchParams = useSearchParams();
   const t = useTranslations("loans");
   const te = useTranslations("errors");
-  const { theme } = useTheme();
-  const isRetro = theme?.startsWith("retro");
+  const themed = useThemed();
+  const classes = useThemedClasses();
+
+  const { PageHeader, Button, Table, EmptyState, LoanStatusBadge } = themed;
 
   // Get filter from URL
   const urlFilter = searchParams.get("filter");
@@ -146,9 +125,11 @@ export default function LoansPage() {
       setItems(itemsData);
       setLocations(locationsData);
       setError(null);
-    } catch (err) {
-      const errorMessage =
-        err instanceof Error ? err.message : "Failed to load loans";
+    } catch (e) {
+      const err = e as Error;
+      const errorMessage = err.message
+        ? getTranslatedErrorMessage(err.message, te)
+        : te("UNKNOWN_ERROR");
       setError(errorMessage);
     } finally {
       setLoading(false);
@@ -176,14 +157,10 @@ export default function LoansPage() {
 
   if (authLoading || loading) {
     return (
-      <div className={cn(
-        "flex items-center justify-center min-h-[400px]",
-        isRetro && "retro-body"
-      )}>
-        <div className={cn(
-          "text-muted-foreground",
-          isRetro && "retro-small uppercase"
-        )}>{t("loading")}</div>
+      <div className="flex items-center justify-center min-h-[400px]">
+        <p className={classes.loadingText}>
+          {classes.isRetro ? "Loading..." : t("loading")}
+        </p>
       </div>
     );
   }
@@ -194,344 +171,156 @@ export default function LoansPage() {
 
   if (error) {
     return (
-      <div className={cn(
-        "flex items-center justify-center min-h-[400px]",
-        isRetro && "retro-body"
-      )}>
+      <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center">
-          <p className={cn(
-            "text-red-500 mb-4",
-            isRetro && "retro-small uppercase"
-          )} style={isRetro ? { color: NES_RED } : undefined}>{error}</p>
-          {isRetro ? (
-            <RetroButton variant="primary" onClick={fetchData}>
-              {t("tryAgain")}
-            </RetroButton>
-          ) : (
-            <button
-              onClick={fetchData}
-              className="px-4 py-2 bg-primary text-primary-foreground rounded-lg"
-            >
-              {t("tryAgain")}
-            </button>
-          )}
+          <p className={`${classes.errorText} mb-4`}>{error}</p>
+          <Button variant="primary" onClick={fetchData}>
+            {t("tryAgain")}
+          </Button>
         </div>
       </div>
-    );
-  }
-
-  // Retro theme UI
-  if (isRetro) {
-    return (
-      <>
-        {/* Header */}
-        <RetroPageHeader
-          title={t("title")}
-          subtitle={t("subtitle")}
-          actions={
-            <div className="flex items-center gap-3">
-              <button
-                onClick={() => {
-                  setShowOverdueOnly(!showOverdueOnly);
-                  if (!showOverdueOnly) setShowActiveOnly(false);
-                }}
-                className={cn(
-                  "retro-btn retro-btn--sm",
-                  showOverdueOnly
-                    ? "retro-btn--danger"
-                    : "retro-btn--secondary"
-                )}
-              >
-                {t("overdue")}
-              </button>
-              <button
-                onClick={() => {
-                  setShowActiveOnly(!showActiveOnly);
-                  if (!showActiveOnly) setShowOverdueOnly(false);
-                }}
-                className={cn(
-                  "retro-btn retro-btn--sm",
-                  showActiveOnly
-                    ? "retro-btn--primary"
-                    : "retro-btn--secondary"
-                )}
-              >
-                {showActiveOnly ? t("showActive") : t("showAll")}
-              </button>
-              {canEdit && (
-                <RetroButton
-                  variant="secondary"
-                  icon="Plus"
-                  onClick={() => setIsCreateModalOpen(true)}
-                >
-                  {t("addLoan")}
-                </RetroButton>
-              )}
-            </div>
-          }
-        />
-
-        {/* Empty State or Table */}
-        {filteredLoans.length === 0 ? (
-          <RetroEmptyState
-            icon="HandCoins"
-            message={t("noLoans")}
-            action={
-              canEdit
-                ? {
-                    label: t("addLoan"),
-                    onClick: () => setIsCreateModalOpen(true),
-                    icon: "Plus",
-                  }
-                : undefined
-            }
-          />
-        ) : (
-          <RetroTable>
-            <RetroTable.Head>
-              <RetroTable.Row>
-                <RetroTable.Th>{t("status")}</RetroTable.Th>
-                <RetroTable.Th>{t("inventory")}</RetroTable.Th>
-                <RetroTable.Th className="hidden xl:table-cell">{t("borrower")}</RetroTable.Th>
-                <RetroTable.Th className="hidden 2xl:table-cell">{t("quantity")}</RetroTable.Th>
-                <RetroTable.Th className="hidden 2xl:table-cell">{t("loanedAt")}</RetroTable.Th>
-                <RetroTable.Th className="hidden lg:table-cell">{t("dueDate")}</RetroTable.Th>
-                <RetroTable.Th align="right">{t("actions")}</RetroTable.Th>
-              </RetroTable.Row>
-            </RetroTable.Head>
-            <RetroTable.Body>
-              {filteredLoans.map((loan) => {
-                const status = getLoanStatus(loan);
-                return (
-                  <RetroTable.Row key={loan.id}>
-                    <RetroTable.Td>
-                      <RetroStatusBadge status={status} t={t} />
-                    </RetroTable.Td>
-                    <RetroTable.Td>
-                      <div className="flex items-center gap-2">
-                        <Icon name="Package" className="w-4 h-4 text-muted-foreground" />
-                        <span className="retro-body retro-small uppercase text-foreground">
-                          {getInventoryDisplay(loan.inventory_id)}
-                        </span>
-                      </div>
-                    </RetroTable.Td>
-                    <RetroTable.Td className="hidden xl:table-cell">
-                      <div className="flex items-center gap-2 retro-body retro-small uppercase text-foreground">
-                        <Icon name="Contact" className="w-4 h-4 text-muted-foreground" />
-                        {getBorrowerName(loan.borrower_id)}
-                      </div>
-                    </RetroTable.Td>
-                    <RetroTable.Td className="hidden 2xl:table-cell">
-                      {loan.quantity}
-                    </RetroTable.Td>
-                    <RetroTable.Td className="hidden 2xl:table-cell" muted>
-                      {formatDateTime(loan.loaned_at)}
-                    </RetroTable.Td>
-                    <RetroTable.Td className="hidden lg:table-cell" muted>
-                      {loan.due_date ? formatDate(loan.due_date) : t("noDueDate")}
-                    </RetroTable.Td>
-                    <RetroTable.Td align="right">
-                      {canEdit && status !== "returned" && (
-                        <RetroButton
-                          variant="success"
-                          size="sm"
-                          icon="RotateCcw"
-                          onClick={() => handleReturn(loan)}
-                        >
-                          {t("return")}
-                        </RetroButton>
-                      )}
-                    </RetroTable.Td>
-                  </RetroTable.Row>
-                );
-              })}
-            </RetroTable.Body>
-          </RetroTable>
-        )}
-
-        {/* Create Modal */}
-        <CreateLoanModal
-          isOpen={isCreateModalOpen}
-          onClose={() => setIsCreateModalOpen(false)}
-          onSuccess={() => {
-            setIsCreateModalOpen(false);
-            fetchData();
-          }}
-          borrowers={borrowers}
-          inventory={inventory}
-          items={items}
-          locations={locations}
-          t={t}
-          te={te}
-          isRetro={isRetro}
-        />
-
-        {/* Return Modal */}
-        {selectedLoan && (
-          <ReturnLoanModal
-            isOpen={isReturnModalOpen}
-            onClose={() => {
-              setIsReturnModalOpen(false);
-              setSelectedLoan(null);
-            }}
-            onSuccess={() => {
-              setIsReturnModalOpen(false);
-              setSelectedLoan(null);
-              fetchData();
-            }}
-            loan={selectedLoan}
-            getBorrowerName={getBorrowerName}
-            getInventoryDisplay={getInventoryDisplay}
-            t={t}
-            te={te}
-            isRetro={isRetro}
-          />
-        )}
-      </>
     );
   }
 
   return (
     <>
       {/* Header */}
-      <div className="mb-8 flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground">{t("title")}</h1>
-          <p className="text-muted-foreground mt-2">{t("subtitle")}</p>
-        </div>
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => {
-              setShowOverdueOnly(!showOverdueOnly);
-              if (!showOverdueOnly) setShowActiveOnly(false);
-            }}
-            className={cn(
-              "px-4 py-2 rounded-lg border transition-colors",
-              showOverdueOnly
-                ? "bg-destructive text-destructive-foreground border-destructive"
-                : "bg-background text-foreground border-border hover:bg-muted"
-            )}
-          >
-            {t("overdue")}
-          </button>
-          <button
-            onClick={() => {
-              setShowActiveOnly(!showActiveOnly);
-              if (!showActiveOnly) setShowOverdueOnly(false);
-            }}
-            className={cn(
-              "px-4 py-2 rounded-lg border transition-colors",
-              showActiveOnly
-                ? "bg-primary text-primary-foreground border-primary"
-                : "bg-background text-foreground border-border hover:bg-muted"
-            )}
-          >
-            {showActiveOnly ? t("showActive") : t("showAll")}
-          </button>
-          {canEdit && (
+      <PageHeader
+        title={t("title")}
+        subtitle={classes.isRetro ? `${filteredLoans.length} LOANS` : t("subtitle")}
+        actions={
+          <div className="flex items-center gap-3">
             <button
-              onClick={() => setIsCreateModalOpen(true)}
-              className="px-4 py-2 bg-primary text-primary-foreground rounded-lg flex items-center gap-2 hover:bg-primary/90 transition-colors"
+              onClick={() => {
+                setShowOverdueOnly(!showOverdueOnly);
+                if (!showOverdueOnly) setShowActiveOnly(false);
+              }}
+              className={cn(
+                classes.isRetro
+                  ? cn(
+                      "retro-btn retro-btn--sm",
+                      showOverdueOnly ? "retro-btn--danger" : "retro-btn--secondary"
+                    )
+                  : cn(
+                      "px-4 py-2 rounded-lg border transition-colors",
+                      showOverdueOnly
+                        ? "bg-destructive text-destructive-foreground border-destructive"
+                        : "bg-background text-foreground border-border hover:bg-muted"
+                    )
+              )}
             >
-              <Plus className="w-4 h-4" />
-              {t("addLoan")}
+              {t("overdue")}
             </button>
-          )}
-        </div>
-      </div>
+            <button
+              onClick={() => {
+                setShowActiveOnly(!showActiveOnly);
+                if (!showActiveOnly) setShowOverdueOnly(false);
+              }}
+              className={cn(
+                classes.isRetro
+                  ? cn(
+                      "retro-btn retro-btn--sm",
+                      showActiveOnly ? "retro-btn--primary" : "retro-btn--secondary"
+                    )
+                  : cn(
+                      "px-4 py-2 rounded-lg border transition-colors",
+                      showActiveOnly
+                        ? "bg-primary text-primary-foreground border-primary"
+                        : "bg-background text-foreground border-border hover:bg-muted"
+                    )
+              )}
+            >
+              {showActiveOnly ? t("showActive") : t("showAll")}
+            </button>
+            {canEdit && (
+              <Button
+                variant={classes.isRetro ? "secondary" : "primary"}
+                icon="Plus"
+                onClick={() => setIsCreateModalOpen(true)}
+              >
+                {t("addLoan")}
+              </Button>
+            )}
+          </div>
+        }
+      />
 
-      {/* Table */}
+      {/* Empty State or Table */}
       {filteredLoans.length === 0 ? (
-        <div className="bg-card border rounded-lg p-12 text-center">
-          <HandCoins className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-          <p className="text-muted-foreground">{t("noLoans")}</p>
-          {canEdit && (
-            <button
-              onClick={() => setIsCreateModalOpen(true)}
-              className="mt-4 px-4 py-2 bg-primary text-primary-foreground rounded-lg inline-flex items-center gap-2 hover:bg-primary/90 transition-colors"
-            >
-              <Plus className="w-4 h-4" />
-              {t("addLoan")}
-            </button>
-          )}
-        </div>
+        <EmptyState
+          icon="HandCoins"
+          message={t("noLoans")}
+          action={
+            canEdit
+              ? {
+                  label: t("addLoan"),
+                  onClick: () => setIsCreateModalOpen(true),
+                  icon: "Plus",
+                }
+              : undefined
+          }
+        />
       ) : (
-        <div className="bg-card border rounded-lg shadow-sm overflow-hidden">
-          <table className="w-full">
-            <thead className="bg-muted/50 border-b">
-              <tr>
-                <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
-                  {t("status")}
-                </th>
-                <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
-                  {t("inventory")}
-                </th>
-                <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
-                  {t("borrower")}
-                </th>
-                <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
-                  {t("quantity")}
-                </th>
-                <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
-                  {t("loanedAt")}
-                </th>
-                <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
-                  {t("dueDate")}
-                </th>
-                <th className="px-4 py-3 text-right text-sm font-medium text-muted-foreground">
-                  {t("actions")}
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border">
-              {filteredLoans.map((loan) => {
-                const status = getLoanStatus(loan);
-                return (
-                  <tr key={loan.id} className="hover:bg-muted/30 transition-colors">
-                    <td className="px-4 py-3">
-                      <StatusBadge status={status} t={t} />
-                    </td>
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-2">
-                        <Package className="w-4 h-4 text-muted-foreground" />
-                        <span className="font-medium text-foreground">
-                          {getInventoryDisplay(loan.inventory_id)}
-                        </span>
-                      </div>
-                    </td>
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-2 text-foreground">
-                        <Contact className="w-4 h-4 text-muted-foreground" />
-                        {getBorrowerName(loan.borrower_id)}
-                      </div>
-                    </td>
-                    <td className="px-4 py-3 text-foreground">
-                      {loan.quantity}
-                    </td>
-                    <td className="px-4 py-3 text-muted-foreground">
-                      {formatDateTime(loan.loaned_at)}
-                    </td>
-                    <td className="px-4 py-3 text-muted-foreground">
-                      {loan.due_date ? formatDate(loan.due_date) : t("noDueDate")}
-                    </td>
-                    <td className="px-4 py-3 text-right">
-                      {canEdit && status !== "returned" && (
-                        <button
-                          onClick={() => handleReturn(loan)}
-                          title={t("return")}
-                          className="px-3 py-1.5 rounded bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 hover:bg-green-200 dark:hover:bg-green-900/50 transition-colors inline-flex items-center gap-1.5 text-sm"
-                        >
-                          <RotateCcw className="w-4 h-4" />
-                          {t("return")}
-                        </button>
-                      )}
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
+        <Table>
+          <Table.Head>
+            <Table.Row>
+              <Table.Th>{t("status")}</Table.Th>
+              <Table.Th>{t("inventory")}</Table.Th>
+              <Table.Th className={classes.isRetro ? "hidden xl:table-cell" : undefined}>{t("borrower")}</Table.Th>
+              <Table.Th className={classes.isRetro ? "hidden 2xl:table-cell" : undefined}>{t("quantity")}</Table.Th>
+              <Table.Th className={classes.isRetro ? "hidden 2xl:table-cell" : undefined}>{t("loanedAt")}</Table.Th>
+              <Table.Th className={classes.isRetro ? "hidden lg:table-cell" : undefined}>{t("dueDate")}</Table.Th>
+              <Table.Th align="right">{t("actions")}</Table.Th>
+            </Table.Row>
+          </Table.Head>
+          <Table.Body>
+            {filteredLoans.map((loan) => {
+              const status = getLoanStatus(loan);
+              return (
+                <Table.Row key={loan.id}>
+                  <Table.Td>
+                    <LoanStatusBadge status={status} />
+                  </Table.Td>
+                  <Table.Td>
+                    <div className="flex items-center gap-2">
+                      <Icon name="Package" className="w-4 h-4 text-muted-foreground" />
+                      <span className={classes.isRetro ? "retro-body retro-small uppercase text-foreground" : "font-medium text-foreground"}>
+                        {getInventoryDisplay(loan.inventory_id)}
+                      </span>
+                    </div>
+                  </Table.Td>
+                  <Table.Td className={classes.isRetro ? "hidden xl:table-cell" : undefined}>
+                    <div className={`flex items-center gap-2 text-foreground ${classes.bodyText}`}>
+                      <Icon name="Contact" className="w-4 h-4 text-muted-foreground" />
+                      {getBorrowerName(loan.borrower_id)}
+                    </div>
+                  </Table.Td>
+                  <Table.Td className={classes.isRetro ? "hidden 2xl:table-cell" : undefined}>
+                    {loan.quantity}
+                  </Table.Td>
+                  <Table.Td className={classes.isRetro ? "hidden 2xl:table-cell" : undefined} muted>
+                    {formatDateTime(loan.loaned_at)}
+                  </Table.Td>
+                  <Table.Td className={classes.isRetro ? "hidden lg:table-cell" : undefined} muted>
+                    {loan.due_date ? formatDate(loan.due_date) : t("noDueDate")}
+                  </Table.Td>
+                  <Table.Td align="right">
+                    {canEdit && status !== "returned" && (
+                      <Button
+                        variant="success"
+                        size="sm"
+                        icon="RotateCcw"
+                        onClick={() => handleReturn(loan)}
+                      >
+                        {t("return")}
+                      </Button>
+                    )}
+                  </Table.Td>
+                </Table.Row>
+              );
+            })}
+          </Table.Body>
+        </Table>
       )}
 
       {/* Create Modal */}
@@ -548,10 +337,10 @@ export default function LoansPage() {
         locations={locations}
         t={t}
         te={te}
-        isRetro={false}
+        themed={themed}
       />
 
-      {/* Return Confirmation Modal */}
+      {/* Return Modal */}
       {selectedLoan && (
         <ReturnLoanModal
           isOpen={isReturnModalOpen}
@@ -569,58 +358,10 @@ export default function LoansPage() {
           getInventoryDisplay={getInventoryDisplay}
           t={t}
           te={te}
-          isRetro={false}
+          themed={themed}
         />
       )}
     </>
-  );
-}
-
-// Retro Status Badge Component
-function RetroStatusBadge({ status, t }: { status: "active" | "returned" | "overdue"; t: (key: string) => string }) {
-  const config = {
-    active: { color: NES_BLUE, icon: "Clock" as const },
-    returned: { color: NES_GREEN, icon: "CheckCircle" as const },
-    overdue: { color: NES_RED, icon: "AlertTriangle" as const },
-  };
-
-  const { color, icon } = config[status];
-
-  return (
-    <span
-      className="retro-loan-status"
-      style={{ backgroundColor: color, color: "white" }}
-    >
-      <Icon name={icon} className="w-3 h-3" />
-      {t(status)}
-    </span>
-  );
-}
-
-// Status Badge Component
-function StatusBadge({ status, t }: { status: "active" | "returned" | "overdue"; t: (key: string) => string }) {
-  const config = {
-    active: {
-      icon: Clock,
-      className: "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400",
-    },
-    returned: {
-      icon: CheckCircle,
-      className: "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400",
-    },
-    overdue: {
-      icon: AlertTriangle,
-      className: "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400",
-    },
-  };
-
-  const { icon: StatusIcon, className } = config[status];
-
-  return (
-    <span className={cn("px-2 py-1 rounded-full text-xs font-medium inline-flex items-center gap-1", className)}>
-      <StatusIcon className="w-3 h-3" />
-      {t(status)}
-    </span>
   );
 }
 
@@ -635,7 +376,7 @@ function CreateLoanModal({
   locations,
   t,
   te,
-  isRetro,
+  themed,
 }: {
   isOpen: boolean;
   onClose: () => void;
@@ -646,8 +387,10 @@ function CreateLoanModal({
   locations: Location[];
   t: (key: string) => string;
   te: (key: string) => string;
-  isRetro: boolean;
+  themed: ThemedComponents;
 }) {
+  const { Modal, Button, FormGroup, Label, Input, Textarea, Error: ErrorMessage } = themed;
+
   const [formData, setFormData] = useState<LoanCreate>({
     inventory_id: "",
     borrower_id: "",
@@ -730,11 +473,11 @@ function CreateLoanModal({
       }
 
       throw new Error("Loan creation timed out");
-    } catch (err) {
-      const errorMessage =
-        err instanceof Error
-          ? getTranslatedErrorMessage(err.message, te)
-          : te("UNKNOWN_ERROR");
+    } catch (e) {
+      const err = e as Error;
+      const errorMessage = err.message
+        ? getTranslatedErrorMessage(err.message, te)
+        : te("UNKNOWN_ERROR");
       setError(errorMessage);
       setJobStatus(null);
     } finally {
@@ -744,164 +487,30 @@ function CreateLoanModal({
 
   if (!isOpen) return null;
 
-  // Retro Modal
-  if (isRetro) {
-    return (
-      <RetroModal open={isOpen} onClose={onClose} size="md">
-        <RetroModal.Header title={t("addLoan")} />
-        <RetroModal.Body>
-          <form id="loan-form" onSubmit={handleSubmit} className="space-y-4">
-            {error && (
-              <div className="retro-card p-3">
-                <RetroError>{error}</RetroError>
-              </div>
-            )}
-
-            {jobStatus && !error && (
-              <div className="retro-card p-3" style={{ borderColor: NES_BLUE }}>
-                <p className="retro-small uppercase font-bold retro-body" style={{ color: NES_BLUE }}>
-                  {jobStatus}
-                </p>
-              </div>
-            )}
-
-            <RetroFormGroup>
-              <RetroLabel htmlFor="inventory" required>{t("inventory")}</RetroLabel>
-              <SearchableSelect
-                options={inventoryOptions}
-                value={formData.inventory_id}
-                onChange={(value) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    inventory_id: value,
-                  }))
-                }
-                placeholder={t("selectInventory")}
-                searchPlaceholder={t("searchInventory")}
-                disabled={submitting}
-                required
-              />
-            </RetroFormGroup>
-
-            <RetroFormGroup>
-              <RetroLabel htmlFor="borrower" required>{t("borrower")}</RetroLabel>
-              <SearchableSelect
-                options={borrowerOptions}
-                value={formData.borrower_id}
-                onChange={(value) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    borrower_id: value,
-                  }))
-                }
-                placeholder={t("selectBorrower")}
-                searchPlaceholder={t("searchBorrower")}
-                disabled={submitting}
-                required
-              />
-            </RetroFormGroup>
-
-            <RetroFormGroup>
-              <RetroLabel htmlFor="quantity" required>{t("quantity")}</RetroLabel>
-              <RetroInput
-                id="quantity"
-                type="number"
-                min="1"
-                value={formData.quantity}
-                onChange={(e) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    quantity: parseInt(e.target.value) || 1,
-                  }))
-                }
-                required
-                disabled={submitting}
-              />
-            </RetroFormGroup>
-
-            <RetroFormGroup>
-              <RetroLabel htmlFor="due_date">{t("dueDate")}</RetroLabel>
-              <RetroInput
-                id="due_date"
-                type="date"
-                value={formData.due_date || ""}
-                onChange={(e) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    due_date: e.target.value || null,
-                  }))
-                }
-                disabled={submitting}
-              />
-            </RetroFormGroup>
-
-            <RetroFormGroup>
-              <RetroLabel htmlFor="notes">{t("notes")}</RetroLabel>
-              <RetroTextarea
-                id="notes"
-                value={formData.notes || ""}
-                onChange={(e) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    notes: e.target.value || null,
-                  }))
-                }
-                placeholder={t("notesPlaceholder")}
-                rows={3}
-                disabled={submitting}
-              />
-            </RetroFormGroup>
-          </form>
-        </RetroModal.Body>
-        <RetroModal.Footer>
-          <RetroButton variant="secondary" onClick={onClose} disabled={submitting}>
-            {t("cancel")}
-          </RetroButton>
-          <RetroButton
-            variant="primary"
-            type="submit"
-            form="loan-form"
-            loading={submitting}
-          >
-            {t("save")}
-          </RetroButton>
-        </RetroModal.Footer>
-      </RetroModal>
-    );
-  }
-
-  // Standard Modal
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center" onClick={onClose}>
-      <div className="absolute inset-0 bg-black/50" />
-      <div
-        className="relative z-10 w-full max-w-md m-4 bg-background border rounded-lg shadow-xl"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="flex items-center justify-between p-4 border-b">
-          <h2 className="text-lg font-semibold">{t("addLoan")}</h2>
-          <button onClick={onClose} className="p-1 rounded hover:bg-muted">
-            <X className="w-5 h-5" />
-          </button>
-        </div>
-
-        <form onSubmit={handleSubmit} className="p-4 space-y-4">
+    <Modal open={isOpen} onClose={onClose} size="md">
+      <Modal.Header title={t("addLoan")} />
+      <Modal.Body>
+        <form id="loan-form" onSubmit={handleSubmit} className="space-y-4">
           {error && (
-            <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md p-3">
-              <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+            <div className={themed.isRetro ? "retro-card p-3" : "p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md"}>
+              <ErrorMessage>{error}</ErrorMessage>
             </div>
           )}
 
           {jobStatus && !error && (
-            <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-md p-3">
-              <p className="text-sm text-blue-600 dark:text-blue-400">{jobStatus}</p>
+            <div
+              className={themed.isRetro ? "retro-card p-3" : "p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-md"}
+              style={themed.isRetro ? { borderColor: NES_BLUE } : undefined}
+            >
+              <p className={themed.isRetro ? "retro-small uppercase font-bold retro-body" : "text-sm text-blue-600 dark:text-blue-400"} style={themed.isRetro ? { color: NES_BLUE } : undefined}>
+                {jobStatus}
+              </p>
             </div>
           )}
 
-          <div>
-            <label className="block mb-2 text-sm font-medium text-foreground">
-              {t("inventory")}
-            </label>
+          <FormGroup>
+            <Label htmlFor="inventory" required>{t("inventory")}</Label>
             <SearchableSelect
               options={inventoryOptions}
               value={formData.inventory_id}
@@ -916,12 +525,10 @@ function CreateLoanModal({
               disabled={submitting}
               required
             />
-          </div>
+          </FormGroup>
 
-          <div>
-            <label className="block mb-2 text-sm font-medium text-foreground">
-              {t("borrower")}
-            </label>
+          <FormGroup>
+            <Label htmlFor="borrower" required>{t("borrower")}</Label>
             <SearchableSelect
               options={borrowerOptions}
               value={formData.borrower_id}
@@ -936,13 +543,12 @@ function CreateLoanModal({
               disabled={submitting}
               required
             />
-          </div>
+          </FormGroup>
 
-          <div>
-            <label className="block mb-2 text-sm font-medium text-foreground">
-              {t("quantity")}
-            </label>
-            <input
+          <FormGroup>
+            <Label htmlFor="quantity" required>{t("quantity")}</Label>
+            <Input
+              id="quantity"
               type="number"
               min="1"
               value={formData.quantity}
@@ -952,17 +558,15 @@ function CreateLoanModal({
                   quantity: parseInt(e.target.value) || 1,
                 }))
               }
-              className="w-full px-3 py-2 bg-background text-foreground border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
               required
               disabled={submitting}
             />
-          </div>
+          </FormGroup>
 
-          <div>
-            <label className="block mb-2 text-sm font-medium text-foreground">
-              {t("dueDate")}
-            </label>
-            <input
+          <FormGroup>
+            <Label htmlFor="due_date">{t("dueDate")}</Label>
+            <Input
+              id="due_date"
               type="date"
               value={formData.due_date || ""}
               onChange={(e) =>
@@ -971,16 +575,14 @@ function CreateLoanModal({
                   due_date: e.target.value || null,
                 }))
               }
-              className="w-full px-3 py-2 bg-background text-foreground border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
               disabled={submitting}
             />
-          </div>
+          </FormGroup>
 
-          <div>
-            <label className="block mb-2 text-sm font-medium text-foreground">
-              {t("notes")}
-            </label>
-            <textarea
+          <FormGroup>
+            <Label htmlFor="notes">{t("notes")}</Label>
+            <Textarea
+              id="notes"
               value={formData.notes || ""}
               onChange={(e) =>
                 setFormData((prev) => ({
@@ -990,31 +592,25 @@ function CreateLoanModal({
               }
               placeholder={t("notesPlaceholder")}
               rows={3}
-              className="w-full px-3 py-2 bg-background text-foreground border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent resize-none"
               disabled={submitting}
             />
-          </div>
-
-          <div className="flex justify-end gap-3 pt-4">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-4 py-2 border border-border rounded-md hover:bg-muted transition-colors"
-              disabled={submitting}
-            >
-              {t("cancel")}
-            </button>
-            <button
-              type="submit"
-              disabled={submitting}
-              className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors disabled:opacity-50"
-            >
-              {submitting ? t("saving") : t("save")}
-            </button>
-          </div>
+          </FormGroup>
         </form>
-      </div>
-    </div>
+      </Modal.Body>
+      <Modal.Footer>
+        <Button variant="secondary" onClick={onClose} disabled={submitting}>
+          {t("cancel")}
+        </Button>
+        <Button
+          variant="primary"
+          type="submit"
+          form="loan-form"
+          loading={submitting}
+        >
+          {t("save")}
+        </Button>
+      </Modal.Footer>
+    </Modal>
   );
 }
 
@@ -1028,7 +624,7 @@ function ReturnLoanModal({
   getInventoryDisplay,
   t,
   te,
-  isRetro,
+  themed,
 }: {
   isOpen: boolean;
   onClose: () => void;
@@ -1038,8 +634,10 @@ function ReturnLoanModal({
   getInventoryDisplay: (id: string) => string;
   t: (key: string) => string;
   te: (key: string) => string;
-  isRetro: boolean;
+  themed: ThemedComponents;
 }) {
+  const { Modal, Button, FormGroup, Label, Textarea, Error: ErrorMessage } = themed;
+
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [notes, setNotes] = useState<string>("");
@@ -1056,11 +654,11 @@ function ReturnLoanModal({
     try {
       await loansApi.return(loan.id, { notes: notes || null });
       onSuccess();
-    } catch (err) {
-      const errorMessage =
-        err instanceof Error
-          ? getTranslatedErrorMessage(err.message, te)
-          : te("UNKNOWN_ERROR");
+    } catch (e) {
+      const err = e as Error;
+      const errorMessage = err.message
+        ? getTranslatedErrorMessage(err.message, te)
+        : te("UNKNOWN_ERROR");
       setError(errorMessage);
     } finally {
       setSubmitting(false);
@@ -1069,133 +667,57 @@ function ReturnLoanModal({
 
   if (!isOpen) return null;
 
-  // Retro Modal
-  if (isRetro) {
-    return (
-      <RetroModal open={isOpen} onClose={onClose} size="md">
-        <RetroModal.Header title={t("returnConfirmTitle")} variant="success" />
-        <RetroModal.Body>
-          {error && (
-            <div className="retro-card p-3 mb-4">
-              <RetroError>{error}</RetroError>
-            </div>
-          )}
-
-          <p className="retro-body text-muted-foreground mb-4">{t("returnConfirmMessage")}</p>
-
-          <RetroModal.Preview>
-            <div className="flex items-center gap-2">
-              <Icon name="Package" className="w-4 h-4 text-muted-foreground" />
-              <span className="retro-heading">{getInventoryDisplay(loan.inventory_id)}</span>
-            </div>
-            <div className="flex items-center gap-2 text-muted-foreground mt-2">
-              <Icon name="Contact" className="w-3 h-3" />
-              {getBorrowerName(loan.borrower_id)}
-            </div>
-            <div className="text-muted-foreground mt-1">
-              Qty: {loan.quantity}
-            </div>
-          </RetroModal.Preview>
-
-          <RetroFormGroup className="mt-4">
-            <RetroLabel htmlFor="return_notes">{t("notes")}</RetroLabel>
-            <RetroTextarea
-              id="return_notes"
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              placeholder={t("notesPlaceholder")}
-              rows={2}
-            />
-          </RetroFormGroup>
-        </RetroModal.Body>
-        <RetroModal.Footer>
-          <RetroButton variant="secondary" onClick={onClose}>
-            {t("cancel")}
-          </RetroButton>
-          <RetroButton
-            variant="success"
-            onClick={handleReturn}
-            loading={submitting}
-          >
-            {t("returnConfirmButton")}
-          </RetroButton>
-        </RetroModal.Footer>
-      </RetroModal>
-    );
-  }
-
-  // Standard Modal
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center" onClick={onClose}>
-      <div className="absolute inset-0 bg-black/50" />
-      <div
-        className="relative z-10 w-full max-w-md m-4 bg-background border rounded-lg shadow-xl"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="flex items-center justify-between p-4 border-b">
-          <h2 className="text-lg font-semibold text-green-600 dark:text-green-400">
-            {t("returnConfirmTitle")}
-          </h2>
-          <button onClick={onClose} className="p-1 rounded hover:bg-muted">
-            <X className="w-5 h-5" />
-          </button>
-        </div>
-
-        <div className="p-4 space-y-4">
-          {error && (
-            <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md p-3">
-              <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
-            </div>
-          )}
-
-          <p className="text-muted-foreground">{t("returnConfirmMessage")}</p>
-
-          <div className="p-3 bg-muted rounded-md space-y-2">
-            <div className="flex items-center gap-2">
-              <Package className="w-4 h-4 text-muted-foreground" />
-              <span className="font-medium">{getInventoryDisplay(loan.inventory_id)}</span>
-            </div>
-            <div className="flex items-center gap-2 text-muted-foreground text-sm">
-              <Contact className="w-3 h-3" />
-              {getBorrowerName(loan.borrower_id)}
-            </div>
-            <div className="text-muted-foreground text-sm">
-              Qty: {loan.quantity}
-            </div>
+    <Modal open={isOpen} onClose={onClose} size="md">
+      <Modal.Header title={t("returnConfirmTitle")} variant="success" />
+      <Modal.Body>
+        {error && (
+          <div className={themed.isRetro ? "retro-card p-3 mb-4" : "p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md mb-4"}>
+            <ErrorMessage>{error}</ErrorMessage>
           </div>
+        )}
 
-          <div>
-            <label className="block mb-2 text-sm font-medium text-foreground">
-              {t("notes")}
-            </label>
-            <textarea
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              placeholder={t("notesPlaceholder")}
-              rows={2}
-              className="w-full px-3 py-2 bg-background text-foreground border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent resize-none"
-            />
-          </div>
+        <p className={themed.isRetro ? "retro-body text-muted-foreground mb-4" : "text-muted-foreground mb-4"}>
+          {t("returnConfirmMessage")}
+        </p>
 
-          <div className="flex justify-end gap-3 pt-4">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-4 py-2 border border-border rounded-md hover:bg-muted transition-colors"
-            >
-              {t("cancel")}
-            </button>
-            <button
-              type="button"
-              onClick={handleReturn}
-              disabled={submitting}
-              className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors disabled:opacity-50"
-            >
-              {submitting ? t("returning") : t("returnConfirmButton")}
-            </button>
+        <Modal.Preview>
+          <div className="flex items-center gap-2">
+            <Icon name="Package" className="w-4 h-4 text-muted-foreground" />
+            <span className={themed.isRetro ? "retro-heading" : "font-medium"}>{getInventoryDisplay(loan.inventory_id)}</span>
           </div>
-        </div>
-      </div>
-    </div>
+          <div className={`flex items-center gap-2 text-muted-foreground mt-2 ${themed.isRetro ? "retro-body" : "text-sm"}`}>
+            <Icon name="Contact" className="w-3 h-3" />
+            {getBorrowerName(loan.borrower_id)}
+          </div>
+          <div className={`text-muted-foreground mt-1 ${themed.isRetro ? "retro-body" : "text-sm"}`}>
+            Qty: {loan.quantity}
+          </div>
+        </Modal.Preview>
+
+        <FormGroup className="mt-4">
+          <Label htmlFor="return_notes">{t("notes")}</Label>
+          <Textarea
+            id="return_notes"
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+            placeholder={t("notesPlaceholder")}
+            rows={2}
+          />
+        </FormGroup>
+      </Modal.Body>
+      <Modal.Footer>
+        <Button variant="secondary" onClick={onClose}>
+          {t("cancel")}
+        </Button>
+        <Button
+          variant="success"
+          onClick={handleReturn}
+          loading={submitting}
+        >
+          {t("returnConfirmButton")}
+        </Button>
+      </Modal.Footer>
+    </Modal>
   );
 }

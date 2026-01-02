@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useTheme } from 'next-themes';
+import { useThemedClasses } from '@/lib/themed';
 import { ChevronRight, ChevronDown, Plus, Pencil, Trash2 } from 'lucide-react';
 import { Icon } from '@/components/icons';
 import { cn } from '@/lib/utils';
@@ -166,8 +166,7 @@ export function TreeView<T extends TreeNode>({
   expandedByDefault = true,
   disabled = false,
 }: TreeViewProps<T>) {
-  const { theme } = useTheme();
-  const isRetro = theme?.startsWith('retro');
+  const classes = useThemedClasses();
 
   if (items.length === 0) {
     return null;
@@ -176,7 +175,7 @@ export function TreeView<T extends TreeNode>({
   return (
     <div className={cn(
       "divide-y divide-border",
-      isRetro ? "border-4 border-border" : "border border-border rounded-lg"
+      classes.isRetro ? "border-4 border-border" : "border border-border rounded-lg"
     )}>
       {items.map((item) => (
         <TreeNodeComponent
@@ -187,7 +186,7 @@ export function TreeView<T extends TreeNode>({
           onAddChild={onAddChild}
           expandedByDefault={expandedByDefault}
           disabled={disabled}
-          isRetro={isRetro}
+          isRetro={classes.isRetro}
         />
       ))}
     </div>

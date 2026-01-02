@@ -4,9 +4,8 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@/lib/auth";
 import { analyticsApi, AnalyticsData } from "@/lib/api";
 import { useTranslations } from "next-intl";
-import { useTheme } from "next-themes";
+import { useThemed, useThemedClasses } from "@/lib/themed";
 import {
-  BarChart3,
   Package,
   MapPin,
   Users,
@@ -107,11 +106,17 @@ const NES_CONDITION_COLORS: Record<string, string> = {
 export default function AnalyticsPage() {
   const { isAuthenticated, isLoading: authLoading } = useAuth();
   const t = useTranslations("analytics");
-  const { theme } = useTheme();
-  const isRetro = theme?.startsWith("retro");
+  const themed = useThemed();
+  const classes = useThemedClasses();
+  const { Card, PageHeader, Button, EmptyState } = themed;
   const [data, setData] = useState<AnalyticsData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Get theme-appropriate colors
+  const chartColors = classes.isRetro ? NES_CHART_COLORS : COLORS;
+  const statusColors = classes.isRetro ? NES_STATUS_COLORS : STATUS_COLORS;
+  const conditionColors = classes.isRetro ? NES_CONDITION_COLORS : CONDITION_COLORS;
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -139,12 +144,9 @@ export default function AnalyticsPage() {
     return (
       <div className={cn(
         "flex items-center justify-center min-h-[400px]",
-        isRetro && "retro-body"
+        classes.isRetro && "retro-body"
       )}>
-        <div className={cn(
-          "text-muted-foreground",
-          isRetro && "retro-small uppercase"
-        )}>{t("loading")}</div>
+        <div className={classes.loadingText}>{t("loading")}</div>
       </div>
     );
   }
@@ -157,22 +159,15 @@ export default function AnalyticsPage() {
     return (
       <div className={cn(
         "flex flex-col items-center justify-center min-h-[400px]",
-        isRetro && "retro-body"
+        classes.isRetro && "retro-body"
       )}>
         <p className={cn(
           "mb-4",
-          isRetro ? "retro-small uppercase" : "text-red-500"
-        )} style={isRetro ? { color: NES_RED } : undefined}>{error}</p>
-        <button
-          onClick={fetchAnalytics}
-          className={cn(
-            isRetro
-              ? "px-4 py-2 border-4 border-border bg-primary text-white retro-small uppercase font-bold retro-shadow-sm hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
-              : "px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
-          )}
-        >
+          classes.errorText
+        )} style={classes.isRetro ? { color: NES_RED } : undefined}>{error}</p>
+        <Button onClick={fetchAnalytics} variant="primary">
           {t("tryAgain")}
-        </button>
+        </Button>
       </div>
     );
   }
@@ -186,317 +181,79 @@ export default function AnalyticsPage() {
     }).format(cents / 100);
   };
 
-  // Retro theme UI
-  if (isRetro) {
-    return (
-      <>
-        {/* Header */}
-        <div className="mb-8">
-          <div className="bg-primary p-4 border-4 border-border retro-shadow">
-            <h1 className="text-lg font-bold text-white uppercase retro-heading">
-              {t("title")}
-            </h1>
-            <p className="text-white/80 retro-body retro-small uppercase mt-1">
-              {t("subtitle")}
-            </p>
-          </div>
-        </div>
-
-        {/* Summary Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <RetroStatCard
-            iconName="Package"
-            label={t("totalItems")}
-            value={data.total_items.toLocaleString()}
-          />
-          <RetroStatCard
-            iconName="Boxes"
-            label={t("inventoryRecords")}
-            value={data.total_inventory_records.toLocaleString()}
-          />
-          <RetroStatCard
-            iconName="MapPin"
-            label={t("locations")}
-            value={data.total_locations.toLocaleString()}
-          />
-          <RetroStatCard
-            iconName="DollarSign"
-            label={t("totalAssetValue")}
-            value={formatCurrency(
-              data.asset_value.total_value,
-              data.asset_value.currency_code
-            )}
-          />
-        </div>
-
-        {/* Loan Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-          <div className="bg-card p-4 border-4 border-border retro-shadow">
-            <p className="retro-small uppercase text-muted-foreground">{t("totalLoans")}</p>
-            <p className="text-3xl font-bold" style={{ fontFamily: "var(--font-pixel)" }}>{data.loan_stats.total_loans}</p>
-          </div>
-          <div className="bg-card p-4 border-4 border-border retro-shadow">
-            <p className="retro-small uppercase text-muted-foreground">{t("activeLoans")}</p>
-            <p className="text-3xl font-bold" style={{ fontFamily: "var(--font-pixel)", color: NES_BLUE }}>
-              {data.loan_stats.active_loans}
-            </p>
-          </div>
-          <div className="bg-card p-4 border-4 border-border retro-shadow">
-            <p className="retro-small uppercase text-muted-foreground">{t("returnedLoans")}</p>
-            <p className="text-3xl font-bold" style={{ fontFamily: "var(--font-pixel)", color: NES_GREEN }}>
-              {data.loan_stats.returned_loans}
-            </p>
-          </div>
-          <div className="bg-card p-4 border-4 border-border retro-shadow">
-            <p className="retro-small uppercase text-muted-foreground">{t("overdueLoans")}</p>
-            <p className="text-3xl font-bold flex items-center gap-2" style={{ fontFamily: "var(--font-pixel)", color: NES_RED }}>
-              {data.loan_stats.overdue_loans}
-              {data.loan_stats.overdue_loans > 0 && (
-                <Icon name="AlertTriangle" className="w-5 h-5" />
-              )}
-            </p>
-          </div>
-        </div>
-
-        {/* Charts Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-          {/* Inventory by Status */}
-          {data.inventory_by_status.length > 0 && (
-            <RetroChartCard title={t("inventoryByStatus")}>
-              <ResponsiveContainer width="100%" height={300}>
-                <PieChart>
-                  <Pie
-                    data={data.inventory_by_status as any[]}
-                    dataKey="quantity"
-                    nameKey="status"
-                    cx="50%"
-                    cy="50%"
-                    outerRadius={100}
-                    label
-                    strokeWidth={4}
-                    stroke="var(--border)"
-                  >
-                    {data.inventory_by_status.map((entry, index) => (
-                      <Cell
-                        key={`cell-${index}`}
-                        fill={
-                          NES_STATUS_COLORS[entry.status] ||
-                          NES_CHART_COLORS[index % NES_CHART_COLORS.length]
-                        }
-                      />
-                    ))}
-                  </Pie>
-                  <Tooltip />
-                  <Legend />
-                </PieChart>
-              </ResponsiveContainer>
-            </RetroChartCard>
-          )}
-
-          {/* Inventory by Condition */}
-          {data.inventory_by_condition.length > 0 && (
-            <RetroChartCard title={t("inventoryByCondition")}>
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={data.inventory_by_condition as any[]}>
-                  <CartesianGrid strokeDasharray="4 4" stroke="var(--border)" />
-                  <XAxis dataKey="condition" tick={{ fontSize: 10 }} />
-                  <YAxis tick={{ fontSize: 10 }} />
-                  <Tooltip />
-                  <Bar dataKey="quantity" name={t("quantity")}>
-                    {data.inventory_by_condition.map((entry, index) => (
-                      <Cell
-                        key={`cell-${index}`}
-                        fill={
-                          NES_CONDITION_COLORS[entry.condition] ||
-                          NES_CHART_COLORS[index % NES_CHART_COLORS.length]
-                        }
-                        strokeWidth={4}
-                        stroke="var(--border)"
-                      />
-                    ))}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
-            </RetroChartCard>
-          )}
-
-          {/* Category Breakdown */}
-          {data.category_breakdown.length > 0 && (
-            <RetroChartCard title={t("categoryBreakdown")}>
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={data.category_breakdown as any[]} layout="vertical">
-                  <CartesianGrid strokeDasharray="4 4" stroke="var(--border)" />
-                  <XAxis type="number" tick={{ fontSize: 10 }} />
-                  <YAxis dataKey="category_name" type="category" width={120} tick={{ fontSize: 10 }} />
-                  <Tooltip />
-                  <Legend />
-                  <Bar dataKey="item_count" name={t("items")} fill={NES_BLUE} strokeWidth={4} stroke="var(--border)" />
-                  <Bar dataKey="inventory_count" name={t("inventory")} fill={NES_GREEN} strokeWidth={4} stroke="var(--border)" />
-                </BarChart>
-              </ResponsiveContainer>
-            </RetroChartCard>
-          )}
-
-          {/* Location Distribution */}
-          {data.location_breakdown.length > 0 && (
-            <RetroChartCard title={t("locationDistribution")}>
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={data.location_breakdown as any[]}>
-                  <CartesianGrid strokeDasharray="4 4" stroke="var(--border)" />
-                  <XAxis dataKey="location_name" tick={{ fontSize: 10 }} />
-                  <YAxis tick={{ fontSize: 10 }} />
-                  <Tooltip />
-                  <Bar
-                    dataKey="total_quantity"
-                    name={t("totalQuantity")}
-                    fill="#8b5cf6"
-                    strokeWidth={4}
-                    stroke="var(--border)"
-                  />
-                </BarChart>
-              </ResponsiveContainer>
-            </RetroChartCard>
-          )}
-        </div>
-
-        {/* Top Borrowers */}
-        {data.top_borrowers.length > 0 && (
-          <div className="bg-card p-6 border-4 border-border retro-shadow">
-            <h3 className="text-sm font-bold uppercase retro-heading mb-4 flex items-center gap-2">
-              <Icon name="Users" className="w-5 h-5" />
-              {t("topBorrowers")}
-            </h3>
-            <div className="overflow-x-auto">
-              <table className="w-full retro-body">
-                <thead>
-                  <tr className="border-b-4 border-border bg-muted/30">
-                    <th className="text-left py-3 px-4 retro-small uppercase font-bold">{t("borrowerName")}</th>
-                    <th className="text-right py-3 px-4 retro-small uppercase font-bold">{t("activeLoans")}</th>
-                    <th className="text-right py-3 px-4 retro-small uppercase font-bold">{t("totalLoans")}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {data.top_borrowers.map((borrower, index) => (
-                    <tr
-                      key={borrower.borrower_id}
-                      className={index % 2 === 0 ? "bg-background" : "bg-muted/20"}
-                    >
-                      <td className="py-3 px-4 retro-small font-bold">{borrower.borrower_name}</td>
-                      <td className="text-right py-3 px-4">
-                        <div className="flex items-center justify-end gap-1">
-                          {Array.from({ length: Math.min(borrower.active_loans, 5) }).map((_, i) => (
-                            <span key={i} style={{ color: NES_YELLOW }}>●</span>
-                          ))}
-                          {borrower.active_loans > 5 && (
-                            <span className="retro-small font-bold" style={{ color: NES_YELLOW }}>+{borrower.active_loans - 5}</span>
-                          )}
-                          {borrower.active_loans === 0 && (
-                            <span className="text-muted-foreground">—</span>
-                          )}
-                        </div>
-                      </td>
-                      <td className="text-right py-3 px-4">
-                        <div className="flex items-center justify-end gap-1">
-                          {Array.from({ length: Math.min(borrower.total_loans, 5) }).map((_, i) => (
-                            <span key={i} style={{ color: NES_BLUE }}>◆</span>
-                          ))}
-                          {borrower.total_loans > 5 && (
-                            <span className="retro-small font-bold" style={{ color: NES_BLUE }}>+{borrower.total_loans - 5}</span>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        )}
-
-        {/* Empty State */}
-        {data.total_items === 0 &&
-          data.total_inventory_records === 0 &&
-          data.total_locations === 0 && (
-            <div className="bg-card p-8 border-4 border-border retro-shadow text-center">
-              <div className="w-16 h-16 mx-auto mb-4 border-4 border-border flex items-center justify-center" style={{ backgroundColor: NES_BLUE }}>
-                <Icon name="FolderTree" className="w-8 h-8 text-white" />
-              </div>
-              <h3 className="text-sm font-bold uppercase retro-heading mb-2">{t("noData")}</h3>
-              <p className="text-muted-foreground retro-small uppercase retro-body">{t("noDataDescription")}</p>
-            </div>
-          )}
-      </>
-    );
-  }
-
   return (
     <>
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-foreground">{t("title")}</h1>
-        <p className="text-muted-foreground mt-2">{t("subtitle")}</p>
-      </div>
+      {/* Header */}
+      <PageHeader title={t("title")} subtitle={t("subtitle")} />
 
       {/* Summary Stats */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <StatCard
+          iconName="Package"
           icon={Package}
           label={t("totalItems")}
           value={data.total_items.toLocaleString()}
+          isRetro={classes.isRetro}
         />
         <StatCard
+          iconName="Boxes"
           icon={Boxes}
           label={t("inventoryRecords")}
           value={data.total_inventory_records.toLocaleString()}
+          isRetro={classes.isRetro}
         />
         <StatCard
+          iconName="MapPin"
           icon={MapPin}
           label={t("locations")}
           value={data.total_locations.toLocaleString()}
+          isRetro={classes.isRetro}
         />
         <StatCard
+          iconName="DollarSign"
           icon={DollarSign}
           label={t("totalAssetValue")}
           value={formatCurrency(
             data.asset_value.total_value,
             data.asset_value.currency_code
           )}
+          isRetro={classes.isRetro}
         />
       </div>
 
       {/* Loan Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-        <div className="bg-card p-4 rounded-lg border">
-          <p className="text-sm text-muted-foreground">{t("totalLoans")}</p>
-          <p className="text-2xl font-bold">{data.loan_stats.total_loans}</p>
-        </div>
-        <div className="bg-card p-4 rounded-lg border">
-          <p className="text-sm text-muted-foreground">{t("activeLoans")}</p>
-          <p className="text-2xl font-bold text-blue-600">
-            {data.loan_stats.active_loans}
-          </p>
-        </div>
-        <div className="bg-card p-4 rounded-lg border">
-          <p className="text-sm text-muted-foreground">{t("returnedLoans")}</p>
-          <p className="text-2xl font-bold text-green-600">
-            {data.loan_stats.returned_loans}
-          </p>
-        </div>
-        <div className="bg-card p-4 rounded-lg border">
-          <p className="text-sm text-muted-foreground">{t("overdueLoans")}</p>
-          <p className="text-2xl font-bold text-red-600 flex items-center gap-2">
-            {data.loan_stats.overdue_loans}
-            {data.loan_stats.overdue_loans > 0 && (
-              <AlertTriangle className="w-5 h-5" />
-            )}
-          </p>
-        </div>
+        <LoanStatCard
+          label={t("totalLoans")}
+          value={data.loan_stats.total_loans}
+          isRetro={classes.isRetro}
+        />
+        <LoanStatCard
+          label={t("activeLoans")}
+          value={data.loan_stats.active_loans}
+          color={classes.isRetro ? NES_BLUE : "text-blue-600"}
+          isRetro={classes.isRetro}
+        />
+        <LoanStatCard
+          label={t("returnedLoans")}
+          value={data.loan_stats.returned_loans}
+          color={classes.isRetro ? NES_GREEN : "text-green-600"}
+          isRetro={classes.isRetro}
+        />
+        <LoanStatCard
+          label={t("overdueLoans")}
+          value={data.loan_stats.overdue_loans}
+          color={classes.isRetro ? NES_RED : "text-red-600"}
+          showWarning={data.loan_stats.overdue_loans > 0}
+          isRetro={classes.isRetro}
+        />
       </div>
 
       {/* Charts Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
         {/* Inventory by Status */}
         {data.inventory_by_status.length > 0 && (
-          <ChartCard title={t("inventoryByStatus")}>
+          <ChartCard title={t("inventoryByStatus")} isRetro={classes.isRetro}>
             <ResponsiveContainer width="100%" height={300}>
               <PieChart>
                 <Pie
@@ -507,13 +264,15 @@ export default function AnalyticsPage() {
                   cy="50%"
                   outerRadius={100}
                   label
+                  strokeWidth={classes.isRetro ? 4 : 1}
+                  stroke={classes.isRetro ? "var(--border)" : undefined}
                 >
                   {data.inventory_by_status.map((entry, index) => (
                     <Cell
                       key={`cell-${index}`}
                       fill={
-                        STATUS_COLORS[entry.status] ||
-                        COLORS[index % COLORS.length]
+                        statusColors[entry.status] ||
+                        chartColors[index % chartColors.length]
                       }
                     />
                   ))}
@@ -527,21 +286,26 @@ export default function AnalyticsPage() {
 
         {/* Inventory by Condition */}
         {data.inventory_by_condition.length > 0 && (
-          <ChartCard title={t("inventoryByCondition")}>
+          <ChartCard title={t("inventoryByCondition")} isRetro={classes.isRetro}>
             <ResponsiveContainer width="100%" height={300}>
               <BarChart data={data.inventory_by_condition as any[]}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="condition" />
-                <YAxis />
+                <CartesianGrid
+                  strokeDasharray={classes.isRetro ? "4 4" : "3 3"}
+                  stroke={classes.isRetro ? "var(--border)" : undefined}
+                />
+                <XAxis dataKey="condition" tick={{ fontSize: classes.isRetro ? 10 : 12 }} />
+                <YAxis tick={{ fontSize: classes.isRetro ? 10 : 12 }} />
                 <Tooltip />
                 <Bar dataKey="quantity" name={t("quantity")}>
                   {data.inventory_by_condition.map((entry, index) => (
                     <Cell
                       key={`cell-${index}`}
                       fill={
-                        CONDITION_COLORS[entry.condition] ||
-                        COLORS[index % COLORS.length]
+                        conditionColors[entry.condition] ||
+                        chartColors[index % chartColors.length]
                       }
+                      strokeWidth={classes.isRetro ? 4 : 0}
+                      stroke={classes.isRetro ? "var(--border)" : undefined}
                     />
                   ))}
                 </Bar>
@@ -552,19 +316,30 @@ export default function AnalyticsPage() {
 
         {/* Category Breakdown */}
         {data.category_breakdown.length > 0 && (
-          <ChartCard title={t("categoryBreakdown")}>
+          <ChartCard title={t("categoryBreakdown")} isRetro={classes.isRetro}>
             <ResponsiveContainer width="100%" height={300}>
               <BarChart data={data.category_breakdown as any[]} layout="vertical">
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis type="number" />
-                <YAxis dataKey="category_name" type="category" width={120} />
+                <CartesianGrid
+                  strokeDasharray={classes.isRetro ? "4 4" : "3 3"}
+                  stroke={classes.isRetro ? "var(--border)" : undefined}
+                />
+                <XAxis type="number" tick={{ fontSize: classes.isRetro ? 10 : 12 }} />
+                <YAxis dataKey="category_name" type="category" width={120} tick={{ fontSize: classes.isRetro ? 10 : 12 }} />
                 <Tooltip />
                 <Legend />
-                <Bar dataKey="item_count" name={t("items")} fill="#3b82f6" />
+                <Bar
+                  dataKey="item_count"
+                  name={t("items")}
+                  fill={classes.isRetro ? NES_BLUE : "#3b82f6"}
+                  strokeWidth={classes.isRetro ? 4 : 0}
+                  stroke={classes.isRetro ? "var(--border)" : undefined}
+                />
                 <Bar
                   dataKey="inventory_count"
                   name={t("inventory")}
-                  fill="#10b981"
+                  fill={classes.isRetro ? NES_GREEN : "#10b981"}
+                  strokeWidth={classes.isRetro ? 4 : 0}
+                  stroke={classes.isRetro ? "var(--border)" : undefined}
                 />
               </BarChart>
             </ResponsiveContainer>
@@ -573,17 +348,22 @@ export default function AnalyticsPage() {
 
         {/* Location Distribution */}
         {data.location_breakdown.length > 0 && (
-          <ChartCard title={t("locationDistribution")}>
+          <ChartCard title={t("locationDistribution")} isRetro={classes.isRetro}>
             <ResponsiveContainer width="100%" height={300}>
               <BarChart data={data.location_breakdown as any[]}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="location_name" />
-                <YAxis />
+                <CartesianGrid
+                  strokeDasharray={classes.isRetro ? "4 4" : "3 3"}
+                  stroke={classes.isRetro ? "var(--border)" : undefined}
+                />
+                <XAxis dataKey="location_name" tick={{ fontSize: classes.isRetro ? 10 : 12 }} />
+                <YAxis tick={{ fontSize: classes.isRetro ? 10 : 12 }} />
                 <Tooltip />
                 <Bar
                   dataKey="total_quantity"
                   name={t("totalQuantity")}
                   fill="#8b5cf6"
+                  strokeWidth={classes.isRetro ? 4 : 0}
+                  stroke={classes.isRetro ? "var(--border)" : undefined}
                 />
               </BarChart>
             </ResponsiveContainer>
@@ -593,64 +373,140 @@ export default function AnalyticsPage() {
 
       {/* Top Borrowers */}
       {data.top_borrowers.length > 0 && (
-        <div className="bg-card p-6 rounded-lg border">
-          <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-            <Users className="w-5 h-5" />
-            {t("topBorrowers")}
-          </h3>
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b">
-                  <th className="text-left py-2 px-4">{t("borrowerName")}</th>
-                  <th className="text-right py-2 px-4">{t("activeLoans")}</th>
-                  <th className="text-right py-2 px-4">{t("totalLoans")}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {data.top_borrowers.map((borrower) => (
-                  <tr
-                    key={borrower.borrower_id}
-                    className="border-b hover:bg-muted/50"
-                  >
-                    <td className="py-2 px-4">{borrower.borrower_name}</td>
-                    <td className="text-right py-2 px-4">
-                      {borrower.active_loans}
-                    </td>
-                    <td className="text-right py-2 px-4">
-                      {borrower.total_loans}
-                    </td>
+        <Card>
+          <div className="p-6">
+            <h3 className={cn(
+              "mb-4 flex items-center gap-2",
+              classes.isRetro ? "text-sm font-bold uppercase retro-heading" : "text-lg font-semibold"
+            )}>
+              {classes.isRetro ? (
+                <Icon name="Users" className="w-5 h-5" />
+              ) : (
+                <Users className="w-5 h-5" />
+              )}
+              {t("topBorrowers")}
+            </h3>
+            <div className="overflow-x-auto">
+              <table className={cn("w-full", classes.isRetro && "retro-body")}>
+                <thead>
+                  <tr className={cn(
+                    classes.isRetro ? "border-b-4 border-border bg-muted/30" : "border-b"
+                  )}>
+                    <th className={cn(
+                      "text-left py-2 px-4",
+                      classes.isRetro && "py-3 retro-small uppercase font-bold"
+                    )}>{t("borrowerName")}</th>
+                    <th className={cn(
+                      "text-right py-2 px-4",
+                      classes.isRetro && "py-3 retro-small uppercase font-bold"
+                    )}>{t("activeLoans")}</th>
+                    <th className={cn(
+                      "text-right py-2 px-4",
+                      classes.isRetro && "py-3 retro-small uppercase font-bold"
+                    )}>{t("totalLoans")}</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {data.top_borrowers.map((borrower, index) => (
+                    <tr
+                      key={borrower.borrower_id}
+                      className={cn(
+                        classes.isRetro
+                          ? (index % 2 === 0 ? "bg-background" : "bg-muted/20")
+                          : "border-b hover:bg-muted/50"
+                      )}
+                    >
+                      <td className={cn(
+                        "py-2 px-4",
+                        classes.isRetro && "py-3 retro-small font-bold"
+                      )}>{borrower.borrower_name}</td>
+                      <td className={cn(
+                        "text-right py-2 px-4",
+                        classes.isRetro && "py-3"
+                      )}>
+                        {classes.isRetro ? (
+                          <div className="flex items-center justify-end gap-1">
+                            {Array.from({ length: Math.min(borrower.active_loans, 5) }).map((_, i) => (
+                              <span key={i} style={{ color: NES_YELLOW }}>●</span>
+                            ))}
+                            {borrower.active_loans > 5 && (
+                              <span className="retro-small font-bold" style={{ color: NES_YELLOW }}>+{borrower.active_loans - 5}</span>
+                            )}
+                            {borrower.active_loans === 0 && (
+                              <span className="text-muted-foreground">-</span>
+                            )}
+                          </div>
+                        ) : (
+                          borrower.active_loans
+                        )}
+                      </td>
+                      <td className={cn(
+                        "text-right py-2 px-4",
+                        classes.isRetro && "py-3"
+                      )}>
+                        {classes.isRetro ? (
+                          <div className="flex items-center justify-end gap-1">
+                            {Array.from({ length: Math.min(borrower.total_loans, 5) }).map((_, i) => (
+                              <span key={i} style={{ color: NES_BLUE }}>{"\u25C6"}</span>
+                            ))}
+                            {borrower.total_loans > 5 && (
+                              <span className="retro-small font-bold" style={{ color: NES_BLUE }}>+{borrower.total_loans - 5}</span>
+                            )}
+                          </div>
+                        ) : (
+                          borrower.total_loans
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
-        </div>
+        </Card>
       )}
 
       {/* Empty State */}
       {data.total_items === 0 &&
         data.total_inventory_records === 0 &&
         data.total_locations === 0 && (
-          <div className="bg-card p-8 rounded-lg border text-center">
-            <FolderTree className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-            <h3 className="text-lg font-semibold mb-2">{t("noData")}</h3>
-            <p className="text-muted-foreground">{t("noDataDescription")}</p>
-          </div>
+          <EmptyState
+            icon="FolderTree"
+            message={t("noData")}
+            description={t("noDataDescription")}
+          />
         )}
     </>
   );
 }
 
 function StatCard({
-  icon: Icon,
+  icon: StandardIcon,
+  iconName,
   label,
   value,
+  isRetro,
 }: {
   icon: React.ComponentType<{ className?: string }>;
+  iconName: "Package" | "Boxes" | "MapPin" | "DollarSign";
   label: string;
   value: string;
+  isRetro: boolean;
 }) {
+  if (isRetro) {
+    return (
+      <div className="bg-card p-4 border-4 border-border retro-shadow flex items-center justify-between gap-3">
+        <div>
+          <p className="retro-small uppercase font-bold text-muted-foreground hidden xl:block">{label}</p>
+          <p className="text-2xl font-bold text-foreground" style={{ fontFamily: "var(--font-pixel)" }}>{value}</p>
+        </div>
+        <div className="w-10 h-10 border-4 border-border flex items-center justify-center flex-shrink-0" style={{ backgroundColor: NES_BLUE }} title={label}>
+          <Icon name={iconName} className="w-5 h-5 text-white" />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="bg-card p-6 rounded-lg border shadow-sm">
       <div className="flex items-center justify-between">
@@ -658,8 +514,52 @@ function StatCard({
           <p className="text-sm font-medium text-muted-foreground">{label}</p>
           <p className="text-3xl font-bold text-foreground mt-1">{value}</p>
         </div>
-        <Icon className="w-8 h-8 text-primary" />
+        <StandardIcon className="w-8 h-8 text-primary" />
       </div>
+    </div>
+  );
+}
+
+function LoanStatCard({
+  label,
+  value,
+  color,
+  showWarning,
+  isRetro,
+}: {
+  label: string;
+  value: number;
+  color?: string;
+  showWarning?: boolean;
+  isRetro: boolean;
+}) {
+  const isNesColor = color?.startsWith("#") || color?.startsWith("rgb");
+
+  if (isRetro) {
+    return (
+      <div className="bg-card p-4 border-4 border-border retro-shadow">
+        <p className="retro-small uppercase text-muted-foreground">{label}</p>
+        <p
+          className="text-3xl font-bold flex items-center gap-2"
+          style={{
+            fontFamily: "var(--font-pixel)",
+            color: isNesColor ? color : undefined,
+          }}
+        >
+          {value}
+          {showWarning && <Icon name="AlertTriangle" className="w-5 h-5" />}
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="bg-card p-4 rounded-lg border">
+      <p className="text-sm text-muted-foreground">{label}</p>
+      <p className={cn("text-2xl font-bold flex items-center gap-2", color)}>
+        {value}
+        {showWarning && <AlertTriangle className="w-5 h-5" />}
+      </p>
     </div>
   );
 }
@@ -667,50 +567,24 @@ function StatCard({
 function ChartCard({
   title,
   children,
+  isRetro,
 }: {
   title: string;
   children: React.ReactNode;
+  isRetro: boolean;
 }) {
+  if (isRetro) {
+    return (
+      <div className="bg-card p-6 border-4 border-border retro-shadow">
+        <h3 className="text-sm font-bold uppercase retro-heading mb-4">{title}</h3>
+        {children}
+      </div>
+    );
+  }
+
   return (
     <div className="bg-card p-6 rounded-lg border">
       <h3 className="text-lg font-semibold mb-4">{title}</h3>
-      {children}
-    </div>
-  );
-}
-
-function RetroStatCard({
-  iconName,
-  label,
-  value,
-}: {
-  iconName: "Package" | "Boxes" | "MapPin" | "DollarSign";
-  label: string;
-  value: string;
-}) {
-  return (
-    <div className="bg-card p-4 border-4 border-border retro-shadow flex items-center justify-between gap-3">
-      <div>
-        <p className="retro-small uppercase font-bold text-muted-foreground hidden xl:block">{label}</p>
-        <p className="text-2xl font-bold text-foreground" style={{ fontFamily: "var(--font-pixel)" }}>{value}</p>
-      </div>
-      <div className="w-10 h-10 border-4 border-border flex items-center justify-center flex-shrink-0" style={{ backgroundColor: NES_BLUE }} title={label}>
-        <Icon name={iconName} className="w-5 h-5 text-white" />
-      </div>
-    </div>
-  );
-}
-
-function RetroChartCard({
-  title,
-  children,
-}: {
-  title: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <div className="bg-card p-6 border-4 border-border retro-shadow">
-      <h3 className="text-sm font-bold uppercase retro-heading mb-4">{title}</h3>
       {children}
     </div>
   );

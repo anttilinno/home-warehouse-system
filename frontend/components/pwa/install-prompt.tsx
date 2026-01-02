@@ -1,7 +1,7 @@
 'use client';
 
 import { useInstallPrompt } from '@/hooks/use-install-prompt';
-import { RetroButton } from '@/components/retro';
+import { Button } from '@/components/themed';
 import { Icon } from '@/components/icons';
 import { cn } from '@/lib/utils';
 
@@ -34,12 +34,12 @@ export function InstallPrompt({ className }: InstallPromptProps) {
             Install the app for offline access and a better experience.
           </p>
           <div className="flex gap-2 mt-3">
-            <RetroButton size="sm" onClick={install}>
+            <Button size="sm" onClick={install}>
               Install
-            </RetroButton>
-            <RetroButton size="sm" variant="ghost" onClick={dismiss}>
+            </Button>
+            <Button size="sm" variant="ghost" onClick={dismiss}>
               Not now
-            </RetroButton>
+            </Button>
           </div>
         </div>
         <button

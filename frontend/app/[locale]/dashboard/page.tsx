@@ -17,18 +17,8 @@ import {
   getTranslatedErrorMessage,
 } from "@/lib/api";
 import { useTranslations } from "next-intl";
-import { useTheme } from "next-themes";
-import { NES_GREEN, NES_BLUE, NES_RED, NES_YELLOW } from "@/lib/nes-colors";
-import {
-  RetroTable,
-  RetroModal,
-  RetroButton,
-  RetroFormGroup,
-  RetroLabel,
-  RetroInput,
-  RetroSelect,
-  RetroBadge,
-} from "@/components/retro";
+import { useThemed, useThemedClasses } from "@/lib/themed";
+import { NES_BLUE } from "@/lib/nes-colors";
 
 type IconName = keyof typeof LucideIcons;
 
@@ -38,8 +28,9 @@ export default function DashboardPage() {
   const t = useTranslations("dashboard");
   const tSettings = useTranslations("settings");
   const tErrors = useTranslations("errors");
-  const { theme, setTheme } = useTheme();
-  const isRetro = theme?.startsWith("retro");
+  const themed = useThemed();
+  const classes = useThemedClasses();
+  const { Button, Modal, FormGroup, Label, Input, Select, Table, Badge } = themed;
   const [stats, setStats] = useState<DashboardExtendedStats | null>(null);
   const [recentItems, setRecentItems] = useState<InventorySummary[]>([]);
   const [locations, setLocations] = useState<Location[]>([]);
@@ -189,12 +180,12 @@ export default function DashboardPage() {
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
           <p className="text-red-500 mb-4">{error}</p>
-          <button
+          <Button
             onClick={fetchData}
-            className="px-4 py-2 bg-primary text-primary-foreground rounded-lg"
+            variant="primary"
           >
             {t("tryAgain")}
-          </button>
+          </Button>
         </div>
       </div>
     );
@@ -221,10 +212,136 @@ export default function DashboardPage() {
     return `${diffDays}d ago`;
   };
 
-  // NES color constants (Tailwind can't resolve CSS vars in arbitrary values)
+  // Invite Member Modal (shared between themes)
+  const renderInviteModal = () => (
+    <Modal open={showInviteModal} onClose={() => setShowInviteModal(false)} size="md">
+      <Modal.Header title={tSettings("inviteMember")} />
+      <Modal.Body>
+        <form onSubmit={handleInviteMember} className="space-y-4" id="invite-form">
+          <FormGroup>
+            <Label required>{tSettings("email")}</Label>
+            {selectedUser ? (
+              <div className={classes.isRetro ? "retro-selected-user" : "flex items-center gap-3 p-3 bg-muted rounded-md"}>
+                <div className="flex-1">
+                  <p className={classes.isRetro ? "font-bold retro-small" : "font-medium text-sm"}>{selectedUser.full_name}</p>
+                  <p className={classes.smallText}>{selectedUser.email}</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleClearSelection}
+                  className="text-muted-foreground hover:text-foreground"
+                >
+                  <Icon name="X" className="w-4 h-4" />
+                </button>
+              </div>
+            ) : (
+              <div className="relative">
+                <Input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => {
+                    setSearchQuery(e.target.value);
+                    setShowDropdown(true);
+                  }}
+                  onFocus={() => setShowDropdown(true)}
+                  placeholder={tSettings("searchOrEnterEmail")}
+                />
+                {isLoadingUsers && (
+                  <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                    <span className={classes.smallText}>...</span>
+                  </div>
+                )}
+                {showDropdown && !isLoadingUsers && (
+                  <div className={classes.isRetro ? "retro-dropdown" : "absolute z-10 mt-1 w-full bg-background border rounded-md shadow-lg max-h-60 overflow-auto"}>
+                    {filteredUsers.length > 0 ? (
+                      filteredUsers.map((user) => (
+                        <button
+                          key={user.id}
+                          type="button"
+                          onClick={() => handleSelectUser(user)}
+                          className={classes.isRetro ? "retro-dropdown__item" : "w-full text-left px-3 py-2 hover:bg-muted"}
+                        >
+                          <p className={classes.isRetro ? "font-bold retro-small" : "font-medium text-sm"}>{user.full_name}</p>
+                          <p className={classes.smallText}>{user.email}</p>
+                        </button>
+                      ))
+                    ) : availableUsers.length === 0 ? (
+                      <div className={classes.isRetro ? "retro-dropdown__empty" : "px-3 py-2 text-muted-foreground text-sm"}>
+                        {tSettings("noUsersToInvite")}
+                      </div>
+                    ) : searchQuery ? (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setInviteEmail(searchQuery);
+                          setShowDropdown(false);
+                        }}
+                        className={classes.isRetro ? "retro-dropdown__item" : "w-full text-left px-3 py-2 hover:bg-muted"}
+                      >
+                        <p className={classes.isRetro ? "font-bold retro-small" : "font-medium text-sm"}>{tSettings("useEmail")}: {searchQuery}</p>
+                        <p className={classes.smallText}>{tSettings("userNotRegistered")}</p>
+                      </button>
+                    ) : null}
+                  </div>
+                )}
+              </div>
+            )}
+            {!selectedUser && inviteEmail && (
+              <div className={classes.isRetro ? "retro-selected-preview" : "flex items-center gap-3 p-2 bg-muted/50 rounded-md mt-2"}>
+                <div className="flex-1">
+                  <p className={classes.bodyText}>{tSettings("willInvite")}: <span className="font-bold">{inviteEmail}</span></p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setInviteEmail("")}
+                  className="text-muted-foreground hover:text-foreground"
+                >
+                  <Icon name="X" className="w-4 h-4" />
+                </button>
+              </div>
+            )}
+            <p className={classes.isRetro ? "retro-hint" : "text-sm text-muted-foreground mt-1"}>{tSettings("searchUsersHint")}</p>
+          </FormGroup>
 
-  // NES-style dashboard for retro themes
-  if (isRetro) {
+          <FormGroup>
+            <Label>{tSettings("role")}</Label>
+            <Select
+              value={inviteRole}
+              onChange={(e) => setInviteRole(e.target.value)}
+            >
+              <option value="admin">{tSettings("roleAdmin")}</option>
+              <option value="member">{tSettings("roleMember")}</option>
+              <option value="viewer">{tSettings("roleViewer")}</option>
+            </Select>
+          </FormGroup>
+
+          {inviteError && (
+            <p className={classes.isRetro ? "retro-error" : "text-sm text-red-500"}>{inviteError}</p>
+          )}
+        </form>
+      </Modal.Body>
+      <Modal.Footer>
+        <Button
+          type="button"
+          variant="secondary"
+          onClick={() => setShowInviteModal(false)}
+        >
+          {tSettings("cancel")}
+        </Button>
+        <Button
+          type="submit"
+          form="invite-form"
+          variant="primary"
+          disabled={isInviting || !inviteEmail.trim()}
+        >
+          {isInviting ? tSettings("inviting") : tSettings("invite")}
+        </Button>
+      </Modal.Footer>
+    </Modal>
+  );
+
+  // Retro theme layout
+  if (classes.isRetro) {
     return (
       <>
         {/* Header */}
@@ -236,19 +353,11 @@ export default function DashboardPage() {
             </p>
           </div>
           <div className="dashboard-header__actions">
-            <RetroButton
-              variant="secondary"
-              size="icon"
-              onClick={() => setTheme(theme === "retro-dark" ? "retro-light" : "retro-dark")}
-              title={theme === "retro-dark" ? "Switch to light mode" : "Switch to dark mode"}
-            >
-              <Icon name={theme === "retro-dark" ? "Sun" : "Moon"} className="w-4 h-4" />
-            </RetroButton>
             <Link href="/dashboard/inventory/new">
-              <RetroButton variant="info">
+              <Button variant="info">
                 <Icon name="Plus" className="w-3 h-3" />
                 <span>{t("newItem")}</span>
-              </RetroButton>
+              </Button>
             </Link>
           </div>
         </header>
@@ -266,7 +375,7 @@ export default function DashboardPage() {
                 {stats?.total_items.toLocaleString() || "0"}
               </span>
               <span className="dashboard-stat__indicator dashboard-stat__indicator--positive">
-                ▲ {t("inStock")}
+                {t("inStock")}
               </span>
             </div>
           </Link>
@@ -302,20 +411,20 @@ export default function DashboardPage() {
               {(stats?.overdue_loans_count || 0) > 0 || (stats?.due_soon_loans_count || 0) > 0 ? (
                 <div className="flex gap-1 flex-wrap">
                   {(stats?.overdue_loans_count || 0) > 0 && (
-                    <RetroBadge variant="danger" size="sm">
+                    <Badge variant="danger" size="sm">
                       {stats?.overdue_loans_count}<span className="dashboard-stat__badge-text"> {t("overdue")}</span>
-                    </RetroBadge>
+                    </Badge>
                   )}
                   {(stats?.due_soon_loans_count || 0) > 0 && (
-                    <RetroBadge variant="warning" size="sm">
+                    <Badge variant="warning" size="sm">
                       {stats?.due_soon_loans_count}<span className="dashboard-stat__badge-text"> {t("dueSoon")}</span>
-                    </RetroBadge>
+                    </Badge>
                   )}
                 </div>
               ) : (
-                <RetroBadge variant="success" size="sm">
-                  ▲ {t("allGood")}
-                </RetroBadge>
+                <Badge variant="success" size="sm">
+                  {t("allGood")}
+                </Badge>
               )}
             </div>
           </Link>
@@ -328,7 +437,7 @@ export default function DashboardPage() {
             <div className="dashboard-stat__label">{t("score")}</div>
             <div>
               <span className="dashboard-stat__value">
-                {stats ? formatCurrency(stats.total_inventory_value, stats.currency_code) : "€0"}
+                {stats ? formatCurrency(stats.total_inventory_value, stats.currency_code) : "0"}
               </span>
               <span className="dashboard-stat__indicator text-muted-foreground">
                 {t("credits")}
@@ -353,57 +462,57 @@ export default function DashboardPage() {
                 </Link>
               </div>
               <div className="dashboard-activity__body">
-                <RetroTable>
-                  <RetroTable.Head>
-                    <RetroTable.Row>
-                      <RetroTable.Th compact>{t("item")}</RetroTable.Th>
-                      <RetroTable.Th compact>{t("action")}</RetroTable.Th>
-                      <RetroTable.Th compact>{t("location")}</RetroTable.Th>
-                      <RetroTable.Th compact align="right">{t("time")}</RetroTable.Th>
-                    </RetroTable.Row>
-                  </RetroTable.Head>
-                  <RetroTable.Body>
+                <Table>
+                  <Table.Head>
+                    <Table.Row>
+                      <Table.Th compact>{t("item")}</Table.Th>
+                      <Table.Th compact>{t("action")}</Table.Th>
+                      <Table.Th compact>{t("location")}</Table.Th>
+                      <Table.Th compact align="right">{t("time")}</Table.Th>
+                    </Table.Row>
+                  </Table.Head>
+                  <Table.Body>
                     {recentItems.length === 0 ? (
-                      <RetroTable.Row>
-                        <RetroTable.Td colSpan={4} muted className="text-center">
+                      <Table.Row>
+                        <Table.Td colSpan={4} muted className="text-center">
                           {t("noRecentItems")}
-                        </RetroTable.Td>
-                      </RetroTable.Row>
+                        </Table.Td>
+                      </Table.Row>
                     ) : (
                       recentItems.map((item, index) => (
-                        <RetroTable.Row
+                        <Table.Row
                           key={item.id}
                           clickable
                           onClick={() => router.push(`/dashboard/inventory/${item.id}`)}
                         >
-                          <RetroTable.Td compact>
+                          <Table.Td compact>
                             <div className="flex items-center gap-2">
                               <div className="retro-item-icon retro-item-icon--blue">
                                 <Icon name="Package" className="w-4 h-4" />
                               </div>
                               <span className="truncate max-w-[120px] text-xs">{item.item_name}</span>
                             </div>
-                          </RetroTable.Td>
-                          <RetroTable.Td compact>
-                            <RetroBadge
+                          </Table.Td>
+                          <Table.Td compact>
+                            <Badge
                               variant={index % 3 === 0 ? "success" : index % 3 === 1 ? "danger" : "muted"}
                               size="sm"
                               className="retro-badge--action"
                             >
                               {index % 3 === 0 ? t("checkIn") : index % 3 === 1 ? t("loaned") : t("added")}
-                            </RetroBadge>
-                          </RetroTable.Td>
-                          <RetroTable.Td compact muted truncate>
+                            </Badge>
+                          </Table.Td>
+                          <Table.Td compact muted truncate>
                             {item.location_name}
-                          </RetroTable.Td>
-                          <RetroTable.Td compact muted align="right">
+                          </Table.Td>
+                          <Table.Td compact muted align="right">
                             {formatRelativeTime(item.updated_at)}
-                          </RetroTable.Td>
-                        </RetroTable.Row>
+                          </Table.Td>
+                        </Table.Row>
                       ))
                     )}
-                  </RetroTable.Body>
-                </RetroTable>
+                  </Table.Body>
+                </Table>
               </div>
             </div>
           </div>
@@ -442,7 +551,7 @@ export default function DashboardPage() {
             <div className="dashboard-gauge">
               <div className="dashboard-gauge__header">
                 <h2 className="retro-heading">{t("storageHP")}</h2>
-                <RetroBadge variant="primary" size="sm">HQ</RetroBadge>
+                <Badge variant="primary" size="sm">HQ</Badge>
               </div>
               <div className="dashboard-gauge__body">
                 {locations.length === 0 ? (
@@ -480,136 +589,12 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Invite Member Modal */}
-        <RetroModal open={showInviteModal} onClose={() => setShowInviteModal(false)} size="md">
-          <RetroModal.Header title={tSettings("inviteMember")} />
-          <RetroModal.Body>
-            <form onSubmit={handleInviteMember} className="space-y-4" id="invite-form">
-              <RetroFormGroup>
-                <RetroLabel required>{tSettings("email")}</RetroLabel>
-                {selectedUser ? (
-                  <div className="retro-selected-user">
-                    <div className="flex-1">
-                      <p className="font-bold retro-small">{selectedUser.full_name}</p>
-                      <p className="retro-small text-muted-foreground">{selectedUser.email}</p>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={handleClearSelection}
-                      className="text-muted-foreground hover:text-foreground"
-                    >
-                      <Icon name="X" className="w-4 h-4" />
-                    </button>
-                  </div>
-                ) : (
-                  <div className="relative">
-                    <RetroInput
-                      type="text"
-                      value={searchQuery}
-                      onChange={(e) => {
-                        setSearchQuery(e.target.value);
-                        setShowDropdown(true);
-                      }}
-                      onFocus={() => setShowDropdown(true)}
-                      placeholder={tSettings("searchOrEnterEmail")}
-                    />
-                    {isLoadingUsers && (
-                      <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                        <span className="retro-small text-muted-foreground">...</span>
-                      </div>
-                    )}
-                    {showDropdown && !isLoadingUsers && (
-                      <div className="retro-dropdown">
-                        {filteredUsers.length > 0 ? (
-                          filteredUsers.map((user) => (
-                            <button
-                              key={user.id}
-                              type="button"
-                              onClick={() => handleSelectUser(user)}
-                              className="retro-dropdown__item"
-                            >
-                              <p className="font-bold retro-small">{user.full_name}</p>
-                              <p className="retro-small text-muted-foreground">{user.email}</p>
-                            </button>
-                          ))
-                        ) : availableUsers.length === 0 ? (
-                          <div className="retro-dropdown__empty">
-                            {tSettings("noUsersToInvite")}
-                          </div>
-                        ) : searchQuery ? (
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setInviteEmail(searchQuery);
-                              setShowDropdown(false);
-                            }}
-                            className="retro-dropdown__item"
-                          >
-                            <p className="font-bold retro-small">{tSettings("useEmail")}: {searchQuery}</p>
-                            <p className="retro-small text-muted-foreground">{tSettings("userNotRegistered")}</p>
-                          </button>
-                        ) : null}
-                      </div>
-                    )}
-                  </div>
-                )}
-                {!selectedUser && inviteEmail && (
-                  <div className="retro-selected-preview">
-                    <div className="flex-1">
-                      <p className="retro-small">{tSettings("willInvite")}: <span className="font-bold">{inviteEmail}</span></p>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => setInviteEmail("")}
-                      className="text-muted-foreground hover:text-foreground"
-                    >
-                      <Icon name="X" className="w-4 h-4" />
-                    </button>
-                  </div>
-                )}
-                <p className="retro-hint">{tSettings("searchUsersHint")}</p>
-              </RetroFormGroup>
-
-              <RetroFormGroup>
-                <RetroLabel>{tSettings("role")}</RetroLabel>
-                <RetroSelect
-                  value={inviteRole}
-                  onChange={(e) => setInviteRole(e.target.value)}
-                >
-                  <option value="admin">{tSettings("roleAdmin")}</option>
-                  <option value="member">{tSettings("roleMember")}</option>
-                  <option value="viewer">{tSettings("roleViewer")}</option>
-                </RetroSelect>
-              </RetroFormGroup>
-
-              {inviteError && (
-                <p className="retro-error">{inviteError}</p>
-              )}
-            </form>
-          </RetroModal.Body>
-          <RetroModal.Footer>
-            <RetroButton
-              type="button"
-              variant="secondary"
-              onClick={() => setShowInviteModal(false)}
-            >
-              {tSettings("cancel")}
-            </RetroButton>
-            <RetroButton
-              type="submit"
-              form="invite-form"
-              variant="primary"
-              disabled={isInviting || !inviteEmail.trim()}
-            >
-              {isInviting ? tSettings("inviting") : tSettings("invite")}
-            </RetroButton>
-          </RetroModal.Footer>
-        </RetroModal>
+        {renderInviteModal()}
       </>
     );
   }
 
-  // Standard dashboard for non-retro themes
+  // Standard theme layout
   const statCards: { name: string; value: string; iconName: IconName; href: string }[] = [
     { name: t("totalItems"), value: stats?.total_items.toLocaleString() || "0", iconName: "Box", href: "/dashboard/inventory" },
     { name: t("locations"), value: stats?.total_locations.toString() || "0", iconName: "MapPin", href: "/dashboard/locations" },
@@ -654,7 +639,7 @@ export default function DashboardPage() {
           <div className="flex items-center justify-center gap-3">
             <Icon name="DollarSign" className="w-6 h-6 text-primary flex-shrink-0" />
             <p className="text-2xl font-bold text-foreground">
-              {stats ? formatCurrency(stats.total_inventory_value, stats.currency_code) : "€0"}
+              {stats ? formatCurrency(stats.total_inventory_value, stats.currency_code) : "0"}
             </p>
           </div>
         </Link>
@@ -722,7 +707,7 @@ export default function DashboardPage() {
                   </h4>
                   <div className="text-xs text-muted-foreground flex gap-3 mt-1">
                     <span>{item.location_name}</span>
-                    <span className="text-muted-foreground/50">•</span>
+                    <span className="text-muted-foreground/50">-</span>
                     <span>{item.item_sku}</span>
                   </div>
                 </div>
@@ -737,6 +722,8 @@ export default function DashboardPage() {
           </div>
         )}
       </div>
+
+      {renderInviteModal()}
     </>
   );
 }

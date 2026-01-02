@@ -4,7 +4,6 @@ import { useCallback, useEffect, useState } from "react";
 import { Icon } from "@/components/icons";
 import { useAuth } from "@/lib/auth";
 import { useTranslations } from "next-intl";
-import { useTheme } from "next-themes";
 import {
   docspellApi,
   DocspellSettings,
@@ -13,15 +12,17 @@ import {
 } from "@/lib/api";
 import { Link } from "@/navigation";
 import { cn } from "@/lib/utils";
-import { NES_GREEN, NES_BLUE, NES_RED, NES_YELLOW } from "@/lib/nes-colors";
-import { RetroPageHeader, RetroButton } from "@/components/retro";
+import { NES_GREEN, NES_RED } from "@/lib/nes-colors";
+import { useThemed, useThemedClasses } from "@/lib/themed";
 
 export default function DocspellSettingsPage() {
   const { isAuthenticated, isLoading: authLoading } = useAuth();
   const t = useTranslations("docspell");
   const tErrors = useTranslations();
-  const { theme } = useTheme();
-  const isRetro = theme?.startsWith("retro");
+  const themed = useThemed();
+  const classes = useThemedClasses();
+
+  const { Button, Card, PageHeader, Modal, Input, Checkbox, Label, Hint, Error } = themed;
 
   // Settings state
   const [settings, setSettings] = useState<DocspellSettings | null>(null);
@@ -61,10 +62,11 @@ export default function DocspellSettingsPage() {
         setUsername(data.username);
         setSyncTagsEnabled(data.sync_tags_enabled);
       }
-    } catch (err) {
+    } catch (e) {
+      const err = e as Error;
       setLoadError(
         getTranslatedErrorMessage(
-          err instanceof Error ? err.message : "Unknown error",
+          err.message || "Unknown error",
           (key) => tErrors(key)
         )
       );
@@ -116,10 +118,11 @@ export default function DocspellSettingsPage() {
       }
       setSaveSuccess(true);
       setTimeout(() => setSaveSuccess(false), 3000);
-    } catch (err) {
+    } catch (e) {
+      const err = e as Error;
       setSaveError(
         getTranslatedErrorMessage(
-          err instanceof Error ? err.message : "Unknown error",
+          err.message || "Unknown error",
           (key) => tErrors(key)
         )
       );
@@ -134,10 +137,11 @@ export default function DocspellSettingsPage() {
     try {
       const result = await docspellApi.testConnection();
       setTestResult(result);
-    } catch (err) {
+    } catch (e) {
+      const err = e as Error;
       setTestResult({
         success: false,
-        message: err instanceof Error ? err.message : "Unknown error",
+        message: err.message || "Unknown error",
         version: null,
       });
     } finally {
@@ -154,10 +158,11 @@ export default function DocspellSettingsPage() {
         is_enabled: !settings.is_enabled,
       });
       setSettings(updated);
-    } catch (err) {
+    } catch (e) {
+      const err = e as Error;
       setSaveError(
         getTranslatedErrorMessage(
-          err instanceof Error ? err.message : "Unknown error",
+          err.message || "Unknown error",
           (key) => tErrors(key)
         )
       );
@@ -178,10 +183,11 @@ export default function DocspellSettingsPage() {
       setSyncTagsEnabled(false);
       setShowDeleteConfirm(false);
       setTestResult(null);
-    } catch (err) {
+    } catch (e) {
+      const err = e as Error;
       setSaveError(
         getTranslatedErrorMessage(
-          err instanceof Error ? err.message : "Unknown error",
+          err.message || "Unknown error",
           (key) => tErrors(key)
         )
       );
@@ -194,9 +200,9 @@ export default function DocspellSettingsPage() {
     return (
       <div className={cn(
         "flex items-center justify-center min-h-[400px]",
-        isRetro && "retro-body"
+        classes.isRetro && "retro-body"
       )}>
-        {isRetro ? (
+        {classes.isRetro ? (
           <div className="retro-small uppercase text-muted-foreground">{t("title")}...</div>
         ) : (
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
@@ -209,311 +215,50 @@ export default function DocspellSettingsPage() {
     return null;
   }
 
-  // Retro theme UI
-  if (isRetro) {
-    return (
-      <>
-        {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center gap-2 retro-small uppercase text-muted-foreground mb-2 retro-body">
-            <Link href="/dashboard/settings" className="hover:text-foreground transition-colors">
-              {t("backToSettings")}
-            </Link>
-            <Icon name="ChevronRight" className="w-4 h-4" />
-            <span className="text-foreground">{t("title")}</span>
-          </div>
-          <RetroPageHeader title={t("title")} subtitle={t("subtitle")} />
-        </div>
-
-        <div className="grid gap-6 w-full">
-          {isLoadingSettings ? (
-            <div className="flex items-center justify-center py-12">
-              <div className="retro-small uppercase text-muted-foreground retro-body">Loading...</div>
-            </div>
-          ) : loadError ? (
-            <div className="p-4 border-4" style={{ borderColor: NES_RED, backgroundColor: 'rgba(206, 55, 43, 0.1)' }}>
-              <p className="retro-small uppercase retro-body" style={{ color: NES_RED }}>{loadError}</p>
-              <button
-                onClick={loadSettings}
-                className="mt-2 retro-small uppercase font-bold text-primary hover:underline retro-body"
-              >
-                {t("retry")}
-              </button>
-            </div>
-          ) : (
-            <>
-              {/* Status Card */}
-              {settings && (
-                <div className="retro-card p-6">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div
-                        className="w-4 h-4 border-4 border-border"
-                        style={{ backgroundColor: settings.is_enabled ? NES_GREEN : '#9ca3af' }}
-                      />
-                      <div>
-                        <h3 className="font-bold text-foreground retro-body retro-small">
-                          {settings.is_enabled ? t("statusEnabled") : t("statusDisabled")}
-                        </h3>
-                        <p className="retro-small uppercase text-muted-foreground retro-body">
-                          {settings.last_sync_at
-                            ? t("lastSync", { date: new Date(settings.last_sync_at).toLocaleString() })
-                            : t("neverSynced")}
-                        </p>
-                      </div>
-                    </div>
-                    <RetroButton
-                      onClick={handleToggleEnabled}
-                      disabled={isSaving}
-                      variant={settings.is_enabled ? "muted" : "primary"}
-                    >
-                      {settings.is_enabled ? t("disable") : t("enable")}
-                    </RetroButton>
-                  </div>
-                </div>
-              )}
-
-              {/* Connection Form */}
-              <div className="retro-card p-6">
-                <h3 className="text-sm font-bold uppercase retro-heading text-foreground mb-4 flex items-center gap-2">
-                  <Icon name="Settings" className="w-5 h-5" />
-                  {settings ? t("editConnection") : t("setupConnection")}
-                </h3>
-
-                <form onSubmit={handleSubmit} className="space-y-4">
-                  <div>
-                    <label className="block retro-small uppercase font-bold text-foreground mb-1 retro-body">
-                      {t("baseUrl")} *
-                    </label>
-                    <input
-                      type="url"
-                      value={baseUrl}
-                      onChange={(e) => setBaseUrl(e.target.value)}
-                      required
-                      placeholder="https://docs.example.com"
-                      className="w-full px-3 py-2 border-4 border-border bg-background text-foreground retro-body retro-small focus:outline-none"
-                    />
-                    <p className="mt-1 text-xs uppercase text-muted-foreground retro-body">{t("baseUrlHint")}</p>
-                  </div>
-
-                  <div>
-                    <label className="block retro-small uppercase font-bold text-foreground mb-1 retro-body">
-                      {t("collectiveName")} *
-                    </label>
-                    <input
-                      type="text"
-                      value={collectiveName}
-                      onChange={(e) => setCollectiveName(e.target.value)}
-                      required
-                      placeholder="my-collective"
-                      className="w-full px-3 py-2 border-4 border-border bg-background text-foreground retro-body retro-small focus:outline-none"
-                    />
-                    <p className="mt-1 text-xs uppercase text-muted-foreground retro-body">{t("collectiveNameHint")}</p>
-                  </div>
-
-                  <div>
-                    <label className="block retro-small uppercase font-bold text-foreground mb-1 retro-body">
-                      {t("username")} *
-                    </label>
-                    <input
-                      type="text"
-                      value={username}
-                      onChange={(e) => setUsername(e.target.value)}
-                      required
-                      className="w-full px-3 py-2 border-4 border-border bg-background text-foreground retro-body retro-small focus:outline-none"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block retro-small uppercase font-bold text-foreground mb-1 retro-body">
-                      {t("password")} {settings ? "" : "*"}
-                    </label>
-                    <input
-                      type="password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      required={!settings}
-                      placeholder={settings ? t("passwordPlaceholderUpdate") : ""}
-                      className="w-full px-3 py-2 border-4 border-border bg-background text-foreground retro-body retro-small focus:outline-none"
-                    />
-                    {settings && (
-                      <p className="mt-1 text-xs uppercase text-muted-foreground retro-body">{t("passwordHint")}</p>
-                    )}
-                  </div>
-
-                  <div className="flex items-center gap-3">
-                    <input
-                      type="checkbox"
-                      id="syncTagsEnabled"
-                      checked={syncTagsEnabled}
-                      onChange={(e) => setSyncTagsEnabled(e.target.checked)}
-                      className="h-4 w-4 border-4 border-border"
-                    />
-                    <label htmlFor="syncTagsEnabled" className="retro-small uppercase text-foreground retro-body">
-                      {t("enableTagSync")}
-                    </label>
-                  </div>
-                  <p className="text-xs uppercase text-muted-foreground ml-7 retro-body">{t("tagSyncHint")}</p>
-
-                  {saveError && <p className="retro-small uppercase retro-body" style={{ color: NES_RED }}>{saveError}</p>}
-
-                  {saveSuccess && (
-                    <p className="retro-small uppercase retro-body" style={{ color: NES_GREEN }}>{t("saveSuccess")}</p>
-                  )}
-
-                  <div className="flex gap-3">
-                    <RetroButton
-                      type="submit"
-                      disabled={isSaving}
-                      variant="primary"
-                      loading={isSaving}
-                    >
-                      {isSaving ? t("saving") : settings ? t("saveChanges") : t("connect")}
-                    </RetroButton>
-
-                    {settings && (
-                      <RetroButton
-                        type="button"
-                        onClick={handleTestConnection}
-                        disabled={isTesting}
-                        variant="muted"
-                        loading={isTesting}
-                      >
-                        {isTesting ? t("testing") : t("testConnection")}
-                      </RetroButton>
-                    )}
-                  </div>
-                </form>
-
-                {/* Connection Test Result */}
-                {testResult && (
-                  <div
-                    className="mt-4 p-4 border-4"
-                    style={{
-                      borderColor: testResult.success ? NES_GREEN : NES_RED,
-                      backgroundColor: testResult.success ? 'rgba(146, 204, 65, 0.1)' : 'rgba(206, 55, 43, 0.1)',
-                    }}
-                  >
-                    <div className="flex items-center gap-2">
-                      <Icon
-                        name={testResult.success ? "CheckCircle" : "XCircle"}
-                        className="w-5 h-5"
-                        style={{ color: testResult.success ? NES_GREEN : NES_RED }}
-                      />
-                      <span
-                        className="font-bold retro-body retro-small"
-                        style={{ color: testResult.success ? NES_GREEN : NES_RED }}
-                      >
-                        {testResult.success ? t("connectionSuccess") : t("connectionFailed")}
-                      </span>
-                    </div>
-                    <p className="mt-1 retro-small text-muted-foreground retro-body">{testResult.message}</p>
-                    {testResult.version && (
-                      <p className="mt-1 retro-small text-muted-foreground retro-body">
-                        {t("docspellVersion", { version: testResult.version })}
-                      </p>
-                    )}
-                  </div>
-                )}
-              </div>
-
-              {/* Danger Zone */}
-              {settings && (
-                <div className="bg-card p-6 border-4 retro-shadow" style={{ borderColor: NES_RED }}>
-                  <h3 className="text-sm font-bold uppercase retro-heading mb-4 flex items-center gap-2" style={{ color: NES_RED }}>
-                    <Icon name="AlertTriangle" className="w-5 h-5" />
-                    {t("dangerZone")}
-                  </h3>
-
-                  <div className="p-4 border-4 border-dashed" style={{ borderColor: NES_RED, backgroundColor: 'rgba(206, 55, 43, 0.1)' }}>
-                    <div className="flex items-start justify-between gap-4">
-                      <div>
-                        <p className="font-bold text-foreground retro-body retro-small">{t("removeIntegration")}</p>
-                        <p className="retro-small uppercase text-muted-foreground mt-1 retro-body">
-                          {t("removeIntegrationWarning")}
-                        </p>
-                      </div>
-                      <RetroButton
-                        onClick={() => setShowDeleteConfirm(true)}
-                        variant="danger"
-                      >
-                        {t("remove")}
-                      </RetroButton>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </>
-          )}
-        </div>
-
-        {/* Delete Confirmation Modal */}
-        {showDeleteConfirm && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-            <div className="retro-card w-full max-w-md mx-4 p-6">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-sm font-bold uppercase retro-heading flex items-center gap-2" style={{ color: NES_RED }}>
-                  <Icon name="AlertTriangle" className="w-5 h-5" />
-                  {t("confirmRemove")}
-                </h3>
-                <button
-                  onClick={() => setShowDeleteConfirm(false)}
-                  className="text-muted-foreground hover:text-foreground"
-                >
-                  <Icon name="X" className="w-5 h-5" />
-                </button>
-              </div>
-
-              <p className="retro-small uppercase text-foreground mb-4 retro-body">{t("confirmRemoveMessage")}</p>
-
-              <div className="flex justify-end gap-3">
-                <RetroButton
-                  onClick={() => setShowDeleteConfirm(false)}
-                  variant="muted"
-                >
-                  {t("cancel")}
-                </RetroButton>
-                <RetroButton
-                  onClick={handleDelete}
-                  disabled={isDeleting}
-                  variant="danger"
-                  loading={isDeleting}
-                >
-                  {isDeleting ? t("removing") : t("remove")}
-                </RetroButton>
-              </div>
-            </div>
-          </div>
-        )}
-      </>
-    );
-  }
-
   return (
     <>
+      {/* Header */}
       <div className="mb-8">
-        <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
+        <div className={cn(
+          "flex items-center gap-2 mb-2",
+          classes.isRetro ? "retro-small uppercase text-muted-foreground retro-body" : "text-sm text-muted-foreground"
+        )}>
           <Link href="/dashboard/settings" className="hover:text-foreground transition-colors">
             {t("backToSettings")}
           </Link>
           <Icon name="ChevronRight" className="w-4 h-4" />
           <span className="text-foreground">{t("title")}</span>
         </div>
-        <h1 className="text-3xl font-bold text-foreground">{t("title")}</h1>
-        <p className="text-muted-foreground mt-2">{t("subtitle")}</p>
+        <PageHeader title={t("title")} subtitle={t("subtitle")} />
       </div>
 
       <div className="grid gap-6 w-full">
         {isLoadingSettings ? (
           <div className="flex items-center justify-center py-12">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+            {classes.isRetro ? (
+              <div className="retro-small uppercase text-muted-foreground retro-body">Loading...</div>
+            ) : (
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+            )}
           </div>
         ) : loadError ? (
-          <div className="bg-destructive/10 border border-destructive/30 rounded-lg p-4">
-            <p className="text-destructive">{loadError}</p>
+          <div className={cn(
+            "p-4",
+            classes.isRetro
+              ? "border-4"
+              : "bg-destructive/10 border border-destructive/30 rounded-lg"
+          )} style={classes.isRetro ? { borderColor: NES_RED, backgroundColor: 'rgba(206, 55, 43, 0.1)' } : undefined}>
+            <p className={cn(
+              classes.isRetro ? "retro-small uppercase retro-body" : "text-destructive"
+            )} style={classes.isRetro ? { color: NES_RED } : undefined}>{loadError}</p>
             <button
               onClick={loadSettings}
-              className="mt-2 text-sm text-primary hover:underline"
+              className={cn(
+                "mt-2",
+                classes.isRetro
+                  ? "retro-small uppercase font-bold text-primary hover:underline retro-body"
+                  : "text-sm text-primary hover:underline"
+              )}
             >
               {t("retry")}
             </button>
@@ -522,146 +267,157 @@ export default function DocspellSettingsPage() {
           <>
             {/* Status Card */}
             {settings && (
-              <div className="bg-card p-6 rounded-lg border shadow-sm">
+              <Card>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <div
-                      className={`w-3 h-3 rounded-full ${
-                        settings.is_enabled ? "bg-green-500" : "bg-gray-400"
-                      }`}
+                      className={cn(
+                        classes.isRetro ? "w-4 h-4 border-4 border-border" : "w-3 h-3 rounded-full"
+                      )}
+                      style={classes.isRetro
+                        ? { backgroundColor: settings.is_enabled ? NES_GREEN : '#9ca3af' }
+                        : { backgroundColor: settings.is_enabled ? '#22c55e' : '#9ca3af' }
+                      }
                     />
                     <div>
-                      <h3 className="font-medium text-foreground">
+                      <h3 className={cn(
+                        "text-foreground",
+                        classes.isRetro ? "font-bold retro-body retro-small" : "font-medium"
+                      )}>
                         {settings.is_enabled ? t("statusEnabled") : t("statusDisabled")}
                       </h3>
-                      <p className="text-sm text-muted-foreground">
+                      <p className={cn(
+                        "text-muted-foreground",
+                        classes.isRetro ? "retro-small uppercase retro-body" : "text-sm"
+                      )}>
                         {settings.last_sync_at
                           ? t("lastSync", { date: new Date(settings.last_sync_at).toLocaleString() })
                           : t("neverSynced")}
                       </p>
                     </div>
                   </div>
-                  <button
+                  <Button
                     onClick={handleToggleEnabled}
                     disabled={isSaving}
-                    className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
-                      settings.is_enabled
-                        ? "text-foreground bg-muted hover:bg-muted/80"
-                        : "text-primary-foreground bg-primary hover:bg-primary/90"
-                    } disabled:opacity-50`}
+                    variant={settings.is_enabled ? "muted" : "primary"}
                   >
                     {settings.is_enabled ? t("disable") : t("enable")}
-                  </button>
+                  </Button>
                 </div>
-              </div>
+              </Card>
             )}
 
             {/* Connection Form */}
-            <div className="bg-card p-6 rounded-lg border shadow-sm">
-              <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
+            <Card>
+              <h3 className={cn(
+                "mb-4 flex items-center gap-2",
+                classes.isRetro
+                  ? "text-sm font-bold uppercase retro-heading text-foreground"
+                  : "text-lg font-semibold text-foreground"
+              )}>
                 <Icon name="Settings" className="w-5 h-5" />
                 {settings ? t("editConnection") : t("setupConnection")}
               </h3>
 
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-foreground mb-1">
-                    {t("baseUrl")} *
-                  </label>
-                  <input
+                  <Label htmlFor="baseUrl">{t("baseUrl")} *</Label>
+                  <Input
+                    id="baseUrl"
                     type="url"
                     value={baseUrl}
                     onChange={(e) => setBaseUrl(e.target.value)}
                     required
                     placeholder="https://docs.example.com"
-                    className="w-full px-3 py-2 border border-border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
                   />
-                  <p className="mt-1 text-xs text-muted-foreground">{t("baseUrlHint")}</p>
+                  <Hint>{t("baseUrlHint")}</Hint>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-foreground mb-1">
-                    {t("collectiveName")} *
-                  </label>
-                  <input
+                  <Label htmlFor="collectiveName">{t("collectiveName")} *</Label>
+                  <Input
+                    id="collectiveName"
                     type="text"
                     value={collectiveName}
                     onChange={(e) => setCollectiveName(e.target.value)}
                     required
                     placeholder="my-collective"
-                    className="w-full px-3 py-2 border border-border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
                   />
-                  <p className="mt-1 text-xs text-muted-foreground">{t("collectiveNameHint")}</p>
+                  <Hint>{t("collectiveNameHint")}</Hint>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-foreground mb-1">
-                    {t("username")} *
-                  </label>
-                  <input
+                  <Label htmlFor="username">{t("username")} *</Label>
+                  <Input
+                    id="username"
                     type="text"
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
                     required
-                    className="w-full px-3 py-2 border border-border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-foreground mb-1">
-                    {t("password")} {settings ? "" : "*"}
-                  </label>
-                  <input
+                  <Label htmlFor="password">{t("password")} {settings ? "" : "*"}</Label>
+                  <Input
+                    id="password"
                     type="password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required={!settings}
                     placeholder={settings ? t("passwordPlaceholderUpdate") : ""}
-                    className="w-full px-3 py-2 border border-border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
                   />
-                  {settings && (
-                    <p className="mt-1 text-xs text-muted-foreground">{t("passwordHint")}</p>
-                  )}
+                  {settings && <Hint>{t("passwordHint")}</Hint>}
                 </div>
 
                 <div className="flex items-center gap-3">
-                  <input
-                    type="checkbox"
+                  <Checkbox
                     id="syncTagsEnabled"
                     checked={syncTagsEnabled}
                     onChange={(e) => setSyncTagsEnabled(e.target.checked)}
-                    className="h-4 w-4 rounded border-border text-primary focus:ring-primary/50"
                   />
-                  <label htmlFor="syncTagsEnabled" className="text-sm text-foreground">
+                  <label
+                    htmlFor="syncTagsEnabled"
+                    className={cn(
+                      "text-foreground",
+                      classes.isRetro ? "retro-small uppercase retro-body" : "text-sm"
+                    )}
+                  >
                     {t("enableTagSync")}
                   </label>
                 </div>
-                <p className="text-xs text-muted-foreground ml-7">{t("tagSyncHint")}</p>
+                <Hint className="ml-7">{t("tagSyncHint")}</Hint>
 
-                {saveError && <p className="text-sm text-destructive">{saveError}</p>}
+                {saveError && <Error>{saveError}</Error>}
 
                 {saveSuccess && (
-                  <p className="text-sm text-green-600">{t("saveSuccess")}</p>
+                  <p className={cn(
+                    classes.isRetro ? "retro-small uppercase retro-body" : "text-sm text-green-600"
+                  )} style={classes.isRetro ? { color: NES_GREEN } : undefined}>
+                    {t("saveSuccess")}
+                  </p>
                 )}
 
                 <div className="flex gap-3">
-                  <button
+                  <Button
                     type="submit"
                     disabled={isSaving}
-                    className="px-4 py-2 text-sm font-medium text-primary-foreground bg-primary hover:bg-primary/90 rounded-lg transition-colors disabled:opacity-50"
+                    variant="primary"
+                    loading={isSaving}
                   >
                     {isSaving ? t("saving") : settings ? t("saveChanges") : t("connect")}
-                  </button>
+                  </Button>
 
                   {settings && (
-                    <button
+                    <Button
                       type="button"
                       onClick={handleTestConnection}
                       disabled={isTesting}
-                      className="px-4 py-2 text-sm font-medium text-foreground bg-muted hover:bg-muted/80 rounded-lg transition-colors disabled:opacity-50"
+                      variant="muted"
+                      loading={isTesting}
                     >
                       {isTesting ? t("testing") : t("testConnection")}
-                    </button>
+                    </Button>
                   )}
                 </div>
               </form>
@@ -669,59 +425,104 @@ export default function DocspellSettingsPage() {
               {/* Connection Test Result */}
               {testResult && (
                 <div
-                  className={`mt-4 p-4 rounded-lg border ${
-                    testResult.success
-                      ? "bg-green-50 border-green-200 dark:bg-green-950 dark:border-green-800"
-                      : "bg-destructive/10 border-destructive/30"
-                  }`}
+                  className={cn(
+                    "mt-4 p-4",
+                    classes.isRetro
+                      ? "border-4"
+                      : cn(
+                          "rounded-lg border",
+                          testResult.success
+                            ? "bg-green-50 border-green-200 dark:bg-green-950 dark:border-green-800"
+                            : "bg-destructive/10 border-destructive/30"
+                        )
+                  )}
+                  style={classes.isRetro ? {
+                    borderColor: testResult.success ? NES_GREEN : NES_RED,
+                    backgroundColor: testResult.success ? 'rgba(146, 204, 65, 0.1)' : 'rgba(206, 55, 43, 0.1)',
+                  } : undefined}
                 >
                   <div className="flex items-center gap-2">
                     <Icon
                       name={testResult.success ? "CheckCircle" : "XCircle"}
-                      className={`w-5 h-5 ${
-                        testResult.success ? "text-green-600" : "text-destructive"
-                      }`}
+                      className={cn(
+                        "w-5 h-5",
+                        !classes.isRetro && (testResult.success ? "text-green-600" : "text-destructive")
+                      )}
+                      style={classes.isRetro ? { color: testResult.success ? NES_GREEN : NES_RED } : undefined}
                     />
                     <span
-                      className={`font-medium ${
-                        testResult.success ? "text-green-700 dark:text-green-400" : "text-destructive"
-                      }`}
+                      className={cn(
+                        classes.isRetro
+                          ? "font-bold retro-body retro-small"
+                          : cn(
+                              "font-medium",
+                              testResult.success ? "text-green-700 dark:text-green-400" : "text-destructive"
+                            )
+                      )}
+                      style={classes.isRetro ? { color: testResult.success ? NES_GREEN : NES_RED } : undefined}
                     >
                       {testResult.success ? t("connectionSuccess") : t("connectionFailed")}
                     </span>
                   </div>
-                  <p className="mt-1 text-sm text-muted-foreground">{testResult.message}</p>
+                  <p className={cn(
+                    "mt-1 text-muted-foreground",
+                    classes.isRetro ? "retro-small retro-body" : "text-sm"
+                  )}>
+                    {testResult.message}
+                  </p>
                   {testResult.version && (
-                    <p className="mt-1 text-sm text-muted-foreground">
+                    <p className={cn(
+                      "mt-1 text-muted-foreground",
+                      classes.isRetro ? "retro-small retro-body" : "text-sm"
+                    )}>
                       {t("docspellVersion", { version: testResult.version })}
                     </p>
                   )}
                 </div>
               )}
-            </div>
+            </Card>
 
             {/* Danger Zone */}
             {settings && (
-              <div className="bg-card p-6 rounded-lg border border-destructive/30 shadow-sm">
-                <h3 className="text-lg font-semibold text-destructive mb-4 flex items-center gap-2">
+              <div className={cn(
+                "bg-card p-6",
+                classes.isRetro ? "border-4 retro-shadow" : "rounded-lg border border-destructive/30 shadow-sm"
+              )} style={classes.isRetro ? { borderColor: NES_RED } : undefined}>
+                <h3 className={cn(
+                  "mb-4 flex items-center gap-2",
+                  classes.isRetro
+                    ? "text-sm font-bold uppercase retro-heading"
+                    : "text-lg font-semibold text-destructive"
+                )} style={classes.isRetro ? { color: NES_RED } : undefined}>
                   <Icon name="AlertTriangle" className="w-5 h-5" />
                   {t("dangerZone")}
                 </h3>
 
-                <div className="p-4 bg-destructive/5 rounded-lg border border-destructive/20">
+                <div className={cn(
+                  "p-4",
+                  classes.isRetro ? "border-4 border-dashed" : "bg-destructive/5 rounded-lg border border-destructive/20"
+                )} style={classes.isRetro ? { borderColor: NES_RED, backgroundColor: 'rgba(206, 55, 43, 0.1)' } : undefined}>
                   <div className="flex items-start justify-between gap-4">
                     <div>
-                      <p className="font-medium text-foreground">{t("removeIntegration")}</p>
-                      <p className="text-sm text-muted-foreground mt-1">
+                      <p className={cn(
+                        "text-foreground",
+                        classes.isRetro ? "font-bold retro-body retro-small" : "font-medium"
+                      )}>
+                        {t("removeIntegration")}
+                      </p>
+                      <p className={cn(
+                        "mt-1 text-muted-foreground",
+                        classes.isRetro ? "retro-small uppercase retro-body" : "text-sm"
+                      )}>
                         {t("removeIntegrationWarning")}
                       </p>
                     </div>
-                    <button
+                    <Button
                       onClick={() => setShowDeleteConfirm(true)}
-                      className="px-4 py-2 text-sm font-medium text-destructive-foreground bg-destructive hover:bg-destructive/90 rounded-lg transition-colors whitespace-nowrap"
+                      variant="danger"
                     >
                       {t("remove")}
-                    </button>
+                    </Button>
                   </div>
                 </div>
               </div>
@@ -731,42 +532,36 @@ export default function DocspellSettingsPage() {
       </div>
 
       {/* Delete Confirmation Modal */}
-      {showDeleteConfirm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="bg-card rounded-lg shadow-lg w-full max-w-md mx-4 p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-destructive flex items-center gap-2">
-                <Icon name="AlertTriangle" className="w-5 h-5" />
-                {t("confirmRemove")}
-              </h3>
-              <button
-                onClick={() => setShowDeleteConfirm(false)}
-                className="text-muted-foreground hover:text-foreground"
-              >
-                <Icon name="X" className="w-5 h-5" />
-              </button>
-            </div>
-
-            <p className="text-sm text-foreground mb-4">{t("confirmRemoveMessage")}</p>
-
-            <div className="flex justify-end gap-3">
-              <button
-                onClick={() => setShowDeleteConfirm(false)}
-                className="px-4 py-2 text-sm font-medium text-foreground bg-muted hover:bg-muted/80 rounded-lg transition-colors"
-              >
-                {t("cancel")}
-              </button>
-              <button
-                onClick={handleDelete}
-                disabled={isDeleting}
-                className="px-4 py-2 text-sm font-medium text-destructive-foreground bg-destructive hover:bg-destructive/90 rounded-lg transition-colors disabled:opacity-50"
-              >
-                {isDeleting ? t("removing") : t("remove")}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <Modal
+        open={showDeleteConfirm}
+        onClose={() => setShowDeleteConfirm(false)}
+      >
+        <Modal.Header title={t("confirmRemove")} variant="danger" />
+        <Modal.Body>
+          <p className={cn(
+            "mb-4 text-foreground",
+            classes.isRetro ? "retro-small uppercase retro-body" : "text-sm"
+          )}>
+            {t("confirmRemoveMessage")}
+          </p>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button
+            onClick={() => setShowDeleteConfirm(false)}
+            variant="secondary"
+          >
+            {t("cancel")}
+          </Button>
+          <Button
+            onClick={handleDelete}
+            disabled={isDeleting}
+            variant="danger"
+            loading={isDeleting}
+          >
+            {isDeleting ? t("removing") : t("remove")}
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </>
   );
 }

@@ -3,15 +3,10 @@
 import { useState, useCallback } from "react";
 import { useDropzone } from "react-dropzone";
 import { useTranslations } from "next-intl";
-import { useTheme } from "next-themes";
 import {
   Upload,
-  FileSpreadsheet,
   CheckCircle,
   AlertTriangle,
-  Loader2,
-  Barcode,
-  Search,
 } from "lucide-react";
 import { Icon } from "@/components/icons";
 import { useAuth } from "@/lib/auth";
@@ -24,7 +19,7 @@ import {
 } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import { NES_GREEN, NES_BLUE, NES_RED, NES_AMBER } from "@/lib/nes-colors";
-import { RetroPageHeader, RetroCard, RetroButton } from "@/components/retro";
+import { useThemed, useThemedClasses } from "@/lib/themed";
 
 const ENTITY_TYPES: EntityType[] = [
   "categories",
@@ -38,8 +33,10 @@ const ENTITY_TYPES: EntityType[] = [
 export default function ImportPage() {
   const { isAuthenticated } = useAuth();
   const t = useTranslations("import");
-  const { theme } = useTheme();
-  const isRetro = theme?.startsWith("retro");
+  const themed = useThemed();
+  const classes = useThemedClasses();
+  const { PageHeader, Card, Button } = themed;
+
   const [selectedEntity, setSelectedEntity] = useState<EntityType>("items");
   const [file, setFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
@@ -114,242 +111,47 @@ export default function ImportPage() {
 
   if (!isAuthenticated) return null;
 
-  // Retro theme UI
-  if (isRetro) {
-    return (
-      <div className="space-y-6">
-        <RetroPageHeader
-          title={t("title")}
-          subtitle={t("subtitle")}
-        />
-
-        {/* Import Section */}
-        <RetroCard
-          title={t("importData")}
-          icon="FileSpreadsheet"
-          padding="none"
-        >
-          <div className="p-6 space-y-4">
-            <p className="retro-small uppercase text-muted-foreground retro-body">{t("importDescription")}</p>
-
-            {/* Entity Type Selection */}
-            <div>
-              <label className="block retro-small uppercase font-bold mb-2 retro-body">{t("selectEntityType")}</label>
-              <select
-                value={selectedEntity}
-                onChange={(e) => setSelectedEntity(e.target.value as EntityType)}
-                className="w-full md:w-64 px-3 py-2 border-4 border-border bg-background text-foreground retro-body retro-small focus:outline-none"
-              >
-                {ENTITY_TYPES.map((type) => (
-                  <option key={type} value={type}>
-                    {t(`entityTypes.${type}`)}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {/* Drop Zone */}
-            <div
-              {...getRootProps()}
-              className={cn(
-                "border-4 border-dashed p-8 text-center cursor-pointer transition-colors",
-                isDragActive
-                  ? "border-primary bg-primary/5"
-                  : "border-border hover:border-primary/50"
-              )}
-            >
-              <input {...getInputProps()} />
-              <div className="w-12 h-12 mx-auto mb-3 border-4 border-border flex items-center justify-center" style={{ backgroundColor: NES_BLUE }}>
-                <Icon name="Upload" className="w-6 h-6 text-white" />
-              </div>
-              {file ? (
-                <p className="text-foreground font-bold retro-body retro-small">{file.name}</p>
-              ) : (
-                <p className="text-muted-foreground retro-body retro-small uppercase">{t("dropzoneText")}</p>
-              )}
-              <p className="retro-small uppercase text-muted-foreground mt-1 retro-body">{t("supportedFormats")}</p>
-            </div>
-
-            {/* Error */}
-            {error && (
-              <div className="p-3 border-4 flex items-start gap-2" style={{ borderColor: NES_RED, backgroundColor: 'rgba(206, 55, 43, 0.1)' }}>
-                <Icon name="AlertTriangle" className="w-4 h-4 mt-0.5 flex-shrink-0" style={{ color: NES_RED }} />
-                <p className="retro-small uppercase retro-body" style={{ color: NES_RED }}>{error}</p>
-              </div>
-            )}
-
-            {/* Import Button */}
-            <div className="flex gap-2">
-              <RetroButton
-                variant="primary"
-                onClick={handleImport}
-                disabled={!file || isUploading}
-                loading={isUploading}
-              >
-                {isUploading ? t("importing") : t("import")}
-              </RetroButton>
-              {file && (
-                <RetroButton
-                  variant="muted"
-                  onClick={resetImport}
-                >
-                  {t("clear")}
-                </RetroButton>
-              )}
-            </div>
-
-            {/* Result */}
-            {result && (
-              <div className="border-4 border-border p-4 space-y-3">
-                <div className="flex items-center gap-2">
-                  <Icon name="CheckCircle" className="w-5 h-5" style={{ color: NES_GREEN }} />
-                  <span className="font-bold retro-body retro-small">{t("importComplete")}</span>
-                </div>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 retro-body">
-                  <div>
-                    <p className="retro-small uppercase text-muted-foreground">{t("totalRows")}</p>
-                    <p className="font-bold retro-small">{result.total_rows}</p>
-                  </div>
-                  <div>
-                    <p className="retro-small uppercase text-muted-foreground">{t("created")}</p>
-                    <p className="font-bold retro-small" style={{ color: NES_GREEN }}>{result.created}</p>
-                  </div>
-                  <div>
-                    <p className="retro-small uppercase text-muted-foreground">{t("skipped")}</p>
-                    <p className="font-bold retro-small" style={{ color: NES_AMBER }}>{result.skipped}</p>
-                  </div>
-                  <div>
-                    <p className="retro-small uppercase text-muted-foreground">{t("errors")}</p>
-                    <p className="font-bold retro-small" style={{ color: NES_RED }}>{result.errors.length}</p>
-                  </div>
-                </div>
-
-                {/* Error Details */}
-                {result.errors.length > 0 && (
-                  <div className="mt-4">
-                    <p className="retro-small uppercase font-bold mb-2 retro-body">{t("errorDetails")}</p>
-                    <div className="max-h-40 overflow-y-auto space-y-1">
-                      {result.errors.slice(0, 10).map((err, idx) => (
-                        <div key={idx} className="retro-small uppercase retro-body p-2 border-4 border-dashed" style={{ borderColor: NES_RED, color: NES_RED, backgroundColor: 'rgba(206, 55, 43, 0.1)' }}>
-                          {t("row")} {err.row}
-                          {err.field && ` (${err.field})`}: {err.message}
-                        </div>
-                      ))}
-                      {result.errors.length > 10 && (
-                        <p className="retro-small uppercase text-muted-foreground retro-body">
-                          {t("andMoreErrors", { count: result.errors.length - 10 })}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-        </RetroCard>
-
-        {/* Barcode Lookup Section */}
-        <RetroCard
-          title={t("barcodeLookup")}
-          icon="Barcode"
-          padding="none"
-        >
-          <div className="p-6 space-y-4">
-            <p className="retro-small uppercase text-muted-foreground retro-body">{t("barcodeLookupDescription")}</p>
-            <div className="flex gap-2">
-              <input
-                type="text"
-                placeholder={t("enterBarcode")}
-                value={barcodeInput}
-                onChange={(e) => setBarcodeInput(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && handleBarcodeLookup()}
-                className="flex-1 px-3 py-2 border-4 border-border bg-background text-foreground retro-body retro-small focus:outline-none"
-              />
-              <RetroButton
-                variant="primary"
-                size="icon"
-                onClick={handleBarcodeLookup}
-                disabled={!barcodeInput.trim() || isLookingUp}
-                loading={isLookingUp}
-                icon="Search"
-              />
-            </div>
-
-            {barcodeResult && (
-              <div className="border-4 border-border p-4">
-                {"found" in barcodeResult && barcodeResult.found === false ? (
-                  <div className="flex items-center gap-2 text-muted-foreground">
-                    <Icon name="AlertTriangle" className="w-4 h-4" />
-                    <span className="retro-small uppercase retro-body">{t("productNotFound")}</span>
-                  </div>
-                ) : (
-                  <div className="space-y-2">
-                    {"name" in barcodeResult && (
-                      <>
-                        <div className="flex items-start gap-4">
-                          {barcodeResult.image_url && (
-                            <img
-                              src={barcodeResult.image_url}
-                              alt={barcodeResult.name || ""}
-                              className="w-20 h-20 object-contain border-4 border-border"
-                            />
-                          )}
-                          <div className="flex-1 retro-body">
-                            <p className="font-bold retro-small">{barcodeResult.name || t("unknownProduct")}</p>
-                            {barcodeResult.brand && (
-                              <p className="retro-small uppercase text-muted-foreground">
-                                {t("brand")}: {barcodeResult.brand}
-                              </p>
-                            )}
-                            {barcodeResult.category && (
-                              <p className="retro-small uppercase text-muted-foreground">
-                                {t("category")}: {barcodeResult.category}
-                              </p>
-                            )}
-                          </div>
-                        </div>
-                        {barcodeResult.description && (
-                          <p className="retro-small text-muted-foreground retro-body">{barcodeResult.description}</p>
-                        )}
-                        <p className="text-xs uppercase text-muted-foreground retro-body">
-                          {t("source")}: {barcodeResult.source}
-                        </p>
-                      </>
-                    )}
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-        </RetroCard>
-      </div>
-    );
-  }
-
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-foreground">{t("title")}</h1>
-        <p className="text-muted-foreground mt-1">{t("subtitle")}</p>
-      </div>
+      <PageHeader
+        title={t("title")}
+        subtitle={t("subtitle")}
+      />
 
       {/* Import Section */}
-      <div className="bg-card border border-border rounded-lg shadow-sm">
-        <div className="p-6 border-b border-border">
-          <h2 className="text-lg font-semibold flex items-center gap-2">
-            <FileSpreadsheet className="w-5 h-5" />
-            {t("importData")}
-          </h2>
-          <p className="text-sm text-muted-foreground mt-1">{t("importDescription")}</p>
-        </div>
-        <div className="p-6 space-y-4">
+      <Card
+        title={t("importData")}
+        icon="FileSpreadsheet"
+        padding={classes.isRetro ? "none" : undefined}
+      >
+        <div className={cn(classes.isRetro && "p-6", "space-y-4")}>
+          <p className={cn(
+            classes.isRetro
+              ? "retro-small uppercase text-muted-foreground retro-body"
+              : "text-sm text-muted-foreground"
+          )}>
+            {t("importDescription")}
+          </p>
+
           {/* Entity Type Selection */}
           <div>
-            <label className="block text-sm font-medium mb-2">{t("selectEntityType")}</label>
+            <label className={cn(
+              "block mb-2",
+              classes.isRetro
+                ? "retro-small uppercase font-bold retro-body"
+                : "text-sm font-medium"
+            )}>
+              {t("selectEntityType")}
+            </label>
             <select
               value={selectedEntity}
               onChange={(e) => setSelectedEntity(e.target.value as EntityType)}
-              className="w-full md:w-64 px-3 py-2 border border-border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+              className={cn(
+                "w-full md:w-64 px-3 py-2 bg-background text-foreground focus:outline-none",
+                classes.isRetro
+                  ? "border-4 border-border retro-body retro-small"
+                  : "border border-border rounded-md focus:ring-2 focus:ring-primary focus:border-transparent"
+              )}
             >
               {ENTITY_TYPES.map((type) => (
                 <option key={type} value={type}>
@@ -362,95 +164,218 @@ export default function ImportPage() {
           {/* Drop Zone */}
           <div
             {...getRootProps()}
-            className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors ${
-              isDragActive
-                ? "border-primary bg-primary/5"
-                : "border-border hover:border-primary/50"
-            }`}
+            className={cn(
+              "p-8 text-center cursor-pointer transition-colors",
+              classes.isRetro
+                ? cn(
+                    "border-4 border-dashed",
+                    isDragActive
+                      ? "border-primary bg-primary/5"
+                      : "border-border hover:border-primary/50"
+                  )
+                : cn(
+                    "border-2 border-dashed rounded-lg",
+                    isDragActive
+                      ? "border-primary bg-primary/5"
+                      : "border-border hover:border-primary/50"
+                  )
+            )}
           >
             <input {...getInputProps()} />
-            <Upload className="w-10 h-10 mx-auto text-muted-foreground mb-3" />
-            {file ? (
-              <p className="text-foreground font-medium">{file.name}</p>
+            {classes.isRetro ? (
+              <div className="w-12 h-12 mx-auto mb-3 border-4 border-border flex items-center justify-center" style={{ backgroundColor: NES_BLUE }}>
+                <Icon name="Upload" className="w-6 h-6 text-white" />
+              </div>
             ) : (
-              <p className="text-muted-foreground">{t("dropzoneText")}</p>
+              <Upload className="w-10 h-10 mx-auto text-muted-foreground mb-3" />
             )}
-            <p className="text-sm text-muted-foreground mt-1">{t("supportedFormats")}</p>
+            {file ? (
+              <p className={cn(
+                "text-foreground",
+                classes.isRetro ? "font-bold retro-body retro-small" : "font-medium"
+              )}>
+                {file.name}
+              </p>
+            ) : (
+              <p className={cn(
+                "text-muted-foreground",
+                classes.isRetro && "retro-body retro-small uppercase"
+              )}>
+                {t("dropzoneText")}
+              </p>
+            )}
+            <p className={cn(
+              "mt-1 text-muted-foreground",
+              classes.isRetro ? "retro-small uppercase retro-body" : "text-sm"
+            )}>
+              {t("supportedFormats")}
+            </p>
           </div>
 
           {/* Error */}
           {error && (
-            <div className="p-3 bg-red-50 border border-red-200 rounded-md flex items-start gap-2">
-              <AlertTriangle className="w-4 h-4 text-red-600 mt-0.5 flex-shrink-0" />
-              <p className="text-sm text-red-600">{error}</p>
+            <div className={cn(
+              "p-3 flex items-start gap-2",
+              classes.isRetro
+                ? "border-4"
+                : "bg-red-50 border border-red-200 rounded-md"
+            )}
+            style={classes.isRetro ? { borderColor: NES_RED, backgroundColor: 'rgba(206, 55, 43, 0.1)' } : undefined}
+            >
+              {classes.isRetro ? (
+                <Icon name="AlertTriangle" className="w-4 h-4 mt-0.5 flex-shrink-0" style={{ color: NES_RED }} />
+              ) : (
+                <AlertTriangle className="w-4 h-4 text-red-600 mt-0.5 flex-shrink-0" />
+              )}
+              <p className={cn(
+                classes.isRetro
+                  ? "retro-small uppercase retro-body"
+                  : "text-sm text-red-600"
+              )}
+              style={classes.isRetro ? { color: NES_RED } : undefined}
+              >
+                {error}
+              </p>
             </div>
           )}
 
           {/* Import Button */}
           <div className="flex gap-2">
-            <button
+            <Button
+              variant="primary"
               onClick={handleImport}
               disabled={!file || isUploading}
-              className="px-4 py-2 bg-primary text-primary-foreground rounded-md font-medium hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center"
+              loading={isUploading}
             >
-              {isUploading ? (
-                <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  {t("importing")}
-                </>
-              ) : (
-                t("import")
-              )}
-            </button>
+              {isUploading ? t("importing") : t("import")}
+            </Button>
             {file && (
-              <button
+              <Button
+                variant="muted"
                 onClick={resetImport}
-                className="px-4 py-2 border border-border rounded-md font-medium hover:bg-muted focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 transition-colors"
               >
                 {t("clear")}
-              </button>
+              </Button>
             )}
           </div>
 
           {/* Result */}
           {result && (
-            <div className="border border-border rounded-lg p-4 space-y-3">
+            <div className={cn(
+              "p-4 space-y-3",
+              classes.isRetro
+                ? "border-4 border-border"
+                : "border border-border rounded-lg"
+            )}>
               <div className="flex items-center gap-2">
-                <CheckCircle className="w-5 h-5 text-green-500" />
-                <span className="font-medium">{t("importComplete")}</span>
+                {classes.isRetro ? (
+                  <Icon name="CheckCircle" className="w-5 h-5" style={{ color: NES_GREEN }} />
+                ) : (
+                  <CheckCircle className="w-5 h-5 text-green-500" />
+                )}
+                <span className={cn(
+                  classes.isRetro ? "font-bold retro-body retro-small" : "font-medium"
+                )}>
+                  {t("importComplete")}
+                </span>
               </div>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+              <div className={cn(
+                "grid grid-cols-2 md:grid-cols-4 gap-4",
+                classes.isRetro ? "retro-body" : "text-sm"
+              )}>
                 <div>
-                  <p className="text-muted-foreground">{t("totalRows")}</p>
-                  <p className="font-medium">{result.total_rows}</p>
+                  <p className={cn(
+                    "text-muted-foreground",
+                    classes.isRetro && "retro-small uppercase"
+                  )}>
+                    {t("totalRows")}
+                  </p>
+                  <p className={cn(
+                    classes.isRetro ? "font-bold retro-small" : "font-medium"
+                  )}>
+                    {result.total_rows}
+                  </p>
                 </div>
                 <div>
-                  <p className="text-muted-foreground">{t("created")}</p>
-                  <p className="font-medium text-green-600">{result.created}</p>
+                  <p className={cn(
+                    "text-muted-foreground",
+                    classes.isRetro && "retro-small uppercase"
+                  )}>
+                    {t("created")}
+                  </p>
+                  <p
+                    className={cn(
+                      classes.isRetro ? "font-bold retro-small" : "font-medium text-green-600"
+                    )}
+                    style={classes.isRetro ? { color: NES_GREEN } : undefined}
+                  >
+                    {result.created}
+                  </p>
                 </div>
                 <div>
-                  <p className="text-muted-foreground">{t("skipped")}</p>
-                  <p className="font-medium text-yellow-600">{result.skipped}</p>
+                  <p className={cn(
+                    "text-muted-foreground",
+                    classes.isRetro && "retro-small uppercase"
+                  )}>
+                    {t("skipped")}
+                  </p>
+                  <p className={cn(
+                    classes.isRetro ? "font-bold retro-small" : "font-medium text-yellow-600"
+                  )}
+                  style={classes.isRetro ? { color: NES_AMBER } : undefined}
+                  >
+                    {result.skipped}
+                  </p>
                 </div>
                 <div>
-                  <p className="text-muted-foreground">{t("errors")}</p>
-                  <p className="font-medium text-red-600">{result.errors.length}</p>
+                  <p className={cn(
+                    "text-muted-foreground",
+                    classes.isRetro && "retro-small uppercase"
+                  )}>
+                    {t("errors")}
+                  </p>
+                  <p className={cn(
+                    classes.isRetro ? "font-bold retro-small" : "font-medium text-red-600"
+                  )}
+                  style={classes.isRetro ? { color: NES_RED } : undefined}
+                  >
+                    {result.errors.length}
+                  </p>
                 </div>
               </div>
 
               {/* Error Details */}
               {result.errors.length > 0 && (
                 <div className="mt-4">
-                  <p className="text-sm font-medium mb-2">{t("errorDetails")}</p>
+                  <p className={cn(
+                    "mb-2",
+                    classes.isRetro
+                      ? "retro-small uppercase font-bold retro-body"
+                      : "text-sm font-medium"
+                  )}>
+                    {t("errorDetails")}
+                  </p>
                   <div className="max-h-40 overflow-y-auto space-y-1">
                     {result.errors.slice(0, 10).map((err, idx) => (
-                      <div key={idx} className="text-sm text-red-600 bg-red-50 p-2 rounded">
+                      <div
+                        key={idx}
+                        className={cn(
+                          "p-2",
+                          classes.isRetro
+                            ? "retro-small uppercase retro-body border-4 border-dashed"
+                            : "text-sm text-red-600 bg-red-50 rounded"
+                        )}
+                        style={classes.isRetro ? { borderColor: NES_RED, color: NES_RED, backgroundColor: 'rgba(206, 55, 43, 0.1)' } : undefined}
+                      >
                         {t("row")} {err.row}
                         {err.field && ` (${err.field})`}: {err.message}
                       </div>
                     ))}
                     {result.errors.length > 10 && (
-                      <p className="text-sm text-muted-foreground">
+                      <p className={cn(
+                        "text-muted-foreground",
+                        classes.isRetro ? "retro-small uppercase retro-body" : "text-sm"
+                      )}>
                         {t("andMoreErrors", { count: result.errors.length - 10 })}
                       </p>
                     )}
@@ -460,18 +385,22 @@ export default function ImportPage() {
             </div>
           )}
         </div>
-      </div>
+      </Card>
 
       {/* Barcode Lookup Section */}
-      <div className="bg-card border border-border rounded-lg shadow-sm">
-        <div className="p-6 border-b border-border">
-          <h2 className="text-lg font-semibold flex items-center gap-2">
-            <Barcode className="w-5 h-5" />
-            {t("barcodeLookup")}
-          </h2>
-          <p className="text-sm text-muted-foreground mt-1">{t("barcodeLookupDescription")}</p>
-        </div>
-        <div className="p-6 space-y-4">
+      <Card
+        title={t("barcodeLookup")}
+        icon="Barcode"
+        padding={classes.isRetro ? "none" : undefined}
+      >
+        <div className={cn(classes.isRetro && "p-6", "space-y-4")}>
+          <p className={cn(
+            classes.isRetro
+              ? "retro-small uppercase text-muted-foreground retro-body"
+              : "text-sm text-muted-foreground"
+          )}>
+            {t("barcodeLookupDescription")}
+          </p>
           <div className="flex gap-2">
             <input
               type="text"
@@ -479,27 +408,40 @@ export default function ImportPage() {
               value={barcodeInput}
               onChange={(e) => setBarcodeInput(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleBarcodeLookup()}
-              className="flex-1 px-3 py-2 border border-border rounded-md bg-background text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+              className={cn(
+                "flex-1 px-3 py-2 bg-background text-foreground focus:outline-none",
+                classes.isRetro
+                  ? "border-4 border-border retro-body retro-small"
+                  : "border border-border rounded-md placeholder-muted-foreground focus:ring-2 focus:ring-primary focus:border-transparent"
+              )}
             />
-            <button
+            <Button
+              variant="primary"
+              size="icon"
               onClick={handleBarcodeLookup}
               disabled={!barcodeInput.trim() || isLookingUp}
-              className="px-4 py-2 bg-primary text-primary-foreground rounded-md font-medium hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            >
-              {isLookingUp ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                <Search className="w-4 h-4" />
-              )}
-            </button>
+              loading={isLookingUp}
+              icon="Search"
+            />
           </div>
 
           {barcodeResult && (
-            <div className="border border-border rounded-lg p-4">
+            <div className={cn(
+              "p-4",
+              classes.isRetro
+                ? "border-4 border-border"
+                : "border border-border rounded-lg"
+            )}>
               {"found" in barcodeResult && barcodeResult.found === false ? (
                 <div className="flex items-center gap-2 text-muted-foreground">
-                  <AlertTriangle className="w-4 h-4" />
-                  <span>{t("productNotFound")}</span>
+                  {classes.isRetro ? (
+                    <Icon name="AlertTriangle" className="w-4 h-4" />
+                  ) : (
+                    <AlertTriangle className="w-4 h-4" />
+                  )}
+                  <span className={cn(classes.isRetro && "retro-small uppercase retro-body")}>
+                    {t("productNotFound")}
+                  </span>
                 </div>
               ) : (
                 <div className="space-y-2">
@@ -510,27 +452,48 @@ export default function ImportPage() {
                           <img
                             src={barcodeResult.image_url}
                             alt={barcodeResult.name || ""}
-                            className="w-20 h-20 object-contain rounded"
+                            className={cn(
+                              "w-20 h-20 object-contain",
+                              classes.isRetro ? "border-4 border-border" : "rounded"
+                            )}
                           />
                         )}
-                        <div className="flex-1">
-                          <p className="font-medium">{barcodeResult.name || t("unknownProduct")}</p>
+                        <div className={cn("flex-1", classes.isRetro && "retro-body")}>
+                          <p className={cn(
+                            classes.isRetro ? "font-bold retro-small" : "font-medium"
+                          )}>
+                            {barcodeResult.name || t("unknownProduct")}
+                          </p>
                           {barcodeResult.brand && (
-                            <p className="text-sm text-muted-foreground">
+                            <p className={cn(
+                              "text-muted-foreground",
+                              classes.isRetro ? "retro-small uppercase" : "text-sm"
+                            )}>
                               {t("brand")}: {barcodeResult.brand}
                             </p>
                           )}
                           {barcodeResult.category && (
-                            <p className="text-sm text-muted-foreground">
+                            <p className={cn(
+                              "text-muted-foreground",
+                              classes.isRetro ? "retro-small uppercase" : "text-sm"
+                            )}>
                               {t("category")}: {barcodeResult.category}
                             </p>
                           )}
                         </div>
                       </div>
                       {barcodeResult.description && (
-                        <p className="text-sm text-muted-foreground">{barcodeResult.description}</p>
+                        <p className={cn(
+                          "text-muted-foreground",
+                          classes.isRetro ? "retro-small retro-body" : "text-sm"
+                        )}>
+                          {barcodeResult.description}
+                        </p>
                       )}
-                      <p className="text-xs text-muted-foreground">
+                      <p className={cn(
+                        "text-muted-foreground",
+                        classes.isRetro ? "text-xs uppercase retro-body" : "text-xs"
+                      )}>
                         {t("source")}: {barcodeResult.source}
                       </p>
                     </>
@@ -540,7 +503,7 @@ export default function ImportPage() {
             </div>
           )}
         </div>
-      </div>
+      </Card>
     </div>
   );
 }

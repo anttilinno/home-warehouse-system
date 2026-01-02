@@ -4,7 +4,6 @@ import { useAuth } from "@/lib/auth";
 import { useRouter } from "@/navigation";
 import { useTranslations } from "next-intl";
 import { useEffect, useState, useMemo } from "react";
-import { useTheme } from "next-themes";
 import { Icon } from "@/components/icons";
 import {
   itemsApi,
@@ -15,34 +14,21 @@ import {
   ItemUpdate,
   Category,
 } from "@/lib/api";
-import { cn } from "@/lib/utils";
 import { CategorySelect } from "@/components/ui/category-select";
 import { FavoriteButton } from "@/components/ui/favorite-button";
 import { LinkedDocuments } from "@/components/docspell";
-import { NES_RED } from "@/lib/nes-colors";
-import {
-  RetroPageHeader,
-  RetroButton,
-  RetroTable,
-  RetroEmptyState,
-  RetroModal,
-  RetroFormGroup,
-  RetroLabel,
-  RetroInput,
-  RetroTextarea,
-  RetroCheckbox,
-  RetroError,
-  RetroActionsMenu,
-  type ActionItem,
-} from "@/components/retro";
+import { useThemed, useThemedClasses } from "@/lib/themed";
+import type { ThemedComponents } from "@/lib/themed";
 
 export default function ItemsPage() {
   const { isAuthenticated, isLoading: authLoading, canEdit } = useAuth();
   const router = useRouter();
   const t = useTranslations("items");
   const te = useTranslations("errors");
-  const { theme } = useTheme();
-  const isRetro = theme?.startsWith("retro");
+  const themed = useThemed();
+  const classes = useThemedClasses();
+
+  const { PageHeader, Button, Table, EmptyState, ActionsMenu } = themed;
 
   // Data state
   const [items, setItems] = useState<Item[]>([]);
@@ -84,9 +70,9 @@ export default function ItemsPage() {
       setItems(itemsData);
       setCategories(categoriesData);
       setError(null);
-    } catch (err) {
-      const errorMessage =
-        err instanceof Error ? err.message : "Failed to load items";
+    } catch (e) {
+      const err = e as Error;
+      const errorMessage = err.message || "Failed to load items";
       setError(errorMessage);
     } finally {
       setLoading(false);
@@ -109,18 +95,11 @@ export default function ItemsPage() {
   };
 
   if (authLoading || loading) {
-    if (isRetro) {
-      return (
-        <div className="flex items-center justify-center min-h-[400px]">
-          <p className="retro-small uppercase font-bold animate-pulse retro-heading">
-            Loading...
-          </p>
-        </div>
-      );
-    }
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <div className="text-muted-foreground">{t("loading")}</div>
+        <p className={classes.loadingText}>
+          {classes.isRetro ? "Loading..." : t("loading")}
+        </p>
       </div>
     );
   }
@@ -130,363 +109,148 @@ export default function ItemsPage() {
   }
 
   if (error) {
-    if (isRetro) {
-      return (
-        <div className="flex items-center justify-center min-h-[400px]">
-          <div className="text-center">
-            <p className="text-primary mb-4 retro-body">{error}</p>
-            <RetroButton variant="primary" onClick={fetchData}>
-              {t("tryAgain")}
-            </RetroButton>
-          </div>
-        </div>
-      );
-    }
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center">
-          <p className="text-red-500 mb-4">{error}</p>
-          <button
-            onClick={fetchData}
-            className="px-4 py-2 bg-primary text-primary-foreground rounded-lg"
-          >
+          <p className={`${classes.errorText} mb-4`}>{error}</p>
+          <Button variant="primary" onClick={fetchData}>
             {t("tryAgain")}
-          </button>
+          </Button>
         </div>
       </div>
     );
   }
 
-  // Retro NES theme
-  if (isRetro) {
-    return (
-      <>
-        {/* Header */}
-        <RetroPageHeader
-          title={t("title")}
-          subtitle={`${items.length} ITEMS IN CATALOG`}
-          actions={
-            canEdit && (
-              <RetroButton
-                variant="secondary"
-                icon="Plus"
-                onClick={() => setIsCreateModalOpen(true)}
-              >
-                {t("addItem")}
-              </RetroButton>
-            )
-          }
-        />
-
-        {/* Table */}
-        {items.length === 0 ? (
-          <RetroEmptyState
-            icon="Tag"
-            message={t("noItems")}
-            action={
-              canEdit
-                ? {
-                    label: t("addItem"),
-                    onClick: () => setIsCreateModalOpen(true),
-                    icon: "Plus",
-                  }
-                : undefined
-            }
-          />
-        ) : (
-          <RetroTable>
-            <RetroTable.Head>
-              <RetroTable.Row>
-                <RetroTable.Th>{t("sku")}</RetroTable.Th>
-                <RetroTable.Th>{t("name")}</RetroTable.Th>
-                <RetroTable.Th>{t("category")}</RetroTable.Th>
-                <RetroTable.Th align="right" className="w-0">{t("actions")}</RetroTable.Th>
-              </RetroTable.Row>
-            </RetroTable.Head>
-            <RetroTable.Body>
-              {items.map((item) => (
-                <RetroTable.Row
-                  key={item.id}
-                  clickable
-                  onDoubleClick={() => router.push(`/dashboard/items/${item.id}`)}
-                >
-                  <RetroTable.Td>
-                    <span className="px-2 py-1 bg-muted border-2 border-border retro-small font-mono retro-body">
-                      {item.sku}
-                    </span>
-                  </RetroTable.Td>
-                  <RetroTable.Td>
-                    <div className="flex items-center gap-2">
-                      <Icon name="Tag" className="w-4 h-4 text-muted-foreground" />
-                      <span className="retro-body text-foreground">
-                        {item.name}
-                      </span>
-                    </div>
-                  </RetroTable.Td>
-                  <RetroTable.Td>
-                    {item.category_id ? (
-                      <div className="flex items-center gap-2 retro-body text-foreground">
-                        <Icon name="Archive" className="w-4 h-4 text-muted-foreground" />
-                        {getCategoryName(item.category_id)}
-                      </div>
-                    ) : (
-                      <span className="text-muted-foreground retro-body">{t("noCategory")}</span>
-                    )}
-                  </RetroTable.Td>
-                  <RetroTable.Td align="right" className="w-0">
-                    <RetroActionsMenu
-                      actions={[
-                        {
-                          icon: "Eye",
-                          label: t("view"),
-                          onClick: () => router.push(`/dashboard/items/${item.id}`),
-                        },
-                        {
-                          icon: "FileText",
-                          label: t("openInObsidian"),
-                          onClick: () => item.obsidian_url && window.open(item.obsidian_url, "_blank"),
-                          hidden: !item.obsidian_url,
-                        },
-                        {
-                          icon: "Copy",
-                          label: t("duplicate"),
-                          onClick: () => handleDuplicate(item),
-                          hidden: !canEdit,
-                        },
-                        {
-                          icon: "Pencil",
-                          label: t("edit"),
-                          onClick: () => handleEdit(item),
-                          hidden: !canEdit,
-                        },
-                        {
-                          icon: "Trash2",
-                          label: t("delete"),
-                          onClick: () => handleDelete(item),
-                          variant: "danger",
-                          hidden: !canEdit,
-                        },
-                      ]}
-                    >
-                      <FavoriteButton
-                        entityType="ITEM"
-                        entityId={item.id}
-                        size="sm"
-                        className="retro-icon-btn"
-                      />
-                    </RetroActionsMenu>
-                  </RetroTable.Td>
-                </RetroTable.Row>
-              ))}
-            </RetroTable.Body>
-          </RetroTable>
-        )}
-
-        {/* Modals */}
-        <CreateEditModal
-          isOpen={isCreateModalOpen}
-          onClose={() => {
-            setIsCreateModalOpen(false);
-            setTemplateItem(null);
-          }}
-          onSuccess={() => {
-            setIsCreateModalOpen(false);
-            setTemplateItem(null);
-            fetchData();
-          }}
-          template={templateItem}
-          categories={categories}
-          t={t}
-          te={te}
-          isRetro={isRetro}
-        />
-
-        <CreateEditModal
-          isOpen={isEditModalOpen}
-          onClose={() => {
-            setIsEditModalOpen(false);
-            setSelectedItem(null);
-          }}
-          onSuccess={() => {
-            setIsEditModalOpen(false);
-            setSelectedItem(null);
-            fetchData();
-          }}
-          item={selectedItem}
-          categories={categories}
-          t={t}
-          te={te}
-          isRetro={isRetro}
-        />
-
-        {selectedItem && (
-          <DeleteConfirmModal
-            isOpen={isDeleteModalOpen}
-            onClose={() => {
-              setIsDeleteModalOpen(false);
-              setSelectedItem(null);
-            }}
-            onSuccess={() => {
-              setIsDeleteModalOpen(false);
-              setSelectedItem(null);
-              fetchData();
-            }}
-            item={selectedItem}
-            t={t}
-            te={te}
-            isRetro={isRetro}
-          />
-        )}
-      </>
-    );
-  }
-
-  // Standard theme
   return (
     <>
       {/* Header */}
-      <div className="mb-8 flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground">{t("title")}</h1>
-          <p className="text-muted-foreground mt-2">{t("subtitle")}</p>
-        </div>
-        {canEdit && (
-          <button
-            onClick={() => setIsCreateModalOpen(true)}
-            className="px-4 py-2 bg-primary text-primary-foreground rounded-lg flex items-center gap-2 hover:bg-primary/90 transition-colors"
-          >
-            <Icon name="Plus" className="w-4 h-4" />
-            {t("addItem")}
-          </button>
-        )}
-      </div>
+      <PageHeader
+        title={t("title")}
+        subtitle={classes.isRetro ? `${items.length} ITEMS IN CATALOG` : t("subtitle")}
+        actions={
+          canEdit && (
+            <Button
+              variant={classes.isRetro ? "secondary" : "primary"}
+              icon="Plus"
+              onClick={() => setIsCreateModalOpen(true)}
+            >
+              {t("addItem")}
+            </Button>
+          )
+        }
+      />
 
       {/* Table */}
       {items.length === 0 ? (
-        <div className="bg-card border rounded-lg p-12 text-center">
-          <Icon name="Tag" className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-          <p className="text-muted-foreground">{t("noItems")}</p>
-          {canEdit && (
-            <button
-              onClick={() => setIsCreateModalOpen(true)}
-              className="mt-4 px-4 py-2 bg-primary text-primary-foreground rounded-lg inline-flex items-center gap-2 hover:bg-primary/90 transition-colors"
-            >
-              <Icon name="Plus" className="w-4 h-4" />
-              {t("addItem")}
-            </button>
-          )}
-        </div>
+        <EmptyState
+          icon="Tag"
+          message={t("noItems")}
+          action={
+            canEdit
+              ? {
+                  label: t("addItem"),
+                  onClick: () => setIsCreateModalOpen(true),
+                  icon: "Plus",
+                }
+              : undefined
+          }
+        />
       ) : (
-        <div className="bg-card border rounded-lg shadow-sm overflow-hidden">
-          <table className="w-full">
-            <thead className="bg-muted/50 border-b">
-              <tr>
-                <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
-                  {t("sku")}
-                </th>
-                <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
-                  {t("name")}
-                </th>
-                <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
-                  {t("category")}
-                </th>
-                <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
-                  {t("description")}
-                </th>
-                <th className="px-4 py-3 text-right text-sm font-medium text-muted-foreground">
-                  {t("actions")}
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border">
-              {items.map((item) => (
-                <tr
-                  key={item.id}
-                  onDoubleClick={() => router.push(`/dashboard/items/${item.id}`)}
-                  className="hover:bg-muted/30 transition-colors cursor-pointer"
-                >
-                  <td className="px-4 py-3">
-                    <span className="px-2 py-1 bg-muted rounded text-xs font-mono">
-                      {item.sku}
+        <Table>
+          <Table.Head>
+            <Table.Row>
+              <Table.Th>{t("sku")}</Table.Th>
+              <Table.Th>{t("name")}</Table.Th>
+              <Table.Th>{t("category")}</Table.Th>
+              {!classes.isRetro && <Table.Th>{t("description")}</Table.Th>}
+              <Table.Th align="right" className="w-0">{t("actions")}</Table.Th>
+            </Table.Row>
+          </Table.Head>
+          <Table.Body>
+            {items.map((item) => (
+              <Table.Row
+                key={item.id}
+                clickable
+                onDoubleClick={() => router.push(`/dashboard/items/${item.id}`)}
+              >
+                <Table.Td>
+                  <span className={classes.isRetro
+                    ? "px-2 py-1 bg-muted border-2 border-border retro-small font-mono retro-body"
+                    : "px-2 py-1 bg-muted rounded text-xs font-mono"
+                  }>
+                    {item.sku}
+                  </span>
+                </Table.Td>
+                <Table.Td>
+                  <div className="flex items-center gap-2">
+                    <Icon name="Tag" className="w-4 h-4 text-muted-foreground" />
+                    <span className={classes.isRetro ? "retro-body text-foreground" : "font-medium text-foreground"}>
+                      {item.name}
                     </span>
-                  </td>
-                  <td className="px-4 py-3">
-                    <div className="flex items-center gap-2">
-                      <Icon name="Tag" className="w-4 h-4 text-muted-foreground" />
-                      <span className="font-medium text-foreground">
-                        {item.name}
-                      </span>
+                  </div>
+                </Table.Td>
+                <Table.Td>
+                  {item.category_id ? (
+                    <div className={`flex items-center gap-2 text-foreground ${classes.bodyText}`}>
+                      <Icon name="Archive" className="w-4 h-4 text-muted-foreground" />
+                      {getCategoryName(item.category_id)}
                     </div>
-                  </td>
-                  <td className="px-4 py-3">
-                    {item.category_id ? (
-                      <div className="flex items-center gap-2 text-foreground">
-                        <Icon name="Archive" className="w-4 h-4 text-muted-foreground" />
-                        {getCategoryName(item.category_id)}
-                      </div>
-                    ) : (
-                      <span className="text-muted-foreground">{t("noCategory")}</span>
-                    )}
-                  </td>
-                  <td className="px-4 py-3 text-muted-foreground">
+                  ) : (
+                    <span className={`text-muted-foreground ${classes.bodyText}`}>{t("noCategory")}</span>
+                  )}
+                </Table.Td>
+                {!classes.isRetro && (
+                  <Table.Td muted>
                     {item.description || t("noDescription")}
-                  </td>
-                  <td className="px-4 py-3 text-right">
-                    <div className="flex justify-end gap-2">
-                      <button
-                        onClick={() => router.push(`/dashboard/items/${item.id}`)}
-                        title={t("view")}
-                        className="p-1.5 rounded hover:bg-muted transition-colors"
-                      >
-                        <Icon name="Eye" className="w-4 h-4 text-muted-foreground hover:text-foreground" />
-                      </button>
-                      <FavoriteButton
-                        entityType="ITEM"
-                        entityId={item.id}
-                        size="sm"
-                        className="p-1.5"
-                      />
-                      {item.obsidian_url && (
-                        <a
-                          href={item.obsidian_url}
-                          title={t("openInObsidian")}
-                          className="p-1.5 rounded hover:bg-muted transition-colors"
-                        >
-                          <Icon name="FileText" className="w-4 h-4 text-purple-500 hover:text-purple-600" />
-                        </a>
-                      )}
-                      {canEdit && (
-                        <>
-                          <button
-                            onClick={() => handleDuplicate(item)}
-                            title={t("duplicate")}
-                            className="p-1.5 rounded hover:bg-muted transition-colors"
-                          >
-                            <Icon name="Copy" className="w-4 h-4 text-muted-foreground hover:text-foreground" />
-                          </button>
-                          <button
-                            onClick={() => handleEdit(item)}
-                            title={t("edit")}
-                            className="p-1.5 rounded hover:bg-muted transition-colors"
-                          >
-                            <Icon name="Pencil" className="w-4 h-4 text-muted-foreground hover:text-foreground" />
-                          </button>
-                          <button
-                            onClick={() => handleDelete(item)}
-                            title={t("delete")}
-                            className="p-1.5 rounded hover:bg-muted transition-colors"
-                          >
-                            <Icon name="Trash2" className="w-4 h-4 text-muted-foreground hover:text-destructive" />
-                          </button>
-                        </>
-                      )}
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+                  </Table.Td>
+                )}
+                <Table.Td align="right" className="w-0">
+                  <ActionsMenu
+                    actions={[
+                      {
+                        icon: "Eye",
+                        label: t("view"),
+                        onClick: () => router.push(`/dashboard/items/${item.id}`),
+                      },
+                      {
+                        icon: "FileText",
+                        label: t("openInObsidian"),
+                        onClick: () => item.obsidian_url && window.open(item.obsidian_url, "_blank"),
+                        hidden: !item.obsidian_url,
+                      },
+                      {
+                        icon: "Copy",
+                        label: t("duplicate"),
+                        onClick: () => handleDuplicate(item),
+                        hidden: !canEdit,
+                      },
+                      {
+                        icon: "Pencil",
+                        label: t("edit"),
+                        onClick: () => handleEdit(item),
+                        hidden: !canEdit,
+                      },
+                      {
+                        icon: "Trash2",
+                        label: t("delete"),
+                        onClick: () => handleDelete(item),
+                        variant: "danger",
+                        hidden: !canEdit,
+                      },
+                    ]}
+                  >
+                    <FavoriteButton
+                      entityType="ITEM"
+                      entityId={item.id}
+                      size="sm"
+                      className={classes.isRetro ? "retro-icon-btn" : "p-1.5"}
+                    />
+                  </ActionsMenu>
+                </Table.Td>
+              </Table.Row>
+            ))}
+          </Table.Body>
+        </Table>
       )}
 
       {/* Modals */}
@@ -505,7 +269,7 @@ export default function ItemsPage() {
         categories={categories}
         t={t}
         te={te}
-        isRetro={false}
+        themed={themed}
       />
 
       <CreateEditModal
@@ -523,7 +287,7 @@ export default function ItemsPage() {
         categories={categories}
         t={t}
         te={te}
-        isRetro={false}
+        themed={themed}
       />
 
       {selectedItem && (
@@ -541,7 +305,7 @@ export default function ItemsPage() {
           item={selectedItem}
           t={t}
           te={te}
-          isRetro={false}
+          themed={themed}
         />
       )}
     </>
@@ -558,7 +322,7 @@ function CreateEditModal({
   categories,
   t,
   te,
-  isRetro,
+  themed,
 }: {
   isOpen: boolean;
   onClose: () => void;
@@ -568,10 +332,12 @@ function CreateEditModal({
   categories: Category[];
   t: (key: string) => string;
   te: (key: string) => string;
-  isRetro: boolean;
+  themed: ThemedComponents;
 }) {
+  const { Modal, Button, FormGroup, Label, Input, Textarea, Checkbox, Error } = themed;
   const isEdit = !!item;
   const isDuplicate = !isEdit && !!template;
+
   const [formData, setFormData] = useState<ItemCreate>({
     sku: "",
     name: "",
@@ -675,11 +441,11 @@ function CreateEditModal({
         await itemsApi.create(formData);
       }
       onSuccess();
-    } catch (err) {
-      const errorMessage =
-        err instanceof Error
-          ? getTranslatedErrorMessage(err.message, te)
-          : te("UNKNOWN_ERROR");
+    } catch (e) {
+      const err = e as Error;
+      const errorMessage = err.message
+        ? getTranslatedErrorMessage(err.message, te)
+        : te("UNKNOWN_ERROR");
       setError(errorMessage);
     } finally {
       setSubmitting(false);
@@ -688,217 +454,45 @@ function CreateEditModal({
 
   if (!isOpen) return null;
 
-  // Retro Modal
-  if (isRetro) {
-    return (
-      <RetroModal open={isOpen} onClose={onClose} size="lg">
-        <RetroModal.Header title={getModalTitle()} />
-        <RetroModal.Body>
-          <form id="item-form" onSubmit={handleSubmit} className="space-y-4">
-            {error && (
-              <div className="retro-card p-3">
-                <RetroError>{error}</RetroError>
-              </div>
-            )}
-
-            <RetroFormGroup>
-              <RetroLabel htmlFor="sku" required>{t("sku")}</RetroLabel>
-              <RetroInput
-                id="sku"
-                type="text"
-                value={formData.sku}
-                onChange={(e) => setFormData((prev) => ({ ...prev, sku: e.target.value }))}
-                placeholder={t("skuPlaceholder")}
-                required
-                disabled={isEdit}
-                mono
-              />
-            </RetroFormGroup>
-
-            <RetroFormGroup>
-              <RetroLabel htmlFor="name" required>{t("name")}</RetroLabel>
-              <RetroInput
-                id="name"
-                type="text"
-                value={formData.name}
-                onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
-                placeholder={t("namePlaceholder")}
-                required
-              />
-            </RetroFormGroup>
-
-            <RetroFormGroup>
-              <RetroLabel>{t("category")}</RetroLabel>
-              <CategorySelect
-                categories={categories}
-                value={formData.category_id ?? null}
-                onChange={(value) => setFormData((prev) => ({ ...prev, category_id: value }))}
-                placeholder={t("selectCategory")}
-                allowNone={true}
-              />
-            </RetroFormGroup>
-
-            <RetroFormGroup>
-              <RetroLabel htmlFor="description">{t("description")}</RetroLabel>
-              <RetroTextarea
-                id="description"
-                value={formData.description || ""}
-                onChange={(e) => setFormData((prev) => ({ ...prev, description: e.target.value || null }))}
-                placeholder={t("descriptionPlaceholder")}
-                rows={2}
-              />
-            </RetroFormGroup>
-
-            {/* Brand, Model, Manufacturer row */}
-            <div className="grid grid-cols-3 gap-3">
-              <RetroFormGroup>
-                <RetroLabel htmlFor="brand">{t("brand")}</RetroLabel>
-                <RetroInput
-                  id="brand"
-                  type="text"
-                  value={formData.brand || ""}
-                  onChange={(e) => setFormData((prev) => ({ ...prev, brand: e.target.value || null }))}
-                  placeholder={t("brandPlaceholder")}
-                />
-              </RetroFormGroup>
-              <RetroFormGroup>
-                <RetroLabel htmlFor="model">{t("model")}</RetroLabel>
-                <RetroInput
-                  id="model"
-                  type="text"
-                  value={formData.model || ""}
-                  onChange={(e) => setFormData((prev) => ({ ...prev, model: e.target.value || null }))}
-                  placeholder={t("modelPlaceholder")}
-                />
-              </RetroFormGroup>
-              <RetroFormGroup>
-                <RetroLabel htmlFor="manufacturer">{t("manufacturer")}</RetroLabel>
-                <RetroInput
-                  id="manufacturer"
-                  type="text"
-                  value={formData.manufacturer || ""}
-                  onChange={(e) => setFormData((prev) => ({ ...prev, manufacturer: e.target.value || null }))}
-                  placeholder={t("manufacturerPlaceholder")}
-                />
-              </RetroFormGroup>
-            </div>
-
-            {/* Serial Number */}
-            <RetroFormGroup>
-              <RetroLabel htmlFor="serial_number">{t("serialNumber")}</RetroLabel>
-              <RetroInput
-                id="serial_number"
-                type="text"
-                value={formData.serial_number || ""}
-                onChange={(e) => setFormData((prev) => ({ ...prev, serial_number: e.target.value || null }))}
-                placeholder={t("serialNumberPlaceholder")}
-                mono
-              />
-            </RetroFormGroup>
-
-            {/* Warranty & Insurance */}
-            <div className="border-t-4 border-border pt-4 space-y-3">
-              <RetroCheckbox
-                id="is_insured"
-                label={t("isInsured")}
-                checked={formData.is_insured || false}
-                onChange={(e) => setFormData((prev) => ({ ...prev, is_insured: e.target.checked }))}
-              />
-              <RetroCheckbox
-                id="lifetime_warranty"
-                label={t("lifetimeWarranty")}
-                checked={formData.lifetime_warranty || false}
-                onChange={(e) => setFormData((prev) => ({ ...prev, lifetime_warranty: e.target.checked }))}
-              />
-              <RetroFormGroup>
-                <RetroLabel htmlFor="warranty_details">{t("warrantyDetails")}</RetroLabel>
-                <RetroTextarea
-                  id="warranty_details"
-                  value={formData.warranty_details || ""}
-                  onChange={(e) => setFormData((prev) => ({ ...prev, warranty_details: e.target.value || null }))}
-                  placeholder={t("warrantyDetailsPlaceholder")}
-                  rows={2}
-                />
-              </RetroFormGroup>
-            </div>
-
-            {/* Docspell Linked Documents - only show in edit mode */}
-            {isEdit && item && (
-              <div className="border-t-4 border-border pt-4 mt-4">
-                <LinkedDocuments itemId={item.id} itemName={item.name} />
-              </div>
-            )}
-          </form>
-        </RetroModal.Body>
-        <RetroModal.Footer>
-          <RetroButton variant="secondary" onClick={onClose}>
-            {t("cancel")}
-          </RetroButton>
-          <RetroButton
-            variant="primary"
-            type="submit"
-            form="item-form"
-            loading={submitting}
-          >
-            {t("save")}
-          </RetroButton>
-        </RetroModal.Footer>
-      </RetroModal>
-    );
-  }
-
-  // Standard Modal
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center" onClick={onClose}>
-      <div className="absolute inset-0 bg-black/50" />
-      <div
-        className="relative z-10 w-full max-w-lg m-4 bg-background border rounded-lg shadow-xl max-h-[90vh] flex flex-col"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="flex items-center justify-between p-4 border-b">
-          <h2 className="text-lg font-semibold">{getModalTitle()}</h2>
-          <button type="button" onClick={onClose} className="p-1 rounded hover:bg-muted">
-            <Icon name="X" className="w-5 h-5" />
-          </button>
-        </div>
-
-        <form onSubmit={handleSubmit} className="p-4 space-y-4 overflow-y-auto flex-1">
+    <Modal open={isOpen} onClose={onClose} size="lg">
+      <Modal.Header title={getModalTitle()} />
+      <Modal.Body>
+        <form id="item-form" onSubmit={handleSubmit} className="space-y-4">
           {error && (
-            <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md">
-              <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+            <div className={themed.isRetro ? "retro-card p-3" : "p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md"}>
+              <Error>{error}</Error>
             </div>
           )}
 
-          <div>
-            <label className="block text-sm font-medium text-foreground mb-2">{t("sku")}</label>
-            <input
+          <FormGroup>
+            <Label htmlFor="sku" required>{t("sku")}</Label>
+            <Input
+              id="sku"
               type="text"
               value={formData.sku}
               onChange={(e) => setFormData((prev) => ({ ...prev, sku: e.target.value }))}
               placeholder={t("skuPlaceholder")}
-              className={cn(
-                "w-full px-3 py-2 border border-border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent font-mono",
-                isEdit && "bg-muted cursor-not-allowed"
-              )}
               required
               disabled={isEdit}
+              mono
             />
-          </div>
+          </FormGroup>
 
-          <div>
-            <label className="block text-sm font-medium text-foreground mb-2">{t("name")}</label>
-            <input
+          <FormGroup>
+            <Label htmlFor="name" required>{t("name")}</Label>
+            <Input
+              id="name"
               type="text"
               value={formData.name}
               onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
               placeholder={t("namePlaceholder")}
-              className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
               required
             />
-          </div>
+          </FormGroup>
 
-          <div>
-            <label className="block text-sm font-medium text-foreground mb-2">{t("category")}</label>
+          <FormGroup>
+            <Label>{t("category")}</Label>
             <CategorySelect
               categories={categories}
               value={formData.category_id ?? null}
@@ -906,129 +500,114 @@ function CreateEditModal({
               placeholder={t("selectCategory")}
               allowNone={true}
             />
-          </div>
+          </FormGroup>
 
-          <div>
-            <label className="block text-sm font-medium text-foreground mb-2">{t("description")}</label>
-            <textarea
+          <FormGroup>
+            <Label htmlFor="description">{t("description")}</Label>
+            <Textarea
+              id="description"
               value={formData.description || ""}
               onChange={(e) => setFormData((prev) => ({ ...prev, description: e.target.value || null }))}
               placeholder={t("descriptionPlaceholder")}
-              rows={3}
-              className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent resize-none"
+              rows={2}
             />
-          </div>
+          </FormGroup>
 
           {/* Brand, Model, Manufacturer row */}
           <div className="grid grid-cols-3 gap-3">
-            <div>
-              <label className="block text-sm font-medium text-foreground mb-2">{t("brand")}</label>
-              <input
+            <FormGroup>
+              <Label htmlFor="brand">{t("brand")}</Label>
+              <Input
+                id="brand"
                 type="text"
                 value={formData.brand || ""}
                 onChange={(e) => setFormData((prev) => ({ ...prev, brand: e.target.value || null }))}
                 placeholder={t("brandPlaceholder")}
-                className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
               />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-foreground mb-2">{t("model")}</label>
-              <input
+            </FormGroup>
+            <FormGroup>
+              <Label htmlFor="model">{t("model")}</Label>
+              <Input
+                id="model"
                 type="text"
                 value={formData.model || ""}
                 onChange={(e) => setFormData((prev) => ({ ...prev, model: e.target.value || null }))}
                 placeholder={t("modelPlaceholder")}
-                className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
               />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-foreground mb-2">{t("manufacturer")}</label>
-              <input
+            </FormGroup>
+            <FormGroup>
+              <Label htmlFor="manufacturer">{t("manufacturer")}</Label>
+              <Input
+                id="manufacturer"
                 type="text"
                 value={formData.manufacturer || ""}
                 onChange={(e) => setFormData((prev) => ({ ...prev, manufacturer: e.target.value || null }))}
                 placeholder={t("manufacturerPlaceholder")}
-                className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
               />
-            </div>
+            </FormGroup>
           </div>
 
           {/* Serial Number */}
-          <div>
-            <label className="block text-sm font-medium text-foreground mb-2">{t("serialNumber")}</label>
-            <input
+          <FormGroup>
+            <Label htmlFor="serial_number">{t("serialNumber")}</Label>
+            <Input
+              id="serial_number"
               type="text"
               value={formData.serial_number || ""}
               onChange={(e) => setFormData((prev) => ({ ...prev, serial_number: e.target.value || null }))}
               placeholder={t("serialNumberPlaceholder")}
-              className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground font-mono focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+              mono
             />
-          </div>
+          </FormGroup>
 
           {/* Warranty & Insurance */}
-          <div className="border-t pt-4 space-y-3">
-            <div className="flex items-center gap-3">
-              <input
-                type="checkbox"
-                id="is_insured_standard"
-                checked={formData.is_insured || false}
-                onChange={(e) => setFormData((prev) => ({ ...prev, is_insured: e.target.checked }))}
-                className="w-4 h-4 rounded border-border bg-background accent-primary"
-              />
-              <label htmlFor="is_insured_standard" className="text-sm font-medium text-foreground">
-                {t("isInsured")}
-              </label>
-            </div>
-            <div className="flex items-center gap-3">
-              <input
-                type="checkbox"
-                id="lifetime_warranty_standard"
-                checked={formData.lifetime_warranty || false}
-                onChange={(e) => setFormData((prev) => ({ ...prev, lifetime_warranty: e.target.checked }))}
-                className="w-4 h-4 rounded border-border bg-background accent-primary"
-              />
-              <label htmlFor="lifetime_warranty_standard" className="text-sm font-medium text-foreground">
-                {t("lifetimeWarranty")}
-              </label>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-foreground mb-2">{t("warrantyDetails")}</label>
-              <textarea
+          <div className={themed.isRetro ? "border-t-4 border-border pt-4 space-y-3" : "border-t pt-4 space-y-3"}>
+            <Checkbox
+              id="is_insured"
+              label={t("isInsured")}
+              checked={formData.is_insured || false}
+              onChange={(e) => setFormData((prev) => ({ ...prev, is_insured: e.target.checked }))}
+            />
+            <Checkbox
+              id="lifetime_warranty"
+              label={t("lifetimeWarranty")}
+              checked={formData.lifetime_warranty || false}
+              onChange={(e) => setFormData((prev) => ({ ...prev, lifetime_warranty: e.target.checked }))}
+            />
+            <FormGroup>
+              <Label htmlFor="warranty_details">{t("warrantyDetails")}</Label>
+              <Textarea
+                id="warranty_details"
                 value={formData.warranty_details || ""}
                 onChange={(e) => setFormData((prev) => ({ ...prev, warranty_details: e.target.value || null }))}
                 placeholder={t("warrantyDetailsPlaceholder")}
                 rows={2}
-                className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent resize-none"
               />
-            </div>
+            </FormGroup>
           </div>
 
           {/* Docspell Linked Documents - only show in edit mode */}
           {isEdit && item && (
-            <div className="border-t pt-4 mt-4">
+            <div className={themed.isRetro ? "border-t-4 border-border pt-4 mt-4" : "border-t pt-4 mt-4"}>
               <LinkedDocuments itemId={item.id} itemName={item.name} />
             </div>
           )}
-
-          <div className="flex justify-end gap-3 pt-4">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-4 py-2 border border-border rounded-md hover:bg-muted transition-colors"
-            >
-              {t("cancel")}
-            </button>
-            <button
-              type="submit"
-              disabled={submitting}
-              className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors disabled:opacity-50"
-            >
-              {submitting ? t("saving") : t("save")}
-            </button>
-          </div>
         </form>
-      </div>
-    </div>
+      </Modal.Body>
+      <Modal.Footer>
+        <Button variant="secondary" onClick={onClose}>
+          {t("cancel")}
+        </Button>
+        <Button
+          variant="primary"
+          type="submit"
+          form="item-form"
+          loading={submitting}
+        >
+          {t("save")}
+        </Button>
+      </Modal.Footer>
+    </Modal>
   );
 }
 
@@ -1040,7 +619,7 @@ function DeleteConfirmModal({
   item,
   t,
   te,
-  isRetro,
+  themed,
 }: {
   isOpen: boolean;
   onClose: () => void;
@@ -1048,8 +627,9 @@ function DeleteConfirmModal({
   item: Item;
   t: (key: string) => string;
   te: (key: string) => string;
-  isRetro: boolean;
+  themed: ThemedComponents;
 }) {
+  const { Modal, Button, Error } = themed;
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -1064,11 +644,11 @@ function DeleteConfirmModal({
     try {
       await itemsApi.delete(item.id);
       onSuccess();
-    } catch (err) {
-      const errorMessage =
-        err instanceof Error
-          ? getTranslatedErrorMessage(err.message, te)
-          : te("UNKNOWN_ERROR");
+    } catch (e) {
+      const err = e as Error;
+      const errorMessage = err.message
+        ? getTranslatedErrorMessage(err.message, te)
+        : te("UNKNOWN_ERROR");
       setError(errorMessage);
     } finally {
       setSubmitting(false);
@@ -1077,103 +657,47 @@ function DeleteConfirmModal({
 
   if (!isOpen) return null;
 
-  // Retro Modal
-  if (isRetro) {
-    return (
-      <RetroModal open={isOpen} onClose={onClose} size="md">
-        <RetroModal.Header title={t("deleteConfirmTitle")} variant="danger" />
-        <RetroModal.Body>
-          {error && (
-            <div className="retro-card p-3 mb-4">
-              <RetroError>{error}</RetroError>
-            </div>
-          )}
-
-          <p className="retro-body text-muted-foreground mb-4">
-            {t("deleteConfirmMessage")}
-          </p>
-
-          <RetroModal.Preview>
-            <div className="flex items-center gap-2 mb-1">
-              <span className="px-2 py-0.5 bg-background border-2 border-border retro-small font-mono retro-body">
-                {item.sku}
-              </span>
-            </div>
-            <p className="retro-heading">{item.name}</p>
-            {item.description && (
-              <p className="text-sm text-muted-foreground mt-1 retro-body">{item.description}</p>
-            )}
-          </RetroModal.Preview>
-        </RetroModal.Body>
-        <RetroModal.Footer>
-          <RetroButton variant="secondary" onClick={onClose}>
-            {t("cancel")}
-          </RetroButton>
-          <RetroButton
-            variant="danger"
-            onClick={handleDelete}
-            loading={submitting}
-          >
-            {t("deleteConfirmButton")}
-          </RetroButton>
-        </RetroModal.Footer>
-      </RetroModal>
-    );
-  }
-
-  // Standard Modal
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center" onClick={onClose}>
-      <div className="absolute inset-0 bg-black/50" />
-      <div
-        className="relative z-10 w-full max-w-md m-4 bg-background border rounded-lg shadow-xl"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="flex items-center justify-between p-4 border-b">
-          <h2 className="text-lg font-semibold text-destructive">{t("deleteConfirmTitle")}</h2>
-          <button onClick={onClose} className="p-1 rounded hover:bg-muted">
-            <Icon name="X" className="w-5 h-5" />
-          </button>
-        </div>
+    <Modal open={isOpen} onClose={onClose} size="md">
+      <Modal.Header title={t("deleteConfirmTitle")} variant="danger" />
+      <Modal.Body>
+        {error && (
+          <div className={themed.isRetro ? "retro-card p-3 mb-4" : "p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md mb-4"}>
+            <Error>{error}</Error>
+          </div>
+        )}
 
-        <div className="p-4 space-y-4">
-          {error && (
-            <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md">
-              <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
-            </div>
+        <p className={themed.isRetro ? "retro-body text-muted-foreground mb-4" : "text-muted-foreground mb-4"}>
+          {t("deleteConfirmMessage")}
+        </p>
+
+        <Modal.Preview>
+          <div className="flex items-center gap-2 mb-1">
+            <span className={themed.isRetro
+              ? "px-2 py-0.5 bg-background border-2 border-border retro-small font-mono retro-body"
+              : "px-2 py-0.5 bg-background rounded text-xs font-mono"
+            }>
+              {item.sku}
+            </span>
+          </div>
+          <p className={themed.isRetro ? "retro-heading" : "font-medium"}>{item.name}</p>
+          {item.description && (
+            <p className={`text-sm text-muted-foreground mt-1 ${themed.isRetro ? "retro-body" : ""}`}>{item.description}</p>
           )}
-
-          <p className="text-muted-foreground">{t("deleteConfirmMessage")}</p>
-
-          <div className="p-3 bg-muted rounded-md">
-            <div className="flex items-center gap-2 mb-1">
-              <span className="px-2 py-0.5 bg-background rounded text-xs font-mono">{item.sku}</span>
-            </div>
-            <p className="font-medium">{item.name}</p>
-            {item.description && (
-              <p className="text-sm text-muted-foreground mt-1">{item.description}</p>
-            )}
-          </div>
-
-          <div className="flex justify-end gap-3 pt-4">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-4 py-2 border border-border rounded-md hover:bg-muted transition-colors"
-            >
-              {t("cancel")}
-            </button>
-            <button
-              type="button"
-              onClick={handleDelete}
-              disabled={submitting}
-              className="px-4 py-2 bg-destructive text-destructive-foreground rounded-md hover:bg-destructive/90 transition-colors disabled:opacity-50"
-            >
-              {submitting ? t("deleting") : t("deleteConfirmButton")}
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
+        </Modal.Preview>
+      </Modal.Body>
+      <Modal.Footer>
+        <Button variant="secondary" onClick={onClose}>
+          {t("cancel")}
+        </Button>
+        <Button
+          variant="danger"
+          onClick={handleDelete}
+          loading={submitting}
+        >
+          {t("deleteConfirmButton")}
+        </Button>
+      </Modal.Footer>
+    </Modal>
   );
 }

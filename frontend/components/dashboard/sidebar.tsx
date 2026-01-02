@@ -8,8 +8,8 @@ import type * as LucideIcons from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/lib/auth";
 import { notificationsApi } from "@/lib/api";
-import { useTheme } from "next-themes";
-import { NES_GREEN, NES_BLUE, NES_RED } from "@/lib/nes-colors";
+import { useThemed, useThemedClasses } from "@/lib/themed";
+import { NES_BLUE } from "@/lib/nes-colors";
 import { OfflineIndicator } from "@/components/pwa";
 
 type IconName = keyof typeof LucideIcons;
@@ -34,8 +34,8 @@ export function Sidebar({ className }: SidebarProps) {
   const pathname = usePathname();
   const t = useTranslations('nav');
   const { logout, user, isAuthenticated } = useAuth();
-  const { theme } = useTheme();
-  const isRetro = theme?.startsWith("retro");
+  const themed = useThemed();
+  const classes = useThemedClasses();
   const userMenuRef = useRef<HTMLDivElement>(null);
   const navRef = useRef<HTMLElement>(null);
 
@@ -52,8 +52,6 @@ export function Sidebar({ className }: SidebarProps) {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [isUserMenuOpen]);
-
-  // NES color constants (Tailwind can't resolve CSS vars in arbitrary values)
 
   // Track if nav can scroll down
   useEffect(() => {
@@ -213,7 +211,7 @@ export function Sidebar({ className }: SidebarProps) {
   };
 
   // Retro NES-style sidebar
-  if (isRetro) {
+  if (classes.isRetro) {
     return (
       <div
         className={cn(

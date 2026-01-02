@@ -37,10 +37,6 @@
   - Language stored in database (profile page)
   - Emails sent in user's preferred language
   - Auto-redirect to user's language on login
-- [x] Companion app prototype
-  - Basic barcode/QR code scanning
-  - Identify containers and items
-  - Minimal viable functionality
 - [x] Theme settings
   - Move from settings to profile page
   - Save theme preference to database
@@ -50,7 +46,7 @@
 
 - [x] Tracking & alerts (partial)
   - [x] Total value: sum of purchase_price per location/workspace
-  - [ ] Activity log: who changed what, when. So there is no need for soft delete
+  - [x] Activity log: who changed what, when. So there is no need for soft delete
   - [ ] Consumables list: items needing restocking (quantity = 0)
   - [x] Low stock alerts: notify when quantity < threshold
   - [x] Expiration alerts: items expiring soon (expiration_date field)
@@ -74,23 +70,13 @@
   - Surface items not accessed/moved in 12+ months
   - Suggest donate, sell, or dispose
   - Track declutter decisions and outcomes
-- [ ] Companion app (refined)
-  - Polished UI/UX
-  - Add/edit items and containers
-  - Inventory management
-  - Loan tracking
-- [ ] Mobile app i18n
-  - Multi-language support for companion app
-  - Use expo-localization + i18n-js
-  - Share translation keys with frontend where applicable
-  - Auto-detect device language, allow manual override
-- [ ] Progressive Web App (PWA)
-  - Installable on iOS/Android without app store
-  - Offline support with service worker caching
-  - QR code scanning (camera API)
-  - Barcode scanning for item lookup
-  - Background sync for offline changes
-  - Push notifications support
+- [x] Progressive Web App (PWA) (partial)
+  - [x] Installable on iOS/Android without app store
+  - [x] Offline support with service worker caching
+  - [x] QR code scanning (camera API)
+  - [x] Barcode scanning for item lookup
+  - [ ] Background sync for offline changes
+  - [ ] Push notifications support
 - [ ] Item photos
   - Upload photos for items
   - Multiple photos per item

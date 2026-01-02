@@ -15,14 +15,14 @@ export interface ActionItem {
   hidden?: boolean;
 }
 
-interface RetroActionsMenuProps {
+export interface ActionsMenuProps {
   actions: ActionItem[];
   className?: string;
   /** Custom elements shown in desktop view before the action buttons */
   children?: React.ReactNode;
 }
 
-export function RetroActionsMenu({ actions, className, children }: RetroActionsMenuProps) {
+export function ActionsMenu({ actions, className, children }: ActionsMenuProps) {
   const [isOpen, setIsOpen] = React.useState(false);
   const menuRef = React.useRef<HTMLDivElement>(null);
 
@@ -43,23 +43,20 @@ export function RetroActionsMenu({ actions, className, children }: RetroActionsM
   }, [isOpen]);
 
   return (
-    <div className={cn("retro-actions-menu", className)} ref={menuRef}>
-      {/* Always visible custom children (e.g., FavoriteButton) */}
+    <div className={cn("themed-actions-menu", className)} ref={menuRef}>
       {children}
-
-      {/* Three-dot menu for all other actions */}
       {visibleActions.length > 0 && (
         <>
           <button
             onClick={() => setIsOpen(!isOpen)}
-            className="retro-icon-btn"
+            className="themed-actions-menu__trigger"
             aria-label="Actions menu"
           >
             <Icon name="MoreVertical" className="w-4 h-4" />
           </button>
 
           {isOpen && (
-            <div className="retro-actions-menu__panel">
+            <div className="themed-actions-menu__panel">
               {visibleActions.map((action, index) => (
                 <button
                   key={index}
@@ -68,8 +65,8 @@ export function RetroActionsMenu({ actions, className, children }: RetroActionsM
                     setIsOpen(false);
                   }}
                   className={cn(
-                    "retro-actions-menu__item",
-                    action.variant === "danger" && "retro-actions-menu__item--danger"
+                    "themed-actions-menu__item",
+                    action.variant === "danger" && "themed-actions-menu__item--danger"
                   )}
                 >
                   <Icon name={action.icon} className="w-4 h-4" />

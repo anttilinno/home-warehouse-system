@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useScanner, type ScanResult } from '@/lib/scanner/use-scanner';
 import { importsApi, type BarcodeProduct } from '@/lib/api';
 import { Icon } from '@/components/icons';
-import { RetroButton } from '@/components/retro';
+import { Button } from '@/components/themed';
 import { cn } from '@/lib/utils';
 
 interface BarcodeScannerProps {
@@ -133,9 +133,9 @@ export function BarcodeScanner({
             <p className="text-muted-foreground mb-4">
               Please allow camera access to scan barcodes.
             </p>
-            <RetroButton onClick={() => window.location.reload()}>
+            <Button onClick={() => window.location.reload()}>
               Try Again
-            </RetroButton>
+            </Button>
           </div>
         )}
 
@@ -144,9 +144,9 @@ export function BarcodeScanner({
             <Icon name="AlertCircle" className="w-16 h-16 mx-auto mb-4 text-destructive" />
             <h3 className="text-lg font-medium mb-2">Scanner Error</h3>
             <p className="text-muted-foreground mb-4">{error}</p>
-            <RetroButton onClick={() => startScanning()}>
+            <Button onClick={() => startScanning()}>
               Retry
-            </RetroButton>
+            </Button>
           </div>
         )}
 
@@ -215,12 +215,12 @@ export function BarcodeScanner({
                 )}
 
                 <div className="flex gap-2">
-                  <RetroButton variant="secondary" onClick={handleReset} className="flex-1">
+                  <Button variant="secondary" onClick={handleReset} className="flex-1">
                     Scan Again
-                  </RetroButton>
-                  <RetroButton onClick={onClose} className="flex-1">
+                  </Button>
+                  <Button onClick={onClose} className="flex-1">
                     Done
-                  </RetroButton>
+                  </Button>
                 </div>
               </div>
             )}
@@ -262,9 +262,9 @@ export function BarcodeScanner({
                 className="flex-1 px-3 py-2 border rounded-md bg-background"
                 autoFocus
               />
-              <RetroButton onClick={handleManualSubmit} disabled={!manualInput.trim()}>
+              <Button onClick={handleManualSubmit} disabled={!manualInput.trim()}>
                 Lookup
-              </RetroButton>
+              </Button>
             </div>
           </div>
         )}
