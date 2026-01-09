@@ -3,6 +3,7 @@ python = "3.14"
 uv = "latest"
 bun = "latest"
 dbmate = "latest"
+go = "1.23"
 
 [env]
 DATABASE_URL = "postgresql+asyncpg://wh:wh@localhost:5432/warehouse_dev"
@@ -20,6 +21,9 @@ APP_DEBUG = "true"
 # Staging database URLs
 STAGING_DATABASE_URL = "postgresql+asyncpg://wh:wh@localhost:5432/warehouse_staging"
 STAGING_DBMATE_URL = "postgresql://wh:wh@localhost:5432/warehouse_staging?sslmode=disable"
+
+# Go backend
+GO_DATABASE_URL = "postgresql://wh:wh@localhost:5432/warehouse_dev?sslmode=disable"
 
 [tasks.setup]
 description = "Setup hint"
@@ -148,3 +152,42 @@ run = "cd backend && DATABASE_URL=$STAGING_DATABASE_URL uv run granian --interfa
 [tasks.staging-status]
 description = "Check staging database status"
 run = "DATABASE_URL=$STAGING_DBMATE_URL dbmate -d backend/db/migrations status"
+
+# Go Backend Tasks
+[tasks.go-dev]
+description = "Run Go backend dev server with hot reload"
+depends = ["dc-up"]
+run = "cd go-backend && air"
+
+[tasks.go-run]
+description = "Run Go backend server (no hot reload)"
+depends = ["dc-up"]
+run = "cd go-backend && go run cmd/server/main.go"
+
+[tasks.go-build]
+description = "Build Go backend binary"
+run = "cd go-backend && CGO_ENABLED=0 go build -o bin/server cmd/server/main.go"
+
+[tasks.go-test]
+description = "Run Go backend tests"
+run = "cd go-backend && go test -v ./..."
+
+[tasks.go-test-cover]
+description = "Run Go backend tests with coverage"
+run = "cd go-backend && go test -coverprofile=coverage.out ./... && go tool cover -html=coverage.out -o coverage.html"
+
+[tasks.go-lint]
+description = "Run Go backend linter"
+run = "cd go-backend && golangci-lint run"
+
+[tasks.go-fmt]
+description = "Format Go backend code"
+run = "cd go-backend && go fmt ./..."
+
+[tasks.go-sqlc]
+description = "Generate sqlc code from queries"
+run = "cd go-backend && sqlc generate"
+
+[tasks.go-mod-tidy]
+description = "Tidy Go backend dependencies"
+run = "cd go-backend && go mod tidy"
