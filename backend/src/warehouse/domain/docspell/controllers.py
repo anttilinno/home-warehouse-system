@@ -150,7 +150,8 @@ class DocspellController(Controller):
     ) -> TagSyncResult:
         """Synchronize tags between Warehouse and Docspell."""
         try:
-            return await service.sync_tags(workspace.workspace_id, data.direction)
+            # Note: direction parameter from data is currently ignored - sync is always bidirectional
+            return await service.sync_tags(workspace.workspace_id)
         except AppError as e:
             raise e.to_http_exception()
 

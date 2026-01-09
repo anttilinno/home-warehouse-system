@@ -102,6 +102,7 @@ def _borrower(**overrides) -> SimpleNamespace:
         "phone": "123",
         "notes": None,
         "created_at": datetime.datetime(2024, 1, 1, 0, 0, 0),
+        "updated_at": datetime.datetime(2024, 1, 1, 0, 0, 0),
     }
     defaults.update(overrides)
     return SimpleNamespace(**defaults)

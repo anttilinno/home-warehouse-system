@@ -24,6 +24,9 @@ Stores user authentication information.
 | `password_hash` | VARCHAR(255) | Hashed password |
 | `is_active` | BOOLEAN | Account active status (default: true) |
 | `is_superuser` | BOOLEAN | Superuser flag (default: false) |
+| `date_format` | VARCHAR(20) | User's preferred date format (default: 'DD.MM.YYYY') |
+| `language` | VARCHAR(5) | User's preferred language code (default: 'en') |
+| `theme` | VARCHAR(20) | User's preferred theme: 'light', 'dark', or 'system' (default: 'system') |
 | `created_at` | TIMESTAMPTZ | Creation timestamp |
 | `updated_at` | TIMESTAMPTZ | Last update timestamp |
 
@@ -36,6 +39,7 @@ Isolated environments for organizing inventory. Each workspace has its own data.
 | `name` | VARCHAR(100) | Workspace display name |
 | `slug` | VARCHAR(50) | URL-friendly identifier (unique) |
 | `description` | TEXT | Workspace description |
+| `is_personal` | BOOLEAN | Whether this is a user's personal workspace (default: false) |
 | `created_at` | TIMESTAMPTZ | Creation timestamp |
 | `updated_at` | TIMESTAMPTZ | Last update timestamp |
 
@@ -58,6 +62,7 @@ Links users to workspaces with role-based access control.
 **Indexes:**
 - `ix_workspace_members_user` on `user_id`
 - `ix_workspace_members_workspace` on `workspace_id`
+- `ix_workspace_members_invited_by` on `invited_by` (partial, WHERE NOT NULL)
 - Unique constraint on `(workspace_id, user_id)`
 
 #### `auth.user_oauth_accounts`
@@ -143,6 +148,22 @@ Per-workspace Docspell integration configuration. Each workspace can connect to 
 - `ix_workspace_docspell_settings_workspace` on `workspace_id`
 - Unique constraint on `workspace_id`
 
+#### `auth.password_reset_tokens`
+Password reset tokens with expiration and one-time use.
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `id` | UUID | Primary key (uuidv7) |
+| `user_id` | UUID | Reference to `auth.users` (CASCADE delete) |
+| `token_hash` | VARCHAR(64) | Hashed reset token |
+| `expires_at` | TIMESTAMPTZ | Token expiration time |
+| `used_at` | TIMESTAMPTZ | When token was used (NULL if unused) |
+| `created_at` | TIMESTAMPTZ | Creation timestamp |
+
+**Indexes:**
+- `ix_password_reset_tokens_user` on `user_id`
+- `ix_password_reset_tokens_hash` on `token_hash`
+
 ### Warehouse Schema
 
 > **Note:** All warehouse tables include a `workspace_id` column for multi-tenant isolation.
@@ -158,6 +179,7 @@ Hierarchical item categories for organizing inventory.
 | `name` | VARCHAR(100) | Category name |
 | `parent_category_id` | UUID | Reference to parent category (self-referencing, NULL for root) |
 | `description` | TEXT | Category description |
+| `is_archived` | BOOLEAN | Soft delete flag (default: false) |
 | `created_at` | TIMESTAMPTZ | Creation timestamp |
 | `updated_at` | TIMESTAMPTZ | Last update timestamp |
 
@@ -165,6 +187,7 @@ Hierarchical item categories for organizing inventory.
 - `ix_categories_workspace` on `workspace_id`
 - `ix_categories_name` on `name`
 - `ix_categories_parent` on `parent_category_id`
+- `ix_categories_active` on `(workspace_id, parent_category_id)` WHERE `is_archived = false`
 
 #### `warehouse.locations`
 Hierarchical storage locations (e.g., rooms, zones, shelves, bins).
@@ -179,7 +202,9 @@ Hierarchical storage locations (e.g., rooms, zones, shelves, bins).
 | `shelf` | VARCHAR(50) | Shelf identifier |
 | `bin` | VARCHAR(50) | Bin identifier |
 | `description` | TEXT | Location description |
-| `short_code` | VARCHAR(8) | Unique code for QR labels (e.g., `C5X1D3`) |
+| `short_code` | VARCHAR(8) | Unique code for QR labels (unique per workspace) |
+| `is_archived` | BOOLEAN | Soft delete flag (default: false) |
+| `search_vector` | TSVECTOR | Full-text search vector (auto-updated by trigger) |
 | `created_at` | TIMESTAMPTZ | Creation timestamp |
 | `updated_at` | TIMESTAMPTZ | Last update timestamp |
 
@@ -187,7 +212,13 @@ Hierarchical storage locations (e.g., rooms, zones, shelves, bins).
 - `ix_locations_workspace` on `workspace_id`
 - `ix_locations_name` on `name`
 - `ix_locations_parent_location` on `parent_location`
-- `ix_locations_short_code` on `short_code`
+- `ix_locations_short_code` on `short_code` (partial, WHERE NOT NULL)
+- `ix_locations_search` on `search_vector` (GIN index)
+- `ix_locations_active` on `(workspace_id, parent_location)` WHERE `is_archived = false`
+- Unique constraint `uq_locations_workspace_short_code` on `(workspace_id, short_code)`
+
+**Triggers:**
+- `trg_locations_search_vector` - Updates `search_vector` on INSERT/UPDATE
 
 #### `warehouse.containers`
 Storage containers within locations (e.g., boxes, bins, drawers).
@@ -200,7 +231,9 @@ Storage containers within locations (e.g., boxes, bins, drawers).
 | `location_id` | UUID | Reference to `warehouse.locations` (CASCADE delete) |
 | `description` | TEXT | Container description |
 | `capacity` | VARCHAR(100) | Container capacity |
-| `short_code` | VARCHAR(8) | Unique code for QR labels (e.g., `A7X3B2`) |
+| `short_code` | VARCHAR(8) | Unique code for QR labels (unique per workspace) |
+| `is_archived` | BOOLEAN | Soft delete flag (default: false) |
+| `search_vector` | TSVECTOR | Full-text search vector (auto-updated by trigger) |
 | `created_at` | TIMESTAMPTZ | Creation timestamp |
 | `updated_at` | TIMESTAMPTZ | Last update timestamp |
 
@@ -208,7 +241,13 @@ Storage containers within locations (e.g., boxes, bins, drawers).
 - `ix_containers_workspace` on `workspace_id`
 - `ix_containers_name` on `name`
 - `ix_containers_location_id` on `location_id`
-- `ix_containers_short_code` on `short_code`
+- `ix_containers_short_code` on `short_code` (partial, WHERE NOT NULL)
+- `ix_containers_search` on `search_vector` (GIN index)
+- `ix_containers_active` on `(workspace_id, location_id)` WHERE `is_archived = false`
+- Unique constraint `uq_containers_workspace_short_code` on `(workspace_id, short_code)`
+
+**Triggers:**
+- `trg_containers_search_vector` - Updates `search_vector` on INSERT/UPDATE
 
 #### `warehouse.companies`
 Vendors, stores, or manufacturers for tracking where items were purchased.
@@ -220,12 +259,14 @@ Vendors, stores, or manufacturers for tracking where items were purchased.
 | `name` | VARCHAR(200) | Company name |
 | `website` | VARCHAR(500) | Company website URL |
 | `notes` | TEXT | Additional notes |
+| `is_archived` | BOOLEAN | Soft delete flag (default: false) |
 | `created_at` | TIMESTAMPTZ | Creation timestamp |
 | `updated_at` | TIMESTAMPTZ | Last update timestamp |
 
 **Indexes:**
 - `ix_companies_workspace` on `workspace_id`
 - `ix_companies_name` on `name`
+- `ix_companies_active` on `workspace_id` WHERE `is_archived = false`
 - Unique constraint on `(workspace_id, name)`
 
 #### `warehouse.labels`
@@ -238,11 +279,13 @@ Structured labels with colors for categorizing items.
 | `name` | VARCHAR(100) | Label name |
 | `color` | VARCHAR(7) | Hex color code (e.g., #FF5733) |
 | `description` | TEXT | Label description |
+| `is_archived` | BOOLEAN | Soft delete flag (default: false) |
 | `created_at` | TIMESTAMPTZ | Creation timestamp |
 | `updated_at` | TIMESTAMPTZ | Last update timestamp |
 
 **Indexes:**
 - `ix_labels_workspace` on `workspace_id`
+- `ix_labels_active` on `workspace_id` WHERE `is_archived = false`
 - Unique constraint on `(workspace_id, name)`
 
 #### `warehouse.items`
@@ -261,23 +304,34 @@ Item catalog/master data for all items in the system.
 | `image_url` | VARCHAR(500) | Image URL |
 | `serial_number` | VARCHAR(100) | Serial number |
 | `manufacturer` | VARCHAR(100) | Manufacturer name |
+| `barcode` | VARCHAR(50) | UPC/EAN/other product barcode for scanning |
 | `is_insured` | BOOLEAN | Whether item is insured (default: false) |
 | `is_archived` | BOOLEAN | Soft delete flag (default: false) |
 | `lifetime_warranty` | BOOLEAN | Has lifetime warranty (default: false) |
 | `warranty_details` | TEXT | Warranty information |
 | `purchased_from` | UUID | Reference to `warehouse.companies` (SET NULL on delete) |
+| `min_stock_level` | INTEGER | Threshold for LOW_STOCK notifications (default: 0) |
 | `search_vector` | TSVECTOR | Generated full-text search column |
-| `short_code` | VARCHAR(8) | Unique code for QR labels (e.g., `B3X2A7`) |
+| `short_code` | VARCHAR(8) | Unique code for QR labels (unique per workspace) |
+| `obsidian_vault_path` | VARCHAR(500) | Local path to Obsidian vault |
+| `obsidian_note_path` | VARCHAR(500) | Relative path to note within vault |
 | `created_at` | TIMESTAMPTZ | Creation timestamp |
 | `updated_at` | TIMESTAMPTZ | Last update timestamp |
+
+**Constraints:**
+- `chk_items_min_stock_non_negative` - Ensures `min_stock_level >= 0`
 
 **Indexes:**
 - `ix_items_workspace` on `workspace_id`
 - `ix_items_name` on `name`
 - `ix_items_category_id` on `category_id`
 - `ix_items_search` on `search_vector` (GIN index for full-text search)
-- `ix_items_short_code` on `short_code`
+- `ix_items_short_code` on `short_code` (partial, WHERE NOT NULL)
+- `ix_items_purchased_from` on `purchased_from` (partial, WHERE NOT NULL)
+- `ix_items_barcode` on `(workspace_id, barcode)` (partial, WHERE NOT NULL)
+- `ix_items_active` on `(workspace_id, name)` WHERE `is_archived = false`
 - Unique constraint on `(workspace_id, sku)`
+- Unique constraint `uq_items_workspace_short_code` on `(workspace_id, short_code)`
 
 #### `warehouse.item_labels`
 Labels associated with items (many-to-many relationship via labels table).
@@ -300,6 +354,7 @@ Uploaded files storage metadata.
 | `mime_type` | VARCHAR(100) | MIME type |
 | `size_bytes` | BIGINT | File size in bytes |
 | `checksum` | VARCHAR(64) | File checksum for integrity |
+| `storage_key` | VARCHAR(500) | Storage backend reference (S3 key, filesystem path, etc.) |
 | `uploaded_by` | UUID | Reference to `auth.users` (SET NULL on delete) |
 | `created_at` | TIMESTAMPTZ | Creation timestamp |
 | `updated_at` | TIMESTAMPTZ | Last update timestamp |
@@ -327,7 +382,7 @@ Links files or Docspell documents to items.
 
 **Indexes:**
 - `ix_attachments_item` on `item_id`
-- `ix_attachments_file` on `file_id`
+- `ix_attachments_file` on `file_id` (partial, WHERE NOT NULL)
 - `ix_attachments_docspell` on `docspell_item_id` WHERE `docspell_item_id IS NOT NULL`
 
 #### `warehouse.inventory`
@@ -349,14 +404,20 @@ Physical instances of items stored at locations or in containers.
 | `warranty_expires` | DATE | Warranty expiration date |
 | `expiration_date` | DATE | Item expiration date |
 | `notes` | TEXT | Additional notes |
+| `is_archived` | BOOLEAN | Soft delete flag (default: false) |
 | `created_at` | TIMESTAMPTZ | Creation timestamp |
 | `updated_at` | TIMESTAMPTZ | Last update timestamp |
+
+**Constraints:**
+- `chk_inventory_quantity_non_negative` - Ensures `quantity >= 0`
 
 **Indexes:**
 - `ix_inventory_workspace` on `workspace_id`
 - `ix_inventory_item_id` on `item_id`
 - `ix_inventory_location_id` on `location_id`
 - `ix_inventory_container_id` on `container_id`
+- `ix_inventory_available` on `(workspace_id, item_id)` WHERE `status = 'AVAILABLE'`
+- `ix_inventory_active` on `(workspace_id, item_id, location_id)` WHERE `is_archived = false`
 
 #### `warehouse.container_tags`
 RFID, NFC, or QR tags associated with containers.
@@ -366,12 +427,13 @@ RFID, NFC, or QR tags associated with containers.
 | `id` | UUID | Primary key (uuidv7) |
 | `container_id` | UUID | Reference to `warehouse.containers` (CASCADE delete) |
 | `tag_type` | tag_type_enum | Tag type (see ENUMs below) |
-| `tag_value` | VARCHAR(255) | Unique tag value |
+| `tag_value` | VARCHAR(255) | Unique tag value (globally unique) |
 | `created_at` | TIMESTAMPTZ | Creation timestamp |
 | `updated_at` | TIMESTAMPTZ | Last update timestamp |
 
 **Indexes:**
 - `ix_container_tags_container_id` on `container_id`
+- Unique constraint on `tag_value` (global uniqueness - a tag cannot be on multiple containers)
 
 #### `warehouse.borrowers`
 People who borrow items from the warehouse.
@@ -384,11 +446,13 @@ People who borrow items from the warehouse.
 | `email` | VARCHAR(255) | Email address |
 | `phone` | VARCHAR(50) | Phone number |
 | `notes` | TEXT | Additional notes |
+| `is_archived` | BOOLEAN | Soft delete flag (default: false) |
 | `created_at` | TIMESTAMPTZ | Creation timestamp |
 | `updated_at` | TIMESTAMPTZ | Last update timestamp |
 
 **Indexes:**
 - `ix_borrowers_workspace` on `workspace_id`
+- `ix_borrowers_active` on `workspace_id` WHERE `is_archived = false`
 
 #### `warehouse.loans`
 Tracks inventory items loaned to borrowers.
@@ -399,7 +463,7 @@ Tracks inventory items loaned to borrowers.
 | `workspace_id` | UUID | Reference to `auth.workspaces` (CASCADE delete) |
 | `inventory_id` | UUID | Reference to `warehouse.inventory` (CASCADE delete) |
 | `borrower_id` | UUID | Reference to `warehouse.borrowers` (RESTRICT delete) |
-| `quantity` | INTEGER | Quantity loaned (default: 1) |
+| `quantity` | INTEGER | Quantity loaned (default: 1, must be > 0 and <= 1000) |
 | `loaned_at` | TIMESTAMPTZ | Loan timestamp (default: now) |
 | `due_date` | DATE | Expected return date |
 | `returned_at` | TIMESTAMPTZ | Actual return timestamp (NULL if not returned) |
@@ -407,11 +471,19 @@ Tracks inventory items loaned to borrowers.
 | `created_at` | TIMESTAMPTZ | Creation timestamp |
 | `updated_at` | TIMESTAMPTZ | Last update timestamp |
 
+**Constraints:**
+- `chk_loans_quantity_positive` - Ensures `quantity > 0`
+- `chk_loans_quantity_limit` - Ensures `quantity <= 1000`
+
 **Indexes:**
 - `ix_loans_workspace` on `workspace_id`
 - `ix_loans_inventory_id` on `inventory_id`
 - `ix_loans_borrower_id` on `borrower_id`
+- `ix_loans_outstanding` on `(workspace_id, borrower_id, due_date)` WHERE `returned_at IS NULL`
 - `ix_loans_active_inventory` unique partial index on `inventory_id` WHERE `returned_at IS NULL`
+
+**Triggers:**
+- `trg_validate_loan_quantity` - Validates that loan quantity doesn't exceed available inventory
 
 #### `warehouse.inventory_movements`
 Tracks movement history of inventory between locations/containers.
@@ -425,15 +497,19 @@ Tracks movement history of inventory between locations/containers.
 | `from_container_id` | UUID | Previous container (SET NULL on delete) |
 | `to_location_id` | UUID | New location (SET NULL on delete) |
 | `to_container_id` | UUID | New container (SET NULL on delete) |
-| `quantity` | INTEGER | Quantity moved (default: 1) |
+| `quantity` | INTEGER | Quantity moved (default: 1, must be > 0) |
 | `moved_by` | UUID | Reference to `auth.users` (SET NULL on delete) |
 | `reason` | TEXT | Reason for movement |
 | `created_at` | TIMESTAMPTZ | Movement timestamp |
+
+**Constraints:**
+- `chk_movements_quantity_positive` - Ensures `quantity > 0`
 
 **Indexes:**
 - `ix_inventory_movements_workspace` on `workspace_id`
 - `ix_inventory_movements_inventory` on `inventory_id`
 - `ix_inventory_movements_date` on `created_at`
+- `ix_inventory_movements_moved_by` on `moved_by` (partial, WHERE NOT NULL)
 
 #### `warehouse.favorites`
 User-pinned items, locations, or containers for quick access.
@@ -480,6 +556,40 @@ Audit trail of all changes to warehouse data.
 - `ix_activity_log_user` on `user_id`
 - `ix_activity_log_entity` on `(entity_type, entity_id)`
 - `ix_activity_log_created` on `created_at DESC`
+
+#### `warehouse.deleted_records`
+Tombstone table tracking hard-deleted records for PWA offline sync.
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `id` | UUID | Primary key (uuidv7) |
+| `workspace_id` | UUID | Reference to `auth.workspaces` (CASCADE delete) |
+| `entity_type` | activity_entity_enum | Type of deleted entity |
+| `entity_id` | UUID | ID of deleted entity |
+| `deleted_at` | TIMESTAMPTZ | Deletion timestamp (default: now) |
+| `deleted_by` | UUID | Reference to `auth.users` (SET NULL on delete) |
+
+**Indexes:**
+- `ix_deleted_records_workspace` on `workspace_id`
+- `ix_deleted_records_workspace_since` on `(workspace_id, deleted_at)`
+
+## Database Views
+
+### `warehouse.v_archived_records`
+Aggregates all soft-deleted (archived) records across entity types for restoration UI.
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `entity_type` | TEXT | Type of entity: 'item', 'location', 'container', 'category', 'company', 'borrower', 'label', 'inventory' |
+| `id` | UUID | Entity primary key |
+| `workspace_id` | UUID | Workspace the entity belongs to |
+| `name` | VARCHAR | Entity name (for inventory, uses the item name) |
+| `archived_at` | TIMESTAMPTZ | When the entity was archived (uses `updated_at`) |
+
+This view unions all tables with `is_archived = true` to provide a single query point for:
+- Displaying archived records in an admin UI
+- Bulk restoration operations
+- Audit/compliance reporting
 
 ## ENUM Types
 
@@ -560,6 +670,17 @@ Activity log entity types:
 - `LOAN`
 - `BORROWER`
 
+## Database Triggers
+
+### `trg_locations_search_vector`
+Automatically updates the `search_vector` column on `warehouse.locations` before INSERT or UPDATE. Indexes: name, description, zone, shelf, bin, and short_code.
+
+### `trg_containers_search_vector`
+Automatically updates the `search_vector` column on `warehouse.containers` before INSERT or UPDATE. Indexes: name, description, and short_code.
+
+### `trg_validate_loan_quantity`
+Validates loan quantity on INSERT or UPDATE to `warehouse.loans`. Ensures the total loaned quantity for an inventory item never exceeds the available inventory quantity. Raises an exception if the loan would exceed available stock.
+
 ## Entity Relationship Diagram
 
 ```mermaid
@@ -571,6 +692,9 @@ erDiagram
         varchar_255 password_hash
         boolean is_active
         boolean is_superuser
+        varchar_20 date_format
+        varchar_5 language
+        varchar_20 theme
         timestamptz created_at
         timestamptz updated_at
     }
@@ -580,6 +704,7 @@ erDiagram
         varchar_100 name
         varchar_50 slug UK
         text description
+        boolean is_personal
         timestamptz created_at
         timestamptz updated_at
     }
@@ -638,12 +763,22 @@ erDiagram
         timestamptz updated_at
     }
 
+    auth_password_reset_tokens {
+        uuid id PK
+        uuid user_id FK
+        varchar_64 token_hash
+        timestamptz expires_at
+        timestamptz used_at
+        timestamptz created_at
+    }
+
     warehouse_categories {
         uuid id PK
         uuid workspace_id FK
         varchar_100 name
         uuid parent_category_id FK
         text description
+        boolean is_archived
         timestamptz created_at
         timestamptz updated_at
     }
@@ -653,7 +788,9 @@ erDiagram
         uuid workspace_id FK
         varchar_100 name
         uuid parent_location FK
-        varchar_8 short_code UK
+        varchar_8 short_code
+        boolean is_archived
+        tsvector search_vector
         timestamptz created_at
         timestamptz updated_at
     }
@@ -663,7 +800,9 @@ erDiagram
         uuid workspace_id FK
         varchar_200 name
         uuid location_id FK
-        varchar_8 short_code UK
+        varchar_8 short_code
+        boolean is_archived
+        tsvector search_vector
         timestamptz created_at
         timestamptz updated_at
     }
@@ -673,6 +812,7 @@ erDiagram
         uuid workspace_id FK
         varchar_200 name
         varchar_500 website
+        boolean is_archived
         timestamptz created_at
         timestamptz updated_at
     }
@@ -682,6 +822,7 @@ erDiagram
         uuid workspace_id FK
         varchar_100 name
         varchar_7 color
+        boolean is_archived
         timestamptz created_at
         timestamptz updated_at
     }
@@ -691,10 +832,14 @@ erDiagram
         uuid workspace_id FK
         varchar_50 sku UK
         varchar_200 name
+        varchar_50 barcode
+        integer min_stock_level
         uuid category_id FK
         uuid purchased_from FK
         tsvector search_vector
-        varchar_8 short_code UK
+        varchar_8 short_code
+        varchar_500 obsidian_vault_path
+        varchar_500 obsidian_note_path
         timestamptz created_at
         timestamptz updated_at
     }
@@ -706,6 +851,7 @@ erDiagram
         varchar_10 extension
         varchar_100 mime_type
         bigint size_bytes
+        varchar_500 storage_key
         uuid uploaded_by FK
         timestamptz created_at
         timestamptz updated_at
@@ -730,6 +876,16 @@ erDiagram
         integer quantity
         item_condition_enum condition
         item_status_enum status
+        boolean is_archived
+        timestamptz created_at
+        timestamptz updated_at
+    }
+
+    warehouse_container_tags {
+        uuid id PK
+        uuid container_id FK
+        tag_type_enum tag_type
+        varchar_255 tag_value UK
         timestamptz created_at
         timestamptz updated_at
     }
@@ -751,8 +907,20 @@ erDiagram
         uuid workspace_id FK
         varchar_200 name
         varchar_255 email
+        boolean is_archived
         timestamptz created_at
         timestamptz updated_at
+    }
+
+    warehouse_inventory_movements {
+        uuid id PK
+        uuid workspace_id FK
+        uuid inventory_id FK
+        uuid from_location_id FK
+        uuid to_location_id FK
+        integer quantity
+        uuid moved_by FK
+        timestamptz created_at
     }
 
     warehouse_favorites {
@@ -777,9 +945,19 @@ erDiagram
         timestamptz created_at
     }
 
+    warehouse_deleted_records {
+        uuid id PK
+        uuid workspace_id FK
+        activity_entity_enum entity_type
+        uuid entity_id
+        timestamptz deleted_at
+        uuid deleted_by FK
+    }
+
     auth_workspaces ||--o{ auth_workspace_members : "workspace_id"
     auth_users ||--o{ auth_workspace_members : "user_id"
     auth_users ||--o{ auth_user_oauth_accounts : "user_id"
+    auth_users ||--o{ auth_password_reset_tokens : "user_id"
     auth_workspaces ||--o{ auth_workspace_exports : "workspace_id"
     auth_users ||--o{ auth_notifications : "user_id"
     auth_workspaces ||--o{ auth_notifications : "workspace_id"
@@ -797,12 +975,16 @@ erDiagram
     warehouse_files ||--o{ warehouse_attachments : "file_id"
     warehouse_locations ||--o{ warehouse_inventory : "location_id"
     warehouse_containers ||--o{ warehouse_inventory : "container_id"
+    warehouse_containers ||--o{ warehouse_container_tags : "container_id"
     warehouse_inventory ||--o{ warehouse_loans : "inventory_id"
     warehouse_borrowers ||--o{ warehouse_loans : "borrower_id"
+    warehouse_inventory ||--o{ warehouse_inventory_movements : "inventory_id"
     auth_users ||--o{ warehouse_favorites : "user_id"
     auth_workspaces ||--o{ warehouse_favorites : "workspace_id"
     auth_users ||--o{ warehouse_activity_log : "user_id"
     auth_workspaces ||--o{ warehouse_activity_log : "workspace_id"
+    auth_workspaces ||--o{ warehouse_deleted_records : "workspace_id"
+    auth_users ||--o{ warehouse_deleted_records : "deleted_by"
 ```
 
 ## Relationships Summary
@@ -810,25 +992,27 @@ erDiagram
 1. **Workspaces** → **Workspace Members**: Users belong to workspaces with roles
 2. **Users** → **Workspace Members**: Users can belong to multiple workspaces
 3. **Users** → **OAuth Accounts**: Users can have linked external OAuth accounts
-4. **Workspaces** → **Workspace Exports**: Track data exports for audit
-5. **Users** → **Notifications**: Users receive notifications
-6. **Workspaces** → **Docspell Settings**: Each workspace can have one Docspell integration
-7. **Workspaces** → **All warehouse tables**: Complete data isolation per workspace
-8. **Categories** → **Categories** (self-referencing): Hierarchical category structure
-9. **Locations** → **Locations** (self-referencing): Hierarchical location structure
-10. **Locations** → **Containers**: Containers belong to locations
-11. **Categories** → **Items**: Items belong to categories (any level)
-12. **Companies** → **Items**: Items can be linked to where they were purchased
-13. **Items** ↔ **Labels**: Many-to-many via `item_labels` junction table
-14. **Items** → **Attachments**: Items can have attached files or Docspell documents
-15. **Files** → **Attachments**: Uploaded files are linked via attachments
-16. **Items** → **Inventory**: Inventory entries reference items
-17. **Locations** → **Inventory**: Inventory entries reference locations
-18. **Containers** → **Inventory**: Inventory entries can optionally be in containers
-19. **Containers** → **Container Tags**: Containers can have RFID/NFC/QR tags
-20. **Inventory** → **Loans**: Loans reference specific inventory entries
-21. **Borrowers** → **Loans**: Loans reference borrowers
-22. **Inventory** → **Inventory Movements**: Movement history for inventory
-23. **Users** → **Inventory Movements**: Track who moved items
-24. **Users** → **Favorites**: Users can pin items, locations, or containers
-25. **Users** → **Activity Log**: Track who made changes
+4. **Users** → **Password Reset Tokens**: Users can have password reset tokens
+5. **Workspaces** → **Workspace Exports**: Track data exports for audit
+6. **Users** → **Notifications**: Users receive notifications
+7. **Workspaces** → **Docspell Settings**: Each workspace can have one Docspell integration
+8. **Workspaces** → **All warehouse tables**: Complete data isolation per workspace
+9. **Categories** → **Categories** (self-referencing): Hierarchical category structure
+10. **Locations** → **Locations** (self-referencing): Hierarchical location structure
+11. **Locations** → **Containers**: Containers belong to locations
+12. **Categories** → **Items**: Items belong to categories (any level)
+13. **Companies** → **Items**: Items can be linked to where they were purchased
+14. **Items** ↔ **Labels**: Many-to-many via `item_labels` junction table
+15. **Items** → **Attachments**: Items can have attached files or Docspell documents
+16. **Files** → **Attachments**: Uploaded files are linked via attachments
+17. **Items** → **Inventory**: Inventory entries reference items
+18. **Locations** → **Inventory**: Inventory entries reference locations
+19. **Containers** → **Inventory**: Inventory entries can optionally be in containers
+20. **Containers** → **Container Tags**: Containers can have RFID/NFC/QR tags
+21. **Inventory** → **Loans**: Loans reference specific inventory entries
+22. **Borrowers** → **Loans**: Loans reference borrowers
+23. **Inventory** → **Inventory Movements**: Movement history for inventory
+24. **Users** → **Inventory Movements**: Track who moved items
+25. **Users** → **Favorites**: Users can pin items, locations, or containers
+26. **Users** → **Activity Log**: Track who made changes
+27. **Workspaces** → **Deleted Records**: Track hard-deleted records for PWA sync

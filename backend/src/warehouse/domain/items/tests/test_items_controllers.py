@@ -86,6 +86,7 @@ def _category(**overrides) -> SimpleNamespace:
         "parent_category_id": None,
         "description": "desc",
         "created_at": datetime.datetime(2024, 1, 1, 0, 0, 0),
+        "updated_at": datetime.datetime(2024, 1, 1, 0, 0, 0),
     }
     defaults.update(overrides)
     return SimpleNamespace(**defaults)
@@ -98,6 +99,7 @@ def _item(**overrides) -> SimpleNamespace:
         "name": "Hammer",
         "description": "d",
         "category_id": uuid7(),
+        "short_code": None,
         "created_at": datetime.datetime(2024, 1, 2, 0, 0, 0),
         "updated_at": datetime.datetime(2024, 1, 3, 0, 0, 0),
         "obsidian_vault_path": None,
