@@ -179,3 +179,45 @@
     @apply absolute inset-0;
   }
 }
+
+/* ==========================================================================
+   Retro Dark Theme Overrides
+   Softer styling with 2px borders and subtle shadows
+   ========================================================================== */
+
+.retro-dark .retro-card {
+  border-width: 2px;
+  border-radius: 0.5rem;
+}
+
+.retro-dark .retro-card--shadow {
+  box-shadow: 4px 4px 0px 0px rgba(0, 0, 0, 0.5);
+}
+
+.retro-dark .retro-card--shadow-md {
+  box-shadow: 3px 3px 0px 0px rgba(0, 0, 0, 0.5);
+}
+
+.retro-dark .retro-card--shadow-sm {
+  box-shadow: 2px 2px 0px 0px rgba(0, 0, 0, 0.5);
+}
+
+.retro-dark .retro-stat-card {
+  border-width: 2px;
+  border-radius: 0.5rem;
+  box-shadow: 3px 3px 0px 0px rgba(0, 0, 0, 0.5);
+}
+
+.retro-dark .retro-card__header {
+  border-bottom-width: 2px;
+}
+
+.retro-dark .retro-card__footer {
+  border-top-width: 2px;
+}
+
+.retro-dark .retro-empty-state {
+  border-width: 2px;
+  border-radius: 0.5rem;
+  box-shadow: 4px 4px 0px 0px rgba(0, 0, 0, 0.5);
+}

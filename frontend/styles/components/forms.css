@@ -285,3 +285,33 @@
     background-color: color-mix(in srgb, var(--nes-green) 10%, transparent);
   }
 }
+
+/* ==========================================================================
+   Retro Dark Theme Overrides
+   Softer styling with 2px borders
+   ========================================================================== */
+
+.retro-dark .retro-input {
+  border-width: 2px;
+  border-radius: 0.25rem;
+}
+
+.retro-dark .retro-textarea {
+  border-width: 2px;
+  border-radius: 0.25rem;
+}
+
+.retro-dark .retro-select {
+  border-width: 2px;
+  border-radius: 0.25rem;
+}
+
+.retro-dark .retro-checkbox {
+  border-width: 2px;
+  border-radius: 0.125rem;
+}
+
+.retro-dark .retro-selected-preview {
+  border-width: 2px;
+  border-radius: 0.25rem;
+}

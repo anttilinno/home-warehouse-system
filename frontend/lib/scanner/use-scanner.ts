@@ -14,6 +14,8 @@ export interface UseScannerOptions {
   onScan?: (result: ScanResult) => void;
   onError?: (error: string) => void;
   formats?: Html5QrcodeSupportedFormats[];
+  /** When true, immediately request camera permission. Default: false */
+  requestPermission?: boolean;
 }
 
 const DEFAULT_FORMATS = [
@@ -38,26 +40,42 @@ export function useScanner(elementId: string, options: UseScannerOptions = {}) {
   const [currentCameraId, setCurrentCameraId] = useState<string | null>(null);
 
   const scannerRef = useRef<Html5Qrcode | null>(null);
-  const { onScan, onError, formats = DEFAULT_FORMATS } = options;
+  const permissionRequestedRef = useRef(false);
+  const { onScan, onError, formats = DEFAULT_FORMATS, requestPermission = false } = options;
 
-  // Get available cameras
-  useEffect(() => {
-    Html5Qrcode.getCameras()
-      .then((devices) => {
-        if (devices && devices.length > 0) {
-          setAvailableCameras(devices.map(d => ({ id: d.id, label: d.label || `Camera ${d.id}` })));
-          setHasPermission(true);
-        } else {
-          setHasPermission(false);
-          setError('No cameras found');
-        }
-      })
-      .catch((err) => {
-        console.error('Error getting cameras:', err);
+  // Request camera permission and get available cameras
+  const requestCameraPermission = useCallback(async () => {
+    if (permissionRequestedRef.current && hasPermission !== null) {
+      return hasPermission;
+    }
+    
+    permissionRequestedRef.current = true;
+    
+    try {
+      const devices = await Html5Qrcode.getCameras();
+      if (devices && devices.length > 0) {
+        setAvailableCameras(devices.map(d => ({ id: d.id, label: d.label || `Camera ${d.id}` })));
+        setHasPermission(true);
+        return true;
+      } else {
         setHasPermission(false);
-        setError('Camera permission denied');
-      });
-  }, []);
+        setError('No cameras found');
+        return false;
+      }
+    } catch (err) {
+      console.error('Error getting cameras:', err);
+      setHasPermission(false);
+      setError('Camera permission denied');
+      return false;
+    }
+  }, [hasPermission]);
+
+  // Only request permission when explicitly enabled via requestPermission option
+  useEffect(() => {
+    if (requestPermission) {
+      requestCameraPermission();
+    }
+  }, [requestPermission, requestCameraPermission]);
 
   const startScanning = useCallback(async (cameraId?: string) => {
     if (scannerRef.current?.isScanning) {
@@ -66,6 +84,16 @@ export function useScanner(elementId: string, options: UseScannerOptions = {}) {
 
     try {
       setError(null);
+
+      // Request permission if not already done
+      if (!permissionRequestedRef.current) {
+        const granted = await requestCameraPermission();
+        if (!granted) {
+          return;
+        }
+        // Wait for next frame to ensure DOM is updated after permission granted
+        await new Promise(resolve => requestAnimationFrame(resolve));
+      }
 
       if (!scannerRef.current) {
         scannerRef.current = new Html5Qrcode(elementId, {
@@ -115,13 +143,14 @@ export function useScanner(elementId: string, options: UseScannerOptions = {}) {
 
       setIsScanning(true);
       setHasPermission(true);
+      setError(null);  // Clear any previous errors on successful start
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to start scanner';
       setError(errorMessage);
       onError?.(errorMessage);
       setIsScanning(false);
     }
-  }, [elementId, formats, cameraFacing, currentCameraId, onScan, onError]);
+  }, [elementId, formats, cameraFacing, currentCameraId, onScan, onError, requestCameraPermission]);
 
   const stopScanning = useCallback(async () => {
     if (scannerRef.current?.isScanning) {
@@ -179,5 +208,6 @@ export function useScanner(elementId: string, options: UseScannerOptions = {}) {
     stopScanning,
     toggleCamera,
     switchCamera,
+    requestCameraPermission,
   };
 }

@@ -210,3 +210,45 @@
     @apply flex justify-end gap-3 p-4 border-t-4 border-border;
   }
 }
+
+/* ==========================================================================
+   Retro Dark Theme Overrides
+   Softer styling with 2px borders and subtle shadows
+   ========================================================================== */
+
+.retro-dark .retro-modal {
+  border-width: 2px;
+  border-radius: 0.5rem;
+  box-shadow: 4px 4px 0px 0px rgba(0, 0, 0, 0.5);
+}
+
+.retro-dark .retro-modal__header {
+  border-bottom-width: 2px;
+}
+
+.retro-dark .retro-modal__footer {
+  border-top-width: 2px;
+}
+
+.retro-dark .retro-alert {
+  border-width: 2px;
+  border-radius: 0.5rem;
+  box-shadow: 4px 4px 0px 0px rgba(0, 0, 0, 0.5);
+}
+
+.retro-dark .retro-modal__preview {
+  border-width: 2px;
+  border-radius: 0.25rem;
+}
+
+.retro-dark .retro-drawer {
+  border-left-width: 2px;
+}
+
+.retro-dark .retro-drawer__header {
+  border-bottom-width: 2px;
+}
+
+.retro-dark .retro-drawer__footer {
+  border-top-width: 2px;
+}

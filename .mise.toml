@@ -191,3 +191,16 @@ run = "cd go-backend && sqlc generate"
 [tasks.go-mod-tidy]
 description = "Tidy Go backend dependencies"
 run = "cd go-backend && go mod tidy"
+
+# Frontend2 tasks
+[tasks.fe2-dev]
+description = "Run frontend2 dev server"
+run = "cd frontend2 && bun run dev"
+
+[tasks.fe2-build]
+description = "Build frontend2"
+run = "cd frontend2 && bun run build"
+
+[tasks.fe2-install]
+description = "Install frontend2 dependencies"
+run = "cd frontend2 && bun install"

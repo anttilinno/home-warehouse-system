@@ -229,3 +229,17 @@
     @apply w-4 h-4;
   }
 }
+
+/* ==========================================================================
+   Retro Dark Theme Overrides
+   Softer styling with rounded corners
+   ========================================================================== */
+
+.retro-dark .retro-badge-component {
+  border-radius: 0.25rem;
+}
+
+.retro-dark .retro-chip {
+  border-width: 2px;
+  border-radius: 0.25rem;
+}

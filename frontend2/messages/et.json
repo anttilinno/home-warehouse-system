@@ -1,0 +1,212 @@
+{
+  "metadata": {
+    "title": "Home Warehouse",
+    "description": "Korralda kõik, mis sul on. Jälgi esemeid, asukohti ja laene kogu kodus võimsa inventuurihaldussüsteemiga."
+  },
+  "nav": {
+    "features": "Funktsioonid",
+    "pricing": "Hinnad",
+    "docs": "Dokumentatsioon",
+    "signIn": "Logi sisse",
+    "getStarted": "Alusta",
+    "toggleMenu": "Lülita menüü"
+  },
+  "hero": {
+    "badge": "Uus",
+    "badgeText": "PWA võrguühenduseta toega on nüüd saadaval",
+    "titleStart": "Korralda",
+    "titleHighlight": "Kõik",
+    "titleEnd": "Mis Sul On",
+    "subtitle": "Jälgi esemeid, asukohti ja laene kogu kodus võimsa inventuurihaldussüsteemiga. Tea täpselt, mis sul on ja kus see asub.",
+    "ctaPrimary": "Alusta tasuta",
+    "ctaSecondary": "Vaata funktsioone",
+    "highlights": {
+      "workspaces": "Mitme kasutaja tööruumid",
+      "scanning": "Vöötkoodi ja QR skaneerimine",
+      "loans": "Laenude jälgimine",
+      "export": "Eksport Excelisse"
+    },
+    "dashboardPreview": "Töölaua eelvaade"
+  },
+  "features": {
+    "title": "Kõik, mida vajad korras püsimiseks",
+    "subtitle": "Täielik inventuurihaldussüsteem, mis on loodud kodudele, kollektsioonidele ja väikeettevõtetele.",
+    "items": {
+      "title": "Esemete kataloog",
+      "description": "Jälgi esemeid SKU, brändi, mudeli, seerianumbrite ja kohandatud kategooriatega. Täistekstotsing kogu inventuuri ulatuses."
+    },
+    "locations": {
+      "title": "Asukohtade hierarhia",
+      "description": "Organiseeri tubade, tsoonide, riiulite ja kastide järgi. Loo täielik kaart oma hoiuruumidest."
+    },
+    "containers": {
+      "title": "Konteinerid",
+      "description": "Grupeeri esemed kastidesse, sahtlitesse ja konteineritesse. Ideaalne hooajalise hoiustamise ja kolimise jaoks."
+    },
+    "workspaces": {
+      "title": "Mitme kasutaja tööruumid",
+      "description": "Tee koostööd pere või toakaaslastega. Rollipõhine juurdepääsukontroll hoiab kõik korras."
+    },
+    "scanning": {
+      "title": "Vöötkoodi skaneerimine",
+      "description": "Skaneeri vöötkoode ja QR-koode telefoniga. Genereeri silte konteineritele ja asukohtadele."
+    },
+    "loans": {
+      "title": "Laenude jälgimine",
+      "description": "Jälgi, kes mida laenas ja millal tagastama peab. Ära kunagi kaota laenatud esemeid silmist."
+    },
+    "alerts": {
+      "title": "Nutikad hoiatused",
+      "description": "Saa teavitusi madala varude, aeguvate esemete, garantii tähtaegade ja hilinenud laenude kohta."
+    },
+    "import": {
+      "title": "Import ja eksport",
+      "description": "Hulgi import CSV/Excelist. Ekspordi oma andmed igal ajal varundamiseks või migreerimiseks."
+    }
+  },
+  "howItWorks": {
+    "title": "Alusta minutitega",
+    "subtitle": "Lihtne seadistusprotsess, et saada inventuur kiiresti korda.",
+    "step1": {
+      "title": "Loo oma tööruum",
+      "description": "Registreeru ja loo tööruum oma kodule, garaažile või kollektsioonile. Kutsu pereliikmeid koostööd tegema."
+    },
+    "step2": {
+      "title": "Lisa asukohad ja esemed",
+      "description": "Seadista oma hoiustamise hierarhia ja alusta esemete lisamist. Impordi tabelitest või skaneeri vöötkoode."
+    },
+    "step3": {
+      "title": "Leia kõik koheselt",
+      "description": "Otsi kõigi esemete ja asukohtade hulgast. Tea alati täpselt, kus kõik hoitakse."
+    }
+  },
+  "cta": {
+    "title": "Valmis korrastama?",
+    "subtitle": "Alusta oma inventuuri jälgimist juba täna. Tasuta isiklikeks projektideks, lisafunktsioonidega võimekasutajatele.",
+    "primary": "Alusta tasuta",
+    "secondary": "Loe lähemalt"
+  },
+  "dashboard": {
+    "title": "Töölaud",
+    "subtitle": "Ülevaade inventuurist ja viimasest tegevusest",
+    "search": "Otsi esemeid, asukohti...",
+    "nav": {
+      "dashboard": "Töölaud",
+      "items": "Esemed",
+      "locations": "Asukohad",
+      "containers": "Konteinerid",
+      "categories": "Kategooriad",
+      "loans": "Laenud",
+      "borrowers": "Laenajad",
+      "analytics": "Analüütika",
+      "settings": "Seaded",
+      "collapse": "Ahenda"
+    },
+    "workspace": {
+      "workspaces": "Tööruumid",
+      "createNew": "Loo tööruum"
+    },
+    "userMenu": {
+      "profile": "Profiil",
+      "settings": "Seaded",
+      "logout": "Logi välja"
+    },
+    "stats": {
+      "totalItems": "Esemeid kokku",
+      "locations": "Asukohad",
+      "containers": "Konteinerid",
+      "activeLoans": "Aktiivsed laenud",
+      "activeLoansDesc": "Hetkel laenatud esemed"
+    },
+    "alerts": {
+      "title": "Hoiatused",
+      "description": "Esemed, mis vajavad tähelepanu",
+      "lowStock": "{count} eset on madala varuga",
+      "expiring": "{count} eset aegub peagi",
+      "overdueLoans": "{count} hilinenud laenu",
+      "warning": "Hoiatus",
+      "urgent": "Kiire"
+    },
+    "activity": {
+      "title": "Viimane tegevus",
+      "description": "Viimased muudatused inventuuris"
+    }
+  },
+  "categories": {
+    "title": "Kategooriad",
+    "subtitle": "Organiseeri esemeid hierarhiliste kategooriatega",
+    "empty": "Kategooriaid pole veel",
+    "emptyDescription": "Loo oma esimene kategooria esemete organiseerimiseks",
+    "add": "Lisa kategooria",
+    "edit": "Muuda kategooriat",
+    "delete": "Kustuta kategooria",
+    "deleteConfirm": "Kas oled kindel, et soovid selle kategooria kustutada?",
+    "deleteWarning": "See kustutab ka kõik alamkategooriad. Selle kategooria esemed muutuvad kategoriseerimata.",
+    "name": "Nimi",
+    "namePlaceholder": "Sisesta kategooria nimi",
+    "description": "Kirjeldus",
+    "descriptionPlaceholder": "Valikuline kirjeldus",
+    "parent": "Ülemkategooria",
+    "parentPlaceholder": "Puudub (juurkategooria)",
+    "save": "Salvesta",
+    "cancel": "Tühista",
+    "items": "{count} eset",
+    "subcategories": "{count} alamkategooriat",
+    "search": "Otsi kategooriaid...",
+    "noResults": "Kategooriaid ei leitud"
+  },
+  "auth": {
+    "signIn": "Logi sisse",
+    "signUp": "Registreeru",
+    "welcomeBack": "Tere tulemast tagasi",
+    "loginDescription": "Logi oma kontole sisse, et jätkata",
+    "createAccount": "Loo konto",
+    "signupDescription": "Alusta oma tasuta kontoga",
+    "email": "E-post",
+    "emailPlaceholder": "nimi@näide.ee",
+    "password": "Parool",
+    "passwordPlaceholder": "Sisesta oma parool",
+    "createPasswordPlaceholder": "Loo parool",
+    "confirmPassword": "Kinnita parool",
+    "confirmPasswordPlaceholder": "Kinnita oma parool",
+    "fullName": "Täisnimi",
+    "fullNamePlaceholder": "Mari Maasikas",
+    "forgotPassword": "Unustasid parooli?",
+    "orContinueWith": "või jätka",
+    "noAccount": "Pole kontot?",
+    "haveAccount": "On juba konto?",
+    "invalidEmail": "Palun sisesta kehtiv e-posti aadress",
+    "passwordRequired": "Parool on kohustuslik",
+    "fullNameRequired": "Täisnimi on kohustuslik",
+    "passwordsNoMatch": "Paroolid ei kattu",
+    "passwordMin8": "Vähemalt 8 tähemärki",
+    "passwordUppercase": "Üks suurtäht",
+    "passwordLowercase": "Üks väiketäht",
+    "passwordNumber": "Üks number",
+    "agreeToTerms": "Konto loomisega nõustud meie",
+    "termsOfService": "Kasutustingimustega",
+    "and": "ja",
+    "privacyPolicy": "Privaatsuspoliitikaga"
+  },
+  "footer": {
+    "tagline": "Korralda kõik, mis sul on, võimsa inventuurihaldusega.",
+    "product": "Toode",
+    "resources": "Ressursid",
+    "company": "Ettevõte",
+    "legal": "Õiguslik",
+    "copyright": "© {year} Home Warehouse. Kõik õigused kaitstud.",
+    "links": {
+      "features": "Funktsioonid",
+      "pricing": "Hinnad",
+      "changelog": "Muudatuste logi",
+      "documentation": "Dokumentatsioon",
+      "apiReference": "API viide",
+      "support": "Tugi",
+      "about": "Meist",
+      "blog": "Blogi",
+      "contact": "Kontakt",
+      "privacy": "Privaatsus",
+      "terms": "Tingimused"
+    }
+  }
+}

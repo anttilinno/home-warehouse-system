@@ -59,59 +59,63 @@
   --color-nes-blue: #209cee;
   --color-nes-green: #92cc41;
   --color-nes-yellow: #f7d51d;
+  /* Gauge background */
+  --gauge-bg: #c4c4c4;
 }
 
-/* Retro Dark Theme - NES Console Style Dark */
+/* Retro Dark Theme - Soft neutral dark style */
 .retro-dark {
-  /* #212529 dark background */
-  --background: #212529;
-  --foreground: #ffffff;
-  /* #000000 black for cards - like NES cartridge */
-  --card: #000000;
-  --card-foreground: #ffffff;
-  --popover: #000000;
-  --popover-foreground: #ffffff;
-  /* #ce372b NES red primary */
-  --primary: #ce372b;
-  --primary-foreground: #ffffff;
-  --secondary: #343a40;
-  --secondary-foreground: #ffffff;
-  --muted: #343a40;
-  --muted-foreground: #adb5bd;
-  --accent: #209cee;
-  --accent-foreground: #ffffff;
-  --destructive: #ce372b;
-  /* #ffffff white borders for dark theme */
-  --border: #ffffff;
-  --input: #000000;
-  --ring: #ce372b;
-  /* NES accent colors for charts */
-  --chart-1: #ce372b;
-  --chart-2: #209cee;
-  --chart-3: #92cc41;
-  --chart-4: #adb5bd;
-  --chart-5: #6c757d;
-  /* #000000 black sidebar */
-  --sidebar: #000000;
-  --sidebar-foreground: #adb5bd;
-  --sidebar-primary: #ce372b;
-  --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #343a40;
-  --sidebar-accent-foreground: #ffffff;
-  --sidebar-border: #ffffff;
-  --sidebar-ring: #ce372b;
-  /* Sharp corners */
-  --radius: 0px;
-  /* NES accent color variables */
-  --nes-red: #ce372b;
-  --nes-blue: #209cee;
-  --nes-green: #92cc41;
-  --nes-yellow: #f7d51d;
+  /* Dark neutral background */
+  --background: #1a1b26;
+  --foreground: #c0caf5;
+  /* Slightly lighter for cards */
+  --card: #24283b;
+  --card-foreground: #c0caf5;
+  --popover: #24283b;
+  --popover-foreground: #c0caf5;
+  /* Soft blue-purple primary - easier on eyes */
+  --primary: #7aa2f7;
+  --primary-foreground: #1a1b26;
+  --secondary: #414868;
+  --secondary-foreground: #c0caf5;
+  --muted: #414868;
+  --muted-foreground: #9aa5ce;
+  --accent: #bb9af7;
+  --accent-foreground: #1a1b26;
+  --destructive: #f7768e;
+  /* Soft border color */
+  --border: #414868;
+  --input: #24283b;
+  --ring: #7aa2f7;
+  /* Chart colors */
+  --chart-1: #7aa2f7;
+  --chart-2: #bb9af7;
+  --chart-3: #9ece6a;
+  --chart-4: #f7768e;
+  --chart-5: #9aa5ce;
+  /* Dark sidebar */
+  --sidebar: #1a1b26;
+  --sidebar-foreground: #9aa5ce;
+  --sidebar-primary: #7aa2f7;
+  --sidebar-primary-foreground: #1a1b26;
+  --sidebar-accent: #24283b;
+  --sidebar-accent-foreground: #c0caf5;
+  --sidebar-border: #414868;
+  --sidebar-ring: #7aa2f7;
+  /* Slightly rounded corners for softer look */
+  --radius: 0.25rem;
+  /* Retro accent color variables */
+  --nes-red: #f7768e;
+  --nes-blue: #7aa2f7;
+  --nes-green: #9ece6a;
+  --nes-yellow: #e0af68;
   /* Tailwind color- prefix versions */
-  --color-nes-red: #ce372b;
-  --color-nes-blue: #209cee;
-  --color-nes-green: #92cc41;
-  --color-nes-yellow: #f7d51d;
+  --color-nes-red: #f7768e;
+  --color-nes-blue: #7aa2f7;
+  --color-nes-green: #9ece6a;
+  --color-nes-yellow: #e0af68;
+  /* Gauge background - visible against card background */
+  --gauge-bg: #1a1b26;
 }
 
 /* ==========================================================================
@@ -240,11 +244,11 @@
 }
 .retro-dark .shadow-retro,
 .retro-dark .shadow-nes {
-  box-shadow: 4px 4px 0px 0px #ffffff;
+  box-shadow: 4px 4px 0px 0px rgba(0, 0, 0, 0.5);
 }
 .retro-dark .shadow-retro-sm,
 .retro-dark .shadow-nes-hover {
-  box-shadow: 2px 2px 0px 0px #ffffff;
+  box-shadow: 2px 2px 0px 0px rgba(0, 0, 0, 0.5);
 }
 
 /* Override default shadows in retro themes */
@@ -286,10 +290,14 @@
    Border Overrides
    ========================================================================== */
 
-/* Thicker borders in retro themes - NES style 4px */
-.retro-light .border,
-.retro-dark .border {
+/* Thicker borders in retro light theme - NES style 4px */
+.retro-light .border {
   border-width: 4px;
+}
+
+/* Softer borders in retro dark theme - 2px */
+.retro-dark .border {
+  border-width: 2px;
 }
 
 /* ==========================================================================
@@ -309,17 +317,16 @@
   border: 4px solid #000;
 }
 
-/* NES-style scrollbar for retro-dark */
+/* Retro-style scrollbar for retro-dark */
 .retro-dark ::-webkit-scrollbar {
-  width: 16px;
+  width: 6px;
 }
 .retro-dark ::-webkit-scrollbar-track {
-  background: #212529;
-  border-left: 4px solid #fff;
+  background: #1a1b26;
 }
 .retro-dark ::-webkit-scrollbar-thumb {
-  background: #ce372b;
-  border: 4px solid #fff;
+  background: #414868;
+  border-radius: 3px;
 }
 
 /* ==========================================================================

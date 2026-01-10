@@ -205,3 +205,38 @@
     @apply text-primary hover:bg-primary hover:text-white;
   }
 }
+
+/* ==========================================================================
+   Retro Dark Theme Overrides
+   Softer styling with 2px borders and subtle shadows
+   ========================================================================== */
+
+.retro-dark .retro-btn {
+  border-width: 2px;
+  border-radius: 0.25rem;
+}
+
+.retro-dark .retro-btn--primary,
+.retro-dark .retro-btn--success,
+.retro-dark .retro-btn--danger,
+.retro-dark .retro-btn--info {
+  box-shadow: 4px 4px 0px 0px rgba(0, 0, 0, 0.5);
+}
+
+.retro-dark .retro-btn--primary:hover:not(:disabled),
+.retro-dark .retro-btn--success:hover:not(:disabled),
+.retro-dark .retro-btn--danger:hover:not(:disabled),
+.retro-dark .retro-btn--info:hover:not(:disabled) {
+  box-shadow: 2px 2px 0px 0px rgba(0, 0, 0, 0.5);
+}
+
+.retro-dark .retro-btn-link {
+  border-width: 2px;
+  border-radius: 0.25rem;
+}
+
+.retro-dark .retro-actions-menu__panel {
+  border-width: 2px;
+  border-radius: 0.5rem;
+  box-shadow: 4px 4px 0px 0px rgba(0, 0, 0, 0.5);
+}

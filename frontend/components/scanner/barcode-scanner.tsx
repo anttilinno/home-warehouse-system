@@ -70,16 +70,16 @@ export function BarcodeScanner({
     onScan: handleScan,
   });
 
-  // Start scanning when modal opens
+  // Start scanning when modal opens (this will also request permission if needed)
   useEffect(() => {
-    if (isOpen && hasPermission) {
+    if (isOpen) {
       // Small delay to ensure DOM is ready
       const timer = setTimeout(() => {
         startScanning();
       }, 100);
       return () => clearTimeout(timer);
     }
-  }, [isOpen, hasPermission, startScanning]);
+  }, [isOpen, startScanning]);
 
   // Stop scanning when modal closes
   useEffect(() => {
@@ -126,6 +126,52 @@ export function BarcodeScanner({
 
       {/* Scanner viewport */}
       <div className="h-full flex flex-col items-center justify-center">
+        {/* Always render viewport div so scanner can attach to it */}
+        <div className={cn(
+          "relative w-full max-w-md aspect-square",
+          hasPermission !== true && "invisible absolute"
+        )}>
+          <div
+            id={SCANNER_ELEMENT_ID}
+            className={cn(
+              "w-full h-full",
+              lastScan && "opacity-50"
+            )}
+          />
+
+          {/* Scanning overlay */}
+          {isScanning && !lastScan && (
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+              <div className="w-64 h-64 border-2 border-primary rounded-lg">
+                <div className="absolute top-0 left-0 w-8 h-8 border-t-4 border-l-4 border-primary rounded-tl-lg" />
+                <div className="absolute top-0 right-0 w-8 h-8 border-t-4 border-r-4 border-primary rounded-tr-lg" />
+                <div className="absolute bottom-0 left-0 w-8 h-8 border-b-4 border-l-4 border-primary rounded-bl-lg" />
+                <div className="absolute bottom-0 right-0 w-8 h-8 border-b-4 border-r-4 border-primary rounded-br-lg" />
+              </div>
+            </div>
+          )}
+
+          {/* Loading overlay */}
+          {isLookingUp && (
+            <div className="absolute inset-0 flex items-center justify-center bg-background/80">
+              <div className="text-center">
+                <Icon name="Loader2" className="w-8 h-8 mx-auto mb-2 animate-spin" />
+                <p>Looking up barcode...</p>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {hasPermission === null && (
+          <div className="text-center p-8">
+            <Icon name="Camera" className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
+            <h3 className="text-lg font-medium mb-2">Requesting Camera Access</h3>
+            <p className="text-muted-foreground mb-4">
+              Please allow camera access when prompted to scan barcodes.
+            </p>
+          </div>
+        )}
+
         {hasPermission === false && (
           <div className="text-center p-8">
             <Icon name="CameraOff" className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
@@ -133,13 +179,13 @@ export function BarcodeScanner({
             <p className="text-muted-foreground mb-4">
               Please allow camera access to scan barcodes.
             </p>
-            <Button onClick={() => window.location.reload()}>
+<Button onClick={() => startScanning()}>
               Try Again
             </Button>
           </div>
         )}
 
-        {error && hasPermission !== false && (
+        {error && !isScanning && hasPermission !== false && hasPermission !== null && (
           <div className="text-center p-8">
             <Icon name="AlertCircle" className="w-16 h-16 mx-auto mb-4 text-destructive" />
             <h3 className="text-lg font-medium mb-2">Scanner Error</h3>
@@ -150,40 +196,8 @@ export function BarcodeScanner({
           </div>
         )}
 
-        {hasPermission && !error && (
+        {hasPermission === true && !error && (
           <>
-            {/* Camera viewport */}
-            <div className="relative w-full max-w-md aspect-square">
-              <div
-                id={SCANNER_ELEMENT_ID}
-                className={cn(
-                  "w-full h-full",
-                  lastScan && "opacity-50"
-                )}
-              />
-
-              {/* Scanning overlay */}
-              {isScanning && !lastScan && (
-                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                  <div className="w-64 h-64 border-2 border-primary rounded-lg">
-                    <div className="absolute top-0 left-0 w-8 h-8 border-t-4 border-l-4 border-primary rounded-tl-lg" />
-                    <div className="absolute top-0 right-0 w-8 h-8 border-t-4 border-r-4 border-primary rounded-tr-lg" />
-                    <div className="absolute bottom-0 left-0 w-8 h-8 border-b-4 border-l-4 border-primary rounded-bl-lg" />
-                    <div className="absolute bottom-0 right-0 w-8 h-8 border-b-4 border-r-4 border-primary rounded-br-lg" />
-                  </div>
-                </div>
-              )}
-
-              {/* Loading overlay */}
-              {isLookingUp && (
-                <div className="absolute inset-0 flex items-center justify-center bg-background/80">
-                  <div className="text-center">
-                    <Icon name="Loader2" className="w-8 h-8 mx-auto mb-2 animate-spin" />
-                    <p>Looking up barcode...</p>
-                  </div>
-                </div>
-              )}
-            </div>
 
             {/* Scan result */}
             {lastScan && !isLookingUp && (

@@ -200,3 +200,35 @@
     @apply border-x-0 md:border-x-4;
   }
 }
+
+/* ==========================================================================
+   Retro Dark Theme Overrides
+   Softer styling with 2px borders and subtle shadows
+   ========================================================================== */
+
+.retro-dark .retro-table-wrap {
+  border-width: 2px;
+  border-radius: 0.5rem;
+  box-shadow: 4px 4px 0px 0px rgba(0, 0, 0, 0.5);
+  overflow: hidden;
+}
+
+.retro-dark .retro-thead {
+  border-bottom-width: 2px;
+}
+
+.retro-dark .retro-tfoot {
+  border-top-width: 2px;
+}
+
+.retro-dark .retro-table-responsive .retro-table-wrap {
+  border-left-width: 0;
+  border-right-width: 0;
+}
+
+@media (min-width: 768px) {
+  .retro-dark .retro-table-responsive .retro-table-wrap {
+    border-left-width: 2px;
+    border-right-width: 2px;
+  }
+}

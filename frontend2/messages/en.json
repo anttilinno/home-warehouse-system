@@ -1,0 +1,212 @@
+{
+  "metadata": {
+    "title": "Home Warehouse",
+    "description": "Organize everything you own. Track items, locations, and loans across your home with a powerful inventory management system."
+  },
+  "nav": {
+    "features": "Features",
+    "pricing": "Pricing",
+    "docs": "Docs",
+    "signIn": "Sign in",
+    "getStarted": "Get Started",
+    "toggleMenu": "Toggle menu"
+  },
+  "hero": {
+    "badge": "New",
+    "badgeText": "PWA with offline support now available",
+    "titleStart": "Organize",
+    "titleHighlight": "Everything",
+    "titleEnd": "You Own",
+    "subtitle": "Track items, locations, and loans across your home with a powerful inventory management system. Know exactly what you have and where it is.",
+    "ctaPrimary": "Get Started Free",
+    "ctaSecondary": "See Features",
+    "highlights": {
+      "workspaces": "Multi-user workspaces",
+      "scanning": "Barcode & QR scanning",
+      "loans": "Loan tracking",
+      "export": "Export to Excel"
+    },
+    "dashboardPreview": "Dashboard Preview"
+  },
+  "features": {
+    "title": "Everything you need to stay organized",
+    "subtitle": "A complete inventory management system designed for homes, collections, and small businesses.",
+    "items": {
+      "title": "Item Catalog",
+      "description": "Track items with SKU, brand, model, serial numbers, and custom categories. Full-text search across your inventory."
+    },
+    "locations": {
+      "title": "Location Hierarchy",
+      "description": "Organize by rooms, zones, shelves, and bins. Create a complete map of your storage spaces."
+    },
+    "containers": {
+      "title": "Containers",
+      "description": "Group items in boxes, drawers, and containers. Perfect for seasonal storage and moving."
+    },
+    "workspaces": {
+      "title": "Multi-User Workspaces",
+      "description": "Collaborate with family or roommates. Role-based access control keeps everyone organized."
+    },
+    "scanning": {
+      "title": "Barcode Scanning",
+      "description": "Scan barcodes and QR codes with your phone. Generate labels for containers and locations."
+    },
+    "loans": {
+      "title": "Loan Tracking",
+      "description": "Track who borrowed what and when it's due. Never lose track of lent items again."
+    },
+    "alerts": {
+      "title": "Smart Alerts",
+      "description": "Get notified about low stock, expiring items, warranty deadlines, and overdue loans."
+    },
+    "import": {
+      "title": "Import & Export",
+      "description": "Bulk import from CSV/Excel. Export your data anytime for backup or migration."
+    }
+  },
+  "howItWorks": {
+    "title": "Get started in minutes",
+    "subtitle": "Simple setup process to get your inventory organized quickly.",
+    "step1": {
+      "title": "Create your workspace",
+      "description": "Sign up and create a workspace for your home, garage, or collection. Invite family members to collaborate."
+    },
+    "step2": {
+      "title": "Add locations & items",
+      "description": "Set up your storage hierarchy and start adding items. Import from spreadsheets or scan barcodes."
+    },
+    "step3": {
+      "title": "Find anything instantly",
+      "description": "Search across all your items and locations. Always know exactly where everything is stored."
+    }
+  },
+  "cta": {
+    "title": "Ready to get organized?",
+    "subtitle": "Start tracking your inventory today. Free to use for personal projects, with premium features for power users.",
+    "primary": "Get Started Free",
+    "secondary": "Learn More"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "subtitle": "Overview of your inventory and recent activity",
+    "search": "Search items, locations...",
+    "nav": {
+      "dashboard": "Dashboard",
+      "items": "Items",
+      "locations": "Locations",
+      "containers": "Containers",
+      "categories": "Categories",
+      "loans": "Loans",
+      "borrowers": "Borrowers",
+      "analytics": "Analytics",
+      "settings": "Settings",
+      "collapse": "Collapse"
+    },
+    "workspace": {
+      "workspaces": "Workspaces",
+      "createNew": "Create workspace"
+    },
+    "userMenu": {
+      "profile": "Profile",
+      "settings": "Settings",
+      "logout": "Log out"
+    },
+    "stats": {
+      "totalItems": "Total Items",
+      "locations": "Locations",
+      "containers": "Containers",
+      "activeLoans": "Active Loans",
+      "activeLoansDesc": "Items currently on loan"
+    },
+    "alerts": {
+      "title": "Alerts",
+      "description": "Items that need your attention",
+      "lowStock": "{count} items are low on stock",
+      "expiring": "{count} items expiring soon",
+      "overdueLoans": "{count} overdue loans",
+      "warning": "Warning",
+      "urgent": "Urgent"
+    },
+    "activity": {
+      "title": "Recent Activity",
+      "description": "Latest changes in your inventory"
+    }
+  },
+  "categories": {
+    "title": "Categories",
+    "subtitle": "Organize items with hierarchical categories",
+    "empty": "No categories yet",
+    "emptyDescription": "Create your first category to organize items",
+    "add": "Add Category",
+    "edit": "Edit Category",
+    "delete": "Delete Category",
+    "deleteConfirm": "Are you sure you want to delete this category?",
+    "deleteWarning": "This will also delete all subcategories. Items in this category will become uncategorized.",
+    "name": "Name",
+    "namePlaceholder": "Enter category name",
+    "description": "Description",
+    "descriptionPlaceholder": "Optional description",
+    "parent": "Parent Category",
+    "parentPlaceholder": "None (root category)",
+    "save": "Save",
+    "cancel": "Cancel",
+    "items": "{count} items",
+    "subcategories": "{count} subcategories",
+    "search": "Search categories...",
+    "noResults": "No categories found"
+  },
+  "auth": {
+    "signIn": "Sign in",
+    "signUp": "Sign up",
+    "welcomeBack": "Welcome back",
+    "loginDescription": "Sign in to your account to continue",
+    "createAccount": "Create account",
+    "signupDescription": "Get started with your free account",
+    "email": "Email",
+    "emailPlaceholder": "name@example.com",
+    "password": "Password",
+    "passwordPlaceholder": "Enter your password",
+    "createPasswordPlaceholder": "Create a password",
+    "confirmPassword": "Confirm password",
+    "confirmPasswordPlaceholder": "Confirm your password",
+    "fullName": "Full name",
+    "fullNamePlaceholder": "John Doe",
+    "forgotPassword": "Forgot password?",
+    "orContinueWith": "or continue with",
+    "noAccount": "Don't have an account?",
+    "haveAccount": "Already have an account?",
+    "invalidEmail": "Please enter a valid email address",
+    "passwordRequired": "Password is required",
+    "fullNameRequired": "Full name is required",
+    "passwordsNoMatch": "Passwords do not match",
+    "passwordMin8": "At least 8 characters",
+    "passwordUppercase": "One uppercase letter",
+    "passwordLowercase": "One lowercase letter",
+    "passwordNumber": "One number",
+    "agreeToTerms": "By creating an account, you agree to our",
+    "termsOfService": "Terms of Service",
+    "and": "and",
+    "privacyPolicy": "Privacy Policy"
+  },
+  "footer": {
+    "tagline": "Organize everything you own with powerful inventory management.",
+    "product": "Product",
+    "resources": "Resources",
+    "company": "Company",
+    "legal": "Legal",
+    "copyright": "© {year} Home Warehouse. All rights reserved.",
+    "links": {
+      "features": "Features",
+      "pricing": "Pricing",
+      "changelog": "Changelog",
+      "documentation": "Documentation",
+      "apiReference": "API Reference",
+      "support": "Support",
+      "about": "About",
+      "blog": "Blog",
+      "contact": "Contact",
+      "privacy": "Privacy",
+      "terms": "Terms"
+    }
+  }
+}
