@@ -181,3 +181,15 @@ func (s *Service) Deactivate(ctx context.Context, id uuid.UUID) error {
 
 	return s.repo.Save(ctx, user)
 }
+
+// Activate activates a user account.
+func (s *Service) Activate(ctx context.Context, id uuid.UUID) error {
+	user, err := s.GetByID(ctx, id)
+	if err != nil {
+		return err
+	}
+
+	user.Activate()
+
+	return s.repo.Save(ctx, user)
+}

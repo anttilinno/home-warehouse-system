@@ -24,6 +24,7 @@ STAGING_DBMATE_URL = "postgresql://wh:wh@localhost:5432/warehouse_staging?sslmod
 
 # Go backend
 GO_DATABASE_URL = "postgresql://wh:wh@localhost:5432/warehouse_dev?sslmode=disable"
+GO_TEST_DATABASE_URL = "postgresql://wh:wh@localhost:5432/warehouse_test?sslmode=disable"
 
 [tasks.setup]
 description = "Setup hint"
@@ -172,6 +173,15 @@ run = "cd go-backend && CGO_ENABLED=0 go build -o bin/server cmd/server/main.go"
 description = "Run Go backend tests"
 run = "cd go-backend && go test -v ./..."
 
+[tasks.go-test-unit]
+description = "Run Go backend unit tests only"
+run = "cd go-backend && go test -v ./internal/domain/..."
+
+[tasks.go-test-integration]
+description = "Run Go backend integration tests"
+depends = ["dc-up"]
+run = "cd go-backend && go test -v ./tests/integration/..."
+
 [tasks.go-test-cover]
 description = "Run Go backend tests with coverage"
 run = "cd go-backend && go test -coverprofile=coverage.out ./... && go tool cover -html=coverage.out -o coverage.html"
@@ -186,11 +196,50 @@ run = "cd go-backend && go fmt ./..."
 
 [tasks.go-sqlc]
 description = "Generate sqlc code from queries"
-run = "cd go-backend && sqlc generate"
+run = "cd go-backend && ~/go/bin/sqlc generate"
+
+[tasks.go-sqlc-vet]
+description = "Verify sqlc queries are valid"
+run = "cd go-backend && ~/go/bin/sqlc vet"
+
+[tasks.go-generate]
+description = "Run migrations and generate sqlc code"
+depends = ["go-migrate", "go-sqlc"]
+
+[tasks.go-migrate]
+description = "Run database migrations for Go backend"
+depends = ["dc-up"]
+run = "DATABASE_URL=$GO_DATABASE_URL dbmate -d go-backend/db/migrations up"
+
+[tasks.go-migrate-new]
+description = "Create new Go backend migration"
+run = "DATABASE_URL=$GO_DATABASE_URL dbmate -d go-backend/db/migrations new"
+
+[tasks.go-migrate-down]
+description = "Rollback last Go backend migration"
+run = "DATABASE_URL=$GO_DATABASE_URL dbmate -d go-backend/db/migrations down"
+
+[tasks.go-migrate-status]
+description = "Check Go backend migration status"
+run = "DATABASE_URL=$GO_DATABASE_URL dbmate -d go-backend/db/migrations status"
+
+[tasks.go-db-reset]
+description = "Reset Go backend database"
+depends = ["dc-up"]
+run = "DATABASE_URL=$GO_DATABASE_URL dbmate -d go-backend/db/migrations drop && DATABASE_URL=$GO_DATABASE_URL dbmate -d go-backend/db/migrations up"
 
 [tasks.go-mod-tidy]
 description = "Tidy Go backend dependencies"
 run = "cd go-backend && go mod tidy"
+
+[tasks.go-mod-download]
+description = "Download Go backend dependencies"
+run = "cd go-backend && go mod download"
+
+[tasks.start-all]
+description = "Start all services (containers, Python backend, Go backend, frontend)"
+depends = ["dc-up", "migrate"]
+run = "mise run dev & mise run go-dev & mise run fe-dev"
 
 # Frontend2 tasks
 [tasks.fe2-dev]

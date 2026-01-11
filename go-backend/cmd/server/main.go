@@ -11,14 +11,18 @@ import (
 	"time"
 
 	"github.com/antti/home-warehouse/go-backend/internal/api"
+	"github.com/antti/home-warehouse/go-backend/internal/config"
 	"github.com/antti/home-warehouse/go-backend/internal/infra/postgres"
 )
 
 func main() {
-	// Get database URL from environment
+	// Load configuration
+	cfg := config.Load()
+
+	// Get database URL from environment (override config if GO_DATABASE_URL is set)
 	dbURL := os.Getenv("GO_DATABASE_URL")
 	if dbURL == "" {
-		dbURL = "postgresql://wh:wh@localhost:5432/warehouse_dev?sslmode=disable"
+		dbURL = cfg.DatabaseURL
 	}
 
 	// Connect to database
@@ -29,7 +33,7 @@ func main() {
 	defer pool.Close()
 
 	// Create router
-	router := api.NewRouter(pool)
+	router := api.NewRouter(pool, cfg)
 
 	// Create server
 	port := os.Getenv("PORT")

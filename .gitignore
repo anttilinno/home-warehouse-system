@@ -83,3 +83,6 @@ dist-ssr/
 .cache/
 
 .data/
+
+# Auto Claude data directory
+.auto-claude/

@@ -164,3 +164,9 @@ func (u *User) Deactivate() {
 	u.isActive = false
 	u.updatedAt = time.Now()
 }
+
+// Activate marks the user as active.
+func (u *User) Activate() {
+	u.isActive = true
+	u.updatedAt = time.Now()
+}
