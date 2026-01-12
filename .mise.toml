@@ -1,26 +1,10 @@
 [tools]
-python = "3.14"
-uv = "latest"
 bun = "latest"
 dbmate = "latest"
 go = "1.23"
 
 [env]
-DATABASE_URL = "postgresql+asyncpg://wh:wh@localhost:5432/warehouse_dev"
 DBMATE_DATABASE_URL = "postgresql://wh:wh@localhost:5432/warehouse_dev?sslmode=disable"
-APP_DEBUG = "true"
-
-# OAuth providers - add credentials to .mise.local.toml (ignored by git)
-# Get Google credentials: https://console.cloud.google.com/apis/credentials
-# GOOGLE_CLIENT_ID = ""
-# GOOGLE_CLIENT_SECRET = ""
-# Get GitHub credentials: https://github.com/settings/developers
-# GITHUB_CLIENT_ID = ""
-# GITHUB_CLIENT_SECRET = ""
-
-# Staging database URLs
-STAGING_DATABASE_URL = "postgresql+asyncpg://wh:wh@localhost:5432/warehouse_staging"
-STAGING_DBMATE_URL = "postgresql://wh:wh@localhost:5432/warehouse_staging?sslmode=disable"
 
 # Go backend
 GO_DATABASE_URL = "postgresql://wh:wh@localhost:5432/warehouse_dev?sslmode=disable"
@@ -29,10 +13,6 @@ GO_TEST_DATABASE_URL = "postgresql://wh:wh@localhost:5432/warehouse_test?sslmode
 [tasks.setup]
 description = "Setup hint"
 run = "echo 'No setup needed. Run: mise trust && mise install'"
-
-[tasks.sync]
-description = "Sync Python dependencies including dev extras"
-run = "cd backend && uv sync --extra dev"
 
 [tasks.start]
 description = "Start all services (containers, backend, frontend)"
@@ -50,206 +30,98 @@ run = "docker compose down"
 [tasks.db-reset]
 description = "Drop and recreate database with fresh migrations"
 depends = ["dc-down"]
-run = "docker compose down -v && docker compose up -d postgres --wait && DATABASE_URL=$DBMATE_DATABASE_URL dbmate -d backend/db/migrations up"
+run = "docker compose down -v && docker compose up -d postgres --wait && DATABASE_URL=$DBMATE_DATABASE_URL dbmate -d go-backend/db/migrations up"
 
 [tasks.db-fresh]
 description = "Complete database reset: drop data volume, recreate database, run migrations"
-run = "docker compose down -v && docker compose up -d --wait && DATABASE_URL=$DBMATE_DATABASE_URL dbmate -d backend/db/migrations up"
+run = "docker compose down -v && docker compose up -d --wait && DATABASE_URL=$DBMATE_DATABASE_URL dbmate -d go-backend/db/migrations up"
 
 [tasks.migrate]
 description = "Run database migrations"
 depends = ["dc-up"]
-run = "DATABASE_URL=$DBMATE_DATABASE_URL dbmate -d backend/db/migrations up"
+run = "DATABASE_URL=$DBMATE_DATABASE_URL dbmate -d go-backend/db/migrations up"
 
 [tasks.migrate-new]
 description = "Create new migration"
-run = "DATABASE_URL=$DBMATE_DATABASE_URL dbmate -d backend/db/migrations new"
+run = "DATABASE_URL=$DBMATE_DATABASE_URL dbmate -d go-backend/db/migrations new"
 
-[tasks.dev]
-description = "Run backend dev server"
-depends = ["dc-up", "sync"]
-run = "cd backend && uv run granian --interface asgi warehouse.app:app --reload --host 0.0.0.0 --port 8000"
+[tasks.migrate-down]
+description = "Rollback last migration"
+run = "DATABASE_URL=$DBMATE_DATABASE_URL dbmate -d go-backend/db/migrations down"
 
-[tasks.test]
-description = "Run all tests (memory limited to 20GB)"
-run = "cd backend && systemd-run --scope -p MemoryMax=20G --user uv run pytest"
-
-[tasks.test-unit]
-description = "Run unit tests only (memory limited to 20GB)"
-run = "cd backend && systemd-run --scope -p MemoryMax=20G --user uv run pytest src/"
-
-[tasks.test-e2e]
-description = "Run e2e tests (memory limited to 20GB)"
-depends = ["dc-up"]
-run = "cd backend && systemd-run --scope -p MemoryMax=20G --user uv run pytest e2e/"
-
-[tasks.lint]
-description = "Run linter"
-run = "cd backend && uv run ruff check ."
-
-[tasks.format]
-description = "Format code"
-run = "cd backend && uv run ruff format ."
-
-[tasks.fe-dev]
-description = "Run frontend dev server"
-run = "cd frontend && rm -rf .next && bun run dev"
-
-[tasks.fe-build]
-description = "Build frontend"
-run = "cd frontend && bun run build"
-
-[tasks.fe-install]
-description = "Install frontend dependencies"
-run = "cd frontend && bun install"
-
-# Mobile app tasks
-[tasks.app-install]
-description = "Install mobile app dependencies"
-run = "cd app && npm install"
-
-[tasks.app-dev]
-description = "Run mobile app dev server (Expo)"
-run = "cd app && npm start"
-
-[tasks.app-android]
-description = "Run mobile app on Android"
-run = "cd app && npm run android"
-
-[tasks.app-ios]
-description = "Run mobile app on iOS"
-run = "cd app && npm run ios"
-
-[tasks.app-web]
-description = "Run mobile app in web browser"
-run = "cd app && npm run web"
-
-[tasks.rq-worker]
-description = "Run RQ worker for loan jobs"
-depends = ["dc-up"]
-run = "cd backend && uv run rq worker loans"
-
-[tasks.seed]
-description = "Seed database with sample data"
-depends = ["dc-up"]
-run = "cd backend && uv run python scripts/seed.py"
-
-# Staging database tasks
-[tasks.staging-init]
-description = "Create staging database (run once)"
-depends = ["dc-up"]
-run = "docker exec warehouse-postgres psql -U wh -d postgres -c \"CREATE DATABASE warehouse_staging;\" 2>/dev/null || echo 'Database already exists'"
-
-[tasks.migrate-staging]
-description = "Run migrations on staging database"
-depends = ["dc-up"]
-run = "DATABASE_URL=$STAGING_DBMATE_URL dbmate -d backend/db/migrations up"
-
-[tasks.dev-staging]
-description = "Run backend dev server against staging database"
-depends = ["dc-up"]
-run = "cd backend && DATABASE_URL=$STAGING_DATABASE_URL uv run granian --interface asgi warehouse.app:app --reload --host 0.0.0.0 --port 8000"
-
-[tasks.staging-status]
-description = "Check staging database status"
-run = "DATABASE_URL=$STAGING_DBMATE_URL dbmate -d backend/db/migrations status"
+[tasks.migrate-status]
+description = "Check migration status"
+run = "DATABASE_URL=$DBMATE_DATABASE_URL dbmate -d go-backend/db/migrations status"
 
 # Go Backend Tasks
-[tasks.go-dev]
+[tasks.dev]
 description = "Run Go backend dev server with hot reload"
 depends = ["dc-up"]
 run = "cd go-backend && air"
 
-[tasks.go-run]
+[tasks.run]
 description = "Run Go backend server (no hot reload)"
 depends = ["dc-up"]
 run = "cd go-backend && go run cmd/server/main.go"
 
-[tasks.go-build]
+[tasks.build]
 description = "Build Go backend binary"
 run = "cd go-backend && CGO_ENABLED=0 go build -o bin/server cmd/server/main.go"
 
-[tasks.go-test]
+[tasks.test]
 description = "Run Go backend tests"
 run = "cd go-backend && go test -v ./..."
 
-[tasks.go-test-unit]
+[tasks.test-unit]
 description = "Run Go backend unit tests only"
 run = "cd go-backend && go test -v ./internal/domain/..."
 
-[tasks.go-test-integration]
+[tasks.test-integration]
 description = "Run Go backend integration tests"
 depends = ["dc-up"]
 run = "cd go-backend && go test -v ./tests/integration/..."
 
-[tasks.go-test-cover]
+[tasks.test-cover]
 description = "Run Go backend tests with coverage"
 run = "cd go-backend && go test -coverprofile=coverage.out ./... && go tool cover -html=coverage.out -o coverage.html"
 
-[tasks.go-lint]
+[tasks.lint]
 description = "Run Go backend linter"
 run = "cd go-backend && golangci-lint run"
 
-[tasks.go-fmt]
+[tasks.fmt]
 description = "Format Go backend code"
 run = "cd go-backend && go fmt ./..."
 
-[tasks.go-sqlc]
+[tasks.sqlc]
 description = "Generate sqlc code from queries"
 run = "cd go-backend && ~/go/bin/sqlc generate"
 
-[tasks.go-sqlc-vet]
+[tasks.sqlc-vet]
 description = "Verify sqlc queries are valid"
 run = "cd go-backend && ~/go/bin/sqlc vet"
 
-[tasks.go-generate]
-description = "Run migrations and generate sqlc code"
-depends = ["go-migrate", "go-sqlc"]
-
-[tasks.go-migrate]
-description = "Run database migrations for Go backend"
-depends = ["dc-up"]
-run = "DATABASE_URL=$GO_DATABASE_URL dbmate -d go-backend/db/migrations up"
-
-[tasks.go-migrate-new]
-description = "Create new Go backend migration"
-run = "DATABASE_URL=$GO_DATABASE_URL dbmate -d go-backend/db/migrations new"
-
-[tasks.go-migrate-down]
-description = "Rollback last Go backend migration"
-run = "DATABASE_URL=$GO_DATABASE_URL dbmate -d go-backend/db/migrations down"
-
-[tasks.go-migrate-status]
-description = "Check Go backend migration status"
-run = "DATABASE_URL=$GO_DATABASE_URL dbmate -d go-backend/db/migrations status"
-
-[tasks.go-db-reset]
-description = "Reset Go backend database"
-depends = ["dc-up"]
-run = "DATABASE_URL=$GO_DATABASE_URL dbmate -d go-backend/db/migrations drop && DATABASE_URL=$GO_DATABASE_URL dbmate -d go-backend/db/migrations up"
-
-[tasks.go-mod-tidy]
+[tasks.mod-tidy]
 description = "Tidy Go backend dependencies"
 run = "cd go-backend && go mod tidy"
 
-[tasks.go-mod-download]
+[tasks.mod-download]
 description = "Download Go backend dependencies"
 run = "cd go-backend && go mod download"
 
-[tasks.start-all]
-description = "Start all services (containers, Python backend, Go backend, frontend)"
-depends = ["dc-up", "migrate"]
-run = "mise run dev & mise run go-dev & mise run fe-dev"
-
-# Frontend2 tasks
-[tasks.fe2-dev]
-description = "Run frontend2 dev server"
+# Frontend Tasks
+[tasks.fe-dev]
+description = "Run frontend dev server"
 run = "cd frontend2 && bun run dev"
 
-[tasks.fe2-build]
-description = "Build frontend2"
+[tasks.fe-build]
+description = "Build frontend"
 run = "cd frontend2 && bun run build"
 
-[tasks.fe2-install]
-description = "Install frontend2 dependencies"
+[tasks.fe-install]
+description = "Install frontend dependencies"
 run = "cd frontend2 && bun install"
+
+[tasks.fe-lint]
+description = "Run frontend linter"
+run = "cd frontend2 && bun run lint"

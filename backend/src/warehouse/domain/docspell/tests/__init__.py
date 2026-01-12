@@ -1,1 +1,0 @@
-"""Docspell domain tests."""

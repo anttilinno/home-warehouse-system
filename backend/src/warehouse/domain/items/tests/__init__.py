@@ -1,2 +1,0 @@
-"""Items domain tests."""
-

@@ -1,2 +1,0 @@
-"""Loans domain tests."""
-
