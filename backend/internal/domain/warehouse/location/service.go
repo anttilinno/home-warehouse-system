@@ -8,6 +8,18 @@ import (
 	"github.com/antti/home-warehouse/go-backend/internal/shared"
 )
 
+// ServiceInterface defines the location service operations.
+type ServiceInterface interface {
+	Create(ctx context.Context, input CreateInput) (*Location, error)
+	GetByID(ctx context.Context, id, workspaceID uuid.UUID) (*Location, error)
+	ListByWorkspace(ctx context.Context, workspaceID uuid.UUID, pagination shared.Pagination) (*shared.PagedResult[*Location], error)
+	Update(ctx context.Context, id, workspaceID uuid.UUID, input UpdateInput) (*Location, error)
+	Archive(ctx context.Context, id, workspaceID uuid.UUID) error
+	Restore(ctx context.Context, id, workspaceID uuid.UUID) error
+	Delete(ctx context.Context, id, workspaceID uuid.UUID) error
+	GetBreadcrumb(ctx context.Context, locationID, workspaceID uuid.UUID) ([]BreadcrumbItem, error)
+}
+
 type Service struct {
 	repo Repository
 }

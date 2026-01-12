@@ -8,6 +8,21 @@ import (
 	"github.com/antti/home-warehouse/go-backend/internal/shared"
 )
 
+// ServiceInterface defines the item service operations.
+type ServiceInterface interface {
+	Create(ctx context.Context, input CreateInput) (*Item, error)
+	GetByID(ctx context.Context, id, workspaceID uuid.UUID) (*Item, error)
+	List(ctx context.Context, workspaceID uuid.UUID, pagination shared.Pagination) ([]*Item, int, error)
+	Update(ctx context.Context, id, workspaceID uuid.UUID, input UpdateInput) (*Item, error)
+	Archive(ctx context.Context, id, workspaceID uuid.UUID) error
+	Restore(ctx context.Context, id, workspaceID uuid.UUID) error
+	Search(ctx context.Context, workspaceID uuid.UUID, query string, limit int) ([]*Item, error)
+	ListByCategory(ctx context.Context, workspaceID, categoryID uuid.UUID, pagination shared.Pagination) ([]*Item, error)
+	AttachLabel(ctx context.Context, itemID, labelID, workspaceID uuid.UUID) error
+	DetachLabel(ctx context.Context, itemID, labelID, workspaceID uuid.UUID) error
+	GetItemLabels(ctx context.Context, itemID, workspaceID uuid.UUID) ([]uuid.UUID, error)
+}
+
 type Service struct {
 	repo Repository
 }

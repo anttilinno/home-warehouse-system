@@ -12,7 +12,7 @@ import (
 )
 
 // RegisterRoutes registers location routes.
-func RegisterRoutes(api huma.API, svc *Service) {
+func RegisterRoutes(api huma.API, svc ServiceInterface) {
 	// List locations
 	huma.Get(api, "/locations", func(ctx context.Context, input *ListLocationsInput) (*ListLocationsOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
