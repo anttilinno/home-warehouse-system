@@ -1484,3 +1484,176 @@ func TestItem_ObsidianURI(t *testing.T) {
 		})
 	}
 }
+
+// =============================================================================
+// Label Association Tests
+// =============================================================================
+
+func TestService_AttachLabel(t *testing.T) {
+	ctx := context.Background()
+	workspaceID := uuid.New()
+	itemID := uuid.New()
+	labelID := uuid.New()
+	now := time.Now()
+
+	createItem := func() *Item {
+		return Reconstruct(itemID, workspaceID, "SKU-001", "Test Item", nil, nil, nil, nil, nil, nil, nil, nil, ptrBool(false), ptrBool(false), ptrBool(false), nil, nil, 0, ptrString("ABC123"), nil, nil, now, now)
+	}
+
+	t.Run("successful attach", func(t *testing.T) {
+		mockRepo := new(MockRepository)
+		svc := NewService(mockRepo)
+
+		mockRepo.On("FindByID", ctx, itemID, workspaceID).Return(createItem(), nil)
+		mockRepo.On("AttachLabel", ctx, itemID, labelID).Return(nil)
+
+		err := svc.AttachLabel(ctx, itemID, labelID, workspaceID)
+
+		assert.NoError(t, err)
+		mockRepo.AssertExpectations(t)
+	})
+
+	t.Run("item not found", func(t *testing.T) {
+		mockRepo := new(MockRepository)
+		svc := NewService(mockRepo)
+
+		mockRepo.On("FindByID", ctx, itemID, workspaceID).Return(nil, nil)
+
+		err := svc.AttachLabel(ctx, itemID, labelID, workspaceID)
+
+		assert.Error(t, err)
+		assert.Equal(t, ErrItemNotFound, err)
+	})
+
+	t.Run("repository error on find", func(t *testing.T) {
+		mockRepo := new(MockRepository)
+		svc := NewService(mockRepo)
+
+		repoErr := errors.New("database error")
+		mockRepo.On("FindByID", ctx, itemID, workspaceID).Return(nil, repoErr)
+
+		err := svc.AttachLabel(ctx, itemID, labelID, workspaceID)
+
+		assert.Error(t, err)
+		assert.Equal(t, repoErr, err)
+	})
+
+	t.Run("repository error on attach", func(t *testing.T) {
+		mockRepo := new(MockRepository)
+		svc := NewService(mockRepo)
+
+		mockRepo.On("FindByID", ctx, itemID, workspaceID).Return(createItem(), nil)
+		repoErr := errors.New("attach error")
+		mockRepo.On("AttachLabel", ctx, itemID, labelID).Return(repoErr)
+
+		err := svc.AttachLabel(ctx, itemID, labelID, workspaceID)
+
+		assert.Error(t, err)
+		assert.Equal(t, repoErr, err)
+	})
+}
+
+func TestService_DetachLabel(t *testing.T) {
+	ctx := context.Background()
+	workspaceID := uuid.New()
+	itemID := uuid.New()
+	labelID := uuid.New()
+	now := time.Now()
+
+	createItem := func() *Item {
+		return Reconstruct(itemID, workspaceID, "SKU-001", "Test Item", nil, nil, nil, nil, nil, nil, nil, nil, ptrBool(false), ptrBool(false), ptrBool(false), nil, nil, 0, ptrString("ABC123"), nil, nil, now, now)
+	}
+
+	t.Run("successful detach", func(t *testing.T) {
+		mockRepo := new(MockRepository)
+		svc := NewService(mockRepo)
+
+		mockRepo.On("FindByID", ctx, itemID, workspaceID).Return(createItem(), nil)
+		mockRepo.On("DetachLabel", ctx, itemID, labelID).Return(nil)
+
+		err := svc.DetachLabel(ctx, itemID, labelID, workspaceID)
+
+		assert.NoError(t, err)
+		mockRepo.AssertExpectations(t)
+	})
+
+	t.Run("item not found", func(t *testing.T) {
+		mockRepo := new(MockRepository)
+		svc := NewService(mockRepo)
+
+		mockRepo.On("FindByID", ctx, itemID, workspaceID).Return(nil, nil)
+
+		err := svc.DetachLabel(ctx, itemID, labelID, workspaceID)
+
+		assert.Error(t, err)
+		assert.Equal(t, ErrItemNotFound, err)
+	})
+
+	t.Run("repository error on detach", func(t *testing.T) {
+		mockRepo := new(MockRepository)
+		svc := NewService(mockRepo)
+
+		mockRepo.On("FindByID", ctx, itemID, workspaceID).Return(createItem(), nil)
+		repoErr := errors.New("detach error")
+		mockRepo.On("DetachLabel", ctx, itemID, labelID).Return(repoErr)
+
+		err := svc.DetachLabel(ctx, itemID, labelID, workspaceID)
+
+		assert.Error(t, err)
+		assert.Equal(t, repoErr, err)
+	})
+}
+
+func TestService_GetItemLabels(t *testing.T) {
+	ctx := context.Background()
+	workspaceID := uuid.New()
+	itemID := uuid.New()
+	now := time.Now()
+
+	createItem := func() *Item {
+		return Reconstruct(itemID, workspaceID, "SKU-001", "Test Item", nil, nil, nil, nil, nil, nil, nil, nil, ptrBool(false), ptrBool(false), ptrBool(false), nil, nil, 0, ptrString("ABC123"), nil, nil, now, now)
+	}
+
+	t.Run("successful get labels", func(t *testing.T) {
+		mockRepo := new(MockRepository)
+		svc := NewService(mockRepo)
+
+		expectedLabels := []uuid.UUID{uuid.New(), uuid.New()}
+		mockRepo.On("FindByID", ctx, itemID, workspaceID).Return(createItem(), nil)
+		mockRepo.On("GetItemLabels", ctx, itemID).Return(expectedLabels, nil)
+
+		labels, err := svc.GetItemLabels(ctx, itemID, workspaceID)
+
+		assert.NoError(t, err)
+		assert.Equal(t, expectedLabels, labels)
+		mockRepo.AssertExpectations(t)
+	})
+
+	t.Run("item not found", func(t *testing.T) {
+		mockRepo := new(MockRepository)
+		svc := NewService(mockRepo)
+
+		mockRepo.On("FindByID", ctx, itemID, workspaceID).Return(nil, nil)
+
+		labels, err := svc.GetItemLabels(ctx, itemID, workspaceID)
+
+		assert.Error(t, err)
+		assert.Nil(t, labels)
+		assert.Equal(t, ErrItemNotFound, err)
+	})
+
+	t.Run("repository error on get labels", func(t *testing.T) {
+		mockRepo := new(MockRepository)
+		svc := NewService(mockRepo)
+
+		mockRepo.On("FindByID", ctx, itemID, workspaceID).Return(createItem(), nil)
+		repoErr := errors.New("get labels error")
+		mockRepo.On("GetItemLabels", ctx, itemID).Return(nil, repoErr)
+
+		labels, err := svc.GetItemLabels(ctx, itemID, workspaceID)
+
+		assert.Error(t, err)
+		assert.Nil(t, labels)
+		assert.Equal(t, repoErr, err)
+	})
+}

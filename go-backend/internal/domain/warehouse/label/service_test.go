@@ -468,6 +468,7 @@ func TestService_Delete(t *testing.T) {
 	labelID := uuid.New()
 	workspaceID := uuid.New()
 	label := &Label{id: labelID, workspaceID: workspaceID, name: "Test Label"}
+	repoErr := assert.AnError
 
 	tests := []struct {
 		testName    string
@@ -475,6 +476,7 @@ func TestService_Delete(t *testing.T) {
 		workspaceID uuid.UUID
 		setupMock   func(*MockRepository)
 		expectError bool
+		errorType   error
 	}{
 		{
 			testName:    "successful deletion",
@@ -494,6 +496,18 @@ func TestService_Delete(t *testing.T) {
 				m.On("FindByID", ctx, mock.Anything, workspaceID).Return(nil, nil)
 			},
 			expectError: true,
+			errorType:   ErrLabelNotFound,
+		},
+		{
+			testName:    "Delete returns error",
+			labelID:     labelID,
+			workspaceID: workspaceID,
+			setupMock: func(m *MockRepository) {
+				m.On("FindByID", ctx, labelID, workspaceID).Return(label, nil)
+				m.On("Delete", ctx, labelID).Return(repoErr)
+			},
+			expectError: true,
+			errorType:   repoErr,
 		},
 	}
 
@@ -508,6 +522,9 @@ func TestService_Delete(t *testing.T) {
 
 			if tt.expectError {
 				assert.Error(t, err)
+				if tt.errorType != nil {
+					assert.Equal(t, tt.errorType, err)
+				}
 			} else {
 				assert.NoError(t, err)
 			}
@@ -515,4 +532,326 @@ func TestService_Delete(t *testing.T) {
 			mockRepo.AssertExpectations(t)
 		})
 	}
+}
+
+func TestService_GetByID_RepoError(t *testing.T) {
+	ctx := context.Background()
+	labelID := uuid.New()
+	workspaceID := uuid.New()
+	repoErr := assert.AnError
+
+	mockRepo := new(MockRepository)
+	svc := NewService(mockRepo)
+
+	mockRepo.On("FindByID", ctx, labelID, workspaceID).Return(nil, repoErr)
+
+	label, err := svc.GetByID(ctx, labelID, workspaceID)
+
+	assert.Error(t, err)
+	assert.Nil(t, label)
+	assert.Equal(t, repoErr, err)
+	mockRepo.AssertExpectations(t)
+}
+
+func TestService_Create_ErrorPaths(t *testing.T) {
+	ctx := context.Background()
+	workspaceID := uuid.New()
+	repoErr := assert.AnError
+
+	t.Run("NameExists returns error", func(t *testing.T) {
+		mockRepo := new(MockRepository)
+		svc := NewService(mockRepo)
+
+		mockRepo.On("NameExists", ctx, workspaceID, "Test").Return(false, repoErr)
+
+		label, err := svc.Create(ctx, CreateInput{
+			WorkspaceID: workspaceID,
+			Name:        "Test",
+		})
+
+		assert.Error(t, err)
+		assert.Nil(t, label)
+		assert.Equal(t, repoErr, err)
+		mockRepo.AssertExpectations(t)
+	})
+
+	t.Run("Save returns error", func(t *testing.T) {
+		mockRepo := new(MockRepository)
+		svc := NewService(mockRepo)
+
+		mockRepo.On("NameExists", ctx, workspaceID, "Test").Return(false, nil)
+		mockRepo.On("Save", ctx, mock.AnythingOfType("*label.Label")).Return(repoErr)
+
+		label, err := svc.Create(ctx, CreateInput{
+			WorkspaceID: workspaceID,
+			Name:        "Test",
+		})
+
+		assert.Error(t, err)
+		assert.Nil(t, label)
+		assert.Equal(t, repoErr, err)
+		mockRepo.AssertExpectations(t)
+	})
+}
+
+func TestService_ListByWorkspace_Error(t *testing.T) {
+	ctx := context.Background()
+	workspaceID := uuid.New()
+	repoErr := assert.AnError
+
+	mockRepo := new(MockRepository)
+	svc := NewService(mockRepo)
+
+	mockRepo.On("FindByWorkspace", ctx, workspaceID).Return(nil, repoErr)
+
+	result, err := svc.ListByWorkspace(ctx, workspaceID)
+
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	assert.Equal(t, repoErr, err)
+	mockRepo.AssertExpectations(t)
+}
+
+func TestService_Update_ErrorPaths(t *testing.T) {
+	ctx := context.Background()
+	labelID := uuid.New()
+	workspaceID := uuid.New()
+	repoErr := assert.AnError
+
+	t.Run("label not found", func(t *testing.T) {
+		mockRepo := new(MockRepository)
+		svc := NewService(mockRepo)
+
+		mockRepo.On("FindByID", ctx, labelID, workspaceID).Return(nil, nil)
+
+		result, err := svc.Update(ctx, labelID, workspaceID, UpdateInput{Name: "Updated"})
+
+		assert.Error(t, err)
+		assert.Nil(t, result)
+		assert.Equal(t, ErrLabelNotFound, err)
+		mockRepo.AssertExpectations(t)
+	})
+
+	t.Run("name already taken", func(t *testing.T) {
+		mockRepo := new(MockRepository)
+		svc := NewService(mockRepo)
+
+		label := &Label{id: labelID, workspaceID: workspaceID, name: "Original"}
+		mockRepo.On("FindByID", ctx, labelID, workspaceID).Return(label, nil)
+		mockRepo.On("NameExists", ctx, workspaceID, "Taken").Return(true, nil)
+
+		result, err := svc.Update(ctx, labelID, workspaceID, UpdateInput{Name: "Taken"})
+
+		assert.Error(t, err)
+		assert.Nil(t, result)
+		assert.Equal(t, ErrNameTaken, err)
+		mockRepo.AssertExpectations(t)
+	})
+
+	t.Run("NameExists returns error", func(t *testing.T) {
+		mockRepo := new(MockRepository)
+		svc := NewService(mockRepo)
+
+		label := &Label{id: labelID, workspaceID: workspaceID, name: "Original"}
+		mockRepo.On("FindByID", ctx, labelID, workspaceID).Return(label, nil)
+		mockRepo.On("NameExists", ctx, workspaceID, "Updated").Return(false, repoErr)
+
+		result, err := svc.Update(ctx, labelID, workspaceID, UpdateInput{Name: "Updated"})
+
+		assert.Error(t, err)
+		assert.Nil(t, result)
+		assert.Equal(t, repoErr, err)
+		mockRepo.AssertExpectations(t)
+	})
+
+	t.Run("invalid update - empty name", func(t *testing.T) {
+		mockRepo := new(MockRepository)
+		svc := NewService(mockRepo)
+
+		label := &Label{id: labelID, workspaceID: workspaceID, name: "Original"}
+		mockRepo.On("FindByID", ctx, labelID, workspaceID).Return(label, nil)
+		// NameExists is called because "" != "Original"
+		mockRepo.On("NameExists", ctx, workspaceID, "").Return(false, nil)
+
+		result, err := svc.Update(ctx, labelID, workspaceID, UpdateInput{Name: ""})
+
+		assert.Error(t, err)
+		assert.Nil(t, result)
+		mockRepo.AssertExpectations(t)
+	})
+
+	t.Run("invalid update - bad color", func(t *testing.T) {
+		mockRepo := new(MockRepository)
+		svc := NewService(mockRepo)
+
+		label := &Label{id: labelID, workspaceID: workspaceID, name: "Original"}
+		mockRepo.On("FindByID", ctx, labelID, workspaceID).Return(label, nil)
+		// No name change, so NameExists won't be called
+
+		result, err := svc.Update(ctx, labelID, workspaceID, UpdateInput{
+			Name:  "Original",
+			Color: ptrString("invalid"),
+		})
+
+		assert.Error(t, err)
+		assert.Nil(t, result)
+		mockRepo.AssertExpectations(t)
+	})
+
+	t.Run("Save returns error", func(t *testing.T) {
+		mockRepo := new(MockRepository)
+		svc := NewService(mockRepo)
+
+		label := &Label{id: labelID, workspaceID: workspaceID, name: "Original"}
+		mockRepo.On("FindByID", ctx, labelID, workspaceID).Return(label, nil)
+		mockRepo.On("NameExists", ctx, workspaceID, "Updated").Return(false, nil)
+		mockRepo.On("Save", ctx, mock.AnythingOfType("*label.Label")).Return(repoErr)
+
+		result, err := svc.Update(ctx, labelID, workspaceID, UpdateInput{Name: "Updated"})
+
+		assert.Error(t, err)
+		assert.Nil(t, result)
+		assert.Equal(t, repoErr, err)
+		mockRepo.AssertExpectations(t)
+	})
+
+	t.Run("same name no NameExists check", func(t *testing.T) {
+		mockRepo := new(MockRepository)
+		svc := NewService(mockRepo)
+
+		label := &Label{id: labelID, workspaceID: workspaceID, name: "Original"}
+		mockRepo.On("FindByID", ctx, labelID, workspaceID).Return(label, nil)
+		// No NameExists call since name isn't changing
+		mockRepo.On("Save", ctx, mock.AnythingOfType("*label.Label")).Return(nil)
+
+		result, err := svc.Update(ctx, labelID, workspaceID, UpdateInput{
+			Name:        "Original",
+			Description: ptrString("Updated desc"),
+		})
+
+		assert.NoError(t, err)
+		assert.NotNil(t, result)
+		mockRepo.AssertExpectations(t)
+	})
+}
+
+func TestService_Archive(t *testing.T) {
+	ctx := context.Background()
+	labelID := uuid.New()
+	workspaceID := uuid.New()
+	repoErr := assert.AnError
+
+	t.Run("successful archive", func(t *testing.T) {
+		mockRepo := new(MockRepository)
+		svc := NewService(mockRepo)
+
+		label := &Label{id: labelID, workspaceID: workspaceID, name: "Test"}
+		mockRepo.On("FindByID", ctx, labelID, workspaceID).Return(label, nil)
+		mockRepo.On("Save", ctx, mock.AnythingOfType("*label.Label")).Return(nil)
+
+		err := svc.Archive(ctx, labelID, workspaceID)
+
+		assert.NoError(t, err)
+		mockRepo.AssertExpectations(t)
+	})
+
+	t.Run("label not found", func(t *testing.T) {
+		mockRepo := new(MockRepository)
+		svc := NewService(mockRepo)
+
+		mockRepo.On("FindByID", ctx, labelID, workspaceID).Return(nil, nil)
+
+		err := svc.Archive(ctx, labelID, workspaceID)
+
+		assert.Error(t, err)
+		assert.Equal(t, ErrLabelNotFound, err)
+		mockRepo.AssertExpectations(t)
+	})
+
+	t.Run("Save returns error", func(t *testing.T) {
+		mockRepo := new(MockRepository)
+		svc := NewService(mockRepo)
+
+		label := &Label{id: labelID, workspaceID: workspaceID, name: "Test"}
+		mockRepo.On("FindByID", ctx, labelID, workspaceID).Return(label, nil)
+		mockRepo.On("Save", ctx, mock.AnythingOfType("*label.Label")).Return(repoErr)
+
+		err := svc.Archive(ctx, labelID, workspaceID)
+
+		assert.Error(t, err)
+		assert.Equal(t, repoErr, err)
+		mockRepo.AssertExpectations(t)
+	})
+}
+
+func TestService_Restore(t *testing.T) {
+	ctx := context.Background()
+	labelID := uuid.New()
+	workspaceID := uuid.New()
+	repoErr := assert.AnError
+
+	t.Run("successful restore", func(t *testing.T) {
+		mockRepo := new(MockRepository)
+		svc := NewService(mockRepo)
+
+		label := &Label{id: labelID, workspaceID: workspaceID, name: "Test", isArchived: true}
+		mockRepo.On("FindByID", ctx, labelID, workspaceID).Return(label, nil)
+		mockRepo.On("Save", ctx, mock.AnythingOfType("*label.Label")).Return(nil)
+
+		err := svc.Restore(ctx, labelID, workspaceID)
+
+		assert.NoError(t, err)
+		mockRepo.AssertExpectations(t)
+	})
+
+	t.Run("label not found", func(t *testing.T) {
+		mockRepo := new(MockRepository)
+		svc := NewService(mockRepo)
+
+		mockRepo.On("FindByID", ctx, labelID, workspaceID).Return(nil, nil)
+
+		err := svc.Restore(ctx, labelID, workspaceID)
+
+		assert.Error(t, err)
+		assert.Equal(t, ErrLabelNotFound, err)
+		mockRepo.AssertExpectations(t)
+	})
+
+	t.Run("Save returns error", func(t *testing.T) {
+		mockRepo := new(MockRepository)
+		svc := NewService(mockRepo)
+
+		label := &Label{id: labelID, workspaceID: workspaceID, name: "Test", isArchived: true}
+		mockRepo.On("FindByID", ctx, labelID, workspaceID).Return(label, nil)
+		mockRepo.On("Save", ctx, mock.AnythingOfType("*label.Label")).Return(repoErr)
+
+		err := svc.Restore(ctx, labelID, workspaceID)
+
+		assert.Error(t, err)
+		assert.Equal(t, repoErr, err)
+		mockRepo.AssertExpectations(t)
+	})
+}
+
+func TestLabel_Restore(t *testing.T) {
+	label, err := NewLabel(uuid.New(), "Test", nil, nil)
+	assert.NoError(t, err)
+
+	label.Archive()
+	assert.True(t, label.IsArchived())
+	originalUpdatedAt := label.UpdatedAt()
+
+	label.Restore()
+
+	assert.False(t, label.IsArchived())
+	assert.True(t, label.UpdatedAt().After(originalUpdatedAt) || label.UpdatedAt().Equal(originalUpdatedAt))
+}
+
+func TestLabel_Update_InvalidColor(t *testing.T) {
+	label, err := NewLabel(uuid.New(), "Test", ptrString("#FF0000"), nil)
+	assert.NoError(t, err)
+
+	err = label.Update("Test", ptrString("invalid-color"), nil)
+	assert.Error(t, err)
+	assert.Equal(t, "#FF0000", *label.Color()) // Color should not change
 }

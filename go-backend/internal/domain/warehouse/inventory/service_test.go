@@ -1751,3 +1751,87 @@ func TestService_GetTotalQuantity(t *testing.T) {
 		})
 	}
 }
+
+// =============================================================================
+// Additional Save Error Tests
+// =============================================================================
+
+func TestService_UpdateStatus_SaveError(t *testing.T) {
+	ctx := context.Background()
+	invID := uuid.New()
+	workspaceID := uuid.New()
+	repoErr := errors.New("repository error")
+
+	mockRepo := new(MockRepository)
+	svc := NewService(mockRepo)
+
+	inv := &Inventory{
+		id:          invID,
+		workspaceID: workspaceID,
+		quantity:    10,
+		condition:   ConditionNew,
+		status:      StatusAvailable,
+	}
+	mockRepo.On("FindByID", ctx, invID, workspaceID).Return(inv, nil)
+	mockRepo.On("Save", ctx, mock.AnythingOfType("*inventory.Inventory")).Return(repoErr)
+
+	result, err := svc.UpdateStatus(ctx, invID, workspaceID, StatusOnLoan)
+
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	assert.Equal(t, repoErr, err)
+}
+
+func TestService_UpdateQuantity_SaveError(t *testing.T) {
+	ctx := context.Background()
+	invID := uuid.New()
+	workspaceID := uuid.New()
+	repoErr := errors.New("repository error")
+
+	mockRepo := new(MockRepository)
+	svc := NewService(mockRepo)
+
+	inv := &Inventory{
+		id:          invID,
+		workspaceID: workspaceID,
+		quantity:    10,
+		condition:   ConditionNew,
+		status:      StatusAvailable,
+	}
+	mockRepo.On("FindByID", ctx, invID, workspaceID).Return(inv, nil)
+	mockRepo.On("Save", ctx, mock.AnythingOfType("*inventory.Inventory")).Return(repoErr)
+
+	result, err := svc.UpdateQuantity(ctx, invID, workspaceID, 50)
+
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	assert.Equal(t, repoErr, err)
+}
+
+func TestService_Move_SaveError(t *testing.T) {
+	ctx := context.Background()
+	invID := uuid.New()
+	workspaceID := uuid.New()
+	newLocationID := uuid.New()
+	repoErr := errors.New("repository error")
+
+	mockRepo := new(MockRepository)
+	svc := NewService(mockRepo)
+
+	inv := &Inventory{
+		id:          invID,
+		workspaceID: workspaceID,
+		locationID:  uuid.New(),
+		quantity:    10,
+		condition:   ConditionNew,
+		status:      StatusAvailable,
+	}
+	mockRepo.On("FindByID", ctx, invID, workspaceID).Return(inv, nil)
+	mockRepo.On("Save", ctx, mock.AnythingOfType("*inventory.Inventory")).Return(repoErr)
+
+	result, err := svc.Move(ctx, invID, workspaceID, newLocationID, nil)
+
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	assert.Equal(t, repoErr, err)
+}

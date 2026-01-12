@@ -519,6 +519,7 @@ func TestService_Delete(t *testing.T) {
 	containerID := uuid.New()
 	workspaceID := uuid.New()
 	container := &Container{id: containerID, workspaceID: workspaceID, name: "Test Container"}
+	repoErr := assert.AnError
 
 	tests := []struct {
 		testName    string
@@ -526,6 +527,7 @@ func TestService_Delete(t *testing.T) {
 		workspaceID uuid.UUID
 		setupMock   func(*MockRepository)
 		expectError bool
+		errorType   error
 	}{
 		{
 			testName:    "successful deletion",
@@ -545,6 +547,18 @@ func TestService_Delete(t *testing.T) {
 				m.On("FindByID", ctx, mock.Anything, workspaceID).Return(nil, nil)
 			},
 			expectError: true,
+			errorType:   ErrContainerNotFound,
+		},
+		{
+			testName:    "Delete returns error",
+			containerID: containerID,
+			workspaceID: workspaceID,
+			setupMock: func(m *MockRepository) {
+				m.On("FindByID", ctx, containerID, workspaceID).Return(container, nil)
+				m.On("Delete", ctx, containerID).Return(repoErr)
+			},
+			expectError: true,
+			errorType:   repoErr,
 		},
 	}
 
@@ -559,6 +573,9 @@ func TestService_Delete(t *testing.T) {
 
 			if tt.expectError {
 				assert.Error(t, err)
+				if tt.errorType != nil {
+					assert.Equal(t, tt.errorType, err)
+				}
 			} else {
 				assert.NoError(t, err)
 			}
@@ -566,4 +583,220 @@ func TestService_Delete(t *testing.T) {
 			mockRepo.AssertExpectations(t)
 		})
 	}
+}
+
+func TestContainer_Restore(t *testing.T) {
+	container, err := NewContainer(uuid.New(), uuid.New(), "Test", nil, nil, nil)
+	assert.NoError(t, err)
+
+	container.Archive()
+	assert.True(t, container.IsArchived())
+	originalUpdatedAt := container.UpdatedAt()
+
+	container.Restore()
+
+	assert.False(t, container.IsArchived())
+	assert.True(t, container.UpdatedAt().After(originalUpdatedAt) || container.UpdatedAt().Equal(originalUpdatedAt))
+}
+
+func TestService_Restore(t *testing.T) {
+	ctx := context.Background()
+	containerID := uuid.New()
+	workspaceID := uuid.New()
+	repoErr := assert.AnError
+
+	t.Run("successful restore", func(t *testing.T) {
+		mockRepo := new(MockRepository)
+		svc := NewService(mockRepo)
+
+		container := &Container{id: containerID, workspaceID: workspaceID, name: "Test", isArchived: true}
+		mockRepo.On("FindByID", ctx, containerID, workspaceID).Return(container, nil)
+		mockRepo.On("Save", ctx, mock.AnythingOfType("*container.Container")).Return(nil)
+
+		err := svc.Restore(ctx, containerID, workspaceID)
+
+		assert.NoError(t, err)
+		mockRepo.AssertExpectations(t)
+	})
+
+	t.Run("container not found", func(t *testing.T) {
+		mockRepo := new(MockRepository)
+		svc := NewService(mockRepo)
+
+		mockRepo.On("FindByID", ctx, containerID, workspaceID).Return(nil, nil)
+
+		err := svc.Restore(ctx, containerID, workspaceID)
+
+		assert.Error(t, err)
+		assert.Equal(t, ErrContainerNotFound, err)
+		mockRepo.AssertExpectations(t)
+	})
+
+	t.Run("Save returns error", func(t *testing.T) {
+		mockRepo := new(MockRepository)
+		svc := NewService(mockRepo)
+
+		container := &Container{id: containerID, workspaceID: workspaceID, name: "Test", isArchived: true}
+		mockRepo.On("FindByID", ctx, containerID, workspaceID).Return(container, nil)
+		mockRepo.On("Save", ctx, mock.AnythingOfType("*container.Container")).Return(repoErr)
+
+		err := svc.Restore(ctx, containerID, workspaceID)
+
+		assert.Error(t, err)
+		assert.Equal(t, repoErr, err)
+		mockRepo.AssertExpectations(t)
+	})
+}
+
+func TestService_GetByID_RepoError(t *testing.T) {
+	ctx := context.Background()
+	containerID := uuid.New()
+	workspaceID := uuid.New()
+	repoErr := assert.AnError
+
+	mockRepo := new(MockRepository)
+	svc := NewService(mockRepo)
+
+	mockRepo.On("FindByID", ctx, containerID, workspaceID).Return(nil, repoErr)
+
+	container, err := svc.GetByID(ctx, containerID, workspaceID)
+
+	assert.Error(t, err)
+	assert.Nil(t, container)
+	assert.Equal(t, repoErr, err)
+	mockRepo.AssertExpectations(t)
+}
+
+func TestService_Create_ErrorPaths(t *testing.T) {
+	ctx := context.Background()
+	workspaceID := uuid.New()
+	locationID := uuid.New()
+	repoErr := assert.AnError
+
+	t.Run("ShortCodeExists returns error", func(t *testing.T) {
+		mockRepo := new(MockRepository)
+		svc := NewService(mockRepo)
+
+		mockRepo.On("ShortCodeExists", ctx, workspaceID, "CODE").Return(false, repoErr)
+
+		container, err := svc.Create(ctx, CreateInput{
+			WorkspaceID: workspaceID,
+			LocationID:  locationID,
+			Name:        "Test",
+			ShortCode:   ptrString("CODE"),
+		})
+
+		assert.Error(t, err)
+		assert.Nil(t, container)
+		assert.Equal(t, repoErr, err)
+		mockRepo.AssertExpectations(t)
+	})
+
+	t.Run("Save returns error", func(t *testing.T) {
+		mockRepo := new(MockRepository)
+		svc := NewService(mockRepo)
+
+		mockRepo.On("Save", ctx, mock.AnythingOfType("*container.Container")).Return(repoErr)
+
+		container, err := svc.Create(ctx, CreateInput{
+			WorkspaceID: workspaceID,
+			LocationID:  locationID,
+			Name:        "Test",
+		})
+
+		assert.Error(t, err)
+		assert.Nil(t, container)
+		assert.Equal(t, repoErr, err)
+		mockRepo.AssertExpectations(t)
+	})
+}
+
+func TestService_ListByWorkspace_Error(t *testing.T) {
+	ctx := context.Background()
+	workspaceID := uuid.New()
+	pagination := shared.Pagination{Page: 1, PageSize: 10}
+	repoErr := assert.AnError
+
+	mockRepo := new(MockRepository)
+	svc := NewService(mockRepo)
+
+	mockRepo.On("FindByWorkspace", ctx, workspaceID, pagination).Return(nil, 0, repoErr)
+
+	result, err := svc.ListByWorkspace(ctx, workspaceID, pagination)
+
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	assert.Equal(t, repoErr, err)
+	mockRepo.AssertExpectations(t)
+}
+
+func TestService_Update_ErrorPaths(t *testing.T) {
+	ctx := context.Background()
+	containerID := uuid.New()
+	workspaceID := uuid.New()
+	repoErr := assert.AnError
+
+	t.Run("container not found", func(t *testing.T) {
+		mockRepo := new(MockRepository)
+		svc := NewService(mockRepo)
+
+		mockRepo.On("FindByID", ctx, containerID, workspaceID).Return(nil, nil)
+
+		result, err := svc.Update(ctx, containerID, workspaceID, UpdateInput{Name: "Updated"})
+
+		assert.Error(t, err)
+		assert.Nil(t, result)
+		assert.Equal(t, ErrContainerNotFound, err)
+		mockRepo.AssertExpectations(t)
+	})
+
+	t.Run("invalid update - empty name", func(t *testing.T) {
+		mockRepo := new(MockRepository)
+		svc := NewService(mockRepo)
+
+		container := &Container{id: containerID, workspaceID: workspaceID, name: "Original", locationID: uuid.New()}
+		mockRepo.On("FindByID", ctx, containerID, workspaceID).Return(container, nil)
+
+		result, err := svc.Update(ctx, containerID, workspaceID, UpdateInput{Name: "", LocationID: uuid.New()})
+
+		assert.Error(t, err)
+		assert.Nil(t, result)
+		mockRepo.AssertExpectations(t)
+	})
+
+	t.Run("Save returns error", func(t *testing.T) {
+		mockRepo := new(MockRepository)
+		svc := NewService(mockRepo)
+
+		container := &Container{id: containerID, workspaceID: workspaceID, name: "Original", locationID: uuid.New()}
+		mockRepo.On("FindByID", ctx, containerID, workspaceID).Return(container, nil)
+		mockRepo.On("Save", ctx, mock.AnythingOfType("*container.Container")).Return(repoErr)
+
+		result, err := svc.Update(ctx, containerID, workspaceID, UpdateInput{Name: "Updated", LocationID: uuid.New()})
+
+		assert.Error(t, err)
+		assert.Nil(t, result)
+		assert.Equal(t, repoErr, err)
+		mockRepo.AssertExpectations(t)
+	})
+}
+
+func TestService_Archive_SaveError(t *testing.T) {
+	ctx := context.Background()
+	containerID := uuid.New()
+	workspaceID := uuid.New()
+	repoErr := assert.AnError
+
+	mockRepo := new(MockRepository)
+	svc := NewService(mockRepo)
+
+	container := &Container{id: containerID, workspaceID: workspaceID, name: "Test"}
+	mockRepo.On("FindByID", ctx, containerID, workspaceID).Return(container, nil)
+	mockRepo.On("Save", ctx, mock.AnythingOfType("*container.Container")).Return(repoErr)
+
+	err := svc.Archive(ctx, containerID, workspaceID)
+
+	assert.Error(t, err)
+	assert.Equal(t, repoErr, err)
+	mockRepo.AssertExpectations(t)
 }

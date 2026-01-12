@@ -683,3 +683,275 @@ func TestService_GetBreadcrumb_IncludesShortCode(t *testing.T) {
 
 	mockRepo.AssertExpectations(t)
 }
+
+// =============================================================================
+// Service Update Tests
+// =============================================================================
+
+func TestService_Update(t *testing.T) {
+	ctx := context.Background()
+	locationID := uuid.New()
+	workspaceID := uuid.New()
+	repoErr := assert.AnError
+
+	t.Run("successful update", func(t *testing.T) {
+		mockRepo := new(MockRepository)
+		svc := NewService(mockRepo)
+
+		location := &Location{id: locationID, workspaceID: workspaceID, name: "Original"}
+		mockRepo.On("FindByID", ctx, locationID, workspaceID).Return(location, nil)
+		mockRepo.On("Save", ctx, mock.AnythingOfType("*location.Location")).Return(nil)
+
+		result, err := svc.Update(ctx, locationID, workspaceID, UpdateInput{
+			Name:        "Updated Name",
+			Zone:        ptrString("Zone A"),
+			Description: ptrString("Updated desc"),
+		})
+
+		assert.NoError(t, err)
+		assert.NotNil(t, result)
+		assert.Equal(t, "Updated Name", result.Name())
+		mockRepo.AssertExpectations(t)
+	})
+
+	t.Run("location not found", func(t *testing.T) {
+		mockRepo := new(MockRepository)
+		svc := NewService(mockRepo)
+
+		mockRepo.On("FindByID", ctx, locationID, workspaceID).Return(nil, nil)
+
+		result, err := svc.Update(ctx, locationID, workspaceID, UpdateInput{Name: "Updated"})
+
+		assert.Error(t, err)
+		assert.Nil(t, result)
+		assert.Equal(t, ErrLocationNotFound, err)
+		mockRepo.AssertExpectations(t)
+	})
+
+	t.Run("invalid update - empty name", func(t *testing.T) {
+		mockRepo := new(MockRepository)
+		svc := NewService(mockRepo)
+
+		location := &Location{id: locationID, workspaceID: workspaceID, name: "Original"}
+		mockRepo.On("FindByID", ctx, locationID, workspaceID).Return(location, nil)
+
+		result, err := svc.Update(ctx, locationID, workspaceID, UpdateInput{Name: ""})
+
+		assert.Error(t, err)
+		assert.Nil(t, result)
+		mockRepo.AssertExpectations(t)
+	})
+
+	t.Run("Save returns error", func(t *testing.T) {
+		mockRepo := new(MockRepository)
+		svc := NewService(mockRepo)
+
+		location := &Location{id: locationID, workspaceID: workspaceID, name: "Original"}
+		mockRepo.On("FindByID", ctx, locationID, workspaceID).Return(location, nil)
+		mockRepo.On("Save", ctx, mock.AnythingOfType("*location.Location")).Return(repoErr)
+
+		result, err := svc.Update(ctx, locationID, workspaceID, UpdateInput{Name: "Updated"})
+
+		assert.Error(t, err)
+		assert.Nil(t, result)
+		assert.Equal(t, repoErr, err)
+		mockRepo.AssertExpectations(t)
+	})
+}
+
+// =============================================================================
+// Service Restore Tests
+// =============================================================================
+
+func TestService_Restore(t *testing.T) {
+	ctx := context.Background()
+	locationID := uuid.New()
+	workspaceID := uuid.New()
+	repoErr := assert.AnError
+
+	t.Run("successful restore", func(t *testing.T) {
+		mockRepo := new(MockRepository)
+		svc := NewService(mockRepo)
+
+		location := &Location{id: locationID, workspaceID: workspaceID, name: "Test", isArchived: true}
+		mockRepo.On("FindByID", ctx, locationID, workspaceID).Return(location, nil)
+		mockRepo.On("Save", ctx, mock.AnythingOfType("*location.Location")).Return(nil)
+
+		err := svc.Restore(ctx, locationID, workspaceID)
+
+		assert.NoError(t, err)
+		mockRepo.AssertExpectations(t)
+	})
+
+	t.Run("location not found", func(t *testing.T) {
+		mockRepo := new(MockRepository)
+		svc := NewService(mockRepo)
+
+		mockRepo.On("FindByID", ctx, locationID, workspaceID).Return(nil, nil)
+
+		err := svc.Restore(ctx, locationID, workspaceID)
+
+		assert.Error(t, err)
+		assert.Equal(t, ErrLocationNotFound, err)
+		mockRepo.AssertExpectations(t)
+	})
+
+	t.Run("Save returns error", func(t *testing.T) {
+		mockRepo := new(MockRepository)
+		svc := NewService(mockRepo)
+
+		location := &Location{id: locationID, workspaceID: workspaceID, name: "Test", isArchived: true}
+		mockRepo.On("FindByID", ctx, locationID, workspaceID).Return(location, nil)
+		mockRepo.On("Save", ctx, mock.AnythingOfType("*location.Location")).Return(repoErr)
+
+		err := svc.Restore(ctx, locationID, workspaceID)
+
+		assert.Error(t, err)
+		assert.Equal(t, repoErr, err)
+		mockRepo.AssertExpectations(t)
+	})
+}
+
+// =============================================================================
+// Additional Error Path Tests
+// =============================================================================
+
+func TestService_GetByID_RepoError(t *testing.T) {
+	ctx := context.Background()
+	locationID := uuid.New()
+	workspaceID := uuid.New()
+	repoErr := assert.AnError
+
+	mockRepo := new(MockRepository)
+	svc := NewService(mockRepo)
+
+	mockRepo.On("FindByID", ctx, locationID, workspaceID).Return(nil, repoErr)
+
+	location, err := svc.GetByID(ctx, locationID, workspaceID)
+
+	assert.Error(t, err)
+	assert.Nil(t, location)
+	assert.Equal(t, repoErr, err)
+	mockRepo.AssertExpectations(t)
+}
+
+func TestService_Create_ErrorPaths(t *testing.T) {
+	ctx := context.Background()
+	workspaceID := uuid.New()
+	repoErr := assert.AnError
+
+	t.Run("ShortCodeExists returns error", func(t *testing.T) {
+		mockRepo := new(MockRepository)
+		svc := NewService(mockRepo)
+
+		mockRepo.On("ShortCodeExists", ctx, workspaceID, "CODE").Return(false, repoErr)
+
+		location, err := svc.Create(ctx, CreateInput{
+			WorkspaceID: workspaceID,
+			Name:        "Test",
+			ShortCode:   ptrString("CODE"),
+		})
+
+		assert.Error(t, err)
+		assert.Nil(t, location)
+		assert.Equal(t, repoErr, err)
+		mockRepo.AssertExpectations(t)
+	})
+
+	t.Run("Save returns error", func(t *testing.T) {
+		mockRepo := new(MockRepository)
+		svc := NewService(mockRepo)
+
+		mockRepo.On("Save", ctx, mock.AnythingOfType("*location.Location")).Return(repoErr)
+
+		location, err := svc.Create(ctx, CreateInput{
+			WorkspaceID: workspaceID,
+			Name:        "Test",
+		})
+
+		assert.Error(t, err)
+		assert.Nil(t, location)
+		assert.Equal(t, repoErr, err)
+		mockRepo.AssertExpectations(t)
+	})
+}
+
+func TestService_ListByWorkspace_Error(t *testing.T) {
+	ctx := context.Background()
+	workspaceID := uuid.New()
+	pagination := shared.Pagination{Page: 1, PageSize: 10}
+	repoErr := assert.AnError
+
+	mockRepo := new(MockRepository)
+	svc := NewService(mockRepo)
+
+	mockRepo.On("FindByWorkspace", ctx, workspaceID, pagination).Return(nil, 0, repoErr)
+
+	result, err := svc.ListByWorkspace(ctx, workspaceID, pagination)
+
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	assert.Equal(t, repoErr, err)
+	mockRepo.AssertExpectations(t)
+}
+
+func TestService_Archive_SaveError(t *testing.T) {
+	ctx := context.Background()
+	locationID := uuid.New()
+	workspaceID := uuid.New()
+	repoErr := assert.AnError
+
+	mockRepo := new(MockRepository)
+	svc := NewService(mockRepo)
+
+	location := &Location{id: locationID, workspaceID: workspaceID, name: "Test"}
+	mockRepo.On("FindByID", ctx, locationID, workspaceID).Return(location, nil)
+	mockRepo.On("Save", ctx, mock.AnythingOfType("*location.Location")).Return(repoErr)
+
+	err := svc.Archive(ctx, locationID, workspaceID)
+
+	assert.Error(t, err)
+	assert.Equal(t, repoErr, err)
+	mockRepo.AssertExpectations(t)
+}
+
+func TestService_Delete_ErrorPaths(t *testing.T) {
+	ctx := context.Background()
+	locationID := uuid.New()
+	workspaceID := uuid.New()
+	repoErr := assert.AnError
+
+	t.Run("Delete returns error", func(t *testing.T) {
+		mockRepo := new(MockRepository)
+		svc := NewService(mockRepo)
+
+		location := &Location{id: locationID, workspaceID: workspaceID, name: "Test"}
+		mockRepo.On("FindByID", ctx, locationID, workspaceID).Return(location, nil)
+		mockRepo.On("Delete", ctx, locationID).Return(repoErr)
+
+		err := svc.Delete(ctx, locationID, workspaceID)
+
+		assert.Error(t, err)
+		assert.Equal(t, repoErr, err)
+		mockRepo.AssertExpectations(t)
+	})
+}
+
+func TestService_GetBreadcrumb_RepoError(t *testing.T) {
+	ctx := context.Background()
+	workspaceID := uuid.New()
+	locationID := uuid.New()
+	repoErr := assert.AnError
+
+	mockRepo := new(MockRepository)
+	svc := NewService(mockRepo)
+
+	mockRepo.On("FindByID", ctx, locationID, workspaceID).Return(nil, repoErr)
+
+	breadcrumb, err := svc.GetBreadcrumb(ctx, locationID, workspaceID)
+
+	assert.Error(t, err)
+	assert.Nil(t, breadcrumb)
+	assert.Equal(t, repoErr, err)
+	mockRepo.AssertExpectations(t)
+}

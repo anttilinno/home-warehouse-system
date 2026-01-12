@@ -1243,3 +1243,193 @@ func TestService_GetOverdueLoans(t *testing.T) {
 		})
 	}
 }
+
+// =============================================================================
+// Additional Error Path Tests
+// =============================================================================
+
+func TestService_Create_SaveErrors(t *testing.T) {
+	ctx := context.Background()
+	workspaceID := uuid.New()
+	inventoryID := uuid.New()
+	borrowerID := uuid.New()
+	itemID := uuid.New()
+	locationID := uuid.New()
+	now := time.Now()
+	repoErr := errors.New("repository error")
+
+	t.Run("inventory save error", func(t *testing.T) {
+		mockLoanRepo := new(MockRepository)
+		mockInvRepo := new(MockInventoryRepository)
+		svc := NewService(mockLoanRepo, mockInvRepo)
+
+		inv := createTestInventory(inventoryID, workspaceID, itemID, locationID, 5, inventory.StatusAvailable)
+		mockInvRepo.On("FindByID", ctx, inventoryID, workspaceID).Return(inv, nil)
+		mockLoanRepo.On("FindActiveLoanForInventory", ctx, inventoryID).Return(nil, nil)
+		mockInvRepo.On("Save", ctx, mock.Anything).Return(repoErr)
+
+		loan, err := svc.Create(ctx, CreateInput{
+			WorkspaceID: workspaceID,
+			InventoryID: inventoryID,
+			BorrowerID:  borrowerID,
+			Quantity:    1,
+			LoanedAt:    now,
+		})
+
+		assert.Error(t, err)
+		assert.Nil(t, loan)
+		assert.Equal(t, repoErr, err)
+	})
+
+	t.Run("loan save error", func(t *testing.T) {
+		mockLoanRepo := new(MockRepository)
+		mockInvRepo := new(MockInventoryRepository)
+		svc := NewService(mockLoanRepo, mockInvRepo)
+
+		inv := createTestInventory(inventoryID, workspaceID, itemID, locationID, 5, inventory.StatusAvailable)
+		mockInvRepo.On("FindByID", ctx, inventoryID, workspaceID).Return(inv, nil)
+		mockLoanRepo.On("FindActiveLoanForInventory", ctx, inventoryID).Return(nil, nil)
+		mockInvRepo.On("Save", ctx, mock.Anything).Return(nil)
+		mockLoanRepo.On("Save", ctx, mock.AnythingOfType("*loan.Loan")).Return(repoErr)
+
+		loan, err := svc.Create(ctx, CreateInput{
+			WorkspaceID: workspaceID,
+			InventoryID: inventoryID,
+			BorrowerID:  borrowerID,
+			Quantity:    1,
+			LoanedAt:    now,
+		})
+
+		assert.Error(t, err)
+		assert.Nil(t, loan)
+		assert.Equal(t, repoErr, err)
+	})
+}
+
+func TestService_Return_SaveErrors(t *testing.T) {
+	ctx := context.Background()
+	workspaceID := uuid.New()
+	loanID := uuid.New()
+	inventoryID := uuid.New()
+	borrowerID := uuid.New()
+	itemID := uuid.New()
+	locationID := uuid.New()
+	now := time.Now()
+	repoErr := errors.New("repository error")
+
+	t.Run("inventory save error", func(t *testing.T) {
+		mockLoanRepo := new(MockRepository)
+		mockInvRepo := new(MockInventoryRepository)
+		svc := NewService(mockLoanRepo, mockInvRepo)
+
+		loan := Reconstruct(loanID, workspaceID, inventoryID, borrowerID, 1, now, nil, nil, nil, now, now)
+		inv := createTestInventory(inventoryID, workspaceID, itemID, locationID, 1, inventory.StatusOnLoan)
+
+		mockLoanRepo.On("FindByID", ctx, loanID, workspaceID).Return(loan, nil)
+		mockInvRepo.On("FindByID", ctx, inventoryID, workspaceID).Return(inv, nil)
+		mockInvRepo.On("Save", ctx, mock.Anything).Return(repoErr)
+
+		result, err := svc.Return(ctx, loanID, workspaceID)
+
+		assert.Error(t, err)
+		assert.Nil(t, result)
+		assert.Equal(t, repoErr, err)
+	})
+
+	t.Run("loan save error", func(t *testing.T) {
+		mockLoanRepo := new(MockRepository)
+		mockInvRepo := new(MockInventoryRepository)
+		svc := NewService(mockLoanRepo, mockInvRepo)
+
+		loan := Reconstruct(loanID, workspaceID, inventoryID, borrowerID, 1, now, nil, nil, nil, now, now)
+		inv := createTestInventory(inventoryID, workspaceID, itemID, locationID, 1, inventory.StatusOnLoan)
+
+		mockLoanRepo.On("FindByID", ctx, loanID, workspaceID).Return(loan, nil)
+		mockInvRepo.On("FindByID", ctx, inventoryID, workspaceID).Return(inv, nil)
+		mockInvRepo.On("Save", ctx, mock.Anything).Return(nil)
+		mockLoanRepo.On("Save", ctx, mock.AnythingOfType("*loan.Loan")).Return(repoErr)
+
+		result, err := svc.Return(ctx, loanID, workspaceID)
+
+		assert.Error(t, err)
+		assert.Nil(t, result)
+		assert.Equal(t, repoErr, err)
+	})
+}
+
+func TestService_ExtendDueDate_SaveError(t *testing.T) {
+	ctx := context.Background()
+	workspaceID := uuid.New()
+	loanID := uuid.New()
+	inventoryID := uuid.New()
+	borrowerID := uuid.New()
+	now := time.Now()
+	dueDate := now.Add(48 * time.Hour)
+	repoErr := errors.New("repository error")
+
+	mockLoanRepo := new(MockRepository)
+	mockInvRepo := new(MockInventoryRepository)
+	svc := NewService(mockLoanRepo, mockInvRepo)
+
+	loan := Reconstruct(loanID, workspaceID, inventoryID, borrowerID, 1, now, ptrTime(now.Add(24*time.Hour)), nil, nil, now, now)
+
+	mockLoanRepo.On("FindByID", ctx, loanID, workspaceID).Return(loan, nil)
+	mockLoanRepo.On("Save", ctx, mock.AnythingOfType("*loan.Loan")).Return(repoErr)
+
+	result, err := svc.ExtendDueDate(ctx, loanID, workspaceID, dueDate)
+
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	assert.Equal(t, repoErr, err)
+}
+
+func TestService_Return_InventoryDeleted(t *testing.T) {
+	ctx := context.Background()
+	loanID := uuid.New()
+	workspaceID := uuid.New()
+	inventoryID := uuid.New()
+	borrowerID := uuid.New()
+	now := time.Now()
+
+	mockLoanRepo := new(MockRepository)
+	mockInvRepo := new(MockInventoryRepository)
+	svc := NewService(mockLoanRepo, mockInvRepo)
+
+	loan := Reconstruct(loanID, workspaceID, inventoryID, borrowerID, 1, now, nil, nil, nil, now, now)
+
+	mockLoanRepo.On("FindByID", ctx, loanID, workspaceID).Return(loan, nil)
+	// Inventory was deleted, return nil
+	mockInvRepo.On("FindByID", ctx, inventoryID, workspaceID).Return(nil, nil)
+	mockLoanRepo.On("Save", ctx, mock.AnythingOfType("*loan.Loan")).Return(nil)
+
+	result, err := svc.Return(ctx, loanID, workspaceID)
+
+	assert.NoError(t, err)
+	assert.NotNil(t, result)
+	assert.False(t, result.IsActive())
+}
+
+func TestService_Return_InventoryFindError(t *testing.T) {
+	ctx := context.Background()
+	loanID := uuid.New()
+	workspaceID := uuid.New()
+	inventoryID := uuid.New()
+	borrowerID := uuid.New()
+	now := time.Now()
+	repoErr := errors.New("repository error")
+
+	mockLoanRepo := new(MockRepository)
+	mockInvRepo := new(MockInventoryRepository)
+	svc := NewService(mockLoanRepo, mockInvRepo)
+
+	loan := Reconstruct(loanID, workspaceID, inventoryID, borrowerID, 1, now, nil, nil, nil, now, now)
+
+	mockLoanRepo.On("FindByID", ctx, loanID, workspaceID).Return(loan, nil)
+	mockInvRepo.On("FindByID", ctx, inventoryID, workspaceID).Return(nil, repoErr)
+
+	result, err := svc.Return(ctx, loanID, workspaceID)
+
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	assert.Equal(t, repoErr, err)
+}
