@@ -7,18 +7,15 @@ import (
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/google/uuid"
 
+	appMiddleware "github.com/antti/home-warehouse/go-backend/internal/api/middleware"
 	"github.com/antti/home-warehouse/go-backend/internal/shared"
 )
-
-type contextKey string
-
-const WorkspaceContextKey contextKey = "workspace"
 
 // RegisterRoutes registers company routes.
 func RegisterRoutes(api huma.API, svc *Service) {
 	// List companies
 	huma.Get(api, "/companies", func(ctx context.Context, input *ListCompaniesInput) (*ListCompaniesOutput, error) {
-		workspaceID, ok := ctx.Value(WorkspaceContextKey).(uuid.UUID)
+		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
 			return nil, huma.Error401Unauthorized("workspace context required")
 		}
@@ -46,7 +43,7 @@ func RegisterRoutes(api huma.API, svc *Service) {
 
 	// Get company by ID
 	huma.Get(api, "/companies/{id}", func(ctx context.Context, input *GetCompanyInput) (*GetCompanyOutput, error) {
-		workspaceID, ok := ctx.Value(WorkspaceContextKey).(uuid.UUID)
+		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
 			return nil, huma.Error401Unauthorized("workspace context required")
 		}
@@ -66,7 +63,7 @@ func RegisterRoutes(api huma.API, svc *Service) {
 
 	// Create company
 	huma.Post(api, "/companies", func(ctx context.Context, input *CreateCompanyInput) (*CreateCompanyOutput, error) {
-		workspaceID, ok := ctx.Value(WorkspaceContextKey).(uuid.UUID)
+		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
 			return nil, huma.Error401Unauthorized("workspace context required")
 		}
@@ -91,7 +88,7 @@ func RegisterRoutes(api huma.API, svc *Service) {
 
 	// Update company
 	huma.Patch(api, "/companies/{id}", func(ctx context.Context, input *UpdateCompanyInput) (*UpdateCompanyOutput, error) {
-		workspaceID, ok := ctx.Value(WorkspaceContextKey).(uuid.UUID)
+		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
 			return nil, huma.Error401Unauthorized("workspace context required")
 		}
@@ -125,7 +122,7 @@ func RegisterRoutes(api huma.API, svc *Service) {
 
 	// Archive company
 	huma.Post(api, "/companies/{id}/archive", func(ctx context.Context, input *GetCompanyInput) (*struct{}, error) {
-		workspaceID, ok := ctx.Value(WorkspaceContextKey).(uuid.UUID)
+		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
 			return nil, huma.Error401Unauthorized("workspace context required")
 		}
@@ -143,7 +140,7 @@ func RegisterRoutes(api huma.API, svc *Service) {
 
 	// Restore company
 	huma.Post(api, "/companies/{id}/restore", func(ctx context.Context, input *GetCompanyInput) (*struct{}, error) {
-		workspaceID, ok := ctx.Value(WorkspaceContextKey).(uuid.UUID)
+		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
 			return nil, huma.Error401Unauthorized("workspace context required")
 		}
@@ -161,7 +158,7 @@ func RegisterRoutes(api huma.API, svc *Service) {
 
 	// Delete company
 	huma.Delete(api, "/companies/{id}", func(ctx context.Context, input *GetCompanyInput) (*struct{}, error) {
-		workspaceID, ok := ctx.Value(WorkspaceContextKey).(uuid.UUID)
+		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
 			return nil, huma.Error401Unauthorized("workspace context required")
 		}

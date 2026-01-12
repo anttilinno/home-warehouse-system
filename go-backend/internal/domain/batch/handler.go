@@ -4,17 +4,13 @@ import (
 	"context"
 
 	"github.com/danielgtaylor/huma/v2"
-	"github.com/google/uuid"
+
+	appMiddleware "github.com/antti/home-warehouse/go-backend/internal/api/middleware"
 )
-
-type contextKey string
-
-const WorkspaceContextKey contextKey = "workspace"
 
 // BatchInput represents the request for batch operations.
 type BatchInput struct {
-	WorkspaceID uuid.UUID    `path:"workspace_id" format:"uuid" doc:"Workspace ID"`
-	Body        BatchRequest `json:"body"`
+	Body BatchRequest `json:"body"`
 }
 
 // BatchOutput represents the response from batch operations.
@@ -23,18 +19,15 @@ type BatchOutput struct {
 }
 
 // RegisterRoutes registers batch operation routes.
+// Note: These routes are registered within a workspace-scoped router group,
+// so paths are relative to /workspaces/{workspace_id}.
 func RegisterRoutes(api huma.API, svc *Service) {
 	// Process batch operations
-	huma.Post(api, "/workspaces/{workspace_id}/sync/batch", func(ctx context.Context, input *BatchInput) (*BatchOutput, error) {
+	huma.Post(api, "/sync/batch", func(ctx context.Context, input *BatchInput) (*BatchOutput, error) {
 		// Validate workspace access from context
-		ctxWorkspaceID, ok := ctx.Value(WorkspaceContextKey).(uuid.UUID)
+		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
 			return nil, huma.Error401Unauthorized("workspace context required")
-		}
-
-		// Ensure workspace ID matches
-		if ctxWorkspaceID != input.WorkspaceID {
-			return nil, huma.Error403Forbidden("workspace mismatch")
 		}
 
 		// Validate request
@@ -47,7 +40,7 @@ func RegisterRoutes(api huma.API, svc *Service) {
 		}
 
 		// Process the batch
-		response, err := svc.ProcessBatch(ctx, input.WorkspaceID, input.Body)
+		response, err := svc.ProcessBatch(ctx, workspaceID, input.Body)
 		if err != nil {
 			return nil, huma.Error500InternalServerError("failed to process batch")
 		}

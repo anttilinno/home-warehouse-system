@@ -7,18 +7,15 @@ import (
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/google/uuid"
 
+	appMiddleware "github.com/antti/home-warehouse/go-backend/internal/api/middleware"
 	"github.com/antti/home-warehouse/go-backend/internal/shared"
 )
-
-type contextKey string
-
-const WorkspaceContextKey contextKey = "workspace"
 
 // RegisterRoutes registers loan routes.
 func RegisterRoutes(api huma.API, svc *Service) {
 	// List all loans
 	huma.Get(api, "/loans", func(ctx context.Context, input *ListLoansInput) (*ListLoansOutput, error) {
-		workspaceID, ok := ctx.Value(WorkspaceContextKey).(uuid.UUID)
+		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
 			return nil, huma.Error401Unauthorized("workspace context required")
 		}
@@ -41,7 +38,7 @@ func RegisterRoutes(api huma.API, svc *Service) {
 
 	// Get active loans
 	huma.Get(api, "/loans/active", func(ctx context.Context, input *struct{}) (*ListLoansOutput, error) {
-		workspaceID, ok := ctx.Value(WorkspaceContextKey).(uuid.UUID)
+		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
 			return nil, huma.Error401Unauthorized("workspace context required")
 		}
@@ -63,7 +60,7 @@ func RegisterRoutes(api huma.API, svc *Service) {
 
 	// Get overdue loans
 	huma.Get(api, "/loans/overdue", func(ctx context.Context, input *struct{}) (*ListLoansOutput, error) {
-		workspaceID, ok := ctx.Value(WorkspaceContextKey).(uuid.UUID)
+		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
 			return nil, huma.Error401Unauthorized("workspace context required")
 		}
@@ -85,7 +82,7 @@ func RegisterRoutes(api huma.API, svc *Service) {
 
 	// Get loan by ID
 	huma.Get(api, "/loans/{id}", func(ctx context.Context, input *GetLoanInput) (*GetLoanOutput, error) {
-		workspaceID, ok := ctx.Value(WorkspaceContextKey).(uuid.UUID)
+		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
 			return nil, huma.Error401Unauthorized("workspace context required")
 		}
@@ -102,7 +99,7 @@ func RegisterRoutes(api huma.API, svc *Service) {
 
 	// Create loan
 	huma.Post(api, "/loans", func(ctx context.Context, input *CreateLoanInput) (*CreateLoanOutput, error) {
-		workspaceID, ok := ctx.Value(WorkspaceContextKey).(uuid.UUID)
+		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
 			return nil, huma.Error401Unauthorized("workspace context required")
 		}
@@ -141,7 +138,7 @@ func RegisterRoutes(api huma.API, svc *Service) {
 
 	// Return loan
 	huma.Post(api, "/loans/{id}/return", func(ctx context.Context, input *ReturnLoanInput) (*ReturnLoanOutput, error) {
-		workspaceID, ok := ctx.Value(WorkspaceContextKey).(uuid.UUID)
+		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
 			return nil, huma.Error401Unauthorized("workspace context required")
 		}
@@ -161,7 +158,7 @@ func RegisterRoutes(api huma.API, svc *Service) {
 
 	// Extend due date
 	huma.Patch(api, "/loans/{id}/extend", func(ctx context.Context, input *ExtendLoanInput) (*ExtendLoanOutput, error) {
-		workspaceID, ok := ctx.Value(WorkspaceContextKey).(uuid.UUID)
+		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
 			return nil, huma.Error401Unauthorized("workspace context required")
 		}
@@ -184,7 +181,7 @@ func RegisterRoutes(api huma.API, svc *Service) {
 
 	// List loans by borrower
 	huma.Get(api, "/borrowers/{borrower_id}/loans", func(ctx context.Context, input *ListBorrowerLoansInput) (*ListLoansOutput, error) {
-		workspaceID, ok := ctx.Value(WorkspaceContextKey).(uuid.UUID)
+		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
 			return nil, huma.Error401Unauthorized("workspace context required")
 		}
@@ -207,7 +204,7 @@ func RegisterRoutes(api huma.API, svc *Service) {
 
 	// List loans by inventory
 	huma.Get(api, "/inventory/{inventory_id}/loans", func(ctx context.Context, input *ListInventoryLoansInput) (*ListLoansOutput, error) {
-		workspaceID, ok := ctx.Value(WorkspaceContextKey).(uuid.UUID)
+		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
 			return nil, huma.Error401Unauthorized("workspace context required")
 		}

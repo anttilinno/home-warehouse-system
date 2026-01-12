@@ -6,30 +6,20 @@ import (
 
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/google/uuid"
+
+	appMiddleware "github.com/antti/home-warehouse/go-backend/internal/api/middleware"
 )
-
-type contextKey string
-
-const (
-	WorkspaceContextKey contextKey = "workspace"
-	UserContextKey      contextKey = "user"
-)
-
-// AuthUser represents the authenticated user in context.
-type AuthUser struct {
-	ID uuid.UUID
-}
 
 // RegisterRoutes registers favorite routes.
 func RegisterRoutes(api huma.API, svc *Service) {
 	// List user's favorites
 	huma.Get(api, "/favorites", func(ctx context.Context, input *struct{}) (*ListFavoritesOutput, error) {
-		workspaceID, ok := ctx.Value(WorkspaceContextKey).(uuid.UUID)
+		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
 			return nil, huma.Error401Unauthorized("workspace context required")
 		}
 
-		authUser, ok := ctx.Value(UserContextKey).(*AuthUser)
+		authUser, ok := appMiddleware.GetAuthUser(ctx)
 		if !ok {
 			return nil, huma.Error401Unauthorized("authentication required")
 		}
@@ -51,12 +41,12 @@ func RegisterRoutes(api huma.API, svc *Service) {
 
 	// Toggle favorite (add if not exists, remove if exists)
 	huma.Post(api, "/favorites", func(ctx context.Context, input *ToggleFavoriteInput) (*ToggleFavoriteOutput, error) {
-		workspaceID, ok := ctx.Value(WorkspaceContextKey).(uuid.UUID)
+		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
 			return nil, huma.Error401Unauthorized("workspace context required")
 		}
 
-		authUser, ok := ctx.Value(UserContextKey).(*AuthUser)
+		authUser, ok := appMiddleware.GetAuthUser(ctx)
 		if !ok {
 			return nil, huma.Error401Unauthorized("authentication required")
 		}
@@ -80,12 +70,12 @@ func RegisterRoutes(api huma.API, svc *Service) {
 
 	// Check if item is favorited
 	huma.Get(api, "/favorites/check/{favorite_type}/{target_id}", func(ctx context.Context, input *CheckFavoriteInput) (*CheckFavoriteOutput, error) {
-		workspaceID, ok := ctx.Value(WorkspaceContextKey).(uuid.UUID)
+		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
 			return nil, huma.Error401Unauthorized("workspace context required")
 		}
 
-		authUser, ok := ctx.Value(UserContextKey).(*AuthUser)
+		authUser, ok := appMiddleware.GetAuthUser(ctx)
 		if !ok {
 			return nil, huma.Error401Unauthorized("authentication required")
 		}

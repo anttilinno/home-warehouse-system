@@ -6,17 +6,15 @@ import (
 
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/google/uuid"
+
+	appMiddleware "github.com/antti/home-warehouse/go-backend/internal/api/middleware"
 )
-
-type contextKey string
-
-const WorkspaceContextKey contextKey = "workspace"
 
 // RegisterRoutes registers deleted records routes (for PWA sync).
 func RegisterRoutes(api huma.API, svc *Service) {
 	// Get deleted records since timestamp (for PWA offline sync)
 	huma.Get(api, "/sync/deleted", func(ctx context.Context, input *GetDeletedSinceInput) (*GetDeletedSinceOutput, error) {
-		workspaceID, ok := ctx.Value(WorkspaceContextKey).(uuid.UUID)
+		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
 			return nil, huma.Error401Unauthorized("workspace context required")
 		}

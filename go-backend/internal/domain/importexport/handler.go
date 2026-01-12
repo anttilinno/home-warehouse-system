@@ -7,7 +7,8 @@ import (
 	"net/http"
 
 	"github.com/danielgtaylor/huma/v2"
-	"github.com/google/uuid"
+
+	appMiddleware "github.com/antti/home-warehouse/go-backend/internal/api/middleware"
 )
 
 // Handler handles import/export HTTP requests
@@ -22,10 +23,9 @@ func NewHandler(svc *Service) *Handler {
 
 // ExportRequest is the input for export
 type ExportRequest struct {
-	WorkspaceID     uuid.UUID `path:"workspace_id" doc:"Workspace ID"`
-	EntityType      string    `path:"entity_type" doc:"Entity type to export (item, location, container, category, label, company, borrower)"`
-	Format          string    `query:"format" default:"csv" doc:"Export format (csv, json)"`
-	IncludeArchived bool      `query:"include_archived" default:"false" doc:"Include archived records"`
+	EntityType      string `path:"entity_type" doc:"Entity type to export (item, location, container, category, label, company, borrower)"`
+	Format          string `query:"format" default:"csv" doc:"Export format (csv, json)"`
+	IncludeArchived bool   `query:"include_archived" default:"false" doc:"Include archived records"`
 }
 
 // ExportResponse is the response for export
@@ -37,9 +37,8 @@ type ExportResponse struct {
 
 // ImportRequest is the input for import
 type ImportRequest struct {
-	WorkspaceID uuid.UUID `path:"workspace_id" doc:"Workspace ID"`
-	EntityType  string    `path:"entity_type" doc:"Entity type to import (item, location, container, category, label, company, borrower)"`
-	Body        struct {
+	EntityType string `path:"entity_type" doc:"Entity type to import (item, location, container, category, label, company, borrower)"`
+	Body       struct {
 		Format string `json:"format" doc:"Import format (csv, json)"`
 		Data   string `json:"data" doc:"Base64 encoded file content"`
 	}
@@ -50,12 +49,14 @@ type ImportResponse struct {
 	Body ImportResult
 }
 
-// RegisterRoutes registers import/export routes with the Huma API
+// RegisterRoutes registers import/export routes with the Huma API.
+// Note: These routes are registered within a workspace-scoped router group,
+// so paths are relative to /workspaces/{workspace_id}.
 func (h *Handler) RegisterRoutes(api huma.API) {
 	huma.Register(api, huma.Operation{
 		OperationID: "export-entities",
 		Method:      http.MethodGet,
-		Path:        "/workspaces/{workspace_id}/export/{entity_type}",
+		Path:        "/export/{entity_type}",
 		Summary:     "Export entities",
 		Description: "Exports entities of the specified type to CSV or JSON format.",
 		Tags:        []string{"Import/Export"},
@@ -64,7 +65,7 @@ func (h *Handler) RegisterRoutes(api huma.API) {
 	huma.Register(api, huma.Operation{
 		OperationID:   "import-entities",
 		Method:        http.MethodPost,
-		Path:          "/workspaces/{workspace_id}/import/{entity_type}",
+		Path:          "/import/{entity_type}",
 		Summary:       "Import entities",
 		Description:   "Imports entities of the specified type from CSV or JSON data. Data should be base64 encoded.",
 		Tags:          []string{"Import/Export"},
@@ -74,6 +75,11 @@ func (h *Handler) RegisterRoutes(api huma.API) {
 
 // Export handles the export request
 func (h *Handler) Export(ctx context.Context, input *ExportRequest) (*ExportResponse, error) {
+	workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
+	if !ok {
+		return nil, huma.Error401Unauthorized("workspace context required")
+	}
+
 	// Validate entity type
 	entityType := EntityType(input.EntityType)
 	if !entityType.IsValid() {
@@ -88,7 +94,7 @@ func (h *Handler) Export(ctx context.Context, input *ExportRequest) (*ExportResp
 
 	// Perform export
 	data, metadata, err := h.svc.Export(ctx, ExportOptions{
-		WorkspaceID:     input.WorkspaceID,
+		WorkspaceID:     workspaceID,
 		EntityType:      entityType,
 		Format:          format,
 		IncludeArchived: input.IncludeArchived,
@@ -116,6 +122,11 @@ func (h *Handler) Export(ctx context.Context, input *ExportRequest) (*ExportResp
 
 // Import handles the import request
 func (h *Handler) Import(ctx context.Context, input *ImportRequest) (*ImportResponse, error) {
+	workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
+	if !ok {
+		return nil, huma.Error401Unauthorized("workspace context required")
+	}
+
 	// Validate entity type
 	entityType := EntityType(input.EntityType)
 	if !entityType.IsValid() {
@@ -139,7 +150,7 @@ func (h *Handler) Import(ctx context.Context, input *ImportRequest) (*ImportResp
 	}
 
 	// Perform import
-	result, err := h.svc.Import(ctx, input.WorkspaceID, entityType, format, data)
+	result, err := h.svc.Import(ctx, workspaceID, entityType, format, data)
 	if err != nil {
 		return nil, huma.Error500InternalServerError("failed to import data", err)
 	}

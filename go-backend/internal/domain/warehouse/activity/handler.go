@@ -7,18 +7,15 @@ import (
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/google/uuid"
 
+	appMiddleware "github.com/antti/home-warehouse/go-backend/internal/api/middleware"
 	"github.com/antti/home-warehouse/go-backend/internal/shared"
 )
-
-type contextKey string
-
-const WorkspaceContextKey contextKey = "workspace"
 
 // RegisterRoutes registers activity routes.
 func RegisterRoutes(api huma.API, svc *Service) {
 	// List workspace activity (optionally filtered by user_id)
 	huma.Get(api, "/activity", func(ctx context.Context, input *ListActivityInput) (*ListActivityOutput, error) {
-		workspaceID, ok := ctx.Value(WorkspaceContextKey).(uuid.UUID)
+		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
 			return nil, huma.Error401Unauthorized("workspace context required")
 		}
@@ -54,7 +51,7 @@ func RegisterRoutes(api huma.API, svc *Service) {
 
 	// List activity by entity
 	huma.Get(api, "/activity/{entity_type}/{entity_id}", func(ctx context.Context, input *ListByEntityInput) (*ListActivityOutput, error) {
-		workspaceID, ok := ctx.Value(WorkspaceContextKey).(uuid.UUID)
+		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
 			return nil, huma.Error401Unauthorized("workspace context required")
 		}
@@ -82,7 +79,7 @@ func RegisterRoutes(api huma.API, svc *Service) {
 
 	// Get recent activity since timestamp
 	huma.Get(api, "/activity/recent", func(ctx context.Context, input *RecentActivityInput) (*ListActivityOutput, error) {
-		workspaceID, ok := ctx.Value(WorkspaceContextKey).(uuid.UUID)
+		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
 			return nil, huma.Error401Unauthorized("workspace context required")
 		}

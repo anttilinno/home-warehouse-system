@@ -12,25 +12,15 @@ import (
 
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/google/uuid"
+
+	appMiddleware "github.com/antti/home-warehouse/go-backend/internal/api/middleware"
 )
-
-type contextKey string
-
-const (
-	WorkspaceContextKey contextKey = "workspace"
-	UserContextKey      contextKey = "user"
-)
-
-// AuthUser represents the authenticated user in context.
-type AuthUser struct {
-	ID uuid.UUID
-}
 
 // RegisterRoutes registers attachment routes.
 func RegisterRoutes(api huma.API, svc *Service) {
 	// List attachments for an item
 	huma.Get(api, "/items/{item_id}/attachments", func(ctx context.Context, input *ListAttachmentsInput) (*ListAttachmentsOutput, error) {
-		workspaceID, ok := ctx.Value(WorkspaceContextKey).(uuid.UUID)
+		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
 			return nil, huma.Error401Unauthorized("workspace context required")
 		}
@@ -55,7 +45,7 @@ func RegisterRoutes(api huma.API, svc *Service) {
 
 	// Get attachment by ID
 	huma.Get(api, "/attachments/{id}", func(ctx context.Context, input *GetAttachmentInput) (*GetAttachmentOutput, error) {
-		workspaceID, ok := ctx.Value(WorkspaceContextKey).(uuid.UUID)
+		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
 			return nil, huma.Error401Unauthorized("workspace context required")
 		}
@@ -76,12 +66,12 @@ func RegisterRoutes(api huma.API, svc *Service) {
 	// Upload file and create attachment
 	// Note: This is a simplified version. In production, you'd handle multipart file upload
 	huma.Post(api, "/items/{item_id}/attachments/upload", func(ctx context.Context, input *UploadAttachmentInput) (*UploadAttachmentOutput, error) {
-		workspaceID, ok := ctx.Value(WorkspaceContextKey).(uuid.UUID)
+		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
 			return nil, huma.Error401Unauthorized("workspace context required")
 		}
 
-		authUser, ok := ctx.Value(UserContextKey).(*AuthUser)
+		authUser, ok := appMiddleware.GetAuthUser(ctx)
 		if !ok {
 			return nil, huma.Error401Unauthorized("authentication required")
 		}
@@ -135,7 +125,7 @@ func RegisterRoutes(api huma.API, svc *Service) {
 
 	// Create attachment without file (e.g., external link)
 	huma.Post(api, "/items/{item_id}/attachments", func(ctx context.Context, input *CreateAttachmentRequest) (*CreateAttachmentOutput, error) {
-		workspaceID, ok := ctx.Value(WorkspaceContextKey).(uuid.UUID)
+		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
 			return nil, huma.Error401Unauthorized("workspace context required")
 		}
@@ -168,7 +158,7 @@ func RegisterRoutes(api huma.API, svc *Service) {
 
 	// Set attachment as primary
 	huma.Post(api, "/items/{item_id}/attachments/{id}/set-primary", func(ctx context.Context, input *SetPrimaryInput) (*struct{}, error) {
-		workspaceID, ok := ctx.Value(WorkspaceContextKey).(uuid.UUID)
+		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
 			return nil, huma.Error401Unauthorized("workspace context required")
 		}
@@ -189,7 +179,7 @@ func RegisterRoutes(api huma.API, svc *Service) {
 
 	// Delete attachment
 	huma.Delete(api, "/attachments/{id}", func(ctx context.Context, input *GetAttachmentInput) (*struct{}, error) {
-		workspaceID, ok := ctx.Value(WorkspaceContextKey).(uuid.UUID)
+		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
 			return nil, huma.Error401Unauthorized("workspace context required")
 		}

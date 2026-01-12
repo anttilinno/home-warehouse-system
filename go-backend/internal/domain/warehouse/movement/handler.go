@@ -7,18 +7,15 @@ import (
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/google/uuid"
 
+	appMiddleware "github.com/antti/home-warehouse/go-backend/internal/api/middleware"
 	"github.com/antti/home-warehouse/go-backend/internal/shared"
 )
-
-type contextKey string
-
-const WorkspaceContextKey contextKey = "workspace"
 
 // RegisterRoutes registers movement routes (read-only, movements are created via inventory service).
 func RegisterRoutes(api huma.API, svc *Service) {
 	// List all movements in workspace
 	huma.Get(api, "/movements", func(ctx context.Context, input *ListWorkspaceMovementsInput) (*ListMovementsOutput, error) {
-		workspaceID, ok := ctx.Value(WorkspaceContextKey).(uuid.UUID)
+		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
 			return nil, huma.Error401Unauthorized("workspace context required")
 		}
@@ -41,7 +38,7 @@ func RegisterRoutes(api huma.API, svc *Service) {
 
 	// List movements for an inventory item
 	huma.Get(api, "/inventory/{inventory_id}/movements", func(ctx context.Context, input *ListMovementsInput) (*ListMovementsOutput, error) {
-		workspaceID, ok := ctx.Value(WorkspaceContextKey).(uuid.UUID)
+		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
 			return nil, huma.Error401Unauthorized("workspace context required")
 		}
@@ -64,7 +61,7 @@ func RegisterRoutes(api huma.API, svc *Service) {
 
 	// List movements for a location
 	huma.Get(api, "/locations/{location_id}/movements", func(ctx context.Context, input *ListLocationMovementsInput) (*ListMovementsOutput, error) {
-		workspaceID, ok := ctx.Value(WorkspaceContextKey).(uuid.UUID)
+		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
 			return nil, huma.Error401Unauthorized("workspace context required")
 		}

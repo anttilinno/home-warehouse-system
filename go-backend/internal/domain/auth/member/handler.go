@@ -6,25 +6,15 @@ import (
 
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/google/uuid"
+
+	appMiddleware "github.com/antti/home-warehouse/go-backend/internal/api/middleware"
 )
-
-type contextKey string
-
-const (
-	WorkspaceContextKey contextKey = "workspace"
-	UserContextKey      contextKey = "user"
-)
-
-// AuthUser represents the authenticated user in context.
-type AuthUser struct {
-	ID uuid.UUID
-}
 
 // RegisterRoutes registers member routes.
 func RegisterRoutes(api huma.API, svc *Service) {
 	// List workspace members
 	huma.Get(api, "/members", func(ctx context.Context, input *struct{}) (*ListMembersOutput, error) {
-		workspaceID, ok := ctx.Value(WorkspaceContextKey).(uuid.UUID)
+		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
 			return nil, huma.Error401Unauthorized("workspace context required")
 		}
@@ -46,7 +36,7 @@ func RegisterRoutes(api huma.API, svc *Service) {
 
 	// Get member (workspace + user ID)
 	huma.Get(api, "/members/{user_id}", func(ctx context.Context, input *GetMemberInput) (*GetMemberOutput, error) {
-		workspaceID, ok := ctx.Value(WorkspaceContextKey).(uuid.UUID)
+		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
 			return nil, huma.Error401Unauthorized("workspace context required")
 		}
@@ -63,12 +53,12 @@ func RegisterRoutes(api huma.API, svc *Service) {
 
 	// Add member to workspace
 	huma.Post(api, "/members", func(ctx context.Context, input *AddMemberRequest) (*AddMemberOutput, error) {
-		workspaceID, ok := ctx.Value(WorkspaceContextKey).(uuid.UUID)
+		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
 			return nil, huma.Error401Unauthorized("workspace context required")
 		}
 
-		authUser, ok := ctx.Value(UserContextKey).(*AuthUser)
+		authUser, ok := appMiddleware.GetAuthUser(ctx)
 		if !ok {
 			return nil, huma.Error401Unauthorized("authentication required")
 		}
@@ -93,12 +83,12 @@ func RegisterRoutes(api huma.API, svc *Service) {
 
 	// Update member role
 	huma.Patch(api, "/members/{user_id}", func(ctx context.Context, input *UpdateMemberRoleRequest) (*UpdateMemberRoleOutput, error) {
-		workspaceID, ok := ctx.Value(WorkspaceContextKey).(uuid.UUID)
+		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
 			return nil, huma.Error401Unauthorized("workspace context required")
 		}
 
-		authUser, ok := ctx.Value(UserContextKey).(*AuthUser)
+		authUser, ok := appMiddleware.GetAuthUser(ctx)
 		if !ok {
 			return nil, huma.Error401Unauthorized("authentication required")
 		}
@@ -126,7 +116,7 @@ func RegisterRoutes(api huma.API, svc *Service) {
 
 	// Remove member from workspace
 	huma.Delete(api, "/members/{user_id}", func(ctx context.Context, input *GetMemberInput) (*struct{}, error) {
-		workspaceID, ok := ctx.Value(WorkspaceContextKey).(uuid.UUID)
+		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
 			return nil, huma.Error401Unauthorized("workspace context required")
 		}
