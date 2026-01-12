@@ -15,6 +15,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
+
+	appMiddleware "github.com/antti/home-warehouse/go-backend/internal/api/middleware"
 )
 
 // MockService is a mock implementation of Service for testing handlers.
@@ -101,7 +103,7 @@ func setupTestRouter(svc *MockService) (http.Handler, *chi.Mux) {
 	r.Use(func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			workspaceID := uuid.MustParse("00000000-0000-0000-0000-000000000001")
-			ctx := context.WithValue(r.Context(), WorkspaceContextKey, workspaceID)
+			ctx := context.WithValue(r.Context(), appMiddleware.WorkspaceContextKey, workspaceID)
 			next.ServeHTTP(w, r.WithContext(ctx))
 		})
 	})
