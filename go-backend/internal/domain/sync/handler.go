@@ -21,10 +21,10 @@ func NewHandler(svc *Service) *Handler {
 
 // DeltaSyncRequest is the input for delta sync
 type DeltaSyncRequest struct {
-	WorkspaceID   uuid.UUID  `path:"workspace_id" doc:"Workspace ID"`
-	ModifiedSince *time.Time `query:"modified_since" doc:"ISO 8601 timestamp for incremental sync. If omitted, performs full sync."`
-	EntityTypes   string     `query:"entity_types" doc:"Comma-separated entity types to sync (item,location,container,inventory,category,label,company,borrower,loan). If omitted, syncs all types."`
-	Limit         int        `query:"limit" default:"500" minimum:"1" maximum:"1000" doc:"Maximum number of records per entity type"`
+	WorkspaceID   uuid.UUID `path:"workspace_id" doc:"Workspace ID"`
+	ModifiedSince string    `query:"modified_since" doc:"ISO 8601 timestamp for incremental sync. If omitted, performs full sync."`
+	EntityTypes   string    `query:"entity_types" doc:"Comma-separated entity types to sync (item,location,container,inventory,category,label,company,borrower,loan). If omitted, syncs all types."`
+	Limit         int       `query:"limit" default:"500" minimum:"1" maximum:"1000" doc:"Maximum number of records per entity type"`
 }
 
 // DeltaSyncResponse is the response for delta sync
@@ -48,9 +48,18 @@ func (h *Handler) RegisterRoutes(api huma.API) {
 func (h *Handler) GetDelta(ctx context.Context, input *DeltaSyncRequest) (*DeltaSyncResponse, error) {
 	entityTypes := ParseEntityTypes(input.EntityTypes)
 
+	var modifiedSince *time.Time
+	if input.ModifiedSince != "" {
+		parsedTime, err := time.Parse(time.RFC3339, input.ModifiedSince)
+		if err != nil {
+			return nil, huma.Error400BadRequest("invalid modified_since format, use RFC3339")
+		}
+		modifiedSince = &parsedTime
+	}
+
 	result, err := h.svc.GetDelta(ctx, DeltaSyncInput{
 		WorkspaceID:   input.WorkspaceID,
-		ModifiedSince: input.ModifiedSince,
+		ModifiedSince: modifiedSince,
 		EntityTypes:   entityTypes,
 		Limit:         int32(input.Limit),
 	})

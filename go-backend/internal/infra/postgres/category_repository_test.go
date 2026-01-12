@@ -125,6 +125,8 @@ func TestCategoryRepository_FindByID(t *testing.T) {
 	t.Run("respects workspace isolation", func(t *testing.T) {
 		workspace1 := uuid.New()
 		workspace2 := uuid.New()
+		testdb.CreateTestWorkspace(t, pool, workspace1)
+		testdb.CreateTestWorkspace(t, pool, workspace2)
 
 		// Create category in workspace 1
 		cat, err := category.NewCategory(workspace1, "Workspace 1 Category", nil, nil)
@@ -155,6 +157,7 @@ func TestCategoryRepository_FindByWorkspace(t *testing.T) {
 
 	t.Run("finds all categories in workspace", func(t *testing.T) {
 		workspaceID := uuid.New()
+		testdb.CreateTestWorkspace(t, pool, workspaceID)
 
 		// Create multiple categories
 		cat1, _ := category.NewCategory(workspaceID, "Category 1", nil, nil)
@@ -181,6 +184,8 @@ func TestCategoryRepository_FindByWorkspace(t *testing.T) {
 	t.Run("isolates categories by workspace", func(t *testing.T) {
 		workspace1 := uuid.New()
 		workspace2 := uuid.New()
+		testdb.CreateTestWorkspace(t, pool, workspace1)
+		testdb.CreateTestWorkspace(t, pool, workspace2)
 
 		// Create categories in different workspaces
 		cat1, _ := category.NewCategory(workspace1, "WS1 Category", nil, nil)
@@ -214,6 +219,7 @@ func TestCategoryRepository_FindByParent(t *testing.T) {
 
 	t.Run("finds child categories", func(t *testing.T) {
 		workspaceID := uuid.New()
+		testdb.CreateTestWorkspace(t, pool, workspaceID)
 
 		// Create parent
 		parent, _ := category.NewCategory(workspaceID, "Parent", nil, nil)
@@ -234,6 +240,7 @@ func TestCategoryRepository_FindByParent(t *testing.T) {
 
 	t.Run("returns empty for parent with no children", func(t *testing.T) {
 		workspaceID := uuid.New()
+		testdb.CreateTestWorkspace(t, pool, workspaceID)
 		parent, _ := category.NewCategory(workspaceID, "Childless Parent", nil, nil)
 		repo.Save(ctx, parent)
 
@@ -254,6 +261,7 @@ func TestCategoryRepository_FindRootCategories(t *testing.T) {
 
 	t.Run("finds only root categories", func(t *testing.T) {
 		workspaceID := uuid.New()
+		testdb.CreateTestWorkspace(t, pool, workspaceID)
 
 		// Create root categories
 		root1, _ := category.NewCategory(workspaceID, "Root 1", nil, nil)
@@ -322,6 +330,7 @@ func TestCategoryRepository_HasChildren(t *testing.T) {
 
 	t.Run("returns true when category has children", func(t *testing.T) {
 		workspaceID := uuid.New()
+		testdb.CreateTestWorkspace(t, pool, workspaceID)
 
 		// Create parent and child
 		parent, _ := category.NewCategory(workspaceID, "Parent", nil, nil)
@@ -339,6 +348,7 @@ func TestCategoryRepository_HasChildren(t *testing.T) {
 
 	t.Run("returns false when category has no children", func(t *testing.T) {
 		workspaceID := uuid.New()
+		testdb.CreateTestWorkspace(t, pool, workspaceID)
 
 		parent, _ := category.NewCategory(workspaceID, "Childless", nil, nil)
 		repo.Save(ctx, parent)

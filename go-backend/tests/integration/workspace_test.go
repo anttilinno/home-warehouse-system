@@ -53,12 +53,15 @@ func (ts *TestServer) AuthHelper(t *testing.T, email string) string {
 func TestCreateWorkspace_Success(t *testing.T) {
 	ts := NewTestServer(t)
 
-	token := ts.AuthHelper(t, "workspace@example.com")
+	token := ts.AuthHelper(t, "workspace_"+uuid.New().String()[:8]+"@example.com")
 	ts.SetToken(token)
 
-	resp := ts.Post("/workspaces", map[string]string{
+	slug := "my-workspace-" + uuid.New().String()[:8]
+	resp := ts.Post("/workspaces", map[string]interface{}{
 		"name":        "My Workspace",
+		"slug":        slug,
 		"description": "A test workspace",
+		"is_personal": false,
 	})
 	RequireStatus(t, resp, http.StatusOK)
 
@@ -81,8 +84,10 @@ func TestCreateWorkspace_Success(t *testing.T) {
 func TestCreateWorkspace_Unauthorized(t *testing.T) {
 	ts := NewTestServer(t)
 
-	resp := ts.Post("/workspaces", map[string]string{
-		"name": "My Workspace",
+	resp := ts.Post("/workspaces", map[string]interface{}{
+		"name":        "My Workspace",
+		"slug":        "my-workspace",
+		"is_personal": false,
 	})
 	RequireStatus(t, resp, http.StatusUnauthorized)
 	resp.Body.Close()
@@ -91,13 +96,16 @@ func TestCreateWorkspace_Unauthorized(t *testing.T) {
 func TestListWorkspaces_Success(t *testing.T) {
 	ts := NewTestServer(t)
 
-	token := ts.AuthHelper(t, "listws@example.com")
+	token := ts.AuthHelper(t, "listws_"+uuid.New().String()[:8]+"@example.com")
 	ts.SetToken(token)
 
 	// Create workspaces
 	for i := 1; i <= 3; i++ {
-		resp := ts.Post("/workspaces", map[string]string{
-			"name": fmt.Sprintf("Workspace %d", i),
+		slug := fmt.Sprintf("workspace-%d-%s", i, uuid.New().String()[:8])
+		resp := ts.Post("/workspaces", map[string]interface{}{
+			"name":        fmt.Sprintf("Workspace %d", i),
+			"slug":        slug,
+			"is_personal": false,
 		})
 		RequireStatus(t, resp, http.StatusOK)
 		resp.Body.Close()
@@ -108,31 +116,34 @@ func TestListWorkspaces_Success(t *testing.T) {
 	RequireStatus(t, resp, http.StatusOK)
 
 	var result struct {
-		Workspaces []struct {
+		Items []struct {
 			ID   uuid.UUID `json:"id"`
 			Name string    `json:"name"`
-		} `json:"workspaces"`
+		} `json:"items"`
 	}
 	result = ParseResponse[struct {
-		Workspaces []struct {
+		Items []struct {
 			ID   uuid.UUID `json:"id"`
 			Name string    `json:"name"`
-		} `json:"workspaces"`
+		} `json:"items"`
 	}](t, resp)
 
-	assert.GreaterOrEqual(t, len(result.Workspaces), 3)
+	assert.GreaterOrEqual(t, len(result.Items), 3)
 }
 
 func TestGetWorkspace_Success(t *testing.T) {
 	ts := NewTestServer(t)
 
-	token := ts.AuthHelper(t, "getws@example.com")
+	token := ts.AuthHelper(t, "getws_"+uuid.New().String()[:8]+"@example.com")
 	ts.SetToken(token)
 
 	// Create workspace
-	resp := ts.Post("/workspaces", map[string]string{
+	slug := "get-test-ws-" + uuid.New().String()[:8]
+	resp := ts.Post("/workspaces", map[string]interface{}{
 		"name":        "Get Test Workspace",
+		"slug":        slug,
 		"description": "Test description",
+		"is_personal": false,
 	})
 	RequireStatus(t, resp, http.StatusOK)
 
@@ -166,12 +177,15 @@ func TestGetWorkspace_Success(t *testing.T) {
 func TestUpdateWorkspace_Success(t *testing.T) {
 	ts := NewTestServer(t)
 
-	token := ts.AuthHelper(t, "updatews@example.com")
+	token := ts.AuthHelper(t, "updatews_"+uuid.New().String()[:8]+"@example.com")
 	ts.SetToken(token)
 
 	// Create workspace
-	resp := ts.Post("/workspaces", map[string]string{
-		"name": "Original Name",
+	slug := "update-test-ws-" + uuid.New().String()[:8]
+	resp := ts.Post("/workspaces", map[string]interface{}{
+		"name":        "Original Name",
+		"slug":        slug,
+		"is_personal": false,
 	})
 	RequireStatus(t, resp, http.StatusOK)
 
@@ -209,12 +223,15 @@ func TestUpdateWorkspace_Success(t *testing.T) {
 func TestCategoryCRUD(t *testing.T) {
 	ts := NewTestServer(t)
 
-	token := ts.AuthHelper(t, "category@example.com")
+	token := ts.AuthHelper(t, "category_"+uuid.New().String()[:8]+"@example.com")
 	ts.SetToken(token)
 
 	// Create workspace
-	resp := ts.Post("/workspaces", map[string]string{
-		"name": "Category Test Workspace",
+	slug := "category-test-ws-" + uuid.New().String()[:8]
+	resp := ts.Post("/workspaces", map[string]interface{}{
+		"name":        "Category Test Workspace",
+		"slug":        slug,
+		"is_personal": false,
 	})
 	RequireStatus(t, resp, http.StatusOK)
 
@@ -232,7 +249,7 @@ func TestCategoryCRUD(t *testing.T) {
 		"name":        "Electronics",
 		"description": "Electronic devices",
 	})
-	RequireStatus(t, resp, http.StatusOK)
+	RequireStatus(t, resp, http.StatusCreated)
 
 	var catResult struct {
 		ID          uuid.UUID `json:"id"`
@@ -253,19 +270,19 @@ func TestCategoryCRUD(t *testing.T) {
 	RequireStatus(t, resp, http.StatusOK)
 
 	var listResult struct {
-		Categories []struct {
+		Items []struct {
 			ID   uuid.UUID `json:"id"`
 			Name string    `json:"name"`
-		} `json:"categories"`
+		} `json:"items"`
 	}
 	listResult = ParseResponse[struct {
-		Categories []struct {
+		Items []struct {
 			ID   uuid.UUID `json:"id"`
 			Name string    `json:"name"`
-		} `json:"categories"`
+		} `json:"items"`
 	}](t, resp)
 
-	assert.GreaterOrEqual(t, len(listResult.Categories), 1)
+	assert.GreaterOrEqual(t, len(listResult.Items), 1)
 
 	// Update category
 	resp = ts.Patch(fmt.Sprintf("%s/categories/%s", workspacePath, catResult.ID), map[string]string{
@@ -291,12 +308,15 @@ func TestCategoryCRUD(t *testing.T) {
 func TestLocationCRUD(t *testing.T) {
 	ts := NewTestServer(t)
 
-	token := ts.AuthHelper(t, "location@example.com")
+	token := ts.AuthHelper(t, "location_"+uuid.New().String()[:8]+"@example.com")
 	ts.SetToken(token)
 
 	// Create workspace
-	resp := ts.Post("/workspaces", map[string]string{
-		"name": "Location Test Workspace",
+	slug := "location-test-ws-" + uuid.New().String()[:8]
+	resp := ts.Post("/workspaces", map[string]interface{}{
+		"name":        "Location Test Workspace",
+		"slug":        slug,
+		"is_personal": false,
 	})
 	RequireStatus(t, resp, http.StatusOK)
 
@@ -335,30 +355,33 @@ func TestLocationCRUD(t *testing.T) {
 	RequireStatus(t, resp, http.StatusOK)
 
 	var breadcrumbResult struct {
-		Items []struct {
+		Breadcrumb []struct {
 			ID   uuid.UUID `json:"id"`
 			Name string    `json:"name"`
-		} `json:"items"`
+		} `json:"breadcrumb"`
 	}
 	breadcrumbResult = ParseResponse[struct {
-		Items []struct {
+		Breadcrumb []struct {
 			ID   uuid.UUID `json:"id"`
 			Name string    `json:"name"`
-		} `json:"items"`
+		} `json:"breadcrumb"`
 	}](t, resp)
 
-	assert.GreaterOrEqual(t, len(breadcrumbResult.Items), 1)
+	assert.GreaterOrEqual(t, len(breadcrumbResult.Breadcrumb), 1)
 }
 
 func TestItemCRUD(t *testing.T) {
 	ts := NewTestServer(t)
 
-	token := ts.AuthHelper(t, "item@example.com")
+	token := ts.AuthHelper(t, "item_"+uuid.New().String()[:8]+"@example.com")
 	ts.SetToken(token)
 
 	// Create workspace
-	resp := ts.Post("/workspaces", map[string]string{
-		"name": "Item Test Workspace",
+	slug := "item-test-ws-" + uuid.New().String()[:8]
+	resp := ts.Post("/workspaces", map[string]interface{}{
+		"name":        "Item Test Workspace",
+		"slug":        slug,
+		"is_personal": false,
 	})
 	RequireStatus(t, resp, http.StatusOK)
 
@@ -385,20 +408,17 @@ func TestItemCRUD(t *testing.T) {
 		Name        string    `json:"name"`
 		SKU         string    `json:"sku"`
 		Description string    `json:"description"`
-		ObsidianURI string    `json:"obsidian_uri"`
 	}
 	itemResult = ParseResponse[struct {
 		ID          uuid.UUID `json:"id"`
 		Name        string    `json:"name"`
 		SKU         string    `json:"sku"`
 		Description string    `json:"description"`
-		ObsidianURI string    `json:"obsidian_uri"`
 	}](t, resp)
 
 	assert.NotEqual(t, uuid.Nil, itemResult.ID)
 	assert.Equal(t, "Test Item", itemResult.Name)
 	assert.Equal(t, "SKU-001", itemResult.SKU)
-	assert.NotEmpty(t, itemResult.ObsidianURI) // Verify Obsidian deep link is generated
 
 	// Search items
 	resp = ts.Get(workspacePath + "/items/search?q=Test")

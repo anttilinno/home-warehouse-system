@@ -162,7 +162,11 @@ func NewRouter(pool *pgxpool.Pool, cfg *config.Config) chi.Router {
 	r.Group(func(r chi.Router) {
 		r.Use(appMiddleware.JWTAuth(jwtService))
 
-		protectedAPI := humachi.New(r, humaAPIConfig)
+		// Create protected API config without docs (docs are already registered publicly)
+		protectedConfig := huma.DefaultConfig("Home Warehouse API", "1.0.0")
+		protectedConfig.DocsPath = ""
+		protectedConfig.OpenAPIPath = ""
+		protectedAPI := humachi.New(r, protectedConfig)
 
 		// Register protected user routes
 		userHandler.RegisterProtectedRoutes(protectedAPI)
@@ -179,7 +183,14 @@ func NewRouter(pool *pgxpool.Pool, cfg *config.Config) chi.Router {
 		// Workspace-scoped routes
 		r.Route("/workspaces/{workspace_id}", func(r chi.Router) {
 			r.Use(appMiddleware.Workspace)
-			wsAPI := humachi.New(r, humaAPIConfig)
+			// Create workspace API config without docs
+			wsConfig := huma.DefaultConfig("Home Warehouse API", "1.0.0")
+			wsConfig.DocsPath = ""
+			wsConfig.OpenAPIPath = ""
+			wsAPI := humachi.New(r, wsConfig)
+
+			// Register single-workspace routes (get, update, delete on "/")
+			workspace.RegisterWorkspaceScopedRoutes(wsAPI, workspaceSvc)
 
 			// Register workspace member routes (auth domain)
 			member.RegisterRoutes(wsAPI, memberSvc)

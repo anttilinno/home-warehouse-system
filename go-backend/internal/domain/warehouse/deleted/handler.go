@@ -23,8 +23,12 @@ func RegisterRoutes(api huma.API, svc *Service) {
 
 		// Default to last 7 days if no since parameter provided
 		since := time.Now().Add(-7 * 24 * time.Hour)
-		if input.Since != nil {
-			since = *input.Since
+		if input.Since != "" {
+			parsedTime, err := time.Parse(time.RFC3339, input.Since)
+			if err != nil {
+				return nil, huma.Error400BadRequest("invalid since format, use RFC3339")
+			}
+			since = parsedTime
 		}
 
 		records, err := svc.GetDeletedSince(ctx, workspaceID, since)
@@ -60,7 +64,7 @@ func toDeletedRecordResponse(record *DeletedRecord) DeletedRecordResponse {
 // Request/Response types
 
 type GetDeletedSinceInput struct {
-	Since *time.Time `query:"since" doc:"Get deleted records since this timestamp"`
+	Since string `query:"since" doc:"Get deleted records since this timestamp (RFC3339 format)"`
 }
 
 type GetDeletedSinceOutput struct {

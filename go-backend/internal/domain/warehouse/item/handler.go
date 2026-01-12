@@ -7,18 +7,15 @@ import (
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/google/uuid"
 
+	appMiddleware "github.com/antti/home-warehouse/go-backend/internal/api/middleware"
 	"github.com/antti/home-warehouse/go-backend/internal/shared"
 )
-
-type contextKey string
-
-const WorkspaceContextKey contextKey = "workspace"
 
 // RegisterRoutes registers item routes.
 func RegisterRoutes(api huma.API, svc *Service) {
 	// List items
 	huma.Get(api, "/items", func(ctx context.Context, input *ListItemsInput) (*ListItemsOutput, error) {
-		workspaceID, ok := ctx.Value(WorkspaceContextKey).(uuid.UUID)
+		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
 			return nil, huma.Error401Unauthorized("workspace context required")
 		}
@@ -46,7 +43,7 @@ func RegisterRoutes(api huma.API, svc *Service) {
 
 	// Search items
 	huma.Get(api, "/items/search", func(ctx context.Context, input *SearchItemsInput) (*SearchItemsOutput, error) {
-		workspaceID, ok := ctx.Value(WorkspaceContextKey).(uuid.UUID)
+		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
 			return nil, huma.Error401Unauthorized("workspace context required")
 		}
@@ -70,7 +67,7 @@ func RegisterRoutes(api huma.API, svc *Service) {
 
 	// Get item by ID
 	huma.Get(api, "/items/{id}", func(ctx context.Context, input *GetItemInput) (*GetItemOutput, error) {
-		workspaceID, ok := ctx.Value(WorkspaceContextKey).(uuid.UUID)
+		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
 			return nil, huma.Error401Unauthorized("workspace context required")
 		}
@@ -90,7 +87,7 @@ func RegisterRoutes(api huma.API, svc *Service) {
 
 	// List items by category
 	huma.Get(api, "/items/by-category/{category_id}", func(ctx context.Context, input *ListItemsByCategoryInput) (*ListItemsOutput, error) {
-		workspaceID, ok := ctx.Value(WorkspaceContextKey).(uuid.UUID)
+		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
 			return nil, huma.Error401Unauthorized("workspace context required")
 		}
@@ -115,7 +112,7 @@ func RegisterRoutes(api huma.API, svc *Service) {
 
 	// Create item
 	huma.Post(api, "/items", func(ctx context.Context, input *CreateItemInput) (*CreateItemOutput, error) {
-		workspaceID, ok := ctx.Value(WorkspaceContextKey).(uuid.UUID)
+		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
 			return nil, huma.Error401Unauthorized("workspace context required")
 		}
@@ -161,7 +158,7 @@ func RegisterRoutes(api huma.API, svc *Service) {
 
 	// Update item
 	huma.Patch(api, "/items/{id}", func(ctx context.Context, input *UpdateItemInput) (*UpdateItemOutput, error) {
-		workspaceID, ok := ctx.Value(WorkspaceContextKey).(uuid.UUID)
+		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
 			return nil, huma.Error401Unauthorized("workspace context required")
 		}
@@ -217,7 +214,7 @@ func RegisterRoutes(api huma.API, svc *Service) {
 
 	// Archive item
 	huma.Post(api, "/items/{id}/archive", func(ctx context.Context, input *GetItemInput) (*struct{}, error) {
-		workspaceID, ok := ctx.Value(WorkspaceContextKey).(uuid.UUID)
+		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
 			return nil, huma.Error401Unauthorized("workspace context required")
 		}
@@ -235,7 +232,7 @@ func RegisterRoutes(api huma.API, svc *Service) {
 
 	// Restore item
 	huma.Post(api, "/items/{id}/restore", func(ctx context.Context, input *GetItemInput) (*struct{}, error) {
-		workspaceID, ok := ctx.Value(WorkspaceContextKey).(uuid.UUID)
+		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
 			return nil, huma.Error401Unauthorized("workspace context required")
 		}
@@ -253,7 +250,7 @@ func RegisterRoutes(api huma.API, svc *Service) {
 
 	// Get item labels
 	huma.Get(api, "/items/{id}/labels", func(ctx context.Context, input *GetItemInput) (*GetItemLabelsOutput, error) {
-		workspaceID, ok := ctx.Value(WorkspaceContextKey).(uuid.UUID)
+		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
 			return nil, huma.Error401Unauthorized("workspace context required")
 		}
@@ -273,7 +270,7 @@ func RegisterRoutes(api huma.API, svc *Service) {
 
 	// Attach label to item
 	huma.Post(api, "/items/{id}/labels/{label_id}", func(ctx context.Context, input *ItemLabelInput) (*struct{}, error) {
-		workspaceID, ok := ctx.Value(WorkspaceContextKey).(uuid.UUID)
+		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
 			return nil, huma.Error401Unauthorized("workspace context required")
 		}
@@ -291,7 +288,7 @@ func RegisterRoutes(api huma.API, svc *Service) {
 
 	// Detach label from item
 	huma.Delete(api, "/items/{id}/labels/{label_id}", func(ctx context.Context, input *ItemLabelInput) (*struct{}, error) {
-		workspaceID, ok := ctx.Value(WorkspaceContextKey).(uuid.UUID)
+		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
 			return nil, huma.Error401Unauthorized("workspace context required")
 		}

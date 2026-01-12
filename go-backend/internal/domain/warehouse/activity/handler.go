@@ -28,8 +28,12 @@ func RegisterRoutes(api huma.API, svc *Service) {
 		var logs []*ActivityLog
 		var err error
 
-		if input.UserID != nil {
-			logs, err = svc.ListByUser(ctx, workspaceID, *input.UserID, pagination)
+		if input.UserID != "" {
+			userID, parseErr := uuid.Parse(input.UserID)
+			if parseErr != nil {
+				return nil, huma.Error400BadRequest("invalid user_id format")
+			}
+			logs, err = svc.ListByUser(ctx, workspaceID, userID, pagination)
 		} else {
 			logs, err = svc.ListByWorkspace(ctx, workspaceID, pagination)
 		}
@@ -84,8 +88,12 @@ func RegisterRoutes(api huma.API, svc *Service) {
 		}
 
 		since := time.Now().Add(-24 * time.Hour) // Default: last 24 hours
-		if input.Since != nil {
-			since = *input.Since
+		if input.Since != "" {
+			parsedTime, parseErr := time.Parse(time.RFC3339, input.Since)
+			if parseErr != nil {
+				return nil, huma.Error400BadRequest("invalid since format, use RFC3339")
+			}
+			since = parsedTime
 		}
 
 		logs, err := svc.GetRecentActivity(ctx, workspaceID, since)
@@ -122,9 +130,9 @@ func toActivityLogResponse(log *ActivityLog) ActivityLogResponse {
 // Request/Response types
 
 type ListActivityInput struct {
-	Page   int        `query:"page" default:"1" minimum:"1"`
-	Limit  int        `query:"limit" default:"50" minimum:"1" maximum:"100"`
-	UserID *uuid.UUID `query:"user_id"`
+	Page   int    `query:"page" default:"1" minimum:"1"`
+	Limit  int    `query:"limit" default:"50" minimum:"1" maximum:"100"`
+	UserID string `query:"user_id" doc:"Optional user ID to filter by"`
 }
 
 type ListByEntityInput struct {
@@ -135,7 +143,7 @@ type ListByEntityInput struct {
 }
 
 type RecentActivityInput struct {
-	Since *time.Time `query:"since"`
+	Since string `query:"since" doc:"ISO 8601 timestamp to get activity since"`
 }
 
 type ListActivityOutput struct {

@@ -116,14 +116,14 @@ func TestOpenAPIContainsAllEndpoints(t *testing.T) {
 	paths, ok := openAPI["paths"].(map[string]interface{})
 	require.True(t, ok)
 
-	// List of expected endpoint patterns (not exhaustive)
+	// List of expected public endpoint patterns (not exhaustive)
+	// Note: Protected routes (/users/me, /workspaces) are on separate Huma API instances
+	// and are not included in the public OpenAPI spec
 	expectedEndpoints := []string{
 		"/health",
 		"/auth/register",
 		"/auth/login",
 		"/auth/refresh",
-		"/users/me",
-		"/workspaces",
 		"/barcode/{barcode}",
 	}
 

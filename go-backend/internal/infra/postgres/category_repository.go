@@ -35,7 +35,28 @@ func (r *CategoryRepository) Save(ctx context.Context, c *category.Category) err
 		parentCategoryID = pgtype.UUID{Bytes: *c.ParentCategoryID(), Valid: true}
 	}
 
-	_, err := r.queries.CreateCategory(ctx, queries.CreateCategoryParams{
+	// Check if category exists
+	existing, err := r.queries.GetCategory(ctx, queries.GetCategoryParams{
+		ID:          c.ID(),
+		WorkspaceID: c.WorkspaceID(),
+	})
+	if err != nil && !errors.Is(err, pgx.ErrNoRows) {
+		return err
+	}
+
+	if existing.ID != uuid.Nil {
+		// Update existing category
+		_, err = r.queries.UpdateCategory(ctx, queries.UpdateCategoryParams{
+			ID:               c.ID(),
+			Name:             c.Name(),
+			ParentCategoryID: parentCategoryID,
+			Description:      c.Description(),
+		})
+		return err
+	}
+
+	// Create new category
+	_, err = r.queries.CreateCategory(ctx, queries.CreateCategoryParams{
 		ID:               c.ID(),
 		WorkspaceID:      c.WorkspaceID(),
 		Name:             c.Name(),

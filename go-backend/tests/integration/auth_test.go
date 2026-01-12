@@ -19,8 +19,9 @@ import (
 func TestRegister_Success(t *testing.T) {
 	ts := NewTestServer(t)
 
+	email := "register_success_" + uuid.New().String()[:8] + "@example.com"
 	resp := ts.Post("/auth/register", map[string]string{
-		"email":     "test@example.com",
+		"email":     email,
 		"full_name": "Test User",
 		"password":  "password123",
 	})
@@ -39,7 +40,7 @@ func TestRegister_Success(t *testing.T) {
 	}](t, resp)
 
 	assert.NotEqual(t, uuid.Nil, result.ID)
-	assert.Equal(t, "test@example.com", result.Email)
+	assert.Equal(t, email, result.Email)
 	assert.Equal(t, "Test User", result.FullName)
 }
 

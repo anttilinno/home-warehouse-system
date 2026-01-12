@@ -6,22 +6,15 @@ import (
 
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/google/uuid"
+
+	appMiddleware "github.com/antti/home-warehouse/go-backend/internal/api/middleware"
 )
 
-type contextKey string
-
-const UserContextKey contextKey = "user"
-
-// AuthUser represents the authenticated user in context.
-type AuthUser struct {
-	ID uuid.UUID
-}
-
-// RegisterRoutes registers workspace routes.
+// RegisterRoutes registers workspace routes at user-level (list, create, get by slug).
 func RegisterRoutes(api huma.API, svc *Service) {
 	// List user's workspaces
 	huma.Get(api, "/workspaces", func(ctx context.Context, input *struct{}) (*ListWorkspacesOutput, error) {
-		authUser, ok := ctx.Value(UserContextKey).(*AuthUser)
+		authUser, ok := appMiddleware.GetAuthUser(ctx)
 		if !ok {
 			return nil, huma.Error401Unauthorized("authentication required")
 		}
@@ -41,26 +34,9 @@ func RegisterRoutes(api huma.API, svc *Service) {
 		}, nil
 	})
 
-	// Get workspace by ID
-	huma.Get(api, "/workspaces/{id}", func(ctx context.Context, input *GetWorkspaceInput) (*GetWorkspaceOutput, error) {
-		_, ok := ctx.Value(UserContextKey).(*AuthUser)
-		if !ok {
-			return nil, huma.Error401Unauthorized("authentication required")
-		}
-
-		workspace, err := svc.GetByID(ctx, input.ID)
-		if err != nil || workspace == nil {
-			return nil, huma.Error404NotFound("workspace not found")
-		}
-
-		return &GetWorkspaceOutput{
-			Body: toWorkspaceResponse(workspace),
-		}, nil
-	})
-
 	// Get workspace by slug
 	huma.Get(api, "/workspaces/by-slug/{slug}", func(ctx context.Context, input *GetWorkspaceBySlugInput) (*GetWorkspaceOutput, error) {
-		_, ok := ctx.Value(UserContextKey).(*AuthUser)
+		_, ok := appMiddleware.GetAuthUser(ctx)
 		if !ok {
 			return nil, huma.Error401Unauthorized("authentication required")
 		}
@@ -77,7 +53,7 @@ func RegisterRoutes(api huma.API, svc *Service) {
 
 	// Create workspace
 	huma.Post(api, "/workspaces", func(ctx context.Context, input *CreateWorkspaceRequest) (*CreateWorkspaceOutput, error) {
-		authUser, ok := ctx.Value(UserContextKey).(*AuthUser)
+		authUser, ok := appMiddleware.GetAuthUser(ctx)
 		if !ok {
 			return nil, huma.Error401Unauthorized("authentication required")
 		}
@@ -100,12 +76,33 @@ func RegisterRoutes(api huma.API, svc *Service) {
 			Body: toWorkspaceResponse(workspace),
 		}, nil
 	})
+}
+
+// RegisterWorkspaceScopedRoutes registers routes for single workspace operations
+// (get, update, delete). These are registered on the workspace-scoped API.
+func RegisterWorkspaceScopedRoutes(api huma.API, svc *Service) {
+	// Get workspace (handles /workspaces/{workspace_id} as root "/" on subrouter)
+	huma.Get(api, "/", func(ctx context.Context, input *struct{}) (*GetWorkspaceOutput, error) {
+		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
+		if !ok {
+			return nil, huma.Error401Unauthorized("workspace context required")
+		}
+
+		workspace, err := svc.GetByID(ctx, workspaceID)
+		if err != nil || workspace == nil {
+			return nil, huma.Error404NotFound("workspace not found")
+		}
+
+		return &GetWorkspaceOutput{
+			Body: toWorkspaceResponse(workspace),
+		}, nil
+	})
 
 	// Update workspace
-	huma.Patch(api, "/workspaces/{id}", func(ctx context.Context, input *UpdateWorkspaceRequest) (*UpdateWorkspaceOutput, error) {
-		_, ok := ctx.Value(UserContextKey).(*AuthUser)
+	huma.Patch(api, "/", func(ctx context.Context, input *UpdateWorkspaceBodyInput) (*UpdateWorkspaceOutput, error) {
+		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("authentication required")
+			return nil, huma.Error401Unauthorized("workspace context required")
 		}
 
 		updateInput := UpdateWorkspaceInput{
@@ -115,7 +112,7 @@ func RegisterRoutes(api huma.API, svc *Service) {
 			updateInput.Name = *input.Body.Name
 		}
 
-		workspace, err := svc.Update(ctx, input.ID, updateInput)
+		workspace, err := svc.Update(ctx, workspaceID, updateInput)
 		if err != nil {
 			if err == ErrWorkspaceNotFound {
 				return nil, huma.Error404NotFound("workspace not found")
@@ -129,13 +126,13 @@ func RegisterRoutes(api huma.API, svc *Service) {
 	})
 
 	// Delete workspace
-	huma.Delete(api, "/workspaces/{id}", func(ctx context.Context, input *GetWorkspaceInput) (*struct{}, error) {
-		_, ok := ctx.Value(UserContextKey).(*AuthUser)
+	huma.Delete(api, "/", func(ctx context.Context, input *struct{}) (*struct{}, error) {
+		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("authentication required")
+			return nil, huma.Error401Unauthorized("workspace context required")
 		}
 
-		err := svc.Delete(ctx, input.ID)
+		err := svc.Delete(ctx, workspaceID)
 		if err != nil {
 			if err == ErrWorkspaceNotFound {
 				return nil, huma.Error404NotFound("workspace not found")
@@ -199,6 +196,14 @@ type CreateWorkspaceOutput struct {
 
 type UpdateWorkspaceRequest struct {
 	ID   uuid.UUID `path:"id"`
+	Body struct {
+		Name        *string `json:"name,omitempty" minLength:"1" maxLength:"255" doc:"Workspace name"`
+		Description *string `json:"description,omitempty" doc:"Workspace description"`
+	}
+}
+
+// UpdateWorkspaceBodyInput is for workspace-scoped update (no path param needed)
+type UpdateWorkspaceBodyInput struct {
 	Body struct {
 		Name        *string `json:"name,omitempty" minLength:"1" maxLength:"255" doc:"Workspace name"`
 		Description *string `json:"description,omitempty" doc:"Workspace description"`

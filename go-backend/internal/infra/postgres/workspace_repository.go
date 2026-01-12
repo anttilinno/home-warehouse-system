@@ -28,7 +28,24 @@ func NewWorkspaceRepository(pool *pgxpool.Pool) *WorkspaceRepository {
 
 // Save persists a workspace (create or update).
 func (r *WorkspaceRepository) Save(ctx context.Context, w *workspace.Workspace) error {
-	_, err := r.queries.CreateWorkspace(ctx, queries.CreateWorkspaceParams{
+	// Check if workspace already exists
+	existing, err := r.queries.GetWorkspaceByID(ctx, w.ID())
+	if err != nil && !errors.Is(err, pgx.ErrNoRows) {
+		return err
+	}
+
+	if existing.ID != uuid.Nil {
+		// Update existing workspace
+		_, err = r.queries.UpdateWorkspace(ctx, queries.UpdateWorkspaceParams{
+			ID:          w.ID(),
+			Name:        w.Name(),
+			Description: w.Description(),
+		})
+		return err
+	}
+
+	// Create new workspace
+	_, err = r.queries.CreateWorkspace(ctx, queries.CreateWorkspaceParams{
 		ID:          w.ID(),
 		Name:        w.Name(),
 		Slug:        w.Slug(),
