@@ -1,4 +1,4 @@
-\restrict LiZdhiKZ7r8eh9znLrmuXtP1Hv5bVY9Ha7u10MWgGXkGFSsNZOjLXeYbtax0Mp5
+\restrict ZzAHi4adjWZ8d8je4h1CjCG4sp5E0YxrrbAmll1wEoMlm0tjTWlWD0L2QfARLfe
 
 -- Dumped from database version 18.1 (Debian 18.1-1.pgdg13+2)
 -- Dumped by pg_dump version 18.1
@@ -151,6 +151,81 @@ CREATE TYPE warehouse.tag_type_enum AS ENUM (
 );
 
 
+--
+-- Name: containers_search_vector_update(); Type: FUNCTION; Schema: warehouse; Owner: -
+--
+
+CREATE FUNCTION warehouse.containers_search_vector_update() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+    NEW.search_vector := to_tsvector('english',
+        coalesce(NEW.name, '') || ' ' ||
+        coalesce(NEW.description, '') || ' ' ||
+        coalesce(NEW.short_code, '')
+    );
+    RETURN NEW;
+END;
+$$;
+
+
+--
+-- Name: locations_search_vector_update(); Type: FUNCTION; Schema: warehouse; Owner: -
+--
+
+CREATE FUNCTION warehouse.locations_search_vector_update() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+    NEW.search_vector := to_tsvector('english',
+        coalesce(NEW.name, '') || ' ' ||
+        coalesce(NEW.description, '') || ' ' ||
+        coalesce(NEW.zone, '') || ' ' ||
+        coalesce(NEW.shelf, '') || ' ' ||
+        coalesce(NEW.bin, '') || ' ' ||
+        coalesce(NEW.short_code, '')
+    );
+    RETURN NEW;
+END;
+$$;
+
+
+--
+-- Name: validate_loan_quantity(); Type: FUNCTION; Schema: warehouse; Owner: -
+--
+
+CREATE FUNCTION warehouse.validate_loan_quantity() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+DECLARE
+    available_qty INTEGER;
+    total_loaned INTEGER;
+    inventory_qty INTEGER;
+BEGIN
+    -- Get inventory quantity
+    SELECT quantity INTO inventory_qty
+    FROM warehouse.inventory
+    WHERE id = NEW.inventory_id;
+
+    -- Get total currently loaned (excluding this loan if updating)
+    SELECT COALESCE(SUM(quantity), 0) INTO total_loaned
+    FROM warehouse.loans
+    WHERE inventory_id = NEW.inventory_id
+        AND returned_at IS NULL
+        AND id != COALESCE(NEW.id, '00000000-0000-0000-0000-000000000000'::uuid);
+
+    available_qty := inventory_qty - total_loaned;
+
+    IF NEW.quantity > available_qty THEN
+        RAISE EXCEPTION 'Loan quantity (%) exceeds available inventory (%)',
+            NEW.quantity, available_qty;
+    END IF;
+
+    RETURN NEW;
+END;
+$$;
+
+
 SET default_tablespace = '';
 
 SET default_table_access_method = heap;
@@ -205,7 +280,7 @@ CREATE TABLE auth.password_reset_tokens (
 -- Name: TABLE password_reset_tokens; Type: COMMENT; Schema: auth; Owner: -
 --
 
-COMMENT ON TABLE auth.password_reset_tokens IS 'Password reset tokens with expiration and one-time use';
+COMMENT ON TABLE auth.password_reset_tokens IS 'Password reset tokens with expiration and one-time use.';
 
 
 --
@@ -253,12 +328,33 @@ CREATE TABLE auth.users (
     password_hash character varying(255) NOT NULL,
     is_active boolean DEFAULT true,
     is_superuser boolean DEFAULT false,
-    created_at timestamp with time zone DEFAULT now(),
-    updated_at timestamp with time zone DEFAULT now(),
     date_format character varying(20) DEFAULT 'DD.MM.YYYY'::character varying,
     language character varying(5) DEFAULT 'en'::character varying NOT NULL,
-    theme character varying(20) DEFAULT 'system'::character varying NOT NULL
+    theme character varying(20) DEFAULT 'system'::character varying NOT NULL,
+    created_at timestamp with time zone DEFAULT now(),
+    updated_at timestamp with time zone DEFAULT now()
 );
+
+
+--
+-- Name: COLUMN users.date_format; Type: COMMENT; Schema: auth; Owner: -
+--
+
+COMMENT ON COLUMN auth.users.date_format IS 'User''s preferred date format for display (e.g., DD.MM.YYYY, MM/DD/YYYY, YYYY-MM-DD)';
+
+
+--
+-- Name: COLUMN users.language; Type: COMMENT; Schema: auth; Owner: -
+--
+
+COMMENT ON COLUMN auth.users.language IS 'User''s preferred language code (e.g., en, fi, de)';
+
+
+--
+-- Name: COLUMN users.theme; Type: COMMENT; Schema: auth; Owner: -
+--
+
+COMMENT ON COLUMN auth.users.theme IS 'User''s preferred UI theme: light, dark, or system';
 
 
 --
@@ -361,9 +457,9 @@ CREATE TABLE auth.workspaces (
     name character varying(100) NOT NULL,
     slug character varying(50) NOT NULL,
     description text,
+    is_personal boolean DEFAULT false NOT NULL,
     created_at timestamp with time zone DEFAULT now(),
-    updated_at timestamp with time zone DEFAULT now(),
-    is_personal boolean DEFAULT false NOT NULL
+    updated_at timestamp with time zone DEFAULT now()
 );
 
 
@@ -379,6 +475,13 @@ COMMENT ON TABLE auth.workspaces IS 'Isolated environments for organizing invent
 --
 
 COMMENT ON COLUMN auth.workspaces.slug IS 'URL-friendly identifier (e.g., "my-home", "office"). Used in URLs like /w/my-home/items';
+
+
+--
+-- Name: COLUMN workspaces.is_personal; Type: COMMENT; Schema: auth; Owner: -
+--
+
+COMMENT ON COLUMN auth.workspaces.is_personal IS 'Whether this is a user''s personal workspace created during registration.';
 
 
 --
@@ -472,6 +575,7 @@ CREATE TABLE warehouse.borrowers (
     email character varying(255),
     phone character varying(50),
     notes text,
+    is_archived boolean DEFAULT false NOT NULL,
     created_at timestamp with time zone DEFAULT now(),
     updated_at timestamp with time zone DEFAULT now()
 );
@@ -487,6 +591,7 @@ CREATE TABLE warehouse.categories (
     name character varying(100) NOT NULL,
     parent_category_id uuid,
     description text,
+    is_archived boolean DEFAULT false NOT NULL,
     created_at timestamp with time zone DEFAULT now(),
     updated_at timestamp with time zone DEFAULT now()
 );
@@ -502,6 +607,7 @@ CREATE TABLE warehouse.companies (
     name character varying(200) NOT NULL,
     website character varying(500),
     notes text,
+    is_archived boolean DEFAULT false NOT NULL,
     created_at timestamp with time zone DEFAULT now(),
     updated_at timestamp with time zone DEFAULT now()
 );
@@ -533,6 +639,8 @@ CREATE TABLE warehouse.containers (
     description text,
     capacity character varying(100),
     short_code character varying(8),
+    is_archived boolean DEFAULT false NOT NULL,
+    search_vector tsvector,
     created_at timestamp with time zone DEFAULT now(),
     updated_at timestamp with time zone DEFAULT now()
 );
@@ -542,7 +650,28 @@ CREATE TABLE warehouse.containers (
 -- Name: COLUMN containers.short_code; Type: COMMENT; Schema: warehouse; Owner: -
 --
 
-COMMENT ON COLUMN warehouse.containers.short_code IS 'Short alphanumeric code for QR labels. Enables compact URLs for small label printers.';
+COMMENT ON COLUMN warehouse.containers.short_code IS 'Short alphanumeric code for QR labels. Unique within workspace. Enables compact URLs for small label printers.';
+
+
+--
+-- Name: deleted_records; Type: TABLE; Schema: warehouse; Owner: -
+--
+
+CREATE TABLE warehouse.deleted_records (
+    id uuid DEFAULT uuidv7() NOT NULL,
+    workspace_id uuid NOT NULL,
+    entity_type warehouse.activity_entity_enum NOT NULL,
+    entity_id uuid NOT NULL,
+    deleted_at timestamp with time zone DEFAULT now() NOT NULL,
+    deleted_by uuid
+);
+
+
+--
+-- Name: TABLE deleted_records; Type: COMMENT; Schema: warehouse; Owner: -
+--
+
+COMMENT ON TABLE warehouse.deleted_records IS 'Tombstone table tracking hard-deleted records for PWA offline sync.';
 
 
 --
@@ -581,10 +710,18 @@ CREATE TABLE warehouse.files (
     mime_type character varying(100),
     size_bytes bigint,
     checksum character varying(64),
+    storage_key character varying(500),
     uploaded_by uuid,
     created_at timestamp with time zone DEFAULT now(),
     updated_at timestamp with time zone DEFAULT now()
 );
+
+
+--
+-- Name: COLUMN files.storage_key; Type: COMMENT; Schema: warehouse; Owner: -
+--
+
+COMMENT ON COLUMN warehouse.files.storage_key IS 'Storage backend reference (S3 key, filesystem path, etc.)';
 
 
 --
@@ -606,9 +743,10 @@ CREATE TABLE warehouse.inventory (
     warranty_expires date,
     expiration_date date,
     notes text,
+    is_archived boolean DEFAULT false NOT NULL,
     created_at timestamp with time zone DEFAULT now(),
     updated_at timestamp with time zone DEFAULT now(),
-    CONSTRAINT inventory_quantity_check CHECK ((quantity >= 0))
+    CONSTRAINT chk_inventory_quantity_non_negative CHECK ((quantity >= 0))
 );
 
 
@@ -627,7 +765,8 @@ CREATE TABLE warehouse.inventory_movements (
     quantity integer DEFAULT 1 NOT NULL,
     moved_by uuid,
     reason text,
-    created_at timestamp with time zone DEFAULT now()
+    created_at timestamp with time zone DEFAULT now(),
+    CONSTRAINT chk_movements_quantity_positive CHECK ((quantity > 0))
 );
 
 
@@ -657,39 +796,56 @@ CREATE TABLE warehouse.items (
     image_url character varying(500),
     serial_number character varying(100),
     manufacturer character varying(100),
+    barcode character varying(50),
     is_insured boolean DEFAULT false,
     is_archived boolean DEFAULT false,
     lifetime_warranty boolean DEFAULT false,
     warranty_details text,
     purchased_from uuid,
+    min_stock_level integer DEFAULT 0 NOT NULL,
     short_code character varying(8),
+    obsidian_vault_path character varying(500),
+    obsidian_note_path character varying(500),
     search_vector tsvector GENERATED ALWAYS AS ((((setweight(to_tsvector('english'::regconfig, (COALESCE(name, ''::character varying))::text), 'A'::"char") || setweight(to_tsvector('english'::regconfig, (COALESCE(brand, ''::character varying))::text), 'B'::"char")) || setweight(to_tsvector('english'::regconfig, (COALESCE(model, ''::character varying))::text), 'B'::"char")) || setweight(to_tsvector('english'::regconfig, COALESCE(description, ''::text)), 'C'::"char"))) STORED,
     created_at timestamp with time zone DEFAULT now(),
     updated_at timestamp with time zone DEFAULT now(),
-    obsidian_vault_path character varying(500),
-    obsidian_note_path character varying(500)
+    CONSTRAINT chk_items_min_stock_non_negative CHECK ((min_stock_level >= 0))
 );
+
+
+--
+-- Name: COLUMN items.barcode; Type: COMMENT; Schema: warehouse; Owner: -
+--
+
+COMMENT ON COLUMN warehouse.items.barcode IS 'UPC/EAN/other product barcode for scanning.';
+
+
+--
+-- Name: COLUMN items.min_stock_level; Type: COMMENT; Schema: warehouse; Owner: -
+--
+
+COMMENT ON COLUMN warehouse.items.min_stock_level IS 'Threshold for LOW_STOCK notifications. When total inventory falls below this, trigger alert.';
 
 
 --
 -- Name: COLUMN items.short_code; Type: COMMENT; Schema: warehouse; Owner: -
 --
 
-COMMENT ON COLUMN warehouse.items.short_code IS 'Short alphanumeric code for QR labels. Enables compact URLs for small label printers.';
+COMMENT ON COLUMN warehouse.items.short_code IS 'Short alphanumeric code for QR labels. Unique within workspace. Enables compact URLs for small label printers.';
 
 
 --
 -- Name: COLUMN items.obsidian_vault_path; Type: COMMENT; Schema: warehouse; Owner: -
 --
 
-COMMENT ON COLUMN warehouse.items.obsidian_vault_path IS 'Local path to Obsidian vault';
+COMMENT ON COLUMN warehouse.items.obsidian_vault_path IS 'Local path to Obsidian vault for linking notes.';
 
 
 --
 -- Name: COLUMN items.obsidian_note_path; Type: COMMENT; Schema: warehouse; Owner: -
 --
 
-COMMENT ON COLUMN warehouse.items.obsidian_note_path IS 'Relative path to note within vault';
+COMMENT ON COLUMN warehouse.items.obsidian_note_path IS 'Relative path to note within vault.';
 
 
 --
@@ -702,6 +858,7 @@ CREATE TABLE warehouse.labels (
     name character varying(100) NOT NULL,
     color character varying(7),
     description text,
+    is_archived boolean DEFAULT false NOT NULL,
     created_at timestamp with time zone DEFAULT now(),
     updated_at timestamp with time zone DEFAULT now()
 );
@@ -722,7 +879,9 @@ CREATE TABLE warehouse.loans (
     returned_at timestamp with time zone,
     notes text,
     created_at timestamp with time zone DEFAULT now(),
-    updated_at timestamp with time zone DEFAULT now()
+    updated_at timestamp with time zone DEFAULT now(),
+    CONSTRAINT chk_loans_quantity_limit CHECK ((quantity <= 1000)),
+    CONSTRAINT chk_loans_quantity_positive CHECK ((quantity > 0))
 );
 
 
@@ -740,6 +899,8 @@ CREATE TABLE warehouse.locations (
     bin character varying(50),
     description text,
     short_code character varying(8),
+    is_archived boolean DEFAULT false NOT NULL,
+    search_vector tsvector,
     created_at timestamp with time zone DEFAULT now(),
     updated_at timestamp with time zone DEFAULT now()
 );
@@ -749,7 +910,85 @@ CREATE TABLE warehouse.locations (
 -- Name: COLUMN locations.short_code; Type: COMMENT; Schema: warehouse; Owner: -
 --
 
-COMMENT ON COLUMN warehouse.locations.short_code IS 'Short alphanumeric code for QR labels. Enables compact URLs for small label printers.';
+COMMENT ON COLUMN warehouse.locations.short_code IS 'Short alphanumeric code for QR labels. Unique within workspace. Enables compact URLs for small label printers.';
+
+
+--
+-- Name: v_archived_records; Type: VIEW; Schema: warehouse; Owner: -
+--
+
+CREATE VIEW warehouse.v_archived_records AS
+ SELECT 'item'::text AS entity_type,
+    items.id,
+    items.workspace_id,
+    items.name,
+    items.updated_at AS archived_at
+   FROM warehouse.items
+  WHERE (items.is_archived = true)
+UNION ALL
+ SELECT 'location'::text AS entity_type,
+    locations.id,
+    locations.workspace_id,
+    locations.name,
+    locations.updated_at AS archived_at
+   FROM warehouse.locations
+  WHERE (locations.is_archived = true)
+UNION ALL
+ SELECT 'container'::text AS entity_type,
+    containers.id,
+    containers.workspace_id,
+    containers.name,
+    containers.updated_at AS archived_at
+   FROM warehouse.containers
+  WHERE (containers.is_archived = true)
+UNION ALL
+ SELECT 'category'::text AS entity_type,
+    categories.id,
+    categories.workspace_id,
+    categories.name,
+    categories.updated_at AS archived_at
+   FROM warehouse.categories
+  WHERE (categories.is_archived = true)
+UNION ALL
+ SELECT 'company'::text AS entity_type,
+    companies.id,
+    companies.workspace_id,
+    companies.name,
+    companies.updated_at AS archived_at
+   FROM warehouse.companies
+  WHERE (companies.is_archived = true)
+UNION ALL
+ SELECT 'borrower'::text AS entity_type,
+    borrowers.id,
+    borrowers.workspace_id,
+    borrowers.name,
+    borrowers.updated_at AS archived_at
+   FROM warehouse.borrowers
+  WHERE (borrowers.is_archived = true)
+UNION ALL
+ SELECT 'label'::text AS entity_type,
+    labels.id,
+    labels.workspace_id,
+    labels.name,
+    labels.updated_at AS archived_at
+   FROM warehouse.labels
+  WHERE (labels.is_archived = true)
+UNION ALL
+ SELECT 'inventory'::text AS entity_type,
+    i.id,
+    i.workspace_id,
+    it.name,
+    i.updated_at AS archived_at
+   FROM (warehouse.inventory i
+     JOIN warehouse.items it ON ((i.item_id = it.id)))
+  WHERE (i.is_archived = true);
+
+
+--
+-- Name: VIEW v_archived_records; Type: COMMENT; Schema: warehouse; Owner: -
+--
+
+COMMENT ON VIEW warehouse.v_archived_records IS 'All soft-deleted records across entity types for restoration UI.';
 
 
 --
@@ -937,11 +1176,11 @@ ALTER TABLE ONLY warehouse.containers
 
 
 --
--- Name: containers containers_short_code_key; Type: CONSTRAINT; Schema: warehouse; Owner: -
+-- Name: deleted_records deleted_records_pkey; Type: CONSTRAINT; Schema: warehouse; Owner: -
 --
 
-ALTER TABLE ONLY warehouse.containers
-    ADD CONSTRAINT containers_short_code_key UNIQUE (short_code);
+ALTER TABLE ONLY warehouse.deleted_records
+    ADD CONSTRAINT deleted_records_pkey PRIMARY KEY (id);
 
 
 --
@@ -1017,14 +1256,6 @@ ALTER TABLE ONLY warehouse.items
 
 
 --
--- Name: items items_short_code_key; Type: CONSTRAINT; Schema: warehouse; Owner: -
---
-
-ALTER TABLE ONLY warehouse.items
-    ADD CONSTRAINT items_short_code_key UNIQUE (short_code);
-
-
---
 -- Name: items items_workspace_id_sku_key; Type: CONSTRAINT; Schema: warehouse; Owner: -
 --
 
@@ -1065,11 +1296,27 @@ ALTER TABLE ONLY warehouse.locations
 
 
 --
--- Name: locations locations_short_code_key; Type: CONSTRAINT; Schema: warehouse; Owner: -
+-- Name: containers uq_containers_workspace_short_code; Type: CONSTRAINT; Schema: warehouse; Owner: -
+--
+
+ALTER TABLE ONLY warehouse.containers
+    ADD CONSTRAINT uq_containers_workspace_short_code UNIQUE (workspace_id, short_code);
+
+
+--
+-- Name: items uq_items_workspace_short_code; Type: CONSTRAINT; Schema: warehouse; Owner: -
+--
+
+ALTER TABLE ONLY warehouse.items
+    ADD CONSTRAINT uq_items_workspace_short_code UNIQUE (workspace_id, short_code);
+
+
+--
+-- Name: locations uq_locations_workspace_short_code; Type: CONSTRAINT; Schema: warehouse; Owner: -
 --
 
 ALTER TABLE ONLY warehouse.locations
-    ADD CONSTRAINT locations_short_code_key UNIQUE (short_code);
+    ADD CONSTRAINT uq_locations_workspace_short_code UNIQUE (workspace_id, short_code);
 
 
 --
@@ -1150,6 +1397,13 @@ CREATE INDEX ix_workspace_exports_workspace ON auth.workspace_exports USING btre
 
 
 --
+-- Name: ix_workspace_members_invited_by; Type: INDEX; Schema: auth; Owner: -
+--
+
+CREATE INDEX ix_workspace_members_invited_by ON auth.workspace_members USING btree (invited_by) WHERE (invited_by IS NOT NULL);
+
+
+--
 -- Name: ix_workspace_members_user; Type: INDEX; Schema: auth; Owner: -
 --
 
@@ -1209,7 +1463,7 @@ CREATE INDEX ix_attachments_docspell ON warehouse.attachments USING btree (docsp
 -- Name: ix_attachments_file; Type: INDEX; Schema: warehouse; Owner: -
 --
 
-CREATE INDEX ix_attachments_file ON warehouse.attachments USING btree (file_id);
+CREATE INDEX ix_attachments_file ON warehouse.attachments USING btree (file_id) WHERE (file_id IS NOT NULL);
 
 
 --
@@ -1220,10 +1474,24 @@ CREATE INDEX ix_attachments_item ON warehouse.attachments USING btree (item_id);
 
 
 --
+-- Name: ix_borrowers_active; Type: INDEX; Schema: warehouse; Owner: -
+--
+
+CREATE INDEX ix_borrowers_active ON warehouse.borrowers USING btree (workspace_id) WHERE (is_archived = false);
+
+
+--
 -- Name: ix_borrowers_workspace; Type: INDEX; Schema: warehouse; Owner: -
 --
 
 CREATE INDEX ix_borrowers_workspace ON warehouse.borrowers USING btree (workspace_id);
+
+
+--
+-- Name: ix_categories_active; Type: INDEX; Schema: warehouse; Owner: -
+--
+
+CREATE INDEX ix_categories_active ON warehouse.categories USING btree (workspace_id, parent_category_id) WHERE (is_archived = false);
 
 
 --
@@ -1248,6 +1516,13 @@ CREATE INDEX ix_categories_workspace ON warehouse.categories USING btree (worksp
 
 
 --
+-- Name: ix_companies_active; Type: INDEX; Schema: warehouse; Owner: -
+--
+
+CREATE INDEX ix_companies_active ON warehouse.companies USING btree (workspace_id) WHERE (is_archived = false);
+
+
+--
 -- Name: ix_companies_name; Type: INDEX; Schema: warehouse; Owner: -
 --
 
@@ -1269,6 +1544,13 @@ CREATE INDEX ix_container_tags_container_id ON warehouse.container_tags USING bt
 
 
 --
+-- Name: ix_containers_active; Type: INDEX; Schema: warehouse; Owner: -
+--
+
+CREATE INDEX ix_containers_active ON warehouse.containers USING btree (workspace_id, location_id) WHERE (is_archived = false);
+
+
+--
 -- Name: ix_containers_location_id; Type: INDEX; Schema: warehouse; Owner: -
 --
 
@@ -1283,10 +1565,17 @@ CREATE INDEX ix_containers_name ON warehouse.containers USING btree (name);
 
 
 --
+-- Name: ix_containers_search; Type: INDEX; Schema: warehouse; Owner: -
+--
+
+CREATE INDEX ix_containers_search ON warehouse.containers USING gin (search_vector);
+
+
+--
 -- Name: ix_containers_short_code; Type: INDEX; Schema: warehouse; Owner: -
 --
 
-CREATE INDEX ix_containers_short_code ON warehouse.containers USING btree (short_code);
+CREATE INDEX ix_containers_short_code ON warehouse.containers USING btree (short_code) WHERE (short_code IS NOT NULL);
 
 
 --
@@ -1294,6 +1583,20 @@ CREATE INDEX ix_containers_short_code ON warehouse.containers USING btree (short
 --
 
 CREATE INDEX ix_containers_workspace ON warehouse.containers USING btree (workspace_id);
+
+
+--
+-- Name: ix_deleted_records_workspace; Type: INDEX; Schema: warehouse; Owner: -
+--
+
+CREATE INDEX ix_deleted_records_workspace ON warehouse.deleted_records USING btree (workspace_id);
+
+
+--
+-- Name: ix_deleted_records_workspace_since; Type: INDEX; Schema: warehouse; Owner: -
+--
+
+CREATE INDEX ix_deleted_records_workspace_since ON warehouse.deleted_records USING btree (workspace_id, deleted_at);
 
 
 --
@@ -1315,6 +1618,20 @@ CREATE INDEX ix_favorites_workspace ON warehouse.favorites USING btree (workspac
 --
 
 CREATE INDEX ix_files_workspace ON warehouse.files USING btree (workspace_id);
+
+
+--
+-- Name: ix_inventory_active; Type: INDEX; Schema: warehouse; Owner: -
+--
+
+CREATE INDEX ix_inventory_active ON warehouse.inventory USING btree (workspace_id, item_id, location_id) WHERE (is_archived = false);
+
+
+--
+-- Name: ix_inventory_available; Type: INDEX; Schema: warehouse; Owner: -
+--
+
+CREATE INDEX ix_inventory_available ON warehouse.inventory USING btree (workspace_id, item_id) WHERE (status = 'AVAILABLE'::warehouse.item_status_enum);
 
 
 --
@@ -1353,6 +1670,13 @@ CREATE INDEX ix_inventory_movements_inventory ON warehouse.inventory_movements U
 
 
 --
+-- Name: ix_inventory_movements_moved_by; Type: INDEX; Schema: warehouse; Owner: -
+--
+
+CREATE INDEX ix_inventory_movements_moved_by ON warehouse.inventory_movements USING btree (moved_by) WHERE (moved_by IS NOT NULL);
+
+
+--
 -- Name: ix_inventory_movements_workspace; Type: INDEX; Schema: warehouse; Owner: -
 --
 
@@ -1364,6 +1688,20 @@ CREATE INDEX ix_inventory_movements_workspace ON warehouse.inventory_movements U
 --
 
 CREATE INDEX ix_inventory_workspace ON warehouse.inventory USING btree (workspace_id);
+
+
+--
+-- Name: ix_items_active; Type: INDEX; Schema: warehouse; Owner: -
+--
+
+CREATE INDEX ix_items_active ON warehouse.items USING btree (workspace_id, name) WHERE (is_archived = false);
+
+
+--
+-- Name: ix_items_barcode; Type: INDEX; Schema: warehouse; Owner: -
+--
+
+CREATE INDEX ix_items_barcode ON warehouse.items USING btree (workspace_id, barcode) WHERE (barcode IS NOT NULL);
 
 
 --
@@ -1381,6 +1719,13 @@ CREATE INDEX ix_items_name ON warehouse.items USING btree (name);
 
 
 --
+-- Name: ix_items_purchased_from; Type: INDEX; Schema: warehouse; Owner: -
+--
+
+CREATE INDEX ix_items_purchased_from ON warehouse.items USING btree (purchased_from) WHERE (purchased_from IS NOT NULL);
+
+
+--
 -- Name: ix_items_search; Type: INDEX; Schema: warehouse; Owner: -
 --
 
@@ -1391,7 +1736,7 @@ CREATE INDEX ix_items_search ON warehouse.items USING gin (search_vector);
 -- Name: ix_items_short_code; Type: INDEX; Schema: warehouse; Owner: -
 --
 
-CREATE INDEX ix_items_short_code ON warehouse.items USING btree (short_code);
+CREATE INDEX ix_items_short_code ON warehouse.items USING btree (short_code) WHERE (short_code IS NOT NULL);
 
 
 --
@@ -1399,6 +1744,13 @@ CREATE INDEX ix_items_short_code ON warehouse.items USING btree (short_code);
 --
 
 CREATE INDEX ix_items_workspace ON warehouse.items USING btree (workspace_id);
+
+
+--
+-- Name: ix_labels_active; Type: INDEX; Schema: warehouse; Owner: -
+--
+
+CREATE INDEX ix_labels_active ON warehouse.labels USING btree (workspace_id) WHERE (is_archived = false);
 
 
 --
@@ -1430,10 +1782,24 @@ CREATE INDEX ix_loans_inventory_id ON warehouse.loans USING btree (inventory_id)
 
 
 --
+-- Name: ix_loans_outstanding; Type: INDEX; Schema: warehouse; Owner: -
+--
+
+CREATE INDEX ix_loans_outstanding ON warehouse.loans USING btree (workspace_id, borrower_id, due_date) WHERE (returned_at IS NULL);
+
+
+--
 -- Name: ix_loans_workspace; Type: INDEX; Schema: warehouse; Owner: -
 --
 
 CREATE INDEX ix_loans_workspace ON warehouse.loans USING btree (workspace_id);
+
+
+--
+-- Name: ix_locations_active; Type: INDEX; Schema: warehouse; Owner: -
+--
+
+CREATE INDEX ix_locations_active ON warehouse.locations USING btree (workspace_id, parent_location) WHERE (is_archived = false);
 
 
 --
@@ -1451,10 +1817,17 @@ CREATE INDEX ix_locations_parent_location ON warehouse.locations USING btree (pa
 
 
 --
+-- Name: ix_locations_search; Type: INDEX; Schema: warehouse; Owner: -
+--
+
+CREATE INDEX ix_locations_search ON warehouse.locations USING gin (search_vector);
+
+
+--
 -- Name: ix_locations_short_code; Type: INDEX; Schema: warehouse; Owner: -
 --
 
-CREATE INDEX ix_locations_short_code ON warehouse.locations USING btree (short_code);
+CREATE INDEX ix_locations_short_code ON warehouse.locations USING btree (short_code) WHERE (short_code IS NOT NULL);
 
 
 --
@@ -1462,6 +1835,27 @@ CREATE INDEX ix_locations_short_code ON warehouse.locations USING btree (short_c
 --
 
 CREATE INDEX ix_locations_workspace ON warehouse.locations USING btree (workspace_id);
+
+
+--
+-- Name: containers trg_containers_search_vector; Type: TRIGGER; Schema: warehouse; Owner: -
+--
+
+CREATE TRIGGER trg_containers_search_vector BEFORE INSERT OR UPDATE ON warehouse.containers FOR EACH ROW EXECUTE FUNCTION warehouse.containers_search_vector_update();
+
+
+--
+-- Name: locations trg_locations_search_vector; Type: TRIGGER; Schema: warehouse; Owner: -
+--
+
+CREATE TRIGGER trg_locations_search_vector BEFORE INSERT OR UPDATE ON warehouse.locations FOR EACH ROW EXECUTE FUNCTION warehouse.locations_search_vector_update();
+
+
+--
+-- Name: loans trg_validate_loan_quantity; Type: TRIGGER; Schema: warehouse; Owner: -
+--
+
+CREATE TRIGGER trg_validate_loan_quantity BEFORE INSERT OR UPDATE ON warehouse.loans FOR EACH ROW WHEN ((new.returned_at IS NULL)) EXECUTE FUNCTION warehouse.validate_loan_quantity();
 
 
 --
@@ -1630,6 +2024,22 @@ ALTER TABLE ONLY warehouse.containers
 
 ALTER TABLE ONLY warehouse.containers
     ADD CONSTRAINT containers_workspace_id_fkey FOREIGN KEY (workspace_id) REFERENCES auth.workspaces(id) ON DELETE CASCADE;
+
+
+--
+-- Name: deleted_records deleted_records_deleted_by_fkey; Type: FK CONSTRAINT; Schema: warehouse; Owner: -
+--
+
+ALTER TABLE ONLY warehouse.deleted_records
+    ADD CONSTRAINT deleted_records_deleted_by_fkey FOREIGN KEY (deleted_by) REFERENCES auth.users(id) ON DELETE SET NULL;
+
+
+--
+-- Name: deleted_records deleted_records_workspace_id_fkey; Type: FK CONSTRAINT; Schema: warehouse; Owner: -
+--
+
+ALTER TABLE ONLY warehouse.deleted_records
+    ADD CONSTRAINT deleted_records_workspace_id_fkey FOREIGN KEY (workspace_id) REFERENCES auth.workspaces(id) ON DELETE CASCADE;
 
 
 --
@@ -1868,7 +2278,7 @@ ALTER TABLE ONLY warehouse.locations
 -- PostgreSQL database dump complete
 --
 
-\unrestrict LiZdhiKZ7r8eh9znLrmuXtP1Hv5bVY9Ha7u10MWgGXkGFSsNZOjLXeYbtax0Mp5
+\unrestrict ZzAHi4adjWZ8d8je4h1CjCG4sp5E0YxrrbAmll1wEoMlm0tjTWlWD0L2QfARLfe
 
 
 --
@@ -1876,12 +2286,4 @@ ALTER TABLE ONLY warehouse.locations
 --
 
 INSERT INTO public.schema_migrations (version) VALUES
-    ('001'),
-    ('002'),
-    ('20251223201614'),
-    ('20251227121316'),
-    ('20251227142407'),
-    ('20251227143353'),
-    ('20251227173251'),
-    ('20251228125630'),
-    ('20251229140244');
+    ('001');

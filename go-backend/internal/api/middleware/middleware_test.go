@@ -253,3 +253,61 @@ func TestAuth_ValidBearerToken_ReturnsError(t *testing.T) {
 	assert.Equal(t, http.StatusUnauthorized, rec.Code)
 	assert.Contains(t, rec.Body.String(), "JWT service not configured")
 }
+
+// =============================================================================
+// CORS Middleware Tests
+// =============================================================================
+
+func TestCORS_SetsHeaders(t *testing.T) {
+	handler := CORS(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	}))
+
+	req := httptest.NewRequest(http.MethodGet, "/test", nil)
+	rec := httptest.NewRecorder()
+
+	handler.ServeHTTP(rec, req)
+
+	assert.Equal(t, http.StatusOK, rec.Code)
+	assert.Equal(t, "*", rec.Header().Get("Access-Control-Allow-Origin"))
+	assert.Equal(t, "GET, POST, PUT, PATCH, DELETE, OPTIONS", rec.Header().Get("Access-Control-Allow-Methods"))
+	assert.Contains(t, rec.Header().Get("Access-Control-Allow-Headers"), "Authorization")
+	assert.Equal(t, "true", rec.Header().Get("Access-Control-Allow-Credentials"))
+	assert.Equal(t, "300", rec.Header().Get("Access-Control-Max-Age"))
+}
+
+func TestCORS_OptionsRequest(t *testing.T) {
+	nextCalled := false
+	handler := CORS(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		nextCalled = true
+		w.WriteHeader(http.StatusOK)
+	}))
+
+	req := httptest.NewRequest(http.MethodOptions, "/test", nil)
+	rec := httptest.NewRecorder()
+
+	handler.ServeHTTP(rec, req)
+
+	// OPTIONS requests should return 204 No Content and not call next handler
+	assert.Equal(t, http.StatusNoContent, rec.Code)
+	assert.False(t, nextCalled)
+
+	// Still should have CORS headers
+	assert.Equal(t, "*", rec.Header().Get("Access-Control-Allow-Origin"))
+}
+
+func TestCORS_NonOptionsRequest(t *testing.T) {
+	nextCalled := false
+	handler := CORS(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		nextCalled = true
+		w.WriteHeader(http.StatusOK)
+	}))
+
+	req := httptest.NewRequest(http.MethodPost, "/test", nil)
+	rec := httptest.NewRecorder()
+
+	handler.ServeHTTP(rec, req)
+
+	assert.Equal(t, http.StatusOK, rec.Code)
+	assert.True(t, nextCalled)
+}
