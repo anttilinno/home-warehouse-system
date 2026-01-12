@@ -30,98 +30,98 @@ run = "docker compose down"
 [tasks.db-reset]
 description = "Drop and recreate database with fresh migrations"
 depends = ["dc-down"]
-run = "docker compose down -v && docker compose up -d postgres --wait && DATABASE_URL=$DBMATE_DATABASE_URL dbmate -d go-backend/db/migrations up"
+run = "docker compose down -v && docker compose up -d postgres --wait && DATABASE_URL=$DBMATE_DATABASE_URL dbmate -d backend/db/migrations up"
 
 [tasks.db-fresh]
 description = "Complete database reset: drop data volume, recreate database, run migrations"
-run = "docker compose down -v && docker compose up -d --wait && DATABASE_URL=$DBMATE_DATABASE_URL dbmate -d go-backend/db/migrations up"
+run = "docker compose down -v && docker compose up -d --wait && DATABASE_URL=$DBMATE_DATABASE_URL dbmate -d backend/db/migrations up"
 
 [tasks.migrate]
 description = "Run database migrations"
 depends = ["dc-up"]
-run = "DATABASE_URL=$DBMATE_DATABASE_URL dbmate -d go-backend/db/migrations up"
+run = "DATABASE_URL=$DBMATE_DATABASE_URL dbmate -d backend/db/migrations up"
 
 [tasks.migrate-new]
 description = "Create new migration"
-run = "DATABASE_URL=$DBMATE_DATABASE_URL dbmate -d go-backend/db/migrations new"
+run = "DATABASE_URL=$DBMATE_DATABASE_URL dbmate -d backend/db/migrations new"
 
 [tasks.migrate-down]
 description = "Rollback last migration"
-run = "DATABASE_URL=$DBMATE_DATABASE_URL dbmate -d go-backend/db/migrations down"
+run = "DATABASE_URL=$DBMATE_DATABASE_URL dbmate -d backend/db/migrations down"
 
 [tasks.migrate-status]
 description = "Check migration status"
-run = "DATABASE_URL=$DBMATE_DATABASE_URL dbmate -d go-backend/db/migrations status"
+run = "DATABASE_URL=$DBMATE_DATABASE_URL dbmate -d backend/db/migrations status"
 
 # Go Backend Tasks
 [tasks.dev]
 description = "Run Go backend dev server with hot reload"
 depends = ["dc-up"]
-run = "cd go-backend && air"
+run = "cd backend && air"
 
 [tasks.run]
 description = "Run Go backend server (no hot reload)"
 depends = ["dc-up"]
-run = "cd go-backend && go run cmd/server/main.go"
+run = "cd backend && go run cmd/server/main.go"
 
 [tasks.build]
 description = "Build Go backend binary"
-run = "cd go-backend && CGO_ENABLED=0 go build -o bin/server cmd/server/main.go"
+run = "cd backend && CGO_ENABLED=0 go build -o bin/server cmd/server/main.go"
 
 [tasks.test]
 description = "Run Go backend tests"
-run = "cd go-backend && go test -v ./..."
+run = "cd backend && go test -v ./..."
 
 [tasks.test-unit]
 description = "Run Go backend unit tests only"
-run = "cd go-backend && go test -v ./internal/domain/..."
+run = "cd backend && go test -v ./internal/domain/..."
 
 [tasks.test-integration]
 description = "Run Go backend integration tests"
 depends = ["dc-up"]
-run = "cd go-backend && go test -v ./tests/integration/..."
+run = "cd backend && go test -v ./tests/integration/..."
 
 [tasks.test-cover]
 description = "Run Go backend tests with coverage"
-run = "cd go-backend && go test -coverprofile=coverage.out ./... && go tool cover -html=coverage.out -o coverage.html"
+run = "cd backend && go test -coverprofile=coverage.out ./... && go tool cover -html=coverage.out -o coverage.html"
 
 [tasks.lint]
 description = "Run Go backend linter"
-run = "cd go-backend && golangci-lint run"
+run = "cd backend && golangci-lint run"
 
 [tasks.fmt]
 description = "Format Go backend code"
-run = "cd go-backend && go fmt ./..."
+run = "cd backend && go fmt ./..."
 
 [tasks.sqlc]
 description = "Generate sqlc code from queries"
-run = "cd go-backend && ~/go/bin/sqlc generate"
+run = "cd backend && ~/go/bin/sqlc generate"
 
 [tasks.sqlc-vet]
 description = "Verify sqlc queries are valid"
-run = "cd go-backend && ~/go/bin/sqlc vet"
+run = "cd backend && ~/go/bin/sqlc vet"
 
 [tasks.mod-tidy]
 description = "Tidy Go backend dependencies"
-run = "cd go-backend && go mod tidy"
+run = "cd backend && go mod tidy"
 
 [tasks.mod-download]
 description = "Download Go backend dependencies"
-run = "cd go-backend && go mod download"
+run = "cd backend && go mod download"
 
 # Frontend Tasks
 [tasks.fe-dev]
 description = "Run frontend dev server"
-run = "cd frontend2 && bun run dev"
+run = "cd frontend && bun run dev"
 
 [tasks.fe-build]
 description = "Build frontend"
-run = "cd frontend2 && bun run build"
+run = "cd frontend && bun run build"
 
 [tasks.fe-install]
 description = "Install frontend dependencies"
-run = "cd frontend2 && bun install"
+run = "cd frontend && bun install"
 
 [tasks.fe-lint]
 description = "Run frontend linter"
-run = "cd frontend2 && bun run lint"
+run = "cd frontend && bun run lint"
