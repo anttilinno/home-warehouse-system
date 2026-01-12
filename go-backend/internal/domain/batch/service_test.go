@@ -1,6 +1,7 @@
 package batch
 
 import (
+	"context"
 	"encoding/json"
 	"testing"
 	"time"
@@ -297,6 +298,147 @@ func TestNewService(t *testing.T) {
 	// In production, actual services would be injected
 	svc := NewService(nil, nil, nil, nil, nil, nil, nil)
 	assert.NotNil(t, svc)
+}
+
+// =============================================================================
+// ProcessBatch Validation Tests
+// =============================================================================
+
+func TestProcessBatch_InvalidOperationType(t *testing.T) {
+	ctx := context.Background()
+	workspaceID := uuid.New()
+	svc := NewService(nil, nil, nil, nil, nil, nil, nil)
+
+	req := BatchRequest{
+		Operations: []Operation{
+			{
+				Operation:  OperationType("patch"), // invalid
+				EntityType: EntityItem,
+			},
+		},
+	}
+
+	resp, err := svc.ProcessBatch(ctx, workspaceID, req)
+	assert.NoError(t, err)
+	assert.NotNil(t, resp)
+	assert.Len(t, resp.Results, 1)
+	assert.Equal(t, StatusError, resp.Results[0].Status)
+	assert.Contains(t, *resp.Results[0].Error, "invalid operation type")
+	assert.Equal(t, "INVALID_OPERATION", *resp.Results[0].ErrorCode)
+	assert.Equal(t, 1, resp.Failed)
+	assert.Equal(t, 0, resp.Succeeded)
+}
+
+func TestProcessBatch_InvalidEntityType(t *testing.T) {
+	ctx := context.Background()
+	workspaceID := uuid.New()
+	svc := NewService(nil, nil, nil, nil, nil, nil, nil)
+
+	req := BatchRequest{
+		Operations: []Operation{
+			{
+				Operation:  OperationUpdate,
+				EntityType: EntityType("unknown"), // invalid
+			},
+		},
+	}
+
+	resp, err := svc.ProcessBatch(ctx, workspaceID, req)
+	assert.NoError(t, err)
+	assert.NotNil(t, resp)
+	assert.Len(t, resp.Results, 1)
+	assert.Equal(t, StatusError, resp.Results[0].Status)
+	assert.Contains(t, *resp.Results[0].Error, "invalid entity type")
+	assert.Equal(t, "INVALID_ENTITY_TYPE", *resp.Results[0].ErrorCode)
+	assert.Equal(t, 1, resp.Failed)
+}
+
+func TestProcessBatch_UnsupportedEntityTypes(t *testing.T) {
+	ctx := context.Background()
+	workspaceID := uuid.New()
+	svc := NewService(nil, nil, nil, nil, nil, nil, nil)
+
+	unsupportedTypes := []EntityType{
+		EntityInventory,
+		EntityBorrower,
+		EntityLoan,
+	}
+
+	for _, entityType := range unsupportedTypes {
+		t.Run(string(entityType), func(t *testing.T) {
+			req := BatchRequest{
+				Operations: []Operation{
+					{
+						Operation:  OperationUpdate,
+						EntityType: entityType,
+					},
+				},
+			}
+
+			resp, err := svc.ProcessBatch(ctx, workspaceID, req)
+			assert.NoError(t, err)
+			assert.NotNil(t, resp)
+			assert.Len(t, resp.Results, 1)
+			assert.Equal(t, StatusError, resp.Results[0].Status)
+			assert.Contains(t, *resp.Results[0].Error, "not yet supported")
+			assert.Equal(t, "UNSUPPORTED_ENTITY", *resp.Results[0].ErrorCode)
+		})
+	}
+}
+
+func TestProcessBatch_EmptyOperations(t *testing.T) {
+	ctx := context.Background()
+	workspaceID := uuid.New()
+	svc := NewService(nil, nil, nil, nil, nil, nil, nil)
+
+	req := BatchRequest{
+		Operations: []Operation{},
+	}
+
+	resp, err := svc.ProcessBatch(ctx, workspaceID, req)
+	assert.NoError(t, err)
+	assert.NotNil(t, resp)
+	assert.Len(t, resp.Results, 0)
+	assert.Equal(t, 0, resp.Succeeded)
+	assert.Equal(t, 0, resp.Failed)
+	assert.Equal(t, 0, resp.Conflicts)
+}
+
+func TestProcessBatch_MultipleValidationErrors(t *testing.T) {
+	ctx := context.Background()
+	workspaceID := uuid.New()
+	svc := NewService(nil, nil, nil, nil, nil, nil, nil)
+
+	req := BatchRequest{
+		Operations: []Operation{
+			{
+				Operation:  OperationType("invalid_op"),
+				EntityType: EntityItem,
+			},
+			{
+				Operation:  OperationUpdate,
+				EntityType: EntityType("invalid_entity"),
+			},
+			{
+				Operation:  OperationUpdate,
+				EntityType: EntityInventory, // unsupported
+			},
+		},
+	}
+
+	resp, err := svc.ProcessBatch(ctx, workspaceID, req)
+	assert.NoError(t, err)
+	assert.NotNil(t, resp)
+	assert.Len(t, resp.Results, 3)
+	assert.Equal(t, 3, resp.Failed)
+	assert.Equal(t, 0, resp.Succeeded)
+
+	// First error: invalid operation
+	assert.Equal(t, "INVALID_OPERATION", *resp.Results[0].ErrorCode)
+	// Second error: invalid entity type
+	assert.Equal(t, "INVALID_ENTITY_TYPE", *resp.Results[1].ErrorCode)
+	// Third error: unsupported entity
+	assert.Equal(t, "UNSUPPORTED_ENTITY", *resp.Results[2].ErrorCode)
 }
 
 // =============================================================================
