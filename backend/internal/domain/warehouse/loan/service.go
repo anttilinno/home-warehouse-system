@@ -10,6 +10,19 @@ import (
 	"github.com/antti/home-warehouse/go-backend/internal/shared"
 )
 
+// ServiceInterface defines the loan service operations.
+type ServiceInterface interface {
+	Create(ctx context.Context, input CreateInput) (*Loan, error)
+	GetByID(ctx context.Context, id, workspaceID uuid.UUID) (*Loan, error)
+	Return(ctx context.Context, id, workspaceID uuid.UUID) (*Loan, error)
+	ExtendDueDate(ctx context.Context, id, workspaceID uuid.UUID, newDueDate time.Time) (*Loan, error)
+	List(ctx context.Context, workspaceID uuid.UUID, pagination shared.Pagination) ([]*Loan, int, error)
+	ListByBorrower(ctx context.Context, workspaceID, borrowerID uuid.UUID, pagination shared.Pagination) ([]*Loan, error)
+	ListByInventory(ctx context.Context, workspaceID, inventoryID uuid.UUID) ([]*Loan, error)
+	GetActiveLoans(ctx context.Context, workspaceID uuid.UUID) ([]*Loan, error)
+	GetOverdueLoans(ctx context.Context, workspaceID uuid.UUID) ([]*Loan, error)
+}
+
 type Service struct {
 	repo          Repository
 	inventoryRepo inventory.Repository

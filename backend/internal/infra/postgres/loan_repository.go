@@ -28,12 +28,47 @@ func NewLoanRepository(pool *pgxpool.Pool) *LoanRepository {
 }
 
 func (r *LoanRepository) Save(ctx context.Context, l *loan.Loan) error {
+	// Check if loan already exists
+	existing, err := r.queries.GetLoan(ctx, queries.GetLoanParams{
+		ID:          l.ID(),
+		WorkspaceID: l.WorkspaceID(),
+	})
+	if err != nil && !errors.Is(err, pgx.ErrNoRows) {
+		return err
+	}
+
+	// If loan exists, use appropriate update query
+	if existing.ID != uuid.Nil {
+		// If returnedAt is set and was previously nil, this is a return
+		if l.ReturnedAt() != nil && !existing.ReturnedAt.Valid {
+			_, err = r.queries.ReturnLoan(ctx, l.ID())
+			return err
+		}
+
+		// If due date changed, use ExtendLoanDueDate
+		loanDueDate := l.DueDate()
+		if loanDueDate != nil {
+			// Check if due date is different
+			if !existing.DueDate.Valid || !existing.DueDate.Time.Equal(*loanDueDate) {
+				_, err = r.queries.ExtendLoanDueDate(ctx, queries.ExtendLoanDueDateParams{
+					ID:      l.ID(),
+					DueDate: pgtype.Date{Time: *loanDueDate, Valid: true},
+				})
+				return err
+			}
+		}
+
+		// No changes needed
+		return nil
+	}
+
+	// Create new loan
 	var dueDate pgtype.Date
 	if l.DueDate() != nil {
 		dueDate = pgtype.Date{Time: *l.DueDate(), Valid: true}
 	}
 
-	_, err := r.queries.CreateLoan(ctx, queries.CreateLoanParams{
+	_, err = r.queries.CreateLoan(ctx, queries.CreateLoanParams{
 		ID:          l.ID(),
 		WorkspaceID: l.WorkspaceID(),
 		InventoryID: l.InventoryID(),

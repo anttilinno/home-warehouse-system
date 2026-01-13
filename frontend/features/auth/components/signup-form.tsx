@@ -6,10 +6,13 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useTranslations } from "next-intl";
 import { Eye, EyeOff, Loader2, Check, X } from "lucide-react";
+import { toast } from "sonner";
 
+import { useRouter } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { authApi } from "@/lib/api";
 
 const signupSchema = z
   .object({
@@ -47,6 +50,7 @@ function PasswordRequirement({
 
 export function SignupForm() {
   const t = useTranslations("auth");
+  const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -70,10 +74,32 @@ export function SignupForm() {
 
   const onSubmit = async (data: SignupFormData) => {
     setIsLoading(true);
-    // TODO: Implement actual signup
-    console.log("Signup:", data);
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    setIsLoading(false);
+
+    try {
+      console.log("Registering user...");
+      await authApi.register({
+        full_name: data.fullName,
+        email: data.email,
+        password: data.password,
+      });
+
+      console.log("Registration successful");
+
+      toast.success("Account created successfully!", {
+        description: "Welcome to Home Warehouse System",
+      });
+
+      console.log("Redirecting to dashboard...");
+      // Redirect to dashboard
+      router.push("/dashboard");
+    } catch (err) {
+      console.error("Registration error:", err);
+      const errorMessage = err instanceof Error ? err.message : "Registration failed";
+      toast.error("Registration failed", {
+        description: errorMessage,
+      });
+      setIsLoading(false);
+    }
   };
 
   return (

@@ -9,6 +9,15 @@ import (
 	"github.com/antti/home-warehouse/go-backend/internal/shared"
 )
 
+// ServiceInterface defines the activity service operations.
+type ServiceInterface interface {
+	Log(ctx context.Context, input LogInput) error
+	ListByWorkspace(ctx context.Context, workspaceID uuid.UUID, pagination shared.Pagination) ([]*ActivityLog, error)
+	ListByEntity(ctx context.Context, workspaceID uuid.UUID, entityType EntityType, entityID uuid.UUID, pagination shared.Pagination) ([]*ActivityLog, error)
+	ListByUser(ctx context.Context, workspaceID, userID uuid.UUID, pagination shared.Pagination) ([]*ActivityLog, error)
+	GetRecentActivity(ctx context.Context, workspaceID uuid.UUID, since time.Time) ([]*ActivityLog, error)
+}
+
 type Service struct {
 	repo Repository
 }

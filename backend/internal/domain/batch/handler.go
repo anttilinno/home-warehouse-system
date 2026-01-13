@@ -21,7 +21,7 @@ type BatchOutput struct {
 // RegisterRoutes registers batch operation routes.
 // Note: These routes are registered within a workspace-scoped router group,
 // so paths are relative to /workspaces/{workspace_id}.
-func RegisterRoutes(api huma.API, svc *Service) {
+func RegisterRoutes(api huma.API, svc ServiceInterface) {
 	// Process batch operations
 	huma.Post(api, "/sync/batch", func(ctx context.Context, input *BatchInput) (*BatchOutput, error) {
 		// Validate workspace access from context

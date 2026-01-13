@@ -6,6 +6,17 @@ import (
 	"github.com/google/uuid"
 )
 
+// ServiceInterface defines the label service operations.
+type ServiceInterface interface {
+	Create(ctx context.Context, input CreateInput) (*Label, error)
+	GetByID(ctx context.Context, id, workspaceID uuid.UUID) (*Label, error)
+	ListByWorkspace(ctx context.Context, workspaceID uuid.UUID) ([]*Label, error)
+	Update(ctx context.Context, id, workspaceID uuid.UUID, input UpdateInput) (*Label, error)
+	Archive(ctx context.Context, id, workspaceID uuid.UUID) error
+	Restore(ctx context.Context, id, workspaceID uuid.UUID) error
+	Delete(ctx context.Context, id, workspaceID uuid.UUID) error
+}
+
 type Service struct {
 	repo Repository
 }

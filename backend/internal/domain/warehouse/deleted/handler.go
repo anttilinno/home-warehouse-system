@@ -11,7 +11,7 @@ import (
 )
 
 // RegisterRoutes registers deleted records routes (for PWA sync).
-func RegisterRoutes(api huma.API, svc *Service) {
+func RegisterRoutes(api huma.API, svc ServiceInterface) {
 	// Get deleted records since timestamp (for PWA offline sync)
 	huma.Get(api, "/sync/deleted", func(ctx context.Context, input *GetDeletedSinceInput) (*GetDeletedSinceOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)

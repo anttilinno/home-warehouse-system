@@ -6,6 +6,15 @@ import (
 	"github.com/google/uuid"
 )
 
+// ServiceInterface defines the favorite service operations.
+type ServiceInterface interface {
+	AddFavorite(ctx context.Context, userID, workspaceID uuid.UUID, favoriteType FavoriteType, targetID uuid.UUID) (*Favorite, error)
+	RemoveFavorite(ctx context.Context, userID, workspaceID uuid.UUID, favoriteType FavoriteType, targetID uuid.UUID) error
+	ToggleFavorite(ctx context.Context, userID, workspaceID uuid.UUID, favoriteType FavoriteType, targetID uuid.UUID) (bool, error)
+	ListFavorites(ctx context.Context, userID, workspaceID uuid.UUID) ([]*Favorite, error)
+	IsFavorite(ctx context.Context, userID, workspaceID uuid.UUID, favoriteType FavoriteType, targetID uuid.UUID) (bool, error)
+}
+
 type Service struct {
 	repo Repository
 }

@@ -8,6 +8,17 @@ import (
 	"github.com/antti/home-warehouse/go-backend/internal/shared"
 )
 
+// ServiceInterface defines the container service operations.
+type ServiceInterface interface {
+	Create(ctx context.Context, input CreateInput) (*Container, error)
+	GetByID(ctx context.Context, id, workspaceID uuid.UUID) (*Container, error)
+	ListByWorkspace(ctx context.Context, workspaceID uuid.UUID, pagination shared.Pagination) (*shared.PagedResult[*Container], error)
+	Update(ctx context.Context, id, workspaceID uuid.UUID, input UpdateInput) (*Container, error)
+	Archive(ctx context.Context, id, workspaceID uuid.UUID) error
+	Restore(ctx context.Context, id, workspaceID uuid.UUID) error
+	Delete(ctx context.Context, id, workspaceID uuid.UUID) error
+}
+
 type Service struct {
 	repo Repository
 }

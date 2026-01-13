@@ -7,7 +7,7 @@ import (
 )
 
 // RegisterRoutes registers barcode lookup routes.
-func RegisterRoutes(api huma.API, svc *Service) {
+func RegisterRoutes(api huma.API, svc ServiceInterface) {
 	// Lookup barcode
 	huma.Get(api, "/barcode/{barcode}", func(ctx context.Context, input *LookupInput) (*LookupOutput, error) {
 		product, err := svc.Lookup(ctx, input.Barcode)

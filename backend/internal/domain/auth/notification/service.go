@@ -8,6 +8,17 @@ import (
 	"github.com/antti/home-warehouse/go-backend/internal/shared"
 )
 
+// ServiceInterface defines the notification service operations.
+type ServiceInterface interface {
+	Create(ctx context.Context, input CreateInput) (*Notification, error)
+	GetByID(ctx context.Context, id, userID uuid.UUID) (*Notification, error)
+	ListUserNotifications(ctx context.Context, userID uuid.UUID, pagination shared.Pagination) (*shared.PagedResult[*Notification], error)
+	GetUnreadNotifications(ctx context.Context, userID uuid.UUID) ([]*Notification, error)
+	MarkAsRead(ctx context.Context, id, userID uuid.UUID) error
+	MarkAllAsRead(ctx context.Context, userID uuid.UUID) error
+	GetUnreadCount(ctx context.Context, userID uuid.UUID) (int64, error)
+}
+
 // Service handles notification business logic.
 type Service struct {
 	repo Repository

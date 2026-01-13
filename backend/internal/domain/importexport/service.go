@@ -16,6 +16,12 @@ import (
 	"github.com/antti/home-warehouse/go-backend/internal/infra/queries"
 )
 
+// ServiceInterface defines the interface for import/export service operations
+type ServiceInterface interface {
+	Export(ctx context.Context, opts ExportOptions) ([]byte, *ExportMetadata, error)
+	Import(ctx context.Context, workspaceID uuid.UUID, entityType EntityType, format Format, data []byte) (*ImportResult, error)
+}
+
 // Repository defines the interface for import/export data access
 type Repository interface {
 	// Items

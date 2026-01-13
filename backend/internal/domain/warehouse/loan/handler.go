@@ -12,7 +12,7 @@ import (
 )
 
 // RegisterRoutes registers loan routes.
-func RegisterRoutes(api huma.API, svc *Service) {
+func RegisterRoutes(api huma.API, svc ServiceInterface) {
 	// List all loans
 	huma.Get(api, "/loans", func(ctx context.Context, input *ListLoansInput) (*ListLoansOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
@@ -145,6 +145,9 @@ func RegisterRoutes(api huma.API, svc *Service) {
 
 		loan, err := svc.Return(ctx, input.ID, workspaceID)
 		if err != nil {
+			if err == ErrLoanNotFound {
+				return nil, huma.Error404NotFound("loan not found")
+			}
 			if err == ErrAlreadyReturned {
 				return nil, huma.Error400BadRequest("loan has already been returned")
 			}
@@ -165,6 +168,9 @@ func RegisterRoutes(api huma.API, svc *Service) {
 
 		loan, err := svc.ExtendDueDate(ctx, input.ID, workspaceID, input.Body.NewDueDate)
 		if err != nil {
+			if err == ErrLoanNotFound {
+				return nil, huma.Error404NotFound("loan not found")
+			}
 			if err == ErrAlreadyReturned {
 				return nil, huma.Error400BadRequest("cannot extend due date for returned loan")
 			}

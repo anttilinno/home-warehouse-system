@@ -126,16 +126,17 @@ func NewRouter(pool *pgxpool.Pool, cfg *config.Config) chi.Router {
 	labelSvc := label.NewService(labelRepo)
 	// Phase 3 services
 	itemSvc := item.NewService(itemRepo)
-	inventorySvc := inventory.NewService(inventoryRepo)
+	// Phase 5 services (movement service created before inventory to allow dependency)
+	movementSvc := movement.NewService(movementRepo)
+	inventorySvc := inventory.NewService(inventoryRepo, movementSvc)
 	// Phase 4 services
 	borrowerSvc := borrower.NewService(borrowerRepo)
 	loanSvc := loan.NewService(loanRepo, inventoryRepo)
-	// Phase 5 services
+	// Phase 5 services (continued)
 	attachmentSvc := attachment.NewService(fileRepo, attachmentRepo)
 	activitySvc := activity.NewService(activityRepo)
 	deletedSvc := deleted.NewService(deletedRepo)
 	favoriteSvc := favorite.NewService(favoriteRepo)
-	movementSvc := movement.NewService(movementRepo)
 	// Analytics service
 	analyticsSvc := analytics.NewService(analyticsRepo)
 	// Import/Export and Sync services
@@ -147,7 +148,7 @@ func NewRouter(pool *pgxpool.Pool, cfg *config.Config) chi.Router {
 	batchSvc := batch.NewService(itemSvc, locationSvc, containerSvc, inventorySvc, categorySvc, labelSvc, companySvc)
 
 	// Create handlers with dependencies
-	userHandler := user.NewHandler(userSvc, jwtService)
+	userHandler := user.NewHandler(userSvc, jwtService, workspaceSvc)
 	analyticsHandler := analytics.NewHandler(analyticsSvc)
 	importExportHandler := importexport.NewHandler(importExportSvc)
 	syncHandler := sync.NewHandler(syncSvc)
@@ -182,7 +183,7 @@ func NewRouter(pool *pgxpool.Pool, cfg *config.Config) chi.Router {
 
 		// Workspace-scoped routes
 		r.Route("/workspaces/{workspace_id}", func(r chi.Router) {
-			r.Use(appMiddleware.Workspace)
+			r.Use(appMiddleware.Workspace(appMiddleware.NewMemberAdapter(memberRepo)))
 			// Create workspace API config without docs
 			wsConfig := huma.DefaultConfig("Home Warehouse API", "1.0.0")
 			wsConfig.DocsPath = ""

@@ -12,7 +12,7 @@ import (
 )
 
 // RegisterRoutes registers borrower routes.
-func RegisterRoutes(api huma.API, svc *Service) {
+func RegisterRoutes(api huma.API, svc ServiceInterface) {
 	// List borrowers
 	huma.Get(api, "/borrowers", func(ctx context.Context, input *ListBorrowersInput) (*ListBorrowersOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)

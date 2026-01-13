@@ -12,7 +12,7 @@ import (
 )
 
 // RegisterRoutes registers activity routes.
-func RegisterRoutes(api huma.API, svc *Service) {
+func RegisterRoutes(api huma.API, svc ServiceInterface) {
 	// List workspace activity (optionally filtered by user_id)
 	huma.Get(api, "/activity", func(ctx context.Context, input *ListActivityInput) (*ListActivityOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)

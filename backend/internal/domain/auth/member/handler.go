@@ -11,7 +11,7 @@ import (
 )
 
 // RegisterRoutes registers member routes.
-func RegisterRoutes(api huma.API, svc *Service) {
+func RegisterRoutes(api huma.API, svc ServiceInterface) {
 	// List workspace members
 	huma.Get(api, "/members", func(ctx context.Context, input *struct{}) (*ListMembersOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)

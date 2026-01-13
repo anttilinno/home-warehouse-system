@@ -18,15 +18,33 @@ type Product struct {
 	Found    bool    `json:"found"`
 }
 
+// ServiceInterface defines the interface for barcode service operations
+type ServiceInterface interface {
+	Lookup(ctx context.Context, barcode string) (*Product, error)
+}
+
 // Service handles barcode lookups from external APIs.
 type Service struct {
-	httpClient *http.Client
+	httpClient        *http.Client
+	openFoodFactsURL  string
+	openProductsDBURL string
 }
 
 // NewService creates a new barcode service.
 func NewService() *Service {
 	return &Service{
-		httpClient: &http.Client{Timeout: 10 * time.Second},
+		httpClient:        &http.Client{Timeout: 10 * time.Second},
+		openFoodFactsURL:  "https://world.openfoodfacts.org/api/v0/product",
+		openProductsDBURL: "https://api.openproductsdb.org/v1/product",
+	}
+}
+
+// NewServiceWithURLs creates a barcode service with custom API URLs (for testing).
+func NewServiceWithURLs(openFoodFactsURL, openProductsDBURL string) *Service {
+	return &Service{
+		httpClient:        &http.Client{Timeout: 10 * time.Second},
+		openFoodFactsURL:  openFoodFactsURL,
+		openProductsDBURL: openProductsDBURL,
 	}
 }
 
@@ -60,7 +78,7 @@ type openFoodFactsResponse struct {
 
 // lookupOpenFoodFacts looks up a barcode in Open Food Facts database.
 func (s *Service) lookupOpenFoodFacts(ctx context.Context, barcode string) (*Product, error) {
-	url := fmt.Sprintf("https://world.openfoodfacts.org/api/v0/product/%s.json", barcode)
+	url := fmt.Sprintf("%s/%s.json", s.openFoodFactsURL, barcode)
 
 	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
 	if err != nil {
@@ -113,7 +131,7 @@ type openProductsDBResponse struct {
 
 // lookupOpenProductsDB looks up a barcode in Open Products Database.
 func (s *Service) lookupOpenProductsDB(ctx context.Context, barcode string) (*Product, error) {
-	url := fmt.Sprintf("https://api.openproductsdb.org/v1/product/%s", barcode)
+	url := fmt.Sprintf("%s/%s", s.openProductsDBURL, barcode)
 
 	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
 	if err != nil {

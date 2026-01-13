@@ -12,11 +12,11 @@ import (
 
 // Handler handles sync-related HTTP requests
 type Handler struct {
-	svc *Service
+	svc ServiceInterface
 }
 
 // NewHandler creates a new sync handler
-func NewHandler(svc *Service) *Handler {
+func NewHandler(svc ServiceInterface) *Handler {
 	return &Handler{svc: svc}
 }
 

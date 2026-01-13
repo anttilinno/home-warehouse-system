@@ -6,6 +6,16 @@ import (
 	"github.com/google/uuid"
 )
 
+// ServiceInterface defines the member service operations.
+type ServiceInterface interface {
+	AddMember(ctx context.Context, input AddMemberInput) (*Member, error)
+	GetMember(ctx context.Context, workspaceID, userID uuid.UUID) (*Member, error)
+	ListWorkspaceMembers(ctx context.Context, workspaceID uuid.UUID) ([]*Member, error)
+	UpdateRole(ctx context.Context, input UpdateRoleInput) (*Member, error)
+	RemoveMember(ctx context.Context, input RemoveMemberInput) error
+	GetUserRole(ctx context.Context, workspaceID, userID uuid.UUID) (Role, error)
+}
+
 // Service handles member business logic.
 type Service struct {
 	repo Repository

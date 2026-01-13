@@ -8,6 +8,17 @@ import (
 	"github.com/antti/home-warehouse/go-backend/internal/shared"
 )
 
+// ServiceInterface defines the borrower service operations.
+type ServiceInterface interface {
+	Create(ctx context.Context, input CreateInput) (*Borrower, error)
+	GetByID(ctx context.Context, id, workspaceID uuid.UUID) (*Borrower, error)
+	Update(ctx context.Context, id, workspaceID uuid.UUID, input UpdateInput) (*Borrower, error)
+	Archive(ctx context.Context, id, workspaceID uuid.UUID) error
+	Restore(ctx context.Context, id, workspaceID uuid.UUID) error
+	Delete(ctx context.Context, id, workspaceID uuid.UUID) error
+	List(ctx context.Context, workspaceID uuid.UUID, pagination shared.Pagination) ([]*Borrower, int, error)
+}
+
 type Service struct {
 	repo Repository
 }

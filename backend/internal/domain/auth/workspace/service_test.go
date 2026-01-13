@@ -2,6 +2,7 @@ package workspace
 
 import (
 	"context"
+	"fmt"
 	"testing"
 	"time"
 
@@ -240,6 +241,33 @@ func TestService_Create(t *testing.T) {
 			},
 			expectError: true,
 		},
+		{
+			name: "database error checking slug",
+			input: CreateWorkspaceInput{
+				Name:        "My Workspace",
+				Slug:        "my-workspace",
+				Description: ptrString("A test workspace"),
+				IsPersonal:  false,
+			},
+			setupMock: func(m *MockRepository) {
+				m.On("ExistsBySlug", ctx, "my-workspace").Return(false, fmt.Errorf("database error"))
+			},
+			expectError: true,
+		},
+		{
+			name: "database error on save",
+			input: CreateWorkspaceInput{
+				Name:        "My Workspace",
+				Slug:        "my-workspace",
+				Description: ptrString("A test workspace"),
+				IsPersonal:  false,
+			},
+			setupMock: func(m *MockRepository) {
+				m.On("ExistsBySlug", ctx, "my-workspace").Return(false, nil)
+				m.On("Save", ctx, mock.AnythingOfType("*workspace.Workspace")).Return(fmt.Errorf("save error"))
+			},
+			expectError: true,
+		},
 	}
 
 	for _, tt := range tests {
@@ -441,6 +469,31 @@ func TestService_Update(t *testing.T) {
 			},
 			setupMock: func(m *MockRepository) {
 				m.On("FindByID", ctx, mock.Anything).Return(nil, nil)
+			},
+			expectError: true,
+		},
+		{
+			name:        "save error",
+			workspaceID: workspaceID,
+			input: UpdateWorkspaceInput{
+				Name:        "Updated Name",
+				Description: ptrString("Updated description"),
+			},
+			setupMock: func(m *MockRepository) {
+				m.On("FindByID", ctx, workspaceID).Return(workspace, nil)
+				m.On("Save", ctx, mock.Anything).Return(fmt.Errorf("database error"))
+			},
+			expectError: true,
+		},
+		{
+			name:        "invalid update input",
+			workspaceID: workspaceID,
+			input: UpdateWorkspaceInput{
+				Name:        "", // Invalid empty name
+				Description: ptrString("Updated description"),
+			},
+			setupMock: func(m *MockRepository) {
+				m.On("FindByID", ctx, workspaceID).Return(workspace, nil)
 			},
 			expectError: true,
 		},

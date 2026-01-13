@@ -17,6 +17,11 @@ import (
 	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/location"
 )
 
+// ServiceInterface defines the interface for batch service operations
+type ServiceInterface interface {
+	ProcessBatch(ctx context.Context, workspaceID uuid.UUID, req BatchRequest) (*BatchResponse, error)
+}
+
 // Service handles batch operations with optimistic locking.
 type Service struct {
 	itemSvc      *item.Service

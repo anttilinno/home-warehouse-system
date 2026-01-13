@@ -442,9 +442,272 @@ func TestProcessBatch_MultipleValidationErrors(t *testing.T) {
 }
 
 // =============================================================================
+// Entity-specific Operation Tests (without mocks - tests validation paths)
+// =============================================================================
+
+func TestProcessBatch_ItemOperation_MissingEntityID(t *testing.T) {
+	ctx := context.Background()
+	workspaceID := uuid.New()
+	svc := NewService(nil, nil, nil, nil, nil, nil, nil)
+
+	tests := []struct {
+		name      string
+		operation OperationType
+		errorCode string
+	}{
+		{"update without entity_id", OperationUpdate, "MISSING_ENTITY_ID"},
+		{"delete without entity_id", OperationDelete, "MISSING_ENTITY_ID"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			req := BatchRequest{
+				Operations: []Operation{
+					{
+						Operation:  tt.operation,
+						EntityType: EntityItem,
+						EntityID:   nil, // Missing entity ID
+					},
+				},
+			}
+
+			resp, err := svc.ProcessBatch(ctx, workspaceID, req)
+			assert.NoError(t, err)
+			assert.NotNil(t, resp)
+			assert.Len(t, resp.Results, 1)
+			assert.Equal(t, StatusError, resp.Results[0].Status)
+			assert.Equal(t, tt.errorCode, *resp.Results[0].ErrorCode)
+		})
+	}
+}
+
+func TestProcessBatch_LocationOperation_MissingEntityID(t *testing.T) {
+	ctx := context.Background()
+	workspaceID := uuid.New()
+	svc := NewService(nil, nil, nil, nil, nil, nil, nil)
+
+	tests := []struct {
+		name      string
+		operation OperationType
+		errorCode string
+	}{
+		{"update without entity_id", OperationUpdate, "MISSING_ENTITY_ID"},
+		{"delete without entity_id", OperationDelete, "MISSING_ENTITY_ID"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			req := BatchRequest{
+				Operations: []Operation{
+					{
+						Operation:  tt.operation,
+						EntityType: EntityLocation,
+						EntityID:   nil,
+					},
+				},
+			}
+
+			resp, err := svc.ProcessBatch(ctx, workspaceID, req)
+			assert.NoError(t, err)
+			assert.Len(t, resp.Results, 1)
+			assert.Equal(t, StatusError, resp.Results[0].Status)
+			assert.Equal(t, tt.errorCode, *resp.Results[0].ErrorCode)
+		})
+	}
+}
+
+func TestProcessBatch_ContainerOperation_MissingEntityID(t *testing.T) {
+	ctx := context.Background()
+	workspaceID := uuid.New()
+	svc := NewService(nil, nil, nil, nil, nil, nil, nil)
+
+	tests := []struct {
+		name      string
+		operation OperationType
+		errorCode string
+	}{
+		{"update without entity_id", OperationUpdate, "MISSING_ENTITY_ID"},
+		{"delete without entity_id", OperationDelete, "MISSING_ENTITY_ID"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			req := BatchRequest{
+				Operations: []Operation{
+					{
+						Operation:  tt.operation,
+						EntityType: EntityContainer,
+						EntityID:   nil,
+					},
+				},
+			}
+
+			resp, err := svc.ProcessBatch(ctx, workspaceID, req)
+			assert.NoError(t, err)
+			assert.Len(t, resp.Results, 1)
+			assert.Equal(t, StatusError, resp.Results[0].Status)
+			assert.Equal(t, tt.errorCode, *resp.Results[0].ErrorCode)
+		})
+	}
+}
+
+func TestProcessBatch_CategoryOperation_MissingEntityID(t *testing.T) {
+	ctx := context.Background()
+	workspaceID := uuid.New()
+	svc := NewService(nil, nil, nil, nil, nil, nil, nil)
+
+	tests := []struct {
+		name      string
+		operation OperationType
+		errorCode string
+	}{
+		{"update without entity_id", OperationUpdate, "MISSING_ENTITY_ID"},
+		{"delete without entity_id", OperationDelete, "MISSING_ENTITY_ID"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			req := BatchRequest{
+				Operations: []Operation{
+					{
+						Operation:  tt.operation,
+						EntityType: EntityCategory,
+						EntityID:   nil,
+					},
+				},
+			}
+
+			resp, err := svc.ProcessBatch(ctx, workspaceID, req)
+			assert.NoError(t, err)
+			assert.Len(t, resp.Results, 1)
+			assert.Equal(t, StatusError, resp.Results[0].Status)
+			assert.Equal(t, tt.errorCode, *resp.Results[0].ErrorCode)
+		})
+	}
+}
+
+func TestProcessBatch_LabelOperation_MissingEntityID(t *testing.T) {
+	ctx := context.Background()
+	workspaceID := uuid.New()
+	svc := NewService(nil, nil, nil, nil, nil, nil, nil)
+
+	tests := []struct {
+		name      string
+		operation OperationType
+		errorCode string
+	}{
+		{"update without entity_id", OperationUpdate, "MISSING_ENTITY_ID"},
+		{"delete without entity_id", OperationDelete, "MISSING_ENTITY_ID"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			req := BatchRequest{
+				Operations: []Operation{
+					{
+						Operation:  tt.operation,
+						EntityType: EntityLabel,
+						EntityID:   nil,
+					},
+				},
+			}
+
+			resp, err := svc.ProcessBatch(ctx, workspaceID, req)
+			assert.NoError(t, err)
+			assert.Len(t, resp.Results, 1)
+			assert.Equal(t, StatusError, resp.Results[0].Status)
+			assert.Equal(t, tt.errorCode, *resp.Results[0].ErrorCode)
+		})
+	}
+}
+
+func TestProcessBatch_CompanyOperation_MissingEntityID(t *testing.T) {
+	ctx := context.Background()
+	workspaceID := uuid.New()
+	svc := NewService(nil, nil, nil, nil, nil, nil, nil)
+
+	tests := []struct {
+		name      string
+		operation OperationType
+		errorCode string
+	}{
+		{"update without entity_id", OperationUpdate, "MISSING_ENTITY_ID"},
+		{"delete without entity_id", OperationDelete, "MISSING_ENTITY_ID"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			req := BatchRequest{
+				Operations: []Operation{
+					{
+						Operation:  tt.operation,
+						EntityType: EntityCompany,
+						EntityID:   nil,
+					},
+				},
+			}
+
+			resp, err := svc.ProcessBatch(ctx, workspaceID, req)
+			assert.NoError(t, err)
+			assert.Len(t, resp.Results, 1)
+			assert.Equal(t, StatusError, resp.Results[0].Status)
+			assert.Equal(t, tt.errorCode, *resp.Results[0].ErrorCode)
+		})
+	}
+}
+
+func TestProcessBatch_UnsupportedCreateOperations(t *testing.T) {
+	ctx := context.Background()
+	workspaceID := uuid.New()
+	svc := NewService(nil, nil, nil, nil, nil, nil, nil)
+
+	entityTypes := []EntityType{
+		EntityItem,
+		EntityLocation,
+		EntityContainer,
+		EntityCategory,
+		EntityLabel,
+		EntityCompany,
+	}
+
+	for _, entityType := range entityTypes {
+		t.Run(string(entityType), func(t *testing.T) {
+			req := BatchRequest{
+				Operations: []Operation{
+					{
+						Operation:  OperationCreate, // create not supported
+						EntityType: entityType,
+						EntityID:   ptrUUID(uuid.New()),
+					},
+				},
+			}
+
+			resp, err := svc.ProcessBatch(ctx, workspaceID, req)
+			assert.NoError(t, err)
+			assert.Len(t, resp.Results, 1)
+			assert.Equal(t, StatusError, resp.Results[0].Status)
+			assert.Equal(t, "UNSUPPORTED_OPERATION", *resp.Results[0].ErrorCode)
+			assert.Contains(t, *resp.Results[0].Error, "create not supported")
+		})
+	}
+}
+
+func TestMarshalEntity_WithInvalidData(t *testing.T) {
+	// Test with nil pointer - should handle gracefully
+	result := marshalEntity(nil)
+	// nil input should still produce valid JSON ("null")
+	assert.NotNil(t, result)
+}
+
+// =============================================================================
 // Helper functions for tests
 // =============================================================================
 
 func ptrUUID(u uuid.UUID) *uuid.UUID {
 	return &u
 }
+
+func ptrTime(t time.Time) *time.Time {
+	return &t
+}
+

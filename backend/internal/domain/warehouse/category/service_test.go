@@ -348,6 +348,350 @@ func TestService_Restore(t *testing.T) {
 	})
 }
 
+func TestService_ListByWorkspace(t *testing.T) {
+	ctx := context.Background()
+	workspaceID := uuid.New()
+
+	t.Run("returns categories successfully", func(t *testing.T) {
+		repo := new(MockRepository)
+		svc := NewService(repo)
+
+		cat1, _ := NewCategory(workspaceID, "Category1", nil, nil)
+		cat2, _ := NewCategory(workspaceID, "Category2", nil, nil)
+		categories := []*Category{cat1, cat2}
+
+		repo.On("FindByWorkspace", ctx, workspaceID).Return(categories, nil)
+
+		result, err := svc.ListByWorkspace(ctx, workspaceID)
+
+		require.NoError(t, err)
+		assert.Len(t, result, 2)
+		repo.AssertExpectations(t)
+	})
+
+	t.Run("returns error on repository failure", func(t *testing.T) {
+		repo := new(MockRepository)
+		svc := NewService(repo)
+
+		repo.On("FindByWorkspace", ctx, workspaceID).Return(nil, errors.New("db error"))
+
+		result, err := svc.ListByWorkspace(ctx, workspaceID)
+
+		assert.Error(t, err)
+		assert.Nil(t, result)
+		repo.AssertExpectations(t)
+	})
+}
+
+func TestService_ListByParent(t *testing.T) {
+	ctx := context.Background()
+	workspaceID := uuid.New()
+	parentID := uuid.New()
+
+	t.Run("returns child categories successfully", func(t *testing.T) {
+		repo := new(MockRepository)
+		svc := NewService(repo)
+
+		child, _ := NewCategory(workspaceID, "Child", &parentID, nil)
+		categories := []*Category{child}
+
+		repo.On("FindByParent", ctx, workspaceID, parentID).Return(categories, nil)
+
+		result, err := svc.ListByParent(ctx, workspaceID, parentID)
+
+		require.NoError(t, err)
+		assert.Len(t, result, 1)
+		repo.AssertExpectations(t)
+	})
+
+	t.Run("returns error on repository failure", func(t *testing.T) {
+		repo := new(MockRepository)
+		svc := NewService(repo)
+
+		repo.On("FindByParent", ctx, workspaceID, parentID).Return(nil, errors.New("db error"))
+
+		result, err := svc.ListByParent(ctx, workspaceID, parentID)
+
+		assert.Error(t, err)
+		assert.Nil(t, result)
+		repo.AssertExpectations(t)
+	})
+}
+
+func TestService_ListRootCategories(t *testing.T) {
+	ctx := context.Background()
+	workspaceID := uuid.New()
+
+	t.Run("returns root categories successfully", func(t *testing.T) {
+		repo := new(MockRepository)
+		svc := NewService(repo)
+
+		root, _ := NewCategory(workspaceID, "RootCategory", nil, nil)
+		categories := []*Category{root}
+
+		repo.On("FindRootCategories", ctx, workspaceID).Return(categories, nil)
+
+		result, err := svc.ListRootCategories(ctx, workspaceID)
+
+		require.NoError(t, err)
+		assert.Len(t, result, 1)
+		assert.Nil(t, result[0].ParentCategoryID())
+		repo.AssertExpectations(t)
+	})
+
+	t.Run("returns error on repository failure", func(t *testing.T) {
+		repo := new(MockRepository)
+		svc := NewService(repo)
+
+		repo.On("FindRootCategories", ctx, workspaceID).Return(nil, errors.New("db error"))
+
+		result, err := svc.ListRootCategories(ctx, workspaceID)
+
+		assert.Error(t, err)
+		assert.Nil(t, result)
+		repo.AssertExpectations(t)
+	})
+}
+
+func TestService_Update_CyclicParent(t *testing.T) {
+	ctx := context.Background()
+	workspaceID := uuid.New()
+
+	t.Run("fails when setting self as parent", func(t *testing.T) {
+		repo := new(MockRepository)
+		svc := NewService(repo)
+
+		categoryID := uuid.New()
+		existingCat := Reconstruct(categoryID, workspaceID, "Category", nil, nil, false, time.Now(), time.Now())
+
+		repo.On("FindByID", ctx, categoryID, workspaceID).Return(existingCat, nil)
+
+		input := UpdateInput{
+			Name:             "Updated Category",
+			ParentCategoryID: &categoryID, // Setting self as parent
+		}
+
+		cat, err := svc.Update(ctx, categoryID, workspaceID, input)
+
+		assert.Error(t, err)
+		assert.Nil(t, cat)
+		assert.Equal(t, ErrCyclicParent, err)
+	})
+
+	t.Run("fails when creating cycle with grandparent", func(t *testing.T) {
+		repo := new(MockRepository)
+		svc := NewService(repo)
+
+		// Create hierarchy: Root -> Parent -> Child
+		// Then try to set Root's parent to Child (creating cycle)
+		rootID := uuid.New()
+		parentID := uuid.New()
+		childID := uuid.New()
+
+		root := Reconstruct(rootID, workspaceID, "Root", nil, nil, false, time.Now(), time.Now())
+		parent := Reconstruct(parentID, workspaceID, "Parent", &rootID, nil, false, time.Now(), time.Now())
+		child := Reconstruct(childID, workspaceID, "Child", &parentID, nil, false, time.Now(), time.Now())
+
+		// We're updating Root, trying to set its parent to Child
+		repo.On("FindByID", ctx, rootID, workspaceID).Return(root, nil)
+		repo.On("FindByID", ctx, childID, workspaceID).Return(child, nil)
+		repo.On("FindByID", ctx, parentID, workspaceID).Return(parent, nil)
+		// The loop will check if child's parent chain includes rootID
+
+		input := UpdateInput{
+			Name:             "Root",
+			ParentCategoryID: &childID, // Try to set child as parent of root
+		}
+
+		cat, err := svc.Update(ctx, rootID, workspaceID, input)
+
+		assert.Error(t, err)
+		assert.Nil(t, cat)
+		assert.Equal(t, ErrCyclicParent, err)
+	})
+
+	t.Run("succeeds when parent chain is valid", func(t *testing.T) {
+		repo := new(MockRepository)
+		svc := NewService(repo)
+
+		// Create hierarchy: Root -> NewParent
+		// Then move an existing category under NewParent (no cycle)
+		rootID := uuid.New()
+		newParentID := uuid.New()
+		categoryID := uuid.New()
+
+		root := Reconstruct(rootID, workspaceID, "Root", nil, nil, false, time.Now(), time.Now())
+		newParent := Reconstruct(newParentID, workspaceID, "NewParent", &rootID, nil, false, time.Now(), time.Now())
+		existingCat := Reconstruct(categoryID, workspaceID, "Category", nil, nil, false, time.Now(), time.Now())
+
+		// FindByID calls for the category being updated
+		repo.On("FindByID", ctx, categoryID, workspaceID).Return(existingCat, nil)
+		// FindByID calls for cycle detection (walks parent chain from newParent)
+		repo.On("FindByID", ctx, newParentID, workspaceID).Return(newParent, nil)
+		repo.On("FindByID", ctx, rootID, workspaceID).Return(root, nil)
+		repo.On("Save", ctx, existingCat).Return(nil)
+
+		input := UpdateInput{
+			Name:             "Category",
+			ParentCategoryID: &newParentID,
+		}
+
+		cat, err := svc.Update(ctx, categoryID, workspaceID, input)
+
+		require.NoError(t, err)
+		assert.NotNil(t, cat)
+		repo.AssertExpectations(t)
+	})
+
+	t.Run("fails when parent lookup fails during cycle check", func(t *testing.T) {
+		repo := new(MockRepository)
+		svc := NewService(repo)
+
+		categoryID := uuid.New()
+		parentID := uuid.New()
+		existingCat := Reconstruct(categoryID, workspaceID, "Category", nil, nil, false, time.Now(), time.Now())
+
+		repo.On("FindByID", ctx, categoryID, workspaceID).Return(existingCat, nil)
+		repo.On("FindByID", ctx, parentID, workspaceID).Return(nil, errors.New("db error"))
+
+		input := UpdateInput{
+			Name:             "Category",
+			ParentCategoryID: &parentID,
+		}
+
+		cat, err := svc.Update(ctx, categoryID, workspaceID, input)
+
+		assert.Error(t, err)
+		assert.Nil(t, cat)
+	})
+}
+
+func TestService_Archive_ErrorPaths(t *testing.T) {
+	ctx := context.Background()
+	workspaceID := uuid.New()
+	categoryID := uuid.New()
+
+	t.Run("fails when category not found", func(t *testing.T) {
+		repo := new(MockRepository)
+		svc := NewService(repo)
+
+		repo.On("FindByID", ctx, categoryID, workspaceID).Return(nil, nil)
+
+		err := svc.Archive(ctx, categoryID, workspaceID)
+
+		assert.Error(t, err)
+		assert.Equal(t, ErrCategoryNotFound, err)
+	})
+
+	t.Run("fails when save fails", func(t *testing.T) {
+		repo := new(MockRepository)
+		svc := NewService(repo)
+
+		existingCat, _ := NewCategory(workspaceID, "Electronics", nil, nil)
+		repo.On("FindByID", ctx, categoryID, workspaceID).Return(existingCat, nil)
+		repo.On("Save", ctx, existingCat).Return(errors.New("db error"))
+
+		err := svc.Archive(ctx, categoryID, workspaceID)
+
+		assert.Error(t, err)
+	})
+}
+
+func TestService_Restore_ErrorPaths(t *testing.T) {
+	ctx := context.Background()
+	workspaceID := uuid.New()
+	categoryID := uuid.New()
+
+	t.Run("fails when category not found", func(t *testing.T) {
+		repo := new(MockRepository)
+		svc := NewService(repo)
+
+		repo.On("FindByID", ctx, categoryID, workspaceID).Return(nil, nil)
+
+		err := svc.Restore(ctx, categoryID, workspaceID)
+
+		assert.Error(t, err)
+		assert.Equal(t, ErrCategoryNotFound, err)
+	})
+
+	t.Run("fails when save fails", func(t *testing.T) {
+		repo := new(MockRepository)
+		svc := NewService(repo)
+
+		existingCat, _ := NewCategory(workspaceID, "Electronics", nil, nil)
+		existingCat.Archive()
+		repo.On("FindByID", ctx, categoryID, workspaceID).Return(existingCat, nil)
+		repo.On("Save", ctx, existingCat).Return(errors.New("db error"))
+
+		err := svc.Restore(ctx, categoryID, workspaceID)
+
+		assert.Error(t, err)
+	})
+}
+
+func TestService_Delete_ErrorPaths(t *testing.T) {
+	ctx := context.Background()
+	workspaceID := uuid.New()
+	categoryID := uuid.New()
+
+	t.Run("fails when HasChildren returns error", func(t *testing.T) {
+		repo := new(MockRepository)
+		svc := NewService(repo)
+
+		existingCat, _ := NewCategory(workspaceID, "Electronics", nil, nil)
+		repo.On("FindByID", ctx, categoryID, workspaceID).Return(existingCat, nil)
+		repo.On("HasChildren", ctx, existingCat.ID()).Return(false, errors.New("db error"))
+
+		err := svc.Delete(ctx, categoryID, workspaceID)
+
+		assert.Error(t, err)
+		repo.AssertNotCalled(t, "Delete")
+	})
+}
+
+func TestService_Create_ParentNotFound(t *testing.T) {
+	ctx := context.Background()
+	workspaceID := uuid.New()
+	parentID := uuid.New()
+
+	t.Run("fails when parent category not found", func(t *testing.T) {
+		repo := new(MockRepository)
+		svc := NewService(repo)
+
+		repo.On("FindByID", ctx, parentID, workspaceID).Return(nil, nil)
+
+		input := CreateInput{
+			WorkspaceID:      workspaceID,
+			Name:             "Child",
+			ParentCategoryID: &parentID,
+		}
+
+		cat, err := svc.Create(ctx, input)
+
+		assert.Error(t, err)
+		assert.Nil(t, cat)
+		assert.Equal(t, ErrCategoryNotFound, err)
+	})
+
+	t.Run("fails when parent lookup returns error", func(t *testing.T) {
+		repo := new(MockRepository)
+		svc := NewService(repo)
+
+		repo.On("FindByID", ctx, parentID, workspaceID).Return(nil, errors.New("db error"))
+
+		input := CreateInput{
+			WorkspaceID:      workspaceID,
+			Name:             "Child",
+			ParentCategoryID: &parentID,
+		}
+
+		cat, err := svc.Create(ctx, input)
+
+		assert.Error(t, err)
+		assert.Nil(t, cat)
+	})
+}
+
 func TestService_GetBreadcrumb(t *testing.T) {
 	ctx := context.Background()
 	workspaceID := uuid.New()
@@ -467,6 +811,93 @@ func TestService_GetBreadcrumb(t *testing.T) {
 		// Should stop after visiting both categories once
 		assert.LessOrEqual(t, len(breadcrumb), 2)
 
+		repo.AssertExpectations(t)
+	})
+
+	t.Run("fails when repository returns error", func(t *testing.T) {
+		repo := new(MockRepository)
+		svc := NewService(repo)
+
+		categoryID := uuid.New()
+		repo.On("FindByID", ctx, categoryID, workspaceID).Return(nil, errors.New("database error"))
+
+		breadcrumb, err := svc.GetBreadcrumb(ctx, categoryID, workspaceID)
+
+		assert.Error(t, err)
+		assert.Nil(t, breadcrumb)
+		repo.AssertExpectations(t)
+	})
+}
+
+func TestService_Update_ErrorPaths(t *testing.T) {
+	ctx := context.Background()
+	workspaceID := uuid.New()
+	categoryID := uuid.New()
+
+	t.Run("fails when entity update validation fails", func(t *testing.T) {
+		repo := new(MockRepository)
+		svc := NewService(repo)
+
+		existingCat, _ := NewCategory(workspaceID, "Electronics", nil, nil)
+		repo.On("FindByID", ctx, categoryID, workspaceID).Return(existingCat, nil)
+
+		// Empty name should fail validation
+		input := UpdateInput{
+			Name: "",
+		}
+
+		cat, err := svc.Update(ctx, categoryID, workspaceID, input)
+
+		assert.Error(t, err)
+		assert.Nil(t, cat)
+		repo.AssertNotCalled(t, "Save")
+	})
+
+	t.Run("fails when repository save fails", func(t *testing.T) {
+		repo := new(MockRepository)
+		svc := NewService(repo)
+
+		existingCat, _ := NewCategory(workspaceID, "Electronics", nil, nil)
+		repo.On("FindByID", ctx, categoryID, workspaceID).Return(existingCat, nil)
+		repo.On("Save", ctx, existingCat).Return(errors.New("database error"))
+
+		input := UpdateInput{
+			Name: "Updated Electronics",
+		}
+
+		cat, err := svc.Update(ctx, categoryID, workspaceID, input)
+
+		assert.Error(t, err)
+		assert.Nil(t, cat)
+		repo.AssertExpectations(t)
+	})
+}
+
+func TestService_ValidateNoCyclicParent_NilParent(t *testing.T) {
+	ctx := context.Background()
+	workspaceID := uuid.New()
+	categoryID := uuid.New()
+	parentID := uuid.New()
+
+	t.Run("succeeds when parent lookup returns nil", func(t *testing.T) {
+		repo := new(MockRepository)
+		svc := NewService(repo)
+
+		existingCat, _ := NewCategory(workspaceID, "Category", nil, nil)
+		repo.On("FindByID", ctx, categoryID, workspaceID).Return(existingCat, nil)
+		// Parent is not found (returns nil)
+		repo.On("FindByID", ctx, parentID, workspaceID).Return(nil, nil)
+		repo.On("Save", ctx, existingCat).Return(nil)
+
+		input := UpdateInput{
+			Name:             "Updated Category",
+			ParentCategoryID: &parentID,
+		}
+
+		cat, err := svc.Update(ctx, categoryID, workspaceID, input)
+
+		require.NoError(t, err)
+		assert.NotNil(t, cat)
 		repo.AssertExpectations(t)
 	})
 }

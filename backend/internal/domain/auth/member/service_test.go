@@ -2,6 +2,7 @@ package member
 
 import (
 	"context"
+	"fmt"
 	"testing"
 	"time"
 
@@ -314,6 +315,33 @@ func TestService_AddMember(t *testing.T) {
 			},
 			setupMock: func(m *MockRepository) {
 				m.On("Exists", ctx, uuid.Nil, userID).Return(false, nil)
+			},
+			expectError: true,
+		},
+		{
+			name: "database error on exists check",
+			input: AddMemberInput{
+				WorkspaceID: workspaceID,
+				UserID:      userID,
+				Role:        RoleMember,
+				InvitedBy:   nil,
+			},
+			setupMock: func(m *MockRepository) {
+				m.On("Exists", ctx, workspaceID, userID).Return(false, fmt.Errorf("db error"))
+			},
+			expectError: true,
+		},
+		{
+			name: "database error on save",
+			input: AddMemberInput{
+				WorkspaceID: workspaceID,
+				UserID:      userID,
+				Role:        RoleMember,
+				InvitedBy:   nil,
+			},
+			setupMock: func(m *MockRepository) {
+				m.On("Exists", ctx, workspaceID, userID).Return(false, nil)
+				m.On("Save", ctx, mock.AnythingOfType("*member.Member")).Return(fmt.Errorf("save error"))
 			},
 			expectError: true,
 		},

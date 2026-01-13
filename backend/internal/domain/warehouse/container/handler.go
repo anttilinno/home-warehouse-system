@@ -12,7 +12,7 @@ import (
 )
 
 // RegisterRoutes registers container routes.
-func RegisterRoutes(api huma.API, svc *Service) {
+func RegisterRoutes(api huma.API, svc ServiceInterface) {
 	// List containers
 	huma.Get(api, "/containers", func(ctx context.Context, input *ListContainersInput) (*ListContainersOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)

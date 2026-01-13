@@ -736,3 +736,242 @@ func TestService_Deactivate(t *testing.T) {
 		})
 	}
 }
+
+func TestService_Activate(t *testing.T) {
+	ctx := context.Background()
+	userID := uuid.New()
+
+	tests := []struct {
+		name        string
+		userID      uuid.UUID
+		setupMock   func(*MockRepository)
+		expectError bool
+	}{
+		{
+			name:   "successful activation",
+			userID: userID,
+			setupMock: func(m *MockRepository) {
+				user, _ := NewUser("test@example.com", "Test User", "password123")
+				user.Deactivate() // Start as deactivated
+				m.On("FindByID", ctx, userID).Return(user, nil)
+				m.On("Save", ctx, mock.MatchedBy(func(u *User) bool {
+					return u.IsActive() // Should be active after Activate
+				})).Return(nil)
+			},
+			expectError: false,
+		},
+		{
+			name:   "user not found",
+			userID: uuid.New(),
+			setupMock: func(m *MockRepository) {
+				m.On("FindByID", ctx, mock.Anything).Return(nil, nil)
+			},
+			expectError: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockRepo := new(MockRepository)
+			svc := NewService(mockRepo)
+
+			tt.setupMock(mockRepo)
+
+			err := svc.Activate(ctx, tt.userID)
+
+			if tt.expectError {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
+
+			mockRepo.AssertExpectations(t)
+		})
+	}
+}
+
+func TestUser_Activate(t *testing.T) {
+	user, err := NewUser("test@example.com", "Test User", "password123")
+	assert.NoError(t, err)
+
+	// First deactivate
+	user.Deactivate()
+	assert.False(t, user.IsActive())
+
+	originalUpdatedAt := user.UpdatedAt()
+
+	// Now activate
+	user.Activate()
+
+	assert.True(t, user.IsActive())
+	assert.True(t, user.UpdatedAt().After(originalUpdatedAt))
+}
+
+func TestService_Create_RepoError(t *testing.T) {
+	ctx := context.Background()
+	mockRepo := new(MockRepository)
+	svc := NewService(mockRepo)
+
+	// Test error from ExistsByEmail
+	mockRepo.On("ExistsByEmail", ctx, "test@example.com").Return(false, assert.AnError)
+
+	user, err := svc.Create(ctx, CreateUserInput{
+		Email:    "test@example.com",
+		FullName: "Test User",
+		Password: "password123",
+	})
+
+	assert.Error(t, err)
+	assert.Nil(t, user)
+	mockRepo.AssertExpectations(t)
+}
+
+func TestService_Create_SaveError(t *testing.T) {
+	ctx := context.Background()
+	mockRepo := new(MockRepository)
+	svc := NewService(mockRepo)
+
+	mockRepo.On("ExistsByEmail", ctx, "test@example.com").Return(false, nil)
+	mockRepo.On("Save", ctx, mock.AnythingOfType("*user.User")).Return(assert.AnError)
+
+	user, err := svc.Create(ctx, CreateUserInput{
+		Email:    "test@example.com",
+		FullName: "Test User",
+		Password: "password123",
+	})
+
+	assert.Error(t, err)
+	assert.Nil(t, user)
+	mockRepo.AssertExpectations(t)
+}
+
+func TestService_GetByID_RepoError(t *testing.T) {
+	ctx := context.Background()
+	mockRepo := new(MockRepository)
+	svc := NewService(mockRepo)
+
+	userID := uuid.New()
+	mockRepo.On("FindByID", ctx, userID).Return(nil, assert.AnError)
+
+	user, err := svc.GetByID(ctx, userID)
+
+	assert.Error(t, err)
+	assert.Nil(t, user)
+	mockRepo.AssertExpectations(t)
+}
+
+func TestService_GetByEmail_RepoError(t *testing.T) {
+	ctx := context.Background()
+	mockRepo := new(MockRepository)
+	svc := NewService(mockRepo)
+
+	mockRepo.On("FindByEmail", ctx, "test@example.com").Return(nil, assert.AnError)
+
+	user, err := svc.GetByEmail(ctx, "test@example.com")
+
+	assert.Error(t, err)
+	assert.Nil(t, user)
+	mockRepo.AssertExpectations(t)
+}
+
+func TestService_Authenticate_RepoError(t *testing.T) {
+	ctx := context.Background()
+	mockRepo := new(MockRepository)
+	svc := NewService(mockRepo)
+
+	mockRepo.On("FindByEmail", ctx, "test@example.com").Return(nil, assert.AnError)
+
+	user, err := svc.Authenticate(ctx, "test@example.com", "password123")
+
+	assert.Error(t, err)
+	assert.Nil(t, user)
+	mockRepo.AssertExpectations(t)
+}
+
+func TestService_UpdateProfile_SaveError(t *testing.T) {
+	ctx := context.Background()
+	mockRepo := new(MockRepository)
+	svc := NewService(mockRepo)
+
+	userID := uuid.New()
+	existingUser, _ := NewUser("test@example.com", "Test User", "password123")
+	mockRepo.On("FindByID", ctx, userID).Return(existingUser, nil)
+	mockRepo.On("Save", ctx, mock.Anything).Return(assert.AnError)
+
+	user, err := svc.UpdateProfile(ctx, userID, UpdateProfileInput{
+		FullName: "Updated Name",
+	})
+
+	assert.Error(t, err)
+	assert.Nil(t, user)
+	mockRepo.AssertExpectations(t)
+}
+
+func TestService_UpdateProfile_InvalidName(t *testing.T) {
+	ctx := context.Background()
+	mockRepo := new(MockRepository)
+	svc := NewService(mockRepo)
+
+	userID := uuid.New()
+	existingUser, _ := NewUser("test@example.com", "Test User", "password123")
+	mockRepo.On("FindByID", ctx, userID).Return(existingUser, nil)
+
+	user, err := svc.UpdateProfile(ctx, userID, UpdateProfileInput{
+		FullName: "", // Empty name is invalid
+	})
+
+	assert.Error(t, err)
+	assert.Nil(t, user)
+	mockRepo.AssertExpectations(t)
+}
+
+func TestService_UpdatePassword_InvalidNewPassword(t *testing.T) {
+	ctx := context.Background()
+	mockRepo := new(MockRepository)
+	svc := NewService(mockRepo)
+
+	userID := uuid.New()
+	existingUser, _ := NewUser("test@example.com", "Test User", "password123")
+	mockRepo.On("FindByID", ctx, userID).Return(existingUser, nil)
+
+	err := svc.UpdatePassword(ctx, userID, "password123", "short") // Short password
+
+	assert.Error(t, err)
+	mockRepo.AssertExpectations(t)
+}
+
+func TestService_UpdatePreferences_SaveError(t *testing.T) {
+	ctx := context.Background()
+	mockRepo := new(MockRepository)
+	svc := NewService(mockRepo)
+
+	userID := uuid.New()
+	existingUser, _ := NewUser("test@example.com", "Test User", "password123")
+	mockRepo.On("FindByID", ctx, userID).Return(existingUser, nil)
+	mockRepo.On("Save", ctx, mock.Anything).Return(assert.AnError)
+
+	user, err := svc.UpdatePreferences(ctx, userID, UpdatePreferencesInput{
+		DateFormat: "YYYY-MM-DD",
+		Language:   "en",
+		Theme:      "dark",
+	})
+
+	assert.Error(t, err)
+	assert.Nil(t, user)
+	mockRepo.AssertExpectations(t)
+}
+
+func TestService_List_RepoError(t *testing.T) {
+	ctx := context.Background()
+	mockRepo := new(MockRepository)
+	svc := NewService(mockRepo)
+
+	pagination := shared.Pagination{Page: 1, PageSize: 10}
+	mockRepo.On("List", ctx, pagination).Return(nil, 0, assert.AnError)
+
+	result, err := svc.List(ctx, pagination)
+
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	mockRepo.AssertExpectations(t)
+}

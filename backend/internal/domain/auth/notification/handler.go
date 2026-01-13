@@ -12,7 +12,7 @@ import (
 )
 
 // RegisterRoutes registers notification routes.
-func RegisterRoutes(api huma.API, svc *Service) {
+func RegisterRoutes(api huma.API, svc ServiceInterface) {
 	// List user notifications
 	huma.Get(api, "/notifications", func(ctx context.Context, input *ListNotificationsInput) (*ListNotificationsOutput, error) {
 		authUser, ok := appMiddleware.GetAuthUser(ctx)

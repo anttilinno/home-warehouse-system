@@ -23,6 +23,7 @@ type HandlerTestSetup struct {
 	API         huma.API
 	WorkspaceID uuid.UUID
 	UserID      uuid.UUID
+	authUser    *appMiddleware.AuthUser
 }
 
 // NewHandlerTestSetup creates a new test setup with injected workspace context
@@ -31,25 +32,40 @@ func NewHandlerTestSetup() *HandlerTestSetup {
 	workspaceID := uuid.MustParse("00000000-0000-0000-0000-000000000001")
 	userID := uuid.MustParse("00000000-0000-0000-0000-000000000002")
 
+	authUser := &appMiddleware.AuthUser{
+		ID:          userID,
+		Email:       "test@example.com",
+		IsSuperuser: false,
+	}
+
+	setup := &HandlerTestSetup{
+		Router:      r,
+		API:         nil, // Will be set after middleware
+		WorkspaceID: workspaceID,
+		UserID:      userID,
+		authUser:    authUser,
+	}
+
 	// Inject workspace and user context middleware for testing
 	r.Use(func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 			ctx := req.Context()
-			ctx = context.WithValue(ctx, appMiddleware.WorkspaceContextKey, workspaceID)
-			ctx = context.WithValue(ctx, appMiddleware.UserContextKey, userID)
+			ctx = context.WithValue(ctx, appMiddleware.WorkspaceContextKey, setup.WorkspaceID)
+			ctx = context.WithValue(ctx, appMiddleware.UserContextKey, setup.authUser)
 			next.ServeHTTP(w, req.WithContext(ctx))
 		})
 	})
 
 	config := huma.DefaultConfig("Test API", "1.0.0")
 	api := humachi.New(r, config)
+	setup.API = api
 
-	return &HandlerTestSetup{
-		Router:      r,
-		API:         api,
-		WorkspaceID: workspaceID,
-		UserID:      userID,
-	}
+	return setup
+}
+
+// MakeSuperuser marks the test user as a superuser
+func (h *HandlerTestSetup) MakeSuperuser() {
+	h.authUser.IsSuperuser = true
 }
 
 // Request makes an HTTP request with JSON body

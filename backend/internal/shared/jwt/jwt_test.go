@@ -1,9 +1,12 @@
 package jwt
 
 import (
+	"crypto/rand"
+	"crypto/rsa"
 	"testing"
 	"time"
 
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 )
@@ -109,6 +112,67 @@ func TestService_ValidateToken(t *testing.T) {
 			},
 			wantErr: ErrInvalidToken,
 		},
+		{
+			testName: "token with wrong signing method (RS256)",
+			setupToken: func() string {
+				// Generate RSA token instead of HMAC
+				privateKey, _ := rsa.GenerateKey(rand.Reader, 2048)
+				claims := Claims{
+					UserID:      userID,
+					Email:       email,
+					IsSuperuser: false,
+					RegisteredClaims: jwt.RegisteredClaims{
+						ExpiresAt: jwt.NewNumericDate(time.Now().Add(24 * time.Hour)),
+						IssuedAt:  jwt.NewNumericDate(time.Now()),
+					},
+				}
+				token := jwt.NewWithClaims(jwt.SigningMethodRS256, claims)
+				signedToken, _ := token.SignedString(privateKey)
+				return signedToken
+			},
+			wantErr: ErrInvalidToken,
+		},
+		{
+			testName: "expired token",
+			setupToken: func() string {
+				// Create a token that's already expired
+				now := time.Now()
+				claims := Claims{
+					UserID:      userID,
+					Email:       email,
+					IsSuperuser: false,
+					RegisteredClaims: jwt.RegisteredClaims{
+						ExpiresAt: jwt.NewNumericDate(now.Add(-1 * time.Hour)), // Expired 1 hour ago
+						IssuedAt:  jwt.NewNumericDate(now.Add(-2 * time.Hour)),
+					},
+				}
+				token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+				signedToken, _ := token.SignedString(svc.secret)
+				return signedToken
+			},
+			wantErr: ErrExpiredToken,
+		},
+		{
+			testName: "token with NotBefore in future",
+			setupToken: func() string {
+				// Create a token that's not yet valid (NotBefore in future)
+				now := time.Now()
+				claims := Claims{
+					UserID:      userID,
+					Email:       email,
+					IsSuperuser: false,
+					RegisteredClaims: jwt.RegisteredClaims{
+						ExpiresAt: jwt.NewNumericDate(now.Add(24 * time.Hour)),
+						IssuedAt:  jwt.NewNumericDate(now),
+						NotBefore: jwt.NewNumericDate(now.Add(1 * time.Hour)), // Not valid for 1 hour
+					},
+				}
+				token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+				signedToken, _ := token.SignedString(svc.secret)
+				return signedToken
+			},
+			wantErr: ErrInvalidToken,
+		},
 	}
 
 	for _, tt := range tests {
@@ -179,6 +243,75 @@ func TestService_ValidateRefreshToken(t *testing.T) {
 				otherSvc := NewService("different-secret-key", 24)
 				token, _ := otherSvc.GenerateRefreshToken(userID)
 				return token
+			},
+			wantErr:    ErrInvalidToken,
+			wantUserID: uuid.Nil,
+		},
+		{
+			testName: "expired refresh token",
+			setupToken: func() string {
+				// Create an expired refresh token
+				now := time.Now()
+				claims := jwt.RegisteredClaims{
+					ExpiresAt: jwt.NewNumericDate(now.Add(-1 * time.Hour)), // Expired 1 hour ago
+					IssuedAt:  jwt.NewNumericDate(now.Add(-2 * time.Hour)),
+					Subject:   userID.String(),
+				}
+				token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+				signedToken, _ := token.SignedString(svc.secret)
+				return signedToken
+			},
+			wantErr:    ErrExpiredToken,
+			wantUserID: uuid.Nil,
+		},
+		{
+			testName: "refresh token with wrong signing method (RS256)",
+			setupToken: func() string {
+				// Generate RSA token instead of HMAC
+				privateKey, _ := rsa.GenerateKey(rand.Reader, 2048)
+				claims := jwt.RegisteredClaims{
+					ExpiresAt: jwt.NewNumericDate(time.Now().Add(7 * 24 * time.Hour)),
+					IssuedAt:  jwt.NewNumericDate(time.Now()),
+					Subject:   userID.String(),
+				}
+				token := jwt.NewWithClaims(jwt.SigningMethodRS256, claims)
+				signedToken, _ := token.SignedString(privateKey)
+				return signedToken
+			},
+			wantErr:    ErrInvalidToken,
+			wantUserID: uuid.Nil,
+		},
+		{
+			testName: "refresh token with invalid UUID subject",
+			setupToken: func() string {
+				// Create a token with invalid UUID in subject
+				now := time.Now()
+				claims := jwt.RegisteredClaims{
+					ExpiresAt: jwt.NewNumericDate(now.Add(7 * 24 * time.Hour)),
+					IssuedAt:  jwt.NewNumericDate(now),
+					Subject:   "invalid-uuid-format", // Invalid UUID
+				}
+				token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+				signedToken, _ := token.SignedString(svc.secret)
+				return signedToken
+			},
+			wantErr:    ErrInvalidToken,
+			wantUserID: uuid.Nil,
+		},
+		{
+			testName: "refresh token with NotBefore in future",
+			setupToken: func() string {
+				// Create a token that's not yet valid
+				now := time.Now()
+				claims := jwt.RegisteredClaims{
+					ExpiresAt: jwt.NewNumericDate(now.Add(7 * 24 * time.Hour)),
+					IssuedAt:  jwt.NewNumericDate(now),
+					NotBefore: jwt.NewNumericDate(now.Add(1 * time.Hour)), // Not valid for 1 hour
+					Subject:   userID.String(),
+				}
+				token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+				signedToken, _ := token.SignedString(svc.secret)
+				return signedToken
 			},
 			wantErr:    ErrInvalidToken,
 			wantUserID: uuid.Nil,

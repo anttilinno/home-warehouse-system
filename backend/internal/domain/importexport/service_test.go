@@ -332,6 +332,45 @@ func TestService_Export_Categories(t *testing.T) {
 	mockRepo.AssertExpectations(t)
 }
 
+func TestService_Export_Categories_CSV(t *testing.T) {
+	ctx := context.Background()
+	workspaceID := uuid.New()
+	catID := uuid.New()
+	now := time.Now().UTC()
+
+	mockRepo := new(MockRepository)
+	svc := NewService(mockRepo)
+
+	mockRepo.On("ListAllCategories", ctx, workspaceID, true).Return([]queries.WarehouseCategory{
+		{
+			ID:          catID,
+			WorkspaceID: workspaceID,
+			Name:        "Electronics",
+			Description: ptrString("Electronic items"),
+			IsArchived:  false,
+			CreatedAt:   pgTimestamp(now),
+			UpdatedAt:   pgTimestamp(now),
+		},
+	}, nil)
+
+	data, metadata, err := svc.Export(ctx, ExportOptions{
+		WorkspaceID:     workspaceID,
+		EntityType:      EntityTypeCategory,
+		Format:          FormatCSV,
+		IncludeArchived: true,
+	})
+
+	assert.NoError(t, err)
+	assert.NotNil(t, metadata)
+	assert.Equal(t, 1, metadata.TotalRecords)
+
+	csvContent := string(data)
+	assert.Contains(t, csvContent, "id,name,parent_category")
+	assert.Contains(t, csvContent, "Electronics")
+
+	mockRepo.AssertExpectations(t)
+}
+
 func TestService_Export_Locations(t *testing.T) {
 	ctx := context.Background()
 	workspaceID := uuid.New()
@@ -536,6 +575,214 @@ func TestService_Export_Containers(t *testing.T) {
 	assert.Equal(t, "Box A1", containers[0].Name)
 
 	mockRepo.AssertExpectations(t)
+}
+
+func TestService_Export_Locations_CSV(t *testing.T) {
+	ctx := context.Background()
+	workspaceID := uuid.New()
+	locID := uuid.New()
+	now := time.Now().UTC()
+
+	mockRepo := new(MockRepository)
+	svc := NewService(mockRepo)
+
+	mockRepo.On("ListAllLocations", ctx, workspaceID, false).Return([]queries.WarehouseLocation{
+		{
+			ID:          locID,
+			WorkspaceID: workspaceID,
+			Name:        "Warehouse A",
+			Zone:        ptrString("Zone 1"),
+			Shelf:       ptrString("Shelf 1"),
+			IsArchived:  false,
+			CreatedAt:   pgTimestamp(now),
+			UpdatedAt:   pgTimestamp(now),
+		},
+	}, nil)
+
+	data, metadata, err := svc.Export(ctx, ExportOptions{
+		WorkspaceID:     workspaceID,
+		EntityType:      EntityTypeLocation,
+		Format:          FormatCSV,
+		IncludeArchived: false,
+	})
+
+	assert.NoError(t, err)
+	assert.Equal(t, 1, metadata.TotalRecords)
+
+	csvContent := string(data)
+	assert.Contains(t, csvContent, "id,name,parent_location")
+	assert.Contains(t, csvContent, "Warehouse A")
+
+	mockRepo.AssertExpectations(t)
+}
+
+func TestService_Export_Labels_CSV(t *testing.T) {
+	ctx := context.Background()
+	workspaceID := uuid.New()
+	labelID := uuid.New()
+	now := time.Now().UTC()
+
+	mockRepo := new(MockRepository)
+	svc := NewService(mockRepo)
+
+	mockRepo.On("ListAllLabels", ctx, workspaceID, false).Return([]queries.WarehouseLabel{
+		{
+			ID:          labelID,
+			WorkspaceID: workspaceID,
+			Name:        "Urgent",
+			Color:       ptrString("#FF0000"),
+			IsArchived:  false,
+			CreatedAt:   pgTimestamp(now),
+			UpdatedAt:   pgTimestamp(now),
+		},
+	}, nil)
+
+	data, metadata, err := svc.Export(ctx, ExportOptions{
+		WorkspaceID:     workspaceID,
+		EntityType:      EntityTypeLabel,
+		Format:          FormatCSV,
+		IncludeArchived: false,
+	})
+
+	assert.NoError(t, err)
+	assert.Equal(t, 1, metadata.TotalRecords)
+
+	csvContent := string(data)
+	assert.Contains(t, csvContent, "id,name,color")
+	assert.Contains(t, csvContent, "Urgent")
+
+	mockRepo.AssertExpectations(t)
+}
+
+func TestService_Export_Companies_CSV(t *testing.T) {
+	ctx := context.Background()
+	workspaceID := uuid.New()
+	companyID := uuid.New()
+	now := time.Now().UTC()
+
+	mockRepo := new(MockRepository)
+	svc := NewService(mockRepo)
+
+	mockRepo.On("ListAllCompanies", ctx, workspaceID, false).Return([]queries.WarehouseCompany{
+		{
+			ID:          companyID,
+			WorkspaceID: workspaceID,
+			Name:        "Acme Corp",
+			Website:     ptrString("https://acme.com"),
+			IsArchived:  false,
+			CreatedAt:   pgTimestamp(now),
+			UpdatedAt:   pgTimestamp(now),
+		},
+	}, nil)
+
+	data, metadata, err := svc.Export(ctx, ExportOptions{
+		WorkspaceID:     workspaceID,
+		EntityType:      EntityTypeCompany,
+		Format:          FormatCSV,
+		IncludeArchived: false,
+	})
+
+	assert.NoError(t, err)
+	assert.Equal(t, 1, metadata.TotalRecords)
+
+	csvContent := string(data)
+	assert.Contains(t, csvContent, "id,name,website")
+	assert.Contains(t, csvContent, "Acme Corp")
+
+	mockRepo.AssertExpectations(t)
+}
+
+func TestService_Export_Borrowers_CSV(t *testing.T) {
+	ctx := context.Background()
+	workspaceID := uuid.New()
+	borrowerID := uuid.New()
+	now := time.Now().UTC()
+
+	mockRepo := new(MockRepository)
+	svc := NewService(mockRepo)
+
+	mockRepo.On("ListAllBorrowers", ctx, workspaceID, false).Return([]queries.WarehouseBorrower{
+		{
+			ID:          borrowerID,
+			WorkspaceID: workspaceID,
+			Name:        "John Doe",
+			Email:       ptrString("john@example.com"),
+			IsArchived:  false,
+			CreatedAt:   pgTimestamp(now),
+			UpdatedAt:   pgTimestamp(now),
+		},
+	}, nil)
+
+	data, metadata, err := svc.Export(ctx, ExportOptions{
+		WorkspaceID:     workspaceID,
+		EntityType:      EntityTypeBorrower,
+		Format:          FormatCSV,
+		IncludeArchived: false,
+	})
+
+	assert.NoError(t, err)
+	assert.Equal(t, 1, metadata.TotalRecords)
+
+	csvContent := string(data)
+	assert.Contains(t, csvContent, "id,name,email")
+	assert.Contains(t, csvContent, "John Doe")
+
+	mockRepo.AssertExpectations(t)
+}
+
+func TestService_Export_Containers_CSV(t *testing.T) {
+	ctx := context.Background()
+	workspaceID := uuid.New()
+	containerID := uuid.New()
+	now := time.Now().UTC()
+
+	mockRepo := new(MockRepository)
+	svc := NewService(mockRepo)
+
+	mockRepo.On("ListAllContainers", ctx, workspaceID, false).Return([]queries.WarehouseContainer{
+		{
+			ID:          containerID,
+			WorkspaceID: workspaceID,
+			Name:        "Box A1",
+			Capacity:    ptrString("100 items"),
+			IsArchived:  false,
+			CreatedAt:   pgTimestamp(now),
+			UpdatedAt:   pgTimestamp(now),
+		},
+	}, nil)
+
+	data, metadata, err := svc.Export(ctx, ExportOptions{
+		WorkspaceID:     workspaceID,
+		EntityType:      EntityTypeContainer,
+		Format:          FormatCSV,
+		IncludeArchived: false,
+	})
+
+	assert.NoError(t, err)
+	assert.Equal(t, 1, metadata.TotalRecords)
+
+	csvContent := string(data)
+	assert.Contains(t, csvContent, "id,name,location_name")
+	assert.Contains(t, csvContent, "Box A1")
+
+	mockRepo.AssertExpectations(t)
+}
+
+func TestService_Export_UnsupportedEntityType_CSV(t *testing.T) {
+	ctx := context.Background()
+	workspaceID := uuid.New()
+
+	mockRepo := new(MockRepository)
+	svc := NewService(mockRepo)
+
+	_, _, err := svc.Export(ctx, ExportOptions{
+		WorkspaceID: workspaceID,
+		EntityType:  EntityType("invalid_type"),
+		Format:      FormatCSV,
+	})
+
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "unsupported entity type")
 }
 
 func TestService_Export_UnsupportedEntityType(t *testing.T) {

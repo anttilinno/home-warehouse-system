@@ -1,6 +1,7 @@
 package jobs
 
 import (
+	"context"
 	"log"
 	"time"
 
@@ -150,5 +151,5 @@ func (s *Scheduler) Client() *asynq.Client {
 // This is useful for testing or manual triggering.
 func (s *Scheduler) EnqueueLoanReminders() error {
 	scheduler := NewLoanReminderScheduler(s.pool, s.client)
-	return scheduler.ScheduleReminders(nil)
+	return scheduler.ScheduleReminders(context.Background())
 }

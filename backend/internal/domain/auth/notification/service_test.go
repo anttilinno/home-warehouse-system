@@ -255,32 +255,76 @@ func TestService_Create(t *testing.T) {
 	workspaceID := uuid.New()
 	metadata := map[string]interface{}{"loan_id": "123"}
 
-	input := CreateInput{
-		UserID:           userID,
-		WorkspaceID:      &workspaceID,
-		NotificationType: TypeLoanDueSoon,
-		Title:            "Loan Due Soon",
-		Message:          "Your loan is due in 3 days",
-		Metadata:         metadata,
-	}
+	t.Run("success", func(t *testing.T) {
+		input := CreateInput{
+			UserID:           userID,
+			WorkspaceID:      &workspaceID,
+			NotificationType: TypeLoanDueSoon,
+			Title:            "Loan Due Soon",
+			Message:          "Your loan is due in 3 days",
+			Metadata:         metadata,
+		}
 
-	mockRepo := new(MockRepository)
-	svc := NewService(mockRepo)
+		mockRepo := new(MockRepository)
+		svc := NewService(mockRepo)
 
-	mockRepo.On("Save", ctx, mock.AnythingOfType("*notification.Notification")).Return(nil)
+		mockRepo.On("Save", ctx, mock.AnythingOfType("*notification.Notification")).Return(nil)
 
-	notification, err := svc.Create(ctx, input)
+		notification, err := svc.Create(ctx, input)
 
-	assert.NoError(t, err)
-	assert.NotNil(t, notification)
-	assert.Equal(t, userID, notification.UserID())
-	assert.Equal(t, &workspaceID, notification.WorkspaceID())
-	assert.Equal(t, TypeLoanDueSoon, notification.NotificationType())
-	assert.Equal(t, "Loan Due Soon", notification.Title())
-	assert.Equal(t, "Your loan is due in 3 days", notification.Message())
-	assert.Equal(t, metadata, notification.Metadata())
+		assert.NoError(t, err)
+		assert.NotNil(t, notification)
+		assert.Equal(t, userID, notification.UserID())
+		assert.Equal(t, &workspaceID, notification.WorkspaceID())
+		assert.Equal(t, TypeLoanDueSoon, notification.NotificationType())
+		assert.Equal(t, "Loan Due Soon", notification.Title())
+		assert.Equal(t, "Your loan is due in 3 days", notification.Message())
+		assert.Equal(t, metadata, notification.Metadata())
 
-	mockRepo.AssertExpectations(t)
+		mockRepo.AssertExpectations(t)
+	})
+
+	t.Run("error on invalid input", func(t *testing.T) {
+		input := CreateInput{
+			UserID:           uuid.Nil, // Invalid user ID
+			WorkspaceID:      &workspaceID,
+			NotificationType: TypeLoanDueSoon,
+			Title:            "Loan Due Soon",
+			Message:          "Your loan is due in 3 days",
+			Metadata:         metadata,
+		}
+
+		mockRepo := new(MockRepository)
+		svc := NewService(mockRepo)
+
+		notification, err := svc.Create(ctx, input)
+
+		assert.Error(t, err)
+		assert.Nil(t, notification)
+		mockRepo.AssertNotCalled(t, "Save")
+	})
+
+	t.Run("error on save", func(t *testing.T) {
+		input := CreateInput{
+			UserID:           userID,
+			WorkspaceID:      &workspaceID,
+			NotificationType: TypeLoanDueSoon,
+			Title:            "Loan Due Soon",
+			Message:          "Your loan is due in 3 days",
+			Metadata:         metadata,
+		}
+
+		mockRepo := new(MockRepository)
+		svc := NewService(mockRepo)
+
+		mockRepo.On("Save", ctx, mock.AnythingOfType("*notification.Notification")).Return(assert.AnError)
+
+		notification, err := svc.Create(ctx, input)
+
+		assert.Error(t, err)
+		assert.Nil(t, notification)
+		mockRepo.AssertExpectations(t)
+	})
 }
 
 func TestService_GetByID(t *testing.T) {
@@ -312,25 +356,40 @@ func TestService_ListUserNotifications(t *testing.T) {
 	userID := uuid.New()
 	pagination := shared.Pagination{Page: 1, PageSize: 10}
 
-	notifications := []*Notification{
-		{id: uuid.New(), userID: userID, title: "Notification 1"},
-		{id: uuid.New(), userID: userID, title: "Notification 2"},
-	}
+	t.Run("success", func(t *testing.T) {
+		notifications := []*Notification{
+			{id: uuid.New(), userID: userID, title: "Notification 1"},
+			{id: uuid.New(), userID: userID, title: "Notification 2"},
+		}
 
-	mockRepo := new(MockRepository)
-	svc := NewService(mockRepo)
+		mockRepo := new(MockRepository)
+		svc := NewService(mockRepo)
 
-	mockRepo.On("FindByUser", ctx, userID, pagination).Return(notifications, 2, nil)
+		mockRepo.On("FindByUser", ctx, userID, pagination).Return(notifications, 2, nil)
 
-	result, err := svc.ListUserNotifications(ctx, userID, pagination)
+		result, err := svc.ListUserNotifications(ctx, userID, pagination)
 
-	assert.NoError(t, err)
-	assert.NotNil(t, result)
-	assert.Len(t, result.Items, 2)
-	assert.Equal(t, 2, result.Total)
-	assert.Equal(t, 1, result.Page)
+		assert.NoError(t, err)
+		assert.NotNil(t, result)
+		assert.Len(t, result.Items, 2)
+		assert.Equal(t, 2, result.Total)
+		assert.Equal(t, 1, result.Page)
 
-	mockRepo.AssertExpectations(t)
+		mockRepo.AssertExpectations(t)
+	})
+
+	t.Run("error on repository failure", func(t *testing.T) {
+		mockRepo := new(MockRepository)
+		svc := NewService(mockRepo)
+
+		mockRepo.On("FindByUser", ctx, userID, pagination).Return(nil, 0, assert.AnError)
+
+		result, err := svc.ListUserNotifications(ctx, userID, pagination)
+
+		assert.Error(t, err)
+		assert.Nil(t, result)
+		mockRepo.AssertExpectations(t)
+	})
 }
 
 func TestService_GetUnreadNotifications(t *testing.T) {

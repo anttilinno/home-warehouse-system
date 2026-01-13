@@ -12,7 +12,7 @@ import (
 )
 
 // RegisterRoutes registers movement routes (read-only, movements are created via inventory service).
-func RegisterRoutes(api huma.API, svc *Service) {
+func RegisterRoutes(api huma.API, svc ServiceInterface) {
 	// List all movements in workspace
 	huma.Get(api, "/movements", func(ctx context.Context, input *ListWorkspaceMovementsInput) (*ListMovementsOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)

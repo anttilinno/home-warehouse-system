@@ -21,11 +21,9 @@ export interface Workspace {
   is_personal: boolean;
 }
 
-export interface LoginResponse {
-  access_token: string;
-  user: User;
-  workspaces: Workspace[];
-  token_type: string;
+export interface AuthTokenResponse {
+  token: string;
+  refresh_token: string;
 }
 
 export interface RegisterData {
@@ -36,18 +34,18 @@ export interface RegisterData {
 }
 
 export const authApi = {
-  login: async (email: string, password: string): Promise<LoginResponse> => {
-    const response = await apiClient.post<LoginResponse>("/auth/login", {
+  login: async (email: string, password: string): Promise<AuthTokenResponse> => {
+    const response = await apiClient.post<AuthTokenResponse>("/auth/login", {
       email,
       password,
     });
-    apiClient.setToken(response.access_token);
+    apiClient.setToken(response.token);
     return response;
   },
 
-  register: async (data: RegisterData): Promise<LoginResponse> => {
-    const response = await apiClient.post<LoginResponse>("/auth/register", data);
-    apiClient.setToken(response.access_token);
+  register: async (data: RegisterData): Promise<AuthTokenResponse> => {
+    const response = await apiClient.post<AuthTokenResponse>("/auth/register", data);
+    apiClient.setToken(response.token);
     return response;
   },
 
@@ -59,10 +57,10 @@ export const authApi = {
   },
 
   getMe: async (): Promise<User> => {
-    return apiClient.get<User>("/auth/me");
+    return apiClient.get<User>("/users/me");
   },
 
   getWorkspaces: async (): Promise<Workspace[]> => {
-    return apiClient.get<Workspace[]>("/auth/me/workspaces");
+    return apiClient.get<Workspace[]>("/users/me/workspaces");
   },
 };

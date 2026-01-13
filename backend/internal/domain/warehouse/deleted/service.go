@@ -9,6 +9,13 @@ import (
 	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/activity"
 )
 
+// ServiceInterface defines the deleted record service operations.
+type ServiceInterface interface {
+	RecordDeletion(ctx context.Context, workspaceID uuid.UUID, entityType activity.EntityType, entityID uuid.UUID, deletedBy *uuid.UUID) error
+	GetDeletedSince(ctx context.Context, workspaceID uuid.UUID, since time.Time) ([]*DeletedRecord, error)
+	CleanupOld(ctx context.Context, before time.Time) error
+}
+
 type Service struct {
 	repo Repository
 }

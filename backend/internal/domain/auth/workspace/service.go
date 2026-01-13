@@ -13,6 +13,16 @@ type MemberAdder interface {
 	Save(ctx context.Context, member *member.Member) error
 }
 
+// ServiceInterface defines the workspace service operations.
+type ServiceInterface interface {
+	Create(ctx context.Context, input CreateWorkspaceInput) (*Workspace, error)
+	GetByID(ctx context.Context, id uuid.UUID) (*Workspace, error)
+	GetBySlug(ctx context.Context, slug string) (*Workspace, error)
+	GetUserWorkspaces(ctx context.Context, userID uuid.UUID) ([]*Workspace, error)
+	Update(ctx context.Context, id uuid.UUID, input UpdateWorkspaceInput) (*Workspace, error)
+	Delete(ctx context.Context, id uuid.UUID) error
+}
+
 // Service handles workspace business logic.
 type Service struct {
 	repo       Repository

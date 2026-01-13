@@ -12,10 +12,13 @@ import {
   ChevronRight,
   ChevronDown,
 } from "lucide-react";
+import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { CategoryListSkeleton } from "@/components/dashboard/category-skeleton";
+import { EmptyState, EmptyStateList, EmptyStateBenefits } from "@/components/ui/empty-state";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -205,7 +208,10 @@ export default function CategoriesPage() {
       setCategories(data);
       setTree(buildCategoryTree(data));
     } catch (error) {
-      console.error("Failed to load categories:", error);
+      const errorMessage = error instanceof Error ? error.message : "Failed to load categories";
+      toast.error("Failed to load categories", {
+        description: errorMessage,
+      });
     } finally {
       setIsLoading(false);
     }
@@ -261,17 +267,26 @@ export default function CategoriesPage() {
           description: formDescription.trim() || null,
           parent_category_id: formParentId,
         });
+        toast.success("Category updated", {
+          description: `"${formName.trim()}" has been updated successfully`,
+        });
       } else {
         await categoriesApi.create(workspaceId, {
           name: formName.trim(),
           description: formDescription.trim() || null,
           parent_category_id: formParentId,
         });
+        toast.success("Category created", {
+          description: `"${formName.trim()}" has been created successfully`,
+        });
       }
       await loadCategories();
       setDialogOpen(false);
     } catch (error) {
-      console.error("Failed to save category:", error);
+      const errorMessage = error instanceof Error ? error.message : "Failed to save category";
+      toast.error(editingCategory ? "Failed to update category" : "Failed to create category", {
+        description: errorMessage,
+      });
     } finally {
       setIsSaving(false);
     }
@@ -283,11 +298,17 @@ export default function CategoriesPage() {
     setIsSaving(true);
     try {
       await categoriesApi.delete(workspaceId, deletingCategory.id);
+      toast.success("Category deleted", {
+        description: `"${deletingCategory.name}" has been deleted successfully`,
+      });
       await loadCategories();
       setDeleteDialogOpen(false);
       setDeletingCategory(null);
     } catch (error) {
-      console.error("Failed to delete category:", error);
+      const errorMessage = error instanceof Error ? error.message : "Failed to delete category";
+      toast.error("Failed to delete category", {
+        description: errorMessage,
+      });
     } finally {
       setIsSaving(false);
     }
@@ -330,14 +351,23 @@ export default function CategoriesPage() {
             <h1 className="text-2xl font-bold tracking-tight">{t("title")}</h1>
             <p className="text-muted-foreground">{t("subtitle")}</p>
           </div>
+          <Button disabled>
+            <Plus className="mr-2 h-4 w-4" />
+            {t("add")}
+          </Button>
         </div>
-        <Card>
-          <CardContent className="py-10">
-            <div className="flex items-center justify-center text-muted-foreground">
-              Loading...
-            </div>
-          </CardContent>
-        </Card>
+
+        <div className="relative max-w-sm">
+          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+          <Input
+            type="search"
+            placeholder={t("search")}
+            className="pl-8"
+            disabled
+          />
+        </div>
+
+        <CategoryListSkeleton />
       </div>
     );
   }
@@ -380,21 +410,46 @@ export default function CategoriesPage() {
         </CardHeader>
         <CardContent>
           {filteredTree.length === 0 ? (
-            <div className="py-10 text-center">
-              <FolderTree className="mx-auto h-12 w-12 text-muted-foreground/50" />
-              <h3 className="mt-4 text-lg font-medium">
-                {searchQuery ? t("noResults") : t("empty")}
-              </h3>
-              <p className="mt-2 text-sm text-muted-foreground">
-                {searchQuery ? "" : t("emptyDescription")}
-              </p>
-              {!searchQuery && (
-                <Button className="mt-4" onClick={openCreateDialog}>
-                  <Plus className="mr-2 h-4 w-4" />
-                  {t("add")}
-                </Button>
-              )}
-            </div>
+            searchQuery ? (
+              <EmptyState
+                icon={FolderTree}
+                title={t("noResults")}
+                description="Try adjusting your search terms"
+              />
+            ) : (
+              <EmptyState
+                icon={FolderTree}
+                title={t("empty")}
+                description="Organize your items with custom categories. Create hierarchies to keep everything structured."
+                action={{
+                  label: t("add"),
+                  onClick: openCreateDialog,
+                }}
+              >
+                <div className="mb-4">
+                  <p className="font-medium mb-3 text-foreground">Examples:</p>
+                  <EmptyStateList
+                    items={[
+                      "Electronics → Cables → USB-C",
+                      "Tools → Power Tools → Drills",
+                      "Home → Kitchen → Appliances",
+                      "Sports → Outdoor → Camping Gear",
+                    ]}
+                  />
+                </div>
+                <div>
+                  <p className="font-medium mb-3 text-foreground">Benefits:</p>
+                  <EmptyStateBenefits
+                    benefits={[
+                      "Quick filtering and search",
+                      "Better organization",
+                      "Faster item lookup",
+                      "Hierarchical structure",
+                    ]}
+                  />
+                </div>
+              </EmptyState>
+            )
           ) : (
             <div className="space-y-1">
               {filteredTree.map((category) => (

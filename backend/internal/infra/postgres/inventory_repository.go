@@ -27,6 +27,15 @@ func NewInventoryRepository(pool *pgxpool.Pool) *InventoryRepository {
 }
 
 func (r *InventoryRepository) Save(ctx context.Context, inv *inventory.Inventory) error {
+	// Check if inventory already exists
+	existing, err := r.queries.GetInventory(ctx, queries.GetInventoryParams{
+		ID:          inv.ID(),
+		WorkspaceID: inv.WorkspaceID(),
+	})
+	if err != nil && !errors.Is(err, pgx.ErrNoRows) {
+		return err
+	}
+
 	var containerID pgtype.UUID
 	if inv.ContainerID() != nil {
 		containerID = pgtype.UUID{Bytes: *inv.ContainerID(), Valid: true}
@@ -58,7 +67,35 @@ func (r *InventoryRepository) Save(ctx context.Context, inv *inventory.Inventory
 		Valid:                   true,
 	}
 
-	_, err := r.queries.CreateInventory(ctx, queries.CreateInventoryParams{
+	// If inventory exists, update it; otherwise create it
+	if existing.ID != uuid.Nil {
+		// Update existing inventory
+		_, err = r.queries.UpdateInventory(ctx, queries.UpdateInventoryParams{
+			ID:              inv.ID(),
+			LocationID:      inv.LocationID(),
+			ContainerID:     containerID,
+			Quantity:        int32(inv.Quantity()),
+			Condition:       condition,
+			DateAcquired:    dateAcquired,
+			PurchasePrice:   purchasePrice,
+			CurrencyCode:    inv.CurrencyCode(),
+			WarrantyExpires: warrantyExpires,
+			ExpirationDate:  expirationDate,
+			Notes:           inv.Notes(),
+		})
+		if err != nil {
+			return err
+		}
+		// Separately update status since UpdateInventory doesn't include it
+		_, err = r.queries.UpdateInventoryStatus(ctx, queries.UpdateInventoryStatusParams{
+			ID:     inv.ID(),
+			Status: status,
+		})
+		return err
+	}
+
+	// Create new inventory
+	_, err = r.queries.CreateInventory(ctx, queries.CreateInventoryParams{
 		ID:              inv.ID(),
 		WorkspaceID:     inv.WorkspaceID(),
 		ItemID:          inv.ItemID(),

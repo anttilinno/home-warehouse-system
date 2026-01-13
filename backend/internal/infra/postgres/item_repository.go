@@ -27,6 +27,15 @@ func NewItemRepository(pool *pgxpool.Pool) *ItemRepository {
 }
 
 func (r *ItemRepository) Save(ctx context.Context, i *item.Item) error {
+	// Check if item already exists
+	existing, err := r.queries.GetItem(ctx, queries.GetItemParams{
+		ID:          i.ID(),
+		WorkspaceID: i.WorkspaceID(),
+	})
+	if err != nil && !errors.Is(err, pgx.ErrNoRows) {
+		return err
+	}
+
 	var categoryID, purchasedFrom pgtype.UUID
 	if i.CategoryID() != nil {
 		categoryID = pgtype.UUID{Bytes: *i.CategoryID(), Valid: true}
@@ -35,7 +44,41 @@ func (r *ItemRepository) Save(ctx context.Context, i *item.Item) error {
 		purchasedFrom = pgtype.UUID{Bytes: *i.PurchasedFrom(), Valid: true}
 	}
 
-	_, err := r.queries.CreateItem(ctx, queries.CreateItemParams{
+	// If item exists, check what kind of update to make
+	if existing.ID != uuid.Nil {
+		// If item is being archived
+		existingArchived := existing.IsArchived != nil && *existing.IsArchived
+		itemArchived := i.IsArchived() != nil && *i.IsArchived()
+		if itemArchived && !existingArchived {
+			err = r.queries.ArchiveItem(ctx, i.ID())
+			return err
+		}
+
+		// Otherwise, update the item
+		_, err = r.queries.UpdateItem(ctx, queries.UpdateItemParams{
+			ID:                i.ID(),
+			Name:              i.Name(),
+			Description:       i.Description(),
+			CategoryID:        categoryID,
+			Brand:             i.Brand(),
+			Model:             i.Model(),
+			ImageUrl:          i.ImageURL(),
+			SerialNumber:      i.SerialNumber(),
+			Manufacturer:      i.Manufacturer(),
+			Barcode:           i.Barcode(),
+			IsInsured:         i.IsInsured(),
+			LifetimeWarranty:  i.LifetimeWarranty(),
+			WarrantyDetails:   i.WarrantyDetails(),
+			PurchasedFrom:     purchasedFrom,
+			MinStockLevel:     int32(i.MinStockLevel()),
+			ObsidianVaultPath: i.ObsidianVaultPath(),
+			ObsidianNotePath:  i.ObsidianNotePath(),
+		})
+		return err
+	}
+
+	// Create new item
+	_, err = r.queries.CreateItem(ctx, queries.CreateItemParams{
 		ID:                i.ID(),
 		WorkspaceID:       i.WorkspaceID(),
 		Sku:               i.SKU(),

@@ -358,3 +358,556 @@ func TestAllEntityTypes(t *testing.T) {
 	assert.Contains(t, types, sync.EntityTypeBorrower)
 	assert.Contains(t, types, sync.EntityTypeLoan)
 }
+
+func TestService_GetDelta_EntityTypeErrors(t *testing.T) {
+	ctx := context.Background()
+	workspaceID := uuid.New()
+	now := time.Now()
+	modifiedSince := now.Add(-24 * time.Hour)
+
+	testCases := []struct {
+		name       string
+		entityType sync.EntityType
+		setupMock  func(*MockRepository)
+	}{
+		{
+			name:       "item error",
+			entityType: sync.EntityTypeItem,
+			setupMock: func(repo *MockRepository) {
+				repo.On("ListItemsModifiedSince", ctx, workspaceID, modifiedSince, int32(100)).Return(nil, assert.AnError)
+			},
+		},
+		{
+			name:       "location error",
+			entityType: sync.EntityTypeLocation,
+			setupMock: func(repo *MockRepository) {
+				repo.On("ListLocationsModifiedSince", ctx, workspaceID, modifiedSince, int32(100)).Return(nil, assert.AnError)
+			},
+		},
+		{
+			name:       "container error",
+			entityType: sync.EntityTypeContainer,
+			setupMock: func(repo *MockRepository) {
+				repo.On("ListContainersModifiedSince", ctx, workspaceID, modifiedSince, int32(100)).Return(nil, assert.AnError)
+			},
+		},
+		{
+			name:       "inventory error",
+			entityType: sync.EntityTypeInventory,
+			setupMock: func(repo *MockRepository) {
+				repo.On("ListInventoryModifiedSince", ctx, workspaceID, modifiedSince, int32(100)).Return(nil, assert.AnError)
+			},
+		},
+		{
+			name:       "category error",
+			entityType: sync.EntityTypeCategory,
+			setupMock: func(repo *MockRepository) {
+				repo.On("ListCategoriesModifiedSince", ctx, workspaceID, modifiedSince, int32(100)).Return(nil, assert.AnError)
+			},
+		},
+		{
+			name:       "label error",
+			entityType: sync.EntityTypeLabel,
+			setupMock: func(repo *MockRepository) {
+				repo.On("ListLabelsModifiedSince", ctx, workspaceID, modifiedSince, int32(100)).Return(nil, assert.AnError)
+			},
+		},
+		{
+			name:       "company error",
+			entityType: sync.EntityTypeCompany,
+			setupMock: func(repo *MockRepository) {
+				repo.On("ListCompaniesModifiedSince", ctx, workspaceID, modifiedSince, int32(100)).Return(nil, assert.AnError)
+			},
+		},
+		{
+			name:       "borrower error",
+			entityType: sync.EntityTypeBorrower,
+			setupMock: func(repo *MockRepository) {
+				repo.On("ListBorrowersModifiedSince", ctx, workspaceID, modifiedSince, int32(100)).Return(nil, assert.AnError)
+			},
+		},
+		{
+			name:       "loan error",
+			entityType: sync.EntityTypeLoan,
+			setupMock: func(repo *MockRepository) {
+				repo.On("ListLoansModifiedSince", ctx, workspaceID, modifiedSince, int32(100)).Return(nil, assert.AnError)
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			repo := new(MockRepository)
+			svc := sync.NewService(repo)
+
+			tc.setupMock(repo)
+
+			result, err := svc.GetDelta(ctx, sync.DeltaSyncInput{
+				WorkspaceID:   workspaceID,
+				ModifiedSince: &modifiedSince,
+				EntityTypes:   []sync.EntityType{tc.entityType},
+				Limit:         100,
+			})
+
+			assert.Error(t, err)
+			assert.Nil(t, result)
+		})
+	}
+}
+
+func TestService_GetDelta_DeletedRecordsError(t *testing.T) {
+	ctx := context.Background()
+	workspaceID := uuid.New()
+	now := time.Now()
+	modifiedSince := now.Add(-24 * time.Hour)
+
+	repo := new(MockRepository)
+	svc := sync.NewService(repo)
+
+	// Items succeed but deleted records fail
+	repo.On("ListItemsModifiedSince", ctx, workspaceID, modifiedSince, int32(100)).Return([]queries.WarehouseItem{}, nil)
+	repo.On("ListDeletedRecordsModifiedSince", ctx, workspaceID, modifiedSince, int32(100)).Return(nil, assert.AnError)
+
+	result, err := svc.GetDelta(ctx, sync.DeltaSyncInput{
+		WorkspaceID:   workspaceID,
+		ModifiedSince: &modifiedSince,
+		EntityTypes:   []sync.EntityType{sync.EntityTypeItem},
+		Limit:         100,
+	})
+
+	assert.Error(t, err)
+	assert.Nil(t, result)
+}
+
+func TestService_GetDelta_AllEntityTypesWithData(t *testing.T) {
+	ctx := context.Background()
+	workspaceID := uuid.New()
+	now := time.Now()
+	modifiedSince := now.Add(-24 * time.Hour)
+
+	repo := new(MockRepository)
+	svc := sync.NewService(repo)
+
+	locationID := uuid.New()
+	parentLocID := uuid.New()
+	containerID := uuid.New()
+	itemID := uuid.New()
+	labelID := uuid.New()
+	companyID := uuid.New()
+	borrowerID := uuid.New()
+	loanID := uuid.New()
+	inventoryID := uuid.New()
+
+	// Setup all entity types with data including optional fields
+	repo.On("ListLocationsModifiedSince", ctx, workspaceID, modifiedSince, int32(100)).Return([]queries.WarehouseLocation{
+		{
+			ID:             locationID,
+			WorkspaceID:    workspaceID,
+			Name:           "Location 1",
+			ParentLocation: pgtype.UUID{Bytes: parentLocID, Valid: true},
+			Zone:           ptrString("A"),
+			Shelf:          ptrString("1"),
+			Bin:            ptrString("B1"),
+			ShortCode:      ptrString("LOC-1"),
+			CreatedAt:      pgtype.Timestamptz{Time: now, Valid: true},
+			UpdatedAt:      pgtype.Timestamptz{Time: now, Valid: true},
+		},
+	}, nil)
+
+	capacity := "50"
+	repo.On("ListContainersModifiedSince", ctx, workspaceID, modifiedSince, int32(100)).Return([]queries.WarehouseContainer{
+		{
+			ID:          containerID,
+			WorkspaceID: workspaceID,
+			Name:        "Container 1",
+			LocationID:  locationID,
+			Capacity:    &capacity,
+			ShortCode:   ptrString("CTN-1"),
+			CreatedAt:   pgtype.Timestamptz{Time: now, Valid: true},
+			UpdatedAt:   pgtype.Timestamptz{Time: now, Valid: true},
+		},
+	}, nil)
+
+	purchasePrice := int32(9999)
+	repo.On("ListInventoryModifiedSince", ctx, workspaceID, modifiedSince, int32(100)).Return([]queries.WarehouseInventory{
+		{
+			ID:            inventoryID,
+			WorkspaceID:   workspaceID,
+			ItemID:        itemID,
+			LocationID:    locationID,
+			ContainerID:   pgtype.UUID{Bytes: containerID, Valid: true},
+			Quantity:      5,
+			Condition:     queries.NullWarehouseItemConditionEnum{WarehouseItemConditionEnum: queries.WarehouseItemConditionEnumGOOD, Valid: true},
+			Status:        queries.NullWarehouseItemStatusEnum{WarehouseItemStatusEnum: queries.WarehouseItemStatusEnumAVAILABLE, Valid: true},
+			DateAcquired:  pgtype.Date{Time: now, Valid: true},
+			PurchasePrice: &purchasePrice,
+			CurrencyCode:  ptrString("USD"),
+			CreatedAt:     pgtype.Timestamptz{Time: now, Valid: true},
+			UpdatedAt:     pgtype.Timestamptz{Time: now, Valid: true},
+		},
+	}, nil)
+
+	labelColor := "#FF0000"
+	repo.On("ListLabelsModifiedSince", ctx, workspaceID, modifiedSince, int32(100)).Return([]queries.WarehouseLabel{
+		{
+			ID:          labelID,
+			WorkspaceID: workspaceID,
+			Name:        "Label 1",
+			Color:       &labelColor,
+			CreatedAt:   pgtype.Timestamptz{Time: now, Valid: true},
+			UpdatedAt:   pgtype.Timestamptz{Time: now, Valid: true},
+		},
+	}, nil)
+
+	repo.On("ListCompaniesModifiedSince", ctx, workspaceID, modifiedSince, int32(100)).Return([]queries.WarehouseCompany{
+		{
+			ID:          companyID,
+			WorkspaceID: workspaceID,
+			Name:        "Company 1",
+			Website:     ptrString("https://example.com"),
+			CreatedAt:   pgtype.Timestamptz{Time: now, Valid: true},
+			UpdatedAt:   pgtype.Timestamptz{Time: now, Valid: true},
+		},
+	}, nil)
+
+	repo.On("ListBorrowersModifiedSince", ctx, workspaceID, modifiedSince, int32(100)).Return([]queries.WarehouseBorrower{
+		{
+			ID:          borrowerID,
+			WorkspaceID: workspaceID,
+			Name:        "Borrower 1",
+			Email:       ptrString("borrower@example.com"),
+			Phone:       ptrString("123-456-7890"),
+			CreatedAt:   pgtype.Timestamptz{Time: now, Valid: true},
+			UpdatedAt:   pgtype.Timestamptz{Time: now, Valid: true},
+		},
+	}, nil)
+
+	repo.On("ListLoansModifiedSince", ctx, workspaceID, modifiedSince, int32(100)).Return([]queries.WarehouseLoan{
+		{
+			ID:          loanID,
+			WorkspaceID: workspaceID,
+			InventoryID: inventoryID,
+			BorrowerID:  borrowerID,
+			Quantity:    1,
+			LoanedAt:    pgtype.Timestamptz{Time: now, Valid: true},
+			DueDate:     pgtype.Date{Time: now.Add(7 * 24 * time.Hour), Valid: true},
+			ReturnedAt:  pgtype.Timestamptz{Time: now.Add(5 * 24 * time.Hour), Valid: true},
+			CreatedAt:   pgtype.Timestamptz{Time: now, Valid: true},
+			UpdatedAt:   pgtype.Timestamptz{Time: now, Valid: true},
+		},
+	}, nil)
+
+	userID := uuid.New()
+	repo.On("ListDeletedRecordsModifiedSince", ctx, workspaceID, modifiedSince, int32(100)).Return([]queries.WarehouseDeletedRecord{
+		{
+			ID:         uuid.New(),
+			EntityType: queries.WarehouseActivityEntityEnumITEM,
+			EntityID:   itemID,
+			DeletedAt:  now,
+			DeletedBy:  pgtype.UUID{Bytes: userID, Valid: true},
+		},
+	}, nil)
+
+	result, err := svc.GetDelta(ctx, sync.DeltaSyncInput{
+		WorkspaceID:   workspaceID,
+		ModifiedSince: &modifiedSince,
+		EntityTypes: []sync.EntityType{
+			sync.EntityTypeLocation,
+			sync.EntityTypeContainer,
+			sync.EntityTypeInventory,
+			sync.EntityTypeLabel,
+			sync.EntityTypeCompany,
+			sync.EntityTypeBorrower,
+			sync.EntityTypeLoan,
+		},
+		Limit: 100,
+	})
+
+	require.NoError(t, err)
+	assert.Len(t, result.Locations, 1)
+	assert.Equal(t, "Location 1", result.Locations[0].Name)
+	assert.NotNil(t, result.Locations[0].ParentLocation)
+
+	assert.Len(t, result.Containers, 1)
+	assert.Equal(t, "Container 1", result.Containers[0].Name)
+
+	assert.Len(t, result.Inventory, 1)
+	assert.Equal(t, "GOOD", result.Inventory[0].Condition)
+	assert.Equal(t, "AVAILABLE", result.Inventory[0].Status)
+
+	assert.Len(t, result.Labels, 1)
+	assert.Equal(t, "#FF0000", result.Labels[0].Color)
+
+	assert.Len(t, result.Companies, 1)
+	assert.Equal(t, "Company 1", result.Companies[0].Name)
+
+	assert.Len(t, result.Borrowers, 1)
+	assert.Equal(t, "Borrower 1", result.Borrowers[0].Name)
+
+	assert.Len(t, result.Loans, 1)
+	assert.NotNil(t, result.Loans[0].ReturnedAt)
+	assert.NotNil(t, result.Loans[0].DueDate)
+
+	assert.Len(t, result.Deleted, 1)
+	assert.NotNil(t, result.Deleted[0].DeletedBy)
+}
+
+func TestService_GetDelta_InventoryWithNullEnums(t *testing.T) {
+	ctx := context.Background()
+	workspaceID := uuid.New()
+	now := time.Now()
+	modifiedSince := now.Add(-24 * time.Hour)
+
+	repo := new(MockRepository)
+	svc := sync.NewService(repo)
+
+	// Inventory with null condition and status
+	repo.On("ListInventoryModifiedSince", ctx, workspaceID, modifiedSince, int32(100)).Return([]queries.WarehouseInventory{
+		{
+			ID:          uuid.New(),
+			WorkspaceID: workspaceID,
+			ItemID:      uuid.New(),
+			LocationID:  uuid.New(),
+			Quantity:    1,
+			Condition:   queries.NullWarehouseItemConditionEnum{Valid: false}, // Null
+			Status:      queries.NullWarehouseItemStatusEnum{Valid: false},    // Null
+			CreatedAt:   pgtype.Timestamptz{Time: now, Valid: true},
+			UpdatedAt:   pgtype.Timestamptz{Time: now, Valid: true},
+		},
+	}, nil)
+	repo.On("ListDeletedRecordsModifiedSince", ctx, workspaceID, modifiedSince, int32(100)).Return([]queries.WarehouseDeletedRecord{}, nil)
+
+	result, err := svc.GetDelta(ctx, sync.DeltaSyncInput{
+		WorkspaceID:   workspaceID,
+		ModifiedSince: &modifiedSince,
+		EntityTypes:   []sync.EntityType{sync.EntityTypeInventory},
+		Limit:         100,
+	})
+
+	require.NoError(t, err)
+	assert.Len(t, result.Inventory, 1)
+	assert.Empty(t, result.Inventory[0].Condition)
+	assert.Empty(t, result.Inventory[0].Status)
+}
+
+func TestService_GetDelta_LabelsWithNullColor(t *testing.T) {
+	ctx := context.Background()
+	workspaceID := uuid.New()
+	now := time.Now()
+	modifiedSince := now.Add(-24 * time.Hour)
+
+	repo := new(MockRepository)
+	svc := sync.NewService(repo)
+
+	repo.On("ListLabelsModifiedSince", ctx, workspaceID, modifiedSince, int32(100)).Return([]queries.WarehouseLabel{
+		{
+			ID:          uuid.New(),
+			WorkspaceID: workspaceID,
+			Name:        "Label Without Color",
+			Color:       nil, // Null color
+			CreatedAt:   pgtype.Timestamptz{Time: now, Valid: true},
+			UpdatedAt:   pgtype.Timestamptz{Time: now, Valid: true},
+		},
+	}, nil)
+	repo.On("ListDeletedRecordsModifiedSince", ctx, workspaceID, modifiedSince, int32(100)).Return([]queries.WarehouseDeletedRecord{}, nil)
+
+	result, err := svc.GetDelta(ctx, sync.DeltaSyncInput{
+		WorkspaceID:   workspaceID,
+		ModifiedSince: &modifiedSince,
+		EntityTypes:   []sync.EntityType{sync.EntityTypeLabel},
+		Limit:         100,
+	})
+
+	require.NoError(t, err)
+	assert.Len(t, result.Labels, 1)
+	assert.Empty(t, result.Labels[0].Color)
+}
+
+func TestService_GetDelta_HasMoreFlags(t *testing.T) {
+	ctx := context.Background()
+	workspaceID := uuid.New()
+	now := time.Now()
+	modifiedSince := now.Add(-24 * time.Hour)
+	limit := int32(2)
+
+	testCases := []struct {
+		name       string
+		entityType sync.EntityType
+		setupMock  func(*MockRepository)
+	}{
+		{
+			name:       "locations has_more",
+			entityType: sync.EntityTypeLocation,
+			setupMock: func(repo *MockRepository) {
+				locations := make([]queries.WarehouseLocation, 2)
+				for i := range locations {
+					locations[i] = queries.WarehouseLocation{
+						ID:          uuid.New(),
+						WorkspaceID: workspaceID,
+						Name:        "Loc",
+						CreatedAt:   pgtype.Timestamptz{Time: now, Valid: true},
+						UpdatedAt:   pgtype.Timestamptz{Time: now, Valid: true},
+					}
+				}
+				repo.On("ListLocationsModifiedSince", ctx, workspaceID, modifiedSince, limit).Return(locations, nil)
+				repo.On("ListDeletedRecordsModifiedSince", ctx, workspaceID, modifiedSince, limit).Return([]queries.WarehouseDeletedRecord{}, nil)
+			},
+		},
+		{
+			name:       "containers has_more",
+			entityType: sync.EntityTypeContainer,
+			setupMock: func(repo *MockRepository) {
+				containers := make([]queries.WarehouseContainer, 2)
+				for i := range containers {
+					containers[i] = queries.WarehouseContainer{
+						ID:          uuid.New(),
+						WorkspaceID: workspaceID,
+						LocationID:  uuid.New(),
+						Name:        "Ctn",
+						CreatedAt:   pgtype.Timestamptz{Time: now, Valid: true},
+						UpdatedAt:   pgtype.Timestamptz{Time: now, Valid: true},
+					}
+				}
+				repo.On("ListContainersModifiedSince", ctx, workspaceID, modifiedSince, limit).Return(containers, nil)
+				repo.On("ListDeletedRecordsModifiedSince", ctx, workspaceID, modifiedSince, limit).Return([]queries.WarehouseDeletedRecord{}, nil)
+			},
+		},
+		{
+			name:       "inventory has_more",
+			entityType: sync.EntityTypeInventory,
+			setupMock: func(repo *MockRepository) {
+				inventory := make([]queries.WarehouseInventory, 2)
+				for i := range inventory {
+					inventory[i] = queries.WarehouseInventory{
+						ID:          uuid.New(),
+						WorkspaceID: workspaceID,
+						ItemID:      uuid.New(),
+						LocationID:  uuid.New(),
+						Quantity:    1,
+						CreatedAt:   pgtype.Timestamptz{Time: now, Valid: true},
+						UpdatedAt:   pgtype.Timestamptz{Time: now, Valid: true},
+					}
+				}
+				repo.On("ListInventoryModifiedSince", ctx, workspaceID, modifiedSince, limit).Return(inventory, nil)
+				repo.On("ListDeletedRecordsModifiedSince", ctx, workspaceID, modifiedSince, limit).Return([]queries.WarehouseDeletedRecord{}, nil)
+			},
+		},
+		{
+			name:       "categories has_more",
+			entityType: sync.EntityTypeCategory,
+			setupMock: func(repo *MockRepository) {
+				categories := make([]queries.WarehouseCategory, 2)
+				for i := range categories {
+					categories[i] = queries.WarehouseCategory{
+						ID:          uuid.New(),
+						WorkspaceID: workspaceID,
+						Name:        "Cat",
+						CreatedAt:   pgtype.Timestamptz{Time: now, Valid: true},
+						UpdatedAt:   pgtype.Timestamptz{Time: now, Valid: true},
+					}
+				}
+				repo.On("ListCategoriesModifiedSince", ctx, workspaceID, modifiedSince, limit).Return(categories, nil)
+				repo.On("ListDeletedRecordsModifiedSince", ctx, workspaceID, modifiedSince, limit).Return([]queries.WarehouseDeletedRecord{}, nil)
+			},
+		},
+		{
+			name:       "labels has_more",
+			entityType: sync.EntityTypeLabel,
+			setupMock: func(repo *MockRepository) {
+				labels := make([]queries.WarehouseLabel, 2)
+				for i := range labels {
+					labels[i] = queries.WarehouseLabel{
+						ID:          uuid.New(),
+						WorkspaceID: workspaceID,
+						Name:        "Lbl",
+						CreatedAt:   pgtype.Timestamptz{Time: now, Valid: true},
+						UpdatedAt:   pgtype.Timestamptz{Time: now, Valid: true},
+					}
+				}
+				repo.On("ListLabelsModifiedSince", ctx, workspaceID, modifiedSince, limit).Return(labels, nil)
+				repo.On("ListDeletedRecordsModifiedSince", ctx, workspaceID, modifiedSince, limit).Return([]queries.WarehouseDeletedRecord{}, nil)
+			},
+		},
+		{
+			name:       "companies has_more",
+			entityType: sync.EntityTypeCompany,
+			setupMock: func(repo *MockRepository) {
+				companies := make([]queries.WarehouseCompany, 2)
+				for i := range companies {
+					companies[i] = queries.WarehouseCompany{
+						ID:          uuid.New(),
+						WorkspaceID: workspaceID,
+						Name:        "Cmp",
+						CreatedAt:   pgtype.Timestamptz{Time: now, Valid: true},
+						UpdatedAt:   pgtype.Timestamptz{Time: now, Valid: true},
+					}
+				}
+				repo.On("ListCompaniesModifiedSince", ctx, workspaceID, modifiedSince, limit).Return(companies, nil)
+				repo.On("ListDeletedRecordsModifiedSince", ctx, workspaceID, modifiedSince, limit).Return([]queries.WarehouseDeletedRecord{}, nil)
+			},
+		},
+		{
+			name:       "borrowers has_more",
+			entityType: sync.EntityTypeBorrower,
+			setupMock: func(repo *MockRepository) {
+				borrowers := make([]queries.WarehouseBorrower, 2)
+				for i := range borrowers {
+					borrowers[i] = queries.WarehouseBorrower{
+						ID:          uuid.New(),
+						WorkspaceID: workspaceID,
+						Name:        "Brw",
+						CreatedAt:   pgtype.Timestamptz{Time: now, Valid: true},
+						UpdatedAt:   pgtype.Timestamptz{Time: now, Valid: true},
+					}
+				}
+				repo.On("ListBorrowersModifiedSince", ctx, workspaceID, modifiedSince, limit).Return(borrowers, nil)
+				repo.On("ListDeletedRecordsModifiedSince", ctx, workspaceID, modifiedSince, limit).Return([]queries.WarehouseDeletedRecord{}, nil)
+			},
+		},
+		{
+			name:       "loans has_more",
+			entityType: sync.EntityTypeLoan,
+			setupMock: func(repo *MockRepository) {
+				loans := make([]queries.WarehouseLoan, 2)
+				for i := range loans {
+					loans[i] = queries.WarehouseLoan{
+						ID:          uuid.New(),
+						WorkspaceID: workspaceID,
+						InventoryID: uuid.New(),
+						BorrowerID:  uuid.New(),
+						Quantity:    1,
+						LoanedAt:    pgtype.Timestamptz{Time: now, Valid: true},
+						CreatedAt:   pgtype.Timestamptz{Time: now, Valid: true},
+						UpdatedAt:   pgtype.Timestamptz{Time: now, Valid: true},
+					}
+				}
+				repo.On("ListLoansModifiedSince", ctx, workspaceID, modifiedSince, limit).Return(loans, nil)
+				repo.On("ListDeletedRecordsModifiedSince", ctx, workspaceID, modifiedSince, limit).Return([]queries.WarehouseDeletedRecord{}, nil)
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			repo := new(MockRepository)
+			svc := sync.NewService(repo)
+
+			tc.setupMock(repo)
+
+			result, err := svc.GetDelta(ctx, sync.DeltaSyncInput{
+				WorkspaceID:   workspaceID,
+				ModifiedSince: &modifiedSince,
+				EntityTypes:   []sync.EntityType{tc.entityType},
+				Limit:         limit,
+			})
+
+			require.NoError(t, err)
+			assert.True(t, result.HasMore)
+		})
+	}
+}
+
+// Helper function to create string pointer
+func ptrString(s string) *string {
+	return &s
+}

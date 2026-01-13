@@ -2,27 +2,31 @@ package user
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/google/uuid"
 
 	appMiddleware "github.com/antti/home-warehouse/go-backend/internal/api/middleware"
+	"github.com/antti/home-warehouse/go-backend/internal/domain/auth/workspace"
 	"github.com/antti/home-warehouse/go-backend/internal/shared"
 	"github.com/antti/home-warehouse/go-backend/internal/shared/jwt"
 )
 
 // Handler holds dependencies for user HTTP handlers.
 type Handler struct {
-	svc        *Service
-	jwtService *jwt.Service
+	svc            ServiceInterface
+	jwtService     *jwt.Service
+	workspaceSvc   workspace.ServiceInterface
 }
 
 // NewHandler creates a new user handler.
-func NewHandler(svc *Service, jwtService *jwt.Service) *Handler {
+func NewHandler(svc ServiceInterface, jwtService *jwt.Service, workspaceSvc workspace.ServiceInterface) *Handler {
 	return &Handler{
-		svc:        svc,
-		jwtService: jwtService,
+		svc:            svc,
+		jwtService:     jwtService,
+		workspaceSvc:   workspaceSvc,
 	}
 }
 
@@ -36,6 +40,7 @@ func (h *Handler) RegisterPublicRoutes(api huma.API) {
 // RegisterProtectedRoutes registers protected user routes (auth required).
 func (h *Handler) RegisterProtectedRoutes(api huma.API) {
 	huma.Get(api, "/users/me", h.getMe)
+	huma.Get(api, "/users/me/workspaces", h.getMyWorkspaces)
 	huma.Patch(api, "/users/me", h.updateMe)
 	huma.Patch(api, "/users/me/password", h.updatePassword)
 	huma.Patch(api, "/users/me/preferences", h.updatePreferences)
@@ -65,14 +70,41 @@ func (h *Handler) register(ctx context.Context, input *RegisterInput) (*Register
 		return nil, huma.Error500InternalServerError("failed to create user")
 	}
 
+	// Create a personal workspace for the new user
+	// TODO: Add test to verify workspace is created during registration
+	workspaceName := fmt.Sprintf("%s's Workspace", user.FullName())
+	workspaceSlug := fmt.Sprintf("user-%s", user.ID().String())
+	_, err = h.workspaceSvc.Create(ctx, workspace.CreateWorkspaceInput{
+		Name:        workspaceName,
+		Slug:        workspaceSlug,
+		Description: nil,
+		IsPersonal:  true,
+		CreatedBy:   user.ID(),
+	})
+	if err != nil {
+		// Log error but don't fail registration
+		// In production, this should be handled in a transaction or retry mechanism
+		// TODO: Add test for workspace creation failure during registration
+	}
+
+	// Generate token for the new user
+	token, err := h.jwtService.GenerateToken(user.ID(), user.Email(), user.IsSuperuser())
+	if err != nil {
+		return nil, huma.Error500InternalServerError("failed to generate token")
+	}
+
+	refreshToken, err := h.jwtService.GenerateRefreshToken(user.ID())
+	if err != nil {
+		return nil, huma.Error500InternalServerError("failed to generate refresh token")
+	}
+
 	return &RegisterOutput{
-		Body: UserResponse{
-			ID:         user.ID(),
-			Email:      user.Email(),
-			FullName:   user.FullName(),
-			DateFormat: user.DateFormat(),
-			Language:   user.Language(),
-			Theme:      user.Theme(),
+		Body: struct {
+			Token        string `json:"token"`
+			RefreshToken string `json:"refresh_token"`
+		}{
+			Token:        token,
+			RefreshToken: refreshToken,
 		},
 	}, nil
 }
@@ -94,17 +126,12 @@ func (h *Handler) login(ctx context.Context, input *LoginInput) (*LoginOutput, e
 	}
 
 	return &LoginOutput{
-		Body: LoginResponse{
+		Body: struct {
+			Token        string `json:"token"`
+			RefreshToken string `json:"refresh_token"`
+		}{
 			Token:        token,
 			RefreshToken: refreshToken,
-			User: UserResponse{
-				ID:         user.ID(),
-				Email:      user.Email(),
-				FullName:   user.FullName(),
-				DateFormat: user.DateFormat(),
-				Language:   user.Language(),
-				Theme:      user.Theme(),
-			},
 		},
 	}, nil
 }
@@ -165,6 +192,34 @@ func (h *Handler) getMe(ctx context.Context, input *struct{}) (*GetMeOutput, err
 			Language:   user.Language(),
 			Theme:      user.Theme(),
 		},
+	}, nil
+}
+
+// TODO: Add handler test for GET /users/me/workspaces endpoint
+func (h *Handler) getMyWorkspaces(ctx context.Context, input *struct{}) (*GetMyWorkspacesOutput, error) {
+	authUser, ok := appMiddleware.GetAuthUser(ctx)
+	if !ok {
+		return nil, huma.Error401Unauthorized("not authenticated")
+	}
+
+	workspaces, err := h.workspaceSvc.GetUserWorkspaces(ctx, authUser.ID)
+	if err != nil {
+		return nil, huma.Error500InternalServerError("failed to get workspaces")
+	}
+
+	result := make([]WorkspaceResponse, len(workspaces))
+	for i, ws := range workspaces {
+		result[i] = WorkspaceResponse{
+			ID:          ws.ID(),
+			Name:        ws.Name(),
+			Slug:        ws.Slug(),
+			Description: ws.Description(),
+			IsPersonal:  ws.IsPersonal(),
+		}
+	}
+
+	return &GetMyWorkspacesOutput{
+		Body: result,
 	}, nil
 }
 
@@ -380,7 +435,10 @@ type RegisterInput struct {
 }
 
 type RegisterOutput struct {
-	Body UserResponse
+	Body struct {
+		Token        string `json:"token"`
+		RefreshToken string `json:"refresh_token"`
+	}
 }
 
 type LoginInput struct {
@@ -391,13 +449,10 @@ type LoginInput struct {
 }
 
 type LoginOutput struct {
-	Body LoginResponse
-}
-
-type LoginResponse struct {
-	Token        string       `json:"token"`
-	RefreshToken string       `json:"refresh_token"`
-	User         UserResponse `json:"user"`
+	Body struct {
+		Token        string `json:"token"`
+		RefreshToken string `json:"refresh_token"`
+	}
 }
 
 type RefreshTokenInput struct {
@@ -426,6 +481,18 @@ type UserResponse struct {
 
 type GetMeOutput struct {
 	Body UserResponse
+}
+
+type WorkspaceResponse struct {
+	ID          uuid.UUID `json:"id"`
+	Name        string    `json:"name"`
+	Slug        string    `json:"slug"`
+	Description *string   `json:"description"`
+	IsPersonal  bool      `json:"is_personal"`
+}
+
+type GetMyWorkspacesOutput struct {
+	Body []WorkspaceResponse
 }
 
 type UpdateMeInput struct {
@@ -515,7 +582,7 @@ func RegisterPublicRoutes(api huma.API, svc *Service) {
 	// This is a legacy function that doesn't support JWT
 	// Applications should migrate to using Handler with JWT service
 	huma.Post(api, "/auth/register", func(ctx context.Context, input *RegisterInput) (*RegisterOutput, error) {
-		user, err := svc.Create(ctx, CreateUserInput{
+		_, err := svc.Create(ctx, CreateUserInput{
 			Email:    input.Body.Email,
 			FullName: input.Body.FullName,
 			Password: input.Body.Password,
@@ -530,14 +597,15 @@ func RegisterPublicRoutes(api huma.API, svc *Service) {
 			return nil, huma.Error500InternalServerError("failed to create user")
 		}
 
+		// This legacy endpoint doesn't have JWT service, so it returns empty tokens
+		// Applications should migrate to using Handler with JWT service
 		return &RegisterOutput{
-			Body: UserResponse{
-				ID:         user.ID(),
-				Email:      user.Email(),
-				FullName:   user.FullName(),
-				DateFormat: user.DateFormat(),
-				Language:   user.Language(),
-				Theme:      user.Theme(),
+			Body: struct {
+				Token        string `json:"token"`
+				RefreshToken string `json:"refresh_token"`
+			}{
+				Token:        "",
+				RefreshToken: "",
 			},
 		}, nil
 	})

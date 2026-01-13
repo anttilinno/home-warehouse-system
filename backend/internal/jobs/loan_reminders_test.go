@@ -1,15 +1,27 @@
 package jobs
 
 import (
+	"context"
 	"encoding/json"
+	"errors"
 	"testing"
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/hibiken/asynq"
 	"github.com/stretchr/testify/assert"
 )
 
 // Additional loan reminder payload tests beyond those in jobs_test.go
+
+// Mock email sender that returns errors for testing error paths
+type errorEmailSender struct {
+	sendError error
+}
+
+func (e *errorEmailSender) SendLoanReminder(ctx context.Context, to, borrowerName, itemName string, dueDate time.Time, isOverdue bool) error {
+	return e.sendError
+}
 
 func TestLoanReminderPayload_LongStrings(t *testing.T) {
 	loanID := uuid.New()
@@ -97,4 +109,59 @@ func TestLoanReminderPayload_UnicodeEmojis(t *testing.T) {
 	// Verify emoji characters are preserved
 	assert.Equal(t, payload.BorrowerName, decoded.BorrowerName)
 	assert.Equal(t, payload.ItemName, decoded.ItemName)
+}
+
+func TestLoanReminderProcessor_ProcessTask_EmailSenderError(t *testing.T) {
+	// Create an error email sender that returns an error
+	errorSender := &errorEmailSender{
+		sendError: errors.New("failed to send email"),
+	}
+
+	processor := NewLoanReminderProcessor(nil, errorSender)
+
+	// Create a valid payload
+	payload := LoanReminderPayload{
+		LoanID:        uuid.New(),
+		WorkspaceID:   uuid.New(),
+		BorrowerName:  "John Doe",
+		BorrowerEmail: "john@example.com",
+		ItemName:      "Power Drill",
+		DueDate:       time.Now().Add(24 * time.Hour),
+		IsOverdue:     false,
+	}
+
+	payloadBytes, err := json.Marshal(payload)
+	assert.NoError(t, err)
+
+	task := asynq.NewTask(TypeLoanReminder, payloadBytes)
+
+	// Process the task - should return error from email sender
+	err = processor.ProcessTask(context.Background(), task)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "failed to send loan reminder email")
+}
+
+func TestLoanReminderProcessor_ProcessTask_NilEmailSender(t *testing.T) {
+	// Create processor with nil email sender
+	processor := NewLoanReminderProcessor(nil, nil)
+
+	// Create a valid payload
+	payload := LoanReminderPayload{
+		LoanID:        uuid.New(),
+		WorkspaceID:   uuid.New(),
+		BorrowerName:  "John Doe",
+		BorrowerEmail: "john@example.com",
+		ItemName:      "Power Drill",
+		DueDate:       time.Now().Add(24 * time.Hour),
+		IsOverdue:     false,
+	}
+
+	payloadBytes, err := json.Marshal(payload)
+	assert.NoError(t, err)
+
+	task := asynq.NewTask(TypeLoanReminder, payloadBytes)
+
+	// Process the task - should succeed without sending email
+	err = processor.ProcessTask(context.Background(), task)
+	assert.NoError(t, err)
 }

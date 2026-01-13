@@ -6,6 +6,16 @@ import (
 	"github.com/google/uuid"
 )
 
+// ServiceInterface defines the attachment service operations.
+type ServiceInterface interface {
+	UploadFile(ctx context.Context, input UploadFileInput) (*File, error)
+	CreateAttachment(ctx context.Context, input CreateAttachmentInput) (*Attachment, error)
+	GetAttachment(ctx context.Context, id uuid.UUID) (*Attachment, error)
+	ListByItem(ctx context.Context, itemID uuid.UUID) ([]*Attachment, error)
+	DeleteAttachment(ctx context.Context, id uuid.UUID) error
+	SetPrimary(ctx context.Context, itemID, attachmentID uuid.UUID) error
+}
+
 type Service struct {
 	fileRepo       FileRepository
 	attachmentRepo AttachmentRepository

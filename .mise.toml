@@ -30,11 +30,11 @@ run = "docker compose down"
 [tasks.db-reset]
 description = "Drop and recreate database with fresh migrations"
 depends = ["dc-down"]
-run = "docker compose down -v && docker compose up -d postgres --wait && DATABASE_URL=$DBMATE_DATABASE_URL dbmate -d backend/db/migrations up"
+run = "rm -rf .data/postgres && mkdir -p .data/postgres && chmod 700 .data/postgres && docker compose up -d postgres --wait && DATABASE_URL=$DBMATE_DATABASE_URL dbmate -d backend/db/migrations up"
 
 [tasks.db-fresh]
 description = "Complete database reset: drop data volume, recreate database, run migrations"
-run = "docker compose down -v && docker compose up -d --wait && DATABASE_URL=$DBMATE_DATABASE_URL dbmate -d backend/db/migrations up"
+run = "docker compose down && rm -rf .data && mkdir -p .data/postgres .data/redis .data/docspell .data/docspell-postgres && chmod 700 .data/postgres .data/docspell-postgres && chmod 755 .data/redis .data/docspell && docker compose up -d --wait && DATABASE_URL=$DBMATE_DATABASE_URL dbmate -d backend/db/migrations up"
 
 [tasks.migrate]
 description = "Run database migrations"

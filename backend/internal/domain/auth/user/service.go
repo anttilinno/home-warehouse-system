@@ -8,6 +8,20 @@ import (
 	"github.com/antti/home-warehouse/go-backend/internal/shared"
 )
 
+// ServiceInterface defines the user service operations.
+type ServiceInterface interface {
+	Create(ctx context.Context, input CreateUserInput) (*User, error)
+	GetByID(ctx context.Context, id uuid.UUID) (*User, error)
+	GetByEmail(ctx context.Context, email string) (*User, error)
+	Authenticate(ctx context.Context, email, password string) (*User, error)
+	UpdateProfile(ctx context.Context, id uuid.UUID, input UpdateProfileInput) (*User, error)
+	UpdatePassword(ctx context.Context, id uuid.UUID, currentPassword, newPassword string) error
+	UpdatePreferences(ctx context.Context, id uuid.UUID, input UpdatePreferencesInput) (*User, error)
+	List(ctx context.Context, pagination shared.Pagination) (*shared.PagedResult[*User], error)
+	Deactivate(ctx context.Context, id uuid.UUID) error
+	Activate(ctx context.Context, id uuid.UUID) error
+}
+
 // Service handles user business logic.
 type Service struct {
 	repo Repository

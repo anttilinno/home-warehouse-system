@@ -12,7 +12,6 @@ export function Footer() {
   const footerNav = {
     product: [
       { title: t("links.features"), href: "/features" },
-      { title: t("links.pricing"), href: "/pricing" },
       { title: t("links.changelog"), href: "/changelog" },
     ],
     resources: [

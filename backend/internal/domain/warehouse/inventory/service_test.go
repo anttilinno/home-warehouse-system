@@ -805,7 +805,7 @@ func TestService_Create(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.testName, func(t *testing.T) {
 			mockRepo := new(MockRepository)
-			svc := NewService(mockRepo)
+			svc := NewService(mockRepo, nil)
 
 			tt.setupMock(mockRepo)
 
@@ -880,7 +880,7 @@ func TestService_GetByID(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.testName, func(t *testing.T) {
 			mockRepo := new(MockRepository)
-			svc := NewService(mockRepo)
+			svc := NewService(mockRepo, nil)
 
 			tt.setupMock(mockRepo)
 
@@ -1011,7 +1011,7 @@ func TestService_Update(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.testName, func(t *testing.T) {
 			mockRepo := new(MockRepository)
-			svc := NewService(mockRepo)
+			svc := NewService(mockRepo, nil)
 
 			tt.setupMock(mockRepo)
 
@@ -1094,7 +1094,7 @@ func TestService_UpdateStatus(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.testName, func(t *testing.T) {
 			mockRepo := new(MockRepository)
-			svc := NewService(mockRepo)
+			svc := NewService(mockRepo, nil)
 
 			tt.setupMock(mockRepo)
 
@@ -1191,7 +1191,7 @@ func TestService_UpdateQuantity(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.testName, func(t *testing.T) {
 			mockRepo := new(MockRepository)
-			svc := NewService(mockRepo)
+			svc := NewService(mockRepo, nil)
 
 			tt.setupMock(mockRepo)
 
@@ -1298,7 +1298,7 @@ func TestService_Move(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.testName, func(t *testing.T) {
 			mockRepo := new(MockRepository)
-			svc := NewService(mockRepo)
+			svc := NewService(mockRepo, nil)
 
 			tt.setupMock(mockRepo)
 
@@ -1378,7 +1378,7 @@ func TestService_Archive(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.testName, func(t *testing.T) {
 			mockRepo := new(MockRepository)
-			svc := NewService(mockRepo)
+			svc := NewService(mockRepo, nil)
 
 			tt.setupMock(mockRepo)
 
@@ -1438,7 +1438,7 @@ func TestService_Restore(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.testName, func(t *testing.T) {
 			mockRepo := new(MockRepository)
-			svc := NewService(mockRepo)
+			svc := NewService(mockRepo, nil)
 
 			tt.setupMock(mockRepo)
 
@@ -1502,7 +1502,7 @@ func TestService_ListByItem(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.testName, func(t *testing.T) {
 			mockRepo := new(MockRepository)
-			svc := NewService(mockRepo)
+			svc := NewService(mockRepo, nil)
 
 			tt.setupMock(mockRepo)
 
@@ -1558,7 +1558,7 @@ func TestService_ListByLocation(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.testName, func(t *testing.T) {
 			mockRepo := new(MockRepository)
-			svc := NewService(mockRepo)
+			svc := NewService(mockRepo, nil)
 
 			tt.setupMock(mockRepo)
 
@@ -1612,7 +1612,7 @@ func TestService_ListByContainer(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.testName, func(t *testing.T) {
 			mockRepo := new(MockRepository)
-			svc := NewService(mockRepo)
+			svc := NewService(mockRepo, nil)
 
 			tt.setupMock(mockRepo)
 
@@ -1675,7 +1675,7 @@ func TestService_GetAvailable(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.testName, func(t *testing.T) {
 			mockRepo := new(MockRepository)
-			svc := NewService(mockRepo)
+			svc := NewService(mockRepo, nil)
 
 			tt.setupMock(mockRepo)
 
@@ -1734,7 +1734,7 @@ func TestService_GetTotalQuantity(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.testName, func(t *testing.T) {
 			mockRepo := new(MockRepository)
-			svc := NewService(mockRepo)
+			svc := NewService(mockRepo, nil)
 
 			tt.setupMock(mockRepo)
 
@@ -1763,7 +1763,7 @@ func TestService_UpdateStatus_SaveError(t *testing.T) {
 	repoErr := errors.New("repository error")
 
 	mockRepo := new(MockRepository)
-	svc := NewService(mockRepo)
+	svc := NewService(mockRepo, nil)
 
 	inv := &Inventory{
 		id:          invID,
@@ -1789,7 +1789,7 @@ func TestService_UpdateQuantity_SaveError(t *testing.T) {
 	repoErr := errors.New("repository error")
 
 	mockRepo := new(MockRepository)
-	svc := NewService(mockRepo)
+	svc := NewService(mockRepo, nil)
 
 	inv := &Inventory{
 		id:          invID,
@@ -1816,7 +1816,7 @@ func TestService_Move_SaveError(t *testing.T) {
 	repoErr := errors.New("repository error")
 
 	mockRepo := new(MockRepository)
-	svc := NewService(mockRepo)
+	svc := NewService(mockRepo, nil)
 
 	inv := &Inventory{
 		id:          invID,

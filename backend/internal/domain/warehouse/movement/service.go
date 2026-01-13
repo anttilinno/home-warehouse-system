@@ -8,6 +8,14 @@ import (
 	"github.com/antti/home-warehouse/go-backend/internal/shared"
 )
 
+// ServiceInterface defines the movement service operations.
+type ServiceInterface interface {
+	RecordMovement(ctx context.Context, input RecordMovementInput) (*InventoryMovement, error)
+	ListByInventory(ctx context.Context, inventoryID, workspaceID uuid.UUID, pagination shared.Pagination) ([]*InventoryMovement, error)
+	ListByLocation(ctx context.Context, locationID, workspaceID uuid.UUID, pagination shared.Pagination) ([]*InventoryMovement, error)
+	ListByWorkspace(ctx context.Context, workspaceID uuid.UUID, pagination shared.Pagination) ([]*InventoryMovement, error)
+}
+
 type Service struct {
 	repo Repository
 }

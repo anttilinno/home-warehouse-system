@@ -34,3 +34,11 @@ func TestSchedulerConfig_WithCustomQueues(t *testing.T) {
 	assert.Equal(t, 5, config.Queues["medium"])
 	assert.Equal(t, 1, config.Queues["low"])
 }
+
+func TestNewScheduler(t *testing.T) {
+	config := jobs.DefaultSchedulerConfig("localhost:6379")
+	scheduler := jobs.NewScheduler(nil, config)
+
+	assert.NotNil(t, scheduler)
+	assert.NotNil(t, scheduler.Client())
+}

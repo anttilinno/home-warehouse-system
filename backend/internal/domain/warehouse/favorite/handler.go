@@ -11,7 +11,7 @@ import (
 )
 
 // RegisterRoutes registers favorite routes.
-func RegisterRoutes(api huma.API, svc *Service) {
+func RegisterRoutes(api huma.API, svc ServiceInterface) {
 	// List user's favorites
 	huma.Get(api, "/favorites", func(ctx context.Context, input *struct{}) (*ListFavoritesOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)

@@ -11,7 +11,7 @@ import (
 )
 
 // RegisterRoutes registers workspace routes at user-level (list, create, get by slug).
-func RegisterRoutes(api huma.API, svc *Service) {
+func RegisterRoutes(api huma.API, svc ServiceInterface) {
 	// List user's workspaces
 	huma.Get(api, "/workspaces", func(ctx context.Context, input *struct{}) (*ListWorkspacesOutput, error) {
 		authUser, ok := appMiddleware.GetAuthUser(ctx)
@@ -80,7 +80,7 @@ func RegisterRoutes(api huma.API, svc *Service) {
 
 // RegisterWorkspaceScopedRoutes registers routes for single workspace operations
 // (get, update, delete). These are registered on the workspace-scoped API.
-func RegisterWorkspaceScopedRoutes(api huma.API, svc *Service) {
+func RegisterWorkspaceScopedRoutes(api huma.API, svc ServiceInterface) {
 	// Get workspace (handles /workspaces/{workspace_id} as root "/" on subrouter)
 	huma.Get(api, "/", func(ctx context.Context, input *struct{}) (*GetWorkspaceOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)

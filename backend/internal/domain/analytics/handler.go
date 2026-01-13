@@ -12,11 +12,11 @@ import (
 
 // Handler handles analytics-related HTTP requests
 type Handler struct {
-	svc *Service
+	svc ServiceInterface
 }
 
 // NewHandler creates a new analytics handler
-func NewHandler(svc *Service) *Handler {
+func NewHandler(svc ServiceInterface) *Handler {
 	return &Handler{svc: svc}
 }
 

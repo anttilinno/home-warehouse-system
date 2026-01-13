@@ -11,7 +11,7 @@ import (
 )
 
 // RegisterRoutes registers inventory routes.
-func RegisterRoutes(api huma.API, svc *Service) {
+func RegisterRoutes(api huma.API, svc ServiceInterface) {
 	// Get inventory by ID
 	huma.Get(api, "/inventory/{id}", func(ctx context.Context, input *GetInventoryInput) (*GetInventoryOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)

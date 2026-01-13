@@ -1433,3 +1433,35 @@ func TestService_Return_InventoryFindError(t *testing.T) {
 	assert.Nil(t, result)
 	assert.Equal(t, repoErr, err)
 }
+
+func TestService_Create_FindActiveLoanError(t *testing.T) {
+	ctx := context.Background()
+	workspaceID := uuid.New()
+	inventoryID := uuid.New()
+	borrowerID := uuid.New()
+	itemID := uuid.New()
+	locationID := uuid.New()
+	now := time.Now()
+	repoErr := errors.New("repository error")
+
+	mockLoanRepo := new(MockRepository)
+	mockInvRepo := new(MockInventoryRepository)
+	svc := NewService(mockLoanRepo, mockInvRepo)
+
+	inv := createTestInventory(inventoryID, workspaceID, itemID, locationID, 5, inventory.StatusAvailable)
+	mockInvRepo.On("FindByID", ctx, inventoryID, workspaceID).Return(inv, nil)
+	mockLoanRepo.On("FindActiveLoanForInventory", ctx, inventoryID).Return(nil, repoErr)
+
+	loan, err := svc.Create(ctx, CreateInput{
+		WorkspaceID: workspaceID,
+		InventoryID: inventoryID,
+		BorrowerID:  borrowerID,
+		Quantity:    1,
+		LoanedAt:    now,
+	})
+
+	assert.Error(t, err)
+	assert.Nil(t, loan)
+	assert.Equal(t, repoErr, err)
+}
+

@@ -11,7 +11,7 @@ import (
 )
 
 // RegisterRoutes registers label routes.
-func RegisterRoutes(api huma.API, svc *Service) {
+func RegisterRoutes(api huma.API, svc ServiceInterface) {
 	// List labels
 	huma.Get(api, "/labels", func(ctx context.Context, input *struct{}) (*ListLabelsOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)

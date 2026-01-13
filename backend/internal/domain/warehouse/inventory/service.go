@@ -5,14 +5,37 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+
+	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/movement"
 )
 
-type Service struct {
-	repo Repository
+// ServiceInterface defines the inventory service operations.
+type ServiceInterface interface {
+	Create(ctx context.Context, input CreateInput) (*Inventory, error)
+	GetByID(ctx context.Context, id, workspaceID uuid.UUID) (*Inventory, error)
+	Update(ctx context.Context, id, workspaceID uuid.UUID, input UpdateInput) (*Inventory, error)
+	UpdateStatus(ctx context.Context, id, workspaceID uuid.UUID, status Status) (*Inventory, error)
+	UpdateQuantity(ctx context.Context, id, workspaceID uuid.UUID, quantity int) (*Inventory, error)
+	Move(ctx context.Context, id, workspaceID, locationID uuid.UUID, containerID *uuid.UUID) (*Inventory, error)
+	Archive(ctx context.Context, id, workspaceID uuid.UUID) error
+	Restore(ctx context.Context, id, workspaceID uuid.UUID) error
+	ListByItem(ctx context.Context, workspaceID, itemID uuid.UUID) ([]*Inventory, error)
+	ListByLocation(ctx context.Context, workspaceID, locationID uuid.UUID) ([]*Inventory, error)
+	ListByContainer(ctx context.Context, workspaceID, containerID uuid.UUID) ([]*Inventory, error)
+	GetAvailable(ctx context.Context, workspaceID, itemID uuid.UUID) ([]*Inventory, error)
+	GetTotalQuantity(ctx context.Context, workspaceID, itemID uuid.UUID) (int, error)
 }
 
-func NewService(repo Repository) *Service {
-	return &Service{repo: repo}
+type Service struct {
+	repo          Repository
+	movementSvc   movement.ServiceInterface
+}
+
+func NewService(repo Repository, movementSvc movement.ServiceInterface) *Service {
+	return &Service{
+		repo:        repo,
+		movementSvc: movementSvc,
+	}
 }
 
 type CreateInput struct {
@@ -128,12 +151,35 @@ func (s *Service) Move(ctx context.Context, id, workspaceID, locationID uuid.UUI
 		return nil, err
 	}
 
+	// Capture old location/container for movement record
+	oldLocationID := inv.LocationID()
+	oldContainerID := inv.ContainerID()
+
 	if err := inv.Move(locationID, containerID); err != nil {
 		return nil, err
 	}
 
 	if err := s.repo.Save(ctx, inv); err != nil {
 		return nil, err
+	}
+
+	// Record the movement if movementSvc is available
+	if s.movementSvc != nil {
+		_, err := s.movementSvc.RecordMovement(ctx, movement.RecordMovementInput{
+			WorkspaceID:     workspaceID,
+			InventoryID:     id,
+			FromLocationID:  &oldLocationID,
+			FromContainerID: oldContainerID,
+			ToLocationID:    &locationID,
+			ToContainerID:   containerID,
+			Quantity:        inv.Quantity(),
+			MovedBy:         nil, // TODO: Get from context
+			Reason:          nil,
+		})
+		if err != nil {
+			// Log error but don't fail the move operation
+			// Movement tracking is supplementary
+		}
 	}
 
 	return inv, nil

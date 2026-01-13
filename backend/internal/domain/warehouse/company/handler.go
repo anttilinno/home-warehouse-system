@@ -12,7 +12,7 @@ import (
 )
 
 // RegisterRoutes registers company routes.
-func RegisterRoutes(api huma.API, svc *Service) {
+func RegisterRoutes(api huma.API, svc ServiceInterface) {
 	// List companies
 	huma.Get(api, "/companies", func(ctx context.Context, input *ListCompaniesInput) (*ListCompaniesOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)

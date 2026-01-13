@@ -11,6 +11,11 @@ import (
 	"github.com/antti/home-warehouse/go-backend/internal/infra/queries"
 )
 
+// ServiceInterface defines the interface for sync service operations
+type ServiceInterface interface {
+	GetDelta(ctx context.Context, input DeltaSyncInput) (*SyncResult, error)
+}
+
 // Repository defines the interface for sync data access
 type Repository interface {
 	ListItemsModifiedSince(ctx context.Context, workspaceID uuid.UUID, modifiedSince time.Time, limit int32) ([]queries.WarehouseItem, error)

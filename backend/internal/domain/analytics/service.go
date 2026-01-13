@@ -23,6 +23,20 @@ type Repository interface {
 	GetMonthlyLoanActivity(ctx context.Context, workspaceID uuid.UUID, since time.Time) ([]queries.GetMonthlyLoanActivityRow, error)
 }
 
+// ServiceInterface defines the interface for analytics service operations
+type ServiceInterface interface {
+	GetDashboardStats(ctx context.Context, workspaceID uuid.UUID) (*DashboardStats, error)
+	GetCategoryStats(ctx context.Context, workspaceID uuid.UUID, limit int32) ([]CategoryStats, error)
+	GetLoanStats(ctx context.Context, workspaceID uuid.UUID) (*LoanStats, error)
+	GetInventoryValueByLocation(ctx context.Context, workspaceID uuid.UUID, limit int32) ([]LocationInventoryValue, error)
+	GetRecentActivity(ctx context.Context, workspaceID uuid.UUID, limit int32) ([]RecentActivity, error)
+	GetConditionBreakdown(ctx context.Context, workspaceID uuid.UUID) ([]ConditionBreakdown, error)
+	GetStatusBreakdown(ctx context.Context, workspaceID uuid.UUID) ([]StatusBreakdown, error)
+	GetTopBorrowers(ctx context.Context, workspaceID uuid.UUID, limit int32) ([]TopBorrower, error)
+	GetMonthlyLoanActivity(ctx context.Context, workspaceID uuid.UUID, since time.Time) ([]MonthlyLoanActivity, error)
+	GetAnalyticsSummary(ctx context.Context, workspaceID uuid.UUID) (*AnalyticsSummary, error)
+}
+
 // Service handles analytics operations
 type Service struct {
 	repo Repository
