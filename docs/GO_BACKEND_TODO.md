@@ -38,6 +38,20 @@ The Go backend is largely complete with 173+ files, 32 test files, and coverage 
 
 ## Medium Priority
 
+### Inventory Movement Audit Trail
+- **Status**: Partial
+- **Description**: Movement tracking records movement history but doesn't capture who performed the move
+- **Required**: Extract authenticated user ID from context and populate `MovedBy` field
+- **Files**: `internal/domain/warehouse/inventory/service.go:176`
+
+### Activity Logging Integration
+- **Status**: Partial
+- **Description**: Activity logging exists but isn't wired into all operations (e.g., item archival doesn't create deleted records)
+- **Required**:
+  - Ensure archived items create audit trail entries
+  - Complete workflow test steps 19-20 for deleted records verification
+- **Files**: `tests/integration/workflow_test.go:509`
+
 ### Delta Sync Completion
 - **Status**: Partial
 - **Description**: Sync handlers exist but `ListModifiedSince` methods may not be fully implemented in all repositories

@@ -2,6 +2,7 @@ package inventory
 
 import (
 	"context"
+	"errors"
 	"time"
 
 	"github.com/danielgtaylor/huma/v2"
@@ -12,11 +13,17 @@ import (
 
 // RegisterRoutes registers inventory routes.
 func RegisterRoutes(api huma.API, svc ServiceInterface) {
-	// Get inventory by ID
+	registerQueryRoutes(api, svc)
+	registerMutationRoutes(api, svc)
+	registerActionRoutes(api, svc)
+}
+
+// registerQueryRoutes registers read-only inventory routes.
+func registerQueryRoutes(api huma.API, svc ServiceInterface) {
 	huma.Get(api, "/inventory/{id}", func(ctx context.Context, input *GetInventoryInput) (*GetInventoryOutput, error) {
-		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
-		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
+		workspaceID, err := appMiddleware.RequireWorkspaceID(ctx)
+		if err != nil {
+			return nil, huma.Error401Unauthorized(err.Error())
 		}
 
 		inv, err := svc.GetByID(ctx, input.ID, workspaceID)
@@ -27,16 +34,13 @@ func RegisterRoutes(api huma.API, svc ServiceInterface) {
 			return nil, huma.Error500InternalServerError("failed to get inventory")
 		}
 
-		return &GetInventoryOutput{
-			Body: toInventoryResponse(inv),
-		}, nil
+		return &GetInventoryOutput{Body: toInventoryResponse(inv)}, nil
 	})
 
-	// List inventory by item
 	huma.Get(api, "/inventory/by-item/{item_id}", func(ctx context.Context, input *GetByItemInput) (*ListInventoryOutput, error) {
-		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
-		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
+		workspaceID, err := appMiddleware.RequireWorkspaceID(ctx)
+		if err != nil {
+			return nil, huma.Error401Unauthorized(err.Error())
 		}
 
 		items, err := svc.ListByItem(ctx, workspaceID, input.ItemID)
@@ -44,23 +48,13 @@ func RegisterRoutes(api huma.API, svc ServiceInterface) {
 			return nil, huma.Error500InternalServerError("failed to list inventory")
 		}
 
-		responses := make([]InventoryResponse, len(items))
-		for i, inv := range items {
-			responses[i] = toInventoryResponse(inv)
-		}
-
-		return &ListInventoryOutput{
-			Body: InventoryListResponse{
-				Items: responses,
-			},
-		}, nil
+		return &ListInventoryOutput{Body: InventoryListResponse{Items: toInventoryResponses(items)}}, nil
 	})
 
-	// List inventory by location
 	huma.Get(api, "/inventory/by-location/{location_id}", func(ctx context.Context, input *GetByLocationInput) (*ListInventoryOutput, error) {
-		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
-		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
+		workspaceID, err := appMiddleware.RequireWorkspaceID(ctx)
+		if err != nil {
+			return nil, huma.Error401Unauthorized(err.Error())
 		}
 
 		items, err := svc.ListByLocation(ctx, workspaceID, input.LocationID)
@@ -68,23 +62,13 @@ func RegisterRoutes(api huma.API, svc ServiceInterface) {
 			return nil, huma.Error500InternalServerError("failed to list inventory")
 		}
 
-		responses := make([]InventoryResponse, len(items))
-		for i, inv := range items {
-			responses[i] = toInventoryResponse(inv)
-		}
-
-		return &ListInventoryOutput{
-			Body: InventoryListResponse{
-				Items: responses,
-			},
-		}, nil
+		return &ListInventoryOutput{Body: InventoryListResponse{Items: toInventoryResponses(items)}}, nil
 	})
 
-	// List inventory by container
 	huma.Get(api, "/inventory/by-container/{container_id}", func(ctx context.Context, input *GetByContainerInput) (*ListInventoryOutput, error) {
-		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
-		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
+		workspaceID, err := appMiddleware.RequireWorkspaceID(ctx)
+		if err != nil {
+			return nil, huma.Error401Unauthorized(err.Error())
 		}
 
 		items, err := svc.ListByContainer(ctx, workspaceID, input.ContainerID)
@@ -92,23 +76,13 @@ func RegisterRoutes(api huma.API, svc ServiceInterface) {
 			return nil, huma.Error500InternalServerError("failed to list inventory")
 		}
 
-		responses := make([]InventoryResponse, len(items))
-		for i, inv := range items {
-			responses[i] = toInventoryResponse(inv)
-		}
-
-		return &ListInventoryOutput{
-			Body: InventoryListResponse{
-				Items: responses,
-			},
-		}, nil
+		return &ListInventoryOutput{Body: InventoryListResponse{Items: toInventoryResponses(items)}}, nil
 	})
 
-	// Get available inventory for an item
 	huma.Get(api, "/inventory/available/{item_id}", func(ctx context.Context, input *GetByItemInput) (*ListInventoryOutput, error) {
-		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
-		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
+		workspaceID, err := appMiddleware.RequireWorkspaceID(ctx)
+		if err != nil {
+			return nil, huma.Error401Unauthorized(err.Error())
 		}
 
 		items, err := svc.GetAvailable(ctx, workspaceID, input.ItemID)
@@ -116,23 +90,13 @@ func RegisterRoutes(api huma.API, svc ServiceInterface) {
 			return nil, huma.Error500InternalServerError("failed to get available inventory")
 		}
 
-		responses := make([]InventoryResponse, len(items))
-		for i, inv := range items {
-			responses[i] = toInventoryResponse(inv)
-		}
-
-		return &ListInventoryOutput{
-			Body: InventoryListResponse{
-				Items: responses,
-			},
-		}, nil
+		return &ListInventoryOutput{Body: InventoryListResponse{Items: toInventoryResponses(items)}}, nil
 	})
 
-	// Get total quantity for an item
 	huma.Get(api, "/inventory/total-quantity/{item_id}", func(ctx context.Context, input *GetByItemInput) (*GetTotalQuantityOutput, error) {
-		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
-		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
+		workspaceID, err := appMiddleware.RequireWorkspaceID(ctx)
+		if err != nil {
+			return nil, huma.Error401Unauthorized(err.Error())
 		}
 
 		total, err := svc.GetTotalQuantity(ctx, workspaceID, input.ItemID)
@@ -140,19 +104,16 @@ func RegisterRoutes(api huma.API, svc ServiceInterface) {
 			return nil, huma.Error500InternalServerError("failed to get total quantity")
 		}
 
-		return &GetTotalQuantityOutput{
-			Body: TotalQuantityResponse{
-				ItemID:        input.ItemID,
-				TotalQuantity: total,
-			},
-		}, nil
+		return &GetTotalQuantityOutput{Body: TotalQuantityResponse{ItemID: input.ItemID, TotalQuantity: total}}, nil
 	})
+}
 
-	// Create inventory
+// registerMutationRoutes registers create/update inventory routes.
+func registerMutationRoutes(api huma.API, svc ServiceInterface) {
 	huma.Post(api, "/inventory", func(ctx context.Context, input *CreateInventoryInput) (*CreateInventoryOutput, error) {
-		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
-		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
+		workspaceID, err := appMiddleware.RequireWorkspaceID(ctx)
+		if err != nil {
+			return nil, huma.Error401Unauthorized(err.Error())
 		}
 
 		inv, err := svc.Create(ctx, CreateInput{
@@ -171,22 +132,16 @@ func RegisterRoutes(api huma.API, svc ServiceInterface) {
 			Notes:           input.Body.Notes,
 		})
 		if err != nil {
-			if err == ErrInvalidCondition || err == ErrInvalidStatus || err == ErrInsufficientQuantity {
-				return nil, huma.Error400BadRequest(err.Error())
-			}
-			return nil, huma.Error500InternalServerError("failed to create inventory")
+			return nil, mapInventoryError(err, "failed to create inventory")
 		}
 
-		return &CreateInventoryOutput{
-			Body: toInventoryResponse(inv),
-		}, nil
+		return &CreateInventoryOutput{Body: toInventoryResponse(inv)}, nil
 	})
 
-	// Update inventory
 	huma.Patch(api, "/inventory/{id}", func(ctx context.Context, input *UpdateInventoryInput) (*UpdateInventoryOutput, error) {
-		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
-		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
+		workspaceID, err := appMiddleware.RequireWorkspaceID(ctx)
+		if err != nil {
+			return nil, huma.Error401Unauthorized(err.Error())
 		}
 
 		inv, err := svc.Update(ctx, input.ID, workspaceID, UpdateInput{
@@ -202,121 +157,105 @@ func RegisterRoutes(api huma.API, svc ServiceInterface) {
 			Notes:           input.Body.Notes,
 		})
 		if err != nil {
-			if err == ErrInventoryNotFound {
-				return nil, huma.Error404NotFound("inventory not found")
-			}
-			if err == ErrInvalidCondition || err == ErrInsufficientQuantity {
-				return nil, huma.Error400BadRequest(err.Error())
-			}
-			return nil, huma.Error500InternalServerError("failed to update inventory")
+			return nil, mapInventoryError(err, "failed to update inventory")
 		}
 
-		return &UpdateInventoryOutput{
-			Body: toInventoryResponse(inv),
-		}, nil
+		return &UpdateInventoryOutput{Body: toInventoryResponse(inv)}, nil
 	})
 
-	// Update inventory status
 	huma.Patch(api, "/inventory/{id}/status", func(ctx context.Context, input *UpdateStatusInput) (*UpdateInventoryOutput, error) {
-		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
-		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
+		workspaceID, err := appMiddleware.RequireWorkspaceID(ctx)
+		if err != nil {
+			return nil, huma.Error401Unauthorized(err.Error())
 		}
 
 		inv, err := svc.UpdateStatus(ctx, input.ID, workspaceID, input.Body.Status)
 		if err != nil {
-			if err == ErrInventoryNotFound {
-				return nil, huma.Error404NotFound("inventory not found")
-			}
-			if err == ErrInvalidStatus {
-				return nil, huma.Error400BadRequest(err.Error())
-			}
-			return nil, huma.Error500InternalServerError("failed to update status")
+			return nil, mapInventoryError(err, "failed to update status")
 		}
 
-		return &UpdateInventoryOutput{
-			Body: toInventoryResponse(inv),
-		}, nil
+		return &UpdateInventoryOutput{Body: toInventoryResponse(inv)}, nil
 	})
 
-	// Update inventory quantity
 	huma.Patch(api, "/inventory/{id}/quantity", func(ctx context.Context, input *UpdateQuantityInput) (*UpdateInventoryOutput, error) {
-		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
-		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
+		workspaceID, err := appMiddleware.RequireWorkspaceID(ctx)
+		if err != nil {
+			return nil, huma.Error401Unauthorized(err.Error())
 		}
 
 		inv, err := svc.UpdateQuantity(ctx, input.ID, workspaceID, input.Body.Quantity)
 		if err != nil {
-			if err == ErrInventoryNotFound {
-				return nil, huma.Error404NotFound("inventory not found")
-			}
-			if err == ErrInsufficientQuantity {
-				return nil, huma.Error400BadRequest(err.Error())
-			}
-			return nil, huma.Error500InternalServerError("failed to update quantity")
+			return nil, mapInventoryError(err, "failed to update quantity")
 		}
 
-		return &UpdateInventoryOutput{
-			Body: toInventoryResponse(inv),
-		}, nil
+		return &UpdateInventoryOutput{Body: toInventoryResponse(inv)}, nil
 	})
+}
 
-	// Move inventory to a different location/container
+// registerActionRoutes registers inventory action routes (move, archive, restore).
+func registerActionRoutes(api huma.API, svc ServiceInterface) {
 	huma.Post(api, "/inventory/{id}/move", func(ctx context.Context, input *MoveInventoryInput) (*UpdateInventoryOutput, error) {
-		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
-		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
+		workspaceID, err := appMiddleware.RequireWorkspaceID(ctx)
+		if err != nil {
+			return nil, huma.Error401Unauthorized(err.Error())
 		}
 
 		inv, err := svc.Move(ctx, input.ID, workspaceID, input.Body.LocationID, input.Body.ContainerID)
 		if err != nil {
-			if err == ErrInventoryNotFound {
-				return nil, huma.Error404NotFound("inventory not found")
-			}
-			return nil, huma.Error400BadRequest(err.Error())
+			return nil, mapInventoryError(err, "failed to move inventory")
 		}
 
-		return &UpdateInventoryOutput{
-			Body: toInventoryResponse(inv),
-		}, nil
+		return &UpdateInventoryOutput{Body: toInventoryResponse(inv)}, nil
 	})
 
-	// Archive inventory
 	huma.Post(api, "/inventory/{id}/archive", func(ctx context.Context, input *GetInventoryInput) (*struct{}, error) {
-		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
-		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
+		workspaceID, err := appMiddleware.RequireWorkspaceID(ctx)
+		if err != nil {
+			return nil, huma.Error401Unauthorized(err.Error())
 		}
 
-		err := svc.Archive(ctx, input.ID, workspaceID)
-		if err != nil {
-			if err == ErrInventoryNotFound {
-				return nil, huma.Error404NotFound("inventory not found")
-			}
-			return nil, huma.Error400BadRequest(err.Error())
+		if err := svc.Archive(ctx, input.ID, workspaceID); err != nil {
+			return nil, mapInventoryError(err, "failed to archive inventory")
 		}
 
 		return nil, nil
 	})
 
-	// Restore inventory
 	huma.Post(api, "/inventory/{id}/restore", func(ctx context.Context, input *GetInventoryInput) (*struct{}, error) {
-		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
-		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
+		workspaceID, err := appMiddleware.RequireWorkspaceID(ctx)
+		if err != nil {
+			return nil, huma.Error401Unauthorized(err.Error())
 		}
 
-		err := svc.Restore(ctx, input.ID, workspaceID)
-		if err != nil {
-			if err == ErrInventoryNotFound {
-				return nil, huma.Error404NotFound("inventory not found")
-			}
-			return nil, huma.Error400BadRequest(err.Error())
+		if err := svc.Restore(ctx, input.ID, workspaceID); err != nil {
+			return nil, mapInventoryError(err, "failed to restore inventory")
 		}
 
 		return nil, nil
 	})
+}
+
+// mapInventoryError converts service errors to appropriate HTTP errors.
+func mapInventoryError(err error, fallbackMsg string) error {
+	if err == nil {
+		return nil
+	}
+	if errors.Is(err, ErrInventoryNotFound) {
+		return huma.Error404NotFound("inventory not found")
+	}
+	if errors.Is(err, ErrInvalidCondition) || errors.Is(err, ErrInvalidStatus) || errors.Is(err, ErrInsufficientQuantity) {
+		return huma.Error400BadRequest(err.Error())
+	}
+	return huma.Error500InternalServerError(fallbackMsg)
+}
+
+// toInventoryResponses converts a slice of Inventory to InventoryResponse.
+func toInventoryResponses(items []*Inventory) []InventoryResponse {
+	responses := make([]InventoryResponse, len(items))
+	for i, inv := range items {
+		responses[i] = toInventoryResponse(inv)
+	}
+	return responses
 }
 
 func toInventoryResponse(inv *Inventory) InventoryResponse {

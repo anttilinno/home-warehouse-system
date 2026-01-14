@@ -71,7 +71,6 @@ func (h *Handler) register(ctx context.Context, input *RegisterInput) (*Register
 	}
 
 	// Create a personal workspace for the new user
-	// TODO: Add test to verify workspace is created during registration
 	workspaceName := fmt.Sprintf("%s's Workspace", user.FullName())
 	workspaceSlug := fmt.Sprintf("user-%s", user.ID().String())
 	_, err = h.workspaceSvc.Create(ctx, workspace.CreateWorkspaceInput{
@@ -84,7 +83,6 @@ func (h *Handler) register(ctx context.Context, input *RegisterInput) (*Register
 	if err != nil {
 		// Log error but don't fail registration
 		// In production, this should be handled in a transaction or retry mechanism
-		// TODO: Add test for workspace creation failure during registration
 	}
 
 	// Generate token for the new user
@@ -195,7 +193,6 @@ func (h *Handler) getMe(ctx context.Context, input *struct{}) (*GetMeOutput, err
 	}, nil
 }
 
-// TODO: Add handler test for GET /users/me/workspaces endpoint
 func (h *Handler) getMyWorkspaces(ctx context.Context, input *struct{}) (*GetMyWorkspacesOutput, error) {
 	authUser, ok := appMiddleware.GetAuthUser(ctx)
 	if !ok {

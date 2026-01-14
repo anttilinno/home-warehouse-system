@@ -137,3 +137,23 @@ func GetRole(ctx context.Context) (string, bool) {
 	role, ok := ctx.Value(RoleContextKey).(string)
 	return role, ok
 }
+
+// RequireWorkspaceID extracts workspace ID from context or returns an error.
+// Use this in handlers to reduce boilerplate workspace ID extraction.
+func RequireWorkspaceID(ctx context.Context) (uuid.UUID, error) {
+	workspaceID, ok := GetWorkspaceID(ctx)
+	if !ok {
+		return uuid.Nil, ErrWorkspaceRequired
+	}
+	return workspaceID, nil
+}
+
+// ErrWorkspaceRequired is returned when workspace context is missing.
+var ErrWorkspaceRequired = &WorkspaceRequiredError{}
+
+// WorkspaceRequiredError indicates missing workspace context.
+type WorkspaceRequiredError struct{}
+
+func (e *WorkspaceRequiredError) Error() string {
+	return "workspace context required"
+}

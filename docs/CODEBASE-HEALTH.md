@@ -19,28 +19,30 @@ This debt doesn't trigger metrics but makes the codebase progressively harder to
 High complexity = harder to maintain and test.
 
 ```bash
-# Python backend
-cd backend && uv run radon cc src/ -a -s
+# Go backend - install gocyclo
+go install github.com/fzipp/gocyclo/cmd/gocyclo@latest
 
-# Show only complex functions (C grade or worse)
-cd backend && uv run radon cc src/ -a -s --min C
+# Show all functions with complexity > 10
+cd backend && gocyclo -over 10 .
+
+# Show top 20 most complex functions
+cd backend && gocyclo -top 20 .
 ```
 
 **Thresholds:**
-- A-B (1-10): Good
-- C (11-20): Consider refactoring
-- D-F (21+): Refactor immediately
+- 1-10: Good
+- 11-20: Consider refactoring
+- 21+: Refactor immediately
 
-### Maintainability Index
+### Cognitive Complexity
 
 ```bash
-cd backend && uv run radon mi src/ -s
-```
+# Install gocognit
+go install github.com/uudashr/gocognit/cmd/gocognit@latest
 
-**Thresholds:**
-- A (20+): Good
-- B (10-19): Acceptable
-- C (0-9): Needs attention
+# Show functions with cognitive complexity > 15
+cd backend && gocognit -over 15 .
+```
 
 ### Frontend Complexity
 
@@ -55,12 +57,17 @@ High coverage doesn't equal quality. AI-generated tests often mirror code rather
 ### Coverage Gaps
 
 ```bash
-cd backend && uv run pytest --cov=src --cov-report=term-missing
+# Go backend
+cd backend && go test ./... -coverprofile=coverage.out
+cd backend && go tool cover -func=coverage.out | grep -v "100.0%"
+
+# HTML coverage report
+cd backend && go tool cover -html=coverage.out -o coverage.html
 ```
 
 Look for:
 - Happy path only testing
-- Missing edge cases (nulls, empty arrays, boundary values)
+- Missing edge cases (nulls, empty slices, boundary values)
 - No stress or concurrency tests
 
 ### Mutation Testing
@@ -68,11 +75,14 @@ Look for:
 The gold standard for test effectiveness. Introduces small bugs and checks if tests catch them.
 
 ```bash
-# Python (requires mutmut)
-cd backend && uv run mutmut run --paths-to-mutate=src/
+# Go (requires gremlins)
+go install github.com/go-gremlins/gremlins/cmd/gremlins@latest
 
-# View surviving mutants (tests didn't catch these bugs)
-cd backend && uv run mutmut results
+cd backend && gremlins unleash
+
+# Alternative: ooze
+go install github.com/gtramontina/ooze/cmd/ooze@latest
+cd backend && ooze
 ```
 
 **If many mutants survive, tests are covering lines but not actually verifying behavior.**
@@ -85,16 +95,16 @@ Check for multiple ways of doing the same thing:
 
 ```bash
 # Find different error handling patterns
-rg "raise HTTPException" backend/src/ | head -20
-rg "raise.*Error" backend/src/ | head -20
+rg "huma\.Error" backend/internal/ | head -20
+rg "errors\.New|fmt\.Errorf" backend/internal/ | head -20
 
 # Find different response patterns
-rg "return \{" backend/src/
-rg "return Response" backend/src/
+rg "return \&.*Output" backend/internal/
+rg "return nil, huma\." backend/internal/
 
-# Find different null checks
-rg "if .* is None" backend/src/
-rg "if not .*:" backend/src/
+# Find different nil checks
+rg "if .* == nil" backend/internal/ | head -20
+rg "if .* != nil" backend/internal/ | head -20
 ```
 
 ### Redundant Helpers
@@ -103,18 +113,22 @@ AI often creates similar helper functions. Look for:
 
 ```bash
 # Functions with similar names
-rg "^def (get_|fetch_|find_)" backend/src/
-rg "^async def (get_|fetch_|find_)" backend/src/
+rg "^func.*(Get|Fetch|Find)" backend/internal/
+rg "^func.*(Create|New|Make)" backend/internal/
 
 # Utility functions that might be duplicated
-rg "^def (format_|parse_|convert_)" backend/src/
+rg "^func.*(Format|Parse|Convert)" backend/internal/
 ```
 
 ### Copy-Paste Fragments
 
 ```bash
 # Install and run duplicate detector
-cd backend && uv run pylint src/ --disable=all --enable=duplicate-code
+go install github.com/mibk/dupl@latest
+cd backend && dupl -t 100 .
+
+# Alternative: use golangci-lint with dupl enabled
+cd backend && golangci-lint run --enable dupl
 ```
 
 ## 4. Architecture Health
@@ -122,24 +136,31 @@ cd backend && uv run pylint src/ --disable=all --enable=duplicate-code
 ### Dependency Analysis
 
 ```bash
-# Python imports analysis
-cd backend && uv run pydeps src/warehouse --cluster --max-bacon 2 -o deps.svg
+# Go dependency graph
+go install github.com/loov/goda@latest
+cd backend && goda graph ./... | dot -Tsvg -o deps.svg
 
-# Check for circular imports
-cd backend && uv run pydeps src/warehouse --show-cycles
+# Check for circular dependencies
+cd backend && goda graph -cluster ./... 2>&1 | grep -i cycle
+
+# Analyze package dependencies
+cd backend && go mod graph | head -50
 ```
 
 ### Layering Violations
 
-The architecture should follow: Routes → Services → Repositories → Models
+The architecture should follow: Handlers → Services → Repositories → Entities
 
 Check for violations:
 ```bash
-# Routes importing repositories directly (skip services)
-rg "from.*repository import" backend/src/warehouse/routes/
+# Handlers importing repositories directly (skip services)
+rg "infra/postgres" backend/internal/domain/*/handler.go
 
-# Services importing route-specific things
-rg "from.*routes import" backend/src/warehouse/services/
+# Services importing handler-specific things
+rg "api/middleware" backend/internal/domain/*/service.go
+
+# Domain importing infrastructure
+rg "infra/" backend/internal/domain/ --type go | grep -v "_test.go"
 ```
 
 ### Coupling Analysis
@@ -148,7 +169,7 @@ Track files changed together that shouldn't be coupled:
 
 ```bash
 # Files frequently changed together in last 50 commits
-git log --oneline -50 --name-only | grep -E "\.py$|\.tsx?$" | sort | uniq -c | sort -rn | head -20
+git log --oneline -50 --name-only | grep -E "\.go$|\.tsx?$" | sort | uniq -c | sort -rn | head -20
 ```
 
 ## 5. Runtime Signals
@@ -158,19 +179,27 @@ Even if tests pass, runtime behavior reveals debt.
 ### Performance Profiling
 
 ```bash
-# Profile endpoint response times
-cd backend && uv run pytest e2e/ -v --durations=20
+# Profile test execution times
+cd backend && go test ./... -v 2>&1 | grep -E "^\s+--- (PASS|FAIL):" | sort -t'(' -k2 -rn | head -20
 
-# Check for N+1 queries (look for repeated similar queries)
-# Enable SQL logging in development and watch for patterns
+# Benchmark tests
+cd backend && go test ./... -bench=. -benchmem
+
+# CPU profiling
+cd backend && go test ./... -cpuprofile=cpu.out
+go tool pprof cpu.out
 ```
 
 ### Memory and Resource Leaks
 
 Monitor during extended test runs:
 ```bash
-# Run tests with memory tracking
-cd backend && uv run pytest --memray
+# Memory profiling
+cd backend && go test ./... -memprofile=mem.out
+go tool pprof mem.out
+
+# Race condition detection
+cd backend && go test ./... -race
 ```
 
 ## 6. Code Churn Analysis
@@ -180,10 +209,10 @@ Frequently changed files indicate unstable or poorly understood components:
 ```bash
 # Most changed files in last 3 months
 git log --since="3 months ago" --name-only --pretty=format: | \
-  grep -E "\.(py|tsx?)$" | sort | uniq -c | sort -rn | head -20
+  grep -E "\.(go|tsx?)$" | sort | uniq -c | sort -rn | head -20
 
 # Files with most contributors (knowledge spread thin)
-git shortlog -sn --all -- "backend/src/**/*.py" | head -10
+git shortlog -sn --all -- "backend/**/*.go" | head -10
 ```
 
 **High churn + multiple contributors = likely debt hotspot.**
@@ -205,8 +234,18 @@ If "small fixes" regularly touch 10+ files, the architecture has hidden coupling
 ### Backend
 
 ```bash
-cd backend && uv run ruff check src/ --statistics
-cd backend && uv run mypy src/ --ignore-missing-imports
+# Comprehensive linting with golangci-lint
+cd backend && golangci-lint run ./...
+
+# With specific linters enabled
+cd backend && golangci-lint run --enable-all --disable exhaustruct,depguard ./...
+
+# Go vet (built-in)
+cd backend && go vet ./...
+
+# Static analysis
+go install honnef.co/go/tools/cmd/staticcheck@latest
+cd backend && staticcheck ./...
 ```
 
 ### Frontend
@@ -233,21 +272,21 @@ docker run -d --name sonarqube -p 9000:9000 sonarqube:community
 ### Analyze Backend
 
 ```bash
-# Install sonar-scanner
 cd backend
 
 # Create sonar-project.properties
 cat > sonar-project.properties << 'EOF'
 sonar.projectKey=hws-backend
 sonar.projectName=HWS Backend
-sonar.sources=src
-sonar.tests=e2e
-sonar.python.version=3.14
-sonar.python.coverage.reportPaths=coverage.xml
+sonar.sources=.
+sonar.exclusions=**/*_test.go,**/testutil/**,**/tests/**
+sonar.tests=.
+sonar.test.inclusions=**/*_test.go
+sonar.go.coverage.reportPaths=coverage.out
 EOF
 
 # Generate coverage report
-uv run pytest --cov=src --cov-report=xml
+go test ./... -coverprofile=coverage.out
 
 # Run scanner (requires sonar-scanner installed or use Docker)
 docker run --rm \
@@ -290,15 +329,43 @@ docker run --rm \
 
 ## 10. Security Scanning
 
+### govulncheck Setup
+
+govulncheck requires the Go version in your toolchain to match what your project needs. If you see errors like:
+```
+package requires newer Go version go1.24 (application built with go1.23)
+```
+
+Fix by ensuring mise.toml matches go.mod:
 ```bash
-# Python dependencies
-cd backend && uv run pip-audit
+# Check what go.mod requires
+head -3 backend/go.mod
+# go 1.24.0
+# toolchain go1.24.11
+
+# Update mise.toml to match
+# [tools]
+# go = "1.24"  # Must match go.mod
+
+# Install the correct Go version
+mise install go@1.24
+```
+
+### Running govulncheck
+
+```bash
+# Go dependencies vulnerability check (run from backend/)
+cd backend && go run golang.org/x/vuln/cmd/govulncheck@latest ./...
 
 # Check for hardcoded secrets
-rg -i "(password|secret|key|token)\s*=" --type py --type ts
+rg -i "(password|secret|key|token)\s*=" --type go --type ts
 
-# SQL injection patterns
-rg "f\".*SELECT|f\".*INSERT|f\".*UPDATE" backend/src/
+# SQL injection patterns (should use parameterized queries)
+rg "fmt\.Sprintf.*SELECT|fmt\.Sprintf.*INSERT|fmt\.Sprintf.*UPDATE" backend/
+
+# Security linter
+go install github.com/securego/gosec/v2/cmd/gosec@latest
+cd backend && gosec ./...
 ```
 
 ## Health Check Checklist
@@ -307,13 +374,13 @@ Run periodically (weekly or before major releases):
 
 | Check | Command | Target |
 |-------|---------|--------|
-| Complexity | `radon cc src/ -a` | Average < 10 |
-| Coverage | `pytest --cov` | > 80% |
-| Mutation score | `mutmut run` | > 70% killed |
-| Duplicate code | `pylint --enable=duplicate-code` | 0 issues |
-| Type coverage | `mypy src/` | 0 errors |
-| Security | `pip-audit` | 0 vulnerabilities |
-| Lint | `ruff check` | 0 errors |
+| Complexity | `gocyclo -top 20 .` | No function > 15 |
+| Coverage | `go test ./... -cover` | > 80% |
+| Mutation score | `gremlins unleash` | > 70% killed |
+| Duplicate code | `dupl -t 100 .` | 0 issues |
+| Race conditions | `go test ./... -race` | 0 races |
+| Security | `govulncheck ./...` | 0 vulnerabilities |
+| Lint | `golangci-lint run` | 0 errors |
 | SonarQube | Quality Gate | Passed |
 
 ## Prioritizing Debt
@@ -340,12 +407,13 @@ Not all debt is equal. Prioritize by:
 
 ## Tools Summary
 
-| Purpose | Python | TypeScript |
-|---------|--------|------------|
-| Complexity | radon | eslint complexity rule |
-| Duplication | pylint | jscpd |
-| Type checking | mypy | tsc |
-| Mutation testing | mutmut | stryker |
-| Security | pip-audit, bandit | npm audit |
-| Dependencies | pydeps | madge |
-| Comprehensive | SonarQube | SonarQube |
+| Purpose | Go | TypeScript |
+|---------|-----|------------|
+| Complexity | gocyclo, gocognit | eslint complexity rule |
+| Duplication | dupl, golangci-lint | jscpd |
+| Static analysis | go vet, staticcheck | tsc |
+| Mutation testing | gremlins, ooze | stryker |
+| Security | govulncheck, gosec | npm audit |
+| Dependencies | goda, go mod graph | madge |
+| Race detection | go test -race | - |
+| Comprehensive | SonarQube, golangci-lint | SonarQube |

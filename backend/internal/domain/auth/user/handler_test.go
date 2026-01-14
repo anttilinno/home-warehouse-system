@@ -10,6 +10,7 @@ import (
 	"github.com/stretchr/testify/mock"
 
 	"github.com/antti/home-warehouse/go-backend/internal/domain/auth/user"
+	"github.com/antti/home-warehouse/go-backend/internal/domain/auth/workspace"
 	"github.com/antti/home-warehouse/go-backend/internal/shared"
 	"github.com/antti/home-warehouse/go-backend/internal/shared/jwt"
 	"github.com/antti/home-warehouse/go-backend/internal/testutil"
@@ -91,27 +92,106 @@ func (m *MockService) Activate(ctx context.Context, id uuid.UUID) error {
 	return args.Error(0)
 }
 
+// MockWorkspaceService implements workspace.ServiceInterface
+type MockWorkspaceService struct {
+	mock.Mock
+}
+
+func (m *MockWorkspaceService) Create(ctx context.Context, input workspace.CreateWorkspaceInput) (*workspace.Workspace, error) {
+	args := m.Called(ctx, input)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*workspace.Workspace), args.Error(1)
+}
+
+func (m *MockWorkspaceService) GetByID(ctx context.Context, id uuid.UUID) (*workspace.Workspace, error) {
+	args := m.Called(ctx, id)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*workspace.Workspace), args.Error(1)
+}
+
+func (m *MockWorkspaceService) GetBySlug(ctx context.Context, slug string) (*workspace.Workspace, error) {
+	args := m.Called(ctx, slug)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*workspace.Workspace), args.Error(1)
+}
+
+func (m *MockWorkspaceService) GetUserWorkspaces(ctx context.Context, userID uuid.UUID) ([]*workspace.Workspace, error) {
+	args := m.Called(ctx, userID)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).([]*workspace.Workspace), args.Error(1)
+}
+
+func (m *MockWorkspaceService) Update(ctx context.Context, id uuid.UUID, input workspace.UpdateWorkspaceInput) (*workspace.Workspace, error) {
+	args := m.Called(ctx, id, input)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*workspace.Workspace), args.Error(1)
+}
+
+func (m *MockWorkspaceService) Delete(ctx context.Context, id uuid.UUID) error {
+	args := m.Called(ctx, id)
+	return args.Error(0)
+}
+
 // Tests
 
 func TestUserHandler_Register(t *testing.T) {
 	setup := testutil.NewHandlerTestSetup()
 	mockSvc := new(MockService)
+	mockWsSvc := new(MockWorkspaceService)
 	jwtSvc := jwt.NewService("test-secret", 24)
-	handler := user.NewHandler(mockSvc, jwtSvc)
+	handler := user.NewHandler(mockSvc, jwtSvc, mockWsSvc)
 	handler.RegisterPublicRoutes(setup.API)
 
-	t.Run("registers user successfully", func(t *testing.T) {
+	t.Run("registers user successfully and creates workspace", func(t *testing.T) {
 		testUser, _ := user.NewUser("test@example.com", "Test User", "password123")
+		testWorkspace, _ := workspace.NewWorkspace("Test User's Workspace", "user-"+testUser.ID().String(), nil, true)
 
 		mockSvc.On("Create", mock.Anything, mock.MatchedBy(func(input user.CreateUserInput) bool {
 			return input.Email == "test@example.com" && input.FullName == "Test User"
 		})).Return(testUser, nil).Once()
+
+		mockWsSvc.On("Create", mock.Anything, mock.MatchedBy(func(input workspace.CreateWorkspaceInput) bool {
+			return input.Name == "Test User's Workspace" &&
+				input.Slug == "user-"+testUser.ID().String() &&
+				input.IsPersonal == true &&
+				input.CreatedBy == testUser.ID()
+		})).Return(testWorkspace, nil).Once()
 
 		body := `{"email":"test@example.com","full_name":"Test User","password":"password123"}`
 		rec := setup.Post("/auth/register", body)
 
 		testutil.AssertStatus(t, rec, http.StatusOK)
 		mockSvc.AssertExpectations(t)
+		mockWsSvc.AssertExpectations(t)
+	})
+
+	t.Run("registration continues if workspace creation fails", func(t *testing.T) {
+		testUser, _ := user.NewUser("test2@example.com", "Test User 2", "password123")
+
+		mockSvc.On("Create", mock.Anything, mock.MatchedBy(func(input user.CreateUserInput) bool {
+			return input.Email == "test2@example.com" && input.FullName == "Test User 2"
+		})).Return(testUser, nil).Once()
+
+		mockWsSvc.On("Create", mock.Anything, mock.Anything).
+			Return(nil, fmt.Errorf("workspace creation failed")).Once()
+
+		body := `{"email":"test2@example.com","full_name":"Test User 2","password":"password123"}`
+		rec := setup.Post("/auth/register", body)
+
+		// Registration should succeed even if workspace creation fails
+		testutil.AssertStatus(t, rec, http.StatusOK)
+		mockSvc.AssertExpectations(t)
+		mockWsSvc.AssertExpectations(t)
 	})
 
 	t.Run("returns 409 for duplicate email", func(t *testing.T) {
@@ -155,7 +235,7 @@ func TestUserHandler_Login(t *testing.T) {
 	setup := testutil.NewHandlerTestSetup()
 	mockSvc := new(MockService)
 	jwtSvc := jwt.NewService("test-secret", 24)
-	handler := user.NewHandler(mockSvc, jwtSvc)
+	handler := user.NewHandler(mockSvc, jwtSvc, nil)
 	handler.RegisterPublicRoutes(setup.API)
 
 	t.Run("authenticates user successfully", func(t *testing.T) {
@@ -187,7 +267,7 @@ func TestUserHandler_RefreshToken(t *testing.T) {
 	setup := testutil.NewHandlerTestSetup()
 	mockSvc := new(MockService)
 	jwtSvc := jwt.NewService("test-secret", 24)
-	handler := user.NewHandler(mockSvc, jwtSvc)
+	handler := user.NewHandler(mockSvc, jwtSvc, nil)
 	handler.RegisterPublicRoutes(setup.API)
 
 	t.Run("refreshes token successfully", func(t *testing.T) {
@@ -250,7 +330,7 @@ func TestUserHandler_GetMe(t *testing.T) {
 	setup := testutil.NewHandlerTestSetup()
 	mockSvc := new(MockService)
 	jwtSvc := jwt.NewService("test-secret", 24)
-	handler := user.NewHandler(mockSvc, jwtSvc)
+	handler := user.NewHandler(mockSvc, jwtSvc, nil)
 	handler.RegisterProtectedRoutes(setup.API)
 
 	t.Run("gets current user successfully", func(t *testing.T) {
@@ -276,11 +356,54 @@ func TestUserHandler_GetMe(t *testing.T) {
 	})
 }
 
+func TestUserHandler_GetMyWorkspaces(t *testing.T) {
+	setup := testutil.NewHandlerTestSetup()
+	mockSvc := new(MockService)
+	mockWsSvc := new(MockWorkspaceService)
+	jwtSvc := jwt.NewService("test-secret", 24)
+	handler := user.NewHandler(mockSvc, jwtSvc, mockWsSvc)
+	handler.RegisterProtectedRoutes(setup.API)
+
+	t.Run("gets user workspaces successfully", func(t *testing.T) {
+		ws1, _ := workspace.NewWorkspace("Workspace 1", "ws-1", nil, false)
+		ws2, _ := workspace.NewWorkspace("Personal Workspace", "personal-ws", nil, true)
+		workspaces := []*workspace.Workspace{ws1, ws2}
+
+		mockWsSvc.On("GetUserWorkspaces", mock.Anything, setup.UserID).
+			Return(workspaces, nil).Once()
+
+		rec := setup.Get("/users/me/workspaces")
+
+		testutil.AssertStatus(t, rec, http.StatusOK)
+		mockWsSvc.AssertExpectations(t)
+	})
+
+	t.Run("returns empty list when user has no workspaces", func(t *testing.T) {
+		mockWsSvc.On("GetUserWorkspaces", mock.Anything, setup.UserID).
+			Return([]*workspace.Workspace{}, nil).Once()
+
+		rec := setup.Get("/users/me/workspaces")
+
+		testutil.AssertStatus(t, rec, http.StatusOK)
+		mockWsSvc.AssertExpectations(t)
+	})
+
+	t.Run("returns 500 for service error", func(t *testing.T) {
+		mockWsSvc.On("GetUserWorkspaces", mock.Anything, setup.UserID).
+			Return(nil, fmt.Errorf("database error")).Once()
+
+		rec := setup.Get("/users/me/workspaces")
+
+		testutil.AssertStatus(t, rec, http.StatusInternalServerError)
+		mockWsSvc.AssertExpectations(t)
+	})
+}
+
 func TestUserHandler_UpdateMe(t *testing.T) {
 	setup := testutil.NewHandlerTestSetup()
 	mockSvc := new(MockService)
 	jwtSvc := jwt.NewService("test-secret", 24)
-	handler := user.NewHandler(mockSvc, jwtSvc)
+	handler := user.NewHandler(mockSvc, jwtSvc, nil)
 	handler.RegisterProtectedRoutes(setup.API)
 
 	t.Run("updates profile successfully", func(t *testing.T) {
@@ -320,7 +443,7 @@ func TestUserHandler_UpdatePassword(t *testing.T) {
 	setup := testutil.NewHandlerTestSetup()
 	mockSvc := new(MockService)
 	jwtSvc := jwt.NewService("test-secret", 24)
-	handler := user.NewHandler(mockSvc, jwtSvc)
+	handler := user.NewHandler(mockSvc, jwtSvc, nil)
 	handler.RegisterProtectedRoutes(setup.API)
 
 	t.Run("updates password successfully", func(t *testing.T) {
@@ -357,7 +480,7 @@ func TestUserHandler_UpdatePreferences(t *testing.T) {
 	setup := testutil.NewHandlerTestSetup()
 	mockSvc := new(MockService)
 	jwtSvc := jwt.NewService("test-secret", 24)
-	handler := user.NewHandler(mockSvc, jwtSvc)
+	handler := user.NewHandler(mockSvc, jwtSvc, nil)
 	handler.RegisterProtectedRoutes(setup.API)
 
 	t.Run("updates preferences successfully", func(t *testing.T) {
@@ -392,7 +515,7 @@ func TestUserHandler_ListUsers(t *testing.T) {
 	setup.MakeSuperuser() // Superuser required for admin endpoints
 	mockSvc := new(MockService)
 	jwtSvc := jwt.NewService("test-secret", 24)
-	handler := user.NewHandler(mockSvc, jwtSvc)
+	handler := user.NewHandler(mockSvc, jwtSvc, nil)
 	handler.RegisterAdminRoutes(setup.API)
 
 	t.Run("lists users successfully", func(t *testing.T) {
@@ -427,7 +550,7 @@ func TestUserHandler_ListUsers(t *testing.T) {
 
 	t.Run("returns 403 for non-superuser", func(t *testing.T) {
 		nonAdminSetup := testutil.NewHandlerTestSetup()
-		handler := user.NewHandler(mockSvc, jwtSvc)
+		handler := user.NewHandler(mockSvc, jwtSvc, nil)
 		handler.RegisterAdminRoutes(nonAdminSetup.API)
 
 		rec := nonAdminSetup.Get("/users")
@@ -451,7 +574,7 @@ func TestUserHandler_GetUserByID(t *testing.T) {
 	setup.MakeSuperuser()
 	mockSvc := new(MockService)
 	jwtSvc := jwt.NewService("test-secret", 24)
-	handler := user.NewHandler(mockSvc, jwtSvc)
+	handler := user.NewHandler(mockSvc, jwtSvc, nil)
 	handler.RegisterAdminRoutes(setup.API)
 
 	t.Run("gets user by ID successfully", func(t *testing.T) {
@@ -481,7 +604,7 @@ func TestUserHandler_GetUserByID(t *testing.T) {
 
 	t.Run("returns 403 for non-superuser", func(t *testing.T) {
 		nonAdminSetup := testutil.NewHandlerTestSetup()
-		handler := user.NewHandler(mockSvc, jwtSvc)
+		handler := user.NewHandler(mockSvc, jwtSvc, nil)
 		handler.RegisterAdminRoutes(nonAdminSetup.API)
 
 		userID := uuid.New()
@@ -496,7 +619,7 @@ func TestUserHandler_DeactivateUser(t *testing.T) {
 	setup.MakeSuperuser()
 	mockSvc := new(MockService)
 	jwtSvc := jwt.NewService("test-secret", 24)
-	handler := user.NewHandler(mockSvc, jwtSvc)
+	handler := user.NewHandler(mockSvc, jwtSvc, nil)
 	handler.RegisterAdminRoutes(setup.API)
 
 	t.Run("deactivates user successfully", func(t *testing.T) {
@@ -547,7 +670,7 @@ func TestUserHandler_ActivateUser(t *testing.T) {
 	setup.MakeSuperuser()
 	mockSvc := new(MockService)
 	jwtSvc := jwt.NewService("test-secret", 24)
-	handler := user.NewHandler(mockSvc, jwtSvc)
+	handler := user.NewHandler(mockSvc, jwtSvc, nil)
 	handler.RegisterAdminRoutes(setup.API)
 
 	t.Run("activates user successfully", func(t *testing.T) {

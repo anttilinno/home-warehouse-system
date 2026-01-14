@@ -173,7 +173,7 @@ func (s *Service) Move(ctx context.Context, id, workspaceID, locationID uuid.UUI
 			ToLocationID:    &locationID,
 			ToContainerID:   containerID,
 			Quantity:        inv.Quantity(),
-			MovedBy:         nil, // TODO: Get from context
+			MovedBy:         nil, // See docs/GO_BACKEND_TODO.md - Inventory Movement Audit Trail
 			Reason:          nil,
 		})
 		if err != nil {
