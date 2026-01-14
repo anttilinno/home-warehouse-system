@@ -153,8 +153,18 @@ func NewRouter(pool *pgxpool.Pool, cfg *config.Config) chi.Router {
 	importExportHandler := importexport.NewHandler(importExportSvc)
 	syncHandler := sync.NewHandler(syncSvc)
 
-	// Register public routes (no auth)
-	userHandler.RegisterPublicRoutes(api)
+	// Rate limiter for auth endpoints (5 requests per minute per IP)
+	authRateLimiter := appMiddleware.NewRateLimiter(5, time.Minute)
+
+	// Register public routes with rate limiting for auth endpoints
+	r.Group(func(r chi.Router) {
+		r.Use(appMiddleware.RateLimit(authRateLimiter))
+		rateLimitedConfig := huma.DefaultConfig("Home Warehouse API", "1.0.0")
+		rateLimitedConfig.DocsPath = ""
+		rateLimitedConfig.OpenAPIPath = ""
+		rateLimitedAPI := humachi.New(r, rateLimitedConfig)
+		userHandler.RegisterPublicRoutes(rateLimitedAPI)
+	})
 
 	// Register barcode lookup (public, no auth required)
 	barcode.RegisterRoutes(api, barcodeSvc)

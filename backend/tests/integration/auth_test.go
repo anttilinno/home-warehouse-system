@@ -409,3 +409,73 @@ func TestHealthCheck(t *testing.T) {
 
 	assert.Equal(t, "ok", result.Status)
 }
+
+// =============================================================================
+// Rate Limiting Tests
+// =============================================================================
+
+func TestAuthEndpoints_RateLimited(t *testing.T) {
+	ts := NewTestServer(t)
+
+	// Auth endpoints are rate limited to 5 requests per minute per IP
+	// Make 5 requests - all should succeed (even with invalid credentials)
+	for i := 0; i < 5; i++ {
+		resp := ts.Post("/auth/login", map[string]string{
+			"email":    "ratelimit@example.com",
+			"password": "wrongpassword",
+		})
+		// Should get 401 (invalid credentials) not 429 (rate limited)
+		assert.Equal(t, http.StatusUnauthorized, resp.StatusCode, "request %d should not be rate limited", i+1)
+		resp.Body.Close()
+	}
+
+	// 6th request should be rate limited
+	resp := ts.Post("/auth/login", map[string]string{
+		"email":    "ratelimit@example.com",
+		"password": "wrongpassword",
+	})
+	assert.Equal(t, http.StatusTooManyRequests, resp.StatusCode, "6th request should be rate limited")
+	assert.NotEmpty(t, resp.Header.Get("Retry-After"), "should have Retry-After header")
+	resp.Body.Close()
+}
+
+func TestAuthEndpoints_RateLimitAppliesToAllAuthRoutes(t *testing.T) {
+	ts := NewTestServer(t)
+
+	// Mix of different auth endpoints - all share the same rate limit
+	// Request 1-2: login attempts
+	for i := 0; i < 2; i++ {
+		resp := ts.Post("/auth/login", map[string]string{
+			"email":    "mixed@example.com",
+			"password": "wrongpassword",
+		})
+		assert.Equal(t, http.StatusUnauthorized, resp.StatusCode)
+		resp.Body.Close()
+	}
+
+	// Request 3-4: register attempts (will fail validation but still count)
+	for i := 0; i < 2; i++ {
+		resp := ts.Post("/auth/register", map[string]string{
+			"email":     "invalid-email",
+			"full_name": "Test",
+			"password":  "password123",
+		})
+		assert.Equal(t, http.StatusUnprocessableEntity, resp.StatusCode)
+		resp.Body.Close()
+	}
+
+	// Request 5: refresh token attempt
+	resp := ts.Post("/auth/refresh", map[string]string{
+		"refresh_token": "invalid-token",
+	})
+	assert.Equal(t, http.StatusUnauthorized, resp.StatusCode)
+	resp.Body.Close()
+
+	// Request 6: should be rate limited regardless of endpoint
+	resp = ts.Post("/auth/login", map[string]string{
+		"email":    "mixed@example.com",
+		"password": "wrongpassword",
+	})
+	assert.Equal(t, http.StatusTooManyRequests, resp.StatusCode, "6th request should be rate limited")
+	resp.Body.Close()
+}
