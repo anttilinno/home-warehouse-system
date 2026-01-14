@@ -3,6 +3,7 @@ package middleware
 import (
 	"log/slog"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/go-chi/chi/v5/middleware"
@@ -81,9 +82,9 @@ func NewLogger(debug bool) *slog.Logger {
 
 	if debug {
 		// Development: text format for readability
-		return slog.New(slog.NewTextHandler(nil, opts))
+		return slog.New(slog.NewTextHandler(os.Stderr, opts))
 	}
 
 	// Production: JSON format for log aggregation
-	return slog.New(slog.NewJSONHandler(nil, opts))
+	return slog.New(slog.NewJSONHandler(os.Stderr, opts))
 }
