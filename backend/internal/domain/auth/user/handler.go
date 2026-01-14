@@ -204,9 +204,9 @@ func (h *Handler) getMyWorkspaces(ctx context.Context, input *struct{}) (*GetMyW
 		return nil, huma.Error500InternalServerError("failed to get workspaces")
 	}
 
-	result := make([]WorkspaceResponse, len(workspaces))
+	result := make([]UserWorkspaceSummary, len(workspaces))
 	for i, ws := range workspaces {
-		result[i] = WorkspaceResponse{
+		result[i] = UserWorkspaceSummary{
 			ID:          ws.ID(),
 			Name:        ws.Name(),
 			Slug:        ws.Slug(),
@@ -480,7 +480,7 @@ type GetMeOutput struct {
 	Body UserResponse
 }
 
-type WorkspaceResponse struct {
+type UserWorkspaceSummary struct {
 	ID          uuid.UUID `json:"id"`
 	Name        string    `json:"name"`
 	Slug        string    `json:"slug"`
@@ -489,7 +489,7 @@ type WorkspaceResponse struct {
 }
 
 type GetMyWorkspacesOutput struct {
-	Body []WorkspaceResponse
+	Body []UserWorkspaceSummary
 }
 
 type UpdateMeInput struct {

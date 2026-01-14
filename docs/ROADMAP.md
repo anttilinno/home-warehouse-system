@@ -92,7 +92,68 @@
   - Seed types: expiring items, warranty alerts, low-stock, overdue loans, location hierarchy
   - Command: `mise run seed <type|all>`
 
-## Phase 3
+## Phase 3: UX & Accessibility
+
+**See [UX_IMPROVEMENTS.md](UX_IMPROVEMENTS.md) for detailed analysis and implementation guide**
+
+### Critical Priority
+- [ ] **WCAG 2.1 AA Compliance** (Sprint 1: 1-2 weeks)
+  - Accessibility audit with Lighthouse and axe DevTools
+  - Fix keyboard navigation throughout application
+  - Add comprehensive ARIA labels and landmarks
+  - Implement focus management in modals and dialogs
+  - Add skip-to-content link
+  - Verify and fix color contrast ratios
+- [ ] **Consistent Error Handling & Offline Support** (Sprint 2: 1-2 weeks)
+  - Implement error boundaries for React errors
+  - Add offline detection and offline banner
+  - Retry mechanisms for failed API requests
+  - Better error messages with actionable guidance
+  - Consistent error states across all forms and lists
+
+### High Priority
+- [ ] **Loading State Standardization** (Sprint 3: 1-2 weeks)
+  - Create comprehensive skeleton component library
+  - Standardize loading button patterns
+  - Implement optimistic updates for better UX
+  - Add progress indicators for long operations
+- [ ] **Mobile UX Optimization** (Sprint 3: 1-2 weeks)
+  - Touch target audit (44x44px minimum)
+  - Mobile navigation improvements with swipe gestures
+  - Bottom sheets for mobile actions/filters
+  - Mobile-optimized table alternative (card view)
+- [ ] **Advanced Search & Filtering** (Sprint 4: 2-3 weeks)
+  - Global command palette search (Ctrl+K)
+  - Advanced filter builder with date ranges
+  - Filter persistence in URL
+  - Fuzzy search with suggestions
+  - Search history and keyboard navigation
+
+### Medium Priority
+- [ ] **Data Visualization & Analytics** (Sprint 5: 2-3 weeks)
+  - Integrate chart library (Recharts or Tremor)
+  - Add charts to dashboard (value trends, category breakdown)
+  - Create dedicated analytics page with drill-down
+  - Export capabilities for charts and reports
+- [ ] **Onboarding & Help System** (Sprint 6: 1-2 weeks)
+  - Welcome screen for first-time users
+  - Guided product tour with React Joyride
+  - Help center with documentation and keyboard shortcuts
+  - Contextual help tooltips
+  - Enhanced empty states with clear actions
+
+### Low Priority (Polish)
+- [ ] **Animations & Micro-interactions** (Sprint 7: 1 week)
+  - Page transitions with Framer Motion
+  - Staggered list animations
+  - Hover states and button lift effects
+  - Success/error animations
+- [ ] **Haptic Feedback for PWA** (Sprint 7)
+  - Vibration on successful actions
+  - Error vibration patterns
+  - Barcode scan feedback
+
+## Phase 4: AI & Advanced Features
 
 - [ ] MCP server for AI integration
   - Expose HWS operations as MCP tools
