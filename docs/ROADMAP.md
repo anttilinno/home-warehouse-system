@@ -87,7 +87,7 @@
   - Progress events: rows processed, errors so far, completion
   - Import history/audit log per workspace
   - Email notification on import completion (optional)
-- [ ] Database seeder CLI
+- [x] Database seeder CLI
   - Generate test data for development
   - Seed types: expiring items, warranty alerts, low-stock, overdue loans, location hierarchy
   - Command: `mise run seed <type|all>`

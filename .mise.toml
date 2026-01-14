@@ -125,3 +125,9 @@ run = "cd frontend && bun install"
 [tasks.fe-lint]
 description = "Run frontend linter"
 run = "cd frontend && bun run lint"
+
+# Database Seeder
+[tasks.seed]
+description = "Seed database with test data (expiring|warranty|low-stock|overdue-loans|locations|all)"
+depends = ["dc-up"]
+run = "cd backend && go run cmd/seed/main.go {{ arg(name='type', default='all') }}"
