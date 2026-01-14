@@ -12,6 +12,7 @@ import (
 
 	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/inventory"
 	"github.com/antti/home-warehouse/go-backend/internal/infra/queries"
+	"github.com/antti/home-warehouse/go-backend/internal/shared"
 )
 
 type InventoryRepository struct {
@@ -121,7 +122,7 @@ func (r *InventoryRepository) FindByID(ctx context.Context, id, workspaceID uuid
 	})
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return nil, nil
+			return nil, shared.ErrNotFound
 		}
 		return nil, err
 	}

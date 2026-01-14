@@ -11,6 +11,7 @@ import (
 	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/category"
 	"github.com/antti/home-warehouse/go-backend/tests/testdb"
 	"github.com/antti/home-warehouse/go-backend/tests/testfixtures"
+	"github.com/antti/home-warehouse/go-backend/internal/shared"
 )
 
 func TestCategoryRepository_Save(t *testing.T) {
@@ -118,7 +119,8 @@ func TestCategoryRepository_FindByID(t *testing.T) {
 	t.Run("returns nil for non-existent category", func(t *testing.T) {
 		nonExistentID := uuid.New()
 		found, err := repo.FindByID(ctx, nonExistentID, testfixtures.TestWorkspaceID)
-		require.NoError(t, err)
+		require.Error(t, err)
+		assert.True(t, shared.IsNotFound(err))
 		assert.Nil(t, found)
 	})
 

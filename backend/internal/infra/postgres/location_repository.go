@@ -53,7 +53,7 @@ func (r *LocationRepository) FindByID(ctx context.Context, id, workspaceID uuid.
 	})
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return nil, nil
+			return nil, shared.ErrNotFound
 		}
 		return nil, err
 	}
@@ -68,7 +68,7 @@ func (r *LocationRepository) FindByShortCode(ctx context.Context, workspaceID uu
 	})
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return nil, nil
+			return nil, shared.ErrNotFound
 		}
 		return nil, err
 	}

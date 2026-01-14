@@ -64,7 +64,7 @@ func (r *NotificationRepository) FindByID(ctx context.Context, id, userID uuid.U
 	})
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return nil, nil
+			return nil, shared.ErrNotFound
 		}
 		return nil, err
 	}

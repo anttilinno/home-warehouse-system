@@ -88,7 +88,7 @@ func (r *LoanRepository) FindByID(ctx context.Context, id, workspaceID uuid.UUID
 	})
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return nil, nil
+			return nil, shared.ErrNotFound
 		}
 		return nil, err
 	}
@@ -182,7 +182,7 @@ func (r *LoanRepository) FindActiveLoanForInventory(ctx context.Context, invento
 	row, err := r.queries.GetActiveLoanForInventory(ctx, inventoryID)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return nil, nil
+			return nil, shared.ErrNotFound
 		}
 		return nil, err
 	}

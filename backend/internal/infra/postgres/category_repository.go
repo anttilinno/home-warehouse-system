@@ -11,6 +11,7 @@ import (
 
 	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/category"
 	"github.com/antti/home-warehouse/go-backend/internal/infra/queries"
+	"github.com/antti/home-warehouse/go-backend/internal/shared"
 )
 
 // CategoryRepository implements category.Repository using PostgreSQL.
@@ -74,7 +75,7 @@ func (r *CategoryRepository) FindByID(ctx context.Context, id, workspaceID uuid.
 	})
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return nil, nil
+			return nil, shared.ErrNotFound
 		}
 		return nil, err
 	}

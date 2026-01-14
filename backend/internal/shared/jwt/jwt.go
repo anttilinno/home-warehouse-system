@@ -21,6 +21,14 @@ type Claims struct {
 	jwt.RegisteredClaims
 }
 
+// ServiceInterface defines the JWT service operations.
+type ServiceInterface interface {
+	GenerateToken(userID uuid.UUID, email string, isSuperuser bool) (string, error)
+	GenerateRefreshToken(userID uuid.UUID) (string, error)
+	ValidateToken(tokenString string) (*Claims, error)
+	ValidateRefreshToken(tokenString string) (uuid.UUID, error)
+}
+
 // Service handles JWT token generation and validation.
 type Service struct {
 	secret          []byte

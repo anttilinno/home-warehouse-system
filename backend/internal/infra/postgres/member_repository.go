@@ -11,6 +11,7 @@ import (
 
 	"github.com/antti/home-warehouse/go-backend/internal/domain/auth/member"
 	"github.com/antti/home-warehouse/go-backend/internal/infra/queries"
+	"github.com/antti/home-warehouse/go-backend/internal/shared"
 )
 
 // MemberRepository implements member.Repository using PostgreSQL.
@@ -53,7 +54,7 @@ func (r *MemberRepository) FindByWorkspaceAndUser(ctx context.Context, workspace
 	})
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return nil, nil
+			return nil, shared.ErrNotFound
 		}
 		return nil, err
 	}

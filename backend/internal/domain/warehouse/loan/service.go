@@ -49,10 +49,8 @@ func (s *Service) Create(ctx context.Context, input CreateInput) (*Loan, error) 
 	// Validate inventory exists and is available
 	inv, err := s.inventoryRepo.FindByID(ctx, input.InventoryID, input.WorkspaceID)
 	if err != nil {
+		// Repository now returns shared.ErrNotFound instead of nil, nil
 		return nil, err
-	}
-	if inv == nil {
-		return nil, shared.NewFieldError(shared.ErrNotFound, "inventory_id", "inventory not found")
 	}
 
 	// Check if inventory is available
@@ -107,10 +105,8 @@ func (s *Service) Create(ctx context.Context, input CreateInput) (*Loan, error) 
 func (s *Service) GetByID(ctx context.Context, id, workspaceID uuid.UUID) (*Loan, error) {
 	loan, err := s.repo.FindByID(ctx, id, workspaceID)
 	if err != nil {
+		// Repository now returns shared.ErrNotFound instead of nil, nil
 		return nil, err
-	}
-	if loan == nil {
-		return nil, ErrLoanNotFound
 	}
 	return loan, nil
 }

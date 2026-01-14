@@ -10,6 +10,7 @@ import (
 
 	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/label"
 	"github.com/antti/home-warehouse/go-backend/internal/infra/queries"
+	"github.com/antti/home-warehouse/go-backend/internal/shared"
 )
 
 type LabelRepository struct {
@@ -42,7 +43,7 @@ func (r *LabelRepository) FindByID(ctx context.Context, id, workspaceID uuid.UUI
 	})
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return nil, nil
+			return nil, shared.ErrNotFound
 		}
 		return nil, err
 	}
@@ -57,7 +58,7 @@ func (r *LabelRepository) FindByName(ctx context.Context, workspaceID uuid.UUID,
 	})
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return nil, nil
+			return nil, shared.ErrNotFound
 		}
 		return nil, err
 	}

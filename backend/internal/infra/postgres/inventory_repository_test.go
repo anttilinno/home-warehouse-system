@@ -14,6 +14,7 @@ import (
 	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/location"
 	"github.com/antti/home-warehouse/go-backend/tests/testdb"
 	"github.com/antti/home-warehouse/go-backend/tests/testfixtures"
+	"github.com/antti/home-warehouse/go-backend/internal/shared"
 )
 
 // Helper to create test item for inventory tests
@@ -138,7 +139,8 @@ func TestInventoryRepository_FindByID(t *testing.T) {
 
 	t.Run("returns nil for non-existent inventory", func(t *testing.T) {
 		found, err := invRepo.FindByID(ctx, uuid.New(), testfixtures.TestWorkspaceID)
-		require.NoError(t, err)
+		require.Error(t, err)
+		assert.True(t, shared.IsNotFound(err))
 		assert.Nil(t, found)
 	})
 

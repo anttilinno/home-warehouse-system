@@ -12,6 +12,7 @@ import (
 	"github.com/antti/home-warehouse/go-backend/internal/domain/auth/workspace"
 	"github.com/antti/home-warehouse/go-backend/tests/testdb"
 	"github.com/antti/home-warehouse/go-backend/tests/testfixtures"
+	"github.com/antti/home-warehouse/go-backend/internal/shared"
 )
 
 func TestWorkspaceRepository_Save(t *testing.T) {
@@ -93,7 +94,8 @@ func TestWorkspaceRepository_FindByID(t *testing.T) {
 	t.Run("returns nil for non-existent workspace", func(t *testing.T) {
 		nonExistentID := uuid.New()
 		found, err := repo.FindByID(ctx, nonExistentID)
-		require.NoError(t, err)
+		require.Error(t, err)
+		assert.True(t, shared.IsNotFound(err))
 		assert.Nil(t, found)
 	})
 
@@ -131,7 +133,8 @@ func TestWorkspaceRepository_FindBySlug(t *testing.T) {
 
 	t.Run("returns nil for non-existent slug", func(t *testing.T) {
 		found, err := repo.FindBySlug(ctx, "non-existent-slug")
-		require.NoError(t, err)
+		require.Error(t, err)
+		assert.True(t, shared.IsNotFound(err))
 		assert.Nil(t, found)
 	})
 }

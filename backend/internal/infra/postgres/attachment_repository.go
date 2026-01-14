@@ -11,6 +11,7 @@ import (
 
 	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/attachment"
 	"github.com/antti/home-warehouse/go-backend/internal/infra/queries"
+	"github.com/antti/home-warehouse/go-backend/internal/shared"
 )
 
 type FileRepository struct {
@@ -55,7 +56,7 @@ func (r *FileRepository) FindByID(ctx context.Context, id uuid.UUID) (*attachmen
 	row, err := r.queries.GetFile(ctx, id)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return nil, nil
+			return nil, shared.ErrNotFound
 		}
 		return nil, err
 	}
@@ -146,7 +147,7 @@ func (r *AttachmentRepository) FindByID(ctx context.Context, id uuid.UUID) (*att
 	row, err := r.queries.GetAttachment(ctx, id)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return nil, nil
+			return nil, shared.ErrNotFound
 		}
 		return nil, err
 	}

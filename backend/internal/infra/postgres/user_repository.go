@@ -150,7 +150,7 @@ func (r *UserRepository) scanUser(row pgx.Row) (*user.User, error) {
 	err := row.Scan(&id, &email, &fullName, &passwordHash, &isActive, &isSuperuser, &dateFormat, &language, &theme, &createdAt, &updatedAt)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return nil, nil
+			return nil, shared.ErrNotFound
 		}
 		return nil, err
 	}

@@ -102,7 +102,8 @@ func TestUserRepository_FindByID(t *testing.T) {
 	t.Run("returns nil for non-existent user", func(t *testing.T) {
 		nonExistentID := uuid.New()
 		found, err := repo.FindByID(ctx, nonExistentID)
-		require.NoError(t, err)
+		require.Error(t, err)
+		assert.True(t, shared.IsNotFound(err))
 		assert.Nil(t, found)
 	})
 }
@@ -132,7 +133,8 @@ func TestUserRepository_FindByEmail(t *testing.T) {
 
 	t.Run("returns nil for non-existent email", func(t *testing.T) {
 		found, err := repo.FindByEmail(ctx, "nonexistent@example.com")
-		require.NoError(t, err)
+		require.Error(t, err)
+		assert.True(t, shared.IsNotFound(err))
 		assert.Nil(t, found)
 	})
 }

@@ -103,7 +103,8 @@ func TestContainerRepository_FindByID(t *testing.T) {
 	t.Run("returns nil for non-existent container", func(t *testing.T) {
 		nonExistentID := uuid.New()
 		found, err := repo.FindByID(ctx, nonExistentID, testfixtures.TestWorkspaceID)
-		require.NoError(t, err)
+		require.Error(t, err)
+		assert.True(t, shared.IsNotFound(err))
 		assert.Nil(t, found)
 	})
 
@@ -205,7 +206,8 @@ func TestContainerRepository_FindByShortCode(t *testing.T) {
 
 	t.Run("returns nil for non-existent short code", func(t *testing.T) {
 		found, err := repo.FindByShortCode(ctx, testfixtures.TestWorkspaceID, "NON-EXISTENT")
-		require.NoError(t, err)
+		require.Error(t, err)
+		assert.True(t, shared.IsNotFound(err))
 		assert.Nil(t, found)
 	})
 }

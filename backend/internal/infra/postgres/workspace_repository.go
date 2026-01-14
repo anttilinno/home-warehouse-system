@@ -10,6 +10,7 @@ import (
 
 	"github.com/antti/home-warehouse/go-backend/internal/domain/auth/workspace"
 	"github.com/antti/home-warehouse/go-backend/internal/infra/queries"
+	"github.com/antti/home-warehouse/go-backend/internal/shared"
 )
 
 // WorkspaceRepository implements workspace.Repository using PostgreSQL.
@@ -60,7 +61,7 @@ func (r *WorkspaceRepository) FindByID(ctx context.Context, id uuid.UUID) (*work
 	row, err := r.queries.GetWorkspaceByID(ctx, id)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return nil, nil
+			return nil, shared.ErrNotFound
 		}
 		return nil, err
 	}
@@ -81,7 +82,7 @@ func (r *WorkspaceRepository) FindBySlug(ctx context.Context, slug string) (*wor
 	row, err := r.queries.GetWorkspaceBySlug(ctx, slug)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return nil, nil
+			return nil, shared.ErrNotFound
 		}
 		return nil, err
 	}

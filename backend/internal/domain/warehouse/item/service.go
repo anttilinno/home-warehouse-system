@@ -106,10 +106,8 @@ func (s *Service) Create(ctx context.Context, input CreateInput) (*Item, error) 
 func (s *Service) GetByID(ctx context.Context, id, workspaceID uuid.UUID) (*Item, error) {
 	item, err := s.repo.FindByID(ctx, id, workspaceID)
 	if err != nil {
+		// Repository now returns shared.ErrNotFound instead of nil, nil
 		return nil, err
-	}
-	if item == nil {
-		return nil, ErrItemNotFound
 	}
 	return item, nil
 }

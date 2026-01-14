@@ -11,6 +11,7 @@ import (
 	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/label"
 	"github.com/antti/home-warehouse/go-backend/tests/testdb"
 	"github.com/antti/home-warehouse/go-backend/tests/testfixtures"
+	"github.com/antti/home-warehouse/go-backend/internal/shared"
 )
 
 func TestLabelRepository_Save(t *testing.T) {
@@ -77,7 +78,8 @@ func TestLabelRepository_FindByID(t *testing.T) {
 
 	t.Run("returns nil for non-existent label", func(t *testing.T) {
 		found, err := repo.FindByID(ctx, uuid.New(), testfixtures.TestWorkspaceID)
-		require.NoError(t, err)
+		require.Error(t, err)
+		assert.True(t, shared.IsNotFound(err))
 		assert.Nil(t, found)
 	})
 
@@ -125,7 +127,8 @@ func TestLabelRepository_FindByName(t *testing.T) {
 
 	t.Run("returns nil for non-existent name", func(t *testing.T) {
 		found, err := repo.FindByName(ctx, testfixtures.TestWorkspaceID, "Does Not Exist")
-		require.NoError(t, err)
+		require.Error(t, err)
+		assert.True(t, shared.IsNotFound(err))
 		assert.Nil(t, found)
 	})
 }

@@ -110,7 +110,7 @@ func (r *ItemRepository) FindByID(ctx context.Context, id, workspaceID uuid.UUID
 	})
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return nil, nil
+			return nil, shared.ErrNotFound
 		}
 		return nil, err
 	}
@@ -125,7 +125,7 @@ func (r *ItemRepository) FindBySKU(ctx context.Context, workspaceID uuid.UUID, s
 	})
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return nil, nil
+			return nil, shared.ErrNotFound
 		}
 		return nil, err
 	}
@@ -140,7 +140,7 @@ func (r *ItemRepository) FindByShortCode(ctx context.Context, workspaceID uuid.U
 	})
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return nil, nil
+			return nil, shared.ErrNotFound
 		}
 		return nil, err
 	}
@@ -155,7 +155,7 @@ func (r *ItemRepository) FindByBarcode(ctx context.Context, workspaceID uuid.UUI
 	})
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return nil, nil
+			return nil, shared.ErrNotFound
 		}
 		return nil, err
 	}

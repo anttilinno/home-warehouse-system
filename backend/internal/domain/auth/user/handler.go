@@ -17,12 +17,12 @@ import (
 // Handler holds dependencies for user HTTP handlers.
 type Handler struct {
 	svc            ServiceInterface
-	jwtService     *jwt.Service
+	jwtService     jwt.ServiceInterface
 	workspaceSvc   workspace.ServiceInterface
 }
 
 // NewHandler creates a new user handler.
-func NewHandler(svc ServiceInterface, jwtService *jwt.Service, workspaceSvc workspace.ServiceInterface) *Handler {
+func NewHandler(svc ServiceInterface, jwtService jwt.ServiceInterface, workspaceSvc workspace.ServiceInterface) *Handler {
 	return &Handler{
 		svc:            svc,
 		jwtService:     jwtService,
@@ -575,7 +575,7 @@ type ActivateUserInput struct {
 
 // RegisterPublicRoutes registers public user routes (no auth required).
 // Deprecated: Use Handler.RegisterPublicRoutes instead.
-func RegisterPublicRoutes(api huma.API, svc *Service) {
+func RegisterPublicRoutes(api huma.API, svc ServiceInterface) {
 	// This is a legacy function that doesn't support JWT
 	// Applications should migrate to using Handler with JWT service
 	huma.Post(api, "/auth/register", func(ctx context.Context, input *RegisterInput) (*RegisterOutput, error) {
@@ -618,7 +618,7 @@ func RegisterPublicRoutes(api huma.API, svc *Service) {
 
 // RegisterProtectedRoutes registers protected user routes (auth required).
 // Deprecated: Use Handler.RegisterProtectedRoutes instead.
-func RegisterProtectedRoutes(api huma.API, svc *Service) {
+func RegisterProtectedRoutes(api huma.API, svc ServiceInterface) {
 	huma.Get(api, "/users/me", func(ctx context.Context, input *struct{}) (*GetMeOutput, error) {
 		authUser, ok := appMiddleware.GetAuthUser(ctx)
 		if !ok {

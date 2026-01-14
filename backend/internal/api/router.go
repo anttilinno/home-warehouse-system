@@ -1,7 +1,6 @@
 package api
 
 import (
-	"context"
 	"time"
 
 	"github.com/danielgtaylor/huma/v2"
@@ -11,6 +10,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 
 	appMiddleware "github.com/antti/home-warehouse/go-backend/internal/api/middleware"
+	"github.com/antti/home-warehouse/go-backend/internal/api/health"
 	"github.com/antti/home-warehouse/go-backend/internal/config"
 	"github.com/antti/home-warehouse/go-backend/internal/domain/analytics"
 	"github.com/antti/home-warehouse/go-backend/internal/domain/auth/member"
@@ -43,11 +43,14 @@ import (
 func NewRouter(pool *pgxpool.Pool, cfg *config.Config) chi.Router {
 	r := chi.NewRouter()
 
+	// Create structured logger
+	logger := appMiddleware.NewLogger(cfg.DebugMode)
+
 	// Global middleware
-	r.Use(middleware.Logger)
-	r.Use(middleware.Recoverer)
-	r.Use(middleware.RequestID)
+	r.Use(middleware.RequestID)  // Must be first to generate request IDs
 	r.Use(middleware.RealIP)
+	r.Use(appMiddleware.StructuredLogger(logger))  // Structured logging with user context
+	r.Use(middleware.Recoverer)
 	r.Use(middleware.Timeout(60 * time.Second))
 	r.Use(appMiddleware.CORS)
 
@@ -74,9 +77,8 @@ func NewRouter(pool *pgxpool.Pool, cfg *config.Config) chi.Router {
 	api := humachi.New(r, humaAPIConfig)
 
 	// Health check endpoint
-	huma.Get(api, "/health", func(ctx context.Context, input *struct{}) (*HealthResponse, error) {
-		return &HealthResponse{Body: HealthBody{Status: "ok"}}, nil
-	})
+	healthHandler := health.NewHandler(pool)
+	huma.Get(api, "/health", healthHandler.Health)
 
 	// Register additional documentation routes (Redoc UI)
 	RegisterDocsRoutes(r)
@@ -243,14 +245,4 @@ func NewRouter(pool *pgxpool.Pool, cfg *config.Config) chi.Router {
 	})
 
 	return r
-}
-
-// HealthBody is the response body for health check.
-type HealthBody struct {
-	Status string `json:"status"`
-}
-
-// HealthResponse is the response for health check.
-type HealthResponse struct {
-	Body HealthBody
 }

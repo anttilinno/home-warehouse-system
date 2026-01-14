@@ -79,7 +79,8 @@ func TestCompanyRepository_FindByID(t *testing.T) {
 
 	t.Run("returns nil for non-existent company", func(t *testing.T) {
 		found, err := repo.FindByID(ctx, uuid.New(), testfixtures.TestWorkspaceID)
-		require.NoError(t, err)
+		require.Error(t, err)
+		assert.True(t, shared.IsNotFound(err))
 		assert.Nil(t, found)
 	})
 
@@ -127,7 +128,8 @@ func TestCompanyRepository_FindByName(t *testing.T) {
 
 	t.Run("returns nil for non-existent name", func(t *testing.T) {
 		found, err := repo.FindByName(ctx, testfixtures.TestWorkspaceID, "Does Not Exist Corp")
-		require.NoError(t, err)
+		require.Error(t, err)
+		assert.True(t, shared.IsNotFound(err))
 		assert.Nil(t, found)
 	})
 }
