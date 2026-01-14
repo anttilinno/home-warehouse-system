@@ -7,6 +7,7 @@ import { getMessages, setRequestLocale } from "next-intl/server";
 import { routing } from "@/i18n/routing";
 import { siteConfig } from "@/config/site";
 import { ThemeProvider } from "@/components/providers/theme-provider";
+import { AuthProvider } from "@/lib/contexts/auth-context";
 import { Toaster } from "@/components/ui/toaster";
 import { ProgressBar } from "@/components/ui/progress-bar";
 import "../globals.css";
@@ -82,8 +83,10 @@ export default async function LocaleLayout({ children, params }: Props) {
         <ThemeProvider>
           <ProgressBar />
           <NextIntlClientProvider messages={messages}>
-            {children}
-            <Toaster />
+            <AuthProvider>
+              {children}
+              <Toaster />
+            </AuthProvider>
           </NextIntlClientProvider>
         </ThemeProvider>
       </body>

@@ -23,18 +23,19 @@ export interface CategoryUpdate {
 
 export const categoriesApi = {
   list: async (workspaceId: string): Promise<Category[]> => {
-    return apiClient.get<Category[]>("/categories", workspaceId);
+    const response = await apiClient.get<{ items: Category[] }>(`/workspaces/${workspaceId}/categories`);
+    return response.items;
   },
 
   create: async (workspaceId: string, data: CategoryCreate): Promise<Category> => {
-    return apiClient.post<Category>("/categories", data, workspaceId);
+    return apiClient.post<Category>(`/workspaces/${workspaceId}/categories`, data);
   },
 
   update: async (workspaceId: string, id: string, data: CategoryUpdate): Promise<Category> => {
-    return apiClient.patch<Category>(`/categories/${id}`, data, workspaceId);
+    return apiClient.patch<Category>(`/workspaces/${workspaceId}/categories/${id}`, data);
   },
 
   delete: async (workspaceId: string, id: string): Promise<void> => {
-    return apiClient.delete(`/categories/${id}`, workspaceId);
+    return apiClient.delete(`/workspaces/${workspaceId}/categories/${id}`);
   },
 };

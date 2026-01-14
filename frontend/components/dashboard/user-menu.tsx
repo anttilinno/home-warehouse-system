@@ -2,11 +2,14 @@
 
 import { useTranslations } from "next-intl";
 import { User, LogOut } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 import { cn } from "@/lib/utils";
 import { Link } from "@/i18n/navigation";
+import { useAuth } from "@/lib/contexts/auth-context";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -22,19 +25,46 @@ interface UserMenuProps {
 
 export function UserMenu({ collapsed = false }: UserMenuProps) {
   const t = useTranslations("dashboard.userMenu");
+  const router = useRouter();
+  const { user, isLoading, logout } = useAuth();
 
-  // TODO: Get actual user data from auth context
-  const user = {
-    name: "John Doe",
-    email: "john@example.com",
-    avatar: null,
-  };
+  // Loading state
+  if (isLoading) {
+    return (
+      <Button
+        variant="ghost"
+        className={cn(
+          "relative h-auto p-2 rounded-lg",
+          collapsed ? "w-10 justify-center" : "w-full justify-start gap-3"
+        )}
+        disabled
+      >
+        <Skeleton className="h-8 w-8 rounded-full" />
+        {!collapsed && (
+          <div className="flex flex-col gap-1 items-start">
+            <Skeleton className="h-3 w-20" />
+            <Skeleton className="h-2 w-24" />
+          </div>
+        )}
+      </Button>
+    );
+  }
 
-  const initials = user.name
+  // No user (shouldn't happen in dashboard, but handle gracefully)
+  if (!user) {
+    return null;
+  }
+
+  const initials = user.full_name
     .split(" ")
     .map((n) => n[0])
     .join("")
     .toUpperCase();
+
+  const handleLogout = () => {
+    logout();
+    router.push("/login");
+  };
 
   return (
     <DropdownMenu>
@@ -47,13 +77,13 @@ export function UserMenu({ collapsed = false }: UserMenuProps) {
           )}
         >
           <Avatar className="h-8 w-8">
-            <AvatarImage src={user.avatar || undefined} alt={user.name} />
+            <AvatarImage src={undefined} alt={user.full_name} />
             <AvatarFallback className="text-xs">{initials}</AvatarFallback>
           </Avatar>
           {!collapsed && (
             <div className="flex flex-col items-start text-left">
               <span className="text-sm font-medium truncate max-w-[140px]">
-                {user.name}
+                {user.full_name}
               </span>
               <span className="text-xs text-muted-foreground truncate max-w-[140px]">
                 {user.email}
@@ -65,7 +95,7 @@ export function UserMenu({ collapsed = false }: UserMenuProps) {
       <DropdownMenuContent className="w-56" align={collapsed ? "center" : "end"} side={collapsed ? "right" : "top"} forceMount>
         <DropdownMenuLabel className="font-normal">
           <div className="flex flex-col space-y-1">
-            <p className="text-sm font-medium leading-none">{user.name}</p>
+            <p className="text-sm font-medium leading-none">{user.full_name}</p>
             <p className="text-xs leading-none text-muted-foreground">
               {user.email}
             </p>
@@ -79,7 +109,10 @@ export function UserMenu({ collapsed = false }: UserMenuProps) {
           </Link>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
-        <DropdownMenuItem className="text-destructive focus:text-destructive">
+        <DropdownMenuItem
+          className="text-destructive focus:text-destructive"
+          onClick={handleLogout}
+        >
           <LogOut className="mr-2 h-4 w-4" />
           {t("logout")}
         </DropdownMenuItem>

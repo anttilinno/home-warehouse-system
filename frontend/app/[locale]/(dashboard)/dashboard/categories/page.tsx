@@ -363,6 +363,7 @@ export default function CategoriesPage() {
             type="search"
             placeholder={t("search")}
             className="pl-8"
+            value=""
             disabled
           />
         </div>
