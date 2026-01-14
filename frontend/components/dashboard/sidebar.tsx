@@ -13,10 +13,10 @@ import {
   Users,
   BarChart3,
   Settings,
+  PackageX,
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
 import {
   Tooltip,
   TooltipContent,
@@ -43,6 +43,7 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
     { icon: HandCoins, label: t("loans"), href: "/dashboard/loans" },
     { icon: Users, label: t("borrowers"), href: "/dashboard/borrowers" },
     { icon: BarChart3, label: t("analytics"), href: "/dashboard/analytics" },
+    { icon: PackageX, label: t("outOfStock"), href: "/dashboard/out-of-stock" },
   ];
 
   const bottomItems = [

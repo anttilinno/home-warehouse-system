@@ -2,8 +2,7 @@
 
 ## Tech Stack
 
-- Python 3.14
-- uv - Python package manager
+- Go 1.25
 - bun - JavaScript runtime and package manager
 - dbmate - Database migration tool
 - [Claude Code](https://claude.ai/code) - AI coding assistant (see `.claude/CLAUDE.md` for project context)
@@ -89,10 +88,11 @@ This file is git-ignored, keeping secrets out of version control.
 
 ```
 .
-├── backend/             # Python backend (Litestar)
-│   ├── src/            # Source code
+├── backend/             # Go backend
+│   ├── cmd/server/     # Main entry point
+│   ├── internal/       # Application code
 │   ├── db/             # Database migrations
-│   └── e2e/            # End-to-end tests
+│   └── tests/          # Integration tests
 ├── docs/               # Documentation
 ├── frontend/           # Next.js frontend
 └── docker-compose.yml  # PostgreSQL + Redis

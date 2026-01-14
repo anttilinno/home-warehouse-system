@@ -110,6 +110,14 @@ type MonthlyLoanActivityResponse struct {
 	Body []MonthlyLoanActivity
 }
 
+// OutOfStockItemsRequest is the input for out of stock items
+type OutOfStockItemsRequest struct{}
+
+// OutOfStockItemsResponse is the response for out of stock items
+type OutOfStockItemsResponse struct {
+	Body []OutOfStockItem
+}
+
 // RegisterRoutes registers analytics routes with the Huma API.
 // Note: These routes are registered within a workspace-scoped router group,
 // so paths are relative to /workspaces/{workspace_id}.
@@ -203,6 +211,15 @@ func (h *Handler) RegisterRoutes(api huma.API) {
 		Description: "Returns loan activity per month for the specified time period.",
 		Tags:        []string{"Analytics"},
 	}, h.GetMonthlyLoanActivity)
+
+	huma.Register(api, huma.Operation{
+		OperationID: "get-out-of-stock-items",
+		Method:      http.MethodGet,
+		Path:        "/analytics/out-of-stock",
+		Summary:     "Get out of stock items",
+		Description: "Returns items that are completely out of stock (quantity = 0) and need restocking.",
+		Tags:        []string{"Analytics"},
+	}, h.GetOutOfStockItems)
 }
 
 // GetDashboardStats handles the dashboard stats request
@@ -334,4 +351,17 @@ func (h *Handler) GetMonthlyLoanActivity(ctx context.Context, input *MonthlyLoan
 		return nil, huma.Error500InternalServerError("failed to fetch monthly loan activity", err)
 	}
 	return &MonthlyLoanActivityResponse{Body: activity}, nil
+}
+
+// GetOutOfStockItems handles the out of stock items request
+func (h *Handler) GetOutOfStockItems(ctx context.Context, input *OutOfStockItemsRequest) (*OutOfStockItemsResponse, error) {
+	workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
+	if !ok {
+		return nil, huma.Error401Unauthorized("workspace context required")
+	}
+	items, err := h.svc.GetOutOfStockItems(ctx, workspaceID)
+	if err != nil {
+		return nil, huma.Error500InternalServerError("failed to fetch out of stock items", err)
+	}
+	return &OutOfStockItemsResponse{Body: items}, nil
 }

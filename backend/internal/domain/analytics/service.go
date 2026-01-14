@@ -21,6 +21,7 @@ type Repository interface {
 	GetItemsByStatus(ctx context.Context, workspaceID uuid.UUID) ([]queries.GetItemsByStatusRow, error)
 	GetTopBorrowers(ctx context.Context, workspaceID uuid.UUID, limit int32) ([]queries.GetTopBorrowersRow, error)
 	GetMonthlyLoanActivity(ctx context.Context, workspaceID uuid.UUID, since time.Time) ([]queries.GetMonthlyLoanActivityRow, error)
+	GetOutOfStockItems(ctx context.Context, workspaceID uuid.UUID) ([]queries.GetOutOfStockItemsRow, error)
 }
 
 // ServiceInterface defines the interface for analytics service operations
@@ -35,6 +36,7 @@ type ServiceInterface interface {
 	GetTopBorrowers(ctx context.Context, workspaceID uuid.UUID, limit int32) ([]TopBorrower, error)
 	GetMonthlyLoanActivity(ctx context.Context, workspaceID uuid.UUID, since time.Time) ([]MonthlyLoanActivity, error)
 	GetAnalyticsSummary(ctx context.Context, workspaceID uuid.UUID) (*AnalyticsSummary, error)
+	GetOutOfStockItems(ctx context.Context, workspaceID uuid.UUID) ([]OutOfStockItem, error)
 }
 
 // Service handles analytics operations
@@ -315,6 +317,33 @@ func (s *Service) GetAnalyticsSummary(ctx context.Context, workspaceID uuid.UUID
 		StatusBreakdown:    statusBreakdown,
 		TopBorrowers:       topBorrowers,
 	}, nil
+}
+
+// GetOutOfStockItems returns items that are completely out of stock (quantity = 0)
+func (s *Service) GetOutOfStockItems(ctx context.Context, workspaceID uuid.UUID) ([]OutOfStockItem, error) {
+	rows, err := s.repo.GetOutOfStockItems(ctx, workspaceID)
+	if err != nil {
+		return nil, err
+	}
+
+	result := make([]OutOfStockItem, len(rows))
+	for i, row := range rows {
+		var categoryID *uuid.UUID
+		if row.CategoryID.Valid {
+			id := uuid.UUID(row.CategoryID.Bytes)
+			categoryID = &id
+		}
+
+		result[i] = OutOfStockItem{
+			ID:            row.ID,
+			Name:          row.Name,
+			SKU:           row.Sku,
+			MinStockLevel: row.MinStockLevel,
+			CategoryID:    categoryID,
+			CategoryName:  row.CategoryName,
+		}
+	}
+	return result, nil
 }
 
 // Helper to convert time to pgtype.Timestamptz

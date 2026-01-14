@@ -281,6 +281,54 @@ func (q *Queries) GetLowStockItems(ctx context.Context, workspaceID uuid.UUID) (
 	return items, nil
 }
 
+const getOutOfStockItems = `-- name: GetOutOfStockItems :many
+SELECT i.id, i.name, i.sku, i.min_stock_level, c.id as category_id, c.name as category_name
+FROM warehouse.items i
+LEFT JOIN warehouse.inventory inv ON i.id = inv.item_id AND inv.is_archived = false
+LEFT JOIN warehouse.categories c ON i.category_id = c.id
+WHERE i.workspace_id = $1 AND i.is_archived = false
+GROUP BY i.id, i.name, i.sku, i.min_stock_level, c.id, c.name
+HAVING COALESCE(SUM(inv.quantity), 0) = 0
+`
+
+type GetOutOfStockItemsRow struct {
+	ID            uuid.UUID   `json:"id"`
+	Name          string      `json:"name"`
+	Sku           string      `json:"sku"`
+	MinStockLevel int32       `json:"min_stock_level"`
+	CategoryID    pgtype.UUID `json:"category_id"`
+	CategoryName  *string     `json:"category_name"`
+}
+
+// Returns items that are completely out of stock (total quantity = 0)
+// These are consumables that need restocking
+func (q *Queries) GetOutOfStockItems(ctx context.Context, workspaceID uuid.UUID) ([]GetOutOfStockItemsRow, error) {
+	rows, err := q.db.Query(ctx, getOutOfStockItems, workspaceID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []GetOutOfStockItemsRow{}
+	for rows.Next() {
+		var i GetOutOfStockItemsRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.Sku,
+			&i.MinStockLevel,
+			&i.CategoryID,
+			&i.CategoryName,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getTotalQuantityByItem = `-- name: GetTotalQuantityByItem :one
 SELECT COALESCE(SUM(quantity), 0)::int as total
 FROM warehouse.inventory

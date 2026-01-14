@@ -88,3 +88,8 @@ func (r *AnalyticsRepository) GetMonthlyLoanActivity(ctx context.Context, worksp
 		},
 	})
 }
+
+// GetOutOfStockItems returns items that are completely out of stock
+func (r *AnalyticsRepository) GetOutOfStockItems(ctx context.Context, workspaceID uuid.UUID) ([]queries.GetOutOfStockItemsRow, error) {
+	return r.q.GetOutOfStockItems(ctx, workspaceID)
+}

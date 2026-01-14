@@ -78,6 +78,14 @@ func (m *MockService) GetAnalyticsSummary(ctx context.Context, workspaceID uuid.
 	return args.Get(0).(*analytics.AnalyticsSummary), args.Error(1)
 }
 
+func (m *MockService) GetOutOfStockItems(ctx context.Context, workspaceID uuid.UUID) ([]analytics.OutOfStockItem, error) {
+	args := m.Called(ctx, workspaceID)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).([]analytics.OutOfStockItem), args.Error(1)
+}
+
 // Tests
 
 func TestAnalyticsHandler_GetDashboardStats(t *testing.T) {
@@ -486,6 +494,64 @@ func TestAnalyticsHandler_GetMonthlyLoanActivity(t *testing.T) {
 			Return([]analytics.MonthlyLoanActivity{}, fmt.Errorf("test error")).Once()
 
 		rec := setup.Get("/analytics/loans/monthly")
+
+		testutil.AssertStatus(t, rec, http.StatusInternalServerError)
+		mockSvc.AssertExpectations(t)
+	})
+}
+
+func TestAnalyticsHandler_GetOutOfStockItems(t *testing.T) {
+	setup := testutil.NewHandlerTestSetup()
+	mockSvc := new(MockService)
+	handler := analytics.NewHandler(mockSvc)
+	handler.RegisterRoutes(setup.API)
+
+	t.Run("gets out of stock items successfully", func(t *testing.T) {
+		categoryID := uuid.New()
+		categoryName := "Electronics"
+		items := []analytics.OutOfStockItem{
+			{
+				ID:            uuid.New(),
+				Name:          "AA Batteries",
+				SKU:           "BAT-AA-001",
+				MinStockLevel: 10,
+				CategoryID:    &categoryID,
+				CategoryName:  &categoryName,
+			},
+			{
+				ID:            uuid.New(),
+				Name:          "USB Cable",
+				SKU:           "CBL-USB-001",
+				MinStockLevel: 5,
+				CategoryID:    nil,
+				CategoryName:  nil,
+			},
+		}
+
+		mockSvc.On("GetOutOfStockItems", mock.Anything, setup.WorkspaceID).
+			Return(items, nil).Once()
+
+		rec := setup.Get("/analytics/out-of-stock")
+
+		testutil.AssertStatus(t, rec, http.StatusOK)
+		mockSvc.AssertExpectations(t)
+	})
+
+	t.Run("returns empty list when no out of stock items", func(t *testing.T) {
+		mockSvc.On("GetOutOfStockItems", mock.Anything, setup.WorkspaceID).
+			Return([]analytics.OutOfStockItem{}, nil).Once()
+
+		rec := setup.Get("/analytics/out-of-stock")
+
+		testutil.AssertStatus(t, rec, http.StatusOK)
+		mockSvc.AssertExpectations(t)
+	})
+
+	t.Run("handles service error", func(t *testing.T) {
+		mockSvc.On("GetOutOfStockItems", mock.Anything, setup.WorkspaceID).
+			Return(nil, fmt.Errorf("test error")).Once()
+
+		rec := setup.Get("/analytics/out-of-stock")
 
 		testutil.AssertStatus(t, rec, http.StatusInternalServerError)
 		mockSvc.AssertExpectations(t)

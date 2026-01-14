@@ -47,7 +47,7 @@
 - [x] Tracking & alerts (partial)
   - [x] Total value: sum of purchase_price per location/workspace
   - [x] Activity log: who changed what, when. So there is no need for soft delete
-  - [ ] Consumables list: items needing restocking (quantity = 0)
+  - [x] Consumables list: items needing restocking (quantity = 0)
   - [x] Low stock alerts: notify when quantity < threshold
   - [x] Expiration alerts: items expiring soon (expiration_date field)
   - [x] Warranty expiring: reminder before warranty ends (warranty_expires field)
@@ -87,6 +87,10 @@
   - Progress events: rows processed, errors so far, completion
   - Import history/audit log per workspace
   - Email notification on import completion (optional)
+- [ ] Database seeder CLI
+  - Generate test data for development
+  - Seed types: expiring items, warranty alerts, low-stock, overdue loans, location hierarchy
+  - Command: `mise run seed <type|all>`
 
 ## Phase 3
 

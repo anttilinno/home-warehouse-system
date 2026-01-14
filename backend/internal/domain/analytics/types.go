@@ -84,6 +84,16 @@ type MonthlyLoanActivity struct {
 	LoansReturned int32     `json:"loans_returned"`
 }
 
+// OutOfStockItem represents an item that is completely out of stock
+type OutOfStockItem struct {
+	ID            uuid.UUID  `json:"id"`
+	Name          string     `json:"name"`
+	SKU           string     `json:"sku"`
+	MinStockLevel int32      `json:"min_stock_level"`
+	CategoryID    *uuid.UUID `json:"category_id,omitempty"`
+	CategoryName  *string    `json:"category_name,omitempty"`
+}
+
 // AnalyticsSummary contains a complete analytics summary
 type AnalyticsSummary struct {
 	Dashboard           DashboardStats           `json:"dashboard"`

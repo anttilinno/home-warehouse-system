@@ -99,6 +99,7 @@
       "loans": "Laenud",
       "borrowers": "Laenajad",
       "analytics": "Analüütika",
+      "outOfStock": "Otsas",
       "settings": "Seaded",
       "collapse": "Ahenda"
     },
@@ -154,6 +155,21 @@
     "subcategories": "{count} alamkategooriat",
     "search": "Otsi kategooriaid...",
     "noResults": "Kategooriaid ei leitud"
+  },
+  "outOfStock": {
+    "title": "Otsas",
+    "subtitle": "Esemed, mis vajavad täiendamist",
+    "empty": "Kõik esemed on laos",
+    "emptyDescription": "Suurepärane! Ükski ese pole praegu otsas.",
+    "search": "Otsi esemeid...",
+    "noResults": "Ühtegi eset ei leitud",
+    "count": "{count} eset on otsas",
+    "sku": "SKU",
+    "name": "Nimi",
+    "category": "Kategooria",
+    "minStock": "Min. varu",
+    "uncategorized": "Kategoriseerimata",
+    "viewItem": "Vaata eset"
   },
   "auth": {
     "signIn": "Logi sisse",

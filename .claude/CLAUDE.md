@@ -8,22 +8,23 @@ Home Warehouse System - a multi-tenant home inventory management system for trac
 
 ## Tech Stack
 
-- **Backend**: Python 3.14, Litestar framework, Granian ASGI server
+- **Backend**: Go 1.25, Chi router, sqlc for type-safe SQL
 - **Frontend**: Next.js 16, React 19, shadcn/ui, Tailwind CSS 4, PWA (Serwist)
 - **Database**: PostgreSQL with dbmate migrations
-- **Package Management**: uv (Python), bun (JavaScript)
+- **Package Management**: bun (JavaScript)
 - **Tool Management**: mise
 
-See `backend/CLAUDE.md` and `frontend/CLAUDE.md` for detailed documentation.
+See `frontend/CLAUDE.md` for detailed frontend documentation.
 
 ## Project Structure
 
 ```
 .
-├── backend/              # Python backend (Litestar) - see backend/CLAUDE.md
-│   ├── src/             # Source code
+├── backend/              # Go backend
+│   ├── cmd/server/      # Main entry point
+│   ├── internal/        # Application code (domain, handlers, middleware)
 │   ├── db/migrations/   # Database migrations (dbmate)
-│   └── e2e/             # End-to-end tests
+│   └── tests/           # Integration tests
 ├── frontend/            # Next.js frontend - see frontend/CLAUDE.md
 └── docker-compose.yml   # PostgreSQL + Redis services
 ```
@@ -43,14 +44,15 @@ mise run migrate-new    # Create new migration
 mise run db-reset       # Drop and recreate database with fresh migrations
 mise run db-fresh       # Complete reset including data volume
 
-# Backend
-mise run dev            # Run backend dev server (with auto-reload)
-mise run test           # Run all tests (99% coverage)
+# Backend (Go)
+mise run dev            # Run backend dev server (with hot reload via air)
+mise run build          # Build backend binary
+mise run test           # Run all tests
 mise run test-unit      # Run unit tests only
-mise run test-e2e       # Run E2E tests
-mise run lint           # Run linter
-mise run format         # Format code
-mise run rq-worker      # Run RQ worker for loan jobs
+mise run test-integration # Run integration tests
+mise run lint           # Run golangci-lint
+mise run fmt            # Format Go code
+mise run sqlc           # Generate sqlc code from queries
 
 # Frontend
 mise run fe-install     # Install frontend dependencies
@@ -98,8 +100,8 @@ All tables use UUIDv7 for primary keys. See DATABASE.md for full schema document
 
 ```bash
 # Database
-DATABASE_URL=postgresql+asyncpg://wh:wh@localhost:5432/warehouse_dev
-DBMATE_DATABASE_URL=postgresql://wh:wh@localhost:5432/warehouse_dev
+GO_DATABASE_URL=postgresql://wh:wh@localhost:5432/warehouse_dev?sslmode=disable
+DBMATE_DATABASE_URL=postgresql://wh:wh@localhost:5432/warehouse_dev?sslmode=disable
 
 # Backend
 JWT_SECRET=your-secret-key

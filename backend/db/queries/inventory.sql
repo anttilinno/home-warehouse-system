@@ -96,3 +96,14 @@ LEFT JOIN warehouse.inventory inv ON i.id = inv.item_id AND inv.is_archived = fa
 WHERE i.workspace_id = $1 AND i.is_archived = false AND i.min_stock_level > 0
 GROUP BY i.id, i.name, i.min_stock_level
 HAVING COALESCE(SUM(inv.quantity), 0) < i.min_stock_level;
+
+-- name: GetOutOfStockItems :many
+-- Returns items that are completely out of stock (total quantity = 0)
+-- These are consumables that need restocking
+SELECT i.id, i.name, i.sku, i.min_stock_level, c.id as category_id, c.name as category_name
+FROM warehouse.items i
+LEFT JOIN warehouse.inventory inv ON i.id = inv.item_id AND inv.is_archived = false
+LEFT JOIN warehouse.categories c ON i.category_id = c.id
+WHERE i.workspace_id = $1 AND i.is_archived = false
+GROUP BY i.id, i.name, i.sku, i.min_stock_level, c.id, c.name
+HAVING COALESCE(SUM(inv.quantity), 0) = 0;

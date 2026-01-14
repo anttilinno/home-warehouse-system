@@ -99,6 +99,7 @@
       "loans": "Loans",
       "borrowers": "Borrowers",
       "analytics": "Analytics",
+      "outOfStock": "Out of Stock",
       "settings": "Settings",
       "collapse": "Collapse"
     },
@@ -154,6 +155,21 @@
     "subcategories": "{count} subcategories",
     "search": "Search categories...",
     "noResults": "No categories found"
+  },
+  "outOfStock": {
+    "title": "Out of Stock",
+    "subtitle": "Items that need restocking",
+    "empty": "All items are in stock",
+    "emptyDescription": "Great news! No items are currently out of stock.",
+    "search": "Search items...",
+    "noResults": "No items match your search",
+    "count": "{count} items out of stock",
+    "sku": "SKU",
+    "name": "Name",
+    "category": "Category",
+    "minStock": "Min. Stock",
+    "uncategorized": "Uncategorized",
+    "viewItem": "View Item"
   },
   "auth": {
     "signIn": "Sign in",

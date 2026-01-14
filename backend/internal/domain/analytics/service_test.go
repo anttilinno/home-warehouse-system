@@ -85,6 +85,14 @@ func (m *MockRepository) GetMonthlyLoanActivity(ctx context.Context, workspaceID
 	return args.Get(0).([]queries.GetMonthlyLoanActivityRow), args.Error(1)
 }
 
+func (m *MockRepository) GetOutOfStockItems(ctx context.Context, workspaceID uuid.UUID) ([]queries.GetOutOfStockItemsRow, error) {
+	args := m.Called(ctx, workspaceID)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).([]queries.GetOutOfStockItemsRow), args.Error(1)
+}
+
 // ============================================================================
 // Service Tests
 // ============================================================================
@@ -1075,4 +1083,120 @@ func TestAnalyticsSummary(t *testing.T) {
 	assert.Empty(t, summary.ConditionBreakdown)
 	assert.Empty(t, summary.StatusBreakdown)
 	assert.Empty(t, summary.TopBorrowers)
+}
+
+func TestService_GetOutOfStockItems(t *testing.T) {
+	workspaceID := uuid.New()
+	itemID1 := uuid.New()
+	itemID2 := uuid.New()
+	categoryID := uuid.New()
+
+	tests := []struct {
+		testName  string
+		mockSetup func(*MockRepository)
+		wantErr   bool
+		wantCount int
+	}{
+		{
+			testName: "successful get out of stock items",
+			mockSetup: func(m *MockRepository) {
+				categoryName := "Electronics"
+				m.On("GetOutOfStockItems", mock.Anything, workspaceID).Return([]queries.GetOutOfStockItemsRow{
+					{
+						ID:            itemID1,
+						Name:          "AA Batteries",
+						Sku:           "BAT-AA-001",
+						MinStockLevel: 10,
+						CategoryID:    pgtype.UUID{Bytes: categoryID, Valid: true},
+						CategoryName:  &categoryName,
+					},
+					{
+						ID:            itemID2,
+						Name:          "USB Cable",
+						Sku:           "CBL-USB-001",
+						MinStockLevel: 5,
+						CategoryID:    pgtype.UUID{Valid: false},
+						CategoryName:  nil,
+					},
+				}, nil)
+			},
+			wantErr:   false,
+			wantCount: 2,
+		},
+		{
+			testName: "empty list when no out of stock items",
+			mockSetup: func(m *MockRepository) {
+				m.On("GetOutOfStockItems", mock.Anything, workspaceID).Return([]queries.GetOutOfStockItemsRow{}, nil)
+			},
+			wantErr:   false,
+			wantCount: 0,
+		},
+		{
+			testName: "repository returns error",
+			mockSetup: func(m *MockRepository) {
+				m.On("GetOutOfStockItems", mock.Anything, workspaceID).Return(nil, errors.New("database error"))
+			},
+			wantErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.testName, func(t *testing.T) {
+			mockRepo := new(MockRepository)
+			tt.mockSetup(mockRepo)
+			service := NewService(mockRepo)
+
+			items, err := service.GetOutOfStockItems(context.Background(), workspaceID)
+
+			if tt.wantErr {
+				assert.Error(t, err)
+				assert.Nil(t, items)
+			} else {
+				assert.NoError(t, err)
+				assert.Len(t, items, tt.wantCount)
+				if tt.wantCount > 0 {
+					// Verify first item has correct fields
+					assert.Equal(t, itemID1, items[0].ID)
+					assert.Equal(t, "AA Batteries", items[0].Name)
+					assert.Equal(t, "BAT-AA-001", items[0].SKU)
+					assert.Equal(t, int32(10), items[0].MinStockLevel)
+					assert.NotNil(t, items[0].CategoryID)
+					assert.Equal(t, categoryID, *items[0].CategoryID)
+					assert.NotNil(t, items[0].CategoryName)
+					assert.Equal(t, "Electronics", *items[0].CategoryName)
+
+					// Verify second item has nil category
+					assert.Equal(t, itemID2, items[1].ID)
+					assert.Nil(t, items[1].CategoryID)
+					assert.Nil(t, items[1].CategoryName)
+				}
+			}
+
+			mockRepo.AssertExpectations(t)
+		})
+	}
+}
+
+func TestOutOfStockItem(t *testing.T) {
+	itemID := uuid.New()
+	categoryID := uuid.New()
+	categoryName := "Electronics"
+
+	item := OutOfStockItem{
+		ID:            itemID,
+		Name:          "Test Item",
+		SKU:           "TEST-001",
+		MinStockLevel: 5,
+		CategoryID:    &categoryID,
+		CategoryName:  &categoryName,
+	}
+
+	assert.Equal(t, itemID, item.ID)
+	assert.Equal(t, "Test Item", item.Name)
+	assert.Equal(t, "TEST-001", item.SKU)
+	assert.Equal(t, int32(5), item.MinStockLevel)
+	assert.NotNil(t, item.CategoryID)
+	assert.Equal(t, categoryID, *item.CategoryID)
+	assert.NotNil(t, item.CategoryName)
+	assert.Equal(t, "Electronics", *item.CategoryName)
 }
