@@ -35,7 +35,7 @@ export interface BulkActionBarProps {
  * </BulkActionBar>
  * ```
  */
-export function BulkActionBar({
+export const BulkActionBar = React.memo(function BulkActionBar({
   selectedCount,
   onClear,
   children,
@@ -100,4 +100,4 @@ export function BulkActionBar({
       </div>
     </div>
   );
-}
+});

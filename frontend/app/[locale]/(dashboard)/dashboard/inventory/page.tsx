@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { useTranslations } from "next-intl";
+import { useVirtualizer } from "@tanstack/react-virtual";
 import {
   Plus,
   Search,
@@ -77,6 +78,7 @@ import { useInfiniteScroll } from "@/lib/hooks/use-infinite-scroll";
 import { useBulkSelection } from "@/lib/hooks/use-bulk-selection";
 import { useFilters } from "@/lib/hooks/use-filters";
 import { useKeyboardShortcuts } from "@/lib/hooks/use-keyboard-shortcuts";
+import { useDebouncedValue } from "@/lib/hooks/use-debounced-value";
 import { inventoryApi, itemsApi, locationsApi, containersApi, importExportApi } from "@/lib/api";
 import type { Inventory, InventoryCreate, InventoryCondition, InventoryStatus } from "@/lib/types/inventory";
 import type { Item } from "@/lib/types/items";
@@ -430,7 +432,11 @@ export default function InventoryPage() {
   const [locations, setLocations] = useState<Location[]>([]);
   const [containers, setContainers] = useState<Container[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
+  const debouncedSearchQuery = useDebouncedValue(searchQuery, 300);
   const [showArchived, setShowArchived] = useState(false);
+
+  // Virtual scrolling
+  const parentRef = useRef<HTMLDivElement>(null);
 
   // Enhanced filters
   const {
@@ -513,8 +519,8 @@ export default function InventoryPage() {
       if (showArchived && !inventory.is_archived) return false;
 
       // Filter by search query
-      if (searchQuery) {
-        const query = searchQuery.toLowerCase();
+      if (debouncedSearchQuery) {
+        const query = debouncedSearchQuery.toLowerCase();
         const item = items.find(i => i.id === inventory.item_id);
         const location = locations.find(l => l.id === inventory.location_id);
         const matchesSearch =
@@ -567,7 +573,7 @@ export default function InventoryPage() {
 
       return true;
     });
-  }, [inventories, showArchived, searchQuery, items, locations, activeFilters]);
+  }, [inventories, showArchived, debouncedSearchQuery, items, locations, activeFilters]);
 
   // Flatten inventory data for sorting (add item name, location name, container name)
   const flattenedInventories = useMemo(() => {
@@ -582,6 +588,14 @@ export default function InventoryPage() {
 
   // Sort inventories
   const { sortedData: sortedInventories, requestSort, getSortDirection } = useTableSort(flattenedInventories, "item_name", "asc");
+
+  // Virtual scrolling setup
+  const virtualizer = useVirtualizer({
+    count: sortedInventories.length,
+    getScrollElement: () => parentRef.current,
+    estimateSize: () => 85,
+    overscan: 5,
+  });
 
   // Bulk selection
   const {
@@ -992,161 +1006,194 @@ export default function InventoryPage() {
               </EmptyState>
             ) : (
               <div className="rounded-lg border">
-                <Table aria-label="Inventory items">
-                  <caption className="sr-only">
-                    List of inventory items with quantity, location, condition, and status information.
-                    Currently showing {sortedInventories.length} {sortedInventories.length === 1 ? "entry" : "entries"}.
-                  </caption>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="w-[50px]">
-                        <Checkbox
-                          checked={isAllSelected(sortedInventories.map((i) => i.id))}
-                          onCheckedChange={(checked) => {
-                            if (checked) {
-                              selectAll(sortedInventories.map((i) => i.id));
-                            } else {
-                              clearSelection();
-                            }
-                          }}
-                          aria-label="Select all inventory"
-                        />
-                      </TableHead>
-                      <SortableTableHead
-                        sortDirection={getSortDirection("item_name")}
-                        onSort={() => requestSort("item_name")}
-                      >
-                        Item
-                      </SortableTableHead>
-                      <SortableTableHead
-                        sortDirection={getSortDirection("location_name")}
-                        onSort={() => requestSort("location_name")}
-                      >
-                        Location
-                      </SortableTableHead>
-                      <SortableTableHead
-                        sortDirection={getSortDirection("quantity")}
-                        onSort={() => requestSort("quantity")}
-                      >
-                        Qty
-                      </SortableTableHead>
-                      <SortableTableHead
-                        sortDirection={getSortDirection("condition")}
-                        onSort={() => requestSort("condition")}
-                      >
-                        Condition
-                      </SortableTableHead>
-                      <SortableTableHead
-                        sortDirection={getSortDirection("status")}
-                        onSort={() => requestSort("status")}
-                      >
-                        Status
-                      </SortableTableHead>
-                      <TableHead className="w-[50px]" />
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {sortedInventories.map((inventory) => (
-                      <TableRow key={inventory.id}>
-                        <TableCell>
+                <div className="overflow-x-auto">
+                  <Table aria-label="Inventory items">
+                    <caption className="sr-only">
+                      List of inventory items with quantity, location, condition, and status information.
+                      Currently showing {sortedInventories.length} {sortedInventories.length === 1 ? "entry" : "entries"}.
+                    </caption>
+                    <TableHeader className="sticky top-0 z-10 bg-background">
+                      <TableRow>
+                        <TableHead className="w-[50px]">
                           <Checkbox
-                            checked={isSelected(inventory.id)}
-                            onCheckedChange={() => toggleSelection(inventory.id)}
-                            aria-label={`Select ${getItemName(inventory.item_id)}`}
+                            checked={isAllSelected(sortedInventories.map((i) => i.id))}
+                            onCheckedChange={(checked) => {
+                              if (checked) {
+                                selectAll(sortedInventories.map((i) => i.id));
+                              } else {
+                                clearSelection();
+                              }
+                            }}
+                            aria-label="Select all inventory"
                           />
-                        </TableCell>
-                        <TableCell>
-                          <div>
-                            <div className="font-medium">{getItemName(inventory.item_id)}</div>
-                            <div className="text-sm text-muted-foreground font-mono">
-                              {getItemSKU(inventory.item_id)}
-                            </div>
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-2">
-                            <MapPin className="h-4 w-4 text-muted-foreground" />
-                            <div>
-                              <div>{getLocationName(inventory.location_id)}</div>
-                              {inventory.container_id && (
-                                <div className="text-sm text-muted-foreground flex items-center gap-1">
-                                  <Box className="h-3 w-3" />
-                                  {getContainerName(inventory.container_id)}
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <InlineEditCell
-                            value={inventory.quantity.toString()}
-                            onSave={(newValue) =>
-                              handleUpdateQuantity(inventory.id, newValue)
-                            }
-                            type="number"
-                            placeholder="0"
-                            className="font-medium"
-                          />
-                        </TableCell>
-                        <TableCell>
-                          <InlineEditSelect
-                            value={inventory.condition}
-                            options={CONDITION_OPTIONS}
-                            onSave={(newValue) =>
-                              handleUpdateCondition(inventory.id, newValue)
-                            }
-                            renderValue={(value, option) => (
-                              <Badge variant="outline">{option?.label || value}</Badge>
-                            )}
-                          />
-                        </TableCell>
-                        <TableCell>
-                          <InlineEditSelect
-                            value={inventory.status}
-                            options={STATUS_OPTIONS}
-                            onSave={(newValue) =>
-                              handleUpdateStatus(inventory.id, newValue)
-                            }
-                            renderValue={(value) => <StatusBadge status={value as InventoryStatus} />}
-                          />
-                        </TableCell>
-                        <TableCell>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="icon" aria-label={`Actions for ${getItemName(inventory.item_id)}`}>
-                                <MoreHorizontal className="h-4 w-4" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuItem onClick={() => toast.info("Edit functionality coming soon")}>
-                                <Pencil className="mr-2 h-4 w-4" />
-                                Edit
-                              </DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => toast.info("Move functionality coming soon")}>
-                                <Move className="mr-2 h-4 w-4" />
-                                Move
-                              </DropdownMenuItem>
-                              <DropdownMenuSeparator />
-                              <DropdownMenuItem onClick={() => handleArchive(inventory)}>
-                                {inventory.is_archived ? (
-                                  <>
-                                    <ArchiveRestore className="mr-2 h-4 w-4" />
-                                    Restore
-                                  </>
-                                ) : (
-                                  <>
-                                    <Archive className="mr-2 h-4 w-4" />
-                                    Archive
-                                  </>
-                                )}
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </TableCell>
+                        </TableHead>
+                        <SortableTableHead
+                          sortDirection={getSortDirection("item_name")}
+                          onSort={() => requestSort("item_name")}
+                        >
+                          Item
+                        </SortableTableHead>
+                        <SortableTableHead
+                          sortDirection={getSortDirection("location_name")}
+                          onSort={() => requestSort("location_name")}
+                        >
+                          Location
+                        </SortableTableHead>
+                        <SortableTableHead
+                          sortDirection={getSortDirection("quantity")}
+                          onSort={() => requestSort("quantity")}
+                        >
+                          Qty
+                        </SortableTableHead>
+                        <SortableTableHead
+                          sortDirection={getSortDirection("condition")}
+                          onSort={() => requestSort("condition")}
+                        >
+                          Condition
+                        </SortableTableHead>
+                        <SortableTableHead
+                          sortDirection={getSortDirection("status")}
+                          onSort={() => requestSort("status")}
+                        >
+                          Status
+                        </SortableTableHead>
+                        <TableHead className="w-[50px]" />
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                    </TableHeader>
+                  </Table>
+                </div>
+
+                {/* Virtual Scrolling Container */}
+                <div
+                  ref={parentRef}
+                  className="overflow-auto"
+                  style={{ height: '600px' }}
+                >
+                  <div
+                    style={{
+                      height: `${virtualizer.getTotalSize()}px`,
+                      width: '100%',
+                      position: 'relative',
+                    }}
+                  >
+                    <Table>
+                      <TableBody>
+                        {virtualizer.getVirtualItems().map((virtualItem) => {
+                          const inventory = sortedInventories[virtualItem.index];
+                          return (
+                            <TableRow
+                              key={inventory.id}
+                              style={{
+                                position: 'absolute',
+                                top: 0,
+                                left: 0,
+                                width: '100%',
+                                height: `${virtualItem.size}px`,
+                                transform: `translateY(${virtualItem.start}px)`,
+                              }}
+                            >
+                              <TableCell>
+                                <Checkbox
+                                  checked={isSelected(inventory.id)}
+                                  onCheckedChange={() => toggleSelection(inventory.id)}
+                                  aria-label={`Select ${getItemName(inventory.item_id)}`}
+                                />
+                              </TableCell>
+                              <TableCell>
+                                <div>
+                                  <div className="font-medium">{getItemName(inventory.item_id)}</div>
+                                  <div className="text-sm text-muted-foreground font-mono">
+                                    {getItemSKU(inventory.item_id)}
+                                  </div>
+                                </div>
+                              </TableCell>
+                              <TableCell>
+                                <div className="flex items-center gap-2">
+                                  <MapPin className="h-4 w-4 text-muted-foreground" />
+                                  <div>
+                                    <div>{getLocationName(inventory.location_id)}</div>
+                                    {inventory.container_id && (
+                                      <div className="text-sm text-muted-foreground flex items-center gap-1">
+                                        <Box className="h-3 w-3" />
+                                        {getContainerName(inventory.container_id)}
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                              </TableCell>
+                              <TableCell>
+                                <InlineEditCell
+                                  value={inventory.quantity.toString()}
+                                  onSave={(newValue) =>
+                                    handleUpdateQuantity(inventory.id, newValue)
+                                  }
+                                  type="number"
+                                  placeholder="0"
+                                  className="font-medium"
+                                />
+                              </TableCell>
+                              <TableCell>
+                                <InlineEditSelect
+                                  value={inventory.condition}
+                                  options={CONDITION_OPTIONS}
+                                  onSave={(newValue) =>
+                                    handleUpdateCondition(inventory.id, newValue)
+                                  }
+                                  renderValue={(value, option) => (
+                                    <Badge variant="outline">{option?.label || value}</Badge>
+                                  )}
+                                />
+                              </TableCell>
+                              <TableCell>
+                                <InlineEditSelect
+                                  value={inventory.status}
+                                  options={STATUS_OPTIONS}
+                                  onSave={(newValue) =>
+                                    handleUpdateStatus(inventory.id, newValue)
+                                  }
+                                  renderValue={(value) => <StatusBadge status={value as InventoryStatus} />}
+                                />
+                              </TableCell>
+                              <TableCell>
+                                <DropdownMenu>
+                                  <DropdownMenuTrigger asChild>
+                                    <Button variant="ghost" size="icon" aria-label={`Actions for ${getItemName(inventory.item_id)}`}>
+                                      <MoreHorizontal className="h-4 w-4" />
+                                    </Button>
+                                  </DropdownMenuTrigger>
+                                  <DropdownMenuContent align="end">
+                                    <DropdownMenuItem onClick={() => toast.info("Edit functionality coming soon")}>
+                                      <Pencil className="mr-2 h-4 w-4" />
+                                      Edit
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem onClick={() => toast.info("Move functionality coming soon")}>
+                                      <Move className="mr-2 h-4 w-4" />
+                                      Move
+                                    </DropdownMenuItem>
+                                    <DropdownMenuSeparator />
+                                    <DropdownMenuItem onClick={() => handleArchive(inventory)}>
+                                      {inventory.is_archived ? (
+                                        <>
+                                          <ArchiveRestore className="mr-2 h-4 w-4" />
+                                          Restore
+                                        </>
+                                      ) : (
+                                        <>
+                                          <Archive className="mr-2 h-4 w-4" />
+                                          Archive
+                                        </>
+                                      )}
+                                    </DropdownMenuItem>
+                                  </DropdownMenuContent>
+                                </DropdownMenu>
+                              </TableCell>
+                            </TableRow>
+                          );
+                        })}
+                      </TableBody>
+                    </Table>
+                  </div>
+                </div>
               </div>
             )}
 

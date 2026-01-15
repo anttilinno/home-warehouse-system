@@ -76,6 +76,7 @@ import { useWorkspace } from "@/lib/hooks/use-workspace";
 import { useTableSort } from "@/lib/hooks/use-table-sort";
 import { useInfiniteScroll } from "@/lib/hooks/use-infinite-scroll";
 import { useBulkSelection } from "@/lib/hooks/use-bulk-selection";
+import { useDebouncedValue } from "@/lib/hooks/use-debounced-value";
 import { borrowersApi, importExportApi } from "@/lib/api";
 import type { Borrower, BorrowerCreate, BorrowerUpdate } from "@/lib/types/borrowers";
 import { exportToCSV, generateFilename, type ColumnDefinition } from "@/lib/utils/csv-export";
@@ -127,6 +128,7 @@ export default function BorrowersPage() {
   const { workspaceId, isLoading: workspaceLoading } = useWorkspace();
 
   const [searchQuery, setSearchQuery] = useState("");
+  const debouncedSearchQuery = useDebouncedValue(searchQuery, 300);
 
   // Dialog state
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -170,8 +172,8 @@ export default function BorrowersPage() {
       // Filter archived
       if (borrower.is_archived) return false;
 
-      if (searchQuery) {
-        const query = searchQuery.toLowerCase();
+      if (debouncedSearchQuery) {
+        const query = debouncedSearchQuery.toLowerCase();
         const matchesSearch =
           borrower.name.toLowerCase().includes(query) ||
           borrower.email?.toLowerCase().includes(query) ||
@@ -181,7 +183,7 @@ export default function BorrowersPage() {
 
       return true;
     });
-  }, [borrowers, searchQuery]);
+  }, [borrowers, debouncedSearchQuery]);
 
   // Sort borrowers
   const { sortedData: sortedBorrowers, requestSort, getSortDirection } = useTableSort(filteredBorrowers, "name", "asc");

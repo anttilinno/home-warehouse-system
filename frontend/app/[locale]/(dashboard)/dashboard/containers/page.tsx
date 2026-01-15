@@ -79,6 +79,7 @@ import { useInfiniteScroll } from "@/lib/hooks/use-infinite-scroll";
 import { useBulkSelection } from "@/lib/hooks/use-bulk-selection";
 import { useFilters } from "@/lib/hooks/use-filters";
 import { useKeyboardShortcuts } from "@/lib/hooks/use-keyboard-shortcuts";
+import { useDebouncedValue } from "@/lib/hooks/use-debounced-value";
 import { containersApi, locationsApi, importExportApi } from "@/lib/api";
 import type { Container, ContainerCreate, ContainerUpdate } from "@/lib/types/containers";
 import type { Location } from "@/lib/types/locations";
@@ -240,6 +241,7 @@ export default function ContainersPage() {
 
   const [locations, setLocations] = useState<Location[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
+  const debouncedSearchQuery = useDebouncedValue(searchQuery, 300);
   const [showArchived, setShowArchived] = useState(false);
 
   // Enhanced filters
@@ -307,45 +309,47 @@ export default function ContainersPage() {
     }
   }, [workspaceId, loadLocations]);
 
-  // Filter containers
-  const filteredContainers = containers.filter((container) => {
-    // Filter by archived status
-    if (!showArchived && container.is_archived) return false;
-    if (showArchived && !container.is_archived) return false;
+  // Filter containers - memoized for performance
+  const filteredContainers = useMemo(() => {
+    return containers.filter((container) => {
+      // Filter by archived status
+      if (!showArchived && container.is_archived) return false;
+      if (showArchived && !container.is_archived) return false;
 
-    // Filter by search query
-    if (searchQuery) {
-      const query = searchQuery.toLowerCase();
-      const location = locations.find(l => l.id === container.location_id);
-      const matchesSearch =
-        container.name.toLowerCase().includes(query) ||
-        container.short_code?.toLowerCase().includes(query) ||
-        container.description?.toLowerCase().includes(query) ||
-        location?.name.toLowerCase().includes(query);
-      if (!matchesSearch) return false;
-    }
-
-    // Filter by locations (multi-select)
-    const locationsFilter = getFilter("locations");
-    if (locationsFilter && Array.isArray(locationsFilter.value)) {
-      if (!container.location_id || !locationsFilter.value.includes(container.location_id)) {
-        return false;
+      // Filter by search query
+      if (debouncedSearchQuery) {
+        const query = debouncedSearchQuery.toLowerCase();
+        const location = locations.find(l => l.id === container.location_id);
+        const matchesSearch =
+          container.name.toLowerCase().includes(query) ||
+          container.short_code?.toLowerCase().includes(query) ||
+          container.description?.toLowerCase().includes(query) ||
+          location?.name.toLowerCase().includes(query);
+        if (!matchesSearch) return false;
       }
-    }
 
-    // Filter by capacity range
-    const capacityFilter = getFilter("capacity");
-    if (capacityFilter && typeof capacityFilter.value === "object") {
-      const range = capacityFilter.value as { min: number | null; max: number | null };
-      if (!container.capacity) return false;
-      const capacity = parseInt(container.capacity, 10);
-      if (isNaN(capacity)) return false;
-      if (range.min !== null && capacity < range.min) return false;
-      if (range.max !== null && capacity > range.max) return false;
-    }
+      // Filter by locations (multi-select)
+      const locationsFilter = getFilter("locations");
+      if (locationsFilter && Array.isArray(locationsFilter.value)) {
+        if (!container.location_id || !locationsFilter.value.includes(container.location_id)) {
+          return false;
+        }
+      }
 
-    return true;
-  });
+      // Filter by capacity range
+      const capacityFilter = getFilter("capacity");
+      if (capacityFilter && typeof capacityFilter.value === "object") {
+        const range = capacityFilter.value as { min: number | null; max: number | null };
+        if (!container.capacity) return false;
+        const capacity = parseInt(container.capacity, 10);
+        if (isNaN(capacity)) return false;
+        if (range.min !== null && capacity < range.min) return false;
+        if (range.max !== null && capacity > range.max) return false;
+      }
+
+      return true;
+    });
+  }, [containers, showArchived, debouncedSearchQuery, locations, getFilter]);
 
   // Flatten container data for sorting (add location name)
   const flattenedContainers = useMemo(() => {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, memo } from "react";
 import { Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -49,7 +49,7 @@ export interface InfiniteScrollTriggerProps {
  * />
  * ```
  */
-export function InfiniteScrollTrigger({
+export const InfiniteScrollTrigger = memo(function InfiniteScrollTrigger({
   onLoadMore,
   isLoading = false,
   hasMore = true,
@@ -127,4 +127,4 @@ export function InfiniteScrollTrigger({
       )}
     </div>
   );
-}
+});

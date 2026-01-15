@@ -120,7 +120,7 @@ interface SortableTableHeadProps
   sortable?: boolean;
 }
 
-const SortableTableHead = React.forwardRef<
+const SortableTableHeadComponent = React.forwardRef<
   HTMLTableCellElement,
   SortableTableHeadProps
 >(({ className, children, sortDirection, onSort, sortable = true, ...props }, ref) => {
@@ -165,7 +165,17 @@ const SortableTableHead = React.forwardRef<
     </th>
   );
 });
-SortableTableHead.displayName = "SortableTableHead";
+SortableTableHeadComponent.displayName = "SortableTableHead";
+
+// Memoize to prevent unnecessary re-renders
+const SortableTableHead = React.memo(SortableTableHeadComponent, (prevProps, nextProps) => {
+  return (
+    prevProps.sortDirection === nextProps.sortDirection &&
+    prevProps.children === nextProps.children &&
+    prevProps.className === nextProps.className &&
+    prevProps.sortable === nextProps.sortable
+  );
+});
 
 export {
   Table,

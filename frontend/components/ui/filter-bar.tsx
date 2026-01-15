@@ -28,7 +28,7 @@ export interface FilterBarProps {
  * />
  * ```
  */
-export function FilterBar({
+export const FilterBar = React.memo(function FilterBar({
   filterChips,
   onRemoveFilter,
   onClearAll,
@@ -63,14 +63,14 @@ export function FilterBar({
       </Button>
     </div>
   );
-}
+});
 
 interface FilterChipItemProps {
   chip: FilterChip;
   onRemove: () => void;
 }
 
-function FilterChipItem({ chip, onRemove }: FilterChipItemProps) {
+const FilterChipItem = React.memo(function FilterChipItem({ chip, onRemove }: FilterChipItemProps) {
   return (
     <Badge
       variant="secondary"
@@ -88,4 +88,4 @@ function FilterChipItem({ chip, onRemove }: FilterChipItemProps) {
       </button>
     </Badge>
   );
-}
+});

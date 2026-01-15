@@ -1,7 +1,9 @@
 "use client";
 
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { useTranslations } from "next-intl";
+import { useVirtualizer } from "@tanstack/react-virtual";
+import { useDebouncedValue } from "@/lib/hooks/use-debounced-value";
 import {
   Plus,
   Search,
@@ -342,7 +344,11 @@ export default function ItemsPage() {
 
   const [categories, setCategories] = useState<Category[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
+  const debouncedSearchQuery = useDebouncedValue(searchQuery, 300);
   const [showArchived, setShowArchived] = useState(false);
+
+  // Virtual scrolling
+  const parentRef = useRef<HTMLDivElement>(null);
 
   // Enhanced filters
   const {
@@ -476,67 +482,69 @@ export default function ItemsPage() {
     autoFetch: !!workspaceId,
   });
 
-  // Filter items (client-side)
-  const filteredItems = items.filter((item) => {
-    // Filter by archived status
-    if (!showArchived && item.is_archived) return false;
-    if (showArchived && !item.is_archived) return false;
+  // Filter items (client-side) - memoized for performance
+  const filteredItems = useMemo(() => {
+    return items.filter((item) => {
+      // Filter by archived status
+      if (!showArchived && item.is_archived) return false;
+      if (showArchived && !item.is_archived) return false;
 
-    // Filter by search query
-    if (searchQuery) {
-      const query = searchQuery.toLowerCase();
-      const matchesSearch =
-        item.sku.toLowerCase().includes(query) ||
-        item.name.toLowerCase().includes(query) ||
-        item.brand?.toLowerCase().includes(query) ||
-        item.model?.toLowerCase().includes(query) ||
-        item.manufacturer?.toLowerCase().includes(query);
-      if (!matchesSearch) return false;
-    }
-
-    // Filter by categories (multi-select)
-    const categoriesFilter = getFilter("categories");
-    if (categoriesFilter && Array.isArray(categoriesFilter.value)) {
-      if (!item.category_id || !categoriesFilter.value.includes(item.category_id)) {
-        return false;
+      // Filter by search query (debounced)
+      if (debouncedSearchQuery) {
+        const query = debouncedSearchQuery.toLowerCase();
+        const matchesSearch =
+          item.sku.toLowerCase().includes(query) ||
+          item.name.toLowerCase().includes(query) ||
+          item.brand?.toLowerCase().includes(query) ||
+          item.model?.toLowerCase().includes(query) ||
+          item.manufacturer?.toLowerCase().includes(query);
+        if (!matchesSearch) return false;
       }
-    }
 
-    // Filter by brands (multi-select)
-    const brandsFilter = getFilter("brands");
-    if (brandsFilter && Array.isArray(brandsFilter.value)) {
-      if (!item.brand || !brandsFilter.value.includes(item.brand)) {
-        return false;
+      // Filter by categories (multi-select)
+      const categoriesFilter = getFilter("categories");
+      if (categoriesFilter && Array.isArray(categoriesFilter.value)) {
+        if (!item.category_id || !categoriesFilter.value.includes(item.category_id)) {
+          return false;
+        }
       }
-    }
 
-    // Filter by warranty
-    const warrantyFilter = getFilter("warranty");
-    if (warrantyFilter && typeof warrantyFilter.value === "boolean") {
-      if (item.lifetime_warranty !== warrantyFilter.value) {
-        return false;
+      // Filter by brands (multi-select)
+      const brandsFilter = getFilter("brands");
+      if (brandsFilter && Array.isArray(brandsFilter.value)) {
+        if (!item.brand || !brandsFilter.value.includes(item.brand)) {
+          return false;
+        }
       }
-    }
 
-    // Filter by insurance
-    const insuranceFilter = getFilter("insurance");
-    if (insuranceFilter && typeof insuranceFilter.value === "boolean") {
-      if (item.is_insured !== insuranceFilter.value) {
-        return false;
+      // Filter by warranty
+      const warrantyFilter = getFilter("warranty");
+      if (warrantyFilter && typeof warrantyFilter.value === "boolean") {
+        if (item.lifetime_warranty !== warrantyFilter.value) {
+          return false;
+        }
       }
-    }
 
-    // Filter by date range
-    const dateFilter = getFilter("dateRange");
-    if (dateFilter && typeof dateFilter.value === "object") {
-      const range = dateFilter.value as { from: Date | null; to: Date | null };
-      const itemDate = new Date(item.created_at);
-      if (range.from && itemDate < range.from) return false;
-      if (range.to && itemDate > range.to) return false;
-    }
+      // Filter by insurance
+      const insuranceFilter = getFilter("insurance");
+      if (insuranceFilter && typeof insuranceFilter.value === "boolean") {
+        if (item.is_insured !== insuranceFilter.value) {
+          return false;
+        }
+      }
 
-    return true;
-  });
+      // Filter by date range
+      const dateFilter = getFilter("dateRange");
+      if (dateFilter && typeof dateFilter.value === "object") {
+        const range = dateFilter.value as { from: Date | null; to: Date | null };
+        const itemDate = new Date(item.created_at);
+        if (range.from && itemDate < range.from) return false;
+        if (range.to && itemDate > range.to) return false;
+      }
+
+      return true;
+    });
+  }, [items, showArchived, debouncedSearchQuery, getFilter]);
 
   // Extract unique brands for filter
   const uniqueBrands = useMemo(() => {
@@ -548,6 +556,14 @@ export default function ItemsPage() {
 
   // Sort items (client-side)
   const { sortedData: sortedItems, requestSort, getSortDirection } = useTableSort(filteredItems, "name", "asc");
+
+  // Virtual scrolling setup
+  const virtualizer = useVirtualizer({
+    count: sortedItems.length,
+    getScrollElement: () => parentRef.current,
+    estimateSize: () => 73,
+    overscan: 5,
+  });
 
   // Bulk selection
   const {
@@ -911,129 +927,162 @@ export default function ItemsPage() {
               </EmptyState>
             ) : (
               <div className="rounded-lg border">
-                <Table aria-label="Item catalog">
-                  <caption className="sr-only">
-                    List of catalog items with SKU, name, category, brand, model, and minimum stock level information.
-                    Currently showing {sortedItems.length} {sortedItems.length === 1 ? "item" : "items"}.
-                  </caption>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="w-[50px]">
-                        <Checkbox
-                          checked={isAllSelected(sortedItems.map((i) => i.id))}
-                          onCheckedChange={(checked) => {
-                            if (checked) {
-                              selectAll(sortedItems.map((i) => i.id));
-                            } else {
-                              clearSelection();
-                            }
-                          }}
-                          aria-label="Select all items"
-                        />
-                      </TableHead>
-                      <SortableTableHead
-                        sortDirection={getSortDirection("sku")}
-                        onSort={() => requestSort("sku")}
-                      >
-                        SKU
-                      </SortableTableHead>
-                      <SortableTableHead
-                        sortDirection={getSortDirection("name")}
-                        onSort={() => requestSort("name")}
-                      >
-                        Name
-                      </SortableTableHead>
-                      <SortableTableHead
-                        sortDirection={getSortDirection("category_id")}
-                        onSort={() => requestSort("category_id")}
-                      >
-                        Category
-                      </SortableTableHead>
-                      <SortableTableHead
-                        sortDirection={getSortDirection("brand")}
-                        onSort={() => requestSort("brand")}
-                      >
-                        Brand
-                      </SortableTableHead>
-                      <SortableTableHead
-                        sortDirection={getSortDirection("model")}
-                        onSort={() => requestSort("model")}
-                      >
-                        Model
-                      </SortableTableHead>
-                      <SortableTableHead
-                        sortDirection={getSortDirection("min_stock_level")}
-                        onSort={() => requestSort("min_stock_level")}
-                      >
-                        Min Stock
-                      </SortableTableHead>
-                      <TableHead className="w-[50px]" />
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {sortedItems.map((item) => (
-                      <TableRow key={item.id}>
-                        <TableCell>
+                <div className="overflow-x-auto">
+                  <Table aria-label="Item catalog">
+                    <caption className="sr-only">
+                      List of catalog items with SKU, name, category, brand, model, and minimum stock level information.
+                      Currently showing {sortedItems.length} {sortedItems.length === 1 ? "item" : "items"}.
+                    </caption>
+                    <TableHeader className="sticky top-0 z-10 bg-background">
+                      <TableRow>
+                        <TableHead className="w-[50px]">
                           <Checkbox
-                            checked={isSelected(item.id)}
-                            onCheckedChange={() => toggleSelection(item.id)}
-                            aria-label={`Select ${item.name}`}
+                            checked={isAllSelected(sortedItems.map((i) => i.id))}
+                            onCheckedChange={(checked) => {
+                              if (checked) {
+                                selectAll(sortedItems.map((i) => i.id));
+                              } else {
+                                clearSelection();
+                              }
+                            }}
+                            aria-label="Select all items"
                           />
-                        </TableCell>
-                        <TableCell className="font-mono text-sm">
-                          {item.sku}
-                          {item.short_code && (
-                            <Badge variant="outline" className="ml-2 text-xs">
-                              {item.short_code}
-                            </Badge>
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          <div>
-                            <div className="font-medium">{item.name}</div>
-                            {item.description && (
-                              <div className="text-sm text-muted-foreground line-clamp-1">
-                                {item.description}
-                              </div>
-                            )}
-                          </div>
-                        </TableCell>
-                        <TableCell>{getCategoryName(item.category_id)}</TableCell>
-                        <TableCell>{item.brand || "-"}</TableCell>
-                        <TableCell>{item.model || "-"}</TableCell>
-                        <TableCell>{item.min_stock_level}</TableCell>
-                        <TableCell>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="icon" aria-label={`Actions for ${item.name}`}>
-                                <MoreHorizontal className="h-4 w-4" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuItem onClick={() => openEditDialog(item)}>
-                                <Pencil className="mr-2 h-4 w-4" />
-                                Edit
-                              </DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => handleArchive(item)}>
-                                {item.is_archived ? (
-                                  <>
-                                    <ArchiveRestore className="mr-2 h-4 w-4" />
-                                    Restore
-                                  </>
-                                ) : (
-                                  <>
-                                    <Archive className="mr-2 h-4 w-4" />
-                                    Archive
-                                  </>
-                                )}
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </TableCell>
+                        </TableHead>
+                        <SortableTableHead
+                          sortDirection={getSortDirection("sku")}
+                          onSort={() => requestSort("sku")}
+                        >
+                          SKU
+                        </SortableTableHead>
+                        <SortableTableHead
+                          sortDirection={getSortDirection("name")}
+                          onSort={() => requestSort("name")}
+                        >
+                          Name
+                        </SortableTableHead>
+                        <SortableTableHead
+                          sortDirection={getSortDirection("category_id")}
+                          onSort={() => requestSort("category_id")}
+                        >
+                          Category
+                        </SortableTableHead>
+                        <SortableTableHead
+                          sortDirection={getSortDirection("brand")}
+                          onSort={() => requestSort("brand")}
+                        >
+                          Brand
+                        </SortableTableHead>
+                        <SortableTableHead
+                          sortDirection={getSortDirection("model")}
+                          onSort={() => requestSort("model")}
+                        >
+                          Model
+                        </SortableTableHead>
+                        <SortableTableHead
+                          sortDirection={getSortDirection("min_stock_level")}
+                          onSort={() => requestSort("min_stock_level")}
+                        >
+                          Min Stock
+                        </SortableTableHead>
+                        <TableHead className="w-[50px]" />
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                    </TableHeader>
+                  </Table>
+                </div>
+
+                {/* Virtual Scrolling Container */}
+                <div
+                  ref={parentRef}
+                  className="overflow-auto"
+                  style={{ height: '600px' }}
+                >
+                  <div
+                    style={{
+                      height: `${virtualizer.getTotalSize()}px`,
+                      width: '100%',
+                      position: 'relative',
+                    }}
+                  >
+                    <Table>
+                      <TableBody>
+                        {virtualizer.getVirtualItems().map((virtualItem) => {
+                          const item = sortedItems[virtualItem.index];
+                          return (
+                            <TableRow
+                              key={item.id}
+                              style={{
+                                position: 'absolute',
+                                top: 0,
+                                left: 0,
+                                width: '100%',
+                                height: `${virtualItem.size}px`,
+                                transform: `translateY(${virtualItem.start}px)`,
+                              }}
+                            >
+                              <TableCell>
+                                <Checkbox
+                                  checked={isSelected(item.id)}
+                                  onCheckedChange={() => toggleSelection(item.id)}
+                                  aria-label={`Select ${item.name}`}
+                                />
+                              </TableCell>
+                              <TableCell className="font-mono text-sm">
+                                {item.sku}
+                                {item.short_code && (
+                                  <Badge variant="outline" className="ml-2 text-xs">
+                                    {item.short_code}
+                                  </Badge>
+                                )}
+                              </TableCell>
+                              <TableCell>
+                                <div>
+                                  <div className="font-medium">{item.name}</div>
+                                  {item.description && (
+                                    <div className="text-sm text-muted-foreground line-clamp-1">
+                                      {item.description}
+                                    </div>
+                                  )}
+                                </div>
+                              </TableCell>
+                              <TableCell>{getCategoryName(item.category_id)}</TableCell>
+                              <TableCell>{item.brand || "-"}</TableCell>
+                              <TableCell>{item.model || "-"}</TableCell>
+                              <TableCell>{item.min_stock_level}</TableCell>
+                              <TableCell>
+                                <DropdownMenu>
+                                  <DropdownMenuTrigger asChild>
+                                    <Button variant="ghost" size="icon" aria-label={`Actions for ${item.name}`}>
+                                      <MoreHorizontal className="h-4 w-4" />
+                                    </Button>
+                                  </DropdownMenuTrigger>
+                                  <DropdownMenuContent align="end">
+                                    <DropdownMenuItem onClick={() => openEditDialog(item)}>
+                                      <Pencil className="mr-2 h-4 w-4" />
+                                      Edit
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem onClick={() => handleArchive(item)}>
+                                      {item.is_archived ? (
+                                        <>
+                                          <ArchiveRestore className="mr-2 h-4 w-4" />
+                                          Restore
+                                        </>
+                                      ) : (
+                                        <>
+                                          <Archive className="mr-2 h-4 w-4" />
+                                          Archive
+                                        </>
+                                      )}
+                                    </DropdownMenuItem>
+                                  </DropdownMenuContent>
+                                </DropdownMenu>
+                              </TableCell>
+                            </TableRow>
+                          );
+                        })}
+                      </TableBody>
+                    </Table>
+                  </div>
+                </div>
 
                 {/* Infinite Scroll Trigger */}
                 <InfiniteScrollTrigger

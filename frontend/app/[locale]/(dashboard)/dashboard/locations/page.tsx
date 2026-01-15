@@ -60,6 +60,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { ImportDialog, type ImportResult } from "@/components/ui/import-dialog";
 import { useWorkspace } from "@/lib/hooks/use-workspace";
+import { useDebouncedValue } from "@/lib/hooks/use-debounced-value";
 import { locationsApi, importExportApi } from "@/lib/api";
 import type { Location, LocationCreate, LocationUpdate } from "@/lib/types/locations";
 import { cn } from "@/lib/utils";
@@ -285,6 +286,7 @@ export default function LocationsPage() {
   const [locations, setLocations] = useState<Location[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
+  const debouncedSearchQuery = useDebouncedValue(searchQuery, 300);
   const [showArchived, setShowArchived] = useState(false);
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
 
@@ -498,24 +500,41 @@ export default function LocationsPage() {
     }
   };
 
-  // Filter locations for display
-  const filteredTree = tree.filter((location) => {
-    const matchesArchived = showArchived ? location.is_archived : !location.is_archived;
-    if (!matchesArchived) return false;
+  // Filter locations for display - memoized for performance
+  const filteredTree = useMemo(() => {
+    const filterTree = (items: LocationTreeItem[]): LocationTreeItem[] => {
+      return items.reduce<LocationTreeItem[]>((acc, location) => {
+        const matchesArchived = showArchived ? location.is_archived : !location.is_archived;
+        if (!matchesArchived) return acc;
 
-    if (searchQuery) {
-      const query = searchQuery.toLowerCase();
-      const matchesSearch =
-        location.name.toLowerCase().includes(query) ||
-        location.zone?.toLowerCase().includes(query) ||
-        location.shelf?.toLowerCase().includes(query) ||
-        location.bin?.toLowerCase().includes(query) ||
-        location.short_code?.toLowerCase().includes(query);
-      return matchesSearch;
-    }
+        let matchesSearch = true;
+        if (debouncedSearchQuery.trim()) {
+          const query = debouncedSearchQuery.toLowerCase();
+          matchesSearch =
+            location.name.toLowerCase().includes(query) ||
+            (location.zone?.toLowerCase().includes(query) ?? false) ||
+            (location.shelf?.toLowerCase().includes(query) ?? false) ||
+            (location.bin?.toLowerCase().includes(query) ?? false) ||
+            (location.short_code?.toLowerCase().includes(query) ?? false);
+        }
 
-    return true;
-  });
+        const filteredChildren = location.children.length > 0
+          ? filterTree(location.children)
+          : [];
+
+        if (matchesSearch || filteredChildren.length > 0) {
+          acc.push({
+            ...location,
+            children: filteredChildren.length > 0 ? filteredChildren : location.children,
+          });
+        }
+
+        return acc;
+      }, []);
+    };
+
+    return filterTree(tree);
+  }, [tree, debouncedSearchQuery, showArchived]);
 
   // Get available parent locations (exclude self and descendants when editing)
   const getAvailableParents = () => {

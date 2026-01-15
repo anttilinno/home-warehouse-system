@@ -64,6 +64,7 @@ import {
 } from "@/components/ui/select";
 import { ImportDialog, type ImportResult } from "@/components/ui/import-dialog";
 import { useWorkspace } from "@/lib/hooks/use-workspace";
+import { useDebouncedValue } from "@/lib/hooks/use-debounced-value";
 import { categoriesApi, importExportApi, type Category } from "@/lib/api";
 import { cn } from "@/lib/utils";
 
@@ -162,10 +163,10 @@ function CategoryRow({
           level > 0 && "ml-6",
           isDragging && "cursor-grabbing"
         )}
+        {...attributes}
         role="treeitem"
         aria-expanded={hasChildren ? category.expanded : undefined}
         aria-level={level + 1}
-        {...attributes}
       >
         <div
           {...listeners}
@@ -266,6 +267,7 @@ export default function CategoriesPage() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
+  const debouncedSearchQuery = useDebouncedValue(searchQuery, 300);
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
 
   // Dialog state
@@ -510,18 +512,35 @@ export default function CategoriesPage() {
     }
   };
 
-  // Filter categories by search
-  const filteredTree = searchQuery
-    ? tree.filter((cat) => {
-        const matchesSearch = (item: CategoryTreeItem): boolean => {
-          const matches =
-            item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            item.description?.toLowerCase().includes(searchQuery.toLowerCase());
-          return matches || item.children.some(matchesSearch);
-        };
-        return matchesSearch(cat);
-      })
-    : tree;
+  // Filter categories by search - memoized for performance
+  const filteredTree = useMemo(() => {
+    if (!debouncedSearchQuery.trim()) {
+      return tree;
+    }
+
+    const filterTree = (items: CategoryTreeItem[]): CategoryTreeItem[] => {
+      return items.reduce<CategoryTreeItem[]>((acc, item) => {
+        const matchesSearch =
+          item.name.toLowerCase().includes(debouncedSearchQuery.toLowerCase()) ||
+          item.description?.toLowerCase().includes(debouncedSearchQuery.toLowerCase());
+
+        const filteredChildren = item.children.length > 0
+          ? filterTree(item.children)
+          : [];
+
+        if (matchesSearch || filteredChildren.length > 0) {
+          acc.push({
+            ...item,
+            children: filteredChildren.length > 0 ? filteredChildren : item.children,
+          });
+        }
+
+        return acc;
+      }, []);
+    };
+
+    return filterTree(tree);
+  }, [tree, debouncedSearchQuery]);
 
   const allCategoryIds = flattenTree(filteredTree);
 

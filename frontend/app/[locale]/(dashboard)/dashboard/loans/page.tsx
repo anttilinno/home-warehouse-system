@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { useTranslations } from "next-intl";
+import { useVirtualizer } from "@tanstack/react-virtual";
 import {
   Plus,
   Search,
@@ -78,6 +79,7 @@ import { useInfiniteScroll } from "@/lib/hooks/use-infinite-scroll";
 import { useBulkSelection } from "@/lib/hooks/use-bulk-selection";
 import { useFilters } from "@/lib/hooks/use-filters";
 import { useKeyboardShortcuts } from "@/lib/hooks/use-keyboard-shortcuts";
+import { useDebouncedValue } from "@/lib/hooks/use-debounced-value";
 import { loansApi, borrowersApi, itemsApi, inventoryApi } from "@/lib/api";
 import type { Loan } from "@/lib/types/loans";
 import type { Borrower } from "@/lib/types/borrowers";
@@ -399,6 +401,10 @@ export default function LoansPage() {
   const [items, setItems] = useState<Item[]>([]);
   const [availableInventory, setAvailableInventory] = useState<Inventory[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
+  const debouncedSearchQuery = useDebouncedValue(searchQuery, 300);
+
+  // Virtual scrolling
+  const parentRef = useRef<HTMLDivElement>(null);
 
   // Enhanced filters
   const {
@@ -512,8 +518,8 @@ export default function LoansPage() {
   const filteredLoans = useMemo(() => {
     return loans.filter((loan) => {
       // Filter by search query
-      if (searchQuery) {
-        const query = searchQuery.toLowerCase();
+      if (debouncedSearchQuery) {
+        const query = debouncedSearchQuery.toLowerCase();
         const borrower = borrowers.find(b => b.id === loan.borrower_id);
         const matchesSearch =
           loan.inventory_id.toLowerCase().includes(query) ||
@@ -572,7 +578,7 @@ export default function LoansPage() {
 
       return true;
     });
-  }, [loans, searchQuery, borrowers, activeFilters]);
+  }, [loans, debouncedSearchQuery, borrowers, activeFilters]);
 
   // Flatten loan data for sorting (add borrower name)
   const flattenedLoans = useMemo(() => {
@@ -584,6 +590,14 @@ export default function LoansPage() {
 
   // Sort loans
   const { sortedData: sortedLoans, requestSort, getSortDirection } = useTableSort(flattenedLoans, "loaned_at", "desc");
+
+  // Virtual scrolling setup
+  const virtualizer = useVirtualizer({
+    count: sortedLoans.length,
+    getScrollElement: () => parentRef.current,
+    estimateSize: () => 78,
+    overscan: 5,
+  });
 
   // Bulk selection
   const {
@@ -891,150 +905,184 @@ export default function LoansPage() {
               </EmptyState>
             ) : (
               <div className="rounded-lg border">
-                <Table aria-label="Borrowed items and loans">
-                  <caption className="sr-only">
-                    List of borrowed items with borrower, inventory details, loan dates, and status information.
-                    Currently showing {sortedLoans.length} {sortedLoans.length === 1 ? "loan" : "loans"}.
-                  </caption>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="w-[50px]">
-                        <Checkbox
-                          checked={isAllSelected(sortedLoans.map((l) => l.id))}
-                          onCheckedChange={(checked) => {
-                            if (checked) {
-                              selectAll(sortedLoans.map((l) => l.id));
-                            } else {
-                              clearSelection();
-                            }
-                          }}
-                          aria-label="Select all loans"
-                        />
-                      </TableHead>
-                      <SortableTableHead
-                        sortDirection={getSortDirection("is_active")}
-                        onSort={() => requestSort("is_active")}
-                      >
-                        Status
-                      </SortableTableHead>
-                      <SortableTableHead
-                        sortDirection={getSortDirection("borrower_name")}
-                        onSort={() => requestSort("borrower_name")}
-                      >
-                        Borrower
-                      </SortableTableHead>
-                      <SortableTableHead
-                        sortDirection={getSortDirection("inventory_id")}
-                        onSort={() => requestSort("inventory_id")}
-                      >
-                        Inventory ID
-                      </SortableTableHead>
-                      <SortableTableHead
-                        sortDirection={getSortDirection("quantity")}
-                        onSort={() => requestSort("quantity")}
-                      >
-                        Qty
-                      </SortableTableHead>
-                      <SortableTableHead
-                        sortDirection={getSortDirection("loaned_at")}
-                        onSort={() => requestSort("loaned_at")}
-                      >
-                        Loaned
-                      </SortableTableHead>
-                      <SortableTableHead
-                        sortDirection={getSortDirection("due_date")}
-                        onSort={() => requestSort("due_date")}
-                      >
-                        Due
-                      </SortableTableHead>
-                      <TableHead className="w-[50px]"></TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {sortedLoans.map((loan) => (
-                      <TableRow key={loan.id} className={cn(loan.is_overdue && "bg-destructive/5")}>
-                        <TableCell>
+                <div className="overflow-x-auto">
+                  <Table aria-label="Borrowed items and loans">
+                    <caption className="sr-only">
+                      List of borrowed items with borrower, inventory details, loan dates, and status information.
+                      Currently showing {sortedLoans.length} {sortedLoans.length === 1 ? "loan" : "loans"}.
+                    </caption>
+                    <TableHeader className="sticky top-0 z-10 bg-background">
+                      <TableRow>
+                        <TableHead className="w-[50px]">
                           <Checkbox
-                            checked={isSelected(loan.id)}
-                            onCheckedChange={() => toggleSelection(loan.id)}
-                            aria-label={`Select loan for ${getBorrowerName(loan.borrower_id)}`}
+                            checked={isAllSelected(sortedLoans.map((l) => l.id))}
+                            onCheckedChange={(checked) => {
+                              if (checked) {
+                                selectAll(sortedLoans.map((l) => l.id));
+                              } else {
+                                clearSelection();
+                              }
+                            }}
+                            aria-label="Select all loans"
                           />
-                        </TableCell>
-                        <TableCell>
-                          <LoanStatusBadge loan={loan} />
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-2">
-                            <User className="h-4 w-4 text-muted-foreground" />
-                            {getBorrowerName(loan.borrower_id)}
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <div className="font-mono text-xs">{loan.inventory_id}</div>
-                          {loan.notes && (
-                            <div className="text-sm text-muted-foreground line-clamp-1 mt-1">
-                              {loan.notes}
-                            </div>
-                          )}
-                        </TableCell>
-                        <TableCell>{loan.quantity}</TableCell>
-                        <TableCell>
-                          <div className="text-sm">
-                            {format(parseISO(loan.loaned_at), "MMM d, yyyy")}
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          {loan.due_date ? (
-                            <div className={cn(
-                              "text-sm flex items-center gap-1",
-                              loan.is_overdue && "text-destructive font-medium"
-                            )}>
-                              <Calendar className="h-3 w-3" />
-                              {format(parseISO(loan.due_date), "MMM d, yyyy")}
-                            </div>
-                          ) : (
-                            <span className="text-muted-foreground">-</span>
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="icon" disabled={!loan.is_active} aria-label={`Actions for loan to ${getBorrowerName(loan.borrower_id)}`}>
-                                <MoreHorizontal className="h-4 w-4" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuItem
-                                onClick={() => {
-                                  setReturningLoan(loan);
-                                  setReturnDialogOpen(true);
-                                }}
-                              >
-                                <CheckCircle2 className="mr-2 h-4 w-4" />
-                                Mark as Returned
-                              </DropdownMenuItem>
-                              {loan.due_date && (
-                                <>
-                                  <DropdownMenuSeparator />
-                                  <DropdownMenuItem
-                                    onClick={() => {
-                                      setExtendingLoan(loan);
-                                      setNewDueDate(loan.due_date || "");
-                                      setExtendDialogOpen(true);
-                                    }}
-                                  >
-                                    <Calendar className="mr-2 h-4 w-4" />
-                                    Extend Due Date
-                                  </DropdownMenuItem>
-                                </>
-                              )}
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </TableCell>
+                        </TableHead>
+                        <SortableTableHead
+                          sortDirection={getSortDirection("is_active")}
+                          onSort={() => requestSort("is_active")}
+                        >
+                          Status
+                        </SortableTableHead>
+                        <SortableTableHead
+                          sortDirection={getSortDirection("borrower_name")}
+                          onSort={() => requestSort("borrower_name")}
+                        >
+                          Borrower
+                        </SortableTableHead>
+                        <SortableTableHead
+                          sortDirection={getSortDirection("inventory_id")}
+                          onSort={() => requestSort("inventory_id")}
+                        >
+                          Inventory ID
+                        </SortableTableHead>
+                        <SortableTableHead
+                          sortDirection={getSortDirection("quantity")}
+                          onSort={() => requestSort("quantity")}
+                        >
+                          Qty
+                        </SortableTableHead>
+                        <SortableTableHead
+                          sortDirection={getSortDirection("loaned_at")}
+                          onSort={() => requestSort("loaned_at")}
+                        >
+                          Loaned
+                        </SortableTableHead>
+                        <SortableTableHead
+                          sortDirection={getSortDirection("due_date")}
+                          onSort={() => requestSort("due_date")}
+                        >
+                          Due
+                        </SortableTableHead>
+                        <TableHead className="w-[50px]"></TableHead>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                    </TableHeader>
+                  </Table>
+                </div>
+
+                {/* Virtual Scrolling Container */}
+                <div
+                  ref={parentRef}
+                  className="overflow-auto"
+                  style={{ height: '600px' }}
+                >
+                  <div
+                    style={{
+                      height: `${virtualizer.getTotalSize()}px`,
+                      width: '100%',
+                      position: 'relative',
+                    }}
+                  >
+                    <Table>
+                      <TableBody>
+                        {virtualizer.getVirtualItems().map((virtualItem) => {
+                          const loan = sortedLoans[virtualItem.index];
+                          return (
+                            <TableRow
+                              key={loan.id}
+                              className={cn(loan.is_overdue && "bg-destructive/5")}
+                              style={{
+                                position: 'absolute',
+                                top: 0,
+                                left: 0,
+                                width: '100%',
+                                height: `${virtualItem.size}px`,
+                                transform: `translateY(${virtualItem.start}px)`,
+                              }}
+                            >
+                              <TableCell>
+                                <Checkbox
+                                  checked={isSelected(loan.id)}
+                                  onCheckedChange={() => toggleSelection(loan.id)}
+                                  aria-label={`Select loan for ${getBorrowerName(loan.borrower_id)}`}
+                                />
+                              </TableCell>
+                              <TableCell>
+                                <LoanStatusBadge loan={loan} />
+                              </TableCell>
+                              <TableCell>
+                                <div className="flex items-center gap-2">
+                                  <User className="h-4 w-4 text-muted-foreground" />
+                                  {getBorrowerName(loan.borrower_id)}
+                                </div>
+                              </TableCell>
+                              <TableCell>
+                                <div className="font-mono text-xs">{loan.inventory_id}</div>
+                                {loan.notes && (
+                                  <div className="text-sm text-muted-foreground line-clamp-1 mt-1">
+                                    {loan.notes}
+                                  </div>
+                                )}
+                              </TableCell>
+                              <TableCell>{loan.quantity}</TableCell>
+                              <TableCell>
+                                <div className="text-sm">
+                                  {format(parseISO(loan.loaned_at), "MMM d, yyyy")}
+                                </div>
+                              </TableCell>
+                              <TableCell>
+                                {loan.due_date ? (
+                                  <div className={cn(
+                                    "text-sm flex items-center gap-1",
+                                    loan.is_overdue && "text-destructive font-medium"
+                                  )}>
+                                    <Calendar className="h-3 w-3" />
+                                    {format(parseISO(loan.due_date), "MMM d, yyyy")}
+                                  </div>
+                                ) : (
+                                  <span className="text-muted-foreground">-</span>
+                                )}
+                              </TableCell>
+                              <TableCell>
+                                <DropdownMenu>
+                                  <DropdownMenuTrigger asChild>
+                                    <Button variant="ghost" size="icon" disabled={!loan.is_active} aria-label={`Actions for loan to ${getBorrowerName(loan.borrower_id)}`}>
+                                      <MoreHorizontal className="h-4 w-4" />
+                                    </Button>
+                                  </DropdownMenuTrigger>
+                                  <DropdownMenuContent align="end">
+                                    <DropdownMenuItem
+                                      onClick={() => {
+                                        setReturningLoan(loan);
+                                        setReturnDialogOpen(true);
+                                      }}
+                                    >
+                                      <CheckCircle2 className="mr-2 h-4 w-4" />
+                                      Mark as Returned
+                                    </DropdownMenuItem>
+                                    {loan.due_date && (
+                                      <>
+                                        <DropdownMenuSeparator />
+                                        <DropdownMenuItem
+                                          onClick={() => {
+                                            setExtendingLoan(loan);
+                                            setNewDueDate(loan.due_date || "");
+                                            setExtendDialogOpen(true);
+                                          }}
+                                        >
+                                          <Calendar className="mr-2 h-4 w-4" />
+                                          Extend Due Date
+                                        </DropdownMenuItem>
+                                      </>
+                                    )}
+                                  </DropdownMenuContent>
+                                </DropdownMenu>
+                              </TableCell>
+                            </TableRow>
+                          );
+                        })}
+                      </TableBody>
+                    </Table>
+                  </div>
+                </div>
               </div>
             )}
 

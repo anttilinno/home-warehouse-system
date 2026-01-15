@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { LucideIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -14,7 +15,7 @@ interface EmptyStateProps {
   className?: string;
 }
 
-export function EmptyState({
+export const EmptyState = memo(function EmptyState({
   icon: Icon,
   title,
   description,
@@ -51,14 +52,14 @@ export function EmptyState({
       )}
     </div>
   );
-}
+});
 
 interface EmptyStateListProps {
   items: string[];
   className?: string;
 }
 
-export function EmptyStateList({ items, className }: EmptyStateListProps) {
+export const EmptyStateList = memo(function EmptyStateList({ items, className }: EmptyStateListProps) {
   return (
     <ul className={cn("space-y-2 text-left inline-block", className)}>
       {items.map((item, index) => (
@@ -69,14 +70,14 @@ export function EmptyStateList({ items, className }: EmptyStateListProps) {
       ))}
     </ul>
   );
-}
+});
 
 interface EmptyStateBenefitsProps {
   benefits: string[];
   className?: string;
 }
 
-export function EmptyStateBenefits({ benefits, className }: EmptyStateBenefitsProps) {
+export const EmptyStateBenefits = memo(function EmptyStateBenefits({ benefits, className }: EmptyStateBenefitsProps) {
   return (
     <ul className={cn("space-y-2 text-left inline-block", className)}>
       {benefits.map((benefit, index) => (
@@ -87,4 +88,4 @@ export function EmptyStateBenefits({ benefits, className }: EmptyStateBenefitsPr
       ))}
     </ul>
   );
-}
+});
