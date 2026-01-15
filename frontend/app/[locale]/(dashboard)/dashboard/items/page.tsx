@@ -62,6 +62,7 @@ import { InfiniteScrollTrigger } from "@/components/ui/infinite-scroll-trigger";
 import { BulkActionBar } from "@/components/ui/bulk-action-bar";
 import { FilterBar } from "@/components/ui/filter-bar";
 import { FilterPopover } from "@/components/ui/filter-popover";
+import { ExportDialog } from "@/components/ui/export-dialog";
 import { useWorkspace } from "@/lib/hooks/use-workspace";
 import { useTableSort } from "@/lib/hooks/use-table-sort";
 import { useInfiniteScroll } from "@/lib/hooks/use-infinite-scroll";
@@ -354,6 +355,7 @@ export default function ItemsPage() {
   const [editingItem, setEditingItem] = useState<Item | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deletingItem, setDeletingItem] = useState<Item | null>(null);
+  const [exportDialogOpen, setExportDialogOpen] = useState(false);
 
   // Form state
   const [formData, setFormData] = useState<ItemFormData>({
@@ -505,6 +507,26 @@ export default function ItemsPage() {
     return category?.name || "-";
   };
 
+  // Export columns definition
+  const exportColumns: ColumnDefinition<Item>[] = useMemo(() => [
+    { key: "sku", label: "SKU" },
+    { key: "name", label: "Name" },
+    { key: "description", label: "Description" },
+    { key: "category_id", label: "Category", formatter: (_, item) => getCategoryName(item.category_id) },
+    { key: "brand", label: "Brand" },
+    { key: "model", label: "Model" },
+    { key: "serial_number", label: "Serial Number" },
+    { key: "manufacturer", label: "Manufacturer" },
+    { key: "barcode", label: "Barcode" },
+    { key: "is_insured", label: "Insured", formatter: (value) => value ? "Yes" : "No" },
+    { key: "lifetime_warranty", label: "Warranty", formatter: (value) => value ? "Yes" : "No" },
+    { key: "warranty_details", label: "Warranty Details" },
+    { key: "min_stock_level", label: "Min Stock Level" },
+    { key: "short_code", label: "Short Code" },
+    { key: "created_at", label: "Created Date", formatter: (value) => new Date(value).toLocaleDateString() },
+    { key: "updated_at", label: "Updated Date", formatter: (value) => new Date(value).toLocaleDateString() },
+  ], [categories]);
+
   const openCreateDialog = () => {
     setEditingItem(null);
     setFormData({
@@ -633,24 +655,7 @@ export default function ItemsPage() {
   // Bulk export selected items to CSV
   const handleBulkExport = () => {
     const selectedItems = sortedItems.filter((item) => selectedIds.has(item.id));
-
-    const columns: ColumnDefinition<Item>[] = [
-      { key: "sku", label: "SKU" },
-      { key: "name", label: "Name" },
-      { key: "description", label: "Description" },
-      { key: "category_id", label: "Category", formatter: (_, item) => getCategoryName(item.category_id) },
-      { key: "brand", label: "Brand" },
-      { key: "model", label: "Model" },
-      { key: "serial_number", label: "Serial Number" },
-      { key: "manufacturer", label: "Manufacturer" },
-      { key: "barcode", label: "Barcode" },
-      { key: "is_insured", label: "Insured", formatter: (value) => value ? "Yes" : "No" },
-      { key: "lifetime_warranty", label: "Warranty", formatter: (value) => value ? "Yes" : "No" },
-      { key: "min_stock_level", label: "Min Stock Level" },
-      { key: "short_code", label: "Short Code" },
-    ];
-
-    exportToCSV(selectedItems, columns, generateFilename("items"));
+    exportToCSV(selectedItems, exportColumns, generateFilename("items-bulk"));
     toast.success(`Exported ${selectedCount} ${selectedCount === 1 ? "item" : "items"}`);
     clearSelection();
   };
@@ -743,6 +748,15 @@ export default function ItemsPage() {
                   getFilter={getFilter}
                 />
               </FilterPopover>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setExportDialogOpen(true)}
+                disabled={filteredItems.length === 0}
+              >
+                <Download className="mr-2 h-4 w-4" />
+                Export
+              </Button>
               <Button
                 variant={showArchived ? "default" : "outline"}
                 size="sm"
@@ -1145,6 +1159,18 @@ export default function ItemsPage() {
           Archive
         </Button>
       </BulkActionBar>
+
+      {/* Export Dialog */}
+      <ExportDialog
+        open={exportDialogOpen}
+        onOpenChange={setExportDialogOpen}
+        data={sortedItems}
+        allData={items}
+        columns={exportColumns}
+        filePrefix="items"
+        title="Export Items to CSV"
+        description="Select columns and data to export"
+      />
     </div>
   );
 }

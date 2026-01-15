@@ -60,6 +60,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { InfiniteScrollTrigger } from "@/components/ui/infinite-scroll-trigger";
 import { BulkActionBar } from "@/components/ui/bulk-action-bar";
+import { ExportDialog } from "@/components/ui/export-dialog";
 import { useWorkspace } from "@/lib/hooks/use-workspace";
 import { useTableSort } from "@/lib/hooks/use-table-sort";
 import { useInfiniteScroll } from "@/lib/hooks/use-infinite-scroll";
@@ -121,6 +122,7 @@ export default function BorrowersPage() {
   const [editingBorrower, setEditingBorrower] = useState<Borrower | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deletingBorrower, setDeletingBorrower] = useState<Borrower | null>(null);
+  const [exportDialogOpen, setExportDialogOpen] = useState(false);
 
   // Form state
   const [formName, setFormName] = useState("");
@@ -182,6 +184,17 @@ export default function BorrowersPage() {
     isAllSelected,
     isSomeSelected,
   } = useBulkSelection<string>();
+
+  // Export columns definition
+  const exportColumns: ColumnDefinition<Borrower>[] = [
+    { key: "name", label: "Name" },
+    { key: "email", label: "Email" },
+    { key: "phone", label: "Phone" },
+    { key: "address", label: "Address" },
+    { key: "notes", label: "Notes" },
+    { key: "created_at", label: "Created Date", formatter: (value) => new Date(value).toLocaleDateString() },
+    { key: "updated_at", label: "Updated Date", formatter: (value) => new Date(value).toLocaleDateString() },
+  ];
 
   const openCreateDialog = () => {
     setEditingBorrower(null);
@@ -276,16 +289,7 @@ export default function BorrowersPage() {
   // Bulk export selected borrowers to CSV
   const handleBulkExport = () => {
     const selectedBorrowers = sortedBorrowers.filter((b) => selectedIds.has(b.id));
-
-    const columns: ColumnDefinition<Borrower>[] = [
-      { key: "name", label: "Name" },
-      { key: "email", label: "Email" },
-      { key: "phone", label: "Phone" },
-      { key: "address", label: "Address" },
-      { key: "notes", label: "Notes" },
-    ];
-
-    exportToCSV(selectedBorrowers, columns, generateFilename("borrowers"));
+    exportToCSV(selectedBorrowers, exportColumns, generateFilename("borrowers-bulk"));
     toast.success(`Exported ${selectedCount} ${selectedCount === 1 ? "borrower" : "borrowers"}`);
     clearSelection();
   };
@@ -363,6 +367,15 @@ export default function BorrowersPage() {
                   className="pl-9"
                 />
               </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setExportDialogOpen(true)}
+                disabled={sortedBorrowers.length === 0}
+              >
+                <Download className="mr-2 h-4 w-4" />
+                Export
+              </Button>
             </div>
 
             {/* Borrowers table */}
@@ -615,6 +628,18 @@ export default function BorrowersPage() {
           Archive
         </Button>
       </BulkActionBar>
+
+      {/* Export Dialog */}
+      <ExportDialog
+        open={exportDialogOpen}
+        onOpenChange={setExportDialogOpen}
+        data={sortedBorrowers}
+        allData={borrowers}
+        columns={exportColumns}
+        filePrefix="borrowers"
+        title="Export Borrowers to CSV"
+        description="Select columns and data to export"
+      />
     </div>
   );
 }

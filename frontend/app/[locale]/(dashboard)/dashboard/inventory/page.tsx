@@ -63,6 +63,7 @@ import { InfiniteScrollTrigger } from "@/components/ui/infinite-scroll-trigger";
 import { BulkActionBar } from "@/components/ui/bulk-action-bar";
 import { FilterBar } from "@/components/ui/filter-bar";
 import { FilterPopover } from "@/components/ui/filter-popover";
+import { ExportDialog } from "@/components/ui/export-dialog";
 import { useWorkspace } from "@/lib/hooks/use-workspace";
 import { useTableSort } from "@/lib/hooks/use-table-sort";
 import { useInfiniteScroll } from "@/lib/hooks/use-infinite-scroll";
@@ -428,6 +429,7 @@ export default function InventoryPage() {
   // Dialog state
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingInventory, setEditingInventory] = useState<Inventory | null>(null);
+  const [exportDialogOpen, setExportDialogOpen] = useState(false);
 
   // Form state
   const [formItemId, setFormItemId] = useState("");
@@ -584,6 +586,22 @@ export default function InventoryPage() {
     return container?.name || null;
   };
 
+  // Export columns definition
+  const exportColumns: ColumnDefinition<Inventory>[] = useMemo(() => [
+    { key: "item_id", label: "Item", formatter: (_, inv) => getItemName(inv.item_id) },
+    { key: "item_id", label: "SKU", formatter: (_, inv) => getItemSKU(inv.item_id) },
+    { key: "location_id", label: "Location", formatter: (_, inv) => getLocationName(inv.location_id) },
+    { key: "container_id", label: "Container", formatter: (_, inv) => getContainerName(inv.container_id) || "-" },
+    { key: "quantity", label: "Quantity" },
+    { key: "condition", label: "Condition" },
+    { key: "status", label: "Status" },
+    { key: "unit_price", label: "Unit Price", formatter: (value) => value ? `$${value}` : "-" },
+    { key: "total_value", label: "Total Value", formatter: (value) => value ? `$${value}` : "-" },
+    { key: "notes", label: "Notes" },
+    { key: "created_at", label: "Created Date", formatter: (value) => new Date(value).toLocaleDateString() },
+    { key: "updated_at", label: "Updated Date", formatter: (value) => new Date(value).toLocaleDateString() },
+  ], [items, locations, containers]);
+
   const openCreateDialog = () => {
     setEditingInventory(null);
     setFormItemId("");
@@ -654,23 +672,7 @@ export default function InventoryPage() {
   // Bulk export selected inventory to CSV
   const handleBulkExport = () => {
     const selectedInventories = sortedInventories.filter((inv) => selectedIds.has(inv.id));
-
-    const columns: ColumnDefinition<Inventory>[] = [
-      { key: "item_id", label: "Item", formatter: (_, inv) => getItemName(inv.item_id) },
-      { key: "location_id", label: "Location", formatter: (_, inv) => getLocationName(inv.location_id) },
-      { key: "container_id", label: "Container", formatter: (_, inv) => getContainerName(inv.container_id) || "-" },
-      { key: "quantity", label: "Quantity" },
-      { key: "condition", label: "Condition" },
-      { key: "status", label: "Status" },
-      { key: "notes", label: "Notes" },
-      {
-        key: "date_acquired",
-        label: "Date Acquired",
-        formatter: (value) => value ? format(parseISO(value), "yyyy-MM-dd") : "-"
-      },
-    ];
-
-    exportToCSV(selectedInventories, columns, generateFilename("inventory"));
+    exportToCSV(selectedInventories, exportColumns, generateFilename("inventory-bulk"));
     toast.success(`Exported ${selectedCount} ${selectedCount === 1 ? "entry" : "entries"}`);
     clearSelection();
   };
@@ -758,6 +760,15 @@ export default function InventoryPage() {
                   getFilter={getFilter}
                 />
               </FilterPopover>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setExportDialogOpen(true)}
+                disabled={filteredInventories.length === 0}
+              >
+                <Download className="mr-2 h-4 w-4" />
+                Export
+              </Button>
               <Button
                 variant={showArchived ? "default" : "outline"}
                 size="sm"
@@ -1117,6 +1128,18 @@ export default function InventoryPage() {
           </DropdownMenuContent>
         </DropdownMenu>
       </BulkActionBar>
+
+      {/* Export Dialog */}
+      <ExportDialog
+        open={exportDialogOpen}
+        onOpenChange={setExportDialogOpen}
+        data={sortedInventories}
+        allData={inventories}
+        columns={exportColumns}
+        filePrefix="inventory"
+        title="Export Inventory to CSV"
+        description="Select columns and data to export"
+      />
     </div>
   );
 }

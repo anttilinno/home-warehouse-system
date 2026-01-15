@@ -70,6 +70,7 @@ import { InfiniteScrollTrigger } from "@/components/ui/infinite-scroll-trigger";
 import { BulkActionBar } from "@/components/ui/bulk-action-bar";
 import { FilterBar } from "@/components/ui/filter-bar";
 import { FilterPopover } from "@/components/ui/filter-popover";
+import { ExportDialog } from "@/components/ui/export-dialog";
 import { useWorkspace } from "@/lib/hooks/use-workspace";
 import { useTableSort } from "@/lib/hooks/use-table-sort";
 import { useInfiniteScroll } from "@/lib/hooks/use-infinite-scroll";
@@ -253,6 +254,7 @@ export default function ContainersPage() {
   const [editingContainer, setEditingContainer] = useState<Container | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deletingContainer, setDeletingContainer] = useState<Container | null>(null);
+  const [exportDialogOpen, setExportDialogOpen] = useState(false);
 
   // Form state
   const [formName, setFormName] = useState("");
@@ -362,6 +364,17 @@ export default function ContainersPage() {
     return location?.name || "Unknown";
   };
 
+  // Export columns definition
+  const exportColumns: ColumnDefinition<Container>[] = useMemo(() => [
+    { key: "name", label: "Name" },
+    { key: "location_id", label: "Location", formatter: (_, container) => getLocationName(container.location_id) },
+    { key: "capacity", label: "Capacity" },
+    { key: "short_code", label: "Short Code" },
+    { key: "description", label: "Description" },
+    { key: "created_at", label: "Created Date", formatter: (value) => new Date(value).toLocaleDateString() },
+    { key: "updated_at", label: "Updated Date", formatter: (value) => new Date(value).toLocaleDateString() },
+  ], [locations]);
+
   const openCreateDialog = () => {
     setEditingContainer(null);
     setFormName("");
@@ -451,16 +464,7 @@ export default function ContainersPage() {
   // Bulk export selected containers to CSV
   const handleBulkExport = () => {
     const selectedContainers = sortedContainers.filter((c) => selectedIds.has(c.id));
-
-    const columns: ColumnDefinition<Container>[] = [
-      { key: "name", label: "Name" },
-      { key: "location_id", label: "Location", formatter: (_, container) => getLocationName(container.location_id) },
-      { key: "capacity", label: "Capacity" },
-      { key: "short_code", label: "Short Code" },
-      { key: "description", label: "Description" },
-    ];
-
-    exportToCSV(selectedContainers, columns, generateFilename("containers"));
+    exportToCSV(selectedContainers, exportColumns, generateFilename("containers-bulk"));
     toast.success(`Exported ${selectedCount} ${selectedCount === 1 ? "container" : "containers"}`);
     clearSelection();
   };
@@ -569,6 +573,15 @@ export default function ContainersPage() {
                   getFilter={getFilter}
                 />
               </FilterPopover>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setExportDialogOpen(true)}
+                disabled={filteredContainers.length === 0}
+              >
+                <Download className="mr-2 h-4 w-4" />
+                Export
+              </Button>
               <Button
                 variant={showArchived ? "default" : "outline"}
                 size="sm"
@@ -884,6 +897,18 @@ export default function ContainersPage() {
           Archive
         </Button>
       </BulkActionBar>
+
+      {/* Export Dialog */}
+      <ExportDialog
+        open={exportDialogOpen}
+        onOpenChange={setExportDialogOpen}
+        data={sortedContainers}
+        allData={containers}
+        columns={exportColumns}
+        filePrefix="containers"
+        title="Export Containers to CSV"
+        description="Select columns and data to export"
+      />
     </div>
   );
 }

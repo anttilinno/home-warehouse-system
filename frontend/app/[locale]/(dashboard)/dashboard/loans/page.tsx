@@ -71,6 +71,7 @@ import { InfiniteScrollTrigger } from "@/components/ui/infinite-scroll-trigger";
 import { BulkActionBar } from "@/components/ui/bulk-action-bar";
 import { FilterBar } from "@/components/ui/filter-bar";
 import { FilterPopover } from "@/components/ui/filter-popover";
+import { ExportDialog } from "@/components/ui/export-dialog";
 import { useWorkspace } from "@/lib/hooks/use-workspace";
 import { useTableSort } from "@/lib/hooks/use-table-sort";
 import { useInfiniteScroll } from "@/lib/hooks/use-infinite-scroll";
@@ -413,6 +414,7 @@ export default function LoansPage() {
   const [returnDialogOpen, setReturnDialogOpen] = useState(false);
   const [returningLoan, setReturningLoan] = useState<Loan | null>(null);
   const [extendDialogOpen, setExtendDialogOpen] = useState(false);
+  const [exportDialogOpen, setExportDialogOpen] = useState(false);
   const [extendingLoan, setExtendingLoan] = useState<Loan | null>(null);
   const [newDueDate, setNewDueDate] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
@@ -589,6 +591,18 @@ export default function LoansPage() {
     return borrower?.name || "Unknown";
   };
 
+  // Export columns definition
+  const exportColumns: ColumnDefinition<Loan>[] = useMemo(() => [
+    { key: "borrower_id", label: "Borrower", formatter: (_, loan) => getBorrowerName(loan.borrower_id) },
+    { key: "inventory_id", label: "Inventory ID" },
+    { key: "quantity", label: "Quantity" },
+    { key: "loaned_date", label: "Loaned Date", formatter: (value) => format(parseISO(value), "yyyy-MM-dd") },
+    { key: "due_date", label: "Due Date", formatter: (value) => format(parseISO(value), "yyyy-MM-dd") },
+    { key: "returned_date", label: "Returned Date", formatter: (value) => value ? format(parseISO(value), "yyyy-MM-dd") : "Not returned" },
+    { key: "notes", label: "Notes" },
+    { key: "created_at", label: "Created Date", formatter: (value) => new Date(value).toLocaleDateString() },
+  ], [borrowers]);
+
   const handleReturn = async () => {
     if (!returningLoan) return;
 
@@ -612,30 +626,7 @@ export default function LoansPage() {
   // Bulk export selected loans to CSV
   const handleBulkExport = () => {
     const selectedLoans = sortedLoans.filter((loan) => selectedIds.has(loan.id));
-
-    const columns: ColumnDefinition<Loan>[] = [
-      { key: "borrower_id", label: "Borrower", formatter: (_, loan) => getBorrowerName(loan.borrower_id) },
-      { key: "inventory_id", label: "Inventory ID" },
-      { key: "quantity", label: "Quantity" },
-      {
-        key: "loaned_at",
-        label: "Loaned Date",
-        formatter: (value) => value ? format(parseISO(value), "yyyy-MM-dd") : "-"
-      },
-      {
-        key: "due_date",
-        label: "Due Date",
-        formatter: (value) => value ? format(parseISO(value), "yyyy-MM-dd") : "-"
-      },
-      {
-        key: "returned_at",
-        label: "Returned Date",
-        formatter: (value) => value ? format(parseISO(value), "yyyy-MM-dd") : "Not returned"
-      },
-      { key: "notes", label: "Notes" },
-    ];
-
-    exportToCSV(selectedLoans, columns, generateFilename("loans"));
+    exportToCSV(selectedLoans, exportColumns, generateFilename("loans-bulk"));
     toast.success(`Exported ${selectedCount} ${selectedCount === 1 ? "loan" : "loans"}`);
     clearSelection();
   };
@@ -808,6 +799,15 @@ export default function LoansPage() {
                   getFilter={getFilter}
                 />
               </FilterPopover>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setExportDialogOpen(true)}
+                disabled={filteredLoans.length === 0}
+              >
+                <Download className="mr-2 h-4 w-4" />
+                Export
+              </Button>
             </div>
 
             {/* Filter chips */}
@@ -1209,6 +1209,18 @@ export default function LoansPage() {
           Mark as Returned
         </Button>
       </BulkActionBar>
+
+      {/* Export Dialog */}
+      <ExportDialog
+        open={exportDialogOpen}
+        onOpenChange={setExportDialogOpen}
+        data={sortedLoans}
+        allData={loans}
+        columns={exportColumns}
+        filePrefix="loans"
+        title="Export Loans to CSV"
+        description="Select columns and data to export"
+      />
     </div>
   );
 }
