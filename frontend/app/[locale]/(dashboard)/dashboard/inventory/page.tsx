@@ -13,6 +13,8 @@ import {
   Move,
   MapPin,
   Box,
+  Download,
+  CheckCircle,
 } from "lucide-react";
 import { toast } from "sonner";
 import { format, parseISO } from "date-fns";
@@ -56,16 +58,20 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
 import { InfiniteScrollTrigger } from "@/components/ui/infinite-scroll-trigger";
+import { BulkActionBar } from "@/components/ui/bulk-action-bar";
 import { useWorkspace } from "@/lib/hooks/use-workspace";
 import { useTableSort } from "@/lib/hooks/use-table-sort";
 import { useInfiniteScroll } from "@/lib/hooks/use-infinite-scroll";
+import { useBulkSelection } from "@/lib/hooks/use-bulk-selection";
 import { inventoryApi, itemsApi, locationsApi, containersApi } from "@/lib/api";
 import type { Inventory, InventoryCreate, InventoryCondition, InventoryStatus } from "@/lib/types/inventory";
 import type { Item } from "@/lib/types/items";
 import type { Location } from "@/lib/types/locations";
 import type { Container } from "@/lib/types/containers";
 import { cn } from "@/lib/utils";
+import { exportToCSV, generateFilename, type ColumnDefinition } from "@/lib/utils/csv-export";
 
 const CONDITION_OPTIONS: { value: InventoryCondition; label: string }[] = [
   { value: "NEW", label: "New" },
@@ -232,6 +238,19 @@ export default function InventoryPage() {
   // Sort inventories
   const { sortedData: sortedInventories, requestSort, getSortDirection } = useTableSort(filteredInventories, "item_id", "asc");
 
+  // Bulk selection
+  const {
+    selectedIds,
+    selectedIdsArray,
+    selectedCount,
+    toggleSelection,
+    selectAll,
+    clearSelection,
+    isSelected,
+    isAllSelected,
+    isSomeSelected,
+  } = useBulkSelection<string>();
+
   const getItemName = (itemId: string) => {
     const item = items.find(i => i.id === itemId);
     return item?.name || "Unknown Item";
@@ -315,6 +334,55 @@ export default function InventoryPage() {
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Failed to archive inventory";
       toast.error("Failed to archive inventory", {
+        description: errorMessage,
+      });
+    }
+  };
+
+  // Bulk export selected inventory to CSV
+  const handleBulkExport = () => {
+    const selectedInventories = sortedInventories.filter((inv) => selectedIds.has(inv.id));
+
+    const columns: ColumnDefinition<Inventory>[] = [
+      { key: "item_id", label: "Item", formatter: (_, inv) => getItemName(inv.item_id) },
+      { key: "location_id", label: "Location", formatter: (_, inv) => getLocationName(inv.location_id) },
+      { key: "container_id", label: "Container", formatter: (_, inv) => getContainerName(inv.container_id) || "-" },
+      { key: "quantity", label: "Quantity" },
+      { key: "condition", label: "Condition" },
+      { key: "status", label: "Status" },
+      { key: "notes", label: "Notes" },
+      {
+        key: "date_acquired",
+        label: "Date Acquired",
+        formatter: (value) => value ? format(parseISO(value), "yyyy-MM-dd") : "-"
+      },
+    ];
+
+    exportToCSV(selectedInventories, columns, generateFilename("inventory"));
+    toast.success(`Exported ${selectedCount} ${selectedCount === 1 ? "entry" : "entries"}`);
+    clearSelection();
+  };
+
+  // Bulk update status for selected inventory
+  const handleBulkStatusUpdate = async (newStatus: InventoryStatus) => {
+    if (selectedCount === 0) return;
+
+    try {
+      // Update all selected inventories
+      await Promise.all(
+        selectedIdsArray.map((id) => {
+          return inventoryApi.updateStatus(id, { status: newStatus });
+        })
+      );
+
+      toast.success(
+        `Updated ${selectedCount} ${selectedCount === 1 ? "entry" : "entries"} to ${newStatus}`
+      );
+      clearSelection();
+      refetch();
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Failed to update inventory";
+      toast.error("Failed to update inventory", {
         description: errorMessage,
       });
     }
@@ -427,6 +495,19 @@ export default function InventoryPage() {
                 <Table>
                   <TableHeader>
                     <TableRow>
+                      <TableHead className="w-[50px]">
+                        <Checkbox
+                          checked={isAllSelected(sortedInventories.map((i) => i.id))}
+                          onCheckedChange={(checked) => {
+                            if (checked) {
+                              selectAll(sortedInventories.map((i) => i.id));
+                            } else {
+                              clearSelection();
+                            }
+                          }}
+                          aria-label="Select all inventory"
+                        />
+                      </TableHead>
                       <SortableTableHead
                         sortDirection={getSortDirection("item_id")}
                         onSort={() => requestSort("item_id")}
@@ -463,6 +544,13 @@ export default function InventoryPage() {
                   <TableBody>
                     {sortedInventories.map((inventory) => (
                       <TableRow key={inventory.id}>
+                        <TableCell>
+                          <Checkbox
+                            checked={isSelected(inventory.id)}
+                            onCheckedChange={() => toggleSelection(inventory.id)}
+                            aria-label={`Select ${getItemName(inventory.item_id)}`}
+                          />
+                        </TableCell>
                         <TableCell>
                           <div>
                             <div className="font-medium">{getItemName(inventory.item_id)}</div>
@@ -683,6 +771,39 @@ export default function InventoryPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Bulk Action Bar */}
+      <BulkActionBar selectedCount={selectedCount} onClear={clearSelection}>
+        <Button onClick={handleBulkExport} size="sm" variant="outline">
+          <Download className="mr-2 h-4 w-4" />
+          Export
+        </Button>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button size="sm" variant="outline">
+              <CheckCircle className="mr-2 h-4 w-4" />
+              Update Status
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent>
+            <DropdownMenuItem onClick={() => handleBulkStatusUpdate("AVAILABLE")}>
+              Set as Available
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => handleBulkStatusUpdate("IN_USE")}>
+              Set as In Use
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => handleBulkStatusUpdate("RESERVED")}>
+              Set as Reserved
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => handleBulkStatusUpdate("ON_LOAN")}>
+              Set as On Loan
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => handleBulkStatusUpdate("IN_TRANSIT")}>
+              Set as In Transit
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </BulkActionBar>
     </div>
   );
 }
