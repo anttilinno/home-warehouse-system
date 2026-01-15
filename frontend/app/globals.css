@@ -150,4 +150,27 @@
   body {
     @apply bg-background text-foreground;
   }
+
+  /* Enhanced focus visibility for accessibility */
+  *:focus-visible {
+    outline: 2px solid hsl(var(--ring));
+    outline-offset: 2px;
+  }
+
+  /* Ensure focus is visible on all interactive elements */
+  button:focus-visible,
+  a:focus-visible,
+  input:focus-visible,
+  textarea:focus-visible,
+  select:focus-visible,
+  [role="button"]:focus-visible,
+  [tabindex]:not([tabindex="-1"]):focus-visible {
+    outline: 2px solid hsl(var(--ring));
+    outline-offset: 2px;
+  }
+
+  /* Remove default focus for mouse users (keeps keyboard focus) */
+  *:focus:not(:focus-visible) {
+    outline: none;
+  }
 }

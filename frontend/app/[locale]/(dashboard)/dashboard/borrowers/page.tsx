@@ -464,7 +464,11 @@ export default function BorrowersPage() {
               </EmptyState>
             ) : (
               <div className="rounded-lg border">
-                <Table>
+                <Table aria-label="Borrowers">
+                  <caption className="sr-only">
+                    List of borrowers with name, email, and phone contact information.
+                    Currently showing {sortedBorrowers.length} {sortedBorrowers.length === 1 ? "borrower" : "borrowers"}.
+                  </caption>
                   <TableHeader>
                     <TableRow>
                       <TableHead className="w-[50px]">
@@ -568,7 +572,7 @@ export default function BorrowersPage() {
                         <TableCell>
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="icon">
+                              <Button variant="ghost" size="icon" aria-label={`Actions for ${borrower.name}`}>
                                 <MoreHorizontal className="h-4 w-4" />
                               </Button>
                             </DropdownMenuTrigger>

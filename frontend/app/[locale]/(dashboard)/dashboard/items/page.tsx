@@ -911,7 +911,11 @@ export default function ItemsPage() {
               </EmptyState>
             ) : (
               <div className="rounded-lg border">
-                <Table>
+                <Table aria-label="Item catalog">
+                  <caption className="sr-only">
+                    List of catalog items with SKU, name, category, brand, model, and minimum stock level information.
+                    Currently showing {sortedItems.length} {sortedItems.length === 1 ? "item" : "items"}.
+                  </caption>
                   <TableHeader>
                     <TableRow>
                       <TableHead className="w-[50px]">
@@ -1001,7 +1005,7 @@ export default function ItemsPage() {
                         <TableCell>
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="icon">
+                              <Button variant="ghost" size="icon" aria-label={`Actions for ${item.name}`}>
                                 <MoreHorizontal className="h-4 w-4" />
                               </Button>
                             </DropdownMenuTrigger>

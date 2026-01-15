@@ -126,6 +126,9 @@ const SortableTableHead = React.forwardRef<
 >(({ className, children, sortDirection, onSort, sortable = true, ...props }, ref) => {
   const SortIcon = sortDirection === "asc" ? ArrowUp : sortDirection === "desc" ? ArrowDown : ArrowUpDown;
 
+  // Determine aria-sort value
+  const ariaSort = sortDirection === "asc" ? "ascending" : sortDirection === "desc" ? "descending" : "none";
+
   if (!sortable) {
     return (
       <TableHead ref={ref} className={className} {...props}>
@@ -143,6 +146,8 @@ const SortableTableHead = React.forwardRef<
         className
       )}
       onClick={onSort}
+      aria-sort={ariaSort}
+      role="columnheader"
       {...props}
     >
       <div className="flex items-center gap-2">
@@ -153,6 +158,7 @@ const SortableTableHead = React.forwardRef<
               "h-4 w-4",
               sortDirection ? "text-foreground" : "text-muted-foreground/50"
             )}
+            aria-hidden="true"
           />
         )}
       </div>

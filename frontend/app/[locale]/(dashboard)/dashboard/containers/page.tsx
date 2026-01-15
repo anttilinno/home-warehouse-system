@@ -707,7 +707,11 @@ export default function ContainersPage() {
               </EmptyState>
             ) : (
               <div className="rounded-lg border">
-                <Table>
+                <Table aria-label="Storage containers">
+                  <caption className="sr-only">
+                    List of storage containers with location, capacity, and short code information.
+                    Currently showing {sortedContainers.length} {sortedContainers.length === 1 ? "container" : "containers"}.
+                  </caption>
                   <TableHeader>
                     <TableRow>
                       <TableHead className="w-[50px]">
@@ -796,7 +800,7 @@ export default function ContainersPage() {
                         <TableCell>
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="icon">
+                              <Button variant="ghost" size="icon" aria-label={`Actions for ${container.name}`}>
                                 <MoreHorizontal className="h-4 w-4" />
                               </Button>
                             </DropdownMenuTrigger>

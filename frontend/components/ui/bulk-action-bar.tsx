@@ -72,10 +72,10 @@ export function BulkActionBar({
         {/* Selection info */}
         <div className="flex items-center gap-3">
           <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground">
-            <Check className="h-4 w-4" />
+            <Check className="h-4 w-4" aria-hidden="true" />
           </div>
           <div className="flex flex-col">
-            <span className="text-sm font-semibold">
+            <span className="text-sm font-semibold" aria-live="polite">
               {selectedCount} {selectedCount === 1 ? "item" : "items"} selected
             </span>
             <span className="text-xs text-muted-foreground">

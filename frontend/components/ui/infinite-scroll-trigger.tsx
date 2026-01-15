@@ -92,6 +92,9 @@ export function InfiniteScrollTrigger({
   if (!hasMore) {
     return (
       <div
+        role="status"
+        aria-live="polite"
+        aria-atomic="true"
         className={cn(
           "flex items-center justify-center py-8 text-sm text-muted-foreground",
           className
@@ -105,6 +108,9 @@ export function InfiniteScrollTrigger({
   return (
     <div
       ref={triggerRef}
+      role="status"
+      aria-live="polite"
+      aria-atomic="true"
       className={cn(
         "flex items-center justify-center py-8",
         className
@@ -112,7 +118,7 @@ export function InfiniteScrollTrigger({
     >
       {isLoading ? (
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <Loader2 className="h-4 w-4 animate-spin" />
+          <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
           <span>{loadingText}</span>
         </div>
       ) : (

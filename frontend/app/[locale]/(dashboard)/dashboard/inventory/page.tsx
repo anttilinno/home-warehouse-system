@@ -16,6 +16,9 @@ import {
   Download,
   Upload,
   CheckCircle,
+  CheckCircle2,
+  HandCoins,
+  AlertCircle,
 } from "lucide-react";
 import { toast } from "sonner";
 import { format, parseISO } from "date-fns";
@@ -92,14 +95,19 @@ const CONDITION_OPTIONS: { value: InventoryCondition; label: string }[] = [
   { value: "FOR_REPAIR", label: "For Repair" },
 ];
 
-const STATUS_OPTIONS: { value: InventoryStatus; label: string; color: string }[] = [
-  { value: "AVAILABLE", label: "Available", color: "bg-green-500" },
-  { value: "IN_USE", label: "In Use", color: "bg-blue-500" },
-  { value: "RESERVED", label: "Reserved", color: "bg-yellow-500" },
-  { value: "ON_LOAN", label: "On Loan", color: "bg-purple-500" },
-  { value: "IN_TRANSIT", label: "In Transit", color: "bg-orange-500" },
-  { value: "DISPOSED", label: "Disposed", color: "bg-gray-500" },
-  { value: "MISSING", label: "Missing", color: "bg-red-500" },
+const STATUS_OPTIONS: {
+  value: InventoryStatus;
+  label: string;
+  color: string;
+  icon: React.ComponentType<{ className?: string }>;
+}[] = [
+  { value: "AVAILABLE", label: "Available", color: "bg-green-500", icon: CheckCircle },
+  { value: "IN_USE", label: "In Use", color: "bg-blue-500", icon: Package },
+  { value: "RESERVED", label: "Reserved", color: "bg-yellow-500", icon: CheckCircle2 },
+  { value: "ON_LOAN", label: "On Loan", color: "bg-purple-500", icon: HandCoins },
+  { value: "IN_TRANSIT", label: "In Transit", color: "bg-orange-500", icon: Move },
+  { value: "DISPOSED", label: "Disposed", color: "bg-gray-500", icon: Archive },
+  { value: "MISSING", label: "Missing", color: "bg-red-500", icon: AlertCircle },
 ];
 
 interface InventoryFilterControlsProps {
@@ -404,9 +412,12 @@ function InventoryTableSkeleton() {
 
 function StatusBadge({ status }: { status: InventoryStatus }) {
   const statusOption = STATUS_OPTIONS.find(s => s.value === status);
+  const Icon = statusOption?.icon;
+
   return (
-    <Badge className={cn("gap-1", statusOption?.color)}>
-      {statusOption?.label || status}
+    <Badge className={cn("gap-1.5", statusOption?.color)}>
+      {Icon && <Icon className="h-3 w-3" aria-hidden="true" />}
+      <span>{statusOption?.label || status}</span>
     </Badge>
   );
 }
@@ -981,7 +992,11 @@ export default function InventoryPage() {
               </EmptyState>
             ) : (
               <div className="rounded-lg border">
-                <Table>
+                <Table aria-label="Inventory items">
+                  <caption className="sr-only">
+                    List of inventory items with quantity, location, condition, and status information.
+                    Currently showing {sortedInventories.length} {sortedInventories.length === 1 ? "entry" : "entries"}.
+                  </caption>
                   <TableHeader>
                     <TableRow>
                       <TableHead className="w-[50px]">
@@ -1098,7 +1113,7 @@ export default function InventoryPage() {
                         <TableCell>
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="icon">
+                              <Button variant="ghost" size="icon" aria-label={`Actions for ${getItemName(inventory.item_id)}`}>
                                 <MoreHorizontal className="h-4 w-4" />
                               </Button>
                             </DropdownMenuTrigger>

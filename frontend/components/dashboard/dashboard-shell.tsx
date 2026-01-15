@@ -8,6 +8,7 @@ import { DashboardHeader } from "./header";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { CommandPalette } from "@/components/ui/command-palette";
 import { KeyboardShortcutsDialog } from "@/components/ui/keyboard-shortcuts-dialog";
+import { SkipLinks } from "@/components/shared/skip-links";
 import { useCommandPalette } from "@/lib/hooks/use-command-palette";
 import { useKeyboardShortcutsDialog } from "@/lib/hooks/use-keyboard-shortcuts-dialog";
 
@@ -25,8 +26,10 @@ export function DashboardShell({ children }: DashboardShellProps) {
 
   return (
     <div className="min-h-screen bg-muted/30">
+      <SkipLinks />
+
       {/* Desktop Sidebar */}
-      <div className="hidden md:block">
+      <div className="hidden md:block" id="navigation">
         <Sidebar
           collapsed={sidebarCollapsed}
           onToggle={() => setSidebarCollapsed(!sidebarCollapsed)}
@@ -48,7 +51,7 @@ export function DashboardShell({ children }: DashboardShellProps) {
         )}
       >
         <DashboardHeader onMenuClick={() => setMobileMenuOpen(true)} />
-        <main className="flex-1 p-4 md:p-6">{children}</main>
+        <main id="main-content" className="flex-1 p-4 md:p-6">{children}</main>
       </div>
 
       {/* Command Palette */}

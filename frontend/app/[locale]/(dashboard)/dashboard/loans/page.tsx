@@ -367,26 +367,26 @@ function LoansTableSkeleton() {
 function LoanStatusBadge({ loan }: { loan: Loan }) {
   if (!loan.is_active) {
     return (
-      <Badge variant="outline" className="gap-1">
-        <CheckCircle2 className="h-3 w-3" />
-        Returned
+      <Badge variant="outline" className="gap-1.5">
+        <CheckCircle2 className="h-3 w-3" aria-hidden="true" />
+        <span>Returned</span>
       </Badge>
     );
   }
 
   if (loan.is_overdue) {
     return (
-      <Badge variant="destructive" className="gap-1">
-        <AlertCircle className="h-3 w-3" />
-        Overdue
+      <Badge variant="destructive" className="gap-1.5">
+        <AlertCircle className="h-3 w-3" aria-hidden="true" />
+        <span>Overdue</span>
       </Badge>
     );
   }
 
   return (
-    <Badge className="gap-1 bg-blue-500">
-      <Clock className="h-3 w-3" />
-      Active
+    <Badge className="gap-1.5 bg-blue-500">
+      <Clock className="h-3 w-3" aria-hidden="true" />
+      <span>Active</span>
     </Badge>
   );
 }
@@ -891,7 +891,11 @@ export default function LoansPage() {
               </EmptyState>
             ) : (
               <div className="rounded-lg border">
-                <Table>
+                <Table aria-label="Borrowed items and loans">
+                  <caption className="sr-only">
+                    List of borrowed items with borrower, inventory details, loan dates, and status information.
+                    Currently showing {sortedLoans.length} {sortedLoans.length === 1 ? "loan" : "loans"}.
+                  </caption>
                   <TableHeader>
                     <TableRow>
                       <TableHead className="w-[50px]">
@@ -995,7 +999,7 @@ export default function LoansPage() {
                         <TableCell>
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="icon" disabled={!loan.is_active}>
+                              <Button variant="ghost" size="icon" disabled={!loan.is_active} aria-label={`Actions for loan to ${getBorrowerName(loan.borrower_id)}`}>
                                 <MoreHorizontal className="h-4 w-4" />
                               </Button>
                             </DropdownMenuTrigger>

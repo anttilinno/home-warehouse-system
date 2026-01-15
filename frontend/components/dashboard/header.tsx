@@ -113,6 +113,7 @@ export function DashboardHeader({ onMenuClick }: HeaderProps) {
         size="icon"
         className="md:hidden shrink-0"
         onClick={onMenuClick}
+        aria-label="Open navigation menu"
       >
         <Menu className="h-5 w-5" />
         <span className="sr-only">Toggle menu</span>
@@ -178,7 +179,7 @@ export function DashboardHeader({ onMenuClick }: HeaderProps) {
         <ThemeToggle />
 
         {/* Notifications */}
-        <Button variant="ghost" size="icon" className="relative">
+        <Button variant="ghost" size="icon" className="relative" aria-label="View notifications (3 unread)">
           <Bell className="h-5 w-5" />
           <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-destructive text-[10px] font-medium text-destructive-foreground">
             3
