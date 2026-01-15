@@ -16,6 +16,9 @@ export interface Loan {
 
 export interface LoanListResponse {
   items: Loan[];
+  total: number;
+  page: number;
+  total_pages: number;
 }
 
 export interface LoanCreate {

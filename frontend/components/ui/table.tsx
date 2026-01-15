@@ -1,6 +1,8 @@
 import * as React from "react";
+import { ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
 
 import { cn } from "@/lib/utils";
+import type { SortDirection } from "@/lib/hooks/use-table-sort";
 
 const Table = React.forwardRef<
   HTMLTableElement,
@@ -108,6 +110,57 @@ const TableCaption = React.forwardRef<
 ));
 TableCaption.displayName = "TableCaption";
 
+interface SortableTableHeadProps
+  extends React.ThHTMLAttributes<HTMLTableCellElement> {
+  /** The current sort direction for this column */
+  sortDirection?: SortDirection;
+  /** Callback when the column header is clicked */
+  onSort?: () => void;
+  /** Whether this column is sortable */
+  sortable?: boolean;
+}
+
+const SortableTableHead = React.forwardRef<
+  HTMLTableCellElement,
+  SortableTableHeadProps
+>(({ className, children, sortDirection, onSort, sortable = true, ...props }, ref) => {
+  const SortIcon = sortDirection === "asc" ? ArrowUp : sortDirection === "desc" ? ArrowDown : ArrowUpDown;
+
+  if (!sortable) {
+    return (
+      <TableHead ref={ref} className={className} {...props}>
+        {children}
+      </TableHead>
+    );
+  }
+
+  return (
+    <th
+      ref={ref}
+      className={cn(
+        "h-10 px-2 text-left align-middle font-medium text-muted-foreground [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]",
+        sortable && "cursor-pointer select-none hover:bg-muted/50 transition-colors",
+        className
+      )}
+      onClick={onSort}
+      {...props}
+    >
+      <div className="flex items-center gap-2">
+        <span>{children}</span>
+        {sortable && (
+          <SortIcon
+            className={cn(
+              "h-4 w-4",
+              sortDirection ? "text-foreground" : "text-muted-foreground/50"
+            )}
+          />
+        )}
+      </div>
+    </th>
+  );
+});
+SortableTableHead.displayName = "SortableTableHead";
+
 export {
   Table,
   TableHeader,
@@ -117,4 +170,5 @@ export {
   TableRow,
   TableCell,
   TableCaption,
+  SortableTableHead,
 };

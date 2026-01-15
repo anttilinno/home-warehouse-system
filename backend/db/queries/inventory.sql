@@ -47,6 +47,16 @@ UPDATE warehouse.inventory
 SET is_archived = false, updated_at = now()
 WHERE id = $1;
 
+-- name: ListInventory :many
+SELECT * FROM warehouse.inventory
+WHERE workspace_id = $1 AND is_archived = false
+ORDER BY created_at DESC
+LIMIT $2 OFFSET $3;
+
+-- name: CountInventory :one
+SELECT COUNT(*) FROM warehouse.inventory
+WHERE workspace_id = $1 AND is_archived = false;
+
 -- name: ListInventoryByItem :many
 SELECT * FROM warehouse.inventory
 WHERE workspace_id = $1 AND item_id = $2 AND is_archived = false

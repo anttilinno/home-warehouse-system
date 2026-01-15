@@ -52,6 +52,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
+  SortableTableHead,
 } from "@/components/ui/table";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -63,7 +64,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
+import { InfiniteScrollTrigger } from "@/components/ui/infinite-scroll-trigger";
 import { useWorkspace } from "@/lib/hooks/use-workspace";
+import { useTableSort } from "@/lib/hooks/use-table-sort";
+import { useInfiniteScroll } from "@/lib/hooks/use-infinite-scroll";
 import { containersApi, locationsApi } from "@/lib/api";
 import type { Container, ContainerCreate, ContainerUpdate } from "@/lib/types/containers";
 import type { Location } from "@/lib/types/locations";
@@ -107,9 +111,7 @@ export default function ContainersPage() {
   const t = useTranslations("containers");
   const { workspaceId, isLoading: workspaceLoading } = useWorkspace();
 
-  const [containers, setContainers] = useState<Container[]>([]);
   const [locations, setLocations] = useState<Location[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [locationFilter, setLocationFilter] = useState<string | null>(null);
   const [showArchived, setShowArchived] = useState(false);
@@ -128,23 +130,26 @@ export default function ContainersPage() {
   const [formShortCode, setFormShortCode] = useState("");
   const [isSaving, setIsSaving] = useState(false);
 
-  // Load containers
-  const loadContainers = useCallback(async () => {
-    if (!workspaceId) return;
-
-    try {
-      setIsLoading(true);
-      const response = await containersApi.list({ limit: 500 });
-      setContainers(response.items);
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "Failed to load containers";
-      toast.error("Failed to load containers", {
-        description: errorMessage,
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  }, [workspaceId]);
+  // Infinite scroll for containers
+  const {
+    items: containers,
+    hasMore,
+    isLoading,
+    isLoadingMore,
+    totalItems,
+    loadMore,
+    refetch,
+  } = useInfiniteScroll({
+    fetchFunction: async (page) => {
+      if (!workspaceId) {
+        return { items: [], total: 0, page: 1, total_pages: 0 };
+      }
+      return await containersApi.list({ page, limit: 50 });
+    },
+    pageSize: 50,
+    dependencies: [workspaceId],
+    autoFetch: !!workspaceId,
+  });
 
   // Load locations
   const loadLocations = useCallback(async () => {
@@ -160,10 +165,9 @@ export default function ContainersPage() {
 
   useEffect(() => {
     if (workspaceId) {
-      loadContainers();
       loadLocations();
     }
-  }, [workspaceId, loadContainers, loadLocations]);
+  }, [workspaceId, loadLocations]);
 
   // Filter containers
   const filteredContainers = containers.filter((container) => {
@@ -188,6 +192,9 @@ export default function ContainersPage() {
 
     return true;
   });
+
+  // Sort containers
+  const { sortedData: sortedContainers, requestSort, getSortDirection } = useTableSort(filteredContainers, "name", "asc");
 
   const getLocationName = (locationId: string) => {
     const location = locations.find((l) => l.id === locationId);
@@ -251,7 +258,7 @@ export default function ContainersPage() {
       }
 
       setDialogOpen(false);
-      loadContainers();
+      refetch();
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Failed to save container";
       toast.error("Failed to save container", {
@@ -271,7 +278,7 @@ export default function ContainersPage() {
         await containersApi.archive(container.id);
         toast.success("Container archived successfully");
       }
-      loadContainers();
+      refetch();
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Failed to archive container";
       toast.error("Failed to archive container", {
@@ -288,7 +295,7 @@ export default function ContainersPage() {
       toast.success("Container deleted successfully");
       setDeleteDialogOpen(false);
       setDeletingContainer(null);
-      loadContainers();
+      refetch();
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Failed to delete container";
       toast.error("Failed to delete container", {
@@ -324,7 +331,7 @@ export default function ContainersPage() {
             <div>
               <CardTitle>Storage Containers</CardTitle>
               <CardDescription>
-                {filteredContainers.length} container{filteredContainers.length !== 1 ? "s" : ""}
+                {sortedContainers.length} container{sortedContainers.length !== 1 ? "s" : ""}
                 {searchQuery && " matching your search"}
               </CardDescription>
             </div>
@@ -374,7 +381,7 @@ export default function ContainersPage() {
             </div>
 
             {/* Containers table */}
-            {filteredContainers.length === 0 ? (
+            {sortedContainers.length === 0 ? (
               <EmptyState
                 icon={Box}
                 title={
@@ -404,15 +411,35 @@ export default function ContainersPage() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Name</TableHead>
-                      <TableHead>Location</TableHead>
-                      <TableHead>Capacity</TableHead>
-                      <TableHead>Short Code</TableHead>
+                      <SortableTableHead
+                        sortDirection={getSortDirection("name")}
+                        onSort={() => requestSort("name")}
+                      >
+                        Name
+                      </SortableTableHead>
+                      <SortableTableHead
+                        sortDirection={getSortDirection("location_id")}
+                        onSort={() => requestSort("location_id")}
+                      >
+                        Location
+                      </SortableTableHead>
+                      <SortableTableHead
+                        sortDirection={getSortDirection("capacity")}
+                        onSort={() => requestSort("capacity")}
+                      >
+                        Capacity
+                      </SortableTableHead>
+                      <SortableTableHead
+                        sortDirection={getSortDirection("short_code")}
+                        onSort={() => requestSort("short_code")}
+                      >
+                        Short Code
+                      </SortableTableHead>
                       <TableHead className="w-[50px]"></TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {filteredContainers.map((container) => (
+                    {sortedContainers.map((container) => (
                       <TableRow key={container.id}>
                         <TableCell>
                           <div>
@@ -492,6 +519,15 @@ export default function ContainersPage() {
                 </Table>
               </div>
             )}
+
+            {/* Infinite scroll trigger */}
+            <InfiniteScrollTrigger
+              onLoadMore={loadMore}
+              isLoading={isLoadingMore}
+              hasMore={hasMore}
+              loadingText="Loading more containers..."
+              endText={`Showing all ${sortedContainers.length} container${sortedContainers.length !== 1 ? "s" : ""}`}
+            />
           </div>
         </CardContent>
       </Card>

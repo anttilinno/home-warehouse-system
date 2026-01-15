@@ -9,6 +9,7 @@ import (
 	"github.com/google/uuid"
 
 	appMiddleware "github.com/antti/home-warehouse/go-backend/internal/api/middleware"
+	"github.com/antti/home-warehouse/go-backend/internal/shared"
 )
 
 // RegisterRoutes registers inventory routes.
@@ -20,6 +21,33 @@ func RegisterRoutes(api huma.API, svc ServiceInterface) {
 
 // registerQueryRoutes registers read-only inventory routes.
 func registerQueryRoutes(api huma.API, svc ServiceInterface) {
+	huma.Get(api, "/inventory", func(ctx context.Context, input *ListInventoryInput) (*ListInventoryOutput, error) {
+		workspaceID, err := appMiddleware.RequireWorkspaceID(ctx)
+		if err != nil {
+			return nil, huma.Error401Unauthorized(err.Error())
+		}
+
+		pagination := shared.Pagination{Page: input.Page, PageSize: input.Limit}
+		inventories, total, err := svc.List(ctx, workspaceID, pagination)
+		if err != nil {
+			return nil, huma.Error500InternalServerError("failed to list inventory")
+		}
+
+		responses := make([]InventoryResponse, len(inventories))
+		for i, inv := range inventories {
+			responses[i] = toInventoryResponse(inv)
+		}
+
+		return &ListInventoryOutput{
+			Body: InventoryListResponse{
+				Items:      responses,
+				Total:      total,
+				Page:       input.Page,
+				TotalPages: (total + input.Limit - 1) / input.Limit,
+			},
+		}, nil
+	})
+
 	huma.Get(api, "/inventory/{id}", func(ctx context.Context, input *GetInventoryInput) (*GetInventoryOutput, error) {
 		workspaceID, err := appMiddleware.RequireWorkspaceID(ctx)
 		if err != nil {
@@ -282,6 +310,11 @@ func toInventoryResponse(inv *Inventory) InventoryResponse {
 
 // Request/Response types
 
+type ListInventoryInput struct {
+	Page  int `query:"page" default:"1" minimum:"1"`
+	Limit int `query:"limit" default:"50" minimum:"1" maximum:"100"`
+}
+
 type GetInventoryInput struct {
 	ID uuid.UUID `path:"id"`
 }
@@ -307,7 +340,10 @@ type ListInventoryOutput struct {
 }
 
 type InventoryListResponse struct {
-	Items []InventoryResponse `json:"items"`
+	Items      []InventoryResponse `json:"items"`
+	Total      int                 `json:"total"`
+	Page       int                 `json:"page"`
+	TotalPages int                 `json:"total_pages"`
 }
 
 type GetTotalQuantityOutput struct {

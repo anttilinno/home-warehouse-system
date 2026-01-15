@@ -10,14 +10,13 @@ export const borrowersApi = {
   /**
    * List borrowers with pagination
    */
-  list: async (params?: { page?: number; limit?: number }): Promise<Borrower[]> => {
+  list: async (params?: { page?: number; limit?: number }): Promise<BorrowerListResponse> => {
     const queryParams = new URLSearchParams();
     if (params?.page) queryParams.append("page", params.page.toString());
     if (params?.limit) queryParams.append("limit", params.limit.toString());
 
     const url = `/borrowers${queryParams.toString() ? `?${queryParams.toString()}` : ""}`;
-    const response = await apiClient.get<BorrowerListResponse>(url);
-    return response.items;
+    return apiClient.get<BorrowerListResponse>(url);
   },
 
   /**

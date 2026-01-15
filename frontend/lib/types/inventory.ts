@@ -38,6 +38,9 @@ export interface Inventory {
 
 export interface InventoryListResponse {
   items: Inventory[];
+  total: number;
+  page: number;
+  total_pages: number;
 }
 
 export interface InventoryCreate {

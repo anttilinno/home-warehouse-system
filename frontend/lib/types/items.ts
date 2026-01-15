@@ -27,9 +27,9 @@ export interface Item {
 
 export interface ItemListResponse {
   items: Item[];
-  total?: number;
-  page?: number;
-  total_pages?: number;
+  total: number;
+  page: number;
+  total_pages: number;
 }
 
 export interface ItemCreate {

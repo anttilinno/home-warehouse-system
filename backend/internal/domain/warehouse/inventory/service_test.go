@@ -9,6 +9,8 @@ import (
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+
+	"github.com/antti/home-warehouse/go-backend/internal/shared"
 )
 
 // MockRepository is a mock implementation of the Repository interface
@@ -69,6 +71,14 @@ func (m *MockRepository) GetTotalQuantity(ctx context.Context, workspaceID, item
 func (m *MockRepository) Delete(ctx context.Context, id uuid.UUID) error {
 	args := m.Called(ctx, id)
 	return args.Error(0)
+}
+
+func (m *MockRepository) List(ctx context.Context, workspaceID uuid.UUID, pagination shared.Pagination) ([]*Inventory, int, error) {
+	args := m.Called(ctx, workspaceID, pagination)
+	if args.Get(0) == nil {
+		return nil, args.Int(1), args.Error(2)
+	}
+	return args.Get(0).([]*Inventory), args.Int(1), args.Error(2)
 }
 
 // Helper functions

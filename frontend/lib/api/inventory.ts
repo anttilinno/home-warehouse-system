@@ -12,6 +12,18 @@ import type {
 
 export const inventoryApi = {
   /**
+   * List inventory with pagination
+   */
+  list: async (params?: { page?: number; limit?: number }): Promise<InventoryListResponse> => {
+    const queryParams = new URLSearchParams();
+    if (params?.page) queryParams.append("page", params.page.toString());
+    if (params?.limit) queryParams.append("limit", params.limit.toString());
+
+    const url = `/inventory${queryParams.toString() ? `?${queryParams.toString()}` : ""}`;
+    return apiClient.get<InventoryListResponse>(url);
+  },
+
+  /**
    * Get a single inventory by ID
    */
   get: async (id: string): Promise<Inventory> => {

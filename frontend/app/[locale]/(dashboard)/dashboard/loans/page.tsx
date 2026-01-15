@@ -53,6 +53,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
+  SortableTableHead,
 } from "@/components/ui/table";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
@@ -63,7 +64,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { InfiniteScrollTrigger } from "@/components/ui/infinite-scroll-trigger";
 import { useWorkspace } from "@/lib/hooks/use-workspace";
+import { useTableSort } from "@/lib/hooks/use-table-sort";
+import { useInfiniteScroll } from "@/lib/hooks/use-infinite-scroll";
 import { loansApi, borrowersApi, itemsApi, inventoryApi } from "@/lib/api";
 import type { Loan } from "@/lib/types/loans";
 import type { Borrower } from "@/lib/types/borrowers";
@@ -142,11 +146,9 @@ export default function LoansPage() {
   const t = useTranslations("loans");
   const { workspaceId, isLoading: workspaceLoading } = useWorkspace();
 
-  const [loans, setLoans] = useState<Loan[]>([]);
   const [borrowers, setBorrowers] = useState<Borrower[]>([]);
   const [items, setItems] = useState<Item[]>([]);
   const [availableInventory, setAvailableInventory] = useState<Inventory[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
 
@@ -168,23 +170,26 @@ export default function LoansPage() {
   const [formDueDate, setFormDueDate] = useState("");
   const [formNotes, setFormNotes] = useState("");
 
-  // Load loans
-  const loadLoans = useCallback(async () => {
-    if (!workspaceId) return;
-
-    try {
-      setIsLoading(true);
-      const data = await loansApi.list({ limit: 500 });
-      setLoans(data);
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "Failed to load loans";
-      toast.error("Failed to load loans", {
-        description: errorMessage,
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  }, [workspaceId]);
+  // Infinite scroll for loans
+  const {
+    items: loans,
+    hasMore,
+    isLoading,
+    isLoadingMore,
+    totalItems,
+    loadMore,
+    refetch,
+  } = useInfiniteScroll({
+    fetchFunction: async (page) => {
+      if (!workspaceId) {
+        return { items: [], total: 0, page: 1, total_pages: 0 };
+      }
+      return await loansApi.list({ page, limit: 50 });
+    },
+    pageSize: 50,
+    dependencies: [workspaceId],
+    autoFetch: !!workspaceId,
+  });
 
   // Load borrowers
   const loadBorrowers = useCallback(async () => {
@@ -192,7 +197,7 @@ export default function LoansPage() {
 
     try {
       const data = await borrowersApi.list({ limit: 500 });
-      setBorrowers(data.filter(b => !b.is_archived));
+      setBorrowers(data.items.filter(b => !b.is_archived));
     } catch (error) {
       console.error("Failed to load borrowers:", error);
     }
@@ -228,11 +233,10 @@ export default function LoansPage() {
 
   useEffect(() => {
     if (workspaceId) {
-      loadLoans();
       loadBorrowers();
       loadItems();
     }
-  }, [workspaceId, loadLoans, loadBorrowers, loadItems]);
+  }, [workspaceId, loadBorrowers, loadItems]);
 
   // Load inventory when item changes
   useEffect(() => {
@@ -265,6 +269,9 @@ export default function LoansPage() {
     return true;
   });
 
+  // Sort loans
+  const { sortedData: sortedLoans, requestSort, getSortDirection } = useTableSort(filteredLoans, "loaned_at", "desc");
+
   const getBorrowerName = (borrowerId: string) => {
     const borrower = borrowers.find((b) => b.id === borrowerId);
     return borrower?.name || "Unknown";
@@ -279,7 +286,7 @@ export default function LoansPage() {
       toast.success("Loan returned successfully");
       setReturnDialogOpen(false);
       setReturningLoan(null);
-      loadLoans();
+      refetch();
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Failed to return loan";
       toast.error("Failed to return loan", {
@@ -300,7 +307,7 @@ export default function LoansPage() {
       setExtendDialogOpen(false);
       setExtendingLoan(null);
       setNewDueDate("");
-      loadLoans();
+      refetch();
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Failed to extend due date";
       toast.error("Failed to extend due date", {
@@ -340,7 +347,7 @@ export default function LoansPage() {
       toast.success("Loan created successfully");
       setCreateDialogOpen(false);
       resetCreateForm();
-      loadLoans();
+      refetch();
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Failed to create loan";
       toast.error("Failed to create loan", {
@@ -405,7 +412,7 @@ export default function LoansPage() {
             <div>
               <CardTitle>Loan History</CardTitle>
               <CardDescription>
-                {filteredLoans.length} loan{filteredLoans.length !== 1 ? "s" : ""}
+                {sortedLoans.length} loan{sortedLoans.length !== 1 ? "s" : ""}
                 {searchQuery && " matching your search"}
               </CardDescription>
             </div>
@@ -445,7 +452,7 @@ export default function LoansPage() {
             </div>
 
             {/* Loans table */}
-            {filteredLoans.length === 0 ? (
+            {sortedLoans.length === 0 ? (
               <EmptyState
                 icon={HandCoins}
                 title={searchQuery || statusFilter !== "all" ? "No loans found" : "No loans yet"}
@@ -467,17 +474,47 @@ export default function LoansPage() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Borrower</TableHead>
-                      <TableHead>Inventory ID</TableHead>
-                      <TableHead>Qty</TableHead>
-                      <TableHead>Loaned</TableHead>
-                      <TableHead>Due</TableHead>
+                      <SortableTableHead
+                        sortDirection={getSortDirection("is_active")}
+                        onSort={() => requestSort("is_active")}
+                      >
+                        Status
+                      </SortableTableHead>
+                      <SortableTableHead
+                        sortDirection={getSortDirection("borrower_id")}
+                        onSort={() => requestSort("borrower_id")}
+                      >
+                        Borrower
+                      </SortableTableHead>
+                      <SortableTableHead
+                        sortDirection={getSortDirection("inventory_id")}
+                        onSort={() => requestSort("inventory_id")}
+                      >
+                        Inventory ID
+                      </SortableTableHead>
+                      <SortableTableHead
+                        sortDirection={getSortDirection("quantity")}
+                        onSort={() => requestSort("quantity")}
+                      >
+                        Qty
+                      </SortableTableHead>
+                      <SortableTableHead
+                        sortDirection={getSortDirection("loaned_at")}
+                        onSort={() => requestSort("loaned_at")}
+                      >
+                        Loaned
+                      </SortableTableHead>
+                      <SortableTableHead
+                        sortDirection={getSortDirection("due_date")}
+                        onSort={() => requestSort("due_date")}
+                      >
+                        Due
+                      </SortableTableHead>
                       <TableHead className="w-[50px]"></TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {filteredLoans.map((loan) => (
+                    {sortedLoans.map((loan) => (
                       <TableRow key={loan.id} className={cn(loan.is_overdue && "bg-destructive/5")}>
                         <TableCell>
                           <LoanStatusBadge loan={loan} />
@@ -556,6 +593,15 @@ export default function LoansPage() {
                 </Table>
               </div>
             )}
+
+            {/* Infinite scroll trigger */}
+            <InfiniteScrollTrigger
+              onLoadMore={loadMore}
+              isLoading={isLoadingMore}
+              hasMore={hasMore}
+              loadingText="Loading more loans..."
+              endText={`Showing all ${sortedLoans.length} loan${sortedLoans.length !== 1 ? "s" : ""}`}
+            />
           </div>
         </CardContent>
       </Card>

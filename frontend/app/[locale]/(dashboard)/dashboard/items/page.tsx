@@ -41,6 +41,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
+  SortableTableHead,
 } from "@/components/ui/table";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -55,7 +56,10 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState, EmptyStateList, EmptyStateBenefits } from "@/components/ui/empty-state";
+import { InfiniteScrollTrigger } from "@/components/ui/infinite-scroll-trigger";
 import { useWorkspace } from "@/lib/hooks/use-workspace";
+import { useTableSort } from "@/lib/hooks/use-table-sort";
+import { useInfiniteScroll } from "@/lib/hooks/use-infinite-scroll";
 import { itemsApi, categoriesApi, type Category } from "@/lib/api";
 import type { Item, ItemCreate, ItemUpdate } from "@/lib/types/items";
 import { cn } from "@/lib/utils";
@@ -118,9 +122,7 @@ export default function ItemsPage() {
   const t = useTranslations("items");
   const { workspaceId, isLoading: workspaceLoading } = useWorkspace();
 
-  const [items, setItems] = useState<Item[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [categoryFilter, setCategoryFilter] = useState<string | null>(null);
   const [showArchived, setShowArchived] = useState(false);
@@ -150,24 +152,6 @@ export default function ItemsPage() {
   });
   const [isSaving, setIsSaving] = useState(false);
 
-  // Load items
-  const loadItems = useCallback(async () => {
-    if (!workspaceId) return;
-
-    try {
-      setIsLoading(true);
-      const response = await itemsApi.list({ limit: 100 });
-      setItems(response.items);
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "Failed to load items";
-      toast.error("Failed to load items", {
-        description: errorMessage,
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  }, [workspaceId]);
-
   // Load categories
   const loadCategories = useCallback(async () => {
     if (!workspaceId) return;
@@ -182,12 +166,32 @@ export default function ItemsPage() {
 
   useEffect(() => {
     if (workspaceId) {
-      loadItems();
       loadCategories();
     }
-  }, [workspaceId, loadItems, loadCategories]);
+  }, [workspaceId, loadCategories]);
 
-  // Filter items
+  // Infinite scroll for items
+  const {
+    items,
+    hasMore,
+    isLoading,
+    isLoadingMore,
+    totalItems,
+    loadMore,
+    refetch,
+  } = useInfiniteScroll({
+    fetchFunction: async (page) => {
+      if (!workspaceId) {
+        return { items: [], total: 0, page: 1, total_pages: 0 };
+      }
+      return await itemsApi.list({ page, limit: 50 });
+    },
+    pageSize: 50,
+    dependencies: [workspaceId],
+    autoFetch: !!workspaceId,
+  });
+
+  // Filter items (client-side)
   const filteredItems = items.filter((item) => {
     // Filter by archived status
     if (!showArchived && item.is_archived) return false;
@@ -210,6 +214,9 @@ export default function ItemsPage() {
 
     return true;
   });
+
+  // Sort items (client-side)
+  const { sortedData: sortedItems, requestSort, getSortDirection } = useTableSort(filteredItems, "name", "asc");
 
   const getCategoryName = (categoryId: string | null | undefined) => {
     if (!categoryId) return "-";
@@ -313,7 +320,7 @@ export default function ItemsPage() {
       }
 
       setDialogOpen(false);
-      loadItems();
+      refetch();
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Failed to save item";
       toast.error("Failed to save item", {
@@ -333,7 +340,7 @@ export default function ItemsPage() {
         await itemsApi.archive(item.id);
         toast.success("Item archived successfully");
       }
-      loadItems();
+      refetch();
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Failed to archive item";
       toast.error("Failed to archive item", {
@@ -369,7 +376,7 @@ export default function ItemsPage() {
             <div>
               <CardTitle>Item Catalog</CardTitle>
               <CardDescription>
-                {filteredItems.length} item{filteredItems.length !== 1 ? "s" : ""}
+                {totalItems} item{totalItems !== 1 ? "s" : ""}
                 {searchQuery && " matching your search"}
               </CardDescription>
             </div>
@@ -419,7 +426,7 @@ export default function ItemsPage() {
             </div>
 
             {/* Items table */}
-            {filteredItems.length === 0 ? (
+            {totalItems === 0 ? (
               <EmptyState
                 icon={Package}
                 title={
@@ -449,17 +456,47 @@ export default function ItemsPage() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>SKU</TableHead>
-                      <TableHead>Name</TableHead>
-                      <TableHead>Category</TableHead>
-                      <TableHead>Brand</TableHead>
-                      <TableHead>Model</TableHead>
-                      <TableHead>Min Stock</TableHead>
-                      <TableHead className="w-[50px]"></TableHead>
+                      <SortableTableHead
+                        sortDirection={getSortDirection("sku")}
+                        onSort={() => requestSort("sku")}
+                      >
+                        SKU
+                      </SortableTableHead>
+                      <SortableTableHead
+                        sortDirection={getSortDirection("name")}
+                        onSort={() => requestSort("name")}
+                      >
+                        Name
+                      </SortableTableHead>
+                      <SortableTableHead
+                        sortDirection={getSortDirection("category_id")}
+                        onSort={() => requestSort("category_id")}
+                      >
+                        Category
+                      </SortableTableHead>
+                      <SortableTableHead
+                        sortDirection={getSortDirection("brand")}
+                        onSort={() => requestSort("brand")}
+                      >
+                        Brand
+                      </SortableTableHead>
+                      <SortableTableHead
+                        sortDirection={getSortDirection("model")}
+                        onSort={() => requestSort("model")}
+                      >
+                        Model
+                      </SortableTableHead>
+                      <SortableTableHead
+                        sortDirection={getSortDirection("min_stock_level")}
+                        onSort={() => requestSort("min_stock_level")}
+                      >
+                        Min Stock
+                      </SortableTableHead>
+                      <TableHead className="w-[50px]" />
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {filteredItems.map((item) => (
+                    {sortedItems.map((item) => (
                       <TableRow key={item.id}>
                         <TableCell className="font-mono text-sm">
                           {item.sku}
@@ -515,6 +552,15 @@ export default function ItemsPage() {
                     ))}
                   </TableBody>
                 </Table>
+
+                {/* Infinite Scroll Trigger */}
+                <InfiniteScrollTrigger
+                  onLoadMore={loadMore}
+                  isLoading={isLoadingMore}
+                  hasMore={hasMore}
+                  loadingText="Loading more items..."
+                  endText={`Showing all ${totalItems} items`}
+                />
               </div>
             )}
           </div>

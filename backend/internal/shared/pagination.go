@@ -1,5 +1,15 @@
 package shared
 
+// Pagination constants
+const (
+	// DefaultPageSize is the default number of items per page
+	DefaultPageSize = 50
+	// MinPageSize is the minimum allowed page size
+	MinPageSize = 1
+	// MaxPageSize is the maximum allowed page size
+	MaxPageSize = 100
+)
+
 // Pagination holds pagination parameters.
 type Pagination struct {
 	Page     int
@@ -10,7 +20,7 @@ type Pagination struct {
 func DefaultPagination() Pagination {
 	return Pagination{
 		Page:     1,
-		PageSize: 20,
+		PageSize: DefaultPageSize,
 	}
 }
 
@@ -24,11 +34,11 @@ func (p Pagination) Offset() int {
 
 // Limit returns the page size, ensuring it's within bounds.
 func (p Pagination) Limit() int {
-	if p.PageSize < 1 {
-		return 20
+	if p.PageSize < MinPageSize {
+		return DefaultPageSize
 	}
-	if p.PageSize > 100 {
-		return 100
+	if p.PageSize > MaxPageSize {
+		return MaxPageSize
 	}
 	return p.PageSize
 }

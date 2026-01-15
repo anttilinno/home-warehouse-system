@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState } from "react";
 import { useTranslations } from "next-intl";
 import {
   Plus,
@@ -50,11 +50,15 @@ import {
   TableHead,
   TableHeader,
   TableRow,
+  SortableTableHead,
 } from "@/components/ui/table";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { InfiniteScrollTrigger } from "@/components/ui/infinite-scroll-trigger";
 import { useWorkspace } from "@/lib/hooks/use-workspace";
+import { useTableSort } from "@/lib/hooks/use-table-sort";
+import { useInfiniteScroll } from "@/lib/hooks/use-infinite-scroll";
 import { borrowersApi } from "@/lib/api";
 import type { Borrower, BorrowerCreate, BorrowerUpdate } from "@/lib/types/borrowers";
 
@@ -104,8 +108,6 @@ export default function BorrowersPage() {
   const t = useTranslations("borrowers");
   const { workspaceId, isLoading: workspaceLoading } = useWorkspace();
 
-  const [borrowers, setBorrowers] = useState<Borrower[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
 
   // Dialog state
@@ -121,32 +123,32 @@ export default function BorrowersPage() {
   const [formNotes, setFormNotes] = useState("");
   const [isSaving, setIsSaving] = useState(false);
 
-  // Load borrowers
-  const loadBorrowers = useCallback(async () => {
-    if (!workspaceId) return;
-
-    try {
-      setIsLoading(true);
-      const data = await borrowersApi.list({ limit: 500 });
-      setBorrowers(data.filter(b => !b.is_archived));
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "Failed to load borrowers";
-      toast.error("Failed to load borrowers", {
-        description: errorMessage,
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  }, [workspaceId]);
-
-  useEffect(() => {
-    if (workspaceId) {
-      loadBorrowers();
-    }
-  }, [workspaceId, loadBorrowers]);
+  // Infinite scroll for borrowers
+  const {
+    items: borrowers,
+    hasMore,
+    isLoading,
+    isLoadingMore,
+    totalItems,
+    loadMore,
+    refetch,
+  } = useInfiniteScroll({
+    fetchFunction: async (page) => {
+      if (!workspaceId) {
+        return { items: [], total: 0, page: 1, total_pages: 0 };
+      }
+      return await borrowersApi.list({ page, limit: 50 });
+    },
+    pageSize: 50,
+    dependencies: [workspaceId],
+    autoFetch: !!workspaceId,
+  });
 
   // Filter borrowers
   const filteredBorrowers = borrowers.filter((borrower) => {
+    // Filter archived
+    if (borrower.is_archived) return false;
+
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
       const matchesSearch =
@@ -158,6 +160,9 @@ export default function BorrowersPage() {
 
     return true;
   });
+
+  // Sort borrowers
+  const { sortedData: sortedBorrowers, requestSort, getSortDirection } = useTableSort(filteredBorrowers, "name", "asc");
 
   const openCreateDialog = () => {
     setEditingBorrower(null);
@@ -221,7 +226,7 @@ export default function BorrowersPage() {
       }
 
       setDialogOpen(false);
-      loadBorrowers();
+      refetch();
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Failed to save borrower";
       toast.error("Failed to save borrower", {
@@ -240,7 +245,7 @@ export default function BorrowersPage() {
       toast.success("Borrower deleted successfully");
       setDeleteDialogOpen(false);
       setDeletingBorrower(null);
-      loadBorrowers();
+      refetch();
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Failed to delete borrower";
       toast.error("Failed to delete borrower", {
@@ -276,7 +281,7 @@ export default function BorrowersPage() {
             <div>
               <CardTitle>Borrowers</CardTitle>
               <CardDescription>
-                {filteredBorrowers.length} borrower{filteredBorrowers.length !== 1 ? "s" : ""}
+                {sortedBorrowers.length} borrower{sortedBorrowers.length !== 1 ? "s" : ""}
                 {searchQuery && " matching your search"}
               </CardDescription>
             </div>
@@ -302,7 +307,7 @@ export default function BorrowersPage() {
             </div>
 
             {/* Borrowers table */}
-            {filteredBorrowers.length === 0 ? (
+            {sortedBorrowers.length === 0 ? (
               <EmptyState
                 icon={Users}
                 title={searchQuery ? "No borrowers found" : "No borrowers yet"}
@@ -324,14 +329,29 @@ export default function BorrowersPage() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Name</TableHead>
-                      <TableHead>Email</TableHead>
-                      <TableHead>Phone</TableHead>
+                      <SortableTableHead
+                        sortDirection={getSortDirection("name")}
+                        onSort={() => requestSort("name")}
+                      >
+                        Name
+                      </SortableTableHead>
+                      <SortableTableHead
+                        sortDirection={getSortDirection("email")}
+                        onSort={() => requestSort("email")}
+                      >
+                        Email
+                      </SortableTableHead>
+                      <SortableTableHead
+                        sortDirection={getSortDirection("phone")}
+                        onSort={() => requestSort("phone")}
+                      >
+                        Phone
+                      </SortableTableHead>
                       <TableHead className="w-[50px]"></TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {filteredBorrowers.map((borrower) => (
+                    {sortedBorrowers.map((borrower) => (
                       <TableRow key={borrower.id}>
                         <TableCell>
                           <div className="flex items-center gap-3">
@@ -401,6 +421,15 @@ export default function BorrowersPage() {
                 </Table>
               </div>
             )}
+
+            {/* Infinite scroll trigger */}
+            <InfiniteScrollTrigger
+              onLoadMore={loadMore}
+              isLoading={isLoadingMore}
+              hasMore={hasMore}
+              loadingText="Loading more borrowers..."
+              endText={`Showing all ${sortedBorrowers.length} borrower${sortedBorrowers.length !== 1 ? "s" : ""}`}
+            />
           </div>
         </CardContent>
       </Card>

@@ -11,6 +11,7 @@ import (
 	"github.com/stretchr/testify/mock"
 
 	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/inventory"
+	"github.com/antti/home-warehouse/go-backend/internal/shared"
 	"github.com/antti/home-warehouse/go-backend/internal/testutil"
 )
 
@@ -100,6 +101,11 @@ func (m *MockService) GetAvailable(ctx context.Context, workspaceID, itemID uuid
 func (m *MockService) GetTotalQuantity(ctx context.Context, workspaceID, itemID uuid.UUID) (int, error) {
 	args := m.Called(ctx, workspaceID, itemID)
 	return args.Int(0), args.Error(1)
+}
+
+func (m *MockService) List(ctx context.Context, workspaceID uuid.UUID, pagination shared.Pagination) ([]*inventory.Inventory, int, error) {
+	args := m.Called(ctx, workspaceID, pagination)
+	return args.Get(0).([]*inventory.Inventory), args.Int(1), args.Error(2)
 }
 
 // Tests
@@ -457,6 +463,98 @@ func TestInventoryHandler_Archive(t *testing.T) {
 		rec := setup.Post(fmt.Sprintf("/inventory/%s/archive", invID), "")
 
 		testutil.AssertStatus(t, rec, http.StatusNotFound)
+		mockSvc.AssertExpectations(t)
+	})
+}
+
+func TestInventoryHandler_List(t *testing.T) {
+	setup := testutil.NewHandlerTestSetup()
+	mockSvc := new(MockService)
+	inventory.RegisterRoutes(setup.API, mockSvc)
+
+	t.Run("lists inventory with default pagination", func(t *testing.T) {
+		itemID1 := uuid.New()
+		itemID2 := uuid.New()
+		locationID := uuid.New()
+
+		inv1, _ := inventory.NewInventory(setup.WorkspaceID, itemID1, locationID, nil, 5, inventory.ConditionNew, inventory.StatusAvailable, nil)
+		inv2, _ := inventory.NewInventory(setup.WorkspaceID, itemID2, locationID, nil, 3, inventory.ConditionGood, inventory.StatusAvailable, nil)
+
+		mockSvc.On("List", mock.Anything, setup.WorkspaceID, mock.MatchedBy(func(p shared.Pagination) bool {
+			return p.Page == 1 && p.PageSize == 50
+		})).Return([]*inventory.Inventory{inv1, inv2}, 2, nil).Once()
+
+		rec := setup.Get("/inventory")
+
+		testutil.AssertStatus(t, rec, http.StatusOK)
+		mockSvc.AssertExpectations(t)
+	})
+
+	t.Run("lists inventory with custom pagination", func(t *testing.T) {
+		itemID1 := uuid.New()
+		locationID := uuid.New()
+
+		inv1, _ := inventory.NewInventory(setup.WorkspaceID, itemID1, locationID, nil, 5, inventory.ConditionNew, inventory.StatusAvailable, nil)
+
+		mockSvc.On("List", mock.Anything, setup.WorkspaceID, mock.MatchedBy(func(p shared.Pagination) bool {
+			return p.Page == 2 && p.PageSize == 10
+		})).Return([]*inventory.Inventory{inv1}, 25, nil).Once()
+
+		rec := setup.Get("/inventory?page=2&limit=10")
+
+		testutil.AssertStatus(t, rec, http.StatusOK)
+		mockSvc.AssertExpectations(t)
+	})
+
+	t.Run("returns empty list when no inventory found", func(t *testing.T) {
+		mockSvc.On("List", mock.Anything, setup.WorkspaceID, mock.Anything).
+			Return([]*inventory.Inventory{}, 0, nil).Once()
+
+		rec := setup.Get("/inventory")
+
+		testutil.AssertStatus(t, rec, http.StatusOK)
+		mockSvc.AssertExpectations(t)
+	})
+
+	t.Run("handles page beyond total pages", func(t *testing.T) {
+		mockSvc.On("List", mock.Anything, setup.WorkspaceID, mock.MatchedBy(func(p shared.Pagination) bool {
+			return p.Page == 999
+		})).Return([]*inventory.Inventory{}, 10, nil).Once()
+
+		rec := setup.Get("/inventory?page=999")
+
+		testutil.AssertStatus(t, rec, http.StatusOK)
+		mockSvc.AssertExpectations(t)
+	})
+
+	t.Run("returns 422 for limit exceeding maximum", func(t *testing.T) {
+		// Huma validates maximum:100 at framework level, returning 422
+		rec := setup.Get("/inventory?limit=500")
+
+		testutil.AssertStatus(t, rec, http.StatusUnprocessableEntity)
+	})
+
+	t.Run("returns 422 for invalid page number", func(t *testing.T) {
+		// Huma validates minimum:1 at framework level, returning 422
+		rec := setup.Get("/inventory?page=0")
+
+		testutil.AssertStatus(t, rec, http.StatusUnprocessableEntity)
+	})
+
+	t.Run("returns 422 for negative limit", func(t *testing.T) {
+		// Huma validates minimum:1 at framework level, returning 422
+		rec := setup.Get("/inventory?limit=-1")
+
+		testutil.AssertStatus(t, rec, http.StatusUnprocessableEntity)
+	})
+
+	t.Run("returns 500 on service error", func(t *testing.T) {
+		mockSvc.On("List", mock.Anything, setup.WorkspaceID, mock.Anything).
+			Return([]*inventory.Inventory{}, 0, fmt.Errorf("database error")).Once()
+
+		rec := setup.Get("/inventory")
+
+		testutil.AssertStatus(t, rec, http.StatusInternalServerError)
 		mockSvc.AssertExpectations(t)
 	})
 }

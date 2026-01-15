@@ -7,6 +7,7 @@ import (
 	"github.com/google/uuid"
 
 	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/movement"
+	"github.com/antti/home-warehouse/go-backend/internal/shared"
 )
 
 // ServiceInterface defines the inventory service operations.
@@ -19,6 +20,7 @@ type ServiceInterface interface {
 	Move(ctx context.Context, id, workspaceID, locationID uuid.UUID, containerID *uuid.UUID) (*Inventory, error)
 	Archive(ctx context.Context, id, workspaceID uuid.UUID) error
 	Restore(ctx context.Context, id, workspaceID uuid.UUID) error
+	List(ctx context.Context, workspaceID uuid.UUID, pagination shared.Pagination) ([]*Inventory, int, error)
 	ListByItem(ctx context.Context, workspaceID, itemID uuid.UUID) ([]*Inventory, error)
 	ListByLocation(ctx context.Context, workspaceID, locationID uuid.UUID) ([]*Inventory, error)
 	ListByContainer(ctx context.Context, workspaceID, containerID uuid.UUID) ([]*Inventory, error)
@@ -201,6 +203,10 @@ func (s *Service) Restore(ctx context.Context, id, workspaceID uuid.UUID) error 
 
 	inv.Restore()
 	return s.repo.Save(ctx, inv)
+}
+
+func (s *Service) List(ctx context.Context, workspaceID uuid.UUID, pagination shared.Pagination) ([]*Inventory, int, error) {
+	return s.repo.List(ctx, workspaceID, pagination)
 }
 
 func (s *Service) ListByItem(ctx context.Context, workspaceID, itemID uuid.UUID) ([]*Inventory, error) {

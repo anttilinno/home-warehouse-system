@@ -12,6 +12,9 @@ export interface Borrower {
 
 export interface BorrowerListResponse {
   items: Borrower[];
+  total: number;
+  page: number;
+  total_pages: number;
 }
 
 export interface BorrowerCreate {

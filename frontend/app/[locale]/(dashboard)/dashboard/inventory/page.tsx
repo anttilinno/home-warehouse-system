@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { useTranslations } from "next-intl";
 import {
   Plus,
@@ -44,6 +44,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
+  SortableTableHead,
 } from "@/components/ui/table";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -55,7 +56,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
+import { InfiniteScrollTrigger } from "@/components/ui/infinite-scroll-trigger";
 import { useWorkspace } from "@/lib/hooks/use-workspace";
+import { useTableSort } from "@/lib/hooks/use-table-sort";
+import { useInfiniteScroll } from "@/lib/hooks/use-infinite-scroll";
 import { inventoryApi, itemsApi, locationsApi, containersApi } from "@/lib/api";
 import type { Inventory, InventoryCreate, InventoryCondition, InventoryStatus } from "@/lib/types/inventory";
 import type { Item } from "@/lib/types/items";
@@ -133,11 +137,9 @@ export default function InventoryPage() {
   const t = useTranslations("inventory");
   const { workspaceId, isLoading: workspaceLoading } = useWorkspace();
 
-  const [inventories, setInventories] = useState<Inventory[]>([]);
   const [items, setItems] = useState<Item[]>([]);
   const [locations, setLocations] = useState<Location[]>([]);
   const [containers, setContainers] = useState<Container[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [showArchived, setShowArchived] = useState(false);
@@ -156,51 +158,51 @@ export default function InventoryPage() {
   const [formNotes, setFormNotes] = useState("");
   const [isSaving, setIsSaving] = useState(false);
 
-  // Load data
-  const loadData = useCallback(async () => {
+  // Infinite scroll for inventories
+  const {
+    items: inventories,
+    hasMore,
+    isLoading,
+    isLoadingMore,
+    totalItems,
+    loadMore,
+    refetch,
+  } = useInfiniteScroll({
+    fetchFunction: async (page) => {
+      if (!workspaceId) {
+        return { items: [], total: 0, page: 1, total_pages: 0 };
+      }
+      return await inventoryApi.list({ page, limit: 50 });
+    },
+    pageSize: 50,
+    dependencies: [workspaceId],
+    autoFetch: !!workspaceId,
+  });
+
+  // Load items, locations, and containers
+  useEffect(() => {
     if (!workspaceId) return;
 
-    try {
-      setIsLoading(true);
-
-      // Load items first to get inventory by item
-      const itemsData = await itemsApi.list({ limit: 500 });
-      setItems(itemsData.items.filter(i => !i.is_archived));
-
-      // Load all inventories from all items
-      const allInventories: Inventory[] = [];
-      for (const item of itemsData.items) {
-        try {
-          const itemInventories = await inventoryApi.listByItem(item.id);
-          allInventories.push(...itemInventories);
-        } catch (err) {
-          console.error(`Failed to load inventory for item ${item.id}:`, err);
-        }
+    const loadReferenceData = async () => {
+      try {
+        const [itemsData, locationsData, containersData] = await Promise.all([
+          itemsApi.list({ limit: 500 }),
+          locationsApi.list({ limit: 500 }),
+          containersApi.list({ limit: 500 }),
+        ]);
+        setItems(itemsData.items.filter(i => !i.is_archived));
+        setLocations(locationsData.items.filter(l => !l.is_archived));
+        setContainers(containersData.items.filter(c => !c.is_archived));
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : "Failed to load data";
+        toast.error("Failed to load reference data", {
+          description: errorMessage,
+        });
       }
-      setInventories(allInventories);
+    };
 
-      // Load locations and containers
-      const [locationsData, containersData] = await Promise.all([
-        locationsApi.list({ limit: 500 }),
-        containersApi.list({ limit: 500 }),
-      ]);
-      setLocations(locationsData.items.filter(l => !l.is_archived));
-      setContainers(containersData.items.filter(c => !c.is_archived));
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "Failed to load data";
-      toast.error("Failed to load inventory", {
-        description: errorMessage,
-      });
-    } finally {
-      setIsLoading(false);
-    }
+    loadReferenceData();
   }, [workspaceId]);
-
-  useEffect(() => {
-    if (workspaceId) {
-      loadData();
-    }
-  }, [workspaceId, loadData]);
 
   // Filter inventories
   const filteredInventories = inventories.filter((inventory) => {
@@ -226,6 +228,9 @@ export default function InventoryPage() {
 
     return true;
   });
+
+  // Sort inventories
+  const { sortedData: sortedInventories, requestSort, getSortDirection } = useTableSort(filteredInventories, "item_id", "asc");
 
   const getItemName = (itemId: string) => {
     const item = items.find(i => i.id === itemId);
@@ -286,7 +291,7 @@ export default function InventoryPage() {
       toast.success("Inventory created successfully");
 
       setDialogOpen(false);
-      loadData();
+      refetch();
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Failed to save inventory";
       toast.error("Failed to save inventory", {
@@ -306,7 +311,7 @@ export default function InventoryPage() {
         await inventoryApi.archive(inventory.id);
         toast.success("Inventory archived successfully");
       }
-      loadData();
+      refetch();
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Failed to archive inventory";
       toast.error("Failed to archive inventory", {
@@ -342,7 +347,7 @@ export default function InventoryPage() {
             <div>
               <CardTitle>Inventory Tracking</CardTitle>
               <CardDescription>
-                {filteredInventories.length} inventor{filteredInventories.length !== 1 ? "ies" : "y"}
+                {sortedInventories.length} inventor{sortedInventories.length !== 1 ? "ies" : "y"}
                 {searchQuery && " matching your search"}
               </CardDescription>
             </div>
@@ -392,7 +397,7 @@ export default function InventoryPage() {
             </div>
 
             {/* Inventory table */}
-            {filteredInventories.length === 0 ? (
+            {sortedInventories.length === 0 ? (
               <EmptyState
                 icon={Package}
                 title={
@@ -422,16 +427,41 @@ export default function InventoryPage() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Item</TableHead>
-                      <TableHead>Location</TableHead>
-                      <TableHead>Qty</TableHead>
-                      <TableHead>Condition</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead className="w-[50px]"></TableHead>
+                      <SortableTableHead
+                        sortDirection={getSortDirection("item_id")}
+                        onSort={() => requestSort("item_id")}
+                      >
+                        Item
+                      </SortableTableHead>
+                      <SortableTableHead
+                        sortDirection={getSortDirection("location_id")}
+                        onSort={() => requestSort("location_id")}
+                      >
+                        Location
+                      </SortableTableHead>
+                      <SortableTableHead
+                        sortDirection={getSortDirection("quantity")}
+                        onSort={() => requestSort("quantity")}
+                      >
+                        Qty
+                      </SortableTableHead>
+                      <SortableTableHead
+                        sortDirection={getSortDirection("condition")}
+                        onSort={() => requestSort("condition")}
+                      >
+                        Condition
+                      </SortableTableHead>
+                      <SortableTableHead
+                        sortDirection={getSortDirection("status")}
+                        onSort={() => requestSort("status")}
+                      >
+                        Status
+                      </SortableTableHead>
+                      <TableHead className="w-[50px]" />
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {filteredInventories.map((inventory) => (
+                    {sortedInventories.map((inventory) => (
                       <TableRow key={inventory.id}>
                         <TableCell>
                           <div>
@@ -503,6 +533,15 @@ export default function InventoryPage() {
                 </Table>
               </div>
             )}
+
+            {/* Infinite scroll trigger */}
+            <InfiniteScrollTrigger
+              onLoadMore={loadMore}
+              isLoading={isLoadingMore}
+              hasMore={hasMore}
+              loadingText="Loading more inventory..."
+              endText={`Showing all ${sortedInventories.length} inventor${sortedInventories.length !== 1 ? "ies" : "y"}`}
+            />
           </div>
         </CardContent>
       </Card>

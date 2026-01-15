@@ -23,6 +23,18 @@ func (q *Queries) ArchiveInventory(ctx context.Context, id uuid.UUID) error {
 	return err
 }
 
+const countInventory = `-- name: CountInventory :one
+SELECT COUNT(*) FROM warehouse.inventory
+WHERE workspace_id = $1 AND is_archived = false
+`
+
+func (q *Queries) CountInventory(ctx context.Context, workspaceID uuid.UUID) (int64, error) {
+	row := q.db.QueryRow(ctx, countInventory, workspaceID)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
 const createInventory = `-- name: CreateInventory :one
 INSERT INTO warehouse.inventory (
     id, workspace_id, item_id, location_id, container_id, quantity,
@@ -345,6 +357,57 @@ func (q *Queries) GetTotalQuantityByItem(ctx context.Context, arg GetTotalQuanti
 	var total int32
 	err := row.Scan(&total)
 	return total, err
+}
+
+const listInventory = `-- name: ListInventory :many
+SELECT id, workspace_id, item_id, location_id, container_id, quantity, condition, status, date_acquired, purchase_price, currency_code, warranty_expires, expiration_date, notes, is_archived, created_at, updated_at FROM warehouse.inventory
+WHERE workspace_id = $1 AND is_archived = false
+ORDER BY created_at DESC
+LIMIT $2 OFFSET $3
+`
+
+type ListInventoryParams struct {
+	WorkspaceID uuid.UUID `json:"workspace_id"`
+	Limit       int32     `json:"limit"`
+	Offset      int32     `json:"offset"`
+}
+
+func (q *Queries) ListInventory(ctx context.Context, arg ListInventoryParams) ([]WarehouseInventory, error) {
+	rows, err := q.db.Query(ctx, listInventory, arg.WorkspaceID, arg.Limit, arg.Offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []WarehouseInventory{}
+	for rows.Next() {
+		var i WarehouseInventory
+		if err := rows.Scan(
+			&i.ID,
+			&i.WorkspaceID,
+			&i.ItemID,
+			&i.LocationID,
+			&i.ContainerID,
+			&i.Quantity,
+			&i.Condition,
+			&i.Status,
+			&i.DateAcquired,
+			&i.PurchasePrice,
+			&i.CurrencyCode,
+			&i.WarrantyExpires,
+			&i.ExpirationDate,
+			&i.Notes,
+			&i.IsArchived,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const listInventoryByContainer = `-- name: ListInventoryByContainer :many

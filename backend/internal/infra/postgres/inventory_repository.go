@@ -130,6 +130,31 @@ func (r *InventoryRepository) FindByID(ctx context.Context, id, workspaceID uuid
 	return r.rowToInventory(row), nil
 }
 
+func (r *InventoryRepository) List(ctx context.Context, workspaceID uuid.UUID, pagination shared.Pagination) ([]*inventory.Inventory, int, error) {
+	// Get total count
+	total, err := r.queries.CountInventory(ctx, workspaceID)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	// Get paginated list
+	rows, err := r.queries.ListInventory(ctx, queries.ListInventoryParams{
+		WorkspaceID: workspaceID,
+		Limit:       int32(pagination.Limit()),
+		Offset:      int32(pagination.Offset()),
+	})
+	if err != nil {
+		return nil, 0, err
+	}
+
+	inventories := make([]*inventory.Inventory, 0, len(rows))
+	for _, row := range rows {
+		inventories = append(inventories, r.rowToInventory(row))
+	}
+
+	return inventories, int(total), nil
+}
+
 func (r *InventoryRepository) FindByItem(ctx context.Context, workspaceID, itemID uuid.UUID) ([]*inventory.Inventory, error) {
 	rows, err := r.queries.ListInventoryByItem(ctx, queries.ListInventoryByItemParams{
 		WorkspaceID: workspaceID,
