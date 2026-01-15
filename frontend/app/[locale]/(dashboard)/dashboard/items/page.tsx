@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useTranslations } from "next-intl";
 import {
   Plus,
@@ -60,10 +60,13 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState, EmptyStateList, EmptyStateBenefits } from "@/components/ui/empty-state";
 import { InfiniteScrollTrigger } from "@/components/ui/infinite-scroll-trigger";
 import { BulkActionBar } from "@/components/ui/bulk-action-bar";
+import { FilterBar } from "@/components/ui/filter-bar";
+import { FilterPopover } from "@/components/ui/filter-popover";
 import { useWorkspace } from "@/lib/hooks/use-workspace";
 import { useTableSort } from "@/lib/hooks/use-table-sort";
 import { useInfiniteScroll } from "@/lib/hooks/use-infinite-scroll";
 import { useBulkSelection } from "@/lib/hooks/use-bulk-selection";
+import { useFilters } from "@/lib/hooks/use-filters";
 import { itemsApi, categoriesApi, type Category } from "@/lib/api";
 import type { Item, ItemCreate, ItemUpdate } from "@/lib/types/items";
 import { cn } from "@/lib/utils";
@@ -84,6 +87,211 @@ interface ItemFormData {
   warranty_details: string;
   min_stock_level: number;
   short_code: string;
+}
+
+interface ItemsFilterControlsProps {
+  categories: Category[];
+  uniqueBrands: string[];
+  addFilter: (filter: any) => void;
+  getFilter: (key: string) => any;
+}
+
+function ItemsFilterControls({
+  categories,
+  uniqueBrands,
+  addFilter,
+  getFilter,
+}: ItemsFilterControlsProps) {
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
+  const [hasWarranty, setHasWarranty] = useState<boolean | null>(null);
+  const [isInsured, setIsInsured] = useState<boolean | null>(null);
+
+  // Toggle category selection
+  const toggleCategory = (categoryId: string) => {
+    const newSelection = selectedCategories.includes(categoryId)
+      ? selectedCategories.filter((id) => id !== categoryId)
+      : [...selectedCategories, categoryId];
+
+    setSelectedCategories(newSelection);
+
+    if (newSelection.length > 0) {
+      addFilter({
+        key: "categories",
+        label: "Category",
+        value: newSelection,
+        type: "multi-select",
+      });
+    } else {
+      addFilter({
+        key: "categories",
+        label: "Category",
+        value: [],
+        type: "multi-select",
+      });
+    }
+  };
+
+  // Toggle brand selection
+  const toggleBrand = (brand: string) => {
+    const newSelection = selectedBrands.includes(brand)
+      ? selectedBrands.filter((b) => b !== brand)
+      : [...selectedBrands, brand];
+
+    setSelectedBrands(newSelection);
+
+    if (newSelection.length > 0) {
+      addFilter({
+        key: "brands",
+        label: "Brand",
+        value: newSelection,
+        type: "multi-select",
+      });
+    } else {
+      addFilter({
+        key: "brands",
+        label: "Brand",
+        value: [],
+        type: "multi-select",
+      });
+    }
+  };
+
+  // Update warranty filter
+  const updateWarrantyFilter = (value: boolean | null) => {
+    setHasWarranty(value);
+    if (value !== null) {
+      addFilter({
+        key: "warranty",
+        label: "Warranty",
+        value: value,
+        type: "boolean",
+      });
+    } else {
+      addFilter({
+        key: "warranty",
+        label: "Warranty",
+        value: [],
+        type: "multi-select",
+      });
+    }
+  };
+
+  // Update insurance filter
+  const updateInsuranceFilter = (value: boolean | null) => {
+    setIsInsured(value);
+    if (value !== null) {
+      addFilter({
+        key: "insurance",
+        label: "Insurance",
+        value: value,
+        type: "boolean",
+      });
+    } else {
+      addFilter({
+        key: "insurance",
+        label: "Insurance",
+        value: [],
+        type: "multi-select",
+      });
+    }
+  };
+
+  return (
+    <div className="space-y-4">
+      {/* Categories */}
+      {categories.length > 0 && (
+        <div className="space-y-2">
+          <Label className="text-sm font-medium">Categories</Label>
+          <div className="max-h-48 space-y-2 overflow-y-auto rounded-md border p-2">
+            {categories.map((category) => (
+              <div key={category.id} className="flex items-center space-x-2">
+                <Checkbox
+                  id={`category-${category.id}`}
+                  checked={selectedCategories.includes(category.id)}
+                  onCheckedChange={() => toggleCategory(category.id)}
+                />
+                <label
+                  htmlFor={`category-${category.id}`}
+                  className="flex-1 cursor-pointer text-sm"
+                >
+                  {category.name}
+                </label>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Brands */}
+      {uniqueBrands.length > 0 && (
+        <div className="space-y-2">
+          <Label className="text-sm font-medium">Brands</Label>
+          <div className="max-h-48 space-y-2 overflow-y-auto rounded-md border p-2">
+            {uniqueBrands.map((brand) => (
+              <div key={brand} className="flex items-center space-x-2">
+                <Checkbox
+                  id={`brand-${brand}`}
+                  checked={selectedBrands.includes(brand)}
+                  onCheckedChange={() => toggleBrand(brand)}
+                />
+                <label
+                  htmlFor={`brand-${brand}`}
+                  className="flex-1 cursor-pointer text-sm"
+                >
+                  {brand}
+                </label>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Warranty */}
+      <div className="space-y-2">
+        <Label className="text-sm font-medium">Warranty</Label>
+        <Select
+          value={hasWarranty === null ? "all" : hasWarranty ? "yes" : "no"}
+          onValueChange={(value) => {
+            if (value === "all") updateWarrantyFilter(null);
+            else if (value === "yes") updateWarrantyFilter(true);
+            else updateWarrantyFilter(false);
+          }}
+        >
+          <SelectTrigger>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All</SelectItem>
+            <SelectItem value="yes">Has Warranty</SelectItem>
+            <SelectItem value="no">No Warranty</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      {/* Insurance */}
+      <div className="space-y-2">
+        <Label className="text-sm font-medium">Insurance</Label>
+        <Select
+          value={isInsured === null ? "all" : isInsured ? "yes" : "no"}
+          onValueChange={(value) => {
+            if (value === "all") updateInsuranceFilter(null);
+            else if (value === "yes") updateInsuranceFilter(true);
+            else updateInsuranceFilter(false);
+          }}
+        >
+          <SelectTrigger>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All</SelectItem>
+            <SelectItem value="yes">Is Insured</SelectItem>
+            <SelectItem value="no">Not Insured</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+    </div>
+  );
 }
 
 function ItemsTableSkeleton() {
@@ -129,8 +337,17 @@ export default function ItemsPage() {
 
   const [categories, setCategories] = useState<Category[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
-  const [categoryFilter, setCategoryFilter] = useState<string | null>(null);
   const [showArchived, setShowArchived] = useState(false);
+
+  // Enhanced filters
+  const {
+    filterChips,
+    activeFilterCount,
+    addFilter,
+    removeFilter,
+    clearFilters,
+    getFilter,
+  } = useFilters();
 
   // Dialog state
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -214,11 +431,57 @@ export default function ItemsPage() {
       if (!matchesSearch) return false;
     }
 
-    // Filter by category
-    if (categoryFilter && item.category_id !== categoryFilter) return false;
+    // Filter by categories (multi-select)
+    const categoriesFilter = getFilter("categories");
+    if (categoriesFilter && Array.isArray(categoriesFilter.value)) {
+      if (!item.category_id || !categoriesFilter.value.includes(item.category_id)) {
+        return false;
+      }
+    }
+
+    // Filter by brands (multi-select)
+    const brandsFilter = getFilter("brands");
+    if (brandsFilter && Array.isArray(brandsFilter.value)) {
+      if (!item.brand || !brandsFilter.value.includes(item.brand)) {
+        return false;
+      }
+    }
+
+    // Filter by warranty
+    const warrantyFilter = getFilter("warranty");
+    if (warrantyFilter && typeof warrantyFilter.value === "boolean") {
+      if (item.lifetime_warranty !== warrantyFilter.value) {
+        return false;
+      }
+    }
+
+    // Filter by insurance
+    const insuranceFilter = getFilter("insurance");
+    if (insuranceFilter && typeof insuranceFilter.value === "boolean") {
+      if (item.is_insured !== insuranceFilter.value) {
+        return false;
+      }
+    }
+
+    // Filter by date range
+    const dateFilter = getFilter("dateRange");
+    if (dateFilter && typeof dateFilter.value === "object") {
+      const range = dateFilter.value as { from: Date | null; to: Date | null };
+      const itemDate = new Date(item.created_at);
+      if (range.from && itemDate < range.from) return false;
+      if (range.to && itemDate > range.to) return false;
+    }
 
     return true;
   });
+
+  // Extract unique brands for filter
+  const uniqueBrands = useMemo(() => {
+    const brands = items
+      .map((item) => item.brand)
+      .filter((brand): brand is string => Boolean(brand));
+    return Array.from(new Set(brands)).sort();
+  }, [items]);
 
   // Sort items (client-side)
   const { sortedData: sortedItems, requestSort, getSortDirection } = useTableSort(filteredItems, "name", "asc");
@@ -472,22 +735,14 @@ export default function ItemsPage() {
                   className="pl-9"
                 />
               </div>
-              <Select
-                value={categoryFilter || "all"}
-                onValueChange={(value) => setCategoryFilter(value === "all" ? null : value)}
-              >
-                <SelectTrigger className="w-[200px]">
-                  <SelectValue placeholder="All categories" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All categories</SelectItem>
-                  {categories.map((cat) => (
-                    <SelectItem key={cat.id} value={cat.id}>
-                      {cat.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <FilterPopover activeFilterCount={activeFilterCount}>
+                <ItemsFilterControls
+                  categories={categories}
+                  uniqueBrands={uniqueBrands}
+                  addFilter={addFilter}
+                  getFilter={getFilter}
+                />
+              </FilterPopover>
               <Button
                 variant={showArchived ? "default" : "outline"}
                 size="sm"
@@ -498,26 +753,35 @@ export default function ItemsPage() {
               </Button>
             </div>
 
+            {/* Filter chips */}
+            {filterChips.length > 0 && (
+              <FilterBar
+                filterChips={filterChips}
+                onRemoveFilter={removeFilter}
+                onClearAll={clearFilters}
+              />
+            )}
+
             {/* Items table */}
             {totalItems === 0 ? (
               <EmptyState
                 icon={Package}
                 title={
-                  searchQuery || categoryFilter
+                  searchQuery || activeFilterCount > 0
                     ? "No items found"
                     : showArchived
                     ? "No archived items"
                     : "No items yet"
                 }
                 description={
-                  searchQuery || categoryFilter
+                  searchQuery || activeFilterCount > 0
                     ? "Try adjusting your search or filters"
                     : showArchived
                     ? "Archived items will appear here"
                     : "Get started by creating your first item"
                 }
               >
-                {!searchQuery && !categoryFilter && !showArchived && (
+                {!searchQuery && activeFilterCount === 0 && !showArchived && (
                   <Button onClick={openCreateDialog}>
                     <Plus className="mr-2 h-4 w-4" />
                     Add Your First Item

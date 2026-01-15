@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useTranslations } from "next-intl";
 import {
   Plus,
@@ -68,14 +68,132 @@ import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { InfiniteScrollTrigger } from "@/components/ui/infinite-scroll-trigger";
 import { BulkActionBar } from "@/components/ui/bulk-action-bar";
+import { FilterBar } from "@/components/ui/filter-bar";
+import { FilterPopover } from "@/components/ui/filter-popover";
 import { useWorkspace } from "@/lib/hooks/use-workspace";
 import { useTableSort } from "@/lib/hooks/use-table-sort";
 import { useInfiniteScroll } from "@/lib/hooks/use-infinite-scroll";
 import { useBulkSelection } from "@/lib/hooks/use-bulk-selection";
+import { useFilters } from "@/lib/hooks/use-filters";
 import { containersApi, locationsApi } from "@/lib/api";
 import type { Container, ContainerCreate, ContainerUpdate } from "@/lib/types/containers";
 import type { Location } from "@/lib/types/locations";
 import { exportToCSV, generateFilename, type ColumnDefinition } from "@/lib/utils/csv-export";
+
+interface ContainersFilterControlsProps {
+  locations: Location[];
+  addFilter: (filter: any) => void;
+  getFilter: (key: string) => any;
+}
+
+function ContainersFilterControls({
+  locations,
+  addFilter,
+  getFilter,
+}: ContainersFilterControlsProps) {
+  const [selectedLocations, setSelectedLocations] = useState<string[]>([]);
+  const [minCapacity, setMinCapacity] = useState<string>("");
+  const [maxCapacity, setMaxCapacity] = useState<string>("");
+
+  // Toggle location selection
+  const toggleLocation = (locationId: string) => {
+    const newSelection = selectedLocations.includes(locationId)
+      ? selectedLocations.filter((id) => id !== locationId)
+      : [...selectedLocations, locationId];
+
+    setSelectedLocations(newSelection);
+
+    if (newSelection.length > 0) {
+      addFilter({
+        key: "locations",
+        label: "Location",
+        value: newSelection,
+        type: "multi-select",
+      });
+    } else {
+      addFilter({
+        key: "locations",
+        label: "Location",
+        value: [],
+        type: "multi-select",
+      });
+    }
+  };
+
+  // Update capacity range
+  const updateCapacityRange = () => {
+    const min = minCapacity ? parseInt(minCapacity, 10) : null;
+    const max = maxCapacity ? parseInt(maxCapacity, 10) : null;
+
+    if (min !== null || max !== null) {
+      addFilter({
+        key: "capacity",
+        label: "Capacity",
+        value: { min, max },
+        type: "number-range",
+      });
+    } else {
+      addFilter({
+        key: "capacity",
+        label: "Capacity",
+        value: [],
+        type: "multi-select",
+      });
+    }
+  };
+
+  return (
+    <div className="space-y-4">
+      {/* Locations */}
+      {locations.length > 0 && (
+        <div className="space-y-2">
+          <Label className="text-sm font-medium">Locations</Label>
+          <div className="max-h-48 space-y-2 overflow-y-auto rounded-md border p-2">
+            {locations.map((location) => (
+              <div key={location.id} className="flex items-center space-x-2">
+                <Checkbox
+                  id={`location-${location.id}`}
+                  checked={selectedLocations.includes(location.id)}
+                  onCheckedChange={() => toggleLocation(location.id)}
+                />
+                <label
+                  htmlFor={`location-${location.id}`}
+                  className="flex-1 cursor-pointer text-sm"
+                >
+                  {location.name}
+                </label>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Capacity Range */}
+      <div className="space-y-2">
+        <Label className="text-sm font-medium">Capacity Range</Label>
+        <div className="flex items-center gap-2">
+          <Input
+            type="number"
+            placeholder="Min"
+            value={minCapacity}
+            onChange={(e) => setMinCapacity(e.target.value)}
+            onBlur={updateCapacityRange}
+            className="w-24"
+          />
+          <span className="text-sm text-muted-foreground">to</span>
+          <Input
+            type="number"
+            placeholder="Max"
+            value={maxCapacity}
+            onChange={(e) => setMaxCapacity(e.target.value)}
+            onBlur={updateCapacityRange}
+            className="w-24"
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
 
 function ContainersTableSkeleton() {
   return (
@@ -118,8 +236,17 @@ export default function ContainersPage() {
 
   const [locations, setLocations] = useState<Location[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
-  const [locationFilter, setLocationFilter] = useState<string | null>(null);
   const [showArchived, setShowArchived] = useState(false);
+
+  // Enhanced filters
+  const {
+    filterChips,
+    activeFilterCount,
+    addFilter,
+    removeFilter,
+    clearFilters,
+    getFilter,
+  } = useFilters();
 
   // Dialog state
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -187,13 +314,29 @@ export default function ContainersPage() {
       const matchesSearch =
         container.name.toLowerCase().includes(query) ||
         container.short_code?.toLowerCase().includes(query) ||
-        container.capacity?.toLowerCase().includes(query) ||
+        container.description?.toLowerCase().includes(query) ||
         location?.name.toLowerCase().includes(query);
       if (!matchesSearch) return false;
     }
 
-    // Filter by location
-    if (locationFilter && container.location_id !== locationFilter) return false;
+    // Filter by locations (multi-select)
+    const locationsFilter = getFilter("locations");
+    if (locationsFilter && Array.isArray(locationsFilter.value)) {
+      if (!container.location_id || !locationsFilter.value.includes(container.location_id)) {
+        return false;
+      }
+    }
+
+    // Filter by capacity range
+    const capacityFilter = getFilter("capacity");
+    if (capacityFilter && typeof capacityFilter.value === "object") {
+      const range = capacityFilter.value as { min: number | null; max: number | null };
+      if (!container.capacity) return false;
+      const capacity = parseInt(container.capacity, 10);
+      if (isNaN(capacity)) return false;
+      if (range.min !== null && capacity < range.min) return false;
+      if (range.max !== null && capacity > range.max) return false;
+    }
 
     return true;
   });
@@ -419,22 +562,13 @@ export default function ContainersPage() {
                   className="pl-9"
                 />
               </div>
-              <Select
-                value={locationFilter || "all"}
-                onValueChange={(value) => setLocationFilter(value === "all" ? null : value)}
-              >
-                <SelectTrigger className="w-[200px]">
-                  <SelectValue placeholder="All locations" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All locations</SelectItem>
-                  {locations.map((loc) => (
-                    <SelectItem key={loc.id} value={loc.id}>
-                      {loc.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <FilterPopover activeFilterCount={activeFilterCount}>
+                <ContainersFilterControls
+                  locations={locations}
+                  addFilter={addFilter}
+                  getFilter={getFilter}
+                />
+              </FilterPopover>
               <Button
                 variant={showArchived ? "default" : "outline"}
                 size="sm"
@@ -445,26 +579,35 @@ export default function ContainersPage() {
               </Button>
             </div>
 
+            {/* Filter chips */}
+            {filterChips.length > 0 && (
+              <FilterBar
+                filterChips={filterChips}
+                onRemoveFilter={removeFilter}
+                onClearAll={clearFilters}
+              />
+            )}
+
             {/* Containers table */}
             {sortedContainers.length === 0 ? (
               <EmptyState
                 icon={Box}
                 title={
-                  searchQuery || locationFilter
+                  searchQuery || activeFilterCount > 0
                     ? "No containers found"
                     : showArchived
                     ? "No archived containers"
                     : "No containers yet"
                 }
                 description={
-                  searchQuery || locationFilter
+                  searchQuery || activeFilterCount > 0
                     ? "Try adjusting your search or filters"
                     : showArchived
                     ? "Archived containers will appear here"
                     : "Get started by creating your first container"
                 }
               >
-                {!searchQuery && !locationFilter && !showArchived && (
+                {!searchQuery && activeFilterCount === 0 && !showArchived && (
                   <Button onClick={openCreateDialog}>
                     <Plus className="mr-2 h-4 w-4" />
                     Add Your First Container

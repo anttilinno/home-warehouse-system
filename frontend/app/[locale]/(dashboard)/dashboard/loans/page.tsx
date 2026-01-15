@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useTranslations } from "next-intl";
 import {
   Plus,
@@ -69,10 +69,13 @@ import {
 } from "@/components/ui/select";
 import { InfiniteScrollTrigger } from "@/components/ui/infinite-scroll-trigger";
 import { BulkActionBar } from "@/components/ui/bulk-action-bar";
+import { FilterBar } from "@/components/ui/filter-bar";
+import { FilterPopover } from "@/components/ui/filter-popover";
 import { useWorkspace } from "@/lib/hooks/use-workspace";
 import { useTableSort } from "@/lib/hooks/use-table-sort";
 import { useInfiniteScroll } from "@/lib/hooks/use-infinite-scroll";
 import { useBulkSelection } from "@/lib/hooks/use-bulk-selection";
+import { useFilters } from "@/lib/hooks/use-filters";
 import { loansApi, borrowersApi, itemsApi, inventoryApi } from "@/lib/api";
 import type { Loan } from "@/lib/types/loans";
 import type { Borrower } from "@/lib/types/borrowers";
@@ -81,6 +84,244 @@ import type { Inventory } from "@/lib/types/inventory";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { exportToCSV, generateFilename, type ColumnDefinition } from "@/lib/utils/csv-export";
+
+interface LoansFilterControlsProps {
+  borrowers: Borrower[];
+  addFilter: (filter: any) => void;
+  getFilter: (key: string) => any;
+}
+
+function LoansFilterControls({
+  borrowers,
+  addFilter,
+  getFilter,
+}: LoansFilterControlsProps) {
+  const [selectedBorrowers, setSelectedBorrowers] = useState<string[]>([]);
+  const [selectedStatuses, setSelectedStatuses] = useState<string[]>([]);
+  const [overdueOnly, setOverdueOnly] = useState(false);
+  const [loanedFrom, setLoanedFrom] = useState<Date | null>(null);
+  const [loanedTo, setLoanedTo] = useState<Date | null>(null);
+  const [dueFrom, setDueFrom] = useState<Date | null>(null);
+  const [dueTo, setDueTo] = useState<Date | null>(null);
+
+  // Toggle borrower selection
+  const toggleBorrower = (borrowerId: string) => {
+    const newSelection = selectedBorrowers.includes(borrowerId)
+      ? selectedBorrowers.filter((id) => id !== borrowerId)
+      : [...selectedBorrowers, borrowerId];
+
+    setSelectedBorrowers(newSelection);
+
+    if (newSelection.length > 0) {
+      addFilter({
+        key: "borrowers",
+        label: "Borrower",
+        value: newSelection,
+        type: "multi-select",
+      });
+    } else {
+      addFilter({
+        key: "borrowers",
+        label: "Borrower",
+        value: [],
+        type: "multi-select",
+      });
+    }
+  };
+
+  // Toggle status selection
+  const toggleStatus = (status: string) => {
+    const newSelection = selectedStatuses.includes(status)
+      ? selectedStatuses.filter((s) => s !== status)
+      : [...selectedStatuses, status];
+
+    setSelectedStatuses(newSelection);
+
+    if (newSelection.length > 0) {
+      addFilter({
+        key: "statuses",
+        label: "Status",
+        value: newSelection,
+        type: "multi-select",
+      });
+    } else {
+      addFilter({
+        key: "statuses",
+        label: "Status",
+        value: [],
+        type: "multi-select",
+      });
+    }
+  };
+
+  // Update overdue filter
+  const updateOverdueFilter = (value: boolean) => {
+    setOverdueOnly(value);
+    if (value) {
+      addFilter({
+        key: "overdue",
+        label: "Overdue Only",
+        value: true,
+        type: "boolean",
+      });
+    } else {
+      addFilter({
+        key: "overdue",
+        label: "Overdue Only",
+        value: [],
+        type: "multi-select",
+      });
+    }
+  };
+
+  // Update loaned date range
+  const updateLoanedDateRange = (from: string, to: string) => {
+    const fromDate = from ? new Date(from) : null;
+    const toDate = to ? new Date(to) : null;
+    setLoanedFrom(fromDate);
+    setLoanedTo(toDate);
+
+    if (fromDate || toDate) {
+      addFilter({
+        key: "loanedDate",
+        label: "Loaned Date",
+        value: { from: fromDate, to: toDate },
+        type: "date-range",
+      });
+    } else {
+      addFilter({
+        key: "loanedDate",
+        label: "Loaned Date",
+        value: [],
+        type: "multi-select",
+      });
+    }
+  };
+
+  // Update due date range
+  const updateDueDateRange = (from: string, to: string) => {
+    const fromDate = from ? new Date(from) : null;
+    const toDate = to ? new Date(to) : null;
+    setDueFrom(fromDate);
+    setDueTo(toDate);
+
+    if (fromDate || toDate) {
+      addFilter({
+        key: "dueDate",
+        label: "Due Date",
+        value: { from: fromDate, to: toDate },
+        type: "date-range",
+      });
+    } else {
+      addFilter({
+        key: "dueDate",
+        label: "Due Date",
+        value: [],
+        type: "multi-select",
+      });
+    }
+  };
+
+  return (
+    <div className="space-y-4">
+      {/* Borrowers */}
+      {borrowers.length > 0 && (
+        <div className="space-y-2">
+          <Label className="text-sm font-medium">Borrowers</Label>
+          <div className="max-h-48 space-y-2 overflow-y-auto rounded-md border p-2">
+            {borrowers.map((borrower) => (
+              <div key={borrower.id} className="flex items-center space-x-2">
+                <Checkbox
+                  id={`borrower-${borrower.id}`}
+                  checked={selectedBorrowers.includes(borrower.id)}
+                  onCheckedChange={() => toggleBorrower(borrower.id)}
+                />
+                <label
+                  htmlFor={`borrower-${borrower.id}`}
+                  className="flex-1 cursor-pointer text-sm"
+                >
+                  {borrower.name}
+                </label>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Status */}
+      <div className="space-y-2">
+        <Label className="text-sm font-medium">Status</Label>
+        <div className="space-y-2 rounded-md border p-2">
+          {["active", "overdue", "returned"].map((status) => (
+            <div key={status} className="flex items-center space-x-2">
+              <Checkbox
+                id={`status-${status}`}
+                checked={selectedStatuses.includes(status)}
+                onCheckedChange={() => toggleStatus(status)}
+              />
+              <label
+                htmlFor={`status-${status}`}
+                className="flex-1 cursor-pointer text-sm capitalize"
+              >
+                {status}
+              </label>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Overdue Only */}
+      <div className="flex items-center space-x-2">
+        <Checkbox
+          id="overdue-only"
+          checked={overdueOnly}
+          onCheckedChange={(checked) => updateOverdueFilter(!!checked)}
+        />
+        <label htmlFor="overdue-only" className="cursor-pointer text-sm">
+          Show Overdue Only
+        </label>
+      </div>
+
+      {/* Loaned Date Range */}
+      <div className="space-y-2">
+        <Label className="text-sm font-medium">Loaned Date</Label>
+        <div className="space-y-2">
+          <Input
+            type="date"
+            value={loanedFrom ? format(loanedFrom, "yyyy-MM-dd") : ""}
+            onChange={(e) => updateLoanedDateRange(e.target.value, loanedTo ? format(loanedTo, "yyyy-MM-dd") : "")}
+            placeholder="From"
+          />
+          <Input
+            type="date"
+            value={loanedTo ? format(loanedTo, "yyyy-MM-dd") : ""}
+            onChange={(e) => updateLoanedDateRange(loanedFrom ? format(loanedFrom, "yyyy-MM-dd") : "", e.target.value)}
+            placeholder="To"
+          />
+        </div>
+      </div>
+
+      {/* Due Date Range */}
+      <div className="space-y-2">
+        <Label className="text-sm font-medium">Due Date</Label>
+        <div className="space-y-2">
+          <Input
+            type="date"
+            value={dueFrom ? format(dueFrom, "yyyy-MM-dd") : ""}
+            onChange={(e) => updateDueDateRange(e.target.value, dueTo ? format(dueTo, "yyyy-MM-dd") : "")}
+            placeholder="From"
+          />
+          <Input
+            type="date"
+            value={dueTo ? format(dueTo, "yyyy-MM-dd") : ""}
+            onChange={(e) => updateDueDateRange(dueFrom ? format(dueFrom, "yyyy-MM-dd") : "", e.target.value)}
+            placeholder="To"
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
 
 function LoansTableSkeleton() {
   return (
@@ -156,7 +397,16 @@ export default function LoansPage() {
   const [items, setItems] = useState<Item[]>([]);
   const [availableInventory, setAvailableInventory] = useState<Inventory[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState<string>("all");
+
+  // Enhanced filters
+  const {
+    filterChips,
+    activeFilterCount,
+    addFilter,
+    removeFilter,
+    clearFilters,
+    getFilter,
+  } = useFilters();
 
   // Dialog state
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
@@ -256,11 +506,6 @@ export default function LoansPage() {
 
   // Filter loans
   const filteredLoans = loans.filter((loan) => {
-    // Filter by status
-    if (statusFilter === "active" && !loan.is_active) return false;
-    if (statusFilter === "overdue" && !loan.is_overdue) return false;
-    if (statusFilter === "returned" && loan.is_active) return false;
-
     // Filter by search query
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
@@ -270,6 +515,54 @@ export default function LoansPage() {
         borrower?.name.toLowerCase().includes(query) ||
         loan.notes?.toLowerCase().includes(query);
       if (!matchesSearch) return false;
+    }
+
+    // Filter by borrowers (multi-select)
+    const borrowersFilter = getFilter("borrowers");
+    if (borrowersFilter && Array.isArray(borrowersFilter.value)) {
+      if (!borrowersFilter.value.includes(loan.borrower_id)) {
+        return false;
+      }
+    }
+
+    // Filter by statuses (multi-select)
+    const statusesFilter = getFilter("statuses");
+    if (statusesFilter && Array.isArray(statusesFilter.value)) {
+      const statuses = statusesFilter.value;
+      if (statuses.includes("active") && !loan.is_active) return false;
+      if (statuses.includes("overdue") && !loan.is_overdue) return false;
+      if (statuses.includes("returned") && loan.is_active) return false;
+      // If none of the selected statuses match, filter out
+      const matchesStatus =
+        (statuses.includes("active") && loan.is_active && !loan.is_overdue) ||
+        (statuses.includes("overdue") && loan.is_overdue) ||
+        (statuses.includes("returned") && !loan.is_active);
+      if (!matchesStatus) return false;
+    }
+
+    // Filter by overdue only
+    const overdueFilter = getFilter("overdue");
+    if (overdueFilter && typeof overdueFilter.value === "boolean" && overdueFilter.value) {
+      if (!loan.is_overdue) return false;
+    }
+
+    // Filter by loaned date range
+    const loanedDateFilter = getFilter("loanedDate");
+    if (loanedDateFilter && typeof loanedDateFilter.value === "object") {
+      const range = loanedDateFilter.value as { from: Date | null; to: Date | null };
+      const loanedDate = new Date(loan.loaned_at);
+      if (range.from && loanedDate < range.from) return false;
+      if (range.to && loanedDate > range.to) return false;
+    }
+
+    // Filter by due date range
+    const dueDateFilter = getFilter("dueDate");
+    if (dueDateFilter && typeof dueDateFilter.value === "object") {
+      const range = dueDateFilter.value as { from: Date | null; to: Date | null };
+      if (!loan.due_date) return false;
+      const dueDate = new Date(loan.due_date);
+      if (range.from && dueDate < range.from) return false;
+      if (range.to && dueDate > range.to) return false;
     }
 
     return true;
@@ -508,34 +801,36 @@ export default function LoansPage() {
                   className="pl-9"
                 />
               </div>
-              <Select
-                value={statusFilter}
-                onValueChange={(value) => setStatusFilter(value)}
-              >
-                <SelectTrigger className="w-[200px]">
-                  <SelectValue placeholder="All statuses" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All statuses</SelectItem>
-                  <SelectItem value="active">Active</SelectItem>
-                  <SelectItem value="overdue">Overdue</SelectItem>
-                  <SelectItem value="returned">Returned</SelectItem>
-                </SelectContent>
-              </Select>
+              <FilterPopover activeFilterCount={activeFilterCount}>
+                <LoansFilterControls
+                  borrowers={borrowers}
+                  addFilter={addFilter}
+                  getFilter={getFilter}
+                />
+              </FilterPopover>
             </div>
+
+            {/* Filter chips */}
+            {filterChips.length > 0 && (
+              <FilterBar
+                filterChips={filterChips}
+                onRemoveFilter={removeFilter}
+                onClearAll={clearFilters}
+              />
+            )}
 
             {/* Loans table */}
             {sortedLoans.length === 0 ? (
               <EmptyState
                 icon={HandCoins}
-                title={searchQuery || statusFilter !== "all" ? "No loans found" : "No loans yet"}
+                title={searchQuery || activeFilterCount > 0 ? "No loans found" : "No loans yet"}
                 description={
-                  searchQuery || statusFilter !== "all"
+                  searchQuery || activeFilterCount > 0
                     ? "Try adjusting your search or filters"
                     : "Start tracking borrowed items by creating a loan"
                 }
               >
-                {!searchQuery && statusFilter === "all" && (
+                {!searchQuery && activeFilterCount === 0 && (
                   <Button onClick={() => setCreateDialogOpen(true)}>
                     <Plus className="mr-2 h-4 w-4" />
                     Create Your First Loan

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useTranslations } from "next-intl";
 import {
   Plus,
@@ -61,10 +61,13 @@ import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { InfiniteScrollTrigger } from "@/components/ui/infinite-scroll-trigger";
 import { BulkActionBar } from "@/components/ui/bulk-action-bar";
+import { FilterBar } from "@/components/ui/filter-bar";
+import { FilterPopover } from "@/components/ui/filter-popover";
 import { useWorkspace } from "@/lib/hooks/use-workspace";
 import { useTableSort } from "@/lib/hooks/use-table-sort";
 import { useInfiniteScroll } from "@/lib/hooks/use-infinite-scroll";
 import { useBulkSelection } from "@/lib/hooks/use-bulk-selection";
+import { useFilters } from "@/lib/hooks/use-filters";
 import { inventoryApi, itemsApi, locationsApi, containersApi } from "@/lib/api";
 import type { Inventory, InventoryCreate, InventoryCondition, InventoryStatus } from "@/lib/types/inventory";
 import type { Item } from "@/lib/types/items";
@@ -92,6 +95,269 @@ const STATUS_OPTIONS: { value: InventoryStatus; label: string; color: string }[]
   { value: "DISPOSED", label: "Disposed", color: "bg-gray-500" },
   { value: "MISSING", label: "Missing", color: "bg-red-500" },
 ];
+
+interface InventoryFilterControlsProps {
+  locations: Location[];
+  containers: Container[];
+  addFilter: (filter: any) => void;
+  getFilter: (key: string) => any;
+}
+
+function InventoryFilterControls({
+  locations,
+  containers,
+  addFilter,
+  getFilter,
+}: InventoryFilterControlsProps) {
+  const [selectedLocations, setSelectedLocations] = useState<string[]>([]);
+  const [selectedContainers, setSelectedContainers] = useState<string[]>([]);
+  const [selectedConditions, setSelectedConditions] = useState<InventoryCondition[]>([]);
+  const [selectedStatuses, setSelectedStatuses] = useState<InventoryStatus[]>([]);
+  const [minQuantity, setMinQuantity] = useState<string>("");
+  const [maxQuantity, setMaxQuantity] = useState<string>("");
+
+  // Toggle location selection
+  const toggleLocation = (locationId: string) => {
+    const newSelection = selectedLocations.includes(locationId)
+      ? selectedLocations.filter((id) => id !== locationId)
+      : [...selectedLocations, locationId];
+
+    setSelectedLocations(newSelection);
+
+    if (newSelection.length > 0) {
+      addFilter({
+        key: "locations",
+        label: "Location",
+        value: newSelection,
+        type: "multi-select",
+      });
+    } else {
+      addFilter({
+        key: "locations",
+        label: "Location",
+        value: [],
+        type: "multi-select",
+      });
+    }
+  };
+
+  // Toggle container selection
+  const toggleContainer = (containerId: string) => {
+    const newSelection = selectedContainers.includes(containerId)
+      ? selectedContainers.filter((id) => id !== containerId)
+      : [...selectedContainers, containerId];
+
+    setSelectedContainers(newSelection);
+
+    if (newSelection.length > 0) {
+      addFilter({
+        key: "containers",
+        label: "Container",
+        value: newSelection,
+        type: "multi-select",
+      });
+    } else {
+      addFilter({
+        key: "containers",
+        label: "Container",
+        value: [],
+        type: "multi-select",
+      });
+    }
+  };
+
+  // Toggle condition selection
+  const toggleCondition = (condition: InventoryCondition) => {
+    const newSelection = selectedConditions.includes(condition)
+      ? selectedConditions.filter((c) => c !== condition)
+      : [...selectedConditions, condition];
+
+    setSelectedConditions(newSelection);
+
+    if (newSelection.length > 0) {
+      addFilter({
+        key: "conditions",
+        label: "Condition",
+        value: newSelection,
+        type: "multi-select",
+      });
+    } else {
+      addFilter({
+        key: "conditions",
+        label: "Condition",
+        value: [],
+        type: "multi-select",
+      });
+    }
+  };
+
+  // Toggle status selection
+  const toggleStatus = (status: InventoryStatus) => {
+    const newSelection = selectedStatuses.includes(status)
+      ? selectedStatuses.filter((s) => s !== status)
+      : [...selectedStatuses, status];
+
+    setSelectedStatuses(newSelection);
+
+    if (newSelection.length > 0) {
+      addFilter({
+        key: "statuses",
+        label: "Status",
+        value: newSelection,
+        type: "multi-select",
+      });
+    } else {
+      addFilter({
+        key: "statuses",
+        label: "Status",
+        value: [],
+        type: "multi-select",
+      });
+    }
+  };
+
+  // Update quantity range
+  const updateQuantityRange = () => {
+    const min = minQuantity ? parseInt(minQuantity, 10) : null;
+    const max = maxQuantity ? parseInt(maxQuantity, 10) : null;
+
+    if (min !== null || max !== null) {
+      addFilter({
+        key: "quantity",
+        label: "Quantity",
+        value: { min, max },
+        type: "number-range",
+      });
+    } else {
+      addFilter({
+        key: "quantity",
+        label: "Quantity",
+        value: [],
+        type: "multi-select",
+      });
+    }
+  };
+
+  return (
+    <div className="space-y-4">
+      {/* Locations */}
+      {locations.length > 0 && (
+        <div className="space-y-2">
+          <Label className="text-sm font-medium">Locations</Label>
+          <div className="max-h-48 space-y-2 overflow-y-auto rounded-md border p-2">
+            {locations.map((location) => (
+              <div key={location.id} className="flex items-center space-x-2">
+                <Checkbox
+                  id={`location-${location.id}`}
+                  checked={selectedLocations.includes(location.id)}
+                  onCheckedChange={() => toggleLocation(location.id)}
+                />
+                <label
+                  htmlFor={`location-${location.id}`}
+                  className="flex-1 cursor-pointer text-sm"
+                >
+                  {location.name}
+                </label>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Containers */}
+      {containers.length > 0 && (
+        <div className="space-y-2">
+          <Label className="text-sm font-medium">Containers</Label>
+          <div className="max-h-48 space-y-2 overflow-y-auto rounded-md border p-2">
+            {containers.map((container) => (
+              <div key={container.id} className="flex items-center space-x-2">
+                <Checkbox
+                  id={`container-${container.id}`}
+                  checked={selectedContainers.includes(container.id)}
+                  onCheckedChange={() => toggleContainer(container.id)}
+                />
+                <label
+                  htmlFor={`container-${container.id}`}
+                  className="flex-1 cursor-pointer text-sm"
+                >
+                  {container.name}
+                </label>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Conditions */}
+      <div className="space-y-2">
+        <Label className="text-sm font-medium">Condition</Label>
+        <div className="space-y-2 rounded-md border p-2">
+          {CONDITION_OPTIONS.map((option) => (
+            <div key={option.value} className="flex items-center space-x-2">
+              <Checkbox
+                id={`condition-${option.value}`}
+                checked={selectedConditions.includes(option.value)}
+                onCheckedChange={() => toggleCondition(option.value)}
+              />
+              <label
+                htmlFor={`condition-${option.value}`}
+                className="flex-1 cursor-pointer text-sm"
+              >
+                {option.label}
+              </label>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Statuses */}
+      <div className="space-y-2">
+        <Label className="text-sm font-medium">Status</Label>
+        <div className="space-y-2 rounded-md border p-2">
+          {STATUS_OPTIONS.map((option) => (
+            <div key={option.value} className="flex items-center space-x-2">
+              <Checkbox
+                id={`status-${option.value}`}
+                checked={selectedStatuses.includes(option.value)}
+                onCheckedChange={() => toggleStatus(option.value)}
+              />
+              <label
+                htmlFor={`status-${option.value}`}
+                className="flex-1 cursor-pointer text-sm"
+              >
+                {option.label}
+              </label>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Quantity Range */}
+      <div className="space-y-2">
+        <Label className="text-sm font-medium">Quantity Range</Label>
+        <div className="flex items-center gap-2">
+          <Input
+            type="number"
+            placeholder="Min"
+            value={minQuantity}
+            onChange={(e) => setMinQuantity(e.target.value)}
+            onBlur={updateQuantityRange}
+            className="w-24"
+          />
+          <span className="text-sm text-muted-foreground">to</span>
+          <Input
+            type="number"
+            placeholder="Max"
+            value={maxQuantity}
+            onChange={(e) => setMaxQuantity(e.target.value)}
+            onBlur={updateQuantityRange}
+            className="w-24"
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
 
 function InventoryTableSkeleton() {
   return (
@@ -147,8 +413,17 @@ export default function InventoryPage() {
   const [locations, setLocations] = useState<Location[]>([]);
   const [containers, setContainers] = useState<Container[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState<string>("all");
   const [showArchived, setShowArchived] = useState(false);
+
+  // Enhanced filters
+  const {
+    filterChips,
+    activeFilterCount,
+    addFilter,
+    removeFilter,
+    clearFilters,
+    getFilter,
+  } = useFilters();
 
   // Dialog state
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -216,9 +491,6 @@ export default function InventoryPage() {
     if (!showArchived && inventory.is_archived) return false;
     if (showArchived && !inventory.is_archived) return false;
 
-    // Filter by status
-    if (statusFilter !== "all" && inventory.status !== statusFilter) return false;
-
     // Filter by search query
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
@@ -230,6 +502,46 @@ export default function InventoryPage() {
         location?.name.toLowerCase().includes(query) ||
         inventory.notes?.toLowerCase().includes(query);
       if (!matchesSearch) return false;
+    }
+
+    // Filter by locations (multi-select)
+    const locationsFilter = getFilter("locations");
+    if (locationsFilter && Array.isArray(locationsFilter.value)) {
+      if (!inventory.location_id || !locationsFilter.value.includes(inventory.location_id)) {
+        return false;
+      }
+    }
+
+    // Filter by containers (multi-select)
+    const containersFilter = getFilter("containers");
+    if (containersFilter && Array.isArray(containersFilter.value)) {
+      if (!inventory.container_id || !containersFilter.value.includes(inventory.container_id)) {
+        return false;
+      }
+    }
+
+    // Filter by conditions (multi-select)
+    const conditionsFilter = getFilter("conditions");
+    if (conditionsFilter && Array.isArray(conditionsFilter.value)) {
+      if (!conditionsFilter.value.includes(inventory.condition)) {
+        return false;
+      }
+    }
+
+    // Filter by statuses (multi-select)
+    const statusesFilter = getFilter("statuses");
+    if (statusesFilter && Array.isArray(statusesFilter.value)) {
+      if (!statusesFilter.value.includes(inventory.status)) {
+        return false;
+      }
+    }
+
+    // Filter by quantity range
+    const quantityFilter = getFilter("quantity");
+    if (quantityFilter && typeof quantityFilter.value === "object") {
+      const range = quantityFilter.value as { min: number | null; max: number | null };
+      if (range.min !== null && inventory.quantity < range.min) return false;
+      if (range.max !== null && inventory.quantity > range.max) return false;
     }
 
     return true;
@@ -438,22 +750,14 @@ export default function InventoryPage() {
                   className="pl-9"
                 />
               </div>
-              <Select
-                value={statusFilter}
-                onValueChange={(value) => setStatusFilter(value)}
-              >
-                <SelectTrigger className="w-[200px]">
-                  <SelectValue placeholder="All statuses" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All statuses</SelectItem>
-                  {STATUS_OPTIONS.map((status) => (
-                    <SelectItem key={status.value} value={status.value}>
-                      {status.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <FilterPopover activeFilterCount={activeFilterCount}>
+                <InventoryFilterControls
+                  locations={locations}
+                  containers={containers}
+                  addFilter={addFilter}
+                  getFilter={getFilter}
+                />
+              </FilterPopover>
               <Button
                 variant={showArchived ? "default" : "outline"}
                 size="sm"
@@ -464,26 +768,35 @@ export default function InventoryPage() {
               </Button>
             </div>
 
+            {/* Filter chips */}
+            {filterChips.length > 0 && (
+              <FilterBar
+                filterChips={filterChips}
+                onRemoveFilter={removeFilter}
+                onClearAll={clearFilters}
+              />
+            )}
+
             {/* Inventory table */}
             {sortedInventories.length === 0 ? (
               <EmptyState
                 icon={Package}
                 title={
-                  searchQuery || statusFilter !== "all"
+                  searchQuery || activeFilterCount > 0
                     ? "No inventory found"
                     : showArchived
                     ? "No archived inventory"
                     : "No inventory yet"
                 }
                 description={
-                  searchQuery || statusFilter !== "all"
+                  searchQuery || activeFilterCount > 0
                     ? "Try adjusting your search or filters"
                     : showArchived
                     ? "Archived inventory will appear here"
                     : "Start tracking physical items at locations"
                 }
               >
-                {!searchQuery && statusFilter === "all" && !showArchived && (
+                {!searchQuery && activeFilterCount === 0 && !showArchived && (
                   <Button onClick={openCreateDialog}>
                     <Plus className="mr-2 h-4 w-4" />
                     Add Your First Inventory
