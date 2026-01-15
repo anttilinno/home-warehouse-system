@@ -78,6 +78,24 @@ func (r *BorrowerRepository) HasActiveLoans(ctx context.Context, id uuid.UUID) (
 	return r.queries.HasActiveLoans(ctx, id)
 }
 
+func (r *BorrowerRepository) Search(ctx context.Context, workspaceID uuid.UUID, query string, limit int) ([]*borrower.Borrower, error) {
+	rows, err := r.queries.SearchBorrowers(ctx, queries.SearchBorrowersParams{
+		WorkspaceID:    workspaceID,
+		PlaintoTsquery: query,
+		Limit:          int32(limit),
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	borrowers := make([]*borrower.Borrower, 0, len(rows))
+	for _, row := range rows {
+		borrowers = append(borrowers, r.rowToBorrower(row))
+	}
+
+	return borrowers, nil
+}
+
 func (r *BorrowerRepository) rowToBorrower(row queries.WarehouseBorrower) *borrower.Borrower {
 	return borrower.Reconstruct(
 		row.ID,

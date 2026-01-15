@@ -114,6 +114,24 @@ func (r *ContainerRepository) ShortCodeExists(ctx context.Context, workspaceID u
 	})
 }
 
+func (r *ContainerRepository) Search(ctx context.Context, workspaceID uuid.UUID, query string, limit int) ([]*container.Container, error) {
+	rows, err := r.queries.SearchContainers(ctx, queries.SearchContainersParams{
+		WorkspaceID:    workspaceID,
+		PlaintoTsquery: query,
+		Limit:          int32(limit),
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	containers := make([]*container.Container, 0, len(rows))
+	for _, row := range rows {
+		containers = append(containers, r.rowToContainer(row))
+	}
+
+	return containers, nil
+}
+
 func (r *ContainerRepository) rowToContainer(row queries.WarehouseContainer) *container.Container {
 	return container.Reconstruct(
 		row.ID,

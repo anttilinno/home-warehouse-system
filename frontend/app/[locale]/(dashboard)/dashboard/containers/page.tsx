@@ -78,6 +78,7 @@ import { useTableSort } from "@/lib/hooks/use-table-sort";
 import { useInfiniteScroll } from "@/lib/hooks/use-infinite-scroll";
 import { useBulkSelection } from "@/lib/hooks/use-bulk-selection";
 import { useFilters } from "@/lib/hooks/use-filters";
+import { useKeyboardShortcuts } from "@/lib/hooks/use-keyboard-shortcuts";
 import { containersApi, locationsApi, importExportApi } from "@/lib/api";
 import type { Container, ContainerCreate, ContainerUpdate } from "@/lib/types/containers";
 import type { Location } from "@/lib/types/locations";
@@ -346,8 +347,16 @@ export default function ContainersPage() {
     return true;
   });
 
+  // Flatten container data for sorting (add location name)
+  const flattenedContainers = useMemo(() => {
+    return filteredContainers.map(container => ({
+      ...container,
+      location_name: getLocationName(container.location_id),
+    }));
+  }, [filteredContainers, locations]);
+
   // Sort containers
-  const { sortedData: sortedContainers, requestSort, getSortDirection } = useTableSort(filteredContainers, "name", "asc");
+  const { sortedData: sortedContainers, requestSort, getSortDirection } = useTableSort(flattenedContainers, "name", "asc");
 
   // Bulk selection
   const {
@@ -361,6 +370,48 @@ export default function ContainersPage() {
     isAllSelected,
     isSomeSelected,
   } = useBulkSelection<string>();
+
+  // Keyboard shortcuts for this page
+  useKeyboardShortcuts({
+    shortcuts: [
+      {
+        key: 'n',
+        ctrl: true,
+        description: 'Create new container',
+        action: () => openCreateDialog(),
+      },
+      {
+        key: 'r',
+        description: 'Refresh containers list',
+        action: () => refetch(),
+        preventDefault: false,
+      },
+      {
+        key: 'a',
+        ctrl: true,
+        description: 'Select all containers',
+        action: () => {
+          if (sortedContainers.length > 0) {
+            selectAll(sortedContainers.map((c) => c.id));
+          }
+        },
+      },
+      {
+        key: 'Escape',
+        description: 'Clear selection or close dialog',
+        action: () => {
+          if (selectedCount > 0) {
+            clearSelection();
+          } else if (dialogOpen) {
+            setDialogOpen(false);
+          }
+        },
+        preventDefault: false,
+      },
+    ],
+    enabled: true,
+    ignoreInputFields: true,
+  });
 
   const getLocationName = (locationId: string) => {
     const location = locations.find((l) => l.id === locationId);
@@ -679,8 +730,8 @@ export default function ContainersPage() {
                         Name
                       </SortableTableHead>
                       <SortableTableHead
-                        sortDirection={getSortDirection("location_id")}
-                        onSort={() => requestSort("location_id")}
+                        sortDirection={getSortDirection("location_name")}
+                        onSort={() => requestSort("location_name")}
                       >
                         Location
                       </SortableTableHead>

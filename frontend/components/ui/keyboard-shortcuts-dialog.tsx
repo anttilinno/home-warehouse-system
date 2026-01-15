@@ -8,8 +8,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Badge } from "@/components/ui/badge";
-import { cn } from "@/lib/utils";
+import { Kbd } from "@/components/ui/kbd";
 
 export interface KeyboardShortcutsDialogProps {
   open: boolean;
@@ -25,44 +24,30 @@ interface Shortcut {
 const shortcuts: Shortcut[] = [
   // Global shortcuts
   { keys: ["Ctrl", "K"], description: "Open command palette", category: "Global" },
-  { keys: ["Ctrl", "/"], description: "Show keyboard shortcuts", category: "Global" },
+  { keys: ["Ctrl", "/"], description: "Focus global search", category: "Global" },
   { keys: ["?"], description: "Show keyboard shortcuts", category: "Global" },
-  { keys: ["Esc"], description: "Close dialog or cancel action", category: "Global" },
+  { keys: ["Esc"], description: "Close dialog or clear selection", category: "Global" },
 
-  // Navigation shortcuts
-  { keys: ["Ctrl", "F"], description: "Focus search", category: "Navigation" },
+  // Page shortcuts
+  { keys: ["Ctrl", "N"], description: "Create new item (on any list page)", category: "Page Actions" },
+  { keys: ["R"], description: "Refresh current page data", category: "Page Actions" },
+  { keys: ["Ctrl", "A"], description: "Select all items in list", category: "Page Actions" },
+  { keys: ["Ctrl", "E"], description: "Export selected items", category: "Page Actions" },
 
-  // Command palette shortcuts
-  { keys: ["Ctrl", "K"], description: "Go to Dashboard", category: "Command Palette" },
-  { keys: ["Ctrl", "K"], description: "Go to any page", category: "Command Palette" },
+  // Command palette navigation
   { keys: ["Ctrl", "K", "then I"], description: "Create new item", category: "Command Palette" },
   { keys: ["Ctrl", "K", "then N"], description: "Create new inventory", category: "Command Palette" },
   { keys: ["Ctrl", "K", "then L"], description: "Create new loan", category: "Command Palette" },
   { keys: ["Ctrl", "K", "then B"], description: "Create new borrower", category: "Command Palette" },
   { keys: ["Ctrl", "K", "then C"], description: "Create new container", category: "Command Palette" },
 
-  // Table shortcuts
-  { keys: ["↑", "↓"], description: "Navigate table rows", category: "Tables" },
-  { keys: ["Enter"], description: "Open selected item", category: "Tables" },
-
-  // Form shortcuts
-  { keys: ["Ctrl", "Enter"], description: "Submit form", category: "Forms" },
-  { keys: ["Esc"], description: "Cancel and close", category: "Forms" },
-  { keys: ["Tab"], description: "Navigate form fields", category: "Forms" },
+  // Navigation in lists and tables
+  { keys: ["↑", "↓"], description: "Navigate search results", category: "Navigation" },
+  { keys: ["Enter"], description: "Open selected item", category: "Navigation" },
+  { keys: ["Tab"], description: "Navigate between fields", category: "Navigation" },
 ];
 
 const categories = Array.from(new Set(shortcuts.map(s => s.category)));
-
-function KeyboardKey({ children }: { children: string }) {
-  return (
-    <Badge
-      variant="outline"
-      className="px-2 py-1 font-mono text-xs font-normal"
-    >
-      {children}
-    </Badge>
-  );
-}
 
 function ShortcutItem({ shortcut }: { shortcut: Shortcut }) {
   return (
@@ -72,7 +57,7 @@ function ShortcutItem({ shortcut }: { shortcut: Shortcut }) {
         {shortcut.keys.map((key, index) => (
           <React.Fragment key={index}>
             {index > 0 && <span className="text-xs text-muted-foreground">+</span>}
-            <KeyboardKey>{key}</KeyboardKey>
+            <Kbd>{key}</Kbd>
           </React.Fragment>
         ))}
       </div>
@@ -127,7 +112,7 @@ export function KeyboardShortcutsDialog({
         </div>
 
         <div className="flex items-center justify-center pt-4 text-xs text-muted-foreground">
-          Press <KeyboardKey>Esc</KeyboardKey> to close
+          Press <Kbd>Esc</Kbd> to close
         </div>
       </DialogContent>
     </Dialog>

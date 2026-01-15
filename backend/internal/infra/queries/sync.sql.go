@@ -116,7 +116,7 @@ func (q *Queries) CountLocationsModifiedSince(ctx context.Context, arg CountLoca
 }
 
 const listBorrowersModifiedSince = `-- name: ListBorrowersModifiedSince :many
-SELECT id, workspace_id, name, email, phone, notes, is_archived, created_at, updated_at FROM warehouse.borrowers
+SELECT id, workspace_id, name, email, phone, notes, is_archived, created_at, updated_at, search_vector FROM warehouse.borrowers
 WHERE workspace_id = $1 
   AND updated_at > $2
 ORDER BY updated_at ASC
@@ -148,6 +148,7 @@ func (q *Queries) ListBorrowersModifiedSince(ctx context.Context, arg ListBorrow
 			&i.IsArchived,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.SearchVector,
 		); err != nil {
 			return nil, err
 		}

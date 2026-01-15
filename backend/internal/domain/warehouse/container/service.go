@@ -17,6 +17,7 @@ type ServiceInterface interface {
 	Archive(ctx context.Context, id, workspaceID uuid.UUID) error
 	Restore(ctx context.Context, id, workspaceID uuid.UUID) error
 	Delete(ctx context.Context, id, workspaceID uuid.UUID) error
+	Search(ctx context.Context, workspaceID uuid.UUID, query string, limit int) ([]*Container, error)
 }
 
 type Service struct {
@@ -129,4 +130,12 @@ func (s *Service) Delete(ctx context.Context, id, workspaceID uuid.UUID) error {
 	}
 
 	return s.repo.Delete(ctx, container.ID())
+}
+
+// Search searches for containers by query string.
+func (s *Service) Search(ctx context.Context, workspaceID uuid.UUID, query string, limit int) ([]*Container, error) {
+	if limit <= 0 {
+		limit = 50 // Default limit
+	}
+	return s.repo.Search(ctx, workspaceID, query, limit)
 }

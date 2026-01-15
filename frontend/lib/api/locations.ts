@@ -21,6 +21,29 @@ export const locationsApi = {
   },
 
   /**
+   * Search locations by query
+   * Note: Backend endpoint not yet implemented - returns empty array on 404
+   */
+  search: async (query: string, limit?: number): Promise<Location[]> => {
+    const queryParams = new URLSearchParams({ q: query });
+    if (limit) queryParams.append("limit", limit.toString());
+
+    try {
+      const response = await apiClient.get<LocationListResponse>(
+        `/locations/search?${queryParams.toString()}`
+      );
+      return response.items;
+    } catch (error: any) {
+      // If endpoint doesn't exist (404), return empty array
+      if (error?.status === 404) {
+        console.warn("Locations search endpoint not yet implemented");
+        return [];
+      }
+      throw error;
+    }
+  },
+
+  /**
    * Get a single location by ID
    */
   get: async (id: string): Promise<Location> => {

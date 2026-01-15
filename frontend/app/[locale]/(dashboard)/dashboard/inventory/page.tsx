@@ -73,6 +73,7 @@ import { useTableSort } from "@/lib/hooks/use-table-sort";
 import { useInfiniteScroll } from "@/lib/hooks/use-infinite-scroll";
 import { useBulkSelection } from "@/lib/hooks/use-bulk-selection";
 import { useFilters } from "@/lib/hooks/use-filters";
+import { useKeyboardShortcuts } from "@/lib/hooks/use-keyboard-shortcuts";
 import { inventoryApi, itemsApi, locationsApi, containersApi, importExportApi } from "@/lib/api";
 import type { Inventory, InventoryCreate, InventoryCondition, InventoryStatus } from "@/lib/types/inventory";
 import type { Item } from "@/lib/types/items";
@@ -557,8 +558,19 @@ export default function InventoryPage() {
     });
   }, [inventories, showArchived, searchQuery, items, locations, activeFilters]);
 
+  // Flatten inventory data for sorting (add item name, location name, container name)
+  const flattenedInventories = useMemo(() => {
+    return filteredInventories.map(inv => ({
+      ...inv,
+      item_name: getItemName(inv.item_id),
+      item_sku: getItemSKU(inv.item_id),
+      location_name: getLocationName(inv.location_id),
+      container_name: getContainerName(inv.container_id) || '',
+    }));
+  }, [filteredInventories, items, locations, containers]);
+
   // Sort inventories
-  const { sortedData: sortedInventories, requestSort, getSortDirection } = useTableSort(filteredInventories, "item_id", "asc");
+  const { sortedData: sortedInventories, requestSort, getSortDirection } = useTableSort(flattenedInventories, "item_name", "asc");
 
   // Bulk selection
   const {
@@ -572,6 +584,58 @@ export default function InventoryPage() {
     isAllSelected,
     isSomeSelected,
   } = useBulkSelection<string>();
+
+  // Keyboard shortcuts for this page
+  useKeyboardShortcuts({
+    shortcuts: [
+      {
+        key: 'n',
+        ctrl: true,
+        description: 'Create new inventory',
+        action: () => openCreateDialog(),
+      },
+      {
+        key: 'r',
+        description: 'Refresh inventory list',
+        action: () => refetch(),
+        preventDefault: false,
+      },
+      {
+        key: 'a',
+        ctrl: true,
+        description: 'Select all inventory',
+        action: () => {
+          if (sortedInventories.length > 0) {
+            selectAll(sortedInventories.map((i) => i.id));
+          }
+        },
+      },
+      {
+        key: 'Escape',
+        description: 'Clear selection',
+        action: () => {
+          if (selectedCount > 0) {
+            clearSelection();
+          } else if (dialogOpen) {
+            setDialogOpen(false);
+          }
+        },
+        preventDefault: false,
+      },
+      {
+        key: 'e',
+        ctrl: true,
+        description: 'Export selected inventory',
+        action: () => {
+          if (selectedCount > 0) {
+            handleBulkExport();
+          }
+        },
+      },
+    ],
+    enabled: true,
+    ignoreInputFields: true,
+  });
 
   const getItemName = (itemId: string) => {
     const item = items.find(i => i.id === itemId);
@@ -934,14 +998,14 @@ export default function InventoryPage() {
                         />
                       </TableHead>
                       <SortableTableHead
-                        sortDirection={getSortDirection("item_id")}
-                        onSort={() => requestSort("item_id")}
+                        sortDirection={getSortDirection("item_name")}
+                        onSort={() => requestSort("item_name")}
                       >
                         Item
                       </SortableTableHead>
                       <SortableTableHead
-                        sortDirection={getSortDirection("location_id")}
-                        onSort={() => requestSort("location_id")}
+                        sortDirection={getSortDirection("location_name")}
+                        onSort={() => requestSort("location_name")}
                       >
                         Location
                       </SortableTableHead>

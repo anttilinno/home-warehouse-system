@@ -17,6 +17,7 @@ type ServiceInterface interface {
 	Restore(ctx context.Context, id, workspaceID uuid.UUID) error
 	Delete(ctx context.Context, id, workspaceID uuid.UUID) error
 	List(ctx context.Context, workspaceID uuid.UUID, pagination shared.Pagination) ([]*Borrower, int, error)
+	Search(ctx context.Context, workspaceID uuid.UUID, query string, limit int) ([]*Borrower, error)
 }
 
 type Service struct {
@@ -117,4 +118,12 @@ func (s *Service) Delete(ctx context.Context, id, workspaceID uuid.UUID) error {
 
 func (s *Service) List(ctx context.Context, workspaceID uuid.UUID, pagination shared.Pagination) ([]*Borrower, int, error) {
 	return s.repo.FindByWorkspace(ctx, workspaceID, pagination)
+}
+
+// Search searches for borrowers by query string.
+func (s *Service) Search(ctx context.Context, workspaceID uuid.UUID, query string, limit int) ([]*Borrower, error) {
+	if limit <= 0 {
+		limit = 50 // Default limit
+	}
+	return s.repo.Search(ctx, workspaceID, query, limit)
 }

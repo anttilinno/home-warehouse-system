@@ -16,4 +16,5 @@ type Repository interface {
 	FindByWorkspace(ctx context.Context, workspaceID uuid.UUID, pagination shared.Pagination) ([]*Container, int, error)
 	Delete(ctx context.Context, id uuid.UUID) error
 	ShortCodeExists(ctx context.Context, workspaceID uuid.UUID, shortCode string) (bool, error)
+	Search(ctx context.Context, workspaceID uuid.UUID, query string, limit int) ([]*Container, error)
 }

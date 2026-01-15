@@ -566,15 +566,16 @@ type WarehouseAttachment struct {
 }
 
 type WarehouseBorrower struct {
-	ID          uuid.UUID          `json:"id"`
-	WorkspaceID uuid.UUID          `json:"workspace_id"`
-	Name        string             `json:"name"`
-	Email       *string            `json:"email"`
-	Phone       *string            `json:"phone"`
-	Notes       *string            `json:"notes"`
-	IsArchived  bool               `json:"is_archived"`
-	CreatedAt   pgtype.Timestamptz `json:"created_at"`
-	UpdatedAt   pgtype.Timestamptz `json:"updated_at"`
+	ID           uuid.UUID          `json:"id"`
+	WorkspaceID  uuid.UUID          `json:"workspace_id"`
+	Name         string             `json:"name"`
+	Email        *string            `json:"email"`
+	Phone        *string            `json:"phone"`
+	Notes        *string            `json:"notes"`
+	IsArchived   bool               `json:"is_archived"`
+	CreatedAt    pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt    pgtype.Timestamptz `json:"updated_at"`
+	SearchVector interface{}        `json:"search_vector"`
 }
 
 type WarehouseCategory struct {

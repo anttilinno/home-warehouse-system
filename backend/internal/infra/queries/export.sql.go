@@ -71,7 +71,7 @@ func (q *Queries) GetLocationByName(ctx context.Context, arg GetLocationByNamePa
 }
 
 const listAllBorrowers = `-- name: ListAllBorrowers :many
-SELECT id, workspace_id, name, email, phone, notes, is_archived, created_at, updated_at FROM warehouse.borrowers
+SELECT id, workspace_id, name, email, phone, notes, is_archived, created_at, updated_at, search_vector FROM warehouse.borrowers
 WHERE workspace_id = $1 
   AND ($2::boolean OR is_archived = false)
 ORDER BY name
@@ -101,6 +101,7 @@ func (q *Queries) ListAllBorrowers(ctx context.Context, arg ListAllBorrowersPara
 			&i.IsArchived,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.SearchVector,
 		); err != nil {
 			return nil, err
 		}

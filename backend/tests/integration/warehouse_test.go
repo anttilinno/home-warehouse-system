@@ -1210,3 +1210,361 @@ func TestBatchOperations(t *testing.T) {
 	// Batch endpoint should process all operations (regardless of success/failure)
 	assert.Equal(t, 2, len(batchResult.Results))
 }
+
+// =============================================================================
+// Search Tests
+// =============================================================================
+
+func TestLocationSearch(t *testing.T) {
+	ts := NewTestServer(t)
+
+	token := ts.AuthHelper(t, "locsearch_"+uuid.New().String()[:8]+"@example.com")
+	ts.SetToken(token)
+
+	// Create workspace
+	slug := "locsearch-ws-" + uuid.New().String()[:8]
+	resp := ts.Post("/workspaces", map[string]interface{}{
+		"name":        "Location Search Test Workspace",
+		"slug":        slug,
+		"is_personal": false,
+	})
+	RequireStatus(t, resp, http.StatusOK)
+
+	var wsResult struct {
+		ID uuid.UUID `json:"id"`
+	}
+	wsResult = ParseResponse[struct {
+		ID uuid.UUID `json:"id"`
+	}](t, resp)
+
+	workspacePath := fmt.Sprintf("/workspaces/%s", wsResult.ID)
+
+	// Create test locations with searchable content
+	locations := []map[string]interface{}{
+		{
+			"name":        "Warehouse Main Floor",
+			"description": "Primary storage area",
+			"zone":        "A",
+			"short_code":  "WH-MAIN",
+		},
+		{
+			"name":        "Warehouse Basement",
+			"description": "Secondary storage",
+			"zone":        "B",
+		},
+		{
+			"name":        "Office Storage",
+			"description": "Documents and supplies",
+			"short_code":  "OFF-STR",
+		},
+		{
+			"name":        "Garage",
+			"description": "Vehicle and tool storage",
+		},
+	}
+
+	for _, loc := range locations {
+		resp = ts.Post(workspacePath+"/locations", loc)
+		RequireStatus(t, resp, http.StatusOK)
+	}
+
+	// Test search by name
+	resp = ts.Get(workspacePath + "/locations/search?q=warehouse&limit=10")
+	RequireStatus(t, resp, http.StatusOK)
+
+	var searchResult struct {
+		Items []struct {
+			ID   uuid.UUID `json:"id"`
+			Name string    `json:"name"`
+		} `json:"items"`
+	}
+	searchResult = ParseResponse[struct {
+		Items []struct {
+			ID   uuid.UUID `json:"id"`
+			Name string    `json:"name"`
+		} `json:"items"`
+	}](t, resp)
+
+	assert.Equal(t, 2, len(searchResult.Items), "Should find 2 locations with 'warehouse'")
+
+	// Test search by zone
+	resp = ts.Get(workspacePath + "/locations/search?q=zone%20A&limit=10")
+	RequireStatus(t, resp, http.StatusOK)
+
+	searchResult = ParseResponse[struct {
+		Items []struct {
+			ID   uuid.UUID `json:"id"`
+			Name string    `json:"name"`
+		} `json:"items"`
+	}](t, resp)
+
+	assert.GreaterOrEqual(t, len(searchResult.Items), 1, "Should find at least 1 location with zone A")
+
+	// Test search by short code
+	resp = ts.Get(workspacePath + "/locations/search?q=WH-MAIN&limit=10")
+	RequireStatus(t, resp, http.StatusOK)
+
+	searchResult = ParseResponse[struct {
+		Items []struct {
+			ID   uuid.UUID `json:"id"`
+			Name string    `json:"name"`
+		} `json:"items"`
+	}](t, resp)
+
+	assert.GreaterOrEqual(t, len(searchResult.Items), 1, "Should find location by short code")
+	assert.Equal(t, "Warehouse Main Floor", searchResult.Items[0].Name)
+
+	// Test empty search
+	resp = ts.Get(workspacePath + "/locations/search?q=nonexistent&limit=10")
+	RequireStatus(t, resp, http.StatusOK)
+
+	searchResult = ParseResponse[struct {
+		Items []struct {
+			ID   uuid.UUID `json:"id"`
+			Name string    `json:"name"`
+		} `json:"items"`
+	}](t, resp)
+
+	assert.Equal(t, 0, len(searchResult.Items), "Should find no results for non-existent query")
+}
+
+func TestContainerSearch(t *testing.T) {
+	ts := NewTestServer(t)
+
+	token := ts.AuthHelper(t, "contsearch_"+uuid.New().String()[:8]+"@example.com")
+	ts.SetToken(token)
+
+	// Create workspace
+	slug := "contsearch-ws-" + uuid.New().String()[:8]
+	resp := ts.Post("/workspaces", map[string]interface{}{
+		"name":        "Container Search Test Workspace",
+		"slug":        slug,
+		"is_personal": false,
+	})
+	RequireStatus(t, resp, http.StatusOK)
+
+	var wsResult struct {
+		ID uuid.UUID `json:"id"`
+	}
+	wsResult = ParseResponse[struct {
+		ID uuid.UUID `json:"id"`
+	}](t, resp)
+
+	workspacePath := fmt.Sprintf("/workspaces/%s", wsResult.ID)
+
+	// Create location first (required for containers)
+	resp = ts.Post(workspacePath+"/locations", map[string]string{
+		"name": "Test Storage",
+	})
+	RequireStatus(t, resp, http.StatusOK)
+
+	var locResult struct {
+		ID uuid.UUID `json:"id"`
+	}
+	locResult = ParseResponse[struct {
+		ID uuid.UUID `json:"id"`
+	}](t, resp)
+
+	// Create test containers with searchable content
+	containers := []map[string]interface{}{
+		{
+			"name":        "Blue Plastic Bin",
+			"location_id": locResult.ID,
+			"description": "Large plastic container for electronics",
+			"short_code":  "BLU-01",
+		},
+		{
+			"name":        "Red Plastic Bin",
+			"location_id": locResult.ID,
+			"description": "Storage for tools and hardware",
+			"short_code":  "RED-01",
+		},
+		{
+			"name":        "Metal Cabinet",
+			"location_id": locResult.ID,
+			"description": "Heavy duty metal storage",
+			"short_code":  "MET-CAB",
+		},
+		{
+			"name":        "Wooden Crate",
+			"location_id": locResult.ID,
+			"description": "Vintage wooden storage box",
+		},
+	}
+
+	for _, cont := range containers {
+		resp = ts.Post(workspacePath+"/containers", cont)
+		RequireStatus(t, resp, http.StatusOK)
+	}
+
+	// Test search by material
+	resp = ts.Get(workspacePath + "/containers/search?q=plastic&limit=10")
+	RequireStatus(t, resp, http.StatusOK)
+
+	var searchResult struct {
+		Items []struct {
+			ID   uuid.UUID `json:"id"`
+			Name string    `json:"name"`
+		} `json:"items"`
+	}
+	searchResult = ParseResponse[struct {
+		Items []struct {
+			ID   uuid.UUID `json:"id"`
+			Name string    `json:"name"`
+		} `json:"items"`
+	}](t, resp)
+
+	assert.Equal(t, 2, len(searchResult.Items), "Should find 2 plastic containers")
+
+	// Test search by short code
+	resp = ts.Get(workspacePath + "/containers/search?q=BLU-01&limit=10")
+	RequireStatus(t, resp, http.StatusOK)
+
+	searchResult = ParseResponse[struct {
+		Items []struct {
+			ID   uuid.UUID `json:"id"`
+			Name string    `json:"name"`
+		} `json:"items"`
+	}](t, resp)
+
+	assert.Equal(t, 1, len(searchResult.Items), "Should find 1 container by short code")
+	assert.Equal(t, "Blue Plastic Bin", searchResult.Items[0].Name)
+
+	// Test search by description content
+	resp = ts.Get(workspacePath + "/containers/search?q=electronics&limit=10")
+	RequireStatus(t, resp, http.StatusOK)
+
+	searchResult = ParseResponse[struct {
+		Items []struct {
+			ID   uuid.UUID `json:"id"`
+			Name string    `json:"name"`
+		} `json:"items"`
+	}](t, resp)
+
+	assert.GreaterOrEqual(t, len(searchResult.Items), 1, "Should find containers with electronics in description")
+}
+
+func TestBorrowerSearch(t *testing.T) {
+	ts := NewTestServer(t)
+
+	token := ts.AuthHelper(t, "borrowsearch_"+uuid.New().String()[:8]+"@example.com")
+	ts.SetToken(token)
+
+	// Create workspace
+	slug := "borrowsearch-ws-" + uuid.New().String()[:8]
+	resp := ts.Post("/workspaces", map[string]interface{}{
+		"name":        "Borrower Search Test Workspace",
+		"slug":        slug,
+		"is_personal": false,
+	})
+	RequireStatus(t, resp, http.StatusOK)
+
+	var wsResult struct {
+		ID uuid.UUID `json:"id"`
+	}
+	wsResult = ParseResponse[struct {
+		ID uuid.UUID `json:"id"`
+	}](t, resp)
+
+	workspacePath := fmt.Sprintf("/workspaces/%s", wsResult.ID)
+
+	// Create test borrowers with searchable content
+	borrowers := []map[string]interface{}{
+		{
+			"name":  "John Smith",
+			"email": "john.smith@example.com",
+			"phone": "+1-555-0101",
+			"notes": "Reliable borrower, returns items on time",
+		},
+		{
+			"name":  "Jane Doe",
+			"email": "jane.doe@example.com",
+			"phone": "+1-555-0102",
+			"notes": "Works in IT department",
+		},
+		{
+			"name":  "Bob Johnson",
+			"email": "bob.johnson@example.com",
+			"phone": "+1-555-0103",
+			"notes": "Facilities manager",
+		},
+		{
+			"name":  "Alice Williams",
+			"email": "alice.w@example.com",
+			"phone": "+1-555-0104",
+		},
+	}
+
+	for _, borrower := range borrowers {
+		resp = ts.Post(workspacePath+"/borrowers", borrower)
+		RequireStatus(t, resp, http.StatusOK)
+	}
+
+	// Test search by name
+	resp = ts.Get(workspacePath + "/borrowers/search?q=John&limit=10")
+	RequireStatus(t, resp, http.StatusOK)
+
+	var searchResult struct {
+		Items []struct {
+			ID   uuid.UUID `json:"id"`
+			Name string    `json:"name"`
+		} `json:"items"`
+	}
+	searchResult = ParseResponse[struct {
+		Items []struct {
+			ID   uuid.UUID `json:"id"`
+			Name string    `json:"name"`
+		} `json:"items"`
+	}](t, resp)
+
+	assert.Equal(t, 2, len(searchResult.Items), "Should find 2 borrowers with 'John' in name")
+
+	// Test search by email
+	resp = ts.Get(workspacePath + "/borrowers/search?q=jane.doe@example.com&limit=10")
+	RequireStatus(t, resp, http.StatusOK)
+
+	var emailSearchResult struct {
+		Items []struct {
+			ID    uuid.UUID `json:"id"`
+			Name  string    `json:"name"`
+			Email *string   `json:"email"`
+		} `json:"items"`
+	}
+	emailSearchResult = ParseResponse[struct {
+		Items []struct {
+			ID    uuid.UUID `json:"id"`
+			Name  string    `json:"name"`
+			Email *string   `json:"email"`
+		} `json:"items"`
+	}](t, resp)
+
+	assert.Equal(t, 1, len(emailSearchResult.Items), "Should find 1 borrower by email")
+	assert.Equal(t, "Jane Doe", emailSearchResult.Items[0].Name)
+
+	// Test search by phone
+	resp = ts.Get(workspacePath + "/borrowers/search?q=555-0103&limit=10")
+	RequireStatus(t, resp, http.StatusOK)
+
+	searchResult = ParseResponse[struct {
+		Items []struct {
+			ID   uuid.UUID `json:"id"`
+			Name string    `json:"name"`
+		} `json:"items"`
+	}](t, resp)
+
+	assert.GreaterOrEqual(t, len(searchResult.Items), 1, "Should find borrower by phone number")
+
+	// Test search by notes content
+	resp = ts.Get(workspacePath + "/borrowers/search?q=IT%20department&limit=10")
+	RequireStatus(t, resp, http.StatusOK)
+
+	searchResult = ParseResponse[struct {
+		Items []struct {
+			ID   uuid.UUID `json:"id"`
+			Name string    `json:"name"`
+		} `json:"items"`
+	}](t, resp)
+
+	assert.GreaterOrEqual(t, len(searchResult.Items), 1, "Should find borrower with 'IT department' in notes")
+	assert.Equal(t, "Jane Doe", searchResult.Items[0].Name)
+}

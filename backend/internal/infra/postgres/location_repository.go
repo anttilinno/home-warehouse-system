@@ -119,6 +119,24 @@ func (r *LocationRepository) ShortCodeExists(ctx context.Context, workspaceID uu
 	})
 }
 
+func (r *LocationRepository) Search(ctx context.Context, workspaceID uuid.UUID, query string, limit int) ([]*location.Location, error) {
+	rows, err := r.queries.SearchLocations(ctx, queries.SearchLocationsParams{
+		WorkspaceID:    workspaceID,
+		PlaintoTsquery: query,
+		Limit:          int32(limit),
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	locations := make([]*location.Location, 0, len(rows))
+	for _, row := range rows {
+		locations = append(locations, r.rowToLocation(row))
+	}
+
+	return locations, nil
+}
+
 func (r *LocationRepository) rowToLocation(row queries.WarehouseLocation) *location.Location {
 	var parentLocation *uuid.UUID
 	if row.ParentLocation.Valid {

@@ -11,14 +11,7 @@ export function useKeyboardShortcutsDialog() {
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Ctrl+/ or Cmd+/
-      if (e.key === "/" && (e.metaKey || e.ctrlKey)) {
-        e.preventDefault();
-        setOpen((prev) => !prev);
-        return;
-      }
-
-      // ? key (Shift+/)
+      // ? key (Shift+/) to show keyboard shortcuts
       if (e.key === "?" && !e.metaKey && !e.ctrlKey && !e.altKey) {
         // Don't open if user is typing in an input field
         const target = e.target as HTMLElement;

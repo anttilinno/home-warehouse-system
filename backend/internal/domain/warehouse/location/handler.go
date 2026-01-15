@@ -194,6 +194,30 @@ func RegisterRoutes(api huma.API, svc ServiceInterface) {
 			},
 		}, nil
 	})
+
+	// Search locations
+	huma.Get(api, "/locations/search", func(ctx context.Context, input *SearchLocationsInput) (*SearchLocationsOutput, error) {
+		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
+		if !ok {
+			return nil, huma.Error401Unauthorized("workspace context required")
+		}
+
+		locations, err := svc.Search(ctx, workspaceID, input.Query, input.Limit)
+		if err != nil {
+			return nil, huma.Error500InternalServerError("failed to search locations")
+		}
+
+		responses := make([]LocationResponse, len(locations))
+		for i, loc := range locations {
+			responses[i] = toLocationResponse(loc)
+		}
+
+		return &SearchLocationsOutput{
+			Body: LocationListResponse{
+				Items: responses,
+			},
+		}, nil
+	})
 }
 
 func toLocationResponse(l *Location) LocationResponse {
@@ -298,4 +322,13 @@ type BreadcrumbResponse struct {
 	ID        uuid.UUID `json:"id"`
 	Name      string    `json:"name"`
 	ShortCode *string   `json:"short_code,omitempty"`
+}
+
+type SearchLocationsInput struct {
+	Query string `query:"q" minLength:"1" doc:"Search query"`
+	Limit int    `query:"limit" default:"50" minimum:"1" maximum:"100"`
+}
+
+type SearchLocationsOutput struct {
+	Body LocationListResponse
 }

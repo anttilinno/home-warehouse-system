@@ -20,6 +20,29 @@ export const containersApi = {
   },
 
   /**
+   * Search containers by query
+   * Note: Backend endpoint not yet implemented - returns empty array on 404
+   */
+  search: async (query: string, limit?: number): Promise<Container[]> => {
+    const queryParams = new URLSearchParams({ q: query });
+    if (limit) queryParams.append("limit", limit.toString());
+
+    try {
+      const response = await apiClient.get<ContainerListResponse>(
+        `/containers/search?${queryParams.toString()}`
+      );
+      return response.items;
+    } catch (error: any) {
+      // If endpoint doesn't exist (404), return empty array
+      if (error?.status === 404) {
+        console.warn("Containers search endpoint not yet implemented");
+        return [];
+      }
+      throw error;
+    }
+  },
+
+  /**
    * Get a single container by ID
    */
   get: async (id: string): Promise<Container> => {

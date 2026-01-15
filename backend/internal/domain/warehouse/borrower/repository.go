@@ -14,4 +14,5 @@ type Repository interface {
 	FindByWorkspace(ctx context.Context, workspaceID uuid.UUID, pagination shared.Pagination) ([]*Borrower, int, error)
 	Delete(ctx context.Context, id uuid.UUID) error
 	HasActiveLoans(ctx context.Context, id uuid.UUID) (bool, error)
+	Search(ctx context.Context, workspaceID uuid.UUID, query string, limit int) ([]*Borrower, error)
 }

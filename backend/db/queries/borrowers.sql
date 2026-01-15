@@ -34,3 +34,11 @@ SELECT EXISTS(
     SELECT 1 FROM warehouse.loans
     WHERE borrower_id = $1 AND returned_at IS NULL
 );
+
+-- name: SearchBorrowers :many
+SELECT * FROM warehouse.borrowers
+WHERE workspace_id = $1
+  AND is_archived = false
+  AND search_vector @@ plainto_tsquery('english', $2)
+ORDER BY ts_rank(search_vector, plainto_tsquery('english', $2)) DESC
+LIMIT $3;

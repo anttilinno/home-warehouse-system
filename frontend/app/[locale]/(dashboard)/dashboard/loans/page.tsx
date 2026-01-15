@@ -77,6 +77,7 @@ import { useTableSort } from "@/lib/hooks/use-table-sort";
 import { useInfiniteScroll } from "@/lib/hooks/use-infinite-scroll";
 import { useBulkSelection } from "@/lib/hooks/use-bulk-selection";
 import { useFilters } from "@/lib/hooks/use-filters";
+import { useKeyboardShortcuts } from "@/lib/hooks/use-keyboard-shortcuts";
 import { loansApi, borrowersApi, itemsApi, inventoryApi } from "@/lib/api";
 import type { Loan } from "@/lib/types/loans";
 import type { Borrower } from "@/lib/types/borrowers";
@@ -573,8 +574,16 @@ export default function LoansPage() {
     });
   }, [loans, searchQuery, borrowers, activeFilters]);
 
+  // Flatten loan data for sorting (add borrower name)
+  const flattenedLoans = useMemo(() => {
+    return filteredLoans.map(loan => ({
+      ...loan,
+      borrower_name: getBorrowerName(loan.borrower_id),
+    }));
+  }, [filteredLoans, borrowers]);
+
   // Sort loans
-  const { sortedData: sortedLoans, requestSort, getSortDirection } = useTableSort(filteredLoans, "loaned_at", "desc");
+  const { sortedData: sortedLoans, requestSort, getSortDirection } = useTableSort(flattenedLoans, "loaned_at", "desc");
 
   // Bulk selection
   const {
@@ -588,6 +597,46 @@ export default function LoansPage() {
     isAllSelected,
     isSomeSelected,
   } = useBulkSelection<string>();
+
+  // Keyboard shortcuts for this page
+  useKeyboardShortcuts({
+    shortcuts: [
+      {
+        key: 'n',
+        ctrl: true,
+        description: 'Create new loan',
+        action: () => setCreateDialogOpen(true),
+      },
+      {
+        key: 'r',
+        description: 'Refresh loans list',
+        action: () => refetch(),
+        preventDefault: false,
+      },
+      {
+        key: 'a',
+        ctrl: true,
+        description: 'Select all loans',
+        action: () => {
+          if (sortedLoans.length > 0) {
+            selectAll(sortedLoans.map((l) => l.id));
+          }
+        },
+      },
+      {
+        key: 'Escape',
+        description: 'Clear selection or close dialog',
+        action: () => {
+          if (selectedCount > 0) {
+            clearSelection();
+          }
+        },
+        preventDefault: false,
+      },
+    ],
+    enabled: true,
+    ignoreInputFields: true,
+  });
 
   const getBorrowerName = (borrowerId: string) => {
     const borrower = borrowers.find((b) => b.id === borrowerId);
@@ -865,8 +914,8 @@ export default function LoansPage() {
                         Status
                       </SortableTableHead>
                       <SortableTableHead
-                        sortDirection={getSortDirection("borrower_id")}
-                        onSort={() => requestSort("borrower_id")}
+                        sortDirection={getSortDirection("borrower_name")}
+                        onSort={() => requestSort("borrower_name")}
                       >
                         Borrower
                       </SortableTableHead>

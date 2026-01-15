@@ -18,6 +18,7 @@ type ServiceInterface interface {
 	Restore(ctx context.Context, id, workspaceID uuid.UUID) error
 	Delete(ctx context.Context, id, workspaceID uuid.UUID) error
 	GetBreadcrumb(ctx context.Context, locationID, workspaceID uuid.UUID) ([]BreadcrumbItem, error)
+	Search(ctx context.Context, workspaceID uuid.UUID, query string, limit int) ([]*Location, error)
 }
 
 type Service struct {
@@ -170,4 +171,12 @@ func (s *Service) GetBreadcrumb(ctx context.Context, locationID, workspaceID uui
 	}
 
 	return breadcrumb, nil
+}
+
+// Search searches for locations by query string.
+func (s *Service) Search(ctx context.Context, workspaceID uuid.UUID, query string, limit int) ([]*Location, error) {
+	if limit <= 0 {
+		limit = 50 // Default limit
+	}
+	return s.repo.Search(ctx, workspaceID, query, limit)
 }

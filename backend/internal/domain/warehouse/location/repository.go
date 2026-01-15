@@ -16,4 +16,5 @@ type Repository interface {
 	FindRootLocations(ctx context.Context, workspaceID uuid.UUID) ([]*Location, error)
 	Delete(ctx context.Context, id uuid.UUID) error
 	ShortCodeExists(ctx context.Context, workspaceID uuid.UUID, shortCode string) (bool, error)
+	Search(ctx context.Context, workspaceID uuid.UUID, query string, limit int) ([]*Location, error)
 }

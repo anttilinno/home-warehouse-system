@@ -166,6 +166,30 @@ func RegisterRoutes(api huma.API, svc ServiceInterface) {
 
 		return nil, nil
 	})
+
+	// Search containers
+	huma.Get(api, "/containers/search", func(ctx context.Context, input *SearchContainersInput) (*SearchContainersOutput, error) {
+		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
+		if !ok {
+			return nil, huma.Error401Unauthorized("workspace context required")
+		}
+
+		containers, err := svc.Search(ctx, workspaceID, input.Query, input.Limit)
+		if err != nil {
+			return nil, huma.Error500InternalServerError("failed to search containers")
+		}
+
+		responses := make([]ContainerResponse, len(containers))
+		for i, c := range containers {
+			responses[i] = toContainerResponse(c)
+		}
+
+		return &SearchContainersOutput{
+			Body: ContainerListResponse{
+				Items: responses,
+			},
+		}, nil
+	})
 }
 
 func toContainerResponse(c *Container) ContainerResponse {
@@ -248,4 +272,13 @@ type ContainerResponse struct {
 	IsArchived  bool      `json:"is_archived"`
 	CreatedAt   time.Time `json:"created_at"`
 	UpdatedAt   time.Time `json:"updated_at"`
+}
+
+type SearchContainersInput struct {
+	Query string `query:"q" minLength:"1" doc:"Search query"`
+	Limit int    `query:"limit" default:"50" minimum:"1" maximum:"100"`
+}
+
+type SearchContainersOutput struct {
+	Body ContainerListResponse
 }
