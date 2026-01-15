@@ -9,6 +9,7 @@ export { containersApi } from "./containers";
 export { borrowersApi } from "./borrowers";
 export { loansApi } from "./loans";
 export { inventoryApi } from "./inventory";
+export { importExportApi } from "./importexport";
 
 export type { User, Workspace, AuthTokenResponse, RegisterData } from "./auth";
 export type { Category, CategoryCreate, CategoryUpdate } from "./categories";
@@ -31,3 +32,4 @@ export type {
   UnreadCountResponse,
   NotificationListResponse,
 } from "./notifications";
+export type { EntityType, ImportResult, ExportOptions } from "./importexport";

@@ -13,6 +13,7 @@ import {
   ArchiveRestore,
   MapPin,
   Download,
+  Upload,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -71,12 +72,13 @@ import { BulkActionBar } from "@/components/ui/bulk-action-bar";
 import { FilterBar } from "@/components/ui/filter-bar";
 import { FilterPopover } from "@/components/ui/filter-popover";
 import { ExportDialog } from "@/components/ui/export-dialog";
+import { ImportDialog, type ImportResult } from "@/components/ui/import-dialog";
 import { useWorkspace } from "@/lib/hooks/use-workspace";
 import { useTableSort } from "@/lib/hooks/use-table-sort";
 import { useInfiniteScroll } from "@/lib/hooks/use-infinite-scroll";
 import { useBulkSelection } from "@/lib/hooks/use-bulk-selection";
 import { useFilters } from "@/lib/hooks/use-filters";
-import { containersApi, locationsApi } from "@/lib/api";
+import { containersApi, locationsApi, importExportApi } from "@/lib/api";
 import type { Container, ContainerCreate, ContainerUpdate } from "@/lib/types/containers";
 import type { Location } from "@/lib/types/locations";
 import { exportToCSV, generateFilename, type ColumnDefinition } from "@/lib/utils/csv-export";
@@ -255,6 +257,7 @@ export default function ContainersPage() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deletingContainer, setDeletingContainer] = useState<Container | null>(null);
   const [exportDialogOpen, setExportDialogOpen] = useState(false);
+  const [importDialogOpen, setImportDialogOpen] = useState(false);
 
   // Form state
   const [formName, setFormName] = useState("");
@@ -469,6 +472,22 @@ export default function ContainersPage() {
     clearSelection();
   };
 
+  // Import containers from CSV
+  const handleImport = async (file: File): Promise<ImportResult> => {
+    if (!workspaceId) throw new Error("No workspace selected");
+    try {
+      const result = await importExportApi.import(workspaceId, "container", file);
+      if (result.successful_imports > 0) refetch();
+      return {
+        success: result.successful_imports,
+        failed: result.failed_imports,
+        errors: result.errors.map((e) => ({ row: e.row_number, message: e.error })),
+      };
+    } catch (error) {
+      throw new Error(error instanceof Error ? error.message : "Import failed");
+    }
+  };
+
   // Bulk archive selected containers
   const handleBulkArchive = async () => {
     if (selectedCount === 0) return;
@@ -573,6 +592,14 @@ export default function ContainersPage() {
                   getFilter={getFilter}
                 />
               </FilterPopover>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setImportDialogOpen(true)}
+              >
+                <Upload className="mr-2 h-4 w-4" />
+                Import
+              </Button>
               <Button
                 variant="outline"
                 size="sm"
@@ -908,6 +935,16 @@ export default function ContainersPage() {
         filePrefix="containers"
         title="Export Containers to CSV"
         description="Select columns and data to export"
+      />
+
+      {/* Import Dialog */}
+      <ImportDialog
+        open={importDialogOpen}
+        onOpenChange={setImportDialogOpen}
+        entityType="container"
+        onImport={handleImport}
+        title="Import Containers from CSV"
+        description="Upload a CSV file to import containers. The file should include columns for name, location, capacity, and other details."
       />
     </div>
   );

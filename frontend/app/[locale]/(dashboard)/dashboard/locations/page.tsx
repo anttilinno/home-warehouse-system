@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useTranslations } from "next-intl";
 import {
   Plus,
@@ -14,6 +14,7 @@ import {
   ChevronRight,
   ChevronDown,
   Home,
+  Upload,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -57,8 +58,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
+import { ImportDialog, type ImportResult } from "@/components/ui/import-dialog";
 import { useWorkspace } from "@/lib/hooks/use-workspace";
-import { locationsApi } from "@/lib/api";
+import { locationsApi, importExportApi } from "@/lib/api";
 import type { Location, LocationCreate, LocationUpdate } from "@/lib/types/locations";
 import { cn } from "@/lib/utils";
 
@@ -248,16 +250,17 @@ export default function LocationsPage() {
   const { workspaceId, isLoading: workspaceLoading } = useWorkspace();
 
   const [locations, setLocations] = useState<Location[]>([]);
-  const [tree, setTree] = useState<LocationTreeItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [showArchived, setShowArchived] = useState(false);
+  const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
 
   // Dialog state
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingLocation, setEditingLocation] = useState<Location | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deletingLocation, setDeletingLocation] = useState<Location | null>(null);
+  const [importDialogOpen, setImportDialogOpen] = useState(false);
 
   // Form state
   const [formName, setFormName] = useState("");
@@ -269,6 +272,24 @@ export default function LocationsPage() {
   const [formShortCode, setFormShortCode] = useState("");
   const [isSaving, setIsSaving] = useState(false);
 
+  // Memoize location tree computation for performance
+  const tree = useMemo(() => {
+    if (locations.length === 0) return [];
+
+    const treeData = buildLocationTree(locations);
+
+    // Apply expansion state from expandedIds Set
+    const applyExpansion = (items: LocationTreeItem[]): LocationTreeItem[] => {
+      return items.map((item) => ({
+        ...item,
+        expanded: expandedIds.has(item.id),
+        children: applyExpansion(item.children),
+      }));
+    };
+
+    return applyExpansion(treeData);
+  }, [locations, expandedIds]);
+
   // Load locations
   const loadLocations = useCallback(async () => {
     if (!workspaceId) return;
@@ -277,7 +298,8 @@ export default function LocationsPage() {
       setIsLoading(true);
       const response = await locationsApi.list({ limit: 500 });
       setLocations(response.items);
-      setTree(buildLocationTree(response.items));
+      // Initialize all locations as expanded by default
+      setExpandedIds(new Set(response.items.map((loc) => loc.id)));
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Failed to load locations";
       toast.error("Failed to load locations", {
@@ -295,15 +317,15 @@ export default function LocationsPage() {
   }, [workspaceId, loadLocations]);
 
   const handleToggle = (id: string) => {
-    const toggleInTree = (items: LocationTreeItem[]): LocationTreeItem[] => {
-      return items.map((item) => {
-        if (item.id === id) {
-          return { ...item, expanded: !item.expanded };
-        }
-        return { ...item, children: toggleInTree(item.children) };
-      });
-    };
-    setTree(toggleInTree(tree));
+    setExpandedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
   };
 
   const openCreateDialog = () => {
@@ -417,6 +439,32 @@ export default function LocationsPage() {
     }
   };
 
+  const handleImport = async (file: File): Promise<ImportResult> => {
+    if (!workspaceId) {
+      throw new Error("No workspace selected");
+    }
+
+    try {
+      const result = await importExportApi.import(workspaceId, "location", file);
+
+      // Refresh the locations list after successful import
+      if (result.successful_imports > 0) {
+        loadLocations();
+      }
+
+      return {
+        success: result.successful_imports,
+        failed: result.failed_imports,
+        errors: result.errors.map((e) => ({
+          row: e.row_number,
+          message: e.error,
+        })),
+      };
+    } catch (error) {
+      throw new Error(error instanceof Error ? error.message : "Import failed");
+    }
+  };
+
   // Filter locations for display
   const filteredTree = tree.filter((location) => {
     const matchesArchived = showArchived ? location.is_archived : !location.is_archived;
@@ -491,10 +539,20 @@ export default function LocationsPage() {
                 {locations.length} location{locations.length !== 1 ? "s" : ""} total
               </CardDescription>
             </div>
-            <Button onClick={openCreateDialog}>
-              <Plus className="mr-2 h-4 w-4" />
-              Add Location
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setImportDialogOpen(true)}
+              >
+                <Upload className="mr-2 h-4 w-4" />
+                Import
+              </Button>
+              <Button onClick={openCreateDialog}>
+                <Plus className="mr-2 h-4 w-4" />
+                Add Location
+              </Button>
+            </div>
           </div>
         </CardHeader>
         <CardContent>
@@ -704,6 +762,16 @@ export default function LocationsPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Import Dialog */}
+      <ImportDialog
+        open={importDialogOpen}
+        onOpenChange={setImportDialogOpen}
+        entityType="location"
+        onImport={handleImport}
+        title="Import Locations from CSV"
+        description="Upload a CSV file to import locations. The file should include columns for name, zone, shelf, bin, and other location details."
+      />
     </div>
   );
 }

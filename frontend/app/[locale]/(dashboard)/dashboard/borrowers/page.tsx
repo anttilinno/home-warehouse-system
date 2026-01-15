@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useTranslations } from "next-intl";
 import {
   Plus,
@@ -12,6 +12,7 @@ import {
   Mail,
   Phone,
   Download,
+  Upload,
   Archive,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -61,11 +62,21 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { InfiniteScrollTrigger } from "@/components/ui/infinite-scroll-trigger";
 import { BulkActionBar } from "@/components/ui/bulk-action-bar";
 import { ExportDialog } from "@/components/ui/export-dialog";
+import { ImportDialog, type ImportResult } from "@/components/ui/import-dialog";
+import { InlineEditCell } from "@/components/ui/inline-edit-cell";
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuSeparator,
+  ContextMenuShortcut,
+  ContextMenuTrigger,
+} from "@/components/ui/context-menu";
 import { useWorkspace } from "@/lib/hooks/use-workspace";
 import { useTableSort } from "@/lib/hooks/use-table-sort";
 import { useInfiniteScroll } from "@/lib/hooks/use-infinite-scroll";
 import { useBulkSelection } from "@/lib/hooks/use-bulk-selection";
-import { borrowersApi } from "@/lib/api";
+import { borrowersApi, importExportApi } from "@/lib/api";
 import type { Borrower, BorrowerCreate, BorrowerUpdate } from "@/lib/types/borrowers";
 import { exportToCSV, generateFilename, type ColumnDefinition } from "@/lib/utils/csv-export";
 
@@ -123,6 +134,7 @@ export default function BorrowersPage() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deletingBorrower, setDeletingBorrower] = useState<Borrower | null>(null);
   const [exportDialogOpen, setExportDialogOpen] = useState(false);
+  const [importDialogOpen, setImportDialogOpen] = useState(false);
 
   // Form state
   const [formName, setFormName] = useState("");
@@ -152,22 +164,24 @@ export default function BorrowersPage() {
     autoFetch: !!workspaceId,
   });
 
-  // Filter borrowers
-  const filteredBorrowers = borrowers.filter((borrower) => {
-    // Filter archived
-    if (borrower.is_archived) return false;
+  // Filter borrowers - memoized for performance
+  const filteredBorrowers = useMemo(() => {
+    return borrowers.filter((borrower) => {
+      // Filter archived
+      if (borrower.is_archived) return false;
 
-    if (searchQuery) {
-      const query = searchQuery.toLowerCase();
-      const matchesSearch =
-        borrower.name.toLowerCase().includes(query) ||
-        borrower.email?.toLowerCase().includes(query) ||
-        borrower.phone?.toLowerCase().includes(query);
-      if (!matchesSearch) return false;
-    }
+      if (searchQuery) {
+        const query = searchQuery.toLowerCase();
+        const matchesSearch =
+          borrower.name.toLowerCase().includes(query) ||
+          borrower.email?.toLowerCase().includes(query) ||
+          borrower.phone?.toLowerCase().includes(query);
+        if (!matchesSearch) return false;
+      }
 
-    return true;
-  });
+      return true;
+    });
+  }, [borrowers, searchQuery]);
 
   // Sort borrowers
   const { sortedData: sortedBorrowers, requestSort, getSortDirection } = useTableSort(filteredBorrowers, "name", "asc");
@@ -286,12 +300,56 @@ export default function BorrowersPage() {
     }
   };
 
+  // Inline edit handlers
+  const handleUpdateField = async (
+    borrowerId: string,
+    field: keyof BorrowerUpdate,
+    value: string
+  ) => {
+    try {
+      await borrowersApi.update(borrowerId, { [field]: value });
+      toast.success("Updated successfully");
+      refetch();
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Failed to update";
+      toast.error("Update failed", { description: errorMessage });
+      throw error; // Re-throw to keep inline edit in error state
+    }
+  };
+
   // Bulk export selected borrowers to CSV
   const handleBulkExport = () => {
     const selectedBorrowers = sortedBorrowers.filter((b) => selectedIds.has(b.id));
     exportToCSV(selectedBorrowers, exportColumns, generateFilename("borrowers-bulk"));
     toast.success(`Exported ${selectedCount} ${selectedCount === 1 ? "borrower" : "borrowers"}`);
     clearSelection();
+  };
+
+  // Import borrowers from CSV
+  const handleImport = async (file: File): Promise<ImportResult> => {
+    if (!workspaceId) {
+      throw new Error("No workspace selected");
+    }
+
+    try {
+      const result = await importExportApi.import(workspaceId, "borrower", file);
+
+      // Refresh the borrowers list after successful import
+      if (result.successful_imports > 0) {
+        refetch();
+      }
+
+      return {
+        success: result.successful_imports,
+        failed: result.failed_imports,
+        errors: result.errors.map((e) => ({
+          row: e.row_number,
+          message: e.error,
+        })),
+      };
+    } catch (error) {
+      throw new Error(error instanceof Error ? error.message : "Import failed");
+    }
   };
 
   // Bulk archive selected borrowers
@@ -370,6 +428,14 @@ export default function BorrowersPage() {
               <Button
                 variant="outline"
                 size="sm"
+                onClick={() => setImportDialogOpen(true)}
+              >
+                <Upload className="mr-2 h-4 w-4" />
+                Import
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
                 onClick={() => setExportDialogOpen(true)}
                 disabled={sortedBorrowers.length === 0}
               >
@@ -437,7 +503,9 @@ export default function BorrowersPage() {
                   </TableHeader>
                   <TableBody>
                     {sortedBorrowers.map((borrower) => (
-                      <TableRow key={borrower.id}>
+                      <ContextMenu key={borrower.id}>
+                        <ContextMenuTrigger asChild>
+                          <TableRow>
                         <TableCell>
                           <Checkbox
                             checked={isSelected(borrower.id)}
@@ -452,8 +520,15 @@ export default function BorrowersPage() {
                                 {getInitials(borrower.name)}
                               </AvatarFallback>
                             </Avatar>
-                            <div>
-                              <div className="font-medium">{borrower.name}</div>
+                            <div className="flex-1 min-w-0">
+                              <InlineEditCell
+                                value={borrower.name}
+                                onSave={(newValue) =>
+                                  handleUpdateField(borrower.id, "name", newValue)
+                                }
+                                className="font-medium"
+                                placeholder="Borrower name"
+                              />
                               {borrower.notes && (
                                 <div className="text-sm text-muted-foreground line-clamp-1">
                                   {borrower.notes}
@@ -463,24 +538,32 @@ export default function BorrowersPage() {
                           </div>
                         </TableCell>
                         <TableCell>
-                          {borrower.email ? (
-                            <div className="flex items-center gap-2 text-sm">
-                              <Mail className="h-4 w-4 text-muted-foreground" />
-                              {borrower.email}
-                            </div>
-                          ) : (
-                            <span className="text-muted-foreground">-</span>
-                          )}
+                          <div className="flex items-center gap-2">
+                            <Mail className="h-4 w-4 text-muted-foreground shrink-0" />
+                            <InlineEditCell
+                              value={borrower.email || ""}
+                              onSave={(newValue) =>
+                                handleUpdateField(borrower.id, "email", newValue)
+                              }
+                              type="email"
+                              placeholder="Email address"
+                              className="text-sm"
+                            />
+                          </div>
                         </TableCell>
                         <TableCell>
-                          {borrower.phone ? (
-                            <div className="flex items-center gap-2 text-sm">
-                              <Phone className="h-4 w-4 text-muted-foreground" />
-                              {borrower.phone}
-                            </div>
-                          ) : (
-                            <span className="text-muted-foreground">-</span>
-                          )}
+                          <div className="flex items-center gap-2">
+                            <Phone className="h-4 w-4 text-muted-foreground shrink-0" />
+                            <InlineEditCell
+                              value={borrower.phone || ""}
+                              onSave={(newValue) =>
+                                handleUpdateField(borrower.id, "phone", newValue)
+                              }
+                              type="tel"
+                              placeholder="Phone number"
+                              className="text-sm"
+                            />
+                          </div>
                         </TableCell>
                         <TableCell>
                           <DropdownMenu>
@@ -508,6 +591,27 @@ export default function BorrowersPage() {
                           </DropdownMenu>
                         </TableCell>
                       </TableRow>
+                        </ContextMenuTrigger>
+                        <ContextMenuContent>
+                          <ContextMenuItem onClick={() => openEditDialog(borrower)}>
+                            <Pencil className="mr-2 h-4 w-4" />
+                            Edit
+                            <ContextMenuShortcut>E</ContextMenuShortcut>
+                          </ContextMenuItem>
+                          <ContextMenuSeparator />
+                          <ContextMenuItem
+                            onClick={() => {
+                              setDeletingBorrower(borrower);
+                              setDeleteDialogOpen(true);
+                            }}
+                            className="text-destructive focus:text-destructive"
+                          >
+                            <Trash2 className="mr-2 h-4 w-4" />
+                            Delete
+                            <ContextMenuShortcut>⌫</ContextMenuShortcut>
+                          </ContextMenuItem>
+                        </ContextMenuContent>
+                      </ContextMenu>
                     ))}
                   </TableBody>
                 </Table>
@@ -639,6 +743,16 @@ export default function BorrowersPage() {
         filePrefix="borrowers"
         title="Export Borrowers to CSV"
         description="Select columns and data to export"
+      />
+
+      {/* Import Dialog */}
+      <ImportDialog
+        open={importDialogOpen}
+        onOpenChange={setImportDialogOpen}
+        entityType="borrower"
+        onImport={handleImport}
+        title="Import Borrowers from CSV"
+        description="Upload a CSV file to import borrowers. The file should include columns for name, email, phone, and other details."
       />
     </div>
   );

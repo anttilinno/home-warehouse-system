@@ -14,6 +14,7 @@ import {
   Filter,
   X,
   Download,
+  Upload,
   Archive as ArchiveIcon,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -63,12 +64,15 @@ import { BulkActionBar } from "@/components/ui/bulk-action-bar";
 import { FilterBar } from "@/components/ui/filter-bar";
 import { FilterPopover } from "@/components/ui/filter-popover";
 import { ExportDialog } from "@/components/ui/export-dialog";
+import { ImportDialog, type ImportResult } from "@/components/ui/import-dialog";
+import { SavedFilters } from "@/components/ui/saved-filters";
 import { useWorkspace } from "@/lib/hooks/use-workspace";
 import { useTableSort } from "@/lib/hooks/use-table-sort";
 import { useInfiniteScroll } from "@/lib/hooks/use-infinite-scroll";
 import { useBulkSelection } from "@/lib/hooks/use-bulk-selection";
 import { useFilters } from "@/lib/hooks/use-filters";
-import { itemsApi, categoriesApi, type Category } from "@/lib/api";
+import { useSavedFilters } from "@/lib/hooks/use-saved-filters";
+import { itemsApi, categoriesApi, importExportApi, type Category } from "@/lib/api";
 import type { Item, ItemCreate, ItemUpdate } from "@/lib/types/items";
 import { cn } from "@/lib/utils";
 import { exportToCSV, generateFilename, type ColumnDefinition } from "@/lib/utils/csv-export";
@@ -343,6 +347,7 @@ export default function ItemsPage() {
   // Enhanced filters
   const {
     filterChips,
+    activeFilters,
     activeFilterCount,
     addFilter,
     removeFilter,
@@ -350,12 +355,68 @@ export default function ItemsPage() {
     getFilter,
   } = useFilters();
 
+  // Saved filters
+  const getCurrentFilters = () => {
+    const filters: Record<string, any> = {};
+    activeFilters.forEach((filter) => {
+      filters[filter.key] = filter.value;
+    });
+    if (searchQuery) {
+      filters.search = searchQuery;
+    }
+    if (showArchived) {
+      filters.showArchived = true;
+    }
+    return filters;
+  };
+
+  const applyFilters = (filters: Record<string, any>) => {
+    // Clear existing filters
+    clearFilters();
+
+    // Apply search
+    if (filters.search) {
+      setSearchQuery(filters.search);
+    } else {
+      setSearchQuery("");
+    }
+
+    // Apply archived toggle
+    if (filters.showArchived !== undefined) {
+      setShowArchived(filters.showArchived);
+    }
+
+    // Apply all other filters
+    Object.entries(filters).forEach(([key, value]) => {
+      if (key !== "search" && key !== "showArchived") {
+        addFilter({
+          key,
+          label: key.charAt(0).toUpperCase() + key.slice(1),
+          value,
+          type: Array.isArray(value) ? "multi-select" : typeof value === "boolean" ? "boolean" : "text",
+        });
+      }
+    });
+  };
+
+  const {
+    savedFilters,
+    saveFilter,
+    deleteFilter,
+    applyFilter: applySavedFilter,
+    setAsDefault,
+  } = useSavedFilters({
+    storageKey: "items-saved-filters",
+    onApplyFilter: applyFilters,
+  });
+
   // Dialog state
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<Item | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deletingItem, setDeletingItem] = useState<Item | null>(null);
   const [exportDialogOpen, setExportDialogOpen] = useState(false);
+  const [importDialogOpen, setImportDialogOpen] = useState(false);
 
   // Form state
   const [formData, setFormData] = useState<ItemFormData>({
@@ -660,6 +721,33 @@ export default function ItemsPage() {
     clearSelection();
   };
 
+  // Import items from CSV
+  const handleImport = async (file: File): Promise<ImportResult> => {
+    if (!workspaceId) {
+      throw new Error("No workspace selected");
+    }
+
+    try {
+      const result = await importExportApi.import(workspaceId, "item", file);
+
+      // Refresh the items list after successful import
+      if (result.successful_imports > 0) {
+        refetch();
+      }
+
+      return {
+        success: result.successful_imports,
+        failed: result.failed_imports,
+        errors: result.errors.map((e) => ({
+          row: e.row_number,
+          message: e.error,
+        })),
+      };
+    } catch (error) {
+      throw new Error(error instanceof Error ? error.message : "Import failed");
+    }
+  };
+
   // Bulk archive selected items
   const handleBulkArchive = async () => {
     if (selectedCount === 0) return;
@@ -748,6 +836,25 @@ export default function ItemsPage() {
                   getFilter={getFilter}
                 />
               </FilterPopover>
+              <SavedFilters
+                savedFilters={savedFilters}
+                currentFilters={getCurrentFilters()}
+                onApplyFilter={applySavedFilter}
+                onSaveFilter={(name, isDefault) => {
+                  saveFilter(name, getCurrentFilters(), isDefault);
+                }}
+                onDeleteFilter={deleteFilter}
+                onSetDefault={setAsDefault}
+                hasActiveFilters={activeFilterCount > 0 || !!searchQuery || showArchived}
+              />
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setImportDialogOpen(true)}
+              >
+                <Upload className="mr-2 h-4 w-4" />
+                Import
+              </Button>
               <Button
                 variant="outline"
                 size="sm"
@@ -1170,6 +1277,16 @@ export default function ItemsPage() {
         filePrefix="items"
         title="Export Items to CSV"
         description="Select columns and data to export"
+      />
+
+      {/* Import Dialog */}
+      <ImportDialog
+        open={importDialogOpen}
+        onOpenChange={setImportDialogOpen}
+        entityType="item"
+        onImport={handleImport}
+        title="Import Items from CSV"
+        description="Upload a CSV file to import items. The file should include columns for SKU, name, and other item details."
       />
     </div>
   );

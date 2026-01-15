@@ -116,4 +116,24 @@ export const analyticsApi = {
   getLocationValues: async (workspaceId: string, limit: number = 10): Promise<LocationInventoryValue[]> => {
     return apiClient.get<LocationInventoryValue[]>(`/workspaces/${workspaceId}/analytics/locations?limit=${limit}`);
   },
+
+  getLoanStats: async (workspaceId: string): Promise<LoanStats> => {
+    return apiClient.get<LoanStats>(`/workspaces/${workspaceId}/analytics/loans`);
+  },
+
+  getConditionBreakdown: async (workspaceId: string): Promise<ConditionBreakdown[]> => {
+    return apiClient.get<ConditionBreakdown[]>(`/workspaces/${workspaceId}/analytics/conditions`);
+  },
+
+  getStatusBreakdown: async (workspaceId: string): Promise<StatusBreakdown[]> => {
+    return apiClient.get<StatusBreakdown[]>(`/workspaces/${workspaceId}/analytics/statuses`);
+  },
+
+  getTopBorrowers: async (workspaceId: string, limit: number = 10): Promise<TopBorrower[]> => {
+    return apiClient.get<TopBorrower[]>(`/workspaces/${workspaceId}/analytics/borrowers?limit=${limit}`);
+  },
+
+  getMonthlyLoanActivity: async (workspaceId: string, months: number = 12): Promise<MonthlyLoanActivity[]> => {
+    return apiClient.get<MonthlyLoanActivity[]>(`/workspaces/${workspaceId}/analytics/loans/monthly?months=${months}`);
+  },
 };

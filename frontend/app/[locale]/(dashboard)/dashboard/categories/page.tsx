@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useTranslations } from "next-intl";
 import {
   Plus,
@@ -11,8 +11,29 @@ import {
   Trash2,
   ChevronRight,
   ChevronDown,
+  Upload,
+  GripVertical,
 } from "lucide-react";
 import { toast } from "sonner";
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+  DragOverlay,
+  DragStartEvent,
+} from "@dnd-kit/core";
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -41,8 +62,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { ImportDialog, type ImportResult } from "@/components/ui/import-dialog";
 import { useWorkspace } from "@/lib/hooks/use-workspace";
-import { categoriesApi, type Category } from "@/lib/api";
+import { categoriesApi, importExportApi, type Category } from "@/lib/api";
 import { cn } from "@/lib/utils";
 
 interface CategoryTreeItem extends Category {
@@ -96,15 +118,41 @@ function CategoryRow({
 }) {
   const hasChildren = category.children.length > 0;
 
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: category.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
+
   return (
     <>
       <div
+        ref={setNodeRef}
+        style={style}
         className={cn(
           "flex items-center gap-2 py-2 px-3 hover:bg-muted/50 rounded-lg group",
-          level > 0 && "ml-6"
+          level > 0 && "ml-6",
+          isDragging && "cursor-grabbing"
         )}
-        style={{ marginLeft: level * 24 }}
+        {...attributes}
       >
+        <div
+          {...listeners}
+          className="cursor-grab active:cursor-grabbing p-1 rounded hover:bg-muted opacity-0 group-hover:opacity-100"
+          style={{ marginLeft: level * 24 }}
+        >
+          <GripVertical className="h-4 w-4 text-muted-foreground" />
+        </div>
+
         <button
           onClick={() => hasChildren && onToggle(category.id)}
           className={cn(
@@ -183,21 +231,49 @@ export default function CategoriesPage() {
   const { workspaceId, isLoading: workspaceLoading } = useWorkspace();
 
   const [categories, setCategories] = useState<Category[]>([]);
-  const [tree, setTree] = useState<CategoryTreeItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
+  const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
 
   // Dialog state
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deletingCategory, setDeletingCategory] = useState<Category | null>(null);
+  const [importDialogOpen, setImportDialogOpen] = useState(false);
+  const [activeId, setActiveId] = useState<string | null>(null);
+
+  // Drag & drop sensors
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
 
   // Form state
   const [formName, setFormName] = useState("");
   const [formDescription, setFormDescription] = useState("");
   const [formParentId, setFormParentId] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+
+  // Memoize category tree computation for performance
+  const tree = useMemo(() => {
+    if (categories.length === 0) return [];
+
+    const treeData = buildCategoryTree(categories);
+
+    // Apply expansion state from expandedIds Set
+    const applyExpansion = (items: CategoryTreeItem[]): CategoryTreeItem[] => {
+      return items.map((item) => ({
+        ...item,
+        expanded: expandedIds.has(item.id),
+        children: applyExpansion(item.children),
+      }));
+    };
+
+    return applyExpansion(treeData);
+  }, [categories, expandedIds]);
 
   const loadCategories = useCallback(async () => {
     if (!workspaceId) return;
@@ -206,7 +282,8 @@ export default function CategoriesPage() {
       setIsLoading(true);
       const data = await categoriesApi.list(workspaceId);
       setCategories(data);
-      setTree(buildCategoryTree(data));
+      // Initialize all categories as expanded by default
+      setExpandedIds(new Set(data.map((cat) => cat.id)));
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Failed to load categories";
       toast.error("Failed to load categories", {
@@ -224,15 +301,15 @@ export default function CategoriesPage() {
   }, [workspaceId, loadCategories]);
 
   const handleToggle = (id: string) => {
-    const toggleInTree = (items: CategoryTreeItem[]): CategoryTreeItem[] => {
-      return items.map((item) => {
-        if (item.id === id) {
-          return { ...item, expanded: !item.expanded };
-        }
-        return { ...item, children: toggleInTree(item.children) };
-      });
-    };
-    setTree(toggleInTree(tree));
+    setExpandedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
   };
 
   const openCreateDialog = () => {
@@ -314,6 +391,92 @@ export default function CategoriesPage() {
     }
   };
 
+  const handleImport = async (file: File): Promise<ImportResult> => {
+    if (!workspaceId) {
+      throw new Error("No workspace selected");
+    }
+
+    try {
+      const result = await importExportApi.import(workspaceId, "category", file);
+
+      // Refresh the categories list after successful import
+      if (result.successful_imports > 0) {
+        loadCategories();
+      }
+
+      return {
+        success: result.successful_imports,
+        failed: result.failed_imports,
+        errors: result.errors.map((e) => ({
+          row: e.row_number,
+          message: e.error,
+        })),
+      };
+    } catch (error) {
+      throw new Error(error instanceof Error ? error.message : "Import failed");
+    }
+  };
+
+  // Flatten tree for drag & drop context
+  const flattenTree = (items: CategoryTreeItem[]): string[] => {
+    const ids: string[] = [];
+    const flatten = (items: CategoryTreeItem[]) => {
+      items.forEach((item) => {
+        ids.push(item.id);
+        if (item.children.length > 0) {
+          flatten(item.children);
+        }
+      });
+    };
+    flatten(items);
+    return ids;
+  };
+
+  // Drag & drop handlers
+  const handleDragStart = (event: DragStartEvent) => {
+    setActiveId(event.active.id as string);
+  };
+
+  const handleDragEnd = async (event: DragEndEvent) => {
+    const { active, over } = event;
+    setActiveId(null);
+
+    if (!over || active.id === over.id || !workspaceId) return;
+
+    const draggedCategory = categories.find((c) => c.id === active.id);
+    const targetCategory = categories.find((c) => c.id === over.id);
+
+    if (!draggedCategory || !targetCategory) return;
+
+    // Prevent dropping a parent onto its own descendant
+    const isDescendant = (parentId: string, childId: string): boolean => {
+      const children = categories.filter((c) => c.parent_category_id === parentId);
+      if (children.some((c) => c.id === childId)) return true;
+      return children.some((c) => isDescendant(c.id, childId));
+    };
+
+    if (isDescendant(draggedCategory.id, targetCategory.id)) {
+      toast.error("Cannot move a category into its own descendant");
+      return;
+    }
+
+    try {
+      // Update the dragged category's parent to the target category
+      await categoriesApi.update(workspaceId, draggedCategory.id, {
+        name: draggedCategory.name,
+        description: draggedCategory.description || null,
+        parent_category_id: targetCategory.id,
+      });
+      toast.success(`Moved "${draggedCategory.name}" under "${targetCategory.name}"`);
+      await loadCategories();
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Failed to move category";
+      toast.error("Failed to move category", {
+        description: errorMessage,
+      });
+    }
+  };
+
   // Filter categories by search
   const filteredTree = searchQuery
     ? tree.filter((cat) => {
@@ -326,6 +489,8 @@ export default function CategoriesPage() {
         return matchesSearch(cat);
       })
     : tree;
+
+  const allCategoryIds = flattenTree(filteredTree);
 
   // Get available parent categories (exclude self and descendants when editing)
   const getAvailableParents = (): Category[] => {
@@ -351,10 +516,16 @@ export default function CategoriesPage() {
             <h1 className="text-2xl font-bold tracking-tight">{t("title")}</h1>
             <p className="text-muted-foreground">{t("subtitle")}</p>
           </div>
-          <Button disabled>
-            <Plus className="mr-2 h-4 w-4" />
-            {t("add")}
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" size="sm" disabled>
+              <Upload className="mr-2 h-4 w-4" />
+              Import
+            </Button>
+            <Button disabled>
+              <Plus className="mr-2 h-4 w-4" />
+              {t("add")}
+            </Button>
+          </div>
         </div>
 
         <div className="relative max-w-sm">
@@ -381,10 +552,20 @@ export default function CategoriesPage() {
           <h1 className="text-2xl font-bold tracking-tight">{t("title")}</h1>
           <p className="text-muted-foreground">{t("subtitle")}</p>
         </div>
-        <Button onClick={openCreateDialog}>
-          <Plus className="mr-2 h-4 w-4" />
-          {t("add")}
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setImportDialogOpen(true)}
+          >
+            <Upload className="mr-2 h-4 w-4" />
+            Import
+          </Button>
+          <Button onClick={openCreateDialog}>
+            <Plus className="mr-2 h-4 w-4" />
+            {t("add")}
+          </Button>
+        </div>
       </div>
 
       {/* Search */}
@@ -452,19 +633,28 @@ export default function CategoriesPage() {
               </EmptyState>
             )
           ) : (
-            <div className="space-y-1">
-              {filteredTree.map((category) => (
-                <CategoryRow
-                  key={category.id}
-                  category={category}
-                  level={0}
-                  onEdit={openEditDialog}
-                  onDelete={openDeleteDialog}
-                  onToggle={handleToggle}
-                  t={t}
-                />
-              ))}
-            </div>
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragStart={handleDragStart}
+              onDragEnd={handleDragEnd}
+            >
+              <SortableContext items={allCategoryIds} strategy={verticalListSortingStrategy}>
+                <div className="space-y-1">
+                  {filteredTree.map((category) => (
+                    <CategoryRow
+                      key={category.id}
+                      category={category}
+                      level={0}
+                      onEdit={openEditDialog}
+                      onDelete={openDeleteDialog}
+                      onToggle={handleToggle}
+                      t={t}
+                    />
+                  ))}
+                </div>
+              </SortableContext>
+            </DndContext>
           )}
         </CardContent>
       </Card>
@@ -563,6 +753,16 @@ export default function CategoriesPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Import Dialog */}
+      <ImportDialog
+        open={importDialogOpen}
+        onOpenChange={setImportDialogOpen}
+        entityType="category"
+        onImport={handleImport}
+        title="Import Categories from CSV"
+        description="Upload a CSV file to import categories. The file should include columns for name, description, and parent category."
+      />
     </div>
   );
 }

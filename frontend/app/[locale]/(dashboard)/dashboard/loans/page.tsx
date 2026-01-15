@@ -402,6 +402,7 @@ export default function LoansPage() {
   // Enhanced filters
   const {
     filterChips,
+    activeFilters,
     activeFilterCount,
     addFilter,
     removeFilter,
@@ -506,69 +507,71 @@ export default function LoansPage() {
     }
   }, [formItemId, loadAvailableInventory]);
 
-  // Filter loans
-  const filteredLoans = loans.filter((loan) => {
-    // Filter by search query
-    if (searchQuery) {
-      const query = searchQuery.toLowerCase();
-      const borrower = borrowers.find(b => b.id === loan.borrower_id);
-      const matchesSearch =
-        loan.inventory_id.toLowerCase().includes(query) ||
-        borrower?.name.toLowerCase().includes(query) ||
-        loan.notes?.toLowerCase().includes(query);
-      if (!matchesSearch) return false;
-    }
-
-    // Filter by borrowers (multi-select)
-    const borrowersFilter = getFilter("borrowers");
-    if (borrowersFilter && Array.isArray(borrowersFilter.value)) {
-      if (!borrowersFilter.value.includes(loan.borrower_id)) {
-        return false;
+  // Filter loans - memoized for performance
+  const filteredLoans = useMemo(() => {
+    return loans.filter((loan) => {
+      // Filter by search query
+      if (searchQuery) {
+        const query = searchQuery.toLowerCase();
+        const borrower = borrowers.find(b => b.id === loan.borrower_id);
+        const matchesSearch =
+          loan.inventory_id.toLowerCase().includes(query) ||
+          borrower?.name.toLowerCase().includes(query) ||
+          loan.notes?.toLowerCase().includes(query);
+        if (!matchesSearch) return false;
       }
-    }
 
-    // Filter by statuses (multi-select)
-    const statusesFilter = getFilter("statuses");
-    if (statusesFilter && Array.isArray(statusesFilter.value)) {
-      const statuses = statusesFilter.value;
-      if (statuses.includes("active") && !loan.is_active) return false;
-      if (statuses.includes("overdue") && !loan.is_overdue) return false;
-      if (statuses.includes("returned") && loan.is_active) return false;
-      // If none of the selected statuses match, filter out
-      const matchesStatus =
-        (statuses.includes("active") && loan.is_active && !loan.is_overdue) ||
-        (statuses.includes("overdue") && loan.is_overdue) ||
-        (statuses.includes("returned") && !loan.is_active);
-      if (!matchesStatus) return false;
-    }
+      // Filter by borrowers (multi-select)
+      const borrowersFilter = getFilter("borrowers");
+      if (borrowersFilter && Array.isArray(borrowersFilter.value)) {
+        if (!borrowersFilter.value.includes(loan.borrower_id)) {
+          return false;
+        }
+      }
 
-    // Filter by overdue only
-    const overdueFilter = getFilter("overdue");
-    if (overdueFilter && typeof overdueFilter.value === "boolean" && overdueFilter.value) {
-      if (!loan.is_overdue) return false;
-    }
+      // Filter by statuses (multi-select)
+      const statusesFilter = getFilter("statuses");
+      if (statusesFilter && Array.isArray(statusesFilter.value)) {
+        const statuses = statusesFilter.value;
+        if (statuses.includes("active") && !loan.is_active) return false;
+        if (statuses.includes("overdue") && !loan.is_overdue) return false;
+        if (statuses.includes("returned") && loan.is_active) return false;
+        // If none of the selected statuses match, filter out
+        const matchesStatus =
+          (statuses.includes("active") && loan.is_active && !loan.is_overdue) ||
+          (statuses.includes("overdue") && loan.is_overdue) ||
+          (statuses.includes("returned") && !loan.is_active);
+        if (!matchesStatus) return false;
+      }
 
-    // Filter by loaned date range
-    const loanedDateFilter = getFilter("loanedDate");
-    if (loanedDateFilter && typeof loanedDateFilter.value === "object") {
-      const range = loanedDateFilter.value as { from: Date | null; to: Date | null };
-      const loanedDate = new Date(loan.loaned_at);
-      if (range.from && loanedDate < range.from) return false;
-      if (range.to && loanedDate > range.to) return false;
-    }
+      // Filter by overdue only
+      const overdueFilter = getFilter("overdue");
+      if (overdueFilter && typeof overdueFilter.value === "boolean" && overdueFilter.value) {
+        if (!loan.is_overdue) return false;
+      }
 
-    // Filter by due date range
-    const dueDateFilter = getFilter("dueDate");
-    if (dueDateFilter && typeof dueDateFilter.value === "object") {
-      const range = dueDateFilter.value as { from: Date | null; to: Date | null };
-      if (!loan.due_date) return false;
-      const dueDate = new Date(loan.due_date);
-      if (range.from && dueDate < range.from) return false;
-      if (range.to && dueDate > range.to) return false;
-    }
+      // Filter by loaned date range
+      const loanedDateFilter = getFilter("loanedDate");
+      if (loanedDateFilter && typeof loanedDateFilter.value === "object") {
+        const range = loanedDateFilter.value as { from: Date | null; to: Date | null };
+        const loanedDate = new Date(loan.loaned_at);
+        if (range.from && loanedDate < range.from) return false;
+        if (range.to && loanedDate > range.to) return false;
+      }
 
-    return true;
-  });
+      // Filter by due date range
+      const dueDateFilter = getFilter("dueDate");
+      if (dueDateFilter && typeof dueDateFilter.value === "object") {
+        const range = dueDateFilter.value as { from: Date | null; to: Date | null };
+        if (!loan.due_date) return false;
+        const dueDate = new Date(loan.due_date);
+        if (range.from && dueDate < range.from) return false;
+        if (range.to && dueDate > range.to) return false;
+      }
+
+      return true;
+    });
+  }, [loans, searchQuery, borrowers, activeFilters]);
 
   // Sort loans
   const { sortedData: sortedLoans, requestSort, getSortDirection } = useTableSort(filteredLoans, "loaned_at", "desc");

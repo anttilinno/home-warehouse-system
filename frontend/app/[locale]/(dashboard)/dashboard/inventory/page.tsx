@@ -14,6 +14,7 @@ import {
   MapPin,
   Box,
   Download,
+  Upload,
   CheckCircle,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -64,12 +65,15 @@ import { BulkActionBar } from "@/components/ui/bulk-action-bar";
 import { FilterBar } from "@/components/ui/filter-bar";
 import { FilterPopover } from "@/components/ui/filter-popover";
 import { ExportDialog } from "@/components/ui/export-dialog";
+import { ImportDialog, type ImportResult } from "@/components/ui/import-dialog";
+import { InlineEditCell } from "@/components/ui/inline-edit-cell";
+import { InlineEditSelect } from "@/components/ui/inline-edit-select";
 import { useWorkspace } from "@/lib/hooks/use-workspace";
 import { useTableSort } from "@/lib/hooks/use-table-sort";
 import { useInfiniteScroll } from "@/lib/hooks/use-infinite-scroll";
 import { useBulkSelection } from "@/lib/hooks/use-bulk-selection";
 import { useFilters } from "@/lib/hooks/use-filters";
-import { inventoryApi, itemsApi, locationsApi, containersApi } from "@/lib/api";
+import { inventoryApi, itemsApi, locationsApi, containersApi, importExportApi } from "@/lib/api";
 import type { Inventory, InventoryCreate, InventoryCondition, InventoryStatus } from "@/lib/types/inventory";
 import type { Item } from "@/lib/types/items";
 import type { Location } from "@/lib/types/locations";
@@ -419,6 +423,7 @@ export default function InventoryPage() {
   // Enhanced filters
   const {
     filterChips,
+    activeFilters,
     activeFilterCount,
     addFilter,
     removeFilter,
@@ -430,6 +435,7 @@ export default function InventoryPage() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingInventory, setEditingInventory] = useState<Inventory | null>(null);
   const [exportDialogOpen, setExportDialogOpen] = useState(false);
+  const [importDialogOpen, setImportDialogOpen] = useState(false);
 
   // Form state
   const [formItemId, setFormItemId] = useState("");
@@ -487,67 +493,69 @@ export default function InventoryPage() {
     loadReferenceData();
   }, [workspaceId]);
 
-  // Filter inventories
-  const filteredInventories = inventories.filter((inventory) => {
-    // Filter by archived status
-    if (!showArchived && inventory.is_archived) return false;
-    if (showArchived && !inventory.is_archived) return false;
+  // Filter inventories - memoized for performance
+  const filteredInventories = useMemo(() => {
+    return inventories.filter((inventory) => {
+      // Filter by archived status
+      if (!showArchived && inventory.is_archived) return false;
+      if (showArchived && !inventory.is_archived) return false;
 
-    // Filter by search query
-    if (searchQuery) {
-      const query = searchQuery.toLowerCase();
-      const item = items.find(i => i.id === inventory.item_id);
-      const location = locations.find(l => l.id === inventory.location_id);
-      const matchesSearch =
-        item?.name.toLowerCase().includes(query) ||
-        item?.sku.toLowerCase().includes(query) ||
-        location?.name.toLowerCase().includes(query) ||
-        inventory.notes?.toLowerCase().includes(query);
-      if (!matchesSearch) return false;
-    }
-
-    // Filter by locations (multi-select)
-    const locationsFilter = getFilter("locations");
-    if (locationsFilter && Array.isArray(locationsFilter.value)) {
-      if (!inventory.location_id || !locationsFilter.value.includes(inventory.location_id)) {
-        return false;
+      // Filter by search query
+      if (searchQuery) {
+        const query = searchQuery.toLowerCase();
+        const item = items.find(i => i.id === inventory.item_id);
+        const location = locations.find(l => l.id === inventory.location_id);
+        const matchesSearch =
+          item?.name.toLowerCase().includes(query) ||
+          item?.sku.toLowerCase().includes(query) ||
+          location?.name.toLowerCase().includes(query) ||
+          inventory.notes?.toLowerCase().includes(query);
+        if (!matchesSearch) return false;
       }
-    }
 
-    // Filter by containers (multi-select)
-    const containersFilter = getFilter("containers");
-    if (containersFilter && Array.isArray(containersFilter.value)) {
-      if (!inventory.container_id || !containersFilter.value.includes(inventory.container_id)) {
-        return false;
+      // Filter by locations (multi-select)
+      const locationsFilter = getFilter("locations");
+      if (locationsFilter && Array.isArray(locationsFilter.value)) {
+        if (!inventory.location_id || !locationsFilter.value.includes(inventory.location_id)) {
+          return false;
+        }
       }
-    }
 
-    // Filter by conditions (multi-select)
-    const conditionsFilter = getFilter("conditions");
-    if (conditionsFilter && Array.isArray(conditionsFilter.value)) {
-      if (!conditionsFilter.value.includes(inventory.condition)) {
-        return false;
+      // Filter by containers (multi-select)
+      const containersFilter = getFilter("containers");
+      if (containersFilter && Array.isArray(containersFilter.value)) {
+        if (!inventory.container_id || !containersFilter.value.includes(inventory.container_id)) {
+          return false;
+        }
       }
-    }
 
-    // Filter by statuses (multi-select)
-    const statusesFilter = getFilter("statuses");
-    if (statusesFilter && Array.isArray(statusesFilter.value)) {
-      if (!statusesFilter.value.includes(inventory.status)) {
-        return false;
+      // Filter by conditions (multi-select)
+      const conditionsFilter = getFilter("conditions");
+      if (conditionsFilter && Array.isArray(conditionsFilter.value)) {
+        if (!conditionsFilter.value.includes(inventory.condition)) {
+          return false;
+        }
       }
-    }
 
-    // Filter by quantity range
-    const quantityFilter = getFilter("quantity");
-    if (quantityFilter && typeof quantityFilter.value === "object") {
-      const range = quantityFilter.value as { min: number | null; max: number | null };
-      if (range.min !== null && inventory.quantity < range.min) return false;
-      if (range.max !== null && inventory.quantity > range.max) return false;
-    }
+      // Filter by statuses (multi-select)
+      const statusesFilter = getFilter("statuses");
+      if (statusesFilter && Array.isArray(statusesFilter.value)) {
+        if (!statusesFilter.value.includes(inventory.status)) {
+          return false;
+        }
+      }
 
-    return true;
-  });
+      // Filter by quantity range
+      const quantityFilter = getFilter("quantity");
+      if (quantityFilter && typeof quantityFilter.value === "object") {
+        const range = quantityFilter.value as { min: number | null; max: number | null };
+        if (range.min !== null && inventory.quantity < range.min) return false;
+        if (range.max !== null && inventory.quantity > range.max) return false;
+      }
+
+      return true;
+    });
+  }, [inventories, showArchived, searchQuery, items, locations, activeFilters]);
 
   // Sort inventories
   const { sortedData: sortedInventories, requestSort, getSortDirection } = useTableSort(filteredInventories, "item_id", "asc");
@@ -669,6 +677,64 @@ export default function InventoryPage() {
     }
   };
 
+  // Inline edit handlers
+  const handleUpdateQuantity = async (inventoryId: string, value: string) => {
+    const quantity = parseInt(value, 10);
+    if (isNaN(quantity) || quantity < 0) {
+      throw new Error("Quantity must be a positive number");
+    }
+    try {
+      await inventoryApi.updateQuantity(inventoryId, { quantity });
+      toast.success("Quantity updated");
+      refetch();
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Failed to update quantity";
+      toast.error("Update failed", { description: errorMessage });
+      throw error;
+    }
+  };
+
+  const handleUpdateCondition = async (inventoryId: string, condition: string) => {
+    // Find the current inventory to get required fields
+    const currentInventory = inventories.find((inv) => inv.id === inventoryId);
+    if (!currentInventory) {
+      throw new Error("Inventory not found");
+    }
+
+    try {
+      await inventoryApi.update(inventoryId, {
+        location_id: currentInventory.location_id,
+        container_id: currentInventory.container_id || undefined,
+        quantity: currentInventory.quantity,
+        condition: condition as InventoryCondition,
+        date_acquired: currentInventory.date_acquired || undefined,
+        purchase_price: currentInventory.purchase_price || undefined,
+        currency_code: currentInventory.currency_code || undefined,
+        warranty_expires: currentInventory.warranty_expires || undefined,
+        expiration_date: currentInventory.expiration_date || undefined,
+        notes: currentInventory.notes || undefined,
+      });
+      toast.success("Condition updated");
+      refetch();
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Failed to update condition";
+      toast.error("Update failed", { description: errorMessage });
+      throw error;
+    }
+  };
+
+  const handleUpdateStatus = async (inventoryId: string, status: string) => {
+    try {
+      await inventoryApi.updateStatus(inventoryId, { status: status as InventoryStatus });
+      toast.success("Status updated");
+      refetch();
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Failed to update status";
+      toast.error("Update failed", { description: errorMessage });
+      throw error;
+    }
+  };
+
   // Bulk export selected inventory to CSV
   const handleBulkExport = () => {
     const selectedInventories = sortedInventories.filter((inv) => selectedIds.has(inv.id));
@@ -699,6 +765,33 @@ export default function InventoryPage() {
       toast.error("Failed to update inventory", {
         description: errorMessage,
       });
+    }
+  };
+
+  // Import inventory from CSV
+  const handleImport = async (file: File): Promise<ImportResult> => {
+    if (!workspaceId) {
+      throw new Error("No workspace selected");
+    }
+
+    try {
+      const result = await importExportApi.import(workspaceId, "inventory", file);
+
+      // Refresh the inventory list after successful import
+      if (result.successful_imports > 0) {
+        refetch();
+      }
+
+      return {
+        success: result.successful_imports,
+        failed: result.failed_imports,
+        errors: result.errors.map((e) => ({
+          row: e.row_number,
+          message: e.error,
+        })),
+      };
+    } catch (error) {
+      throw new Error(error instanceof Error ? error.message : "Import failed");
     }
   };
 
@@ -760,6 +853,14 @@ export default function InventoryPage() {
                   getFilter={getFilter}
                 />
               </FilterPopover>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setImportDialogOpen(true)}
+              >
+                <Upload className="mr-2 h-4 w-4" />
+                Import
+              </Button>
               <Button
                 variant="outline"
                 size="sm"
@@ -897,14 +998,38 @@ export default function InventoryPage() {
                             </div>
                           </div>
                         </TableCell>
-                        <TableCell>{inventory.quantity}</TableCell>
                         <TableCell>
-                          <Badge variant="outline">
-                            {CONDITION_OPTIONS.find(c => c.value === inventory.condition)?.label || inventory.condition}
-                          </Badge>
+                          <InlineEditCell
+                            value={inventory.quantity.toString()}
+                            onSave={(newValue) =>
+                              handleUpdateQuantity(inventory.id, newValue)
+                            }
+                            type="number"
+                            placeholder="0"
+                            className="font-medium"
+                          />
                         </TableCell>
                         <TableCell>
-                          <StatusBadge status={inventory.status} />
+                          <InlineEditSelect
+                            value={inventory.condition}
+                            options={CONDITION_OPTIONS}
+                            onSave={(newValue) =>
+                              handleUpdateCondition(inventory.id, newValue)
+                            }
+                            renderValue={(value, option) => (
+                              <Badge variant="outline">{option?.label || value}</Badge>
+                            )}
+                          />
+                        </TableCell>
+                        <TableCell>
+                          <InlineEditSelect
+                            value={inventory.status}
+                            options={STATUS_OPTIONS}
+                            onSave={(newValue) =>
+                              handleUpdateStatus(inventory.id, newValue)
+                            }
+                            renderValue={(value) => <StatusBadge status={value as InventoryStatus} />}
+                          />
                         </TableCell>
                         <TableCell>
                           <DropdownMenu>
@@ -1139,6 +1264,16 @@ export default function InventoryPage() {
         filePrefix="inventory"
         title="Export Inventory to CSV"
         description="Select columns and data to export"
+      />
+
+      {/* Import Dialog */}
+      <ImportDialog
+        open={importDialogOpen}
+        onOpenChange={setImportDialogOpen}
+        entityType="inventory"
+        onImport={handleImport}
+        title="Import Inventory from CSV"
+        description="Upload a CSV file to import inventory entries"
       />
     </div>
   );
