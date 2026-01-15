@@ -12,6 +12,7 @@ import {
   Archive,
   ArchiveRestore,
   MapPin,
+  Download,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -64,13 +65,17 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
 import { InfiniteScrollTrigger } from "@/components/ui/infinite-scroll-trigger";
+import { BulkActionBar } from "@/components/ui/bulk-action-bar";
 import { useWorkspace } from "@/lib/hooks/use-workspace";
 import { useTableSort } from "@/lib/hooks/use-table-sort";
 import { useInfiniteScroll } from "@/lib/hooks/use-infinite-scroll";
+import { useBulkSelection } from "@/lib/hooks/use-bulk-selection";
 import { containersApi, locationsApi } from "@/lib/api";
 import type { Container, ContainerCreate, ContainerUpdate } from "@/lib/types/containers";
 import type { Location } from "@/lib/types/locations";
+import { exportToCSV, generateFilename, type ColumnDefinition } from "@/lib/utils/csv-export";
 
 function ContainersTableSkeleton() {
   return (
@@ -196,6 +201,19 @@ export default function ContainersPage() {
   // Sort containers
   const { sortedData: sortedContainers, requestSort, getSortDirection } = useTableSort(filteredContainers, "name", "asc");
 
+  // Bulk selection
+  const {
+    selectedIds,
+    selectedIdsArray,
+    selectedCount,
+    toggleSelection,
+    selectAll,
+    clearSelection,
+    isSelected,
+    isAllSelected,
+    isSomeSelected,
+  } = useBulkSelection<string>();
+
   const getLocationName = (locationId: string) => {
     const location = locations.find((l) => l.id === locationId);
     return location?.name || "Unknown";
@@ -282,6 +300,53 @@ export default function ContainersPage() {
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Failed to archive container";
       toast.error("Failed to archive container", {
+        description: errorMessage,
+      });
+    }
+  };
+
+  // Bulk export selected containers to CSV
+  const handleBulkExport = () => {
+    const selectedContainers = sortedContainers.filter((c) => selectedIds.has(c.id));
+
+    const columns: ColumnDefinition<Container>[] = [
+      { key: "name", label: "Name" },
+      { key: "location_id", label: "Location", formatter: (_, container) => getLocationName(container.location_id) },
+      { key: "capacity", label: "Capacity" },
+      { key: "short_code", label: "Short Code" },
+      { key: "description", label: "Description" },
+    ];
+
+    exportToCSV(selectedContainers, columns, generateFilename("containers"));
+    toast.success(`Exported ${selectedCount} ${selectedCount === 1 ? "container" : "containers"}`);
+    clearSelection();
+  };
+
+  // Bulk archive selected containers
+  const handleBulkArchive = async () => {
+    if (selectedCount === 0) return;
+
+    try {
+      const selectedContainers = sortedContainers.filter((c) => selectedIds.has(c.id));
+      const isRestoring = selectedContainers.every((c) => c.is_archived);
+
+      // Archive/restore all selected containers
+      await Promise.all(
+        selectedIdsArray.map((id) => {
+          const container = sortedContainers.find((c) => c.id === id);
+          if (!container) return Promise.resolve();
+          return isRestoring ? containersApi.restore(id) : containersApi.archive(id);
+        })
+      );
+
+      toast.success(
+        `${isRestoring ? "Restored" : "Archived"} ${selectedCount} ${selectedCount === 1 ? "container" : "containers"}`
+      );
+      clearSelection();
+      refetch();
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Failed to archive containers";
+      toast.error("Failed to archive containers", {
         description: errorMessage,
       });
     }
@@ -411,6 +476,19 @@ export default function ContainersPage() {
                 <Table>
                   <TableHeader>
                     <TableRow>
+                      <TableHead className="w-[50px]">
+                        <Checkbox
+                          checked={isAllSelected(sortedContainers.map((c) => c.id))}
+                          onCheckedChange={(checked) => {
+                            if (checked) {
+                              selectAll(sortedContainers.map((c) => c.id));
+                            } else {
+                              clearSelection();
+                            }
+                          }}
+                          aria-label="Select all containers"
+                        />
+                      </TableHead>
                       <SortableTableHead
                         sortDirection={getSortDirection("name")}
                         onSort={() => requestSort("name")}
@@ -441,6 +519,13 @@ export default function ContainersPage() {
                   <TableBody>
                     {sortedContainers.map((container) => (
                       <TableRow key={container.id}>
+                        <TableCell>
+                          <Checkbox
+                            checked={isSelected(container.id)}
+                            onCheckedChange={() => toggleSelection(container.id)}
+                            aria-label={`Select ${container.name}`}
+                          />
+                        </TableCell>
                         <TableCell>
                           <div>
                             <div className="font-medium flex items-center gap-2">
@@ -644,6 +729,18 @@ export default function ContainersPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Bulk Action Bar */}
+      <BulkActionBar selectedCount={selectedCount} onClear={clearSelection}>
+        <Button onClick={handleBulkExport} size="sm" variant="outline">
+          <Download className="mr-2 h-4 w-4" />
+          Export
+        </Button>
+        <Button onClick={handleBulkArchive} size="sm" variant="outline">
+          <Archive className="mr-2 h-4 w-4" />
+          Archive
+        </Button>
+      </BulkActionBar>
     </div>
   );
 }

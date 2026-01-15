@@ -11,6 +11,8 @@ import {
   Trash2,
   Mail,
   Phone,
+  Download,
+  Archive,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -54,13 +56,17 @@ import {
 } from "@/components/ui/table";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { InfiniteScrollTrigger } from "@/components/ui/infinite-scroll-trigger";
+import { BulkActionBar } from "@/components/ui/bulk-action-bar";
 import { useWorkspace } from "@/lib/hooks/use-workspace";
 import { useTableSort } from "@/lib/hooks/use-table-sort";
 import { useInfiniteScroll } from "@/lib/hooks/use-infinite-scroll";
+import { useBulkSelection } from "@/lib/hooks/use-bulk-selection";
 import { borrowersApi } from "@/lib/api";
 import type { Borrower, BorrowerCreate, BorrowerUpdate } from "@/lib/types/borrowers";
+import { exportToCSV, generateFilename, type ColumnDefinition } from "@/lib/utils/csv-export";
 
 function BorrowersTableSkeleton() {
   return (
@@ -164,6 +170,19 @@ export default function BorrowersPage() {
   // Sort borrowers
   const { sortedData: sortedBorrowers, requestSort, getSortDirection } = useTableSort(filteredBorrowers, "name", "asc");
 
+  // Bulk selection
+  const {
+    selectedIds,
+    selectedIdsArray,
+    selectedCount,
+    toggleSelection,
+    selectAll,
+    clearSelection,
+    isSelected,
+    isAllSelected,
+    isSomeSelected,
+  } = useBulkSelection<string>();
+
   const openCreateDialog = () => {
     setEditingBorrower(null);
     setFormName("");
@@ -254,6 +273,46 @@ export default function BorrowersPage() {
     }
   };
 
+  // Bulk export selected borrowers to CSV
+  const handleBulkExport = () => {
+    const selectedBorrowers = sortedBorrowers.filter((b) => selectedIds.has(b.id));
+
+    const columns: ColumnDefinition<Borrower>[] = [
+      { key: "name", label: "Name" },
+      { key: "email", label: "Email" },
+      { key: "phone", label: "Phone" },
+      { key: "address", label: "Address" },
+      { key: "notes", label: "Notes" },
+    ];
+
+    exportToCSV(selectedBorrowers, columns, generateFilename("borrowers"));
+    toast.success(`Exported ${selectedCount} ${selectedCount === 1 ? "borrower" : "borrowers"}`);
+    clearSelection();
+  };
+
+  // Bulk archive selected borrowers
+  const handleBulkArchive = async () => {
+    if (selectedCount === 0) return;
+
+    try {
+      // Archive all selected borrowers (soft delete)
+      await Promise.all(
+        selectedIdsArray.map((id) => borrowersApi.delete(id))
+      );
+
+      toast.success(
+        `Archived ${selectedCount} ${selectedCount === 1 ? "borrower" : "borrowers"}`
+      );
+      clearSelection();
+      refetch();
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Failed to archive borrowers";
+      toast.error("Failed to archive borrowers", {
+        description: errorMessage,
+      });
+    }
+  };
+
   if (workspaceLoading || isLoading) {
     return (
       <div className="space-y-6">
@@ -329,6 +388,19 @@ export default function BorrowersPage() {
                 <Table>
                   <TableHeader>
                     <TableRow>
+                      <TableHead className="w-[50px]">
+                        <Checkbox
+                          checked={isAllSelected(sortedBorrowers.map((b) => b.id))}
+                          onCheckedChange={(checked) => {
+                            if (checked) {
+                              selectAll(sortedBorrowers.map((b) => b.id));
+                            } else {
+                              clearSelection();
+                            }
+                          }}
+                          aria-label="Select all borrowers"
+                        />
+                      </TableHead>
                       <SortableTableHead
                         sortDirection={getSortDirection("name")}
                         onSort={() => requestSort("name")}
@@ -353,6 +425,13 @@ export default function BorrowersPage() {
                   <TableBody>
                     {sortedBorrowers.map((borrower) => (
                       <TableRow key={borrower.id}>
+                        <TableCell>
+                          <Checkbox
+                            checked={isSelected(borrower.id)}
+                            onCheckedChange={() => toggleSelection(borrower.id)}
+                            aria-label={`Select ${borrower.name}`}
+                          />
+                        </TableCell>
                         <TableCell>
                           <div className="flex items-center gap-3">
                             <Avatar className="h-8 w-8">
@@ -524,6 +603,18 @@ export default function BorrowersPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Bulk Action Bar */}
+      <BulkActionBar selectedCount={selectedCount} onClear={clearSelection}>
+        <Button onClick={handleBulkExport} size="sm" variant="outline">
+          <Download className="mr-2 h-4 w-4" />
+          Export
+        </Button>
+        <Button onClick={handleBulkArchive} size="sm" variant="outline">
+          <Archive className="mr-2 h-4 w-4" />
+          Archive
+        </Button>
+      </BulkActionBar>
     </div>
   );
 }

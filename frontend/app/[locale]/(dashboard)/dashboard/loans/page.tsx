@@ -12,6 +12,8 @@ import {
   Clock,
   Calendar,
   User,
+  Download,
+  Undo2,
 } from "lucide-react";
 import { toast } from "sonner";
 import { format, isPast, parseISO } from "date-fns";
@@ -57,6 +59,7 @@ import {
 } from "@/components/ui/table";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Select,
   SelectContent,
@@ -65,9 +68,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { InfiniteScrollTrigger } from "@/components/ui/infinite-scroll-trigger";
+import { BulkActionBar } from "@/components/ui/bulk-action-bar";
 import { useWorkspace } from "@/lib/hooks/use-workspace";
 import { useTableSort } from "@/lib/hooks/use-table-sort";
 import { useInfiniteScroll } from "@/lib/hooks/use-infinite-scroll";
+import { useBulkSelection } from "@/lib/hooks/use-bulk-selection";
 import { loansApi, borrowersApi, itemsApi, inventoryApi } from "@/lib/api";
 import type { Loan } from "@/lib/types/loans";
 import type { Borrower } from "@/lib/types/borrowers";
@@ -75,6 +80,7 @@ import type { Item } from "@/lib/types/items";
 import type { Inventory } from "@/lib/types/inventory";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
+import { exportToCSV, generateFilename, type ColumnDefinition } from "@/lib/utils/csv-export";
 
 function LoansTableSkeleton() {
   return (
@@ -272,6 +278,19 @@ export default function LoansPage() {
   // Sort loans
   const { sortedData: sortedLoans, requestSort, getSortDirection } = useTableSort(filteredLoans, "loaned_at", "desc");
 
+  // Bulk selection
+  const {
+    selectedIds,
+    selectedIdsArray,
+    selectedCount,
+    toggleSelection,
+    selectAll,
+    clearSelection,
+    isSelected,
+    isAllSelected,
+    isSomeSelected,
+  } = useBulkSelection<string>();
+
   const getBorrowerName = (borrowerId: string) => {
     const borrower = borrowers.find((b) => b.id === borrowerId);
     return borrower?.name || "Unknown";
@@ -294,6 +313,60 @@ export default function LoansPage() {
       });
     } finally {
       setIsProcessing(false);
+    }
+  };
+
+  // Bulk export selected loans to CSV
+  const handleBulkExport = () => {
+    const selectedLoans = sortedLoans.filter((loan) => selectedIds.has(loan.id));
+
+    const columns: ColumnDefinition<Loan>[] = [
+      { key: "borrower_id", label: "Borrower", formatter: (_, loan) => getBorrowerName(loan.borrower_id) },
+      { key: "inventory_id", label: "Inventory ID" },
+      { key: "quantity", label: "Quantity" },
+      {
+        key: "loaned_at",
+        label: "Loaned Date",
+        formatter: (value) => value ? format(parseISO(value), "yyyy-MM-dd") : "-"
+      },
+      {
+        key: "due_date",
+        label: "Due Date",
+        formatter: (value) => value ? format(parseISO(value), "yyyy-MM-dd") : "-"
+      },
+      {
+        key: "returned_at",
+        label: "Returned Date",
+        formatter: (value) => value ? format(parseISO(value), "yyyy-MM-dd") : "Not returned"
+      },
+      { key: "notes", label: "Notes" },
+    ];
+
+    exportToCSV(selectedLoans, columns, generateFilename("loans"));
+    toast.success(`Exported ${selectedCount} ${selectedCount === 1 ? "loan" : "loans"}`);
+    clearSelection();
+  };
+
+  // Bulk return selected loans
+  const handleBulkReturn = async () => {
+    if (selectedCount === 0) return;
+
+    try {
+      // Return all selected loans
+      await Promise.all(
+        selectedIdsArray.map((id) => loansApi.return(id))
+      );
+
+      toast.success(
+        `Returned ${selectedCount} ${selectedCount === 1 ? "loan" : "loans"}`
+      );
+      clearSelection();
+      refetch();
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Failed to return loans";
+      toast.error("Failed to return loans", {
+        description: errorMessage,
+      });
     }
   };
 
@@ -474,6 +547,19 @@ export default function LoansPage() {
                 <Table>
                   <TableHeader>
                     <TableRow>
+                      <TableHead className="w-[50px]">
+                        <Checkbox
+                          checked={isAllSelected(sortedLoans.map((l) => l.id))}
+                          onCheckedChange={(checked) => {
+                            if (checked) {
+                              selectAll(sortedLoans.map((l) => l.id));
+                            } else {
+                              clearSelection();
+                            }
+                          }}
+                          aria-label="Select all loans"
+                        />
+                      </TableHead>
                       <SortableTableHead
                         sortDirection={getSortDirection("is_active")}
                         onSort={() => requestSort("is_active")}
@@ -516,6 +602,13 @@ export default function LoansPage() {
                   <TableBody>
                     {sortedLoans.map((loan) => (
                       <TableRow key={loan.id} className={cn(loan.is_overdue && "bg-destructive/5")}>
+                        <TableCell>
+                          <Checkbox
+                            checked={isSelected(loan.id)}
+                            onCheckedChange={() => toggleSelection(loan.id)}
+                            aria-label={`Select loan for ${getBorrowerName(loan.borrower_id)}`}
+                          />
+                        </TableCell>
                         <TableCell>
                           <LoanStatusBadge loan={loan} />
                         </TableCell>
@@ -809,6 +902,18 @@ export default function LoansPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Bulk Action Bar */}
+      <BulkActionBar selectedCount={selectedCount} onClear={clearSelection}>
+        <Button onClick={handleBulkExport} size="sm" variant="outline">
+          <Download className="mr-2 h-4 w-4" />
+          Export
+        </Button>
+        <Button onClick={handleBulkReturn} size="sm" variant="outline">
+          <Undo2 className="mr-2 h-4 w-4" />
+          Mark as Returned
+        </Button>
+      </BulkActionBar>
     </div>
   );
 }
