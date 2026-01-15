@@ -13,6 +13,8 @@ import {
   Package,
   Filter,
   X,
+  Download,
+  Archive as ArchiveIcon,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -57,12 +59,15 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState, EmptyStateList, EmptyStateBenefits } from "@/components/ui/empty-state";
 import { InfiniteScrollTrigger } from "@/components/ui/infinite-scroll-trigger";
+import { BulkActionBar } from "@/components/ui/bulk-action-bar";
 import { useWorkspace } from "@/lib/hooks/use-workspace";
 import { useTableSort } from "@/lib/hooks/use-table-sort";
 import { useInfiniteScroll } from "@/lib/hooks/use-infinite-scroll";
+import { useBulkSelection } from "@/lib/hooks/use-bulk-selection";
 import { itemsApi, categoriesApi, type Category } from "@/lib/api";
 import type { Item, ItemCreate, ItemUpdate } from "@/lib/types/items";
 import { cn } from "@/lib/utils";
+import { exportToCSV, generateFilename, type ColumnDefinition } from "@/lib/utils/csv-export";
 
 interface ItemFormData {
   sku: string;
@@ -218,6 +223,19 @@ export default function ItemsPage() {
   // Sort items (client-side)
   const { sortedData: sortedItems, requestSort, getSortDirection } = useTableSort(filteredItems, "name", "asc");
 
+  // Bulk selection
+  const {
+    selectedIds,
+    selectedIdsArray,
+    selectedCount,
+    toggleSelection,
+    selectAll,
+    clearSelection,
+    isSelected,
+    isAllSelected,
+    isSomeSelected,
+  } = useBulkSelection<string>();
+
   const getCategoryName = (categoryId: string | null | undefined) => {
     if (!categoryId) return "-";
     const category = categories.find((c) => c.id === categoryId);
@@ -349,6 +367,61 @@ export default function ItemsPage() {
     }
   };
 
+  // Bulk export selected items to CSV
+  const handleBulkExport = () => {
+    const selectedItems = sortedItems.filter((item) => selectedIds.has(item.id));
+
+    const columns: ColumnDefinition<Item>[] = [
+      { key: "sku", label: "SKU" },
+      { key: "name", label: "Name" },
+      { key: "description", label: "Description" },
+      { key: "category_id", label: "Category", formatter: (_, item) => getCategoryName(item.category_id) },
+      { key: "brand", label: "Brand" },
+      { key: "model", label: "Model" },
+      { key: "serial_number", label: "Serial Number" },
+      { key: "manufacturer", label: "Manufacturer" },
+      { key: "barcode", label: "Barcode" },
+      { key: "is_insured", label: "Insured", formatter: (value) => value ? "Yes" : "No" },
+      { key: "lifetime_warranty", label: "Warranty", formatter: (value) => value ? "Yes" : "No" },
+      { key: "min_stock_level", label: "Min Stock Level" },
+      { key: "short_code", label: "Short Code" },
+    ];
+
+    exportToCSV(selectedItems, columns, generateFilename("items"));
+    toast.success(`Exported ${selectedCount} ${selectedCount === 1 ? "item" : "items"}`);
+    clearSelection();
+  };
+
+  // Bulk archive selected items
+  const handleBulkArchive = async () => {
+    if (selectedCount === 0) return;
+
+    try {
+      const selectedItems = sortedItems.filter((item) => selectedIds.has(item.id));
+      const isRestoring = selectedItems.every((item) => item.is_archived);
+
+      // Archive/restore all selected items
+      await Promise.all(
+        selectedIdsArray.map((id) => {
+          const item = sortedItems.find((i) => i.id === id);
+          if (!item) return Promise.resolve();
+          return isRestoring ? itemsApi.restore(id) : itemsApi.archive(id);
+        })
+      );
+
+      toast.success(
+        `${isRestoring ? "Restored" : "Archived"} ${selectedCount} ${selectedCount === 1 ? "item" : "items"}`
+      );
+      clearSelection();
+      refetch();
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Failed to archive items";
+      toast.error("Failed to archive items", {
+        description: errorMessage,
+      });
+    }
+  };
+
   if (workspaceLoading || isLoading) {
     return (
       <div className="space-y-6">
@@ -456,6 +529,19 @@ export default function ItemsPage() {
                 <Table>
                   <TableHeader>
                     <TableRow>
+                      <TableHead className="w-[50px]">
+                        <Checkbox
+                          checked={isAllSelected(sortedItems.map((i) => i.id))}
+                          onCheckedChange={(checked) => {
+                            if (checked) {
+                              selectAll(sortedItems.map((i) => i.id));
+                            } else {
+                              clearSelection();
+                            }
+                          }}
+                          aria-label="Select all items"
+                        />
+                      </TableHead>
                       <SortableTableHead
                         sortDirection={getSortDirection("sku")}
                         onSort={() => requestSort("sku")}
@@ -498,6 +584,13 @@ export default function ItemsPage() {
                   <TableBody>
                     {sortedItems.map((item) => (
                       <TableRow key={item.id}>
+                        <TableCell>
+                          <Checkbox
+                            checked={isSelected(item.id)}
+                            onCheckedChange={() => toggleSelection(item.id)}
+                            aria-label={`Select ${item.name}`}
+                          />
+                        </TableCell>
                         <TableCell className="font-mono text-sm">
                           {item.sku}
                           {item.short_code && (
@@ -776,6 +869,18 @@ export default function ItemsPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Bulk Action Bar */}
+      <BulkActionBar selectedCount={selectedCount} onClear={clearSelection}>
+        <Button onClick={handleBulkExport} size="sm" variant="outline">
+          <Download className="mr-2 h-4 w-4" />
+          Export
+        </Button>
+        <Button onClick={handleBulkArchive} size="sm" variant="outline">
+          <ArchiveIcon className="mr-2 h-4 w-4" />
+          Archive
+        </Button>
+      </BulkActionBar>
     </div>
   );
 }
