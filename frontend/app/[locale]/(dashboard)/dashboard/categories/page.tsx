@@ -133,6 +133,25 @@ function CategoryRow({
     opacity: isDragging ? 0.5 : 1,
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (!hasChildren) return;
+
+    switch (e.key) {
+      case "ArrowRight":
+        if (!category.expanded) {
+          e.preventDefault();
+          onToggle(category.id);
+        }
+        break;
+      case "ArrowLeft":
+        if (category.expanded) {
+          e.preventDefault();
+          onToggle(category.id);
+        }
+        break;
+    }
+  };
+
   return (
     <>
       <div
@@ -143,6 +162,9 @@ function CategoryRow({
           level > 0 && "ml-6",
           isDragging && "cursor-grabbing"
         )}
+        role="treeitem"
+        aria-expanded={hasChildren ? category.expanded : undefined}
+        aria-level={level + 1}
         {...attributes}
       >
         <div
@@ -150,20 +172,27 @@ function CategoryRow({
           className="cursor-grab active:cursor-grabbing p-1 rounded hover:bg-muted opacity-0 group-hover:opacity-100"
           style={{ marginLeft: level * 24 }}
         >
-          <GripVertical className="h-4 w-4 text-muted-foreground" />
+          <GripVertical className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
         </div>
 
         <button
           onClick={() => hasChildren && onToggle(category.id)}
+          onKeyDown={handleKeyDown}
           className={cn(
             "p-1 rounded hover:bg-muted",
             !hasChildren && "invisible"
           )}
+          aria-label={
+            hasChildren
+              ? `${category.expanded ? "Collapse" : "Expand"} ${category.name}`
+              : undefined
+          }
+          tabIndex={hasChildren ? 0 : -1}
         >
           {category.expanded ? (
-            <ChevronDown className="h-4 w-4 text-muted-foreground" />
+            <ChevronDown className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
           ) : (
-            <ChevronRight className="h-4 w-4 text-muted-foreground" />
+            <ChevronRight className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
           )}
         </button>
 
@@ -211,18 +240,21 @@ function CategoryRow({
         </DropdownMenu>
       </div>
 
-      {category.expanded &&
-        category.children.map((child) => (
-          <CategoryRow
-            key={child.id}
-            category={child}
-            level={level + 1}
-            onEdit={onEdit}
-            onDelete={onDelete}
-            onToggle={onToggle}
-            t={t}
-          />
-        ))}
+      {category.expanded && category.children.length > 0 && (
+        <div role="group">
+          {category.children.map((child) => (
+            <CategoryRow
+              key={child.id}
+              category={child}
+              level={level + 1}
+              onEdit={onEdit}
+              onDelete={onDelete}
+              onToggle={onToggle}
+              t={t}
+            />
+          ))}
+        </div>
+      )}
     </>
   );
 }
@@ -641,7 +673,7 @@ export default function CategoriesPage() {
               onDragEnd={handleDragEnd}
             >
               <SortableContext items={allCategoryIds} strategy={verticalListSortingStrategy}>
-                <div className="space-y-1">
+                <div className="space-y-1" role="tree" aria-label="Category hierarchy">
                   {filteredTree.map((category) => (
                     <CategoryRow
                       key={category.id}

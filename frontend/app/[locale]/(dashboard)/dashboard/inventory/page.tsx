@@ -1178,8 +1178,8 @@ export default function InventoryPage() {
                 <Label htmlFor="item">
                   Item <span className="text-destructive">*</span>
                 </Label>
-                <Select value={formItemId} onValueChange={setFormItemId}>
-                  <SelectTrigger>
+                <Select value={formItemId} onValueChange={setFormItemId} required>
+                  <SelectTrigger id="item" aria-required="true">
                     <SelectValue placeholder="Select item" />
                   </SelectTrigger>
                   <SelectContent>
@@ -1196,8 +1196,8 @@ export default function InventoryPage() {
                 <Label htmlFor="location">
                   Location <span className="text-destructive">*</span>
                 </Label>
-                <Select value={formLocationId} onValueChange={setFormLocationId}>
-                  <SelectTrigger>
+                <Select value={formLocationId} onValueChange={setFormLocationId} required>
+                  <SelectTrigger id="location" aria-required="true">
                     <SelectValue placeholder="Select location" />
                   </SelectTrigger>
                   <SelectContent>
@@ -1241,6 +1241,7 @@ export default function InventoryPage() {
                   min="1"
                   value={formQuantity}
                   onChange={(e) => setFormQuantity(parseInt(e.target.value) || 1)}
+                  aria-required="true"
                 />
               </div>
 

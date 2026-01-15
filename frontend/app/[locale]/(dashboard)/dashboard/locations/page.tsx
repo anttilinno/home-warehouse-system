@@ -123,6 +123,25 @@ function LocationRow({
     return details.join(" · ");
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (!hasChildren) return;
+
+    switch (e.key) {
+      case "ArrowRight":
+        if (!location.expanded) {
+          e.preventDefault();
+          onToggle(location.id);
+        }
+        break;
+      case "ArrowLeft":
+        if (location.expanded) {
+          e.preventDefault();
+          onToggle(location.id);
+        }
+        break;
+    }
+  };
+
   return (
     <>
       <div
@@ -131,18 +150,28 @@ function LocationRow({
           location.is_archived && "opacity-60"
         )}
         style={{ marginLeft: level * 24 }}
+        role="treeitem"
+        aria-expanded={hasChildren ? location.expanded : undefined}
+        aria-level={level + 1}
       >
         <button
           onClick={() => hasChildren && onToggle(location.id)}
+          onKeyDown={handleKeyDown}
           className={cn(
             "p-1 rounded hover:bg-muted",
             !hasChildren && "invisible"
           )}
+          aria-label={
+            hasChildren
+              ? `${location.expanded ? "Collapse" : "Expand"} ${location.name}`
+              : undefined
+          }
+          tabIndex={hasChildren ? 0 : -1}
         >
           {location.expanded ? (
-            <ChevronDown className="h-4 w-4 text-muted-foreground" />
+            <ChevronDown className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
           ) : (
-            <ChevronRight className="h-4 w-4 text-muted-foreground" />
+            <ChevronRight className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
           )}
         </button>
 
@@ -216,18 +245,21 @@ function LocationRow({
         </DropdownMenu>
       </div>
 
-      {location.expanded &&
-        location.children.map((child) => (
-          <LocationRow
-            key={child.id}
-            location={child}
-            level={level + 1}
-            onEdit={onEdit}
-            onDelete={onDelete}
-            onArchive={onArchive}
-            onToggle={onToggle}
-          />
-        ))}
+      {location.expanded && location.children.length > 0 && (
+        <div role="group">
+          {location.children.map((child) => (
+            <LocationRow
+              key={child.id}
+              location={child}
+              level={level + 1}
+              onEdit={onEdit}
+              onDelete={onDelete}
+              onArchive={onArchive}
+              onToggle={onToggle}
+            />
+          ))}
+        </div>
+      )}
     </>
   );
 }
@@ -606,7 +638,7 @@ export default function LocationsPage() {
                 )}
               </EmptyState>
             ) : (
-              <div className="space-y-1">
+              <div className="space-y-1" role="tree" aria-label="Location hierarchy">
                 {filteredTree.map((location) => (
                   <LocationRow
                     key={location.id}
