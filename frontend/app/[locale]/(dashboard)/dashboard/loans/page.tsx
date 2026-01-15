@@ -64,9 +64,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useWorkspace } from "@/lib/hooks/use-workspace";
-import { loansApi, borrowersApi } from "@/lib/api";
+import { loansApi, borrowersApi, itemsApi, inventoryApi } from "@/lib/api";
 import type { Loan } from "@/lib/types/loans";
 import type { Borrower } from "@/lib/types/borrowers";
+import type { Item } from "@/lib/types/items";
+import type { Inventory } from "@/lib/types/inventory";
+import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 
 function LoansTableSkeleton() {
@@ -141,17 +144,29 @@ export default function LoansPage() {
 
   const [loans, setLoans] = useState<Loan[]>([]);
   const [borrowers, setBorrowers] = useState<Borrower[]>([]);
+  const [items, setItems] = useState<Item[]>([]);
+  const [availableInventory, setAvailableInventory] = useState<Inventory[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
 
   // Dialog state
+  const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [returnDialogOpen, setReturnDialogOpen] = useState(false);
   const [returningLoan, setReturningLoan] = useState<Loan | null>(null);
   const [extendDialogOpen, setExtendDialogOpen] = useState(false);
   const [extendingLoan, setExtendingLoan] = useState<Loan | null>(null);
   const [newDueDate, setNewDueDate] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
+
+  // Create loan form state
+  const [formItemId, setFormItemId] = useState("");
+  const [formInventoryId, setFormInventoryId] = useState("");
+  const [formBorrowerId, setFormBorrowerId] = useState("");
+  const [formQuantity, setFormQuantity] = useState(1);
+  const [formLoanedAt, setFormLoanedAt] = useState(format(new Date(), "yyyy-MM-dd"));
+  const [formDueDate, setFormDueDate] = useState("");
+  const [formNotes, setFormNotes] = useState("");
 
   // Load loans
   const loadLoans = useCallback(async () => {
@@ -183,12 +198,51 @@ export default function LoansPage() {
     }
   }, [workspaceId]);
 
+  // Load items
+  const loadItems = useCallback(async () => {
+    if (!workspaceId) return;
+
+    try {
+      const response = await itemsApi.list({ limit: 500 });
+      setItems(response.items.filter(item => !item.is_archived));
+    } catch (error) {
+      console.error("Failed to load items:", error);
+    }
+  }, [workspaceId]);
+
+  // Load available inventory for selected item
+  const loadAvailableInventory = useCallback(async (itemId: string) => {
+    if (!workspaceId || !itemId) {
+      setAvailableInventory([]);
+      return;
+    }
+
+    try {
+      const data = await inventoryApi.getAvailable(itemId);
+      setAvailableInventory(data);
+    } catch (error) {
+      console.error("Failed to load available inventory:", error);
+      setAvailableInventory([]);
+    }
+  }, [workspaceId]);
+
   useEffect(() => {
     if (workspaceId) {
       loadLoans();
       loadBorrowers();
+      loadItems();
     }
-  }, [workspaceId, loadLoans, loadBorrowers]);
+  }, [workspaceId, loadLoans, loadBorrowers, loadItems]);
+
+  // Load inventory when item changes
+  useEffect(() => {
+    if (formItemId) {
+      loadAvailableInventory(formItemId);
+    } else {
+      setAvailableInventory([]);
+      setFormInventoryId("");
+    }
+  }, [formItemId, loadAvailableInventory]);
 
   // Filter loans
   const filteredLoans = loans.filter((loan) => {
@@ -257,6 +311,46 @@ export default function LoansPage() {
     }
   };
 
+  const resetCreateForm = () => {
+    setFormItemId("");
+    setFormInventoryId("");
+    setFormBorrowerId("");
+    setFormQuantity(1);
+    setFormLoanedAt(format(new Date(), "yyyy-MM-dd"));
+    setFormDueDate("");
+    setFormNotes("");
+  };
+
+  const handleCreateLoan = async () => {
+    if (!formInventoryId || !formBorrowerId) {
+      toast.error("Please fill in all required fields");
+      return;
+    }
+
+    try {
+      setIsProcessing(true);
+      await loansApi.create({
+        inventory_id: formInventoryId,
+        borrower_id: formBorrowerId,
+        quantity: formQuantity,
+        loaned_at: new Date(formLoanedAt).toISOString(),
+        due_date: formDueDate ? new Date(formDueDate).toISOString() : undefined,
+        notes: formNotes || undefined,
+      });
+      toast.success("Loan created successfully");
+      setCreateDialogOpen(false);
+      resetCreateForm();
+      loadLoans();
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Failed to create loan";
+      toast.error("Failed to create loan", {
+        description: errorMessage,
+      });
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
   if (workspaceLoading || isLoading) {
     return (
       <div className="space-y-6">
@@ -315,7 +409,7 @@ export default function LoansPage() {
                 {searchQuery && " matching your search"}
               </CardDescription>
             </div>
-            <Button onClick={() => toast.info("Loan creation requires inventory management to be set up first")}>
+            <Button onClick={() => setCreateDialogOpen(true)}>
               <Plus className="mr-2 h-4 w-4" />
               New Loan
             </Button>
@@ -362,7 +456,7 @@ export default function LoansPage() {
                 }
               >
                 {!searchQuery && statusFilter === "all" && (
-                  <Button onClick={() => toast.info("Loan creation requires inventory management to be set up first")}>
+                  <Button onClick={() => setCreateDialogOpen(true)}>
                     <Plus className="mr-2 h-4 w-4" />
                     Create Your First Loan
                   </Button>
@@ -513,6 +607,158 @@ export default function LoansPage() {
             </Button>
             <Button onClick={handleExtend} disabled={isProcessing || !newDueDate}>
               {isProcessing ? "Saving..." : "Extend"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Create Loan Dialog */}
+      <Dialog open={createDialogOpen} onOpenChange={(open) => {
+        setCreateDialogOpen(open);
+        if (!open) resetCreateForm();
+      }}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Create New Loan</DialogTitle>
+            <DialogDescription>
+              Select an item and borrower to create a new loan
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 py-4">
+            {/* Item Selection */}
+            <div className="space-y-2">
+              <Label htmlFor="item">Item *</Label>
+              <Select value={formItemId} onValueChange={setFormItemId}>
+                <SelectTrigger id="item">
+                  <SelectValue placeholder="Select an item" />
+                </SelectTrigger>
+                <SelectContent>
+                  {items.map((item) => (
+                    <SelectItem key={item.id} value={item.id}>
+                      {item.name} {item.sku && `(${item.sku})`}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Inventory Selection */}
+            {formItemId && (
+              <div className="space-y-2">
+                <Label htmlFor="inventory">Available Inventory *</Label>
+                <Select value={formInventoryId} onValueChange={setFormInventoryId}>
+                  <SelectTrigger id="inventory">
+                    <SelectValue placeholder={
+                      availableInventory.length === 0
+                        ? "No available inventory"
+                        : "Select inventory"
+                    } />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {availableInventory.map((inv) => (
+                      <SelectItem key={inv.id} value={inv.id}>
+                        {inv.condition} - Qty: {inv.quantity}
+                        {inv.notes && ` (${inv.notes.substring(0, 30)}...)`}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {availableInventory.length === 0 && (
+                  <p className="text-sm text-muted-foreground">
+                    No available inventory for this item
+                  </p>
+                )}
+              </div>
+            )}
+
+            {/* Borrower Selection */}
+            <div className="space-y-2">
+              <Label htmlFor="borrower">Borrower *</Label>
+              <Select value={formBorrowerId} onValueChange={setFormBorrowerId}>
+                <SelectTrigger id="borrower">
+                  <SelectValue placeholder="Select a borrower" />
+                </SelectTrigger>
+                <SelectContent>
+                  {borrowers.map((borrower) => (
+                    <SelectItem key={borrower.id} value={borrower.id}>
+                      {borrower.name}
+                      {borrower.email && ` (${borrower.email})`}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              {/* Quantity */}
+              <div className="space-y-2">
+                <Label htmlFor="quantity">Quantity *</Label>
+                <Input
+                  id="quantity"
+                  type="number"
+                  min="1"
+                  max={availableInventory.find(inv => inv.id === formInventoryId)?.quantity || 1}
+                  value={formQuantity}
+                  onChange={(e) => setFormQuantity(parseInt(e.target.value) || 1)}
+                />
+                {formInventoryId && (
+                  <p className="text-xs text-muted-foreground">
+                    Max: {availableInventory.find(inv => inv.id === formInventoryId)?.quantity || 0}
+                  </p>
+                )}
+              </div>
+
+              {/* Loaned Date */}
+              <div className="space-y-2">
+                <Label htmlFor="loaned_at">Loaned Date *</Label>
+                <Input
+                  id="loaned_at"
+                  type="date"
+                  value={formLoanedAt}
+                  onChange={(e) => setFormLoanedAt(e.target.value)}
+                  max={format(new Date(), "yyyy-MM-dd")}
+                />
+              </div>
+            </div>
+
+            {/* Due Date */}
+            <div className="space-y-2">
+              <Label htmlFor="due_date">Due Date</Label>
+              <Input
+                id="due_date"
+                type="date"
+                value={formDueDate}
+                onChange={(e) => setFormDueDate(e.target.value)}
+                min={formLoanedAt || format(new Date(), "yyyy-MM-dd")}
+              />
+              <p className="text-xs text-muted-foreground">
+                Optional - leave empty for no due date
+              </p>
+            </div>
+
+            {/* Notes */}
+            <div className="space-y-2">
+              <Label htmlFor="notes">Notes</Label>
+              <Textarea
+                id="notes"
+                value={formNotes}
+                onChange={(e) => setFormNotes(e.target.value)}
+                placeholder="Add any notes about this loan..."
+                rows={3}
+              />
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setCreateDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              onClick={handleCreateLoan}
+              disabled={isProcessing || !formInventoryId || !formBorrowerId || availableInventory.length === 0}
+            >
+              {isProcessing ? "Creating..." : "Create Loan"}
             </Button>
           </DialogFooter>
         </DialogContent>
