@@ -39,6 +39,7 @@ import (
 	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/location"
 	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/movement"
 	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/importjob"
+	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/pendingchange"
 	infraEvents "github.com/antti/home-warehouse/go-backend/internal/infra/events"
 	"github.com/antti/home-warehouse/go-backend/internal/infra/postgres"
 	"github.com/antti/home-warehouse/go-backend/internal/infra/queries"
@@ -136,6 +137,7 @@ func NewRouter(pool *pgxpool.Pool, cfg *config.Config) chi.Router {
 	importExportRepo := postgres.NewImportExportRepository(pool)
 	syncRepo := postgres.NewSyncRepository(pool)
 	importJobRepo := postgres.NewImportJobRepository(pool)
+	pendingChangeRepo := postgres.NewPendingChangeRepository(pool)
 
 	// Initialize services
 	// Auth services
@@ -173,6 +175,21 @@ func NewRouter(pool *pgxpool.Pool, cfg *config.Config) chi.Router {
 	barcodeSvc := barcode.NewService()
 	// Batch service (for PWA offline sync)
 	batchSvc := batch.NewService(itemSvc, locationSvc, containerSvc, inventorySvc, categorySvc, labelSvc, companySvc)
+	// Pending change service (for approval workflow)
+	pendingChangeSvc := pendingchange.NewService(
+		pendingChangeRepo,
+		memberRepo,
+		userRepo,
+		itemRepo,
+		categoryRepo,
+		locationRepo,
+		containerRepo,
+		inventoryRepo,
+		borrowerRepo,
+		loanRepo,
+		labelRepo,
+		broadcaster,
+	)
 
 	// Create handlers with dependencies
 	userHandler := user.NewHandler(userSvc, jwtService, workspaceSvc)
@@ -221,6 +238,11 @@ func NewRouter(pool *pgxpool.Pool, cfg *config.Config) chi.Router {
 		// Workspace-scoped routes
 		r.Route("/workspaces/{workspace_id}", func(r chi.Router) {
 			r.Use(appMiddleware.Workspace(appMiddleware.NewMemberAdapter(memberRepo)))
+
+			// Apply approval middleware to intercept member operations
+			// This must come after Workspace middleware (which sets the role in context)
+			pendingChangeAdapter := pendingchange.NewMiddlewareAdapter(pendingChangeSvc)
+			r.Use(appMiddleware.ApprovalMiddleware(pendingChangeAdapter))
 
 			// Register SSE endpoint (uses Chi directly, not Huma)
 			eventsHandler := events.NewHandler(broadcaster)
@@ -278,6 +300,9 @@ func NewRouter(pool *pgxpool.Pool, cfg *config.Config) chi.Router {
 
 			// Register batch operations (for PWA offline sync)
 			batch.RegisterRoutes(wsAPI, batchSvc)
+
+			// Register pending change management routes (approval workflow)
+			pendingchange.RegisterRoutes(wsAPI, pendingChangeSvc, userRepo)
 		})
 	})
 

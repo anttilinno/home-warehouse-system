@@ -140,6 +140,9 @@ export function useSSE(options: UseSSEOptions = {}) {
         "attachment.created",
         "attachment.updated",
         "attachment.deleted",
+        "pendingchange.created",
+        "pendingchange.approved",
+        "pendingchange.rejected",
       ];
 
       eventTypes.forEach((type) => {

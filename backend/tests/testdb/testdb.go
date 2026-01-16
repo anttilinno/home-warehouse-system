@@ -114,6 +114,7 @@ func CleanupTestDB(t *testing.T, pool *pgxpool.Pool) {
 		"warehouse.locations",
 		"warehouse.categories",
 		"warehouse.companies",
+		"warehouse.pending_changes",
 		// Auth schema - reverse dependency order
 		"auth.notifications",
 		"auth.workspace_members",

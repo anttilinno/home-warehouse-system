@@ -10,6 +10,7 @@ export { borrowersApi } from "./borrowers";
 export { loansApi } from "./loans";
 export { inventoryApi } from "./inventory";
 export { importExportApi } from "./importexport";
+export { pendingChangesApi } from "./pending-changes";
 
 export type { User, Workspace, AuthTokenResponse, RegisterData } from "./auth";
 export type { Category, CategoryCreate, CategoryUpdate } from "./categories";
@@ -33,3 +34,13 @@ export type {
   NotificationListResponse,
 } from "./notifications";
 export type { EntityType, ImportResult, ExportOptions } from "./importexport";
+export type {
+  PendingChange,
+  PendingChangeStatus,
+  PendingChangeAction,
+  PendingChangeEntityType,
+  PendingChangesListResponse,
+  PendingChangesListParams,
+  ApproveChangeRequest,
+  RejectChangeRequest,
+} from "./pending-changes";

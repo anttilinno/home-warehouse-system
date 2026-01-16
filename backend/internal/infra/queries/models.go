@@ -286,6 +286,97 @@ func (ns NullWarehouseFavoriteTypeEnum) Value() (driver.Value, error) {
 	return string(ns.WarehouseFavoriteTypeEnum), nil
 }
 
+type WarehouseImportEntityEnum string
+
+const (
+	WarehouseImportEntityEnumItems      WarehouseImportEntityEnum = "items"
+	WarehouseImportEntityEnumInventory  WarehouseImportEntityEnum = "inventory"
+	WarehouseImportEntityEnumLocations  WarehouseImportEntityEnum = "locations"
+	WarehouseImportEntityEnumContainers WarehouseImportEntityEnum = "containers"
+	WarehouseImportEntityEnumCategories WarehouseImportEntityEnum = "categories"
+	WarehouseImportEntityEnumBorrowers  WarehouseImportEntityEnum = "borrowers"
+)
+
+func (e *WarehouseImportEntityEnum) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = WarehouseImportEntityEnum(s)
+	case string:
+		*e = WarehouseImportEntityEnum(s)
+	default:
+		return fmt.Errorf("unsupported scan type for WarehouseImportEntityEnum: %T", src)
+	}
+	return nil
+}
+
+type NullWarehouseImportEntityEnum struct {
+	WarehouseImportEntityEnum WarehouseImportEntityEnum `json:"warehouse_import_entity_enum"`
+	Valid                     bool                      `json:"valid"` // Valid is true if WarehouseImportEntityEnum is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullWarehouseImportEntityEnum) Scan(value interface{}) error {
+	if value == nil {
+		ns.WarehouseImportEntityEnum, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.WarehouseImportEntityEnum.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullWarehouseImportEntityEnum) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.WarehouseImportEntityEnum), nil
+}
+
+type WarehouseImportStatusEnum string
+
+const (
+	WarehouseImportStatusEnumPending    WarehouseImportStatusEnum = "pending"
+	WarehouseImportStatusEnumProcessing WarehouseImportStatusEnum = "processing"
+	WarehouseImportStatusEnumCompleted  WarehouseImportStatusEnum = "completed"
+	WarehouseImportStatusEnumFailed     WarehouseImportStatusEnum = "failed"
+	WarehouseImportStatusEnumCancelled  WarehouseImportStatusEnum = "cancelled"
+)
+
+func (e *WarehouseImportStatusEnum) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = WarehouseImportStatusEnum(s)
+	case string:
+		*e = WarehouseImportStatusEnum(s)
+	default:
+		return fmt.Errorf("unsupported scan type for WarehouseImportStatusEnum: %T", src)
+	}
+	return nil
+}
+
+type NullWarehouseImportStatusEnum struct {
+	WarehouseImportStatusEnum WarehouseImportStatusEnum `json:"warehouse_import_status_enum"`
+	Valid                     bool                      `json:"valid"` // Valid is true if WarehouseImportStatusEnum is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullWarehouseImportStatusEnum) Scan(value interface{}) error {
+	if value == nil {
+		ns.WarehouseImportStatusEnum, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.WarehouseImportStatusEnum.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullWarehouseImportStatusEnum) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.WarehouseImportStatusEnum), nil
+}
+
 type WarehouseItemConditionEnum string
 
 const (
@@ -378,6 +469,92 @@ func (ns NullWarehouseItemStatusEnum) Value() (driver.Value, error) {
 		return nil, nil
 	}
 	return string(ns.WarehouseItemStatusEnum), nil
+}
+
+type WarehousePendingChangeActionEnum string
+
+const (
+	WarehousePendingChangeActionEnumCreate WarehousePendingChangeActionEnum = "create"
+	WarehousePendingChangeActionEnumUpdate WarehousePendingChangeActionEnum = "update"
+	WarehousePendingChangeActionEnumDelete WarehousePendingChangeActionEnum = "delete"
+)
+
+func (e *WarehousePendingChangeActionEnum) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = WarehousePendingChangeActionEnum(s)
+	case string:
+		*e = WarehousePendingChangeActionEnum(s)
+	default:
+		return fmt.Errorf("unsupported scan type for WarehousePendingChangeActionEnum: %T", src)
+	}
+	return nil
+}
+
+type NullWarehousePendingChangeActionEnum struct {
+	WarehousePendingChangeActionEnum WarehousePendingChangeActionEnum `json:"warehouse_pending_change_action_enum"`
+	Valid                            bool                             `json:"valid"` // Valid is true if WarehousePendingChangeActionEnum is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullWarehousePendingChangeActionEnum) Scan(value interface{}) error {
+	if value == nil {
+		ns.WarehousePendingChangeActionEnum, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.WarehousePendingChangeActionEnum.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullWarehousePendingChangeActionEnum) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.WarehousePendingChangeActionEnum), nil
+}
+
+type WarehousePendingChangeStatusEnum string
+
+const (
+	WarehousePendingChangeStatusEnumPending  WarehousePendingChangeStatusEnum = "pending"
+	WarehousePendingChangeStatusEnumApproved WarehousePendingChangeStatusEnum = "approved"
+	WarehousePendingChangeStatusEnumRejected WarehousePendingChangeStatusEnum = "rejected"
+)
+
+func (e *WarehousePendingChangeStatusEnum) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = WarehousePendingChangeStatusEnum(s)
+	case string:
+		*e = WarehousePendingChangeStatusEnum(s)
+	default:
+		return fmt.Errorf("unsupported scan type for WarehousePendingChangeStatusEnum: %T", src)
+	}
+	return nil
+}
+
+type NullWarehousePendingChangeStatusEnum struct {
+	WarehousePendingChangeStatusEnum WarehousePendingChangeStatusEnum `json:"warehouse_pending_change_status_enum"`
+	Valid                            bool                             `json:"valid"` // Valid is true if WarehousePendingChangeStatusEnum is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullWarehousePendingChangeStatusEnum) Scan(value interface{}) error {
+	if value == nil {
+		ns.WarehousePendingChangeStatusEnum, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.WarehousePendingChangeStatusEnum.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullWarehousePendingChangeStatusEnum) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.WarehousePendingChangeStatusEnum), nil
 }
 
 type WarehouseTagTypeEnum string
@@ -661,6 +838,36 @@ type WarehouseFile struct {
 	UpdatedAt  pgtype.Timestamptz `json:"updated_at"`
 }
 
+type WarehouseImportError struct {
+	ID           uuid.UUID `json:"id"`
+	ImportJobID  uuid.UUID `json:"import_job_id"`
+	RowNumber    int32     `json:"row_number"`
+	FieldName    *string   `json:"field_name"`
+	ErrorMessage string    `json:"error_message"`
+	RowData      []byte    `json:"row_data"`
+	CreatedAt    time.Time `json:"created_at"`
+}
+
+type WarehouseImportJob struct {
+	ID            uuid.UUID                 `json:"id"`
+	WorkspaceID   uuid.UUID                 `json:"workspace_id"`
+	UserID        uuid.UUID                 `json:"user_id"`
+	EntityType    WarehouseImportEntityEnum `json:"entity_type"`
+	Status        WarehouseImportStatusEnum `json:"status"`
+	FileName      string                    `json:"file_name"`
+	FilePath      string                    `json:"file_path"`
+	FileSizeBytes int64                     `json:"file_size_bytes"`
+	TotalRows     *int32                    `json:"total_rows"`
+	ProcessedRows int32                     `json:"processed_rows"`
+	SuccessCount  int32                     `json:"success_count"`
+	ErrorCount    int32                     `json:"error_count"`
+	StartedAt     pgtype.Timestamptz        `json:"started_at"`
+	CompletedAt   pgtype.Timestamptz        `json:"completed_at"`
+	CreatedAt     time.Time                 `json:"created_at"`
+	UpdatedAt     time.Time                 `json:"updated_at"`
+	ErrorMessage  *string                   `json:"error_message"`
+}
+
 type WarehouseInventory struct {
 	ID              uuid.UUID                      `json:"id"`
 	WorkspaceID     uuid.UUID                      `json:"workspace_id"`
@@ -772,6 +979,22 @@ type WarehouseLocation struct {
 	SearchVector interface{}        `json:"search_vector"`
 	CreatedAt    pgtype.Timestamptz `json:"created_at"`
 	UpdatedAt    pgtype.Timestamptz `json:"updated_at"`
+}
+
+type WarehousePendingChange struct {
+	ID              uuid.UUID                        `json:"id"`
+	WorkspaceID     uuid.UUID                        `json:"workspace_id"`
+	RequesterID     uuid.UUID                        `json:"requester_id"`
+	EntityType      string                           `json:"entity_type"`
+	EntityID        pgtype.UUID                      `json:"entity_id"`
+	Action          WarehousePendingChangeActionEnum `json:"action"`
+	Payload         []byte                           `json:"payload"`
+	Status          WarehousePendingChangeStatusEnum `json:"status"`
+	ReviewedBy      pgtype.UUID                      `json:"reviewed_by"`
+	ReviewedAt      pgtype.Timestamptz               `json:"reviewed_at"`
+	RejectionReason *string                          `json:"rejection_reason"`
+	CreatedAt       time.Time                        `json:"created_at"`
+	UpdatedAt       time.Time                        `json:"updated_at"`
 }
 
 // All soft-deleted records across entity types for restoration UI.

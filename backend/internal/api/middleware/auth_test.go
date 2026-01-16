@@ -23,7 +23,7 @@ func TestJWTAuth_ValidToken(t *testing.T) {
 	email := "test@example.com"
 
 	// Generate a valid token
-	token, err := jwtService.GenerateToken(userID, email, false)
+	token, err := jwtService.GenerateToken(userID, email, "Test User", false)
 	assert.NoError(t, err)
 
 	// Track if next handler was called
@@ -57,7 +57,7 @@ func TestJWTAuth_ValidTokenSuperuser(t *testing.T) {
 	userID := uuid.New()
 	email := "admin@example.com"
 
-	token, err := jwtService.GenerateToken(userID, email, true)
+	token, err := jwtService.GenerateToken(userID, email, "Admin User", true)
 	assert.NoError(t, err)
 
 	var capturedUser *AuthUser
@@ -159,7 +159,7 @@ func TestJWTAuth_ExpiredToken(t *testing.T) {
 	email := "test@example.com"
 
 	// Generate token that expires immediately
-	token, err := jwtService.GenerateToken(userID, email, false)
+	token, err := jwtService.GenerateToken(userID, email, "Test User", false)
 	assert.NoError(t, err)
 
 	// Wait a tiny bit to ensure expiration (the token has 0 hour expiration)
@@ -188,7 +188,7 @@ func TestJWTAuth_TokenWithWrongSecret(t *testing.T) {
 	userID := uuid.New()
 	email := "test@example.com"
 
-	token, err := jwtService1.GenerateToken(userID, email, false)
+	token, err := jwtService1.GenerateToken(userID, email, "Test User", false)
 	assert.NoError(t, err)
 
 	// Try to validate with different secret
@@ -216,7 +216,7 @@ func TestJWTAuth_UserInContext(t *testing.T) {
 	userID := uuid.New()
 	email := "context-test@example.com"
 
-	token, err := jwtService.GenerateToken(userID, email, true)
+	token, err := jwtService.GenerateToken(userID, email, "Context Test User", true)
 	assert.NoError(t, err)
 
 	var capturedContext context.Context

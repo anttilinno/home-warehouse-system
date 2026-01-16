@@ -101,6 +101,8 @@
       "analytics": "Analytics",
       "outOfStock": "Out of Stock",
       "imports": "Imports",
+      "approvals": "Approvals",
+      "myChanges": "My Changes",
       "settings": "Settings",
       "collapse": "Collapse"
     },
@@ -224,6 +226,146 @@
       "contact": "Contact",
       "privacy": "Privacy",
       "terms": "Terms"
+    }
+  },
+  "approvals": {
+    "title": "Approvals",
+    "subtitle": "Review and approve pending changes",
+    "search": "Search approvals...",
+    "back": "Back",
+    "approve": "Approve",
+    "reject": "Reject",
+    "empty": "No pending changes",
+    "emptyDescription": "There are no pending changes to review at this time.",
+    "noResults": "No approvals found",
+    "noResultsDescription": "Try adjusting your search or filters.",
+    "noPermission": "Access Denied",
+    "noPermissionDescription": "Only workspace owners and admins can view approvals.",
+    "filter": {
+      "allStatuses": "All Statuses",
+      "pending": "Pending",
+      "approved": "Approved",
+      "rejected": "Rejected",
+      "allTypes": "All Types",
+      "item": "Items",
+      "location": "Locations",
+      "container": "Containers",
+      "category": "Categories",
+      "borrower": "Borrowers",
+      "loan": "Loans",
+      "inventory": "Inventory"
+    },
+    "stats": {
+      "title": "Summary",
+      "description": "Overview of approval statistics",
+      "pending": "Pending",
+      "approved": "Approved",
+      "rejected": "Rejected"
+    },
+    "detailTitle": "{action} {type}",
+    "requestInfo": {
+      "title": "Request Information",
+      "description": "Details about who requested this change",
+      "requester": "Requested by",
+      "created": "Created at",
+      "entityId": "Entity ID",
+      "newEntity": "New entity (will be created)"
+    },
+    "reviewInfo": {
+      "title": "Review Information",
+      "description": "Details about the review decision",
+      "reviewer": "Reviewed by",
+      "reviewedAt": "Reviewed at",
+      "reason": "Rejection Reason",
+      "unknown": "Unknown"
+    },
+    "payload": {
+      "title": "Change Details",
+      "description": "The data associated with this change request",
+      "data": "Data",
+      "changes": "Proposed Changes",
+      "note": "This shows the data that will be created, updated, or deleted."
+    },
+    "approveDialog": {
+      "title": "Approve Change",
+      "description": "Are you sure you want to approve this change? This action will apply the changes immediately and cannot be undone.",
+      "cancel": "Cancel",
+      "confirm": "Approve",
+      "approving": "Approving..."
+    },
+    "rejectDialog": {
+      "title": "Reject Change",
+      "description": "Please provide a reason for rejecting this change request.",
+      "reason": "Reason",
+      "reasonPlaceholder": "Explain why this change is being rejected...",
+      "cancel": "Cancel",
+      "confirm": "Reject",
+      "rejecting": "Rejecting..."
+    },
+    "approveSuccess": "Change approved",
+    "approveSuccessDescription": "The change has been approved and applied successfully.",
+    "approveError": "Failed to approve",
+    "rejectSuccess": "Change rejected",
+    "rejectSuccessDescription": "The change has been rejected.",
+    "rejectError": "Failed to reject"
+  },
+  "myChanges": {
+    "title": "My Changes",
+    "subtitle": "Track your submitted change requests",
+    "search": "Search my changes...",
+    "empty": "No change requests",
+    "emptyDescription": "You haven't submitted any change requests yet.",
+    "noResults": "No changes found",
+    "noResultsDescription": "Try adjusting your search or filters.",
+    "filter": {
+      "allStatuses": "All Statuses",
+      "pending": "Pending",
+      "approved": "Approved",
+      "rejected": "Rejected",
+      "allTypes": "All Types",
+      "item": "Items",
+      "location": "Locations",
+      "container": "Containers",
+      "category": "Categories",
+      "borrower": "Borrowers",
+      "loan": "Loans",
+      "inventory": "Inventory"
+    },
+    "status": {
+      "pending": "Pending Approval",
+      "approved": "Approved",
+      "rejected": "Rejected"
+    },
+    "action": {
+      "create": "Create",
+      "update": "Update",
+      "delete": "Delete"
+    },
+    "requestInfo": {
+      "submitted": "Submitted",
+      "reviewedAt": "Reviewed at",
+      "reason": "Rejection Reason"
+    },
+    "pendingDescription": "Your change is awaiting approval from an admin.",
+    "approvedDescription": "Your change has been approved and applied.",
+    "rejectedDescription": "Your change was rejected by an admin.",
+    "viewDetails": "View Details"
+  },
+  "pendingChange": {
+    "toast": {
+      "pendingTitle": "Change Pending Approval",
+      "pendingDescription": "Your change has been submitted and is awaiting approval from an admin.",
+      "approvedTitle": "Change Approved",
+      "approvedDescription": "Your change request has been approved and applied.",
+      "rejectedTitle": "Change Rejected",
+      "rejectedDescription": "Your change request was rejected: {reason}",
+      "submittedTitle": "Submitted for Approval",
+      "submittedDescription": "Your {action} request for {entityType} is pending admin approval."
+    },
+    "banner": {
+      "title": "Pending Approval",
+      "description": "This change is awaiting approval from a workspace admin.",
+      "viewChanges": "View My Changes"
     }
   }
 }

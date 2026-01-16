@@ -90,6 +90,7 @@ Key entities:
 - **borrowers**: People who borrow items
 - **loans**: Tracks inventory loans (references inventory, not items directly)
 - **inventory_movements**: Movement history tracking
+- **pending_changes**: Change approval queue for member role (stores create/update/delete operations pending admin approval)
 
 ### ENUMs
 - **workspace_role_enum**: owner, admin, member, viewer
@@ -97,8 +98,22 @@ Key entities:
 - **item_status_enum**: AVAILABLE, IN_USE, RESERVED, ON_LOAN, IN_TRANSIT, DISPOSED, MISSING
 - **tag_type_enum**: RFID, NFC, QR
 - **attachment_type_enum**: PHOTO, MANUAL, RECEIPT, WARRANTY, OTHER
+- **pending_change_action_enum**: create, update, delete
+- **pending_change_status_enum**: pending, approved, rejected
 
 All tables use UUIDv7 for primary keys. See DATABASE.md for full schema documentation.
+
+## Approval Pipeline
+
+The system includes a role-based approval pipeline that intercepts CRUD operations from members and routes them through admin approval:
+
+- **Owner/Admin**: Changes applied immediately (bypass approval)
+- **Member**: Create/update/delete operations require admin approval (202 Accepted response)
+- **Viewer**: Read-only access (no changes allowed)
+
+When a member submits a change, it's stored in `pending_changes` table with status "pending". Admins can review, approve (applies the change), or reject (with reason) through the approval queue UI. Real-time SSE notifications inform users of approval decisions.
+
+See `docs/APPROVAL_PIPELINE.md` for complete documentation and `frontend/docs/PENDING_CHANGES_INTEGRATION.md` for frontend integration guide.
 
 ## Environment Variables
 

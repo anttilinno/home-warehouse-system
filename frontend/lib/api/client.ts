@@ -5,6 +5,11 @@ interface ApiError {
   code?: string;
 }
 
+export interface ApiResponse<T> {
+  data: T;
+  status: number;
+}
+
 class ApiClient {
   private baseUrl: string;
   private token: string | null = null;
@@ -35,8 +40,9 @@ class ApiClient {
   private async request<T>(
     endpoint: string,
     options: RequestInit = {},
-    workspaceId?: string
-  ): Promise<T> {
+    workspaceId?: string,
+    includeStatus = false
+  ): Promise<T | ApiResponse<T>> {
     const headers: HeadersInit = {
       "Content-Type": "application/json",
       ...options.headers,
@@ -65,32 +71,60 @@ class ApiClient {
     // Handle empty responses (204 No Content)
     const contentType = response.headers.get("content-type");
     if (!contentType || !contentType.includes("application/json")) {
+      if (includeStatus) {
+        return { data: undefined as T, status: response.status } as ApiResponse<T>;
+      }
       return undefined as T;
     }
 
-    return response.json();
+    const data = await response.json();
+
+    if (includeStatus) {
+      return { data, status: response.status } as ApiResponse<T>;
+    }
+
+    return data;
   }
 
   async get<T>(endpoint: string, workspaceId?: string): Promise<T> {
-    return this.request<T>(endpoint, { method: "GET" }, workspaceId);
+    return this.request<T>(endpoint, { method: "GET" }, workspaceId) as Promise<T>;
   }
 
   async post<T>(endpoint: string, data?: unknown, workspaceId?: string): Promise<T> {
     return this.request<T>(endpoint, {
       method: "POST",
       body: data ? JSON.stringify(data) : undefined,
-    }, workspaceId);
+    }, workspaceId) as Promise<T>;
   }
 
   async patch<T>(endpoint: string, data: unknown, workspaceId?: string): Promise<T> {
     return this.request<T>(endpoint, {
       method: "PATCH",
       body: JSON.stringify(data),
-    }, workspaceId);
+    }, workspaceId) as Promise<T>;
   }
 
   async delete(endpoint: string, workspaceId?: string): Promise<void> {
     await this.request(endpoint, { method: "DELETE" }, workspaceId);
+  }
+
+  // Methods that include status code in response (for handling 202 Accepted)
+  async postWithStatus<T>(endpoint: string, data?: unknown, workspaceId?: string): Promise<ApiResponse<T>> {
+    return this.request<T>(endpoint, {
+      method: "POST",
+      body: data ? JSON.stringify(data) : undefined,
+    }, workspaceId, true) as Promise<ApiResponse<T>>;
+  }
+
+  async patchWithStatus<T>(endpoint: string, data: unknown, workspaceId?: string): Promise<ApiResponse<T>> {
+    return this.request<T>(endpoint, {
+      method: "PATCH",
+      body: JSON.stringify(data),
+    }, workspaceId, true) as Promise<ApiResponse<T>>;
+  }
+
+  async deleteWithStatus(endpoint: string, workspaceId?: string): Promise<ApiResponse<void>> {
+    return this.request(endpoint, { method: "DELETE" }, workspaceId, true) as Promise<ApiResponse<void>>;
   }
 }
 

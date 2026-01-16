@@ -62,12 +62,21 @@
   - [x] Expiration alerts: items expiring soon (expiration_date field)
   - [x] Warranty expiring: reminder before warranty ends (warranty_expires field)
   - [x] Overdue loans: loans past due_date
-- [ ] Approval pipeline for member role
-  - Members' create/update/delete operations require owner/admin approval
-  - Pending changes table: entity type, action, JSON payload, requester, status
-  - Review queue UI for owner/admin to approve/reject
-  - Notifications when changes need review
-  - Members see "Pending approval" status instead of immediate success
+- [x] Approval pipeline for member role
+  - [x] Members' create/update/delete operations require owner/admin approval
+  - [x] Pending changes table: entity type, action, JSON payload, requester, status
+  - [x] Review queue UI for owner/admin to approve/reject
+  - [x] Notifications when changes need review
+  - [x] Members see "Pending approval" status instead of immediate success
+  - [x] Backend middleware for role-based interception
+  - [x] Domain service for approval operations (create, list, approve, reject)
+  - [x] PostgreSQL repository with transaction support
+  - [x] Frontend integration with usePendingChangeHandler hook
+  - [x] Real-time SSE notifications for approvals/rejections
+  - [x] "My Changes" page for members to track their submissions
+  - [x] "Approvals" page for admins with pending count badge
+  - [x] Comprehensive documentation (APPROVAL_PIPELINE.md)
+  - [x] Integration tests covering all workflows
 - [ ] TUI client (Go + Bubble Tea)
   - Terminal-based interface for quick inventory operations
   - Browse locations, containers, items
@@ -114,15 +123,6 @@
   - Generate test data for development
   - Seed types: expiring items, warranty alerts, low-stock, overdue loans, location hierarchy
   - Command: `mise run seed <type|all>`
-- [ ] Kubernetes deployment configuration
-  - Create k8s manifests for main backend service
-  - Create k8s manifests for background worker
-  - ConfigMaps for environment variables
-  - Secrets for sensitive data (JWT, database credentials)
-  - Deployment, Service, and Ingress resources
-  - HPA (Horizontal Pod Autoscaler) for both services
-  - PersistentVolumeClaim for upload storage
-  - Health check endpoints integration
 
 ## Phase 3: UX & Accessibility
 
@@ -184,6 +184,17 @@
   - Vibration on successful actions
   - Error vibration patterns
   - Barcode scan feedback
+
+### Infrastructure
+- [ ] **Kubernetes deployment configuration**
+  - Create k8s manifests for main backend service
+  - Create k8s manifests for background worker
+  - ConfigMaps for environment variables
+  - Secrets for sensitive data (JWT, database credentials)
+  - Deployment, Service, and Ingress resources
+  - HPA (Horizontal Pod Autoscaler) for both services
+  - PersistentVolumeClaim for upload storage
+  - Health check endpoints integration
 
 ## Phase 4: AI & Advanced Features
 

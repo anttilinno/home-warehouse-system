@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { useTranslations } from "next-intl";
 import { usePathname } from "@/i18n/navigation";
 import { Link } from "@/i18n/navigation";
@@ -15,6 +16,8 @@ import {
   Settings,
   PackageX,
   FileUp,
+  ShieldCheck,
+  Clock,
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
@@ -24,7 +27,10 @@ import {
   TooltipTrigger,
   TooltipProvider,
 } from "@/components/ui/tooltip";
+import { Badge } from "@/components/ui/badge";
 import { UserMenu } from "./user-menu";
+import { useWorkspace } from "@/lib/hooks/use-workspace";
+import { pendingChangesApi } from "@/lib/api";
 
 interface SidebarProps {
   collapsed: boolean;
@@ -34,6 +40,55 @@ interface SidebarProps {
 export function Sidebar({ collapsed, onToggle }: SidebarProps) {
   const t = useTranslations("dashboard.nav");
   const pathname = usePathname();
+  const { workspaceId, currentMember } = useWorkspace();
+
+  const [pendingCount, setPendingCount] = useState(0);
+  const [myPendingCount, setMyPendingCount] = useState(0);
+
+  // Check if user can view approvals (owner or admin)
+  const canViewApprovals = currentMember?.role === "owner" || currentMember?.role === "admin";
+
+  // Load pending count for admins/owners
+  useEffect(() => {
+    const loadPendingCount = async () => {
+      if (!workspaceId || !canViewApprovals) return;
+
+      try {
+        const count = await pendingChangesApi.getPendingCount(workspaceId);
+        setPendingCount(count);
+      } catch (error) {
+        // Silently fail - not critical
+        console.error("Failed to load pending count:", error);
+      }
+    };
+
+    loadPendingCount();
+
+    // Refresh every 30 seconds
+    const interval = setInterval(loadPendingCount, 30000);
+    return () => clearInterval(interval);
+  }, [workspaceId, canViewApprovals]);
+
+  // Load my pending count for all users
+  useEffect(() => {
+    const loadMyPendingCount = async () => {
+      if (!workspaceId) return;
+
+      try {
+        const count = await pendingChangesApi.getMyPendingCount(workspaceId);
+        setMyPendingCount(count);
+      } catch (error) {
+        // Silently fail - not critical
+        console.error("Failed to load my pending count:", error);
+      }
+    };
+
+    loadMyPendingCount();
+
+    // Refresh every 30 seconds
+    const interval = setInterval(loadMyPendingCount, 30000);
+    return () => clearInterval(interval);
+  }, [workspaceId]);
 
   const navItems = [
     { icon: LayoutDashboard, label: t("dashboard"), href: "/dashboard" },
@@ -48,6 +103,22 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
     { icon: FileUp, label: t("imports"), href: "/dashboard/imports" },
   ];
 
+  // Add approvals link if user can view them
+  if (canViewApprovals) {
+    navItems.push({
+      icon: ShieldCheck,
+      label: t("approvals"),
+      href: "/dashboard/approvals",
+    });
+  }
+
+  // Add My Changes for all users
+  navItems.push({
+    icon: Clock,
+    label: t("myChanges"),
+    href: "/dashboard/my-changes",
+  });
+
   const bottomItems = [
     { icon: Settings, label: t("settings"), href: "/dashboard/settings" },
   ];
@@ -59,6 +130,10 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
   }) => {
     const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
     const Icon = item.icon;
+    const showApprovalsBadge = item.href === "/dashboard/approvals" && pendingCount > 0;
+    const showMyChangesBadge = item.href === "/dashboard/my-changes" && myPendingCount > 0;
+    const showBadge = showApprovalsBadge || showMyChangesBadge;
+    const badgeCount = showApprovalsBadge ? pendingCount : myPendingCount;
 
     const link = (
       <Link
@@ -72,15 +147,37 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
         )}
       >
         <Icon className="h-5 w-5 shrink-0" />
-        {!collapsed && <span>{item.label}</span>}
+        {!collapsed && (
+          <>
+            <span className="flex-1">{item.label}</span>
+            {showBadge && (
+              <Badge
+                variant="secondary"
+                className="h-5 min-w-5 px-1 text-xs bg-yellow-500/20 text-yellow-700 hover:bg-yellow-500/30"
+              >
+                {badgeCount}
+              </Badge>
+            )}
+          </>
+        )}
+        {collapsed && showBadge && (
+          <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-yellow-500 text-[10px] font-bold text-white">
+            {badgeCount > 9 ? "9+" : badgeCount}
+          </span>
+        )}
       </Link>
     );
 
     if (collapsed) {
       return (
         <Tooltip delayDuration={0}>
-          <TooltipTrigger asChild>{link}</TooltipTrigger>
-          <TooltipContent side="right">{item.label}</TooltipContent>
+          <TooltipTrigger asChild>
+            <div className="relative">{link}</div>
+          </TooltipTrigger>
+          <TooltipContent side="right">
+            {item.label}
+            {showBadge && ` (${badgeCount})`}
+          </TooltipContent>
         </Tooltip>
       );
     }
