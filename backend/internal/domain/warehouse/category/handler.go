@@ -117,6 +117,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 
 		// Publish event
 		if broadcaster != nil && authUser != nil {
+			userName := appMiddleware.GetUserDisplayName(ctx)
 			broadcaster.Publish(workspaceID, events.Event{
 				Type:       "category.created",
 				EntityID:   category.ID().String(),
@@ -125,6 +126,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 				Data: map[string]any{
 					"id":   category.ID(),
 					"name": category.Name(),
+					"user_name": userName,
 				},
 			})
 		}
@@ -162,6 +164,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 
 		// Publish event
 		if broadcaster != nil && authUser != nil {
+			userName := appMiddleware.GetUserDisplayName(ctx)
 			broadcaster.Publish(workspaceID, events.Event{
 				Type:       "category.updated",
 				EntityID:   category.ID().String(),
@@ -170,6 +173,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 				Data: map[string]any{
 					"id":   category.ID(),
 					"name": category.Name(),
+					"user_name": userName,
 				},
 			})
 		}
@@ -195,11 +199,15 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 
 		// Publish event (treat archive as delete event)
 		if broadcaster != nil && authUser != nil {
+			userName := appMiddleware.GetUserDisplayName(ctx)
 			broadcaster.Publish(workspaceID, events.Event{
 				Type:       "category.deleted",
 				EntityID:   input.ID.String(),
 				EntityType: "category",
 				UserID:     authUser.ID,
+			Data: map[string]any{
+				"user_name": userName,
+			},
 			})
 		}
 
@@ -213,9 +221,25 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 			return nil, huma.Error401Unauthorized("workspace context required")
 		}
 
+		authUser, _ := appMiddleware.GetAuthUser(ctx)
+
 		err := svc.Restore(ctx, input.ID, workspaceID)
 		if err != nil {
 			return nil, huma.Error400BadRequest(err.Error())
+		}
+
+		// Publish event (treat restore as create event)
+		if broadcaster != nil && authUser != nil {
+			userName := appMiddleware.GetUserDisplayName(ctx)
+			broadcaster.Publish(workspaceID, events.Event{
+				Type:       "category.created",
+				EntityID:   input.ID.String(),
+				EntityType: "category",
+				UserID:     authUser.ID,
+				Data: map[string]any{
+					"user_name": userName,
+				},
+			})
 		}
 
 		return nil, nil
@@ -240,11 +264,15 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 
 		// Publish event
 		if broadcaster != nil && authUser != nil {
+			userName := appMiddleware.GetUserDisplayName(ctx)
 			broadcaster.Publish(workspaceID, events.Event{
 				Type:       "category.deleted",
 				EntityID:   input.ID.String(),
 				EntityType: "category",
 				UserID:     authUser.ID,
+			Data: map[string]any{
+				"user_name": userName,
+			},
 			})
 		}
 

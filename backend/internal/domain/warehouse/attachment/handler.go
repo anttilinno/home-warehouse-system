@@ -121,6 +121,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 
 		// Publish event
 		if broadcaster != nil && authUser != nil {
+			userName := appMiddleware.GetUserDisplayName(ctx)
 			broadcaster.Publish(workspaceID, events.Event{
 				Type:       "attachment.created",
 				EntityID:   attachment.ID().String(),
@@ -130,6 +131,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 					"id":              attachment.ID(),
 					"item_id":         attachment.ItemID(),
 					"attachment_type": string(attachment.AttachmentType()),
+					"user_name": userName,
 				},
 			})
 		}
@@ -168,6 +170,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 
 		// Publish event
 		if broadcaster != nil && authUser != nil {
+			userName := appMiddleware.GetUserDisplayName(ctx)
 			broadcaster.Publish(workspaceID, events.Event{
 				Type:       "attachment.created",
 				EntityID:   attachment.ID().String(),
@@ -177,6 +180,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 					"id":              attachment.ID(),
 					"item_id":         attachment.ItemID(),
 					"attachment_type": string(attachment.AttachmentType()),
+					"user_name": userName,
 				},
 			})
 		}
@@ -205,6 +209,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 
 		// Publish event (treat set-primary as update)
 		if broadcaster != nil && authUser != nil {
+			userName := appMiddleware.GetUserDisplayName(ctx)
 			broadcaster.Publish(workspaceID, events.Event{
 				Type:       "attachment.updated",
 				EntityID:   input.ID.String(),
@@ -214,6 +219,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 					"id":         input.ID,
 					"item_id":    input.ItemID,
 					"is_primary": true,
+					"user_name": userName,
 				},
 			})
 		}
@@ -240,11 +246,15 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 
 		// Publish event
 		if broadcaster != nil && authUser != nil {
+			userName := appMiddleware.GetUserDisplayName(ctx)
 			broadcaster.Publish(workspaceID, events.Event{
 				Type:       "attachment.deleted",
 				EntityID:   input.ID.String(),
 				EntityType: "attachment",
 				UserID:     authUser.ID,
+			Data: map[string]any{
+				"user_name": userName,
+			},
 			})
 		}
 

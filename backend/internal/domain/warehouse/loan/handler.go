@@ -135,6 +135,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 		// Publish SSE event
 		authUser, _ := appMiddleware.GetAuthUser(ctx)
 		if broadcaster != nil && authUser != nil {
+			userName := appMiddleware.GetUserDisplayName(ctx)
 			broadcaster.Publish(workspaceID, events.Event{
 				Type:       "loan.created",
 				EntityID:   loan.ID().String(),
@@ -144,6 +145,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 					"id":          loan.ID(),
 					"borrower_id": loan.BorrowerID(),
 					"due_date":    loan.DueDate(),
+					"user_name": userName,
 				},
 			})
 		}
@@ -174,11 +176,15 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 		// Publish SSE event
 		authUser, _ := appMiddleware.GetAuthUser(ctx)
 		if broadcaster != nil && authUser != nil {
+			userName := appMiddleware.GetUserDisplayName(ctx)
 			broadcaster.Publish(workspaceID, events.Event{
 				Type:       "loan.returned",
 				EntityID:   input.ID.String(),
 				EntityType: "loan",
 				UserID:     authUser.ID,
+				Data: map[string]any{
+					"user_name": userName,
+				},
 			})
 		}
 
@@ -211,6 +217,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 		// Publish SSE event
 		authUser, _ := appMiddleware.GetAuthUser(ctx)
 		if broadcaster != nil && authUser != nil {
+			userName := appMiddleware.GetUserDisplayName(ctx)
 			broadcaster.Publish(workspaceID, events.Event{
 				Type:       "loan.updated",
 				EntityID:   loan.ID().String(),
@@ -219,6 +226,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 				Data: map[string]any{
 					"id":       loan.ID(),
 					"due_date": loan.DueDate(),
+					"user_name": userName,
 				},
 			})
 		}

@@ -86,6 +86,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 
 		// Publish event
 		if broadcaster != nil && authUser != nil {
+			userName := appMiddleware.GetUserDisplayName(ctx)
 			broadcaster.Publish(workspaceID, events.Event{
 				Type:       "company.created",
 				EntityID:   company.ID().String(),
@@ -94,6 +95,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 				Data: map[string]any{
 					"id":   company.ID(),
 					"name": company.Name(),
+					"user_name": userName,
 				},
 			})
 		}
@@ -136,6 +138,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 
 		// Publish event
 		if broadcaster != nil && authUser != nil {
+			userName := appMiddleware.GetUserDisplayName(ctx)
 			broadcaster.Publish(workspaceID, events.Event{
 				Type:       "company.updated",
 				EntityID:   company.ID().String(),
@@ -144,6 +147,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 				Data: map[string]any{
 					"id":   company.ID(),
 					"name": company.Name(),
+					"user_name": userName,
 				},
 			})
 		}
@@ -172,11 +176,15 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 
 		// Publish event (treat archive as delete event)
 		if broadcaster != nil && authUser != nil {
+			userName := appMiddleware.GetUserDisplayName(ctx)
 			broadcaster.Publish(workspaceID, events.Event{
 				Type:       "company.deleted",
 				EntityID:   input.ID.String(),
 				EntityType: "company",
 				UserID:     authUser.ID,
+			Data: map[string]any{
+				"user_name": userName,
+			},
 			})
 		}
 
@@ -190,12 +198,28 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 			return nil, huma.Error401Unauthorized("workspace context required")
 		}
 
+		authUser, _ := appMiddleware.GetAuthUser(ctx)
+
 		err := svc.Restore(ctx, input.ID, workspaceID)
 		if err != nil {
 			if err == ErrCompanyNotFound {
 				return nil, huma.Error404NotFound("company not found")
 			}
 			return nil, huma.Error400BadRequest(err.Error())
+		}
+
+		// Publish event (treat restore as create event)
+		if broadcaster != nil && authUser != nil {
+			userName := appMiddleware.GetUserDisplayName(ctx)
+			broadcaster.Publish(workspaceID, events.Event{
+				Type:       "company.created",
+				EntityID:   input.ID.String(),
+				EntityType: "company",
+				UserID:     authUser.ID,
+				Data: map[string]any{
+					"user_name": userName,
+				},
+			})
 		}
 
 		return nil, nil
@@ -220,11 +244,15 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 
 		// Publish event
 		if broadcaster != nil && authUser != nil {
+			userName := appMiddleware.GetUserDisplayName(ctx)
 			broadcaster.Publish(workspaceID, events.Event{
 				Type:       "company.deleted",
 				EntityID:   input.ID.String(),
 				EntityType: "company",
 				UserID:     authUser.ID,
+			Data: map[string]any{
+				"user_name": userName,
+			},
 			})
 		}
 

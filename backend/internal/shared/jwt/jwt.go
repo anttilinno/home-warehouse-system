@@ -17,13 +17,14 @@ var (
 type Claims struct {
 	UserID      uuid.UUID `json:"user_id"`
 	Email       string    `json:"email"`
+	FullName    string    `json:"full_name"`
 	IsSuperuser bool      `json:"is_superuser"`
 	jwt.RegisteredClaims
 }
 
 // ServiceInterface defines the JWT service operations.
 type ServiceInterface interface {
-	GenerateToken(userID uuid.UUID, email string, isSuperuser bool) (string, error)
+	GenerateToken(userID uuid.UUID, email string, fullName string, isSuperuser bool) (string, error)
 	GenerateRefreshToken(userID uuid.UUID) (string, error)
 	ValidateToken(tokenString string) (*Claims, error)
 	ValidateRefreshToken(tokenString string) (uuid.UUID, error)
@@ -44,11 +45,12 @@ func NewService(secret string, expirationHours int) *Service {
 }
 
 // GenerateToken creates a new JWT token for a user.
-func (s *Service) GenerateToken(userID uuid.UUID, email string, isSuperuser bool) (string, error) {
+func (s *Service) GenerateToken(userID uuid.UUID, email string, fullName string, isSuperuser bool) (string, error) {
 	now := time.Now()
 	claims := Claims{
 		UserID:      userID,
 		Email:       email,
+		FullName:    fullName,
 		IsSuperuser: isSuperuser,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(now.Add(time.Duration(s.expirationHours) * time.Hour)),

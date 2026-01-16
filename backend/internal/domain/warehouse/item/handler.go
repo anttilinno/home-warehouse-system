@@ -156,15 +156,17 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 
 		// Publish event
 		if broadcaster != nil && authUser != nil {
+			userName := appMiddleware.GetUserDisplayName(ctx)
 			broadcaster.Publish(workspaceID, events.Event{
 				Type:       "item.created",
 				EntityID:   item.ID().String(),
 				EntityType: "item",
 				UserID:     authUser.ID,
 				Data: map[string]any{
-					"id":   item.ID(),
-					"sku":  item.SKU(),
-					"name": item.Name(),
+					"id":        item.ID(),
+					"sku":       item.SKU(),
+					"name":      item.Name(),
+					"user_name": userName,
 				},
 			})
 		}
@@ -229,14 +231,16 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 
 		// Publish event
 		if broadcaster != nil && authUser != nil {
+			userName := appMiddleware.GetUserDisplayName(ctx)
 			broadcaster.Publish(workspaceID, events.Event{
 				Type:       "item.updated",
 				EntityID:   item.ID().String(),
 				EntityType: "item",
 				UserID:     authUser.ID,
 				Data: map[string]any{
-					"id":   item.ID(),
-					"name": item.Name(),
+					"id":        item.ID(),
+					"name":      item.Name(),
+					"user_name": userName,
 				},
 			})
 		}
@@ -265,11 +269,15 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 
 		// Publish event (treat archive as delete event)
 		if broadcaster != nil && authUser != nil {
+			userName := appMiddleware.GetUserDisplayName(ctx)
 			broadcaster.Publish(workspaceID, events.Event{
 				Type:       "item.deleted",
 				EntityID:   input.ID.String(),
 				EntityType: "item",
 				UserID:     authUser.ID,
+				Data: map[string]any{
+					"user_name": userName,
+				},
 			})
 		}
 
@@ -295,11 +303,15 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 
 		// Publish event (treat restore as create event)
 		if broadcaster != nil && authUser != nil {
+			userName := appMiddleware.GetUserDisplayName(ctx)
 			broadcaster.Publish(workspaceID, events.Event{
 				Type:       "item.created",
 				EntityID:   input.ID.String(),
 				EntityType: "item",
 				UserID:     authUser.ID,
+				Data: map[string]any{
+					"user_name": userName,
+				},
 			})
 		}
 

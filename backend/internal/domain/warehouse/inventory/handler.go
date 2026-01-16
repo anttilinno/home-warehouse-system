@@ -167,6 +167,7 @@ func registerMutationRoutes(api huma.API, svc ServiceInterface, broadcaster *eve
 		// Publish SSE event
 		authUser, _ := appMiddleware.GetAuthUser(ctx)
 		if broadcaster != nil && authUser != nil {
+			userName := appMiddleware.GetUserDisplayName(ctx)
 			broadcaster.Publish(workspaceID, events.Event{
 				Type:       "inventory.created",
 				EntityID:   inv.ID().String(),
@@ -176,6 +177,7 @@ func registerMutationRoutes(api huma.API, svc ServiceInterface, broadcaster *eve
 					"id":      inv.ID(),
 					"item_id": inv.ItemID(),
 					"status":  inv.Status(),
+					"user_name": userName,
 				},
 			})
 		}
@@ -208,6 +210,7 @@ func registerMutationRoutes(api huma.API, svc ServiceInterface, broadcaster *eve
 		// Publish SSE event
 		authUser, _ := appMiddleware.GetAuthUser(ctx)
 		if broadcaster != nil && authUser != nil {
+			userName := appMiddleware.GetUserDisplayName(ctx)
 			broadcaster.Publish(workspaceID, events.Event{
 				Type:       "inventory.updated",
 				EntityID:   inv.ID().String(),
@@ -216,6 +219,7 @@ func registerMutationRoutes(api huma.API, svc ServiceInterface, broadcaster *eve
 				Data: map[string]any{
 					"id":     inv.ID(),
 					"status": inv.Status(),
+					"user_name": userName,
 				},
 			})
 		}
@@ -237,6 +241,7 @@ func registerMutationRoutes(api huma.API, svc ServiceInterface, broadcaster *eve
 		// Publish SSE event
 		authUser, _ := appMiddleware.GetAuthUser(ctx)
 		if broadcaster != nil && authUser != nil {
+			userName := appMiddleware.GetUserDisplayName(ctx)
 			broadcaster.Publish(workspaceID, events.Event{
 				Type:       "inventory.updated",
 				EntityID:   inv.ID().String(),
@@ -245,6 +250,7 @@ func registerMutationRoutes(api huma.API, svc ServiceInterface, broadcaster *eve
 				Data: map[string]any{
 					"id":     inv.ID(),
 					"status": inv.Status(),
+					"user_name": userName,
 				},
 			})
 		}
@@ -266,6 +272,7 @@ func registerMutationRoutes(api huma.API, svc ServiceInterface, broadcaster *eve
 		// Publish SSE event
 		authUser, _ := appMiddleware.GetAuthUser(ctx)
 		if broadcaster != nil && authUser != nil {
+			userName := appMiddleware.GetUserDisplayName(ctx)
 			broadcaster.Publish(workspaceID, events.Event{
 				Type:       "inventory.updated",
 				EntityID:   inv.ID().String(),
@@ -274,6 +281,7 @@ func registerMutationRoutes(api huma.API, svc ServiceInterface, broadcaster *eve
 				Data: map[string]any{
 					"id":       inv.ID(),
 					"quantity": inv.Quantity(),
+					"user_name": userName,
 				},
 			})
 		}
@@ -298,6 +306,7 @@ func registerActionRoutes(api huma.API, svc ServiceInterface, broadcaster *event
 		// Publish SSE event
 		authUser, _ := appMiddleware.GetAuthUser(ctx)
 		if broadcaster != nil && authUser != nil {
+			userName := appMiddleware.GetUserDisplayName(ctx)
 			broadcaster.Publish(workspaceID, events.Event{
 				Type:       "inventory.updated",
 				EntityID:   inv.ID().String(),
@@ -306,6 +315,7 @@ func registerActionRoutes(api huma.API, svc ServiceInterface, broadcaster *event
 				Data: map[string]any{
 					"id":          inv.ID(),
 					"location_id": inv.LocationID(),
+					"user_name": userName,
 				},
 			})
 		}
@@ -326,11 +336,15 @@ func registerActionRoutes(api huma.API, svc ServiceInterface, broadcaster *event
 		// Publish SSE event
 		authUser, _ := appMiddleware.GetAuthUser(ctx)
 		if broadcaster != nil && authUser != nil {
+			userName := appMiddleware.GetUserDisplayName(ctx)
 			broadcaster.Publish(workspaceID, events.Event{
 				Type:       "inventory.deleted",
 				EntityID:   input.ID.String(),
 				EntityType: "inventory",
 				UserID:     authUser.ID,
+			Data: map[string]any{
+				"user_name": userName,
+			},
 			})
 		}
 
@@ -350,11 +364,15 @@ func registerActionRoutes(api huma.API, svc ServiceInterface, broadcaster *event
 		// Publish SSE event
 		authUser, _ := appMiddleware.GetAuthUser(ctx)
 		if broadcaster != nil && authUser != nil {
+			userName := appMiddleware.GetUserDisplayName(ctx)
 			broadcaster.Publish(workspaceID, events.Event{
 				Type:       "inventory.created",
 				EntityID:   input.ID.String(),
 				EntityType: "inventory",
 				UserID:     authUser.ID,
+			Data: map[string]any{
+				"user_name": userName,
+			},
 			})
 		}
 

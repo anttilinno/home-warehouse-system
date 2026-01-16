@@ -22,6 +22,7 @@ const (
 type AuthUser struct {
 	ID          uuid.UUID
 	Email       string
+	FullName    string
 	IsSuperuser bool
 }
 
@@ -54,6 +55,7 @@ func JWTAuth(jwtService *jwt.Service) func(http.Handler) http.Handler {
 			user := &AuthUser{
 				ID:          claims.UserID,
 				Email:       claims.Email,
+				FullName:    claims.FullName,
 				IsSuperuser: claims.IsSuperuser,
 			}
 
@@ -106,4 +108,29 @@ func RequireSuperuser(next http.Handler) http.Handler {
 
 		next.ServeHTTP(w, r)
 	})
+}
+
+// GetUserDisplayName extracts the user's full name from auth context.
+// Falls back to email username or "Unknown User" if not available.
+func GetUserDisplayName(ctx context.Context) string {
+	authUser, ok := GetAuthUser(ctx)
+	if !ok {
+		return "Unknown User"
+	}
+
+	// Use full name if available
+	if authUser.FullName != "" {
+		return authUser.FullName
+	}
+
+	// Fallback to email prefix if no full name
+	if authUser.Email != "" {
+		// Extract name part from email (before @)
+		parts := strings.Split(authUser.Email, "@")
+		if len(parts) > 0 && parts[0] != "" {
+			return parts[0]
+		}
+	}
+
+	return "User"
 }

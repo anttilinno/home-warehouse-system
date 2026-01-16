@@ -86,7 +86,7 @@ func (h *Handler) register(ctx context.Context, input *RegisterInput) (*Register
 	}
 
 	// Generate token for the new user
-	token, err := h.jwtService.GenerateToken(user.ID(), user.Email(), user.IsSuperuser())
+	token, err := h.jwtService.GenerateToken(user.ID(), user.Email(), user.FullName(), user.IsSuperuser())
 	if err != nil {
 		return nil, huma.Error500InternalServerError("failed to generate token")
 	}
@@ -113,7 +113,7 @@ func (h *Handler) login(ctx context.Context, input *LoginInput) (*LoginOutput, e
 		return nil, huma.Error401Unauthorized("invalid credentials")
 	}
 
-	token, err := h.jwtService.GenerateToken(user.ID(), user.Email(), user.IsSuperuser())
+	token, err := h.jwtService.GenerateToken(user.ID(), user.Email(), user.FullName(), user.IsSuperuser())
 	if err != nil {
 		return nil, huma.Error500InternalServerError("failed to generate token")
 	}
@@ -152,7 +152,7 @@ func (h *Handler) refreshToken(ctx context.Context, input *RefreshTokenInput) (*
 		return nil, huma.Error401Unauthorized("user is deactivated")
 	}
 
-	token, err := h.jwtService.GenerateToken(user.ID(), user.Email(), user.IsSuperuser())
+	token, err := h.jwtService.GenerateToken(user.ID(), user.Email(), user.FullName(), user.IsSuperuser())
 	if err != nil {
 		return nil, huma.Error500InternalServerError("failed to generate token")
 	}

@@ -64,6 +64,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 
 		// Publish event
 		if broadcaster != nil && authUser != nil {
+			userName := appMiddleware.GetUserDisplayName(ctx)
 			eventType := "favorite.deleted"
 			if added {
 				eventType = "favorite.created"
@@ -77,6 +78,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 					"target_id":     input.Body.TargetID,
 					"favorite_type": input.Body.FavoriteType,
 					"added":         added,
+					"user_name": userName,
 				},
 			})
 		}

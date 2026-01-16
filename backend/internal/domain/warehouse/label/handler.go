@@ -76,6 +76,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 
 		// Publish event
 		if broadcaster != nil && authUser != nil {
+			userName := appMiddleware.GetUserDisplayName(ctx)
 			broadcaster.Publish(workspaceID, events.Event{
 				Type:       "label.created",
 				EntityID:   label.ID().String(),
@@ -84,6 +85,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 				Data: map[string]any{
 					"id":   label.ID(),
 					"name": label.Name(),
+					"user_name": userName,
 				},
 			})
 		}
@@ -127,6 +129,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 
 		// Publish event
 		if broadcaster != nil && authUser != nil {
+			userName := appMiddleware.GetUserDisplayName(ctx)
 			broadcaster.Publish(workspaceID, events.Event{
 				Type:       "label.updated",
 				EntityID:   label.ID().String(),
@@ -135,6 +138,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 				Data: map[string]any{
 					"id":   label.ID(),
 					"name": label.Name(),
+					"user_name": userName,
 				},
 			})
 		}
@@ -160,11 +164,15 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 
 		// Publish event (treat archive as delete event)
 		if broadcaster != nil && authUser != nil {
+			userName := appMiddleware.GetUserDisplayName(ctx)
 			broadcaster.Publish(workspaceID, events.Event{
 				Type:       "label.deleted",
 				EntityID:   input.ID.String(),
 				EntityType: "label",
 				UserID:     authUser.ID,
+			Data: map[string]any{
+				"user_name": userName,
+			},
 			})
 		}
 
@@ -178,9 +186,25 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 			return nil, huma.Error401Unauthorized("workspace context required")
 		}
 
+		authUser, _ := appMiddleware.GetAuthUser(ctx)
+
 		err := svc.Restore(ctx, input.ID, workspaceID)
 		if err != nil {
 			return nil, huma.Error400BadRequest(err.Error())
+		}
+
+		// Publish event (treat restore as create event)
+		if broadcaster != nil && authUser != nil {
+			userName := appMiddleware.GetUserDisplayName(ctx)
+			broadcaster.Publish(workspaceID, events.Event{
+				Type:       "label.created",
+				EntityID:   input.ID.String(),
+				EntityType: "label",
+				UserID:     authUser.ID,
+				Data: map[string]any{
+					"user_name": userName,
+				},
+			})
 		}
 
 		return nil, nil
@@ -202,11 +226,15 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 
 		// Publish event
 		if broadcaster != nil && authUser != nil {
+			userName := appMiddleware.GetUserDisplayName(ctx)
 			broadcaster.Publish(workspaceID, events.Event{
 				Type:       "label.deleted",
 				EntityID:   input.ID.String(),
 				EntityType: "label",
 				UserID:     authUser.ID,
+			Data: map[string]any{
+				"user_name": userName,
+			},
 			})
 		}
 
