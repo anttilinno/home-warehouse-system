@@ -91,16 +91,38 @@
   - Upload photos for items
   - Multiple photos per item
   - Thumbnail generation
-- [ ] Background import processing (RQ + SSE)
-  - Large file imports processed asynchronously via RQ
-  - Real-time progress via SSE (`GET /imports/jobs/{job_id}/stream`)
-  - Progress events: rows processed, errors so far, completion
-  - Import history/audit log per workspace
-  - Email notification on import completion (optional)
+- [x] Background import processing (Redis Queue + SSE)
+  - [x] Backend infrastructure (Redis queue, worker process, CSV parser)
+  - [x] Database schema (import_jobs, import_errors tables)
+  - [x] SSE streaming endpoint (`GET /imports/jobs/{job_id}/stream`)
+  - [x] Frontend UI (list, detail with real-time progress, upload)
+  - [x] Worker systemd service configuration
+  - [x] Integration tests
+  - [x] Documentation (user guide, deployment guide)
+  - [ ] Manual testing checklist
+    - [ ] Upload valid CSV (10 rows) → verify all rows imported successfully
+    - [ ] Upload CSV with validation errors → verify errors recorded with row details
+    - [ ] Monitor progress via SSE → verify real-time updates display correctly
+    - [ ] Upload large CSV (1000+ rows) → verify progress percentage accuracy
+    - [ ] Test concurrent imports → verify both complete successfully
+    - [ ] Restart worker mid-import → verify job resumes from checkpoint
+    - [ ] Navigate away from detail page → verify SSE disconnects properly
+    - [ ] Test invalid file format → verify error message shown
+    - [ ] Test file size limit → verify 10MB limit enforced
+    - [ ] Verify error list displays row number, field, and data correctly
 - [x] Database seeder CLI
   - Generate test data for development
   - Seed types: expiring items, warranty alerts, low-stock, overdue loans, location hierarchy
   - Command: `mise run seed <type|all>`
+- [ ] Kubernetes deployment configuration
+  - Create k8s manifests for main backend service
+  - Create k8s manifests for background worker
+  - ConfigMaps for environment variables
+  - Secrets for sensitive data (JWT, database credentials)
+  - Deployment, Service, and Ingress resources
+  - HPA (Horizontal Pod Autoscaler) for both services
+  - PersistentVolumeClaim for upload storage
+  - Health check endpoints integration
 
 ## Phase 3: UX & Accessibility
 

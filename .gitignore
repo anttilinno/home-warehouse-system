@@ -87,3 +87,7 @@ dist-ssr/
 
 # Auto Claude data directory
 .auto-claude/
+
+# Claude wrapper
+chunks/
+.claude_state.json

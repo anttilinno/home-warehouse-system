@@ -68,6 +68,15 @@ run = "cd backend && go run cmd/server/main.go"
 description = "Build Go backend binary"
 run = "cd backend && CGO_ENABLED=0 go build -o bin/server cmd/server/main.go"
 
+[tasks.worker]
+description = "Run background import worker"
+depends = ["dc-up"]
+run = "cd backend && go run cmd/worker/main.go"
+
+[tasks.build-worker]
+description = "Build worker binary"
+run = "cd backend && CGO_ENABLED=0 go build -o bin/worker cmd/worker/main.go"
+
 [tasks.test]
 description = "Run Go backend tests"
 run = "cd backend && go test -v ./..."

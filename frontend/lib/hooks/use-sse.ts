@@ -133,6 +133,13 @@ export function useSSE(options: UseSSEOptions = {}) {
         "label.created",
         "label.updated",
         "label.deleted",
+        "company.created",
+        "company.updated",
+        "company.deleted",
+        "favorite.created",
+        "attachment.created",
+        "attachment.updated",
+        "attachment.deleted",
       ];
 
       eventTypes.forEach((type) => {

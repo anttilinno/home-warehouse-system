@@ -1,6 +1,8 @@
 package api
 
 import (
+	"log"
+	"os"
 	"time"
 
 	"github.com/danielgtaylor/huma/v2"
@@ -36,10 +38,13 @@ import (
 	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/loan"
 	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/location"
 	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/movement"
+	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/importjob"
 	infraEvents "github.com/antti/home-warehouse/go-backend/internal/infra/events"
 	"github.com/antti/home-warehouse/go-backend/internal/infra/postgres"
 	"github.com/antti/home-warehouse/go-backend/internal/infra/queries"
+	"github.com/antti/home-warehouse/go-backend/internal/infra/queue"
 	"github.com/antti/home-warehouse/go-backend/internal/shared/jwt"
+	"github.com/redis/go-redis/v9"
 )
 
 // NewRouter creates and configures the main router.
@@ -62,6 +67,18 @@ func NewRouter(pool *pgxpool.Pool, cfg *config.Config) chi.Router {
 
 	// Create event broadcaster for SSE
 	broadcaster := infraEvents.NewBroadcaster()
+
+	// Initialize Redis for background jobs
+	redisURL := os.Getenv("REDIS_URL")
+	if redisURL == "" {
+		redisURL = "redis://localhost:6379"
+	}
+	redisOpts, err := redis.ParseURL(redisURL)
+	if err != nil {
+		log.Fatalf("failed to parse Redis URL: %v", err)
+	}
+	redisClient := redis.NewClient(redisOpts)
+	importQueue := queue.NewQueue(redisClient, "imports")
 
 	// Create Huma API with OpenAPI configuration
 	humaAPIConfig := huma.DefaultConfig("Home Warehouse API", "1.0.0")
@@ -118,6 +135,7 @@ func NewRouter(pool *pgxpool.Pool, cfg *config.Config) chi.Router {
 	analyticsRepo := postgres.NewAnalyticsRepository(pool)
 	importExportRepo := postgres.NewImportExportRepository(pool)
 	syncRepo := postgres.NewSyncRepository(pool)
+	importJobRepo := postgres.NewImportJobRepository(pool)
 
 	// Initialize services
 	// Auth services
@@ -250,6 +268,13 @@ func NewRouter(pool *pgxpool.Pool, cfg *config.Config) chi.Router {
 			// Register import/export and sync routes
 			importExportHandler.RegisterRoutes(wsAPI)
 			syncHandler.RegisterRoutes(wsAPI)
+
+			// Register import job routes
+			importjob.RegisterRoutes(wsAPI, importJobRepo, importQueue, broadcaster)
+
+			// Register upload handler (uses Chi directly for multipart form data)
+			uploadHandler := importjob.NewUploadHandler(importJobRepo, importQueue)
+			uploadHandler.RegisterUploadRoutes(r)
 
 			// Register batch operations (for PWA offline sync)
 			batch.RegisterRoutes(wsAPI, batchSvc)

@@ -21,7 +21,9 @@ See `frontend/CLAUDE.md` for detailed frontend documentation.
 ```
 .
 ├── backend/              # Go backend
-│   ├── cmd/server/      # Main entry point
+│   ├── cmd/
+│   │   ├── server/      # API server entry point
+│   │   └── worker/      # Background worker entry point
 │   ├── internal/        # Application code (domain, handlers, middleware)
 │   ├── db/migrations/   # Database migrations (dbmate)
 │   └── tests/           # Integration tests
@@ -46,7 +48,9 @@ mise run db-fresh       # Complete reset including data volume
 
 # Backend (Go)
 mise run dev            # Run backend dev server (with hot reload via air)
+mise run worker         # Run background import worker
 mise run build          # Build backend binary
+mise run build-worker   # Build worker binary
 mise run test           # Run all tests
 mise run test-unit      # Run unit tests only
 mise run test-integration # Run integration tests

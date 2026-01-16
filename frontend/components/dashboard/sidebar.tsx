@@ -14,6 +14,7 @@ import {
   BarChart3,
   Settings,
   PackageX,
+  FileUp,
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
@@ -44,6 +45,7 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
     { icon: Users, label: t("borrowers"), href: "/dashboard/borrowers" },
     { icon: BarChart3, label: t("analytics"), href: "/dashboard/analytics" },
     { icon: PackageX, label: t("outOfStock"), href: "/dashboard/out-of-stock" },
+    { icon: FileUp, label: t("imports"), href: "/dashboard/imports" },
   ];
 
   const bottomItems = [

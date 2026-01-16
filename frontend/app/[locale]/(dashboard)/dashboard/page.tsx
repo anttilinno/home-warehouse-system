@@ -23,6 +23,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { ActivityFeed } from "@/components/dashboard/activity-feed";
+import { ActivityFeedMobile } from "@/components/dashboard/activity-feed-mobile";
 
 interface FrontendActivity {
   id: string;
@@ -238,21 +240,23 @@ export default function DashboardPage() {
   // }
 
   return (
-    <div className="space-y-6">
-      {/* Page header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">{t("title")}</h1>
-          <p className="text-muted-foreground">{t("subtitle")}</p>
+    <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+      {/* Main content (3 columns on desktop) */}
+      <div className="lg:col-span-3 space-y-6">
+        {/* Page header */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">{t("title")}</h1>
+            <p className="text-muted-foreground">{t("subtitle")}</p>
+          </div>
+          <Button variant="outline" size="sm" onClick={loadDashboardData}>
+            <RefreshCw className="mr-2 h-4 w-4" />
+            Refresh
+          </Button>
         </div>
-        <Button variant="outline" size="sm" onClick={loadDashboardData}>
-          <RefreshCw className="mr-2 h-4 w-4" />
-          Refresh
-        </Button>
-      </div>
 
-      {/* Stats grid */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {/* Stats grid */}
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatsCard
           title={t("stats.totalItems")}
           value={stats.total_items.toLocaleString()}
@@ -274,10 +278,10 @@ export default function DashboardPage() {
           icon={HandCoins}
           description={t("stats.activeLoansDesc")}
         />
-      </div>
+        </div>
 
-      {/* Alerts and Activity */}
-      <div className="grid gap-6 lg:grid-cols-2">
+        {/* Alerts and Activity */}
+        <div className="grid gap-6 lg:grid-cols-2">
         {/* Alerts */}
         <Card>
           <CardHeader>
@@ -367,6 +371,17 @@ export default function DashboardPage() {
             )}
           </CardContent>
         </Card>
+        </div>
+      </div>
+
+      {/* Activity Feed - Desktop (1 column, sticky) */}
+      <aside className="hidden lg:block lg:sticky lg:top-6 lg:h-fit">
+        <ActivityFeed />
+      </aside>
+
+      {/* Activity Feed - Mobile (floating button) */}
+      <div className="lg:hidden">
+        <ActivityFeedMobile />
       </div>
     </div>
   );
