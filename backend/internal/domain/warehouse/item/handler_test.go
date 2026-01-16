@@ -5,8 +5,10 @@ import (
 	"fmt"
 	"net/http"
 	"testing"
+	"time"
 
 	"github.com/google/uuid"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 
 	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/item"
@@ -91,7 +93,7 @@ func (m *MockService) GetItemLabels(ctx context.Context, itemID, workspaceID uui
 func TestItemHandler_Create(t *testing.T) {
 	setup := testutil.NewHandlerTestSetup()
 	mockSvc := new(MockService)
-	item.RegisterRoutes(setup.API, mockSvc)
+	item.RegisterRoutes(setup.API, mockSvc, nil)
 
 	t.Run("creates item successfully", func(t *testing.T) {
 		testItem, _ := item.NewItem(setup.WorkspaceID, "Laptop", "LAP-001", 0)
@@ -141,7 +143,7 @@ func TestItemHandler_Create(t *testing.T) {
 func TestItemHandler_List(t *testing.T) {
 	setup := testutil.NewHandlerTestSetup()
 	mockSvc := new(MockService)
-	item.RegisterRoutes(setup.API, mockSvc)
+	item.RegisterRoutes(setup.API, mockSvc, nil)
 
 	t.Run("lists items successfully", func(t *testing.T) {
 		item1, _ := item.NewItem(setup.WorkspaceID, "Item 1", "IT-001", 0)
@@ -183,7 +185,7 @@ func TestItemHandler_List(t *testing.T) {
 func TestItemHandler_Get(t *testing.T) {
 	setup := testutil.NewHandlerTestSetup()
 	mockSvc := new(MockService)
-	item.RegisterRoutes(setup.API, mockSvc)
+	item.RegisterRoutes(setup.API, mockSvc, nil)
 
 	t.Run("gets item by ID", func(t *testing.T) {
 		testItem, _ := item.NewItem(setup.WorkspaceID, "Laptop", "LAP-001", 0)
@@ -214,7 +216,7 @@ func TestItemHandler_Get(t *testing.T) {
 func TestItemHandler_Update(t *testing.T) {
 	setup := testutil.NewHandlerTestSetup()
 	mockSvc := new(MockService)
-	item.RegisterRoutes(setup.API, mockSvc)
+	item.RegisterRoutes(setup.API, mockSvc, nil)
 
 	t.Run("updates item successfully", func(t *testing.T) {
 		testItem, _ := item.NewItem(setup.WorkspaceID, "Updated Laptop", "LAP-001", 0)
@@ -262,7 +264,7 @@ func TestItemHandler_Update(t *testing.T) {
 func TestItemHandler_Archive(t *testing.T) {
 	setup := testutil.NewHandlerTestSetup()
 	mockSvc := new(MockService)
-	item.RegisterRoutes(setup.API, mockSvc)
+	item.RegisterRoutes(setup.API, mockSvc, nil)
 
 	t.Run("archives item successfully", func(t *testing.T) {
 		itemID := uuid.New()
@@ -292,7 +294,7 @@ func TestItemHandler_Archive(t *testing.T) {
 func TestItemHandler_Restore(t *testing.T) {
 	setup := testutil.NewHandlerTestSetup()
 	mockSvc := new(MockService)
-	item.RegisterRoutes(setup.API, mockSvc)
+	item.RegisterRoutes(setup.API, mockSvc, nil)
 
 	t.Run("restores item successfully", func(t *testing.T) {
 		itemID := uuid.New()
@@ -322,7 +324,7 @@ func TestItemHandler_Restore(t *testing.T) {
 func TestItemHandler_Search(t *testing.T) {
 	setup := testutil.NewHandlerTestSetup()
 	mockSvc := new(MockService)
-	item.RegisterRoutes(setup.API, mockSvc)
+	item.RegisterRoutes(setup.API, mockSvc, nil)
 
 	t.Run("searches items successfully", func(t *testing.T) {
 		testItem, _ := item.NewItem(setup.WorkspaceID, "Laptop", "LAP-001", 0)
@@ -361,7 +363,7 @@ func TestItemHandler_Search(t *testing.T) {
 func TestItemHandler_ListByCategory(t *testing.T) {
 	setup := testutil.NewHandlerTestSetup()
 	mockSvc := new(MockService)
-	item.RegisterRoutes(setup.API, mockSvc)
+	item.RegisterRoutes(setup.API, mockSvc, nil)
 
 	t.Run("lists items by category successfully", func(t *testing.T) {
 		categoryID := uuid.New()
@@ -393,7 +395,7 @@ func TestItemHandler_ListByCategory(t *testing.T) {
 func TestItemHandler_GetItemLabels(t *testing.T) {
 	setup := testutil.NewHandlerTestSetup()
 	mockSvc := new(MockService)
-	item.RegisterRoutes(setup.API, mockSvc)
+	item.RegisterRoutes(setup.API, mockSvc, nil)
 
 	t.Run("gets item labels successfully", func(t *testing.T) {
 		itemID := uuid.New()
@@ -424,7 +426,7 @@ func TestItemHandler_GetItemLabels(t *testing.T) {
 func TestItemHandler_AttachLabel(t *testing.T) {
 	setup := testutil.NewHandlerTestSetup()
 	mockSvc := new(MockService)
-	item.RegisterRoutes(setup.API, mockSvc)
+	item.RegisterRoutes(setup.API, mockSvc, nil)
 
 	t.Run("attaches label successfully", func(t *testing.T) {
 		itemID := uuid.New()
@@ -456,7 +458,7 @@ func TestItemHandler_AttachLabel(t *testing.T) {
 func TestItemHandler_DetachLabel(t *testing.T) {
 	setup := testutil.NewHandlerTestSetup()
 	mockSvc := new(MockService)
-	item.RegisterRoutes(setup.API, mockSvc)
+	item.RegisterRoutes(setup.API, mockSvc, nil)
 
 	t.Run("detaches label successfully", func(t *testing.T) {
 		itemID := uuid.New()
@@ -483,4 +485,163 @@ func TestItemHandler_DetachLabel(t *testing.T) {
 		testutil.AssertStatus(t, rec, http.StatusNotFound)
 		mockSvc.AssertExpectations(t)
 	})
+}
+
+// Event Publishing Tests
+
+func TestItemHandler_Create_PublishesEvent(t *testing.T) {
+	setup := testutil.NewHandlerTestSetup()
+	mockSvc := new(MockService)
+	capture := testutil.NewEventCapture(setup.WorkspaceID, setup.UserID)
+	capture.Start()
+	defer capture.Stop()
+
+	item.RegisterRoutes(setup.API, mockSvc, capture.GetBroadcaster())
+
+	testItem, _ := item.NewItem(setup.WorkspaceID, "Test Item", "TEST-001", 0)
+
+	mockSvc.On("Create", mock.Anything, mock.MatchedBy(func(input item.CreateInput) bool {
+		return input.Name == "Test Item" && input.SKU == "TEST-001"
+	})).Return(testItem, nil).Once()
+
+	body := `{"name":"Test Item","sku":"TEST-001","min_stock_level":0}`
+	rec := setup.Post("/items", body)
+
+	testutil.AssertStatus(t, rec, http.StatusOK)
+	mockSvc.AssertExpectations(t)
+
+	// Wait for event
+	assert.True(t, capture.WaitForEvents(1, 500*time.Millisecond), "Event should be published")
+
+	event := capture.GetLastEvent()
+	assert.NotNil(t, event)
+	assert.Equal(t, "item.created", event.Type)
+	assert.Equal(t, "item", event.EntityType)
+	assert.Equal(t, setup.WorkspaceID, event.WorkspaceID)
+	assert.Equal(t, setup.UserID, event.UserID)
+	assert.Equal(t, testItem.ID().String(), event.EntityID)
+	assert.NotNil(t, event.Data)
+	assert.Equal(t, testItem.ID(), event.Data["id"])
+	assert.Equal(t, testItem.Name(), event.Data["name"])
+	assert.Equal(t, testItem.SKU(), event.Data["sku"])
+}
+
+func TestItemHandler_Update_PublishesEvent(t *testing.T) {
+	setup := testutil.NewHandlerTestSetup()
+	mockSvc := new(MockService)
+	capture := testutil.NewEventCapture(setup.WorkspaceID, setup.UserID)
+	capture.Start()
+	defer capture.Stop()
+
+	item.RegisterRoutes(setup.API, mockSvc, capture.GetBroadcaster())
+
+	testItem, _ := item.NewItem(setup.WorkspaceID, "Updated Item", "TEST-001", 0)
+	itemID := testItem.ID()
+
+	// Mock GetByID first (handler calls it to get current item)
+	currentItem, _ := item.NewItem(setup.WorkspaceID, "Original Item", "TEST-001", 0)
+	mockSvc.On("GetByID", mock.Anything, itemID, setup.WorkspaceID).
+		Return(currentItem, nil).Once()
+
+	mockSvc.On("Update", mock.Anything, itemID, setup.WorkspaceID, mock.Anything).
+		Return(testItem, nil).Once()
+
+	body := `{"name":"Updated Item"}`
+	rec := setup.Patch(fmt.Sprintf("/items/%s", itemID), body)
+
+	testutil.AssertStatus(t, rec, http.StatusOK)
+	mockSvc.AssertExpectations(t)
+
+	// Wait for event
+	assert.True(t, capture.WaitForEvents(1, 500*time.Millisecond), "Event should be published")
+
+	event := capture.GetLastEvent()
+	assert.NotNil(t, event)
+	assert.Equal(t, "item.updated", event.Type)
+	assert.Equal(t, "item", event.EntityType)
+	assert.Equal(t, setup.WorkspaceID, event.WorkspaceID)
+	assert.Equal(t, setup.UserID, event.UserID)
+	assert.Equal(t, itemID.String(), event.EntityID)
+}
+
+func TestItemHandler_Archive_PublishesEvent(t *testing.T) {
+	setup := testutil.NewHandlerTestSetup()
+	mockSvc := new(MockService)
+	capture := testutil.NewEventCapture(setup.WorkspaceID, setup.UserID)
+	capture.Start()
+	defer capture.Stop()
+
+	item.RegisterRoutes(setup.API, mockSvc, capture.GetBroadcaster())
+
+	itemID := uuid.New()
+
+	mockSvc.On("Archive", mock.Anything, itemID, setup.WorkspaceID).
+		Return(nil).Once()
+
+	rec := setup.Post(fmt.Sprintf("/items/%s/archive", itemID), "")
+
+	testutil.AssertStatus(t, rec, http.StatusNoContent)
+	mockSvc.AssertExpectations(t)
+
+	// Wait for event
+	assert.True(t, capture.WaitForEvents(1, 500*time.Millisecond), "Event should be published")
+
+	event := capture.GetLastEvent()
+	assert.NotNil(t, event)
+	assert.Equal(t, "item.deleted", event.Type)
+	assert.Equal(t, "item", event.EntityType)
+	assert.Equal(t, setup.WorkspaceID, event.WorkspaceID)
+	assert.Equal(t, setup.UserID, event.UserID)
+	assert.Equal(t, itemID.String(), event.EntityID)
+}
+
+func TestItemHandler_Create_NilBroadcaster_NoError(t *testing.T) {
+	setup := testutil.NewHandlerTestSetup()
+	mockSvc := new(MockService)
+	// Register with nil broadcaster
+	item.RegisterRoutes(setup.API, mockSvc, nil)
+
+	testItem, _ := item.NewItem(setup.WorkspaceID, "Test Item", "TEST-001", 0)
+
+	mockSvc.On("Create", mock.Anything, mock.MatchedBy(func(input item.CreateInput) bool {
+		return input.Name == "Test Item"
+	})).Return(testItem, nil).Once()
+
+	body := `{"name":"Test Item","sku":"TEST-001","min_stock_level":0}`
+	rec := setup.Post("/items", body)
+
+	// Should not panic and should succeed
+	testutil.AssertStatus(t, rec, http.StatusOK)
+	mockSvc.AssertExpectations(t)
+}
+
+func TestItemHandler_Restore_PublishesEvent(t *testing.T) {
+	setup := testutil.NewHandlerTestSetup()
+	mockSvc := new(MockService)
+	capture := testutil.NewEventCapture(setup.WorkspaceID, setup.UserID)
+	capture.Start()
+	defer capture.Stop()
+
+	item.RegisterRoutes(setup.API, mockSvc, capture.GetBroadcaster())
+
+	itemID := uuid.New()
+
+	mockSvc.On("Restore", mock.Anything, itemID, setup.WorkspaceID).
+		Return(nil).Once()
+
+	rec := setup.Post(fmt.Sprintf("/items/%s/restore", itemID), "")
+
+	testutil.AssertStatus(t, rec, http.StatusNoContent)
+	mockSvc.AssertExpectations(t)
+
+	// Wait for event (restore emits item.created event)
+	assert.True(t, capture.WaitForEvents(1, 500*time.Millisecond), "Event should be published")
+
+	event := capture.GetLastEvent()
+	assert.NotNil(t, event)
+	assert.Equal(t, "item.created", event.Type) // Restore emits created event
+	assert.Equal(t, "item", event.EntityType)
+	assert.Equal(t, setup.WorkspaceID, event.WorkspaceID)
+	assert.Equal(t, setup.UserID, event.UserID)
+	assert.Equal(t, itemID.String(), event.EntityID)
 }

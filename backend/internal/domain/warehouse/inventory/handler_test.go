@@ -113,7 +113,7 @@ func (m *MockService) List(ctx context.Context, workspaceID uuid.UUID, paginatio
 func TestInventoryHandler_Create(t *testing.T) {
 	setup := testutil.NewHandlerTestSetup()
 	mockSvc := new(MockService)
-	inventory.RegisterRoutes(setup.API, mockSvc)
+	inventory.RegisterRoutes(setup.API, mockSvc, nil)
 
 	t.Run("creates inventory successfully", func(t *testing.T) {
 		itemID := uuid.New()
@@ -163,7 +163,7 @@ func TestInventoryHandler_Create(t *testing.T) {
 func TestInventoryHandler_Get(t *testing.T) {
 	setup := testutil.NewHandlerTestSetup()
 	mockSvc := new(MockService)
-	inventory.RegisterRoutes(setup.API, mockSvc)
+	inventory.RegisterRoutes(setup.API, mockSvc, nil)
 
 	t.Run("gets inventory by ID", func(t *testing.T) {
 		itemID := uuid.New()
@@ -205,7 +205,7 @@ func TestInventoryHandler_Get(t *testing.T) {
 func TestInventoryHandler_Update(t *testing.T) {
 	setup := testutil.NewHandlerTestSetup()
 	mockSvc := new(MockService)
-	inventory.RegisterRoutes(setup.API, mockSvc)
+	inventory.RegisterRoutes(setup.API, mockSvc, nil)
 
 	t.Run("updates inventory successfully", func(t *testing.T) {
 		itemID := uuid.New()
@@ -250,7 +250,7 @@ func TestInventoryHandler_Update(t *testing.T) {
 func TestInventoryHandler_UpdateStatus(t *testing.T) {
 	setup := testutil.NewHandlerTestSetup()
 	mockSvc := new(MockService)
-	inventory.RegisterRoutes(setup.API, mockSvc)
+	inventory.RegisterRoutes(setup.API, mockSvc, nil)
 
 	t.Run("updates inventory status successfully", func(t *testing.T) {
 		itemID := uuid.New()
@@ -291,7 +291,7 @@ func TestInventoryHandler_UpdateStatus(t *testing.T) {
 func TestInventoryHandler_UpdateQuantity(t *testing.T) {
 	setup := testutil.NewHandlerTestSetup()
 	mockSvc := new(MockService)
-	inventory.RegisterRoutes(setup.API, mockSvc)
+	inventory.RegisterRoutes(setup.API, mockSvc, nil)
 
 	t.Run("updates inventory quantity successfully", func(t *testing.T) {
 		itemID := uuid.New()
@@ -335,7 +335,7 @@ func TestInventoryHandler_UpdateQuantity(t *testing.T) {
 func TestInventoryHandler_Move(t *testing.T) {
 	setup := testutil.NewHandlerTestSetup()
 	mockSvc := new(MockService)
-	inventory.RegisterRoutes(setup.API, mockSvc)
+	inventory.RegisterRoutes(setup.API, mockSvc, nil)
 
 	t.Run("moves inventory successfully", func(t *testing.T) {
 		itemID := uuid.New()
@@ -380,7 +380,7 @@ func TestInventoryHandler_Move(t *testing.T) {
 func TestInventoryHandler_ListByItem(t *testing.T) {
 	setup := testutil.NewHandlerTestSetup()
 	mockSvc := new(MockService)
-	inventory.RegisterRoutes(setup.API, mockSvc)
+	inventory.RegisterRoutes(setup.API, mockSvc, nil)
 
 	t.Run("lists inventory by item successfully", func(t *testing.T) {
 		itemID := uuid.New()
@@ -401,7 +401,7 @@ func TestInventoryHandler_ListByItem(t *testing.T) {
 func TestInventoryHandler_GetAvailable(t *testing.T) {
 	setup := testutil.NewHandlerTestSetup()
 	mockSvc := new(MockService)
-	inventory.RegisterRoutes(setup.API, mockSvc)
+	inventory.RegisterRoutes(setup.API, mockSvc, nil)
 
 	t.Run("gets available inventory for item", func(t *testing.T) {
 		itemID := uuid.New()
@@ -422,7 +422,7 @@ func TestInventoryHandler_GetAvailable(t *testing.T) {
 func TestInventoryHandler_GetTotalQuantity(t *testing.T) {
 	setup := testutil.NewHandlerTestSetup()
 	mockSvc := new(MockService)
-	inventory.RegisterRoutes(setup.API, mockSvc)
+	inventory.RegisterRoutes(setup.API, mockSvc, nil)
 
 	t.Run("gets total quantity for item", func(t *testing.T) {
 		itemID := uuid.New()
@@ -440,7 +440,7 @@ func TestInventoryHandler_GetTotalQuantity(t *testing.T) {
 func TestInventoryHandler_Archive(t *testing.T) {
 	setup := testutil.NewHandlerTestSetup()
 	mockSvc := new(MockService)
-	inventory.RegisterRoutes(setup.API, mockSvc)
+	inventory.RegisterRoutes(setup.API, mockSvc, nil)
 
 	t.Run("archives inventory successfully", func(t *testing.T) {
 		invID := uuid.New()
@@ -470,7 +470,7 @@ func TestInventoryHandler_Archive(t *testing.T) {
 func TestInventoryHandler_List(t *testing.T) {
 	setup := testutil.NewHandlerTestSetup()
 	mockSvc := new(MockService)
-	inventory.RegisterRoutes(setup.API, mockSvc)
+	inventory.RegisterRoutes(setup.API, mockSvc, nil)
 
 	t.Run("lists inventory with default pagination", func(t *testing.T) {
 		itemID1 := uuid.New()

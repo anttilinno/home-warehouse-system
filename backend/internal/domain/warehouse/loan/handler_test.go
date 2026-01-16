@@ -13,6 +13,7 @@ import (
 	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/loan"
 	"github.com/antti/home-warehouse/go-backend/internal/shared"
 	"github.com/antti/home-warehouse/go-backend/internal/testutil"
+	"github.com/stretchr/testify/assert"
 )
 
 // MockService implements loan.Service interface methods
@@ -82,7 +83,7 @@ func (m *MockService) GetOverdueLoans(ctx context.Context, workspaceID uuid.UUID
 func TestLoanHandler_Create(t *testing.T) {
 	setup := testutil.NewHandlerTestSetup()
 	mockSvc := new(MockService)
-	loan.RegisterRoutes(setup.API, mockSvc)
+	loan.RegisterRoutes(setup.API, mockSvc, nil)
 
 	t.Run("creates loan successfully", func(t *testing.T) {
 		inventoryID := uuid.New()
@@ -149,7 +150,7 @@ func TestLoanHandler_Create(t *testing.T) {
 func TestLoanHandler_List(t *testing.T) {
 	setup := testutil.NewHandlerTestSetup()
 	mockSvc := new(MockService)
-	loan.RegisterRoutes(setup.API, mockSvc)
+	loan.RegisterRoutes(setup.API, mockSvc, nil)
 
 	t.Run("lists loans successfully", func(t *testing.T) {
 		inventoryID := uuid.New()
@@ -195,7 +196,7 @@ func TestLoanHandler_List(t *testing.T) {
 func TestLoanHandler_GetActiveLoans(t *testing.T) {
 	setup := testutil.NewHandlerTestSetup()
 	mockSvc := new(MockService)
-	loan.RegisterRoutes(setup.API, mockSvc)
+	loan.RegisterRoutes(setup.API, mockSvc, nil)
 
 	t.Run("gets active loans successfully", func(t *testing.T) {
 		inventoryID := uuid.New()
@@ -229,7 +230,7 @@ func TestLoanHandler_GetActiveLoans(t *testing.T) {
 func TestLoanHandler_GetOverdueLoans(t *testing.T) {
 	setup := testutil.NewHandlerTestSetup()
 	mockSvc := new(MockService)
-	loan.RegisterRoutes(setup.API, mockSvc)
+	loan.RegisterRoutes(setup.API, mockSvc, nil)
 
 	t.Run("gets overdue loans successfully", func(t *testing.T) {
 		inventoryID := uuid.New()
@@ -263,7 +264,7 @@ func TestLoanHandler_GetOverdueLoans(t *testing.T) {
 func TestLoanHandler_Get(t *testing.T) {
 	setup := testutil.NewHandlerTestSetup()
 	mockSvc := new(MockService)
-	loan.RegisterRoutes(setup.API, mockSvc)
+	loan.RegisterRoutes(setup.API, mockSvc, nil)
 
 	t.Run("gets loan by ID", func(t *testing.T) {
 		inventoryID := uuid.New()
@@ -299,7 +300,7 @@ func TestLoanHandler_Get(t *testing.T) {
 func TestLoanHandler_Return(t *testing.T) {
 	setup := testutil.NewHandlerTestSetup()
 	mockSvc := new(MockService)
-	loan.RegisterRoutes(setup.API, mockSvc)
+	loan.RegisterRoutes(setup.API, mockSvc, nil)
 
 	t.Run("returns loan successfully", func(t *testing.T) {
 		inventoryID := uuid.New()
@@ -347,7 +348,7 @@ func TestLoanHandler_Return(t *testing.T) {
 func TestLoanHandler_ExtendDueDate(t *testing.T) {
 	setup := testutil.NewHandlerTestSetup()
 	mockSvc := new(MockService)
-	loan.RegisterRoutes(setup.API, mockSvc)
+	loan.RegisterRoutes(setup.API, mockSvc, nil)
 
 	t.Run("extends due date successfully", func(t *testing.T) {
 		inventoryID := uuid.New()
@@ -401,7 +402,7 @@ func TestLoanHandler_ExtendDueDate(t *testing.T) {
 func TestLoanHandler_ListByBorrower(t *testing.T) {
 	setup := testutil.NewHandlerTestSetup()
 	mockSvc := new(MockService)
-	loan.RegisterRoutes(setup.API, mockSvc)
+	loan.RegisterRoutes(setup.API, mockSvc, nil)
 
 	t.Run("lists loans by borrower successfully", func(t *testing.T) {
 		borrowerID := uuid.New()
@@ -425,7 +426,7 @@ func TestLoanHandler_ListByBorrower(t *testing.T) {
 func TestLoanHandler_ListByInventory(t *testing.T) {
 	setup := testutil.NewHandlerTestSetup()
 	mockSvc := new(MockService)
-	loan.RegisterRoutes(setup.API, mockSvc)
+	loan.RegisterRoutes(setup.API, mockSvc, nil)
 
 	t.Run("lists loans by inventory successfully", func(t *testing.T) {
 		inventoryID := uuid.New()
@@ -444,4 +445,147 @@ func TestLoanHandler_ListByInventory(t *testing.T) {
 		testutil.AssertStatus(t, rec, http.StatusOK)
 		mockSvc.AssertExpectations(t)
 	})
+}
+
+// Event Publishing Tests
+
+func TestLoanHandler_Create_PublishesEvent(t *testing.T) {
+	setup := testutil.NewHandlerTestSetup()
+	mockSvc := new(MockService)
+	capture := testutil.NewEventCapture(setup.WorkspaceID, setup.UserID)
+	capture.Start()
+	defer capture.Stop()
+
+	loan.RegisterRoutes(setup.API, mockSvc, capture.GetBroadcaster())
+
+	inventoryID := uuid.New()
+	borrowerID := uuid.New()
+	loanedAt := time.Now()
+	dueDate := loanedAt.Add(7 * 24 * time.Hour)
+
+	testLoan, _ := loan.NewLoan(
+		setup.WorkspaceID,
+		inventoryID,
+		borrowerID,
+		1,
+		loanedAt,
+		&dueDate,
+		nil,
+	)
+
+	mockSvc.On("Create", mock.Anything, mock.MatchedBy(func(input loan.CreateInput) bool {
+		return input.BorrowerID == borrowerID && input.InventoryID == inventoryID
+	})).Return(testLoan, nil).Once()
+
+	body := fmt.Sprintf(`{"inventory_id":"%s","borrower_id":"%s","quantity":1,"loaned_at":"%s","due_date":"%s"}`,
+		inventoryID, borrowerID, loanedAt.Format(time.RFC3339), dueDate.Format(time.RFC3339))
+	rec := setup.Post("/loans", body)
+
+	testutil.AssertStatus(t, rec, http.StatusOK)
+	mockSvc.AssertExpectations(t)
+
+	// Wait for event
+	assert.True(t, capture.WaitForEvents(1, 500*time.Millisecond), "Event should be published")
+
+	event := capture.GetLastEvent()
+	assert.NotNil(t, event)
+	assert.Equal(t, "loan.created", event.Type)
+	assert.Equal(t, "loan", event.EntityType)
+	assert.Equal(t, setup.WorkspaceID, event.WorkspaceID)
+	assert.Equal(t, setup.UserID, event.UserID)
+	assert.Equal(t, testLoan.ID().String(), event.EntityID)
+}
+
+func TestLoanHandler_ExtendDueDate_PublishesEvent(t *testing.T) {
+	setup := testutil.NewHandlerTestSetup()
+	mockSvc := new(MockService)
+	capture := testutil.NewEventCapture(setup.WorkspaceID, setup.UserID)
+	capture.Start()
+	defer capture.Stop()
+
+	loan.RegisterRoutes(setup.API, mockSvc, capture.GetBroadcaster())
+
+	inventoryID := uuid.New()
+	borrowerID := uuid.New()
+	loanedAt := time.Now()
+	newDueDate := loanedAt.Add(14 * 24 * time.Hour)
+
+	testLoan, _ := loan.NewLoan(setup.WorkspaceID, inventoryID, borrowerID, 1, loanedAt, &newDueDate, nil)
+	loanID := testLoan.ID()
+
+	mockSvc.On("ExtendDueDate", mock.Anything, loanID, setup.WorkspaceID, mock.Anything).
+		Return(testLoan, nil).Once()
+
+	body := fmt.Sprintf(`{"new_due_date":"%s"}`, newDueDate.Format(time.RFC3339))
+	rec := setup.Patch(fmt.Sprintf("/loans/%s/extend", loanID), body)
+
+	testutil.AssertStatus(t, rec, http.StatusOK)
+	mockSvc.AssertExpectations(t)
+
+	// Wait for event
+	assert.True(t, capture.WaitForEvents(1, 500*time.Millisecond), "Event should be published")
+
+	event := capture.GetLastEvent()
+	assert.NotNil(t, event)
+	assert.Equal(t, "loan.updated", event.Type)
+	assert.Equal(t, "loan", event.EntityType)
+	assert.Equal(t, loanID.String(), event.EntityID)
+}
+
+func TestLoanHandler_Return_PublishesEvent(t *testing.T) {
+	setup := testutil.NewHandlerTestSetup()
+	mockSvc := new(MockService)
+	capture := testutil.NewEventCapture(setup.WorkspaceID, setup.UserID)
+	capture.Start()
+	defer capture.Stop()
+
+	loan.RegisterRoutes(setup.API, mockSvc, capture.GetBroadcaster())
+
+	inventoryID := uuid.New()
+	borrowerID := uuid.New()
+	loanedAt := time.Now()
+	dueDate := loanedAt.Add(7 * 24 * time.Hour)
+
+	testLoan, _ := loan.NewLoan(setup.WorkspaceID, inventoryID, borrowerID, 1, loanedAt, &dueDate, nil)
+	loanID := testLoan.ID()
+
+	mockSvc.On("Return", mock.Anything, loanID, setup.WorkspaceID).
+		Return(testLoan, nil).Once()
+
+	rec := setup.Post(fmt.Sprintf("/loans/%s/return", loanID), "")
+
+	testutil.AssertStatus(t, rec, http.StatusOK)
+	mockSvc.AssertExpectations(t)
+
+	// Wait for event
+	assert.True(t, capture.WaitForEvents(1, 500*time.Millisecond), "Event should be published")
+
+	event := capture.GetLastEvent()
+	assert.NotNil(t, event)
+	assert.Equal(t, "loan.returned", event.Type) // Special returned event
+	assert.Equal(t, "loan", event.EntityType)
+	assert.Equal(t, loanID.String(), event.EntityID)
+}
+
+func TestLoanHandler_Create_NilBroadcaster_NoError(t *testing.T) {
+	setup := testutil.NewHandlerTestSetup()
+	mockSvc := new(MockService)
+	loan.RegisterRoutes(setup.API, mockSvc, nil)
+
+	inventoryID := uuid.New()
+	borrowerID := uuid.New()
+	loanedAt := time.Now()
+	dueDate := loanedAt.Add(7 * 24 * time.Hour)
+
+	testLoan, _ := loan.NewLoan(setup.WorkspaceID, inventoryID, borrowerID, 1, loanedAt, &dueDate, nil)
+
+	mockSvc.On("Create", mock.Anything, mock.Anything).
+		Return(testLoan, nil).Once()
+
+	body := fmt.Sprintf(`{"inventory_id":"%s","borrower_id":"%s","quantity":1,"loaned_at":"%s","due_date":"%s"}`,
+		inventoryID, borrowerID, loanedAt.Format(time.RFC3339), dueDate.Format(time.RFC3339))
+	rec := setup.Post("/loans", body)
+
+	testutil.AssertStatus(t, rec, http.StatusOK)
+	mockSvc.AssertExpectations(t)
 }

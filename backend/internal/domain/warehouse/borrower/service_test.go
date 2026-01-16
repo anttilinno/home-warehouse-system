@@ -49,6 +49,14 @@ func (m *MockRepository) HasActiveLoans(ctx context.Context, id uuid.UUID) (bool
 	return args.Bool(0), args.Error(1)
 }
 
+func (m *MockRepository) Search(ctx context.Context, workspaceID uuid.UUID, query string, limit int) ([]*Borrower, error) {
+	args := m.Called(ctx, workspaceID, query, limit)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).([]*Borrower), args.Error(1)
+}
+
 // Helper functions
 func ptrString(s string) *string {
 	return &s

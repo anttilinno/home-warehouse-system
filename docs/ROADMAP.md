@@ -44,6 +44,16 @@
 
 ## Phase 2
 
+- [x] Real-time sync with SSE
+  - [x] Backend broadcaster service (100% test coverage)
+  - [x] SSE HTTP streaming endpoint (81% test coverage)
+  - [x] Event publishing in all 11 CRUD handlers
+  - [x] Frontend SSE integration in all 10 dashboard pages
+  - [x] Multi-user workspace-scoped broadcasting
+  - [ ] Complete test coverage for event publishing (currently 2/11 handlers tested)
+    - Add MockBroadcaster tests to remaining 9 handlers
+    - Verify created/updated/deleted events for: borrower, inventory, location, container, category, label, company, favorite, attachment
+    - Estimated effort: 4-6 hours
 - [x] Tracking & alerts (partial)
   - [x] Total value: sum of purchase_price per location/workspace
   - [x] Activity log: who changed what, when. So there is no need for soft delete

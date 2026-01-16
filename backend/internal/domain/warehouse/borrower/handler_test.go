@@ -63,12 +63,20 @@ func (m *MockService) Delete(ctx context.Context, id, workspaceID uuid.UUID) err
 	return args.Error(0)
 }
 
+func (m *MockService) Search(ctx context.Context, workspaceID uuid.UUID, query string, limit int) ([]*borrower.Borrower, error) {
+	args := m.Called(ctx, workspaceID, query, limit)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).([]*borrower.Borrower), args.Error(1)
+}
+
 // Tests
 
 func TestBorrowerHandler_Create(t *testing.T) {
 	setup := testutil.NewHandlerTestSetup()
 	mockSvc := new(MockService)
-	borrower.RegisterRoutes(setup.API, mockSvc)
+	borrower.RegisterRoutes(setup.API, mockSvc, nil)
 
 	t.Run("creates borrower successfully", func(t *testing.T) {
 		email := "john@example.com"
@@ -120,7 +128,7 @@ func TestBorrowerHandler_Create(t *testing.T) {
 func TestBorrowerHandler_List(t *testing.T) {
 	setup := testutil.NewHandlerTestSetup()
 	mockSvc := new(MockService)
-	borrower.RegisterRoutes(setup.API, mockSvc)
+	borrower.RegisterRoutes(setup.API, mockSvc, nil)
 
 	t.Run("lists borrowers successfully", func(t *testing.T) {
 		bor1, _ := borrower.NewBorrower(setup.WorkspaceID, "Borrower 1", nil, nil, nil)
@@ -162,7 +170,7 @@ func TestBorrowerHandler_List(t *testing.T) {
 func TestBorrowerHandler_Get(t *testing.T) {
 	setup := testutil.NewHandlerTestSetup()
 	mockSvc := new(MockService)
-	borrower.RegisterRoutes(setup.API, mockSvc)
+	borrower.RegisterRoutes(setup.API, mockSvc, nil)
 
 	t.Run("gets borrower by ID", func(t *testing.T) {
 		testBorrower, _ := borrower.NewBorrower(setup.WorkspaceID, "Test Borrower", nil, nil, nil)
@@ -193,7 +201,7 @@ func TestBorrowerHandler_Get(t *testing.T) {
 func TestBorrowerHandler_Update(t *testing.T) {
 	setup := testutil.NewHandlerTestSetup()
 	mockSvc := new(MockService)
-	borrower.RegisterRoutes(setup.API, mockSvc)
+	borrower.RegisterRoutes(setup.API, mockSvc, nil)
 
 	t.Run("updates borrower successfully", func(t *testing.T) {
 		email := "updated@example.com"
@@ -247,7 +255,7 @@ func TestBorrowerHandler_Update(t *testing.T) {
 func TestBorrowerHandler_Delete(t *testing.T) {
 	setup := testutil.NewHandlerTestSetup()
 	mockSvc := new(MockService)
-	borrower.RegisterRoutes(setup.API, mockSvc)
+	borrower.RegisterRoutes(setup.API, mockSvc, nil)
 
 	t.Run("deletes borrower successfully", func(t *testing.T) {
 		borrowerID := uuid.New()
