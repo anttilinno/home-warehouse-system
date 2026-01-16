@@ -62,7 +62,7 @@ func (m *MockService) SetPrimary(ctx context.Context, itemID, attachmentID uuid.
 func TestAttachmentHandler_ListByItem(t *testing.T) {
 	setup := testutil.NewHandlerTestSetup()
 	mockSvc := new(MockService)
-	attachment.RegisterRoutes(setup.API, mockSvc)
+	attachment.RegisterRoutes(setup.API, mockSvc, nil)
 
 	t.Run("lists attachments for item successfully", func(t *testing.T) {
 		itemID := uuid.New()
@@ -96,7 +96,7 @@ func TestAttachmentHandler_ListByItem(t *testing.T) {
 func TestAttachmentHandler_Get(t *testing.T) {
 	setup := testutil.NewHandlerTestSetup()
 	mockSvc := new(MockService)
-	attachment.RegisterRoutes(setup.API, mockSvc)
+	attachment.RegisterRoutes(setup.API, mockSvc, nil)
 
 	t.Run("gets attachment by ID", func(t *testing.T) {
 		itemID := uuid.New()
@@ -129,7 +129,7 @@ func TestAttachmentHandler_Get(t *testing.T) {
 func TestAttachmentHandler_UploadAttachment(t *testing.T) {
 	setup := testutil.NewHandlerTestSetup()
 	mockSvc := new(MockService)
-	attachment.RegisterRoutes(setup.API, mockSvc)
+	attachment.RegisterRoutes(setup.API, mockSvc, nil)
 
 	t.Run("uploads attachment successfully", func(t *testing.T) {
 		itemID := uuid.New()
@@ -185,7 +185,7 @@ func TestAttachmentHandler_UploadAttachment(t *testing.T) {
 func TestAttachmentHandler_CreateAttachment(t *testing.T) {
 	setup := testutil.NewHandlerTestSetup()
 	mockSvc := new(MockService)
-	attachment.RegisterRoutes(setup.API, mockSvc)
+	attachment.RegisterRoutes(setup.API, mockSvc, nil)
 
 	t.Run("creates attachment without file successfully", func(t *testing.T) {
 		itemID := uuid.New()
@@ -232,7 +232,7 @@ func TestAttachmentHandler_CreateAttachment(t *testing.T) {
 func TestAttachmentHandler_SetPrimary(t *testing.T) {
 	setup := testutil.NewHandlerTestSetup()
 	mockSvc := new(MockService)
-	attachment.RegisterRoutes(setup.API, mockSvc)
+	attachment.RegisterRoutes(setup.API, mockSvc, nil)
 
 	t.Run("sets attachment as primary successfully", func(t *testing.T) {
 		itemID := uuid.New()
@@ -264,7 +264,7 @@ func TestAttachmentHandler_SetPrimary(t *testing.T) {
 func TestAttachmentHandler_Delete(t *testing.T) {
 	setup := testutil.NewHandlerTestSetup()
 	mockSvc := new(MockService)
-	attachment.RegisterRoutes(setup.API, mockSvc)
+	attachment.RegisterRoutes(setup.API, mockSvc, nil)
 
 	t.Run("deletes attachment successfully", func(t *testing.T) {
 		attID := uuid.New()

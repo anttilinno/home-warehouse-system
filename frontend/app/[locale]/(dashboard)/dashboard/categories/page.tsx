@@ -65,6 +65,7 @@ import {
 import { ImportDialog, type ImportResult } from "@/components/ui/import-dialog";
 import { useWorkspace } from "@/lib/hooks/use-workspace";
 import { useDebouncedValue } from "@/lib/hooks/use-debounced-value";
+import { useSSE, type SSEEvent } from "@/lib/hooks/use-sse";
 import { categoriesApi, importExportApi, type Category } from "@/lib/api";
 import { cn } from "@/lib/utils";
 
@@ -334,6 +335,28 @@ export default function CategoriesPage() {
       loadCategories();
     }
   }, [workspaceId, loadCategories]);
+
+  // Subscribe to SSE events for real-time updates
+  useSSE({
+    onEvent: (event: SSEEvent) => {
+      if (event.entity_type === 'category') {
+        switch (event.type) {
+          case 'category.created':
+            loadCategories();
+            toast.info(`New category added: ${event.data?.name || 'Unknown'}`);
+            break;
+          case 'category.updated':
+            loadCategories();
+            toast.info(`Category updated: ${event.data?.name || 'Unknown'}`);
+            break;
+          case 'category.deleted':
+            loadCategories();
+            toast.info('Category deleted');
+            break;
+        }
+      }
+    }
+  });
 
   const handleToggle = (id: string) => {
     setExpandedIds((prev) => {

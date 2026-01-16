@@ -8,10 +8,11 @@ import (
 	"github.com/google/uuid"
 
 	appMiddleware "github.com/antti/home-warehouse/go-backend/internal/api/middleware"
+	"github.com/antti/home-warehouse/go-backend/internal/infra/events"
 )
 
 // RegisterRoutes registers label routes.
-func RegisterRoutes(api huma.API, svc ServiceInterface) {
+func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broadcaster) {
 	// List labels
 	huma.Get(api, "/labels", func(ctx context.Context, input *struct{}) (*ListLabelsOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
@@ -58,6 +59,8 @@ func RegisterRoutes(api huma.API, svc ServiceInterface) {
 			return nil, huma.Error401Unauthorized("workspace context required")
 		}
 
+		authUser, _ := appMiddleware.GetAuthUser(ctx)
+
 		label, err := svc.Create(ctx, CreateInput{
 			WorkspaceID: workspaceID,
 			Name:        input.Body.Name,
@@ -71,6 +74,20 @@ func RegisterRoutes(api huma.API, svc ServiceInterface) {
 			return nil, huma.Error400BadRequest(err.Error())
 		}
 
+		// Publish event
+		if broadcaster != nil && authUser != nil {
+			broadcaster.Publish(workspaceID, events.Event{
+				Type:       "label.created",
+				EntityID:   label.ID().String(),
+				EntityType: "label",
+				UserID:     authUser.ID,
+				Data: map[string]any{
+					"id":   label.ID(),
+					"name": label.Name(),
+				},
+			})
+		}
+
 		return &CreateLabelOutput{
 			Body: toLabelResponse(label),
 		}, nil
@@ -82,6 +99,8 @@ func RegisterRoutes(api huma.API, svc ServiceInterface) {
 		if !ok {
 			return nil, huma.Error401Unauthorized("workspace context required")
 		}
+
+		authUser, _ := appMiddleware.GetAuthUser(ctx)
 
 		// Get current label to use its name if not provided in update
 		currentLabel, err := svc.GetByID(ctx, input.ID, workspaceID)
@@ -106,6 +125,20 @@ func RegisterRoutes(api huma.API, svc ServiceInterface) {
 			return nil, huma.Error400BadRequest(err.Error())
 		}
 
+		// Publish event
+		if broadcaster != nil && authUser != nil {
+			broadcaster.Publish(workspaceID, events.Event{
+				Type:       "label.updated",
+				EntityID:   label.ID().String(),
+				EntityType: "label",
+				UserID:     authUser.ID,
+				Data: map[string]any{
+					"id":   label.ID(),
+					"name": label.Name(),
+				},
+			})
+		}
+
 		return &UpdateLabelOutput{
 			Body: toLabelResponse(label),
 		}, nil
@@ -118,9 +151,21 @@ func RegisterRoutes(api huma.API, svc ServiceInterface) {
 			return nil, huma.Error401Unauthorized("workspace context required")
 		}
 
+		authUser, _ := appMiddleware.GetAuthUser(ctx)
+
 		err := svc.Archive(ctx, input.ID, workspaceID)
 		if err != nil {
 			return nil, huma.Error400BadRequest(err.Error())
+		}
+
+		// Publish event (treat archive as delete event)
+		if broadcaster != nil && authUser != nil {
+			broadcaster.Publish(workspaceID, events.Event{
+				Type:       "label.deleted",
+				EntityID:   input.ID.String(),
+				EntityType: "label",
+				UserID:     authUser.ID,
+			})
 		}
 
 		return nil, nil
@@ -148,9 +193,21 @@ func RegisterRoutes(api huma.API, svc ServiceInterface) {
 			return nil, huma.Error401Unauthorized("workspace context required")
 		}
 
+		authUser, _ := appMiddleware.GetAuthUser(ctx)
+
 		err := svc.Delete(ctx, input.ID, workspaceID)
 		if err != nil {
 			return nil, huma.Error400BadRequest(err.Error())
+		}
+
+		// Publish event
+		if broadcaster != nil && authUser != nil {
+			broadcaster.Publish(workspaceID, events.Event{
+				Type:       "label.deleted",
+				EntityID:   input.ID.String(),
+				EntityType: "label",
+				UserID:     authUser.ID,
+			})
 		}
 
 		return nil, nil

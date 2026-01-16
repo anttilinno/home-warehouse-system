@@ -10,14 +10,15 @@ import (
 type Format string
 
 const (
-	FormatCSV  Format = "csv"
-	FormatJSON Format = "json"
+	FormatCSV   Format = "csv"
+	FormatJSON  Format = "json"
+	FormatExcel Format = "xlsx"
 )
 
 // IsValid checks if the format is valid
 func (f Format) IsValid() bool {
 	switch f {
-	case FormatCSV, FormatJSON:
+	case FormatCSV, FormatJSON, FormatExcel:
 		return true
 	}
 	return false
@@ -241,4 +242,20 @@ type ExportMetadata struct {
 	TotalRecords int        `json:"total_records"`
 	ExportedAt   time.Time  `json:"exported_at"`
 	WorkspaceID  uuid.UUID  `json:"workspace_id"`
+}
+
+// WorkspaceBackupResult contains the result of a workspace backup export
+type WorkspaceBackupResult struct {
+	Data         []byte            `json:"-"`
+	Filename     string            `json:"filename"`
+	ContentType  string            `json:"content_type"`
+	RecordCounts map[string]int    `json:"record_counts"`
+	TotalRecords int               `json:"total_records"`
+	ExportID     uuid.UUID         `json:"export_id"`
+}
+
+// WorkspaceRestoreRequest contains data for restoring a workspace
+type WorkspaceRestoreRequest struct {
+	Format Format `json:"format"`
+	Data   string `json:"data"` // Base64 encoded
 }

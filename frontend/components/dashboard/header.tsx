@@ -9,6 +9,8 @@ import { Input } from "@/components/ui/input";
 import { ThemeToggle } from "@/components/shared/theme-toggle";
 import { LanguageSwitcher } from "@/components/shared/language-switcher";
 import { WorkspaceSwitcher } from "@/components/dashboard/workspace-switcher";
+import { BackupRestoreDialog } from "@/components/shared/backup-restore-dialog";
+import { SSEStatusIndicator } from "@/components/dashboard/sse-status-indicator";
 import { useGlobalSearch } from "@/lib/hooks/use-global-search";
 import { GlobalSearchResults } from "@/components/ui/global-search-results";
 
@@ -175,6 +177,8 @@ export function DashboardHeader({ onMenuClick }: HeaderProps) {
 
       {/* Right side */}
       <div className="flex items-center gap-2 ml-auto">
+        <SSEStatusIndicator className="mr-2" />
+        <BackupRestoreDialog />
         <LanguageSwitcher />
         <ThemeToggle />
 

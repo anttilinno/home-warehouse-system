@@ -51,7 +51,7 @@ func (m *MockService) IsFavorite(ctx context.Context, userID, workspaceID uuid.U
 func TestFavoriteHandler_ListFavorites(t *testing.T) {
 	setup := testutil.NewHandlerTestSetup()
 	mockSvc := new(MockService)
-	favorite.RegisterRoutes(setup.API, mockSvc)
+	favorite.RegisterRoutes(setup.API, mockSvc, nil)
 
 	t.Run("lists user favorites successfully", func(t *testing.T) {
 		itemID := uuid.New()
@@ -81,7 +81,7 @@ func TestFavoriteHandler_ListFavorites(t *testing.T) {
 func TestFavoriteHandler_ToggleFavorite(t *testing.T) {
 	setup := testutil.NewHandlerTestSetup()
 	mockSvc := new(MockService)
-	favorite.RegisterRoutes(setup.API, mockSvc)
+	favorite.RegisterRoutes(setup.API, mockSvc, nil)
 
 	t.Run("adds favorite successfully", func(t *testing.T) {
 		itemID := uuid.New()
@@ -148,7 +148,7 @@ func TestFavoriteHandler_ToggleFavorite(t *testing.T) {
 func TestFavoriteHandler_CheckFavorite(t *testing.T) {
 	setup := testutil.NewHandlerTestSetup()
 	mockSvc := new(MockService)
-	favorite.RegisterRoutes(setup.API, mockSvc)
+	favorite.RegisterRoutes(setup.API, mockSvc, nil)
 
 	t.Run("checks favorite status - is favorite", func(t *testing.T) {
 		itemID := uuid.New()

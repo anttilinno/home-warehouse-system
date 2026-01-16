@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useTranslations } from "next-intl";
 import {
   BarChart,
@@ -41,6 +41,7 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { useWorkspace } from "@/lib/hooks/use-workspace";
+import { useSSE, type SSEEvent } from "@/lib/hooks/use-sse";
 import { analyticsApi } from "@/lib/api";
 import type {
   DashboardStats,
@@ -145,8 +146,7 @@ export default function AnalyticsPage() {
   const [monthlyActivity, setMonthlyActivity] = useState<MonthlyLoanActivity[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    async function loadAnalytics() {
+  const loadAnalytics = useCallback(async () => {
       if (!workspaceId) return;
 
       try {
@@ -189,10 +189,22 @@ export default function AnalyticsPage() {
       } finally {
         setIsLoading(false);
       }
-    }
-
-    loadAnalytics();
   }, [workspaceId]);
+
+  useEffect(() => {
+    loadAnalytics();
+  }, [loadAnalytics]);
+
+  // Subscribe to SSE events for real-time updates
+  useSSE({
+    onEvent: (event: SSEEvent) => {
+      const analyticsEntities = ['item', 'inventory', 'loan', 'location', 'container'];
+      if (analyticsEntities.includes(event.entity_type)) {
+        // Refresh analytics data when any relevant entity changes
+        loadAnalytics();
+      }
+    }
+  });
 
   if (workspaceLoading || isLoading) {
     return <LoadingSkeleton />;

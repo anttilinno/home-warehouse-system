@@ -8,10 +8,11 @@ import (
 	"github.com/google/uuid"
 
 	appMiddleware "github.com/antti/home-warehouse/go-backend/internal/api/middleware"
+	"github.com/antti/home-warehouse/go-backend/internal/infra/events"
 )
 
 // RegisterRoutes registers category routes.
-func RegisterRoutes(api huma.API, svc ServiceInterface) {
+func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broadcaster) {
 	// List all categories
 	huma.Get(api, "/categories", func(ctx context.Context, input *struct{}) (*ListCategoriesOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
@@ -102,6 +103,8 @@ func RegisterRoutes(api huma.API, svc ServiceInterface) {
 			return nil, huma.Error401Unauthorized("workspace context required")
 		}
 
+		authUser, _ := appMiddleware.GetAuthUser(ctx)
+
 		category, err := svc.Create(ctx, CreateInput{
 			WorkspaceID:      workspaceID,
 			Name:             input.Body.Name,
@@ -110,6 +113,20 @@ func RegisterRoutes(api huma.API, svc ServiceInterface) {
 		})
 		if err != nil {
 			return nil, huma.Error400BadRequest(err.Error())
+		}
+
+		// Publish event
+		if broadcaster != nil && authUser != nil {
+			broadcaster.Publish(workspaceID, events.Event{
+				Type:       "category.created",
+				EntityID:   category.ID().String(),
+				EntityType: "category",
+				UserID:     authUser.ID,
+				Data: map[string]any{
+					"id":   category.ID(),
+					"name": category.Name(),
+				},
+			})
 		}
 
 		return &CreateCategoryOutput{
@@ -124,6 +141,8 @@ func RegisterRoutes(api huma.API, svc ServiceInterface) {
 		if !ok {
 			return nil, huma.Error401Unauthorized("workspace context required")
 		}
+
+		authUser, _ := appMiddleware.GetAuthUser(ctx)
 
 		updateInput := UpdateInput{
 			ParentCategoryID: input.Body.ParentCategoryID,
@@ -141,6 +160,20 @@ func RegisterRoutes(api huma.API, svc ServiceInterface) {
 			return nil, huma.Error400BadRequest(err.Error())
 		}
 
+		// Publish event
+		if broadcaster != nil && authUser != nil {
+			broadcaster.Publish(workspaceID, events.Event{
+				Type:       "category.updated",
+				EntityID:   category.ID().String(),
+				EntityType: "category",
+				UserID:     authUser.ID,
+				Data: map[string]any{
+					"id":   category.ID(),
+					"name": category.Name(),
+				},
+			})
+		}
+
 		return &UpdateCategoryOutput{
 			Body: toCategoryResponse(category),
 		}, nil
@@ -153,9 +186,21 @@ func RegisterRoutes(api huma.API, svc ServiceInterface) {
 			return nil, huma.Error401Unauthorized("workspace context required")
 		}
 
+		authUser, _ := appMiddleware.GetAuthUser(ctx)
+
 		err := svc.Archive(ctx, input.ID, workspaceID)
 		if err != nil {
 			return nil, huma.Error400BadRequest(err.Error())
+		}
+
+		// Publish event (treat archive as delete event)
+		if broadcaster != nil && authUser != nil {
+			broadcaster.Publish(workspaceID, events.Event{
+				Type:       "category.deleted",
+				EntityID:   input.ID.String(),
+				EntityType: "category",
+				UserID:     authUser.ID,
+			})
 		}
 
 		return nil, nil
@@ -183,12 +228,24 @@ func RegisterRoutes(api huma.API, svc ServiceInterface) {
 			return nil, huma.Error401Unauthorized("workspace context required")
 		}
 
+		authUser, _ := appMiddleware.GetAuthUser(ctx)
+
 		err := svc.Delete(ctx, input.ID, workspaceID)
 		if err != nil {
 			if err == ErrHasChildren {
 				return nil, huma.Error409Conflict("cannot delete category with child categories")
 			}
 			return nil, huma.Error400BadRequest(err.Error())
+		}
+
+		// Publish event
+		if broadcaster != nil && authUser != nil {
+			broadcaster.Publish(workspaceID, events.Event{
+				Type:       "category.deleted",
+				EntityID:   input.ID.String(),
+				EntityType: "category",
+				UserID:     authUser.ID,
+			})
 		}
 
 		return nil, nil

@@ -8,11 +8,12 @@ import (
 	"github.com/google/uuid"
 
 	appMiddleware "github.com/antti/home-warehouse/go-backend/internal/api/middleware"
+	"github.com/antti/home-warehouse/go-backend/internal/infra/events"
 	"github.com/antti/home-warehouse/go-backend/internal/shared"
 )
 
 // RegisterRoutes registers borrower routes.
-func RegisterRoutes(api huma.API, svc ServiceInterface) {
+func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broadcaster) {
 	// List borrowers
 	huma.Get(api, "/borrowers", func(ctx context.Context, input *ListBorrowersInput) (*ListBorrowersOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
@@ -60,6 +61,8 @@ func RegisterRoutes(api huma.API, svc ServiceInterface) {
 			return nil, huma.Error401Unauthorized("workspace context required")
 		}
 
+		authUser, _ := appMiddleware.GetAuthUser(ctx)
+
 		borrower, err := svc.Create(ctx, CreateInput{
 			WorkspaceID: workspaceID,
 			Name:        input.Body.Name,
@@ -69,6 +72,20 @@ func RegisterRoutes(api huma.API, svc ServiceInterface) {
 		})
 		if err != nil {
 			return nil, huma.Error400BadRequest(err.Error())
+		}
+
+		// Publish event
+		if broadcaster != nil && authUser != nil {
+			broadcaster.Publish(workspaceID, events.Event{
+				Type:       "borrower.created",
+				EntityID:   borrower.ID().String(),
+				EntityType: "borrower",
+				UserID:     authUser.ID,
+				Data: map[string]any{
+					"id":   borrower.ID(),
+					"name": borrower.Name(),
+				},
+			})
 		}
 
 		return &CreateBorrowerOutput{
@@ -82,6 +99,8 @@ func RegisterRoutes(api huma.API, svc ServiceInterface) {
 		if !ok {
 			return nil, huma.Error401Unauthorized("workspace context required")
 		}
+
+		authUser, _ := appMiddleware.GetAuthUser(ctx)
 
 		updateInput := UpdateInput{
 			Email: input.Body.Email,
@@ -97,6 +116,20 @@ func RegisterRoutes(api huma.API, svc ServiceInterface) {
 			return nil, huma.Error400BadRequest(err.Error())
 		}
 
+		// Publish event
+		if broadcaster != nil && authUser != nil {
+			broadcaster.Publish(workspaceID, events.Event{
+				Type:       "borrower.updated",
+				EntityID:   borrower.ID().String(),
+				EntityType: "borrower",
+				UserID:     authUser.ID,
+				Data: map[string]any{
+					"id":   borrower.ID(),
+					"name": borrower.Name(),
+				},
+			})
+		}
+
 		return &UpdateBorrowerOutput{
 			Body: toBorrowerResponse(borrower),
 		}, nil
@@ -109,12 +142,24 @@ func RegisterRoutes(api huma.API, svc ServiceInterface) {
 			return nil, huma.Error401Unauthorized("workspace context required")
 		}
 
+		authUser, _ := appMiddleware.GetAuthUser(ctx)
+
 		err := svc.Archive(ctx, input.ID, workspaceID)
 		if err != nil {
 			if err == ErrHasActiveLoans {
 				return nil, huma.Error400BadRequest("cannot delete borrower with active loans")
 			}
 			return nil, huma.Error400BadRequest(err.Error())
+		}
+
+		// Publish event
+		if broadcaster != nil && authUser != nil {
+			broadcaster.Publish(workspaceID, events.Event{
+				Type:       "borrower.deleted",
+				EntityID:   input.ID.String(),
+				EntityType: "borrower",
+				UserID:     authUser.ID,
+			})
 		}
 
 		return nil, nil

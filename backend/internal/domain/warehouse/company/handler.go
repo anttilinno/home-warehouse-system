@@ -8,11 +8,12 @@ import (
 	"github.com/google/uuid"
 
 	appMiddleware "github.com/antti/home-warehouse/go-backend/internal/api/middleware"
+	"github.com/antti/home-warehouse/go-backend/internal/infra/events"
 	"github.com/antti/home-warehouse/go-backend/internal/shared"
 )
 
 // RegisterRoutes registers company routes.
-func RegisterRoutes(api huma.API, svc ServiceInterface) {
+func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broadcaster) {
 	// List companies
 	huma.Get(api, "/companies", func(ctx context.Context, input *ListCompaniesInput) (*ListCompaniesOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
@@ -68,6 +69,8 @@ func RegisterRoutes(api huma.API, svc ServiceInterface) {
 			return nil, huma.Error401Unauthorized("workspace context required")
 		}
 
+		authUser, _ := appMiddleware.GetAuthUser(ctx)
+
 		company, err := svc.Create(ctx, CreateInput{
 			WorkspaceID: workspaceID,
 			Name:        input.Body.Name,
@@ -81,6 +84,20 @@ func RegisterRoutes(api huma.API, svc ServiceInterface) {
 			return nil, huma.Error400BadRequest(err.Error())
 		}
 
+		// Publish event
+		if broadcaster != nil && authUser != nil {
+			broadcaster.Publish(workspaceID, events.Event{
+				Type:       "company.created",
+				EntityID:   company.ID().String(),
+				EntityType: "company",
+				UserID:     authUser.ID,
+				Data: map[string]any{
+					"id":   company.ID(),
+					"name": company.Name(),
+				},
+			})
+		}
+
 		return &CreateCompanyOutput{
 			Body: toCompanyResponse(company),
 		}, nil
@@ -92,6 +109,8 @@ func RegisterRoutes(api huma.API, svc ServiceInterface) {
 		if !ok {
 			return nil, huma.Error401Unauthorized("workspace context required")
 		}
+
+		authUser, _ := appMiddleware.GetAuthUser(ctx)
 
 		existing, err := svc.GetByID(ctx, input.ID, workspaceID)
 		if err != nil {
@@ -115,6 +134,20 @@ func RegisterRoutes(api huma.API, svc ServiceInterface) {
 			return nil, huma.Error400BadRequest(err.Error())
 		}
 
+		// Publish event
+		if broadcaster != nil && authUser != nil {
+			broadcaster.Publish(workspaceID, events.Event{
+				Type:       "company.updated",
+				EntityID:   company.ID().String(),
+				EntityType: "company",
+				UserID:     authUser.ID,
+				Data: map[string]any{
+					"id":   company.ID(),
+					"name": company.Name(),
+				},
+			})
+		}
+
 		return &UpdateCompanyOutput{
 			Body: toCompanyResponse(company),
 		}, nil
@@ -127,12 +160,24 @@ func RegisterRoutes(api huma.API, svc ServiceInterface) {
 			return nil, huma.Error401Unauthorized("workspace context required")
 		}
 
+		authUser, _ := appMiddleware.GetAuthUser(ctx)
+
 		err := svc.Archive(ctx, input.ID, workspaceID)
 		if err != nil {
 			if err == ErrCompanyNotFound {
 				return nil, huma.Error404NotFound("company not found")
 			}
 			return nil, huma.Error400BadRequest(err.Error())
+		}
+
+		// Publish event (treat archive as delete event)
+		if broadcaster != nil && authUser != nil {
+			broadcaster.Publish(workspaceID, events.Event{
+				Type:       "company.deleted",
+				EntityID:   input.ID.String(),
+				EntityType: "company",
+				UserID:     authUser.ID,
+			})
 		}
 
 		return nil, nil
@@ -163,12 +208,24 @@ func RegisterRoutes(api huma.API, svc ServiceInterface) {
 			return nil, huma.Error401Unauthorized("workspace context required")
 		}
 
+		authUser, _ := appMiddleware.GetAuthUser(ctx)
+
 		err := svc.Delete(ctx, input.ID, workspaceID)
 		if err != nil {
 			if err == ErrCompanyNotFound {
 				return nil, huma.Error404NotFound("company not found")
 			}
 			return nil, huma.Error400BadRequest(err.Error())
+		}
+
+		// Publish event
+		if broadcaster != nil && authUser != nil {
+			broadcaster.Publish(workspaceID, events.Event{
+				Type:       "company.deleted",
+				EntityID:   input.ID.String(),
+				EntityType: "company",
+				UserID:     authUser.ID,
+			})
 		}
 
 		return nil, nil

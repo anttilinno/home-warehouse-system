@@ -8,10 +8,11 @@ import (
 	"github.com/google/uuid"
 
 	appMiddleware "github.com/antti/home-warehouse/go-backend/internal/api/middleware"
+	"github.com/antti/home-warehouse/go-backend/internal/infra/events"
 )
 
 // RegisterRoutes registers favorite routes.
-func RegisterRoutes(api huma.API, svc ServiceInterface) {
+func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broadcaster) {
 	// List user's favorites
 	huma.Get(api, "/favorites", func(ctx context.Context, input *struct{}) (*ListFavoritesOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
@@ -59,6 +60,25 @@ func RegisterRoutes(api huma.API, svc ServiceInterface) {
 		added, err := svc.ToggleFavorite(ctx, authUser.ID, workspaceID, favoriteType, input.Body.TargetID)
 		if err != nil {
 			return nil, huma.Error500InternalServerError("failed to toggle favorite")
+		}
+
+		// Publish event
+		if broadcaster != nil && authUser != nil {
+			eventType := "favorite.deleted"
+			if added {
+				eventType = "favorite.created"
+			}
+			broadcaster.Publish(workspaceID, events.Event{
+				Type:       eventType,
+				EntityID:   input.Body.TargetID.String(),
+				EntityType: "favorite",
+				UserID:     authUser.ID,
+				Data: map[string]any{
+					"target_id":     input.Body.TargetID,
+					"favorite_type": input.Body.FavoriteType,
+					"added":         added,
+				},
+			})
 		}
 
 		return &ToggleFavoriteOutput{

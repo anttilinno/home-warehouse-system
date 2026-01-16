@@ -13,12 +13,16 @@ import (
 
 // Handler handles import/export HTTP requests
 type Handler struct {
-	svc ServiceInterface
+	svc       ServiceInterface
+	backupSvc *WorkspaceBackupService
 }
 
 // NewHandler creates a new import/export handler
-func NewHandler(svc ServiceInterface) *Handler {
-	return &Handler{svc: svc}
+func NewHandler(svc ServiceInterface, backupSvc *WorkspaceBackupService) *Handler {
+	return &Handler{
+		svc:       svc,
+		backupSvc: backupSvc,
+	}
 }
 
 // ExportRequest is the input for export
@@ -71,6 +75,25 @@ func (h *Handler) RegisterRoutes(api huma.API) {
 		Tags:          []string{"Import/Export"},
 		DefaultStatus: http.StatusOK,
 	}, h.Import)
+
+	huma.Register(api, huma.Operation{
+		OperationID: "export-workspace-full",
+		Method:      http.MethodGet,
+		Path:        "/export/workspace",
+		Summary:     "Export complete workspace",
+		Description: "Exports all workspace data (items, inventory, locations, etc.) to Excel or JSON format.",
+		Tags:        []string{"Import/Export", "Workspace Backup"},
+	}, h.ExportWorkspaceFull)
+
+	huma.Register(api, huma.Operation{
+		OperationID:   "import-workspace-full",
+		Method:        http.MethodPost,
+		Path:          "/import/workspace",
+		Summary:       "Import complete workspace",
+		Description:   "Imports workspace data from Excel or JSON format. Restores all entities with proper dependency resolution.",
+		Tags:          []string{"Import/Export", "Workspace Backup"},
+		DefaultStatus: http.StatusOK,
+	}, h.ImportWorkspaceFull)
 }
 
 // Export handles the export request
@@ -153,6 +176,84 @@ func (h *Handler) Import(ctx context.Context, input *ImportRequest) (*ImportResp
 	result, err := h.svc.Import(ctx, workspaceID, entityType, format, data)
 	if err != nil {
 		return nil, huma.Error500InternalServerError("failed to import data", err)
+	}
+
+	return &ImportResponse{Body: *result}, nil
+}
+
+// WorkspaceExportRequest is the input for full workspace export
+type WorkspaceExportRequest struct {
+	Format          string `query:"format" default:"xlsx" doc:"Export format (xlsx, json)"`
+	IncludeArchived bool   `query:"include_archived" default:"false" doc:"Include archived records"`
+}
+
+// ExportWorkspaceFull handles full workspace backup export
+func (h *Handler) ExportWorkspaceFull(ctx context.Context, input *WorkspaceExportRequest) (*ExportResponse, error) {
+	workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
+	if !ok {
+		return nil, huma.Error401Unauthorized("workspace context required")
+	}
+
+	authUser, ok := appMiddleware.GetAuthUser(ctx)
+	if !ok {
+		return nil, huma.Error401Unauthorized("user context required")
+	}
+	userID := authUser.ID
+
+	// Validate format
+	format := Format(input.Format)
+	if format != FormatExcel && format != FormatJSON {
+		return nil, huma.Error400BadRequest(fmt.Sprintf("invalid format: %s. Supported formats: xlsx, json", input.Format))
+	}
+
+	// Perform export
+	result, err := h.backupSvc.ExportWorkspace(ctx, workspaceID, format, input.IncludeArchived, userID)
+	if err != nil {
+		return nil, huma.Error500InternalServerError("failed to export workspace", err)
+	}
+
+	return &ExportResponse{
+		ContentType:        result.ContentType,
+		ContentDisposition: fmt.Sprintf("attachment; filename=%s", result.Filename),
+		Body:               result.Data,
+	}, nil
+}
+
+// WorkspaceImportRequest is the input for full workspace import
+type WorkspaceImportRequest struct {
+	Body struct {
+		Format string `json:"format" doc:"Import format (xlsx, json)"`
+		Data   string `json:"data" doc:"Base64 encoded file content"`
+	}
+}
+
+// ImportWorkspaceFull handles full workspace backup import
+func (h *Handler) ImportWorkspaceFull(ctx context.Context, input *WorkspaceImportRequest) (*ImportResponse, error) {
+	workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
+	if !ok {
+		return nil, huma.Error401Unauthorized("workspace context required")
+	}
+
+	// Validate format
+	format := Format(input.Body.Format)
+	if format != FormatExcel && format != FormatJSON {
+		return nil, huma.Error400BadRequest(fmt.Sprintf("invalid format: %s. Supported formats: xlsx, json", input.Body.Format))
+	}
+
+	// Decode base64 data
+	data, err := base64.StdEncoding.DecodeString(input.Body.Data)
+	if err != nil {
+		return nil, huma.Error400BadRequest("invalid base64 encoding in data field")
+	}
+
+	if len(data) == 0 {
+		return nil, huma.Error400BadRequest("data field is empty")
+	}
+
+	// Perform import
+	result, err := h.backupSvc.ImportWorkspace(ctx, workspaceID, format, data)
+	if err != nil {
+		return nil, huma.Error500InternalServerError("failed to import workspace", err)
 	}
 
 	return &ImportResponse{Body: *result}, nil

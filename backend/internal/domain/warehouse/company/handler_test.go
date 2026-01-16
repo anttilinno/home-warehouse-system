@@ -71,7 +71,7 @@ func (m *MockService) Delete(ctx context.Context, id, workspaceID uuid.UUID) err
 func TestCompanyHandler_Create(t *testing.T) {
 	setup := testutil.NewHandlerTestSetup()
 	mockSvc := new(MockService)
-	company.RegisterRoutes(setup.API, mockSvc)
+	company.RegisterRoutes(setup.API, mockSvc, nil)
 
 	t.Run("creates company successfully", func(t *testing.T) {
 		website := "https://example.com"
@@ -125,7 +125,7 @@ func TestCompanyHandler_Create(t *testing.T) {
 func TestCompanyHandler_List(t *testing.T) {
 	setup := testutil.NewHandlerTestSetup()
 	mockSvc := new(MockService)
-	company.RegisterRoutes(setup.API, mockSvc)
+	company.RegisterRoutes(setup.API, mockSvc, nil)
 
 	t.Run("lists companies successfully", func(t *testing.T) {
 		comp1, _ := company.NewCompany(setup.WorkspaceID, "Company 1", nil, nil)
@@ -176,7 +176,7 @@ func TestCompanyHandler_List(t *testing.T) {
 func TestCompanyHandler_Get(t *testing.T) {
 	setup := testutil.NewHandlerTestSetup()
 	mockSvc := new(MockService)
-	company.RegisterRoutes(setup.API, mockSvc)
+	company.RegisterRoutes(setup.API, mockSvc, nil)
 
 	t.Run("gets company by ID", func(t *testing.T) {
 		testCompany, _ := company.NewCompany(setup.WorkspaceID, "Test Corp", nil, nil)
@@ -207,7 +207,7 @@ func TestCompanyHandler_Get(t *testing.T) {
 func TestCompanyHandler_Update(t *testing.T) {
 	setup := testutil.NewHandlerTestSetup()
 	mockSvc := new(MockService)
-	company.RegisterRoutes(setup.API, mockSvc)
+	company.RegisterRoutes(setup.API, mockSvc, nil)
 
 	t.Run("updates company successfully", func(t *testing.T) {
 		website := "https://updated.com"
@@ -256,7 +256,7 @@ func TestCompanyHandler_Update(t *testing.T) {
 func TestCompanyHandler_Archive(t *testing.T) {
 	setup := testutil.NewHandlerTestSetup()
 	mockSvc := new(MockService)
-	company.RegisterRoutes(setup.API, mockSvc)
+	company.RegisterRoutes(setup.API, mockSvc, nil)
 
 	t.Run("archives company successfully", func(t *testing.T) {
 		companyID := uuid.New()
@@ -286,7 +286,7 @@ func TestCompanyHandler_Archive(t *testing.T) {
 func TestCompanyHandler_Restore(t *testing.T) {
 	setup := testutil.NewHandlerTestSetup()
 	mockSvc := new(MockService)
-	company.RegisterRoutes(setup.API, mockSvc)
+	company.RegisterRoutes(setup.API, mockSvc, nil)
 
 	t.Run("restores company successfully", func(t *testing.T) {
 		companyID := uuid.New()
@@ -316,7 +316,7 @@ func TestCompanyHandler_Restore(t *testing.T) {
 func TestCompanyHandler_Delete(t *testing.T) {
 	setup := testutil.NewHandlerTestSetup()
 	mockSvc := new(MockService)
-	company.RegisterRoutes(setup.API, mockSvc)
+	company.RegisterRoutes(setup.API, mockSvc, nil)
 
 	t.Run("deletes company successfully", func(t *testing.T) {
 		companyID := uuid.New()

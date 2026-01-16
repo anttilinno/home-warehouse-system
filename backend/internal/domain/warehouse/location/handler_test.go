@@ -79,7 +79,7 @@ func (m *MockService) GetBreadcrumb(ctx context.Context, locationID, workspaceID
 func TestLocationHandler_Create(t *testing.T) {
 	setup := testutil.NewHandlerTestSetup()
 	mockSvc := new(MockService)
-	location.RegisterRoutes(setup.API, mockSvc)
+	location.RegisterRoutes(setup.API, mockSvc, nil)
 
 	t.Run("creates location successfully", func(t *testing.T) {
 		testLoc, _ := location.NewLocation(setup.WorkspaceID, "Warehouse A", nil, nil, nil, nil, nil, nil)
@@ -110,7 +110,7 @@ func TestLocationHandler_Create(t *testing.T) {
 func TestLocationHandler_List(t *testing.T) {
 	setup := testutil.NewHandlerTestSetup()
 	mockSvc := new(MockService)
-	location.RegisterRoutes(setup.API, mockSvc)
+	location.RegisterRoutes(setup.API, mockSvc, nil)
 
 	t.Run("lists locations successfully", func(t *testing.T) {
 		loc1, _ := location.NewLocation(setup.WorkspaceID, "Location 1", nil, nil, nil, nil, nil, nil)
@@ -144,7 +144,7 @@ func TestLocationHandler_List(t *testing.T) {
 func TestLocationHandler_Get(t *testing.T) {
 	setup := testutil.NewHandlerTestSetup()
 	mockSvc := new(MockService)
-	location.RegisterRoutes(setup.API, mockSvc)
+	location.RegisterRoutes(setup.API, mockSvc, nil)
 
 	t.Run("gets location by ID", func(t *testing.T) {
 		testLoc, _ := location.NewLocation(setup.WorkspaceID, "Warehouse A", nil, nil, nil, nil, nil, nil)
@@ -175,7 +175,7 @@ func TestLocationHandler_Get(t *testing.T) {
 func TestLocationHandler_Update(t *testing.T) {
 	setup := testutil.NewHandlerTestSetup()
 	mockSvc := new(MockService)
-	location.RegisterRoutes(setup.API, mockSvc)
+	location.RegisterRoutes(setup.API, mockSvc, nil)
 
 	t.Run("updates location successfully", func(t *testing.T) {
 		testLoc, _ := location.NewLocation(setup.WorkspaceID, "Updated Warehouse", nil, nil, nil, nil, nil, nil)
@@ -212,7 +212,7 @@ func TestLocationHandler_Update(t *testing.T) {
 func TestLocationHandler_Archive(t *testing.T) {
 	setup := testutil.NewHandlerTestSetup()
 	mockSvc := new(MockService)
-	location.RegisterRoutes(setup.API, mockSvc)
+	location.RegisterRoutes(setup.API, mockSvc, nil)
 
 	t.Run("archives location successfully", func(t *testing.T) {
 		locID := uuid.New()
@@ -242,7 +242,7 @@ func TestLocationHandler_Archive(t *testing.T) {
 func TestLocationHandler_Restore(t *testing.T) {
 	setup := testutil.NewHandlerTestSetup()
 	mockSvc := new(MockService)
-	location.RegisterRoutes(setup.API, mockSvc)
+	location.RegisterRoutes(setup.API, mockSvc, nil)
 
 	t.Run("restores location successfully", func(t *testing.T) {
 		locID := uuid.New()
@@ -272,7 +272,7 @@ func TestLocationHandler_Restore(t *testing.T) {
 func TestLocationHandler_Delete(t *testing.T) {
 	setup := testutil.NewHandlerTestSetup()
 	mockSvc := new(MockService)
-	location.RegisterRoutes(setup.API, mockSvc)
+	location.RegisterRoutes(setup.API, mockSvc, nil)
 
 	t.Run("deletes location successfully", func(t *testing.T) {
 		locID := uuid.New()
@@ -314,7 +314,7 @@ func TestLocationHandler_Delete(t *testing.T) {
 func TestLocationHandler_GetBreadcrumb(t *testing.T) {
 	setup := testutil.NewHandlerTestSetup()
 	mockSvc := new(MockService)
-	location.RegisterRoutes(setup.API, mockSvc)
+	location.RegisterRoutes(setup.API, mockSvc, nil)
 
 	t.Run("gets breadcrumb trail successfully", func(t *testing.T) {
 		locID := uuid.New()

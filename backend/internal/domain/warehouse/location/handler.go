@@ -8,11 +8,12 @@ import (
 	"github.com/google/uuid"
 
 	appMiddleware "github.com/antti/home-warehouse/go-backend/internal/api/middleware"
+	"github.com/antti/home-warehouse/go-backend/internal/infra/events"
 	"github.com/antti/home-warehouse/go-backend/internal/shared"
 )
 
 // RegisterRoutes registers location routes.
-func RegisterRoutes(api huma.API, svc ServiceInterface) {
+func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broadcaster) {
 	// List locations
 	huma.Get(api, "/locations", func(ctx context.Context, input *ListLocationsInput) (*ListLocationsOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
@@ -65,6 +66,8 @@ func RegisterRoutes(api huma.API, svc ServiceInterface) {
 			return nil, huma.Error401Unauthorized("workspace context required")
 		}
 
+		authUser, _ := appMiddleware.GetAuthUser(ctx)
+
 		location, err := svc.Create(ctx, CreateInput{
 			WorkspaceID:    workspaceID,
 			Name:           input.Body.Name,
@@ -82,6 +85,20 @@ func RegisterRoutes(api huma.API, svc ServiceInterface) {
 			return nil, huma.Error400BadRequest(err.Error())
 		}
 
+		// Publish event
+		if broadcaster != nil && authUser != nil {
+			broadcaster.Publish(workspaceID, events.Event{
+				Type:       "location.created",
+				EntityID:   location.ID().String(),
+				EntityType: "location",
+				UserID:     authUser.ID,
+				Data: map[string]any{
+					"id":   location.ID(),
+					"name": location.Name(),
+				},
+			})
+		}
+
 		return &CreateLocationOutput{
 			Body: toLocationResponse(location),
 		}, nil
@@ -93,6 +110,8 @@ func RegisterRoutes(api huma.API, svc ServiceInterface) {
 		if !ok {
 			return nil, huma.Error401Unauthorized("workspace context required")
 		}
+
+		authUser, _ := appMiddleware.GetAuthUser(ctx)
 
 		// Get existing location to preserve unchanged fields
 		existing, err := svc.GetByID(ctx, input.ID, workspaceID)
@@ -117,6 +136,20 @@ func RegisterRoutes(api huma.API, svc ServiceInterface) {
 			return nil, huma.Error400BadRequest(err.Error())
 		}
 
+		// Publish event
+		if broadcaster != nil && authUser != nil {
+			broadcaster.Publish(workspaceID, events.Event{
+				Type:       "location.updated",
+				EntityID:   location.ID().String(),
+				EntityType: "location",
+				UserID:     authUser.ID,
+				Data: map[string]any{
+					"id":   location.ID(),
+					"name": location.Name(),
+				},
+			})
+		}
+
 		return &UpdateLocationOutput{
 			Body: toLocationResponse(location),
 		}, nil
@@ -129,9 +162,21 @@ func RegisterRoutes(api huma.API, svc ServiceInterface) {
 			return nil, huma.Error401Unauthorized("workspace context required")
 		}
 
+		authUser, _ := appMiddleware.GetAuthUser(ctx)
+
 		err := svc.Archive(ctx, input.ID, workspaceID)
 		if err != nil {
 			return nil, huma.Error400BadRequest(err.Error())
+		}
+
+		// Publish event (treat archive as delete event)
+		if broadcaster != nil && authUser != nil {
+			broadcaster.Publish(workspaceID, events.Event{
+				Type:       "location.deleted",
+				EntityID:   input.ID.String(),
+				EntityType: "location",
+				UserID:     authUser.ID,
+			})
 		}
 
 		return nil, nil
@@ -159,9 +204,21 @@ func RegisterRoutes(api huma.API, svc ServiceInterface) {
 			return nil, huma.Error401Unauthorized("workspace context required")
 		}
 
+		authUser, _ := appMiddleware.GetAuthUser(ctx)
+
 		err := svc.Delete(ctx, input.ID, workspaceID)
 		if err != nil {
 			return nil, huma.Error400BadRequest(err.Error())
+		}
+
+		// Publish event
+		if broadcaster != nil && authUser != nil {
+			broadcaster.Publish(workspaceID, events.Event{
+				Type:       "location.deleted",
+				EntityID:   input.ID.String(),
+				EntityType: "location",
+				UserID:     authUser.ID,
+			})
 		}
 
 		return nil, nil

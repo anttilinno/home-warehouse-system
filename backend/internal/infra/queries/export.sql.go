@@ -9,7 +9,43 @@ import (
 	"context"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgtype"
 )
+
+const createWorkspaceExport = `-- name: CreateWorkspaceExport :exec
+INSERT INTO auth.workspace_exports (
+    id,
+    workspace_id,
+    exported_by,
+    format,
+    record_counts,
+    file_size_bytes,
+    created_at
+) VALUES (
+    $1, $2, $3, $4, $5, $6, NOW()
+)
+`
+
+type CreateWorkspaceExportParams struct {
+	ID            uuid.UUID   `json:"id"`
+	WorkspaceID   uuid.UUID   `json:"workspace_id"`
+	ExportedBy    pgtype.UUID `json:"exported_by"`
+	Format        string      `json:"format"`
+	RecordCounts  []byte      `json:"record_counts"`
+	FileSizeBytes *int64      `json:"file_size_bytes"`
+}
+
+func (q *Queries) CreateWorkspaceExport(ctx context.Context, arg CreateWorkspaceExportParams) error {
+	_, err := q.db.Exec(ctx, createWorkspaceExport,
+		arg.ID,
+		arg.WorkspaceID,
+		arg.ExportedBy,
+		arg.Format,
+		arg.RecordCounts,
+		arg.FileSizeBytes,
+	)
+	return err
+}
 
 const getCategoryByName = `-- name: GetCategoryByName :one
 SELECT id, workspace_id, name, parent_category_id, description, is_archived, created_at, updated_at FROM warehouse.categories
@@ -70,6 +106,43 @@ func (q *Queries) GetLocationByName(ctx context.Context, arg GetLocationByNamePa
 	return i, err
 }
 
+const listAllAttachments = `-- name: ListAllAttachments :many
+SELECT a.id, a.item_id, a.file_id, a.attachment_type, a.title, a.is_primary, a.docspell_item_id, a.created_at, a.updated_at FROM warehouse.attachments a
+JOIN warehouse.items i ON a.item_id = i.id
+WHERE i.workspace_id = $1
+ORDER BY a.created_at
+`
+
+func (q *Queries) ListAllAttachments(ctx context.Context, workspaceID uuid.UUID) ([]WarehouseAttachment, error) {
+	rows, err := q.db.Query(ctx, listAllAttachments, workspaceID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []WarehouseAttachment{}
+	for rows.Next() {
+		var i WarehouseAttachment
+		if err := rows.Scan(
+			&i.ID,
+			&i.ItemID,
+			&i.FileID,
+			&i.AttachmentType,
+			&i.Title,
+			&i.IsPrimary,
+			&i.DocspellItemID,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listAllBorrowers = `-- name: ListAllBorrowers :many
 SELECT id, workspace_id, name, email, phone, notes, is_archived, created_at, updated_at, search_vector FROM warehouse.borrowers
 WHERE workspace_id = $1 
@@ -84,6 +157,43 @@ type ListAllBorrowersParams struct {
 
 func (q *Queries) ListAllBorrowers(ctx context.Context, arg ListAllBorrowersParams) ([]WarehouseBorrower, error) {
 	rows, err := q.db.Query(ctx, listAllBorrowers, arg.WorkspaceID, arg.IncludeArchived)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []WarehouseBorrower{}
+	for rows.Next() {
+		var i WarehouseBorrower
+		if err := rows.Scan(
+			&i.ID,
+			&i.WorkspaceID,
+			&i.Name,
+			&i.Email,
+			&i.Phone,
+			&i.Notes,
+			&i.IsArchived,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.SearchVector,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listAllBorrowersIncludingArchived = `-- name: ListAllBorrowersIncludingArchived :many
+SELECT id, workspace_id, name, email, phone, notes, is_archived, created_at, updated_at, search_vector FROM warehouse.borrowers
+WHERE workspace_id = $1
+ORDER BY created_at
+`
+
+func (q *Queries) ListAllBorrowersIncludingArchived(ctx context.Context, workspaceID uuid.UUID) ([]WarehouseBorrower, error) {
+	rows, err := q.db.Query(ctx, listAllBorrowersIncludingArchived, workspaceID)
 	if err != nil {
 		return nil, err
 	}
@@ -154,6 +264,41 @@ func (q *Queries) ListAllCategories(ctx context.Context, arg ListAllCategoriesPa
 	return items, nil
 }
 
+const listAllCategoriesIncludingArchived = `-- name: ListAllCategoriesIncludingArchived :many
+SELECT id, workspace_id, name, parent_category_id, description, is_archived, created_at, updated_at FROM warehouse.categories
+WHERE workspace_id = $1
+ORDER BY created_at
+`
+
+func (q *Queries) ListAllCategoriesIncludingArchived(ctx context.Context, workspaceID uuid.UUID) ([]WarehouseCategory, error) {
+	rows, err := q.db.Query(ctx, listAllCategoriesIncludingArchived, workspaceID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []WarehouseCategory{}
+	for rows.Next() {
+		var i WarehouseCategory
+		if err := rows.Scan(
+			&i.ID,
+			&i.WorkspaceID,
+			&i.Name,
+			&i.ParentCategoryID,
+			&i.Description,
+			&i.IsArchived,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listAllCompanies = `-- name: ListAllCompanies :many
 SELECT id, workspace_id, name, website, notes, is_archived, created_at, updated_at FROM warehouse.companies
 WHERE workspace_id = $1 
@@ -168,6 +313,41 @@ type ListAllCompaniesParams struct {
 
 func (q *Queries) ListAllCompanies(ctx context.Context, arg ListAllCompaniesParams) ([]WarehouseCompany, error) {
 	rows, err := q.db.Query(ctx, listAllCompanies, arg.WorkspaceID, arg.IncludeArchived)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []WarehouseCompany{}
+	for rows.Next() {
+		var i WarehouseCompany
+		if err := rows.Scan(
+			&i.ID,
+			&i.WorkspaceID,
+			&i.Name,
+			&i.Website,
+			&i.Notes,
+			&i.IsArchived,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listAllCompaniesIncludingArchived = `-- name: ListAllCompaniesIncludingArchived :many
+SELECT id, workspace_id, name, website, notes, is_archived, created_at, updated_at FROM warehouse.companies
+WHERE workspace_id = $1
+ORDER BY created_at
+`
+
+func (q *Queries) ListAllCompaniesIncludingArchived(ctx context.Context, workspaceID uuid.UUID) ([]WarehouseCompany, error) {
+	rows, err := q.db.Query(ctx, listAllCompaniesIncludingArchived, workspaceID)
 	if err != nil {
 		return nil, err
 	}
@@ -239,6 +419,88 @@ func (q *Queries) ListAllContainers(ctx context.Context, arg ListAllContainersPa
 	return items, nil
 }
 
+const listAllContainersIncludingArchived = `-- name: ListAllContainersIncludingArchived :many
+SELECT id, workspace_id, name, location_id, description, capacity, short_code, is_archived, search_vector, created_at, updated_at FROM warehouse.containers
+WHERE workspace_id = $1
+ORDER BY created_at
+`
+
+func (q *Queries) ListAllContainersIncludingArchived(ctx context.Context, workspaceID uuid.UUID) ([]WarehouseContainer, error) {
+	rows, err := q.db.Query(ctx, listAllContainersIncludingArchived, workspaceID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []WarehouseContainer{}
+	for rows.Next() {
+		var i WarehouseContainer
+		if err := rows.Scan(
+			&i.ID,
+			&i.WorkspaceID,
+			&i.Name,
+			&i.LocationID,
+			&i.Description,
+			&i.Capacity,
+			&i.ShortCode,
+			&i.IsArchived,
+			&i.SearchVector,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listAllInventory = `-- name: ListAllInventory :many
+SELECT id, workspace_id, item_id, location_id, container_id, quantity, condition, status, date_acquired, purchase_price, currency_code, warranty_expires, expiration_date, notes, is_archived, created_at, updated_at FROM warehouse.inventory
+WHERE workspace_id = $1
+ORDER BY created_at
+`
+
+func (q *Queries) ListAllInventory(ctx context.Context, workspaceID uuid.UUID) ([]WarehouseInventory, error) {
+	rows, err := q.db.Query(ctx, listAllInventory, workspaceID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []WarehouseInventory{}
+	for rows.Next() {
+		var i WarehouseInventory
+		if err := rows.Scan(
+			&i.ID,
+			&i.WorkspaceID,
+			&i.ItemID,
+			&i.LocationID,
+			&i.ContainerID,
+			&i.Quantity,
+			&i.Condition,
+			&i.Status,
+			&i.DateAcquired,
+			&i.PurchasePrice,
+			&i.CurrencyCode,
+			&i.WarrantyExpires,
+			&i.ExpirationDate,
+			&i.Notes,
+			&i.IsArchived,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listAllItems = `-- name: ListAllItems :many
 
 SELECT id, workspace_id, sku, name, description, category_id, brand, model, image_url, serial_number, manufacturer, barcode, is_insured, is_archived, lifetime_warranty, warranty_details, purchased_from, min_stock_level, short_code, obsidian_vault_path, obsidian_note_path, search_vector, created_at, updated_at FROM warehouse.items
@@ -256,6 +518,57 @@ type ListAllItemsParams struct {
 // These queries support bulk export operations for all entity types
 func (q *Queries) ListAllItems(ctx context.Context, arg ListAllItemsParams) ([]WarehouseItem, error) {
 	rows, err := q.db.Query(ctx, listAllItems, arg.WorkspaceID, arg.IncludeArchived)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []WarehouseItem{}
+	for rows.Next() {
+		var i WarehouseItem
+		if err := rows.Scan(
+			&i.ID,
+			&i.WorkspaceID,
+			&i.Sku,
+			&i.Name,
+			&i.Description,
+			&i.CategoryID,
+			&i.Brand,
+			&i.Model,
+			&i.ImageUrl,
+			&i.SerialNumber,
+			&i.Manufacturer,
+			&i.Barcode,
+			&i.IsInsured,
+			&i.IsArchived,
+			&i.LifetimeWarranty,
+			&i.WarrantyDetails,
+			&i.PurchasedFrom,
+			&i.MinStockLevel,
+			&i.ShortCode,
+			&i.ObsidianVaultPath,
+			&i.ObsidianNotePath,
+			&i.SearchVector,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listAllItemsIncludingArchived = `-- name: ListAllItemsIncludingArchived :many
+SELECT id, workspace_id, sku, name, description, category_id, brand, model, image_url, serial_number, manufacturer, barcode, is_insured, is_archived, lifetime_warranty, warranty_details, purchased_from, min_stock_level, short_code, obsidian_vault_path, obsidian_note_path, search_vector, created_at, updated_at FROM warehouse.items
+WHERE workspace_id = $1
+ORDER BY created_at
+`
+
+func (q *Queries) ListAllItemsIncludingArchived(ctx context.Context, workspaceID uuid.UUID) ([]WarehouseItem, error) {
+	rows, err := q.db.Query(ctx, listAllItemsIncludingArchived, workspaceID)
 	if err != nil {
 		return nil, err
 	}
@@ -340,6 +653,79 @@ func (q *Queries) ListAllLabels(ctx context.Context, arg ListAllLabelsParams) ([
 	return items, nil
 }
 
+const listAllLabelsIncludingArchived = `-- name: ListAllLabelsIncludingArchived :many
+SELECT id, workspace_id, name, color, description, is_archived, created_at, updated_at FROM warehouse.labels
+WHERE workspace_id = $1
+ORDER BY created_at
+`
+
+func (q *Queries) ListAllLabelsIncludingArchived(ctx context.Context, workspaceID uuid.UUID) ([]WarehouseLabel, error) {
+	rows, err := q.db.Query(ctx, listAllLabelsIncludingArchived, workspaceID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []WarehouseLabel{}
+	for rows.Next() {
+		var i WarehouseLabel
+		if err := rows.Scan(
+			&i.ID,
+			&i.WorkspaceID,
+			&i.Name,
+			&i.Color,
+			&i.Description,
+			&i.IsArchived,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listAllLoans = `-- name: ListAllLoans :many
+SELECT id, workspace_id, inventory_id, borrower_id, quantity, loaned_at, due_date, returned_at, notes, created_at, updated_at FROM warehouse.loans
+WHERE workspace_id = $1
+ORDER BY loaned_at
+`
+
+func (q *Queries) ListAllLoans(ctx context.Context, workspaceID uuid.UUID) ([]WarehouseLoan, error) {
+	rows, err := q.db.Query(ctx, listAllLoans, workspaceID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []WarehouseLoan{}
+	for rows.Next() {
+		var i WarehouseLoan
+		if err := rows.Scan(
+			&i.ID,
+			&i.WorkspaceID,
+			&i.InventoryID,
+			&i.BorrowerID,
+			&i.Quantity,
+			&i.LoanedAt,
+			&i.DueDate,
+			&i.ReturnedAt,
+			&i.Notes,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listAllLocations = `-- name: ListAllLocations :many
 SELECT id, workspace_id, name, parent_location, zone, shelf, bin, description, short_code, is_archived, search_vector, created_at, updated_at FROM warehouse.locations
 WHERE workspace_id = $1 
@@ -375,6 +761,87 @@ func (q *Queries) ListAllLocations(ctx context.Context, arg ListAllLocationsPara
 			&i.SearchVector,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listAllLocationsIncludingArchived = `-- name: ListAllLocationsIncludingArchived :many
+SELECT id, workspace_id, name, parent_location, zone, shelf, bin, description, short_code, is_archived, search_vector, created_at, updated_at FROM warehouse.locations
+WHERE workspace_id = $1
+ORDER BY created_at
+`
+
+func (q *Queries) ListAllLocationsIncludingArchived(ctx context.Context, workspaceID uuid.UUID) ([]WarehouseLocation, error) {
+	rows, err := q.db.Query(ctx, listAllLocationsIncludingArchived, workspaceID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []WarehouseLocation{}
+	for rows.Next() {
+		var i WarehouseLocation
+		if err := rows.Scan(
+			&i.ID,
+			&i.WorkspaceID,
+			&i.Name,
+			&i.ParentLocation,
+			&i.Zone,
+			&i.Shelf,
+			&i.Bin,
+			&i.Description,
+			&i.ShortCode,
+			&i.IsArchived,
+			&i.SearchVector,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listWorkspaceExports = `-- name: ListWorkspaceExports :many
+SELECT id, workspace_id, exported_by, format, file_size_bytes, record_counts, created_at FROM auth.workspace_exports
+WHERE workspace_id = $1
+ORDER BY created_at DESC
+LIMIT $2 OFFSET $3
+`
+
+type ListWorkspaceExportsParams struct {
+	WorkspaceID uuid.UUID `json:"workspace_id"`
+	Limit       int32     `json:"limit"`
+	Offset      int32     `json:"offset"`
+}
+
+func (q *Queries) ListWorkspaceExports(ctx context.Context, arg ListWorkspaceExportsParams) ([]AuthWorkspaceExport, error) {
+	rows, err := q.db.Query(ctx, listWorkspaceExports, arg.WorkspaceID, arg.Limit, arg.Offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []AuthWorkspaceExport{}
+	for rows.Next() {
+		var i AuthWorkspaceExport
+		if err := rows.Scan(
+			&i.ID,
+			&i.WorkspaceID,
+			&i.ExportedBy,
+			&i.Format,
+			&i.FileSizeBytes,
+			&i.RecordCounts,
+			&i.CreatedAt,
 		); err != nil {
 			return nil, err
 		}

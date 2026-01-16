@@ -67,7 +67,7 @@ func (m *MockService) Delete(ctx context.Context, id, workspaceID uuid.UUID) err
 func TestLabelHandler_Create(t *testing.T) {
 	setup := testutil.NewHandlerTestSetup()
 	mockSvc := new(MockService)
-	label.RegisterRoutes(setup.API, mockSvc)
+	label.RegisterRoutes(setup.API, mockSvc, nil)
 
 	t.Run("creates label successfully", func(t *testing.T) {
 		color := "#FF5733"
@@ -121,7 +121,7 @@ func TestLabelHandler_Create(t *testing.T) {
 func TestLabelHandler_List(t *testing.T) {
 	setup := testutil.NewHandlerTestSetup()
 	mockSvc := new(MockService)
-	label.RegisterRoutes(setup.API, mockSvc)
+	label.RegisterRoutes(setup.API, mockSvc, nil)
 
 	t.Run("lists labels successfully", func(t *testing.T) {
 		label1, _ := label.NewLabel(setup.WorkspaceID, "Label 1", nil, nil)
@@ -151,7 +151,7 @@ func TestLabelHandler_List(t *testing.T) {
 func TestLabelHandler_Get(t *testing.T) {
 	setup := testutil.NewHandlerTestSetup()
 	mockSvc := new(MockService)
-	label.RegisterRoutes(setup.API, mockSvc)
+	label.RegisterRoutes(setup.API, mockSvc, nil)
 
 	t.Run("gets label by ID", func(t *testing.T) {
 		testLabel, _ := label.NewLabel(setup.WorkspaceID, "Test Label", nil, nil)
@@ -182,7 +182,7 @@ func TestLabelHandler_Get(t *testing.T) {
 func TestLabelHandler_Update(t *testing.T) {
 	setup := testutil.NewHandlerTestSetup()
 	mockSvc := new(MockService)
-	label.RegisterRoutes(setup.API, mockSvc)
+	label.RegisterRoutes(setup.API, mockSvc, nil)
 
 	t.Run("updates label successfully", func(t *testing.T) {
 		color := "#00FF00"
@@ -248,7 +248,7 @@ func TestLabelHandler_Update(t *testing.T) {
 func TestLabelHandler_Archive(t *testing.T) {
 	setup := testutil.NewHandlerTestSetup()
 	mockSvc := new(MockService)
-	label.RegisterRoutes(setup.API, mockSvc)
+	label.RegisterRoutes(setup.API, mockSvc, nil)
 
 	t.Run("archives label successfully", func(t *testing.T) {
 		labelID := uuid.New()
@@ -278,7 +278,7 @@ func TestLabelHandler_Archive(t *testing.T) {
 func TestLabelHandler_Restore(t *testing.T) {
 	setup := testutil.NewHandlerTestSetup()
 	mockSvc := new(MockService)
-	label.RegisterRoutes(setup.API, mockSvc)
+	label.RegisterRoutes(setup.API, mockSvc, nil)
 
 	t.Run("restores label successfully", func(t *testing.T) {
 		labelID := uuid.New()
@@ -308,7 +308,7 @@ func TestLabelHandler_Restore(t *testing.T) {
 func TestLabelHandler_Delete(t *testing.T) {
 	setup := testutil.NewHandlerTestSetup()
 	mockSvc := new(MockService)
-	label.RegisterRoutes(setup.API, mockSvc)
+	label.RegisterRoutes(setup.API, mockSvc, nil)
 
 	t.Run("deletes label successfully", func(t *testing.T) {
 		labelID := uuid.New()

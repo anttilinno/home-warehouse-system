@@ -16,6 +16,7 @@ import {
 import { toast } from "sonner";
 
 import { useAuth } from "@/lib/contexts/auth-context";
+import { useSSE, type SSEEvent } from "@/lib/hooks/use-sse";
 import { analyticsApi, notificationsApi, type AnalyticsSummary, type RecentActivity } from "@/lib/api";
 import { StatsCard } from "@/components/dashboard/stats-card";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -184,6 +185,15 @@ export default function DashboardPage() {
       loadDashboardData();
     }
   }, [workspaceId, authLoading, loadDashboardData]);
+
+  // Subscribe to SSE events for real-time updates
+  useSSE({
+    onEvent: (event: SSEEvent) => {
+      // Dashboard shows aggregate stats, refresh on any entity change
+      // Silently refresh data without showing toasts to avoid spam
+      loadDashboardData();
+    }
+  });
 
   // Loading state
   if (authLoading || isLoading) {

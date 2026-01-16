@@ -41,7 +41,7 @@ func (m *MockService) Import(ctx context.Context, workspaceID uuid.UUID, entityT
 func TestImportExportHandler_Export(t *testing.T) {
 	setup := testutil.NewHandlerTestSetup()
 	mockSvc := new(MockService)
-	handler := importexport.NewHandler(mockSvc)
+	handler := importexport.NewHandler(mockSvc, nil)
 	handler.RegisterRoutes(setup.API)
 
 	t.Run("exports items as CSV successfully", func(t *testing.T) {
@@ -174,7 +174,7 @@ func TestImportExportHandler_Export(t *testing.T) {
 func TestImportExportHandler_Import(t *testing.T) {
 	setup := testutil.NewHandlerTestSetup()
 	mockSvc := new(MockService)
-	handler := importexport.NewHandler(mockSvc)
+	handler := importexport.NewHandler(mockSvc, nil)
 	handler.RegisterRoutes(setup.API)
 
 	t.Run("imports items from CSV successfully", func(t *testing.T) {

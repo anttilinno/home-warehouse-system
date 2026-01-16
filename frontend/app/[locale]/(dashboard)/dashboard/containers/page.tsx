@@ -80,6 +80,7 @@ import { useBulkSelection } from "@/lib/hooks/use-bulk-selection";
 import { useFilters } from "@/lib/hooks/use-filters";
 import { useKeyboardShortcuts } from "@/lib/hooks/use-keyboard-shortcuts";
 import { useDebouncedValue } from "@/lib/hooks/use-debounced-value";
+import { useSSE, type SSEEvent } from "@/lib/hooks/use-sse";
 import { containersApi, locationsApi, importExportApi } from "@/lib/api";
 import type { Container, ContainerCreate, ContainerUpdate } from "@/lib/types/containers";
 import type { Location } from "@/lib/types/locations";
@@ -308,6 +309,28 @@ export default function ContainersPage() {
       loadLocations();
     }
   }, [workspaceId, loadLocations]);
+
+  // Subscribe to SSE events for real-time updates
+  useSSE({
+    onEvent: (event: SSEEvent) => {
+      if (event.entity_type === 'container') {
+        switch (event.type) {
+          case 'container.created':
+            refetch();
+            toast.info(`New container added: ${event.data?.name || 'Unknown'}`);
+            break;
+          case 'container.updated':
+            refetch();
+            toast.info(`Container updated: ${event.data?.name || 'Unknown'}`);
+            break;
+          case 'container.deleted':
+            refetch();
+            toast.info('Container deleted');
+            break;
+        }
+      }
+    }
+  });
 
   // Filter containers - memoized for performance
   const filteredContainers = useMemo(() => {

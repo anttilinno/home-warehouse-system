@@ -77,6 +77,8 @@ import { useTableSort } from "@/lib/hooks/use-table-sort";
 import { useInfiniteScroll } from "@/lib/hooks/use-infinite-scroll";
 import { useBulkSelection } from "@/lib/hooks/use-bulk-selection";
 import { useDebouncedValue } from "@/lib/hooks/use-debounced-value";
+import { useKeyboardShortcuts } from "@/lib/hooks/use-keyboard-shortcuts";
+import { useSSE, type SSEEvent } from "@/lib/hooks/use-sse";
 import { borrowersApi, importExportApi } from "@/lib/api";
 import type { Borrower, BorrowerCreate, BorrowerUpdate } from "@/lib/types/borrowers";
 import { exportToCSV, generateFilename, type ColumnDefinition } from "@/lib/utils/csv-export";
@@ -164,6 +166,39 @@ export default function BorrowersPage() {
     pageSize: 50,
     dependencies: [workspaceId],
     autoFetch: !!workspaceId,
+  });
+
+  // Subscribe to SSE events for real-time updates
+  useSSE({
+    onEvent: (event: SSEEvent) => {
+      // Handle borrower events
+      if (event.entity_type === "borrower") {
+        switch (event.type) {
+          case "borrower.created":
+            // Refetch borrowers list to show new borrower
+            refetch();
+            toast.info(`New borrower added: ${event.data?.name || "Unknown"}`);
+            break;
+
+          case "borrower.updated":
+            // Refetch to update the borrower in the list
+            refetch();
+            break;
+
+          case "borrower.deleted":
+            // Refetch to remove deleted borrower
+            refetch();
+            toast.warning("A borrower was deleted");
+            break;
+        }
+      }
+    },
+    onConnect: () => {
+      console.log("[Borrowers Page] SSE connected");
+    },
+    onDisconnect: () => {
+      console.log("[Borrowers Page] SSE disconnected");
+    },
   });
 
   // Filter borrowers - memoized for performance
@@ -376,6 +411,58 @@ export default function BorrowersPage() {
       });
     }
   };
+
+  // Keyboard shortcuts for this page
+  useKeyboardShortcuts({
+    shortcuts: [
+      {
+        key: 'n',
+        ctrl: true,
+        description: 'Create new borrower',
+        action: () => openCreateDialog(),
+      },
+      {
+        key: 'r',
+        description: 'Refresh borrowers list',
+        action: () => refetch(),
+        preventDefault: false,
+      },
+      {
+        key: 'a',
+        ctrl: true,
+        description: 'Select all borrowers',
+        action: () => {
+          if (sortedBorrowers.length > 0) {
+            selectAll(sortedBorrowers.map((b) => b.id));
+          }
+        },
+      },
+      {
+        key: 'Escape',
+        description: 'Clear selection or close dialog',
+        action: () => {
+          if (selectedCount > 0) {
+            clearSelection();
+          } else if (dialogOpen) {
+            setDialogOpen(false);
+          }
+        },
+        preventDefault: false,
+      },
+      {
+        key: 'e',
+        ctrl: true,
+        description: 'Export selected borrowers',
+        action: () => {
+          if (selectedCount > 0) {
+            handleBulkExport();
+          }
+        },
+      },
+    ],
+    enabled: true,
+    ignoreInputFields: true,
+  });
 
   if (workspaceLoading || isLoading) {
     return (

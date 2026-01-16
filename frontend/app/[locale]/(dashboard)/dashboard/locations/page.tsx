@@ -61,6 +61,7 @@ import { Badge } from "@/components/ui/badge";
 import { ImportDialog, type ImportResult } from "@/components/ui/import-dialog";
 import { useWorkspace } from "@/lib/hooks/use-workspace";
 import { useDebouncedValue } from "@/lib/hooks/use-debounced-value";
+import { useSSE, type SSEEvent } from "@/lib/hooks/use-sse";
 import { locationsApi, importExportApi } from "@/lib/api";
 import type { Location, LocationCreate, LocationUpdate } from "@/lib/types/locations";
 import { cn } from "@/lib/utils";
@@ -350,6 +351,28 @@ export default function LocationsPage() {
       loadLocations();
     }
   }, [workspaceId, loadLocations]);
+
+  // Subscribe to SSE events for real-time updates
+  useSSE({
+    onEvent: (event: SSEEvent) => {
+      if (event.entity_type === 'location') {
+        switch (event.type) {
+          case 'location.created':
+            loadLocations();
+            toast.info(`New location added: ${event.data?.name || 'Unknown'}`);
+            break;
+          case 'location.updated':
+            loadLocations();
+            toast.info(`Location updated: ${event.data?.name || 'Unknown'}`);
+            break;
+          case 'location.deleted':
+            loadLocations();
+            toast.info('Location deleted');
+            break;
+        }
+      }
+    }
+  });
 
   const handleToggle = (id: string) => {
     setExpandedIds((prev) => {

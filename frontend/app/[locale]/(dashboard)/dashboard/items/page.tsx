@@ -74,6 +74,8 @@ import { useInfiniteScroll } from "@/lib/hooks/use-infinite-scroll";
 import { useBulkSelection } from "@/lib/hooks/use-bulk-selection";
 import { useFilters } from "@/lib/hooks/use-filters";
 import { useSavedFilters } from "@/lib/hooks/use-saved-filters";
+import { useKeyboardShortcuts } from "@/lib/hooks/use-keyboard-shortcuts";
+import { useSSE, type SSEEvent } from "@/lib/hooks/use-sse";
 import { itemsApi, categoriesApi, importExportApi, type Category } from "@/lib/api";
 import type { Item, ItemCreate, ItemUpdate } from "@/lib/types/items";
 import { cn } from "@/lib/utils";
@@ -482,6 +484,38 @@ export default function ItemsPage() {
     autoFetch: !!workspaceId,
   });
 
+  // Subscribe to SSE events for real-time updates
+  useSSE({
+    onEvent: (event: SSEEvent) => {
+      // Handle item events
+      if (event.entity_type === "item") {
+        switch (event.type) {
+          case "item.created":
+            // Refetch items list to show new item
+            refetch();
+            toast.info(`New item added: ${event.data?.name || "Unknown"}`);
+            break;
+
+          case "item.updated":
+            // Refetch to update the item in the list
+            refetch();
+            break;
+
+          case "item.deleted":
+            // Refetch to remove archived/deleted item
+            refetch();
+            break;
+        }
+      }
+    },
+    onConnect: () => {
+      console.log("[Items Page] SSE connected");
+    },
+    onDisconnect: () => {
+      console.log("[Items Page] SSE disconnected");
+    },
+  });
+
   // Filter items (client-side) - memoized for performance
   const filteredItems = useMemo(() => {
     return items.filter((item) => {
@@ -793,6 +827,58 @@ export default function ItemsPage() {
       });
     }
   };
+
+  // Keyboard shortcuts for this page
+  useKeyboardShortcuts({
+    shortcuts: [
+      {
+        key: 'n',
+        ctrl: true,
+        description: 'Create new item',
+        action: () => openCreateDialog(),
+      },
+      {
+        key: 'r',
+        description: 'Refresh items list',
+        action: () => refetch(),
+        preventDefault: false,
+      },
+      {
+        key: 'a',
+        ctrl: true,
+        description: 'Select all items',
+        action: () => {
+          if (sortedItems.length > 0) {
+            selectAll(sortedItems.map((i) => i.id));
+          }
+        },
+      },
+      {
+        key: 'Escape',
+        description: 'Clear selection or close dialog',
+        action: () => {
+          if (selectedCount > 0) {
+            clearSelection();
+          } else if (dialogOpen) {
+            setDialogOpen(false);
+          }
+        },
+        preventDefault: false,
+      },
+      {
+        key: 'e',
+        ctrl: true,
+        description: 'Export selected items',
+        action: () => {
+          if (selectedCount > 0) {
+            handleBulkExport();
+          }
+        },
+      },
+    ],
+    enabled: true,
+    ignoreInputFields: true,
+  });
 
   if (workspaceLoading || isLoading) {
     return (

@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useWorkspace } from "@/lib/hooks/use-workspace";
+import { useSSE, type SSEEvent } from "@/lib/hooks/use-sse";
 import { analyticsApi, type OutOfStockItem } from "@/lib/api";
 import { Link } from "@/i18n/navigation";
 
@@ -70,6 +71,16 @@ export default function OutOfStockPage() {
       loadItems();
     }
   }, [workspaceId, loadItems]);
+
+  // Subscribe to SSE events for real-time updates
+  useSSE({
+    onEvent: (event: SSEEvent) => {
+      if (event.entity_type === 'inventory' || event.entity_type === 'item') {
+        // Refresh out-of-stock/low-stock data when inventory or items change
+        loadItems();
+      }
+    }
+  });
 
   // Filter items by search
   const filteredItems = items.filter((item) =>

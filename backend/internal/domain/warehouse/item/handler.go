@@ -8,11 +8,12 @@ import (
 	"github.com/google/uuid"
 
 	appMiddleware "github.com/antti/home-warehouse/go-backend/internal/api/middleware"
+	"github.com/antti/home-warehouse/go-backend/internal/infra/events"
 	"github.com/antti/home-warehouse/go-backend/internal/shared"
 )
 
 // RegisterRoutes registers item routes.
-func RegisterRoutes(api huma.API, svc ServiceInterface) {
+func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broadcaster) {
 	// List items
 	huma.Get(api, "/items", func(ctx context.Context, input *ListItemsInput) (*ListItemsOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
@@ -117,6 +118,8 @@ func RegisterRoutes(api huma.API, svc ServiceInterface) {
 			return nil, huma.Error401Unauthorized("workspace context required")
 		}
 
+		authUser, _ := appMiddleware.GetAuthUser(ctx)
+
 		item, err := svc.Create(ctx, CreateInput{
 			WorkspaceID:       workspaceID,
 			SKU:               input.Body.SKU,
@@ -151,6 +154,21 @@ func RegisterRoutes(api huma.API, svc ServiceInterface) {
 			return nil, huma.Error400BadRequest(err.Error())
 		}
 
+		// Publish event
+		if broadcaster != nil && authUser != nil {
+			broadcaster.Publish(workspaceID, events.Event{
+				Type:       "item.created",
+				EntityID:   item.ID().String(),
+				EntityType: "item",
+				UserID:     authUser.ID,
+				Data: map[string]any{
+					"id":   item.ID(),
+					"sku":  item.SKU(),
+					"name": item.Name(),
+				},
+			})
+		}
+
 		return &CreateItemOutput{
 			Body: toItemResponse(item),
 		}, nil
@@ -162,6 +180,8 @@ func RegisterRoutes(api huma.API, svc ServiceInterface) {
 		if !ok {
 			return nil, huma.Error401Unauthorized("workspace context required")
 		}
+
+		authUser, _ := appMiddleware.GetAuthUser(ctx)
 
 		// Get the current item to use defaults for fields not provided
 		currentItem, err := svc.GetByID(ctx, input.ID, workspaceID)
@@ -207,6 +227,20 @@ func RegisterRoutes(api huma.API, svc ServiceInterface) {
 			return nil, huma.Error400BadRequest(err.Error())
 		}
 
+		// Publish event
+		if broadcaster != nil && authUser != nil {
+			broadcaster.Publish(workspaceID, events.Event{
+				Type:       "item.updated",
+				EntityID:   item.ID().String(),
+				EntityType: "item",
+				UserID:     authUser.ID,
+				Data: map[string]any{
+					"id":   item.ID(),
+					"name": item.Name(),
+				},
+			})
+		}
+
 		return &UpdateItemOutput{
 			Body: toItemResponse(item),
 		}, nil
@@ -219,12 +253,24 @@ func RegisterRoutes(api huma.API, svc ServiceInterface) {
 			return nil, huma.Error401Unauthorized("workspace context required")
 		}
 
+		authUser, _ := appMiddleware.GetAuthUser(ctx)
+
 		err := svc.Archive(ctx, input.ID, workspaceID)
 		if err != nil {
 			if err == ErrItemNotFound {
 				return nil, huma.Error404NotFound("item not found")
 			}
 			return nil, huma.Error400BadRequest(err.Error())
+		}
+
+		// Publish event (treat archive as delete event)
+		if broadcaster != nil && authUser != nil {
+			broadcaster.Publish(workspaceID, events.Event{
+				Type:       "item.deleted",
+				EntityID:   input.ID.String(),
+				EntityType: "item",
+				UserID:     authUser.ID,
+			})
 		}
 
 		return nil, nil
@@ -237,12 +283,24 @@ func RegisterRoutes(api huma.API, svc ServiceInterface) {
 			return nil, huma.Error401Unauthorized("workspace context required")
 		}
 
+		authUser, _ := appMiddleware.GetAuthUser(ctx)
+
 		err := svc.Restore(ctx, input.ID, workspaceID)
 		if err != nil {
 			if err == ErrItemNotFound {
 				return nil, huma.Error404NotFound("item not found")
 			}
 			return nil, huma.Error400BadRequest(err.Error())
+		}
+
+		// Publish event (treat restore as create event)
+		if broadcaster != nil && authUser != nil {
+			broadcaster.Publish(workspaceID, events.Event{
+				Type:       "item.created",
+				EntityID:   input.ID.String(),
+				EntityType: "item",
+				UserID:     authUser.ID,
+			})
 		}
 
 		return nil, nil

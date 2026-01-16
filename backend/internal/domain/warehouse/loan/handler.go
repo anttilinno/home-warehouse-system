@@ -8,11 +8,12 @@ import (
 	"github.com/google/uuid"
 
 	appMiddleware "github.com/antti/home-warehouse/go-backend/internal/api/middleware"
+	"github.com/antti/home-warehouse/go-backend/internal/infra/events"
 	"github.com/antti/home-warehouse/go-backend/internal/shared"
 )
 
 // RegisterRoutes registers loan routes.
-func RegisterRoutes(api huma.API, svc ServiceInterface) {
+func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broadcaster) {
 	// List all loans
 	huma.Get(api, "/loans", func(ctx context.Context, input *ListLoansInput) (*ListLoansOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
@@ -131,6 +132,22 @@ func RegisterRoutes(api huma.API, svc ServiceInterface) {
 			return nil, huma.Error400BadRequest(err.Error())
 		}
 
+		// Publish SSE event
+		authUser, _ := appMiddleware.GetAuthUser(ctx)
+		if broadcaster != nil && authUser != nil {
+			broadcaster.Publish(workspaceID, events.Event{
+				Type:       "loan.created",
+				EntityID:   loan.ID().String(),
+				EntityType: "loan",
+				UserID:     authUser.ID,
+				Data: map[string]any{
+					"id":          loan.ID(),
+					"borrower_id": loan.BorrowerID(),
+					"due_date":    loan.DueDate(),
+				},
+			})
+		}
+
 		return &CreateLoanOutput{
 			Body: toLoanResponse(loan),
 		}, nil
@@ -152,6 +169,17 @@ func RegisterRoutes(api huma.API, svc ServiceInterface) {
 				return nil, huma.Error400BadRequest("loan has already been returned")
 			}
 			return nil, huma.Error400BadRequest(err.Error())
+		}
+
+		// Publish SSE event
+		authUser, _ := appMiddleware.GetAuthUser(ctx)
+		if broadcaster != nil && authUser != nil {
+			broadcaster.Publish(workspaceID, events.Event{
+				Type:       "loan.returned",
+				EntityID:   input.ID.String(),
+				EntityType: "loan",
+				UserID:     authUser.ID,
+			})
 		}
 
 		return &ReturnLoanOutput{
@@ -178,6 +206,21 @@ func RegisterRoutes(api huma.API, svc ServiceInterface) {
 				return nil, huma.Error400BadRequest("new due date must be after loaned date")
 			}
 			return nil, huma.Error400BadRequest(err.Error())
+		}
+
+		// Publish SSE event
+		authUser, _ := appMiddleware.GetAuthUser(ctx)
+		if broadcaster != nil && authUser != nil {
+			broadcaster.Publish(workspaceID, events.Event{
+				Type:       "loan.updated",
+				EntityID:   loan.ID().String(),
+				EntityType: "loan",
+				UserID:     authUser.ID,
+				Data: map[string]any{
+					"id":       loan.ID(),
+					"due_date": loan.DueDate(),
+				},
+			})
 		}
 
 		return &ExtendLoanOutput{

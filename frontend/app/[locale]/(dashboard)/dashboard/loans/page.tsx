@@ -80,6 +80,7 @@ import { useBulkSelection } from "@/lib/hooks/use-bulk-selection";
 import { useFilters } from "@/lib/hooks/use-filters";
 import { useKeyboardShortcuts } from "@/lib/hooks/use-keyboard-shortcuts";
 import { useDebouncedValue } from "@/lib/hooks/use-debounced-value";
+import { useSSE, type SSEEvent } from "@/lib/hooks/use-sse";
 import { loansApi, borrowersApi, itemsApi, inventoryApi } from "@/lib/api";
 import type { Loan } from "@/lib/types/loans";
 import type { Borrower } from "@/lib/types/borrowers";
@@ -513,6 +514,28 @@ export default function LoansPage() {
       setFormInventoryId("");
     }
   }, [formItemId, loadAvailableInventory]);
+
+  // Subscribe to SSE events for real-time updates
+  useSSE({
+    onEvent: (event: SSEEvent) => {
+      if (event.entity_type === 'loan') {
+        switch (event.type) {
+          case 'loan.created':
+            refetch();
+            toast.info('New loan created');
+            break;
+          case 'loan.updated':
+            refetch();
+            toast.info('Loan updated');
+            break;
+          case 'loan.returned':
+            refetch();
+            toast.success('Loan returned');
+            break;
+        }
+      }
+    }
+  });
 
   // Filter loans - memoized for performance
   const filteredLoans = useMemo(() => {

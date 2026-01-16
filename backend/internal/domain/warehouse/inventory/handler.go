@@ -9,14 +9,15 @@ import (
 	"github.com/google/uuid"
 
 	appMiddleware "github.com/antti/home-warehouse/go-backend/internal/api/middleware"
+	"github.com/antti/home-warehouse/go-backend/internal/infra/events"
 	"github.com/antti/home-warehouse/go-backend/internal/shared"
 )
 
 // RegisterRoutes registers inventory routes.
-func RegisterRoutes(api huma.API, svc ServiceInterface) {
+func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broadcaster) {
 	registerQueryRoutes(api, svc)
-	registerMutationRoutes(api, svc)
-	registerActionRoutes(api, svc)
+	registerMutationRoutes(api, svc, broadcaster)
+	registerActionRoutes(api, svc, broadcaster)
 }
 
 // registerQueryRoutes registers read-only inventory routes.
@@ -137,7 +138,7 @@ func registerQueryRoutes(api huma.API, svc ServiceInterface) {
 }
 
 // registerMutationRoutes registers create/update inventory routes.
-func registerMutationRoutes(api huma.API, svc ServiceInterface) {
+func registerMutationRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broadcaster) {
 	huma.Post(api, "/inventory", func(ctx context.Context, input *CreateInventoryInput) (*CreateInventoryOutput, error) {
 		workspaceID, err := appMiddleware.RequireWorkspaceID(ctx)
 		if err != nil {
@@ -161,6 +162,22 @@ func registerMutationRoutes(api huma.API, svc ServiceInterface) {
 		})
 		if err != nil {
 			return nil, mapInventoryError(err, "failed to create inventory")
+		}
+
+		// Publish SSE event
+		authUser, _ := appMiddleware.GetAuthUser(ctx)
+		if broadcaster != nil && authUser != nil {
+			broadcaster.Publish(workspaceID, events.Event{
+				Type:       "inventory.created",
+				EntityID:   inv.ID().String(),
+				EntityType: "inventory",
+				UserID:     authUser.ID,
+				Data: map[string]any{
+					"id":      inv.ID(),
+					"item_id": inv.ItemID(),
+					"status":  inv.Status(),
+				},
+			})
 		}
 
 		return &CreateInventoryOutput{Body: toInventoryResponse(inv)}, nil
@@ -188,6 +205,21 @@ func registerMutationRoutes(api huma.API, svc ServiceInterface) {
 			return nil, mapInventoryError(err, "failed to update inventory")
 		}
 
+		// Publish SSE event
+		authUser, _ := appMiddleware.GetAuthUser(ctx)
+		if broadcaster != nil && authUser != nil {
+			broadcaster.Publish(workspaceID, events.Event{
+				Type:       "inventory.updated",
+				EntityID:   inv.ID().String(),
+				EntityType: "inventory",
+				UserID:     authUser.ID,
+				Data: map[string]any{
+					"id":     inv.ID(),
+					"status": inv.Status(),
+				},
+			})
+		}
+
 		return &UpdateInventoryOutput{Body: toInventoryResponse(inv)}, nil
 	})
 
@@ -200,6 +232,21 @@ func registerMutationRoutes(api huma.API, svc ServiceInterface) {
 		inv, err := svc.UpdateStatus(ctx, input.ID, workspaceID, input.Body.Status)
 		if err != nil {
 			return nil, mapInventoryError(err, "failed to update status")
+		}
+
+		// Publish SSE event
+		authUser, _ := appMiddleware.GetAuthUser(ctx)
+		if broadcaster != nil && authUser != nil {
+			broadcaster.Publish(workspaceID, events.Event{
+				Type:       "inventory.updated",
+				EntityID:   inv.ID().String(),
+				EntityType: "inventory",
+				UserID:     authUser.ID,
+				Data: map[string]any{
+					"id":     inv.ID(),
+					"status": inv.Status(),
+				},
+			})
 		}
 
 		return &UpdateInventoryOutput{Body: toInventoryResponse(inv)}, nil
@@ -216,12 +263,27 @@ func registerMutationRoutes(api huma.API, svc ServiceInterface) {
 			return nil, mapInventoryError(err, "failed to update quantity")
 		}
 
+		// Publish SSE event
+		authUser, _ := appMiddleware.GetAuthUser(ctx)
+		if broadcaster != nil && authUser != nil {
+			broadcaster.Publish(workspaceID, events.Event{
+				Type:       "inventory.updated",
+				EntityID:   inv.ID().String(),
+				EntityType: "inventory",
+				UserID:     authUser.ID,
+				Data: map[string]any{
+					"id":       inv.ID(),
+					"quantity": inv.Quantity(),
+				},
+			})
+		}
+
 		return &UpdateInventoryOutput{Body: toInventoryResponse(inv)}, nil
 	})
 }
 
 // registerActionRoutes registers inventory action routes (move, archive, restore).
-func registerActionRoutes(api huma.API, svc ServiceInterface) {
+func registerActionRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broadcaster) {
 	huma.Post(api, "/inventory/{id}/move", func(ctx context.Context, input *MoveInventoryInput) (*UpdateInventoryOutput, error) {
 		workspaceID, err := appMiddleware.RequireWorkspaceID(ctx)
 		if err != nil {
@@ -231,6 +293,21 @@ func registerActionRoutes(api huma.API, svc ServiceInterface) {
 		inv, err := svc.Move(ctx, input.ID, workspaceID, input.Body.LocationID, input.Body.ContainerID)
 		if err != nil {
 			return nil, mapInventoryError(err, "failed to move inventory")
+		}
+
+		// Publish SSE event
+		authUser, _ := appMiddleware.GetAuthUser(ctx)
+		if broadcaster != nil && authUser != nil {
+			broadcaster.Publish(workspaceID, events.Event{
+				Type:       "inventory.updated",
+				EntityID:   inv.ID().String(),
+				EntityType: "inventory",
+				UserID:     authUser.ID,
+				Data: map[string]any{
+					"id":          inv.ID(),
+					"location_id": inv.LocationID(),
+				},
+			})
 		}
 
 		return &UpdateInventoryOutput{Body: toInventoryResponse(inv)}, nil
@@ -246,6 +323,17 @@ func registerActionRoutes(api huma.API, svc ServiceInterface) {
 			return nil, mapInventoryError(err, "failed to archive inventory")
 		}
 
+		// Publish SSE event
+		authUser, _ := appMiddleware.GetAuthUser(ctx)
+		if broadcaster != nil && authUser != nil {
+			broadcaster.Publish(workspaceID, events.Event{
+				Type:       "inventory.deleted",
+				EntityID:   input.ID.String(),
+				EntityType: "inventory",
+				UserID:     authUser.ID,
+			})
+		}
+
 		return nil, nil
 	})
 
@@ -257,6 +345,17 @@ func registerActionRoutes(api huma.API, svc ServiceInterface) {
 
 		if err := svc.Restore(ctx, input.ID, workspaceID); err != nil {
 			return nil, mapInventoryError(err, "failed to restore inventory")
+		}
+
+		// Publish SSE event
+		authUser, _ := appMiddleware.GetAuthUser(ctx)
+		if broadcaster != nil && authUser != nil {
+			broadcaster.Publish(workspaceID, events.Event{
+				Type:       "inventory.created",
+				EntityID:   input.ID.String(),
+				EntityType: "inventory",
+				UserID:     authUser.ID,
+			})
 		}
 
 		return nil, nil

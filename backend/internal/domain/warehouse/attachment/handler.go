@@ -14,10 +14,11 @@ import (
 	"github.com/google/uuid"
 
 	appMiddleware "github.com/antti/home-warehouse/go-backend/internal/api/middleware"
+	"github.com/antti/home-warehouse/go-backend/internal/infra/events"
 )
 
 // RegisterRoutes registers attachment routes.
-func RegisterRoutes(api huma.API, svc ServiceInterface) {
+func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broadcaster) {
 	// List attachments for an item
 	huma.Get(api, "/items/{item_id}/attachments", func(ctx context.Context, input *ListAttachmentsInput) (*ListAttachmentsOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
@@ -118,6 +119,21 @@ func RegisterRoutes(api huma.API, svc ServiceInterface) {
 			return nil, huma.Error400BadRequest(err.Error())
 		}
 
+		// Publish event
+		if broadcaster != nil && authUser != nil {
+			broadcaster.Publish(workspaceID, events.Event{
+				Type:       "attachment.created",
+				EntityID:   attachment.ID().String(),
+				EntityType: "attachment",
+				UserID:     authUser.ID,
+				Data: map[string]any{
+					"id":              attachment.ID(),
+					"item_id":         attachment.ItemID(),
+					"attachment_type": string(attachment.AttachmentType()),
+				},
+			})
+		}
+
 		return &UploadAttachmentOutput{
 			Body: toAttachmentResponse(attachment),
 		}, nil
@@ -130,8 +146,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface) {
 			return nil, huma.Error401Unauthorized("workspace context required")
 		}
 
-		// Note: In production, verify item belongs to workspace
-		_ = workspaceID
+		authUser, _ := appMiddleware.GetAuthUser(ctx)
 
 		// Validate attachment type
 		attachmentType := AttachmentType(input.Body.AttachmentType)
@@ -151,6 +166,21 @@ func RegisterRoutes(api huma.API, svc ServiceInterface) {
 			return nil, huma.Error400BadRequest(err.Error())
 		}
 
+		// Publish event
+		if broadcaster != nil && authUser != nil {
+			broadcaster.Publish(workspaceID, events.Event{
+				Type:       "attachment.created",
+				EntityID:   attachment.ID().String(),
+				EntityType: "attachment",
+				UserID:     authUser.ID,
+				Data: map[string]any{
+					"id":              attachment.ID(),
+					"item_id":         attachment.ItemID(),
+					"attachment_type": string(attachment.AttachmentType()),
+				},
+			})
+		}
+
 		return &CreateAttachmentOutput{
 			Body: toAttachmentResponse(attachment),
 		}, nil
@@ -163,8 +193,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface) {
 			return nil, huma.Error401Unauthorized("workspace context required")
 		}
 
-		// Note: In production, verify item belongs to workspace
-		_ = workspaceID
+		authUser, _ := appMiddleware.GetAuthUser(ctx)
 
 		err := svc.SetPrimary(ctx, input.ItemID, input.ID)
 		if err != nil {
@@ -172,6 +201,21 @@ func RegisterRoutes(api huma.API, svc ServiceInterface) {
 				return nil, huma.Error404NotFound("attachment not found")
 			}
 			return nil, huma.Error400BadRequest(err.Error())
+		}
+
+		// Publish event (treat set-primary as update)
+		if broadcaster != nil && authUser != nil {
+			broadcaster.Publish(workspaceID, events.Event{
+				Type:       "attachment.updated",
+				EntityID:   input.ID.String(),
+				EntityType: "attachment",
+				UserID:     authUser.ID,
+				Data: map[string]any{
+					"id":         input.ID,
+					"item_id":    input.ItemID,
+					"is_primary": true,
+				},
+			})
 		}
 
 		return nil, nil
@@ -184,8 +228,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface) {
 			return nil, huma.Error401Unauthorized("workspace context required")
 		}
 
-		// Note: In production, verify attachment's item belongs to workspace
-		_ = workspaceID
+		authUser, _ := appMiddleware.GetAuthUser(ctx)
 
 		err := svc.DeleteAttachment(ctx, input.ID)
 		if err != nil {
@@ -193,6 +236,16 @@ func RegisterRoutes(api huma.API, svc ServiceInterface) {
 				return nil, huma.Error404NotFound("attachment not found")
 			}
 			return nil, huma.Error400BadRequest(err.Error())
+		}
+
+		// Publish event
+		if broadcaster != nil && authUser != nil {
+			broadcaster.Publish(workspaceID, events.Event{
+				Type:       "attachment.deleted",
+				EntityID:   input.ID.String(),
+				EntityType: "attachment",
+				UserID:     authUser.ID,
+			})
 		}
 
 		return nil, nil

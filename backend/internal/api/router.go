@@ -19,6 +19,7 @@ import (
 	"github.com/antti/home-warehouse/go-backend/internal/domain/auth/workspace"
 	"github.com/antti/home-warehouse/go-backend/internal/domain/barcode"
 	"github.com/antti/home-warehouse/go-backend/internal/domain/batch"
+	"github.com/antti/home-warehouse/go-backend/internal/domain/events"
 	"github.com/antti/home-warehouse/go-backend/internal/domain/importexport"
 	"github.com/antti/home-warehouse/go-backend/internal/domain/sync"
 	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/activity"
@@ -35,7 +36,9 @@ import (
 	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/loan"
 	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/location"
 	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/movement"
+	infraEvents "github.com/antti/home-warehouse/go-backend/internal/infra/events"
 	"github.com/antti/home-warehouse/go-backend/internal/infra/postgres"
+	"github.com/antti/home-warehouse/go-backend/internal/infra/queries"
 	"github.com/antti/home-warehouse/go-backend/internal/shared/jwt"
 )
 
@@ -56,6 +59,9 @@ func NewRouter(pool *pgxpool.Pool, cfg *config.Config) chi.Router {
 
 	// Create JWT service
 	jwtService := jwt.NewService(cfg.JWTSecret, cfg.JWTExpirationHours)
+
+	// Create event broadcaster for SSE
+	broadcaster := infraEvents.NewBroadcaster()
 
 	// Create Huma API with OpenAPI configuration
 	humaAPIConfig := huma.DefaultConfig("Home Warehouse API", "1.0.0")
@@ -143,6 +149,7 @@ func NewRouter(pool *pgxpool.Pool, cfg *config.Config) chi.Router {
 	analyticsSvc := analytics.NewService(analyticsRepo)
 	// Import/Export and Sync services
 	importExportSvc := importexport.NewService(importExportRepo)
+	workspaceBackupSvc := importexport.NewWorkspaceBackupService(queries.New(pool))
 	syncSvc := sync.NewService(syncRepo)
 	// Barcode service
 	barcodeSvc := barcode.NewService()
@@ -152,7 +159,7 @@ func NewRouter(pool *pgxpool.Pool, cfg *config.Config) chi.Router {
 	// Create handlers with dependencies
 	userHandler := user.NewHandler(userSvc, jwtService, workspaceSvc)
 	analyticsHandler := analytics.NewHandler(analyticsSvc)
-	importExportHandler := importexport.NewHandler(importExportSvc)
+	importExportHandler := importexport.NewHandler(importExportSvc, workspaceBackupSvc)
 	syncHandler := sync.NewHandler(syncSvc)
 
 	// Rate limiter for auth endpoints (5 requests per minute per IP)
@@ -196,6 +203,11 @@ func NewRouter(pool *pgxpool.Pool, cfg *config.Config) chi.Router {
 		// Workspace-scoped routes
 		r.Route("/workspaces/{workspace_id}", func(r chi.Router) {
 			r.Use(appMiddleware.Workspace(appMiddleware.NewMemberAdapter(memberRepo)))
+
+			// Register SSE endpoint (uses Chi directly, not Huma)
+			eventsHandler := events.NewHandler(broadcaster)
+			eventsHandler.RegisterRoutes(r)
+
 			// Create workspace API config without docs
 			wsConfig := huma.DefaultConfig("Home Warehouse API", "1.0.0")
 			wsConfig.DocsPath = ""
@@ -209,28 +221,28 @@ func NewRouter(pool *pgxpool.Pool, cfg *config.Config) chi.Router {
 			member.RegisterRoutes(wsAPI, memberSvc)
 
 			// Register Phase 1 domain routes (hierarchical data)
-			category.RegisterRoutes(wsAPI, categorySvc)
-			location.RegisterRoutes(wsAPI, locationSvc)
-			container.RegisterRoutes(wsAPI, containerSvc)
+			category.RegisterRoutes(wsAPI, categorySvc, broadcaster)
+			location.RegisterRoutes(wsAPI, locationSvc, broadcaster)
+			container.RegisterRoutes(wsAPI, containerSvc, broadcaster)
 
 			// Register Phase 2 domain routes (supporting data)
-			company.RegisterRoutes(wsAPI, companySvc)
-			label.RegisterRoutes(wsAPI, labelSvc)
+			company.RegisterRoutes(wsAPI, companySvc, broadcaster)
+			label.RegisterRoutes(wsAPI, labelSvc, broadcaster)
 
 			// Register Phase 3 domain routes (core inventory)
-			item.RegisterRoutes(wsAPI, itemSvc)
-			inventory.RegisterRoutes(wsAPI, inventorySvc)
+			item.RegisterRoutes(wsAPI, itemSvc, broadcaster)
+			inventory.RegisterRoutes(wsAPI, inventorySvc, broadcaster)
 
 			// Register Phase 4 domain routes (loans & borrowers)
-			borrower.RegisterRoutes(wsAPI, borrowerSvc)
-			loan.RegisterRoutes(wsAPI, loanSvc)
+			borrower.RegisterRoutes(wsAPI, borrowerSvc, broadcaster)
+			loan.RegisterRoutes(wsAPI, loanSvc, broadcaster)
 
 			// Register Phase 5 domain routes (activity & sync)
 			activity.RegisterRoutes(wsAPI, activitySvc)
 			deleted.RegisterRoutes(wsAPI, deletedSvc)
-			favorite.RegisterRoutes(wsAPI, favoriteSvc)
+			favorite.RegisterRoutes(wsAPI, favoriteSvc, broadcaster)
 			movement.RegisterRoutes(wsAPI, movementSvc)
-			attachment.RegisterRoutes(wsAPI, attachmentSvc)
+			attachment.RegisterRoutes(wsAPI, attachmentSvc, broadcaster)
 
 			// Register analytics routes
 			analyticsHandler.RegisterRoutes(wsAPI)

@@ -71,7 +71,7 @@ func (m *MockService) Delete(ctx context.Context, id, workspaceID uuid.UUID) err
 func TestContainerHandler_Create(t *testing.T) {
 	setup := testutil.NewHandlerTestSetup()
 	mockSvc := new(MockService)
-	container.RegisterRoutes(setup.API, mockSvc)
+	container.RegisterRoutes(setup.API, mockSvc, nil)
 
 	t.Run("creates container successfully", func(t *testing.T) {
 		locationID := uuid.New()
@@ -130,7 +130,7 @@ func TestContainerHandler_Create(t *testing.T) {
 func TestContainerHandler_List(t *testing.T) {
 	setup := testutil.NewHandlerTestSetup()
 	mockSvc := new(MockService)
-	container.RegisterRoutes(setup.API, mockSvc)
+	container.RegisterRoutes(setup.API, mockSvc, nil)
 
 	t.Run("lists containers successfully", func(t *testing.T) {
 		locationID := uuid.New()
@@ -182,7 +182,7 @@ func TestContainerHandler_List(t *testing.T) {
 func TestContainerHandler_Get(t *testing.T) {
 	setup := testutil.NewHandlerTestSetup()
 	mockSvc := new(MockService)
-	container.RegisterRoutes(setup.API, mockSvc)
+	container.RegisterRoutes(setup.API, mockSvc, nil)
 
 	t.Run("gets container by ID", func(t *testing.T) {
 		locationID := uuid.New()
@@ -214,7 +214,7 @@ func TestContainerHandler_Get(t *testing.T) {
 func TestContainerHandler_Update(t *testing.T) {
 	setup := testutil.NewHandlerTestSetup()
 	mockSvc := new(MockService)
-	container.RegisterRoutes(setup.API, mockSvc)
+	container.RegisterRoutes(setup.API, mockSvc, nil)
 
 	t.Run("updates container successfully", func(t *testing.T) {
 		locationID := uuid.New()
@@ -262,7 +262,7 @@ func TestContainerHandler_Update(t *testing.T) {
 func TestContainerHandler_Archive(t *testing.T) {
 	setup := testutil.NewHandlerTestSetup()
 	mockSvc := new(MockService)
-	container.RegisterRoutes(setup.API, mockSvc)
+	container.RegisterRoutes(setup.API, mockSvc, nil)
 
 	t.Run("archives container successfully", func(t *testing.T) {
 		containerID := uuid.New()
@@ -292,7 +292,7 @@ func TestContainerHandler_Archive(t *testing.T) {
 func TestContainerHandler_Restore(t *testing.T) {
 	setup := testutil.NewHandlerTestSetup()
 	mockSvc := new(MockService)
-	container.RegisterRoutes(setup.API, mockSvc)
+	container.RegisterRoutes(setup.API, mockSvc, nil)
 
 	t.Run("restores container successfully", func(t *testing.T) {
 		containerID := uuid.New()
@@ -322,7 +322,7 @@ func TestContainerHandler_Restore(t *testing.T) {
 func TestContainerHandler_Delete(t *testing.T) {
 	setup := testutil.NewHandlerTestSetup()
 	mockSvc := new(MockService)
-	container.RegisterRoutes(setup.API, mockSvc)
+	container.RegisterRoutes(setup.API, mockSvc, nil)
 
 	t.Run("deletes container successfully", func(t *testing.T) {
 		containerID := uuid.New()

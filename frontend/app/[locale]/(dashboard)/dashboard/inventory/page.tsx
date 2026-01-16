@@ -79,6 +79,7 @@ import { useBulkSelection } from "@/lib/hooks/use-bulk-selection";
 import { useFilters } from "@/lib/hooks/use-filters";
 import { useKeyboardShortcuts } from "@/lib/hooks/use-keyboard-shortcuts";
 import { useDebouncedValue } from "@/lib/hooks/use-debounced-value";
+import { useSSE, type SSEEvent } from "@/lib/hooks/use-sse";
 import { inventoryApi, itemsApi, locationsApi, containersApi, importExportApi } from "@/lib/api";
 import type { Inventory, InventoryCreate, InventoryCondition, InventoryStatus } from "@/lib/types/inventory";
 import type { Item } from "@/lib/types/items";
@@ -510,6 +511,28 @@ export default function InventoryPage() {
 
     loadReferenceData();
   }, [workspaceId]);
+
+  // Subscribe to SSE events for real-time updates
+  useSSE({
+    onEvent: (event: SSEEvent) => {
+      if (event.entity_type === 'inventory') {
+        switch (event.type) {
+          case 'inventory.created':
+            refetch();
+            toast.info('New inventory added');
+            break;
+          case 'inventory.updated':
+            refetch();
+            toast.info('Inventory updated');
+            break;
+          case 'inventory.deleted':
+            refetch();
+            toast.info('Inventory deleted');
+            break;
+        }
+      }
+    }
+  });
 
   // Filter inventories - memoized for performance
   const filteredInventories = useMemo(() => {
