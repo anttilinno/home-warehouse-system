@@ -939,6 +939,25 @@ type WarehouseItemLabel struct {
 	LabelID uuid.UUID `json:"label_id"`
 }
 
+type WarehouseItemPhoto struct {
+	ID            uuid.UUID `json:"id"`
+	ItemID        uuid.UUID `json:"item_id"`
+	WorkspaceID   uuid.UUID `json:"workspace_id"`
+	Filename      string    `json:"filename"`
+	StoragePath   string    `json:"storage_path"`
+	ThumbnailPath string    `json:"thumbnail_path"`
+	FileSize      int64     `json:"file_size"`
+	MimeType      string    `json:"mime_type"`
+	Width         int32     `json:"width"`
+	Height        int32     `json:"height"`
+	DisplayOrder  int32     `json:"display_order"`
+	IsPrimary     bool      `json:"is_primary"`
+	Caption       *string   `json:"caption"`
+	UploadedBy    uuid.UUID `json:"uploaded_by"`
+	CreatedAt     time.Time `json:"created_at"`
+	UpdatedAt     time.Time `json:"updated_at"`
+}
+
 type WarehouseLabel struct {
 	ID          uuid.UUID          `json:"id"`
 	WorkspaceID uuid.UUID          `json:"workspace_id"`

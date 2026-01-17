@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useMemo, useRef } from "react";
+import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { useDebouncedValue } from "@/lib/hooks/use-debounced-value";
@@ -78,6 +79,7 @@ import { useKeyboardShortcuts } from "@/lib/hooks/use-keyboard-shortcuts";
 import { useSSE, type SSEEvent } from "@/lib/hooks/use-sse";
 import { itemsApi, categoriesApi, importExportApi, type Category } from "@/lib/api";
 import type { Item, ItemCreate, ItemUpdate } from "@/lib/types/items";
+import { PhotoPlaceholder } from "@/components/items/photo-placeholder";
 import { cn } from "@/lib/utils";
 import { exportToCSV, generateFilename, type ColumnDefinition } from "@/lib/utils/csv-export";
 
@@ -314,6 +316,7 @@ function ItemsTableSkeleton() {
         <Table>
           <TableHeader>
             <TableRow>
+              <TableHead>Photo</TableHead>
               <TableHead>SKU</TableHead>
               <TableHead>Name</TableHead>
               <TableHead>Category</TableHead>
@@ -325,6 +328,7 @@ function ItemsTableSkeleton() {
           <TableBody>
             {[...Array(5)].map((_, i) => (
               <TableRow key={i}>
+                <TableCell><Skeleton className="h-12 w-12 rounded-md" /></TableCell>
                 <TableCell><Skeleton className="h-4 w-20" /></TableCell>
                 <TableCell><Skeleton className="h-4 w-40" /></TableCell>
                 <TableCell><Skeleton className="h-4 w-24" /></TableCell>
@@ -342,12 +346,15 @@ function ItemsTableSkeleton() {
 
 export default function ItemsPage() {
   const t = useTranslations("items");
+  const router = useRouter();
   const { workspaceId, isLoading: workspaceLoading } = useWorkspace();
 
   const [categories, setCategories] = useState<Category[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const debouncedSearchQuery = useDebouncedValue(searchQuery, 300);
   const [showArchived, setShowArchived] = useState(false);
+  const [itemPhotos, setItemPhotos] = useState<Record<string, { thumbnail_url?: string; photo_url: string } | null>>({});
+  const [photoCount, setPhotoCount] = useState<Record<string, number>>({});
 
   // Virtual scrolling
   const parentRef = useRef<HTMLDivElement>(null);
@@ -463,6 +470,50 @@ export default function ItemsPage() {
     }
   }, [workspaceId, loadCategories]);
 
+  // Load primary photos for visible items
+  const loadItemPhotos = useCallback(async (itemIds: string[]) => {
+    if (!workspaceId || itemIds.length === 0) return;
+
+    try {
+      // Fetch primary photos for each item
+      const photoPromises = itemIds.map(async (itemId) => {
+        try {
+          const response = await fetch(
+            `${process.env.NEXT_PUBLIC_API_URL}/workspaces/${workspaceId}/items/${itemId}/photos?limit=1&primary_only=true`,
+            {
+              credentials: "include",
+            }
+          );
+          if (response.ok) {
+            const data = await response.json();
+            return { itemId, photo: data.photos?.[0] || null, count: data.total || 0 };
+          }
+          return { itemId, photo: null, count: 0 };
+        } catch {
+          return { itemId, photo: null, count: 0 };
+        }
+      });
+
+      const results = await Promise.all(photoPromises);
+      const photosMap: Record<string, any> = {};
+      const countMap: Record<string, number> = {};
+      results.forEach(({ itemId, photo, count }) => {
+        photosMap[itemId] = photo;
+        countMap[itemId] = count;
+      });
+      setItemPhotos((prev) => ({ ...prev, ...photosMap }));
+      setPhotoCount((prev) => ({ ...prev, ...countMap }));
+    } catch (error) {
+      console.error("Failed to load item photos:", error);
+    }
+  }, [workspaceId]);
+
+  // Load photos when items change
+  useEffect(() => {
+    const visibleItemIds = sortedItems.slice(0, 50).map((item) => item.id);
+    loadItemPhotos(visibleItemIds);
+  }, [sortedItems, loadItemPhotos]);
+
   // Infinite scroll for items
   const {
     items,
@@ -505,6 +556,15 @@ export default function ItemsPage() {
             // Refetch to remove archived/deleted item
             refetch();
             break;
+        }
+      }
+
+      // Handle photo events
+      if (event.entity_type === "itemphoto") {
+        const itemId = event.data?.item_id;
+        if (itemId) {
+          // Reload photos for the affected item
+          loadItemPhotos([itemId]);
         }
       }
     },
@@ -1034,6 +1094,7 @@ export default function ItemsPage() {
                             aria-label="Select all items"
                           />
                         </TableHead>
+                        <TableHead className="w-[60px]">Photo</TableHead>
                         <SortableTableHead
                           sortDirection={getSortDirection("sku")}
                           onSort={() => requestSort("sku")}
@@ -1096,6 +1157,8 @@ export default function ItemsPage() {
                           return (
                             <TableRow
                               key={item.id}
+                              className="cursor-pointer hover:bg-muted/50"
+                              onClick={() => router.push(`/dashboard/items/${item.id}`)}
                               style={{
                                 position: 'absolute',
                                 top: 0,
@@ -1105,12 +1168,38 @@ export default function ItemsPage() {
                                 transform: `translateY(${virtualItem.start}px)`,
                               }}
                             >
-                              <TableCell>
+                              <TableCell onClick={(e) => e.stopPropagation()}>
                                 <Checkbox
                                   checked={isSelected(item.id)}
                                   onCheckedChange={() => toggleSelection(item.id)}
                                   aria-label={`Select ${item.name}`}
                                 />
+                              </TableCell>
+                              <TableCell>
+                                <div className="relative">
+                                  {itemPhotos[item.id] ? (
+                                    <div className="h-12 w-12 overflow-hidden rounded-md border">
+                                      <img
+                                        src={itemPhotos[item.id].thumbnail_url || itemPhotos[item.id].photo_url}
+                                        alt={item.name}
+                                        className="h-full w-full object-cover"
+                                        loading="lazy"
+                                      />
+                                    </div>
+                                  ) : itemPhotos[item.id] === null ? (
+                                    <PhotoPlaceholder size="sm" ariaLabel={`No photo for ${item.name}`} />
+                                  ) : (
+                                    <div className="h-12 w-12 animate-pulse rounded-md bg-muted" />
+                                  )}
+                                  {photoCount[item.id] > 1 && (
+                                    <Badge
+                                      variant="secondary"
+                                      className="absolute -bottom-1 -right-1 h-5 min-w-5 px-1 text-xs"
+                                    >
+                                      {photoCount[item.id]}
+                                    </Badge>
+                                  )}
+                                </div>
                               </TableCell>
                               <TableCell className="font-mono text-sm">
                                 {item.sku}
@@ -1134,7 +1223,7 @@ export default function ItemsPage() {
                               <TableCell>{item.brand || "-"}</TableCell>
                               <TableCell>{item.model || "-"}</TableCell>
                               <TableCell>{item.min_stock_level}</TableCell>
-                              <TableCell>
+                              <TableCell onClick={(e) => e.stopPropagation()}>
                                 <DropdownMenu>
                                   <DropdownMenuTrigger asChild>
                                     <Button variant="ghost" size="icon" aria-label={`Actions for ${item.name}`}>

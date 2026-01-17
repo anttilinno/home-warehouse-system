@@ -108,6 +108,7 @@ func CleanupTestDB(t *testing.T, pool *pgxpool.Pool) {
 		"warehouse.inventory",
 		"warehouse.item_labels",
 		"warehouse.labels",
+		"warehouse.item_photos",
 		"warehouse.items",
 		"warehouse.container_tags",
 		"warehouse.containers",

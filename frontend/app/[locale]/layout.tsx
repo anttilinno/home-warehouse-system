@@ -7,6 +7,7 @@ import { getMessages, setRequestLocale } from "next-intl/server";
 import { routing } from "@/i18n/routing";
 import { siteConfig } from "@/config/site";
 import { ThemeProvider } from "@/components/providers/theme-provider";
+import { ServiceWorkerProvider } from "@/components/providers/sw-provider";
 import { AuthProvider } from "@/lib/contexts/auth-context";
 import { Toaster } from "@/components/ui/toaster";
 import { ProgressBar } from "@/components/ui/progress-bar";
@@ -37,6 +38,12 @@ export const metadata: Metadata = {
     "barcode scanner",
   ],
   authors: [{ name: "Home Warehouse" }],
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: siteConfig.name,
+  },
   openGraph: {
     type: "website",
     locale: "en_US",
@@ -80,15 +87,17 @@ export default async function LocaleLayout({ children, params }: Props) {
       <body
         className={`${geistSans.variable} ${geistMono.variable} font-sans antialiased`}
       >
-        <ThemeProvider>
-          <ProgressBar />
-          <NextIntlClientProvider messages={messages}>
-            <AuthProvider>
-              {children}
-              <Toaster />
-            </AuthProvider>
-          </NextIntlClientProvider>
-        </ThemeProvider>
+        <ServiceWorkerProvider>
+          <ThemeProvider>
+            <ProgressBar />
+            <NextIntlClientProvider messages={messages}>
+              <AuthProvider>
+                {children}
+                <Toaster />
+              </AuthProvider>
+            </NextIntlClientProvider>
+          </ThemeProvider>
+        </ServiceWorkerProvider>
       </body>
     </html>
   );

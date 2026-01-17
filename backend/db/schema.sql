@@ -1,4 +1,4 @@
-\restrict dVvVRkoJ47PwpfLtw1D5ZqMcj1KApJ89lxRpxwiKfqhoGyu1qGb3nJww2AAWRQC
+\restrict ySrXVp5qo9VXxXR5bgNYL6KdwAeUz6yaodm0bv1ku343fP8jFYvf35C5S2WNi86
 
 -- Dumped from database version 18.1 (Debian 18.1-1.pgdg13+2)
 -- Dumped by pg_dump version 18.1
@@ -891,6 +891,30 @@ CREATE TABLE warehouse.item_labels (
 
 
 --
+-- Name: item_photos; Type: TABLE; Schema: warehouse; Owner: -
+--
+
+CREATE TABLE warehouse.item_photos (
+    id uuid DEFAULT uuidv7() NOT NULL,
+    item_id uuid NOT NULL,
+    workspace_id uuid NOT NULL,
+    filename character varying(255) NOT NULL,
+    storage_path character varying(500) NOT NULL,
+    thumbnail_path character varying(500) NOT NULL,
+    file_size bigint NOT NULL,
+    mime_type character varying(100) NOT NULL,
+    width integer NOT NULL,
+    height integer NOT NULL,
+    display_order integer DEFAULT 0 NOT NULL,
+    is_primary boolean DEFAULT false NOT NULL,
+    caption text,
+    uploaded_by uuid NOT NULL,
+    created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
+);
+
+
+--
 -- Name: items; Type: TABLE; Schema: warehouse; Owner: -
 --
 
@@ -1395,6 +1419,14 @@ ALTER TABLE ONLY warehouse.item_labels
 
 
 --
+-- Name: item_photos item_photos_pkey; Type: CONSTRAINT; Schema: warehouse; Owner: -
+--
+
+ALTER TABLE ONLY warehouse.item_photos
+    ADD CONSTRAINT item_photos_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: items items_pkey; Type: CONSTRAINT; Schema: warehouse; Owner: -
 --
 
@@ -1612,6 +1644,27 @@ CREATE INDEX idx_import_jobs_user_id ON warehouse.import_jobs USING btree (user_
 --
 
 CREATE INDEX idx_import_jobs_workspace_id ON warehouse.import_jobs USING btree (workspace_id);
+
+
+--
+-- Name: idx_item_photos_item; Type: INDEX; Schema: warehouse; Owner: -
+--
+
+CREATE INDEX idx_item_photos_item ON warehouse.item_photos USING btree (item_id, display_order);
+
+
+--
+-- Name: idx_item_photos_primary; Type: INDEX; Schema: warehouse; Owner: -
+--
+
+CREATE UNIQUE INDEX idx_item_photos_primary ON warehouse.item_photos USING btree (item_id, is_primary) WHERE (is_primary = true);
+
+
+--
+-- Name: idx_item_photos_workspace; Type: INDEX; Schema: warehouse; Owner: -
+--
+
+CREATE INDEX idx_item_photos_workspace ON warehouse.item_photos USING btree (workspace_id);
 
 
 --
@@ -2452,6 +2505,30 @@ ALTER TABLE ONLY warehouse.item_labels
 
 
 --
+-- Name: item_photos item_photos_item_id_fkey; Type: FK CONSTRAINT; Schema: warehouse; Owner: -
+--
+
+ALTER TABLE ONLY warehouse.item_photos
+    ADD CONSTRAINT item_photos_item_id_fkey FOREIGN KEY (item_id) REFERENCES warehouse.items(id) ON DELETE CASCADE;
+
+
+--
+-- Name: item_photos item_photos_uploaded_by_fkey; Type: FK CONSTRAINT; Schema: warehouse; Owner: -
+--
+
+ALTER TABLE ONLY warehouse.item_photos
+    ADD CONSTRAINT item_photos_uploaded_by_fkey FOREIGN KEY (uploaded_by) REFERENCES auth.users(id);
+
+
+--
+-- Name: item_photos item_photos_workspace_id_fkey; Type: FK CONSTRAINT; Schema: warehouse; Owner: -
+--
+
+ALTER TABLE ONLY warehouse.item_photos
+    ADD CONSTRAINT item_photos_workspace_id_fkey FOREIGN KEY (workspace_id) REFERENCES auth.workspaces(id) ON DELETE CASCADE;
+
+
+--
 -- Name: items items_category_id_fkey; Type: FK CONSTRAINT; Schema: warehouse; Owner: -
 --
 
@@ -2551,7 +2628,7 @@ ALTER TABLE ONLY warehouse.pending_changes
 -- PostgreSQL database dump complete
 --
 
-\unrestrict dVvVRkoJ47PwpfLtw1D5ZqMcj1KApJ89lxRpxwiKfqhoGyu1qGb3nJww2AAWRQC
+\unrestrict ySrXVp5qo9VXxXR5bgNYL6KdwAeUz6yaodm0bv1ku343fP8jFYvf35C5S2WNi86
 
 
 --
@@ -2562,4 +2639,5 @@ INSERT INTO public.schema_migrations (version) VALUES
     ('001'),
     ('20260115195916'),
     ('20260116155543'),
-    ('20260116192313');
+    ('20260116192313'),
+    ('20260116204232');

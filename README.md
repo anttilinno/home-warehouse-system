@@ -7,12 +7,13 @@ A multi-tenant home inventory management system for tracking items, locations, c
 - **Multi-tenant Workspaces** - Isolated environments for different users/teams with role-based access control
 - **Approval Pipeline** - Member changes require admin approval for data integrity
 - **Item Management** - Track items with SKU, brand, model, serial numbers
+- **Item Photos** - Multiple photos per item with thumbnails, captions, and automatic compression
 - **Location Hierarchy** - Organize storage by rooms, zones, shelves, bins
 - **Container Management** - Group items in boxes and containers
 - **Loan Tracking** - Monitor who borrowed what and when
 - **Background Import System** - Bulk import data via CSV files
 - **Real-time Updates** - SSE-based live updates for import progress and approvals
-- **PWA Support** - Progressive Web App with offline capability
+- **PWA Support** - Progressive Web App with offline capability and cached photos
 
 ## Quick Start
 
@@ -99,6 +100,7 @@ For detailed CSV format requirements and usage instructions, see the [Import Use
 - [Database Schema](docs/DATABASE.md) - Complete database documentation
 - [Approval Pipeline](docs/APPROVAL_PIPELINE.md) - Role-based change approval system
 - [Import User Guide](docs/IMPORT_USER_GUIDE.md) - CSV bulk import instructions
+- [Item Photos](docs/ITEM_PHOTOS.md) - Photo management feature documentation
 
 ## Tech Stack
 

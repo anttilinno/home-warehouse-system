@@ -1,6 +1,7 @@
 package api
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"time"
@@ -9,6 +10,7 @@ import (
 	"github.com/danielgtaylor/huma/v2/adapters/humachi"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 
 	appMiddleware "github.com/antti/home-warehouse/go-backend/internal/api/middleware"
@@ -34,6 +36,7 @@ import (
 	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/favorite"
 	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/inventory"
 	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/item"
+	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/itemphoto"
 	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/label"
 	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/loan"
 	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/location"
@@ -41,7 +44,9 @@ import (
 	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/importjob"
 	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/pendingchange"
 	infraEvents "github.com/antti/home-warehouse/go-backend/internal/infra/events"
+	"github.com/antti/home-warehouse/go-backend/internal/infra/imageprocessor"
 	"github.com/antti/home-warehouse/go-backend/internal/infra/postgres"
+	"github.com/antti/home-warehouse/go-backend/internal/infra/storage"
 	"github.com/antti/home-warehouse/go-backend/internal/infra/queries"
 	"github.com/antti/home-warehouse/go-backend/internal/infra/queue"
 	"github.com/antti/home-warehouse/go-backend/internal/shared/jwt"
@@ -107,6 +112,9 @@ func NewRouter(pool *pgxpool.Pool, cfg *config.Config) chi.Router {
 	// Register additional documentation routes (Redoc UI)
 	RegisterDocsRoutes(r)
 
+	// Initialize transaction manager
+	txManager := postgres.NewTxManager(pool)
+
 	// Initialize repositories
 	// Auth repositories
 	userRepo := postgres.NewUserRepository(pool)
@@ -122,6 +130,7 @@ func NewRouter(pool *pgxpool.Pool, cfg *config.Config) chi.Router {
 	labelRepo := postgres.NewLabelRepository(pool)
 	// Phase 3 repositories
 	itemRepo := postgres.NewItemRepository(pool)
+	itemPhotoRepo := postgres.NewItemPhotoRepository(pool, txManager)
 	inventoryRepo := postgres.NewInventoryRepository(pool)
 	// Phase 4 repositories
 	borrowerRepo := postgres.NewBorrowerRepository(pool)
@@ -154,6 +163,16 @@ func NewRouter(pool *pgxpool.Pool, cfg *config.Config) chi.Router {
 	labelSvc := label.NewService(labelRepo)
 	// Phase 3 services
 	itemSvc := item.NewService(itemRepo)
+
+	// Initialize storage and image processor for item photos
+	uploadDir := getUploadDir()
+	photoStorageDir := getPhotoStorageDir()
+	photoStorage, err := storage.NewLocalStorage(photoStorageDir)
+	if err != nil {
+		log.Fatalf("failed to initialize photo storage: %v", err)
+	}
+	imageProcessor := imageprocessor.NewProcessor(imageprocessor.DefaultConfig())
+	itemPhotoSvc := itemphoto.NewService(itemPhotoRepo, photoStorage, imageProcessor, uploadDir)
 	// Phase 5 services (movement service created before inventory to allow dependency)
 	movementSvc := movement.NewService(movementRepo)
 	inventorySvc := inventory.NewService(inventoryRepo, movementSvc)
@@ -273,6 +292,22 @@ func NewRouter(pool *pgxpool.Pool, cfg *config.Config) chi.Router {
 			item.RegisterRoutes(wsAPI, itemSvc, broadcaster)
 			inventory.RegisterRoutes(wsAPI, inventorySvc, broadcaster)
 
+			// Register item photo routes
+			photoURLGenerator := func(workspaceID, itemID, photoID uuid.UUID, isThumbnail bool) string {
+				if isThumbnail {
+					return fmt.Sprintf("%s/api/v1/workspaces/%s/items/%s/photos/%s/thumbnail",
+						cfg.BackendURL, workspaceID, itemID, photoID)
+				}
+				return fmt.Sprintf("%s/api/v1/workspaces/%s/items/%s/photos/%s",
+					cfg.BackendURL, workspaceID, itemID, photoID)
+			}
+			itemphoto.RegisterRoutes(wsAPI, itemPhotoSvc, broadcaster, photoURLGenerator)
+
+			// Register photo upload and serve handlers (use Chi directly for multipart)
+			storageGetter := &photoStorageGetter{storage: photoStorage}
+			itemphoto.RegisterUploadHandler(r, itemPhotoSvc, broadcaster, photoURLGenerator)
+			itemphoto.RegisterServeHandler(r, itemPhotoSvc, storageGetter)
+
 			// Register Phase 4 domain routes (loans & borrowers)
 			borrower.RegisterRoutes(wsAPI, borrowerSvc, broadcaster)
 			loan.RegisterRoutes(wsAPI, loanSvc, broadcaster)
@@ -307,4 +342,44 @@ func NewRouter(pool *pgxpool.Pool, cfg *config.Config) chi.Router {
 	})
 
 	return r
+}
+
+// getUploadDir returns the configured temporary upload directory for processing files
+func getUploadDir() string {
+	dir := os.Getenv("PHOTO_UPLOAD_DIR")
+	if dir == "" {
+		dir = "/tmp/photo-uploads"
+	}
+
+	// Create directory if it doesn't exist
+	if err := os.MkdirAll(dir, 0755); err != nil {
+		log.Printf("Warning: failed to create upload directory %s: %v", dir, err)
+	}
+
+	return dir
+}
+
+// getPhotoStorageDir returns the configured permanent storage directory for photos
+func getPhotoStorageDir() string {
+	dir := os.Getenv("PHOTO_STORAGE_DIR")
+	if dir == "" {
+		dir = "./uploads/photos"
+	}
+
+	// Create directory if it doesn't exist
+	if err := os.MkdirAll(dir, 0755); err != nil {
+		log.Printf("Warning: failed to create photo storage directory %s: %v", dir, err)
+	}
+
+	return dir
+}
+
+
+// photoStorageGetter implements the StorageGetter interface
+type photoStorageGetter struct {
+	storage *storage.LocalStorage
+}
+
+func (g *photoStorageGetter) GetStorage() itemphoto.Storage {
+	return g.storage
 }

@@ -96,10 +96,20 @@
   - [x] Barcode scanning for item lookup
   - [ ] Background sync for offline changes
   - [ ] Push notifications support
-- [ ] Item photos
-  - Upload photos for items
-  - Multiple photos per item
-  - Thumbnail generation
+- [x] Item photos
+  - [x] Upload photos for items (drag-and-drop, multi-file)
+  - [x] Multiple photos per item with ordering
+  - [x] Automatic thumbnail generation (400x400)
+  - [x] Primary photo designation
+  - [x] Photo captions and editing
+  - [x] Photo viewer/lightbox
+  - [x] Client-side compression before upload (>2MB auto-compressed)
+  - [x] PWA caching for offline photo viewing
+  - [x] Integration tests and documentation
+  - [ ] WebP thumbnail generation (requires schema changes)
+  - [ ] Background thumbnail processing worker
+  - [ ] Bulk photo operations (delete, caption edit)
+  - [ ] Admin cleanup tools (orphaned files, regenerate thumbnails)
 - [x] Background import processing (Redis Queue + SSE)
   - [x] Backend infrastructure (Redis queue, worker process, CSV parser)
   - [x] Database schema (import_jobs, import_errors tables)
