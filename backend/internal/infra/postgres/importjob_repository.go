@@ -137,7 +137,7 @@ func (r *ImportJobRepository) FindJobsByWorkspace(ctx context.Context, workspace
 		LIMIT $2 OFFSET $3
 	`
 
-	rows, err := r.pool.Query(ctx, query, workspaceID, pagination.Limit, pagination.Offset)
+	rows, err := r.pool.Query(ctx, query, workspaceID, pagination.Limit(), pagination.Offset())
 	if err != nil {
 		return nil, 0, err
 	}

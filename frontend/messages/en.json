@@ -241,6 +241,32 @@
     "noResultsDescription": "Try adjusting your search or filters.",
     "noPermission": "Access Denied",
     "noPermissionDescription": "Only workspace owners and admins can view approvals.",
+    "status": {
+      "pending": "Pending",
+      "approved": "Approved",
+      "rejected": "Rejected"
+    },
+    "action": {
+      "create": "Create",
+      "update": "Update",
+      "delete": "Delete"
+    },
+    "entityType": {
+      "item": "Item",
+      "location": "Location",
+      "container": "Container",
+      "category": "Category",
+      "borrower": "Borrower",
+      "loan": "Loan",
+      "inventory": "Inventory"
+    },
+    "card": {
+      "requestedBy": "Requested by",
+      "reviewedBy": "Reviewed by",
+      "on": "on",
+      "reason": "Reason"
+    },
+    "pendingCount": "({count} pending)",
     "filter": {
       "allStatuses": "All Statuses",
       "pending": "Pending",
@@ -284,7 +310,12 @@
       "description": "The data associated with this change request",
       "data": "Data",
       "changes": "Proposed Changes",
-      "note": "This shows the data that will be created, updated, or deleted."
+      "note": "This shows the data that will be created, updated, or deleted.",
+      "noData": "No data available for this change.",
+      "deleteConfirmation": "This entity will be permanently deleted if approved.",
+      "field": "Field",
+      "oldValue": "Old Value",
+      "newValue": "New Value"
     },
     "approveDialog": {
       "title": "Approve Change",
@@ -317,6 +348,7 @@
     "emptyDescription": "You haven't submitted any change requests yet.",
     "noResults": "No changes found",
     "noResultsDescription": "Try adjusting your search or filters.",
+    "loadError": "Failed to load your changes",
     "filter": {
       "allStatuses": "All Statuses",
       "pending": "Pending",
@@ -341,15 +373,36 @@
       "update": "Update",
       "delete": "Delete"
     },
+    "entityType": {
+      "item": "Item",
+      "location": "Location",
+      "container": "Container",
+      "category": "Category",
+      "borrower": "Borrower",
+      "loan": "Loan",
+      "inventory": "Inventory"
+    },
+    "card": {
+      "reviewedBy": "Reviewed by",
+      "on": "on"
+    },
     "requestInfo": {
       "submitted": "Submitted",
       "reviewedAt": "Reviewed at",
       "reason": "Rejection Reason"
     },
+    "pendingCount": "({count} pending)",
     "pendingDescription": "Your change is awaiting approval from an admin.",
     "approvedDescription": "Your change has been approved and applied.",
     "rejectedDescription": "Your change was rejected by an admin.",
     "viewDetails": "View Details"
+  },
+  "rejectionReasons": {
+    "duplicateEntry": "Duplicate entry already exists",
+    "itemInUse": "Item is currently in use and cannot be modified",
+    "locationHasItems": "Location contains inventory items",
+    "categoryHasItems": "Category has associated items",
+    "insufficientJustification": "Insufficient justification provided"
   },
   "pendingChange": {
     "toast": {
@@ -366,6 +419,40 @@
       "title": "Pending Approval",
       "description": "This change is awaiting approval from a workspace admin.",
       "viewChanges": "View My Changes"
+    }
+  },
+  "imports": {
+    "title": "Import Jobs",
+    "subtitle": "Manage and monitor your bulk import operations",
+    "newImport": "New Import",
+    "empty": {
+      "title": "No import jobs",
+      "description": "You haven't created any import jobs yet. Click the button above to start a new import."
+    },
+    "errors": {
+      "authTitle": "Authentication required",
+      "authDescription": "Please log in to access the import system.",
+      "serverTitle": "Server error",
+      "serverDescription": "The server encountered an error. Please try again later.",
+      "unavailableTitle": "Import system unavailable",
+      "unavailableDescription": "The import service is currently unavailable. This may happen if the background worker is not running.",
+      "tryAgain": "Try Again"
+    },
+    "status": {
+      "pending": "Pending",
+      "processing": "Processing",
+      "completed": "Completed",
+      "failed": "Failed",
+      "cancelled": "Cancelled"
+    },
+    "viewDetails": "View Details",
+    "job": {
+      "started": "Started",
+      "progress": "Progress",
+      "rowsProcessed": "{processed} of {total} rows processed",
+      "success": "Success",
+      "errors": "Errors",
+      "total": "Total"
     }
   },
   "photos": {

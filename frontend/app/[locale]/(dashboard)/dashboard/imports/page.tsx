@@ -1,16 +1,21 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { useTranslations } from "next-intl";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatDistanceToNow } from "date-fns";
-import { FileText, Clock, CheckCircle2, XCircle, Loader2, Upload } from "lucide-react";
+import { FileText, Clock, CheckCircle2, XCircle, Loader2, Upload, AlertTriangle, ShieldAlert } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import { useWorkspace } from "@/lib/hooks/use-workspace";
 import { toast } from "sonner";
+
+interface FetchError extends Error {
+  status?: number;
+}
 
 interface ImportJob {
   id: string;
@@ -34,6 +39,7 @@ interface ImportJobsResponse {
 }
 
 export default function ImportsPage() {
+  const t = useTranslations("imports");
   const { workspaceId, isLoading: workspaceLoading } = useWorkspace();
   const [data, setData] = useState<ImportJobsResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -49,12 +55,16 @@ export default function ImportsPage() {
           credentials: "include",
         }
       );
-      if (!response.ok) throw new Error("Failed to fetch import jobs");
+      if (!response.ok) {
+        const fetchError: FetchError = new Error("Failed to fetch import jobs");
+        fetchError.status = response.status;
+        throw fetchError;
+      }
       const result = await response.json();
       setData(result);
       setError(null);
     } catch (err) {
-      const errorObj = err instanceof Error ? err : new Error("Failed to fetch import jobs");
+      const errorObj: FetchError = err instanceof Error ? err as FetchError : new Error("Failed to fetch import jobs");
       setError(errorObj);
       // Don't show toast for initial load errors - show inline error instead
     } finally {
@@ -122,9 +132,9 @@ export default function ImportsPage() {
       <div className="container mx-auto py-6 space-y-6">
         <div className="flex justify-between items-center">
           <div>
-            <h1 className="text-3xl font-bold">Import Jobs</h1>
+            <h1 className="text-3xl font-bold">{t("title")}</h1>
             <p className="text-muted-foreground mt-2">
-              Manage and monitor your bulk import operations
+              {t("subtitle")}
             </p>
           </div>
           <Skeleton className="h-10 w-32" />
@@ -155,26 +165,50 @@ export default function ImportsPage() {
   }
 
   if (error) {
+    const fetchError = error as FetchError;
+    const isAuthError = fetchError.status === 401 || fetchError.status === 403;
+    const isServerError = fetchError.status && fetchError.status >= 500;
+
     return (
       <div className="container mx-auto py-6 space-y-6">
         <div className="flex justify-between items-center">
           <div>
-            <h1 className="text-3xl font-bold">Import Jobs</h1>
+            <h1 className="text-3xl font-bold">{t("title")}</h1>
             <p className="text-muted-foreground mt-2">
-              Manage and monitor your bulk import operations
+              {t("subtitle")}
             </p>
           </div>
         </div>
 
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-12">
-            <FileText className="h-12 w-12 text-muted-foreground mb-4" />
-            <p className="text-lg font-medium">Import system unavailable</p>
-            <p className="text-sm text-muted-foreground mb-4 text-center max-w-md">
-              The import service is currently unavailable. This may happen if the background worker is not running.
-            </p>
+            {isAuthError ? (
+              <>
+                <ShieldAlert className="h-12 w-12 text-yellow-600 mb-4" />
+                <p className="text-lg font-medium">{t("errors.authTitle")}</p>
+                <p className="text-sm text-muted-foreground mb-4 text-center max-w-md">
+                  {t("errors.authDescription")}
+                </p>
+              </>
+            ) : isServerError ? (
+              <>
+                <AlertTriangle className="h-12 w-12 text-red-600 mb-4" />
+                <p className="text-lg font-medium">{t("errors.serverTitle")}</p>
+                <p className="text-sm text-muted-foreground mb-4 text-center max-w-md">
+                  {t("errors.serverDescription")}
+                </p>
+              </>
+            ) : (
+              <>
+                <FileText className="h-12 w-12 text-muted-foreground mb-4" />
+                <p className="text-lg font-medium">{t("errors.unavailableTitle")}</p>
+                <p className="text-sm text-muted-foreground mb-4 text-center max-w-md">
+                  {t("errors.unavailableDescription")}
+                </p>
+              </>
+            )}
             <Button variant="outline" onClick={() => { setError(null); setIsLoading(true); fetchJobs(); }}>
-              Try Again
+              {t("errors.tryAgain")}
             </Button>
           </CardContent>
         </Card>
@@ -186,15 +220,15 @@ export default function ImportsPage() {
     <div className="container mx-auto py-6 space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold">Import Jobs</h1>
+          <h1 className="text-3xl font-bold">{t("title")}</h1>
           <p className="text-muted-foreground mt-2">
-            Manage and monitor your bulk import operations
+            {t("subtitle")}
           </p>
         </div>
         <Button asChild>
           <Link href="/dashboard/imports/new">
             <Upload className="h-4 w-4 mr-2" />
-            New Import
+            {t("newImport")}
           </Link>
         </Button>
       </div>
@@ -209,7 +243,7 @@ export default function ImportsPage() {
                   <div>
                     <CardTitle className="text-lg">{job.file_name}</CardTitle>
                     <CardDescription>
-                      {job.entity_type} • Started{" "}
+                      {job.entity_type} • {t("job.started")}{" "}
                       {formatDistanceToNow(new Date(job.created_at), { addSuffix: true })}
                     </CardDescription>
                   </div>
@@ -222,12 +256,12 @@ export default function ImportsPage() {
                 {job.status === "processing" && job.total_rows && (
                   <div className="space-y-1">
                     <div className="flex justify-between text-sm">
-                      <span>Progress</span>
+                      <span>{t("job.progress")}</span>
                       <span className="font-medium">{calculateProgress(job)}%</span>
                     </div>
                     <Progress value={calculateProgress(job)} />
                     <p className="text-xs text-muted-foreground">
-                      {job.processed_rows} of {job.total_rows} rows processed
+                      {t("job.rowsProcessed", { processed: job.processed_rows, total: job.total_rows })}
                     </p>
                   </div>
                 )}
@@ -235,18 +269,18 @@ export default function ImportsPage() {
                 {(job.status === "completed" || job.status === "failed") && (
                   <div className="flex gap-6 text-sm">
                     <div>
-                      <span className="text-muted-foreground">Success: </span>
+                      <span className="text-muted-foreground">{t("job.success")}: </span>
                       <span className="font-medium text-green-600">{job.success_count}</span>
                     </div>
                     {job.error_count > 0 && (
                       <div>
-                        <span className="text-muted-foreground">Errors: </span>
+                        <span className="text-muted-foreground">{t("job.errors")}: </span>
                         <span className="font-medium text-red-600">{job.error_count}</span>
                       </div>
                     )}
                     {job.total_rows && (
                       <div>
-                        <span className="text-muted-foreground">Total: </span>
+                        <span className="text-muted-foreground">{t("job.total")}: </span>
                         <span className="font-medium">{job.total_rows}</span>
                       </div>
                     )}
@@ -255,7 +289,7 @@ export default function ImportsPage() {
 
                 <div className="flex justify-end">
                   <Button variant="ghost" size="sm" asChild>
-                    <Link href={`/dashboard/imports/${job.id}`}>View Details</Link>
+                    <Link href={`/dashboard/imports/${job.id}`}>{t("viewDetails")}</Link>
                   </Button>
                 </div>
               </div>
@@ -267,14 +301,14 @@ export default function ImportsPage() {
           <Card>
             <CardContent className="flex flex-col items-center justify-center py-12">
               <FileText className="h-12 w-12 text-muted-foreground mb-4" />
-              <p className="text-lg font-medium">No import jobs yet</p>
+              <p className="text-lg font-medium">{t("empty.title")}</p>
               <p className="text-sm text-muted-foreground mb-4">
-                Start by creating your first import
+                {t("empty.description")}
               </p>
               <Button asChild>
                 <Link href="/dashboard/imports/new">
                   <Upload className="h-4 w-4 mr-2" />
-                  New Import
+                  {t("newImport")}
                 </Link>
               </Button>
             </CardContent>

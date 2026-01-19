@@ -264,12 +264,13 @@ func TestCORS_SetsHeaders(t *testing.T) {
 	}))
 
 	req := httptest.NewRequest(http.MethodGet, "/test", nil)
+	req.Header.Set("Origin", "http://localhost:3000") // Set allowed origin
 	rec := httptest.NewRecorder()
 
 	handler.ServeHTTP(rec, req)
 
 	assert.Equal(t, http.StatusOK, rec.Code)
-	assert.Equal(t, "*", rec.Header().Get("Access-Control-Allow-Origin"))
+	assert.Equal(t, "http://localhost:3000", rec.Header().Get("Access-Control-Allow-Origin"))
 	assert.Equal(t, "GET, POST, PUT, PATCH, DELETE, OPTIONS", rec.Header().Get("Access-Control-Allow-Methods"))
 	assert.Contains(t, rec.Header().Get("Access-Control-Allow-Headers"), "Authorization")
 	assert.Equal(t, "true", rec.Header().Get("Access-Control-Allow-Credentials"))
@@ -284,6 +285,7 @@ func TestCORS_OptionsRequest(t *testing.T) {
 	}))
 
 	req := httptest.NewRequest(http.MethodOptions, "/test", nil)
+	req.Header.Set("Origin", "http://localhost:3000") // Set allowed origin
 	rec := httptest.NewRecorder()
 
 	handler.ServeHTTP(rec, req)
@@ -293,7 +295,7 @@ func TestCORS_OptionsRequest(t *testing.T) {
 	assert.False(t, nextCalled)
 
 	// Still should have CORS headers
-	assert.Equal(t, "*", rec.Header().Get("Access-Control-Allow-Origin"))
+	assert.Equal(t, "http://localhost:3000", rec.Header().Get("Access-Control-Allow-Origin"))
 }
 
 func TestCORS_NonOptionsRequest(t *testing.T) {

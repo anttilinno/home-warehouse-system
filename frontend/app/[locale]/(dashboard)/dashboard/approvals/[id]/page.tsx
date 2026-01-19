@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, use } from "react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import {
@@ -77,48 +77,124 @@ function getStatusColor(status: PendingChangeStatus): string {
   }
 }
 
-function getActionLabel(action: string): string {
-  switch (action) {
-    case "create":
-      return "Create";
-    case "update":
-      return "Update";
-    case "delete":
-      return "Delete";
-    default:
-      return action;
-  }
-}
 
 interface PayloadDiffProps {
   payload: Record<string, unknown>;
   action: string;
 }
 
+function formatFieldName(key: string): string {
+  return key
+    .replace(/_/g, " ")
+    .replace(/([A-Z])/g, " $1")
+    .replace(/^./, (str) => str.toUpperCase())
+    .trim();
+}
+
+function formatValue(value: unknown): string {
+  if (value === null || value === undefined) {
+    return "—";
+  }
+  if (typeof value === "boolean") {
+    return value ? "Yes" : "No";
+  }
+  if (typeof value === "object") {
+    if (Array.isArray(value)) {
+      return value.length === 0 ? "None" : value.join(", ");
+    }
+    return JSON.stringify(value);
+  }
+  return String(value);
+}
+
 function PayloadDiff({ payload, action }: PayloadDiffProps) {
   const t = useTranslations("approvals");
 
-  // For create/delete, just show the payload as-is
-  if (action === "create" || action === "delete") {
+  // Check if this is an update with old/new values structure
+  const hasOldNewStructure = payload.old_values && payload.new_values;
+
+  if (action === "update" && hasOldNewStructure) {
+    const oldValues = payload.old_values as Record<string, unknown>;
+    const newValues = payload.new_values as Record<string, unknown>;
+    const allKeys = [...new Set([...Object.keys(oldValues), ...Object.keys(newValues)])];
+
     return (
-      <div className="space-y-2">
-        <h4 className="font-medium text-sm">{t("payload.data")}</h4>
-        <div className="bg-muted rounded-lg p-4 font-mono text-xs overflow-x-auto">
-          <pre>{JSON.stringify(payload, null, 2)}</pre>
+      <div className="space-y-1">
+        <div className="grid grid-cols-3 gap-4 pb-2 border-b border-border text-sm font-medium text-muted-foreground">
+          <span>{t("payload.field")}</span>
+          <span>{t("payload.oldValue")}</span>
+          <span>{t("payload.newValue")}</span>
         </div>
+        {allKeys.map((key) => {
+          const oldVal = oldValues[key];
+          const newVal = newValues[key];
+          const hasChanged = JSON.stringify(oldVal) !== JSON.stringify(newVal);
+
+          return (
+            <div
+              key={key}
+              className={cn(
+                "grid grid-cols-3 gap-4 py-2 border-b border-border/50 last:border-0",
+                hasChanged && "bg-yellow-50 dark:bg-yellow-950/20 -mx-2 px-2 rounded"
+              )}
+            >
+              <span className="text-sm font-medium">
+                {formatFieldName(key)}
+              </span>
+              <span className={cn(
+                "text-sm",
+                hasChanged && "text-red-600 dark:text-red-400 line-through"
+              )}>
+                {formatValue(oldVal)}
+              </span>
+              <span className={cn(
+                "text-sm",
+                hasChanged && "text-green-600 dark:text-green-400 font-medium"
+              )}>
+                {formatValue(newVal)}
+              </span>
+            </div>
+          );
+        })}
       </div>
     );
   }
 
-  // For updates, we could show a diff if old_data is included in payload
-  // For now, just show the payload
-  return (
-    <div className="space-y-2">
-      <h4 className="font-medium text-sm">{t("payload.changes")}</h4>
-      <div className="bg-muted rounded-lg p-4 font-mono text-xs overflow-x-auto">
-        <pre>{JSON.stringify(payload, null, 2)}</pre>
+  // For delete action, show minimal info
+  if (action === "delete") {
+    return (
+      <div className="text-sm text-muted-foreground">
+        {t("payload.deleteConfirmation")}
       </div>
-      <p className="text-xs text-muted-foreground">{t("payload.note")}</p>
+    );
+  }
+
+  // For create or legacy update format, show simple key-value pairs
+  const entries = Object.entries(payload).filter(
+    ([key]) => !key.startsWith("_") && key !== "id" && key !== "old_values" && key !== "new_values"
+  );
+
+  if (entries.length === 0) {
+    return (
+      <p className="text-sm text-muted-foreground">{t("payload.noData")}</p>
+    );
+  }
+
+  return (
+    <div className="space-y-1">
+      {entries.map(([key, value]) => (
+        <div
+          key={key}
+          className="flex items-start py-2 border-b border-border/50 last:border-0"
+        >
+          <span className="text-sm font-medium text-muted-foreground w-1/3 shrink-0">
+            {formatFieldName(key)}
+          </span>
+          <span className="text-sm break-words">
+            {formatValue(value)}
+          </span>
+        </div>
+      ))}
     </div>
   );
 }
@@ -141,10 +217,21 @@ function DetailSkeleton() {
   );
 }
 
-export default function ApprovalDetailPage({ params }: { params: { id: string } }) {
+export default function ApprovalDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = use(params);
   const t = useTranslations("approvals");
+  const tReasons = useTranslations("rejectionReasons");
   const router = useRouter();
   const { workspaceId, currentMember } = useWorkspace();
+
+  // Translate rejection reason if it's a translation key
+  const getTranslatedReason = (reason: string) => {
+    if (reason.startsWith("rejectionReasons.")) {
+      const key = reason.replace("rejectionReasons.", "");
+      return tReasons(key);
+    }
+    return reason;
+  };
 
   const [change, setChange] = useState<PendingChange | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -164,7 +251,7 @@ export default function ApprovalDetailPage({ params }: { params: { id: string } 
 
     try {
       setIsLoading(true);
-      const data = await pendingChangesApi.get(workspaceId, params.id);
+      const data = await pendingChangesApi.get(workspaceId, id);
       setChange(data);
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Failed to load pending change";
@@ -181,7 +268,7 @@ export default function ApprovalDetailPage({ params }: { params: { id: string } 
     if (workspaceId) {
       loadChange();
     }
-  }, [workspaceId, params.id]);
+  }, [workspaceId, id]);
 
   const handleApprove = async () => {
     if (!workspaceId || !change) return;
@@ -262,18 +349,18 @@ export default function ApprovalDetailPage({ params }: { params: { id: string } 
           </div>
           <div className="space-y-1">
             <div className="flex items-center gap-2 flex-wrap">
-              <Badge variant="outline" className={cn("capitalize", getStatusColor(change.status))}>
-                {change.status}
+              <Badge variant="outline" className={cn(getStatusColor(change.status))}>
+                {t(`status.${change.status}`)}
               </Badge>
-              <Badge variant="secondary" className="capitalize">
-                {getActionLabel(change.action)}
+              <Badge variant="secondary">
+                {t(`action.${change.action}`)}
               </Badge>
-              <span className="text-sm text-muted-foreground capitalize">
-                {change.entity_type}
+              <span className="text-sm text-muted-foreground">
+                {t(`entityType.${change.entity_type}`)}
               </span>
             </div>
             <h1 className="text-2xl font-bold tracking-tight">
-              {t("detailTitle", { action: getActionLabel(change.action), type: change.entity_type })}
+              {t("detailTitle", { action: t(`action.${change.action}`), type: t(`entityType.${change.entity_type}`) })}
             </h1>
           </div>
         </div>
@@ -376,7 +463,7 @@ export default function ApprovalDetailPage({ params }: { params: { id: string } 
                     <XCircle className="h-5 w-5 text-destructive mt-0.5" />
                     <div className="space-y-1">
                       <div className="text-sm font-medium">{t("reviewInfo.reason")}</div>
-                      <div className="text-sm text-destructive">{change.rejection_reason}</div>
+                      <div className="text-sm text-destructive">{getTranslatedReason(change.rejection_reason)}</div>
                     </div>
                   </div>
                 </>

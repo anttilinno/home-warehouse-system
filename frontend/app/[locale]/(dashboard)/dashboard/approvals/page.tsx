@@ -17,6 +17,9 @@ import {
   HandCoins,
   Archive,
   ChevronRight,
+  Check,
+  X,
+  Loader2,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Link } from "@/i18n/navigation";
@@ -33,6 +36,21 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { useWorkspace } from "@/lib/hooks/use-workspace";
 import { useDebouncedValue } from "@/lib/hooks/use-debounced-value";
 import { useSSE, type SSEEvent } from "@/lib/hooks/use-sse";
@@ -67,22 +85,42 @@ function getStatusColor(status: PendingChangeStatus): string {
   }
 }
 
-function getActionLabel(action: string): string {
-  switch (action) {
-    case "create":
-      return "Create";
-    case "update":
-      return "Update";
-    case "delete":
-      return "Delete";
-    default:
-      return action;
-  }
+
+interface PendingChangeCardProps {
+  change: PendingChange;
+  onApprove?: (id: string) => void;
+  onReject?: (id: string) => void;
+  isApproving?: boolean;
+  approvingId?: string | null;
 }
 
-function PendingChangeCard({ change }: { change: PendingChange }) {
+function PendingChangeCard({ change, onApprove, onReject, isApproving, approvingId }: PendingChangeCardProps) {
   const t = useTranslations("approvals");
+  const tReasons = useTranslations("rejectionReasons");
   const Icon = entityTypeIcons[change.entity_type];
+
+  // Translate rejection reason if it's a translation key
+  const getTranslatedReason = (reason: string) => {
+    if (reason.startsWith("rejectionReasons.")) {
+      const key = reason.replace("rejectionReasons.", "");
+      return tReasons(key);
+    }
+    return reason;
+  };
+  const isPending = change.status === "pending";
+  const isThisApproving = isApproving && approvingId === change.id;
+
+  const handleApprove = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    onApprove?.(change.id);
+  };
+
+  const handleReject = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    onReject?.(change.id);
+  };
 
   return (
     <Link href={`/dashboard/approvals/${change.id}`}>
@@ -99,22 +137,60 @@ function PendingChangeCard({ change }: { change: PendingChange }) {
               <div className="flex items-start justify-between gap-2">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <Badge variant="outline" className={cn("capitalize", getStatusColor(change.status))}>
-                      {change.status}
+                    <Badge variant="outline" className={cn(getStatusColor(change.status))}>
+                      {t(`status.${change.status}`)}
                     </Badge>
-                    <Badge variant="secondary" className="capitalize">
-                      {getActionLabel(change.action)}
+                    <Badge variant="secondary">
+                      {t(`action.${change.action}`)}
                     </Badge>
-                    <span className="text-sm text-muted-foreground capitalize">
-                      {change.entity_type}
+                    <span className="text-sm text-muted-foreground">
+                      {t(`entityType.${change.entity_type}`)}
                     </span>
                   </div>
                   <div className="mt-1 text-sm text-muted-foreground">
-                    Requested by <span className="font-medium text-foreground">{change.requester_name}</span>
+                    {t("card.requestedBy")} <span className="font-medium text-foreground">{change.requester_name}</span>
                   </div>
                 </div>
 
-                <ChevronRight className="h-5 w-5 text-muted-foreground shrink-0" />
+                {/* Quick actions for pending items */}
+                {isPending && onApprove && onReject ? (
+                  <div className="flex items-center gap-1 shrink-0">
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 text-green-600 hover:text-green-700 hover:bg-green-100 dark:hover:bg-green-900/20"
+                          onClick={handleApprove}
+                          disabled={isThisApproving}
+                        >
+                          {isThisApproving ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <Check className="h-4 w-4" />
+                          )}
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>{t("approve")}</TooltipContent>
+                    </Tooltip>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 text-red-600 hover:text-red-700 hover:bg-red-100 dark:hover:bg-red-900/20"
+                          onClick={handleReject}
+                          disabled={isThisApproving}
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>{t("reject")}</TooltipContent>
+                    </Tooltip>
+                  </div>
+                ) : (
+                  <ChevronRight className="h-5 w-5 text-muted-foreground shrink-0" />
+                )}
               </div>
 
               {/* Timestamp */}
@@ -126,9 +202,9 @@ function PendingChangeCard({ change }: { change: PendingChange }) {
               {/* Review info if reviewed */}
               {change.status !== "pending" && change.reviewer_name && (
                 <div className="text-xs text-muted-foreground">
-                  Reviewed by <span className="font-medium">{change.reviewer_name}</span>
+                  {t("card.reviewedBy")} <span className="font-medium">{change.reviewer_name}</span>
                   {change.reviewed_at && (
-                    <> on {new Date(change.reviewed_at).toLocaleString()}</>
+                    <> {t("card.on")} {new Date(change.reviewed_at).toLocaleString()}</>
                   )}
                 </div>
               )}
@@ -136,7 +212,7 @@ function PendingChangeCard({ change }: { change: PendingChange }) {
               {/* Rejection reason */}
               {change.status === "rejected" && change.rejection_reason && (
                 <div className="text-sm text-destructive">
-                  Reason: {change.rejection_reason}
+                  {t("card.reason")}: {getTranslatedReason(change.rejection_reason)}
                 </div>
               )}
             </div>
@@ -179,6 +255,14 @@ export default function ApprovalsPage() {
   const debouncedSearchQuery = useDebouncedValue(searchQuery, 300);
   const [statusFilter, setStatusFilter] = useState<PendingChangeStatus | "all">("pending");
   const [entityTypeFilter, setEntityTypeFilter] = useState<PendingChangeEntityType | "all">("all");
+
+  // Quick action state
+  const [isApproving, setIsApproving] = useState(false);
+  const [approvingId, setApprovingId] = useState<string | null>(null);
+  const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
+  const [rejectingId, setRejectingId] = useState<string | null>(null);
+  const [rejectionReason, setRejectionReason] = useState("");
+  const [isRejecting, setIsRejecting] = useState(false);
 
   // Check if user has permission to view approvals (owner or admin)
   const canViewApprovals = currentMember?.role === "owner" || currentMember?.role === "admin";
@@ -224,6 +308,59 @@ export default function ApprovalsPage() {
       }
     },
   });
+
+  // Quick action handlers
+  const handleQuickApprove = async (id: string) => {
+    if (!workspaceId) return;
+
+    setIsApproving(true);
+    setApprovingId(id);
+    try {
+      await pendingChangesApi.approve(workspaceId, id);
+      toast.success(t("approveSuccess"), {
+        description: t("approveSuccessDescription"),
+      });
+      loadChanges();
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Failed to approve change";
+      toast.error(t("approveError"), {
+        description: errorMessage,
+      });
+    } finally {
+      setIsApproving(false);
+      setApprovingId(null);
+    }
+  };
+
+  const handleQuickReject = (id: string) => {
+    setRejectingId(id);
+    setRejectionReason("");
+    setRejectDialogOpen(true);
+  };
+
+  const handleConfirmReject = async () => {
+    if (!workspaceId || !rejectingId || !rejectionReason.trim()) return;
+
+    setIsRejecting(true);
+    try {
+      await pendingChangesApi.reject(workspaceId, rejectingId, {
+        reason: rejectionReason.trim(),
+      });
+      toast.success(t("rejectSuccess"), {
+        description: t("rejectSuccessDescription"),
+      });
+      loadChanges();
+      setRejectDialogOpen(false);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Failed to reject change";
+      toast.error(t("rejectError"), {
+        description: errorMessage,
+      });
+    } finally {
+      setIsRejecting(false);
+      setRejectingId(null);
+    }
+  };
 
   // Filter changes by search query
   const filteredChanges = useMemo(() => {
@@ -282,7 +419,7 @@ export default function ApprovalsPage() {
         <div>
           <h1 className="text-2xl font-bold tracking-tight">{t("title")}</h1>
           <p className="text-muted-foreground">
-            {t("subtitle")} {pendingCount > 0 && `(${pendingCount} pending)`}
+            {t("subtitle")} {pendingCount > 0 && t("pendingCount", { count: pendingCount })}
           </p>
         </div>
       </div>
@@ -343,7 +480,14 @@ export default function ApprovalsPage() {
       ) : (
         <div className="space-y-4">
           {filteredChanges.map((change) => (
-            <PendingChangeCard key={change.id} change={change} />
+            <PendingChangeCard
+              key={change.id}
+              change={change}
+              onApprove={handleQuickApprove}
+              onReject={handleQuickReject}
+              isApproving={isApproving}
+              approvingId={approvingId}
+            />
           ))}
         </div>
       )}
@@ -386,6 +530,44 @@ export default function ApprovalsPage() {
           </CardContent>
         </Card>
       )}
+
+      {/* Quick Reject Dialog */}
+      <Dialog open={rejectDialogOpen} onOpenChange={setRejectDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{t("rejectDialog.title")}</DialogTitle>
+            <DialogDescription>
+              {t("rejectDialog.description")}
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="reason">{t("rejectDialog.reason")}</Label>
+              <Textarea
+                id="reason"
+                placeholder={t("rejectDialog.reasonPlaceholder")}
+                value={rejectionReason}
+                onChange={(e) => setRejectionReason(e.target.value)}
+                rows={4}
+              />
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setRejectDialogOpen(false)}>
+              {t("rejectDialog.cancel")}
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleConfirmReject}
+              disabled={isRejecting || !rejectionReason.trim()}
+            >
+              {isRejecting ? t("rejectDialog.rejecting") : t("rejectDialog.confirm")}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

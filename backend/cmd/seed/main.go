@@ -546,31 +546,39 @@ func (s *Seeder) seedChanges(ctx context.Context) error {
 	_ = s.pool.QueryRow(ctx, `SELECT id FROM warehouse.categories WHERE workspace_id = $1 LIMIT 1`, s.workspaceID).Scan(&categoryID)
 
 	// Define change requests with various statuses, actions, and entity types
+	// For updates, payload includes both old_values and new_values for proper diff display
 	changes := []struct {
-		entityType string
-		entityID   *uuid.UUID
-		action     string
-		status     string
-		payload    string
-		desc       string
+		entityType  string
+		entityID    *uuid.UUID
+		action      string
+		status      string
+		payload     string
+		desc        string
+		requesterID uuid.UUID // Who submitted the change
 	}{
-		// Pending changes
-		{"item", nil, "create", "pending", `{"name": "New Power Drill", "sku": "PEND-001", "brand": "DeWalt"}`, "Create new item (pending)"},
-		{"item", &itemID, "update", "pending", `{"name": "Updated Item Name", "brand": "Makita"}`, "Update item (pending)"},
-		{"location", nil, "create", "pending", `{"name": "New Storage Room", "description": "Additional storage space"}`, "Create location (pending)"},
-		{"category", nil, "create", "pending", `{"name": "New Category", "description": "A new category for items"}`, "Create category (pending)"},
-		{"container", nil, "create", "pending", `{"name": "Box 99", "description": "New storage container"}`, "Create container (pending)"},
+		// Pending changes from member user (for Approvals page)
+		{"item", nil, "create", "pending", `{"name": "New Power Drill", "sku": "PEND-001", "brand": "DeWalt"}`, "Create new item (pending)", memberID},
+		{"item", &itemID, "update", "pending", `{"old_values": {"name": "Original Item Name", "brand": "Generic"}, "new_values": {"name": "Updated Item Name", "brand": "Makita"}}`, "Update item (pending)", memberID},
+		{"location", nil, "create", "pending", `{"name": "New Storage Room", "description": "Additional storage space"}`, "Create location (pending)", memberID},
+		{"category", nil, "create", "pending", `{"name": "New Category", "description": "A new category for items"}`, "Create category (pending)", memberID},
+		{"container", nil, "create", "pending", `{"name": "Box 99", "description": "New storage container"}`, "Create container (pending)", memberID},
 
-		// Approved changes
-		{"item", nil, "create", "approved", `{"name": "Approved Hammer", "sku": "APPR-001", "brand": "Stanley"}`, "Create item (approved)"},
-		{"location", &locationID, "update", "approved", `{"name": "Updated Location", "description": "Reorganized storage"}`, "Update location (approved)"},
-		{"item", &itemID, "update", "approved", `{"description": "Added detailed description"}`, "Update item description (approved)"},
+		// Approved changes from member user
+		{"item", nil, "create", "approved", `{"name": "Approved Hammer", "sku": "APPR-001", "brand": "Stanley"}`, "Create item (approved)", memberID},
+		{"location", &locationID, "update", "approved", `{"old_values": {"name": "Old Location", "description": null}, "new_values": {"name": "Updated Location", "description": "Reorganized storage"}}`, "Update location (approved)", memberID},
 
-		// Rejected changes
-		{"item", nil, "create", "rejected", `{"name": "Rejected Item", "sku": "REJ-001"}`, "Create item (rejected - duplicate SKU)"},
-		{"item", &itemID, "delete", "rejected", `{}`, "Delete item (rejected - still in use)"},
-		{"location", &locationID, "delete", "rejected", `{}`, "Delete location (rejected - has inventory)"},
-		{"category", &categoryID, "delete", "rejected", `{}`, "Delete category (rejected - has items)"},
+		// Rejected changes from member user
+		{"item", nil, "create", "rejected", `{"name": "Rejected Item", "sku": "REJ-001"}`, "Create item (rejected - duplicate SKU)", memberID},
+		{"item", &itemID, "delete", "rejected", `{}`, "Delete item (rejected - still in use)", memberID},
+
+		// Changes from owner/admin user (for My Changes page when logged in as admin)
+		{"borrower", nil, "create", "pending", `{"name": "Alice Johnson", "email": "alice@example.com", "phone": "+1234567890"}`, "Create borrower (my pending)", s.userID},
+		{"item", nil, "create", "pending", `{"name": "Cordless Screwdriver", "sku": "MY-001", "brand": "Bosch", "description": "18V cordless screwdriver with case"}`, "Create item (my pending)", s.userID},
+		{"container", nil, "create", "pending", `{"name": "Tool Cabinet", "description": "Large metal cabinet for power tools"}`, "Create container (my pending)", s.userID},
+		{"item", &itemID, "update", "approved", `{"old_values": {"description": null}, "new_values": {"description": "Added detailed description"}}`, "Update item description (my approved)", s.userID},
+		{"location", nil, "create", "approved", `{"name": "Workshop Corner", "description": "Dedicated workspace area"}`, "Create location (my approved)", s.userID},
+		{"category", nil, "create", "rejected", `{"name": "Duplicate Category"}`, "Create category (my rejected - already exists)", s.userID},
+		{"location", &locationID, "delete", "rejected", `{}`, "Delete location (my rejected - has inventory)", s.userID},
 	}
 
 	for i, change := range changes {
@@ -588,12 +596,13 @@ func (s *Seeder) seedChanges(ctx context.Context) error {
 		}
 
 		if change.status == "rejected" {
+			// Use translation keys that frontend will translate
 			reasons := []string{
-				"Duplicate entry already exists",
-				"Item is currently in use and cannot be modified",
-				"Location contains inventory items",
-				"Category has associated items",
-				"Insufficient justification provided",
+				"rejectionReasons.duplicateEntry",
+				"rejectionReasons.itemInUse",
+				"rejectionReasons.locationHasItems",
+				"rejectionReasons.categoryHasItems",
+				"rejectionReasons.insufficientJustification",
 			}
 			reason := reasons[i%len(reasons)]
 			rejectionReason = &reason
@@ -609,7 +618,7 @@ func (s *Seeder) seedChanges(ctx context.Context) error {
 			INSERT INTO warehouse.pending_changes (id, workspace_id, requester_id, entity_type, entity_id, action, payload, status, reviewed_by, reviewed_at, rejection_reason, created_at)
 			VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
 			ON CONFLICT DO NOTHING
-		`, changeID, s.workspaceID, memberID, change.entityType, change.entityID, change.action, change.payload, change.status, reviewedBy, reviewedAt, rejectionReason, createdAt)
+		`, changeID, s.workspaceID, change.requesterID, change.entityType, change.entityID, change.action, change.payload, change.status, reviewedBy, reviewedAt, rejectionReason, createdAt)
 		if err != nil {
 			return fmt.Errorf("creating pending change: %w", err)
 		}

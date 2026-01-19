@@ -81,8 +81,18 @@ function getStatusIcon(status: PendingChangeStatus) {
 
 function MyChangeCard({ change }: { change: PendingChange }) {
   const t = useTranslations("myChanges");
+  const tReasons = useTranslations("rejectionReasons");
   const Icon = entityTypeIcons[change.entity_type];
   const StatusIcon = getStatusIcon(change.status);
+
+  // Translate rejection reason if it's a translation key
+  const getTranslatedReason = (reason: string) => {
+    if (reason.startsWith("rejectionReasons.")) {
+      const key = reason.replace("rejectionReasons.", "");
+      return tReasons(key);
+    }
+    return reason;
+  };
 
   return (
     <Card className="hover:bg-muted/50 transition-colors">
@@ -98,15 +108,15 @@ function MyChangeCard({ change }: { change: PendingChange }) {
             <div className="flex items-start justify-between gap-2">
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <Badge variant="outline" className={cn("capitalize", getStatusColor(change.status))}>
+                  <Badge variant="outline" className={cn(getStatusColor(change.status))}>
                     <StatusIcon className="h-3 w-3 mr-1" />
                     {t(`status.${change.status}`)}
                   </Badge>
-                  <Badge variant="secondary" className="capitalize">
+                  <Badge variant="secondary">
                     {t(`action.${change.action}`)}
                   </Badge>
-                  <span className="text-sm text-muted-foreground capitalize">
-                    {t(`filter.${change.entity_type}`)}
+                  <span className="text-sm text-muted-foreground">
+                    {t(`entityType.${change.entity_type}`)}
                   </span>
                 </div>
               </div>
@@ -128,9 +138,9 @@ function MyChangeCard({ change }: { change: PendingChange }) {
             {/* Review info if reviewed */}
             {change.status !== "pending" && change.reviewer_name && (
               <div className="text-xs text-muted-foreground">
-                Reviewed by <span className="font-medium">{change.reviewer_name}</span>
+                {t("card.reviewedBy")} <span className="font-medium">{change.reviewer_name}</span>
                 {change.reviewed_at && (
-                  <> on {new Date(change.reviewed_at).toLocaleString()}</>
+                  <> {t("card.on")} {new Date(change.reviewed_at).toLocaleString()}</>
                 )}
               </div>
             )}
@@ -140,7 +150,7 @@ function MyChangeCard({ change }: { change: PendingChange }) {
               <Alert variant="destructive" className="mt-2">
                 <AlertCircle className="h-4 w-4" />
                 <AlertTitle>{t("requestInfo.reason")}</AlertTitle>
-                <AlertDescription>{change.rejection_reason}</AlertDescription>
+                <AlertDescription>{getTranslatedReason(change.rejection_reason)}</AlertDescription>
               </Alert>
             )}
           </div>
@@ -201,8 +211,8 @@ export default function MyChangesPage() {
       setChanges(response.changes ?? []);
       setTotal(response.total ?? 0);
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "Failed to load changes";
-      toast.error("Failed to load your changes", {
+      const errorMessage = error instanceof Error ? error.message : t("loadError");
+      toast.error(t("loadError"), {
         description: errorMessage,
       });
     } finally {
@@ -267,7 +277,7 @@ export default function MyChangesPage() {
         <div>
           <h1 className="text-2xl font-bold tracking-tight">{t("title")}</h1>
           <p className="text-muted-foreground">
-            {t("subtitle")} {pendingCount > 0 && `(${pendingCount} pending)`}
+            {t("subtitle")} {pendingCount > 0 && t("pendingCount", { count: pendingCount })}
           </p>
         </div>
       </div>

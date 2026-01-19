@@ -100,6 +100,9 @@
       "borrowers": "Laenajad",
       "analytics": "Analüütika",
       "outOfStock": "Otsas",
+      "imports": "Import",
+      "approvals": "Kinnitused",
+      "myChanges": "Minu muudatused",
       "settings": "Seaded",
       "collapse": "Ahenda"
     },
@@ -253,6 +256,216 @@
     "security": {
       "title": "Turvalisus",
       "description": "Parool ja turvaseaded"
+    }
+  },
+  "approvals": {
+    "title": "Kinnitused",
+    "subtitle": "Vaata üle ja kinnita ootel muudatused",
+    "search": "Otsi kinnitusi...",
+    "back": "Tagasi",
+    "approve": "Kinnita",
+    "reject": "Lükka tagasi",
+    "empty": "Ootel muudatusi pole",
+    "emptyDescription": "Praegu pole ühtegi ootel muudatust ülevaatamiseks.",
+    "noResults": "Kinnitusi ei leitud",
+    "noResultsDescription": "Proovi kohandada otsingut või filtreid.",
+    "noPermission": "Juurdepääs keelatud",
+    "noPermissionDescription": "Ainult tööruumi omanikud ja administraatorid saavad kinnitusi vaadata.",
+    "status": {
+      "pending": "Ootel",
+      "approved": "Kinnitatud",
+      "rejected": "Tagasi lükatud"
+    },
+    "action": {
+      "create": "Loomine",
+      "update": "Uuendamine",
+      "delete": "Kustutamine"
+    },
+    "entityType": {
+      "item": "Ese",
+      "location": "Asukoht",
+      "container": "Konteiner",
+      "category": "Kategooria",
+      "borrower": "Laenaja",
+      "loan": "Laen",
+      "inventory": "Inventar"
+    },
+    "card": {
+      "requestedBy": "Taotleja",
+      "reviewedBy": "Ülevaataja",
+      "on": "",
+      "reason": "Põhjus"
+    },
+    "pendingCount": "({count} ootel)",
+    "filter": {
+      "allStatuses": "Kõik olekud",
+      "pending": "Ootel",
+      "approved": "Kinnitatud",
+      "rejected": "Tagasi lükatud",
+      "allTypes": "Kõik tüübid",
+      "item": "Esemed",
+      "location": "Asukohad",
+      "container": "Konteinerid",
+      "category": "Kategooriad",
+      "borrower": "Laenajad",
+      "loan": "Laenud",
+      "inventory": "Inventuur"
+    },
+    "stats": {
+      "title": "Kokkuvõte",
+      "description": "Kinnituste statistika ülevaade",
+      "pending": "Ootel",
+      "approved": "Kinnitatud",
+      "rejected": "Tagasi lükatud"
+    },
+    "detailTitle": "{action} {type}",
+    "requestInfo": {
+      "title": "Taotluse info",
+      "description": "Üksikasjad selle muudatuse taotleja kohta",
+      "requester": "Taotleja",
+      "created": "Loodud",
+      "entityId": "Olemi ID",
+      "newEntity": "Uus olem (luuakse)"
+    },
+    "reviewInfo": {
+      "title": "Ülevaatuse info",
+      "description": "Üksikasjad ülevaatuse otsuse kohta",
+      "reviewer": "Ülevaataja",
+      "reviewedAt": "Üle vaadatud",
+      "reason": "Tagasilükkamise põhjus",
+      "unknown": "Teadmata"
+    },
+    "payload": {
+      "title": "Muudatuse üksikasjad",
+      "description": "Selle muudatustaotlusega seotud andmed",
+      "data": "Andmed",
+      "changes": "Pakutud muudatused",
+      "note": "See näitab andmeid, mis luuakse, uuendatakse või kustutatakse.",
+      "noData": "Selle muudatuse kohta andmed puuduvad.",
+      "deleteConfirmation": "See olem kustutatakse jäädavalt, kui kinnitatakse.",
+      "field": "Väli",
+      "oldValue": "Vana väärtus",
+      "newValue": "Uus väärtus"
+    },
+    "approveDialog": {
+      "title": "Kinnita muudatus",
+      "description": "Kas olete kindel, et soovite seda muudatust kinnitada? See toiming rakendab muudatused kohe ja seda ei saa tagasi võtta.",
+      "cancel": "Tühista",
+      "confirm": "Kinnita",
+      "approving": "Kinnitamine..."
+    },
+    "rejectDialog": {
+      "title": "Lükka muudatus tagasi",
+      "description": "Palun esitage põhjus selle muudatustaotluse tagasilükkamiseks.",
+      "reason": "Põhjus",
+      "reasonPlaceholder": "Selgitage, miks see muudatus tagasi lükatakse...",
+      "cancel": "Tühista",
+      "confirm": "Lükka tagasi",
+      "rejecting": "Tagasilükkamine..."
+    },
+    "approveSuccess": "Muudatus kinnitatud",
+    "approveSuccessDescription": "Muudatus on edukalt kinnitatud ja rakendatud.",
+    "approveError": "Kinnitamine ebaõnnestus",
+    "rejectSuccess": "Muudatus tagasi lükatud",
+    "rejectSuccessDescription": "Muudatus on tagasi lükatud.",
+    "rejectError": "Tagasilükkamine ebaõnnestus"
+  },
+  "myChanges": {
+    "title": "Minu muudatused",
+    "subtitle": "Jälgi oma esitatud muudatustaotlusi",
+    "search": "Otsi minu muudatusi...",
+    "empty": "Muudatustaotlusi pole",
+    "emptyDescription": "Te pole veel ühtegi muudatustaotlust esitanud.",
+    "noResults": "Muudatusi ei leitud",
+    "noResultsDescription": "Proovi kohandada otsingut või filtreid.",
+    "loadError": "Muudatuste laadimine ebaõnnestus",
+    "filter": {
+      "allStatuses": "Kõik olekud",
+      "pending": "Ootel",
+      "approved": "Kinnitatud",
+      "rejected": "Tagasi lükatud",
+      "allTypes": "Kõik tüübid",
+      "item": "Esemed",
+      "location": "Asukohad",
+      "container": "Konteinerid",
+      "category": "Kategooriad",
+      "borrower": "Laenajad",
+      "loan": "Laenud",
+      "inventory": "Inventar"
+    },
+    "status": {
+      "pending": "Ootab kinnitust",
+      "approved": "Kinnitatud",
+      "rejected": "Tagasi lükatud"
+    },
+    "action": {
+      "create": "Loomine",
+      "update": "Uuendamine",
+      "delete": "Kustutamine"
+    },
+    "entityType": {
+      "item": "Ese",
+      "location": "Asukoht",
+      "container": "Konteiner",
+      "category": "Kategooria",
+      "borrower": "Laenaja",
+      "loan": "Laen",
+      "inventory": "Inventar"
+    },
+    "card": {
+      "reviewedBy": "Ülevaataja",
+      "on": ""
+    },
+    "requestInfo": {
+      "submitted": "Esitatud",
+      "reviewedAt": "Ülevaadatud",
+      "reason": "Tagasilükkamise põhjus"
+    },
+    "pendingCount": "({count} ootel)",
+    "pendingDescription": "Teie muudatus ootab administraatori kinnitust.",
+    "approvedDescription": "Teie muudatus on kinnitatud ja rakendatud.",
+    "rejectedDescription": "Teie muudatus lükati administraatori poolt tagasi.",
+    "viewDetails": "Vaata üksikasju"
+  },
+  "rejectionReasons": {
+    "duplicateEntry": "Selline kirje on juba olemas",
+    "itemInUse": "Ese on hetkel kasutuses ja seda ei saa muuta",
+    "locationHasItems": "Asukoht sisaldab inventari",
+    "categoryHasItems": "Kategooria sisaldab esemeid",
+    "insufficientJustification": "Ebapiisav põhjendus"
+  },
+  "imports": {
+    "title": "Imporditööd",
+    "subtitle": "Halda ja jälgi hulgiimpordi toiminguid",
+    "newImport": "Uus import",
+    "empty": {
+      "title": "Imporditöid pole",
+      "description": "Te pole veel ühtegi imporditööd loonud. Klõpsake ülaloleval nupul uue impordi alustamiseks."
+    },
+    "errors": {
+      "authTitle": "Autentimine nõutav",
+      "authDescription": "Impordisüsteemile juurdepääsuks logige sisse.",
+      "serverTitle": "Serveri viga",
+      "serverDescription": "Serveris tekkis viga. Proovige hiljem uuesti.",
+      "unavailableTitle": "Impordisüsteem pole saadaval",
+      "unavailableDescription": "Imporditeenus pole hetkel saadaval. See võib juhtuda, kui taustatöötaja ei tööta.",
+      "tryAgain": "Proovi uuesti"
+    },
+    "status": {
+      "pending": "Ootel",
+      "processing": "Töötlemisel",
+      "completed": "Lõpetatud",
+      "failed": "Ebaõnnestunud",
+      "cancelled": "Tühistatud"
+    },
+    "viewDetails": "Vaata detaile",
+    "job": {
+      "started": "Alustatud",
+      "progress": "Edenemine",
+      "rowsProcessed": "{processed} / {total} rida töödeldud",
+      "success": "Õnnestunud",
+      "errors": "Vead",
+      "total": "Kokku"
     }
   }
 }

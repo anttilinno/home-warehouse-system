@@ -198,9 +198,6 @@ Hierarchical storage locations (e.g., rooms, zones, shelves, bins).
 | `workspace_id` | UUID | Reference to `auth.workspaces` (CASCADE delete) |
 | `name` | VARCHAR(100) | Location name |
 | `parent_location` | UUID | Reference to parent location (self-referencing) |
-| `zone` | VARCHAR(50) | Zone identifier |
-| `shelf` | VARCHAR(50) | Shelf identifier |
-| `bin` | VARCHAR(50) | Bin identifier |
 | `description` | TEXT | Location description |
 | `short_code` | VARCHAR(8) | Unique code for QR labels (unique per workspace) |
 | `is_archived` | BOOLEAN | Soft delete flag (default: false) |
@@ -342,6 +339,33 @@ Labels associated with items (many-to-many relationship via labels table).
 | `label_id` | UUID | Reference to `warehouse.labels` (CASCADE delete) |
 | PRIMARY KEY | (`item_id`, `label_id`) | Composite primary key |
 
+#### `warehouse.item_photos`
+Photos attached to items with support for thumbnails and display ordering.
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `id` | UUID | Primary key (uuidv7) |
+| `item_id` | UUID | Reference to `warehouse.items` (CASCADE delete) |
+| `workspace_id` | UUID | Reference to `auth.workspaces` (CASCADE delete) |
+| `filename` | VARCHAR(255) | Original filename |
+| `storage_path` | VARCHAR(500) | Path to full-size image |
+| `thumbnail_path` | VARCHAR(500) | Path to thumbnail image |
+| `file_size` | BIGINT | File size in bytes |
+| `mime_type` | VARCHAR(100) | MIME type (e.g., image/jpeg) |
+| `width` | INTEGER | Image width in pixels |
+| `height` | INTEGER | Image height in pixels |
+| `display_order` | INTEGER | Order for display (default: 0) |
+| `is_primary` | BOOLEAN | Primary photo flag (default: false) |
+| `caption` | TEXT | Optional photo caption |
+| `uploaded_by` | UUID | Reference to `auth.users` who uploaded |
+| `created_at` | TIMESTAMPTZ | Creation timestamp |
+| `updated_at` | TIMESTAMPTZ | Last update timestamp |
+
+**Indexes:**
+- `idx_item_photos_item` on `(item_id, display_order)`
+- `idx_item_photos_workspace` on `workspace_id`
+- `idx_item_photos_primary` unique partial index on `(item_id, is_primary)` WHERE `is_primary = true`
+
 #### `warehouse.files`
 Uploaded files storage metadata.
 
@@ -447,12 +471,17 @@ People who borrow items from the warehouse.
 | `phone` | VARCHAR(50) | Phone number |
 | `notes` | TEXT | Additional notes |
 | `is_archived` | BOOLEAN | Soft delete flag (default: false) |
+| `search_vector` | TSVECTOR | Full-text search vector (auto-updated by trigger) |
 | `created_at` | TIMESTAMPTZ | Creation timestamp |
 | `updated_at` | TIMESTAMPTZ | Last update timestamp |
 
 **Indexes:**
 - `ix_borrowers_workspace` on `workspace_id`
 - `ix_borrowers_active` on `workspace_id` WHERE `is_archived = false`
+- `ix_borrowers_search` on `search_vector` (GIN index)
+
+**Triggers:**
+- `trgr_borrowers_search_vector` - Updates `search_vector` on INSERT/UPDATE
 
 #### `warehouse.loans`
 Tracks inventory items loaned to borrowers.
@@ -573,6 +602,75 @@ Tombstone table tracking hard-deleted records for PWA offline sync.
 - `ix_deleted_records_workspace` on `workspace_id`
 - `ix_deleted_records_workspace_since` on `(workspace_id, deleted_at)`
 
+#### `warehouse.import_jobs`
+Background import job tracking for bulk data imports.
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `id` | UUID | Primary key |
+| `workspace_id` | UUID | Reference to `auth.workspaces` (CASCADE delete) |
+| `user_id` | UUID | Reference to `auth.users` who initiated import |
+| `entity_type` | import_entity_enum | Type of entity being imported |
+| `status` | import_status_enum | Current job status |
+| `file_name` | VARCHAR(255) | Original uploaded filename |
+| `file_path` | TEXT | Server path to uploaded file |
+| `file_size_bytes` | BIGINT | Size of uploaded file |
+| `total_rows` | INTEGER | Total rows in import file |
+| `processed_rows` | INTEGER | Rows processed so far (default: 0) |
+| `success_count` | INTEGER | Successfully imported rows (default: 0) |
+| `error_count` | INTEGER | Failed rows (default: 0) |
+| `started_at` | TIMESTAMPTZ | When processing started |
+| `completed_at` | TIMESTAMPTZ | When processing completed |
+| `error_message` | TEXT | Overall error message if job failed |
+| `created_at` | TIMESTAMPTZ | Creation timestamp |
+| `updated_at` | TIMESTAMPTZ | Last update timestamp |
+
+**Indexes:**
+- `idx_import_jobs_workspace_id` on `workspace_id`
+- `idx_import_jobs_user_id` on `user_id`
+- `idx_import_jobs_status` on `status`
+- `idx_import_jobs_created_at` on `created_at DESC`
+
+#### `warehouse.import_errors`
+Row-level errors from import jobs for user review.
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `id` | UUID | Primary key |
+| `import_job_id` | UUID | Reference to `warehouse.import_jobs` (CASCADE delete) |
+| `row_number` | INTEGER | Row number in the import file |
+| `field_name` | VARCHAR(255) | Field that caused the error (optional) |
+| `error_message` | TEXT | Description of the error |
+| `row_data` | JSONB | Original row data for debugging |
+| `created_at` | TIMESTAMPTZ | Creation timestamp |
+
+**Indexes:**
+- `idx_import_errors_import_job_id` on `import_job_id`
+
+#### `warehouse.pending_changes`
+Approval queue for changes submitted by members requiring admin review.
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `id` | UUID | Primary key (uuidv7) |
+| `workspace_id` | UUID | Reference to `auth.workspaces` (CASCADE delete) |
+| `requester_id` | UUID | Reference to `auth.users` who submitted (CASCADE delete) |
+| `entity_type` | VARCHAR(50) | Type of entity (e.g., 'items', 'locations') |
+| `entity_id` | UUID | ID of existing entity (NULL for create operations) |
+| `action` | pending_change_action_enum | Action type (create, update, delete) |
+| `payload` | JSONB | Change payload (create/update data) |
+| `status` | pending_change_status_enum | Current status (default: pending) |
+| `reviewed_by` | UUID | Reference to `auth.users` who reviewed (SET NULL on delete) |
+| `reviewed_at` | TIMESTAMPTZ | When the change was reviewed |
+| `rejection_reason` | TEXT | Reason for rejection (if rejected) |
+| `created_at` | TIMESTAMPTZ | Creation timestamp |
+| `updated_at` | TIMESTAMPTZ | Last update timestamp |
+
+**Indexes:**
+- `idx_pending_changes_workspace_status` on `(workspace_id, status)`
+- `idx_pending_changes_requester` on `requester_id`
+- `idx_pending_changes_entity` on `(entity_type, entity_id)`
+
 ## Database Views
 
 ### `warehouse.v_archived_records`
@@ -670,13 +768,45 @@ Activity log entity types:
 - `LOAN`
 - `BORROWER`
 
+### `warehouse.import_entity_enum`
+Import job entity types:
+- `items`
+- `inventory`
+- `locations`
+- `containers`
+- `categories`
+- `borrowers`
+
+### `warehouse.import_status_enum`
+Import job status values:
+- `pending` - Job created, waiting to start
+- `processing` - Job currently running
+- `completed` - Job finished successfully
+- `failed` - Job failed with error
+- `cancelled` - Job was cancelled
+
+### `warehouse.pending_change_action_enum`
+Pending change action types:
+- `create` - Create new entity
+- `update` - Update existing entity
+- `delete` - Delete existing entity
+
+### `warehouse.pending_change_status_enum`
+Pending change status values:
+- `pending` - Awaiting admin review
+- `approved` - Change approved and applied
+- `rejected` - Change rejected by admin
+
 ## Database Triggers
 
 ### `trg_locations_search_vector`
-Automatically updates the `search_vector` column on `warehouse.locations` before INSERT or UPDATE. Indexes: name, description, zone, shelf, bin, and short_code.
+Automatically updates the `search_vector` column on `warehouse.locations` before INSERT or UPDATE. Indexes: name, description, and short_code.
 
 ### `trg_containers_search_vector`
 Automatically updates the `search_vector` column on `warehouse.containers` before INSERT or UPDATE. Indexes: name, description, and short_code.
+
+### `trgr_borrowers_search_vector`
+Automatically updates the `search_vector` column on `warehouse.borrowers` before INSERT or UPDATE. Uses weighted search: name (A), email (B), phone (B), notes (C).
 
 ### `trg_validate_loan_quantity`
 Validates loan quantity on INSERT or UPDATE to `warehouse.loans`. Ensures the total loaned quantity for an inventory item never exceeds the available inventory quantity. Raises an exception if the loan would exceed available stock.
@@ -788,6 +918,7 @@ erDiagram
         uuid workspace_id FK
         varchar_100 name
         uuid parent_location FK
+        text description
         varchar_8 short_code
         boolean is_archived
         tsvector search_vector
@@ -907,7 +1038,10 @@ erDiagram
         uuid workspace_id FK
         varchar_200 name
         varchar_255 email
+        varchar_50 phone
+        text notes
         boolean is_archived
+        tsvector search_vector
         timestamptz created_at
         timestamptz updated_at
     }
@@ -954,6 +1088,71 @@ erDiagram
         uuid deleted_by FK
     }
 
+    warehouse_item_photos {
+        uuid id PK
+        uuid item_id FK
+        uuid workspace_id FK
+        varchar_255 filename
+        varchar_500 storage_path
+        varchar_500 thumbnail_path
+        bigint file_size
+        varchar_100 mime_type
+        integer width
+        integer height
+        integer display_order
+        boolean is_primary
+        text caption
+        uuid uploaded_by FK
+        timestamptz created_at
+        timestamptz updated_at
+    }
+
+    warehouse_import_jobs {
+        uuid id PK
+        uuid workspace_id FK
+        uuid user_id FK
+        import_entity_enum entity_type
+        import_status_enum status
+        varchar_255 file_name
+        text file_path
+        bigint file_size_bytes
+        integer total_rows
+        integer processed_rows
+        integer success_count
+        integer error_count
+        timestamptz started_at
+        timestamptz completed_at
+        text error_message
+        timestamptz created_at
+        timestamptz updated_at
+    }
+
+    warehouse_import_errors {
+        uuid id PK
+        uuid import_job_id FK
+        integer row_number
+        varchar_255 field_name
+        text error_message
+        jsonb row_data
+        timestamptz created_at
+    }
+
+    warehouse_pending_changes {
+        uuid id PK
+        uuid workspace_id FK
+        uuid requester_id FK
+        varchar_50 entity_type
+        uuid entity_id
+        pending_change_action_enum action
+        jsonb payload
+        pending_change_status_enum status
+        uuid reviewed_by FK
+        timestamptz reviewed_at
+        text rejection_reason
+        timestamptz created_at
+        timestamptz updated_at
+    }
+
     auth_workspaces ||--o{ auth_workspace_members : "workspace_id"
     auth_users ||--o{ auth_workspace_members : "user_id"
     auth_users ||--o{ auth_user_oauth_accounts : "user_id"
@@ -985,6 +1184,15 @@ erDiagram
     auth_workspaces ||--o{ warehouse_activity_log : "workspace_id"
     auth_workspaces ||--o{ warehouse_deleted_records : "workspace_id"
     auth_users ||--o{ warehouse_deleted_records : "deleted_by"
+    warehouse_items ||--o{ warehouse_item_photos : "item_id"
+    auth_workspaces ||--o{ warehouse_item_photos : "workspace_id"
+    auth_users ||--o{ warehouse_item_photos : "uploaded_by"
+    auth_workspaces ||--o{ warehouse_import_jobs : "workspace_id"
+    auth_users ||--o{ warehouse_import_jobs : "user_id"
+    warehouse_import_jobs ||--o{ warehouse_import_errors : "import_job_id"
+    auth_workspaces ||--o{ warehouse_pending_changes : "workspace_id"
+    auth_users ||--o{ warehouse_pending_changes : "requester_id"
+    auth_users ||--o{ warehouse_pending_changes : "reviewed_by"
 ```
 
 ## Relationships Summary
@@ -1016,3 +1224,10 @@ erDiagram
 25. **Users** → **Favorites**: Users can pin items, locations, or containers
 26. **Users** → **Activity Log**: Track who made changes
 27. **Workspaces** → **Deleted Records**: Track hard-deleted records for PWA sync
+28. **Items** → **Item Photos**: Items can have multiple photos
+29. **Users** → **Item Photos**: Track who uploaded photos
+30. **Workspaces** → **Import Jobs**: Import jobs are workspace-scoped
+31. **Users** → **Import Jobs**: Track who initiated imports
+32. **Import Jobs** → **Import Errors**: Each job can have multiple row errors
+33. **Workspaces** → **Pending Changes**: Pending changes are workspace-scoped
+34. **Users** → **Pending Changes**: Track who requested and who reviewed changes

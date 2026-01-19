@@ -80,16 +80,19 @@ All tables include `workspace_id` for multi-tenant isolation.
 
 Key entities:
 - **categories**: Hierarchical categories (self-referencing parent_category_id)
-- **locations**: Hierarchical storage locations (parent_location, zone, shelf, bin, short_code)
+- **locations**: Hierarchical storage locations (parent_location, short_code for QR labels)
 - **containers**: Storage containers within locations (short_code for QR labels)
 - **items**: Item catalog with SKU, category, brand, model, serial_number, manufacturer, search_vector, short_code
+- **item_photos**: Photos attached to items with thumbnails and display ordering
 - **labels**: Structured labels with colors for categorizing items
 - **item_labels**: Many-to-many junction table for item-label relationships
 - **inventory**: Physical instances of items at locations/containers with condition, status, pricing
 - **container_tags**: RFID/NFC/QR tags for containers
-- **borrowers**: People who borrow items
+- **borrowers**: People who borrow items (with full-text search)
 - **loans**: Tracks inventory loans (references inventory, not items directly)
 - **inventory_movements**: Movement history tracking
+- **import_jobs**: Background import job tracking for bulk CSV imports
+- **import_errors**: Row-level errors from import jobs
 - **pending_changes**: Change approval queue for member role (stores create/update/delete operations pending admin approval)
 
 ### ENUMs
@@ -98,6 +101,8 @@ Key entities:
 - **item_status_enum**: AVAILABLE, IN_USE, RESERVED, ON_LOAN, IN_TRANSIT, DISPOSED, MISSING
 - **tag_type_enum**: RFID, NFC, QR
 - **attachment_type_enum**: PHOTO, MANUAL, RECEIPT, WARRANTY, OTHER
+- **import_entity_enum**: items, inventory, locations, containers, categories, borrowers
+- **import_status_enum**: pending, processing, completed, failed, cancelled
 - **pending_change_action_enum**: create, update, delete
 - **pending_change_status_enum**: pending, approved, rejected
 
