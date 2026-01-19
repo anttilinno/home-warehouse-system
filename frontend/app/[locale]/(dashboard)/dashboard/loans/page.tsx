@@ -603,6 +603,12 @@ export default function LoansPage() {
     });
   }, [loans, debouncedSearchQuery, borrowers, activeFilters]);
 
+  // Helper to get borrower name by ID
+  const getBorrowerName = (borrowerId: string) => {
+    const borrower = borrowers.find((b) => b.id === borrowerId);
+    return borrower?.name || "Unknown";
+  };
+
   // Flatten loan data for sorting (add borrower name)
   const flattenedLoans = useMemo(() => {
     return filteredLoans.map(loan => ({
@@ -674,11 +680,6 @@ export default function LoansPage() {
     enabled: true,
     ignoreInputFields: true,
   });
-
-  const getBorrowerName = (borrowerId: string) => {
-    const borrower = borrowers.find((b) => b.id === borrowerId);
-    return borrower?.name || "Unknown";
-  };
 
   // Export columns definition
   const exportColumns: ColumnDefinition<Loan>[] = useMemo(() => [
