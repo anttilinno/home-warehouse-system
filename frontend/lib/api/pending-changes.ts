@@ -107,18 +107,15 @@ export const pendingChangesApi = {
     if (params?.page) queryParams.append("page", params.page.toString());
     if (params?.limit) queryParams.append("limit", params.limit.toString());
 
-    // Add my_changes filter to only get current user's changes
-    queryParams.append("requester", "me");
-
     const query = queryParams.toString();
-    const endpoint = `/workspaces/${workspaceId}/pending-changes${query ? `?${query}` : ""}`;
+    const endpoint = `/workspaces/${workspaceId}/my-pending-changes${query ? `?${query}` : ""}`;
 
     return apiClient.get<PendingChangesListResponse>(endpoint);
   },
 
   getMyPendingCount: async (workspaceId: string): Promise<number> => {
     const response = await apiClient.get<PendingChangesListResponse>(
-      `/workspaces/${workspaceId}/pending-changes?status=pending&requester=me&limit=1`
+      `/workspaces/${workspaceId}/my-pending-changes?status=pending&limit=1`
     );
     return response.total;
   },

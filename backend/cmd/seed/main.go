@@ -21,10 +21,11 @@ const (
 	SeedOverdueLoans = "overdue-loans"
 	SeedLocations    = "locations"
 	SeedConditions   = "conditions"
+	SeedChanges      = "changes"
 	SeedAll          = "all"
 )
 
-var validSeedTypes = []string{SeedExpiring, SeedWarranty, SeedLowStock, SeedOverdueLoans, SeedLocations, SeedConditions, SeedAll}
+var validSeedTypes = []string{SeedExpiring, SeedWarranty, SeedLowStock, SeedOverdueLoans, SeedLocations, SeedConditions, SeedChanges, SeedAll}
 
 // Sample data for realistic seeding
 var (
@@ -191,6 +192,11 @@ func main() {
 			fmt.Printf("Error seeding conditions: %v\n", err)
 			os.Exit(1)
 		}
+	case SeedChanges:
+		if err := seeder.seedChanges(ctx); err != nil {
+			fmt.Printf("Error seeding changes: %v\n", err)
+			os.Exit(1)
+		}
 	}
 
 	fmt.Println("\nSeeding completed successfully!")
@@ -208,6 +214,7 @@ func printUsage() {
 	fmt.Println("  overdue-loans - Loans that are past their due date")
 	fmt.Println("  locations     - Hierarchical location structure")
 	fmt.Println("  conditions    - Items with all conditions and statuses")
+	fmt.Println("  changes       - Pending change requests (all statuses and actions)")
 	fmt.Println("  all           - Run all seed types")
 	fmt.Println()
 	fmt.Println("Example: mise run seed expiring")
@@ -318,6 +325,9 @@ func (s *Seeder) seedAll(ctx context.Context) error {
 		return err
 	}
 	if err := s.seedOverdueLoans(ctx); err != nil {
+		return err
+	}
+	if err := s.seedChanges(ctx); err != nil {
 		return err
 	}
 
@@ -518,6 +528,133 @@ func (s *Seeder) seedConditions(ctx context.Context) error {
 
 	fmt.Println("  Conditions and statuses seeding complete")
 	return nil
+}
+
+func (s *Seeder) seedChanges(ctx context.Context) error {
+	fmt.Println("\n--- Seeding pending changes ---")
+
+	// Create or get a member user for the pending changes
+	memberID, err := s.ensureMemberUser(ctx)
+	if err != nil {
+		return err
+	}
+
+	// Get some existing entities to reference in changes
+	var itemID, locationID, categoryID uuid.UUID
+	_ = s.pool.QueryRow(ctx, `SELECT id FROM warehouse.items WHERE workspace_id = $1 LIMIT 1`, s.workspaceID).Scan(&itemID)
+	_ = s.pool.QueryRow(ctx, `SELECT id FROM warehouse.locations WHERE workspace_id = $1 LIMIT 1`, s.workspaceID).Scan(&locationID)
+	_ = s.pool.QueryRow(ctx, `SELECT id FROM warehouse.categories WHERE workspace_id = $1 LIMIT 1`, s.workspaceID).Scan(&categoryID)
+
+	// Define change requests with various statuses, actions, and entity types
+	changes := []struct {
+		entityType string
+		entityID   *uuid.UUID
+		action     string
+		status     string
+		payload    string
+		desc       string
+	}{
+		// Pending changes
+		{"item", nil, "create", "pending", `{"name": "New Power Drill", "sku": "PEND-001", "brand": "DeWalt"}`, "Create new item (pending)"},
+		{"item", &itemID, "update", "pending", `{"name": "Updated Item Name", "brand": "Makita"}`, "Update item (pending)"},
+		{"location", nil, "create", "pending", `{"name": "New Storage Room", "description": "Additional storage space"}`, "Create location (pending)"},
+		{"category", nil, "create", "pending", `{"name": "New Category", "description": "A new category for items"}`, "Create category (pending)"},
+		{"container", nil, "create", "pending", `{"name": "Box 99", "description": "New storage container"}`, "Create container (pending)"},
+
+		// Approved changes
+		{"item", nil, "create", "approved", `{"name": "Approved Hammer", "sku": "APPR-001", "brand": "Stanley"}`, "Create item (approved)"},
+		{"location", &locationID, "update", "approved", `{"name": "Updated Location", "description": "Reorganized storage"}`, "Update location (approved)"},
+		{"item", &itemID, "update", "approved", `{"description": "Added detailed description"}`, "Update item description (approved)"},
+
+		// Rejected changes
+		{"item", nil, "create", "rejected", `{"name": "Rejected Item", "sku": "REJ-001"}`, "Create item (rejected - duplicate SKU)"},
+		{"item", &itemID, "delete", "rejected", `{}`, "Delete item (rejected - still in use)"},
+		{"location", &locationID, "delete", "rejected", `{}`, "Delete location (rejected - has inventory)"},
+		{"category", &categoryID, "delete", "rejected", `{}`, "Delete category (rejected - has items)"},
+	}
+
+	for i, change := range changes {
+		changeID := uuid.New()
+
+		// Set reviewed_by and reviewed_at for non-pending changes
+		var reviewedBy *uuid.UUID
+		var reviewedAt *time.Time
+		var rejectionReason *string
+
+		if change.status != "pending" {
+			reviewedBy = &s.userID
+			now := time.Now().Add(-time.Duration(s.rng.Intn(7*24)) * time.Hour) // Random time in last week
+			reviewedAt = &now
+		}
+
+		if change.status == "rejected" {
+			reasons := []string{
+				"Duplicate entry already exists",
+				"Item is currently in use and cannot be modified",
+				"Location contains inventory items",
+				"Category has associated items",
+				"Insufficient justification provided",
+			}
+			reason := reasons[i%len(reasons)]
+			rejectionReason = &reason
+		}
+
+		// Calculate created_at (before reviewed_at if applicable)
+		createdAt := time.Now().Add(-time.Duration(s.rng.Intn(14*24)+24) * time.Hour)
+		if reviewedAt != nil && createdAt.After(*reviewedAt) {
+			createdAt = reviewedAt.Add(-time.Duration(s.rng.Intn(48)+1) * time.Hour)
+		}
+
+		_, err := s.pool.Exec(ctx, `
+			INSERT INTO warehouse.pending_changes (id, workspace_id, requester_id, entity_type, entity_id, action, payload, status, reviewed_by, reviewed_at, rejection_reason, created_at)
+			VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+			ON CONFLICT DO NOTHING
+		`, changeID, s.workspaceID, memberID, change.entityType, change.entityID, change.action, change.payload, change.status, reviewedBy, reviewedAt, rejectionReason, createdAt)
+		if err != nil {
+			return fmt.Errorf("creating pending change: %w", err)
+		}
+		fmt.Printf("  Created: %s\n", change.desc)
+	}
+
+	fmt.Println("  Pending changes seeding complete")
+	return nil
+}
+
+func (s *Seeder) ensureMemberUser(ctx context.Context) (uuid.UUID, error) {
+	// Check if member user exists
+	var memberID uuid.UUID
+	err := s.pool.QueryRow(ctx, `
+		SELECT id FROM auth.users WHERE email = 'member@test.local'
+	`).Scan(&memberID)
+
+	if err == pgx.ErrNoRows {
+		// Create member user
+		memberID = uuid.New()
+		// Password: password123
+		_, err = s.pool.Exec(ctx, `
+			INSERT INTO auth.users (id, email, full_name, password_hash)
+			VALUES ($1, 'member@test.local', 'Test Member', '$2a$10$OedVwpGWe4iRJxl4AO7qIOj3u19vhdgQNvhAk3GdSFb2B72zvPJ1i')
+		`, memberID)
+		if err != nil {
+			return uuid.Nil, fmt.Errorf("creating member user: %w", err)
+		}
+
+		// Add user as workspace member
+		_, err = s.pool.Exec(ctx, `
+			INSERT INTO auth.workspace_members (workspace_id, user_id, role)
+			VALUES ($1, $2, 'member')
+		`, s.workspaceID, memberID)
+		if err != nil {
+			return uuid.Nil, fmt.Errorf("adding workspace member: %w", err)
+		}
+		fmt.Println("  Created member user: member@test.local (password: password123)")
+	} else if err != nil {
+		return uuid.Nil, fmt.Errorf("checking member user: %w", err)
+	} else {
+		fmt.Println("  Using existing member user: member@test.local")
+	}
+
+	return memberID, nil
 }
 
 func (s *Seeder) seedExpiring(ctx context.Context) error {
