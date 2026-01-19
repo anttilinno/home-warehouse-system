@@ -1,0 +1,11 @@
+name,parent_location,description,short_code
+Warehouse A,,Main warehouse building,WH-A
+Warehouse B,,Secondary warehouse,WH-B
+Shelf 1,Warehouse A,First shelf in main warehouse,S1
+Shelf 2,Warehouse A,Second shelf in main warehouse,S2
+Shelf 3,Warehouse B,First shelf in secondary warehouse,S3
+Storage Room,Warehouse A,Climate controlled storage,STOR
+Garage,,Vehicle and large equipment storage,GAR
+Attic,,Long-term storage area,ATT
+Basement,,Underground storage,BASE
+Office,Warehouse A,Office supplies storage,OFF

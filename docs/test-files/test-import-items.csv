@@ -1,0 +1,11 @@
+name,sku,description,brand,model,manufacturer
+Power Drill,TOOL-001,18V cordless power drill with battery,DeWalt,DCD771C2,DeWalt Inc.
+Circular Saw,TOOL-002,7-1/4 inch circular saw,Makita,5007MG,Makita Corporation
+Hammer,TOOL-003,16oz claw hammer with fiberglass handle,Stanley,51-163,Stanley Black & Decker
+Screwdriver Set,TOOL-004,20-piece precision screwdriver set,Wera,05073675001,Wera Werkzeuge GmbH
+Tape Measure,TOOL-005,25ft retractable tape measure,Milwaukee,48-22-6825,Milwaukee Tool
+Level,TOOL-006,48 inch spirit level,Stabila,37448,Stabila
+Wrench Set,TOOL-007,Combination wrench set 8-19mm,Craftsman,CMMT12345,Craftsman
+Pliers,TOOL-008,Linesman pliers 9 inch,Klein Tools,D2000-9NE,Klein Tools Inc.
+Wire Stripper,TOOL-009,Automatic wire stripper,Irwin,2078300,Irwin Tools
+Safety Glasses,PPE-001,Impact resistant safety glasses,3M,SF400,3M Company

@@ -1,0 +1,11 @@
+item,location,container,quantity,condition,status,purchase_price,currency_code,date_acquired,notes
+Power Drill,S1,BIN-01,1,NEW,AVAILABLE,15999,EUR,2024-01-15,Main drill for workshop
+Circular Saw,S1,BIN-02,1,EXCELLENT,AVAILABLE,24999,EUR,2023-06-20,Heavy duty model
+Hammer,S2,BOX-R1,3,GOOD,AVAILABLE,2499,EUR,2022-03-10,General purpose hammers
+Screwdriver Set,S2,BOX-R1,2,NEW,AVAILABLE,4999,EUR,2024-02-01,Precision set
+Tape Measure,OFF,DRW-01,5,GOOD,AVAILABLE,1299,EUR,2023-01-05,Standard 25ft
+Level,GAR,TBX-A,1,EXCELLENT,AVAILABLE,8999,EUR,2023-08-15,Professional grade
+Wrench Set,GAR,TBX-B,1,NEW,AVAILABLE,7999,EUR,2024-03-01,Metric set 8-19mm
+Pliers,S1,BIN-01,2,GOOD,AVAILABLE,2999,EUR,2022-11-20,Linesman pliers
+Wire Stripper,S2,BOX-R1,1,NEW,AVAILABLE,3499,EUR,2024-01-20,Automatic model
+Safety Glasses,STOR,CLR-01,10,NEW,AVAILABLE,999,EUR,2024-02-15,3M brand

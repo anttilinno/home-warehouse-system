@@ -1,0 +1,11 @@
+name,location,description,capacity,short_code
+Blue Bin 1,S1,Large blue storage bin,50 liters,BIN-01
+Blue Bin 2,S1,Large blue storage bin,50 liters,BIN-02
+Red Box,S2,Medium red box,25 liters,BOX-R1
+Toolbox A,GAR,Metal toolbox for hand tools,Medium,TBX-A
+Toolbox B,GAR,Metal toolbox for power tools,Large,TBX-B
+Parts Drawer,OFF,Small parts organizer,40 compartments,DRW-01
+Archive Box 1,ATT,Cardboard archive box,Standard,ARC-01
+Archive Box 2,ATT,Cardboard archive box,Standard,ARC-02
+Crate 1,BASE,Wooden storage crate,100kg capacity,CRT-01
+Clear Container,STOR,Transparent storage container,30 liters,CLR-01
