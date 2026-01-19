@@ -929,15 +929,16 @@ export default function LoansPage() {
               </EmptyState>
             ) : (
               <div className="rounded-lg border">
-                <div className="overflow-x-auto">
-                  <Table aria-label="Borrowed items and loans">
+                {/* Header Table - pr-[15px] accounts for body scrollbar width */}
+                <div className="overflow-x-auto pr-[15px]">
+                  <table className="w-full caption-bottom text-sm">
                     <caption className="sr-only">
                       List of borrowed items with borrower, inventory details, loan dates, and status information.
                       Currently showing {sortedLoans.length} {sortedLoans.length === 1 ? "loan" : "loans"}.
                     </caption>
                     <TableHeader className="sticky top-0 z-10 bg-background">
-                      <TableRow>
-                        <TableHead className="w-[50px]">
+                      <TableRow className="flex items-center">
+                        <TableHead className="w-[50px] flex-none">
                           <Checkbox
                             checked={isAllSelected(sortedLoans.map((l) => l.id))}
                             onCheckedChange={(checked) => {
@@ -951,45 +952,51 @@ export default function LoansPage() {
                           />
                         </TableHead>
                         <SortableTableHead
+                          className="w-[100px] flex-none"
                           sortDirection={getSortDirection("is_active")}
                           onSort={() => requestSort("is_active")}
                         >
                           Status
                         </SortableTableHead>
                         <SortableTableHead
+                          className="w-[150px] flex-none"
                           sortDirection={getSortDirection("borrower_name")}
                           onSort={() => requestSort("borrower_name")}
                         >
                           Borrower
                         </SortableTableHead>
                         <SortableTableHead
+                          className="flex-1 min-w-0"
                           sortDirection={getSortDirection("inventory_id")}
                           onSort={() => requestSort("inventory_id")}
                         >
                           Inventory ID
                         </SortableTableHead>
                         <SortableTableHead
+                          className="w-[60px] flex-none"
                           sortDirection={getSortDirection("quantity")}
                           onSort={() => requestSort("quantity")}
                         >
                           Qty
                         </SortableTableHead>
                         <SortableTableHead
+                          className="w-[110px] flex-none"
                           sortDirection={getSortDirection("loaned_at")}
                           onSort={() => requestSort("loaned_at")}
                         >
                           Loaned
                         </SortableTableHead>
                         <SortableTableHead
+                          className="w-[110px] flex-none"
                           sortDirection={getSortDirection("due_date")}
                           onSort={() => requestSort("due_date")}
                         >
                           Due
                         </SortableTableHead>
-                        <TableHead className="w-[50px]"></TableHead>
+                        <TableHead className="w-[50px] flex-none" />
                       </TableRow>
                     </TableHeader>
-                  </Table>
+                  </table>
                 </div>
 
                 {/* Virtual Scrolling Container */}
@@ -1005,14 +1012,15 @@ export default function LoansPage() {
                       position: 'relative',
                     }}
                   >
-                    <Table>
-                      <TableBody>
+                    {/* Use raw table element to avoid wrapper div from Table component */}
+                    <table className="w-full caption-bottom text-sm">
+                      <tbody className="[&_tr:last-child]:border-0">
                         {virtualizer.getVirtualItems().map((virtualItem) => {
                           const loan = sortedLoans[virtualItem.index];
                           return (
                             <TableRow
                               key={loan.id}
-                              className={cn(loan.is_overdue && "bg-destructive/5")}
+                              className={cn("flex items-center", loan.is_overdue && "bg-destructive/5")}
                               style={{
                                 position: 'absolute',
                                 top: 0,
@@ -1022,37 +1030,37 @@ export default function LoansPage() {
                                 transform: `translateY(${virtualItem.start}px)`,
                               }}
                             >
-                              <TableCell>
+                              <TableCell className="w-[50px] flex-none">
                                 <Checkbox
                                   checked={isSelected(loan.id)}
                                   onCheckedChange={() => toggleSelection(loan.id)}
                                   aria-label={`Select loan for ${getBorrowerName(loan.borrower_id)}`}
                                 />
                               </TableCell>
-                              <TableCell>
+                              <TableCell className="w-[100px] flex-none">
                                 <LoanStatusBadge loan={loan} />
                               </TableCell>
-                              <TableCell>
-                                <div className="flex items-center gap-2">
-                                  <User className="h-4 w-4 text-muted-foreground" />
-                                  {getBorrowerName(loan.borrower_id)}
+                              <TableCell className="w-[150px] flex-none">
+                                <div className="flex items-center gap-2 truncate">
+                                  <User className="h-4 w-4 text-muted-foreground flex-none" />
+                                  <span className="truncate">{getBorrowerName(loan.borrower_id)}</span>
                                 </div>
                               </TableCell>
-                              <TableCell>
-                                <div className="font-mono text-xs">{loan.inventory_id}</div>
+                              <TableCell className="flex-1 min-w-0">
+                                <div className="font-mono text-xs truncate">{loan.inventory_id}</div>
                                 {loan.notes && (
-                                  <div className="text-sm text-muted-foreground line-clamp-1 mt-1">
+                                  <div className="text-sm text-muted-foreground truncate mt-1">
                                     {loan.notes}
                                   </div>
                                 )}
                               </TableCell>
-                              <TableCell>{loan.quantity}</TableCell>
-                              <TableCell>
+                              <TableCell className="w-[60px] flex-none">{loan.quantity}</TableCell>
+                              <TableCell className="w-[110px] flex-none">
                                 <div className="text-sm">
                                   {format(parseISO(loan.loaned_at), "MMM d, yyyy")}
                                 </div>
                               </TableCell>
-                              <TableCell>
+                              <TableCell className="w-[110px] flex-none">
                                 {loan.due_date ? (
                                   <div className={cn(
                                     "text-sm flex items-center gap-1",
@@ -1065,7 +1073,7 @@ export default function LoansPage() {
                                   <span className="text-muted-foreground">-</span>
                                 )}
                               </TableCell>
-                              <TableCell>
+                              <TableCell className="w-[50px] flex-none">
                                 <DropdownMenu>
                                   <DropdownMenuTrigger asChild>
                                     <Button variant="ghost" size="icon" disabled={!loan.is_active} aria-label={`Actions for loan to ${getBorrowerName(loan.borrower_id)}`}>
@@ -1103,8 +1111,8 @@ export default function LoansPage() {
                             </TableRow>
                           );
                         })}
-                      </TableBody>
-                    </Table>
+                      </tbody>
+                    </table>
                   </div>
                 </div>
               </div>
