@@ -1076,15 +1076,16 @@ export default function ItemsPage() {
               </EmptyState>
             ) : (
               <div className="rounded-lg border">
-                <div className="overflow-x-auto">
-                  <Table aria-label="Item catalog">
+                {/* Header Table - pr-[15px] accounts for body scrollbar width */}
+                <div className="overflow-x-auto pr-[15px]">
+                  <table className="w-full caption-bottom text-sm">
                     <caption className="sr-only">
                       List of catalog items with SKU, name, category, brand, model, and minimum stock level information.
                       Currently showing {sortedItems.length} {sortedItems.length === 1 ? "item" : "items"}.
                     </caption>
                     <TableHeader className="sticky top-0 z-10 bg-background">
-                      <TableRow>
-                        <TableHead className="w-[50px]">
+                      <TableRow className="flex items-center">
+                        <TableHead className="w-[50px] flex-none">
                           <Checkbox
                             checked={isAllSelected(sortedItems.map((i) => i.id))}
                             onCheckedChange={(checked) => {
@@ -1097,47 +1098,53 @@ export default function ItemsPage() {
                             aria-label="Select all items"
                           />
                         </TableHead>
-                        <TableHead className="w-[60px]">Photo</TableHead>
+                        <TableHead className="w-[60px] flex-none">Photo</TableHead>
                         <SortableTableHead
+                          className="w-[140px] flex-none"
                           sortDirection={getSortDirection("sku")}
                           onSort={() => requestSort("sku")}
                         >
                           SKU
                         </SortableTableHead>
                         <SortableTableHead
+                          className="flex-1 min-w-0"
                           sortDirection={getSortDirection("name")}
                           onSort={() => requestSort("name")}
                         >
                           Name
                         </SortableTableHead>
                         <SortableTableHead
+                          className="w-[120px] flex-none"
                           sortDirection={getSortDirection("category_id")}
                           onSort={() => requestSort("category_id")}
                         >
                           Category
                         </SortableTableHead>
                         <SortableTableHead
+                          className="w-[100px] flex-none"
                           sortDirection={getSortDirection("brand")}
                           onSort={() => requestSort("brand")}
                         >
                           Brand
                         </SortableTableHead>
                         <SortableTableHead
+                          className="w-[100px] flex-none"
                           sortDirection={getSortDirection("model")}
                           onSort={() => requestSort("model")}
                         >
                           Model
                         </SortableTableHead>
                         <SortableTableHead
+                          className="w-[90px] flex-none"
                           sortDirection={getSortDirection("min_stock_level")}
                           onSort={() => requestSort("min_stock_level")}
                         >
                           Min Stock
                         </SortableTableHead>
-                        <TableHead className="w-[50px]" />
+                        <TableHead className="w-[50px] flex-none" />
                       </TableRow>
                     </TableHeader>
-                  </Table>
+                  </table>
                 </div>
 
                 {/* Virtual Scrolling Container */}
@@ -1153,14 +1160,15 @@ export default function ItemsPage() {
                       position: 'relative',
                     }}
                   >
-                    <Table>
-                      <TableBody>
+                    {/* Use raw table element to avoid wrapper div from Table component */}
+                    <table className="w-full caption-bottom text-sm">
+                      <tbody className="[&_tr:last-child]:border-0">
                         {virtualizer.getVirtualItems().map((virtualItem) => {
                           const item = sortedItems[virtualItem.index];
                           return (
                             <TableRow
                               key={item.id}
-                              className="cursor-pointer hover:bg-muted/50"
+                              className="cursor-pointer hover:bg-muted/50 flex items-center"
                               onClick={() => router.push(`/dashboard/items/${item.id}`)}
                               style={{
                                 position: 'absolute',
@@ -1171,14 +1179,14 @@ export default function ItemsPage() {
                                 transform: `translateY(${virtualItem.start}px)`,
                               }}
                             >
-                              <TableCell onClick={(e) => e.stopPropagation()}>
+                              <TableCell className="w-[50px] flex-none" onClick={(e) => e.stopPropagation()}>
                                 <Checkbox
                                   checked={isSelected(item.id)}
                                   onCheckedChange={() => toggleSelection(item.id)}
                                   aria-label={`Select ${item.name}`}
                                 />
                               </TableCell>
-                              <TableCell>
+                              <TableCell className="w-[60px] flex-none">
                                 <div className="relative">
                                   {(() => {
                                     const photo = itemPhotos[item.id];
@@ -1209,7 +1217,7 @@ export default function ItemsPage() {
                                   )}
                                 </div>
                               </TableCell>
-                              <TableCell className="font-mono text-sm">
+                              <TableCell className="w-[140px] flex-none font-mono text-sm">
                                 {item.sku}
                                 {item.short_code && (
                                   <Badge variant="outline" className="ml-2 text-xs">
@@ -1217,21 +1225,21 @@ export default function ItemsPage() {
                                   </Badge>
                                 )}
                               </TableCell>
-                              <TableCell>
-                                <div>
-                                  <div className="font-medium">{item.name}</div>
+                              <TableCell className="flex-1 min-w-0">
+                                <div className="truncate">
+                                  <div className="font-medium truncate">{item.name}</div>
                                   {item.description && (
-                                    <div className="text-sm text-muted-foreground line-clamp-1">
+                                    <div className="text-sm text-muted-foreground truncate">
                                       {item.description}
                                     </div>
                                   )}
                                 </div>
                               </TableCell>
-                              <TableCell>{getCategoryName(item.category_id)}</TableCell>
-                              <TableCell>{item.brand || "-"}</TableCell>
-                              <TableCell>{item.model || "-"}</TableCell>
-                              <TableCell>{item.min_stock_level}</TableCell>
-                              <TableCell onClick={(e) => e.stopPropagation()}>
+                              <TableCell className="w-[120px] flex-none">{getCategoryName(item.category_id)}</TableCell>
+                              <TableCell className="w-[100px] flex-none">{item.brand || "-"}</TableCell>
+                              <TableCell className="w-[100px] flex-none">{item.model || "-"}</TableCell>
+                              <TableCell className="w-[90px] flex-none">{item.min_stock_level}</TableCell>
+                              <TableCell className="w-[50px] flex-none" onClick={(e) => e.stopPropagation()}>
                                 <DropdownMenu>
                                   <DropdownMenuTrigger asChild>
                                     <Button variant="ghost" size="icon" aria-label={`Actions for ${item.name}`}>
@@ -1262,8 +1270,8 @@ export default function ItemsPage() {
                             </TableRow>
                           );
                         })}
-                      </TableBody>
-                    </Table>
+                      </tbody>
+                    </table>
                   </div>
                 </div>
 
