@@ -20,10 +20,11 @@ const (
 	SeedLowStock     = "low-stock"
 	SeedOverdueLoans = "overdue-loans"
 	SeedLocations    = "locations"
+	SeedConditions   = "conditions"
 	SeedAll          = "all"
 )
 
-var validSeedTypes = []string{SeedExpiring, SeedWarranty, SeedLowStock, SeedOverdueLoans, SeedLocations, SeedAll}
+var validSeedTypes = []string{SeedExpiring, SeedWarranty, SeedLowStock, SeedOverdueLoans, SeedLocations, SeedConditions, SeedAll}
 
 // Sample data for realistic seeding
 var (
@@ -65,7 +66,8 @@ var (
 		"David Miller", "Eva Davis", "Frank Wilson", "Grace Moore", "Henry Taylor",
 	}
 
-	conditions = []string{"NEW", "EXCELLENT", "GOOD", "FAIR", "POOR"}
+	conditions = []string{"NEW", "EXCELLENT", "GOOD", "FAIR", "POOR", "DAMAGED", "FOR_REPAIR"}
+	statuses   = []string{"AVAILABLE", "IN_USE", "RESERVED", "IN_TRANSIT", "DISPOSED", "MISSING"}
 
 	// Categories with subcategories
 	categoryTree = map[string][]string{
@@ -184,6 +186,11 @@ func main() {
 			fmt.Printf("Error seeding locations: %v\n", err)
 			os.Exit(1)
 		}
+	case SeedConditions:
+		if err := seeder.seedConditions(ctx); err != nil {
+			fmt.Printf("Error seeding conditions: %v\n", err)
+			os.Exit(1)
+		}
 	}
 
 	fmt.Println("\nSeeding completed successfully!")
@@ -200,6 +207,7 @@ func printUsage() {
 	fmt.Println("  low-stock     - Items with low or zero stock levels")
 	fmt.Println("  overdue-loans - Loans that are past their due date")
 	fmt.Println("  locations     - Hierarchical location structure")
+	fmt.Println("  conditions    - Items with all conditions and statuses")
 	fmt.Println("  all           - Run all seed types")
 	fmt.Println()
 	fmt.Println("Example: mise run seed expiring")
@@ -295,6 +303,9 @@ func (s *Seeder) seedAll(ctx context.Context) error {
 		return err
 	}
 	if err := s.seedLocations(ctx); err != nil {
+		return err
+	}
+	if err := s.seedConditions(ctx); err != nil {
 		return err
 	}
 	if err := s.seedExpiring(ctx); err != nil {
@@ -450,6 +461,62 @@ func (s *Seeder) seedLocations(ctx context.Context) error {
 	}
 
 	fmt.Println("  Locations seeding complete")
+	return nil
+}
+
+func (s *Seeder) seedConditions(ctx context.Context) error {
+	fmt.Println("\n--- Seeding items with all conditions and statuses ---")
+
+	locationID, err := s.getOrCreateLocation(ctx)
+	if err != nil {
+		return err
+	}
+
+	// Create inventory items for each condition
+	fmt.Println("  Creating items for each condition:")
+	for i, condition := range conditions {
+		brand := brands[s.rng.Intn(len(brands))]
+		itemName := fmt.Sprintf("%s %s (%s condition)", brand, itemNames[s.rng.Intn(len(itemNames))], condition)
+		itemID, err := s.createItemWithBrand(ctx, itemName, fmt.Sprintf("COND-%03d", i+1), brand)
+		if err != nil {
+			return err
+		}
+
+		purchasePrice := int32((s.rng.Intn(50) + 1) * 1000) // $10-$500 in cents
+		_, err = s.pool.Exec(ctx, `
+			INSERT INTO warehouse.inventory (workspace_id, item_id, location_id, quantity, condition, status, purchase_price, currency_code)
+			VALUES ($1, $2, $3, $4, $5, 'AVAILABLE', $6, 'EUR')
+		`, s.workspaceID, itemID, locationID, s.rng.Intn(5)+1, condition, purchasePrice)
+		if err != nil {
+			return fmt.Errorf("creating inventory for condition %s: %w", condition, err)
+		}
+		fmt.Printf("    Created: %s\n", itemName)
+	}
+
+	// Create inventory items for each status (except ON_LOAN which is handled by loans)
+	fmt.Println("  Creating items for each status:")
+	for i, status := range statuses {
+		brand := brands[s.rng.Intn(len(brands))]
+		itemName := fmt.Sprintf("%s %s (%s status)", brand, itemNames[s.rng.Intn(len(itemNames))], status)
+		itemID, err := s.createItemWithBrand(ctx, itemName, fmt.Sprintf("STAT-%03d", i+1), brand)
+		if err != nil {
+			return err
+		}
+
+		// Pick a random condition for variety
+		condition := conditions[s.rng.Intn(len(conditions))]
+		purchasePrice := int32((s.rng.Intn(50) + 1) * 1000)
+		_, err = s.pool.Exec(ctx, `
+			INSERT INTO warehouse.inventory (workspace_id, item_id, location_id, quantity, condition, status, purchase_price, currency_code)
+			VALUES ($1, $2, $3, $4, $5, $6, $7, 'EUR')
+		`, s.workspaceID, itemID, locationID, s.rng.Intn(5)+1, condition, status, purchasePrice)
+		if err != nil {
+			return fmt.Errorf("creating inventory for status %s: %w", status, err)
+		}
+		fmt.Printf("    Created: %s\n", itemName)
+	}
+
+	fmt.Println("  Conditions and statuses seeding complete")
 	return nil
 }
 
