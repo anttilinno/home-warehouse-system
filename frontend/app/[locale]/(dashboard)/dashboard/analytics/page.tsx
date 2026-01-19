@@ -328,7 +328,7 @@ export default function AnalyticsPage() {
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={statusBreakdown} layout="horizontal">
+              <BarChart data={statusBreakdown} layout="vertical">
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis type="number" />
                 <YAxis dataKey="status" type="category" width={100} />
