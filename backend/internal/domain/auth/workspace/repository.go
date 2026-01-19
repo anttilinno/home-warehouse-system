@@ -17,8 +17,8 @@ type Repository interface {
 	// FindBySlug retrieves a workspace by slug.
 	FindBySlug(ctx context.Context, slug string) (*Workspace, error)
 
-	// FindByUserID retrieves all workspaces for a user.
-	FindByUserID(ctx context.Context, userID uuid.UUID) ([]*Workspace, error)
+	// FindByUserID retrieves all workspaces for a user with their role.
+	FindByUserID(ctx context.Context, userID uuid.UUID) ([]*WorkspaceWithRole, error)
 
 	// Delete removes a workspace by ID.
 	Delete(ctx context.Context, id uuid.UUID) error

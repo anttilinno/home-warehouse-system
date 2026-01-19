@@ -122,12 +122,12 @@ func (m *MockWorkspaceService) GetBySlug(ctx context.Context, slug string) (*wor
 	return args.Get(0).(*workspace.Workspace), args.Error(1)
 }
 
-func (m *MockWorkspaceService) GetUserWorkspaces(ctx context.Context, userID uuid.UUID) ([]*workspace.Workspace, error) {
+func (m *MockWorkspaceService) GetUserWorkspaces(ctx context.Context, userID uuid.UUID) ([]*workspace.WorkspaceWithRole, error) {
 	args := m.Called(ctx, userID)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}
-	return args.Get(0).([]*workspace.Workspace), args.Error(1)
+	return args.Get(0).([]*workspace.WorkspaceWithRole), args.Error(1)
 }
 
 func (m *MockWorkspaceService) Update(ctx context.Context, id uuid.UUID, input workspace.UpdateWorkspaceInput) (*workspace.Workspace, error) {
@@ -457,7 +457,10 @@ func TestUserHandler_GetMyWorkspaces(t *testing.T) {
 	t.Run("gets user workspaces successfully", func(t *testing.T) {
 		ws1, _ := workspace.NewWorkspace("Workspace 1", "ws-1", nil, false)
 		ws2, _ := workspace.NewWorkspace("Personal Workspace", "personal-ws", nil, true)
-		workspaces := []*workspace.Workspace{ws1, ws2}
+		workspaces := []*workspace.WorkspaceWithRole{
+			{Workspace: ws1, Role: "owner"},
+			{Workspace: ws2, Role: "member"},
+		}
 
 		mockWsSvc.On("GetUserWorkspaces", mock.Anything, setup.UserID).
 			Return(workspaces, nil).Once()
@@ -470,7 +473,7 @@ func TestUserHandler_GetMyWorkspaces(t *testing.T) {
 
 	t.Run("returns empty list when user has no workspaces", func(t *testing.T) {
 		mockWsSvc.On("GetUserWorkspaces", mock.Anything, setup.UserID).
-			Return([]*workspace.Workspace{}, nil).Once()
+			Return([]*workspace.WorkspaceWithRole{}, nil).Once()
 
 		rec := setup.Get("/users/me/workspaces")
 

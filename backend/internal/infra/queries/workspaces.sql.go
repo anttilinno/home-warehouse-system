@@ -9,6 +9,7 @@ import (
 	"context"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const createWorkspace = `-- name: CreateWorkspace :one
@@ -94,21 +95,32 @@ func (q *Queries) GetWorkspaceBySlug(ctx context.Context, slug string) (AuthWork
 }
 
 const listWorkspacesByUser = `-- name: ListWorkspacesByUser :many
-SELECT w.id, w.name, w.slug, w.description, w.is_personal, w.created_at, w.updated_at FROM auth.workspaces w
+SELECT w.id, w.name, w.slug, w.description, w.is_personal, w.created_at, w.updated_at, wm.role FROM auth.workspaces w
 JOIN auth.workspace_members wm ON w.id = wm.workspace_id
 WHERE wm.user_id = $1
 ORDER BY w.name
 `
 
-func (q *Queries) ListWorkspacesByUser(ctx context.Context, userID uuid.UUID) ([]AuthWorkspace, error) {
+type ListWorkspacesByUserRow struct {
+	ID          uuid.UUID             `json:"id"`
+	Name        string                `json:"name"`
+	Slug        string                `json:"slug"`
+	Description *string               `json:"description"`
+	IsPersonal  bool                  `json:"is_personal"`
+	CreatedAt   pgtype.Timestamptz    `json:"created_at"`
+	UpdatedAt   pgtype.Timestamptz    `json:"updated_at"`
+	Role        AuthWorkspaceRoleEnum `json:"role"`
+}
+
+func (q *Queries) ListWorkspacesByUser(ctx context.Context, userID uuid.UUID) ([]ListWorkspacesByUserRow, error) {
 	rows, err := q.db.Query(ctx, listWorkspacesByUser, userID)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	items := []AuthWorkspace{}
+	items := []ListWorkspacesByUserRow{}
 	for rows.Next() {
-		var i AuthWorkspace
+		var i ListWorkspacesByUserRow
 		if err := rows.Scan(
 			&i.ID,
 			&i.Name,
@@ -117,6 +129,7 @@ func (q *Queries) ListWorkspacesByUser(ctx context.Context, userID uuid.UUID) ([
 			&i.IsPersonal,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.Role,
 		); err != nil {
 			return nil, err
 		}

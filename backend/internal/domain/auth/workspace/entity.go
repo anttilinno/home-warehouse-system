@@ -90,3 +90,9 @@ func (w *Workspace) Update(name string, description *string) error {
 	w.updatedAt = time.Now()
 	return nil
 }
+
+// WorkspaceWithRole combines a workspace with the user's role in it.
+type WorkspaceWithRole struct {
+	*Workspace
+	Role string
+}

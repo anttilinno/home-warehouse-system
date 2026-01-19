@@ -19,7 +19,7 @@ RETURNING *;
 DELETE FROM auth.workspaces WHERE id = $1;
 
 -- name: ListWorkspacesByUser :many
-SELECT w.* FROM auth.workspaces w
+SELECT w.*, wm.role FROM auth.workspaces w
 JOIN auth.workspace_members wm ON w.id = wm.workspace_id
 WHERE wm.user_id = $1
 ORDER BY w.name;

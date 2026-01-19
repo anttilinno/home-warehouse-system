@@ -18,7 +18,7 @@ type ServiceInterface interface {
 	Create(ctx context.Context, input CreateWorkspaceInput) (*Workspace, error)
 	GetByID(ctx context.Context, id uuid.UUID) (*Workspace, error)
 	GetBySlug(ctx context.Context, slug string) (*Workspace, error)
-	GetUserWorkspaces(ctx context.Context, userID uuid.UUID) ([]*Workspace, error)
+	GetUserWorkspaces(ctx context.Context, userID uuid.UUID) ([]*WorkspaceWithRole, error)
 	Update(ctx context.Context, id uuid.UUID, input UpdateWorkspaceInput) (*Workspace, error)
 	Delete(ctx context.Context, id uuid.UUID) error
 }
@@ -110,8 +110,8 @@ func (s *Service) GetBySlug(ctx context.Context, slug string) (*Workspace, error
 	return workspace, nil
 }
 
-// GetUserWorkspaces retrieves all workspaces for a user.
-func (s *Service) GetUserWorkspaces(ctx context.Context, userID uuid.UUID) ([]*Workspace, error) {
+// GetUserWorkspaces retrieves all workspaces for a user with their role.
+func (s *Service) GetUserWorkspaces(ctx context.Context, userID uuid.UUID) ([]*WorkspaceWithRole, error) {
 	return s.repo.FindByUserID(ctx, userID)
 }
 

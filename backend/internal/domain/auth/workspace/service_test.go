@@ -39,12 +39,12 @@ func (m *MockRepository) FindBySlug(ctx context.Context, slug string) (*Workspac
 	return args.Get(0).(*Workspace), args.Error(1)
 }
 
-func (m *MockRepository) FindByUserID(ctx context.Context, userID uuid.UUID) ([]*Workspace, error) {
+func (m *MockRepository) FindByUserID(ctx context.Context, userID uuid.UUID) ([]*WorkspaceWithRole, error) {
 	args := m.Called(ctx, userID)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}
-	return args.Get(0).([]*Workspace), args.Error(1)
+	return args.Get(0).([]*WorkspaceWithRole), args.Error(1)
 }
 
 func (m *MockRepository) Delete(ctx context.Context, id uuid.UUID) error {
@@ -413,9 +413,9 @@ func TestService_GetUserWorkspaces(t *testing.T) {
 	ctx := context.Background()
 	userID := uuid.New()
 
-	workspaces := []*Workspace{
-		{id: uuid.New(), name: "Workspace 1", slug: "workspace-1"},
-		{id: uuid.New(), name: "Workspace 2", slug: "workspace-2"},
+	workspaces := []*WorkspaceWithRole{
+		{Workspace: &Workspace{id: uuid.New(), name: "Workspace 1", slug: "workspace-1"}, Role: "owner"},
+		{Workspace: &Workspace{id: uuid.New(), name: "Workspace 2", slug: "workspace-2"}, Role: "member"},
 	}
 
 	mockRepo := new(MockRepository)
@@ -429,6 +429,8 @@ func TestService_GetUserWorkspaces(t *testing.T) {
 	assert.Len(t, result, 2)
 	assert.Equal(t, "Workspace 1", result[0].Name())
 	assert.Equal(t, "Workspace 2", result[1].Name())
+	assert.Equal(t, "owner", result[0].Role)
+	assert.Equal(t, "member", result[1].Role)
 
 	mockRepo.AssertExpectations(t)
 }

@@ -277,6 +277,7 @@ func (h *Handler) getMyWorkspaces(ctx context.Context, input *struct{}) (*GetMyW
 			Slug:        ws.Slug(),
 			Description: ws.Description(),
 			IsPersonal:  ws.IsPersonal(),
+			Role:        ws.Role,
 		}
 	}
 
@@ -558,6 +559,7 @@ type UserWorkspaceSummary struct {
 	Slug        string    `json:"slug"`
 	Description *string   `json:"description"`
 	IsPersonal  bool      `json:"is_personal"`
+	Role        string    `json:"role"`
 }
 
 type GetMyWorkspacesOutput struct {

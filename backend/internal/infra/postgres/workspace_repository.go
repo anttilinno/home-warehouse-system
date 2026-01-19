@@ -98,24 +98,27 @@ func (r *WorkspaceRepository) FindBySlug(ctx context.Context, slug string) (*wor
 	), nil
 }
 
-// FindByUserID retrieves all workspaces for a user.
-func (r *WorkspaceRepository) FindByUserID(ctx context.Context, userID uuid.UUID) ([]*workspace.Workspace, error) {
+// FindByUserID retrieves all workspaces for a user with their role.
+func (r *WorkspaceRepository) FindByUserID(ctx context.Context, userID uuid.UUID) ([]*workspace.WorkspaceWithRole, error) {
 	rows, err := r.queries.ListWorkspacesByUser(ctx, userID)
 	if err != nil {
 		return nil, err
 	}
 
-	workspaces := make([]*workspace.Workspace, 0, len(rows))
+	workspaces := make([]*workspace.WorkspaceWithRole, 0, len(rows))
 	for _, row := range rows {
-		workspaces = append(workspaces, workspace.Reconstruct(
-			row.ID,
-			row.Name,
-			row.Slug,
-			row.Description,
-			row.IsPersonal,
-			row.CreatedAt.Time,
-			row.UpdatedAt.Time,
-		))
+		workspaces = append(workspaces, &workspace.WorkspaceWithRole{
+			Workspace: workspace.Reconstruct(
+				row.ID,
+				row.Name,
+				row.Slug,
+				row.Description,
+				row.IsPersonal,
+				row.CreatedAt.Time,
+				row.UpdatedAt.Time,
+			),
+			Role: string(row.Role),
+		})
 	}
 
 	return workspaces, nil

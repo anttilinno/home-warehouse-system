@@ -41,12 +41,12 @@ func (m *MockService) GetBySlug(ctx context.Context, slug string) (*workspace.Wo
 	return args.Get(0).(*workspace.Workspace), args.Error(1)
 }
 
-func (m *MockService) GetUserWorkspaces(ctx context.Context, userID uuid.UUID) ([]*workspace.Workspace, error) {
+func (m *MockService) GetUserWorkspaces(ctx context.Context, userID uuid.UUID) ([]*workspace.WorkspaceWithRole, error) {
 	args := m.Called(ctx, userID)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}
-	return args.Get(0).([]*workspace.Workspace), args.Error(1)
+	return args.Get(0).([]*workspace.WorkspaceWithRole), args.Error(1)
 }
 
 func (m *MockService) Update(ctx context.Context, id uuid.UUID, input workspace.UpdateWorkspaceInput) (*workspace.Workspace, error) {
@@ -72,7 +72,10 @@ func TestWorkspaceHandler_List(t *testing.T) {
 	t.Run("lists user workspaces successfully", func(t *testing.T) {
 		ws1, _ := workspace.NewWorkspace("Workspace 1", "workspace-1", nil, false)
 		ws2, _ := workspace.NewWorkspace("Workspace 2", "workspace-2", nil, false)
-		workspaces := []*workspace.Workspace{ws1, ws2}
+		workspaces := []*workspace.WorkspaceWithRole{
+			{Workspace: ws1, Role: "owner"},
+			{Workspace: ws2, Role: "member"},
+		}
 
 		mockSvc.On("GetUserWorkspaces", mock.Anything, setup.UserID).
 			Return(workspaces, nil).Once()
@@ -85,7 +88,7 @@ func TestWorkspaceHandler_List(t *testing.T) {
 
 	t.Run("returns empty list when no workspaces", func(t *testing.T) {
 		mockSvc.On("GetUserWorkspaces", mock.Anything, setup.UserID).
-			Return([]*workspace.Workspace{}, nil).Once()
+			Return([]*workspace.WorkspaceWithRole{}, nil).Once()
 
 		rec := setup.Get("/workspaces")
 

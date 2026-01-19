@@ -26,7 +26,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface) {
 
 		items := make([]WorkspaceResponse, len(workspaces))
 		for i, ws := range workspaces {
-			items[i] = toWorkspaceResponse(ws)
+			items[i] = toWorkspaceWithRoleResponse(ws)
 		}
 
 		return &ListWorkspacesOutput{
@@ -159,6 +159,19 @@ func toWorkspaceResponse(w *Workspace) WorkspaceResponse {
 	}
 }
 
+func toWorkspaceWithRoleResponse(w *WorkspaceWithRole) WorkspaceResponse {
+	return WorkspaceResponse{
+		ID:          w.ID(),
+		Name:        w.Name(),
+		Slug:        w.Slug(),
+		Description: w.Description(),
+		IsPersonal:  w.IsPersonal(),
+		Role:        w.Role,
+		CreatedAt:   w.CreatedAt(),
+		UpdatedAt:   w.UpdatedAt(),
+	}
+}
+
 // Request/Response types
 
 type ListWorkspacesOutput struct {
@@ -220,6 +233,7 @@ type WorkspaceResponse struct {
 	Slug        string    `json:"slug"`
 	Description *string   `json:"description,omitempty"`
 	IsPersonal  bool      `json:"is_personal"`
+	Role        string    `json:"role,omitempty"`
 	CreatedAt   time.Time `json:"created_at"`
 	UpdatedAt   time.Time `json:"updated_at"`
 }
