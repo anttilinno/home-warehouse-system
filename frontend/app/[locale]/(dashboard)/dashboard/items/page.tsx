@@ -353,7 +353,7 @@ export default function ItemsPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const debouncedSearchQuery = useDebouncedValue(searchQuery, 300);
   const [showArchived, setShowArchived] = useState(false);
-  const [itemPhotos, setItemPhotos] = useState<Record<string, { thumbnail_url?: string; photo_url: string } | null>>({});
+  const [itemPhotos, setItemPhotos] = useState<Record<string, { urls: { small: string; medium: string; original: string; large: string } } | null>>({});
   const [photoCount, setPhotoCount] = useState<Record<string, number>>({});
 
   // Virtual scrolling
@@ -479,14 +479,17 @@ export default function ItemsPage() {
       const photoPromises = itemIds.map(async (itemId) => {
         try {
           const response = await fetch(
-            `${process.env.NEXT_PUBLIC_API_URL}/workspaces/${workspaceId}/items/${itemId}/photos?limit=1&primary_only=true`,
+            `${process.env.NEXT_PUBLIC_API_URL}/workspaces/${workspaceId}/items/${itemId}/photos/list`,
             {
               credentials: "include",
             }
           );
           if (response.ok) {
             const data = await response.json();
-            return { itemId, photo: data.photos?.[0] || null, count: data.total || 0 };
+            // Find primary photo or use first one
+            const photos = data.items || [];
+            const primaryPhoto = photos.find((p: any) => p.is_primary) || photos[0] || null;
+            return { itemId, photo: primaryPhoto, count: photos.length };
           }
           return { itemId, photo: null, count: 0 };
         } catch {
@@ -508,12 +511,6 @@ export default function ItemsPage() {
     }
   }, [workspaceId]);
 
-  // Load photos when items change
-  useEffect(() => {
-    const visibleItemIds = sortedItems.slice(0, 50).map((item) => item.id);
-    loadItemPhotos(visibleItemIds);
-  }, [sortedItems, loadItemPhotos]);
-
   // Infinite scroll for items
   const {
     items,
@@ -528,7 +525,7 @@ export default function ItemsPage() {
       if (!workspaceId) {
         return { items: [], total: 0, page: 1, total_pages: 0 };
       }
-      return await itemsApi.list({ page, limit: 50 });
+      return await itemsApi.list(workspaceId, { page, limit: 50 });
     },
     pageSize: 50,
     dependencies: [workspaceId],
@@ -562,7 +559,7 @@ export default function ItemsPage() {
       // Handle photo events
       if (event.entity_type === "itemphoto") {
         const itemId = event.data?.item_id;
-        if (itemId) {
+        if (typeof itemId === "string") {
           // Reload photos for the affected item
           loadItemPhotos([itemId]);
         }
@@ -650,6 +647,12 @@ export default function ItemsPage() {
 
   // Sort items (client-side)
   const { sortedData: sortedItems, requestSort, getSortDirection } = useTableSort(filteredItems, "name", "asc");
+
+  // Load photos when sorted items change
+  useEffect(() => {
+    const visibleItemIds = sortedItems.slice(0, 50).map((item) => item.id);
+    loadItemPhotos(visibleItemIds);
+  }, [sortedItems, loadItemPhotos]);
 
   // Virtual scrolling setup
   const virtualizer = useVirtualizer({
@@ -769,7 +772,7 @@ export default function ItemsPage() {
           warranty_details: formData.warranty_details || undefined,
           min_stock_level: formData.min_stock_level,
         };
-        await itemsApi.update(editingItem.id, updateData);
+        await itemsApi.update(workspaceId!, editingItem.id, updateData);
         toast.success("Item updated successfully");
       } else {
         // Create new item
@@ -789,7 +792,7 @@ export default function ItemsPage() {
           min_stock_level: formData.min_stock_level,
           short_code: formData.short_code || undefined,
         };
-        await itemsApi.create(createData);
+        await itemsApi.create(workspaceId!, createData);
         toast.success("Item created successfully");
       }
 
@@ -808,10 +811,10 @@ export default function ItemsPage() {
   const handleArchive = async (item: Item) => {
     try {
       if (item.is_archived) {
-        await itemsApi.restore(item.id);
+        await itemsApi.restore(workspaceId!, item.id);
         toast.success("Item restored successfully");
       } else {
-        await itemsApi.archive(item.id);
+        await itemsApi.archive(workspaceId!, item.id);
         toast.success("Item archived successfully");
       }
       refetch();
@@ -871,7 +874,7 @@ export default function ItemsPage() {
         selectedIdsArray.map((id) => {
           const item = sortedItems.find((i) => i.id === id);
           if (!item) return Promise.resolve();
-          return isRestoring ? itemsApi.restore(id) : itemsApi.archive(id);
+          return isRestoring ? itemsApi.restore(workspaceId!, id) : itemsApi.archive(workspaceId!, id);
         })
       );
 
@@ -1177,20 +1180,25 @@ export default function ItemsPage() {
                               </TableCell>
                               <TableCell>
                                 <div className="relative">
-                                  {itemPhotos[item.id] ? (
-                                    <div className="h-12 w-12 overflow-hidden rounded-md border">
-                                      <img
-                                        src={itemPhotos[item.id].thumbnail_url || itemPhotos[item.id].photo_url}
-                                        alt={item.name}
-                                        className="h-full w-full object-cover"
-                                        loading="lazy"
-                                      />
-                                    </div>
-                                  ) : itemPhotos[item.id] === null ? (
-                                    <PhotoPlaceholder size="sm" ariaLabel={`No photo for ${item.name}`} />
-                                  ) : (
-                                    <div className="h-12 w-12 animate-pulse rounded-md bg-muted" />
-                                  )}
+                                  {(() => {
+                                    const photo = itemPhotos[item.id];
+                                    if (photo) {
+                                      return (
+                                        <div className="h-12 w-12 overflow-hidden rounded-md border">
+                                          <img
+                                            src={photo.urls.small}
+                                            alt={item.name}
+                                            className="h-full w-full object-cover"
+                                            loading="lazy"
+                                          />
+                                        </div>
+                                      );
+                                    } else if (photo === null) {
+                                      return <PhotoPlaceholder size="sm" ariaLabel={`No photo for ${item.name}`} />;
+                                    } else {
+                                      return <div className="h-12 w-12 animate-pulse rounded-md bg-muted" />;
+                                    }
+                                  })()}
                                   {photoCount[item.id] > 1 && (
                                     <Badge
                                       variant="secondary"
@@ -1340,16 +1348,16 @@ export default function ItemsPage() {
               <div className="space-y-2">
                 <Label htmlFor="category">Category</Label>
                 <Select
-                  value={formData.category_id}
+                  value={formData.category_id || "none"}
                   onValueChange={(value) =>
-                    setFormData({ ...formData, category_id: value })
+                    setFormData({ ...formData, category_id: value === "none" ? "" : value })
                   }
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Select a category" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">None</SelectItem>
+                    <SelectItem value="none">None</SelectItem>
                     {categories.map((cat) => (
                       <SelectItem key={cat.id} value={cat.id}>
                         {cat.name}

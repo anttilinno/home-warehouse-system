@@ -43,6 +43,7 @@ import { Badge } from "@/components/ui/badge";
 import { useWorkspace } from "@/lib/hooks/use-workspace";
 import { useSSE, type SSEEvent } from "@/lib/hooks/use-sse";
 import { analyticsApi } from "@/lib/api";
+import { chartColors, chartColorPalette } from "@/lib/config/constants";
 import type {
   DashboardStats,
   LoanStats,
@@ -53,26 +54,6 @@ import type {
   TopBorrower,
   MonthlyLoanActivity,
 } from "@/lib/api/analytics";
-
-const COLORS = {
-  primary: "#3b82f6",
-  success: "#22c55e",
-  warning: "#f59e0b",
-  danger: "#ef4444",
-  purple: "#a855f7",
-  teal: "#14b8a6",
-  pink: "#ec4899",
-};
-
-const CHART_COLORS = [
-  COLORS.primary,
-  COLORS.success,
-  COLORS.warning,
-  COLORS.danger,
-  COLORS.purple,
-  COLORS.teal,
-  COLORS.pink,
-];
 
 function StatsCard({
   title,
@@ -301,7 +282,7 @@ export default function AnalyticsPage() {
                 <XAxis dataKey="name" angle={-45} textAnchor="end" height={100} />
                 <YAxis />
                 <Tooltip />
-                <Bar dataKey="item_count" fill={COLORS.primary} name="Items" />
+                <Bar dataKey="item_count" fill={chartColors.primary} name="Items" />
               </BarChart>
             </ResponsiveContainer>
           </CardContent>
@@ -326,7 +307,7 @@ export default function AnalyticsPage() {
                   label
                 >
                   {conditionBreakdown.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
+                    <Cell key={`cell-${index}`} fill={chartColorPalette[index % chartColorPalette.length]} />
                   ))}
                 </Pie>
                 <Tooltip />
@@ -352,7 +333,7 @@ export default function AnalyticsPage() {
                 <XAxis type="number" />
                 <YAxis dataKey="status" type="category" width={100} />
                 <Tooltip />
-                <Bar dataKey="count" fill={COLORS.success} />
+                <Bar dataKey="count" fill={chartColors.success} />
               </BarChart>
             </ResponsiveContainer>
           </CardContent>
@@ -372,8 +353,8 @@ export default function AnalyticsPage() {
                 <YAxis />
                 <Tooltip />
                 <Legend />
-                <Line type="monotone" dataKey="created" stroke={COLORS.primary} name="Created" />
-                <Line type="monotone" dataKey="returned" stroke={COLORS.success} name="Returned" />
+                <Line type="monotone" dataKey="created" stroke={chartColors.primary} name="Created" />
+                <Line type="monotone" dataKey="returned" stroke={chartColors.success} name="Returned" />
               </LineChart>
             </ResponsiveContainer>
           </CardContent>

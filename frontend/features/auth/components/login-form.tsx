@@ -12,7 +12,7 @@ import { Link, useRouter } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { authApi } from "@/lib/api";
+import { useAuth } from "@/lib/contexts/auth-context";
 
 const loginSchema = z.object({
   email: z.string().email(),
@@ -24,8 +24,12 @@ type LoginFormData = z.infer<typeof loginSchema>;
 export function LoginForm() {
   const t = useTranslations("auth");
   const router = useRouter();
+  const { login } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+
+  // Pre-fill with seeded user credentials in development
+  const isDev = process.env.NODE_ENV === "development";
 
   const {
     register,
@@ -35,6 +39,9 @@ export function LoginForm() {
   } = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
     mode: "onChange",
+    defaultValues: isDev
+      ? { email: "seeder@test.local", password: "password123" }
+      : undefined,
   });
 
   const email = watch("email");
@@ -47,7 +54,7 @@ export function LoginForm() {
     setIsLoading(true);
 
     try {
-      await authApi.login(data.email, data.password);
+      await login(data.email, data.password);
 
       toast.success("Login successful! Redirecting...");
 

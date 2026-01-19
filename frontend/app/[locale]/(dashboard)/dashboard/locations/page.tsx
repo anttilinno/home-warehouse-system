@@ -107,6 +107,7 @@ function LocationRow({
   onDelete,
   onArchive,
   onToggle,
+  onAddSublocation,
 }: {
   location: LocationTreeItem;
   level: number;
@@ -114,16 +115,9 @@ function LocationRow({
   onDelete: (loc: Location) => void;
   onArchive: (loc: Location) => void;
   onToggle: (id: string) => void;
+  onAddSublocation: (loc: Location) => void;
 }) {
   const hasChildren = location.children.length > 0;
-
-  const getLocationDetails = () => {
-    const details: string[] = [];
-    if (location.zone) details.push(`Zone: ${location.zone}`);
-    if (location.shelf) details.push(`Shelf: ${location.shelf}`);
-    if (location.bin) details.push(`Bin: ${location.bin}`);
-    return details.join(" · ");
-  };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (!hasChildren) return;
@@ -193,9 +187,9 @@ function LocationRow({
               </Badge>
             )}
           </div>
-          {(location.description || getLocationDetails()) && (
+          {location.description && (
             <div className="text-sm text-muted-foreground truncate">
-              {location.description || getLocationDetails()}
+              {location.description}
             </div>
           )}
         </div>
@@ -218,6 +212,10 @@ function LocationRow({
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
+            <DropdownMenuItem onClick={() => onAddSublocation(location)}>
+              <Plus className="mr-2 h-4 w-4" />
+              Add sublocation
+            </DropdownMenuItem>
             <DropdownMenuItem onClick={() => onEdit(location)}>
               <Pencil className="mr-2 h-4 w-4" />
               Edit
@@ -258,6 +256,7 @@ function LocationRow({
               onDelete={onDelete}
               onArchive={onArchive}
               onToggle={onToggle}
+              onAddSublocation={onAddSublocation}
             />
           ))}
         </div>
@@ -302,9 +301,6 @@ export default function LocationsPage() {
   const [formName, setFormName] = useState("");
   const [formDescription, setFormDescription] = useState("");
   const [formParentId, setFormParentId] = useState<string>("");
-  const [formZone, setFormZone] = useState("");
-  const [formShelf, setFormShelf] = useState("");
-  const [formBin, setFormBin] = useState("");
   const [formShortCode, setFormShortCode] = useState("");
   const [isSaving, setIsSaving] = useState(false);
 
@@ -332,7 +328,7 @@ export default function LocationsPage() {
 
     try {
       setIsLoading(true);
-      const response = await locationsApi.list({ limit: 500 });
+      const response = await locationsApi.list(workspaceId, { limit: 100 });
       setLocations(response.items);
       // Initialize all locations as expanded by default
       setExpandedIds(new Set(response.items.map((loc) => loc.id)));
@@ -391,9 +387,6 @@ export default function LocationsPage() {
     setFormName("");
     setFormDescription("");
     setFormParentId("");
-    setFormZone("");
-    setFormShelf("");
-    setFormBin("");
     setFormShortCode("");
     setDialogOpen(true);
   };
@@ -403,10 +396,16 @@ export default function LocationsPage() {
     setFormName(location.name);
     setFormDescription(location.description || "");
     setFormParentId(location.parent_location || "");
-    setFormZone(location.zone || "");
-    setFormShelf(location.shelf || "");
-    setFormBin(location.bin || "");
     setFormShortCode(location.short_code || "");
+    setDialogOpen(true);
+  };
+
+  const openAddSublocationDialog = (parentLocation: Location) => {
+    setEditingLocation(null);
+    setFormName("");
+    setFormDescription("");
+    setFormParentId(parentLocation.id);
+    setFormShortCode("");
     setDialogOpen(true);
   };
 
@@ -429,11 +428,8 @@ export default function LocationsPage() {
           name: formName,
           description: formDescription || undefined,
           parent_location: formParentId || undefined,
-          zone: formZone || undefined,
-          shelf: formShelf || undefined,
-          bin: formBin || undefined,
         };
-        await locationsApi.update(editingLocation.id, updateData);
+        await locationsApi.update(workspaceId, editingLocation.id, updateData);
         toast.success("Location updated successfully");
       } else {
         // Create new location
@@ -441,12 +437,9 @@ export default function LocationsPage() {
           name: formName,
           description: formDescription || undefined,
           parent_location: formParentId || undefined,
-          zone: formZone || undefined,
-          shelf: formShelf || undefined,
-          bin: formBin || undefined,
           short_code: formShortCode || undefined,
         };
-        await locationsApi.create(createData);
+        await locationsApi.create(workspaceId, createData);
         toast.success("Location created successfully");
       }
 
@@ -463,12 +456,14 @@ export default function LocationsPage() {
   };
 
   const handleArchive = async (location: Location) => {
+    if (!workspaceId) return;
+
     try {
       if (location.is_archived) {
-        await locationsApi.restore(location.id);
+        await locationsApi.restore(workspaceId, location.id);
         toast.success("Location restored successfully");
       } else {
-        await locationsApi.archive(location.id);
+        await locationsApi.archive(workspaceId, location.id);
         toast.success("Location archived successfully");
       }
       loadLocations();
@@ -481,10 +476,10 @@ export default function LocationsPage() {
   };
 
   const handleDelete = async () => {
-    if (!deletingLocation) return;
+    if (!deletingLocation || !workspaceId) return;
 
     try {
-      await locationsApi.delete(deletingLocation.id);
+      await locationsApi.delete(workspaceId, deletingLocation.id);
       toast.success("Location deleted successfully");
       setDeleteDialogOpen(false);
       setDeletingLocation(null);
@@ -535,9 +530,7 @@ export default function LocationsPage() {
           const query = debouncedSearchQuery.toLowerCase();
           matchesSearch =
             location.name.toLowerCase().includes(query) ||
-            (location.zone?.toLowerCase().includes(query) ?? false) ||
-            (location.shelf?.toLowerCase().includes(query) ?? false) ||
-            (location.bin?.toLowerCase().includes(query) ?? false) ||
+            (location.description?.toLowerCase().includes(query) ?? false) ||
             (location.short_code?.toLowerCase().includes(query) ?? false);
         }
 
@@ -637,7 +630,7 @@ export default function LocationsPage() {
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder="Search by name, zone, shelf, or bin..."
+                  placeholder="Search locations..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="pl-9"
@@ -693,6 +686,7 @@ export default function LocationsPage() {
                     }}
                     onArchive={handleArchive}
                     onToggle={handleToggle}
+                    onAddSublocation={openAddSublocationDialog}
                   />
                 ))}
               </div>
@@ -731,14 +725,14 @@ export default function LocationsPage() {
             <div className="space-y-2">
               <Label htmlFor="parent">Parent Location</Label>
               <Select
-                value={formParentId}
-                onValueChange={(value) => setFormParentId(value)}
+                value={formParentId || "none"}
+                onValueChange={(value) => setFormParentId(value === "none" ? "" : value)}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="None (root location)" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">
+                  <SelectItem value="none">
                     <div className="flex items-center gap-2">
                       <Home className="h-4 w-4" />
                       None (root location)
@@ -753,48 +747,25 @@ export default function LocationsPage() {
               </Select>
             </div>
 
-            <div className="grid grid-cols-3 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="zone">Zone</Label>
+            <div className="space-y-2">
+              <Label htmlFor="short_code">Short Code (QR Label)</Label>
+              {editingLocation ? (
                 <Input
-                  id="zone"
-                  value={formZone}
-                  onChange={(e) => setFormZone(e.target.value)}
-                  placeholder="e.g., A, B, C"
+                  id="short_code"
+                  value={formShortCode}
+                  readOnly
+                  className="bg-muted font-mono"
                 />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="shelf">Shelf</Label>
-                <Input
-                  id="shelf"
-                  value={formShelf}
-                  onChange={(e) => setFormShelf(e.target.value)}
-                  placeholder="e.g., 1, 2, 3"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="bin">Bin</Label>
-                <Input
-                  id="bin"
-                  value={formBin}
-                  onChange={(e) => setFormBin(e.target.value)}
-                  placeholder="e.g., 1A, 2B"
-                />
-              </div>
-            </div>
-
-            {!editingLocation && (
-              <div className="space-y-2">
-                <Label htmlFor="short_code">Short Code (QR Label)</Label>
+              ) : (
                 <Input
                   id="short_code"
                   value={formShortCode}
                   onChange={(e) => setFormShortCode(e.target.value)}
-                  placeholder="e.g., LOC-001"
-                  maxLength={20}
+                  placeholder="Leave empty to auto-generate"
+                  maxLength={8}
                 />
-              </div>
-            )}
+              )}
+            </div>
 
             <div className="space-y-2">
               <Label htmlFor="description">Description</Label>
@@ -845,7 +816,7 @@ export default function LocationsPage() {
         entityType="location"
         onImport={handleImport}
         title="Import Locations from CSV"
-        description="Upload a CSV file to import locations. The file should include columns for name, zone, shelf, bin, and other location details."
+        description="Upload a CSV file to import locations. The file should include columns for name, description, and parent location."
       />
     </div>
   );

@@ -238,12 +238,9 @@ func (s *WorkspaceBackupService) parseLocationsFromRows(rows [][]string) []queri
 				loc.ParentLocation = pgtype.UUID{Bytes: id, Valid: true}
 			}
 		}
-		loc.Zone = stringToPtr(getCellValue(row, 3))
-		loc.Shelf = stringToPtr(getCellValue(row, 4))
-		loc.Bin = stringToPtr(getCellValue(row, 5))
-		loc.Description = stringToPtr(getCellValue(row, 6))
-		loc.ShortCode = stringToPtr(getCellValue(row, 7))
-		loc.IsArchived = getCellValue(row, 8) == "true"
+		loc.Description = stringToPtr(getCellValue(row, 3))
+		loc.ShortCode = getCellValue(row, 4)
+		loc.IsArchived = getCellValue(row, 5) == "true"
 		locations = append(locations, loc)
 	}
 	return locations
@@ -291,7 +288,7 @@ func (s *WorkspaceBackupService) parseItemsFromRows(rows [][]string) []queries.W
 		item.Model = stringToPtr(getCellValue(row, 6))
 		item.Manufacturer = stringToPtr(getCellValue(row, 7))
 		item.Barcode = stringToPtr(getCellValue(row, 8))
-		item.ShortCode = stringToPtr(getCellValue(row, 9))
+		item.ShortCode = getCellValue(row, 9)
 		// Min stock level is in column 10
 		isArchived := getCellValue(row, 11) == "true"
 		item.IsArchived = &isArchived
@@ -318,7 +315,7 @@ func (s *WorkspaceBackupService) parseContainersFromRows(rows [][]string) []quer
 		}
 		container.Description = stringToPtr(getCellValue(row, 3))
 		container.Capacity = stringToPtr(getCellValue(row, 4))
-		container.ShortCode = stringToPtr(getCellValue(row, 5))
+		container.ShortCode = getCellValue(row, 5)
 		container.IsArchived = getCellValue(row, 6) == "true"
 		containers = append(containers, container)
 	}
@@ -575,9 +572,6 @@ func (s *WorkspaceBackupService) importLocations(ctx context.Context, workspaceI
 			ID:          newID,
 			WorkspaceID: workspaceID,
 			Name:        loc.Name,
-			Zone:        loc.Zone,
-			Shelf:       loc.Shelf,
-			Bin:         loc.Bin,
 			Description: loc.Description,
 			ShortCode:   loc.ShortCode,
 		})
@@ -616,9 +610,6 @@ func (s *WorkspaceBackupService) importLocations(ctx context.Context, workspaceI
 			WorkspaceID:    workspaceID,
 			Name:           loc.Name,
 			ParentLocation: pgtype.UUID{Bytes: parentID, Valid: true},
-			Zone:           loc.Zone,
-			Shelf:          loc.Shelf,
-			Bin:            loc.Bin,
 			Description:    loc.Description,
 			ShortCode:      loc.ShortCode,
 		})

@@ -30,10 +30,8 @@ export interface PendingChange {
 }
 
 export interface PendingChangesListResponse {
-  items: PendingChange[];
+  changes: PendingChange[];
   total: number;
-  page: number;
-  total_pages: number;
 }
 
 export interface PendingChangesListParams {

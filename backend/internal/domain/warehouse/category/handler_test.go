@@ -111,7 +111,7 @@ func setupTestRouter(svc *MockService) (http.Handler, *chi.Mux) {
 	config := huma.DefaultConfig("Test API", "1.0.0")
 	api := humachi.New(r, config)
 
-	RegisterRoutes(api, svc)
+	RegisterRoutes(api, svc, nil)
 
 	return r, r
 }

@@ -414,7 +414,7 @@ func (s *WorkspaceBackupService) createLocationsSheet(f *excelize.File, location
 		return err
 	}
 
-	headers := []string{"ID", "Name", "Parent Location ID", "Zone", "Shelf", "Bin", "Description", "Short Code", "Archived", "Created At", "Updated At"}
+	headers := []string{"ID", "Name", "Parent Location ID", "Description", "Short Code", "Archived", "Created At", "Updated At"}
 	for i, header := range headers {
 		cell, _ := excelize.CoordinatesToCellName(i+1, 1)
 		f.SetCellValue(sheetName, cell, header)
@@ -428,14 +428,11 @@ func (s *WorkspaceBackupService) createLocationsSheet(f *excelize.File, location
 		if loc.ParentLocation.Valid {
 			f.SetCellValue(sheetName, fmt.Sprintf("C%d", row), uuid.UUID(loc.ParentLocation.Bytes).String())
 		}
-		f.SetCellValue(sheetName, fmt.Sprintf("D%d", row), ptrToString(loc.Zone))
-		f.SetCellValue(sheetName, fmt.Sprintf("E%d", row), ptrToString(loc.Shelf))
-		f.SetCellValue(sheetName, fmt.Sprintf("F%d", row), ptrToString(loc.Bin))
-		f.SetCellValue(sheetName, fmt.Sprintf("G%d", row), ptrToString(loc.Description))
-		f.SetCellValue(sheetName, fmt.Sprintf("H%d", row), ptrToString(loc.ShortCode))
-		f.SetCellValue(sheetName, fmt.Sprintf("I%d", row), loc.IsArchived)
-		f.SetCellValue(sheetName, fmt.Sprintf("J%d", row), formatTimestamp(loc.CreatedAt))
-		f.SetCellValue(sheetName, fmt.Sprintf("K%d", row), formatTimestamp(loc.UpdatedAt))
+		f.SetCellValue(sheetName, fmt.Sprintf("D%d", row), ptrToString(loc.Description))
+		f.SetCellValue(sheetName, fmt.Sprintf("E%d", row), loc.ShortCode)
+		f.SetCellValue(sheetName, fmt.Sprintf("F%d", row), loc.IsArchived)
+		f.SetCellValue(sheetName, fmt.Sprintf("G%d", row), formatTimestamp(loc.CreatedAt))
+		f.SetCellValue(sheetName, fmt.Sprintf("H%d", row), formatTimestamp(loc.UpdatedAt))
 	}
 
 	f.SetPanes(sheetName, &excelize.Panes{
@@ -515,7 +512,7 @@ func (s *WorkspaceBackupService) createItemsSheet(f *excelize.File, items []quer
 		f.SetCellValue(sheetName, fmt.Sprintf("G%d", row), ptrToString(item.Model))
 		f.SetCellValue(sheetName, fmt.Sprintf("H%d", row), ptrToString(item.Manufacturer))
 		f.SetCellValue(sheetName, fmt.Sprintf("I%d", row), ptrToString(item.Barcode))
-		f.SetCellValue(sheetName, fmt.Sprintf("J%d", row), ptrToString(item.ShortCode))
+		f.SetCellValue(sheetName, fmt.Sprintf("J%d", row), item.ShortCode)
 		f.SetCellValue(sheetName, fmt.Sprintf("K%d", row), item.MinStockLevel)
 		f.SetCellValue(sheetName, fmt.Sprintf("L%d", row), ptrToBool(item.IsArchived))
 		f.SetCellValue(sheetName, fmt.Sprintf("M%d", row), formatTimestamp(item.CreatedAt))
@@ -555,7 +552,7 @@ func (s *WorkspaceBackupService) createContainersSheet(f *excelize.File, contain
 		f.SetCellValue(sheetName, fmt.Sprintf("C%d", row), container.LocationID.String())
 		f.SetCellValue(sheetName, fmt.Sprintf("D%d", row), ptrToString(container.Description))
 		f.SetCellValue(sheetName, fmt.Sprintf("E%d", row), ptrToString(container.Capacity))
-		f.SetCellValue(sheetName, fmt.Sprintf("F%d", row), ptrToString(container.ShortCode))
+		f.SetCellValue(sheetName, fmt.Sprintf("F%d", row), container.ShortCode)
 		f.SetCellValue(sheetName, fmt.Sprintf("G%d", row), container.IsArchived)
 		f.SetCellValue(sheetName, fmt.Sprintf("H%d", row), formatTimestamp(container.CreatedAt))
 		f.SetCellValue(sheetName, fmt.Sprintf("I%d", row), formatTimestamp(container.UpdatedAt))

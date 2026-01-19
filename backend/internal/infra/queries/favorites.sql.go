@@ -145,7 +145,7 @@ type GetFavoriteItemsRow struct {
 	WarrantyDetails   *string            `json:"warranty_details"`
 	PurchasedFrom     pgtype.UUID        `json:"purchased_from"`
 	MinStockLevel     int32              `json:"min_stock_level"`
-	ShortCode         *string            `json:"short_code"`
+	ShortCode         string             `json:"short_code"`
 	ObsidianVaultPath *string            `json:"obsidian_vault_path"`
 	ObsidianNotePath  *string            `json:"obsidian_note_path"`
 	SearchVector      interface{}        `json:"search_vector"`

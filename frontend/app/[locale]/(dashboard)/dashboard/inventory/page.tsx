@@ -480,7 +480,7 @@ export default function InventoryPage() {
       if (!workspaceId) {
         return { items: [], total: 0, page: 1, total_pages: 0 };
       }
-      return await inventoryApi.list({ page, limit: 50 });
+      return await inventoryApi.list(workspaceId!, { page, limit: 50 });
     },
     pageSize: 50,
     dependencies: [workspaceId],
@@ -494,9 +494,9 @@ export default function InventoryPage() {
     const loadReferenceData = async () => {
       try {
         const [itemsData, locationsData, containersData] = await Promise.all([
-          itemsApi.list({ limit: 500 }),
-          locationsApi.list({ limit: 500 }),
-          containersApi.list({ limit: 500 }),
+          itemsApi.list(workspaceId, { limit: 100 }),
+          locationsApi.list(workspaceId, { limit: 100 }),
+          containersApi.list(workspaceId, { limit: 100 }),
         ]);
         setItems(itemsData.items.filter(i => !i.is_archived));
         setLocations(locationsData.items.filter(l => !l.is_archived));
@@ -756,7 +756,7 @@ export default function InventoryPage() {
         status: formStatus,
         notes: formNotes || undefined,
       };
-      await inventoryApi.create(createData);
+      await inventoryApi.create(workspaceId!, createData);
       toast.success("Inventory created successfully");
 
       setDialogOpen(false);
@@ -774,10 +774,10 @@ export default function InventoryPage() {
   const handleArchive = async (inventory: Inventory) => {
     try {
       if (inventory.is_archived) {
-        await inventoryApi.restore(inventory.id);
+        await inventoryApi.restore(workspaceId!, inventory.id);
         toast.success("Inventory restored successfully");
       } else {
-        await inventoryApi.archive(inventory.id);
+        await inventoryApi.archive(workspaceId!, inventory.id);
         toast.success("Inventory archived successfully");
       }
       refetch();
@@ -796,7 +796,7 @@ export default function InventoryPage() {
       throw new Error("Quantity must be a positive number");
     }
     try {
-      await inventoryApi.updateQuantity(inventoryId, { quantity });
+      await inventoryApi.updateQuantity(workspaceId!, inventoryId, { quantity });
       toast.success("Quantity updated");
       refetch();
     } catch (error) {
@@ -814,7 +814,7 @@ export default function InventoryPage() {
     }
 
     try {
-      await inventoryApi.update(inventoryId, {
+      await inventoryApi.update(workspaceId!, inventoryId, {
         location_id: currentInventory.location_id,
         container_id: currentInventory.container_id || undefined,
         quantity: currentInventory.quantity,
@@ -837,7 +837,7 @@ export default function InventoryPage() {
 
   const handleUpdateStatus = async (inventoryId: string, status: string) => {
     try {
-      await inventoryApi.updateStatus(inventoryId, { status: status as InventoryStatus });
+      await inventoryApi.updateStatus(workspaceId!, inventoryId, { status: status as InventoryStatus });
       toast.success("Status updated");
       refetch();
     } catch (error) {
@@ -863,7 +863,7 @@ export default function InventoryPage() {
       // Update all selected inventories
       await Promise.all(
         selectedIdsArray.map((id) => {
-          return inventoryApi.updateStatus(id, { status: newStatus });
+          return inventoryApi.updateStatus(workspaceId!, id, { status: newStatus });
         })
       );
 
@@ -1284,12 +1284,12 @@ export default function InventoryPage() {
             <div className="grid grid-cols-3 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="container">Container</Label>
-                <Select value={formContainerId} onValueChange={setFormContainerId}>
+                <Select value={formContainerId || "none"} onValueChange={(value) => setFormContainerId(value === "none" ? "" : value)}>
                   <SelectTrigger>
                     <SelectValue placeholder="None" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">None</SelectItem>
+                    <SelectItem value="none">None</SelectItem>
                     {containers
                       .filter(c => !formLocationId || c.location_id === formLocationId)
                       .map((container) => (

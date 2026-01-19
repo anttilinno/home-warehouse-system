@@ -17,34 +17,46 @@ func TestNewLocation(t *testing.T) {
 		name       string
 		wsID       uuid.UUID
 		locName    string
+		shortCode  string
 		wantErr    bool
 		errMsg     string
 	}{
 		{
-			name:    "valid location with minimal fields",
-			wsID:    workspaceID,
-			locName: "Warehouse A",
-			wantErr: false,
+			name:      "valid location with minimal fields",
+			wsID:      workspaceID,
+			locName:   "Warehouse A",
+			shortCode: "WH-A",
+			wantErr:   false,
 		},
 		{
-			name:    "missing location name",
-			wsID:    workspaceID,
-			locName: "",
-			wantErr: true,
-			errMsg:  "name",
+			name:      "missing location name",
+			wsID:      workspaceID,
+			locName:   "",
+			shortCode: "WH-A",
+			wantErr:   true,
+			errMsg:    "name",
 		},
 		{
-			name:    "nil workspace ID",
-			wsID:    uuid.Nil,
-			locName: "Location",
-			wantErr: true,
-			errMsg:  "workspace_id",
+			name:      "nil workspace ID",
+			wsID:      uuid.Nil,
+			locName:   "Location",
+			shortCode: "LOC-1",
+			wantErr:   true,
+			errMsg:    "workspace_id",
+		},
+		{
+			name:      "missing short code",
+			wsID:      workspaceID,
+			locName:   "Warehouse B",
+			shortCode: "",
+			wantErr:   true,
+			errMsg:    "short_code",
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			loc, err := location.NewLocation(tt.wsID, tt.locName, nil, nil, nil, nil, nil, nil)
+			loc, err := location.NewLocation(tt.wsID, tt.locName, nil, nil, tt.shortCode)
 
 			if tt.wantErr {
 				assert.Error(t, err)
@@ -57,6 +69,7 @@ func TestNewLocation(t *testing.T) {
 				assert.NotNil(t, loc)
 				assert.Equal(t, tt.wsID, loc.WorkspaceID())
 				assert.Equal(t, tt.locName, loc.Name())
+				assert.Equal(t, tt.shortCode, loc.ShortCode())
 				assert.NotEqual(t, uuid.Nil, loc.ID())
 				assert.False(t, loc.IsArchived())
 			}
@@ -67,48 +80,40 @@ func TestNewLocation(t *testing.T) {
 func TestNewLocation_WithOptionalFields(t *testing.T) {
 	workspaceID := uuid.New()
 	parentID := uuid.New()
-	zone := "Zone A"
-	shelf := "Shelf 1"
-	bin := "Bin 5"
 	description := "Main storage"
 	shortCode := "WH-A-1-5"
 
-	loc, err := location.NewLocation(workspaceID, "Test Location", &parentID, &zone, &shelf, &bin, &description, &shortCode)
+	loc, err := location.NewLocation(workspaceID, "Test Location", &parentID, &description, shortCode)
 
 	assert.NoError(t, err)
 	assert.NotNil(t, loc)
 	assert.Equal(t, "Test Location", loc.Name())
 	assert.Equal(t, &parentID, loc.ParentLocation())
-	assert.Equal(t, &zone, loc.Zone())
-	assert.Equal(t, &shelf, loc.Shelf())
-	assert.Equal(t, &bin, loc.Bin())
 	assert.Equal(t, &description, loc.Description())
-	assert.Equal(t, &shortCode, loc.ShortCode())
+	assert.Equal(t, shortCode, loc.ShortCode())
 }
 
 func TestLocation_Update(t *testing.T) {
 	workspaceID := uuid.New()
-	loc, err := location.NewLocation(workspaceID, "Original Name", nil, nil, nil, nil, nil, nil)
+	loc, err := location.NewLocation(workspaceID, "Original Name", nil, nil, "LOC-1")
 	assert.NoError(t, err)
 
 	newName := "Updated Name"
-	zone := "Zone B"
-	shelf := "Shelf 2"
+	description := "Updated description"
 
-	err = loc.Update(newName, nil, &zone, &shelf, nil, nil)
+	err = loc.Update(newName, nil, &description)
 
 	assert.NoError(t, err)
 	assert.Equal(t, newName, loc.Name())
-	assert.Equal(t, &zone, loc.Zone())
-	assert.Equal(t, &shelf, loc.Shelf())
+	assert.Equal(t, &description, loc.Description())
 }
 
 func TestLocation_Update_EmptyName(t *testing.T) {
 	workspaceID := uuid.New()
-	loc, err := location.NewLocation(workspaceID, "Original Name", nil, nil, nil, nil, nil, nil)
+	loc, err := location.NewLocation(workspaceID, "Original Name", nil, nil, "LOC-2")
 	assert.NoError(t, err)
 
-	err = loc.Update("", nil, nil, nil, nil, nil)
+	err = loc.Update("", nil, nil)
 
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "name")
@@ -116,7 +121,7 @@ func TestLocation_Update_EmptyName(t *testing.T) {
 
 func TestLocation_Archive(t *testing.T) {
 	workspaceID := uuid.New()
-	loc, err := location.NewLocation(workspaceID, "Test Location", nil, nil, nil, nil, nil, nil)
+	loc, err := location.NewLocation(workspaceID, "Test Location", nil, nil, "LOC-3")
 	assert.NoError(t, err)
 
 	assert.False(t, loc.IsArchived())
@@ -128,7 +133,7 @@ func TestLocation_Archive(t *testing.T) {
 
 func TestLocation_Restore(t *testing.T) {
 	workspaceID := uuid.New()
-	loc, err := location.NewLocation(workspaceID, "Test Location", nil, nil, nil, nil, nil, nil)
+	loc, err := location.NewLocation(workspaceID, "Test Location", nil, nil, "LOC-4")
 	assert.NoError(t, err)
 
 	loc.Archive()
@@ -143,9 +148,6 @@ func TestLocation_Reconstruct(t *testing.T) {
 	id := uuid.New()
 	workspaceID := uuid.New()
 	parentID := uuid.New()
-	zone := "Zone A"
-	shelf := "Shelf 1"
-	bin := "Bin 5"
 	description := "Storage area"
 	shortCode := "WH-A"
 	now := time.Now()
@@ -155,11 +157,8 @@ func TestLocation_Reconstruct(t *testing.T) {
 		workspaceID,
 		"Test Location",
 		&parentID,
-		&zone,
-		&shelf,
-		&bin,
 		&description,
-		&shortCode,
+		shortCode,
 		false,
 		now,
 		now,
@@ -170,10 +169,7 @@ func TestLocation_Reconstruct(t *testing.T) {
 	assert.Equal(t, workspaceID, loc.WorkspaceID())
 	assert.Equal(t, "Test Location", loc.Name())
 	assert.Equal(t, &parentID, loc.ParentLocation())
-	assert.Equal(t, &zone, loc.Zone())
-	assert.Equal(t, &shelf, loc.Shelf())
-	assert.Equal(t, &bin, loc.Bin())
 	assert.Equal(t, &description, loc.Description())
-	assert.Equal(t, &shortCode, loc.ShortCode())
+	assert.Equal(t, shortCode, loc.ShortCode())
 	assert.False(t, loc.IsArchived())
 }

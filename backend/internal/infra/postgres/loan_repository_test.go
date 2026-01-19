@@ -37,7 +37,7 @@ func createTestInventoryForLoan(t *testing.T, invRepo *InventoryRepository, item
 	err = itemRepo.Save(ctx, itm)
 	require.NoError(t, err)
 
-	loc, err := location.NewLocation(testfixtures.TestWorkspaceID, "Loan Loc "+uuid.NewString()[:4], nil, nil, nil, nil, nil, nil)
+	loc, err := location.NewLocation(testfixtures.TestWorkspaceID, "Loan Loc "+uuid.NewString()[:4], nil, nil, uuid.NewString()[:8])
 	require.NoError(t, err)
 	err = locRepo.Save(ctx, loc)
 	require.NoError(t, err)
@@ -168,7 +168,7 @@ func TestLoanRepository_FindByID(t *testing.T) {
 		itm, _ := item.NewItem(workspace1, "WS1 Item", "SKU-WS1-"+uuid.NewString()[:4], 0)
 		require.NoError(t, itemRepo.Save(ctx, itm))
 
-		loc, _ := location.NewLocation(workspace1, "WS1 Loc", nil, nil, nil, nil, nil, nil)
+		loc, _ := location.NewLocation(workspace1, "WS1 Loc", nil, nil, "WS1-LOC")
 		require.NoError(t, locRepo.Save(ctx, loc))
 
 		inv, _ := inventory.NewInventory(workspace1, itm.ID(), loc.ID(), nil, 5, inventory.ConditionNew, inventory.StatusAvailable, nil)
@@ -213,7 +213,7 @@ func TestLoanRepository_FindByWorkspace(t *testing.T) {
 			itm, _ := item.NewItem(workspace, "Item "+uuid.NewString()[:4], "SKU-"+uuid.NewString()[:8], 0)
 			require.NoError(t, itemRepo.Save(ctx, itm))
 
-			loc, _ := location.NewLocation(workspace, "Loc "+uuid.NewString()[:4], nil, nil, nil, nil, nil, nil)
+			loc, _ := location.NewLocation(workspace, "Loc "+uuid.NewString()[:4], nil, nil, uuid.NewString()[:8])
 			require.NoError(t, locRepo.Save(ctx, loc))
 
 			inv, _ := inventory.NewInventory(workspace, itm.ID(), loc.ID(), nil, 10, inventory.ConditionNew, inventory.StatusAvailable, nil)
@@ -317,7 +317,7 @@ func TestLoanRepository_FindActiveLoans(t *testing.T) {
 		itm, _ := item.NewItem(workspace, "Active Item", "SKU-ACT-"+uuid.NewString()[:4], 0)
 		require.NoError(t, itemRepo.Save(ctx, itm))
 
-		loc, _ := location.NewLocation(workspace, "Active Loc", nil, nil, nil, nil, nil, nil)
+		loc, _ := location.NewLocation(workspace, "Active Loc", nil, nil, "ACT-LOC")
 		require.NoError(t, locRepo.Save(ctx, loc))
 
 		inv, _ := inventory.NewInventory(workspace, itm.ID(), loc.ID(), nil, 5, inventory.ConditionNew, inventory.StatusAvailable, nil)

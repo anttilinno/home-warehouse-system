@@ -224,5 +224,35 @@
       "privacy": "Privaatsus",
       "terms": "Tingimused"
     }
+  },
+  "notifications": {
+    "title": "Teavitused",
+    "empty": "Uusi teavitusi pole",
+    "markAllRead": "Märgi kõik loetuks",
+    "markRead": "Märgi loetuks",
+    "ariaLabel": "Teavitused ({count} lugemata)"
+  },
+  "settings": {
+    "title": "Seaded",
+    "description": "Halda oma tööruumi ja konto seadeid",
+    "comingSoon": "Tulekul",
+    "dataManagement": {
+      "title": "Andmehaldus",
+      "description": "Varunda ja taasta oma tööruumi andmeid",
+      "backupRestore": "Varundamine ja taastamine",
+      "backupRestoreDescription": "Ekspordi või impordi oma tööruumi andmeid"
+    },
+    "account": {
+      "title": "Konto",
+      "description": "Halda oma profiili ja eelistusi"
+    },
+    "notifications": {
+      "title": "Teavitused",
+      "description": "Seadista teavituste eelistusi"
+    },
+    "security": {
+      "title": "Turvalisus",
+      "description": "Parool ja turvaseaded"
+    }
   }
 }

@@ -1,18 +1,17 @@
 "use client";
 
-import { useState, useCallback, useRef, useEffect } from "react";
+import { useState, useCallback, useRef, useEffect, useMemo } from "react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
-import { Upload, X, Image as ImageIcon, CheckCircle2, AlertCircle, Loader2 } from "lucide-react";
+import { Upload, X, CheckCircle2, AlertCircle, Loader2, ImagePlus } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { usePhotoUpload } from "@/lib/hooks/use-photo-upload";
-import { validateImageFile, createImagePreview, revokeImagePreview, formatFileSize } from "@/lib/utils/image";
+import { validateImageFile, createImagePreview, revokeImagePreview, formatFileSize, compressImage } from "@/lib/utils/image";
 import type { ItemPhoto } from "@/lib/types/item-photo";
 
 interface PhotoUploadProps {
@@ -20,6 +19,8 @@ interface PhotoUploadProps {
   itemId: string;
   onUploadComplete?: (photos: ItemPhoto[]) => void;
   maxFiles?: number;
+  /** Enable automatic compression for files larger than this size (bytes). Default: 2MB */
+  compressionThreshold?: number;
 }
 
 interface PreviewFile {
@@ -27,34 +28,45 @@ interface PreviewFile {
   preview: string;
   caption: string;
   uploading: boolean;
+  compressing: boolean;
   progress: number;
   uploaded: boolean;
   error: string | null;
   photo?: ItemPhoto;
 }
 
+/** Compression threshold default: 2MB */
+const DEFAULT_COMPRESSION_THRESHOLD = 2 * 1024 * 1024;
+
 export function PhotoUpload({
   workspaceId,
   itemId,
   onUploadComplete,
-  maxFiles = 10
+  maxFiles = 10,
+  compressionThreshold = DEFAULT_COMPRESSION_THRESHOLD
 }: PhotoUploadProps) {
   const t = useTranslations("photos.upload");
   const [files, setFiles] = useState<PreviewFile[]>([]);
   const [isDragging, setIsDragging] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const dropZoneRef = useRef<HTMLDivElement>(null);
+  const [statusAnnouncement, setStatusAnnouncement] = useState("");
 
-  const { upload } = usePhotoUpload({
-    workspaceId,
-    itemId,
-    onSuccess: () => {
-      // Handle success in uploadFile function
-    },
-    onError: (error) => {
-      toast.error(t("uploadError"), { description: error });
-    },
-  });
+  // Calculate overall progress
+  const overallProgress = useMemo(() => {
+    if (files.length === 0) return 0;
+    const pendingFiles = files.filter((f) => !f.uploaded);
+    if (pendingFiles.length === 0) return 100;
+    const totalProgress = files.reduce((sum, f) => sum + f.progress, 0);
+    return Math.round(totalProgress / files.length);
+  }, [files]);
+
+  // Count stats for display
+  const uploadingCount = files.filter((f) => f.uploading).length;
+  const compressingCount = files.filter((f) => f.compressing).length;
+  const uploadedCount = files.filter((f) => f.uploaded).length;
+  const errorCount = files.filter((f) => f.error).length;
 
   // Cleanup preview URLs on unmount
   useEffect(() => {
@@ -96,6 +108,7 @@ export function PhotoUpload({
         preview: createImagePreview(file),
         caption: "",
         uploading: false,
+        compressing: false,
         progress: 0,
         uploaded: false,
         error: null,
@@ -125,18 +138,56 @@ export function PhotoUpload({
 
   const uploadFile = async (index: number) => {
     const file = files[index];
-    if (!file || file.uploaded || file.uploading) return;
+    if (!file || file.uploaded || file.uploading || file.compressing) return;
+
+    let fileToUpload = file.file;
+
+    // Compress large files first
+    if (file.file.size > compressionThreshold) {
+      setFiles((prev) =>
+        prev.map((f, i) => i === index ? { ...f, compressing: true, error: null } : f)
+      );
+      setStatusAnnouncement(t("compressing", { name: file.file.name }));
+
+      try {
+        fileToUpload = await compressImage(file.file, 1920, 1920, 0.85);
+      } catch (compressionError) {
+        console.warn("Compression failed, uploading original:", compressionError);
+        fileToUpload = file.file;
+      }
+
+      setFiles((prev) =>
+        prev.map((f, i) => i === index ? { ...f, compressing: false } : f)
+      );
+    }
 
     // Update state to uploading
     setFiles((prev) =>
-      prev.map((f, i) => i === index ? { ...f, uploading: true, error: null } : f)
+      prev.map((f, i) => i === index ? { ...f, uploading: true, error: null, progress: 0 } : f)
     );
+    setStatusAnnouncement(t("uploadingFile", { name: file.file.name }));
 
     try {
-      const photo = await upload(file.file, file.caption || undefined);
+      // Use the API directly to get per-file progress tracking
+      const { itemPhotosApi } = await import("@/lib/api/item-photos");
+
+      const photo = await itemPhotosApi.uploadItemPhoto(
+        workspaceId,
+        itemId,
+        fileToUpload,
+        file.caption || undefined,
+        (percentage) => {
+          // Update progress for this specific file
+          setFiles((prev) =>
+            prev.map((f, i) =>
+              i === index ? { ...f, progress: percentage } : f
+            )
+          );
+        }
+      );
 
       if (photo) {
-        // Success - update file state
+        // Success - update file state and announce
         setFiles((prev) =>
           prev.map((f, i) =>
             i === index
@@ -144,6 +195,7 @@ export function PhotoUpload({
               : f
           )
         );
+        setStatusAnnouncement(t("fileUploaded", { name: file.file.name }));
       } else {
         // Upload failed but didn't throw
         setFiles((prev) =>
@@ -153,6 +205,7 @@ export function PhotoUpload({
               : f
           )
         );
+        setStatusAnnouncement(t("fileUploadFailed", { name: file.file.name }));
       }
     } catch (error) {
       // Upload threw an error
@@ -164,38 +217,46 @@ export function PhotoUpload({
             : f
         )
       );
+      setStatusAnnouncement(t("fileUploadFailed", { name: file.file.name }));
     }
   };
 
   const uploadAll = async () => {
     setIsUploading(true);
+    const totalToUpload = files.filter((f) => !f.uploaded).length;
+    setStatusAnnouncement(t("startingUpload", { count: totalToUpload }));
 
     // Upload files sequentially
     for (let i = 0; i < files.length; i++) {
-      if (!files[i]?.uploaded && !files[i]?.uploading) {
+      if (!files[i]?.uploaded && !files[i]?.uploading && !files[i]?.compressing) {
         await uploadFile(i);
       }
     }
 
     setIsUploading(false);
 
-    // Check results and notify
-    const uploadedPhotos = files.filter((f) => f.uploaded && f.photo).map((f) => f.photo!);
-    const failedCount = files.filter((f) => !f.uploaded && !f.uploading).length;
+    // Check results and notify - use current state from the callback
+    setFiles((currentFiles) => {
+      const uploadedPhotos = currentFiles.filter((f) => f.uploaded && f.photo).map((f) => f.photo!);
+      const failedCount = currentFiles.filter((f) => f.error).length;
 
-    if (uploadedPhotos.length > 0) {
-      toast.success(t("uploadSuccess", { count: uploadedPhotos.length }));
-      onUploadComplete?.(uploadedPhotos);
+      if (uploadedPhotos.length > 0) {
+        toast.success(t("uploadSuccess", { count: uploadedPhotos.length }));
+        setStatusAnnouncement(t("allUploadsComplete", { count: uploadedPhotos.length }));
+        onUploadComplete?.(uploadedPhotos);
 
-      // Clear uploaded files after a delay
-      setTimeout(() => {
-        setFiles((prev) => prev.filter((f) => !f.uploaded));
-      }, 2000);
-    }
+        // Clear uploaded files after a delay
+        setTimeout(() => {
+          setFiles((prev) => prev.filter((f) => !f.uploaded));
+        }, 2000);
+      }
 
-    if (failedCount > 0) {
-      toast.error(t("someUploadsFailed", { count: failedCount }));
-    }
+      if (failedCount > 0) {
+        toast.error(t("someUploadsFailed", { count: failedCount }));
+      }
+
+      return currentFiles;
+    });
   };
 
   const handleDragEnter = useCallback((e: React.DragEvent) => {
@@ -247,46 +308,75 @@ export function PhotoUpload({
   }, []);
 
   const hasFiles = files.length > 0;
-  const hasUploadedFiles = files.some((f) => f.uploaded);
-  const canUpload = hasFiles && !isUploading && files.some((f) => !f.uploaded);
+  const canUpload = hasFiles && !isUploading && files.some((f) => !f.uploaded && !f.compressing);
+  const isProcessing = isUploading || compressingCount > 0 || uploadingCount > 0;
+
+  // Handle keyboard navigation for drop zone
+  const handleDropZoneKeyDown = useCallback((e: React.KeyboardEvent) => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      fileInputRef.current?.click();
+    }
+  }, []);
 
   return (
     <div className="space-y-4">
+      {/* Screen reader announcements */}
+      <div
+        role="status"
+        aria-live="polite"
+        aria-atomic="true"
+        className="sr-only"
+      >
+        {statusAnnouncement}
+      </div>
+
       {/* Drop Zone */}
       <Card
-        className={`transition-colors ${
+        ref={dropZoneRef}
+        className={`transition-colors cursor-pointer focus-within:ring-2 focus-within:ring-primary focus-within:ring-offset-2 ${
           isDragging
             ? "border-primary bg-primary/5"
-            : "border-dashed"
+            : "border-dashed hover:border-primary/50"
         }`}
         onDragEnter={handleDragEnter}
         onDragLeave={handleDragLeave}
         onDragOver={handleDragOver}
         onDrop={handleDrop}
+        onClick={handleBrowseClick}
+        onKeyDown={handleDropZoneKeyDown}
+        tabIndex={0}
+        role="button"
+        aria-label={t("dropZoneLabel")}
+        aria-describedby="drop-zone-description"
       >
-        <CardContent className="flex flex-col items-center justify-center py-12 text-center">
-          <div className={`rounded-full p-3 mb-4 ${
+        <CardContent className="flex flex-col items-center justify-center py-12 sm:py-16 text-center">
+          <div className={`rounded-full p-3 sm:p-4 mb-4 ${
             isDragging ? "bg-primary/10" : "bg-muted"
           }`}>
-            <Upload className={`h-8 w-8 ${
+            <Upload className={`h-6 w-6 sm:h-8 sm:w-8 ${
               isDragging ? "text-primary" : "text-muted-foreground"
             }`} />
           </div>
 
-          <h3 className="text-lg font-semibold mb-2">
+          <h3 className="text-base sm:text-lg font-semibold mb-2">
             {isDragging ? t("dropFiles") : t("title")}
           </h3>
 
-          <p className="text-sm text-muted-foreground mb-4 max-w-sm">
+          <p id="drop-zone-description" className="text-sm text-muted-foreground mb-4 max-w-sm px-4">
             {t("instructions")}
           </p>
 
           <Button
             type="button"
-            onClick={handleBrowseClick}
-            disabled={isUploading}
-            aria-label={t("browse")}
+            onClick={(e) => {
+              e.stopPropagation();
+              handleBrowseClick();
+            }}
+            disabled={isProcessing}
+            className="touch-manipulation"
           >
+            <ImagePlus className="h-4 w-4 mr-2" />
             {t("browse")}
           </Button>
 
@@ -309,20 +399,40 @@ export function PhotoUpload({
       {/* Preview Grid */}
       {hasFiles && (
         <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h4 className="text-sm font-medium">
-              {t("selectedFiles", { count: files.length })}
-            </h4>
+          {/* Header with stats and action button */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="space-y-1">
+              <h4 className="text-sm font-medium">
+                {t("selectedFiles", { count: files.length })}
+              </h4>
+              {/* Status summary */}
+              {(uploadedCount > 0 || errorCount > 0) && (
+                <p className="text-xs text-muted-foreground">
+                  {uploadedCount > 0 && (
+                    <span className="text-green-600 dark:text-green-500">
+                      {t("uploadedCount", { count: uploadedCount })}
+                    </span>
+                  )}
+                  {uploadedCount > 0 && errorCount > 0 && " · "}
+                  {errorCount > 0 && (
+                    <span className="text-destructive">
+                      {t("failedCount", { count: errorCount })}
+                    </span>
+                  )}
+                </p>
+              )}
+            </div>
             {canUpload && (
               <Button
                 onClick={uploadAll}
-                disabled={isUploading}
+                disabled={isProcessing}
                 size="sm"
+                className="w-full sm:w-auto touch-manipulation"
               >
-                {isUploading ? (
+                {isProcessing ? (
                   <>
                     <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    {t("uploading")}
+                    {compressingCount > 0 ? t("compressingFiles") : t("uploading")}
                   </>
                 ) : (
                   t("uploadAll")
@@ -331,9 +441,25 @@ export function PhotoUpload({
             )}
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {/* Overall progress bar when uploading multiple files */}
+          {isProcessing && files.length > 1 && (
+            <div className="space-y-2">
+              <div className="flex items-center justify-between text-xs text-muted-foreground">
+                <span>{t("overallProgress")}</span>
+                <span>{overallProgress}%</span>
+              </div>
+              <Progress value={overallProgress} className="h-2" />
+            </div>
+          )}
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
             {files.map((file, index) => (
-              <Card key={`${file.file.name}-${index}`} className="overflow-hidden">
+              <Card
+                key={`${file.file.name}-${index}`}
+                className="overflow-hidden"
+                role="article"
+                aria-label={t("fileCard", { name: file.file.name })}
+              >
                 <div className="relative aspect-square bg-muted">
                   <img
                     src={file.preview}
@@ -341,19 +467,30 @@ export function PhotoUpload({
                     className="w-full h-full object-cover"
                   />
 
-                  {/* Status Overlay */}
-                  {file.uploading && (
-                    <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                  {/* Status Overlay - Compressing */}
+                  {file.compressing && (
+                    <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center gap-2">
                       <Loader2 className="h-8 w-8 text-white animate-spin" />
+                      <span className="text-xs text-white font-medium">{t("compressingLabel")}</span>
                     </div>
                   )}
 
+                  {/* Status Overlay - Uploading */}
+                  {file.uploading && !file.compressing && (
+                    <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center gap-2">
+                      <Loader2 className="h-8 w-8 text-white animate-spin" />
+                      <span className="text-xs text-white font-medium">{file.progress}%</span>
+                    </div>
+                  )}
+
+                  {/* Status Overlay - Uploaded */}
                   {file.uploaded && (
                     <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
                       <CheckCircle2 className="h-8 w-8 text-green-500" />
                     </div>
                   )}
 
+                  {/* Status Overlay - Error */}
                   {file.error && (
                     <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
                       <AlertCircle className="h-8 w-8 text-destructive" />
@@ -361,11 +498,11 @@ export function PhotoUpload({
                   )}
 
                   {/* Remove Button */}
-                  {!file.uploading && !file.uploaded && (
+                  {!file.uploading && !file.uploaded && !file.compressing && (
                     <Button
                       variant="destructive"
                       size="sm"
-                      className="absolute top-2 right-2 h-8 w-8 p-0"
+                      className="absolute top-2 right-2 h-9 w-9 sm:h-8 sm:w-8 p-0 touch-manipulation"
                       onClick={() => removeFile(index)}
                       aria-label={t("removeFile")}
                     >
@@ -386,7 +523,7 @@ export function PhotoUpload({
                   </div>
 
                   {/* Caption Input */}
-                  {!file.uploaded && (
+                  {!file.uploaded && !file.uploading && !file.compressing && (
                     <div className="space-y-1">
                       <Label htmlFor={`caption-${index}`} className="text-xs">
                         {t("caption")}
@@ -397,18 +534,26 @@ export function PhotoUpload({
                         placeholder={t("captionPlaceholder")}
                         value={file.caption}
                         onChange={(e) => updateCaption(index, e.target.value)}
-                        disabled={file.uploading}
-                        className="h-8 text-xs"
+                        disabled={file.uploading || file.compressing}
+                        className="h-9 sm:h-8 text-sm sm:text-xs"
                       />
                     </div>
                   )}
 
-                  {/* Progress Bar */}
-                  {file.uploading && (
+                  {/* Compression Progress */}
+                  {file.compressing && (
+                    <div className="flex items-center gap-2 text-muted-foreground">
+                      <Loader2 className="h-3 w-3 animate-spin" />
+                      <span className="text-xs">{t("compressingLabel")}</span>
+                    </div>
+                  )}
+
+                  {/* Upload Progress Bar */}
+                  {file.uploading && !file.compressing && (
                     <div className="space-y-1">
-                      <Progress value={file.progress} className="h-1" />
+                      <Progress value={file.progress} className="h-1.5" />
                       <p className="text-xs text-muted-foreground text-center">
-                        {file.progress}%
+                        {t("uploadingProgress", { progress: file.progress })}
                       </p>
                     </div>
                   )}
@@ -436,7 +581,7 @@ export function PhotoUpload({
                     <Button
                       variant="outline"
                       size="sm"
-                      className="w-full h-7 text-xs"
+                      className="w-full h-9 sm:h-7 text-sm sm:text-xs touch-manipulation"
                       onClick={() => uploadFile(index)}
                     >
                       {t("retry")}

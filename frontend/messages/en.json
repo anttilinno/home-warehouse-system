@@ -373,13 +373,17 @@
       "title": "Upload Photos",
       "instructions": "Drag and drop images here, or click to browse. You can upload multiple photos at once.",
       "dropFiles": "Drop files here to upload",
+      "dropZoneLabel": "Photo upload drop zone. Click or press Enter to browse files.",
       "browse": "Browse Files",
       "fileInput": "Choose image files to upload",
       "acceptedFormats": "Accepted formats: JPEG, PNG, GIF, WebP (max 10MB each)",
       "selectedFiles": "{count, plural, =1 {1 file selected} other {# files selected}}",
+      "uploadedCount": "{count, plural, =1 {1 uploaded} other {# uploaded}}",
+      "failedCount": "{count, plural, =1 {1 failed} other {# failed}}",
       "uploadAll": "Upload All",
       "uploading": "Uploading...",
       "uploaded": "Uploaded",
+      "uploadingProgress": "{progress}% uploaded",
       "uploadSuccess": "{count, plural, =1 {Photo uploaded successfully} other {# photos uploaded successfully}}",
       "uploadError": "Upload failed",
       "uploadFailed": "Failed to upload photo",
@@ -388,9 +392,19 @@
       "invalidFile": "Invalid file",
       "duplicateFile": "File already selected",
       "removeFile": "Remove file",
+      "fileCard": "Photo: {name}",
       "caption": "Caption (optional)",
       "captionPlaceholder": "Add a caption...",
-      "retry": "Retry"
+      "retry": "Retry",
+      "compressing": "Compressing {name}...",
+      "compressingLabel": "Compressing...",
+      "compressingFiles": "Compressing...",
+      "uploadingFile": "Uploading {name}...",
+      "fileUploaded": "{name} uploaded successfully",
+      "fileUploadFailed": "Failed to upload {name}",
+      "startingUpload": "Starting upload of {count, plural, =1 {1 file} other {# files}}",
+      "allUploadsComplete": "{count, plural, =1 {1 photo uploaded} other {# photos uploaded}} successfully",
+      "overallProgress": "Overall progress"
     },
     "gallery": {
       "empty": "No photos yet",
@@ -435,6 +449,36 @@
       "cancel": "Cancel",
       "saveSuccess": "Caption updated successfully",
       "saveError": "Failed to update caption"
+    }
+  },
+  "notifications": {
+    "title": "Notifications",
+    "empty": "No new notifications",
+    "markAllRead": "Mark all read",
+    "markRead": "Mark as read",
+    "ariaLabel": "Notifications ({count} unread)"
+  },
+  "settings": {
+    "title": "Settings",
+    "description": "Manage your workspace and account settings",
+    "comingSoon": "Coming soon",
+    "dataManagement": {
+      "title": "Data Management",
+      "description": "Backup and restore your workspace data",
+      "backupRestore": "Backup & Restore",
+      "backupRestoreDescription": "Export or import your workspace data"
+    },
+    "account": {
+      "title": "Account",
+      "description": "Manage your profile and preferences"
+    },
+    "notifications": {
+      "title": "Notifications",
+      "description": "Configure notification preferences"
+    },
+    "security": {
+      "title": "Security",
+      "description": "Password and security settings"
     }
   }
 }

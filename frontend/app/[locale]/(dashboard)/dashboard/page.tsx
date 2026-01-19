@@ -244,15 +244,9 @@ export default function DashboardPage() {
       {/* Main content (3 columns on desktop) */}
       <div className="lg:col-span-3 space-y-6">
         {/* Page header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">{t("title")}</h1>
-            <p className="text-muted-foreground">{t("subtitle")}</p>
-          </div>
-          <Button variant="outline" size="sm" onClick={loadDashboardData}>
-            <RefreshCw className="mr-2 h-4 w-4" />
-            Refresh
-          </Button>
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">{t("title")}</h1>
+          <p className="text-muted-foreground">{t("subtitle")}</p>
         </div>
 
         {/* Stats grid */}
@@ -276,7 +270,6 @@ export default function DashboardPage() {
           title={t("stats.activeLoans")}
           value={stats.active_loans}
           icon={HandCoins}
-          description={t("stats.activeLoansDesc")}
         />
         </div>
 

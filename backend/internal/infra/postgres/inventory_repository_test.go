@@ -30,7 +30,7 @@ func createTestItem(t *testing.T, repo *ItemRepository, ctx context.Context, nam
 // Helper to create test location for inventory tests
 func createTestLocationForInv(t *testing.T, repo *LocationRepository, ctx context.Context, name string) *location.Location {
 	t.Helper()
-	loc, err := location.NewLocation(testfixtures.TestWorkspaceID, name, nil, nil, nil, nil, nil, nil)
+	loc, err := location.NewLocation(testfixtures.TestWorkspaceID, name, nil, nil, "")
 	require.NoError(t, err)
 	err = repo.Save(ctx, loc)
 	require.NoError(t, err)
@@ -82,7 +82,7 @@ func TestInventoryRepository_Save(t *testing.T) {
 		loc := createTestLocationForInv(t, locRepo, ctx, "Container Location")
 
 		contRepo := NewContainerRepository(pool)
-		cont, err := container.NewContainer(testfixtures.TestWorkspaceID, loc.ID(), "Box", nil, nil, nil)
+		cont, err := container.NewContainer(testfixtures.TestWorkspaceID, loc.ID(), "Box", nil, nil, "")
 		require.NoError(t, err)
 		err = contRepo.Save(ctx, cont)
 		require.NoError(t, err)
@@ -154,7 +154,7 @@ func TestInventoryRepository_FindByID(t *testing.T) {
 		itm, _ := item.NewItem(workspace1, "WS1 Item", "SKU-WS1-"+uuid.NewString()[:4], 0)
 		require.NoError(t, itemRepo.Save(ctx, itm))
 
-		loc, _ := location.NewLocation(workspace1, "WS1 Loc", nil, nil, nil, nil, nil, nil)
+		loc, _ := location.NewLocation(workspace1, "WS1 Loc", nil, nil, "")
 		require.NoError(t, locRepo.Save(ctx, loc))
 
 		inv, _ := inventory.NewInventory(workspace1, itm.ID(), loc.ID(), nil, 1, inventory.ConditionNew, inventory.StatusAvailable, nil)
@@ -359,7 +359,7 @@ func TestInventoryRepository_List(t *testing.T) {
 		// Create items in workspace1
 		itm1, _ := item.NewItem(workspace1, "WS1 Item", "SKU-WS1-"+uuid.NewString()[:4], 0)
 		require.NoError(t, itemRepo.Save(ctx, itm1))
-		loc1, _ := location.NewLocation(workspace1, "WS1 Loc", nil, nil, nil, nil, nil, nil)
+		loc1, _ := location.NewLocation(workspace1, "WS1 Loc", nil, nil, "WS1-LOC")
 		require.NoError(t, locRepo.Save(ctx, loc1))
 		inv1, _ := inventory.NewInventory(workspace1, itm1.ID(), loc1.ID(), nil, 1, inventory.ConditionNew, inventory.StatusAvailable, nil)
 		require.NoError(t, invRepo.Save(ctx, inv1))
@@ -367,7 +367,7 @@ func TestInventoryRepository_List(t *testing.T) {
 		// Create items in workspace2
 		itm2, _ := item.NewItem(workspace2, "WS2 Item", "SKU-WS2-"+uuid.NewString()[:4], 0)
 		require.NoError(t, itemRepo.Save(ctx, itm2))
-		loc2, _ := location.NewLocation(workspace2, "WS2 Loc", nil, nil, nil, nil, nil, nil)
+		loc2, _ := location.NewLocation(workspace2, "WS2 Loc", nil, nil, "WS2-LOC")
 		require.NoError(t, locRepo.Save(ctx, loc2))
 		inv2, _ := inventory.NewInventory(workspace2, itm2.ID(), loc2.ID(), nil, 1, inventory.ConditionNew, inventory.StatusAvailable, nil)
 		require.NoError(t, invRepo.Save(ctx, inv2))

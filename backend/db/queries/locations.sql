@@ -7,13 +7,13 @@ SELECT * FROM warehouse.locations
 WHERE workspace_id = $1 AND short_code = $2;
 
 -- name: CreateLocation :one
-INSERT INTO warehouse.locations (id, workspace_id, name, parent_location, zone, shelf, bin, description, short_code)
-VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+INSERT INTO warehouse.locations (id, workspace_id, name, parent_location, description, short_code)
+VALUES ($1, $2, $3, $4, $5, $6)
 RETURNING *;
 
 -- name: UpdateLocation :one
 UPDATE warehouse.locations
-SET name = $2, parent_location = $3, zone = $4, shelf = $5, bin = $6, description = $7, updated_at = now()
+SET name = $2, parent_location = $3, description = $4, updated_at = now()
 WHERE id = $1
 RETURNING *;
 

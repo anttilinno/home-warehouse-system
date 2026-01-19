@@ -29,9 +29,8 @@ import {
   Image as ImageIcon,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
-import Image from "next/image";
-
 import type { ItemPhoto } from "@/lib/types/item-photo";
+import { LazyPhoto } from "./lazy-photo";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -111,17 +110,19 @@ function SortablePhotoItem({
         isDragging && "opacity-50 z-50"
       )}
     >
-      {/* Photo Image */}
+      {/* Photo Image with lazy loading */}
       <div
         className="relative h-full w-full cursor-pointer"
         onClick={onPhotoClick}
       >
-        <Image
+        <LazyPhoto
           src={photo.urls.medium}
+          thumbnailSrc={photo.urls.small}
           alt={photo.caption || `Photo ${index + 1}`}
           fill
-          className="object-cover transition-transform group-hover:scale-105"
+          className="transition-transform group-hover:scale-105"
           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+          priority={index < 4}
         />
       </div>
 

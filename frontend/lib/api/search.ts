@@ -109,15 +109,17 @@ function locationToSearchResult(location: Location): SearchResult {
 /**
  * Global search across all entity types
  *
+ * @param workspaceId - Workspace ID
  * @param query - Search query string
  * @param limit - Max results per entity type (default: 5)
  * @returns Combined search results grouped by entity type
  */
 export async function globalSearch(
+  workspaceId: string,
   query: string,
   limit: number = 5
 ): Promise<GlobalSearchResponse> {
-  if (!query || query.trim().length === 0) {
+  if (!workspaceId || !query || query.trim().length === 0) {
     return {
       query: "",
       results: {
@@ -135,23 +137,17 @@ export async function globalSearch(
   // Call all search endpoints in parallel
   const [itemsResult, borrowersResult, containersResult, locationsResult] =
     await Promise.allSettled([
-      // Items search (always available)
-      itemsApi.search(trimmedQuery, limit).catch(() => [] as Item[]),
+      // Items search
+      itemsApi.search(workspaceId, trimmedQuery, limit).catch(() => [] as Item[]),
 
-      // Borrowers search (check if method exists first)
-      typeof borrowersApi.search === "function"
-        ? borrowersApi.search(trimmedQuery, limit).catch(() => [] as Borrower[])
-        : Promise.resolve([] as Borrower[]),
+      // Borrowers search
+      borrowersApi.search(workspaceId, trimmedQuery, limit).catch(() => [] as Borrower[]),
 
-      // Containers search (check if method exists first)
-      typeof containersApi.search === "function"
-        ? containersApi.search(trimmedQuery, limit).catch(() => [] as Container[])
-        : Promise.resolve([] as Container[]),
+      // Containers search
+      containersApi.search(workspaceId, trimmedQuery, limit).catch(() => [] as Container[]),
 
-      // Locations search (check if method exists first)
-      typeof locationsApi.search === "function"
-        ? locationsApi.search(trimmedQuery, limit).catch(() => [] as Location[])
-        : Promise.resolve([] as Location[]),
+      // Locations search
+      locationsApi.search(workspaceId, trimmedQuery, limit).catch(() => [] as Location[]),
     ]);
 
   // Extract results from Promise.allSettled

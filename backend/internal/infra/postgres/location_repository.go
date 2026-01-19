@@ -37,9 +37,6 @@ func (r *LocationRepository) Save(ctx context.Context, l *location.Location) err
 		WorkspaceID:    l.WorkspaceID(),
 		Name:           l.Name(),
 		ParentLocation: parentLocation,
-		Zone:           l.Zone(),
-		Shelf:          l.Shelf(),
-		Bin:            l.Bin(),
 		Description:    l.Description(),
 		ShortCode:      l.ShortCode(),
 	})
@@ -64,7 +61,7 @@ func (r *LocationRepository) FindByID(ctx context.Context, id, workspaceID uuid.
 func (r *LocationRepository) FindByShortCode(ctx context.Context, workspaceID uuid.UUID, shortCode string) (*location.Location, error) {
 	row, err := r.queries.GetLocationByShortCode(ctx, queries.GetLocationByShortCodeParams{
 		WorkspaceID: workspaceID,
-		ShortCode:   &shortCode,
+		ShortCode:   shortCode,
 	})
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
@@ -115,7 +112,7 @@ func (r *LocationRepository) Delete(ctx context.Context, id uuid.UUID) error {
 func (r *LocationRepository) ShortCodeExists(ctx context.Context, workspaceID uuid.UUID, shortCode string) (bool, error) {
 	return r.queries.ShortCodeExists(ctx, queries.ShortCodeExistsParams{
 		WorkspaceID: workspaceID,
-		ShortCode:   &shortCode,
+		ShortCode:   shortCode,
 	})
 }
 
@@ -149,9 +146,6 @@ func (r *LocationRepository) rowToLocation(row queries.WarehouseLocation) *locat
 		row.WorkspaceID,
 		row.Name,
 		parentLocation,
-		row.Zone,
-		row.Shelf,
-		row.Bin,
 		row.Description,
 		row.ShortCode,
 		row.IsArchived,

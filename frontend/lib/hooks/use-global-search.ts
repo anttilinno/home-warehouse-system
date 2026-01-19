@@ -10,6 +10,7 @@ import {
 } from "../api/search";
 
 export interface UseGlobalSearchOptions {
+  workspaceId: string;
   debounceMs?: number;
   limit?: number;
   minQueryLength?: number;
@@ -42,9 +43,10 @@ export interface UseGlobalSearchReturn {
 }
 
 export function useGlobalSearch(
-  options: UseGlobalSearchOptions = {}
+  options: UseGlobalSearchOptions
 ): UseGlobalSearchReturn {
   const {
+    workspaceId,
     debounceMs = 300,
     limit = 5,
     minQueryLength = 2,
@@ -88,8 +90,8 @@ export function useGlobalSearch(
   const executeSearch = useCallback(async () => {
     const trimmedQuery = debouncedQuery.trim();
 
-    // Reset if query is too short
-    if (trimmedQuery.length < minQueryLength) {
+    // Reset if query is too short or no workspace
+    if (!workspaceId || trimmedQuery.length < minQueryLength) {
       setResults(null);
       setError(null);
       setIsLoading(false);
@@ -101,7 +103,7 @@ export function useGlobalSearch(
     setSelectedIndex(-1); // Reset selection
 
     try {
-      const searchResults = await globalSearch(trimmedQuery, limit);
+      const searchResults = await globalSearch(workspaceId, trimmedQuery, limit);
       setResults(searchResults);
 
       // Add to recent searches if results found
@@ -115,7 +117,7 @@ export function useGlobalSearch(
     } finally {
       setIsLoading(false);
     }
-  }, [debouncedQuery, limit, minQueryLength]);
+  }, [workspaceId, debouncedQuery, limit, minQueryLength]);
 
   // Execute search when debounced query changes
   useEffect(() => {

@@ -179,7 +179,7 @@ func (s *Service) exportItems(ctx context.Context, workspaceID uuid.UUID, includ
 			Model:         ptrToString(item.Model),
 			Manufacturer:  ptrToString(item.Manufacturer),
 			Barcode:       ptrToString(item.Barcode),
-			ShortCode:     ptrToString(item.ShortCode),
+			ShortCode:     item.ShortCode,
 			MinStockLevel: item.MinStockLevel,
 			IsArchived:    ptrToBool(item.IsArchived),
 			CreatedAt:     pgtimeToString(item.CreatedAt),
@@ -200,11 +200,8 @@ func (s *Service) exportLocations(ctx context.Context, workspaceID uuid.UUID, in
 		result[i] = LocationExport{
 			ID:          loc.ID.String(),
 			Name:        loc.Name,
-			Zone:        ptrToString(loc.Zone),
-			Shelf:       ptrToString(loc.Shelf),
-			Bin:         ptrToString(loc.Bin),
 			Description: ptrToString(loc.Description),
-			ShortCode:   ptrToString(loc.ShortCode),
+			ShortCode:   loc.ShortCode,
 			IsArchived:  loc.IsArchived,
 			CreatedAt:   pgtimeToString(loc.CreatedAt),
 			UpdatedAt:   pgtimeToString(loc.UpdatedAt),
@@ -246,7 +243,7 @@ func (s *Service) exportContainers(ctx context.Context, workspaceID uuid.UUID, i
 			Name:        c.Name,
 			Description: ptrToString(c.Description),
 			Capacity:    ptrToString(c.Capacity),
-			ShortCode:   ptrToString(c.ShortCode),
+			ShortCode:   c.ShortCode,
 			IsArchived:  c.IsArchived,
 			CreatedAt:   pgtimeToString(c.CreatedAt),
 			UpdatedAt:   pgtimeToString(c.UpdatedAt),
@@ -415,12 +412,12 @@ func (s *Service) toCSV(data interface{}, entityType EntityType) ([]byte, error)
 
 	case EntityTypeLocation:
 		locations := data.([]LocationExport)
-		if err := writer.Write([]string{"id", "name", "parent_location", "zone", "shelf", "bin", "description", "short_code", "is_archived", "created_at", "updated_at"}); err != nil {
+		if err := writer.Write([]string{"id", "name", "parent_location", "description", "short_code", "is_archived", "created_at", "updated_at"}); err != nil {
 			return nil, err
 		}
 		for _, loc := range locations {
 			if err := writer.Write([]string{
-				loc.ID, loc.Name, loc.ParentLocation, loc.Zone, loc.Shelf, loc.Bin,
+				loc.ID, loc.Name, loc.ParentLocation,
 				loc.Description, loc.ShortCode, fmt.Sprintf("%t", loc.IsArchived),
 				loc.CreatedAt, loc.UpdatedAt,
 			}); err != nil {
@@ -635,11 +632,8 @@ func (s *Service) importLocation(ctx context.Context, workspaceID uuid.UUID, row
 		WorkspaceID:    workspaceID,
 		Name:           name,
 		ParentLocation: parentID,
-		Zone:           stringToPtr(row["zone"]),
-		Shelf:          stringToPtr(row["shelf"]),
-		Bin:            stringToPtr(row["bin"]),
 		Description:    stringToPtr(row["description"]),
-		ShortCode:      stringToPtr(row["short_code"]),
+		ShortCode:      row["short_code"],
 	})
 	return err
 }
@@ -677,7 +671,7 @@ func (s *Service) importItem(ctx context.Context, workspaceID uuid.UUID, row map
 		Model:        stringToPtr(row["model"]),
 		Manufacturer: stringToPtr(row["manufacturer"]),
 		Barcode:      stringToPtr(row["barcode"]),
-		ShortCode:    stringToPtr(row["short_code"]),
+		ShortCode:    row["short_code"],
 	})
 	return err
 }
@@ -708,7 +702,7 @@ func (s *Service) importContainer(ctx context.Context, workspaceID uuid.UUID, ro
 		LocationID:  location.ID,
 		Description: stringToPtr(row["description"]),
 		Capacity:    stringToPtr(row["capacity"]),
-		ShortCode:   stringToPtr(row["short_code"]),
+		ShortCode:   row["short_code"],
 	})
 	return err
 }

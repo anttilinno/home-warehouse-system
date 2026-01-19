@@ -1,6 +1,7 @@
+/// <reference lib="webworker" />
 import { defaultCache } from "@serwist/next/worker";
-import type { PrecacheEntry, SerwistGlobalConfig } from "serwist";
-import { Serwist } from "serwist";
+import type { PrecacheEntry, RuntimeCaching, SerwistGlobalConfig } from "serwist";
+import { Serwist, NetworkFirst, CacheFirst } from "serwist";
 
 // This declares the value of `injectionPoint` to TypeScript.
 // `injectionPoint` is the string that will be replaced by the
@@ -23,72 +24,61 @@ const serwist = new Serwist({
     ...defaultCache,
     // Cache API responses
     {
-      urlPattern: /^https?:\/\/.*\/api\/.*/i,
-      handler: "NetworkFirst",
-      options: {
+      matcher: /^https?:\/\/.*\/api\/.*/i,
+      handler: new NetworkFirst({
         cacheName: "api-cache",
-        expiration: {
-          maxEntries: 100,
-          maxAgeSeconds: 60 * 60, // 1 hour
-        },
-        networkTimeoutSeconds: 10,
-      },
+        plugins: [
+          {
+            cacheWillUpdate: async ({ response }) => {
+              return response?.status === 200 ? response : null;
+            },
+          },
+        ],
+      }),
     },
     // Cache item photos with offline-first strategy
     {
-      urlPattern: /^https?:\/\/.*\/api\/workspaces\/.*\/items\/.*\/photos\/.*/i,
-      handler: "CacheFirst",
-      options: {
+      matcher: /^https?:\/\/.*\/api\/workspaces\/.*\/items\/.*\/photos\/.*/i,
+      handler: new CacheFirst({
         cacheName: "item-photos-cache",
-        expiration: {
-          maxEntries: 500,
-          maxAgeSeconds: 60 * 60 * 24 * 30, // 30 days
-        },
-        cacheableResponse: {
-          statuses: [0, 200],
-        },
-      },
+        plugins: [
+          {
+            cacheWillUpdate: async ({ response }) => {
+              return response?.status === 200 || response?.status === 0 ? response : null;
+            },
+          },
+        ],
+      }),
     },
     // Cache thumbnail images (small images, longer cache)
     {
-      urlPattern: /^https?:\/\/.*\/api\/workspaces\/.*\/items\/.*\/photos\/.*\/(thumb|small)\/.*/i,
-      handler: "CacheFirst",
-      options: {
+      matcher: /^https?:\/\/.*\/api\/workspaces\/.*\/items\/.*\/photos\/.*\/(thumb|small)\/.*/i,
+      handler: new CacheFirst({
         cacheName: "photo-thumbnails-cache",
-        expiration: {
-          maxEntries: 1000,
-          maxAgeSeconds: 60 * 60 * 24 * 90, // 90 days
-        },
-        cacheableResponse: {
-          statuses: [0, 200],
-        },
-      },
+        plugins: [
+          {
+            cacheWillUpdate: async ({ response }) => {
+              return response?.status === 200 || response?.status === 0 ? response : null;
+            },
+          },
+        ],
+      }),
     },
     // Cache other images
     {
-      urlPattern: /\.(?:png|jpg|jpeg|webp|svg|gif|ico)$/i,
-      handler: "CacheFirst",
-      options: {
+      matcher: /\.(?:png|jpg|jpeg|webp|svg|gif|ico)$/i,
+      handler: new CacheFirst({
         cacheName: "images-cache",
-        expiration: {
-          maxEntries: 200,
-          maxAgeSeconds: 60 * 60 * 24 * 30, // 30 days
-        },
-      },
+      }),
     },
     // Cache fonts
     {
-      urlPattern: /\.(?:woff|woff2|ttf|eot)$/i,
-      handler: "CacheFirst",
-      options: {
+      matcher: /\.(?:woff|woff2|ttf|eot)$/i,
+      handler: new CacheFirst({
         cacheName: "fonts-cache",
-        expiration: {
-          maxEntries: 30,
-          maxAgeSeconds: 60 * 60 * 24 * 365, // 1 year
-        },
-      },
+      }),
     },
-  ],
+  ] satisfies RuntimeCaching[],
 });
 
 serwist.addEventListeners();
@@ -144,6 +134,14 @@ self.addEventListener("online", async () => {
   await syncQueuedUploads();
 });
 
+// Helper to promisify IDBRequest
+function promisifyRequest<T>(request: IDBRequest<T>): Promise<T> {
+  return new Promise((resolve, reject) => {
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error);
+  });
+}
+
 // Helper functions for queuing uploads
 async function queuePhotoUpload(url: string, formData: FormData) {
   const db = await openUploadQueueDB();
@@ -154,18 +152,18 @@ async function queuePhotoUpload(url: string, formData: FormData) {
   const uploadData = {
     url,
     timestamp: Date.now(),
-    file: await formData.get("file"),
+    file: formData.get("file"),
     caption: formData.get("caption"),
   };
 
-  await store.add(uploadData);
+  await promisifyRequest(store.add(uploadData));
 }
 
 async function syncQueuedUploads() {
   const db = await openUploadQueueDB();
   const tx = db.transaction("uploads", "readonly");
   const store = tx.objectStore("uploads");
-  const uploads = await store.getAll();
+  const uploads = await promisifyRequest(store.getAll());
 
   for (const upload of uploads) {
     try {
@@ -184,7 +182,7 @@ async function syncQueuedUploads() {
         // Remove from queue on success
         const deleteTx = db.transaction("uploads", "readwrite");
         const deleteStore = deleteTx.objectStore("uploads");
-        await deleteStore.delete(upload.id);
+        await promisifyRequest(deleteStore.delete(upload.id));
         console.log("Successfully synced upload:", upload.id);
       }
     } catch (error) {

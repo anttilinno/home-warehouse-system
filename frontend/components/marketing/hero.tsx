@@ -2,6 +2,7 @@
 
 import { useTranslations } from "next-intl";
 import { ArrowRight, CheckCircle2 } from "lucide-react";
+import Image from "next/image";
 
 import { Link } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
@@ -73,30 +74,18 @@ export function Hero() {
           </div>
         </div>
 
-        {/* Hero Image / Screenshot placeholder */}
+        {/* Hero Image / Screenshot */}
         <div className="mt-16 md:mt-24">
           <div className="relative mx-auto max-w-5xl">
-            <div className="aspect-[16/10] overflow-hidden rounded-xl border bg-gradient-to-br from-muted/50 to-muted shadow-2xl">
-              <div className="flex h-full items-center justify-center text-muted-foreground">
-                <div className="text-center">
-                  <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10">
-                    <svg
-                      className="h-8 w-8 text-primary"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={1.5}
-                        d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
-                      />
-                    </svg>
-                  </div>
-                  <p className="text-sm">{t("dashboardPreview")}</p>
-                </div>
-              </div>
+            <div className="overflow-hidden rounded-xl border bg-gradient-to-br from-muted/50 to-muted shadow-2xl">
+              <Image
+                src="/images/dashboard-preview.png"
+                alt={t("dashboardPreview")}
+                width={1920}
+                height={1200}
+                className="w-full h-auto"
+                priority
+              />
             </div>
 
             {/* Decorative elements */}

@@ -1,7 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { Menu, Bell, Search, X } from "lucide-react";
+import { Menu, Search, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -9,10 +9,11 @@ import { Input } from "@/components/ui/input";
 import { ThemeToggle } from "@/components/shared/theme-toggle";
 import { LanguageSwitcher } from "@/components/shared/language-switcher";
 import { WorkspaceSwitcher } from "@/components/dashboard/workspace-switcher";
-import { BackupRestoreDialog } from "@/components/shared/backup-restore-dialog";
 import { SSEStatusIndicator } from "@/components/dashboard/sse-status-indicator";
+import { NotificationsDropdown } from "@/components/dashboard/notifications-dropdown";
 import { useGlobalSearch } from "@/lib/hooks/use-global-search";
 import { GlobalSearchResults } from "@/components/ui/global-search-results";
+import { useWorkspace } from "@/lib/hooks/use-workspace";
 
 interface HeaderProps {
   onMenuClick: () => void;
@@ -20,6 +21,7 @@ interface HeaderProps {
 
 export function DashboardHeader({ onMenuClick }: HeaderProps) {
   const t = useTranslations("dashboard");
+  const { workspaceId } = useWorkspace();
 
   // Global search state
   const [searchOpen, setSearchOpen] = useState(false);
@@ -40,6 +42,7 @@ export function DashboardHeader({ onMenuClick }: HeaderProps) {
     selectedResult,
     clearSearch,
   } = useGlobalSearch({
+    workspaceId: workspaceId || "",
     debounceMs: 300,
     limit: 5,
     minQueryLength: 2,
@@ -178,18 +181,11 @@ export function DashboardHeader({ onMenuClick }: HeaderProps) {
       {/* Right side */}
       <div className="flex items-center gap-2 ml-auto">
         <SSEStatusIndicator className="mr-2" />
-        <BackupRestoreDialog />
         <LanguageSwitcher />
         <ThemeToggle />
 
         {/* Notifications */}
-        <Button variant="ghost" size="icon" className="relative" aria-label="View notifications (3 unread)">
-          <Bell className="h-5 w-5" />
-          <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-destructive text-[10px] font-medium text-destructive-foreground">
-            3
-          </span>
-          <span className="sr-only">Notifications</span>
-        </Button>
+        <NotificationsDropdown />
       </div>
     </header>
   );

@@ -91,7 +91,7 @@ type ItemSyncData struct {
 	WarrantyDetails  *string    `json:"warranty_details,omitempty"`
 	PurchasedFrom    *uuid.UUID `json:"purchased_from,omitempty"`
 	MinStockLevel    *int32     `json:"min_stock_level,omitempty"`
-	ShortCode        *string    `json:"short_code,omitempty"`
+	ShortCode        string     `json:"short_code"`
 	IsArchived       bool       `json:"is_archived"`
 	CreatedAt        time.Time  `json:"created_at"`
 	UpdatedAt        time.Time  `json:"updated_at"`
@@ -103,11 +103,8 @@ type LocationSyncData struct {
 	WorkspaceID    uuid.UUID  `json:"workspace_id"`
 	Name           string     `json:"name"`
 	ParentLocation *uuid.UUID `json:"parent_location,omitempty"`
-	Zone           *string    `json:"zone,omitempty"`
-	Shelf          *string    `json:"shelf,omitempty"`
-	Bin            *string    `json:"bin,omitempty"`
 	Description    *string    `json:"description,omitempty"`
-	ShortCode      *string    `json:"short_code,omitempty"`
+	ShortCode      string     `json:"short_code"`
 	IsArchived     bool       `json:"is_archived"`
 	CreatedAt      time.Time  `json:"created_at"`
 	UpdatedAt      time.Time  `json:"updated_at"`
@@ -121,7 +118,7 @@ type ContainerSyncData struct {
 	LocationID  uuid.UUID `json:"location_id"`
 	Description *string   `json:"description,omitempty"`
 	Capacity    *int32    `json:"capacity,omitempty"`
-	ShortCode   *string   `json:"short_code,omitempty"`
+	ShortCode   string    `json:"short_code"`
 	IsArchived  bool      `json:"is_archived"`
 	CreatedAt   time.Time `json:"created_at"`
 	UpdatedAt   time.Time `json:"updated_at"`

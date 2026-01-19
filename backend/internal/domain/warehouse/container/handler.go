@@ -68,13 +68,18 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 
 		authUser, _ := appMiddleware.GetAuthUser(ctx)
 
+		shortCode := ""
+		if input.Body.ShortCode != nil {
+			shortCode = *input.Body.ShortCode
+		}
+
 		container, err := svc.Create(ctx, CreateInput{
 			WorkspaceID: workspaceID,
 			LocationID:  input.Body.LocationID,
 			Name:        input.Body.Name,
 			Description: input.Body.Description,
 			Capacity:    input.Body.Capacity,
-			ShortCode:   input.Body.ShortCode,
+			ShortCode:   shortCode,
 		})
 		if err != nil {
 			if err == ErrShortCodeTaken {
@@ -353,7 +358,7 @@ type ContainerResponse struct {
 	LocationID  uuid.UUID `json:"location_id"`
 	Description *string   `json:"description,omitempty"`
 	Capacity    *string   `json:"capacity,omitempty"`
-	ShortCode   *string   `json:"short_code,omitempty"`
+	ShortCode   string    `json:"short_code"`
 	IsArchived  bool      `json:"is_archived"`
 	CreatedAt   time.Time `json:"created_at"`
 	UpdatedAt   time.Time `json:"updated_at"`

@@ -48,6 +48,8 @@ class ApiClient {
       ...options.headers,
     };
 
+    // Include Authorization header for backwards compatibility
+    // (cookies are now the primary auth mechanism)
     if (this.token) {
       (headers as Record<string, string>)["Authorization"] = `Bearer ${this.token}`;
     }
@@ -59,11 +61,24 @@ class ApiClient {
     const response = await fetch(`${this.baseUrl}${endpoint}`, {
       ...options,
       headers,
+      credentials: "include", // Send cookies with requests
     });
 
     if (!response.ok) {
+      // Handle 401 Unauthorized - redirect to login
+      if (response.status === 401) {
+        // Clear auth state
+        this.setToken(null);
+        if (typeof window !== "undefined") {
+          localStorage.removeItem("workspace_id");
+          // Redirect to login page
+          window.location.href = "/login";
+        }
+        throw new Error("Session expired. Please log in again.");
+      }
+
       const error: ApiError = await response.json().catch(() => ({
-        message: "An error occurred",
+        message: `HTTP ${response.status}: ${response.statusText || "Request failed"}`,
       }));
       throw new Error(error.message || `HTTP ${response.status}`);
     }

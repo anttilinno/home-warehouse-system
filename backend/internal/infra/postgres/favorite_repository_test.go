@@ -54,7 +54,7 @@ func TestFavoriteRepository_Save(t *testing.T) {
 
 	t.Run("saves favorite location successfully", func(t *testing.T) {
 		locRepo := NewLocationRepository(pool)
-		loc, err := location.NewLocation(testfixtures.TestWorkspaceID, "Fav Loc "+uuid.NewString()[:4], nil, nil, nil, nil, nil, nil)
+		loc, err := location.NewLocation(testfixtures.TestWorkspaceID, "Fav Loc "+uuid.NewString()[:4], nil, nil, "")
 		require.NoError(t, err)
 		err = locRepo.Save(ctx, loc)
 		require.NoError(t, err)

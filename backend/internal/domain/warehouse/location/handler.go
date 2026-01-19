@@ -68,15 +68,17 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 
 		authUser, _ := appMiddleware.GetAuthUser(ctx)
 
+		shortCode := ""
+		if input.Body.ShortCode != nil {
+			shortCode = *input.Body.ShortCode
+		}
+
 		location, err := svc.Create(ctx, CreateInput{
 			WorkspaceID:    workspaceID,
 			Name:           input.Body.Name,
 			ParentLocation: input.Body.ParentLocation,
-			Zone:           input.Body.Zone,
-			Shelf:          input.Body.Shelf,
-			Bin:            input.Body.Bin,
 			Description:    input.Body.Description,
-			ShortCode:      input.Body.ShortCode,
+			ShortCode:      shortCode,
 		})
 		if err != nil {
 			if err == ErrShortCodeTaken {
@@ -129,9 +131,6 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 		location, err := svc.Update(ctx, input.ID, workspaceID, UpdateInput{
 			Name:           name,
 			ParentLocation: input.Body.ParentLocation,
-			Zone:           input.Body.Zone,
-			Shelf:          input.Body.Shelf,
-			Bin:            input.Body.Bin,
 			Description:    input.Body.Description,
 		})
 		if err != nil {
@@ -311,9 +310,6 @@ func toLocationResponse(l *Location) LocationResponse {
 		WorkspaceID:    l.WorkspaceID(),
 		Name:           l.Name(),
 		ParentLocation: l.ParentLocation(),
-		Zone:           l.Zone(),
-		Shelf:          l.Shelf(),
-		Bin:            l.Bin(),
 		Description:    l.Description(),
 		ShortCode:      l.ShortCode(),
 		IsArchived:     l.IsArchived(),
@@ -352,11 +348,8 @@ type CreateLocationInput struct {
 	Body struct {
 		Name           string     `json:"name" minLength:"1" maxLength:"255" doc:"Location name"`
 		ParentLocation *uuid.UUID `json:"parent_location,omitempty" doc:"Parent location ID for hierarchical locations"`
-		Zone           *string    `json:"zone,omitempty" maxLength:"100" doc:"Zone identifier"`
-		Shelf          *string    `json:"shelf,omitempty" maxLength:"100" doc:"Shelf identifier"`
-		Bin            *string    `json:"bin,omitempty" maxLength:"100" doc:"Bin identifier"`
 		Description    *string    `json:"description,omitempty" doc:"Location description"`
-		ShortCode      *string    `json:"short_code,omitempty" maxLength:"20" doc:"Short code for QR labels"`
+		ShortCode      *string    `json:"short_code,omitempty" maxLength:"8" doc:"Short code for QR labels (auto-generated if empty)"`
 	}
 }
 
@@ -369,9 +362,6 @@ type UpdateLocationInput struct {
 	Body struct {
 		Name           *string    `json:"name,omitempty" minLength:"1" maxLength:"255" doc:"Location name"`
 		ParentLocation *uuid.UUID `json:"parent_location,omitempty" doc:"Parent location ID for hierarchical locations"`
-		Zone           *string    `json:"zone,omitempty" maxLength:"100" doc:"Zone identifier"`
-		Shelf          *string    `json:"shelf,omitempty" maxLength:"100" doc:"Shelf identifier"`
-		Bin            *string    `json:"bin,omitempty" maxLength:"100" doc:"Bin identifier"`
 		Description    *string    `json:"description,omitempty" doc:"Location description"`
 	}
 }
@@ -385,11 +375,8 @@ type LocationResponse struct {
 	WorkspaceID    uuid.UUID  `json:"workspace_id"`
 	Name           string     `json:"name"`
 	ParentLocation *uuid.UUID `json:"parent_location,omitempty"`
-	Zone           *string    `json:"zone,omitempty"`
-	Shelf          *string    `json:"shelf,omitempty"`
-	Bin            *string    `json:"bin,omitempty"`
 	Description    *string    `json:"description,omitempty"`
-	ShortCode      *string    `json:"short_code,omitempty"`
+	ShortCode      string     `json:"short_code"`
 	IsArchived     bool       `json:"is_archived"`
 	CreatedAt      time.Time  `json:"created_at"`
 	UpdatedAt      time.Time  `json:"updated_at"`
@@ -406,7 +393,7 @@ type BreadcrumbListResponse struct {
 type BreadcrumbResponse struct {
 	ID        uuid.UUID `json:"id"`
 	Name      string    `json:"name"`
-	ShortCode *string   `json:"short_code,omitempty"`
+	ShortCode string    `json:"short_code"`
 }
 
 type SearchLocationsInput struct {

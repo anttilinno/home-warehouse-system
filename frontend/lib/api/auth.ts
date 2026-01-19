@@ -49,7 +49,13 @@ export const authApi = {
     return response;
   },
 
-  logout: () => {
+  logout: async () => {
+    try {
+      // Call backend to clear cookies
+      await apiClient.post("/auth/logout");
+    } catch {
+      // Ignore errors - we still want to clear local state
+    }
     apiClient.setToken(null);
     if (typeof window !== "undefined") {
       localStorage.removeItem("workspace_id");

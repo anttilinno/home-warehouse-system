@@ -66,6 +66,14 @@ func (m *MockService) Delete(ctx context.Context, id, workspaceID uuid.UUID) err
 	return args.Error(0)
 }
 
+func (m *MockService) Search(ctx context.Context, workspaceID uuid.UUID, query string, limit int) ([]*container.Container, error) {
+	args := m.Called(ctx, workspaceID, query, limit)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).([]*container.Container), args.Error(1)
+}
+
 // Tests
 
 func TestContainerHandler_Create(t *testing.T) {
@@ -76,7 +84,7 @@ func TestContainerHandler_Create(t *testing.T) {
 	t.Run("creates container successfully", func(t *testing.T) {
 		locationID := uuid.New()
 		shortCode := "C001"
-		testContainer, _ := container.NewContainer(setup.WorkspaceID, locationID, "Box A", nil, nil, &shortCode)
+		testContainer, _ := container.NewContainer(setup.WorkspaceID, locationID, "Box A", nil, nil, shortCode)
 
 		mockSvc.On("Create", mock.Anything, mock.MatchedBy(func(input container.CreateInput) bool {
 			return input.Name == "Box A" && input.LocationID == locationID
@@ -91,10 +99,10 @@ func TestContainerHandler_Create(t *testing.T) {
 
 	t.Run("creates container without optional fields", func(t *testing.T) {
 		locationID := uuid.New()
-		testContainer, _ := container.NewContainer(setup.WorkspaceID, locationID, "Simple Box", nil, nil, nil)
+		testContainer, _ := container.NewContainer(setup.WorkspaceID, locationID, "Simple Box", nil, nil, "SIM01")
 
 		mockSvc.On("Create", mock.Anything, mock.MatchedBy(func(input container.CreateInput) bool {
-			return input.Name == "Simple Box" && input.ShortCode == nil
+			return input.Name == "Simple Box" && input.ShortCode == ""
 		})).Return(testContainer, nil).Once()
 
 		body := fmt.Sprintf(`{"location_id":"%s","name":"Simple Box"}`, locationID)
@@ -134,8 +142,8 @@ func TestContainerHandler_List(t *testing.T) {
 
 	t.Run("lists containers successfully", func(t *testing.T) {
 		locationID := uuid.New()
-		cont1, _ := container.NewContainer(setup.WorkspaceID, locationID, "Container 1", nil, nil, nil)
-		cont2, _ := container.NewContainer(setup.WorkspaceID, locationID, "Container 2", nil, nil, nil)
+		cont1, _ := container.NewContainer(setup.WorkspaceID, locationID, "Container 1", nil, nil, "CON01")
+		cont2, _ := container.NewContainer(setup.WorkspaceID, locationID, "Container 2", nil, nil, "CON02")
 		containers := []*container.Container{cont1, cont2}
 
 		pagination := shared.Pagination{Page: 1, PageSize: 50}
@@ -186,7 +194,7 @@ func TestContainerHandler_Get(t *testing.T) {
 
 	t.Run("gets container by ID", func(t *testing.T) {
 		locationID := uuid.New()
-		testContainer, _ := container.NewContainer(setup.WorkspaceID, locationID, "Test Container", nil, nil, nil)
+		testContainer, _ := container.NewContainer(setup.WorkspaceID, locationID, "Test Container", nil, nil, "TST01")
 		containerID := testContainer.ID()
 
 		mockSvc.On("GetByID", mock.Anything, containerID, setup.WorkspaceID).
@@ -218,11 +226,11 @@ func TestContainerHandler_Update(t *testing.T) {
 
 	t.Run("updates container successfully", func(t *testing.T) {
 		locationID := uuid.New()
-		testContainer, _ := container.NewContainer(setup.WorkspaceID, locationID, "Updated Container", nil, nil, nil)
+		testContainer, _ := container.NewContainer(setup.WorkspaceID, locationID, "Updated Container", nil, nil, "UPD01")
 		containerID := testContainer.ID()
 
 		// Mock GetByID first (handler calls it to get current container)
-		currentContainer, _ := container.NewContainer(setup.WorkspaceID, locationID, "Original", nil, nil, nil)
+		currentContainer, _ := container.NewContainer(setup.WorkspaceID, locationID, "Original", nil, nil, "ORG01")
 		mockSvc.On("GetByID", mock.Anything, containerID, setup.WorkspaceID).
 			Return(currentContainer, nil).Once()
 

@@ -4,6 +4,7 @@ export { categoriesApi } from "./categories";
 export { analyticsApi } from "./analytics";
 export { notificationsApi } from "./notifications";
 export { itemsApi } from "./items";
+export { itemPhotosApi } from "./item-photos";
 export { locationsApi } from "./locations";
 export { containersApi } from "./containers";
 export { borrowersApi } from "./borrowers";
@@ -44,3 +45,16 @@ export type {
   ApproveChangeRequest,
   RejectChangeRequest,
 } from "./pending-changes";
+export type {
+  ItemPhoto,
+  PhotoUrls,
+  PhotoSize,
+  UploadPhotoResponse,
+  PhotoListResponse,
+  PhotoResponse,
+  UpdateCaptionRequest,
+  ReorderPhotosRequest,
+  UploadProgress,
+  ImageValidation,
+  ImageDimensions,
+} from "../types/item-photo";

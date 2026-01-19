@@ -75,7 +75,7 @@ func (q *Queries) GetCategoryByName(ctx context.Context, arg GetCategoryByNamePa
 }
 
 const getLocationByName = `-- name: GetLocationByName :one
-SELECT id, workspace_id, name, parent_location, zone, shelf, bin, description, short_code, is_archived, search_vector, created_at, updated_at FROM warehouse.locations
+SELECT id, workspace_id, name, parent_location, description, short_code, is_archived, search_vector, created_at, updated_at FROM warehouse.locations
 WHERE workspace_id = $1 AND name = $2 AND is_archived = false
 LIMIT 1
 `
@@ -93,9 +93,6 @@ func (q *Queries) GetLocationByName(ctx context.Context, arg GetLocationByNamePa
 		&i.WorkspaceID,
 		&i.Name,
 		&i.ParentLocation,
-		&i.Zone,
-		&i.Shelf,
-		&i.Bin,
 		&i.Description,
 		&i.ShortCode,
 		&i.IsArchived,
@@ -144,7 +141,7 @@ func (q *Queries) ListAllAttachments(ctx context.Context, workspaceID uuid.UUID)
 }
 
 const listAllBorrowers = `-- name: ListAllBorrowers :many
-SELECT id, workspace_id, name, email, phone, notes, is_archived, created_at, updated_at, search_vector FROM warehouse.borrowers
+SELECT id, workspace_id, name, email, phone, notes, is_archived, search_vector, created_at, updated_at FROM warehouse.borrowers
 WHERE workspace_id = $1 
   AND ($2::boolean OR is_archived = false)
 ORDER BY name
@@ -172,9 +169,9 @@ func (q *Queries) ListAllBorrowers(ctx context.Context, arg ListAllBorrowersPara
 			&i.Phone,
 			&i.Notes,
 			&i.IsArchived,
+			&i.SearchVector,
 			&i.CreatedAt,
 			&i.UpdatedAt,
-			&i.SearchVector,
 		); err != nil {
 			return nil, err
 		}
@@ -187,7 +184,7 @@ func (q *Queries) ListAllBorrowers(ctx context.Context, arg ListAllBorrowersPara
 }
 
 const listAllBorrowersIncludingArchived = `-- name: ListAllBorrowersIncludingArchived :many
-SELECT id, workspace_id, name, email, phone, notes, is_archived, created_at, updated_at, search_vector FROM warehouse.borrowers
+SELECT id, workspace_id, name, email, phone, notes, is_archived, search_vector, created_at, updated_at FROM warehouse.borrowers
 WHERE workspace_id = $1
 ORDER BY created_at
 `
@@ -209,9 +206,9 @@ func (q *Queries) ListAllBorrowersIncludingArchived(ctx context.Context, workspa
 			&i.Phone,
 			&i.Notes,
 			&i.IsArchived,
+			&i.SearchVector,
 			&i.CreatedAt,
 			&i.UpdatedAt,
-			&i.SearchVector,
 		); err != nil {
 			return nil, err
 		}
@@ -727,7 +724,7 @@ func (q *Queries) ListAllLoans(ctx context.Context, workspaceID uuid.UUID) ([]Wa
 }
 
 const listAllLocations = `-- name: ListAllLocations :many
-SELECT id, workspace_id, name, parent_location, zone, shelf, bin, description, short_code, is_archived, search_vector, created_at, updated_at FROM warehouse.locations
+SELECT id, workspace_id, name, parent_location, description, short_code, is_archived, search_vector, created_at, updated_at FROM warehouse.locations
 WHERE workspace_id = $1 
   AND ($2::boolean OR is_archived = false)
 ORDER BY name
@@ -752,9 +749,6 @@ func (q *Queries) ListAllLocations(ctx context.Context, arg ListAllLocationsPara
 			&i.WorkspaceID,
 			&i.Name,
 			&i.ParentLocation,
-			&i.Zone,
-			&i.Shelf,
-			&i.Bin,
 			&i.Description,
 			&i.ShortCode,
 			&i.IsArchived,
@@ -773,7 +767,7 @@ func (q *Queries) ListAllLocations(ctx context.Context, arg ListAllLocationsPara
 }
 
 const listAllLocationsIncludingArchived = `-- name: ListAllLocationsIncludingArchived :many
-SELECT id, workspace_id, name, parent_location, zone, shelf, bin, description, short_code, is_archived, search_vector, created_at, updated_at FROM warehouse.locations
+SELECT id, workspace_id, name, parent_location, description, short_code, is_archived, search_vector, created_at, updated_at FROM warehouse.locations
 WHERE workspace_id = $1
 ORDER BY created_at
 `
@@ -792,9 +786,6 @@ func (q *Queries) ListAllLocationsIncludingArchived(ctx context.Context, workspa
 			&i.WorkspaceID,
 			&i.Name,
 			&i.ParentLocation,
-			&i.Zone,
-			&i.Shelf,
-			&i.Bin,
 			&i.Description,
 			&i.ShortCode,
 			&i.IsArchived,

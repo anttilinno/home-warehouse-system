@@ -750,9 +750,9 @@ type WarehouseBorrower struct {
 	Phone        *string            `json:"phone"`
 	Notes        *string            `json:"notes"`
 	IsArchived   bool               `json:"is_archived"`
+	SearchVector interface{}        `json:"search_vector"`
 	CreatedAt    pgtype.Timestamptz `json:"created_at"`
 	UpdatedAt    pgtype.Timestamptz `json:"updated_at"`
-	SearchVector interface{}        `json:"search_vector"`
 }
 
 type WarehouseCategory struct {
@@ -784,8 +784,8 @@ type WarehouseContainer struct {
 	LocationID  uuid.UUID `json:"location_id"`
 	Description *string   `json:"description"`
 	Capacity    *string   `json:"capacity"`
-	// Short alphanumeric code for QR labels. Unique within workspace. Enables compact URLs for small label printers.
-	ShortCode    *string            `json:"short_code"`
+	// Short alphanumeric code for QR labels. Unique within workspace. Auto-generated if not provided.
+	ShortCode    string             `json:"short_code"`
 	IsArchived   bool               `json:"is_archived"`
 	SearchVector interface{}        `json:"search_vector"`
 	CreatedAt    pgtype.Timestamptz `json:"created_at"`
@@ -923,8 +923,8 @@ type WarehouseItem struct {
 	PurchasedFrom    pgtype.UUID `json:"purchased_from"`
 	// Threshold for LOW_STOCK notifications. When total inventory falls below this, trigger alert.
 	MinStockLevel int32 `json:"min_stock_level"`
-	// Short alphanumeric code for QR labels. Unique within workspace. Enables compact URLs for small label printers.
-	ShortCode *string `json:"short_code"`
+	// Short alphanumeric code for QR labels. Unique within workspace. Auto-generated if not provided.
+	ShortCode string `json:"short_code"`
 	// Local path to Obsidian vault for linking notes.
 	ObsidianVaultPath *string `json:"obsidian_vault_path"`
 	// Relative path to note within vault.
@@ -988,12 +988,9 @@ type WarehouseLocation struct {
 	WorkspaceID    uuid.UUID   `json:"workspace_id"`
 	Name           string      `json:"name"`
 	ParentLocation pgtype.UUID `json:"parent_location"`
-	Zone           *string     `json:"zone"`
-	Shelf          *string     `json:"shelf"`
-	Bin            *string     `json:"bin"`
 	Description    *string     `json:"description"`
-	// Short alphanumeric code for QR labels. Unique within workspace. Enables compact URLs for small label printers.
-	ShortCode    *string            `json:"short_code"`
+	// Short alphanumeric code for QR labels. Unique within workspace. Auto-generated if not provided.
+	ShortCode    string             `json:"short_code"`
 	IsArchived   bool               `json:"is_archived"`
 	SearchVector interface{}        `json:"search_vector"`
 	CreatedAt    pgtype.Timestamptz `json:"created_at"`

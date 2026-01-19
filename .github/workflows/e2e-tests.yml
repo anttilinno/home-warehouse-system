@@ -1,0 +1,141 @@
+name: E2E Tests
+
+on:
+  pull_request:
+    branches: [main, master]
+  push:
+    branches: [main, master]
+  workflow_dispatch:
+
+env:
+  # Frontend environment variables
+  NEXT_PUBLIC_API_URL: http://localhost:8000
+
+jobs:
+  test:
+    timeout-minutes: 30
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: bun install
+
+      - name: Install Playwright browsers
+        working-directory: frontend
+        run: bunx playwright install --with-deps chromium
+
+      - name: Build frontend (for static checks)
+        working-directory: frontend
+        run: bun run build
+        env:
+          NEXT_PUBLIC_API_URL: http://localhost:8000
+
+      - name: Run Playwright tests
+        working-directory: frontend
+        run: bun run test
+        env:
+          CI: true
+          NEXT_PUBLIC_API_URL: http://localhost:8000
+          # Test credentials (for auth tests)
+          TEST_USER_EMAIL: test@example.com
+          TEST_USER_PASSWORD: testpassword123
+
+      - name: Upload Playwright report
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-report
+          path: frontend/playwright-report/
+          retention-days: 14
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-results
+          path: frontend/test-results/
+          retention-days: 7
+
+  # Run visual regression tests separately (optional)
+  visual-tests:
+    timeout-minutes: 20
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: bun install
+
+      - name: Install Playwright browsers
+        working-directory: frontend
+        run: bunx playwright install --with-deps chromium
+
+      - name: Run visual regression tests
+        working-directory: frontend
+        run: bunx playwright test --grep @visual || true
+        env:
+          CI: true
+          NEXT_PUBLIC_API_URL: http://localhost:8000
+
+      - name: Upload visual snapshots
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: visual-snapshots
+          path: frontend/test-results/
+          retention-days: 7
+
+  # Accessibility audit
+  accessibility:
+    timeout-minutes: 15
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: bun install
+
+      - name: Install Playwright browsers
+        working-directory: frontend
+        run: bunx playwright install --with-deps chromium
+
+      - name: Run accessibility tests
+        working-directory: frontend
+        run: bunx playwright test accessibility/ || true
+        env:
+          CI: true
+          NEXT_PUBLIC_API_URL: http://localhost:8000
+
+      - name: Upload accessibility report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: accessibility-report
+          path: frontend/playwright-report/
+          retention-days: 7

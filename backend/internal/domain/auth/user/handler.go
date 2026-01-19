@@ -3,6 +3,8 @@ package user
 import (
 	"context"
 	"fmt"
+	"net/http"
+	"os"
 	"time"
 
 	"github.com/danielgtaylor/huma/v2"
@@ -13,6 +15,47 @@ import (
 	"github.com/antti/home-warehouse/go-backend/internal/shared"
 	"github.com/antti/home-warehouse/go-backend/internal/shared/jwt"
 )
+
+const (
+	// Cookie names
+	accessTokenCookie  = "access_token"
+	refreshTokenCookie = "refresh_token"
+
+	// Cookie max ages
+	accessTokenMaxAge  = 24 * 60 * 60     // 24 hours (matches JWT expiry)
+	refreshTokenMaxAge = 7 * 24 * 60 * 60 // 7 days
+)
+
+// isSecureCookie returns true if cookies should be secure (HTTPS only)
+func isSecureCookie() bool {
+	return os.Getenv("APP_ENV") == "production"
+}
+
+// createAuthCookie creates an HTTP cookie for authentication
+func createAuthCookie(name, value string, maxAge int) *http.Cookie {
+	return &http.Cookie{
+		Name:     name,
+		Value:    value,
+		Path:     "/",
+		MaxAge:   maxAge,
+		HttpOnly: true,
+		Secure:   isSecureCookie(),
+		SameSite: http.SameSiteLaxMode,
+	}
+}
+
+// clearAuthCookie creates a cookie that clears the auth cookie
+func clearAuthCookie(name string) *http.Cookie {
+	return &http.Cookie{
+		Name:     name,
+		Value:    "",
+		Path:     "/",
+		MaxAge:   -1,
+		HttpOnly: true,
+		Secure:   isSecureCookie(),
+		SameSite: http.SameSiteLaxMode,
+	}
+}
 
 // Handler holds dependencies for user HTTP handlers.
 type Handler struct {
@@ -35,6 +78,7 @@ func (h *Handler) RegisterPublicRoutes(api huma.API) {
 	huma.Post(api, "/auth/register", h.register)
 	huma.Post(api, "/auth/login", h.login)
 	huma.Post(api, "/auth/refresh", h.refreshToken)
+	huma.Post(api, "/auth/logout", h.logout)
 }
 
 // RegisterProtectedRoutes registers protected user routes (auth required).
@@ -97,6 +141,10 @@ func (h *Handler) register(ctx context.Context, input *RegisterInput) (*Register
 	}
 
 	return &RegisterOutput{
+		SetCookie: []http.Cookie{
+			*createAuthCookie(accessTokenCookie, token, accessTokenMaxAge),
+			*createAuthCookie(refreshTokenCookie, refreshToken, refreshTokenMaxAge),
+		},
 		Body: struct {
 			Token        string `json:"token"`
 			RefreshToken string `json:"refresh_token"`
@@ -124,6 +172,10 @@ func (h *Handler) login(ctx context.Context, input *LoginInput) (*LoginOutput, e
 	}
 
 	return &LoginOutput{
+		SetCookie: []http.Cookie{
+			*createAuthCookie(accessTokenCookie, token, accessTokenMaxAge),
+			*createAuthCookie(refreshTokenCookie, refreshToken, refreshTokenMaxAge),
+		},
 		Body: struct {
 			Token        string `json:"token"`
 			RefreshToken string `json:"refresh_token"`
@@ -163,9 +215,22 @@ func (h *Handler) refreshToken(ctx context.Context, input *RefreshTokenInput) (*
 	}
 
 	return &RefreshTokenOutput{
+		SetCookie: []http.Cookie{
+			*createAuthCookie(accessTokenCookie, token, accessTokenMaxAge),
+			*createAuthCookie(refreshTokenCookie, refreshToken, refreshTokenMaxAge),
+		},
 		Body: RefreshTokenResponse{
 			Token:        token,
 			RefreshToken: refreshToken,
+		},
+	}, nil
+}
+
+func (h *Handler) logout(ctx context.Context, input *struct{}) (*LogoutOutput, error) {
+	return &LogoutOutput{
+		SetCookie: []http.Cookie{
+			*clearAuthCookie(accessTokenCookie),
+			*clearAuthCookie(refreshTokenCookie),
 		},
 	}, nil
 }
@@ -432,7 +497,8 @@ type RegisterInput struct {
 }
 
 type RegisterOutput struct {
-	Body struct {
+	SetCookie []http.Cookie `header:"Set-Cookie"`
+	Body      struct {
 		Token        string `json:"token"`
 		RefreshToken string `json:"refresh_token"`
 	}
@@ -446,7 +512,8 @@ type LoginInput struct {
 }
 
 type LoginOutput struct {
-	Body struct {
+	SetCookie []http.Cookie `header:"Set-Cookie"`
+	Body      struct {
 		Token        string `json:"token"`
 		RefreshToken string `json:"refresh_token"`
 	}
@@ -454,17 +521,22 @@ type LoginOutput struct {
 
 type RefreshTokenInput struct {
 	Body struct {
-		RefreshToken string `json:"refresh_token" required:"true"`
+		RefreshToken string `json:"refresh_token,omitempty"`
 	}
 }
 
 type RefreshTokenOutput struct {
-	Body RefreshTokenResponse
+	SetCookie []http.Cookie `header:"Set-Cookie"`
+	Body      RefreshTokenResponse
 }
 
 type RefreshTokenResponse struct {
 	Token        string `json:"token"`
 	RefreshToken string `json:"refresh_token"`
+}
+
+type LogoutOutput struct {
+	SetCookie []http.Cookie `header:"Set-Cookie"`
 }
 
 type UserResponse struct {

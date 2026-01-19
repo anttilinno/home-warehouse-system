@@ -454,3 +454,165 @@ func TestDefaultConfig(t *testing.T) {
 		t.Errorf("MaxHeight = %d, want 8192", config.MaxHeight)
 	}
 }
+
+func TestLoadConfigFromEnv(t *testing.T) {
+	// Helper to clear env vars after test
+	clearEnv := func() {
+		os.Unsetenv("PHOTO_THUMBNAIL_SMALL_SIZE")
+		os.Unsetenv("PHOTO_THUMBNAIL_MEDIUM_SIZE")
+		os.Unsetenv("PHOTO_THUMBNAIL_LARGE_SIZE")
+		os.Unsetenv("PHOTO_JPEG_QUALITY")
+		os.Unsetenv("PHOTO_WEBP_QUALITY")
+		os.Unsetenv("PHOTO_MIN_WIDTH")
+		os.Unsetenv("PHOTO_MIN_HEIGHT")
+		os.Unsetenv("PHOTO_MAX_WIDTH")
+		os.Unsetenv("PHOTO_MAX_HEIGHT")
+	}
+
+	t.Run("defaults_when_no_env_vars", func(t *testing.T) {
+		clearEnv()
+
+		cfg, err := LoadConfigFromEnv()
+		if err != nil {
+			t.Fatalf("LoadConfigFromEnv() error = %v", err)
+		}
+
+		defaults := DefaultConfig()
+		if cfg.SmallSize != defaults.SmallSize {
+			t.Errorf("SmallSize = %d, want %d", cfg.SmallSize, defaults.SmallSize)
+		}
+		if cfg.MediumSize != defaults.MediumSize {
+			t.Errorf("MediumSize = %d, want %d", cfg.MediumSize, defaults.MediumSize)
+		}
+		if cfg.LargeSize != defaults.LargeSize {
+			t.Errorf("LargeSize = %d, want %d", cfg.LargeSize, defaults.LargeSize)
+		}
+		if cfg.JPEGQuality != defaults.JPEGQuality {
+			t.Errorf("JPEGQuality = %d, want %d", cfg.JPEGQuality, defaults.JPEGQuality)
+		}
+	})
+
+	t.Run("custom_thumbnail_sizes", func(t *testing.T) {
+		clearEnv()
+		os.Setenv("PHOTO_THUMBNAIL_SMALL_SIZE", "100")
+		os.Setenv("PHOTO_THUMBNAIL_MEDIUM_SIZE", "300")
+		os.Setenv("PHOTO_THUMBNAIL_LARGE_SIZE", "600")
+
+		cfg, err := LoadConfigFromEnv()
+		if err != nil {
+			t.Fatalf("LoadConfigFromEnv() error = %v", err)
+		}
+
+		if cfg.SmallSize != 100 {
+			t.Errorf("SmallSize = %d, want 100", cfg.SmallSize)
+		}
+		if cfg.MediumSize != 300 {
+			t.Errorf("MediumSize = %d, want 300", cfg.MediumSize)
+		}
+		if cfg.LargeSize != 600 {
+			t.Errorf("LargeSize = %d, want 600", cfg.LargeSize)
+		}
+		clearEnv()
+	})
+
+	t.Run("custom_quality_settings", func(t *testing.T) {
+		clearEnv()
+		os.Setenv("PHOTO_JPEG_QUALITY", "90")
+		os.Setenv("PHOTO_WEBP_QUALITY", "80")
+
+		cfg, err := LoadConfigFromEnv()
+		if err != nil {
+			t.Fatalf("LoadConfigFromEnv() error = %v", err)
+		}
+
+		if cfg.JPEGQuality != 90 {
+			t.Errorf("JPEGQuality = %d, want 90", cfg.JPEGQuality)
+		}
+		if cfg.WebPQuality != 80 {
+			t.Errorf("WebPQuality = %f, want 80", cfg.WebPQuality)
+		}
+		clearEnv()
+	})
+
+	t.Run("custom_dimension_limits", func(t *testing.T) {
+		clearEnv()
+		os.Setenv("PHOTO_MIN_WIDTH", "200")
+		os.Setenv("PHOTO_MIN_HEIGHT", "200")
+		os.Setenv("PHOTO_MAX_WIDTH", "4096")
+		os.Setenv("PHOTO_MAX_HEIGHT", "4096")
+
+		cfg, err := LoadConfigFromEnv()
+		if err != nil {
+			t.Fatalf("LoadConfigFromEnv() error = %v", err)
+		}
+
+		if cfg.MinWidth != 200 {
+			t.Errorf("MinWidth = %d, want 200", cfg.MinWidth)
+		}
+		if cfg.MinHeight != 200 {
+			t.Errorf("MinHeight = %d, want 200", cfg.MinHeight)
+		}
+		if cfg.MaxWidth != 4096 {
+			t.Errorf("MaxWidth = %d, want 4096", cfg.MaxWidth)
+		}
+		if cfg.MaxHeight != 4096 {
+			t.Errorf("MaxHeight = %d, want 4096", cfg.MaxHeight)
+		}
+		clearEnv()
+	})
+
+	t.Run("invalid_small_size", func(t *testing.T) {
+		clearEnv()
+		os.Setenv("PHOTO_THUMBNAIL_SMALL_SIZE", "invalid")
+
+		_, err := LoadConfigFromEnv()
+		if err == nil {
+			t.Error("LoadConfigFromEnv() error = nil, want error")
+		}
+		clearEnv()
+	})
+
+	t.Run("negative_size", func(t *testing.T) {
+		clearEnv()
+		os.Setenv("PHOTO_THUMBNAIL_SMALL_SIZE", "-10")
+
+		_, err := LoadConfigFromEnv()
+		if err == nil {
+			t.Error("LoadConfigFromEnv() error = nil, want error")
+		}
+		clearEnv()
+	})
+
+	t.Run("invalid_quality_range", func(t *testing.T) {
+		clearEnv()
+		os.Setenv("PHOTO_JPEG_QUALITY", "101")
+
+		_, err := LoadConfigFromEnv()
+		if err == nil {
+			t.Error("LoadConfigFromEnv() error = nil, want error for quality > 100")
+		}
+		clearEnv()
+	})
+
+	t.Run("negative_quality", func(t *testing.T) {
+		clearEnv()
+		os.Setenv("PHOTO_JPEG_QUALITY", "-1")
+
+		_, err := LoadConfigFromEnv()
+		if err == nil {
+			t.Error("LoadConfigFromEnv() error = nil, want error for negative quality")
+		}
+		clearEnv()
+	})
+
+	t.Run("invalid_webp_quality", func(t *testing.T) {
+		clearEnv()
+		os.Setenv("PHOTO_WEBP_QUALITY", "invalid")
+
+		_, err := LoadConfigFromEnv()
+		if err == nil {
+			t.Error("LoadConfigFromEnv() error = nil, want error")
+		}
+		clearEnv()
+	})
+}

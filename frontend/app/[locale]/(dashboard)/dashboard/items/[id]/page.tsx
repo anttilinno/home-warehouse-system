@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { ArrowLeft, Pencil, Archive, ArchiveRestore, Package, Barcode, Tag, Shield, FileText, Clock } from "lucide-react";
+import { ArrowLeft, Pencil, Archive, ArchiveRestore, Package, Barcode, Tag, Shield, FileText, Clock, Camera, ImagePlus } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -11,7 +11,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
-import { PhotoGallery } from "@/components/items/photo-gallery";
+import { PhotoGalleryContainer } from "@/components/items/photo-gallery-container";
 import { PhotoUpload } from "@/components/items/photo-upload";
 import { PhotoPlaceholder } from "@/components/items/photo-placeholder";
 import { useWorkspace } from "@/lib/hooks/use-workspace";
@@ -19,36 +19,39 @@ import { useSSE, type SSEEvent } from "@/lib/hooks/use-sse";
 import { useItemPhotos } from "@/lib/hooks/use-item-photos";
 import { itemsApi } from "@/lib/api";
 import type { Item } from "@/lib/types/items";
+import type { ItemPhoto } from "@/lib/types/item-photo";
 import { cn } from "@/lib/utils";
 
 export default function ItemDetailPage() {
   const params = useParams();
   const router = useRouter();
   const t = useTranslations("items");
+  const tPhotos = useTranslations("photos");
   const { workspaceId, hasPermission } = useWorkspace();
   const itemId = params.id as string;
 
   const [item, setItem] = useState<Item | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [showUploadSection, setShowUploadSection] = useState(false);
 
   // Fetch item photos
   const {
     photos,
     primaryPhoto,
-    isLoading: photosLoading,
-    refetch: refetchPhotos,
-  } = useItemPhotos(itemId);
+    loading: photosLoading,
+    refresh: refetchPhotos,
+  } = useItemPhotos({ workspaceId: workspaceId || "", itemId, autoFetch: !!workspaceId });
 
   // Check edit permissions
   const canEdit = hasPermission("edit");
 
   // Load item details
   const loadItem = async () => {
-    if (!itemId) return;
+    if (!itemId || !workspaceId) return;
 
     try {
       setIsLoading(true);
-      const data = await itemsApi.get(itemId);
+      const data = await itemsApi.get(workspaceId, itemId);
       setItem(data);
     } catch (error) {
       console.error("Failed to load item:", error);
@@ -61,7 +64,7 @@ export default function ItemDetailPage() {
 
   useEffect(() => {
     loadItem();
-  }, [itemId]);
+  }, [itemId, workspaceId]);
 
   // Subscribe to SSE events for real-time updates
   useSSE({
@@ -100,14 +103,14 @@ export default function ItemDetailPage() {
   });
 
   const handleArchive = async () => {
-    if (!item) return;
+    if (!item || !workspaceId) return;
 
     try {
       if (item.is_archived) {
-        await itemsApi.restore(item.id);
+        await itemsApi.restore(workspaceId, item.id);
         toast.success("Item restored successfully");
       } else {
-        await itemsApi.archive(item.id);
+        await itemsApi.archive(workspaceId, item.id);
         toast.success("Item archived successfully");
       }
       loadItem();
@@ -195,19 +198,36 @@ export default function ItemDetailPage() {
         {/* Photo Section */}
         <Card className="md:col-span-1">
           <CardHeader>
-            <CardTitle>Photos</CardTitle>
-            <CardDescription>
-              {photos.length} photo{photos.length !== 1 ? "s" : ""}
-            </CardDescription>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="flex items-center gap-2">
+                  <Camera className="h-5 w-5" />
+                  Photos
+                </CardTitle>
+                <CardDescription>
+                  {photos.length} photo{photos.length !== 1 ? "s" : ""}
+                </CardDescription>
+              </div>
+              {canEdit && photos.length > 0 && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowUploadSection(!showUploadSection)}
+                >
+                  <ImagePlus className="h-4 w-4 mr-2" />
+                  Add
+                </Button>
+              )}
+            </div>
           </CardHeader>
           <CardContent className="space-y-4">
-            {/* Primary Photo */}
+            {/* Primary Photo Display */}
             {primaryPhoto ? (
-              <div className="aspect-square overflow-hidden rounded-lg border">
+              <div className="aspect-square overflow-hidden rounded-lg border bg-muted">
                 <img
-                  src={primaryPhoto.thumbnail_url || primaryPhoto.photo_url}
-                  alt={item.name}
-                  className="h-full w-full object-cover"
+                  src={primaryPhoto.urls?.medium || primaryPhoto.urls?.small || primaryPhoto.urls?.original}
+                  alt={primaryPhoto.caption || item.name}
+                  className="h-full w-full object-cover transition-transform hover:scale-105"
                   loading="lazy"
                 />
               </div>
@@ -219,20 +239,37 @@ export default function ItemDetailPage() {
               />
             )}
 
-            {/* Photo Gallery */}
-            {photos.length > 0 && (
-              <PhotoGallery
-                photos={photos}
-                itemName={item.name}
+            {/* Photo Upload Section */}
+            {canEdit && (showUploadSection || photos.length === 0) && workspaceId && (
+              <PhotoUpload
+                workspaceId={workspaceId}
+                itemId={itemId}
+                onUploadComplete={(uploadedPhotos: ItemPhoto[]) => {
+                  refetchPhotos();
+                  if (uploadedPhotos.length > 0) {
+                    setShowUploadSection(false);
+                  }
+                }}
+                maxFiles={10}
               />
             )}
 
-            {/* Photo Upload */}
-            {canEdit && (
-              <PhotoUpload
-                itemId={itemId}
-                onUploadComplete={refetchPhotos}
-              />
+            {/* Photo Gallery with full functionality */}
+            {photos.length > 0 && workspaceId && (
+              <div className="pt-2">
+                <PhotoGalleryContainer
+                  workspaceId={workspaceId}
+                  itemId={itemId}
+                  onUploadClick={canEdit ? () => setShowUploadSection(true) : undefined}
+                />
+              </div>
+            )}
+
+            {/* Empty state prompt for adding photos */}
+            {photos.length === 0 && !canEdit && (
+              <p className="text-sm text-muted-foreground text-center py-4">
+                No photos have been added to this item yet.
+              </p>
             )}
           </CardContent>
         </Card>

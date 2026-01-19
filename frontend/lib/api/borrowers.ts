@@ -10,26 +10,25 @@ export const borrowersApi = {
   /**
    * List borrowers with pagination
    */
-  list: async (params?: { page?: number; limit?: number }): Promise<BorrowerListResponse> => {
+  list: async (workspaceId: string, params?: { page?: number; limit?: number }): Promise<BorrowerListResponse> => {
     const queryParams = new URLSearchParams();
     if (params?.page) queryParams.append("page", params.page.toString());
     if (params?.limit) queryParams.append("limit", params.limit.toString());
 
-    const url = `/borrowers${queryParams.toString() ? `?${queryParams.toString()}` : ""}`;
+    const url = `/workspaces/${workspaceId}/borrowers${queryParams.toString() ? `?${queryParams.toString()}` : ""}`;
     return apiClient.get<BorrowerListResponse>(url);
   },
 
   /**
    * Search borrowers by query
-   * Note: Backend endpoint not yet implemented - returns empty array on 404
    */
-  search: async (query: string, limit?: number): Promise<Borrower[]> => {
+  search: async (workspaceId: string, query: string, limit?: number): Promise<Borrower[]> => {
     const queryParams = new URLSearchParams({ q: query });
     if (limit) queryParams.append("limit", limit.toString());
 
     try {
       const response = await apiClient.get<BorrowerListResponse>(
-        `/borrowers/search?${queryParams.toString()}`
+        `/workspaces/${workspaceId}/borrowers/search?${queryParams.toString()}`
       );
       return response.items;
     } catch (error: any) {
@@ -45,29 +44,29 @@ export const borrowersApi = {
   /**
    * Get a single borrower by ID
    */
-  get: async (id: string): Promise<Borrower> => {
-    return apiClient.get<Borrower>(`/borrowers/${id}`);
+  get: async (workspaceId: string, id: string): Promise<Borrower> => {
+    return apiClient.get<Borrower>(`/workspaces/${workspaceId}/borrowers/${id}`);
   },
 
   /**
    * Create a new borrower
    */
-  create: async (data: BorrowerCreate): Promise<Borrower> => {
-    return apiClient.post<Borrower>("/borrowers", data);
+  create: async (workspaceId: string, data: BorrowerCreate): Promise<Borrower> => {
+    return apiClient.post<Borrower>(`/workspaces/${workspaceId}/borrowers`, data);
   },
 
   /**
    * Update an existing borrower
    */
-  update: async (id: string, data: BorrowerUpdate): Promise<Borrower> => {
-    return apiClient.patch<Borrower>(`/borrowers/${id}`, data);
+  update: async (workspaceId: string, id: string, data: BorrowerUpdate): Promise<Borrower> => {
+    return apiClient.patch<Borrower>(`/workspaces/${workspaceId}/borrowers/${id}`, data);
   },
 
   /**
-   * Archive a borrower (soft delete)
-   * Note: Cannot archive borrower with active loans
+   * Delete a borrower
+   * Note: Cannot delete borrower with active loans
    */
-  delete: async (id: string): Promise<void> => {
-    return apiClient.delete(`/borrowers/${id}`);
+  delete: async (workspaceId: string, id: string): Promise<void> => {
+    return apiClient.delete(`/workspaces/${workspaceId}/borrowers/${id}`);
   },
 };

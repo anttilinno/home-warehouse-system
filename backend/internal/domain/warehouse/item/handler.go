@@ -120,6 +120,11 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 
 		authUser, _ := appMiddleware.GetAuthUser(ctx)
 
+		shortCode := ""
+		if input.Body.ShortCode != nil {
+			shortCode = *input.Body.ShortCode
+		}
+
 		item, err := svc.Create(ctx, CreateInput{
 			WorkspaceID:       workspaceID,
 			SKU:               input.Body.SKU,
@@ -137,7 +142,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 			WarrantyDetails:   input.Body.WarrantyDetails,
 			PurchasedFrom:     input.Body.PurchasedFrom,
 			MinStockLevel:     input.Body.MinStockLevel,
-			ShortCode:         input.Body.ShortCode,
+			ShortCode:         shortCode,
 			ObsidianVaultPath: input.Body.ObsidianVaultPath,
 			ObsidianNotePath:  input.Body.ObsidianNotePath,
 		})
@@ -417,9 +422,9 @@ type ListItemsOutput struct {
 
 type ItemListResponse struct {
 	Items      []ItemResponse `json:"items"`
-	Total      int            `json:"total,omitempty"`
-	Page       int            `json:"page,omitempty"`
-	TotalPages int            `json:"total_pages,omitempty"`
+	Total      int            `json:"total"`
+	Page       int            `json:"page"`
+	TotalPages int            `json:"total_pages"`
 }
 
 type SearchItemsInput struct {
@@ -517,7 +522,7 @@ type ItemResponse struct {
 	WarrantyDetails   *string    `json:"warranty_details,omitempty"`
 	PurchasedFrom     *uuid.UUID `json:"purchased_from,omitempty"`
 	MinStockLevel     int        `json:"min_stock_level"`
-	ShortCode         *string    `json:"short_code,omitempty"`
+	ShortCode         string     `json:"short_code"`
 	ObsidianVaultPath *string    `json:"obsidian_vault_path,omitempty"`
 	ObsidianNotePath  *string    `json:"obsidian_note_path,omitempty"`
 	ObsidianURI       *string    `json:"obsidian_uri,omitempty" doc:"Generated Obsidian deep link URI"`

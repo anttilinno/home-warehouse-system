@@ -72,7 +72,8 @@ export const itemPhotosApi = {
       const token = apiClient.getToken();
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
-      xhr.open("POST", `${apiUrl}/api/workspaces/${workspaceId}/items/${itemId}/photos`);
+      xhr.open("POST", `${apiUrl}/workspaces/${workspaceId}/items/${itemId}/photos`);
+      xhr.withCredentials = true;
 
       if (token) {
         xhr.setRequestHeader("Authorization", `Bearer ${token}`);
@@ -87,11 +88,11 @@ export const itemPhotosApi = {
    * Get all photos for an item
    */
   getItemPhotos: async (workspaceId: string, itemId: string): Promise<ItemPhoto[]> => {
-    const response = await apiClient.get<PhotoListResponse>(
-      `/api/workspaces/${workspaceId}/items/${itemId}/photos`,
+    const response = await apiClient.get<{ items: ItemPhoto[] }>(
+      `/workspaces/${workspaceId}/items/${itemId}/photos/list`,
       workspaceId
     );
-    return response.photos;
+    return response.items || [];
   },
 
   /**
@@ -99,7 +100,7 @@ export const itemPhotosApi = {
    */
   getPhoto: async (workspaceId: string, photoId: string): Promise<ItemPhoto> => {
     const response = await apiClient.get<PhotoResponse>(
-      `/api/workspaces/${workspaceId}/item-photos/${photoId}`,
+      `/workspaces/${workspaceId}/photos/${photoId}`,
       workspaceId
     );
     return response.photo;
@@ -110,7 +111,7 @@ export const itemPhotosApi = {
    */
   setPrimaryPhoto: async (workspaceId: string, photoId: string): Promise<ItemPhoto> => {
     const response = await apiClient.post<PhotoResponse>(
-      `/api/workspaces/${workspaceId}/item-photos/${photoId}/set-primary`,
+      `/workspaces/${workspaceId}/photos/${photoId}/set-primary`,
       undefined,
       workspaceId
     );
@@ -127,7 +128,7 @@ export const itemPhotosApi = {
   ): Promise<ItemPhoto> => {
     const body: UpdateCaptionRequest = { caption };
     const response = await apiClient.patch<PhotoResponse>(
-      `/api/workspaces/${workspaceId}/item-photos/${photoId}`,
+      `/workspaces/${workspaceId}/photos/${photoId}`,
       body,
       workspaceId
     );
@@ -143,12 +144,12 @@ export const itemPhotosApi = {
     photoIds: string[]
   ): Promise<ItemPhoto[]> => {
     const body: ReorderPhotosRequest = { photo_ids: photoIds };
-    const response = await apiClient.post<PhotoListResponse>(
-      `/api/workspaces/${workspaceId}/items/${itemId}/photos/reorder`,
+    const response = await apiClient.post<{ items: ItemPhoto[] }>(
+      `/workspaces/${workspaceId}/items/${itemId}/photos/order`,
       body,
       workspaceId
     );
-    return response.photos;
+    return response.items || [];
   },
 
   /**
@@ -156,7 +157,7 @@ export const itemPhotosApi = {
    */
   deletePhoto: async (workspaceId: string, photoId: string): Promise<void> => {
     await apiClient.delete(
-      `/api/workspaces/${workspaceId}/item-photos/${photoId}`,
+      `/workspaces/${workspaceId}/photos/${photoId}`,
       workspaceId
     );
   },

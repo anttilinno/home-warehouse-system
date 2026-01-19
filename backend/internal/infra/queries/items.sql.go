@@ -68,7 +68,7 @@ type CreateItemParams struct {
 	WarrantyDetails   *string     `json:"warranty_details"`
 	PurchasedFrom     pgtype.UUID `json:"purchased_from"`
 	MinStockLevel     int32       `json:"min_stock_level"`
-	ShortCode         *string     `json:"short_code"`
+	ShortCode         string      `json:"short_code"`
 	ObsidianVaultPath *string     `json:"obsidian_vault_path"`
 	ObsidianNotePath  *string     `json:"obsidian_note_path"`
 }
@@ -274,7 +274,7 @@ WHERE workspace_id = $1 AND short_code = $2
 
 type GetItemByShortCodeParams struct {
 	WorkspaceID uuid.UUID `json:"workspace_id"`
-	ShortCode   *string   `json:"short_code"`
+	ShortCode   string    `json:"short_code"`
 }
 
 func (q *Queries) GetItemByShortCode(ctx context.Context, arg GetItemByShortCodeParams) (WarehouseItem, error) {
@@ -376,7 +376,7 @@ type GetItemWithDetailsRow struct {
 	WarrantyDetails   *string            `json:"warranty_details"`
 	PurchasedFrom     pgtype.UUID        `json:"purchased_from"`
 	MinStockLevel     int32              `json:"min_stock_level"`
-	ShortCode         *string            `json:"short_code"`
+	ShortCode         string             `json:"short_code"`
 	ObsidianVaultPath *string            `json:"obsidian_vault_path"`
 	ObsidianNotePath  *string            `json:"obsidian_note_path"`
 	SearchVector      interface{}        `json:"search_vector"`
@@ -448,7 +448,7 @@ SELECT EXISTS(
 
 type ItemShortCodeExistsParams struct {
 	WorkspaceID uuid.UUID `json:"workspace_id"`
-	ShortCode   *string   `json:"short_code"`
+	ShortCode   string    `json:"short_code"`
 }
 
 func (q *Queries) ItemShortCodeExists(ctx context.Context, arg ItemShortCodeExistsParams) (bool, error) {

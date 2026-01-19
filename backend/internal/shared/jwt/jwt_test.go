@@ -20,30 +20,34 @@ func TestService_GenerateToken(t *testing.T) {
 	svc := NewService("test-secret-key-that-is-long-enough", 24)
 	userID := uuid.New()
 	email := "test@example.com"
+	fullName := "Test User"
 
 	tests := []struct {
 		testName    string
 		userID      uuid.UUID
 		email       string
+		fullName    string
 		isSuperuser bool
 	}{
 		{
 			testName:    "generate token for regular user",
 			userID:      userID,
 			email:       email,
+			fullName:    fullName,
 			isSuperuser: false,
 		},
 		{
 			testName:    "generate token for superuser",
 			userID:      userID,
 			email:       email,
+			fullName:    fullName,
 			isSuperuser: true,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.testName, func(t *testing.T) {
-			token, err := svc.GenerateToken(tt.userID, tt.email, tt.isSuperuser)
+			token, err := svc.GenerateToken(tt.userID, tt.email, tt.fullName, tt.isSuperuser)
 
 			assert.NoError(t, err)
 			assert.NotEmpty(t, token)
@@ -53,6 +57,7 @@ func TestService_GenerateToken(t *testing.T) {
 			assert.NoError(t, err)
 			assert.Equal(t, tt.userID, claims.UserID)
 			assert.Equal(t, tt.email, claims.Email)
+			assert.Equal(t, tt.fullName, claims.FullName)
 			assert.Equal(t, tt.isSuperuser, claims.IsSuperuser)
 		})
 	}
@@ -72,7 +77,7 @@ func TestService_ValidateToken(t *testing.T) {
 		{
 			testName: "valid token",
 			setupToken: func() string {
-				token, _ := svc.GenerateToken(userID, email, false)
+				token, _ := svc.GenerateToken(userID, email, "Test User", false)
 				return token
 			},
 			wantErr: nil,
@@ -100,7 +105,7 @@ func TestService_ValidateToken(t *testing.T) {
 			testName: "token signed with different secret",
 			setupToken: func() string {
 				otherSvc := NewService("different-secret-key", 24)
-				token, _ := otherSvc.GenerateToken(userID, email, false)
+				token, _ := otherSvc.GenerateToken(userID, email, "Test User", false)
 				return token
 			},
 			wantErr: ErrInvalidToken,
@@ -342,7 +347,7 @@ func TestService_TokenExpiration(t *testing.T) {
 	svc := NewService("test-secret-key-that-is-long-enough", 24)
 	userID := uuid.New()
 
-	token, err := svc.GenerateToken(userID, "test@example.com", false)
+	token, err := svc.GenerateToken(userID, "test@example.com", "Test User", false)
 	assert.NoError(t, err)
 
 	// Token should be valid immediately
@@ -359,8 +364,9 @@ func TestService_TokenClaims(t *testing.T) {
 	svc := NewService("test-secret-key-that-is-long-enough", 24)
 	userID := uuid.New()
 	email := "test@example.com"
+	fullName := "Test User"
 
-	token, err := svc.GenerateToken(userID, email, true)
+	token, err := svc.GenerateToken(userID, email, fullName, true)
 	assert.NoError(t, err)
 
 	claims, err := svc.ValidateToken(token)
@@ -369,6 +375,7 @@ func TestService_TokenClaims(t *testing.T) {
 	// Verify all claims
 	assert.Equal(t, userID, claims.UserID)
 	assert.Equal(t, email, claims.Email)
+	assert.Equal(t, fullName, claims.FullName)
 	assert.True(t, claims.IsSuperuser)
 	assert.Equal(t, "home-warehouse", claims.Issuer)
 	assert.Equal(t, userID.String(), claims.Subject)

@@ -451,7 +451,7 @@ export default function LoansPage() {
       if (!workspaceId) {
         return { items: [], total: 0, page: 1, total_pages: 0 };
       }
-      return await loansApi.list({ page, limit: 50 });
+      return await loansApi.list(workspaceId!, { page, limit: 50 });
     },
     pageSize: 50,
     dependencies: [workspaceId],
@@ -463,7 +463,7 @@ export default function LoansPage() {
     if (!workspaceId) return;
 
     try {
-      const data = await borrowersApi.list({ limit: 500 });
+      const data = await borrowersApi.list(workspaceId!, { limit: 100 });
       setBorrowers(data.items.filter(b => !b.is_archived));
     } catch (error) {
       console.error("Failed to load borrowers:", error);
@@ -475,7 +475,7 @@ export default function LoansPage() {
     if (!workspaceId) return;
 
     try {
-      const response = await itemsApi.list({ limit: 500 });
+      const response = await itemsApi.list(workspaceId, { limit: 100 });
       setItems(response.items.filter(item => !item.is_archived));
     } catch (error) {
       console.error("Failed to load items:", error);
@@ -490,7 +490,7 @@ export default function LoansPage() {
     }
 
     try {
-      const data = await inventoryApi.getAvailable(itemId);
+      const data = await inventoryApi.getAvailable(workspaceId!, itemId);
       setAvailableInventory(data);
     } catch (error) {
       console.error("Failed to load available inventory:", error);
@@ -698,7 +698,7 @@ export default function LoansPage() {
 
     try {
       setIsProcessing(true);
-      await loansApi.return(returningLoan.id);
+      await loansApi.return(workspaceId!, returningLoan.id);
       toast.success("Loan returned successfully");
       setReturnDialogOpen(false);
       setReturningLoan(null);
@@ -728,7 +728,7 @@ export default function LoansPage() {
     try {
       // Return all selected loans
       await Promise.all(
-        selectedIdsArray.map((id) => loansApi.return(id))
+        selectedIdsArray.map((id) => loansApi.return(workspaceId!, id))
       );
 
       toast.success(
@@ -749,7 +749,7 @@ export default function LoansPage() {
 
     try {
       setIsProcessing(true);
-      await loansApi.extend(extendingLoan.id, { new_due_date: newDueDate });
+      await loansApi.extend(workspaceId!, extendingLoan.id, { new_due_date: newDueDate });
       toast.success("Due date extended successfully");
       setExtendDialogOpen(false);
       setExtendingLoan(null);
@@ -783,7 +783,7 @@ export default function LoansPage() {
 
     try {
       setIsProcessing(true);
-      await loansApi.create({
+      await loansApi.create(workspaceId!, {
         inventory_id: formInventoryId,
         borrower_id: formBorrowerId,
         quantity: formQuantity,

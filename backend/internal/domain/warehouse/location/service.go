@@ -2,11 +2,20 @@ package location
 
 import (
 	"context"
+	"crypto/rand"
+	"encoding/base32"
 
 	"github.com/google/uuid"
 
 	"github.com/antti/home-warehouse/go-backend/internal/shared"
 )
+
+// generateShortCode generates a random 8-character alphanumeric short code.
+func generateShortCode() string {
+	b := make([]byte, 5) // 5 bytes = 40 bits, base32 encodes to 8 chars
+	rand.Read(b)
+	return base32.StdEncoding.WithPadding(base32.NoPadding).EncodeToString(b)
+}
 
 // ServiceInterface defines the location service operations.
 type ServiceInterface interface {
@@ -30,24 +39,45 @@ func NewService(repo Repository) *Service {
 }
 
 type CreateInput struct {
-	WorkspaceID                              uuid.UUID
-	Name                                     string
-	ParentLocation                           *uuid.UUID
-	Zone, Shelf, Bin, Description, ShortCode *string
+	WorkspaceID    uuid.UUID
+	Name           string
+	ParentLocation *uuid.UUID
+	Description    *string
+	ShortCode      string // Optional - will be auto-generated if empty
 }
 
 func (s *Service) Create(ctx context.Context, input CreateInput) (*Location, error) {
-	if input.ShortCode != nil && *input.ShortCode != "" {
-		exists, err := s.repo.ShortCodeExists(ctx, input.WorkspaceID, *input.ShortCode)
+	shortCode := input.ShortCode
+
+	if shortCode != "" {
+		// User provided a short code - check uniqueness
+		exists, err := s.repo.ShortCodeExists(ctx, input.WorkspaceID, shortCode)
 		if err != nil {
 			return nil, err
 		}
 		if exists {
 			return nil, ErrShortCodeTaken
 		}
+	} else {
+		// Auto-generate a unique short code
+		const maxAttempts = 10
+		for i := 0; i < maxAttempts; i++ {
+			code := generateShortCode()
+			exists, err := s.repo.ShortCodeExists(ctx, input.WorkspaceID, code)
+			if err != nil {
+				return nil, err
+			}
+			if !exists {
+				shortCode = code
+				break
+			}
+		}
+		if shortCode == "" {
+			return nil, shared.NewDomainError(shared.ErrInternal, "failed to generate unique short code")
+		}
 	}
 
-	location, err := NewLocation(input.WorkspaceID, input.Name, input.ParentLocation, input.Zone, input.Shelf, input.Bin, input.Description, input.ShortCode)
+	location, err := NewLocation(input.WorkspaceID, input.Name, input.ParentLocation, input.Description, shortCode)
 	if err != nil {
 		return nil, err
 	}
@@ -83,9 +113,6 @@ func (s *Service) ListByWorkspace(ctx context.Context, workspaceID uuid.UUID, pa
 type UpdateInput struct {
 	Name           string
 	ParentLocation *uuid.UUID
-	Zone           *string
-	Shelf          *string
-	Bin            *string
 	Description    *string
 }
 
@@ -95,7 +122,7 @@ func (s *Service) Update(ctx context.Context, id, workspaceID uuid.UUID, input U
 		return nil, err
 	}
 
-	if err := location.Update(input.Name, input.ParentLocation, input.Zone, input.Shelf, input.Bin, input.Description); err != nil {
+	if err := location.Update(input.Name, input.ParentLocation, input.Description); err != nil {
 		return nil, err
 	}
 
@@ -139,7 +166,7 @@ func (s *Service) Delete(ctx context.Context, id, workspaceID uuid.UUID) error {
 type BreadcrumbItem struct {
 	ID        uuid.UUID
 	Name      string
-	ShortCode *string
+	ShortCode string
 }
 
 // GetBreadcrumb returns the breadcrumb trail from root to the specified location.

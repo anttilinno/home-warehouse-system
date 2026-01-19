@@ -15,13 +15,13 @@ type Container struct {
 	locationID  uuid.UUID
 	description *string
 	capacity    *string
-	shortCode   *string
+	shortCode   string
 	isArchived  bool
 	createdAt   time.Time
 	updatedAt   time.Time
 }
 
-func NewContainer(workspaceID, locationID uuid.UUID, name string, description, capacity, shortCode *string) (*Container, error) {
+func NewContainer(workspaceID, locationID uuid.UUID, name string, description, capacity *string, shortCode string) (*Container, error) {
 	if err := shared.ValidateUUID(workspaceID, "workspace_id"); err != nil {
 		return nil, err
 	}
@@ -30,6 +30,9 @@ func NewContainer(workspaceID, locationID uuid.UUID, name string, description, c
 	}
 	if name == "" {
 		return nil, shared.NewFieldError(shared.ErrInvalidInput, "name", "container name is required")
+	}
+	if shortCode == "" {
+		return nil, shared.NewFieldError(shared.ErrInvalidInput, "short_code", "short code is required")
 	}
 
 	now := time.Now()
@@ -47,7 +50,7 @@ func NewContainer(workspaceID, locationID uuid.UUID, name string, description, c
 	}, nil
 }
 
-func Reconstruct(id, workspaceID, locationID uuid.UUID, name string, description, capacity, shortCode *string, isArchived bool, createdAt, updatedAt time.Time) *Container {
+func Reconstruct(id, workspaceID, locationID uuid.UUID, name string, description, capacity *string, shortCode string, isArchived bool, createdAt, updatedAt time.Time) *Container {
 	return &Container{id, workspaceID, name, locationID, description, capacity, shortCode, isArchived, createdAt, updatedAt}
 }
 
@@ -57,7 +60,7 @@ func (c *Container) Name() string           { return c.name }
 func (c *Container) LocationID() uuid.UUID  { return c.locationID }
 func (c *Container) Description() *string   { return c.description }
 func (c *Container) Capacity() *string      { return c.capacity }
-func (c *Container) ShortCode() *string     { return c.shortCode }
+func (c *Container) ShortCode() string      { return c.shortCode }
 func (c *Container) IsArchived() bool       { return c.isArchived }
 func (c *Container) CreatedAt() time.Time   { return c.createdAt }
 func (c *Container) UpdatedAt() time.Time   { return c.updatedAt }

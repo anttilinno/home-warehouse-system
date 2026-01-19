@@ -12,7 +12,7 @@ import { useRouter } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { authApi } from "@/lib/api";
+import { useAuth } from "@/lib/contexts/auth-context";
 
 const signupSchema = z
   .object({
@@ -51,6 +51,7 @@ function PasswordRequirement({
 export function SignupForm() {
   const t = useTranslations("auth");
   const router = useRouter();
+  const { register: authRegister } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -76,20 +77,16 @@ export function SignupForm() {
     setIsLoading(true);
 
     try {
-      console.log("Registering user...");
-      await authApi.register({
+      await authRegister({
         full_name: data.fullName,
         email: data.email,
         password: data.password,
       });
 
-      console.log("Registration successful");
-
       toast.success("Account created successfully!", {
         description: "Welcome to Home Warehouse System",
       });
 
-      console.log("Redirecting to dashboard...");
       // Redirect to dashboard
       router.push("/dashboard");
     } catch (err) {

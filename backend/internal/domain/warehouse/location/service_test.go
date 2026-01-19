@@ -64,6 +64,14 @@ func (m *MockRepository) ShortCodeExists(ctx context.Context, workspaceID uuid.U
 	return args.Bool(0), args.Error(1)
 }
 
+func (m *MockRepository) Search(ctx context.Context, workspaceID uuid.UUID, query string, limit int) ([]*Location, error) {
+	args := m.Called(ctx, workspaceID, query, limit)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).([]*Location), args.Error(1)
+}
+
 func ptrString(s string) *string {
 	return &s
 }
@@ -85,11 +93,8 @@ func TestNewLocation(t *testing.T) {
 		workspaceID    uuid.UUID
 		locationName   string
 		parentLocation *uuid.UUID
-		zone           *string
-		shelf          *string
-		bin            *string
 		description    *string
-		shortCode      *string
+		shortCode      string
 		expectError    bool
 		errorField     string
 	}{
@@ -98,23 +103,8 @@ func TestNewLocation(t *testing.T) {
 			workspaceID:    workspaceID,
 			locationName:   "Warehouse A",
 			parentLocation: &parentID,
-			zone:           ptrString("Zone 1"),
-			shelf:          ptrString("Shelf A"),
-			bin:            ptrString("Bin 01"),
 			description:    ptrString("Main storage area"),
-			shortCode:      ptrString("WHA"),
-			expectError:    false,
-		},
-		{
-			testName:       "root location without parent",
-			workspaceID:    workspaceID,
-			locationName:   "Main Warehouse",
-			parentLocation: nil,
-			zone:           nil,
-			shelf:          nil,
-			bin:            nil,
-			description:    ptrString("Root location"),
-			shortCode:      nil,
+			shortCode:      "WHA",
 			expectError:    false,
 		},
 		{
@@ -122,11 +112,8 @@ func TestNewLocation(t *testing.T) {
 			workspaceID:    uuid.Nil,
 			locationName:   "Warehouse A",
 			parentLocation: nil,
-			zone:           nil,
-			shelf:          nil,
-			bin:            nil,
 			description:    nil,
-			shortCode:      nil,
+			shortCode:      "WHA2",
 			expectError:    true,
 			errorField:     "workspace_id",
 		},
@@ -135,19 +122,26 @@ func TestNewLocation(t *testing.T) {
 			workspaceID:    workspaceID,
 			locationName:   "",
 			parentLocation: nil,
-			zone:           nil,
-			shelf:          nil,
-			bin:            nil,
 			description:    nil,
-			shortCode:      nil,
+			shortCode:      "WHA3",
 			expectError:    true,
 			errorField:     "name",
+		},
+		{
+			testName:       "empty short code",
+			workspaceID:    workspaceID,
+			locationName:   "Test",
+			parentLocation: nil,
+			description:    nil,
+			shortCode:      "",
+			expectError:    true,
+			errorField:     "short_code",
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.testName, func(t *testing.T) {
-			location, err := NewLocation(tt.workspaceID, tt.locationName, tt.parentLocation, tt.zone, tt.shelf, tt.bin, tt.description, tt.shortCode)
+			location, err := NewLocation(tt.workspaceID, tt.locationName, tt.parentLocation, tt.description, tt.shortCode)
 
 			if tt.expectError {
 				assert.Error(t, err)
@@ -161,9 +155,6 @@ func TestNewLocation(t *testing.T) {
 				assert.Equal(t, tt.workspaceID, location.WorkspaceID())
 				assert.Equal(t, tt.locationName, location.Name())
 				assert.Equal(t, tt.parentLocation, location.ParentLocation())
-				assert.Equal(t, tt.zone, location.Zone())
-				assert.Equal(t, tt.shelf, location.Shelf())
-				assert.Equal(t, tt.bin, location.Bin())
 				assert.Equal(t, tt.description, location.Description())
 				assert.Equal(t, tt.shortCode, location.ShortCode())
 				assert.False(t, location.IsArchived())
@@ -183,11 +174,8 @@ func TestReconstruct(t *testing.T) {
 		workspaceID,
 		"Warehouse A",
 		&parentID,
-		ptrString("Zone 1"),
-		ptrString("Shelf A"),
-		ptrString("Bin 01"),
 		ptrString("Description"),
-		ptrString("WHA"),
+		"WHA",
 		true,
 		now,
 		now,
@@ -197,11 +185,8 @@ func TestReconstruct(t *testing.T) {
 	assert.Equal(t, workspaceID, location.WorkspaceID())
 	assert.Equal(t, "Warehouse A", location.Name())
 	assert.Equal(t, &parentID, location.ParentLocation())
-	assert.Equal(t, "Zone 1", *location.Zone())
-	assert.Equal(t, "Shelf A", *location.Shelf())
-	assert.Equal(t, "Bin 01", *location.Bin())
 	assert.Equal(t, "Description", *location.Description())
-	assert.Equal(t, "WHA", *location.ShortCode())
+	assert.Equal(t, "WHA", location.ShortCode())
 	assert.True(t, location.IsArchived())
 	assert.Equal(t, now, location.CreatedAt())
 	assert.Equal(t, now, location.UpdatedAt())
@@ -209,31 +194,28 @@ func TestReconstruct(t *testing.T) {
 
 func TestLocation_Update(t *testing.T) {
 	parentID := uuid.New()
-	location, err := NewLocation(uuid.New(), "Original Name", &parentID, nil, nil, nil, nil, nil)
+	location, err := NewLocation(uuid.New(), "Original Name", &parentID, nil, "TESTCODE")
 	assert.NoError(t, err)
 
 	originalUpdatedAt := location.UpdatedAt()
 
 	// Update with valid data
 	newParentID := uuid.New()
-	err = location.Update("Updated Name", &newParentID, ptrString("New Zone"), ptrString("New Shelf"), ptrString("New Bin"), ptrString("New Description"))
+	err = location.Update("Updated Name", &newParentID, ptrString("New Description"))
 	assert.NoError(t, err)
 	assert.Equal(t, "Updated Name", location.Name())
 	assert.Equal(t, &newParentID, location.ParentLocation())
-	assert.Equal(t, "New Zone", *location.Zone())
-	assert.Equal(t, "New Shelf", *location.Shelf())
-	assert.Equal(t, "New Bin", *location.Bin())
 	assert.Equal(t, "New Description", *location.Description())
 	assert.True(t, location.UpdatedAt().After(originalUpdatedAt))
 
 	// Update with empty name
-	err = location.Update("", nil, nil, nil, nil, nil)
+	err = location.Update("", nil, nil)
 	assert.Error(t, err)
 	assert.Equal(t, "Updated Name", location.Name()) // Should not change
 }
 
 func TestLocation_Archive(t *testing.T) {
-	location, err := NewLocation(uuid.New(), "Test Location", nil, nil, nil, nil, nil, nil)
+	location, err := NewLocation(uuid.New(), "Test Location", nil, nil, "ARCHTEST")
 	assert.NoError(t, err)
 
 	assert.False(t, location.IsArchived())
@@ -246,7 +228,7 @@ func TestLocation_Archive(t *testing.T) {
 }
 
 func TestLocation_Restore(t *testing.T) {
-	location, err := NewLocation(uuid.New(), "Test Location", nil, nil, nil, nil, nil, nil)
+	location, err := NewLocation(uuid.New(), "Test Location", nil, nil, "RESTTEST")
 	assert.NoError(t, err)
 
 	location.Archive()
@@ -279,9 +261,8 @@ func TestService_Create(t *testing.T) {
 			input: CreateInput{
 				WorkspaceID: workspaceID,
 				Name:        "Warehouse A",
-				Zone:        ptrString("Zone 1"),
-				Shelf:       ptrString("Shelf A"),
-				ShortCode:   ptrString("WHA"),
+				Description: ptrString("Main storage"),
+				ShortCode:   "WHA",
 			},
 			setupMock: func(m *MockRepository) {
 				m.On("ShortCodeExists", ctx, workspaceID, "WHA").Return(false, nil)
@@ -290,14 +271,15 @@ func TestService_Create(t *testing.T) {
 			expectError: false,
 		},
 		{
-			testName: "creation without short code",
+			testName: "creation without short code - auto generates",
 			input: CreateInput{
 				WorkspaceID: workspaceID,
 				Name:        "Warehouse B",
-				Zone:        ptrString("Zone 2"),
+				Description: ptrString("Secondary storage"),
+				ShortCode:   "", // Empty triggers auto-generation
 			},
 			setupMock: func(m *MockRepository) {
-				// No ShortCodeExists call expected
+				m.On("ShortCodeExists", ctx, workspaceID, mock.AnythingOfType("string")).Return(false, nil)
 				m.On("Save", ctx, mock.AnythingOfType("*location.Location")).Return(nil)
 			},
 			expectError: false,
@@ -307,7 +289,7 @@ func TestService_Create(t *testing.T) {
 			input: CreateInput{
 				WorkspaceID: workspaceID,
 				Name:        "Warehouse C",
-				ShortCode:   ptrString("TAKEN"),
+				ShortCode:   "TAKEN",
 			},
 			setupMock: func(m *MockRepository) {
 				m.On("ShortCodeExists", ctx, workspaceID, "TAKEN").Return(true, nil)
@@ -320,10 +302,11 @@ func TestService_Create(t *testing.T) {
 			input: CreateInput{
 				WorkspaceID: uuid.Nil,
 				Name:        "Invalid Location",
+				ShortCode:   "", // Empty triggers auto-generation
 			},
 			setupMock: func(m *MockRepository) {
-				// ShortCodeExists not called due to validation failure
-				// Save not called due to entity creation failure
+				// Auto-generate short code first
+				m.On("ShortCodeExists", ctx, uuid.Nil, mock.AnythingOfType("string")).Return(false, nil)
 			},
 			expectError: true,
 		},
@@ -349,9 +332,7 @@ func TestService_Create(t *testing.T) {
 				assert.NotNil(t, location)
 				assert.Equal(t, tt.input.WorkspaceID, location.WorkspaceID())
 				assert.Equal(t, tt.input.Name, location.Name())
-				assert.Equal(t, tt.input.Zone, location.Zone())
-				assert.Equal(t, tt.input.Shelf, location.Shelf())
-				assert.Equal(t, tt.input.ShortCode, location.ShortCode())
+				assert.Equal(t, tt.input.Description, location.Description())
 			}
 
 			mockRepo.AssertExpectations(t)
@@ -566,9 +547,9 @@ func TestService_GetBreadcrumb(t *testing.T) {
 	parentID := uuid.New()
 	childID := uuid.New()
 
-	rootLocation := &Location{id: rootID, workspaceID: workspaceID, name: "Root", parentLocation: nil, shortCode: ptrString("ROOT")}
-	parentLocation := &Location{id: parentID, workspaceID: workspaceID, name: "Parent", parentLocation: &rootID, shortCode: ptrString("PARENT")}
-	childLocation := &Location{id: childID, workspaceID: workspaceID, name: "Child", parentLocation: &parentID, shortCode: nil}
+	rootLocation := &Location{id: rootID, workspaceID: workspaceID, name: "Root", parentLocation: nil, shortCode: "ROOT"}
+	parentLocation := &Location{id: parentID, workspaceID: workspaceID, name: "Parent", parentLocation: &rootID, shortCode: "PARENT"}
+	childLocation := &Location{id: childID, workspaceID: workspaceID, name: "Child", parentLocation: &parentID, shortCode: "CHILD"}
 
 	tests := []struct {
 		name           string
@@ -665,7 +646,7 @@ func TestService_GetBreadcrumb_IncludesShortCode(t *testing.T) {
 		id:          locationID,
 		workspaceID: workspaceID,
 		name:        "Warehouse A",
-		shortCode:   ptrString("WHA"),
+		shortCode:   "WHA",
 	}
 
 	mockRepo := new(MockRepository)
@@ -678,8 +659,7 @@ func TestService_GetBreadcrumb_IncludesShortCode(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Len(t, breadcrumb, 1)
 	assert.Equal(t, "Warehouse A", breadcrumb[0].Name)
-	assert.NotNil(t, breadcrumb[0].ShortCode)
-	assert.Equal(t, "WHA", *breadcrumb[0].ShortCode)
+	assert.Equal(t, "WHA", breadcrumb[0].ShortCode)
 
 	mockRepo.AssertExpectations(t)
 }
@@ -704,7 +684,6 @@ func TestService_Update(t *testing.T) {
 
 		result, err := svc.Update(ctx, locationID, workspaceID, UpdateInput{
 			Name:        "Updated Name",
-			Zone:        ptrString("Zone A"),
 			Description: ptrString("Updated desc"),
 		})
 
@@ -849,7 +828,7 @@ func TestService_Create_ErrorPaths(t *testing.T) {
 		location, err := svc.Create(ctx, CreateInput{
 			WorkspaceID: workspaceID,
 			Name:        "Test",
-			ShortCode:   ptrString("CODE"),
+			ShortCode:   "CODE",
 		})
 
 		assert.Error(t, err)
@@ -862,6 +841,7 @@ func TestService_Create_ErrorPaths(t *testing.T) {
 		mockRepo := new(MockRepository)
 		svc := NewService(mockRepo)
 
+		mockRepo.On("ShortCodeExists", ctx, workspaceID, mock.AnythingOfType("string")).Return(false, nil)
 		mockRepo.On("Save", ctx, mock.AnythingOfType("*location.Location")).Return(repoErr)
 
 		location, err := svc.Create(ctx, CreateInput{

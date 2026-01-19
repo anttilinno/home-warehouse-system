@@ -285,7 +285,7 @@ export default function ContainersPage() {
       if (!workspaceId) {
         return { items: [], total: 0, page: 1, total_pages: 0 };
       }
-      return await containersApi.list({ page, limit: 50 });
+      return await containersApi.list(workspaceId, { page, limit: 50 });
     },
     pageSize: 50,
     dependencies: [workspaceId],
@@ -297,7 +297,7 @@ export default function ContainersPage() {
     if (!workspaceId) return;
 
     try {
-      const response = await locationsApi.list({ limit: 500 });
+      const response = await locationsApi.list(workspaceId, { limit: 100 });
       setLocations(response.items.filter(loc => !loc.is_archived));
     } catch (error) {
       console.error("Failed to load locations:", error);
@@ -374,6 +374,12 @@ export default function ContainersPage() {
     });
   }, [containers, showArchived, debouncedSearchQuery, locations, getFilter]);
 
+  // Helper to get location name by ID
+  const getLocationName = (locationId: string) => {
+    const location = locations.find((l) => l.id === locationId);
+    return location?.name || "Unknown";
+  };
+
   // Flatten container data for sorting (add location name)
   const flattenedContainers = useMemo(() => {
     return filteredContainers.map(container => ({
@@ -440,11 +446,6 @@ export default function ContainersPage() {
     ignoreInputFields: true,
   });
 
-  const getLocationName = (locationId: string) => {
-    const location = locations.find((l) => l.id === locationId);
-    return location?.name || "Unknown";
-  };
-
   // Export columns definition
   const exportColumns: ColumnDefinition<Container>[] = useMemo(() => [
     { key: "name", label: "Name" },
@@ -497,7 +498,7 @@ export default function ContainersPage() {
           description: formDescription || undefined,
           capacity: formCapacity || undefined,
         };
-        await containersApi.update(editingContainer.id, updateData);
+        await containersApi.update(workspaceId!, editingContainer.id, updateData);
         toast.success("Container updated successfully");
       } else {
         // Create new container
@@ -508,7 +509,7 @@ export default function ContainersPage() {
           capacity: formCapacity || undefined,
           short_code: formShortCode || undefined,
         };
-        await containersApi.create(createData);
+        await containersApi.create(workspaceId!, createData);
         toast.success("Container created successfully");
       }
 
@@ -525,12 +526,13 @@ export default function ContainersPage() {
   };
 
   const handleArchive = async (container: Container) => {
+    if (!workspaceId) return;
     try {
       if (container.is_archived) {
-        await containersApi.restore(container.id);
+        await containersApi.restore(workspaceId, container.id);
         toast.success("Container restored successfully");
       } else {
-        await containersApi.archive(container.id);
+        await containersApi.archive(workspaceId, container.id);
         toast.success("Container archived successfully");
       }
       refetch();
@@ -578,8 +580,8 @@ export default function ContainersPage() {
       await Promise.all(
         selectedIdsArray.map((id) => {
           const container = sortedContainers.find((c) => c.id === id);
-          if (!container) return Promise.resolve();
-          return isRestoring ? containersApi.restore(id) : containersApi.archive(id);
+          if (!container || !workspaceId) return Promise.resolve();
+          return isRestoring ? containersApi.restore(workspaceId, id) : containersApi.archive(workspaceId, id);
         })
       );
 
@@ -597,10 +599,10 @@ export default function ContainersPage() {
   };
 
   const handleDelete = async () => {
-    if (!deletingContainer) return;
+    if (!deletingContainer || !workspaceId) return;
 
     try {
-      await containersApi.delete(deletingContainer.id);
+      await containersApi.delete(workspaceId, deletingContainer.id);
       toast.success("Container deleted successfully");
       setDeleteDialogOpen(false);
       setDeletingContainer(null);

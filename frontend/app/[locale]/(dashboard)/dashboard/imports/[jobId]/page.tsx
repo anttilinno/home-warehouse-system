@@ -1,18 +1,20 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import { useQuery } from "@tanstack/react-query";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { formatDistanceToNow, format } from "date-fns";
 import { ArrowLeft, AlertCircle, Loader2 } from "lucide-react";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { useWorkspace } from "@/lib/hooks/use-workspace";
+import { toast } from "sonner";
+import { apiClient } from "@/lib/api/client";
 
 interface ImportJob {
   id: string;
@@ -35,7 +37,7 @@ interface ImportError {
   row_number: number;
   field_name: string | null;
   error_message: string;
-  row_data: Record<string, any>;
+  row_data: Record<string, unknown>;
 }
 
 interface ImportErrorsResponse {
@@ -45,55 +47,85 @@ interface ImportErrorsResponse {
 
 export default function ImportJobDetailPage() {
   const params = useParams();
-  const { workspace } = useWorkspace();
+  const { workspaceId, isLoading: workspaceLoading } = useWorkspace();
   const jobId = params.jobId as string;
 
   const [job, setJob] = useState<ImportJob | null>(null);
+  const [errorsData, setErrorsData] = useState<ImportErrorsResponse | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [isLive, setIsLive] = useState(false);
 
-  // Fetch initial job data
-  const { data: initialData, isLoading } = useQuery<ImportJob>({
-    queryKey: ["import-job", workspace?.slug, jobId],
-    queryFn: async () => {
+  // Fetch job data
+  const fetchJob = useCallback(async () => {
+    if (!workspaceId || !jobId) return;
+
+    try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/workspace/${workspace?.slug}/imports/jobs/${jobId}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/workspaces/${workspaceId}/imports/jobs/${jobId}`,
         { credentials: "include" }
       );
       if (!response.ok) throw new Error("Failed to fetch job");
-      return response.json();
-    },
-    enabled: !!workspace?.slug && !!jobId,
-  });
+      const data = await response.json();
+      setJob(data);
+      return data;
+    } catch (err) {
+      toast.error("Failed to load import job", {
+        description: err instanceof Error ? err.message : "Unknown error",
+      });
+      return null;
+    } finally {
+      setIsLoading(false);
+    }
+  }, [workspaceId, jobId]);
 
   // Fetch errors
-  const { data: errorsData } = useQuery<ImportErrorsResponse>({
-    queryKey: ["import-errors", workspace?.slug, jobId],
-    queryFn: async () => {
+  const fetchErrors = useCallback(async () => {
+    if (!workspaceId || !jobId) return;
+
+    try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/workspace/${workspace?.slug}/imports/jobs/${jobId}/errors`,
+        `${process.env.NEXT_PUBLIC_API_URL}/workspaces/${workspaceId}/imports/jobs/${jobId}/errors`,
         { credentials: "include" }
       );
-      if (!response.ok) return { errors: [], total: 0 };
-      return response.json();
-    },
-    enabled: !!workspace?.slug && !!jobId && !!job && (job.status === "completed" || job.status === "failed"),
-  });
+      if (!response.ok) return;
+      const data = await response.json();
+      setErrorsData(data);
+    } catch {
+      // Silently fail for errors fetch
+    }
+  }, [workspaceId, jobId]);
+
+  // Initial load
+  useEffect(() => {
+    if (workspaceId && jobId) {
+      fetchJob();
+    }
+  }, [workspaceId, jobId, fetchJob]);
+
+  // Fetch errors when job is completed/failed
+  useEffect(() => {
+    if (job && (job.status === "completed" || job.status === "failed")) {
+      fetchErrors();
+    }
+  }, [job?.status, fetchErrors]);
 
   // Set up SSE for real-time updates
   useEffect(() => {
-    if (!initialData || !workspace?.slug) return;
-    setJob(initialData);
+    if (!job || !workspaceId) return;
 
     // Only subscribe to SSE if job is pending or processing
-    if (initialData.status !== "pending" && initialData.status !== "processing") {
+    if (job.status !== "pending" && job.status !== "processing") {
       return;
     }
 
     setIsLive(true);
-    const eventSource = new EventSource(
-      `${process.env.NEXT_PUBLIC_API_URL}/workspace/${workspace.slug}/sse`,
-      { withCredentials: true }
-    );
+    // Include token as query param since EventSource can't send Authorization header
+    let sseUrl = `${process.env.NEXT_PUBLIC_API_URL}/workspaces/${workspaceId}/sse`;
+    const token = apiClient.getToken();
+    if (token) {
+      sseUrl += `?token=${encodeURIComponent(token)}`;
+    }
+    const eventSource = new EventSource(sseUrl, { withCredentials: true });
 
     eventSource.addEventListener("message", (event) => {
       try {
@@ -133,7 +165,7 @@ export default function ImportJobDetailPage() {
       eventSource.close();
       setIsLive(false);
     };
-  }, [initialData, workspace?.slug, jobId]);
+  }, [job?.status, workspaceId, jobId]);
 
   const calculateProgress = () => {
     if (!job?.total_rows || job.total_rows === 0) return 0;
@@ -146,10 +178,43 @@ export default function ImportJobDetailPage() {
     return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
   };
 
-  if (isLoading) {
+  if (workspaceLoading || isLoading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <Loader2 className="h-8 w-8 animate-spin" />
+      <div className="container mx-auto py-6 space-y-6">
+        <div className="flex items-center gap-4">
+          <Button variant="ghost" size="sm" asChild>
+            <Link href="/dashboard/imports">
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back to Imports
+            </Link>
+          </Button>
+        </div>
+
+        <div className="flex items-start justify-between">
+          <div className="space-y-2">
+            <Skeleton className="h-9 w-64" />
+            <Skeleton className="h-5 w-48" />
+          </div>
+          <Skeleton className="h-6 w-24" />
+        </div>
+
+        <Card>
+          <CardHeader>
+            <Skeleton className="h-6 w-24" />
+            <Skeleton className="h-4 w-48" />
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <Skeleton className="h-4 w-full" />
+            <div className="grid grid-cols-3 gap-4">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="space-y-1">
+                  <Skeleton className="h-4 w-20" />
+                  <Skeleton className="h-8 w-16" />
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
       </div>
     );
   }

@@ -31,6 +31,7 @@ import { Badge } from "@/components/ui/badge";
 import { UserMenu } from "./user-menu";
 import { useWorkspace } from "@/lib/hooks/use-workspace";
 import { pendingChangesApi } from "@/lib/api";
+import { pollingIntervals } from "@/lib/config/constants";
 
 interface SidebarProps {
   collapsed: boolean;
@@ -65,7 +66,7 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
     loadPendingCount();
 
     // Refresh every 30 seconds
-    const interval = setInterval(loadPendingCount, 30000);
+    const interval = setInterval(loadPendingCount, pollingIntervals.pendingCount);
     return () => clearInterval(interval);
   }, [workspaceId, canViewApprovals]);
 
@@ -86,7 +87,7 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
     loadMyPendingCount();
 
     // Refresh every 30 seconds
-    const interval = setInterval(loadMyPendingCount, 30000);
+    const interval = setInterval(loadMyPendingCount, pollingIntervals.pendingCount);
     return () => clearInterval(interval);
   }, [workspaceId]);
 
@@ -128,7 +129,10 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
   }: {
     item: { icon: typeof LayoutDashboard; label: string; href: string };
   }) => {
-    const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
+    // For /dashboard, only match exactly. For other routes, also match child paths.
+    const isActive = item.href === "/dashboard"
+      ? pathname === "/dashboard"
+      : pathname === item.href || pathname.startsWith(item.href + "/");
     const Icon = item.icon;
     const showApprovalsBadge = item.href === "/dashboard/approvals" && pendingCount > 0;
     const showMyChangesBadge = item.href === "/dashboard/my-changes" && myPendingCount > 0;

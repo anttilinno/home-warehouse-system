@@ -871,7 +871,7 @@ func TestService_GetByID(t *testing.T) {
 			invID:       invID,
 			workspaceID: workspaceID,
 			setupMock: func(m *MockRepository) {
-				m.On("FindByID", ctx, invID, workspaceID).Return(nil, nil)
+				m.On("FindByID", ctx, invID, workspaceID).Return(nil, ErrInventoryNotFound)
 			},
 			expectError: true,
 			errorType:   ErrInventoryNotFound,
@@ -964,7 +964,7 @@ func TestService_Update(t *testing.T) {
 				Condition:  ConditionGood,
 			},
 			setupMock: func(m *MockRepository) {
-				m.On("FindByID", ctx, mock.Anything, workspaceID).Return(nil, nil)
+				m.On("FindByID", ctx, mock.Anything, workspaceID).Return(nil, ErrInventoryNotFound)
 			},
 			expectError: true,
 			errorType:   ErrInventoryNotFound,
@@ -1078,7 +1078,7 @@ func TestService_UpdateStatus(t *testing.T) {
 			testName:  "inventory not found",
 			newStatus: StatusOnLoan,
 			setupMock: func(m *MockRepository) {
-				m.On("FindByID", ctx, invID, workspaceID).Return(nil, nil)
+				m.On("FindByID", ctx, invID, workspaceID).Return(nil, ErrInventoryNotFound)
 			},
 			expectError: true,
 			errorType:   ErrInventoryNotFound,
@@ -1175,7 +1175,7 @@ func TestService_UpdateQuantity(t *testing.T) {
 			testName:    "inventory not found",
 			newQuantity: 50,
 			setupMock: func(m *MockRepository) {
-				m.On("FindByID", ctx, invID, workspaceID).Return(nil, nil)
+				m.On("FindByID", ctx, invID, workspaceID).Return(nil, ErrInventoryNotFound)
 			},
 			expectError: true,
 			errorType:   ErrInventoryNotFound,
@@ -1281,7 +1281,7 @@ func TestService_Move(t *testing.T) {
 			newLocationID:  newLocationID,
 			newContainerID: nil,
 			setupMock: func(m *MockRepository) {
-				m.On("FindByID", ctx, invID, workspaceID).Return(nil, nil)
+				m.On("FindByID", ctx, invID, workspaceID).Return(nil, ErrInventoryNotFound)
 			},
 			expectError: true,
 			errorType:   ErrInventoryNotFound,
@@ -1362,7 +1362,7 @@ func TestService_Archive(t *testing.T) {
 		{
 			testName: "inventory not found",
 			setupMock: func(m *MockRepository) {
-				m.On("FindByID", ctx, invID, workspaceID).Return(nil, nil)
+				m.On("FindByID", ctx, invID, workspaceID).Return(nil, ErrInventoryNotFound)
 			},
 			expectError: true,
 			errorType:   ErrInventoryNotFound,
@@ -1438,7 +1438,7 @@ func TestService_Restore(t *testing.T) {
 		{
 			testName: "inventory not found",
 			setupMock: func(m *MockRepository) {
-				m.On("FindByID", ctx, invID, workspaceID).Return(nil, nil)
+				m.On("FindByID", ctx, invID, workspaceID).Return(nil, ErrInventoryNotFound)
 			},
 			expectError: true,
 			errorType:   ErrInventoryNotFound,

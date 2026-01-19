@@ -47,11 +47,33 @@ export function useWorkspace() {
     window.location.reload();
   };
 
+  // Check if the current user has a specific permission
+  const hasPermission = (permission: "view" | "edit" | "admin" | "owner"): boolean => {
+    if (!currentMember) return false;
+
+    const roleHierarchy: Record<WorkspaceMember["role"], number> = {
+      viewer: 1,
+      member: 2,
+      admin: 3,
+      owner: 4,
+    };
+
+    const permissionLevel: Record<typeof permission, number> = {
+      view: 1,
+      edit: 2,
+      admin: 3,
+      owner: 4,
+    };
+
+    return roleHierarchy[currentMember.role] >= permissionLevel[permission];
+  };
+
   return {
     workspaceId,
     workspace,
     currentMember,
     isLoading,
     switchWorkspace,
+    hasPermission,
   };
 }

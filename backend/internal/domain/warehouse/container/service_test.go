@@ -64,6 +64,14 @@ func (m *MockRepository) ShortCodeExists(ctx context.Context, workspaceID uuid.U
 	return args.Bool(0), args.Error(1)
 }
 
+func (m *MockRepository) Search(ctx context.Context, workspaceID uuid.UUID, query string, limit int) ([]*Container, error) {
+	args := m.Called(ctx, workspaceID, query, limit)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).([]*Container), args.Error(1)
+}
+
 func ptrString(s string) *string {
 	return &s
 }
@@ -83,7 +91,7 @@ func TestNewContainer(t *testing.T) {
 		name        string
 		description *string
 		capacity    *string
-		shortCode   *string
+		shortCode   string
 		expectError bool
 		errorField  string
 	}{
@@ -94,7 +102,7 @@ func TestNewContainer(t *testing.T) {
 			name:        "Box A1",
 			description: ptrString("Small storage box"),
 			capacity:    ptrString("50 items"),
-			shortCode:   ptrString("BA1"),
+			shortCode:   "BA1",
 			expectError: false,
 		},
 		{
@@ -104,8 +112,19 @@ func TestNewContainer(t *testing.T) {
 			name:        "Simple Box",
 			description: nil,
 			capacity:    nil,
-			shortCode:   nil,
+			shortCode:   "SIMPLE",
 			expectError: false,
+		},
+		{
+			testName:    "missing short code",
+			workspaceID: workspaceID,
+			locationID:  locationID,
+			name:        "Test Container",
+			description: nil,
+			capacity:    nil,
+			shortCode:   "",
+			expectError: true,
+			errorField:  "short_code",
 		},
 		{
 			testName:    "invalid workspace ID",
@@ -114,7 +133,7 @@ func TestNewContainer(t *testing.T) {
 			name:        "Test Container",
 			description: nil,
 			capacity:    nil,
-			shortCode:   nil,
+			shortCode:   "",
 			expectError: true,
 			errorField:  "workspace_id",
 		},
@@ -125,7 +144,7 @@ func TestNewContainer(t *testing.T) {
 			name:        "Test Container",
 			description: nil,
 			capacity:    nil,
-			shortCode:   nil,
+			shortCode:   "",
 			expectError: true,
 			errorField:  "location_id",
 		},
@@ -136,7 +155,7 @@ func TestNewContainer(t *testing.T) {
 			name:        "",
 			description: nil,
 			capacity:    nil,
-			shortCode:   nil,
+			shortCode:   "",
 			expectError: true,
 			errorField:  "name",
 		},
@@ -180,7 +199,7 @@ func TestReconstruct(t *testing.T) {
 		"Test Container",
 		ptrString("Description"),
 		ptrString("Capacity"),
-		ptrString("CODE"),
+		"CODE",
 		true,
 		now,
 		now,
@@ -192,14 +211,14 @@ func TestReconstruct(t *testing.T) {
 	assert.Equal(t, "Test Container", container.Name())
 	assert.Equal(t, "Description", *container.Description())
 	assert.Equal(t, "Capacity", *container.Capacity())
-	assert.Equal(t, "CODE", *container.ShortCode())
+	assert.Equal(t, "CODE", container.ShortCode())
 	assert.True(t, container.IsArchived())
 	assert.Equal(t, now, container.CreatedAt())
 	assert.Equal(t, now, container.UpdatedAt())
 }
 
 func TestContainer_Update(t *testing.T) {
-	container, err := NewContainer(uuid.New(), uuid.New(), "Original Name", nil, nil, nil)
+	container, err := NewContainer(uuid.New(), uuid.New(), "Original Name", nil, nil, "ORIG")
 	assert.NoError(t, err)
 
 	originalUpdatedAt := container.UpdatedAt()
@@ -220,7 +239,7 @@ func TestContainer_Update(t *testing.T) {
 }
 
 func TestContainer_Archive(t *testing.T) {
-	container, err := NewContainer(uuid.New(), uuid.New(), "Test Container", nil, nil, nil)
+	container, err := NewContainer(uuid.New(), uuid.New(), "Test Container", nil, nil, "TEST")
 	assert.NoError(t, err)
 
 	assert.False(t, container.IsArchived())
@@ -256,7 +275,7 @@ func TestService_Create(t *testing.T) {
 				Name:        "Box A1",
 				Description: ptrString("Small box"),
 				Capacity:    ptrString("50 items"),
-				ShortCode:   ptrString("BA1"),
+				ShortCode:   "BA1",
 			},
 			setupMock: func(m *MockRepository) {
 				m.On("ShortCodeExists", ctx, workspaceID, "BA1").Return(false, nil)
@@ -265,14 +284,14 @@ func TestService_Create(t *testing.T) {
 			expectError: false,
 		},
 		{
-			testName: "creation without short code",
+			testName: "creation without short code auto-generates one",
 			input: CreateInput{
 				WorkspaceID: workspaceID,
 				LocationID:  locationID,
 				Name:        "Simple Box",
 			},
 			setupMock: func(m *MockRepository) {
-				// No ShortCodeExists call expected
+				m.On("ShortCodeExists", ctx, workspaceID, mock.AnythingOfType("string")).Return(false, nil)
 				m.On("Save", ctx, mock.AnythingOfType("*container.Container")).Return(nil)
 			},
 			expectError: false,
@@ -283,7 +302,7 @@ func TestService_Create(t *testing.T) {
 				WorkspaceID: workspaceID,
 				LocationID:  locationID,
 				Name:        "Box B1",
-				ShortCode:   ptrString("TAKEN"),
+				ShortCode:   "TAKEN",
 			},
 			setupMock: func(m *MockRepository) {
 				m.On("ShortCodeExists", ctx, workspaceID, "TAKEN").Return(true, nil)
@@ -299,7 +318,7 @@ func TestService_Create(t *testing.T) {
 				Name:        "Invalid Container",
 			},
 			setupMock: func(m *MockRepository) {
-				// ShortCodeExists not called due to validation failure
+				m.On("ShortCodeExists", ctx, uuid.Nil, mock.AnythingOfType("string")).Return(false, nil)
 				// Save not called due to entity creation failure
 			},
 			expectError: true,
@@ -329,7 +348,12 @@ func TestService_Create(t *testing.T) {
 				assert.Equal(t, tt.input.Name, container.Name())
 				assert.Equal(t, tt.input.Description, container.Description())
 				assert.Equal(t, tt.input.Capacity, container.Capacity())
-				assert.Equal(t, tt.input.ShortCode, container.ShortCode())
+				// Short code is either provided or auto-generated
+				if tt.input.ShortCode != "" {
+					assert.Equal(t, tt.input.ShortCode, container.ShortCode())
+				} else {
+					assert.NotEmpty(t, container.ShortCode())
+				}
 			}
 
 			mockRepo.AssertExpectations(t)
@@ -586,7 +610,7 @@ func TestService_Delete(t *testing.T) {
 }
 
 func TestContainer_Restore(t *testing.T) {
-	container, err := NewContainer(uuid.New(), uuid.New(), "Test", nil, nil, nil)
+	container, err := NewContainer(uuid.New(), uuid.New(), "Test", nil, nil, "TST")
 	assert.NoError(t, err)
 
 	container.Archive()
@@ -683,7 +707,7 @@ func TestService_Create_ErrorPaths(t *testing.T) {
 			WorkspaceID: workspaceID,
 			LocationID:  locationID,
 			Name:        "Test",
-			ShortCode:   ptrString("CODE"),
+			ShortCode:   "CODE",
 		})
 
 		assert.Error(t, err)
@@ -696,6 +720,7 @@ func TestService_Create_ErrorPaths(t *testing.T) {
 		mockRepo := new(MockRepository)
 		svc := NewService(mockRepo)
 
+		mockRepo.On("ShortCodeExists", ctx, workspaceID, mock.AnythingOfType("string")).Return(false, nil)
 		mockRepo.On("Save", ctx, mock.AnythingOfType("*container.Container")).Return(repoErr)
 
 		container, err := svc.Create(ctx, CreateInput{

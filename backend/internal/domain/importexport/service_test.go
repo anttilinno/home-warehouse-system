@@ -385,8 +385,7 @@ func TestService_Export_Locations(t *testing.T) {
 			ID:          locID,
 			WorkspaceID: workspaceID,
 			Name:        "Warehouse A",
-			Zone:        ptrString("Zone 1"),
-			Shelf:       ptrString("Shelf 1"),
+			Description: ptrString("Main storage"),
 			IsArchived:  false,
 			CreatedAt:   pgTimestamp(now),
 			UpdatedAt:   pgTimestamp(now),
@@ -409,7 +408,7 @@ func TestService_Export_Locations(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Len(t, locations, 1)
 	assert.Equal(t, "Warehouse A", locations[0].Name)
-	assert.Equal(t, "Zone 1", locations[0].Zone)
+	assert.Equal(t, "Main storage", locations[0].Description)
 
 	mockRepo.AssertExpectations(t)
 }
@@ -591,8 +590,7 @@ func TestService_Export_Locations_CSV(t *testing.T) {
 			ID:          locID,
 			WorkspaceID: workspaceID,
 			Name:        "Warehouse A",
-			Zone:        ptrString("Zone 1"),
-			Shelf:       ptrString("Shelf 1"),
+			Description: ptrString("Main storage"),
 			IsArchived:  false,
 			CreatedAt:   pgTimestamp(now),
 			UpdatedAt:   pgTimestamp(now),
@@ -1027,10 +1025,10 @@ func TestService_Import_Locations(t *testing.T) {
 	svc := NewService(mockRepo)
 
 	// Location without parent_location - no GetLocationByName calls expected
-	csvData := []byte("name,zone,shelf,bin,description\nWarehouse A,Zone 1,Shelf 1,Bin 1,Main storage")
+	csvData := []byte("name,description,short_code\nWarehouse A,Main storage,WH-A")
 
 	mockRepo.On("CreateLocation", ctx, mock.MatchedBy(func(p queries.CreateLocationParams) bool {
-		return p.Name == "Warehouse A" && *p.Zone == "Zone 1"
+		return p.Name == "Warehouse A" && *p.Description == "Main storage"
 	})).Return(queries.WarehouseLocation{}, nil)
 
 	result, err := svc.Import(ctx, workspaceID, EntityTypeLocation, FormatCSV, csvData)

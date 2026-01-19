@@ -198,8 +198,8 @@ export default function ApprovalsPage() {
       }
 
       const response = await pendingChangesApi.list(workspaceId, params);
-      setChanges(response.items);
-      setTotal(response.total);
+      setChanges(response.changes ?? []);
+      setTotal(response.total ?? 0);
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Failed to load pending changes";
       toast.error("Failed to load pending changes", {
@@ -227,12 +227,13 @@ export default function ApprovalsPage() {
 
   // Filter changes by search query
   const filteredChanges = useMemo(() => {
+    const safeChanges = changes ?? [];
     if (!debouncedSearchQuery.trim()) {
-      return changes;
+      return safeChanges;
     }
 
     const query = debouncedSearchQuery.toLowerCase();
-    return changes.filter(
+    return safeChanges.filter(
       (change) =>
         change.requester_name.toLowerCase().includes(query) ||
         change.entity_type.toLowerCase().includes(query) ||
@@ -241,7 +242,8 @@ export default function ApprovalsPage() {
     );
   }, [changes, debouncedSearchQuery]);
 
-  const pendingCount = changes.filter((c) => c.status === "pending").length;
+  const safeChanges = changes ?? [];
+  const pendingCount = safeChanges.filter((c) => c.status === "pending").length;
 
   if (workspaceLoading) {
     return (
@@ -366,7 +368,7 @@ export default function ApprovalsPage() {
                 <CheckCircle2 className="h-8 w-8 text-green-600" />
                 <div>
                   <div className="text-2xl font-bold">
-                    {changes.filter((c) => c.status === "approved").length}
+                    {safeChanges.filter((c) => c.status === "approved").length}
                   </div>
                   <div className="text-sm text-muted-foreground">{t("stats.approved")}</div>
                 </div>
@@ -375,7 +377,7 @@ export default function ApprovalsPage() {
                 <XCircle className="h-8 w-8 text-red-600" />
                 <div>
                   <div className="text-2xl font-bold">
-                    {changes.filter((c) => c.status === "rejected").length}
+                    {safeChanges.filter((c) => c.status === "rejected").length}
                   </div>
                   <div className="text-sm text-muted-foreground">{t("stats.rejected")}</div>
                 </div>

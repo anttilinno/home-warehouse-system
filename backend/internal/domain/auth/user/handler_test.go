@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"net/http/httptest"
 	"testing"
 
 	"github.com/google/uuid"
@@ -231,6 +232,16 @@ func TestUserHandler_Register(t *testing.T) {
 	})
 }
 
+// getCookie finds a cookie by name in the response
+func getCookie(rec *httptest.ResponseRecorder, name string) *http.Cookie {
+	for _, cookie := range rec.Result().Cookies() {
+		if cookie.Name == name {
+			return cookie
+		}
+	}
+	return nil
+}
+
 func TestUserHandler_Login(t *testing.T) {
 	setup := testutil.NewHandlerTestSetup()
 	mockSvc := new(MockService)
@@ -251,6 +262,47 @@ func TestUserHandler_Login(t *testing.T) {
 		mockSvc.AssertExpectations(t)
 	})
 
+	t.Run("sets auth cookies on successful login", func(t *testing.T) {
+		testUser, _ := user.NewUser("cookie@example.com", "Cookie User", "password123")
+
+		mockSvc.On("Authenticate", mock.Anything, "cookie@example.com", "password123").
+			Return(testUser, nil).Once()
+
+		body := `{"email":"cookie@example.com","password":"password123"}`
+		rec := setup.Post("/auth/login", body)
+
+		testutil.AssertStatus(t, rec, http.StatusOK)
+
+		// Check access_token cookie
+		accessCookie := getCookie(rec, "access_token")
+		if accessCookie == nil {
+			t.Fatal("access_token cookie not set")
+		}
+		if accessCookie.Value == "" {
+			t.Error("access_token cookie value is empty")
+		}
+		if !accessCookie.HttpOnly {
+			t.Error("access_token cookie should be HttpOnly")
+		}
+		if accessCookie.Path != "/" {
+			t.Errorf("access_token cookie path should be '/', got '%s'", accessCookie.Path)
+		}
+
+		// Check refresh_token cookie
+		refreshCookie := getCookie(rec, "refresh_token")
+		if refreshCookie == nil {
+			t.Fatal("refresh_token cookie not set")
+		}
+		if refreshCookie.Value == "" {
+			t.Error("refresh_token cookie value is empty")
+		}
+		if !refreshCookie.HttpOnly {
+			t.Error("refresh_token cookie should be HttpOnly")
+		}
+
+		mockSvc.AssertExpectations(t)
+	})
+
 	t.Run("returns 401 for invalid credentials", func(t *testing.T) {
 		mockSvc.On("Authenticate", mock.Anything, "test@example.com", "wrongpassword").
 			Return(nil, user.ErrInvalidPassword).Once()
@@ -260,6 +312,44 @@ func TestUserHandler_Login(t *testing.T) {
 
 		testutil.AssertStatus(t, rec, http.StatusUnauthorized)
 		mockSvc.AssertExpectations(t)
+	})
+}
+
+func TestUserHandler_Logout(t *testing.T) {
+	setup := testutil.NewHandlerTestSetup()
+	mockSvc := new(MockService)
+	jwtSvc := jwt.NewService("test-secret", 24)
+	handler := user.NewHandler(mockSvc, jwtSvc, nil)
+	handler.RegisterPublicRoutes(setup.API)
+
+	t.Run("clears auth cookies on logout", func(t *testing.T) {
+		rec := setup.Post("/auth/logout", "")
+
+		testutil.AssertStatus(t, rec, http.StatusNoContent)
+
+		// Check access_token cookie is cleared (MaxAge < 0)
+		accessCookie := getCookie(rec, "access_token")
+		if accessCookie == nil {
+			t.Fatal("access_token cookie not set")
+		}
+		if accessCookie.MaxAge >= 0 {
+			t.Errorf("access_token cookie MaxAge should be negative to clear, got %d", accessCookie.MaxAge)
+		}
+		if accessCookie.Value != "" {
+			t.Error("access_token cookie value should be empty")
+		}
+
+		// Check refresh_token cookie is cleared
+		refreshCookie := getCookie(rec, "refresh_token")
+		if refreshCookie == nil {
+			t.Fatal("refresh_token cookie not set")
+		}
+		if refreshCookie.MaxAge >= 0 {
+			t.Errorf("refresh_token cookie MaxAge should be negative to clear, got %d", refreshCookie.MaxAge)
+		}
+		if refreshCookie.Value != "" {
+			t.Error("refresh_token cookie value should be empty")
+		}
 	})
 }
 

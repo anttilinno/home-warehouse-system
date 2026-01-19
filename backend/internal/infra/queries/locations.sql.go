@@ -24,9 +24,9 @@ func (q *Queries) ArchiveLocation(ctx context.Context, id uuid.UUID) error {
 }
 
 const createLocation = `-- name: CreateLocation :one
-INSERT INTO warehouse.locations (id, workspace_id, name, parent_location, zone, shelf, bin, description, short_code)
-VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-RETURNING id, workspace_id, name, parent_location, zone, shelf, bin, description, short_code, is_archived, search_vector, created_at, updated_at
+INSERT INTO warehouse.locations (id, workspace_id, name, parent_location, description, short_code)
+VALUES ($1, $2, $3, $4, $5, $6)
+RETURNING id, workspace_id, name, parent_location, description, short_code, is_archived, search_vector, created_at, updated_at
 `
 
 type CreateLocationParams struct {
@@ -34,11 +34,8 @@ type CreateLocationParams struct {
 	WorkspaceID    uuid.UUID   `json:"workspace_id"`
 	Name           string      `json:"name"`
 	ParentLocation pgtype.UUID `json:"parent_location"`
-	Zone           *string     `json:"zone"`
-	Shelf          *string     `json:"shelf"`
-	Bin            *string     `json:"bin"`
 	Description    *string     `json:"description"`
-	ShortCode      *string     `json:"short_code"`
+	ShortCode      string      `json:"short_code"`
 }
 
 func (q *Queries) CreateLocation(ctx context.Context, arg CreateLocationParams) (WarehouseLocation, error) {
@@ -47,9 +44,6 @@ func (q *Queries) CreateLocation(ctx context.Context, arg CreateLocationParams) 
 		arg.WorkspaceID,
 		arg.Name,
 		arg.ParentLocation,
-		arg.Zone,
-		arg.Shelf,
-		arg.Bin,
 		arg.Description,
 		arg.ShortCode,
 	)
@@ -59,9 +53,6 @@ func (q *Queries) CreateLocation(ctx context.Context, arg CreateLocationParams) 
 		&i.WorkspaceID,
 		&i.Name,
 		&i.ParentLocation,
-		&i.Zone,
-		&i.Shelf,
-		&i.Bin,
 		&i.Description,
 		&i.ShortCode,
 		&i.IsArchived,
@@ -82,7 +73,7 @@ func (q *Queries) DeleteLocation(ctx context.Context, id uuid.UUID) error {
 }
 
 const getLocation = `-- name: GetLocation :one
-SELECT id, workspace_id, name, parent_location, zone, shelf, bin, description, short_code, is_archived, search_vector, created_at, updated_at FROM warehouse.locations
+SELECT id, workspace_id, name, parent_location, description, short_code, is_archived, search_vector, created_at, updated_at FROM warehouse.locations
 WHERE id = $1 AND workspace_id = $2
 `
 
@@ -99,9 +90,6 @@ func (q *Queries) GetLocation(ctx context.Context, arg GetLocationParams) (Wareh
 		&i.WorkspaceID,
 		&i.Name,
 		&i.ParentLocation,
-		&i.Zone,
-		&i.Shelf,
-		&i.Bin,
 		&i.Description,
 		&i.ShortCode,
 		&i.IsArchived,
@@ -113,13 +101,13 @@ func (q *Queries) GetLocation(ctx context.Context, arg GetLocationParams) (Wareh
 }
 
 const getLocationByShortCode = `-- name: GetLocationByShortCode :one
-SELECT id, workspace_id, name, parent_location, zone, shelf, bin, description, short_code, is_archived, search_vector, created_at, updated_at FROM warehouse.locations
+SELECT id, workspace_id, name, parent_location, description, short_code, is_archived, search_vector, created_at, updated_at FROM warehouse.locations
 WHERE workspace_id = $1 AND short_code = $2
 `
 
 type GetLocationByShortCodeParams struct {
 	WorkspaceID uuid.UUID `json:"workspace_id"`
-	ShortCode   *string   `json:"short_code"`
+	ShortCode   string    `json:"short_code"`
 }
 
 func (q *Queries) GetLocationByShortCode(ctx context.Context, arg GetLocationByShortCodeParams) (WarehouseLocation, error) {
@@ -130,9 +118,6 @@ func (q *Queries) GetLocationByShortCode(ctx context.Context, arg GetLocationByS
 		&i.WorkspaceID,
 		&i.Name,
 		&i.ParentLocation,
-		&i.Zone,
-		&i.Shelf,
-		&i.Bin,
 		&i.Description,
 		&i.ShortCode,
 		&i.IsArchived,
@@ -144,7 +129,7 @@ func (q *Queries) GetLocationByShortCode(ctx context.Context, arg GetLocationByS
 }
 
 const listLocations = `-- name: ListLocations :many
-SELECT id, workspace_id, name, parent_location, zone, shelf, bin, description, short_code, is_archived, search_vector, created_at, updated_at FROM warehouse.locations
+SELECT id, workspace_id, name, parent_location, description, short_code, is_archived, search_vector, created_at, updated_at FROM warehouse.locations
 WHERE workspace_id = $1 AND is_archived = false
 ORDER BY name
 LIMIT $2 OFFSET $3
@@ -170,9 +155,6 @@ func (q *Queries) ListLocations(ctx context.Context, arg ListLocationsParams) ([
 			&i.WorkspaceID,
 			&i.Name,
 			&i.ParentLocation,
-			&i.Zone,
-			&i.Shelf,
-			&i.Bin,
 			&i.Description,
 			&i.ShortCode,
 			&i.IsArchived,
@@ -191,7 +173,7 @@ func (q *Queries) ListLocations(ctx context.Context, arg ListLocationsParams) ([
 }
 
 const listLocationsByParent = `-- name: ListLocationsByParent :many
-SELECT id, workspace_id, name, parent_location, zone, shelf, bin, description, short_code, is_archived, search_vector, created_at, updated_at FROM warehouse.locations
+SELECT id, workspace_id, name, parent_location, description, short_code, is_archived, search_vector, created_at, updated_at FROM warehouse.locations
 WHERE workspace_id = $1 AND parent_location = $2 AND is_archived = false
 ORDER BY name
 `
@@ -215,9 +197,6 @@ func (q *Queries) ListLocationsByParent(ctx context.Context, arg ListLocationsBy
 			&i.WorkspaceID,
 			&i.Name,
 			&i.ParentLocation,
-			&i.Zone,
-			&i.Shelf,
-			&i.Bin,
 			&i.Description,
 			&i.ShortCode,
 			&i.IsArchived,
@@ -236,7 +215,7 @@ func (q *Queries) ListLocationsByParent(ctx context.Context, arg ListLocationsBy
 }
 
 const listRootLocations = `-- name: ListRootLocations :many
-SELECT id, workspace_id, name, parent_location, zone, shelf, bin, description, short_code, is_archived, search_vector, created_at, updated_at FROM warehouse.locations
+SELECT id, workspace_id, name, parent_location, description, short_code, is_archived, search_vector, created_at, updated_at FROM warehouse.locations
 WHERE workspace_id = $1 AND parent_location IS NULL AND is_archived = false
 ORDER BY name
 `
@@ -255,9 +234,6 @@ func (q *Queries) ListRootLocations(ctx context.Context, workspaceID uuid.UUID) 
 			&i.WorkspaceID,
 			&i.Name,
 			&i.ParentLocation,
-			&i.Zone,
-			&i.Shelf,
-			&i.Bin,
 			&i.Description,
 			&i.ShortCode,
 			&i.IsArchived,
@@ -287,7 +263,7 @@ func (q *Queries) RestoreLocation(ctx context.Context, id uuid.UUID) error {
 }
 
 const searchLocations = `-- name: SearchLocations :many
-SELECT id, workspace_id, name, parent_location, zone, shelf, bin, description, short_code, is_archived, search_vector, created_at, updated_at FROM warehouse.locations
+SELECT id, workspace_id, name, parent_location, description, short_code, is_archived, search_vector, created_at, updated_at FROM warehouse.locations
 WHERE workspace_id = $1
   AND is_archived = false
   AND search_vector @@ plainto_tsquery('english', $2)
@@ -315,9 +291,6 @@ func (q *Queries) SearchLocations(ctx context.Context, arg SearchLocationsParams
 			&i.WorkspaceID,
 			&i.Name,
 			&i.ParentLocation,
-			&i.Zone,
-			&i.Shelf,
-			&i.Bin,
 			&i.Description,
 			&i.ShortCode,
 			&i.IsArchived,
@@ -344,7 +317,7 @@ SELECT EXISTS(
 
 type ShortCodeExistsParams struct {
 	WorkspaceID uuid.UUID `json:"workspace_id"`
-	ShortCode   *string   `json:"short_code"`
+	ShortCode   string    `json:"short_code"`
 }
 
 func (q *Queries) ShortCodeExists(ctx context.Context, arg ShortCodeExistsParams) (bool, error) {
@@ -356,18 +329,15 @@ func (q *Queries) ShortCodeExists(ctx context.Context, arg ShortCodeExistsParams
 
 const updateLocation = `-- name: UpdateLocation :one
 UPDATE warehouse.locations
-SET name = $2, parent_location = $3, zone = $4, shelf = $5, bin = $6, description = $7, updated_at = now()
+SET name = $2, parent_location = $3, description = $4, updated_at = now()
 WHERE id = $1
-RETURNING id, workspace_id, name, parent_location, zone, shelf, bin, description, short_code, is_archived, search_vector, created_at, updated_at
+RETURNING id, workspace_id, name, parent_location, description, short_code, is_archived, search_vector, created_at, updated_at
 `
 
 type UpdateLocationParams struct {
 	ID             uuid.UUID   `json:"id"`
 	Name           string      `json:"name"`
 	ParentLocation pgtype.UUID `json:"parent_location"`
-	Zone           *string     `json:"zone"`
-	Shelf          *string     `json:"shelf"`
-	Bin            *string     `json:"bin"`
 	Description    *string     `json:"description"`
 }
 
@@ -376,9 +346,6 @@ func (q *Queries) UpdateLocation(ctx context.Context, arg UpdateLocationParams) 
 		arg.ID,
 		arg.Name,
 		arg.ParentLocation,
-		arg.Zone,
-		arg.Shelf,
-		arg.Bin,
 		arg.Description,
 	)
 	var i WarehouseLocation
@@ -387,9 +354,6 @@ func (q *Queries) UpdateLocation(ctx context.Context, arg UpdateLocationParams) 
 		&i.WorkspaceID,
 		&i.Name,
 		&i.ParentLocation,
-		&i.Zone,
-		&i.Shelf,
-		&i.Bin,
 		&i.Description,
 		&i.ShortCode,
 		&i.IsArchived,

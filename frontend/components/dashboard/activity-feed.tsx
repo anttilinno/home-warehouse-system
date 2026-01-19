@@ -189,8 +189,8 @@ function ActivityLogEntry({
 
 function formatActivityEvent(event: SSEEvent): ActivityEvent {
   const action = event.type.split('.')[1];
-  const entityName = event.data?.name || event.entity_type;
-  const userName = event.data?.user_name || 'Someone';
+  const entityName = (typeof event.data?.name === 'string' ? event.data.name : event.entity_type);
+  const userName = (typeof event.data?.user_name === 'string' ? event.data.user_name : 'Someone');
 
   // Action templates with icons and colors
   const templates: Record<string, { message: string; icon: string; color: string }> = {

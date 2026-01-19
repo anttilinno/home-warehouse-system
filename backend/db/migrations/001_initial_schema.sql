@@ -59,6 +59,26 @@ CREATE TYPE warehouse.activity_entity_enum AS ENUM (
     'ITEM', 'INVENTORY', 'LOCATION', 'CONTAINER', 'CATEGORY', 'LABEL', 'LOAN', 'BORROWER'
 );
 
+CREATE TYPE warehouse.import_entity_enum AS ENUM (
+    'items',
+    'inventory',
+    'locations',
+    'containers',
+    'categories',
+    'borrowers'
+);
+
+CREATE TYPE warehouse.import_status_enum AS ENUM (
+    'pending',
+    'processing',
+    'completed',
+    'failed',
+    'cancelled'
+);
+
+CREATE TYPE warehouse.pending_change_action_enum AS ENUM ('create', 'update', 'delete');
+CREATE TYPE warehouse.pending_change_status_enum AS ENUM ('pending', 'approved', 'rejected');
+
 -- ============================================================================
 -- Auth Schema Tables
 -- ============================================================================
@@ -270,11 +290,8 @@ CREATE TABLE warehouse.locations (
     workspace_id uuid NOT NULL REFERENCES auth.workspaces(id) ON DELETE CASCADE,
     name VARCHAR(100) NOT NULL,
     parent_location uuid REFERENCES warehouse.locations(id) ON DELETE SET NULL,
-    zone VARCHAR(50),
-    shelf VARCHAR(50),
-    bin VARCHAR(50),
     description TEXT,
-    short_code VARCHAR(8),
+    short_code VARCHAR(8) NOT NULL,
     is_archived BOOLEAN NOT NULL DEFAULT false,
     search_vector TSVECTOR,
     created_at TIMESTAMPTZ DEFAULT now(),
@@ -283,12 +300,12 @@ CREATE TABLE warehouse.locations (
 );
 
 COMMENT ON COLUMN warehouse.locations.short_code IS
-'Short alphanumeric code for QR labels. Unique within workspace. Enables compact URLs for small label printers.';
+'Short alphanumeric code for QR labels. Unique within workspace. Auto-generated if not provided.';
 
 CREATE INDEX ix_locations_workspace ON warehouse.locations(workspace_id);
 CREATE INDEX ix_locations_name ON warehouse.locations(name);
 CREATE INDEX ix_locations_parent_location ON warehouse.locations(parent_location);
-CREATE INDEX ix_locations_short_code ON warehouse.locations(short_code) WHERE short_code IS NOT NULL;
+CREATE INDEX ix_locations_short_code ON warehouse.locations(short_code);
 CREATE INDEX ix_locations_search ON warehouse.locations USING GIN(search_vector);
 CREATE INDEX ix_locations_active ON warehouse.locations(workspace_id, parent_location)
     WHERE is_archived = false;
@@ -301,7 +318,7 @@ CREATE TABLE warehouse.containers (
     location_id uuid NOT NULL REFERENCES warehouse.locations(id) ON DELETE CASCADE,
     description TEXT,
     capacity VARCHAR(100),
-    short_code VARCHAR(8),
+    short_code VARCHAR(8) NOT NULL,
     is_archived BOOLEAN NOT NULL DEFAULT false,
     search_vector TSVECTOR,
     created_at TIMESTAMPTZ DEFAULT now(),
@@ -310,12 +327,12 @@ CREATE TABLE warehouse.containers (
 );
 
 COMMENT ON COLUMN warehouse.containers.short_code IS
-'Short alphanumeric code for QR labels. Unique within workspace. Enables compact URLs for small label printers.';
+'Short alphanumeric code for QR labels. Unique within workspace. Auto-generated if not provided.';
 
 CREATE INDEX ix_containers_workspace ON warehouse.containers(workspace_id);
 CREATE INDEX ix_containers_name ON warehouse.containers(name);
 CREATE INDEX ix_containers_location_id ON warehouse.containers(location_id);
-CREATE INDEX ix_containers_short_code ON warehouse.containers(short_code) WHERE short_code IS NOT NULL;
+CREATE INDEX ix_containers_short_code ON warehouse.containers(short_code);
 CREATE INDEX ix_containers_search ON warehouse.containers USING GIN(search_vector);
 CREATE INDEX ix_containers_active ON warehouse.containers(workspace_id, location_id)
     WHERE is_archived = false;
@@ -375,7 +392,7 @@ CREATE TABLE warehouse.items (
     warranty_details TEXT,
     purchased_from uuid REFERENCES warehouse.companies(id) ON DELETE SET NULL,
     min_stock_level INTEGER NOT NULL DEFAULT 0,
-    short_code VARCHAR(8),
+    short_code VARCHAR(8) NOT NULL,
     obsidian_vault_path VARCHAR(500),
     obsidian_note_path VARCHAR(500),
     search_vector tsvector GENERATED ALWAYS AS (
@@ -392,7 +409,7 @@ CREATE TABLE warehouse.items (
 );
 
 COMMENT ON COLUMN warehouse.items.short_code IS
-'Short alphanumeric code for QR labels. Unique within workspace. Enables compact URLs for small label printers.';
+'Short alphanumeric code for QR labels. Unique within workspace. Auto-generated if not provided.';
 
 COMMENT ON COLUMN warehouse.items.barcode IS
 'UPC/EAN/other product barcode for scanning.';
@@ -409,7 +426,7 @@ COMMENT ON COLUMN warehouse.items.obsidian_note_path IS
 CREATE INDEX ix_items_workspace ON warehouse.items(workspace_id);
 CREATE INDEX ix_items_name ON warehouse.items(name);
 CREATE INDEX ix_items_category_id ON warehouse.items(category_id);
-CREATE INDEX ix_items_short_code ON warehouse.items(short_code) WHERE short_code IS NOT NULL;
+CREATE INDEX ix_items_short_code ON warehouse.items(short_code);
 CREATE INDEX ix_items_search ON warehouse.items USING gin(search_vector);
 CREATE INDEX ix_items_purchased_from ON warehouse.items(purchased_from) WHERE purchased_from IS NOT NULL;
 CREATE INDEX ix_items_barcode ON warehouse.items(workspace_id, barcode) WHERE barcode IS NOT NULL;
@@ -421,6 +438,30 @@ CREATE TABLE warehouse.item_labels (
     label_id uuid NOT NULL REFERENCES warehouse.labels(id) ON DELETE CASCADE,
     PRIMARY KEY (item_id, label_id)
 );
+
+-- Item photos
+CREATE TABLE warehouse.item_photos (
+    id UUID PRIMARY KEY DEFAULT uuidv7(),
+    item_id UUID NOT NULL REFERENCES warehouse.items(id) ON DELETE CASCADE,
+    workspace_id UUID NOT NULL REFERENCES auth.workspaces(id) ON DELETE CASCADE,
+    filename VARCHAR(255) NOT NULL,
+    storage_path VARCHAR(500) NOT NULL,
+    thumbnail_path VARCHAR(500) NOT NULL,
+    file_size BIGINT NOT NULL,
+    mime_type VARCHAR(100) NOT NULL,
+    width INTEGER NOT NULL,
+    height INTEGER NOT NULL,
+    display_order INTEGER NOT NULL DEFAULT 0,
+    is_primary BOOLEAN NOT NULL DEFAULT false,
+    caption TEXT,
+    uploaded_by UUID NOT NULL REFERENCES auth.users(id),
+    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_item_photos_item ON warehouse.item_photos(item_id, display_order);
+CREATE INDEX idx_item_photos_workspace ON warehouse.item_photos(workspace_id);
+CREATE UNIQUE INDEX idx_item_photos_primary ON warehouse.item_photos(item_id, is_primary) WHERE is_primary = true;
 
 -- Files (uploaded files storage metadata)
 CREATE TABLE warehouse.files (
@@ -520,6 +561,7 @@ CREATE TABLE warehouse.borrowers (
     phone VARCHAR(50),
     notes TEXT,
     is_archived BOOLEAN NOT NULL DEFAULT false,
+    search_vector TSVECTOR,
     created_at TIMESTAMPTZ DEFAULT now(),
     updated_at TIMESTAMPTZ DEFAULT now()
 );
@@ -527,6 +569,7 @@ CREATE TABLE warehouse.borrowers (
 CREATE INDEX ix_borrowers_workspace ON warehouse.borrowers(workspace_id);
 CREATE INDEX ix_borrowers_active ON warehouse.borrowers(workspace_id)
     WHERE is_archived = false;
+CREATE INDEX ix_borrowers_search ON warehouse.borrowers USING gin(search_vector);
 
 -- Loans (tracks inventory loans)
 CREATE TABLE warehouse.loans (
@@ -648,6 +691,70 @@ COMMENT ON TABLE warehouse.deleted_records IS
 CREATE INDEX ix_deleted_records_workspace ON warehouse.deleted_records(workspace_id);
 CREATE INDEX ix_deleted_records_workspace_since ON warehouse.deleted_records(workspace_id, deleted_at);
 
+-- Import jobs
+CREATE TABLE warehouse.import_jobs (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    workspace_id UUID NOT NULL REFERENCES auth.workspaces(id) ON DELETE CASCADE,
+    user_id UUID NOT NULL REFERENCES auth.users(id),
+    entity_type warehouse.import_entity_enum NOT NULL,
+    status warehouse.import_status_enum NOT NULL DEFAULT 'pending',
+    file_name VARCHAR(255) NOT NULL,
+    file_path TEXT NOT NULL,
+    file_size_bytes BIGINT NOT NULL,
+    total_rows INTEGER,
+    processed_rows INTEGER NOT NULL DEFAULT 0,
+    success_count INTEGER NOT NULL DEFAULT 0,
+    error_count INTEGER NOT NULL DEFAULT 0,
+    started_at TIMESTAMPTZ,
+    completed_at TIMESTAMPTZ,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    error_message TEXT,
+
+    CONSTRAINT import_jobs_workspace_id_idx_check CHECK (workspace_id IS NOT NULL)
+);
+
+CREATE INDEX idx_import_jobs_workspace_id ON warehouse.import_jobs(workspace_id);
+CREATE INDEX idx_import_jobs_user_id ON warehouse.import_jobs(user_id);
+CREATE INDEX idx_import_jobs_status ON warehouse.import_jobs(status);
+CREATE INDEX idx_import_jobs_created_at ON warehouse.import_jobs(created_at DESC);
+
+-- Import errors
+CREATE TABLE warehouse.import_errors (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    import_job_id UUID NOT NULL REFERENCES warehouse.import_jobs(id) ON DELETE CASCADE,
+    row_number INTEGER NOT NULL,
+    field_name VARCHAR(255),
+    error_message TEXT NOT NULL,
+    row_data JSONB,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+
+    CONSTRAINT import_errors_import_job_id_idx_check CHECK (import_job_id IS NOT NULL)
+);
+
+CREATE INDEX idx_import_errors_import_job_id ON warehouse.import_errors(import_job_id);
+
+-- Pending changes (approval pipeline for member role)
+CREATE TABLE warehouse.pending_changes (
+    id UUID PRIMARY KEY DEFAULT uuidv7(),
+    workspace_id UUID NOT NULL REFERENCES auth.workspaces(id) ON DELETE CASCADE,
+    requester_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+    entity_type VARCHAR(50) NOT NULL,
+    entity_id UUID,
+    action warehouse.pending_change_action_enum NOT NULL,
+    payload JSONB NOT NULL,
+    status warehouse.pending_change_status_enum NOT NULL DEFAULT 'pending',
+    reviewed_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    reviewed_at TIMESTAMPTZ,
+    rejection_reason TEXT,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX idx_pending_changes_workspace_status ON warehouse.pending_changes (workspace_id, status);
+CREATE INDEX idx_pending_changes_requester ON warehouse.pending_changes (requester_id);
+CREATE INDEX idx_pending_changes_entity ON warehouse.pending_changes (entity_type, entity_id);
+
 -- ============================================================================
 -- Search Vector Triggers
 -- ============================================================================
@@ -659,9 +766,6 @@ BEGIN
     NEW.search_vector := to_tsvector('english',
         coalesce(NEW.name, '') || ' ' ||
         coalesce(NEW.description, '') || ' ' ||
-        coalesce(NEW.zone, '') || ' ' ||
-        coalesce(NEW.shelf, '') || ' ' ||
-        coalesce(NEW.bin, '') || ' ' ||
         coalesce(NEW.short_code, '')
     );
     RETURN NEW;
@@ -688,6 +792,24 @@ $$ LANGUAGE plpgsql;
 CREATE TRIGGER trg_containers_search_vector
     BEFORE INSERT OR UPDATE ON warehouse.containers
     FOR EACH ROW EXECUTE FUNCTION warehouse.containers_search_vector_update();
+
+-- Trigger function for borrowers search vector
+CREATE OR REPLACE FUNCTION warehouse.update_borrower_search_vector()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.search_vector :=
+        setweight(to_tsvector('english', coalesce(NEW.name, '')), 'A') ||
+        setweight(to_tsvector('english', coalesce(NEW.email, '')), 'B') ||
+        setweight(to_tsvector('english', coalesce(NEW.phone, '')), 'B') ||
+        setweight(to_tsvector('english', coalesce(NEW.notes, '')), 'C');
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trgr_borrowers_search_vector
+BEFORE INSERT OR UPDATE ON warehouse.borrowers
+FOR EACH ROW
+EXECUTE FUNCTION warehouse.update_borrower_search_vector();
 
 -- ============================================================================
 -- Loan Quantity Validation Trigger

@@ -25,7 +25,7 @@ func (q *Queries) ArchiveBorrower(ctx context.Context, id uuid.UUID) error {
 const createBorrower = `-- name: CreateBorrower :one
 INSERT INTO warehouse.borrowers (id, workspace_id, name, email, phone, notes)
 VALUES ($1, $2, $3, $4, $5, $6)
-RETURNING id, workspace_id, name, email, phone, notes, is_archived, created_at, updated_at, search_vector
+RETURNING id, workspace_id, name, email, phone, notes, is_archived, search_vector, created_at, updated_at
 `
 
 type CreateBorrowerParams struct {
@@ -55,15 +55,15 @@ func (q *Queries) CreateBorrower(ctx context.Context, arg CreateBorrowerParams) 
 		&i.Phone,
 		&i.Notes,
 		&i.IsArchived,
+		&i.SearchVector,
 		&i.CreatedAt,
 		&i.UpdatedAt,
-		&i.SearchVector,
 	)
 	return i, err
 }
 
 const getBorrower = `-- name: GetBorrower :one
-SELECT id, workspace_id, name, email, phone, notes, is_archived, created_at, updated_at, search_vector FROM warehouse.borrowers
+SELECT id, workspace_id, name, email, phone, notes, is_archived, search_vector, created_at, updated_at FROM warehouse.borrowers
 WHERE id = $1 AND workspace_id = $2
 `
 
@@ -83,9 +83,9 @@ func (q *Queries) GetBorrower(ctx context.Context, arg GetBorrowerParams) (Wareh
 		&i.Phone,
 		&i.Notes,
 		&i.IsArchived,
+		&i.SearchVector,
 		&i.CreatedAt,
 		&i.UpdatedAt,
-		&i.SearchVector,
 	)
 	return i, err
 }
@@ -105,7 +105,7 @@ func (q *Queries) HasActiveLoans(ctx context.Context, borrowerID uuid.UUID) (boo
 }
 
 const listBorrowers = `-- name: ListBorrowers :many
-SELECT id, workspace_id, name, email, phone, notes, is_archived, created_at, updated_at, search_vector FROM warehouse.borrowers
+SELECT id, workspace_id, name, email, phone, notes, is_archived, search_vector, created_at, updated_at FROM warehouse.borrowers
 WHERE workspace_id = $1 AND is_archived = false
 ORDER BY name
 LIMIT $2 OFFSET $3
@@ -134,9 +134,9 @@ func (q *Queries) ListBorrowers(ctx context.Context, arg ListBorrowersParams) ([
 			&i.Phone,
 			&i.Notes,
 			&i.IsArchived,
+			&i.SearchVector,
 			&i.CreatedAt,
 			&i.UpdatedAt,
-			&i.SearchVector,
 		); err != nil {
 			return nil, err
 		}
@@ -160,7 +160,7 @@ func (q *Queries) RestoreBorrower(ctx context.Context, id uuid.UUID) error {
 }
 
 const searchBorrowers = `-- name: SearchBorrowers :many
-SELECT id, workspace_id, name, email, phone, notes, is_archived, created_at, updated_at, search_vector FROM warehouse.borrowers
+SELECT id, workspace_id, name, email, phone, notes, is_archived, search_vector, created_at, updated_at FROM warehouse.borrowers
 WHERE workspace_id = $1
   AND is_archived = false
   AND search_vector @@ plainto_tsquery('english', $2)
@@ -191,9 +191,9 @@ func (q *Queries) SearchBorrowers(ctx context.Context, arg SearchBorrowersParams
 			&i.Phone,
 			&i.Notes,
 			&i.IsArchived,
+			&i.SearchVector,
 			&i.CreatedAt,
 			&i.UpdatedAt,
-			&i.SearchVector,
 		); err != nil {
 			return nil, err
 		}
@@ -209,7 +209,7 @@ const updateBorrower = `-- name: UpdateBorrower :one
 UPDATE warehouse.borrowers
 SET name = $2, email = $3, phone = $4, notes = $5, updated_at = now()
 WHERE id = $1
-RETURNING id, workspace_id, name, email, phone, notes, is_archived, created_at, updated_at, search_vector
+RETURNING id, workspace_id, name, email, phone, notes, is_archived, search_vector, created_at, updated_at
 `
 
 type UpdateBorrowerParams struct {
@@ -237,9 +237,9 @@ func (q *Queries) UpdateBorrower(ctx context.Context, arg UpdateBorrowerParams) 
 		&i.Phone,
 		&i.Notes,
 		&i.IsArchived,
+		&i.SearchVector,
 		&i.CreatedAt,
 		&i.UpdatedAt,
-		&i.SearchVector,
 	)
 	return i, err
 }

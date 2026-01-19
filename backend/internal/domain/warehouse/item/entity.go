@@ -29,7 +29,7 @@ type Item struct {
 	warrantyDetails   *string
 	purchasedFrom     *uuid.UUID
 	minStockLevel     int
-	shortCode         *string
+	shortCode         string
 	obsidianVaultPath *string
 	obsidianNotePath  *string
 	createdAt         time.Time
@@ -77,7 +77,8 @@ func Reconstruct(
 	warrantyDetails *string,
 	purchasedFrom *uuid.UUID,
 	minStockLevel int,
-	shortCode, obsidianVaultPath, obsidianNotePath *string,
+	shortCode string,
+	obsidianVaultPath, obsidianNotePath *string,
 	createdAt, updatedAt time.Time,
 ) *Item {
 	return &Item{
@@ -126,7 +127,7 @@ func (i *Item) LifetimeWarranty() *bool    { return i.lifetimeWarranty }
 func (i *Item) WarrantyDetails() *string   { return i.warrantyDetails }
 func (i *Item) PurchasedFrom() *uuid.UUID  { return i.purchasedFrom }
 func (i *Item) MinStockLevel() int         { return i.minStockLevel }
-func (i *Item) ShortCode() *string         { return i.shortCode }
+func (i *Item) ShortCode() string          { return i.shortCode }
 func (i *Item) ObsidianVaultPath() *string { return i.obsidianVaultPath }
 func (i *Item) ObsidianNotePath() *string  { return i.obsidianNotePath }
 func (i *Item) CreatedAt() time.Time       { return i.createdAt }
@@ -185,7 +186,7 @@ func (i *Item) SetSKU(sku string) {
 }
 
 func (i *Item) SetShortCode(shortCode string) {
-	i.shortCode = &shortCode
+	i.shortCode = shortCode
 	i.updatedAt = time.Now()
 }
 

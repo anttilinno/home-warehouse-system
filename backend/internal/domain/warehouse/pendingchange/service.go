@@ -508,24 +508,17 @@ func (s *Service) applyLocationChange(ctx context.Context, change *PendingChange
 		var locationData struct {
 			Name           string     `json:"name"`
 			ParentLocation *uuid.UUID `json:"parent_location"`
-			Zone           *string    `json:"zone"`
-			Shelf          *string    `json:"shelf"`
-			Bin            *string    `json:"bin"`
 			Description    *string    `json:"description"`
-			ShortCode      *string    `json:"short_code"`
+			ShortCode      string     `json:"short_code"`
 		}
 		if err := json.Unmarshal(change.Payload(), &locationData); err != nil {
 			return fmt.Errorf("failed to unmarshal location payload: %w", err)
 		}
 
-		// NewLocation signature: (workspaceID, name, parentLocation, zone, shelf, bin, description, shortCode)
 		newLocation, err := location.NewLocation(
 			change.WorkspaceID(),
 			locationData.Name,
 			locationData.ParentLocation,
-			locationData.Zone,
-			locationData.Shelf,
-			locationData.Bin,
 			locationData.Description,
 			locationData.ShortCode,
 		)
@@ -550,16 +543,13 @@ func (s *Service) applyLocationChange(ctx context.Context, change *PendingChange
 		var updateData struct {
 			Name           string     `json:"name"`
 			ParentLocation *uuid.UUID `json:"parent_location"`
-			Zone           *string    `json:"zone"`
-			Shelf          *string    `json:"shelf"`
-			Bin            *string    `json:"bin"`
 			Description    *string    `json:"description"`
 		}
 		if err := json.Unmarshal(change.Payload(), &updateData); err != nil {
 			return fmt.Errorf("failed to unmarshal update payload: %w", err)
 		}
 
-		if err := existingLocation.Update(updateData.Name, updateData.ParentLocation, updateData.Zone, updateData.Shelf, updateData.Bin, updateData.Description); err != nil {
+		if err := existingLocation.Update(updateData.Name, updateData.ParentLocation, updateData.Description); err != nil {
 			return fmt.Errorf("failed to update location: %w", err)
 		}
 
@@ -592,13 +582,13 @@ func (s *Service) applyContainerChange(ctx context.Context, change *PendingChang
 			Name        string    `json:"name"`
 			Description *string   `json:"description"`
 			Capacity    *string   `json:"capacity"`
-			ShortCode   *string   `json:"short_code"`
+			ShortCode   string    `json:"short_code"`
 		}
 		if err := json.Unmarshal(change.Payload(), &containerData); err != nil {
 			return fmt.Errorf("failed to unmarshal container payload: %w", err)
 		}
 
-		// NewContainer signature: (workspaceID, locationID uuid.UUID, name string, description, capacity, shortCode *string)
+		// NewContainer signature: (workspaceID, locationID uuid.UUID, name string, description, capacity *string, shortCode string)
 		newContainer, err := container.NewContainer(
 			change.WorkspaceID(),
 			containerData.LocationID,

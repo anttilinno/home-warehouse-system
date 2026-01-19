@@ -1,5 +1,9 @@
 # Roadmap
 
+## Pre-Production Checklist
+
+- [ ] Remove dev-only login defaults (seeder@test.local) from `frontend/features/auth/components/login-form.tsx`
+
 ## Phase 1
 
 - [x] Workspaces for multi-user usage
@@ -99,17 +103,18 @@
 - [x] Item photos
   - [x] Upload photos for items (drag-and-drop, multi-file)
   - [x] Multiple photos per item with ordering
-  - [x] Automatic thumbnail generation (400x400)
+  - [x] Automatic thumbnail generation (small: 150px, medium: 400px, large: 800px)
   - [x] Primary photo designation
   - [x] Photo captions and editing
-  - [x] Photo viewer/lightbox
+  - [x] Photo viewer/lightbox with zoom and navigation
   - [x] Client-side compression before upload (>2MB auto-compressed)
-  - [x] PWA caching for offline photo viewing
-  - [x] Integration tests and documentation
-  - [ ] WebP thumbnail generation (requires schema changes)
+  - [x] PWA caching for offline photo viewing and upload queuing
+  - [x] Lazy loading with blur-up technique and intersection observer
+  - [x] Integration tests, service tests, and documentation
+  - [x] WebP format support (upload, decode, and thumbnail generation)
+  - [x] Admin cleanup tools (orphaned files, regenerate thumbnails, storage reports)
   - [ ] Background thumbnail processing worker
   - [ ] Bulk photo operations (delete, caption edit)
-  - [ ] Admin cleanup tools (orphaned files, regenerate thumbnails)
 - [x] Background import processing (Redis Queue + SSE)
   - [x] Backend infrastructure (Redis queue, worker process, CSV parser)
   - [x] Database schema (import_jobs, import_errors tables)

@@ -1,14 +1,16 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
+import { useState, useEffect, useCallback } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
+import { Skeleton } from "@/components/ui/skeleton";
 import { formatDistanceToNow } from "date-fns";
 import { FileText, Clock, CheckCircle2, XCircle, Loader2, Upload } from "lucide-react";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { useWorkspace } from "@/lib/hooks/use-workspace";
+import { toast } from "sonner";
 
 interface ImportJob {
   id: string;
@@ -32,23 +34,53 @@ interface ImportJobsResponse {
 }
 
 export default function ImportsPage() {
-  const { workspace } = useWorkspace();
+  const { workspaceId, isLoading: workspaceLoading } = useWorkspace();
+  const [data, setData] = useState<ImportJobsResponse | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
 
-  const { data, isLoading, error } = useQuery<ImportJobsResponse>({
-    queryKey: ["import-jobs", workspace?.slug],
-    queryFn: async () => {
+  const fetchJobs = useCallback(async () => {
+    if (!workspaceId) return;
+
+    try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/workspace/${workspace?.slug}/imports/jobs`,
+        `${process.env.NEXT_PUBLIC_API_URL}/workspaces/${workspaceId}/imports/jobs`,
         {
           credentials: "include",
         }
       );
       if (!response.ok) throw new Error("Failed to fetch import jobs");
-      return response.json();
-    },
-    enabled: !!workspace?.slug,
-    refetchInterval: 5000, // Refresh every 5 seconds
-  });
+      const result = await response.json();
+      setData(result);
+      setError(null);
+    } catch (err) {
+      const errorObj = err instanceof Error ? err : new Error("Failed to fetch import jobs");
+      setError(errorObj);
+      // Don't show toast for initial load errors - show inline error instead
+    } finally {
+      setIsLoading(false);
+    }
+  }, [workspaceId]);
+
+  useEffect(() => {
+    if (workspaceId) {
+      fetchJobs();
+    }
+  }, [workspaceId, fetchJobs]);
+
+  // Refresh every 5 seconds when there are active jobs
+  useEffect(() => {
+    if (!workspaceId) return;
+
+    const hasActiveJobs = data?.jobs.some(
+      (job) => job.status === "pending" || job.status === "processing"
+    );
+
+    if (hasActiveJobs) {
+      const interval = setInterval(fetchJobs, 5000);
+      return () => clearInterval(interval);
+    }
+  }, [workspaceId, data?.jobs, fetchJobs]);
 
   const getStatusIcon = (status: ImportJob["status"]) => {
     switch (status) {
@@ -85,18 +117,67 @@ export default function ImportsPage() {
     return Math.round((job.processed_rows / job.total_rows) * 100);
   };
 
-  if (isLoading) {
+  if (workspaceLoading || isLoading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <Loader2 className="h-8 w-8 animate-spin" />
+      <div className="container mx-auto py-6 space-y-6">
+        <div className="flex justify-between items-center">
+          <div>
+            <h1 className="text-3xl font-bold">Import Jobs</h1>
+            <p className="text-muted-foreground mt-2">
+              Manage and monitor your bulk import operations
+            </p>
+          </div>
+          <Skeleton className="h-10 w-32" />
+        </div>
+        <div className="grid gap-4">
+          {[1, 2, 3].map((i) => (
+            <Card key={i}>
+              <CardHeader className="pb-3">
+                <div className="flex items-start justify-between">
+                  <div className="flex items-center gap-3">
+                    <Skeleton className="h-4 w-4" />
+                    <div className="space-y-2">
+                      <Skeleton className="h-5 w-48" />
+                      <Skeleton className="h-4 w-32" />
+                    </div>
+                  </div>
+                  <Skeleton className="h-6 w-20" />
+                </div>
+              </CardHeader>
+              <CardContent>
+                <Skeleton className="h-4 w-full" />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <p className="text-red-600">Failed to load import jobs</p>
+      <div className="container mx-auto py-6 space-y-6">
+        <div className="flex justify-between items-center">
+          <div>
+            <h1 className="text-3xl font-bold">Import Jobs</h1>
+            <p className="text-muted-foreground mt-2">
+              Manage and monitor your bulk import operations
+            </p>
+          </div>
+        </div>
+
+        <Card>
+          <CardContent className="flex flex-col items-center justify-center py-12">
+            <FileText className="h-12 w-12 text-muted-foreground mb-4" />
+            <p className="text-lg font-medium">Import system unavailable</p>
+            <p className="text-sm text-muted-foreground mb-4 text-center max-w-md">
+              The import service is currently unavailable. This may happen if the background worker is not running.
+            </p>
+            <Button variant="outline" onClick={() => { setError(null); setIsLoading(true); fetchJobs(); }}>
+              Try Again
+            </Button>
+          </CardContent>
+        </Card>
       </div>
     );
   }

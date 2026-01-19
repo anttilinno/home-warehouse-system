@@ -57,7 +57,7 @@ func TestNewContainer(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			cont, err := container.NewContainer(tt.wsID, tt.locID, tt.contName, nil, nil, nil)
+			cont, err := container.NewContainer(tt.wsID, tt.locID, tt.contName, nil, nil, "CODE")
 
 			if tt.wantErr {
 				assert.Error(t, err)
@@ -80,7 +80,7 @@ func TestNewContainer(t *testing.T) {
 func TestContainer_Update(t *testing.T) {
 	workspaceID := uuid.New()
 	locationID := uuid.New()
-	cont, err := container.NewContainer(workspaceID, locationID, "Original", nil, nil, nil)
+	cont, err := container.NewContainer(workspaceID, locationID, "Original", nil, nil, "ORIG")
 	assert.NoError(t, err)
 
 	newName := "Updated Name"
@@ -96,7 +96,7 @@ func TestContainer_Update(t *testing.T) {
 func TestContainer_Update_EmptyName(t *testing.T) {
 	workspaceID := uuid.New()
 	locationID := uuid.New()
-	cont, err := container.NewContainer(workspaceID, locationID, "Original", nil, nil, nil)
+	cont, err := container.NewContainer(workspaceID, locationID, "Original", nil, nil, "ORIG")
 	assert.NoError(t, err)
 
 	err = cont.Update("", locationID, nil, nil)
@@ -108,7 +108,7 @@ func TestContainer_Update_EmptyName(t *testing.T) {
 func TestContainer_Archive(t *testing.T) {
 	workspaceID := uuid.New()
 	locationID := uuid.New()
-	cont, err := container.NewContainer(workspaceID, locationID, "Test", nil, nil, nil)
+	cont, err := container.NewContainer(workspaceID, locationID, "Test", nil, nil, "TST")
 	assert.NoError(t, err)
 
 	assert.False(t, cont.IsArchived())
@@ -121,7 +121,7 @@ func TestContainer_Archive(t *testing.T) {
 func TestContainer_Restore(t *testing.T) {
 	workspaceID := uuid.New()
 	locationID := uuid.New()
-	cont, err := container.NewContainer(workspaceID, locationID, "Test", nil, nil, nil)
+	cont, err := container.NewContainer(workspaceID, locationID, "Test", nil, nil, "TST")
 	assert.NoError(t, err)
 
 	cont.Archive()
@@ -148,7 +148,7 @@ func TestContainer_Reconstruct(t *testing.T) {
 		"Test Container",
 		&description,
 		&capacity,
-		&shortCode,
+		shortCode,
 		false,
 		now,
 		now,
@@ -161,6 +161,6 @@ func TestContainer_Reconstruct(t *testing.T) {
 	assert.Equal(t, "Test Container", cont.Name())
 	assert.Equal(t, &description, cont.Description())
 	assert.Equal(t, &capacity, cont.Capacity())
-	assert.Equal(t, &shortCode, cont.ShortCode())
+	assert.Equal(t, shortCode, cont.ShortCode())
 	assert.False(t, cont.IsArchived())
 }

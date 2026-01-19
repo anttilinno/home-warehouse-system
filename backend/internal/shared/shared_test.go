@@ -117,7 +117,7 @@ func TestDefaultPagination(t *testing.T) {
 	p := DefaultPagination()
 
 	assert.Equal(t, 1, p.Page)
-	assert.Equal(t, 20, p.PageSize)
+	assert.Equal(t, 50, p.PageSize)
 }
 
 func TestPagination_Offset_Page1(t *testing.T) {
@@ -154,12 +154,12 @@ func TestPagination_Limit_Normal(t *testing.T) {
 
 func TestPagination_Limit_TooSmall(t *testing.T) {
 	p := Pagination{Page: 1, PageSize: 0}
-	assert.Equal(t, 20, p.Limit()) // Default to 20
+	assert.Equal(t, 50, p.Limit()) // Default to 50
 }
 
 func TestPagination_Limit_Negative(t *testing.T) {
 	p := Pagination{Page: 1, PageSize: -10}
-	assert.Equal(t, 20, p.Limit()) // Default to 20
+	assert.Equal(t, 50, p.Limit()) // Default to 50
 }
 
 func TestPagination_Limit_TooLarge(t *testing.T) {

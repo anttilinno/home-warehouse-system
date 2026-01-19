@@ -73,7 +73,7 @@ func (r *ContainerRepository) FindByLocation(ctx context.Context, workspaceID, l
 func (r *ContainerRepository) FindByShortCode(ctx context.Context, workspaceID uuid.UUID, shortCode string) (*container.Container, error) {
 	row, err := r.queries.GetContainerByShortCode(ctx, queries.GetContainerByShortCodeParams{
 		WorkspaceID: workspaceID,
-		ShortCode:   &shortCode,
+		ShortCode:   shortCode,
 	})
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
@@ -110,7 +110,7 @@ func (r *ContainerRepository) Delete(ctx context.Context, id uuid.UUID) error {
 func (r *ContainerRepository) ShortCodeExists(ctx context.Context, workspaceID uuid.UUID, shortCode string) (bool, error) {
 	return r.queries.ContainerShortCodeExists(ctx, queries.ContainerShortCodeExistsParams{
 		WorkspaceID: workspaceID,
-		ShortCode:   &shortCode,
+		ShortCode:   shortCode,
 	})
 }
 

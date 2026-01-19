@@ -161,7 +161,7 @@ export default function BorrowersPage() {
       if (!workspaceId) {
         return { items: [], total: 0, page: 1, total_pages: 0 };
       }
-      return await borrowersApi.list({ page, limit: 50 });
+      return await borrowersApi.list(workspaceId, { page, limit: 50 });
     },
     pageSize: 50,
     dependencies: [workspaceId],
@@ -294,7 +294,7 @@ export default function BorrowersPage() {
           phone: formPhone || undefined,
           notes: formNotes || undefined,
         };
-        await borrowersApi.update(editingBorrower.id, updateData);
+        await borrowersApi.update(workspaceId!, editingBorrower.id, updateData);
         toast.success("Borrower updated successfully");
       } else {
         // Create new borrower
@@ -304,7 +304,7 @@ export default function BorrowersPage() {
           phone: formPhone || undefined,
           notes: formNotes || undefined,
         };
-        await borrowersApi.create(createData);
+        await borrowersApi.create(workspaceId!, createData);
         toast.success("Borrower created successfully");
       }
 
@@ -324,7 +324,7 @@ export default function BorrowersPage() {
     if (!deletingBorrower) return;
 
     try {
-      await borrowersApi.delete(deletingBorrower.id);
+      await borrowersApi.delete(workspaceId!, deletingBorrower.id);
       toast.success("Borrower deleted successfully");
       setDeleteDialogOpen(false);
       setDeletingBorrower(null);
@@ -344,7 +344,7 @@ export default function BorrowersPage() {
     value: string
   ) => {
     try {
-      await borrowersApi.update(borrowerId, { [field]: value });
+      await borrowersApi.update(workspaceId!, borrowerId, { [field]: value });
       toast.success("Updated successfully");
       refetch();
     } catch (error) {
@@ -396,7 +396,7 @@ export default function BorrowersPage() {
     try {
       // Archive all selected borrowers (soft delete)
       await Promise.all(
-        selectedIdsArray.map((id) => borrowersApi.delete(id))
+        selectedIdsArray.map((id) => borrowersApi.delete(workspaceId!, id))
       );
 
       toast.success(

@@ -20,7 +20,7 @@ func strPtr(s string) *string { return &s }
 // createTestLocation creates a location for container tests
 func createTestLocation(t *testing.T, repo *LocationRepository, ctx context.Context, name string) *location.Location {
 	t.Helper()
-	loc, err := location.NewLocation(testfixtures.TestWorkspaceID, name, nil, nil, nil, nil, nil, nil)
+	loc, err := location.NewLocation(testfixtures.TestWorkspaceID, name, nil, nil, "")
 	require.NoError(t, err)
 	err = repo.Save(ctx, loc)
 	require.NoError(t, err)
@@ -40,7 +40,7 @@ func TestContainerRepository_Save(t *testing.T) {
 	t.Run("saves new container successfully", func(t *testing.T) {
 		loc := createTestLocation(t, locRepo, ctx, "Warehouse A")
 
-		c, err := container.NewContainer(testfixtures.TestWorkspaceID, loc.ID(), "Box 1", nil, nil, nil)
+		c, err := container.NewContainer(testfixtures.TestWorkspaceID, loc.ID(), "Box 1", nil, nil, "")
 		require.NoError(t, err)
 
 		err = repo.Save(ctx, c)
@@ -62,7 +62,7 @@ func TestContainerRepository_Save(t *testing.T) {
 		capacity := "50"
 		shortCode := "BOX-001"
 
-		c, err := container.NewContainer(testfixtures.TestWorkspaceID, loc.ID(), "Big Box", &desc, &capacity, &shortCode)
+		c, err := container.NewContainer(testfixtures.TestWorkspaceID, loc.ID(), "Big Box", &desc, &capacity, shortCode)
 		require.NoError(t, err)
 
 		err = repo.Save(ctx, c)
@@ -73,7 +73,7 @@ func TestContainerRepository_Save(t *testing.T) {
 		require.NotNil(t, retrieved)
 
 		assert.Equal(t, desc, *retrieved.Description())
-		assert.Equal(t, shortCode, *retrieved.ShortCode())
+		assert.Equal(t, shortCode, retrieved.ShortCode())
 	})
 }
 
@@ -89,7 +89,7 @@ func TestContainerRepository_FindByID(t *testing.T) {
 
 	t.Run("finds existing container", func(t *testing.T) {
 		loc := createTestLocation(t, locRepo, ctx, "Find Location")
-		c, err := container.NewContainer(testfixtures.TestWorkspaceID, loc.ID(), "Find Me", nil, nil, nil)
+		c, err := container.NewContainer(testfixtures.TestWorkspaceID, loc.ID(), "Find Me", nil, nil, "")
 		require.NoError(t, err)
 		err = repo.Save(ctx, c)
 		require.NoError(t, err)
@@ -115,12 +115,12 @@ func TestContainerRepository_FindByID(t *testing.T) {
 		testdb.CreateTestWorkspace(t, pool, workspace2)
 
 		// Create location in workspace1
-		loc, err := location.NewLocation(workspace1, "WS1 Location", nil, nil, nil, nil, nil, nil)
+		loc, err := location.NewLocation(workspace1, "WS1 Location", nil, nil, "")
 		require.NoError(t, err)
 		err = locRepo.Save(ctx, loc)
 		require.NoError(t, err)
 
-		c, err := container.NewContainer(workspace1, loc.ID(), "WS1 Container", nil, nil, nil)
+		c, err := container.NewContainer(workspace1, loc.ID(), "WS1 Container", nil, nil, "")
 		require.NoError(t, err)
 		err = repo.Save(ctx, c)
 		require.NoError(t, err)
@@ -152,10 +152,10 @@ func TestContainerRepository_FindByLocation(t *testing.T) {
 		loc2 := createTestLocation(t, locRepo, ctx, "Location 2")
 
 		// Create containers in loc1
-		c1, _ := container.NewContainer(testfixtures.TestWorkspaceID, loc1.ID(), "Container A", nil, nil, nil)
-		c2, _ := container.NewContainer(testfixtures.TestWorkspaceID, loc1.ID(), "Container B", nil, nil, nil)
+		c1, _ := container.NewContainer(testfixtures.TestWorkspaceID, loc1.ID(), "Container A", nil, nil, "")
+		c2, _ := container.NewContainer(testfixtures.TestWorkspaceID, loc1.ID(), "Container B", nil, nil, "")
 		// Create container in loc2
-		c3, _ := container.NewContainer(testfixtures.TestWorkspaceID, loc2.ID(), "Container C", nil, nil, nil)
+		c3, _ := container.NewContainer(testfixtures.TestWorkspaceID, loc2.ID(), "Container C", nil, nil, "")
 
 		require.NoError(t, repo.Save(ctx, c1))
 		require.NoError(t, repo.Save(ctx, c2))
@@ -193,7 +193,7 @@ func TestContainerRepository_FindByShortCode(t *testing.T) {
 	t.Run("finds container by short code", func(t *testing.T) {
 		loc := createTestLocation(t, locRepo, ctx, "ShortCode Location")
 		shortCode := "UNQ-001"
-		c, err := container.NewContainer(testfixtures.TestWorkspaceID, loc.ID(), "Coded Box", nil, nil, &shortCode)
+		c, err := container.NewContainer(testfixtures.TestWorkspaceID, loc.ID(), "Coded Box", nil, nil, shortCode)
 		require.NoError(t, err)
 		err = repo.Save(ctx, c)
 		require.NoError(t, err)
@@ -227,7 +227,7 @@ func TestContainerRepository_FindByWorkspace(t *testing.T) {
 
 		// Create multiple containers
 		for i := 0; i < 5; i++ {
-			c, _ := container.NewContainer(testfixtures.TestWorkspaceID, loc.ID(), "Container", nil, nil, nil)
+			c, _ := container.NewContainer(testfixtures.TestWorkspaceID, loc.ID(), "Container", nil, nil, "")
 			require.NoError(t, repo.Save(ctx, c))
 		}
 
@@ -251,7 +251,7 @@ func TestContainerRepository_Delete(t *testing.T) {
 
 	t.Run("deletes container", func(t *testing.T) {
 		loc := createTestLocation(t, locRepo, ctx, "Delete Location")
-		c, err := container.NewContainer(testfixtures.TestWorkspaceID, loc.ID(), "To Delete", nil, nil, nil)
+		c, err := container.NewContainer(testfixtures.TestWorkspaceID, loc.ID(), "To Delete", nil, nil, "")
 		require.NoError(t, err)
 		err = repo.Save(ctx, c)
 		require.NoError(t, err)
@@ -285,7 +285,7 @@ func TestContainerRepository_ShortCodeExists(t *testing.T) {
 	t.Run("returns true for existing short code", func(t *testing.T) {
 		loc := createTestLocation(t, locRepo, ctx, "Exists Location")
 		shortCode := "EXT-001"
-		c, err := container.NewContainer(testfixtures.TestWorkspaceID, loc.ID(), "Existing", nil, nil, &shortCode)
+		c, err := container.NewContainer(testfixtures.TestWorkspaceID, loc.ID(), "Existing", nil, nil, shortCode)
 		require.NoError(t, err)
 		err = repo.Save(ctx, c)
 		require.NoError(t, err)

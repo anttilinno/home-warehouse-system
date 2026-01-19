@@ -74,6 +74,14 @@ func (m *MockService) GetBreadcrumb(ctx context.Context, locationID, workspaceID
 	return args.Get(0).([]location.BreadcrumbItem), args.Error(1)
 }
 
+func (m *MockService) Search(ctx context.Context, workspaceID uuid.UUID, query string, limit int) ([]*location.Location, error) {
+	args := m.Called(ctx, workspaceID, query, limit)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).([]*location.Location), args.Error(1)
+}
+
 // Tests
 
 func TestLocationHandler_Create(t *testing.T) {
@@ -82,7 +90,7 @@ func TestLocationHandler_Create(t *testing.T) {
 	location.RegisterRoutes(setup.API, mockSvc, nil)
 
 	t.Run("creates location successfully", func(t *testing.T) {
-		testLoc, _ := location.NewLocation(setup.WorkspaceID, "Warehouse A", nil, nil, nil, nil, nil, nil)
+		testLoc, _ := location.NewLocation(setup.WorkspaceID, "Warehouse A", nil, nil, "WH-A")
 
 		mockSvc.On("Create", mock.Anything, mock.MatchedBy(func(input location.CreateInput) bool {
 			return input.Name == "Warehouse A"
@@ -113,8 +121,8 @@ func TestLocationHandler_List(t *testing.T) {
 	location.RegisterRoutes(setup.API, mockSvc, nil)
 
 	t.Run("lists locations successfully", func(t *testing.T) {
-		loc1, _ := location.NewLocation(setup.WorkspaceID, "Location 1", nil, nil, nil, nil, nil, nil)
-		loc2, _ := location.NewLocation(setup.WorkspaceID, "Location 2", nil, nil, nil, nil, nil, nil)
+		loc1, _ := location.NewLocation(setup.WorkspaceID, "Location 1", nil, nil, "LOC-1")
+		loc2, _ := location.NewLocation(setup.WorkspaceID, "Location 2", nil, nil, "LOC-2")
 		items := []*location.Location{loc1, loc2}
 		result := shared.NewPagedResult(items, 2, shared.Pagination{Page: 1, PageSize: 50})
 
@@ -147,7 +155,7 @@ func TestLocationHandler_Get(t *testing.T) {
 	location.RegisterRoutes(setup.API, mockSvc, nil)
 
 	t.Run("gets location by ID", func(t *testing.T) {
-		testLoc, _ := location.NewLocation(setup.WorkspaceID, "Warehouse A", nil, nil, nil, nil, nil, nil)
+		testLoc, _ := location.NewLocation(setup.WorkspaceID, "Warehouse A", nil, nil, "WH-A")
 		locID := testLoc.ID()
 
 		mockSvc.On("GetByID", mock.Anything, locID, setup.WorkspaceID).
@@ -178,10 +186,10 @@ func TestLocationHandler_Update(t *testing.T) {
 	location.RegisterRoutes(setup.API, mockSvc, nil)
 
 	t.Run("updates location successfully", func(t *testing.T) {
-		testLoc, _ := location.NewLocation(setup.WorkspaceID, "Updated Warehouse", nil, nil, nil, nil, nil, nil)
+		testLoc, _ := location.NewLocation(setup.WorkspaceID, "Updated Warehouse", nil, nil, "UPD-WH")
 		locID := testLoc.ID()
 
-		existingLoc, _ := location.NewLocation(setup.WorkspaceID, "Warehouse A", nil, nil, nil, nil, nil, nil)
+		existingLoc, _ := location.NewLocation(setup.WorkspaceID, "Warehouse A", nil, nil, "WH-A")
 		mockSvc.On("GetByID", mock.Anything, locID, setup.WorkspaceID).
 			Return(existingLoc, nil).Once()
 

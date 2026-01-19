@@ -103,7 +103,9 @@ export default function OutOfStockPage() {
             type="search"
             placeholder={t("search")}
             className="pl-8"
+            value=""
             disabled
+            readOnly
           />
         </div>
 

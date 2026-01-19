@@ -120,9 +120,6 @@ type LocationExport struct {
 	ID             string `json:"id" csv:"id"`
 	Name           string `json:"name" csv:"name"`
 	ParentLocation string `json:"parent_location" csv:"parent_location"`
-	Zone           string `json:"zone" csv:"zone"`
-	Shelf          string `json:"shelf" csv:"shelf"`
-	Bin            string `json:"bin" csv:"bin"`
 	Description    string `json:"description" csv:"description"`
 	ShortCode      string `json:"short_code" csv:"short_code"`
 	IsArchived     bool   `json:"is_archived" csv:"is_archived"`
@@ -134,9 +131,6 @@ type LocationExport struct {
 type LocationImport struct {
 	Name           string `json:"name" csv:"name"`
 	ParentLocation string `json:"parent_location" csv:"parent_location"`
-	Zone           string `json:"zone" csv:"zone"`
-	Shelf          string `json:"shelf" csv:"shelf"`
-	Bin            string `json:"bin" csv:"bin"`
 	Description    string `json:"description" csv:"description"`
 }
 

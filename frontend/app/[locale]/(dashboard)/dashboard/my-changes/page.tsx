@@ -198,8 +198,8 @@ export default function MyChangesPage() {
       }
 
       const response = await pendingChangesApi.getMyChanges(workspaceId, params);
-      setChanges(response.items);
-      setTotal(response.total);
+      setChanges(response.changes ?? []);
+      setTotal(response.total ?? 0);
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Failed to load changes";
       toast.error("Failed to load your changes", {
@@ -227,12 +227,13 @@ export default function MyChangesPage() {
 
   // Filter changes by search query
   const filteredChanges = useMemo(() => {
+    const safeChanges = changes ?? [];
     if (!debouncedSearchQuery.trim()) {
-      return changes;
+      return safeChanges;
     }
 
     const query = debouncedSearchQuery.toLowerCase();
-    return changes.filter(
+    return safeChanges.filter(
       (change) =>
         change.entity_type.toLowerCase().includes(query) ||
         change.action.toLowerCase().includes(query) ||
@@ -240,9 +241,10 @@ export default function MyChangesPage() {
     );
   }, [changes, debouncedSearchQuery]);
 
-  const pendingCount = changes.filter((c) => c.status === "pending").length;
-  const approvedCount = changes.filter((c) => c.status === "approved").length;
-  const rejectedCount = changes.filter((c) => c.status === "rejected").length;
+  const safeChanges = changes ?? [];
+  const pendingCount = safeChanges.filter((c) => c.status === "pending").length;
+  const approvedCount = safeChanges.filter((c) => c.status === "approved").length;
+  const rejectedCount = safeChanges.filter((c) => c.status === "rejected").length;
 
   if (workspaceLoading) {
     return (

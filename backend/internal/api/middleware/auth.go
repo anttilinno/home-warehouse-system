@@ -27,18 +27,39 @@ type AuthUser struct {
 }
 
 // JWTAuth creates an authentication middleware with JWT validation.
+// Supports multiple token sources in order of priority:
+// 1. Authorization header (Bearer token)
+// 2. Cookie (access_token)
+// 3. Query parameter (token=...) - for SSE since EventSource doesn't support custom headers
 func JWTAuth(jwtService *jwt.Service) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			var token string
+
+			// First try Authorization header
 			authHeader := r.Header.Get("Authorization")
-			if authHeader == "" {
-				http.Error(w, `{"error":"unauthorized","message":"missing authorization header"}`, http.StatusUnauthorized)
-				return
+			if authHeader != "" {
+				token = strings.TrimPrefix(authHeader, "Bearer ")
+				if token == authHeader {
+					http.Error(w, `{"error":"unauthorized","message":"invalid authorization format"}`, http.StatusUnauthorized)
+					return
+				}
 			}
 
-			token := strings.TrimPrefix(authHeader, "Bearer ")
-			if token == authHeader {
-				http.Error(w, `{"error":"unauthorized","message":"invalid authorization format"}`, http.StatusUnauthorized)
+			// Fall back to cookie
+			if token == "" {
+				if cookie, err := r.Cookie("access_token"); err == nil {
+					token = cookie.Value
+				}
+			}
+
+			// Fall back to query parameter (for SSE connections as last resort)
+			if token == "" {
+				token = r.URL.Query().Get("token")
+			}
+
+			if token == "" {
+				http.Error(w, `{"error":"unauthorized","message":"missing authorization"}`, http.StatusUnauthorized)
 				return
 			}
 

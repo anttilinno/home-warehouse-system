@@ -31,7 +31,7 @@ SELECT EXISTS(
 
 type ContainerShortCodeExistsParams struct {
 	WorkspaceID uuid.UUID `json:"workspace_id"`
-	ShortCode   *string   `json:"short_code"`
+	ShortCode   string    `json:"short_code"`
 }
 
 func (q *Queries) ContainerShortCodeExists(ctx context.Context, arg ContainerShortCodeExistsParams) (bool, error) {
@@ -54,7 +54,7 @@ type CreateContainerParams struct {
 	LocationID  uuid.UUID `json:"location_id"`
 	Description *string   `json:"description"`
 	Capacity    *string   `json:"capacity"`
-	ShortCode   *string   `json:"short_code"`
+	ShortCode   string    `json:"short_code"`
 }
 
 func (q *Queries) CreateContainer(ctx context.Context, arg CreateContainerParams) (WarehouseContainer, error) {
@@ -129,7 +129,7 @@ WHERE workspace_id = $1 AND short_code = $2
 
 type GetContainerByShortCodeParams struct {
 	WorkspaceID uuid.UUID `json:"workspace_id"`
-	ShortCode   *string   `json:"short_code"`
+	ShortCode   string    `json:"short_code"`
 }
 
 func (q *Queries) GetContainerByShortCode(ctx context.Context, arg GetContainerByShortCodeParams) (WarehouseContainer, error) {

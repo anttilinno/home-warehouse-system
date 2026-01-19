@@ -80,6 +80,107 @@ func TestJWTAuth_ValidTokenSuperuser(t *testing.T) {
 	assert.True(t, capturedUser.IsSuperuser)
 }
 
+func TestJWTAuth_ValidTokenFromCookie(t *testing.T) {
+	jwtService := jwt.NewService("test-secret", 24)
+	userID := uuid.New()
+	email := "cookie@example.com"
+
+	token, err := jwtService.GenerateToken(userID, email, "Cookie User", false)
+	assert.NoError(t, err)
+
+	nextCalled := false
+	var capturedUser *AuthUser
+
+	handler := JWTAuth(jwtService)(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		nextCalled = true
+		user, ok := GetAuthUser(r.Context())
+		assert.True(t, ok)
+		capturedUser = user
+		w.WriteHeader(http.StatusOK)
+	}))
+
+	req := httptest.NewRequest(http.MethodGet, "/test", nil)
+	req.AddCookie(&http.Cookie{
+		Name:  "access_token",
+		Value: token,
+	})
+	rec := httptest.NewRecorder()
+
+	handler.ServeHTTP(rec, req)
+
+	assert.Equal(t, http.StatusOK, rec.Code)
+	assert.True(t, nextCalled)
+	assert.NotNil(t, capturedUser)
+	assert.Equal(t, userID, capturedUser.ID)
+	assert.Equal(t, email, capturedUser.Email)
+}
+
+func TestJWTAuth_ValidTokenFromQueryParam(t *testing.T) {
+	jwtService := jwt.NewService("test-secret", 24)
+	userID := uuid.New()
+	email := "query@example.com"
+
+	token, err := jwtService.GenerateToken(userID, email, "Query User", false)
+	assert.NoError(t, err)
+
+	nextCalled := false
+	var capturedUser *AuthUser
+
+	handler := JWTAuth(jwtService)(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		nextCalled = true
+		user, ok := GetAuthUser(r.Context())
+		assert.True(t, ok)
+		capturedUser = user
+		w.WriteHeader(http.StatusOK)
+	}))
+
+	req := httptest.NewRequest(http.MethodGet, "/test?token="+token, nil)
+	rec := httptest.NewRecorder()
+
+	handler.ServeHTTP(rec, req)
+
+	assert.Equal(t, http.StatusOK, rec.Code)
+	assert.True(t, nextCalled)
+	assert.NotNil(t, capturedUser)
+	assert.Equal(t, userID, capturedUser.ID)
+	assert.Equal(t, email, capturedUser.Email)
+}
+
+func TestJWTAuth_HeaderTakesPrecedenceOverCookie(t *testing.T) {
+	jwtService := jwt.NewService("test-secret", 24)
+
+	// Create two different users
+	headerUserID := uuid.New()
+	cookieUserID := uuid.New()
+
+	headerToken, err := jwtService.GenerateToken(headerUserID, "header@example.com", "Header User", false)
+	assert.NoError(t, err)
+	cookieToken, err := jwtService.GenerateToken(cookieUserID, "cookie@example.com", "Cookie User", false)
+	assert.NoError(t, err)
+
+	var capturedUser *AuthUser
+
+	handler := JWTAuth(jwtService)(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		user, _ := GetAuthUser(r.Context())
+		capturedUser = user
+		w.WriteHeader(http.StatusOK)
+	}))
+
+	req := httptest.NewRequest(http.MethodGet, "/test", nil)
+	req.Header.Set("Authorization", "Bearer "+headerToken)
+	req.AddCookie(&http.Cookie{
+		Name:  "access_token",
+		Value: cookieToken,
+	})
+	rec := httptest.NewRecorder()
+
+	handler.ServeHTTP(rec, req)
+
+	assert.Equal(t, http.StatusOK, rec.Code)
+	// Should use header token, not cookie
+	assert.Equal(t, headerUserID, capturedUser.ID)
+}
+
 func TestJWTAuth_MissingAuthorizationHeader(t *testing.T) {
 	jwtService := jwt.NewService("test-secret", 24)
 
@@ -96,7 +197,7 @@ func TestJWTAuth_MissingAuthorizationHeader(t *testing.T) {
 
 	assert.Equal(t, http.StatusUnauthorized, rec.Code)
 	assert.False(t, nextCalled)
-	assert.Contains(t, rec.Body.String(), "missing authorization header")
+	assert.Contains(t, rec.Body.String(), "missing authorization")
 }
 
 func TestJWTAuth_InvalidAuthorizationFormat(t *testing.T) {

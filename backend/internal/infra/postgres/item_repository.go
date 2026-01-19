@@ -136,7 +136,7 @@ func (r *ItemRepository) FindBySKU(ctx context.Context, workspaceID uuid.UUID, s
 func (r *ItemRepository) FindByShortCode(ctx context.Context, workspaceID uuid.UUID, shortCode string) (*item.Item, error) {
 	row, err := r.queries.GetItemByShortCode(ctx, queries.GetItemByShortCodeParams{
 		WorkspaceID: workspaceID,
-		ShortCode:   &shortCode,
+		ShortCode:   shortCode,
 	})
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
@@ -232,7 +232,7 @@ func (r *ItemRepository) SKUExists(ctx context.Context, workspaceID uuid.UUID, s
 func (r *ItemRepository) ShortCodeExists(ctx context.Context, workspaceID uuid.UUID, shortCode string) (bool, error) {
 	return r.queries.ItemShortCodeExists(ctx, queries.ItemShortCodeExistsParams{
 		WorkspaceID: workspaceID,
-		ShortCode:   &shortCode,
+		ShortCode:   shortCode,
 	})
 }
 

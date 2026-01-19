@@ -8,9 +8,10 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Upload, FileText, AlertCircle, ArrowLeft } from "lucide-react";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
 import { useWorkspace } from "@/lib/hooks/use-workspace";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const ENTITY_TYPES = [
   { value: "items", label: "Items" },
@@ -23,7 +24,7 @@ const ENTITY_TYPES = [
 
 export default function NewImportPage() {
   const router = useRouter();
-  const { workspace } = useWorkspace();
+  const { workspaceId, isLoading: workspaceLoading } = useWorkspace();
 
   const [entityType, setEntityType] = useState<string>("");
   const [file, setFile] = useState<File | null>(null);
@@ -73,6 +74,42 @@ export default function NewImportPage() {
     setFile(file);
   };
 
+  if (workspaceLoading) {
+    return (
+      <div className="container mx-auto py-6 max-w-2xl space-y-6">
+        <div className="flex items-center gap-4">
+          <Button variant="ghost" size="sm" asChild>
+            <Link href="/dashboard/imports">
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back to Imports
+            </Link>
+          </Button>
+        </div>
+
+        <div>
+          <h1 className="text-3xl font-bold">New Import</h1>
+          <p className="text-muted-foreground mt-2">
+            Upload a CSV file to bulk import data
+          </p>
+        </div>
+
+        <Card>
+          <CardHeader>
+            <Skeleton className="h-6 w-40" />
+            <Skeleton className="h-4 w-64" />
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="space-y-2">
+              <Skeleton className="h-4 w-24" />
+              <Skeleton className="h-10 w-full" />
+            </div>
+            <Skeleton className="h-48 w-full" />
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   const handleUpload = async () => {
     if (!entityType) {
       setError("Please select an entity type");
@@ -84,7 +121,7 @@ export default function NewImportPage() {
       return;
     }
 
-    if (!workspace?.slug) {
+    if (!workspaceId) {
       setError("Workspace not found");
       return;
     }
@@ -98,7 +135,7 @@ export default function NewImportPage() {
       formData.append("entity_type", entityType);
 
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/workspace/${workspace.slug}/imports/upload`,
+        `${process.env.NEXT_PUBLIC_API_URL}/workspaces/${workspaceId}/imports/upload`,
         {
           method: "POST",
           credentials: "include",

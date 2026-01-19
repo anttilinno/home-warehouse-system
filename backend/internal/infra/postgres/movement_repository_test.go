@@ -25,7 +25,7 @@ func createTestInventoryForMovement(t *testing.T, invRepo *InventoryRepository, 
 	err = itemRepo.Save(ctx, itm)
 	require.NoError(t, err)
 
-	loc, err := location.NewLocation(testfixtures.TestWorkspaceID, "Move Loc "+uuid.NewString()[:4], nil, nil, nil, nil, nil, nil)
+	loc, err := location.NewLocation(testfixtures.TestWorkspaceID, "Move Loc "+uuid.NewString()[:4], nil, nil, uuid.NewString()[:8])
 	require.NoError(t, err)
 	err = locRepo.Save(ctx, loc)
 	require.NoError(t, err)
@@ -53,7 +53,7 @@ func TestMovementRepository_Save(t *testing.T) {
 	t.Run("saves new movement successfully", func(t *testing.T) {
 		inv, fromLoc := createTestInventoryForMovement(t, invRepo, itemRepo, locRepo, ctx)
 
-		toLoc, err := location.NewLocation(testfixtures.TestWorkspaceID, "To Loc "+uuid.NewString()[:4], nil, nil, nil, nil, nil, nil)
+		toLoc, err := location.NewLocation(testfixtures.TestWorkspaceID, "To Loc "+uuid.NewString()[:4], nil, nil, uuid.NewString()[:8])
 		require.NoError(t, err)
 		err = locRepo.Save(ctx, toLoc)
 		require.NoError(t, err)
@@ -91,7 +91,7 @@ func TestMovementRepository_Save(t *testing.T) {
 	t.Run("saves movement with all fields", func(t *testing.T) {
 		inv, fromLoc := createTestInventoryForMovement(t, invRepo, itemRepo, locRepo, ctx)
 
-		toLoc, err := location.NewLocation(testfixtures.TestWorkspaceID, "Full To Loc "+uuid.NewString()[:4], nil, nil, nil, nil, nil, nil)
+		toLoc, err := location.NewLocation(testfixtures.TestWorkspaceID, "Full To Loc "+uuid.NewString()[:4], nil, nil, uuid.NewString()[:8])
 		require.NoError(t, err)
 		err = locRepo.Save(ctx, toLoc)
 		require.NoError(t, err)
@@ -145,7 +145,7 @@ func TestMovementRepository_FindByInventory(t *testing.T) {
 
 		// Create multiple movements for the same inventory
 		for i := 0; i < 3; i++ {
-			toLoc, _ := location.NewLocation(testfixtures.TestWorkspaceID, "Mv Loc "+uuid.NewString()[:4], nil, nil, nil, nil, nil, nil)
+			toLoc, _ := location.NewLocation(testfixtures.TestWorkspaceID, "Mv Loc "+uuid.NewString()[:4], nil, nil, uuid.NewString()[:8])
 			locRepo.Save(ctx, toLoc)
 			toLocID := toLoc.ID()
 
@@ -176,7 +176,7 @@ func TestMovementRepository_FindByLocation(t *testing.T) {
 		inv, fromLoc := createTestInventoryForMovement(t, invRepo, itemRepo, locRepo, ctx)
 		fromLocID := fromLoc.ID()
 
-		toLoc, _ := location.NewLocation(testfixtures.TestWorkspaceID, "By Loc To "+uuid.NewString()[:4], nil, nil, nil, nil, nil, nil)
+		toLoc, _ := location.NewLocation(testfixtures.TestWorkspaceID, "By Loc To "+uuid.NewString()[:4], nil, nil, uuid.NewString()[:8])
 		locRepo.Save(ctx, toLoc)
 		toLocID := toLoc.ID()
 
@@ -210,7 +210,7 @@ func TestMovementRepository_FindByWorkspace(t *testing.T) {
 		itm, _ := item.NewItem(workspace, "WS Item", "SKU-WS-"+uuid.NewString()[:4], 0)
 		require.NoError(t, itemRepo.Save(ctx, itm))
 
-		fromLoc, _ := location.NewLocation(workspace, "WS From Loc", nil, nil, nil, nil, nil, nil)
+		fromLoc, _ := location.NewLocation(workspace, "WS From Loc", nil, nil, "WS-FROM")
 		require.NoError(t, locRepo.Save(ctx, fromLoc))
 
 		inv, _ := inventory.NewInventory(workspace, itm.ID(), fromLoc.ID(), nil, 10, inventory.ConditionNew, inventory.StatusAvailable, nil)
@@ -218,7 +218,7 @@ func TestMovementRepository_FindByWorkspace(t *testing.T) {
 
 		fromLocID := fromLoc.ID()
 		for i := 0; i < 5; i++ {
-			toLoc, _ := location.NewLocation(workspace, "WS To Loc "+uuid.NewString()[:4], nil, nil, nil, nil, nil, nil)
+			toLoc, _ := location.NewLocation(workspace, "WS To Loc "+uuid.NewString()[:4], nil, nil, uuid.NewString()[:8])
 			locRepo.Save(ctx, toLoc)
 			toLocID := toLoc.ID()
 

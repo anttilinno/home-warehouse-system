@@ -14,107 +14,107 @@ export const inventoryApi = {
   /**
    * List inventory with pagination
    */
-  list: async (params?: { page?: number; limit?: number }): Promise<InventoryListResponse> => {
+  list: async (workspaceId: string, params?: { page?: number; limit?: number }): Promise<InventoryListResponse> => {
     const queryParams = new URLSearchParams();
     if (params?.page) queryParams.append("page", params.page.toString());
     if (params?.limit) queryParams.append("limit", params.limit.toString());
 
-    const url = `/inventory${queryParams.toString() ? `?${queryParams.toString()}` : ""}`;
+    const url = `/workspaces/${workspaceId}/inventory${queryParams.toString() ? `?${queryParams.toString()}` : ""}`;
     return apiClient.get<InventoryListResponse>(url);
   },
 
   /**
    * Get a single inventory by ID
    */
-  get: async (id: string): Promise<Inventory> => {
-    return apiClient.get<Inventory>(`/inventory/${id}`);
+  get: async (workspaceId: string, id: string): Promise<Inventory> => {
+    return apiClient.get<Inventory>(`/workspaces/${workspaceId}/inventory/${id}`);
   },
 
   /**
    * List inventory by item ID
    */
-  listByItem: async (itemId: string): Promise<Inventory[]> => {
-    const response = await apiClient.get<InventoryListResponse>(`/inventory/by-item/${itemId}`);
+  listByItem: async (workspaceId: string, itemId: string): Promise<Inventory[]> => {
+    const response = await apiClient.get<InventoryListResponse>(`/workspaces/${workspaceId}/inventory/by-item/${itemId}`);
     return response.items;
   },
 
   /**
    * List inventory by location ID
    */
-  listByLocation: async (locationId: string): Promise<Inventory[]> => {
-    const response = await apiClient.get<InventoryListResponse>(`/inventory/by-location/${locationId}`);
+  listByLocation: async (workspaceId: string, locationId: string): Promise<Inventory[]> => {
+    const response = await apiClient.get<InventoryListResponse>(`/workspaces/${workspaceId}/inventory/by-location/${locationId}`);
     return response.items;
   },
 
   /**
    * List inventory by container ID
    */
-  listByContainer: async (containerId: string): Promise<Inventory[]> => {
-    const response = await apiClient.get<InventoryListResponse>(`/inventory/by-container/${containerId}`);
+  listByContainer: async (workspaceId: string, containerId: string): Promise<Inventory[]> => {
+    const response = await apiClient.get<InventoryListResponse>(`/workspaces/${workspaceId}/inventory/by-container/${containerId}`);
     return response.items;
   },
 
   /**
    * Get available inventory for an item
    */
-  getAvailable: async (itemId: string): Promise<Inventory[]> => {
-    const response = await apiClient.get<InventoryListResponse>(`/inventory/available/${itemId}`);
+  getAvailable: async (workspaceId: string, itemId: string): Promise<Inventory[]> => {
+    const response = await apiClient.get<InventoryListResponse>(`/workspaces/${workspaceId}/inventory/available/${itemId}`);
     return response.items;
   },
 
   /**
    * Get total quantity for an item
    */
-  getTotalQuantity: async (itemId: string): Promise<TotalQuantityResponse> => {
-    return apiClient.get<TotalQuantityResponse>(`/inventory/total-quantity/${itemId}`);
+  getTotalQuantity: async (workspaceId: string, itemId: string): Promise<TotalQuantityResponse> => {
+    return apiClient.get<TotalQuantityResponse>(`/workspaces/${workspaceId}/inventory/total-quantity/${itemId}`);
   },
 
   /**
    * Create a new inventory entry
    */
-  create: async (data: InventoryCreate): Promise<Inventory> => {
-    return apiClient.post<Inventory>("/inventory", data);
+  create: async (workspaceId: string, data: InventoryCreate): Promise<Inventory> => {
+    return apiClient.post<Inventory>(`/workspaces/${workspaceId}/inventory`, data);
   },
 
   /**
    * Update an existing inventory entry
    */
-  update: async (id: string, data: InventoryUpdate): Promise<Inventory> => {
-    return apiClient.patch<Inventory>(`/inventory/${id}`, data);
+  update: async (workspaceId: string, id: string, data: InventoryUpdate): Promise<Inventory> => {
+    return apiClient.patch<Inventory>(`/workspaces/${workspaceId}/inventory/${id}`, data);
   },
 
   /**
    * Update inventory status
    */
-  updateStatus: async (id: string, data: InventoryStatusUpdate): Promise<Inventory> => {
-    return apiClient.patch<Inventory>(`/inventory/${id}/status`, data);
+  updateStatus: async (workspaceId: string, id: string, data: InventoryStatusUpdate): Promise<Inventory> => {
+    return apiClient.patch<Inventory>(`/workspaces/${workspaceId}/inventory/${id}/status`, data);
   },
 
   /**
    * Update inventory quantity
    */
-  updateQuantity: async (id: string, data: InventoryQuantityUpdate): Promise<Inventory> => {
-    return apiClient.patch<Inventory>(`/inventory/${id}/quantity`, data);
+  updateQuantity: async (workspaceId: string, id: string, data: InventoryQuantityUpdate): Promise<Inventory> => {
+    return apiClient.patch<Inventory>(`/workspaces/${workspaceId}/inventory/${id}/quantity`, data);
   },
 
   /**
    * Move inventory to a new location/container
    */
-  move: async (id: string, data: InventoryMove): Promise<Inventory> => {
-    return apiClient.post<Inventory>(`/inventory/${id}/move`, data);
+  move: async (workspaceId: string, id: string, data: InventoryMove): Promise<Inventory> => {
+    return apiClient.post<Inventory>(`/workspaces/${workspaceId}/inventory/${id}/move`, data);
   },
 
   /**
    * Archive an inventory entry
    */
-  archive: async (id: string): Promise<void> => {
-    return apiClient.post(`/inventory/${id}/archive`);
+  archive: async (workspaceId: string, id: string): Promise<void> => {
+    return apiClient.post(`/workspaces/${workspaceId}/inventory/${id}/archive`);
   },
 
   /**
    * Restore an archived inventory entry
    */
-  restore: async (id: string): Promise<void> => {
-    return apiClient.post(`/inventory/${id}/restore`);
+  restore: async (workspaceId: string, id: string): Promise<void> => {
+    return apiClient.post(`/workspaces/${workspaceId}/inventory/${id}/restore`);
   },
 };

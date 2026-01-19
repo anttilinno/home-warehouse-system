@@ -2,11 +2,20 @@ package container
 
 import (
 	"context"
+	"crypto/rand"
+	"encoding/base32"
 
 	"github.com/google/uuid"
 
 	"github.com/antti/home-warehouse/go-backend/internal/shared"
 )
+
+// generateShortCode generates a random 8-character alphanumeric code
+func generateShortCode() string {
+	b := make([]byte, 5) // 5 bytes = 40 bits, base32 encodes to 8 chars
+	rand.Read(b)
+	return base32.StdEncoding.WithPadding(base32.NoPadding).EncodeToString(b)
+}
 
 // ServiceInterface defines the container service operations.
 type ServiceInterface interface {
@@ -29,24 +38,46 @@ func NewService(repo Repository) *Service {
 }
 
 type CreateInput struct {
-	WorkspaceID                      uuid.UUID
-	LocationID                       uuid.UUID
-	Name                             string
-	Description, Capacity, ShortCode *string
+	WorkspaceID         uuid.UUID
+	LocationID          uuid.UUID
+	Name                string
+	Description         *string
+	Capacity            *string
+	ShortCode           string // Optional - will be auto-generated if empty
 }
 
 func (s *Service) Create(ctx context.Context, input CreateInput) (*Container, error) {
-	if input.ShortCode != nil && *input.ShortCode != "" {
-		exists, err := s.repo.ShortCodeExists(ctx, input.WorkspaceID, *input.ShortCode)
+	shortCode := input.ShortCode
+
+	// If short code provided, check uniqueness
+	if shortCode != "" {
+		exists, err := s.repo.ShortCodeExists(ctx, input.WorkspaceID, shortCode)
 		if err != nil {
 			return nil, err
 		}
 		if exists {
 			return nil, ErrShortCodeTaken
 		}
+	} else {
+		// Auto-generate short code if not provided
+		const maxRetries = 5
+		for i := 0; i < maxRetries; i++ {
+			code := generateShortCode()
+			exists, err := s.repo.ShortCodeExists(ctx, input.WorkspaceID, code)
+			if err != nil {
+				return nil, err
+			}
+			if !exists {
+				shortCode = code
+				break
+			}
+		}
+		if shortCode == "" {
+			return nil, ErrShortCodeTaken
+		}
 	}
 
-	container, err := NewContainer(input.WorkspaceID, input.LocationID, input.Name, input.Description, input.Capacity, input.ShortCode)
+	container, err := NewContainer(input.WorkspaceID, input.LocationID, input.Name, input.Description, input.Capacity, shortCode)
 	if err != nil {
 		return nil, err
 	}

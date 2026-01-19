@@ -32,8 +32,8 @@ description = "Drop and recreate database with fresh migrations"
 depends = ["dc-down"]
 run = "rm -rf .data/postgres && mkdir -p .data/postgres && chmod 700 .data/postgres && docker compose up -d postgres --wait && DATABASE_URL=$DBMATE_DATABASE_URL dbmate -d backend/db/migrations up"
 
-[tasks.db-fresh]
-description = "Complete database reset: drop data volume, recreate database, run migrations"
+[tasks.env-reset]
+description = "Reset entire environment: wipe all data (postgres, redis, etc), restart containers, run migrations"
 run = "docker compose down && rm -rf .data && mkdir -p .data/postgres .data/redis .data/docspell .data/docspell-postgres && chmod 700 .data/postgres .data/docspell-postgres && chmod 755 .data/redis .data/docspell && docker compose up -d --wait && DATABASE_URL=$DBMATE_DATABASE_URL dbmate -d backend/db/migrations up"
 
 [tasks.migrate]
@@ -140,3 +140,22 @@ run = "cd frontend && bun run lint"
 description = "Seed database with test data (expiring|warranty|low-stock|overdue-loans|locations|all)"
 depends = ["dc-up"]
 run = "cd backend && go run cmd/seed/main.go {{ arg(name='type', default='all') }}"
+
+# Photo Admin Tools
+[tasks.photo-admin]
+description = "Run photo admin CLI (regenerate|cleanup|report)"
+depends = ["dc-up"]
+run = "cd backend && go run cmd/photo-admin/main.go {{ arg(name='command', default='help') }}"
+
+[tasks.build-photo-admin]
+description = "Build photo-admin binary"
+run = "cd backend && CGO_ENABLED=0 go build -o bin/photo-admin cmd/photo-admin/main.go"
+
+# Frontend Testing
+[tasks.fe-test]
+description = "Run frontend Playwright tests"
+run = "cd frontend && bun run test"
+
+[tasks.fe-test-ui]
+description = "Run frontend Playwright tests with UI"
+run = "cd frontend && bun run test:ui"

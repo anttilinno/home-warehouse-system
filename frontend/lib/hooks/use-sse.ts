@@ -1,17 +1,10 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { useAuth } from "@/lib/contexts/auth-context";
+import { useEffect, useRef, useCallback } from "react";
+import { useSSEConnection, useSSESubscription, type SSEEvent } from "@/lib/contexts/sse-context";
 
-export interface SSEEvent {
-  type: string;
-  entity_id?: string;
-  entity_type: string;
-  workspace_id: string;
-  user_id: string;
-  timestamp: string;
-  data?: Record<string, any>;
-}
+// Re-export SSEEvent type for backwards compatibility
+export type { SSEEvent } from "@/lib/contexts/sse-context";
 
 export interface UseSSEOptions {
   /**
@@ -35,173 +28,57 @@ export interface UseSSEOptions {
   onError?: (error: Event) => void;
 
   /**
-   * Automatically reconnect on disconnect
+   * @deprecated - autoReconnect is now handled by SSEProvider
    */
   autoReconnect?: boolean;
 
   /**
-   * Reconnect delay in milliseconds
+   * @deprecated - reconnectDelay is now handled by SSEProvider
    */
   reconnectDelay?: number;
 }
 
 /**
- * Hook to subscribe to workspace SSE events
+ * Hook to subscribe to workspace SSE events.
+ * Uses the shared SSEProvider connection instead of creating individual connections.
  */
 export function useSSE(options: UseSSEOptions = {}) {
-  const { currentWorkspace } = useAuth();
-  const [isConnected, setIsConnected] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const eventSourceRef = useRef<EventSource | null>(null);
-  const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const { isConnected, error, reconnect } = useSSEConnection();
+  const prevConnectedRef = useRef(isConnected);
 
-  const {
-    onEvent,
-    onConnect,
-    onDisconnect,
-    onError,
-    autoReconnect = true,
-    reconnectDelay = 3000,
-  } = options;
+  // Store callbacks in refs to avoid re-running effects
+  const onEventRef = useRef(options.onEvent);
+  const onConnectRef = useRef(options.onConnect);
+  const onDisconnectRef = useRef(options.onDisconnect);
 
+  // Update refs when callbacks change
   useEffect(() => {
-    if (!currentWorkspace) {
-      return;
+    onEventRef.current = options.onEvent;
+    onConnectRef.current = options.onConnect;
+    onDisconnectRef.current = options.onDisconnect;
+  });
+
+  // Handle connect/disconnect callbacks
+  useEffect(() => {
+    if (isConnected && !prevConnectedRef.current) {
+      onConnectRef.current?.();
+    } else if (!isConnected && prevConnectedRef.current) {
+      onDisconnectRef.current?.();
     }
+    prevConnectedRef.current = isConnected;
+  }, [isConnected]);
 
-    const connect = () => {
-      // Clean up existing connection
-      if (eventSourceRef.current) {
-        eventSourceRef.current.close();
-      }
+  // Memoize the event handler to prevent re-subscriptions
+  const handleEvent = useCallback((event: SSEEvent) => {
+    onEventRef.current?.(event);
+  }, []);
 
-      // Create SSE connection
-      const url = `${process.env.NEXT_PUBLIC_API_URL}/workspaces/${currentWorkspace.id}/sse`;
-      const eventSource = new EventSource(url, {
-        withCredentials: true, // Include cookies for auth
-      });
-
-      eventSourceRef.current = eventSource;
-
-      // Handle connection open
-      eventSource.addEventListener("open", () => {
-        setIsConnected(true);
-        setError(null);
-        onConnect?.();
-      });
-
-      // Handle connection event (initial)
-      eventSource.addEventListener("connected", (e) => {
-        const data = JSON.parse(e.data);
-        console.log("[SSE] Connected with client ID:", data.client_id);
-      });
-
-      // Handle generic events
-      eventSource.addEventListener("message", (e) => {
-        try {
-          const event: SSEEvent = JSON.parse(e.data);
-          onEvent?.(event);
-        } catch (err) {
-          console.error("[SSE] Failed to parse event:", err);
-        }
-      });
-
-      // Handle specific event types (dynamic)
-      const eventTypes = [
-        "item.created",
-        "item.updated",
-        "item.deleted",
-        "itemphoto.created",
-        "itemphoto.updated",
-        "itemphoto.deleted",
-        "inventory.created",
-        "inventory.updated",
-        "inventory.deleted",
-        "loan.created",
-        "loan.updated",
-        "loan.returned",
-        "loan.deleted",
-        "location.created",
-        "location.updated",
-        "location.deleted",
-        "container.created",
-        "container.updated",
-        "container.deleted",
-        "category.created",
-        "category.updated",
-        "category.deleted",
-        "borrower.created",
-        "borrower.updated",
-        "borrower.deleted",
-        "label.created",
-        "label.updated",
-        "label.deleted",
-        "company.created",
-        "company.updated",
-        "company.deleted",
-        "favorite.created",
-        "attachment.created",
-        "attachment.updated",
-        "attachment.deleted",
-        "pendingchange.created",
-        "pendingchange.approved",
-        "pendingchange.rejected",
-      ];
-
-      eventTypes.forEach((type) => {
-        eventSource.addEventListener(type, (e) => {
-          try {
-            const event: SSEEvent = JSON.parse((e as MessageEvent).data);
-            onEvent?.(event);
-          } catch (err) {
-            console.error(`[SSE] Failed to parse ${type} event:`, err);
-          }
-        });
-      });
-
-      // Handle errors
-      eventSource.addEventListener("error", (e) => {
-        console.error("[SSE] Connection error:", e);
-        setIsConnected(false);
-        setError("Connection lost");
-        onError?.(e);
-        onDisconnect?.();
-
-        // Auto-reconnect
-        if (autoReconnect) {
-          reconnectTimeoutRef.current = setTimeout(() => {
-            console.log("[SSE] Attempting to reconnect...");
-            connect();
-          }, reconnectDelay);
-        }
-      });
-    };
-
-    connect();
-
-    // Cleanup on unmount or workspace change
-    return () => {
-      if (eventSourceRef.current) {
-        eventSourceRef.current.close();
-        eventSourceRef.current = null;
-      }
-      if (reconnectTimeoutRef.current) {
-        clearTimeout(reconnectTimeoutRef.current);
-      }
-      setIsConnected(false);
-    };
-  }, [
-    currentWorkspace?.id,
-    autoReconnect,
-    reconnectDelay,
-    onEvent,
-    onConnect,
-    onDisconnect,
-    onError,
-  ]);
+  // Subscribe to events
+  useSSESubscription(handleEvent);
 
   return {
     isConnected,
     error,
+    reconnect,
   };
 }

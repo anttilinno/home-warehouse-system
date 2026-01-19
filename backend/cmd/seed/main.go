@@ -255,9 +255,10 @@ func ensureTestWorkspace(ctx context.Context, pool *pgxpool.Pool) (uuid.UUID, uu
 	if err == pgx.ErrNoRows {
 		// Create test user
 		userID = uuid.New()
+		// Password: password123
 		_, err = pool.Exec(ctx, `
 			INSERT INTO auth.users (id, email, full_name, password_hash)
-			VALUES ($1, 'seeder@test.local', 'Test Seeder', '$2a$10$dummy.hash.for.testing.only')
+			VALUES ($1, 'seeder@test.local', 'Test Seeder', '$2a$10$OedVwpGWe4iRJxl4AO7qIOj3u19vhdgQNvhAk3GdSFb2B72zvPJ1i')
 		`, userID)
 		if err != nil {
 			return uuid.Nil, uuid.Nil, fmt.Errorf("creating user: %w", err)
@@ -271,9 +272,11 @@ func ensureTestWorkspace(ctx context.Context, pool *pgxpool.Pool) (uuid.UUID, uu
 		if err != nil {
 			return uuid.Nil, uuid.Nil, fmt.Errorf("adding workspace member: %w", err)
 		}
-		fmt.Println("Created test user: seeder@test.local")
+		fmt.Println("Created test user: seeder@test.local (password: password123)")
 	} else if err != nil {
 		return uuid.Nil, uuid.Nil, fmt.Errorf("checking user: %w", err)
+	} else {
+		fmt.Println("Using existing test user: seeder@test.local (password: password123)")
 	}
 
 	return workspaceID, userID, nil

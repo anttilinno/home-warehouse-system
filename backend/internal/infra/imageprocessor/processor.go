@@ -10,6 +10,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 
 	"github.com/disintegration/imaging"
@@ -59,6 +60,115 @@ func DefaultConfig() Config {
 		MaxWidth:    8192,
 		MaxHeight:   8192,
 	}
+}
+
+// LoadConfigFromEnv loads configuration from environment variables.
+// Environment variables:
+//   - PHOTO_THUMBNAIL_SMALL_SIZE: Small thumbnail size in pixels (default: 150)
+//   - PHOTO_THUMBNAIL_MEDIUM_SIZE: Medium thumbnail size in pixels (default: 400)
+//   - PHOTO_THUMBNAIL_LARGE_SIZE: Large thumbnail size in pixels (default: 800)
+//   - PHOTO_JPEG_QUALITY: JPEG compression quality 0-100 (default: 85)
+//   - PHOTO_WEBP_QUALITY: WebP compression quality 0-100 (default: 75)
+//   - PHOTO_MIN_WIDTH: Minimum image width (default: 100)
+//   - PHOTO_MIN_HEIGHT: Minimum image height (default: 100)
+//   - PHOTO_MAX_WIDTH: Maximum image width (default: 8192)
+//   - PHOTO_MAX_HEIGHT: Maximum image height (default: 8192)
+func LoadConfigFromEnv() (Config, error) {
+	cfg := DefaultConfig()
+	var err error
+
+	if v := os.Getenv("PHOTO_THUMBNAIL_SMALL_SIZE"); v != "" {
+		cfg.SmallSize, err = strconv.Atoi(v)
+		if err != nil {
+			return cfg, fmt.Errorf("invalid PHOTO_THUMBNAIL_SMALL_SIZE: %w", err)
+		}
+		if cfg.SmallSize <= 0 {
+			return cfg, fmt.Errorf("PHOTO_THUMBNAIL_SMALL_SIZE must be positive")
+		}
+	}
+
+	if v := os.Getenv("PHOTO_THUMBNAIL_MEDIUM_SIZE"); v != "" {
+		cfg.MediumSize, err = strconv.Atoi(v)
+		if err != nil {
+			return cfg, fmt.Errorf("invalid PHOTO_THUMBNAIL_MEDIUM_SIZE: %w", err)
+		}
+		if cfg.MediumSize <= 0 {
+			return cfg, fmt.Errorf("PHOTO_THUMBNAIL_MEDIUM_SIZE must be positive")
+		}
+	}
+
+	if v := os.Getenv("PHOTO_THUMBNAIL_LARGE_SIZE"); v != "" {
+		cfg.LargeSize, err = strconv.Atoi(v)
+		if err != nil {
+			return cfg, fmt.Errorf("invalid PHOTO_THUMBNAIL_LARGE_SIZE: %w", err)
+		}
+		if cfg.LargeSize <= 0 {
+			return cfg, fmt.Errorf("PHOTO_THUMBNAIL_LARGE_SIZE must be positive")
+		}
+	}
+
+	if v := os.Getenv("PHOTO_JPEG_QUALITY"); v != "" {
+		cfg.JPEGQuality, err = strconv.Atoi(v)
+		if err != nil {
+			return cfg, fmt.Errorf("invalid PHOTO_JPEG_QUALITY: %w", err)
+		}
+		if cfg.JPEGQuality < 0 || cfg.JPEGQuality > 100 {
+			return cfg, fmt.Errorf("PHOTO_JPEG_QUALITY must be between 0 and 100")
+		}
+	}
+
+	if v := os.Getenv("PHOTO_WEBP_QUALITY"); v != "" {
+		quality, err := strconv.Atoi(v)
+		if err != nil {
+			return cfg, fmt.Errorf("invalid PHOTO_WEBP_QUALITY: %w", err)
+		}
+		if quality < 0 || quality > 100 {
+			return cfg, fmt.Errorf("PHOTO_WEBP_QUALITY must be between 0 and 100")
+		}
+		cfg.WebPQuality = float32(quality)
+	}
+
+	if v := os.Getenv("PHOTO_MIN_WIDTH"); v != "" {
+		cfg.MinWidth, err = strconv.Atoi(v)
+		if err != nil {
+			return cfg, fmt.Errorf("invalid PHOTO_MIN_WIDTH: %w", err)
+		}
+		if cfg.MinWidth <= 0 {
+			return cfg, fmt.Errorf("PHOTO_MIN_WIDTH must be positive")
+		}
+	}
+
+	if v := os.Getenv("PHOTO_MIN_HEIGHT"); v != "" {
+		cfg.MinHeight, err = strconv.Atoi(v)
+		if err != nil {
+			return cfg, fmt.Errorf("invalid PHOTO_MIN_HEIGHT: %w", err)
+		}
+		if cfg.MinHeight <= 0 {
+			return cfg, fmt.Errorf("PHOTO_MIN_HEIGHT must be positive")
+		}
+	}
+
+	if v := os.Getenv("PHOTO_MAX_WIDTH"); v != "" {
+		cfg.MaxWidth, err = strconv.Atoi(v)
+		if err != nil {
+			return cfg, fmt.Errorf("invalid PHOTO_MAX_WIDTH: %w", err)
+		}
+		if cfg.MaxWidth <= 0 {
+			return cfg, fmt.Errorf("PHOTO_MAX_WIDTH must be positive")
+		}
+	}
+
+	if v := os.Getenv("PHOTO_MAX_HEIGHT"); v != "" {
+		cfg.MaxHeight, err = strconv.Atoi(v)
+		if err != nil {
+			return cfg, fmt.Errorf("invalid PHOTO_MAX_HEIGHT: %w", err)
+		}
+		if cfg.MaxHeight <= 0 {
+			return cfg, fmt.Errorf("PHOTO_MAX_HEIGHT must be positive")
+		}
+	}
+
+	return cfg, nil
 }
 
 // ImageProcessor defines the interface for image processing operations
