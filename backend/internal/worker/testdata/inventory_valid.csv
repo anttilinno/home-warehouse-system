@@ -1,0 +1,4 @@
+item,location,container,quantity,condition,status,purchase_price,currency_code,date_acquired,notes
+Power Drill,Garage,Red Box,1,NEW,AVAILABLE,199,USD,2024-01-15,Brand new drill
+Hammer,Garage,,2,GOOD,AVAILABLE,29,USD,2023-06-20,
+Screwdriver Set,Garage,Blue Bin,1,EXCELLENT,IN_USE,45,USD,2024-02-01,Currently being used

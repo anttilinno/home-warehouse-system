@@ -817,3 +817,971 @@ func TestEntity_GetFileExtension(t *testing.T) {
 		})
 	}
 }
+
+func TestEntity_URLGeneration(t *testing.T) {
+	workspaceID := uuid.New()
+	itemID := uuid.New()
+	photoID := uuid.New()
+
+	photo := &itemphoto.ItemPhoto{
+		ID:          photoID,
+		ItemID:      itemID,
+		WorkspaceID: workspaceID,
+	}
+
+	baseURL := "https://example.com"
+
+	t.Run("generates correct thumbnail URL", func(t *testing.T) {
+		expected := "https://example.com/api/v1/workspaces/" + workspaceID.String() +
+			"/items/" + itemID.String() + "/photos/" + photoID.String() + "/thumbnail"
+		assert.Equal(t, expected, photo.GetThumbnailURL(baseURL))
+	})
+
+	t.Run("generates correct full-size URL", func(t *testing.T) {
+		expected := "https://example.com/api/v1/workspaces/" + workspaceID.String() +
+			"/items/" + itemID.String() + "/photos/" + photoID.String()
+		assert.Equal(t, expected, photo.GetFullSizeURL(baseURL))
+	})
+
+	t.Run("handles empty base URL", func(t *testing.T) {
+		expected := "/api/v1/workspaces/" + workspaceID.String() +
+			"/items/" + itemID.String() + "/photos/" + photoID.String()
+		assert.Equal(t, expected, photo.GetFullSizeURL(""))
+	})
+}
+
+func TestEntity_Validate_AdditionalCases(t *testing.T) {
+	basePhoto := func() *itemphoto.ItemPhoto {
+		return &itemphoto.ItemPhoto{
+			ID:            uuid.New(),
+			ItemID:        uuid.New(),
+			WorkspaceID:   uuid.New(),
+			Filename:      "test.jpg",
+			StoragePath:   "path/to/file.jpg",
+			ThumbnailPath: "path/to/thumb.jpg",
+			FileSize:      1024,
+			MimeType:      itemphoto.MimeTypeJPEG,
+			Width:         800,
+			Height:        600,
+			DisplayOrder:  0,
+			IsPrimary:     false,
+			UploadedBy:    uuid.New(),
+		}
+	}
+
+	t.Run("missing storage_path fails validation", func(t *testing.T) {
+		photo := basePhoto()
+		photo.StoragePath = ""
+		err := photo.Validate()
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "storage_path")
+	})
+
+	t.Run("missing thumbnail_path fails validation", func(t *testing.T) {
+		photo := basePhoto()
+		photo.ThumbnailPath = ""
+		err := photo.Validate()
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "thumbnail_path")
+	})
+
+	t.Run("missing mime_type fails validation", func(t *testing.T) {
+		photo := basePhoto()
+		photo.MimeType = ""
+		err := photo.Validate()
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "mime_type")
+	})
+
+	t.Run("zero width fails validation", func(t *testing.T) {
+		photo := basePhoto()
+		photo.Width = 0
+		err := photo.Validate()
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "width")
+	})
+
+	t.Run("negative width fails validation", func(t *testing.T) {
+		photo := basePhoto()
+		photo.Width = -100
+		err := photo.Validate()
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "width")
+	})
+
+	t.Run("zero height fails validation", func(t *testing.T) {
+		photo := basePhoto()
+		photo.Height = 0
+		err := photo.Validate()
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "height")
+	})
+
+	t.Run("negative height fails validation", func(t *testing.T) {
+		photo := basePhoto()
+		photo.Height = -100
+		err := photo.Validate()
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "height")
+	})
+
+	t.Run("negative file size fails validation", func(t *testing.T) {
+		photo := basePhoto()
+		photo.FileSize = -1
+		err := photo.Validate()
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "file_size")
+	})
+
+	t.Run("missing uploaded_by fails validation", func(t *testing.T) {
+		photo := basePhoto()
+		photo.UploadedBy = uuid.Nil
+		err := photo.Validate()
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "uploaded_by")
+	})
+
+	t.Run("valid PNG mime type passes validation", func(t *testing.T) {
+		photo := basePhoto()
+		photo.MimeType = itemphoto.MimeTypePNG
+		err := photo.Validate()
+		require.NoError(t, err)
+	})
+
+	t.Run("valid WebP mime type passes validation", func(t *testing.T) {
+		photo := basePhoto()
+		photo.MimeType = itemphoto.MimeTypeWEBP
+		err := photo.Validate()
+		require.NoError(t, err)
+	})
+}
+
+func TestService_GetPhoto_RepositoryError(t *testing.T) {
+	ctx := context.Background()
+	photoID := uuid.New()
+
+	t.Run("returns repository error", func(t *testing.T) {
+		repo := new(MockRepository)
+		storage := new(MockStorage)
+		processor := new(MockImageProcessor)
+
+		expectedErr := errors.New("database connection failed")
+		repo.On("GetByID", ctx, photoID).Return(nil, expectedErr)
+
+		service := itemphoto.NewService(repo, storage, processor, os.TempDir())
+		result, err := service.GetPhoto(ctx, photoID)
+
+		require.Error(t, err)
+		assert.Equal(t, expectedErr, err)
+		assert.Nil(t, result)
+		repo.AssertExpectations(t)
+	})
+}
+
+func TestService_SetPrimaryPhoto_RepositoryError(t *testing.T) {
+	ctx := context.Background()
+	itemID := uuid.New()
+	workspaceID := uuid.New()
+	photoID := uuid.New()
+
+	t.Run("returns error when GetByID fails", func(t *testing.T) {
+		repo := new(MockRepository)
+		storage := new(MockStorage)
+		processor := new(MockImageProcessor)
+
+		expectedErr := errors.New("database error")
+		repo.On("GetByID", ctx, photoID).Return(nil, expectedErr)
+
+		service := itemphoto.NewService(repo, storage, processor, os.TempDir())
+		err := service.SetPrimaryPhoto(ctx, photoID, workspaceID)
+
+		require.Error(t, err)
+		assert.Equal(t, expectedErr, err)
+		repo.AssertExpectations(t)
+	})
+
+	t.Run("returns error when SetPrimary fails", func(t *testing.T) {
+		repo := new(MockRepository)
+		storage := new(MockStorage)
+		processor := new(MockImageProcessor)
+
+		photo := createServiceTestPhoto(t, itemID, workspaceID)
+		photo.ID = photoID
+
+		expectedErr := errors.New("failed to update primary")
+		repo.On("GetByID", ctx, photoID).Return(photo, nil)
+		repo.On("SetPrimary", ctx, photoID).Return(expectedErr)
+
+		service := itemphoto.NewService(repo, storage, processor, os.TempDir())
+		err := service.SetPrimaryPhoto(ctx, photoID, workspaceID)
+
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "failed to set primary photo")
+		repo.AssertExpectations(t)
+	})
+}
+
+func TestService_UpdateCaption_Errors(t *testing.T) {
+	ctx := context.Background()
+	itemID := uuid.New()
+	workspaceID := uuid.New()
+	photoID := uuid.New()
+
+	t.Run("returns error when GetByID fails", func(t *testing.T) {
+		repo := new(MockRepository)
+		storage := new(MockStorage)
+		processor := new(MockImageProcessor)
+
+		expectedErr := errors.New("database error")
+		repo.On("GetByID", ctx, photoID).Return(nil, expectedErr)
+
+		caption := "Test caption"
+		service := itemphoto.NewService(repo, storage, processor, os.TempDir())
+		err := service.UpdateCaption(ctx, photoID, workspaceID, &caption)
+
+		require.Error(t, err)
+		assert.Equal(t, expectedErr, err)
+		repo.AssertExpectations(t)
+	})
+
+	t.Run("returns error when photo not found", func(t *testing.T) {
+		repo := new(MockRepository)
+		storage := new(MockStorage)
+		processor := new(MockImageProcessor)
+
+		repo.On("GetByID", ctx, photoID).Return(nil, nil)
+
+		caption := "Test caption"
+		service := itemphoto.NewService(repo, storage, processor, os.TempDir())
+		err := service.UpdateCaption(ctx, photoID, workspaceID, &caption)
+
+		require.Error(t, err)
+		assert.Equal(t, itemphoto.ErrPhotoNotFound, err)
+		repo.AssertExpectations(t)
+	})
+
+	t.Run("returns error when Update fails", func(t *testing.T) {
+		repo := new(MockRepository)
+		storage := new(MockStorage)
+		processor := new(MockImageProcessor)
+
+		photo := createServiceTestPhoto(t, itemID, workspaceID)
+		photo.ID = photoID
+
+		expectedErr := errors.New("update failed")
+		repo.On("GetByID", ctx, photoID).Return(photo, nil)
+		repo.On("Update", ctx, mock.AnythingOfType("*itemphoto.ItemPhoto")).Return(expectedErr)
+
+		caption := "Test caption"
+		service := itemphoto.NewService(repo, storage, processor, os.TempDir())
+		err := service.UpdateCaption(ctx, photoID, workspaceID, &caption)
+
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "failed to update caption")
+		repo.AssertExpectations(t)
+	})
+}
+
+func TestService_ReorderPhotos_Errors(t *testing.T) {
+	ctx := context.Background()
+	itemID := uuid.New()
+	workspaceID := uuid.New()
+
+	t.Run("returns error when GetByItem fails", func(t *testing.T) {
+		repo := new(MockRepository)
+		storage := new(MockStorage)
+		processor := new(MockImageProcessor)
+
+		expectedErr := errors.New("database error")
+		repo.On("GetByItem", ctx, itemID, workspaceID).Return(nil, expectedErr)
+
+		service := itemphoto.NewService(repo, storage, processor, os.TempDir())
+		err := service.ReorderPhotos(ctx, itemID, workspaceID, []uuid.UUID{uuid.New()})
+
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "failed to get existing photos")
+		repo.AssertExpectations(t)
+	})
+
+	t.Run("returns error when UpdateDisplayOrder fails", func(t *testing.T) {
+		repo := new(MockRepository)
+		storage := new(MockStorage)
+		processor := new(MockImageProcessor)
+
+		photo1 := createServiceTestPhoto(t, itemID, workspaceID)
+		existingPhotos := []*itemphoto.ItemPhoto{photo1}
+		newOrder := []uuid.UUID{photo1.ID}
+
+		expectedErr := errors.New("update order failed")
+		repo.On("GetByItem", ctx, itemID, workspaceID).Return(existingPhotos, nil)
+		repo.On("UpdateDisplayOrder", ctx, photo1.ID, int32(0)).Return(expectedErr)
+
+		service := itemphoto.NewService(repo, storage, processor, os.TempDir())
+		err := service.ReorderPhotos(ctx, itemID, workspaceID, newOrder)
+
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "failed to update display order")
+		repo.AssertExpectations(t)
+	})
+
+	t.Run("returns error for extra photo IDs in reorder", func(t *testing.T) {
+		repo := new(MockRepository)
+		storage := new(MockStorage)
+		processor := new(MockImageProcessor)
+
+		photo1 := createServiceTestPhoto(t, itemID, workspaceID)
+		existingPhotos := []*itemphoto.ItemPhoto{photo1}
+
+		// Try to reorder with extra IDs (more than existing)
+		newOrder := []uuid.UUID{photo1.ID, uuid.New()}
+
+		repo.On("GetByItem", ctx, itemID, workspaceID).Return(existingPhotos, nil)
+
+		service := itemphoto.NewService(repo, storage, processor, os.TempDir())
+		err := service.ReorderPhotos(ctx, itemID, workspaceID, newOrder)
+
+		require.Error(t, err)
+		assert.Equal(t, itemphoto.ErrInvalidDisplayOrder, err)
+		repo.AssertExpectations(t)
+	})
+}
+
+func TestService_DeletePhoto_Errors(t *testing.T) {
+	ctx := context.Background()
+	itemID := uuid.New()
+	workspaceID := uuid.New()
+	photoID := uuid.New()
+
+	t.Run("returns error when GetByID fails", func(t *testing.T) {
+		repo := new(MockRepository)
+		storage := new(MockStorage)
+		processor := new(MockImageProcessor)
+
+		expectedErr := errors.New("database error")
+		repo.On("GetByID", ctx, photoID).Return(nil, expectedErr)
+
+		service := itemphoto.NewService(repo, storage, processor, os.TempDir())
+		err := service.DeletePhoto(ctx, photoID, workspaceID)
+
+		require.Error(t, err)
+		assert.Equal(t, expectedErr, err)
+		repo.AssertExpectations(t)
+	})
+
+	t.Run("returns error when database Delete fails", func(t *testing.T) {
+		repo := new(MockRepository)
+		storage := new(MockStorage)
+		processor := new(MockImageProcessor)
+
+		photo := createServiceTestPhoto(t, itemID, workspaceID)
+		photo.ID = photoID
+		photo.IsPrimary = false
+
+		expectedErr := errors.New("delete failed")
+		repo.On("GetByID", ctx, photoID).Return(photo, nil)
+		repo.On("Delete", ctx, photoID).Return(expectedErr)
+
+		service := itemphoto.NewService(repo, storage, processor, os.TempDir())
+		err := service.DeletePhoto(ctx, photoID, workspaceID)
+
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "failed to delete photo from database")
+		repo.AssertExpectations(t)
+	})
+
+	t.Run("deletes primary photo but no remaining photos", func(t *testing.T) {
+		repo := new(MockRepository)
+		storage := new(MockStorage)
+		processor := new(MockImageProcessor)
+
+		photo := createServiceTestPhoto(t, itemID, workspaceID)
+		photo.ID = photoID
+		photo.IsPrimary = true
+
+		repo.On("GetByID", ctx, photoID).Return(photo, nil)
+		repo.On("Delete", ctx, photoID).Return(nil)
+		storage.On("Delete", ctx, photo.StoragePath).Return(nil)
+		storage.On("Delete", ctx, photo.ThumbnailPath).Return(nil)
+		// Return empty list - no remaining photos
+		repo.On("GetByItem", ctx, itemID, workspaceID).Return([]*itemphoto.ItemPhoto{}, nil)
+
+		service := itemphoto.NewService(repo, storage, processor, os.TempDir())
+		err := service.DeletePhoto(ctx, photoID, workspaceID)
+
+		require.NoError(t, err)
+		repo.AssertExpectations(t)
+		storage.AssertExpectations(t)
+	})
+
+	t.Run("handles GetByItem error after primary delete gracefully", func(t *testing.T) {
+		repo := new(MockRepository)
+		storage := new(MockStorage)
+		processor := new(MockImageProcessor)
+
+		photo := createServiceTestPhoto(t, itemID, workspaceID)
+		photo.ID = photoID
+		photo.IsPrimary = true
+
+		repo.On("GetByID", ctx, photoID).Return(photo, nil)
+		repo.On("Delete", ctx, photoID).Return(nil)
+		storage.On("Delete", ctx, photo.StoragePath).Return(nil)
+		storage.On("Delete", ctx, photo.ThumbnailPath).Return(nil)
+		// GetByItem fails - but should be handled gracefully
+		repo.On("GetByItem", ctx, itemID, workspaceID).Return(nil, errors.New("db error"))
+
+		service := itemphoto.NewService(repo, storage, processor, os.TempDir())
+		err := service.DeletePhoto(ctx, photoID, workspaceID)
+
+		// Should still succeed since primary reassignment is best-effort
+		require.NoError(t, err)
+		repo.AssertExpectations(t)
+		storage.AssertExpectations(t)
+	})
+}
+
+// mockFile implements multipart.File interface for testing
+type mockFile struct {
+	*bytes.Reader
+}
+
+func (f *mockFile) Close() error {
+	return nil
+}
+
+func TestService_UploadPhoto_FullFlow(t *testing.T) {
+	itemID := uuid.New()
+	workspaceID := uuid.New()
+	userID := uuid.New()
+
+	// Create temporary directory for uploads
+	tmpDir, err := os.MkdirTemp("", "photo-upload-test-*")
+	require.NoError(t, err)
+	defer os.RemoveAll(tmpDir)
+
+	t.Run("successful upload as first photo becomes primary", func(t *testing.T) {
+		ctx := context.Background()
+		repo := new(MockRepository)
+		storage := new(MockStorage)
+		processor := new(MockImageProcessor)
+
+		// Create test file content
+		testContent := []byte("fake jpeg image content for testing purposes")
+		file := &mockFile{bytes.NewReader(testContent)}
+
+		header := &multipart.FileHeader{
+			Filename: "test-image.jpg",
+			Size:     int64(len(testContent)),
+			Header:   make(map[string][]string),
+		}
+		header.Header.Set("Content-Type", "image/jpeg")
+
+		// Set up all mocks in order of execution
+		processor.On("Validate", ctx, mock.AnythingOfType("string")).Return(nil)
+		processor.On("GetDimensions", ctx, mock.AnythingOfType("string")).Return(1920, 1080, nil)
+		storage.On("Save", ctx, workspaceID.String(), itemID.String(), "test-image.jpg", mock.Anything).Return("photos/original.jpg", nil)
+		// GenerateThumbnail mock - create the actual file when called
+		processor.On("GenerateThumbnail", ctx, mock.AnythingOfType("string"), mock.AnythingOfType("string"), 400, 400).
+			Run(func(args mock.Arguments) {
+				destPath := args.Get(2).(string)
+				os.WriteFile(destPath, []byte("thumbnail content"), 0644)
+			}).Return(nil)
+		storage.On("Save", ctx, workspaceID.String(), itemID.String(), "thumb_test-image.jpg", mock.Anything).Return("photos/thumb.jpg", nil)
+		repo.On("GetByItem", ctx, itemID, workspaceID).Return([]*itemphoto.ItemPhoto{}, nil)
+		repo.On("Create", ctx, mock.MatchedBy(func(p *itemphoto.ItemPhoto) bool {
+			return p.ItemID == itemID &&
+				p.WorkspaceID == workspaceID &&
+				p.IsPrimary == true && // First photo should be primary
+				p.DisplayOrder == 0 &&
+				p.Filename == "test-image.jpg" &&
+				p.Width == 1920 &&
+				p.Height == 1080
+		})).Return(&itemphoto.ItemPhoto{
+			ID:            uuid.New(),
+			ItemID:        itemID,
+			WorkspaceID:   workspaceID,
+			Filename:      "test-image.jpg",
+			StoragePath:   "photos/original.jpg",
+			ThumbnailPath: "photos/thumb.jpg",
+			FileSize:      int64(len(testContent)),
+			MimeType:      "image/jpeg",
+			Width:         1920,
+			Height:        1080,
+			DisplayOrder:  0,
+			IsPrimary:     true,
+			UploadedBy:    userID,
+		}, nil)
+
+		service := itemphoto.NewService(repo, storage, processor, tmpDir)
+		result, err := service.UploadPhoto(ctx, itemID, workspaceID, userID, file, header, nil)
+
+		require.NoError(t, err)
+		require.NotNil(t, result)
+		assert.Equal(t, itemID, result.ItemID)
+		assert.True(t, result.IsPrimary)
+		processor.AssertExpectations(t)
+		storage.AssertExpectations(t)
+		repo.AssertExpectations(t)
+	})
+
+	t.Run("successful upload as second photo is not primary", func(t *testing.T) {
+		ctx := context.Background()
+		repo := new(MockRepository)
+		storage := new(MockStorage)
+		processor := new(MockImageProcessor)
+
+		testContent := []byte("another fake jpeg image")
+		file := &mockFile{bytes.NewReader(testContent)}
+
+		header := &multipart.FileHeader{
+			Filename: "second-image.jpg",
+			Size:     int64(len(testContent)),
+			Header:   make(map[string][]string),
+		}
+		header.Header.Set("Content-Type", "image/jpeg")
+
+		existingPhoto := createServiceTestPhoto(t, itemID, workspaceID)
+
+		processor.On("Validate", ctx, mock.AnythingOfType("string")).Return(nil)
+		processor.On("GetDimensions", ctx, mock.AnythingOfType("string")).Return(800, 600, nil)
+		storage.On("Save", ctx, workspaceID.String(), itemID.String(), "second-image.jpg", mock.Anything).Return("photos/second.jpg", nil)
+		processor.On("GenerateThumbnail", ctx, mock.AnythingOfType("string"), mock.AnythingOfType("string"), 400, 400).
+			Run(func(args mock.Arguments) {
+				destPath := args.Get(2).(string)
+				os.WriteFile(destPath, []byte("thumbnail content"), 0644)
+			}).Return(nil)
+		storage.On("Save", ctx, workspaceID.String(), itemID.String(), "thumb_second-image.jpg", mock.Anything).Return("photos/thumb_second.jpg", nil)
+		repo.On("GetByItem", ctx, itemID, workspaceID).Return([]*itemphoto.ItemPhoto{existingPhoto}, nil)
+		repo.On("Create", ctx, mock.MatchedBy(func(p *itemphoto.ItemPhoto) bool {
+			return p.IsPrimary == false && // Second photo should NOT be primary
+				p.DisplayOrder == 1 // Should be after first photo
+		})).Return(&itemphoto.ItemPhoto{
+			ID:            uuid.New(),
+			ItemID:        itemID,
+			WorkspaceID:   workspaceID,
+			IsPrimary:     false,
+			DisplayOrder:  1,
+			UploadedBy:    userID,
+		}, nil)
+
+		service := itemphoto.NewService(repo, storage, processor, tmpDir)
+		result, err := service.UploadPhoto(ctx, itemID, workspaceID, userID, file, header, nil)
+
+		require.NoError(t, err)
+		require.NotNil(t, result)
+		assert.False(t, result.IsPrimary)
+		assert.Equal(t, int32(1), result.DisplayOrder)
+	})
+
+	t.Run("upload with caption", func(t *testing.T) {
+		ctx := context.Background()
+		repo := new(MockRepository)
+		storage := new(MockStorage)
+		processor := new(MockImageProcessor)
+
+		testContent := []byte("image with caption")
+		file := &mockFile{bytes.NewReader(testContent)}
+
+		header := &multipart.FileHeader{
+			Filename: "captioned.jpg",
+			Size:     int64(len(testContent)),
+			Header:   make(map[string][]string),
+		}
+		header.Header.Set("Content-Type", "image/jpeg")
+
+		caption := "My awesome photo"
+
+		processor.On("Validate", ctx, mock.AnythingOfType("string")).Return(nil)
+		processor.On("GetDimensions", ctx, mock.AnythingOfType("string")).Return(640, 480, nil)
+		storage.On("Save", ctx, workspaceID.String(), itemID.String(), "captioned.jpg", mock.Anything).Return("photos/captioned.jpg", nil)
+		processor.On("GenerateThumbnail", ctx, mock.AnythingOfType("string"), mock.AnythingOfType("string"), 400, 400).
+			Run(func(args mock.Arguments) {
+				destPath := args.Get(2).(string)
+				os.WriteFile(destPath, []byte("thumbnail content"), 0644)
+			}).Return(nil)
+		storage.On("Save", ctx, workspaceID.String(), itemID.String(), "thumb_captioned.jpg", mock.Anything).Return("photos/thumb_captioned.jpg", nil)
+		repo.On("GetByItem", ctx, itemID, workspaceID).Return([]*itemphoto.ItemPhoto{}, nil)
+		repo.On("Create", ctx, mock.MatchedBy(func(p *itemphoto.ItemPhoto) bool {
+			return p.Caption != nil && *p.Caption == caption
+		})).Return(&itemphoto.ItemPhoto{
+			ID:          uuid.New(),
+			Caption:     &caption,
+			IsPrimary:   true,
+			UploadedBy:  userID,
+		}, nil)
+
+		service := itemphoto.NewService(repo, storage, processor, tmpDir)
+		result, err := service.UploadPhoto(ctx, itemID, workspaceID, userID, file, header, &caption)
+
+		require.NoError(t, err)
+		require.NotNil(t, result)
+		assert.NotNil(t, result.Caption)
+		assert.Equal(t, caption, *result.Caption)
+	})
+
+	t.Run("fails when image validation fails", func(t *testing.T) {
+		ctx := context.Background()
+		repo := new(MockRepository)
+		storage := new(MockStorage)
+		processor := new(MockImageProcessor)
+
+		testContent := []byte("corrupted image data")
+		file := &mockFile{bytes.NewReader(testContent)}
+
+		header := &multipart.FileHeader{
+			Filename: "corrupted.jpg",
+			Size:     int64(len(testContent)),
+			Header:   make(map[string][]string),
+		}
+		header.Header.Set("Content-Type", "image/jpeg")
+
+		processor.On("Validate", ctx, mock.AnythingOfType("string")).Return(errors.New("invalid image format"))
+
+		service := itemphoto.NewService(repo, storage, processor, tmpDir)
+		result, err := service.UploadPhoto(ctx, itemID, workspaceID, userID, file, header, nil)
+
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "invalid image")
+		assert.Nil(t, result)
+	})
+
+	t.Run("fails when GetDimensions fails", func(t *testing.T) {
+		ctx := context.Background()
+		repo := new(MockRepository)
+		storage := new(MockStorage)
+		processor := new(MockImageProcessor)
+
+		testContent := []byte("some image content")
+		file := &mockFile{bytes.NewReader(testContent)}
+
+		header := &multipart.FileHeader{
+			Filename: "test.jpg",
+			Size:     int64(len(testContent)),
+			Header:   make(map[string][]string),
+		}
+		header.Header.Set("Content-Type", "image/jpeg")
+
+		processor.On("Validate", ctx, mock.AnythingOfType("string")).Return(nil)
+		processor.On("GetDimensions", ctx, mock.AnythingOfType("string")).Return(0, 0, errors.New("failed to read dimensions"))
+
+		service := itemphoto.NewService(repo, storage, processor, tmpDir)
+		result, err := service.UploadPhoto(ctx, itemID, workspaceID, userID, file, header, nil)
+
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "failed to get image dimensions")
+		assert.Nil(t, result)
+	})
+
+	t.Run("fails when original file storage fails", func(t *testing.T) {
+		ctx := context.Background()
+		repo := new(MockRepository)
+		storage := new(MockStorage)
+		processor := new(MockImageProcessor)
+
+		testContent := []byte("image content")
+		file := &mockFile{bytes.NewReader(testContent)}
+
+		header := &multipart.FileHeader{
+			Filename: "test.jpg",
+			Size:     int64(len(testContent)),
+			Header:   make(map[string][]string),
+		}
+		header.Header.Set("Content-Type", "image/jpeg")
+
+		processor.On("Validate", ctx, mock.AnythingOfType("string")).Return(nil)
+		processor.On("GetDimensions", ctx, mock.AnythingOfType("string")).Return(800, 600, nil)
+		storage.On("Save", ctx, workspaceID.String(), itemID.String(), "test.jpg", mock.Anything).Return("", errors.New("storage full"))
+
+		service := itemphoto.NewService(repo, storage, processor, tmpDir)
+		result, err := service.UploadPhoto(ctx, itemID, workspaceID, userID, file, header, nil)
+
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "failed to save file")
+		assert.Nil(t, result)
+	})
+
+	t.Run("cleans up original when thumbnail generation fails", func(t *testing.T) {
+		ctx := context.Background()
+		repo := new(MockRepository)
+		storage := new(MockStorage)
+		processor := new(MockImageProcessor)
+
+		testContent := []byte("image content")
+		file := &mockFile{bytes.NewReader(testContent)}
+
+		header := &multipart.FileHeader{
+			Filename: "test.jpg",
+			Size:     int64(len(testContent)),
+			Header:   make(map[string][]string),
+		}
+		header.Header.Set("Content-Type", "image/jpeg")
+
+		originalPath := "photos/original.jpg"
+
+		processor.On("Validate", ctx, mock.AnythingOfType("string")).Return(nil)
+		processor.On("GetDimensions", ctx, mock.AnythingOfType("string")).Return(800, 600, nil)
+		storage.On("Save", ctx, workspaceID.String(), itemID.String(), "test.jpg", mock.Anything).Return(originalPath, nil)
+		processor.On("GenerateThumbnail", ctx, mock.AnythingOfType("string"), mock.AnythingOfType("string"), 400, 400).Return(errors.New("thumbnail generation failed"))
+		storage.On("Delete", ctx, originalPath).Return(nil) // Should cleanup
+
+		service := itemphoto.NewService(repo, storage, processor, tmpDir)
+		result, err := service.UploadPhoto(ctx, itemID, workspaceID, userID, file, header, nil)
+
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "failed to generate thumbnail")
+		assert.Nil(t, result)
+		storage.AssertCalled(t, "Delete", ctx, originalPath)
+	})
+
+	t.Run("cleans up files when thumbnail storage fails", func(t *testing.T) {
+		ctx := context.Background()
+		repo := new(MockRepository)
+		storage := new(MockStorage)
+		processor := new(MockImageProcessor)
+
+		testContent := []byte("image content")
+		file := &mockFile{bytes.NewReader(testContent)}
+
+		header := &multipart.FileHeader{
+			Filename: "test.jpg",
+			Size:     int64(len(testContent)),
+			Header:   make(map[string][]string),
+		}
+		header.Header.Set("Content-Type", "image/jpeg")
+
+		originalPath := "photos/original.jpg"
+
+		processor.On("Validate", ctx, mock.AnythingOfType("string")).Return(nil)
+		processor.On("GetDimensions", ctx, mock.AnythingOfType("string")).Return(800, 600, nil)
+		storage.On("Save", ctx, workspaceID.String(), itemID.String(), "test.jpg", mock.Anything).Return(originalPath, nil)
+		processor.On("GenerateThumbnail", ctx, mock.AnythingOfType("string"), mock.AnythingOfType("string"), 400, 400).
+			Run(func(args mock.Arguments) {
+				destPath := args.Get(2).(string)
+				os.WriteFile(destPath, []byte("thumbnail content"), 0644)
+			}).Return(nil)
+		storage.On("Save", ctx, workspaceID.String(), itemID.String(), "thumb_test.jpg", mock.Anything).Return("", errors.New("storage error"))
+		storage.On("Delete", ctx, originalPath).Return(nil)
+
+		service := itemphoto.NewService(repo, storage, processor, tmpDir)
+		result, err := service.UploadPhoto(ctx, itemID, workspaceID, userID, file, header, nil)
+
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "failed to save thumbnail")
+		assert.Nil(t, result)
+	})
+
+	t.Run("cleans up files when GetByItem fails", func(t *testing.T) {
+		ctx := context.Background()
+		repo := new(MockRepository)
+		storage := new(MockStorage)
+		processor := new(MockImageProcessor)
+
+		testContent := []byte("image content")
+		file := &mockFile{bytes.NewReader(testContent)}
+
+		header := &multipart.FileHeader{
+			Filename: "test.jpg",
+			Size:     int64(len(testContent)),
+			Header:   make(map[string][]string),
+		}
+		header.Header.Set("Content-Type", "image/jpeg")
+
+		originalPath := "photos/original.jpg"
+		thumbnailPath := "photos/thumb.jpg"
+
+		processor.On("Validate", ctx, mock.AnythingOfType("string")).Return(nil)
+		processor.On("GetDimensions", ctx, mock.AnythingOfType("string")).Return(800, 600, nil)
+		storage.On("Save", ctx, workspaceID.String(), itemID.String(), "test.jpg", mock.Anything).Return(originalPath, nil)
+		processor.On("GenerateThumbnail", ctx, mock.AnythingOfType("string"), mock.AnythingOfType("string"), 400, 400).
+			Run(func(args mock.Arguments) {
+				destPath := args.Get(2).(string)
+				os.WriteFile(destPath, []byte("thumbnail content"), 0644)
+			}).Return(nil)
+		storage.On("Save", ctx, workspaceID.String(), itemID.String(), "thumb_test.jpg", mock.Anything).Return(thumbnailPath, nil)
+		repo.On("GetByItem", ctx, itemID, workspaceID).Return(nil, errors.New("database error"))
+		storage.On("Delete", ctx, originalPath).Return(nil)
+		storage.On("Delete", ctx, thumbnailPath).Return(nil)
+
+		service := itemphoto.NewService(repo, storage, processor, tmpDir)
+		result, err := service.UploadPhoto(ctx, itemID, workspaceID, userID, file, header, nil)
+
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "failed to get existing photos")
+		assert.Nil(t, result)
+	})
+
+	t.Run("cleans up files when repository Create fails", func(t *testing.T) {
+		ctx := context.Background()
+		repo := new(MockRepository)
+		storage := new(MockStorage)
+		processor := new(MockImageProcessor)
+
+		testContent := []byte("image content")
+		file := &mockFile{bytes.NewReader(testContent)}
+
+		header := &multipart.FileHeader{
+			Filename: "test.jpg",
+			Size:     int64(len(testContent)),
+			Header:   make(map[string][]string),
+		}
+		header.Header.Set("Content-Type", "image/jpeg")
+
+		originalPath := "photos/original.jpg"
+		thumbnailPath := "photos/thumb.jpg"
+
+		processor.On("Validate", ctx, mock.AnythingOfType("string")).Return(nil)
+		processor.On("GetDimensions", ctx, mock.AnythingOfType("string")).Return(800, 600, nil)
+		storage.On("Save", ctx, workspaceID.String(), itemID.String(), "test.jpg", mock.Anything).Return(originalPath, nil)
+		processor.On("GenerateThumbnail", ctx, mock.AnythingOfType("string"), mock.AnythingOfType("string"), 400, 400).
+			Run(func(args mock.Arguments) {
+				destPath := args.Get(2).(string)
+				os.WriteFile(destPath, []byte("thumbnail content"), 0644)
+			}).Return(nil)
+		storage.On("Save", ctx, workspaceID.String(), itemID.String(), "thumb_test.jpg", mock.Anything).Return(thumbnailPath, nil)
+		repo.On("GetByItem", ctx, itemID, workspaceID).Return([]*itemphoto.ItemPhoto{}, nil)
+		repo.On("Create", ctx, mock.AnythingOfType("*itemphoto.ItemPhoto")).Return(nil, errors.New("database error"))
+		storage.On("Delete", ctx, originalPath).Return(nil)
+		storage.On("Delete", ctx, thumbnailPath).Return(nil)
+
+		service := itemphoto.NewService(repo, storage, processor, tmpDir)
+		result, err := service.UploadPhoto(ctx, itemID, workspaceID, userID, file, header, nil)
+
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "failed to save photo to database")
+		assert.Nil(t, result)
+	})
+
+	t.Run("accepts PNG mime type", func(t *testing.T) {
+		ctx := context.Background()
+		repo := new(MockRepository)
+		storage := new(MockStorage)
+		processor := new(MockImageProcessor)
+
+		testContent := []byte("png image content")
+		file := &mockFile{bytes.NewReader(testContent)}
+
+		header := &multipart.FileHeader{
+			Filename: "test.png",
+			Size:     int64(len(testContent)),
+			Header:   make(map[string][]string),
+		}
+		header.Header.Set("Content-Type", "image/png")
+
+		processor.On("Validate", ctx, mock.AnythingOfType("string")).Return(nil)
+		processor.On("GetDimensions", ctx, mock.AnythingOfType("string")).Return(800, 600, nil)
+		storage.On("Save", ctx, workspaceID.String(), itemID.String(), "test.png", mock.Anything).Return("photos/test.png", nil)
+		processor.On("GenerateThumbnail", ctx, mock.AnythingOfType("string"), mock.AnythingOfType("string"), 400, 400).
+			Run(func(args mock.Arguments) {
+				destPath := args.Get(2).(string)
+				os.WriteFile(destPath, []byte("thumbnail content"), 0644)
+			}).Return(nil)
+		storage.On("Save", ctx, workspaceID.String(), itemID.String(), "thumb_test.png", mock.Anything).Return("photos/thumb.png", nil)
+		repo.On("GetByItem", ctx, itemID, workspaceID).Return([]*itemphoto.ItemPhoto{}, nil)
+		repo.On("Create", ctx, mock.MatchedBy(func(p *itemphoto.ItemPhoto) bool {
+			return p.MimeType == "image/png"
+		})).Return(&itemphoto.ItemPhoto{
+			ID:        uuid.New(),
+			MimeType:  "image/png",
+			IsPrimary: true,
+		}, nil)
+
+		service := itemphoto.NewService(repo, storage, processor, tmpDir)
+		result, err := service.UploadPhoto(ctx, itemID, workspaceID, userID, file, header, nil)
+
+		require.NoError(t, err)
+		require.NotNil(t, result)
+	})
+
+	t.Run("accepts WebP mime type", func(t *testing.T) {
+		ctx := context.Background()
+		repo := new(MockRepository)
+		storage := new(MockStorage)
+		processor := new(MockImageProcessor)
+
+		testContent := []byte("webp image content")
+		file := &mockFile{bytes.NewReader(testContent)}
+
+		header := &multipart.FileHeader{
+			Filename: "test.webp",
+			Size:     int64(len(testContent)),
+			Header:   make(map[string][]string),
+		}
+		header.Header.Set("Content-Type", "image/webp")
+
+		processor.On("Validate", ctx, mock.AnythingOfType("string")).Return(nil)
+		processor.On("GetDimensions", ctx, mock.AnythingOfType("string")).Return(800, 600, nil)
+		storage.On("Save", ctx, workspaceID.String(), itemID.String(), "test.webp", mock.Anything).Return("photos/test.webp", nil)
+		processor.On("GenerateThumbnail", ctx, mock.AnythingOfType("string"), mock.AnythingOfType("string"), 400, 400).
+			Run(func(args mock.Arguments) {
+				destPath := args.Get(2).(string)
+				os.WriteFile(destPath, []byte("thumbnail content"), 0644)
+			}).Return(nil)
+		storage.On("Save", ctx, workspaceID.String(), itemID.String(), "thumb_test.webp", mock.Anything).Return("photos/thumb.webp", nil)
+		repo.On("GetByItem", ctx, itemID, workspaceID).Return([]*itemphoto.ItemPhoto{}, nil)
+		repo.On("Create", ctx, mock.MatchedBy(func(p *itemphoto.ItemPhoto) bool {
+			return p.MimeType == "image/webp"
+		})).Return(&itemphoto.ItemPhoto{
+			ID:        uuid.New(),
+			MimeType:  "image/webp",
+			IsPrimary: true,
+		}, nil)
+
+		service := itemphoto.NewService(repo, storage, processor, tmpDir)
+		result, err := service.UploadPhoto(ctx, itemID, workspaceID, userID, file, header, nil)
+
+		require.NoError(t, err)
+		require.NotNil(t, result)
+	})
+
+	t.Run("rejects GIF mime type", func(t *testing.T) {
+		ctx := context.Background()
+		repo := new(MockRepository)
+		storage := new(MockStorage)
+		processor := new(MockImageProcessor)
+
+		header := &multipart.FileHeader{
+			Filename: "test.gif",
+			Size:     1024,
+			Header:   make(map[string][]string),
+		}
+		header.Header.Set("Content-Type", "image/gif")
+
+		service := itemphoto.NewService(repo, storage, processor, tmpDir)
+		result, err := service.UploadPhoto(ctx, itemID, workspaceID, userID, nil, header, nil)
+
+		require.Error(t, err)
+		assert.Equal(t, itemphoto.ErrInvalidFileType, err)
+		assert.Nil(t, result)
+	})
+}
+
+func TestIsValidMimeType(t *testing.T) {
+	t.Run("JPEG is valid", func(t *testing.T) {
+		photo := &itemphoto.ItemPhoto{MimeType: "image/jpeg"}
+		assert.True(t, photo.IsValidMimeType())
+	})
+
+	t.Run("PNG is valid", func(t *testing.T) {
+		photo := &itemphoto.ItemPhoto{MimeType: "image/png"}
+		assert.True(t, photo.IsValidMimeType())
+	})
+
+	t.Run("WebP is valid", func(t *testing.T) {
+		photo := &itemphoto.ItemPhoto{MimeType: "image/webp"}
+		assert.True(t, photo.IsValidMimeType())
+	})
+
+	t.Run("GIF is not valid", func(t *testing.T) {
+		photo := &itemphoto.ItemPhoto{MimeType: "image/gif"}
+		assert.False(t, photo.IsValidMimeType())
+	})
+
+	t.Run("PDF is not valid", func(t *testing.T) {
+		photo := &itemphoto.ItemPhoto{MimeType: "application/pdf"}
+		assert.False(t, photo.IsValidMimeType())
+	})
+
+	t.Run("empty is not valid", func(t *testing.T) {
+		photo := &itemphoto.ItemPhoto{MimeType: ""}
+		assert.False(t, photo.IsValidMimeType())
+	})
+}

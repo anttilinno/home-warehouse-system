@@ -1,0 +1,6 @@
+name,description,price
+"Simple Product","A simple description",10.99
+"Product with ""quotes""","Description with ""quoted"" text",25.50
+"Multiline
+Product","Description with
+multiple lines",99.99

@@ -1,0 +1,3 @@
+Name,EMAIL,Age,IsActive
+John,john@test.com,30,true
+Jane,jane@test.com,25,false

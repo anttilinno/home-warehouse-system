@@ -467,5 +467,44 @@
       "errors": "Vead",
       "total": "Kokku"
     }
+  },
+  "pwa": {
+    "offline": {
+      "message": "Oled võrguühenduseta. Mõned funktsioonid võivad olla kättesaamatud.",
+      "backOnline": "Oled tagasi võrgus!"
+    },
+    "pendingUploads": {
+      "queued": "{count, plural, =1 {1 foto ootab üleslaadimist} other {# fotot ootab üleslaadimist}}",
+      "syncing": "{count, plural, =1 {Sünkroonimine 1 foto...} other {Sünkroonimine # fotot...}}"
+    },
+    "banner": {
+      "title": "Paigalda Home Warehouse",
+      "description": "Lisa avakuvale kiireks juurdepääsuks ja võrguühenduseta toeks",
+      "install": "Paigalda rakendus",
+      "installShort": "Paigalda",
+      "dismiss": "Sulge"
+    },
+    "button": {
+      "install": "Paigalda rakendus",
+      "installed": "Paigaldatud"
+    },
+    "ios": {
+      "title": "Paigalda iOS-ile",
+      "description": "Järgi neid samme, et lisada Home Warehouse oma avakuvale",
+      "step1": {
+        "title": "Puuduta Jaga nuppu",
+        "description": "Leia Jaga nupp Safari tööriistaribal ekraani allosas",
+        "button": "Jaga"
+      },
+      "step2": {
+        "title": "Lisa avakuvale",
+        "description": "Keri alla ja puuduta \"Lisa avakuvale\"",
+        "button": "Lisa avakuvale"
+      },
+      "step3": {
+        "title": "Kinnita paigaldus",
+        "description": "Puuduta \"Lisa\" paremas ülanurgas, et rakendus paigaldada"
+      }
+    }
   }
 }

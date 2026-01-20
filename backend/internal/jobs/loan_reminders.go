@@ -13,6 +13,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 
 	"github.com/antti/home-warehouse/go-backend/internal/infra/queries"
+	"github.com/antti/home-warehouse/go-backend/internal/infra/webpush"
 )
 
 // LoanReminderPayload is the payload for loan reminder tasks.
@@ -30,6 +31,7 @@ type LoanReminderPayload struct {
 type LoanReminderProcessor struct {
 	pool        *pgxpool.Pool
 	emailSender EmailSender
+	pushSender  *webpush.Sender
 }
 
 // EmailSender is an interface for sending emails.
@@ -38,10 +40,11 @@ type EmailSender interface {
 }
 
 // NewLoanReminderProcessor creates a new loan reminder processor.
-func NewLoanReminderProcessor(pool *pgxpool.Pool, emailSender EmailSender) *LoanReminderProcessor {
+func NewLoanReminderProcessor(pool *pgxpool.Pool, emailSender EmailSender, pushSender *webpush.Sender) *LoanReminderProcessor {
 	return &LoanReminderProcessor{
 		pool:        pool,
 		emailSender: emailSender,
+		pushSender:  pushSender,
 	}
 }
 
@@ -69,8 +72,70 @@ func (p *LoanReminderProcessor) ProcessTask(ctx context.Context, t *asynq.Task) 
 		}
 	}
 
+	// Send push notifications to workspace members (owners/admins)
+	if p.pushSender != nil && p.pushSender.IsEnabled() {
+		if err := p.sendPushNotifications(ctx, payload); err != nil {
+			// Log but don't fail the task if push fails
+			log.Printf("Failed to send push notification for loan %s: %v", payload.LoanID, err)
+		}
+	}
+
 	log.Printf("Loan reminder sent for loan %s", payload.LoanID)
 	return nil
+}
+
+// sendPushNotifications sends push notifications to workspace admins/owners about the loan.
+func (p *LoanReminderProcessor) sendPushNotifications(ctx context.Context, payload LoanReminderPayload) error {
+	q := queries.New(p.pool)
+
+	// Get workspace members who should receive notifications (owners and admins)
+	members, err := q.ListWorkspaceMembersByRole(ctx, queries.ListWorkspaceMembersByRoleParams{
+		WorkspaceID: payload.WorkspaceID,
+		Column2:     []queries.AuthWorkspaceRoleEnum{queries.AuthWorkspaceRoleEnumOwner, queries.AuthWorkspaceRoleEnumAdmin},
+	})
+	if err != nil {
+		return fmt.Errorf("failed to get workspace members: %w", err)
+	}
+
+	if len(members) == 0 {
+		return nil
+	}
+
+	// Collect user IDs
+	userIDs := make([]uuid.UUID, len(members))
+	for i, m := range members {
+		userIDs[i] = m.UserID
+	}
+
+	// Build push message
+	title := "Loan Due Soon"
+	body := fmt.Sprintf("%s borrowed by %s is due on %s",
+		payload.ItemName, payload.BorrowerName, payload.DueDate.Format("Jan 2, 2006"))
+	tag := "loan-due"
+
+	if payload.IsOverdue {
+		title = "Loan Overdue"
+		body = fmt.Sprintf("%s borrowed by %s was due on %s",
+			payload.ItemName, payload.BorrowerName, payload.DueDate.Format("Jan 2, 2006"))
+		tag = "loan-overdue"
+	}
+
+	message := webpush.PushMessage{
+		Title: title,
+		Body:  body,
+		Icon:  "/icon-192.png",
+		Badge: "/favicon-32x32.png",
+		Tag:   tag,
+		URL:   fmt.Sprintf("/dashboard/loans/%s", payload.LoanID),
+		Data: map[string]interface{}{
+			"type":         "loan_reminder",
+			"loan_id":      payload.LoanID.String(),
+			"workspace_id": payload.WorkspaceID.String(),
+			"is_overdue":   payload.IsOverdue,
+		},
+	}
+
+	return p.pushSender.SendToUsers(ctx, userIDs, message)
 }
 
 // LoanReminderScheduler schedules loan reminder tasks.

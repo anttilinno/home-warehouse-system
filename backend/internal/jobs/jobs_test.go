@@ -12,7 +12,7 @@ import (
 )
 
 // =============================================================================
-// Task Type Tests
+// Task Type Constants Tests
 // =============================================================================
 
 func TestTaskTypes(t *testing.T) {
@@ -28,7 +28,7 @@ func TestQueueNames(t *testing.T) {
 }
 
 // =============================================================================
-// LoanReminderPayload Tests
+// LoanReminderPayload JSON Tests
 // =============================================================================
 
 func TestLoanReminderPayload_JSON(t *testing.T) {
@@ -64,66 +64,11 @@ func TestLoanReminderPayload_JSON(t *testing.T) {
 	assert.Equal(t, payload.IsOverdue, unmarshaled.IsOverdue)
 }
 
-func TestLoanReminderPayload_OverdueFlag(t *testing.T) {
-	tests := []struct {
-		name      string
-		dueDate   time.Time
-		isOverdue bool
-	}{
-		{
-			name:      "future due date - not overdue",
-			dueDate:   time.Now().Add(24 * time.Hour),
-			isOverdue: false,
-		},
-		{
-			name:      "past due date - overdue",
-			dueDate:   time.Now().Add(-24 * time.Hour),
-			isOverdue: true,
-		},
-		{
-			name:      "today - not overdue yet",
-			dueDate:   time.Now(),
-			isOverdue: false,
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			payload := LoanReminderPayload{
-				DueDate:   tt.dueDate,
-				IsOverdue: tt.isOverdue,
-			}
-			assert.Equal(t, tt.isOverdue, payload.IsOverdue)
-		})
-	}
-}
-
-// =============================================================================
-// CleanupConfig Tests
-// =============================================================================
-
-func TestDefaultCleanupConfig(t *testing.T) {
-	config := DefaultCleanupConfig()
-
-	assert.Equal(t, 90, config.DeletedRecordsRetentionDays)
-	assert.Equal(t, 365, config.ActivityLogsRetentionDays)
-}
-
-func TestCleanupConfig_CustomValues(t *testing.T) {
-	config := CleanupConfig{
-		DeletedRecordsRetentionDays: 30,
-		ActivityLogsRetentionDays:   180,
-	}
-
-	assert.Equal(t, 30, config.DeletedRecordsRetentionDays)
-	assert.Equal(t, 180, config.ActivityLogsRetentionDays)
-}
-
 // =============================================================================
 // SchedulerConfig Tests
 // =============================================================================
 
-func TestDefaultSchedulerConfig(t *testing.T) {
+func TestDefaultSchedulerConfigInternal(t *testing.T) {
 	config := DefaultSchedulerConfig("localhost:6379")
 
 	assert.Equal(t, "localhost:6379", config.RedisAddr)
@@ -133,44 +78,69 @@ func TestDefaultSchedulerConfig(t *testing.T) {
 	assert.Equal(t, 1, config.Queues[QueueLow])
 }
 
+func TestSchedulerConfig_CustomQueues(t *testing.T) {
+	config := SchedulerConfig{
+		RedisAddr: "redis:6379",
+		Queues: map[string]int{
+			QueueCritical: 20,
+			QueueDefault:  10,
+			QueueLow:      5,
+		},
+	}
+
+	assert.Equal(t, "redis:6379", config.RedisAddr)
+	assert.Equal(t, 20, config.Queues[QueueCritical])
+	assert.Equal(t, 10, config.Queues[QueueDefault])
+	assert.Equal(t, 5, config.Queues[QueueLow])
+}
+
 // =============================================================================
 // Task Creation Tests
 // =============================================================================
 
-func TestNewScheduleLoanRemindersTask(t *testing.T) {
+func TestNewScheduleLoanRemindersTaskInternal(t *testing.T) {
 	task := NewScheduleLoanRemindersTask()
 	assert.NotNil(t, task)
 	assert.Equal(t, TypeLoanReminder+":schedule", task.Type())
 }
 
-func TestNewCleanupDeletedRecordsTask(t *testing.T) {
+func TestNewCleanupDeletedRecordsTaskInternal(t *testing.T) {
 	task := NewCleanupDeletedRecordsTask()
 	assert.NotNil(t, task)
 	assert.Equal(t, TypeCleanupDeletedRecords, task.Type())
 }
 
-func TestNewCleanupActivityTask(t *testing.T) {
+func TestNewCleanupActivityTaskInternal(t *testing.T) {
 	task := NewCleanupActivityTask()
 	assert.NotNil(t, task)
 	assert.Equal(t, TypeCleanupOldActivity, task.Type())
+}
+
+func TestNewCleanupTasks_Independent(t *testing.T) {
+	deletedTask := NewCleanupDeletedRecordsTask()
+	activityTask := NewCleanupActivityTask()
+
+	assert.NotNil(t, deletedTask)
+	assert.NotNil(t, activityTask)
+	assert.NotEqual(t, deletedTask.Type(), activityTask.Type())
 }
 
 // =============================================================================
 // Processor Constructor Tests
 // =============================================================================
 
-func TestNewLoanReminderProcessor(t *testing.T) {
+func TestNewLoanReminderProcessorInternal(t *testing.T) {
 	processor := NewLoanReminderProcessor(nil, nil)
 	assert.NotNil(t, processor)
 }
 
-func TestNewCleanupProcessor(t *testing.T) {
+func TestNewCleanupProcessorInternal(t *testing.T) {
 	config := DefaultCleanupConfig()
 	processor := NewCleanupProcessor(nil, config)
 	assert.NotNil(t, processor)
 }
 
-func TestNewLoanReminderScheduler(t *testing.T) {
+func TestNewLoanReminderSchedulerInternal(t *testing.T) {
 	scheduler := NewLoanReminderScheduler(nil, nil)
 	assert.NotNil(t, scheduler)
 }
@@ -231,15 +201,6 @@ func TestLoanReminderProcessor_ProcessTask_WithMockEmailSender(t *testing.T) {
 	assert.False(t, mockSender.sentEmails[0].isOverdue)
 }
 
-func TestLoanReminderProcessor_ProcessTask_InvalidPayload(t *testing.T) {
-	processor := NewLoanReminderProcessor(nil, nil)
-
-	task := asynq.NewTask(TypeLoanReminder, []byte("invalid json"))
-	err := processor.ProcessTask(context.Background(), task)
-	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "failed to unmarshal payload")
-}
-
 func TestLoanReminderProcessor_ProcessTask_NoEmailSender(t *testing.T) {
 	// Processor with nil email sender should not fail
 	processor := NewLoanReminderProcessor(nil, nil)
@@ -289,72 +250,9 @@ func TestScheduler_Client(t *testing.T) {
 	assert.NotNil(t, client)
 }
 
-func TestSchedulerConfig_CustomQueues(t *testing.T) {
-	config := SchedulerConfig{
-		RedisAddr: "redis:6379",
-		Queues: map[string]int{
-			QueueCritical: 20,
-			QueueDefault:  10,
-			QueueLow:      5,
-		},
-	}
-
-	assert.Equal(t, "redis:6379", config.RedisAddr)
-	assert.Equal(t, 20, config.Queues[QueueCritical])
-	assert.Equal(t, 10, config.Queues[QueueDefault])
-	assert.Equal(t, 5, config.Queues[QueueLow])
-}
-
-// =============================================================================
-// Cleanup Config Validation Tests
-// =============================================================================
-
-func TestCleanupConfig_ZeroRetention(t *testing.T) {
-	config := CleanupConfig{
-		DeletedRecordsRetentionDays: 0,
-		ActivityLogsRetentionDays:   0,
-	}
-
-	assert.Equal(t, 0, config.DeletedRecordsRetentionDays)
-	assert.Equal(t, 0, config.ActivityLogsRetentionDays)
-}
-
-func TestCleanupConfig_LargeRetention(t *testing.T) {
-	config := CleanupConfig{
-		DeletedRecordsRetentionDays: 3650, // 10 years
-		ActivityLogsRetentionDays:   7300, // 20 years
-	}
-
-	assert.Equal(t, 3650, config.DeletedRecordsRetentionDays)
-	assert.Equal(t, 7300, config.ActivityLogsRetentionDays)
-}
-
 // =============================================================================
 // Loan Reminder Payload Edge Cases
 // =============================================================================
-
-func TestLoanReminderPayload_EmptyStrings(t *testing.T) {
-	payload := LoanReminderPayload{
-		LoanID:        uuid.New(),
-		WorkspaceID:   uuid.New(),
-		BorrowerName:  "",
-		BorrowerEmail: "",
-		ItemName:      "",
-		DueDate:       time.Now(),
-		IsOverdue:     false,
-	}
-
-	data, err := json.Marshal(payload)
-	assert.NoError(t, err)
-
-	var unmarshaled LoanReminderPayload
-	err = json.Unmarshal(data, &unmarshaled)
-	assert.NoError(t, err)
-
-	assert.Equal(t, "", unmarshaled.BorrowerName)
-	assert.Equal(t, "", unmarshaled.BorrowerEmail)
-	assert.Equal(t, "", unmarshaled.ItemName)
-}
 
 func TestLoanReminderPayload_PastDueDate(t *testing.T) {
 	pastDate := time.Now().Add(-7 * 24 * time.Hour) // 7 days ago
@@ -392,10 +290,6 @@ func TestLoanReminderPayload_FarFuture(t *testing.T) {
 	assert.True(t, payload.DueDate.After(time.Now()))
 }
 
-// =============================================================================
-// Task Creation Edge Cases
-// =============================================================================
-
 func TestNewScheduleLoanRemindersTask_Multiple(t *testing.T) {
 	task1 := NewScheduleLoanRemindersTask()
 	task2 := NewScheduleLoanRemindersTask()
@@ -406,20 +300,11 @@ func TestNewScheduleLoanRemindersTask_Multiple(t *testing.T) {
 	assert.Equal(t, task1.Type(), task2.Type())
 }
 
-func TestNewCleanupTasks_Independent(t *testing.T) {
-	deletedTask := NewCleanupDeletedRecordsTask()
-	activityTask := NewCleanupActivityTask()
-
-	assert.NotNil(t, deletedTask)
-	assert.NotNil(t, activityTask)
-	assert.NotEqual(t, deletedTask.Type(), activityTask.Type())
-}
-
 // =============================================================================
 // RegisterHandlers Tests
 // =============================================================================
 
-func TestScheduler_RegisterHandlers(t *testing.T) {
+func TestScheduler_RegisterHandlersInternal(t *testing.T) {
 	config := DefaultSchedulerConfig("localhost:6379")
 	scheduler := NewScheduler(nil, config)
 
@@ -431,7 +316,7 @@ func TestScheduler_RegisterHandlers(t *testing.T) {
 	assert.NotNil(t, mux)
 }
 
-func TestScheduler_RegisterHandlers_WithNilEmailSender(t *testing.T) {
+func TestScheduler_RegisterHandlers_WithNilEmailSenderInternal(t *testing.T) {
 	config := DefaultSchedulerConfig("localhost:6379")
 	scheduler := NewScheduler(nil, config)
 
@@ -442,7 +327,7 @@ func TestScheduler_RegisterHandlers_WithNilEmailSender(t *testing.T) {
 	assert.NotNil(t, mux)
 }
 
-func TestScheduler_RegisterHandlers_WithCustomCleanupConfig(t *testing.T) {
+func TestScheduler_RegisterHandlers_WithCustomCleanupConfigInternal(t *testing.T) {
 	config := DefaultSchedulerConfig("localhost:6379")
 	scheduler := NewScheduler(nil, config)
 

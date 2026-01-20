@@ -566,6 +566,71 @@
     "security": {
       "title": "Security",
       "description": "Password and security settings"
+    },
+    "pushNotifications": {
+      "title": "Push Notifications",
+      "description": "Receive alerts when you're not using the app",
+      "notSupported": {
+        "title": "Not Supported",
+        "description": "Push notifications are not supported in this browser. Try using Chrome, Firefox, or Edge."
+      },
+      "denied": {
+        "title": "Permission Denied",
+        "description": "You've blocked notifications for this site. To enable, update your browser settings."
+      },
+      "status": {
+        "enabled": "Push notifications are enabled on this device",
+        "disabled": "Push notifications are disabled"
+      },
+      "badge": {
+        "active": "Active",
+        "inactive": "Inactive"
+      },
+      "button": {
+        "enable": "Enable Push Notifications",
+        "disable": "Disable Push Notifications",
+        "loading": "Processing..."
+      },
+      "info": "You'll receive notifications for loan reminders, approval decisions, and other important updates."
+    }
+  },
+  "pwa": {
+    "offline": {
+      "message": "You're offline. Some features may be unavailable.",
+      "backOnline": "You're back online!"
+    },
+    "pendingUploads": {
+      "queued": "{count, plural, =1 {1 photo queued for upload} other {# photos queued for upload}}",
+      "syncing": "{count, plural, =1 {Syncing 1 photo...} other {Syncing # photos...}}"
+    },
+    "banner": {
+      "title": "Install Home Warehouse",
+      "description": "Add to your home screen for quick access and offline support",
+      "install": "Install App",
+      "installShort": "Install",
+      "dismiss": "Dismiss"
+    },
+    "button": {
+      "install": "Install App",
+      "installed": "Installed"
+    },
+    "ios": {
+      "title": "Install on iOS",
+      "description": "Follow these steps to add Home Warehouse to your home screen",
+      "step1": {
+        "title": "Tap the Share button",
+        "description": "Find the Share button in Safari's toolbar at the bottom of the screen",
+        "button": "Share"
+      },
+      "step2": {
+        "title": "Add to Home Screen",
+        "description": "Scroll down and tap \"Add to Home Screen\"",
+        "button": "Add to Home Screen"
+      },
+      "step3": {
+        "title": "Confirm installation",
+        "description": "Tap \"Add\" in the top right corner to install the app"
+      }
     }
   }
 }

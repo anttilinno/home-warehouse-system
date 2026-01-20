@@ -19,6 +19,7 @@ import (
 	"github.com/antti/home-warehouse/go-backend/internal/domain/analytics"
 	"github.com/antti/home-warehouse/go-backend/internal/domain/auth/member"
 	"github.com/antti/home-warehouse/go-backend/internal/domain/auth/notification"
+	"github.com/antti/home-warehouse/go-backend/internal/domain/auth/pushsubscription"
 	"github.com/antti/home-warehouse/go-backend/internal/domain/auth/user"
 	"github.com/antti/home-warehouse/go-backend/internal/domain/auth/workspace"
 	"github.com/antti/home-warehouse/go-backend/internal/domain/barcode"
@@ -121,6 +122,7 @@ func NewRouter(pool *pgxpool.Pool, cfg *config.Config) chi.Router {
 	workspaceRepo := postgres.NewWorkspaceRepository(pool)
 	memberRepo := postgres.NewMemberRepository(pool)
 	notificationRepo := postgres.NewNotificationRepository(pool)
+	pushSubscriptionRepo := postgres.NewPushSubscriptionRepository(pool)
 	// Phase 1 repositories
 	categoryRepo := postgres.NewCategoryRepository(pool)
 	locationRepo := postgres.NewLocationRepository(pool)
@@ -154,6 +156,7 @@ func NewRouter(pool *pgxpool.Pool, cfg *config.Config) chi.Router {
 	workspaceSvc := workspace.NewService(workspaceRepo, memberRepo)
 	memberSvc := member.NewService(memberRepo)
 	notificationSvc := notification.NewService(notificationRepo)
+	pushSubscriptionSvc := pushsubscription.NewService(pushSubscriptionRepo)
 	// Phase 1 services
 	categorySvc := category.NewService(categoryRepo)
 	locationSvc := location.NewService(locationRepo)
@@ -253,6 +256,9 @@ func NewRouter(pool *pgxpool.Pool, cfg *config.Config) chi.Router {
 
 		// Register notification routes (user-level)
 		notification.RegisterRoutes(protectedAPI, notificationSvc)
+
+		// Register push subscription routes (user-level)
+		pushsubscription.RegisterRoutes(protectedAPI, pushSubscriptionSvc)
 
 		// Workspace-scoped routes
 		r.Route("/workspaces/{workspace_id}", func(r chi.Router) {

@@ -10,6 +10,7 @@ import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { CommandPalette } from "@/components/ui/command-palette";
 import { KeyboardShortcutsDialog } from "@/components/ui/keyboard-shortcuts-dialog";
 import { SkipLinks } from "@/components/shared/skip-links";
+import { InstallBanner, OfflineIndicator, PendingUploadsIndicator } from "@/components/pwa";
 import { useCommandPalette } from "@/lib/hooks/use-command-palette";
 import { useKeyboardShortcutsDialog } from "@/lib/hooks/use-keyboard-shortcuts-dialog";
 import { SSEProvider } from "@/lib/contexts/sse-context";
@@ -48,6 +49,9 @@ export function DashboardShell({ children }: DashboardShellProps) {
   return (
     <SSEProvider>
       <div className="min-h-screen bg-muted/30">
+        <OfflineIndicator />
+        <PendingUploadsIndicator />
+        <InstallBanner />
         <SkipLinks />
 
         {/* Desktop Sidebar */}

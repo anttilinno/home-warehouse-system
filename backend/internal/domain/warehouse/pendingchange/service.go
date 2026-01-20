@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log"
 	"time"
 
 	"github.com/google/uuid"
@@ -19,6 +20,7 @@ import (
 	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/loan"
 	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/location"
 	"github.com/antti/home-warehouse/go-backend/internal/infra/events"
+	"github.com/antti/home-warehouse/go-backend/internal/infra/webpush"
 )
 
 // EntityApplier defines the interface for applying approved changes to specific entity types.
@@ -51,6 +53,7 @@ type Service struct {
 	loanRepo       loan.Repository
 	labelRepo      label.Repository
 	broadcaster    *events.Broadcaster
+	pushSender     *webpush.Sender
 }
 
 // NewService creates a new pending change service with all required dependencies.
@@ -83,6 +86,11 @@ func NewService(
 		labelRepo:     labelRepo,
 		broadcaster:   broadcaster,
 	}
+}
+
+// SetPushSender sets the push notification sender (optional).
+func (s *Service) SetPushSender(sender *webpush.Sender) {
+	s.pushSender = sender
 }
 
 // CreatePendingChange creates a new pending change request and stores it in the queue.
@@ -219,6 +227,27 @@ func (s *Service) ApproveChange(ctx context.Context, changeID uuid.UUID, reviewe
 		})
 	}
 
+	// Send push notification to the requester
+	if s.pushSender != nil && s.pushSender.IsEnabled() {
+		message := webpush.PushMessage{
+			Title: "Change Approved",
+			Body:  fmt.Sprintf("Your %s %s has been approved by %s", change.EntityType(), change.Action(), reviewerName),
+			Icon:  "/icon-192.png",
+			Badge: "/favicon-32x32.png",
+			Tag:   "change-approved",
+			URL:   "/dashboard/my-changes",
+			Data: map[string]interface{}{
+				"type":        "pending_change_approved",
+				"change_id":   change.ID().String(),
+				"entity_type": change.EntityType(),
+				"action":      string(change.Action()),
+			},
+		}
+		if err := s.pushSender.SendToUser(ctx, change.RequesterID(), message); err != nil {
+			log.Printf("Failed to send push notification for approved change %s: %v", change.ID(), err)
+		}
+	}
+
 	return nil
 }
 
@@ -290,6 +319,28 @@ func (s *Service) RejectChange(ctx context.Context, changeID uuid.UUID, reviewer
 				"status":             string(change.Status()),
 			},
 		})
+	}
+
+	// Send push notification to the requester
+	if s.pushSender != nil && s.pushSender.IsEnabled() {
+		message := webpush.PushMessage{
+			Title: "Change Rejected",
+			Body:  fmt.Sprintf("Your %s %s has been rejected by %s: %s", change.EntityType(), change.Action(), reviewerName, reason),
+			Icon:  "/icon-192.png",
+			Badge: "/favicon-32x32.png",
+			Tag:   "change-rejected",
+			URL:   "/dashboard/my-changes",
+			Data: map[string]interface{}{
+				"type":        "pending_change_rejected",
+				"change_id":   change.ID().String(),
+				"entity_type": change.EntityType(),
+				"action":      string(change.Action()),
+				"reason":      reason,
+			},
+		}
+		if err := s.pushSender.SendToUser(ctx, change.RequesterID(), message); err != nil {
+			log.Printf("Failed to send push notification for rejected change %s: %v", change.ID(), err)
+		}
 	}
 
 	return nil

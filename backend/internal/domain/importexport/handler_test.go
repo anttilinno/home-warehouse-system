@@ -372,3 +372,65 @@ func TestImportExportHandler_Import(t *testing.T) {
 		mockSvc.AssertExpectations(t)
 	})
 }
+
+// Note: Tests for ExportWorkspaceFull and ImportWorkspaceFull require
+// integration tests with a real database since WorkspaceBackupService
+// uses direct database queries. The validation tests below cover
+// the handler-level validation paths.
+
+func TestImportExportHandler_WorkspaceExport_Validation(t *testing.T) {
+	setup := testutil.NewHandlerTestSetup()
+	mockSvc := new(MockService)
+	// Pass nil for backupSvc - validation happens before it's used
+	handler := importexport.NewHandler(mockSvc, nil)
+	handler.RegisterRoutes(setup.API)
+
+	t.Run("returns 400 for invalid format", func(t *testing.T) {
+		rec := setup.Get("/export/workspace?format=csv")
+
+		testutil.AssertStatus(t, rec, http.StatusBadRequest)
+	})
+}
+
+func TestImportExportHandler_WorkspaceImport_Validation(t *testing.T) {
+	setup := testutil.NewHandlerTestSetup()
+	mockSvc := new(MockService)
+	// Pass nil for backupSvc - validation happens before it's used
+	handler := importexport.NewHandler(mockSvc, nil)
+	handler.RegisterRoutes(setup.API)
+
+	t.Run("returns 400 for invalid format", func(t *testing.T) {
+		body := `{
+			"format": "csv",
+			"data": "dGVzdA=="
+		}`
+
+		rec := setup.Post("/import/workspace", body)
+
+		testutil.AssertStatus(t, rec, http.StatusBadRequest)
+	})
+
+	t.Run("returns 400 for invalid base64 encoding", func(t *testing.T) {
+		body := `{
+			"format": "xlsx",
+			"data": "invalid-base64!!!"
+		}`
+
+		rec := setup.Post("/import/workspace", body)
+
+		testutil.AssertStatus(t, rec, http.StatusBadRequest)
+	})
+
+	t.Run("returns 400 for empty data", func(t *testing.T) {
+		encodedData := base64.StdEncoding.EncodeToString([]byte(""))
+
+		body := `{
+			"format": "xlsx",
+			"data": "` + encodedData + `"
+		}`
+
+		rec := setup.Post("/import/workspace", body)
+
+		testutil.AssertStatus(t, rec, http.StatusBadRequest)
+	})
+}

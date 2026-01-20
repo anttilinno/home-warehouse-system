@@ -667,4 +667,1087 @@ func TestListPendingForWorkspace(t *testing.T) {
 		assert.Empty(t, changes)
 		mockRepo.AssertExpectations(t)
 	})
+
+	t.Run("returns error when repository fails", func(t *testing.T) {
+		mockRepo := new(MockPendingChangeRepository)
+
+		service := &Service{
+			repo: mockRepo,
+		}
+
+		status := StatusPending
+		repoError := errors.New("database connection failed")
+		mockRepo.On("FindByWorkspace", ctx, workspaceID, &status).Return(nil, repoError)
+
+		changes, err := service.ListPendingForWorkspace(ctx, workspaceID)
+
+		assert.Error(t, err)
+		assert.Nil(t, changes)
+		assert.Contains(t, err.Error(), "failed to list pending changes")
+		mockRepo.AssertExpectations(t)
+	})
+}
+
+// TestCreatePendingChangeValidation tests CreatePendingChange validation
+func TestCreatePendingChangeValidation(t *testing.T) {
+	ctx := context.Background()
+	workspaceID := uuid.New()
+	requesterID := uuid.New()
+
+	t.Run("validates all supported entity types", func(t *testing.T) {
+		mockRepo := new(MockPendingChangeRepository)
+		service := &Service{
+			repo: mockRepo,
+		}
+
+		validTypes := []string{"item", "category", "location", "container", "inventory", "borrower", "loan", "label"}
+		payload := json.RawMessage(`{"name": "Test"}`)
+
+		for _, entityType := range validTypes {
+			mockRepo.On("Save", ctx, mock.AnythingOfType("*pendingchange.PendingChange")).Return(nil).Once()
+
+			change, err := service.CreatePendingChange(ctx, workspaceID, requesterID, entityType, nil, ActionCreate, payload)
+
+			assert.NoError(t, err, "expected no error for entity type: %s", entityType)
+			assert.NotNil(t, change, "expected change to be created for entity type: %s", entityType)
+			assert.Equal(t, entityType, change.EntityType())
+		}
+
+		mockRepo.AssertExpectations(t)
+	})
+
+	t.Run("creates pending change with entity ID for update action", func(t *testing.T) {
+		mockRepo := new(MockPendingChangeRepository)
+		service := &Service{
+			repo: mockRepo,
+		}
+
+		entityID := uuid.New()
+		payload := json.RawMessage(`{"name": "Updated Item"}`)
+
+		mockRepo.On("Save", ctx, mock.MatchedBy(func(pc *PendingChange) bool {
+			return pc.EntityID() != nil &&
+				*pc.EntityID() == entityID &&
+				pc.Action() == ActionUpdate
+		})).Return(nil)
+
+		change, err := service.CreatePendingChange(ctx, workspaceID, requesterID, "item", &entityID, ActionUpdate, payload)
+
+		assert.NoError(t, err)
+		assert.NotNil(t, change)
+		assert.NotNil(t, change.EntityID())
+		assert.Equal(t, entityID, *change.EntityID())
+		mockRepo.AssertExpectations(t)
+	})
+
+	t.Run("creates pending change for delete action", func(t *testing.T) {
+		mockRepo := new(MockPendingChangeRepository)
+		service := &Service{
+			repo: mockRepo,
+		}
+
+		entityID := uuid.New()
+		payload := json.RawMessage(`{"id": "` + entityID.String() + `"}`)
+
+		mockRepo.On("Save", ctx, mock.MatchedBy(func(pc *PendingChange) bool {
+			return pc.Action() == ActionDelete
+		})).Return(nil)
+
+		change, err := service.CreatePendingChange(ctx, workspaceID, requesterID, "item", &entityID, ActionDelete, payload)
+
+		assert.NoError(t, err)
+		assert.NotNil(t, change)
+		assert.Equal(t, ActionDelete, change.Action())
+		mockRepo.AssertExpectations(t)
+	})
+}
+
+// TestApproveChangeEdgeCases tests additional ApproveChange edge cases
+func TestApproveChangeEdgeCases(t *testing.T) {
+	ctx := context.Background()
+	workspaceID := uuid.New()
+	requesterID := uuid.New()
+	reviewerID := uuid.New()
+	changeID := uuid.New()
+
+	t.Run("fails when change is already approved", func(t *testing.T) {
+		mockRepo := new(MockPendingChangeRepository)
+		mockMemberRepo := new(MockMemberRepository)
+		mockUserRepo := new(MockUserRepository)
+
+		service := &Service{
+			repo:       mockRepo,
+			memberRepo: mockMemberRepo,
+			userRepo:   mockUserRepo,
+		}
+
+		reviewedAt := time.Now()
+		payload := json.RawMessage(`{"name": "Test Item"}`)
+		alreadyApprovedChange := Reconstruct(
+			changeID,
+			workspaceID,
+			requesterID,
+			"item",
+			nil,
+			ActionCreate,
+			payload,
+			StatusApproved, // Already approved
+			&reviewerID,
+			&reviewedAt,
+			nil,
+			time.Now(),
+			time.Now(),
+		)
+
+		ownerMember := member.Reconstruct(
+			uuid.New(),
+			workspaceID,
+			reviewerID,
+			member.RoleOwner,
+			nil,
+			time.Now(),
+			time.Now(),
+		)
+
+		requesterUser, _ := user.NewUser("requester@test.com", "Requester User", "password123")
+		reviewerUser, _ := user.NewUser("reviewer@test.com", "Reviewer User", "password123")
+
+		mockRepo.On("FindByID", ctx, changeID).Return(alreadyApprovedChange, nil)
+		mockMemberRepo.On("FindByWorkspaceAndUser", ctx, workspaceID, reviewerID).Return(ownerMember, nil)
+		mockUserRepo.On("FindByID", ctx, requesterID).Return(requesterUser, nil)
+		mockUserRepo.On("FindByID", ctx, reviewerID).Return(reviewerUser, nil)
+
+		err := service.ApproveChange(ctx, changeID, reviewerID)
+
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "failed to approve change")
+		mockRepo.AssertExpectations(t)
+	})
+
+	t.Run("fails when member repository returns error", func(t *testing.T) {
+		mockRepo := new(MockPendingChangeRepository)
+		mockMemberRepo := new(MockMemberRepository)
+
+		service := &Service{
+			repo:       mockRepo,
+			memberRepo: mockMemberRepo,
+		}
+
+		payload := json.RawMessage(`{"name": "Test Item"}`)
+		pendingChange := Reconstruct(
+			changeID,
+			workspaceID,
+			requesterID,
+			"item",
+			nil,
+			ActionCreate,
+			payload,
+			StatusPending,
+			nil,
+			nil,
+			nil,
+			time.Now(),
+			time.Now(),
+		)
+
+		mockRepo.On("FindByID", ctx, changeID).Return(pendingChange, nil)
+		mockMemberRepo.On("FindByWorkspaceAndUser", ctx, workspaceID, reviewerID).Return(nil, errors.New("member not found"))
+
+		err := service.ApproveChange(ctx, changeID, reviewerID)
+
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "failed to check reviewer permissions")
+		mockRepo.AssertExpectations(t)
+		mockMemberRepo.AssertExpectations(t)
+	})
+
+	t.Run("fails when applying change fails", func(t *testing.T) {
+		mockRepo := new(MockPendingChangeRepository)
+		mockMemberRepo := new(MockMemberRepository)
+		mockUserRepo := new(MockUserRepository)
+		mockItemRepo := new(MockItemRepository)
+
+		service := &Service{
+			repo:       mockRepo,
+			memberRepo: mockMemberRepo,
+			userRepo:   mockUserRepo,
+			itemRepo:   mockItemRepo,
+		}
+
+		payload := json.RawMessage(`{"name": "Test Item", "sku": "TEST-001", "min_stock_level": 5}`)
+		pendingChange := Reconstruct(
+			changeID,
+			workspaceID,
+			requesterID,
+			"item",
+			nil,
+			ActionCreate,
+			payload,
+			StatusPending,
+			nil,
+			nil,
+			nil,
+			time.Now(),
+			time.Now(),
+		)
+
+		ownerMember := member.Reconstruct(
+			uuid.New(),
+			workspaceID,
+			reviewerID,
+			member.RoleOwner,
+			nil,
+			time.Now(),
+			time.Now(),
+		)
+
+		requesterUser, _ := user.NewUser("requester@test.com", "Requester User", "password123")
+		reviewerUser, _ := user.NewUser("reviewer@test.com", "Reviewer User", "password123")
+
+		mockRepo.On("FindByID", ctx, changeID).Return(pendingChange, nil)
+		mockMemberRepo.On("FindByWorkspaceAndUser", ctx, workspaceID, reviewerID).Return(ownerMember, nil)
+		mockUserRepo.On("FindByID", ctx, requesterID).Return(requesterUser, nil)
+		mockUserRepo.On("FindByID", ctx, reviewerID).Return(reviewerUser, nil)
+		mockItemRepo.On("Save", ctx, mock.AnythingOfType("*item.Item")).Return(errors.New("database error"))
+
+		err := service.ApproveChange(ctx, changeID, reviewerID)
+
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "failed to apply change")
+		mockRepo.AssertExpectations(t)
+		mockMemberRepo.AssertExpectations(t)
+		mockItemRepo.AssertExpectations(t)
+	})
+
+	t.Run("fails when final save fails", func(t *testing.T) {
+		mockRepo := new(MockPendingChangeRepository)
+		mockMemberRepo := new(MockMemberRepository)
+		mockUserRepo := new(MockUserRepository)
+		mockItemRepo := new(MockItemRepository)
+
+		service := &Service{
+			repo:       mockRepo,
+			memberRepo: mockMemberRepo,
+			userRepo:   mockUserRepo,
+			itemRepo:   mockItemRepo,
+		}
+
+		payload := json.RawMessage(`{"name": "Test Item", "sku": "TEST-001", "min_stock_level": 5}`)
+		pendingChange := Reconstruct(
+			changeID,
+			workspaceID,
+			requesterID,
+			"item",
+			nil,
+			ActionCreate,
+			payload,
+			StatusPending,
+			nil,
+			nil,
+			nil,
+			time.Now(),
+			time.Now(),
+		)
+
+		ownerMember := member.Reconstruct(
+			uuid.New(),
+			workspaceID,
+			reviewerID,
+			member.RoleOwner,
+			nil,
+			time.Now(),
+			time.Now(),
+		)
+
+		requesterUser, _ := user.NewUser("requester@test.com", "Requester User", "password123")
+		reviewerUser, _ := user.NewUser("reviewer@test.com", "Reviewer User", "password123")
+
+		mockRepo.On("FindByID", ctx, changeID).Return(pendingChange, nil)
+		mockMemberRepo.On("FindByWorkspaceAndUser", ctx, workspaceID, reviewerID).Return(ownerMember, nil)
+		mockUserRepo.On("FindByID", ctx, requesterID).Return(requesterUser, nil)
+		mockUserRepo.On("FindByID", ctx, reviewerID).Return(reviewerUser, nil)
+		mockItemRepo.On("Save", ctx, mock.AnythingOfType("*item.Item")).Return(nil)
+		mockRepo.On("Save", ctx, mock.AnythingOfType("*pendingchange.PendingChange")).Return(errors.New("save failed"))
+
+		err := service.ApproveChange(ctx, changeID, reviewerID)
+
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "failed to save approved change")
+		mockRepo.AssertExpectations(t)
+		mockMemberRepo.AssertExpectations(t)
+		mockItemRepo.AssertExpectations(t)
+	})
+}
+
+// TestRejectChangeEdgeCases tests additional RejectChange edge cases
+func TestRejectChangeEdgeCases(t *testing.T) {
+	ctx := context.Background()
+	workspaceID := uuid.New()
+	requesterID := uuid.New()
+	reviewerID := uuid.New()
+	changeID := uuid.New()
+
+	t.Run("fails when change not found", func(t *testing.T) {
+		mockRepo := new(MockPendingChangeRepository)
+
+		service := &Service{
+			repo: mockRepo,
+		}
+
+		mockRepo.On("FindByID", ctx, changeID).Return(nil, ErrPendingChangeNotFound)
+
+		err := service.RejectChange(ctx, changeID, reviewerID, "Not needed")
+
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "failed to fetch pending change")
+		mockRepo.AssertExpectations(t)
+	})
+
+	t.Run("fails when change is already rejected", func(t *testing.T) {
+		mockRepo := new(MockPendingChangeRepository)
+		mockMemberRepo := new(MockMemberRepository)
+		mockUserRepo := new(MockUserRepository)
+
+		service := &Service{
+			repo:       mockRepo,
+			memberRepo: mockMemberRepo,
+			userRepo:   mockUserRepo,
+		}
+
+		reviewedAt := time.Now()
+		reason := "First rejection"
+		payload := json.RawMessage(`{"name": "Test Item"}`)
+		alreadyRejectedChange := Reconstruct(
+			changeID,
+			workspaceID,
+			requesterID,
+			"item",
+			nil,
+			ActionCreate,
+			payload,
+			StatusRejected, // Already rejected
+			&reviewerID,
+			&reviewedAt,
+			&reason,
+			time.Now(),
+			time.Now(),
+		)
+
+		ownerMember := member.Reconstruct(
+			uuid.New(),
+			workspaceID,
+			reviewerID,
+			member.RoleOwner,
+			nil,
+			time.Now(),
+			time.Now(),
+		)
+
+		requesterUser, _ := user.NewUser("requester@test.com", "Requester User", "password123")
+		reviewerUser, _ := user.NewUser("reviewer@test.com", "Reviewer User", "password123")
+
+		mockRepo.On("FindByID", ctx, changeID).Return(alreadyRejectedChange, nil)
+		mockMemberRepo.On("FindByWorkspaceAndUser", ctx, workspaceID, reviewerID).Return(ownerMember, nil)
+		mockUserRepo.On("FindByID", ctx, requesterID).Return(requesterUser, nil)
+		mockUserRepo.On("FindByID", ctx, reviewerID).Return(reviewerUser, nil)
+
+		err := service.RejectChange(ctx, changeID, reviewerID, "Second rejection")
+
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "failed to reject change")
+		mockRepo.AssertExpectations(t)
+	})
+
+	t.Run("fails with empty rejection reason", func(t *testing.T) {
+		mockRepo := new(MockPendingChangeRepository)
+		mockMemberRepo := new(MockMemberRepository)
+		mockUserRepo := new(MockUserRepository)
+
+		service := &Service{
+			repo:       mockRepo,
+			memberRepo: mockMemberRepo,
+			userRepo:   mockUserRepo,
+		}
+
+		payload := json.RawMessage(`{"name": "Test Item"}`)
+		pendingChange := Reconstruct(
+			changeID,
+			workspaceID,
+			requesterID,
+			"item",
+			nil,
+			ActionCreate,
+			payload,
+			StatusPending,
+			nil,
+			nil,
+			nil,
+			time.Now(),
+			time.Now(),
+		)
+
+		ownerMember := member.Reconstruct(
+			uuid.New(),
+			workspaceID,
+			reviewerID,
+			member.RoleOwner,
+			nil,
+			time.Now(),
+			time.Now(),
+		)
+
+		requesterUser, _ := user.NewUser("requester@test.com", "Requester User", "password123")
+		reviewerUser, _ := user.NewUser("reviewer@test.com", "Reviewer User", "password123")
+
+		mockRepo.On("FindByID", ctx, changeID).Return(pendingChange, nil)
+		mockMemberRepo.On("FindByWorkspaceAndUser", ctx, workspaceID, reviewerID).Return(ownerMember, nil)
+		mockUserRepo.On("FindByID", ctx, requesterID).Return(requesterUser, nil)
+		mockUserRepo.On("FindByID", ctx, reviewerID).Return(reviewerUser, nil)
+
+		err := service.RejectChange(ctx, changeID, reviewerID, "")
+
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "failed to reject change")
+		mockRepo.AssertExpectations(t)
+	})
+
+	t.Run("fails when save fails", func(t *testing.T) {
+		mockRepo := new(MockPendingChangeRepository)
+		mockMemberRepo := new(MockMemberRepository)
+		mockUserRepo := new(MockUserRepository)
+
+		service := &Service{
+			repo:       mockRepo,
+			memberRepo: mockMemberRepo,
+			userRepo:   mockUserRepo,
+		}
+
+		payload := json.RawMessage(`{"name": "Test Item"}`)
+		pendingChange := Reconstruct(
+			changeID,
+			workspaceID,
+			requesterID,
+			"item",
+			nil,
+			ActionCreate,
+			payload,
+			StatusPending,
+			nil,
+			nil,
+			nil,
+			time.Now(),
+			time.Now(),
+		)
+
+		ownerMember := member.Reconstruct(
+			uuid.New(),
+			workspaceID,
+			reviewerID,
+			member.RoleOwner,
+			nil,
+			time.Now(),
+			time.Now(),
+		)
+
+		requesterUser, _ := user.NewUser("requester@test.com", "Requester User", "password123")
+		reviewerUser, _ := user.NewUser("reviewer@test.com", "Reviewer User", "password123")
+
+		mockRepo.On("FindByID", ctx, changeID).Return(pendingChange, nil)
+		mockMemberRepo.On("FindByWorkspaceAndUser", ctx, workspaceID, reviewerID).Return(ownerMember, nil)
+		mockUserRepo.On("FindByID", ctx, requesterID).Return(requesterUser, nil)
+		mockUserRepo.On("FindByID", ctx, reviewerID).Return(reviewerUser, nil)
+		mockRepo.On("Save", ctx, mock.AnythingOfType("*pendingchange.PendingChange")).Return(errors.New("save failed"))
+
+		err := service.RejectChange(ctx, changeID, reviewerID, "Not needed")
+
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "failed to save rejected change")
+		mockRepo.AssertExpectations(t)
+	})
+
+	t.Run("fails when member repository returns error", func(t *testing.T) {
+		mockRepo := new(MockPendingChangeRepository)
+		mockMemberRepo := new(MockMemberRepository)
+
+		service := &Service{
+			repo:       mockRepo,
+			memberRepo: mockMemberRepo,
+		}
+
+		payload := json.RawMessage(`{"name": "Test Item"}`)
+		pendingChange := Reconstruct(
+			changeID,
+			workspaceID,
+			requesterID,
+			"item",
+			nil,
+			ActionCreate,
+			payload,
+			StatusPending,
+			nil,
+			nil,
+			nil,
+			time.Now(),
+			time.Now(),
+		)
+
+		mockRepo.On("FindByID", ctx, changeID).Return(pendingChange, nil)
+		mockMemberRepo.On("FindByWorkspaceAndUser", ctx, workspaceID, reviewerID).Return(nil, errors.New("member not found"))
+
+		err := service.RejectChange(ctx, changeID, reviewerID, "Not needed")
+
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "failed to check reviewer permissions")
+		mockRepo.AssertExpectations(t)
+		mockMemberRepo.AssertExpectations(t)
+	})
+
+	t.Run("successfully rejects change with admin role", func(t *testing.T) {
+		mockRepo := new(MockPendingChangeRepository)
+		mockMemberRepo := new(MockMemberRepository)
+		mockUserRepo := new(MockUserRepository)
+
+		service := &Service{
+			repo:       mockRepo,
+			memberRepo: mockMemberRepo,
+			userRepo:   mockUserRepo,
+		}
+
+		payload := json.RawMessage(`{"name": "Test Item"}`)
+		pendingChange := Reconstruct(
+			changeID,
+			workspaceID,
+			requesterID,
+			"item",
+			nil,
+			ActionCreate,
+			payload,
+			StatusPending,
+			nil,
+			nil,
+			nil,
+			time.Now(),
+			time.Now(),
+		)
+
+		adminMember := member.Reconstruct(
+			uuid.New(),
+			workspaceID,
+			reviewerID,
+			member.RoleAdmin,
+			nil,
+			time.Now(),
+			time.Now(),
+		)
+
+		requesterUser, _ := user.NewUser("requester@test.com", "Requester User", "password123")
+		reviewerUser, _ := user.NewUser("reviewer@test.com", "Reviewer User", "password123")
+
+		mockRepo.On("FindByID", ctx, changeID).Return(pendingChange, nil)
+		mockMemberRepo.On("FindByWorkspaceAndUser", ctx, workspaceID, reviewerID).Return(adminMember, nil)
+		mockUserRepo.On("FindByID", ctx, requesterID).Return(requesterUser, nil)
+		mockUserRepo.On("FindByID", ctx, reviewerID).Return(reviewerUser, nil)
+		mockRepo.On("Save", ctx, mock.MatchedBy(func(pc *PendingChange) bool {
+			return pc.Status() == StatusRejected
+		})).Return(nil)
+
+		err := service.RejectChange(ctx, changeID, reviewerID, "Duplicate item")
+
+		assert.NoError(t, err)
+		mockRepo.AssertExpectations(t)
+		mockMemberRepo.AssertExpectations(t)
+		mockUserRepo.AssertExpectations(t)
+	})
+}
+
+// TestNewService tests the NewService constructor
+func TestNewService(t *testing.T) {
+	t.Run("creates service with all dependencies", func(t *testing.T) {
+		mockRepo := new(MockPendingChangeRepository)
+		mockMemberRepo := new(MockMemberRepository)
+		mockUserRepo := new(MockUserRepository)
+		mockItemRepo := new(MockItemRepository)
+
+		service := NewService(
+			mockRepo,
+			mockMemberRepo,
+			mockUserRepo,
+			mockItemRepo,
+			nil, // categoryRepo
+			nil, // locationRepo
+			nil, // containerRepo
+			nil, // inventoryRepo
+			nil, // borrowerRepo
+			nil, // loanRepo
+			nil, // labelRepo
+			nil, // broadcaster
+		)
+
+		assert.NotNil(t, service)
+		assert.Equal(t, mockRepo, service.repo)
+		assert.Equal(t, mockMemberRepo, service.memberRepo)
+		assert.Equal(t, mockUserRepo, service.userRepo)
+		assert.Equal(t, mockItemRepo, service.itemRepo)
+	})
+}
+
+// TestIsValidEntityType tests the isValidEntityType helper
+func TestServiceIsValidEntityType(t *testing.T) {
+	service := &Service{}
+
+	t.Run("returns true for valid entity types", func(t *testing.T) {
+		validTypes := []string{"item", "category", "location", "container", "inventory", "borrower", "loan", "label"}
+		for _, entityType := range validTypes {
+			assert.True(t, service.isValidEntityType(entityType), "expected true for entity type: %s", entityType)
+		}
+	})
+
+	t.Run("returns false for invalid entity types", func(t *testing.T) {
+		invalidTypes := []string{"invalid", "user", "workspace", "member", "", "ITEM", "Item"}
+		for _, entityType := range invalidTypes {
+			assert.False(t, service.isValidEntityType(entityType), "expected false for entity type: %s", entityType)
+		}
+	})
+}
+
+// TestApplyItemChangeUpdate tests item update change application
+func TestApplyItemChangeUpdate(t *testing.T) {
+	ctx := context.Background()
+	workspaceID := uuid.New()
+	requesterID := uuid.New()
+	reviewerID := uuid.New()
+	changeID := uuid.New()
+	itemID := uuid.New()
+
+	t.Run("successfully applies item update change", func(t *testing.T) {
+		mockRepo := new(MockPendingChangeRepository)
+		mockMemberRepo := new(MockMemberRepository)
+		mockUserRepo := new(MockUserRepository)
+		mockItemRepo := new(MockItemRepository)
+
+		service := &Service{
+			repo:       mockRepo,
+			memberRepo: mockMemberRepo,
+			userRepo:   mockUserRepo,
+			itemRepo:   mockItemRepo,
+		}
+
+		payload := json.RawMessage(`{"name": "Updated Item Name"}`)
+		pendingChange := Reconstruct(
+			changeID,
+			workspaceID,
+			requesterID,
+			"item",
+			&itemID,
+			ActionUpdate,
+			payload,
+			StatusPending,
+			nil,
+			nil,
+			nil,
+			time.Now(),
+			time.Now(),
+		)
+
+		ownerMember := member.Reconstruct(
+			uuid.New(),
+			workspaceID,
+			reviewerID,
+			member.RoleOwner,
+			nil,
+			time.Now(),
+			time.Now(),
+		)
+
+		requesterUser, _ := user.NewUser("requester@test.com", "Requester User", "password123")
+		reviewerUser, _ := user.NewUser("reviewer@test.com", "Reviewer User", "password123")
+
+		existingItem, _ := item.NewItem(workspaceID, "Original Item", "SKU-001", 5)
+
+		mockRepo.On("FindByID", ctx, changeID).Return(pendingChange, nil)
+		mockMemberRepo.On("FindByWorkspaceAndUser", ctx, workspaceID, reviewerID).Return(ownerMember, nil)
+		mockUserRepo.On("FindByID", ctx, requesterID).Return(requesterUser, nil)
+		mockUserRepo.On("FindByID", ctx, reviewerID).Return(reviewerUser, nil)
+		mockItemRepo.On("FindByID", ctx, itemID, workspaceID).Return(existingItem, nil)
+		mockItemRepo.On("Save", ctx, mock.AnythingOfType("*item.Item")).Return(nil)
+		mockRepo.On("Save", ctx, mock.AnythingOfType("*pendingchange.PendingChange")).Return(nil)
+
+		err := service.ApproveChange(ctx, changeID, reviewerID)
+
+		assert.NoError(t, err)
+		mockRepo.AssertExpectations(t)
+		mockItemRepo.AssertExpectations(t)
+	})
+
+	t.Run("fails item update when item not found", func(t *testing.T) {
+		mockRepo := new(MockPendingChangeRepository)
+		mockMemberRepo := new(MockMemberRepository)
+		mockUserRepo := new(MockUserRepository)
+		mockItemRepo := new(MockItemRepository)
+
+		service := &Service{
+			repo:       mockRepo,
+			memberRepo: mockMemberRepo,
+			userRepo:   mockUserRepo,
+			itemRepo:   mockItemRepo,
+		}
+
+		payload := json.RawMessage(`{"name": "Updated Item"}`)
+		pendingChange := Reconstruct(
+			changeID,
+			workspaceID,
+			requesterID,
+			"item",
+			&itemID,
+			ActionUpdate,
+			payload,
+			StatusPending,
+			nil,
+			nil,
+			nil,
+			time.Now(),
+			time.Now(),
+		)
+
+		ownerMember := member.Reconstruct(
+			uuid.New(),
+			workspaceID,
+			reviewerID,
+			member.RoleOwner,
+			nil,
+			time.Now(),
+			time.Now(),
+		)
+
+		requesterUser, _ := user.NewUser("requester@test.com", "Requester User", "password123")
+		reviewerUser, _ := user.NewUser("reviewer@test.com", "Reviewer User", "password123")
+
+		mockRepo.On("FindByID", ctx, changeID).Return(pendingChange, nil)
+		mockMemberRepo.On("FindByWorkspaceAndUser", ctx, workspaceID, reviewerID).Return(ownerMember, nil)
+		mockUserRepo.On("FindByID", ctx, requesterID).Return(requesterUser, nil)
+		mockUserRepo.On("FindByID", ctx, reviewerID).Return(reviewerUser, nil)
+		mockItemRepo.On("FindByID", ctx, itemID, workspaceID).Return(nil, errors.New("item not found"))
+
+		err := service.ApproveChange(ctx, changeID, reviewerID)
+
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "failed to apply change")
+		mockRepo.AssertExpectations(t)
+		mockItemRepo.AssertExpectations(t)
+	})
+}
+
+// TestApplyItemChangeDelete tests item delete change application
+func TestApplyItemChangeDelete(t *testing.T) {
+	ctx := context.Background()
+	workspaceID := uuid.New()
+	requesterID := uuid.New()
+	reviewerID := uuid.New()
+	changeID := uuid.New()
+	itemID := uuid.New()
+
+	t.Run("successfully applies item delete change", func(t *testing.T) {
+		mockRepo := new(MockPendingChangeRepository)
+		mockMemberRepo := new(MockMemberRepository)
+		mockUserRepo := new(MockUserRepository)
+		mockItemRepo := new(MockItemRepository)
+
+		service := &Service{
+			repo:       mockRepo,
+			memberRepo: mockMemberRepo,
+			userRepo:   mockUserRepo,
+			itemRepo:   mockItemRepo,
+		}
+
+		payload := json.RawMessage(`{"id": "` + itemID.String() + `"}`)
+		pendingChange := Reconstruct(
+			changeID,
+			workspaceID,
+			requesterID,
+			"item",
+			&itemID,
+			ActionDelete,
+			payload,
+			StatusPending,
+			nil,
+			nil,
+			nil,
+			time.Now(),
+			time.Now(),
+		)
+
+		ownerMember := member.Reconstruct(
+			uuid.New(),
+			workspaceID,
+			reviewerID,
+			member.RoleOwner,
+			nil,
+			time.Now(),
+			time.Now(),
+		)
+
+		requesterUser, _ := user.NewUser("requester@test.com", "Requester User", "password123")
+		reviewerUser, _ := user.NewUser("reviewer@test.com", "Reviewer User", "password123")
+
+		mockRepo.On("FindByID", ctx, changeID).Return(pendingChange, nil)
+		mockMemberRepo.On("FindByWorkspaceAndUser", ctx, workspaceID, reviewerID).Return(ownerMember, nil)
+		mockUserRepo.On("FindByID", ctx, requesterID).Return(requesterUser, nil)
+		mockUserRepo.On("FindByID", ctx, reviewerID).Return(reviewerUser, nil)
+		mockItemRepo.On("Delete", ctx, itemID).Return(nil)
+		mockRepo.On("Save", ctx, mock.AnythingOfType("*pendingchange.PendingChange")).Return(nil)
+
+		err := service.ApproveChange(ctx, changeID, reviewerID)
+
+		assert.NoError(t, err)
+		mockRepo.AssertExpectations(t)
+		mockItemRepo.AssertExpectations(t)
+	})
+
+	t.Run("fails item delete when entity ID is missing", func(t *testing.T) {
+		mockRepo := new(MockPendingChangeRepository)
+		mockMemberRepo := new(MockMemberRepository)
+		mockUserRepo := new(MockUserRepository)
+		mockItemRepo := new(MockItemRepository)
+
+		service := &Service{
+			repo:       mockRepo,
+			memberRepo: mockMemberRepo,
+			userRepo:   mockUserRepo,
+			itemRepo:   mockItemRepo,
+		}
+
+		payload := json.RawMessage(`{}`)
+		pendingChange := Reconstruct(
+			changeID,
+			workspaceID,
+			requesterID,
+			"item",
+			nil, // No entity ID
+			ActionDelete,
+			payload,
+			StatusPending,
+			nil,
+			nil,
+			nil,
+			time.Now(),
+			time.Now(),
+		)
+
+		ownerMember := member.Reconstruct(
+			uuid.New(),
+			workspaceID,
+			reviewerID,
+			member.RoleOwner,
+			nil,
+			time.Now(),
+			time.Now(),
+		)
+
+		requesterUser, _ := user.NewUser("requester@test.com", "Requester User", "password123")
+		reviewerUser, _ := user.NewUser("reviewer@test.com", "Reviewer User", "password123")
+
+		mockRepo.On("FindByID", ctx, changeID).Return(pendingChange, nil)
+		mockMemberRepo.On("FindByWorkspaceAndUser", ctx, workspaceID, reviewerID).Return(ownerMember, nil)
+		mockUserRepo.On("FindByID", ctx, requesterID).Return(requesterUser, nil)
+		mockUserRepo.On("FindByID", ctx, reviewerID).Return(reviewerUser, nil)
+
+		err := service.ApproveChange(ctx, changeID, reviewerID)
+
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "failed to apply change")
+		mockRepo.AssertExpectations(t)
+	})
+}
+
+// TestApplyItemChangeInvalidPayload tests item change with invalid payload
+func TestApplyItemChangeInvalidPayload(t *testing.T) {
+	ctx := context.Background()
+	workspaceID := uuid.New()
+	requesterID := uuid.New()
+	reviewerID := uuid.New()
+	changeID := uuid.New()
+
+	t.Run("fails with invalid JSON payload for create", func(t *testing.T) {
+		mockRepo := new(MockPendingChangeRepository)
+		mockMemberRepo := new(MockMemberRepository)
+		mockUserRepo := new(MockUserRepository)
+		mockItemRepo := new(MockItemRepository)
+
+		service := &Service{
+			repo:       mockRepo,
+			memberRepo: mockMemberRepo,
+			userRepo:   mockUserRepo,
+			itemRepo:   mockItemRepo,
+		}
+
+		// Invalid JSON that won't parse correctly
+		payload := json.RawMessage(`{invalid json}`)
+		pendingChange := Reconstruct(
+			changeID,
+			workspaceID,
+			requesterID,
+			"item",
+			nil,
+			ActionCreate,
+			payload,
+			StatusPending,
+			nil,
+			nil,
+			nil,
+			time.Now(),
+			time.Now(),
+		)
+
+		ownerMember := member.Reconstruct(
+			uuid.New(),
+			workspaceID,
+			reviewerID,
+			member.RoleOwner,
+			nil,
+			time.Now(),
+			time.Now(),
+		)
+
+		requesterUser, _ := user.NewUser("requester@test.com", "Requester User", "password123")
+		reviewerUser, _ := user.NewUser("reviewer@test.com", "Reviewer User", "password123")
+
+		mockRepo.On("FindByID", ctx, changeID).Return(pendingChange, nil)
+		mockMemberRepo.On("FindByWorkspaceAndUser", ctx, workspaceID, reviewerID).Return(ownerMember, nil)
+		mockUserRepo.On("FindByID", ctx, requesterID).Return(requesterUser, nil)
+		mockUserRepo.On("FindByID", ctx, reviewerID).Return(reviewerUser, nil)
+
+		err := service.ApproveChange(ctx, changeID, reviewerID)
+
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "failed to apply change")
+		mockRepo.AssertExpectations(t)
+	})
+}
+
+// TestApplyUnsupportedAction tests handling of unsupported actions
+func TestApplyUnsupportedAction(t *testing.T) {
+	ctx := context.Background()
+	workspaceID := uuid.New()
+	requesterID := uuid.New()
+	reviewerID := uuid.New()
+	changeID := uuid.New()
+
+	t.Run("fails with unsupported action", func(t *testing.T) {
+		mockRepo := new(MockPendingChangeRepository)
+		mockMemberRepo := new(MockMemberRepository)
+		mockUserRepo := new(MockUserRepository)
+		mockItemRepo := new(MockItemRepository)
+
+		service := &Service{
+			repo:       mockRepo,
+			memberRepo: mockMemberRepo,
+			userRepo:   mockUserRepo,
+			itemRepo:   mockItemRepo,
+		}
+
+		payload := json.RawMessage(`{"name": "Test"}`)
+		pendingChange := Reconstruct(
+			changeID,
+			workspaceID,
+			requesterID,
+			"item",
+			nil,
+			Action("unsupported"),
+			payload,
+			StatusPending,
+			nil,
+			nil,
+			nil,
+			time.Now(),
+			time.Now(),
+		)
+
+		ownerMember := member.Reconstruct(
+			uuid.New(),
+			workspaceID,
+			reviewerID,
+			member.RoleOwner,
+			nil,
+			time.Now(),
+			time.Now(),
+		)
+
+		requesterUser, _ := user.NewUser("requester@test.com", "Requester User", "password123")
+		reviewerUser, _ := user.NewUser("reviewer@test.com", "Reviewer User", "password123")
+
+		mockRepo.On("FindByID", ctx, changeID).Return(pendingChange, nil)
+		mockMemberRepo.On("FindByWorkspaceAndUser", ctx, workspaceID, reviewerID).Return(ownerMember, nil)
+		mockUserRepo.On("FindByID", ctx, requesterID).Return(requesterUser, nil)
+		mockUserRepo.On("FindByID", ctx, reviewerID).Return(reviewerUser, nil)
+
+		err := service.ApproveChange(ctx, changeID, reviewerID)
+
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "failed to apply change")
+		mockRepo.AssertExpectations(t)
+	})
+}
+
+// TestApplyUnsupportedEntityType tests handling of unsupported entity types during apply
+func TestApplyUnsupportedEntityType(t *testing.T) {
+	ctx := context.Background()
+	workspaceID := uuid.New()
+	requesterID := uuid.New()
+	reviewerID := uuid.New()
+	changeID := uuid.New()
+
+	t.Run("fails when applying change for unsupported entity type", func(t *testing.T) {
+		mockRepo := new(MockPendingChangeRepository)
+		mockMemberRepo := new(MockMemberRepository)
+		mockUserRepo := new(MockUserRepository)
+
+		service := &Service{
+			repo:       mockRepo,
+			memberRepo: mockMemberRepo,
+			userRepo:   mockUserRepo,
+		}
+
+		payload := json.RawMessage(`{"name": "Test"}`)
+		// Create a pending change with an unsupported entity type using Reconstruct
+		// (bypassing the entity type validation in NewPendingChange)
+		pendingChange := Reconstruct(
+			changeID,
+			workspaceID,
+			requesterID,
+			"unsupported_entity",
+			nil,
+			ActionCreate,
+			payload,
+			StatusPending,
+			nil,
+			nil,
+			nil,
+			time.Now(),
+			time.Now(),
+		)
+
+		ownerMember := member.Reconstruct(
+			uuid.New(),
+			workspaceID,
+			reviewerID,
+			member.RoleOwner,
+			nil,
+			time.Now(),
+			time.Now(),
+		)
+
+		requesterUser, _ := user.NewUser("requester@test.com", "Requester User", "password123")
+		reviewerUser, _ := user.NewUser("reviewer@test.com", "Reviewer User", "password123")
+
+		mockRepo.On("FindByID", ctx, changeID).Return(pendingChange, nil)
+		mockMemberRepo.On("FindByWorkspaceAndUser", ctx, workspaceID, reviewerID).Return(ownerMember, nil)
+		mockUserRepo.On("FindByID", ctx, requesterID).Return(requesterUser, nil)
+		mockUserRepo.On("FindByID", ctx, reviewerID).Return(reviewerUser, nil)
+
+		err := service.ApproveChange(ctx, changeID, reviewerID)
+
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "failed to apply change")
+		mockRepo.AssertExpectations(t)
+	})
 }

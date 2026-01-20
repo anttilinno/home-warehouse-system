@@ -1,10 +1,11 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { Settings, Database, User, Bell, Shield } from "lucide-react";
+import { Database, User, Shield } from "lucide-react";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { BackupRestoreDialog } from "@/components/shared/backup-restore-dialog";
+import { NotificationSettings } from "@/components/settings/notification-settings";
 
 export default function SettingsPage() {
   const t = useTranslations("settings");
@@ -40,6 +41,9 @@ export default function SettingsPage() {
           </CardContent>
         </Card>
 
+        {/* Push Notifications */}
+        <NotificationSettings />
+
         {/* Placeholder for future settings */}
         <Card className="opacity-50">
           <CardHeader>
@@ -48,19 +52,6 @@ export default function SettingsPage() {
               {t("account.title")}
             </CardTitle>
             <CardDescription>{t("account.description")}</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-muted-foreground">{t("comingSoon")}</p>
-          </CardContent>
-        </Card>
-
-        <Card className="opacity-50">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Bell className="h-5 w-5" />
-              {t("notifications.title")}
-            </CardTitle>
-            <CardDescription>{t("notifications.description")}</CardDescription>
           </CardHeader>
           <CardContent>
             <p className="text-sm text-muted-foreground">{t("comingSoon")}</p>

@@ -166,6 +166,53 @@ func (q *Queries) ListMembersByWorkspace(ctx context.Context, workspaceID uuid.U
 	return items, nil
 }
 
+const listWorkspaceMembersByRole = `-- name: ListWorkspaceMembersByRole :many
+SELECT wm.id, wm.workspace_id, wm.user_id, wm.role, wm.created_at
+FROM auth.workspace_members wm
+WHERE wm.workspace_id = $1 AND wm.role = ANY($2::auth.workspace_role_enum[])
+ORDER BY wm.created_at
+`
+
+type ListWorkspaceMembersByRoleParams struct {
+	WorkspaceID uuid.UUID               `json:"workspace_id"`
+	Column2     []AuthWorkspaceRoleEnum `json:"column_2"`
+}
+
+type ListWorkspaceMembersByRoleRow struct {
+	ID          uuid.UUID             `json:"id"`
+	WorkspaceID uuid.UUID             `json:"workspace_id"`
+	UserID      uuid.UUID             `json:"user_id"`
+	Role        AuthWorkspaceRoleEnum `json:"role"`
+	CreatedAt   pgtype.Timestamptz    `json:"created_at"`
+}
+
+// Lists workspace members with specific roles (for push notifications, etc.)
+func (q *Queries) ListWorkspaceMembersByRole(ctx context.Context, arg ListWorkspaceMembersByRoleParams) ([]ListWorkspaceMembersByRoleRow, error) {
+	rows, err := q.db.Query(ctx, listWorkspaceMembersByRole, arg.WorkspaceID, arg.Column2)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []ListWorkspaceMembersByRoleRow{}
+	for rows.Next() {
+		var i ListWorkspaceMembersByRoleRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.WorkspaceID,
+			&i.UserID,
+			&i.Role,
+			&i.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const memberExists = `-- name: MemberExists :one
 SELECT EXISTS(
     SELECT 1 FROM auth.workspace_members

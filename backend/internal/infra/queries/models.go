@@ -625,6 +625,22 @@ type AuthPasswordResetToken struct {
 	CreatedAt pgtype.Timestamptz `json:"created_at"`
 }
 
+// Web Push API subscriptions for sending push notifications to user devices.
+type AuthPushSubscription struct {
+	ID     uuid.UUID `json:"id"`
+	UserID uuid.UUID `json:"user_id"`
+	// The push service URL where messages should be sent.
+	Endpoint string `json:"endpoint"`
+	// The client public key for message encryption (P-256 curve, base64 encoded).
+	P256dh string `json:"p256dh"`
+	// The authentication secret for message encryption (base64 encoded).
+	Auth string `json:"auth"`
+	// User agent string to identify the device/browser.
+	UserAgent *string            `json:"user_agent"`
+	CreatedAt pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt pgtype.Timestamptz `json:"updated_at"`
+}
+
 type AuthUser struct {
 	ID           uuid.UUID `json:"id"`
 	Email        string    `json:"email"`

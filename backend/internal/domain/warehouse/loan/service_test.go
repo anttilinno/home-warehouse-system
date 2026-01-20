@@ -150,6 +150,14 @@ func (m *MockInventoryRepository) Delete(ctx context.Context, id uuid.UUID) erro
 	return args.Error(0)
 }
 
+func (m *MockInventoryRepository) List(ctx context.Context, workspaceID uuid.UUID, pagination shared.Pagination) ([]*inventory.Inventory, int, error) {
+	args := m.Called(ctx, workspaceID, pagination)
+	if args.Get(0) == nil {
+		return nil, args.Int(1), args.Error(2)
+	}
+	return args.Get(0).([]*inventory.Inventory), args.Int(1), args.Error(2)
+}
+
 // Helper functions
 func ptrString(s string) *string {
 	return &s
@@ -561,7 +569,7 @@ func TestService_Create(t *testing.T) {
 				LoanedAt:    loanedAt,
 			},
 			setupMock: func(loanRepo *MockRepository, invRepo *MockInventoryRepository) {
-				invRepo.On("FindByID", ctx, mock.Anything, workspaceID).Return(nil, nil)
+				invRepo.On("FindByID", ctx, mock.Anything, workspaceID).Return(nil, shared.ErrNotFound)
 			},
 			expectError: true,
 		},
@@ -726,10 +734,10 @@ func TestService_GetByID(t *testing.T) {
 			loanID:      loanID,
 			workspaceID: workspaceID,
 			setupMock: func(m *MockRepository) {
-				m.On("FindByID", ctx, loanID, workspaceID).Return(nil, nil)
+				m.On("FindByID", ctx, loanID, workspaceID).Return(nil, shared.ErrNotFound)
 			},
 			expectError: true,
-			errorType:   ErrLoanNotFound,
+			errorType:   shared.ErrNotFound,
 		},
 		{
 			testName:    "repository returns error",
@@ -802,10 +810,10 @@ func TestService_Return(t *testing.T) {
 		{
 			testName: "loan not found",
 			setupMock: func(loanRepo *MockRepository, invRepo *MockInventoryRepository) {
-				loanRepo.On("FindByID", ctx, loanID, workspaceID).Return(nil, nil)
+				loanRepo.On("FindByID", ctx, loanID, workspaceID).Return(nil, shared.ErrNotFound)
 			},
 			expectError: true,
-			errorType:   ErrLoanNotFound,
+			errorType:   shared.ErrNotFound,
 		},
 		{
 			testName: "already returned",
@@ -894,10 +902,10 @@ func TestService_ExtendDueDate(t *testing.T) {
 		{
 			testName: "loan not found",
 			setupMock: func(m *MockRepository) {
-				m.On("FindByID", ctx, loanID, workspaceID).Return(nil, nil)
+				m.On("FindByID", ctx, loanID, workspaceID).Return(nil, shared.ErrNotFound)
 			},
 			expectError: true,
-			errorType:   ErrLoanNotFound,
+			errorType:   shared.ErrNotFound,
 		},
 		{
 			testName: "cannot extend returned loan",
@@ -1398,15 +1406,16 @@ func TestService_Return_InventoryDeleted(t *testing.T) {
 	loan := Reconstruct(loanID, workspaceID, inventoryID, borrowerID, 1, now, nil, nil, nil, now, now)
 
 	mockLoanRepo.On("FindByID", ctx, loanID, workspaceID).Return(loan, nil)
-	// Inventory was deleted, return nil
-	mockInvRepo.On("FindByID", ctx, inventoryID, workspaceID).Return(nil, nil)
-	mockLoanRepo.On("Save", ctx, mock.AnythingOfType("*loan.Loan")).Return(nil)
+	// Inventory was deleted - now returns ErrNotFound
+	// The Return method propagates this error
+	mockInvRepo.On("FindByID", ctx, inventoryID, workspaceID).Return(nil, shared.ErrNotFound)
 
 	result, err := svc.Return(ctx, loanID, workspaceID)
 
-	assert.NoError(t, err)
-	assert.NotNil(t, result)
-	assert.False(t, result.IsActive())
+	// When inventory is not found, the Return method returns an error
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	assert.ErrorIs(t, err, shared.ErrNotFound)
 }
 
 func TestService_Return_InventoryFindError(t *testing.T) {

@@ -1,0 +1,4 @@
+name,description,short_code,parent_location
+Garage,Main garage storage,LOC-001,
+Toolbox,Portable toolbox,LOC-002,Garage
+Shelf A,First shelf in garage,LOC-003,Garage

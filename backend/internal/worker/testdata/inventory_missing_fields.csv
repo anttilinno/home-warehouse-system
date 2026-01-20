@@ -1,0 +1,3 @@
+item,location,container,quantity,condition,status,purchase_price,currency_code,date_acquired,notes
+,Garage,,1,NEW,AVAILABLE,199,USD,2024-01-15,Missing item
+Power Drill,,,1,GOOD,AVAILABLE,29,USD,2023-06-20,Missing location

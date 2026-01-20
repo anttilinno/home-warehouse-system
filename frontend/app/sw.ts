@@ -83,6 +83,86 @@ const serwist = new Serwist({
 
 serwist.addEventListeners();
 
+// ============================================================================
+// Push Notification Handlers
+// ============================================================================
+
+interface PushNotificationData {
+  title: string;
+  body: string;
+  icon?: string;
+  badge?: string;
+  tag?: string;
+  url?: string;
+  data?: Record<string, unknown>;
+  require_open?: boolean;
+}
+
+// Handle push notification events
+self.addEventListener("push", (event) => {
+  if (!event.data) {
+    console.log("Push event but no data");
+    return;
+  }
+
+  try {
+    const data = event.data.json() as PushNotificationData;
+
+    const options: NotificationOptions = {
+      body: data.body,
+      icon: data.icon || "/icon-192.png",
+      badge: data.badge || "/favicon-32x32.png",
+      tag: data.tag || "default",
+      data: {
+        url: data.url || "/",
+        ...data.data,
+      },
+      requireInteraction: data.require_open || false,
+      vibrate: [100, 50, 100],
+    };
+
+    event.waitUntil(self.registration.showNotification(data.title, options));
+  } catch (error) {
+    console.error("Error handling push event:", error);
+  }
+});
+
+// Handle notification click events
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+
+  const url = (event.notification.data?.url as string) || "/";
+
+  event.waitUntil(
+    self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((clientList) => {
+      // Check if there's already a window open on our origin
+      for (const client of clientList) {
+        if (client.url.includes(self.location.origin) && "focus" in client) {
+          client.focus();
+          // Navigate to the URL if needed
+          if (url !== "/" && "navigate" in client) {
+            (client as WindowClient).navigate(url);
+          }
+          return;
+        }
+      }
+      // If no window is open, open a new one
+      if (self.clients.openWindow) {
+        return self.clients.openWindow(url);
+      }
+    })
+  );
+});
+
+// Handle notification close events (for analytics if needed)
+self.addEventListener("notificationclose", (event) => {
+  console.log("Notification closed:", event.notification.tag);
+});
+
+// ============================================================================
+// Offline Photo Upload Handlers
+// ============================================================================
+
 // Handle offline photo uploads by queueing them
 self.addEventListener("fetch", (event) => {
   const { request } = event;

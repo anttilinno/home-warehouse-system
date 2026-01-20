@@ -37,3 +37,10 @@ SELECT EXISTS(
     SELECT 1 FROM auth.workspace_members
     WHERE workspace_id = $1 AND user_id = $2
 );
+
+-- name: ListWorkspaceMembersByRole :many
+-- Lists workspace members with specific roles (for push notifications, etc.)
+SELECT wm.id, wm.workspace_id, wm.user_id, wm.role, wm.created_at
+FROM auth.workspace_members wm
+WHERE wm.workspace_id = $1 AND wm.role = ANY($2::auth.workspace_role_enum[])
+ORDER BY wm.created_at;

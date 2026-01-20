@@ -1392,3 +1392,1102 @@ func TestService_parseJSON_WithNullValues(t *testing.T) {
 
 	mockRepo.AssertExpectations(t)
 }
+
+// =============================================================================
+// CSV Special Character Handling Tests
+// =============================================================================
+
+func TestService_Export_CSV_SpecialCharacters(t *testing.T) {
+	ctx := context.Background()
+	workspaceID := uuid.New()
+	catID := uuid.New()
+	now := time.Now().UTC()
+
+	tests := []struct {
+		name        string
+		description string
+		expected    string
+	}{
+		{
+			name:        "Commas",
+			description: "Description with, commas, inside",
+			expected:    `"Description with, commas, inside"`,
+		},
+		{
+			name:        "Quotes",
+			description: `Description with "quotes" inside`,
+			expected:    `"Description with ""quotes"" inside"`,
+		},
+		{
+			name:        "Newlines",
+			description: "Line1\nLine2\nLine3",
+			expected:    "\"Line1\nLine2\nLine3\"",
+		},
+		{
+			name:        "Unicode",
+			description: "Beschreibung mit Umlauten: äöü и кириллица 中文",
+			expected:    "Beschreibung mit Umlauten: äöü и кириллица 中文",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockRepo := new(MockRepository)
+			svc := NewService(mockRepo)
+
+			mockRepo.On("ListAllCategories", ctx, workspaceID, false).Return([]queries.WarehouseCategory{
+				{
+					ID:          catID,
+					WorkspaceID: workspaceID,
+					Name:        "Test Category",
+					Description: ptrString(tt.description),
+					IsArchived:  false,
+					CreatedAt:   pgTimestamp(now),
+					UpdatedAt:   pgTimestamp(now),
+				},
+			}, nil)
+
+			data, _, err := svc.Export(ctx, ExportOptions{
+				WorkspaceID: workspaceID,
+				EntityType:  EntityTypeCategory,
+				Format:      FormatCSV,
+			})
+
+			assert.NoError(t, err)
+			csvContent := string(data)
+			assert.Contains(t, csvContent, tt.expected)
+			mockRepo.AssertExpectations(t)
+		})
+	}
+}
+
+func TestService_Import_CSV_SpecialCharacters(t *testing.T) {
+	ctx := context.Background()
+	workspaceID := uuid.New()
+
+	tests := []struct {
+		name        string
+		csvData     string
+		expectedVal string
+	}{
+		{
+			name:        "Commas",
+			csvData:     "name,description\nTest,\"Description with, commas, inside\"",
+			expectedVal: "Description with, commas, inside",
+		},
+		{
+			name:        "Quotes",
+			csvData:     "name,description\nTest,\"Description with \"\"quotes\"\" inside\"",
+			expectedVal: `Description with "quotes" inside`,
+		},
+		{
+			name:        "Newlines",
+			csvData:     "name,description\nTest,\"Line1\nLine2\"",
+			expectedVal: "Line1\nLine2",
+		},
+		{
+			name:        "Unicode",
+			csvData:     "name,description\nTest,Beschreibung äöü 中文",
+			expectedVal: "Beschreibung äöü 中文",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockRepo := new(MockRepository)
+			svc := NewService(mockRepo)
+
+			mockRepo.On("CreateCategory", ctx, mock.MatchedBy(func(p queries.CreateCategoryParams) bool {
+				return p.Name == "Test" && *p.Description == tt.expectedVal
+			})).Return(queries.WarehouseCategory{}, nil)
+
+			result, err := svc.Import(ctx, workspaceID, EntityTypeCategory, FormatCSV, []byte(tt.csvData))
+
+			assert.NoError(t, err)
+			assert.Equal(t, 1, result.Succeeded)
+			mockRepo.AssertExpectations(t)
+		})
+	}
+}
+
+// =============================================================================
+// Empty/Null Value Handling Tests
+// =============================================================================
+
+func TestService_Export_EmptyValues(t *testing.T) {
+	ctx := context.Background()
+	workspaceID := uuid.New()
+	now := time.Now().UTC()
+
+	mockRepo := new(MockRepository)
+	svc := NewService(mockRepo)
+
+	// Item with many nil fields
+	mockRepo.On("ListAllItems", ctx, workspaceID, false).Return([]queries.WarehouseItem{
+		{
+			ID:          uuid.New(),
+			WorkspaceID: workspaceID,
+			Sku:         "SKU-001",
+			Name:        "Test Item",
+			Description: nil,
+			Brand:       nil,
+			Model:       nil,
+			Manufacturer: nil,
+			Barcode:     nil,
+			ShortCode:   "",
+			IsArchived:  nil,
+			CreatedAt:   pgTimestamp(now),
+			UpdatedAt:   pgTimestamp(now),
+		},
+	}, nil)
+
+	data, metadata, err := svc.Export(ctx, ExportOptions{
+		WorkspaceID: workspaceID,
+		EntityType:  EntityTypeItem,
+		Format:      FormatCSV,
+	})
+
+	assert.NoError(t, err)
+	assert.Equal(t, 1, metadata.TotalRecords)
+
+	csvContent := string(data)
+	// Verify empty fields are handled properly
+	assert.Contains(t, csvContent, "SKU-001")
+	assert.Contains(t, csvContent, "Test Item")
+	// Should have empty values for nil fields
+	lines := strings.Split(csvContent, "\n")
+	assert.GreaterOrEqual(t, len(lines), 2)
+
+	mockRepo.AssertExpectations(t)
+}
+
+func TestService_Export_JSON_EmptyValues(t *testing.T) {
+	ctx := context.Background()
+	workspaceID := uuid.New()
+	now := time.Now().UTC()
+
+	mockRepo := new(MockRepository)
+	svc := NewService(mockRepo)
+
+	mockRepo.On("ListAllBorrowers", ctx, workspaceID, false).Return([]queries.WarehouseBorrower{
+		{
+			ID:          uuid.New(),
+			WorkspaceID: workspaceID,
+			Name:        "John Doe",
+			Email:       nil,
+			Phone:       nil,
+			Notes:       nil,
+			IsArchived:  false,
+			CreatedAt:   pgTimestamp(now),
+			UpdatedAt:   pgTimestamp(now),
+		},
+	}, nil)
+
+	data, _, err := svc.Export(ctx, ExportOptions{
+		WorkspaceID: workspaceID,
+		EntityType:  EntityTypeBorrower,
+		Format:      FormatJSON,
+	})
+
+	assert.NoError(t, err)
+
+	var borrowers []BorrowerExport
+	err = json.Unmarshal(data, &borrowers)
+	assert.NoError(t, err)
+	assert.Len(t, borrowers, 1)
+	assert.Equal(t, "John Doe", borrowers[0].Name)
+	assert.Equal(t, "", borrowers[0].Email)
+	assert.Equal(t, "", borrowers[0].Phone)
+
+	mockRepo.AssertExpectations(t)
+}
+
+func TestService_Export_InvalidTimestamp(t *testing.T) {
+	ctx := context.Background()
+	workspaceID := uuid.New()
+
+	mockRepo := new(MockRepository)
+	svc := NewService(mockRepo)
+
+	// Label with invalid (zero) timestamp
+	mockRepo.On("ListAllLabels", ctx, workspaceID, false).Return([]queries.WarehouseLabel{
+		{
+			ID:          uuid.New(),
+			WorkspaceID: workspaceID,
+			Name:        "Test Label",
+			Color:       ptrString("#FF0000"),
+			IsArchived:  false,
+			CreatedAt:   pgtype.Timestamptz{Valid: false}, // Invalid timestamp
+			UpdatedAt:   pgtype.Timestamptz{Valid: false},
+		},
+	}, nil)
+
+	data, _, err := svc.Export(ctx, ExportOptions{
+		WorkspaceID: workspaceID,
+		EntityType:  EntityTypeLabel,
+		Format:      FormatJSON,
+	})
+
+	assert.NoError(t, err)
+
+	var labels []LabelExport
+	err = json.Unmarshal(data, &labels)
+	assert.NoError(t, err)
+	assert.Len(t, labels, 1)
+	assert.Equal(t, "", labels[0].CreatedAt)
+	assert.Equal(t, "", labels[0].UpdatedAt)
+
+	mockRepo.AssertExpectations(t)
+}
+
+// =============================================================================
+// Repository Error Tests for All Entity Types
+// =============================================================================
+
+func TestService_Export_RepositoryError_Categories(t *testing.T) {
+	ctx := context.Background()
+	workspaceID := uuid.New()
+
+	mockRepo := new(MockRepository)
+	svc := NewService(mockRepo)
+
+	mockRepo.On("ListAllCategories", ctx, workspaceID, false).Return(nil, fmt.Errorf("database error"))
+
+	_, _, err := svc.Export(ctx, ExportOptions{
+		WorkspaceID: workspaceID,
+		EntityType:  EntityTypeCategory,
+		Format:      FormatJSON,
+	})
+
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "database error")
+}
+
+func TestService_Export_RepositoryError_Locations(t *testing.T) {
+	ctx := context.Background()
+	workspaceID := uuid.New()
+
+	mockRepo := new(MockRepository)
+	svc := NewService(mockRepo)
+
+	mockRepo.On("ListAllLocations", ctx, workspaceID, false).Return(nil, fmt.Errorf("connection failed"))
+
+	_, _, err := svc.Export(ctx, ExportOptions{
+		WorkspaceID: workspaceID,
+		EntityType:  EntityTypeLocation,
+		Format:      FormatJSON,
+	})
+
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "connection failed")
+}
+
+func TestService_Export_RepositoryError_Containers(t *testing.T) {
+	ctx := context.Background()
+	workspaceID := uuid.New()
+
+	mockRepo := new(MockRepository)
+	svc := NewService(mockRepo)
+
+	mockRepo.On("ListAllContainers", ctx, workspaceID, false).Return(nil, fmt.Errorf("timeout"))
+
+	_, _, err := svc.Export(ctx, ExportOptions{
+		WorkspaceID: workspaceID,
+		EntityType:  EntityTypeContainer,
+		Format:      FormatJSON,
+	})
+
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "timeout")
+}
+
+func TestService_Export_RepositoryError_Labels(t *testing.T) {
+	ctx := context.Background()
+	workspaceID := uuid.New()
+
+	mockRepo := new(MockRepository)
+	svc := NewService(mockRepo)
+
+	mockRepo.On("ListAllLabels", ctx, workspaceID, false).Return(nil, fmt.Errorf("access denied"))
+
+	_, _, err := svc.Export(ctx, ExportOptions{
+		WorkspaceID: workspaceID,
+		EntityType:  EntityTypeLabel,
+		Format:      FormatJSON,
+	})
+
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "access denied")
+}
+
+func TestService_Export_RepositoryError_Companies(t *testing.T) {
+	ctx := context.Background()
+	workspaceID := uuid.New()
+
+	mockRepo := new(MockRepository)
+	svc := NewService(mockRepo)
+
+	mockRepo.On("ListAllCompanies", ctx, workspaceID, false).Return(nil, fmt.Errorf("query error"))
+
+	_, _, err := svc.Export(ctx, ExportOptions{
+		WorkspaceID: workspaceID,
+		EntityType:  EntityTypeCompany,
+		Format:      FormatJSON,
+	})
+
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "query error")
+}
+
+func TestService_Export_RepositoryError_Borrowers(t *testing.T) {
+	ctx := context.Background()
+	workspaceID := uuid.New()
+
+	mockRepo := new(MockRepository)
+	svc := NewService(mockRepo)
+
+	mockRepo.On("ListAllBorrowers", ctx, workspaceID, false).Return(nil, fmt.Errorf("table not found"))
+
+	_, _, err := svc.Export(ctx, ExportOptions{
+		WorkspaceID: workspaceID,
+		EntityType:  EntityTypeBorrower,
+		Format:      FormatJSON,
+	})
+
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "table not found")
+}
+
+// =============================================================================
+// Empty Export Tests
+// =============================================================================
+
+func TestService_Export_EmptyWorkspace(t *testing.T) {
+	ctx := context.Background()
+	workspaceID := uuid.New()
+
+	mockRepo := new(MockRepository)
+	svc := NewService(mockRepo)
+
+	mockRepo.On("ListAllItems", ctx, workspaceID, false).Return([]queries.WarehouseItem{}, nil)
+
+	data, metadata, err := svc.Export(ctx, ExportOptions{
+		WorkspaceID: workspaceID,
+		EntityType:  EntityTypeItem,
+		Format:      FormatJSON,
+	})
+
+	assert.NoError(t, err)
+	assert.NotNil(t, metadata)
+	assert.Equal(t, 0, metadata.TotalRecords)
+
+	var items []ItemExport
+	err = json.Unmarshal(data, &items)
+	assert.NoError(t, err)
+	assert.Len(t, items, 0)
+}
+
+func TestService_Export_EmptyWorkspace_CSV(t *testing.T) {
+	ctx := context.Background()
+	workspaceID := uuid.New()
+
+	mockRepo := new(MockRepository)
+	svc := NewService(mockRepo)
+
+	mockRepo.On("ListAllCategories", ctx, workspaceID, false).Return([]queries.WarehouseCategory{}, nil)
+
+	data, metadata, err := svc.Export(ctx, ExportOptions{
+		WorkspaceID: workspaceID,
+		EntityType:  EntityTypeCategory,
+		Format:      FormatCSV,
+	})
+
+	assert.NoError(t, err)
+	assert.Equal(t, 0, metadata.TotalRecords)
+
+	// Should still have header row
+	csvContent := string(data)
+	assert.Contains(t, csvContent, "id,name,parent_category")
+}
+
+// =============================================================================
+// Multiple Items Export Tests
+// =============================================================================
+
+func TestService_Export_MultipleItems(t *testing.T) {
+	ctx := context.Background()
+	workspaceID := uuid.New()
+	now := time.Now().UTC()
+
+	mockRepo := new(MockRepository)
+	svc := NewService(mockRepo)
+
+	items := make([]queries.WarehouseItem, 100)
+	for i := 0; i < 100; i++ {
+		items[i] = queries.WarehouseItem{
+			ID:          uuid.New(),
+			WorkspaceID: workspaceID,
+			Sku:         fmt.Sprintf("SKU-%03d", i),
+			Name:        fmt.Sprintf("Item %d", i),
+			IsArchived:  ptrBool(false),
+			CreatedAt:   pgTimestamp(now),
+			UpdatedAt:   pgTimestamp(now),
+		}
+	}
+
+	mockRepo.On("ListAllItems", ctx, workspaceID, false).Return(items, nil)
+
+	data, metadata, err := svc.Export(ctx, ExportOptions{
+		WorkspaceID: workspaceID,
+		EntityType:  EntityTypeItem,
+		Format:      FormatJSON,
+	})
+
+	assert.NoError(t, err)
+	assert.Equal(t, 100, metadata.TotalRecords)
+
+	var exportedItems []ItemExport
+	err = json.Unmarshal(data, &exportedItems)
+	assert.NoError(t, err)
+	assert.Len(t, exportedItems, 100)
+
+	mockRepo.AssertExpectations(t)
+}
+
+// =============================================================================
+// Import Validation Tests
+// =============================================================================
+
+func TestService_Import_Label_MissingName(t *testing.T) {
+	ctx := context.Background()
+	workspaceID := uuid.New()
+
+	mockRepo := new(MockRepository)
+	svc := NewService(mockRepo)
+
+	csvData := []byte("color,description\n#FF0000,A label without name")
+
+	result, err := svc.Import(ctx, workspaceID, EntityTypeLabel, FormatCSV, csvData)
+
+	assert.NoError(t, err)
+	assert.Equal(t, 0, result.Succeeded)
+	assert.Equal(t, 1, result.Failed)
+	assert.Contains(t, result.Errors[0].Message, "name is required")
+}
+
+func TestService_Import_Company_MissingName(t *testing.T) {
+	ctx := context.Background()
+	workspaceID := uuid.New()
+
+	mockRepo := new(MockRepository)
+	svc := NewService(mockRepo)
+
+	csvData := []byte("website,notes\nhttps://example.com,Notes here")
+
+	result, err := svc.Import(ctx, workspaceID, EntityTypeCompany, FormatCSV, csvData)
+
+	assert.NoError(t, err)
+	assert.Equal(t, 0, result.Succeeded)
+	assert.Equal(t, 1, result.Failed)
+	assert.Contains(t, result.Errors[0].Message, "name is required")
+}
+
+func TestService_Import_Borrower_MissingName(t *testing.T) {
+	ctx := context.Background()
+	workspaceID := uuid.New()
+
+	mockRepo := new(MockRepository)
+	svc := NewService(mockRepo)
+
+	csvData := []byte("email,phone\njohn@example.com,+1234567890")
+
+	result, err := svc.Import(ctx, workspaceID, EntityTypeBorrower, FormatCSV, csvData)
+
+	assert.NoError(t, err)
+	assert.Equal(t, 0, result.Succeeded)
+	assert.Equal(t, 1, result.Failed)
+	assert.Contains(t, result.Errors[0].Message, "name is required")
+}
+
+func TestService_Import_Location_MissingName(t *testing.T) {
+	ctx := context.Background()
+	workspaceID := uuid.New()
+
+	mockRepo := new(MockRepository)
+	svc := NewService(mockRepo)
+
+	csvData := []byte("description,short_code\nA location,LOC-1")
+
+	result, err := svc.Import(ctx, workspaceID, EntityTypeLocation, FormatCSV, csvData)
+
+	assert.NoError(t, err)
+	assert.Equal(t, 0, result.Succeeded)
+	assert.Equal(t, 1, result.Failed)
+	assert.Contains(t, result.Errors[0].Message, "name is required")
+}
+
+func TestService_Import_Item_MissingName(t *testing.T) {
+	ctx := context.Background()
+	workspaceID := uuid.New()
+
+	mockRepo := new(MockRepository)
+	svc := NewService(mockRepo)
+
+	csvData := []byte("sku,brand\nSKU-001,Acme")
+
+	result, err := svc.Import(ctx, workspaceID, EntityTypeItem, FormatCSV, csvData)
+
+	assert.NoError(t, err)
+	assert.Equal(t, 0, result.Succeeded)
+	assert.Equal(t, 1, result.Failed)
+	assert.Contains(t, result.Errors[0].Message, "name is required")
+}
+
+// =============================================================================
+// Import Parent Reference Error Tests
+// =============================================================================
+
+func TestService_Import_Category_ParentNotFound(t *testing.T) {
+	ctx := context.Background()
+	workspaceID := uuid.New()
+
+	mockRepo := new(MockRepository)
+	svc := NewService(mockRepo)
+
+	csvData := []byte("name,parent_category,description\nSubcategory,Nonexistent,A subcategory")
+
+	mockRepo.On("GetCategoryByName", ctx, workspaceID, "Nonexistent").Return(nil, nil)
+
+	// When parent is not found but no error, CreateCategory is still called
+	mockRepo.On("CreateCategory", ctx, mock.Anything).Return(queries.WarehouseCategory{}, nil)
+
+	result, err := svc.Import(ctx, workspaceID, EntityTypeCategory, FormatCSV, csvData)
+
+	assert.NoError(t, err)
+	assert.Equal(t, 1, result.Succeeded)
+
+	mockRepo.AssertExpectations(t)
+}
+
+func TestService_Import_Category_ParentLookupError(t *testing.T) {
+	ctx := context.Background()
+	workspaceID := uuid.New()
+
+	mockRepo := new(MockRepository)
+	svc := NewService(mockRepo)
+
+	csvData := []byte("name,parent_category,description\nSubcategory,Parent,A subcategory")
+
+	mockRepo.On("GetCategoryByName", ctx, workspaceID, "Parent").Return(nil, fmt.Errorf("database error"))
+
+	result, err := svc.Import(ctx, workspaceID, EntityTypeCategory, FormatCSV, csvData)
+
+	assert.NoError(t, err)
+	assert.Equal(t, 0, result.Succeeded)
+	assert.Equal(t, 1, result.Failed)
+	assert.Contains(t, result.Errors[0].Message, "failed to find parent category")
+
+	mockRepo.AssertExpectations(t)
+}
+
+func TestService_Import_Location_ParentLookupError(t *testing.T) {
+	ctx := context.Background()
+	workspaceID := uuid.New()
+
+	mockRepo := new(MockRepository)
+	svc := NewService(mockRepo)
+
+	csvData := []byte("name,parent_location,description\nRoom A,Building 1,A room")
+
+	mockRepo.On("GetLocationByName", ctx, workspaceID, "Building 1").Return(nil, fmt.Errorf("database error"))
+
+	result, err := svc.Import(ctx, workspaceID, EntityTypeLocation, FormatCSV, csvData)
+
+	assert.NoError(t, err)
+	assert.Equal(t, 0, result.Succeeded)
+	assert.Equal(t, 1, result.Failed)
+	assert.Contains(t, result.Errors[0].Message, "failed to find parent location")
+
+	mockRepo.AssertExpectations(t)
+}
+
+func TestService_Import_Item_CategoryLookupError(t *testing.T) {
+	ctx := context.Background()
+	workspaceID := uuid.New()
+
+	mockRepo := new(MockRepository)
+	svc := NewService(mockRepo)
+
+	csvData := []byte("name,sku,category_name\nWidget,SKU-001,Electronics")
+
+	mockRepo.On("GetCategoryByName", ctx, workspaceID, "Electronics").Return(nil, fmt.Errorf("database error"))
+
+	result, err := svc.Import(ctx, workspaceID, EntityTypeItem, FormatCSV, csvData)
+
+	assert.NoError(t, err)
+	assert.Equal(t, 0, result.Succeeded)
+	assert.Equal(t, 1, result.Failed)
+	assert.Contains(t, result.Errors[0].Message, "failed to find category")
+
+	mockRepo.AssertExpectations(t)
+}
+
+func TestService_Import_Container_LocationLookupError(t *testing.T) {
+	ctx := context.Background()
+	workspaceID := uuid.New()
+
+	mockRepo := new(MockRepository)
+	svc := NewService(mockRepo)
+
+	csvData := []byte("name,location_name\nBox A1,Warehouse A")
+
+	mockRepo.On("GetLocationByName", ctx, workspaceID, "Warehouse A").Return(nil, fmt.Errorf("database error"))
+
+	result, err := svc.Import(ctx, workspaceID, EntityTypeContainer, FormatCSV, csvData)
+
+	assert.NoError(t, err)
+	assert.Equal(t, 0, result.Succeeded)
+	assert.Equal(t, 1, result.Failed)
+	assert.Contains(t, result.Errors[0].Message, "failed to find location")
+
+	mockRepo.AssertExpectations(t)
+}
+
+// =============================================================================
+// Import Create Error Tests
+// =============================================================================
+
+func TestService_Import_Label_CreateError(t *testing.T) {
+	ctx := context.Background()
+	workspaceID := uuid.New()
+
+	mockRepo := new(MockRepository)
+	svc := NewService(mockRepo)
+
+	csvData := []byte("name,color\nTest Label,#FF0000")
+
+	mockRepo.On("CreateLabel", ctx, mock.Anything).Return(queries.WarehouseLabel{}, fmt.Errorf("duplicate label"))
+
+	result, err := svc.Import(ctx, workspaceID, EntityTypeLabel, FormatCSV, csvData)
+
+	assert.NoError(t, err)
+	assert.Equal(t, 0, result.Succeeded)
+	assert.Equal(t, 1, result.Failed)
+	assert.Contains(t, result.Errors[0].Message, "duplicate label")
+
+	mockRepo.AssertExpectations(t)
+}
+
+func TestService_Import_Company_CreateError(t *testing.T) {
+	ctx := context.Background()
+	workspaceID := uuid.New()
+
+	mockRepo := new(MockRepository)
+	svc := NewService(mockRepo)
+
+	csvData := []byte("name,website\nAcme Corp,https://acme.com")
+
+	mockRepo.On("CreateCompany", ctx, mock.Anything).Return(queries.WarehouseCompany{}, fmt.Errorf("constraint violation"))
+
+	result, err := svc.Import(ctx, workspaceID, EntityTypeCompany, FormatCSV, csvData)
+
+	assert.NoError(t, err)
+	assert.Equal(t, 0, result.Succeeded)
+	assert.Equal(t, 1, result.Failed)
+	assert.Contains(t, result.Errors[0].Message, "constraint violation")
+
+	mockRepo.AssertExpectations(t)
+}
+
+func TestService_Import_Borrower_CreateError(t *testing.T) {
+	ctx := context.Background()
+	workspaceID := uuid.New()
+
+	mockRepo := new(MockRepository)
+	svc := NewService(mockRepo)
+
+	csvData := []byte("name,email\nJohn Doe,john@example.com")
+
+	mockRepo.On("CreateBorrower", ctx, mock.Anything).Return(queries.WarehouseBorrower{}, fmt.Errorf("email already exists"))
+
+	result, err := svc.Import(ctx, workspaceID, EntityTypeBorrower, FormatCSV, csvData)
+
+	assert.NoError(t, err)
+	assert.Equal(t, 0, result.Succeeded)
+	assert.Equal(t, 1, result.Failed)
+	assert.Contains(t, result.Errors[0].Message, "email already exists")
+
+	mockRepo.AssertExpectations(t)
+}
+
+func TestService_Import_Location_CreateError(t *testing.T) {
+	ctx := context.Background()
+	workspaceID := uuid.New()
+
+	mockRepo := new(MockRepository)
+	svc := NewService(mockRepo)
+
+	csvData := []byte("name,description\nWarehouse A,Main storage")
+
+	mockRepo.On("CreateLocation", ctx, mock.Anything).Return(queries.WarehouseLocation{}, fmt.Errorf("short code conflict"))
+
+	result, err := svc.Import(ctx, workspaceID, EntityTypeLocation, FormatCSV, csvData)
+
+	assert.NoError(t, err)
+	assert.Equal(t, 0, result.Succeeded)
+	assert.Equal(t, 1, result.Failed)
+	assert.Contains(t, result.Errors[0].Message, "short code conflict")
+
+	mockRepo.AssertExpectations(t)
+}
+
+func TestService_Import_Item_CreateError(t *testing.T) {
+	ctx := context.Background()
+	workspaceID := uuid.New()
+
+	mockRepo := new(MockRepository)
+	svc := NewService(mockRepo)
+
+	csvData := []byte("name,sku\nWidget,SKU-001")
+
+	mockRepo.On("CreateItem", ctx, mock.Anything).Return(queries.WarehouseItem{}, fmt.Errorf("SKU already exists"))
+
+	result, err := svc.Import(ctx, workspaceID, EntityTypeItem, FormatCSV, csvData)
+
+	assert.NoError(t, err)
+	assert.Equal(t, 0, result.Succeeded)
+	assert.Equal(t, 1, result.Failed)
+	assert.Contains(t, result.Errors[0].Message, "SKU already exists")
+
+	mockRepo.AssertExpectations(t)
+}
+
+func TestService_Import_Container_CreateError(t *testing.T) {
+	ctx := context.Background()
+	workspaceID := uuid.New()
+	locID := uuid.New()
+
+	mockRepo := new(MockRepository)
+	svc := NewService(mockRepo)
+
+	csvData := []byte("name,location_name\nBox A1,Warehouse A")
+
+	mockRepo.On("GetLocationByName", ctx, workspaceID, "Warehouse A").Return(&queries.WarehouseLocation{
+		ID:   locID,
+		Name: "Warehouse A",
+	}, nil)
+
+	mockRepo.On("CreateContainer", ctx, mock.Anything).Return(queries.WarehouseContainer{}, fmt.Errorf("container name exists"))
+
+	result, err := svc.Import(ctx, workspaceID, EntityTypeContainer, FormatCSV, csvData)
+
+	assert.NoError(t, err)
+	assert.Equal(t, 0, result.Succeeded)
+	assert.Equal(t, 1, result.Failed)
+	assert.Contains(t, result.Errors[0].Message, "container name exists")
+
+	mockRepo.AssertExpectations(t)
+}
+
+// =============================================================================
+// JSON Parsing Edge Cases
+// =============================================================================
+
+func TestService_parseJSON_EmptyArray(t *testing.T) {
+	ctx := context.Background()
+	workspaceID := uuid.New()
+
+	mockRepo := new(MockRepository)
+	svc := NewService(mockRepo)
+
+	jsonData := []byte(`[]`)
+
+	result, err := svc.Import(ctx, workspaceID, EntityTypeCategory, FormatJSON, jsonData)
+
+	assert.NoError(t, err)
+	assert.Equal(t, 0, result.TotalRows)
+	assert.Equal(t, 0, result.Succeeded)
+	assert.Equal(t, 0, result.Failed)
+}
+
+func TestService_parseJSON_ObjectValues(t *testing.T) {
+	ctx := context.Background()
+	workspaceID := uuid.New()
+
+	mockRepo := new(MockRepository)
+	svc := NewService(mockRepo)
+
+	// JSON with nested object - should be stringified
+	jsonData := []byte(`[{"name": "Test", "metadata": {"key": "value"}}]`)
+
+	mockRepo.On("CreateCategory", ctx, mock.Anything).Return(queries.WarehouseCategory{}, nil)
+
+	result, err := svc.Import(ctx, workspaceID, EntityTypeCategory, FormatJSON, jsonData)
+
+	assert.NoError(t, err)
+	assert.Equal(t, 1, result.Succeeded)
+
+	mockRepo.AssertExpectations(t)
+}
+
+// =============================================================================
+// CSV Header Edge Cases
+// =============================================================================
+
+func TestService_parseCSV_HeaderOnly(t *testing.T) {
+	ctx := context.Background()
+	workspaceID := uuid.New()
+
+	mockRepo := new(MockRepository)
+	svc := NewService(mockRepo)
+
+	csvData := []byte("name,description")
+
+	result, err := svc.Import(ctx, workspaceID, EntityTypeCategory, FormatCSV, csvData)
+
+	assert.NoError(t, err)
+	assert.Equal(t, 0, result.TotalRows)
+	assert.Equal(t, 0, result.Succeeded)
+}
+
+func TestService_parseCSV_ExtraColumns(t *testing.T) {
+	ctx := context.Background()
+	workspaceID := uuid.New()
+
+	mockRepo := new(MockRepository)
+	svc := NewService(mockRepo)
+
+	// CSV with extra unknown columns - should be ignored
+	csvData := []byte("name,description,unknown_column,another_unknown\nTest,Desc,value1,value2")
+
+	mockRepo.On("CreateCategory", ctx, mock.MatchedBy(func(p queries.CreateCategoryParams) bool {
+		return p.Name == "Test" && *p.Description == "Desc"
+	})).Return(queries.WarehouseCategory{}, nil)
+
+	result, err := svc.Import(ctx, workspaceID, EntityTypeCategory, FormatCSV, csvData)
+
+	assert.NoError(t, err)
+	assert.Equal(t, 1, result.Succeeded)
+
+	mockRepo.AssertExpectations(t)
+}
+
+func TestService_parseCSV_CaseInsensitiveHeaders(t *testing.T) {
+	ctx := context.Background()
+	workspaceID := uuid.New()
+
+	mockRepo := new(MockRepository)
+	svc := NewService(mockRepo)
+
+	// CSV with uppercase/mixed case headers
+	csvData := []byte("NAME,DESCRIPTION,Parent_Category\nTest,Desc,")
+
+	mockRepo.On("CreateCategory", ctx, mock.MatchedBy(func(p queries.CreateCategoryParams) bool {
+		return p.Name == "Test" && *p.Description == "Desc"
+	})).Return(queries.WarehouseCategory{}, nil)
+
+	result, err := svc.Import(ctx, workspaceID, EntityTypeCategory, FormatCSV, csvData)
+
+	assert.NoError(t, err)
+	assert.Equal(t, 1, result.Succeeded)
+
+	mockRepo.AssertExpectations(t)
+}
+
+// =============================================================================
+// Helper Function Tests
+// =============================================================================
+
+func TestPtrToString_Nil(t *testing.T) {
+	result := ptrToString(nil)
+	assert.Equal(t, "", result)
+}
+
+func TestPtrToString_Value(t *testing.T) {
+	s := "test"
+	result := ptrToString(&s)
+	assert.Equal(t, "test", result)
+}
+
+func TestPtrToBool_Nil(t *testing.T) {
+	result := ptrToBool(nil)
+	assert.False(t, result)
+}
+
+func TestPtrToBool_True(t *testing.T) {
+	b := true
+	result := ptrToBool(&b)
+	assert.True(t, result)
+}
+
+func TestPtrToBool_False(t *testing.T) {
+	b := false
+	result := ptrToBool(&b)
+	assert.False(t, result)
+}
+
+func TestPgtimeToString_Valid(t *testing.T) {
+	now := time.Now().UTC()
+	pt := pgtype.Timestamptz{Time: now, Valid: true}
+	result := pgtimeToString(pt)
+	assert.Equal(t, now.Format(time.RFC3339), result)
+}
+
+func TestPgtimeToString_Invalid(t *testing.T) {
+	pt := pgtype.Timestamptz{Valid: false}
+	result := pgtimeToString(pt)
+	assert.Equal(t, "", result)
+}
+
+func TestStringToPtr_Empty(t *testing.T) {
+	result := stringToPtr("")
+	assert.Nil(t, result)
+}
+
+func TestStringToPtr_Value(t *testing.T) {
+	result := stringToPtr("test")
+	assert.NotNil(t, result)
+	assert.Equal(t, "test", *result)
+}
+
+// =============================================================================
+// Format Validation Tests
+// =============================================================================
+
+func TestFormat_IsValid_Excel(t *testing.T) {
+	assert.True(t, FormatExcel.IsValid())
+}
+
+// =============================================================================
+// Export with Parent References Tests
+// =============================================================================
+
+func TestService_Export_Locations_WithParent(t *testing.T) {
+	ctx := context.Background()
+	workspaceID := uuid.New()
+	parentID := uuid.New()
+	childID := uuid.New()
+	now := time.Now().UTC()
+
+	mockRepo := new(MockRepository)
+	svc := NewService(mockRepo)
+
+	mockRepo.On("ListAllLocations", ctx, workspaceID, false).Return([]queries.WarehouseLocation{
+		{
+			ID:             parentID,
+			WorkspaceID:    workspaceID,
+			Name:           "Building 1",
+			ParentLocation: pgtype.UUID{Valid: false},
+			Description:    ptrString("Main building"),
+			IsArchived:     false,
+			CreatedAt:      pgTimestamp(now),
+			UpdatedAt:      pgTimestamp(now),
+		},
+		{
+			ID:             childID,
+			WorkspaceID:    workspaceID,
+			Name:           "Room A",
+			ParentLocation: pgtype.UUID{Bytes: parentID, Valid: true},
+			Description:    ptrString("Room in Building 1"),
+			IsArchived:     false,
+			CreatedAt:      pgTimestamp(now),
+			UpdatedAt:      pgTimestamp(now),
+		},
+	}, nil)
+
+	data, metadata, err := svc.Export(ctx, ExportOptions{
+		WorkspaceID: workspaceID,
+		EntityType:  EntityTypeLocation,
+		Format:      FormatJSON,
+	})
+
+	assert.NoError(t, err)
+	assert.Equal(t, 2, metadata.TotalRecords)
+
+	var locations []LocationExport
+	err = json.Unmarshal(data, &locations)
+	assert.NoError(t, err)
+	assert.Len(t, locations, 2)
+
+	mockRepo.AssertExpectations(t)
+}
+
+func TestService_Export_Categories_WithParent(t *testing.T) {
+	ctx := context.Background()
+	workspaceID := uuid.New()
+	parentID := uuid.New()
+	childID := uuid.New()
+	now := time.Now().UTC()
+
+	mockRepo := new(MockRepository)
+	svc := NewService(mockRepo)
+
+	mockRepo.On("ListAllCategories", ctx, workspaceID, false).Return([]queries.WarehouseCategory{
+		{
+			ID:               parentID,
+			WorkspaceID:      workspaceID,
+			Name:             "Electronics",
+			ParentCategoryID: pgtype.UUID{Valid: false},
+			Description:      ptrString("Electronic items"),
+			IsArchived:       false,
+			CreatedAt:        pgTimestamp(now),
+			UpdatedAt:        pgTimestamp(now),
+		},
+		{
+			ID:               childID,
+			WorkspaceID:      workspaceID,
+			Name:             "Computers",
+			ParentCategoryID: pgtype.UUID{Bytes: parentID, Valid: true},
+			Description:      ptrString("Computer items"),
+			IsArchived:       false,
+			CreatedAt:        pgTimestamp(now),
+			UpdatedAt:        pgTimestamp(now),
+		},
+	}, nil)
+
+	data, metadata, err := svc.Export(ctx, ExportOptions{
+		WorkspaceID: workspaceID,
+		EntityType:  EntityTypeCategory,
+		Format:      FormatJSON,
+	})
+
+	assert.NoError(t, err)
+	assert.Equal(t, 2, metadata.TotalRecords)
+
+	var categories []CategoryExport
+	err = json.Unmarshal(data, &categories)
+	assert.NoError(t, err)
+	assert.Len(t, categories, 2)
+
+	mockRepo.AssertExpectations(t)
+}
+
+// =============================================================================
+// Import Multiple Rows Tests
+// =============================================================================
+
+func TestService_Import_MultipleRowsWithMixedResults(t *testing.T) {
+	ctx := context.Background()
+	workspaceID := uuid.New()
+
+	mockRepo := new(MockRepository)
+	svc := NewService(mockRepo)
+
+	// 3 rows: 2 valid, 1 invalid (missing name)
+	csvData := []byte("name,description\nCategory 1,Desc 1\n,Missing Name\nCategory 3,Desc 3")
+
+	mockRepo.On("CreateCategory", ctx, mock.MatchedBy(func(p queries.CreateCategoryParams) bool {
+		return p.Name == "Category 1" || p.Name == "Category 3"
+	})).Return(queries.WarehouseCategory{}, nil).Times(2)
+
+	result, err := svc.Import(ctx, workspaceID, EntityTypeCategory, FormatCSV, csvData)
+
+	assert.NoError(t, err)
+	assert.Equal(t, 3, result.TotalRows)
+	assert.Equal(t, 2, result.Succeeded)
+	assert.Equal(t, 1, result.Failed)
+	assert.Len(t, result.Errors, 1)
+	assert.Equal(t, 2, result.Errors[0].Row)
+
+	mockRepo.AssertExpectations(t)
+}
