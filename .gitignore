@@ -43,6 +43,7 @@ uv.lock
 htmlcov/
 .tox/
 .hypothesis/
+*.out
 
 # Jujutsu
 .jj/

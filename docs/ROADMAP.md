@@ -100,6 +100,12 @@
   - [x] Barcode scanning for item lookup
   - [ ] Background sync for offline changes
   - [ ] Push notifications support
+  - [ ] Add PWA manifest screenshots
+    - Create `frontend/public/screenshots/` directory
+    - Capture `mobile-dashboard.png` (1080x1920) - mobile dashboard view
+    - Capture `desktop-inventory.png` (1920x1080) - desktop inventory page
+    - Screenshots are shown during PWA install prompt on supported browsers
+    - Can use browser DevTools device emulation for consistent captures
 - [x] Item photos
   - [x] Upload photos for items (drag-and-drop, multi-file)
   - [x] Multiple photos per item with ordering
