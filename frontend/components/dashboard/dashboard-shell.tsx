@@ -65,7 +65,11 @@ export function DashboardShell({ children }: DashboardShellProps) {
         {/* Mobile Sidebar */}
         <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
           <SheetContent side="left" className="w-64 p-0">
-            <Sidebar collapsed={false} onToggle={() => setMobileMenuOpen(false)} />
+            <Sidebar
+              collapsed={false}
+              onToggle={() => setMobileMenuOpen(false)}
+              onNavClick={() => setMobileMenuOpen(false)}
+            />
           </SheetContent>
         </Sheet>
 

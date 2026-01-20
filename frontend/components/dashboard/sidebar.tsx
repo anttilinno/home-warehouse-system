@@ -36,9 +36,10 @@ import { pollingIntervals } from "@/lib/config/constants";
 interface SidebarProps {
   collapsed: boolean;
   onToggle: () => void;
+  onNavClick?: () => void;
 }
 
-export function Sidebar({ collapsed, onToggle }: SidebarProps) {
+export function Sidebar({ collapsed, onToggle, onNavClick }: SidebarProps) {
   const t = useTranslations("dashboard.nav");
   const pathname = usePathname();
   const { workspaceId, currentMember } = useWorkspace();
@@ -142,6 +143,7 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
     const link = (
       <Link
         href={item.href}
+        onClick={onNavClick}
         className={cn(
           "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
           isActive
