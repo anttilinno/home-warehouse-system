@@ -108,7 +108,8 @@ self.addEventListener("push", (event) => {
   try {
     const data = event.data.json() as PushNotificationData;
 
-    const options: NotificationOptions = {
+    // Note: vibrate is part of the Notification API but not in TypeScript's NotificationOptions
+    const options = {
       body: data.body,
       icon: data.icon || "/icon-192.png",
       badge: data.badge || "/favicon-32x32.png",
@@ -119,7 +120,7 @@ self.addEventListener("push", (event) => {
       },
       requireInteraction: data.require_open || false,
       vibrate: [100, 50, 100],
-    };
+    } satisfies NotificationOptions & { vibrate?: number[] };
 
     event.waitUntil(self.registration.showNotification(data.title, options));
   } catch (error) {
