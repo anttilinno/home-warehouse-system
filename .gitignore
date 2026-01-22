@@ -92,3 +92,6 @@ dist-ssr/
 # Claude wrapper
 chunks/
 .claude_state.json
+
+# GSD Planning (local-only)
+.planning/
