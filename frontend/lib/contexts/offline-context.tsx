@@ -1,6 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from "react";
+import { initDB } from "@/lib/db/offline-db";
 
 interface OfflineContextValue {
   isOnline: boolean;
@@ -9,6 +10,10 @@ interface OfflineContextValue {
   pendingUploadsCount: number;
   hasPendingUploads: boolean;
   refreshPendingUploads: () => Promise<void>;
+  /** Whether the offline IndexedDB database is ready */
+  dbReady: boolean;
+  /** Whether persistent storage has been granted (prevents Safari eviction) */
+  persistentStorage: boolean;
 }
 
 const OfflineContext = createContext<OfflineContextValue | undefined>(undefined);
@@ -17,6 +22,8 @@ export function OfflineProvider({ children }: { children: ReactNode }) {
   const [isOnline, setIsOnline] = useState(true);
   const [wasOffline, setWasOffline] = useState(false);
   const [pendingUploadsCount, setPendingUploadsCount] = useState(0);
+  const [dbReady, setDbReady] = useState(false);
+  const [persistentStorage, setPersistentStorage] = useState(false);
 
   const handleOnline = useCallback(() => {
     setIsOnline(true);
@@ -65,6 +72,14 @@ export function OfflineProvider({ children }: { children: ReactNode }) {
     };
   }, [handleOnline, handleOffline]);
 
+  // Initialize offline database on mount
+  useEffect(() => {
+    initDB().then(({ dbReady, persistentStorage }) => {
+      setDbReady(dbReady);
+      setPersistentStorage(persistentStorage);
+    });
+  }, []);
+
   // Check pending uploads on mount and periodically
   useEffect(() => {
     refreshPendingUploads();
@@ -91,6 +106,8 @@ export function OfflineProvider({ children }: { children: ReactNode }) {
     pendingUploadsCount,
     hasPendingUploads: pendingUploadsCount > 0,
     refreshPendingUploads,
+    dbReady,
+    persistentStorage,
   };
 
   return (
