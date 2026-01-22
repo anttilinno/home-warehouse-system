@@ -93,13 +93,18 @@
   - Surface items not accessed/moved in 12+ months
   - Suggest donate, sell, or dispose
   - Track declutter decisions and outcomes
-- [x] Progressive Web App (PWA) (partial)
+- [x] Progressive Web App (PWA)
   - [x] Installable on iOS/Android without app store
   - [x] Offline support with service worker caching
   - [x] QR code scanning (camera API)
   - [x] Barcode scanning for item lookup
+  - [x] Push notifications support
+    - Backend: webpush.Sender, push subscription domain, VAPID config
+    - Frontend: usePushNotifications hook, service worker handlers
+    - Notifications for: approval workflow (approve/reject), loan reminders
+    - Settings UI for enabling/disabling push notifications
+    - Requires: VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY, VAPID_SUBSCRIBER env vars
   - [ ] Background sync for offline changes
-  - [ ] Push notifications support
   - [ ] Add PWA manifest screenshots
     - Create `frontend/public/screenshots/` directory
     - Capture `mobile-dashboard.png` (1080x1920) - mobile dashboard view
@@ -144,6 +149,12 @@
   - Generate test data for development
   - Seed types: expiring items, warranty alerts, low-stock, overdue loans, location hierarchy
   - Command: `mise run seed <type|all>`
+- [x] Job scheduler (asynq + Redis)
+  - Loan reminder notifications (daily at 9 AM) — email + push to workspace admins
+  - Deleted records cleanup (weekly Sunday 3 AM)
+  - Activity logs cleanup (weekly Sunday 4 AM)
+  - Separate worker process: `mise run scheduler`
+  - Health check endpoint on :8082
 
 ## Phase 3: UX & Accessibility
 
@@ -208,14 +219,15 @@
 
 ### Infrastructure
 - [ ] **Kubernetes deployment configuration**
-  - Create k8s manifests for main backend service
-  - Create k8s manifests for background worker
+  - Create k8s manifests for main backend service (API server :8080)
+  - Create k8s manifests for import worker (:8081)
+  - Create k8s manifests for job scheduler (:8082)
   - ConfigMaps for environment variables
-  - Secrets for sensitive data (JWT, database credentials)
+  - Secrets for sensitive data (JWT, VAPID keys, database credentials)
   - Deployment, Service, and Ingress resources
-  - HPA (Horizontal Pod Autoscaler) for both services
+  - HPA (Horizontal Pod Autoscaler) for API server
   - PersistentVolumeClaim for upload storage
-  - Health check endpoints integration
+  - Health check endpoints integration (all three services)
 
 ## Phase 4: AI & Advanced Features
 
