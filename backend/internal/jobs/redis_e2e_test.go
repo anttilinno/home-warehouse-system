@@ -110,7 +110,7 @@ func TestRedis_Scheduler_RegisterHandlers(t *testing.T) {
 
 	// Register handlers
 	cleanupConfig := DefaultCleanupConfig()
-	mux := scheduler.RegisterHandlers(mockSender, cleanupConfig)
+	mux := scheduler.RegisterHandlers(mockSender, nil, cleanupConfig)
 
 	require.NotNil(t, mux)
 }
@@ -126,7 +126,7 @@ func TestScheduler_StartAndStop(t *testing.T) {
 	// Create mock email sender
 	mockSender := &mockEmailSenderForRedis{}
 	cleanupConfig := DefaultCleanupConfig()
-	mux := scheduler.RegisterHandlers(mockSender, cleanupConfig)
+	mux := scheduler.RegisterHandlers(mockSender, nil, cleanupConfig)
 
 	// Start scheduler in background
 	errChan := make(chan error, 1)

@@ -130,7 +130,7 @@ func TestNewCleanupTasks_Independent(t *testing.T) {
 // =============================================================================
 
 func TestNewLoanReminderProcessorInternal(t *testing.T) {
-	processor := NewLoanReminderProcessor(nil, nil)
+	processor := NewLoanReminderProcessor(nil, nil, nil)
 	assert.NotNil(t, processor)
 }
 
@@ -174,7 +174,7 @@ func (m *mockEmailSender) SendLoanReminder(ctx context.Context, to, borrowerName
 
 func TestLoanReminderProcessor_ProcessTask_WithMockEmailSender(t *testing.T) {
 	mockSender := &mockEmailSender{}
-	processor := NewLoanReminderProcessor(nil, mockSender)
+	processor := NewLoanReminderProcessor(nil, mockSender, nil)
 
 	payload := LoanReminderPayload{
 		LoanID:        uuid.New(),
@@ -203,7 +203,7 @@ func TestLoanReminderProcessor_ProcessTask_WithMockEmailSender(t *testing.T) {
 
 func TestLoanReminderProcessor_ProcessTask_NoEmailSender(t *testing.T) {
 	// Processor with nil email sender should not fail
-	processor := NewLoanReminderProcessor(nil, nil)
+	processor := NewLoanReminderProcessor(nil, nil, nil)
 
 	payload := LoanReminderPayload{
 		LoanID:        uuid.New(),
@@ -311,7 +311,7 @@ func TestScheduler_RegisterHandlersInternal(t *testing.T) {
 	mockSender := &mockEmailSender{}
 	cleanupConfig := DefaultCleanupConfig()
 
-	mux := scheduler.RegisterHandlers(mockSender, cleanupConfig)
+	mux := scheduler.RegisterHandlers(mockSender, nil, cleanupConfig)
 
 	assert.NotNil(t, mux)
 }
@@ -322,7 +322,7 @@ func TestScheduler_RegisterHandlers_WithNilEmailSenderInternal(t *testing.T) {
 
 	cleanupConfig := DefaultCleanupConfig()
 
-	mux := scheduler.RegisterHandlers(nil, cleanupConfig)
+	mux := scheduler.RegisterHandlers(nil, nil, cleanupConfig)
 
 	assert.NotNil(t, mux)
 }
@@ -336,7 +336,7 @@ func TestScheduler_RegisterHandlers_WithCustomCleanupConfigInternal(t *testing.T
 		ActivityLogsRetentionDays:   180,
 	}
 
-	mux := scheduler.RegisterHandlers(nil, customCleanupConfig)
+	mux := scheduler.RegisterHandlers(nil, nil, customCleanupConfig)
 
 	assert.NotNil(t, mux)
 }

@@ -158,7 +158,7 @@ func TestScheduler_RegisterHandlers(t *testing.T) {
 	scheduler := jobs.NewScheduler(nil, config)
 
 	cleanupConfig := jobs.DefaultCleanupConfig()
-	mux := scheduler.RegisterHandlers(nil, cleanupConfig)
+	mux := scheduler.RegisterHandlers(nil, nil, cleanupConfig)
 
 	assert.NotNil(t, mux)
 }
@@ -168,7 +168,7 @@ func TestScheduler_RegisterHandlers_WithNilEmailSender(t *testing.T) {
 	scheduler := jobs.NewScheduler(nil, config)
 
 	cleanupConfig := jobs.DefaultCleanupConfig()
-	mux := scheduler.RegisterHandlers(nil, cleanupConfig)
+	mux := scheduler.RegisterHandlers(nil, nil, cleanupConfig)
 
 	// Should work with nil email sender
 	assert.NotNil(t, mux)
@@ -180,7 +180,7 @@ func TestScheduler_RegisterHandlers_WithMockEmailSender(t *testing.T) {
 
 	mockSender := &mockEmailSender{}
 	cleanupConfig := jobs.DefaultCleanupConfig()
-	mux := scheduler.RegisterHandlers(mockSender, cleanupConfig)
+	mux := scheduler.RegisterHandlers(mockSender, nil, cleanupConfig)
 
 	assert.NotNil(t, mux)
 }
@@ -193,7 +193,7 @@ func TestScheduler_RegisterHandlers_WithCustomCleanupConfig(t *testing.T) {
 		DeletedRecordsRetentionDays: 7,
 		ActivityLogsRetentionDays:   30,
 	}
-	mux := scheduler.RegisterHandlers(nil, customCleanupConfig)
+	mux := scheduler.RegisterHandlers(nil, nil, customCleanupConfig)
 
 	assert.NotNil(t, mux)
 }
@@ -205,8 +205,8 @@ func TestScheduler_RegisterHandlers_CalledMultipleTimes(t *testing.T) {
 	cleanupConfig := jobs.DefaultCleanupConfig()
 
 	// Should be able to register handlers multiple times
-	mux1 := scheduler.RegisterHandlers(nil, cleanupConfig)
-	mux2 := scheduler.RegisterHandlers(nil, cleanupConfig)
+	mux1 := scheduler.RegisterHandlers(nil, nil, cleanupConfig)
+	mux2 := scheduler.RegisterHandlers(nil, nil, cleanupConfig)
 
 	assert.NotNil(t, mux1)
 	assert.NotNil(t, mux2)
@@ -347,13 +347,13 @@ func (m *mockEmailSender) SendLoanReminder(ctx context.Context, to, borrowerName
 // =============================================================================
 
 func TestNewLoanReminderProcessor(t *testing.T) {
-	processor := jobs.NewLoanReminderProcessor(nil, nil)
+	processor := jobs.NewLoanReminderProcessor(nil, nil, nil)
 	assert.NotNil(t, processor)
 }
 
 func TestNewLoanReminderProcessor_WithMockSender(t *testing.T) {
 	mockSender := &mockEmailSender{}
-	processor := jobs.NewLoanReminderProcessor(nil, mockSender)
+	processor := jobs.NewLoanReminderProcessor(nil, mockSender, nil)
 	assert.NotNil(t, processor)
 }
 
@@ -458,7 +458,7 @@ func TestScheduler_ConcurrentRegisterHandlers(t *testing.T) {
 	done := make(chan bool)
 	for i := 0; i < 5; i++ {
 		go func() {
-			mux := scheduler.RegisterHandlers(nil, cleanupConfig)
+			mux := scheduler.RegisterHandlers(nil, nil, cleanupConfig)
 			require.NotNil(t, mux)
 			done <- true
 		}()

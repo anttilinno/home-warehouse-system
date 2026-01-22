@@ -50,6 +50,7 @@ import (
 	"github.com/antti/home-warehouse/go-backend/internal/infra/storage"
 	"github.com/antti/home-warehouse/go-backend/internal/infra/queries"
 	"github.com/antti/home-warehouse/go-backend/internal/infra/queue"
+	"github.com/antti/home-warehouse/go-backend/internal/infra/webpush"
 	"github.com/antti/home-warehouse/go-backend/internal/shared/jwt"
 	"github.com/redis/go-redis/v9"
 )
@@ -150,6 +151,20 @@ func NewRouter(pool *pgxpool.Pool, cfg *config.Config) chi.Router {
 	importJobRepo := postgres.NewImportJobRepository(pool)
 	pendingChangeRepo := postgres.NewPendingChangeRepository(pool)
 
+	// Initialize web push sender (optional - only if VAPID keys are configured)
+	var pushSender *webpush.Sender
+	if cfg.VAPIDPublicKey != "" && cfg.VAPIDPrivateKey != "" {
+		pushSender = webpush.NewSender(
+			cfg.VAPIDPublicKey,
+			cfg.VAPIDPrivateKey,
+			cfg.VAPIDSubscriber,
+			pushSubscriptionRepo,
+		)
+		log.Println("Web push notifications enabled")
+	} else {
+		log.Println("Web push notifications disabled (VAPID keys not configured)")
+	}
+
 	// Initialize services
 	// Auth services
 	userSvc := user.NewService(userRepo)
@@ -212,6 +227,10 @@ func NewRouter(pool *pgxpool.Pool, cfg *config.Config) chi.Router {
 		labelRepo,
 		broadcaster,
 	)
+	// Enable push notifications for approval workflow if configured
+	if pushSender != nil {
+		pendingChangeSvc.SetPushSender(pushSender)
+	}
 
 	// Create handlers with dependencies
 	userHandler := user.NewHandler(userSvc, jwtService, workspaceSvc)

@@ -7,6 +7,8 @@ import (
 
 	"github.com/hibiken/asynq"
 	"github.com/jackc/pgx/v5/pgxpool"
+
+	"github.com/antti/home-warehouse/go-backend/internal/infra/webpush"
 )
 
 // SchedulerConfig holds configuration for the job scheduler.
@@ -66,11 +68,11 @@ func NewScheduler(pool *pgxpool.Pool, config SchedulerConfig) *Scheduler {
 }
 
 // RegisterHandlers registers all task handlers.
-func (s *Scheduler) RegisterHandlers(emailSender EmailSender, cleanupConfig CleanupConfig) *asynq.ServeMux {
+func (s *Scheduler) RegisterHandlers(emailSender EmailSender, pushSender *webpush.Sender, cleanupConfig CleanupConfig) *asynq.ServeMux {
 	mux := asynq.NewServeMux()
 
 	// Loan reminder processor
-	loanProcessor := NewLoanReminderProcessor(s.pool, emailSender)
+	loanProcessor := NewLoanReminderProcessor(s.pool, emailSender, pushSender)
 	mux.HandleFunc(TypeLoanReminder, loanProcessor.ProcessTask)
 
 	// Cleanup processor

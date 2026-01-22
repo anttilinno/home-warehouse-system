@@ -38,6 +38,11 @@ type Config struct {
 	GitHubClientID     string
 	GitHubClientSecret string
 
+	// Web Push (VAPID)
+	VAPIDPublicKey  string
+	VAPIDPrivateKey string
+	VAPIDSubscriber string // Usually mailto:email or URL
+
 	// URLs
 	AppURL     string // Frontend URL
 	BackendURL string
@@ -77,6 +82,11 @@ func Load() *Config {
 		GoogleClientSecret: getEnv("GOOGLE_CLIENT_SECRET", ""),
 		GitHubClientID:     getEnv("GITHUB_CLIENT_ID", ""),
 		GitHubClientSecret: getEnv("GITHUB_CLIENT_SECRET", ""),
+
+		// Web Push (VAPID)
+		VAPIDPublicKey:  getEnv("VAPID_PUBLIC_KEY", ""),
+		VAPIDPrivateKey: getEnv("VAPID_PRIVATE_KEY", ""),
+		VAPIDSubscriber: getEnv("VAPID_SUBSCRIBER", ""),
 
 		// URLs
 		AppURL:     getEnv("APP_URL", "http://localhost:3000"),

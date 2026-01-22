@@ -326,7 +326,7 @@ func TestLoanReminderPayload_PastDates(t *testing.T) {
 
 func TestLoanReminderProcessor_ProcessTask_Success(t *testing.T) {
 	sender := &testTrackingEmailSender{}
-	processor := NewLoanReminderProcessor(nil, sender)
+	processor := NewLoanReminderProcessor(nil, sender, nil)
 
 	dueDate := time.Now().Add(48 * time.Hour)
 	payload := LoanReminderPayload{
@@ -356,7 +356,7 @@ func TestLoanReminderProcessor_ProcessTask_Success(t *testing.T) {
 
 func TestLoanReminderProcessor_ProcessTask_OverdueEmail(t *testing.T) {
 	sender := &testTrackingEmailSender{}
-	processor := NewLoanReminderProcessor(nil, sender)
+	processor := NewLoanReminderProcessor(nil, sender, nil)
 
 	dueDate := time.Now().Add(-48 * time.Hour)
 	payload := LoanReminderPayload{
@@ -384,7 +384,7 @@ func TestLoanReminderProcessor_ProcessTask_EmailSenderError(t *testing.T) {
 	errorSender := &testErrorEmailSender{
 		sendError: errors.New("SMTP connection failed"),
 	}
-	processor := NewLoanReminderProcessor(nil, errorSender)
+	processor := NewLoanReminderProcessor(nil, errorSender, nil)
 
 	payload := LoanReminderPayload{
 		LoanID:        uuid.New(),
@@ -408,7 +408,7 @@ func TestLoanReminderProcessor_ProcessTask_EmailSenderError(t *testing.T) {
 }
 
 func TestLoanReminderProcessor_ProcessTask_NilEmailSender(t *testing.T) {
-	processor := NewLoanReminderProcessor(nil, nil)
+	processor := NewLoanReminderProcessor(nil, nil, nil)
 
 	payload := LoanReminderPayload{
 		LoanID:        uuid.New(),
@@ -431,7 +431,7 @@ func TestLoanReminderProcessor_ProcessTask_NilEmailSender(t *testing.T) {
 }
 
 func TestLoanReminderProcessor_ProcessTask_InvalidPayload(t *testing.T) {
-	processor := NewLoanReminderProcessor(nil, nil)
+	processor := NewLoanReminderProcessor(nil, nil, nil)
 
 	tests := []struct {
 		name    string
@@ -455,7 +455,7 @@ func TestLoanReminderProcessor_ProcessTask_InvalidPayload(t *testing.T) {
 }
 
 func TestLoanReminderProcessor_ProcessTask_InvalidUUID(t *testing.T) {
-	processor := NewLoanReminderProcessor(nil, nil)
+	processor := NewLoanReminderProcessor(nil, nil, nil)
 
 	// Payload with invalid UUID format
 	payload := []byte(`{"loan_id": "not-a-valid-uuid"}`)
@@ -467,7 +467,7 @@ func TestLoanReminderProcessor_ProcessTask_InvalidUUID(t *testing.T) {
 
 func TestLoanReminderProcessor_ProcessTask_MultipleEmails(t *testing.T) {
 	sender := &testTrackingEmailSender{}
-	processor := NewLoanReminderProcessor(nil, sender)
+	processor := NewLoanReminderProcessor(nil, sender, nil)
 
 	// Process multiple tasks
 	for i := 0; i < 5; i++ {
@@ -495,7 +495,7 @@ func TestLoanReminderProcessor_ProcessTask_MultipleEmails(t *testing.T) {
 
 func TestLoanReminderProcessor_ProcessTask_ContextCancellation(t *testing.T) {
 	sender := &testContextAwareEmailSender{delay: 100 * time.Millisecond}
-	processor := NewLoanReminderProcessor(nil, sender)
+	processor := NewLoanReminderProcessor(nil, sender, nil)
 
 	ctx, cancel := context.WithCancel(context.Background())
 	cancel() // Cancel immediately
