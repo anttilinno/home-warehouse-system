@@ -1,7 +1,8 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from "react";
-import { initDB } from "@/lib/db/offline-db";
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef, type ReactNode } from "react";
+import { initDB, getSyncMeta } from "@/lib/db/offline-db";
+import { syncWorkspaceData, type SyncResult, type EntityType } from "@/lib/db/sync-operations";
 
 interface OfflineContextValue {
   isOnline: boolean;
@@ -14,6 +15,16 @@ interface OfflineContextValue {
   dbReady: boolean;
   /** Whether persistent storage has been granted (prevents Safari eviction) */
   persistentStorage: boolean;
+  /** Whether a workspace data sync is currently in progress */
+  isSyncing: boolean;
+  /** Timestamp of the last successful sync, or null if never synced */
+  lastSyncTimestamp: number | null;
+  /** Error message from the last sync attempt, if it failed */
+  syncError: string | null;
+  /** Count of records synced for each entity type */
+  syncCounts: Record<EntityType, number> | null;
+  /** Manually trigger a workspace data sync */
+  triggerSync: () => Promise<void>;
 }
 
 const OfflineContext = createContext<OfflineContextValue | undefined>(undefined);
@@ -25,6 +36,15 @@ export function OfflineProvider({ children }: { children: ReactNode }) {
   const [dbReady, setDbReady] = useState(false);
   const [persistentStorage, setPersistentStorage] = useState(false);
 
+  // Sync state
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [lastSyncTimestamp, setLastSyncTimestamp] = useState<number | null>(null);
+  const [syncError, setSyncError] = useState<string | null>(null);
+  const [syncCounts, setSyncCounts] = useState<Record<EntityType, number> | null>(null);
+
+  // Track if initial sync has been triggered to prevent double-sync
+  const hasInitialSyncTriggered = useRef(false);
+
   const handleOnline = useCallback(() => {
     setIsOnline(true);
     // Track that we were previously offline (for "back online" message)
@@ -35,6 +55,45 @@ export function OfflineProvider({ children }: { children: ReactNode }) {
 
   const handleOffline = useCallback(() => {
     setIsOnline(false);
+  }, []);
+
+  // Trigger workspace data sync
+  const triggerSync = useCallback(async () => {
+    // Get workspace ID from localStorage (same pattern as use-workspace.ts)
+    const workspaceId = typeof localStorage !== "undefined"
+      ? localStorage.getItem("workspace_id")
+      : null;
+
+    if (!workspaceId) {
+      console.log("[Offline] No workspace selected, skipping sync");
+      return;
+    }
+
+    if (typeof navigator !== "undefined" && !navigator.onLine) {
+      console.log("[Offline] Device is offline, skipping sync");
+      return;
+    }
+
+    setIsSyncing(true);
+    setSyncError(null);
+
+    try {
+      const result: SyncResult = await syncWorkspaceData(workspaceId);
+
+      if (result.success) {
+        setLastSyncTimestamp(result.timestamp);
+        setSyncCounts(result.counts);
+        setSyncError(null);
+      } else {
+        setSyncError(result.error || "Sync failed");
+      }
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Sync failed";
+      setSyncError(errorMessage);
+      console.error("[Offline] Sync error:", error);
+    } finally {
+      setIsSyncing(false);
+    }
   }, []);
 
   // Check pending uploads in IndexedDB
@@ -80,6 +139,32 @@ export function OfflineProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
+  // Load last sync timestamp from IndexedDB on mount
+  useEffect(() => {
+    if (dbReady) {
+      getSyncMeta("lastSync").then((meta) => {
+        if (meta?.value && typeof meta.value === "number") {
+          setLastSyncTimestamp(meta.value);
+        }
+      });
+    }
+  }, [dbReady]);
+
+  // Initial sync when DB is ready and online
+  useEffect(() => {
+    if (dbReady && isOnline && !hasInitialSyncTriggered.current) {
+      hasInitialSyncTriggered.current = true;
+      triggerSync();
+    }
+  }, [dbReady, isOnline, triggerSync]);
+
+  // Re-sync when coming back online (after being offline)
+  useEffect(() => {
+    if (wasOffline && isOnline && dbReady) {
+      triggerSync();
+    }
+  }, [wasOffline, isOnline, dbReady, triggerSync]);
+
   // Check pending uploads on mount and periodically
   useEffect(() => {
     refreshPendingUploads();
@@ -108,6 +193,11 @@ export function OfflineProvider({ children }: { children: ReactNode }) {
     refreshPendingUploads,
     dbReady,
     persistentStorage,
+    isSyncing,
+    lastSyncTimestamp,
+    syncError,
+    syncCounts,
+    triggerSync,
   };
 
   return (
