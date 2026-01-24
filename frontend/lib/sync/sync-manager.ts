@@ -102,6 +102,66 @@ export interface SyncEvent {
 export type SyncEventListener = (event: SyncEvent) => void;
 
 // ============================================================================
+// Topological Sort for Hierarchical Entities
+// ============================================================================
+
+/**
+ * Sort category mutations topologically by parent-child dependency.
+ * Uses Kahn's algorithm to ensure parents are created before children.
+ *
+ * @param mutations - Array of category mutation entries
+ * @returns Sorted array with creates ordered by dependency, followed by updates
+ */
+export function topologicalSortCategories(mutations: MutationQueueEntry[]): MutationQueueEntry[] {
+  // Only sort create operations (updates don't create new IDs)
+  const creates = mutations.filter(m => m.operation === 'create');
+  const updates = mutations.filter(m => m.operation === 'update');
+
+  if (creates.length <= 1) return [...creates, ...updates];
+
+  // Build dependency graph from parent_category_id references
+  const indegree = new Map<string, number>();
+  const children = new Map<string, string[]>();
+
+  // Initialize
+  for (const m of creates) {
+    indegree.set(m.idempotencyKey, 0);
+    children.set(m.idempotencyKey, []);
+  }
+
+  // Build edges from parent references where parent is also a pending create
+  const keySet = new Set(creates.map(m => m.idempotencyKey));
+  for (const m of creates) {
+    const parentId = m.payload.parent_category_id as string | null;
+    if (parentId && keySet.has(parentId)) {
+      // parentId is another pending create's temp ID
+      indegree.set(m.idempotencyKey, (indegree.get(m.idempotencyKey) || 0) + 1);
+      children.get(parentId)!.push(m.idempotencyKey);
+    }
+  }
+
+  // Kahn's algorithm: start with nodes with indegree 0
+  const queue = creates.filter(m => indegree.get(m.idempotencyKey) === 0);
+  const sorted: MutationQueueEntry[] = [];
+
+  while (queue.length > 0) {
+    const m = queue.shift()!;
+    sorted.push(m);
+    for (const childKey of children.get(m.idempotencyKey) || []) {
+      const newDegree = (indegree.get(childKey) || 1) - 1;
+      indegree.set(childKey, newDegree);
+      if (newDegree === 0) {
+        const child = creates.find(c => c.idempotencyKey === childKey);
+        if (child) queue.push(child);
+      }
+    }
+  }
+
+  // Combine sorted creates with updates
+  return [...sorted, ...updates];
+}
+
+// ============================================================================
 // SyncManager Class
 // ============================================================================
 
@@ -251,9 +311,14 @@ export class SyncManager {
         const mutations = byEntity.get(entityType) || [];
         if (mutations.length === 0) continue;
 
-        console.log(`[SyncManager] Processing ${mutations.length} ${entityType} mutations`);
+        // Apply topological sort for hierarchical entities
+        const sortedMutations = entityType === 'categories'
+          ? topologicalSortCategories(mutations)
+          : mutations;
 
-        for (const mutation of mutations) {
+        console.log(`[SyncManager] Processing ${sortedMutations.length} ${entityType} mutations`);
+
+        for (const mutation of sortedMutations) {
           // Check if dependencies have failed - cascade failure
           const cascadeFailed = await this.hasCascadeFailure(mutation, failedKeys);
           if (cascadeFailed) {
