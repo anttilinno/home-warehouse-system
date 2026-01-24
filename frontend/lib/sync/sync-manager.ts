@@ -15,6 +15,7 @@ import {
   getPendingMutationCount,
   RETRY_CONFIG,
   prepareSyncPayload,
+  getMutationByIdempotencyKey,
 } from "./mutation-queue";
 import {
   findConflictFields,
@@ -22,7 +23,30 @@ import {
   resolveWithLastWriteWins,
   logConflict,
 } from "./conflict-resolver";
-import type { MutationQueueEntry } from "@/lib/db/types";
+import type { MutationQueueEntry, MutationEntityType } from "@/lib/db/types";
+
+// ============================================================================
+// Entity Sync Order
+// ============================================================================
+
+/**
+ * Entity sync order - process entities with no dependencies first.
+ * Categories and borrowers have no FK dependencies.
+ * Locations have self-referential hierarchy (handled by topological sort in Phase 7+).
+ * Containers depend on locations.
+ * Items depend on categories (optional).
+ * Inventory depends on items, locations, containers.
+ * Loans depend on inventory, borrowers.
+ */
+export const ENTITY_SYNC_ORDER: MutationEntityType[] = [
+  "categories",
+  "locations",
+  "borrowers",
+  "containers",
+  "items",
+  "inventory",
+  "loans",
+];
 
 // ============================================================================
 // Types
@@ -38,6 +62,8 @@ export type SyncEventType =
   | "SYNC_REQUESTED"
   | "MUTATION_SYNCED"
   | "MUTATION_FAILED"
+  | "MUTATION_CASCADE_FAILED"
+  | "MUTATION_SKIPPED_DEPENDENCY"
   | "QUEUE_UPDATED"
   | "CONFLICT_DETECTED"
   | "CONFLICT_AUTO_RESOLVED"
@@ -185,6 +211,7 @@ export class SyncManager {
   /**
    * Process the mutation queue.
    * Implements locking to prevent concurrent processing.
+   * Processes mutations in entity-type order to respect dependencies.
    */
   async processQueue(): Promise<void> {
     // Prevent concurrent processing
@@ -202,17 +229,68 @@ export class SyncManager {
     this.isProcessing = true;
     this.broadcast({ type: "SYNC_STARTED" });
 
+    // Track synced idempotency keys for dependency checking
+    const syncedKeys = new Set<string>();
+    // Track failed idempotency keys for cascade failure
+    const failedKeys = new Set<string>();
+
     try {
       const pending = await getPendingMutations();
       console.log(`[SyncManager] Processing ${pending.length} pending mutations`);
 
+      // Group mutations by entity type
+      const byEntity = new Map<MutationEntityType, MutationQueueEntry[]>();
       for (const mutation of pending) {
-        const success = await this.processMutation(mutation);
+        const existing = byEntity.get(mutation.entity) || [];
+        existing.push(mutation);
+        byEntity.set(mutation.entity, existing);
+      }
 
-        if (!success && mutation.retries >= RETRY_CONFIG.maxRetries) {
-          // Max retries reached, mark as failed
-          await updateMutationStatus(mutation.id, { status: "failed" });
-          this.broadcast({ type: "MUTATION_FAILED", payload: { mutation } });
+      // Process in entity order
+      for (const entityType of ENTITY_SYNC_ORDER) {
+        const mutations = byEntity.get(entityType) || [];
+        if (mutations.length === 0) continue;
+
+        console.log(`[SyncManager] Processing ${mutations.length} ${entityType} mutations`);
+
+        for (const mutation of mutations) {
+          // Check if dependencies have failed - cascade failure
+          const cascadeFailed = await this.hasCascadeFailure(mutation, failedKeys);
+          if (cascadeFailed) {
+            console.log(`[SyncManager] Cascade failure for mutation ${mutation.id}`);
+            await updateMutationStatus(mutation.id, {
+              status: "failed",
+              lastError: "Parent mutation failed",
+            });
+            failedKeys.add(mutation.idempotencyKey);
+            this.broadcast({
+              type: "MUTATION_CASCADE_FAILED",
+              payload: { mutation },
+            });
+            continue;
+          }
+
+          // Check if dependencies have synced
+          const depsReady = await this.areDependenciesSynced(mutation, syncedKeys);
+          if (!depsReady) {
+            console.log(`[SyncManager] Skipping mutation ${mutation.id} - dependencies not synced`);
+            this.broadcast({
+              type: "MUTATION_SKIPPED_DEPENDENCY",
+              payload: { mutation },
+            });
+            continue;
+          }
+
+          const success = await this.processMutation(mutation);
+
+          if (success) {
+            syncedKeys.add(mutation.idempotencyKey);
+          } else if (mutation.retries >= RETRY_CONFIG.maxRetries) {
+            // Max retries reached, mark as failed
+            await updateMutationStatus(mutation.id, { status: "failed" });
+            failedKeys.add(mutation.idempotencyKey);
+            this.broadcast({ type: "MUTATION_FAILED", payload: { mutation } });
+          }
         }
       }
 
@@ -420,6 +498,79 @@ export class SyncManager {
     });
 
     console.log(`[SyncManager] Critical conflict needs review for ${mutation.entity}/${mutation.entityId}`);
+    return false;
+  }
+
+  /**
+   * Check if all dependencies for a mutation have been synced.
+   * A mutation depends on other mutations via the dependsOn array of idempotency keys.
+   *
+   * @param mutation - The mutation to check
+   * @param syncedKeys - Set of idempotency keys that have been successfully synced in this run
+   * @returns True if all dependencies are synced or mutation has no dependencies
+   */
+  private async areDependenciesSynced(
+    mutation: MutationQueueEntry,
+    syncedKeys: Set<string>
+  ): Promise<boolean> {
+    // No dependencies - can proceed
+    if (!mutation.dependsOn || mutation.dependsOn.length === 0) {
+      return true;
+    }
+
+    // Check each dependency
+    for (const depKey of mutation.dependsOn) {
+      // Already synced in this run - OK
+      if (syncedKeys.has(depKey)) {
+        continue;
+      }
+
+      // Check if dependency still exists in queue (not synced yet)
+      const depMutation = await getMutationByIdempotencyKey(depKey);
+      if (depMutation) {
+        // Dependency still pending - cannot proceed
+        console.log(
+          `[SyncManager] Mutation ${mutation.id} waiting for dependency ${depKey}`
+        );
+        return false;
+      }
+      // Dependency not in queue - either already synced in previous run or removed
+      // Assume it's OK to proceed
+    }
+
+    return true;
+  }
+
+  /**
+   * Check if any dependency has failed, triggering cascade failure.
+   *
+   * @param mutation - The mutation to check
+   * @param failedKeys - Set of idempotency keys that have failed in this run
+   * @returns True if any dependency has failed
+   */
+  private async hasCascadeFailure(
+    mutation: MutationQueueEntry,
+    failedKeys: Set<string>
+  ): Promise<boolean> {
+    // No dependencies - no cascade failure possible
+    if (!mutation.dependsOn || mutation.dependsOn.length === 0) {
+      return false;
+    }
+
+    // Check each dependency
+    for (const depKey of mutation.dependsOn) {
+      // Failed in this run - cascade failure
+      if (failedKeys.has(depKey)) {
+        return true;
+      }
+
+      // Check if dependency exists and is in failed status
+      const depMutation = await getMutationByIdempotencyKey(depKey);
+      if (depMutation && depMutation.status === "failed") {
+        return true;
+      }
+    }
+
     return false;
   }
 
