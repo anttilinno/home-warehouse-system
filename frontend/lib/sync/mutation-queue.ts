@@ -87,6 +87,8 @@ export interface QueueMutationParams {
   payload: Record<string, unknown>;
   /** Cached updated_at timestamp from entity (for conflict detection on updates) */
   cachedUpdatedAt?: string;
+  /** Optional array of idempotency keys this mutation depends on */
+  dependsOn?: string[];
 }
 
 /**
@@ -112,6 +114,8 @@ export async function queueMutation(
     status: "pending",
     // Store cached updated_at for conflict detection on updates
     updatedAt: params.cachedUpdatedAt,
+    // Store dependency keys for entity-ordered sync
+    dependsOn: params.dependsOn,
   };
 
   const id = await db.add("mutationQueue", entry as MutationQueueEntry);

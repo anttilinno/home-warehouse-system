@@ -91,6 +91,8 @@ export interface MutationQueueEntry {
   status: MutationStatus;
   /** Cached updated_at timestamp (ISO string) for conflict detection on updates */
   updatedAt?: string;
+  /** Optional array of idempotency keys this mutation depends on */
+  dependsOn?: string[];
 }
 
 /**
