@@ -3,6 +3,8 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef, type ReactNode } from "react";
 import { initDB, getSyncMeta } from "@/lib/db/offline-db";
 import { syncWorkspaceData, type SyncResult, type EntityType } from "@/lib/db/sync-operations";
+import { syncManager } from "@/lib/sync/sync-manager";
+import { getPendingMutationCount } from "@/lib/sync/mutation-queue";
 
 interface OfflineContextValue {
   isOnline: boolean;
@@ -25,6 +27,12 @@ interface OfflineContextValue {
   syncCounts: Record<EntityType, number> | null;
   /** Manually trigger a workspace data sync */
   triggerSync: () => Promise<void>;
+  /** Count of pending offline mutations */
+  pendingMutationCount: number;
+  /** Whether mutations are currently syncing */
+  isMutationSyncing: boolean;
+  /** Manually trigger mutation queue processing */
+  processMutationQueue: () => Promise<void>;
 }
 
 const OfflineContext = createContext<OfflineContextValue | undefined>(undefined);
@@ -42,6 +50,10 @@ export function OfflineProvider({ children }: { children: ReactNode }) {
   const [syncError, setSyncError] = useState<string | null>(null);
   const [syncCounts, setSyncCounts] = useState<Record<EntityType, number> | null>(null);
 
+  // Mutation queue state
+  const [pendingMutationCount, setPendingMutationCount] = useState(0);
+  const [isMutationSyncing, setIsMutationSyncing] = useState(false);
+
   // Track if initial sync has been triggered to prevent double-sync
   const hasInitialSyncTriggered = useRef(false);
 
@@ -55,6 +67,13 @@ export function OfflineProvider({ children }: { children: ReactNode }) {
 
   const handleOffline = useCallback(() => {
     setIsOnline(false);
+  }, []);
+
+  // Process mutation queue
+  const processMutationQueue = useCallback(async () => {
+    if (syncManager) {
+      await syncManager.processQueue();
+    }
   }, []);
 
   // Trigger workspace data sync
@@ -184,6 +203,50 @@ export function OfflineProvider({ children }: { children: ReactNode }) {
     }
   }, [isOnline, refreshPendingUploads]);
 
+  // Setup SyncManager event subscription and fallback listeners
+  useEffect(() => {
+    if (!syncManager) return;
+
+    // Get initial pending mutation count
+    getPendingMutationCount().then(setPendingMutationCount);
+
+    // Subscribe to sync events
+    const unsubscribe = syncManager.subscribe((event) => {
+      switch (event.type) {
+        case "SYNC_STARTED":
+          setIsMutationSyncing(true);
+          break;
+        case "SYNC_COMPLETE":
+        case "SYNC_ERROR":
+          setIsMutationSyncing(false);
+          if (event.payload?.queueLength !== undefined) {
+            setPendingMutationCount(event.payload.queueLength);
+          }
+          break;
+        case "QUEUE_UPDATED":
+        case "MUTATION_SYNCED":
+        case "MUTATION_FAILED":
+          getPendingMutationCount().then(setPendingMutationCount);
+          break;
+      }
+    });
+
+    // Setup iOS fallback listeners (online + visibilitychange)
+    const cleanupFallback = syncManager.setupFallbackListeners();
+
+    return () => {
+      unsubscribe();
+      cleanupFallback();
+    };
+  }, []);
+
+  // Process mutation queue when coming back online
+  useEffect(() => {
+    if (wasOffline && isOnline && dbReady) {
+      processMutationQueue();
+    }
+  }, [wasOffline, isOnline, dbReady, processMutationQueue]);
+
   const value: OfflineContextValue = {
     isOnline,
     isOffline: !isOnline,
@@ -198,6 +261,9 @@ export function OfflineProvider({ children }: { children: ReactNode }) {
     syncError,
     syncCounts,
     triggerSync,
+    pendingMutationCount,
+    isMutationSyncing,
+    processMutationQueue,
   };
 
   return (
