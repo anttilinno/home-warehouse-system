@@ -14,6 +14,8 @@ import {
   useContext,
   useState,
   useCallback,
+  useEffect,
+  useRef,
   type ReactNode,
 } from "react";
 import { toast } from "sonner";
@@ -117,6 +119,9 @@ export function ConflictResolutionProvider({
     []
   );
 
+  // Track toast IDs for cleanup on unmount
+  const toastIdsRef = useRef<Set<string | number>>(new Set());
+
   // Current conflict is first in queue (FIFO)
   const currentConflict =
     pendingConflicts.length > 0 ? pendingConflicts[0] : null;
@@ -168,10 +173,11 @@ export function ConflictResolutionProvider({
   // Show toast for auto-resolved (LWW) conflict
   const showAutoResolvedToast = useCallback(
     (entityType: string, entityName: string) => {
-      toast.info("Changes merged", {
+      const toastId = toast.info("Changes merged", {
         description: `Your edits to '${entityName}' were merged with server changes`,
         duration: 4000,
       });
+      if (toastId) toastIdsRef.current.add(toastId);
     },
     []
   );
@@ -179,7 +185,7 @@ export function ConflictResolutionProvider({
   // Show toast for critical conflict queued for review
   const showCriticalConflictToast = useCallback(
     (entityType: string, entityName: string) => {
-      toast.warning("Review required", {
+      const toastId = toast.warning("Review required", {
         description: `Changes to '${entityName}' need your attention`,
         duration: 10000,
         action: {
@@ -191,9 +197,22 @@ export function ConflictResolutionProvider({
           },
         },
       });
+      if (toastId) toastIdsRef.current.add(toastId);
     },
     []
   );
+
+  // Cleanup toasts on unmount
+  useEffect(() => {
+    const toastIds = toastIdsRef.current;
+    return () => {
+      // Dismiss all toasts created by this provider
+      toastIds.forEach((id) => {
+        toast.dismiss(id);
+      });
+      toastIds.clear();
+    };
+  }, []);
 
   const value: ConflictResolutionContextType = {
     pendingConflicts,
