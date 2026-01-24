@@ -84,6 +84,55 @@ const serwist = new Serwist({
 serwist.addEventListeners();
 
 // ============================================================================
+// Background Sync & Mutation Queue Communication
+// ============================================================================
+
+/**
+ * BroadcastChannel for communicating sync status with main thread.
+ * Used for mutation queue sync coordination.
+ */
+const syncChannel = new BroadcastChannel("sync-status");
+
+/**
+ * Handle Background Sync events (Chrome/Edge only).
+ * When triggered, notify main thread to process mutation queue.
+ */
+self.addEventListener("sync", (event) => {
+  if (event.tag === "mutation-queue-sync") {
+    console.log("[SW] Background sync triggered for mutation-queue-sync");
+    event.waitUntil(
+      Promise.resolve().then(() => {
+        syncChannel.postMessage({
+          type: "SYNC_REQUESTED",
+          payload: { source: "background-sync" },
+        });
+      })
+    );
+  }
+});
+
+/**
+ * Handle messages from main thread requesting sync registration.
+ */
+self.addEventListener("message", (event) => {
+  if (event.data?.type === "REGISTER_SYNC") {
+    console.log("[SW] Received REGISTER_SYNC request");
+
+    // TypeScript doesn't have full types for Background Sync API
+    const registration = self.registration as ServiceWorkerRegistration & {
+      sync?: { register: (tag: string) => Promise<void> };
+    };
+
+    if (registration.sync) {
+      registration.sync.register("mutation-queue-sync").catch((error) => {
+        console.warn("[SW] Background sync registration failed:", error);
+        // Fallback handled by main thread online event
+      });
+    }
+  }
+});
+
+// ============================================================================
 // Push Notification Handlers
 // ============================================================================
 
