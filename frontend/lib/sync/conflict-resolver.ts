@@ -349,6 +349,57 @@ export async function getConflictLog(
   return conflicts;
 }
 
+/**
+ * Get conflicts from the log with optional filtering by entity type and date range.
+ * Results are ordered by timestamp (newest first).
+ *
+ * @param filters - Optional filters for entity type and date range
+ * @param filters.entityType - Filter by entity type
+ * @param filters.fromDate - Filter from this timestamp (ms since epoch)
+ * @param filters.toDate - Filter to this timestamp (ms since epoch)
+ * @param limit - Maximum number of entries to return (default: 100)
+ * @returns Array of conflict log entries matching the filters
+ */
+export async function getFilteredConflicts(
+  filters: {
+    entityType?: MutationEntityType;
+    fromDate?: number;
+    toDate?: number;
+  },
+  limit: number = 100
+): Promise<ConflictLogEntry[]> {
+  const db = await getDB();
+  const tx = db.transaction("conflictLog", "readonly");
+  const store = tx.objectStore("conflictLog");
+  const index = store.index("timestamp");
+
+  // Build IDBKeyRange based on date filters
+  let range: IDBKeyRange | null = null;
+  if (filters.fromDate && filters.toDate) {
+    range = IDBKeyRange.bound(filters.fromDate, filters.toDate);
+  } else if (filters.fromDate) {
+    range = IDBKeyRange.lowerBound(filters.fromDate);
+  } else if (filters.toDate) {
+    range = IDBKeyRange.upperBound(filters.toDate);
+  }
+
+  const conflicts: ConflictLogEntry[] = [];
+  let cursor = await index.openCursor(range, "prev"); // newest first
+
+  while (cursor) {
+    const entry = cursor.value;
+    // Apply entity type filter client-side
+    if (!filters.entityType || entry.entityType === filters.entityType) {
+      conflicts.push(entry);
+      if (conflicts.length >= limit) break;
+    }
+    cursor = await cursor.continue();
+  }
+
+  await tx.done;
+  return conflicts;
+}
+
 // ============================================================================
 // Mutation Payload Enhancement Helpers
 // ============================================================================
