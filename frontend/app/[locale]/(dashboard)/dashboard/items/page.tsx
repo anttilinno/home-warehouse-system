@@ -19,6 +19,7 @@ import {
   Download,
   Upload,
   Archive as ArchiveIcon,
+  Cloud,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -81,6 +82,9 @@ import { itemsApi, categoriesApi, importExportApi, type Category } from "@/lib/a
 import type { Item, ItemCreate, ItemUpdate } from "@/lib/types/items";
 import { PhotoPlaceholder } from "@/components/items/photo-placeholder";
 import { cn } from "@/lib/utils";
+import { useOfflineMutation } from "@/lib/hooks/use-offline-mutation";
+import { syncManager } from "@/lib/sync/sync-manager";
+import type { SyncEvent } from "@/lib/sync/sync-manager";
 import { exportToCSV, generateFilename, type ColumnDefinition } from "@/lib/utils/csv-export";
 
 interface ItemFormData {
@@ -356,6 +360,9 @@ export default function ItemsPage() {
   const [itemPhotos, setItemPhotos] = useState<Record<string, { urls: { small: string; medium: string; original: string; large: string } } | null>>({});
   const [photoCount, setPhotoCount] = useState<Record<string, number>>({});
 
+  // Optimistic items state for offline mutations
+  const [optimisticItems, setOptimisticItems] = useState<(Item & { _pending?: boolean })[]>([]);
+
   // Virtual scrolling
   const parentRef = useRef<HTMLDivElement>(null);
 
@@ -573,9 +580,82 @@ export default function ItemsPage() {
     },
   });
 
+  // Offline mutation hooks for create and update
+  // Note: Using Record<string, unknown> as the generic since the hook requires index signature
+  const { mutate: createItemOffline, isPending: isCreatingOffline } = useOfflineMutation<Record<string, unknown>>({
+    entity: 'items',
+    operation: 'create',
+    onMutate: (payload, tempId) => {
+      const optimisticItem: Item & { _pending: boolean } = {
+        id: tempId,
+        workspace_id: workspaceId!,
+        sku: (payload.sku as string) || '',
+        name: (payload.name as string) || '',
+        description: (payload.description as string) || null,
+        category_id: (payload.category_id as string) || null,
+        brand: (payload.brand as string) || null,
+        model: (payload.model as string) || null,
+        serial_number: (payload.serial_number as string) || null,
+        manufacturer: (payload.manufacturer as string) || null,
+        barcode: (payload.barcode as string) || null,
+        is_insured: (payload.is_insured as boolean) ?? false,
+        lifetime_warranty: (payload.lifetime_warranty as boolean) ?? false,
+        warranty_details: (payload.warranty_details as string) || null,
+        min_stock_level: (payload.min_stock_level as number) ?? 0,
+        short_code: (payload.short_code as string) || null,
+        is_archived: false,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        _pending: true,
+      };
+      setOptimisticItems(prev => [...prev, optimisticItem]);
+    },
+  });
+
+  const { mutate: updateItemOffline, isPending: isUpdatingOffline } = useOfflineMutation<Record<string, unknown>>({
+    entity: 'items',
+    operation: 'update',
+    onMutate: (_payload, _tempId) => {
+      // For updates, the item will be marked as pending via the hook's IDB write
+      // The actual update will be applied after sync
+    },
+  });
+
+  // Subscribe to sync events to clear optimistic items after successful sync
+  useEffect(() => {
+    if (!syncManager) return;
+
+    const handleSyncEvent = (event: SyncEvent) => {
+      if (event.type === 'MUTATION_SYNCED' && event.payload?.mutation?.entity === 'items') {
+        // Remove synced item from optimistic state
+        const syncedKey = event.payload.mutation.idempotencyKey;
+        setOptimisticItems(prev =>
+          prev.filter(item => item.id !== syncedKey)
+        );
+        // Refetch to get server data
+        refetch();
+      }
+    };
+
+    const unsubscribe = syncManager.subscribe(handleSyncEvent);
+
+    return () => {
+      unsubscribe();
+    };
+  }, [refetch]);
+
   // Filter items (client-side) - memoized for performance
+  // Merge optimistic items with fetched items
   const filteredItems = useMemo(() => {
-    return items.filter((item) => {
+    // Merge optimistic items with fetched items (exclude duplicates)
+    const allItems: (Item & { _pending?: boolean })[] = [
+      ...items,
+      ...optimisticItems.filter(opt =>
+        !items.some(item => item.id === opt.id)
+      )
+    ];
+
+    return allItems.filter((item) => {
       // Filter by archived status
       if (!showArchived && item.is_archived) return false;
       if (showArchived && !item.is_archived) return false;
@@ -635,7 +715,7 @@ export default function ItemsPage() {
 
       return true;
     });
-  }, [items, showArchived, debouncedSearchQuery, getFilter]);
+  }, [items, optimisticItems, showArchived, debouncedSearchQuery, getFilter]);
 
   // Extract unique brands for filter
   const uniqueBrands = useMemo(() => {
@@ -772,8 +852,10 @@ export default function ItemsPage() {
           warranty_details: formData.warranty_details || undefined,
           min_stock_level: formData.min_stock_level,
         };
-        await itemsApi.update(workspaceId!, editingItem.id, updateData);
-        toast.success("Item updated successfully");
+
+        // Use offline mutation - works both online and offline
+        await updateItemOffline(updateData as unknown as Record<string, unknown>, editingItem.id);
+        toast.success(navigator.onLine ? "Item updated" : "Item update queued for sync");
       } else {
         // Create new item
         const createData: ItemCreate = {
@@ -792,12 +874,18 @@ export default function ItemsPage() {
           min_stock_level: formData.min_stock_level,
           short_code: formData.short_code || undefined,
         };
-        await itemsApi.create(workspaceId!, createData);
-        toast.success("Item created successfully");
+
+        // Use offline mutation - works both online and offline
+        await createItemOffline(createData as unknown as Record<string, unknown>);
+        toast.success(navigator.onLine ? "Item created" : "Item queued for sync");
       }
 
       setDialogOpen(false);
-      refetch();
+
+      // Only refetch if online - offline items are handled via optimistic state
+      if (navigator.onLine) {
+        refetch();
+      }
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Failed to save item";
       toast.error("Failed to save item", {
@@ -1492,8 +1580,8 @@ export default function ItemsPage() {
             <Button variant="outline" onClick={() => setDialogOpen(false)}>
               Cancel
             </Button>
-            <Button onClick={handleSave} disabled={isSaving}>
-              {isSaving ? "Saving..." : editingItem ? "Update" : "Create"}
+            <Button onClick={handleSave} disabled={isSaving || isCreatingOffline || isUpdatingOffline}>
+              {isSaving || isCreatingOffline || isUpdatingOffline ? "Saving..." : editingItem ? "Update" : "Create"}
             </Button>
           </DialogFooter>
         </DialogContent>
