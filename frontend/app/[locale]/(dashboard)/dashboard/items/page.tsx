@@ -1253,11 +1253,23 @@ export default function ItemsPage() {
                       <tbody className="[&_tr:last-child]:border-0">
                         {virtualizer.getVirtualItems().map((virtualItem) => {
                           const item = sortedItems[virtualItem.index];
+                          const isPending = '_pending' in item && item._pending;
                           return (
                             <TableRow
                               key={item.id}
-                              className="cursor-pointer hover:bg-muted/50 flex items-center"
-                              onClick={() => router.push(`/dashboard/items/${item.id}`)}
+                              className={cn(
+                                "cursor-pointer hover:bg-muted/50 flex items-center",
+                                isPending && "bg-amber-50/50 dark:bg-amber-900/10"
+                              )}
+                              onClick={() => {
+                                if (isPending) {
+                                  toast.info("Item pending sync", {
+                                    description: "This item will be available after syncing"
+                                  });
+                                  return;
+                                }
+                                router.push(`/dashboard/items/${item.id}`);
+                              }}
                               style={{
                                 position: 'absolute',
                                 top: 0,
@@ -1315,7 +1327,15 @@ export default function ItemsPage() {
                               </TableCell>
                               <TableCell className="flex-1 min-w-0">
                                 <div className="truncate">
-                                  <div className="font-medium truncate">{item.name}</div>
+                                  <div className="flex items-center gap-2">
+                                    <span className="font-medium truncate">{item.name}</span>
+                                    {isPending && (
+                                      <Badge variant="outline" className="text-xs text-amber-600 border-amber-300 shrink-0">
+                                        <Cloud className="w-3 h-3 mr-1 animate-pulse" />
+                                        Pending
+                                      </Badge>
+                                    )}
+                                  </div>
                                   {item.description && (
                                     <div className="text-sm text-muted-foreground truncate">
                                       {item.description}
@@ -1328,32 +1348,34 @@ export default function ItemsPage() {
                               <TableCell className="w-[100px] flex-none">{item.model || "-"}</TableCell>
                               <TableCell className="w-[90px] flex-none">{item.min_stock_level}</TableCell>
                               <TableCell className="w-[50px] flex-none" onClick={(e) => e.stopPropagation()}>
-                                <DropdownMenu>
-                                  <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" size="icon" aria-label={`Actions for ${item.name}`}>
-                                      <MoreHorizontal className="h-4 w-4" />
-                                    </Button>
-                                  </DropdownMenuTrigger>
-                                  <DropdownMenuContent align="end">
-                                    <DropdownMenuItem onClick={() => openEditDialog(item)}>
-                                      <Pencil className="mr-2 h-4 w-4" />
-                                      Edit
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem onClick={() => handleArchive(item)}>
-                                      {item.is_archived ? (
-                                        <>
-                                          <ArchiveRestore className="mr-2 h-4 w-4" />
-                                          Restore
-                                        </>
-                                      ) : (
-                                        <>
-                                          <Archive className="mr-2 h-4 w-4" />
-                                          Archive
-                                        </>
-                                      )}
-                                    </DropdownMenuItem>
-                                  </DropdownMenuContent>
-                                </DropdownMenu>
+                                {!isPending && (
+                                  <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                      <Button variant="ghost" size="icon" aria-label={`Actions for ${item.name}`}>
+                                        <MoreHorizontal className="h-4 w-4" />
+                                      </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent align="end">
+                                      <DropdownMenuItem onClick={() => openEditDialog(item)}>
+                                        <Pencil className="mr-2 h-4 w-4" />
+                                        Edit
+                                      </DropdownMenuItem>
+                                      <DropdownMenuItem onClick={() => handleArchive(item)}>
+                                        {item.is_archived ? (
+                                          <>
+                                            <ArchiveRestore className="mr-2 h-4 w-4" />
+                                            Restore
+                                          </>
+                                        ) : (
+                                          <>
+                                            <Archive className="mr-2 h-4 w-4" />
+                                            Archive
+                                          </>
+                                        )}
+                                      </DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                  </DropdownMenu>
+                                )}
                               </TableCell>
                             </TableRow>
                           );
