@@ -513,8 +513,9 @@ export default function ContainersPage() {
     return filteredContainers.map(container => ({
       ...container,
       location_name: getLocationName(container.location_id),
+      _pending: '_pending' in container ? (container._pending as boolean | undefined) : undefined,
     }));
-  }, [filteredContainers, locations]);
+  }, [filteredContainers, allLocations]);
 
   // Sort containers
   const { sortedData: sortedContainers, requestSort, getSortDirection } = useTableSort(flattenedContainers, "name", "asc");
@@ -553,7 +554,7 @@ export default function ContainersPage() {
         description: 'Select all containers',
         action: () => {
           if (sortedContainers.length > 0) {
-            selectAll(sortedContainers.map((c) => c.id));
+            selectAll(sortedContainers.filter(c => !c._pending).map((c) => c.id));
           }
         },
       },
@@ -880,10 +881,10 @@ export default function ContainersPage() {
                     <TableRow>
                       <TableHead className="w-[50px]">
                         <Checkbox
-                          checked={isAllSelected(sortedContainers.map((c) => c.id))}
+                          checked={isAllSelected(sortedContainers.filter(c => !c._pending).map((c) => c.id))}
                           onCheckedChange={(checked) => {
                             if (checked) {
-                              selectAll(sortedContainers.map((c) => c.id));
+                              selectAll(sortedContainers.filter(c => !c._pending).map((c) => c.id));
                             } else {
                               clearSelection();
                             }
@@ -920,11 +921,12 @@ export default function ContainersPage() {
                   </TableHeader>
                   <TableBody>
                     {sortedContainers.map((container) => (
-                      <TableRow key={container.id}>
+                      <TableRow key={container.id} className={cn(container._pending && "bg-amber-50")}>
                         <TableCell>
                           <Checkbox
                             checked={isSelected(container.id)}
                             onCheckedChange={() => toggleSelection(container.id)}
+                            disabled={container._pending}
                             aria-label={`Select ${container.name}`}
                           />
                         </TableCell>
@@ -932,6 +934,15 @@ export default function ContainersPage() {
                           <div>
                             <div className="font-medium flex items-center gap-2">
                               {container.name}
+                              {container._pending && (
+                                <Badge variant="outline" className="text-xs text-amber-600 border-amber-300 shrink-0">
+                                  <Cloud className="w-3 h-3 mr-1 animate-pulse" />
+                                  {(() => {
+                                    const locationName = getLocationName(container.location_id);
+                                    return locationName ? `Pending... in ${locationName}` : 'Pending';
+                                  })()}
+                                </Badge>
+                              )}
                               {container.is_archived && (
                                 <Badge variant="secondary" className="text-xs">
                                   Archived
@@ -962,43 +973,45 @@ export default function ContainersPage() {
                           )}
                         </TableCell>
                         <TableCell>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="icon" aria-label={`Actions for ${container.name}`}>
-                                <MoreHorizontal className="h-4 w-4" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuItem onClick={() => openEditDialog(container)}>
-                                <Pencil className="mr-2 h-4 w-4" />
-                                Edit
-                              </DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => handleArchive(container)}>
-                                {container.is_archived ? (
-                                  <>
-                                    <ArchiveRestore className="mr-2 h-4 w-4" />
-                                    Restore
-                                  </>
-                                ) : (
-                                  <>
-                                    <Archive className="mr-2 h-4 w-4" />
-                                    Archive
-                                  </>
-                                )}
-                              </DropdownMenuItem>
-                              <DropdownMenuSeparator />
-                              <DropdownMenuItem
-                                onClick={() => {
-                                  setDeletingContainer(container);
-                                  setDeleteDialogOpen(true);
-                                }}
-                                className="text-destructive focus:text-destructive"
-                              >
-                                <Trash2 className="mr-2 h-4 w-4" />
-                                Delete
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
+                          {!container._pending && (
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="icon" aria-label={`Actions for ${container.name}`}>
+                                  <MoreHorizontal className="h-4 w-4" />
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end">
+                                <DropdownMenuItem onClick={() => openEditDialog(container)}>
+                                  <Pencil className="mr-2 h-4 w-4" />
+                                  Edit
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => handleArchive(container)}>
+                                  {container.is_archived ? (
+                                    <>
+                                      <ArchiveRestore className="mr-2 h-4 w-4" />
+                                      Restore
+                                    </>
+                                  ) : (
+                                    <>
+                                      <Archive className="mr-2 h-4 w-4" />
+                                      Archive
+                                    </>
+                                  )}
+                                </DropdownMenuItem>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem
+                                  onClick={() => {
+                                    setDeletingContainer(container);
+                                    setDeleteDialogOpen(true);
+                                  }}
+                                  className="text-destructive focus:text-destructive"
+                                >
+                                  <Trash2 className="mr-2 h-4 w-4" />
+                                  Delete
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          )}
                         </TableCell>
                       </TableRow>
                     ))}
