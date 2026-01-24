@@ -41,7 +41,7 @@ async function requestPersistentStorage(): Promise<boolean> {
  * Get the database instance, creating it if necessary.
  * Uses singleton pattern to share connection across the app.
  */
-async function getDB(): Promise<IDBPDatabase<OfflineDBSchema>> {
+export async function getDB(): Promise<IDBPDatabase<OfflineDBSchema>> {
   if (typeof indexedDB === "undefined") {
     throw new Error("IndexedDB is not available in this environment");
   }
