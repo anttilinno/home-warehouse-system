@@ -28,11 +28,19 @@ test.describe("Sync Behavior", () => {
     page,
     context,
   }) => {
+    // Ensure page is fully loaded before testing
+    await page.waitForLoadState("domcontentloaded");
+    await expect(page.locator("main")).toBeVisible();
+
     // Go offline
     await context.setOffline(true);
     await page.evaluate(() => {
       window.dispatchEvent(new Event("offline"));
     });
+
+    // First verify the offline indicator appears (OfflineIndicator component)
+    const offlineIndicator = page.locator('[data-testid="offline-indicator"]');
+    await expect(offlineIndicator).toBeVisible({ timeout: 5000 });
 
     // Verify offline state in sync status
     const offlineBadge = page.getByText("Offline", { exact: true });
@@ -47,26 +55,24 @@ test.describe("Sync Behavior", () => {
     // Verify sync status changes - should show "just now" or a timestamp
     // The "Offline" badge should disappear
     await expect(offlineBadge).not.toBeVisible({ timeout: 5000 });
-
-    // After sync, should show synced state (check icon or "Not synced" is gone)
-    // Either "just now" or the green checkmark badge
-    const syncedIndicator = page
-      .locator(".gap-1\\.5")
-      .filter({ has: page.locator(".text-green-500") });
-    const notSyncedBadge = page.getByText("Not synced", { exact: true });
-
-    // Wait for either synced state or verify not showing offline
-    await expect(offlineBadge).not.toBeVisible();
   });
 
   test("shows syncing state briefly during sync", async ({ page, context }) => {
+    // Ensure page is fully loaded before testing
+    await page.waitForLoadState("domcontentloaded");
+    await expect(page.locator("main")).toBeVisible();
+
     // Go offline
     await context.setOffline(true);
     await page.evaluate(() => {
       window.dispatchEvent(new Event("offline"));
     });
 
-    // Verify offline state
+    // First verify the offline indicator appears (OfflineIndicator component)
+    const offlineIndicator = page.locator('[data-testid="offline-indicator"]');
+    await expect(offlineIndicator).toBeVisible({ timeout: 5000 });
+
+    // Then verify offline badge in sync status
     const offlineBadge = page.getByText("Offline", { exact: true });
     await expect(offlineBadge).toBeVisible({ timeout: 5000 });
 
@@ -115,6 +121,10 @@ test.describe("Sync Behavior", () => {
     page,
     context,
   }) => {
+    // Ensure page is fully loaded before testing
+    await page.waitForLoadState("domcontentloaded");
+    await expect(page.locator("main")).toBeVisible();
+
     const offlineIndicator = page.locator('[data-testid="offline-indicator"]');
 
     // Cycle 1: Go offline and back
@@ -125,6 +135,9 @@ test.describe("Sync Behavior", () => {
     await context.setOffline(false);
     await page.evaluate(() => window.dispatchEvent(new Event("online")));
     await expect(offlineIndicator).not.toBeVisible({ timeout: 5000 });
+
+    // Wait for state to settle before next cycle
+    await page.waitForTimeout(500);
 
     // Cycle 2: Go offline and back again
     await context.setOffline(true);
@@ -144,13 +157,21 @@ test.describe("Sync Behavior", () => {
     page,
     context,
   }) => {
+    // Ensure page is fully loaded before testing
+    await page.waitForLoadState("domcontentloaded");
+    await expect(page.locator("main")).toBeVisible();
+
     // Go offline
     await context.setOffline(true);
     await page.evaluate(() => {
       window.dispatchEvent(new Event("offline"));
     });
 
-    // Verify we're showing offline state
+    // First verify the offline indicator appears (OfflineIndicator component)
+    const offlineIndicator = page.locator('[data-testid="offline-indicator"]');
+    await expect(offlineIndicator).toBeVisible({ timeout: 5000 });
+
+    // Verify we're showing offline state in sync status badge
     const offlineBadge = page.getByText("Offline", { exact: true });
     await expect(offlineBadge).toBeVisible({ timeout: 5000 });
 
@@ -169,11 +190,19 @@ test.describe("Sync Behavior", () => {
     page,
     context,
   }) => {
+    // Ensure page is fully loaded before testing
+    await page.waitForLoadState("domcontentloaded");
+    await expect(page.locator("main")).toBeVisible();
+
     // Go offline
     await context.setOffline(true);
     await page.evaluate(() => {
       window.dispatchEvent(new Event("offline"));
     });
+
+    // First verify the offline indicator appears (OfflineIndicator component)
+    const offlineIndicator = page.locator('[data-testid="offline-indicator"]');
+    await expect(offlineIndicator).toBeVisible({ timeout: 5000 });
 
     // The SyncStatusIndicator should show CloudOff icon
     // Look for the badge with CloudOff icon (h-3 w-3 class inside .gap-1.5 badge)

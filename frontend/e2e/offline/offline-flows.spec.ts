@@ -38,8 +38,7 @@ test.describe("Offline Flows", () => {
     // Go offline
     await context.setOffline(true);
 
-    // Trigger a navigation or interaction to detect offline status
-    // The offline indicator appears when navigator.onLine changes
+    // Trigger the offline event and wait for React to process
     await page.evaluate(() => {
       window.dispatchEvent(new Event("offline"));
     });
@@ -59,6 +58,9 @@ test.describe("Offline Flows", () => {
     page,
     context,
   }) => {
+    // Ensure we're on the dashboard with main visible
+    await expect(page.locator("main")).toBeVisible();
+
     // Go offline first
     await context.setOffline(true);
     await page.evaluate(() => {
@@ -87,9 +89,6 @@ test.describe("Offline Flows", () => {
     const heading = page.getByRole("heading", { level: 1 });
     await expect(heading).toBeVisible();
 
-    // Capture the heading text while online
-    const headingText = await heading.textContent();
-
     // Go offline
     await context.setOffline(true);
     await page.evaluate(() => {
@@ -114,6 +113,10 @@ test.describe("Offline Flows", () => {
     page,
     context,
   }) => {
+    // Ensure page is fully loaded before testing
+    await page.waitForLoadState("domcontentloaded");
+    await expect(page.locator("main")).toBeVisible();
+
     // The SyncStatusIndicator should show "Offline" when disconnected
     // Go offline
     await context.setOffline(true);
@@ -121,8 +124,11 @@ test.describe("Offline Flows", () => {
       window.dispatchEvent(new Event("offline"));
     });
 
-    // Wait for the sync status to update
-    // Look for the "Offline" badge in SyncStatusIndicator
+    // First verify the offline indicator appears (OfflineIndicator component)
+    const offlineIndicator = page.locator('[data-testid="offline-indicator"]');
+    await expect(offlineIndicator).toBeVisible({ timeout: 5000 });
+
+    // Then check the sync status shows "Offline" badge
     const offlineBadge = page.getByText("Offline", { exact: true });
     await expect(offlineBadge).toBeVisible({ timeout: 5000 });
 
@@ -169,6 +175,10 @@ test.describe("Offline Flows", () => {
     page,
     context,
   }) => {
+    // Ensure page is fully loaded before testing
+    await page.waitForLoadState("domcontentloaded");
+    await expect(page.locator("main")).toBeVisible();
+
     // Go offline
     await context.setOffline(true);
     await page.evaluate(() => {
