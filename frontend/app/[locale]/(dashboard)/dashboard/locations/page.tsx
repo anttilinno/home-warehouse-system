@@ -15,6 +15,7 @@ import {
   ChevronDown,
   Home,
   Upload,
+  Cloud,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -62,6 +63,9 @@ import { ImportDialog, type ImportResult } from "@/components/ui/import-dialog";
 import { useWorkspace } from "@/lib/hooks/use-workspace";
 import { useDebouncedValue } from "@/lib/hooks/use-debounced-value";
 import { useSSE, type SSEEvent } from "@/lib/hooks/use-sse";
+import { useOfflineMutation } from "@/lib/hooks/use-offline-mutation";
+import { syncManager } from "@/lib/sync/sync-manager";
+import type { SyncEvent } from "@/lib/sync/sync-manager";
 import { locationsApi, importExportApi } from "@/lib/api";
 import type { Location, LocationCreate, LocationUpdate } from "@/lib/types/locations";
 import { cn } from "@/lib/utils";
@@ -69,6 +73,7 @@ import { cn } from "@/lib/utils";
 interface LocationTreeItem extends Location {
   children: LocationTreeItem[];
   expanded?: boolean;
+  _pending?: boolean;
 }
 
 function buildLocationTree(locations: Location[]): LocationTreeItem[] {
@@ -108,6 +113,7 @@ function LocationRow({
   onArchive,
   onToggle,
   onAddSublocation,
+  allLocations,
 }: {
   location: LocationTreeItem;
   level: number;
@@ -116,8 +122,16 @@ function LocationRow({
   onArchive: (loc: Location) => void;
   onToggle: (id: string) => void;
   onAddSublocation: (loc: Location) => void;
+  allLocations: (Location & { _pending?: boolean })[];
 }) {
   const hasChildren = location.children.length > 0;
+
+  // Helper to get parent name for pending badge
+  const getParentName = (parentId: string | null): string | null => {
+    if (!parentId) return null;
+    const parent = allLocations.find(l => l.id === parentId);
+    return parent?.name || null;
+  };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (!hasChildren) return;
@@ -143,7 +157,8 @@ function LocationRow({
       <div
         className={cn(
           "flex items-center gap-2 py-2 px-3 hover:bg-muted/50 rounded-lg group",
-          location.is_archived && "opacity-60"
+          location.is_archived && "opacity-60",
+          location._pending && "bg-amber-50"
         )}
         style={{ marginLeft: level * 24 }}
         role="treeitem"
@@ -181,6 +196,16 @@ function LocationRow({
                 {location.short_code}
               </Badge>
             )}
+            {location._pending && (
+              <Badge variant="outline" className="text-xs text-amber-600 border-amber-300 shrink-0">
+                <Cloud className="w-3 h-3 mr-1 animate-pulse" />
+                {(() => {
+                  if (!location.parent_location) return 'Pending';
+                  const parentName = getParentName(location.parent_location);
+                  return parentName ? `Pending... under ${parentName}` : 'Pending';
+                })()}
+              </Badge>
+            )}
             {location.is_archived && (
               <Badge variant="secondary" className="text-xs">
                 Archived
@@ -200,49 +225,52 @@ function LocationRow({
           </span>
         )}
 
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 opacity-0 group-hover:opacity-100"
-              aria-label={`Actions for ${location.name}`}
-            >
-              <MoreHorizontal className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={() => onAddSublocation(location)}>
-              <Plus className="mr-2 h-4 w-4" />
-              Add sublocation
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => onEdit(location)}>
-              <Pencil className="mr-2 h-4 w-4" />
-              Edit
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => onArchive(location)}>
-              {location.is_archived ? (
-                <>
-                  <ArchiveRestore className="mr-2 h-4 w-4" />
-                  Restore
-                </>
-              ) : (
-                <>
-                  <Archive className="mr-2 h-4 w-4" />
-                  Archive
-                </>
-              )}
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem
-              onClick={() => onDelete(location)}
-              className="text-destructive focus:text-destructive"
-            >
-              <Trash2 className="mr-2 h-4 w-4" />
-              Delete
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        {/* Hide dropdown menu for pending locations */}
+        {!location._pending && (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 opacity-0 group-hover:opacity-100"
+                aria-label={`Actions for ${location.name}`}
+              >
+                <MoreHorizontal className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => onAddSublocation(location)}>
+                <Plus className="mr-2 h-4 w-4" />
+                Add sublocation
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => onEdit(location)}>
+                <Pencil className="mr-2 h-4 w-4" />
+                Edit
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => onArchive(location)}>
+                {location.is_archived ? (
+                  <>
+                    <ArchiveRestore className="mr-2 h-4 w-4" />
+                    Restore
+                  </>
+                ) : (
+                  <>
+                    <Archive className="mr-2 h-4 w-4" />
+                    Archive
+                  </>
+                )}
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                onClick={() => onDelete(location)}
+                className="text-destructive focus:text-destructive"
+              >
+                <Trash2 className="mr-2 h-4 w-4" />
+                Delete
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
       </div>
 
       {location.expanded && location.children.length > 0 && (
@@ -257,6 +285,7 @@ function LocationRow({
               onArchive={onArchive}
               onToggle={onToggle}
               onAddSublocation={onAddSublocation}
+              allLocations={allLocations}
             />
           ))}
         </div>
@@ -304,11 +333,71 @@ export default function LocationsPage() {
   const [formShortCode, setFormShortCode] = useState("");
   const [isSaving, setIsSaving] = useState(false);
 
+  // Optimistic locations for offline mutations
+  const [optimisticLocations, setOptimisticLocations] = useState<(Location & { _pending?: boolean })[]>([]);
+
+  // Offline mutation hooks
+  const { mutate: createLocationOffline } = useOfflineMutation<Record<string, unknown>>({
+    entity: 'locations',
+    operation: 'create',
+    onMutate: (payload, tempId, dependsOn) => {
+      const optimisticLocation: Location & { _pending: boolean } = {
+        id: tempId,
+        workspace_id: workspaceId!,
+        name: (payload.name as string) || '',
+        description: (payload.description as string) || null,
+        parent_location: (payload.parent_location as string) || null,
+        short_code: (payload.short_code as string) || null,
+        zone: null,
+        shelf: null,
+        bin: null,
+        is_archived: false,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        _pending: true,
+      };
+      setOptimisticLocations(prev => [...prev, optimisticLocation]);
+    },
+  });
+
+  const { mutate: updateLocationOffline } = useOfflineMutation<Record<string, unknown>>({
+    entity: 'locations',
+    operation: 'update',
+    onMutate: (payload, _tempId) => {
+      const entityId = payload._entityId as string;
+      if (entityId) {
+        setOptimisticLocations(prev => {
+          const existing = prev.find(l => l.id === entityId);
+          if (existing) {
+            return prev.map(l => l.id === entityId ? { ...l, ...payload, _pending: true } : l);
+          }
+          const fromFetched = locations.find(l => l.id === entityId);
+          if (fromFetched) {
+            return [...prev, { ...fromFetched, ...payload, _pending: true }];
+          }
+          return prev;
+        });
+      }
+    },
+  });
+
+  // Merge fetched locations with optimistic locations
+  const mergedLocations = useMemo(() => {
+    const fetchedIds = new Set(locations.map(l => l.id));
+    const merged = locations.map(l => {
+      const optimistic = optimisticLocations.find(o => o.id === l.id);
+      if (optimistic) return { ...l, ...optimistic, _pending: true };
+      return l;
+    });
+    const newOptimistic = optimisticLocations.filter(o => !fetchedIds.has(o.id));
+    return [...merged, ...newOptimistic];
+  }, [locations, optimisticLocations]);
+
   // Memoize location tree computation for performance
   const tree = useMemo(() => {
-    if (locations.length === 0) return [];
+    if (mergedLocations.length === 0) return [];
 
-    const treeData = buildLocationTree(locations);
+    const treeData = buildLocationTree(mergedLocations);
 
     // Apply expansion state from expandedIds Set
     const applyExpansion = (items: LocationTreeItem[]): LocationTreeItem[] => {
@@ -320,7 +409,7 @@ export default function LocationsPage() {
     };
 
     return applyExpansion(treeData);
-  }, [locations, expandedIds]);
+  }, [mergedLocations, expandedIds]);
 
   // Load locations
   const loadLocations = useCallback(async () => {
@@ -347,6 +436,27 @@ export default function LocationsPage() {
       loadLocations();
     }
   }, [workspaceId, loadLocations]);
+
+  // Subscribe to sync events for offline mutation completion
+  useEffect(() => {
+    if (!syncManager) return;
+
+    const handleSyncEvent = (event: SyncEvent) => {
+      if (event.type === 'MUTATION_SYNCED' && event.payload?.mutation?.entity === 'locations') {
+        const syncedKey = event.payload.mutation.idempotencyKey;
+        const entityId = event.payload.mutation.entityId;
+        setOptimisticLocations(prev => prev.filter(l => l.id !== syncedKey && l.id !== entityId));
+        loadLocations();
+      }
+      if (event.type === 'MUTATION_FAILED' && event.payload?.mutation?.entity === 'locations') {
+        toast.error('Failed to sync location', {
+          description: event.payload.mutation.lastError || 'Please try again',
+        });
+      }
+    };
+
+    return syncManager.subscribe(handleSyncEvent);
+  }, [loadLocations]);
 
   // Subscribe to SSE events for real-time updates
   useSSE({
@@ -423,28 +533,35 @@ export default function LocationsPage() {
       setIsSaving(true);
 
       if (editingLocation) {
-        // Update existing location
-        const updateData: LocationUpdate = {
-          name: formName,
-          description: formDescription || undefined,
-          parent_location: formParentId || undefined,
+        // Update existing location - use offline mutation
+        const updatePayload: Record<string, unknown> = {
+          name: formName.trim(),
+          description: formDescription.trim() || null,
+          parent_location: formParentId || null,
+          _entityId: editingLocation.id,
         };
-        await locationsApi.update(workspaceId, editingLocation.id, updateData);
-        toast.success("Location updated successfully");
+        await updateLocationOffline(updatePayload, editingLocation.id);
+        toast.success(navigator.onLine ? "Location updated" : "Location update queued");
       } else {
-        // Create new location
-        const createData: LocationCreate = {
-          name: formName,
-          description: formDescription || undefined,
-          parent_location: formParentId || undefined,
+        // Create new location - use offline mutation
+        // Check if parent is a pending optimistic location
+        const parentIsPending = formParentId && optimisticLocations.some(
+          l => l.id === formParentId && l._pending
+        );
+        const dependsOn = parentIsPending ? [formParentId] : undefined;
+
+        const createPayload: Record<string, unknown> = {
+          name: formName.trim(),
+          description: formDescription.trim() || null,
+          parent_location: formParentId || null,
           short_code: formShortCode || undefined,
         };
-        await locationsApi.create(workspaceId, createData);
-        toast.success("Location created successfully");
+        await createLocationOffline(createPayload, undefined, dependsOn);
+        toast.success(navigator.onLine ? "Location created" : "Location queued for sync");
       }
 
       setDialogOpen(false);
-      loadLocations();
+      // Sync events will trigger reload - no need to call loadLocations()
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Failed to save location";
       toast.error("Failed to save location", {
@@ -553,19 +670,22 @@ export default function LocationsPage() {
   }, [tree, debouncedSearchQuery, showArchived]);
 
   // Get available parent locations (exclude self and descendants when editing)
-  const getAvailableParents = () => {
-    if (!editingLocation) return locations.filter(loc => !loc.is_archived);
+  // Include optimistic locations so user can select pending parents
+  const getAvailableParents = (): (Location & { _pending?: boolean })[] => {
+    const allLocations = [...locations, ...optimisticLocations.filter(o => !locations.some(l => l.id === o.id))];
+
+    if (!editingLocation) return allLocations.filter(loc => !loc.is_archived);
 
     const descendantIds = new Set<string>();
     const findDescendants = (parentId: string) => {
       descendantIds.add(parentId);
-      locations
+      allLocations
         .filter((loc) => loc.parent_location === parentId)
         .forEach((loc) => findDescendants(loc.id));
     };
     findDescendants(editingLocation.id);
 
-    return locations.filter(
+    return allLocations.filter(
       (loc) => !descendantIds.has(loc.id) && !loc.is_archived
     );
   };
@@ -687,6 +807,7 @@ export default function LocationsPage() {
                     onArchive={handleArchive}
                     onToggle={handleToggle}
                     onAddSublocation={openAddSublocationDialog}
+                    allLocations={mergedLocations}
                   />
                 ))}
               </div>
@@ -740,7 +861,7 @@ export default function LocationsPage() {
                   </SelectItem>
                   {getAvailableParents().map((loc) => (
                     <SelectItem key={loc.id} value={loc.id}>
-                      {loc.name}
+                      {loc.name}{'_pending' in loc && loc._pending ? ' (pending)' : ''}
                     </SelectItem>
                   ))}
                 </SelectContent>
