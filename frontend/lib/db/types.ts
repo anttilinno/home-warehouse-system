@@ -38,6 +38,55 @@ export interface SyncMeta {
 }
 
 /**
+ * Operation types for offline mutations
+ */
+export type MutationOperation = "create" | "update";
+
+/**
+ * Status of a queued mutation
+ */
+export type MutationStatus = "pending" | "syncing" | "failed";
+
+/**
+ * Entity types that support offline mutations
+ */
+export type MutationEntityType =
+  | "items"
+  | "inventory"
+  | "locations"
+  | "containers"
+  | "categories"
+  | "borrowers"
+  | "loans";
+
+/**
+ * Mutation queue entry for offline operations.
+ * Persisted to IndexedDB and replayed when online.
+ */
+export interface MutationQueueEntry {
+  /** Auto-incremented ID (keyPath for IndexedDB) */
+  id: number;
+  /** UUIDv7 for server-side deduplication */
+  idempotencyKey: string;
+  /** Type of operation */
+  operation: MutationOperation;
+  /** Entity type being mutated */
+  entity: MutationEntityType;
+  /** Entity ID for updates (undefined for creates) */
+  entityId?: string;
+  /** The mutation payload to send to server */
+  payload: Record<string, unknown>;
+  /** Timestamp when mutation was queued (ms since epoch) */
+  timestamp: number;
+  /** Number of retry attempts */
+  retries: number;
+  /** Last error message if failed */
+  lastError?: string;
+  /** Current status */
+  status: MutationStatus;
+}
+
+/**
  * IndexedDB schema definition for the offline database.
  * Extends idb's DBSchema for type-safe database operations.
  */
@@ -73,6 +122,16 @@ export interface OfflineDBSchema extends DBSchema {
   syncMeta: {
     key: string;
     value: SyncMeta;
+  };
+  mutationQueue: {
+    key: number;
+    value: MutationQueueEntry;
+    indexes: {
+      status: MutationStatus;
+      entity: MutationEntityType;
+      timestamp: number;
+      idempotencyKey: string;
+    };
   };
 }
 
