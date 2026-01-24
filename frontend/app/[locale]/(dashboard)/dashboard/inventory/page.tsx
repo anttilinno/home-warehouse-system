@@ -1238,10 +1238,10 @@ export default function InventoryPage() {
                       <TableRow>
                         <TableHead className="w-[50px]">
                           <Checkbox
-                            checked={isAllSelected(sortedInventories.map((i) => i.id))}
+                            checked={isAllSelected(sortedInventories.filter(i => !('_pending' in i && i._pending)).map((i) => i.id))}
                             onCheckedChange={(checked) => {
                               if (checked) {
-                                selectAll(sortedInventories.map((i) => i.id));
+                                selectAll(sortedInventories.filter(i => !('_pending' in i && i._pending)).map((i) => i.id));
                               } else {
                                 clearSelection();
                               }
@@ -1302,9 +1302,11 @@ export default function InventoryPage() {
                       <TableBody>
                         {virtualizer.getVirtualItems().map((virtualItem) => {
                           const inventory = sortedInventories[virtualItem.index];
+                          const isPending = '_pending' in inventory && inventory._pending;
                           return (
                             <TableRow
                               key={inventory.id}
+                              className={cn(isPending && "bg-amber-50")}
                               style={{
                                 position: 'absolute',
                                 top: 0,
@@ -1318,15 +1320,30 @@ export default function InventoryPage() {
                                 <Checkbox
                                   checked={isSelected(inventory.id)}
                                   onCheckedChange={() => toggleSelection(inventory.id)}
+                                  disabled={isPending}
                                   aria-label={`Select ${getItemName(inventory.item_id)}`}
                                 />
                               </TableCell>
                               <TableCell>
-                                <div>
-                                  <div className="font-medium">{getItemName(inventory.item_id)}</div>
-                                  <div className="text-sm text-muted-foreground font-mono">
-                                    {getItemSKU(inventory.item_id)}
+                                <div className="flex items-center gap-2">
+                                  <div>
+                                    <div className="font-medium">{getItemName(inventory.item_id)}</div>
+                                    <div className="text-sm text-muted-foreground font-mono">
+                                      {getItemSKU(inventory.item_id)}
+                                    </div>
                                   </div>
+                                  {isPending && (
+                                    <Badge variant="outline" className="text-xs text-amber-600 border-amber-300 shrink-0">
+                                      <Cloud className="w-3 h-3 mr-1 animate-pulse" />
+                                      {(() => {
+                                        const itemName = getItemName(inventory.item_id);
+                                        const locationName = getLocationName(inventory.location_id);
+                                        const containerName = inventory.container_id ? getContainerName(inventory.container_id) : null;
+                                        const locationContext = containerName ? `${locationName} / ${containerName}` : locationName;
+                                        return `Pending... ${itemName} at ${locationContext}`;
+                                      })()}
+                                    </Badge>
+                                  )}
                                 </div>
                               </TableCell>
                               <TableCell>
@@ -1344,70 +1361,86 @@ export default function InventoryPage() {
                                 </div>
                               </TableCell>
                               <TableCell>
-                                <InlineEditCell
-                                  value={inventory.quantity.toString()}
-                                  onSave={(newValue) =>
-                                    handleUpdateQuantity(inventory.id, newValue)
-                                  }
-                                  type="number"
-                                  placeholder="0"
-                                  className="font-medium"
-                                />
+                                {isPending ? (
+                                  <span className="font-medium">{inventory.quantity}</span>
+                                ) : (
+                                  <InlineEditCell
+                                    value={inventory.quantity.toString()}
+                                    onSave={(newValue) =>
+                                      handleUpdateQuantity(inventory.id, newValue)
+                                    }
+                                    type="number"
+                                    placeholder="0"
+                                    className="font-medium"
+                                  />
+                                )}
                               </TableCell>
                               <TableCell>
-                                <InlineEditSelect
-                                  value={inventory.condition}
-                                  options={CONDITION_OPTIONS}
-                                  onSave={(newValue) =>
-                                    handleUpdateCondition(inventory.id, newValue)
-                                  }
-                                  renderValue={(value, option) => (
-                                    <Badge variant="outline">{option?.label || value}</Badge>
-                                  )}
-                                />
+                                {isPending ? (
+                                  <Badge variant="outline">
+                                    {CONDITION_OPTIONS.find(c => c.value === inventory.condition)?.label || inventory.condition}
+                                  </Badge>
+                                ) : (
+                                  <InlineEditSelect
+                                    value={inventory.condition}
+                                    options={CONDITION_OPTIONS}
+                                    onSave={(newValue) =>
+                                      handleUpdateCondition(inventory.id, newValue)
+                                    }
+                                    renderValue={(value, option) => (
+                                      <Badge variant="outline">{option?.label || value}</Badge>
+                                    )}
+                                  />
+                                )}
                               </TableCell>
                               <TableCell>
-                                <InlineEditSelect
-                                  value={inventory.status}
-                                  options={STATUS_OPTIONS}
-                                  onSave={(newValue) =>
-                                    handleUpdateStatus(inventory.id, newValue)
-                                  }
-                                  renderValue={(value) => <StatusBadge status={value as InventoryStatus} />}
-                                />
+                                {isPending ? (
+                                  <StatusBadge status={inventory.status} />
+                                ) : (
+                                  <InlineEditSelect
+                                    value={inventory.status}
+                                    options={STATUS_OPTIONS}
+                                    onSave={(newValue) =>
+                                      handleUpdateStatus(inventory.id, newValue)
+                                    }
+                                    renderValue={(value) => <StatusBadge status={value as InventoryStatus} />}
+                                  />
+                                )}
                               </TableCell>
                               <TableCell>
-                                <DropdownMenu>
-                                  <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" size="icon" aria-label={`Actions for ${getItemName(inventory.item_id)}`}>
-                                      <MoreHorizontal className="h-4 w-4" />
-                                    </Button>
-                                  </DropdownMenuTrigger>
-                                  <DropdownMenuContent align="end">
-                                    <DropdownMenuItem onClick={() => toast.info("Edit functionality coming soon")}>
-                                      <Pencil className="mr-2 h-4 w-4" />
-                                      Edit
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem onClick={() => toast.info("Move functionality coming soon")}>
-                                      <Move className="mr-2 h-4 w-4" />
-                                      Move
-                                    </DropdownMenuItem>
-                                    <DropdownMenuSeparator />
-                                    <DropdownMenuItem onClick={() => handleArchive(inventory)}>
-                                      {inventory.is_archived ? (
-                                        <>
-                                          <ArchiveRestore className="mr-2 h-4 w-4" />
-                                          Restore
-                                        </>
-                                      ) : (
-                                        <>
-                                          <Archive className="mr-2 h-4 w-4" />
-                                          Archive
-                                        </>
-                                      )}
-                                    </DropdownMenuItem>
-                                  </DropdownMenuContent>
-                                </DropdownMenu>
+                                {!isPending && (
+                                  <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                      <Button variant="ghost" size="icon" aria-label={`Actions for ${getItemName(inventory.item_id)}`}>
+                                        <MoreHorizontal className="h-4 w-4" />
+                                      </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent align="end">
+                                      <DropdownMenuItem onClick={() => toast.info("Edit functionality coming soon")}>
+                                        <Pencil className="mr-2 h-4 w-4" />
+                                        Edit
+                                      </DropdownMenuItem>
+                                      <DropdownMenuItem onClick={() => toast.info("Move functionality coming soon")}>
+                                        <Move className="mr-2 h-4 w-4" />
+                                        Move
+                                      </DropdownMenuItem>
+                                      <DropdownMenuSeparator />
+                                      <DropdownMenuItem onClick={() => handleArchive(inventory)}>
+                                        {inventory.is_archived ? (
+                                          <>
+                                            <ArchiveRestore className="mr-2 h-4 w-4" />
+                                            Restore
+                                          </>
+                                        ) : (
+                                          <>
+                                            <Archive className="mr-2 h-4 w-4" />
+                                            Archive
+                                          </>
+                                        )}
+                                      </DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                  </DropdownMenu>
+                                )}
                               </TableCell>
                             </TableRow>
                           );
@@ -1452,9 +1485,9 @@ export default function InventoryPage() {
                     <SelectValue placeholder="Select item" />
                   </SelectTrigger>
                   <SelectContent>
-                    {items.map((item) => (
+                    {allItems.map((item) => (
                       <SelectItem key={item.id} value={item.id}>
-                        {item.name} ({item.sku})
+                        {item.name} ({item.sku}){'_pending' in item && item._pending ? ' (pending)' : ''}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -1470,9 +1503,9 @@ export default function InventoryPage() {
                     <SelectValue placeholder="Select location" />
                   </SelectTrigger>
                   <SelectContent>
-                    {locations.map((loc) => (
+                    {allLocations.map((loc) => (
                       <SelectItem key={loc.id} value={loc.id}>
-                        {loc.name}
+                        {loc.name}{'_pending' in loc && loc._pending ? ' (pending)' : ''}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -1489,11 +1522,11 @@ export default function InventoryPage() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="none">None</SelectItem>
-                    {containers
+                    {allContainers
                       .filter(c => !formLocationId || c.location_id === formLocationId)
                       .map((container) => (
                         <SelectItem key={container.id} value={container.id}>
-                          {container.name}
+                          {container.name}{'_pending' in container && container._pending ? ' (pending)' : ''}
                         </SelectItem>
                       ))}
                   </SelectContent>
