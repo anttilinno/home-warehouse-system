@@ -20,6 +20,7 @@ import {
   CheckCircle2,
   HandCoins,
   AlertCircle,
+  Cloud,
 } from "lucide-react";
 import { toast } from "sonner";
 import { format, parseISO } from "date-fns";
@@ -87,6 +88,9 @@ import type { Location } from "@/lib/types/locations";
 import type { Container } from "@/lib/types/containers";
 import { cn } from "@/lib/utils";
 import { exportToCSV, generateFilename, type ColumnDefinition } from "@/lib/utils/csv-export";
+import { useOfflineMutation, getPendingMutationsForEntity } from "@/lib/hooks/use-offline-mutation";
+import { syncManager } from "@/lib/sync/sync-manager";
+import type { SyncEvent } from "@/lib/sync/sync-manager";
 
 const CONDITION_OPTIONS: { value: InventoryCondition; label: string }[] = [
   { value: "NEW", label: "New" },
@@ -466,6 +470,12 @@ export default function InventoryPage() {
   const [formNotes, setFormNotes] = useState("");
   const [isSaving, setIsSaving] = useState(false);
 
+  // Optimistic state for offline mutations
+  const [optimisticInventory, setOptimisticInventory] = useState<(Inventory & { _pending?: boolean })[]>([]);
+  const [optimisticItems, setOptimisticItems] = useState<(Item & { _pending?: boolean })[]>([]);
+  const [optimisticLocations, setOptimisticLocations] = useState<(Location & { _pending?: boolean })[]>([]);
+  const [optimisticContainers, setOptimisticContainers] = useState<(Container & { _pending?: boolean })[]>([]);
+
   // Infinite scroll for inventories
   const {
     items: inventories,
@@ -512,6 +522,185 @@ export default function InventoryPage() {
     loadReferenceData();
   }, [workspaceId]);
 
+  // Offline mutation hooks
+  const { mutate: createInventoryOffline } = useOfflineMutation<Record<string, unknown>>({
+    entity: 'inventory',
+    operation: 'create',
+    onMutate: (payload, tempId) => {
+      const optimisticInv: Inventory & { _pending: boolean } = {
+        id: tempId,
+        workspace_id: workspaceId!,
+        item_id: (payload.item_id as string) || '',
+        location_id: (payload.location_id as string) || '',
+        container_id: (payload.container_id as string) || null,
+        quantity: (payload.quantity as number) || 1,
+        condition: (payload.condition as InventoryCondition) || 'GOOD',
+        status: (payload.status as InventoryStatus) || 'AVAILABLE',
+        notes: (payload.notes as string) || null,
+        is_archived: false,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        _pending: true,
+      };
+      setOptimisticInventory(prev => [...prev, optimisticInv]);
+    },
+  });
+
+  const { mutate: updateInventoryOffline } = useOfflineMutation<Record<string, unknown>>({
+    entity: 'inventory',
+    operation: 'update',
+    onMutate: (payload, _tempId) => {
+      const entityId = payload._entityId as string;
+      if (entityId) {
+        setOptimisticInventory(prev => {
+          const existing = prev.find(i => i.id === entityId);
+          if (existing) {
+            return prev.map(i => i.id === entityId ? { ...i, ...payload, _pending: true } : i);
+          }
+          const fromFetched = inventories.find(i => i.id === entityId);
+          if (fromFetched) {
+            return [...prev, { ...fromFetched, ...payload, _pending: true }];
+          }
+          return prev;
+        });
+      }
+    },
+  });
+
+  // Subscribe to sync events for offline mutation completion
+  useEffect(() => {
+    if (!syncManager) return;
+
+    const handleSyncEvent = (event: SyncEvent) => {
+      if (event.type === 'MUTATION_SYNCED' && event.payload?.mutation?.entity === 'inventory') {
+        const syncedKey = event.payload.mutation.idempotencyKey;
+        const entityId = event.payload.mutation.entityId;
+        setOptimisticInventory(prev => prev.filter(i => i.id !== syncedKey && i.id !== entityId));
+        refetch();
+      }
+      // Also handle items, locations, containers syncing
+      if (event.type === 'MUTATION_SYNCED' && event.payload?.mutation?.entity === 'items') {
+        const syncedKey = event.payload.mutation.idempotencyKey;
+        const entityId = event.payload.mutation.entityId;
+        setOptimisticItems(prev => prev.filter(i => i.id !== syncedKey && i.id !== entityId));
+      }
+      if (event.type === 'MUTATION_SYNCED' && event.payload?.mutation?.entity === 'locations') {
+        const syncedKey = event.payload.mutation.idempotencyKey;
+        const entityId = event.payload.mutation.entityId;
+        setOptimisticLocations(prev => prev.filter(l => l.id !== syncedKey && l.id !== entityId));
+      }
+      if (event.type === 'MUTATION_SYNCED' && event.payload?.mutation?.entity === 'containers') {
+        const syncedKey = event.payload.mutation.idempotencyKey;
+        const entityId = event.payload.mutation.entityId;
+        setOptimisticContainers(prev => prev.filter(c => c.id !== syncedKey && c.id !== entityId));
+      }
+      if (event.type === 'MUTATION_FAILED' && event.payload?.mutation?.entity === 'inventory') {
+        toast.error('Failed to sync inventory', {
+          description: event.payload.mutation.lastError || 'Please try again',
+        });
+      }
+    };
+
+    return syncManager.subscribe(handleSyncEvent);
+  }, [refetch]);
+
+  // Load pending creates for items, locations, containers on mount
+  useEffect(() => {
+    async function loadPendingEntities() {
+      const [pendingItemMutations, pendingLocationMutations, pendingContainerMutations] = await Promise.all([
+        getPendingMutationsForEntity('items'),
+        getPendingMutationsForEntity('locations'),
+        getPendingMutationsForEntity('containers'),
+      ]);
+
+      // Process pending items
+      const pendingItems = pendingItemMutations
+        .filter(m => m.operation === 'create')
+        .map(m => ({
+          id: m.idempotencyKey,
+          workspace_id: workspaceId || '',
+          sku: (m.payload.sku as string) || '',
+          name: (m.payload.name as string) || '',
+          description: (m.payload.description as string) || null,
+          category_id: (m.payload.category_id as string) || null,
+          brand: (m.payload.brand as string) || null,
+          model: (m.payload.model as string) || null,
+          min_stock_level: 0,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+          _pending: true,
+        } as Item & { _pending: boolean }));
+      setOptimisticItems(pendingItems);
+
+      // Process pending locations
+      const pendingLocations = pendingLocationMutations
+        .filter(m => m.operation === 'create')
+        .map(m => ({
+          id: m.idempotencyKey,
+          workspace_id: workspaceId || '',
+          name: (m.payload.name as string) || '',
+          description: (m.payload.description as string) || null,
+          parent_location: (m.payload.parent_location as string) || null,
+          short_code: (m.payload.short_code as string) || null,
+          zone: null,
+          shelf: null,
+          bin: null,
+          is_archived: false,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+          _pending: true,
+        } as Location & { _pending: boolean }));
+      setOptimisticLocations(pendingLocations);
+
+      // Process pending containers
+      const pendingContainers = pendingContainerMutations
+        .filter(m => m.operation === 'create')
+        .map(m => ({
+          id: m.idempotencyKey,
+          workspace_id: workspaceId || '',
+          name: (m.payload.name as string) || '',
+          description: (m.payload.description as string) || null,
+          location_id: (m.payload.location_id as string) || '',
+          capacity: (m.payload.capacity as string) || null,
+          short_code: (m.payload.short_code as string) || null,
+          is_archived: false,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+          _pending: true,
+        } as Container & { _pending: boolean }));
+      setOptimisticContainers(pendingContainers);
+    }
+    loadPendingEntities();
+  }, [workspaceId]);
+
+  // Merge fetched data with optimistic data
+  const allItems = useMemo(() => {
+    const fetchedIds = new Set(items.map(i => i.id));
+    return [...items, ...optimisticItems.filter(o => !fetchedIds.has(o.id))];
+  }, [items, optimisticItems]);
+
+  const allLocations = useMemo(() => {
+    const fetchedIds = new Set(locations.map(l => l.id));
+    return [...locations, ...optimisticLocations.filter(o => !fetchedIds.has(o.id))];
+  }, [locations, optimisticLocations]);
+
+  const allContainers = useMemo(() => {
+    const fetchedIds = new Set(containers.map(c => c.id));
+    return [...containers, ...optimisticContainers.filter(o => !fetchedIds.has(o.id))];
+  }, [containers, optimisticContainers]);
+
+  // Merge fetched inventory with optimistic inventory
+  const mergedInventories = useMemo(() => {
+    const fetchedIds = new Set(inventories.map(i => i.id));
+    const merged = inventories.map(inv => {
+      const optimistic = optimisticInventory.find(o => o.id === inv.id);
+      if (optimistic) return { ...inv, ...optimistic, _pending: true };
+      return inv;
+    });
+    const newOptimistic = optimisticInventory.filter(o => !fetchedIds.has(o.id));
+    return [...merged, ...newOptimistic];
+  }, [inventories, optimisticInventory]);
+
   // Subscribe to SSE events for real-time updates
   useSSE({
     onEvent: (event: SSEEvent) => {
@@ -536,7 +725,7 @@ export default function InventoryPage() {
 
   // Filter inventories - memoized for performance
   const filteredInventories = useMemo(() => {
-    return inventories.filter((inventory) => {
+    return mergedInventories.filter((inventory) => {
       // Filter by archived status
       if (!showArchived && inventory.is_archived) return false;
       if (showArchived && !inventory.is_archived) return false;
@@ -544,8 +733,8 @@ export default function InventoryPage() {
       // Filter by search query
       if (debouncedSearchQuery) {
         const query = debouncedSearchQuery.toLowerCase();
-        const item = items.find(i => i.id === inventory.item_id);
-        const location = locations.find(l => l.id === inventory.location_id);
+        const item = allItems.find(i => i.id === inventory.item_id);
+        const location = allLocations.find(l => l.id === inventory.location_id);
         const matchesSearch =
           item?.name.toLowerCase().includes(query) ||
           item?.sku.toLowerCase().includes(query) ||
@@ -596,7 +785,7 @@ export default function InventoryPage() {
 
       return true;
     });
-  }, [inventories, showArchived, debouncedSearchQuery, items, locations, activeFilters]);
+  }, [mergedInventories, showArchived, debouncedSearchQuery, allItems, allLocations, activeFilters]);
 
   // Flatten inventory data for sorting (add item name, location name, container name)
   const flattenedInventories = useMemo(() => {
@@ -606,8 +795,9 @@ export default function InventoryPage() {
       item_sku: getItemSKU(inv.item_id),
       location_name: getLocationName(inv.location_id),
       container_name: getContainerName(inv.container_id) || '',
+      _pending: '_pending' in inv ? (inv._pending as boolean | undefined) : undefined,
     }));
-  }, [filteredInventories, items, locations, containers]);
+  }, [filteredInventories, allItems, allLocations, allContainers]);
 
   // Sort inventories
   const { sortedData: sortedInventories, requestSort, getSortDirection } = useTableSort(flattenedInventories, "item_name", "asc");
@@ -686,23 +876,23 @@ export default function InventoryPage() {
   });
 
   const getItemName = (itemId: string) => {
-    const item = items.find(i => i.id === itemId);
+    const item = allItems.find(i => i.id === itemId);
     return item?.name || "Unknown Item";
   };
 
   const getItemSKU = (itemId: string) => {
-    const item = items.find(i => i.id === itemId);
+    const item = allItems.find(i => i.id === itemId);
     return item?.sku || "";
   };
 
   const getLocationName = (locationId: string) => {
-    const location = locations.find(l => l.id === locationId);
+    const location = allLocations.find(l => l.id === locationId);
     return location?.name || "Unknown Location";
   };
 
   const getContainerName = (containerId: string | null | undefined) => {
     if (!containerId) return null;
-    const container = containers.find(c => c.id === containerId);
+    const container = allContainers.find(c => c.id === containerId);
     return container?.name || null;
   };
 
@@ -739,7 +929,7 @@ export default function InventoryPage() {
 
     if (!formItemId || !formLocationId || formQuantity < 1) {
       toast.error("Please fill in required fields", {
-        description: "Item, Location, and Quantity (≥1) are required",
+        description: "Item, Location, and Quantity (>=1) are required",
       });
       return;
     }
@@ -747,7 +937,17 @@ export default function InventoryPage() {
     try {
       setIsSaving(true);
 
-      const createData: InventoryCreate = {
+      // Collect dependsOn for pending entities
+      const dependsOn: string[] = [];
+      const itemIsPending = optimisticItems.some(i => i.id === formItemId && i._pending);
+      const locationIsPending = optimisticLocations.some(l => l.id === formLocationId && l._pending);
+      const containerIsPending = formContainerId && optimisticContainers.some(c => c.id === formContainerId && c._pending);
+
+      if (itemIsPending) dependsOn.push(formItemId);
+      if (locationIsPending) dependsOn.push(formLocationId);
+      if (containerIsPending) dependsOn.push(formContainerId!);
+
+      const createPayload: Record<string, unknown> = {
         item_id: formItemId,
         location_id: formLocationId,
         container_id: formContainerId || undefined,
@@ -756,11 +956,10 @@ export default function InventoryPage() {
         status: formStatus,
         notes: formNotes || undefined,
       };
-      await inventoryApi.create(workspaceId!, createData);
-      toast.success("Inventory created successfully");
+      await createInventoryOffline(createPayload, undefined, dependsOn.length > 0 ? dependsOn : undefined);
+      toast.success(navigator.onLine ? "Inventory created" : "Inventory queued for sync");
 
       setDialogOpen(false);
-      refetch();
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Failed to save inventory";
       toast.error("Failed to save inventory", {
