@@ -41,6 +41,39 @@ export const RETRY_CONFIG = {
 export const MUTATION_TTL = 7 * 24 * 60 * 60 * 1000;
 
 // ============================================================================
+// BroadcastChannel for Queue Updates
+// ============================================================================
+
+/**
+ * BroadcastChannel for notifying other tabs/contexts of queue changes.
+ * Only created in browser environment where BroadcastChannel is available.
+ */
+const queueChannel =
+  typeof BroadcastChannel !== "undefined"
+    ? new BroadcastChannel("sync-status")
+    : null;
+
+/**
+ * Broadcast queue update event to all listeners.
+ * Called after queue operations that change the pending count.
+ */
+export function broadcastQueueUpdate(): void {
+  if (!queueChannel) return;
+
+  // Get pending count and broadcast asynchronously
+  getPendingMutationCount()
+    .then((count) => {
+      queueChannel.postMessage({
+        type: "QUEUE_UPDATED",
+        payload: { queueLength: count },
+      });
+    })
+    .catch((error) => {
+      console.warn("[MutationQueue] Failed to broadcast queue update:", error);
+    });
+}
+
+// ============================================================================
 // Queue Operations
 // ============================================================================
 
@@ -79,6 +112,9 @@ export async function queueMutation(
 
   const id = await db.add("mutationQueue", entry as MutationQueueEntry);
 
+  // Notify listeners of queue update
+  broadcastQueueUpdate();
+
   return { ...entry, id } as MutationQueueEntry;
 }
 
@@ -100,7 +136,11 @@ export async function getMutationQueue(): Promise<MutationQueueEntry[]> {
  */
 export async function getPendingMutations(): Promise<MutationQueueEntry[]> {
   const db = await getDB();
-  const mutations = await db.getAllFromIndex("mutationQueue", "status", "pending");
+  const mutations = await db.getAllFromIndex(
+    "mutationQueue",
+    "status",
+    "pending"
+  );
   // Sort by timestamp (oldest first for FIFO processing)
   return mutations.sort((a, b) => a.timestamp - b.timestamp);
 }
@@ -177,6 +217,9 @@ export async function updateMutationStatus(
 
   await store.put(updated);
   await tx.done;
+
+  // Notify listeners of status change (affects pending count)
+  broadcastQueueUpdate();
 }
 
 /**
@@ -188,6 +231,9 @@ export async function updateMutationStatus(
 export async function removeMutation(id: number): Promise<void> {
   const db = await getDB();
   await db.delete("mutationQueue", id);
+
+  // Notify listeners of queue update
+  broadcastQueueUpdate();
 }
 
 /**
@@ -196,7 +242,9 @@ export async function removeMutation(id: number): Promise<void> {
  *
  * @param key - The idempotency key
  */
-export async function removeMutationByIdempotencyKey(key: string): Promise<void> {
+export async function removeMutationByIdempotencyKey(
+  key: string
+): Promise<void> {
   const db = await getDB();
   const tx = db.transaction("mutationQueue", "readwrite");
   const store = tx.objectStore("mutationQueue");
@@ -208,6 +256,11 @@ export async function removeMutationByIdempotencyKey(key: string): Promise<void>
   }
 
   await tx.done;
+
+  // Notify listeners of queue update (if mutation was removed)
+  if (mutation) {
+    broadcastQueueUpdate();
+  }
 }
 
 /**
@@ -239,6 +292,8 @@ export async function cleanExpiredMutations(): Promise<number> {
 
   if (removedCount > 0) {
     console.log(`[MutationQueue] Cleaned ${removedCount} expired mutations`);
+    // Notify listeners of queue update
+    broadcastQueueUpdate();
   }
 
   return removedCount;
