@@ -13,6 +13,7 @@ import {
   ChevronDown,
   Upload,
   GripVertical,
+  Cloud,
 } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -63,9 +64,13 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ImportDialog, type ImportResult } from "@/components/ui/import-dialog";
+import { Badge } from "@/components/ui/badge";
 import { useWorkspace } from "@/lib/hooks/use-workspace";
 import { useDebouncedValue } from "@/lib/hooks/use-debounced-value";
 import { useSSE, type SSEEvent } from "@/lib/hooks/use-sse";
+import { useOfflineMutation } from "@/lib/hooks/use-offline-mutation";
+import { syncManager } from "@/lib/sync/sync-manager";
+import type { SyncEvent } from "@/lib/sync/sync-manager";
 import { categoriesApi, importExportApi, type Category } from "@/lib/api";
 import { cn } from "@/lib/utils";
 
@@ -293,11 +298,65 @@ export default function CategoriesPage() {
   const [formParentId, setFormParentId] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
 
+  // Optimistic categories for offline mutations
+  const [optimisticCategories, setOptimisticCategories] = useState<(Category & { _pending?: boolean })[]>([]);
+
+  // Offline mutation hooks
+  const { mutate: createCategoryOffline } = useOfflineMutation<Record<string, unknown>>({
+    entity: 'categories',
+    operation: 'create',
+    onMutate: (payload, tempId, dependsOn) => {
+      const optimisticCategory: Category & { _pending: boolean } = {
+        id: tempId,
+        name: (payload.name as string) || '',
+        description: (payload.description as string) || null,
+        parent_category_id: (payload.parent_category_id as string) || null,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        _pending: true,
+      };
+      setOptimisticCategories(prev => [...prev, optimisticCategory]);
+    },
+  });
+
+  const { mutate: updateCategoryOffline } = useOfflineMutation<Record<string, unknown>>({
+    entity: 'categories',
+    operation: 'update',
+    onMutate: (payload, _tempId) => {
+      const entityId = payload._entityId as string;
+      if (entityId) {
+        setOptimisticCategories(prev => {
+          const existing = prev.find(c => c.id === entityId);
+          if (existing) {
+            return prev.map(c => c.id === entityId ? { ...c, ...payload, _pending: true } : c);
+          }
+          const fromFetched = categories.find(c => c.id === entityId);
+          if (fromFetched) {
+            return [...prev, { ...fromFetched, ...payload, _pending: true }];
+          }
+          return prev;
+        });
+      }
+    },
+  });
+
+  // Merge fetched categories with optimistic categories
+  const mergedCategories = useMemo(() => {
+    const fetchedIds = new Set(categories.map(c => c.id));
+    const merged = categories.map(c => {
+      const optimistic = optimisticCategories.find(o => o.id === c.id);
+      if (optimistic) return { ...c, ...optimistic, _pending: true };
+      return c;
+    });
+    const newOptimistic = optimisticCategories.filter(o => !fetchedIds.has(o.id));
+    return [...merged, ...newOptimistic];
+  }, [categories, optimisticCategories]);
+
   // Memoize category tree computation for performance
   const tree = useMemo(() => {
-    if (categories.length === 0) return [];
+    if (mergedCategories.length === 0) return [];
 
-    const treeData = buildCategoryTree(categories);
+    const treeData = buildCategoryTree(mergedCategories);
 
     // Apply expansion state from expandedIds Set
     const applyExpansion = (items: CategoryTreeItem[]): CategoryTreeItem[] => {
@@ -309,7 +368,7 @@ export default function CategoriesPage() {
     };
 
     return applyExpansion(treeData);
-  }, [categories, expandedIds]);
+  }, [mergedCategories, expandedIds]);
 
   const loadCategories = useCallback(async () => {
     if (!workspaceId) return;
@@ -335,6 +394,27 @@ export default function CategoriesPage() {
       loadCategories();
     }
   }, [workspaceId, loadCategories]);
+
+  // Subscribe to sync events for offline mutation completion
+  useEffect(() => {
+    if (!syncManager) return;
+
+    const handleSyncEvent = (event: SyncEvent) => {
+      if (event.type === 'MUTATION_SYNCED' && event.payload?.mutation?.entity === 'categories') {
+        const syncedKey = event.payload.mutation.idempotencyKey;
+        const entityId = event.payload.mutation.entityId;
+        setOptimisticCategories(prev => prev.filter(c => c.id !== syncedKey && c.id !== entityId));
+        loadCategories();
+      }
+      if (event.type === 'MUTATION_FAILED' && event.payload?.mutation?.entity === 'categories') {
+        toast.error('Failed to sync category', {
+          description: event.payload.mutation.lastError || 'Please try again',
+        });
+      }
+    };
+
+    return syncManager.subscribe(handleSyncEvent);
+  }, [loadCategories]);
 
   // Subscribe to SSE events for real-time updates
   useSSE({
@@ -397,25 +477,31 @@ export default function CategoriesPage() {
     setIsSaving(true);
     try {
       if (editingCategory) {
-        await categoriesApi.update(workspaceId, editingCategory.id, {
+        // Update existing category - use offline mutation
+        const updatePayload: Record<string, unknown> = {
           name: formName.trim(),
           description: formDescription.trim() || null,
           parent_category_id: formParentId,
-        });
-        toast.success("Category updated", {
-          description: `"${formName.trim()}" has been updated successfully`,
-        });
+          _entityId: editingCategory.id,
+        };
+        await updateCategoryOffline(updatePayload, editingCategory.id);
+        toast.success(navigator.onLine ? "Category updated" : "Category update queued");
       } else {
-        await categoriesApi.create(workspaceId, {
+        // Create new category - use offline mutation
+        // Check if parent is a pending optimistic category
+        const parentIsPending = formParentId && optimisticCategories.some(
+          c => c.id === formParentId && c._pending
+        );
+        const dependsOn = parentIsPending ? [formParentId] : undefined;
+
+        const createPayload: Record<string, unknown> = {
           name: formName.trim(),
           description: formDescription.trim() || null,
           parent_category_id: formParentId,
-        });
-        toast.success("Category created", {
-          description: `"${formName.trim()}" has been created successfully`,
-        });
+        };
+        await createCategoryOffline(createPayload, undefined, dependsOn);
+        toast.success(navigator.onLine ? "Category created" : "Category queued for sync");
       }
-      await loadCategories();
       setDialogOpen(false);
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Failed to save category";
@@ -568,19 +654,22 @@ export default function CategoriesPage() {
   const allCategoryIds = flattenTree(filteredTree);
 
   // Get available parent categories (exclude self and descendants when editing)
-  const getAvailableParents = (): Category[] => {
-    if (!editingCategory) return categories;
+  // Include optimistic categories so user can select pending parents
+  const getAvailableParents = (): (Category & { _pending?: boolean })[] => {
+    const allCategories = [...categories, ...optimisticCategories.filter(o => !categories.some(c => c.id === o.id))];
+
+    if (!editingCategory) return allCategories;
 
     const excludeIds = new Set<string>();
     const collectDescendants = (id: string) => {
       excludeIds.add(id);
-      categories
+      allCategories
         .filter((c) => c.parent_category_id === id)
         .forEach((c) => collectDescendants(c.id));
     };
     collectDescendants(editingCategory.id);
 
-    return categories.filter((c) => !excludeIds.has(c.id));
+    return allCategories.filter((c) => !excludeIds.has(c.id));
   };
 
   if (workspaceLoading || isLoading) {
@@ -782,7 +871,7 @@ export default function CategoriesPage() {
                   <SelectItem value="none">{t("parentPlaceholder")}</SelectItem>
                   {getAvailableParents().map((cat) => (
                     <SelectItem key={cat.id} value={cat.id}>
-                      {cat.name}
+                      {cat.name}{'_pending' in cat && cat._pending ? ' (pending)' : ''}
                     </SelectItem>
                   ))}
                 </SelectContent>
