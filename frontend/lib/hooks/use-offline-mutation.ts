@@ -36,8 +36,11 @@ export interface UseOfflineMutationOptions<TPayload> {
   /**
    * Called after mutation is queued (both online and offline).
    * Use this for optimistic UI updates.
+   * @param payload - The mutation payload
+   * @param tempId - The temporary ID (idempotency key)
+   * @param dependsOn - Optional array of idempotency keys this mutation depends on
    */
-  onMutate?: (payload: TPayload, tempId: string) => void;
+  onMutate?: (payload: TPayload, tempId: string, dependsOn?: string[]) => void;
   /**
    * Called when mutation succeeds (online sync completed).
    */
@@ -52,8 +55,14 @@ export interface UseOfflineMutationOptions<TPayload> {
  * Return type for useOfflineMutation
  */
 export interface UseOfflineMutationResult<TPayload> {
-  /** Queue a mutation. Works online and offline. */
-  mutate: (payload: TPayload, entityId?: string) => Promise<string>;
+  /**
+   * Queue a mutation. Works online and offline.
+   * @param payload - The mutation payload
+   * @param entityId - Optional entity ID for updates
+   * @param dependsOn - Optional array of idempotency keys this mutation depends on (for hierarchical entities)
+   * @returns The idempotency key (tempId) for tracking the mutation
+   */
+  mutate: (payload: TPayload, entityId?: string, dependsOn?: string[]) => Promise<string>;
   /** Whether a mutation is currently in progress */
   isPending: boolean;
 }
@@ -95,13 +104,14 @@ export function useOfflineMutation<TPayload extends Record<string, unknown>>({
   const [isPending, startTransition] = useTransition();
 
   const mutate = useCallback(
-    async (payload: TPayload, entityId?: string): Promise<string> => {
+    async (payload: TPayload, entityId?: string, dependsOn?: string[]): Promise<string> => {
       // 1. Queue mutation to IndexedDB FIRST (persist before optimistic update)
       const entry = await queueMutation({
         operation,
         entity,
         entityId,
         payload: payload as Record<string, unknown>,
+        dependsOn,
       });
 
       const tempId = entry.idempotencyKey;
@@ -109,7 +119,7 @@ export function useOfflineMutation<TPayload extends Record<string, unknown>>({
       // 2. Call onMutate for optimistic UI update
       if (onMutate) {
         startTransition(() => {
-          onMutate(payload, tempId);
+          onMutate(payload, tempId, dependsOn);
         });
       }
 
