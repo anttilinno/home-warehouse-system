@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useTranslations } from "next-intl";
 import {
   Plus,
@@ -14,8 +14,13 @@ import {
   Download,
   Upload,
   Archive,
+  Cloud,
 } from "lucide-react";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
+import { useOfflineMutation } from "@/lib/hooks/use-offline-mutation";
+import { syncManager } from "@/lib/sync/sync-manager";
+import type { SyncEvent } from "@/lib/sync/sync-manager";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -64,6 +69,7 @@ import { BulkActionBar } from "@/components/ui/bulk-action-bar";
 import { ExportDialog } from "@/components/ui/export-dialog";
 import { ImportDialog, type ImportResult } from "@/components/ui/import-dialog";
 import { InlineEditCell } from "@/components/ui/inline-edit-cell";
+import { Badge } from "@/components/ui/badge";
 import {
   ContextMenu,
   ContextMenuContent,
@@ -147,6 +153,9 @@ export default function BorrowersPage() {
   const [formNotes, setFormNotes] = useState("");
   const [isSaving, setIsSaving] = useState(false);
 
+  // Optimistic borrowers for offline mutations
+  const [optimisticBorrowers, setOptimisticBorrowers] = useState<(Borrower & { _pending?: boolean })[]>([]);
+
   // Infinite scroll for borrowers
   const {
     items: borrowers,
@@ -166,6 +175,51 @@ export default function BorrowersPage() {
     pageSize: 50,
     dependencies: [workspaceId],
     autoFetch: !!workspaceId,
+  });
+
+  // Offline mutation hooks
+  const { mutate: createBorrowerOffline } = useOfflineMutation<Record<string, unknown>>({
+    entity: 'borrowers',
+    operation: 'create',
+    onMutate: (payload, tempId) => {
+      const optimisticBorrower: Borrower & { _pending: boolean } = {
+        id: tempId,
+        workspace_id: workspaceId!,
+        name: (payload.name as string) || '',
+        email: (payload.email as string) || null,
+        phone: (payload.phone as string) || null,
+        notes: (payload.notes as string) || null,
+        is_archived: false,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        _pending: true,
+      };
+      setOptimisticBorrowers(prev => [...prev, optimisticBorrower]);
+    },
+  });
+
+  const { mutate: updateBorrowerOffline } = useOfflineMutation<Record<string, unknown>>({
+    entity: 'borrowers',
+    operation: 'update',
+    onMutate: (payload, _tempId) => {
+      // For updates, mark the existing borrower as pending
+      const entityId = payload._entityId as string;
+      if (entityId) {
+        setOptimisticBorrowers(prev => {
+          // Check if already in optimistic list
+          const existing = prev.find(b => b.id === entityId);
+          if (existing) {
+            return prev.map(b => b.id === entityId ? { ...b, ...payload, _pending: true } : b);
+          }
+          // Find in fetched borrowers and add to optimistic with updates
+          const fromFetched = borrowers.find(b => b.id === entityId);
+          if (fromFetched) {
+            return [...prev, { ...fromFetched, ...payload, _pending: true }];
+          }
+          return prev;
+        });
+      }
+    },
   });
 
   // Subscribe to SSE events for real-time updates
@@ -201,9 +255,56 @@ export default function BorrowersPage() {
     },
   });
 
+  // Subscribe to sync events for offline mutation completion
+  useEffect(() => {
+    if (!syncManager) return;
+
+    const handleSyncEvent = (event: SyncEvent) => {
+      if (event.type === 'MUTATION_SYNCED' && event.payload?.mutation?.entity === 'borrowers') {
+        const syncedKey = event.payload.mutation.idempotencyKey;
+        const entityId = event.payload.mutation.entityId;
+
+        // Remove from optimistic list
+        setOptimisticBorrowers(prev =>
+          prev.filter(b => b.id !== syncedKey && b.id !== entityId)
+        );
+
+        // Refetch to get server data
+        refetch();
+      }
+
+      if (event.type === 'MUTATION_FAILED' && event.payload?.mutation?.entity === 'borrowers') {
+        toast.error('Failed to sync borrower', {
+          description: event.payload.mutation.lastError || 'Please try again',
+        });
+      }
+    };
+
+    return syncManager.subscribe(handleSyncEvent);
+  }, [refetch]);
+
+  // Merge fetched borrowers with optimistic borrowers
+  const mergedBorrowers = useMemo(() => {
+    const fetchedIds = new Set(borrowers.map(b => b.id));
+
+    // Start with fetched borrowers, overlay pending updates
+    const merged = borrowers.map(b => {
+      const optimistic = optimisticBorrowers.find(o => o.id === b.id);
+      if (optimistic) {
+        return { ...b, ...optimistic, _pending: true };
+      }
+      return b;
+    });
+
+    // Add new optimistic creates (not yet in fetched)
+    const newOptimistic = optimisticBorrowers.filter(o => !fetchedIds.has(o.id));
+
+    return [...merged, ...newOptimistic];
+  }, [borrowers, optimisticBorrowers]);
+
   // Filter borrowers - memoized for performance
   const filteredBorrowers = useMemo(() => {
-    return borrowers.filter((borrower) => {
+    return mergedBorrowers.filter((borrower) => {
       // Filter archived
       if (borrower.is_archived) return false;
 
@@ -218,7 +319,7 @@ export default function BorrowersPage() {
 
       return true;
     });
-  }, [borrowers, debouncedSearchQuery]);
+  }, [mergedBorrowers, debouncedSearchQuery]);
 
   // Sort borrowers
   const { sortedData: sortedBorrowers, requestSort, getSortDirection } = useTableSort(filteredBorrowers, "name", "asc");
@@ -283,33 +384,35 @@ export default function BorrowersPage() {
       return;
     }
 
-    try {
-      setIsSaving(true);
+    setIsSaving(true);
 
+    try {
       if (editingBorrower) {
-        // Update existing borrower
-        const updateData: BorrowerUpdate = {
+        // Update existing borrower - use offline mutation
+        const updatePayload: Record<string, unknown> = {
           name: formName,
-          email: formEmail || undefined,
-          phone: formPhone || undefined,
-          notes: formNotes || undefined,
+          email: formEmail || null,
+          phone: formPhone || null,
+          notes: formNotes || null,
+          _entityId: editingBorrower.id, // Track which entity we're updating
         };
-        await borrowersApi.update(workspaceId!, editingBorrower.id, updateData);
-        toast.success("Borrower updated successfully");
+
+        await updateBorrowerOffline(updatePayload, editingBorrower.id);
+        toast.success(navigator.onLine ? "Borrower updated" : "Borrower update queued");
       } else {
-        // Create new borrower
-        const createData: BorrowerCreate = {
+        // Create new borrower - use offline mutation
+        const createPayload: Record<string, unknown> = {
           name: formName,
-          email: formEmail || undefined,
-          phone: formPhone || undefined,
-          notes: formNotes || undefined,
+          email: formEmail || null,
+          phone: formPhone || null,
+          notes: formNotes || null,
         };
-        await borrowersApi.create(workspaceId!, createData);
-        toast.success("Borrower created successfully");
+
+        await createBorrowerOffline(createPayload);
+        toast.success(navigator.onLine ? "Borrower created" : "Borrower queued for sync");
       }
 
       setDialogOpen(false);
-      refetch();
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Failed to save borrower";
       toast.error("Failed to save borrower", {
@@ -344,9 +447,12 @@ export default function BorrowersPage() {
     value: string
   ) => {
     try {
-      await borrowersApi.update(workspaceId!, borrowerId, { [field]: value });
-      toast.success("Updated successfully");
-      refetch();
+      const updatePayload: Record<string, unknown> = {
+        [field]: value,
+        _entityId: borrowerId,
+      };
+      await updateBorrowerOffline(updatePayload, borrowerId);
+      toast.success(navigator.onLine ? "Updated successfully" : "Update queued");
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Failed to update";
       toast.error("Update failed", { description: errorMessage });
@@ -595,10 +701,16 @@ export default function BorrowersPage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {sortedBorrowers.map((borrower) => (
+                    {sortedBorrowers.map((borrower) => {
+                      const isPending = '_pending' in borrower && (borrower as { _pending?: boolean })._pending === true;
+                      return (
                       <ContextMenu key={borrower.id}>
                         <ContextMenuTrigger asChild>
-                          <TableRow>
+                          <TableRow
+                            className={cn(
+                              isPending && "bg-amber-50/50 dark:bg-amber-900/10"
+                            )}
+                          >
                         <TableCell>
                           <Checkbox
                             checked={isSelected(borrower.id)}
@@ -614,14 +726,22 @@ export default function BorrowersPage() {
                               </AvatarFallback>
                             </Avatar>
                             <div className="flex-1 min-w-0">
-                              <InlineEditCell
-                                value={borrower.name}
-                                onSave={(newValue) =>
-                                  handleUpdateField(borrower.id, "name", newValue)
-                                }
-                                className="font-medium"
-                                placeholder="Borrower name"
-                              />
+                              <div className="flex items-center gap-2">
+                                <InlineEditCell
+                                  value={borrower.name}
+                                  onSave={(newValue) =>
+                                    handleUpdateField(borrower.id, "name", newValue)
+                                  }
+                                  className="font-medium"
+                                  placeholder="Borrower name"
+                                />
+                                {isPending && (
+                                  <Badge variant="outline" className="text-xs text-amber-600 border-amber-300 shrink-0">
+                                    <Cloud className="w-3 h-3 mr-1 animate-pulse" />
+                                    Pending
+                                  </Badge>
+                                )}
+                              </div>
                               {borrower.notes && (
                                 <div className="text-sm text-muted-foreground line-clamp-1">
                                   {borrower.notes}
@@ -705,7 +825,8 @@ export default function BorrowersPage() {
                           </ContextMenuItem>
                         </ContextMenuContent>
                       </ContextMenu>
-                    ))}
+                    );
+                    })}
                   </TableBody>
                 </Table>
               </div>
