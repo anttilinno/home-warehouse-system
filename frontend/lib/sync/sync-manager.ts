@@ -14,7 +14,14 @@ import {
   shouldRetry,
   getPendingMutationCount,
   RETRY_CONFIG,
+  prepareSyncPayload,
 } from "./mutation-queue";
+import {
+  findConflictFields,
+  classifyConflict,
+  resolveWithLastWriteWins,
+  logConflict,
+} from "./conflict-resolver";
 import type { MutationQueueEntry } from "@/lib/db/types";
 
 // ============================================================================
@@ -31,7 +38,23 @@ export type SyncEventType =
   | "SYNC_REQUESTED"
   | "MUTATION_SYNCED"
   | "MUTATION_FAILED"
-  | "QUEUE_UPDATED";
+  | "QUEUE_UPDATED"
+  | "CONFLICT_DETECTED"
+  | "CONFLICT_AUTO_RESOLVED"
+  | "CONFLICT_NEEDS_REVIEW";
+
+/**
+ * Conflict data included in conflict events
+ */
+export interface ConflictEventPayload {
+  entityType: string;
+  entityId: string;
+  entityName?: string;
+  localData: Record<string, unknown>;
+  serverData: Record<string, unknown>;
+  conflictFields: string[];
+  isCritical: boolean;
+}
 
 /**
  * Sync event payload structure
@@ -43,6 +66,7 @@ export interface SyncEvent {
     mutation?: MutationQueueEntry;
     error?: string;
     source?: string;
+    conflict?: ConflictEventPayload;
   };
 }
 
@@ -221,13 +245,14 @@ export class SyncManager {
 
       console.log(`[SyncManager] Sending ${method} to ${url}`);
 
+      // Use prepareSyncPayload to include updated_at for conflict detection
       const response = await fetch(url, {
         method,
         headers: {
           "Content-Type": "application/json",
           "Idempotency-Key": mutation.idempotencyKey,
         },
-        body: JSON.stringify(mutation.payload),
+        body: JSON.stringify(prepareSyncPayload(mutation)),
         credentials: "include",
       });
 
@@ -239,9 +264,21 @@ export class SyncManager {
         return true;
       }
 
+      // Handle conflict response (409)
+      if (response.status === 409) {
+        console.log(`[SyncManager] Conflict detected for mutation ${mutation.id}`);
+        try {
+          const conflictData = await response.json();
+          return this.handleConflict(mutation, conflictData);
+        } catch {
+          // If we can't parse conflict data, treat as regular error
+          console.warn("[SyncManager] Failed to parse conflict response");
+        }
+      }
+
       // Check if we should retry
       if (!shouldRetry(new Error(`HTTP ${response.status}`), response)) {
-        // Client error (4xx except 429, 408), don't retry
+        // Client error (4xx except 429, 408, 409), don't retry
         const errorText = await response.text();
         console.log(`[SyncManager] Mutation ${mutation.id} failed permanently: ${response.status}`);
         await updateMutationStatus(mutation.id, {
@@ -269,6 +306,121 @@ export class SyncManager {
       });
       return false;
     }
+  }
+
+  /**
+   * Handle a 409 Conflict response from the server.
+   *
+   * Classifies the conflict as critical or non-critical:
+   * - Non-critical: Auto-resolve with LWW (server wins), show toast
+   * - Critical: Queue for user review, show dialog
+   *
+   * @param mutation - The mutation that caused the conflict
+   * @param serverResponse - The server's conflict response data
+   * @returns True if handled (removed from queue), false if needs user review
+   */
+  private async handleConflict(
+    mutation: MutationQueueEntry,
+    serverResponse: { server_data: Record<string, unknown>; updated_at?: string }
+  ): Promise<boolean> {
+    const localData = mutation.payload;
+    const serverData = serverResponse.server_data;
+
+    // Find which fields differ
+    const conflictFields = findConflictFields(localData, serverData);
+
+    // Classify as critical or non-critical
+    const isCritical = classifyConflict(mutation.entity, conflictFields);
+
+    // Broadcast that a conflict was detected
+    this.broadcast({
+      type: "CONFLICT_DETECTED",
+      payload: {
+        mutation,
+        conflict: {
+          entityType: mutation.entity,
+          entityId: mutation.entityId!,
+          localData,
+          serverData,
+          conflictFields,
+          isCritical,
+        },
+      },
+    });
+
+    if (!isCritical) {
+      // Auto-resolve with LWW (server version wins)
+      const resolved = resolveWithLastWriteWins(serverData);
+
+      // Log the conflict to IndexedDB
+      await logConflict({
+        entityType: mutation.entity,
+        entityId: mutation.entityId!,
+        localData,
+        serverData,
+        conflictFields,
+        resolution: "server",
+        resolvedData: resolved,
+        timestamp: Date.now(),
+        resolvedAt: Date.now(),
+      });
+
+      // Remove mutation from queue (server version wins)
+      await removeMutation(mutation.id);
+
+      // Notify listeners of auto-resolution
+      this.broadcast({
+        type: "CONFLICT_AUTO_RESOLVED",
+        payload: {
+          mutation,
+          conflict: {
+            entityType: mutation.entity,
+            entityId: mutation.entityId!,
+            localData,
+            serverData,
+            conflictFields,
+            isCritical: false,
+          },
+        },
+      });
+
+      console.log(`[SyncManager] Conflict auto-resolved for ${mutation.entity}/${mutation.entityId}`);
+      return true;
+    }
+
+    // Critical conflict - needs user review
+    // Reset to pending (not failed) so it can be retried after resolution
+    await updateMutationStatus(mutation.id, { status: "pending" });
+
+    // Log the conflict to IndexedDB (without resolution yet)
+    await logConflict({
+      entityType: mutation.entity,
+      entityId: mutation.entityId!,
+      localData,
+      serverData,
+      conflictFields,
+      resolution: "server", // Will be updated when user resolves
+      timestamp: Date.now(),
+    });
+
+    // Notify listeners that user review is needed
+    this.broadcast({
+      type: "CONFLICT_NEEDS_REVIEW",
+      payload: {
+        mutation,
+        conflict: {
+          entityType: mutation.entity,
+          entityId: mutation.entityId!,
+          localData,
+          serverData,
+          conflictFields,
+          isCritical: true,
+        },
+      },
+    });
+
+    console.log(`[SyncManager] Critical conflict needs review for ${mutation.entity}/${mutation.entityId}`);
+    return false;
   }
 
   /**
