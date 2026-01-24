@@ -20,6 +20,7 @@ import {
 } from "react";
 import { toast } from "sonner";
 import type { MutationEntityType } from "@/lib/db/types";
+import { syncManager, type SyncEvent, type ConflictEventPayload } from "./sync-manager";
 
 // ============================================================================
 // Types
@@ -213,6 +214,49 @@ export function ConflictResolutionProvider({
       toastIds.clear();
     };
   }, []);
+
+  // Subscribe to SyncManager conflict events
+  useEffect(() => {
+    if (!syncManager) return;
+
+    const handleSyncEvent = (event: SyncEvent) => {
+      const conflict = event.payload?.conflict as ConflictEventPayload | undefined;
+
+      if (event.type === "CONFLICT_AUTO_RESOLVED" && conflict) {
+        // Show toast for auto-resolved conflict
+        const entityName =
+          conflict.entityName ||
+          (conflict.serverData?.name as string) ||
+          conflict.entityId;
+        showAutoResolvedToast(conflict.entityType, entityName);
+      }
+
+      if (event.type === "CONFLICT_NEEDS_REVIEW" && conflict) {
+        // Add to conflict queue for dialog resolution
+        addConflict({
+          entityType: conflict.entityType as MutationEntityType,
+          entityId: conflict.entityId,
+          entityName:
+            conflict.entityName ||
+            (conflict.serverData?.name as string) ||
+            undefined,
+          localData: conflict.localData,
+          serverData: conflict.serverData,
+          conflictFields: conflict.conflictFields,
+        });
+
+        // Show notification toast
+        const entityName =
+          conflict.entityName ||
+          (conflict.serverData?.name as string) ||
+          conflict.entityId;
+        showCriticalConflictToast(conflict.entityType, entityName);
+      }
+    };
+
+    const unsubscribe = syncManager.subscribe(handleSyncEvent);
+    return unsubscribe;
+  }, [addConflict, showAutoResolvedToast, showCriticalConflictToast]);
 
   const value: ConflictResolutionContextType = {
     pendingConflicts,

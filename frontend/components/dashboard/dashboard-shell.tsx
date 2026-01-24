@@ -16,6 +16,9 @@ import { useCommandPalette } from "@/lib/hooks/use-command-palette";
 import { useKeyboardShortcutsDialog } from "@/lib/hooks/use-keyboard-shortcuts-dialog";
 import { SSEProvider } from "@/lib/contexts/sse-context";
 import { useAuth } from "@/lib/contexts/auth-context";
+import { OfflineProvider } from "@/lib/contexts/offline-context";
+import { ConflictResolutionProvider } from "@/lib/sync/use-conflict-resolution";
+import { ConflictResolutionDialog } from "@/components/conflict-resolution-dialog";
 
 interface DashboardShellProps {
   children: React.ReactNode;
@@ -48,57 +51,74 @@ export function DashboardShell({ children }: DashboardShellProps) {
   }
 
   return (
-    <SSEProvider>
-      <div className="min-h-screen bg-muted/30">
-        <OfflineIndicator />
-        <PendingUploadsIndicator />
-        <SkipLinks />
-
-        {/* PWA Install Prompt (bottom floating card) */}
-        <PwaInstallPrompt />
-
-        {/* Desktop Sidebar */}
-        <div className="hidden md:block" id="navigation">
-          <Sidebar
-            collapsed={sidebarCollapsed}
-            onToggle={() => setSidebarCollapsed(!sidebarCollapsed)}
-          />
-        </div>
-
-        {/* Mobile Sidebar */}
-        <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
-          <SheetContent side="left" className="w-64 p-0">
-            <Sidebar
-              collapsed={false}
-              onToggle={() => setMobileMenuOpen(false)}
-              onNavClick={() => setMobileMenuOpen(false)}
-            />
-          </SheetContent>
-        </Sheet>
-
-        {/* Main content */}
-        <div
-          className={cn(
-            "flex flex-col transition-all duration-300",
-            sidebarCollapsed ? "md:ml-16" : "md:ml-64"
-          )}
+    <OfflineProvider>
+      <SSEProvider>
+        <ConflictResolutionProvider
+          onResolve={async (conflict, resolution, resolvedData) => {
+            // Log conflict resolution for debugging
+            console.log(
+              "[DashboardShell] Conflict resolved:",
+              conflict.entityId,
+              resolution,
+              resolvedData
+            );
+          }}
         >
-          <DashboardHeader onMenuClick={() => setMobileMenuOpen(true)} />
-          <main id="main-content" className="flex-1 p-4 md:p-6">{children}</main>
-        </div>
+          <div className="min-h-screen bg-muted/30">
+            <OfflineIndicator />
+            <PendingUploadsIndicator />
+            <SkipLinks />
 
-        {/* Command Palette */}
-        <CommandPalette
-          open={commandPaletteOpen}
-          onOpenChange={setCommandPaletteOpen}
-        />
+            {/* PWA Install Prompt (bottom floating card) */}
+            <PwaInstallPrompt />
 
-        {/* Keyboard Shortcuts Help */}
-        <KeyboardShortcutsDialog
-          open={shortcutsOpen}
-          onOpenChange={setShortcutsOpen}
-        />
-      </div>
-    </SSEProvider>
+            {/* Desktop Sidebar */}
+            <div className="hidden md:block" id="navigation">
+              <Sidebar
+                collapsed={sidebarCollapsed}
+                onToggle={() => setSidebarCollapsed(!sidebarCollapsed)}
+              />
+            </div>
+
+            {/* Mobile Sidebar */}
+            <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+              <SheetContent side="left" className="w-64 p-0">
+                <Sidebar
+                  collapsed={false}
+                  onToggle={() => setMobileMenuOpen(false)}
+                  onNavClick={() => setMobileMenuOpen(false)}
+                />
+              </SheetContent>
+            </Sheet>
+
+            {/* Main content */}
+            <div
+              className={cn(
+                "flex flex-col transition-all duration-300",
+                sidebarCollapsed ? "md:ml-16" : "md:ml-64"
+              )}
+            >
+              <DashboardHeader onMenuClick={() => setMobileMenuOpen(true)} />
+              <main id="main-content" className="flex-1 p-4 md:p-6">{children}</main>
+            </div>
+
+            {/* Command Palette */}
+            <CommandPalette
+              open={commandPaletteOpen}
+              onOpenChange={setCommandPaletteOpen}
+            />
+
+            {/* Keyboard Shortcuts Help */}
+            <KeyboardShortcutsDialog
+              open={shortcutsOpen}
+              onOpenChange={setShortcutsOpen}
+            />
+
+            {/* Conflict Resolution Dialog */}
+            <ConflictResolutionDialog />
+          </div>
+        </ConflictResolutionProvider>
+      </SSEProvider>
+    </OfflineProvider>
   );
 }
