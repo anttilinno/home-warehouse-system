@@ -48,6 +48,11 @@ export type MutationOperation = "create" | "update";
 export type MutationStatus = "pending" | "syncing" | "failed";
 
 /**
+ * Conflict resolution strategy applied
+ */
+export type ConflictResolution = "local" | "server" | "merged";
+
+/**
  * Entity types that support offline mutations
  */
 export type MutationEntityType =
@@ -84,6 +89,33 @@ export interface MutationQueueEntry {
   lastError?: string;
   /** Current status */
   status: MutationStatus;
+}
+
+/**
+ * Conflict log entry for tracking sync conflicts.
+ * Stored in IndexedDB for user review and debugging.
+ */
+export interface ConflictLogEntry {
+  /** Auto-incremented ID (keyPath for IndexedDB) */
+  id: number;
+  /** Type of entity that had the conflict */
+  entityType: MutationEntityType;
+  /** ID of the entity */
+  entityId: string;
+  /** Local version of the data */
+  localData: Record<string, unknown>;
+  /** Server version of the data */
+  serverData: Record<string, unknown>;
+  /** Fields that differed between local and server */
+  conflictFields: string[];
+  /** How the conflict was resolved */
+  resolution: ConflictResolution;
+  /** Merged data if resolution was 'merged' */
+  resolvedData?: Record<string, unknown>;
+  /** Timestamp when conflict was detected (ms since epoch) */
+  timestamp: number;
+  /** Timestamp when conflict was resolved (ms since epoch) */
+  resolvedAt?: number;
 }
 
 /**
@@ -131,6 +163,15 @@ export interface OfflineDBSchema extends DBSchema {
       entity: MutationEntityType;
       timestamp: number;
       idempotencyKey: string;
+    };
+  };
+  conflictLog: {
+    key: number;
+    value: ConflictLogEntry;
+    indexes: {
+      entityType: MutationEntityType;
+      timestamp: number;
+      resolution: ConflictResolution;
     };
   };
 }

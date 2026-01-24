@@ -9,7 +9,7 @@ import { openDB as idbOpen, type IDBPDatabase, type StoreNames } from "idb";
 import type { OfflineDBSchema, SyncMeta } from "./types";
 
 const DB_NAME = "hws-offline-v1";
-const DB_VERSION = 2;
+const DB_VERSION = 3;
 
 // Singleton promise for the database connection
 let dbPromise: Promise<IDBPDatabase<OfflineDBSchema>> | null = null;
@@ -89,6 +89,22 @@ export async function getDB(): Promise<IDBPDatabase<OfflineDBSchema>> {
           mutationStore.createIndex("timestamp", "timestamp", { unique: false });
           mutationStore.createIndex("idempotencyKey", "idempotencyKey", {
             unique: true,
+          });
+        }
+
+        // Conflict log store for tracking sync conflicts (v3)
+        if (oldVersion < 3) {
+          const conflictStore = db.createObjectStore("conflictLog", {
+            keyPath: "id",
+            autoIncrement: true,
+          });
+          // Indexes for querying conflict history
+          conflictStore.createIndex("entityType", "entityType", {
+            unique: false,
+          });
+          conflictStore.createIndex("timestamp", "timestamp", { unique: false });
+          conflictStore.createIndex("resolution", "resolution", {
+            unique: false,
           });
         }
 
