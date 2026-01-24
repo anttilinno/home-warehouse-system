@@ -14,6 +14,7 @@ import {
   MapPin,
   Download,
   Upload,
+  Cloud,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -85,6 +86,10 @@ import { containersApi, locationsApi, importExportApi } from "@/lib/api";
 import type { Container, ContainerCreate, ContainerUpdate } from "@/lib/types/containers";
 import type { Location } from "@/lib/types/locations";
 import { exportToCSV, generateFilename, type ColumnDefinition } from "@/lib/utils/csv-export";
+import { useOfflineMutation, getPendingMutationsForEntity } from "@/lib/hooks/use-offline-mutation";
+import { syncManager } from "@/lib/sync/sync-manager";
+import type { SyncEvent } from "@/lib/sync/sync-manager";
+import { cn } from "@/lib/utils";
 
 interface ContainersFilterControlsProps {
   locations: Location[];
@@ -271,6 +276,10 @@ export default function ContainersPage() {
   const [formShortCode, setFormShortCode] = useState("");
   const [isSaving, setIsSaving] = useState(false);
 
+  // Optimistic state for offline mutations
+  const [optimisticContainers, setOptimisticContainers] = useState<(Container & { _pending?: boolean })[]>([]);
+  const [optimisticLocations, setOptimisticLocations] = useState<(Location & { _pending?: boolean })[]>([]);
+
   // Infinite scroll for containers
   const {
     items: containers,
@@ -310,6 +319,125 @@ export default function ContainersPage() {
     }
   }, [workspaceId, loadLocations]);
 
+  // Offline mutation hooks
+  const { mutate: createContainerOffline } = useOfflineMutation<Record<string, unknown>>({
+    entity: 'containers',
+    operation: 'create',
+    onMutate: (payload, tempId) => {
+      const optimisticContainer: Container & { _pending: boolean } = {
+        id: tempId,
+        workspace_id: workspaceId!,
+        name: (payload.name as string) || '',
+        description: (payload.description as string) || null,
+        location_id: (payload.location_id as string) || '',
+        capacity: (payload.capacity as string) || null,
+        short_code: (payload.short_code as string) || null,
+        is_archived: false,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        _pending: true,
+      };
+      setOptimisticContainers(prev => [...prev, optimisticContainer]);
+    },
+  });
+
+  const { mutate: updateContainerOffline } = useOfflineMutation<Record<string, unknown>>({
+    entity: 'containers',
+    operation: 'update',
+    onMutate: (payload, _tempId) => {
+      const entityId = payload._entityId as string;
+      if (entityId) {
+        setOptimisticContainers(prev => {
+          const existing = prev.find(c => c.id === entityId);
+          if (existing) {
+            return prev.map(c => c.id === entityId ? { ...c, ...payload, _pending: true } : c);
+          }
+          const fromFetched = containers.find(c => c.id === entityId);
+          if (fromFetched) {
+            return [...prev, { ...fromFetched, ...payload, _pending: true }];
+          }
+          return prev;
+        });
+      }
+    },
+  });
+
+  // Merge fetched containers with optimistic containers
+  const mergedContainers = useMemo(() => {
+    const fetchedIds = new Set(containers.map(c => c.id));
+    const merged = containers.map(c => {
+      const optimistic = optimisticContainers.find(o => o.id === c.id);
+      if (optimistic) return { ...c, ...optimistic, _pending: true };
+      return c;
+    });
+    const newOptimistic = optimisticContainers.filter(o => !fetchedIds.has(o.id));
+    return [...merged, ...newOptimistic];
+  }, [containers, optimisticContainers]);
+
+  // Merge fetched locations with optimistic locations for dropdown
+  const allLocations = useMemo(() => {
+    const fetchedIds = new Set(locations.map(l => l.id));
+    const merged = locations.map(l => {
+      const optimistic = optimisticLocations.find(o => o.id === l.id);
+      if (optimistic) return { ...l, ...optimistic };
+      return l;
+    });
+    const newOptimistic = optimisticLocations.filter(o => !fetchedIds.has(o.id));
+    return [...merged, ...newOptimistic];
+  }, [locations, optimisticLocations]);
+
+  // Subscribe to sync events for offline mutation completion
+  useEffect(() => {
+    if (!syncManager) return;
+
+    const handleSyncEvent = (event: SyncEvent) => {
+      if (event.type === 'MUTATION_SYNCED' && event.payload?.mutation?.entity === 'containers') {
+        const syncedKey = event.payload.mutation.idempotencyKey;
+        const entityId = event.payload.mutation.entityId;
+        setOptimisticContainers(prev => prev.filter(c => c.id !== syncedKey && c.id !== entityId));
+        refetch();
+      }
+      if (event.type === 'MUTATION_SYNCED' && event.payload?.mutation?.entity === 'locations') {
+        const syncedKey = event.payload.mutation.idempotencyKey;
+        const entityId = event.payload.mutation.entityId;
+        setOptimisticLocations(prev => prev.filter(l => l.id !== syncedKey && l.id !== entityId));
+      }
+      if (event.type === 'MUTATION_FAILED' && event.payload?.mutation?.entity === 'containers') {
+        toast.error('Failed to sync container', {
+          description: event.payload.mutation.lastError || 'Please try again',
+        });
+      }
+    };
+
+    return syncManager.subscribe(handleSyncEvent);
+  }, [refetch]);
+
+  // Load pending location creates on mount for dependency tracking
+  useEffect(() => {
+    async function loadPendingLocations() {
+      const pendingLocationMutations = await getPendingMutationsForEntity('locations');
+      const pendingLocations = pendingLocationMutations
+        .filter(m => m.operation === 'create')
+        .map(m => ({
+          id: m.idempotencyKey,
+          workspace_id: workspaceId || '',
+          name: (m.payload.name as string) || '',
+          description: (m.payload.description as string) || null,
+          parent_location: (m.payload.parent_location as string) || null,
+          short_code: (m.payload.short_code as string) || null,
+          zone: null,
+          shelf: null,
+          bin: null,
+          is_archived: false,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+          _pending: true,
+        } as Location & { _pending: boolean }));
+      setOptimisticLocations(pendingLocations);
+    }
+    loadPendingLocations();
+  }, [workspaceId]);
+
   // Subscribe to SSE events for real-time updates
   useSSE({
     onEvent: (event: SSEEvent) => {
@@ -334,7 +462,7 @@ export default function ContainersPage() {
 
   // Filter containers - memoized for performance
   const filteredContainers = useMemo(() => {
-    return containers.filter((container) => {
+    return mergedContainers.filter((container) => {
       // Filter by archived status
       if (!showArchived && container.is_archived) return false;
       if (showArchived && !container.is_archived) return false;
@@ -342,7 +470,7 @@ export default function ContainersPage() {
       // Filter by search query
       if (debouncedSearchQuery) {
         const query = debouncedSearchQuery.toLowerCase();
-        const location = locations.find(l => l.id === container.location_id);
+        const location = allLocations.find(l => l.id === container.location_id);
         const matchesSearch =
           container.name.toLowerCase().includes(query) ||
           container.short_code?.toLowerCase().includes(query) ||
@@ -372,11 +500,11 @@ export default function ContainersPage() {
 
       return true;
     });
-  }, [containers, showArchived, debouncedSearchQuery, locations, getFilter]);
+  }, [mergedContainers, showArchived, debouncedSearchQuery, allLocations, getFilter]);
 
-  // Helper to get location name by ID
+  // Helper to get location name by ID (includes pending locations)
   const getLocationName = (locationId: string) => {
-    const location = locations.find((l) => l.id === locationId);
+    const location = allLocations.find((l) => l.id === locationId);
     return location?.name || "Unknown";
   };
 
@@ -491,30 +619,37 @@ export default function ContainersPage() {
       setIsSaving(true);
 
       if (editingContainer) {
-        // Update existing container
-        const updateData: ContainerUpdate = {
-          name: formName,
+        // Update existing container - use offline mutation
+        const updatePayload: Record<string, unknown> = {
+          name: formName.trim(),
           location_id: formLocationId,
-          description: formDescription || undefined,
-          capacity: formCapacity || undefined,
+          description: formDescription.trim() || null,
+          capacity: formCapacity || null,
+          _entityId: editingContainer.id,
         };
-        await containersApi.update(workspaceId!, editingContainer.id, updateData);
-        toast.success("Container updated successfully");
+        await updateContainerOffline(updatePayload, editingContainer.id);
+        toast.success(navigator.onLine ? "Container updated" : "Container update queued");
       } else {
-        // Create new container
-        const createData: ContainerCreate = {
-          name: formName,
+        // Create new container - use offline mutation
+        // Check if location is a pending optimistic location
+        const locationIsPending = optimisticLocations.some(
+          l => l.id === formLocationId && l._pending
+        );
+        const dependsOn = locationIsPending ? [formLocationId] : undefined;
+
+        const createPayload: Record<string, unknown> = {
+          name: formName.trim(),
           location_id: formLocationId,
-          description: formDescription || undefined,
-          capacity: formCapacity || undefined,
+          description: formDescription.trim() || null,
+          capacity: formCapacity || null,
           short_code: formShortCode || undefined,
         };
-        await containersApi.create(workspaceId!, createData);
-        toast.success("Container created successfully");
+        await createContainerOffline(createPayload, undefined, dependsOn);
+        toast.success(navigator.onLine ? "Container created" : "Container queued for sync");
       }
 
       setDialogOpen(false);
-      refetch();
+      // Sync events will trigger refetch - no need to call refetch() directly
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Failed to save container";
       toast.error("Failed to save container", {
@@ -923,9 +1058,9 @@ export default function ContainersPage() {
                   <SelectValue placeholder="Select a location" />
                 </SelectTrigger>
                 <SelectContent>
-                  {locations.map((loc) => (
+                  {allLocations.filter(loc => !loc.is_archived).map((loc) => (
                     <SelectItem key={loc.id} value={loc.id}>
-                      {loc.name}
+                      {loc.name}{'_pending' in loc && loc._pending ? ' (pending)' : ''}
                     </SelectItem>
                   ))}
                 </SelectContent>
