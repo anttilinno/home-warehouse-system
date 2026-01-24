@@ -9,7 +9,7 @@ import { openDB as idbOpen, type IDBPDatabase, type StoreNames } from "idb";
 import type { OfflineDBSchema, SyncMeta } from "./types";
 
 const DB_NAME = "hws-offline-v1";
-const DB_VERSION = 1;
+const DB_VERSION = 2;
 
 // Singleton promise for the database connection
 let dbPromise: Promise<IDBPDatabase<OfflineDBSchema>> | null = null;
@@ -48,8 +48,8 @@ async function getDB(): Promise<IDBPDatabase<OfflineDBSchema>> {
 
   if (!dbPromise) {
     dbPromise = idbOpen<OfflineDBSchema>(DB_NAME, DB_VERSION, {
-      upgrade(db) {
-        // Create entity stores with 'id' as keyPath
+      upgrade(db, oldVersion) {
+        // Create entity stores with 'id' as keyPath (v1)
         if (!db.objectStoreNames.contains("items")) {
           db.createObjectStore("items", { keyPath: "id" });
         }
@@ -72,12 +72,30 @@ async function getDB(): Promise<IDBPDatabase<OfflineDBSchema>> {
           db.createObjectStore("loans", { keyPath: "id" });
         }
 
-        // Sync metadata store uses 'key' as keyPath
+        // Sync metadata store uses 'key' as keyPath (v1)
         if (!db.objectStoreNames.contains("syncMeta")) {
           db.createObjectStore("syncMeta", { keyPath: "key" });
         }
 
-        console.log("[OfflineDB] Database schema created/upgraded to version", DB_VERSION);
+        // Mutation queue store for offline mutations (v2)
+        if (oldVersion < 2) {
+          const mutationStore = db.createObjectStore("mutationQueue", {
+            keyPath: "id",
+            autoIncrement: true,
+          });
+          // Indexes for efficient queries
+          mutationStore.createIndex("status", "status", { unique: false });
+          mutationStore.createIndex("entity", "entity", { unique: false });
+          mutationStore.createIndex("timestamp", "timestamp", { unique: false });
+          mutationStore.createIndex("idempotencyKey", "idempotencyKey", {
+            unique: true,
+          });
+        }
+
+        console.log(
+          "[OfflineDB] Database schema created/upgraded to version",
+          DB_VERSION
+        );
       },
     });
 
