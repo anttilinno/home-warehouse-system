@@ -77,6 +77,7 @@ import { cn } from "@/lib/utils";
 interface CategoryTreeItem extends Category {
   children: CategoryTreeItem[];
   expanded?: boolean;
+  _pending?: boolean;
 }
 
 function buildCategoryTree(categories: Category[]): CategoryTreeItem[] {
@@ -114,6 +115,7 @@ function CategoryRow({
   onEdit,
   onDelete,
   onToggle,
+  allCategories,
   t,
 }: {
   category: CategoryTreeItem;
@@ -121,9 +123,17 @@ function CategoryRow({
   onEdit: (cat: Category) => void;
   onDelete: (cat: Category) => void;
   onToggle: (id: string) => void;
+  allCategories: (Category & { _pending?: boolean })[];
   t: ReturnType<typeof useTranslations<"categories">>;
 }) {
   const hasChildren = category.children.length > 0;
+
+  // Helper to get parent name for pending badge
+  const getParentName = (parentId: string | null): string | null => {
+    if (!parentId) return null;
+    const parent = allCategories.find(c => c.id === parentId);
+    return parent?.name || null;
+  };
 
   const {
     attributes,
@@ -132,7 +142,10 @@ function CategoryRow({
     transform,
     transition,
     isDragging,
-  } = useSortable({ id: category.id });
+  } = useSortable({
+    id: category.id,
+    disabled: category._pending === true,
+  });
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -167,20 +180,27 @@ function CategoryRow({
         className={cn(
           "flex items-center gap-2 py-2 px-3 hover:bg-muted/50 rounded-lg group",
           level > 0 && "ml-6",
-          isDragging && "cursor-grabbing"
+          isDragging && "cursor-grabbing",
+          category._pending && "bg-amber-50"
         )}
         {...attributes}
         role="treeitem"
         aria-expanded={hasChildren ? category.expanded : undefined}
         aria-level={level + 1}
       >
-        <div
-          {...listeners}
-          className="cursor-grab active:cursor-grabbing p-1 rounded hover:bg-muted opacity-0 group-hover:opacity-100"
-          style={{ marginLeft: level * 24 }}
-        >
-          <GripVertical className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
-        </div>
+        {/* Drag handle - hidden for pending categories */}
+        {!category._pending && (
+          <div
+            {...listeners}
+            className="cursor-grab active:cursor-grabbing p-1 rounded hover:bg-muted opacity-0 group-hover:opacity-100"
+            style={{ marginLeft: level * 24 }}
+          >
+            <GripVertical className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
+          </div>
+        )}
+        {category._pending && (
+          <div style={{ marginLeft: level * 24, width: 32 }} />
+        )}
 
         <button
           onClick={() => hasChildren && onToggle(category.id)}
@@ -206,7 +226,20 @@ function CategoryRow({
         <FolderTree className="h-4 w-4 text-muted-foreground shrink-0" />
 
         <div className="flex-1 min-w-0">
-          <div className="font-medium truncate">{category.name}</div>
+          <div className="flex items-center gap-2">
+            <span className="font-medium truncate">{category.name}</span>
+            {/* Pending badge with parent context */}
+            {category._pending && (
+              <Badge variant="outline" className="text-xs text-amber-600 border-amber-300 shrink-0">
+                <Cloud className="w-3 h-3 mr-1 animate-pulse" />
+                {(() => {
+                  if (!category.parent_category_id) return 'Pending';
+                  const parentName = getParentName(category.parent_category_id);
+                  return parentName ? `Pending... under ${parentName}` : 'Pending';
+                })()}
+              </Badge>
+            )}
+          </div>
           {category.description && (
             <div className="text-sm text-muted-foreground truncate">
               {category.description}
@@ -220,31 +253,34 @@ function CategoryRow({
           </span>
         )}
 
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 opacity-0 group-hover:opacity-100"
-              aria-label={`Actions for ${category.name}`}
-            >
-              <MoreHorizontal className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={() => onEdit(category)}>
-              <Pencil className="mr-2 h-4 w-4" />
-              {t("edit")}
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={() => onDelete(category)}
-              className="text-destructive focus:text-destructive"
-            >
-              <Trash2 className="mr-2 h-4 w-4" />
-              {t("delete")}
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        {/* Hide dropdown menu for pending categories */}
+        {!category._pending && (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 opacity-0 group-hover:opacity-100"
+                aria-label={`Actions for ${category.name}`}
+              >
+                <MoreHorizontal className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => onEdit(category)}>
+                <Pencil className="mr-2 h-4 w-4" />
+                {t("edit")}
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => onDelete(category)}
+                className="text-destructive focus:text-destructive"
+              >
+                <Trash2 className="mr-2 h-4 w-4" />
+                {t("delete")}
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
       </div>
 
       {category.expanded && category.children.length > 0 && (
@@ -257,6 +293,7 @@ function CategoryRow({
               onEdit={onEdit}
               onDelete={onDelete}
               onToggle={onToggle}
+              allCategories={allCategories}
               t={t}
             />
           ))}
@@ -813,6 +850,7 @@ export default function CategoriesPage() {
                       onEdit={openEditDialog}
                       onDelete={openDeleteDialog}
                       onToggle={handleToggle}
+                      allCategories={mergedCategories}
                       t={t}
                     />
                   ))}
