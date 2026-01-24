@@ -18,6 +18,7 @@ import {
   FileUp,
   ShieldCheck,
   Clock,
+  History,
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
@@ -119,6 +120,13 @@ export function Sidebar({ collapsed, onToggle, onNavClick }: SidebarProps) {
     icon: Clock,
     label: t("myChanges"),
     href: "/dashboard/my-changes",
+  });
+
+  // Add Sync History for all users
+  navItems.push({
+    icon: History,
+    label: t("syncHistory"),
+    href: "/dashboard/sync-history",
   });
 
   const bottomItems = [

@@ -103,6 +103,7 @@
       "imports": "Import",
       "approvals": "Kinnitused",
       "myChanges": "Minu muudatused",
+      "syncHistory": "Sünkroonimise ajalugu",
       "settings": "Seaded",
       "collapse": "Ahenda"
     },
@@ -466,6 +467,39 @@
       "success": "Õnnestunud",
       "errors": "Vead",
       "total": "Kokku"
+    }
+  },
+  "syncHistory": {
+    "title": "Sünkroonimise ajalugu",
+    "subtitle": "Vaata üle lahendatud konfliktid võrguühenduseta sünkroonimisest",
+    "empty": "Konflikte pole",
+    "emptyDescription": "Konflikte pole veel salvestatud. Konfliktid logitakse, kui võrguühenduseta muudatused erinevad serveri andmetest.",
+    "filter": {
+      "allTypes": "Kõik tüübid",
+      "items": "Esemed",
+      "inventory": "Inventar",
+      "locations": "Asukohad",
+      "containers": "Konteinerid",
+      "categories": "Kategooriad",
+      "borrowers": "Laenajad",
+      "loans": "Laenud"
+    },
+    "dateRange": {
+      "from": "Alates",
+      "to": "Kuni",
+      "clear": "Tühjenda kuupäevad"
+    },
+    "card": {
+      "entityId": "ID",
+      "resolution": "Lahendus",
+      "conflictFields": "Konfliktsed väljad",
+      "detected": "Tuvastatud",
+      "resolved": "Lahendatud"
+    },
+    "resolution": {
+      "local": "Kohalik säilitatud",
+      "server": "Server aktsepteeritud",
+      "merged": "Ühendatud"
     }
   },
   "pwa": {

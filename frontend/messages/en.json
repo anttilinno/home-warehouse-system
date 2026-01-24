@@ -103,6 +103,7 @@
       "imports": "Imports",
       "approvals": "Approvals",
       "myChanges": "My Changes",
+      "syncHistory": "Sync History",
       "settings": "Settings",
       "collapse": "Collapse"
     },
@@ -592,6 +593,39 @@
         "loading": "Processing..."
       },
       "info": "You'll receive notifications for loan reminders, approval decisions, and other important updates."
+    }
+  },
+  "syncHistory": {
+    "title": "Sync History",
+    "subtitle": "Review resolved conflicts from offline sync",
+    "empty": "No sync conflicts",
+    "emptyDescription": "No conflicts have been recorded yet. Conflicts are logged when offline changes differ from server data.",
+    "filter": {
+      "allTypes": "All entity types",
+      "items": "Items",
+      "inventory": "Inventory",
+      "locations": "Locations",
+      "containers": "Containers",
+      "categories": "Categories",
+      "borrowers": "Borrowers",
+      "loans": "Loans"
+    },
+    "dateRange": {
+      "from": "From",
+      "to": "To",
+      "clear": "Clear dates"
+    },
+    "card": {
+      "entityId": "ID",
+      "resolution": "Resolution",
+      "conflictFields": "Conflicting fields",
+      "detected": "Detected",
+      "resolved": "Resolved"
+    },
+    "resolution": {
+      "local": "Kept local",
+      "server": "Accepted server",
+      "merged": "Merged"
     }
   },
   "pwa": {
