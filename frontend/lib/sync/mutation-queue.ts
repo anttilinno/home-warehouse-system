@@ -85,6 +85,8 @@ export interface QueueMutationParams {
   entity: MutationEntityType;
   entityId?: string;
   payload: Record<string, unknown>;
+  /** Cached updated_at timestamp from entity (for conflict detection on updates) */
+  cachedUpdatedAt?: string;
 }
 
 /**
@@ -108,6 +110,8 @@ export async function queueMutation(
     timestamp: Date.now(),
     retries: 0,
     status: "pending",
+    // Store cached updated_at for conflict detection on updates
+    updatedAt: params.cachedUpdatedAt,
   };
 
   const id = await db.add("mutationQueue", entry as MutationQueueEntry);
@@ -399,4 +403,30 @@ export async function getMutationByIdempotencyKey(
 ): Promise<MutationQueueEntry | undefined> {
   const db = await getDB();
   return db.getFromIndex("mutationQueue", "idempotencyKey", key);
+}
+
+// ============================================================================
+// Sync Payload Helpers
+// ============================================================================
+
+/**
+ * Prepare a mutation payload for syncing.
+ * For update operations with a cached timestamp, includes updated_at
+ * for server-side conflict detection.
+ *
+ * @param mutation - The mutation queue entry
+ * @returns Payload with updated_at if applicable
+ */
+export function prepareSyncPayload(
+  mutation: MutationQueueEntry
+): Record<string, unknown> {
+  // For update operations with cached timestamp, include updated_at
+  if (mutation.operation === "update" && mutation.updatedAt) {
+    return {
+      ...mutation.payload,
+      updated_at: mutation.updatedAt,
+    };
+  }
+
+  return mutation.payload;
 }

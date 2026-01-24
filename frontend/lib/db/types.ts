@@ -89,6 +89,8 @@ export interface MutationQueueEntry {
   lastError?: string;
   /** Current status */
   status: MutationStatus;
+  /** Cached updated_at timestamp (ISO string) for conflict detection on updates */
+  updatedAt?: string;
 }
 
 /**
