@@ -995,9 +995,8 @@ export default function InventoryPage() {
       throw new Error("Quantity must be a positive number");
     }
     try {
-      await inventoryApi.updateQuantity(workspaceId!, inventoryId, { quantity });
-      toast.success("Quantity updated");
-      refetch();
+      await updateInventoryOffline({ _entityId: inventoryId, quantity });
+      toast.success(navigator.onLine ? "Quantity updated" : "Quantity update queued");
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Failed to update quantity";
       toast.error("Update failed", { description: errorMessage });
@@ -1006,27 +1005,9 @@ export default function InventoryPage() {
   };
 
   const handleUpdateCondition = async (inventoryId: string, condition: string) => {
-    // Find the current inventory to get required fields
-    const currentInventory = inventories.find((inv) => inv.id === inventoryId);
-    if (!currentInventory) {
-      throw new Error("Inventory not found");
-    }
-
     try {
-      await inventoryApi.update(workspaceId!, inventoryId, {
-        location_id: currentInventory.location_id,
-        container_id: currentInventory.container_id || undefined,
-        quantity: currentInventory.quantity,
-        condition: condition as InventoryCondition,
-        date_acquired: currentInventory.date_acquired || undefined,
-        purchase_price: currentInventory.purchase_price || undefined,
-        currency_code: currentInventory.currency_code || undefined,
-        warranty_expires: currentInventory.warranty_expires || undefined,
-        expiration_date: currentInventory.expiration_date || undefined,
-        notes: currentInventory.notes || undefined,
-      });
-      toast.success("Condition updated");
-      refetch();
+      await updateInventoryOffline({ _entityId: inventoryId, condition: condition as InventoryCondition });
+      toast.success(navigator.onLine ? "Condition updated" : "Condition update queued");
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Failed to update condition";
       toast.error("Update failed", { description: errorMessage });
@@ -1036,9 +1017,8 @@ export default function InventoryPage() {
 
   const handleUpdateStatus = async (inventoryId: string, status: string) => {
     try {
-      await inventoryApi.updateStatus(workspaceId!, inventoryId, { status: status as InventoryStatus });
-      toast.success("Status updated");
-      refetch();
+      await updateInventoryOffline({ _entityId: inventoryId, status: status as InventoryStatus });
+      toast.success(navigator.onLine ? "Status updated" : "Status update queued");
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Failed to update status";
       toast.error("Update failed", { description: errorMessage });
