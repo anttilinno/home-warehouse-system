@@ -1,62 +1,56 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { WifiOff, Wifi } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { CloudOff } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useNetworkStatus } from "@/lib/hooks/use-network-status";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 export function OfflineIndicator() {
-  const t = useTranslations("pwa.offline");
-  const { isOffline, wasOffline } = useNetworkStatus();
+  const { isOffline } = useNetworkStatus();
   const [mounted, setMounted] = useState(false);
+  const [showPulse, setShowPulse] = useState(false);
 
   // Avoid hydration mismatch by only rendering after mount
   useEffect(() => {
     setMounted(true);
   }, []);
 
-  if (!mounted) {
+  // Trigger pulse animation when transitioning to offline
+  useEffect(() => {
+    if (isOffline && mounted) {
+      setShowPulse(true);
+      const timer = setTimeout(() => setShowPulse(false), 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [isOffline, mounted]);
+
+  if (!mounted || !isOffline) {
     return null;
   }
 
-  // Show "back online" message briefly after reconnecting
-  if (wasOffline && !isOffline) {
-    return (
-      <div
-        className={cn(
-          "bg-green-600 text-white px-4 py-2",
-          "animate-in fade-in slide-in-from-top duration-300"
-        )}
-        role="status"
-        aria-live="polite"
-      >
-        <div className="flex items-center justify-center gap-2">
-          <Wifi className="h-4 w-4" />
-          <span className="text-sm font-medium">{t("backOnline")}</span>
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <div
+          className="relative flex items-center justify-center"
+          data-testid="offline-indicator"
+          role="status"
+          aria-label="You are offline"
+        >
+          {showPulse && (
+            <span className="absolute inset-0 animate-ping rounded-full bg-amber-400 opacity-75" />
+          )}
+          <CloudOff
+            className={cn("h-4 w-4 text-amber-500", showPulse && "animate-pulse")}
+          />
         </div>
-      </div>
-    );
-  }
-
-  // Show offline banner when disconnected
-  if (isOffline) {
-    return (
-      <div
-        className={cn(
-          "bg-destructive text-destructive-foreground px-4 py-2",
-          "animate-in fade-in slide-in-from-top duration-300"
-        )}
-        role="alert"
-        aria-live="assertive"
-      >
-        <div className="flex items-center justify-center gap-2">
-          <WifiOff className="h-4 w-4" />
-          <span className="text-sm font-medium">{t("message")}</span>
-        </div>
-      </div>
-    );
-  }
-
-  return null;
+      </TooltipTrigger>
+      <TooltipContent>You are offline</TooltipContent>
+    </Tooltip>
+  );
 }
