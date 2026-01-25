@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 
 	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/inventory"
@@ -557,4 +558,330 @@ func TestInventoryHandler_List(t *testing.T) {
 		testutil.AssertStatus(t, rec, http.StatusInternalServerError)
 		mockSvc.AssertExpectations(t)
 	})
+}
+
+// Event Publishing Tests
+
+func TestInventoryHandler_Create_PublishesEvent(t *testing.T) {
+	setup := testutil.NewHandlerTestSetup()
+	mockSvc := new(MockService)
+	capture := testutil.NewEventCapture(setup.WorkspaceID, setup.UserID)
+	capture.Start()
+	defer capture.Stop()
+
+	inventory.RegisterRoutes(setup.API, mockSvc, capture.GetBroadcaster())
+
+	itemID := uuid.New()
+	locationID := uuid.New()
+	testInv, _ := inventory.NewInventory(
+		setup.WorkspaceID,
+		itemID,
+		locationID,
+		nil,
+		10,
+		inventory.ConditionNew,
+		inventory.StatusAvailable,
+		nil,
+	)
+
+	mockSvc.On("Create", mock.Anything, mock.MatchedBy(func(input inventory.CreateInput) bool {
+		return input.ItemID == itemID && input.Quantity == 10
+	})).Return(testInv, nil).Once()
+
+	body := fmt.Sprintf(`{"item_id":"%s","location_id":"%s","quantity":10,"condition":"NEW","status":"AVAILABLE"}`,
+		itemID, locationID)
+	rec := setup.Post("/inventory", body)
+
+	testutil.AssertStatus(t, rec, http.StatusOK)
+	mockSvc.AssertExpectations(t)
+
+	// Wait for event
+	assert.True(t, capture.WaitForEvents(1, 500*time.Millisecond), "Event should be published")
+
+	event := capture.GetLastEvent()
+	assert.NotNil(t, event)
+	assert.Equal(t, "inventory.created", event.Type)
+	assert.Equal(t, "inventory", event.EntityType)
+	assert.Equal(t, setup.WorkspaceID, event.WorkspaceID)
+	assert.Equal(t, setup.UserID, event.UserID)
+	assert.Equal(t, testInv.ID().String(), event.EntityID)
+	assert.NotNil(t, event.Data)
+	assert.Equal(t, testInv.ID(), event.Data["id"])
+	assert.Equal(t, testInv.ItemID(), event.Data["item_id"])
+}
+
+func TestInventoryHandler_Update_PublishesEvent(t *testing.T) {
+	setup := testutil.NewHandlerTestSetup()
+	mockSvc := new(MockService)
+	capture := testutil.NewEventCapture(setup.WorkspaceID, setup.UserID)
+	capture.Start()
+	defer capture.Stop()
+
+	inventory.RegisterRoutes(setup.API, mockSvc, capture.GetBroadcaster())
+
+	itemID := uuid.New()
+	locationID := uuid.New()
+	testInv, _ := inventory.NewInventory(
+		setup.WorkspaceID,
+		itemID,
+		locationID,
+		nil,
+		15,
+		inventory.ConditionExcellent,
+		inventory.StatusAvailable,
+		nil,
+	)
+	invID := testInv.ID()
+
+	mockSvc.On("Update", mock.Anything, invID, setup.WorkspaceID, mock.Anything).
+		Return(testInv, nil).Once()
+
+	body := fmt.Sprintf(`{"location_id":"%s","quantity":15,"condition":"EXCELLENT"}`, locationID)
+	rec := setup.Patch(fmt.Sprintf("/inventory/%s", invID), body)
+
+	testutil.AssertStatus(t, rec, http.StatusOK)
+	mockSvc.AssertExpectations(t)
+
+	// Wait for event
+	assert.True(t, capture.WaitForEvents(1, 500*time.Millisecond), "Event should be published")
+
+	event := capture.GetLastEvent()
+	assert.NotNil(t, event)
+	assert.Equal(t, "inventory.updated", event.Type)
+	assert.Equal(t, "inventory", event.EntityType)
+	assert.Equal(t, setup.WorkspaceID, event.WorkspaceID)
+	assert.Equal(t, setup.UserID, event.UserID)
+	assert.Equal(t, invID.String(), event.EntityID)
+}
+
+func TestInventoryHandler_UpdateStatus_PublishesEvent(t *testing.T) {
+	setup := testutil.NewHandlerTestSetup()
+	mockSvc := new(MockService)
+	capture := testutil.NewEventCapture(setup.WorkspaceID, setup.UserID)
+	capture.Start()
+	defer capture.Stop()
+
+	inventory.RegisterRoutes(setup.API, mockSvc, capture.GetBroadcaster())
+
+	itemID := uuid.New()
+	locationID := uuid.New()
+	testInv, _ := inventory.NewInventory(
+		setup.WorkspaceID,
+		itemID,
+		locationID,
+		nil,
+		5,
+		inventory.ConditionGood,
+		inventory.StatusInUse,
+		nil,
+	)
+	invID := testInv.ID()
+
+	mockSvc.On("UpdateStatus", mock.Anything, invID, setup.WorkspaceID, inventory.StatusInUse).
+		Return(testInv, nil).Once()
+
+	body := `{"status":"IN_USE"}`
+	rec := setup.Patch(fmt.Sprintf("/inventory/%s/status", invID), body)
+
+	testutil.AssertStatus(t, rec, http.StatusOK)
+	mockSvc.AssertExpectations(t)
+
+	// Wait for event - UpdateStatus emits inventory.updated (not a specialized event type)
+	assert.True(t, capture.WaitForEvents(1, 500*time.Millisecond), "Event should be published")
+
+	event := capture.GetLastEvent()
+	assert.NotNil(t, event)
+	assert.Equal(t, "inventory.updated", event.Type)
+	assert.Equal(t, "inventory", event.EntityType)
+	assert.Equal(t, setup.WorkspaceID, event.WorkspaceID)
+	assert.Equal(t, setup.UserID, event.UserID)
+	assert.Equal(t, invID.String(), event.EntityID)
+	assert.NotNil(t, event.Data)
+	assert.Equal(t, inventory.StatusInUse, event.Data["status"])
+}
+
+func TestInventoryHandler_UpdateQuantity_PublishesEvent(t *testing.T) {
+	setup := testutil.NewHandlerTestSetup()
+	mockSvc := new(MockService)
+	capture := testutil.NewEventCapture(setup.WorkspaceID, setup.UserID)
+	capture.Start()
+	defer capture.Stop()
+
+	inventory.RegisterRoutes(setup.API, mockSvc, capture.GetBroadcaster())
+
+	itemID := uuid.New()
+	locationID := uuid.New()
+	testInv, _ := inventory.NewInventory(
+		setup.WorkspaceID,
+		itemID,
+		locationID,
+		nil,
+		25,
+		inventory.ConditionGood,
+		inventory.StatusAvailable,
+		nil,
+	)
+	invID := testInv.ID()
+
+	mockSvc.On("UpdateQuantity", mock.Anything, invID, setup.WorkspaceID, 25).
+		Return(testInv, nil).Once()
+
+	body := `{"quantity":25}`
+	rec := setup.Patch(fmt.Sprintf("/inventory/%s/quantity", invID), body)
+
+	testutil.AssertStatus(t, rec, http.StatusOK)
+	mockSvc.AssertExpectations(t)
+
+	// Wait for event - UpdateQuantity emits inventory.updated (not a specialized event type)
+	assert.True(t, capture.WaitForEvents(1, 500*time.Millisecond), "Event should be published")
+
+	event := capture.GetLastEvent()
+	assert.NotNil(t, event)
+	assert.Equal(t, "inventory.updated", event.Type)
+	assert.Equal(t, "inventory", event.EntityType)
+	assert.Equal(t, setup.WorkspaceID, event.WorkspaceID)
+	assert.Equal(t, setup.UserID, event.UserID)
+	assert.Equal(t, invID.String(), event.EntityID)
+	assert.NotNil(t, event.Data)
+	assert.Equal(t, 25, event.Data["quantity"])
+}
+
+func TestInventoryHandler_Move_PublishesEvent(t *testing.T) {
+	setup := testutil.NewHandlerTestSetup()
+	mockSvc := new(MockService)
+	capture := testutil.NewEventCapture(setup.WorkspaceID, setup.UserID)
+	capture.Start()
+	defer capture.Stop()
+
+	inventory.RegisterRoutes(setup.API, mockSvc, capture.GetBroadcaster())
+
+	itemID := uuid.New()
+	newLocationID := uuid.New()
+	testInv, _ := inventory.NewInventory(
+		setup.WorkspaceID,
+		itemID,
+		newLocationID,
+		nil,
+		5,
+		inventory.ConditionGood,
+		inventory.StatusAvailable,
+		nil,
+	)
+	invID := testInv.ID()
+
+	mockSvc.On("Move", mock.Anything, invID, setup.WorkspaceID, newLocationID, (*uuid.UUID)(nil)).
+		Return(testInv, nil).Once()
+
+	body := fmt.Sprintf(`{"location_id":"%s"}`, newLocationID)
+	rec := setup.Post(fmt.Sprintf("/inventory/%s/move", invID), body)
+
+	testutil.AssertStatus(t, rec, http.StatusOK)
+	mockSvc.AssertExpectations(t)
+
+	// Wait for event - Move emits inventory.updated (not a specialized event type)
+	assert.True(t, capture.WaitForEvents(1, 500*time.Millisecond), "Event should be published")
+
+	event := capture.GetLastEvent()
+	assert.NotNil(t, event)
+	assert.Equal(t, "inventory.updated", event.Type)
+	assert.Equal(t, "inventory", event.EntityType)
+	assert.Equal(t, setup.WorkspaceID, event.WorkspaceID)
+	assert.Equal(t, setup.UserID, event.UserID)
+	assert.Equal(t, invID.String(), event.EntityID)
+	assert.NotNil(t, event.Data)
+	assert.Equal(t, newLocationID, event.Data["location_id"])
+}
+
+func TestInventoryHandler_Archive_PublishesEvent(t *testing.T) {
+	setup := testutil.NewHandlerTestSetup()
+	mockSvc := new(MockService)
+	capture := testutil.NewEventCapture(setup.WorkspaceID, setup.UserID)
+	capture.Start()
+	defer capture.Stop()
+
+	inventory.RegisterRoutes(setup.API, mockSvc, capture.GetBroadcaster())
+
+	invID := uuid.New()
+
+	mockSvc.On("Archive", mock.Anything, invID, setup.WorkspaceID).
+		Return(nil).Once()
+
+	rec := setup.Post(fmt.Sprintf("/inventory/%s/archive", invID), "")
+
+	testutil.AssertStatus(t, rec, http.StatusNoContent)
+	mockSvc.AssertExpectations(t)
+
+	// Wait for event
+	assert.True(t, capture.WaitForEvents(1, 500*time.Millisecond), "Event should be published")
+
+	event := capture.GetLastEvent()
+	assert.NotNil(t, event)
+	assert.Equal(t, "inventory.deleted", event.Type)
+	assert.Equal(t, "inventory", event.EntityType)
+	assert.Equal(t, setup.WorkspaceID, event.WorkspaceID)
+	assert.Equal(t, setup.UserID, event.UserID)
+	assert.Equal(t, invID.String(), event.EntityID)
+}
+
+func TestInventoryHandler_Restore_PublishesEvent(t *testing.T) {
+	setup := testutil.NewHandlerTestSetup()
+	mockSvc := new(MockService)
+	capture := testutil.NewEventCapture(setup.WorkspaceID, setup.UserID)
+	capture.Start()
+	defer capture.Stop()
+
+	inventory.RegisterRoutes(setup.API, mockSvc, capture.GetBroadcaster())
+
+	invID := uuid.New()
+
+	mockSvc.On("Restore", mock.Anything, invID, setup.WorkspaceID).
+		Return(nil).Once()
+
+	rec := setup.Post(fmt.Sprintf("/inventory/%s/restore", invID), "")
+
+	testutil.AssertStatus(t, rec, http.StatusNoContent)
+	mockSvc.AssertExpectations(t)
+
+	// Wait for event - Restore emits inventory.created (restore brings back)
+	assert.True(t, capture.WaitForEvents(1, 500*time.Millisecond), "Event should be published")
+
+	event := capture.GetLastEvent()
+	assert.NotNil(t, event)
+	assert.Equal(t, "inventory.created", event.Type)
+	assert.Equal(t, "inventory", event.EntityType)
+	assert.Equal(t, setup.WorkspaceID, event.WorkspaceID)
+	assert.Equal(t, setup.UserID, event.UserID)
+	assert.Equal(t, invID.String(), event.EntityID)
+}
+
+func TestInventoryHandler_Create_NilBroadcaster_NoError(t *testing.T) {
+	setup := testutil.NewHandlerTestSetup()
+	mockSvc := new(MockService)
+	// Register with nil broadcaster
+	inventory.RegisterRoutes(setup.API, mockSvc, nil)
+
+	itemID := uuid.New()
+	locationID := uuid.New()
+	testInv, _ := inventory.NewInventory(
+		setup.WorkspaceID,
+		itemID,
+		locationID,
+		nil,
+		10,
+		inventory.ConditionNew,
+		inventory.StatusAvailable,
+		nil,
+	)
+
+	mockSvc.On("Create", mock.Anything, mock.MatchedBy(func(input inventory.CreateInput) bool {
+		return input.ItemID == itemID
+	})).Return(testInv, nil).Once()
+
+	body := fmt.Sprintf(`{"item_id":"%s","location_id":"%s","quantity":10,"condition":"NEW","status":"AVAILABLE"}`,
+		itemID, locationID)
+	rec := setup.Post("/inventory", body)
+
+	// Should not panic and should succeed
+	testutil.AssertStatus(t, rec, http.StatusOK)
+	mockSvc.AssertExpectations(t)
 }
