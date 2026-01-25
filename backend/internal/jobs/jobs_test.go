@@ -311,7 +311,7 @@ func TestScheduler_RegisterHandlersInternal(t *testing.T) {
 	mockSender := &mockEmailSender{}
 	cleanupConfig := DefaultCleanupConfig()
 
-	mux := scheduler.RegisterHandlers(mockSender, nil, cleanupConfig)
+	mux := scheduler.RegisterHandlers(mockSender, nil, cleanupConfig, nil)
 
 	assert.NotNil(t, mux)
 }
@@ -322,7 +322,7 @@ func TestScheduler_RegisterHandlers_WithNilEmailSenderInternal(t *testing.T) {
 
 	cleanupConfig := DefaultCleanupConfig()
 
-	mux := scheduler.RegisterHandlers(nil, nil, cleanupConfig)
+	mux := scheduler.RegisterHandlers(nil, nil, cleanupConfig, nil)
 
 	assert.NotNil(t, mux)
 }
@@ -336,7 +336,7 @@ func TestScheduler_RegisterHandlers_WithCustomCleanupConfigInternal(t *testing.T
 		ActivityLogsRetentionDays:   180,
 	}
 
-	mux := scheduler.RegisterHandlers(nil, nil, customCleanupConfig)
+	mux := scheduler.RegisterHandlers(nil, nil, customCleanupConfig, nil)
 
 	assert.NotNil(t, mux)
 }

@@ -158,7 +158,7 @@ func TestScheduler_RegisterHandlers(t *testing.T) {
 	scheduler := jobs.NewScheduler(nil, config)
 
 	cleanupConfig := jobs.DefaultCleanupConfig()
-	mux := scheduler.RegisterHandlers(nil, nil, cleanupConfig)
+	mux := scheduler.RegisterHandlers(nil, nil, cleanupConfig, nil)
 
 	assert.NotNil(t, mux)
 }
@@ -168,7 +168,7 @@ func TestScheduler_RegisterHandlers_WithNilEmailSender(t *testing.T) {
 	scheduler := jobs.NewScheduler(nil, config)
 
 	cleanupConfig := jobs.DefaultCleanupConfig()
-	mux := scheduler.RegisterHandlers(nil, nil, cleanupConfig)
+	mux := scheduler.RegisterHandlers(nil, nil, cleanupConfig, nil)
 
 	// Should work with nil email sender
 	assert.NotNil(t, mux)
@@ -180,7 +180,7 @@ func TestScheduler_RegisterHandlers_WithMockEmailSender(t *testing.T) {
 
 	mockSender := &mockEmailSender{}
 	cleanupConfig := jobs.DefaultCleanupConfig()
-	mux := scheduler.RegisterHandlers(mockSender, nil, cleanupConfig)
+	mux := scheduler.RegisterHandlers(mockSender, nil, cleanupConfig, nil)
 
 	assert.NotNil(t, mux)
 }
@@ -193,7 +193,7 @@ func TestScheduler_RegisterHandlers_WithCustomCleanupConfig(t *testing.T) {
 		DeletedRecordsRetentionDays: 7,
 		ActivityLogsRetentionDays:   30,
 	}
-	mux := scheduler.RegisterHandlers(nil, nil, customCleanupConfig)
+	mux := scheduler.RegisterHandlers(nil, nil, customCleanupConfig, nil)
 
 	assert.NotNil(t, mux)
 }
@@ -205,8 +205,8 @@ func TestScheduler_RegisterHandlers_CalledMultipleTimes(t *testing.T) {
 	cleanupConfig := jobs.DefaultCleanupConfig()
 
 	// Should be able to register handlers multiple times
-	mux1 := scheduler.RegisterHandlers(nil, nil, cleanupConfig)
-	mux2 := scheduler.RegisterHandlers(nil, nil, cleanupConfig)
+	mux1 := scheduler.RegisterHandlers(nil, nil, cleanupConfig, nil)
+	mux2 := scheduler.RegisterHandlers(nil, nil, cleanupConfig, nil)
 
 	assert.NotNil(t, mux1)
 	assert.NotNil(t, mux2)
@@ -458,7 +458,7 @@ func TestScheduler_ConcurrentRegisterHandlers(t *testing.T) {
 	done := make(chan bool)
 	for i := 0; i < 5; i++ {
 		go func() {
-			mux := scheduler.RegisterHandlers(nil, nil, cleanupConfig)
+			mux := scheduler.RegisterHandlers(nil, nil, cleanupConfig, nil)
 			require.NotNil(t, mux)
 			done <- true
 		}()

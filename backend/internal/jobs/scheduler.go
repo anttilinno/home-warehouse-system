@@ -8,6 +8,9 @@ import (
 	"github.com/hibiken/asynq"
 	"github.com/jackc/pgx/v5/pgxpool"
 
+	"github.com/antti/home-warehouse/go-backend/internal/infra/events"
+	"github.com/antti/home-warehouse/go-backend/internal/infra/imageprocessor"
+	"github.com/antti/home-warehouse/go-backend/internal/infra/storage"
 	"github.com/antti/home-warehouse/go-backend/internal/infra/webpush"
 )
 
@@ -67,8 +70,16 @@ func NewScheduler(pool *pgxpool.Pool, config SchedulerConfig) *Scheduler {
 	}
 }
 
+// ThumbnailConfig holds configuration for thumbnail processing.
+type ThumbnailConfig struct {
+	Processor   imageprocessor.ImageProcessor
+	Storage     storage.Storage
+	Broadcaster *events.Broadcaster
+	UploadDir   string
+}
+
 // RegisterHandlers registers all task handlers.
-func (s *Scheduler) RegisterHandlers(emailSender EmailSender, pushSender *webpush.Sender, cleanupConfig CleanupConfig) *asynq.ServeMux {
+func (s *Scheduler) RegisterHandlers(emailSender EmailSender, pushSender *webpush.Sender, cleanupConfig CleanupConfig, thumbnailConfig *ThumbnailConfig) *asynq.ServeMux {
 	mux := asynq.NewServeMux()
 
 	// Loan reminder processor
@@ -83,6 +94,19 @@ func (s *Scheduler) RegisterHandlers(emailSender EmailSender, pushSender *webpus
 	cleanupProcessor := NewCleanupProcessor(s.pool, cleanupConfig)
 	mux.HandleFunc(TypeCleanupDeletedRecords, cleanupProcessor.ProcessDeletedRecordsCleanup)
 	mux.HandleFunc(TypeCleanupOldActivity, cleanupProcessor.ProcessActivityCleanup)
+
+	// Thumbnail processor (optional - only if config provided)
+	if thumbnailConfig != nil {
+		thumbnailProcessor := NewThumbnailProcessor(
+			s.pool,
+			thumbnailConfig.Processor,
+			thumbnailConfig.Storage,
+			thumbnailConfig.Broadcaster,
+			thumbnailConfig.UploadDir,
+		)
+		mux.HandleFunc(TypeThumbnailGeneration, thumbnailProcessor.ProcessTask)
+		log.Println("Registered thumbnail processor")
+	}
 
 	return mux
 }

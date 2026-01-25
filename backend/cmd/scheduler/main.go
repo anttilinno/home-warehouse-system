@@ -13,7 +13,10 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 
 	"github.com/antti/home-warehouse/go-backend/internal/config"
+	"github.com/antti/home-warehouse/go-backend/internal/infra/events"
+	"github.com/antti/home-warehouse/go-backend/internal/infra/imageprocessor"
 	"github.com/antti/home-warehouse/go-backend/internal/infra/postgres"
+	"github.com/antti/home-warehouse/go-backend/internal/infra/storage"
 	"github.com/antti/home-warehouse/go-backend/internal/infra/webpush"
 	"github.com/antti/home-warehouse/go-backend/internal/jobs"
 )
@@ -71,10 +74,26 @@ func main() {
 	schedulerConfig := jobs.DefaultSchedulerConfig(redisURL)
 	scheduler := jobs.NewScheduler(dbPool, schedulerConfig)
 
+	// Initialize storage and image processor for thumbnail processing
+	uploadDir := getUploadDir()
+	photoStorageDir := getPhotoStorageDir()
+	photoStorage, err := storage.NewLocalStorage(photoStorageDir)
+	if err != nil {
+		log.Fatalf("Failed to initialize photo storage: %v", err)
+	}
+	imgProcessor := imageprocessor.NewProcessor(imageprocessor.DefaultConfig())
+	broadcaster := events.NewBroadcaster()
+
 	// Register task handlers
 	// Note: emailSender is nil - implement when email service is added
 	cleanupConfig := jobs.DefaultCleanupConfig()
-	mux := scheduler.RegisterHandlers(nil, pushSender, cleanupConfig)
+	thumbnailConfig := &jobs.ThumbnailConfig{
+		Processor:   imgProcessor,
+		Storage:     photoStorage,
+		Broadcaster: broadcaster,
+		UploadDir:   uploadDir,
+	}
+	mux := scheduler.RegisterHandlers(nil, pushSender, cleanupConfig, thumbnailConfig)
 
 	// Register scheduled/periodic tasks
 	if err := scheduler.RegisterScheduledTasks(); err != nil {
@@ -138,4 +157,34 @@ func main() {
 	scheduler.Stop()
 
 	log.Println("Scheduler stopped")
+}
+
+// getUploadDir returns the configured temporary upload directory for processing files
+func getUploadDir() string {
+	dir := os.Getenv("PHOTO_UPLOAD_DIR")
+	if dir == "" {
+		dir = "/tmp/photo-uploads"
+	}
+
+	// Create directory if it doesn't exist
+	if err := os.MkdirAll(dir, 0755); err != nil {
+		log.Printf("Warning: failed to create upload directory %s: %v", dir, err)
+	}
+
+	return dir
+}
+
+// getPhotoStorageDir returns the configured permanent storage directory for photos
+func getPhotoStorageDir() string {
+	dir := os.Getenv("PHOTO_STORAGE_DIR")
+	if dir == "" {
+		dir = "./uploads/photos"
+	}
+
+	// Create directory if it doesn't exist
+	if err := os.MkdirAll(dir, 0755); err != nil {
+		log.Printf("Warning: failed to create photo storage directory %s: %v", dir, err)
+	}
+
+	return dir
 }
