@@ -220,6 +220,21 @@ func (s *Service) UploadPhoto(ctx context.Context, itemID, workspaceID, userID u
 		return nil, fmt.Errorf("failed to save photo to database: %w", err)
 	}
 
+	// Generate perceptual hash for duplicate detection (sync, before temp file cleanup)
+	// This is fast (~10-50ms) and ensures we have the hash for duplicate detection
+	if s.hasher != nil {
+		hash, err := s.hasher.GenerateHash(ctx, tempPath)
+		if err != nil {
+			log.Printf("Failed to generate perceptual hash for photo %s: %v", createdPhoto.ID, err)
+		} else {
+			if err := s.repo.UpdatePerceptualHash(ctx, createdPhoto.ID, hash); err != nil {
+				log.Printf("Failed to save perceptual hash for photo %s: %v", createdPhoto.ID, err)
+			} else {
+				createdPhoto.PerceptualHash = &hash
+			}
+		}
+	}
+
 	// Enqueue thumbnail generation job (async, non-blocking)
 	if s.asynqClient != nil {
 		task := jobs.NewThumbnailGenerationTask(
