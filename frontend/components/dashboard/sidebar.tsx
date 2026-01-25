@@ -19,6 +19,7 @@ import {
   ShieldCheck,
   Clock,
   History,
+  Trash2,
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
@@ -102,6 +103,7 @@ export function Sidebar({ collapsed, onToggle, onNavClick }: SidebarProps) {
     { icon: HandCoins, label: t("loans"), href: "/dashboard/loans" },
     { icon: Users, label: t("borrowers"), href: "/dashboard/borrowers" },
     { icon: BarChart3, label: t("analytics"), href: "/dashboard/analytics" },
+    { icon: Trash2, label: t("declutter"), href: "/dashboard/declutter" },
     { icon: PackageX, label: t("outOfStock"), href: "/dashboard/out-of-stock" },
     { icon: FileUp, label: t("imports"), href: "/dashboard/imports" },
   ];
