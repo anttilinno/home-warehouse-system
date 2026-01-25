@@ -41,16 +41,24 @@ Reliable inventory access anywhere — online or offline — with seamless sync.
 - ✓ Online/offline status detection
 - ✓ Pending uploads indicator UI
 
+**v1.2 Phase 2 Completion (shipped 2026-01-25):**
+
+- ✓ Repair log tracking — full lifecycle with photos, attachments, warranty, reminders — v1.2
+- ✓ Declutter assistant — unused item detection, scoring, grouping, export — v1.2
+- ✓ Bulk photo operations — multi-select, bulk delete/edit, zip download, duplicate detection — v1.2
+- ✓ Background thumbnail processing — async generation, WebP, multiple sizes via Asynq — v1.2
+- ✓ SSE test coverage — all 11 handlers tested (47 SSE tests passing) — v1.2
+- ✓ Import testing checklist — 8 comprehensive manual test scenarios documented — v1.2
+
 ### Active
 
-**v1.2 Phase 2 Completion (in progress):**
+**v1.3 Mobile UX Overhaul:** (requirements TBD via `/gsd:new-milestone`)
 
-- [ ] Repair log tracking — full lifecycle with photos, attachments, reminders
-- [ ] Declutter assistant — unused item detection, scoring, grouping, export
-- [ ] Bulk photo operations — multi-select, bulk delete/edit, zip download
-- [ ] Background thumbnail processing — async generation, WebP, multiple sizes
-- [ ] SSE test coverage — remaining 9 handler tests
-- [ ] Import testing checklist — manual verification documented
+- [ ] Barcode/QR scanning with quick action menu
+- [ ] Improved search (fuzzy matching, recent items, smart suggestions, mobile filters)
+- [ ] Floating action button with radial menu for common tasks
+- [ ] Mobile form redesign (progressive disclosure, better pickers, inline photo, keyboard handling)
+- [ ] Offline-first for all mobile features
 
 ### Out of Scope
 
@@ -60,7 +68,7 @@ Reliable inventory access anywhere — online or offline — with seamless sync.
 
 ## Current State
 
-**Shipped:** v1.1 Offline Entity Extension (2026-01-25)
+**Shipped:** v1.2 Phase 2 Completion (2026-01-25)
 
 **Tech stack:**
 - Backend: Go 1.25, Chi, sqlc, PostgreSQL
@@ -92,5 +100,16 @@ Reliable inventory access anywhere — online or offline — with seamless sync.
 - **Compatibility**: Must work in Safari (limited Background Sync support)
 - **No heavy assets**: Photos, PDFs, attachments excluded from proactive sync
 
+## Current Milestone: v1.3 Mobile UX Overhaul
+
+**Goal:** Make the mobile experience feel native with instant access to common actions through scanning and quick actions.
+
+**Target features:**
+- Barcode/QR scanning → item lookup → quick action menu
+- Search overhaul with fuzzy matching, recents, suggestions
+- FAB with radial menu for add item, log loan, scan
+- Progressive disclosure forms optimized for mobile
+- Full offline support for all mobile features
+
 ---
-*Last updated: 2026-01-25 after v1.2 milestone started*
+*Last updated: 2026-01-25 after v1.2 milestone archived*

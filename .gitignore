@@ -93,5 +93,3 @@ dist-ssr/
 chunks/
 .claude_state.json
 
-# GSD Planning (local-only)
-.planning/
