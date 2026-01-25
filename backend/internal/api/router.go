@@ -41,6 +41,7 @@ import (
 	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/label"
 	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/loan"
 	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/location"
+	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/repairattachment"
 	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/repairlog"
 	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/movement"
 	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/importjob"
@@ -152,6 +153,7 @@ func NewRouter(pool *pgxpool.Pool, cfg *config.Config) chi.Router {
 	syncRepo := postgres.NewSyncRepository(pool)
 	importJobRepo := postgres.NewImportJobRepository(pool)
 	pendingChangeRepo := postgres.NewPendingChangeRepository(pool)
+	repairAttachmentRepo := postgres.NewRepairAttachmentRepository(pool)
 
 	// Initialize web push sender (optional - only if VAPID keys are configured)
 	var pushSender *webpush.Sender
@@ -200,6 +202,7 @@ func NewRouter(pool *pgxpool.Pool, cfg *config.Config) chi.Router {
 	borrowerSvc := borrower.NewService(borrowerRepo)
 	loanSvc := loan.NewService(loanRepo, inventoryRepo)
 	repairLogSvc := repairlog.NewService(repairLogRepo, inventoryRepo)
+	repairAttachmentSvc := repairattachment.NewService(repairAttachmentRepo, fileRepo)
 	// Phase 5 services (continued)
 	attachmentSvc := attachment.NewService(fileRepo, attachmentRepo)
 	activitySvc := activity.NewService(activityRepo)
@@ -342,6 +345,9 @@ func NewRouter(pool *pgxpool.Pool, cfg *config.Config) chi.Router {
 
 			// Register repair log routes
 			repairlog.RegisterRoutes(wsAPI, repairLogSvc, broadcaster)
+
+			// Register repair attachment routes
+			repairattachment.RegisterRoutes(wsAPI, repairAttachmentSvc, broadcaster)
 
 			// Register Phase 5 domain routes (activity & sync)
 			activity.RegisterRoutes(wsAPI, activitySvc)

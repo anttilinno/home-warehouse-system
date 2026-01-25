@@ -229,3 +229,8 @@ func (r *AttachmentRepository) rowToAttachmentFromList(row queries.ListAttachmen
 		row.UpdatedAt.Time,
 	)
 }
+
+// GetFileByID implements the repairattachment.FileVerifier interface.
+func (r *FileRepository) GetFileByID(ctx context.Context, fileID uuid.UUID) (*attachment.File, error) {
+	return r.FindByID(ctx, fileID)
+}
