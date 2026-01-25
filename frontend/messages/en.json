@@ -514,7 +514,8 @@
       "setPrimarySuccess": "Primary photo updated",
       "setPrimaryError": "Failed to set primary photo",
       "deleteSuccess": "Photo deleted successfully",
-      "deleteError": "Failed to delete photo"
+      "deleteError": "Failed to delete photo",
+      "selectPhoto": "Select photo"
     },
     "viewer": {
       "previous": "Previous photo",
@@ -545,6 +546,30 @@
       "failed": "Failed",
       "defaultError": "Thumbnail generation failed",
       "thumbnailFailed": "Failed to generate thumbnail"
+    },
+    "bulk": {
+      "select": "Select",
+      "cancel": "Cancel",
+      "selectAll": "Select All",
+      "download": "Download",
+      "editCaptions": "Edit Captions",
+      "delete": "Delete",
+      "deleteTitle": "Delete Photos",
+      "deleteDescription": "Are you sure you want to delete {count, plural, =1 {1 photo} other {# photos}}? This action cannot be undone.",
+      "deleting": "Deleting...",
+      "confirmDelete": "Delete Photos",
+      "captionTitle": "Edit Captions",
+      "captionDescription": "Set the same caption for {count, plural, =1 {1 selected photo} other {# selected photos}}.",
+      "captionLabel": "Caption",
+      "captionPlaceholder": "Enter caption for all selected photos...",
+      "updating": "Updating...",
+      "applyCaption": "Apply Caption",
+      "deleteSuccess": "{count, plural, =1 {Photo deleted} other {# photos deleted}} successfully",
+      "deleteError": "Failed to delete photos",
+      "captionSuccess": "{count, plural, =1 {Caption updated for 1 photo} other {Captions updated for # photos}}",
+      "captionError": "Failed to update captions",
+      "downloadSuccess": "Download started",
+      "downloadError": "Failed to download photos"
     }
   },
   "notifications": {

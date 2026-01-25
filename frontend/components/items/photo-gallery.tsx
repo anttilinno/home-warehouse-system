@@ -27,6 +27,7 @@ import {
   Trash2,
   GripVertical,
   Image as ImageIcon,
+  Check,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import type { ItemPhoto } from "@/lib/types/item-photo";
@@ -53,6 +54,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
 
 interface PhotoGalleryProps {
@@ -65,6 +67,12 @@ interface PhotoGalleryProps {
   onEditCaption?: (photoId: string, currentCaption: string | null) => void;
   onDelete?: (photoId: string) => Promise<void>;
   onUploadClick?: () => void;
+  /** Enable selection mode */
+  selectionMode?: boolean;
+  /** Set of selected photo IDs */
+  selectedIds?: Set<string>;
+  /** Toggle selection for a photo */
+  onToggleSelect?: (photoId: string) => void;
 }
 
 interface SortablePhotoItemProps {
@@ -76,6 +84,10 @@ interface SortablePhotoItemProps {
   onEditCaption: () => void;
   onDownload: () => void;
   onDelete: () => void;
+  /** Selection mode props */
+  selectionMode?: boolean;
+  isSelected?: boolean;
+  onToggleSelect?: () => void;
 }
 
 function SortablePhotoItem({
@@ -87,6 +99,9 @@ function SortablePhotoItem({
   onEditCaption,
   onDownload,
   onDelete,
+  selectionMode = false,
+  isSelected = false,
+  onToggleSelect,
 }: SortablePhotoItemProps) {
   const t = useTranslations("photos.gallery");
   const {
@@ -96,11 +111,19 @@ function SortablePhotoItem({
     transform,
     transition,
     isDragging,
-  } = useSortable({ id: photo.id });
+  } = useSortable({ id: photo.id, disabled: selectionMode });
 
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
+  };
+
+  const handleClick = () => {
+    if (selectionMode && onToggleSelect) {
+      onToggleSelect();
+    } else {
+      onPhotoClick();
+    }
   };
 
   return (
@@ -109,13 +132,26 @@ function SortablePhotoItem({
       style={style}
       className={cn(
         "group relative aspect-square overflow-hidden rounded-lg border bg-muted",
-        isDragging && "opacity-50 z-50"
+        isDragging && "opacity-50 z-50",
+        selectionMode && isSelected && "ring-2 ring-primary ring-offset-2"
       )}
     >
+      {/* Selection checkbox overlay */}
+      {selectionMode && (
+        <div className="absolute top-2 left-2 z-20">
+          <Checkbox
+            checked={isSelected}
+            onCheckedChange={() => onToggleSelect?.()}
+            className="h-5 w-5 bg-background/80 border-2"
+            aria-label={t("selectPhoto")}
+          />
+        </div>
+      )}
+
       {/* Photo Image with lazy loading - show processing state for pending thumbnails */}
       <div
         className="relative h-full w-full cursor-pointer"
-        onClick={onPhotoClick}
+        onClick={handleClick}
       >
         {isThumbnailProcessing(photo) ? (
           <PhotoThumbnail photo={photo} className="h-full w-full" />
@@ -147,16 +183,19 @@ function SortablePhotoItem({
           </Badge>
         </div>
 
-        {/* Drag handle */}
-        <button
-          className="absolute top-2 right-10 cursor-grab rounded-md bg-black/50 p-1.5 text-white opacity-0 transition-opacity hover:bg-black/70 group-hover:opacity-100 active:cursor-grabbing"
-          {...attributes}
-          {...listeners}
-        >
-          <GripVertical className="h-4 w-4" />
-        </button>
+        {/* Drag handle - hidden in selection mode */}
+        {!selectionMode && (
+          <button
+            className="absolute top-2 right-10 cursor-grab rounded-md bg-black/50 p-1.5 text-white opacity-0 transition-opacity hover:bg-black/70 group-hover:opacity-100 active:cursor-grabbing"
+            {...attributes}
+            {...listeners}
+          >
+            <GripVertical className="h-4 w-4" />
+          </button>
+        )}
 
-        {/* Actions menu */}
+        {/* Actions menu - hidden in selection mode */}
+        {!selectionMode && (
         <div className="absolute top-2 right-2">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -195,6 +234,7 @@ function SortablePhotoItem({
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
+        )}
 
         {/* Caption (if exists) */}
         {photo.caption && (
@@ -217,6 +257,9 @@ export function PhotoGallery({
   onEditCaption,
   onDelete,
   onUploadClick,
+  selectionMode = false,
+  selectedIds,
+  onToggleSelect,
 }: PhotoGalleryProps) {
   const t = useTranslations("photos.gallery");
   const [sortedPhotos, setSortedPhotos] = useState<ItemPhoto[]>(photos);
@@ -227,7 +270,8 @@ export function PhotoGallery({
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
-        distance: 8,
+        // Disable drag in selection mode
+        distance: selectionMode ? Infinity : 8,
       },
     }),
     useSensor(KeyboardSensor, {
@@ -350,6 +394,9 @@ export function PhotoGallery({
                 }
                 onDownload={() => handleDownload(photo)}
                 onDelete={() => setDeletePhotoId(photo.id)}
+                selectionMode={selectionMode}
+                isSelected={selectedIds?.has(photo.id)}
+                onToggleSelect={() => onToggleSelect?.(photo.id)}
               />
             ))}
           </div>

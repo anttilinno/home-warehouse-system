@@ -13,12 +13,17 @@ import * as React from "react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { useTranslations } from "next-intl";
+import { CheckSquare, X } from "lucide-react";
 
 import type { ItemPhoto } from "@/lib/types/item-photo";
 import { useItemPhotos } from "@/lib/hooks/use-item-photos";
+import { useBulkSelection } from "@/lib/hooks/use-bulk-selection";
+import { itemPhotosApi } from "@/lib/api/item-photos";
+import { Button } from "@/components/ui/button";
 import { PhotoGallery } from "./photo-gallery";
 import { PhotoViewer } from "./photo-viewer";
 import { PhotoCaptionEditor } from "./photo-caption-editor";
+import { PhotoSelectionBar } from "./photo-selection-bar";
 
 interface PhotoGalleryContainerProps {
   workspaceId: string;
@@ -43,6 +48,18 @@ export function PhotoGalleryContainer({
     caption: string | null;
   } | null>(null);
 
+  // Selection mode state
+  const [selectionMode, setSelectionMode] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
+  const {
+    selectedIds,
+    selectedCount,
+    toggleSelection,
+    selectAll,
+    clearSelection,
+  } = useBulkSelection<string>();
+
   const {
     photos,
     loading: isLoading,
@@ -50,6 +67,7 @@ export function PhotoGalleryContainer({
     setPrimary: setPrimaryPhoto,
     updateCaption,
     deletePhoto,
+    refresh: refreshPhotos,
   } = useItemPhotos({ workspaceId, itemId });
 
   // Handle photo click to open viewer
@@ -106,8 +124,92 @@ export function PhotoGalleryContainer({
     }
   };
 
+  // Toggle selection mode
+  const handleToggleSelectionMode = () => {
+    if (selectionMode) {
+      clearSelection();
+    }
+    setSelectionMode(!selectionMode);
+  };
+
+  // Handle bulk delete
+  const handleBulkDelete = async () => {
+    if (selectedCount === 0) return;
+    setIsDeleting(true);
+    try {
+      await itemPhotosApi.bulkDelete(
+        workspaceId,
+        itemId,
+        Array.from(selectedIds)
+      );
+      toast.success(t("bulk.deleteSuccess", { count: selectedCount }));
+      clearSelection();
+      setSelectionMode(false);
+      await refreshPhotos();
+    } catch (error) {
+      toast.error(t("bulk.deleteError"));
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  // Handle bulk caption update
+  const handleBulkCaption = async (caption: string) => {
+    if (selectedCount === 0) return;
+    setIsUpdating(true);
+    try {
+      const updates = Array.from(selectedIds).map((photo_id) => ({
+        photo_id,
+        caption: caption || null,
+      }));
+      await itemPhotosApi.bulkUpdateCaptions(workspaceId, itemId, updates);
+      toast.success(t("bulk.captionSuccess", { count: selectedCount }));
+      clearSelection();
+      setSelectionMode(false);
+      await refreshPhotos();
+    } catch (error) {
+      toast.error(t("bulk.captionError"));
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+  // Handle download
+  const handleDownload = async () => {
+    try {
+      const photoIds = selectedCount > 0 ? Array.from(selectedIds) : undefined;
+      await itemPhotosApi.downloadAsZip(workspaceId, itemId, photoIds);
+      toast.success(t("bulk.downloadSuccess"));
+    } catch (error) {
+      toast.error(t("bulk.downloadError"));
+    }
+  };
+
   return (
     <>
+      {/* Selection mode toggle button */}
+      {photos.length > 0 && (
+        <div className="flex items-center justify-end mb-4 gap-2">
+          <Button
+            variant={selectionMode ? "secondary" : "outline"}
+            size="sm"
+            onClick={handleToggleSelectionMode}
+          >
+            {selectionMode ? (
+              <>
+                <X className="mr-2 h-4 w-4" />
+                {t("bulk.cancel")}
+              </>
+            ) : (
+              <>
+                <CheckSquare className="mr-2 h-4 w-4" />
+                {t("bulk.select")}
+              </>
+            )}
+          </Button>
+        </div>
+      )}
+
       <PhotoGallery
         itemId={itemId}
         photos={photos}
@@ -118,6 +220,20 @@ export function PhotoGalleryContainer({
         onEditCaption={handleEditCaption}
         onDelete={handleDelete}
         onUploadClick={onUploadClick}
+        selectionMode={selectionMode}
+        selectedIds={selectedIds}
+        onToggleSelect={toggleSelection}
+      />
+
+      {/* Bulk action bar */}
+      <PhotoSelectionBar
+        selectedCount={selectedCount}
+        onClear={clearSelection}
+        onBulkDelete={handleBulkDelete}
+        onBulkCaption={handleBulkCaption}
+        onDownload={handleDownload}
+        isDeleting={isDeleting}
+        isUpdating={isUpdating}
       />
 
       <PhotoViewer
