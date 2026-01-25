@@ -33,6 +33,7 @@ import (
 	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/category"
 	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/company"
 	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/container"
+	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/declutter"
 	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/deleted"
 	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/favorite"
 	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/inventory"
@@ -156,6 +157,7 @@ func NewRouter(pool *pgxpool.Pool, cfg *config.Config) chi.Router {
 	pendingChangeRepo := postgres.NewPendingChangeRepository(pool)
 	repairAttachmentRepo := postgres.NewRepairAttachmentRepository(pool)
 	repairPhotoRepo := postgres.NewRepairPhotoRepository(pool)
+	declutterRepo := postgres.NewDeclutterRepository(pool)
 
 	// Initialize web push sender (optional - only if VAPID keys are configured)
 	var pushSender *webpush.Sender
@@ -206,6 +208,8 @@ func NewRouter(pool *pgxpool.Pool, cfg *config.Config) chi.Router {
 	repairLogSvc := repairlog.NewService(repairLogRepo, inventoryRepo)
 	repairPhotoSvc := repairphoto.NewService(repairPhotoRepo, photoStorage, imageProcessor, uploadDir)
 	repairAttachmentSvc := repairattachment.NewService(repairAttachmentRepo, fileRepo)
+	// Declutter service
+	declutterSvc := declutter.NewService(declutterRepo)
 	// Phase 5 services (continued)
 	attachmentSvc := attachment.NewService(fileRepo, attachmentRepo)
 	activitySvc := activity.NewService(activityRepo)
@@ -365,6 +369,9 @@ func NewRouter(pool *pgxpool.Pool, cfg *config.Config) chi.Router {
 
 			// Register repair attachment routes
 			repairattachment.RegisterRoutes(wsAPI, repairAttachmentSvc, broadcaster)
+
+			// Register declutter assistant routes
+			declutter.RegisterRoutes(wsAPI, declutterSvc, broadcaster)
 
 			// Register Phase 5 domain routes (activity & sync)
 			activity.RegisterRoutes(wsAPI, activitySvc)
