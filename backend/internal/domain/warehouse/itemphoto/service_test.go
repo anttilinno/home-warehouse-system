@@ -1409,16 +1409,10 @@ func TestService_UploadPhoto_FullFlow(t *testing.T) {
 		header.Header.Set("Content-Type", "image/jpeg")
 
 		// Set up all mocks in order of execution
+		// Note: Thumbnails are now generated asynchronously, so no thumbnail mocks needed
 		processor.On("Validate", ctx, mock.AnythingOfType("string")).Return(nil)
 		processor.On("GetDimensions", ctx, mock.AnythingOfType("string")).Return(1920, 1080, nil)
 		storage.On("Save", ctx, workspaceID.String(), itemID.String(), "test-image.jpg", mock.Anything).Return("photos/original.jpg", nil)
-		// GenerateThumbnail mock - create the actual file when called
-		processor.On("GenerateThumbnail", ctx, mock.AnythingOfType("string"), mock.AnythingOfType("string"), 400, 400).
-			Run(func(args mock.Arguments) {
-				destPath := args.Get(2).(string)
-				os.WriteFile(destPath, []byte("thumbnail content"), 0644)
-			}).Return(nil)
-		storage.On("Save", ctx, workspaceID.String(), itemID.String(), "thumb_test-image.jpg", mock.Anything).Return("photos/thumb.jpg", nil)
 		repo.On("GetByItem", ctx, itemID, workspaceID).Return([]*itemphoto.ItemPhoto{}, nil)
 		repo.On("Create", ctx, mock.MatchedBy(func(p *itemphoto.ItemPhoto) bool {
 			return p.ItemID == itemID &&
@@ -1427,21 +1421,24 @@ func TestService_UploadPhoto_FullFlow(t *testing.T) {
 				p.DisplayOrder == 0 &&
 				p.Filename == "test-image.jpg" &&
 				p.Width == 1920 &&
-				p.Height == 1080
+				p.Height == 1080 &&
+				p.ThumbnailPath == "" && // Empty - thumbnails generated async
+				p.ThumbnailStatus == itemphoto.ThumbnailStatusPending // Async status
 		})).Return(&itemphoto.ItemPhoto{
-			ID:            uuid.New(),
-			ItemID:        itemID,
-			WorkspaceID:   workspaceID,
-			Filename:      "test-image.jpg",
-			StoragePath:   "photos/original.jpg",
-			ThumbnailPath: "photos/thumb.jpg",
-			FileSize:      int64(len(testContent)),
-			MimeType:      "image/jpeg",
-			Width:         1920,
-			Height:        1080,
-			DisplayOrder:  0,
-			IsPrimary:     true,
-			UploadedBy:    userID,
+			ID:              uuid.New(),
+			ItemID:          itemID,
+			WorkspaceID:     workspaceID,
+			Filename:        "test-image.jpg",
+			StoragePath:     "photos/original.jpg",
+			ThumbnailPath:   "", // Empty for async processing
+			ThumbnailStatus: itemphoto.ThumbnailStatusPending,
+			FileSize:        int64(len(testContent)),
+			MimeType:        "image/jpeg",
+			Width:           1920,
+			Height:          1080,
+			DisplayOrder:    0,
+			IsPrimary:       true,
+			UploadedBy:      userID,
 		}, nil)
 
 		service := itemphoto.NewService(repo, storage, processor, tmpDir)
@@ -1451,6 +1448,7 @@ func TestService_UploadPhoto_FullFlow(t *testing.T) {
 		require.NotNil(t, result)
 		assert.Equal(t, itemID, result.ItemID)
 		assert.True(t, result.IsPrimary)
+		assert.Equal(t, itemphoto.ThumbnailStatusPending, result.ThumbnailStatus)
 		processor.AssertExpectations(t)
 		storage.AssertExpectations(t)
 		repo.AssertExpectations(t)
@@ -1474,26 +1472,23 @@ func TestService_UploadPhoto_FullFlow(t *testing.T) {
 
 		existingPhoto := createServiceTestPhoto(t, itemID, workspaceID)
 
+		// Note: Thumbnails are now generated asynchronously, so no thumbnail mocks needed
 		processor.On("Validate", ctx, mock.AnythingOfType("string")).Return(nil)
 		processor.On("GetDimensions", ctx, mock.AnythingOfType("string")).Return(800, 600, nil)
 		storage.On("Save", ctx, workspaceID.String(), itemID.String(), "second-image.jpg", mock.Anything).Return("photos/second.jpg", nil)
-		processor.On("GenerateThumbnail", ctx, mock.AnythingOfType("string"), mock.AnythingOfType("string"), 400, 400).
-			Run(func(args mock.Arguments) {
-				destPath := args.Get(2).(string)
-				os.WriteFile(destPath, []byte("thumbnail content"), 0644)
-			}).Return(nil)
-		storage.On("Save", ctx, workspaceID.String(), itemID.String(), "thumb_second-image.jpg", mock.Anything).Return("photos/thumb_second.jpg", nil)
 		repo.On("GetByItem", ctx, itemID, workspaceID).Return([]*itemphoto.ItemPhoto{existingPhoto}, nil)
 		repo.On("Create", ctx, mock.MatchedBy(func(p *itemphoto.ItemPhoto) bool {
 			return p.IsPrimary == false && // Second photo should NOT be primary
-				p.DisplayOrder == 1 // Should be after first photo
+				p.DisplayOrder == 1 && // Should be after first photo
+				p.ThumbnailStatus == itemphoto.ThumbnailStatusPending // Async status
 		})).Return(&itemphoto.ItemPhoto{
-			ID:            uuid.New(),
-			ItemID:        itemID,
-			WorkspaceID:   workspaceID,
-			IsPrimary:     false,
-			DisplayOrder:  1,
-			UploadedBy:    userID,
+			ID:              uuid.New(),
+			ItemID:          itemID,
+			WorkspaceID:     workspaceID,
+			IsPrimary:       false,
+			DisplayOrder:    1,
+			ThumbnailStatus: itemphoto.ThumbnailStatusPending,
+			UploadedBy:      userID,
 		}, nil)
 
 		service := itemphoto.NewService(repo, storage, processor, tmpDir)
@@ -1523,23 +1518,20 @@ func TestService_UploadPhoto_FullFlow(t *testing.T) {
 
 		caption := "My awesome photo"
 
+		// Note: Thumbnails are now generated asynchronously, so no thumbnail mocks needed
 		processor.On("Validate", ctx, mock.AnythingOfType("string")).Return(nil)
 		processor.On("GetDimensions", ctx, mock.AnythingOfType("string")).Return(640, 480, nil)
 		storage.On("Save", ctx, workspaceID.String(), itemID.String(), "captioned.jpg", mock.Anything).Return("photos/captioned.jpg", nil)
-		processor.On("GenerateThumbnail", ctx, mock.AnythingOfType("string"), mock.AnythingOfType("string"), 400, 400).
-			Run(func(args mock.Arguments) {
-				destPath := args.Get(2).(string)
-				os.WriteFile(destPath, []byte("thumbnail content"), 0644)
-			}).Return(nil)
-		storage.On("Save", ctx, workspaceID.String(), itemID.String(), "thumb_captioned.jpg", mock.Anything).Return("photos/thumb_captioned.jpg", nil)
 		repo.On("GetByItem", ctx, itemID, workspaceID).Return([]*itemphoto.ItemPhoto{}, nil)
 		repo.On("Create", ctx, mock.MatchedBy(func(p *itemphoto.ItemPhoto) bool {
-			return p.Caption != nil && *p.Caption == caption
+			return p.Caption != nil && *p.Caption == caption &&
+				p.ThumbnailStatus == itemphoto.ThumbnailStatusPending
 		})).Return(&itemphoto.ItemPhoto{
-			ID:          uuid.New(),
-			Caption:     &caption,
-			IsPrimary:   true,
-			UploadedBy:  userID,
+			ID:              uuid.New(),
+			Caption:         &caption,
+			IsPrimary:       true,
+			ThumbnailStatus: itemphoto.ThumbnailStatusPending,
+			UploadedBy:      userID,
 		}, nil)
 
 		service := itemphoto.NewService(repo, storage, processor, tmpDir)
@@ -1632,75 +1624,8 @@ func TestService_UploadPhoto_FullFlow(t *testing.T) {
 		assert.Nil(t, result)
 	})
 
-	t.Run("cleans up original when thumbnail generation fails", func(t *testing.T) {
-		ctx := context.Background()
-		repo := new(MockRepository)
-		storage := new(MockStorage)
-		processor := new(MockImageProcessor)
-
-		testContent := []byte("image content")
-		file := &mockFile{bytes.NewReader(testContent)}
-
-		header := &multipart.FileHeader{
-			Filename: "test.jpg",
-			Size:     int64(len(testContent)),
-			Header:   make(map[string][]string),
-		}
-		header.Header.Set("Content-Type", "image/jpeg")
-
-		originalPath := "photos/original.jpg"
-
-		processor.On("Validate", ctx, mock.AnythingOfType("string")).Return(nil)
-		processor.On("GetDimensions", ctx, mock.AnythingOfType("string")).Return(800, 600, nil)
-		storage.On("Save", ctx, workspaceID.String(), itemID.String(), "test.jpg", mock.Anything).Return(originalPath, nil)
-		processor.On("GenerateThumbnail", ctx, mock.AnythingOfType("string"), mock.AnythingOfType("string"), 400, 400).Return(errors.New("thumbnail generation failed"))
-		storage.On("Delete", ctx, originalPath).Return(nil) // Should cleanup
-
-		service := itemphoto.NewService(repo, storage, processor, tmpDir)
-		result, err := service.UploadPhoto(ctx, itemID, workspaceID, userID, file, header, nil)
-
-		require.Error(t, err)
-		assert.Contains(t, err.Error(), "failed to generate thumbnail")
-		assert.Nil(t, result)
-		storage.AssertCalled(t, "Delete", ctx, originalPath)
-	})
-
-	t.Run("cleans up files when thumbnail storage fails", func(t *testing.T) {
-		ctx := context.Background()
-		repo := new(MockRepository)
-		storage := new(MockStorage)
-		processor := new(MockImageProcessor)
-
-		testContent := []byte("image content")
-		file := &mockFile{bytes.NewReader(testContent)}
-
-		header := &multipart.FileHeader{
-			Filename: "test.jpg",
-			Size:     int64(len(testContent)),
-			Header:   make(map[string][]string),
-		}
-		header.Header.Set("Content-Type", "image/jpeg")
-
-		originalPath := "photos/original.jpg"
-
-		processor.On("Validate", ctx, mock.AnythingOfType("string")).Return(nil)
-		processor.On("GetDimensions", ctx, mock.AnythingOfType("string")).Return(800, 600, nil)
-		storage.On("Save", ctx, workspaceID.String(), itemID.String(), "test.jpg", mock.Anything).Return(originalPath, nil)
-		processor.On("GenerateThumbnail", ctx, mock.AnythingOfType("string"), mock.AnythingOfType("string"), 400, 400).
-			Run(func(args mock.Arguments) {
-				destPath := args.Get(2).(string)
-				os.WriteFile(destPath, []byte("thumbnail content"), 0644)
-			}).Return(nil)
-		storage.On("Save", ctx, workspaceID.String(), itemID.String(), "thumb_test.jpg", mock.Anything).Return("", errors.New("storage error"))
-		storage.On("Delete", ctx, originalPath).Return(nil)
-
-		service := itemphoto.NewService(repo, storage, processor, tmpDir)
-		result, err := service.UploadPhoto(ctx, itemID, workspaceID, userID, file, header, nil)
-
-		require.Error(t, err)
-		assert.Contains(t, err.Error(), "failed to save thumbnail")
-		assert.Nil(t, result)
-	})
+	// Note: "cleans up original when thumbnail generation fails" and "cleans up files when thumbnail storage fails"
+	// test cases removed - thumbnails are now generated asynchronously, so these failures don't happen during upload
 
 	t.Run("cleans up files when GetByItem fails", func(t *testing.T) {
 		ctx := context.Background()
@@ -1719,20 +1644,13 @@ func TestService_UploadPhoto_FullFlow(t *testing.T) {
 		header.Header.Set("Content-Type", "image/jpeg")
 
 		originalPath := "photos/original.jpg"
-		thumbnailPath := "photos/thumb.jpg"
 
+		// Note: No thumbnail mocks - thumbnails are generated asynchronously
 		processor.On("Validate", ctx, mock.AnythingOfType("string")).Return(nil)
 		processor.On("GetDimensions", ctx, mock.AnythingOfType("string")).Return(800, 600, nil)
 		storage.On("Save", ctx, workspaceID.String(), itemID.String(), "test.jpg", mock.Anything).Return(originalPath, nil)
-		processor.On("GenerateThumbnail", ctx, mock.AnythingOfType("string"), mock.AnythingOfType("string"), 400, 400).
-			Run(func(args mock.Arguments) {
-				destPath := args.Get(2).(string)
-				os.WriteFile(destPath, []byte("thumbnail content"), 0644)
-			}).Return(nil)
-		storage.On("Save", ctx, workspaceID.String(), itemID.String(), "thumb_test.jpg", mock.Anything).Return(thumbnailPath, nil)
 		repo.On("GetByItem", ctx, itemID, workspaceID).Return(nil, errors.New("database error"))
 		storage.On("Delete", ctx, originalPath).Return(nil)
-		storage.On("Delete", ctx, thumbnailPath).Return(nil)
 
 		service := itemphoto.NewService(repo, storage, processor, tmpDir)
 		result, err := service.UploadPhoto(ctx, itemID, workspaceID, userID, file, header, nil)
@@ -1759,21 +1677,14 @@ func TestService_UploadPhoto_FullFlow(t *testing.T) {
 		header.Header.Set("Content-Type", "image/jpeg")
 
 		originalPath := "photos/original.jpg"
-		thumbnailPath := "photos/thumb.jpg"
 
+		// Note: No thumbnail mocks - thumbnails are generated asynchronously
 		processor.On("Validate", ctx, mock.AnythingOfType("string")).Return(nil)
 		processor.On("GetDimensions", ctx, mock.AnythingOfType("string")).Return(800, 600, nil)
 		storage.On("Save", ctx, workspaceID.String(), itemID.String(), "test.jpg", mock.Anything).Return(originalPath, nil)
-		processor.On("GenerateThumbnail", ctx, mock.AnythingOfType("string"), mock.AnythingOfType("string"), 400, 400).
-			Run(func(args mock.Arguments) {
-				destPath := args.Get(2).(string)
-				os.WriteFile(destPath, []byte("thumbnail content"), 0644)
-			}).Return(nil)
-		storage.On("Save", ctx, workspaceID.String(), itemID.String(), "thumb_test.jpg", mock.Anything).Return(thumbnailPath, nil)
 		repo.On("GetByItem", ctx, itemID, workspaceID).Return([]*itemphoto.ItemPhoto{}, nil)
 		repo.On("Create", ctx, mock.AnythingOfType("*itemphoto.ItemPhoto")).Return(nil, errors.New("database error"))
 		storage.On("Delete", ctx, originalPath).Return(nil)
-		storage.On("Delete", ctx, thumbnailPath).Return(nil)
 
 		service := itemphoto.NewService(repo, storage, processor, tmpDir)
 		result, err := service.UploadPhoto(ctx, itemID, workspaceID, userID, file, header, nil)
@@ -1799,22 +1710,19 @@ func TestService_UploadPhoto_FullFlow(t *testing.T) {
 		}
 		header.Header.Set("Content-Type", "image/png")
 
+		// Note: No thumbnail mocks - thumbnails are generated asynchronously
 		processor.On("Validate", ctx, mock.AnythingOfType("string")).Return(nil)
 		processor.On("GetDimensions", ctx, mock.AnythingOfType("string")).Return(800, 600, nil)
 		storage.On("Save", ctx, workspaceID.String(), itemID.String(), "test.png", mock.Anything).Return("photos/test.png", nil)
-		processor.On("GenerateThumbnail", ctx, mock.AnythingOfType("string"), mock.AnythingOfType("string"), 400, 400).
-			Run(func(args mock.Arguments) {
-				destPath := args.Get(2).(string)
-				os.WriteFile(destPath, []byte("thumbnail content"), 0644)
-			}).Return(nil)
-		storage.On("Save", ctx, workspaceID.String(), itemID.String(), "thumb_test.png", mock.Anything).Return("photos/thumb.png", nil)
 		repo.On("GetByItem", ctx, itemID, workspaceID).Return([]*itemphoto.ItemPhoto{}, nil)
 		repo.On("Create", ctx, mock.MatchedBy(func(p *itemphoto.ItemPhoto) bool {
-			return p.MimeType == "image/png"
+			return p.MimeType == "image/png" &&
+				p.ThumbnailStatus == itemphoto.ThumbnailStatusPending
 		})).Return(&itemphoto.ItemPhoto{
-			ID:        uuid.New(),
-			MimeType:  "image/png",
-			IsPrimary: true,
+			ID:              uuid.New(),
+			MimeType:        "image/png",
+			IsPrimary:       true,
+			ThumbnailStatus: itemphoto.ThumbnailStatusPending,
 		}, nil)
 
 		service := itemphoto.NewService(repo, storage, processor, tmpDir)
@@ -1840,22 +1748,19 @@ func TestService_UploadPhoto_FullFlow(t *testing.T) {
 		}
 		header.Header.Set("Content-Type", "image/webp")
 
+		// Note: No thumbnail mocks - thumbnails are generated asynchronously
 		processor.On("Validate", ctx, mock.AnythingOfType("string")).Return(nil)
 		processor.On("GetDimensions", ctx, mock.AnythingOfType("string")).Return(800, 600, nil)
 		storage.On("Save", ctx, workspaceID.String(), itemID.String(), "test.webp", mock.Anything).Return("photos/test.webp", nil)
-		processor.On("GenerateThumbnail", ctx, mock.AnythingOfType("string"), mock.AnythingOfType("string"), 400, 400).
-			Run(func(args mock.Arguments) {
-				destPath := args.Get(2).(string)
-				os.WriteFile(destPath, []byte("thumbnail content"), 0644)
-			}).Return(nil)
-		storage.On("Save", ctx, workspaceID.String(), itemID.String(), "thumb_test.webp", mock.Anything).Return("photos/thumb.webp", nil)
 		repo.On("GetByItem", ctx, itemID, workspaceID).Return([]*itemphoto.ItemPhoto{}, nil)
 		repo.On("Create", ctx, mock.MatchedBy(func(p *itemphoto.ItemPhoto) bool {
-			return p.MimeType == "image/webp"
+			return p.MimeType == "image/webp" &&
+				p.ThumbnailStatus == itemphoto.ThumbnailStatusPending
 		})).Return(&itemphoto.ItemPhoto{
-			ID:        uuid.New(),
-			MimeType:  "image/webp",
-			IsPrimary: true,
+			ID:              uuid.New(),
+			MimeType:        "image/webp",
+			IsPrimary:       true,
+			ThumbnailStatus: itemphoto.ThumbnailStatusPending,
 		}, nil)
 
 		service := itemphoto.NewService(repo, storage, processor, tmpDir)

@@ -5,11 +5,15 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log"
 	"mime/multipart"
 	"os"
 	"path/filepath"
 
 	"github.com/google/uuid"
+	"github.com/hibiken/asynq"
+
+	"github.com/antti/home-warehouse/go-backend/internal/jobs"
 )
 
 const (
@@ -55,10 +59,11 @@ type ServiceInterface interface {
 
 // Service implements the item photo business logic
 type Service struct {
-	repo      Repository
-	storage   Storage
-	processor ImageProcessor
-	uploadDir string // Base directory for temporary uploads
+	repo        Repository
+	storage     Storage
+	processor   ImageProcessor
+	asynqClient *asynq.Client
+	uploadDir   string // Base directory for temporary uploads
 }
 
 // NewService creates a new item photo service
@@ -69,6 +74,12 @@ func NewService(repo Repository, storage Storage, processor ImageProcessor, uplo
 		processor: processor,
 		uploadDir: uploadDir,
 	}
+}
+
+// SetAsynqClient sets the asynq client for background job enqueuing.
+// This is optional - if not set, thumbnails will not be generated in background.
+func (s *Service) SetAsynqClient(client *asynq.Client) {
+	s.asynqClient = client
 }
 
 // UploadPhoto uploads a new photo for an item
@@ -122,40 +133,10 @@ func (s *Service) UploadPhoto(ctx context.Context, itemID, workspaceID, userID u
 		return nil, fmt.Errorf("failed to save file: %w", err)
 	}
 
-	// Generate JPEG thumbnail
-	thumbnailFilename := "thumb_" + header.Filename
-	thumbnailTempPath := filepath.Join(s.uploadDir, "thumb-"+uuid.New().String()+filepath.Ext(header.Filename))
-	defer os.Remove(thumbnailTempPath)
-
-	if err := s.processor.GenerateThumbnail(ctx, tempPath, thumbnailTempPath, 400, 400); err != nil {
-		// Clean up original file on thumbnail generation failure
-		s.storage.Delete(ctx, storagePath)
-		return nil, fmt.Errorf("failed to generate thumbnail: %w", err)
-	}
-
-	// Save JPEG thumbnail to storage
-	thumbReader, err := os.Open(thumbnailTempPath)
-	if err != nil {
-		s.storage.Delete(ctx, storagePath)
-		return nil, fmt.Errorf("failed to open thumbnail: %w", err)
-	}
-	defer thumbReader.Close()
-
-	thumbnailPath, err := s.storage.Save(ctx, workspaceID.String(), itemID.String(), thumbnailFilename, thumbReader)
-	if err != nil {
-		s.storage.Delete(ctx, storagePath)
-		return nil, fmt.Errorf("failed to save thumbnail: %w", err)
-	}
-
-	// TODO: Generate WebP thumbnails in addition to JPEG
-	// This requires database schema changes to store both thumbnail paths
-	// For now, we only generate JPEG thumbnails
-
 	// Get file size
 	fileInfo, err := os.Stat(tempPath)
 	if err != nil {
 		s.storage.Delete(ctx, storagePath)
-		s.storage.Delete(ctx, thumbnailPath)
 		return nil, fmt.Errorf("failed to get file info: %w", err)
 	}
 
@@ -163,21 +144,21 @@ func (s *Service) UploadPhoto(ctx context.Context, itemID, workspaceID, userID u
 	existingPhotos, err := s.repo.GetByItem(ctx, itemID, workspaceID)
 	if err != nil {
 		s.storage.Delete(ctx, storagePath)
-		s.storage.Delete(ctx, thumbnailPath)
 		return nil, fmt.Errorf("failed to get existing photos: %w", err)
 	}
 
 	displayOrder := int32(len(existingPhotos))
 	isPrimary := len(existingPhotos) == 0 // First photo is primary by default
 
-	// Create photo record
+	// Create photo record with pending thumbnail status
+	// ThumbnailPath is empty - thumbnails will be generated asynchronously
 	photo := &ItemPhoto{
-		ID:            uuid.New(),
-		ItemID:        itemID,
+		ID:              uuid.New(),
+		ItemID:         itemID,
 		WorkspaceID:   workspaceID,
 		Filename:      header.Filename,
 		StoragePath:   storagePath,
-		ThumbnailPath: thumbnailPath,
+		ThumbnailPath: "", // Legacy field - empty for async processing
 		FileSize:      fileInfo.Size(),
 		MimeType:      mimeType,
 		Width:         int32(width),
@@ -186,12 +167,12 @@ func (s *Service) UploadPhoto(ctx context.Context, itemID, workspaceID, userID u
 		IsPrimary:     isPrimary,
 		Caption:       caption,
 		UploadedBy:    userID,
+		ThumbnailStatus: ThumbnailStatusPending,
 	}
 
 	// Validate photo entity
 	if err := photo.Validate(); err != nil {
 		s.storage.Delete(ctx, storagePath)
-		s.storage.Delete(ctx, thumbnailPath)
 		return nil, err
 	}
 
@@ -199,8 +180,21 @@ func (s *Service) UploadPhoto(ctx context.Context, itemID, workspaceID, userID u
 	createdPhoto, err := s.repo.Create(ctx, photo)
 	if err != nil {
 		s.storage.Delete(ctx, storagePath)
-		s.storage.Delete(ctx, thumbnailPath)
 		return nil, fmt.Errorf("failed to save photo to database: %w", err)
+	}
+
+	// Enqueue thumbnail generation job (async, non-blocking)
+	if s.asynqClient != nil {
+		task := jobs.NewThumbnailGenerationTask(
+			createdPhoto.ID,
+			workspaceID,
+			itemID,
+			storagePath,
+		)
+		if _, err := s.asynqClient.Enqueue(task); err != nil {
+			log.Printf("Failed to enqueue thumbnail job for photo %s: %v", createdPhoto.ID, err)
+			// Don't fail upload - photo is usable, thumbnails will be missing
+		}
 	}
 
 	return createdPhoto, nil
@@ -329,7 +323,19 @@ func (s *Service) DeletePhoto(ctx context.Context, id, workspaceID uuid.UUID) er
 
 	// Delete files from storage (best effort - don't fail if files are already gone)
 	_ = s.storage.Delete(ctx, photo.StoragePath)
-	_ = s.storage.Delete(ctx, photo.ThumbnailPath)
+	if photo.ThumbnailPath != "" {
+		_ = s.storage.Delete(ctx, photo.ThumbnailPath)
+	}
+	// Delete multi-size thumbnails if they exist
+	if photo.ThumbnailSmallPath != nil && *photo.ThumbnailSmallPath != "" {
+		_ = s.storage.Delete(ctx, *photo.ThumbnailSmallPath)
+	}
+	if photo.ThumbnailMediumPath != nil && *photo.ThumbnailMediumPath != "" {
+		_ = s.storage.Delete(ctx, *photo.ThumbnailMediumPath)
+	}
+	if photo.ThumbnailLargePath != nil && *photo.ThumbnailLargePath != "" {
+		_ = s.storage.Delete(ctx, *photo.ThumbnailLargePath)
+	}
 
 	// If this was the primary photo, set another photo as primary
 	if photo.IsPrimary {
