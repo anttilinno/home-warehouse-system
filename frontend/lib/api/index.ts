@@ -13,6 +13,7 @@ export { inventoryApi } from "./inventory";
 export { importExportApi } from "./importexport";
 export { pendingChangesApi } from "./pending-changes";
 export { repairLogsApi } from "./repair-logs";
+export { declutterApi } from "./declutter";
 
 export type { User, Workspace, AuthTokenResponse, RegisterData } from "./auth";
 export type { Category, CategoryCreate, CategoryUpdate } from "./categories";
