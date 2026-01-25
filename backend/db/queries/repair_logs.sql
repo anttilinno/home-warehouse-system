@@ -63,3 +63,33 @@ LIMIT $3 OFFSET $4;
 -- name: CountRepairLogsByInventory :one
 SELECT COUNT(*)::int FROM warehouse.repair_logs
 WHERE workspace_id = $1 AND inventory_id = $2;
+
+-- name: GetTotalRepairCostByInventory :many
+SELECT
+    currency_code,
+    COALESCE(SUM(cost), 0)::int AS total_cost_cents,
+    COUNT(*)::int AS repair_count
+FROM warehouse.repair_logs
+WHERE workspace_id = $1
+  AND inventory_id = $2
+  AND status = 'COMPLETED'
+GROUP BY currency_code;
+
+-- name: ListRepairsNeedingReminder :many
+SELECT
+    rl.id,
+    rl.workspace_id,
+    rl.inventory_id,
+    rl.description,
+    rl.reminder_date,
+    it.name AS item_name
+FROM warehouse.repair_logs rl
+JOIN warehouse.inventory inv ON rl.inventory_id = inv.id
+JOIN warehouse.items it ON inv.item_id = it.id
+WHERE rl.reminder_date <= $1
+  AND rl.reminder_sent = false;
+
+-- name: MarkRepairReminderSent :exec
+UPDATE warehouse.repair_logs
+SET reminder_sent = true, updated_at = now()
+WHERE id = $1;

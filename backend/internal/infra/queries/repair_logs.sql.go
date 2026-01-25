@@ -173,6 +173,49 @@ func (q *Queries) GetRepairLog(ctx context.Context, arg GetRepairLogParams) (War
 	return i, err
 }
 
+const getTotalRepairCostByInventory = `-- name: GetTotalRepairCostByInventory :many
+SELECT
+    currency_code,
+    COALESCE(SUM(cost), 0)::int AS total_cost_cents,
+    COUNT(*)::int AS repair_count
+FROM warehouse.repair_logs
+WHERE workspace_id = $1
+  AND inventory_id = $2
+  AND status = 'COMPLETED'
+GROUP BY currency_code
+`
+
+type GetTotalRepairCostByInventoryParams struct {
+	WorkspaceID uuid.UUID `json:"workspace_id"`
+	InventoryID uuid.UUID `json:"inventory_id"`
+}
+
+type GetTotalRepairCostByInventoryRow struct {
+	CurrencyCode   *string `json:"currency_code"`
+	TotalCostCents int32   `json:"total_cost_cents"`
+	RepairCount    int32   `json:"repair_count"`
+}
+
+func (q *Queries) GetTotalRepairCostByInventory(ctx context.Context, arg GetTotalRepairCostByInventoryParams) ([]GetTotalRepairCostByInventoryRow, error) {
+	rows, err := q.db.Query(ctx, getTotalRepairCostByInventory, arg.WorkspaceID, arg.InventoryID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []GetTotalRepairCostByInventoryRow{}
+	for rows.Next() {
+		var i GetTotalRepairCostByInventoryRow
+		if err := rows.Scan(&i.CurrencyCode, &i.TotalCostCents, &i.RepairCount); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listRepairLogsByInventory = `-- name: ListRepairLogsByInventory :many
 SELECT id, workspace_id, inventory_id, status, description, repair_date, cost, currency_code, service_provider, completed_at, new_condition, notes, created_at, updated_at, is_warranty_claim, reminder_date, reminder_sent FROM warehouse.repair_logs
 WHERE workspace_id = $1 AND inventory_id = $2
@@ -328,6 +371,68 @@ func (q *Queries) ListRepairLogsByWorkspace(ctx context.Context, arg ListRepairL
 		return nil, err
 	}
 	return items, nil
+}
+
+const listRepairsNeedingReminder = `-- name: ListRepairsNeedingReminder :many
+SELECT
+    rl.id,
+    rl.workspace_id,
+    rl.inventory_id,
+    rl.description,
+    rl.reminder_date,
+    it.name AS item_name
+FROM warehouse.repair_logs rl
+JOIN warehouse.inventory inv ON rl.inventory_id = inv.id
+JOIN warehouse.items it ON inv.item_id = it.id
+WHERE rl.reminder_date <= $1
+  AND rl.reminder_sent = false
+`
+
+type ListRepairsNeedingReminderRow struct {
+	ID           uuid.UUID   `json:"id"`
+	WorkspaceID  uuid.UUID   `json:"workspace_id"`
+	InventoryID  uuid.UUID   `json:"inventory_id"`
+	Description  string      `json:"description"`
+	ReminderDate pgtype.Date `json:"reminder_date"`
+	ItemName     string      `json:"item_name"`
+}
+
+func (q *Queries) ListRepairsNeedingReminder(ctx context.Context, reminderDate pgtype.Date) ([]ListRepairsNeedingReminderRow, error) {
+	rows, err := q.db.Query(ctx, listRepairsNeedingReminder, reminderDate)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []ListRepairsNeedingReminderRow{}
+	for rows.Next() {
+		var i ListRepairsNeedingReminderRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.WorkspaceID,
+			&i.InventoryID,
+			&i.Description,
+			&i.ReminderDate,
+			&i.ItemName,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const markRepairReminderSent = `-- name: MarkRepairReminderSent :exec
+UPDATE warehouse.repair_logs
+SET reminder_sent = true, updated_at = now()
+WHERE id = $1
+`
+
+func (q *Queries) MarkRepairReminderSent(ctx context.Context, id uuid.UUID) error {
+	_, err := q.db.Exec(ctx, markRepairReminderSent, id)
+	return err
 }
 
 const updateRepairLog = `-- name: UpdateRepairLog :one
