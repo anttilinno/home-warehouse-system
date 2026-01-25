@@ -43,6 +43,7 @@ import (
 	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/location"
 	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/repairattachment"
 	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/repairlog"
+	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/repairphoto"
 	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/movement"
 	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/importjob"
 	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/pendingchange"
@@ -154,6 +155,7 @@ func NewRouter(pool *pgxpool.Pool, cfg *config.Config) chi.Router {
 	importJobRepo := postgres.NewImportJobRepository(pool)
 	pendingChangeRepo := postgres.NewPendingChangeRepository(pool)
 	repairAttachmentRepo := postgres.NewRepairAttachmentRepository(pool)
+	repairPhotoRepo := postgres.NewRepairPhotoRepository(pool)
 
 	// Initialize web push sender (optional - only if VAPID keys are configured)
 	var pushSender *webpush.Sender
@@ -202,6 +204,7 @@ func NewRouter(pool *pgxpool.Pool, cfg *config.Config) chi.Router {
 	borrowerSvc := borrower.NewService(borrowerRepo)
 	loanSvc := loan.NewService(loanRepo, inventoryRepo)
 	repairLogSvc := repairlog.NewService(repairLogRepo, inventoryRepo)
+	repairPhotoSvc := repairphoto.NewService(repairPhotoRepo, photoStorage, imageProcessor, uploadDir)
 	repairAttachmentSvc := repairattachment.NewService(repairAttachmentRepo, fileRepo)
 	// Phase 5 services (continued)
 	attachmentSvc := attachment.NewService(fileRepo, attachmentRepo)
@@ -346,6 +349,20 @@ func NewRouter(pool *pgxpool.Pool, cfg *config.Config) chi.Router {
 			// Register repair log routes
 			repairlog.RegisterRoutes(wsAPI, repairLogSvc, broadcaster)
 
+			// Register repair photo routes
+			repairPhotoURLGenerator := func(workspaceID, repairLogID, photoID uuid.UUID, isThumbnail bool) string {
+				if isThumbnail {
+					return fmt.Sprintf("%s/api/v1/workspaces/%s/repairs/%s/photos/%s/thumbnail",
+						cfg.BackendURL, workspaceID, repairLogID, photoID)
+				}
+				return fmt.Sprintf("%s/api/v1/workspaces/%s/repairs/%s/photos/%s/file",
+					cfg.BackendURL, workspaceID, repairLogID, photoID)
+			}
+			repairphoto.RegisterRoutes(wsAPI, repairPhotoSvc, broadcaster, repairPhotoURLGenerator)
+			repairPhotoStorageGetter := &repairPhotoStorageGetter{storage: photoStorage}
+			repairphoto.RegisterUploadHandler(r, repairPhotoSvc, broadcaster, repairPhotoURLGenerator)
+			repairphoto.RegisterServeHandler(r, repairPhotoSvc, repairPhotoStorageGetter)
+
 			// Register repair attachment routes
 			repairattachment.RegisterRoutes(wsAPI, repairAttachmentSvc, broadcaster)
 
@@ -418,5 +435,14 @@ type photoStorageGetter struct {
 }
 
 func (g *photoStorageGetter) GetStorage() itemphoto.Storage {
+	return g.storage
+}
+
+// repairPhotoStorageGetter implements the repairphoto.StorageGetter interface
+type repairPhotoStorageGetter struct {
+	storage *storage.LocalStorage
+}
+
+func (g *repairPhotoStorageGetter) GetStorage() repairphoto.Storage {
 	return g.storage
 }
