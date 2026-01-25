@@ -5,8 +5,10 @@ import (
 	"fmt"
 	"net/http"
 	"testing"
+	"time"
 
 	"github.com/google/uuid"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 
 	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/company"
@@ -341,4 +343,165 @@ func TestCompanyHandler_Delete(t *testing.T) {
 		testutil.AssertStatus(t, rec, http.StatusNotFound)
 		mockSvc.AssertExpectations(t)
 	})
+}
+
+// Event Publishing Tests
+
+func TestCompanyHandler_Create_PublishesEvent(t *testing.T) {
+	setup := testutil.NewHandlerTestSetup()
+	mockSvc := new(MockService)
+	capture := testutil.NewEventCapture(setup.WorkspaceID, setup.UserID)
+	capture.Start()
+	defer capture.Stop()
+
+	company.RegisterRoutes(setup.API, mockSvc, capture.GetBroadcaster())
+
+	website := "https://example.com"
+	testCompany, _ := company.NewCompany(setup.WorkspaceID, "Acme Corp", &website, nil)
+
+	mockSvc.On("Create", mock.Anything, mock.MatchedBy(func(input company.CreateInput) bool {
+		return input.Name == "Acme Corp"
+	})).Return(testCompany, nil).Once()
+
+	body := `{"name":"Acme Corp","website":"https://example.com"}`
+	rec := setup.Post("/companies", body)
+
+	testutil.AssertStatus(t, rec, http.StatusOK)
+	mockSvc.AssertExpectations(t)
+
+	// Wait for event
+	assert.True(t, capture.WaitForEvents(1, 500*time.Millisecond), "Event should be published")
+
+	event := capture.GetLastEvent()
+	assert.NotNil(t, event)
+	assert.Equal(t, "company.created", event.Type)
+	assert.Equal(t, "company", event.EntityType)
+	assert.Equal(t, setup.WorkspaceID, event.WorkspaceID)
+	assert.Equal(t, setup.UserID, event.UserID)
+	assert.Equal(t, testCompany.ID().String(), event.EntityID)
+	assert.NotNil(t, event.Data)
+	assert.Equal(t, testCompany.ID(), event.Data["id"])
+	assert.Equal(t, testCompany.Name(), event.Data["name"])
+}
+
+func TestCompanyHandler_Update_PublishesEvent(t *testing.T) {
+	setup := testutil.NewHandlerTestSetup()
+	mockSvc := new(MockService)
+	capture := testutil.NewEventCapture(setup.WorkspaceID, setup.UserID)
+	capture.Start()
+	defer capture.Stop()
+
+	company.RegisterRoutes(setup.API, mockSvc, capture.GetBroadcaster())
+
+	website := "https://updated.com"
+	testCompany, _ := company.NewCompany(setup.WorkspaceID, "Updated Corp", &website, nil)
+	companyID := testCompany.ID()
+
+	// Mock GetByID first (handler calls it to get current company)
+	currentCompany, _ := company.NewCompany(setup.WorkspaceID, "Original Corp", nil, nil)
+	mockSvc.On("GetByID", mock.Anything, companyID, setup.WorkspaceID).
+		Return(currentCompany, nil).Once()
+
+	mockSvc.On("Update", mock.Anything, companyID, setup.WorkspaceID, mock.Anything).
+		Return(testCompany, nil).Once()
+
+	body := `{"name":"Updated Corp","website":"https://updated.com"}`
+	rec := setup.Patch(fmt.Sprintf("/companies/%s", companyID), body)
+
+	testutil.AssertStatus(t, rec, http.StatusOK)
+	mockSvc.AssertExpectations(t)
+
+	// Wait for event
+	assert.True(t, capture.WaitForEvents(1, 500*time.Millisecond), "Event should be published")
+
+	event := capture.GetLastEvent()
+	assert.NotNil(t, event)
+	assert.Equal(t, "company.updated", event.Type)
+	assert.Equal(t, "company", event.EntityType)
+	assert.Equal(t, setup.WorkspaceID, event.WorkspaceID)
+	assert.Equal(t, setup.UserID, event.UserID)
+	assert.Equal(t, companyID.String(), event.EntityID)
+}
+
+func TestCompanyHandler_Archive_PublishesEvent(t *testing.T) {
+	setup := testutil.NewHandlerTestSetup()
+	mockSvc := new(MockService)
+	capture := testutil.NewEventCapture(setup.WorkspaceID, setup.UserID)
+	capture.Start()
+	defer capture.Stop()
+
+	company.RegisterRoutes(setup.API, mockSvc, capture.GetBroadcaster())
+
+	companyID := uuid.New()
+
+	mockSvc.On("Archive", mock.Anything, companyID, setup.WorkspaceID).
+		Return(nil).Once()
+
+	rec := setup.Post(fmt.Sprintf("/companies/%s/archive", companyID), "")
+
+	testutil.AssertStatus(t, rec, http.StatusNoContent)
+	mockSvc.AssertExpectations(t)
+
+	// Wait for event (archive emits deleted event)
+	assert.True(t, capture.WaitForEvents(1, 500*time.Millisecond), "Event should be published")
+
+	event := capture.GetLastEvent()
+	assert.NotNil(t, event)
+	assert.Equal(t, "company.deleted", event.Type)
+	assert.Equal(t, "company", event.EntityType)
+	assert.Equal(t, setup.WorkspaceID, event.WorkspaceID)
+	assert.Equal(t, setup.UserID, event.UserID)
+	assert.Equal(t, companyID.String(), event.EntityID)
+}
+
+func TestCompanyHandler_Restore_PublishesEvent(t *testing.T) {
+	setup := testutil.NewHandlerTestSetup()
+	mockSvc := new(MockService)
+	capture := testutil.NewEventCapture(setup.WorkspaceID, setup.UserID)
+	capture.Start()
+	defer capture.Stop()
+
+	company.RegisterRoutes(setup.API, mockSvc, capture.GetBroadcaster())
+
+	companyID := uuid.New()
+
+	mockSvc.On("Restore", mock.Anything, companyID, setup.WorkspaceID).
+		Return(nil).Once()
+
+	rec := setup.Post(fmt.Sprintf("/companies/%s/restore", companyID), "")
+
+	testutil.AssertStatus(t, rec, http.StatusNoContent)
+	mockSvc.AssertExpectations(t)
+
+	// Wait for event (restore emits created event)
+	assert.True(t, capture.WaitForEvents(1, 500*time.Millisecond), "Event should be published")
+
+	event := capture.GetLastEvent()
+	assert.NotNil(t, event)
+	assert.Equal(t, "company.created", event.Type)
+	assert.Equal(t, "company", event.EntityType)
+	assert.Equal(t, setup.WorkspaceID, event.WorkspaceID)
+	assert.Equal(t, setup.UserID, event.UserID)
+	assert.Equal(t, companyID.String(), event.EntityID)
+}
+
+func TestCompanyHandler_Create_NilBroadcaster_NoError(t *testing.T) {
+	setup := testutil.NewHandlerTestSetup()
+	mockSvc := new(MockService)
+	// Register with nil broadcaster
+	company.RegisterRoutes(setup.API, mockSvc, nil)
+
+	website := "https://example.com"
+	testCompany, _ := company.NewCompany(setup.WorkspaceID, "Acme Corp", &website, nil)
+
+	mockSvc.On("Create", mock.Anything, mock.MatchedBy(func(input company.CreateInput) bool {
+		return input.Name == "Acme Corp"
+	})).Return(testCompany, nil).Once()
+
+	body := `{"name":"Acme Corp","website":"https://example.com"}`
+	rec := setup.Post("/companies", body)
+
+	// Should not panic and should succeed
+	testutil.AssertStatus(t, rec, http.StatusOK)
+	mockSvc.AssertExpectations(t)
 }
