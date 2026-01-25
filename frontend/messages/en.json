@@ -538,6 +538,13 @@
       "cancel": "Cancel",
       "saveSuccess": "Caption updated successfully",
       "saveError": "Failed to update caption"
+    },
+    "thumbnail": {
+      "processing": "Processing",
+      "generatingThumbnails": "Generating thumbnails...",
+      "failed": "Failed",
+      "defaultError": "Thumbnail generation failed",
+      "thumbnailFailed": "Failed to generate thumbnail"
     }
   },
   "notifications": {
