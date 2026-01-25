@@ -523,7 +523,19 @@
     "startSuccess": "Ремонт начат",
     "completeSuccess": "Ремонт завершён",
     "deleteSuccess": "Ремонт удалён",
-    "error": "Произошла ошибка"
+    "error": "Произошла ошибка",
+    "warrantyClaim": "Гарантийный случай",
+    "reminderDate": "Дата напоминания",
+    "photos": "Фотографии",
+    "attachments": "Вложения",
+    "beforePhotos": "До",
+    "duringPhotos": "Во время",
+    "afterPhotos": "После",
+    "uploadPhoto": "Загрузить фото",
+    "linkAttachment": "Прикрепить файл",
+    "totalCost": "Общая стоимость ремонтов",
+    "noPhotos": "Фотографии отсутствуют",
+    "noAttachments": "Вложения отсутствуют"
   },
   "pwa": {
     "offline": {

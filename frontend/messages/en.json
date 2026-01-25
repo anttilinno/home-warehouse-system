@@ -649,7 +649,19 @@
     "startSuccess": "Repair started",
     "completeSuccess": "Repair completed",
     "deleteSuccess": "Repair deleted",
-    "error": "An error occurred"
+    "error": "An error occurred",
+    "warrantyClaim": "Warranty Claim",
+    "reminderDate": "Reminder Date",
+    "photos": "Photos",
+    "attachments": "Attachments",
+    "beforePhotos": "Before",
+    "duringPhotos": "During",
+    "afterPhotos": "After",
+    "uploadPhoto": "Upload Photo",
+    "linkAttachment": "Link Attachment",
+    "totalCost": "Total Repair Cost",
+    "noPhotos": "No photos attached",
+    "noAttachments": "No attachments linked"
   },
   "pwa": {
     "offline": {

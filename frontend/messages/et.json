@@ -523,7 +523,19 @@
     "startSuccess": "Remont alustatud",
     "completeSuccess": "Remont lõpetatud",
     "deleteSuccess": "Remont kustutatud",
-    "error": "Tekkis viga"
+    "error": "Tekkis viga",
+    "warrantyClaim": "Garantiinõue",
+    "reminderDate": "Meeldetuletuse kuupäev",
+    "photos": "Fotod",
+    "attachments": "Manused",
+    "beforePhotos": "Enne",
+    "duringPhotos": "Ajal",
+    "afterPhotos": "Pärast",
+    "uploadPhoto": "Laadi foto üles",
+    "linkAttachment": "Lisa manus",
+    "totalCost": "Remondi kogumaksumus",
+    "noPhotos": "Fotod puuduvad",
+    "noAttachments": "Manused puuduvad"
   },
   "pwa": {
     "offline": {

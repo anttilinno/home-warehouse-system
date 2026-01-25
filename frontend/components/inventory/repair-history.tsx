@@ -16,6 +16,12 @@ import {
   DollarSign,
   Building,
   Calendar,
+  Shield,
+  Bell,
+  Image,
+  Paperclip,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -25,6 +31,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Card,
   CardContent,
@@ -74,9 +81,11 @@ import {
 } from "@/components/ui/alert-dialog";
 
 import { repairLogsApi } from "@/lib/api";
-import type { RepairLog, RepairLogCreate, RepairStatus } from "@/lib/types/repair-log";
+import type { RepairLog, RepairLogCreate, RepairStatus, RepairPhoto, RepairAttachment, RepairCostSummary } from "@/lib/types/repair-log";
 import type { InventoryCondition } from "@/lib/types/inventory";
 import { cn } from "@/lib/utils";
+import { RepairPhotoUpload } from "./repair-photo-upload";
+import { RepairAttachments } from "./repair-attachments";
 
 const CONDITION_OPTIONS: { value: InventoryCondition; label: string }[] = [
   { value: "NEW", label: "New" },
@@ -137,8 +146,18 @@ export function RepairHistory({ inventoryId, workspaceId, onRepairComplete }: Re
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [completeDialogOpen, setCompleteDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [detailDialogOpen, setDetailDialogOpen] = useState(false);
   const [selectedRepair, setSelectedRepair] = useState<RepairLog | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+
+  // Cost summary state
+  const [costSummary, setCostSummary] = useState<RepairCostSummary[]>([]);
+
+  // Detail dialog state
+  const [repairPhotos, setRepairPhotos] = useState<RepairPhoto[]>([]);
+  const [repairAttachments, setRepairAttachments] = useState<RepairAttachment[]>([]);
+  const [photosExpanded, setPhotosExpanded] = useState(true);
+  const [attachmentsExpanded, setAttachmentsExpanded] = useState(false);
 
   // Create form state
   const [formDescription, setFormDescription] = useState("");
@@ -147,6 +166,8 @@ export function RepairHistory({ inventoryId, workspaceId, onRepairComplete }: Re
   const [formCurrencyCode, setFormCurrencyCode] = useState("EUR");
   const [formServiceProvider, setFormServiceProvider] = useState("");
   const [formNotes, setFormNotes] = useState("");
+  const [formIsWarrantyClaim, setFormIsWarrantyClaim] = useState(false);
+  const [formReminderDate, setFormReminderDate] = useState("");
 
   // Complete form state
   const [completeNewCondition, setCompleteNewCondition] = useState<string>("");
@@ -155,8 +176,12 @@ export function RepairHistory({ inventoryId, workspaceId, onRepairComplete }: Re
   const fetchRepairs = useCallback(async () => {
     try {
       setLoading(true);
-      const data = await repairLogsApi.listByInventory(workspaceId, inventoryId);
-      setRepairs(data);
+      const [repairsData, costData] = await Promise.all([
+        repairLogsApi.listByInventory(workspaceId, inventoryId),
+        repairLogsApi.getRepairCost(workspaceId, inventoryId),
+      ]);
+      setRepairs(repairsData);
+      setCostSummary(costData);
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Failed to load repairs";
       toast.error(t("error"), { description: errorMessage });
@@ -169,6 +194,20 @@ export function RepairHistory({ inventoryId, workspaceId, onRepairComplete }: Re
     fetchRepairs();
   }, [fetchRepairs]);
 
+  // Fetch photos and attachments for selected repair
+  const fetchRepairDetails = useCallback(async (repair: RepairLog) => {
+    try {
+      const [photos, attachments] = await Promise.all([
+        repairLogsApi.listPhotos(workspaceId, repair.id),
+        repairLogsApi.listAttachments(workspaceId, repair.id),
+      ]);
+      setRepairPhotos(photos);
+      setRepairAttachments(attachments);
+    } catch (error) {
+      console.error("Failed to fetch repair details:", error);
+    }
+  }, [workspaceId]);
+
   // Reset form
   const resetForm = () => {
     setFormDescription("");
@@ -177,6 +216,17 @@ export function RepairHistory({ inventoryId, workspaceId, onRepairComplete }: Re
     setFormCurrencyCode("EUR");
     setFormServiceProvider("");
     setFormNotes("");
+    setFormIsWarrantyClaim(false);
+    setFormReminderDate("");
+  };
+
+  // Open detail dialog
+  const openDetailDialog = async (repair: RepairLog) => {
+    setSelectedRepair(repair);
+    setDetailDialogOpen(true);
+    setPhotosExpanded(true);
+    setAttachmentsExpanded(false);
+    await fetchRepairDetails(repair);
   };
 
   // Create repair
@@ -208,6 +258,12 @@ export function RepairHistory({ inventoryId, workspaceId, onRepairComplete }: Re
       }
       if (formNotes.trim()) {
         data.notes = formNotes.trim();
+      }
+      if (formIsWarrantyClaim) {
+        data.is_warranty_claim = true;
+      }
+      if (formReminderDate) {
+        data.reminder_date = formReminderDate;
       }
 
       await repairLogsApi.create(workspaceId, data);
@@ -315,6 +371,25 @@ export function RepairHistory({ inventoryId, workspaceId, onRepairComplete }: Re
         </Button>
       </div>
 
+      {/* Lifecycle Cost Summary */}
+      {costSummary.length > 0 && (
+        <Card>
+          <CardContent className="py-3">
+            <div className="flex items-center gap-2">
+              <DollarSign className="h-4 w-4 text-muted-foreground" />
+              <span className="text-sm font-medium">{t("totalCost")}:</span>
+              <div className="flex flex-wrap gap-2">
+                {costSummary.map((summary) => (
+                  <Badge key={summary.currency_code} variant="secondary">
+                    {formatCurrency(summary.total_cents, summary.currency_code)} ({summary.repair_count} {summary.repair_count === 1 ? "repair" : "repairs"})
+                  </Badge>
+                ))}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {repairs.length === 0 ? (
         <EmptyState
           icon={Wrench}
@@ -341,14 +416,32 @@ export function RepairHistory({ inventoryId, workspaceId, onRepairComplete }: Re
             </TableHeader>
             <TableBody>
               {repairs.map((repair) => (
-                <TableRow key={repair.id}>
+                <TableRow key={repair.id} className="cursor-pointer hover:bg-muted/50" onClick={() => openDetailDialog(repair)}>
                   <TableCell>
-                    <div className="font-medium">{repair.description}</div>
-                    {repair.notes && (
-                      <div className="text-sm text-muted-foreground line-clamp-1">
-                        {repair.notes}
+                    <div className="flex items-start gap-2">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="font-medium">{repair.description}</span>
+                          {repair.is_warranty_claim && (
+                            <Badge variant="outline" className="text-purple-600 border-purple-600">
+                              <Shield className="h-3 w-3 mr-1" />
+                              {t("warrantyClaim")}
+                            </Badge>
+                          )}
+                          {repair.reminder_date && (
+                            <Badge variant="outline" className="text-orange-600 border-orange-600">
+                              <Bell className="h-3 w-3 mr-1" />
+                              {format(parseISO(repair.reminder_date), "PP")}
+                            </Badge>
+                          )}
+                        </div>
+                        {repair.notes && (
+                          <div className="text-sm text-muted-foreground line-clamp-1">
+                            {repair.notes}
+                          </div>
+                        )}
                       </div>
-                    )}
+                    </div>
                   </TableCell>
                   <TableCell>
                     <StatusBadge status={repair.status} />
@@ -364,7 +457,7 @@ export function RepairHistory({ inventoryId, workspaceId, onRepairComplete }: Re
                   <TableCell>
                     {repair.service_provider || "-"}
                   </TableCell>
-                  <TableCell>
+                  <TableCell onClick={(e) => e.stopPropagation()}>
                     <div className="flex items-center gap-1">
                       {repair.status === "PENDING" && (
                         <Button
@@ -393,6 +486,11 @@ export function RepairHistory({ inventoryId, workspaceId, onRepairComplete }: Re
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={() => openDetailDialog(repair)}>
+                            <Pencil className="mr-2 h-4 w-4" />
+                            View Details
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
                           <DropdownMenuItem
                             onClick={() => openDeleteDialog(repair)}
                             className="text-destructive"
@@ -497,6 +595,30 @@ export function RepairHistory({ inventoryId, workspaceId, onRepairComplete }: Re
                 rows={3}
               />
             </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="warrantyClaimCreate"
+                  checked={formIsWarrantyClaim}
+                  onCheckedChange={(checked) => setFormIsWarrantyClaim(checked === true)}
+                />
+                <Label htmlFor="warrantyClaimCreate" className="text-sm font-normal cursor-pointer">
+                  <Shield className="h-4 w-4 inline mr-1" />
+                  {t("warrantyClaim")}
+                </Label>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="reminderDate">{t("reminderDate")}</Label>
+                <Input
+                  id="reminderDate"
+                  type="date"
+                  value={formReminderDate}
+                  onChange={(e) => setFormReminderDate(e.target.value)}
+                />
+              </div>
+            </div>
           </div>
 
           <DialogFooter>
@@ -574,6 +696,128 @@ export function RepairHistory({ inventoryId, workspaceId, onRepairComplete }: Re
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Repair Detail Dialog */}
+      <Dialog open={detailDialogOpen} onOpenChange={setDetailDialogOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Wrench className="h-5 w-5" />
+              {selectedRepair?.description}
+            </DialogTitle>
+            <DialogDescription className="flex items-center gap-2 flex-wrap">
+              {selectedRepair && <StatusBadge status={selectedRepair.status} />}
+              {selectedRepair?.is_warranty_claim && (
+                <Badge variant="outline" className="text-purple-600 border-purple-600">
+                  <Shield className="h-3 w-3 mr-1" />
+                  {t("warrantyClaim")}
+                </Badge>
+              )}
+              {selectedRepair?.reminder_date && (
+                <Badge variant="outline" className="text-orange-600 border-orange-600">
+                  <Bell className="h-3 w-3 mr-1" />
+                  {format(parseISO(selectedRepair.reminder_date), "PP")}
+                </Badge>
+              )}
+            </DialogDescription>
+          </DialogHeader>
+
+          {selectedRepair && (
+            <div className="space-y-4 py-4">
+              {/* Repair Info */}
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                  <span className="text-muted-foreground">{t("date")}:</span>
+                  <span className="ml-2 font-medium">
+                    {selectedRepair.repair_date ? format(parseISO(selectedRepair.repair_date), "PP") : "-"}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-muted-foreground">{t("cost")}:</span>
+                  <span className="ml-2 font-medium">
+                    {formatCurrency(selectedRepair.cost, selectedRepair.currency_code)}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-muted-foreground">{t("serviceProvider")}:</span>
+                  <span className="ml-2 font-medium">{selectedRepair.service_provider || "-"}</span>
+                </div>
+                {selectedRepair.new_condition && (
+                  <div>
+                    <span className="text-muted-foreground">{t("newCondition")}:</span>
+                    <span className="ml-2 font-medium">{selectedRepair.new_condition}</span>
+                  </div>
+                )}
+              </div>
+
+              {selectedRepair.notes && (
+                <div>
+                  <span className="text-sm text-muted-foreground">{t("notes")}:</span>
+                  <p className="mt-1 text-sm">{selectedRepair.notes}</p>
+                </div>
+              )}
+
+              {/* Photos Section */}
+              <div className="border rounded-lg">
+                <Button
+                  variant="ghost"
+                  className="w-full justify-between p-3 h-auto"
+                  onClick={() => setPhotosExpanded(!photosExpanded)}
+                >
+                  <div className="flex items-center gap-2">
+                    <Image className="h-4 w-4" />
+                    <span className="font-medium">{t("photos")}</span>
+                    <Badge variant="secondary" className="ml-1">{repairPhotos.length}</Badge>
+                  </div>
+                  {photosExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                </Button>
+                {photosExpanded && (
+                  <div className="p-3 pt-0 border-t">
+                    <RepairPhotoUpload
+                      workspaceId={workspaceId}
+                      repairLogId={selectedRepair.id}
+                      photos={repairPhotos}
+                      onPhotosChange={() => fetchRepairDetails(selectedRepair)}
+                    />
+                  </div>
+                )}
+              </div>
+
+              {/* Attachments Section */}
+              <div className="border rounded-lg">
+                <Button
+                  variant="ghost"
+                  className="w-full justify-between p-3 h-auto"
+                  onClick={() => setAttachmentsExpanded(!attachmentsExpanded)}
+                >
+                  <div className="flex items-center gap-2">
+                    <Paperclip className="h-4 w-4" />
+                    <span className="font-medium">{t("attachments")}</span>
+                    <Badge variant="secondary" className="ml-1">{repairAttachments.length}</Badge>
+                  </div>
+                  {attachmentsExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                </Button>
+                {attachmentsExpanded && (
+                  <div className="p-3 pt-0 border-t">
+                    <RepairAttachments
+                      workspaceId={workspaceId}
+                      repairLogId={selectedRepair.id}
+                      attachments={repairAttachments}
+                      onAttachmentsChange={() => fetchRepairDetails(selectedRepair)}
+                    />
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDetailDialogOpen(false)}>
+              Close
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
