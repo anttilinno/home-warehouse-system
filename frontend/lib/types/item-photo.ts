@@ -3,6 +3,11 @@
  */
 
 /**
+ * Thumbnail processing status
+ */
+export type ThumbnailStatus = 'pending' | 'processing' | 'complete' | 'failed';
+
+/**
  * Photo URLs at different sizes
  */
 export interface PhotoUrls {
@@ -31,6 +36,62 @@ export interface ItemPhoto {
   created_at: string;
   updated_at: string;
   urls: PhotoUrls;
+  /** Thumbnail processing status */
+  thumbnail_status: ThumbnailStatus;
+  /** Error message if thumbnail generation failed */
+  thumbnail_error?: string;
+}
+
+/**
+ * SSE event for when thumbnails are ready
+ */
+export interface ThumbnailReadyEvent {
+  photo_id: string;
+  item_id: string;
+  small_thumbnail_url?: string;
+  medium_thumbnail_url?: string;
+  large_thumbnail_url?: string;
+}
+
+/**
+ * SSE event for when thumbnail generation fails
+ */
+export interface ThumbnailFailedEvent {
+  photo_id: string;
+  item_id: string;
+  error: string;
+}
+
+/**
+ * Check if a photo's thumbnails are ready
+ */
+export function isThumbnailReady(photo: ItemPhoto): boolean {
+  return photo.thumbnail_status === 'complete';
+}
+
+/**
+ * Check if a photo's thumbnails are still being processed
+ */
+export function isThumbnailProcessing(photo: ItemPhoto): boolean {
+  return photo.thumbnail_status === 'pending' || photo.thumbnail_status === 'processing';
+}
+
+/**
+ * Get the best available thumbnail URL for a photo
+ * Prefers medium size, falls back to small, then original
+ */
+export function getBestThumbnailUrl(photo: ItemPhoto): string | null {
+  if (photo.thumbnail_status !== 'complete') {
+    return null;
+  }
+  // Use the urls object which contains all size variants
+  if (photo.urls.medium) {
+    return photo.urls.medium;
+  }
+  if (photo.urls.small) {
+    return photo.urls.small;
+  }
+  return photo.urls.original || null;
 }
 
 /**
