@@ -334,7 +334,7 @@ func (q *Queries) ListDeletedRecordsModifiedSince(ctx context.Context, arg ListD
 }
 
 const listInventoryModifiedSince = `-- name: ListInventoryModifiedSince :many
-SELECT id, workspace_id, item_id, location_id, container_id, quantity, condition, status, date_acquired, purchase_price, currency_code, warranty_expires, expiration_date, notes, is_archived, created_at, updated_at FROM warehouse.inventory
+SELECT id, workspace_id, item_id, location_id, container_id, quantity, condition, status, date_acquired, purchase_price, currency_code, warranty_expires, expiration_date, notes, is_archived, created_at, updated_at, last_used_at FROM warehouse.inventory
 WHERE workspace_id = $1 
   AND updated_at > $2
 ORDER BY updated_at ASC
@@ -374,6 +374,7 @@ func (q *Queries) ListInventoryModifiedSince(ctx context.Context, arg ListInvent
 			&i.IsArchived,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.LastUsedAt,
 		); err != nil {
 			return nil, err
 		}

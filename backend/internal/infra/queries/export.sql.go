@@ -455,7 +455,7 @@ func (q *Queries) ListAllContainersIncludingArchived(ctx context.Context, worksp
 }
 
 const listAllInventory = `-- name: ListAllInventory :many
-SELECT id, workspace_id, item_id, location_id, container_id, quantity, condition, status, date_acquired, purchase_price, currency_code, warranty_expires, expiration_date, notes, is_archived, created_at, updated_at FROM warehouse.inventory
+SELECT id, workspace_id, item_id, location_id, container_id, quantity, condition, status, date_acquired, purchase_price, currency_code, warranty_expires, expiration_date, notes, is_archived, created_at, updated_at, last_used_at FROM warehouse.inventory
 WHERE workspace_id = $1
 ORDER BY created_at
 `
@@ -487,6 +487,7 @@ func (q *Queries) ListAllInventory(ctx context.Context, workspaceID uuid.UUID) (
 			&i.IsArchived,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.LastUsedAt,
 		); err != nil {
 			return nil, err
 		}

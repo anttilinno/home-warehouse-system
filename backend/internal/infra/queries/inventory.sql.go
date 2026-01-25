@@ -42,7 +42,7 @@ INSERT INTO warehouse.inventory (
     warranty_expires, expiration_date, notes
 )
 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
-RETURNING id, workspace_id, item_id, location_id, container_id, quantity, condition, status, date_acquired, purchase_price, currency_code, warranty_expires, expiration_date, notes, is_archived, created_at, updated_at
+RETURNING id, workspace_id, item_id, location_id, container_id, quantity, condition, status, date_acquired, purchase_price, currency_code, warranty_expires, expiration_date, notes, is_archived, created_at, updated_at, last_used_at
 `
 
 type CreateInventoryParams struct {
@@ -98,12 +98,13 @@ func (q *Queries) CreateInventory(ctx context.Context, arg CreateInventoryParams
 		&i.IsArchived,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.LastUsedAt,
 	)
 	return i, err
 }
 
 const getAvailableInventory = `-- name: GetAvailableInventory :many
-SELECT id, workspace_id, item_id, location_id, container_id, quantity, condition, status, date_acquired, purchase_price, currency_code, warranty_expires, expiration_date, notes, is_archived, created_at, updated_at FROM warehouse.inventory
+SELECT id, workspace_id, item_id, location_id, container_id, quantity, condition, status, date_acquired, purchase_price, currency_code, warranty_expires, expiration_date, notes, is_archived, created_at, updated_at, last_used_at FROM warehouse.inventory
 WHERE workspace_id = $1 AND item_id = $2 AND status = 'AVAILABLE' AND is_archived = false
 `
 
@@ -139,6 +140,7 @@ func (q *Queries) GetAvailableInventory(ctx context.Context, arg GetAvailableInv
 			&i.IsArchived,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.LastUsedAt,
 		); err != nil {
 			return nil, err
 		}
@@ -151,7 +153,7 @@ func (q *Queries) GetAvailableInventory(ctx context.Context, arg GetAvailableInv
 }
 
 const getInventory = `-- name: GetInventory :one
-SELECT id, workspace_id, item_id, location_id, container_id, quantity, condition, status, date_acquired, purchase_price, currency_code, warranty_expires, expiration_date, notes, is_archived, created_at, updated_at FROM warehouse.inventory
+SELECT id, workspace_id, item_id, location_id, container_id, quantity, condition, status, date_acquired, purchase_price, currency_code, warranty_expires, expiration_date, notes, is_archived, created_at, updated_at, last_used_at FROM warehouse.inventory
 WHERE id = $1 AND workspace_id = $2
 `
 
@@ -181,12 +183,13 @@ func (q *Queries) GetInventory(ctx context.Context, arg GetInventoryParams) (War
 		&i.IsArchived,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.LastUsedAt,
 	)
 	return i, err
 }
 
 const getInventoryWithDetails = `-- name: GetInventoryWithDetails :one
-SELECT i.id, i.workspace_id, i.item_id, i.location_id, i.container_id, i.quantity, i.condition, i.status, i.date_acquired, i.purchase_price, i.currency_code, i.warranty_expires, i.expiration_date, i.notes, i.is_archived, i.created_at, i.updated_at, it.name as item_name, it.sku, l.name as location_name, c.name as container_name
+SELECT i.id, i.workspace_id, i.item_id, i.location_id, i.container_id, i.quantity, i.condition, i.status, i.date_acquired, i.purchase_price, i.currency_code, i.warranty_expires, i.expiration_date, i.notes, i.is_archived, i.created_at, i.updated_at, i.last_used_at, it.name as item_name, it.sku, l.name as location_name, c.name as container_name
 FROM warehouse.inventory i
 JOIN warehouse.items it ON i.item_id = it.id
 JOIN warehouse.locations l ON i.location_id = l.id
@@ -217,6 +220,7 @@ type GetInventoryWithDetailsRow struct {
 	IsArchived      bool                           `json:"is_archived"`
 	CreatedAt       pgtype.Timestamptz             `json:"created_at"`
 	UpdatedAt       pgtype.Timestamptz             `json:"updated_at"`
+	LastUsedAt      pgtype.Timestamptz             `json:"last_used_at"`
 	ItemName        string                         `json:"item_name"`
 	Sku             string                         `json:"sku"`
 	LocationName    string                         `json:"location_name"`
@@ -244,6 +248,7 @@ func (q *Queries) GetInventoryWithDetails(ctx context.Context, arg GetInventoryW
 		&i.IsArchived,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.LastUsedAt,
 		&i.ItemName,
 		&i.Sku,
 		&i.LocationName,
@@ -360,7 +365,7 @@ func (q *Queries) GetTotalQuantityByItem(ctx context.Context, arg GetTotalQuanti
 }
 
 const listInventory = `-- name: ListInventory :many
-SELECT id, workspace_id, item_id, location_id, container_id, quantity, condition, status, date_acquired, purchase_price, currency_code, warranty_expires, expiration_date, notes, is_archived, created_at, updated_at FROM warehouse.inventory
+SELECT id, workspace_id, item_id, location_id, container_id, quantity, condition, status, date_acquired, purchase_price, currency_code, warranty_expires, expiration_date, notes, is_archived, created_at, updated_at, last_used_at FROM warehouse.inventory
 WHERE workspace_id = $1 AND is_archived = false
 ORDER BY created_at DESC
 LIMIT $2 OFFSET $3
@@ -399,6 +404,7 @@ func (q *Queries) ListInventory(ctx context.Context, arg ListInventoryParams) ([
 			&i.IsArchived,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.LastUsedAt,
 		); err != nil {
 			return nil, err
 		}
@@ -411,7 +417,7 @@ func (q *Queries) ListInventory(ctx context.Context, arg ListInventoryParams) ([
 }
 
 const listInventoryByContainer = `-- name: ListInventoryByContainer :many
-SELECT id, workspace_id, item_id, location_id, container_id, quantity, condition, status, date_acquired, purchase_price, currency_code, warranty_expires, expiration_date, notes, is_archived, created_at, updated_at FROM warehouse.inventory
+SELECT id, workspace_id, item_id, location_id, container_id, quantity, condition, status, date_acquired, purchase_price, currency_code, warranty_expires, expiration_date, notes, is_archived, created_at, updated_at, last_used_at FROM warehouse.inventory
 WHERE workspace_id = $1 AND container_id = $2 AND is_archived = false
 ORDER BY created_at DESC
 `
@@ -448,6 +454,7 @@ func (q *Queries) ListInventoryByContainer(ctx context.Context, arg ListInventor
 			&i.IsArchived,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.LastUsedAt,
 		); err != nil {
 			return nil, err
 		}
@@ -460,7 +467,7 @@ func (q *Queries) ListInventoryByContainer(ctx context.Context, arg ListInventor
 }
 
 const listInventoryByItem = `-- name: ListInventoryByItem :many
-SELECT id, workspace_id, item_id, location_id, container_id, quantity, condition, status, date_acquired, purchase_price, currency_code, warranty_expires, expiration_date, notes, is_archived, created_at, updated_at FROM warehouse.inventory
+SELECT id, workspace_id, item_id, location_id, container_id, quantity, condition, status, date_acquired, purchase_price, currency_code, warranty_expires, expiration_date, notes, is_archived, created_at, updated_at, last_used_at FROM warehouse.inventory
 WHERE workspace_id = $1 AND item_id = $2 AND is_archived = false
 ORDER BY created_at DESC
 `
@@ -497,6 +504,7 @@ func (q *Queries) ListInventoryByItem(ctx context.Context, arg ListInventoryByIt
 			&i.IsArchived,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.LastUsedAt,
 		); err != nil {
 			return nil, err
 		}
@@ -509,7 +517,7 @@ func (q *Queries) ListInventoryByItem(ctx context.Context, arg ListInventoryByIt
 }
 
 const listInventoryByLocation = `-- name: ListInventoryByLocation :many
-SELECT id, workspace_id, item_id, location_id, container_id, quantity, condition, status, date_acquired, purchase_price, currency_code, warranty_expires, expiration_date, notes, is_archived, created_at, updated_at FROM warehouse.inventory
+SELECT id, workspace_id, item_id, location_id, container_id, quantity, condition, status, date_acquired, purchase_price, currency_code, warranty_expires, expiration_date, notes, is_archived, created_at, updated_at, last_used_at FROM warehouse.inventory
 WHERE workspace_id = $1 AND location_id = $2 AND is_archived = false
 ORDER BY created_at DESC
 `
@@ -546,6 +554,7 @@ func (q *Queries) ListInventoryByLocation(ctx context.Context, arg ListInventory
 			&i.IsArchived,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.LastUsedAt,
 		); err != nil {
 			return nil, err
 		}
@@ -558,7 +567,7 @@ func (q *Queries) ListInventoryByLocation(ctx context.Context, arg ListInventory
 }
 
 const listInventoryWithDetails = `-- name: ListInventoryWithDetails :many
-SELECT i.id, i.workspace_id, i.item_id, i.location_id, i.container_id, i.quantity, i.condition, i.status, i.date_acquired, i.purchase_price, i.currency_code, i.warranty_expires, i.expiration_date, i.notes, i.is_archived, i.created_at, i.updated_at, it.name as item_name, it.sku, l.name as location_name, c.name as container_name
+SELECT i.id, i.workspace_id, i.item_id, i.location_id, i.container_id, i.quantity, i.condition, i.status, i.date_acquired, i.purchase_price, i.currency_code, i.warranty_expires, i.expiration_date, i.notes, i.is_archived, i.created_at, i.updated_at, i.last_used_at, it.name as item_name, it.sku, l.name as location_name, c.name as container_name
 FROM warehouse.inventory i
 JOIN warehouse.items it ON i.item_id = it.id
 JOIN warehouse.locations l ON i.location_id = l.id
@@ -592,6 +601,7 @@ type ListInventoryWithDetailsRow struct {
 	IsArchived      bool                           `json:"is_archived"`
 	CreatedAt       pgtype.Timestamptz             `json:"created_at"`
 	UpdatedAt       pgtype.Timestamptz             `json:"updated_at"`
+	LastUsedAt      pgtype.Timestamptz             `json:"last_used_at"`
 	ItemName        string                         `json:"item_name"`
 	Sku             string                         `json:"sku"`
 	LocationName    string                         `json:"location_name"`
@@ -625,6 +635,7 @@ func (q *Queries) ListInventoryWithDetails(ctx context.Context, arg ListInventor
 			&i.IsArchived,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.LastUsedAt,
 			&i.ItemName,
 			&i.Sku,
 			&i.LocationName,
@@ -644,7 +655,7 @@ const moveInventory = `-- name: MoveInventory :one
 UPDATE warehouse.inventory
 SET location_id = $2, container_id = $3, updated_at = now()
 WHERE id = $1
-RETURNING id, workspace_id, item_id, location_id, container_id, quantity, condition, status, date_acquired, purchase_price, currency_code, warranty_expires, expiration_date, notes, is_archived, created_at, updated_at
+RETURNING id, workspace_id, item_id, location_id, container_id, quantity, condition, status, date_acquired, purchase_price, currency_code, warranty_expires, expiration_date, notes, is_archived, created_at, updated_at, last_used_at
 `
 
 type MoveInventoryParams struct {
@@ -674,6 +685,7 @@ func (q *Queries) MoveInventory(ctx context.Context, arg MoveInventoryParams) (W
 		&i.IsArchived,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.LastUsedAt,
 	)
 	return i, err
 }
@@ -695,7 +707,7 @@ SET location_id = $2, container_id = $3, quantity = $4, condition = $5,
     date_acquired = $6, purchase_price = $7, currency_code = $8,
     warranty_expires = $9, expiration_date = $10, notes = $11, updated_at = now()
 WHERE id = $1
-RETURNING id, workspace_id, item_id, location_id, container_id, quantity, condition, status, date_acquired, purchase_price, currency_code, warranty_expires, expiration_date, notes, is_archived, created_at, updated_at
+RETURNING id, workspace_id, item_id, location_id, container_id, quantity, condition, status, date_acquired, purchase_price, currency_code, warranty_expires, expiration_date, notes, is_archived, created_at, updated_at, last_used_at
 `
 
 type UpdateInventoryParams struct {
@@ -745,6 +757,7 @@ func (q *Queries) UpdateInventory(ctx context.Context, arg UpdateInventoryParams
 		&i.IsArchived,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.LastUsedAt,
 	)
 	return i, err
 }
@@ -753,7 +766,7 @@ const updateInventoryQuantity = `-- name: UpdateInventoryQuantity :one
 UPDATE warehouse.inventory
 SET quantity = $2, updated_at = now()
 WHERE id = $1
-RETURNING id, workspace_id, item_id, location_id, container_id, quantity, condition, status, date_acquired, purchase_price, currency_code, warranty_expires, expiration_date, notes, is_archived, created_at, updated_at
+RETURNING id, workspace_id, item_id, location_id, container_id, quantity, condition, status, date_acquired, purchase_price, currency_code, warranty_expires, expiration_date, notes, is_archived, created_at, updated_at, last_used_at
 `
 
 type UpdateInventoryQuantityParams struct {
@@ -782,6 +795,7 @@ func (q *Queries) UpdateInventoryQuantity(ctx context.Context, arg UpdateInvento
 		&i.IsArchived,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.LastUsedAt,
 	)
 	return i, err
 }
@@ -790,7 +804,7 @@ const updateInventoryStatus = `-- name: UpdateInventoryStatus :one
 UPDATE warehouse.inventory
 SET status = $2, updated_at = now()
 WHERE id = $1
-RETURNING id, workspace_id, item_id, location_id, container_id, quantity, condition, status, date_acquired, purchase_price, currency_code, warranty_expires, expiration_date, notes, is_archived, created_at, updated_at
+RETURNING id, workspace_id, item_id, location_id, container_id, quantity, condition, status, date_acquired, purchase_price, currency_code, warranty_expires, expiration_date, notes, is_archived, created_at, updated_at, last_used_at
 `
 
 type UpdateInventoryStatusParams struct {
@@ -819,6 +833,7 @@ func (q *Queries) UpdateInventoryStatus(ctx context.Context, arg UpdateInventory
 		&i.IsArchived,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.LastUsedAt,
 	)
 	return i, err
 }
