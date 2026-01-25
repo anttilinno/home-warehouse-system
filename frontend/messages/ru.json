@@ -651,6 +651,17 @@
       "captionError": "Не удалось обновить подписи",
       "downloadSuccess": "Загрузка началась",
       "downloadError": "Не удалось скачать фото"
+    },
+    "duplicates": {
+      "exactTitle": "Обнаружен дубликат",
+      "similarTitle": "Найдены похожие фото",
+      "exactDescription": "Это фото уже существует в этом предмете.",
+      "similarDescription": "Мы нашли фото, похожие на загружаемое.",
+      "foundCount": "{count, plural, =1 {Найдено 1 похожее фото} other {Найдено # похожих фото}}:",
+      "existingPhoto": "Существующее фото",
+      "cancel": "Отмена",
+      "uploadAnyway": "Загрузить всё равно",
+      "uploading": "Загрузка..."
     }
   },
   "declutter": {

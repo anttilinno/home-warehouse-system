@@ -12,7 +12,8 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { validateImageFile, createImagePreview, revokeImagePreview, formatFileSize, compressImage } from "@/lib/utils/image";
-import type { ItemPhoto } from "@/lib/types/item-photo";
+import type { ItemPhoto, DuplicateCheckResponse } from "@/lib/types/item-photo";
+import { DuplicateWarningDialog } from "./duplicate-warning-dialog";
 
 interface PhotoUploadProps {
   workspaceId: string;
@@ -46,12 +47,19 @@ export function PhotoUpload({
   compressionThreshold = DEFAULT_COMPRESSION_THRESHOLD
 }: PhotoUploadProps) {
   const t = useTranslations("photos.upload");
+  const tDup = useTranslations("photos.duplicates");
   const [files, setFiles] = useState<PreviewFile[]>([]);
   const [isDragging, setIsDragging] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const dropZoneRef = useRef<HTMLDivElement>(null);
   const [statusAnnouncement, setStatusAnnouncement] = useState("");
+
+  // Duplicate detection state
+  const [pendingUploadIndex, setPendingUploadIndex] = useState<number | null>(null);
+  const [duplicateInfo, setDuplicateInfo] = useState<DuplicateCheckResponse | null>(null);
+  const [showDuplicateWarning, setShowDuplicateWarning] = useState(false);
+  const [isCheckingDuplicate, setIsCheckingDuplicate] = useState(false);
 
   // Calculate overall progress
   const overallProgress = useMemo(() => {
@@ -136,7 +144,8 @@ export function PhotoUpload({
     );
   }, []);
 
-  const uploadFile = async (index: number) => {
+  // Internal upload function that skips duplicate check
+  const uploadFileInternal = async (index: number) => {
     const file = files[index];
     if (!file || file.uploaded || file.uploading || file.compressing) return;
 
@@ -219,6 +228,53 @@ export function PhotoUpload({
       );
       setStatusAnnouncement(t("fileUploadFailed", { name: file.file.name }));
     }
+  };
+
+  // Upload file with duplicate check
+  const uploadFile = async (index: number) => {
+    const file = files[index];
+    if (!file || file.uploaded || file.uploading || file.compressing) return;
+
+    // Check for duplicates before upload
+    setIsCheckingDuplicate(true);
+    try {
+      const { itemPhotosApi } = await import("@/lib/api/item-photos");
+      const duplicateResult = await itemPhotosApi.checkDuplicates(workspaceId, itemId, file.file);
+
+      if (duplicateResult.duplicates.length > 0) {
+        // Store pending upload and show warning
+        setPendingUploadIndex(index);
+        setDuplicateInfo(duplicateResult);
+        setShowDuplicateWarning(true);
+        setIsCheckingDuplicate(false);
+        return; // Don't upload yet - wait for user decision
+      }
+    } catch (err) {
+      // If duplicate check fails, proceed with upload anyway
+      console.warn("Duplicate check failed:", err);
+    }
+    setIsCheckingDuplicate(false);
+
+    // No duplicates found, proceed with upload
+    await uploadFileInternal(index);
+  };
+
+  // Handle proceeding after duplicate warning
+  const handleProceedWithUpload = async () => {
+    setShowDuplicateWarning(false);
+    if (pendingUploadIndex !== null) {
+      // Continue with upload (skip duplicate check this time)
+      await uploadFileInternal(pendingUploadIndex);
+    }
+    setPendingUploadIndex(null);
+    setDuplicateInfo(null);
+  };
+
+  // Handle cancel duplicate warning
+  const handleCancelDuplicateUpload = () => {
+    setShowDuplicateWarning(false);
+    setPendingUploadIndex(null);
+    setDuplicateInfo(null);
   };
 
   const uploadAll = async () => {
@@ -593,6 +649,17 @@ export function PhotoUpload({
           </div>
         </div>
       )}
+
+      {/* Duplicate warning dialog */}
+      <DuplicateWarningDialog
+        open={showDuplicateWarning}
+        onOpenChange={setShowDuplicateWarning}
+        duplicates={duplicateInfo?.duplicates ?? []}
+        hasExact={duplicateInfo?.has_exact ?? false}
+        onProceed={handleProceedWithUpload}
+        onCancel={handleCancelDuplicateUpload}
+        isUploading={isCheckingDuplicate}
+      />
     </div>
   );
 }

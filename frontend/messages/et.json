@@ -651,6 +651,17 @@
       "captionError": "Pealkirjade uuendamine ebaonnestus",
       "downloadSuccess": "Allalaadimine alustatud",
       "downloadError": "Fotode allalaadimine ebaonnestus"
+    },
+    "duplicates": {
+      "exactTitle": "Duplikaat foto tuvastatud",
+      "similarTitle": "Sarnased fotod leitud",
+      "exactDescription": "See foto tundub juba selles esemetes olemas olevat.",
+      "similarDescription": "Leidsime fotod, mis sarnanevad uleslaetavale.",
+      "foundCount": "{count, plural, =1 {1 sarnane foto leitud} other {# sarnast fotot leitud}}:",
+      "existingPhoto": "Olemasolev foto",
+      "cancel": "Tuhista",
+      "uploadAnyway": "Laadi siiski",
+      "uploading": "Laadimine..."
     }
   },
   "declutter": {

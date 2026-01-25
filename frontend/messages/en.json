@@ -570,6 +570,17 @@
       "captionError": "Failed to update captions",
       "downloadSuccess": "Download started",
       "downloadError": "Failed to download photos"
+    },
+    "duplicates": {
+      "exactTitle": "Duplicate Photo Detected",
+      "similarTitle": "Similar Photos Found",
+      "exactDescription": "This photo appears to already exist in this item.",
+      "similarDescription": "We found photos that look similar to the one you're uploading.",
+      "foundCount": "{count, plural, =1 {1 similar photo found} other {# similar photos found}}:",
+      "existingPhoto": "Existing photo",
+      "cancel": "Cancel",
+      "uploadAnyway": "Upload Anyway",
+      "uploading": "Uploading..."
     }
   },
   "notifications": {
