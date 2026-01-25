@@ -5,8 +5,10 @@ import (
 	"fmt"
 	"net/http"
 	"testing"
+	"time"
 
 	"github.com/google/uuid"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 
 	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/location"
@@ -352,4 +354,193 @@ func TestLocationHandler_GetBreadcrumb(t *testing.T) {
 		testutil.AssertStatus(t, rec, http.StatusInternalServerError)
 		mockSvc.AssertExpectations(t)
 	})
+}
+
+// Event Publishing Tests
+
+func TestLocationHandler_Create_PublishesEvent(t *testing.T) {
+	setup := testutil.NewHandlerTestSetup()
+	mockSvc := new(MockService)
+	capture := testutil.NewEventCapture(setup.WorkspaceID, setup.UserID)
+	capture.Start()
+	defer capture.Stop()
+
+	location.RegisterRoutes(setup.API, mockSvc, capture.GetBroadcaster())
+
+	testLoc, _ := location.NewLocation(setup.WorkspaceID, "Warehouse", nil, nil, "WH-A")
+
+	mockSvc.On("Create", mock.Anything, mock.MatchedBy(func(input location.CreateInput) bool {
+		return input.Name == "Warehouse"
+	})).Return(testLoc, nil).Once()
+
+	body := `{"name":"Warehouse","short_code":"WH-A"}`
+	rec := setup.Post("/locations", body)
+
+	testutil.AssertStatus(t, rec, http.StatusOK)
+	mockSvc.AssertExpectations(t)
+
+	// Wait for event
+	assert.True(t, capture.WaitForEvents(1, 500*time.Millisecond), "Event should be published")
+
+	event := capture.GetLastEvent()
+	assert.NotNil(t, event)
+	assert.Equal(t, "location.created", event.Type)
+	assert.Equal(t, "location", event.EntityType)
+	assert.Equal(t, setup.WorkspaceID, event.WorkspaceID)
+	assert.Equal(t, setup.UserID, event.UserID)
+	assert.Equal(t, testLoc.ID().String(), event.EntityID)
+	assert.NotNil(t, event.Data)
+	assert.Equal(t, testLoc.ID(), event.Data["id"])
+	assert.Equal(t, testLoc.Name(), event.Data["name"])
+}
+
+func TestLocationHandler_Update_PublishesEvent(t *testing.T) {
+	setup := testutil.NewHandlerTestSetup()
+	mockSvc := new(MockService)
+	capture := testutil.NewEventCapture(setup.WorkspaceID, setup.UserID)
+	capture.Start()
+	defer capture.Stop()
+
+	location.RegisterRoutes(setup.API, mockSvc, capture.GetBroadcaster())
+
+	testLoc, _ := location.NewLocation(setup.WorkspaceID, "Updated Warehouse", nil, nil, "WH-U")
+	locID := testLoc.ID()
+
+	// Mock GetByID first (handler calls it to get current location)
+	existingLoc, _ := location.NewLocation(setup.WorkspaceID, "Warehouse", nil, nil, "WH-A")
+	mockSvc.On("GetByID", mock.Anything, locID, setup.WorkspaceID).
+		Return(existingLoc, nil).Once()
+
+	mockSvc.On("Update", mock.Anything, locID, setup.WorkspaceID, mock.Anything).
+		Return(testLoc, nil).Once()
+
+	body := `{"name":"Updated Warehouse"}`
+	rec := setup.Patch(fmt.Sprintf("/locations/%s", locID), body)
+
+	testutil.AssertStatus(t, rec, http.StatusOK)
+	mockSvc.AssertExpectations(t)
+
+	// Wait for event
+	assert.True(t, capture.WaitForEvents(1, 500*time.Millisecond), "Event should be published")
+
+	event := capture.GetLastEvent()
+	assert.NotNil(t, event)
+	assert.Equal(t, "location.updated", event.Type)
+	assert.Equal(t, "location", event.EntityType)
+	assert.Equal(t, setup.WorkspaceID, event.WorkspaceID)
+	assert.Equal(t, setup.UserID, event.UserID)
+	assert.Equal(t, locID.String(), event.EntityID)
+}
+
+func TestLocationHandler_Archive_PublishesEvent(t *testing.T) {
+	setup := testutil.NewHandlerTestSetup()
+	mockSvc := new(MockService)
+	capture := testutil.NewEventCapture(setup.WorkspaceID, setup.UserID)
+	capture.Start()
+	defer capture.Stop()
+
+	location.RegisterRoutes(setup.API, mockSvc, capture.GetBroadcaster())
+
+	locID := uuid.New()
+
+	mockSvc.On("Archive", mock.Anything, locID, setup.WorkspaceID).
+		Return(nil).Once()
+
+	rec := setup.Post(fmt.Sprintf("/locations/%s/archive", locID), "")
+
+	testutil.AssertStatus(t, rec, http.StatusNoContent)
+	mockSvc.AssertExpectations(t)
+
+	// Wait for event (archive emits location.deleted)
+	assert.True(t, capture.WaitForEvents(1, 500*time.Millisecond), "Event should be published")
+
+	event := capture.GetLastEvent()
+	assert.NotNil(t, event)
+	assert.Equal(t, "location.deleted", event.Type)
+	assert.Equal(t, "location", event.EntityType)
+	assert.Equal(t, setup.WorkspaceID, event.WorkspaceID)
+	assert.Equal(t, setup.UserID, event.UserID)
+	assert.Equal(t, locID.String(), event.EntityID)
+}
+
+func TestLocationHandler_Restore_PublishesEvent(t *testing.T) {
+	setup := testutil.NewHandlerTestSetup()
+	mockSvc := new(MockService)
+	capture := testutil.NewEventCapture(setup.WorkspaceID, setup.UserID)
+	capture.Start()
+	defer capture.Stop()
+
+	location.RegisterRoutes(setup.API, mockSvc, capture.GetBroadcaster())
+
+	locID := uuid.New()
+
+	mockSvc.On("Restore", mock.Anything, locID, setup.WorkspaceID).
+		Return(nil).Once()
+
+	rec := setup.Post(fmt.Sprintf("/locations/%s/restore", locID), "")
+
+	testutil.AssertStatus(t, rec, http.StatusNoContent)
+	mockSvc.AssertExpectations(t)
+
+	// Wait for event (restore emits location.created)
+	assert.True(t, capture.WaitForEvents(1, 500*time.Millisecond), "Event should be published")
+
+	event := capture.GetLastEvent()
+	assert.NotNil(t, event)
+	assert.Equal(t, "location.created", event.Type)
+	assert.Equal(t, "location", event.EntityType)
+	assert.Equal(t, setup.WorkspaceID, event.WorkspaceID)
+	assert.Equal(t, setup.UserID, event.UserID)
+	assert.Equal(t, locID.String(), event.EntityID)
+}
+
+func TestLocationHandler_Delete_PublishesEvent(t *testing.T) {
+	setup := testutil.NewHandlerTestSetup()
+	mockSvc := new(MockService)
+	capture := testutil.NewEventCapture(setup.WorkspaceID, setup.UserID)
+	capture.Start()
+	defer capture.Stop()
+
+	location.RegisterRoutes(setup.API, mockSvc, capture.GetBroadcaster())
+
+	locID := uuid.New()
+
+	mockSvc.On("Delete", mock.Anything, locID, setup.WorkspaceID).
+		Return(nil).Once()
+
+	rec := setup.Delete(fmt.Sprintf("/locations/%s", locID))
+
+	testutil.AssertStatus(t, rec, http.StatusNoContent)
+	mockSvc.AssertExpectations(t)
+
+	// Wait for event
+	assert.True(t, capture.WaitForEvents(1, 500*time.Millisecond), "Event should be published")
+
+	event := capture.GetLastEvent()
+	assert.NotNil(t, event)
+	assert.Equal(t, "location.deleted", event.Type)
+	assert.Equal(t, "location", event.EntityType)
+	assert.Equal(t, setup.WorkspaceID, event.WorkspaceID)
+	assert.Equal(t, setup.UserID, event.UserID)
+	assert.Equal(t, locID.String(), event.EntityID)
+}
+
+func TestLocationHandler_Create_NilBroadcaster_NoError(t *testing.T) {
+	setup := testutil.NewHandlerTestSetup()
+	mockSvc := new(MockService)
+	// Register with nil broadcaster
+	location.RegisterRoutes(setup.API, mockSvc, nil)
+
+	testLoc, _ := location.NewLocation(setup.WorkspaceID, "Warehouse", nil, nil, "WH-A")
+
+	mockSvc.On("Create", mock.Anything, mock.MatchedBy(func(input location.CreateInput) bool {
+		return input.Name == "Warehouse"
+	})).Return(testLoc, nil).Once()
+
+	body := `{"name":"Warehouse","short_code":"WH-A"}`
+	rec := setup.Post("/locations", body)
+
+	// Should not panic and should succeed
+	testutil.AssertStatus(t, rec, http.StatusOK)
+	mockSvc.AssertExpectations(t)
 }
