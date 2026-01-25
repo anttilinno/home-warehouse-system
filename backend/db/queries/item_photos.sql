@@ -105,3 +105,43 @@ SELECT ip.*, i.workspace_id as item_workspace_id
 FROM warehouse.item_photos ip
 JOIN warehouse.items i ON i.id = ip.item_id
 WHERE ip.id = $1;
+
+-- Bulk operations queries
+
+-- name: GetItemPhotosByIDs :many
+-- Get multiple photos by ID array with workspace verification
+SELECT * FROM warehouse.item_photos
+WHERE id = ANY(@ids::UUID[]) AND workspace_id = @workspace_id
+ORDER BY display_order ASC;
+
+-- name: BulkDeleteItemPhotos :exec
+-- Delete multiple photos by ID array (workspace check ensures security)
+DELETE FROM warehouse.item_photos
+WHERE id = ANY(@ids::UUID[]) AND workspace_id = @workspace_id;
+
+-- name: UpdatePhotoCaption :exec
+-- Update caption for single photo (used in bulk caption updates)
+UPDATE warehouse.item_photos
+SET caption = @caption, updated_at = now()
+WHERE id = @id AND workspace_id = @workspace_id;
+
+-- name: GetPhotosWithHashes :many
+-- Get photos with perceptual hashes for duplicate detection within a workspace
+SELECT * FROM warehouse.item_photos
+WHERE workspace_id = @workspace_id
+  AND perceptual_hash IS NOT NULL
+ORDER BY created_at DESC;
+
+-- name: GetItemPhotosWithHashes :many
+-- Get photos with perceptual hashes for a specific item
+SELECT * FROM warehouse.item_photos
+WHERE item_id = @item_id
+  AND workspace_id = @workspace_id
+  AND perceptual_hash IS NOT NULL
+ORDER BY display_order ASC;
+
+-- name: UpdatePerceptualHash :exec
+-- Set perceptual hash after upload processing
+UPDATE warehouse.item_photos
+SET perceptual_hash = @perceptual_hash, updated_at = now()
+WHERE id = @id;

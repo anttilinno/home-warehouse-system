@@ -12,6 +12,22 @@ import (
 	"github.com/google/uuid"
 )
 
+const bulkDeleteItemPhotos = `-- name: BulkDeleteItemPhotos :exec
+DELETE FROM warehouse.item_photos
+WHERE id = ANY($1::UUID[]) AND workspace_id = $2
+`
+
+type BulkDeleteItemPhotosParams struct {
+	Ids         []uuid.UUID `json:"ids"`
+	WorkspaceID uuid.UUID   `json:"workspace_id"`
+}
+
+// Delete multiple photos by ID array (workspace check ensures security)
+func (q *Queries) BulkDeleteItemPhotos(ctx context.Context, arg BulkDeleteItemPhotosParams) error {
+	_, err := q.db.Exec(ctx, bulkDeleteItemPhotos, arg.Ids, arg.WorkspaceID)
+	return err
+}
+
 const countItemPhotosByItem = `-- name: CountItemPhotosByItem :one
 SELECT COUNT(*) FROM warehouse.item_photos
 WHERE item_id = $1 AND workspace_id = $2
@@ -36,7 +52,7 @@ INSERT INTO warehouse.item_photos (
     caption, uploaded_by
 )
 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
-RETURNING id, item_id, workspace_id, filename, storage_path, thumbnail_path, file_size, mime_type, width, height, display_order, is_primary, caption, uploaded_by, created_at, updated_at, thumbnail_status, thumbnail_small_path, thumbnail_medium_path, thumbnail_large_path, thumbnail_attempts, thumbnail_error
+RETURNING id, item_id, workspace_id, filename, storage_path, thumbnail_path, file_size, mime_type, width, height, display_order, is_primary, caption, uploaded_by, created_at, updated_at, thumbnail_status, thumbnail_small_path, thumbnail_medium_path, thumbnail_large_path, thumbnail_attempts, thumbnail_error, perceptual_hash
 `
 
 type CreateItemPhotoParams struct {
@@ -97,6 +113,7 @@ func (q *Queries) CreateItemPhoto(ctx context.Context, arg CreateItemPhotoParams
 		&i.ThumbnailLargePath,
 		&i.ThumbnailAttempts,
 		&i.ThumbnailError,
+		&i.PerceptualHash,
 	)
 	return i, err
 }
@@ -132,7 +149,7 @@ func (q *Queries) DeleteItemPhotosByItem(ctx context.Context, arg DeleteItemPhot
 }
 
 const getItemPhoto = `-- name: GetItemPhoto :one
-SELECT id, item_id, workspace_id, filename, storage_path, thumbnail_path, file_size, mime_type, width, height, display_order, is_primary, caption, uploaded_by, created_at, updated_at, thumbnail_status, thumbnail_small_path, thumbnail_medium_path, thumbnail_large_path, thumbnail_attempts, thumbnail_error FROM warehouse.item_photos
+SELECT id, item_id, workspace_id, filename, storage_path, thumbnail_path, file_size, mime_type, width, height, display_order, is_primary, caption, uploaded_by, created_at, updated_at, thumbnail_status, thumbnail_small_path, thumbnail_medium_path, thumbnail_large_path, thumbnail_attempts, thumbnail_error, perceptual_hash FROM warehouse.item_photos
 WHERE id = $1
 `
 
@@ -162,12 +179,13 @@ func (q *Queries) GetItemPhoto(ctx context.Context, id uuid.UUID) (WarehouseItem
 		&i.ThumbnailLargePath,
 		&i.ThumbnailAttempts,
 		&i.ThumbnailError,
+		&i.PerceptualHash,
 	)
 	return i, err
 }
 
 const getItemPhotoByID = `-- name: GetItemPhotoByID :one
-SELECT id, item_id, workspace_id, filename, storage_path, thumbnail_path, file_size, mime_type, width, height, display_order, is_primary, caption, uploaded_by, created_at, updated_at, thumbnail_status, thumbnail_small_path, thumbnail_medium_path, thumbnail_large_path, thumbnail_attempts, thumbnail_error FROM warehouse.item_photos
+SELECT id, item_id, workspace_id, filename, storage_path, thumbnail_path, file_size, mime_type, width, height, display_order, is_primary, caption, uploaded_by, created_at, updated_at, thumbnail_status, thumbnail_small_path, thumbnail_medium_path, thumbnail_large_path, thumbnail_attempts, thumbnail_error, perceptual_hash FROM warehouse.item_photos
 WHERE id = $1 AND workspace_id = $2
 `
 
@@ -202,12 +220,13 @@ func (q *Queries) GetItemPhotoByID(ctx context.Context, arg GetItemPhotoByIDPara
 		&i.ThumbnailLargePath,
 		&i.ThumbnailAttempts,
 		&i.ThumbnailError,
+		&i.PerceptualHash,
 	)
 	return i, err
 }
 
 const getItemPhotoForProcessing = `-- name: GetItemPhotoForProcessing :one
-SELECT ip.id, ip.item_id, ip.workspace_id, ip.filename, ip.storage_path, ip.thumbnail_path, ip.file_size, ip.mime_type, ip.width, ip.height, ip.display_order, ip.is_primary, ip.caption, ip.uploaded_by, ip.created_at, ip.updated_at, ip.thumbnail_status, ip.thumbnail_small_path, ip.thumbnail_medium_path, ip.thumbnail_large_path, ip.thumbnail_attempts, ip.thumbnail_error, i.workspace_id as item_workspace_id
+SELECT ip.id, ip.item_id, ip.workspace_id, ip.filename, ip.storage_path, ip.thumbnail_path, ip.file_size, ip.mime_type, ip.width, ip.height, ip.display_order, ip.is_primary, ip.caption, ip.uploaded_by, ip.created_at, ip.updated_at, ip.thumbnail_status, ip.thumbnail_small_path, ip.thumbnail_medium_path, ip.thumbnail_large_path, ip.thumbnail_attempts, ip.thumbnail_error, ip.perceptual_hash, i.workspace_id as item_workspace_id
 FROM warehouse.item_photos ip
 JOIN warehouse.items i ON i.id = ip.item_id
 WHERE ip.id = $1
@@ -236,6 +255,7 @@ type GetItemPhotoForProcessingRow struct {
 	ThumbnailLargePath  *string   `json:"thumbnail_large_path"`
 	ThumbnailAttempts   int32     `json:"thumbnail_attempts"`
 	ThumbnailError      *string   `json:"thumbnail_error"`
+	PerceptualHash      *int64    `json:"perceptual_hash"`
 	ItemWorkspaceID     uuid.UUID `json:"item_workspace_id"`
 }
 
@@ -266,9 +286,126 @@ func (q *Queries) GetItemPhotoForProcessing(ctx context.Context, id uuid.UUID) (
 		&i.ThumbnailLargePath,
 		&i.ThumbnailAttempts,
 		&i.ThumbnailError,
+		&i.PerceptualHash,
 		&i.ItemWorkspaceID,
 	)
 	return i, err
+}
+
+const getItemPhotosByIDs = `-- name: GetItemPhotosByIDs :many
+
+SELECT id, item_id, workspace_id, filename, storage_path, thumbnail_path, file_size, mime_type, width, height, display_order, is_primary, caption, uploaded_by, created_at, updated_at, thumbnail_status, thumbnail_small_path, thumbnail_medium_path, thumbnail_large_path, thumbnail_attempts, thumbnail_error, perceptual_hash FROM warehouse.item_photos
+WHERE id = ANY($1::UUID[]) AND workspace_id = $2
+ORDER BY display_order ASC
+`
+
+type GetItemPhotosByIDsParams struct {
+	Ids         []uuid.UUID `json:"ids"`
+	WorkspaceID uuid.UUID   `json:"workspace_id"`
+}
+
+// Bulk operations queries
+// Get multiple photos by ID array with workspace verification
+func (q *Queries) GetItemPhotosByIDs(ctx context.Context, arg GetItemPhotosByIDsParams) ([]WarehouseItemPhoto, error) {
+	rows, err := q.db.Query(ctx, getItemPhotosByIDs, arg.Ids, arg.WorkspaceID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []WarehouseItemPhoto{}
+	for rows.Next() {
+		var i WarehouseItemPhoto
+		if err := rows.Scan(
+			&i.ID,
+			&i.ItemID,
+			&i.WorkspaceID,
+			&i.Filename,
+			&i.StoragePath,
+			&i.ThumbnailPath,
+			&i.FileSize,
+			&i.MimeType,
+			&i.Width,
+			&i.Height,
+			&i.DisplayOrder,
+			&i.IsPrimary,
+			&i.Caption,
+			&i.UploadedBy,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.ThumbnailStatus,
+			&i.ThumbnailSmallPath,
+			&i.ThumbnailMediumPath,
+			&i.ThumbnailLargePath,
+			&i.ThumbnailAttempts,
+			&i.ThumbnailError,
+			&i.PerceptualHash,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getItemPhotosWithHashes = `-- name: GetItemPhotosWithHashes :many
+SELECT id, item_id, workspace_id, filename, storage_path, thumbnail_path, file_size, mime_type, width, height, display_order, is_primary, caption, uploaded_by, created_at, updated_at, thumbnail_status, thumbnail_small_path, thumbnail_medium_path, thumbnail_large_path, thumbnail_attempts, thumbnail_error, perceptual_hash FROM warehouse.item_photos
+WHERE item_id = $1
+  AND workspace_id = $2
+  AND perceptual_hash IS NOT NULL
+ORDER BY display_order ASC
+`
+
+type GetItemPhotosWithHashesParams struct {
+	ItemID      uuid.UUID `json:"item_id"`
+	WorkspaceID uuid.UUID `json:"workspace_id"`
+}
+
+// Get photos with perceptual hashes for a specific item
+func (q *Queries) GetItemPhotosWithHashes(ctx context.Context, arg GetItemPhotosWithHashesParams) ([]WarehouseItemPhoto, error) {
+	rows, err := q.db.Query(ctx, getItemPhotosWithHashes, arg.ItemID, arg.WorkspaceID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []WarehouseItemPhoto{}
+	for rows.Next() {
+		var i WarehouseItemPhoto
+		if err := rows.Scan(
+			&i.ID,
+			&i.ItemID,
+			&i.WorkspaceID,
+			&i.Filename,
+			&i.StoragePath,
+			&i.ThumbnailPath,
+			&i.FileSize,
+			&i.MimeType,
+			&i.Width,
+			&i.Height,
+			&i.DisplayOrder,
+			&i.IsPrimary,
+			&i.Caption,
+			&i.UploadedBy,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.ThumbnailStatus,
+			&i.ThumbnailSmallPath,
+			&i.ThumbnailMediumPath,
+			&i.ThumbnailLargePath,
+			&i.ThumbnailAttempts,
+			&i.ThumbnailError,
+			&i.PerceptualHash,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const getNextDisplayOrder = `-- name: GetNextDisplayOrder :one
@@ -289,8 +426,60 @@ func (q *Queries) GetNextDisplayOrder(ctx context.Context, arg GetNextDisplayOrd
 	return next_order, err
 }
 
+const getPhotosWithHashes = `-- name: GetPhotosWithHashes :many
+SELECT id, item_id, workspace_id, filename, storage_path, thumbnail_path, file_size, mime_type, width, height, display_order, is_primary, caption, uploaded_by, created_at, updated_at, thumbnail_status, thumbnail_small_path, thumbnail_medium_path, thumbnail_large_path, thumbnail_attempts, thumbnail_error, perceptual_hash FROM warehouse.item_photos
+WHERE workspace_id = $1
+  AND perceptual_hash IS NOT NULL
+ORDER BY created_at DESC
+`
+
+// Get photos with perceptual hashes for duplicate detection within a workspace
+func (q *Queries) GetPhotosWithHashes(ctx context.Context, workspaceID uuid.UUID) ([]WarehouseItemPhoto, error) {
+	rows, err := q.db.Query(ctx, getPhotosWithHashes, workspaceID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []WarehouseItemPhoto{}
+	for rows.Next() {
+		var i WarehouseItemPhoto
+		if err := rows.Scan(
+			&i.ID,
+			&i.ItemID,
+			&i.WorkspaceID,
+			&i.Filename,
+			&i.StoragePath,
+			&i.ThumbnailPath,
+			&i.FileSize,
+			&i.MimeType,
+			&i.Width,
+			&i.Height,
+			&i.DisplayOrder,
+			&i.IsPrimary,
+			&i.Caption,
+			&i.UploadedBy,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.ThumbnailStatus,
+			&i.ThumbnailSmallPath,
+			&i.ThumbnailMediumPath,
+			&i.ThumbnailLargePath,
+			&i.ThumbnailAttempts,
+			&i.ThumbnailError,
+			&i.PerceptualHash,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getPrimaryItemPhoto = `-- name: GetPrimaryItemPhoto :one
-SELECT id, item_id, workspace_id, filename, storage_path, thumbnail_path, file_size, mime_type, width, height, display_order, is_primary, caption, uploaded_by, created_at, updated_at, thumbnail_status, thumbnail_small_path, thumbnail_medium_path, thumbnail_large_path, thumbnail_attempts, thumbnail_error FROM warehouse.item_photos
+SELECT id, item_id, workspace_id, filename, storage_path, thumbnail_path, file_size, mime_type, width, height, display_order, is_primary, caption, uploaded_by, created_at, updated_at, thumbnail_status, thumbnail_small_path, thumbnail_medium_path, thumbnail_large_path, thumbnail_attempts, thumbnail_error, perceptual_hash FROM warehouse.item_photos
 WHERE item_id = $1 AND workspace_id = $2 AND is_primary = true
 LIMIT 1
 `
@@ -326,12 +515,13 @@ func (q *Queries) GetPrimaryItemPhoto(ctx context.Context, arg GetPrimaryItemPho
 		&i.ThumbnailLargePath,
 		&i.ThumbnailAttempts,
 		&i.ThumbnailError,
+		&i.PerceptualHash,
 	)
 	return i, err
 }
 
 const listItemPhotosByItem = `-- name: ListItemPhotosByItem :many
-SELECT id, item_id, workspace_id, filename, storage_path, thumbnail_path, file_size, mime_type, width, height, display_order, is_primary, caption, uploaded_by, created_at, updated_at, thumbnail_status, thumbnail_small_path, thumbnail_medium_path, thumbnail_large_path, thumbnail_attempts, thumbnail_error FROM warehouse.item_photos
+SELECT id, item_id, workspace_id, filename, storage_path, thumbnail_path, file_size, mime_type, width, height, display_order, is_primary, caption, uploaded_by, created_at, updated_at, thumbnail_status, thumbnail_small_path, thumbnail_medium_path, thumbnail_large_path, thumbnail_attempts, thumbnail_error, perceptual_hash FROM warehouse.item_photos
 WHERE item_id = $1 AND workspace_id = $2
 ORDER BY display_order ASC, created_at ASC
 `
@@ -373,6 +563,7 @@ func (q *Queries) ListItemPhotosByItem(ctx context.Context, arg ListItemPhotosBy
 			&i.ThumbnailLargePath,
 			&i.ThumbnailAttempts,
 			&i.ThumbnailError,
+			&i.PerceptualHash,
 		); err != nil {
 			return nil, err
 		}
@@ -385,7 +576,7 @@ func (q *Queries) ListItemPhotosByItem(ctx context.Context, arg ListItemPhotosBy
 }
 
 const listPendingThumbnails = `-- name: ListPendingThumbnails :many
-SELECT id, item_id, workspace_id, filename, storage_path, thumbnail_path, file_size, mime_type, width, height, display_order, is_primary, caption, uploaded_by, created_at, updated_at, thumbnail_status, thumbnail_small_path, thumbnail_medium_path, thumbnail_large_path, thumbnail_attempts, thumbnail_error FROM warehouse.item_photos
+SELECT id, item_id, workspace_id, filename, storage_path, thumbnail_path, file_size, mime_type, width, height, display_order, is_primary, caption, uploaded_by, created_at, updated_at, thumbnail_status, thumbnail_small_path, thumbnail_medium_path, thumbnail_large_path, thumbnail_attempts, thumbnail_error, perceptual_hash FROM warehouse.item_photos
 WHERE thumbnail_status IN ('pending', 'processing')
   AND thumbnail_attempts < 5
 ORDER BY created_at ASC
@@ -425,6 +616,7 @@ func (q *Queries) ListPendingThumbnails(ctx context.Context, limit int32) ([]War
 			&i.ThumbnailLargePath,
 			&i.ThumbnailAttempts,
 			&i.ThumbnailError,
+			&i.PerceptualHash,
 		); err != nil {
 			return nil, err
 		}
@@ -477,7 +669,7 @@ SET
     display_order = COALESCE($4, display_order),
     updated_at = now()
 WHERE id = $5
-RETURNING id, item_id, workspace_id, filename, storage_path, thumbnail_path, file_size, mime_type, width, height, display_order, is_primary, caption, uploaded_by, created_at, updated_at, thumbnail_status, thumbnail_small_path, thumbnail_medium_path, thumbnail_large_path, thumbnail_attempts, thumbnail_error
+RETURNING id, item_id, workspace_id, filename, storage_path, thumbnail_path, file_size, mime_type, width, height, display_order, is_primary, caption, uploaded_by, created_at, updated_at, thumbnail_status, thumbnail_small_path, thumbnail_medium_path, thumbnail_large_path, thumbnail_attempts, thumbnail_error, perceptual_hash
 `
 
 type UpdateItemPhotoParams struct {
@@ -520,6 +712,7 @@ func (q *Queries) UpdateItemPhoto(ctx context.Context, arg UpdateItemPhotoParams
 		&i.ThumbnailLargePath,
 		&i.ThumbnailAttempts,
 		&i.ThumbnailError,
+		&i.PerceptualHash,
 	)
 	return i, err
 }
@@ -540,6 +733,41 @@ func (q *Queries) UpdateItemPhotoDisplayOrder(ctx context.Context, arg UpdateIte
 	return err
 }
 
+const updatePerceptualHash = `-- name: UpdatePerceptualHash :exec
+UPDATE warehouse.item_photos
+SET perceptual_hash = $1, updated_at = now()
+WHERE id = $2
+`
+
+type UpdatePerceptualHashParams struct {
+	PerceptualHash *int64    `json:"perceptual_hash"`
+	ID             uuid.UUID `json:"id"`
+}
+
+// Set perceptual hash after upload processing
+func (q *Queries) UpdatePerceptualHash(ctx context.Context, arg UpdatePerceptualHashParams) error {
+	_, err := q.db.Exec(ctx, updatePerceptualHash, arg.PerceptualHash, arg.ID)
+	return err
+}
+
+const updatePhotoCaption = `-- name: UpdatePhotoCaption :exec
+UPDATE warehouse.item_photos
+SET caption = $1, updated_at = now()
+WHERE id = $2 AND workspace_id = $3
+`
+
+type UpdatePhotoCaptionParams struct {
+	Caption     *string   `json:"caption"`
+	ID          uuid.UUID `json:"id"`
+	WorkspaceID uuid.UUID `json:"workspace_id"`
+}
+
+// Update caption for single photo (used in bulk caption updates)
+func (q *Queries) UpdatePhotoCaption(ctx context.Context, arg UpdatePhotoCaptionParams) error {
+	_, err := q.db.Exec(ctx, updatePhotoCaption, arg.Caption, arg.ID, arg.WorkspaceID)
+	return err
+}
+
 const updateThumbnailPaths = `-- name: UpdateThumbnailPaths :one
 UPDATE warehouse.item_photos
 SET thumbnail_small_path = $2,
@@ -549,7 +777,7 @@ SET thumbnail_small_path = $2,
     thumbnail_error = NULL,
     updated_at = now()
 WHERE id = $1
-RETURNING id, item_id, workspace_id, filename, storage_path, thumbnail_path, file_size, mime_type, width, height, display_order, is_primary, caption, uploaded_by, created_at, updated_at, thumbnail_status, thumbnail_small_path, thumbnail_medium_path, thumbnail_large_path, thumbnail_attempts, thumbnail_error
+RETURNING id, item_id, workspace_id, filename, storage_path, thumbnail_path, file_size, mime_type, width, height, display_order, is_primary, caption, uploaded_by, created_at, updated_at, thumbnail_status, thumbnail_small_path, thumbnail_medium_path, thumbnail_large_path, thumbnail_attempts, thumbnail_error, perceptual_hash
 `
 
 type UpdateThumbnailPathsParams struct {
@@ -591,6 +819,7 @@ func (q *Queries) UpdateThumbnailPaths(ctx context.Context, arg UpdateThumbnailP
 		&i.ThumbnailLargePath,
 		&i.ThumbnailAttempts,
 		&i.ThumbnailError,
+		&i.PerceptualHash,
 	)
 	return i, err
 }

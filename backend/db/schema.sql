@@ -1,4 +1,4 @@
-\restrict RP3VujKyBcc9Ja4tOmlqsMdfPAyFxboUjGmZ7U7pCfb82oadHLwJAefT12P9gA5
+\restrict if2kdQoltIlVmAoJokhEeDWpeK2aK364WZvcBXjL1K0K2hJOT49xdgWnGPUB2Sx
 
 -- Dumped from database version 18.1 (Debian 18.1-1.pgdg13+2)
 -- Dumped by pg_dump version 18.1
@@ -37,6 +37,7 @@ CREATE TYPE auth.notification_type_enum AS ENUM (
     'LOAN_DUE_SOON',
     'LOAN_OVERDUE',
     'LOAN_RETURNED',
+    'REPAIR_REMINDER',
     'LOW_STOCK',
     'WORKSPACE_INVITE',
     'MEMBER_JOINED',
@@ -186,6 +187,17 @@ CREATE TYPE warehouse.pending_change_status_enum AS ENUM (
     'pending',
     'approved',
     'rejected'
+);
+
+
+--
+-- Name: repair_photo_type_enum; Type: TYPE; Schema: warehouse; Owner: -
+--
+
+CREATE TYPE warehouse.repair_photo_type_enum AS ENUM (
+    'BEFORE',
+    'DURING',
+    'AFTER'
 );
 
 
@@ -915,8 +927,16 @@ CREATE TABLE warehouse.inventory (
     is_archived boolean DEFAULT false NOT NULL,
     created_at timestamp with time zone DEFAULT now(),
     updated_at timestamp with time zone DEFAULT now(),
+    last_used_at timestamp with time zone,
     CONSTRAINT chk_inventory_quantity_non_negative CHECK ((quantity >= 0))
 );
+
+
+--
+-- Name: COLUMN inventory.last_used_at; Type: COMMENT; Schema: warehouse; Owner: -
+--
+
+COMMENT ON COLUMN warehouse.inventory.last_used_at IS 'Timestamp when this inventory was last marked as "used". Used for declutter assistant. Defaults to created_at for existing records.';
 
 
 --
@@ -969,8 +989,65 @@ CREATE TABLE warehouse.item_photos (
     caption text,
     uploaded_by uuid NOT NULL,
     created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
+    updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    thumbnail_status character varying(20) DEFAULT 'pending'::character varying NOT NULL,
+    thumbnail_small_path character varying(500),
+    thumbnail_medium_path character varying(500),
+    thumbnail_large_path character varying(500),
+    thumbnail_attempts integer DEFAULT 0 NOT NULL,
+    thumbnail_error text,
+    perceptual_hash bigint,
+    CONSTRAINT item_photos_thumbnail_status_check CHECK (((thumbnail_status)::text = ANY ((ARRAY['pending'::character varying, 'processing'::character varying, 'complete'::character varying, 'failed'::character varying])::text[])))
 );
+
+
+--
+-- Name: COLUMN item_photos.thumbnail_status; Type: COMMENT; Schema: warehouse; Owner: -
+--
+
+COMMENT ON COLUMN warehouse.item_photos.thumbnail_status IS 'Thumbnail generation status: pending (not started), processing (in queue), complete (ready), failed (max retries exceeded)';
+
+
+--
+-- Name: COLUMN item_photos.thumbnail_small_path; Type: COMMENT; Schema: warehouse; Owner: -
+--
+
+COMMENT ON COLUMN warehouse.item_photos.thumbnail_small_path IS 'Path to 150px thumbnail (used for lists/grids)';
+
+
+--
+-- Name: COLUMN item_photos.thumbnail_medium_path; Type: COMMENT; Schema: warehouse; Owner: -
+--
+
+COMMENT ON COLUMN warehouse.item_photos.thumbnail_medium_path IS 'Path to 400px thumbnail (used for detail views)';
+
+
+--
+-- Name: COLUMN item_photos.thumbnail_large_path; Type: COMMENT; Schema: warehouse; Owner: -
+--
+
+COMMENT ON COLUMN warehouse.item_photos.thumbnail_large_path IS 'Path to 800px thumbnail (used for lightbox/preview)';
+
+
+--
+-- Name: COLUMN item_photos.thumbnail_attempts; Type: COMMENT; Schema: warehouse; Owner: -
+--
+
+COMMENT ON COLUMN warehouse.item_photos.thumbnail_attempts IS 'Number of thumbnail generation attempts (max 5 before marked failed)';
+
+
+--
+-- Name: COLUMN item_photos.thumbnail_error; Type: COMMENT; Schema: warehouse; Owner: -
+--
+
+COMMENT ON COLUMN warehouse.item_photos.thumbnail_error IS 'Last error message if thumbnail generation failed';
+
+
+--
+-- Name: COLUMN item_photos.perceptual_hash; Type: COMMENT; Schema: warehouse; Owner: -
+--
+
+COMMENT ON COLUMN warehouse.item_photos.perceptual_hash IS '64-bit difference hash (dHash) for duplicate detection. Similar images have similar hashes with small Hamming distance.';
 
 
 --
@@ -1125,6 +1202,29 @@ CREATE TABLE warehouse.pending_changes (
 
 
 --
+-- Name: repair_attachments; Type: TABLE; Schema: warehouse; Owner: -
+--
+
+CREATE TABLE warehouse.repair_attachments (
+    id uuid DEFAULT uuidv7() NOT NULL,
+    repair_log_id uuid NOT NULL,
+    workspace_id uuid NOT NULL,
+    file_id uuid NOT NULL,
+    attachment_type warehouse.attachment_type_enum NOT NULL,
+    title character varying(200),
+    created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
+);
+
+
+--
+-- Name: TABLE repair_attachments; Type: COMMENT; Schema: warehouse; Owner: -
+--
+
+COMMENT ON TABLE warehouse.repair_attachments IS 'Links repair logs to uploaded files (receipts, invoices, warranty documents).';
+
+
+--
 -- Name: repair_logs; Type: TABLE; Schema: warehouse; Owner: -
 --
 
@@ -1142,7 +1242,10 @@ CREATE TABLE warehouse.repair_logs (
     new_condition warehouse.item_condition_enum,
     notes text,
     created_at timestamp with time zone DEFAULT now(),
-    updated_at timestamp with time zone DEFAULT now()
+    updated_at timestamp with time zone DEFAULT now(),
+    is_warranty_claim boolean DEFAULT false NOT NULL,
+    reminder_date date,
+    reminder_sent boolean DEFAULT false NOT NULL
 );
 
 
@@ -1172,6 +1275,65 @@ COMMENT ON COLUMN warehouse.repair_logs.completed_at IS 'Timestamp when the repa
 --
 
 COMMENT ON COLUMN warehouse.repair_logs.new_condition IS 'The condition to set on the inventory item when the repair is completed.';
+
+
+--
+-- Name: COLUMN repair_logs.is_warranty_claim; Type: COMMENT; Schema: warehouse; Owner: -
+--
+
+COMMENT ON COLUMN warehouse.repair_logs.is_warranty_claim IS 'Whether this repair was covered under warranty.';
+
+
+--
+-- Name: COLUMN repair_logs.reminder_date; Type: COMMENT; Schema: warehouse; Owner: -
+--
+
+COMMENT ON COLUMN warehouse.repair_logs.reminder_date IS 'Optional future date for maintenance reminder notification.';
+
+
+--
+-- Name: COLUMN repair_logs.reminder_sent; Type: COMMENT; Schema: warehouse; Owner: -
+--
+
+COMMENT ON COLUMN warehouse.repair_logs.reminder_sent IS 'Whether the reminder notification has been sent.';
+
+
+--
+-- Name: repair_photos; Type: TABLE; Schema: warehouse; Owner: -
+--
+
+CREATE TABLE warehouse.repair_photos (
+    id uuid DEFAULT uuidv7() NOT NULL,
+    repair_log_id uuid NOT NULL,
+    workspace_id uuid NOT NULL,
+    photo_type warehouse.repair_photo_type_enum DEFAULT 'DURING'::warehouse.repair_photo_type_enum NOT NULL,
+    filename character varying(255) NOT NULL,
+    storage_path character varying(500) NOT NULL,
+    thumbnail_path character varying(500) NOT NULL,
+    file_size bigint NOT NULL,
+    mime_type character varying(100) NOT NULL,
+    width integer NOT NULL,
+    height integer NOT NULL,
+    display_order integer DEFAULT 0 NOT NULL,
+    caption text,
+    uploaded_by uuid NOT NULL,
+    created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
+);
+
+
+--
+-- Name: TABLE repair_photos; Type: COMMENT; Schema: warehouse; Owner: -
+--
+
+COMMENT ON TABLE warehouse.repair_photos IS 'Photos attached to repair logs, categorized by when they were taken (before/during/after repair).';
+
+
+--
+-- Name: COLUMN repair_photos.photo_type; Type: COMMENT; Schema: warehouse; Owner: -
+--
+
+COMMENT ON COLUMN warehouse.repair_photos.photo_type IS 'Categorizes when the photo was taken: BEFORE repair, DURING the repair process, or AFTER completion.';
 
 
 --
@@ -1605,11 +1767,27 @@ ALTER TABLE ONLY warehouse.pending_changes
 
 
 --
+-- Name: repair_attachments repair_attachments_pkey; Type: CONSTRAINT; Schema: warehouse; Owner: -
+--
+
+ALTER TABLE ONLY warehouse.repair_attachments
+    ADD CONSTRAINT repair_attachments_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: repair_logs repair_logs_pkey; Type: CONSTRAINT; Schema: warehouse; Owner: -
 --
 
 ALTER TABLE ONLY warehouse.repair_logs
     ADD CONSTRAINT repair_logs_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: repair_photos repair_photos_pkey; Type: CONSTRAINT; Schema: warehouse; Owner: -
+--
+
+ALTER TABLE ONLY warehouse.repair_photos
+    ADD CONSTRAINT repair_photos_pkey PRIMARY KEY (id);
 
 
 --
@@ -1798,6 +1976,13 @@ CREATE INDEX idx_item_photos_item ON warehouse.item_photos USING btree (item_id,
 
 
 --
+-- Name: idx_item_photos_perceptual_hash; Type: INDEX; Schema: warehouse; Owner: -
+--
+
+CREATE INDEX idx_item_photos_perceptual_hash ON warehouse.item_photos USING btree (perceptual_hash) WHERE (perceptual_hash IS NOT NULL);
+
+
+--
 -- Name: idx_item_photos_primary; Type: INDEX; Schema: warehouse; Owner: -
 --
 
@@ -1805,10 +1990,24 @@ CREATE UNIQUE INDEX idx_item_photos_primary ON warehouse.item_photos USING btree
 
 
 --
+-- Name: idx_item_photos_thumbnail_pending; Type: INDEX; Schema: warehouse; Owner: -
+--
+
+CREATE INDEX idx_item_photos_thumbnail_pending ON warehouse.item_photos USING btree (thumbnail_status) WHERE ((thumbnail_status)::text = ANY ((ARRAY['pending'::character varying, 'processing'::character varying])::text[]));
+
+
+--
 -- Name: idx_item_photos_workspace; Type: INDEX; Schema: warehouse; Owner: -
 --
 
 CREATE INDEX idx_item_photos_workspace ON warehouse.item_photos USING btree (workspace_id);
+
+
+--
+-- Name: idx_item_photos_workspace_hash; Type: INDEX; Schema: warehouse; Owner: -
+--
+
+CREATE INDEX idx_item_photos_workspace_hash ON warehouse.item_photos USING btree (workspace_id, perceptual_hash) WHERE (perceptual_hash IS NOT NULL);
 
 
 --
@@ -1830,6 +2029,20 @@ CREATE INDEX idx_pending_changes_requester ON warehouse.pending_changes USING bt
 --
 
 CREATE INDEX idx_pending_changes_workspace_status ON warehouse.pending_changes USING btree (workspace_id, status);
+
+
+--
+-- Name: idx_repair_photos_repair; Type: INDEX; Schema: warehouse; Owner: -
+--
+
+CREATE INDEX idx_repair_photos_repair ON warehouse.repair_photos USING btree (repair_log_id, display_order);
+
+
+--
+-- Name: idx_repair_photos_workspace; Type: INDEX; Schema: warehouse; Owner: -
+--
+
+CREATE INDEX idx_repair_photos_workspace ON warehouse.repair_photos USING btree (workspace_id);
 
 
 --
@@ -2064,6 +2277,13 @@ CREATE INDEX ix_inventory_item_id ON warehouse.inventory USING btree (item_id);
 
 
 --
+-- Name: ix_inventory_last_used; Type: INDEX; Schema: warehouse; Owner: -
+--
+
+CREATE INDEX ix_inventory_last_used ON warehouse.inventory USING btree (workspace_id, last_used_at) WHERE (is_archived = false);
+
+
+--
 -- Name: ix_inventory_location_id; Type: INDEX; Schema: warehouse; Owner: -
 --
 
@@ -2253,10 +2473,31 @@ CREATE INDEX ix_locations_workspace ON warehouse.locations USING btree (workspac
 
 
 --
+-- Name: ix_repair_attachments_repair; Type: INDEX; Schema: warehouse; Owner: -
+--
+
+CREATE INDEX ix_repair_attachments_repair ON warehouse.repair_attachments USING btree (repair_log_id);
+
+
+--
+-- Name: ix_repair_attachments_workspace; Type: INDEX; Schema: warehouse; Owner: -
+--
+
+CREATE INDEX ix_repair_attachments_workspace ON warehouse.repair_attachments USING btree (workspace_id);
+
+
+--
 -- Name: ix_repair_logs_inventory; Type: INDEX; Schema: warehouse; Owner: -
 --
 
 CREATE INDEX ix_repair_logs_inventory ON warehouse.repair_logs USING btree (inventory_id);
+
+
+--
+-- Name: ix_repair_logs_reminder; Type: INDEX; Schema: warehouse; Owner: -
+--
+
+CREATE INDEX ix_repair_logs_reminder ON warehouse.repair_logs USING btree (reminder_date) WHERE ((reminder_date IS NOT NULL) AND (reminder_sent = false));
 
 
 --
@@ -2798,6 +3039,30 @@ ALTER TABLE ONLY warehouse.pending_changes
 
 
 --
+-- Name: repair_attachments repair_attachments_file_id_fkey; Type: FK CONSTRAINT; Schema: warehouse; Owner: -
+--
+
+ALTER TABLE ONLY warehouse.repair_attachments
+    ADD CONSTRAINT repair_attachments_file_id_fkey FOREIGN KEY (file_id) REFERENCES warehouse.files(id) ON DELETE CASCADE;
+
+
+--
+-- Name: repair_attachments repair_attachments_repair_log_id_fkey; Type: FK CONSTRAINT; Schema: warehouse; Owner: -
+--
+
+ALTER TABLE ONLY warehouse.repair_attachments
+    ADD CONSTRAINT repair_attachments_repair_log_id_fkey FOREIGN KEY (repair_log_id) REFERENCES warehouse.repair_logs(id) ON DELETE CASCADE;
+
+
+--
+-- Name: repair_attachments repair_attachments_workspace_id_fkey; Type: FK CONSTRAINT; Schema: warehouse; Owner: -
+--
+
+ALTER TABLE ONLY warehouse.repair_attachments
+    ADD CONSTRAINT repair_attachments_workspace_id_fkey FOREIGN KEY (workspace_id) REFERENCES auth.workspaces(id) ON DELETE CASCADE;
+
+
+--
 -- Name: repair_logs repair_logs_inventory_id_fkey; Type: FK CONSTRAINT; Schema: warehouse; Owner: -
 --
 
@@ -2814,10 +3079,34 @@ ALTER TABLE ONLY warehouse.repair_logs
 
 
 --
+-- Name: repair_photos repair_photos_repair_log_id_fkey; Type: FK CONSTRAINT; Schema: warehouse; Owner: -
+--
+
+ALTER TABLE ONLY warehouse.repair_photos
+    ADD CONSTRAINT repair_photos_repair_log_id_fkey FOREIGN KEY (repair_log_id) REFERENCES warehouse.repair_logs(id) ON DELETE CASCADE;
+
+
+--
+-- Name: repair_photos repair_photos_uploaded_by_fkey; Type: FK CONSTRAINT; Schema: warehouse; Owner: -
+--
+
+ALTER TABLE ONLY warehouse.repair_photos
+    ADD CONSTRAINT repair_photos_uploaded_by_fkey FOREIGN KEY (uploaded_by) REFERENCES auth.users(id);
+
+
+--
+-- Name: repair_photos repair_photos_workspace_id_fkey; Type: FK CONSTRAINT; Schema: warehouse; Owner: -
+--
+
+ALTER TABLE ONLY warehouse.repair_photos
+    ADD CONSTRAINT repair_photos_workspace_id_fkey FOREIGN KEY (workspace_id) REFERENCES auth.workspaces(id) ON DELETE CASCADE;
+
+
+--
 -- PostgreSQL database dump complete
 --
 
-\unrestrict RP3VujKyBcc9Ja4tOmlqsMdfPAyFxboUjGmZ7U7pCfb82oadHLwJAefT12P9gA5
+\unrestrict if2kdQoltIlVmAoJokhEeDWpeK2aK364WZvcBXjL1K0K2hJOT49xdgWnGPUB2Sx
 
 
 --
@@ -2827,4 +3116,9 @@ ALTER TABLE ONLY warehouse.repair_logs
 INSERT INTO public.schema_migrations (version) VALUES
     ('001'),
     ('002'),
-    ('003');
+    ('003'),
+    ('004'),
+    ('005'),
+    ('006'),
+    ('007'),
+    ('008');

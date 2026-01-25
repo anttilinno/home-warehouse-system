@@ -1073,6 +1073,8 @@ type WarehouseItemPhoto struct {
 	ThumbnailAttempts int32 `json:"thumbnail_attempts"`
 	// Last error message if thumbnail generation failed
 	ThumbnailError *string `json:"thumbnail_error"`
+	// 64-bit difference hash (dHash) for duplicate detection. Similar images have similar hashes with small Hamming distance.
+	PerceptualHash *int64 `json:"perceptual_hash"`
 }
 
 type WarehouseLabel struct {
