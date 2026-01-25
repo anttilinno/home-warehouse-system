@@ -21,6 +21,9 @@ type ServiceInterface interface {
 	ListByInventory(ctx context.Context, workspaceID, inventoryID uuid.UUID) ([]*RepairLog, error)
 	ListByWorkspace(ctx context.Context, workspaceID uuid.UUID, pagination shared.Pagination) ([]*RepairLog, int, error)
 	ListByStatus(ctx context.Context, workspaceID uuid.UUID, status RepairStatus, pagination shared.Pagination) ([]*RepairLog, error)
+	SetWarrantyClaim(ctx context.Context, id, workspaceID uuid.UUID, isWarrantyClaim bool) (*RepairLog, error)
+	SetReminderDate(ctx context.Context, id, workspaceID uuid.UUID, reminderDate *time.Time) (*RepairLog, error)
+	GetTotalRepairCost(ctx context.Context, workspaceID, inventoryID uuid.UUID) ([]RepairCostSummary, error)
 }
 
 // Service implements repair log business logic.
@@ -47,6 +50,8 @@ type CreateInput struct {
 	CurrencyCode    *string
 	ServiceProvider *string
 	Notes           *string
+	IsWarrantyClaim bool
+	ReminderDate    *time.Time
 }
 
 // UpdateInput contains the data for updating a repair log.
@@ -77,6 +82,8 @@ func (s *Service) Create(ctx context.Context, input CreateInput) (*RepairLog, er
 		input.CurrencyCode,
 		input.ServiceProvider,
 		input.Notes,
+		input.IsWarrantyClaim,
+		input.ReminderDate,
 	)
 	if err != nil {
 		return nil, err
@@ -249,4 +256,45 @@ func (s *Service) ListByWorkspace(ctx context.Context, workspaceID uuid.UUID, pa
 // ListByStatus returns repair logs filtered by status.
 func (s *Service) ListByStatus(ctx context.Context, workspaceID uuid.UUID, status RepairStatus, pagination shared.Pagination) ([]*RepairLog, error) {
 	return s.repo.FindByStatus(ctx, workspaceID, status, pagination)
+}
+
+// SetWarrantyClaim sets whether the repair was covered under warranty.
+func (s *Service) SetWarrantyClaim(ctx context.Context, id, workspaceID uuid.UUID, isWarrantyClaim bool) (*RepairLog, error) {
+	repairLog, err := s.GetByID(ctx, id, workspaceID)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := repairLog.SetWarrantyClaim(isWarrantyClaim); err != nil {
+		return nil, err
+	}
+
+	if err := s.repo.UpdateWarrantyClaim(ctx, id, workspaceID, isWarrantyClaim); err != nil {
+		return nil, err
+	}
+
+	return repairLog, nil
+}
+
+// SetReminderDate sets the reminder date for future maintenance notification.
+func (s *Service) SetReminderDate(ctx context.Context, id, workspaceID uuid.UUID, reminderDate *time.Time) (*RepairLog, error) {
+	repairLog, err := s.GetByID(ctx, id, workspaceID)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := repairLog.SetReminderDate(reminderDate); err != nil {
+		return nil, err
+	}
+
+	if err := s.repo.UpdateReminderDate(ctx, id, workspaceID, reminderDate); err != nil {
+		return nil, err
+	}
+
+	return repairLog, nil
+}
+
+// GetTotalRepairCost returns the total repair cost summary for an inventory item.
+func (s *Service) GetTotalRepairCost(ctx context.Context, workspaceID, inventoryID uuid.UUID) ([]RepairCostSummary, error) {
+	return s.repo.GetTotalRepairCost(ctx, workspaceID, inventoryID)
 }

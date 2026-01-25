@@ -116,6 +116,7 @@ func main() {
 	log.Println("Job scheduler started successfully")
 	log.Println("Scheduled tasks:")
 	log.Println("  - Loan reminders: daily at 9 AM")
+	log.Println("  - Repair reminders: daily at 9 AM")
 	log.Println("  - Deleted records cleanup: weekly Sunday 3 AM")
 	log.Println("  - Activity logs cleanup: weekly Sunday 4 AM")
 
