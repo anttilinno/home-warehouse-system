@@ -13,6 +13,9 @@ const (
 
 	// TypeCleanupOldActivity is the task type for cleaning up old activity logs.
 	TypeCleanupOldActivity = "cleanup:old_activity"
+
+	// TypeThumbnailGeneration is the task type for generating photo thumbnails.
+	TypeThumbnailGeneration = "photo:generate_thumbnails"
 )
 
 // Queue names for task prioritization.
