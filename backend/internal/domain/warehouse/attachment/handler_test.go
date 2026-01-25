@@ -5,8 +5,10 @@ import (
 	"fmt"
 	"net/http"
 	"testing"
+	"time"
 
 	"github.com/google/uuid"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 
 	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/attachment"
@@ -289,4 +291,183 @@ func TestAttachmentHandler_Delete(t *testing.T) {
 		testutil.AssertStatus(t, rec, http.StatusNotFound)
 		mockSvc.AssertExpectations(t)
 	})
+}
+
+// Event Publishing Tests
+
+func TestAttachmentHandler_Create_PublishesEvent(t *testing.T) {
+	setup := testutil.NewHandlerTestSetup()
+	mockSvc := new(MockService)
+	capture := testutil.NewEventCapture(setup.WorkspaceID, setup.UserID)
+	capture.Start()
+	defer capture.Stop()
+
+	attachment.RegisterRoutes(setup.API, mockSvc, capture.GetBroadcaster())
+
+	itemID := uuid.New()
+	testAtt, _ := attachment.NewAttachment(itemID, nil, attachment.TypeManual, nil, false, nil)
+
+	mockSvc.On("CreateAttachment", mock.Anything, mock.MatchedBy(func(input attachment.CreateAttachmentInput) bool {
+		return input.ItemID == itemID && input.AttachmentType == attachment.TypeManual
+	})).Return(testAtt, nil).Once()
+
+	body := `{"attachment_type":"MANUAL","is_primary":false}`
+	rec := setup.Post(fmt.Sprintf("/items/%s/attachments", itemID), body)
+
+	testutil.AssertStatus(t, rec, http.StatusOK)
+	mockSvc.AssertExpectations(t)
+
+	// Wait for event
+	assert.True(t, capture.WaitForEvents(1, 500*time.Millisecond), "Event should be published")
+
+	event := capture.GetLastEvent()
+	assert.NotNil(t, event)
+	assert.Equal(t, "attachment.created", event.Type)
+	assert.Equal(t, "attachment", event.EntityType)
+	assert.Equal(t, setup.WorkspaceID, event.WorkspaceID)
+	assert.Equal(t, setup.UserID, event.UserID)
+	assert.Equal(t, testAtt.ID().String(), event.EntityID)
+	assert.NotNil(t, event.Data)
+	assert.Equal(t, testAtt.ID(), event.Data["id"])
+	assert.Equal(t, testAtt.ItemID(), event.Data["item_id"])
+	assert.Equal(t, "MANUAL", event.Data["attachment_type"])
+}
+
+func TestAttachmentHandler_Upload_PublishesEvent(t *testing.T) {
+	setup := testutil.NewHandlerTestSetup()
+	mockSvc := new(MockService)
+	capture := testutil.NewEventCapture(setup.WorkspaceID, setup.UserID)
+	capture.Start()
+	defer capture.Stop()
+
+	attachment.RegisterRoutes(setup.API, mockSvc, capture.GetBroadcaster())
+
+	itemID := uuid.New()
+	fileID := uuid.New()
+
+	testFile, _ := attachment.NewFile(
+		setup.WorkspaceID,
+		"test.jpg",
+		".jpg",
+		"image/jpeg",
+		"abc123",
+		"storage/key",
+		1024,
+		&setup.UserID,
+	)
+
+	testAtt, _ := attachment.NewAttachment(itemID, &fileID, attachment.TypePhoto, nil, false, nil)
+
+	mockSvc.On("UploadFile", mock.Anything, mock.MatchedBy(func(input attachment.UploadFileInput) bool {
+		return input.OriginalName == "test.jpg" && input.MimeType == "image/jpeg"
+	})).Return(testFile, nil).Once()
+
+	mockSvc.On("CreateAttachment", mock.Anything, mock.MatchedBy(func(input attachment.CreateAttachmentInput) bool {
+		return input.ItemID == itemID && input.AttachmentType == attachment.TypePhoto
+	})).Return(testAtt, nil).Once()
+
+	body := `{"file_name":"test.jpg","mime_type":"image/jpeg","size_bytes":1024,"checksum":"abc123","attachment_type":"PHOTO","is_primary":false}`
+	rec := setup.Post(fmt.Sprintf("/items/%s/attachments/upload", itemID), body)
+
+	testutil.AssertStatus(t, rec, http.StatusOK)
+	mockSvc.AssertExpectations(t)
+
+	// Wait for event
+	assert.True(t, capture.WaitForEvents(1, 500*time.Millisecond), "Event should be published")
+
+	event := capture.GetLastEvent()
+	assert.NotNil(t, event)
+	assert.Equal(t, "attachment.created", event.Type)
+	assert.Equal(t, "attachment", event.EntityType)
+	assert.Equal(t, setup.WorkspaceID, event.WorkspaceID)
+	assert.Equal(t, setup.UserID, event.UserID)
+	assert.Equal(t, testAtt.ID().String(), event.EntityID)
+}
+
+func TestAttachmentHandler_SetPrimary_PublishesEvent(t *testing.T) {
+	setup := testutil.NewHandlerTestSetup()
+	mockSvc := new(MockService)
+	capture := testutil.NewEventCapture(setup.WorkspaceID, setup.UserID)
+	capture.Start()
+	defer capture.Stop()
+
+	attachment.RegisterRoutes(setup.API, mockSvc, capture.GetBroadcaster())
+
+	itemID := uuid.New()
+	attID := uuid.New()
+
+	mockSvc.On("SetPrimary", mock.Anything, itemID, attID).
+		Return(nil).Once()
+
+	rec := setup.Post(fmt.Sprintf("/items/%s/attachments/%s/set-primary", itemID, attID), "")
+
+	testutil.AssertStatus(t, rec, http.StatusNoContent)
+	mockSvc.AssertExpectations(t)
+
+	// Wait for event
+	assert.True(t, capture.WaitForEvents(1, 500*time.Millisecond), "Event should be published")
+
+	event := capture.GetLastEvent()
+	assert.NotNil(t, event)
+	assert.Equal(t, "attachment.updated", event.Type)
+	assert.Equal(t, "attachment", event.EntityType)
+	assert.Equal(t, setup.WorkspaceID, event.WorkspaceID)
+	assert.Equal(t, setup.UserID, event.UserID)
+	assert.Equal(t, attID.String(), event.EntityID)
+	assert.NotNil(t, event.Data)
+	assert.Equal(t, attID, event.Data["id"])
+	assert.Equal(t, itemID, event.Data["item_id"])
+	assert.Equal(t, true, event.Data["is_primary"])
+}
+
+func TestAttachmentHandler_Delete_PublishesEvent(t *testing.T) {
+	setup := testutil.NewHandlerTestSetup()
+	mockSvc := new(MockService)
+	capture := testutil.NewEventCapture(setup.WorkspaceID, setup.UserID)
+	capture.Start()
+	defer capture.Stop()
+
+	attachment.RegisterRoutes(setup.API, mockSvc, capture.GetBroadcaster())
+
+	attID := uuid.New()
+
+	mockSvc.On("DeleteAttachment", mock.Anything, attID).
+		Return(nil).Once()
+
+	rec := setup.Delete(fmt.Sprintf("/attachments/%s", attID))
+
+	testutil.AssertStatus(t, rec, http.StatusNoContent)
+	mockSvc.AssertExpectations(t)
+
+	// Wait for event
+	assert.True(t, capture.WaitForEvents(1, 500*time.Millisecond), "Event should be published")
+
+	event := capture.GetLastEvent()
+	assert.NotNil(t, event)
+	assert.Equal(t, "attachment.deleted", event.Type)
+	assert.Equal(t, "attachment", event.EntityType)
+	assert.Equal(t, setup.WorkspaceID, event.WorkspaceID)
+	assert.Equal(t, setup.UserID, event.UserID)
+	assert.Equal(t, attID.String(), event.EntityID)
+}
+
+func TestAttachmentHandler_Create_NilBroadcaster_NoError(t *testing.T) {
+	setup := testutil.NewHandlerTestSetup()
+	mockSvc := new(MockService)
+	// Register with nil broadcaster
+	attachment.RegisterRoutes(setup.API, mockSvc, nil)
+
+	itemID := uuid.New()
+	testAtt, _ := attachment.NewAttachment(itemID, nil, attachment.TypeManual, nil, false, nil)
+
+	mockSvc.On("CreateAttachment", mock.Anything, mock.MatchedBy(func(input attachment.CreateAttachmentInput) bool {
+		return input.ItemID == itemID
+	})).Return(testAtt, nil).Once()
+
+	body := `{"attachment_type":"MANUAL","is_primary":false}`
+	rec := setup.Post(fmt.Sprintf("/items/%s/attachments", itemID), body)
+
+	// Should not panic and should succeed
+	testutil.AssertStatus(t, rec, http.StatusOK)
+	mockSvc.AssertExpectations(t)
 }
