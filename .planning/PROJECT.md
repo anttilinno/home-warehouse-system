@@ -12,6 +12,17 @@ Reliable inventory access anywhere — online or offline — with seamless sync.
 
 ### Validated
 
+**v1.1 Offline Entity Extension (shipped 2026-01-25):**
+
+- ✓ Offline mutations for borrowers — create/update while offline with optimistic UI
+- ✓ Offline mutations for categories — hierarchical support with topological sort
+- ✓ Offline mutations for locations — hierarchical support with topological sort
+- ✓ Offline mutations for containers — cross-entity location dependency tracking
+- ✓ Offline mutations for inventory — multi-entity dependency (item, location, container)
+- ✓ Conflict history UI — `/dashboard/sync-history` with entity type and date range filtering
+- ✓ Dependency-aware sync — `dependsOn` field for prerequisite tracking, cascade failure handling
+- ✓ Entity-type ordered sync — categories → locations → borrowers → containers → items → inventory
+
 **v1 PWA Offline Completion (shipped 2026-01-24):**
 
 - ✓ Proactive data sync — all workspace data cached to IndexedDB on app load
@@ -32,14 +43,14 @@ Reliable inventory access anywhere — online or offline — with seamless sync.
 
 ### Active
 
-**v1.1 Offline Entity Extension:**
+**v1.2 Phase 2 Completion (in progress):**
 
-- [ ] Offline mutations for locations (create/update while offline)
-- [ ] Offline mutations for containers (create/update while offline)
-- [ ] Offline mutations for inventory records (create/update while offline)
-- [ ] Offline mutations for categories (create/update while offline)
-- [ ] Offline mutations for borrowers (create/update while offline)
-- [ ] Conflict history UI (expose existing getConflictLog function)
+- [ ] Repair log tracking — full lifecycle with photos, attachments, reminders
+- [ ] Declutter assistant — unused item detection, scoring, grouping, export
+- [ ] Bulk photo operations — multi-select, bulk delete/edit, zip download
+- [ ] Background thumbnail processing — async generation, WebP, multiple sizes
+- [ ] SSE test coverage — remaining 9 handler tests
+- [ ] Import testing checklist — manual verification documented
 
 ### Out of Scope
 
@@ -47,18 +58,9 @@ Reliable inventory access anywhere — online or offline — with seamless sync.
 - Photo/attachment sync — heavy assets excluded from proactive sync (cached on-demand)
 - Real-time sync while offline — changes sync on reconnection, not continuously
 
-## Current Milestone: v1.1 Offline Entity Extension
-
-**Goal:** Extend offline mutation support from items to all core entities (locations, containers, inventory, categories, borrowers) and add conflict history UI.
-
-**Target features:**
-- Offline create/update for locations, containers, inventory, categories, borrowers
-- Conflict history UI showing resolved conflicts
-- Same patterns as v1 items: IndexedDB, mutation queue, optimistic UI, pending indicators
-
 ## Current State
 
-**Shipped:** v1 PWA Offline Completion (2026-01-24)
+**Shipped:** v1.1 Offline Entity Extension (2026-01-25)
 
 **Tech stack:**
 - Backend: Go 1.25, Chi, sqlc, PostgreSQL
@@ -91,4 +93,4 @@ Reliable inventory access anywhere — online or offline — with seamless sync.
 - **No heavy assets**: Photos, PDFs, attachments excluded from proactive sync
 
 ---
-*Last updated: 2026-01-24 after v1.1 milestone start*
+*Last updated: 2026-01-25 after v1.2 milestone started*
