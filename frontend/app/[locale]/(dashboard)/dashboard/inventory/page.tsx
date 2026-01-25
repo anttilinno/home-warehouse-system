@@ -21,6 +21,7 @@ import {
   HandCoins,
   AlertCircle,
   Cloud,
+  Wrench,
 } from "lucide-react";
 import { toast } from "sonner";
 import { format, parseISO } from "date-fns";
@@ -71,6 +72,7 @@ import { FilterBar } from "@/components/ui/filter-bar";
 import { FilterPopover } from "@/components/ui/filter-popover";
 import { ExportDialog } from "@/components/ui/export-dialog";
 import { ImportDialog, type ImportResult } from "@/components/ui/import-dialog";
+import { RepairHistory } from "@/components/inventory/repair-history";
 import { InlineEditCell } from "@/components/ui/inline-edit-cell";
 import { InlineEditSelect } from "@/components/ui/inline-edit-select";
 import { useWorkspace } from "@/lib/hooks/use-workspace";
@@ -459,6 +461,8 @@ export default function InventoryPage() {
   const [editingInventory, setEditingInventory] = useState<Inventory | null>(null);
   const [exportDialogOpen, setExportDialogOpen] = useState(false);
   const [importDialogOpen, setImportDialogOpen] = useState(false);
+  const [repairDialogOpen, setRepairDialogOpen] = useState(false);
+  const [repairInventoryId, setRepairInventoryId] = useState<string | null>(null);
 
   // Form state
   const [formItemId, setFormItemId] = useState("");
@@ -1404,6 +1408,13 @@ export default function InventoryPage() {
                                         <Move className="mr-2 h-4 w-4" />
                                         Move
                                       </DropdownMenuItem>
+                                      <DropdownMenuItem onClick={() => {
+                                        setRepairInventoryId(inventory.id);
+                                        setRepairDialogOpen(true);
+                                      }}>
+                                        <Wrench className="mr-2 h-4 w-4" />
+                                        Repair History
+                                      </DropdownMenuItem>
                                       <DropdownMenuSeparator />
                                       <DropdownMenuItem onClick={() => handleArchive(inventory)}>
                                         {inventory.is_archived ? (
@@ -1637,6 +1648,28 @@ export default function InventoryPage() {
         title="Import Inventory from CSV"
         description="Upload a CSV file to import inventory entries"
       />
+
+      {/* Repair History Dialog */}
+      <Dialog open={repairDialogOpen} onOpenChange={setRepairDialogOpen}>
+        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Repair History</DialogTitle>
+            <DialogDescription>
+              View and manage repair entries for this inventory item
+            </DialogDescription>
+          </DialogHeader>
+          {repairInventoryId && workspaceId && (
+            <RepairHistory
+              inventoryId={repairInventoryId}
+              workspaceId={workspaceId}
+              onRepairComplete={() => {
+                // Refresh inventory list to reflect condition change
+                refetch();
+              }}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
