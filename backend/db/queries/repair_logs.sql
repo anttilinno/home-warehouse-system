@@ -93,3 +93,24 @@ WHERE rl.reminder_date <= $1
 UPDATE warehouse.repair_logs
 SET reminder_sent = true, updated_at = now()
 WHERE id = $1;
+
+-- name: UpdateRepairLogWarrantyClaim :one
+UPDATE warehouse.repair_logs
+SET is_warranty_claim = $2, updated_at = now()
+WHERE id = $1 AND workspace_id = $3
+RETURNING *;
+
+-- name: UpdateRepairLogReminderDate :one
+UPDATE warehouse.repair_logs
+SET reminder_date = $2, reminder_sent = false, updated_at = now()
+WHERE id = $1 AND workspace_id = $3
+RETURNING *;
+
+-- name: CreateRepairLogWithWarranty :one
+INSERT INTO warehouse.repair_logs (
+    id, workspace_id, inventory_id, status, description,
+    repair_date, cost, currency_code, service_provider, notes,
+    is_warranty_claim, reminder_date
+)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+RETURNING *;

@@ -91,6 +91,8 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 			CurrencyCode:    input.Body.CurrencyCode,
 			ServiceProvider: input.Body.ServiceProvider,
 			Notes:           input.Body.Notes,
+			IsWarrantyClaim: input.Body.IsWarrantyClaim,
+			ReminderDate:    input.Body.ReminderDate,
 		})
 		if err != nil {
 			if errors.Is(err, shared.ErrNotFound) {
@@ -322,10 +324,36 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 			},
 		}, nil
 	})
+
+	// Get total repair cost for inventory
+	huma.Get(api, "/inventory/{inventory_id}/repair-cost", func(ctx context.Context, input *GetRepairCostInput) (*GetRepairCostOutput, error) {
+		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
+		if !ok {
+			return nil, huma.Error401Unauthorized("workspace context required")
+		}
+
+		summaries, err := svc.GetTotalRepairCost(ctx, workspaceID, input.InventoryID)
+		if err != nil {
+			return nil, huma.Error500InternalServerError("failed to get repair cost")
+		}
+
+		items := make([]RepairCostSummaryResponse, len(summaries))
+		for i, s := range summaries {
+			items[i] = RepairCostSummaryResponse{
+				CurrencyCode:   s.CurrencyCode,
+				TotalCostCents: s.TotalCostCents,
+				RepairCount:    s.RepairCount,
+			}
+		}
+
+		return &GetRepairCostOutput{
+			Body: RepairCostResponse{Items: items},
+		}, nil
+	})
 }
 
 func toRepairLogResponse(r *RepairLog) RepairLogResponse {
-	var repairDate, completedAt *string
+	var repairDate, completedAt, reminderDate *string
 	if r.RepairDate() != nil {
 		s := r.RepairDate().Format(time.RFC3339)
 		repairDate = &s
@@ -333,6 +361,10 @@ func toRepairLogResponse(r *RepairLog) RepairLogResponse {
 	if r.CompletedAt() != nil {
 		s := r.CompletedAt().Format(time.RFC3339)
 		completedAt = &s
+	}
+	if r.ReminderDate() != nil {
+		s := r.ReminderDate().Format(time.RFC3339)
+		reminderDate = &s
 	}
 
 	return RepairLogResponse{
@@ -348,6 +380,9 @@ func toRepairLogResponse(r *RepairLog) RepairLogResponse {
 		CompletedAt:     completedAt,
 		NewCondition:    r.NewCondition(),
 		Notes:           r.Notes(),
+		IsWarrantyClaim: r.IsWarrantyClaim(),
+		ReminderDate:    reminderDate,
+		ReminderSent:    r.ReminderSent(),
 		CreatedAt:       r.CreatedAt(),
 		UpdatedAt:       r.UpdatedAt(),
 	}
@@ -387,6 +422,8 @@ type CreateRepairLogInput struct {
 		CurrencyCode    *string    `json:"currency_code,omitempty" doc:"Currency code (e.g., USD, EUR)"`
 		ServiceProvider *string    `json:"service_provider,omitempty" doc:"Name of the service provider"`
 		Notes           *string    `json:"notes,omitempty" doc:"Additional notes"`
+		IsWarrantyClaim bool       `json:"is_warranty_claim,omitempty" doc:"Whether this repair is covered under warranty"`
+		ReminderDate    *time.Time `json:"reminder_date,omitempty" doc:"Date to send reminder for maintenance follow-up"`
 	}
 }
 
@@ -450,6 +487,28 @@ type RepairLogResponse struct {
 	CompletedAt     *string   `json:"completed_at,omitempty"`
 	NewCondition    *string   `json:"new_condition,omitempty"`
 	Notes           *string   `json:"notes,omitempty"`
+	IsWarrantyClaim bool      `json:"is_warranty_claim" doc:"Whether this repair is covered under warranty"`
+	ReminderDate    *string   `json:"reminder_date,omitempty" doc:"Date to send reminder for maintenance follow-up"`
+	ReminderSent    bool      `json:"reminder_sent" doc:"Whether the reminder has been sent"`
 	CreatedAt       time.Time `json:"created_at"`
 	UpdatedAt       time.Time `json:"updated_at"`
+}
+
+// Types for repair cost endpoint
+type GetRepairCostInput struct {
+	InventoryID uuid.UUID `path:"inventory_id"`
+}
+
+type GetRepairCostOutput struct {
+	Body RepairCostResponse
+}
+
+type RepairCostResponse struct {
+	Items []RepairCostSummaryResponse `json:"items"`
+}
+
+type RepairCostSummaryResponse struct {
+	CurrencyCode   *string `json:"currency_code"`
+	TotalCostCents int     `json:"total_cost_cents" doc:"Total repair cost in cents"`
+	RepairCount    int     `json:"repair_count" doc:"Number of completed repairs"`
 }

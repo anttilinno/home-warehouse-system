@@ -97,13 +97,18 @@ func (r *RepairLogRepository) Save(ctx context.Context, repair *repairlog.Repair
 		repairDate = pgtype.Date{Time: *repair.RepairDate(), Valid: true}
 	}
 
+	var reminderDate pgtype.Date
+	if repair.ReminderDate() != nil {
+		reminderDate = pgtype.Date{Time: *repair.ReminderDate(), Valid: true}
+	}
+
 	var cost *int32
 	if repair.Cost() != nil {
 		c := int32(*repair.Cost())
 		cost = &c
 	}
 
-	_, err = r.queries.CreateRepairLog(ctx, queries.CreateRepairLogParams{
+	_, err = r.queries.CreateRepairLogWithWarranty(ctx, queries.CreateRepairLogWithWarrantyParams{
 		ID:              repair.ID(),
 		WorkspaceID:     repair.WorkspaceID(),
 		InventoryID:     repair.InventoryID(),
@@ -114,6 +119,8 @@ func (r *RepairLogRepository) Save(ctx context.Context, repair *repairlog.Repair
 		CurrencyCode:    repair.CurrencyCode(),
 		ServiceProvider: repair.ServiceProvider(),
 		Notes:           repair.Notes(),
+		IsWarrantyClaim: repair.IsWarrantyClaim(),
+		ReminderDate:    reminderDate,
 	})
 	return err
 }
@@ -208,9 +215,61 @@ func (r *RepairLogRepository) Delete(ctx context.Context, id uuid.UUID) error {
 	return r.queries.DeleteRepairLog(ctx, id)
 }
 
+// UpdateWarrantyClaim updates the warranty claim flag.
+func (r *RepairLogRepository) UpdateWarrantyClaim(ctx context.Context, id, workspaceID uuid.UUID, isWarrantyClaim bool) error {
+	_, err := r.queries.UpdateRepairLogWarrantyClaim(ctx, queries.UpdateRepairLogWarrantyClaimParams{
+		ID:              id,
+		IsWarrantyClaim: isWarrantyClaim,
+		WorkspaceID:     workspaceID,
+	})
+	return err
+}
+
+// UpdateReminderDate updates the reminder date.
+func (r *RepairLogRepository) UpdateReminderDate(ctx context.Context, id, workspaceID uuid.UUID, reminderDate *time.Time) error {
+	var date pgtype.Date
+	if reminderDate != nil {
+		date = pgtype.Date{Time: *reminderDate, Valid: true}
+	}
+
+	_, err := r.queries.UpdateRepairLogReminderDate(ctx, queries.UpdateRepairLogReminderDateParams{
+		ID:           id,
+		ReminderDate: date,
+		WorkspaceID:  workspaceID,
+	})
+	return err
+}
+
+// MarkReminderSent marks the reminder as sent.
+func (r *RepairLogRepository) MarkReminderSent(ctx context.Context, id uuid.UUID) error {
+	return r.queries.MarkRepairReminderSent(ctx, id)
+}
+
+// GetTotalRepairCost returns the total repair cost summary for an inventory item.
+func (r *RepairLogRepository) GetTotalRepairCost(ctx context.Context, workspaceID, inventoryID uuid.UUID) ([]repairlog.RepairCostSummary, error) {
+	rows, err := r.queries.GetTotalRepairCostByInventory(ctx, queries.GetTotalRepairCostByInventoryParams{
+		WorkspaceID: workspaceID,
+		InventoryID: inventoryID,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	summaries := make([]repairlog.RepairCostSummary, 0, len(rows))
+	for _, row := range rows {
+		summaries = append(summaries, repairlog.RepairCostSummary{
+			CurrencyCode:   row.CurrencyCode,
+			TotalCostCents: int(row.TotalCostCents),
+			RepairCount:    int(row.RepairCount),
+		})
+	}
+
+	return summaries, nil
+}
+
 // rowToRepairLog converts a database row to a domain entity.
 func (r *RepairLogRepository) rowToRepairLog(row queries.WarehouseRepairLog) *repairlog.RepairLog {
-	var repairDate, completedAt *time.Time
+	var repairDate, completedAt, reminderDate *time.Time
 	if row.RepairDate.Valid {
 		t := row.RepairDate.Time
 		repairDate = &t
@@ -218,6 +277,10 @@ func (r *RepairLogRepository) rowToRepairLog(row queries.WarehouseRepairLog) *re
 	if row.CompletedAt.Valid {
 		t := row.CompletedAt.Time
 		completedAt = &t
+	}
+	if row.ReminderDate.Valid {
+		t := row.ReminderDate.Time
+		reminderDate = &t
 	}
 
 	var cost *int
@@ -245,6 +308,9 @@ func (r *RepairLogRepository) rowToRepairLog(row queries.WarehouseRepairLog) *re
 		completedAt,
 		newCondition,
 		row.Notes,
+		row.IsWarrantyClaim,
+		reminderDate,
+		row.ReminderSent,
 		row.CreatedAt.Time,
 		row.UpdatedAt.Time,
 	)

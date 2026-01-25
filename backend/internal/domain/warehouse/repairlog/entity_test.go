@@ -19,6 +19,7 @@ func TestNewRepairLog_ValidInput(t *testing.T) {
 		inventoryID,
 		description,
 		nil, nil, nil, nil, nil,
+		false, nil,
 	)
 
 	require.NoError(t, err)
@@ -34,6 +35,9 @@ func TestNewRepairLog_ValidInput(t *testing.T) {
 	assert.Nil(t, repair.CompletedAt())
 	assert.Nil(t, repair.NewCondition())
 	assert.Nil(t, repair.Notes())
+	assert.False(t, repair.IsWarrantyClaim())
+	assert.Nil(t, repair.ReminderDate())
+	assert.False(t, repair.ReminderSent())
 	assert.True(t, repair.IsPending())
 	assert.False(t, repair.IsInProgress())
 	assert.False(t, repair.IsCompleted())
@@ -48,6 +52,7 @@ func TestNewRepairLog_WithAllFields(t *testing.T) {
 	currencyCode := "EUR"
 	serviceProvider := "Local Repair Shop"
 	notes := "Under warranty"
+	reminderDate := time.Now().Add(24 * time.Hour)
 
 	repair, err := NewRepairLog(
 		workspaceID,
@@ -58,6 +63,8 @@ func TestNewRepairLog_WithAllFields(t *testing.T) {
 		&currencyCode,
 		&serviceProvider,
 		&notes,
+		true,
+		&reminderDate,
 	)
 
 	require.NoError(t, err)
@@ -67,6 +74,8 @@ func TestNewRepairLog_WithAllFields(t *testing.T) {
 	assert.Equal(t, currencyCode, *repair.CurrencyCode())
 	assert.Equal(t, serviceProvider, *repair.ServiceProvider())
 	assert.Equal(t, notes, *repair.Notes())
+	assert.True(t, repair.IsWarrantyClaim())
+	assert.Equal(t, reminderDate, *repair.ReminderDate())
 }
 
 func TestNewRepairLog_EmptyDescription(t *testing.T) {
@@ -78,6 +87,7 @@ func TestNewRepairLog_EmptyDescription(t *testing.T) {
 		inventoryID,
 		"",
 		nil, nil, nil, nil, nil,
+		false, nil,
 	)
 
 	assert.ErrorIs(t, err, ErrInvalidDescription)
@@ -92,6 +102,7 @@ func TestNewRepairLog_WhitespaceDescription(t *testing.T) {
 		inventoryID,
 		"   ",
 		nil, nil, nil, nil, nil,
+		false, nil,
 	)
 
 	assert.ErrorIs(t, err, ErrInvalidDescription)
@@ -105,6 +116,7 @@ func TestNewRepairLog_NilWorkspaceID(t *testing.T) {
 		inventoryID,
 		"Fix broken part",
 		nil, nil, nil, nil, nil,
+		false, nil,
 	)
 
 	assert.Error(t, err)
@@ -118,6 +130,7 @@ func TestNewRepairLog_NilInventoryID(t *testing.T) {
 		uuid.Nil,
 		"Fix broken part",
 		nil, nil, nil, nil, nil,
+		false, nil,
 	)
 
 	assert.Error(t, err)
@@ -280,6 +293,7 @@ func TestReconstruct(t *testing.T) {
 	currencyCode := "EUR"
 	serviceProvider := "Test Provider"
 	notes := "Test notes"
+	reminderDate := time.Now().Add(24 * time.Hour)
 	createdAt := time.Now().Add(-time.Hour)
 	updatedAt := time.Now()
 
@@ -288,6 +302,7 @@ func TestReconstruct(t *testing.T) {
 		status, description,
 		&repairDate, &cost, &currencyCode, &serviceProvider,
 		nil, nil, &notes,
+		true, &reminderDate, false,
 		createdAt, updatedAt,
 	)
 
@@ -303,6 +318,9 @@ func TestReconstruct(t *testing.T) {
 	assert.Nil(t, repair.CompletedAt())
 	assert.Nil(t, repair.NewCondition())
 	assert.Equal(t, notes, *repair.Notes())
+	assert.True(t, repair.IsWarrantyClaim())
+	assert.Equal(t, reminderDate, *repair.ReminderDate())
+	assert.False(t, repair.ReminderSent())
 	assert.Equal(t, createdAt, repair.CreatedAt())
 	assert.Equal(t, updatedAt, repair.UpdatedAt())
 }
@@ -326,6 +344,7 @@ func createTestRepairLog(t *testing.T, status RepairStatus) *RepairLog {
 		nil, nil, nil, nil,
 		completedAt,
 		nil, nil,
+		false, nil, false,
 		now, now,
 	)
 }

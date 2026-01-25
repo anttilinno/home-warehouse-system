@@ -35,6 +35,9 @@ type RepairLog struct {
 	completedAt     *time.Time
 	newCondition    *string
 	notes           *string
+	isWarrantyClaim bool
+	reminderDate    *time.Time
+	reminderSent    bool
 	createdAt       time.Time
 	updatedAt       time.Time
 }
@@ -48,6 +51,8 @@ func NewRepairLog(
 	currencyCode *string,
 	serviceProvider *string,
 	notes *string,
+	isWarrantyClaim bool,
+	reminderDate *time.Time,
 ) (*RepairLog, error) {
 	if err := shared.ValidateUUID(workspaceID, "workspace_id"); err != nil {
 		return nil, err
@@ -73,6 +78,9 @@ func NewRepairLog(
 		completedAt:     nil,
 		newCondition:    nil,
 		notes:           notes,
+		isWarrantyClaim: isWarrantyClaim,
+		reminderDate:    reminderDate,
+		reminderSent:    false,
 		createdAt:       now,
 		updatedAt:       now,
 	}, nil
@@ -91,6 +99,9 @@ func Reconstruct(
 	completedAt *time.Time,
 	newCondition *string,
 	notes *string,
+	isWarrantyClaim bool,
+	reminderDate *time.Time,
+	reminderSent bool,
 	createdAt, updatedAt time.Time,
 ) *RepairLog {
 	return &RepairLog{
@@ -106,6 +117,9 @@ func Reconstruct(
 		completedAt:     completedAt,
 		newCondition:    newCondition,
 		notes:           notes,
+		isWarrantyClaim: isWarrantyClaim,
+		reminderDate:    reminderDate,
+		reminderSent:    reminderSent,
 		createdAt:       createdAt,
 		updatedAt:       updatedAt,
 	}
@@ -148,6 +162,15 @@ func (r *RepairLog) NewCondition() *string { return r.newCondition }
 
 // Notes returns additional notes about the repair.
 func (r *RepairLog) Notes() *string { return r.notes }
+
+// IsWarrantyClaim returns whether this repair was covered under warranty.
+func (r *RepairLog) IsWarrantyClaim() bool { return r.isWarrantyClaim }
+
+// ReminderDate returns the optional future date for maintenance reminder.
+func (r *RepairLog) ReminderDate() *time.Time { return r.reminderDate }
+
+// ReminderSent returns whether the reminder notification has been sent.
+func (r *RepairLog) ReminderSent() bool { return r.reminderSent }
 
 // CreatedAt returns the creation timestamp.
 func (r *RepairLog) CreatedAt() time.Time { return r.createdAt }
@@ -223,4 +246,33 @@ func (r *RepairLog) IsInProgress() bool {
 // IsCompleted returns true if the repair is completed.
 func (r *RepairLog) IsCompleted() bool {
 	return r.status == StatusCompleted
+}
+
+// SetWarrantyClaim sets whether this repair was covered under warranty.
+// Cannot change on completed repairs.
+func (r *RepairLog) SetWarrantyClaim(isWarrantyClaim bool) error {
+	if r.status == StatusCompleted {
+		return ErrRepairAlreadyCompleted
+	}
+	r.isWarrantyClaim = isWarrantyClaim
+	r.updatedAt = time.Now()
+	return nil
+}
+
+// SetReminderDate sets the reminder date for future maintenance notification.
+// Cannot change on completed repairs. Setting to nil clears the reminder.
+func (r *RepairLog) SetReminderDate(reminderDate *time.Time) error {
+	if r.status == StatusCompleted {
+		return ErrRepairAlreadyCompleted
+	}
+	r.reminderDate = reminderDate
+	r.reminderSent = false // Reset sent flag when date changes
+	r.updatedAt = time.Now()
+	return nil
+}
+
+// MarkReminderSent marks the reminder notification as sent.
+func (r *RepairLog) MarkReminderSent() {
+	r.reminderSent = true
+	r.updatedAt = time.Now()
 }

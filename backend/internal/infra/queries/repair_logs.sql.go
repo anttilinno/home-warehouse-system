@@ -128,6 +128,69 @@ func (q *Queries) CreateRepairLog(ctx context.Context, arg CreateRepairLogParams
 	return i, err
 }
 
+const createRepairLogWithWarranty = `-- name: CreateRepairLogWithWarranty :one
+INSERT INTO warehouse.repair_logs (
+    id, workspace_id, inventory_id, status, description,
+    repair_date, cost, currency_code, service_provider, notes,
+    is_warranty_claim, reminder_date
+)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+RETURNING id, workspace_id, inventory_id, status, description, repair_date, cost, currency_code, service_provider, completed_at, new_condition, notes, created_at, updated_at, is_warranty_claim, reminder_date, reminder_sent
+`
+
+type CreateRepairLogWithWarrantyParams struct {
+	ID              uuid.UUID                 `json:"id"`
+	WorkspaceID     uuid.UUID                 `json:"workspace_id"`
+	InventoryID     uuid.UUID                 `json:"inventory_id"`
+	Status          WarehouseRepairStatusEnum `json:"status"`
+	Description     string                    `json:"description"`
+	RepairDate      pgtype.Date               `json:"repair_date"`
+	Cost            *int32                    `json:"cost"`
+	CurrencyCode    *string                   `json:"currency_code"`
+	ServiceProvider *string                   `json:"service_provider"`
+	Notes           *string                   `json:"notes"`
+	IsWarrantyClaim bool                      `json:"is_warranty_claim"`
+	ReminderDate    pgtype.Date               `json:"reminder_date"`
+}
+
+func (q *Queries) CreateRepairLogWithWarranty(ctx context.Context, arg CreateRepairLogWithWarrantyParams) (WarehouseRepairLog, error) {
+	row := q.db.QueryRow(ctx, createRepairLogWithWarranty,
+		arg.ID,
+		arg.WorkspaceID,
+		arg.InventoryID,
+		arg.Status,
+		arg.Description,
+		arg.RepairDate,
+		arg.Cost,
+		arg.CurrencyCode,
+		arg.ServiceProvider,
+		arg.Notes,
+		arg.IsWarrantyClaim,
+		arg.ReminderDate,
+	)
+	var i WarehouseRepairLog
+	err := row.Scan(
+		&i.ID,
+		&i.WorkspaceID,
+		&i.InventoryID,
+		&i.Status,
+		&i.Description,
+		&i.RepairDate,
+		&i.Cost,
+		&i.CurrencyCode,
+		&i.ServiceProvider,
+		&i.CompletedAt,
+		&i.NewCondition,
+		&i.Notes,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.IsWarrantyClaim,
+		&i.ReminderDate,
+		&i.ReminderSent,
+	)
+	return i, err
+}
+
 const deleteRepairLog = `-- name: DeleteRepairLog :exec
 DELETE FROM warehouse.repair_logs
 WHERE id = $1
@@ -492,6 +555,44 @@ func (q *Queries) UpdateRepairLog(ctx context.Context, arg UpdateRepairLogParams
 	return i, err
 }
 
+const updateRepairLogReminderDate = `-- name: UpdateRepairLogReminderDate :one
+UPDATE warehouse.repair_logs
+SET reminder_date = $2, reminder_sent = false, updated_at = now()
+WHERE id = $1 AND workspace_id = $3
+RETURNING id, workspace_id, inventory_id, status, description, repair_date, cost, currency_code, service_provider, completed_at, new_condition, notes, created_at, updated_at, is_warranty_claim, reminder_date, reminder_sent
+`
+
+type UpdateRepairLogReminderDateParams struct {
+	ID           uuid.UUID   `json:"id"`
+	ReminderDate pgtype.Date `json:"reminder_date"`
+	WorkspaceID  uuid.UUID   `json:"workspace_id"`
+}
+
+func (q *Queries) UpdateRepairLogReminderDate(ctx context.Context, arg UpdateRepairLogReminderDateParams) (WarehouseRepairLog, error) {
+	row := q.db.QueryRow(ctx, updateRepairLogReminderDate, arg.ID, arg.ReminderDate, arg.WorkspaceID)
+	var i WarehouseRepairLog
+	err := row.Scan(
+		&i.ID,
+		&i.WorkspaceID,
+		&i.InventoryID,
+		&i.Status,
+		&i.Description,
+		&i.RepairDate,
+		&i.Cost,
+		&i.CurrencyCode,
+		&i.ServiceProvider,
+		&i.CompletedAt,
+		&i.NewCondition,
+		&i.Notes,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.IsWarrantyClaim,
+		&i.ReminderDate,
+		&i.ReminderSent,
+	)
+	return i, err
+}
+
 const updateRepairLogStatus = `-- name: UpdateRepairLogStatus :one
 UPDATE warehouse.repair_logs
 SET status = $2, updated_at = now()
@@ -506,6 +607,44 @@ type UpdateRepairLogStatusParams struct {
 
 func (q *Queries) UpdateRepairLogStatus(ctx context.Context, arg UpdateRepairLogStatusParams) (WarehouseRepairLog, error) {
 	row := q.db.QueryRow(ctx, updateRepairLogStatus, arg.ID, arg.Status)
+	var i WarehouseRepairLog
+	err := row.Scan(
+		&i.ID,
+		&i.WorkspaceID,
+		&i.InventoryID,
+		&i.Status,
+		&i.Description,
+		&i.RepairDate,
+		&i.Cost,
+		&i.CurrencyCode,
+		&i.ServiceProvider,
+		&i.CompletedAt,
+		&i.NewCondition,
+		&i.Notes,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.IsWarrantyClaim,
+		&i.ReminderDate,
+		&i.ReminderSent,
+	)
+	return i, err
+}
+
+const updateRepairLogWarrantyClaim = `-- name: UpdateRepairLogWarrantyClaim :one
+UPDATE warehouse.repair_logs
+SET is_warranty_claim = $2, updated_at = now()
+WHERE id = $1 AND workspace_id = $3
+RETURNING id, workspace_id, inventory_id, status, description, repair_date, cost, currency_code, service_provider, completed_at, new_condition, notes, created_at, updated_at, is_warranty_claim, reminder_date, reminder_sent
+`
+
+type UpdateRepairLogWarrantyClaimParams struct {
+	ID              uuid.UUID `json:"id"`
+	IsWarrantyClaim bool      `json:"is_warranty_claim"`
+	WorkspaceID     uuid.UUID `json:"workspace_id"`
+}
+
+func (q *Queries) UpdateRepairLogWarrantyClaim(ctx context.Context, arg UpdateRepairLogWarrantyClaimParams) (WarehouseRepairLog, error) {
+	row := q.db.QueryRow(ctx, updateRepairLogWarrantyClaim, arg.ID, arg.IsWarrantyClaim, arg.WorkspaceID)
 	var i WarehouseRepairLog
 	err := row.Scan(
 		&i.ID,

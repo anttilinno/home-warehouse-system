@@ -56,6 +56,26 @@ func (m *MockRepository) Delete(ctx context.Context, id uuid.UUID) error {
 	return args.Error(0)
 }
 
+func (m *MockRepository) UpdateWarrantyClaim(ctx context.Context, id, workspaceID uuid.UUID, isWarrantyClaim bool) error {
+	args := m.Called(ctx, id, workspaceID, isWarrantyClaim)
+	return args.Error(0)
+}
+
+func (m *MockRepository) UpdateReminderDate(ctx context.Context, id, workspaceID uuid.UUID, reminderDate *time.Time) error {
+	args := m.Called(ctx, id, workspaceID, reminderDate)
+	return args.Error(0)
+}
+
+func (m *MockRepository) MarkReminderSent(ctx context.Context, id uuid.UUID) error {
+	args := m.Called(ctx, id)
+	return args.Error(0)
+}
+
+func (m *MockRepository) GetTotalRepairCost(ctx context.Context, workspaceID, inventoryID uuid.UUID) ([]RepairCostSummary, error) {
+	args := m.Called(ctx, workspaceID, inventoryID)
+	return args.Get(0).([]RepairCostSummary), args.Error(1)
+}
+
 // MockInventoryRepository implements inventory.Repository for testing
 type MockInventoryRepository struct {
 	mock.Mock
@@ -147,6 +167,7 @@ func newPendingRepairLog(workspaceID, inventoryID uuid.UUID) *RepairLog {
 		nil,
 		nil,
 		nil,
+		false, nil, false,
 		time.Now(),
 		time.Now(),
 	)
@@ -167,6 +188,7 @@ func newInProgressRepairLog(workspaceID, inventoryID uuid.UUID) *RepairLog {
 		nil,
 		nil,
 		nil,
+		false, nil, false,
 		time.Now(),
 		time.Now(),
 	)
@@ -313,6 +335,7 @@ func TestComplete_UpdatesInventoryCondition(t *testing.T) {
 		StatusInProgress,
 		repair.Description(),
 		nil, nil, nil, nil, nil, nil, nil,
+		false, nil, false,
 		repair.CreatedAt(),
 		repair.UpdatedAt(),
 	)
@@ -419,6 +442,7 @@ func TestUpdate_CompletedRepair(t *testing.T) {
 		StatusCompleted,
 		"Test repair",
 		nil, nil, nil, nil, &now, nil, nil,
+		false, nil, false,
 		now, now,
 	)
 

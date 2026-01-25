@@ -2,6 +2,7 @@ package repairlog
 
 import (
 	"context"
+	"time"
 
 	"github.com/google/uuid"
 
@@ -31,4 +32,23 @@ type Repository interface {
 
 	// Delete removes a repair log by ID.
 	Delete(ctx context.Context, id uuid.UUID) error
+
+	// UpdateWarrantyClaim updates the warranty claim flag.
+	UpdateWarrantyClaim(ctx context.Context, id, workspaceID uuid.UUID, isWarrantyClaim bool) error
+
+	// UpdateReminderDate updates the reminder date.
+	UpdateReminderDate(ctx context.Context, id, workspaceID uuid.UUID, reminderDate *time.Time) error
+
+	// MarkReminderSent marks the reminder as sent.
+	MarkReminderSent(ctx context.Context, id uuid.UUID) error
+
+	// GetTotalRepairCost returns the total repair cost summary for an inventory item.
+	GetTotalRepairCost(ctx context.Context, workspaceID, inventoryID uuid.UUID) ([]RepairCostSummary, error)
+}
+
+// RepairCostSummary represents the total repair cost for a currency.
+type RepairCostSummary struct {
+	CurrencyCode   *string
+	TotalCostCents int
+	RepairCount    int
 }
