@@ -877,12 +877,12 @@ func TestEntity_Validate_AdditionalCases(t *testing.T) {
 		assert.Contains(t, err.Error(), "storage_path")
 	})
 
-	t.Run("missing thumbnail_path fails validation", func(t *testing.T) {
+	t.Run("empty thumbnail_path passes validation for async processing", func(t *testing.T) {
+		// ThumbnailPath is optional for async processing - thumbnails generated in background
 		photo := basePhoto()
 		photo.ThumbnailPath = ""
 		err := photo.Validate()
-		require.Error(t, err)
-		assert.Contains(t, err.Error(), "thumbnail_path")
+		require.NoError(t, err)
 	})
 
 	t.Run("missing mime_type fails validation", func(t *testing.T) {
@@ -953,6 +953,139 @@ func TestEntity_Validate_AdditionalCases(t *testing.T) {
 		photo.MimeType = itemphoto.MimeTypeWEBP
 		err := photo.Validate()
 		require.NoError(t, err)
+	})
+
+	t.Run("invalid thumbnail_status fails validation", func(t *testing.T) {
+		photo := basePhoto()
+		photo.ThumbnailStatus = "invalid_status"
+		err := photo.Validate()
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "thumbnail_status")
+	})
+
+	t.Run("valid thumbnail_status passes validation", func(t *testing.T) {
+		statuses := []itemphoto.ThumbnailStatus{
+			itemphoto.ThumbnailStatusPending,
+			itemphoto.ThumbnailStatusProcessing,
+			itemphoto.ThumbnailStatusComplete,
+			itemphoto.ThumbnailStatusFailed,
+		}
+		for _, status := range statuses {
+			photo := basePhoto()
+			photo.ThumbnailStatus = status
+			err := photo.Validate()
+			require.NoError(t, err, "status %s should be valid", status)
+		}
+	})
+}
+
+func TestThumbnailStatus(t *testing.T) {
+	t.Run("IsValid returns true for valid statuses", func(t *testing.T) {
+		assert.True(t, itemphoto.ThumbnailStatusPending.IsValid())
+		assert.True(t, itemphoto.ThumbnailStatusProcessing.IsValid())
+		assert.True(t, itemphoto.ThumbnailStatusComplete.IsValid())
+		assert.True(t, itemphoto.ThumbnailStatusFailed.IsValid())
+	})
+
+	t.Run("IsValid returns false for invalid status", func(t *testing.T) {
+		invalid := itemphoto.ThumbnailStatus("invalid")
+		assert.False(t, invalid.IsValid())
+	})
+
+	t.Run("String returns correct value", func(t *testing.T) {
+		assert.Equal(t, "pending", itemphoto.ThumbnailStatusPending.String())
+		assert.Equal(t, "complete", itemphoto.ThumbnailStatusComplete.String())
+	})
+}
+
+func TestThumbnailHelperMethods(t *testing.T) {
+	t.Run("IsThumbnailReady returns true only for complete status", func(t *testing.T) {
+		photo := &itemphoto.ItemPhoto{}
+
+		photo.ThumbnailStatus = itemphoto.ThumbnailStatusPending
+		assert.False(t, photo.IsThumbnailReady())
+
+		photo.ThumbnailStatus = itemphoto.ThumbnailStatusProcessing
+		assert.False(t, photo.IsThumbnailReady())
+
+		photo.ThumbnailStatus = itemphoto.ThumbnailStatusComplete
+		assert.True(t, photo.IsThumbnailReady())
+
+		photo.ThumbnailStatus = itemphoto.ThumbnailStatusFailed
+		assert.False(t, photo.IsThumbnailReady())
+	})
+
+	t.Run("IsThumbnailFailed returns true only for failed status", func(t *testing.T) {
+		photo := &itemphoto.ItemPhoto{}
+
+		photo.ThumbnailStatus = itemphoto.ThumbnailStatusPending
+		assert.False(t, photo.IsThumbnailFailed())
+
+		photo.ThumbnailStatus = itemphoto.ThumbnailStatusFailed
+		assert.True(t, photo.IsThumbnailFailed())
+	})
+
+	t.Run("IsThumbnailPending returns true for pending or processing", func(t *testing.T) {
+		photo := &itemphoto.ItemPhoto{}
+
+		photo.ThumbnailStatus = itemphoto.ThumbnailStatusPending
+		assert.True(t, photo.IsThumbnailPending())
+
+		photo.ThumbnailStatus = itemphoto.ThumbnailStatusProcessing
+		assert.True(t, photo.IsThumbnailPending())
+
+		photo.ThumbnailStatus = itemphoto.ThumbnailStatusComplete
+		assert.False(t, photo.IsThumbnailPending())
+
+		photo.ThumbnailStatus = itemphoto.ThumbnailStatusFailed
+		assert.False(t, photo.IsThumbnailPending())
+	})
+
+	t.Run("GetBestThumbnail returns medium path when available", func(t *testing.T) {
+		mediumPath := "path/to/medium.jpg"
+		photo := &itemphoto.ItemPhoto{
+			ThumbnailPath:       "legacy/thumb.jpg",
+			ThumbnailMediumPath: &mediumPath,
+		}
+		assert.Equal(t, mediumPath, photo.GetBestThumbnail())
+	})
+
+	t.Run("GetBestThumbnail falls back to legacy thumbnail", func(t *testing.T) {
+		photo := &itemphoto.ItemPhoto{
+			ThumbnailPath:       "legacy/thumb.jpg",
+			ThumbnailMediumPath: nil,
+		}
+		assert.Equal(t, "legacy/thumb.jpg", photo.GetBestThumbnail())
+	})
+
+	t.Run("GetBestThumbnail falls back when medium path is empty string", func(t *testing.T) {
+		emptyPath := ""
+		photo := &itemphoto.ItemPhoto{
+			ThumbnailPath:       "legacy/thumb.jpg",
+			ThumbnailMediumPath: &emptyPath,
+		}
+		assert.Equal(t, "legacy/thumb.jpg", photo.GetBestThumbnail())
+	})
+
+	t.Run("GetSmallThumbnail returns empty string when not set", func(t *testing.T) {
+		photo := &itemphoto.ItemPhoto{}
+		assert.Equal(t, "", photo.GetSmallThumbnail())
+	})
+
+	t.Run("GetSmallThumbnail returns path when set", func(t *testing.T) {
+		smallPath := "path/to/small.jpg"
+		photo := &itemphoto.ItemPhoto{ThumbnailSmallPath: &smallPath}
+		assert.Equal(t, smallPath, photo.GetSmallThumbnail())
+	})
+
+	t.Run("GetMediumThumbnail falls back to legacy path", func(t *testing.T) {
+		photo := &itemphoto.ItemPhoto{ThumbnailPath: "legacy/thumb.jpg"}
+		assert.Equal(t, "legacy/thumb.jpg", photo.GetMediumThumbnail())
+	})
+
+	t.Run("GetLargeThumbnail returns empty string when not set", func(t *testing.T) {
+		photo := &itemphoto.ItemPhoto{}
+		assert.Equal(t, "", photo.GetLargeThumbnail())
 	})
 }
 

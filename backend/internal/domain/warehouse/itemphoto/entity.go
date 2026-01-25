@@ -14,6 +14,30 @@ const (
 	MimeTypeWEBP = "image/webp"
 )
 
+// ThumbnailStatus represents the processing state of photo thumbnails
+type ThumbnailStatus string
+
+const (
+	ThumbnailStatusPending    ThumbnailStatus = "pending"
+	ThumbnailStatusProcessing ThumbnailStatus = "processing"
+	ThumbnailStatusComplete   ThumbnailStatus = "complete"
+	ThumbnailStatusFailed     ThumbnailStatus = "failed"
+)
+
+// IsValid checks if the status is a valid enum value
+func (s ThumbnailStatus) IsValid() bool {
+	switch s {
+	case ThumbnailStatusPending, ThumbnailStatusProcessing, ThumbnailStatusComplete, ThumbnailStatusFailed:
+		return true
+	}
+	return false
+}
+
+// String returns the string representation of the status
+func (s ThumbnailStatus) String() string {
+	return string(s)
+}
+
 // AllowedMimeTypes contains all supported image MIME types
 var AllowedMimeTypes = []string{
 	MimeTypeJPEG,
@@ -28,7 +52,7 @@ type ItemPhoto struct {
 	WorkspaceID   uuid.UUID
 	Filename      string
 	StoragePath   string
-	ThumbnailPath string
+	ThumbnailPath string // Legacy thumbnail path (for backward compatibility)
 	FileSize      int64
 	MimeType      string
 	Width         int32
@@ -39,6 +63,14 @@ type ItemPhoto struct {
 	UploadedBy    uuid.UUID
 	CreatedAt     time.Time
 	UpdatedAt     time.Time
+
+	// Thumbnail processing fields
+	ThumbnailStatus     ThumbnailStatus // Current processing status (pending/processing/complete/failed)
+	ThumbnailSmallPath  *string         // 150px thumbnail path
+	ThumbnailMediumPath *string         // 400px thumbnail path
+	ThumbnailLargePath  *string         // 800px thumbnail path
+	ThumbnailAttempts   int32           // Number of processing attempts
+	ThumbnailError      *string         // Last error message if failed
 }
 
 // Validate checks if the item photo data is valid
@@ -55,9 +87,7 @@ func (p *ItemPhoto) Validate() error {
 	if p.StoragePath == "" {
 		return fmt.Errorf("storage_path is required")
 	}
-	if p.ThumbnailPath == "" {
-		return fmt.Errorf("thumbnail_path is required")
-	}
+	// ThumbnailPath is optional for async processing - thumbnails generated in background
 	if p.MimeType == "" {
 		return fmt.Errorf("mime_type is required")
 	}
@@ -78,6 +108,10 @@ func (p *ItemPhoto) Validate() error {
 	}
 	if p.UploadedBy == uuid.Nil {
 		return fmt.Errorf("uploaded_by is required")
+	}
+	// Validate ThumbnailStatus if set
+	if p.ThumbnailStatus != "" && !p.ThumbnailStatus.IsValid() {
+		return fmt.Errorf("thumbnail_status must be one of: pending, processing, complete, failed")
 	}
 	return nil
 }
@@ -142,4 +176,52 @@ func (p *ItemPhoto) IsPortrait() bool {
 func (p *ItemPhoto) IsSquare() bool {
 	ratio := p.AspectRatio()
 	return ratio >= 0.95 && ratio <= 1.05
+}
+
+// IsThumbnailReady returns true if thumbnails are ready for display
+func (p *ItemPhoto) IsThumbnailReady() bool {
+	return p.ThumbnailStatus == ThumbnailStatusComplete
+}
+
+// IsThumbnailFailed returns true if thumbnail generation has failed
+func (p *ItemPhoto) IsThumbnailFailed() bool {
+	return p.ThumbnailStatus == ThumbnailStatusFailed
+}
+
+// IsThumbnailPending returns true if thumbnail is awaiting or in processing
+func (p *ItemPhoto) IsThumbnailPending() bool {
+	return p.ThumbnailStatus == ThumbnailStatusPending || p.ThumbnailStatus == ThumbnailStatusProcessing
+}
+
+// GetBestThumbnail returns the path to the best available thumbnail
+// Returns medium if available, falls back to legacy ThumbnailPath
+func (p *ItemPhoto) GetBestThumbnail() string {
+	if p.ThumbnailMediumPath != nil && *p.ThumbnailMediumPath != "" {
+		return *p.ThumbnailMediumPath
+	}
+	return p.ThumbnailPath // Legacy fallback
+}
+
+// GetSmallThumbnail returns the small thumbnail path if available
+func (p *ItemPhoto) GetSmallThumbnail() string {
+	if p.ThumbnailSmallPath != nil {
+		return *p.ThumbnailSmallPath
+	}
+	return ""
+}
+
+// GetMediumThumbnail returns the medium thumbnail path if available
+func (p *ItemPhoto) GetMediumThumbnail() string {
+	if p.ThumbnailMediumPath != nil {
+		return *p.ThumbnailMediumPath
+	}
+	return p.ThumbnailPath // Legacy fallback
+}
+
+// GetLargeThumbnail returns the large thumbnail path if available
+func (p *ItemPhoto) GetLargeThumbnail() string {
+	if p.ThumbnailLargePath != nil {
+		return *p.ThumbnailLargePath
+	}
+	return ""
 }
