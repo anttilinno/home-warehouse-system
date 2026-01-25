@@ -557,6 +557,49 @@ func (ns NullWarehousePendingChangeStatusEnum) Value() (driver.Value, error) {
 	return string(ns.WarehousePendingChangeStatusEnum), nil
 }
 
+type WarehouseRepairStatusEnum string
+
+const (
+	WarehouseRepairStatusEnumPENDING    WarehouseRepairStatusEnum = "PENDING"
+	WarehouseRepairStatusEnumINPROGRESS WarehouseRepairStatusEnum = "IN_PROGRESS"
+	WarehouseRepairStatusEnumCOMPLETED  WarehouseRepairStatusEnum = "COMPLETED"
+)
+
+func (e *WarehouseRepairStatusEnum) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = WarehouseRepairStatusEnum(s)
+	case string:
+		*e = WarehouseRepairStatusEnum(s)
+	default:
+		return fmt.Errorf("unsupported scan type for WarehouseRepairStatusEnum: %T", src)
+	}
+	return nil
+}
+
+type NullWarehouseRepairStatusEnum struct {
+	WarehouseRepairStatusEnum WarehouseRepairStatusEnum `json:"warehouse_repair_status_enum"`
+	Valid                     bool                      `json:"valid"` // Valid is true if WarehouseRepairStatusEnum is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullWarehouseRepairStatusEnum) Scan(value interface{}) error {
+	if value == nil {
+		ns.WarehouseRepairStatusEnum, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.WarehouseRepairStatusEnum.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullWarehouseRepairStatusEnum) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.WarehouseRepairStatusEnum), nil
+}
+
 type WarehouseTagTypeEnum string
 
 const (
@@ -1027,6 +1070,27 @@ type WarehousePendingChange struct {
 	RejectionReason *string                          `json:"rejection_reason"`
 	CreatedAt       time.Time                        `json:"created_at"`
 	UpdatedAt       time.Time                        `json:"updated_at"`
+}
+
+// Tracks repair history for inventory items. Status workflow: PENDING -> IN_PROGRESS -> COMPLETED.
+type WarehouseRepairLog struct {
+	ID          uuid.UUID                 `json:"id"`
+	WorkspaceID uuid.UUID                 `json:"workspace_id"`
+	InventoryID uuid.UUID                 `json:"inventory_id"`
+	Status      WarehouseRepairStatusEnum `json:"status"`
+	Description string                    `json:"description"`
+	RepairDate  pgtype.Date               `json:"repair_date"`
+	// Repair cost in cents for the specified currency.
+	Cost            *int32  `json:"cost"`
+	CurrencyCode    *string `json:"currency_code"`
+	ServiceProvider *string `json:"service_provider"`
+	// Timestamp when the repair status was set to COMPLETED.
+	CompletedAt pgtype.Timestamptz `json:"completed_at"`
+	// The condition to set on the inventory item when the repair is completed.
+	NewCondition NullWarehouseItemConditionEnum `json:"new_condition"`
+	Notes        *string                        `json:"notes"`
+	CreatedAt    pgtype.Timestamptz             `json:"created_at"`
+	UpdatedAt    pgtype.Timestamptz             `json:"updated_at"`
 }
 
 // All soft-deleted records across entity types for restoration UI.

@@ -1,4 +1,4 @@
-\restrict ySrXVp5qo9VXxXR5bgNYL6KdwAeUz6yaodm0bv1ku343fP8jFYvf35C5S2WNi86
+\restrict RP3VujKyBcc9Ja4tOmlqsMdfPAyFxboUjGmZ7U7pCfb82oadHLwJAefT12P9gA5
 
 -- Dumped from database version 18.1 (Debian 18.1-1.pgdg13+2)
 -- Dumped by pg_dump version 18.1
@@ -190,6 +190,17 @@ CREATE TYPE warehouse.pending_change_status_enum AS ENUM (
 
 
 --
+-- Name: repair_status_enum; Type: TYPE; Schema: warehouse; Owner: -
+--
+
+CREATE TYPE warehouse.repair_status_enum AS ENUM (
+    'PENDING',
+    'IN_PROGRESS',
+    'COMPLETED'
+);
+
+
+--
 -- Name: tag_type_enum; Type: TYPE; Schema: warehouse; Owner: -
 --
 
@@ -229,9 +240,6 @@ BEGIN
     NEW.search_vector := to_tsvector('english',
         coalesce(NEW.name, '') || ' ' ||
         coalesce(NEW.description, '') || ' ' ||
-        coalesce(NEW.zone, '') || ' ' ||
-        coalesce(NEW.shelf, '') || ' ' ||
-        coalesce(NEW.bin, '') || ' ' ||
         coalesce(NEW.short_code, '')
     );
     RETURN NEW;
@@ -348,6 +356,57 @@ CREATE TABLE auth.password_reset_tokens (
 --
 
 COMMENT ON TABLE auth.password_reset_tokens IS 'Password reset tokens with expiration and one-time use.';
+
+
+--
+-- Name: push_subscriptions; Type: TABLE; Schema: auth; Owner: -
+--
+
+CREATE TABLE auth.push_subscriptions (
+    id uuid DEFAULT uuidv7() NOT NULL,
+    user_id uuid NOT NULL,
+    endpoint text NOT NULL,
+    p256dh text NOT NULL,
+    auth text NOT NULL,
+    user_agent text,
+    created_at timestamp with time zone DEFAULT now(),
+    updated_at timestamp with time zone DEFAULT now()
+);
+
+
+--
+-- Name: TABLE push_subscriptions; Type: COMMENT; Schema: auth; Owner: -
+--
+
+COMMENT ON TABLE auth.push_subscriptions IS 'Web Push API subscriptions for sending push notifications to user devices.';
+
+
+--
+-- Name: COLUMN push_subscriptions.endpoint; Type: COMMENT; Schema: auth; Owner: -
+--
+
+COMMENT ON COLUMN auth.push_subscriptions.endpoint IS 'The push service URL where messages should be sent.';
+
+
+--
+-- Name: COLUMN push_subscriptions.p256dh; Type: COMMENT; Schema: auth; Owner: -
+--
+
+COMMENT ON COLUMN auth.push_subscriptions.p256dh IS 'The client public key for message encryption (P-256 curve, base64 encoded).';
+
+
+--
+-- Name: COLUMN push_subscriptions.auth; Type: COMMENT; Schema: auth; Owner: -
+--
+
+COMMENT ON COLUMN auth.push_subscriptions.auth IS 'The authentication secret for message encryption (base64 encoded).';
+
+
+--
+-- Name: COLUMN push_subscriptions.user_agent; Type: COMMENT; Schema: auth; Owner: -
+--
+
+COMMENT ON COLUMN auth.push_subscriptions.user_agent IS 'User agent string to identify the device/browser.';
 
 
 --
@@ -643,9 +702,9 @@ CREATE TABLE warehouse.borrowers (
     phone character varying(50),
     notes text,
     is_archived boolean DEFAULT false NOT NULL,
+    search_vector tsvector,
     created_at timestamp with time zone DEFAULT now(),
-    updated_at timestamp with time zone DEFAULT now(),
-    search_vector tsvector
+    updated_at timestamp with time zone DEFAULT now()
 );
 
 
@@ -706,7 +765,7 @@ CREATE TABLE warehouse.containers (
     location_id uuid NOT NULL,
     description text,
     capacity character varying(100),
-    short_code character varying(8),
+    short_code character varying(8) NOT NULL,
     is_archived boolean DEFAULT false NOT NULL,
     search_vector tsvector,
     created_at timestamp with time zone DEFAULT now(),
@@ -718,7 +777,7 @@ CREATE TABLE warehouse.containers (
 -- Name: COLUMN containers.short_code; Type: COMMENT; Schema: warehouse; Owner: -
 --
 
-COMMENT ON COLUMN warehouse.containers.short_code IS 'Short alphanumeric code for QR labels. Unique within workspace. Enables compact URLs for small label printers.';
+COMMENT ON COLUMN warehouse.containers.short_code IS 'Short alphanumeric code for QR labels. Unique within workspace. Auto-generated if not provided.';
 
 
 --
@@ -937,7 +996,7 @@ CREATE TABLE warehouse.items (
     warranty_details text,
     purchased_from uuid,
     min_stock_level integer DEFAULT 0 NOT NULL,
-    short_code character varying(8),
+    short_code character varying(8) NOT NULL,
     obsidian_vault_path character varying(500),
     obsidian_note_path character varying(500),
     search_vector tsvector GENERATED ALWAYS AS ((((setweight(to_tsvector('english'::regconfig, (COALESCE(name, ''::character varying))::text), 'A'::"char") || setweight(to_tsvector('english'::regconfig, (COALESCE(brand, ''::character varying))::text), 'B'::"char")) || setweight(to_tsvector('english'::regconfig, (COALESCE(model, ''::character varying))::text), 'B'::"char")) || setweight(to_tsvector('english'::regconfig, COALESCE(description, ''::text)), 'C'::"char"))) STORED,
@@ -965,7 +1024,7 @@ COMMENT ON COLUMN warehouse.items.min_stock_level IS 'Threshold for LOW_STOCK no
 -- Name: COLUMN items.short_code; Type: COMMENT; Schema: warehouse; Owner: -
 --
 
-COMMENT ON COLUMN warehouse.items.short_code IS 'Short alphanumeric code for QR labels. Unique within workspace. Enables compact URLs for small label printers.';
+COMMENT ON COLUMN warehouse.items.short_code IS 'Short alphanumeric code for QR labels. Unique within workspace. Auto-generated if not provided.';
 
 
 --
@@ -1028,11 +1087,8 @@ CREATE TABLE warehouse.locations (
     workspace_id uuid NOT NULL,
     name character varying(100) NOT NULL,
     parent_location uuid,
-    zone character varying(50),
-    shelf character varying(50),
-    bin character varying(50),
     description text,
-    short_code character varying(8),
+    short_code character varying(8) NOT NULL,
     is_archived boolean DEFAULT false NOT NULL,
     search_vector tsvector,
     created_at timestamp with time zone DEFAULT now(),
@@ -1044,7 +1100,7 @@ CREATE TABLE warehouse.locations (
 -- Name: COLUMN locations.short_code; Type: COMMENT; Schema: warehouse; Owner: -
 --
 
-COMMENT ON COLUMN warehouse.locations.short_code IS 'Short alphanumeric code for QR labels. Unique within workspace. Enables compact URLs for small label printers.';
+COMMENT ON COLUMN warehouse.locations.short_code IS 'Short alphanumeric code for QR labels. Unique within workspace. Auto-generated if not provided.';
 
 
 --
@@ -1066,6 +1122,56 @@ CREATE TABLE warehouse.pending_changes (
     created_at timestamp with time zone DEFAULT now() NOT NULL,
     updated_at timestamp with time zone DEFAULT now() NOT NULL
 );
+
+
+--
+-- Name: repair_logs; Type: TABLE; Schema: warehouse; Owner: -
+--
+
+CREATE TABLE warehouse.repair_logs (
+    id uuid DEFAULT uuidv7() NOT NULL,
+    workspace_id uuid NOT NULL,
+    inventory_id uuid NOT NULL,
+    status warehouse.repair_status_enum DEFAULT 'PENDING'::warehouse.repair_status_enum NOT NULL,
+    description text NOT NULL,
+    repair_date date,
+    cost integer,
+    currency_code character varying(3) DEFAULT 'EUR'::character varying,
+    service_provider character varying(200),
+    completed_at timestamp with time zone,
+    new_condition warehouse.item_condition_enum,
+    notes text,
+    created_at timestamp with time zone DEFAULT now(),
+    updated_at timestamp with time zone DEFAULT now()
+);
+
+
+--
+-- Name: TABLE repair_logs; Type: COMMENT; Schema: warehouse; Owner: -
+--
+
+COMMENT ON TABLE warehouse.repair_logs IS 'Tracks repair history for inventory items. Status workflow: PENDING -> IN_PROGRESS -> COMPLETED.';
+
+
+--
+-- Name: COLUMN repair_logs.cost; Type: COMMENT; Schema: warehouse; Owner: -
+--
+
+COMMENT ON COLUMN warehouse.repair_logs.cost IS 'Repair cost in cents for the specified currency.';
+
+
+--
+-- Name: COLUMN repair_logs.completed_at; Type: COMMENT; Schema: warehouse; Owner: -
+--
+
+COMMENT ON COLUMN warehouse.repair_logs.completed_at IS 'Timestamp when the repair status was set to COMPLETED.';
+
+
+--
+-- Name: COLUMN repair_logs.new_condition; Type: COMMENT; Schema: warehouse; Owner: -
+--
+
+COMMENT ON COLUMN warehouse.repair_logs.new_condition IS 'The condition to set on the inventory item when the repair is completed.';
 
 
 --
@@ -1160,6 +1266,22 @@ ALTER TABLE ONLY auth.notifications
 
 ALTER TABLE ONLY auth.password_reset_tokens
     ADD CONSTRAINT password_reset_tokens_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: push_subscriptions push_subscriptions_pkey; Type: CONSTRAINT; Schema: auth; Owner: -
+--
+
+ALTER TABLE ONLY auth.push_subscriptions
+    ADD CONSTRAINT push_subscriptions_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: push_subscriptions push_subscriptions_user_id_endpoint_key; Type: CONSTRAINT; Schema: auth; Owner: -
+--
+
+ALTER TABLE ONLY auth.push_subscriptions
+    ADD CONSTRAINT push_subscriptions_user_id_endpoint_key UNIQUE (user_id, endpoint);
 
 
 --
@@ -1483,6 +1605,14 @@ ALTER TABLE ONLY warehouse.pending_changes
 
 
 --
+-- Name: repair_logs repair_logs_pkey; Type: CONSTRAINT; Schema: warehouse; Owner: -
+--
+
+ALTER TABLE ONLY warehouse.repair_logs
+    ADD CONSTRAINT repair_logs_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: containers uq_containers_workspace_short_code; Type: CONSTRAINT; Schema: warehouse; Owner: -
 --
 
@@ -1560,6 +1690,20 @@ CREATE INDEX ix_password_reset_tokens_hash ON auth.password_reset_tokens USING b
 --
 
 CREATE INDEX ix_password_reset_tokens_user ON auth.password_reset_tokens USING btree (user_id);
+
+
+--
+-- Name: ix_push_subscriptions_endpoint; Type: INDEX; Schema: auth; Owner: -
+--
+
+CREATE INDEX ix_push_subscriptions_endpoint ON auth.push_subscriptions USING btree (endpoint);
+
+
+--
+-- Name: ix_push_subscriptions_user; Type: INDEX; Schema: auth; Owner: -
+--
+
+CREATE INDEX ix_push_subscriptions_user ON auth.push_subscriptions USING btree (user_id);
 
 
 --
@@ -1846,7 +1990,7 @@ CREATE INDEX ix_containers_search ON warehouse.containers USING gin (search_vect
 -- Name: ix_containers_short_code; Type: INDEX; Schema: warehouse; Owner: -
 --
 
-CREATE INDEX ix_containers_short_code ON warehouse.containers USING btree (short_code) WHERE (short_code IS NOT NULL);
+CREATE INDEX ix_containers_short_code ON warehouse.containers USING btree (short_code);
 
 
 --
@@ -2007,7 +2151,7 @@ CREATE INDEX ix_items_search ON warehouse.items USING gin (search_vector);
 -- Name: ix_items_short_code; Type: INDEX; Schema: warehouse; Owner: -
 --
 
-CREATE INDEX ix_items_short_code ON warehouse.items USING btree (short_code) WHERE (short_code IS NOT NULL);
+CREATE INDEX ix_items_short_code ON warehouse.items USING btree (short_code);
 
 
 --
@@ -2098,7 +2242,7 @@ CREATE INDEX ix_locations_search ON warehouse.locations USING gin (search_vector
 -- Name: ix_locations_short_code; Type: INDEX; Schema: warehouse; Owner: -
 --
 
-CREATE INDEX ix_locations_short_code ON warehouse.locations USING btree (short_code) WHERE (short_code IS NOT NULL);
+CREATE INDEX ix_locations_short_code ON warehouse.locations USING btree (short_code);
 
 
 --
@@ -2106,6 +2250,27 @@ CREATE INDEX ix_locations_short_code ON warehouse.locations USING btree (short_c
 --
 
 CREATE INDEX ix_locations_workspace ON warehouse.locations USING btree (workspace_id);
+
+
+--
+-- Name: ix_repair_logs_inventory; Type: INDEX; Schema: warehouse; Owner: -
+--
+
+CREATE INDEX ix_repair_logs_inventory ON warehouse.repair_logs USING btree (inventory_id);
+
+
+--
+-- Name: ix_repair_logs_status; Type: INDEX; Schema: warehouse; Owner: -
+--
+
+CREATE INDEX ix_repair_logs_status ON warehouse.repair_logs USING btree (workspace_id, status);
+
+
+--
+-- Name: ix_repair_logs_workspace; Type: INDEX; Schema: warehouse; Owner: -
+--
+
+CREATE INDEX ix_repair_logs_workspace ON warehouse.repair_logs USING btree (workspace_id);
 
 
 --
@@ -2158,6 +2323,14 @@ ALTER TABLE ONLY auth.notifications
 
 ALTER TABLE ONLY auth.password_reset_tokens
     ADD CONSTRAINT password_reset_tokens_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE;
+
+
+--
+-- Name: push_subscriptions push_subscriptions_user_id_fkey; Type: FK CONSTRAINT; Schema: auth; Owner: -
+--
+
+ALTER TABLE ONLY auth.push_subscriptions
+    ADD CONSTRAINT push_subscriptions_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE;
 
 
 --
@@ -2625,10 +2798,26 @@ ALTER TABLE ONLY warehouse.pending_changes
 
 
 --
+-- Name: repair_logs repair_logs_inventory_id_fkey; Type: FK CONSTRAINT; Schema: warehouse; Owner: -
+--
+
+ALTER TABLE ONLY warehouse.repair_logs
+    ADD CONSTRAINT repair_logs_inventory_id_fkey FOREIGN KEY (inventory_id) REFERENCES warehouse.inventory(id) ON DELETE CASCADE;
+
+
+--
+-- Name: repair_logs repair_logs_workspace_id_fkey; Type: FK CONSTRAINT; Schema: warehouse; Owner: -
+--
+
+ALTER TABLE ONLY warehouse.repair_logs
+    ADD CONSTRAINT repair_logs_workspace_id_fkey FOREIGN KEY (workspace_id) REFERENCES auth.workspaces(id) ON DELETE CASCADE;
+
+
+--
 -- PostgreSQL database dump complete
 --
 
-\unrestrict ySrXVp5qo9VXxXR5bgNYL6KdwAeUz6yaodm0bv1ku343fP8jFYvf35C5S2WNi86
+\unrestrict RP3VujKyBcc9Ja4tOmlqsMdfPAyFxboUjGmZ7U7pCfb82oadHLwJAefT12P9gA5
 
 
 --
@@ -2637,7 +2826,5 @@ ALTER TABLE ONLY warehouse.pending_changes
 
 INSERT INTO public.schema_migrations (version) VALUES
     ('001'),
-    ('20260115195916'),
-    ('20260116155543'),
-    ('20260116192313'),
-    ('20260116204232');
+    ('002'),
+    ('003');
