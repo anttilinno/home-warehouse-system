@@ -5,8 +5,10 @@ import (
 	"fmt"
 	"net/http"
 	"testing"
+	"time"
 
 	"github.com/google/uuid"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 
 	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/label"
@@ -333,4 +335,165 @@ func TestLabelHandler_Delete(t *testing.T) {
 		testutil.AssertStatus(t, rec, http.StatusBadRequest)
 		mockSvc.AssertExpectations(t)
 	})
+}
+
+// Event Publishing Tests
+
+func TestLabelHandler_Create_PublishesEvent(t *testing.T) {
+	setup := testutil.NewHandlerTestSetup()
+	mockSvc := new(MockService)
+	capture := testutil.NewEventCapture(setup.WorkspaceID, setup.UserID)
+	capture.Start()
+	defer capture.Stop()
+
+	label.RegisterRoutes(setup.API, mockSvc, capture.GetBroadcaster())
+
+	color := "#FF5733"
+	testLabel, _ := label.NewLabel(setup.WorkspaceID, "Important", &color, nil)
+
+	mockSvc.On("Create", mock.Anything, mock.MatchedBy(func(input label.CreateInput) bool {
+		return input.Name == "Important"
+	})).Return(testLabel, nil).Once()
+
+	body := `{"name":"Important","color":"#FF5733"}`
+	rec := setup.Post("/labels", body)
+
+	testutil.AssertStatus(t, rec, http.StatusOK)
+	mockSvc.AssertExpectations(t)
+
+	// Wait for event
+	assert.True(t, capture.WaitForEvents(1, 500*time.Millisecond), "Event should be published")
+
+	event := capture.GetLastEvent()
+	assert.NotNil(t, event)
+	assert.Equal(t, "label.created", event.Type)
+	assert.Equal(t, "label", event.EntityType)
+	assert.Equal(t, setup.WorkspaceID, event.WorkspaceID)
+	assert.Equal(t, setup.UserID, event.UserID)
+	assert.Equal(t, testLabel.ID().String(), event.EntityID)
+	assert.NotNil(t, event.Data)
+	assert.Equal(t, testLabel.ID(), event.Data["id"])
+	assert.Equal(t, testLabel.Name(), event.Data["name"])
+}
+
+func TestLabelHandler_Update_PublishesEvent(t *testing.T) {
+	setup := testutil.NewHandlerTestSetup()
+	mockSvc := new(MockService)
+	capture := testutil.NewEventCapture(setup.WorkspaceID, setup.UserID)
+	capture.Start()
+	defer capture.Stop()
+
+	label.RegisterRoutes(setup.API, mockSvc, capture.GetBroadcaster())
+
+	color := "#00FF00"
+	testLabel, _ := label.NewLabel(setup.WorkspaceID, "Updated", &color, nil)
+	labelID := testLabel.ID()
+
+	// Mock GetByID first (handler calls it to get current label)
+	currentLabel, _ := label.NewLabel(setup.WorkspaceID, "Original", nil, nil)
+	mockSvc.On("GetByID", mock.Anything, labelID, setup.WorkspaceID).
+		Return(currentLabel, nil).Once()
+
+	mockSvc.On("Update", mock.Anything, labelID, setup.WorkspaceID, mock.Anything).
+		Return(testLabel, nil).Once()
+
+	body := `{"name":"Updated","color":"#00FF00"}`
+	rec := setup.Patch(fmt.Sprintf("/labels/%s", labelID), body)
+
+	testutil.AssertStatus(t, rec, http.StatusOK)
+	mockSvc.AssertExpectations(t)
+
+	// Wait for event
+	assert.True(t, capture.WaitForEvents(1, 500*time.Millisecond), "Event should be published")
+
+	event := capture.GetLastEvent()
+	assert.NotNil(t, event)
+	assert.Equal(t, "label.updated", event.Type)
+	assert.Equal(t, "label", event.EntityType)
+	assert.Equal(t, setup.WorkspaceID, event.WorkspaceID)
+	assert.Equal(t, setup.UserID, event.UserID)
+	assert.Equal(t, labelID.String(), event.EntityID)
+}
+
+func TestLabelHandler_Archive_PublishesEvent(t *testing.T) {
+	setup := testutil.NewHandlerTestSetup()
+	mockSvc := new(MockService)
+	capture := testutil.NewEventCapture(setup.WorkspaceID, setup.UserID)
+	capture.Start()
+	defer capture.Stop()
+
+	label.RegisterRoutes(setup.API, mockSvc, capture.GetBroadcaster())
+
+	labelID := uuid.New()
+
+	mockSvc.On("Archive", mock.Anything, labelID, setup.WorkspaceID).
+		Return(nil).Once()
+
+	rec := setup.Post(fmt.Sprintf("/labels/%s/archive", labelID), "")
+
+	testutil.AssertStatus(t, rec, http.StatusNoContent)
+	mockSvc.AssertExpectations(t)
+
+	// Wait for event (archive emits deleted event)
+	assert.True(t, capture.WaitForEvents(1, 500*time.Millisecond), "Event should be published")
+
+	event := capture.GetLastEvent()
+	assert.NotNil(t, event)
+	assert.Equal(t, "label.deleted", event.Type)
+	assert.Equal(t, "label", event.EntityType)
+	assert.Equal(t, setup.WorkspaceID, event.WorkspaceID)
+	assert.Equal(t, setup.UserID, event.UserID)
+	assert.Equal(t, labelID.String(), event.EntityID)
+}
+
+func TestLabelHandler_Restore_PublishesEvent(t *testing.T) {
+	setup := testutil.NewHandlerTestSetup()
+	mockSvc := new(MockService)
+	capture := testutil.NewEventCapture(setup.WorkspaceID, setup.UserID)
+	capture.Start()
+	defer capture.Stop()
+
+	label.RegisterRoutes(setup.API, mockSvc, capture.GetBroadcaster())
+
+	labelID := uuid.New()
+
+	mockSvc.On("Restore", mock.Anything, labelID, setup.WorkspaceID).
+		Return(nil).Once()
+
+	rec := setup.Post(fmt.Sprintf("/labels/%s/restore", labelID), "")
+
+	testutil.AssertStatus(t, rec, http.StatusNoContent)
+	mockSvc.AssertExpectations(t)
+
+	// Wait for event (restore emits created event)
+	assert.True(t, capture.WaitForEvents(1, 500*time.Millisecond), "Event should be published")
+
+	event := capture.GetLastEvent()
+	assert.NotNil(t, event)
+	assert.Equal(t, "label.created", event.Type)
+	assert.Equal(t, "label", event.EntityType)
+	assert.Equal(t, setup.WorkspaceID, event.WorkspaceID)
+	assert.Equal(t, setup.UserID, event.UserID)
+	assert.Equal(t, labelID.String(), event.EntityID)
+}
+
+func TestLabelHandler_Create_NilBroadcaster_NoError(t *testing.T) {
+	setup := testutil.NewHandlerTestSetup()
+	mockSvc := new(MockService)
+	// Register with nil broadcaster
+	label.RegisterRoutes(setup.API, mockSvc, nil)
+
+	color := "#FF5733"
+	testLabel, _ := label.NewLabel(setup.WorkspaceID, "Important", &color, nil)
+
+	mockSvc.On("Create", mock.Anything, mock.MatchedBy(func(input label.CreateInput) bool {
+		return input.Name == "Important"
+	})).Return(testLabel, nil).Once()
+
+	body := `{"name":"Important","color":"#FF5733"}`
+	rec := setup.Post("/labels", body)
+
+	// Should not panic and should succeed
+	testutil.AssertStatus(t, rec, http.StatusOK)
+	mockSvc.AssertExpectations(t)
 }
