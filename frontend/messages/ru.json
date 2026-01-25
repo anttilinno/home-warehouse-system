@@ -502,6 +502,29 @@
       "merged": "Объединено"
     }
   },
+  "repairs": {
+    "title": "История ремонтов",
+    "add": "Добавить ремонт",
+    "description": "Описание",
+    "status": "Статус",
+    "date": "Дата ремонта",
+    "cost": "Стоимость",
+    "serviceProvider": "Сервисный центр",
+    "notes": "Заметки",
+    "newCondition": "Обновить состояние предмета",
+    "pending": "Ожидает",
+    "inProgress": "В процессе",
+    "completed": "Завершён",
+    "startRepair": "Начать ремонт",
+    "completeRepair": "Завершить ремонт",
+    "noRepairs": "Нет истории ремонтов",
+    "noRepairsDescription": "Записи о ремонтах появятся здесь после добавления",
+    "createSuccess": "Запись о ремонте создана",
+    "startSuccess": "Ремонт начат",
+    "completeSuccess": "Ремонт завершён",
+    "deleteSuccess": "Ремонт удалён",
+    "error": "Произошла ошибка"
+  },
   "pwa": {
     "offline": {
       "message": "Вы офлайн. Некоторые функции могут быть недоступны.",

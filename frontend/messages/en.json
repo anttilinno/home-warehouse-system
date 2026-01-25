@@ -628,6 +628,29 @@
       "merged": "Merged"
     }
   },
+  "repairs": {
+    "title": "Repair History",
+    "add": "Add Repair",
+    "description": "Description",
+    "status": "Status",
+    "date": "Repair Date",
+    "cost": "Cost",
+    "serviceProvider": "Service Provider",
+    "notes": "Notes",
+    "newCondition": "Update Item Condition",
+    "pending": "Pending",
+    "inProgress": "In Progress",
+    "completed": "Completed",
+    "startRepair": "Start Repair",
+    "completeRepair": "Complete Repair",
+    "noRepairs": "No repair history",
+    "noRepairsDescription": "Repair entries will appear here when added",
+    "createSuccess": "Repair log created",
+    "startSuccess": "Repair started",
+    "completeSuccess": "Repair completed",
+    "deleteSuccess": "Repair deleted",
+    "error": "An error occurred"
+  },
   "pwa": {
     "offline": {
       "message": "You're offline. Some features may be unavailable.",

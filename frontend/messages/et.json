@@ -502,6 +502,29 @@
       "merged": "Ühendatud"
     }
   },
+  "repairs": {
+    "title": "Remondi ajalugu",
+    "add": "Lisa remont",
+    "description": "Kirjeldus",
+    "status": "Olek",
+    "date": "Remondi kuupäev",
+    "cost": "Maksumus",
+    "serviceProvider": "Teenusepakkuja",
+    "notes": "Märkmed",
+    "newCondition": "Uuenda eseme seisukorda",
+    "pending": "Ootel",
+    "inProgress": "Käimas",
+    "completed": "Lõpetatud",
+    "startRepair": "Alusta remonti",
+    "completeRepair": "Lõpeta remont",
+    "noRepairs": "Remondi ajalugu puudub",
+    "noRepairsDescription": "Remondi kirjed ilmuvad siia pärast lisamist",
+    "createSuccess": "Remondi kirje loodud",
+    "startSuccess": "Remont alustatud",
+    "completeSuccess": "Remont lõpetatud",
+    "deleteSuccess": "Remont kustutatud",
+    "error": "Tekkis viga"
+  },
   "pwa": {
     "offline": {
       "message": "Oled võrguühenduseta. Mõned funktsioonid võivad olla kättesaamatud.",
