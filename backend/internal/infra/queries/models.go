@@ -557,6 +557,49 @@ func (ns NullWarehousePendingChangeStatusEnum) Value() (driver.Value, error) {
 	return string(ns.WarehousePendingChangeStatusEnum), nil
 }
 
+type WarehouseRepairPhotoTypeEnum string
+
+const (
+	WarehouseRepairPhotoTypeEnumBEFORE WarehouseRepairPhotoTypeEnum = "BEFORE"
+	WarehouseRepairPhotoTypeEnumDURING WarehouseRepairPhotoTypeEnum = "DURING"
+	WarehouseRepairPhotoTypeEnumAFTER  WarehouseRepairPhotoTypeEnum = "AFTER"
+)
+
+func (e *WarehouseRepairPhotoTypeEnum) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = WarehouseRepairPhotoTypeEnum(s)
+	case string:
+		*e = WarehouseRepairPhotoTypeEnum(s)
+	default:
+		return fmt.Errorf("unsupported scan type for WarehouseRepairPhotoTypeEnum: %T", src)
+	}
+	return nil
+}
+
+type NullWarehouseRepairPhotoTypeEnum struct {
+	WarehouseRepairPhotoTypeEnum WarehouseRepairPhotoTypeEnum `json:"warehouse_repair_photo_type_enum"`
+	Valid                        bool                         `json:"valid"` // Valid is true if WarehouseRepairPhotoTypeEnum is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullWarehouseRepairPhotoTypeEnum) Scan(value interface{}) error {
+	if value == nil {
+		ns.WarehouseRepairPhotoTypeEnum, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.WarehouseRepairPhotoTypeEnum.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullWarehouseRepairPhotoTypeEnum) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.WarehouseRepairPhotoTypeEnum), nil
+}
+
 type WarehouseRepairStatusEnum string
 
 const (
@@ -1072,6 +1115,18 @@ type WarehousePendingChange struct {
 	UpdatedAt       time.Time                        `json:"updated_at"`
 }
 
+// Links repair logs to uploaded files (receipts, invoices, warranty documents).
+type WarehouseRepairAttachment struct {
+	ID             uuid.UUID                   `json:"id"`
+	RepairLogID    uuid.UUID                   `json:"repair_log_id"`
+	WorkspaceID    uuid.UUID                   `json:"workspace_id"`
+	FileID         uuid.UUID                   `json:"file_id"`
+	AttachmentType WarehouseAttachmentTypeEnum `json:"attachment_type"`
+	Title          *string                     `json:"title"`
+	CreatedAt      time.Time                   `json:"created_at"`
+	UpdatedAt      time.Time                   `json:"updated_at"`
+}
+
 // Tracks repair history for inventory items. Status workflow: PENDING -> IN_PROGRESS -> COMPLETED.
 type WarehouseRepairLog struct {
 	ID          uuid.UUID                 `json:"id"`
@@ -1091,6 +1146,33 @@ type WarehouseRepairLog struct {
 	Notes        *string                        `json:"notes"`
 	CreatedAt    pgtype.Timestamptz             `json:"created_at"`
 	UpdatedAt    pgtype.Timestamptz             `json:"updated_at"`
+	// Whether this repair was covered under warranty.
+	IsWarrantyClaim bool `json:"is_warranty_claim"`
+	// Optional future date for maintenance reminder notification.
+	ReminderDate pgtype.Date `json:"reminder_date"`
+	// Whether the reminder notification has been sent.
+	ReminderSent bool `json:"reminder_sent"`
+}
+
+// Photos attached to repair logs, categorized by when they were taken (before/during/after repair).
+type WarehouseRepairPhoto struct {
+	ID          uuid.UUID `json:"id"`
+	RepairLogID uuid.UUID `json:"repair_log_id"`
+	WorkspaceID uuid.UUID `json:"workspace_id"`
+	// Categorizes when the photo was taken: BEFORE repair, DURING the repair process, or AFTER completion.
+	PhotoType     WarehouseRepairPhotoTypeEnum `json:"photo_type"`
+	Filename      string                       `json:"filename"`
+	StoragePath   string                       `json:"storage_path"`
+	ThumbnailPath string                       `json:"thumbnail_path"`
+	FileSize      int64                        `json:"file_size"`
+	MimeType      string                       `json:"mime_type"`
+	Width         int32                        `json:"width"`
+	Height        int32                        `json:"height"`
+	DisplayOrder  int32                        `json:"display_order"`
+	Caption       *string                      `json:"caption"`
+	UploadedBy    uuid.UUID                    `json:"uploaded_by"`
+	CreatedAt     time.Time                    `json:"created_at"`
+	UpdatedAt     time.Time                    `json:"updated_at"`
 }
 
 // All soft-deleted records across entity types for restoration UI.
