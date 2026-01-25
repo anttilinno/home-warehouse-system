@@ -989,6 +989,8 @@ type WarehouseInventory struct {
 	IsArchived      bool                           `json:"is_archived"`
 	CreatedAt       pgtype.Timestamptz             `json:"created_at"`
 	UpdatedAt       pgtype.Timestamptz             `json:"updated_at"`
+	// Timestamp when this inventory was last marked as "used". Used for declutter assistant. Defaults to created_at for existing records.
+	LastUsedAt pgtype.Timestamptz `json:"last_used_at"`
 }
 
 type WarehouseInventoryMovement struct {
@@ -1059,6 +1061,18 @@ type WarehouseItemPhoto struct {
 	UploadedBy    uuid.UUID `json:"uploaded_by"`
 	CreatedAt     time.Time `json:"created_at"`
 	UpdatedAt     time.Time `json:"updated_at"`
+	// Thumbnail generation status: pending (not started), processing (in queue), complete (ready), failed (max retries exceeded)
+	ThumbnailStatus string `json:"thumbnail_status"`
+	// Path to 150px thumbnail (used for lists/grids)
+	ThumbnailSmallPath *string `json:"thumbnail_small_path"`
+	// Path to 400px thumbnail (used for detail views)
+	ThumbnailMediumPath *string `json:"thumbnail_medium_path"`
+	// Path to 800px thumbnail (used for lightbox/preview)
+	ThumbnailLargePath *string `json:"thumbnail_large_path"`
+	// Number of thumbnail generation attempts (max 5 before marked failed)
+	ThumbnailAttempts int32 `json:"thumbnail_attempts"`
+	// Last error message if thumbnail generation failed
+	ThumbnailError *string `json:"thumbnail_error"`
 }
 
 type WarehouseLabel struct {

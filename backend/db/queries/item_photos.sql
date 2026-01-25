@@ -67,3 +67,41 @@ WHERE item_id = $1 AND workspace_id = $2;
 SELECT COALESCE(MAX(display_order) + 1, 0) as next_order
 FROM warehouse.item_photos
 WHERE item_id = $1 AND workspace_id = $2;
+
+-- Thumbnail processing queries
+
+-- name: UpdateThumbnailStatus :exec
+-- Update thumbnail status and increment attempts counter
+UPDATE warehouse.item_photos
+SET thumbnail_status = $2,
+    thumbnail_attempts = thumbnail_attempts + 1,
+    thumbnail_error = $3,
+    updated_at = now()
+WHERE id = $1;
+
+-- name: UpdateThumbnailPaths :one
+-- Set all thumbnail paths and mark as complete
+UPDATE warehouse.item_photos
+SET thumbnail_small_path = $2,
+    thumbnail_medium_path = $3,
+    thumbnail_large_path = $4,
+    thumbnail_status = 'complete',
+    thumbnail_error = NULL,
+    updated_at = now()
+WHERE id = $1
+RETURNING *;
+
+-- name: ListPendingThumbnails :many
+-- Find photos needing thumbnail processing (used by background worker)
+SELECT * FROM warehouse.item_photos
+WHERE thumbnail_status IN ('pending', 'processing')
+  AND thumbnail_attempts < 5
+ORDER BY created_at ASC
+LIMIT $1;
+
+-- name: GetItemPhotoForProcessing :one
+-- Get photo with workspace for background job processing
+SELECT ip.*, i.workspace_id as item_workspace_id
+FROM warehouse.item_photos ip
+JOIN warehouse.items i ON i.id = ip.item_id
+WHERE ip.id = $1;
