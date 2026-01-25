@@ -5,8 +5,10 @@ import (
 	"fmt"
 	"net/http"
 	"testing"
+	"time"
 
 	"github.com/google/uuid"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 
 	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/borrower"
@@ -292,4 +294,129 @@ func TestBorrowerHandler_Delete(t *testing.T) {
 		testutil.AssertStatus(t, rec, http.StatusBadRequest)
 		mockSvc.AssertExpectations(t)
 	})
+}
+
+// Event Publishing Tests
+
+func TestBorrowerHandler_Create_PublishesEvent(t *testing.T) {
+	setup := testutil.NewHandlerTestSetup()
+	mockSvc := new(MockService)
+	capture := testutil.NewEventCapture(setup.WorkspaceID, setup.UserID)
+	capture.Start()
+	defer capture.Stop()
+
+	borrower.RegisterRoutes(setup.API, mockSvc, capture.GetBroadcaster())
+
+	email := "john@example.com"
+	testBorrower, _ := borrower.NewBorrower(setup.WorkspaceID, "John Doe", &email, nil, nil)
+
+	mockSvc.On("Create", mock.Anything, mock.MatchedBy(func(input borrower.CreateInput) bool {
+		return input.Name == "John Doe"
+	})).Return(testBorrower, nil).Once()
+
+	body := `{"name":"John Doe","email":"john@example.com"}`
+	rec := setup.Post("/borrowers", body)
+
+	testutil.AssertStatus(t, rec, http.StatusOK)
+	mockSvc.AssertExpectations(t)
+
+	// Wait for event
+	assert.True(t, capture.WaitForEvents(1, 500*time.Millisecond), "Event should be published")
+
+	event := capture.GetLastEvent()
+	assert.NotNil(t, event)
+	assert.Equal(t, "borrower.created", event.Type)
+	assert.Equal(t, "borrower", event.EntityType)
+	assert.Equal(t, setup.WorkspaceID, event.WorkspaceID)
+	assert.Equal(t, setup.UserID, event.UserID)
+	assert.Equal(t, testBorrower.ID().String(), event.EntityID)
+	assert.NotNil(t, event.Data)
+	assert.Equal(t, testBorrower.ID(), event.Data["id"])
+	assert.Equal(t, testBorrower.Name(), event.Data["name"])
+}
+
+func TestBorrowerHandler_Update_PublishesEvent(t *testing.T) {
+	setup := testutil.NewHandlerTestSetup()
+	mockSvc := new(MockService)
+	capture := testutil.NewEventCapture(setup.WorkspaceID, setup.UserID)
+	capture.Start()
+	defer capture.Stop()
+
+	borrower.RegisterRoutes(setup.API, mockSvc, capture.GetBroadcaster())
+
+	email := "updated@example.com"
+	testBorrower, _ := borrower.NewBorrower(setup.WorkspaceID, "Updated Name", &email, nil, nil)
+	borrowerID := testBorrower.ID()
+
+	mockSvc.On("Update", mock.Anything, borrowerID, setup.WorkspaceID, mock.Anything).
+		Return(testBorrower, nil).Once()
+
+	body := `{"name":"Updated Name","email":"updated@example.com"}`
+	rec := setup.Patch(fmt.Sprintf("/borrowers/%s", borrowerID), body)
+
+	testutil.AssertStatus(t, rec, http.StatusOK)
+	mockSvc.AssertExpectations(t)
+
+	// Wait for event
+	assert.True(t, capture.WaitForEvents(1, 500*time.Millisecond), "Event should be published")
+
+	event := capture.GetLastEvent()
+	assert.NotNil(t, event)
+	assert.Equal(t, "borrower.updated", event.Type)
+	assert.Equal(t, "borrower", event.EntityType)
+	assert.Equal(t, setup.WorkspaceID, event.WorkspaceID)
+	assert.Equal(t, setup.UserID, event.UserID)
+	assert.Equal(t, borrowerID.String(), event.EntityID)
+}
+
+func TestBorrowerHandler_Delete_PublishesEvent(t *testing.T) {
+	setup := testutil.NewHandlerTestSetup()
+	mockSvc := new(MockService)
+	capture := testutil.NewEventCapture(setup.WorkspaceID, setup.UserID)
+	capture.Start()
+	defer capture.Stop()
+
+	borrower.RegisterRoutes(setup.API, mockSvc, capture.GetBroadcaster())
+
+	borrowerID := uuid.New()
+
+	mockSvc.On("Archive", mock.Anything, borrowerID, setup.WorkspaceID).
+		Return(nil).Once()
+
+	rec := setup.Delete(fmt.Sprintf("/borrowers/%s", borrowerID))
+
+	testutil.AssertStatus(t, rec, http.StatusNoContent)
+	mockSvc.AssertExpectations(t)
+
+	// Wait for event
+	assert.True(t, capture.WaitForEvents(1, 500*time.Millisecond), "Event should be published")
+
+	event := capture.GetLastEvent()
+	assert.NotNil(t, event)
+	assert.Equal(t, "borrower.deleted", event.Type)
+	assert.Equal(t, "borrower", event.EntityType)
+	assert.Equal(t, setup.WorkspaceID, event.WorkspaceID)
+	assert.Equal(t, setup.UserID, event.UserID)
+	assert.Equal(t, borrowerID.String(), event.EntityID)
+}
+
+func TestBorrowerHandler_Create_NilBroadcaster_NoError(t *testing.T) {
+	setup := testutil.NewHandlerTestSetup()
+	mockSvc := new(MockService)
+	// Register with nil broadcaster
+	borrower.RegisterRoutes(setup.API, mockSvc, nil)
+
+	email := "john@example.com"
+	testBorrower, _ := borrower.NewBorrower(setup.WorkspaceID, "John Doe", &email, nil, nil)
+
+	mockSvc.On("Create", mock.Anything, mock.MatchedBy(func(input borrower.CreateInput) bool {
+		return input.Name == "John Doe"
+	})).Return(testBorrower, nil).Once()
+
+	body := `{"name":"John Doe","email":"john@example.com"}`
+	rec := setup.Post("/borrowers", body)
+
+	// Should not panic and should succeed
+	testutil.AssertStatus(t, rec, http.StatusOK)
+	mockSvc.AssertExpectations(t)
 }
