@@ -5,8 +5,10 @@ import (
 	"fmt"
 	"net/http"
 	"testing"
+	"time"
 
 	"github.com/google/uuid"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 
 	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/favorite"
@@ -205,4 +207,91 @@ func TestFavoriteHandler_CheckFavorite(t *testing.T) {
 		testutil.AssertStatus(t, rec, http.StatusOK)
 		mockSvc.AssertExpectations(t)
 	})
+}
+
+// Event Publishing Tests
+
+func TestFavoriteHandler_Toggle_PublishesEvent(t *testing.T) {
+	setup := testutil.NewHandlerTestSetup()
+	mockSvc := new(MockService)
+	capture := testutil.NewEventCapture(setup.WorkspaceID, setup.UserID)
+	capture.Start()
+	defer capture.Stop()
+
+	favorite.RegisterRoutes(setup.API, mockSvc, capture.GetBroadcaster())
+
+	t.Run("publishes favorite.created when added", func(t *testing.T) {
+		itemID := uuid.New()
+
+		mockSvc.On("ToggleFavorite", mock.Anything, setup.UserID, setup.WorkspaceID, favorite.TypeItem, itemID).
+			Return(true, nil).Once()
+
+		body := fmt.Sprintf(`{"favorite_type":"ITEM","target_id":"%s"}`, itemID)
+		rec := setup.Post("/favorites", body)
+
+		testutil.AssertStatus(t, rec, http.StatusOK)
+		mockSvc.AssertExpectations(t)
+
+		// Wait for event
+		assert.True(t, capture.WaitForEvents(1, 500*time.Millisecond), "Event should be published")
+
+		event := capture.GetLastEvent()
+		assert.NotNil(t, event)
+		assert.Equal(t, "favorite.created", event.Type)
+		assert.Equal(t, "favorite", event.EntityType)
+		assert.Equal(t, setup.WorkspaceID, event.WorkspaceID)
+		assert.Equal(t, setup.UserID, event.UserID)
+		assert.Equal(t, itemID.String(), event.EntityID)
+		assert.NotNil(t, event.Data)
+		assert.Equal(t, itemID, event.Data["target_id"])
+		assert.Equal(t, "ITEM", event.Data["favorite_type"])
+		assert.Equal(t, true, event.Data["added"])
+	})
+
+	t.Run("publishes favorite.deleted when removed", func(t *testing.T) {
+		locationID := uuid.New()
+
+		mockSvc.On("ToggleFavorite", mock.Anything, setup.UserID, setup.WorkspaceID, favorite.TypeLocation, locationID).
+			Return(false, nil).Once()
+
+		body := fmt.Sprintf(`{"favorite_type":"LOCATION","target_id":"%s"}`, locationID)
+		rec := setup.Post("/favorites", body)
+
+		testutil.AssertStatus(t, rec, http.StatusOK)
+		mockSvc.AssertExpectations(t)
+
+		// Wait for second event (we already have one from previous subtest)
+		assert.True(t, capture.WaitForEvents(2, 500*time.Millisecond), "Event should be published")
+
+		event := capture.GetLastEvent()
+		assert.NotNil(t, event)
+		assert.Equal(t, "favorite.deleted", event.Type)
+		assert.Equal(t, "favorite", event.EntityType)
+		assert.Equal(t, setup.WorkspaceID, event.WorkspaceID)
+		assert.Equal(t, setup.UserID, event.UserID)
+		assert.Equal(t, locationID.String(), event.EntityID)
+		assert.NotNil(t, event.Data)
+		assert.Equal(t, locationID, event.Data["target_id"])
+		assert.Equal(t, "LOCATION", event.Data["favorite_type"])
+		assert.Equal(t, false, event.Data["added"])
+	})
+}
+
+func TestFavoriteHandler_Toggle_NilBroadcaster_NoError(t *testing.T) {
+	setup := testutil.NewHandlerTestSetup()
+	mockSvc := new(MockService)
+	// Register with nil broadcaster
+	favorite.RegisterRoutes(setup.API, mockSvc, nil)
+
+	itemID := uuid.New()
+
+	mockSvc.On("ToggleFavorite", mock.Anything, setup.UserID, setup.WorkspaceID, favorite.TypeItem, itemID).
+		Return(true, nil).Once()
+
+	body := fmt.Sprintf(`{"favorite_type":"ITEM","target_id":"%s"}`, itemID)
+	rec := setup.Post("/favorites", body)
+
+	// Should not panic and should succeed
+	testutil.AssertStatus(t, rec, http.StatusOK)
+	mockSvc.AssertExpectations(t)
 }
