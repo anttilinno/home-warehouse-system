@@ -46,6 +46,14 @@ type ImageProcessor interface {
 	Validate(ctx context.Context, path string) error
 }
 
+// Hasher defines the interface for perceptual hashing operations
+type Hasher interface {
+	GenerateHash(ctx context.Context, imagePath string) (int64, error)
+	CompareHashes(hash1, hash2 int64) (bool, int)
+	IsSimilar(hash1, hash2 int64) bool
+	GetDistance(hash1, hash2 int64) int
+}
+
 // ServiceInterface defines the public interface for item photo operations
 type ServiceInterface interface {
 	UploadPhoto(ctx context.Context, itemID, workspaceID, userID uuid.UUID, file multipart.File, header *multipart.FileHeader, caption *string) (*ItemPhoto, error)
@@ -55,6 +63,27 @@ type ServiceInterface interface {
 	UpdateCaption(ctx context.Context, photoID, workspaceID uuid.UUID, caption *string) error
 	ReorderPhotos(ctx context.Context, itemID, workspaceID uuid.UUID, photoIDs []uuid.UUID) error
 	DeletePhoto(ctx context.Context, id, workspaceID uuid.UUID) error
+
+	// Bulk operations
+	BulkDeletePhotos(ctx context.Context, itemID, workspaceID uuid.UUID, photoIDs []uuid.UUID) error
+	BulkUpdateCaptions(ctx context.Context, workspaceID uuid.UUID, updates []CaptionUpdate) error
+	GetPhotosForDownload(ctx context.Context, itemID, workspaceID uuid.UUID) ([]*ItemPhoto, error)
+	CheckDuplicates(ctx context.Context, workspaceID uuid.UUID, hash int64) ([]DuplicateCandidate, error)
+}
+
+// CaptionUpdate represents a caption update for a single photo
+type CaptionUpdate struct {
+	PhotoID uuid.UUID
+	Caption *string
+}
+
+// DuplicateCandidate represents a potentially duplicate photo
+type DuplicateCandidate struct {
+	PhotoID     uuid.UUID
+	ItemID      uuid.UUID
+	Filename    string
+	Distance    int
+	SimilarityPct float64
 }
 
 // Service implements the item photo business logic
@@ -62,6 +91,7 @@ type Service struct {
 	repo        Repository
 	storage     Storage
 	processor   ImageProcessor
+	hasher      Hasher
 	asynqClient *asynq.Client
 	uploadDir   string // Base directory for temporary uploads
 }
@@ -80,6 +110,12 @@ func NewService(repo Repository, storage Storage, processor ImageProcessor, uplo
 // This is optional - if not set, thumbnails will not be generated in background.
 func (s *Service) SetAsynqClient(client *asynq.Client) {
 	s.asynqClient = client
+}
+
+// SetHasher sets the perceptual hasher for duplicate detection.
+// This is optional - if not set, duplicate detection will not be available.
+func (s *Service) SetHasher(hasher Hasher) {
+	s.hasher = hasher
 }
 
 // UploadPhoto uploads a new photo for an item
@@ -357,4 +393,133 @@ func isValidMimeType(mimeType string) bool {
 		}
 	}
 	return false
+}
+
+// BulkDeletePhotos deletes multiple photos for an item
+func (s *Service) BulkDeletePhotos(ctx context.Context, itemID, workspaceID uuid.UUID, photoIDs []uuid.UUID) error {
+	if len(photoIDs) == 0 {
+		return nil
+	}
+
+	// Get photos to verify ownership and get storage paths
+	photos, err := s.repo.GetByIDs(ctx, photoIDs, workspaceID)
+	if err != nil {
+		return fmt.Errorf("failed to get photos: %w", err)
+	}
+
+	// Verify all photos belong to the specified item
+	for _, photo := range photos {
+		if photo.ItemID != itemID {
+			return fmt.Errorf("photo %s does not belong to item %s", photo.ID, itemID)
+		}
+	}
+
+	// Delete from database first
+	if err := s.repo.BulkDelete(ctx, photoIDs, workspaceID); err != nil {
+		return fmt.Errorf("failed to delete photos from database: %w", err)
+	}
+
+	// Delete files from storage (best effort - don't fail if files are already gone)
+	for _, photo := range photos {
+		_ = s.storage.Delete(ctx, photo.StoragePath)
+		if photo.ThumbnailPath != "" {
+			_ = s.storage.Delete(ctx, photo.ThumbnailPath)
+		}
+		if photo.ThumbnailSmallPath != nil && *photo.ThumbnailSmallPath != "" {
+			_ = s.storage.Delete(ctx, *photo.ThumbnailSmallPath)
+		}
+		if photo.ThumbnailMediumPath != nil && *photo.ThumbnailMediumPath != "" {
+			_ = s.storage.Delete(ctx, *photo.ThumbnailMediumPath)
+		}
+		if photo.ThumbnailLargePath != nil && *photo.ThumbnailLargePath != "" {
+			_ = s.storage.Delete(ctx, *photo.ThumbnailLargePath)
+		}
+	}
+
+	// If a primary photo was deleted, set a new one
+	remainingPhotos, err := s.repo.GetByItem(ctx, itemID, workspaceID)
+	if err == nil && len(remainingPhotos) > 0 {
+		hasPrimary := false
+		for _, p := range remainingPhotos {
+			if p.IsPrimary {
+				hasPrimary = true
+				break
+			}
+		}
+		if !hasPrimary {
+			_ = s.repo.SetPrimary(ctx, remainingPhotos[0].ID)
+		}
+	}
+
+	return nil
+}
+
+// BulkUpdateCaptions updates captions for multiple photos
+func (s *Service) BulkUpdateCaptions(ctx context.Context, workspaceID uuid.UUID, updates []CaptionUpdate) error {
+	if len(updates) == 0 {
+		return nil
+	}
+
+	// Update each caption
+	for _, update := range updates {
+		if err := s.repo.UpdateCaption(ctx, update.PhotoID, workspaceID, update.Caption); err != nil {
+			return fmt.Errorf("failed to update caption for photo %s: %w", update.PhotoID, err)
+		}
+	}
+
+	return nil
+}
+
+// GetPhotosForDownload returns all photos for an item with full metadata for zip download
+func (s *Service) GetPhotosForDownload(ctx context.Context, itemID, workspaceID uuid.UUID) ([]*ItemPhoto, error) {
+	return s.repo.GetByItem(ctx, itemID, workspaceID)
+}
+
+// CheckDuplicates finds photos with similar perceptual hashes
+func (s *Service) CheckDuplicates(ctx context.Context, workspaceID uuid.UUID, hash int64) ([]DuplicateCandidate, error) {
+	if s.hasher == nil {
+		return nil, nil
+	}
+
+	// Get all photos with hashes in the workspace
+	photos, err := s.repo.GetPhotosWithHashes(ctx, workspaceID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get photos: %w", err)
+	}
+
+	var candidates []DuplicateCandidate
+	for _, photo := range photos {
+		if photo.PerceptualHash == nil {
+			continue
+		}
+
+		similar, distance := s.hasher.CompareHashes(hash, *photo.PerceptualHash)
+		if similar {
+			// Calculate similarity percentage (0 distance = 100%, threshold distance = 0%)
+			// Using 10 as max threshold for percentage calculation
+			similarityPct := 100.0 - (float64(distance) / 10.0 * 100.0)
+			if similarityPct < 0 {
+				similarityPct = 0
+			}
+
+			candidates = append(candidates, DuplicateCandidate{
+				PhotoID:       photo.ID,
+				ItemID:        photo.ItemID,
+				Filename:      photo.Filename,
+				Distance:      distance,
+				SimilarityPct: similarityPct,
+			})
+		}
+	}
+
+	// Sort by distance (most similar first)
+	for i := 0; i < len(candidates); i++ {
+		for j := i + 1; j < len(candidates); j++ {
+			if candidates[j].Distance < candidates[i].Distance {
+				candidates[i], candidates[j] = candidates[j], candidates[i]
+			}
+		}
+	}
+
+	return candidates, nil
 }

@@ -80,6 +80,45 @@ func (m *MockRepository) DeleteByItem(ctx context.Context, itemID, workspaceID u
 	return args.Error(0)
 }
 
+func (m *MockRepository) GetByIDs(ctx context.Context, ids []uuid.UUID, workspaceID uuid.UUID) ([]*itemphoto.ItemPhoto, error) {
+	args := m.Called(ctx, ids, workspaceID)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).([]*itemphoto.ItemPhoto), args.Error(1)
+}
+
+func (m *MockRepository) BulkDelete(ctx context.Context, ids []uuid.UUID, workspaceID uuid.UUID) error {
+	args := m.Called(ctx, ids, workspaceID)
+	return args.Error(0)
+}
+
+func (m *MockRepository) UpdateCaption(ctx context.Context, id, workspaceID uuid.UUID, caption *string) error {
+	args := m.Called(ctx, id, workspaceID, caption)
+	return args.Error(0)
+}
+
+func (m *MockRepository) GetPhotosWithHashes(ctx context.Context, workspaceID uuid.UUID) ([]*itemphoto.ItemPhoto, error) {
+	args := m.Called(ctx, workspaceID)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).([]*itemphoto.ItemPhoto), args.Error(1)
+}
+
+func (m *MockRepository) GetItemPhotosWithHashes(ctx context.Context, itemID, workspaceID uuid.UUID) ([]*itemphoto.ItemPhoto, error) {
+	args := m.Called(ctx, itemID, workspaceID)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).([]*itemphoto.ItemPhoto), args.Error(1)
+}
+
+func (m *MockRepository) UpdatePerceptualHash(ctx context.Context, id uuid.UUID, hash int64) error {
+	args := m.Called(ctx, id, hash)
+	return args.Error(0)
+}
+
 // MockStorage implements itemphoto.Storage for testing
 type MockStorage struct {
 	mock.Mock

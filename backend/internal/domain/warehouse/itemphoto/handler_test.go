@@ -63,6 +63,32 @@ func (m *MockService) DeletePhoto(ctx context.Context, id, workspaceID uuid.UUID
 	return args.Error(0)
 }
 
+func (m *MockService) BulkDeletePhotos(ctx context.Context, itemID, workspaceID uuid.UUID, photoIDs []uuid.UUID) error {
+	args := m.Called(ctx, itemID, workspaceID, photoIDs)
+	return args.Error(0)
+}
+
+func (m *MockService) BulkUpdateCaptions(ctx context.Context, workspaceID uuid.UUID, updates []itemphoto.CaptionUpdate) error {
+	args := m.Called(ctx, workspaceID, updates)
+	return args.Error(0)
+}
+
+func (m *MockService) GetPhotosForDownload(ctx context.Context, itemID, workspaceID uuid.UUID) ([]*itemphoto.ItemPhoto, error) {
+	args := m.Called(ctx, itemID, workspaceID)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).([]*itemphoto.ItemPhoto), args.Error(1)
+}
+
+func (m *MockService) CheckDuplicates(ctx context.Context, workspaceID uuid.UUID, hash int64) ([]itemphoto.DuplicateCandidate, error) {
+	args := m.Called(ctx, workspaceID, hash)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).([]itemphoto.DuplicateCandidate), args.Error(1)
+}
+
 // Helper to create test photo
 func createTestPhoto(itemID uuid.UUID) *itemphoto.ItemPhoto {
 	return &itemphoto.ItemPhoto{

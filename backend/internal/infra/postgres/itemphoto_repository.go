@@ -190,22 +190,117 @@ func (r *ItemPhotoRepository) DeleteByItem(ctx context.Context, itemID, workspac
 }
 
 func (r *ItemPhotoRepository) rowToItemPhoto(row queries.WarehouseItemPhoto) *itemphoto.ItemPhoto {
-	return &itemphoto.ItemPhoto{
-		ID:            row.ID,
-		ItemID:        row.ItemID,
-		WorkspaceID:   row.WorkspaceID,
-		Filename:      row.Filename,
-		StoragePath:   row.StoragePath,
-		ThumbnailPath: row.ThumbnailPath,
-		FileSize:      row.FileSize,
-		MimeType:      row.MimeType,
-		Width:         row.Width,
-		Height:        row.Height,
-		DisplayOrder:  row.DisplayOrder,
-		IsPrimary:     row.IsPrimary,
-		Caption:       row.Caption,
-		UploadedBy:    row.UploadedBy,
-		CreatedAt:     row.CreatedAt,
-		UpdatedAt:     row.UpdatedAt,
+	photo := &itemphoto.ItemPhoto{
+		ID:                  row.ID,
+		ItemID:              row.ItemID,
+		WorkspaceID:         row.WorkspaceID,
+		Filename:            row.Filename,
+		StoragePath:         row.StoragePath,
+		ThumbnailPath:       row.ThumbnailPath,
+		FileSize:            row.FileSize,
+		MimeType:            row.MimeType,
+		Width:               row.Width,
+		Height:              row.Height,
+		DisplayOrder:        row.DisplayOrder,
+		IsPrimary:           row.IsPrimary,
+		Caption:             row.Caption,
+		UploadedBy:          row.UploadedBy,
+		CreatedAt:           row.CreatedAt,
+		UpdatedAt:           row.UpdatedAt,
+		ThumbnailStatus:     itemphoto.ThumbnailStatus(row.ThumbnailStatus),
+		ThumbnailSmallPath:  row.ThumbnailSmallPath,
+		ThumbnailMediumPath: row.ThumbnailMediumPath,
+		ThumbnailLargePath:  row.ThumbnailLargePath,
+		ThumbnailAttempts:   row.ThumbnailAttempts,
+		ThumbnailError:      row.ThumbnailError,
+		PerceptualHash:      row.PerceptualHash,
 	}
+	return photo
+}
+
+// Bulk operations
+
+func (r *ItemPhotoRepository) GetByIDs(ctx context.Context, ids []uuid.UUID, workspaceID uuid.UUID) ([]*itemphoto.ItemPhoto, error) {
+	db := GetDBTX(ctx, r.pool)
+	q := queries.New(db)
+
+	rows, err := q.GetItemPhotosByIDs(ctx, queries.GetItemPhotosByIDsParams{
+		Ids:         ids,
+		WorkspaceID: workspaceID,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	photos := make([]*itemphoto.ItemPhoto, 0, len(rows))
+	for _, row := range rows {
+		photos = append(photos, r.rowToItemPhoto(row))
+	}
+	return photos, nil
+}
+
+func (r *ItemPhotoRepository) BulkDelete(ctx context.Context, ids []uuid.UUID, workspaceID uuid.UUID) error {
+	db := GetDBTX(ctx, r.pool)
+	q := queries.New(db)
+
+	return q.BulkDeleteItemPhotos(ctx, queries.BulkDeleteItemPhotosParams{
+		Ids:         ids,
+		WorkspaceID: workspaceID,
+	})
+}
+
+func (r *ItemPhotoRepository) UpdateCaption(ctx context.Context, id, workspaceID uuid.UUID, caption *string) error {
+	db := GetDBTX(ctx, r.pool)
+	q := queries.New(db)
+
+	return q.UpdatePhotoCaption(ctx, queries.UpdatePhotoCaptionParams{
+		ID:          id,
+		WorkspaceID: workspaceID,
+		Caption:     caption,
+	})
+}
+
+func (r *ItemPhotoRepository) GetPhotosWithHashes(ctx context.Context, workspaceID uuid.UUID) ([]*itemphoto.ItemPhoto, error) {
+	db := GetDBTX(ctx, r.pool)
+	q := queries.New(db)
+
+	rows, err := q.GetPhotosWithHashes(ctx, workspaceID)
+	if err != nil {
+		return nil, err
+	}
+
+	photos := make([]*itemphoto.ItemPhoto, 0, len(rows))
+	for _, row := range rows {
+		photos = append(photos, r.rowToItemPhoto(row))
+	}
+	return photos, nil
+}
+
+func (r *ItemPhotoRepository) GetItemPhotosWithHashes(ctx context.Context, itemID, workspaceID uuid.UUID) ([]*itemphoto.ItemPhoto, error) {
+	db := GetDBTX(ctx, r.pool)
+	q := queries.New(db)
+
+	rows, err := q.GetItemPhotosWithHashes(ctx, queries.GetItemPhotosWithHashesParams{
+		ItemID:      itemID,
+		WorkspaceID: workspaceID,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	photos := make([]*itemphoto.ItemPhoto, 0, len(rows))
+	for _, row := range rows {
+		photos = append(photos, r.rowToItemPhoto(row))
+	}
+	return photos, nil
+}
+
+func (r *ItemPhotoRepository) UpdatePerceptualHash(ctx context.Context, id uuid.UUID, hash int64) error {
+	db := GetDBTX(ctx, r.pool)
+	q := queries.New(db)
+
+	return q.UpdatePerceptualHash(ctx, queries.UpdatePerceptualHashParams{
+		ID:             id,
+		PerceptualHash: &hash,
+	})
 }

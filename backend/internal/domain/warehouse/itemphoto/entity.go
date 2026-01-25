@@ -71,6 +71,9 @@ type ItemPhoto struct {
 	ThumbnailLargePath  *string         // 800px thumbnail path
 	ThumbnailAttempts   int32           // Number of processing attempts
 	ThumbnailError      *string         // Last error message if failed
+
+	// Duplicate detection
+	PerceptualHash *int64 // dHash for finding similar images
 }
 
 // Validate checks if the item photo data is valid

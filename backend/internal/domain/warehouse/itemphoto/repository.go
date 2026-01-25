@@ -34,4 +34,24 @@ type Repository interface {
 
 	// DeleteByItem removes all photos for an item (bulk delete)
 	DeleteByItem(ctx context.Context, itemID, workspaceID uuid.UUID) error
+
+	// Bulk operations
+
+	// GetByIDs retrieves multiple photos by their IDs
+	GetByIDs(ctx context.Context, ids []uuid.UUID, workspaceID uuid.UUID) ([]*ItemPhoto, error)
+
+	// BulkDelete removes multiple photos by their IDs
+	BulkDelete(ctx context.Context, ids []uuid.UUID, workspaceID uuid.UUID) error
+
+	// UpdateCaption updates the caption for a single photo
+	UpdateCaption(ctx context.Context, id, workspaceID uuid.UUID, caption *string) error
+
+	// GetPhotosWithHashes retrieves all photos with perceptual hashes in a workspace
+	GetPhotosWithHashes(ctx context.Context, workspaceID uuid.UUID) ([]*ItemPhoto, error)
+
+	// GetItemPhotosWithHashes retrieves photos with hashes for a specific item
+	GetItemPhotosWithHashes(ctx context.Context, itemID, workspaceID uuid.UUID) ([]*ItemPhoto, error)
+
+	// UpdatePerceptualHash sets the perceptual hash for a photo
+	UpdatePerceptualHash(ctx context.Context, id uuid.UUID, hash int64) error
 }
