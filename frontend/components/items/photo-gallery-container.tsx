@@ -223,6 +223,7 @@ export function PhotoGalleryContainer({
         selectionMode={selectionMode}
         selectedIds={selectedIds}
         onToggleSelect={toggleSelection}
+        onSelectAll={selectAll}
       />
 
       {/* Bulk action bar */}

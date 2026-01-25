@@ -422,11 +422,41 @@ func (h *BulkPhotoHandler) HandleDownload(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	// Get photos for download
-	photos, err := h.svc.GetPhotosForDownload(ctx, itemID, workspaceID)
-	if err != nil {
-		http.Error(w, "failed to get photos", http.StatusInternalServerError)
-		return
+	// Parse optional ?ids= query parameter for selective download
+	var photos []*ItemPhoto
+	idsParam := r.URL.Query().Get("ids")
+	if idsParam != "" {
+		// Parse comma-separated UUIDs
+		idStrings := strings.Split(idsParam, ",")
+		photoIDs := make([]uuid.UUID, 0, len(idStrings))
+		for _, idStr := range idStrings {
+			idStr = strings.TrimSpace(idStr)
+			if idStr == "" {
+				continue
+			}
+			photoID, err := uuid.Parse(idStr)
+			if err != nil {
+				http.Error(w, "invalid photo ID in ids parameter", http.StatusBadRequest)
+				return
+			}
+			photoIDs = append(photoIDs, photoID)
+		}
+		if len(photoIDs) > 0 {
+			photos, err = h.svc.GetPhotosByIDs(ctx, photoIDs, workspaceID)
+			if err != nil {
+				http.Error(w, "failed to get selected photos", http.StatusInternalServerError)
+				return
+			}
+		}
+	}
+
+	// If no IDs specified or empty, get all photos for the item
+	if photos == nil {
+		photos, err = h.svc.GetPhotosForDownload(ctx, itemID, workspaceID)
+		if err != nil {
+			http.Error(w, "failed to get photos", http.StatusInternalServerError)
+			return
+		}
 	}
 
 	if len(photos) == 0 {

@@ -596,7 +596,8 @@
       "setPrimaryError": "Peamise foto maaramine ebaonnestus",
       "deleteSuccess": "Foto kustutatud edukalt",
       "deleteError": "Foto kustutamine ebaonnestus",
-      "selectPhoto": "Vali foto"
+      "selectPhoto": "Vali foto",
+      "selectAll": "Vali kõik"
     },
     "viewer": {
       "previous": "Eelmine foto",

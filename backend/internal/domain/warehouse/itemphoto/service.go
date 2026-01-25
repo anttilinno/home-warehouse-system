@@ -68,6 +68,7 @@ type ServiceInterface interface {
 	BulkDeletePhotos(ctx context.Context, itemID, workspaceID uuid.UUID, photoIDs []uuid.UUID) error
 	BulkUpdateCaptions(ctx context.Context, workspaceID uuid.UUID, updates []CaptionUpdate) error
 	GetPhotosForDownload(ctx context.Context, itemID, workspaceID uuid.UUID) ([]*ItemPhoto, error)
+	GetPhotosByIDs(ctx context.Context, photoIDs []uuid.UUID, workspaceID uuid.UUID) ([]*ItemPhoto, error)
 	CheckDuplicates(ctx context.Context, workspaceID uuid.UUID, hash int64) ([]DuplicateCandidate, error)
 }
 
@@ -473,6 +474,11 @@ func (s *Service) BulkUpdateCaptions(ctx context.Context, workspaceID uuid.UUID,
 // GetPhotosForDownload returns all photos for an item with full metadata for zip download
 func (s *Service) GetPhotosForDownload(ctx context.Context, itemID, workspaceID uuid.UUID) ([]*ItemPhoto, error) {
 	return s.repo.GetByItem(ctx, itemID, workspaceID)
+}
+
+// GetPhotosByIDs returns photos by their IDs with workspace verification
+func (s *Service) GetPhotosByIDs(ctx context.Context, photoIDs []uuid.UUID, workspaceID uuid.UUID) ([]*ItemPhoto, error) {
+	return s.repo.GetByIDs(ctx, photoIDs, workspaceID)
 }
 
 // CheckDuplicates finds photos with similar perceptual hashes

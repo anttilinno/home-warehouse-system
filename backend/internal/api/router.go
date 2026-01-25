@@ -202,8 +202,10 @@ func NewRouter(pool *pgxpool.Pool, cfg *config.Config) chi.Router {
 		log.Fatalf("failed to initialize photo storage: %v", err)
 	}
 	imageProcessor := imageprocessor.NewProcessor(imageprocessor.DefaultConfig())
+	imageHasher := imageprocessor.NewHasher() // Perceptual hasher for duplicate detection
 	itemPhotoSvc := itemphoto.NewService(itemPhotoRepo, photoStorage, imageProcessor, uploadDir)
 	itemPhotoSvc.SetAsynqClient(asynqClient) // Enable async thumbnail generation
+	itemPhotoSvc.SetHasher(imageHasher)      // Enable duplicate detection
 	// Phase 5 services (movement service created before inventory to allow dependency)
 	movementSvc := movement.NewService(movementRepo)
 	inventorySvc := inventory.NewService(inventoryRepo, movementSvc)
@@ -350,6 +352,7 @@ func NewRouter(pool *pgxpool.Pool, cfg *config.Config) chi.Router {
 			storageGetter := &photoStorageGetter{storage: photoStorage}
 			itemphoto.RegisterUploadHandler(r, itemPhotoSvc, broadcaster, photoURLGenerator)
 			itemphoto.RegisterServeHandler(r, itemPhotoSvc, storageGetter)
+			itemphoto.RegisterBulkHandler(r, itemPhotoSvc, storageGetter, imageHasher, broadcaster, photoURLGenerator)
 
 			// Register Phase 4 domain routes (loans & borrowers)
 			borrower.RegisterRoutes(wsAPI, borrowerSvc, broadcaster)

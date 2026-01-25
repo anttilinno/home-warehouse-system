@@ -81,6 +81,14 @@ func (m *MockService) GetPhotosForDownload(ctx context.Context, itemID, workspac
 	return args.Get(0).([]*itemphoto.ItemPhoto), args.Error(1)
 }
 
+func (m *MockService) GetPhotosByIDs(ctx context.Context, photoIDs []uuid.UUID, workspaceID uuid.UUID) ([]*itemphoto.ItemPhoto, error) {
+	args := m.Called(ctx, photoIDs, workspaceID)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).([]*itemphoto.ItemPhoto), args.Error(1)
+}
+
 func (m *MockService) CheckDuplicates(ctx context.Context, workspaceID uuid.UUID, hash int64) ([]itemphoto.DuplicateCandidate, error) {
 	args := m.Called(ctx, workspaceID, hash)
 	if args.Get(0) == nil {

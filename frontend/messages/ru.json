@@ -596,7 +596,8 @@
       "setPrimaryError": "Не удалось установить основное фото",
       "deleteSuccess": "Фото удалено",
       "deleteError": "Не удалось удалить фото",
-      "selectPhoto": "Выбрать фото"
+      "selectPhoto": "Выбрать фото",
+      "selectAll": "Выбрать все"
     },
     "viewer": {
       "previous": "Предыдущее фото",

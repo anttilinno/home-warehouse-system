@@ -515,7 +515,8 @@
       "setPrimaryError": "Failed to set primary photo",
       "deleteSuccess": "Photo deleted successfully",
       "deleteError": "Failed to delete photo",
-      "selectPhoto": "Select photo"
+      "selectPhoto": "Select photo",
+      "selectAll": "Select all"
     },
     "viewer": {
       "previous": "Previous photo",

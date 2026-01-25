@@ -73,6 +73,8 @@ interface PhotoGalleryProps {
   selectedIds?: Set<string>;
   /** Toggle selection for a photo */
   onToggleSelect?: (photoId: string) => void;
+  /** Select all photos */
+  onSelectAll?: (photoIds: string[]) => void;
 }
 
 interface SortablePhotoItemProps {
@@ -260,6 +262,7 @@ export function PhotoGallery({
   selectionMode = false,
   selectedIds,
   onToggleSelect,
+  onSelectAll,
 }: PhotoGalleryProps) {
   const t = useTranslations("photos.gallery");
   const [sortedPhotos, setSortedPhotos] = useState<ItemPhoto[]>(photos);
@@ -369,8 +372,36 @@ export function PhotoGallery({
     );
   }
 
+  // Check if all photos are selected
+  const allSelected = selectedIds && sortedPhotos.length > 0 &&
+    sortedPhotos.every((p) => selectedIds.has(p.id));
+
+  const handleSelectAll = () => {
+    if (onSelectAll) {
+      onSelectAll(sortedPhotos.map((p) => p.id));
+    }
+  };
+
   return (
     <>
+      {/* Select All checkbox when in selection mode */}
+      {selectionMode && sortedPhotos.length > 0 && (
+        <div className="flex items-center gap-2 mb-4 pb-2 border-b">
+          <Checkbox
+            id="select-all"
+            checked={allSelected}
+            onCheckedChange={handleSelectAll}
+            className="h-5 w-5"
+          />
+          <label
+            htmlFor="select-all"
+            className="text-sm font-medium cursor-pointer select-none"
+          >
+            {t("selectAll")} ({sortedPhotos.length})
+          </label>
+        </div>
+      )}
+
       <DndContext
         sensors={sensors}
         collisionDetection={closestCenter}
