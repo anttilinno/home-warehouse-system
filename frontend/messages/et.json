@@ -537,6 +537,51 @@
     "noPhotos": "Fotod puuduvad",
     "noAttachments": "Manused puuduvad"
   },
+  "declutter": {
+    "title": "Korrastusabi",
+    "description": "Tuvasta kasutamata esemed lao korrastamiseks",
+    "emptyState": {
+      "title": "Kasutamata esemeid ei leitud",
+      "description": "Koiki teie inventari esemeid on hiljuti kasutatud"
+    },
+    "filters": {
+      "threshold": "Kasutamata",
+      "groupBy": "Grupeeri",
+      "days90": "90+ paeva",
+      "days180": "180+ paeva",
+      "days365": "365+ paeva",
+      "none": "Ei grupeerita",
+      "category": "Kategooria",
+      "location": "Asukoht"
+    },
+    "summary": {
+      "items": "eset",
+      "totalValue": "Koguvaartus"
+    },
+    "table": {
+      "item": "Ese",
+      "location": "Asukoht",
+      "category": "Kategooria",
+      "daysUnused": "Paevi kasutamata",
+      "value": "Vaartus",
+      "score": "Punktid",
+      "actions": "Toimingud"
+    },
+    "actions": {
+      "markUsed": "Margi kasutatuks",
+      "export": "Ekspordi CSV-na",
+      "viewItem": "Vaata eset"
+    },
+    "score": {
+      "high": "Korge prioriteet",
+      "medium": "Keskmine",
+      "low": "Madal"
+    },
+    "toast": {
+      "markedUsed": "Ese margitud kasutatuks",
+      "exportSuccess": "Korrastuse nimekiri eksporditud"
+    }
+  },
   "pwa": {
     "offline": {
       "message": "Oled võrguühenduseta. Mõned funktsioonid võivad olla kättesaamatud.",

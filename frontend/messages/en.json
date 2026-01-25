@@ -663,6 +663,51 @@
     "noPhotos": "No photos attached",
     "noAttachments": "No attachments linked"
   },
+  "declutter": {
+    "title": "Declutter Assistant",
+    "description": "Identify unused items to reduce inventory clutter",
+    "emptyState": {
+      "title": "No unused items found",
+      "description": "All your inventory items have been used recently"
+    },
+    "filters": {
+      "threshold": "Unused for",
+      "groupBy": "Group by",
+      "days90": "90+ days",
+      "days180": "180+ days",
+      "days365": "365+ days",
+      "none": "None",
+      "category": "Category",
+      "location": "Location"
+    },
+    "summary": {
+      "items": "items",
+      "totalValue": "Total value"
+    },
+    "table": {
+      "item": "Item",
+      "location": "Location",
+      "category": "Category",
+      "daysUnused": "Days Unused",
+      "value": "Value",
+      "score": "Score",
+      "actions": "Actions"
+    },
+    "actions": {
+      "markUsed": "Mark as used",
+      "export": "Export to CSV",
+      "viewItem": "View item"
+    },
+    "score": {
+      "high": "High priority",
+      "medium": "Medium",
+      "low": "Low"
+    },
+    "toast": {
+      "markedUsed": "Item marked as used",
+      "exportSuccess": "Declutter list exported"
+    }
+  },
   "pwa": {
     "offline": {
       "message": "You're offline. Some features may be unavailable.",
