@@ -5,8 +5,10 @@ import (
 	"fmt"
 	"net/http"
 	"testing"
+	"time"
 
 	"github.com/google/uuid"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 
 	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/container"
@@ -367,4 +369,196 @@ func TestContainerHandler_Delete(t *testing.T) {
 		testutil.AssertStatus(t, rec, http.StatusBadRequest)
 		mockSvc.AssertExpectations(t)
 	})
+}
+
+// Event Publishing Tests
+
+func TestContainerHandler_Create_PublishesEvent(t *testing.T) {
+	setup := testutil.NewHandlerTestSetup()
+	mockSvc := new(MockService)
+	capture := testutil.NewEventCapture(setup.WorkspaceID, setup.UserID)
+	capture.Start()
+	defer capture.Stop()
+
+	container.RegisterRoutes(setup.API, mockSvc, capture.GetBroadcaster())
+
+	locationID := uuid.New()
+	testContainer, _ := container.NewContainer(setup.WorkspaceID, locationID, "Box A", nil, nil, "BOX-A")
+
+	mockSvc.On("Create", mock.Anything, mock.MatchedBy(func(input container.CreateInput) bool {
+		return input.Name == "Box A" && input.LocationID == locationID
+	})).Return(testContainer, nil).Once()
+
+	body := fmt.Sprintf(`{"location_id":"%s","name":"Box A","short_code":"BOX-A"}`, locationID)
+	rec := setup.Post("/containers", body)
+
+	testutil.AssertStatus(t, rec, http.StatusOK)
+	mockSvc.AssertExpectations(t)
+
+	// Wait for event
+	assert.True(t, capture.WaitForEvents(1, 500*time.Millisecond), "Event should be published")
+
+	event := capture.GetLastEvent()
+	assert.NotNil(t, event)
+	assert.Equal(t, "container.created", event.Type)
+	assert.Equal(t, "container", event.EntityType)
+	assert.Equal(t, setup.WorkspaceID, event.WorkspaceID)
+	assert.Equal(t, setup.UserID, event.UserID)
+	assert.Equal(t, testContainer.ID().String(), event.EntityID)
+	assert.NotNil(t, event.Data)
+	assert.Equal(t, testContainer.ID(), event.Data["id"])
+	assert.Equal(t, testContainer.Name(), event.Data["name"])
+}
+
+func TestContainerHandler_Update_PublishesEvent(t *testing.T) {
+	setup := testutil.NewHandlerTestSetup()
+	mockSvc := new(MockService)
+	capture := testutil.NewEventCapture(setup.WorkspaceID, setup.UserID)
+	capture.Start()
+	defer capture.Stop()
+
+	container.RegisterRoutes(setup.API, mockSvc, capture.GetBroadcaster())
+
+	locationID := uuid.New()
+	testContainer, _ := container.NewContainer(setup.WorkspaceID, locationID, "Updated Box", nil, nil, "UPD-B")
+	containerID := testContainer.ID()
+
+	// Mock GetByID first (handler calls it to get current container)
+	existingContainer, _ := container.NewContainer(setup.WorkspaceID, locationID, "Box A", nil, nil, "BOX-A")
+	mockSvc.On("GetByID", mock.Anything, containerID, setup.WorkspaceID).
+		Return(existingContainer, nil).Once()
+
+	mockSvc.On("Update", mock.Anything, containerID, setup.WorkspaceID, mock.Anything).
+		Return(testContainer, nil).Once()
+
+	body := `{"name":"Updated Box"}`
+	rec := setup.Patch(fmt.Sprintf("/containers/%s", containerID), body)
+
+	testutil.AssertStatus(t, rec, http.StatusOK)
+	mockSvc.AssertExpectations(t)
+
+	// Wait for event
+	assert.True(t, capture.WaitForEvents(1, 500*time.Millisecond), "Event should be published")
+
+	event := capture.GetLastEvent()
+	assert.NotNil(t, event)
+	assert.Equal(t, "container.updated", event.Type)
+	assert.Equal(t, "container", event.EntityType)
+	assert.Equal(t, setup.WorkspaceID, event.WorkspaceID)
+	assert.Equal(t, setup.UserID, event.UserID)
+	assert.Equal(t, containerID.String(), event.EntityID)
+}
+
+func TestContainerHandler_Archive_PublishesEvent(t *testing.T) {
+	setup := testutil.NewHandlerTestSetup()
+	mockSvc := new(MockService)
+	capture := testutil.NewEventCapture(setup.WorkspaceID, setup.UserID)
+	capture.Start()
+	defer capture.Stop()
+
+	container.RegisterRoutes(setup.API, mockSvc, capture.GetBroadcaster())
+
+	containerID := uuid.New()
+
+	mockSvc.On("Archive", mock.Anything, containerID, setup.WorkspaceID).
+		Return(nil).Once()
+
+	rec := setup.Post(fmt.Sprintf("/containers/%s/archive", containerID), "")
+
+	testutil.AssertStatus(t, rec, http.StatusNoContent)
+	mockSvc.AssertExpectations(t)
+
+	// Wait for event (archive emits container.deleted)
+	assert.True(t, capture.WaitForEvents(1, 500*time.Millisecond), "Event should be published")
+
+	event := capture.GetLastEvent()
+	assert.NotNil(t, event)
+	assert.Equal(t, "container.deleted", event.Type)
+	assert.Equal(t, "container", event.EntityType)
+	assert.Equal(t, setup.WorkspaceID, event.WorkspaceID)
+	assert.Equal(t, setup.UserID, event.UserID)
+	assert.Equal(t, containerID.String(), event.EntityID)
+}
+
+func TestContainerHandler_Restore_PublishesEvent(t *testing.T) {
+	setup := testutil.NewHandlerTestSetup()
+	mockSvc := new(MockService)
+	capture := testutil.NewEventCapture(setup.WorkspaceID, setup.UserID)
+	capture.Start()
+	defer capture.Stop()
+
+	container.RegisterRoutes(setup.API, mockSvc, capture.GetBroadcaster())
+
+	containerID := uuid.New()
+
+	mockSvc.On("Restore", mock.Anything, containerID, setup.WorkspaceID).
+		Return(nil).Once()
+
+	rec := setup.Post(fmt.Sprintf("/containers/%s/restore", containerID), "")
+
+	testutil.AssertStatus(t, rec, http.StatusNoContent)
+	mockSvc.AssertExpectations(t)
+
+	// Wait for event (restore emits container.created)
+	assert.True(t, capture.WaitForEvents(1, 500*time.Millisecond), "Event should be published")
+
+	event := capture.GetLastEvent()
+	assert.NotNil(t, event)
+	assert.Equal(t, "container.created", event.Type)
+	assert.Equal(t, "container", event.EntityType)
+	assert.Equal(t, setup.WorkspaceID, event.WorkspaceID)
+	assert.Equal(t, setup.UserID, event.UserID)
+	assert.Equal(t, containerID.String(), event.EntityID)
+}
+
+func TestContainerHandler_Delete_PublishesEvent(t *testing.T) {
+	setup := testutil.NewHandlerTestSetup()
+	mockSvc := new(MockService)
+	capture := testutil.NewEventCapture(setup.WorkspaceID, setup.UserID)
+	capture.Start()
+	defer capture.Stop()
+
+	container.RegisterRoutes(setup.API, mockSvc, capture.GetBroadcaster())
+
+	containerID := uuid.New()
+
+	mockSvc.On("Delete", mock.Anything, containerID, setup.WorkspaceID).
+		Return(nil).Once()
+
+	rec := setup.Delete(fmt.Sprintf("/containers/%s", containerID))
+
+	testutil.AssertStatus(t, rec, http.StatusNoContent)
+	mockSvc.AssertExpectations(t)
+
+	// Wait for event
+	assert.True(t, capture.WaitForEvents(1, 500*time.Millisecond), "Event should be published")
+
+	event := capture.GetLastEvent()
+	assert.NotNil(t, event)
+	assert.Equal(t, "container.deleted", event.Type)
+	assert.Equal(t, "container", event.EntityType)
+	assert.Equal(t, setup.WorkspaceID, event.WorkspaceID)
+	assert.Equal(t, setup.UserID, event.UserID)
+	assert.Equal(t, containerID.String(), event.EntityID)
+}
+
+func TestContainerHandler_Create_NilBroadcaster_NoError(t *testing.T) {
+	setup := testutil.NewHandlerTestSetup()
+	mockSvc := new(MockService)
+	// Register with nil broadcaster
+	container.RegisterRoutes(setup.API, mockSvc, nil)
+
+	locationID := uuid.New()
+	testContainer, _ := container.NewContainer(setup.WorkspaceID, locationID, "Box A", nil, nil, "BOX-A")
+
+	mockSvc.On("Create", mock.Anything, mock.MatchedBy(func(input container.CreateInput) bool {
+		return input.Name == "Box A"
+	})).Return(testContainer, nil).Once()
+
+	body := fmt.Sprintf(`{"location_id":"%s","name":"Box A","short_code":"BOX-A"}`, locationID)
+	rec := setup.Post("/containers", body)
+
+	// Should not panic and should succeed
+	testutil.AssertStatus(t, rec, http.StatusOK)
+	mockSvc.AssertExpectations(t)
 }
