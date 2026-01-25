@@ -188,6 +188,8 @@ export function SSEProvider({
         "pendingchange.created",
         "pendingchange.approved",
         "pendingchange.rejected",
+        "photo.thumbnail_ready",
+        "photo.thumbnail_failed",
       ];
 
       eventTypes.forEach((type) => {

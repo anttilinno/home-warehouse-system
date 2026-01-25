@@ -1,8 +1,10 @@
 "use client";
 
 import { useState, useEffect, useCallback, useMemo } from "react";
+import { toast } from "sonner";
 import { itemPhotosApi } from "../api/item-photos";
-import type { ItemPhoto } from "../types/item-photo";
+import type { ItemPhoto, ThumbnailReadyEvent, ThumbnailFailedEvent } from "../types/item-photo";
+import { useSSE, type SSEEvent } from "./use-sse";
 
 interface UseItemPhotosOptions {
   workspaceId: string;
@@ -65,6 +67,59 @@ export function useItemPhotos({
       fetchPhotos();
     }
   }, [autoFetch, fetchPhotos]);
+
+  // Handle SSE events for thumbnail updates
+  const handleSSEEvent = useCallback((event: SSEEvent) => {
+    // Handle thumbnail ready event
+    if (event.type === "photo.thumbnail_ready") {
+      const data = event.data as ThumbnailReadyEvent | undefined;
+      if (data && data.item_id === itemId) {
+        setPhotos((prev) =>
+          prev.map((photo) =>
+            photo.id === data.photo_id
+              ? {
+                  ...photo,
+                  thumbnail_status: "complete" as const,
+                  urls: {
+                    ...photo.urls,
+                    small: data.small_thumbnail_url || photo.urls.small,
+                    medium: data.medium_thumbnail_url || photo.urls.medium,
+                    large: data.large_thumbnail_url || photo.urls.large,
+                  },
+                }
+              : photo
+          )
+        );
+      }
+    }
+
+    // Handle thumbnail failed event
+    if (event.type === "photo.thumbnail_failed") {
+      const data = event.data as ThumbnailFailedEvent | undefined;
+      if (data && data.item_id === itemId) {
+        setPhotos((prev) =>
+          prev.map((photo) =>
+            photo.id === data.photo_id
+              ? {
+                  ...photo,
+                  thumbnail_status: "failed" as const,
+                  thumbnail_error: data.error,
+                }
+              : photo
+          )
+        );
+        // Show toast notification for failed thumbnail
+        toast.error("Failed to generate thumbnail", {
+          description: data.error,
+        });
+      }
+    }
+  }, [itemId]);
+
+  // Subscribe to SSE events
+  useSSE({
+    onEvent: handleSSEEvent,
+  });
 
   // Upload photo
   const uploadPhoto = useCallback(
