@@ -6,6 +6,8 @@ import type {
   UploadPhotoResponse,
   UpdateCaptionRequest,
   ReorderPhotosRequest,
+  CaptionUpdate,
+  DuplicateCheckResponse,
 } from "../types/item-photo";
 
 /**
@@ -160,5 +162,111 @@ export const itemPhotosApi = {
       `/workspaces/${workspaceId}/photos/${photoId}`,
       workspaceId
     );
+  },
+
+  /**
+   * Bulk delete multiple photos
+   */
+  bulkDelete: async (
+    workspaceId: string,
+    itemId: string,
+    photoIds: string[]
+  ): Promise<void> => {
+    await apiClient.post(
+      `/workspaces/${workspaceId}/items/${itemId}/photos/bulk-delete`,
+      { photo_ids: photoIds },
+      workspaceId
+    );
+  },
+
+  /**
+   * Bulk update captions for multiple photos
+   */
+  bulkUpdateCaptions: async (
+    workspaceId: string,
+    itemId: string,
+    updates: CaptionUpdate[]
+  ): Promise<void> => {
+    await apiClient.post(
+      `/workspaces/${workspaceId}/items/${itemId}/photos/bulk-caption`,
+      { updates },
+      workspaceId
+    );
+  },
+
+  /**
+   * Download photos as zip file
+   * Uses fetch+blob to include auth headers (window.open cannot send headers)
+   * @param photoIds - Optional array of photo IDs. If empty, downloads all photos.
+   */
+  downloadAsZip: async (
+    workspaceId: string,
+    itemId: string,
+    photoIds?: string[]
+  ): Promise<void> => {
+    const token = apiClient.getToken();
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+    let url = `${apiUrl}/workspaces/${workspaceId}/items/${itemId}/photos/download`;
+    if (photoIds && photoIds.length > 0) {
+      url += `?ids=${photoIds.join(",")}`;
+    }
+
+    const response = await fetch(url, {
+      method: "GET",
+      headers: {
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        "X-Workspace-ID": workspaceId,
+      },
+      credentials: "include",
+    });
+
+    if (!response.ok) {
+      throw new Error(`Download failed: ${response.status}`);
+    }
+
+    // Create blob and trigger download
+    const blob = await response.blob();
+    const downloadUrl = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = downloadUrl;
+    link.download = `photos-${itemId.slice(0, 8)}.zip`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(downloadUrl);
+  },
+
+  /**
+   * Check for duplicate photos before upload
+   */
+  checkDuplicates: async (
+    workspaceId: string,
+    itemId: string,
+    file: File
+  ): Promise<DuplicateCheckResponse> => {
+    const formData = new FormData();
+    formData.append("photo", file);
+
+    const token = apiClient.getToken();
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+
+    const response = await fetch(
+      `${apiUrl}/workspaces/${workspaceId}/items/${itemId}/photos/check-duplicate`,
+      {
+        method: "POST",
+        headers: {
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          "X-Workspace-ID": workspaceId,
+        },
+        credentials: "include",
+        body: formData,
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
+    }
+
+    return response.json();
   },
 };

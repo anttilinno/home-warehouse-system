@@ -158,3 +158,43 @@ export interface ImageDimensions {
   width: number;
   height: number;
 }
+
+/**
+ * Request for bulk delete operation
+ */
+export interface BulkDeleteRequest {
+  photo_ids: string[];
+}
+
+/**
+ * Single caption update for bulk operation
+ */
+export interface CaptionUpdate {
+  photo_id: string;
+  caption: string | null;
+}
+
+/**
+ * Request for bulk caption update
+ */
+export interface BulkCaptionRequest {
+  updates: CaptionUpdate[];
+}
+
+/**
+ * Duplicate photo information
+ */
+export interface DuplicateInfo {
+  photo_id: string;
+  distance: number;
+  similarity_percent: number;
+  thumbnail_url: string | null;
+}
+
+/**
+ * Response from duplicate check endpoint
+ */
+export interface DuplicateCheckResponse {
+  duplicates: DuplicateInfo[];
+  has_exact: boolean;
+}
