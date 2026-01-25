@@ -56,6 +56,7 @@ import (
 	"github.com/antti/home-warehouse/go-backend/internal/infra/queue"
 	"github.com/antti/home-warehouse/go-backend/internal/infra/webpush"
 	"github.com/antti/home-warehouse/go-backend/internal/shared/jwt"
+	"github.com/hibiken/asynq"
 	"github.com/redis/go-redis/v9"
 )
 
@@ -91,6 +92,9 @@ func NewRouter(pool *pgxpool.Pool, cfg *config.Config) chi.Router {
 	}
 	redisClient := redis.NewClient(redisOpts)
 	importQueue := queue.NewQueue(redisClient, "imports")
+
+	// Create asynq client for background job enqueuing (thumbnails, etc.)
+	asynqClient := asynq.NewClient(asynq.RedisClientOpt{Addr: redisOpts.Addr, Password: redisOpts.Password, DB: redisOpts.DB})
 
 	// Create Huma API with OpenAPI configuration
 	humaAPIConfig := huma.DefaultConfig("Home Warehouse API", "1.0.0")
@@ -199,6 +203,7 @@ func NewRouter(pool *pgxpool.Pool, cfg *config.Config) chi.Router {
 	}
 	imageProcessor := imageprocessor.NewProcessor(imageprocessor.DefaultConfig())
 	itemPhotoSvc := itemphoto.NewService(itemPhotoRepo, photoStorage, imageProcessor, uploadDir)
+	itemPhotoSvc.SetAsynqClient(asynqClient) // Enable async thumbnail generation
 	// Phase 5 services (movement service created before inventory to allow dependency)
 	movementSvc := movement.NewService(movementRepo)
 	inventorySvc := inventory.NewService(inventoryRepo, movementSvc)
