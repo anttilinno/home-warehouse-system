@@ -19,6 +19,7 @@ const (
 	AuthNotificationTypeEnumLOANDUESOON     AuthNotificationTypeEnum = "LOAN_DUE_SOON"
 	AuthNotificationTypeEnumLOANOVERDUE     AuthNotificationTypeEnum = "LOAN_OVERDUE"
 	AuthNotificationTypeEnumLOANRETURNED    AuthNotificationTypeEnum = "LOAN_RETURNED"
+	AuthNotificationTypeEnumREPAIRREMINDER  AuthNotificationTypeEnum = "REPAIR_REMINDER"
 	AuthNotificationTypeEnumLOWSTOCK        AuthNotificationTypeEnum = "LOW_STOCK"
 	AuthNotificationTypeEnumWORKSPACEINVITE AuthNotificationTypeEnum = "WORKSPACE_INVITE"
 	AuthNotificationTypeEnumMEMBERJOINED    AuthNotificationTypeEnum = "MEMBER_JOINED"

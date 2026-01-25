@@ -5,6 +5,9 @@ const (
 	// TypeLoanReminder is the task type for sending loan reminder emails.
 	TypeLoanReminder = "loan:reminder"
 
+	// TypeRepairReminder is the task type for sending repair reminder notifications.
+	TypeRepairReminder = "repair:reminder"
+
 	// TypeCleanupDeletedRecords is the task type for cleaning up old deleted records.
 	TypeCleanupDeletedRecords = "cleanup:deleted_records"
 

@@ -75,6 +75,10 @@ func (s *Scheduler) RegisterHandlers(emailSender EmailSender, pushSender *webpus
 	loanProcessor := NewLoanReminderProcessor(s.pool, emailSender, pushSender)
 	mux.HandleFunc(TypeLoanReminder, loanProcessor.ProcessTask)
 
+	// Repair reminder processor
+	repairProcessor := NewRepairReminderProcessor(s.pool, pushSender)
+	mux.HandleFunc(TypeRepairReminder, repairProcessor.ProcessTask)
+
 	// Cleanup processor
 	cleanupProcessor := NewCleanupProcessor(s.pool, cleanupConfig)
 	mux.HandleFunc(TypeCleanupDeletedRecords, cleanupProcessor.ProcessDeletedRecordsCleanup)
@@ -93,6 +97,15 @@ func (s *Scheduler) RegisterScheduledTasks() error {
 		return err
 	}
 	log.Println("Registered scheduled task: loan reminders (daily at 9 AM)")
+
+	// Schedule repair reminders check daily at 9 AM (same schedule as loan reminders)
+	_, err = s.scheduler.Register("0 9 * * *", NewScheduleRepairRemindersTask(),
+		asynq.Queue(QueueDefault),
+	)
+	if err != nil {
+		return err
+	}
+	log.Println("Registered scheduled task: repair reminders (daily at 9 AM)")
 
 	// Schedule deleted records cleanup weekly on Sunday at 3 AM
 	_, err = s.scheduler.Register("0 3 * * 0", NewCleanupDeletedRecordsTask(),
@@ -153,5 +166,12 @@ func (s *Scheduler) Client() *asynq.Client {
 // This is useful for testing or manual triggering.
 func (s *Scheduler) EnqueueLoanReminders() error {
 	scheduler := NewLoanReminderScheduler(s.pool, s.client)
+	return scheduler.ScheduleReminders(context.Background())
+}
+
+// EnqueueRepairReminders manually triggers repair reminder scheduling.
+// This is useful for testing or manual triggering.
+func (s *Scheduler) EnqueueRepairReminders() error {
+	scheduler := NewRepairReminderScheduler(s.pool, s.client)
 	return scheduler.ScheduleReminders(context.Background())
 }

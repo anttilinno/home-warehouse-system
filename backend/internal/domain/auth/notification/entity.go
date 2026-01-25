@@ -15,6 +15,7 @@ const (
 	TypeLoanDueSoon     NotificationType = "LOAN_DUE_SOON"
 	TypeLoanOverdue     NotificationType = "LOAN_OVERDUE"
 	TypeLoanReturned    NotificationType = "LOAN_RETURNED"
+	TypeRepairReminder  NotificationType = "REPAIR_REMINDER"
 	TypeLowStock        NotificationType = "LOW_STOCK"
 	TypeWorkspaceInvite NotificationType = "WORKSPACE_INVITE"
 	TypeMemberJoined    NotificationType = "MEMBER_JOINED"
