@@ -11,12 +11,12 @@ See: `.planning/PROJECT.md` (updated 2026-01-25)
 
 **Milestone:** v1.3 Mobile UX Overhaul
 **Phase:** Phase 19 - Barcode Scanning (EXECUTING)
-**Plan:** 02 of 6 complete
+**Plan:** 03 of 6 complete
 **Status:** In progress
 
-**Progress:** `[======              ] 22%` (1/4 phases + 2/6 plans, 6/27 requirements)
+**Progress:** `[=======             ] 26%` (1/4 phases + 3/6 plans, 8/27 requirements)
 
-**Last activity:** 2026-01-31 — Completed 19-02-PLAN.md (Scan Lookup and History)
+**Last activity:** 2026-01-31 — Completed 19-03-PLAN.md (Scanner UI Component)
 
 ## Shipped Milestones
 
@@ -31,7 +31,7 @@ See: `.planning/PROJECT.md` (updated 2026-01-25)
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 51
+- Total plans completed: 52
 - Total execution time: ~12.4h
 - Average per plan: ~15min
 
@@ -42,7 +42,7 @@ See: `.planning/PROJECT.md` (updated 2026-01-25)
 | v1 | 5 | 14 | ~6h |
 | v1.1 | 6 | 12 | ~2.5h |
 | v1.2 | 6 | 19 | ~4h |
-| v1.3 | 1+ | 6 | 25min |
+| v1.3 | 1+ | 7 | 27min |
 
 ## Accumulated Context
 
@@ -66,10 +66,13 @@ New in v1.3:
 - Web Audio API oscillator for UI feedback beeps (19-01)
 - Case-insensitive short_code/barcode matching for lookups (19-02)
 - 10-entry scan history limit with de-duplication (19-02)
+- Dynamic import for @yudiel/react-qr-scanner (SSR safety) (19-03)
+- Torch toggle hidden on iOS (not supported in Safari) (19-03)
+- Paused prop for iOS-safe camera management (19-03)
 
 ### Pending Todos
 
-None — Plan 19-02 complete. Continue with Phase 19 plans.
+None — Plan 19-03 complete. Continue with Phase 19 plans.
 
 ### Blockers/Concerns
 
@@ -89,9 +92,9 @@ New from v1.3 research:
 ## Session Continuity
 
 Last session: 2026-01-31
-Stopped at: Completed 19-02-PLAN.md (Scan Lookup and History)
+Stopped at: Completed 19-03-PLAN.md (Scanner UI Component)
 Resume file: None
-Next step: Execute 19-03-PLAN.md (Scanner UI Component)
+Next step: Execute 19-04-PLAN.md (Scan Page Integration)
 
 ---
-*Updated: 2026-01-31 after completing 19-02-PLAN.md*
+*Updated: 2026-01-31 after completing 19-03-PLAN.md*
