@@ -125,6 +125,16 @@ Plans:
 
 **Research Flags:** REQUIRES BENCHMARKING - Test scanning performance on iPhone 12+ and mid-range Android, validate ZXing fallback behavior, memory usage with continuous scanning
 
+**Plans:** 6 plans
+
+Plans:
+- [ ] 19-01-PLAN.md — Install dependencies and create scanner infrastructure
+- [ ] 19-02-PLAN.md — Create scan lookup and history modules
+- [ ] 19-03-PLAN.md — Create BarcodeScanner component
+- [ ] 19-04-PLAN.md — Create QuickActionMenu, ManualEntry, and History components
+- [ ] 19-05-PLAN.md — Create scan page with integrated flow
+- [ ] 19-06-PLAN.md — Human verification of scanner on device
+
 ---
 
 **Phase 20: Mobile Navigation - FAB and Gestures**
@@ -198,13 +208,13 @@ Plans:
 | 1-5 | v1 | 14 | Complete | 2026-01-24 |
 | 6-11 | v1.1 | 12 | Complete | 2026-01-25 |
 | 12-17 | v1.2 | 19 | Complete | 2026-01-25 |
-| 18 | v1.3 | 4 | Planned | — |
-| 19 | v1.3 | TBD | Pending | — |
+| 18 | v1.3 | 4 | Complete | 2026-01-30 |
+| 19 | v1.3 | 6 | Planned | — |
 | 20 | v1.3 | TBD | Pending | — |
 | 21 | v1.3 | TBD | Pending | — |
 
-**Total:** 17 phases shipped (45 plans), 4 phases pending
+**Total:** 18 phases shipped (49 plans), 3 phases pending
 
 ---
 *Roadmap created: 2026-01-24*
-*Last updated: 2026-01-30 after Phase 18 planning*
+*Last updated: 2026-01-31 after Phase 19 planning complete*
