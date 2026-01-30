@@ -85,6 +85,14 @@ Transform the PWA into a warehouse-grade mobile inventory tool with barcode scan
 
 **Research Flags:** Standard patterns - monitor performance with real dataset size
 
+**Plans:** 4 plans
+
+Plans:
+- [ ] 18-01-PLAN.md — Install Fuse.js and enhance search touch targets (SRCH-05)
+- [ ] 18-02-PLAN.md — Create Fuse index builders per entity type
+- [ ] 18-03-PLAN.md — Create offline search module with pending mutations merge
+- [ ] 18-04-PLAN.md — Enhance useGlobalSearch with offline mode detection
+
 ---
 
 **Phase 19: Barcode Scanning**
@@ -190,7 +198,7 @@ Transform the PWA into a warehouse-grade mobile inventory tool with barcode scan
 | 1-5 | v1 | 14 | Complete | 2026-01-24 |
 | 6-11 | v1.1 | 12 | Complete | 2026-01-25 |
 | 12-17 | v1.2 | 19 | Complete | 2026-01-25 |
-| 18 | v1.3 | TBD | Pending | — |
+| 18 | v1.3 | 4 | Planned | — |
 | 19 | v1.3 | TBD | Pending | — |
 | 20 | v1.3 | TBD | Pending | — |
 | 21 | v1.3 | TBD | Pending | — |
@@ -199,4 +207,4 @@ Transform the PWA into a warehouse-grade mobile inventory tool with barcode scan
 
 ---
 *Roadmap created: 2026-01-24*
-*Last updated: 2026-01-25 after v1.3 roadmap created*
+*Last updated: 2026-01-30 after Phase 18 planning*
