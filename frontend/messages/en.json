@@ -753,6 +753,45 @@
       "exportSuccess": "Declutter list exported"
     }
   },
+  "scanner": {
+    "title": "Scan",
+    "description": "Scan barcodes and QR codes to find items",
+    "tabs": {
+      "scan": "Scan",
+      "manual": "Manual",
+      "history": "History"
+    },
+    "notFound": {
+      "title": "Not Found",
+      "description": "No item found for code: {code}"
+    },
+    "actions": {
+      "view": "View",
+      "loan": "Loan",
+      "move": "Move",
+      "repair": "Repair",
+      "createItem": "Create Item",
+      "scanAgain": "Scan Again"
+    },
+    "close": "Close",
+    "manualEntry": {
+      "label": "Enter barcode manually",
+      "placeholder": "Type or paste barcode...",
+      "submit": "Look up",
+      "clear": "Clear",
+      "hint": "Enter a barcode, QR code, or short code"
+    },
+    "history": {
+      "title": "Recent Scans",
+      "empty": "No recent scans",
+      "clearAll": "Clear"
+    },
+    "feedback": {
+      "scanning": "Scanning...",
+      "found": "Found: {name}",
+      "notFound": "Code not found"
+    }
+  },
   "pwa": {
     "offline": {
       "message": "You're offline. Some features may be unavailable.",
