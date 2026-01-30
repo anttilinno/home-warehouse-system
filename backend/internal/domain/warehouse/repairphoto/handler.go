@@ -41,13 +41,13 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 			return nil, huma.Error500InternalServerError("failed to list photos")
 		}
 
-		items := make([]PhotoResponse, len(photos))
+		items := make([]RepairPhotoResponse, len(photos))
 		for i, photo := range photos {
-			items[i] = toPhotoResponse(photo, urlGenerator)
+			items[i] = toRepairPhotoResponse(photo, urlGenerator)
 		}
 
 		return &ListPhotosOutput{
-			Body: PhotoListResponse{Items: items},
+			Body: RepairPhotoListResponse{Items: items},
 		}, nil
 	})
 
@@ -72,7 +72,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 		}
 
 		return &GetPhotoOutput{
-			Body: toPhotoResponse(photo, urlGenerator),
+			Body: toRepairPhotoResponse(photo, urlGenerator),
 		}, nil
 	})
 
@@ -123,7 +123,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 		}
 
 		return &UpdateCaptionOutput{
-			Body: toPhotoResponse(photo, urlGenerator),
+			Body: toRepairPhotoResponse(photo, urlGenerator),
 		}, nil
 	})
 
@@ -292,7 +292,7 @@ func (h *UploadHandler) HandleUpload(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Return response
-	response := toPhotoResponse(photo, h.urlGenerator)
+	response := toRepairPhotoResponse(photo, h.urlGenerator)
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(response)
@@ -379,8 +379,8 @@ func (h *ServePhotoHandler) servePhoto(w http.ResponseWriter, r *http.Request, t
 }
 
 // Helper function to convert entity to response
-func toPhotoResponse(p *RepairPhoto, urlGenerator PhotoURLGenerator) PhotoResponse {
-	return PhotoResponse{
+func toRepairPhotoResponse(p *RepairPhoto, urlGenerator PhotoURLGenerator) RepairPhotoResponse {
+	return RepairPhotoResponse{
 		ID:           p.ID,
 		RepairLogID:  p.RepairLogID,
 		WorkspaceID:  p.WorkspaceID,
@@ -406,11 +406,11 @@ type ListPhotosInput struct {
 }
 
 type ListPhotosOutput struct {
-	Body PhotoListResponse
+	Body RepairPhotoListResponse
 }
 
-type PhotoListResponse struct {
-	Items []PhotoResponse `json:"items"`
+type RepairPhotoListResponse struct {
+	Items []RepairPhotoResponse `json:"items"`
 }
 
 type GetPhotoInput struct {
@@ -419,7 +419,7 @@ type GetPhotoInput struct {
 }
 
 type GetPhotoOutput struct {
-	Body PhotoResponse
+	Body RepairPhotoResponse
 }
 
 type UpdateCaptionInput struct {
@@ -431,7 +431,7 @@ type UpdateCaptionInput struct {
 }
 
 type UpdateCaptionOutput struct {
-	Body PhotoResponse
+	Body RepairPhotoResponse
 }
 
 type DeletePhotoInput struct {
@@ -439,7 +439,7 @@ type DeletePhotoInput struct {
 	ID          uuid.UUID `path:"id"`
 }
 
-type PhotoResponse struct {
+type RepairPhotoResponse struct {
 	ID           uuid.UUID `json:"id"`
 	RepairLogID  uuid.UUID `json:"repair_log_id"`
 	WorkspaceID  uuid.UUID `json:"workspace_id"`

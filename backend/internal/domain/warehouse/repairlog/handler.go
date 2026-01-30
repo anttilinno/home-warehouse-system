@@ -29,8 +29,8 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 		var err error
 
 		// If status filter is provided, use ListByStatus
-		if input.Status != nil {
-			repairs, err = svc.ListByStatus(ctx, workspaceID, RepairStatus(*input.Status), pagination)
+		if input.Status != "" {
+			repairs, err = svc.ListByStatus(ctx, workspaceID, RepairStatus(input.Status), pagination)
 			if err != nil {
 				return nil, huma.Error500InternalServerError("failed to list repair logs")
 			}
@@ -391,9 +391,9 @@ func toRepairLogResponse(r *RepairLog) RepairLogResponse {
 // Request/Response types
 
 type ListRepairLogsInput struct {
-	Page   int     `query:"page" default:"1" minimum:"1"`
-	Limit  int     `query:"limit" default:"50" minimum:"1" maximum:"100"`
-	Status *string `query:"status" doc:"Filter by status (PENDING, IN_PROGRESS, COMPLETED)"`
+	Page   int    `query:"page" default:"1" minimum:"1"`
+	Limit  int    `query:"limit" default:"50" minimum:"1" maximum:"100"`
+	Status string `query:"status" doc:"Filter by status (PENDING, IN_PROGRESS, COMPLETED)"`
 }
 
 type ListRepairLogsOutput struct {
