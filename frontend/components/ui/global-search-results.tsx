@@ -59,9 +59,11 @@ export function GlobalSearchResults({
             <button
               key={index}
               onClick={() => onSelectRecentSearch?.(recent)}
-              className="w-full px-3 py-2 text-sm text-left hover:bg-accent flex items-center gap-2"
+              className="w-full min-h-[44px] px-3 py-2 text-sm text-left hover:bg-accent flex items-center gap-3 touch-manipulation"
             >
-              <LucideIcons.History className="h-4 w-4 text-muted-foreground" />
+              <div className="flex items-center justify-center min-w-[44px] min-h-[44px] -my-2 -ml-1">
+                <LucideIcons.History className="h-4 w-4 text-muted-foreground" />
+              </div>
               <span>{recent}</span>
             </button>
           ))}
@@ -227,11 +229,13 @@ function SearchResultGroup({
             key={result.id}
             onClick={() => onSelect(result)}
             className={cn(
-              "w-full px-3 py-2 text-sm text-left hover:bg-accent flex items-start gap-3 transition-colors",
+              "w-full min-h-[44px] px-3 py-2 text-sm text-left hover:bg-accent flex items-center gap-3 transition-colors touch-manipulation",
               isSelected && "bg-accent"
             )}
           >
-            <ResultIcon className="h-4 w-4 mt-0.5 flex-shrink-0 text-muted-foreground" />
+            <div className="flex items-center justify-center min-w-[44px] min-h-[44px] -my-2 -ml-1 flex-shrink-0">
+              <ResultIcon className="h-4 w-4 text-muted-foreground" />
+            </div>
             <div className="flex-1 min-w-0">
               <div className="font-medium truncate">{result.title}</div>
               {result.subtitle && (
