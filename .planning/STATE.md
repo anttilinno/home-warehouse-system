@@ -11,12 +11,12 @@ See: `.planning/PROJECT.md` (updated 2026-01-25)
 
 **Milestone:** v1.3 Mobile UX Overhaul
 **Phase:** Phase 19 - Barcode Scanning (EXECUTING)
-**Plan:** 04 of 6 complete
+**Plan:** 05 of 6 complete
 **Status:** In progress
 
-**Progress:** `[========            ] 30%` (1/4 phases + 4/6 plans, 11/27 requirements)
+**Progress:** `[=========           ] 32%` (1/4 phases + 5/6 plans, 12/27 requirements)
 
-**Last activity:** 2026-01-31 — Completed 19-04-PLAN.md (Supporting Scanner Components)
+**Last activity:** 2026-01-31 — Completed 19-05-PLAN.md (Scan Page Assembly)
 
 ## Shipped Milestones
 
@@ -31,7 +31,7 @@ See: `.planning/PROJECT.md` (updated 2026-01-25)
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 53
+- Total plans completed: 54
 - Total execution time: ~12.4h
 - Average per plan: ~15min
 
@@ -42,7 +42,7 @@ See: `.planning/PROJECT.md` (updated 2026-01-25)
 | v1 | 5 | 14 | ~6h |
 | v1.1 | 6 | 12 | ~2.5h |
 | v1.2 | 6 | 19 | ~4h |
-| v1.3 | 1+ | 8 | 29min |
+| v1.3 | 1+ | 9 | ~30min |
 
 ## Accumulated Context
 
@@ -71,10 +71,13 @@ New in v1.3:
 - Paused prop for iOS-safe camera management (19-03)
 - useState+useEffect for history refresh to handle storage events (19-04)
 - Context-aware actions: items get loan/move/repair, containers/locations get move only (19-04)
+- Keep scanner mounted with isPaused for iOS PWA camera persistence (19-05)
+- Overlay action menu on scanner instead of navigating away (19-05)
+- Three-tab layout for scan, manual entry, history (19-05)
 
 ### Pending Todos
 
-None — Plan 19-04 complete. Continue with Phase 19 plans.
+None — Plan 19-05 complete. Continue with Phase 19 plans.
 
 ### Blockers/Concerns
 
@@ -85,7 +88,7 @@ Carried forward from v1.2:
 - Pre-existing repairlog handler panic (Huma pointer param issue) — not blocking
 
 New from v1.3 research:
-- iOS PWA camera permission volatility — mitigation via single-page scan flow
+- iOS PWA camera permission volatility — mitigation via single-page scan flow (implemented in 19-05)
 - ZXing/html5-qrcode performance on mobile — mitigation via reduced FPS, manual fallback
 - Fuse.js re-indexing lag — mitigation via useMemo (index builders ready in 18-02)
 - IndexedDB + fuzzy search performance cliff at 5000+ items — mitigation via hybrid querying
@@ -94,9 +97,9 @@ New from v1.3 research:
 ## Session Continuity
 
 Last session: 2026-01-31
-Stopped at: Completed 19-04-PLAN.md (Supporting Scanner Components)
+Stopped at: Completed 19-05-PLAN.md (Scan Page Assembly)
 Resume file: None
-Next step: Execute 19-05-PLAN.md (Scan Page Assembly)
+Next step: Execute 19-06-PLAN.md (Navigation Integration)
 
 ---
-*Updated: 2026-01-31 after completing 19-04-PLAN.md*
+*Updated: 2026-01-31 after completing 19-05-PLAN.md*
