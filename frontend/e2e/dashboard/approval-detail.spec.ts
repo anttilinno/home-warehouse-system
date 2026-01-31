@@ -114,7 +114,8 @@ test.describe("Approval Detail - Pending Changes", () => {
     await approvalsPage.goto();
     await approvalsPage.waitForPageLoaded();
     await approvalsPage.filterByStatus("pending");
-    await page.waitForTimeout(300);
+    // Wait for filter to apply - DOM will update when filter completes
+    await page.waitForLoadState("domcontentloaded");
   });
 
   test("approve button visible for pending changes", async ({ page }) => {
@@ -230,7 +231,8 @@ test.describe("Approval Detail - Processed Changes", () => {
   test("approved changes show reviewer info", async ({ page }) => {
     // Filter to approved
     await approvalsPage.filterByStatus("approved");
-    await page.waitForTimeout(300);
+    // Wait for filter to apply
+    await page.waitForLoadState("domcontentloaded");
 
     const cardCount = await approvalsPage.getAllChangeCards().count();
 
@@ -251,7 +253,8 @@ test.describe("Approval Detail - Processed Changes", () => {
   test("rejected changes show rejection reason", async ({ page }) => {
     // Filter to rejected
     await approvalsPage.filterByStatus("rejected");
-    await page.waitForTimeout(300);
+    // Wait for filter to apply
+    await page.waitForLoadState("domcontentloaded");
 
     const cardCount = await approvalsPage.getAllChangeCards().count();
 
@@ -275,7 +278,8 @@ test.describe("Approval Detail - Processed Changes", () => {
   test("approved changes do not show approve/reject buttons", async ({ page }) => {
     // Filter to approved
     await approvalsPage.filterByStatus("approved");
-    await page.waitForTimeout(300);
+    // Wait for filter to apply
+    await page.waitForLoadState("domcontentloaded");
 
     const cardCount = await approvalsPage.getAllChangeCards().count();
 
@@ -296,7 +300,8 @@ test.describe("Approval Detail - Processed Changes", () => {
   test("rejected changes do not show approve/reject buttons", async ({ page }) => {
     // Filter to rejected
     await approvalsPage.filterByStatus("rejected");
-    await page.waitForTimeout(300);
+    // Wait for filter to apply
+    await page.waitForLoadState("domcontentloaded");
 
     const cardCount = await approvalsPage.getAllChangeCards().count();
 

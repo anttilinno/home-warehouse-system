@@ -186,15 +186,13 @@ test.describe("Items Table Interactions", () => {
         // Search for something unlikely to match all items
         await itemsPage.search("zzz-unlikely-search-term-xyz");
 
-        // Wait for filter to apply
-        await page.waitForTimeout(500);
-
-        // Row count should be different (likely 0 or less)
-        const filteredRows = await itemsPage.getAllItemRows().count();
-        const hasEmptyAfterSearch = await itemsPage.hasEmptyState();
-
-        // Either fewer rows or empty state
-        expect(filteredRows < initialRows || hasEmptyAfterSearch).toBe(true);
+        // Wait for table to update using assertion retry
+        await expect(async () => {
+          const filteredRows = await itemsPage.getAllItemRows().count();
+          const hasEmptyAfterSearch = await itemsPage.hasEmptyState();
+          // Either fewer rows or empty state
+          expect(filteredRows < initialRows || hasEmptyAfterSearch).toBe(true);
+        }).toPass({ timeout: 3000 });
       }
     }
   });

@@ -23,11 +23,11 @@ test.describe("Registration Page", () => {
     await registerPage.submitButton.click();
 
     // Form should not submit - we stay on register page
+    // Use assertion retry - it will poll until condition is met or timeout
     await expect(page).toHaveURL(/\/register/);
 
     // Form uses Zod validation via react-hook-form, not HTML5 validation
     // Just verify we stayed on the register page (form didn't submit)
-    await page.waitForTimeout(500);
     await expect(page).toHaveURL(/\/register/);
   });
 
@@ -118,8 +118,12 @@ test.describe("Registration Page", () => {
 
     await registerPage.register("Test User", uniqueEmail, "StrongPassword123!");
 
-    // Wait for API response
-    await page.waitForTimeout(3000);
+    // Wait for navigation or error - use expect.toPass to poll URL changes
+    await expect(async () => {
+      const url = page.url();
+      const hasNavigated = url.includes("/dashboard") || url.includes("/workspace") || url.includes("/register");
+      expect(hasNavigated).toBe(true);
+    }).toPass({ timeout: 5000 });
 
     // Should either redirect to dashboard/workspace setup or stay on register with success/error
     // With backend running: redirects to dashboard or workspace creation
@@ -137,14 +141,12 @@ test.describe("Registration Page", () => {
     await registerPage.emailInput.fill("invalid-email");
     await registerPage.emailInput.blur();
 
-    // Trigger form validation
-    await page.waitForTimeout(100);
-
-    // Check for validation error
-    const hasError = await page.locator(".text-destructive").count() > 0 ||
-      await registerPage.emailInput.evaluate((el: HTMLInputElement) => !el.validity.valid);
-
-    expect(hasError).toBe(true);
+    // Wait for validation error to appear or check HTML5 validity
+    await expect(async () => {
+      const hasError = await page.locator(".text-destructive").count() > 0 ||
+        await registerPage.emailInput.evaluate((el: HTMLInputElement) => !el.validity.valid);
+      expect(hasError).toBe(true);
+    }).toPass({ timeout: 2000 });
   });
 
   test("name field validates minimum length", async ({ page }) => {
