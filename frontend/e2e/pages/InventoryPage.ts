@@ -63,10 +63,10 @@ export class InventoryPage extends BasePage {
     this.pageTitle = page.getByRole("heading", { level: 1, name: "Inventory" });
     this.pageSubtitle = page.locator("p.text-muted-foreground").first();
 
-    // Card - find by "Inventory Tracking" title
-    this.inventoryCard = page.locator('[class*="card"]').filter({ hasText: "Inventory Tracking" });
-    this.cardTitle = this.inventoryCard.locator('[class*="card-title"]');
-    this.cardDescription = this.inventoryCard.locator('[class*="card-description"]');
+    // Card - find by "Inventory Tracking" heading
+    this.inventoryCard = page.locator("main").locator("div").filter({ hasText: "Inventory Tracking" }).first();
+    this.cardTitle = page.getByRole("heading", { level: 3, name: "Inventory Tracking" });
+    this.cardDescription = this.cardTitle.locator("+ *"); // sibling element after title
 
     // Add inventory button - main button in card header
     this.addInventoryButton = page.getByRole("button", { name: /add inventory/i });
@@ -84,15 +84,15 @@ export class InventoryPage extends BasePage {
     this.tableHeader = this.inventoryTable.locator("thead");
     this.tableBody = page.locator("table tbody");
 
-    // Empty state
-    this.emptyState = page.locator('[class*="flex flex-col items-center"]').filter({ hasText: /no inventory/i });
+    // Empty state - look for heading "No inventory yet" or "No inventory found"
+    this.emptyState = page.locator("main").filter({ has: page.getByRole("heading", { level: 3, name: /no inventory/i }) });
 
     // Bulk action bar
     this.bulkActionBar = page.locator('[class*="fixed"]').filter({ hasText: /selected/i });
 
     // Create dialog - filter by dialog title text
     this.createDialog = page.locator('[role="dialog"]').filter({ hasText: /add inventory/i });
-    this.dialogTitle = this.createDialog.locator('[class*="dialog-title"]');
+    this.dialogTitle = this.createDialog.getByRole("heading");
     this.dialogItemSelect = this.createDialog.locator('#item').locator('..').locator('button[role="combobox"]');
     this.dialogLocationSelect = this.createDialog.locator('#location').locator('..').locator('button[role="combobox"]');
     this.dialogContainerSelect = this.createDialog.locator('button[role="combobox"]').nth(2);
@@ -203,14 +203,17 @@ export class InventoryPage extends BasePage {
    * Check if empty state is displayed
    */
   async hasEmptyState(): Promise<boolean> {
-    return this.emptyState.isVisible();
+    const emptyHeading = this.page.getByRole("heading", { level: 3, name: /no inventory/i });
+    return emptyHeading.isVisible();
   }
 
   /**
    * Get inventory count from card description
    */
   async getInventoryCount(): Promise<string | null> {
-    return this.cardDescription.textContent();
+    // The count text is in a generic div after the "Inventory Tracking" heading, e.g., "0 inventories"
+    const countText = this.page.locator("main").getByText(/\d+\s*inventor/i).first();
+    return countText.textContent();
   }
 
   /**
