@@ -96,7 +96,13 @@ See `.planning/milestones/v1.4-ROADMAP.md` for full details.
   - [ ] 24-01-PLAN.md — repairphoto and declutter handler unit tests
   - [ ] 24-02-PLAN.md — repair workflow and sync integration tests
   - [ ] 24-03-PLAN.md — request/response validation tests
-- [ ] **Phase 25: Frontend Unit Testing** - Critical hooks and components
+- [ ] **Phase 25: Frontend Unit Testing** - Critical hooks and components have tests preventing sync and UI regressions
+  **Plans:** 5 plans
+  - [ ] 25-01-PLAN.md — useOfflineMutation hook tests
+  - [ ] 25-02-PLAN.md — SyncManager comprehensive tests
+  - [ ] 25-03-PLAN.md — MultiStepForm component tests
+  - [ ] 25-04-PLAN.md — BarcodeScanner component tests
+  - [ ] 25-05-PLAN.md — FloatingActionButton component tests
 - [ ] **Phase 26: E2E Stability and Coverage** - Fix flaky tests and fill gaps
 
 ## Progress
@@ -113,4 +119,4 @@ See `.planning/milestones/v1.4-ROADMAP.md` for full details.
 
 ---
 *Roadmap created: 2026-01-24*
-*Last updated: 2026-01-31 after Phase 24 plans created*
+*Last updated: 2026-01-31 after Phase 25 plans created*
