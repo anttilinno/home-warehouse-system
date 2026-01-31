@@ -5,24 +5,24 @@
 See: `.planning/PROJECT.md` (updated 2026-01-31)
 
 **Core value:** Reliable inventory access anywhere — online or offline — with seamless sync
-**Current focus:** v1.4 Test Overhaul - Phase 23
+**Current focus:** v1.4 Test Overhaul - Phase 24
 
 ## Current Position
 
 **Milestone:** v1.4 Test Overhaul
-**Phase:** 23 of 26 (Backend Business Logic Tests) — In Progress
-**Plan:** 7 of 7 in current phase — BE-05 complete (all BE plans done)
+**Phase:** 24 of 26 (Backend API Testing) — In Progress
+**Plan:** 1 of 6 in current phase — 24-01 complete
 **Status:** In progress
-**Last activity:** 2026-01-31 — Completed 23-05-PLAN.md (itemphoto tests)
+**Last activity:** 2026-01-31 — Completed 24-01-PLAN.md (repairphoto and declutter handler tests)
 
-Progress: [=========...........] 45% (9/20 plans)
+Progress: [==========..........] 50% (10/20 plans)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 72 (from v1-v1.3 + v1.4)
+- Total plans completed: 73 (from v1-v1.3 + v1.4)
 - Average duration: ~15 min
-- Total execution time: ~18.0 hours
+- Total execution time: ~18.25 hours
 
 **By Milestone:**
 
@@ -45,18 +45,23 @@ Milestone decisions archived in:
 - `.planning/milestones/v1.1-ROADMAP.md`
 
 **Recent Decisions:**
+- DEC-24-01: Add ServiceInterface to declutter package for mock injection
 - JOBS-COV-01: Jobs package coverage target relaxed to ~20% (was 60%) due to pgxpool/Redis dependencies
 - PENDING-COV-01: Pendingchange package coverage at 57.3% (service layer comprehensive, handler/middleware integration-tested)
 
 ### Current Test Coverage Baseline
 
-**Backend (Go) - Targets for v1.4:**
+**Backend (Go) - Phase 23 Complete:**
 - importexport: 31% -> 92.4% (BE-01 COMPLETE)
 - pendingchange: 29% -> 57.3% (BE-02 COMPLETE - service layer comprehensive)
 - importjob: 38% -> 86.3% (BE-03 COMPLETE)
 - jobs: 17% -> 20.1% (BE-04 COMPLETE - limited by database dependencies)
 - itemphoto: 40% -> 80.5% (BE-05 COMPLETE)
 - repairlog: 36% -> 92.8% (BE-06 COMPLETE)
+
+**Backend API Tests (Phase 24):**
+- repairphoto: ~10% -> 20.5% (24-01 COMPLETE - handler tests)
+- declutter: ~15% -> 41.6% (24-01 COMPLETE - handler tests)
 
 **Frontend - Infrastructure Status (Phase 22 Complete):**
 - @vitest/coverage-v8 installed (22-02)
@@ -83,9 +88,9 @@ Carried forward:
 ## Session Continuity
 
 Last session: 2026-01-31
-Stopped at: Completed 23-05-PLAN.md (itemphoto tests)
+Stopped at: Completed 24-01-PLAN.md (repairphoto and declutter handler tests)
 Resume file: None
-Next step: Continue with Phase 23 verification or Phase 24
+Next step: Continue with 24-02 (itemlabel, loan, movement, containertag handlers)
 
 ---
-*Updated: 2026-01-31 after 23-05 complete*
+*Updated: 2026-01-31 after 24-01 complete*
