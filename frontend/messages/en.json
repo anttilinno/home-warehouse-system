@@ -874,6 +874,7 @@
       "fields": {
         "sku": "SKU",
         "name": "Name",
+        "category": "Category",
         "description": "Description",
         "brand": "Brand",
         "model": "Model",
@@ -894,6 +895,7 @@
       "placeholders": {
         "sku": "e.g., ITEM-001",
         "name": "Enter item name",
+        "category": "Select category...",
         "description": "Optional description",
         "brand": "e.g., Apple",
         "model": "e.g., iPhone 15 Pro",
