@@ -11,18 +11,18 @@ See: `.planning/PROJECT.md` (updated 2026-01-31)
 
 **Milestone:** v1.4 Test Overhaul
 **Phase:** 23 of 26 (Backend Business Logic Tests) — In Progress
-**Plan:** 4 of 7 in current phase — BE-04 complete
+**Plan:** 5 of 7 in current phase — BE-01 complete (3 of 6 BE plans done)
 **Status:** In progress
-**Last activity:** 2026-01-31 — Completed 23-04-PLAN.md (jobs package tests)
+**Last activity:** 2026-01-31 — Completed 23-01-PLAN.md (importexport package tests)
 
-Progress: [=====...............] 25% (5/20 plans)
+Progress: [======..............] 30% (6/20 plans)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 69 (from v1-v1.3 + v1.4)
+- Total plans completed: 70 (from v1-v1.3 + v1.4)
 - Average duration: ~15 min
-- Total execution time: ~17.2 hours
+- Total execution time: ~17.6 hours
 
 **By Milestone:**
 
@@ -50,7 +50,7 @@ Milestone decisions archived in:
 ### Current Test Coverage Baseline
 
 **Backend (Go) - Targets for v1.4:**
-- importexport: 31% -> 80%
+- importexport: 31% -> 92.4% (BE-01 COMPLETE)
 - pendingchange: 29% -> 80%
 - importjob: 38% -> 86.3% (BE-03 COMPLETE)
 - jobs: 17% -> 20.1% (BE-04 COMPLETE - limited by database dependencies)
@@ -82,9 +82,9 @@ Carried forward:
 ## Session Continuity
 
 Last session: 2026-01-31
-Stopped at: Completed 23-04-PLAN.md (jobs package tests)
+Stopped at: Completed 23-01-PLAN.md (importexport package tests - 92.4% coverage)
 Resume file: None
-Next step: Continue with 23-05-PLAN.md or other Phase 23 plans
+Next step: Continue with 23-02 (pendingchange), 23-05 (itemphoto), or 23-06 (repairlog)
 
 ---
-*Updated: 2026-01-31 after 23-04 complete*
+*Updated: 2026-01-31 after 23-01 complete*
