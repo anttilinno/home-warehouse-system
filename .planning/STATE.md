@@ -5,44 +5,34 @@
 See: `.planning/PROJECT.md` (updated 2026-01-31)
 
 **Core value:** Reliable inventory access anywhere — online or offline — with seamless sync
-**Current focus:** Ready for next milestone planning
+**Current focus:** v1.4 Test Overhaul - Phase 22
 
 ## Current Position
 
-**Milestone:** v1.3 Mobile UX Overhaul — SHIPPED
-**Phase:** All complete (18-21)
-**Status:** Milestone archived, ready for next planning
+**Milestone:** v1.4 Test Overhaul
+**Phase:** 22 of 26 (Test Infrastructure Setup) — COMPLETE
+**Plan:** 3 of 3 in current phase — All complete
+**Status:** Ready for Phase 23
+**Last activity:** 2026-01-31 — Completed Phase 22 (all 3 plans)
 
-**Progress:** `[====================] 100%` (4/4 milestones complete since v1)
-
-**Last activity:** 2026-01-31 — v1.3 milestone archived
-
-## Shipped Milestones
-
-| Version | Name | Shipped | Phases | Plans |
-|---------|------|---------|--------|-------|
-| v1 | PWA Offline Completion | 2026-01-24 | 5 | 14 |
-| v1.1 | Offline Entity Extension | 2026-01-25 | 6 | 12 |
-| v1.2 | Phase 2 Completion | 2026-01-25 | 6 | 19 |
-| v1.3 | Mobile UX Overhaul | 2026-01-31 | 4 | 22 |
-
-**Total shipped:** 21 phases, 67 plans
+Progress: [===.................] 15% (3/20 plans)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 67
-- Total execution time: ~14h
-- Average per plan: ~12.5min
+- Total plans completed: 67 (from v1-v1.3)
+- Average duration: ~15 min
+- Total execution time: ~16.7 hours
 
 **By Milestone:**
 
-| Milestone | Phases | Plans | Duration |
-|-----------|--------|-------|----------|
-| v1 | 5 | 14 | ~6h |
-| v1.1 | 6 | 12 | ~2.5h |
-| v1.2 | 6 | 19 | ~4h |
-| v1.3 | 4 | 22 | ~69min |
+| Milestone | Phases | Plans | Status |
+|-----------|--------|-------|--------|
+| v1 | 5 | 14 | Complete |
+| v1.1 | 6 | 12 | Complete |
+| v1.2 | 6 | 19 | Complete |
+| v1.3 | 4 | 22 | Complete |
+| v1.4 | 5 | 20 | In progress |
 
 ## Accumulated Context
 
@@ -54,32 +44,43 @@ Milestone decisions archived in:
 - `.planning/milestones/v1.2-ROADMAP.md`
 - `.planning/milestones/v1.1-ROADMAP.md`
 
+### Current Test Coverage Baseline
+
+**Backend (Go) - Targets for v1.4:**
+- importexport: 31% -> 80%
+- pendingchange: 29% -> 80%
+- importjob: 38% -> 80%
+- jobs: 17% -> 80%
+- itemphoto: 40% -> 80%
+- repairlog: 36% -> 80%
+
+**Frontend - Infrastructure Status (Phase 22 Complete):**
+- @vitest/coverage-v8 installed (22-02)
+- Entity factories created (22-01, 22-02)
+- Mock utilities for offline/sync created (22-02)
+- CI workflow with parallel tests and Codecov (22-03)
+- Coverage badges in README (22-03)
+- Limited unit tests for critical hooks (target for Phase 25)
+
 ### Pending Todos
 
 **Manual Testing Required (Phase 19 - Barcode Scanning):**
-- [ ] SCAN-01: Camera scans QR/barcodes within 2 seconds
-- [ ] SCAN-02: Audio beep + haptic feedback (Android)
-- [ ] SCAN-03: Torch toggle (Android Chrome only)
-- [ ] SCAN-04: Scan history with timestamps
-- [ ] SCAN-05: Manual entry fallback
-- [ ] SCAN-06: Quick action menu after scan
-- [ ] SCAN-07: "Not found" handling
-- [ ] iOS PWA: Camera permission persists after "Scan Again"
+- [ ] SCAN-01 through SCAN-07: Barcode scanning manual verification
+- [ ] iOS PWA: Camera permission persistence
 
 ### Blockers/Concerns
 
 Carried forward:
-- E2E test auth setup timing issues — needs investigation but doesn't block features
-- Safari iOS manual testing pending — recommended before production
+- E2E test auth setup timing issues — target for Phase 26 (E2E-01)
+- Safari iOS manual testing pending
 - CGO_ENABLED=0 build has webp library issue — dev builds work fine
-- Pre-existing repairlog handler panic (Huma pointer param issue) — not blocking
 
 ## Session Continuity
 
 Last session: 2026-01-31
-Stopped at: v1.3 milestone archived
+Stopped at: Completed Phase 22 (all 3 plans verified)
 Resume file: None
-Next step: Run `/gsd:new-milestone` to plan next milestone
+Next step: Plan Phase 23 (Backend Business Logic Tests)
 
 ---
-*Updated: 2026-01-31 after v1.3 milestone archived*
+*Updated: 2026-01-31 after Phase 22 complete*

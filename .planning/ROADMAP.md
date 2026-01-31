@@ -6,6 +6,7 @@
 - v1.1 **Offline Entity Extension** — Phases 6-11 (shipped 2026-01-25)
 - v1.2 **Phase 2 Completion** — Phases 12-17 (shipped 2026-01-25)
 - v1.3 **Mobile UX Overhaul** — Phases 18-21 (shipped 2026-01-31)
+- v1.4 **Test Overhaul** — Phases 22-26 (in progress)
 
 ## Phases
 
@@ -70,6 +71,21 @@ See `.planning/milestones/v1.3-ROADMAP.md` for full details.
 
 </details>
 
+### v1.4 Test Overhaul (In Progress)
+
+**Milestone Goal:** Establish 80% minimum coverage standard with fast, reliable test infrastructure
+
+See `.planning/milestones/v1.4-ROADMAP.md` for full details.
+
+- [x] **Phase 22: Test Infrastructure Setup** - Testing foundations enable fast, reliable test development
+  - [x] 22-01-PLAN.md — Go test factories for common entities
+  - [x] 22-02-PLAN.md — Frontend coverage and mock utilities setup
+  - [x] 22-03-PLAN.md — CI parallelization and coverage reporting
+- [ ] **Phase 23: Backend Business Logic Tests** - Bring 6 packages to 80%+ coverage
+- [ ] **Phase 24: Backend API Testing** - Handler unit tests and integration tests
+- [ ] **Phase 25: Frontend Unit Testing** - Critical hooks and components
+- [ ] **Phase 26: E2E Stability and Coverage** - Fix flaky tests and fill gaps
+
 ## Progress
 
 | Phase | Milestone | Plans | Status | Shipped |
@@ -78,9 +94,10 @@ See `.planning/milestones/v1.3-ROADMAP.md` for full details.
 | 6-11 | v1.1 | 12 | Complete | 2026-01-25 |
 | 12-17 | v1.2 | 19 | Complete | 2026-01-25 |
 | 18-21 | v1.3 | 22 | Complete | 2026-01-31 |
+| 22-26 | v1.4 | 20 | In progress | - |
 
-**Total:** 21 phases complete (67 plans)
+**Total:** 22 phases complete (70 plans), 4 phases remaining (17 plans)
 
 ---
 *Roadmap created: 2026-01-24*
-*Last updated: 2026-01-31 after v1.3 milestone archived*
+*Last updated: 2026-01-31 after Phase 22 complete*

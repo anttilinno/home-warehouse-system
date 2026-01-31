@@ -81,7 +81,18 @@ Reliable inventory access anywhere — online or offline — with seamless sync.
 
 ### Active
 
-None — v1.3 complete, ready for next milestone planning.
+**v1.4 Test Overhaul:**
+
+- [ ] Backend: 80%+ coverage for critical business logic (importexport, pendingchange)
+- [ ] Backend: API handler testing (currently 0%)
+- [ ] Backend: Integration test expansion (database flows)
+- [ ] Frontend: Hook/utility unit tests (sync, offline mutations, search)
+- [ ] Frontend: Component testing (forms, scanner, FAB)
+- [ ] Frontend: E2E stability (auth timing, flaky tests, missing flows)
+- [ ] Frontend: Mobile/Safari testing (iOS PWA flows)
+- [ ] Infra: CI pipeline improvements (parallelization, caching)
+- [ ] Infra: Coverage reporting (Vitest coverage-v8, badges)
+- [ ] Infra: Test utilities and fixtures (mocking, factories, shared setup)
 
 ### Out of Scope
 
@@ -142,5 +153,16 @@ None — v1.3 complete, ready for next milestone planning.
 - **No heavy assets**: Photos, PDFs, attachments excluded from proactive sync
 - **iOS quirks**: Camera permissions volatile in PWA, Visual Viewport API needed for keyboard
 
+## Current Milestone: v1.4 Test Overhaul
+
+**Goal:** Comprehensive test coverage and stability across the full stack with 80% minimum coverage standard.
+
+**Target areas:**
+- Backend critical business logic to 80%+ (importexport 31%→80%, pendingchange 29%→80%)
+- API handler testing (0%→80%)
+- Frontend unit tests for hooks, utilities, and components
+- E2E test stability and Safari/iOS coverage
+- Test infrastructure (CI, coverage reporting, fixtures)
+
 ---
-*Last updated: 2026-01-31 after v1.3 milestone complete*
+*Last updated: 2026-01-31 after v1.4 milestone started*
