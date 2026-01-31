@@ -6,6 +6,9 @@ const TEST_PASSWORD = process.env.TEST_USER_PASSWORD ?? "TestPassword123!";
 const AUTH_FILE = "playwright/.auth/user.json";
 
 // Set a 30 second total timeout for auth setup
+// Note: Backend has rate limiting (5 requests/minute) on auth endpoints.
+// Running auth setup multiple times rapidly may hit 429 errors.
+// In normal E2E runs, auth setup runs once and state is reused.
 setup.setTimeout(30000);
 
 setup("authenticate", async ({ page }) => {
@@ -45,17 +48,72 @@ setup("authenticate", async ({ page }) => {
     // If not on dashboard, user exists - login instead
     if (!page.url().includes("/dashboard")) {
       console.log("[Auth Setup] User exists, logging in instead...");
-      await page.goto("/en/login");
 
-      // Fill in credentials
-      await page.getByLabel(/email/i).fill(TEST_EMAIL);
-      await page.getByLabel(/password/i).fill(TEST_PASSWORD);
+      // Wait for network idle before navigating to ensure clean state
+      await page.goto("/en/login", { waitUntil: "networkidle" });
 
-      // Click sign in button
-      await page.getByRole("button", { name: /sign in|log in/i }).click();
+      // Wait for form to be fully loaded and hydrated
+      const emailInput = page.getByLabel(/email/i);
+      await expect(emailInput).toBeVisible({ timeout: 5000 });
 
-      // Wait for navigation to dashboard
-      await page.waitForURL(/\/dashboard/, { timeout: 10000 });
+      // Type slowly to ensure form state updates properly
+      await emailInput.click();
+      await emailInput.fill(TEST_EMAIL);
+      // Tab to trigger blur and mark field as "touched"
+      await page.keyboard.press("Tab");
+
+      const passwordInput = page.getByLabel(/password/i);
+      await passwordInput.fill(TEST_PASSWORD);
+      // Tab again to trigger validation
+      await page.keyboard.press("Tab");
+
+      // Wait for sign in button to be ready and form validation to complete
+      const signInButton = page.getByRole("button", { name: /sign in|log in/i });
+      await expect(signInButton).toBeEnabled({ timeout: 5000 });
+
+      // Wait a small moment for React state to settle
+      await page.waitForLoadState("networkidle");
+
+      console.log("[Auth Setup] Submitting login form...");
+
+      // Submit login form by clicking the button
+      // Note: Sometimes the first attempt doesn't work due to hydration, so we retry
+      let loginSuccess = false;
+      for (let attempt = 1; attempt <= 3 && !loginSuccess; attempt++) {
+        try {
+          // Set up monitoring for the login API call
+          const responsePromise = page.waitForResponse(
+            (response) => response.url().includes("/auth/login") && response.request().method() === "POST",
+            { timeout: 8000 }
+          );
+
+          // Set up monitoring for navigation
+          const navigationPromise = page.waitForURL(/\/dashboard/, { timeout: 10000 });
+
+          // Click the sign in button
+          await signInButton.click();
+
+          console.log(`[Auth Setup] Attempt ${attempt}: Waiting for API response...`);
+
+          // Wait for the API response first
+          const response = await responsePromise;
+          console.log(`[Auth Setup] Attempt ${attempt}: Got API response: ${response.status()}`);
+
+          // Then wait for navigation
+          await navigationPromise;
+          loginSuccess = true;
+        } catch (e) {
+          console.log(`[Auth Setup] Login attempt ${attempt} failed, URL: ${page.url()}, error: ${e instanceof Error ? e.message : e}`);
+          if (attempt === 3) throw e;
+          // If we're still on login page, wait a bit and try again
+          if (page.url().includes("/login")) {
+            // Wait for any pending network activity to complete
+            await page.waitForLoadState("networkidle");
+            continue;
+          }
+          throw e;
+        }
+      }
     }
 
     // CRITICAL: Verify authentication before saving state
