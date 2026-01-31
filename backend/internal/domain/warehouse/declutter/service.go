@@ -6,10 +6,21 @@ import (
 	"github.com/google/uuid"
 )
 
+// ServiceInterface defines the public interface for declutter operations.
+// Used for dependency injection and testing.
+type ServiceInterface interface {
+	ListUnused(ctx context.Context, params ListParams) (*ListUnusedResult, error)
+	GetCounts(ctx context.Context, workspaceID uuid.UUID) (*DeclutterCounts, error)
+	MarkUsed(ctx context.Context, inventoryID, workspaceID uuid.UUID) error
+}
+
 // Service implements declutter business logic.
 type Service struct {
 	repo Repository
 }
+
+// Ensure Service implements ServiceInterface
+var _ ServiceInterface = (*Service)(nil)
 
 // NewService creates a new declutter service.
 func NewService(repo Repository) *Service {

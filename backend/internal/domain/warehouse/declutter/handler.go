@@ -12,7 +12,7 @@ import (
 )
 
 // RegisterRoutes registers declutter routes.
-func RegisterRoutes(api huma.API, svc *Service, broadcaster *events.Broadcaster) {
+func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broadcaster) {
 	// List unused inventory
 	huma.Get(api, "/declutter", func(ctx context.Context, input *ListInput) (*ListOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
