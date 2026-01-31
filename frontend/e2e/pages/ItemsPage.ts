@@ -63,10 +63,10 @@ export class ItemsPage extends BasePage {
     this.pageTitle = page.getByRole("heading", { level: 1, name: "Items" });
     this.pageSubtitle = page.locator("p.text-muted-foreground").first();
 
-    // Card
-    this.itemsCard = page.locator('[class*="card"]').filter({ hasText: "Item Catalog" });
-    this.cardTitle = this.itemsCard.locator('[class*="card-title"]');
-    this.cardDescription = this.itemsCard.locator('[class*="card-description"]');
+    // Card - using data-slot attributes
+    this.itemsCard = page.locator('[data-slot="card"]').filter({ hasText: "Item Catalog" });
+    this.cardTitle = this.itemsCard.locator('[data-slot="card-title"]');
+    this.cardDescription = this.itemsCard.locator('[data-slot="card-description"]');
 
     // Add item button - main button in card header
     this.addItemButton = page.getByRole("button", { name: /add item/i });
@@ -84,16 +84,16 @@ export class ItemsPage extends BasePage {
     this.tableHeader = this.itemsTable.locator("thead");
     this.tableBody = page.locator("table tbody");
 
-    // Empty state
-    this.emptyState = page.locator('[class*="flex flex-col items-center"]').filter({ hasText: /no items/i });
+    // Empty state - matches EmptyState component with "py-12 text-center" classes
+    this.emptyState = page.locator('[class*="py-12"][class*="text-center"]').filter({ hasText: /no items/i });
 
     // Bulk action bar
     this.bulkActionBar = page.locator('[class*="fixed"]').filter({ hasText: /selected/i });
 
     // Create/Edit dialog
-    this.createDialog = page.locator('[role="dialog"]').filter({ hasText: /item/i });
-    this.dialogTitle = this.createDialog.locator('[class*="dialog-title"]');
-    this.dialogDescription = this.createDialog.locator('[class*="dialog-description"]');
+    this.createDialog = page.locator('[role="dialog"]').filter({ hasText: /new item|edit item/i });
+    this.dialogTitle = this.createDialog.locator('[class*="font-semibold"]').first();
+    this.dialogDescription = this.createDialog.locator('[class*="text-muted-foreground"]').first();
     this.dialogSkuInput = this.createDialog.locator('input[id="sku"]');
     this.dialogNameInput = this.createDialog.locator('input[id="name"]');
     this.dialogDescriptionInput = this.createDialog.locator('textarea[id="description"]');
