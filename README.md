@@ -1,5 +1,8 @@
 # Home Warehouse System
 
+[![codecov](https://codecov.io/gh/anttilinno/home-warehouse-system/graph/badge.svg)](https://codecov.io/gh/anttilinno/home-warehouse-system)
+[![CI](https://github.com/anttilinno/home-warehouse-system/actions/workflows/ci.yml/badge.svg)](https://github.com/anttilinno/home-warehouse-system/actions/workflows/ci.yml)
+
 A multi-tenant home inventory management system for tracking items, locations, containers, and loans. Built with Go, Next.js, and PostgreSQL.
 
 ## Features
