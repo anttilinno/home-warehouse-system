@@ -5,24 +5,24 @@
 See: `.planning/PROJECT.md` (updated 2026-01-31)
 
 **Core value:** Reliable inventory access anywhere — online or offline — with seamless sync
-**Current focus:** v1.4 Test Overhaul - Phase 25 Complete
+**Current focus:** v1.4 Test Overhaul - Phase 26 In Progress
 
 ## Current Position
 
 **Milestone:** v1.4 Test Overhaul
-**Phase:** 25 of 26 (Frontend Unit Testing) — Complete
-**Plan:** 5 of 5 in current phase — 25-05 complete
-**Status:** Phase complete
-**Last activity:** 2026-01-31 — Completed 25-05-PLAN.md (FloatingActionButton component tests)
+**Phase:** 26 of 26 (E2E Stability and Coverage) — In progress
+**Plan:** 2 of 4 in current phase — 26-02 complete
+**Status:** In progress
+**Last activity:** 2026-01-31 — Completed 26-02-PLAN.md (High-risk E2E test stabilization)
 
-Progress: [===============.....] 75% (15/20 plans)
+Progress: [================....] 80% (16/20 plans)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 78 (from v1-v1.3 + v1.4)
+- Total plans completed: 79 (from v1-v1.3 + v1.4)
 - Average duration: ~15 min
-- Total execution time: ~19.25 hours
+- Total execution time: ~19.5 hours
 
 **By Milestone:**
 
@@ -45,13 +45,14 @@ Milestone decisions archived in:
 - `.planning/milestones/v1.1-ROADMAP.md`
 
 **Recent Decisions:**
+- DEC-26-02-01: Use toHaveClass for theme class changes instead of getAttribute polling
+- DEC-26-02-02: Use expect().toPass() for complex multi-condition waits
+- DEC-26-02-03: Use waitForLoadState('domcontentloaded') for debounced search operations
 - FE-MOTION-MOCK: Mock motion/react with static div wrapper for animation component testing
 - DEC-25-04: Add @testing-library/jest-dom for DOM matchers (toBeInTheDocument)
 - DEC-25-03: Use fireEvent instead of userEvent (userEvent not installed)
 - DEC-24-02: Complete endpoint requires body (even empty) per Huma API framework
 - DEC-24-01: Add ServiceInterface to declutter package for mock injection
-- JOBS-COV-01: Jobs package coverage target relaxed to ~20% (was 60%) due to pgxpool/Redis dependencies
-- PENDING-COV-01: Pendingchange package coverage at 57.3% (service layer comprehensive, handler/middleware integration-tested)
 
 ### Current Test Coverage Baseline
 
@@ -74,6 +75,10 @@ Milestone decisions archived in:
 - MultiStepForm: 21 test cases (25-03 COMPLETE - navigation, validation, draft persistence)
 - BarcodeScanner: 18 test cases (25-04 COMPLETE - init, permissions, torch, pause)
 - FloatingActionButton: 28 test cases (25-05 COMPLETE - toggle, keyboard, accessibility)
+
+**E2E Test Stability (Phase 26 IN PROGRESS):**
+- 26-01: E2E authentication fixtures (pending)
+- 26-02: High-risk E2E test stabilization (COMPLETE - 25 waitForTimeout calls removed)
 
 **Frontend - Infrastructure Status (Phase 22 Complete):**
 - @vitest/coverage-v8 installed (22-02)
@@ -99,9 +104,9 @@ Carried forward:
 ## Session Continuity
 
 Last session: 2026-01-31
-Stopped at: Completed 25-05-PLAN.md (FloatingActionButton component tests)
+Stopped at: Completed 26-02-PLAN.md (High-risk E2E test stabilization)
 Resume file: None
-Next step: Continue with Phase 26 (E2E Testing)
+Next step: Continue with 26-03 (additional E2E stabilization) or 26-04
 
 ---
-*Updated: 2026-01-31 after 25-05 complete*
+*Updated: 2026-01-31 after 26-02 complete*
