@@ -10,13 +10,13 @@ See: `.planning/PROJECT.md` (updated 2026-01-25)
 ## Current Position
 
 **Milestone:** v1.3 Mobile UX Overhaul
-**Phase:** Phase 19 - Barcode Scanning (EXECUTING)
-**Plan:** 05 of 6 complete
+**Phase:** Phase 21 - Mobile Form Improvements
+**Plan:** 04 of 5 complete
 **Status:** In progress
 
-**Progress:** `[=========           ] 32%` (1/4 phases + 5/6 plans, 12/27 requirements)
+**Progress:** `[===============     ] 75%` (2/4 phases, 26/27 requirements)
 
-**Last activity:** 2026-01-31 — Completed 19-05-PLAN.md (Scan Page Assembly)
+**Last activity:** 2026-01-31 — Completed 21-04-PLAN.md (Inline Photo Capture)
 
 ## Shipped Milestones
 
@@ -31,9 +31,9 @@ See: `.planning/PROJECT.md` (updated 2026-01-25)
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 54
-- Total execution time: ~12.4h
-- Average per plan: ~15min
+- Total plans completed: 61
+- Total execution time: ~12.7h
+- Average per plan: ~12.5min
 
 **By Milestone:**
 
@@ -42,7 +42,7 @@ See: `.planning/PROJECT.md` (updated 2026-01-25)
 | v1 | 5 | 14 | ~6h |
 | v1.1 | 6 | 12 | ~2.5h |
 | v1.2 | 6 | 19 | ~4h |
-| v1.3 | 1+ | 9 | ~30min |
+| v1.3 | 2 | 16 | ~51min |
 
 ## Accumulated Context
 
@@ -74,10 +74,39 @@ New in v1.3:
 - Keep scanner mounted with isPaused for iOS PWA camera persistence (19-05)
 - Overlay action menu on scanner instead of navigating away (19-05)
 - Three-tab layout for scan, manual entry, history (19-05)
+- Deferred device manual testing to pending todos (19-06)
+- ios-haptics library for iOS 17.4+ Safari haptic workaround (20-01)
+- Both useHaptic hook and triggerHaptic function for React/non-React flexibility (20-01)
+- 56px main FAB, 44px action items (Material Design standard) (20-02)
+- Radial menu with configurable radius/arc via polar coordinates (20-02)
+- Spring physics (stiffness: 400, damping: 25) for FAB animations (20-02)
+- .tsx extension for hooks containing JSX (lucide icons) (20-03)
+- Maximum 4 FAB actions per route for radial menu comfort (20-03)
+- Empty array return for scan page to let consumer hide FAB (20-03)
+- 500ms long press threshold (Google/iOS standard) (20-04)
+- 25px cancelOnMovement for scroll-safe long press (20-04)
+- Touch-only detection for long press (mouse has right-click) (20-04)
+- 80px bottom padding (pb-20) for FAB clearance on mobile (20-05)
+- Conditional FAB render: fabActions.length > 0 hides on scan page (20-05)
+- IndexedDB formDrafts store for draft persistence (21-01)
+- 1-second debounce on draft saves to prevent IndexedDB thrashing (21-01)
+- localStorage for smart defaults (lightweight, per-field) (21-01)
+- Visual Viewport API for iOS keyboard detection with blur workaround (21-01)
+- Native file input with capture='environment' for mobile camera (21-04)
+- 2MB compression threshold for photo capture (21-04)
+- Blob URL previews with proper cleanup (21-04)
 
 ### Pending Todos
 
-None — Plan 19-05 complete. Continue with Phase 19 plans.
+**Manual Testing Required (Phase 19 - Barcode Scanning):**
+- [ ] SCAN-01: Camera scans QR/barcodes within 2 seconds
+- [ ] SCAN-02: Audio beep + haptic feedback (Android)
+- [ ] SCAN-03: Torch toggle (Android Chrome only)
+- [ ] SCAN-04: Scan history with timestamps
+- [ ] SCAN-05: Manual entry fallback
+- [ ] SCAN-06: Quick action menu after scan
+- [ ] SCAN-07: "Not found" handling
+- [ ] iOS PWA: Camera permission persists after "Scan Again"
 
 ### Blockers/Concerns
 
@@ -92,14 +121,14 @@ New from v1.3 research:
 - ZXing/html5-qrcode performance on mobile — mitigation via reduced FPS, manual fallback
 - Fuse.js re-indexing lag — mitigation via useMemo (index builders ready in 18-02)
 - IndexedDB + fuzzy search performance cliff at 5000+ items — mitigation via hybrid querying
-- iOS keyboard hiding fixed elements — mitigation via Visual Viewport API
+- iOS keyboard hiding fixed elements — mitigation via Visual Viewport API (implemented in 21-01)
 
 ## Session Continuity
 
 Last session: 2026-01-31
-Stopped at: Completed 19-05-PLAN.md (Scan Page Assembly)
+Stopped at: Completed 21-04-PLAN.md (Inline Photo Capture)
 Resume file: None
-Next step: Execute 19-06-PLAN.md (Navigation Integration)
+Next step: Continue with 21-05-PLAN.md (Form Integration Patterns)
 
 ---
-*Updated: 2026-01-31 after completing 19-05-PLAN.md*
+*Updated: 2026-01-31 after completing 21-04*
