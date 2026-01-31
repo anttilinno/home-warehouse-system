@@ -92,6 +92,10 @@ See `.planning/milestones/v1.4-ROADMAP.md` for full details.
   - [ ] 23-07-PLAN.md — pendingchange handler unit tests (gap closure)
   - [ ] 23-08-PLAN.md — jobs ProcessTask error paths (gap closure)
 - [ ] **Phase 24: Backend API Testing** - Handler unit tests and integration tests
+  **Plans:** 3 plans
+  - [ ] 24-01-PLAN.md — repairphoto and declutter handler unit tests
+  - [ ] 24-02-PLAN.md — repair workflow and sync integration tests
+  - [ ] 24-03-PLAN.md — request/response validation tests
 - [ ] **Phase 25: Frontend Unit Testing** - Critical hooks and components
 - [ ] **Phase 26: E2E Stability and Coverage** - Fix flaky tests and fill gaps
 
@@ -103,10 +107,10 @@ See `.planning/milestones/v1.4-ROADMAP.md` for full details.
 | 6-11 | v1.1 | 12 | Complete | 2026-01-25 |
 | 12-17 | v1.2 | 19 | Complete | 2026-01-25 |
 | 18-21 | v1.3 | 22 | Complete | 2026-01-31 |
-| 22-26 | v1.4 | 23 | In progress | - |
+| 22-26 | v1.4 | 25 | In progress | - |
 
-**Total:** 22 phases complete (70 plans), 4 phases remaining (22 plans)
+**Total:** 22 phases complete (70 plans), 4 phases remaining (25 plans)
 
 ---
 *Roadmap created: 2026-01-24*
-*Last updated: 2026-01-31 after Phase 23 gap closure plans added*
+*Last updated: 2026-01-31 after Phase 24 plans created*
