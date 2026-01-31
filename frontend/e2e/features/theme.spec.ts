@@ -30,14 +30,12 @@ test.describe("Theme Switching", () => {
 
     await themeToggle.click();
 
-    // Wait for theme change
-    await page.waitForTimeout(100);
-
-    // Theme should have changed
-    const newClass = await html.getAttribute("class");
-    const isDarkNow = newClass?.includes("dark");
-
-    expect(isDarkNow).not.toBe(wasDark);
+    // Wait for theme class to change using assertion retry
+    if (wasDark) {
+      await expect(html).not.toHaveClass(/dark/, { timeout: 2000 });
+    } else {
+      await expect(html).toHaveClass(/dark/, { timeout: 2000 });
+    }
   });
 
   test("theme persists after page reload", async ({ page }) => {
@@ -48,10 +46,20 @@ test.describe("Theme Switching", () => {
       name: /switch to (light|dark) mode|toggle theme/i,
     });
 
-    await themeToggle.click();
-    await page.waitForTimeout(100);
+    // Get initial theme state
+    const initialClass = await html.getAttribute("class");
+    const wasDark = initialClass?.includes("dark");
 
-    // Get current theme
+    await themeToggle.click();
+
+    // Wait for theme class to change
+    if (wasDark) {
+      await expect(html).not.toHaveClass(/dark/, { timeout: 2000 });
+    } else {
+      await expect(html).toHaveClass(/dark/, { timeout: 2000 });
+    }
+
+    // Get current theme (after verified change)
     const themeAfterToggle = await html.getAttribute("class");
     const isDarkAfterToggle = themeAfterToggle?.includes("dark");
 
@@ -87,14 +95,12 @@ test.describe("Theme Switching", () => {
     );
     await themeOption.click();
 
-    // Wait for theme change
-    await page.waitForTimeout(100);
-
-    // Theme should have changed
-    const newClass = await html.getAttribute("class");
-    const isDarkNow = newClass?.includes("dark");
-
-    expect(isDarkNow).not.toBe(wasDark);
+    // Wait for theme class to change using assertion retry
+    if (wasDark) {
+      await expect(html).not.toHaveClass(/dark/, { timeout: 2000 });
+    } else {
+      await expect(html).toHaveClass(/dark/, { timeout: 2000 });
+    }
   });
 
   test("system theme option available", async ({ page }) => {
@@ -124,7 +130,8 @@ test.describe("Theme Switching", () => {
         name: /switch to (light|dark) mode|toggle theme/i,
       });
       await themeToggle.click();
-      await page.waitForTimeout(100);
+      // Wait for theme to switch to light mode
+      await expect(html).not.toHaveClass(/dark/, { timeout: 2000 });
     }
 
     // Get background color in light mode
@@ -137,7 +144,8 @@ test.describe("Theme Switching", () => {
       name: /switch to (light|dark) mode|toggle theme/i,
     });
     await themeToggle.click();
-    await page.waitForTimeout(100);
+    // Wait for theme to switch to dark mode
+    await expect(html).toHaveClass(/dark/, { timeout: 2000 });
 
     // Get background color in dark mode
     const darkBg = await page.evaluate(() => {
@@ -166,12 +174,12 @@ test.describe("Theme Switching", () => {
     const initialIcon = await themeToggle.locator("svg").first().innerHTML().catch(() => "");
 
     await themeToggle.click();
-    await page.waitForTimeout(100);
 
-    const newIcon = await themeToggle.locator("svg").first().innerHTML().catch(() => "");
-
-    // Icon should change (sun -> moon or moon -> sun)
-    expect(newIcon).not.toBe(initialIcon);
+    // Wait for icon to change using Playwright's expect.toPass
+    await expect(async () => {
+      const currentIcon = await themeToggle.locator("svg").first().innerHTML().catch(() => "");
+      expect(currentIcon).not.toBe(initialIcon);
+    }).toPass({ timeout: 2000 });
   });
 
   test("theme is consistent across pages", async ({ page }) => {
@@ -186,7 +194,8 @@ test.describe("Theme Switching", () => {
     const initialClass = await html.getAttribute("class");
     if (!initialClass?.includes("dark")) {
       await themeToggle.click();
-      await page.waitForTimeout(100);
+      // Wait for theme to switch to dark mode
+      await expect(html).toHaveClass(/dark/, { timeout: 2000 });
     }
 
     // Verify dark mode on dashboard
