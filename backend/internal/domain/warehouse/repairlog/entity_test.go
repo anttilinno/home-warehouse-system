@@ -325,6 +325,140 @@ func TestReconstruct(t *testing.T) {
 	assert.Equal(t, updatedAt, repair.UpdatedAt())
 }
 
+func TestEntity_SetWarrantyClaim_Success(t *testing.T) {
+	repair := createTestRepairLog(t, StatusPending)
+
+	err := repair.SetWarrantyClaim(true)
+
+	assert.NoError(t, err)
+	assert.True(t, repair.IsWarrantyClaim())
+}
+
+func TestEntity_SetWarrantyClaim_InProgress_Success(t *testing.T) {
+	repair := createTestRepairLog(t, StatusInProgress)
+
+	err := repair.SetWarrantyClaim(true)
+
+	assert.NoError(t, err)
+	assert.True(t, repair.IsWarrantyClaim())
+}
+
+func TestEntity_SetWarrantyClaim_Completed_Fails(t *testing.T) {
+	repair := createTestRepairLog(t, StatusCompleted)
+
+	err := repair.SetWarrantyClaim(true)
+
+	assert.ErrorIs(t, err, ErrRepairAlreadyCompleted)
+}
+
+func TestEntity_SetReminderDate_Success(t *testing.T) {
+	repair := createTestRepairLog(t, StatusPending)
+	futureDate := time.Now().Add(7 * 24 * time.Hour)
+
+	err := repair.SetReminderDate(&futureDate)
+
+	assert.NoError(t, err)
+	assert.Equal(t, futureDate, *repair.ReminderDate())
+	assert.False(t, repair.ReminderSent())
+}
+
+func TestEntity_SetReminderDate_ClearsReminder(t *testing.T) {
+	now := time.Now()
+	futureDate := now.Add(7 * 24 * time.Hour)
+	repair := Reconstruct(
+		uuid.New(), uuid.New(), uuid.New(), StatusPending,
+		"Test", nil, nil, nil, nil, nil, nil, nil,
+		false, &futureDate, true, // reminderSent = true
+		now, now,
+	)
+
+	err := repair.SetReminderDate(nil)
+
+	assert.NoError(t, err)
+	assert.Nil(t, repair.ReminderDate())
+	assert.False(t, repair.ReminderSent()) // Should be reset
+}
+
+func TestEntity_SetReminderDate_ResetsReminderSentFlag(t *testing.T) {
+	now := time.Now()
+	oldDate := now.Add(7 * 24 * time.Hour)
+	repair := Reconstruct(
+		uuid.New(), uuid.New(), uuid.New(), StatusPending,
+		"Test", nil, nil, nil, nil, nil, nil, nil,
+		false, &oldDate, true, // reminderSent = true
+		now, now,
+	)
+
+	newDate := now.Add(14 * 24 * time.Hour)
+	err := repair.SetReminderDate(&newDate)
+
+	assert.NoError(t, err)
+	assert.Equal(t, newDate, *repair.ReminderDate())
+	assert.False(t, repair.ReminderSent()) // Should be reset when date changes
+}
+
+func TestEntity_SetReminderDate_Completed_Fails(t *testing.T) {
+	repair := createTestRepairLog(t, StatusCompleted)
+	futureDate := time.Now().Add(7 * 24 * time.Hour)
+
+	err := repair.SetReminderDate(&futureDate)
+
+	assert.ErrorIs(t, err, ErrRepairAlreadyCompleted)
+}
+
+func TestMarkReminderSent(t *testing.T) {
+	now := time.Now()
+	futureDate := now.Add(7 * 24 * time.Hour)
+	repair := Reconstruct(
+		uuid.New(), uuid.New(), uuid.New(), StatusPending,
+		"Test", nil, nil, nil, nil, nil, nil, nil,
+		false, &futureDate, false,
+		now, now,
+	)
+
+	repair.MarkReminderSent()
+
+	assert.True(t, repair.ReminderSent())
+}
+
+func TestReconstruct_WithCompletedFields(t *testing.T) {
+	now := time.Now()
+	completedAt := now.Add(-time.Hour)
+	newCondition := "EXCELLENT"
+
+	repair := Reconstruct(
+		uuid.New(), uuid.New(), uuid.New(),
+		StatusCompleted, "Completed repair",
+		nil, nil, nil, nil,
+		&completedAt, &newCondition, nil,
+		false, nil, false,
+		now.Add(-2*time.Hour), now,
+	)
+
+	assert.Equal(t, StatusCompleted, repair.Status())
+	assert.NotNil(t, repair.CompletedAt())
+	assert.Equal(t, completedAt, *repair.CompletedAt())
+	assert.NotNil(t, repair.NewCondition())
+	assert.Equal(t, newCondition, *repair.NewCondition())
+	assert.True(t, repair.IsCompleted())
+}
+
+func TestReconstruct_WithReminderSent(t *testing.T) {
+	now := time.Now()
+	reminderDate := now.Add(-time.Hour)
+
+	repair := Reconstruct(
+		uuid.New(), uuid.New(), uuid.New(),
+		StatusPending, "Test",
+		nil, nil, nil, nil, nil, nil, nil,
+		false, &reminderDate, true, // reminderSent = true
+		now, now,
+	)
+
+	assert.Equal(t, reminderDate, *repair.ReminderDate())
+	assert.True(t, repair.ReminderSent())
+}
+
 // Helper function to create test repair logs with specific status
 func createTestRepairLog(t *testing.T, status RepairStatus) *RepairLog {
 	t.Helper()
