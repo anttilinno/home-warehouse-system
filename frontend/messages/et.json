@@ -748,5 +748,15 @@
         "description": "Puuduta \"Lisa\" paremas ülanurgas, et rakendus paigaldada"
       }
     }
+  },
+  "fab": {
+    "openActions": "Ava kiirtoimingud",
+    "closeActions": "Sulge kiirtoimingud",
+    "scan": "Skaneeri vöötkood",
+    "addItem": "Lisa ese",
+    "logLoan": "Kirja laen",
+    "addContainer": "Lisa konteiner",
+    "addLocation": "Lisa asukoht",
+    "quickCount": "Kiire loendus"
   }
 }
