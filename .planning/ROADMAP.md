@@ -207,14 +207,16 @@ Plans:
 
 **Research Flags:** REQUIRES IOS TESTING - Test keyboard behavior on iOS 17-18 in PWA standalone mode, validate Visual Viewport API handling, test form auto-save recovery after backgrounding
 
-**Plans:** 5 plans
+**Plans:** 7 plans
 
 Plans:
-- [ ] 21-01-PLAN.md — Create form infrastructure: IndexedDB drafts, smart defaults, iOS keyboard hooks
-- [ ] 21-02-PLAN.md — Create CollapsibleSection and MobileFormField components
-- [ ] 21-03-PLAN.md — Create MultiStepForm wizard infrastructure
-- [ ] 21-04-PLAN.md — Create InlinePhotoCapture component
-- [ ] 21-05-PLAN.md — Create Item wizard with all components integrated
+- [x] 21-01-PLAN.md — Create form infrastructure: IndexedDB drafts, smart defaults, iOS keyboard hooks
+- [x] 21-02-PLAN.md — Create CollapsibleSection and MobileFormField components
+- [x] 21-03-PLAN.md — Create MultiStepForm wizard infrastructure
+- [x] 21-04-PLAN.md — Create InlinePhotoCapture component
+- [x] 21-05-PLAN.md — Create Item wizard with all components integrated
+- [ ] 21-06-PLAN.md — Gap closure: Integrate smart defaults hook into wizard
+- [ ] 21-07-PLAN.md — Gap closure: Integrate iOS keyboard hook into forms
 
 ---
 
@@ -228,10 +230,10 @@ Plans:
 | 18 | v1.3 | 4 | Complete | 2026-01-30 |
 | 19 | v1.3 | 6 | Complete | 2026-01-31 |
 | 20 | v1.3 | 5 | Complete | 2026-01-31 |
-| 21 | v1.3 | 5 | Pending | — |
+| 21 | v1.3 | 7 | Gap Closure | — |
 
-**Total:** 20 phases shipped (60 plans), 1 phase pending
+**Total:** 20 phases shipped (60 plans), 1 phase with gap closure pending
 
 ---
 *Roadmap created: 2026-01-24*
-*Last updated: 2026-01-31 after Phase 21 planned*
+*Last updated: 2026-01-31 after Phase 21 gap closure plans*
