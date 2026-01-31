@@ -6,6 +6,7 @@ export { DashboardShell } from "./DashboardShell";
 export { DashboardPage } from "./DashboardPage";
 export { ItemsPage } from "./ItemsPage";
 export { ItemDetailPage } from "./ItemDetailPage";
+export { InventoryPage } from "./InventoryPage";
 export { LocationsPage } from "./LocationsPage";
 export { ContainersPage } from "./ContainersPage";
 export { CategoriesPage } from "./CategoriesPage";
