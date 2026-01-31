@@ -1043,6 +1043,233 @@ func TestPtrToBool(t *testing.T) {
 }
 
 // =============================================================================
+// Constructor Test
+// =============================================================================
+
+func TestNewWorkspaceBackupService(t *testing.T) {
+	mockQueries := new(MockWorkspaceBackupQueries)
+
+	svc := NewWorkspaceBackupService(mockQueries)
+
+	assert.NotNil(t, svc)
+	assert.Equal(t, mockQueries, svc.queries)
+}
+
+// =============================================================================
+// Excel Sheet Generation Edge Cases
+// =============================================================================
+
+func TestExportWorkspace_ExcelWithParentReferences(t *testing.T) {
+	ctx := context.Background()
+	workspaceID := uuid.New()
+	exportedBy := uuid.New()
+
+	mockQueries := new(MockWorkspaceBackupQueries)
+
+	// Create categories with parent reference
+	parentCatID := uuid.New()
+	childCatID := uuid.New()
+	categories := []queries.WarehouseCategory{
+		{
+			ID:          parentCatID,
+			WorkspaceID: workspaceID,
+			Name:        "Parent Category",
+			IsArchived:  false,
+			CreatedAt:   makeTimestamp(time.Now()),
+			UpdatedAt:   makeTimestamp(time.Now()),
+		},
+		{
+			ID:               childCatID,
+			WorkspaceID:      workspaceID,
+			Name:             "Child Category",
+			ParentCategoryID: makeNullUUID(parentCatID),
+			IsArchived:       false,
+			CreatedAt:        makeTimestamp(time.Now()),
+			UpdatedAt:        makeTimestamp(time.Now()),
+		},
+	}
+
+	// Create locations with parent reference
+	parentLocID := uuid.New()
+	childLocID := uuid.New()
+	locations := []queries.WarehouseLocation{
+		{
+			ID:          parentLocID,
+			WorkspaceID: workspaceID,
+			Name:        "Building A",
+			ShortCode:   "BLD-A",
+			IsArchived:  false,
+			CreatedAt:   makeTimestamp(time.Now()),
+			UpdatedAt:   makeTimestamp(time.Now()),
+		},
+		{
+			ID:             childLocID,
+			WorkspaceID:    workspaceID,
+			Name:           "Room 101",
+			ParentLocation: makeNullUUID(parentLocID),
+			ShortCode:      "R-101",
+			IsArchived:     false,
+			CreatedAt:      makeTimestamp(time.Now()),
+			UpdatedAt:      makeTimestamp(time.Now()),
+		},
+	}
+
+	// Create item with category reference
+	itemID := uuid.New()
+	items := []queries.WarehouseItem{
+		{
+			ID:          itemID,
+			WorkspaceID: workspaceID,
+			Sku:         "SKU-001",
+			Name:        "Test Item",
+			CategoryID:  makeNullUUID(parentCatID),
+			IsArchived:  boolPtr(false),
+			CreatedAt:   makeTimestamp(time.Now()),
+			UpdatedAt:   makeTimestamp(time.Now()),
+		},
+	}
+
+	// Create inventory with container
+	containerID := uuid.New()
+	containers := []queries.WarehouseContainer{
+		{
+			ID:          containerID,
+			WorkspaceID: workspaceID,
+			LocationID:  parentLocID,
+			Name:        "Box A1",
+			ShortCode:   "BOX-A1",
+			IsArchived:  false,
+			CreatedAt:   makeTimestamp(time.Now()),
+			UpdatedAt:   makeTimestamp(time.Now()),
+		},
+	}
+
+	inventoryID := uuid.New()
+	inventory := []queries.WarehouseInventory{
+		{
+			ID:          inventoryID,
+			WorkspaceID: workspaceID,
+			ItemID:      itemID,
+			LocationID:  parentLocID,
+			ContainerID: makeNullUUID(containerID),
+			Quantity:    10,
+			Condition:   queries.NullWarehouseItemConditionEnum{WarehouseItemConditionEnum: queries.WarehouseItemConditionEnumGOOD, Valid: true},
+			Status:      queries.NullWarehouseItemStatusEnum{WarehouseItemStatusEnum: queries.WarehouseItemStatusEnumAVAILABLE, Valid: true},
+			CreatedAt:   makeTimestamp(time.Now()),
+			UpdatedAt:   makeTimestamp(time.Now()),
+		},
+	}
+
+	// Create loan with due date
+	borrowerID := uuid.New()
+	borrowers := []queries.WarehouseBorrower{
+		{
+			ID:          borrowerID,
+			WorkspaceID: workspaceID,
+			Name:        "John Doe",
+			IsArchived:  false,
+			CreatedAt:   makeTimestamp(time.Now()),
+			UpdatedAt:   makeTimestamp(time.Now()),
+		},
+	}
+
+	loans := []queries.WarehouseLoan{
+		{
+			ID:          uuid.New(),
+			WorkspaceID: workspaceID,
+			BorrowerID:  borrowerID,
+			InventoryID: inventoryID,
+			Quantity:    1,
+			LoanedAt:    makeTimestamp(time.Now()),
+			DueDate:     pgtype.Date{Time: time.Now().AddDate(0, 0, 30), Valid: true},
+			ReturnedAt:  makeTimestamp(time.Now().AddDate(0, 0, 15)),
+			CreatedAt:   makeTimestamp(time.Now()),
+			UpdatedAt:   makeTimestamp(time.Now()),
+		},
+	}
+
+	// Create attachment with file ID
+	attachments := []queries.WarehouseAttachment{
+		{
+			ID:             uuid.New(),
+			ItemID:         itemID,
+			FileID:         makeNullUUID(uuid.New()),
+			AttachmentType: queries.WarehouseAttachmentTypeEnumPHOTO,
+			Title:          strPtr("Item Photo"),
+			IsPrimary:      boolPtr(true),
+			CreatedAt:      makeTimestamp(time.Now()),
+			UpdatedAt:      makeTimestamp(time.Now()),
+		},
+	}
+
+	// Set up mocks
+	mockQueries.On("ListAllCategories", ctx, mock.Anything).Return(categories, nil)
+	mockQueries.On("ListAllLabels", ctx, mock.Anything).Return([]queries.WarehouseLabel{}, nil)
+	mockQueries.On("ListAllCompanies", ctx, mock.Anything).Return([]queries.WarehouseCompany{}, nil)
+	mockQueries.On("ListAllLocations", ctx, mock.Anything).Return(locations, nil)
+	mockQueries.On("ListAllBorrowers", ctx, mock.Anything).Return(borrowers, nil)
+	mockQueries.On("ListAllItems", ctx, mock.Anything).Return(items, nil)
+	mockQueries.On("ListAllContainers", ctx, mock.Anything).Return(containers, nil)
+	mockQueries.On("ListAllInventory", ctx, workspaceID).Return(inventory, nil)
+	mockQueries.On("ListAllLoans", ctx, workspaceID).Return(loans, nil)
+	mockQueries.On("ListAllAttachments", ctx, workspaceID).Return(attachments, nil)
+	mockQueries.On("CreateWorkspaceExport", ctx, mock.AnythingOfType("queries.CreateWorkspaceExportParams")).Return(nil)
+
+	svc := NewWorkspaceBackupService(mockQueries)
+
+	result, err := svc.ExportWorkspace(ctx, workspaceID, FormatExcel, false, exportedBy)
+
+	assert.NoError(t, err)
+	assert.NotNil(t, result)
+
+	// Verify the Excel content
+	f, err := excelize.OpenReader(bytes.NewReader(result.Data))
+	assert.NoError(t, err)
+	defer f.Close()
+
+	// Check Categories sheet - verify parent category is included
+	catRows, err := f.GetRows("Categories")
+	assert.NoError(t, err)
+	assert.Len(t, catRows, 3) // Header + 2 data rows
+
+	// Verify child category has parent ID
+	childRow := catRows[2] // Second data row (index 2)
+	assert.Equal(t, parentCatID.String(), childRow[2]) // Parent Category ID column
+
+	// Check Locations sheet - verify parent location is included
+	locRows, err := f.GetRows("Locations")
+	assert.NoError(t, err)
+	assert.Len(t, locRows, 3) // Header + 2 data rows
+
+	// Check Inventory sheet - verify container ID and enum values
+	invRows, err := f.GetRows("Inventory")
+	assert.NoError(t, err)
+	assert.Len(t, invRows, 2) // Header + 1 data row
+	invDataRow := invRows[1]
+	assert.Equal(t, containerID.String(), invDataRow[3]) // Container ID column
+	assert.Equal(t, "GOOD", invDataRow[5])               // Condition column
+	assert.Equal(t, "AVAILABLE", invDataRow[6])          // Status column
+
+	// Check Loans sheet - verify dates
+	loanRows, err := f.GetRows("Loans")
+	assert.NoError(t, err)
+	assert.Len(t, loanRows, 2) // Header + 1 data row
+	loanDataRow := loanRows[1]
+	assert.NotEmpty(t, loanDataRow[4]) // Loaned At
+	assert.NotEmpty(t, loanDataRow[5]) // Due Date
+	assert.NotEmpty(t, loanDataRow[6]) // Returned At
+
+	// Check Attachments sheet - verify file ID
+	attRows, err := f.GetRows("Attachments")
+	assert.NoError(t, err)
+	assert.Len(t, attRows, 2) // Header + 1 data row
+	attDataRow := attRows[1]
+	assert.NotEmpty(t, attDataRow[2]) // File ID column
+
+	mockQueries.AssertExpectations(t)
+}
+
+// =============================================================================
 // Interface Implementation Test
 // =============================================================================
 
