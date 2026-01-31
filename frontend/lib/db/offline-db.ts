@@ -9,7 +9,7 @@ import { openDB as idbOpen, type IDBPDatabase, type StoreNames } from "idb";
 import type { OfflineDBSchema, SyncMeta } from "./types";
 
 const DB_NAME = "hws-offline-v1";
-const DB_VERSION = 3;
+const DB_VERSION = 4;
 
 // Singleton promise for the database connection
 let dbPromise: Promise<IDBPDatabase<OfflineDBSchema>> | null = null;
@@ -106,6 +106,13 @@ export async function getDB(): Promise<IDBPDatabase<OfflineDBSchema>> {
           conflictStore.createIndex("resolution", "resolution", {
             unique: false,
           });
+        }
+
+        // Form drafts store for persisting form data before submission (v4)
+        if (oldVersion < 4) {
+          if (!db.objectStoreNames.contains("formDrafts")) {
+            db.createObjectStore("formDrafts", { keyPath: "id" });
+          }
         }
 
         console.log(

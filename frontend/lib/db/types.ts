@@ -96,6 +96,21 @@ export interface MutationQueueEntry {
 }
 
 /**
+ * Form draft for persisting form data before submission.
+ * Enables draft recovery across sessions/reloads.
+ */
+export interface FormDraft {
+  /** Unique identifier for the draft (formType + contextId) */
+  id: string;
+  /** Type of form (e.g., "item-create", "inventory-edit") */
+  formType: string;
+  /** Form field values */
+  data: Record<string, unknown>;
+  /** Timestamp when draft was last saved (ms since epoch) */
+  savedAt: number;
+}
+
+/**
  * Conflict log entry for tracking sync conflicts.
  * Stored in IndexedDB for user review and debugging.
  */
@@ -177,6 +192,10 @@ export interface OfflineDBSchema extends DBSchema {
       timestamp: number;
       resolution: ConflictResolution;
     };
+  };
+  formDrafts: {
+    key: string;
+    value: FormDraft;
   };
 }
 
