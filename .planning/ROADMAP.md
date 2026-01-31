@@ -5,7 +5,7 @@
 - v1 **PWA Offline Completion** — Phases 1-5 (shipped 2026-01-24)
 - v1.1 **Offline Entity Extension** — Phases 6-11 (shipped 2026-01-25)
 - v1.2 **Phase 2 Completion** — Phases 12-17 (shipped 2026-01-25)
-- v1.3 **Mobile UX Overhaul** — Phases 18-21 (complete)
+- v1.3 **Mobile UX Overhaul** — Phases 18-21 (shipped 2026-01-31)
 
 ## Phases
 
@@ -56,169 +56,19 @@ See `.planning/milestones/v1.2-ROADMAP.md` for full details.
 
 </details>
 
-### v1.3 Mobile UX Overhaul (Phases 18-21) — COMPLETE
+<details>
+<summary>v1.3 Mobile UX Overhaul (Phases 18-21) — SHIPPED 2026-01-31</summary>
 
-Transform the PWA into a warehouse-grade mobile inventory tool with barcode scanning, offline-capable fuzzy search, floating action buttons with radial menus, and mobile-optimized forms.
+See `.planning/milestones/v1.3-ROADMAP.md` for full details.
 
-**Phase 18: Fuzzy Search Infrastructure**
+**Delivered:** Warehouse-grade mobile experience with barcode scanning, offline fuzzy search, floating action buttons with radial menus, and mobile-optimized multi-step forms.
 
-**Goal:** Users can find items instantly despite typos, works completely offline
+- Phase 18: Fuzzy Search Infrastructure (4 plans)
+- Phase 19: Barcode Scanning (6 plans)
+- Phase 20: Mobile Navigation - FAB and Gestures (5 plans)
+- Phase 21: Mobile Form Improvements (7 plans)
 
-**Dependencies:** None (pure infrastructure)
-
-**Requirements:** SRCH-01, SRCH-02, SRCH-03, SRCH-04, SRCH-05, SRCH-06
-
-**Success Criteria:**
-1. User types a search query and sees results appear within 300ms without network
-2. User can find items with 1-2 character typos (fuzzy matching working)
-3. User sees 5-8 autocomplete suggestions matching their partial input
-4. User focuses the search box and sees their 5 most recent searches
-5. Search works while device is in airplane mode (IndexedDB-backed)
-
-**Key Deliverables:**
-- Fuse.js v7.1.0 integration with IndexedDB
-- Enhanced use-global-search.ts hook with offline mode detection
-- Fuse index builders per entity store (items, inventory, locations, containers, borrowers, categories)
-- Memoized Fuse instances to avoid re-indexing on every render
-- Debounced search input (300ms) with useMemo optimization
-- Hybrid query approach (IndexedDB filters → Fuse on subset)
-
-**Research Flags:** Standard patterns - monitor performance with real dataset size
-
-**Plans:** 4 plans
-
-Plans:
-- [ ] 18-01-PLAN.md — Install Fuse.js and enhance search touch targets (SRCH-05)
-- [ ] 18-02-PLAN.md — Create Fuse index builders per entity type
-- [ ] 18-03-PLAN.md — Create offline search module with pending mutations merge
-- [ ] 18-04-PLAN.md — Enhance useGlobalSearch with offline mode detection
-
----
-
-**Phase 19: Barcode Scanning**
-
-**Goal:** Users can scan items and take immediate action without manual searching
-
-**Dependencies:** Phase 18 (offline fuzzy search for code lookup)
-
-**Requirements:** SCAN-01, SCAN-02, SCAN-03, SCAN-04, SCAN-05, SCAN-06, SCAN-07
-
-**Success Criteria:**
-1. User points camera at QR code or barcode (UPC/EAN/Code128) and receives scan within 2 seconds
-2. User receives visual overlay highlight, audio beep, and haptic vibration on successful scan
-3. User taps flashlight toggle and sees torch activate for scanning in low-light warehouse
-4. User scans an item and sees quick action menu with loan/move/view/repair options
-5. User scans unknown barcode and sees "Item not found" with create option
-6. User navigates to scan history and sees last 10 scans with timestamps
-
-**Key Deliverables:**
-- BarcodeScanner component using @yudiel/react-qr-scanner v2.5.0
-- QuickActionMenu component with context-aware actions based on entity type
-- IndexedDB lookup by short_code field (items/containers/locations)
-- Scan history persistence to localStorage with timestamps
-- Manual barcode entry fallback input
-- Camera permission patterns from photo-upload.tsx
-- Single-page scan flow to avoid iOS permission revocation
-- Reduced FPS (5-10) and scan region targeting for performance
-- Torch/flashlight toggle control
-
-**Research Flags:** REQUIRES BENCHMARKING - Test scanning performance on iPhone 12+ and mid-range Android, validate ZXing fallback behavior, memory usage with continuous scanning
-
-**Plans:** 6 plans
-
-Plans:
-- [x] 19-01-PLAN.md — Install dependencies and create scanner infrastructure
-- [x] 19-02-PLAN.md — Create scan lookup and history modules
-- [x] 19-03-PLAN.md — Create BarcodeScanner component
-- [x] 19-04-PLAN.md — Create QuickActionMenu, ManualEntry, and History components
-- [x] 19-05-PLAN.md — Create scan page with integrated flow
-- [x] 19-06-PLAN.md — Human verification of scanner on device (deferred to manual testing)
-
----
-
-**Phase 20: Mobile Navigation - FAB and Gestures**
-
-**Goal:** Users can access common actions instantly from any screen via floating action button
-
-**Dependencies:** Phase 19 (FAB opens scanner)
-
-**Requirements:** QACT-01, QACT-02, QACT-03, QACT-04, QACT-05, QACT-06
-
-**Success Criteria:**
-1. User sees floating action button in bottom-right corner on all mobile screens (16px margins)
-2. User taps FAB and sees radial menu expand with 3-5 action shortcuts
-3. User can quickly access scan, add item, and log loan from FAB without navigation
-4. User receives haptic feedback (10-20ms vibration) when tapping FAB actions
-5. User navigates to different screens and sees FAB actions change based on context (Items page: Add Item, Inventory page: Quick Count)
-6. User long-presses a list item and enters multi-select mode with checkboxes
-
-**Key Deliverables:**
-- FloatingActionButton component using shadcn Button + motion v12.27.0
-- Radial menu animation with arc positioning (Math.cos/sin)
-- @use-gesture/react v10.3.1 for touch handling
-- Context-aware action configuration based on current route
-- Long-press gesture handler for list items (tap-and-hold, not swipe to avoid accessibility issues)
-- Haptic feedback via navigator.vibrate(20)
-- Mobile breakpoint detection (hidden on desktop)
-- Keyboard navigation and screen reader support (role="menu", ARIA attributes)
-
-**Research Flags:** REQUIRES ACCESSIBILITY TESTING - Test VoiceOver/TalkBack, keyboard navigation, validate radial menu on various screen sizes, test in iOS PWA standalone mode
-
-**Plans:** 5 plans
-
-Plans:
-- [x] 20-01-PLAN.md — Install dependencies and create haptic utility
-- [x] 20-02-PLAN.md — Create FAB component with radial menu animation
-- [x] 20-03-PLAN.md — Create context-aware FAB actions hook
-- [x] 20-04-PLAN.md — Create long-press selectable list items
-- [x] 20-05-PLAN.md — Integrate FAB into dashboard layout
-
----
-
-**Phase 21: Mobile Form Improvements**
-
-**Goal:** Users can complete forms efficiently on mobile with progressive disclosure and smart defaults
-
-**Dependencies:** Phase 19 (inline barcode scan to populate fields), Phase 20 (FAB to open forms)
-
-**Requirements:** FORM-01, FORM-02, FORM-03, FORM-04, FORM-05, FORM-06, FORM-07, FORM-08
-
-**Success Criteria:**
-1. User opens Create Item form and sees essential fields first with "Advanced Options" expandable section
-2. User taps quantity field and sees number pad keyboard, taps email field and sees email keyboard with @ symbol
-3. User taps form controls and experiences 44x44px minimum touch targets throughout
-4. User focuses input field and sees label remain visible above field (not disappear like placeholder)
-5. User submits incomplete form and sees inline validation errors appear next to each invalid field
-6. User taps "Add Photo" button inline within form and takes photo without leaving form context
-7. User starts filling form, navigates away, returns later and sees form draft recovered from storage
-8. User enters text in form fields using 16px+ font size without iOS triggering zoom
-
-**Key Deliverables:**
-- MultiStepForm component for complex forms (Create Item wizard: Basic → Details → Photos)
-- CollapsibleSection component for progressive disclosure (Advanced fields)
-- InlinePhotoCapture component combining camera modal with form field
-- Form draft auto-save to IndexedDB on every change
-- Smart defaults from recent selections (last used category/location)
-- Mobile keyboard handling (inputMode="numeric", inputMode="email", etc.)
-- All input fields use min 16px font size to prevent iOS zoom
-- Visual Viewport API integration to handle iOS keyboard hiding fixed elements
-- Inline validation errors with clear messaging near each field
-- Barcode scan button to populate form fields (integrates Phase 19 scanner)
-
-**Research Flags:** REQUIRES IOS TESTING - Test keyboard behavior on iOS 17-18 in PWA standalone mode, validate Visual Viewport API handling, test form auto-save recovery after backgrounding
-
-**Plans:** 7 plans
-
-Plans:
-- [x] 21-01-PLAN.md — Create form infrastructure: IndexedDB drafts, smart defaults, iOS keyboard hooks
-- [x] 21-02-PLAN.md — Create CollapsibleSection and MobileFormField components
-- [x] 21-03-PLAN.md — Create MultiStepForm wizard infrastructure
-- [x] 21-04-PLAN.md — Create InlinePhotoCapture component
-- [x] 21-05-PLAN.md — Create Item wizard with all components integrated
-- [x] 21-06-PLAN.md — Gap closure: Integrate smart defaults hook into wizard
-- [x] 21-07-PLAN.md — Gap closure: Integrate iOS keyboard hook into forms
-
----
+</details>
 
 ## Progress
 
@@ -227,13 +77,10 @@ Plans:
 | 1-5 | v1 | 14 | Complete | 2026-01-24 |
 | 6-11 | v1.1 | 12 | Complete | 2026-01-25 |
 | 12-17 | v1.2 | 19 | Complete | 2026-01-25 |
-| 18 | v1.3 | 4 | Complete | 2026-01-30 |
-| 19 | v1.3 | 6 | Complete | 2026-01-31 |
-| 20 | v1.3 | 5 | Complete | 2026-01-31 |
-| 21 | v1.3 | 7 | Complete | 2026-01-31 |
+| 18-21 | v1.3 | 22 | Complete | 2026-01-31 |
 
 **Total:** 21 phases complete (67 plans)
 
 ---
 *Roadmap created: 2026-01-24*
-*Last updated: 2026-01-31 after Phase 21 complete*
+*Last updated: 2026-01-31 after v1.3 milestone archived*

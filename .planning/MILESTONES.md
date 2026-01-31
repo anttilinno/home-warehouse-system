@@ -1,5 +1,37 @@
 # Project Milestones: Home Warehouse System
 
+## v1.3 Mobile UX Overhaul (Shipped: 2026-01-31)
+
+**Delivered:** Warehouse-grade mobile experience with barcode scanning, offline fuzzy search, floating action buttons with radial menus, and mobile-optimized multi-step forms.
+
+**Phases completed:** 18-21 (22 plans total)
+
+**Key accomplishments:**
+
+- Offline fuzzy search via Fuse.js — instant results despite typos, IndexedDB-backed, 300ms debounce
+- Barcode/QR scanning — camera-based with audio/haptic feedback, quick action menu, scan history
+- Floating action button — radial menu, context-aware actions, haptic feedback, ios-haptics integration
+- Mobile form improvements — progressive disclosure, smart defaults, draft auto-save, 44px touch targets
+- Create Item wizard — 3-step flow with inline photo capture and iOS keyboard handling
+
+**Stats:**
+
+- ~40 files created/modified
+- ~4,822 lines of TypeScript
+- 4 phases, 22 plans
+- 2 days from start to ship (Jan 30-31, 2026)
+
+**Git range:** `feat(18-01)` → `feat(21-07)` (67 commits)
+
+**Tech debt carried forward:**
+- Move action shows "Coming soon" in scanner quick actions
+- SelectableListItem ready but not integrated into list views
+- Physical device testing pending for scanner
+
+**What's next:** TBD — ready for next feature work
+
+---
+
 ## v1.2 Phase 2 Completion (Shipped: 2026-01-25)
 
 **Delivered:** Enhanced item lifecycle management with repair tracking, declutter assistant, async thumbnail processing, bulk photo operations, and comprehensive SSE test coverage.
