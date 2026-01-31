@@ -1,5 +1,46 @@
 # Project Milestones: Home Warehouse System
 
+## v1.4 Test Overhaul (Shipped: 2026-01-31)
+
+**Delivered:** Comprehensive test infrastructure and coverage bringing critical packages to 80%+ with CI parallelization, Codecov integration, and stable E2E tests.
+
+**Phases completed:** 22-26 (20 plans executed of 24 planned)
+
+**Key accomplishments:**
+
+- Go test factories for 8 entity types with functional options pattern and gofakeit integration
+- Backend business logic coverage: importexport 92.4%, importjob 86.3%, itemphoto 80.5%, repairlog 92.8%
+- Frontend unit tests: 130 new tests for useOfflineMutation, SyncManager, MultiStepForm, BarcodeScanner, FloatingActionButton
+- CI parallelization with matrix strategy and Codecov coverage reporting with README badge
+- E2E auth timing fixed with proper wait conditions; 25 waitForTimeout calls removed from high-risk files
+- Inventory E2E tests (18 tests) and loan CRUD flow tests (4 serial tests) added
+
+**Stats:**
+
+- 139 files created/modified
+- ~33,500 lines of test code (TypeScript/Go)
+- 5 phases, 20 plans executed
+- 1 day (Jan 31, 2026)
+
+**Git range:** `feat(22-01)` → `docs(26-04)` (60+ commits)
+
+**Requirements satisfied:** 14/17 (82%)
+- INFRA-01 through INFRA-05: All satisfied
+- BE-01, BE-03, BE-05, BE-06: All satisfied (80%+ coverage)
+- FE-01 through FE-05: All satisfied
+- E2E-01 through E2E-03: All satisfied
+
+**Tech debt carried forward:**
+- BE-02: pendingchange at 57.3% (handler.go tested via integration, not unit tests)
+- BE-04: jobs at 20.1% (architectural constraint — ProcessTask requires database mocking)
+- API-03: 24-03 validation tests plan not executed
+- 56 waitForTimeout calls remain in 24 lower-priority E2E files
+- Go test factories orphaned (not adopted by Phase 23/24 tests)
+
+**What's next:** TBD — ready for next milestone
+
+---
+
 ## v1.3 Mobile UX Overhaul (Shipped: 2026-01-31)
 
 **Delivered:** Warehouse-grade mobile experience with barcode scanning, offline fuzzy search, floating action buttons with radial menus, and mobile-optimized multi-step forms.
