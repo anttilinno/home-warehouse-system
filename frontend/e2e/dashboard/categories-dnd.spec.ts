@@ -122,10 +122,6 @@ test.describe("Categories Drag and Drop", () => {
               );
 
               // Check for drag visual feedback (overlay or opacity change)
-              const overlay = page.locator('[data-dnd-kit-dragging], [class*="dragging"]');
-              await expect(overlay).toBeVisible({ timeout: 1000 }).catch(() => {});
-
-              // Check for drag overlay or opacity change
               // dnd-kit typically adds opacity: 0.5 during drag
               const overlay = page.locator('[data-dnd-kit-dragging], [class*="dragging"]');
               const hasOverlay = await overlay.isVisible().catch(() => false);

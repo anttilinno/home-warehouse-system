@@ -4,7 +4,10 @@ import { DashboardShell } from "../pages/DashboardShell";
 test.describe("Theme Switching", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/en/dashboard");
-    await page.waitForLoadState("networkidle");
+    // Use domcontentloaded instead of networkidle - SSE connections prevent networkidle
+    await page.waitForLoadState("domcontentloaded");
+    // Wait for theme toggle to be visible
+    await expect(page.getByRole("button", { name: /switch to (light|dark) mode|toggle theme/i })).toBeVisible({ timeout: 5000 });
   });
 
   test("theme toggle button exists", async ({ page }) => {
