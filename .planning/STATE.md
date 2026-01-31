@@ -5,24 +5,24 @@
 See: `.planning/PROJECT.md` (updated 2026-01-31)
 
 **Core value:** Reliable inventory access anywhere — online or offline — with seamless sync
-**Current focus:** v1.4 Test Overhaul - Phase 24
+**Current focus:** v1.4 Test Overhaul - Phase 25
 
 ## Current Position
 
 **Milestone:** v1.4 Test Overhaul
-**Phase:** 24 of 26 (Backend API Testing) — In Progress
-**Plan:** 2 of 6 in current phase — 24-02 complete
+**Phase:** 25 of 26 (Frontend Unit Testing) — In Progress
+**Plan:** 2 of 5 in current phase — 25-02 complete
 **Status:** In progress
-**Last activity:** 2026-01-31 — Completed 24-02-PLAN.md (repair workflow integration tests)
+**Last activity:** 2026-01-31 — Completed 25-02-PLAN.md (SyncManager comprehensive tests)
 
-Progress: [==========..........] 55% (11/20 plans)
+Progress: [============........] 60% (12/20 plans)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 74 (from v1-v1.3 + v1.4)
+- Total plans completed: 75 (from v1-v1.3 + v1.4)
 - Average duration: ~15 min
-- Total execution time: ~18.5 hours
+- Total execution time: ~18.75 hours
 
 **By Milestone:**
 
@@ -65,13 +65,16 @@ Milestone decisions archived in:
 - declutter: ~15% -> 41.6% (24-01 COMPLETE - handler tests)
 - repair workflow: Integration tests complete (24-02 COMPLETE - auth/authz coverage)
 
+**Frontend Unit Tests (Phase 25):**
+- useOfflineMutation: 15 test cases (25-01 COMPLETE)
+- SyncManager: 83.46% statements, 73.55% branch, 34 test cases (25-02 COMPLETE)
+
 **Frontend - Infrastructure Status (Phase 22 Complete):**
 - @vitest/coverage-v8 installed (22-02)
 - Entity factories created (22-01, 22-02)
 - Mock utilities for offline/sync created (22-02)
 - CI workflow with parallel tests and Codecov (22-03)
 - Coverage badges in README (22-03)
-- Limited unit tests for critical hooks (target for Phase 25)
 
 ### Pending Todos
 
@@ -90,9 +93,9 @@ Carried forward:
 ## Session Continuity
 
 Last session: 2026-01-31
-Stopped at: Completed 24-02-PLAN.md (repair workflow integration tests)
+Stopped at: Completed 25-02-PLAN.md (SyncManager comprehensive tests)
 Resume file: None
-Next step: Continue with 24-03 (loan workflow integration tests)
+Next step: Continue with 25-03 (MultiStepForm tests)
 
 ---
-*Updated: 2026-01-31 after 24-02 complete*
+*Updated: 2026-01-31 after 25-02 complete*
