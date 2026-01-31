@@ -66,7 +66,7 @@ Milestone decisions archived in:
 - repair workflow: Integration tests complete (24-02 COMPLETE - auth/authz coverage)
 
 **Frontend Unit Tests (Phase 25):**
-- useOfflineMutation: 15 test cases (25-01 COMPLETE)
+- useOfflineMutation: 29 test cases (25-01 COMPLETE - queue, optimistic, network, helpers)
 - SyncManager: 83.46% statements, 73.55% branch, 34 test cases (25-02 COMPLETE)
 
 **Frontend - Infrastructure Status (Phase 22 Complete):**
