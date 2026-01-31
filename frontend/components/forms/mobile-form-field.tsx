@@ -45,6 +45,8 @@ interface MobileFormFieldProps<TFieldValues extends FieldValues = FieldValues> {
   min?: number;
   /** Max value for numeric inputs */
   max?: number;
+  /** Callback when input loses focus (called after register's onBlur) */
+  onBlur?: (e: React.FocusEvent<HTMLInputElement>) => void;
 }
 
 export function MobileFormField<
@@ -62,11 +64,23 @@ export function MobileFormField<
   autoComplete,
   min,
   max,
+  onBlur: externalOnBlur,
 }: MobileFormFieldProps<TFieldValues>) {
   const {
     register,
     formState: { errors },
   } = useFormContext<TFieldValues>();
+
+  // Get register props and combine onBlur handlers
+  const registerProps = register(name, {
+    valueAsNumber:
+      inputMode === "numeric" || inputMode === "decimal" ? true : undefined,
+  });
+
+  const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+    registerProps.onBlur(e);
+    externalOnBlur?.(e);
+  };
 
   // Get nested error (supports dot notation like "address.city")
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -104,12 +118,8 @@ export function MobileFormField<
         )}
         aria-invalid={errorMessage ? "true" : "false"}
         aria-describedby={errorMessage ? errorId : undefined}
-        {...register(name, {
-          valueAsNumber:
-            inputMode === "numeric" || inputMode === "decimal"
-              ? true
-              : undefined,
-        })}
+        {...registerProps}
+        onBlur={handleBlur}
       />
 
       {/* Inline validation error (FORM-05) */}

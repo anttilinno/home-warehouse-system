@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import { useFormContext } from "react-hook-form";
 import { useTranslations } from "next-intl";
 
@@ -11,6 +12,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
+import { useSmartDefaults } from "@/lib/hooks/use-smart-defaults";
 import type { CreateItemFormData } from "./schema";
 
 interface DetailsStepProps {
@@ -27,8 +29,33 @@ export function DetailsStep({
   const t = useTranslations("items.create");
   const { watch, setValue } = useFormContext<CreateItemFormData>();
 
+  // Smart defaults hooks for remembering recent selections
+  const brandDefaults = useSmartDefaults("item-brand");
+  const manufacturerDefaults = useSmartDefaults("item-manufacturer");
+  const purchasedFromDefaults = useSmartDefaults("item-purchased-from");
+
   const isInsured = watch("is_insured");
   const lifetimeWarranty = watch("lifetime_warranty");
+  const brand = watch("brand");
+  const manufacturer = watch("manufacturer");
+  const purchasedFrom = watch("purchased_from");
+
+  // Pre-fill from smart defaults on mount (only if fields are empty)
+  useEffect(() => {
+    const defaultBrand = brandDefaults.getDefault();
+    if (defaultBrand && !brand) {
+      setValue("brand", defaultBrand);
+    }
+    const defaultManufacturer = manufacturerDefaults.getDefault();
+    if (defaultManufacturer && !manufacturer) {
+      setValue("manufacturer", defaultManufacturer);
+    }
+    const defaultPurchasedFrom = purchasedFromDefaults.getDefault();
+    if (defaultPurchasedFrom && !purchasedFrom) {
+      setValue("purchased_from", defaultPurchasedFrom);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <div className="space-y-6">
@@ -45,6 +72,7 @@ export function DetailsStep({
           name="brand"
           label={t("fields.brand")}
           placeholder={t("placeholders.brand")}
+          onBlur={(e) => e.target.value && brandDefaults.recordSelection(e.target.value)}
         />
 
         <MobileFormField<CreateItemFormData>
@@ -57,6 +85,7 @@ export function DetailsStep({
           name="manufacturer"
           label={t("fields.manufacturer")}
           placeholder={t("placeholders.manufacturer")}
+          onBlur={(e) => e.target.value && manufacturerDefaults.recordSelection(e.target.value)}
         />
       </div>
 
@@ -96,6 +125,7 @@ export function DetailsStep({
             name="purchased_from"
             label={t("fields.purchasedFrom")}
             placeholder={t("placeholders.purchasedFrom")}
+            onBlur={(e) => e.target.value && purchasedFromDefaults.recordSelection(e.target.value)}
           />
 
           <MobileFormField<CreateItemFormData>
