@@ -20,6 +20,7 @@ require (
 )
 
 require (
+	github.com/brianvoe/gofakeit/v7 v7.14.0 // indirect
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
 	github.com/corona10/goimagehash v1.1.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
