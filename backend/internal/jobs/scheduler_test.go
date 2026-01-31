@@ -468,3 +468,62 @@ func TestScheduler_ConcurrentRegisterHandlers(t *testing.T) {
 		<-done
 	}
 }
+
+// =============================================================================
+// ThumbnailConfig Tests
+// =============================================================================
+
+func TestScheduler_RegisterHandlers_WithThumbnailConfig(t *testing.T) {
+	config := jobs.DefaultSchedulerConfig("localhost:6379")
+	scheduler := jobs.NewScheduler(nil, config)
+	cleanupConfig := jobs.DefaultCleanupConfig()
+
+	// Test with thumbnail config
+	thumbnailConfig := &jobs.ThumbnailConfig{
+		Processor:   nil, // Can be nil for handler registration
+		Storage:     nil,
+		Broadcaster: nil,
+		UploadDir:   "/tmp/uploads",
+	}
+
+	mux := scheduler.RegisterHandlers(nil, nil, cleanupConfig, thumbnailConfig)
+	assert.NotNil(t, mux)
+}
+
+func TestThumbnailConfig_ZeroValue(t *testing.T) {
+	// Test zero value config (all nil)
+	config := jobs.ThumbnailConfig{}
+
+	assert.Nil(t, config.Processor)
+	assert.Nil(t, config.Storage)
+	assert.Nil(t, config.Broadcaster)
+	assert.Empty(t, config.UploadDir)
+}
+
+func TestThumbnailConfig_WithUploadDir(t *testing.T) {
+	config := jobs.ThumbnailConfig{
+		UploadDir: "/var/uploads",
+	}
+
+	assert.Equal(t, "/var/uploads", config.UploadDir)
+}
+
+func TestThumbnailConfig_UploadDirVariants(t *testing.T) {
+	tests := []struct {
+		name string
+		dir  string
+	}{
+		{"absolute path", "/var/uploads"},
+		{"relative path", "uploads"},
+		{"temp dir", "/tmp/uploads"},
+		{"nested path", "/home/user/app/uploads/photos"},
+		{"empty path", ""},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			config := jobs.ThumbnailConfig{UploadDir: tt.dir}
+			assert.Equal(t, tt.dir, config.UploadDir)
+		})
+	}
+}
