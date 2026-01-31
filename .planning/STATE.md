@@ -5,24 +5,24 @@
 See: `.planning/PROJECT.md` (updated 2026-01-31)
 
 **Core value:** Reliable inventory access anywhere — online or offline — with seamless sync
-**Current focus:** v1.4 Test Overhaul - Phase 26 In Progress
+**Current focus:** v1.4 Test Overhaul - COMPLETE
 
 ## Current Position
 
 **Milestone:** v1.4 Test Overhaul
-**Phase:** 26 of 26 (E2E Stability and Coverage) — In progress
-**Plan:** 3 of 4 in current phase — 26-03 complete
-**Status:** In progress
-**Last activity:** 2026-01-31 — Completed 26-03-PLAN.md (Inventory E2E tests)
+**Phase:** 26 of 26 (E2E Stability and Coverage) — Complete
+**Plan:** 4 of 4 in current phase — 26-04 complete
+**Status:** Milestone complete
+**Last activity:** 2026-01-31 — Completed 26-04-PLAN.md (Loan CRUD Flow Tests)
 
-Progress: [==================..] 90% (18/20 plans)
+Progress: [====================] 100% (20/20 plans)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 80 (from v1-v1.3 + v1.4)
+- Total plans completed: 87 (from v1-v1.4)
 - Average duration: ~15 min
-- Total execution time: ~20.1 hours
+- Total execution time: ~21.8 hours
 
 **By Milestone:**
 
@@ -32,7 +32,7 @@ Progress: [==================..] 90% (18/20 plans)
 | v1.1 | 6 | 12 | Complete |
 | v1.2 | 6 | 19 | Complete |
 | v1.3 | 4 | 22 | Complete |
-| v1.4 | 5 | 20 | In progress |
+| v1.4 | 5 | 20 | Complete |
 
 ## Accumulated Context
 
@@ -45,16 +45,15 @@ Milestone decisions archived in:
 - `.planning/milestones/v1.1-ROADMAP.md`
 
 **Recent Decisions:**
+- DEC-26-04-01: Use test.skip() for missing prerequisites instead of failing
+- DEC-26-04-02: Replace networkidle globally with domcontentloaded due to SSE
+- DEC-26-04-03: Document comprehensive E2E gaps as future work (not scope of phase)
 - DEC-26-03-01: Use role-based selectors for dialog title instead of class-based
 - DEC-26-03-02: Test both table and empty state scenarios with conditional checks
-- DEC-26-03-03: Look for specific button text in empty state to avoid ambiguity
 - E2E-AUTH-01: Use waitForURL instead of waitForTimeout for navigation
 - E2E-AUTH-02: Monitor API responses before waiting for navigation
-- E2E-AUTH-03: Add retry logic for login form submission (hydration handling)
 - DEC-26-02-01: Use toHaveClass for theme class changes instead of getAttribute polling
 - DEC-26-02-02: Use expect().toPass() for complex multi-condition waits
-- DEC-26-02-03: Use waitForLoadState('domcontentloaded') for debounced search operations
-- FE-MOTION-MOCK: Mock motion/react with static div wrapper for animation component testing
 
 ### Current Test Coverage Baseline
 
@@ -78,10 +77,11 @@ Milestone decisions archived in:
 - BarcodeScanner: 18 test cases (25-04 COMPLETE - init, permissions, torch, pause)
 - FloatingActionButton: 28 test cases (25-05 COMPLETE - toggle, keyboard, accessibility)
 
-**E2E Test Stability (Phase 26 IN PROGRESS):**
+**E2E Test Stability (Phase 26 COMPLETE):**
 - 26-01: Auth setup timing fixes (COMPLETE - waitForURL, API monitoring, retry logic)
 - 26-02: High-risk E2E test stabilization (COMPLETE - 25 waitForTimeout calls removed)
 - 26-03: Inventory E2E tests (COMPLETE - InventoryPage PO, 18 tests)
+- 26-04: Loan CRUD flow tests (COMPLETE - 4 tests, 10 consecutive runs verified)
 
 **Frontend - Infrastructure Status (Phase 22 Complete):**
 - @vitest/coverage-v8 installed (22-02)
@@ -96,6 +96,13 @@ Milestone decisions archived in:
 - [ ] SCAN-01 through SCAN-07: Barcode scanning manual verification
 - [ ] iOS PWA: Camera permission persistence
 
+**Future E2E Work (documented in 26-04-SUMMARY.md):**
+- [ ] Complete CRUD in existing specs (items, locations, containers, borrowers, categories)
+- [ ] Fix accessibility test failures (actual component issues)
+- [ ] Remove remaining waitForTimeout instances (~30 in lower-priority files)
+- [ ] Stabilize theme/command palette tests
+- [ ] Add multi-entity flow tests
+
 ### Blockers/Concerns
 
 Carried forward:
@@ -107,9 +114,9 @@ Carried forward:
 ## Session Continuity
 
 Last session: 2026-01-31
-Stopped at: Completed 26-03-PLAN.md (Inventory E2E tests)
+Stopped at: Completed 26-04-PLAN.md (Loan CRUD Flow Tests) - v1.4 Milestone Complete
 Resume file: None
-Next step: Continue with 26-04 (Loans/Borrowers E2E tests)
+Next step: Plan next milestone or address pending todos
 
 ---
-*Updated: 2026-01-31 after 26-03 complete*
+*Updated: 2026-01-31 after 26-04 complete - v1.4 Test Overhaul milestone complete*
