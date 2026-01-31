@@ -18,6 +18,8 @@ import (
 	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/container"
 	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/inventory"
 	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/item"
+	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/label"
+	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/loan"
 	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/location"
 	"github.com/antti/home-warehouse/go-backend/internal/shared"
 )
@@ -3714,6 +3716,881 @@ func TestApplyBorrowerChange(t *testing.T) {
 			workspaceID,
 			requesterID,
 			"borrower",
+			nil,
+			ActionCreate,
+			payload,
+			StatusPending,
+			nil,
+			nil,
+			nil,
+			time.Now(),
+			time.Now(),
+		)
+
+		mockRepo.On("FindByID", ctx, changeID).Return(pendingChange, nil)
+		mockMemberRepo.On("FindByWorkspaceAndUser", ctx, workspaceID, reviewerID).Return(ownerMember, nil)
+		mockUserRepo.On("FindByID", ctx, requesterID).Return(requesterUser, nil)
+		mockUserRepo.On("FindByID", ctx, reviewerID).Return(reviewerUser, nil)
+
+		err := service.ApproveChange(ctx, changeID, reviewerID)
+
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "failed to apply change")
+	})
+}
+
+// MockLoanRepository is a mock for loan.Repository
+type MockLoanRepository struct {
+	mock.Mock
+}
+
+func (m *MockLoanRepository) Save(ctx context.Context, l *loan.Loan) error {
+	args := m.Called(ctx, l)
+	return args.Error(0)
+}
+
+func (m *MockLoanRepository) FindByID(ctx context.Context, id, workspaceID uuid.UUID) (*loan.Loan, error) {
+	args := m.Called(ctx, id, workspaceID)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*loan.Loan), args.Error(1)
+}
+
+func (m *MockLoanRepository) FindByWorkspace(ctx context.Context, workspaceID uuid.UUID, pagination shared.Pagination) ([]*loan.Loan, int, error) {
+	args := m.Called(ctx, workspaceID, pagination)
+	if args.Get(0) == nil {
+		return nil, 0, args.Error(2)
+	}
+	return args.Get(0).([]*loan.Loan), args.Int(1), args.Error(2)
+}
+
+func (m *MockLoanRepository) FindByBorrower(ctx context.Context, workspaceID, borrowerID uuid.UUID, pagination shared.Pagination) ([]*loan.Loan, error) {
+	args := m.Called(ctx, workspaceID, borrowerID, pagination)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).([]*loan.Loan), args.Error(1)
+}
+
+func (m *MockLoanRepository) FindByInventory(ctx context.Context, workspaceID, inventoryID uuid.UUID) ([]*loan.Loan, error) {
+	args := m.Called(ctx, workspaceID, inventoryID)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).([]*loan.Loan), args.Error(1)
+}
+
+func (m *MockLoanRepository) FindActiveLoans(ctx context.Context, workspaceID uuid.UUID) ([]*loan.Loan, error) {
+	args := m.Called(ctx, workspaceID)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).([]*loan.Loan), args.Error(1)
+}
+
+func (m *MockLoanRepository) FindOverdueLoans(ctx context.Context, workspaceID uuid.UUID) ([]*loan.Loan, error) {
+	args := m.Called(ctx, workspaceID)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).([]*loan.Loan), args.Error(1)
+}
+
+func (m *MockLoanRepository) FindActiveLoanForInventory(ctx context.Context, inventoryID uuid.UUID) (*loan.Loan, error) {
+	args := m.Called(ctx, inventoryID)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*loan.Loan), args.Error(1)
+}
+
+func (m *MockLoanRepository) GetTotalLoanedQuantity(ctx context.Context, inventoryID uuid.UUID) (int, error) {
+	args := m.Called(ctx, inventoryID)
+	return args.Int(0), args.Error(1)
+}
+
+func (m *MockLoanRepository) Delete(ctx context.Context, id uuid.UUID) error {
+	args := m.Called(ctx, id)
+	return args.Error(0)
+}
+
+// MockLabelRepository is a mock for label.Repository
+type MockLabelRepository struct {
+	mock.Mock
+}
+
+func (m *MockLabelRepository) Save(ctx context.Context, l *label.Label) error {
+	args := m.Called(ctx, l)
+	return args.Error(0)
+}
+
+func (m *MockLabelRepository) FindByID(ctx context.Context, id, workspaceID uuid.UUID) (*label.Label, error) {
+	args := m.Called(ctx, id, workspaceID)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*label.Label), args.Error(1)
+}
+
+func (m *MockLabelRepository) FindByName(ctx context.Context, workspaceID uuid.UUID, name string) (*label.Label, error) {
+	args := m.Called(ctx, workspaceID, name)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*label.Label), args.Error(1)
+}
+
+func (m *MockLabelRepository) FindByWorkspace(ctx context.Context, workspaceID uuid.UUID) ([]*label.Label, error) {
+	args := m.Called(ctx, workspaceID)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).([]*label.Label), args.Error(1)
+}
+
+func (m *MockLabelRepository) Delete(ctx context.Context, id uuid.UUID) error {
+	args := m.Called(ctx, id)
+	return args.Error(0)
+}
+
+func (m *MockLabelRepository) NameExists(ctx context.Context, workspaceID uuid.UUID, name string) (bool, error) {
+	args := m.Called(ctx, workspaceID, name)
+	return args.Bool(0), args.Error(1)
+}
+
+// TestApplyLoanChange tests loan change application through approval pipeline
+func TestApplyLoanChange(t *testing.T) {
+	ctx := context.Background()
+	workspaceID := uuid.New()
+	requesterID := uuid.New()
+	reviewerID := uuid.New()
+	changeID := uuid.New()
+	inventoryID := uuid.New()
+	borrowerID := uuid.New()
+
+	setupMocks := func() (*MockPendingChangeRepository, *MockMemberRepository, *MockUserRepository, *MockLoanRepository, *member.Member, *user.User, *user.User) {
+		mockRepo := new(MockPendingChangeRepository)
+		mockMemberRepo := new(MockMemberRepository)
+		mockUserRepo := new(MockUserRepository)
+		mockLoanRepo := new(MockLoanRepository)
+
+		ownerMember := member.Reconstruct(
+			uuid.New(),
+			workspaceID,
+			reviewerID,
+			member.RoleOwner,
+			nil,
+			time.Now(),
+			time.Now(),
+		)
+
+		requesterUser, _ := user.NewUser("requester@test.com", "Requester User", "password123")
+		reviewerUser, _ := user.NewUser("reviewer@test.com", "Reviewer User", "password123")
+
+		return mockRepo, mockMemberRepo, mockUserRepo, mockLoanRepo, ownerMember, requesterUser, reviewerUser
+	}
+
+	t.Run("create loan successfully", func(t *testing.T) {
+		mockRepo, mockMemberRepo, mockUserRepo, mockLoanRepo, ownerMember, requesterUser, reviewerUser := setupMocks()
+
+		service := &Service{
+			repo:       mockRepo,
+			memberRepo: mockMemberRepo,
+			userRepo:   mockUserRepo,
+			loanRepo:   mockLoanRepo,
+		}
+
+		loanedAt := time.Now().Format(time.RFC3339)
+		dueDate := time.Now().Add(7 * 24 * time.Hour).Format(time.RFC3339)
+		payload := json.RawMessage(`{
+			"inventory_id": "` + inventoryID.String() + `",
+			"borrower_id": "` + borrowerID.String() + `",
+			"quantity": 1,
+			"loaned_at": "` + loanedAt + `",
+			"due_date": "` + dueDate + `"
+		}`)
+		pendingChange := Reconstruct(
+			changeID,
+			workspaceID,
+			requesterID,
+			"loan",
+			nil,
+			ActionCreate,
+			payload,
+			StatusPending,
+			nil,
+			nil,
+			nil,
+			time.Now(),
+			time.Now(),
+		)
+
+		mockRepo.On("FindByID", ctx, changeID).Return(pendingChange, nil)
+		mockMemberRepo.On("FindByWorkspaceAndUser", ctx, workspaceID, reviewerID).Return(ownerMember, nil)
+		mockUserRepo.On("FindByID", ctx, requesterID).Return(requesterUser, nil)
+		mockUserRepo.On("FindByID", ctx, reviewerID).Return(reviewerUser, nil)
+		mockLoanRepo.On("Save", ctx, mock.AnythingOfType("*loan.Loan")).Return(nil)
+		mockRepo.On("Save", ctx, mock.AnythingOfType("*pendingchange.PendingChange")).Return(nil)
+
+		err := service.ApproveChange(ctx, changeID, reviewerID)
+
+		assert.NoError(t, err)
+		mockLoanRepo.AssertExpectations(t)
+	})
+
+	t.Run("create loan without due date", func(t *testing.T) {
+		mockRepo, mockMemberRepo, mockUserRepo, mockLoanRepo, ownerMember, requesterUser, reviewerUser := setupMocks()
+
+		service := &Service{
+			repo:       mockRepo,
+			memberRepo: mockMemberRepo,
+			userRepo:   mockUserRepo,
+			loanRepo:   mockLoanRepo,
+		}
+
+		loanedAt := time.Now().Format(time.RFC3339)
+		payload := json.RawMessage(`{
+			"inventory_id": "` + inventoryID.String() + `",
+			"borrower_id": "` + borrowerID.String() + `",
+			"quantity": 2,
+			"loaned_at": "` + loanedAt + `"
+		}`)
+		pendingChange := Reconstruct(
+			changeID,
+			workspaceID,
+			requesterID,
+			"loan",
+			nil,
+			ActionCreate,
+			payload,
+			StatusPending,
+			nil,
+			nil,
+			nil,
+			time.Now(),
+			time.Now(),
+		)
+
+		mockRepo.On("FindByID", ctx, changeID).Return(pendingChange, nil)
+		mockMemberRepo.On("FindByWorkspaceAndUser", ctx, workspaceID, reviewerID).Return(ownerMember, nil)
+		mockUserRepo.On("FindByID", ctx, requesterID).Return(requesterUser, nil)
+		mockUserRepo.On("FindByID", ctx, reviewerID).Return(reviewerUser, nil)
+		mockLoanRepo.On("Save", ctx, mock.AnythingOfType("*loan.Loan")).Return(nil)
+		mockRepo.On("Save", ctx, mock.AnythingOfType("*pendingchange.PendingChange")).Return(nil)
+
+		err := service.ApproveChange(ctx, changeID, reviewerID)
+
+		assert.NoError(t, err)
+		mockLoanRepo.AssertExpectations(t)
+	})
+
+	t.Run("update loan - return item", func(t *testing.T) {
+		mockRepo, mockMemberRepo, mockUserRepo, mockLoanRepo, ownerMember, requesterUser, reviewerUser := setupMocks()
+
+		service := &Service{
+			repo:       mockRepo,
+			memberRepo: mockMemberRepo,
+			userRepo:   mockUserRepo,
+			loanRepo:   mockLoanRepo,
+		}
+
+		loanID := uuid.New()
+		payload := json.RawMessage(`{"return": true}`)
+		pendingChange := Reconstruct(
+			changeID,
+			workspaceID,
+			requesterID,
+			"loan",
+			&loanID,
+			ActionUpdate,
+			payload,
+			StatusPending,
+			nil,
+			nil,
+			nil,
+			time.Now(),
+			time.Now(),
+		)
+
+		existingLoan := loan.Reconstruct(
+			loanID,
+			workspaceID,
+			inventoryID,
+			borrowerID,
+			1,
+			time.Now().Add(-24*time.Hour),
+			nil,
+			nil, // not returned yet
+			nil,
+			time.Now().Add(-24*time.Hour),
+			time.Now().Add(-24*time.Hour),
+		)
+
+		mockRepo.On("FindByID", ctx, changeID).Return(pendingChange, nil)
+		mockMemberRepo.On("FindByWorkspaceAndUser", ctx, workspaceID, reviewerID).Return(ownerMember, nil)
+		mockUserRepo.On("FindByID", ctx, requesterID).Return(requesterUser, nil)
+		mockUserRepo.On("FindByID", ctx, reviewerID).Return(reviewerUser, nil)
+		mockLoanRepo.On("FindByID", ctx, loanID, workspaceID).Return(existingLoan, nil)
+		mockLoanRepo.On("Save", ctx, mock.AnythingOfType("*loan.Loan")).Return(nil)
+		mockRepo.On("Save", ctx, mock.AnythingOfType("*pendingchange.PendingChange")).Return(nil)
+
+		err := service.ApproveChange(ctx, changeID, reviewerID)
+
+		assert.NoError(t, err)
+		mockLoanRepo.AssertExpectations(t)
+	})
+
+	t.Run("delete loan successfully", func(t *testing.T) {
+		mockRepo, mockMemberRepo, mockUserRepo, mockLoanRepo, ownerMember, requesterUser, reviewerUser := setupMocks()
+
+		service := &Service{
+			repo:       mockRepo,
+			memberRepo: mockMemberRepo,
+			userRepo:   mockUserRepo,
+			loanRepo:   mockLoanRepo,
+		}
+
+		loanID := uuid.New()
+		payload := json.RawMessage(`{}`)
+		pendingChange := Reconstruct(
+			changeID,
+			workspaceID,
+			requesterID,
+			"loan",
+			&loanID,
+			ActionDelete,
+			payload,
+			StatusPending,
+			nil,
+			nil,
+			nil,
+			time.Now(),
+			time.Now(),
+		)
+
+		mockRepo.On("FindByID", ctx, changeID).Return(pendingChange, nil)
+		mockMemberRepo.On("FindByWorkspaceAndUser", ctx, workspaceID, reviewerID).Return(ownerMember, nil)
+		mockUserRepo.On("FindByID", ctx, requesterID).Return(requesterUser, nil)
+		mockUserRepo.On("FindByID", ctx, reviewerID).Return(reviewerUser, nil)
+		mockLoanRepo.On("Delete", ctx, loanID).Return(nil)
+		mockRepo.On("Save", ctx, mock.AnythingOfType("*pendingchange.PendingChange")).Return(nil)
+
+		err := service.ApproveChange(ctx, changeID, reviewerID)
+
+		assert.NoError(t, err)
+		mockLoanRepo.AssertExpectations(t)
+	})
+
+	t.Run("create loan fails on save error", func(t *testing.T) {
+		mockRepo, mockMemberRepo, mockUserRepo, mockLoanRepo, ownerMember, requesterUser, reviewerUser := setupMocks()
+
+		service := &Service{
+			repo:       mockRepo,
+			memberRepo: mockMemberRepo,
+			userRepo:   mockUserRepo,
+			loanRepo:   mockLoanRepo,
+		}
+
+		loanedAt := time.Now().Format(time.RFC3339)
+		payload := json.RawMessage(`{
+			"inventory_id": "` + inventoryID.String() + `",
+			"borrower_id": "` + borrowerID.String() + `",
+			"quantity": 1,
+			"loaned_at": "` + loanedAt + `"
+		}`)
+		pendingChange := Reconstruct(
+			changeID,
+			workspaceID,
+			requesterID,
+			"loan",
+			nil,
+			ActionCreate,
+			payload,
+			StatusPending,
+			nil,
+			nil,
+			nil,
+			time.Now(),
+			time.Now(),
+		)
+
+		mockRepo.On("FindByID", ctx, changeID).Return(pendingChange, nil)
+		mockMemberRepo.On("FindByWorkspaceAndUser", ctx, workspaceID, reviewerID).Return(ownerMember, nil)
+		mockUserRepo.On("FindByID", ctx, requesterID).Return(requesterUser, nil)
+		mockUserRepo.On("FindByID", ctx, reviewerID).Return(reviewerUser, nil)
+		mockLoanRepo.On("Save", ctx, mock.AnythingOfType("*loan.Loan")).Return(errors.New("database error"))
+
+		err := service.ApproveChange(ctx, changeID, reviewerID)
+
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "failed to apply change")
+		mockLoanRepo.AssertExpectations(t)
+	})
+
+	t.Run("update loan fails when not found", func(t *testing.T) {
+		mockRepo, mockMemberRepo, mockUserRepo, mockLoanRepo, ownerMember, requesterUser, reviewerUser := setupMocks()
+
+		service := &Service{
+			repo:       mockRepo,
+			memberRepo: mockMemberRepo,
+			userRepo:   mockUserRepo,
+			loanRepo:   mockLoanRepo,
+		}
+
+		loanID := uuid.New()
+		payload := json.RawMessage(`{"return": true}`)
+		pendingChange := Reconstruct(
+			changeID,
+			workspaceID,
+			requesterID,
+			"loan",
+			&loanID,
+			ActionUpdate,
+			payload,
+			StatusPending,
+			nil,
+			nil,
+			nil,
+			time.Now(),
+			time.Now(),
+		)
+
+		mockRepo.On("FindByID", ctx, changeID).Return(pendingChange, nil)
+		mockMemberRepo.On("FindByWorkspaceAndUser", ctx, workspaceID, reviewerID).Return(ownerMember, nil)
+		mockUserRepo.On("FindByID", ctx, requesterID).Return(requesterUser, nil)
+		mockUserRepo.On("FindByID", ctx, reviewerID).Return(reviewerUser, nil)
+		mockLoanRepo.On("FindByID", ctx, loanID, workspaceID).Return(nil, errors.New("loan not found"))
+
+		err := service.ApproveChange(ctx, changeID, reviewerID)
+
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "failed to apply change")
+		mockLoanRepo.AssertExpectations(t)
+	})
+
+	t.Run("delete loan fails when entity ID missing", func(t *testing.T) {
+		mockRepo, mockMemberRepo, mockUserRepo, mockLoanRepo, ownerMember, requesterUser, reviewerUser := setupMocks()
+
+		service := &Service{
+			repo:       mockRepo,
+			memberRepo: mockMemberRepo,
+			userRepo:   mockUserRepo,
+			loanRepo:   mockLoanRepo,
+		}
+
+		payload := json.RawMessage(`{}`)
+		pendingChange := Reconstruct(
+			changeID,
+			workspaceID,
+			requesterID,
+			"loan",
+			nil,
+			ActionDelete,
+			payload,
+			StatusPending,
+			nil,
+			nil,
+			nil,
+			time.Now(),
+			time.Now(),
+		)
+
+		mockRepo.On("FindByID", ctx, changeID).Return(pendingChange, nil)
+		mockMemberRepo.On("FindByWorkspaceAndUser", ctx, workspaceID, reviewerID).Return(ownerMember, nil)
+		mockUserRepo.On("FindByID", ctx, requesterID).Return(requesterUser, nil)
+		mockUserRepo.On("FindByID", ctx, reviewerID).Return(reviewerUser, nil)
+
+		err := service.ApproveChange(ctx, changeID, reviewerID)
+
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "failed to apply change")
+	})
+
+	t.Run("create loan fails with invalid loaned_at date", func(t *testing.T) {
+		mockRepo, mockMemberRepo, mockUserRepo, mockLoanRepo, ownerMember, requesterUser, reviewerUser := setupMocks()
+
+		service := &Service{
+			repo:       mockRepo,
+			memberRepo: mockMemberRepo,
+			userRepo:   mockUserRepo,
+			loanRepo:   mockLoanRepo,
+		}
+
+		payload := json.RawMessage(`{
+			"inventory_id": "` + inventoryID.String() + `",
+			"borrower_id": "` + borrowerID.String() + `",
+			"quantity": 1,
+			"loaned_at": "invalid-date"
+		}`)
+		pendingChange := Reconstruct(
+			changeID,
+			workspaceID,
+			requesterID,
+			"loan",
+			nil,
+			ActionCreate,
+			payload,
+			StatusPending,
+			nil,
+			nil,
+			nil,
+			time.Now(),
+			time.Now(),
+		)
+
+		mockRepo.On("FindByID", ctx, changeID).Return(pendingChange, nil)
+		mockMemberRepo.On("FindByWorkspaceAndUser", ctx, workspaceID, reviewerID).Return(ownerMember, nil)
+		mockUserRepo.On("FindByID", ctx, requesterID).Return(requesterUser, nil)
+		mockUserRepo.On("FindByID", ctx, reviewerID).Return(reviewerUser, nil)
+
+		err := service.ApproveChange(ctx, changeID, reviewerID)
+
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "failed to apply change")
+	})
+}
+
+// TestApplyLabelChange tests label change application through approval pipeline
+func TestApplyLabelChange(t *testing.T) {
+	ctx := context.Background()
+	workspaceID := uuid.New()
+	requesterID := uuid.New()
+	reviewerID := uuid.New()
+	changeID := uuid.New()
+
+	setupMocks := func() (*MockPendingChangeRepository, *MockMemberRepository, *MockUserRepository, *MockLabelRepository, *member.Member, *user.User, *user.User) {
+		mockRepo := new(MockPendingChangeRepository)
+		mockMemberRepo := new(MockMemberRepository)
+		mockUserRepo := new(MockUserRepository)
+		mockLabelRepo := new(MockLabelRepository)
+
+		ownerMember := member.Reconstruct(
+			uuid.New(),
+			workspaceID,
+			reviewerID,
+			member.RoleOwner,
+			nil,
+			time.Now(),
+			time.Now(),
+		)
+
+		requesterUser, _ := user.NewUser("requester@test.com", "Requester User", "password123")
+		reviewerUser, _ := user.NewUser("reviewer@test.com", "Reviewer User", "password123")
+
+		return mockRepo, mockMemberRepo, mockUserRepo, mockLabelRepo, ownerMember, requesterUser, reviewerUser
+	}
+
+	t.Run("create label successfully", func(t *testing.T) {
+		mockRepo, mockMemberRepo, mockUserRepo, mockLabelRepo, ownerMember, requesterUser, reviewerUser := setupMocks()
+
+		service := &Service{
+			repo:       mockRepo,
+			memberRepo: mockMemberRepo,
+			userRepo:   mockUserRepo,
+			labelRepo:  mockLabelRepo,
+		}
+
+		payload := json.RawMessage(`{"name": "Important", "color": "#FF0000"}`)
+		pendingChange := Reconstruct(
+			changeID,
+			workspaceID,
+			requesterID,
+			"label",
+			nil,
+			ActionCreate,
+			payload,
+			StatusPending,
+			nil,
+			nil,
+			nil,
+			time.Now(),
+			time.Now(),
+		)
+
+		mockRepo.On("FindByID", ctx, changeID).Return(pendingChange, nil)
+		mockMemberRepo.On("FindByWorkspaceAndUser", ctx, workspaceID, reviewerID).Return(ownerMember, nil)
+		mockUserRepo.On("FindByID", ctx, requesterID).Return(requesterUser, nil)
+		mockUserRepo.On("FindByID", ctx, reviewerID).Return(reviewerUser, nil)
+		mockLabelRepo.On("Save", ctx, mock.AnythingOfType("*label.Label")).Return(nil)
+		mockRepo.On("Save", ctx, mock.AnythingOfType("*pendingchange.PendingChange")).Return(nil)
+
+		err := service.ApproveChange(ctx, changeID, reviewerID)
+
+		assert.NoError(t, err)
+		mockLabelRepo.AssertExpectations(t)
+	})
+
+	t.Run("create label without color", func(t *testing.T) {
+		mockRepo, mockMemberRepo, mockUserRepo, mockLabelRepo, ownerMember, requesterUser, reviewerUser := setupMocks()
+
+		service := &Service{
+			repo:       mockRepo,
+			memberRepo: mockMemberRepo,
+			userRepo:   mockUserRepo,
+			labelRepo:  mockLabelRepo,
+		}
+
+		payload := json.RawMessage(`{"name": "Normal Label"}`)
+		pendingChange := Reconstruct(
+			changeID,
+			workspaceID,
+			requesterID,
+			"label",
+			nil,
+			ActionCreate,
+			payload,
+			StatusPending,
+			nil,
+			nil,
+			nil,
+			time.Now(),
+			time.Now(),
+		)
+
+		mockRepo.On("FindByID", ctx, changeID).Return(pendingChange, nil)
+		mockMemberRepo.On("FindByWorkspaceAndUser", ctx, workspaceID, reviewerID).Return(ownerMember, nil)
+		mockUserRepo.On("FindByID", ctx, requesterID).Return(requesterUser, nil)
+		mockUserRepo.On("FindByID", ctx, reviewerID).Return(reviewerUser, nil)
+		mockLabelRepo.On("Save", ctx, mock.AnythingOfType("*label.Label")).Return(nil)
+		mockRepo.On("Save", ctx, mock.AnythingOfType("*pendingchange.PendingChange")).Return(nil)
+
+		err := service.ApproveChange(ctx, changeID, reviewerID)
+
+		assert.NoError(t, err)
+		mockLabelRepo.AssertExpectations(t)
+	})
+
+	t.Run("update label successfully", func(t *testing.T) {
+		mockRepo, mockMemberRepo, mockUserRepo, mockLabelRepo, ownerMember, requesterUser, reviewerUser := setupMocks()
+
+		service := &Service{
+			repo:       mockRepo,
+			memberRepo: mockMemberRepo,
+			userRepo:   mockUserRepo,
+			labelRepo:  mockLabelRepo,
+		}
+
+		labelID := uuid.New()
+		payload := json.RawMessage(`{"name": "Updated Label", "color": "#00FF00"}`)
+		pendingChange := Reconstruct(
+			changeID,
+			workspaceID,
+			requesterID,
+			"label",
+			&labelID,
+			ActionUpdate,
+			payload,
+			StatusPending,
+			nil,
+			nil,
+			nil,
+			time.Now(),
+			time.Now(),
+		)
+
+		color := "#FF0000"
+		existingLabel := label.Reconstruct(
+			labelID,
+			workspaceID,
+			"Original Label",
+			&color,
+			nil,
+			false,
+			time.Now(),
+			time.Now(),
+		)
+
+		mockRepo.On("FindByID", ctx, changeID).Return(pendingChange, nil)
+		mockMemberRepo.On("FindByWorkspaceAndUser", ctx, workspaceID, reviewerID).Return(ownerMember, nil)
+		mockUserRepo.On("FindByID", ctx, requesterID).Return(requesterUser, nil)
+		mockUserRepo.On("FindByID", ctx, reviewerID).Return(reviewerUser, nil)
+		mockLabelRepo.On("FindByID", ctx, labelID, workspaceID).Return(existingLabel, nil)
+		mockLabelRepo.On("Save", ctx, mock.AnythingOfType("*label.Label")).Return(nil)
+		mockRepo.On("Save", ctx, mock.AnythingOfType("*pendingchange.PendingChange")).Return(nil)
+
+		err := service.ApproveChange(ctx, changeID, reviewerID)
+
+		assert.NoError(t, err)
+		mockLabelRepo.AssertExpectations(t)
+	})
+
+	t.Run("delete label successfully", func(t *testing.T) {
+		mockRepo, mockMemberRepo, mockUserRepo, mockLabelRepo, ownerMember, requesterUser, reviewerUser := setupMocks()
+
+		service := &Service{
+			repo:       mockRepo,
+			memberRepo: mockMemberRepo,
+			userRepo:   mockUserRepo,
+			labelRepo:  mockLabelRepo,
+		}
+
+		labelID := uuid.New()
+		payload := json.RawMessage(`{}`)
+		pendingChange := Reconstruct(
+			changeID,
+			workspaceID,
+			requesterID,
+			"label",
+			&labelID,
+			ActionDelete,
+			payload,
+			StatusPending,
+			nil,
+			nil,
+			nil,
+			time.Now(),
+			time.Now(),
+		)
+
+		mockRepo.On("FindByID", ctx, changeID).Return(pendingChange, nil)
+		mockMemberRepo.On("FindByWorkspaceAndUser", ctx, workspaceID, reviewerID).Return(ownerMember, nil)
+		mockUserRepo.On("FindByID", ctx, requesterID).Return(requesterUser, nil)
+		mockUserRepo.On("FindByID", ctx, reviewerID).Return(reviewerUser, nil)
+		mockLabelRepo.On("Delete", ctx, labelID).Return(nil)
+		mockRepo.On("Save", ctx, mock.AnythingOfType("*pendingchange.PendingChange")).Return(nil)
+
+		err := service.ApproveChange(ctx, changeID, reviewerID)
+
+		assert.NoError(t, err)
+		mockLabelRepo.AssertExpectations(t)
+	})
+
+	t.Run("create label fails on save error", func(t *testing.T) {
+		mockRepo, mockMemberRepo, mockUserRepo, mockLabelRepo, ownerMember, requesterUser, reviewerUser := setupMocks()
+
+		service := &Service{
+			repo:       mockRepo,
+			memberRepo: mockMemberRepo,
+			userRepo:   mockUserRepo,
+			labelRepo:  mockLabelRepo,
+		}
+
+		payload := json.RawMessage(`{"name": "Important"}`)
+		pendingChange := Reconstruct(
+			changeID,
+			workspaceID,
+			requesterID,
+			"label",
+			nil,
+			ActionCreate,
+			payload,
+			StatusPending,
+			nil,
+			nil,
+			nil,
+			time.Now(),
+			time.Now(),
+		)
+
+		mockRepo.On("FindByID", ctx, changeID).Return(pendingChange, nil)
+		mockMemberRepo.On("FindByWorkspaceAndUser", ctx, workspaceID, reviewerID).Return(ownerMember, nil)
+		mockUserRepo.On("FindByID", ctx, requesterID).Return(requesterUser, nil)
+		mockUserRepo.On("FindByID", ctx, reviewerID).Return(reviewerUser, nil)
+		mockLabelRepo.On("Save", ctx, mock.AnythingOfType("*label.Label")).Return(errors.New("database error"))
+
+		err := service.ApproveChange(ctx, changeID, reviewerID)
+
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "failed to apply change")
+		mockLabelRepo.AssertExpectations(t)
+	})
+
+	t.Run("update label fails when not found", func(t *testing.T) {
+		mockRepo, mockMemberRepo, mockUserRepo, mockLabelRepo, ownerMember, requesterUser, reviewerUser := setupMocks()
+
+		service := &Service{
+			repo:       mockRepo,
+			memberRepo: mockMemberRepo,
+			userRepo:   mockUserRepo,
+			labelRepo:  mockLabelRepo,
+		}
+
+		labelID := uuid.New()
+		payload := json.RawMessage(`{"name": "Updated"}`)
+		pendingChange := Reconstruct(
+			changeID,
+			workspaceID,
+			requesterID,
+			"label",
+			&labelID,
+			ActionUpdate,
+			payload,
+			StatusPending,
+			nil,
+			nil,
+			nil,
+			time.Now(),
+			time.Now(),
+		)
+
+		mockRepo.On("FindByID", ctx, changeID).Return(pendingChange, nil)
+		mockMemberRepo.On("FindByWorkspaceAndUser", ctx, workspaceID, reviewerID).Return(ownerMember, nil)
+		mockUserRepo.On("FindByID", ctx, requesterID).Return(requesterUser, nil)
+		mockUserRepo.On("FindByID", ctx, reviewerID).Return(reviewerUser, nil)
+		mockLabelRepo.On("FindByID", ctx, labelID, workspaceID).Return(nil, errors.New("label not found"))
+
+		err := service.ApproveChange(ctx, changeID, reviewerID)
+
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "failed to apply change")
+		mockLabelRepo.AssertExpectations(t)
+	})
+
+	t.Run("delete label fails when entity ID missing", func(t *testing.T) {
+		mockRepo, mockMemberRepo, mockUserRepo, mockLabelRepo, ownerMember, requesterUser, reviewerUser := setupMocks()
+
+		service := &Service{
+			repo:       mockRepo,
+			memberRepo: mockMemberRepo,
+			userRepo:   mockUserRepo,
+			labelRepo:  mockLabelRepo,
+		}
+
+		payload := json.RawMessage(`{}`)
+		pendingChange := Reconstruct(
+			changeID,
+			workspaceID,
+			requesterID,
+			"label",
+			nil,
+			ActionDelete,
+			payload,
+			StatusPending,
+			nil,
+			nil,
+			nil,
+			time.Now(),
+			time.Now(),
+		)
+
+		mockRepo.On("FindByID", ctx, changeID).Return(pendingChange, nil)
+		mockMemberRepo.On("FindByWorkspaceAndUser", ctx, workspaceID, reviewerID).Return(ownerMember, nil)
+		mockUserRepo.On("FindByID", ctx, requesterID).Return(requesterUser, nil)
+		mockUserRepo.On("FindByID", ctx, reviewerID).Return(reviewerUser, nil)
+
+		err := service.ApproveChange(ctx, changeID, reviewerID)
+
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "failed to apply change")
+	})
+
+	t.Run("create label fails with invalid payload", func(t *testing.T) {
+		mockRepo, mockMemberRepo, mockUserRepo, mockLabelRepo, ownerMember, requesterUser, reviewerUser := setupMocks()
+
+		service := &Service{
+			repo:       mockRepo,
+			memberRepo: mockMemberRepo,
+			userRepo:   mockUserRepo,
+			labelRepo:  mockLabelRepo,
+		}
+
+		payload := json.RawMessage(`{invalid json}`)
+		pendingChange := Reconstruct(
+			changeID,
+			workspaceID,
+			requesterID,
+			"label",
 			nil,
 			ActionCreate,
 			payload,
