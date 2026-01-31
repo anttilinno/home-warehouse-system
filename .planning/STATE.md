@@ -11,18 +11,18 @@ See: `.planning/PROJECT.md` (updated 2026-01-31)
 
 **Milestone:** v1.4 Test Overhaul
 **Phase:** 26 of 26 (E2E Stability and Coverage) — In progress
-**Plan:** 2 of 4 in current phase — 26-02 complete
+**Plan:** 3 of 4 in current phase — 26-03 complete
 **Status:** In progress
-**Last activity:** 2026-01-31 — Completed 26-02-PLAN.md (High-risk E2E test stabilization)
+**Last activity:** 2026-01-31 — Completed 26-03-PLAN.md (Inventory E2E tests)
 
-Progress: [================....] 80% (16/20 plans)
+Progress: [==================..] 90% (18/20 plans)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 79 (from v1-v1.3 + v1.4)
+- Total plans completed: 80 (from v1-v1.3 + v1.4)
 - Average duration: ~15 min
-- Total execution time: ~19.5 hours
+- Total execution time: ~20.1 hours
 
 **By Milestone:**
 
@@ -45,14 +45,16 @@ Milestone decisions archived in:
 - `.planning/milestones/v1.1-ROADMAP.md`
 
 **Recent Decisions:**
+- DEC-26-03-01: Use role-based selectors for dialog title instead of class-based
+- DEC-26-03-02: Test both table and empty state scenarios with conditional checks
+- DEC-26-03-03: Look for specific button text in empty state to avoid ambiguity
+- E2E-AUTH-01: Use waitForURL instead of waitForTimeout for navigation
+- E2E-AUTH-02: Monitor API responses before waiting for navigation
+- E2E-AUTH-03: Add retry logic for login form submission (hydration handling)
 - DEC-26-02-01: Use toHaveClass for theme class changes instead of getAttribute polling
 - DEC-26-02-02: Use expect().toPass() for complex multi-condition waits
 - DEC-26-02-03: Use waitForLoadState('domcontentloaded') for debounced search operations
 - FE-MOTION-MOCK: Mock motion/react with static div wrapper for animation component testing
-- DEC-25-04: Add @testing-library/jest-dom for DOM matchers (toBeInTheDocument)
-- DEC-25-03: Use fireEvent instead of userEvent (userEvent not installed)
-- DEC-24-02: Complete endpoint requires body (even empty) per Huma API framework
-- DEC-24-01: Add ServiceInterface to declutter package for mock injection
 
 ### Current Test Coverage Baseline
 
@@ -77,8 +79,9 @@ Milestone decisions archived in:
 - FloatingActionButton: 28 test cases (25-05 COMPLETE - toggle, keyboard, accessibility)
 
 **E2E Test Stability (Phase 26 IN PROGRESS):**
-- 26-01: E2E authentication fixtures (pending)
+- 26-01: Auth setup timing fixes (COMPLETE - waitForURL, API monitoring, retry logic)
 - 26-02: High-risk E2E test stabilization (COMPLETE - 25 waitForTimeout calls removed)
+- 26-03: Inventory E2E tests (COMPLETE - InventoryPage PO, 18 tests)
 
 **Frontend - Infrastructure Status (Phase 22 Complete):**
 - @vitest/coverage-v8 installed (22-02)
@@ -96,17 +99,17 @@ Milestone decisions archived in:
 ### Blockers/Concerns
 
 Carried forward:
-- E2E test auth setup timing issues — target for Phase 26 (E2E-01)
 - Safari iOS manual testing pending
 - CGO_ENABLED=0 build has webp library issue — dev builds work fine
 - Jobs package coverage limited by pgxpool/Redis requirements (documented in JOBS-COV-01)
+- E2E rate limiting: Backend limits auth to 5 req/min (documented, not a bug)
 
 ## Session Continuity
 
 Last session: 2026-01-31
-Stopped at: Completed 26-02-PLAN.md (High-risk E2E test stabilization)
+Stopped at: Completed 26-03-PLAN.md (Inventory E2E tests)
 Resume file: None
-Next step: Continue with 26-03 (additional E2E stabilization) or 26-04
+Next step: Continue with 26-04 (Loans/Borrowers E2E tests)
 
 ---
-*Updated: 2026-01-31 after 26-02 complete*
+*Updated: 2026-01-31 after 26-03 complete*
