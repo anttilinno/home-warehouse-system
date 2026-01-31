@@ -768,5 +768,69 @@
       "cameraInput": "Сделать фото камерой",
       "galleryInput": "Выбрать из галереи"
     }
+  },
+  "items": {
+    "create": {
+      "title": "Создать новый предмет",
+      "subtitle": "Добавить новый предмет в инвентарь",
+      "steps": {
+        "basic": "Основная информация",
+        "basicDescription": "Введите основную информацию о предмете",
+        "details": "Детали",
+        "detailsDescription": "Добавьте детали продукта и дополнительные настройки",
+        "photos": "Фото",
+        "photosDescription": "Добавьте фотографии предмета (необязательно)"
+      },
+      "sections": {
+        "identification": "Идентификация",
+        "identificationDescription": "Серийные номера, штрихкоды и коды",
+        "purchase": "Покупка и запас",
+        "purchaseDescription": "История покупок и уровни запаса",
+        "warranty": "Гарантия и страховка",
+        "warrantyDescription": "Детали защиты и покрытия"
+      },
+      "fields": {
+        "sku": "Артикул",
+        "name": "Название",
+        "description": "Описание",
+        "brand": "Бренд",
+        "model": "Модель",
+        "manufacturer": "Производитель",
+        "serialNumber": "Серийный номер",
+        "barcode": "Штрихкод",
+        "shortCode": "Короткий код",
+        "purchasedFrom": "Куплено у",
+        "minStockLevel": "Минимальный запас",
+        "isInsured": "Предмет застрахован",
+        "lifetimeWarranty": "Пожизненная гарантия",
+        "warrantyDetails": "Детали гарантии",
+        "photo": "Фото",
+        "addPhoto": "Добавить фото",
+        "addAnotherPhoto": "Добавить ещё фото",
+        "maxPhotosReached": "Максимум 5 фотографий"
+      },
+      "placeholders": {
+        "sku": "напр., ITEM-001",
+        "name": "Введите название предмета",
+        "description": "Необязательное описание",
+        "brand": "напр., Apple",
+        "model": "напр., iPhone 15 Pro",
+        "manufacturer": "напр., Apple Inc.",
+        "serialNumber": "напр., ABC123XYZ",
+        "barcode": "напр., 1234567890123",
+        "shortCode": "Генерируется автоматически если пусто",
+        "purchasedFrom": "напр., Amazon",
+        "warrantyDetails": "Опишите условия гарантии"
+      },
+      "next": "Далее",
+      "back": "Назад",
+      "createItem": "Создать предмет",
+      "creating": "Создание...",
+      "success": "Предмет успешно создан",
+      "errors": {
+        "noWorkspace": "Рабочее пространство не выбрано",
+        "createFailed": "Не удалось создать предмет"
+      }
+    }
   }
 }

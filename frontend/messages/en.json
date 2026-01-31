@@ -850,5 +850,69 @@
       "cameraInput": "Take photo with camera",
       "galleryInput": "Choose from gallery"
     }
+  },
+  "items": {
+    "create": {
+      "title": "Create New Item",
+      "subtitle": "Add a new item to your inventory",
+      "steps": {
+        "basic": "Basic Info",
+        "basicDescription": "Enter the essential item information",
+        "details": "Details",
+        "detailsDescription": "Add product details and advanced settings",
+        "photos": "Photos",
+        "photosDescription": "Add photos of your item (optional)"
+      },
+      "sections": {
+        "identification": "Identification",
+        "identificationDescription": "Serial numbers, barcodes, and codes",
+        "purchase": "Purchase & Stock",
+        "purchaseDescription": "Purchase history and stock levels",
+        "warranty": "Warranty & Insurance",
+        "warrantyDescription": "Protection and coverage details"
+      },
+      "fields": {
+        "sku": "SKU",
+        "name": "Name",
+        "description": "Description",
+        "brand": "Brand",
+        "model": "Model",
+        "manufacturer": "Manufacturer",
+        "serialNumber": "Serial Number",
+        "barcode": "Barcode",
+        "shortCode": "Short Code",
+        "purchasedFrom": "Purchased From",
+        "minStockLevel": "Minimum Stock Level",
+        "isInsured": "Item is insured",
+        "lifetimeWarranty": "Has lifetime warranty",
+        "warrantyDetails": "Warranty Details",
+        "photo": "Photo",
+        "addPhoto": "Add Photo",
+        "addAnotherPhoto": "Add Another Photo",
+        "maxPhotosReached": "Maximum 5 photos allowed"
+      },
+      "placeholders": {
+        "sku": "e.g., ITEM-001",
+        "name": "Enter item name",
+        "description": "Optional description",
+        "brand": "e.g., Apple",
+        "model": "e.g., iPhone 15 Pro",
+        "manufacturer": "e.g., Apple Inc.",
+        "serialNumber": "e.g., ABC123XYZ",
+        "barcode": "e.g., 1234567890123",
+        "shortCode": "Auto-generated if empty",
+        "purchasedFrom": "e.g., Amazon",
+        "warrantyDetails": "Describe warranty coverage"
+      },
+      "next": "Next",
+      "back": "Back",
+      "createItem": "Create Item",
+      "creating": "Creating...",
+      "success": "Item created successfully",
+      "errors": {
+        "noWorkspace": "No workspace selected",
+        "createFailed": "Failed to create item"
+      }
+    }
   }
 }

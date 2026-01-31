@@ -768,5 +768,69 @@
       "cameraInput": "Tee foto kaameraga",
       "galleryInput": "Vali galeriist"
     }
+  },
+  "items": {
+    "create": {
+      "title": "Loo uus ese",
+      "subtitle": "Lisa uus ese oma inventari",
+      "steps": {
+        "basic": "Põhiinfo",
+        "basicDescription": "Sisesta eseme põhiandmed",
+        "details": "Üksikasjad",
+        "detailsDescription": "Lisa toote üksikasjad ja täpsemad seaded",
+        "photos": "Fotod",
+        "photosDescription": "Lisa eseme fotod (valikuline)"
+      },
+      "sections": {
+        "identification": "Identifitseerimine",
+        "identificationDescription": "Seerianumbrid, vöötkoodid ja koodid",
+        "purchase": "Ost ja laoseis",
+        "purchaseDescription": "Ostuajalugu ja laoseisu tasemed",
+        "warranty": "Garantii ja kindlustus",
+        "warrantyDescription": "Kaitse ja kindlustuse üksikasjad"
+      },
+      "fields": {
+        "sku": "Tootekood",
+        "name": "Nimi",
+        "description": "Kirjeldus",
+        "brand": "Bränd",
+        "model": "Mudel",
+        "manufacturer": "Tootja",
+        "serialNumber": "Seerianumber",
+        "barcode": "Vöötkood",
+        "shortCode": "Lühikood",
+        "purchasedFrom": "Ostetud kohast",
+        "minStockLevel": "Minimaalne laoseis",
+        "isInsured": "Ese on kindlustatud",
+        "lifetimeWarranty": "Eluaegne garantii",
+        "warrantyDetails": "Garantii üksikasjad",
+        "photo": "Foto",
+        "addPhoto": "Lisa foto",
+        "addAnotherPhoto": "Lisa veel foto",
+        "maxPhotosReached": "Maksimaalselt 5 fotot lubatud"
+      },
+      "placeholders": {
+        "sku": "nt ITEM-001",
+        "name": "Sisesta eseme nimi",
+        "description": "Valikuline kirjeldus",
+        "brand": "nt Apple",
+        "model": "nt iPhone 15 Pro",
+        "manufacturer": "nt Apple Inc.",
+        "serialNumber": "nt ABC123XYZ",
+        "barcode": "nt 1234567890123",
+        "shortCode": "Genereeritakse automaatselt kui tühi",
+        "purchasedFrom": "nt Amazon",
+        "warrantyDetails": "Kirjelda garantii tingimusi"
+      },
+      "next": "Edasi",
+      "back": "Tagasi",
+      "createItem": "Loo ese",
+      "creating": "Loome...",
+      "success": "Ese edukalt loodud",
+      "errors": {
+        "noWorkspace": "Tööruum pole valitud",
+        "createFailed": "Eseme loomine ebaõnnestus"
+      }
+    }
   }
 }

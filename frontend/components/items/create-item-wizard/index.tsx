@@ -95,13 +95,7 @@ export function CreateItemWizard() {
       stepFields={stepFields}
       className="max-w-2xl mx-auto"
     >
-      {({
-        currentStep,
-        goNext,
-        goBack,
-        isLastStep,
-        isSubmitting,
-      }) => (
+      {({ currentStep, goNext, goBack, isSubmitting }) => (
         <>
           {currentStep === 0 && (
             <BasicStep onNext={goNext} isSubmitting={isSubmitting} />
