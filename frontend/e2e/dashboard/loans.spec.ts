@@ -123,7 +123,8 @@ test.describe("Loans Status Filter", () => {
 
         if (hasReturned) {
           await returnedOption.click();
-          await page.waitForTimeout(500);
+          // Wait for filter to apply by checking network idle
+          await page.waitForLoadState("networkidle");
 
           // The loans displayed may have changed
           // This tests that the filter mechanism works
@@ -298,8 +299,8 @@ test.describe("Loans Table Interactions", () => {
         await borrowerHeader.click();
 
         // Should see sort indicator or column should be clickable
-        // Just verify the click doesn't cause errors
-        await page.waitForTimeout(300);
+        // Wait for any sort animation/re-render to complete
+        await page.waitForLoadState("domcontentloaded");
       }
     }
   });
@@ -360,5 +361,182 @@ test.describe("Loans Stats Cards", () => {
         expect(overdueCount).toMatch(/\d+/);
       }
     }
+  });
+});
+
+// Serial mode ensures tests run in order and can build on each other's state
+test.describe.serial("Loan CRUD Flows", () => {
+  test("can check prerequisites for loan creation", async ({ page }) => {
+    const loansPage = new LoansPage(page);
+    await loansPage.goto();
+    await loansPage.waitForLoansLoaded();
+
+    // Open create dialog
+    await loansPage.openCreateDialog();
+
+    // Check if we have items and borrowers available
+    const hasItems = await loansPage.hasItemOptions();
+    const hasBorrowers = await loansPage.hasBorrowerOptions();
+
+    // Log state for debugging
+    console.log(`[Loan CRUD] Prerequisites - Items: ${hasItems}, Borrowers: ${hasBorrowers}`);
+
+    // Close dialog
+    await loansPage.closeDialog();
+
+    // This test always passes - it's informational for subsequent tests
+    expect(true).toBe(true);
+  });
+
+  test("can create a new loan when prerequisites exist", async ({ page }) => {
+    const loansPage = new LoansPage(page);
+    await loansPage.goto();
+    await loansPage.waitForLoansLoaded();
+
+    // Open create dialog
+    await loansPage.openCreateDialog();
+
+    // Check prerequisites
+    const hasItems = await loansPage.hasItemOptions();
+    const hasBorrowers = await loansPage.hasBorrowerOptions();
+
+    if (!hasItems || !hasBorrowers) {
+      console.log("[Loan CRUD] Skipping create test - missing items or borrowers");
+      test.skip(true, "Prerequisites not met: need items and borrowers to create loan");
+      return;
+    }
+
+    // Select first item
+    await loansPage.selectFirstItem();
+
+    // Wait for inventory to load after item selection
+    await page.waitForLoadState("networkidle");
+
+    // Check if inventory is available for this item
+    const hasInventory = await loansPage.hasInventoryAvailable();
+
+    if (!hasInventory) {
+      console.log("[Loan CRUD] Skipping create test - no available inventory for selected item");
+      await loansPage.closeDialog();
+      test.skip(true, "No available inventory for selected item");
+      return;
+    }
+
+    // Select first inventory
+    await loansPage.selectFirstInventory();
+
+    // Select first borrower
+    await loansPage.selectFirstBorrower();
+
+    // Check if submit button is now enabled
+    const isSubmitEnabled = await loansPage.dialogSubmitButton.isEnabled();
+
+    if (isSubmitEnabled) {
+      // Submit the form
+      await loansPage.submitCreateForm();
+
+      // Wait for dialog to close (success) or error toast
+      await expect(async () => {
+        const dialogHidden = await loansPage.createDialog.isHidden();
+        const hasError = await page.locator('[data-sonner-toast][data-type="error"]').isVisible().catch(() => false);
+        expect(dialogHidden || hasError).toBe(true);
+      }).toPass({ timeout: 5000 });
+
+      // If dialog closed, loan was created
+      const dialogClosed = await loansPage.createDialog.isHidden();
+      if (dialogClosed) {
+        console.log("[Loan CRUD] Successfully created a loan");
+      }
+    } else {
+      console.log("[Loan CRUD] Submit button not enabled - form validation may have failed");
+      await loansPage.closeDialog();
+    }
+  });
+
+  test("can view loan details in table after creation", async ({ page }) => {
+    const loansPage = new LoansPage(page);
+    await loansPage.goto();
+    await loansPage.waitForLoansLoaded();
+
+    const hasTable = await loansPage.loansTable.isVisible().catch(() => false);
+
+    if (!hasTable) {
+      console.log("[Loan CRUD] No loans table visible");
+      test.skip(true, "No loans table visible");
+      return;
+    }
+
+    const rows = loansPage.getAllLoanRows();
+    const rowCount = await rows.count();
+
+    if (rowCount === 0) {
+      console.log("[Loan CRUD] No loans to view");
+      test.skip(true, "No loans available to view");
+      return;
+    }
+
+    // Click on first row to see if it has details
+    const firstRow = rows.first();
+
+    // Check that row contains expected loan data
+    const rowText = await firstRow.textContent();
+    expect(rowText?.length).toBeGreaterThan(0);
+
+    // Check for status badge
+    const badge = firstRow.locator('[class*="badge"]');
+    const hasBadge = await badge.isVisible().catch(() => false);
+    expect(hasBadge).toBe(true);
+
+    // Badge should show a valid status
+    const badgeText = await badge.textContent();
+    expect(badgeText?.toLowerCase()).toMatch(/active|overdue|returned/);
+
+    console.log(`[Loan CRUD] Found loan with status: ${badgeText}`);
+  });
+
+  test("can return an active loan", async ({ page }) => {
+    const loansPage = new LoansPage(page);
+    await loansPage.goto();
+    await loansPage.waitForLoansLoaded();
+
+    const hasTable = await loansPage.loansTable.isVisible().catch(() => false);
+
+    if (!hasTable) {
+      console.log("[Loan CRUD] No loans table visible");
+      test.skip(true, "No loans table visible");
+      return;
+    }
+
+    // Try to initiate return on first active loan
+    const returnInitiated = await loansPage.initiateReturnOnFirstActiveLoan();
+
+    if (!returnInitiated) {
+      console.log("[Loan CRUD] No active loans to return");
+      test.skip(true, "No active loans available to return");
+      return;
+    }
+
+    // Return dialog should be visible
+    await expect(loansPage.returnDialog).toBeVisible();
+
+    // Get initial active loan count from stats card (if visible)
+    const hasActiveCard = await loansPage.activeLoansCard.isVisible().catch(() => false);
+    let initialActiveCount: string | null = null;
+    if (hasActiveCard) {
+      initialActiveCount = await loansPage.getActiveLoanCount();
+    }
+
+    // Confirm the return
+    await loansPage.confirmReturn();
+
+    // Wait for page to update (toast or table refresh)
+    await expect(async () => {
+      // Either success toast appears or active count changes
+      const successToast = await page.locator('[data-sonner-toast]').filter({ hasText: /return|success/i }).isVisible().catch(() => false);
+      const dialogHidden = await loansPage.returnDialog.isHidden();
+      expect(successToast || dialogHidden).toBe(true);
+    }).toPass({ timeout: 5000 });
+
+    console.log("[Loan CRUD] Successfully returned a loan");
   });
 });

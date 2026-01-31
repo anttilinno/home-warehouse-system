@@ -274,4 +274,167 @@ export class LoansPage extends BasePage {
   tableHeaderColumn(name: string): Locator {
     return this.tableHeader.locator("th").filter({ hasText: new RegExp(name, "i") });
   }
+
+  /**
+   * Get item select in create dialog
+   */
+  getItemSelect(): Locator {
+    return this.createDialog.locator('#item').locator('..').locator('button[role="combobox"]').or(
+      this.createDialog.locator('button[role="combobox"]').filter({ hasText: /select.*item/i })
+    );
+  }
+
+  /**
+   * Get borrower select in create dialog
+   */
+  getBorrowerSelect(): Locator {
+    return this.createDialog.locator('#borrower').locator('..').locator('button[role="combobox"]').or(
+      this.createDialog.locator('button[role="combobox"]').filter({ hasText: /select.*borrower/i })
+    );
+  }
+
+  /**
+   * Get inventory select in create dialog (appears after item is selected)
+   */
+  getInventorySelect(): Locator {
+    return this.createDialog.locator('#inventory').locator('..').locator('button[role="combobox"]').or(
+      this.createDialog.locator('button[role="combobox"]').filter({ hasText: /select inventory|no available/i })
+    );
+  }
+
+  /**
+   * Check if item select has options available
+   */
+  async hasItemOptions(): Promise<boolean> {
+    const itemSelect = this.getItemSelect();
+    const isVisible = await itemSelect.isVisible().catch(() => false);
+    if (!isVisible) return false;
+
+    await itemSelect.click();
+    const options = this.page.locator('[role="listbox"] [role="option"], [data-radix-select-viewport] [role="option"]');
+    const count = await options.count().catch(() => 0);
+    // Close the dropdown
+    await this.page.keyboard.press('Escape');
+    return count > 0;
+  }
+
+  /**
+   * Check if borrower select has options available
+   */
+  async hasBorrowerOptions(): Promise<boolean> {
+    const borrowerSelect = this.getBorrowerSelect();
+    const isVisible = await borrowerSelect.isVisible().catch(() => false);
+    if (!isVisible) return false;
+
+    await borrowerSelect.click();
+    const options = this.page.locator('[role="listbox"] [role="option"], [data-radix-select-viewport] [role="option"]');
+    const count = await options.count().catch(() => 0);
+    // Close the dropdown
+    await this.page.keyboard.press('Escape');
+    return count > 0;
+  }
+
+  /**
+   * Select first available item in create dialog
+   */
+  async selectFirstItem(): Promise<void> {
+    const itemSelect = this.getItemSelect();
+    await itemSelect.click();
+    const firstOption = this.page.locator('[role="listbox"] [role="option"], [data-radix-select-viewport] [role="option"]').first();
+    await firstOption.click();
+  }
+
+  /**
+   * Select first available borrower in create dialog
+   */
+  async selectFirstBorrower(): Promise<void> {
+    const borrowerSelect = this.getBorrowerSelect();
+    await borrowerSelect.click();
+    const firstOption = this.page.locator('[role="listbox"] [role="option"], [data-radix-select-viewport] [role="option"]').first();
+    await firstOption.click();
+  }
+
+  /**
+   * Select first available inventory in create dialog
+   */
+  async selectFirstInventory(): Promise<void> {
+    const inventorySelect = this.getInventorySelect();
+    await inventorySelect.click();
+    const firstOption = this.page.locator('[role="listbox"] [role="option"], [data-radix-select-viewport] [role="option"]').first();
+    await firstOption.click();
+  }
+
+  /**
+   * Check if inventory is available after selecting an item
+   */
+  async hasInventoryAvailable(): Promise<boolean> {
+    const inventorySelect = this.getInventorySelect();
+    const isVisible = await inventorySelect.isVisible().catch(() => false);
+    if (!isVisible) return false;
+
+    // Check the select trigger text - if it says "No available" there's no inventory
+    const text = await inventorySelect.textContent();
+    if (text?.toLowerCase().includes('no available')) {
+      return false;
+    }
+
+    await inventorySelect.click();
+    const options = this.page.locator('[role="listbox"] [role="option"], [data-radix-select-viewport] [role="option"]');
+    const count = await options.count().catch(() => 0);
+    // Close the dropdown
+    await this.page.keyboard.press('Escape');
+    return count > 0;
+  }
+
+  /**
+   * Submit the create loan form
+   */
+  async submitCreateForm(): Promise<void> {
+    await this.dialogSubmitButton.click();
+  }
+
+  /**
+   * Confirm return in the return dialog
+   */
+  async confirmReturn(): Promise<void> {
+    await this.returnConfirmButton.click();
+    await this.returnDialog.waitFor({ state: "hidden" });
+  }
+
+  /**
+   * Find and click return on first active loan
+   * Returns true if a loan was found and return was initiated
+   */
+  async initiateReturnOnFirstActiveLoan(): Promise<boolean> {
+    const activeBadges = this.tableBody.locator('[class*="badge"]').filter({ hasText: /active|overdue/i });
+    const hasActive = await activeBadges.count() > 0;
+
+    if (!hasActive) return false;
+
+    // Get the row with an active loan
+    const activeRow = this.tableBody.locator("tr").filter({
+      has: this.page.locator('[class*="badge"]').filter({ hasText: /active|overdue/i })
+    }).first();
+
+    // Open action menu
+    await activeRow.hover();
+    const menuButton = activeRow.locator('button').filter({
+      has: this.page.locator('[class*="lucide-more"]')
+    }).first();
+
+    const hasMenu = await menuButton.isVisible().catch(() => false);
+    if (!hasMenu) return false;
+
+    await menuButton.click();
+
+    // Click return option
+    const menuContent = this.page.locator("[data-radix-dropdown-menu-content]");
+    await menuContent.waitFor({ state: "visible" });
+    const returnOption = menuContent.getByText(/mark as returned/i);
+    await returnOption.click();
+
+    // Wait for return dialog
+    await this.returnDialog.waitFor({ state: "visible" });
+    return true;
+  }
 }
