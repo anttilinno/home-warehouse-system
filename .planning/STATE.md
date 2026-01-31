@@ -11,18 +11,18 @@ See: `.planning/PROJECT.md` (updated 2026-01-31)
 
 **Milestone:** v1.4 Test Overhaul
 **Phase:** 25 of 26 (Frontend Unit Testing) — In Progress
-**Plan:** 2 of 5 in current phase — 25-02 complete
+**Plan:** 3 of 5 in current phase — 25-03 complete
 **Status:** In progress
-**Last activity:** 2026-01-31 — Completed 25-02-PLAN.md (SyncManager comprehensive tests)
+**Last activity:** 2026-01-31 — Completed 25-03-PLAN.md (MultiStepForm component tests)
 
-Progress: [============........] 60% (12/20 plans)
+Progress: [=============.......] 65% (13/20 plans)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 75 (from v1-v1.3 + v1.4)
+- Total plans completed: 76 (from v1-v1.3 + v1.4)
 - Average duration: ~15 min
-- Total execution time: ~18.75 hours
+- Total execution time: ~19 hours
 
 **By Milestone:**
 
@@ -45,6 +45,7 @@ Milestone decisions archived in:
 - `.planning/milestones/v1.1-ROADMAP.md`
 
 **Recent Decisions:**
+- DEC-25-03: Use fireEvent instead of userEvent (userEvent not installed)
 - DEC-24-02: Complete endpoint requires body (even empty) per Huma API framework
 - DEC-24-01: Add ServiceInterface to declutter package for mock injection
 - JOBS-COV-01: Jobs package coverage target relaxed to ~20% (was 60%) due to pgxpool/Redis dependencies
@@ -68,6 +69,7 @@ Milestone decisions archived in:
 **Frontend Unit Tests (Phase 25):**
 - useOfflineMutation: 29 test cases (25-01 COMPLETE - queue, optimistic, network, helpers)
 - SyncManager: 83.46% statements, 73.55% branch, 34 test cases (25-02 COMPLETE)
+- MultiStepForm: 21 test cases (25-03 COMPLETE - navigation, validation, draft persistence)
 
 **Frontend - Infrastructure Status (Phase 22 Complete):**
 - @vitest/coverage-v8 installed (22-02)
@@ -93,9 +95,9 @@ Carried forward:
 ## Session Continuity
 
 Last session: 2026-01-31
-Stopped at: Completed 25-02-PLAN.md (SyncManager comprehensive tests)
+Stopped at: Completed 25-03-PLAN.md (MultiStepForm component tests)
 Resume file: None
-Next step: Continue with 25-03 (MultiStepForm tests)
+Next step: Continue with 25-04 (BarcodeScanner component tests)
 
 ---
-*Updated: 2026-01-31 after 25-02 complete*
+*Updated: 2026-01-31 after 25-03 complete*
