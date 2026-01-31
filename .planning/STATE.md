@@ -11,18 +11,18 @@ See: `.planning/PROJECT.md` (updated 2026-01-31)
 
 **Milestone:** v1.4 Test Overhaul
 **Phase:** 24 of 26 (Backend API Testing) — In Progress
-**Plan:** 1 of 6 in current phase — 24-01 complete
+**Plan:** 2 of 6 in current phase — 24-02 complete
 **Status:** In progress
-**Last activity:** 2026-01-31 — Completed 24-01-PLAN.md (repairphoto and declutter handler tests)
+**Last activity:** 2026-01-31 — Completed 24-02-PLAN.md (repair workflow integration tests)
 
-Progress: [==========..........] 50% (10/20 plans)
+Progress: [==========..........] 55% (11/20 plans)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 73 (from v1-v1.3 + v1.4)
+- Total plans completed: 74 (from v1-v1.3 + v1.4)
 - Average duration: ~15 min
-- Total execution time: ~18.25 hours
+- Total execution time: ~18.5 hours
 
 **By Milestone:**
 
@@ -45,6 +45,7 @@ Milestone decisions archived in:
 - `.planning/milestones/v1.1-ROADMAP.md`
 
 **Recent Decisions:**
+- DEC-24-02: Complete endpoint requires body (even empty) per Huma API framework
 - DEC-24-01: Add ServiceInterface to declutter package for mock injection
 - JOBS-COV-01: Jobs package coverage target relaxed to ~20% (was 60%) due to pgxpool/Redis dependencies
 - PENDING-COV-01: Pendingchange package coverage at 57.3% (service layer comprehensive, handler/middleware integration-tested)
@@ -62,6 +63,7 @@ Milestone decisions archived in:
 **Backend API Tests (Phase 24):**
 - repairphoto: ~10% -> 20.5% (24-01 COMPLETE - handler tests)
 - declutter: ~15% -> 41.6% (24-01 COMPLETE - handler tests)
+- repair workflow: Integration tests complete (24-02 COMPLETE - auth/authz coverage)
 
 **Frontend - Infrastructure Status (Phase 22 Complete):**
 - @vitest/coverage-v8 installed (22-02)
@@ -88,9 +90,9 @@ Carried forward:
 ## Session Continuity
 
 Last session: 2026-01-31
-Stopped at: Completed 24-01-PLAN.md (repairphoto and declutter handler tests)
+Stopped at: Completed 24-02-PLAN.md (repair workflow integration tests)
 Resume file: None
-Next step: Continue with 24-02 (itemlabel, loan, movement, containertag handlers)
+Next step: Continue with 24-03 (loan workflow integration tests)
 
 ---
-*Updated: 2026-01-31 after 24-01 complete*
+*Updated: 2026-01-31 after 24-02 complete*
