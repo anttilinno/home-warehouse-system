@@ -14,6 +14,7 @@ import type { z } from "zod";
 import { v7 as uuidv7 } from "uuid";
 
 import { useFormDraft } from "@/lib/hooks/use-form-draft";
+import { useIOSKeyboard } from "@/lib/hooks/use-ios-keyboard";
 import { StepIndicator, type Step } from "./step-indicator";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -33,6 +34,10 @@ interface MultiStepFormProps<TFormData extends FieldValues> {
     isFirstStep: boolean;
     isLastStep: boolean;
     isSubmitting: boolean;
+    /** Style for fixed bottom elements when iOS keyboard is open */
+    keyboardStyle: React.CSSProperties;
+    /** Whether iOS keyboard is currently open */
+    isKeyboardOpen: boolean;
   }) => React.ReactNode;
   /** Called when form is submitted on last step */
   onSubmit: (data: TFormData) => Promise<void>;
@@ -63,6 +68,9 @@ export function MultiStepForm<TFormData extends FieldValues>({
   const [currentStep, setCurrentStep] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [draftLoaded, setDraftLoaded] = useState(false);
+
+  // iOS keyboard detection for positioning fixed bottom elements
+  const { isKeyboardOpen, getFixedBottomStyle } = useIOSKeyboard();
 
   // Generate or use provided draft ID
   const draftIdRef = useRef(externalDraftId || uuidv7());
@@ -198,6 +206,8 @@ export function MultiStepForm<TFormData extends FieldValues>({
           isFirstStep,
           isLastStep,
           isSubmitting,
+          keyboardStyle: getFixedBottomStyle(),
+          isKeyboardOpen,
         })}
       </form>
     </FormProvider>
