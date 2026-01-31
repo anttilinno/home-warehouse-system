@@ -5,24 +5,24 @@
 See: `.planning/PROJECT.md` (updated 2026-01-31)
 
 **Core value:** Reliable inventory access anywhere — online or offline — with seamless sync
-**Current focus:** v1.4 Test Overhaul - Phase 25
+**Current focus:** v1.4 Test Overhaul - Phase 25 Complete
 
 ## Current Position
 
 **Milestone:** v1.4 Test Overhaul
-**Phase:** 25 of 26 (Frontend Unit Testing) — In Progress
-**Plan:** 4 of 5 in current phase — 25-04 complete
-**Status:** In progress
-**Last activity:** 2026-01-31 — Completed 25-04-PLAN.md (BarcodeScanner component tests)
+**Phase:** 25 of 26 (Frontend Unit Testing) — Complete
+**Plan:** 5 of 5 in current phase — 25-05 complete
+**Status:** Phase complete
+**Last activity:** 2026-01-31 — Completed 25-05-PLAN.md (FloatingActionButton component tests)
 
-Progress: [==============......] 70% (14/20 plans)
+Progress: [===============.....] 75% (15/20 plans)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 77 (from v1-v1.3 + v1.4)
+- Total plans completed: 78 (from v1-v1.3 + v1.4)
 - Average duration: ~15 min
-- Total execution time: ~19.1 hours
+- Total execution time: ~19.25 hours
 
 **By Milestone:**
 
@@ -45,6 +45,7 @@ Milestone decisions archived in:
 - `.planning/milestones/v1.1-ROADMAP.md`
 
 **Recent Decisions:**
+- FE-MOTION-MOCK: Mock motion/react with static div wrapper for animation component testing
 - DEC-25-04: Add @testing-library/jest-dom for DOM matchers (toBeInTheDocument)
 - DEC-25-03: Use fireEvent instead of userEvent (userEvent not installed)
 - DEC-24-02: Complete endpoint requires body (even empty) per Huma API framework
@@ -67,11 +68,12 @@ Milestone decisions archived in:
 - declutter: ~15% -> 41.6% (24-01 COMPLETE - handler tests)
 - repair workflow: Integration tests complete (24-02 COMPLETE - auth/authz coverage)
 
-**Frontend Unit Tests (Phase 25):**
+**Frontend Unit Tests (Phase 25 COMPLETE):**
 - useOfflineMutation: 29 test cases (25-01 COMPLETE - queue, optimistic, network, helpers)
 - SyncManager: 83.46% statements, 73.55% branch, 34 test cases (25-02 COMPLETE)
 - MultiStepForm: 21 test cases (25-03 COMPLETE - navigation, validation, draft persistence)
 - BarcodeScanner: 18 test cases (25-04 COMPLETE - init, permissions, torch, pause)
+- FloatingActionButton: 28 test cases (25-05 COMPLETE - toggle, keyboard, accessibility)
 
 **Frontend - Infrastructure Status (Phase 22 Complete):**
 - @vitest/coverage-v8 installed (22-02)
@@ -97,9 +99,9 @@ Carried forward:
 ## Session Continuity
 
 Last session: 2026-01-31
-Stopped at: Completed 25-04-PLAN.md (BarcodeScanner component tests)
+Stopped at: Completed 25-05-PLAN.md (FloatingActionButton component tests)
 Resume file: None
-Next step: Continue with 25-05 (FloatingActionButton component tests)
+Next step: Continue with Phase 26 (E2E Testing)
 
 ---
-*Updated: 2026-01-31 after 25-04 complete*
+*Updated: 2026-01-31 after 25-05 complete*
