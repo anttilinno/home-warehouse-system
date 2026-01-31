@@ -758,5 +758,15 @@
     "addContainer": "Lisa konteiner",
     "addLocation": "Lisa asukoht",
     "quickCount": "Kiire loendus"
+  },
+  "forms": {
+    "photoCapture": {
+      "takePhoto": "Tee foto",
+      "chooseFile": "Vali fail",
+      "remove": "Eemalda foto",
+      "previewAlt": "Jäädvustatud foto eelvaade",
+      "cameraInput": "Tee foto kaameraga",
+      "galleryInput": "Vali galeriist"
+    }
   }
 }

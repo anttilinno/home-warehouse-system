@@ -840,5 +840,15 @@
     "addContainer": "Add container",
     "addLocation": "Add location",
     "quickCount": "Quick count"
+  },
+  "forms": {
+    "photoCapture": {
+      "takePhoto": "Take Photo",
+      "chooseFile": "Choose File",
+      "remove": "Remove photo",
+      "previewAlt": "Captured photo preview",
+      "cameraInput": "Take photo with camera",
+      "galleryInput": "Choose from gallery"
+    }
   }
 }

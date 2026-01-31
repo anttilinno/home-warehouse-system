@@ -758,5 +758,15 @@
     "addContainer": "Добавить контейнер",
     "addLocation": "Добавить место",
     "quickCount": "Быстрый подсчёт"
+  },
+  "forms": {
+    "photoCapture": {
+      "takePhoto": "Сделать фото",
+      "chooseFile": "Выбрать файл",
+      "remove": "Удалить фото",
+      "previewAlt": "Предпросмотр снятого фото",
+      "cameraInput": "Сделать фото камерой",
+      "galleryInput": "Выбрать из галереи"
+    }
   }
 }
