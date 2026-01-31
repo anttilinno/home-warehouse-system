@@ -12,6 +12,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
+import { cn } from "@/lib/utils";
 import { useSmartDefaults } from "@/lib/hooks/use-smart-defaults";
 import type { CreateItemFormData } from "./schema";
 
@@ -19,12 +20,16 @@ interface DetailsStepProps {
   onNext: () => Promise<boolean>;
   onBack: () => void;
   isSubmitting: boolean;
+  keyboardStyle?: React.CSSProperties;
+  isKeyboardOpen?: boolean;
 }
 
 export function DetailsStep({
   onNext,
   onBack,
   isSubmitting,
+  keyboardStyle,
+  isKeyboardOpen,
 }: DetailsStepProps) {
   const t = useTranslations("items.create");
   const { watch, setValue } = useFormContext<CreateItemFormData>();
@@ -191,7 +196,14 @@ export function DetailsStep({
       </CollapsibleSection>
 
       {/* Navigation */}
-      <div className="flex justify-between pt-4 border-t">
+      <div
+        className={cn(
+          "flex justify-between pt-4 border-t",
+          isKeyboardOpen &&
+            "fixed left-0 right-0 bg-background px-4 pb-4 shadow-lg z-50"
+        )}
+        style={isKeyboardOpen ? keyboardStyle : undefined}
+      >
         <Button
           type="button"
           variant="outline"

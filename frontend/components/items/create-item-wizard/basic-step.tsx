@@ -7,6 +7,7 @@ import { useTranslations } from "next-intl";
 import { MobileFormField, MobileFormTextarea } from "@/components/forms";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { cn } from "@/lib/utils";
 import {
   Select,
   SelectContent,
@@ -22,9 +23,16 @@ import type { CreateItemFormData } from "./schema";
 interface BasicStepProps {
   onNext: () => Promise<boolean>;
   isSubmitting: boolean;
+  keyboardStyle?: React.CSSProperties;
+  isKeyboardOpen?: boolean;
 }
 
-export function BasicStep({ onNext, isSubmitting }: BasicStepProps) {
+export function BasicStep({
+  onNext,
+  isSubmitting,
+  keyboardStyle,
+  isKeyboardOpen,
+}: BasicStepProps) {
   const t = useTranslations("items.create");
   const { workspace } = useWorkspace();
   const { setValue, watch } = useFormContext<CreateItemFormData>();
@@ -132,7 +140,14 @@ export function BasicStep({ onNext, isSubmitting }: BasicStepProps) {
       </div>
 
       {/* Navigation */}
-      <div className="flex justify-end pt-4 border-t">
+      <div
+        className={cn(
+          "flex justify-end pt-4 border-t",
+          isKeyboardOpen &&
+            "fixed left-0 right-0 bg-background px-4 pb-4 shadow-lg z-50"
+        )}
+        style={isKeyboardOpen ? keyboardStyle : undefined}
+      >
         <Button
           type="button"
           onClick={handleNext}

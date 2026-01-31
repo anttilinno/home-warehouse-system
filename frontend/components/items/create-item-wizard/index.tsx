@@ -95,16 +95,30 @@ export function CreateItemWizard() {
       stepFields={stepFields}
       className="max-w-2xl mx-auto"
     >
-      {({ currentStep, goNext, goBack, isSubmitting }) => (
+      {({
+        currentStep,
+        goNext,
+        goBack,
+        isSubmitting,
+        keyboardStyle,
+        isKeyboardOpen,
+      }) => (
         <>
           {currentStep === 0 && (
-            <BasicStep onNext={goNext} isSubmitting={isSubmitting} />
+            <BasicStep
+              onNext={goNext}
+              isSubmitting={isSubmitting}
+              keyboardStyle={keyboardStyle}
+              isKeyboardOpen={isKeyboardOpen}
+            />
           )}
           {currentStep === 1 && (
             <DetailsStep
               onNext={goNext}
               onBack={goBack}
               isSubmitting={isSubmitting}
+              keyboardStyle={keyboardStyle}
+              isKeyboardOpen={isKeyboardOpen}
             />
           )}
           {currentStep === 2 && (
@@ -112,6 +126,8 @@ export function CreateItemWizard() {
               onBack={goBack}
               isSubmitting={isSubmitting}
               onPhotosChange={setCapturedPhotos}
+              keyboardStyle={keyboardStyle}
+              isKeyboardOpen={isKeyboardOpen}
             />
           )}
         </>

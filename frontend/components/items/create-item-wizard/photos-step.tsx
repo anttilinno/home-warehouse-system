@@ -6,6 +6,7 @@ import { Loader2 } from "lucide-react";
 
 import { InlinePhotoCapture } from "@/components/forms";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 interface CapturedPhoto {
   file: File;
@@ -16,12 +17,16 @@ interface PhotosStepProps {
   onBack: () => void;
   isSubmitting: boolean;
   onPhotosChange: (photos: File[]) => void;
+  keyboardStyle?: React.CSSProperties;
+  isKeyboardOpen?: boolean;
 }
 
 export function PhotosStep({
   onBack,
   isSubmitting,
   onPhotosChange,
+  keyboardStyle,
+  isKeyboardOpen,
 }: PhotosStepProps) {
   const t = useTranslations("items.create");
   const [photos, setPhotos] = useState<CapturedPhoto[]>([]);
@@ -96,7 +101,14 @@ export function PhotosStep({
       </div>
 
       {/* Navigation */}
-      <div className="flex justify-between pt-4 border-t">
+      <div
+        className={cn(
+          "flex justify-between pt-4 border-t",
+          isKeyboardOpen &&
+            "fixed left-0 right-0 bg-background px-4 pb-4 shadow-lg z-50"
+        )}
+        style={isKeyboardOpen ? keyboardStyle : undefined}
+      >
         <Button
           type="button"
           variant="outline"
