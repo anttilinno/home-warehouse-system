@@ -13,7 +13,10 @@ import (
 
 	"github.com/antti/home-warehouse/go-backend/internal/domain/auth/member"
 	"github.com/antti/home-warehouse/go-backend/internal/domain/auth/user"
+	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/borrower"
 	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/category"
+	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/container"
+	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/inventory"
 	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/item"
 	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/location"
 	"github.com/antti/home-warehouse/go-backend/internal/shared"
@@ -2574,6 +2577,1143 @@ func TestApplyLocationChange(t *testing.T) {
 			workspaceID,
 			requesterID,
 			"location",
+			nil,
+			ActionCreate,
+			payload,
+			StatusPending,
+			nil,
+			nil,
+			nil,
+			time.Now(),
+			time.Now(),
+		)
+
+		mockRepo.On("FindByID", ctx, changeID).Return(pendingChange, nil)
+		mockMemberRepo.On("FindByWorkspaceAndUser", ctx, workspaceID, reviewerID).Return(ownerMember, nil)
+		mockUserRepo.On("FindByID", ctx, requesterID).Return(requesterUser, nil)
+		mockUserRepo.On("FindByID", ctx, reviewerID).Return(reviewerUser, nil)
+
+		err := service.ApproveChange(ctx, changeID, reviewerID)
+
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "failed to apply change")
+	})
+}
+
+// MockContainerRepository is a mock for container.Repository
+type MockContainerRepository struct {
+	mock.Mock
+}
+
+func (m *MockContainerRepository) Save(ctx context.Context, cont *container.Container) error {
+	args := m.Called(ctx, cont)
+	return args.Error(0)
+}
+
+func (m *MockContainerRepository) FindByID(ctx context.Context, id, workspaceID uuid.UUID) (*container.Container, error) {
+	args := m.Called(ctx, id, workspaceID)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*container.Container), args.Error(1)
+}
+
+func (m *MockContainerRepository) FindByLocation(ctx context.Context, workspaceID, locationID uuid.UUID) ([]*container.Container, error) {
+	args := m.Called(ctx, workspaceID, locationID)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).([]*container.Container), args.Error(1)
+}
+
+func (m *MockContainerRepository) FindByShortCode(ctx context.Context, workspaceID uuid.UUID, shortCode string) (*container.Container, error) {
+	args := m.Called(ctx, workspaceID, shortCode)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*container.Container), args.Error(1)
+}
+
+func (m *MockContainerRepository) FindByWorkspace(ctx context.Context, workspaceID uuid.UUID, pagination shared.Pagination) ([]*container.Container, int, error) {
+	args := m.Called(ctx, workspaceID, pagination)
+	if args.Get(0) == nil {
+		return nil, 0, args.Error(2)
+	}
+	return args.Get(0).([]*container.Container), args.Int(1), args.Error(2)
+}
+
+func (m *MockContainerRepository) Delete(ctx context.Context, id uuid.UUID) error {
+	args := m.Called(ctx, id)
+	return args.Error(0)
+}
+
+func (m *MockContainerRepository) ShortCodeExists(ctx context.Context, workspaceID uuid.UUID, shortCode string) (bool, error) {
+	args := m.Called(ctx, workspaceID, shortCode)
+	return args.Bool(0), args.Error(1)
+}
+
+func (m *MockContainerRepository) Search(ctx context.Context, workspaceID uuid.UUID, query string, limit int) ([]*container.Container, error) {
+	args := m.Called(ctx, workspaceID, query, limit)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).([]*container.Container), args.Error(1)
+}
+
+// MockInventoryRepository is a mock for inventory.Repository
+type MockInventoryRepository struct {
+	mock.Mock
+}
+
+func (m *MockInventoryRepository) Save(ctx context.Context, inv *inventory.Inventory) error {
+	args := m.Called(ctx, inv)
+	return args.Error(0)
+}
+
+func (m *MockInventoryRepository) FindByID(ctx context.Context, id, workspaceID uuid.UUID) (*inventory.Inventory, error) {
+	args := m.Called(ctx, id, workspaceID)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*inventory.Inventory), args.Error(1)
+}
+
+func (m *MockInventoryRepository) List(ctx context.Context, workspaceID uuid.UUID, pagination shared.Pagination) ([]*inventory.Inventory, int, error) {
+	args := m.Called(ctx, workspaceID, pagination)
+	if args.Get(0) == nil {
+		return nil, 0, args.Error(2)
+	}
+	return args.Get(0).([]*inventory.Inventory), args.Int(1), args.Error(2)
+}
+
+func (m *MockInventoryRepository) FindByItem(ctx context.Context, workspaceID, itemID uuid.UUID) ([]*inventory.Inventory, error) {
+	args := m.Called(ctx, workspaceID, itemID)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).([]*inventory.Inventory), args.Error(1)
+}
+
+func (m *MockInventoryRepository) FindByLocation(ctx context.Context, workspaceID, locationID uuid.UUID) ([]*inventory.Inventory, error) {
+	args := m.Called(ctx, workspaceID, locationID)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).([]*inventory.Inventory), args.Error(1)
+}
+
+func (m *MockInventoryRepository) FindByContainer(ctx context.Context, workspaceID, containerID uuid.UUID) ([]*inventory.Inventory, error) {
+	args := m.Called(ctx, workspaceID, containerID)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).([]*inventory.Inventory), args.Error(1)
+}
+
+func (m *MockInventoryRepository) FindAvailable(ctx context.Context, workspaceID, itemID uuid.UUID) ([]*inventory.Inventory, error) {
+	args := m.Called(ctx, workspaceID, itemID)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).([]*inventory.Inventory), args.Error(1)
+}
+
+func (m *MockInventoryRepository) GetTotalQuantity(ctx context.Context, workspaceID, itemID uuid.UUID) (int, error) {
+	args := m.Called(ctx, workspaceID, itemID)
+	return args.Int(0), args.Error(1)
+}
+
+func (m *MockInventoryRepository) Delete(ctx context.Context, id uuid.UUID) error {
+	args := m.Called(ctx, id)
+	return args.Error(0)
+}
+
+// MockBorrowerRepository is a mock for borrower.Repository
+type MockBorrowerRepository struct {
+	mock.Mock
+}
+
+func (m *MockBorrowerRepository) Save(ctx context.Context, b *borrower.Borrower) error {
+	args := m.Called(ctx, b)
+	return args.Error(0)
+}
+
+func (m *MockBorrowerRepository) FindByID(ctx context.Context, id, workspaceID uuid.UUID) (*borrower.Borrower, error) {
+	args := m.Called(ctx, id, workspaceID)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*borrower.Borrower), args.Error(1)
+}
+
+func (m *MockBorrowerRepository) FindByWorkspace(ctx context.Context, workspaceID uuid.UUID, pagination shared.Pagination) ([]*borrower.Borrower, int, error) {
+	args := m.Called(ctx, workspaceID, pagination)
+	if args.Get(0) == nil {
+		return nil, 0, args.Error(2)
+	}
+	return args.Get(0).([]*borrower.Borrower), args.Int(1), args.Error(2)
+}
+
+func (m *MockBorrowerRepository) Delete(ctx context.Context, id uuid.UUID) error {
+	args := m.Called(ctx, id)
+	return args.Error(0)
+}
+
+func (m *MockBorrowerRepository) HasActiveLoans(ctx context.Context, id uuid.UUID) (bool, error) {
+	args := m.Called(ctx, id)
+	return args.Bool(0), args.Error(1)
+}
+
+func (m *MockBorrowerRepository) Search(ctx context.Context, workspaceID uuid.UUID, query string, limit int) ([]*borrower.Borrower, error) {
+	args := m.Called(ctx, workspaceID, query, limit)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).([]*borrower.Borrower), args.Error(1)
+}
+
+// TestApplyContainerChange tests container change application through approval pipeline
+func TestApplyContainerChange(t *testing.T) {
+	ctx := context.Background()
+	workspaceID := uuid.New()
+	requesterID := uuid.New()
+	reviewerID := uuid.New()
+	changeID := uuid.New()
+	locationID := uuid.New()
+
+	setupMocks := func() (*MockPendingChangeRepository, *MockMemberRepository, *MockUserRepository, *MockContainerRepository, *member.Member, *user.User, *user.User) {
+		mockRepo := new(MockPendingChangeRepository)
+		mockMemberRepo := new(MockMemberRepository)
+		mockUserRepo := new(MockUserRepository)
+		mockContainerRepo := new(MockContainerRepository)
+
+		ownerMember := member.Reconstruct(
+			uuid.New(),
+			workspaceID,
+			reviewerID,
+			member.RoleOwner,
+			nil,
+			time.Now(),
+			time.Now(),
+		)
+
+		requesterUser, _ := user.NewUser("requester@test.com", "Requester User", "password123")
+		reviewerUser, _ := user.NewUser("reviewer@test.com", "Reviewer User", "password123")
+
+		return mockRepo, mockMemberRepo, mockUserRepo, mockContainerRepo, ownerMember, requesterUser, reviewerUser
+	}
+
+	t.Run("create container successfully", func(t *testing.T) {
+		mockRepo, mockMemberRepo, mockUserRepo, mockContainerRepo, ownerMember, requesterUser, reviewerUser := setupMocks()
+
+		service := &Service{
+			repo:          mockRepo,
+			memberRepo:    mockMemberRepo,
+			userRepo:      mockUserRepo,
+			containerRepo: mockContainerRepo,
+		}
+
+		payload := json.RawMessage(`{"name": "Box A", "location_id": "` + locationID.String() + `", "short_code": "BOX-A", "capacity": "50 items"}`)
+		pendingChange := Reconstruct(
+			changeID,
+			workspaceID,
+			requesterID,
+			"container",
+			nil,
+			ActionCreate,
+			payload,
+			StatusPending,
+			nil,
+			nil,
+			nil,
+			time.Now(),
+			time.Now(),
+		)
+
+		mockRepo.On("FindByID", ctx, changeID).Return(pendingChange, nil)
+		mockMemberRepo.On("FindByWorkspaceAndUser", ctx, workspaceID, reviewerID).Return(ownerMember, nil)
+		mockUserRepo.On("FindByID", ctx, requesterID).Return(requesterUser, nil)
+		mockUserRepo.On("FindByID", ctx, reviewerID).Return(reviewerUser, nil)
+		mockContainerRepo.On("Save", ctx, mock.AnythingOfType("*container.Container")).Return(nil)
+		mockRepo.On("Save", ctx, mock.AnythingOfType("*pendingchange.PendingChange")).Return(nil)
+
+		err := service.ApproveChange(ctx, changeID, reviewerID)
+
+		assert.NoError(t, err)
+		mockContainerRepo.AssertExpectations(t)
+	})
+
+	t.Run("update container successfully", func(t *testing.T) {
+		mockRepo, mockMemberRepo, mockUserRepo, mockContainerRepo, ownerMember, requesterUser, reviewerUser := setupMocks()
+
+		service := &Service{
+			repo:          mockRepo,
+			memberRepo:    mockMemberRepo,
+			userRepo:      mockUserRepo,
+			containerRepo: mockContainerRepo,
+		}
+
+		containerID := uuid.New()
+		payload := json.RawMessage(`{"name": "Box A Updated", "location_id": "` + locationID.String() + `"}`)
+		pendingChange := Reconstruct(
+			changeID,
+			workspaceID,
+			requesterID,
+			"container",
+			&containerID,
+			ActionUpdate,
+			payload,
+			StatusPending,
+			nil,
+			nil,
+			nil,
+			time.Now(),
+			time.Now(),
+		)
+
+		existingContainer := container.Reconstruct(
+			containerID,
+			workspaceID,
+			locationID,
+			"Box A",
+			nil,
+			nil,
+			"BOX-A",
+			false,
+			time.Now(),
+			time.Now(),
+		)
+
+		mockRepo.On("FindByID", ctx, changeID).Return(pendingChange, nil)
+		mockMemberRepo.On("FindByWorkspaceAndUser", ctx, workspaceID, reviewerID).Return(ownerMember, nil)
+		mockUserRepo.On("FindByID", ctx, requesterID).Return(requesterUser, nil)
+		mockUserRepo.On("FindByID", ctx, reviewerID).Return(reviewerUser, nil)
+		mockContainerRepo.On("FindByID", ctx, containerID, workspaceID).Return(existingContainer, nil)
+		mockContainerRepo.On("Save", ctx, mock.AnythingOfType("*container.Container")).Return(nil)
+		mockRepo.On("Save", ctx, mock.AnythingOfType("*pendingchange.PendingChange")).Return(nil)
+
+		err := service.ApproveChange(ctx, changeID, reviewerID)
+
+		assert.NoError(t, err)
+		mockContainerRepo.AssertExpectations(t)
+	})
+
+	t.Run("delete container successfully", func(t *testing.T) {
+		mockRepo, mockMemberRepo, mockUserRepo, mockContainerRepo, ownerMember, requesterUser, reviewerUser := setupMocks()
+
+		service := &Service{
+			repo:          mockRepo,
+			memberRepo:    mockMemberRepo,
+			userRepo:      mockUserRepo,
+			containerRepo: mockContainerRepo,
+		}
+
+		containerID := uuid.New()
+		payload := json.RawMessage(`{}`)
+		pendingChange := Reconstruct(
+			changeID,
+			workspaceID,
+			requesterID,
+			"container",
+			&containerID,
+			ActionDelete,
+			payload,
+			StatusPending,
+			nil,
+			nil,
+			nil,
+			time.Now(),
+			time.Now(),
+		)
+
+		mockRepo.On("FindByID", ctx, changeID).Return(pendingChange, nil)
+		mockMemberRepo.On("FindByWorkspaceAndUser", ctx, workspaceID, reviewerID).Return(ownerMember, nil)
+		mockUserRepo.On("FindByID", ctx, requesterID).Return(requesterUser, nil)
+		mockUserRepo.On("FindByID", ctx, reviewerID).Return(reviewerUser, nil)
+		mockContainerRepo.On("Delete", ctx, containerID).Return(nil)
+		mockRepo.On("Save", ctx, mock.AnythingOfType("*pendingchange.PendingChange")).Return(nil)
+
+		err := service.ApproveChange(ctx, changeID, reviewerID)
+
+		assert.NoError(t, err)
+		mockContainerRepo.AssertExpectations(t)
+	})
+
+	t.Run("create container fails on save error", func(t *testing.T) {
+		mockRepo, mockMemberRepo, mockUserRepo, mockContainerRepo, ownerMember, requesterUser, reviewerUser := setupMocks()
+
+		service := &Service{
+			repo:          mockRepo,
+			memberRepo:    mockMemberRepo,
+			userRepo:      mockUserRepo,
+			containerRepo: mockContainerRepo,
+		}
+
+		payload := json.RawMessage(`{"name": "Box A", "location_id": "` + locationID.String() + `", "short_code": "BOX-A"}`)
+		pendingChange := Reconstruct(
+			changeID,
+			workspaceID,
+			requesterID,
+			"container",
+			nil,
+			ActionCreate,
+			payload,
+			StatusPending,
+			nil,
+			nil,
+			nil,
+			time.Now(),
+			time.Now(),
+		)
+
+		mockRepo.On("FindByID", ctx, changeID).Return(pendingChange, nil)
+		mockMemberRepo.On("FindByWorkspaceAndUser", ctx, workspaceID, reviewerID).Return(ownerMember, nil)
+		mockUserRepo.On("FindByID", ctx, requesterID).Return(requesterUser, nil)
+		mockUserRepo.On("FindByID", ctx, reviewerID).Return(reviewerUser, nil)
+		mockContainerRepo.On("Save", ctx, mock.AnythingOfType("*container.Container")).Return(errors.New("database error"))
+
+		err := service.ApproveChange(ctx, changeID, reviewerID)
+
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "failed to apply change")
+		mockContainerRepo.AssertExpectations(t)
+	})
+
+	t.Run("update container fails when not found", func(t *testing.T) {
+		mockRepo, mockMemberRepo, mockUserRepo, mockContainerRepo, ownerMember, requesterUser, reviewerUser := setupMocks()
+
+		service := &Service{
+			repo:          mockRepo,
+			memberRepo:    mockMemberRepo,
+			userRepo:      mockUserRepo,
+			containerRepo: mockContainerRepo,
+		}
+
+		containerID := uuid.New()
+		payload := json.RawMessage(`{"name": "Updated", "location_id": "` + locationID.String() + `"}`)
+		pendingChange := Reconstruct(
+			changeID,
+			workspaceID,
+			requesterID,
+			"container",
+			&containerID,
+			ActionUpdate,
+			payload,
+			StatusPending,
+			nil,
+			nil,
+			nil,
+			time.Now(),
+			time.Now(),
+		)
+
+		mockRepo.On("FindByID", ctx, changeID).Return(pendingChange, nil)
+		mockMemberRepo.On("FindByWorkspaceAndUser", ctx, workspaceID, reviewerID).Return(ownerMember, nil)
+		mockUserRepo.On("FindByID", ctx, requesterID).Return(requesterUser, nil)
+		mockUserRepo.On("FindByID", ctx, reviewerID).Return(reviewerUser, nil)
+		mockContainerRepo.On("FindByID", ctx, containerID, workspaceID).Return(nil, errors.New("container not found"))
+
+		err := service.ApproveChange(ctx, changeID, reviewerID)
+
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "failed to apply change")
+		mockContainerRepo.AssertExpectations(t)
+	})
+
+	t.Run("delete container fails when entity ID missing", func(t *testing.T) {
+		mockRepo, mockMemberRepo, mockUserRepo, mockContainerRepo, ownerMember, requesterUser, reviewerUser := setupMocks()
+
+		service := &Service{
+			repo:          mockRepo,
+			memberRepo:    mockMemberRepo,
+			userRepo:      mockUserRepo,
+			containerRepo: mockContainerRepo,
+		}
+
+		payload := json.RawMessage(`{}`)
+		pendingChange := Reconstruct(
+			changeID,
+			workspaceID,
+			requesterID,
+			"container",
+			nil,
+			ActionDelete,
+			payload,
+			StatusPending,
+			nil,
+			nil,
+			nil,
+			time.Now(),
+			time.Now(),
+		)
+
+		mockRepo.On("FindByID", ctx, changeID).Return(pendingChange, nil)
+		mockMemberRepo.On("FindByWorkspaceAndUser", ctx, workspaceID, reviewerID).Return(ownerMember, nil)
+		mockUserRepo.On("FindByID", ctx, requesterID).Return(requesterUser, nil)
+		mockUserRepo.On("FindByID", ctx, reviewerID).Return(reviewerUser, nil)
+
+		err := service.ApproveChange(ctx, changeID, reviewerID)
+
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "failed to apply change")
+	})
+}
+
+// TestApplyInventoryChange tests inventory change application through approval pipeline
+func TestApplyInventoryChange(t *testing.T) {
+	ctx := context.Background()
+	workspaceID := uuid.New()
+	requesterID := uuid.New()
+	reviewerID := uuid.New()
+	changeID := uuid.New()
+	itemID := uuid.New()
+	locationID := uuid.New()
+
+	setupMocks := func() (*MockPendingChangeRepository, *MockMemberRepository, *MockUserRepository, *MockInventoryRepository, *member.Member, *user.User, *user.User) {
+		mockRepo := new(MockPendingChangeRepository)
+		mockMemberRepo := new(MockMemberRepository)
+		mockUserRepo := new(MockUserRepository)
+		mockInventoryRepo := new(MockInventoryRepository)
+
+		ownerMember := member.Reconstruct(
+			uuid.New(),
+			workspaceID,
+			reviewerID,
+			member.RoleOwner,
+			nil,
+			time.Now(),
+			time.Now(),
+		)
+
+		requesterUser, _ := user.NewUser("requester@test.com", "Requester User", "password123")
+		reviewerUser, _ := user.NewUser("reviewer@test.com", "Reviewer User", "password123")
+
+		return mockRepo, mockMemberRepo, mockUserRepo, mockInventoryRepo, ownerMember, requesterUser, reviewerUser
+	}
+
+	t.Run("create inventory successfully", func(t *testing.T) {
+		mockRepo, mockMemberRepo, mockUserRepo, mockInventoryRepo, ownerMember, requesterUser, reviewerUser := setupMocks()
+
+		service := &Service{
+			repo:          mockRepo,
+			memberRepo:    mockMemberRepo,
+			userRepo:      mockUserRepo,
+			inventoryRepo: mockInventoryRepo,
+		}
+
+		payload := json.RawMessage(`{
+			"item_id": "` + itemID.String() + `",
+			"location_id": "` + locationID.String() + `",
+			"quantity": 10,
+			"condition": "NEW",
+			"status": "AVAILABLE"
+		}`)
+		pendingChange := Reconstruct(
+			changeID,
+			workspaceID,
+			requesterID,
+			"inventory",
+			nil,
+			ActionCreate,
+			payload,
+			StatusPending,
+			nil,
+			nil,
+			nil,
+			time.Now(),
+			time.Now(),
+		)
+
+		mockRepo.On("FindByID", ctx, changeID).Return(pendingChange, nil)
+		mockMemberRepo.On("FindByWorkspaceAndUser", ctx, workspaceID, reviewerID).Return(ownerMember, nil)
+		mockUserRepo.On("FindByID", ctx, requesterID).Return(requesterUser, nil)
+		mockUserRepo.On("FindByID", ctx, reviewerID).Return(reviewerUser, nil)
+		mockInventoryRepo.On("Save", ctx, mock.AnythingOfType("*inventory.Inventory")).Return(nil)
+		mockRepo.On("Save", ctx, mock.AnythingOfType("*pendingchange.PendingChange")).Return(nil)
+
+		err := service.ApproveChange(ctx, changeID, reviewerID)
+
+		assert.NoError(t, err)
+		mockInventoryRepo.AssertExpectations(t)
+	})
+
+	t.Run("create inventory with container", func(t *testing.T) {
+		mockRepo, mockMemberRepo, mockUserRepo, mockInventoryRepo, ownerMember, requesterUser, reviewerUser := setupMocks()
+
+		service := &Service{
+			repo:          mockRepo,
+			memberRepo:    mockMemberRepo,
+			userRepo:      mockUserRepo,
+			inventoryRepo: mockInventoryRepo,
+		}
+
+		containerID := uuid.New()
+		payload := json.RawMessage(`{
+			"item_id": "` + itemID.String() + `",
+			"location_id": "` + locationID.String() + `",
+			"container_id": "` + containerID.String() + `",
+			"quantity": 5,
+			"condition": "GOOD",
+			"status": "AVAILABLE"
+		}`)
+		pendingChange := Reconstruct(
+			changeID,
+			workspaceID,
+			requesterID,
+			"inventory",
+			nil,
+			ActionCreate,
+			payload,
+			StatusPending,
+			nil,
+			nil,
+			nil,
+			time.Now(),
+			time.Now(),
+		)
+
+		mockRepo.On("FindByID", ctx, changeID).Return(pendingChange, nil)
+		mockMemberRepo.On("FindByWorkspaceAndUser", ctx, workspaceID, reviewerID).Return(ownerMember, nil)
+		mockUserRepo.On("FindByID", ctx, requesterID).Return(requesterUser, nil)
+		mockUserRepo.On("FindByID", ctx, reviewerID).Return(reviewerUser, nil)
+		mockInventoryRepo.On("Save", ctx, mock.AnythingOfType("*inventory.Inventory")).Return(nil)
+		mockRepo.On("Save", ctx, mock.AnythingOfType("*pendingchange.PendingChange")).Return(nil)
+
+		err := service.ApproveChange(ctx, changeID, reviewerID)
+
+		assert.NoError(t, err)
+		mockInventoryRepo.AssertExpectations(t)
+	})
+
+	t.Run("update inventory quantity successfully", func(t *testing.T) {
+		mockRepo, mockMemberRepo, mockUserRepo, mockInventoryRepo, ownerMember, requesterUser, reviewerUser := setupMocks()
+
+		service := &Service{
+			repo:          mockRepo,
+			memberRepo:    mockMemberRepo,
+			userRepo:      mockUserRepo,
+			inventoryRepo: mockInventoryRepo,
+		}
+
+		inventoryID := uuid.New()
+		payload := json.RawMessage(`{"quantity": 15}`)
+		pendingChange := Reconstruct(
+			changeID,
+			workspaceID,
+			requesterID,
+			"inventory",
+			&inventoryID,
+			ActionUpdate,
+			payload,
+			StatusPending,
+			nil,
+			nil,
+			nil,
+			time.Now(),
+			time.Now(),
+		)
+
+		existingInventory := inventory.Reconstruct(
+			inventoryID,
+			workspaceID,
+			itemID,
+			locationID,
+			nil,
+			10,
+			inventory.ConditionNew,
+			inventory.StatusAvailable,
+			nil,
+			nil,
+			nil,
+			nil,
+			nil,
+			nil,
+			false,
+			time.Now(),
+			time.Now(),
+		)
+
+		mockRepo.On("FindByID", ctx, changeID).Return(pendingChange, nil)
+		mockMemberRepo.On("FindByWorkspaceAndUser", ctx, workspaceID, reviewerID).Return(ownerMember, nil)
+		mockUserRepo.On("FindByID", ctx, requesterID).Return(requesterUser, nil)
+		mockUserRepo.On("FindByID", ctx, reviewerID).Return(reviewerUser, nil)
+		mockInventoryRepo.On("FindByID", ctx, inventoryID, workspaceID).Return(existingInventory, nil)
+		mockInventoryRepo.On("Save", ctx, mock.AnythingOfType("*inventory.Inventory")).Return(nil)
+		mockRepo.On("Save", ctx, mock.AnythingOfType("*pendingchange.PendingChange")).Return(nil)
+
+		err := service.ApproveChange(ctx, changeID, reviewerID)
+
+		assert.NoError(t, err)
+		mockInventoryRepo.AssertExpectations(t)
+	})
+
+	t.Run("delete inventory successfully", func(t *testing.T) {
+		mockRepo, mockMemberRepo, mockUserRepo, mockInventoryRepo, ownerMember, requesterUser, reviewerUser := setupMocks()
+
+		service := &Service{
+			repo:          mockRepo,
+			memberRepo:    mockMemberRepo,
+			userRepo:      mockUserRepo,
+			inventoryRepo: mockInventoryRepo,
+		}
+
+		inventoryID := uuid.New()
+		payload := json.RawMessage(`{}`)
+		pendingChange := Reconstruct(
+			changeID,
+			workspaceID,
+			requesterID,
+			"inventory",
+			&inventoryID,
+			ActionDelete,
+			payload,
+			StatusPending,
+			nil,
+			nil,
+			nil,
+			time.Now(),
+			time.Now(),
+		)
+
+		mockRepo.On("FindByID", ctx, changeID).Return(pendingChange, nil)
+		mockMemberRepo.On("FindByWorkspaceAndUser", ctx, workspaceID, reviewerID).Return(ownerMember, nil)
+		mockUserRepo.On("FindByID", ctx, requesterID).Return(requesterUser, nil)
+		mockUserRepo.On("FindByID", ctx, reviewerID).Return(reviewerUser, nil)
+		mockInventoryRepo.On("Delete", ctx, inventoryID).Return(nil)
+		mockRepo.On("Save", ctx, mock.AnythingOfType("*pendingchange.PendingChange")).Return(nil)
+
+		err := service.ApproveChange(ctx, changeID, reviewerID)
+
+		assert.NoError(t, err)
+		mockInventoryRepo.AssertExpectations(t)
+	})
+
+	t.Run("create inventory fails on save error", func(t *testing.T) {
+		mockRepo, mockMemberRepo, mockUserRepo, mockInventoryRepo, ownerMember, requesterUser, reviewerUser := setupMocks()
+
+		service := &Service{
+			repo:          mockRepo,
+			memberRepo:    mockMemberRepo,
+			userRepo:      mockUserRepo,
+			inventoryRepo: mockInventoryRepo,
+		}
+
+		payload := json.RawMessage(`{
+			"item_id": "` + itemID.String() + `",
+			"location_id": "` + locationID.String() + `",
+			"quantity": 10,
+			"condition": "NEW",
+			"status": "AVAILABLE"
+		}`)
+		pendingChange := Reconstruct(
+			changeID,
+			workspaceID,
+			requesterID,
+			"inventory",
+			nil,
+			ActionCreate,
+			payload,
+			StatusPending,
+			nil,
+			nil,
+			nil,
+			time.Now(),
+			time.Now(),
+		)
+
+		mockRepo.On("FindByID", ctx, changeID).Return(pendingChange, nil)
+		mockMemberRepo.On("FindByWorkspaceAndUser", ctx, workspaceID, reviewerID).Return(ownerMember, nil)
+		mockUserRepo.On("FindByID", ctx, requesterID).Return(requesterUser, nil)
+		mockUserRepo.On("FindByID", ctx, reviewerID).Return(reviewerUser, nil)
+		mockInventoryRepo.On("Save", ctx, mock.AnythingOfType("*inventory.Inventory")).Return(errors.New("database error"))
+
+		err := service.ApproveChange(ctx, changeID, reviewerID)
+
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "failed to apply change")
+		mockInventoryRepo.AssertExpectations(t)
+	})
+
+	t.Run("update inventory fails when not found", func(t *testing.T) {
+		mockRepo, mockMemberRepo, mockUserRepo, mockInventoryRepo, ownerMember, requesterUser, reviewerUser := setupMocks()
+
+		service := &Service{
+			repo:          mockRepo,
+			memberRepo:    mockMemberRepo,
+			userRepo:      mockUserRepo,
+			inventoryRepo: mockInventoryRepo,
+		}
+
+		inventoryID := uuid.New()
+		payload := json.RawMessage(`{"quantity": 15}`)
+		pendingChange := Reconstruct(
+			changeID,
+			workspaceID,
+			requesterID,
+			"inventory",
+			&inventoryID,
+			ActionUpdate,
+			payload,
+			StatusPending,
+			nil,
+			nil,
+			nil,
+			time.Now(),
+			time.Now(),
+		)
+
+		mockRepo.On("FindByID", ctx, changeID).Return(pendingChange, nil)
+		mockMemberRepo.On("FindByWorkspaceAndUser", ctx, workspaceID, reviewerID).Return(ownerMember, nil)
+		mockUserRepo.On("FindByID", ctx, requesterID).Return(requesterUser, nil)
+		mockUserRepo.On("FindByID", ctx, reviewerID).Return(reviewerUser, nil)
+		mockInventoryRepo.On("FindByID", ctx, inventoryID, workspaceID).Return(nil, errors.New("inventory not found"))
+
+		err := service.ApproveChange(ctx, changeID, reviewerID)
+
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "failed to apply change")
+		mockInventoryRepo.AssertExpectations(t)
+	})
+
+	t.Run("delete inventory fails when entity ID missing", func(t *testing.T) {
+		mockRepo, mockMemberRepo, mockUserRepo, mockInventoryRepo, ownerMember, requesterUser, reviewerUser := setupMocks()
+
+		service := &Service{
+			repo:          mockRepo,
+			memberRepo:    mockMemberRepo,
+			userRepo:      mockUserRepo,
+			inventoryRepo: mockInventoryRepo,
+		}
+
+		payload := json.RawMessage(`{}`)
+		pendingChange := Reconstruct(
+			changeID,
+			workspaceID,
+			requesterID,
+			"inventory",
+			nil,
+			ActionDelete,
+			payload,
+			StatusPending,
+			nil,
+			nil,
+			nil,
+			time.Now(),
+			time.Now(),
+		)
+
+		mockRepo.On("FindByID", ctx, changeID).Return(pendingChange, nil)
+		mockMemberRepo.On("FindByWorkspaceAndUser", ctx, workspaceID, reviewerID).Return(ownerMember, nil)
+		mockUserRepo.On("FindByID", ctx, requesterID).Return(requesterUser, nil)
+		mockUserRepo.On("FindByID", ctx, reviewerID).Return(reviewerUser, nil)
+
+		err := service.ApproveChange(ctx, changeID, reviewerID)
+
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "failed to apply change")
+	})
+}
+
+// TestApplyBorrowerChange tests borrower change application through approval pipeline
+func TestApplyBorrowerChange(t *testing.T) {
+	ctx := context.Background()
+	workspaceID := uuid.New()
+	requesterID := uuid.New()
+	reviewerID := uuid.New()
+	changeID := uuid.New()
+
+	setupMocks := func() (*MockPendingChangeRepository, *MockMemberRepository, *MockUserRepository, *MockBorrowerRepository, *member.Member, *user.User, *user.User) {
+		mockRepo := new(MockPendingChangeRepository)
+		mockMemberRepo := new(MockMemberRepository)
+		mockUserRepo := new(MockUserRepository)
+		mockBorrowerRepo := new(MockBorrowerRepository)
+
+		ownerMember := member.Reconstruct(
+			uuid.New(),
+			workspaceID,
+			reviewerID,
+			member.RoleOwner,
+			nil,
+			time.Now(),
+			time.Now(),
+		)
+
+		requesterUser, _ := user.NewUser("requester@test.com", "Requester User", "password123")
+		reviewerUser, _ := user.NewUser("reviewer@test.com", "Reviewer User", "password123")
+
+		return mockRepo, mockMemberRepo, mockUserRepo, mockBorrowerRepo, ownerMember, requesterUser, reviewerUser
+	}
+
+	t.Run("create borrower successfully", func(t *testing.T) {
+		mockRepo, mockMemberRepo, mockUserRepo, mockBorrowerRepo, ownerMember, requesterUser, reviewerUser := setupMocks()
+
+		service := &Service{
+			repo:         mockRepo,
+			memberRepo:   mockMemberRepo,
+			userRepo:     mockUserRepo,
+			borrowerRepo: mockBorrowerRepo,
+		}
+
+		payload := json.RawMessage(`{"name": "John Doe", "email": "john@example.com", "phone": "555-1234"}`)
+		pendingChange := Reconstruct(
+			changeID,
+			workspaceID,
+			requesterID,
+			"borrower",
+			nil,
+			ActionCreate,
+			payload,
+			StatusPending,
+			nil,
+			nil,
+			nil,
+			time.Now(),
+			time.Now(),
+		)
+
+		mockRepo.On("FindByID", ctx, changeID).Return(pendingChange, nil)
+		mockMemberRepo.On("FindByWorkspaceAndUser", ctx, workspaceID, reviewerID).Return(ownerMember, nil)
+		mockUserRepo.On("FindByID", ctx, requesterID).Return(requesterUser, nil)
+		mockUserRepo.On("FindByID", ctx, reviewerID).Return(reviewerUser, nil)
+		mockBorrowerRepo.On("Save", ctx, mock.AnythingOfType("*borrower.Borrower")).Return(nil)
+		mockRepo.On("Save", ctx, mock.AnythingOfType("*pendingchange.PendingChange")).Return(nil)
+
+		err := service.ApproveChange(ctx, changeID, reviewerID)
+
+		assert.NoError(t, err)
+		mockBorrowerRepo.AssertExpectations(t)
+	})
+
+	t.Run("update borrower successfully", func(t *testing.T) {
+		mockRepo, mockMemberRepo, mockUserRepo, mockBorrowerRepo, ownerMember, requesterUser, reviewerUser := setupMocks()
+
+		service := &Service{
+			repo:         mockRepo,
+			memberRepo:   mockMemberRepo,
+			userRepo:     mockUserRepo,
+			borrowerRepo: mockBorrowerRepo,
+		}
+
+		borrowerID := uuid.New()
+		payload := json.RawMessage(`{"name": "John Updated", "email": "john.new@example.com"}`)
+		pendingChange := Reconstruct(
+			changeID,
+			workspaceID,
+			requesterID,
+			"borrower",
+			&borrowerID,
+			ActionUpdate,
+			payload,
+			StatusPending,
+			nil,
+			nil,
+			nil,
+			time.Now(),
+			time.Now(),
+		)
+
+		existingBorrower := borrower.Reconstruct(
+			borrowerID,
+			workspaceID,
+			"John Doe",
+			nil,
+			nil,
+			nil,
+			false,
+			time.Now(),
+			time.Now(),
+		)
+
+		mockRepo.On("FindByID", ctx, changeID).Return(pendingChange, nil)
+		mockMemberRepo.On("FindByWorkspaceAndUser", ctx, workspaceID, reviewerID).Return(ownerMember, nil)
+		mockUserRepo.On("FindByID", ctx, requesterID).Return(requesterUser, nil)
+		mockUserRepo.On("FindByID", ctx, reviewerID).Return(reviewerUser, nil)
+		mockBorrowerRepo.On("FindByID", ctx, borrowerID, workspaceID).Return(existingBorrower, nil)
+		mockBorrowerRepo.On("Save", ctx, mock.AnythingOfType("*borrower.Borrower")).Return(nil)
+		mockRepo.On("Save", ctx, mock.AnythingOfType("*pendingchange.PendingChange")).Return(nil)
+
+		err := service.ApproveChange(ctx, changeID, reviewerID)
+
+		assert.NoError(t, err)
+		mockBorrowerRepo.AssertExpectations(t)
+	})
+
+	t.Run("delete borrower successfully", func(t *testing.T) {
+		mockRepo, mockMemberRepo, mockUserRepo, mockBorrowerRepo, ownerMember, requesterUser, reviewerUser := setupMocks()
+
+		service := &Service{
+			repo:         mockRepo,
+			memberRepo:   mockMemberRepo,
+			userRepo:     mockUserRepo,
+			borrowerRepo: mockBorrowerRepo,
+		}
+
+		borrowerID := uuid.New()
+		payload := json.RawMessage(`{}`)
+		pendingChange := Reconstruct(
+			changeID,
+			workspaceID,
+			requesterID,
+			"borrower",
+			&borrowerID,
+			ActionDelete,
+			payload,
+			StatusPending,
+			nil,
+			nil,
+			nil,
+			time.Now(),
+			time.Now(),
+		)
+
+		mockRepo.On("FindByID", ctx, changeID).Return(pendingChange, nil)
+		mockMemberRepo.On("FindByWorkspaceAndUser", ctx, workspaceID, reviewerID).Return(ownerMember, nil)
+		mockUserRepo.On("FindByID", ctx, requesterID).Return(requesterUser, nil)
+		mockUserRepo.On("FindByID", ctx, reviewerID).Return(reviewerUser, nil)
+		mockBorrowerRepo.On("Delete", ctx, borrowerID).Return(nil)
+		mockRepo.On("Save", ctx, mock.AnythingOfType("*pendingchange.PendingChange")).Return(nil)
+
+		err := service.ApproveChange(ctx, changeID, reviewerID)
+
+		assert.NoError(t, err)
+		mockBorrowerRepo.AssertExpectations(t)
+	})
+
+	t.Run("create borrower fails on save error", func(t *testing.T) {
+		mockRepo, mockMemberRepo, mockUserRepo, mockBorrowerRepo, ownerMember, requesterUser, reviewerUser := setupMocks()
+
+		service := &Service{
+			repo:         mockRepo,
+			memberRepo:   mockMemberRepo,
+			userRepo:     mockUserRepo,
+			borrowerRepo: mockBorrowerRepo,
+		}
+
+		payload := json.RawMessage(`{"name": "John Doe"}`)
+		pendingChange := Reconstruct(
+			changeID,
+			workspaceID,
+			requesterID,
+			"borrower",
+			nil,
+			ActionCreate,
+			payload,
+			StatusPending,
+			nil,
+			nil,
+			nil,
+			time.Now(),
+			time.Now(),
+		)
+
+		mockRepo.On("FindByID", ctx, changeID).Return(pendingChange, nil)
+		mockMemberRepo.On("FindByWorkspaceAndUser", ctx, workspaceID, reviewerID).Return(ownerMember, nil)
+		mockUserRepo.On("FindByID", ctx, requesterID).Return(requesterUser, nil)
+		mockUserRepo.On("FindByID", ctx, reviewerID).Return(reviewerUser, nil)
+		mockBorrowerRepo.On("Save", ctx, mock.AnythingOfType("*borrower.Borrower")).Return(errors.New("database error"))
+
+		err := service.ApproveChange(ctx, changeID, reviewerID)
+
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "failed to apply change")
+		mockBorrowerRepo.AssertExpectations(t)
+	})
+
+	t.Run("update borrower fails when not found", func(t *testing.T) {
+		mockRepo, mockMemberRepo, mockUserRepo, mockBorrowerRepo, ownerMember, requesterUser, reviewerUser := setupMocks()
+
+		service := &Service{
+			repo:         mockRepo,
+			memberRepo:   mockMemberRepo,
+			userRepo:     mockUserRepo,
+			borrowerRepo: mockBorrowerRepo,
+		}
+
+		borrowerID := uuid.New()
+		payload := json.RawMessage(`{"name": "Updated"}`)
+		pendingChange := Reconstruct(
+			changeID,
+			workspaceID,
+			requesterID,
+			"borrower",
+			&borrowerID,
+			ActionUpdate,
+			payload,
+			StatusPending,
+			nil,
+			nil,
+			nil,
+			time.Now(),
+			time.Now(),
+		)
+
+		mockRepo.On("FindByID", ctx, changeID).Return(pendingChange, nil)
+		mockMemberRepo.On("FindByWorkspaceAndUser", ctx, workspaceID, reviewerID).Return(ownerMember, nil)
+		mockUserRepo.On("FindByID", ctx, requesterID).Return(requesterUser, nil)
+		mockUserRepo.On("FindByID", ctx, reviewerID).Return(reviewerUser, nil)
+		mockBorrowerRepo.On("FindByID", ctx, borrowerID, workspaceID).Return(nil, errors.New("borrower not found"))
+
+		err := service.ApproveChange(ctx, changeID, reviewerID)
+
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "failed to apply change")
+		mockBorrowerRepo.AssertExpectations(t)
+	})
+
+	t.Run("delete borrower fails when entity ID missing", func(t *testing.T) {
+		mockRepo, mockMemberRepo, mockUserRepo, mockBorrowerRepo, ownerMember, requesterUser, reviewerUser := setupMocks()
+
+		service := &Service{
+			repo:         mockRepo,
+			memberRepo:   mockMemberRepo,
+			userRepo:     mockUserRepo,
+			borrowerRepo: mockBorrowerRepo,
+		}
+
+		payload := json.RawMessage(`{}`)
+		pendingChange := Reconstruct(
+			changeID,
+			workspaceID,
+			requesterID,
+			"borrower",
+			nil,
+			ActionDelete,
+			payload,
+			StatusPending,
+			nil,
+			nil,
+			nil,
+			time.Now(),
+			time.Now(),
+		)
+
+		mockRepo.On("FindByID", ctx, changeID).Return(pendingChange, nil)
+		mockMemberRepo.On("FindByWorkspaceAndUser", ctx, workspaceID, reviewerID).Return(ownerMember, nil)
+		mockUserRepo.On("FindByID", ctx, requesterID).Return(requesterUser, nil)
+		mockUserRepo.On("FindByID", ctx, reviewerID).Return(reviewerUser, nil)
+
+		err := service.ApproveChange(ctx, changeID, reviewerID)
+
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "failed to apply change")
+	})
+
+	t.Run("create borrower fails with invalid payload", func(t *testing.T) {
+		mockRepo, mockMemberRepo, mockUserRepo, mockBorrowerRepo, ownerMember, requesterUser, reviewerUser := setupMocks()
+
+		service := &Service{
+			repo:         mockRepo,
+			memberRepo:   mockMemberRepo,
+			userRepo:     mockUserRepo,
+			borrowerRepo: mockBorrowerRepo,
+		}
+
+		payload := json.RawMessage(`{invalid json}`)
+		pendingChange := Reconstruct(
+			changeID,
+			workspaceID,
+			requesterID,
+			"borrower",
 			nil,
 			ActionCreate,
 			payload,
