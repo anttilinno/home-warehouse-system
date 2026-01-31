@@ -5,7 +5,7 @@
 - v1 **PWA Offline Completion** — Phases 1-5 (shipped 2026-01-24)
 - v1.1 **Offline Entity Extension** — Phases 6-11 (shipped 2026-01-25)
 - v1.2 **Phase 2 Completion** — Phases 12-17 (shipped 2026-01-25)
-- v1.3 **Mobile UX Overhaul** — Phases 18-21 (active)
+- v1.3 **Mobile UX Overhaul** — Phases 18-21 (complete)
 
 ## Phases
 
@@ -56,7 +56,7 @@ See `.planning/milestones/v1.2-ROADMAP.md` for full details.
 
 </details>
 
-### v1.3 Mobile UX Overhaul (Phases 18-21) — ACTIVE
+### v1.3 Mobile UX Overhaul (Phases 18-21) — COMPLETE
 
 Transform the PWA into a warehouse-grade mobile inventory tool with barcode scanning, offline-capable fuzzy search, floating action buttons with radial menus, and mobile-optimized forms.
 
@@ -215,8 +215,8 @@ Plans:
 - [x] 21-03-PLAN.md — Create MultiStepForm wizard infrastructure
 - [x] 21-04-PLAN.md — Create InlinePhotoCapture component
 - [x] 21-05-PLAN.md — Create Item wizard with all components integrated
-- [ ] 21-06-PLAN.md — Gap closure: Integrate smart defaults hook into wizard
-- [ ] 21-07-PLAN.md — Gap closure: Integrate iOS keyboard hook into forms
+- [x] 21-06-PLAN.md — Gap closure: Integrate smart defaults hook into wizard
+- [x] 21-07-PLAN.md — Gap closure: Integrate iOS keyboard hook into forms
 
 ---
 
@@ -230,10 +230,10 @@ Plans:
 | 18 | v1.3 | 4 | Complete | 2026-01-30 |
 | 19 | v1.3 | 6 | Complete | 2026-01-31 |
 | 20 | v1.3 | 5 | Complete | 2026-01-31 |
-| 21 | v1.3 | 7 | Gap Closure | — |
+| 21 | v1.3 | 7 | Complete | 2026-01-31 |
 
-**Total:** 20 phases shipped (60 plans), 1 phase with gap closure pending
+**Total:** 21 phases complete (67 plans)
 
 ---
 *Roadmap created: 2026-01-24*
-*Last updated: 2026-01-31 after Phase 21 gap closure plans*
+*Last updated: 2026-01-31 after Phase 21 complete*
