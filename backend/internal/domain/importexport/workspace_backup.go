@@ -13,13 +13,38 @@ import (
 	"github.com/antti/home-warehouse/go-backend/internal/infra/queries"
 )
 
+// WorkspaceBackupQueries defines the database operations needed for workspace backup/restore
+type WorkspaceBackupQueries interface {
+	// Export operations
+	ListAllCategories(ctx context.Context, arg queries.ListAllCategoriesParams) ([]queries.WarehouseCategory, error)
+	ListAllLabels(ctx context.Context, arg queries.ListAllLabelsParams) ([]queries.WarehouseLabel, error)
+	ListAllCompanies(ctx context.Context, arg queries.ListAllCompaniesParams) ([]queries.WarehouseCompany, error)
+	ListAllLocations(ctx context.Context, arg queries.ListAllLocationsParams) ([]queries.WarehouseLocation, error)
+	ListAllBorrowers(ctx context.Context, arg queries.ListAllBorrowersParams) ([]queries.WarehouseBorrower, error)
+	ListAllItems(ctx context.Context, arg queries.ListAllItemsParams) ([]queries.WarehouseItem, error)
+	ListAllContainers(ctx context.Context, arg queries.ListAllContainersParams) ([]queries.WarehouseContainer, error)
+	ListAllInventory(ctx context.Context, workspaceID uuid.UUID) ([]queries.WarehouseInventory, error)
+	ListAllLoans(ctx context.Context, workspaceID uuid.UUID) ([]queries.WarehouseLoan, error)
+	ListAllAttachments(ctx context.Context, workspaceID uuid.UUID) ([]queries.WarehouseAttachment, error)
+	CreateWorkspaceExport(ctx context.Context, arg queries.CreateWorkspaceExportParams) error
+
+	// Import operations
+	CreateCategory(ctx context.Context, arg queries.CreateCategoryParams) (queries.WarehouseCategory, error)
+	CreateLabel(ctx context.Context, arg queries.CreateLabelParams) (queries.WarehouseLabel, error)
+	CreateCompany(ctx context.Context, arg queries.CreateCompanyParams) (queries.WarehouseCompany, error)
+	CreateLocation(ctx context.Context, arg queries.CreateLocationParams) (queries.WarehouseLocation, error)
+	CreateBorrower(ctx context.Context, arg queries.CreateBorrowerParams) (queries.WarehouseBorrower, error)
+	CreateItem(ctx context.Context, arg queries.CreateItemParams) (queries.WarehouseItem, error)
+	CreateContainer(ctx context.Context, arg queries.CreateContainerParams) (queries.WarehouseContainer, error)
+}
+
 // WorkspaceBackupService handles full workspace backup and restore operations
 type WorkspaceBackupService struct {
-	queries *queries.Queries
+	queries WorkspaceBackupQueries
 }
 
 // NewWorkspaceBackupService creates a new workspace backup service
-func NewWorkspaceBackupService(q *queries.Queries) *WorkspaceBackupService {
+func NewWorkspaceBackupService(q WorkspaceBackupQueries) *WorkspaceBackupService {
 	return &WorkspaceBackupService{queries: q}
 }
 
