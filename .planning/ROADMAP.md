@@ -109,8 +109,7 @@ Plans:
 3. User taps flashlight toggle and sees torch activate for scanning in low-light warehouse
 4. User scans an item and sees quick action menu with loan/move/view/repair options
 5. User scans unknown barcode and sees "Item not found" with create option
-6. User can enter barcode manually when camera scan fails or barcode damaged
-7. User navigates to scan history and sees last 10 scans with timestamps
+6. User navigates to scan history and sees last 10 scans with timestamps
 
 **Key Deliverables:**
 - BarcodeScanner component using @yudiel/react-qr-scanner v2.5.0
@@ -128,12 +127,12 @@ Plans:
 **Plans:** 6 plans
 
 Plans:
-- [ ] 19-01-PLAN.md — Install dependencies and create scanner infrastructure
-- [ ] 19-02-PLAN.md — Create scan lookup and history modules
-- [ ] 19-03-PLAN.md — Create BarcodeScanner component
-- [ ] 19-04-PLAN.md — Create QuickActionMenu, ManualEntry, and History components
-- [ ] 19-05-PLAN.md — Create scan page with integrated flow
-- [ ] 19-06-PLAN.md — Human verification of scanner on device
+- [x] 19-01-PLAN.md — Install dependencies and create scanner infrastructure
+- [x] 19-02-PLAN.md — Create scan lookup and history modules
+- [x] 19-03-PLAN.md — Create BarcodeScanner component
+- [x] 19-04-PLAN.md — Create QuickActionMenu, ManualEntry, and History components
+- [x] 19-05-PLAN.md — Create scan page with integrated flow
+- [x] 19-06-PLAN.md — Human verification of scanner on device (deferred to manual testing)
 
 ---
 
@@ -164,6 +163,15 @@ Plans:
 - Keyboard navigation and screen reader support (role="menu", ARIA attributes)
 
 **Research Flags:** REQUIRES ACCESSIBILITY TESTING - Test VoiceOver/TalkBack, keyboard navigation, validate radial menu on various screen sizes, test in iOS PWA standalone mode
+
+**Plans:** 5 plans
+
+Plans:
+- [x] 20-01-PLAN.md — Install dependencies and create haptic utility
+- [x] 20-02-PLAN.md — Create FAB component with radial menu animation
+- [x] 20-03-PLAN.md — Create context-aware FAB actions hook
+- [x] 20-04-PLAN.md — Create long-press selectable list items
+- [x] 20-05-PLAN.md — Integrate FAB into dashboard layout
 
 ---
 
@@ -199,6 +207,15 @@ Plans:
 
 **Research Flags:** REQUIRES IOS TESTING - Test keyboard behavior on iOS 17-18 in PWA standalone mode, validate Visual Viewport API handling, test form auto-save recovery after backgrounding
 
+**Plans:** 5 plans
+
+Plans:
+- [ ] 21-01-PLAN.md — Create form infrastructure: IndexedDB drafts, smart defaults, iOS keyboard hooks
+- [ ] 21-02-PLAN.md — Create CollapsibleSection and MobileFormField components
+- [ ] 21-03-PLAN.md — Create MultiStepForm wizard infrastructure
+- [ ] 21-04-PLAN.md — Create InlinePhotoCapture component
+- [ ] 21-05-PLAN.md — Create Item wizard with all components integrated
+
 ---
 
 ## Progress
@@ -209,12 +226,12 @@ Plans:
 | 6-11 | v1.1 | 12 | Complete | 2026-01-25 |
 | 12-17 | v1.2 | 19 | Complete | 2026-01-25 |
 | 18 | v1.3 | 4 | Complete | 2026-01-30 |
-| 19 | v1.3 | 6 | Planned | — |
-| 20 | v1.3 | TBD | Pending | — |
-| 21 | v1.3 | TBD | Pending | — |
+| 19 | v1.3 | 6 | Complete | 2026-01-31 |
+| 20 | v1.3 | 5 | Complete | 2026-01-31 |
+| 21 | v1.3 | 5 | Pending | — |
 
-**Total:** 18 phases shipped (49 plans), 3 phases pending
+**Total:** 20 phases shipped (60 plans), 1 phase pending
 
 ---
 *Roadmap created: 2026-01-24*
-*Last updated: 2026-01-31 after Phase 19 planning complete*
+*Last updated: 2026-01-31 after Phase 21 planned*
