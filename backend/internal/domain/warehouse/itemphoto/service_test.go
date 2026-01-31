@@ -1862,3 +1862,422 @@ func TestIsValidMimeType(t *testing.T) {
 		assert.False(t, photo.IsValidMimeType())
 	})
 }
+
+// MockHasher implements itemphoto.Hasher for testing
+type MockHasher struct {
+	mock.Mock
+}
+
+func (m *MockHasher) GenerateHash(ctx context.Context, imagePath string) (int64, error) {
+	args := m.Called(ctx, imagePath)
+	return args.Get(0).(int64), args.Error(1)
+}
+
+func (m *MockHasher) CompareHashes(hash1, hash2 int64) (bool, int) {
+	args := m.Called(hash1, hash2)
+	return args.Bool(0), args.Int(1)
+}
+
+func (m *MockHasher) IsSimilar(hash1, hash2 int64) bool {
+	args := m.Called(hash1, hash2)
+	return args.Bool(0)
+}
+
+func (m *MockHasher) GetDistance(hash1, hash2 int64) int {
+	args := m.Called(hash1, hash2)
+	return args.Int(0)
+}
+
+func TestService_BulkDeletePhotos(t *testing.T) {
+	ctx := context.Background()
+	itemID := uuid.New()
+	workspaceID := uuid.New()
+
+	t.Run("success: multiple photos deleted", func(t *testing.T) {
+		repo := new(MockRepository)
+		storage := new(MockStorage)
+		processor := new(MockImageProcessor)
+
+		photo1 := createServiceTestPhoto(t, itemID, workspaceID)
+		photo2 := createServiceTestPhoto(t, itemID, workspaceID)
+		photo1.IsPrimary = false
+		photo2.IsPrimary = false
+		photoIDs := []uuid.UUID{photo1.ID, photo2.ID}
+
+		repo.On("GetByIDs", ctx, photoIDs, workspaceID).Return([]*itemphoto.ItemPhoto{photo1, photo2}, nil)
+		repo.On("BulkDelete", ctx, photoIDs, workspaceID).Return(nil)
+		storage.On("Delete", ctx, photo1.StoragePath).Return(nil)
+		storage.On("Delete", ctx, photo1.ThumbnailPath).Return(nil)
+		storage.On("Delete", ctx, photo2.StoragePath).Return(nil)
+		storage.On("Delete", ctx, photo2.ThumbnailPath).Return(nil)
+		repo.On("GetByItem", ctx, itemID, workspaceID).Return([]*itemphoto.ItemPhoto{}, nil)
+
+		service := itemphoto.NewService(repo, storage, processor, os.TempDir())
+		err := service.BulkDeletePhotos(ctx, itemID, workspaceID, photoIDs)
+
+		require.NoError(t, err)
+		repo.AssertExpectations(t)
+		storage.AssertExpectations(t)
+	})
+
+	t.Run("success: empty list is no-op", func(t *testing.T) {
+		repo := new(MockRepository)
+		storage := new(MockStorage)
+		processor := new(MockImageProcessor)
+
+		service := itemphoto.NewService(repo, storage, processor, os.TempDir())
+		err := service.BulkDeletePhotos(ctx, itemID, workspaceID, []uuid.UUID{})
+
+		require.NoError(t, err)
+		// No repository calls expected
+		repo.AssertExpectations(t)
+	})
+
+	t.Run("success: single photo deleted", func(t *testing.T) {
+		repo := new(MockRepository)
+		storage := new(MockStorage)
+		processor := new(MockImageProcessor)
+
+		photo := createServiceTestPhoto(t, itemID, workspaceID)
+		photo.IsPrimary = false
+		photoIDs := []uuid.UUID{photo.ID}
+
+		repo.On("GetByIDs", ctx, photoIDs, workspaceID).Return([]*itemphoto.ItemPhoto{photo}, nil)
+		repo.On("BulkDelete", ctx, photoIDs, workspaceID).Return(nil)
+		storage.On("Delete", ctx, photo.StoragePath).Return(nil)
+		storage.On("Delete", ctx, photo.ThumbnailPath).Return(nil)
+		repo.On("GetByItem", ctx, itemID, workspaceID).Return([]*itemphoto.ItemPhoto{}, nil)
+
+		service := itemphoto.NewService(repo, storage, processor, os.TempDir())
+		err := service.BulkDeletePhotos(ctx, itemID, workspaceID, photoIDs)
+
+		require.NoError(t, err)
+		repo.AssertExpectations(t)
+	})
+
+	t.Run("error: photo belongs to different item", func(t *testing.T) {
+		repo := new(MockRepository)
+		storage := new(MockStorage)
+		processor := new(MockImageProcessor)
+
+		differentItemID := uuid.New()
+		photo := createServiceTestPhoto(t, differentItemID, workspaceID) // Different item
+		photoIDs := []uuid.UUID{photo.ID}
+
+		repo.On("GetByIDs", ctx, photoIDs, workspaceID).Return([]*itemphoto.ItemPhoto{photo}, nil)
+
+		service := itemphoto.NewService(repo, storage, processor, os.TempDir())
+		err := service.BulkDeletePhotos(ctx, itemID, workspaceID, photoIDs)
+
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "does not belong to item")
+		repo.AssertExpectations(t)
+	})
+
+	t.Run("error: GetByIDs repository error", func(t *testing.T) {
+		repo := new(MockRepository)
+		storage := new(MockStorage)
+		processor := new(MockImageProcessor)
+
+		photoIDs := []uuid.UUID{uuid.New()}
+		expectedErr := errors.New("database error")
+		repo.On("GetByIDs", ctx, photoIDs, workspaceID).Return(nil, expectedErr)
+
+		service := itemphoto.NewService(repo, storage, processor, os.TempDir())
+		err := service.BulkDeletePhotos(ctx, itemID, workspaceID, photoIDs)
+
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "failed to get photos")
+		repo.AssertExpectations(t)
+	})
+
+	t.Run("error: BulkDelete repository error", func(t *testing.T) {
+		repo := new(MockRepository)
+		storage := new(MockStorage)
+		processor := new(MockImageProcessor)
+
+		photo := createServiceTestPhoto(t, itemID, workspaceID)
+		photoIDs := []uuid.UUID{photo.ID}
+		expectedErr := errors.New("bulk delete failed")
+
+		repo.On("GetByIDs", ctx, photoIDs, workspaceID).Return([]*itemphoto.ItemPhoto{photo}, nil)
+		repo.On("BulkDelete", ctx, photoIDs, workspaceID).Return(expectedErr)
+
+		service := itemphoto.NewService(repo, storage, processor, os.TempDir())
+		err := service.BulkDeletePhotos(ctx, itemID, workspaceID, photoIDs)
+
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "failed to delete photos from database")
+		repo.AssertExpectations(t)
+	})
+
+	t.Run("success: reassigns primary after bulk delete", func(t *testing.T) {
+		repo := new(MockRepository)
+		storage := new(MockStorage)
+		processor := new(MockImageProcessor)
+
+		photo := createServiceTestPhoto(t, itemID, workspaceID)
+		photo.IsPrimary = true // Deleting the primary photo
+		photoIDs := []uuid.UUID{photo.ID}
+
+		remainingPhoto := createServiceTestPhoto(t, itemID, workspaceID)
+		remainingPhoto.IsPrimary = false
+
+		repo.On("GetByIDs", ctx, photoIDs, workspaceID).Return([]*itemphoto.ItemPhoto{photo}, nil)
+		repo.On("BulkDelete", ctx, photoIDs, workspaceID).Return(nil)
+		storage.On("Delete", ctx, photo.StoragePath).Return(nil)
+		storage.On("Delete", ctx, photo.ThumbnailPath).Return(nil)
+		repo.On("GetByItem", ctx, itemID, workspaceID).Return([]*itemphoto.ItemPhoto{remainingPhoto}, nil)
+		repo.On("SetPrimary", ctx, remainingPhoto.ID).Return(nil)
+
+		service := itemphoto.NewService(repo, storage, processor, os.TempDir())
+		err := service.BulkDeletePhotos(ctx, itemID, workspaceID, photoIDs)
+
+		require.NoError(t, err)
+		repo.AssertExpectations(t)
+	})
+
+	t.Run("success: deletes multi-size thumbnails when present", func(t *testing.T) {
+		repo := new(MockRepository)
+		storage := new(MockStorage)
+		processor := new(MockImageProcessor)
+
+		smallPath := "small/thumb.jpg"
+		mediumPath := "medium/thumb.jpg"
+		largePath := "large/thumb.jpg"
+
+		photo := createServiceTestPhoto(t, itemID, workspaceID)
+		photo.IsPrimary = false
+		photo.ThumbnailSmallPath = &smallPath
+		photo.ThumbnailMediumPath = &mediumPath
+		photo.ThumbnailLargePath = &largePath
+		photoIDs := []uuid.UUID{photo.ID}
+
+		repo.On("GetByIDs", ctx, photoIDs, workspaceID).Return([]*itemphoto.ItemPhoto{photo}, nil)
+		repo.On("BulkDelete", ctx, photoIDs, workspaceID).Return(nil)
+		storage.On("Delete", ctx, photo.StoragePath).Return(nil)
+		storage.On("Delete", ctx, photo.ThumbnailPath).Return(nil)
+		storage.On("Delete", ctx, smallPath).Return(nil)
+		storage.On("Delete", ctx, mediumPath).Return(nil)
+		storage.On("Delete", ctx, largePath).Return(nil)
+		repo.On("GetByItem", ctx, itemID, workspaceID).Return([]*itemphoto.ItemPhoto{}, nil)
+
+		service := itemphoto.NewService(repo, storage, processor, os.TempDir())
+		err := service.BulkDeletePhotos(ctx, itemID, workspaceID, photoIDs)
+
+		require.NoError(t, err)
+		storage.AssertExpectations(t)
+	})
+
+	t.Run("success: storage errors are ignored during bulk delete", func(t *testing.T) {
+		repo := new(MockRepository)
+		storage := new(MockStorage)
+		processor := new(MockImageProcessor)
+
+		photo := createServiceTestPhoto(t, itemID, workspaceID)
+		photo.IsPrimary = false
+		photoIDs := []uuid.UUID{photo.ID}
+
+		repo.On("GetByIDs", ctx, photoIDs, workspaceID).Return([]*itemphoto.ItemPhoto{photo}, nil)
+		repo.On("BulkDelete", ctx, photoIDs, workspaceID).Return(nil)
+		storage.On("Delete", ctx, photo.StoragePath).Return(errors.New("storage error"))
+		storage.On("Delete", ctx, photo.ThumbnailPath).Return(errors.New("storage error"))
+		repo.On("GetByItem", ctx, itemID, workspaceID).Return([]*itemphoto.ItemPhoto{}, nil)
+
+		service := itemphoto.NewService(repo, storage, processor, os.TempDir())
+		err := service.BulkDeletePhotos(ctx, itemID, workspaceID, photoIDs)
+
+		require.NoError(t, err)
+		repo.AssertExpectations(t)
+	})
+}
+
+func TestService_BulkUpdateCaptions(t *testing.T) {
+	ctx := context.Background()
+	workspaceID := uuid.New()
+
+	t.Run("success: all captions updated", func(t *testing.T) {
+		repo := new(MockRepository)
+		storage := new(MockStorage)
+		processor := new(MockImageProcessor)
+
+		caption1 := "Caption 1"
+		caption2 := "Caption 2"
+		photo1ID := uuid.New()
+		photo2ID := uuid.New()
+
+		updates := []itemphoto.CaptionUpdate{
+			{PhotoID: photo1ID, Caption: &caption1},
+			{PhotoID: photo2ID, Caption: &caption2},
+		}
+
+		repo.On("UpdateCaption", ctx, photo1ID, workspaceID, &caption1).Return(nil)
+		repo.On("UpdateCaption", ctx, photo2ID, workspaceID, &caption2).Return(nil)
+
+		service := itemphoto.NewService(repo, storage, processor, os.TempDir())
+		err := service.BulkUpdateCaptions(ctx, workspaceID, updates)
+
+		require.NoError(t, err)
+		repo.AssertExpectations(t)
+	})
+
+	t.Run("success: empty updates is no-op", func(t *testing.T) {
+		repo := new(MockRepository)
+		storage := new(MockStorage)
+		processor := new(MockImageProcessor)
+
+		service := itemphoto.NewService(repo, storage, processor, os.TempDir())
+		err := service.BulkUpdateCaptions(ctx, workspaceID, []itemphoto.CaptionUpdate{})
+
+		require.NoError(t, err)
+		repo.AssertExpectations(t)
+	})
+
+	t.Run("success: clears caption when nil", func(t *testing.T) {
+		repo := new(MockRepository)
+		storage := new(MockStorage)
+		processor := new(MockImageProcessor)
+
+		photoID := uuid.New()
+		updates := []itemphoto.CaptionUpdate{
+			{PhotoID: photoID, Caption: nil},
+		}
+
+		repo.On("UpdateCaption", ctx, photoID, workspaceID, (*string)(nil)).Return(nil)
+
+		service := itemphoto.NewService(repo, storage, processor, os.TempDir())
+		err := service.BulkUpdateCaptions(ctx, workspaceID, updates)
+
+		require.NoError(t, err)
+		repo.AssertExpectations(t)
+	})
+
+	t.Run("error: repository error stops processing", func(t *testing.T) {
+		repo := new(MockRepository)
+		storage := new(MockStorage)
+		processor := new(MockImageProcessor)
+
+		caption := "Caption"
+		photo1ID := uuid.New()
+		photo2ID := uuid.New()
+
+		updates := []itemphoto.CaptionUpdate{
+			{PhotoID: photo1ID, Caption: &caption},
+			{PhotoID: photo2ID, Caption: &caption},
+		}
+
+		expectedErr := errors.New("update failed")
+		repo.On("UpdateCaption", ctx, photo1ID, workspaceID, &caption).Return(expectedErr)
+
+		service := itemphoto.NewService(repo, storage, processor, os.TempDir())
+		err := service.BulkUpdateCaptions(ctx, workspaceID, updates)
+
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "failed to update caption")
+		repo.AssertExpectations(t)
+	})
+
+	t.Run("success: single caption update", func(t *testing.T) {
+		repo := new(MockRepository)
+		storage := new(MockStorage)
+		processor := new(MockImageProcessor)
+
+		caption := "Single caption"
+		photoID := uuid.New()
+		updates := []itemphoto.CaptionUpdate{
+			{PhotoID: photoID, Caption: &caption},
+		}
+
+		repo.On("UpdateCaption", ctx, photoID, workspaceID, &caption).Return(nil)
+
+		service := itemphoto.NewService(repo, storage, processor, os.TempDir())
+		err := service.BulkUpdateCaptions(ctx, workspaceID, updates)
+
+		require.NoError(t, err)
+		repo.AssertExpectations(t)
+	})
+}
+
+func TestService_GetPhotosForDownload(t *testing.T) {
+	ctx := context.Background()
+	itemID := uuid.New()
+	workspaceID := uuid.New()
+
+	t.Run("returns photos for item", func(t *testing.T) {
+		repo := new(MockRepository)
+		storage := new(MockStorage)
+		processor := new(MockImageProcessor)
+
+		photo1 := createServiceTestPhoto(t, itemID, workspaceID)
+		photo2 := createServiceTestPhoto(t, itemID, workspaceID)
+		photos := []*itemphoto.ItemPhoto{photo1, photo2}
+
+		repo.On("GetByItem", ctx, itemID, workspaceID).Return(photos, nil)
+
+		service := itemphoto.NewService(repo, storage, processor, os.TempDir())
+		result, err := service.GetPhotosForDownload(ctx, itemID, workspaceID)
+
+		require.NoError(t, err)
+		assert.Len(t, result, 2)
+		repo.AssertExpectations(t)
+	})
+
+	t.Run("returns error on repository failure", func(t *testing.T) {
+		repo := new(MockRepository)
+		storage := new(MockStorage)
+		processor := new(MockImageProcessor)
+
+		expectedErr := errors.New("database error")
+		repo.On("GetByItem", ctx, itemID, workspaceID).Return(nil, expectedErr)
+
+		service := itemphoto.NewService(repo, storage, processor, os.TempDir())
+		result, err := service.GetPhotosForDownload(ctx, itemID, workspaceID)
+
+		require.Error(t, err)
+		assert.Nil(t, result)
+		repo.AssertExpectations(t)
+	})
+}
+
+func TestService_GetPhotosByIDs(t *testing.T) {
+	ctx := context.Background()
+	workspaceID := uuid.New()
+
+	t.Run("returns photos by IDs", func(t *testing.T) {
+		repo := new(MockRepository)
+		storage := new(MockStorage)
+		processor := new(MockImageProcessor)
+
+		itemID := uuid.New()
+		photo1 := createServiceTestPhoto(t, itemID, workspaceID)
+		photo2 := createServiceTestPhoto(t, itemID, workspaceID)
+		photoIDs := []uuid.UUID{photo1.ID, photo2.ID}
+		photos := []*itemphoto.ItemPhoto{photo1, photo2}
+
+		repo.On("GetByIDs", ctx, photoIDs, workspaceID).Return(photos, nil)
+
+		service := itemphoto.NewService(repo, storage, processor, os.TempDir())
+		result, err := service.GetPhotosByIDs(ctx, photoIDs, workspaceID)
+
+		require.NoError(t, err)
+		assert.Len(t, result, 2)
+		repo.AssertExpectations(t)
+	})
+
+	t.Run("returns error on repository failure", func(t *testing.T) {
+		repo := new(MockRepository)
+		storage := new(MockStorage)
+		processor := new(MockImageProcessor)
+
+		photoIDs := []uuid.UUID{uuid.New()}
+		expectedErr := errors.New("database error")
+		repo.On("GetByIDs", ctx, photoIDs, workspaceID).Return(nil, expectedErr)
+
+		service := itemphoto.NewService(repo, storage, processor, os.TempDir())
+		result, err := service.GetPhotosByIDs(ctx, photoIDs, workspaceID)
+
+		require.Error(t, err)
+		assert.Nil(t, result)
+		repo.AssertExpectations(t)
+	})
+}
