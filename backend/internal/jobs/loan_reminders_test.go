@@ -631,3 +631,299 @@ func TestLoanReminderPayload_DueDateBoundaries(t *testing.T) {
 		})
 	}
 }
+
+// =============================================================================
+// LoanReminderProcessor Additional Error Path Tests
+// =============================================================================
+
+func TestLoanReminderProcessor_ProcessTask_InvalidPayloadTypes(t *testing.T) {
+	processor := NewLoanReminderProcessor(nil, nil, nil)
+
+	tests := []struct {
+		name        string
+		payload     []byte
+		errContains string
+	}{
+		{
+			name:        "array instead of object",
+			payload:     []byte("[1,2,3]"),
+			errContains: "failed to unmarshal payload",
+		},
+		{
+			name:        "string instead of object",
+			payload:     []byte(`"just a string"`),
+			errContains: "failed to unmarshal payload",
+		},
+		{
+			name:        "number instead of object",
+			payload:     []byte("12345"),
+			errContains: "failed to unmarshal payload",
+		},
+		{
+			name:        "boolean instead of object",
+			payload:     []byte("true"),
+			errContains: "failed to unmarshal payload",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			task := asynq.NewTask(TypeLoanReminder, tt.payload)
+			err := processor.ProcessTask(context.Background(), task)
+
+			assert.Error(t, err)
+			assert.Contains(t, err.Error(), tt.errContains)
+		})
+	}
+}
+
+func TestLoanReminderProcessor_ProcessTask_EmailSenderVariousErrors(t *testing.T) {
+	tests := []struct {
+		name          string
+		sendError     error
+		errContains   string
+	}{
+		{
+			name:          "network timeout",
+			sendError:     errors.New("connection timeout"),
+			errContains:   "connection timeout",
+		},
+		{
+			name:          "invalid recipient",
+			sendError:     errors.New("invalid email address"),
+			errContains:   "invalid email address",
+		},
+		{
+			name:          "mail server unavailable",
+			sendError:     errors.New("503 service unavailable"),
+			errContains:   "503 service unavailable",
+		},
+		{
+			name:          "rate limited",
+			sendError:     errors.New("too many requests"),
+			errContains:   "too many requests",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			errorSender := &testErrorEmailSender{sendError: tt.sendError}
+			processor := NewLoanReminderProcessor(nil, errorSender, nil)
+
+			payload := LoanReminderPayload{
+				LoanID:        uuid.New(),
+				WorkspaceID:   uuid.New(),
+				BorrowerName:  "John Doe",
+				BorrowerEmail: "john@example.com",
+				ItemName:      "Test Item",
+				DueDate:       time.Now().Add(24 * time.Hour),
+				IsOverdue:     false,
+			}
+
+			payloadBytes, err := json.Marshal(payload)
+			require.NoError(t, err)
+
+			task := asynq.NewTask(TypeLoanReminder, payloadBytes)
+			err = processor.ProcessTask(context.Background(), task)
+
+			assert.Error(t, err)
+			assert.Contains(t, err.Error(), tt.errContains)
+		})
+	}
+}
+
+func TestLoanReminderProcessor_ProcessTask_WithTimeout(t *testing.T) {
+	// Test that context timeout is respected
+	sender := &testContextAwareEmailSender{delay: 1 * time.Second}
+	processor := NewLoanReminderProcessor(nil, sender, nil)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Millisecond)
+	defer cancel()
+
+	payload := LoanReminderPayload{
+		LoanID:        uuid.New(),
+		WorkspaceID:   uuid.New(),
+		BorrowerName:  "John Doe",
+		BorrowerEmail: "john@example.com",
+		ItemName:      "Test Item",
+		DueDate:       time.Now(),
+		IsOverdue:     false,
+	}
+
+	payloadBytes, err := json.Marshal(payload)
+	require.NoError(t, err)
+
+	task := asynq.NewTask(TypeLoanReminder, payloadBytes)
+	err = processor.ProcessTask(ctx, task)
+
+	assert.Error(t, err)
+	// Could be either deadline exceeded or context canceled
+	assert.True(t, strings.Contains(err.Error(), "deadline exceeded") ||
+		strings.Contains(err.Error(), "context"))
+}
+
+// =============================================================================
+// LoanReminderPayload Field Validation Tests
+// =============================================================================
+
+func TestLoanReminderPayload_AllFieldsSerialization(t *testing.T) {
+	// Test that all fields serialize correctly
+	loanID := uuid.New()
+	workspaceID := uuid.New()
+
+	payload := LoanReminderPayload{
+		LoanID:        loanID,
+		WorkspaceID:   workspaceID,
+		BorrowerName:  "Test User",
+		BorrowerEmail: "test@example.com",
+		ItemName:      "Test Item",
+		DueDate:       time.Now(),
+		IsOverdue:     true,
+	}
+
+	data, err := json.Marshal(payload)
+	require.NoError(t, err)
+
+	jsonStr := string(data)
+	assert.Contains(t, jsonStr, "loan_id")
+	assert.Contains(t, jsonStr, "workspace_id")
+	assert.Contains(t, jsonStr, "borrower_name")
+	assert.Contains(t, jsonStr, "borrower_email")
+	assert.Contains(t, jsonStr, "item_name")
+	assert.Contains(t, jsonStr, "due_date")
+	assert.Contains(t, jsonStr, "is_overdue")
+}
+
+func TestLoanReminderPayload_ZeroUUIDs(t *testing.T) {
+	payload := LoanReminderPayload{
+		LoanID:        uuid.Nil,
+		WorkspaceID:   uuid.Nil,
+		BorrowerName:  "Test User",
+		BorrowerEmail: "test@example.com",
+		ItemName:      "Test Item",
+		DueDate:       time.Now(),
+		IsOverdue:     false,
+	}
+
+	data, err := json.Marshal(payload)
+	require.NoError(t, err)
+
+	var decoded LoanReminderPayload
+	err = json.Unmarshal(data, &decoded)
+	require.NoError(t, err)
+
+	assert.Equal(t, uuid.Nil, decoded.LoanID)
+	assert.Equal(t, uuid.Nil, decoded.WorkspaceID)
+}
+
+// =============================================================================
+// Concurrent Access Tests
+// =============================================================================
+
+func TestLoanReminderPayload_ConcurrentMarshal(t *testing.T) {
+	payload := LoanReminderPayload{
+		LoanID:        uuid.New(),
+		WorkspaceID:   uuid.New(),
+		BorrowerName:  "Test User",
+		BorrowerEmail: "test@example.com",
+		ItemName:      "Test Item",
+		DueDate:       time.Now(),
+		IsOverdue:     false,
+	}
+
+	done := make(chan bool)
+	for i := 0; i < 10; i++ {
+		go func() {
+			data, err := json.Marshal(payload)
+			require.NoError(t, err)
+			require.NotEmpty(t, data)
+			done <- true
+		}()
+	}
+
+	for i := 0; i < 10; i++ {
+		<-done
+	}
+}
+
+func TestNewScheduleLoanRemindersTask_Concurrent(t *testing.T) {
+	done := make(chan bool)
+	for i := 0; i < 10; i++ {
+		go func() {
+			task := NewScheduleLoanRemindersTask()
+			require.NotNil(t, task)
+			require.Equal(t, TypeLoanReminder+":schedule", task.Type())
+			done <- true
+		}()
+	}
+
+	for i := 0; i < 10; i++ {
+		<-done
+	}
+}
+
+func TestLoanReminderProcessor_ConcurrentProcessing(t *testing.T) {
+	sender := &testTrackingEmailSender{}
+	processor := NewLoanReminderProcessor(nil, sender, nil)
+
+	done := make(chan bool)
+	for i := 0; i < 5; i++ {
+		go func(idx int) {
+			payload := LoanReminderPayload{
+				LoanID:        uuid.New(),
+				WorkspaceID:   uuid.New(),
+				BorrowerName:  "User",
+				BorrowerEmail: "user@example.com",
+				ItemName:      "Item",
+				DueDate:       time.Now().Add(24 * time.Hour),
+				IsOverdue:     false,
+			}
+
+			payloadBytes, _ := json.Marshal(payload)
+			task := asynq.NewTask(TypeLoanReminder, payloadBytes)
+			_ = processor.ProcessTask(context.Background(), task)
+			done <- true
+		}(i)
+	}
+
+	for i := 0; i < 5; i++ {
+		<-done
+	}
+
+	// All 5 emails should have been tracked
+	assert.Len(t, sender.sentEmails, 5)
+}
+
+// =============================================================================
+// LoanReminderScheduler Tests
+// =============================================================================
+
+func TestNewLoanReminderScheduler_ReturnsValidInstance(t *testing.T) {
+	scheduler := NewLoanReminderScheduler(nil, nil)
+
+	// Scheduler should not be nil even with nil dependencies
+	assert.NotNil(t, scheduler)
+}
+
+func TestNewLoanReminderScheduler_MultipleInstances(t *testing.T) {
+	scheduler1 := NewLoanReminderScheduler(nil, nil)
+	scheduler2 := NewLoanReminderScheduler(nil, nil)
+
+	assert.NotNil(t, scheduler1)
+	assert.NotNil(t, scheduler2)
+	assert.NotSame(t, scheduler1, scheduler2)
+}
+
+// =============================================================================
+// Type Constant Tests
+// =============================================================================
+
+func TestTypeLoanReminder_Value(t *testing.T) {
+	assert.Equal(t, "loan:reminder", TypeLoanReminder)
+}
+
+func TestTypeLoanReminder_NotEqualToOtherTypes(t *testing.T) {
+	assert.NotEqual(t, TypeRepairReminder, TypeLoanReminder)
+	assert.NotEqual(t, TypeCleanupDeletedRecords, TypeLoanReminder)
+	assert.NotEqual(t, TypeCleanupOldActivity, TypeLoanReminder)
+}
