@@ -82,6 +82,15 @@ See `.planning/milestones/v1.4-ROADMAP.md` for full details.
   - [x] 22-02-PLAN.md — Frontend coverage and mock utilities setup
   - [x] 22-03-PLAN.md — CI parallelization and coverage reporting
 - [ ] **Phase 23: Backend Business Logic Tests** - Bring 6 packages to 80%+ coverage
+  **Plans:** 8 plans (6 original + 2 gap closure)
+  - [x] 23-01-PLAN.md — importexport workspace backup/restore tests
+  - [x] 23-02-PLAN.md — pendingchange apply methods tests
+  - [x] 23-03-PLAN.md — importjob handler and upload tests
+  - [x] 23-04-PLAN.md — jobs thumbnail processor tests (60%+ target)
+  - [x] 23-05-PLAN.md — itemphoto bulk operations and duplicate detection tests
+  - [x] 23-06-PLAN.md — repairlog handler and service error path tests
+  - [ ] 23-07-PLAN.md — pendingchange handler unit tests (gap closure)
+  - [ ] 23-08-PLAN.md — jobs ProcessTask error paths (gap closure)
 - [ ] **Phase 24: Backend API Testing** - Handler unit tests and integration tests
 - [ ] **Phase 25: Frontend Unit Testing** - Critical hooks and components
 - [ ] **Phase 26: E2E Stability and Coverage** - Fix flaky tests and fill gaps
@@ -94,10 +103,10 @@ See `.planning/milestones/v1.4-ROADMAP.md` for full details.
 | 6-11 | v1.1 | 12 | Complete | 2026-01-25 |
 | 12-17 | v1.2 | 19 | Complete | 2026-01-25 |
 | 18-21 | v1.3 | 22 | Complete | 2026-01-31 |
-| 22-26 | v1.4 | 20 | In progress | - |
+| 22-26 | v1.4 | 23 | In progress | - |
 
-**Total:** 22 phases complete (70 plans), 4 phases remaining (17 plans)
+**Total:** 22 phases complete (70 plans), 4 phases remaining (22 plans)
 
 ---
 *Roadmap created: 2026-01-24*
-*Last updated: 2026-01-31 after Phase 22 complete*
+*Last updated: 2026-01-31 after Phase 23 gap closure plans added*
