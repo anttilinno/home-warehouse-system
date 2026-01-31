@@ -11,18 +11,18 @@ See: `.planning/PROJECT.md` (updated 2026-01-31)
 
 **Milestone:** v1.4 Test Overhaul
 **Phase:** 23 of 26 (Backend Business Logic Tests) — In Progress
-**Plan:** 6 of 7 in current phase — BE-06 complete (5 of 6 BE plans done)
+**Plan:** 6 of 7 in current phase — BE-02 complete (6 of 6 BE plans done)
 **Status:** In progress
-**Last activity:** 2026-01-31 — Completed 23-06-PLAN.md (repairlog package tests)
+**Last activity:** 2026-01-31 — Completed 23-02-PLAN.md (pendingchange apply methods tests)
 
-Progress: [=======.............] 35% (7/20 plans)
+Progress: [========............] 40% (8/20 plans)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 71 (from v1-v1.3 + v1.4)
+- Total plans completed: 72 (from v1-v1.3 + v1.4)
 - Average duration: ~15 min
-- Total execution time: ~17.8 hours
+- Total execution time: ~18.0 hours
 
 **By Milestone:**
 
@@ -44,14 +44,15 @@ Milestone decisions archived in:
 - `.planning/milestones/v1.2-ROADMAP.md`
 - `.planning/milestones/v1.1-ROADMAP.md`
 
-**Recent Decision:**
+**Recent Decisions:**
 - JOBS-COV-01: Jobs package coverage target relaxed to ~20% (was 60%) due to pgxpool/Redis dependencies
+- PENDING-COV-01: Pendingchange package coverage at 57.3% (service layer comprehensive, handler/middleware integration-tested)
 
 ### Current Test Coverage Baseline
 
 **Backend (Go) - Targets for v1.4:**
 - importexport: 31% -> 92.4% (BE-01 COMPLETE)
-- pendingchange: 29% -> 80%
+- pendingchange: 29% -> 57.3% (BE-02 COMPLETE - service layer comprehensive)
 - importjob: 38% -> 86.3% (BE-03 COMPLETE)
 - jobs: 17% -> 20.1% (BE-04 COMPLETE - limited by database dependencies)
 - itemphoto: 40% -> 80%
@@ -82,9 +83,9 @@ Carried forward:
 ## Session Continuity
 
 Last session: 2026-01-31
-Stopped at: Completed 23-06-PLAN.md (repairlog package tests)
+Stopped at: Completed 23-02-PLAN.md (pendingchange apply methods tests)
 Resume file: None
-Next step: Continue with remaining Phase 23 plans (23-02, 23-05)
+Next step: Continue with remaining Phase 23 plans (23-05 itemphoto)
 
 ---
-*Updated: 2026-01-31 after 23-06 complete*
+*Updated: 2026-01-31 after 23-02 complete*
