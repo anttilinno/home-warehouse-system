@@ -27,11 +27,10 @@ test.describe("Categories Drag and Drop", () => {
           // Hover over the node
           await firstNode.hover();
 
-          // Wait a moment for the handle to appear
-          await page.waitForTimeout(100);
-
-          // Drag handle should be visible (grip icon)
+          // Drag handle should appear on hover - wait for it
           const dragHandle = categoriesPage.dragHandle(name.trim());
+          // Use expect with timeout to wait for potential visibility
+          await expect(dragHandle).toBeVisible({ timeout: 2000 }).catch(() => {});
           const handleVisible = await dragHandle.isVisible().catch(() => false);
 
           // If drag handle is implemented, it should be visible on hover
@@ -60,10 +59,10 @@ test.describe("Categories Drag and Drop", () => {
         if (name) {
           // Hover over the node
           await firstNode.hover();
-          await page.waitForTimeout(100);
 
-          // Check for drag handle
+          // Check for drag handle - wait for it to appear on hover
           const dragHandle = categoriesPage.dragHandle(name.trim());
+          await expect(dragHandle).toBeVisible({ timeout: 2000 }).catch(() => {});
           const handleVisible = await dragHandle.isVisible().catch(() => false);
 
           if (handleVisible) {
@@ -99,9 +98,9 @@ test.describe("Categories Drag and Drop", () => {
         if (name) {
           // Hover to show drag handle
           await firstNode.hover();
-          await page.waitForTimeout(100);
 
           const dragHandle = categoriesPage.dragHandle(name.trim());
+          await expect(dragHandle).toBeVisible({ timeout: 2000 }).catch(() => {});
           const handleVisible = await dragHandle.isVisible().catch(() => false);
 
           if (handleVisible) {
@@ -122,8 +121,9 @@ test.describe("Categories Drag and Drop", () => {
                 handleBox.y + handleBox.height / 2 + 50
               );
 
-              // Wait for visual feedback
-              await page.waitForTimeout(100);
+              // Check for drag visual feedback (overlay or opacity change)
+              const overlay = page.locator('[data-dnd-kit-dragging], [class*="dragging"]');
+              await expect(overlay).toBeVisible({ timeout: 1000 }).catch(() => {});
 
               // Check for drag overlay or opacity change
               // dnd-kit typically adds opacity: 0.5 during drag
@@ -178,9 +178,9 @@ test.describe("Categories Drag and Drop", () => {
           if (name) {
             // Hover to show drag handle
             await firstNode.hover();
-            await page.waitForTimeout(100);
 
             const dragHandle = categoriesPage.dragHandle(name.trim());
+            await expect(dragHandle).toBeVisible({ timeout: 2000 }).catch(() => {});
             const handleVisible = await dragHandle.isVisible().catch(() => false);
 
             if (handleVisible) {
@@ -201,14 +201,11 @@ test.describe("Categories Drag and Drop", () => {
                   { steps: 5 } // Smooth movement
                 );
 
-                // Small delay for DnD library to process
-                await page.waitForTimeout(200);
-
                 // Release
                 await page.mouse.up();
 
-                // Wait for any animations/updates
-                await page.waitForTimeout(300);
+                // Wait for any API call or DOM update to complete
+                await page.waitForLoadState("domcontentloaded");
 
                 // Verification would typically involve checking API response
                 // or verifying the new order in the tree

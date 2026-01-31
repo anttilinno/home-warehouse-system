@@ -157,8 +157,8 @@ export class CategoriesPage extends BasePage {
    */
   async search(query: string): Promise<void> {
     await this.searchInput.fill(query);
-    // Wait for debounced search to apply
-    await this.page.waitForTimeout(400);
+    // Wait for debounced search to trigger and results to load
+    await this.page.waitForLoadState("domcontentloaded");
   }
 
   /**
@@ -166,7 +166,8 @@ export class CategoriesPage extends BasePage {
    */
   async clearSearch(): Promise<void> {
     await this.searchInput.clear();
-    await this.page.waitForTimeout(400);
+    // Wait for debounced search reset to complete
+    await this.page.waitForLoadState("domcontentloaded");
   }
 
   /**
