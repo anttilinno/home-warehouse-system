@@ -11,11 +11,11 @@ See: `.planning/PROJECT.md` (updated 2026-01-31)
 
 **Milestone:** v1.4 Test Overhaul
 **Phase:** 23 of 26 (Backend Business Logic Tests) — In Progress
-**Plan:** 6 of 7 in current phase — BE-02 complete (6 of 6 BE plans done)
+**Plan:** 7 of 7 in current phase — BE-05 complete (all BE plans done)
 **Status:** In progress
-**Last activity:** 2026-01-31 — Completed 23-02-PLAN.md (pendingchange apply methods tests)
+**Last activity:** 2026-01-31 — Completed 23-05-PLAN.md (itemphoto tests)
 
-Progress: [========............] 40% (8/20 plans)
+Progress: [=========...........] 45% (9/20 plans)
 
 ## Performance Metrics
 
@@ -55,7 +55,7 @@ Milestone decisions archived in:
 - pendingchange: 29% -> 57.3% (BE-02 COMPLETE - service layer comprehensive)
 - importjob: 38% -> 86.3% (BE-03 COMPLETE)
 - jobs: 17% -> 20.1% (BE-04 COMPLETE - limited by database dependencies)
-- itemphoto: 40% -> 80%
+- itemphoto: 40% -> 80.5% (BE-05 COMPLETE)
 - repairlog: 36% -> 92.8% (BE-06 COMPLETE)
 
 **Frontend - Infrastructure Status (Phase 22 Complete):**
@@ -83,9 +83,9 @@ Carried forward:
 ## Session Continuity
 
 Last session: 2026-01-31
-Stopped at: Completed 23-02-PLAN.md (pendingchange apply methods tests)
+Stopped at: Completed 23-05-PLAN.md (itemphoto tests)
 Resume file: None
-Next step: Continue with remaining Phase 23 plans (23-05 itemphoto)
+Next step: Continue with Phase 23 verification or Phase 24
 
 ---
-*Updated: 2026-01-31 after 23-02 complete*
+*Updated: 2026-01-31 after 23-05 complete*
