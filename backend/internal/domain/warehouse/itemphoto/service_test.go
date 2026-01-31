@@ -2281,3 +2281,291 @@ func TestService_GetPhotosByIDs(t *testing.T) {
 		repo.AssertExpectations(t)
 	})
 }
+
+func TestService_CheckDuplicates(t *testing.T) {
+	ctx := context.Background()
+	workspaceID := uuid.New()
+
+	t.Run("returns nil when hasher is not set", func(t *testing.T) {
+		repo := new(MockRepository)
+		storage := new(MockStorage)
+		processor := new(MockImageProcessor)
+
+		service := itemphoto.NewService(repo, storage, processor, os.TempDir())
+		// Hasher is not set by default
+		result, err := service.CheckDuplicates(ctx, workspaceID, 123456)
+
+		require.NoError(t, err)
+		assert.Nil(t, result)
+	})
+
+	t.Run("returns empty when no photos with hashes exist", func(t *testing.T) {
+		repo := new(MockRepository)
+		storage := new(MockStorage)
+		processor := new(MockImageProcessor)
+		hasher := new(MockHasher)
+
+		repo.On("GetPhotosWithHashes", ctx, workspaceID).Return([]*itemphoto.ItemPhoto{}, nil)
+
+		service := itemphoto.NewService(repo, storage, processor, os.TempDir())
+		service.SetHasher(hasher)
+		result, err := service.CheckDuplicates(ctx, workspaceID, 123456)
+
+		require.NoError(t, err)
+		assert.Empty(t, result)
+		repo.AssertExpectations(t)
+	})
+
+	t.Run("returns exact duplicates when same hash", func(t *testing.T) {
+		repo := new(MockRepository)
+		storage := new(MockStorage)
+		processor := new(MockImageProcessor)
+		hasher := new(MockHasher)
+
+		itemID := uuid.New()
+		hash := int64(123456)
+		photo := createServiceTestPhoto(t, itemID, workspaceID)
+		photo.PerceptualHash = &hash
+
+		repo.On("GetPhotosWithHashes", ctx, workspaceID).Return([]*itemphoto.ItemPhoto{photo}, nil)
+		hasher.On("CompareHashes", hash, hash).Return(true, 0) // Exact match
+
+		service := itemphoto.NewService(repo, storage, processor, os.TempDir())
+		service.SetHasher(hasher)
+		result, err := service.CheckDuplicates(ctx, workspaceID, hash)
+
+		require.NoError(t, err)
+		require.Len(t, result, 1)
+		assert.Equal(t, photo.ID, result[0].PhotoID)
+		assert.Equal(t, itemID, result[0].ItemID)
+		assert.Equal(t, 0, result[0].Distance)
+		assert.Equal(t, 100.0, result[0].SimilarityPct)
+		repo.AssertExpectations(t)
+		hasher.AssertExpectations(t)
+	})
+
+	t.Run("returns similar images above threshold", func(t *testing.T) {
+		repo := new(MockRepository)
+		storage := new(MockStorage)
+		processor := new(MockImageProcessor)
+		hasher := new(MockHasher)
+
+		itemID := uuid.New()
+		inputHash := int64(123456)
+		photoHash := int64(123460) // Similar but not exact
+		photo := createServiceTestPhoto(t, itemID, workspaceID)
+		photo.PerceptualHash = &photoHash
+
+		repo.On("GetPhotosWithHashes", ctx, workspaceID).Return([]*itemphoto.ItemPhoto{photo}, nil)
+		hasher.On("CompareHashes", inputHash, photoHash).Return(true, 3) // Similar, distance 3
+
+		service := itemphoto.NewService(repo, storage, processor, os.TempDir())
+		service.SetHasher(hasher)
+		result, err := service.CheckDuplicates(ctx, workspaceID, inputHash)
+
+		require.NoError(t, err)
+		require.Len(t, result, 1)
+		assert.Equal(t, 3, result[0].Distance)
+		assert.InDelta(t, 70.0, result[0].SimilarityPct, 0.1) // 100 - (3/10)*100 = 70%
+		repo.AssertExpectations(t)
+		hasher.AssertExpectations(t)
+	})
+
+	t.Run("does not return photos below threshold", func(t *testing.T) {
+		repo := new(MockRepository)
+		storage := new(MockStorage)
+		processor := new(MockImageProcessor)
+		hasher := new(MockHasher)
+
+		itemID := uuid.New()
+		inputHash := int64(123456)
+		photoHash := int64(999999) // Very different
+		photo := createServiceTestPhoto(t, itemID, workspaceID)
+		photo.PerceptualHash = &photoHash
+
+		repo.On("GetPhotosWithHashes", ctx, workspaceID).Return([]*itemphoto.ItemPhoto{photo}, nil)
+		hasher.On("CompareHashes", inputHash, photoHash).Return(false, 20) // Not similar
+
+		service := itemphoto.NewService(repo, storage, processor, os.TempDir())
+		service.SetHasher(hasher)
+		result, err := service.CheckDuplicates(ctx, workspaceID, inputHash)
+
+		require.NoError(t, err)
+		assert.Empty(t, result)
+		repo.AssertExpectations(t)
+		hasher.AssertExpectations(t)
+	})
+
+	t.Run("skips photos without hashes", func(t *testing.T) {
+		repo := new(MockRepository)
+		storage := new(MockStorage)
+		processor := new(MockImageProcessor)
+		hasher := new(MockHasher)
+
+		itemID := uuid.New()
+		photo := createServiceTestPhoto(t, itemID, workspaceID)
+		photo.PerceptualHash = nil // No hash
+
+		repo.On("GetPhotosWithHashes", ctx, workspaceID).Return([]*itemphoto.ItemPhoto{photo}, nil)
+
+		service := itemphoto.NewService(repo, storage, processor, os.TempDir())
+		service.SetHasher(hasher)
+		result, err := service.CheckDuplicates(ctx, workspaceID, 123456)
+
+		require.NoError(t, err)
+		assert.Empty(t, result)
+		repo.AssertExpectations(t)
+	})
+
+	t.Run("returns error on repository failure", func(t *testing.T) {
+		repo := new(MockRepository)
+		storage := new(MockStorage)
+		processor := new(MockImageProcessor)
+		hasher := new(MockHasher)
+
+		expectedErr := errors.New("database error")
+		repo.On("GetPhotosWithHashes", ctx, workspaceID).Return(nil, expectedErr)
+
+		service := itemphoto.NewService(repo, storage, processor, os.TempDir())
+		service.SetHasher(hasher)
+		result, err := service.CheckDuplicates(ctx, workspaceID, 123456)
+
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "failed to get photos")
+		assert.Nil(t, result)
+		repo.AssertExpectations(t)
+	})
+
+	t.Run("sorts results by distance (most similar first)", func(t *testing.T) {
+		repo := new(MockRepository)
+		storage := new(MockStorage)
+		processor := new(MockImageProcessor)
+		hasher := new(MockHasher)
+
+		itemID := uuid.New()
+		inputHash := int64(123456)
+
+		hash1 := int64(123460)
+		hash2 := int64(123458)
+		hash3 := int64(123459)
+
+		photo1 := createServiceTestPhoto(t, itemID, workspaceID)
+		photo1.PerceptualHash = &hash1
+		photo2 := createServiceTestPhoto(t, itemID, workspaceID)
+		photo2.PerceptualHash = &hash2
+		photo3 := createServiceTestPhoto(t, itemID, workspaceID)
+		photo3.PerceptualHash = &hash3
+
+		repo.On("GetPhotosWithHashes", ctx, workspaceID).Return([]*itemphoto.ItemPhoto{photo1, photo2, photo3}, nil)
+		hasher.On("CompareHashes", inputHash, hash1).Return(true, 5) // Least similar
+		hasher.On("CompareHashes", inputHash, hash2).Return(true, 1) // Most similar
+		hasher.On("CompareHashes", inputHash, hash3).Return(true, 3) // Middle
+
+		service := itemphoto.NewService(repo, storage, processor, os.TempDir())
+		service.SetHasher(hasher)
+		result, err := service.CheckDuplicates(ctx, workspaceID, inputHash)
+
+		require.NoError(t, err)
+		require.Len(t, result, 3)
+		// Should be sorted by distance: 1, 3, 5
+		assert.Equal(t, 1, result[0].Distance)
+		assert.Equal(t, 3, result[1].Distance)
+		assert.Equal(t, 5, result[2].Distance)
+		repo.AssertExpectations(t)
+		hasher.AssertExpectations(t)
+	})
+
+	t.Run("calculates similarity percentage correctly for high distance", func(t *testing.T) {
+		repo := new(MockRepository)
+		storage := new(MockStorage)
+		processor := new(MockImageProcessor)
+		hasher := new(MockHasher)
+
+		itemID := uuid.New()
+		inputHash := int64(123456)
+		photoHash := int64(123470)
+		photo := createServiceTestPhoto(t, itemID, workspaceID)
+		photo.PerceptualHash = &photoHash
+
+		repo.On("GetPhotosWithHashes", ctx, workspaceID).Return([]*itemphoto.ItemPhoto{photo}, nil)
+		hasher.On("CompareHashes", inputHash, photoHash).Return(true, 15) // High distance
+
+		service := itemphoto.NewService(repo, storage, processor, os.TempDir())
+		service.SetHasher(hasher)
+		result, err := service.CheckDuplicates(ctx, workspaceID, inputHash)
+
+		require.NoError(t, err)
+		require.Len(t, result, 1)
+		// Similarity = 100 - (15/10)*100 = -50, but should be clamped to 0
+		assert.Equal(t, 0.0, result[0].SimilarityPct)
+		repo.AssertExpectations(t)
+	})
+
+	t.Run("finds duplicates across multiple items", func(t *testing.T) {
+		repo := new(MockRepository)
+		storage := new(MockStorage)
+		processor := new(MockImageProcessor)
+		hasher := new(MockHasher)
+
+		item1ID := uuid.New()
+		item2ID := uuid.New()
+		inputHash := int64(123456)
+
+		hash1 := int64(123456)
+		hash2 := int64(123456)
+
+		photo1 := createServiceTestPhoto(t, item1ID, workspaceID)
+		photo1.PerceptualHash = &hash1
+		photo2 := createServiceTestPhoto(t, item2ID, workspaceID)
+		photo2.PerceptualHash = &hash2
+
+		repo.On("GetPhotosWithHashes", ctx, workspaceID).Return([]*itemphoto.ItemPhoto{photo1, photo2}, nil)
+		hasher.On("CompareHashes", inputHash, hash1).Return(true, 0)
+		hasher.On("CompareHashes", inputHash, hash2).Return(true, 0)
+
+		service := itemphoto.NewService(repo, storage, processor, os.TempDir())
+		service.SetHasher(hasher)
+		result, err := service.CheckDuplicates(ctx, workspaceID, inputHash)
+
+		require.NoError(t, err)
+		require.Len(t, result, 2)
+		// Both should have different item IDs
+		itemIDs := []uuid.UUID{result[0].ItemID, result[1].ItemID}
+		assert.Contains(t, itemIDs, item1ID)
+		assert.Contains(t, itemIDs, item2ID)
+		repo.AssertExpectations(t)
+	})
+}
+
+func TestService_SetAsynqClient(t *testing.T) {
+	t.Run("sets asynq client", func(t *testing.T) {
+		repo := new(MockRepository)
+		storage := new(MockStorage)
+		processor := new(MockImageProcessor)
+
+		service := itemphoto.NewService(repo, storage, processor, os.TempDir())
+		// SetAsynqClient is a setter method - we just verify it doesn't panic
+		service.SetAsynqClient(nil)
+	})
+}
+
+func TestService_SetHasher(t *testing.T) {
+	t.Run("sets hasher", func(t *testing.T) {
+		repo := new(MockRepository)
+		storage := new(MockStorage)
+		processor := new(MockImageProcessor)
+		hasher := new(MockHasher)
+
+		service := itemphoto.NewService(repo, storage, processor, os.TempDir())
+		service.SetHasher(hasher)
+
+		// Verify hasher is set by checking CheckDuplicates behavior
+		ctx := context.Background()
+		workspaceID := uuid.New()
+		hasher.On("CompareHashes", mock.Anything, mock.Anything).Return(false, 99)
+		repo.On("GetPhotosWithHashes", ctx, workspaceID).Return([]*itemphoto.ItemPhoto{}, nil)
+
+		_, err := service.CheckDuplicates(ctx, workspaceID, 123)
+		require.NoError(t, err)
+	})
+}
