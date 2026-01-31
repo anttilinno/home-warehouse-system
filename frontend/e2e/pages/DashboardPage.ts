@@ -90,7 +90,7 @@ export class DashboardPage extends BasePage {
    */
   async refresh(): Promise<void> {
     await this.refreshButton.click();
-    await this.page.waitForLoadState("networkidle");
+    await this.page.waitForLoadState("domcontentloaded");
   }
 
   /**

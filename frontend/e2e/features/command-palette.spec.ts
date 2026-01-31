@@ -12,7 +12,7 @@ test.describe("Command Palette - Feature Tests", () => {
   test.beforeEach(async ({ page }) => {
     shell = new DashboardShell(page);
     await page.goto("/en/dashboard");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
   });
 
   test("palette opens with keyboard shortcut", async ({ page }) => {
@@ -152,7 +152,7 @@ test.describe("Command Palette - Feature Tests", () => {
   test("palette accessible from any page", async ({ page }) => {
     // Test from items page
     await page.goto("/en/dashboard/items");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
 
     await pressShortcut(page, SHORTCUTS.COMMAND_PALETTE);
     await expect(shell.commandPalette).toBeVisible();
@@ -160,7 +160,7 @@ test.describe("Command Palette - Feature Tests", () => {
 
     // Test from locations page
     await page.goto("/en/dashboard/locations");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
 
     await pressShortcut(page, SHORTCUTS.COMMAND_PALETTE);
     await expect(shell.commandPalette).toBeVisible();
@@ -168,7 +168,7 @@ test.describe("Command Palette - Feature Tests", () => {
 
     // Test from settings page
     await page.goto("/en/dashboard/settings");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
 
     await pressShortcut(page, SHORTCUTS.COMMAND_PALETTE);
     await expect(shell.commandPalette).toBeVisible();

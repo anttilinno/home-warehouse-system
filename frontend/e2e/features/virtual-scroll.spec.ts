@@ -7,7 +7,7 @@ test.describe("Virtual Scrolling", () => {
   test.beforeEach(async ({ page }) => {
     itemsPage = new ItemsPage(page);
     await page.goto("/en/dashboard/items");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
     await itemsPage.waitForItemsLoaded();
   });
 

@@ -72,7 +72,7 @@ test.describe("PWA Features", () => {
   test.describe("Meta Tags", () => {
     test("manifest link tag present in HTML", async ({ page }) => {
       await page.goto("/en/dashboard");
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("domcontentloaded");
 
       // Check for manifest link tag
       const manifestLink = page.locator('link[rel="manifest"]');
@@ -85,7 +85,7 @@ test.describe("PWA Features", () => {
 
     test("apple-touch-icon present", async ({ page }) => {
       await page.goto("/en/dashboard");
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("domcontentloaded");
 
       // Check for apple-touch-icon (for iOS)
       const appleIcon = page.locator('link[rel="apple-touch-icon"]');
@@ -97,7 +97,7 @@ test.describe("PWA Features", () => {
 
     test("theme-color meta tag present", async ({ page }) => {
       await page.goto("/en/dashboard");
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("domcontentloaded");
 
       // Check for theme-color meta tag
       const themeColorMeta = page.locator('meta[name="theme-color"]');
@@ -109,7 +109,7 @@ test.describe("PWA Features", () => {
 
     test("viewport meta tag configured correctly", async ({ page }) => {
       await page.goto("/en/dashboard");
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("domcontentloaded");
 
       // Check viewport meta tag
       const viewportMeta = page.locator('meta[name="viewport"]');
@@ -152,7 +152,7 @@ test.describe("PWA Features", () => {
 
     test("app shows content when online", async ({ page }) => {
       await page.goto("/en/dashboard");
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("domcontentloaded");
 
       // Main content should be visible
       const heading = page.getByRole("heading", { level: 1 });
@@ -161,7 +161,7 @@ test.describe("PWA Features", () => {
 
     test("network status hook available", async ({ page }) => {
       await page.goto("/en/dashboard");
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("domcontentloaded");
 
       // Check that navigator.onLine is available (for network status detection)
       const isOnline = await page.evaluate(() => navigator.onLine);

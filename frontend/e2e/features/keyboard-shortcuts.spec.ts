@@ -14,7 +14,7 @@ test.describe("Keyboard Shortcuts", () => {
   test.beforeEach(async ({ page }) => {
     shell = new DashboardShell(page);
     await page.goto("/en/dashboard");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
   });
 
   test("Cmd/Ctrl+K opens command palette", async ({ page }) => {
@@ -33,7 +33,7 @@ test.describe("Keyboard Shortcuts", () => {
   test("Escape closes open dialogs", async ({ page }) => {
     // Navigate to items page
     await page.goto("/en/dashboard/items");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
 
     const itemsPage = new ItemsPage(page);
 
@@ -48,7 +48,7 @@ test.describe("Keyboard Shortcuts", () => {
 
   test("Cmd/Ctrl+N opens create dialog on items page", async ({ page }) => {
     await page.goto("/en/dashboard/items");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
 
     const itemsPage = new ItemsPage(page);
 
@@ -61,7 +61,7 @@ test.describe("Keyboard Shortcuts", () => {
 
   test("shortcuts ignored when focused on input field", async ({ page }) => {
     await page.goto("/en/dashboard/items");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
 
     const itemsPage = new ItemsPage(page);
 
@@ -85,7 +85,7 @@ test.describe("Keyboard Shortcuts", () => {
   test("Tab navigates through focusable elements", async ({ page }) => {
     // Start at the page
     await page.goto("/en/dashboard");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
 
     // Focus on the first focusable element by pressing Tab
     await page.keyboard.press("Tab");
@@ -109,7 +109,7 @@ test.describe("Keyboard Shortcuts", () => {
 
   test("Shift+Tab navigates backwards through elements", async ({ page }) => {
     await page.goto("/en/dashboard");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
 
     // Tab forward a few times
     await page.keyboard.press("Tab");

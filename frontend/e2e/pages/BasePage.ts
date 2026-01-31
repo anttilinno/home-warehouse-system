@@ -17,7 +17,7 @@ export class BasePage {
   }
 
   async waitForPageReady(): Promise<void> {
-    await this.page.waitForLoadState("networkidle");
+    await this.page.waitForLoadState("domcontentloaded");
   }
 
   getByTestId(id: string): Locator {

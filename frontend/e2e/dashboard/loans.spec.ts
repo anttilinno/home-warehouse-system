@@ -124,7 +124,7 @@ test.describe("Loans Status Filter", () => {
         if (hasReturned) {
           await returnedOption.click();
           // Wait for filter to apply by checking network idle
-          await page.waitForLoadState("networkidle");
+          await page.waitForLoadState("domcontentloaded");
 
           // The loans displayed may have changed
           // This tests that the filter mechanism works
@@ -410,7 +410,7 @@ test.describe.serial("Loan CRUD Flows", () => {
     await loansPage.selectFirstItem();
 
     // Wait for inventory to load after item selection
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
 
     // Check if inventory is available for this item
     const hasInventory = await loansPage.hasInventoryAvailable();

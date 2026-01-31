@@ -3,7 +3,7 @@ import { test, expect } from "../fixtures/authenticated";
 test.describe("SSE Status Indicator", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/en/dashboard");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
   });
 
   test("SSE status indicator present in UI", async ({ page }) => {
@@ -52,7 +52,7 @@ test.describe("SSE Status Indicator", () => {
 
     // Navigate to items and check
     await page.goto("/en/dashboard/items");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
 
     await expect(
       page.locator('[aria-label="Connected"], [aria-label="Disconnected"]').first()
@@ -60,7 +60,7 @@ test.describe("SSE Status Indicator", () => {
 
     // Navigate to locations and check
     await page.goto("/en/dashboard/locations");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
 
     await expect(
       page.locator('[aria-label="Connected"], [aria-label="Disconnected"]').first()

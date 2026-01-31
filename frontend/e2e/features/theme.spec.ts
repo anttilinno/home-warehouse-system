@@ -68,7 +68,7 @@ test.describe("Theme Switching", () => {
 
     // Reload the page
     await page.reload();
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
 
     // Theme should persist
     const themeAfterReload = await html.getAttribute("class");
@@ -206,14 +206,14 @@ test.describe("Theme Switching", () => {
 
     // Navigate to items page
     await page.goto("/en/dashboard/items");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
 
     // Theme should still be dark
     await expect(html).toHaveClass(/dark/);
 
     // Navigate to locations page
     await page.goto("/en/dashboard/locations");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
 
     // Theme should still be dark
     await expect(html).toHaveClass(/dark/);

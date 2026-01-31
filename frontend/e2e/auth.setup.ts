@@ -49,8 +49,9 @@ setup("authenticate", async ({ page }) => {
     if (!page.url().includes("/dashboard")) {
       console.log("[Auth Setup] User exists, logging in instead...");
 
-      // Wait for network idle before navigating to ensure clean state
-      await page.goto("/en/login", { waitUntil: "networkidle" });
+      // Navigate to login page
+      await page.goto("/en/login");
+      await page.waitForLoadState("domcontentloaded");
 
       // Wait for form to be fully loaded and hydrated
       const emailInput = page.getByLabel(/email/i);
@@ -71,8 +72,8 @@ setup("authenticate", async ({ page }) => {
       const signInButton = page.getByRole("button", { name: /sign in|log in/i });
       await expect(signInButton).toBeEnabled({ timeout: 5000 });
 
-      // Wait a small moment for React state to settle
-      await page.waitForLoadState("networkidle");
+      // Wait for form to be fully hydrated
+      await page.waitForLoadState("domcontentloaded");
 
       console.log("[Auth Setup] Submitting login form...");
 
@@ -107,8 +108,8 @@ setup("authenticate", async ({ page }) => {
           if (attempt === 3) throw e;
           // If we're still on login page, wait a bit and try again
           if (page.url().includes("/login")) {
-            // Wait for any pending network activity to complete
-            await page.waitForLoadState("networkidle");
+            // Wait for DOM to settle before retry
+            await page.waitForLoadState("domcontentloaded");
             continue;
           }
           throw e;

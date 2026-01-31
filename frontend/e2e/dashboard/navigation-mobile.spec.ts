@@ -11,7 +11,7 @@ test.describe("Mobile Navigation", () => {
   test.beforeEach(async ({ page }) => {
     shell = new DashboardShell(page);
     await page.goto("/en/dashboard");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
   });
 
   test("mobile menu toggle is visible", async ({ page }) => {

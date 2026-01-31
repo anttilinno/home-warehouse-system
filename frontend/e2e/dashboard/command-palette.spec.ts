@@ -7,7 +7,7 @@ test.describe("Command Palette", () => {
   test.beforeEach(async ({ page }) => {
     shell = new DashboardShell(page);
     await page.goto("/en/dashboard");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
   });
 
   test("Cmd/Ctrl+K opens command palette", async ({ page }) => {

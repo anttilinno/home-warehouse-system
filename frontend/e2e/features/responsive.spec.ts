@@ -10,7 +10,7 @@ test.describe("Responsive Design", () => {
     test("sidebar hidden by default", async ({ page }) => {
       const shell = new DashboardShell(page);
       await page.goto("/en/dashboard");
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("domcontentloaded");
 
       // Desktop sidebar should be hidden on mobile
       // The sidebar is inside a div with "hidden md:block"
@@ -24,7 +24,7 @@ test.describe("Responsive Design", () => {
     test("menu toggle visible", async ({ page }) => {
       const shell = new DashboardShell(page);
       await page.goto("/en/dashboard");
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("domcontentloaded");
 
       // Mobile menu toggle should be visible
       await expect(shell.mobileMenuToggle).toBeVisible();
@@ -33,7 +33,7 @@ test.describe("Responsive Design", () => {
     test("clicking toggle shows sidebar", async ({ page }) => {
       const shell = new DashboardShell(page);
       await page.goto("/en/dashboard");
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("domcontentloaded");
 
       // Open mobile menu
       await shell.openMobileMenu();
@@ -45,7 +45,7 @@ test.describe("Responsive Design", () => {
     test("navigation works from mobile menu", async ({ page }) => {
       const shell = new DashboardShell(page);
       await page.goto("/en/dashboard");
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("domcontentloaded");
 
       // Navigate using mobile menu
       await shell.navigateToMobile("Items");
@@ -59,7 +59,7 @@ test.describe("Responsive Design", () => {
 
     test("tables scroll horizontally", async ({ page }) => {
       await page.goto("/en/dashboard/items");
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("domcontentloaded");
 
       // Table container should have horizontal scroll capability
       const tableContainer = page.locator(".overflow-x-auto").first();
@@ -77,7 +77,7 @@ test.describe("Responsive Design", () => {
 
     test("dialogs full-width on mobile", async ({ page }) => {
       await page.goto("/en/dashboard/items");
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("domcontentloaded");
 
       // Open create dialog
       const addButton = page.getByRole("button", { name: /add item/i });
@@ -101,7 +101,7 @@ test.describe("Responsive Design", () => {
     test("header adapts to mobile", async ({ page }) => {
       const shell = new DashboardShell(page);
       await page.goto("/en/dashboard");
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("domcontentloaded");
 
       // Header should be visible
       await expect(shell.header).toBeVisible();
@@ -121,7 +121,7 @@ test.describe("Responsive Design", () => {
 
     test("sidebar visible on tablet", async ({ page }) => {
       await page.goto("/en/dashboard");
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("domcontentloaded");
 
       // At md breakpoint (768px), desktop sidebar should be visible
       const sidebar = page.locator("#navigation");
@@ -130,7 +130,7 @@ test.describe("Responsive Design", () => {
 
     test("navigation items visible in sidebar", async ({ page }) => {
       await page.goto("/en/dashboard");
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("domcontentloaded");
 
       const sidebar = page.locator("#navigation");
 
@@ -150,7 +150,7 @@ test.describe("Responsive Design", () => {
 
     test("sidebar expanded", async ({ page }) => {
       await page.goto("/en/dashboard");
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("domcontentloaded");
 
       // Desktop sidebar should be visible
       const sidebar = page.locator("#navigation");
@@ -167,7 +167,7 @@ test.describe("Responsive Design", () => {
     test("mobile menu toggle hidden", async ({ page }) => {
       const shell = new DashboardShell(page);
       await page.goto("/en/dashboard");
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("domcontentloaded");
 
       // Mobile menu toggle should be hidden on desktop
       await expect(shell.mobileMenuToggle).toBeHidden();
@@ -175,7 +175,7 @@ test.describe("Responsive Design", () => {
 
     test("full navigation labels visible", async ({ page }) => {
       await page.goto("/en/dashboard");
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("domcontentloaded");
 
       const sidebar = page.locator("#navigation");
 
@@ -189,7 +189,7 @@ test.describe("Responsive Design", () => {
 
     test("wide content area", async ({ page }) => {
       await page.goto("/en/dashboard");
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("domcontentloaded");
 
       const mainContent = page.locator("main#main-content");
       const mainBox = await mainContent.boundingBox();
@@ -206,7 +206,7 @@ test.describe("Responsive Design", () => {
       // Start at desktop size
       await page.setViewportSize({ width: 1024, height: 768 });
       await page.goto("/en/dashboard");
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("domcontentloaded");
 
       // Desktop sidebar should be visible
       const desktopSidebar = page.locator("#navigation");
@@ -226,7 +226,7 @@ test.describe("Responsive Design", () => {
 
     test("content reflows correctly at breakpoints", async ({ page }) => {
       await page.goto("/en/dashboard/items");
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("domcontentloaded");
 
       // Test mobile
       await page.setViewportSize({ width: 390, height: 844 });
@@ -256,7 +256,7 @@ test.describe("Responsive Design", () => {
 
     test("buttons are large enough for touch", async ({ page }) => {
       await page.goto("/en/dashboard/items");
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("domcontentloaded");
 
       // Get Add Item button
       const addButton = page.getByRole("button", { name: /add item/i });
@@ -272,7 +272,7 @@ test.describe("Responsive Design", () => {
     test("mobile menu can be opened by tap", async ({ page }) => {
       const shell = new DashboardShell(page);
       await page.goto("/en/dashboard");
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("domcontentloaded");
 
       // Tap mobile menu toggle
       await shell.mobileMenuToggle.tap();

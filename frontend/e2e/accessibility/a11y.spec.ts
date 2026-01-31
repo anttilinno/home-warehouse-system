@@ -6,7 +6,7 @@ test.describe("Accessibility", () => {
   test.describe("Skip Links", () => {
     test("skip link present and functional", async ({ page }) => {
       await page.goto("/en/dashboard");
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("domcontentloaded");
 
       // Skip link should exist but be visually hidden initially
       const skipLink = page.getByRole("link", { name: /skip to main content/i });
@@ -28,7 +28,7 @@ test.describe("Accessibility", () => {
 
     test("skip to navigation link present", async ({ page }) => {
       await page.goto("/en/dashboard");
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("domcontentloaded");
 
       // Skip to navigation link should exist
       const skipNavLink = page.getByRole("link", { name: /skip to navigation/i });
@@ -39,7 +39,7 @@ test.describe("Accessibility", () => {
   test.describe("Landmarks", () => {
     test("main landmark present", async ({ page }) => {
       await page.goto("/en/dashboard");
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("domcontentloaded");
 
       // Main landmark should exist
       const main = page.locator("main#main-content");
@@ -48,7 +48,7 @@ test.describe("Accessibility", () => {
 
     test("navigation landmark present", async ({ page }) => {
       await page.goto("/en/dashboard");
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("domcontentloaded");
 
       // Navigation should exist in sidebar
       const nav = page.locator("nav");
@@ -57,7 +57,7 @@ test.describe("Accessibility", () => {
 
     test("header landmark present", async ({ page }) => {
       await page.goto("/en/dashboard");
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("domcontentloaded");
 
       const header = page.locator("header");
       await expect(header).toBeVisible();
@@ -68,7 +68,7 @@ test.describe("Accessibility", () => {
     test("dialogs trap focus when open", async ({ page }) => {
       const itemsPage = new ItemsPage(page);
       await page.goto("/en/dashboard/items");
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("domcontentloaded");
 
       // Open create dialog
       await itemsPage.addItemButton.click();
@@ -92,7 +92,7 @@ test.describe("Accessibility", () => {
     test("dialog focus returns after close", async ({ page }) => {
       const itemsPage = new ItemsPage(page);
       await page.goto("/en/dashboard/items");
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("domcontentloaded");
 
       // Remember the trigger button
       const addButton = itemsPage.addItemButton;
@@ -117,7 +117,7 @@ test.describe("Accessibility", () => {
     test("command palette traps focus", async ({ page }) => {
       const shell = new DashboardShell(page);
       await page.goto("/en/dashboard");
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("domcontentloaded");
 
       // Open command palette
       await shell.openCommandPalette();
@@ -142,7 +142,7 @@ test.describe("Accessibility", () => {
     test("form inputs have associated labels", async ({ page }) => {
       const itemsPage = new ItemsPage(page);
       await page.goto("/en/dashboard/items");
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("domcontentloaded");
 
       // Open create dialog
       await itemsPage.addItemButton.click();
@@ -166,7 +166,7 @@ test.describe("Accessibility", () => {
     test("required fields are indicated", async ({ page }) => {
       const itemsPage = new ItemsPage(page);
       await page.goto("/en/dashboard/items");
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("domcontentloaded");
 
       await itemsPage.addItemButton.click();
       await expect(itemsPage.createDialog).toBeVisible();
@@ -183,7 +183,7 @@ test.describe("Accessibility", () => {
   test.describe("Button Accessibility", () => {
     test("buttons have accessible names", async ({ page }) => {
       await page.goto("/en/dashboard/items");
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("domcontentloaded");
 
       // Add Item button should have accessible name
       const addButton = page.getByRole("button", { name: /add item/i });
@@ -216,7 +216,7 @@ test.describe("Accessibility", () => {
 
     test("icon buttons have aria-labels", async ({ page }) => {
       await page.goto("/en/dashboard/items");
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("domcontentloaded");
 
       // Look for icon buttons (buttons with only icons, no text)
       // These should have aria-label
@@ -237,7 +237,7 @@ test.describe("Accessibility", () => {
   test.describe("Image Accessibility", () => {
     test("images have alt text", async ({ page }) => {
       await page.goto("/en/dashboard/items");
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("domcontentloaded");
 
       // Wait for any images to load
       await page.waitForTimeout(500);
@@ -259,7 +259,7 @@ test.describe("Accessibility", () => {
   test.describe("Table Accessibility", () => {
     test("tables have captions or aria-labels", async ({ page }) => {
       await page.goto("/en/dashboard/items");
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("domcontentloaded");
 
       // Items table should have aria-label
       const itemsTable = page.locator('table[aria-label="Item catalog"]');
@@ -275,7 +275,7 @@ test.describe("Accessibility", () => {
 
     test("table headers use th elements", async ({ page }) => {
       await page.goto("/en/dashboard/items");
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("domcontentloaded");
 
       // Check table has proper header structure
       const tableHeaders = page.locator("table thead th");
@@ -292,7 +292,7 @@ test.describe("Accessibility", () => {
   test.describe("Color Contrast", () => {
     test("text is visible against background", async ({ page }) => {
       await page.goto("/en/dashboard");
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("domcontentloaded");
 
       // This is a basic visual check - actual contrast testing requires
       // specialized tools like axe-core
@@ -315,7 +315,7 @@ test.describe("Accessibility", () => {
   test.describe("Keyboard Navigation", () => {
     test("all interactive elements are focusable", async ({ page }) => {
       await page.goto("/en/dashboard");
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("domcontentloaded");
 
       // Tab through the page and count focusable elements
       let focusedElements = 0;
@@ -341,7 +341,7 @@ test.describe("Accessibility", () => {
 
     test("focus is visible on interactive elements", async ({ page }) => {
       await page.goto("/en/dashboard");
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("domcontentloaded");
 
       // Tab to a button
       await page.keyboard.press("Tab");
