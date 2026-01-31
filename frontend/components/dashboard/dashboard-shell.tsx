@@ -12,8 +12,10 @@ import { KeyboardShortcutsDialog } from "@/components/ui/keyboard-shortcuts-dial
 import { SkipLinks } from "@/components/shared/skip-links";
 import { OfflineIndicator, PendingUploadsIndicator } from "@/components/pwa";
 import { PwaInstallPrompt } from "@/components/pwa-install-prompt";
+import { FloatingActionButton } from "@/components/fab";
 import { useCommandPalette } from "@/lib/hooks/use-command-palette";
 import { useKeyboardShortcutsDialog } from "@/lib/hooks/use-keyboard-shortcuts-dialog";
+import { useFABActions } from "@/lib/hooks/use-fab-actions";
 import { SSEProvider } from "@/lib/contexts/sse-context";
 import { useAuth } from "@/lib/contexts/auth-context";
 import { OfflineProvider } from "@/lib/contexts/offline-context";
@@ -33,6 +35,7 @@ export function DashboardShell({ children }: DashboardShellProps) {
     useCommandPalette();
   const { open: shortcutsOpen, setOpen: setShortcutsOpen } =
     useKeyboardShortcutsDialog();
+  const fabActions = useFABActions();
 
   // Redirect to login if not authenticated
   useEffect(() => {
@@ -99,7 +102,7 @@ export function DashboardShell({ children }: DashboardShellProps) {
               )}
             >
               <DashboardHeader onMenuClick={() => setMobileMenuOpen(true)} />
-              <main id="main-content" className="flex-1 p-4 md:p-6">{children}</main>
+              <main id="main-content" className="flex-1 p-4 pb-20 md:p-6 md:pb-6">{children}</main>
             </div>
 
             {/* Command Palette */}
@@ -116,6 +119,9 @@ export function DashboardShell({ children }: DashboardShellProps) {
 
             {/* Conflict Resolution Dialog */}
             <ConflictResolutionDialog />
+
+            {/* Floating Action Button (mobile only) */}
+            {fabActions.length > 0 && <FloatingActionButton actions={fabActions} />}
           </div>
         </ConflictResolutionProvider>
       </SSEProvider>
