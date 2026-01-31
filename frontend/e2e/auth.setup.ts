@@ -6,8 +6,11 @@ const TEST_PASSWORD = process.env.TEST_USER_PASSWORD ?? "TestPassword123!";
 const AUTH_FILE = "playwright/.auth/user.json";
 
 setup("authenticate", async ({ page }) => {
+  console.log("[Auth Setup] Starting authentication...");
+
   // First, try to register a new user
   await page.goto("/en/register");
+  console.log("[Auth Setup] Registration attempt...");
 
   // Fill in registration form
   await page.getByLabel(/full name|name/i).fill(TEST_NAME);
@@ -18,12 +21,26 @@ setup("authenticate", async ({ page }) => {
   // Click register button
   await page.getByRole("button", { name: /create account|sign up|register/i }).click();
 
-  // Wait for either dashboard (success) or stay on page (user exists)
-  await page.waitForTimeout(2000);
+  console.log("[Auth Setup] Submitted registration, waiting for response...");
 
-  // If we're still on register page or redirected to login, the user might exist
-  // Try logging in instead
+  // Wait for either success redirect OR error (user exists) OR network error
+  // Using Promise.race to handle all cases without arbitrary timeout
+  try {
+    await Promise.race([
+      page.waitForURL(/\/dashboard/, { timeout: 10000 }),
+      page.waitForURL(/\/login/, { timeout: 10000 }),
+      expect(page.getByText(/already exists|already registered|email.*taken/i)).toBeVisible({ timeout: 10000 }),
+    ]);
+  } catch {
+    // If none of the expected outcomes happened, log what we see
+    console.log("[Auth Setup] Current URL after registration:", page.url());
+  }
+
+  console.log("[Auth Setup] After registration attempt, URL is:", page.url());
+
+  // If not on dashboard, user exists - login instead
   if (!page.url().includes("/dashboard")) {
+    console.log("[Auth Setup] User exists, logging in instead...");
     await page.goto("/en/login");
 
     // Fill in credentials
@@ -32,14 +49,22 @@ setup("authenticate", async ({ page }) => {
 
     // Click sign in button
     await page.getByRole("button", { name: /sign in|log in/i }).click();
+
+    // Wait for navigation to dashboard
+    await page.waitForURL(/\/dashboard/, { timeout: 10000 });
   }
 
-  // Wait for navigation to dashboard
-  await page.waitForURL(/\/dashboard/, { timeout: 10000 });
-
-  // Verify we're on the dashboard
+  // CRITICAL: Verify authentication before saving state
   await expect(page).toHaveURL(/\/dashboard/);
+
+  // Wait for the sidebar navigation to be visible
+  // This ensures the page is fully loaded with authenticated content
+  await expect(page.locator('aside nav')).toBeVisible({ timeout: 5000 });
+
+  console.log("[Auth Setup] Auth verified, saving state...");
 
   // Save authenticated state
   await page.context().storageState({ path: AUTH_FILE });
+
+  console.log("[Auth Setup] Authentication complete.");
 });
