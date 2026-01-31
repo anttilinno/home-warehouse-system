@@ -11,18 +11,18 @@ See: `.planning/PROJECT.md` (updated 2026-01-31)
 
 **Milestone:** v1.4 Test Overhaul
 **Phase:** 25 of 26 (Frontend Unit Testing) — In Progress
-**Plan:** 3 of 5 in current phase — 25-03 complete
+**Plan:** 4 of 5 in current phase — 25-04 complete
 **Status:** In progress
-**Last activity:** 2026-01-31 — Completed 25-03-PLAN.md (MultiStepForm component tests)
+**Last activity:** 2026-01-31 — Completed 25-04-PLAN.md (BarcodeScanner component tests)
 
-Progress: [=============.......] 65% (13/20 plans)
+Progress: [==============......] 70% (14/20 plans)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 76 (from v1-v1.3 + v1.4)
+- Total plans completed: 77 (from v1-v1.3 + v1.4)
 - Average duration: ~15 min
-- Total execution time: ~19 hours
+- Total execution time: ~19.1 hours
 
 **By Milestone:**
 
@@ -45,6 +45,7 @@ Milestone decisions archived in:
 - `.planning/milestones/v1.1-ROADMAP.md`
 
 **Recent Decisions:**
+- DEC-25-04: Add @testing-library/jest-dom for DOM matchers (toBeInTheDocument)
 - DEC-25-03: Use fireEvent instead of userEvent (userEvent not installed)
 - DEC-24-02: Complete endpoint requires body (even empty) per Huma API framework
 - DEC-24-01: Add ServiceInterface to declutter package for mock injection
@@ -70,6 +71,7 @@ Milestone decisions archived in:
 - useOfflineMutation: 29 test cases (25-01 COMPLETE - queue, optimistic, network, helpers)
 - SyncManager: 83.46% statements, 73.55% branch, 34 test cases (25-02 COMPLETE)
 - MultiStepForm: 21 test cases (25-03 COMPLETE - navigation, validation, draft persistence)
+- BarcodeScanner: 18 test cases (25-04 COMPLETE - init, permissions, torch, pause)
 
 **Frontend - Infrastructure Status (Phase 22 Complete):**
 - @vitest/coverage-v8 installed (22-02)
@@ -95,9 +97,9 @@ Carried forward:
 ## Session Continuity
 
 Last session: 2026-01-31
-Stopped at: Completed 25-03-PLAN.md (MultiStepForm component tests)
+Stopped at: Completed 25-04-PLAN.md (BarcodeScanner component tests)
 Resume file: None
-Next step: Continue with 25-04 (BarcodeScanner component tests)
+Next step: Continue with 25-05 (FloatingActionButton component tests)
 
 ---
-*Updated: 2026-01-31 after 25-03 complete*
+*Updated: 2026-01-31 after 25-04 complete*
