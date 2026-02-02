@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/joho/godotenv"
 	"github.com/redis/go-redis/v9"
 
 	"github.com/antti/home-warehouse/go-backend/internal/infra/events"
@@ -20,6 +21,9 @@ import (
 )
 
 func main() {
+	// Load .env file if it exists (ignore error if not found)
+	_ = godotenv.Load()
+
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 

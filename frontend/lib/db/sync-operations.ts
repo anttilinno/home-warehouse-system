@@ -14,6 +14,42 @@ import { borrowersApi } from "@/lib/api/borrowers";
 import { loansApi } from "@/lib/api/loans";
 import { putAll, clearStore, setSyncMeta, getSyncMeta } from "./offline-db";
 
+// Backend's maximum page size
+const MAX_PAGE_SIZE = 100;
+
+/**
+ * Paginated response structure from the API
+ */
+interface PaginatedResponse<T> {
+  items: T[];
+  total: number;
+  page: number;
+  total_pages: number;
+}
+
+/**
+ * Fetch all pages of a paginated API endpoint
+ *
+ * @param fetchPage - Function that fetches a single page
+ * @returns All items from all pages
+ */
+async function fetchAllPages<T>(
+  fetchPage: (page: number, limit: number) => Promise<PaginatedResponse<T>>
+): Promise<T[]> {
+  const allItems: T[] = [];
+  let currentPage = 1;
+  let totalPages = 1;
+
+  do {
+    const response = await fetchPage(currentPage, MAX_PAGE_SIZE);
+    allItems.push(...response.items);
+    totalPages = response.total_pages;
+    currentPage++;
+  } while (currentPage <= totalPages);
+
+  return allItems;
+}
+
 /**
  * Entity types that can be synced
  */
@@ -90,36 +126,29 @@ export async function syncWorkspaceData(workspaceId: string): Promise<SyncResult
 
     console.log("[Sync] Starting workspace data sync for:", workspaceId);
 
-    // Sync all entities in parallel
-    // Using high limit (10000) to fetch all at once - appropriate for home inventory
-    // systems which typically have hundreds to low thousands of items
+    // Sync all entities in parallel using pagination
+    // Backend has max page size of 100, so we paginate through all results
     const [items, inventory, locations, containers, categories, borrowers, loans] =
       await Promise.all([
-        syncEntity("items", async () => {
-          const response = await itemsApi.list(workspaceId, { limit: 10000 });
-          return response.items;
-        }),
-        syncEntity("inventory", async () => {
-          const response = await inventoryApi.list(workspaceId, { limit: 10000 });
-          return response.items;
-        }),
-        syncEntity("locations", async () => {
-          const response = await locationsApi.list(workspaceId, { limit: 10000 });
-          return response.items;
-        }),
-        syncEntity("containers", async () => {
-          const response = await containersApi.list(workspaceId, { limit: 10000 });
-          return response.items;
-        }),
+        syncEntity("items", () =>
+          fetchAllPages((page, limit) => itemsApi.list(workspaceId, { page, limit }))
+        ),
+        syncEntity("inventory", () =>
+          fetchAllPages((page, limit) => inventoryApi.list(workspaceId, { page, limit }))
+        ),
+        syncEntity("locations", () =>
+          fetchAllPages((page, limit) => locationsApi.list(workspaceId, { page, limit }))
+        ),
+        syncEntity("containers", () =>
+          fetchAllPages((page, limit) => containersApi.list(workspaceId, { page, limit }))
+        ),
         syncEntity("categories", () => categoriesApi.list(workspaceId)),
-        syncEntity("borrowers", async () => {
-          const response = await borrowersApi.list(workspaceId, { limit: 10000 });
-          return response.items;
-        }),
-        syncEntity("loans", async () => {
-          const response = await loansApi.list(workspaceId, { limit: 10000 });
-          return response.items;
-        }),
+        syncEntity("borrowers", () =>
+          fetchAllPages((page, limit) => borrowersApi.list(workspaceId, { page, limit }))
+        ),
+        syncEntity("loans", () =>
+          fetchAllPages((page, limit) => loansApi.list(workspaceId, { page, limit }))
+        ),
       ]);
 
     // Record sync metadata

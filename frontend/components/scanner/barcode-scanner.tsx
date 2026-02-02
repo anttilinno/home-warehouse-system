@@ -22,6 +22,7 @@ import {
   AlertCircle,
 } from "lucide-react";
 import type { IDetectedBarcode } from "@yudiel/react-qr-scanner";
+import type { BarcodeFormat } from "barcode-detector";
 
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -45,13 +46,13 @@ export interface BarcodeScannerProps {
   /** Called when a barcode is successfully scanned */
   onScan: (result: IDetectedBarcode[]) => void;
   /** Called when an error occurs */
-  onError?: (error: Error) => void;
+  onError?: (error: unknown) => void;
   /** Whether scanning is paused (camera stays mounted) */
   paused?: boolean;
   /** Additional CSS classes for the container */
   className?: string;
   /** Barcode formats to detect (defaults to SUPPORTED_FORMATS) */
-  formats?: string[];
+  formats?: BarcodeFormat[];
 }
 
 /**
@@ -89,7 +90,7 @@ export function BarcodeScanner({
   onError,
   paused = false,
   className,
-  formats = [...SUPPORTED_FORMATS],
+  formats = [...SUPPORTED_FORMATS] as BarcodeFormat[],
 }: BarcodeScannerProps) {
   const [isInitializing, setIsInitializing] = useState(true);
   const [initError, setInitError] = useState<string | null>(null);
@@ -135,15 +136,17 @@ export function BarcodeScanner({
 
   // Handle scanner errors
   const handleError = useCallback(
-    (error: Error) => {
+    (error: unknown) => {
       console.error("[BarcodeScanner] Error:", error);
 
       // Check for permission denied
-      if (
-        error.name === "NotAllowedError" ||
-        error.message.includes("Permission denied")
-      ) {
-        setPermissionDenied(true);
+      if (error instanceof Error) {
+        if (
+          error.name === "NotAllowedError" ||
+          error.message.includes("Permission denied")
+        ) {
+          setPermissionDenied(true);
+        }
       }
 
       onError?.(error);
@@ -216,8 +219,8 @@ export function BarcodeScanner({
         components={{
           torch: torchSupported && torchEnabled,
           finder: true,
-          audio: false, // We handle audio feedback separately
         }}
+        sound={false} // We handle audio feedback separately
         styles={{
           container: {
             width: "100%",

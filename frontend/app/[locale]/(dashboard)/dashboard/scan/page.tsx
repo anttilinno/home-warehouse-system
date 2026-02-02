@@ -115,9 +115,10 @@ export default function ScanPage() {
   );
 
   // Handle scanner error
-  const handleScanError = useCallback((error: Error) => {
+  const handleScanError = useCallback((error: unknown) => {
     console.error("[ScanPage] Scanner error:", error);
-    toast.error("Scanner error", { description: error.message });
+    const message = error instanceof Error ? error.message : "Unknown error";
+    toast.error("Scanner error", { description: message });
   }, []);
 
   // Handle closing action menu (resume scanning)

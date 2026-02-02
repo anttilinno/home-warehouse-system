@@ -13,9 +13,13 @@ import (
 	"github.com/antti/home-warehouse/go-backend/internal/api"
 	"github.com/antti/home-warehouse/go-backend/internal/config"
 	"github.com/antti/home-warehouse/go-backend/internal/infra/postgres"
+	"github.com/joho/godotenv"
 )
 
 func main() {
+	// Load .env file if it exists (ignore error if not found)
+	_ = godotenv.Load()
+
 	// Load configuration
 	cfg := config.Load()
 
