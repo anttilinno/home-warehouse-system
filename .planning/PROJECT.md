@@ -92,7 +92,15 @@ Reliable inventory access anywhere — online or offline — with seamless sync.
 
 ### Active
 
-(No active requirements — ready for next milestone)
+**v1.5 Settings Enhancement (in progress):**
+
+- [ ] User can update profile (name, email)
+- [ ] User can upload/change avatar
+- [ ] User can set date format preference (MM/DD/YY, DD/MM/YY, YYYY-MM-DD)
+- [ ] User can change password
+- [ ] User can view active sessions
+- [ ] User can revoke/logout sessions
+- [ ] User can delete their account
 
 ### Out of Scope
 
@@ -184,4 +192,4 @@ Reliable inventory access anywhere — online or offline — with seamless sync.
 - Go test factories orphaned (not adopted by Phase 23/24 tests)
 
 ---
-*Last updated: 2026-01-31 after v1.4 milestone complete*
+*Last updated: 2026-02-02 after v1.5 milestone started*

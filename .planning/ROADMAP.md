@@ -7,6 +7,7 @@
 - v1.2 **Phase 2 Completion** — Phases 12-17 (shipped 2026-01-25)
 - v1.3 **Mobile UX Overhaul** — Phases 18-21 (shipped 2026-01-31)
 - v1.4 **Test Overhaul** — Phases 22-26 (shipped 2026-01-31)
+- v1.5 **Settings Enhancement** — Phases 27-29 (in progress)
 
 ## Phases
 
@@ -88,6 +89,55 @@ See `.planning/milestones/v1.4-ROADMAP.md` for full details.
 
 </details>
 
+### v1.5 Settings Enhancement (In Progress)
+
+**Milestone Goal:** Complete user settings experience with profile management, security controls, and account lifecycle.
+
+#### Phase 27: Account Settings
+**Goal**: Users can manage their profile and personalize their experience
+**Depends on**: None (new feature area)
+**Requirements**: ACCT-01, ACCT-02, ACCT-03
+**Success Criteria** (what must be TRUE):
+  1. User can view and edit their full name from the settings page
+  2. User can change their email address from the settings page
+  3. User can upload an avatar image that displays in the app header
+  4. User can select a date format preference that persists across sessions
+  5. Date format preference is applied throughout the application
+**Plans**: TBD
+
+Plans:
+- [ ] 27-01: TBD
+- [ ] 27-02: TBD
+
+#### Phase 28: Security Settings
+**Goal**: Users can manage password and control active sessions
+**Depends on**: Phase 27 (settings page infrastructure)
+**Requirements**: SEC-01, SEC-02, SEC-03, SEC-04
+**Success Criteria** (what must be TRUE):
+  1. User can change their password by providing current password and new password
+  2. User can view a list of all active sessions showing device type and last activity
+  3. User can revoke any individual session, logging out that device
+  4. User can log out all other sessions at once, keeping only current session active
+**Plans**: TBD
+
+Plans:
+- [ ] 28-01: TBD
+- [ ] 28-02: TBD
+
+#### Phase 29: Account Deletion
+**Goal**: Users can permanently delete their account with appropriate safeguards
+**Depends on**: Phase 27 (settings page infrastructure)
+**Requirements**: ACCT-04
+**Success Criteria** (what must be TRUE):
+  1. User can initiate account deletion from settings page
+  2. User must confirm deletion with explicit action (type confirmation text or similar)
+  3. Deletion removes all user data and logs user out
+  4. Deletion is prevented if user is sole owner of any workspace
+**Plans**: TBD
+
+Plans:
+- [ ] 29-01: TBD
+
 ## Progress
 
 | Phase | Milestone | Plans | Status | Shipped |
@@ -97,9 +147,12 @@ See `.planning/milestones/v1.4-ROADMAP.md` for full details.
 | 12-17 | v1.2 | 19 | Complete | 2026-01-25 |
 | 18-21 | v1.3 | 22 | Complete | 2026-01-31 |
 | 22-26 | v1.4 | 20 | Complete | 2026-01-31 |
+| 27 | v1.5 | TBD | Not started | - |
+| 28 | v1.5 | TBD | Not started | - |
+| 29 | v1.5 | TBD | Not started | - |
 
-**Total:** 26 phases complete (87 plans executed)
+**Total:** 26 phases complete (87 plans executed), 3 phases planned for v1.5
 
 ---
 *Roadmap created: 2026-01-24*
-*Last updated: 2026-01-31 after v1.4 milestone complete*
+*Last updated: 2026-02-02 after v1.5 roadmap created*
