@@ -65,6 +65,7 @@ export function UserMenu({ collapsed = false }: UserMenuProps) {
   // Push notifications
   const {
     isSupported: pushSupported,
+    isServiceWorkerReady: swReady,
     permission: pushPermission,
     isSubscribed: pushEnabled,
     isLoading: pushLoading,
@@ -151,7 +152,8 @@ export function UserMenu({ collapsed = false }: UserMenuProps) {
   };
 
   // Determine push notification state for display
-  const canTogglePush = pushSupported && pushPermission !== "denied";
+  const showPushToggle = pushSupported && pushPermission !== "denied";
+  const pushDisabled = !swReady || pushLoading;
   const pushStatusIcon = pushEnabled ? (
     <Bell className="mr-2 h-4 w-4" />
   ) : (
@@ -242,10 +244,11 @@ export function UserMenu({ collapsed = false }: UserMenuProps) {
           </DropdownMenuSub>
 
           {/* Push Notifications Toggle */}
-          {canTogglePush && (
+          {showPushToggle && (
             <DropdownMenuItem
               onClick={handlePushToggle}
-              disabled={pushLoading}
+              disabled={pushDisabled}
+              className={!swReady ? "opacity-50" : undefined}
             >
               {pushLoading ? (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />

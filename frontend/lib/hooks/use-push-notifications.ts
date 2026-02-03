@@ -20,6 +20,7 @@ interface PushStatus {
 
 interface UsePushNotificationsReturn {
   isSupported: boolean;
+  isServiceWorkerReady: boolean;
   permission: NotificationPermission | "default";
   isSubscribed: boolean;
   isLoading: boolean;
@@ -54,6 +55,7 @@ function arrayBufferToBase64(buffer: ArrayBuffer): string {
 
 export function usePushNotifications(): UsePushNotificationsReturn {
   const [isSupported, setIsSupported] = useState(false);
+  const [isServiceWorkerReady, setIsServiceWorkerReady] = useState(false);
   const [permission, setPermission] = useState<NotificationPermission | "default">("default");
   const [isSubscribed, setIsSubscribed] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -71,6 +73,11 @@ export function usePushNotifications(): UsePushNotificationsReturn {
 
     if (supported) {
       setPermission(Notification.permission);
+
+      // Check if service worker is ready
+      navigator.serviceWorker.getRegistration().then((registration) => {
+        setIsServiceWorkerReady(!!registration?.active);
+      });
     }
   }, []);
 
@@ -209,6 +216,7 @@ export function usePushNotifications(): UsePushNotificationsReturn {
 
   return {
     isSupported,
+    isServiceWorkerReady,
     permission,
     isSubscribed,
     isLoading,
