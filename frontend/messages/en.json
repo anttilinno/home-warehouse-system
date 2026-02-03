@@ -603,7 +603,26 @@
     },
     "account": {
       "title": "Account",
-      "description": "Manage your profile and preferences"
+      "description": "Manage your profile information",
+      "fullName": "Full Name",
+      "email": "Email Address",
+      "save": "Save Changes",
+      "saving": "Saving...",
+      "saved": "Profile updated successfully",
+      "saveError": "Failed to update profile",
+      "avatar": {
+        "title": "Profile Photo",
+        "upload": "Upload Photo",
+        "change": "Change Photo",
+        "remove": "Remove",
+        "dropHere": "Drop image here or click to upload",
+        "invalidType": "Please upload a JPEG, PNG, or WebP image",
+        "tooLarge": "Image must be less than 2MB",
+        "uploadSuccess": "Avatar updated",
+        "uploadError": "Failed to upload avatar",
+        "deleteSuccess": "Avatar removed",
+        "deleteError": "Failed to remove avatar"
+      }
     },
     "notifications": {
       "title": "Notifications",
