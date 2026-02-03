@@ -77,7 +77,10 @@ export function UserMenu({ collapsed = false }: UserMenuProps) {
           )}
         >
           <Avatar className="h-8 w-8">
-            <AvatarImage src={undefined} alt={user.full_name} />
+            <AvatarImage
+              src={user.avatar_url || undefined}
+              alt={user.full_name}
+            />
             <AvatarFallback className="text-xs">{initials}</AvatarFallback>
           </Avatar>
           {!collapsed && (
