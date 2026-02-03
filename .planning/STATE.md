@@ -5,24 +5,24 @@
 See: `.planning/PROJECT.md` (updated 2026-02-02)
 
 **Core value:** Reliable inventory access anywhere — online or offline — with seamless sync
-**Current focus:** v1.5 Settings Enhancement - Phase 29 Account Deletion
+**Current focus:** v1.5 Settings Enhancement - COMPLETE
 
 ## Current Position
 
 **Milestone:** v1.5 Settings Enhancement
-**Phase:** 29 of 29 (Account Deletion)
-**Plan:** 1 of 2 complete
-**Status:** In progress
-**Last activity:** 2026-02-03 - Completed 29-01-PLAN.md (backend account deletion)
+**Phase:** 29 of 29 (Account Deletion) - COMPLETE
+**Plan:** 2 of 2 complete
+**Status:** Milestone complete
+**Last activity:** 2026-02-03 - Completed 29-02-PLAN.md (frontend account deletion)
 
-Progress: [####################] v1-v1.4 complete | v1.5 [████████████] ~95%
+Progress: [####################] v1-v1.4 complete | v1.5 [████████████] 100%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 95 (from v1-v1.4 + 8 v1.5 plans)
+- Total plans completed: 96 (from v1-v1.4 + 9 v1.5 plans)
 - Average duration: ~15 min
-- Total execution time: ~23.75 hours
+- Total execution time: ~24 hours
 
 **By Milestone:**
 
@@ -33,7 +33,7 @@ Progress: [####################] v1-v1.4 complete | v1.5 [███████�
 | v1.2 | 6 | 19 | Complete |
 | v1.3 | 4 | 22 | Complete |
 | v1.4 | 5 | 20 | Complete |
-| v1.5 | 3/3 | 8/9 | In Progress |
+| v1.5 | 3 | 9 | Complete |
 
 ## Accumulated Context
 
@@ -70,6 +70,8 @@ Milestone decisions archived in:
 - Repository pattern for sole owner query (matches codebase patterns)
 - Personal workspace excluded from blocking deletion
 - Avatar cleanup in handler layer (matches deleteAvatar pattern)
+- Added deleteWithBody helper to ApiClient for DELETE requests with body
+- Used separate useTranslations hook for dangerZone section
 
 ### Pending Todos
 
@@ -93,9 +95,9 @@ Carried forward:
 ## Session Continuity
 
 Last session: 2026-02-03
-Stopped at: Completed 29-01-PLAN.md (backend account deletion API)
+Stopped at: Completed 29-02-PLAN.md (frontend account deletion)
 Resume file: None
-Next step: Execute 29-02-PLAN.md (frontend account deletion)
+Next step: v1.5 milestone complete. Next milestone planning required.
 
 ---
-*Updated: 2026-02-03 after 29-01-PLAN.md execution*
+*Updated: 2026-02-03 after 29-02-PLAN.md execution*
