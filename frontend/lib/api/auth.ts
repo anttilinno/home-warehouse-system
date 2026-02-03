@@ -1,5 +1,14 @@
 import { apiClient } from "./client";
 
+export interface Session {
+  id: string;
+  device_info: string;
+  ip_address: string | null;
+  last_active_at: string;
+  created_at: string;
+  is_current: boolean;
+}
+
 export interface User {
   id: string;
   email: string;
@@ -95,5 +104,17 @@ export const authApi = {
       current_password: currentPassword,
       new_password: newPassword,
     });
+  },
+
+  getSessions: async (): Promise<Session[]> => {
+    return apiClient.get<Session[]>("/users/me/sessions");
+  },
+
+  revokeSession: async (sessionId: string): Promise<void> => {
+    await apiClient.delete(`/users/me/sessions/${sessionId}`);
+  },
+
+  revokeAllOtherSessions: async (): Promise<void> => {
+    await apiClient.delete("/users/me/sessions");
   },
 };
