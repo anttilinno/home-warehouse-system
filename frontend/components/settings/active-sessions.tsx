@@ -1,6 +1,6 @@
 "use client";
 
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useState, useEffect, useCallback } from "react";
 import { useTranslations } from "next-intl";
 import { Monitor, Smartphone, Tablet, LogOut, Loader2 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
@@ -24,34 +24,54 @@ function getDeviceIcon(deviceInfo: string) {
 
 export function ActiveSessions() {
   const t = useTranslations("settings.security.sessions");
-  const queryClient = useQueryClient();
+  const [sessions, setSessions] = useState<Session[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [revokingId, setRevokingId] = useState<string | null>(null);
+  const [isRevokingAll, setIsRevokingAll] = useState(false);
 
-  const { data: sessions, isLoading, error } = useQuery({
-    queryKey: ["sessions"],
-    queryFn: () => authApi.getSessions(),
-  });
+  const loadSessions = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      const data = await authApi.getSessions();
+      setSessions(data);
+    } catch {
+      setError(t("loadError"));
+    } finally {
+      setIsLoading(false);
+    }
+  }, [t]);
 
-  const revokeMutation = useMutation({
-    mutationFn: (sessionId: string) => authApi.revokeSession(sessionId),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["sessions"] });
+  useEffect(() => {
+    loadSessions();
+  }, [loadSessions]);
+
+  const handleRevoke = async (sessionId: string) => {
+    try {
+      setRevokingId(sessionId);
+      await authApi.revokeSession(sessionId);
+      setSessions((prev) => prev.filter((s) => s.id !== sessionId));
       toast.success(t("revokeSuccess"));
-    },
-    onError: () => {
+    } catch {
       toast.error(t("revokeError"));
-    },
-  });
+    } finally {
+      setRevokingId(null);
+    }
+  };
 
-  const revokeAllMutation = useMutation({
-    mutationFn: () => authApi.revokeAllOtherSessions(),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["sessions"] });
+  const handleRevokeAll = async () => {
+    try {
+      setIsRevokingAll(true);
+      await authApi.revokeAllOtherSessions();
+      setSessions((prev) => prev.filter((s) => s.is_current));
       toast.success(t("revokeAllSuccess"));
-    },
-    onError: () => {
+    } catch {
       toast.error(t("revokeAllError"));
-    },
-  });
+    } finally {
+      setIsRevokingAll(false);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -64,15 +84,15 @@ export function ActiveSessions() {
 
   if (error) {
     return (
-      <p className="text-sm text-destructive">{t("loadError")}</p>
+      <p className="text-sm text-destructive">{error}</p>
     );
   }
 
-  const hasOtherSessions = sessions && sessions.filter(s => !s.is_current).length > 0;
+  const hasOtherSessions = sessions.filter((s) => !s.is_current).length > 0;
 
   return (
     <div className="space-y-4">
-      {sessions?.map((session) => {
+      {sessions.map((session) => {
         const DeviceIcon = getDeviceIcon(session.device_info);
         return (
           <div
@@ -105,11 +125,11 @@ export function ActiveSessions() {
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => revokeMutation.mutate(session.id)}
-                disabled={revokeMutation.isPending}
+                onClick={() => handleRevoke(session.id)}
+                disabled={revokingId === session.id}
                 title={t("revokeButton")}
               >
-                {revokeMutation.isPending && revokeMutation.variables === session.id ? (
+                {revokingId === session.id ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
                 ) : (
                   <LogOut className="h-4 w-4" />
@@ -124,17 +144,17 @@ export function ActiveSessions() {
         <Button
           variant="outline"
           className="w-full"
-          onClick={() => revokeAllMutation.mutate()}
-          disabled={revokeAllMutation.isPending}
+          onClick={handleRevokeAll}
+          disabled={isRevokingAll}
         >
-          {revokeAllMutation.isPending && (
+          {isRevokingAll && (
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
           )}
           {t("revokeAllButton")}
         </Button>
       )}
 
-      {sessions?.length === 1 && sessions[0].is_current && (
+      {sessions.length === 1 && sessions[0].is_current && (
         <p className="text-sm text-muted-foreground text-center">
           {t("onlyCurrentSession")}
         </p>
