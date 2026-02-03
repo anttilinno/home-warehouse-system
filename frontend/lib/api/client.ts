@@ -123,6 +123,13 @@ class ApiClient {
     await this.request(endpoint, { method: "DELETE" }, workspaceId);
   }
 
+  async deleteWithBody<T = void>(endpoint: string, data: unknown, workspaceId?: string): Promise<T> {
+    return this.request<T>(endpoint, {
+      method: "DELETE",
+      body: JSON.stringify(data),
+    }, workspaceId) as Promise<T>;
+  }
+
   async postForm<T>(endpoint: string, formData: FormData, workspaceId?: string): Promise<T> {
     const headers: HeadersInit = {};
 

@@ -9,6 +9,11 @@ export interface Session {
   is_current: boolean;
 }
 
+export interface CanDeleteResponse {
+  can_delete: boolean;
+  blocking_workspaces: Array<{ id: string; name: string; slug: string }>;
+}
+
 export interface User {
   id: string;
   email: string;
@@ -116,5 +121,18 @@ export const authApi = {
 
   revokeAllOtherSessions: async (): Promise<void> => {
     await apiClient.delete("/users/me/sessions");
+  },
+
+  canDeleteAccount: async (): Promise<CanDeleteResponse> => {
+    return apiClient.get<CanDeleteResponse>("/users/me/can-delete");
+  },
+
+  deleteAccount: async (confirmation: string): Promise<void> => {
+    await apiClient.deleteWithBody("/users/me", { confirmation });
+    // Clear local state same as logout
+    apiClient.setToken(null);
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("workspace_id");
+    }
   },
 };
