@@ -1,13 +1,14 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { Database, Shield } from "lucide-react";
+import { Database } from "lucide-react";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { BackupRestoreDialog } from "@/components/shared/backup-restore-dialog";
 import { NotificationSettings } from "@/components/settings/notification-settings";
 import { AccountSettings } from "@/components/settings/account-settings";
 import { DateFormatSettings } from "@/components/settings/date-format-settings";
+import { SecuritySettings } from "@/components/settings/security-settings";
 
 export default function SettingsPage() {
   const t = useTranslations("settings");
@@ -52,19 +53,8 @@ export default function SettingsPage() {
         {/* Date Format Settings */}
         <DateFormatSettings />
 
-        {/* Security - Coming Soon */}
-        <Card className="opacity-50">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Shield className="h-5 w-5" />
-              {t("security.title")}
-            </CardTitle>
-            <CardDescription>{t("security.description")}</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-muted-foreground">{t("comingSoon")}</p>
-          </CardContent>
-        </Card>
+        {/* Security */}
+        <SecuritySettings />
       </div>
     </div>
   );
