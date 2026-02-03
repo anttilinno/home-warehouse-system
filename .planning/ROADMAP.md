@@ -136,10 +136,11 @@ Plans:
   2. User must confirm deletion with explicit action (type confirmation text or similar)
   3. Deletion removes all user data and logs user out
   4. Deletion is prevented if user is sole owner of any workspace
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 29-01: TBD
+- [ ] 29-01-PLAN.md — Backend account deletion with sole owner validation
+- [ ] 29-02-PLAN.md — Frontend delete account dialog with type-to-confirm
 
 ## Progress
 
@@ -152,10 +153,10 @@ Plans:
 | 22-26 | v1.4 | 20 | Complete | 2026-01-31 |
 | 27 | v1.5 | 3 | Complete | 2026-02-03 |
 | 28 | v1.5 | 4 | Complete | 2026-02-03 |
-| 29 | v1.5 | TBD | Not started | - |
+| 29 | v1.5 | 2 | Not started | - |
 
 **Total:** 28 phases complete (94 plans executed), 1 phase remaining for v1.5
 
 ---
 *Roadmap created: 2026-01-24*
-*Last updated: 2026-02-03 after Phase 28 execution*
+*Last updated: 2026-02-03 after Phase 29 planning*
