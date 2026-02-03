@@ -651,7 +651,17 @@
       },
       "sessions": {
         "title": "Active Sessions",
-        "comingSoon": "Session management coming soon"
+        "unknownDevice": "Unknown device",
+        "currentSession": "Current",
+        "lastActive": "Active {time}",
+        "revokeButton": "Sign out this device",
+        "revokeAllButton": "Sign out all other sessions",
+        "revokeSuccess": "Session signed out",
+        "revokeError": "Failed to sign out session",
+        "revokeAllSuccess": "All other sessions signed out",
+        "revokeAllError": "Failed to sign out sessions",
+        "loadError": "Failed to load sessions",
+        "onlyCurrentSession": "This is your only active session"
       }
     },
     "pushNotifications": {
