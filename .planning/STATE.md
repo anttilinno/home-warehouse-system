@@ -11,18 +11,18 @@ See: `.planning/PROJECT.md` (updated 2026-02-02)
 
 **Milestone:** v1.5 Settings Enhancement
 **Phase:** 28 of 29 (Security Settings)
-**Plan:** 1 of 4 complete
+**Plan:** 2 of 4 complete
 **Status:** In progress
-**Last activity:** 2026-02-03 - Completed 28-01-PLAN.md (password change UI)
+**Last activity:** 2026-02-03 - Completed 28-02-PLAN.md (sessions database infrastructure)
 
-Progress: [####################] v1-v1.4 complete | v1.5 [████░░░░░░] ~40%
+Progress: [####################] v1-v1.4 complete | v1.5 [█████░░░░░] ~45%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 90 (from v1-v1.4 + 27-01 + 27-02 + 27-03 + 28-01)
+- Total plans completed: 91 (from v1-v1.4 + 27-01 + 27-02 + 27-03 + 28-01 + 28-02)
 - Average duration: ~15 min
-- Total execution time: ~22.2 hours
+- Total execution time: ~22.3 hours
 
 **By Milestone:**
 
@@ -57,6 +57,9 @@ Milestone decisions archived in:
 - Password change uses react-hook-form with zod validation (consistent with phase 27)
 - Minimum 8 character password requirement
 - Form resets after successful password change
+- VARCHAR(64) for refresh_token_hash to store SHA-256 hex encoding
+- INET type for ip_address for proper PostgreSQL IP handling
+- GetUserSessions query excludes sensitive fields (refresh_token_hash, user_agent)
 
 ### Pending Todos
 
@@ -80,9 +83,9 @@ Carried forward:
 ## Session Continuity
 
 Last session: 2026-02-03
-Stopped at: Completed 28-01-PLAN.md
+Stopped at: Completed 28-02-PLAN.md
 Resume file: None
-Next step: Execute 28-02-PLAN.md (session tracking migration and queries)
+Next step: Execute 28-03-PLAN.md (session service and API endpoints)
 
 ---
-*Updated: 2026-02-03 after completing 28-01-PLAN.md*
+*Updated: 2026-02-03 after completing 28-02-PLAN.md*
