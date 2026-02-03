@@ -7,6 +7,7 @@ package queries
 import (
 	"database/sql/driver"
 	"fmt"
+	"net/netip"
 	"time"
 
 	"github.com/google/uuid"
@@ -740,9 +741,11 @@ type AuthUser struct {
 	// User's preferred language code (e.g., en, fi, de)
 	Language string `json:"language"`
 	// User's preferred UI theme: light, dark, or system
-	Theme     string             `json:"theme"`
-	CreatedAt pgtype.Timestamptz `json:"created_at"`
-	UpdatedAt pgtype.Timestamptz `json:"updated_at"`
+	Theme string `json:"theme"`
+	// Storage path to user avatar image. Null if user has no custom avatar.
+	AvatarPath *string            `json:"avatar_path"`
+	CreatedAt  pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt  pgtype.Timestamptz `json:"updated_at"`
 }
 
 // External OAuth provider accounts linked to local users for SSO.
@@ -760,6 +763,23 @@ type AuthUserOauthAccount struct {
 	TokenExpiresAt pgtype.Timestamptz `json:"token_expires_at"`
 	CreatedAt      pgtype.Timestamptz `json:"created_at"`
 	UpdatedAt      pgtype.Timestamptz `json:"updated_at"`
+}
+
+// Tracks active user sessions for multi-device management and token revocation.
+type AuthUserSession struct {
+	ID     uuid.UUID `json:"id"`
+	UserID uuid.UUID `json:"user_id"`
+	// SHA-256 hash of the refresh token. Never store plain tokens.
+	RefreshTokenHash string `json:"refresh_token_hash"`
+	// Human-readable device description parsed from user agent (e.g., Chrome on Windows).
+	DeviceInfo *string `json:"device_info"`
+	// Client IP address at login time.
+	IpAddress *netip.Addr `json:"ip_address"`
+	UserAgent *string     `json:"user_agent"`
+	// Updated on token refresh to track session activity.
+	LastActiveAt time.Time `json:"last_active_at"`
+	ExpiresAt    time.Time `json:"expires_at"`
+	CreatedAt    time.Time `json:"created_at"`
 }
 
 // Isolated environments for organizing inventory. Each workspace has its own locations, items, etc.
