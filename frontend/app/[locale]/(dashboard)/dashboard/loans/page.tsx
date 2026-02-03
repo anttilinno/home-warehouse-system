@@ -17,9 +17,10 @@ import {
   Undo2,
 } from "lucide-react";
 import { toast } from "sonner";
-import { format, isPast, parseISO } from "date-fns";
+import { format, parseISO } from "date-fns";
 
 import { Button } from "@/components/ui/button";
+import { useDateFormat } from "@/lib/hooks/use-date-format";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -397,6 +398,7 @@ function LoanStatusBadge({ loan }: { loan: Loan }) {
 export default function LoansPage() {
   const t = useTranslations("loans");
   const { workspaceId, isLoading: workspaceLoading } = useWorkspace();
+  const { formatDate } = useDateFormat();
 
   const [borrowers, setBorrowers] = useState<Borrower[]>([]);
   const [items, setItems] = useState<Item[]>([]);
@@ -1057,7 +1059,7 @@ export default function LoansPage() {
                               <TableCell className="w-[60px] flex-none">{loan.quantity}</TableCell>
                               <TableCell className="w-[110px] flex-none">
                                 <div className="text-sm">
-                                  {format(parseISO(loan.loaned_at), "MMM d, yyyy")}
+                                  {formatDate(loan.loaned_at)}
                                 </div>
                               </TableCell>
                               <TableCell className="w-[110px] flex-none">
@@ -1067,7 +1069,7 @@ export default function LoansPage() {
                                     loan.is_overdue && "text-destructive font-medium"
                                   )}>
                                     <Calendar className="h-3 w-3" />
-                                    {format(parseISO(loan.due_date), "MMM d, yyyy")}
+                                    {formatDate(loan.due_date)}
                                   </div>
                                 ) : (
                                   <span className="text-muted-foreground">-</span>
