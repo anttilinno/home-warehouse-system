@@ -15,6 +15,7 @@ import (
 	"github.com/google/uuid"
 
 	appMiddleware "github.com/antti/home-warehouse/go-backend/internal/api/middleware"
+	"github.com/antti/home-warehouse/go-backend/internal/domain/auth/session"
 	"github.com/antti/home-warehouse/go-backend/internal/domain/auth/workspace"
 	"github.com/antti/home-warehouse/go-backend/internal/shared"
 	"github.com/antti/home-warehouse/go-backend/internal/shared/jwt"
@@ -86,6 +87,7 @@ type Handler struct {
 	svc            ServiceInterface
 	jwtService     jwt.ServiceInterface
 	workspaceSvc   workspace.ServiceInterface
+	sessionSvc     session.ServiceInterface
 	avatarStorage  AvatarStorage
 	imageProcessor AvatarImageProcessor
 	uploadDir      string
@@ -113,6 +115,11 @@ func (h *Handler) SetImageProcessor(processor AvatarImageProcessor) {
 // SetUploadDir sets the temporary upload directory.
 func (h *Handler) SetUploadDir(dir string) {
 	h.uploadDir = dir
+}
+
+// SetSessionService sets the session service for session tracking.
+func (h *Handler) SetSessionService(sessionSvc session.ServiceInterface) {
+	h.sessionSvc = sessionSvc
 }
 
 // RegisterPublicRoutes registers public user routes (no auth required).
@@ -221,6 +228,12 @@ func (h *Handler) login(ctx context.Context, input *LoginInput) (*LoginOutput, e
 		return nil, huma.Error500InternalServerError("failed to generate refresh token")
 	}
 
+	// Create session if session service is configured
+	if h.sessionSvc != nil {
+		ipAddress := getClientIPFromHeaders(input.XForwardedFor, input.XRealIP)
+		_, _ = h.sessionSvc.Create(ctx, user.ID(), refreshToken, input.UserAgent, ipAddress)
+	}
+
 	return &LoginOutput{
 		SetCookie: []http.Cookie{
 			*createAuthCookie(accessTokenCookie, token, accessTokenMaxAge),
@@ -245,6 +258,16 @@ func (h *Handler) refreshToken(ctx context.Context, input *RefreshTokenInput) (*
 		return nil, huma.Error401Unauthorized("invalid refresh token")
 	}
 
+	// Validate session exists (if session service is configured)
+	var currentSession *session.Session
+	if h.sessionSvc != nil {
+		tokenHash := session.HashToken(input.Body.RefreshToken)
+		currentSession, err = h.sessionSvc.FindByTokenHash(ctx, tokenHash)
+		if err != nil {
+			return nil, huma.Error401Unauthorized("session has been revoked")
+		}
+	}
+
 	user, err := h.svc.GetByID(ctx, userID)
 	if err != nil {
 		return nil, huma.Error401Unauthorized("user not found")
@@ -262,6 +285,11 @@ func (h *Handler) refreshToken(ctx context.Context, input *RefreshTokenInput) (*
 	refreshToken, err := h.jwtService.GenerateRefreshToken(user.ID())
 	if err != nil {
 		return nil, huma.Error500InternalServerError("failed to generate refresh token")
+	}
+
+	// Update session with new token
+	if h.sessionSvc != nil && currentSession != nil {
+		_ = h.sessionSvc.UpdateActivity(ctx, currentSession.ID(), refreshToken)
 	}
 
 	return &RefreshTokenOutput{
@@ -823,6 +851,9 @@ type RegisterOutput struct {
 }
 
 type LoginInput struct {
+	UserAgent      string `header:"User-Agent"`
+	XForwardedFor  string `header:"X-Forwarded-For"`
+	XRealIP        string `header:"X-Real-IP"`
 	Body struct {
 		Email    string `json:"email" required:"true" format:"email"`
 		Password string `json:"password" required:"true"`
@@ -874,6 +905,20 @@ func generateAvatarURL(avatarPath *string) *string {
 	}
 	url := "/users/me/avatar"
 	return &url
+}
+
+// getClientIPFromHeaders extracts the client IP address from headers.
+func getClientIPFromHeaders(xForwardedFor, xRealIP string) string {
+	// Check X-Forwarded-For first (for proxies)
+	if xForwardedFor != "" {
+		parts := strings.Split(xForwardedFor, ",")
+		return strings.TrimSpace(parts[0])
+	}
+	// Check X-Real-IP
+	if xRealIP != "" {
+		return xRealIP
+	}
+	return ""
 }
 
 type GetMeOutput struct {

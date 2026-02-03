@@ -20,6 +20,7 @@ import (
 	"github.com/antti/home-warehouse/go-backend/internal/domain/auth/member"
 	"github.com/antti/home-warehouse/go-backend/internal/domain/auth/notification"
 	"github.com/antti/home-warehouse/go-backend/internal/domain/auth/pushsubscription"
+	"github.com/antti/home-warehouse/go-backend/internal/domain/auth/session"
 	"github.com/antti/home-warehouse/go-backend/internal/domain/auth/user"
 	"github.com/antti/home-warehouse/go-backend/internal/domain/auth/workspace"
 	"github.com/antti/home-warehouse/go-backend/internal/domain/barcode"
@@ -177,9 +178,13 @@ func NewRouter(pool *pgxpool.Pool, cfg *config.Config) chi.Router {
 		log.Println("Web push notifications disabled (VAPID keys not configured)")
 	}
 
+	// Initialize session repository
+	sessionRepo := postgres.NewSessionRepository(pool)
+
 	// Initialize services
 	// Auth services
 	userSvc := user.NewService(userRepo)
+	sessionSvc := session.NewService(sessionRepo)
 	workspaceSvc := workspace.NewService(workspaceRepo, memberRepo)
 	memberSvc := member.NewService(memberRepo)
 	notificationSvc := notification.NewService(notificationRepo)
@@ -259,6 +264,11 @@ func NewRouter(pool *pgxpool.Pool, cfg *config.Config) chi.Router {
 	userHandler.SetAvatarStorage(avatarStorageAdapter)
 	userHandler.SetImageProcessor(imageProcessor)
 	userHandler.SetUploadDir(uploadDir)
+	// Configure session service for session tracking
+	userHandler.SetSessionService(sessionSvc)
+
+	// Create session handler
+	sessionHandler := session.NewHandler(sessionSvc)
 	analyticsHandler := analytics.NewHandler(analyticsSvc)
 	importExportHandler := importexport.NewHandler(importExportSvc, workspaceBackupSvc)
 	syncHandler := sync.NewHandler(syncSvc)
@@ -291,6 +301,9 @@ func NewRouter(pool *pgxpool.Pool, cfg *config.Config) chi.Router {
 
 		// Register protected user routes
 		userHandler.RegisterProtectedRoutes(protectedAPI)
+
+		// Register session routes
+		sessionHandler.RegisterRoutes(protectedAPI)
 
 		// Register avatar routes (uses Chi directly for multipart handling)
 		userHandler.RegisterAvatarRoutes(r)
