@@ -5,24 +5,24 @@
 See: `.planning/PROJECT.md` (updated 2026-02-02)
 
 **Core value:** Reliable inventory access anywhere — online or offline — with seamless sync
-**Current focus:** v1.5 Settings Enhancement - Phase 27 Account Settings
+**Current focus:** v1.5 Settings Enhancement - Phase 28 Security Settings
 
 ## Current Position
 
 **Milestone:** v1.5 Settings Enhancement
-**Phase:** 27 of 29 (Account Settings)
-**Plan:** 1 of 3 complete
+**Phase:** 28 of 29 (Security Settings)
+**Plan:** 1 of 4 complete
 **Status:** In progress
-**Last activity:** 2026-02-03 — Completed 27-01-PLAN.md (Avatar and Email Update Backend)
+**Last activity:** 2026-02-03 - Completed 28-01-PLAN.md (password change UI)
 
-Progress: [####################] v1-v1.4 complete | v1.5 [█░░░░░░░░░] ~11%
+Progress: [####################] v1-v1.4 complete | v1.5 [████░░░░░░] ~40%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 87 (from v1-v1.4)
+- Total plans completed: 90 (from v1-v1.4 + 27-01 + 27-02 + 27-03 + 28-01)
 - Average duration: ~15 min
-- Total execution time: ~21.8 hours
+- Total execution time: ~22.2 hours
 
 **By Milestone:**
 
@@ -46,6 +46,18 @@ Milestone decisions archived in:
 - `.planning/milestones/v1.2-ROADMAP.md`
 - `.planning/milestones/v1.1-ROADMAP.md`
 
+**Phase 27 Decisions:**
+- Used Label/Input pattern for settings forms (consistent with login-form)
+- Avatar validates 2MB max size and JPEG/PNG/WebP types client-side
+- Form uses isDirty check to disable save button when no changes
+- UI-displayed dates use user preference; CSV exports keep ISO format
+- Default date format is YYYY-MM-DD (ISO standard)
+
+**Phase 28 Decisions:**
+- Password change uses react-hook-form with zod validation (consistent with phase 27)
+- Minimum 8 character password requirement
+- Form resets after successful password change
+
 ### Pending Todos
 
 **Manual Testing Required (Phase 19 - Barcode Scanning):**
@@ -68,9 +80,9 @@ Carried forward:
 ## Session Continuity
 
 Last session: 2026-02-03
-Stopped at: Completed 27-01-PLAN.md (Avatar and Email Update Backend)
+Stopped at: Completed 28-01-PLAN.md
 Resume file: None
-Next step: `/gsd:execute-phase 27` to continue executing Account Settings phase (Plan 02)
+Next step: Execute 28-02-PLAN.md (session tracking migration and queries)
 
 ---
-*Updated: 2026-02-03 after completing 27-01-PLAN.md*
+*Updated: 2026-02-03 after completing 28-01-PLAN.md*
