@@ -109,6 +109,19 @@ func (m *MockService) UpdateEmail(ctx context.Context, id uuid.UUID, newEmail st
 	return args.Get(0).(*user.User), args.Error(1)
 }
 
+func (m *MockService) CanDelete(ctx context.Context, userID uuid.UUID) (bool, []user.BlockingWorkspace, error) {
+	args := m.Called(ctx, userID)
+	if args.Get(1) == nil {
+		return args.Bool(0), nil, args.Error(2)
+	}
+	return args.Bool(0), args.Get(1).([]user.BlockingWorkspace), args.Error(2)
+}
+
+func (m *MockService) Delete(ctx context.Context, userID uuid.UUID) error {
+	args := m.Called(ctx, userID)
+	return args.Error(0)
+}
+
 // MockWorkspaceService implements workspace.ServiceInterface
 type MockWorkspaceService struct {
 	mock.Mock

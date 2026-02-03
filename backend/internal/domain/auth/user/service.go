@@ -22,6 +22,8 @@ type ServiceInterface interface {
 	Activate(ctx context.Context, id uuid.UUID) error
 	UpdateAvatar(ctx context.Context, id uuid.UUID, avatarPath *string) (*User, error)
 	UpdateEmail(ctx context.Context, id uuid.UUID, newEmail string) (*User, error)
+	CanDelete(ctx context.Context, userID uuid.UUID) (canDelete bool, blockingWorkspaces []BlockingWorkspace, err error)
+	Delete(ctx context.Context, userID uuid.UUID) error
 }
 
 // Service handles user business logic.
@@ -231,4 +233,25 @@ func (s *Service) UpdateEmail(ctx context.Context, id uuid.UUID, newEmail string
 	}
 
 	return s.repo.UpdateEmail(ctx, id, newEmail)
+}
+
+// CanDelete checks if a user can delete their account.
+// Returns false with a list of blocking workspaces if the user is the sole owner of any non-personal workspace.
+func (s *Service) CanDelete(ctx context.Context, userID uuid.UUID) (bool, []BlockingWorkspace, error) {
+	blockingWorkspaces, err := s.repo.GetSoleOwnerWorkspaces(ctx, userID)
+	if err != nil {
+		return false, nil, err
+	}
+
+	if len(blockingWorkspaces) > 0 {
+		return false, blockingWorkspaces, nil
+	}
+
+	return true, nil, nil
+}
+
+// Delete permanently deletes a user account.
+// PostgreSQL ON DELETE CASCADE handles related data cleanup automatically.
+func (s *Service) Delete(ctx context.Context, userID uuid.UUID) error {
+	return s.repo.Delete(ctx, userID)
 }

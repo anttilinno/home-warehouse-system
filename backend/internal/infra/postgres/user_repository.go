@@ -209,3 +209,37 @@ func (r *UserRepository) UpdateEmail(ctx context.Context, id uuid.UUID, email st
 	row := r.pool.QueryRow(ctx, query, id, email)
 	return r.scanUser(row)
 }
+
+// GetSoleOwnerWorkspaces returns workspaces where the user is the only owner.
+// Excludes personal workspaces since they should not block account deletion.
+func (r *UserRepository) GetSoleOwnerWorkspaces(ctx context.Context, userID uuid.UUID) ([]user.BlockingWorkspace, error) {
+	query := `
+		SELECT w.id, w.name, w.slug, w.is_personal
+		FROM auth.workspaces w
+		JOIN auth.workspace_members wm ON w.id = wm.workspace_id
+		WHERE wm.user_id = $1
+		  AND wm.role = 'owner'
+		  AND w.is_personal = false
+		  AND (
+			SELECT COUNT(*) FROM auth.workspace_members
+			WHERE workspace_id = w.id AND role = 'owner'
+		  ) = 1
+	`
+
+	rows, err := r.pool.Query(ctx, query, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var workspaces []user.BlockingWorkspace
+	for rows.Next() {
+		var ws user.BlockingWorkspace
+		if err := rows.Scan(&ws.ID, &ws.Name, &ws.Slug, &ws.IsPersonal); err != nil {
+			return nil, err
+		}
+		workspaces = append(workspaces, ws)
+	}
+
+	return workspaces, nil
+}

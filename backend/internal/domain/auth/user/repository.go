@@ -33,4 +33,16 @@ type Repository interface {
 
 	// UpdateEmail updates a user's email address.
 	UpdateEmail(ctx context.Context, id uuid.UUID, email string) (*User, error)
+
+	// GetSoleOwnerWorkspaces returns workspaces where the user is the only owner
+	// (blocking account deletion). Excludes personal workspaces.
+	GetSoleOwnerWorkspaces(ctx context.Context, userID uuid.UUID) ([]BlockingWorkspace, error)
+}
+
+// BlockingWorkspace holds workspace details that block account deletion.
+type BlockingWorkspace struct {
+	ID         uuid.UUID
+	Name       string
+	Slug       string
+	IsPersonal bool
 }

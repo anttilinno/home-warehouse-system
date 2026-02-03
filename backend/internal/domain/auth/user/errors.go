@@ -6,8 +6,9 @@ import (
 
 // Domain-specific errors for the user domain.
 var (
-	ErrUserNotFound    = shared.NewDomainError(shared.ErrNotFound, "user not found")
-	ErrEmailTaken      = shared.NewDomainError(shared.ErrAlreadyExists, "email is already taken")
-	ErrInvalidPassword = shared.NewDomainError(shared.ErrInvalidInput, "invalid password")
-	ErrInactiveUser    = shared.NewDomainError(shared.ErrForbidden, "user account is inactive")
+	ErrUserNotFound          = shared.NewDomainError(shared.ErrNotFound, "user not found")
+	ErrEmailTaken            = shared.NewDomainError(shared.ErrAlreadyExists, "email is already taken")
+	ErrInvalidPassword       = shared.NewDomainError(shared.ErrInvalidInput, "invalid password")
+	ErrInactiveUser          = shared.NewDomainError(shared.ErrForbidden, "user account is inactive")
+	ErrSoleOwnerOfWorkspace  = shared.NewDomainError(shared.ErrConflict, "user is sole owner of one or more workspaces")
 )

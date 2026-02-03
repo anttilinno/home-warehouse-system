@@ -72,6 +72,14 @@ func (m *MockRepository) UpdateEmail(ctx context.Context, id uuid.UUID, email st
 	return args.Get(0).(*User), args.Error(1)
 }
 
+func (m *MockRepository) GetSoleOwnerWorkspaces(ctx context.Context, userID uuid.UUID) ([]BlockingWorkspace, error) {
+	args := m.Called(ctx, userID)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).([]BlockingWorkspace), args.Error(1)
+}
+
 // =============================================================================
 // Entity Tests
 // =============================================================================
