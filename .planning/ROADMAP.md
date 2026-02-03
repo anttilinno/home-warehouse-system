@@ -122,10 +122,10 @@ Plans:
 **Plans**: 4 plans
 
 Plans:
-- [ ] 28-01-PLAN.md — Password change UI (frontend)
-- [ ] 28-02-PLAN.md — Sessions database infrastructure (migration + sqlc)
-- [ ] 28-03-PLAN.md — Sessions backend (service + handler + auth flow integration)
-- [ ] 28-04-PLAN.md — Active sessions UI with revocation
+- [x] 28-01-PLAN.md — Password change UI (frontend)
+- [x] 28-02-PLAN.md — Sessions database infrastructure (migration + sqlc)
+- [x] 28-03-PLAN.md — Sessions backend (service + handler + auth flow integration)
+- [x] 28-04-PLAN.md — Active sessions UI with revocation
 
 #### Phase 29: Account Deletion
 **Goal**: Users can permanently delete their account with appropriate safeguards
@@ -151,11 +151,11 @@ Plans:
 | 18-21 | v1.3 | 22 | Complete | 2026-01-31 |
 | 22-26 | v1.4 | 20 | Complete | 2026-01-31 |
 | 27 | v1.5 | 3 | Complete | 2026-02-03 |
-| 28 | v1.5 | 4 | Not started | - |
+| 28 | v1.5 | 4 | Complete | 2026-02-03 |
 | 29 | v1.5 | TBD | Not started | - |
 
-**Total:** 27 phases complete (90 plans executed), 2 phases remaining for v1.5
+**Total:** 28 phases complete (94 plans executed), 1 phase remaining for v1.5
 
 ---
 *Roadmap created: 2026-01-24*
-*Last updated: 2026-02-03 after Phase 28 planning*
+*Last updated: 2026-02-03 after Phase 28 execution*
