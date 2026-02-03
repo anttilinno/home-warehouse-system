@@ -264,7 +264,15 @@ func (h *Handler) refreshToken(ctx context.Context, input *RefreshTokenInput) (*
 		tokenHash := session.HashToken(input.Body.RefreshToken)
 		currentSession, err = h.sessionSvc.FindByTokenHash(ctx, tokenHash)
 		if err != nil {
-			return nil, huma.Error401Unauthorized("session has been revoked")
+			// Session not found - could be a pre-session-tracking token or revoked session
+			// For backwards compatibility, check if it's just missing vs explicitly revoked
+			if err == session.ErrSessionNotFound {
+				// Token is valid but no session exists - this is a legacy token
+				// We'll create a session below when we update with new token
+				currentSession = nil
+			} else {
+				return nil, huma.Error401Unauthorized("session has been revoked")
+			}
 		}
 	}
 
@@ -287,9 +295,15 @@ func (h *Handler) refreshToken(ctx context.Context, input *RefreshTokenInput) (*
 		return nil, huma.Error500InternalServerError("failed to generate refresh token")
 	}
 
-	// Update session with new token
-	if h.sessionSvc != nil && currentSession != nil {
-		_ = h.sessionSvc.UpdateActivity(ctx, currentSession.ID(), refreshToken)
+	// Update session with new token, or create one for legacy tokens
+	if h.sessionSvc != nil {
+		if currentSession != nil {
+			_ = h.sessionSvc.UpdateActivity(ctx, currentSession.ID(), refreshToken)
+		} else {
+			// Create session for legacy token (pre-session-tracking)
+			ipAddress := getClientIPFromHeaders(input.XForwardedFor, input.XRealIP)
+			_, _ = h.sessionSvc.Create(ctx, user.ID(), refreshToken, input.UserAgent, ipAddress)
+		}
 	}
 
 	return &RefreshTokenOutput{
@@ -869,7 +883,10 @@ type LoginOutput struct {
 }
 
 type RefreshTokenInput struct {
-	Body struct {
+	UserAgent     string `header:"User-Agent"`
+	XForwardedFor string `header:"X-Forwarded-For"`
+	XRealIP       string `header:"X-Real-IP"`
+	Body          struct {
 		RefreshToken string `json:"refresh_token,omitempty"`
 	}
 }
