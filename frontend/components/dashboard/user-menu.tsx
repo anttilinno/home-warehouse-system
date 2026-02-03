@@ -138,9 +138,15 @@ export function UserMenu({ collapsed = false }: UserMenuProps) {
 
   const handlePushToggle = async () => {
     if (pushEnabled) {
-      await pushUnsubscribe();
+      const success = await pushUnsubscribe();
+      if (!success) {
+        toast.error(t("notificationsError"));
+      }
     } else {
-      await pushSubscribe();
+      const success = await pushSubscribe();
+      if (!success) {
+        toast.error(t("notificationsError"));
+      }
     }
   };
 

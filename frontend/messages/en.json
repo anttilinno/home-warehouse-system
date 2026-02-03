@@ -116,6 +116,7 @@
       "editProfile": "Edit Profile",
       "dateFormat": "Date Format",
       "notifications": "Notifications",
+      "notificationsError": "Failed to toggle notifications",
       "settings": "Settings",
       "logout": "Log out"
     },

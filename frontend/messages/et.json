@@ -116,6 +116,7 @@
       "editProfile": "Muuda profiili",
       "dateFormat": "Kuupäeva vorming",
       "notifications": "Teavitused",
+      "notificationsError": "Teavituste muutmine ebaõnnestus",
       "settings": "Seaded",
       "logout": "Logi välja"
     },

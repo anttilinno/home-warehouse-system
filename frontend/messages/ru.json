@@ -116,6 +116,7 @@
       "editProfile": "Редактировать профиль",
       "dateFormat": "Формат даты",
       "notifications": "Уведомления",
+      "notificationsError": "Не удалось изменить уведомления",
       "settings": "Настройки",
       "logout": "Выйти"
     },
