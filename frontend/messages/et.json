@@ -258,6 +258,22 @@
     "security": {
       "title": "Turvalisus",
       "description": "Parool ja turvaseaded"
+    },
+    "dangerZone": {
+      "title": "Ohutsoon",
+      "description": "Poordumatud toimingud, mis mojutavad teie kontot jaavaldt.",
+      "deleteButton": "Kustuta konto",
+      "deleteTitle": "Kustuta oma konto",
+      "deleteWarning": "Seda toimingut ei saa tagasi votta. See kustutab jaavaldt teie konto ja koik teie andmed.",
+      "typeConfirm": "Sisestage {word} kinnitamiseks",
+      "confirmPlaceholder": "DELETE",
+      "confirmDelete": "Kustuta minu konto",
+      "deleting": "Kustutamine...",
+      "deleted": "Teie konto on kustutatud",
+      "deleteError": "Konto kustutamine ebaonnestus. Proovige uuesti.",
+      "cannotDelete": "Kontot ei saa kustutada",
+      "cannotDeleteDescription": "Enne konto kustutamist peate ule andma jargmiste tooruumide omandioiguse:",
+      "cancel": "Tuhista"
     }
   },
   "approvals": {

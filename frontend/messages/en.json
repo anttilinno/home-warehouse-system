@@ -664,6 +664,22 @@
         "onlyCurrentSession": "This is your only active session"
       }
     },
+    "dangerZone": {
+      "title": "Danger Zone",
+      "description": "Irreversible actions that permanently affect your account.",
+      "deleteButton": "Delete Account",
+      "deleteTitle": "Delete Your Account",
+      "deleteWarning": "This action cannot be undone. This will permanently delete your account and all your data.",
+      "typeConfirm": "Type {word} to confirm",
+      "confirmPlaceholder": "DELETE",
+      "confirmDelete": "Delete My Account",
+      "deleting": "Deleting...",
+      "deleted": "Your account has been deleted",
+      "deleteError": "Failed to delete account. Please try again.",
+      "cannotDelete": "Cannot Delete Account",
+      "cannotDeleteDescription": "You must transfer ownership of the following workspaces before deleting your account:",
+      "cancel": "Cancel"
+    },
     "pushNotifications": {
       "title": "Push Notifications",
       "description": "Receive alerts when you're not using the app",
