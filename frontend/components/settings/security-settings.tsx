@@ -10,6 +10,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { PasswordChange } from "./password-change";
+import { ActiveSessions } from "./active-sessions";
 
 export function SecuritySettings() {
   const t = useTranslations("settings.security");
@@ -33,15 +34,13 @@ export function SecuritySettings() {
           <PasswordChange />
         </div>
 
-        {/* Sessions Section - Coming Soon */}
+        {/* Sessions Section */}
         <div className="space-y-4">
           <h3 className="text-sm font-medium flex items-center gap-2">
             <Smartphone className="h-4 w-4" />
             {t("sessions.title")}
           </h3>
-          <p className="text-sm text-muted-foreground">
-            {t("sessions.comingSoon")}
-          </p>
+          <ActiveSessions />
         </div>
       </CardContent>
     </Card>
