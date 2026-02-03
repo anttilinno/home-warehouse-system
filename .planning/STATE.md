@@ -5,24 +5,24 @@
 See: `.planning/PROJECT.md` (updated 2026-02-02)
 
 **Core value:** Reliable inventory access anywhere — online or offline — with seamless sync
-**Current focus:** v1.5 Settings Enhancement - Phase 29 Account Deletion (next)
+**Current focus:** v1.5 Settings Enhancement - Phase 29 Account Deletion
 
 ## Current Position
 
 **Milestone:** v1.5 Settings Enhancement
-**Phase:** 28 of 29 (Security Settings) - COMPLETE
-**Plan:** 4 of 4 complete
-**Status:** Phase verified (PASS)
-**Last activity:** 2026-02-03 - Phase 28 execution complete, verified
+**Phase:** 29 of 29 (Account Deletion)
+**Plan:** 1 of 2 complete
+**Status:** In progress
+**Last activity:** 2026-02-03 - Completed 29-01-PLAN.md (backend account deletion)
 
-Progress: [####################] v1-v1.4 complete | v1.5 [██████████] ~90%
+Progress: [####################] v1-v1.4 complete | v1.5 [████████████] ~95%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 94 (from v1-v1.4 + 7 v1.5 plans)
+- Total plans completed: 95 (from v1-v1.4 + 8 v1.5 plans)
 - Average duration: ~15 min
-- Total execution time: ~23.5 hours
+- Total execution time: ~23.75 hours
 
 **By Milestone:**
 
@@ -33,7 +33,7 @@ Progress: [####################] v1-v1.4 complete | v1.5 [███████�
 | v1.2 | 6 | 19 | Complete |
 | v1.3 | 4 | 22 | Complete |
 | v1.4 | 5 | 20 | Complete |
-| v1.5 | 2/3 | 7 | In Progress |
+| v1.5 | 3/3 | 8/9 | In Progress |
 
 ## Accumulated Context
 
@@ -66,6 +66,11 @@ Milestone decisions archived in:
 - Simple device icon detection via string matching on device_info
 - ActiveSessions uses useState/useEffect pattern (not react-query) to match codebase patterns
 
+**Phase 29 Decisions:**
+- Repository pattern for sole owner query (matches codebase patterns)
+- Personal workspace excluded from blocking deletion
+- Avatar cleanup in handler layer (matches deleteAvatar pattern)
+
 ### Pending Todos
 
 **Manual Testing Required (Phase 19 - Barcode Scanning):**
@@ -88,9 +93,9 @@ Carried forward:
 ## Session Continuity
 
 Last session: 2026-02-03
-Stopped at: Phase 28 complete and verified (4/4 plans executed)
+Stopped at: Completed 29-01-PLAN.md (backend account deletion API)
 Resume file: None
-Next step: Phase 29 planning (Account Deletion)
+Next step: Execute 29-02-PLAN.md (frontend account deletion)
 
 ---
-*Updated: 2026-02-03 after Phase 28 verification*
+*Updated: 2026-02-03 after 29-01-PLAN.md execution*
