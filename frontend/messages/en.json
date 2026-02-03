@@ -628,6 +628,12 @@
       "title": "Notifications",
       "description": "Configure notification preferences"
     },
+    "dateFormat": {
+      "title": "Date Format",
+      "description": "Choose how dates are displayed throughout the app",
+      "saved": "Date format updated",
+      "saveError": "Failed to update date format"
+    },
     "security": {
       "title": "Security",
       "description": "Password and security settings"
