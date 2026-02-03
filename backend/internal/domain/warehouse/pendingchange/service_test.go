@@ -170,6 +170,14 @@ func (m *MockUserRepository) UpdateEmail(ctx context.Context, id uuid.UUID, emai
 	return args.Get(0).(*user.User), args.Error(1)
 }
 
+func (m *MockUserRepository) GetSoleOwnerWorkspaces(ctx context.Context, userID uuid.UUID) ([]user.BlockingWorkspace, error) {
+	args := m.Called(ctx, userID)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).([]user.BlockingWorkspace), args.Error(1)
+}
+
 type MockItemRepository struct {
 	mock.Mock
 }
