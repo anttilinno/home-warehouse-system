@@ -151,7 +151,8 @@ export function UserMenu({ collapsed = false }: UserMenuProps) {
   };
 
   // Determine push notification state for display
-  const canTogglePush = pushSupported && pushPermission !== "denied";
+  const vapidConfigured = !!process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
+  const canTogglePush = vapidConfigured && pushSupported && pushPermission !== "denied";
   const pushStatusIcon = pushEnabled ? (
     <Bell className="mr-2 h-4 w-4" />
   ) : (
