@@ -89,4 +89,11 @@ export const authApi = {
   deleteAvatar: async (): Promise<void> => {
     await apiClient.delete("/users/me/avatar");
   },
+
+  changePassword: async (currentPassword: string, newPassword: string): Promise<void> => {
+    await apiClient.patch("/users/me/password", {
+      current_password: currentPassword,
+      new_password: newPassword,
+    });
+  },
 };
