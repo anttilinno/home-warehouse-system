@@ -11,16 +11,16 @@ See: `.planning/PROJECT.md` (updated 2026-02-02)
 
 **Milestone:** v1.5 Settings Enhancement
 **Phase:** 28 of 29 (Security Settings)
-**Plan:** 3 of 4 complete
-**Status:** In progress
-**Last activity:** 2026-02-03 - Completed 28-03-PLAN.md (session backend implementation)
+**Plan:** 4 of 4 complete
+**Status:** Phase complete
+**Last activity:** 2026-02-03 - Completed 28-04-PLAN.md (session management frontend UI)
 
-Progress: [####################] v1-v1.4 complete | v1.5 [██████░░░░] ~55%
+Progress: [####################] v1-v1.4 complete | v1.5 [████████░░] ~70%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 92 (from v1-v1.4 + 27-01 + 27-02 + 27-03 + 28-01 + 28-02 + 28-03)
+- Total plans completed: 93 (from v1-v1.4 + 27-01 + 27-02 + 27-03 + 28-01 + 28-02 + 28-03 + 28-04)
 - Average duration: ~15 min
 - Total execution time: ~22.5 hours
 
@@ -63,6 +63,7 @@ Milestone decisions archived in:
 - Used mssola/useragent for parsing user-agent into device info
 - Session ID stored in context for current session identification
 - Cannot revoke current session to prevent self-lockout
+- Simple device icon detection via string matching on device_info
 
 ### Pending Todos
 
@@ -86,9 +87,9 @@ Carried forward:
 ## Session Continuity
 
 Last session: 2026-02-03
-Stopped at: Completed 28-03-PLAN.md
+Stopped at: Completed 28-04-PLAN.md (Phase 28 complete)
 Resume file: None
-Next step: Execute 28-04-PLAN.md (session management frontend UI)
+Next step: Phase 29 planning or verification
 
 ---
-*Updated: 2026-02-03 after completing 28-03-PLAN.md*
+*Updated: 2026-02-03 after completing 28-04-PLAN.md*
