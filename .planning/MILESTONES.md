@@ -1,5 +1,40 @@
 # Project Milestones: Home Warehouse System
 
+## v1.5 Settings Enhancement (Shipped: 2026-02-03)
+
+**Delivered:** Complete user settings experience with profile management, security controls, and account lifecycle.
+
+**Phases completed:** 27-29 (9 plans total)
+
+**Key accomplishments:**
+
+- User profile management — avatar upload with 150x150 thumbnails, name/email editing, Chi router multipart handling
+- Date format personalization — user preference stored in database, applied throughout app via useDateFormat hook
+- Password change UI — react-hook-form with zod validation, 8+ character requirement, current password verification
+- Session tracking infrastructure — database schema for active sessions with device info and IP addresses
+- Active sessions UI — view all sessions, revoke individual sessions, logout all other devices
+- Account deletion with safeguards — type-to-confirm ("DELETE"), sole owner validation prevents orphaned workspaces
+
+**Stats:**
+
+- 63 files created/modified
+- ~6,855 lines of TypeScript/Go
+- 3 phases, 9 plans
+- 1 day (Feb 3, 2026)
+
+**Git range:** `e030519` → `ef7d626` (30+ commits)
+
+**Requirements satisfied:** 8/8 (100%)
+- ACCT-01 through ACCT-04: All satisfied
+- SEC-01 through SEC-04: All satisfied
+
+**Tech debt carried forward:**
+- None significant
+
+**What's next:** TBD — ready for next milestone
+
+---
+
 ## v1.4 Test Overhaul (Shipped: 2026-01-31)
 
 **Delivered:** Comprehensive test infrastructure and coverage bringing critical packages to 80%+ with CI parallelization, Codecov integration, and stable E2E tests.

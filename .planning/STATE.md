@@ -2,26 +2,25 @@
 
 ## Project Reference
 
-See: `.planning/PROJECT.md` (updated 2026-02-02)
+See: `.planning/PROJECT.md` (updated 2026-02-03)
 
 **Core value:** Reliable inventory access anywhere — online or offline — with seamless sync
-**Current focus:** v1.5 Settings Enhancement - COMPLETE
+**Current focus:** Planning next milestone
 
 ## Current Position
 
-**Milestone:** v1.5 Settings Enhancement
-**Phase:** 29 of 29 (Account Deletion) - COMPLETE
-**Plan:** 2 of 2 complete
-**Status:** Phase verified (PASS), Milestone complete
-**Last activity:** 2026-02-03 - Phase 29 execution complete, verified
+**Milestone:** v1.5 Settings Enhancement - ARCHIVED
+**Phase:** 29 complete (Account Deletion)
+**Status:** Milestone complete and archived
+**Last activity:** 2026-02-03 - v1.5 milestone archived
 
-Progress: [####################] v1-v1.4 complete | v1.5 [████████████] 100%
+Progress: [####################] v1-v1.5 complete | 100%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 96 (from v1-v1.4 + 9 v1.5 plans)
-- Average duration: ~15 min
+- Total plans completed: 96 (from v1-v1.5)
+- Average duration: ~15 min per plan
 - Total execution time: ~24 hours
 
 **By Milestone:**
@@ -39,43 +38,17 @@ Progress: [####################] v1-v1.4 complete | v1.5 [███████�
 
 ### Decisions
 
-Key decisions logged in PROJECT.md Key Decisions table.
-Milestone decisions archived in:
-- `.planning/milestones/v1.4-ROADMAP.md`
-- `.planning/milestones/v1.3-ROADMAP.md`
-- `.planning/milestones/v1.2-ROADMAP.md`
-- `.planning/milestones/v1.1-ROADMAP.md`
+All v1.5 decisions archived in `.planning/milestones/v1.5-ROADMAP.md`.
 
-**Phase 27 Decisions:**
-- Used Label/Input pattern for settings forms (consistent with login-form)
-- Avatar validates 2MB max size and JPEG/PNG/WebP types client-side
-- Form uses isDirty check to disable save button when no changes
-- UI-displayed dates use user preference; CSV exports keep ISO format
-- Default date format is YYYY-MM-DD (ISO standard)
-
-**Phase 28 Decisions:**
-- Password change uses react-hook-form with zod validation (consistent with phase 27)
-- Minimum 8 character password requirement
-- Form resets after successful password change
-- VARCHAR(64) for refresh_token_hash to store SHA-256 hex encoding
-- INET type for ip_address for proper PostgreSQL IP handling
-- GetUserSessions query excludes sensitive fields (refresh_token_hash, user_agent)
-- Used mssola/useragent for parsing user-agent into device info
-- Session ID stored in context for current session identification
-- Cannot revoke current session to prevent self-lockout
-- Simple device icon detection via string matching on device_info
-- ActiveSessions uses useState/useEffect pattern (not react-query) to match codebase patterns
-
-**Phase 29 Decisions:**
-- Repository pattern for sole owner query (matches codebase patterns)
-- Personal workspace excluded from blocking deletion
-- Avatar cleanup in handler layer (matches deleteAvatar pattern)
-- Added deleteWithBody helper to ApiClient for DELETE requests with body
-- Used separate useTranslations hook for dangerZone section
+Key patterns established:
+- Settings forms use Label/Input pattern with react-hook-form + zod
+- Storage adapters wrap GenericStorage with domain-specific interface
+- Session tracking uses token hash comparison (not raw tokens)
+- Type-to-confirm pattern for destructive actions
 
 ### Pending Todos
 
-**Manual Testing Required (Phase 19 - Barcode Scanning):**
+**Manual Testing Required:**
 - [ ] SCAN-01 through SCAN-07: Barcode scanning manual verification
 - [ ] iOS PWA: Camera permission persistence
 
@@ -95,9 +68,9 @@ Carried forward:
 ## Session Continuity
 
 Last session: 2026-02-03
-Stopped at: v1.5 milestone complete (29 phases, 96 plans)
+Stopped at: v1.5 milestone archived
 Resume file: None
-Next step: Archive milestone or plan next milestone
+Next step: `/gsd:new-milestone` to start next milestone
 
 ---
-*Updated: 2026-02-03 after v1.5 Settings Enhancement milestone complete*
+*Updated: 2026-02-03 after v1.5 milestone archived*

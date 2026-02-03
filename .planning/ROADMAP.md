@@ -89,58 +89,18 @@ See `.planning/milestones/v1.4-ROADMAP.md` for full details.
 
 </details>
 
-### v1.5 Settings Enhancement (In Progress)
+<details>
+<summary>v1.5 Settings Enhancement (Phases 27-29) — SHIPPED 2026-02-03</summary>
 
-**Milestone Goal:** Complete user settings experience with profile management, security controls, and account lifecycle.
+See `.planning/milestones/v1.5-ROADMAP.md` for full details.
 
-#### Phase 27: Account Settings
-**Goal**: Users can manage their profile and personalize their experience
-**Depends on**: None (new feature area)
-**Requirements**: ACCT-01, ACCT-02, ACCT-03
-**Success Criteria** (what must be TRUE):
-  1. User can view and edit their full name from the settings page
-  2. User can change their email address from the settings page
-  3. User can upload an avatar image that displays in the app header
-  4. User can select a date format preference that persists across sessions
-  5. Date format preference is applied throughout the application
-**Plans**: 3 plans
+**Delivered:** Complete user settings experience with profile management (avatar, email, name), security controls (password change, session management), and account lifecycle (deletion with safeguards).
 
-Plans:
-- [x] 27-01-PLAN.md — Backend avatar and email update support
-- [x] 27-02-PLAN.md — Frontend account settings UI with avatar upload
-- [x] 27-03-PLAN.md — Date format preference and application-wide formatting
+- Phase 27: Account Settings (3 plans)
+- Phase 28: Security Settings (4 plans)
+- Phase 29: Account Deletion (2 plans)
 
-#### Phase 28: Security Settings
-**Goal**: Users can manage password and control active sessions
-**Depends on**: Phase 27 (settings page infrastructure)
-**Requirements**: SEC-01, SEC-02, SEC-03, SEC-04
-**Success Criteria** (what must be TRUE):
-  1. User can change their password by providing current password and new password
-  2. User can view a list of all active sessions showing device type and last activity
-  3. User can revoke any individual session, logging out that device
-  4. User can log out all other sessions at once, keeping only current session active
-**Plans**: 4 plans
-
-Plans:
-- [x] 28-01-PLAN.md — Password change UI (frontend)
-- [x] 28-02-PLAN.md — Sessions database infrastructure (migration + sqlc)
-- [x] 28-03-PLAN.md — Sessions backend (service + handler + auth flow integration)
-- [x] 28-04-PLAN.md — Active sessions UI with revocation
-
-#### Phase 29: Account Deletion
-**Goal**: Users can permanently delete their account with appropriate safeguards
-**Depends on**: Phase 27 (settings page infrastructure)
-**Requirements**: ACCT-04
-**Success Criteria** (what must be TRUE):
-  1. User can initiate account deletion from settings page
-  2. User must confirm deletion with explicit action (type confirmation text or similar)
-  3. Deletion removes all user data and logs user out
-  4. Deletion is prevented if user is sole owner of any workspace
-**Plans**: 2 plans
-
-Plans:
-- [x] 29-01-PLAN.md — Backend account deletion with sole owner validation
-- [x] 29-02-PLAN.md — Frontend delete account dialog with type-to-confirm
+</details>
 
 ## Progress
 
@@ -151,12 +111,10 @@ Plans:
 | 12-17 | v1.2 | 19 | Complete | 2026-01-25 |
 | 18-21 | v1.3 | 22 | Complete | 2026-01-31 |
 | 22-26 | v1.4 | 20 | Complete | 2026-01-31 |
-| 27 | v1.5 | 3 | Complete | 2026-02-03 |
-| 28 | v1.5 | 4 | Complete | 2026-02-03 |
-| 29 | v1.5 | 2 | Complete | 2026-02-03 |
+| 27-29 | v1.5 | 9 | Complete | 2026-02-03 |
 
-**Total:** 29 phases complete (96 plans executed), v1.5 milestone complete
+**Total:** 29 phases complete (96 plans executed)
 
 ---
 *Roadmap created: 2026-01-24*
-*Last updated: 2026-02-03 after Phase 29 complete - v1.5 milestone shipped*
+*Last updated: 2026-02-03 after v1.5 milestone archived*
