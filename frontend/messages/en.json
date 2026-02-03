@@ -636,7 +636,23 @@
     },
     "security": {
       "title": "Security",
-      "description": "Password and security settings"
+      "description": "Manage your password and active sessions",
+      "password": {
+        "title": "Password",
+        "currentPassword": "Current Password",
+        "newPassword": "New Password",
+        "confirmPassword": "Confirm New Password",
+        "changeButton": "Change Password",
+        "successMessage": "Password changed successfully",
+        "errorIncorrect": "Current password is incorrect",
+        "errorFailed": "Failed to change password",
+        "validationMinLength": "Password must be at least 8 characters",
+        "validationMismatch": "Passwords don't match"
+      },
+      "sessions": {
+        "title": "Active Sessions",
+        "comingSoon": "Session management coming soon"
+      }
     },
     "pushNotifications": {
       "title": "Push Notifications",
