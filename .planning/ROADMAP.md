@@ -103,11 +103,12 @@ See `.planning/milestones/v1.4-ROADMAP.md` for full details.
   3. User can upload an avatar image that displays in the app header
   4. User can select a date format preference that persists across sessions
   5. Date format preference is applied throughout the application
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
-- [ ] 27-01: TBD
-- [ ] 27-02: TBD
+- [x] 27-01-PLAN.md — Backend avatar and email update support
+- [x] 27-02-PLAN.md — Frontend account settings UI with avatar upload
+- [x] 27-03-PLAN.md — Date format preference and application-wide formatting
 
 #### Phase 28: Security Settings
 **Goal**: Users can manage password and control active sessions
@@ -118,11 +119,13 @@ Plans:
   2. User can view a list of all active sessions showing device type and last activity
   3. User can revoke any individual session, logging out that device
   4. User can log out all other sessions at once, keeping only current session active
-**Plans**: TBD
+**Plans**: 4 plans
 
 Plans:
-- [ ] 28-01: TBD
-- [ ] 28-02: TBD
+- [ ] 28-01-PLAN.md — Password change UI (frontend)
+- [ ] 28-02-PLAN.md — Sessions database infrastructure (migration + sqlc)
+- [ ] 28-03-PLAN.md — Sessions backend (service + handler + auth flow integration)
+- [ ] 28-04-PLAN.md — Active sessions UI with revocation
 
 #### Phase 29: Account Deletion
 **Goal**: Users can permanently delete their account with appropriate safeguards
@@ -147,12 +150,12 @@ Plans:
 | 12-17 | v1.2 | 19 | Complete | 2026-01-25 |
 | 18-21 | v1.3 | 22 | Complete | 2026-01-31 |
 | 22-26 | v1.4 | 20 | Complete | 2026-01-31 |
-| 27 | v1.5 | TBD | Not started | - |
-| 28 | v1.5 | TBD | Not started | - |
+| 27 | v1.5 | 3 | Complete | 2026-02-03 |
+| 28 | v1.5 | 4 | Not started | - |
 | 29 | v1.5 | TBD | Not started | - |
 
-**Total:** 26 phases complete (87 plans executed), 3 phases planned for v1.5
+**Total:** 27 phases complete (90 plans executed), 2 phases remaining for v1.5
 
 ---
 *Roadmap created: 2026-01-24*
-*Last updated: 2026-02-02 after v1.5 roadmap created*
+*Last updated: 2026-02-03 after Phase 28 planning*
