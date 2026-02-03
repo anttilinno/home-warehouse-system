@@ -8,8 +8,14 @@ export interface User {
   date_format: string;
   language: string;
   theme: string;
+  avatar_url: string | null;
   created_at: string;
   updated_at: string;
+}
+
+export interface UpdateProfileData {
+  full_name?: string;
+  email?: string;
 }
 
 export interface Workspace {
@@ -68,5 +74,19 @@ export const authApi = {
 
   getWorkspaces: async (): Promise<Workspace[]> => {
     return apiClient.get<Workspace[]>("/users/me/workspaces");
+  },
+
+  updateProfile: async (data: UpdateProfileData): Promise<User> => {
+    return apiClient.patch<User>("/users/me", data);
+  },
+
+  uploadAvatar: async (file: File): Promise<User> => {
+    const formData = new FormData();
+    formData.append("avatar", file);
+    return apiClient.postForm<User>("/users/me/avatar", formData);
+  },
+
+  deleteAvatar: async (): Promise<void> => {
+    await apiClient.delete("/users/me/avatar");
   },
 };

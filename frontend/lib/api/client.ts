@@ -123,6 +123,45 @@ class ApiClient {
     await this.request(endpoint, { method: "DELETE" }, workspaceId);
   }
 
+  async postForm<T>(endpoint: string, formData: FormData, workspaceId?: string): Promise<T> {
+    const headers: HeadersInit = {};
+
+    // Include Authorization header for backwards compatibility
+    if (this.token) {
+      (headers as Record<string, string>)["Authorization"] = `Bearer ${this.token}`;
+    }
+
+    if (workspaceId) {
+      (headers as Record<string, string>)["X-Workspace-ID"] = workspaceId;
+    }
+
+    // Note: Do NOT set Content-Type - browser sets it with boundary for multipart
+    const response = await fetch(`${this.baseUrl}${endpoint}`, {
+      method: "POST",
+      headers,
+      credentials: "include",
+      body: formData,
+    });
+
+    if (!response.ok) {
+      if (response.status === 401) {
+        this.setToken(null);
+        if (typeof window !== "undefined") {
+          localStorage.removeItem("workspace_id");
+          window.location.href = "/login";
+        }
+        throw new Error("Session expired. Please log in again.");
+      }
+
+      const error: ApiError = await response.json().catch(() => ({
+        message: `HTTP ${response.status}: ${response.statusText || "Request failed"}`,
+      }));
+      throw new Error(error.message || `HTTP ${response.status}`);
+    }
+
+    return response.json();
+  }
+
   // Methods that include status code in response (for handling 202 Accepted)
   async postWithStatus<T>(endpoint: string, data?: unknown, workspaceId?: string): Promise<ApiResponse<T>> {
     return this.request<T>(endpoint, {
