@@ -113,7 +113,9 @@
       "createNew": "Loo tööruum"
     },
     "userMenu": {
-      "profile": "Profiil",
+      "editProfile": "Muuda profiili",
+      "dateFormat": "Kuupäeva vorming",
+      "notifications": "Teavitused",
       "settings": "Seaded",
       "logout": "Logi välja"
     },

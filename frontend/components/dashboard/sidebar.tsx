@@ -13,7 +13,6 @@ import {
   HandCoins,
   Users,
   BarChart3,
-  Settings,
   PackageX,
   FileUp,
   ShieldCheck,
@@ -131,9 +130,7 @@ export function Sidebar({ collapsed, onToggle, onNavClick }: SidebarProps) {
     href: "/dashboard/sync-history",
   });
 
-  const bottomItems = [
-    { icon: Settings, label: t("settings"), href: "/dashboard/settings" },
-  ];
+  const bottomItems: { icon: typeof LayoutDashboard; label: string; href: string }[] = [];
 
   const NavLink = ({
     item,

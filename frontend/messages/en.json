@@ -113,7 +113,9 @@
       "createNew": "Create workspace"
     },
     "userMenu": {
-      "profile": "Profile",
+      "editProfile": "Edit Profile",
+      "dateFormat": "Date Format",
+      "notifications": "Notifications",
       "settings": "Settings",
       "logout": "Log out"
     },

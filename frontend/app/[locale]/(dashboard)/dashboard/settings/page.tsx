@@ -1,17 +1,16 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { Database } from "lucide-react";
+import { Database, Smartphone, KeyRound } from "lucide-react";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { BackupRestoreDialog } from "@/components/shared/backup-restore-dialog";
-import { NotificationSettings } from "@/components/settings/notification-settings";
-import { AccountSettings } from "@/components/settings/account-settings";
-import { DateFormatSettings } from "@/components/settings/date-format-settings";
-import { SecuritySettings } from "@/components/settings/security-settings";
+import { ActiveSessions } from "@/components/settings/active-sessions";
+import { PasswordChange } from "@/components/settings/password-change";
 
 export default function SettingsPage() {
   const t = useTranslations("settings");
+  const tSecurity = useTranslations("settings.security");
 
   return (
     <div className="space-y-6">
@@ -22,39 +21,56 @@ export default function SettingsPage() {
       </div>
 
       <div className="grid gap-6 md:grid-cols-2">
-        {/* Data Management */}
-        <Card>
+        {/* Left Column */}
+        <div className="flex flex-col gap-6">
+          {/* Data Management */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Database className="h-5 w-5" />
+                {t("dataManagement.title")}
+              </CardTitle>
+              <CardDescription>{t("dataManagement.description")}</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="font-medium">{t("dataManagement.backupRestore")}</p>
+                  <p className="text-sm text-muted-foreground">
+                    {t("dataManagement.backupRestoreDescription")}
+                  </p>
+                </div>
+                <BackupRestoreDialog />
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Password */}
+          <Card className="flex-1">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <KeyRound className="h-5 w-5" />
+                {tSecurity("password.title")}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <PasswordChange />
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Active Sessions */}
+        <Card className="flex flex-col">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Database className="h-5 w-5" />
-              {t("dataManagement.title")}
+              <Smartphone className="h-5 w-5" />
+              {tSecurity("sessions.title")}
             </CardTitle>
-            <CardDescription>{t("dataManagement.description")}</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="font-medium">{t("dataManagement.backupRestore")}</p>
-                <p className="text-sm text-muted-foreground">
-                  {t("dataManagement.backupRestoreDescription")}
-                </p>
-              </div>
-              <BackupRestoreDialog />
-            </div>
+          <CardContent className="flex-1 overflow-y-auto">
+            <ActiveSessions />
           </CardContent>
         </Card>
-
-        {/* Push Notifications */}
-        <NotificationSettings />
-
-        {/* Account Settings */}
-        <AccountSettings />
-
-        {/* Date Format Settings */}
-        <DateFormatSettings />
-
-        {/* Security */}
-        <SecuritySettings />
       </div>
     </div>
   );

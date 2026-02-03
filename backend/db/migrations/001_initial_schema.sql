@@ -116,6 +116,7 @@ CREATE TABLE auth.users (
     date_format VARCHAR(20) DEFAULT 'DD.MM.YYYY',
     language VARCHAR(5) NOT NULL DEFAULT 'en',
     theme VARCHAR(20) NOT NULL DEFAULT 'system',
+    avatar_path VARCHAR(500),
     created_at TIMESTAMPTZ DEFAULT now(),
     updated_at TIMESTAMPTZ DEFAULT now()
 );
@@ -175,7 +176,9 @@ COMMENT ON COLUMN auth.user_oauth_accounts.access_token IS
 CREATE INDEX ix_oauth_accounts_user ON auth.user_oauth_accounts(user_id);
 CREATE INDEX ix_oauth_accounts_provider ON auth.user_oauth_accounts(provider, provider_user_id);
 
--- Password reset tokens
+COMMENT ON COLUMN auth.users.avatar_path IS
+'Storage path to user avatar image. Null if user has no custom avatar.';
+
 CREATE TABLE auth.password_reset_tokens (
     id uuid DEFAULT uuidv7() PRIMARY KEY,
     user_id uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,

@@ -113,7 +113,9 @@
       "createNew": "Создать пространство"
     },
     "userMenu": {
-      "profile": "Профиль",
+      "editProfile": "Редактировать профиль",
+      "dateFormat": "Формат даты",
+      "notifications": "Уведомления",
       "settings": "Настройки",
       "logout": "Выйти"
     },

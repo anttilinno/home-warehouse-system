@@ -24,9 +24,9 @@ func (q *Queries) CountActiveUsers(ctx context.Context) (int64, error) {
 }
 
 const createUser = `-- name: CreateUser :one
-INSERT INTO auth.users (id, email, full_name, password_hash, is_active, is_superuser, date_format, language, theme, created_at, updated_at)
-VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
-RETURNING id, email, full_name, password_hash, is_active, is_superuser, date_format, language, theme, created_at, updated_at
+INSERT INTO auth.users (id, email, full_name, password_hash, is_active, is_superuser, date_format, language, theme, avatar_path, created_at, updated_at)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+RETURNING id, email, full_name, password_hash, is_active, is_superuser, date_format, language, theme, avatar_path, created_at, updated_at
 `
 
 type CreateUserParams struct {
@@ -39,6 +39,7 @@ type CreateUserParams struct {
 	DateFormat   *string            `json:"date_format"`
 	Language     string             `json:"language"`
 	Theme        string             `json:"theme"`
+	AvatarPath   *string            `json:"avatar_path"`
 	CreatedAt    pgtype.Timestamptz `json:"created_at"`
 	UpdatedAt    pgtype.Timestamptz `json:"updated_at"`
 }
@@ -54,6 +55,7 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (AuthUse
 		arg.DateFormat,
 		arg.Language,
 		arg.Theme,
+		arg.AvatarPath,
 		arg.CreatedAt,
 		arg.UpdatedAt,
 	)
@@ -68,6 +70,7 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (AuthUse
 		&i.DateFormat,
 		&i.Language,
 		&i.Theme,
+		&i.AvatarPath,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
@@ -95,7 +98,7 @@ func (q *Queries) DeleteUser(ctx context.Context, id uuid.UUID) error {
 }
 
 const getUserByEmail = `-- name: GetUserByEmail :one
-SELECT id, email, full_name, password_hash, is_active, is_superuser, date_format, language, theme, created_at, updated_at
+SELECT id, email, full_name, password_hash, is_active, is_superuser, date_format, language, theme, avatar_path, created_at, updated_at
 FROM auth.users
 WHERE email = $1
 `
@@ -113,6 +116,7 @@ func (q *Queries) GetUserByEmail(ctx context.Context, email string) (AuthUser, e
 		&i.DateFormat,
 		&i.Language,
 		&i.Theme,
+		&i.AvatarPath,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
@@ -120,7 +124,7 @@ func (q *Queries) GetUserByEmail(ctx context.Context, email string) (AuthUser, e
 }
 
 const getUserByID = `-- name: GetUserByID :one
-SELECT id, email, full_name, password_hash, is_active, is_superuser, date_format, language, theme, created_at, updated_at
+SELECT id, email, full_name, password_hash, is_active, is_superuser, date_format, language, theme, avatar_path, created_at, updated_at
 FROM auth.users
 WHERE id = $1
 `
@@ -138,6 +142,7 @@ func (q *Queries) GetUserByID(ctx context.Context, id uuid.UUID) (AuthUser, erro
 		&i.DateFormat,
 		&i.Language,
 		&i.Theme,
+		&i.AvatarPath,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
@@ -145,7 +150,7 @@ func (q *Queries) GetUserByID(ctx context.Context, id uuid.UUID) (AuthUser, erro
 }
 
 const listUsers = `-- name: ListUsers :many
-SELECT id, email, full_name, password_hash, is_active, is_superuser, date_format, language, theme, created_at, updated_at
+SELECT id, email, full_name, password_hash, is_active, is_superuser, date_format, language, theme, avatar_path, created_at, updated_at
 FROM auth.users
 WHERE is_active = true
 ORDER BY created_at DESC
@@ -176,6 +181,7 @@ func (q *Queries) ListUsers(ctx context.Context, arg ListUsersParams) ([]AuthUse
 			&i.DateFormat,
 			&i.Language,
 			&i.Theme,
+			&i.AvatarPath,
 			&i.CreatedAt,
 			&i.UpdatedAt,
 		); err != nil {
@@ -193,7 +199,7 @@ const updateUser = `-- name: UpdateUser :one
 UPDATE auth.users
 SET full_name = $2, updated_at = now()
 WHERE id = $1
-RETURNING id, email, full_name, password_hash, is_active, is_superuser, date_format, language, theme, created_at, updated_at
+RETURNING id, email, full_name, password_hash, is_active, is_superuser, date_format, language, theme, avatar_path, created_at, updated_at
 `
 
 type UpdateUserParams struct {
@@ -214,6 +220,71 @@ func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (AuthUse
 		&i.DateFormat,
 		&i.Language,
 		&i.Theme,
+		&i.AvatarPath,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const updateUserAvatar = `-- name: UpdateUserAvatar :one
+UPDATE auth.users
+SET avatar_path = $2, updated_at = now()
+WHERE id = $1
+RETURNING id, email, full_name, password_hash, is_active, is_superuser, date_format, language, theme, avatar_path, created_at, updated_at
+`
+
+type UpdateUserAvatarParams struct {
+	ID         uuid.UUID `json:"id"`
+	AvatarPath *string   `json:"avatar_path"`
+}
+
+func (q *Queries) UpdateUserAvatar(ctx context.Context, arg UpdateUserAvatarParams) (AuthUser, error) {
+	row := q.db.QueryRow(ctx, updateUserAvatar, arg.ID, arg.AvatarPath)
+	var i AuthUser
+	err := row.Scan(
+		&i.ID,
+		&i.Email,
+		&i.FullName,
+		&i.PasswordHash,
+		&i.IsActive,
+		&i.IsSuperuser,
+		&i.DateFormat,
+		&i.Language,
+		&i.Theme,
+		&i.AvatarPath,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const updateUserEmail = `-- name: UpdateUserEmail :one
+UPDATE auth.users
+SET email = $2, updated_at = now()
+WHERE id = $1
+RETURNING id, email, full_name, password_hash, is_active, is_superuser, date_format, language, theme, avatar_path, created_at, updated_at
+`
+
+type UpdateUserEmailParams struct {
+	ID    uuid.UUID `json:"id"`
+	Email string    `json:"email"`
+}
+
+func (q *Queries) UpdateUserEmail(ctx context.Context, arg UpdateUserEmailParams) (AuthUser, error) {
+	row := q.db.QueryRow(ctx, updateUserEmail, arg.ID, arg.Email)
+	var i AuthUser
+	err := row.Scan(
+		&i.ID,
+		&i.Email,
+		&i.FullName,
+		&i.PasswordHash,
+		&i.IsActive,
+		&i.IsSuperuser,
+		&i.DateFormat,
+		&i.Language,
+		&i.Theme,
+		&i.AvatarPath,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
@@ -240,7 +311,7 @@ const updateUserPreferences = `-- name: UpdateUserPreferences :one
 UPDATE auth.users
 SET date_format = $2, language = $3, theme = $4, updated_at = now()
 WHERE id = $1
-RETURNING id, email, full_name, password_hash, is_active, is_superuser, date_format, language, theme, created_at, updated_at
+RETURNING id, email, full_name, password_hash, is_active, is_superuser, date_format, language, theme, avatar_path, created_at, updated_at
 `
 
 type UpdateUserPreferencesParams struct {
@@ -268,6 +339,7 @@ func (q *Queries) UpdateUserPreferences(ctx context.Context, arg UpdateUserPrefe
 		&i.DateFormat,
 		&i.Language,
 		&i.Theme,
+		&i.AvatarPath,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
