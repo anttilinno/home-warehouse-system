@@ -1,7 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { Shield, KeyRound, Smartphone } from "lucide-react";
+import { Shield, KeyRound, Smartphone, AlertTriangle } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -11,9 +11,11 @@ import {
 } from "@/components/ui/card";
 import { PasswordChange } from "./password-change";
 import { ActiveSessions } from "./active-sessions";
+import { DeleteAccountDialog } from "./delete-account-dialog";
 
 export function SecuritySettings() {
   const t = useTranslations("settings.security");
+  const tDanger = useTranslations("settings.dangerZone");
 
   return (
     <Card>
@@ -41,6 +43,18 @@ export function SecuritySettings() {
             {t("sessions.title")}
           </h3>
           <ActiveSessions />
+        </div>
+
+        {/* Danger Zone Section */}
+        <div className="space-y-4 border-t pt-6">
+          <h3 className="text-sm font-medium flex items-center gap-2 text-destructive">
+            <AlertTriangle className="h-4 w-4" />
+            {tDanger("title")}
+          </h3>
+          <p className="text-sm text-muted-foreground">
+            {tDanger("description")}
+          </p>
+          <DeleteAccountDialog />
         </div>
       </CardContent>
     </Card>
