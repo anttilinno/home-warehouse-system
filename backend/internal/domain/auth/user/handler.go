@@ -134,10 +134,12 @@ func (h *Handler) RegisterPublicRoutes(api huma.API) {
 func (h *Handler) RegisterProtectedRoutes(api huma.API) {
 	huma.Get(api, "/users/me", h.getMe)
 	huma.Get(api, "/users/me/workspaces", h.getMyWorkspaces)
+	huma.Get(api, "/users/me/can-delete", h.canDeleteMe)
 	huma.Patch(api, "/users/me", h.updateMe)
 	huma.Patch(api, "/users/me/password", h.updatePassword)
 	huma.Patch(api, "/users/me/preferences", h.updatePreferences)
 	huma.Delete(api, "/users/me/avatar", h.deleteAvatar)
+	huma.Delete(api, "/users/me", h.deleteMe)
 }
 
 // RegisterAvatarRoutes registers avatar upload and serve routes on a Chi router.
@@ -846,6 +848,82 @@ func (h *Handler) deleteAvatar(ctx context.Context, input *struct{}) (*struct{},
 	return nil, nil
 }
 
+// canDeleteMe handles GET /users/me/can-delete
+func (h *Handler) canDeleteMe(ctx context.Context, input *struct{}) (*CanDeleteAccountOutput, error) {
+	authUser, ok := appMiddleware.GetAuthUser(ctx)
+	if !ok {
+		return nil, huma.Error401Unauthorized("not authenticated")
+	}
+
+	canDelete, blockingWorkspaces, err := h.svc.CanDelete(ctx, authUser.ID)
+	if err != nil {
+		return nil, huma.Error500InternalServerError("failed to check account status")
+	}
+
+	// Convert domain types to DTOs
+	workspaceDTOs := make([]BlockingWorkspaceDTO, len(blockingWorkspaces))
+	for i, ws := range blockingWorkspaces {
+		workspaceDTOs[i] = BlockingWorkspaceDTO{
+			ID:   ws.ID,
+			Name: ws.Name,
+			Slug: ws.Slug,
+		}
+	}
+
+	return &CanDeleteAccountOutput{
+		Body: CanDeleteAccountResponse{
+			CanDelete:          canDelete,
+			BlockingWorkspaces: workspaceDTOs,
+		},
+	}, nil
+}
+
+// deleteMe handles DELETE /users/me
+func (h *Handler) deleteMe(ctx context.Context, input *DeleteAccountInput) (*DeleteAccountOutput, error) {
+	authUser, ok := appMiddleware.GetAuthUser(ctx)
+	if !ok {
+		return nil, huma.Error401Unauthorized("not authenticated")
+	}
+
+	// Validate confirmation text (case-insensitive)
+	if strings.ToUpper(input.Body.Confirmation) != "DELETE" {
+		return nil, huma.Error400BadRequest("confirmation text must be 'DELETE'")
+	}
+
+	// Check if user can be deleted
+	canDelete, blockingWorkspaces, err := h.svc.CanDelete(ctx, authUser.ID)
+	if err != nil {
+		return nil, huma.Error500InternalServerError("failed to check account status")
+	}
+	if !canDelete {
+		// Return 409 with blocking workspace names
+		names := make([]string, len(blockingWorkspaces))
+		for i, ws := range blockingWorkspaces {
+			names[i] = ws.Name
+		}
+		return nil, huma.Error409Conflict(fmt.Sprintf("cannot delete account while sole owner of workspaces: %s", strings.Join(names, ", ")))
+	}
+
+	// Delete avatar file if exists (before deleting user)
+	user, err := h.svc.GetByID(ctx, authUser.ID)
+	if err == nil && user.AvatarPath() != nil && *user.AvatarPath() != "" && h.avatarStorage != nil {
+		_ = h.avatarStorage.DeleteAvatar(ctx, *user.AvatarPath())
+	}
+
+	// Delete user (CASCADE handles related data)
+	if err := h.svc.Delete(ctx, authUser.ID); err != nil {
+		return nil, huma.Error500InternalServerError("failed to delete account")
+	}
+
+	// Return response with cookie clearing
+	return &DeleteAccountOutput{
+		SetCookie: []http.Cookie{
+			*clearAuthCookie(accessTokenCookie),
+			*clearAuthCookie(refreshTokenCookie),
+		},
+	}, nil
+}
+
 // Request/Response types
 
 type RegisterInput struct {
@@ -1033,6 +1111,33 @@ type DeactivateUserInput struct {
 
 type ActivateUserInput struct {
 	ID uuid.UUID `path:"id" format:"uuid"`
+}
+
+// CanDeleteAccountOutput for GET /users/me/can-delete
+type CanDeleteAccountOutput struct {
+	Body CanDeleteAccountResponse
+}
+
+type CanDeleteAccountResponse struct {
+	CanDelete          bool                   `json:"can_delete"`
+	BlockingWorkspaces []BlockingWorkspaceDTO `json:"blocking_workspaces"`
+}
+
+type BlockingWorkspaceDTO struct {
+	ID   uuid.UUID `json:"id"`
+	Name string    `json:"name"`
+	Slug string    `json:"slug"`
+}
+
+// DeleteAccountInput for DELETE /users/me
+type DeleteAccountInput struct {
+	Body struct {
+		Confirmation string `json:"confirmation" required:"true"`
+	}
+}
+
+type DeleteAccountOutput struct {
+	SetCookie []http.Cookie `header:"Set-Cookie"`
 }
 
 // Legacy functions for backward compatibility - deprecated
