@@ -44,3 +44,17 @@ SELECT wm.id, wm.workspace_id, wm.user_id, wm.role, wm.created_at
 FROM auth.workspace_members wm
 WHERE wm.workspace_id = $1 AND wm.role = ANY($2::auth.workspace_role_enum[])
 ORDER BY wm.created_at;
+
+-- name: GetUserSoleOwnerWorkspaces :many
+-- Returns workspaces where the user is the ONLY owner (blocking account deletion)
+-- Excludes personal workspaces since they should not block deletion
+SELECT w.id, w.name, w.slug, w.is_personal
+FROM auth.workspaces w
+JOIN auth.workspace_members wm ON w.id = wm.workspace_id
+WHERE wm.user_id = $1
+  AND wm.role = 'owner'
+  AND w.is_personal = false
+  AND (
+    SELECT COUNT(*) FROM auth.workspace_members
+    WHERE workspace_id = w.id AND role = 'owner'
+  ) = 1;

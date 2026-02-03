@@ -116,6 +116,53 @@ func (q *Queries) GetUserRole(ctx context.Context, arg GetUserRoleParams) (AuthW
 	return role, err
 }
 
+const getUserSoleOwnerWorkspaces = `-- name: GetUserSoleOwnerWorkspaces :many
+SELECT w.id, w.name, w.slug, w.is_personal
+FROM auth.workspaces w
+JOIN auth.workspace_members wm ON w.id = wm.workspace_id
+WHERE wm.user_id = $1
+  AND wm.role = 'owner'
+  AND w.is_personal = false
+  AND (
+    SELECT COUNT(*) FROM auth.workspace_members
+    WHERE workspace_id = w.id AND role = 'owner'
+  ) = 1
+`
+
+type GetUserSoleOwnerWorkspacesRow struct {
+	ID         uuid.UUID `json:"id"`
+	Name       string    `json:"name"`
+	Slug       string    `json:"slug"`
+	IsPersonal bool      `json:"is_personal"`
+}
+
+// Returns workspaces where the user is the ONLY owner (blocking account deletion)
+// Excludes personal workspaces since they should not block deletion
+func (q *Queries) GetUserSoleOwnerWorkspaces(ctx context.Context, userID uuid.UUID) ([]GetUserSoleOwnerWorkspacesRow, error) {
+	rows, err := q.db.Query(ctx, getUserSoleOwnerWorkspaces, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []GetUserSoleOwnerWorkspacesRow{}
+	for rows.Next() {
+		var i GetUserSoleOwnerWorkspacesRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.Slug,
+			&i.IsPersonal,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listMembersByWorkspace = `-- name: ListMembersByWorkspace :many
 SELECT wm.id, wm.workspace_id, wm.user_id, wm.role, wm.invited_by, wm.created_at, wm.updated_at, u.email, u.full_name
 FROM auth.workspace_members wm
