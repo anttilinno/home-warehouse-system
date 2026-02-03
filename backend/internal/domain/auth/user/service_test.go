@@ -56,6 +56,22 @@ func (m *MockRepository) ExistsByEmail(ctx context.Context, email string) (bool,
 	return args.Bool(0), args.Error(1)
 }
 
+func (m *MockRepository) UpdateAvatar(ctx context.Context, id uuid.UUID, path *string) (*User, error) {
+	args := m.Called(ctx, id, path)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*User), args.Error(1)
+}
+
+func (m *MockRepository) UpdateEmail(ctx context.Context, id uuid.UUID, email string) (*User, error) {
+	args := m.Called(ctx, id, email)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*User), args.Error(1)
+}
+
 // =============================================================================
 // Entity Tests
 // =============================================================================
@@ -129,6 +145,7 @@ func TestNewUser(t *testing.T) {
 func TestReconstruct(t *testing.T) {
 	id := uuid.New()
 	now := time.Now()
+	avatarPath := "/avatars/test/avatar.jpg"
 
 	user := Reconstruct(
 		id,
@@ -140,6 +157,7 @@ func TestReconstruct(t *testing.T) {
 		"YYYY-MM-DD",
 		"en",
 		"system",
+		&avatarPath,
 		now,
 		now,
 	)
@@ -153,6 +171,7 @@ func TestReconstruct(t *testing.T) {
 	assert.Equal(t, "YYYY-MM-DD", user.DateFormat())
 	assert.Equal(t, "en", user.Language())
 	assert.Equal(t, "system", user.Theme())
+	assert.Equal(t, &avatarPath, user.AvatarPath())
 	assert.Equal(t, now, user.CreatedAt())
 	assert.Equal(t, now, user.UpdatedAt())
 }

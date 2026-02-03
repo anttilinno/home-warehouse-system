@@ -171,6 +171,7 @@ func TestUser_Activate(t *testing.T) {
 func TestUser_Reconstruct(t *testing.T) {
 	id := uuid.New()
 	now := time.Now()
+	avatarPath := "/avatars/test/avatar.jpg"
 
 	u := user.Reconstruct(
 		id,
@@ -182,6 +183,7 @@ func TestUser_Reconstruct(t *testing.T) {
 		"YYYY-MM-DD",
 		"en",
 		"system",
+		&avatarPath,
 		now,
 		now,
 	)
@@ -196,4 +198,5 @@ func TestUser_Reconstruct(t *testing.T) {
 	assert.Equal(t, "YYYY-MM-DD", u.DateFormat())
 	assert.Equal(t, "en", u.Language())
 	assert.Equal(t, "system", u.Theme())
+	assert.Equal(t, &avatarPath, u.AvatarPath())
 }

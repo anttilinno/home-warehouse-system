@@ -3,11 +3,15 @@ package user
 import (
 	"context"
 	"fmt"
+	"io"
 	"net/http"
 	"os"
+	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/danielgtaylor/huma/v2"
+	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 
 	appMiddleware "github.com/antti/home-warehouse/go-backend/internal/api/middleware"
@@ -57,11 +61,34 @@ func clearAuthCookie(name string) *http.Cookie {
 	}
 }
 
+// AvatarStorage defines the interface for storing avatar files
+type AvatarStorage interface {
+	// SaveAvatar saves an avatar file and returns the storage path
+	SaveAvatar(ctx context.Context, userID, filename string, reader io.Reader) (path string, err error)
+	// GetAvatar retrieves an avatar file by path
+	GetAvatar(ctx context.Context, path string) (io.ReadCloser, error)
+	// DeleteAvatar removes an avatar file
+	DeleteAvatar(ctx context.Context, path string) error
+}
+
+// AvatarImageProcessor defines the interface for avatar image processing
+type AvatarImageProcessor interface {
+	// GenerateThumbnail generates a square thumbnail
+	GenerateThumbnail(ctx context.Context, sourcePath, destPath string, maxWidth, maxHeight int) error
+	// GetDimensions returns image dimensions
+	GetDimensions(ctx context.Context, path string) (width, height int, err error)
+	// Validate validates an image file
+	Validate(ctx context.Context, path string) error
+}
+
 // Handler holds dependencies for user HTTP handlers.
 type Handler struct {
 	svc            ServiceInterface
 	jwtService     jwt.ServiceInterface
 	workspaceSvc   workspace.ServiceInterface
+	avatarStorage  AvatarStorage
+	imageProcessor AvatarImageProcessor
+	uploadDir      string
 }
 
 // NewHandler creates a new user handler.
@@ -71,6 +98,21 @@ func NewHandler(svc ServiceInterface, jwtService jwt.ServiceInterface, workspace
 		jwtService:     jwtService,
 		workspaceSvc:   workspaceSvc,
 	}
+}
+
+// SetAvatarStorage sets the avatar storage for avatar operations.
+func (h *Handler) SetAvatarStorage(storage AvatarStorage) {
+	h.avatarStorage = storage
+}
+
+// SetImageProcessor sets the image processor for avatar thumbnail generation.
+func (h *Handler) SetImageProcessor(processor AvatarImageProcessor) {
+	h.imageProcessor = processor
+}
+
+// SetUploadDir sets the temporary upload directory.
+func (h *Handler) SetUploadDir(dir string) {
+	h.uploadDir = dir
 }
 
 // RegisterPublicRoutes registers public user routes (no auth required).
@@ -88,6 +130,14 @@ func (h *Handler) RegisterProtectedRoutes(api huma.API) {
 	huma.Patch(api, "/users/me", h.updateMe)
 	huma.Patch(api, "/users/me/password", h.updatePassword)
 	huma.Patch(api, "/users/me/preferences", h.updatePreferences)
+	huma.Delete(api, "/users/me/avatar", h.deleteAvatar)
+}
+
+// RegisterAvatarRoutes registers avatar upload and serve routes on a Chi router.
+// This must be called separately because multipart upload requires Chi routing.
+func (h *Handler) RegisterAvatarRoutes(r chi.Router) {
+	r.Post("/users/me/avatar", h.uploadAvatar)
+	r.Get("/users/me/avatar", h.serveAvatar)
 }
 
 // RegisterAdminRoutes registers admin-only user routes (superuser required).
@@ -254,6 +304,7 @@ func (h *Handler) getMe(ctx context.Context, input *struct{}) (*GetMeOutput, err
 			DateFormat: user.DateFormat(),
 			Language:   user.Language(),
 			Theme:      user.Theme(),
+			AvatarURL:  generateAvatarURL(user.AvatarPath()),
 		},
 	}, nil
 }
@@ -292,11 +343,36 @@ func (h *Handler) updateMe(ctx context.Context, input *UpdateMeInput) (*UpdateMe
 		return nil, huma.Error401Unauthorized("not authenticated")
 	}
 
-	user, err := h.svc.UpdateProfile(ctx, authUser.ID, UpdateProfileInput{
-		FullName: input.Body.FullName,
-	})
-	if err != nil {
-		return nil, huma.Error400BadRequest(err.Error())
+	var user *User
+	var err error
+
+	// Update email if provided
+	if input.Body.Email != "" {
+		user, err = h.svc.UpdateEmail(ctx, authUser.ID, input.Body.Email)
+		if err != nil {
+			if shared.IsAlreadyExists(err) {
+				return nil, huma.Error409Conflict("email is already taken")
+			}
+			return nil, huma.Error400BadRequest(err.Error())
+		}
+	}
+
+	// Update full name if provided
+	if input.Body.FullName != "" {
+		user, err = h.svc.UpdateProfile(ctx, authUser.ID, UpdateProfileInput{
+			FullName: input.Body.FullName,
+		})
+		if err != nil {
+			return nil, huma.Error400BadRequest(err.Error())
+		}
+	}
+
+	// If nothing was updated, fetch current user
+	if user == nil {
+		user, err = h.svc.GetByID(ctx, authUser.ID)
+		if err != nil {
+			return nil, huma.Error404NotFound("user not found")
+		}
 	}
 
 	return &UpdateMeOutput{
@@ -307,6 +383,7 @@ func (h *Handler) updateMe(ctx context.Context, input *UpdateMeInput) (*UpdateMe
 			DateFormat: user.DateFormat(),
 			Language:   user.Language(),
 			Theme:      user.Theme(),
+			AvatarURL:  generateAvatarURL(user.AvatarPath()),
 		},
 	}, nil
 }
@@ -351,6 +428,7 @@ func (h *Handler) updatePreferences(ctx context.Context, input *UpdatePrefsReque
 			DateFormat: user.DateFormat(),
 			Language:   user.Language(),
 			Theme:      user.Theme(),
+			AvatarURL:  generateAvatarURL(user.AvatarPath()),
 		},
 	}, nil
 }
@@ -487,6 +565,245 @@ func (h *Handler) activateUser(ctx context.Context, input *ActivateUserInput) (*
 	return nil, nil
 }
 
+// Avatar handlers
+
+const (
+	// MaxAvatarSize is the maximum allowed avatar file size (2MB)
+	MaxAvatarSize = 2 * 1024 * 1024
+	// AvatarThumbnailSize is the size of the square avatar thumbnail
+	AvatarThumbnailSize = 150
+)
+
+// Allowed MIME types for avatars
+var allowedAvatarMimeTypes = map[string]bool{
+	"image/jpeg": true,
+	"image/png":  true,
+	"image/webp": true,
+}
+
+// uploadAvatar handles POST /users/me/avatar
+func (h *Handler) uploadAvatar(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	authUser, ok := appMiddleware.GetAuthUser(ctx)
+	if !ok {
+		http.Error(w, "not authenticated", http.StatusUnauthorized)
+		return
+	}
+
+	// Check if storage is configured
+	if h.avatarStorage == nil || h.imageProcessor == nil {
+		http.Error(w, "avatar upload not configured", http.StatusServiceUnavailable)
+		return
+	}
+
+	// Parse multipart form (2MB max)
+	if err := r.ParseMultipartForm(MaxAvatarSize); err != nil {
+		http.Error(w, "file too large or invalid form data", http.StatusBadRequest)
+		return
+	}
+
+	// Get file from form
+	file, header, err := r.FormFile("avatar")
+	if err != nil {
+		http.Error(w, "avatar file is required", http.StatusBadRequest)
+		return
+	}
+	defer file.Close()
+
+	// Validate file size
+	if header.Size > MaxAvatarSize {
+		http.Error(w, "file too large: maximum size is 2MB", http.StatusRequestEntityTooLarge)
+		return
+	}
+
+	// Validate MIME type
+	contentType := header.Header.Get("Content-Type")
+	if !allowedAvatarMimeTypes[contentType] {
+		http.Error(w, "invalid file type: only JPEG, PNG, and WebP are allowed", http.StatusBadRequest)
+		return
+	}
+
+	// Create temporary file for image processing
+	uploadDir := h.uploadDir
+	if uploadDir == "" {
+		uploadDir = os.TempDir()
+	}
+	tempFile, err := os.CreateTemp(uploadDir, "avatar-*"+filepath.Ext(header.Filename))
+	if err != nil {
+		http.Error(w, "failed to process file", http.StatusInternalServerError)
+		return
+	}
+	tempPath := tempFile.Name()
+	defer os.Remove(tempPath)
+
+	// Copy uploaded data to temp file
+	if _, err := io.Copy(tempFile, file); err != nil {
+		tempFile.Close()
+		http.Error(w, "failed to process file", http.StatusInternalServerError)
+		return
+	}
+	tempFile.Close()
+
+	// Validate image
+	if err := h.imageProcessor.Validate(ctx, tempPath); err != nil {
+		http.Error(w, "invalid image file", http.StatusBadRequest)
+		return
+	}
+
+	// Generate thumbnail (150x150 square)
+	ext := filepath.Ext(header.Filename)
+	if ext == "" {
+		// Determine extension from content type
+		switch contentType {
+		case "image/jpeg":
+			ext = ".jpg"
+		case "image/png":
+			ext = ".png"
+		case "image/webp":
+			ext = ".webp"
+		}
+	}
+	thumbnailPath := tempPath + "_thumb" + ext
+	defer os.Remove(thumbnailPath)
+
+	if err := h.imageProcessor.GenerateThumbnail(ctx, tempPath, thumbnailPath, AvatarThumbnailSize, AvatarThumbnailSize); err != nil {
+		http.Error(w, "failed to process image", http.StatusInternalServerError)
+		return
+	}
+
+	// Save thumbnail to storage
+	thumbReader, err := os.Open(thumbnailPath)
+	if err != nil {
+		http.Error(w, "failed to process image", http.StatusInternalServerError)
+		return
+	}
+	defer thumbReader.Close()
+
+	filename := fmt.Sprintf("avatar%s", ext)
+	storagePath, err := h.avatarStorage.SaveAvatar(ctx, authUser.ID.String(), filename, thumbReader)
+	if err != nil {
+		http.Error(w, "failed to save avatar", http.StatusInternalServerError)
+		return
+	}
+
+	// Delete old avatar if exists
+	currentUser, err := h.svc.GetByID(ctx, authUser.ID)
+	if err == nil && currentUser.AvatarPath() != nil && *currentUser.AvatarPath() != "" {
+		_ = h.avatarStorage.DeleteAvatar(ctx, *currentUser.AvatarPath())
+	}
+
+	// Update user with new avatar path
+	user, err := h.svc.UpdateAvatar(ctx, authUser.ID, &storagePath)
+	if err != nil {
+		// Try to clean up the uploaded file
+		_ = h.avatarStorage.DeleteAvatar(ctx, storagePath)
+		http.Error(w, "failed to update user", http.StatusInternalServerError)
+		return
+	}
+
+	// Return updated user
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	fmt.Fprintf(w, `{"id":"%s","email":"%s","full_name":"%s","date_format":"%s","language":"%s","theme":"%s","avatar_url":"/users/me/avatar"}`,
+		user.ID(), user.Email(), user.FullName(), user.DateFormat(), user.Language(), user.Theme())
+}
+
+// serveAvatar handles GET /users/me/avatar
+func (h *Handler) serveAvatar(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	authUser, ok := appMiddleware.GetAuthUser(ctx)
+	if !ok {
+		http.Error(w, "not authenticated", http.StatusUnauthorized)
+		return
+	}
+
+	// Check if storage is configured
+	if h.avatarStorage == nil {
+		http.Error(w, "avatar service not configured", http.StatusServiceUnavailable)
+		return
+	}
+
+	// Get user to find avatar path
+	user, err := h.svc.GetByID(ctx, authUser.ID)
+	if err != nil {
+		http.Error(w, "user not found", http.StatusNotFound)
+		return
+	}
+
+	avatarPath := user.AvatarPath()
+	if avatarPath == nil || *avatarPath == "" {
+		http.Error(w, "no avatar", http.StatusNotFound)
+		return
+	}
+
+	// Get file from storage
+	reader, err := h.avatarStorage.GetAvatar(ctx, *avatarPath)
+	if err != nil {
+		http.Error(w, "avatar not found", http.StatusNotFound)
+		return
+	}
+	defer reader.Close()
+
+	// Determine content type from path extension
+	ext := strings.ToLower(filepath.Ext(*avatarPath))
+	contentType := "application/octet-stream"
+	switch ext {
+	case ".jpg", ".jpeg":
+		contentType = "image/jpeg"
+	case ".png":
+		contentType = "image/png"
+	case ".webp":
+		contentType = "image/webp"
+	}
+
+	// Set headers
+	w.Header().Set("Content-Type", contentType)
+	w.Header().Set("Cache-Control", "public, max-age=31536000, immutable")
+
+	// Serve file
+	io.Copy(w, reader)
+}
+
+// deleteAvatar handles DELETE /users/me/avatar
+func (h *Handler) deleteAvatar(ctx context.Context, input *struct{}) (*struct{}, error) {
+	authUser, ok := appMiddleware.GetAuthUser(ctx)
+	if !ok {
+		return nil, huma.Error401Unauthorized("not authenticated")
+	}
+
+	// Check if storage is configured
+	if h.avatarStorage == nil {
+		return nil, huma.Error503ServiceUnavailable("avatar service not configured")
+	}
+
+	// Get user to find current avatar path
+	user, err := h.svc.GetByID(ctx, authUser.ID)
+	if err != nil {
+		return nil, huma.Error404NotFound("user not found")
+	}
+
+	avatarPath := user.AvatarPath()
+	if avatarPath == nil || *avatarPath == "" {
+		// No avatar to delete, return success
+		return nil, nil
+	}
+
+	// Delete from storage
+	if err := h.avatarStorage.DeleteAvatar(ctx, *avatarPath); err != nil {
+		// Log but don't fail - file might already be gone
+	}
+
+	// Update user to remove avatar path
+	_, err = h.svc.UpdateAvatar(ctx, authUser.ID, nil)
+	if err != nil {
+		return nil, huma.Error500InternalServerError("failed to update user")
+	}
+
+	return nil, nil
+}
+
 // Request/Response types
 
 type RegisterInput struct {
@@ -547,6 +864,16 @@ type UserResponse struct {
 	DateFormat string    `json:"date_format"`
 	Language   string    `json:"language"`
 	Theme      string    `json:"theme"`
+	AvatarURL  *string   `json:"avatar_url,omitempty"`
+}
+
+// generateAvatarURL returns the avatar URL if the user has an avatar.
+func generateAvatarURL(avatarPath *string) *string {
+	if avatarPath == nil || *avatarPath == "" {
+		return nil
+	}
+	url := "/users/me/avatar"
+	return &url
 }
 
 type GetMeOutput struct {
@@ -568,7 +895,8 @@ type GetMyWorkspacesOutput struct {
 
 type UpdateMeInput struct {
 	Body struct {
-		FullName string `json:"full_name" required:"true" minLength:"1"`
+		FullName string `json:"full_name,omitempty" minLength:"1"`
+		Email    string `json:"email,omitempty" format:"email"`
 	}
 }
 

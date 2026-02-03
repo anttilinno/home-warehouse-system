@@ -93,6 +93,22 @@ func (m *MockService) Activate(ctx context.Context, id uuid.UUID) error {
 	return args.Error(0)
 }
 
+func (m *MockService) UpdateAvatar(ctx context.Context, id uuid.UUID, avatarPath *string) (*user.User, error) {
+	args := m.Called(ctx, id, avatarPath)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*user.User), args.Error(1)
+}
+
+func (m *MockService) UpdateEmail(ctx context.Context, id uuid.UUID, newEmail string) (*user.User, error) {
+	args := m.Called(ctx, id, newEmail)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*user.User), args.Error(1)
+}
+
 // MockWorkspaceService implements workspace.ServiceInterface
 type MockWorkspaceService struct {
 	mock.Mock

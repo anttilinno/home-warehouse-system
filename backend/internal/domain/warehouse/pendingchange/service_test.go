@@ -154,6 +154,22 @@ func (m *MockUserRepository) ExistsByEmail(ctx context.Context, email string) (b
 	return args.Bool(0), args.Error(1)
 }
 
+func (m *MockUserRepository) UpdateAvatar(ctx context.Context, id uuid.UUID, path *string) (*user.User, error) {
+	args := m.Called(ctx, id, path)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*user.User), args.Error(1)
+}
+
+func (m *MockUserRepository) UpdateEmail(ctx context.Context, id uuid.UUID, email string) (*user.User, error) {
+	args := m.Called(ctx, id, email)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*user.User), args.Error(1)
+}
+
 type MockItemRepository struct {
 	mock.Mock
 }

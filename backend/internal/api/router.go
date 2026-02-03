@@ -254,6 +254,11 @@ func NewRouter(pool *pgxpool.Pool, cfg *config.Config) chi.Router {
 
 	// Create handlers with dependencies
 	userHandler := user.NewHandler(userSvc, jwtService, workspaceSvc)
+	// Configure avatar storage for user handler
+	avatarStorageAdapter := user.NewAvatarStorageAdapter(photoStorage)
+	userHandler.SetAvatarStorage(avatarStorageAdapter)
+	userHandler.SetImageProcessor(imageProcessor)
+	userHandler.SetUploadDir(uploadDir)
 	analyticsHandler := analytics.NewHandler(analyticsSvc)
 	importExportHandler := importexport.NewHandler(importExportSvc, workspaceBackupSvc)
 	syncHandler := sync.NewHandler(syncSvc)
@@ -286,6 +291,9 @@ func NewRouter(pool *pgxpool.Pool, cfg *config.Config) chi.Router {
 
 		// Register protected user routes
 		userHandler.RegisterProtectedRoutes(protectedAPI)
+
+		// Register avatar routes (uses Chi directly for multipart handling)
+		userHandler.RegisterAvatarRoutes(r)
 
 		// Register admin routes (requires superuser check in handler)
 		userHandler.RegisterAdminRoutes(protectedAPI)
