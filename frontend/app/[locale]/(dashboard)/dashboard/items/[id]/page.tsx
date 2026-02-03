@@ -17,6 +17,7 @@ import { PhotoPlaceholder } from "@/components/items/photo-placeholder";
 import { useWorkspace } from "@/lib/hooks/use-workspace";
 import { useSSE, type SSEEvent } from "@/lib/hooks/use-sse";
 import { useItemPhotos } from "@/lib/hooks/use-item-photos";
+import { useDateFormat } from "@/lib/hooks/use-date-format";
 import { itemsApi } from "@/lib/api";
 import type { Item } from "@/lib/types/items";
 import type { ItemPhoto } from "@/lib/types/item-photo";
@@ -28,6 +29,7 @@ export default function ItemDetailPage() {
   const t = useTranslations("items");
   const tPhotos = useTranslations("photos");
   const { workspaceId, hasPermission } = useWorkspace();
+  const { formatDate } = useDateFormat();
   const itemId = params.id as string;
 
   const [item, setItem] = useState<Item | null>(null);
@@ -410,11 +412,11 @@ export default function ItemDetailPage() {
               <dl className="grid grid-cols-2 gap-4 text-sm">
                 <dt className="text-muted-foreground">Created</dt>
                 <dd className="font-medium">
-                  {new Date(item.created_at).toLocaleDateString()}
+                  {formatDate(item.created_at)}
                 </dd>
                 <dt className="text-muted-foreground">Last Updated</dt>
                 <dd className="font-medium">
-                  {new Date(item.updated_at).toLocaleDateString()}
+                  {formatDate(item.updated_at)}
                 </dd>
               </dl>
             </div>
