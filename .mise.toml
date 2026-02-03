@@ -24,9 +24,15 @@ if [ -z "$IP" ]; then
 fi
 echo "Detected IP: $IP"
 
-# Update frontend/.env.local
+# Update frontend/.env.local (preserve other settings)
 mkdir -p frontend
-echo "NEXT_PUBLIC_API_URL=http://${IP}:8080" > frontend/.env.local
+if [ -f frontend/.env.local ]; then
+  grep -v '^NEXT_PUBLIC_API_URL=' frontend/.env.local > frontend/.env.local.tmp || true
+  echo "NEXT_PUBLIC_API_URL=http://${IP}:8080" >> frontend/.env.local.tmp
+  mv frontend/.env.local.tmp frontend/.env.local
+else
+  echo "NEXT_PUBLIC_API_URL=http://${IP}:8080" > frontend/.env.local
+fi
 echo "Updated frontend/.env.local"
 
 # Update backend/.env (preserve other settings if they exist)
