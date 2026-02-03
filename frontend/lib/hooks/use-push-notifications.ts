@@ -112,8 +112,14 @@ export function usePushNotifications(): UsePushNotificationsReturn {
         return false;
       }
 
-      // Get the service worker registration
-      const registration = await navigator.serviceWorker.ready;
+      // Get the service worker registration with timeout
+      const timeoutPromise = new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error("Service worker not ready")), 5000)
+      );
+      const registration = await Promise.race([
+        navigator.serviceWorker.ready,
+        timeoutPromise,
+      ]);
 
       // Get the VAPID public key from environment
       const vapidPublicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
@@ -168,8 +174,14 @@ export function usePushNotifications(): UsePushNotificationsReturn {
     setError(null);
 
     try {
-      // Get the service worker registration
-      const registration = await navigator.serviceWorker.ready;
+      // Get the service worker registration with timeout
+      const timeoutPromise = new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error("Service worker not ready")), 5000)
+      );
+      const registration = await Promise.race([
+        navigator.serviceWorker.ready,
+        timeoutPromise,
+      ]);
 
       // Get current subscription
       const subscription = await registration.pushManager.getSubscription();
