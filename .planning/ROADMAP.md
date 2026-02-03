@@ -7,7 +7,7 @@
 - v1.2 **Phase 2 Completion** — Phases 12-17 (shipped 2026-01-25)
 - v1.3 **Mobile UX Overhaul** — Phases 18-21 (shipped 2026-01-31)
 - v1.4 **Test Overhaul** — Phases 22-26 (shipped 2026-01-31)
-- v1.5 **Settings Enhancement** — Phases 27-29 (in progress)
+- v1.5 **Settings Enhancement** — Phases 27-29 (shipped 2026-02-03)
 
 ## Phases
 
@@ -139,8 +139,8 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 29-01-PLAN.md — Backend account deletion with sole owner validation
-- [ ] 29-02-PLAN.md — Frontend delete account dialog with type-to-confirm
+- [x] 29-01-PLAN.md — Backend account deletion with sole owner validation
+- [x] 29-02-PLAN.md — Frontend delete account dialog with type-to-confirm
 
 ## Progress
 
@@ -153,10 +153,10 @@ Plans:
 | 22-26 | v1.4 | 20 | Complete | 2026-01-31 |
 | 27 | v1.5 | 3 | Complete | 2026-02-03 |
 | 28 | v1.5 | 4 | Complete | 2026-02-03 |
-| 29 | v1.5 | 2 | Not started | - |
+| 29 | v1.5 | 2 | Complete | 2026-02-03 |
 
-**Total:** 28 phases complete (94 plans executed), 1 phase remaining for v1.5
+**Total:** 29 phases complete (96 plans executed), v1.5 milestone complete
 
 ---
 *Roadmap created: 2026-01-24*
-*Last updated: 2026-02-03 after Phase 29 planning*
+*Last updated: 2026-02-03 after Phase 29 complete - v1.5 milestone shipped*
