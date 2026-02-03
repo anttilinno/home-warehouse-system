@@ -42,6 +42,7 @@ func WithEmail(email string) UserOpt {
 			u.DateFormat(),
 			u.Language(),
 			u.Theme(),
+			u.AvatarPath(),
 			u.CreatedAt(),
 			u.UpdatedAt(),
 		)
@@ -68,6 +69,7 @@ func WithSuperuser(isSuperuser bool) UserOpt {
 			u.DateFormat(),
 			u.Language(),
 			u.Theme(),
+			u.AvatarPath(),
 			u.CreatedAt(),
 			u.UpdatedAt(),
 		)

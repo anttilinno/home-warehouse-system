@@ -20,6 +20,8 @@ type ServiceInterface interface {
 	List(ctx context.Context, pagination shared.Pagination) (*shared.PagedResult[*User], error)
 	Deactivate(ctx context.Context, id uuid.UUID) error
 	Activate(ctx context.Context, id uuid.UUID) error
+	UpdateAvatar(ctx context.Context, id uuid.UUID, avatarPath *string) (*User, error)
+	UpdateEmail(ctx context.Context, id uuid.UUID, newEmail string) (*User, error)
 }
 
 // Service handles user business logic.
@@ -206,4 +208,27 @@ func (s *Service) Activate(ctx context.Context, id uuid.UUID) error {
 	user.Activate()
 
 	return s.repo.Save(ctx, user)
+}
+
+// UpdateAvatar updates a user's avatar path.
+func (s *Service) UpdateAvatar(ctx context.Context, id uuid.UUID, avatarPath *string) (*User, error) {
+	return s.repo.UpdateAvatar(ctx, id, avatarPath)
+}
+
+// UpdateEmail updates a user's email address.
+func (s *Service) UpdateEmail(ctx context.Context, id uuid.UUID, newEmail string) (*User, error) {
+	if newEmail == "" {
+		return nil, shared.NewFieldError(shared.ErrInvalidInput, "email", "email is required")
+	}
+
+	// Check if email is already taken by another user
+	existingUser, err := s.repo.FindByEmail(ctx, newEmail)
+	if err != nil && err != shared.ErrNotFound {
+		return nil, err
+	}
+	if existingUser != nil && existingUser.ID() != id {
+		return nil, ErrEmailTaken
+	}
+
+	return s.repo.UpdateEmail(ctx, id, newEmail)
 }

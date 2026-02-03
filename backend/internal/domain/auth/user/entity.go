@@ -20,6 +20,7 @@ type User struct {
 	dateFormat   string
 	language     string
 	theme        string
+	avatarPath   *string
 	createdAt    time.Time
 	updatedAt    time.Time
 }
@@ -52,6 +53,7 @@ func NewUser(email, fullName, password string) (*User, error) {
 		dateFormat:   "YYYY-MM-DD",
 		language:     "en",
 		theme:        "system",
+		avatarPath:   nil,
 		createdAt:    now,
 		updatedAt:    now,
 	}, nil
@@ -63,6 +65,7 @@ func Reconstruct(
 	email, fullName, passwordHash string,
 	isActive, isSuperuser bool,
 	dateFormat, language, theme string,
+	avatarPath *string,
 	createdAt, updatedAt time.Time,
 ) *User {
 	return &User{
@@ -75,6 +78,7 @@ func Reconstruct(
 		dateFormat:   dateFormat,
 		language:     language,
 		theme:        theme,
+		avatarPath:   avatarPath,
 		createdAt:    createdAt,
 		updatedAt:    updatedAt,
 	}
@@ -106,6 +110,9 @@ func (u *User) Language() string { return u.language }
 
 // Theme returns the user's preferred theme.
 func (u *User) Theme() string { return u.theme }
+
+// AvatarPath returns the user's avatar storage path.
+func (u *User) AvatarPath() *string { return u.avatarPath }
 
 // CreatedAt returns when the user was created.
 func (u *User) CreatedAt() time.Time { return u.createdAt }
@@ -169,4 +176,20 @@ func (u *User) Deactivate() {
 func (u *User) Activate() {
 	u.isActive = true
 	u.updatedAt = time.Now()
+}
+
+// UpdateAvatar updates the user's avatar path.
+func (u *User) UpdateAvatar(path *string) {
+	u.avatarPath = path
+	u.updatedAt = time.Now()
+}
+
+// UpdateEmail updates the user's email address.
+func (u *User) UpdateEmail(email string) error {
+	if email == "" {
+		return shared.NewFieldError(shared.ErrInvalidInput, "email", "email is required")
+	}
+	u.email = email
+	u.updatedAt = time.Now()
+	return nil
 }

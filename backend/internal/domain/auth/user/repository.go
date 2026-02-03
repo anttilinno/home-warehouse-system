@@ -27,4 +27,10 @@ type Repository interface {
 
 	// ExistsByEmail checks if a user with the given email exists.
 	ExistsByEmail(ctx context.Context, email string) (bool, error)
+
+	// UpdateAvatar updates a user's avatar path.
+	UpdateAvatar(ctx context.Context, id uuid.UUID, path *string) (*User, error)
+
+	// UpdateEmail updates a user's email address.
+	UpdateEmail(ctx context.Context, id uuid.UUID, email string) (*User, error)
 }
