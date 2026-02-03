@@ -13,9 +13,10 @@ import (
 type contextKey string
 
 const (
-	UserContextKey      contextKey = "user"
-	WorkspaceContextKey contextKey = "workspace"
-	RoleContextKey      contextKey = "role"
+	UserContextKey           contextKey = "user"
+	WorkspaceContextKey      contextKey = "workspace"
+	RoleContextKey           contextKey = "role"
+	CurrentSessionIDKey      contextKey = "current_session_id"
 )
 
 // AuthUser represents the authenticated user in context.
@@ -111,6 +112,17 @@ func Auth(next http.Handler) http.Handler {
 func GetAuthUser(ctx context.Context) (*AuthUser, bool) {
 	user, ok := ctx.Value(UserContextKey).(*AuthUser)
 	return user, ok
+}
+
+// WithCurrentSessionID adds the current session ID to context.
+func WithCurrentSessionID(ctx context.Context, sessionID uuid.UUID) context.Context {
+	return context.WithValue(ctx, CurrentSessionIDKey, sessionID)
+}
+
+// GetCurrentSessionID retrieves the current session ID from context.
+func GetCurrentSessionID(ctx context.Context) (uuid.UUID, bool) {
+	id, ok := ctx.Value(CurrentSessionIDKey).(uuid.UUID)
+	return id, ok
 }
 
 // RequireSuperuser is a middleware that requires the user to be a superuser.
