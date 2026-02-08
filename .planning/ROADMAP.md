@@ -163,10 +163,11 @@ Plans:
 **Success Criteria** (what must be TRUE):
   1. User who selects 12-hour format sees all timestamps with AM/PM (e.g., "2:30 PM" instead of "14:30") across tables, detail pages, and activity feeds
   2. Time input fields adapt to the user's format -- 12-hour users see AM/PM selectors, 24-hour users see 00-23 range
-**Plans**: TBD
+**Plans:** 1 plan
+**Status:** Complete (2026-02-08)
 
 Plans:
-- [ ] 33-01: Time format applied to all timestamp displays and time inputs
+- [x] 33-01-PLAN.md -- Fix formatDateTime time-awareness + convert all datetime display sites
 
 #### Phase 34: Number Format Rollout
 **Goal**: Every number displayed or entered in the application respects the user's chosen number format
@@ -198,10 +199,10 @@ Phases execute in numeric order: 30 -> 31 -> 32 -> 33 -> 34
 | 30. Format Infrastructure | v1.6 | 2/2 | Complete | 2026-02-08 |
 | 31. Format Settings UI | v1.6 | 2/2 | Complete | 2026-02-08 |
 | 32. Date Format Rollout | v1.6 | 2/2 | Complete | 2026-02-08 |
-| 33. Time Format Rollout | v1.6 | 0/1 | Not started | - |
+| 33. Time Format Rollout | v1.6 | 1/1 | Complete | 2026-02-08 |
 | 34. Number Format Rollout | v1.6 | 0/2 | Not started | - |
 
-**Total:** 30 phases complete (102 plans executed), 2 phases planned (3 plans)
+**Total:** 31 phases complete (103 plans executed), 1 phase planned (2 plans)
 
 ---
 *Roadmap created: 2026-01-24*
