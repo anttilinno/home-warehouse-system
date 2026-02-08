@@ -645,6 +645,21 @@
       "saved": "Time format updated",
       "saveError": "Failed to update time format"
     },
+    "numberFormat": {
+      "title": "Number Format",
+      "description": "Configure how numbers are displayed throughout the app",
+      "thousandSeparator": "Thousand separator",
+      "decimalSeparator": "Decimal separator",
+      "comma": "Comma (1,000)",
+      "period": "Period (1.000)",
+      "space": "Space (1 000)",
+      "decimalPeriod": "Period (0.99)",
+      "decimalComma": "Comma (0,99)",
+      "saved": "Number format updated",
+      "saveError": "Failed to update number format",
+      "conflictError": "Thousand and decimal separators must be different",
+      "preview": "Preview"
+    },
     "security": {
       "title": "Security",
       "description": "Manage your password and active sessions",
