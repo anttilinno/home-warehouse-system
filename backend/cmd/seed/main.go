@@ -338,37 +338,48 @@ func (s *Seeder) seedCategories(ctx context.Context) error {
 	fmt.Println("\n--- Seeding categories ---")
 
 	for parentName, children := range categoryTree {
-		// Create parent category
-		parentID := uuid.New()
-		_, err := s.pool.Exec(ctx, `
-			INSERT INTO warehouse.categories (id, workspace_id, name, description)
-			VALUES ($1, $2, $3, $4)
-			ON CONFLICT DO NOTHING
-		`, parentID, s.workspaceID, parentName, fmt.Sprintf("Category for %s", parentName))
-		if err != nil {
-			// Try to get existing
-			err = s.pool.QueryRow(ctx, `
-				SELECT id FROM warehouse.categories WHERE workspace_id = $1 AND name = $2 AND parent_category_id IS NULL
-			`, s.workspaceID, parentName).Scan(&parentID)
+		// Check if parent category already exists
+		var parentID uuid.UUID
+		err := s.pool.QueryRow(ctx, `
+			SELECT id FROM warehouse.categories WHERE workspace_id = $1 AND name = $2 AND parent_category_id IS NULL
+		`, s.workspaceID, parentName).Scan(&parentID)
+
+		if err == pgx.ErrNoRows {
+			parentID = uuid.New()
+			_, err = s.pool.Exec(ctx, `
+				INSERT INTO warehouse.categories (id, workspace_id, name, description)
+				VALUES ($1, $2, $3, $4)
+			`, parentID, s.workspaceID, parentName, fmt.Sprintf("Category for %s", parentName))
 			if err != nil {
-				return fmt.Errorf("getting category %s: %w", parentName, err)
+				return fmt.Errorf("creating category %s: %w", parentName, err)
 			}
-		} else {
 			fmt.Printf("  Created category: %s\n", parentName)
+		} else if err != nil {
+			return fmt.Errorf("checking category %s: %w", parentName, err)
+		} else {
+			fmt.Printf("  Existing category: %s\n", parentName)
 		}
 
 		// Create child categories
 		for _, childName := range children {
-			childID := uuid.New()
-			_, err := s.pool.Exec(ctx, `
-				INSERT INTO warehouse.categories (id, workspace_id, name, parent_category_id, description)
-				VALUES ($1, $2, $3, $4, $5)
-				ON CONFLICT DO NOTHING
-			`, childID, s.workspaceID, childName, parentID, fmt.Sprintf("Subcategory of %s", parentName))
-			if err != nil {
-				continue
+			var childID uuid.UUID
+			err := s.pool.QueryRow(ctx, `
+				SELECT id FROM warehouse.categories WHERE workspace_id = $1 AND name = $2 AND parent_category_id = $3
+			`, s.workspaceID, childName, parentID).Scan(&childID)
+
+			if err == pgx.ErrNoRows {
+				childID = uuid.New()
+				_, err = s.pool.Exec(ctx, `
+					INSERT INTO warehouse.categories (id, workspace_id, name, parent_category_id, description)
+					VALUES ($1, $2, $3, $4, $5)
+				`, childID, s.workspaceID, childName, parentID, fmt.Sprintf("Subcategory of %s", parentName))
+				if err != nil {
+					return fmt.Errorf("creating subcategory %s > %s: %w", parentName, childName, err)
+				}
+				fmt.Printf("    Created subcategory: %s > %s\n", parentName, childName)
+			} else if err != nil {
+				return fmt.Errorf("checking subcategory %s > %s: %w", parentName, childName, err)
 			}
-			fmt.Printf("    Created subcategory: %s > %s\n", parentName, childName)
 		}
 	}
 
@@ -814,25 +825,28 @@ func (s *Seeder) seedOverdueLoans(ctx context.Context) error {
 	// Create borrowers
 	borrowerIDs := make([]uuid.UUID, 0, 5)
 	for i := 0; i < 5; i++ {
-		borrowerID := uuid.New()
 		name := borrowerNames[i]
 		email := fmt.Sprintf("%s@example.com", strings.ToLower(strings.ReplaceAll(name, " ", ".")))
 
-		_, err := s.pool.Exec(ctx, `
-			INSERT INTO warehouse.borrowers (id, workspace_id, name, email)
-			VALUES ($1, $2, $3, $4)
-			ON CONFLICT DO NOTHING
-		`, borrowerID, s.workspaceID, name, email)
-		if err != nil {
-			// Try to get existing borrower
-			err = s.pool.QueryRow(ctx, `
-				SELECT id FROM warehouse.borrowers WHERE workspace_id = $1 AND name = $2
-			`, s.workspaceID, name).Scan(&borrowerID)
+		var borrowerID uuid.UUID
+		err := s.pool.QueryRow(ctx, `
+			SELECT id FROM warehouse.borrowers WHERE workspace_id = $1 AND name = $2
+		`, s.workspaceID, name).Scan(&borrowerID)
+
+		if err == pgx.ErrNoRows {
+			borrowerID = uuid.New()
+			_, err = s.pool.Exec(ctx, `
+				INSERT INTO warehouse.borrowers (id, workspace_id, name, email)
+				VALUES ($1, $2, $3, $4)
+			`, borrowerID, s.workspaceID, name, email)
 			if err != nil {
-				return fmt.Errorf("getting borrower: %w", err)
+				return fmt.Errorf("creating borrower %s: %w", name, err)
 			}
-		} else {
 			fmt.Printf("  Created borrower: %s\n", name)
+		} else if err != nil {
+			return fmt.Errorf("checking borrower %s: %w", name, err)
+		} else {
+			fmt.Printf("  Existing borrower: %s\n", name)
 		}
 		borrowerIDs = append(borrowerIDs, borrowerID)
 	}
