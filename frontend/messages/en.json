@@ -637,6 +637,14 @@
       "saved": "Date format updated",
       "saveError": "Failed to update date format"
     },
+    "timeFormat": {
+      "title": "Time Format",
+      "description": "Choose how times are displayed throughout the app",
+      "24h": "24-hour (14:30)",
+      "12h": "12-hour (2:30 PM)",
+      "saved": "Time format updated",
+      "saveError": "Failed to update time format"
+    },
     "security": {
       "title": "Security",
       "description": "Manage your password and active sessions",
