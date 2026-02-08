@@ -18,6 +18,7 @@ import { toast } from "sonner";
 import { useAuth } from "@/lib/contexts/auth-context";
 import { useSSE, type SSEEvent } from "@/lib/hooks/use-sse";
 import { useDateFormat } from "@/lib/hooks/use-date-format";
+import { useNumberFormat } from "@/lib/hooks/use-number-format";
 import { analyticsApi, notificationsApi, type AnalyticsSummary, type RecentActivity } from "@/lib/api";
 import { StatsCard } from "@/components/dashboard/stats-card";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -139,6 +140,7 @@ export default function DashboardPage() {
   const t = useTranslations("dashboard");
   const { workspaceId, isLoading: authLoading } = useAuth();
   const { formatDate } = useDateFormat();
+  const { formatNumber } = useNumberFormat();
 
   const [summary, setSummary] = useState<AnalyticsSummary | null>(null);
   const [unreadCount, setUnreadCount] = useState<number>(0);
@@ -261,22 +263,22 @@ export default function DashboardPage() {
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatsCard
           title={t("stats.totalItems")}
-          value={stats.total_items.toLocaleString()}
+          value={formatNumber(stats.total_items)}
           icon={Package}
         />
         <StatsCard
           title={t("stats.locations")}
-          value={stats.total_locations}
+          value={formatNumber(stats.total_locations)}
           icon={MapPin}
         />
         <StatsCard
           title={t("stats.containers")}
-          value={stats.total_containers}
+          value={formatNumber(stats.total_containers)}
           icon={Box}
         />
         <StatsCard
           title={t("stats.activeLoans")}
-          value={stats.active_loans}
+          value={formatNumber(stats.active_loans)}
           icon={HandCoins}
         />
         </div>

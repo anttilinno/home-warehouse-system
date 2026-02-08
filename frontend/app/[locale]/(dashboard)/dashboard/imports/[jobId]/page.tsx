@@ -14,6 +14,7 @@ import { ArrowLeft, AlertCircle, Loader2 } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import { useWorkspace } from "@/lib/hooks/use-workspace";
 import { useDateFormat } from "@/lib/hooks/use-date-format";
+import { useNumberFormat } from "@/lib/hooks/use-number-format";
 import { toast } from "sonner";
 import { apiClient } from "@/lib/api/client";
 
@@ -50,6 +51,7 @@ export default function ImportJobDetailPage() {
   const params = useParams();
   const { workspaceId, isLoading: workspaceLoading } = useWorkspace();
   const { formatDateTime } = useDateFormat();
+  const { formatNumber } = useNumberFormat();
   const jobId = params.jobId as string;
 
   const [job, setJob] = useState<ImportJob | null>(null);
@@ -288,7 +290,7 @@ export default function ImportJobDetailPage() {
               </div>
               <Progress value={calculateProgress()} className="h-2" />
               <p className="text-sm text-muted-foreground">
-                {job.processed_rows} of {job.total_rows} rows processed
+                {formatNumber(job.processed_rows)} of {formatNumber(job.total_rows)} rows processed
               </p>
             </div>
           )}
@@ -296,15 +298,15 @@ export default function ImportJobDetailPage() {
           <div className="grid grid-cols-3 gap-4">
             <div className="space-y-1">
               <p className="text-sm text-muted-foreground">Total Rows</p>
-              <p className="text-2xl font-bold">{job.total_rows || "-"}</p>
+              <p className="text-2xl font-bold">{job.total_rows ? formatNumber(job.total_rows) : "-"}</p>
             </div>
             <div className="space-y-1">
               <p className="text-sm text-muted-foreground">Successful</p>
-              <p className="text-2xl font-bold text-green-600">{job.success_count}</p>
+              <p className="text-2xl font-bold text-green-600">{formatNumber(job.success_count)}</p>
             </div>
             <div className="space-y-1">
               <p className="text-sm text-muted-foreground">Errors</p>
-              <p className="text-2xl font-bold text-red-600">{job.error_count}</p>
+              <p className="text-2xl font-bold text-red-600">{formatNumber(job.error_count)}</p>
             </div>
           </div>
 

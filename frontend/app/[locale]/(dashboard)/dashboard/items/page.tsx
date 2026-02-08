@@ -6,6 +6,7 @@ import { useTranslations } from "next-intl";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { useDebouncedValue } from "@/lib/hooks/use-debounced-value";
 import { useDateFormat } from "@/lib/hooks/use-date-format";
+import { useNumberFormat } from "@/lib/hooks/use-number-format";
 import {
   Plus,
   Search,
@@ -354,6 +355,7 @@ export default function ItemsPage() {
   const router = useRouter();
   const { workspaceId, isLoading: workspaceLoading } = useWorkspace();
   const { formatDate } = useDateFormat();
+  const { formatNumber } = useNumberFormat();
 
   const [categories, setCategories] = useState<Category[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
@@ -1348,7 +1350,7 @@ export default function ItemsPage() {
                               <TableCell className="w-[120px] flex-none">{getCategoryName(item.category_id)}</TableCell>
                               <TableCell className="w-[100px] flex-none">{item.brand || "-"}</TableCell>
                               <TableCell className="w-[100px] flex-none">{item.model || "-"}</TableCell>
-                              <TableCell className="w-[90px] flex-none">{item.min_stock_level}</TableCell>
+                              <TableCell className="w-[90px] flex-none">{formatNumber(item.min_stock_level)}</TableCell>
                               <TableCell className="w-[50px] flex-none" onClick={(e) => e.stopPropagation()}>
                                 {!isPending && (
                                   <DropdownMenu>

@@ -13,6 +13,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useWorkspace } from "@/lib/hooks/use-workspace";
 import { useSSE, type SSEEvent } from "@/lib/hooks/use-sse";
+import { useNumberFormat } from "@/lib/hooks/use-number-format";
 import { analyticsApi, type OutOfStockItem } from "@/lib/api";
 import { Link } from "@/i18n/navigation";
 
@@ -44,6 +45,7 @@ function OutOfStockListSkeleton() {
 export default function OutOfStockPage() {
   const t = useTranslations("outOfStock");
   const { workspaceId, isLoading: workspaceLoading } = useWorkspace();
+  const { formatNumber } = useNumberFormat();
 
   const [items, setItems] = useState<OutOfStockItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -209,7 +211,7 @@ export default function OutOfStockPage() {
                   {/* Min Stock */}
                   <div className="sm:col-span-2">
                     <span className="text-sm text-muted-foreground">
-                      {item.min_stock_level > 0 ? item.min_stock_level : "-"}
+                      {item.min_stock_level > 0 ? formatNumber(item.min_stock_level) : "-"}
                     </span>
                   </div>
 

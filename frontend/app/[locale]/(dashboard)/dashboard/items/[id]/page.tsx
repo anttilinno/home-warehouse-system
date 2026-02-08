@@ -18,6 +18,7 @@ import { useWorkspace } from "@/lib/hooks/use-workspace";
 import { useSSE, type SSEEvent } from "@/lib/hooks/use-sse";
 import { useItemPhotos } from "@/lib/hooks/use-item-photos";
 import { useDateFormat } from "@/lib/hooks/use-date-format";
+import { useNumberFormat } from "@/lib/hooks/use-number-format";
 import { itemsApi } from "@/lib/api";
 import type { Item } from "@/lib/types/items";
 import type { ItemPhoto } from "@/lib/types/item-photo";
@@ -30,6 +31,7 @@ export default function ItemDetailPage() {
   const tPhotos = useTranslations("photos");
   const { workspaceId, hasPermission } = useWorkspace();
   const { formatDate } = useDateFormat();
+  const { formatNumber } = useNumberFormat();
   const itemId = params.id as string;
 
   const [item, setItem] = useState<Item | null>(null);
@@ -397,7 +399,7 @@ export default function ItemDetailPage() {
               </h3>
               <dl className="grid grid-cols-2 gap-4 text-sm">
                 <dt className="text-muted-foreground">Minimum Stock Level</dt>
-                <dd className="font-medium">{item.min_stock_level}</dd>
+                <dd className="font-medium">{formatNumber(item.min_stock_level)}</dd>
               </dl>
             </div>
 

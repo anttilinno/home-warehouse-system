@@ -16,6 +16,7 @@ import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Download, FileDown } from "lucide-react";
 import { exportToCSV, generateFilename, ColumnDefinition } from "@/lib/utils/csv-export";
+import { useNumberFormat } from "@/lib/hooks/use-number-format";
 
 export interface ExportDialogProps<T> {
   open: boolean;
@@ -38,6 +39,7 @@ export function ExportDialog<T>({
   title = "Export to CSV",
   description = "Select columns and data to export",
 }: ExportDialogProps<T>) {
+  const { formatNumber } = useNumberFormat();
   const [selectedColumns, setSelectedColumns] = useState<Set<string>>(
     new Set(columns.map((col) => String(col.key)))
   );
@@ -177,7 +179,7 @@ export function ExportDialog<T>({
                     htmlFor="export-current"
                     className="cursor-pointer text-sm font-normal"
                   >
-                    Current page ({currentCount.toLocaleString()}{" "}
+                    Current page ({formatNumber(currentCount)}{" "}
                     {currentCount === 1 ? "item" : "items"})
                   </Label>
                 </div>
@@ -187,7 +189,7 @@ export function ExportDialog<T>({
                     htmlFor="export-all"
                     className="cursor-pointer text-sm font-normal"
                   >
-                    All data ({allCount.toLocaleString()}{" "}
+                    All data ({formatNumber(allCount)}{" "}
                     {allCount === 1 ? "item" : "items"})
                   </Label>
                 </div>

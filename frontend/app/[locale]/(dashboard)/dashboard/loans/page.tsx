@@ -21,6 +21,7 @@ import { format, parseISO } from "date-fns";
 
 import { Button } from "@/components/ui/button";
 import { useDateFormat } from "@/lib/hooks/use-date-format";
+import { useNumberFormat } from "@/lib/hooks/use-number-format";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -401,6 +402,7 @@ export default function LoansPage() {
   const t = useTranslations("loans");
   const { workspaceId, isLoading: workspaceLoading } = useWorkspace();
   const { formatDate, placeholder: datePlaceholder } = useDateFormat();
+  const { formatNumber } = useNumberFormat();
 
   const [borrowers, setBorrowers] = useState<Borrower[]>([]);
   const [items, setItems] = useState<Item[]>([]);
@@ -1059,7 +1061,7 @@ export default function LoansPage() {
                                   </div>
                                 )}
                               </TableCell>
-                              <TableCell className="w-[60px] flex-none">{loan.quantity}</TableCell>
+                              <TableCell className="w-[60px] flex-none">{formatNumber(loan.quantity)}</TableCell>
                               <TableCell className="w-[110px] flex-none">
                                 <div className="text-sm">
                                   {formatDate(loan.loaned_at)}
@@ -1233,7 +1235,7 @@ export default function LoansPage() {
                   <SelectContent>
                     {availableInventory.map((inv) => (
                       <SelectItem key={inv.id} value={inv.id}>
-                        {inv.condition} - Qty: {inv.quantity}
+                        {inv.condition} - Qty: {formatNumber(inv.quantity)}
                         {inv.notes && ` (${inv.notes.substring(0, 30)}...)`}
                       </SelectItem>
                     ))}
@@ -1279,7 +1281,7 @@ export default function LoansPage() {
                 />
                 {formInventoryId && (
                   <p className="text-xs text-muted-foreground">
-                    Max: {availableInventory.find(inv => inv.id === formInventoryId)?.quantity || 0}
+                    Max: {formatNumber(availableInventory.find(inv => inv.id === formInventoryId)?.quantity || 0)}
                   </p>
                 )}
               </div>

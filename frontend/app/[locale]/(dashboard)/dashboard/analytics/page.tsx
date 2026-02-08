@@ -42,6 +42,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { useWorkspace } from "@/lib/hooks/use-workspace";
 import { useSSE, type SSEEvent } from "@/lib/hooks/use-sse";
+import { useNumberFormat } from "@/lib/hooks/use-number-format";
 import { analyticsApi } from "@/lib/api";
 import { chartColors, chartColorPalette } from "@/lib/config/constants";
 import type {
@@ -116,6 +117,7 @@ function LoadingSkeleton() {
 export default function AnalyticsPage() {
   const t = useTranslations("analytics");
   const { workspaceId, isLoading: workspaceLoading } = useWorkspace();
+  const { formatNumber } = useNumberFormat();
 
   const [dashboardStats, setDashboardStats] = useState<DashboardStats | null>(null);
   const [loanStats, setLoanStats] = useState<LoanStats | null>(null);
@@ -216,25 +218,25 @@ export default function AnalyticsPage() {
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <StatsCard
           title="Total Items"
-          value={dashboardStats.total_items}
+          value={formatNumber(dashboardStats.total_items)}
           icon={Package}
           color="text-blue-500"
         />
         <StatsCard
           title="Total Inventory"
-          value={dashboardStats.total_inventory}
+          value={formatNumber(dashboardStats.total_inventory)}
           icon={Box}
           color="text-green-500"
         />
         <StatsCard
           title="Active Loans"
-          value={dashboardStats.active_loans}
+          value={formatNumber(dashboardStats.active_loans)}
           icon={HandCoins}
           color="text-purple-500"
         />
         <StatsCard
           title="Overdue Loans"
-          value={dashboardStats.overdue_loans}
+          value={formatNumber(dashboardStats.overdue_loans)}
           icon={AlertTriangle}
           color="text-red-500"
         />
@@ -243,25 +245,25 @@ export default function AnalyticsPage() {
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <StatsCard
           title="Locations"
-          value={dashboardStats.total_locations}
+          value={formatNumber(dashboardStats.total_locations)}
           icon={MapPin}
           color="text-teal-500"
         />
         <StatsCard
           title="Containers"
-          value={dashboardStats.total_containers}
+          value={formatNumber(dashboardStats.total_containers)}
           icon={Box}
           color="text-orange-500"
         />
         <StatsCard
           title="Borrowers"
-          value={dashboardStats.total_borrowers}
+          value={formatNumber(dashboardStats.total_borrowers)}
           icon={Users}
           color="text-pink-500"
         />
         <StatsCard
           title="Low Stock Items"
-          value={dashboardStats.low_stock_items}
+          value={formatNumber(dashboardStats.low_stock_items)}
           icon={TrendingUp}
           color="text-yellow-500"
         />
@@ -396,10 +398,10 @@ export default function AnalyticsPage() {
                           )}
                         </div>
                       </TableCell>
-                      <TableCell>{borrower.total_loans}</TableCell>
+                      <TableCell>{formatNumber(borrower.total_loans)}</TableCell>
                       <TableCell>
                         <Badge variant={borrower.active_loans > 0 ? "default" : "secondary"}>
-                          {borrower.active_loans}
+                          {formatNumber(borrower.active_loans)}
                         </Badge>
                       </TableCell>
                     </TableRow>
@@ -437,10 +439,10 @@ export default function AnalyticsPage() {
                   locationValues.map((location) => (
                     <TableRow key={location.id}>
                       <TableCell className="font-medium">{location.name}</TableCell>
-                      <TableCell>{location.item_count}</TableCell>
-                      <TableCell>{location.total_quantity}</TableCell>
+                      <TableCell>{formatNumber(location.item_count)}</TableCell>
+                      <TableCell>{formatNumber(location.total_quantity)}</TableCell>
                       <TableCell className="text-right">
-                        ${(location.total_value / 100).toFixed(2)}
+                        ${formatNumber(location.total_value / 100, 2)}
                       </TableCell>
                     </TableRow>
                   ))
@@ -462,19 +464,19 @@ export default function AnalyticsPage() {
             <div className="grid gap-4 md:grid-cols-4">
               <div>
                 <p className="text-sm font-medium text-muted-foreground">Total Loans</p>
-                <p className="text-2xl font-bold">{loanStats.total_loans}</p>
+                <p className="text-2xl font-bold">{formatNumber(loanStats.total_loans)}</p>
               </div>
               <div>
                 <p className="text-sm font-medium text-muted-foreground">Active</p>
-                <p className="text-2xl font-bold text-blue-500">{loanStats.active_loans}</p>
+                <p className="text-2xl font-bold text-blue-500">{formatNumber(loanStats.active_loans)}</p>
               </div>
               <div>
                 <p className="text-sm font-medium text-muted-foreground">Returned</p>
-                <p className="text-2xl font-bold text-green-500">{loanStats.returned_loans}</p>
+                <p className="text-2xl font-bold text-green-500">{formatNumber(loanStats.returned_loans)}</p>
               </div>
               <div>
                 <p className="text-sm font-medium text-muted-foreground">Overdue</p>
-                <p className="text-2xl font-bold text-red-500">{loanStats.overdue_loans}</p>
+                <p className="text-2xl font-bold text-red-500">{formatNumber(loanStats.overdue_loans)}</p>
               </div>
             </div>
           </CardContent>
