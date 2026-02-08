@@ -11,18 +11,21 @@ import (
 
 // User represents a user in the system.
 type User struct {
-	id           uuid.UUID
-	email        string
-	fullName     string
-	passwordHash string
-	isActive     bool
-	isSuperuser  bool
-	dateFormat   string
-	language     string
-	theme        string
-	avatarPath   *string
-	createdAt    time.Time
-	updatedAt    time.Time
+	id                uuid.UUID
+	email             string
+	fullName          string
+	passwordHash      string
+	isActive          bool
+	isSuperuser       bool
+	dateFormat        string
+	language          string
+	theme             string
+	timeFormat        string
+	thousandSeparator string
+	decimalSeparator  string
+	avatarPath        *string
+	createdAt         time.Time
+	updatedAt         time.Time
 }
 
 // NewUser creates a new user with the given parameters.
@@ -44,18 +47,21 @@ func NewUser(email, fullName, password string) (*User, error) {
 
 	now := time.Now()
 	return &User{
-		id:           uuid.New(),
-		email:        email,
-		fullName:     fullName,
-		passwordHash: string(hash),
-		isActive:     true,
-		isSuperuser:  false,
-		dateFormat:   "YYYY-MM-DD",
-		language:     "en",
-		theme:        "system",
-		avatarPath:   nil,
-		createdAt:    now,
-		updatedAt:    now,
+		id:                uuid.New(),
+		email:             email,
+		fullName:          fullName,
+		passwordHash:      string(hash),
+		isActive:          true,
+		isSuperuser:       false,
+		dateFormat:        "YYYY-MM-DD",
+		language:          "en",
+		theme:             "system",
+		timeFormat:        "24h",
+		thousandSeparator: ",",
+		decimalSeparator:  ".",
+		avatarPath:        nil,
+		createdAt:         now,
+		updatedAt:         now,
 	}, nil
 }
 
@@ -65,22 +71,26 @@ func Reconstruct(
 	email, fullName, passwordHash string,
 	isActive, isSuperuser bool,
 	dateFormat, language, theme string,
+	timeFormat, thousandSeparator, decimalSeparator string,
 	avatarPath *string,
 	createdAt, updatedAt time.Time,
 ) *User {
 	return &User{
-		id:           id,
-		email:        email,
-		fullName:     fullName,
-		passwordHash: passwordHash,
-		isActive:     isActive,
-		isSuperuser:  isSuperuser,
-		dateFormat:   dateFormat,
-		language:     language,
-		theme:        theme,
-		avatarPath:   avatarPath,
-		createdAt:    createdAt,
-		updatedAt:    updatedAt,
+		id:                id,
+		email:             email,
+		fullName:          fullName,
+		passwordHash:      passwordHash,
+		isActive:          isActive,
+		isSuperuser:       isSuperuser,
+		dateFormat:        dateFormat,
+		language:          language,
+		theme:             theme,
+		timeFormat:        timeFormat,
+		thousandSeparator: thousandSeparator,
+		decimalSeparator:  decimalSeparator,
+		avatarPath:        avatarPath,
+		createdAt:         createdAt,
+		updatedAt:         updatedAt,
 	}
 }
 
@@ -110,6 +120,15 @@ func (u *User) Language() string { return u.language }
 
 // Theme returns the user's preferred theme.
 func (u *User) Theme() string { return u.theme }
+
+// TimeFormat returns the user's preferred time format (12h or 24h).
+func (u *User) TimeFormat() string { return u.timeFormat }
+
+// ThousandSeparator returns the user's preferred thousand separator.
+func (u *User) ThousandSeparator() string { return u.thousandSeparator }
+
+// DecimalSeparator returns the user's preferred decimal separator.
+func (u *User) DecimalSeparator() string { return u.decimalSeparator }
 
 // AvatarPath returns the user's avatar storage path.
 func (u *User) AvatarPath() *string { return u.avatarPath }
@@ -153,7 +172,21 @@ func (u *User) UpdatePassword(newPassword string) error {
 }
 
 // UpdatePreferences updates the user's preferences.
-func (u *User) UpdatePreferences(dateFormat, language, theme string) {
+// Returns an error if thousand_separator and decimal_separator are both non-empty and equal.
+func (u *User) UpdatePreferences(dateFormat, language, theme, timeFormat, thousandSeparator, decimalSeparator string) error {
+	// Validate separator conflict: resolve effective values after update
+	effectiveThousand := u.thousandSeparator
+	if thousandSeparator != "" {
+		effectiveThousand = thousandSeparator
+	}
+	effectiveDecimal := u.decimalSeparator
+	if decimalSeparator != "" {
+		effectiveDecimal = decimalSeparator
+	}
+	if effectiveThousand == effectiveDecimal {
+		return shared.NewFieldError(shared.ErrInvalidInput, "thousand_separator", "thousand separator and decimal separator must be different")
+	}
+
 	if dateFormat != "" {
 		u.dateFormat = dateFormat
 	}
@@ -163,7 +196,17 @@ func (u *User) UpdatePreferences(dateFormat, language, theme string) {
 	if theme != "" {
 		u.theme = theme
 	}
+	if timeFormat != "" {
+		u.timeFormat = timeFormat
+	}
+	if thousandSeparator != "" {
+		u.thousandSeparator = thousandSeparator
+	}
+	if decimalSeparator != "" {
+		u.decimalSeparator = decimalSeparator
+	}
 	u.updatedAt = time.Now()
+	return nil
 }
 
 // Deactivate marks the user as inactive.

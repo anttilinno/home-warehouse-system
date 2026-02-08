@@ -115,11 +115,24 @@ func TestUser_UpdatePreferences(t *testing.T) {
 	u, err := user.NewUser("test@example.com", "John Doe", "SecurePass123!")
 	assert.NoError(t, err)
 
-	u.UpdatePreferences("DD/MM/YYYY", "fr", "dark")
+	err = u.UpdatePreferences("DD/MM/YYYY", "fr", "dark", "12h", ".", ",")
+	assert.NoError(t, err)
 
 	assert.Equal(t, "DD/MM/YYYY", u.DateFormat())
 	assert.Equal(t, "fr", u.Language())
 	assert.Equal(t, "dark", u.Theme())
+	assert.Equal(t, "12h", u.TimeFormat())
+	assert.Equal(t, ".", u.ThousandSeparator())
+	assert.Equal(t, ",", u.DecimalSeparator())
+}
+
+func TestUser_UpdatePreferences_ConflictingSeparators(t *testing.T) {
+	u, err := user.NewUser("test@example.com", "John Doe", "SecurePass123!")
+	assert.NoError(t, err)
+
+	err = u.UpdatePreferences("", "", "", "", ".", ".")
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "thousand separator and decimal separator must be different")
 }
 
 func TestUser_UpdatePassword(t *testing.T) {
@@ -183,6 +196,9 @@ func TestUser_Reconstruct(t *testing.T) {
 		"YYYY-MM-DD",
 		"en",
 		"system",
+		"24h",
+		",",
+		".",
 		&avatarPath,
 		now,
 		now,
@@ -198,5 +214,8 @@ func TestUser_Reconstruct(t *testing.T) {
 	assert.Equal(t, "YYYY-MM-DD", u.DateFormat())
 	assert.Equal(t, "en", u.Language())
 	assert.Equal(t, "system", u.Theme())
+	assert.Equal(t, "24h", u.TimeFormat())
+	assert.Equal(t, ",", u.ThousandSeparator())
+	assert.Equal(t, ".", u.DecimalSeparator())
 	assert.Equal(t, &avatarPath, u.AvatarPath())
 }

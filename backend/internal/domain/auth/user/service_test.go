@@ -165,6 +165,9 @@ func TestReconstruct(t *testing.T) {
 		"YYYY-MM-DD",
 		"en",
 		"system",
+		"24h",
+		",",
+		".",
 		&avatarPath,
 		now,
 		now,
@@ -179,6 +182,9 @@ func TestReconstruct(t *testing.T) {
 	assert.Equal(t, "YYYY-MM-DD", user.DateFormat())
 	assert.Equal(t, "en", user.Language())
 	assert.Equal(t, "system", user.Theme())
+	assert.Equal(t, "24h", user.TimeFormat())
+	assert.Equal(t, ",", user.ThousandSeparator())
+	assert.Equal(t, ".", user.DecimalSeparator())
 	assert.Equal(t, &avatarPath, user.AvatarPath())
 	assert.Equal(t, now, user.CreatedAt())
 	assert.Equal(t, now, user.UpdatedAt())
@@ -237,11 +243,15 @@ func TestUser_UpdatePreferences(t *testing.T) {
 
 	originalUpdatedAt := user.UpdatedAt()
 
-	user.UpdatePreferences("MM/DD/YYYY", "es", "dark")
+	err = user.UpdatePreferences("MM/DD/YYYY", "es", "dark", "12h", ".", ",")
+	assert.NoError(t, err)
 
 	assert.Equal(t, "MM/DD/YYYY", user.DateFormat())
 	assert.Equal(t, "es", user.Language())
 	assert.Equal(t, "dark", user.Theme())
+	assert.Equal(t, "12h", user.TimeFormat())
+	assert.Equal(t, ".", user.ThousandSeparator())
+	assert.Equal(t, ",", user.DecimalSeparator())
 	assert.True(t, user.UpdatedAt().After(originalUpdatedAt))
 }
 
