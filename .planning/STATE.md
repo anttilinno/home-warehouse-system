@@ -5,24 +5,24 @@
 See: `.planning/PROJECT.md` (updated 2026-02-08)
 
 **Core value:** Reliable inventory access anywhere -- online or offline -- with seamless sync
-**Current focus:** v1.6 Format Personalization - Phase 31 complete
+**Current focus:** v1.6 Format Personalization - Phase 32 in progress
 
 ## Current Position
 
 **Milestone:** v1.6 Format Personalization
-**Phase:** 31 of 34 (Format Settings UI) -- Complete
-**Plan:** 2 of 2 in current phase
-**Status:** Phase complete
-**Last activity:** 2026-02-08 -- Completed 31-02-PLAN.md (number format settings UI)
+**Phase:** 32 of 34 (Date Format Rollout) -- In progress
+**Plan:** 1 of 2 in current phase
+**Status:** Plan 32-01 complete
+**Last activity:** 2026-02-08 -- Completed 32-01-PLAN.md (extend useDateFormat hook + convert all display sites and CSV exports)
 
-Progress: [#############################] 94% (100/107 plans)
+Progress: [#############################] 94% (101/107 plans)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 100 (from v1-v1.6)
+- Total plans completed: 101 (from v1-v1.6)
 - Average duration: ~15 min per plan
-- Total execution time: ~24 hours
+- Total execution time: ~25 hours
 
 **By Milestone:**
 
@@ -44,7 +44,7 @@ All v1.5 decisions archived in `.planning/milestones/v1.5-ROADMAP.md`.
 
 Key patterns established:
 - Settings forms use Label/Input pattern with react-hook-form + zod
-- useDateFormat hook already exists from v1.5 (extends to useTimeFormat, useNumberFormat)
+- useDateFormat hook extended with parseDate and placeholder utilities for parsing and input hints
 - User preferences stored in users table with DB migration pattern
 - UpdatePreferences entity method returns error (changed from void) for separator conflict validation
 - New format preference fields placed after theme, before avatarPath in Reconstruct parameter order
@@ -52,6 +52,9 @@ Key patterns established:
 - TimeFormatSettings uses simpler RadioGroup (no custom format) since time is strictly 12h/24h
 - Format settings cards placed between Data Management and Active Sessions on settings page
 - NumberFormatSettings uses Select dropdowns (not RadioGroup) for separator choices with client-side conflict validation
+- Format fallback pattern: Relative time helpers show "X ago" for recent items, fall back to user's date format for older items
+- useMemo dependency pattern: formatDate added to exportColumns useMemo dependencies to ensure fresh formatters when user changes format
+- All date displays and CSV exports now respect user's chosen date format preference
 
 ### Pending Todos
 
@@ -69,9 +72,9 @@ Carried forward:
 ## Session Continuity
 
 Last session: 2026-02-08
-Stopped at: Completed 31-02-PLAN.md (number format settings UI) -- Phase 31 complete
-Resume file: `.planning/phases/31-format-settings-ui/31-02-SUMMARY.md`
-Next step: Execute Phase 32 plans
+Stopped at: Completed 32-01-PLAN.md (extend useDateFormat hook + convert all display sites and CSV exports)
+Resume file: `.planning/phases/32-date-format-rollout/32-01-SUMMARY.md`
+Next step: Execute 32-02-PLAN.md (convert date inputs to use parseDate and placeholder)
 
 ---
-*Updated: 2026-02-08 after completing 31-02-PLAN.md*
+*Updated: 2026-02-08 after completing 32-01-PLAN.md*
