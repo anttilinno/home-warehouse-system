@@ -10,19 +10,19 @@ See: `.planning/PROJECT.md` (updated 2026-02-08)
 ## Current Position
 
 **Milestone:** v1.6 Format Personalization
-**Phase:** 33 of 34 (Time Format Rollout) -- Complete
-**Plan:** 1 of 1 in current phase
-**Status:** Phase 33 complete
-**Last activity:** 2026-02-08 -- Completed 33-01-PLAN.md (fix formatDateTime time-awareness + convert all datetime displays)
+**Phase:** 34 of 34 (Number Format Rollout) -- In progress
+**Plan:** 2 of 2 in current phase
+**Status:** Phase 34 in progress
+**Last activity:** 2026-02-08 -- Completed 34-02-PLAN.md (declutter and repair-history number format refactoring)
 
-Progress: [###############################] 96% (103/107 plans)
+Progress: [################################] 97% (104/107 plans)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 103 (from v1-v1.6)
+- Total plans completed: 104 (from v1-v1.6)
 - Average duration: ~15 min per plan
-- Total execution time: ~25.5 hours
+- Total execution time: ~25.9 hours
 
 **By Milestone:**
 
@@ -58,6 +58,9 @@ Key patterns established:
 - Date input format hints pattern: Native HTML5 date inputs use Label format hints to communicate app's date format while allowing browser-native validation
 - TIME_FORMAT_MAP placed in use-date-format.ts to keep formatDateTime self-contained (compose date + time format strings)
 - Scan history uses relative-time-with-hook-fallback pattern: "X ago" for recent, formatDateTime for older entries
+- Currency formatting pattern: formatCurrencyValue helper inside component composes currency symbol + formatNumber(amount, 2)
+- Decimal input pattern: type="text" + inputMode="decimal" + parseNumber validation + dynamic placeholder with user's decimalSeparator
+- CSV export with user format: Use formatNumber in column formatter functions for decimal columns
 
 ### Pending Todos
 
@@ -75,9 +78,9 @@ Carried forward:
 ## Session Continuity
 
 Last session: 2026-02-08
-Stopped at: Completed 33-01-PLAN.md (time format rollout) - Phase 33 complete
-Resume file: `.planning/phases/33-time-format-rollout/33-01-SUMMARY.md`
-Next step: Plan and execute Phase 34 (Number Format Rollout)
+Stopped at: Completed 34-02-PLAN.md (declutter and repair-history number format refactoring) - Phase 34 in progress
+Resume file: `.planning/phases/34-number-format-rollout/34-02-SUMMARY.md`
+Next step: Complete remaining Phase 34 plans or proceed to next milestone
 
 ---
-*Updated: 2026-02-08 after completing 33-01-PLAN.md*
+*Updated: 2026-02-08 after completing 34-02-PLAN.md*
