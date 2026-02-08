@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useTranslations } from "next-intl";
+import { useDateFormat } from "@/lib/hooks/use-date-format";
 import {
   Plus,
   Search,
@@ -244,6 +245,7 @@ function ContainersTableSkeleton() {
 export default function ContainersPage() {
   const t = useTranslations("containers");
   const { workspaceId, isLoading: workspaceLoading } = useWorkspace();
+  const { formatDate } = useDateFormat();
 
   const [locations, setLocations] = useState<Location[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
@@ -582,9 +584,9 @@ export default function ContainersPage() {
     { key: "capacity", label: "Capacity" },
     { key: "short_code", label: "Short Code" },
     { key: "description", label: "Description" },
-    { key: "created_at", label: "Created Date", formatter: (value) => new Date(value).toLocaleDateString() },
-    { key: "updated_at", label: "Updated Date", formatter: (value) => new Date(value).toLocaleDateString() },
-  ], [locations]);
+    { key: "created_at", label: "Created Date", formatter: (value) => formatDate(value) },
+    { key: "updated_at", label: "Updated Date", formatter: (value) => formatDate(value) },
+  ], [locations, formatDate]);
 
   const openCreateDialog = () => {
     setEditingContainer(null);

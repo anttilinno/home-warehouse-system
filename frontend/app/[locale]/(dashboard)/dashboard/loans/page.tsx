@@ -688,12 +688,12 @@ export default function LoansPage() {
     { key: "borrower_id", label: "Borrower", formatter: (_, loan) => getBorrowerName(loan.borrower_id) },
     { key: "inventory_id", label: "Inventory ID" },
     { key: "quantity", label: "Quantity" },
-    { key: "loaned_date", label: "Loaned Date", formatter: (value) => format(parseISO(value), "yyyy-MM-dd") },
-    { key: "due_date", label: "Due Date", formatter: (value) => format(parseISO(value), "yyyy-MM-dd") },
-    { key: "returned_date", label: "Returned Date", formatter: (value) => value ? format(parseISO(value), "yyyy-MM-dd") : "Not returned" },
+    { key: "loaned_date", label: "Loaned Date", formatter: (value) => formatDate(value) },
+    { key: "due_date", label: "Due Date", formatter: (value) => formatDate(value) },
+    { key: "returned_date", label: "Returned Date", formatter: (value) => value ? formatDate(value) : "Not returned" },
     { key: "notes", label: "Notes" },
-    { key: "created_at", label: "Created Date", formatter: (value) => new Date(value).toLocaleDateString() },
-  ], [borrowers]);
+    { key: "created_at", label: "Created Date", formatter: (value) => formatDate(value) },
+  ], [borrowers, formatDate]);
 
   const handleReturn = async () => {
     if (!returningLoan) return;

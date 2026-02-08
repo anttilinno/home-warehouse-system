@@ -3,6 +3,7 @@
 import { useState, useEffect, useMemo, useRef } from "react";
 import { useTranslations } from "next-intl";
 import { useVirtualizer } from "@tanstack/react-virtual";
+import { useDateFormat } from "@/lib/hooks/use-date-format";
 import {
   Plus,
   Search,
@@ -434,6 +435,7 @@ function StatusBadge({ status }: { status: InventoryStatus }) {
 export default function InventoryPage() {
   const t = useTranslations("inventory");
   const { workspaceId, isLoading: workspaceLoading } = useWorkspace();
+  const { formatDate } = useDateFormat();
 
   const [items, setItems] = useState<Item[]>([]);
   const [locations, setLocations] = useState<Location[]>([]);
@@ -912,9 +914,9 @@ export default function InventoryPage() {
     { key: "unit_price", label: "Unit Price", formatter: (value) => value ? `$${value}` : "-" },
     { key: "total_value", label: "Total Value", formatter: (value) => value ? `$${value}` : "-" },
     { key: "notes", label: "Notes" },
-    { key: "created_at", label: "Created Date", formatter: (value) => new Date(value).toLocaleDateString() },
-    { key: "updated_at", label: "Updated Date", formatter: (value) => new Date(value).toLocaleDateString() },
-  ], [items, locations, containers]);
+    { key: "created_at", label: "Created Date", formatter: (value) => formatDate(value) },
+    { key: "updated_at", label: "Updated Date", formatter: (value) => formatDate(value) },
+  ], [items, locations, containers, formatDate]);
 
   const openCreateDialog = () => {
     setEditingInventory(null);

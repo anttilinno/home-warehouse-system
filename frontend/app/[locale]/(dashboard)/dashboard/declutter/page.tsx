@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
-import { format, parseISO } from "date-fns";
+import { useDateFormat } from "@/lib/hooks/use-date-format";
 import {
   Download,
   CheckCircle,
@@ -56,6 +56,7 @@ function formatCurrency(amountCents: number | null | undefined, currencyCode: st
 export default function DeclutterPage() {
   const t = useTranslations("declutter");
   const { workspace, workspaceId } = useWorkspace();
+  const { formatDate } = useDateFormat();
 
   // State
   const [items, setItems] = useState<DeclutterItem[]>([]);
@@ -176,7 +177,7 @@ export default function DeclutterPage() {
       {
         key: "last_used_at",
         label: "Last Used",
-        formatter: (value) => value ? format(parseISO(value), "yyyy-MM-dd") : "Never",
+        formatter: (value) => value ? formatDate(value) : "Never",
       },
     ];
 

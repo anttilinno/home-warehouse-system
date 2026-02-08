@@ -2,6 +2,7 @@
 
 import { useState, useMemo, useEffect } from "react";
 import { useTranslations } from "next-intl";
+import { useDateFormat } from "@/lib/hooks/use-date-format";
 import {
   Plus,
   Search,
@@ -134,6 +135,7 @@ function getInitials(name: string): string {
 export default function BorrowersPage() {
   const t = useTranslations("borrowers");
   const { workspaceId, isLoading: workspaceLoading } = useWorkspace();
+  const { formatDate } = useDateFormat();
 
   const [searchQuery, setSearchQuery] = useState("");
   const debouncedSearchQuery = useDebouncedValue(searchQuery, 300);
@@ -338,15 +340,15 @@ export default function BorrowersPage() {
   } = useBulkSelection<string>();
 
   // Export columns definition
-  const exportColumns: ColumnDefinition<Borrower>[] = [
+  const exportColumns: ColumnDefinition<Borrower>[] = useMemo(() => [
     { key: "name", label: "Name" },
     { key: "email", label: "Email" },
     { key: "phone", label: "Phone" },
     { key: "address", label: "Address" },
     { key: "notes", label: "Notes" },
-    { key: "created_at", label: "Created Date", formatter: (value) => new Date(value).toLocaleDateString() },
-    { key: "updated_at", label: "Updated Date", formatter: (value) => new Date(value).toLocaleDateString() },
-  ];
+    { key: "created_at", label: "Created Date", formatter: (value) => formatDate(value) },
+    { key: "updated_at", label: "Updated Date", formatter: (value) => formatDate(value) },
+  ], [formatDate]);
 
   const openCreateDialog = () => {
     setEditingBorrower(null);

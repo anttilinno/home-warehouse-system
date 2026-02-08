@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { useDebouncedValue } from "@/lib/hooks/use-debounced-value";
+import { useDateFormat } from "@/lib/hooks/use-date-format";
 import {
   Plus,
   Search,
@@ -352,6 +353,7 @@ export default function ItemsPage() {
   const t = useTranslations("items");
   const router = useRouter();
   const { workspaceId, isLoading: workspaceLoading } = useWorkspace();
+  const { formatDate } = useDateFormat();
 
   const [categories, setCategories] = useState<Category[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
@@ -777,9 +779,9 @@ export default function ItemsPage() {
     { key: "warranty_details", label: "Warranty Details" },
     { key: "min_stock_level", label: "Min Stock Level" },
     { key: "short_code", label: "Short Code" },
-    { key: "created_at", label: "Created Date", formatter: (value) => new Date(value).toLocaleDateString() },
-    { key: "updated_at", label: "Updated Date", formatter: (value) => new Date(value).toLocaleDateString() },
-  ], [categories]);
+    { key: "created_at", label: "Created Date", formatter: (value) => formatDate(value) },
+    { key: "updated_at", label: "Updated Date", formatter: (value) => formatDate(value) },
+  ], [categories, formatDate]);
 
   const openCreateDialog = () => {
     setEditingItem(null);
