@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, useMemo } from "react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { useDateFormat } from "@/lib/hooks/use-date-format";
+import { useNumberFormat } from "@/lib/hooks/use-number-format";
 import {
   Download,
   CheckCircle,
@@ -40,23 +41,20 @@ import { cn } from "@/lib/utils";
 
 const PAGE_SIZE = 50;
 
-/**
- * Format currency from cents to display string
- */
-function formatCurrency(amountCents: number | null | undefined, currencyCode: string | null | undefined): string {
-  if (amountCents === null || amountCents === undefined) return "-";
-  const amount = amountCents / 100;
-  const currency = currencyCode || "EUR";
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency,
-  }).format(amount);
-}
-
 export default function DeclutterPage() {
   const t = useTranslations("declutter");
   const { workspace, workspaceId } = useWorkspace();
   const { formatDate } = useDateFormat();
+  const { formatNumber } = useNumberFormat();
+
+  // Format currency using user's number format
+  const formatCurrencyValue = useCallback((amountCents: number | null | undefined, currencyCode: string | null | undefined): string => {
+    if (amountCents === null || amountCents === undefined) return "-";
+    const amount = amountCents / 100;
+    const currency = currencyCode || "EUR";
+    const symbol = currency === "USD" ? "$" : currency === "EUR" ? "\u20AC" : currency + " ";
+    return `${symbol}${formatNumber(amount, 2)}`;
+  }, [formatNumber]);
 
   // State
   const [items, setItems] = useState<DeclutterItem[]>([]);
@@ -169,7 +167,7 @@ export default function DeclutterPage() {
       {
         key: "purchase_price",
         label: t("table.value"),
-        formatter: (value) => value ? (value / 100).toFixed(2) : "",
+        formatter: (value) => value ? formatNumber(value / 100, 2) : "",
       },
       { key: "currency_code", label: "Currency" },
       { key: "condition", label: "Condition" },
@@ -261,14 +259,14 @@ export default function DeclutterPage() {
           <CardContent className="pt-6">
             <div className="flex flex-wrap gap-6">
               <div>
-                <div className="text-2xl font-bold">{currentCount}</div>
+                <div className="text-2xl font-bold">{formatNumber(currentCount)}</div>
                 <div className="text-sm text-muted-foreground">
                   {t("summary.items")}
                 </div>
               </div>
               <div>
                 <div className="text-2xl font-bold">
-                  {formatCurrency(currentValue, "EUR")}
+                  {formatCurrencyValue(currentValue, "EUR")}
                 </div>
                 <div className="text-sm text-muted-foreground">
                   {t("summary.totalValue")}
@@ -337,11 +335,11 @@ export default function DeclutterPage() {
                           <TableCell>{item.category_name || "-"}</TableCell>
                         )}
                         <TableCell className="text-right">
-                          {item.days_unused}
+                          {formatNumber(item.days_unused)}
                         </TableCell>
                         <TableCell className="text-right">
                           {item.purchase_price
-                            ? formatCurrency(item.purchase_price, item.currency_code)
+                            ? formatCurrencyValue(item.purchase_price, item.currency_code)
                             : "-"}
                         </TableCell>
                         <TableCell className="text-center">
