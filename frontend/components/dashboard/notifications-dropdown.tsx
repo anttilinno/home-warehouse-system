@@ -12,22 +12,8 @@ import {
 } from "@/components/ui/popover";
 import { notificationsApi, type Notification } from "@/lib/api";
 import { useSSE } from "@/lib/hooks/use-sse";
+import { useDateFormat } from "@/lib/hooks/use-date-format";
 import { cn } from "@/lib/utils";
-
-function formatRelativeTime(isoDate: string): string {
-  const date = new Date(isoDate);
-  const now = new Date();
-  const diffMs = now.getTime() - date.getTime();
-  const diffMins = Math.floor(diffMs / 60000);
-  const diffHours = Math.floor(diffMins / 60);
-  const diffDays = Math.floor(diffHours / 24);
-
-  if (diffMins < 1) return "just now";
-  if (diffMins < 60) return `${diffMins}m ago`;
-  if (diffHours < 24) return `${diffHours}h ago`;
-  if (diffDays < 7) return `${diffDays}d ago`;
-  return date.toLocaleDateString();
-}
 
 function getNotificationIcon(type: Notification["notification_type"]): string {
   switch (type) {
@@ -50,11 +36,27 @@ function getNotificationIcon(type: Notification["notification_type"]): string {
 
 export function NotificationsDropdown() {
   const t = useTranslations("notifications");
+  const { formatDate } = useDateFormat();
   const [open, setOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isMarkingRead, setIsMarkingRead] = useState<string | null>(null);
+
+  function formatRelativeTime(isoDate: string): string {
+    const date = new Date(isoDate);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMins / 60);
+    const diffDays = Math.floor(diffHours / 24);
+
+    if (diffMins < 1) return "just now";
+    if (diffMins < 60) return `${diffMins}m ago`;
+    if (diffHours < 24) return `${diffHours}h ago`;
+    if (diffDays < 7) return `${diffDays}d ago`;
+    return formatDate(date);
+  }
 
   const fetchUnreadCount = useCallback(async () => {
     try {

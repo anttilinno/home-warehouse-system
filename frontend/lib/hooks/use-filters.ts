@@ -1,4 +1,5 @@
 import { useState, useCallback, useMemo } from "react";
+import { useDateFormat } from "@/lib/hooks/use-date-format";
 
 /**
  * Supported filter types
@@ -61,55 +62,6 @@ export interface UseFiltersReturn {
   getFilter: (key: string) => Filter | undefined;
 }
 
-/**
- * Format filter value for display in chips
- */
-function formatFilterValue(filter: Filter): string {
-  switch (filter.type) {
-    case "text":
-    case "select":
-      return String(filter.value);
-
-    case "multi-select":
-      const values = filter.value as string[];
-      if (values.length === 1) return values[0];
-      return `${values[0]} +${values.length - 1}`;
-
-    case "date-range": {
-      const range = filter.value as { from: Date | null; to: Date | null };
-      if (range.from && range.to) {
-        return `${range.from.toLocaleDateString()} - ${range.to.toLocaleDateString()}`;
-      }
-      if (range.from) {
-        return `From ${range.from.toLocaleDateString()}`;
-      }
-      if (range.to) {
-        return `Until ${range.to.toLocaleDateString()}`;
-      }
-      return "";
-    }
-
-    case "number-range": {
-      const range = filter.value as { min: number | null; max: number | null };
-      if (range.min !== null && range.max !== null) {
-        return `${range.min} - ${range.max}`;
-      }
-      if (range.min !== null) {
-        return `≥ ${range.min}`;
-      }
-      if (range.max !== null) {
-        return `≤ ${range.max}`;
-      }
-      return "";
-    }
-
-    case "boolean":
-      return filter.value ? "Yes" : "No";
-
-    default:
-      return String(filter.value);
-  }
-}
 
 /**
  * Check if a filter has a valid value
@@ -166,6 +118,57 @@ function isFilterValid(filter: Filter): boolean {
  */
 export function useFilters(): UseFiltersReturn {
   const [filters, setFilters] = useState<Map<string, Filter>>(new Map());
+  const { formatDate } = useDateFormat();
+
+  /**
+   * Format filter value for display in chips
+   */
+  const formatFilterValue = useCallback((filter: Filter): string => {
+    switch (filter.type) {
+      case "text":
+      case "select":
+        return String(filter.value);
+
+      case "multi-select":
+        const values = filter.value as string[];
+        if (values.length === 1) return values[0];
+        return `${values[0]} +${values.length - 1}`;
+
+      case "date-range": {
+        const range = filter.value as { from: Date | null; to: Date | null };
+        if (range.from && range.to) {
+          return `${formatDate(range.from)} - ${formatDate(range.to)}`;
+        }
+        if (range.from) {
+          return `From ${formatDate(range.from)}`;
+        }
+        if (range.to) {
+          return `Until ${formatDate(range.to)}`;
+        }
+        return "";
+      }
+
+      case "number-range": {
+        const range = filter.value as { min: number | null; max: number | null };
+        if (range.min !== null && range.max !== null) {
+          return `${range.min} - ${range.max}`;
+        }
+        if (range.min !== null) {
+          return `≥ ${range.min}`;
+        }
+        if (range.max !== null) {
+          return `≤ ${range.max}`;
+        }
+        return "";
+      }
+
+      case "boolean":
+        return filter.value ? "Yes" : "No";
+
+      default:
+        return String(filter.value);
+    }
+  }, [formatDate]);
 
   const activeFilters = useMemo(() => {
     return Array.from(filters.values()).filter(isFilterValid);
@@ -179,7 +182,7 @@ export function useFilters(): UseFiltersReturn {
       label: filter.label,
       displayValue: formatFilterValue(filter),
     }));
-  }, [activeFilters]);
+  }, [activeFilters, formatFilterValue]);
 
   const addFilter = useCallback((filter: Filter) => {
     setFilters((prev) => {

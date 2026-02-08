@@ -9,10 +9,11 @@ import { Progress } from "@/components/ui/progress";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { formatDistanceToNow, format } from "date-fns";
+import { formatDistanceToNow } from "date-fns";
 import { ArrowLeft, AlertCircle, Loader2 } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import { useWorkspace } from "@/lib/hooks/use-workspace";
+import { useDateFormat } from "@/lib/hooks/use-date-format";
 import { toast } from "sonner";
 import { apiClient } from "@/lib/api/client";
 
@@ -48,6 +49,7 @@ interface ImportErrorsResponse {
 export default function ImportJobDetailPage() {
   const params = useParams();
   const { workspaceId, isLoading: workspaceLoading } = useWorkspace();
+  const { formatDateTime } = useDateFormat();
   const jobId = params.jobId as string;
 
   const [job, setJob] = useState<ImportJob | null>(null);
@@ -310,12 +312,12 @@ export default function ImportJobDetailPage() {
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div>
                 <span className="text-muted-foreground">Started: </span>
-                <span>{format(new Date(job.started_at), "PPpp")}</span>
+                <span>{formatDateTime(job.started_at)}</span>
               </div>
               {job.completed_at && (
                 <div>
                   <span className="text-muted-foreground">Completed: </span>
-                  <span>{format(new Date(job.completed_at), "PPpp")}</span>
+                  <span>{formatDateTime(job.completed_at)}</span>
                 </div>
               )}
             </div>

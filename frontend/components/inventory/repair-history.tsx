@@ -2,8 +2,9 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useTranslations } from "next-intl";
-import { format, parseISO } from "date-fns";
+import { format } from "date-fns";
 import { toast } from "sonner";
+import { useDateFormat } from "@/lib/hooks/use-date-format";
 import {
   Plus,
   Wrench,
@@ -139,6 +140,7 @@ function formatCurrency(amountCents: number | null, currencyCode: string | null)
 
 export function RepairHistory({ inventoryId, workspaceId, onRepairComplete }: RepairHistoryProps) {
   const t = useTranslations("repairs");
+  const { formatDate } = useDateFormat();
 
   // State
   const [repairs, setRepairs] = useState<RepairLog[]>([]);
@@ -431,7 +433,7 @@ export function RepairHistory({ inventoryId, workspaceId, onRepairComplete }: Re
                           {repair.reminder_date && (
                             <Badge variant="outline" className="text-orange-600 border-orange-600">
                               <Bell className="h-3 w-3 mr-1" />
-                              {format(parseISO(repair.reminder_date), "PP")}
+                              {formatDate(repair.reminder_date)}
                             </Badge>
                           )}
                         </div>
@@ -447,9 +449,7 @@ export function RepairHistory({ inventoryId, workspaceId, onRepairComplete }: Re
                     <StatusBadge status={repair.status} />
                   </TableCell>
                   <TableCell>
-                    {repair.repair_date
-                      ? format(parseISO(repair.repair_date), "PP")
-                      : "-"}
+                    {formatDate(repair.repair_date)}
                   </TableCell>
                   <TableCell>
                     {formatCurrency(repair.cost, repair.currency_code)}
@@ -716,7 +716,7 @@ export function RepairHistory({ inventoryId, workspaceId, onRepairComplete }: Re
               {selectedRepair?.reminder_date && (
                 <Badge variant="outline" className="text-orange-600 border-orange-600">
                   <Bell className="h-3 w-3 mr-1" />
-                  {format(parseISO(selectedRepair.reminder_date), "PP")}
+                  {formatDate(selectedRepair.reminder_date)}
                 </Badge>
               )}
             </DialogDescription>
@@ -729,7 +729,7 @@ export function RepairHistory({ inventoryId, workspaceId, onRepairComplete }: Re
                 <div>
                   <span className="text-muted-foreground">{t("date")}:</span>
                   <span className="ml-2 font-medium">
-                    {selectedRepair.repair_date ? format(parseISO(selectedRepair.repair_date), "PP") : "-"}
+                    {formatDate(selectedRepair.repair_date)}
                   </span>
                 </div>
                 <div>

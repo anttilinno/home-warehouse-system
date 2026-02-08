@@ -17,6 +17,7 @@ import { toast } from "sonner";
 
 import { useAuth } from "@/lib/contexts/auth-context";
 import { useSSE, type SSEEvent } from "@/lib/hooks/use-sse";
+import { useDateFormat } from "@/lib/hooks/use-date-format";
 import { analyticsApi, notificationsApi, type AnalyticsSummary, type RecentActivity } from "@/lib/api";
 import { StatsCard } from "@/components/dashboard/stats-card";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -33,48 +34,7 @@ interface FrontendActivity {
   location?: string;
   borrower?: string;
   time: string;
-}
-
-function formatRelativeTime(isoDate: string): string {
-  const date = new Date(isoDate);
-  const now = new Date();
-  const diffMs = now.getTime() - date.getTime();
-  const diffMins = Math.floor(diffMs / 60000);
-  const diffHours = Math.floor(diffMins / 60);
-  const diffDays = Math.floor(diffHours / 24);
-
-  if (diffMins < 1) return "just now";
-  if (diffMins < 60) return `${diffMins} minute${diffMins !== 1 ? "s" : ""} ago`;
-  if (diffHours < 24) return `${diffHours} hour${diffHours !== 1 ? "s" : ""} ago`;
-  if (diffDays < 7) return `${diffDays} day${diffDays !== 1 ? "s" : ""} ago`;
-  return date.toLocaleDateString();
-}
-
-function mapActivityToFrontend(activity: RecentActivity): FrontendActivity | null {
-  const getActivityType = (action: string, entityType: string): "add" | "move" | "loan" | "return" => {
-    const actionLower = action.toLowerCase();
-    const entityLower = entityType.toLowerCase();
-
-    if (actionLower === "create" || actionLower === "created") {
-      if (entityLower === "loan") return "loan";
-      return "add";
-    }
-    if (actionLower === "move" || actionLower === "moved") return "move";
-    if (actionLower === "loan" || actionLower === "loaned") return "loan";
-    if (actionLower === "return" || actionLower === "returned") return "return";
-    if (actionLower === "update" || actionLower === "updated") return "move";
-
-    return "add"; // default
-  };
-
-  return {
-    id: activity.id,
-    type: getActivityType(activity.action, activity.entity_type),
-    item: activity.entity_name || "Unknown Item",
-    location: undefined,
-    borrower: undefined,
-    time: formatRelativeTime(activity.created_at),
-  };
+  created_at: string; // Store the ISO date for formatting later
 }
 
 function DashboardSkeleton() {
@@ -147,14 +107,58 @@ function ErrorState({ error, onRetry }: { error: string | null; onRetry: () => v
   );
 }
 
+function mapActivityToFrontend(activity: RecentActivity): FrontendActivity | null {
+  const getActivityType = (action: string, entityType: string): "add" | "move" | "loan" | "return" => {
+    const actionLower = action.toLowerCase();
+    const entityLower = entityType.toLowerCase();
+
+    if (actionLower === "create" || actionLower === "created") {
+      if (entityLower === "loan") return "loan";
+      return "add";
+    }
+    if (actionLower === "move" || actionLower === "moved") return "move";
+    if (actionLower === "loan" || actionLower === "loaned") return "loan";
+    if (actionLower === "return" || actionLower === "returned") return "return";
+    if (actionLower === "update" || actionLower === "updated") return "move";
+
+    return "add"; // default
+  };
+
+  return {
+    id: activity.id,
+    type: getActivityType(activity.action, activity.entity_type),
+    item: activity.entity_name || "Unknown Item",
+    location: undefined,
+    borrower: undefined,
+    time: "", // Will be formatted in the component
+    created_at: activity.created_at,
+  };
+}
+
 export default function DashboardPage() {
   const t = useTranslations("dashboard");
   const { workspaceId, isLoading: authLoading } = useAuth();
+  const { formatDate } = useDateFormat();
 
   const [summary, setSummary] = useState<AnalyticsSummary | null>(null);
   const [unreadCount, setUnreadCount] = useState<number>(0);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  function formatRelativeTime(isoDate: string): string {
+    const date = new Date(isoDate);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMins / 60);
+    const diffDays = Math.floor(diffHours / 24);
+
+    if (diffMins < 1) return "just now";
+    if (diffMins < 60) return `${diffMins} minute${diffMins !== 1 ? "s" : ""} ago`;
+    if (diffHours < 24) return `${diffHours} hour${diffHours !== 1 ? "s" : ""} ago`;
+    if (diffDays < 7) return `${diffDays} day${diffDays !== 1 ? "s" : ""} ago`;
+    return formatDate(date);
+  }
 
   const loadDashboardData = useCallback(async () => {
     if (!workspaceId) return;
@@ -214,6 +218,10 @@ export default function DashboardPage() {
   const recentActivity = summary.recent_activity
     .map(mapActivityToFrontend)
     .filter((a): a is FrontendActivity => a !== null)
+    .map(activity => ({
+      ...activity,
+      time: formatRelativeTime(activity.created_at)
+    }))
     .slice(0, 4); // Show only 4 most recent
 
   // Generate alerts dynamically from stats
