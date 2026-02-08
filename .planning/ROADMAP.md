@@ -132,12 +132,11 @@ Plans:
   2. User can select thousand separator (comma, period, space) and decimal separator (period, comma) in settings with live preview of a sample number
   3. Date format settings section is enhanced with live preview consistent with the time and number sections
   4. All format changes persist immediately and apply across the app without page reload
-**Plans**: TBD
+**Plans:** 2 plans
 
 Plans:
-- [ ] 31-01: Time format settings section with live preview
-- [ ] 31-02: Number format settings section with live preview
-- [ ] 31-03: Date format settings enhancement with live preview
+- [ ] 31-01-PLAN.md -- TimeFormatSettings component + wire date/time format cards to settings page
+- [ ] 31-02-PLAN.md -- NumberFormatSettings component with separator conflict validation + complete settings page integration
 
 #### Phase 32: Date Format Rollout
 **Goal**: Every date displayed, entered, or exported in the application respects the user's chosen date format
@@ -196,12 +195,12 @@ Phases execute in numeric order: 30 -> 31 -> 32 -> 33 -> 34
 | 22-26 | v1.4 | 20 | Complete | 2026-01-31 |
 | 27-29 | v1.5 | 9 | Complete | 2026-02-03 |
 | 30. Format Infrastructure | v1.6 | 2/2 | Complete | 2026-02-08 |
-| 31. Format Settings UI | v1.6 | 0/3 | Not started | - |
+| 31. Format Settings UI | v1.6 | 0/2 | Not started | - |
 | 32. Date Format Rollout | v1.6 | 0/3 | Not started | - |
 | 33. Time Format Rollout | v1.6 | 0/1 | Not started | - |
 | 34. Number Format Rollout | v1.6 | 0/2 | Not started | - |
 
-**Total:** 29 phases complete (96 plans executed), 5 phases planned (11 plans)
+**Total:** 29 phases complete (96 plans executed), 5 phases planned (10 plans)
 
 ---
 *Roadmap created: 2026-01-24*
