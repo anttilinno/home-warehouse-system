@@ -2,24 +2,25 @@
 
 ## Project Reference
 
-See: `.planning/PROJECT.md` (updated 2026-02-03)
+See: `.planning/PROJECT.md` (updated 2026-02-08)
 
-**Core value:** Reliable inventory access anywhere — online or offline — with seamless sync
-**Current focus:** Planning next milestone
+**Core value:** Reliable inventory access anywhere -- online or offline -- with seamless sync
+**Current focus:** v1.6 Format Personalization - Phase 30 complete, ready for Phase 31
 
 ## Current Position
 
-**Milestone:** v1.5 Settings Enhancement - ARCHIVED
-**Phase:** 29 complete (Account Deletion)
-**Status:** Milestone complete and archived
-**Last activity:** 2026-02-03 - v1.5 milestone archived
+**Milestone:** v1.6 Format Personalization
+**Phase:** 30 of 34 (Format Infrastructure) -- COMPLETE
+**Plan:** 2 of 2 in current phase (all complete)
+**Status:** Phase complete
+**Last activity:** 2026-02-08 -- Completed 30-02-PLAN.md (frontend format hooks)
 
-Progress: [####################] v1-v1.5 complete | 100%
+Progress: [###########################.] 92% (98/107 plans)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 96 (from v1-v1.5)
+- Total plans completed: 98 (from v1-v1.6)
 - Average duration: ~15 min per plan
 - Total execution time: ~24 hours
 
@@ -33,6 +34,7 @@ Progress: [####################] v1-v1.5 complete | 100%
 | v1.3 | 4 | 22 | Complete |
 | v1.4 | 5 | 20 | Complete |
 | v1.5 | 3 | 9 | Complete |
+| v1.6 | 5 | 11 | In progress |
 
 ## Accumulated Context
 
@@ -42,9 +44,11 @@ All v1.5 decisions archived in `.planning/milestones/v1.5-ROADMAP.md`.
 
 Key patterns established:
 - Settings forms use Label/Input pattern with react-hook-form + zod
-- Storage adapters wrap GenericStorage with domain-specific interface
-- Session tracking uses token hash comparison (not raw tokens)
-- Type-to-confirm pattern for destructive actions
+- useDateFormat hook already exists from v1.5 (extends to useTimeFormat, useNumberFormat)
+- User preferences stored in users table with DB migration pattern
+- UpdatePreferences entity method returns error (changed from void) for separator conflict validation
+- New format preference fields placed after theme, before avatarPath in Reconstruct parameter order
+- Format hook trio pattern: useDateFormat, useTimeFormat, useNumberFormat all follow identical structure (useAuth -> useMemo -> useCallback)
 
 ### Pending Todos
 
@@ -52,25 +56,19 @@ Key patterns established:
 - [ ] SCAN-01 through SCAN-07: Barcode scanning manual verification
 - [ ] iOS PWA: Camera permission persistence
 
-**Future E2E Work:**
-- [ ] Complete CRUD in existing specs
-- [ ] Fix accessibility test failures
-- [ ] Remove remaining waitForTimeout instances (~30)
-
 ### Blockers/Concerns
 
 Carried forward:
 - Safari iOS manual testing pending
-- CGO_ENABLED=0 build has webp library issue — dev builds work fine
+- CGO_ENABLED=0 build has webp library issue -- dev builds work fine
 - Jobs package coverage limited by pgxpool/Redis requirements
-- E2E rate limiting: Backend limits auth to 5 req/min
 
 ## Session Continuity
 
-Last session: 2026-02-03
-Stopped at: v1.5 milestone archived
-Resume file: None
-Next step: `/gsd:new-milestone` to start next milestone
+Last session: 2026-02-08
+Stopped at: Completed Phase 30 (Format Infrastructure) -- both plans done
+Resume file: `.planning/phases/30-format-infrastructure/30-02-SUMMARY.md`
+Next step: Execute Phase 31 (Settings UI)
 
 ---
-*Updated: 2026-02-03 after v1.5 milestone archived*
+*Updated: 2026-02-08 after completing 30-02-PLAN.md*

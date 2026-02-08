@@ -8,6 +8,7 @@
 - v1.3 **Mobile UX Overhaul** — Phases 18-21 (shipped 2026-01-31)
 - v1.4 **Test Overhaul** — Phases 22-26 (shipped 2026-01-31)
 - v1.5 **Settings Enhancement** — Phases 27-29 (shipped 2026-02-03)
+- v1.6 **Format Personalization** — Phases 30-34 (in progress)
 
 ## Phases
 
@@ -102,7 +103,89 @@ See `.planning/milestones/v1.5-ROADMAP.md` for full details.
 
 </details>
 
+### v1.6 Format Personalization (In Progress)
+
+**Milestone Goal:** All dates, times, and numbers display according to user's chosen format preferences throughout the entire application.
+
+#### Phase 30: Format Infrastructure
+**Goal**: User preferences for time and number formats are persisted and accessible to the frontend via hooks
+**Depends on**: Phase 29 (extends v1.5 user preferences infrastructure)
+**Requirements**: TIME-01, TIME-02, NUM-01, NUM-02, NUM-03, SETTINGS-05
+**Success Criteria** (what must be TRUE):
+  1. User's time format preference (12-hour or 24-hour) is stored in the database and returned by the user profile API
+  2. User's number format preferences (thousand separator, decimal separator) are stored in the database and returned by the user profile API
+  3. Frontend hooks useTimeFormat and useNumberFormat are available and return the user's persisted preferences
+  4. Hooks fall back to sensible defaults (24-hour time, comma thousands, period decimal) when no preference is set
+**Plans:** 2 plans
+**Status:** Complete (2026-02-08)
+
+Plans:
+- [x] 30-01-PLAN.md -- Backend migration and API for time/number format preferences
+- [x] 30-02-PLAN.md -- Frontend hooks useTimeFormat and useNumberFormat
+
+#### Phase 31: Format Settings UI
+**Goal**: Users can configure all format preferences from a single settings page with immediate visual feedback
+**Depends on**: Phase 30
+**Requirements**: SETTINGS-01, SETTINGS-02, SETTINGS-03, SETTINGS-04, TIME-05, NUM-09
+**Success Criteria** (what must be TRUE):
+  1. User can select time format (12-hour or 24-hour) in settings and see a live preview of the current time in their chosen format
+  2. User can select thousand separator (comma, period, space) and decimal separator (period, comma) in settings with live preview of a sample number
+  3. Date format settings section is enhanced with live preview consistent with the time and number sections
+  4. All format changes persist immediately and apply across the app without page reload
+**Plans**: TBD
+
+Plans:
+- [ ] 31-01: Time format settings section with live preview
+- [ ] 31-02: Number format settings section with live preview
+- [ ] 31-03: Date format settings enhancement with live preview
+
+#### Phase 32: Date Format Rollout
+**Goal**: Every date displayed, entered, or exported in the application respects the user's chosen date format
+**Depends on**: Phase 31 (settings UI must exist so users can change format)
+**Requirements**: DATE-01, DATE-02, DATE-03, DATE-04, DATE-05, DATE-06, DATE-07, DATE-08, DATE-09, DATE-10
+**Success Criteria** (what must be TRUE):
+  1. User who sets DD/MM/YYYY sees dates in that format in all tables, cards, lists, and detail pages throughout the app
+  2. Date input placeholders and date picker behavior match the user's chosen format (e.g., DD/MM/YYYY user sees "dd/mm/yyyy" placeholder, and typing "25/01/2026" is parsed correctly)
+  3. DateTime displays (timestamps like "created at", "last modified") format the date portion per user's preference while preserving the time portion
+  4. Form validation messages reference the user's chosen format (e.g., "Please enter a date in DD/MM/YYYY format")
+  5. CSV/export downloads format all date columns according to the user's preference
+**Plans**: TBD
+
+Plans:
+- [ ] 32-01: Date format applied to all display components (tables, cards, detail pages)
+- [ ] 32-02: Date inputs, pickers, and parsing respect user format
+- [ ] 32-03: DateTime displays, validation messages, and CSV exports
+
+#### Phase 33: Time Format Rollout
+**Goal**: Every timestamp displayed or entered in the application respects the user's chosen time format
+**Depends on**: Phase 30 (useTimeFormat hook must exist)
+**Requirements**: TIME-03, TIME-04
+**Success Criteria** (what must be TRUE):
+  1. User who selects 12-hour format sees all timestamps with AM/PM (e.g., "2:30 PM" instead of "14:30") across tables, detail pages, and activity feeds
+  2. Time input fields adapt to the user's format -- 12-hour users see AM/PM selectors, 24-hour users see 00-23 range
+**Plans**: TBD
+
+Plans:
+- [ ] 33-01: Time format applied to all timestamp displays and time inputs
+
+#### Phase 34: Number Format Rollout
+**Goal**: Every number displayed or entered in the application respects the user's chosen number format
+**Depends on**: Phase 30 (useNumberFormat hook must exist)
+**Requirements**: NUM-04, NUM-05, NUM-06, NUM-07, NUM-08
+**Success Criteria** (what must be TRUE):
+  1. User who sets period as thousand separator and comma as decimal sees "1.234,56" for prices and quantities throughout the app
+  2. Inventory counts, quantities, prices, and dashboard statistics all use the user's number format consistently
+  3. Number input fields accept values typed in the user's format (e.g., European user can type "1.234,56" and it parses correctly)
+**Plans**: TBD
+
+Plans:
+- [ ] 34-01: Number format applied to all display components (counts, quantities, prices, stats)
+- [ ] 34-02: Number input parsing respects user format
+
 ## Progress
+
+**Execution Order:**
+Phases execute in numeric order: 30 -> 31 -> 32 -> 33 -> 34
 
 | Phase | Milestone | Plans | Status | Shipped |
 |-------|-----------|-------|--------|---------|
@@ -112,9 +195,14 @@ See `.planning/milestones/v1.5-ROADMAP.md` for full details.
 | 18-21 | v1.3 | 22 | Complete | 2026-01-31 |
 | 22-26 | v1.4 | 20 | Complete | 2026-01-31 |
 | 27-29 | v1.5 | 9 | Complete | 2026-02-03 |
+| 30. Format Infrastructure | v1.6 | 2/2 | Complete | 2026-02-08 |
+| 31. Format Settings UI | v1.6 | 0/3 | Not started | - |
+| 32. Date Format Rollout | v1.6 | 0/3 | Not started | - |
+| 33. Time Format Rollout | v1.6 | 0/1 | Not started | - |
+| 34. Number Format Rollout | v1.6 | 0/2 | Not started | - |
 
-**Total:** 29 phases complete (96 plans executed)
+**Total:** 29 phases complete (96 plans executed), 5 phases planned (11 plans)
 
 ---
 *Roadmap created: 2026-01-24*
-*Last updated: 2026-02-03 after v1.5 milestone archived*
+*Last updated: 2026-02-08 after v1.6 roadmap created*
