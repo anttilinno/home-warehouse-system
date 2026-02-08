@@ -20,6 +20,9 @@ export interface User {
   full_name: string;
   is_active: boolean;
   date_format: string;
+  time_format: string;
+  thousand_separator: string;
+  decimal_separator: string;
   language: string;
   theme: string;
   avatar_url: string | null;
