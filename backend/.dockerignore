@@ -1,0 +1,7 @@
+bin/
+tmp/
+.env
+.env.*
+*_test.go
+tests/
+.air.toml

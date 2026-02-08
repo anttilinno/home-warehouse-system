@@ -1,4 +1,7 @@
 services:
+  # ──────────────────────────────────────────────
+  # Infrastructure (no profile — always starts)
+  # ──────────────────────────────────────────────
   postgres:
     image: postgres:18
     container_name: warehouse-postgres
@@ -17,6 +20,8 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+    networks:
+      - warehouse
 
   redis:
     image: redis:latest
@@ -25,6 +30,13 @@ services:
       - "6379:6379"
     volumes:
       - ./.data/redis:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - warehouse
 
   # Docspell PostgreSQL (separate database)
   docspell-postgres:
@@ -44,6 +56,8 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+    networks:
+      - warehouse
 
   # Docspell REST Server
   docspell-restserver:
@@ -65,6 +79,8 @@ services:
       - "7880:7880"
     volumes:
       - ./.data/docspell:/opt/docspell
+    networks:
+      - warehouse
 
   # Docspell JOEX (Job Executor)
   docspell-joex:
@@ -83,4 +99,132 @@ services:
       - "7878:7878"
     volumes:
       - ./.data/docspell:/opt/docspell
+    networks:
+      - warehouse
 
+  # ──────────────────────────────────────────────
+  # Production app services (profile: prod)
+  # ──────────────────────────────────────────────
+
+  # One-shot migration runner
+  migrate:
+    image: ghcr.io/amacneil/dbmate:2
+    profiles: ["prod"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: "postgresql://wh:wh@postgres:5432/warehouse_dev?sslmode=disable"
+    volumes:
+      - ./backend/db/migrations:/db/migrations
+    command: ["--wait", "--no-dump-schema", "migrate"]
+    networks:
+      - warehouse
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    profiles: ["prod"]
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      redis:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: "postgresql://wh:wh@postgres:5432/warehouse_dev?sslmode=disable"
+      REDIS_URL: "redis://redis:6379"
+      JWT_SECRET: "change-me-in-production"
+      DEBUG: "true"
+      PHOTO_STORAGE_DIR: "/data/photos"
+      APP_URL: "https://localhost"
+      BACKEND_URL: "https://localhost"
+    volumes:
+      - photo-storage:/data/photos
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8080/health"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    networks:
+      - warehouse
+
+  worker:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    profiles: ["prod"]
+    command: ["./worker"]
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      redis:
+        condition: service_healthy
+    environment:
+      GO_DATABASE_URL: "postgresql://wh:wh@postgres:5432/warehouse_dev?sslmode=disable"
+      REDIS_URL: "redis://redis:6379"
+      PHOTO_STORAGE_DIR: "/data/photos"
+    volumes:
+      - photo-storage:/data/photos
+    networks:
+      - warehouse
+
+  scheduler:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    profiles: ["prod"]
+    command: ["./scheduler"]
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      redis:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: "postgresql://wh:wh@postgres:5432/warehouse_dev?sslmode=disable"
+      REDIS_URL: "redis:6379"
+      PHOTO_STORAGE_DIR: "/data/photos"
+    volumes:
+      - photo-storage:/data/photos
+    networks:
+      - warehouse
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    profiles: ["prod"]
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:3000"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 15s
+    networks:
+      - warehouse
+
+  angie:
+    image: docker.angie.software/angie:latest
+    profiles: ["prod"]
+    depends_on:
+      backend:
+        condition: service_healthy
+      frontend:
+        condition: service_healthy
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./docker/angie/angie.conf:/etc/angie/angie.conf:ro
+      - ./docker/angie/proxy_params.conf:/etc/angie/proxy_params.conf:ro
+      - ./.data/certs:/etc/angie/certs:ro
+    networks:
+      - warehouse
+
+networks:
+  warehouse:
+    driver: bridge
+
+volumes:
+  photo-storage:

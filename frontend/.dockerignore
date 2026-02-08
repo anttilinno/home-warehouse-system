@@ -1,0 +1,9 @@
+.next/
+node_modules/
+.env
+.env.*
+tests/
+e2e/
+playwright-report/
+test-results/
+coverage/
