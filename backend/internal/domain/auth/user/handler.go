@@ -342,13 +342,16 @@ func (h *Handler) getMe(ctx context.Context, input *struct{}) (*GetMeOutput, err
 
 	return &GetMeOutput{
 		Body: UserResponse{
-			ID:         user.ID(),
-			Email:      user.Email(),
-			FullName:   user.FullName(),
-			DateFormat: user.DateFormat(),
-			Language:   user.Language(),
-			Theme:      user.Theme(),
-			AvatarURL:  generateAvatarURL(user.AvatarPath()),
+			ID:                user.ID(),
+			Email:             user.Email(),
+			FullName:          user.FullName(),
+			DateFormat:        user.DateFormat(),
+			TimeFormat:        user.TimeFormat(),
+			ThousandSeparator: user.ThousandSeparator(),
+			DecimalSeparator:  user.DecimalSeparator(),
+			Language:          user.Language(),
+			Theme:             user.Theme(),
+			AvatarURL:         generateAvatarURL(user.AvatarPath()),
 		},
 	}, nil
 }
@@ -421,13 +424,16 @@ func (h *Handler) updateMe(ctx context.Context, input *UpdateMeInput) (*UpdateMe
 
 	return &UpdateMeOutput{
 		Body: UserResponse{
-			ID:         user.ID(),
-			Email:      user.Email(),
-			FullName:   user.FullName(),
-			DateFormat: user.DateFormat(),
-			Language:   user.Language(),
-			Theme:      user.Theme(),
-			AvatarURL:  generateAvatarURL(user.AvatarPath()),
+			ID:                user.ID(),
+			Email:             user.Email(),
+			FullName:          user.FullName(),
+			DateFormat:        user.DateFormat(),
+			TimeFormat:        user.TimeFormat(),
+			ThousandSeparator: user.ThousandSeparator(),
+			DecimalSeparator:  user.DecimalSeparator(),
+			Language:          user.Language(),
+			Theme:             user.Theme(),
+			AvatarURL:         generateAvatarURL(user.AvatarPath()),
 		},
 	}, nil
 }
@@ -456,9 +462,12 @@ func (h *Handler) updatePreferences(ctx context.Context, input *UpdatePrefsReque
 	}
 
 	user, err := h.svc.UpdatePreferences(ctx, authUser.ID, UpdatePreferencesInput{
-		DateFormat: input.Body.DateFormat,
-		Language:   input.Body.Language,
-		Theme:      input.Body.Theme,
+		DateFormat:        input.Body.DateFormat,
+		Language:          input.Body.Language,
+		Theme:             input.Body.Theme,
+		TimeFormat:        input.Body.TimeFormat,
+		ThousandSeparator: input.Body.ThousandSeparator,
+		DecimalSeparator:  input.Body.DecimalSeparator,
 	})
 	if err != nil {
 		return nil, huma.Error400BadRequest(err.Error())
@@ -466,13 +475,16 @@ func (h *Handler) updatePreferences(ctx context.Context, input *UpdatePrefsReque
 
 	return &UpdatePrefsResponse{
 		Body: UserResponse{
-			ID:         user.ID(),
-			Email:      user.Email(),
-			FullName:   user.FullName(),
-			DateFormat: user.DateFormat(),
-			Language:   user.Language(),
-			Theme:      user.Theme(),
-			AvatarURL:  generateAvatarURL(user.AvatarPath()),
+			ID:                user.ID(),
+			Email:             user.Email(),
+			FullName:          user.FullName(),
+			DateFormat:        user.DateFormat(),
+			TimeFormat:        user.TimeFormat(),
+			ThousandSeparator: user.ThousandSeparator(),
+			DecimalSeparator:  user.DecimalSeparator(),
+			Language:          user.Language(),
+			Theme:             user.Theme(),
+			AvatarURL:         generateAvatarURL(user.AvatarPath()),
 		},
 	}, nil
 }
@@ -507,16 +519,19 @@ func (h *Handler) listUsers(ctx context.Context, input *ListUsersInput) (*ListUs
 	users := make([]UserAdminResponse, len(result.Items))
 	for i, u := range result.Items {
 		users[i] = UserAdminResponse{
-			ID:          u.ID(),
-			Email:       u.Email(),
-			FullName:    u.FullName(),
-			IsActive:    u.IsActive(),
-			IsSuperuser: u.IsSuperuser(),
-			DateFormat:  u.DateFormat(),
-			Language:    u.Language(),
-			Theme:       u.Theme(),
-			CreatedAt:   u.CreatedAt(),
-			UpdatedAt:   u.UpdatedAt(),
+			ID:                u.ID(),
+			Email:             u.Email(),
+			FullName:          u.FullName(),
+			IsActive:          u.IsActive(),
+			IsSuperuser:       u.IsSuperuser(),
+			DateFormat:        u.DateFormat(),
+			TimeFormat:        u.TimeFormat(),
+			ThousandSeparator: u.ThousandSeparator(),
+			DecimalSeparator:  u.DecimalSeparator(),
+			Language:          u.Language(),
+			Theme:             u.Theme(),
+			CreatedAt:         u.CreatedAt(),
+			UpdatedAt:         u.UpdatedAt(),
 		}
 	}
 
@@ -550,16 +565,19 @@ func (h *Handler) getUserByID(ctx context.Context, input *GetUserByIDInput) (*Ge
 
 	return &GetUserByIDOutput{
 		Body: UserAdminResponse{
-			ID:          user.ID(),
-			Email:       user.Email(),
-			FullName:    user.FullName(),
-			IsActive:    user.IsActive(),
-			IsSuperuser: user.IsSuperuser(),
-			DateFormat:  user.DateFormat(),
-			Language:    user.Language(),
-			Theme:       user.Theme(),
-			CreatedAt:   user.CreatedAt(),
-			UpdatedAt:   user.UpdatedAt(),
+			ID:                user.ID(),
+			Email:             user.Email(),
+			FullName:          user.FullName(),
+			IsActive:          user.IsActive(),
+			IsSuperuser:       user.IsSuperuser(),
+			DateFormat:        user.DateFormat(),
+			TimeFormat:        user.TimeFormat(),
+			ThousandSeparator: user.ThousandSeparator(),
+			DecimalSeparator:  user.DecimalSeparator(),
+			Language:          user.Language(),
+			Theme:             user.Theme(),
+			CreatedAt:         user.CreatedAt(),
+			UpdatedAt:         user.UpdatedAt(),
 		},
 	}, nil
 }
@@ -749,8 +767,8 @@ func (h *Handler) uploadAvatar(w http.ResponseWriter, r *http.Request) {
 	// Return updated user
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, `{"id":"%s","email":"%s","full_name":"%s","date_format":"%s","language":"%s","theme":"%s","avatar_url":"/users/me/avatar"}`,
-		user.ID(), user.Email(), user.FullName(), user.DateFormat(), user.Language(), user.Theme())
+	fmt.Fprintf(w, `{"id":"%s","email":"%s","full_name":"%s","date_format":"%s","time_format":"%s","thousand_separator":"%s","decimal_separator":"%s","language":"%s","theme":"%s","avatar_url":"/users/me/avatar"}`,
+		user.ID(), user.Email(), user.FullName(), user.DateFormat(), user.TimeFormat(), user.ThousandSeparator(), user.DecimalSeparator(), user.Language(), user.Theme())
 }
 
 // serveAvatar handles GET /users/me/avatar
@@ -984,13 +1002,16 @@ type LogoutOutput struct {
 }
 
 type UserResponse struct {
-	ID         uuid.UUID `json:"id"`
-	Email      string    `json:"email"`
-	FullName   string    `json:"full_name"`
-	DateFormat string    `json:"date_format"`
-	Language   string    `json:"language"`
-	Theme      string    `json:"theme"`
-	AvatarURL  *string   `json:"avatar_url,omitempty"`
+	ID                uuid.UUID `json:"id"`
+	Email             string    `json:"email"`
+	FullName          string    `json:"full_name"`
+	DateFormat        string    `json:"date_format"`
+	TimeFormat        string    `json:"time_format"`
+	ThousandSeparator string    `json:"thousand_separator"`
+	DecimalSeparator  string    `json:"decimal_separator"`
+	Language          string    `json:"language"`
+	Theme             string    `json:"theme"`
+	AvatarURL         *string   `json:"avatar_url,omitempty"`
 }
 
 // generateAvatarURL returns the avatar URL if the user has an avatar.
@@ -1052,9 +1073,12 @@ type UpdatePasswordInput struct {
 }
 
 type UpdatePrefsRequestBody struct {
-	DateFormat string `json:"date_format,omitempty"`
-	Language   string `json:"language,omitempty"`
-	Theme      string `json:"theme,omitempty"`
+	DateFormat        string `json:"date_format,omitempty"`
+	TimeFormat        string `json:"time_format,omitempty"`
+	ThousandSeparator string `json:"thousand_separator,omitempty"`
+	DecimalSeparator  string `json:"decimal_separator,omitempty"`
+	Language          string `json:"language,omitempty"`
+	Theme             string `json:"theme,omitempty"`
 }
 
 type UpdatePrefsRequest struct {
@@ -1085,16 +1109,19 @@ type ListUsersResponse struct {
 }
 
 type UserAdminResponse struct {
-	ID          uuid.UUID `json:"id"`
-	Email       string    `json:"email"`
-	FullName    string    `json:"full_name"`
-	IsActive    bool      `json:"is_active"`
-	IsSuperuser bool      `json:"is_superuser"`
-	DateFormat  string    `json:"date_format"`
-	Language    string    `json:"language"`
-	Theme       string    `json:"theme"`
-	CreatedAt   time.Time `json:"created_at"`
-	UpdatedAt   time.Time `json:"updated_at"`
+	ID                uuid.UUID `json:"id"`
+	Email             string    `json:"email"`
+	FullName          string    `json:"full_name"`
+	IsActive          bool      `json:"is_active"`
+	IsSuperuser       bool      `json:"is_superuser"`
+	DateFormat        string    `json:"date_format"`
+	TimeFormat        string    `json:"time_format"`
+	ThousandSeparator string    `json:"thousand_separator"`
+	DecimalSeparator  string    `json:"decimal_separator"`
+	Language          string    `json:"language"`
+	Theme             string    `json:"theme"`
+	CreatedAt         time.Time `json:"created_at"`
+	UpdatedAt         time.Time `json:"updated_at"`
 }
 
 type GetUserByIDInput struct {
@@ -1201,12 +1228,15 @@ func RegisterProtectedRoutes(api huma.API, svc ServiceInterface) {
 
 		return &GetMeOutput{
 			Body: UserResponse{
-				ID:         user.ID(),
-				Email:      user.Email(),
-				FullName:   user.FullName(),
-				DateFormat: user.DateFormat(),
-				Language:   user.Language(),
-				Theme:      user.Theme(),
+				ID:                user.ID(),
+				Email:             user.Email(),
+				FullName:          user.FullName(),
+				DateFormat:        user.DateFormat(),
+				TimeFormat:        user.TimeFormat(),
+				ThousandSeparator: user.ThousandSeparator(),
+				DecimalSeparator:  user.DecimalSeparator(),
+				Language:          user.Language(),
+				Theme:             user.Theme(),
 			},
 		}, nil
 	})
@@ -1226,12 +1256,15 @@ func RegisterProtectedRoutes(api huma.API, svc ServiceInterface) {
 
 		return &UpdateMeOutput{
 			Body: UserResponse{
-				ID:         user.ID(),
-				Email:      user.Email(),
-				FullName:   user.FullName(),
-				DateFormat: user.DateFormat(),
-				Language:   user.Language(),
-				Theme:      user.Theme(),
+				ID:                user.ID(),
+				Email:             user.Email(),
+				FullName:          user.FullName(),
+				DateFormat:        user.DateFormat(),
+				TimeFormat:        user.TimeFormat(),
+				ThousandSeparator: user.ThousandSeparator(),
+				DecimalSeparator:  user.DecimalSeparator(),
+				Language:          user.Language(),
+				Theme:             user.Theme(),
 			},
 		}, nil
 	})
@@ -1260,9 +1293,12 @@ func RegisterProtectedRoutes(api huma.API, svc ServiceInterface) {
 		}
 
 		user, err := svc.UpdatePreferences(ctx, authUser.ID, UpdatePreferencesInput{
-			DateFormat: input.Body.DateFormat,
-			Language:   input.Body.Language,
-			Theme:      input.Body.Theme,
+			DateFormat:        input.Body.DateFormat,
+			Language:          input.Body.Language,
+			Theme:             input.Body.Theme,
+			TimeFormat:        input.Body.TimeFormat,
+			ThousandSeparator: input.Body.ThousandSeparator,
+			DecimalSeparator:  input.Body.DecimalSeparator,
 		})
 		if err != nil {
 			return nil, huma.Error400BadRequest(err.Error())
@@ -1270,12 +1306,15 @@ func RegisterProtectedRoutes(api huma.API, svc ServiceInterface) {
 
 		return &UpdatePrefsResponse{
 			Body: UserResponse{
-				ID:         user.ID(),
-				Email:      user.Email(),
-				FullName:   user.FullName(),
-				DateFormat: user.DateFormat(),
-				Language:   user.Language(),
-				Theme:      user.Theme(),
+				ID:                user.ID(),
+				Email:             user.Email(),
+				FullName:          user.FullName(),
+				DateFormat:        user.DateFormat(),
+				TimeFormat:        user.TimeFormat(),
+				ThousandSeparator: user.ThousandSeparator(),
+				DecimalSeparator:  user.DecimalSeparator(),
+				Language:          user.Language(),
+				Theme:             user.Theme(),
 			},
 		}, nil
 	})

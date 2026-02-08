@@ -156,9 +156,12 @@ func (s *Service) UpdatePassword(ctx context.Context, id uuid.UUID, currentPassw
 
 // UpdatePreferencesInput holds the input for updating user preferences.
 type UpdatePreferencesInput struct {
-	DateFormat string
-	Language   string
-	Theme      string
+	DateFormat        string
+	Language          string
+	Theme             string
+	TimeFormat        string
+	ThousandSeparator string
+	DecimalSeparator  string
 }
 
 // UpdatePreferences updates a user's preferences.
@@ -168,7 +171,9 @@ func (s *Service) UpdatePreferences(ctx context.Context, id uuid.UUID, input Upd
 		return nil, err
 	}
 
-	user.UpdatePreferences(input.DateFormat, input.Language, input.Theme)
+	if err := user.UpdatePreferences(input.DateFormat, input.Language, input.Theme, input.TimeFormat, input.ThousandSeparator, input.DecimalSeparator); err != nil {
+		return nil, err
+	}
 
 	if err := s.repo.Save(ctx, user); err != nil {
 		return nil, err

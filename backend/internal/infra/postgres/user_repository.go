@@ -26,8 +26,8 @@ func NewUserRepository(pool *pgxpool.Pool) *UserRepository {
 // Save persists a user (create or update).
 func (r *UserRepository) Save(ctx context.Context, u *user.User) error {
 	query := `
-		INSERT INTO auth.users (id, email, full_name, password_hash, is_active, is_superuser, date_format, language, theme, created_at, updated_at)
-		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+		INSERT INTO auth.users (id, email, full_name, password_hash, is_active, is_superuser, date_format, language, theme, time_format, thousand_separator, decimal_separator, created_at, updated_at)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
 		ON CONFLICT (id) DO UPDATE SET
 			email = EXCLUDED.email,
 			full_name = EXCLUDED.full_name,
@@ -36,6 +36,9 @@ func (r *UserRepository) Save(ctx context.Context, u *user.User) error {
 			date_format = EXCLUDED.date_format,
 			language = EXCLUDED.language,
 			theme = EXCLUDED.theme,
+			time_format = EXCLUDED.time_format,
+			thousand_separator = EXCLUDED.thousand_separator,
+			decimal_separator = EXCLUDED.decimal_separator,
 			updated_at = EXCLUDED.updated_at
 	`
 
@@ -49,6 +52,9 @@ func (r *UserRepository) Save(ctx context.Context, u *user.User) error {
 		u.DateFormat(),
 		u.Language(),
 		u.Theme(),
+		u.TimeFormat(),
+		u.ThousandSeparator(),
+		u.DecimalSeparator(),
 		u.CreatedAt(),
 		u.UpdatedAt(),
 	)
@@ -59,7 +65,7 @@ func (r *UserRepository) Save(ctx context.Context, u *user.User) error {
 // FindByID retrieves a user by ID.
 func (r *UserRepository) FindByID(ctx context.Context, id uuid.UUID) (*user.User, error) {
 	query := `
-		SELECT id, email, full_name, password_hash, is_active, is_superuser, date_format, language, theme, avatar_path, created_at, updated_at
+		SELECT id, email, full_name, password_hash, is_active, is_superuser, date_format, language, theme, time_format, thousand_separator, decimal_separator, avatar_path, created_at, updated_at
 		FROM auth.users
 		WHERE id = $1
 	`
@@ -71,7 +77,7 @@ func (r *UserRepository) FindByID(ctx context.Context, id uuid.UUID) (*user.User
 // FindByEmail retrieves a user by email.
 func (r *UserRepository) FindByEmail(ctx context.Context, email string) (*user.User, error) {
 	query := `
-		SELECT id, email, full_name, password_hash, is_active, is_superuser, date_format, language, theme, avatar_path, created_at, updated_at
+		SELECT id, email, full_name, password_hash, is_active, is_superuser, date_format, language, theme, time_format, thousand_separator, decimal_separator, avatar_path, created_at, updated_at
 		FROM auth.users
 		WHERE email = $1
 	`
@@ -91,7 +97,7 @@ func (r *UserRepository) List(ctx context.Context, pagination shared.Pagination)
 
 	// Get users
 	query := `
-		SELECT id, email, full_name, password_hash, is_active, is_superuser, date_format, language, theme, avatar_path, created_at, updated_at
+		SELECT id, email, full_name, password_hash, is_active, is_superuser, date_format, language, theme, time_format, thousand_separator, decimal_separator, avatar_path, created_at, updated_at
 		FROM auth.users
 		WHERE is_active = true
 		ORDER BY created_at DESC
@@ -134,21 +140,24 @@ func (r *UserRepository) ExistsByEmail(ctx context.Context, email string) (bool,
 // scanUser scans a single row into a User.
 func (r *UserRepository) scanUser(row pgx.Row) (*user.User, error) {
 	var (
-		id           uuid.UUID
-		email        string
-		fullName     string
-		passwordHash string
-		isActive     bool
-		isSuperuser  bool
-		dateFormat   string
-		language     string
-		theme        string
-		avatarPath   *string
-		createdAt    pgtype.Timestamptz
-		updatedAt    pgtype.Timestamptz
+		id                uuid.UUID
+		email             string
+		fullName          string
+		passwordHash      string
+		isActive          bool
+		isSuperuser       bool
+		dateFormat        string
+		language          string
+		theme             string
+		timeFormat        string
+		thousandSeparator string
+		decimalSeparator  string
+		avatarPath        *string
+		createdAt         pgtype.Timestamptz
+		updatedAt         pgtype.Timestamptz
 	)
 
-	err := row.Scan(&id, &email, &fullName, &passwordHash, &isActive, &isSuperuser, &dateFormat, &language, &theme, &avatarPath, &createdAt, &updatedAt)
+	err := row.Scan(&id, &email, &fullName, &passwordHash, &isActive, &isSuperuser, &dateFormat, &language, &theme, &timeFormat, &thousandSeparator, &decimalSeparator, &avatarPath, &createdAt, &updatedAt)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, shared.ErrNotFound
@@ -156,32 +165,35 @@ func (r *UserRepository) scanUser(row pgx.Row) (*user.User, error) {
 		return nil, err
 	}
 
-	return user.Reconstruct(id, email, fullName, passwordHash, isActive, isSuperuser, dateFormat, language, theme, avatarPath, createdAt.Time, updatedAt.Time), nil
+	return user.Reconstruct(id, email, fullName, passwordHash, isActive, isSuperuser, dateFormat, language, theme, timeFormat, thousandSeparator, decimalSeparator, avatarPath, createdAt.Time, updatedAt.Time), nil
 }
 
 // scanUserFromRows scans a row from Rows into a User.
 func (r *UserRepository) scanUserFromRows(rows pgx.Rows) (*user.User, error) {
 	var (
-		id           uuid.UUID
-		email        string
-		fullName     string
-		passwordHash string
-		isActive     bool
-		isSuperuser  bool
-		dateFormat   string
-		language     string
-		theme        string
-		avatarPath   *string
-		createdAt    pgtype.Timestamptz
-		updatedAt    pgtype.Timestamptz
+		id                uuid.UUID
+		email             string
+		fullName          string
+		passwordHash      string
+		isActive          bool
+		isSuperuser       bool
+		dateFormat        string
+		language          string
+		theme             string
+		timeFormat        string
+		thousandSeparator string
+		decimalSeparator  string
+		avatarPath        *string
+		createdAt         pgtype.Timestamptz
+		updatedAt         pgtype.Timestamptz
 	)
 
-	err := rows.Scan(&id, &email, &fullName, &passwordHash, &isActive, &isSuperuser, &dateFormat, &language, &theme, &avatarPath, &createdAt, &updatedAt)
+	err := rows.Scan(&id, &email, &fullName, &passwordHash, &isActive, &isSuperuser, &dateFormat, &language, &theme, &timeFormat, &thousandSeparator, &decimalSeparator, &avatarPath, &createdAt, &updatedAt)
 	if err != nil {
 		return nil, err
 	}
 
-	return user.Reconstruct(id, email, fullName, passwordHash, isActive, isSuperuser, dateFormat, language, theme, avatarPath, createdAt.Time, updatedAt.Time), nil
+	return user.Reconstruct(id, email, fullName, passwordHash, isActive, isSuperuser, dateFormat, language, theme, timeFormat, thousandSeparator, decimalSeparator, avatarPath, createdAt.Time, updatedAt.Time), nil
 }
 
 // UpdateAvatar updates a user's avatar path.
@@ -190,7 +202,7 @@ func (r *UserRepository) UpdateAvatar(ctx context.Context, id uuid.UUID, path *s
 		UPDATE auth.users
 		SET avatar_path = $2, updated_at = now()
 		WHERE id = $1
-		RETURNING id, email, full_name, password_hash, is_active, is_superuser, date_format, language, theme, avatar_path, created_at, updated_at
+		RETURNING id, email, full_name, password_hash, is_active, is_superuser, date_format, language, theme, time_format, thousand_separator, decimal_separator, avatar_path, created_at, updated_at
 	`
 
 	row := r.pool.QueryRow(ctx, query, id, path)
@@ -203,7 +215,7 @@ func (r *UserRepository) UpdateEmail(ctx context.Context, id uuid.UUID, email st
 		UPDATE auth.users
 		SET email = $2, updated_at = now()
 		WHERE id = $1
-		RETURNING id, email, full_name, password_hash, is_active, is_superuser, date_format, language, theme, avatar_path, created_at, updated_at
+		RETURNING id, email, full_name, password_hash, is_active, is_superuser, date_format, language, theme, time_format, thousand_separator, decimal_separator, avatar_path, created_at, updated_at
 	`
 
 	row := r.pool.QueryRow(ctx, query, id, email)
