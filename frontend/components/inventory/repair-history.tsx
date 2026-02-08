@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { format } from "date-fns";
 import { toast } from "sonner";
 import { useDateFormat } from "@/lib/hooks/use-date-format";
+import { useNumberFormat } from "@/lib/hooks/use-number-format";
 import {
   Plus,
   Wrench,
@@ -128,19 +129,19 @@ function StatusBadge({ status }: { status: RepairStatus }) {
   );
 }
 
-function formatCurrency(amountCents: number | null, currencyCode: string | null): string {
-  if (amountCents === null) return "-";
-  const amount = amountCents / 100;
-  const code = currencyCode || "EUR";
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: code,
-  }).format(amount);
-}
-
 export function RepairHistory({ inventoryId, workspaceId, onRepairComplete }: RepairHistoryProps) {
   const t = useTranslations("repairs");
   const { formatDate, placeholder: datePlaceholder } = useDateFormat();
+  const { formatNumber, parseNumber, decimalSeparator } = useNumberFormat();
+
+  // Format currency using user's number format
+  const formatCurrencyValue = useCallback((amountCents: number | null, currencyCode: string | null): string => {
+    if (amountCents === null) return "-";
+    const amount = amountCents / 100;
+    const currency = currencyCode || "EUR";
+    const symbol = currency === "USD" ? "$" : currency === "EUR" ? "\u20AC" : currency + " ";
+    return `${symbol}${formatNumber(amount, 2)}`;
+  }, [formatNumber]);
 
   // State
   const [repairs, setRepairs] = useState<RepairLog[]>([]);
@@ -249,9 +250,13 @@ export function RepairHistory({ inventoryId, workspaceId, onRepairComplete }: Re
         data.repair_date = formRepairDate;
       }
       if (formCost) {
-        const costCents = Math.round(parseFloat(formCost) * 100);
-        if (!isNaN(costCents) && costCents > 0) {
-          data.cost = costCents;
+        const parsedCost = parseNumber(formCost);
+        if (parsedCost === null) {
+          toast.error(t("error"), { description: "Invalid cost format" });
+          return;
+        }
+        if (parsedCost > 0) {
+          data.cost = Math.round(parsedCost * 100);
           data.currency_code = formCurrencyCode;
         }
       }
@@ -383,7 +388,7 @@ export function RepairHistory({ inventoryId, workspaceId, onRepairComplete }: Re
               <div className="flex flex-wrap gap-2">
                 {costSummary.map((summary) => (
                   <Badge key={summary.currency_code} variant="secondary">
-                    {formatCurrency(summary.total_cents, summary.currency_code)} ({summary.repair_count} {summary.repair_count === 1 ? "repair" : "repairs"})
+                    {formatCurrencyValue(summary.total_cents, summary.currency_code)} ({summary.repair_count} {summary.repair_count === 1 ? "repair" : "repairs"})
                   </Badge>
                 ))}
               </div>
@@ -452,7 +457,7 @@ export function RepairHistory({ inventoryId, workspaceId, onRepairComplete }: Re
                     {formatDate(repair.repair_date)}
                   </TableCell>
                   <TableCell>
-                    {formatCurrency(repair.cost, repair.currency_code)}
+                    {formatCurrencyValue(repair.cost, repair.currency_code)}
                   </TableCell>
                   <TableCell>
                     {repair.service_provider || "-"}
@@ -559,12 +564,11 @@ export function RepairHistory({ inventoryId, workspaceId, onRepairComplete }: Re
                 <Label htmlFor="cost">{t("cost")}</Label>
                 <Input
                   id="cost"
-                  type="number"
-                  step="0.01"
-                  min="0"
+                  type="text"
+                  inputMode="decimal"
                   value={formCost}
                   onChange={(e) => setFormCost(e.target.value)}
-                  placeholder="0.00"
+                  placeholder={`0${decimalSeparator}00`}
                 />
               </div>
 
@@ -735,7 +739,7 @@ export function RepairHistory({ inventoryId, workspaceId, onRepairComplete }: Re
                 <div>
                   <span className="text-muted-foreground">{t("cost")}:</span>
                   <span className="ml-2 font-medium">
-                    {formatCurrency(selectedRepair.cost, selectedRepair.currency_code)}
+                    {formatCurrencyValue(selectedRepair.cost, selectedRepair.currency_code)}
                   </span>
                 </div>
                 <div>
