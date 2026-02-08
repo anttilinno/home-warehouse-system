@@ -95,12 +95,14 @@ interface LoansFilterControlsProps {
   borrowers: Borrower[];
   addFilter: (filter: any) => void;
   getFilter: (key: string) => any;
+  datePlaceholder: string;
 }
 
 function LoansFilterControls({
   borrowers,
   addFilter,
   getFilter,
+  datePlaceholder,
 }: LoansFilterControlsProps) {
   const [selectedBorrowers, setSelectedBorrowers] = useState<string[]>([]);
   const [selectedStatuses, setSelectedStatuses] = useState<string[]>([]);
@@ -290,7 +292,7 @@ function LoansFilterControls({
 
       {/* Loaned Date Range */}
       <div className="space-y-2">
-        <Label className="text-sm font-medium">Loaned Date</Label>
+        <Label className="text-sm font-medium">Loaned Date <span className="text-xs text-muted-foreground font-normal">({datePlaceholder})</span></Label>
         <div className="space-y-2">
           <Input
             type="date"
@@ -309,7 +311,7 @@ function LoansFilterControls({
 
       {/* Due Date Range */}
       <div className="space-y-2">
-        <Label className="text-sm font-medium">Due Date</Label>
+        <Label className="text-sm font-medium">Due Date <span className="text-xs text-muted-foreground font-normal">({datePlaceholder})</span></Label>
         <div className="space-y-2">
           <Input
             type="date"
@@ -398,7 +400,7 @@ function LoanStatusBadge({ loan }: { loan: Loan }) {
 export default function LoansPage() {
   const t = useTranslations("loans");
   const { workspaceId, isLoading: workspaceLoading } = useWorkspace();
-  const { formatDate } = useDateFormat();
+  const { formatDate, placeholder: datePlaceholder } = useDateFormat();
 
   const [borrowers, setBorrowers] = useState<Borrower[]>([]);
   const [items, setItems] = useState<Item[]>([]);
@@ -889,6 +891,7 @@ export default function LoansPage() {
                   borrowers={borrowers}
                   addFilter={addFilter}
                   getFilter={getFilter}
+                  datePlaceholder={datePlaceholder}
                 />
               </FilterPopover>
               <Button
@@ -1162,7 +1165,7 @@ export default function LoansPage() {
 
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label htmlFor="new_due_date">New Due Date</Label>
+              <Label htmlFor="new_due_date">New Due Date <span className="text-xs text-muted-foreground font-normal">({datePlaceholder})</span></Label>
               <Input
                 id="new_due_date"
                 type="date"
@@ -1283,7 +1286,7 @@ export default function LoansPage() {
 
               {/* Loaned Date */}
               <div className="space-y-2">
-                <Label htmlFor="loaned_at">Loaned Date *</Label>
+                <Label htmlFor="loaned_at">Loaned Date * <span className="text-xs text-muted-foreground font-normal">({datePlaceholder})</span></Label>
                 <Input
                   id="loaned_at"
                   type="date"
@@ -1296,7 +1299,7 @@ export default function LoansPage() {
 
             {/* Due Date */}
             <div className="space-y-2">
-              <Label htmlFor="due_date">Due Date</Label>
+              <Label htmlFor="due_date">Due Date <span className="text-xs text-muted-foreground font-normal">({datePlaceholder})</span></Label>
               <Input
                 id="due_date"
                 type="date"

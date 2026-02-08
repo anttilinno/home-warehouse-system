@@ -140,7 +140,7 @@ function formatCurrency(amountCents: number | null, currencyCode: string | null)
 
 export function RepairHistory({ inventoryId, workspaceId, onRepairComplete }: RepairHistoryProps) {
   const t = useTranslations("repairs");
-  const { formatDate } = useDateFormat();
+  const { formatDate, placeholder: datePlaceholder } = useDateFormat();
 
   // State
   const [repairs, setRepairs] = useState<RepairLog[]>([]);
@@ -534,7 +534,7 @@ export function RepairHistory({ inventoryId, workspaceId, onRepairComplete }: Re
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="repairDate">{t("date")}</Label>
+                <Label htmlFor="repairDate">{t("date")} <span className="text-xs text-muted-foreground font-normal">({datePlaceholder})</span></Label>
                 <Input
                   id="repairDate"
                   type="date"
@@ -610,7 +610,7 @@ export function RepairHistory({ inventoryId, workspaceId, onRepairComplete }: Re
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="reminderDate">{t("reminderDate")}</Label>
+                <Label htmlFor="reminderDate">{t("reminderDate")} <span className="text-xs text-muted-foreground font-normal">({datePlaceholder})</span></Label>
                 <Input
                   id="reminderDate"
                   type="date"

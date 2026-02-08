@@ -28,6 +28,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { useDateFormat } from "@/lib/hooks/use-date-format";
 import { getFilteredConflicts } from "@/lib/sync/conflict-resolver";
 import type { ConflictLogEntry, MutationEntityType, ConflictResolution } from "@/lib/db/types";
 
@@ -148,6 +149,7 @@ function ConflictListSkeleton() {
 
 export default function SyncHistoryPage() {
   const t = useTranslations("syncHistory");
+  const { placeholder: datePlaceholder } = useDateFormat();
 
   const [conflicts, setConflicts] = useState<ConflictLogEntry[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -238,7 +240,7 @@ export default function SyncHistoryPage() {
         <div className="flex items-center gap-2 flex-wrap">
           <div className="flex items-center gap-2">
             <Label htmlFor="from-date" className="text-sm text-muted-foreground whitespace-nowrap">
-              {t("dateRange.from")}
+              {t("dateRange.from")} <span className="text-xs font-normal">({datePlaceholder})</span>
             </Label>
             <Input
               id="from-date"
@@ -250,7 +252,7 @@ export default function SyncHistoryPage() {
           </div>
           <div className="flex items-center gap-2">
             <Label htmlFor="to-date" className="text-sm text-muted-foreground whitespace-nowrap">
-              {t("dateRange.to")}
+              {t("dateRange.to")} <span className="text-xs font-normal">({datePlaceholder})</span>
             </Label>
             <Input
               id="to-date"
