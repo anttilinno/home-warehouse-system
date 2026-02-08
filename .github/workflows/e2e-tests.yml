@@ -8,7 +8,8 @@ on:
   workflow_dispatch:
 
 env:
-  # Frontend environment variables
+  GO_VERSION: "1.25"
+  BUN_VERSION: "latest"
   NEXT_PUBLIC_API_URL: http://localhost:8000
 
 jobs:
@@ -16,14 +17,85 @@ jobs:
     timeout-minutes: 30
     runs-on: ubuntu-latest
 
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: wh
+          POSTGRES_PASSWORD: wh
+          POSTGRES_DB: warehouse_dev
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      redis:
+        image: redis:7
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Install system dependencies
+        run: sudo apt-get update && sudo apt-get install -y libwebp-dev
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          cache-dependency-path: backend/go.sum
+
+      - name: Install dbmate
+        run: |
+          curl -fsSL -o /usr/local/bin/dbmate https://github.com/amacneil/dbmate/releases/latest/download/dbmate-linux-amd64
+          chmod +x /usr/local/bin/dbmate
+
+      - name: Run migrations
+        working-directory: backend
+        run: dbmate up
+        env:
+          DATABASE_URL: postgres://wh:wh@localhost:5432/warehouse_dev?sslmode=disable
+
+      - name: Build backend
+        working-directory: backend
+        run: go build -o server ./cmd/server/
+
+      - name: Start backend
+        working-directory: backend
+        run: ./server &
+        env:
+          PORT: "8000"
+          GO_DATABASE_URL: postgresql://wh:wh@localhost:5432/warehouse_dev?sslmode=disable
+          REDIS_URL: redis://localhost:6379
+          JWT_SECRET: test-secret-key
+          DEBUG: "true"
+
+      - name: Wait for backend
+        run: |
+          for i in $(seq 1 30); do
+            if curl -sf http://localhost:8000/health > /dev/null 2>&1; then
+              echo "Backend is ready"
+              exit 0
+            fi
+            sleep 1
+          done
+          echo "Backend failed to start"
+          exit 1
+
       - name: Setup Bun
         uses: oven-sh/setup-bun@v1
         with:
-          bun-version: latest
+          bun-version: ${{ env.BUN_VERSION }}
 
       - name: Install frontend dependencies
         working-directory: frontend
@@ -33,21 +105,14 @@ jobs:
         working-directory: frontend
         run: bunx playwright install --with-deps chromium
 
-      - name: Build frontend (for static checks)
-        working-directory: frontend
-        run: bun run build
-        env:
-          NEXT_PUBLIC_API_URL: http://localhost:8000
-
       - name: Run Playwright tests
         working-directory: frontend
         run: bun run test
         env:
           CI: true
           NEXT_PUBLIC_API_URL: http://localhost:8000
-          # Test credentials (for auth tests)
-          TEST_USER_EMAIL: test@example.com
-          TEST_USER_PASSWORD: testpassword123
+          TEST_USER_EMAIL: playwright@test.local
+          TEST_USER_PASSWORD: TestPassword123!
 
       - name: Upload Playwright report
         uses: actions/upload-artifact@v4
@@ -71,14 +136,83 @@ jobs:
     runs-on: ubuntu-latest
     if: github.event_name == 'pull_request'
 
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: wh
+          POSTGRES_PASSWORD: wh
+          POSTGRES_DB: warehouse_dev
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      redis:
+        image: redis:7
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Install system dependencies
+        run: sudo apt-get update && sudo apt-get install -y libwebp-dev
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          cache-dependency-path: backend/go.sum
+
+      - name: Install dbmate
+        run: |
+          curl -fsSL -o /usr/local/bin/dbmate https://github.com/amacneil/dbmate/releases/latest/download/dbmate-linux-amd64
+          chmod +x /usr/local/bin/dbmate
+
+      - name: Run migrations
+        working-directory: backend
+        run: dbmate up
+        env:
+          DATABASE_URL: postgres://wh:wh@localhost:5432/warehouse_dev?sslmode=disable
+
+      - name: Build and start backend
+        working-directory: backend
+        run: |
+          go build -o server ./cmd/server/
+          ./server &
+        env:
+          PORT: "8000"
+          GO_DATABASE_URL: postgresql://wh:wh@localhost:5432/warehouse_dev?sslmode=disable
+          REDIS_URL: redis://localhost:6379
+          JWT_SECRET: test-secret-key
+          DEBUG: "true"
+
+      - name: Wait for backend
+        run: |
+          for i in $(seq 1 30); do
+            if curl -sf http://localhost:8000/health > /dev/null 2>&1; then
+              echo "Backend is ready"
+              exit 0
+            fi
+            sleep 1
+          done
+          echo "Backend failed to start"
+          exit 1
+
       - name: Setup Bun
         uses: oven-sh/setup-bun@v1
         with:
-          bun-version: latest
+          bun-version: ${{ env.BUN_VERSION }}
 
       - name: Install frontend dependencies
         working-directory: frontend
@@ -108,14 +242,83 @@ jobs:
     timeout-minutes: 15
     runs-on: ubuntu-latest
 
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: wh
+          POSTGRES_PASSWORD: wh
+          POSTGRES_DB: warehouse_dev
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      redis:
+        image: redis:7
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Install system dependencies
+        run: sudo apt-get update && sudo apt-get install -y libwebp-dev
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          cache-dependency-path: backend/go.sum
+
+      - name: Install dbmate
+        run: |
+          curl -fsSL -o /usr/local/bin/dbmate https://github.com/amacneil/dbmate/releases/latest/download/dbmate-linux-amd64
+          chmod +x /usr/local/bin/dbmate
+
+      - name: Run migrations
+        working-directory: backend
+        run: dbmate up
+        env:
+          DATABASE_URL: postgres://wh:wh@localhost:5432/warehouse_dev?sslmode=disable
+
+      - name: Build and start backend
+        working-directory: backend
+        run: |
+          go build -o server ./cmd/server/
+          ./server &
+        env:
+          PORT: "8000"
+          GO_DATABASE_URL: postgresql://wh:wh@localhost:5432/warehouse_dev?sslmode=disable
+          REDIS_URL: redis://localhost:6379
+          JWT_SECRET: test-secret-key
+          DEBUG: "true"
+
+      - name: Wait for backend
+        run: |
+          for i in $(seq 1 30); do
+            if curl -sf http://localhost:8000/health > /dev/null 2>&1; then
+              echo "Backend is ready"
+              exit 0
+            fi
+            sleep 1
+          done
+          echo "Backend failed to start"
+          exit 1
+
       - name: Setup Bun
         uses: oven-sh/setup-bun@v1
         with:
-          bun-version: latest
+          bun-version: ${{ env.BUN_VERSION }}
 
       - name: Install frontend dependencies
         working-directory: frontend
