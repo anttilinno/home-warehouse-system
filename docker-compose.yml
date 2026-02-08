@@ -2,7 +2,6 @@ services:
   postgres:
     image: postgres:18
     container_name: warehouse-postgres
-    user: "1000:1000"
     environment:
       POSTGRES_USER: wh
       POSTGRES_PASSWORD: wh
@@ -22,7 +21,6 @@ services:
   redis:
     image: redis:latest
     container_name: warehouse-redis
-    user: "1000:1000"
     ports:
       - "6379:6379"
     volumes:
@@ -32,7 +30,6 @@ services:
   docspell-postgres:
     image: postgres:18
     container_name: warehouse-docspell-postgres
-    user: "1000:1000"
     environment:
       POSTGRES_USER: docspell
       POSTGRES_PASSWORD: docspell
@@ -52,7 +49,6 @@ services:
   docspell-restserver:
     image: docspell/restserver:latest
     container_name: warehouse-docspell-restserver
-    user: "1000:1000"
     depends_on:
       docspell-postgres:
         condition: service_healthy
@@ -74,7 +70,6 @@ services:
   docspell-joex:
     image: docspell/joex:latest
     container_name: warehouse-docspell-joex
-    user: "1000:1000"
     depends_on:
       - docspell-restserver
     environment:

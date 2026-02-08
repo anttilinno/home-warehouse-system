@@ -35,7 +35,11 @@ export function ActiveSessions() {
       setIsLoading(true);
       setError(null);
       const data = await authApi.getSessions();
-      setSessions(data);
+      // Sort by last_active_at and take only the last 5 sessions
+      const sortedSessions = data
+        .sort((a, b) => new Date(b.last_active_at).getTime() - new Date(a.last_active_at).getTime())
+        .slice(0, 5);
+      setSessions(sortedSessions);
     } catch {
       setError(t("loadError"));
     } finally {

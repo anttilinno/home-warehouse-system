@@ -4,7 +4,6 @@ import { useState } from "react";
 import { useTranslations } from "next-intl";
 import {
   Pencil,
-  Calendar,
   Bell,
   BellOff,
   Settings,
@@ -13,7 +12,6 @@ import {
   Check,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { format } from "date-fns";
 
 import { cn } from "@/lib/utils";
 import { Link } from "@/i18n/navigation";
@@ -29,38 +27,20 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-  DropdownMenuSub,
-  DropdownMenuSubTrigger,
-  DropdownMenuSubContent,
-  DropdownMenuRadioGroup,
-  DropdownMenuRadioItem,
   DropdownMenuShortcut,
 } from "@/components/ui/dropdown-menu";
 import { ProfileEditSheet } from "./profile-edit-sheet";
 import { toast } from "sonner";
-import type { DateFormatOption } from "@/lib/hooks/use-date-format";
 
 interface UserMenuProps {
   collapsed?: boolean;
 }
 
-const DATE_FORMAT_OPTIONS: {
-  value: DateFormatOption;
-  label: string;
-  dateFns: string;
-}[] = [
-  { value: "MM/DD/YY", label: "MM/DD/YY", dateFns: "MM/dd/yy" },
-  { value: "DD/MM/YYYY", label: "DD/MM/YYYY", dateFns: "dd/MM/yyyy" },
-  { value: "YYYY-MM-DD", label: "YYYY-MM-DD", dateFns: "yyyy-MM-dd" },
-];
-
 export function UserMenu({ collapsed = false }: UserMenuProps) {
   const t = useTranslations("dashboard.userMenu");
-  const tDateFormat = useTranslations("settings.dateFormat");
   const router = useRouter();
-  const { user, isLoading, logout, refreshUser } = useAuth();
+  const { user, isLoading, logout } = useAuth();
   const [profileSheetOpen, setProfileSheetOpen] = useState(false);
-  const [isUpdatingDateFormat, setIsUpdatingDateFormat] = useState(false);
 
   // Push notifications
   const {
@@ -109,32 +89,6 @@ export function UserMenu({ collapsed = false }: UserMenuProps) {
   const handleLogout = () => {
     logout();
     router.push("/login");
-  };
-
-  const currentDateFormat = (user.date_format as DateFormatOption) || "YYYY-MM-DD";
-  const exampleDate = new Date();
-
-  const handleDateFormatChange = async (value: string) => {
-    if (value === currentDateFormat) return;
-
-    setIsUpdatingDateFormat(true);
-    try {
-      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/me/preferences`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("auth_token")}`,
-        },
-        credentials: "include",
-        body: JSON.stringify({ date_format: value }),
-      });
-      await refreshUser();
-      toast.success(tDateFormat("saved"));
-    } catch {
-      toast.error(tDateFormat("saveError"));
-    } finally {
-      setIsUpdatingDateFormat(false);
-    }
   };
 
   const handlePushToggle = async () => {
@@ -211,37 +165,6 @@ export function UserMenu({ collapsed = false }: UserMenuProps) {
             <Pencil className="mr-2 h-4 w-4" />
             {t("editProfile")}
           </DropdownMenuItem>
-
-          {/* Date Format Sub-menu */}
-          <DropdownMenuSub>
-            <DropdownMenuSubTrigger disabled={isUpdatingDateFormat}>
-              {isUpdatingDateFormat ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              ) : (
-                <Calendar className="mr-2 h-4 w-4" />
-              )}
-              {t("dateFormat")}
-            </DropdownMenuSubTrigger>
-            <DropdownMenuSubContent>
-              <DropdownMenuRadioGroup
-                value={currentDateFormat}
-                onValueChange={handleDateFormatChange}
-              >
-                {DATE_FORMAT_OPTIONS.map((option) => (
-                  <DropdownMenuRadioItem
-                    key={option.value}
-                    value={option.value}
-                    disabled={isUpdatingDateFormat}
-                  >
-                    {option.label}
-                    <DropdownMenuShortcut>
-                      {format(exampleDate, option.dateFns)}
-                    </DropdownMenuShortcut>
-                  </DropdownMenuRadioItem>
-                ))}
-              </DropdownMenuRadioGroup>
-            </DropdownMenuSubContent>
-          </DropdownMenuSub>
 
           {/* Push Notifications Toggle */}
           {showPushToggle && (
