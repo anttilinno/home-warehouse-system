@@ -90,17 +90,25 @@ Reliable inventory access anywhere — online or offline — with seamless sync.
 - ⚠ pendingchange 57.3% — handler.go tested via integration, not unit tests
 - ⚠ jobs 20.1% — architectural constraint (ProcessTask requires database)
 
+**v1.5 Settings Enhancement (shipped 2026-02-03):**
+
+- ✓ User can update profile (name, email)
+- ✓ User can upload/change avatar
+- ✓ User can set date format preference (MM/DD/YY, DD/MM/YYYY, YYYY-MM-DD, custom)
+- ✓ User can change password
+- ✓ User can view active sessions
+- ✓ User can revoke/logout sessions
+- ✓ User can delete their account
+
 ### Active
 
-**v1.5 Settings Enhancement (in progress):**
+**v1.6 Format Personalization (in progress):**
 
-- [ ] User can update profile (name, email)
-- [ ] User can upload/change avatar
-- [ ] User can set date format preference (MM/DD/YY, DD/MM/YY, YYYY-MM-DD)
-- [ ] User can change password
-- [ ] User can view active sessions
-- [ ] User can revoke/logout sessions
-- [ ] User can delete their account
+- [ ] Date format applied consistently everywhere (displays, inputs, pickers, validation, exports)
+- [ ] Time format preference (12-hour vs 24-hour)
+- [ ] Number format preference (thousand/decimal separators)
+- [ ] Format settings UI in user settings page
+- [ ] All components use format hooks (useDateFormat, useTimeFormat, useNumberFormat)
 
 ### Out of Scope
 
@@ -113,7 +121,8 @@ Reliable inventory access anywhere — online or offline — with seamless sync.
 
 ## Current State
 
-**Shipped:** v1.4 Test Overhaul (2026-01-31)
+**Shipped:** v1.5 Settings Enhancement (2026-02-03)
+**Current Milestone:** v1.6 Format Personalization
 
 **Tech stack:**
 - Backend: Go 1.25, Chi, sqlc, PostgreSQL
@@ -191,5 +200,14 @@ Reliable inventory access anywhere — online or offline — with seamless sync.
 - 56 waitForTimeout calls remain in 24 lower-priority E2E files
 - Go test factories orphaned (not adopted by Phase 23/24 tests)
 
+## Current Milestone: v1.6 Format Personalization
+
+**Goal:** Complete user format preferences — dates, times, and numbers display according to user's chosen formats throughout the entire application.
+
+**Target features:**
+- Comprehensive date format application (extend v1.5)
+- Time format preference (12-hour vs 24-hour)
+- Number format preference (thousand/decimal separators)
+
 ---
-*Last updated: 2026-02-02 after v1.5 milestone started*
+*Last updated: 2026-02-08 after v1.6 milestone started*

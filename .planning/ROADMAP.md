@@ -103,9 +103,11 @@ See `.planning/milestones/v1.5-ROADMAP.md` for full details.
 
 </details>
 
-### v1.6 Format Personalization (In Progress)
+### v1.6 Format Personalization (Shipped 2026-02-08)
 
 **Milestone Goal:** All dates, times, and numbers display according to user's chosen format preferences throughout the entire application.
+
+**Delivered:** Complete format personalization system with user preferences for date format (DD/MM/YYYY, MM/DD/YYYY, YYYY-MM-DD), time format (12-hour with AM/PM, 24-hour), and number format (thousand/decimal separator choices). All 107 display sites, 6 CSV exports, and 1 decimal input field respect user's chosen formats with immediate reactivity.
 
 #### Phase 30: Format Infrastructure
 **Goal**: User preferences for time and number formats are persisted and accessible to the frontend via hooks
@@ -177,11 +179,12 @@ Plans:
   1. User who sets period as thousand separator and comma as decimal sees "1.234,56" for prices and quantities throughout the app
   2. Inventory counts, quantities, prices, and dashboard statistics all use the user's number format consistently
   3. Number input fields accept values typed in the user's format (e.g., European user can type "1.234,56" and it parses correctly)
-**Plans**: TBD
+**Plans:** 2 plans
+**Status:** Complete (2026-02-08)
 
 Plans:
-- [ ] 34-01: Number format applied to all display components (counts, quantities, prices, stats)
-- [ ] 34-02: Number input parsing respects user format
+- [x] 34-01-PLAN.md -- Apply useNumberFormat to all display sites (stats, quantities, prices, CSV exports) across 9 files
+- [x] 34-02-PLAN.md -- Refactor formatCurrency in declutter/repair-history + convert repair cost input to accept user's decimal separator
 
 ## Progress
 
@@ -200,9 +203,9 @@ Phases execute in numeric order: 30 -> 31 -> 32 -> 33 -> 34
 | 31. Format Settings UI | v1.6 | 2/2 | Complete | 2026-02-08 |
 | 32. Date Format Rollout | v1.6 | 2/2 | Complete | 2026-02-08 |
 | 33. Time Format Rollout | v1.6 | 1/1 | Complete | 2026-02-08 |
-| 34. Number Format Rollout | v1.6 | 0/2 | Not started | - |
+| 34. Number Format Rollout | v1.6 | 2/2 | Complete | 2026-02-08 |
 
-**Total:** 31 phases complete (103 plans executed), 1 phase planned (2 plans)
+**Total:** 32 phases complete (107 plans executed)
 
 ---
 *Roadmap created: 2026-01-24*
