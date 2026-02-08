@@ -5,22 +5,22 @@
 See: `.planning/PROJECT.md` (updated 2026-02-08)
 
 **Core value:** Reliable inventory access anywhere -- online or offline -- with seamless sync
-**Current focus:** v1.6 Format Personalization - Phase 30 complete, ready for Phase 31
+**Current focus:** v1.6 Format Personalization - Phase 31 in progress
 
 ## Current Position
 
 **Milestone:** v1.6 Format Personalization
-**Phase:** 30 of 34 (Format Infrastructure) -- COMPLETE
-**Plan:** 2 of 2 in current phase (all complete)
-**Status:** Phase complete
-**Last activity:** 2026-02-08 -- Completed 30-02-PLAN.md (frontend format hooks)
+**Phase:** 31 of 34 (Format Settings UI) -- In progress
+**Plan:** 1 of 2 in current phase
+**Status:** In progress
+**Last activity:** 2026-02-08 -- Completed 31-01-PLAN.md (time & date format settings UI)
 
-Progress: [###########################.] 92% (98/107 plans)
+Progress: [############################] 93% (99/107 plans)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 98 (from v1-v1.6)
+- Total plans completed: 99 (from v1-v1.6)
 - Average duration: ~15 min per plan
 - Total execution time: ~24 hours
 
@@ -49,6 +49,8 @@ Key patterns established:
 - UpdatePreferences entity method returns error (changed from void) for separator conflict validation
 - New format preference fields placed after theme, before avatarPath in Reconstruct parameter order
 - Format hook trio pattern: useDateFormat, useTimeFormat, useNumberFormat all follow identical structure (useAuth -> useMemo -> useCallback)
+- TimeFormatSettings uses simpler RadioGroup (no custom format) since time is strictly 12h/24h
+- Format settings cards placed between Data Management and Active Sessions on settings page
 
 ### Pending Todos
 
@@ -66,9 +68,9 @@ Carried forward:
 ## Session Continuity
 
 Last session: 2026-02-08
-Stopped at: Completed Phase 30 (Format Infrastructure) -- both plans done
-Resume file: `.planning/phases/30-format-infrastructure/30-02-SUMMARY.md`
-Next step: Execute Phase 31 (Settings UI)
+Stopped at: Completed 31-01-PLAN.md (time & date format settings UI)
+Resume file: `.planning/phases/31-format-settings-ui/31-01-SUMMARY.md`
+Next step: Execute 31-02-PLAN.md (number format settings UI)
 
 ---
-*Updated: 2026-02-08 after completing 30-02-PLAN.md*
+*Updated: 2026-02-08 after completing 31-01-PLAN.md*
