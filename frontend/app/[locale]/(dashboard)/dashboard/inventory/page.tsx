@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo, useRef } from "react";
 import { useTranslations } from "next-intl";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { useDateFormat } from "@/lib/hooks/use-date-format";
+import { useNumberFormat } from "@/lib/hooks/use-number-format";
 import {
   Plus,
   Search,
@@ -436,6 +437,7 @@ export default function InventoryPage() {
   const t = useTranslations("inventory");
   const { workspaceId, isLoading: workspaceLoading } = useWorkspace();
   const { formatDate } = useDateFormat();
+  const { formatNumber } = useNumberFormat();
 
   const [items, setItems] = useState<Item[]>([]);
   const [locations, setLocations] = useState<Location[]>([]);
@@ -911,12 +913,12 @@ export default function InventoryPage() {
     { key: "quantity", label: "Quantity" },
     { key: "condition", label: "Condition" },
     { key: "status", label: "Status" },
-    { key: "unit_price", label: "Unit Price", formatter: (value) => value ? `$${value}` : "-" },
-    { key: "total_value", label: "Total Value", formatter: (value) => value ? `$${value}` : "-" },
+    { key: "unit_price", label: "Unit Price", formatter: (value) => value ? `$${formatNumber(value / 100, 2)}` : "-" },
+    { key: "total_value", label: "Total Value", formatter: (value) => value ? `$${formatNumber(value / 100, 2)}` : "-" },
     { key: "notes", label: "Notes" },
     { key: "created_at", label: "Created Date", formatter: (value) => formatDate(value) },
     { key: "updated_at", label: "Updated Date", formatter: (value) => formatDate(value) },
-  ], [items, locations, containers, formatDate]);
+  ], [items, locations, containers, formatDate, formatNumber]);
 
   const openCreateDialog = () => {
     setEditingInventory(null);
@@ -1348,7 +1350,7 @@ export default function InventoryPage() {
                               </TableCell>
                               <TableCell>
                                 {isPending ? (
-                                  <span className="font-medium">{inventory.quantity}</span>
+                                  <span className="font-medium">{formatNumber(inventory.quantity)}</span>
                                 ) : (
                                   <InlineEditCell
                                     value={inventory.quantity.toString()}
