@@ -42,6 +42,7 @@ import {
   Users,
   Receipt,
 } from "lucide-react";
+import { useDateFormat } from "@/lib/hooks/use-date-format";
 
 interface PendingChangesDrawerProps {
   open: boolean;
@@ -64,16 +65,6 @@ const statusColors: Record<string, string> = {
   failed: "bg-red-500",
 };
 
-function formatTimestamp(timestamp: number): string {
-  const date = new Date(timestamp);
-  return date.toLocaleString(undefined, {
-    month: "short",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-}
-
 function formatPayloadPreview(payload: Record<string, unknown>): string {
   // Try to extract a meaningful preview
   const name = payload.name || payload.title || payload.sku || "";
@@ -84,6 +75,7 @@ function formatPayloadPreview(payload: Record<string, unknown>): string {
 }
 
 export function PendingChangesDrawer({ open, onOpenChange }: PendingChangesDrawerProps) {
+  const { formatDateTime } = useDateFormat();
   const [mutations, setMutations] = useState<MutationQueueEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [actionInProgress, setActionInProgress] = useState<number | null>(null);
@@ -254,7 +246,7 @@ export function PendingChangesDrawer({ open, onOpenChange }: PendingChangesDrawe
                         </p>
 
                         <p className="text-xs text-muted-foreground mt-1">
-                          {formatTimestamp(mutation.timestamp)}
+                          {formatDateTime(new Date(mutation.timestamp))}
                           {mutation.retries > 0 && ` · ${mutation.retries} retries`}
                         </p>
 

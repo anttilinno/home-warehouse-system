@@ -15,9 +15,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   getScanHistory,
   clearScanHistory,
-  formatScanTime,
   type ScanHistoryEntry,
 } from "@/lib/scanner";
+import { useDateFormat } from "@/lib/hooks/use-date-format";
 
 export interface ScanHistoryListProps {
   /** Called when user taps a history entry */
@@ -41,7 +41,21 @@ export function ScanHistoryList({
   className,
 }: ScanHistoryListProps) {
   const t = useTranslations("scanner.history");
+  const { formatDateTime } = useDateFormat();
   const [history, setHistory] = useState<ScanHistoryEntry[]>([]);
+
+  const formatScanTimestamp = (timestamp: number): string => {
+    const now = Date.now();
+    const diffMs = now - timestamp;
+    const diffSec = Math.floor(diffMs / 1000);
+    const diffMin = Math.floor(diffSec / 60);
+    const diffHour = Math.floor(diffMin / 60);
+
+    if (diffMin < 1) return "Just now";
+    if (diffMin < 60) return `${diffMin} min ago`;
+    if (diffHour < 24) return `${diffHour} hr ago`;
+    return formatDateTime(new Date(timestamp));
+  };
 
   // Load history from localStorage on mount and listen for changes
   useEffect(() => {
@@ -117,7 +131,7 @@ export function ScanHistoryList({
                     </p>
                   </div>
                   <span className="text-xs text-muted-foreground flex-shrink-0">
-                    {formatScanTime(entry.timestamp)}
+                    {formatScanTimestamp(entry.timestamp)}
                   </span>
                 </button>
               );

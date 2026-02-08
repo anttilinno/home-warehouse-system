@@ -52,6 +52,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { useWorkspace } from "@/lib/hooks/use-workspace";
+import { useDateFormat } from "@/lib/hooks/use-date-format";
 import { useDebouncedValue } from "@/lib/hooks/use-debounced-value";
 import { useSSE, type SSEEvent } from "@/lib/hooks/use-sse";
 import {
@@ -97,6 +98,7 @@ interface PendingChangeCardProps {
 function PendingChangeCard({ change, onApprove, onReject, isApproving, approvingId }: PendingChangeCardProps) {
   const t = useTranslations("approvals");
   const tReasons = useTranslations("rejectionReasons");
+  const { formatDateTime } = useDateFormat();
   const Icon = entityTypeIcons[change.entity_type];
 
   // Translate rejection reason if it's a translation key
@@ -196,7 +198,7 @@ function PendingChangeCard({ change, onApprove, onReject, isApproving, approving
               {/* Timestamp */}
               <div className="flex items-center gap-1 text-xs text-muted-foreground">
                 <Clock className="h-3 w-3" />
-                {new Date(change.created_at).toLocaleString()}
+                {formatDateTime(change.created_at)}
               </div>
 
               {/* Review info if reviewed */}
@@ -204,7 +206,7 @@ function PendingChangeCard({ change, onApprove, onReject, isApproving, approving
                 <div className="text-xs text-muted-foreground">
                   {t("card.reviewedBy")} <span className="font-medium">{change.reviewer_name}</span>
                   {change.reviewed_at && (
-                    <> {t("card.on")} {new Date(change.reviewed_at).toLocaleString()}</>
+                    <> {t("card.on")} {formatDateTime(change.reviewed_at)}</>
                   )}
                 </div>
               )}

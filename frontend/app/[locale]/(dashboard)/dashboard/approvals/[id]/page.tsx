@@ -46,6 +46,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { useWorkspace } from "@/lib/hooks/use-workspace";
+import { useDateFormat } from "@/lib/hooks/use-date-format";
 import {
   pendingChangesApi,
   type PendingChange,
@@ -223,6 +224,7 @@ export default function ApprovalDetailPage({ params }: { params: Promise<{ id: s
   const tReasons = useTranslations("rejectionReasons");
   const router = useRouter();
   const { workspaceId, currentMember } = useWorkspace();
+  const { formatDateTime } = useDateFormat();
 
   // Translate rejection reason if it's a translation key
   const getTranslatedReason = (reason: string) => {
@@ -407,7 +409,7 @@ export default function ApprovalDetailPage({ params }: { params: Promise<{ id: s
               <div className="space-y-1">
                 <div className="text-sm font-medium">{t("requestInfo.created")}</div>
                 <div className="text-sm text-muted-foreground">
-                  {new Date(change.created_at).toLocaleString()}
+                  {formatDateTime(change.created_at)}
                 </div>
               </div>
             </div>
@@ -451,7 +453,7 @@ export default function ApprovalDetailPage({ params }: { params: Promise<{ id: s
                 <div className="space-y-1">
                   <div className="text-sm font-medium">{t("reviewInfo.reviewedAt")}</div>
                   <div className="text-sm text-muted-foreground">
-                    {change.reviewed_at ? new Date(change.reviewed_at).toLocaleString() : t("reviewInfo.unknown")}
+                    {change.reviewed_at ? formatDateTime(change.reviewed_at) : t("reviewInfo.unknown")}
                   </div>
                 </div>
               </div>
