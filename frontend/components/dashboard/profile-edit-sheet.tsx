@@ -72,7 +72,7 @@ export function ProfileEditSheet({ open, onOpenChange }: ProfileEditSheetProps) 
     register: registerPassword,
     handleSubmit: handlePasswordSubmit,
     reset: resetPassword,
-    formState: { errors: passwordErrors },
+    formState: { errors: passwordErrors, isDirty: isPasswordDirty },
   } = useForm<PasswordFormValues>({
     resolver: zodResolver(createPasswordSchema(tPassword)),
     defaultValues: {
@@ -258,7 +258,7 @@ export function ProfileEditSheet({ open, onOpenChange }: ProfileEditSheetProps) 
                 )}
               </div>
 
-              <Button type="submit" disabled={isPasswordSubmitting} className="w-full">
+              <Button type="submit" disabled={isPasswordSubmitting || !isPasswordDirty} className="w-full">
                 {isPasswordSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 {tPassword("changeButton")}
               </Button>
