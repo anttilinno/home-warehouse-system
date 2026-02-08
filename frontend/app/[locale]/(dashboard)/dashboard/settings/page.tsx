@@ -8,6 +8,7 @@ import { BackupRestoreDialog } from "@/components/shared/backup-restore-dialog";
 import { ActiveSessions } from "@/components/settings/active-sessions";
 import { DateFormatSettings } from "@/components/settings/date-format-settings";
 import { TimeFormatSettings } from "@/components/settings/time-format-settings";
+import { NumberFormatSettings } from "@/components/settings/number-format-settings";
 
 export default function SettingsPage() {
   const t = useTranslations("settings");
@@ -46,6 +47,7 @@ export default function SettingsPage() {
         {/* Format Settings */}
         <DateFormatSettings />
         <TimeFormatSettings />
+        <NumberFormatSettings />
 
         {/* Active Sessions */}
         <Card>
