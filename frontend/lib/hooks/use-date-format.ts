@@ -24,6 +24,12 @@ const PLACEHOLDER_MAP: Record<PresetDateFormat, string> = {
   "YYYY-MM-DD": "yyyy-mm-dd",
 };
 
+// Map time format options to date-fns format strings
+const TIME_FORMAT_MAP: Record<string, string> = {
+  "12h": "h:mm a",
+  "24h": "HH:mm",
+};
+
 // Default format if not set
 const DEFAULT_FORMAT: PresetDateFormat = "YYYY-MM-DD";
 
@@ -69,6 +75,12 @@ export function useDateFormat(): UseDateFormatReturn {
     return PLACEHOLDER_MAP[format as PresetDateFormat] || format.toLowerCase();
   }, [format]);
 
+  // Get time format string based on user's time format preference
+  const timeFormatStr = useMemo(() => {
+    const tf = user?.time_format;
+    return TIME_FORMAT_MAP[tf as string] || "HH:mm";
+  }, [user?.time_format]);
+
   const parseDate = useCallback(
     (dateString: string): Date | null => {
       if (!dateString || !dateString.trim()) return null;
@@ -106,13 +118,13 @@ export function useDateFormat(): UseDateFormatReturn {
       try {
         const dateObj = typeof date === "string" ? parseISO(date) : date;
         if (!isValid(dateObj)) return "-";
-        // Add time component to date format
-        return dateFnsFormat(dateObj, `${dateFnsFormatStr} HH:mm`);
+        // Add time component to date format using user's time preference
+        return dateFnsFormat(dateObj, `${dateFnsFormatStr} ${timeFormatStr}`);
       } catch {
         return "-";
       }
     },
-    [dateFnsFormatStr]
+    [dateFnsFormatStr, timeFormatStr]
   );
 
   return {
