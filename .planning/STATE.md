@@ -10,12 +10,12 @@ See: `.planning/PROJECT.md` (updated 2026-02-08)
 ## Current Position
 
 **Milestone:** v1.6 Format Personalization
-**Phase:** 32 of 34 (Date Format Rollout) -- In progress
-**Plan:** 1 of 2 in current phase
-**Status:** Plan 32-01 complete
-**Last activity:** 2026-02-08 -- Completed 32-01-PLAN.md (extend useDateFormat hook + convert all display sites and CSV exports)
+**Phase:** 32 of 34 (Date Format Rollout) -- Complete
+**Plan:** 2 of 2 in current phase
+**Status:** Phase 32 complete
+**Last activity:** 2026-02-08 -- Completed 32-02-PLAN.md (add format hints to date inputs)
 
-Progress: [#############################] 94% (101/107 plans)
+Progress: [##############################] 95% (102/107 plans)
 
 ## Performance Metrics
 
@@ -55,6 +55,7 @@ Key patterns established:
 - Format fallback pattern: Relative time helpers show "X ago" for recent items, fall back to user's date format for older items
 - useMemo dependency pattern: formatDate added to exportColumns useMemo dependencies to ensure fresh formatters when user changes format
 - All date displays and CSV exports now respect user's chosen date format preference
+- Date input format hints pattern: Native HTML5 date inputs use Label format hints to communicate app's date format while allowing browser-native validation
 
 ### Pending Todos
 
@@ -72,9 +73,9 @@ Carried forward:
 ## Session Continuity
 
 Last session: 2026-02-08
-Stopped at: Completed 32-01-PLAN.md (extend useDateFormat hook + convert all display sites and CSV exports)
-Resume file: `.planning/phases/32-date-format-rollout/32-01-SUMMARY.md`
-Next step: Execute 32-02-PLAN.md (convert date inputs to use parseDate and placeholder)
+Stopped at: Completed 32-02-PLAN.md (add format hints to date inputs) - Phase 32 complete
+Resume file: `.planning/phases/32-date-format-rollout/32-02-SUMMARY.md`
+Next step: Begin Phase 33 (Number Format Rollout)
 
 ---
-*Updated: 2026-02-08 after completing 32-01-PLAN.md*
+*Updated: 2026-02-08 after completing 32-02-PLAN.md*
