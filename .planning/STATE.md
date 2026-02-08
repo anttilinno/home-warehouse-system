@@ -5,22 +5,22 @@
 See: `.planning/PROJECT.md` (updated 2026-02-08)
 
 **Core value:** Reliable inventory access anywhere -- online or offline -- with seamless sync
-**Current focus:** v1.6 Format Personalization - Phase 31 in progress
+**Current focus:** v1.6 Format Personalization - Phase 31 complete
 
 ## Current Position
 
 **Milestone:** v1.6 Format Personalization
-**Phase:** 31 of 34 (Format Settings UI) -- In progress
-**Plan:** 1 of 2 in current phase
-**Status:** In progress
-**Last activity:** 2026-02-08 -- Completed 31-01-PLAN.md (time & date format settings UI)
+**Phase:** 31 of 34 (Format Settings UI) -- Complete
+**Plan:** 2 of 2 in current phase
+**Status:** Phase complete
+**Last activity:** 2026-02-08 -- Completed 31-02-PLAN.md (number format settings UI)
 
-Progress: [############################] 93% (99/107 plans)
+Progress: [#############################] 94% (100/107 plans)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 99 (from v1-v1.6)
+- Total plans completed: 100 (from v1-v1.6)
 - Average duration: ~15 min per plan
 - Total execution time: ~24 hours
 
@@ -51,6 +51,7 @@ Key patterns established:
 - Format hook trio pattern: useDateFormat, useTimeFormat, useNumberFormat all follow identical structure (useAuth -> useMemo -> useCallback)
 - TimeFormatSettings uses simpler RadioGroup (no custom format) since time is strictly 12h/24h
 - Format settings cards placed between Data Management and Active Sessions on settings page
+- NumberFormatSettings uses Select dropdowns (not RadioGroup) for separator choices with client-side conflict validation
 
 ### Pending Todos
 
@@ -68,9 +69,9 @@ Carried forward:
 ## Session Continuity
 
 Last session: 2026-02-08
-Stopped at: Completed 31-01-PLAN.md (time & date format settings UI)
-Resume file: `.planning/phases/31-format-settings-ui/31-01-SUMMARY.md`
-Next step: Execute 31-02-PLAN.md (number format settings UI)
+Stopped at: Completed 31-02-PLAN.md (number format settings UI) -- Phase 31 complete
+Resume file: `.planning/phases/31-format-settings-ui/31-02-SUMMARY.md`
+Next step: Execute Phase 32 plans
 
 ---
-*Updated: 2026-02-08 after completing 31-01-PLAN.md*
+*Updated: 2026-02-08 after completing 31-02-PLAN.md*
