@@ -5,22 +5,22 @@
 See: `.planning/PROJECT.md` (updated 2026-02-08)
 
 **Core value:** Reliable inventory access anywhere -- online or offline -- with seamless sync
-**Current focus:** v1.6 Format Personalization - Phase 32 in progress
+**Current focus:** v1.6 Format Personalization - Phase 33 complete
 
 ## Current Position
 
 **Milestone:** v1.6 Format Personalization
-**Phase:** 32 of 34 (Date Format Rollout) -- Complete
-**Plan:** 2 of 2 in current phase
-**Status:** Phase 32 complete
-**Last activity:** 2026-02-08 -- Completed 32-02-PLAN.md (add format hints to date inputs)
+**Phase:** 33 of 34 (Time Format Rollout) -- Complete
+**Plan:** 1 of 1 in current phase
+**Status:** Phase 33 complete
+**Last activity:** 2026-02-08 -- Completed 33-01-PLAN.md (fix formatDateTime time-awareness + convert all datetime displays)
 
-Progress: [##############################] 95% (102/107 plans)
+Progress: [###############################] 96% (103/107 plans)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 102 (from v1-v1.6)
+- Total plans completed: 103 (from v1-v1.6)
 - Average duration: ~15 min per plan
 - Total execution time: ~25.5 hours
 
@@ -56,6 +56,8 @@ Key patterns established:
 - useMemo dependency pattern: formatDate added to exportColumns useMemo dependencies to ensure fresh formatters when user changes format
 - All date displays and CSV exports now respect user's chosen date format preference
 - Date input format hints pattern: Native HTML5 date inputs use Label format hints to communicate app's date format while allowing browser-native validation
+- TIME_FORMAT_MAP placed in use-date-format.ts to keep formatDateTime self-contained (compose date + time format strings)
+- Scan history uses relative-time-with-hook-fallback pattern: "X ago" for recent, formatDateTime for older entries
 
 ### Pending Todos
 
@@ -73,9 +75,9 @@ Carried forward:
 ## Session Continuity
 
 Last session: 2026-02-08
-Stopped at: Completed 32-02-PLAN.md (add format hints to date inputs) - Phase 32 complete
-Resume file: `.planning/phases/32-date-format-rollout/32-02-SUMMARY.md`
-Next step: Plan and execute Phase 33 (Time Format Rollout)
+Stopped at: Completed 33-01-PLAN.md (time format rollout) - Phase 33 complete
+Resume file: `.planning/phases/33-time-format-rollout/33-01-SUMMARY.md`
+Next step: Plan and execute Phase 34 (Number Format Rollout)
 
 ---
-*Updated: 2026-02-08 after completing 32-02-PLAN.md*
+*Updated: 2026-02-08 after completing 33-01-PLAN.md*
