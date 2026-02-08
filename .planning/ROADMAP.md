@@ -149,12 +149,11 @@ Plans:
   3. DateTime displays (timestamps like "created at", "last modified") format the date portion per user's preference while preserving the time portion
   4. Form validation messages reference the user's chosen format (e.g., "Please enter a date in DD/MM/YYYY format")
   5. CSV/export downloads format all date columns according to the user's preference
-**Plans**: TBD
+**Plans:** 2 plans
 
 Plans:
-- [ ] 32-01: Date format applied to all display components (tables, cards, detail pages)
-- [ ] 32-02: Date inputs, pickers, and parsing respect user format
-- [ ] 32-03: DateTime displays, validation messages, and CSV exports
+- [ ] 32-01-PLAN.md -- Extend useDateFormat hook + convert all display sites and CSV exports
+- [ ] 32-02-PLAN.md -- Date input format hints and validation messages
 
 #### Phase 33: Time Format Rollout
 **Goal**: Every timestamp displayed or entered in the application respects the user's chosen time format
@@ -197,11 +196,11 @@ Phases execute in numeric order: 30 -> 31 -> 32 -> 33 -> 34
 | 27-29 | v1.5 | 9 | Complete | 2026-02-03 |
 | 30. Format Infrastructure | v1.6 | 2/2 | Complete | 2026-02-08 |
 | 31. Format Settings UI | v1.6 | 2/2 | Complete | 2026-02-08 |
-| 32. Date Format Rollout | v1.6 | 0/3 | Not started | - |
+| 32. Date Format Rollout | v1.6 | 0/2 | Not started | - |
 | 33. Time Format Rollout | v1.6 | 0/1 | Not started | - |
 | 34. Number Format Rollout | v1.6 | 0/2 | Not started | - |
 
-**Total:** 29 phases complete (96 plans executed), 5 phases planned (10 plans)
+**Total:** 29 phases complete (96 plans executed), 5 phases planned (9 plans)
 
 ---
 *Roadmap created: 2026-01-24*
