@@ -8,7 +8,8 @@
 - v1.3 **Mobile UX Overhaul** — Phases 18-21 (shipped 2026-01-31)
 - v1.4 **Test Overhaul** — Phases 22-26 (shipped 2026-01-31)
 - v1.5 **Settings Enhancement** — Phases 27-29 (shipped 2026-02-03)
-- v1.6 **Format Personalization** — Phases 30-34 (in progress)
+- v1.6 **Format Personalization** — Phases 30-34 (shipped 2026-02-08)
+- v1.7 **Modular Settings** — Phases 35-39 (in progress)
 
 ## Phases
 
@@ -103,93 +104,88 @@ See `.planning/milestones/v1.5-ROADMAP.md` for full details.
 
 </details>
 
-### v1.6 Format Personalization (Shipped 2026-02-08)
-
-**Milestone Goal:** All dates, times, and numbers display according to user's chosen format preferences throughout the entire application.
+<details>
+<summary>v1.6 Format Personalization (Phases 30-34) — SHIPPED 2026-02-08</summary>
 
 **Delivered:** Complete format personalization system with user preferences for date format (DD/MM/YYYY, MM/DD/YYYY, YYYY-MM-DD), time format (12-hour with AM/PM, 24-hour), and number format (thousand/decimal separator choices). All 107 display sites, 6 CSV exports, and 1 decimal input field respect user's chosen formats with immediate reactivity.
 
-#### Phase 30: Format Infrastructure
-**Goal**: User preferences for time and number formats are persisted and accessible to the frontend via hooks
-**Depends on**: Phase 29 (extends v1.5 user preferences infrastructure)
-**Requirements**: TIME-01, TIME-02, NUM-01, NUM-02, NUM-03, SETTINGS-05
+- Phase 30: Format Infrastructure (2 plans)
+- Phase 31: Format Settings UI (2 plans)
+- Phase 32: Date Format Rollout (2 plans)
+- Phase 33: Time Format Rollout (1 plan)
+- Phase 34: Number Format Rollout (2 plans)
+
+</details>
+
+### v1.7 Modular Settings (In Progress)
+
+**Milestone Goal:** Restructure the monolithic settings page into an iOS-style hub-and-subpage architecture with dedicated routes, adding three-way theme selection, per-category notification preferences, and client-side storage management.
+
+#### Phase 35: Settings Shell and Route Structure
+**Goal**: Users can navigate to a settings hub that shows organized groups of settings with subpage navigation
+**Depends on**: Phase 34 (builds on v1.6 settings page)
+**Requirements**: HUB-01, HUB-02, HUB-03, HUB-04, HUB-05, HUB-06
 **Success Criteria** (what must be TRUE):
-  1. User's time format preference (12-hour or 24-hour) is stored in the database and returned by the user profile API
-  2. User's number format preferences (thousand separator, decimal separator) are stored in the database and returned by the user profile API
-  3. Frontend hooks useTimeFormat and useNumberFormat are available and return the user's persisted preferences
-  4. Hooks fall back to sensible defaults (24-hour time, comma thousands, period decimal) when no preference is set
-**Plans:** 2 plans
-**Status:** Complete (2026-02-08)
+  1. User sees a settings landing page with iOS-style grouped rows showing icons, labels, descriptions, and chevrons for each settings category
+  2. Each settings row displays a live preview of the current value (e.g., "Dark", "English", "DD/MM/YYYY") pulled from actual user preferences
+  3. Settings are organized into visible sections: Profile card at top, Preferences group (Appearance, Language, Regional Formats), System & Security group (Security, Notifications, Data & Storage)
+  4. On desktop, a persistent sidebar navigation is visible alongside the settings content; on mobile, the hub page serves as the navigation entry point
+  5. Tapping any subpage and pressing back returns the user to the settings hub, and all navigation labels are translated in en, et, and ru
+**Plans:** TBD
+**Status:** Not started
 
-Plans:
-- [x] 30-01-PLAN.md -- Backend migration and API for time/number format preferences
-- [x] 30-02-PLAN.md -- Frontend hooks useTimeFormat and useNumberFormat
-
-#### Phase 31: Format Settings UI
-**Goal**: Users can configure all format preferences from a single settings page with immediate visual feedback
-**Depends on**: Phase 30
-**Requirements**: SETTINGS-01, SETTINGS-02, SETTINGS-03, SETTINGS-04, TIME-05, NUM-09
+#### Phase 36: Profile, Security, and Regional Formats
+**Goal**: Users can manage their profile, security settings, and regional format preferences on dedicated subpages using existing components
+**Depends on**: Phase 35 (route structure and layout must exist)
+**Requirements**: PROF-01, PROF-02, PROF-03, SECU-01, SECU-02, SECU-03, FMTS-01, FMTS-02, FMTS-03
 **Success Criteria** (what must be TRUE):
-  1. User can select time format (12-hour or 24-hour) in settings and see a live preview of the current time in their chosen format
-  2. User can select thousand separator (comma, period, space) and decimal separator (period, comma) in settings with live preview of a sample number
-  3. Date format settings section is enhanced with live preview consistent with the time and number sections
-  4. All format changes persist immediately and apply across the app without page reload
-**Plans:** 2 plans
-**Status:** Complete (2026-02-08)
+  1. User can navigate to a Profile subpage and edit their name, email, and avatar -- the same functionality as before, now on its own page
+  2. The settings hub profile card displays the user's current avatar, full name, and email address
+  3. User can navigate to a Security subpage and change their password, view/revoke active sessions, and delete their account -- all existing functionality relocated
+  4. User can navigate to a Regional Formats subpage and configure date format, time format, and number format preferences -- all existing functionality relocated
+**Plans:** TBD
+**Status:** Not started
 
-Plans:
-- [x] 31-01-PLAN.md -- TimeFormatSettings component + wire date/time format cards to settings page
-- [x] 31-02-PLAN.md -- NumberFormatSettings component with separator conflict validation + complete settings page integration
-
-#### Phase 32: Date Format Rollout
-**Goal**: Every date displayed, entered, or exported in the application respects the user's chosen date format
-**Depends on**: Phase 31 (settings UI must exist so users can change format)
-**Requirements**: DATE-01, DATE-02, DATE-03, DATE-04, DATE-05, DATE-06, DATE-07, DATE-08, DATE-09, DATE-10
+#### Phase 37: Appearance and Language
+**Goal**: Users can choose a visual theme (light, dark, or system) and language preference that persist across devices
+**Depends on**: Phase 35 (route structure must exist)
+**Requirements**: APPR-01, APPR-02, APPR-03, APPR-04, APPR-05, LANG-01, LANG-02
 **Success Criteria** (what must be TRUE):
-  1. User who sets DD/MM/YYYY sees dates in that format in all tables, cards, lists, and detail pages throughout the app
-  2. Date input placeholders and date picker behavior match the user's chosen format (e.g., DD/MM/YYYY user sees "dd/mm/yyyy" placeholder, and typing "25/01/2026" is parsed correctly)
-  3. DateTime displays (timestamps like "created at", "last modified") format the date portion per user's preference while preserving the time portion
-  4. Form validation messages reference the user's chosen format (e.g., "Please enter a date in DD/MM/YYYY format")
-  5. CSV/export downloads format all date columns according to the user's preference
-**Plans:** 2 plans
-**Status:** Complete (2026-02-08)
+  1. User sees a three-way theme selector (Light, Dark, System) on the Appearance subpage and selecting an option changes the app theme instantly without page reload
+  2. The CSS dark mode variant fix is applied (Tailwind v4 `:where` selector) so dark utilities work correctly on `<html>` and `<body>` elements
+  3. User's theme preference persists to the backend so logging in on a different device loads the same theme, and the theme loads without a flash of the wrong theme on page load
+  4. User can navigate to a Language subpage and select from the three available languages (en, et, ru), with the language preference persisted to the backend for cross-device sync
+**Plans:** TBD
+**Status:** Not started
 
-Plans:
-- [x] 32-01-PLAN.md -- Extend useDateFormat hook + convert all display sites and CSV exports
-- [x] 32-02-PLAN.md -- Date input format hints and validation messages
-
-#### Phase 33: Time Format Rollout
-**Goal**: Every timestamp displayed or entered in the application respects the user's chosen time format
-**Depends on**: Phase 30 (useTimeFormat hook must exist)
-**Requirements**: TIME-03, TIME-04
+#### Phase 38: Data and Storage Management
+**Goal**: Users can see their offline storage usage, manage cached data, trigger syncs, and access import/export functionality from a dedicated subpage
+**Depends on**: Phase 35 (route structure must exist)
+**Requirements**: DATA-01, DATA-02, DATA-03, DATA-04, DATA-05
 **Success Criteria** (what must be TRUE):
-  1. User who selects 12-hour format sees all timestamps with AM/PM (e.g., "2:30 PM" instead of "14:30") across tables, detail pages, and activity feeds
-  2. Time input fields adapt to the user's format -- 12-hour users see AM/PM selectors, 24-hour users see 00-23 range
-**Plans:** 1 plan
-**Status:** Complete (2026-02-08)
+  1. User sees a storage usage display with progress bar showing IndexedDB and cache size on the Data & Storage subpage
+  2. User can clear offline cache via a button that shows a confirmation dialog before deleting data, and can see persistent storage status with an option to request persistent storage from the browser
+  3. User can trigger a manual sync and see the last-sync timestamp displayed on the page
+  4. User can access import/export (backup/restore) functionality from the Data & Storage subpage -- the existing backup/restore feature relocated here
+**Plans:** TBD
+**Status:** Not started
 
-Plans:
-- [x] 33-01-PLAN.md -- Fix formatDateTime time-awareness + convert all datetime display sites
-
-#### Phase 34: Number Format Rollout
-**Goal**: Every number displayed or entered in the application respects the user's chosen number format
-**Depends on**: Phase 30 (useNumberFormat hook must exist)
-**Requirements**: NUM-04, NUM-05, NUM-06, NUM-07, NUM-08
+#### Phase 39: Notification Preferences
+**Goal**: Users can control which categories of in-app notifications they receive, with preferences persisted to the backend
+**Depends on**: Phase 35 (route structure must exist)
+**Requirements**: NOTF-01, NOTF-02, NOTF-03, NOTF-04, NOTF-05
 **Success Criteria** (what must be TRUE):
-  1. User who sets period as thousand separator and comma as decimal sees "1.234,56" for prices and quantities throughout the app
-  2. Inventory counts, quantities, prices, and dashboard statistics all use the user's number format consistently
-  3. Number input fields accept values typed in the user's format (e.g., European user can type "1.234,56" and it parses correctly)
-**Plans:** 2 plans
-**Status:** Complete (2026-02-08)
-
-Plans:
-- [x] 34-01-PLAN.md -- Apply useNumberFormat to all display sites (stats, quantities, prices, CSV exports) across 9 files
-- [x] 34-02-PLAN.md -- Refactor formatCurrency in declutter/repair-history + convert repair cost input to accept user's decimal separator
+  1. User sees a master toggle to enable/disable all in-app notifications, and per-category toggles for Loans, Inventory, Workspace, and System notifications
+  2. Toggle changes auto-save immediately without an explicit submit button -- the user flips a toggle and the preference is persisted
+  3. Notification preferences are stored in the backend (JSONB column on auth.users) and sync across devices -- disabling "Loans" notifications on one device applies everywhere
+  4. Notification preferences filter alert surfacing only -- SSE data sync continues regardless of preference settings so real-time data updates are never interrupted
+**Plans:** TBD
+**Status:** Not started
 
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 30 -> 31 -> 32 -> 33 -> 34
+Phases execute in numeric order: 35 -> 36 -> 37 -> 38 -> 39
 
 | Phase | Milestone | Plans | Status | Shipped |
 |-------|-----------|-------|--------|---------|
@@ -199,14 +195,15 @@ Phases execute in numeric order: 30 -> 31 -> 32 -> 33 -> 34
 | 18-21 | v1.3 | 22 | Complete | 2026-01-31 |
 | 22-26 | v1.4 | 20 | Complete | 2026-01-31 |
 | 27-29 | v1.5 | 9 | Complete | 2026-02-03 |
-| 30. Format Infrastructure | v1.6 | 2/2 | Complete | 2026-02-08 |
-| 31. Format Settings UI | v1.6 | 2/2 | Complete | 2026-02-08 |
-| 32. Date Format Rollout | v1.6 | 2/2 | Complete | 2026-02-08 |
-| 33. Time Format Rollout | v1.6 | 1/1 | Complete | 2026-02-08 |
-| 34. Number Format Rollout | v1.6 | 2/2 | Complete | 2026-02-08 |
+| 30-34 | v1.6 | 9 | Complete | 2026-02-08 |
+| 35. Settings Shell | v1.7 | TBD | Not started | - |
+| 36. Profile, Security, Formats | v1.7 | TBD | Not started | - |
+| 37. Appearance and Language | v1.7 | TBD | Not started | - |
+| 38. Data and Storage | v1.7 | TBD | Not started | - |
+| 39. Notification Preferences | v1.7 | TBD | Not started | - |
 
-**Total:** 32 phases complete (107 plans executed)
+**Total:** 34 phases complete (107 plans executed), 5 phases planned
 
 ---
 *Roadmap created: 2026-01-24*
-*Last updated: 2026-02-08 after v1.6 roadmap created*
+*Last updated: 2026-02-12 after v1.7 roadmap created*

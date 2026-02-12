@@ -2,20 +2,17 @@
 
 ## Project Reference
 
-See: `.planning/PROJECT.md` (updated 2026-02-08)
+See: `.planning/PROJECT.md` (updated 2026-02-12)
 
 **Core value:** Reliable inventory access anywhere -- online or offline -- with seamless sync
-**Current focus:** v1.6 Format Personalization - MILESTONE COMPLETE
+**Current focus:** v1.7 Modular Settings -- Phase 35 (Settings Shell and Route Structure)
 
 ## Current Position
 
-**Milestone:** v1.6 Format Personalization -- COMPLETE
-**Phase:** 34 of 34 (Number Format Rollout) -- Complete
-**Plan:** 2 of 2 in current phase
-**Status:** Milestone v1.6 complete
-**Last activity:** 2026-02-08 -- Completed Phase 34 (Number Format Rollout)
-
-Progress: [################################] 100% (107/107 plans)
+Phase: 35 of 39 (Settings Shell and Route Structure)
+Plan: 0 of TBD in current phase
+Status: Ready to plan
+Last activity: 2026-02-12 -- v1.7 roadmap created (5 phases, 32 requirements mapped)
 
 ## Performance Metrics
 
@@ -35,32 +32,21 @@ Progress: [################################] 100% (107/107 plans)
 | v1.4 | 5 | 20 | Complete |
 | v1.5 | 3 | 9 | Complete |
 | v1.6 | 5 | 9 | Complete |
+| v1.7 | 5 | TBD | In progress |
 
 ## Accumulated Context
 
 ### Decisions
 
-All v1.5 decisions archived in `.planning/milestones/v1.5-ROADMAP.md`.
+All v1.6 decisions archived in `.planning/milestones/v1.5-ROADMAP.md`.
 
 Key patterns established:
 - Settings forms use Label/Input pattern with react-hook-form + zod
-- useDateFormat hook extended with parseDate and placeholder utilities for parsing and input hints
 - User preferences stored in users table with DB migration pattern
-- UpdatePreferences entity method returns error (changed from void) for separator conflict validation
-- New format preference fields placed after theme, before avatarPath in Reconstruct parameter order
-- Format hook trio pattern: useDateFormat, useTimeFormat, useNumberFormat all follow identical structure (useAuth -> useMemo -> useCallback)
-- TimeFormatSettings uses simpler RadioGroup (no custom format) since time is strictly 12h/24h
-- Format settings cards placed between Data Management and Active Sessions on settings page
-- NumberFormatSettings uses Select dropdowns (not RadioGroup) for separator choices with client-side conflict validation
-- Format fallback pattern: Relative time helpers show "X ago" for recent items, fall back to user's date format for older items
-- useMemo dependency pattern: formatDate added to exportColumns useMemo dependencies to ensure fresh formatters when user changes format
-- All date displays and CSV exports now respect user's chosen date format preference
-- Date input format hints pattern: Native HTML5 date inputs use Label format hints to communicate app's date format while allowing browser-native validation
-- TIME_FORMAT_MAP placed in use-date-format.ts to keep formatDateTime self-contained (compose date + time format strings)
-- Scan history uses relative-time-with-hook-fallback pattern: "X ago" for recent, formatDateTime for older entries
-- Currency formatting pattern: formatCurrencyValue helper inside component composes currency symbol + formatNumber(amount, 2)
-- Decimal input pattern: type="text" + inputMode="decimal" + parseNumber validation + dynamic placeholder with user's decimalSeparator
-- CSV export with user format: Use formatNumber in column formatter functions for decimal columns
+- Format hook trio pattern: useDateFormat, useTimeFormat, useNumberFormat
+- No new SettingsContext needed -- useAuth() is the single source of truth
+- Theme two-layer source of truth: next-themes (client) + backend (server) -- never a third
+- Notification preferences as JSONB on auth.users (not a separate table)
 
 ### Pending Todos
 
@@ -74,13 +60,13 @@ Carried forward:
 - Safari iOS manual testing pending
 - CGO_ENABLED=0 build has webp library issue -- dev builds work fine
 - Jobs package coverage limited by pgxpool/Redis requirements
+- Safari `navigator.storage.estimate()` returns approximate values -- Data & Storage subpage needs graceful degradation
 
 ## Session Continuity
 
-Last session: 2026-02-08
-Stopped at: Milestone v1.6 Format Personalization complete (all 5 phases, 9 plans executed)
-Resume file: `.planning/phases/34-number-format-rollout/34-VERIFICATION.md`
-Next step: Ready for next milestone planning
+Last session: 2026-02-12
+Stopped at: v1.7 roadmap created, ready to plan Phase 35
+Next step: `/gsd:plan-phase 35`
 
 ---
-*Updated: 2026-02-08 after completing v1.6 Format Personalization milestone*
+*Updated: 2026-02-12 after v1.7 roadmap creation*

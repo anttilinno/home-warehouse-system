@@ -100,15 +100,26 @@ Reliable inventory access anywhere — online or offline — with seamless sync.
 - ✓ User can revoke/logout sessions
 - ✓ User can delete their account
 
+**v1.6 Format Personalization (shipped 2026-02-08):**
+
+- ✓ Date format applied consistently everywhere (displays, inputs, pickers, validation, exports)
+- ✓ Time format preference (12-hour vs 24-hour)
+- ✓ Number format preference (thousand/decimal separators)
+- ✓ Format settings UI in user settings page
+- ✓ All components use format hooks (useDateFormat, useTimeFormat, useNumberFormat)
+
 ### Active
 
-**v1.6 Format Personalization (in progress):**
+**v1.7 Modular Settings (in progress):**
 
-- [ ] Date format applied consistently everywhere (displays, inputs, pickers, validation, exports)
-- [ ] Time format preference (12-hour vs 24-hour)
-- [ ] Number format preference (thousand/decimal separators)
-- [ ] Format settings UI in user settings page
-- [ ] All components use format hooks (useDateFormat, useTimeFormat, useNumberFormat)
+- [ ] Settings landing page with iOS-style grouped rows and subpage navigation
+- [ ] Profile subpage (reorganize existing name/email/avatar editing)
+- [ ] Appearance subpage with light/dark/system theme toggle
+- [ ] Language subpage (surface existing 3-language selector)
+- [ ] Regional Formats subpage (reorganize existing date/time/number preferences)
+- [ ] Security subpage (reorganize password change, active sessions, account deletion)
+- [ ] Notifications subpage with in-app preference toggles for SSE events
+- [ ] Data & Storage subpage (offline storage management + import/export hub)
 
 ### Out of Scope
 
@@ -121,8 +132,8 @@ Reliable inventory access anywhere — online or offline — with seamless sync.
 
 ## Current State
 
-**Shipped:** v1.5 Settings Enhancement (2026-02-03)
-**Current Milestone:** v1.6 Format Personalization
+**Shipped:** v1.6 Format Personalization (2026-02-08)
+**Current Milestone:** v1.7 Modular Settings
 
 **Tech stack:**
 - Backend: Go 1.25, Chi, sqlc, PostgreSQL
@@ -200,14 +211,17 @@ Reliable inventory access anywhere — online or offline — with seamless sync.
 - 56 waitForTimeout calls remain in 24 lower-priority E2E files
 - Go test factories orphaned (not adopted by Phase 23/24 tests)
 
-## Current Milestone: v1.6 Format Personalization
+## Current Milestone: v1.7 Modular Settings
 
-**Goal:** Complete user format preferences — dates, times, and numbers display according to user's chosen formats throughout the entire application.
+**Goal:** Restructure settings into a modular iOS-style landing page with dedicated subpages, adding theme support, notification preferences, and data/storage management.
 
 **Target features:**
-- Comprehensive date format application (extend v1.5)
-- Time format preference (12-hour vs 24-hour)
-- Number format preference (thousand/decimal separators)
+- Settings landing page with grouped navigation rows
+- Profile, Appearance, Language, Regional Formats subpages
+- Security, Notifications, Data & Storage subpages
+- Light/dark/system theme toggle (new)
+- In-app notification preferences (new)
+- Offline storage management + import/export hub (new)
 
 ---
-*Last updated: 2026-02-08 after v1.6 milestone started*
+*Last updated: 2026-02-12 after v1.7 milestone started*
