@@ -1,379 +1,254 @@
-# Feature Landscape: v1.2 Phase 2 - Repair Tracking & Declutter Assistant
+# Feature Landscape
 
-**Domain:** Home inventory management with maintenance tracking and organization assistance
-**Researched:** 2026-01-25
-**Confidence:** MEDIUM (domain patterns verified, implementation details inferred from industry standards)
+**Domain:** Modular settings page with theming, notification preferences, and storage management for a multi-tenant home inventory PWA
+**Researched:** 2026-02-12
 
 ## Current State Assessment
 
-The application already has foundational capabilities relevant to these features:
+The existing settings page is a single flat page at `/dashboard/settings/page.tsx` containing four sections separated by `<Separator />` dividers: Account Settings, Personalization (date/time/number formats), Security (active sessions), and Data Management (backup/restore dialog). Several components that should be in settings exist elsewhere (SecuritySettings with PasswordChange and DeleteAccountDialog, NotificationSettings for push). The backend User entity already stores `theme` (default "system"), `language`, `dateFormat`, `timeFormat`, `thousandSeparator`, `decimalSeparator` with a PATCH `/users/me/preferences` endpoint.
 
-| Existing Feature | Implementation | Relevance |
-|------------------|----------------|-----------|
-| Item condition tracking | `item_condition_enum`: NEW, EXCELLENT, GOOD, FAIR, POOR, DAMAGED, FOR_REPAIR | Direct - repair tracking builds on FOR_REPAIR status |
-| Activity logging | `activity_log` table with JSONB changes field | Reusable pattern for repair history |
-| Item photos | Full upload, thumbnail, captions, ordering | Foundation for bulk photo operations |
-| Inventory movements | `inventory_movements` table with history | Similar pattern for repair history |
-| Date tracking | `date_acquired`, `warranty_expires`, `expiration_date` | Pattern for repair dates |
-| Loans with due dates | `loans` table with `due_date`, reminders | Pattern for scheduled maintenance |
-
----
-
-## Repair Tracking Features
-
-### Table Stakes
-
-Features users expect from repair/maintenance tracking in inventory apps. Missing = incomplete feature.
-
-| Feature | Why Expected | Complexity | Dependencies | Notes |
-|---------|--------------|------------|--------------|-------|
-| Repair history log | Core use case - "what was done to this item?" | Medium | New `repair_log` table | Links to inventory, not items (per-instance history) |
-| Repair date tracking | Know when repairs happened | Low | `repaired_at` field | Required for history timeline |
-| Repair description | What was actually done | Low | `description` text field | Free-form notes about the repair |
-| Repair cost tracking | Track money spent on maintenance | Low | `cost` integer (cents) + `currency_code` | Matches existing `purchase_price` pattern |
-| Condition change on repair | Repair should update item condition | Low | Existing `condition` enum | DAMAGED -> GOOD after repair |
-| Link repairs to service provider | Who did the repair | Low | Optional `service_provider` text | Simple text, not full entity |
-| View repair history on item detail | See all repairs for an inventory item | Low | Query + UI component | Chronological list view |
-
-### Differentiators
-
-Features that distinguish a well-implemented repair tracking system.
-
-| Feature | Value Proposition | Complexity | Dependencies | Notes |
-|---------|-------------------|------------|--------------|-------|
-| Repair photos (before/after) | Visual documentation of repairs | Medium | Extend `item_photos` pattern | Optional photo attachments per repair |
-| Repair receipts/attachments | Store warranty claims, invoices | Medium | Existing `attachments` table | Link attachments to repair entries |
-| Total repair cost per item | Lifecycle cost analysis | Low | Aggregation query | "Is this item worth keeping?" |
-| Repair reminders | Scheduled maintenance alerts | Medium | Notification system | Similar to loan due date reminders |
-| Repair triggers for condition | Auto-update condition on repair completion | Low | Domain logic | If repair marked complete, prompt condition update |
-| Warranty claim tracking | Mark repairs as warranty claims | Low | `is_warranty_claim` boolean | Useful for warranty tracking users |
-| Repair status workflow | Track repair progress (pending/in-progress/complete) | Low | `repair_status` enum | Simple state machine |
-
-### Anti-Features
-
-Features to explicitly NOT build for repair tracking.
-
-| Anti-Feature | Why Avoid | What to Do Instead |
-|--------------|-----------|-------------------|
-| Full CMMS work order system | Over-engineered for home use; CMMS features like MTBF, work order assignments, PM schedules add complexity without home user value | Simple repair log with optional reminders |
-| Preventive maintenance calendars | Complex scheduling, low home user adoption; most home users react to issues rather than schedule PM | Allow manual "next service due" date field |
-| Technician assignment/labor tracking | Multi-user complexity; home warehouses rarely have dedicated technicians | Simple "service provider" text field |
-| Part inventory integration | Scope creep; managing parts inventory is a separate domain | Notes field for parts used |
-| Repair approval workflows | Unnecessary for personal inventory | Direct repair logging |
-| Equipment hierarchies (parent/child repairs) | CMMS pattern that adds complexity | Flat repair-per-inventory-item |
+| Existing Asset | Location | Reuse Strategy |
+|----------------|----------|----------------|
+| ThemeProvider (next-themes) | `components/providers/theme-provider.tsx` | Keep as-is, wire to settings UI |
+| ThemeToggle (icon button) | `components/shared/theme-toggle.tsx` | Replace with 3-way selector in settings; keep header toggle |
+| User.theme field + PATCH | `backend/.../user/entity.go` | Already persists; just call from new UI |
+| Date/Time/Number format settings | `components/settings/date-format-settings.tsx` etc. | Relocate into Appearance subpage |
+| NotificationSettings (push toggle) | `components/settings/notification-settings.tsx` | Relocate into Notifications subpage |
+| SecuritySettings (password + sessions + delete) | `components/settings/security-settings.tsx` | Relocate into Security subpage |
+| BackupRestoreDialog | `components/shared/backup-restore-dialog.tsx` | Inline into Data & Storage subpage |
+| OfflineContext (storage/sync state) | `lib/contexts/offline-context.tsx` | Read dbReady, persistentStorage, lastSyncTimestamp, triggerSync |
+| deleteDB() + clearStore() | `lib/db/offline-db.ts` | Use for cache clear functionality |
+| NotificationsDropdown (SSE events) | `components/dashboard/notifications-dropdown.tsx` | Reference for notification type mapping |
+| 8 NotificationTypes on backend | `backend/.../notification/entity.go` | Map to preference categories |
+| 30+ SSE event types | `lib/contexts/sse-context.tsx` | Reference for understanding event scope |
+| 3 i18n locales (en, et, ru) | `frontend/messages/` | All new UI strings need translation keys |
 
 ---
 
-## Declutter Assistant Features
+## Table Stakes
 
-### Table Stakes
+Features users expect. Missing = product feels incomplete.
 
-Features users expect from a declutter suggestion system. Missing = not useful.
+### Settings Hub (Landing Page)
 
-| Feature | Why Expected | Complexity | Dependencies | Notes |
-|---------|--------------|------------|--------------|-------|
-| "Last used" date tracking | Core signal for unused items | Medium | New `last_used_at` field on inventory | Manual update or loan-based inference |
-| Unused items list | Surface items not used in X days | Low | Query + UI | Configurable threshold (90/180/365 days) |
-| Filter by time threshold | User chooses "unused for 90 days" vs "1 year" | Low | UI filter control | Common thresholds: 90, 180, 365 days |
-| Item value display | Help prioritize what to declutter | Low | Existing `purchase_price` | Show value alongside unused items |
-| Quick action: mark as used | Update last_used_at easily | Low | Single-click action | "I used this" button |
+| Feature | Why Expected | Complexity | Notes |
+|---------|--------------|------------|-------|
+| Grouped rows with section headers | iOS/Android settings convention users have internalized; flat lists feel disorganized | Low | Group into: Account, Appearance, Notifications, Data & Storage, Security. Each group = visual card or section |
+| Row-level navigation with chevrons | Universal affordance signaling "tap to drill down"; ChevronRight icon per row | Low | Each row = Next.js Link to `/dashboard/settings/[subpage]`. Use `ChevronRight` from lucide-react |
+| Icon + label + subtitle per row | Scannability. Users identify sections by icon before reading text | Low | Reuse existing icon set: User, Palette, Bell, Database, Shield |
+| Summary/preview text on rows | Shows current state without navigating (e.g., "Dark", "English", "3 active sessions") | Med | Pull current values from auth context and offline context into hub. Strong UX signal that justifies the extra data fetching |
+| Mobile-first touch targets | PWA on phone is the primary use case; minimum 44px tap targets | Low | Already enforced elsewhere in codebase (`min-h-[44px]` pattern on inputs/buttons) |
+| Back navigation from subpages | Users must return to hub without relying on browser back button | Low | Next.js App Router layout nesting handles this. Add explicit back arrow + "Settings" in subpage headers |
+| Route-based subpages (not tabs/accordion) | Each settings section gets its own URL for deep linking, browser history, and shareability | Low | Convert `settings/page.tsx` to `settings/layout.tsx` + `settings/page.tsx` (hub) + `settings/account/page.tsx`, `settings/appearance/page.tsx`, etc. |
 
-### Differentiators
+### Appearance / Theme Settings
 
-Features that make declutter suggestions genuinely helpful.
+| Feature | Why Expected | Complexity | Notes |
+|---------|--------------|------------|-------|
+| Three-way selector: Light / Dark / System | Industry standard since macOS Mojave. Every major web app offers this | Low | **90% built.** next-themes provider has `enableSystem` + `defaultTheme="system"`. User entity stores `theme`. Just need explicit 3-option UI (radio group or segmented control) instead of current toggle button |
+| Server-persisted theme preference | User logs in on different device, expects same theme | Low | **Already built.** PATCH `/users/me/preferences` accepts `theme`. Wire settings UI to call this on change |
+| No flash of wrong theme on load | Flash of incorrect theme on page load destroys perceived quality | Low | **Already handled.** next-themes with `disableTransitionOnChange` and `attribute="class"` on `<html>` prevents FOUC |
+| Immediate application on change | Theme should apply instantly without page reload | Low | **Already works.** `setTheme()` from next-themes triggers immediate CSS class swap |
+| Format preferences relocated here | Date, time, and number format settings belong under "Appearance" or "Personalization" | Low | Move existing DateFormatSettings, TimeFormatSettings, NumberFormatSettings components into this subpage |
+| Language selector | Language preference belongs in Appearance alongside other display settings | Low | Already stored on User entity. Build a simple RadioGroup or Select with en/et/ru options, call PATCH preferences |
 
-| Feature | Value Proposition | Complexity | Dependencies | Notes |
-|---------|-------------------|------------|--------------|-------|
-| Declutter score/ranking | Prioritize items by unused time + value | Medium | Algorithm combining multiple factors | Higher score = better candidate for declutter |
-| Category-based suggestions | "You have 15 unused items in Electronics" | Low | Group by category | Quick category overview |
-| Location-based view | "Garage has 23 unused items" | Low | Group by location | Helps with room-by-room decluttering |
-| Seasonal awareness | Don't suggest holiday decorations in January | Medium | Category + date logic | Optional sophistication |
-| Estimated resale value | Help decide keep vs sell | High | External APIs or manual entry | Could use eBay/FB Marketplace estimates |
-| Action suggestions | Keep/Sell/Donate/Dispose recommendations | Medium | Simple rules or user preference | Based on value thresholds |
-| Declutter progress tracking | Gamification - "decluttered 15 items this month" | Low | Count disposed/archived items | Motivational feature |
-| Export declutter list | Share with partner, create selling list | Low | Export to CSV/PDF | Planning feature |
+### Notification Preferences
 
-### Anti-Features
+| Feature | Why Expected | Complexity | Notes |
+|---------|--------------|------------|-------|
+| Master notification toggle | Users must be able to silence all in-app notifications in one action | Low | Single Switch at top of notifications subpage. Disables all category toggles below it |
+| Per-category toggles for in-app notifications | Users want loan reminders but not member-joined alerts | Med | Categories derived from backend NotificationType enum: LOAN_DUE_SOON, LOAN_OVERDUE, LOAN_RETURNED, REPAIR_REMINDER, LOW_STOCK, WORKSPACE_INVITE, MEMBER_JOINED, SYSTEM |
+| Grouped by domain | Toggles organized by logical grouping, not flat list | Low | **Loans**: due soon, overdue, returned. **Inventory**: low stock, repair reminder. **Workspace**: invite, member joined. **System**: system notifications |
+| Push notification toggle (relocated) | Existing NotificationSettings component with usePushNotifications hook belongs here | Low | Move from wherever it currently floats into this subpage as a dedicated section |
+| Auto-save on toggle change | Toggles should take effect immediately (iOS convention), no "Save" button | Med | Each toggle change fires PATCH to server. Use optimistic UI: flip toggle immediately, revert on error with toast |
+| Clear visual on/off state | Each toggle must clearly show enabled vs disabled with accessible contrast | Low | shadcn Switch component handles this. Disabled master toggle should grey out all child toggles |
 
-Features to explicitly NOT build for declutter assistant.
+### Data & Storage Management
 
-| Anti-Feature | Why Avoid | What to Do Instead |
-|--------------|-----------|-------------------|
-| AI room scanning | Complex, requires camera integration, privacy concerns; Decluttify does this but requires significant ML investment | Manual inventory with good search/filter |
-| Automatic usage tracking | Would require IoT integration, invasive; no reasonable way to auto-detect item usage | Manual "mark as used" or infer from loans |
-| Automatic disposal actions | Dangerous - user must explicitly decide | Suggestions only, user confirms actions |
-| Social sharing of declutter | Privacy risk, unnecessary complexity | Export for manual sharing if desired |
-| Marketplace integration (auto-listing) | Scope creep, API complexity, liability | Link to external marketplaces manually |
-| KonMari "spark joy" prompts | Philosophical approach not suitable for app UX | Practical unused-time metrics |
-| Aggressive notifications | "You haven't used X in 6 months!" is annoying | On-demand declutter review, not push |
+| Feature | Why Expected | Complexity | Notes |
+|---------|--------------|------------|-------|
+| Storage usage display | PWA users need to know how much local data exists. Opaque storage creates anxiety | Med | `navigator.storage.estimate()` returns `{usage, quota}`. Display as progress bar + human-readable sizes (e.g., "12.4 MB of 200 MB used") |
+| Clear offline cache button | Users must be able to reclaim storage; PWA equivalent of "Clear Cache" | Med | Call `deleteDB()` from offline-db.ts + `caches.keys()` then `caches.delete()` for service worker caches. Require confirmation dialog. Show "This will remove offline data. You'll need to be online to re-sync." |
+| Persistent storage status indicator | Users should know if browser might auto-evict their data | Low | `navigator.storage.persisted()` already tracked in OfflineContext as `persistentStorage`. Show green/amber badge |
+| Request persistent storage button | If not already granted, let users request it | Low | `navigator.storage.persist()` already implemented in offline-db.ts. Show button only when `!persistentStorage` |
+| Import/export section | Centralize data import and export in settings rather than hiding in a dialog | Low | Inline the content from existing BackupRestoreDialog into this subpage. Keep dialog accessible from other places via the existing trigger pattern |
+| Last sync timestamp | Users want to know when offline data was last synchronized | Low | Already in OfflineContext as `lastSyncTimestamp`. Format with useDateFormat hook and show prominently |
+| Manual sync trigger button | Let users force-sync from settings instead of hoping auto-sync works | Low | Already in OfflineContext as `triggerSync()`. "Sync Now" button with loading state from `isSyncing` |
+| Offline database status | Show whether IndexedDB is initialized and healthy | Low | OfflineContext provides `dbReady`. Simple status indicator |
 
----
+### Security Subpage (Relocation)
 
-## Bulk Photo Operations Features
-
-### Table Stakes
-
-Features users expect when managing multiple photos.
-
-| Feature | Why Expected | Complexity | Dependencies | Notes |
-|---------|--------------|------------|--------------|-------|
-| Multi-select photos | Select several photos for bulk action | Low | UI pattern | Checkbox or long-press selection |
-| Bulk delete | Remove multiple photos at once | Low | Batch API endpoint | Confirmation required |
-| Bulk caption edit | Add same caption to multiple photos | Low | Batch update endpoint | Template with item name variable |
-| Reorder photos (drag-drop) | Already exists but verify | Low | Existing `display_order` | May need touch-friendly UI |
-
-### Differentiators
-
-| Feature | Value Proposition | Complexity | Dependencies | Notes |
-|---------|-------------------|------------|--------------|-------|
-| Bulk upload with progress | Upload 10+ photos with progress bar | Medium | Chunked upload, progress tracking | Better UX for large batches |
-| Auto-rotate based on EXIF | Correct orientation automatically | Low | Backend image processing | Already may exist in thumbnail generation |
-| Bulk download (zip) | Export all item photos | Medium | Server-side zip generation | Useful for backup/insurance |
-| Photo compression options | Choose quality vs size tradeoff | Medium | Backend processing options | Save storage space |
-| Duplicate photo detection | Warn before uploading same image | Medium | Hash comparison | Prevent accidental duplicates |
-
-### Anti-Features
-
-| Anti-Feature | Why Avoid | What to Do Instead |
-|--------------|-----------|-------------------|
-| Full photo editor | Scope creep; users have phone editors | Crop/rotate only if needed |
-| AI object detection | Complex, expensive, limited value for home inventory | Manual categorization |
-| Photo backup service | Separate concern, liability | Export/download features |
-| Social sharing from app | Privacy risk, out of scope | Standard OS share sheet |
+| Feature | Why Expected | Complexity | Notes |
+|---------|--------------|------------|-------|
+| Password change | **Already built** as PasswordChange component | Low | Relocate into Security subpage |
+| Active sessions list with revocation | **Already built** as ActiveSessions component | Low | Relocate into Security subpage |
+| Account deletion with safeguards | **Already built** as DeleteAccountDialog component | Low | Relocate into Security subpage as "Danger Zone" section |
 
 ---
 
-## Background Thumbnail Processing Features
+## Differentiators
 
-### Table Stakes
+Features that set the product apart. Not expected, but valued.
 
-Features needed for reliable background processing.
+| Feature | Value Proposition | Complexity | Notes |
+|---------|-------------------|------------|-------|
+| Visual theme preview cards | Small mock-up cards showing light/dark/system appearance before selecting | Med | Tiny preview rectangles with representative colors. Polish feature that communicates quality |
+| Animated theme transition | Smooth cross-fade when switching themes instead of instant class swap | Low | Remove `disableTransitionOnChange` from ThemeProvider, add CSS transitions on `background-color` and `color`. 200ms transition. Subtle but premium feel |
+| Notification history page | Full paginated view of all past notifications (not just unread dropdown) | Low | Backend `notificationsApi.getAll(page, limit)` already exists. Add as "View History" link within notifications subpage |
+| Storage quota warning banner | Proactively warn when IndexedDB usage approaches browser limits | Med | Calculate `usage/quota` ratio from Storage API estimate. Show warning when > 80%. Good PWA hygiene that prevents data loss |
+| Per-store record counts | Show "Items: 847, Inventory: 1,203, Locations: 24" etc. | Low | Call `getAll(store).length` for each store. Cheap operation, provides useful transparency |
+| Notification sound preference | Let users toggle whether in-app toast notifications play a sound | Low | Web Audio API for a subtle notification chime. Single on/off toggle. Adds polish |
+| Settings search (cmd+k integration) | Search within settings to jump to specific options | Med | Not needed at current scale (<20 settings). Valuable if settings grow. Could hook into existing command palette |
 
-| Feature | Why Expected | Complexity | Dependencies | Notes |
-|---------|--------------|------------|--------------|-------|
-| Async thumbnail generation | Don't block upload on thumbnail creation | Medium | Queue + worker pattern | Already have Redis worker infrastructure |
-| Processing status indicator | Know when thumbnails are ready | Low | Status field + UI | "Processing..." placeholder |
-| Retry on failure | Recover from transient errors | Low | Worker retry logic | Exponential backoff |
-| Error reporting | Know when processing fails permanently | Low | Error logging + UI notification | Admin visibility |
+---
 
-### Differentiators
+## Anti-Features
 
-| Feature | Value Proposition | Complexity | Dependencies | Notes |
-|---------|-------------------|------------|--------------|-------|
-| Multiple thumbnail sizes | Optimize for different UI contexts | Medium | Generate small/medium/large | Better performance on list vs detail views |
-| WebP conversion | Smaller file sizes, faster loading | Low | Image processing library | Modern format with good support |
-| Progressive JPEG | Faster perceived loading | Low | Encoding option | Better UX on slow connections |
-| Batch reprocessing | Regenerate all thumbnails if settings change | Medium | Admin tool | Useful if thumbnail size requirements change |
-
-### Anti-Features
+Features to explicitly NOT build.
 
 | Anti-Feature | Why Avoid | What to Do Instead |
 |--------------|-----------|-------------------|
-| Real-time processing in service worker | PWA service workers have limited CPU time; iOS especially restrictive | Server-side processing with worker |
-| Client-side thumbnail generation | Inconsistent results, battery drain | Server-side with queue |
-| Infinite thumbnail variants | Storage cost, processing overhead | Fixed set of useful sizes |
+| Per-workspace notification preferences | Requires junction table (user x workspace x notification_type). Most users have 1-2 workspaces. Disproportionate complexity | Store preferences at user level. Preferences apply across all workspaces |
+| Custom CSS / theme injection | Security risk (XSS vector), maintenance burden, breaks on updates | Predefined themes only (light/dark/system). Accent colors are a future consideration |
+| Email notification preferences | Backend does not currently send emails. UI for non-existent functionality confuses users and creates support tickets | Only add when email delivery is implemented |
+| Auto-delete old offline data | Silently deleting cached warehouse data destroys trust. Users need historical data | Manual cache management only. Warn on high usage, never auto-purge |
+| Granular SSE event filtering | SSE events drive real-time UI updates (list refresh, toast notifications). Letting users disable specific SSE event types would break data synchronization | SSE always flows fully. Notification preferences control what gets *surfaced as alerts*, not what data syncs |
+| Export/import user settings | Exporting a JSON of 15 preference values is pointless when they sync via the server automatically | Settings are per-user on the server. Multi-device sync is automatic |
+| Notification badge counts per category | Separate unread counts for loans vs inventory vs workspace adds visual noise to the hub | Single aggregate unread count is sufficient. Per-category is noise |
+| Tabbed settings layout | Tabs hide content behind clicks and don't work well on mobile with many sections | Route-based subpages with a hub landing page. Each section is a full page, not a tab |
+| Per-store cache clear | Letting users selectively clear only "items" or only "locations" from IndexedDB | All-or-nothing clear is safer and simpler. Partial clears leave inconsistent state |
 
 ---
 
 ## Feature Dependencies
 
 ```
-Existing Infrastructure:
-  - activity_log table -----------------> Pattern for repair_log
-  - item_photos system ----------------> Extend for repair photos, bulk ops
-  - inventory.condition enum ----------> FOR_REPAIR status exists
-  - Redis worker infrastructure -------> Background thumbnail processing
-  - notifications table ---------------> Repair reminders
-
-New Features - Repair Tracking:
-  1. repair_log table (core)
-     - id, inventory_id, workspace_id
-     - repaired_at, description, cost, currency_code
-     - service_provider, is_warranty_claim
-     - repair_status (pending/in_progress/completed)
-     - condition_before, condition_after
-     - created_by, created_at, updated_at
-
-  2. Repair photos (optional)
-     - Link existing item_photos or separate repair_photos table
-     - Consider: repair_attachments junction table
-
-  3. Repair UI
-     - Add to inventory detail page
-     - Repair history list
-     - Add repair form
-
-New Features - Declutter Assistant:
-  1. last_used_at field on inventory
-     - Nullable timestamp
-     - Updated manually or on loan return
-
-  2. Declutter queries
-     - Unused items by threshold
-     - Group by category/location
-     - Calculate declutter score
-
-  3. Declutter UI
-     - Dedicated declutter view
-     - Quick actions (mark used, archive, etc.)
-
-New Features - Bulk Photo Operations:
-  1. Batch API endpoints
-     - POST /photos/bulk-delete
-     - PATCH /photos/bulk-update
-
-  2. Multi-select UI
-     - Selection mode toggle
-     - Bulk action toolbar
-
-Dependencies Graph:
-  repair_log -> inventory (FK)
-  repair_log -> users (FK: created_by)
-  declutter queries -> inventory.last_used_at
-  bulk photo ops -> existing item_photos system
-  thumbnail processing -> existing Redis worker
+Settings Hub (landing page route: /settings)
+  |
+  +-- Account subpage (/settings/account)
+  |     +-- Profile editing (existing: ProfileEditSheet -> convert to inline form)
+  |     +-- Password change (existing: PasswordChange component)
+  |     +-- Avatar upload (existing: AvatarUpload component)
+  |     Dependencies: auth-context (user data), authApi (update calls)
+  |
+  +-- Appearance subpage (/settings/appearance)
+  |     +-- Theme 3-way selector (depends on: next-themes provider, User.theme field)
+  |     +-- Date format settings (existing: DateFormatSettings)
+  |     +-- Time format settings (existing: TimeFormatSettings)
+  |     +-- Number format settings (existing: NumberFormatSettings)
+  |     +-- Language selector (depends on: next-intl, User.language field)
+  |     Dependencies: next-themes useTheme(), PATCH /users/me/preferences
+  |
+  +-- Notifications subpage (/settings/notifications)
+  |     +-- Master notification toggle
+  |     +-- Per-category toggles grouped by domain
+  |     +-- Push notification toggle (existing: NotificationSettings)
+  |     Dependencies: NEW backend endpoint + migration for notification_preferences
+  |
+  +-- Data & Storage subpage (/settings/data-storage)
+  |     +-- Storage usage display (depends on: navigator.storage.estimate())
+  |     +-- Persistent storage status (depends on: OfflineContext.persistentStorage)
+  |     +-- Cache clear (depends on: deleteDB(), caches API)
+  |     +-- Import/export hub (existing: BackupRestoreDialog content, inlined)
+  |     +-- Sync status & manual trigger (depends on: OfflineContext)
+  |     Dependencies: OfflineContext, offline-db.ts, importExportApi
+  |
+  +-- Security subpage (/settings/security)
+        +-- Password change (existing: PasswordChange)
+        +-- Active sessions (existing: ActiveSessions)
+        +-- Delete account (existing: DeleteAccountDialog)
+        Dependencies: authApi, auth-context
 ```
 
----
+### Critical Dependency Chain
 
-## Database Schema Recommendations
-
-### Repair Log Table
-
-```sql
-CREATE TYPE warehouse.repair_status_enum AS ENUM (
-    'pending',      -- Repair needed, not started
-    'in_progress',  -- Currently being repaired
-    'completed'     -- Repair finished
-);
-
-CREATE TABLE warehouse.repair_log (
-    id UUID PRIMARY KEY DEFAULT uuidv7(),
-    workspace_id UUID NOT NULL REFERENCES auth.workspaces(id) ON DELETE CASCADE,
-    inventory_id UUID NOT NULL REFERENCES warehouse.inventory(id) ON DELETE CASCADE,
-
-    -- Repair details
-    repaired_at TIMESTAMPTZ,  -- NULL if not yet completed
-    description TEXT NOT NULL,
-    cost INTEGER,  -- In cents, matches purchase_price pattern
-    currency_code VARCHAR(3) DEFAULT 'EUR',
-    service_provider VARCHAR(200),
-
-    -- Status tracking
-    repair_status warehouse.repair_status_enum NOT NULL DEFAULT 'pending',
-    is_warranty_claim BOOLEAN DEFAULT false,
-
-    -- Condition tracking
-    condition_before warehouse.item_condition_enum,
-    condition_after warehouse.item_condition_enum,
-
-    -- Audit
-    created_by UUID NOT NULL REFERENCES auth.users(id),
-    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
-
-CREATE INDEX idx_repair_log_inventory ON warehouse.repair_log(inventory_id);
-CREATE INDEX idx_repair_log_workspace ON warehouse.repair_log(workspace_id);
-CREATE INDEX idx_repair_log_status ON warehouse.repair_log(workspace_id, repair_status);
 ```
+1. Route restructure MUST happen first:
+   settings/page.tsx -> settings/layout.tsx + settings/page.tsx (hub) + settings/*/page.tsx
 
-### Inventory Extension for Declutter
+2. Hub layout MUST exist before subpages render
+   (layout provides back navigation, breadcrumb context, mobile shell)
 
-```sql
-ALTER TABLE warehouse.inventory
-ADD COLUMN last_used_at TIMESTAMPTZ;
+3. Appearance subpage has ZERO new backend work (theme field exists, preferences endpoint exists)
 
--- Index for efficient unused item queries
-CREATE INDEX idx_inventory_last_used ON warehouse.inventory(workspace_id, last_used_at)
-WHERE is_archived = false;
+4. Data & Storage subpage has ZERO new backend work (all APIs exist in frontend contexts)
+
+5. Security subpage has ZERO new backend work (all components exist, just relocation)
+
+6. Notification preferences subpage REQUIRES new backend work:
+   - Migration: notification_preferences JSONB column on auth.users (or separate table)
+   - Endpoint: GET/PATCH /users/me/notification-preferences
+   - Frontend must NOT ship toggles without backend persistence
 ```
 
 ---
 
 ## MVP Recommendation
 
-### Phase 1: Repair Tracking Core
+Prioritize in this order based on dependency chain and effort/impact ratio:
 
-**Effort:** ~12-16 hours
+1. **Settings Hub + Route Restructure** -- Foundation everything else depends on. Convert flat settings page into Next.js layout with hub landing page. All existing settings components continue working, just reorganized into subpages. **Zero backend work.**
 
-1. **repair_log table migration** (2h)
-2. **Backend: repair CRUD endpoints** (4h)
-   - Create, Read (list by inventory), Update, Delete
-   - Include condition update on repair completion
-3. **Frontend: repair history UI** (4h)
-   - List view on inventory detail page
-   - Add repair form/dialog
-   - Repair history timeline
-4. **Activity log integration** (2h)
-   - Log repair create/update/complete actions
+2. **Appearance Subpage** -- Lowest new complexity because next-themes + server persistence are already built. Three-way theme selector + relocate format settings + add language selector. **Zero backend work.**
 
-### Phase 2: Declutter Assistant Core
+3. **Security Subpage** -- Pure relocation of existing PasswordChange, ActiveSessions, DeleteAccountDialog. No new features, just better organization. **Zero backend work.**
 
-**Effort:** ~10-14 hours
+4. **Data & Storage Subpage** -- All building blocks exist (OfflineContext, Storage API, deleteDB, BackupRestoreDialog). Pure frontend assembly. **Zero backend work.**
 
-1. **Inventory schema migration** (1h)
-   - Add `last_used_at` column
-2. **Backend: declutter endpoints** (3h)
-   - GET /declutter/suggestions?threshold=90
-   - PATCH /inventory/:id/mark-used
-3. **Frontend: declutter view** (6h)
-   - Unused items list with filters
-   - Quick actions (mark used, archive)
-   - Category/location grouping
-4. **Loan integration** (2h)
-   - Auto-update `last_used_at` on loan return
+5. **Notifications Subpage** -- Requires new backend migration + endpoint for notification preferences. Relocate existing push toggle. Build per-category toggle UI. **Backend work required.**
 
-### Phase 3: Bulk Photo Operations
+### What Ships Without Backend Changes
 
-**Effort:** ~8-10 hours
+Everything except notification per-category preferences. The hub, appearance, security, and data & storage subpages are entirely frontend work using existing APIs and components.
 
-1. **Backend: batch endpoints** (3h)
-   - POST /photos/bulk-delete
-   - PATCH /photos/bulk-update (captions)
-2. **Frontend: multi-select UI** (4h)
-   - Selection mode toggle
-   - Bulk action toolbar
-   - Confirmation dialogs
-3. **Background processing improvements** (if needed) (3h)
-   - Verify thumbnail queue is robust
-   - Add processing status indicator
+### Backend Work Required (Notifications Only)
+
+| Change | Type | Complexity |
+|--------|------|------------|
+| `notification_preferences` JSONB column on `auth.users` | Migration | Low |
+| `GET /users/me/notification-preferences` | Endpoint | Low |
+| `PATCH /users/me/notification-preferences` | Endpoint | Low |
+| Filter notification creation based on preferences | Service logic | Med |
+| Filter SSE toast display based on preferences | Frontend logic | Low |
 
 ### Defer to Post-MVP
 
-- Repair photos/attachments
-- Repair reminders
-- Seasonal declutter awareness
-- Estimated resale values
-- Multiple thumbnail sizes
-- WebP conversion
+- Visual theme preview cards
+- Animated theme transitions
+- Notification history page
+- Storage quota warning banner
+- Notification sound preferences
+- Settings search
+- Per-store record counts display
 
 ---
 
 ## Sources
 
-### Maintenance/Repair Tracking Patterns
-- [BarCloud Asset Maintenance Tracking](https://barcloud.com/product/maintenance-tracking/)
-- [Connecteam Maintenance Management Software 2026](https://connecteam.com/best-maintenance-management-software/)
-- [HomeZada Home Maintenance](https://www.homezada.com/homeowners/home-maintenance)
-- [Under My Roof App](https://apps.apple.com/us/app/under-my-roof-home-inventory/id1524335878)
-- [EZO Equipment Maintenance Log Guide](https://ezo.io/ezofficeinventory/blog/equipment-maintenance-log/)
-- [Fabrico Work Order Types](https://www.fabrico.io/blog/work-order-types-explained/)
+### Codebase (Primary)
+- Settings page: `frontend/app/[locale]/(dashboard)/dashboard/settings/page.tsx`
+- Theme provider: `frontend/components/providers/theme-provider.tsx` (next-themes)
+- Theme toggle: `frontend/components/shared/theme-toggle.tsx`
+- User entity: `backend/internal/domain/auth/user/entity.go` (theme, language, format fields)
+- Offline DB: `frontend/lib/db/offline-db.ts` (idb library, 10+ stores, deleteDB)
+- Offline context: `frontend/lib/contexts/offline-context.tsx` (dbReady, persistentStorage, sync state)
+- SSE context: `frontend/lib/contexts/sse-context.tsx` (30+ event types)
+- Notification types: `backend/internal/domain/auth/notification/entity.go` (8 types)
+- Notification API: `frontend/lib/api/notifications.ts`
+- Push notifications: `frontend/components/settings/notification-settings.tsx`
+- Backup/restore: `frontend/components/shared/backup-restore-dialog.tsx`
+- Security settings: `frontend/components/settings/security-settings.tsx`
+- Format preferences migration: `backend/db/migrations/010_format_preferences.sql`
+- CSS theme variables: `frontend/app/globals.css` (oklch light + dark tokens)
 
-### Declutter/Unused Item Patterns
-- [Decluttify App](https://play.google.com/store/apps/details?id=com.asanarebel.Decluttify&hl=en_US)
-- [Sortly Inventory Features](https://www.sortly.com/features/)
-- [Good Housekeeping 90/90 Rule](https://www.goodhousekeeping.com/home/organizing/a70025689/before-you-declutter-i-tried-90-90-rule/)
-- [Clean.Email Best Decluttering Apps 2026](https://clean.email/blog/email-management/best-decluttering-apps)
-- [MyAssets Decluttering Apps](https://myassets.com/blog/asset-management/apps-for-decluttering/)
-
-### Bulk Photo Operations
-- [BatchPhoto Features](https://www.batchphoto.com/)
-- [MDN Background Sync API](https://developer.mozilla.org/en-US/docs/Web/API/Background_Synchronization_API)
-- [ZeePalm Background Sync PWA Guide](https://www.zeepalm.com/blog/background-sync-in-pwas-service-worker-guide)
-
-### Existing Codebase (Primary Source)
-- `/backend/db/migrations/001_initial_schema.sql` - Current schema patterns
-- `/backend/internal/domain/warehouse/inventory/entity.go` - Condition/Status enums
-- `/backend/internal/domain/warehouse/itemphoto/` - Photo handling patterns
-- `/.planning/PROJECT.md` - Project context and constraints
+### External
+- [next-themes GitHub](https://github.com/pacocoursey/next-themes) -- Theme provider capabilities and API
+- [shadcn/ui dark mode](https://ui.shadcn.com/docs/dark-mode/next) -- Official integration guide
+- [MDN StorageManager.estimate()](https://developer.mozilla.org/en-US/docs/Web/API/StorageManager/estimate) -- Storage API for usage/quota display
+- [MDN Storage quotas and eviction](https://developer.mozilla.org/en-US/docs/Web/API/Storage_API/Storage_quotas_and_eviction_criteria) -- Browser limits and persistent storage
+- [Material Design Settings Patterns](https://m1.material.io/patterns/settings.html) -- Settings page UI organization
+- [Material Design Notification Patterns](https://m1.material.io/patterns/notifications.html) -- Notification preference best practices
+- [Android Settings Design Guide](https://developer.android.com/design/ui/mobile/guides/patterns/settings) -- Grouped settings with navigation pattern
+- [SetProduct Settings UI Design](https://www.setproduct.com/blog/settings-ui-design) -- Settings page usability tips
+- [Toggle list design patterns](https://cieden.com/book/atoms/toggle-switch/how-to-design-a-toggle-list) -- Toggle switch best practices for preference panels
+- [Notification settings examples](https://nicelydone.club/pages/notification-settings) -- Real-world notification settings from web apps

@@ -1,510 +1,224 @@
-# Technology Stack: v1.3 Mobile UX Overhaul
+# Technology Stack: Modular Settings with Theming, Notification Preferences, and Storage Management
 
-**Project:** Home Warehouse System - Barcode Scanning, Fuzzy Search, Mobile Gestures
-**Researched:** 2026-01-25
-**Scope:** Stack additions for browser-based barcode/QR scanning, client-side fuzzy search, mobile gestures (swipe, FAB, radial menu), and progressive form patterns
+**Project:** Home Warehouse System -- Settings Restructure
+**Researched:** 2026-02-12
+**Scope:** Stack additions for dark/light/system theme settings UI, in-app notification preference toggles, and IndexedDB/cache storage visibility and management
 **Overall Confidence:** HIGH
 
 ## Executive Summary
 
-This milestone requires **4 new frontend libraries**. The existing stack (Next.js 16, React 19, shadcn/ui, Tailwind CSS 4, idb v8) provides a solid foundation. Recommendations prioritize actively maintained libraries with TypeScript support and minimal bundle impact.
+**No new npm packages required.** The existing stack already contains every library needed for all three features. The only addition is one shadcn/ui component (Switch) installed via the CLI, which pulls in `@radix-ui/react-switch` automatically.
 
-**Total estimated bundle addition:** ~45-50 KB gzip (with tree-shaking)
+One CSS correctness fix is needed in the Tailwind v4 dark mode variant selector.
+
+**Total new dependencies:** 1 (via shadcn CLI)
+**Total new npm packages:** 0 (manually added)
 
 ---
 
-## Recommended Additions
+## What Already Exists (DO NOT Add)
 
-### 1. Barcode/QR Scanning
+These are already installed and configured. Listed to prevent duplicate work.
 
-| Library | Version | Bundle Size | Maintenance |
-|---------|---------|-------------|-------------|
-| **@yudiel/react-qr-scanner** | ^2.5.0 | ~15-60 KB gzip | Active (updated Jan 2025) |
+| Capability | Library | Version | Location |
+|------------|---------|---------|----------|
+| Theme switching | `next-themes` | 0.4.6 | `components/providers/theme-provider.tsx` |
+| Theme toggle (binary) | Custom component | -- | `components/shared/theme-toggle.tsx` |
+| Dark mode CSS variables | Tailwind CSS 4 + oklch | -- | `app/globals.css` (`:root` + `.dark`) |
+| Dark variant config | `@custom-variant dark` | -- | `app/globals.css` line 4 |
+| ThemeProvider in layout | Wraps entire app | -- | `app/[locale]/layout.tsx` |
+| SSE real-time events | Custom SSEProvider | -- | `lib/contexts/sse-context.tsx` |
+| SSE subscription hook | `useSSE` / `useSSESubscription` | -- | `lib/hooks/use-sse.ts` |
+| Push notification toggle | `usePushNotifications` | -- | `lib/hooks/use-push-notifications.ts` |
+| Push notification UI | `NotificationSettings` | -- | `components/settings/notification-settings.tsx` |
+| In-app notifications | `NotificationsDropdown` | -- | `components/dashboard/notifications-dropdown.tsx` |
+| Notifications API client | `notificationsApi` | -- | `lib/api/notifications.ts` |
+| IndexedDB offline storage | `idb` | 8.0.3 | `lib/db/offline-db.ts` |
+| Offline context | `OfflineProvider` / `useOffline` | -- | `lib/contexts/offline-context.tsx` |
+| Persistent storage request | `requestPersistentStorage()` | -- | `lib/db/offline-db.ts` |
+| DB clear/delete operations | `clearStore()` / `deleteDB()` | -- | `lib/db/offline-db.ts` |
+| Service worker (PWA) | `serwist` / `@serwist/next` | 9.5.0 | `app/sw.ts` |
+| Form validation | `react-hook-form` + `zod` | 7.70.0 / 4.3.5 | Already configured |
+| i18n | `next-intl` | 4.7.0 | Already configured (en/et/ru) |
+| Toast notifications | `sonner` | 2.0.7 | Already configured |
+| Radio groups | `@radix-ui/react-radio-group` | -- | Used in backup-restore-dialog |
+| Animations | `motion` | 12.29.2 | Already installed |
+| Progress bar | shadcn/ui Progress | -- | `components/ui/progress.tsx` |
+| Settings page | Existing monolithic page | -- | `app/[locale]/(dashboard)/dashboard/settings/page.tsx` |
+| Backup/Restore | `BackupRestoreDialog` | -- | `components/shared/backup-restore-dialog.tsx` |
+| Format preferences | Date/Time/Number settings | -- | `components/settings/*-format-settings.tsx` |
 
-**Rationale:** This library leverages the native BarcodeDetector API when available (reducing bundle to ~15KB), falls back gracefully, and provides React hooks (`useDevices`) that integrate cleanly with React 19. Supports both continuous scanning and single-scan modes needed for inventory workflows.
+---
 
-**Key features:**
-- QR codes + EAN/UPC/Code128 barcode formats (needed for product lookup)
-- Built-in torch (flashlight), zoom, camera switching
-- Audio feedback on successful scans
-- Full TypeScript support
-- Minimal dependencies
+## Recommended Stack Additions
+
+### 1. shadcn/ui Switch Component (Add via CLI)
+
+| Technology | Version | Bundle Size | Purpose |
+|------------|---------|-------------|---------|
+| shadcn/ui Switch | Latest (CLI-managed) | ~2 KB (Radix primitive) | Toggle controls for notification preferences |
+
+**Why:** Notification preference toggles need an on/off control. The project uses shadcn/ui components everywhere else. Switch is the standard pattern for boolean settings -- semantically "enable/disable" rather than Checkbox which implies "select/agree". The project currently has NO `switch.tsx` in `components/ui/`.
+
+**Confidence:** HIGH -- verified shadcn/ui Switch exists at `ui.shadcn.com/docs/components/radix/switch`, verified absence by listing `components/ui/`.
 
 **Installation:**
 ```bash
-bun add @yudiel/react-qr-scanner
+cd frontend && pnpm dlx shadcn@latest add switch
 ```
 
-**Integration example:**
-```tsx
-import { Scanner } from '@yudiel/react-qr-scanner';
+This adds `@radix-ui/react-switch` as a dependency (consistent with the project's current individual `@radix-ui/react-*` package approach) and generates `components/ui/switch.tsx`.
 
-function InventoryScanner({ onScan }: { onScan: (code: string) => void }) {
-  return (
-    <Scanner
-      onScan={(result) => onScan(result[0].rawValue)}
-      formats={['qr_code', 'ean_13', 'ean_8', 'code_128']}
-      components={{ audio: true, torch: true }}
-    />
-  );
-}
-```
-
-**Next.js integration (browser-only):**
-```tsx
-// Must use dynamic import - camera APIs are browser-only
-const Scanner = dynamic(
-  () => import('@yudiel/react-qr-scanner').then(m => m.Scanner),
-  { ssr: false }
-);
-```
+**Note on Radix UI migration:** As of February 2026, shadcn/ui supports a unified `radix-ui` package replacing individual `@radix-ui/react-*` packages. This project still uses individual packages. A migration is available (`pnpm dlx shadcn@latest migrate radix`) but is out of scope for this milestone.
 
 ---
 
-### 2. Fuzzy/Typo-Tolerant Search
+### 2. CSS Fix: Tailwind v4 Dark Mode Variant (Not a dependency -- a bug fix)
 
-| Library | Version | Bundle Size | Maintenance |
-|---------|---------|-------------|-------------|
-| **fuse.js** | ^7.1.0 | ~6 KB gzip (basic) | Active (3.1K stars, 21M monthly downloads) |
+| Item | Detail |
+|------|--------|
+| File | `app/globals.css` line 4 |
+| Current | `@custom-variant dark (&:is(.dark *));` |
+| Correct | `@custom-variant dark (&:where(.dark, .dark *));` |
 
-**Rationale:** Fuse.js provides the best balance of fuzzy search quality and simplicity. Since the app already uses IndexedDB for offline storage (idb v8), Fuse.js can search the local cache directly without network calls - enabling "search as you type" that works offline.
+**Why this matters:**
 
-**Why Fuse.js over alternatives:**
+1. **Missing self-match:** The current selector `(&:is(.dark *))` only matches descendants of `.dark` elements, NOT the `.dark` element itself. The correct selector `(&:where(.dark, .dark *))` matches both the element with the `.dark` class AND its descendants. This matters for `dark:bg-background` on the `<body>` tag -- if `.dark` is on `<html>`, then `<html>` elements with `dark:` utilities would not match.
 
-| Library | Verdict | Reason |
-|---------|---------|--------|
-| **Fuse.js** | CHOSEN | Simple API, excellent fuzzy matching, zero dependencies |
-| MiniSearch | REJECTED | Better for full-text indexing; overkill for inventory search |
-| FlexSearch | REJECTED | Faster on huge datasets but more complex API; inventory data fits in memory |
-| Server-side pg_trgm | REJECTED | This milestone focuses on offline-capable mobile UX |
+2. **Specificity:** `:where()` has zero specificity (unlike `:is()` which takes the highest specificity of its arguments). Using `:where()` prevents unintentional specificity inflation that could make dark mode overrides harder to manage. This is the approach recommended by the official Tailwind CSS v4 documentation.
 
-**Installation:**
-```bash
-bun add fuse.js
-```
-
-**Integration example:**
-```tsx
-import Fuse from 'fuse.js';
-
-// Initialize with IndexedDB data
-const fuse = new Fuse(items, {
-  keys: [
-    { name: 'name', weight: 2 },      // Prioritize name matches
-    { name: 'sku', weight: 1.5 },     // Then SKU
-    { name: 'description', weight: 1 }
-  ],
-  threshold: 0.4,        // 0.0 = exact, 1.0 = match anything
-  distance: 100,         // Characters to search within
-  includeScore: true,
-  minMatchCharLength: 2,
-});
-
-// Typo-tolerant search
-const results = fuse.search('shlef');  // finds "shelf" with typo
-```
-
-**React hook pattern:**
-```tsx
-function useItemSearch(items: Item[]) {
-  const fuse = useMemo(
-    () => new Fuse(items, { keys: ['name', 'sku'], threshold: 0.4 }),
-    [items]
-  );
-
-  const search = useCallback((query: string) => {
-    if (!query) return items;
-    return fuse.search(query).map(r => r.item);
-  }, [fuse, items]);
-
-  return search;
-}
-```
+**Confidence:** HIGH -- verified against official Tailwind CSS v4 documentation at `tailwindcss.com/docs/dark-mode`.
 
 ---
 
-### 3. Mobile Gestures (Swipe, Drag)
+## What You Do NOT Need
 
-| Library | Version | Bundle Size | Maintenance |
-|---------|---------|-------------|-------------|
-| **@use-gesture/react** | ^10.3.1 | ~10 KB gzip | Active (pmndrs ecosystem, 1.1M weekly downloads) |
+### No new theme library
+`next-themes` 0.4.6 already provides everything needed:
+- Three-way theme: `theme` returns `"light"` | `"dark"` | `"system"`, `setTheme()` accepts these values
+- System preference detection via `prefers-color-scheme` media query
+- Class-based toggling via `attribute="class"` (already configured)
+- Flash prevention via injected inline script (handled by the provider)
+- SSR-safe: `resolvedTheme` is undefined on server, `useTheme()` requires mounting check
+- localStorage persistence (automatic, key: `"theme"`)
+- The ThemeProvider is already configured with `enableSystem` and `defaultTheme="system"` in `components/providers/theme-provider.tsx`
 
-**Rationale:** @use-gesture provides low-level gesture primitives that can power swipe-to-delete, drag-to-reorder, and pull-to-refresh. It's maintained by the pmndrs collective (same team as react-spring, zustand) and has excellent TypeScript support. The hook-based API (`useDrag`, `useSwipe`) integrates cleanly with React 19.
+### No CSS-in-JS or theme tokens library
+The project already has complete light and dark CSS custom property sets in oklch color space in `globals.css`. All shadcn/ui components consume these variables through Tailwind's `@theme inline` mapping. No additional theming infrastructure is needed.
 
-**Why @use-gesture over alternatives:**
+### No storage estimation library
+`navigator.storage.estimate()` is a native browser API returning `{ usage, quota }` in bytes. Combined with the existing `idb` library's ability to count records per object store via `getAll()`, this covers all storage visibility needs. No third-party library adds value here.
 
-| Library | Verdict | Reason |
-|---------|---------|--------|
-| **@use-gesture/react** | CHOSEN | Comprehensive (drag, swipe, pinch, scroll), composable hooks |
-| react-swipeable | REJECTED | Swipe-only; @use-gesture covers more use cases |
-| Custom implementation | REJECTED | Reinventing the wheel; gesture handling is subtle |
+### No notification preferences library / state manager
+In-app notification preferences (which SSE event types to display) are simple boolean toggles. localStorage is sufficient for storage. The existing `useSSE` hook already receives all event types -- filtering is a client-side concern at the subscriber level.
 
-**Installation:**
-```bash
-bun add @use-gesture/react
-```
-
-**Integration examples:**
-
-```tsx
-import { useSwipe, useDrag } from '@use-gesture/react';
-
-// Swipe-to-delete pattern
-function SwipeableItem({ onDelete }: { onDelete: () => void }) {
-  const bind = useSwipe(({ direction: [dx], velocity: [vx] }) => {
-    if (dx < 0 && vx > 0.5) onDelete(); // swipe left fast
-  });
-
-  return <div {...bind()}>Item content</div>;
-}
-
-// Drag-to-reorder (combine with @dnd-kit already in stack)
-function DraggableHandle() {
-  const bind = useDrag(({ down, movement: [mx, my] }) => {
-    // Handle drag state
-  });
-
-  return <div {...bind()} className="cursor-grab" />;
-}
-```
+### No state management library (Zustand, Jotai, etc.)
+- Theme state: managed by `next-themes`
+- Notification preferences: localStorage + a custom hook
+- Storage metrics: one-shot async reads via `navigator.storage.estimate()`
+None of these warrant a state management library.
 
 ---
 
-### 4. FAB with Radial Menu Animation
+## Integration Architecture Per Feature
 
-| Library | Version | Bundle Size | Maintenance |
-|---------|---------|-------------|-------------|
-| **motion** | ^12.27.0 | ~15 KB gzip (tree-shaken) | Very Active (updated daily, 25K stars) |
+### Feature 1: Theme Settings (Three-Way Selector)
 
-**Rationale:** Build the FAB/radial menu as a custom component using Motion's animation primitives rather than using a pre-built FAB library. This approach provides:
+**Existing infrastructure used:**
+- `next-themes` `useTheme()` hook: `theme` (current), `setTheme()`, `resolvedTheme` (actual active theme)
+- `ThemeProvider` already wraps the entire app with `enableSystem` and `attribute="class"`
+- `globals.css` already has `:root` (light) and `.dark` (dark) CSS variable sets
 
-1. **Full control** over the radial menu design and behavior
-2. **Consistency** with the rest of the app's animation language
-3. **No dependency on stale libraries** (react-tiny-fab last updated 4 years ago)
+**UI pattern:** RadioGroup with three options (Light, Dark, System). Use `theme` for the selected value, `setTheme()` for onChange. Show `resolvedTheme` as a badge when "System" is selected to indicate which theme is actually active.
 
-Motion (formerly Framer Motion) is the de facto standard for React animation.
+**Hydration safety:** The existing ThemeToggle already demonstrates the pattern -- use `useState(false)` for mounted, set to `true` in `useEffect`. Render skeleton/placeholder until mounted. This same pattern applies to the three-way selector.
 
-**Why custom Motion-based FAB over pre-built:**
+**Existing component to refactor:** The binary `ThemeToggle` in `components/shared/theme-toggle.tsx` currently only toggles between light/dark, skipping system. After adding the settings subpage with three-way selection, the header toggle can remain as a quick shortcut (cycling light -> dark -> system) or link to settings.
 
-| Library | Verdict | Reason |
-|---------|---------|--------|
-| **Custom + Motion** | CHOSEN | Full control, consistent animation language, actively maintained |
-| react-tiny-fab | REJECTED | Last updated 4 years ago; not maintained |
-| Material UI FAB | REJECTED | Would require importing MUI; conflicts with shadcn design system |
-| Syncfusion FAB | REJECTED | Commercial license; heavier dependency |
+**shadcn/ui components needed (all already installed):**
+- RadioGroup + RadioGroupItem
+- Card, CardHeader, CardContent
+- Label
 
-**Installation:**
-```bash
-bun add motion
+### Feature 2: In-App Notification Preferences
+
+**Approach: Client-side only (recommended for this milestone)**
+
+No backend notification preference API exists (verified by searching the backend codebase for `notification_preferences`). Building backend preferences would require database migrations, new API endpoints, and backend filtering logic -- significant scope for what is primarily a UI/UX milestone.
+
+**Implementation pattern:**
+1. Create a `useNotificationPreferences()` hook backed by localStorage
+2. Define preference categories matching existing SSE event types:
+   - Loan events: `loan.created`, `loan.updated`, `loan.returned`, `loan.deleted`
+   - Inventory events: `inventory.created`, `inventory.updated`, `inventory.deleted`
+   - Item events: `item.created`, `item.updated`, `item.deleted`
+   - Approval events: `pendingchange.created`, `pendingchange.approved`, `pendingchange.rejected`
+   - Location/container events: grouped
+3. Filter SSE events in `NotificationsDropdown` and in-app toast triggers based on preferences
+4. The existing push notification toggle (`NotificationSettings`) remains separate -- it controls browser push permission, not in-app notification filtering
+
+**SSE integration:** The `SSEProvider` broadcasts ALL events to subscribers. Filtering happens at the subscriber level in `useSSE({ onEvent })`. This means notification preferences are purely a consumer-side concern -- no changes to the SSE infrastructure needed.
+
+**shadcn/ui components needed:**
+- **Switch** (ADD via CLI) -- one per notification category
+- Card, CardHeader, CardContent (already installed)
+- Separator (already installed)
+- Badge (already installed)
+
+### Feature 3: Data & Storage Management
+
+**Storage estimation (native API -- no library needed):**
+```typescript
+// navigator.storage.estimate() returns { usage, quota } in bytes
+// Supported: Chrome, Firefox, Edge, Safari 17+
+// Returns origin-wide totals, not per-database breakdown
+const estimate = await navigator.storage.estimate();
 ```
 
-**Note:** The package was renamed from `framer-motion` to `motion`. Import from `motion/react`:
-
-```tsx
-import { motion, AnimatePresence } from 'motion/react';
+**Per-store record counts (using existing idb):**
+```typescript
+// Already available via getAll() or can add count operations
+const db = await getDB();
+const tx = db.transaction(['items', 'inventory', 'locations'], 'readonly');
+const itemCount = await tx.objectStore('items').count();
 ```
 
-**Radial menu implementation pattern:**
+**Persistent storage status (already implemented):**
+- `navigator.storage.persisted()` -- already called in `offline-db.ts`
+- `OfflineProvider` already exposes `persistentStorage` boolean
 
-```tsx
-import { motion, AnimatePresence } from 'motion/react';
-
-interface FABItem {
-  id: string;
-  icon: React.ReactNode;
-  label: string;
-  onClick: () => void;
-}
-
-function RadialFAB({ items, isOpen, onToggle }: {
-  items: FABItem[];
-  isOpen: boolean;
-  onToggle: () => void;
-}) {
-  const itemCount = items.length;
-  const radius = 80; // Distance from center
-
-  return (
-    <div className="fixed bottom-6 right-6">
-      {/* Radial menu items */}
-      <AnimatePresence>
-        {isOpen && items.map((item, i) => {
-          // Calculate position in arc (180 degrees spread)
-          const angle = (i * Math.PI) / (itemCount - 1) + Math.PI;
-          const x = Math.cos(angle) * radius;
-          const y = Math.sin(angle) * radius;
-
-          return (
-            <motion.button
-              key={item.id}
-              initial={{ scale: 0, x: 0, y: 0, opacity: 0 }}
-              animate={{ scale: 1, x, y, opacity: 1 }}
-              exit={{ scale: 0, x: 0, y: 0, opacity: 0 }}
-              transition={{
-                type: 'spring',
-                stiffness: 400,
-                damping: 25,
-                delay: i * 0.05, // Stagger
-              }}
-              onClick={item.onClick}
-              className="absolute w-12 h-12 rounded-full bg-primary text-primary-foreground shadow-md flex items-center justify-center"
-              aria-label={item.label}
-            >
-              {item.icon}
-            </motion.button>
-          );
-        })}
-      </AnimatePresence>
-
-      {/* Main FAB button */}
-      <motion.button
-        whileTap={{ scale: 0.9 }}
-        onClick={onToggle}
-        className="relative z-10 w-14 h-14 rounded-full bg-primary text-primary-foreground shadow-lg flex items-center justify-center"
-      >
-        <motion.span
-          animate={{ rotate: isOpen ? 45 : 0 }}
-          transition={{ type: 'spring', stiffness: 300 }}
-          className="text-2xl"
-        >
-          +
-        </motion.span>
-      </motion.button>
-    </div>
-  );
-}
+**Cache management (native API):**
+```typescript
+// Service worker cache keys -- native API, no library needed
+const cacheNames = await caches.keys();
+// Clear specific cache
+await caches.delete(cacheName);
 ```
+
+**Existing operations to expose in UI:**
+- `clearStore(storeName)` -- already in `lib/db/offline-db.ts`
+- `deleteDB()` -- already in `lib/db/offline-db.ts`
+- `triggerSync()` -- already in `OfflineProvider`
+
+**New hook needed:** A `useStorageEstimate()` hook wrapping `navigator.storage.estimate()` with loading/error states. This is ~20 lines of custom code, not a library.
+
+**shadcn/ui components needed (all already installed):**
+- Progress -- for storage usage bars
+- Card, CardHeader, CardContent -- section wrappers
+- AlertDialog -- confirm destructive actions (clear cache, delete DB)
+- Button -- action triggers
+- Separator -- between sections
 
 ---
 
-## Complete Installation
+## Installation Commands
 
 ```bash
-# All new dependencies for Mobile UX v1.3
-bun add @yudiel/react-qr-scanner fuse.js @use-gesture/react motion
+# The ONLY installation needed:
+cd frontend && pnpm dlx shadcn@latest add switch
 ```
 
-**Bundle impact summary:**
-
-| Library | Gzip Size | Notes |
-|---------|-----------|-------|
-| @yudiel/react-qr-scanner | 15-60 KB | 15KB when native BarcodeDetector available |
-| fuse.js | ~6 KB | Using basic build |
-| @use-gesture/react | ~10 KB | Tree-shakeable |
-| motion | ~15 KB | Tree-shakeable |
-| **Total** | **~45-50 KB** | With tree-shaking |
-
----
-
-## Integration Points with Existing Stack
-
-### Next.js 16
-
-| Feature | Integration |
-|---------|-------------|
-| Barcode scanner | Dynamic import with `ssr: false` - camera APIs browser-only |
-| Fuzzy search | Works in both client and server components |
-| Gestures | Client components only (`'use client'`) |
-| Animations | Client components only (`'use client'`) |
-
-### React 19
-
-All recommended libraries support React 19:
-- @yudiel/react-qr-scanner: Hook-based, works with React 19
-- fuse.js: Framework-agnostic, no React dependency
-- @use-gesture/react: Explicitly supports React 18+ hooks
-- motion: Updated for React 19 in v12
-
-### shadcn/ui
-
-| Component | Integration |
-|-----------|-------------|
-| FAB | Build with shadcn Button + motion animations |
-| Swipeable lists | Wrap shadcn components with gesture handlers |
-| Search input | shadcn Input + Fuse.js for filtering |
-| Scanner modal | shadcn Dialog/Sheet + Scanner component |
-
-Example combining shadcn Dialog with scanner:
-
-```tsx
-import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Scanner } from '@yudiel/react-qr-scanner';
-
-function ScannerDialog({ onScan }: { onScan: (code: string) => void }) {
-  const [open, setOpen] = useState(false);
-
-  return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button variant="outline">Scan Barcode</Button>
-      </DialogTrigger>
-      <DialogContent className="sm:max-w-md">
-        <Scanner
-          onScan={(result) => {
-            onScan(result[0].rawValue);
-            setOpen(false);
-          }}
-          formats={['qr_code', 'ean_13']}
-        />
-      </DialogContent>
-    </Dialog>
-  );
-}
-```
-
-### Tailwind CSS 4
-
-Motion works well with Tailwind - use Tailwind for static styles, Motion for dynamic animations:
-
-```tsx
-<motion.div
-  className="bg-primary rounded-lg p-4"  // Tailwind: static styles
-  animate={{ scale: 1.1 }}                // Motion: dynamic animations
-  whileHover={{ scale: 1.05 }}
-/>
-```
-
-### IndexedDB (idb v8)
-
-Fuse.js search integrates with existing offline data layer:
-
-```tsx
-import { getDB } from '@/lib/db';
-import Fuse from 'fuse.js';
-
-async function searchOfflineItems(query: string) {
-  const db = await getDB();
-  const items = await db.getAll('items');
-
-  const fuse = new Fuse(items, {
-    keys: ['name', 'sku', 'description'],
-    threshold: 0.4,
-  });
-
-  return query ? fuse.search(query).map(r => r.item) : items;
-}
-```
-
-### PWA (Serwist)
-
-Scanner requires camera permissions - handle gracefully:
-
-```tsx
-function useCameraAvailable() {
-  const [available, setAvailable] = useState<boolean | null>(null);
-
-  useEffect(() => {
-    const check = async () => {
-      try {
-        const devices = await navigator.mediaDevices.enumerateDevices();
-        setAvailable(devices.some(d => d.kind === 'videoinput'));
-      } catch {
-        setAvailable(false);
-      }
-    };
-    check();
-  }, []);
-
-  return available;
-}
-```
-
-### @dnd-kit (already installed)
-
-@use-gesture complements @dnd-kit rather than replacing it:
-- **@dnd-kit**: Complex drag-and-drop with drop zones (already used for photo reordering)
-- **@use-gesture**: Simple gestures (swipe-to-delete, pull-to-refresh)
-
----
-
-## Progressive Form Patterns (No New Libraries Needed)
-
-Progressive form patterns for mobile can be implemented with existing stack:
-
-| Pattern | Implementation |
-|---------|----------------|
-| Step-by-step forms | React state + conditional rendering |
-| Form validation | react-hook-form v7.70.0 + zod v4.3.5 (already installed) |
-| Auto-save drafts | IndexedDB via idb v8 (already installed) |
-| Optimistic UI | React 19 useOptimistic hook |
-| Loading states | shadcn Skeleton + Sonner toasts (already installed) |
-
-**Example: Multi-step form with auto-save:**
-
-```tsx
-function useFormDraft<T>(key: string, defaultValues: T) {
-  const [values, setValues] = useState<T>(defaultValues);
-
-  // Load draft on mount
-  useEffect(() => {
-    const db = await getDB();
-    const draft = await db.get('formDrafts', key);
-    if (draft) setValues(draft);
-  }, [key]);
-
-  // Auto-save on change
-  const updateValues = useCallback(async (newValues: Partial<T>) => {
-    const merged = { ...values, ...newValues };
-    setValues(merged);
-    const db = await getDB();
-    await db.put('formDrafts', merged, key);
-  }, [values, key]);
-
-  const clearDraft = useCallback(async () => {
-    const db = await getDB();
-    await db.delete('formDrafts', key);
-  }, [key]);
-
-  return { values, updateValues, clearDraft };
-}
-```
-
----
-
-## What NOT to Add
-
-### Rejected: react-tiny-fab (v4.0.4)
-**Why not:** Last updated 4 years ago, not actively maintained. Building a custom FAB with Motion provides more flexibility and uses an actively maintained dependency.
-
-### Rejected: MiniSearch (v7.2.0)
-**Why not:** Overkill for this use case. MiniSearch maintains a full-text search index, which adds complexity. Fuse.js's simpler fuzzy matching is sufficient for inventory item search. Consider MiniSearch only if search performance becomes an issue with 10,000+ items.
-
-### Rejected: FlexSearch.js
-**Why not:** While faster than Fuse.js on large datasets, it has a more complex API and larger bundle. The inventory app's dataset size doesn't warrant the additional complexity.
-
-### Rejected: react-swipeable (v7.0.2)
-**Why not:** Limited to swipe gestures only. @use-gesture provides swipe plus drag, pinch, and scroll gestures with one dependency, covering more mobile UX use cases.
-
-### Rejected: nimiq/qr-scanner (v1.4.2)
-**Why not:** QR-only, no barcode support. Last updated 3 years ago. The inventory app needs EAN/UPC barcode scanning for product lookup.
-
-### Rejected: @zxing/library + @zxing/browser
-**Why not:** In maintenance mode only. While still functional, @yudiel/react-qr-scanner provides a better React integration and is actively maintained.
-
-### Rejected: Full Material UI (for FAB)
-**Why not:** Adding MUI just for FAB would conflict with shadcn/ui design system and significantly increase bundle size. Custom Motion-based FAB is more appropriate.
-
-### Rejected: Server-side pg_trgm fuzzy search
-**Why not:** This milestone focuses on mobile UX with offline capability. Client-side Fuse.js provides instant search without network latency and works offline. The PostgreSQL search_vector already handles full-text search when online.
-
-### Rejected: framer-motion (legacy package name)
-**Why not:** Package renamed to `motion`. Use the new package name for latest features and smaller bundle.
-
-### Rejected: react-zxing (v2.1.0)
-**Why not:** Less actively maintained (10 months since update) compared to @yudiel/react-qr-scanner. Underlying @zxing/library is in maintenance mode.
-
----
-
-## Summary Table
-
-| Capability | Library | Version | Status |
-|------------|---------|---------|--------|
-| Barcode/QR scanning | @yudiel/react-qr-scanner | ^2.5.0 | ADD |
-| Fuzzy search | fuse.js | ^7.1.0 | ADD |
-| Mobile gestures | @use-gesture/react | ^10.3.1 | ADD |
-| FAB/animations | motion | ^12.27.0 | ADD |
-| Progressive forms | (existing stack) | - | NO CHANGE |
+No `bun add`, `npm install`, or manual package additions are needed. Everything else is already in `package.json`.
 
 ---
 
@@ -512,42 +226,40 @@ function useFormDraft<T>(key: string, defaultValues: T) {
 
 | Area | Confidence | Rationale |
 |------|------------|-----------|
-| Barcode scanner | HIGH | @yudiel/react-qr-scanner actively maintained, verified npm stats |
-| Fuzzy search | HIGH | Fuse.js is industry standard, 21M monthly downloads |
-| Mobile gestures | HIGH | @use-gesture from pmndrs ecosystem, 1.1M weekly downloads |
-| FAB animations | HIGH | Motion is de facto React animation standard |
-| Integration | HIGH | All libraries explicitly support React 19 |
+| Theme system | HIGH | `next-themes` 0.4.6 verified on npm, ThemeProvider config verified in codebase, dark mode CSS variables verified in globals.css |
+| Switch component | HIGH | Verified on shadcn/ui docs, confirmed absence in project's `components/ui/` |
+| CSS variant fix | HIGH | Verified against official Tailwind CSS v4 docs (`tailwindcss.com/docs/dark-mode`) |
+| Notification preferences | HIGH | SSE event types verified in codebase, localStorage approach is standard |
+| Storage APIs | MEDIUM | `navigator.storage.estimate()` is well-supported in Chrome/Firefox/Edge, but Safari support for `estimate()` is limited (Safari supports `persisted()` but `estimate()` may return approximate values). Need graceful fallback. |
+| No-new-deps conclusion | HIGH | Every capability verified against installed packages in `package.json` and existing code |
 
 ---
 
 ## Sources
 
-### Barcode/QR Scanning
-- [@yudiel/react-qr-scanner npm](https://www.npmjs.com/package/@yudiel/react-qr-scanner) - v2.5.0, updated Jan 2025
-- [react-qr-scanner GitHub](https://github.com/yudielcurbelo/react-qr-scanner) - Feature list, TypeScript support
-- [react-zxing npm](https://www.npmjs.com/package/react-zxing) - Alternative considered
-- [@zxing/browser npm](https://www.npmjs.com/package/@zxing/browser) - Maintenance mode status
-- [nimiq/qr-scanner GitHub](https://github.com/nimiq/qr-scanner) - QR-only limitation
+### Verified (HIGH confidence)
+- [Tailwind CSS v4 Dark Mode docs](https://tailwindcss.com/docs/dark-mode) -- `:where(.dark, .dark *)` variant syntax
+- [shadcn/ui Switch component](https://ui.shadcn.com/docs/components/radix/switch) -- installation and API
+- [shadcn/ui Dark Mode with Next.js](https://ui.shadcn.com/docs/dark-mode/next) -- next-themes integration pattern
+- [next-themes npm](https://www.npmjs.com/package/next-themes) -- version 0.4.6, latest
+- [next-themes GitHub](https://github.com/pacocoursey/next-themes) -- `useTheme()` API, system preference support
+- [shadcn/ui February 2026 changelog](https://ui.shadcn.com/docs/changelog/2026-02-radix-ui) -- unified radix-ui package migration (noted, out of scope)
 
-### Fuzzy Search
-- [Fuse.js Official](https://www.fusejs.io/) - API documentation
-- [Fuse.js npm](https://www.npmjs.com/package/fuse.js) - v7.1.0, 21M monthly downloads
-- [Fuse.js GitHub](https://github.com/krisk/Fuse) - 3.1K stars
-- [MiniSearch npm](https://www.npmjs.com/package/minisearch) - Alternative considered
-- [npm-compare: fuse.js vs flexsearch vs minisearch](https://npm-compare.com/elasticlunr,flexsearch,fuse.js,minisearch)
+### Verified (MEDIUM confidence)
+- [MDN Storage API](https://developer.mozilla.org/en-US/docs/Web/API/Storage_API) -- `navigator.storage.estimate()` browser compatibility
+- [MDN Storage quotas and eviction criteria](https://developer.mozilla.org/en-US/docs/Web/API/Storage_API/Storage_quotas_and_eviction_criteria) -- quota limits, persistence model
+- [Chrome Developer Blog - Estimating Available Storage](https://developer.chrome.com/blog/estimating-available-storage-space) -- `estimate()` API details
+- [WebKit Storage Policy Updates](https://webkit.org/blog/14403/updates-to-storage-policy/) -- Safari storage behavior
 
-### Mobile Gestures
-- [@use-gesture/react npm](https://www.npmjs.com/package/@use-gesture/react) - v10.3.1, 1.1M weekly downloads
-- [@use-gesture documentation](https://use-gesture.netlify.app/) - API reference
-- [pmndrs/use-gesture GitHub](https://github.com/pmndrs/use-gesture) - Upgrade guide
-- [react-swipeable npm](https://www.npmjs.com/package/react-swipeable) - Alternative considered
-
-### Animation/FAB
-- [Motion Official](https://motion.dev/) - Documentation
-- [motion npm](https://www.npmjs.com/package/motion) - v12.27.0
-- [Motion Upgrade Guide](https://motion.dev/docs/react-upgrade-guide) - framer-motion to motion migration
-- [Motion Changelog](https://motion.dev/changelog) - Latest features
-- [react-tiny-fab npm](https://www.npmjs.com/package/react-tiny-fab) - Last updated 4 years ago
-
-### Framework Compatibility
-- [Framer Motion + Tailwind 2025](https://dev.to/manukumar07/framer-motion-tailwind-the-2025-animation-stack-1801) - Integration patterns
+### Codebase verification (HIGH confidence)
+- `frontend/package.json` -- confirmed all existing dependencies and versions
+- `frontend/app/globals.css` -- confirmed dark mode variant and CSS variable setup
+- `frontend/components/providers/theme-provider.tsx` -- confirmed ThemeProvider configuration
+- `frontend/components/shared/theme-toggle.tsx` -- confirmed current binary toggle implementation
+- `frontend/lib/contexts/sse-context.tsx` -- confirmed SSE event broadcast architecture and all event types
+- `frontend/lib/db/offline-db.ts` -- confirmed IndexedDB setup with `clearStore()` / `deleteDB()`
+- `frontend/lib/contexts/offline-context.tsx` -- confirmed OfflineProvider with storage metrics
+- `frontend/components/ui/` directory listing -- confirmed Switch component is NOT present
+- `frontend/components/settings/notification-settings.tsx` -- confirmed existing push notification UI
+- `frontend/lib/api/notifications.ts` -- confirmed notification types and API client
+- Backend codebase -- confirmed NO `notification_preferences` API exists
