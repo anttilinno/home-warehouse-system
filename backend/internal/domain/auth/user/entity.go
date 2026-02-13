@@ -11,21 +11,22 @@ import (
 
 // User represents a user in the system.
 type User struct {
-	id                uuid.UUID
-	email             string
-	fullName          string
-	passwordHash      string
-	isActive          bool
-	isSuperuser       bool
-	dateFormat        string
-	language          string
-	theme             string
-	timeFormat        string
-	thousandSeparator string
-	decimalSeparator  string
-	avatarPath        *string
-	createdAt         time.Time
-	updatedAt         time.Time
+	id                      uuid.UUID
+	email                   string
+	fullName                string
+	passwordHash            string
+	isActive                bool
+	isSuperuser             bool
+	dateFormat              string
+	language                string
+	theme                   string
+	timeFormat              string
+	thousandSeparator       string
+	decimalSeparator        string
+	notificationPreferences map[string]bool
+	avatarPath              *string
+	createdAt               time.Time
+	updatedAt               time.Time
 }
 
 // NewUser creates a new user with the given parameters.
@@ -47,21 +48,22 @@ func NewUser(email, fullName, password string) (*User, error) {
 
 	now := time.Now()
 	return &User{
-		id:                uuid.New(),
-		email:             email,
-		fullName:          fullName,
-		passwordHash:      string(hash),
-		isActive:          true,
-		isSuperuser:       false,
-		dateFormat:        "YYYY-MM-DD",
-		language:          "en",
-		theme:             "system",
-		timeFormat:        "24h",
-		thousandSeparator: ",",
-		decimalSeparator:  ".",
-		avatarPath:        nil,
-		createdAt:         now,
-		updatedAt:         now,
+		id:                      uuid.New(),
+		email:                   email,
+		fullName:                fullName,
+		passwordHash:            string(hash),
+		isActive:                true,
+		isSuperuser:             false,
+		dateFormat:              "YYYY-MM-DD",
+		language:                "en",
+		theme:                   "system",
+		timeFormat:              "24h",
+		thousandSeparator:       ",",
+		decimalSeparator:        ".",
+		notificationPreferences: make(map[string]bool),
+		avatarPath:              nil,
+		createdAt:               now,
+		updatedAt:               now,
 	}, nil
 }
 
@@ -73,24 +75,29 @@ func Reconstruct(
 	dateFormat, language, theme string,
 	timeFormat, thousandSeparator, decimalSeparator string,
 	avatarPath *string,
+	notificationPreferences map[string]bool,
 	createdAt, updatedAt time.Time,
 ) *User {
+	if notificationPreferences == nil {
+		notificationPreferences = make(map[string]bool)
+	}
 	return &User{
-		id:                id,
-		email:             email,
-		fullName:          fullName,
-		passwordHash:      passwordHash,
-		isActive:          isActive,
-		isSuperuser:       isSuperuser,
-		dateFormat:        dateFormat,
-		language:          language,
-		theme:             theme,
-		timeFormat:        timeFormat,
-		thousandSeparator: thousandSeparator,
-		decimalSeparator:  decimalSeparator,
-		avatarPath:        avatarPath,
-		createdAt:         createdAt,
-		updatedAt:         updatedAt,
+		id:                      id,
+		email:                   email,
+		fullName:                fullName,
+		passwordHash:            passwordHash,
+		isActive:                isActive,
+		isSuperuser:             isSuperuser,
+		dateFormat:              dateFormat,
+		language:                language,
+		theme:                   theme,
+		timeFormat:              timeFormat,
+		thousandSeparator:       thousandSeparator,
+		decimalSeparator:        decimalSeparator,
+		notificationPreferences: notificationPreferences,
+		avatarPath:              avatarPath,
+		createdAt:               createdAt,
+		updatedAt:               updatedAt,
 	}
 }
 
@@ -129,6 +136,9 @@ func (u *User) ThousandSeparator() string { return u.thousandSeparator }
 
 // DecimalSeparator returns the user's preferred decimal separator.
 func (u *User) DecimalSeparator() string { return u.decimalSeparator }
+
+// NotificationPreferences returns the user's notification preferences.
+func (u *User) NotificationPreferences() map[string]bool { return u.notificationPreferences }
 
 // AvatarPath returns the user's avatar storage path.
 func (u *User) AvatarPath() *string { return u.avatarPath }
@@ -171,9 +181,21 @@ func (u *User) UpdatePassword(newPassword string) error {
 	return nil
 }
 
+// UpdateNotificationPreferences merges the provided notification preference keys
+// into the existing map. Keys not present in prefs are left unchanged.
+func (u *User) UpdateNotificationPreferences(prefs map[string]bool) {
+	if u.notificationPreferences == nil {
+		u.notificationPreferences = make(map[string]bool)
+	}
+	for k, v := range prefs {
+		u.notificationPreferences[k] = v
+	}
+	u.updatedAt = time.Now()
+}
+
 // UpdatePreferences updates the user's preferences.
 // Returns an error if thousand_separator and decimal_separator are both non-empty and equal.
-func (u *User) UpdatePreferences(dateFormat, language, theme, timeFormat, thousandSeparator, decimalSeparator string) error {
+func (u *User) UpdatePreferences(dateFormat, language, theme, timeFormat, thousandSeparator, decimalSeparator string, notificationPreferences map[string]bool) error {
 	// Validate separator conflict: resolve effective values after update
 	effectiveThousand := u.thousandSeparator
 	if thousandSeparator != "" {
@@ -204,6 +226,9 @@ func (u *User) UpdatePreferences(dateFormat, language, theme, timeFormat, thousa
 	}
 	if decimalSeparator != "" {
 		u.decimalSeparator = decimalSeparator
+	}
+	if notificationPreferences != nil {
+		u.UpdateNotificationPreferences(notificationPreferences)
 	}
 	u.updatedAt = time.Now()
 	return nil
