@@ -117,87 +117,22 @@ See `.planning/milestones/v1.5-ROADMAP.md` for full details.
 
 </details>
 
-### v1.7 Modular Settings (In Progress)
+<details>
+<summary>v1.7 Modular Settings (Phases 35-39) — SHIPPED 2026-02-13</summary>
 
-**Milestone Goal:** Restructure the monolithic settings page into an iOS-style hub-and-subpage architecture with dedicated routes, adding three-way theme selection, per-category notification preferences, and client-side storage management.
+See `.planning/milestones/v1.7-ROADMAP.md` for full details.
 
-#### Phase 35: Settings Shell and Route Structure
-**Goal**: Users can navigate to a settings hub that shows organized groups of settings with subpage navigation
-**Depends on**: Phase 34 (builds on v1.6 settings page)
-**Requirements**: HUB-01, HUB-02, HUB-03, HUB-04, HUB-05, HUB-06
-**Success Criteria** (what must be TRUE):
-  1. User sees a settings landing page with iOS-style grouped rows showing icons, labels, descriptions, and chevrons for each settings category
-  2. Each settings row displays a live preview of the current value (e.g., "Dark", "English", "DD/MM/YYYY") pulled from actual user preferences
-  3. Settings are organized into visible sections: Profile card at top, Preferences group (Appearance, Language, Regional Formats), System & Security group (Security, Notifications, Data & Storage)
-  4. On desktop, a persistent sidebar navigation is visible alongside the settings content; on mobile, the hub page serves as the navigation entry point
-  5. Tapping any subpage and pressing back returns the user to the settings hub, and all navigation labels are translated in en, et, and ru
-**Plans:** 2 plans
-Plans:
-- [x] 35-01-PLAN.md — Settings shell infrastructure (components, layout, i18n keys)
-- [x] 35-02-PLAN.md — Hub page rewrite with live previews and 7 stub subpages
-**Status:** Complete (2026-02-13)
+**Delivered:** Modular iOS-style settings architecture with hub-and-subpage navigation, three-way theme toggle, per-category notification preferences, and offline storage management. 32/32 requirements satisfied.
 
-#### Phase 36: Profile, Security, and Regional Formats
-**Goal**: Users can manage their profile, security settings, and regional format preferences on dedicated subpages using existing components
-**Depends on**: Phase 35 (route structure and layout must exist)
-**Requirements**: PROF-01, PROF-02, PROF-03, SECU-01, SECU-02, SECU-03, FMTS-01, FMTS-02, FMTS-03
-**Success Criteria** (what must be TRUE):
-  1. User can navigate to a Profile subpage and edit their name, email, and avatar -- the same functionality as before, now on its own page
-  2. The settings hub profile card displays the user's current avatar, full name, and email address
-  3. User can navigate to a Security subpage and change their password, view/revoke active sessions, and delete their account -- all existing functionality relocated
-  4. User can navigate to a Regional Formats subpage and configure date format, time format, and number format preferences -- all existing functionality relocated
-**Plans:** 1 plan
-Plans:
-- [x] 36-01-PLAN.md — Wire existing settings components into profile, security, and regional-formats subpages
-**Status:** Complete (2026-02-13)
+- Phase 35: Settings Shell and Route Structure (2 plans)
+- Phase 36: Profile, Security, and Regional Formats (1 plan)
+- Phase 37: Appearance and Language (1 plan)
+- Phase 38: Data and Storage Management (1 plan)
+- Phase 39: Notification Preferences (2 plans)
 
-#### Phase 37: Appearance and Language
-**Goal**: Users can choose a visual theme (light, dark, or system) and language preference that persist across devices
-**Depends on**: Phase 35 (route structure must exist)
-**Requirements**: APPR-01, APPR-02, APPR-03, APPR-04, APPR-05, LANG-01, LANG-02
-**Success Criteria** (what must be TRUE):
-  1. User sees a three-way theme selector (Light, Dark, System) on the Appearance subpage and selecting an option changes the app theme instantly without page reload
-  2. The CSS dark mode variant fix is applied (Tailwind v4 `:where` selector) so dark utilities work correctly on `<html>` and `<body>` elements
-  3. User's theme preference persists to the backend so logging in on a different device loads the same theme, and the theme loads without a flash of the wrong theme on page load
-  4. User can navigate to a Language subpage and select from the three available languages (en, et, ru), with the language preference persisted to the backend for cross-device sync
-**Plans:** 1 plan
-Plans:
-- [x] 37-01-PLAN.md — ThemeSettings + LanguageSettings components, CSS dark mode fix, theme sync on login
-**Status:** Complete (2026-02-13)
-
-#### Phase 38: Data and Storage Management
-**Goal**: Users can see their offline storage usage, manage cached data, trigger syncs, and access import/export functionality from a dedicated subpage
-**Depends on**: Phase 35 (route structure must exist)
-**Requirements**: DATA-01, DATA-02, DATA-03, DATA-04, DATA-05
-**Success Criteria** (what must be TRUE):
-  1. User sees a storage usage display with progress bar showing IndexedDB and cache size on the Data & Storage subpage
-  2. User can clear offline cache via a button that shows a confirmation dialog before deleting data, and can see persistent storage status with an option to request persistent storage from the browser
-  3. User can trigger a manual sync and see the last-sync timestamp displayed on the page
-  4. User can access import/export (backup/restore) functionality from the Data & Storage subpage -- the existing backup/restore feature relocated here
-**Plans:** 1 plan
-Plans:
-- [x] 38-01-PLAN.md — Storage usage, cache management, sync controls, and backup/restore on data-storage subpage
-**Status:** Complete (2026-02-13)
-
-#### Phase 39: Notification Preferences
-**Goal**: Users can control which categories of in-app notifications they receive, with preferences persisted to the backend
-**Depends on**: Phase 35 (route structure must exist)
-**Requirements**: NOTF-01, NOTF-02, NOTF-03, NOTF-04, NOTF-05
-**Success Criteria** (what must be TRUE):
-  1. User sees a master toggle to enable/disable all in-app notifications, and per-category toggles for Loans, Inventory, Workspace, and System notifications
-  2. Toggle changes auto-save immediately without an explicit submit button -- the user flips a toggle and the preference is persisted
-  3. Notification preferences are stored in the backend (JSONB column on auth.users) and sync across devices -- disabling "Loans" notifications on one device applies everywhere
-  4. Notification preferences filter alert surfacing only -- SSE data sync continues regardless of preference settings so real-time data updates are never interrupted
-**Plans:** 2 plans
-Plans:
-- [x] 39-01-PLAN.md — Backend: migration, Go entity/handler/service/repository for notification_preferences JSONB
-- [x] 39-02-PLAN.md — Frontend: Switch toggles, notification preferences component, page wiring, i18n, dropdown filtering
-**Status:** Complete (2026-02-13)
+</details>
 
 ## Progress
-
-**Execution Order:**
-Phases execute in numeric order: 35 -> 36 -> 37 -> 38 -> 39
 
 | Phase | Milestone | Plans | Status | Shipped |
 |-------|-----------|-------|--------|---------|
@@ -208,14 +143,10 @@ Phases execute in numeric order: 35 -> 36 -> 37 -> 38 -> 39
 | 22-26 | v1.4 | 20 | Complete | 2026-01-31 |
 | 27-29 | v1.5 | 9 | Complete | 2026-02-03 |
 | 30-34 | v1.6 | 9 | Complete | 2026-02-08 |
-| 35. Settings Shell | v1.7 | 2 | Complete | 2026-02-13 |
-| 36. Profile, Security, Formats | v1.7 | 1 | Complete | 2026-02-13 |
-| 37. Appearance and Language | v1.7 | 1 | Complete | 2026-02-13 |
-| 38. Data and Storage | v1.7 | 1 | Complete | 2026-02-13 |
-| 39. Notification Preferences | v1.7 | 2 | Complete | 2026-02-13 |
+| 35-39 | v1.7 | 7 | Complete | 2026-02-13 |
 
-**Total:** 39 phases complete (114 plans executed)
+**Total:** 39 phases complete (112 plans executed) across 8 milestones
 
 ---
 *Roadmap created: 2026-01-24*
-*Last updated: 2026-02-13 after Phase 39 execution*
+*Last updated: 2026-02-13 after v1.7 milestone completion*

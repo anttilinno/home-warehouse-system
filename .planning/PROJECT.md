@@ -108,18 +108,20 @@ Reliable inventory access anywhere — online or offline — with seamless sync.
 - ✓ Format settings UI in user settings page
 - ✓ All components use format hooks (useDateFormat, useTimeFormat, useNumberFormat)
 
+**v1.7 Modular Settings (shipped 2026-02-13):**
+
+- ✓ Settings landing page with iOS-style grouped rows and subpage navigation
+- ✓ Profile subpage (reorganize existing name/email/avatar editing)
+- ✓ Appearance subpage with light/dark/system theme toggle
+- ✓ Language subpage (surface existing 3-language selector)
+- ✓ Regional Formats subpage (reorganize existing date/time/number preferences)
+- ✓ Security subpage (reorganize password change, active sessions, account deletion)
+- ✓ Notifications subpage with in-app preference toggles for SSE events
+- ✓ Data & Storage subpage (offline storage management + import/export hub)
+
 ### Active
 
-**v1.7 Modular Settings (in progress):**
-
-- [ ] Settings landing page with iOS-style grouped rows and subpage navigation
-- [ ] Profile subpage (reorganize existing name/email/avatar editing)
-- [ ] Appearance subpage with light/dark/system theme toggle
-- [ ] Language subpage (surface existing 3-language selector)
-- [ ] Regional Formats subpage (reorganize existing date/time/number preferences)
-- [ ] Security subpage (reorganize password change, active sessions, account deletion)
-- [ ] Notifications subpage with in-app preference toggles for SSE events
-- [ ] Data & Storage subpage (offline storage management + import/export hub)
+(None — ready for next milestone)
 
 ### Out of Scope
 
@@ -132,8 +134,8 @@ Reliable inventory access anywhere — online or offline — with seamless sync.
 
 ## Current State
 
-**Shipped:** v1.6 Format Personalization (2026-02-08)
-**Current Milestone:** v1.7 Modular Settings
+**Shipped:** v1.7 Modular Settings (2026-02-13)
+**Current Milestone:** None — ready for next milestone
 
 **Tech stack:**
 - Backend: Go 1.25, Chi, sqlc, PostgreSQL
@@ -177,6 +179,10 @@ Reliable inventory access anywhere — online or offline — with seamless sync.
 | vi.hoisted for Vitest mocks | vi.mock is hoisted, so mock functions need vi.hoisted() | ✓ Good — works with factory pattern |
 | waitForURL over waitForTimeout | Event-driven waits more reliable than arbitrary timeouts | ✓ Good — auth stability improved |
 | domcontentloaded over networkidle | SSE connections prevent networkidle from completing | ✓ Good — E2E tests reliable |
+| iOS-style settings hub architecture | Modular subpages over monolithic page | ✓ Good — 8 dedicated routes |
+| next-themes + ThemeSyncer | Two-layer theme: client (instant) + backend (persist) | ✓ Good — no flash, cross-device |
+| JSONB for notification prefs | Flexible schema, single column on auth.users | ✓ Good — opt-out model, merge semantics |
+| Display-only notification filtering | SSE data sync untouched, filter in dropdown render | ✓ Good — real-time data never interrupted |
 
 ## Constraints
 
@@ -211,17 +217,5 @@ Reliable inventory access anywhere — online or offline — with seamless sync.
 - 56 waitForTimeout calls remain in 24 lower-priority E2E files
 - Go test factories orphaned (not adopted by Phase 23/24 tests)
 
-## Current Milestone: v1.7 Modular Settings
-
-**Goal:** Restructure settings into a modular iOS-style landing page with dedicated subpages, adding theme support, notification preferences, and data/storage management.
-
-**Target features:**
-- Settings landing page with grouped navigation rows
-- Profile, Appearance, Language, Regional Formats subpages
-- Security, Notifications, Data & Storage subpages
-- Light/dark/system theme toggle (new)
-- In-app notification preferences (new)
-- Offline storage management + import/export hub (new)
-
 ---
-*Last updated: 2026-02-12 after v1.7 milestone started*
+*Last updated: 2026-02-13 after v1.7 milestone completion*

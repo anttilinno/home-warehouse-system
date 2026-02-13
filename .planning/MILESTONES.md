@@ -204,3 +204,45 @@
 **What's next:** TBD — milestone complete, ready for next feature work
 
 ---
+
+## v1.7 Modular Settings (Shipped: 2026-02-13)
+
+**Delivered:** Modular iOS-style settings architecture with hub-and-subpage navigation, three-way theme toggle, per-category notification preferences, and offline storage management.
+
+**Phases completed:** 35-39 (7 plans, 17 tasks)
+
+**Key accomplishments:**
+
+- iOS-style settings hub with grouped rows, live preview values, and responsive sidebar/mobile navigation
+- Three-way theme selector (light/dark/system) with instant switching, CSS dark mode fix (:where selector), and cross-device persistence via ThemeSyncer
+- Dedicated subpages for Profile, Security, Regional Formats, Language -- existing features relocated to modular architecture
+- Data & Storage management with offline storage usage display, cache clearing, persistent storage controls, and manual sync
+- Per-category notification preferences (backend JSONB + frontend toggles) with auto-save and client-side dropdown filtering
+- All labels translated in English, Estonian, and Russian
+
+**Stats:**
+
+- 60 files created/modified
+- +6,739 / -379 lines of TypeScript/Go
+- 5 phases, 7 plans, 17 tasks
+- 1 day (Feb 13, 2026)
+
+**Git range:** `feat(35-01)` → `docs(39-02)` (16 feature commits)
+
+**Requirements satisfied:** 32/32 (100%)
+- HUB-01 through HUB-06: All satisfied
+- PROF-01 through PROF-03: All satisfied
+- SECU-01 through SECU-03: All satisfied
+- FMTS-01 through FMTS-03: All satisfied
+- APPR-01 through APPR-05: All satisfied
+- LANG-01, LANG-02: All satisfied
+- DATA-01 through DATA-05: All satisfied
+- NOTF-01 through NOTF-05: All satisfied
+
+**Tech debt carried forward:**
+- None from v1.7
+
+**What's next:** TBD -- ready for next milestone
+
+---
+
