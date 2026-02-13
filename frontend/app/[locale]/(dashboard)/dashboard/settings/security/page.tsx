@@ -3,6 +3,7 @@
 import { useTranslations } from "next-intl";
 import { ArrowLeft } from "lucide-react";
 import { Link } from "@/i18n/navigation";
+import { SecuritySettings } from "@/components/settings/security-settings";
 
 export default function SecurityPage() {
   const t = useTranslations("settings");
@@ -22,8 +23,10 @@ export default function SecurityPage() {
         <h2 className="text-2xl font-bold tracking-tight">
           {t("nav.security")}
         </h2>
-        <p className="text-muted-foreground">{t("comingSoon")}</p>
+        <p className="text-muted-foreground">{t("security.description")}</p>
       </div>
+
+      <SecuritySettings />
     </div>
   );
 }
