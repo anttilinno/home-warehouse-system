@@ -162,8 +162,8 @@ Plans:
   4. User can navigate to a Language subpage and select from the three available languages (en, et, ru), with the language preference persisted to the backend for cross-device sync
 **Plans:** 1 plan
 Plans:
-- [ ] 37-01-PLAN.md — ThemeSettings + LanguageSettings components, CSS dark mode fix, theme sync on login
-**Status:** Not started
+- [x] 37-01-PLAN.md — ThemeSettings + LanguageSettings components, CSS dark mode fix, theme sync on login
+**Status:** Complete (2026-02-13)
 
 #### Phase 38: Data and Storage Management
 **Goal**: Users can see their offline storage usage, manage cached data, trigger syncs, and access import/export functionality from a dedicated subpage
@@ -174,8 +174,10 @@ Plans:
   2. User can clear offline cache via a button that shows a confirmation dialog before deleting data, and can see persistent storage status with an option to request persistent storage from the browser
   3. User can trigger a manual sync and see the last-sync timestamp displayed on the page
   4. User can access import/export (backup/restore) functionality from the Data & Storage subpage -- the existing backup/restore feature relocated here
-**Plans:** TBD
-**Status:** Not started
+**Plans:** 1 plan
+Plans:
+- [x] 38-01-PLAN.md — Storage usage, cache management, sync controls, and backup/restore on data-storage subpage
+**Status:** Complete (2026-02-13)
 
 #### Phase 39: Notification Preferences
 **Goal**: Users can control which categories of in-app notifications they receive, with preferences persisted to the backend
@@ -205,12 +207,12 @@ Phases execute in numeric order: 35 -> 36 -> 37 -> 38 -> 39
 | 30-34 | v1.6 | 9 | Complete | 2026-02-08 |
 | 35. Settings Shell | v1.7 | 2 | Complete | 2026-02-13 |
 | 36. Profile, Security, Formats | v1.7 | 1 | Complete | 2026-02-13 |
-| 37. Appearance and Language | v1.7 | 1 | Not started | - |
-| 38. Data and Storage | v1.7 | TBD | Not started | - |
+| 37. Appearance and Language | v1.7 | 1 | Complete | 2026-02-13 |
+| 38. Data and Storage | v1.7 | 1 | Complete | 2026-02-13 |
 | 39. Notification Preferences | v1.7 | TBD | Not started | - |
 
-**Total:** 36 phases complete (110 plans executed), 3 phases planned
+**Total:** 38 phases complete (112 plans executed), 1 phase planned
 
 ---
 *Roadmap created: 2026-01-24*
-*Last updated: 2026-02-13 after Phase 37 planning*
+*Last updated: 2026-02-13 after Phase 38 execution*
