@@ -188,7 +188,10 @@ Plans:
   2. Toggle changes auto-save immediately without an explicit submit button -- the user flips a toggle and the preference is persisted
   3. Notification preferences are stored in the backend (JSONB column on auth.users) and sync across devices -- disabling "Loans" notifications on one device applies everywhere
   4. Notification preferences filter alert surfacing only -- SSE data sync continues regardless of preference settings so real-time data updates are never interrupted
-**Plans:** TBD
+**Plans:** 2 plans
+Plans:
+- [ ] 39-01-PLAN.md — Backend: migration, Go entity/handler/service/repository for notification_preferences JSONB
+- [ ] 39-02-PLAN.md — Frontend: Switch toggles, notification preferences component, page wiring, i18n, dropdown filtering
 **Status:** Not started
 
 ## Progress
@@ -209,10 +212,10 @@ Phases execute in numeric order: 35 -> 36 -> 37 -> 38 -> 39
 | 36. Profile, Security, Formats | v1.7 | 1 | Complete | 2026-02-13 |
 | 37. Appearance and Language | v1.7 | 1 | Complete | 2026-02-13 |
 | 38. Data and Storage | v1.7 | 1 | Complete | 2026-02-13 |
-| 39. Notification Preferences | v1.7 | TBD | Not started | - |
+| 39. Notification Preferences | v1.7 | 2 | Not started | - |
 
 **Total:** 38 phases complete (112 plans executed), 1 phase planned
 
 ---
 *Roadmap created: 2026-01-24*
-*Last updated: 2026-02-13 after Phase 38 execution*
+*Last updated: 2026-02-13 after Phase 39 planning*
