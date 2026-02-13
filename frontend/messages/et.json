@@ -267,6 +267,15 @@
       "dark": "Tume",
       "system": "Süsteem"
     },
+    "appearance": {
+      "title": "Välimus",
+      "description": "Vali eelistatud visuaalne teema",
+      "light": "Hele",
+      "dark": "Tume",
+      "system": "Süsteem",
+      "saved": "Teema uuendatud",
+      "saveError": "Teema uuendamine ebaõnnestus"
+    },
     "dataManagement": {
       "title": "Andmehaldus",
       "description": "Varunda ja taasta oma tööruumi andmeid",

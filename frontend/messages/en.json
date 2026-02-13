@@ -621,6 +621,15 @@
       "dark": "Dark",
       "system": "System"
     },
+    "appearance": {
+      "title": "Appearance",
+      "description": "Choose your preferred visual theme",
+      "light": "Light",
+      "dark": "Dark",
+      "system": "System",
+      "saved": "Theme updated",
+      "saveError": "Failed to update theme"
+    },
     "dataManagement": {
       "title": "Data Management",
       "description": "Backup and restore your workspace data",

@@ -3,6 +3,7 @@
 import { useTranslations } from "next-intl";
 import { ArrowLeft } from "lucide-react";
 import { Link } from "@/i18n/navigation";
+import { ThemeSettings } from "@/components/settings/theme-settings";
 
 export default function AppearancePage() {
   const t = useTranslations("settings");
@@ -22,8 +23,10 @@ export default function AppearancePage() {
         <h2 className="text-2xl font-bold tracking-tight">
           {t("nav.appearance")}
         </h2>
-        <p className="text-muted-foreground">{t("comingSoon")}</p>
+        <p className="text-muted-foreground">{t("hub.appearanceDesc")}</p>
       </div>
+
+      <ThemeSettings />
     </div>
   );
 }
