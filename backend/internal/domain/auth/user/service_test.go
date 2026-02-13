@@ -169,6 +169,7 @@ func TestReconstruct(t *testing.T) {
 		",",
 		".",
 		&avatarPath,
+		nil,
 		now,
 		now,
 	)
@@ -243,7 +244,7 @@ func TestUser_UpdatePreferences(t *testing.T) {
 
 	originalUpdatedAt := user.UpdatedAt()
 
-	err = user.UpdatePreferences("MM/DD/YYYY", "es", "dark", "12h", ".", ",")
+	err = user.UpdatePreferences("MM/DD/YYYY", "es", "dark", "12h", ".", ",", nil)
 	assert.NoError(t, err)
 
 	assert.Equal(t, "MM/DD/YYYY", user.DateFormat())

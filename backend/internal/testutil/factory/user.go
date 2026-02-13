@@ -46,6 +46,7 @@ func WithEmail(email string) UserOpt {
 			u.ThousandSeparator(),
 			u.DecimalSeparator(),
 			u.AvatarPath(),
+			u.NotificationPreferences(),
 			u.CreatedAt(),
 			u.UpdatedAt(),
 		)
@@ -76,6 +77,7 @@ func WithSuperuser(isSuperuser bool) UserOpt {
 			u.ThousandSeparator(),
 			u.DecimalSeparator(),
 			u.AvatarPath(),
+			u.NotificationPreferences(),
 			u.CreatedAt(),
 			u.UpdatedAt(),
 		)

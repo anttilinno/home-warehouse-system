@@ -607,7 +607,7 @@ func TestUserHandler_UpdatePreferences(t *testing.T) {
 
 	t.Run("updates preferences successfully", func(t *testing.T) {
 		testUser, _ := user.NewUser("test@example.com", "Test User", "password123")
-		testUser.UpdatePreferences("YYYY-MM-DD", "en", "dark", "", "", "")
+		testUser.UpdatePreferences("YYYY-MM-DD", "en", "dark", "", "", "", nil)
 
 		mockSvc.On("UpdatePreferences", mock.Anything, setup.UserID, mock.MatchedBy(func(input user.UpdatePreferencesInput) bool {
 			return input.Theme == "dark" && input.Language == "en"

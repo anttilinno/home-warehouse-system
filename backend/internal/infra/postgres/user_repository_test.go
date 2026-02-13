@@ -66,7 +66,7 @@ func TestUserRepository_Save(t *testing.T) {
 	t.Run("saves user with preferences", func(t *testing.T) {
 		u, err := user.NewUser("prefuser@example.com", "Pref User", "password123")
 		require.NoError(t, err)
-		u.UpdatePreferences("DD/MM/YYYY", "fi", "dark")
+		u.UpdatePreferences("DD/MM/YYYY", "fi", "dark", "", "", "", nil)
 
 		err = repo.Save(ctx, u)
 		require.NoError(t, err)

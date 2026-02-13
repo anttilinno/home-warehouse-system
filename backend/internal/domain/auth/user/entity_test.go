@@ -115,7 +115,7 @@ func TestUser_UpdatePreferences(t *testing.T) {
 	u, err := user.NewUser("test@example.com", "John Doe", "SecurePass123!")
 	assert.NoError(t, err)
 
-	err = u.UpdatePreferences("DD/MM/YYYY", "fr", "dark", "12h", ".", ",")
+	err = u.UpdatePreferences("DD/MM/YYYY", "fr", "dark", "12h", ".", ",", nil)
 	assert.NoError(t, err)
 
 	assert.Equal(t, "DD/MM/YYYY", u.DateFormat())
@@ -130,7 +130,7 @@ func TestUser_UpdatePreferences_ConflictingSeparators(t *testing.T) {
 	u, err := user.NewUser("test@example.com", "John Doe", "SecurePass123!")
 	assert.NoError(t, err)
 
-	err = u.UpdatePreferences("", "", "", "", ".", ".")
+	err = u.UpdatePreferences("", "", "", "", ".", ".", nil)
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "thousand separator and decimal separator must be different")
 }
@@ -186,6 +186,8 @@ func TestUser_Reconstruct(t *testing.T) {
 	now := time.Now()
 	avatarPath := "/avatars/test/avatar.jpg"
 
+	notifPrefs := map[string]bool{"enabled": true, "loans": false}
+
 	u := user.Reconstruct(
 		id,
 		"test@example.com",
@@ -200,6 +202,7 @@ func TestUser_Reconstruct(t *testing.T) {
 		",",
 		".",
 		&avatarPath,
+		notifPrefs,
 		now,
 		now,
 	)
@@ -218,4 +221,5 @@ func TestUser_Reconstruct(t *testing.T) {
 	assert.Equal(t, ",", u.ThousandSeparator())
 	assert.Equal(t, ".", u.DecimalSeparator())
 	assert.Equal(t, &avatarPath, u.AvatarPath())
+	assert.Equal(t, notifPrefs, u.NotificationPreferences())
 }
