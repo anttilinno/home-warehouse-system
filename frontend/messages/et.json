@@ -276,6 +276,11 @@
       "saved": "Teema uuendatud",
       "saveError": "Teema uuendamine ebaõnnestus"
     },
+    "language": {
+      "title": "Keel",
+      "description": "Vali eelistatud rakenduse keel",
+      "saveError": "Keele uuendamine ebaõnnestus"
+    },
     "dataManagement": {
       "title": "Andmehaldus",
       "description": "Varunda ja taasta oma tööruumi andmeid",

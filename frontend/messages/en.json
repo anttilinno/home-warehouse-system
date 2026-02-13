@@ -630,6 +630,11 @@
       "saved": "Theme updated",
       "saveError": "Failed to update theme"
     },
+    "language": {
+      "title": "Language",
+      "description": "Choose your preferred app language",
+      "saveError": "Failed to update language"
+    },
     "dataManagement": {
       "title": "Data Management",
       "description": "Backup and restore your workspace data",

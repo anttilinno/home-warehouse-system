@@ -3,6 +3,7 @@
 import { useTranslations } from "next-intl";
 import { ArrowLeft } from "lucide-react";
 import { Link } from "@/i18n/navigation";
+import { LanguageSettings } from "@/components/settings/language-settings";
 
 export default function LanguagePage() {
   const t = useTranslations("settings");
@@ -22,8 +23,10 @@ export default function LanguagePage() {
         <h2 className="text-2xl font-bold tracking-tight">
           {t("nav.language")}
         </h2>
-        <p className="text-muted-foreground">{t("comingSoon")}</p>
+        <p className="text-muted-foreground">{t("hub.languageDesc")}</p>
       </div>
+
+      <LanguageSettings />
     </div>
   );
 }
