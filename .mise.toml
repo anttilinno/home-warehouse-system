@@ -1,7 +1,9 @@
 [tools]
+air = "latest"
 bun = "latest"
 dbmate = "latest"
 go = "1.25"
+"golangci-lint" = "latest"
 
 [env]
 DBMATE_DATABASE_URL = "postgresql://wh:wh@localhost:5432/warehouse_dev?sslmode=disable"
@@ -11,8 +13,26 @@ GO_DATABASE_URL = "postgresql://wh:wh@localhost:5432/warehouse_dev?sslmode=disab
 GO_TEST_DATABASE_URL = "postgresql://wh:wh@localhost:5432/warehouse_test?sslmode=disable"
 
 [tasks.setup]
-description = "Setup hint"
-run = "echo 'No setup needed. Run: mise trust && mise install'"
+description = "Full project setup from zero: install tools, deps, start containers, run migrations, seed DB"
+run = """
+set -e
+echo "==> Installing mise tools (go, air, bun, dbmate, golangci-lint)..."
+mise install
+
+echo "==> Downloading Go module dependencies..."
+cd backend && go mod download && cd ..
+
+echo "==> Installing frontend dependencies..."
+cd frontend && bun install && cd ..
+
+echo "==> Starting containers (PostgreSQL, Redis)..."
+docker compose up -d --wait
+
+echo "==> Running database migrations..."
+DATABASE_URL=$DBMATE_DATABASE_URL dbmate -d backend/db/migrations up
+
+echo "==> Setup complete! Run 'mise run dev' for backend or 'mise run start' for everything."
+"""
 
 [tasks.update-ip]
 description = "Update .env files with current machine IP"
