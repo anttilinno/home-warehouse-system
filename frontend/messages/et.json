@@ -281,6 +281,51 @@
       "description": "Vali eelistatud rakenduse keel",
       "saveError": "Keele uuendamine ebaõnnestus"
     },
+    "dataStorage": {
+      "description": "Halda võrguühenduseta andmeid, salvestusruumi ja varukoopiaid",
+      "storageUsage": {
+        "title": "Salvestusruumi kasutus",
+        "description": "Kettaruumi, mida kasutavad võrguühenduseta andmed ja vahemälu",
+        "used": "{usage} / {quota} kasutatud ({percent}%)",
+        "unsupported": "Salvestusruumi info pole selles brauseris saadaval",
+        "approximate": "Salvestusruumi väärtused on ligikaudsed",
+        "refresh": "Värskenda"
+      },
+      "cacheManagement": {
+        "title": "Vahemälu haldus",
+        "description": "Halda võrguühenduseta vahemälu ja salvestusruumi püsivust",
+        "clearCache": "Tühjenda võrguühenduseta vahemälu",
+        "clearCacheConfirmTitle": "Tühjendada võrguühenduseta vahemälu?",
+        "clearCacheConfirmDesc": "See kustutab kõik võrguühenduseta andmed ja vahemälu failid. Leht laadib automaatselt uuesti. Teie veebiandmed ei ole mõjutatud.",
+        "clearCacheCancel": "Tühista",
+        "clearCacheConfirm": "Tühjenda vahemälu",
+        "clearCacheSuccess": "Vahemälu tühjendatud. Laadimine...",
+        "persistentStorage": "Püsiv salvestusruum",
+        "persistentStorageDesc": "Takistab brauserit automaatselt kustutamast võrguühenduseta andmeid, kui salvestusruum on väike",
+        "persistentGranted": "Lubatud",
+        "persistentNotGranted": "Lubamata",
+        "requestPersistent": "Taotle püsivat salvestusruumi",
+        "persistentSuccess": "Püsiv salvestusruum lubatud",
+        "persistentDenied": "Brauser ei lubanud püsivat salvestusruumi. See otsustatakse automaatselt teie kasutusharjumuste põhjal."
+      },
+      "sync": {
+        "title": "Sünkroonimine",
+        "description": "Halda andmete sünkroonimist serveriga",
+        "syncNow": "Süngi kohe",
+        "syncing": "Sünkroonimine...",
+        "lastSync": "Viimati süngitud",
+        "neverSynced": "Pole süngitud",
+        "online": "Veebis",
+        "offline": "Võrguühenduseta",
+        "pendingMutations": "{count} ootel muudatust",
+        "syncError": "Viimane sünkroonimine ebaõnnestus"
+      },
+      "backupRestore": {
+        "title": "Varukoopia ja taastamine",
+        "description": "Ekspordi tööruumi andmed varundamiseks või impordi eelmisest varukoopiast",
+        "openDialog": "Ava varukoopia ja taastamine"
+      }
+    },
     "dataManagement": {
       "title": "Andmehaldus",
       "description": "Varunda ja taasta oma tööruumi andmeid",

@@ -635,6 +635,51 @@
       "description": "Choose your preferred app language",
       "saveError": "Failed to update language"
     },
+    "dataStorage": {
+      "description": "Manage offline data, storage, and backups",
+      "storageUsage": {
+        "title": "Storage Usage",
+        "description": "Disk space used by offline data and caches",
+        "used": "{usage} of {quota} used ({percent}%)",
+        "unsupported": "Storage information is not available in this browser",
+        "approximate": "Storage values are approximate",
+        "refresh": "Refresh"
+      },
+      "cacheManagement": {
+        "title": "Cache Management",
+        "description": "Manage offline cache and storage persistence",
+        "clearCache": "Clear Offline Cache",
+        "clearCacheConfirmTitle": "Clear offline cache?",
+        "clearCacheConfirmDesc": "This will delete all offline data and cached files. The page will reload automatically. Your online data is not affected.",
+        "clearCacheCancel": "Cancel",
+        "clearCacheConfirm": "Clear Cache",
+        "clearCacheSuccess": "Cache cleared. Reloading...",
+        "persistentStorage": "Persistent Storage",
+        "persistentStorageDesc": "Prevents the browser from automatically deleting offline data when storage is low",
+        "persistentGranted": "Granted",
+        "persistentNotGranted": "Not granted",
+        "requestPersistent": "Request Persistent Storage",
+        "persistentSuccess": "Persistent storage granted",
+        "persistentDenied": "The browser did not grant persistent storage. This is decided automatically based on your usage patterns."
+      },
+      "sync": {
+        "title": "Sync",
+        "description": "Manage data synchronization with the server",
+        "syncNow": "Sync Now",
+        "syncing": "Syncing...",
+        "lastSync": "Last synced",
+        "neverSynced": "Never synced",
+        "online": "Online",
+        "offline": "Offline",
+        "pendingMutations": "{count} pending changes",
+        "syncError": "Last sync failed"
+      },
+      "backupRestore": {
+        "title": "Backup & Restore",
+        "description": "Export your workspace data for backup or import from a previous backup",
+        "openDialog": "Open Backup & Restore"
+      }
+    },
     "dataManagement": {
       "title": "Data Management",
       "description": "Backup and restore your workspace data",
