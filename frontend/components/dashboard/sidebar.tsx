@@ -235,7 +235,7 @@ export function Sidebar({ collapsed, onToggle, onNavClick }: SidebarProps) {
         </nav>
 
         {/* Bottom section */}
-        <div className="border-t p-3 space-y-1">
+        <div className="p-3 space-y-1">
           {bottomItems.map((item) => (
             <NavLink key={item.href} item={item} />
           ))}

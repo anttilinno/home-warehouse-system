@@ -88,15 +88,15 @@ export default async function LocaleLayout({ children, params }: Props) {
         className={`${geistSans.variable} ${geistMono.variable} font-sans antialiased`}
       >
         <ServiceWorkerProvider>
-          <ThemeProvider>
-            <ProgressBar />
-            <NextIntlClientProvider messages={messages}>
-              <AuthProvider>
+          <NextIntlClientProvider messages={messages}>
+            <AuthProvider>
+              <ThemeProvider>
+                <ProgressBar />
                 {children}
                 <Toaster />
-              </AuthProvider>
-            </NextIntlClientProvider>
-          </ThemeProvider>
+              </ThemeProvider>
+            </AuthProvider>
+          </NextIntlClientProvider>
         </ServiceWorkerProvider>
       </body>
     </html>
