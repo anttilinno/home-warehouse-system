@@ -9,7 +9,7 @@
 - v1.4 **Test Overhaul** — Phases 22-26 (shipped 2026-01-31)
 - v1.5 **Settings Enhancement** — Phases 27-29 (shipped 2026-02-03)
 - v1.6 **Format Personalization** — Phases 30-34 (shipped 2026-02-08)
-- v1.7 **Modular Settings** — Phases 35-39 (in progress)
+- v1.7 **Modular Settings** — Phases 35-39 (shipped 2026-02-13)
 
 ## Phases
 
@@ -190,9 +190,9 @@ Plans:
   4. Notification preferences filter alert surfacing only -- SSE data sync continues regardless of preference settings so real-time data updates are never interrupted
 **Plans:** 2 plans
 Plans:
-- [ ] 39-01-PLAN.md — Backend: migration, Go entity/handler/service/repository for notification_preferences JSONB
-- [ ] 39-02-PLAN.md — Frontend: Switch toggles, notification preferences component, page wiring, i18n, dropdown filtering
-**Status:** Not started
+- [x] 39-01-PLAN.md — Backend: migration, Go entity/handler/service/repository for notification_preferences JSONB
+- [x] 39-02-PLAN.md — Frontend: Switch toggles, notification preferences component, page wiring, i18n, dropdown filtering
+**Status:** Complete (2026-02-13)
 
 ## Progress
 
@@ -212,10 +212,10 @@ Phases execute in numeric order: 35 -> 36 -> 37 -> 38 -> 39
 | 36. Profile, Security, Formats | v1.7 | 1 | Complete | 2026-02-13 |
 | 37. Appearance and Language | v1.7 | 1 | Complete | 2026-02-13 |
 | 38. Data and Storage | v1.7 | 1 | Complete | 2026-02-13 |
-| 39. Notification Preferences | v1.7 | 2 | Not started | - |
+| 39. Notification Preferences | v1.7 | 2 | Complete | 2026-02-13 |
 
-**Total:** 38 phases complete (112 plans executed), 1 phase planned
+**Total:** 39 phases complete (114 plans executed)
 
 ---
 *Roadmap created: 2026-01-24*
-*Last updated: 2026-02-13 after Phase 39 planning*
+*Last updated: 2026-02-13 after Phase 39 execution*
