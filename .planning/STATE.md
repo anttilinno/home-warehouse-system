@@ -10,14 +10,14 @@ See: `.planning/PROJECT.md` (updated 2026-02-12)
 ## Current Position
 
 Phase: 39 of 39 (Notification Preferences)
-Plan: 1 of 2 in current phase
-Status: In Progress
-Last activity: 2026-02-13 -- Completed 39-01 (notification preferences backend)
+Plan: 2 of 2 in current phase
+Status: Phase Complete
+Last activity: 2026-02-13 -- Completed 39-02 (notification preferences frontend UI)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 111 (from v1-v1.7)
+- Total plans completed: 112 (from v1-v1.7)
 - Average duration: ~15 min per plan
 - Total execution time: ~27 hours
 
@@ -58,6 +58,9 @@ Key patterns established:
 - No success toast on language change: the language changing IS the feedback (37-01)
 - Inline formatRelativeTime in settings components rather than importing non-exported functions (38-01)
 - Backup & Restore section rendered inline in page.tsx as simple Card with dialog trigger (38-01)
+- Switch toggle auto-save pattern: isUpdating key tracks which toggle is saving, disables all during save (39-02)
+- Client-side notification filtering via NOTIFICATION_CATEGORY_MAP (display-only, SSE untouched) (39-02)
+- NotificationPreferences uses index signature for dynamic category access in Switch toggles (39-02)
 
 ### Pending Todos
 
@@ -76,8 +79,8 @@ Carried forward:
 ## Session Continuity
 
 Last session: 2026-02-13
-Stopped at: Completed 39-01-PLAN.md (notification preferences backend)
-Next step: Execute 39-02-PLAN.md (notification preferences frontend UI)
+Stopped at: Completed 39-02-PLAN.md (notification preferences frontend UI)
+Next step: Phase 39 complete. All v1.7 Modular Settings phases done.
 
 ---
-*Updated: 2026-02-13 after 39-01 plan execution*
+*Updated: 2026-02-13 after 39-02 plan execution*
