@@ -131,8 +131,11 @@ See `.planning/milestones/v1.5-ROADMAP.md` for full details.
   3. Settings are organized into visible sections: Profile card at top, Preferences group (Appearance, Language, Regional Formats), System & Security group (Security, Notifications, Data & Storage)
   4. On desktop, a persistent sidebar navigation is visible alongside the settings content; on mobile, the hub page serves as the navigation entry point
   5. Tapping any subpage and pressing back returns the user to the settings hub, and all navigation labels are translated in en, et, and ru
-**Plans:** TBD
-**Status:** Not started
+**Plans:** 2 plans
+Plans:
+- [ ] 35-01-PLAN.md — Settings shell infrastructure (components, layout, i18n keys)
+- [ ] 35-02-PLAN.md — Hub page rewrite with live previews and 7 stub subpages
+**Status:** Planned
 
 #### Phase 36: Profile, Security, and Regional Formats
 **Goal**: Users can manage their profile, security settings, and regional format preferences on dedicated subpages using existing components
@@ -196,7 +199,7 @@ Phases execute in numeric order: 35 -> 36 -> 37 -> 38 -> 39
 | 22-26 | v1.4 | 20 | Complete | 2026-01-31 |
 | 27-29 | v1.5 | 9 | Complete | 2026-02-03 |
 | 30-34 | v1.6 | 9 | Complete | 2026-02-08 |
-| 35. Settings Shell | v1.7 | TBD | Not started | - |
+| 35. Settings Shell | v1.7 | 2 | Planned | - |
 | 36. Profile, Security, Formats | v1.7 | TBD | Not started | - |
 | 37. Appearance and Language | v1.7 | TBD | Not started | - |
 | 38. Data and Storage | v1.7 | TBD | Not started | - |
@@ -206,4 +209,4 @@ Phases execute in numeric order: 35 -> 36 -> 37 -> 38 -> 39
 
 ---
 *Roadmap created: 2026-01-24*
-*Last updated: 2026-02-12 after v1.7 roadmap created*
+*Last updated: 2026-02-13 after Phase 35 planning*
