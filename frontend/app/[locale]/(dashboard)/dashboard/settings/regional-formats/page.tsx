@@ -3,6 +3,9 @@
 import { useTranslations } from "next-intl";
 import { ArrowLeft } from "lucide-react";
 import { Link } from "@/i18n/navigation";
+import { DateFormatSettings } from "@/components/settings/date-format-settings";
+import { TimeFormatSettings } from "@/components/settings/time-format-settings";
+import { NumberFormatSettings } from "@/components/settings/number-format-settings";
 
 export default function RegionalFormatsPage() {
   const t = useTranslations("settings");
@@ -22,8 +25,12 @@ export default function RegionalFormatsPage() {
         <h2 className="text-2xl font-bold tracking-tight">
           {t("nav.regionalFormats")}
         </h2>
-        <p className="text-muted-foreground">{t("comingSoon")}</p>
+        <p className="text-muted-foreground">{t("hub.regionalFormatsDesc")}</p>
       </div>
+
+      <DateFormatSettings />
+      <TimeFormatSettings />
+      <NumberFormatSettings />
     </div>
   );
 }
