@@ -3,6 +3,8 @@
 import { useTranslations } from "next-intl";
 import { ArrowLeft } from "lucide-react";
 import { Link } from "@/i18n/navigation";
+import { NotificationPreferenceSettings } from "@/components/settings/notification-preference-settings";
+import { NotificationSettings } from "@/components/settings/notification-settings";
 
 export default function NotificationsPage() {
   const t = useTranslations("settings");
@@ -22,8 +24,13 @@ export default function NotificationsPage() {
         <h2 className="text-2xl font-bold tracking-tight">
           {t("nav.notifications")}
         </h2>
-        <p className="text-muted-foreground">{t("comingSoon")}</p>
+        <p className="text-muted-foreground">
+          {t("notifications.description")}
+        </p>
       </div>
+
+      <NotificationPreferenceSettings />
+      <NotificationSettings />
     </div>
   );
 }

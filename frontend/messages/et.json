@@ -340,6 +340,24 @@
       "title": "Teavitused",
       "description": "Seadista teavituste eelistusi"
     },
+    "notificationPreferences": {
+      "title": "Teavituste kategooriad",
+      "description": "Vali, milliseid teavitusi soovid saada",
+      "masterToggle": "Luba teavitused",
+      "masterDescription": "Saa rakendusesiseseid teavitusi",
+      "categories": {
+        "loans": "Laenutused",
+        "loansDescription": "Laenutuse meeldetuletused, hilinenud teated ja tagastused",
+        "inventory": "Inventar",
+        "inventoryDescription": "Madala laoseisu hoiatused ja remondi meeldetuletused",
+        "workspace": "Tooruum",
+        "workspaceDescription": "Kutsed ja liikmete tegevus",
+        "system": "Susteem",
+        "systemDescription": "Susteemiteated ja uuendused"
+      },
+      "saved": "Teavituste eelistused salvestatud",
+      "saveError": "Teavituste eelistuste salvestamine ebaonnestus"
+    },
     "security": {
       "title": "Turvalisus",
       "description": "Parool ja turvaseaded"

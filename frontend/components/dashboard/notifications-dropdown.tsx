@@ -13,7 +13,18 @@ import {
 import { notificationsApi, type Notification } from "@/lib/api";
 import { useSSE } from "@/lib/hooks/use-sse";
 import { useDateFormat } from "@/lib/hooks/use-date-format";
+import { useAuth } from "@/lib/contexts/auth-context";
 import { cn } from "@/lib/utils";
+
+const NOTIFICATION_CATEGORY_MAP: Record<string, string> = {
+  LOAN_DUE_SOON: "loans",
+  LOAN_OVERDUE: "loans",
+  LOAN_RETURNED: "loans",
+  LOW_STOCK: "inventory",
+  WORKSPACE_INVITE: "workspace",
+  MEMBER_JOINED: "workspace",
+  SYSTEM: "system",
+};
 
 function getNotificationIcon(type: Notification["notification_type"]): string {
   switch (type) {
@@ -37,11 +48,26 @@ function getNotificationIcon(type: Notification["notification_type"]): string {
 export function NotificationsDropdown() {
   const t = useTranslations("notifications");
   const { formatDate } = useDateFormat();
+  const { user } = useAuth();
   const [open, setOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isMarkingRead, setIsMarkingRead] = useState<string | null>(null);
+
+  // Filter notifications based on user preferences (display only)
+  const prefs = user?.notification_preferences ?? {};
+  const isNotifEnabled = prefs.enabled !== false;
+
+  const filteredNotifications = isNotifEnabled
+    ? notifications.filter((n) => {
+        const category = NOTIFICATION_CATEGORY_MAP[n.notification_type];
+        return category ? prefs[category] !== false : true;
+      })
+    : [];
+
+  // Badge count: hide when master toggle is off
+  const displayCount = isNotifEnabled ? unreadCount : 0;
 
   function formatRelativeTime(isoDate: string): string {
     const date = new Date(isoDate);
@@ -139,12 +165,12 @@ export function NotificationsDropdown() {
           variant="ghost"
           size="icon"
           className="relative"
-          aria-label={t("ariaLabel", { count: unreadCount })}
+          aria-label={t("ariaLabel", { count: displayCount })}
         >
           <Bell className="h-5 w-5" />
-          {unreadCount > 0 && (
+          {displayCount > 0 && (
             <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-destructive text-[10px] font-medium text-destructive-foreground">
-              {unreadCount > 9 ? "9+" : unreadCount}
+              {displayCount > 9 ? "9+" : displayCount}
             </span>
           )}
           <span className="sr-only">{t("title")}</span>
@@ -153,7 +179,7 @@ export function NotificationsDropdown() {
       <PopoverContent className="w-80 p-0" align="end">
         <div className="flex items-center justify-between border-b px-4 py-3">
           <h4 className="font-semibold">{t("title")}</h4>
-          {notifications.length > 0 && (
+          {filteredNotifications.length > 0 && (
             <Button
               variant="ghost"
               size="sm"
@@ -175,14 +201,14 @@ export function NotificationsDropdown() {
             <div className="flex items-center justify-center py-8">
               <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
             </div>
-          ) : notifications.length === 0 ? (
+          ) : filteredNotifications.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-8 text-center">
               <Bell className="h-8 w-8 text-muted-foreground/50 mb-2" />
               <p className="text-sm text-muted-foreground">{t("empty")}</p>
             </div>
           ) : (
             <div className="divide-y">
-              {notifications.map((notification) => (
+              {filteredNotifications.map((notification) => (
                 <div
                   key={notification.id}
                   className={cn(

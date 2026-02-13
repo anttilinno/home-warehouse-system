@@ -713,6 +713,24 @@
       "title": "Notifications",
       "description": "Configure notification preferences"
     },
+    "notificationPreferences": {
+      "title": "Notification Categories",
+      "description": "Choose which types of notifications you want to receive",
+      "masterToggle": "Enable notifications",
+      "masterDescription": "Receive in-app notifications",
+      "categories": {
+        "loans": "Loans",
+        "loansDescription": "Loan reminders, overdue notices, and returns",
+        "inventory": "Inventory",
+        "inventoryDescription": "Low stock alerts and repair reminders",
+        "workspace": "Workspace",
+        "workspaceDescription": "Invitations and member activity",
+        "system": "System",
+        "systemDescription": "System announcements and updates"
+      },
+      "saved": "Notification preferences saved",
+      "saveError": "Failed to save notification preferences"
+    },
     "dateFormat": {
       "title": "Date Format",
       "description": "Choose how dates are displayed throughout the app",
