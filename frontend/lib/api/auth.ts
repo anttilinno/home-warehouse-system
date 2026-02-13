@@ -14,6 +14,15 @@ export interface CanDeleteResponse {
   blocking_workspaces: Array<{ id: string; name: string; slug: string }>;
 }
 
+export interface NotificationPreferences {
+  enabled?: boolean;
+  loans?: boolean;
+  inventory?: boolean;
+  workspace?: boolean;
+  system?: boolean;
+  [key: string]: boolean | undefined;
+}
+
 export interface User {
   id: string;
   email: string;
@@ -25,6 +34,7 @@ export interface User {
   decimal_separator: string;
   language: string;
   theme: string;
+  notification_preferences: NotificationPreferences;
   avatar_url: string | null;
   created_at: string;
   updated_at: string;
