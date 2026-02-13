@@ -5,19 +5,19 @@
 See: `.planning/PROJECT.md` (updated 2026-02-12)
 
 **Core value:** Reliable inventory access anywhere -- online or offline -- with seamless sync
-**Current focus:** v1.7 Modular Settings -- Phase 36 (Profile, Security, and Regional Formats)
+**Current focus:** v1.7 Modular Settings -- Phase 37 (Appearance and Language)
 
 ## Current Position
 
-Phase: 36 of 39 (Profile, Security, and Regional Formats)
+Phase: 37 of 39 (Appearance and Language)
 Plan: 1 of 1 in current phase
 Status: Complete
-Last activity: 2026-02-13 -- Completed 36-01 (profile, security, and regional formats subpages)
+Last activity: 2026-02-13 -- Completed 37-01 (appearance and language settings subpages)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 108 (from v1-v1.7)
+- Total plans completed: 109 (from v1-v1.7)
 - Average duration: ~15 min per plan
 - Total execution time: ~27 hours
 
@@ -52,6 +52,8 @@ Key patterns established:
 - Live preview values computed inline without useMemo/useEffect for simplicity (35-02)
 - Profile card links to dedicated /profile subpage for consistent navigation pattern (35-02)
 - Settings subpage composition: page.tsx imports existing component(s) directly, no extra Card wrappers (36-01)
+- ThemeSyncer pattern: inner component inside ThemeProvider syncs user.theme to setTheme on login (37-01)
+- No success toast on language change: the language changing IS the feedback (37-01)
 
 ### Pending Todos
 
@@ -70,8 +72,8 @@ Carried forward:
 ## Session Continuity
 
 Last session: 2026-02-13
-Stopped at: Completed 36-01-PLAN.md (profile, security, and regional formats subpages)
-Next step: Phase 36 complete. Proceed to Phase 37 per v1.7 roadmap
+Stopped at: Completed 37-01-PLAN.md (appearance and language settings subpages)
+Next step: Phase 37 complete. Proceed to Phase 38 per v1.7 roadmap
 
 ---
-*Updated: 2026-02-13 after 36-01 plan execution*
+*Updated: 2026-02-13 after 37-01 plan execution*
