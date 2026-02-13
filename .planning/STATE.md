@@ -10,9 +10,9 @@ See: `.planning/PROJECT.md` (updated 2026-02-12)
 ## Current Position
 
 Phase: 35 of 39 (Settings Shell and Route Structure)
-Plan: 0 of TBD in current phase
-Status: Ready to plan
-Last activity: 2026-02-12 -- v1.7 roadmap created (5 phases, 32 requirements mapped)
+Plan: 1 of 2 in current phase
+Status: Executing
+Last activity: 2026-02-13 -- Completed 35-01 (settings shell infrastructure)
 
 ## Performance Metrics
 
@@ -47,6 +47,8 @@ Key patterns established:
 - No new SettingsContext needed -- useAuth() is the single source of truth
 - Theme two-layer source of truth: next-themes (client) + backend (server) -- never a third
 - Notification preferences as JSONB on auth.users (not a separate table)
+- SettingsNav active state: exact pathname match for hub, prefix match for subpages
+- Settings sidebar hidden below md; hub page serves as mobile navigation
 
 ### Pending Todos
 
@@ -64,9 +66,9 @@ Carried forward:
 
 ## Session Continuity
 
-Last session: 2026-02-12
-Stopped at: v1.7 roadmap created, ready to plan Phase 35
-Next step: `/gsd:plan-phase 35`
+Last session: 2026-02-13
+Stopped at: Completed 35-01-PLAN.md (settings shell infrastructure)
+Next step: Execute 35-02-PLAN.md (settings hub page and stub subpages)
 
 ---
-*Updated: 2026-02-12 after v1.7 roadmap creation*
+*Updated: 2026-02-13 after 35-01 plan execution*
