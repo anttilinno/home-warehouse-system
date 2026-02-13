@@ -10,9 +10,9 @@ See: `.planning/PROJECT.md` (updated 2026-02-12)
 ## Current Position
 
 Phase: 35 of 39 (Settings Shell and Route Structure)
-Plan: 1 of 2 in current phase
-Status: Executing
-Last activity: 2026-02-13 -- Completed 35-01 (settings shell infrastructure)
+Plan: 2 of 2 in current phase
+Status: Complete
+Last activity: 2026-02-13 -- Completed 35-02 (settings hub and stub subpages)
 
 ## Performance Metrics
 
@@ -49,6 +49,8 @@ Key patterns established:
 - Notification preferences as JSONB on auth.users (not a separate table)
 - SettingsNav active state: exact pathname match for hub, prefix match for subpages
 - Settings sidebar hidden below md; hub page serves as mobile navigation
+- Live preview values computed inline without useMemo/useEffect for simplicity (35-02)
+- Profile card links to dedicated /profile subpage for consistent navigation pattern (35-02)
 
 ### Pending Todos
 
@@ -67,8 +69,8 @@ Carried forward:
 ## Session Continuity
 
 Last session: 2026-02-13
-Stopped at: Completed 35-01-PLAN.md (settings shell infrastructure)
-Next step: Execute 35-02-PLAN.md (settings hub page and stub subpages)
+Stopped at: Completed 35-02-PLAN.md (settings hub and stub subpages)
+Next step: Phase 35 complete. Proceed to Phase 36 (Profile Subpage) per v1.7 roadmap
 
 ---
-*Updated: 2026-02-13 after 35-01 plan execution*
+*Updated: 2026-02-13 after 35-02 plan execution*
