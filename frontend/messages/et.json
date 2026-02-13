@@ -244,6 +244,29 @@
     "title": "Seaded",
     "description": "Halda oma tööruumi ja konto seadeid",
     "comingSoon": "Tulekul",
+    "nav": {
+      "overview": "Ülevaade",
+      "profile": "Profiil",
+      "appearance": "Välimus",
+      "language": "Keel",
+      "regionalFormats": "Piirkondlikud vormingud",
+      "security": "Turvalisus",
+      "notifications": "Teavitused",
+      "dataStorage": "Andmed ja salvestus"
+    },
+    "hub": {
+      "preferences": "Eelistused",
+      "systemSecurity": "Süsteem ja turvalisus",
+      "appearanceDesc": "Teema ja kuva seaded",
+      "languageDesc": "Rakenduse keele eelistus",
+      "regionalFormatsDesc": "Kuupäeva, kellaaja ja numbri vormingud",
+      "securityDesc": "Parool, seansid ja konto",
+      "notificationsDesc": "Teavituste eelistused",
+      "dataStorageDesc": "Offline-andmed ja salvestushaldus",
+      "light": "Hele",
+      "dark": "Tume",
+      "system": "Süsteem"
+    },
     "dataManagement": {
       "title": "Andmehaldus",
       "description": "Varunda ja taasta oma tööruumi andmeid",

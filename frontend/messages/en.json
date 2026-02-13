@@ -598,6 +598,29 @@
     "title": "Settings",
     "description": "Manage your workspace and account settings",
     "comingSoon": "Coming soon",
+    "nav": {
+      "overview": "Overview",
+      "profile": "Profile",
+      "appearance": "Appearance",
+      "language": "Language",
+      "regionalFormats": "Regional Formats",
+      "security": "Security",
+      "notifications": "Notifications",
+      "dataStorage": "Data & Storage"
+    },
+    "hub": {
+      "preferences": "Preferences",
+      "systemSecurity": "System & Security",
+      "appearanceDesc": "Theme and display settings",
+      "languageDesc": "App language preference",
+      "regionalFormatsDesc": "Date, time, and number formats",
+      "securityDesc": "Password, sessions, and account",
+      "notificationsDesc": "Notification preferences",
+      "dataStorageDesc": "Offline data and storage management",
+      "light": "Light",
+      "dark": "Dark",
+      "system": "System"
+    },
     "dataManagement": {
       "title": "Data Management",
       "description": "Backup and restore your workspace data",

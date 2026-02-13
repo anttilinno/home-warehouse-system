@@ -244,6 +244,29 @@
     "title": "Настройки",
     "description": "Управление настройками рабочего пространства и аккаунта",
     "comingSoon": "Скоро",
+    "nav": {
+      "overview": "Обзор",
+      "profile": "Профиль",
+      "appearance": "Оформление",
+      "language": "Язык",
+      "regionalFormats": "Региональные форматы",
+      "security": "Безопасность",
+      "notifications": "Уведомления",
+      "dataStorage": "Данные и хранилище"
+    },
+    "hub": {
+      "preferences": "Настройки",
+      "systemSecurity": "Система и безопасность",
+      "appearanceDesc": "Тема и настройки отображения",
+      "languageDesc": "Язык приложения",
+      "regionalFormatsDesc": "Форматы даты, времени и чисел",
+      "securityDesc": "Пароль, сессии и аккаунт",
+      "notificationsDesc": "Настройки уведомлений",
+      "dataStorageDesc": "Офлайн-данные и управление хранилищем",
+      "light": "Светлая",
+      "dark": "Тёмная",
+      "system": "Системная"
+    },
     "dataManagement": {
       "title": "Управление данными",
       "description": "Резервное копирование и восстановление данных",
