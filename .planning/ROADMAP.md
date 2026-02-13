@@ -133,9 +133,9 @@ See `.planning/milestones/v1.5-ROADMAP.md` for full details.
   5. Tapping any subpage and pressing back returns the user to the settings hub, and all navigation labels are translated in en, et, and ru
 **Plans:** 2 plans
 Plans:
-- [ ] 35-01-PLAN.md — Settings shell infrastructure (components, layout, i18n keys)
-- [ ] 35-02-PLAN.md — Hub page rewrite with live previews and 7 stub subpages
-**Status:** Planned
+- [x] 35-01-PLAN.md — Settings shell infrastructure (components, layout, i18n keys)
+- [x] 35-02-PLAN.md — Hub page rewrite with live previews and 7 stub subpages
+**Status:** Complete (2026-02-13)
 
 #### Phase 36: Profile, Security, and Regional Formats
 **Goal**: Users can manage their profile, security settings, and regional format preferences on dedicated subpages using existing components
@@ -146,8 +146,10 @@ Plans:
   2. The settings hub profile card displays the user's current avatar, full name, and email address
   3. User can navigate to a Security subpage and change their password, view/revoke active sessions, and delete their account -- all existing functionality relocated
   4. User can navigate to a Regional Formats subpage and configure date format, time format, and number format preferences -- all existing functionality relocated
-**Plans:** TBD
-**Status:** Not started
+**Plans:** 1 plan
+Plans:
+- [x] 36-01-PLAN.md — Wire existing settings components into profile, security, and regional-formats subpages
+**Status:** Complete (2026-02-13)
 
 #### Phase 37: Appearance and Language
 **Goal**: Users can choose a visual theme (light, dark, or system) and language preference that persist across devices
@@ -158,7 +160,9 @@ Plans:
   2. The CSS dark mode variant fix is applied (Tailwind v4 `:where` selector) so dark utilities work correctly on `<html>` and `<body>` elements
   3. User's theme preference persists to the backend so logging in on a different device loads the same theme, and the theme loads without a flash of the wrong theme on page load
   4. User can navigate to a Language subpage and select from the three available languages (en, et, ru), with the language preference persisted to the backend for cross-device sync
-**Plans:** TBD
+**Plans:** 1 plan
+Plans:
+- [ ] 37-01-PLAN.md — ThemeSettings + LanguageSettings components, CSS dark mode fix, theme sync on login
 **Status:** Not started
 
 #### Phase 38: Data and Storage Management
@@ -199,14 +203,14 @@ Phases execute in numeric order: 35 -> 36 -> 37 -> 38 -> 39
 | 22-26 | v1.4 | 20 | Complete | 2026-01-31 |
 | 27-29 | v1.5 | 9 | Complete | 2026-02-03 |
 | 30-34 | v1.6 | 9 | Complete | 2026-02-08 |
-| 35. Settings Shell | v1.7 | 2 | Planned | - |
-| 36. Profile, Security, Formats | v1.7 | TBD | Not started | - |
-| 37. Appearance and Language | v1.7 | TBD | Not started | - |
+| 35. Settings Shell | v1.7 | 2 | Complete | 2026-02-13 |
+| 36. Profile, Security, Formats | v1.7 | 1 | Complete | 2026-02-13 |
+| 37. Appearance and Language | v1.7 | 1 | Not started | - |
 | 38. Data and Storage | v1.7 | TBD | Not started | - |
 | 39. Notification Preferences | v1.7 | TBD | Not started | - |
 
-**Total:** 34 phases complete (107 plans executed), 5 phases planned
+**Total:** 36 phases complete (110 plans executed), 3 phases planned
 
 ---
 *Roadmap created: 2026-01-24*
-*Last updated: 2026-02-13 after Phase 35 planning*
+*Last updated: 2026-02-13 after Phase 37 planning*
