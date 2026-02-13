@@ -5,19 +5,19 @@
 See: `.planning/PROJECT.md` (updated 2026-02-12)
 
 **Core value:** Reliable inventory access anywhere -- online or offline -- with seamless sync
-**Current focus:** v1.7 Modular Settings -- Phase 38 (Data and Storage Management)
+**Current focus:** v1.7 Modular Settings -- Phase 39 (Notification Preferences)
 
 ## Current Position
 
-Phase: 38 of 39 (Data and Storage Management)
-Plan: 1 of 1 in current phase
-Status: Complete
-Last activity: 2026-02-13 -- Completed 38-01 (data and storage settings subpage)
+Phase: 39 of 39 (Notification Preferences)
+Plan: 1 of 2 in current phase
+Status: In Progress
+Last activity: 2026-02-13 -- Completed 39-01 (notification preferences backend)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 110 (from v1-v1.7)
+- Total plans completed: 111 (from v1-v1.7)
 - Average duration: ~15 min per plan
 - Total execution time: ~27 hours
 
@@ -46,7 +46,9 @@ Key patterns established:
 - Format hook trio pattern: useDateFormat, useTimeFormat, useNumberFormat
 - No new SettingsContext needed -- useAuth() is the single source of truth
 - Theme two-layer source of truth: next-themes (client) + backend (server) -- never a third
-- Notification preferences as JSONB on auth.users (not a separate table)
+- Notification preferences as JSONB on auth.users (not a separate table) -- implemented in 39-01
+- JSONB preference maps: marshal to []byte for DB, unmarshal from []byte on scan (39-01)
+- UpdateNotificationPreferences uses merge semantics: only updates provided keys (39-01)
 - SettingsNav active state: exact pathname match for hub, prefix match for subpages
 - Settings sidebar hidden below md; hub page serves as mobile navigation
 - Live preview values computed inline without useMemo/useEffect for simplicity (35-02)
@@ -74,8 +76,8 @@ Carried forward:
 ## Session Continuity
 
 Last session: 2026-02-13
-Stopped at: Completed 38-01-PLAN.md (data and storage settings subpage)
-Next step: Phase 38 complete. Proceed to Phase 39 per v1.7 roadmap
+Stopped at: Completed 39-01-PLAN.md (notification preferences backend)
+Next step: Execute 39-02-PLAN.md (notification preferences frontend UI)
 
 ---
-*Updated: 2026-02-13 after 38-01 plan execution*
+*Updated: 2026-02-13 after 39-01 plan execution*
