@@ -250,6 +250,12 @@ services:
       - ./docker/angie/angie.conf:/etc/angie/angie.conf:ro
       - ./docker/angie/proxy_params.conf:/etc/angie/proxy_params.conf:ro
       - ./.data/certs:/etc/angie/certs:ro
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsk https://localhost/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
     networks:
       - warehouse
 
