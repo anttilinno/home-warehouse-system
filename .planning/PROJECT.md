@@ -119,20 +119,16 @@ Reliable inventory access anywhere — online or offline — with seamless sync.
 - ✓ Notifications subpage with in-app preference toggles for SSE events
 - ✓ Data & Storage subpage (offline storage management + import/export hub)
 
+**v1.8 Docker Deployment (shipped 2026-02-14):**
+
+- ✓ Dev/prod compose profile separation with isolated databases
+- ✓ Per-service Dockerfiles (server/worker/scheduler) with optimized dependencies
+- ✓ Angie reverse proxy with HTTPS, SSE hardening, and healthcheck
+- ✓ Production environment hardening (required JWT_SECRET, no debug flags, named volumes)
+
 ### Active
 
-**v1.8 Docker Deployment:**
-
-- [ ] Dev profile runs only Postgres + Redis with exposed ports for host development
-- [ ] Prod profile runs full stack (Postgres, Redis, backend, worker, scheduler, frontend, Angie)
-- [ ] Prod Postgres uses separate container/volume from dev with no exposed ports
-- [ ] Docspell services moved to prod profile
-- [ ] Migration runner executes before app services start in prod
-- [ ] Backend multi-stage image (Go builder + Alpine runtime with libwebp)
-- [ ] Frontend multi-stage image (bun builder + Node slim runner with standalone output)
-- [ ] Worker and scheduler as separate containers with same image
-- [ ] Angie reverse proxy with API/frontend routing, SSE support, HTTPS
-- [ ] Prod environment properly configured (no debug, no dev credentials)
+(No active requirements — ready for next milestone)
 
 ### Out of Scope
 
@@ -145,8 +141,8 @@ Reliable inventory access anywhere — online or offline — with seamless sync.
 
 ## Current State
 
-**Shipped:** v1.7 Modular Settings (2026-02-13)
-**Current Milestone:** v1.8 Docker Deployment
+**Shipped:** v1.8 Docker Deployment (2026-02-14)
+**Current Milestone:** Planning next milestone
 
 **Tech stack:**
 - Backend: Go 1.25, Chi, sqlc, PostgreSQL
@@ -194,6 +190,11 @@ Reliable inventory access anywhere — online or offline — with seamless sync.
 | next-themes + ThemeSyncer | Two-layer theme: client (instant) + backend (persist) | ✓ Good — no flash, cross-device |
 | JSONB for notification prefs | Flexible schema, single column on auth.users | ✓ Good — opt-out model, merge semantics |
 | Display-only notification filtering | SSE data sync untouched, filter in dropdown render | ✓ Good — real-time data never interrupted |
+| Angie (nginx fork) as reverse proxy | User preference, actively maintained | ✓ Good — clean config |
+| Per-service Dockerfiles | Each binary gets minimal dependencies | ✓ Good — worker 30MB lighter |
+| Worker CGO_ENABLED=0 | No photo processing in worker | ✓ Good — pure Go, faster builds |
+| Separate dev/prod Postgres | Data isolation, no port conflicts | ✓ Good — clean separation |
+| Required JWT_SECRET substitution | Prevent accidental deployment with defaults | ✓ Good — fails fast |
 
 ## Constraints
 
@@ -229,4 +230,4 @@ Reliable inventory access anywhere — online or offline — with seamless sync.
 - Go test factories orphaned (not adopted by Phase 23/24 tests)
 
 ---
-*Last updated: 2026-02-14 after v1.8 milestone start*
+*Last updated: 2026-02-14 after v1.8 milestone completion*

@@ -5,14 +5,13 @@
 See: `.planning/PROJECT.md` (updated 2026-02-14)
 
 **Core value:** Reliable inventory access anywhere -- online or offline -- with seamless sync
-**Current focus:** v1.8 Docker Deployment — Complete
+**Current focus:** Planning next milestone
 
 ## Current Position
 
-Phase: 42 of 42 (Reverse Proxy and End-to-End Validation)
-Plan: 1 of 1 in current phase
-Status: Plan 01 complete — Milestone v1.8 complete
-Last activity: 2026-02-14 — Completed 42-01 SSE proxy hardening and Angie healthcheck
+Phase: 42 of 42 — All milestones complete through v1.8
+Status: v1.8 Docker Deployment shipped
+Last activity: 2026-02-14 — Completed milestone archival
 
 Progress: [██████████] 100%
 
@@ -41,25 +40,9 @@ Progress: [██████████] 100%
 
 ### Decisions
 
-All v1.7 decisions archived in `.planning/milestones/v1.7-ROADMAP.md`.
-
-**v1.8 Decisions:**
-- Angie (nginx fork) as reverse proxy
-- Alpine runtime for backend (CGO/libwebp dependency)
-- bun build + Node slim runner for frontend
-- Dev profile = infra only (Postgres + Redis), app runs on host
-- Prod profile = full stack with Angie
-- Separate Postgres containers per profile
-- Docspell moved to prod profile
-- postgres-prod uses named volume for portability (not bind mount)
-- JWT_SECRET uses required variable substitution (${JWT_SECRET:?})
-- Scheduler uses GO_DATABASE_URL for consistency with worker
-- Frontend NEXT_PUBLIC_API_URL empty (Angie proxies /api)
-- [Phase 41]: Worker uses CGO_ENABLED=0, drops libwebp (pure Go, no photo processing)
-- [Phase 41]: Per-service Dockerfiles: each binary gets own Dockerfile with only required deps
-- [Phase 42]: SSE proxy hardened with HTTP/1.1, Connection "", proxy_cache off
-- [Phase 42]: Backend upstream keepalive 16 for connection reuse
-- [Phase 42]: Angie healthcheck via curl -fsk https://localhost/health
+All decisions archived in milestone-specific files:
+- v1.7: `.planning/milestones/v1.7-ROADMAP.md`
+- v1.8: `.planning/milestones/v1.8-ROADMAP.md`
 
 ### Pending Todos
 
@@ -78,8 +61,8 @@ Carried forward:
 ## Session Continuity
 
 Last session: 2026-02-14
-Stopped at: Completed 42-01-PLAN.md (SSE proxy hardening + Angie healthcheck)
-Next step: `/gsd:complete-milestone` to archive v1.8, or start next milestone
+Stopped at: Completed v1.8 milestone archival
+Next step: `/gsd:new-milestone` to start next milestone
 
 ---
-*Updated: 2026-02-14 after completing 42-01*
+*Updated: 2026-02-14 after v1.8 milestone completion*

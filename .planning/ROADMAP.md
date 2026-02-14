@@ -133,52 +133,18 @@ See `.planning/milestones/v1.7-ROADMAP.md` for full details.
 
 </details>
 
-### v1.8 Docker Deployment (In Progress)
+<details>
+<summary>v1.8 Docker Deployment (Phases 40-42) — SHIPPED 2026-02-14</summary>
 
-**Milestone Goal:** Production-ready Docker Compose deployment with clean dev/prod separation, optimized container images, and HTTPS reverse proxy.
+See `.planning/milestones/v1.8-ROADMAP.md` for full details.
 
-#### Phase 40: Compose Profiles and Environment
-**Goal**: Developer runs `docker compose up` for dev and `docker compose --profile prod up` for full production stack with proper isolation
-**Depends on**: Nothing (first phase of milestone)
-**Requirements**: COMP-01, COMP-02, COMP-03, COMP-04, COMP-05, ENV-01, ENV-02, ENV-03
-**Success Criteria** (what must be TRUE):
-  1. Running `docker compose up` starts only Postgres and Redis with ports exposed to host
-  2. Running `docker compose --profile prod up` starts the full stack (Postgres, Redis, backend, worker, scheduler, frontend, Angie) with prod Postgres isolated from dev
-  3. Docspell services only start under the prod profile, not during dev
-  4. Database migrations run and complete before backend/worker/scheduler accept traffic in prod
-  5. Prod containers use production environment variables (NODE_ENV=production, no debug flags, no dev credentials) and photo storage persists via named volume
-**Plans**: 1 plan
+**Delivered:** Production-ready Docker Compose deployment with dev/prod profile separation, per-service optimized container images, and Angie HTTPS reverse proxy with SSE support. 16/16 requirements satisfied.
 
-Plans:
-- [ ] 40-01-PLAN.md — Compose profiles, prod Postgres isolation, and environment variable cleanup
+- Phase 40: Compose Profiles and Environment (1 plan)
+- Phase 41: Container Images (1 plan)
+- Phase 42: Reverse Proxy and End-to-End Validation (1 plan)
 
-#### Phase 41: Container Images
-**Goal**: Each service builds into its own optimized, minimal container image via separate Dockerfiles
-**Depends on**: Phase 40 (compose structure must exist for image testing)
-**Requirements**: IMG-01, IMG-02, IMG-03, IMG-04
-**Success Criteria** (what must be TRUE):
-  1. Server image builds via Dockerfile.server (Go builder + Alpine runtime) with libwebp for photo processing
-  2. Frontend image builds via Dockerfile (bun install/build + Node slim runner) with Next.js standalone output
-  3. Worker has its own Dockerfile.worker — builds only the worker binary, includes only needed runtime dependencies (no libwebp if not required)
-  4. Scheduler has its own Dockerfile.scheduler — builds only the scheduler binary with its runtime dependencies
-**Plans**: 1 plan
-
-Plans:
-- [ ] 41-01-PLAN.md — Split backend into per-service Dockerfiles and update compose references
-
-#### Phase 42: Reverse Proxy and End-to-End Validation
-**Goal**: Angie reverse proxy routes all traffic correctly with HTTPS, and the full production stack works end-to-end
-**Depends on**: Phase 40, Phase 41 (needs compose structure and working images)
-**Requirements**: PROXY-01, PROXY-02, PROXY-03, PROXY-04
-**Success Criteria** (what must be TRUE):
-  1. Accessing the prod stack via HTTPS serves the frontend app, and API requests at /api/* reach the backend
-  2. SSE connections (notifications, sync events) work through the proxy without premature timeout or buffering
-  3. A self-signed certificate is generated via provided script and used by Angie for HTTPS
-  4. HTTP requests on port 80 redirect to HTTPS on port 443
-**Plans**: 1 plan
-
-Plans:
-- [x] 42-01-PLAN.md — Harden SSE proxy settings, add Angie healthcheck, validate end-to-end
+</details>
 
 ## Progress
 

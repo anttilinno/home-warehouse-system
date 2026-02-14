@@ -246,3 +246,39 @@
 
 ---
 
+
+## v1.8 Docker Deployment (Shipped: 2026-02-14)
+
+**Delivered:** Production-ready Docker Compose deployment with dev/prod profile separation, per-service optimized container images, and Angie HTTPS reverse proxy with SSE support.
+
+**Phases completed:** 40-42 (3 plans, 6 tasks)
+
+**Key accomplishments:**
+
+- Dev/prod compose profile separation — `docker compose up` for infra only, `--profile prod` for full stack with isolated postgres-prod
+- Per-service Dockerfiles — server and scheduler with CGO/libwebp, worker as pure Go (CGO_ENABLED=0) saving ~30MB
+- Angie reverse proxy with HTTPS — self-signed certs, HTTP→HTTPS redirect, SSE proxy hardening (HTTP/1.1, no buffering/caching)
+- Production environment hardening — required JWT_SECRET, parameterized credentials, NODE_ENV=production, no debug flags
+
+**Stats:**
+
+- 5 files created/modified
+- 3 Dockerfiles + compose + angie config
+- 3 phases, 3 plans, 6 tasks
+- 1 day (Feb 14, 2026)
+
+**Git range:** `7d12773a` → `31d9aeae` (7 feature commits)
+
+**Requirements satisfied:** 16/16 (100%)
+- COMP-01 through COMP-05: All satisfied
+- IMG-01 through IMG-04: All satisfied
+- PROXY-01 through PROXY-04: All satisfied
+- ENV-01 through ENV-03: All satisfied
+
+**Tech debt carried forward:**
+- None from v1.8
+
+**What's next:** TBD — ready for next milestone
+
+---
+
