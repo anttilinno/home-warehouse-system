@@ -161,10 +161,10 @@ Plans:
   2. Frontend image builds via Dockerfile (bun install/build + Node slim runner) with Next.js standalone output
   3. Worker has its own Dockerfile.worker — builds only the worker binary, includes only needed runtime dependencies (no libwebp if not required)
   4. Scheduler has its own Dockerfile.scheduler — builds only the scheduler binary with its runtime dependencies
-**Plans**: TBD
+**Plans**: 1 plan
 
 Plans:
-- [ ] 41-01: TBD
+- [ ] 41-01-PLAN.md — Split backend into per-service Dockerfiles and update compose references
 
 #### Phase 42: Reverse Proxy and End-to-End Validation
 **Goal**: Angie reverse proxy routes all traffic correctly with HTTPS, and the full production stack works end-to-end
@@ -193,11 +193,11 @@ Plans:
 | 30-34 | v1.6 | 9 | Complete | 2026-02-08 |
 | 35-39 | v1.7 | 7 | Complete | 2026-02-13 |
 | 40 | v1.8 | 1 | Complete | 2026-02-14 |
-| 41 | v1.8 | TBD | Not started | - |
+| 41 | v1.8 | 1 | Complete | 2026-02-14 |
 | 42 | v1.8 | TBD | Not started | - |
 
-**Total:** 40 phases complete (113 plans executed) across 8 milestones
+**Total:** 41 phases complete (114 plans executed) across 8 milestones
 
 ---
 *Roadmap created: 2026-01-24*
-*Last updated: 2026-02-14 after phase 40 completion*
+*Last updated: 2026-02-14 after phase 41 completion*
