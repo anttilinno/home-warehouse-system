@@ -10,7 +10,7 @@
 - v1.5 **Settings Enhancement** — Phases 27-29 (shipped 2026-02-03)
 - v1.6 **Format Personalization** — Phases 30-34 (shipped 2026-02-08)
 - v1.7 **Modular Settings** — Phases 35-39 (shipped 2026-02-13)
-- v1.8 **Docker Deployment** — Phases 40-42 (in progress)
+- v1.8 **Docker Deployment** — Phases 40-42 (shipped 2026-02-14)
 
 ## Phases
 
@@ -175,10 +175,10 @@ Plans:
   2. SSE connections (notifications, sync events) work through the proxy without premature timeout or buffering
   3. A self-signed certificate is generated via provided script and used by Angie for HTTPS
   4. HTTP requests on port 80 redirect to HTTPS on port 443
-**Plans**: TBD
+**Plans**: 1 plan
 
 Plans:
-- [ ] 42-01: TBD
+- [x] 42-01-PLAN.md — Harden SSE proxy settings, add Angie healthcheck, validate end-to-end
 
 ## Progress
 
@@ -194,10 +194,10 @@ Plans:
 | 35-39 | v1.7 | 7 | Complete | 2026-02-13 |
 | 40 | v1.8 | 1 | Complete | 2026-02-14 |
 | 41 | v1.8 | 1 | Complete | 2026-02-14 |
-| 42 | v1.8 | TBD | Not started | - |
+| 42 | v1.8 | 1 | Complete | 2026-02-14 |
 
-**Total:** 41 phases complete (114 plans executed) across 8 milestones
+**Total:** 42 phases complete (115 plans executed) across 8 milestones
 
 ---
 *Roadmap created: 2026-01-24*
-*Last updated: 2026-02-14 after phase 41 completion*
+*Last updated: 2026-02-14 after phase 42 completion*

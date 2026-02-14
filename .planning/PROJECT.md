@@ -121,7 +121,18 @@ Reliable inventory access anywhere — online or offline — with seamless sync.
 
 ### Active
 
-(None — ready for next milestone)
+**v1.8 Docker Deployment:**
+
+- [ ] Dev profile runs only Postgres + Redis with exposed ports for host development
+- [ ] Prod profile runs full stack (Postgres, Redis, backend, worker, scheduler, frontend, Angie)
+- [ ] Prod Postgres uses separate container/volume from dev with no exposed ports
+- [ ] Docspell services moved to prod profile
+- [ ] Migration runner executes before app services start in prod
+- [ ] Backend multi-stage image (Go builder + Alpine runtime with libwebp)
+- [ ] Frontend multi-stage image (bun builder + Node slim runner with standalone output)
+- [ ] Worker and scheduler as separate containers with same image
+- [ ] Angie reverse proxy with API/frontend routing, SSE support, HTTPS
+- [ ] Prod environment properly configured (no debug, no dev credentials)
 
 ### Out of Scope
 
@@ -135,7 +146,7 @@ Reliable inventory access anywhere — online or offline — with seamless sync.
 ## Current State
 
 **Shipped:** v1.7 Modular Settings (2026-02-13)
-**Current Milestone:** None — ready for next milestone
+**Current Milestone:** v1.8 Docker Deployment
 
 **Tech stack:**
 - Backend: Go 1.25, Chi, sqlc, PostgreSQL
@@ -218,4 +229,4 @@ Reliable inventory access anywhere — online or offline — with seamless sync.
 - Go test factories orphaned (not adopted by Phase 23/24 tests)
 
 ---
-*Last updated: 2026-02-13 after v1.7 milestone completion*
+*Last updated: 2026-02-14 after v1.8 milestone start*

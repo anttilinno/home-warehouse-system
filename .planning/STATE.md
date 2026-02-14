@@ -5,23 +5,23 @@
 See: `.planning/PROJECT.md` (updated 2026-02-14)
 
 **Core value:** Reliable inventory access anywhere -- online or offline -- with seamless sync
-**Current focus:** v1.8 Docker Deployment — Phase 41 (Container Images)
+**Current focus:** v1.8 Docker Deployment — Complete
 
 ## Current Position
 
-Phase: 41 of 42 (Container Images)
+Phase: 42 of 42 (Reverse Proxy and End-to-End Validation)
 Plan: 1 of 1 in current phase
-Status: Plan 01 complete
-Last activity: 2026-02-14 — Completed 41-01 Per-service Dockerfiles
+Status: Plan 01 complete — Milestone v1.8 complete
+Last activity: 2026-02-14 — Completed 42-01 SSE proxy hardening and Angie healthcheck
 
-Progress: [██████░░░░] 66%
+Progress: [██████████] 100%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 112 (from v1-v1.7)
+- Total plans completed: 115 (from v1-v1.8)
 - Average duration: ~15 min per plan
-- Total execution time: ~28 hours
+- Total execution time: ~29 hours
 
 **By Milestone:**
 
@@ -35,7 +35,7 @@ Progress: [██████░░░░] 66%
 | v1.5 | 3 | 9 | Complete |
 | v1.6 | 5 | 9 | Complete |
 | v1.7 | 5 | 7 | Complete |
-| v1.8 | 3 | TBD | In progress |
+| v1.8 | 3 | 3 | Complete |
 
 ## Accumulated Context
 
@@ -57,12 +57,16 @@ All v1.7 decisions archived in `.planning/milestones/v1.7-ROADMAP.md`.
 - Frontend NEXT_PUBLIC_API_URL empty (Angie proxies /api)
 - [Phase 41]: Worker uses CGO_ENABLED=0, drops libwebp (pure Go, no photo processing)
 - [Phase 41]: Per-service Dockerfiles: each binary gets own Dockerfile with only required deps
+- [Phase 42]: SSE proxy hardened with HTTP/1.1, Connection "", proxy_cache off
+- [Phase 42]: Backend upstream keepalive 16 for connection reuse
+- [Phase 42]: Angie healthcheck via curl -fsk https://localhost/health
 
 ### Pending Todos
 
 **Manual Testing Required:**
 - [ ] SCAN-01 through SCAN-07: Barcode scanning manual verification
 - [ ] iOS PWA: Camera permission persistence
+- [ ] Full prod stack startup test (`docker compose --profile prod up`)
 
 ### Blockers/Concerns
 
@@ -74,8 +78,8 @@ Carried forward:
 ## Session Continuity
 
 Last session: 2026-02-14
-Stopped at: Completed 41-01-PLAN.md (Per-service Dockerfiles)
-Next step: `/gsd:plan-phase 42` or execute remaining v1.8 plans
+Stopped at: Completed 42-01-PLAN.md (SSE proxy hardening + Angie healthcheck)
+Next step: `/gsd:complete-milestone` to archive v1.8, or start next milestone
 
 ---
-*Updated: 2026-02-14 after completing 41-01*
+*Updated: 2026-02-14 after completing 42-01*
