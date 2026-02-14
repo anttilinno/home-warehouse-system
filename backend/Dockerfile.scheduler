@@ -9,8 +9,6 @@ RUN go mod download
 
 COPY . .
 
-RUN CGO_ENABLED=1 go build -ldflags="-s -w" -o /bin/server   ./cmd/server
-RUN CGO_ENABLED=1 go build -ldflags="-s -w" -o /bin/worker   ./cmd/worker
 RUN CGO_ENABLED=1 go build -ldflags="-s -w" -o /bin/scheduler ./cmd/scheduler
 
 # ---- Runtime ----
@@ -21,14 +19,10 @@ RUN apk add --no-cache libwebp ca-certificates tzdata \
 
 WORKDIR /app
 
-COPY --from=builder /bin/server   ./server
-COPY --from=builder /bin/worker   ./worker
 COPY --from=builder /bin/scheduler ./scheduler
 
 RUN mkdir -p /data/photos && chown -R app:app /app /data/photos
 
 USER app
 
-EXPOSE 8080
-
-CMD ["./server"]
+CMD ["./scheduler"]
