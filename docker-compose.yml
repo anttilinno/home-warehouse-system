@@ -38,10 +38,38 @@ services:
     networks:
       - warehouse
 
+  # ──────────────────────────────────────────────
+  # Production database (profile: prod)
+  # ──────────────────────────────────────────────
+  postgres-prod:
+    image: postgres:18
+    container_name: warehouse-postgres-prod
+    profiles: ["prod"]
+    environment:
+      POSTGRES_USER: wh
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-wh}
+      POSTGRES_DB: warehouse_prod
+      PGDATA: /var/lib/postgresql/data
+    volumes:
+      - postgres-prod-data:/var/lib/postgresql/data
+      - ./docker/postgres:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U wh -d warehouse_prod"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - warehouse
+
+  # ──────────────────────────────────────────────
+  # Docspell services (profile: prod)
+  # ──────────────────────────────────────────────
+
   # Docspell PostgreSQL (separate database)
   docspell-postgres:
     image: postgres:18
     container_name: warehouse-docspell-postgres
+    profiles: ["prod"]
     environment:
       POSTGRES_USER: docspell
       POSTGRES_PASSWORD: docspell
@@ -63,6 +91,7 @@ services:
   docspell-restserver:
     image: docspell/restserver:latest
     container_name: warehouse-docspell-restserver
+    profiles: ["prod"]
     depends_on:
       docspell-postgres:
         condition: service_healthy
@@ -86,6 +115,7 @@ services:
   docspell-joex:
     image: docspell/joex:latest
     container_name: warehouse-docspell-joex
+    profiles: ["prod"]
     depends_on:
       - docspell-restserver
     environment:
@@ -111,10 +141,10 @@ services:
     image: ghcr.io/amacneil/dbmate:2
     profiles: ["prod"]
     depends_on:
-      postgres:
+      postgres-prod:
         condition: service_healthy
     environment:
-      DATABASE_URL: "postgresql://wh:wh@postgres:5432/warehouse_dev?sslmode=disable"
+      DATABASE_URL: "postgresql://wh:${POSTGRES_PASSWORD:-wh}@postgres-prod:5432/warehouse_prod?sslmode=disable"
     volumes:
       - ./backend/db/migrations:/db/migrations
     command: ["--wait", "--no-dump-schema", "migrate"]
@@ -132,7 +162,7 @@ services:
       redis:
         condition: service_healthy
     environment:
-      DATABASE_URL: "postgresql://wh:wh@postgres:5432/warehouse_dev?sslmode=disable"
+      DATABASE_URL: "postgresql://wh:${POSTGRES_PASSWORD:-wh}@postgres-prod:5432/warehouse_prod?sslmode=disable"
       REDIS_URL: "redis://redis:6379"
       JWT_SECRET: "change-me-in-production"
       DEBUG: "true"
@@ -162,7 +192,7 @@ services:
       redis:
         condition: service_healthy
     environment:
-      GO_DATABASE_URL: "postgresql://wh:wh@postgres:5432/warehouse_dev?sslmode=disable"
+      GO_DATABASE_URL: "postgresql://wh:${POSTGRES_PASSWORD:-wh}@postgres-prod:5432/warehouse_prod?sslmode=disable"
       REDIS_URL: "redis://redis:6379"
       PHOTO_STORAGE_DIR: "/data/photos"
     volumes:
@@ -182,7 +212,7 @@ services:
       redis:
         condition: service_healthy
     environment:
-      DATABASE_URL: "postgresql://wh:wh@postgres:5432/warehouse_dev?sslmode=disable"
+      DATABASE_URL: "postgresql://wh:${POSTGRES_PASSWORD:-wh}@postgres-prod:5432/warehouse_prod?sslmode=disable"
       REDIS_URL: "redis:6379"
       PHOTO_STORAGE_DIR: "/data/photos"
     volumes:
@@ -228,3 +258,4 @@ networks:
 
 volumes:
   photo-storage:
+  postgres-prod-data:
