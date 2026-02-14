@@ -154,7 +154,7 @@ services:
   backend:
     build:
       context: ./backend
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.server
     profiles: ["prod"]
     depends_on:
       migrate:
@@ -183,9 +183,8 @@ services:
   worker:
     build:
       context: ./backend
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.worker
     profiles: ["prod"]
-    command: ["./worker"]
     depends_on:
       migrate:
         condition: service_completed_successfully
@@ -203,9 +202,8 @@ services:
   scheduler:
     build:
       context: ./backend
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.scheduler
     profiles: ["prod"]
-    command: ["./scheduler"]
     depends_on:
       migrate:
         condition: service_completed_successfully
