@@ -5,16 +5,16 @@
 See: `.planning/PROJECT.md` (updated 2026-02-14)
 
 **Core value:** Reliable inventory access anywhere -- online or offline -- with seamless sync
-**Current focus:** v1.8 Docker Deployment — Phase 40 (Compose Profiles and Environment)
+**Current focus:** v1.8 Docker Deployment — Phase 41 (Container Images)
 
 ## Current Position
 
-Phase: 40 of 42 (Compose Profiles and Environment)
+Phase: 41 of 42 (Container Images)
 Plan: 1 of 1 in current phase
 Status: Plan 01 complete
-Last activity: 2026-02-14 — Completed 40-01 Compose profiles and environment
+Last activity: 2026-02-14 — Completed 41-01 Per-service Dockerfiles
 
-Progress: [███░░░░░░░] 33%
+Progress: [██████░░░░] 66%
 
 ## Performance Metrics
 
@@ -55,6 +55,8 @@ All v1.7 decisions archived in `.planning/milestones/v1.7-ROADMAP.md`.
 - JWT_SECRET uses required variable substitution (${JWT_SECRET:?})
 - Scheduler uses GO_DATABASE_URL for consistency with worker
 - Frontend NEXT_PUBLIC_API_URL empty (Angie proxies /api)
+- [Phase 41]: Worker uses CGO_ENABLED=0, drops libwebp (pure Go, no photo processing)
+- [Phase 41]: Per-service Dockerfiles: each binary gets own Dockerfile with only required deps
 
 ### Pending Todos
 
@@ -72,8 +74,8 @@ Carried forward:
 ## Session Continuity
 
 Last session: 2026-02-14
-Stopped at: Completed 40-01-PLAN.md (Compose profiles and environment)
-Next step: `/gsd:plan-phase 41` or execute remaining phase 40 plans
+Stopped at: Completed 41-01-PLAN.md (Per-service Dockerfiles)
+Next step: `/gsd:plan-phase 42` or execute remaining v1.8 plans
 
 ---
-*Updated: 2026-02-14 after completing 40-01*
+*Updated: 2026-02-14 after completing 41-01*
