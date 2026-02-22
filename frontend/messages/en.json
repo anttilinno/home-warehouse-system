@@ -775,6 +775,17 @@
         "validationMinLength": "Password must be at least 8 characters",
         "validationMismatch": "Passwords don't match"
       },
+      "connectedAccounts": {
+        "title": "Connected Accounts",
+        "connected": "Connected",
+        "connect": "Connect",
+        "disconnect": "Disconnect",
+        "linkSuccess": "{provider} account connected successfully",
+        "unlinkSuccess": "{provider} account disconnected",
+        "unlinkError": "Failed to disconnect account",
+        "setPasswordFirst": "Set a password first to disconnect",
+        "setPasswordWarning": "Set a password to allow disconnecting your last linked account."
+      },
       "sessions": {
         "title": "Active Sessions",
         "unknownDevice": "Unknown device",

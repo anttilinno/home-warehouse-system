@@ -360,7 +360,18 @@
     },
     "security": {
       "title": "Turvalisus",
-      "description": "Parool ja turvaseaded"
+      "description": "Parool ja turvaseaded",
+      "connectedAccounts": {
+        "title": "Seotud kontod",
+        "connected": "Seotud",
+        "connect": "Seosta",
+        "disconnect": "Katkesta",
+        "linkSuccess": "{provider} konto seostatud",
+        "unlinkSuccess": "{provider} konto katkestatud",
+        "unlinkError": "Konto katkestamine ebaonnestus",
+        "setPasswordFirst": "Seadista esmalt parool, et katkestada",
+        "setPasswordWarning": "Seadista parool, et lubada viimase seotud konto katkestamist."
+      }
     },
     "dangerZone": {
       "title": "Ohutsoon",
