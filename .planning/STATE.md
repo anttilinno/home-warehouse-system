@@ -5,16 +5,16 @@
 See: `.planning/PROJECT.md` (updated 2026-02-22)
 
 **Core value:** Reliable inventory access anywhere -- online or offline -- with seamless sync
-**Current focus:** v1.8 Social Login -- Phase 40 (Backend OAuth Core)
+**Current focus:** v1.8 Social Login -- Phase 42 (Error Handling, Internationalization, and Offline Polish)
 
 ## Current Position
 
-Phase: 40 of 42 (Database Migration and Backend OAuth Core)
-Plan: 3 of 3 in current phase
-Status: Phase Complete
-Last activity: 2026-02-22 -- Completed 40-03 (OAuth HTTP handlers and router wiring)
+Phase: 42 of 42 (Error Handling, Internationalization, and Offline Polish)
+Plan: 1 of 2 in current phase
+Status: In Progress
+Last activity: 2026-02-22 -- Completed 42-01 (OAuth error handling and i18n)
 
-Progress: [##########] 100%
+Progress: [#####-----] 50%
 
 ## Performance Metrics
 
@@ -39,6 +39,7 @@ Progress: [##########] 100%
 | Phase 40 P01 | 7min | 2 tasks | 14 files |
 | Phase 40 P02 | 3min | 2 tasks | 8 files |
 | Phase 40 P03 | 5min | 2 tasks | 2 files |
+| Phase 42 P01 | 3min | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -60,6 +61,9 @@ Progress: [##########] 100%
 - 40-03: WorkspaceCreator adapter wraps workspace service with same name/slug logic as register
 - 40-03: RedisClient interface uses Set/GetDel to avoid importing redis in domain layer
 - 40-03: CSRF state cookie combines state and PKCE verifier in pipe-delimited format
+- 42-01: OAuthErrorHandler uses Suspense boundary wrapper for useSearchParams in Next.js App Router
+- 42-01: URL cleanup via window.history.replaceState avoids re-render cycle
+- 42-01: Toast duration 8000ms for error messages (longer than default for readability)
 
 ### Pending Todos
 
@@ -81,8 +85,8 @@ New for v1.8:
 ## Session Continuity
 
 Last session: 2026-02-22
-Stopped at: Completed 40-03-PLAN.md (OAuth HTTP handlers and router wiring)
-Next step: Phase 40 complete. Proceed to next phase (frontend OAuth integration).
+Stopped at: Completed 42-01-PLAN.md (OAuth error handling and i18n)
+Next step: Execute 42-02 (Offline-aware social login buttons).
 
 ---
-*Updated: 2026-02-22 after 40-03 execution*
+*Updated: 2026-02-22 after 42-01 execution*

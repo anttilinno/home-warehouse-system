@@ -40,14 +40,14 @@ Requirements for Social Login milestone. Each maps to roadmap phases.
 
 ### Error Handling
 
-- [ ] **ERR-01**: User sees specific error message when OAuth authorization is cancelled
-- [ ] **ERR-02**: User sees specific error message when provider email is not verified
-- [ ] **ERR-03**: User sees specific error message when OAuth state is expired or invalid
-- [ ] **ERR-04**: User sees specific error message when provider is temporarily unavailable
+- [x] **ERR-01**: User sees specific error message when OAuth authorization is cancelled
+- [x] **ERR-02**: User sees specific error message when provider email is not verified
+- [x] **ERR-03**: User sees specific error message when OAuth state is expired or invalid
+- [x] **ERR-04**: User sees specific error message when provider is temporarily unavailable
 
 ### Internationalization
 
-- [ ] **I18N-01**: All new OAuth UI strings have translation keys for all 3 supported languages
+- [x] **I18N-01**: All new OAuth UI strings have translation keys for all 3 supported languages
 
 ### Offline Behavior
 
@@ -104,11 +104,11 @@ Which phases cover which requirements. Updated during roadmap creation.
 | ACCT-06 | Phase 41 | Pending |
 | SCHM-01 | Phase 40 | Complete |
 | SCHM-02 | Phase 40 | Complete |
-| ERR-01 | Phase 42 | Pending |
-| ERR-02 | Phase 42 | Pending |
-| ERR-03 | Phase 42 | Pending |
-| ERR-04 | Phase 42 | Pending |
-| I18N-01 | Phase 42 | Pending |
+| ERR-01 | Phase 42 | Complete |
+| ERR-02 | Phase 42 | Complete |
+| ERR-03 | Phase 42 | Complete |
+| ERR-04 | Phase 42 | Complete |
+| I18N-01 | Phase 42 | Complete |
 | OFFL-01 | Phase 42 | Pending |
 
 **Coverage:**
