@@ -1082,7 +1082,7 @@ type UpdateMeOutput struct {
 
 type UpdatePasswordInput struct {
 	Body struct {
-		CurrentPassword string `json:"current_password" required:"true"`
+		CurrentPassword string `json:"current_password"`
 		NewPassword     string `json:"new_password" required:"true" minLength:"8"`
 	}
 }
