@@ -10,11 +10,11 @@ See: `.planning/PROJECT.md` (updated 2026-02-22)
 ## Current Position
 
 Phase: 41 of 42 (Frontend OAuth Flow and Connected Accounts)
-Plan: 1 of 2 in current phase
-Status: In progress
-Last activity: 2026-02-22 -- Completed 41-01 (Frontend OAuth Flow)
+Plan: 2 of 2 in current phase (COMPLETE)
+Status: Phase 41 complete
+Last activity: 2026-02-22 -- Completed 41-02 (Connected Accounts UI)
 
-Progress: [#░░░░░░░░░] 10%
+Progress: [##░░░░░░░░] 20%
 
 ## Performance Metrics
 
@@ -48,6 +48,8 @@ Progress: [#░░░░░░░░░] 10%
 - v1.8: Full page redirect after OAuth exchange (window.location.href) to ensure AuthProvider picks up token
 - v1.8: sessionStorage for redirect_to preservation across OAuth flow (auto-clears on tab close)
 - v1.8: Hardcoded English strings on transient callback page (visible <2 seconds, i18n unnecessary)
+- v1.8: has_password !== false for conditional form rendering (defaults to PasswordChange when user data is loading)
+- v1.8: Inline ProviderIcon component reuses SVGs from social-login.tsx (simple, only 2 providers)
 
 ### Pending Todos
 
@@ -69,8 +71,8 @@ New for v1.8:
 ## Session Continuity
 
 Last session: 2026-02-22
-Stopped at: Completed 41-01-PLAN.md (Frontend OAuth Flow)
-Next step: Execute 41-02-PLAN.md (Connected Accounts UI)
+Stopped at: Completed 41-02-PLAN.md (Connected Accounts UI)
+Next step: Execute phase 42 (next phase)
 
 ---
-*Updated: 2026-02-22 after completing 41-01 (Frontend OAuth Flow)*
+*Updated: 2026-02-22 after completing 41-02 (Connected Accounts UI)*
