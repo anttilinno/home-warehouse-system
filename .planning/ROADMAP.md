@@ -186,11 +186,11 @@ Plans:
   2. All OAuth-related UI text (buttons, error messages, connected accounts labels, set-password form) has translation keys and translations for all 3 supported languages (English, Estonian, Russian)
   3. Social login buttons show a disabled state with an "internet required" message when the app is offline
 
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 42-01: TBD
-- [ ] 42-02: TBD
+- [ ] 42-01-PLAN.md — OAuth translation keys (all 3 locales) and error code-to-message mapping with OAuthErrorHandler component
+- [ ] 42-02-PLAN.md — Offline-aware social login buttons with disabled state and translated message
 
 ## Progress
 
