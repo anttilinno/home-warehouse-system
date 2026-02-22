@@ -1,7 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { Shield, KeyRound, Smartphone, AlertTriangle } from "lucide-react";
+import { Shield, KeyRound, Link2, Smartphone, AlertTriangle } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -10,11 +10,13 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { PasswordChange } from "./password-change";
+import { ConnectedAccounts } from "./connected-accounts";
 import { ActiveSessions } from "./active-sessions";
 import { DeleteAccountDialog } from "./delete-account-dialog";
 
 export function SecuritySettings() {
   const t = useTranslations("settings.security");
+  const tAuth = useTranslations("auth");
   const tDanger = useTranslations("settings.dangerZone");
 
   return (
@@ -34,6 +36,15 @@ export function SecuritySettings() {
             {t("password.title")}
           </h3>
           <PasswordChange />
+        </div>
+
+        {/* Connected Accounts Section */}
+        <div className="space-y-4">
+          <h3 className="text-sm font-medium flex items-center gap-2">
+            <Link2 className="h-4 w-4" />
+            {tAuth("oauth.connectedAccounts.title")}
+          </h3>
+          <ConnectedAccounts />
         </div>
 
         {/* Sessions Section */}
