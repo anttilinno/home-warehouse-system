@@ -1,6 +1,7 @@
 package api
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"os"
@@ -19,6 +20,7 @@ import (
 	"github.com/antti/home-warehouse/go-backend/internal/domain/analytics"
 	"github.com/antti/home-warehouse/go-backend/internal/domain/auth/member"
 	"github.com/antti/home-warehouse/go-backend/internal/domain/auth/notification"
+	"github.com/antti/home-warehouse/go-backend/internal/domain/auth/oauth"
 	"github.com/antti/home-warehouse/go-backend/internal/domain/auth/pushsubscription"
 	"github.com/antti/home-warehouse/go-backend/internal/domain/auth/session"
 	"github.com/antti/home-warehouse/go-backend/internal/domain/auth/user"
@@ -257,6 +259,13 @@ func NewRouter(pool *pgxpool.Pool, cfg *config.Config) chi.Router {
 		pendingChangeSvc.SetPushSender(pushSender)
 	}
 
+	// Initialize OAuth service and handler
+	oauthRepo := postgres.NewOAuthRepository(pool)
+	wsCreator := &workspaceCreatorAdapter{workspaceSvc: workspaceSvc}
+	oauthSvc := oauth.NewService(oauthRepo, userSvc, wsCreator)
+	redisAdapter := &oauthRedisAdapter{client: redisClient}
+	oauthHandler := oauth.NewHandler(oauthSvc, jwtService, sessionSvc, redisAdapter, cfg)
+
 	// Create handlers with dependencies
 	userHandler := user.NewHandler(userSvc, jwtService, workspaceSvc)
 	// Configure avatar storage for user handler
@@ -286,6 +295,26 @@ func NewRouter(pool *pgxpool.Pool, cfg *config.Config) chi.Router {
 		userHandler.RegisterPublicRoutes(rateLimitedAPI)
 	})
 
+	// OAuth initiate (public, no rate limit -- just redirects)
+	r.Get("/auth/oauth/{provider}", oauthHandler.Initiate)
+
+	// OAuth callback (public, rate-limited at 10/min per IP)
+	r.Group(func(r chi.Router) {
+		oauthCallbackRL := appMiddleware.NewRateLimiter(10, time.Minute)
+		r.Use(appMiddleware.RateLimit(oauthCallbackRL))
+		r.Get("/auth/oauth/{provider}/callback", oauthHandler.Callback)
+	})
+
+	// OAuth exchange (public, rate-limited with auth rate limiter)
+	r.Group(func(r chi.Router) {
+		r.Use(appMiddleware.RateLimit(authRateLimiter))
+		oauthExchangeConfig := huma.DefaultConfig("Home Warehouse API", "1.0.0")
+		oauthExchangeConfig.DocsPath = ""
+		oauthExchangeConfig.OpenAPIPath = ""
+		oauthExchangeAPI := humachi.New(r, oauthExchangeConfig)
+		huma.Post(oauthExchangeAPI, "/auth/oauth/exchange", oauthHandler.ExchangeCode)
+	})
+
 	// Register barcode lookup (public, no auth required)
 	barcode.RegisterRoutes(api, barcodeSvc)
 
@@ -301,6 +330,10 @@ func NewRouter(pool *pgxpool.Pool, cfg *config.Config) chi.Router {
 
 		// Register protected user routes
 		userHandler.RegisterProtectedRoutes(protectedAPI)
+
+		// Register OAuth account management routes (JWT-protected)
+		huma.Get(protectedAPI, "/auth/oauth/accounts", oauthHandler.ListAccounts)
+		huma.Delete(protectedAPI, "/auth/oauth/accounts/{provider}", oauthHandler.UnlinkAccount)
 
 		// Register session routes
 		sessionHandler.RegisterRoutes(protectedAPI)
@@ -481,4 +514,36 @@ type repairPhotoStorageGetter struct {
 
 func (g *repairPhotoStorageGetter) GetStorage() repairphoto.Storage {
 	return g.storage
+}
+
+// workspaceCreatorAdapter implements oauth.WorkspaceCreator using the workspace service.
+// This ensures OAuth signup creates a personal workspace using the same logic as
+// email/password registration (Pitfall 8-E).
+type workspaceCreatorAdapter struct {
+	workspaceSvc workspace.ServiceInterface
+}
+
+func (a *workspaceCreatorAdapter) CreatePersonalWorkspace(ctx context.Context, userID uuid.UUID, fullName string) error {
+	workspaceName := fmt.Sprintf("%s's Workspace", fullName)
+	workspaceSlug := fmt.Sprintf("user-%s", userID.String())
+	_, err := a.workspaceSvc.Create(ctx, workspace.CreateWorkspaceInput{
+		Name:       workspaceName,
+		Slug:       workspaceSlug,
+		IsPersonal: true,
+		CreatedBy:  userID,
+	})
+	return err
+}
+
+// oauthRedisAdapter wraps go-redis client to implement oauth.RedisClient interface.
+type oauthRedisAdapter struct {
+	client *redis.Client
+}
+
+func (a *oauthRedisAdapter) Set(ctx context.Context, key, value string, expiration time.Duration) error {
+	return a.client.Set(ctx, key, value, expiration).Err()
+}
+
+func (a *oauthRedisAdapter) GetDel(ctx context.Context, key string) (string, error) {
+	return a.client.GetDel(ctx, key).Result()
 }

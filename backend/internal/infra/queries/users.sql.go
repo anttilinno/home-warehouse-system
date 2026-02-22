@@ -26,14 +26,14 @@ func (q *Queries) CountActiveUsers(ctx context.Context) (int64, error) {
 const createUser = `-- name: CreateUser :one
 INSERT INTO auth.users (id, email, full_name, password_hash, is_active, is_superuser, date_format, language, theme, avatar_path, created_at, updated_at)
 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
-RETURNING id, email, full_name, password_hash, is_active, is_superuser, date_format, language, theme, avatar_path, created_at, updated_at
+RETURNING id, email, full_name, password_hash, is_active, is_superuser, date_format, language, theme, avatar_path, created_at, updated_at, time_format, thousand_separator, decimal_separator, notification_preferences, has_password
 `
 
 type CreateUserParams struct {
 	ID           uuid.UUID          `json:"id"`
 	Email        string             `json:"email"`
 	FullName     string             `json:"full_name"`
-	PasswordHash string             `json:"password_hash"`
+	PasswordHash *string            `json:"password_hash"`
 	IsActive     *bool              `json:"is_active"`
 	IsSuperuser  *bool              `json:"is_superuser"`
 	DateFormat   *string            `json:"date_format"`
@@ -73,6 +73,11 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (AuthUse
 		&i.AvatarPath,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.TimeFormat,
+		&i.ThousandSeparator,
+		&i.DecimalSeparator,
+		&i.NotificationPreferences,
+		&i.HasPassword,
 	)
 	return i, err
 }
@@ -103,9 +108,24 @@ FROM auth.users
 WHERE email = $1
 `
 
-func (q *Queries) GetUserByEmail(ctx context.Context, email string) (AuthUser, error) {
+type GetUserByEmailRow struct {
+	ID           uuid.UUID          `json:"id"`
+	Email        string             `json:"email"`
+	FullName     string             `json:"full_name"`
+	PasswordHash *string            `json:"password_hash"`
+	IsActive     *bool              `json:"is_active"`
+	IsSuperuser  *bool              `json:"is_superuser"`
+	DateFormat   *string            `json:"date_format"`
+	Language     string             `json:"language"`
+	Theme        string             `json:"theme"`
+	AvatarPath   *string            `json:"avatar_path"`
+	CreatedAt    pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt    pgtype.Timestamptz `json:"updated_at"`
+}
+
+func (q *Queries) GetUserByEmail(ctx context.Context, email string) (GetUserByEmailRow, error) {
 	row := q.db.QueryRow(ctx, getUserByEmail, email)
-	var i AuthUser
+	var i GetUserByEmailRow
 	err := row.Scan(
 		&i.ID,
 		&i.Email,
@@ -129,9 +149,24 @@ FROM auth.users
 WHERE id = $1
 `
 
-func (q *Queries) GetUserByID(ctx context.Context, id uuid.UUID) (AuthUser, error) {
+type GetUserByIDRow struct {
+	ID           uuid.UUID          `json:"id"`
+	Email        string             `json:"email"`
+	FullName     string             `json:"full_name"`
+	PasswordHash *string            `json:"password_hash"`
+	IsActive     *bool              `json:"is_active"`
+	IsSuperuser  *bool              `json:"is_superuser"`
+	DateFormat   *string            `json:"date_format"`
+	Language     string             `json:"language"`
+	Theme        string             `json:"theme"`
+	AvatarPath   *string            `json:"avatar_path"`
+	CreatedAt    pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt    pgtype.Timestamptz `json:"updated_at"`
+}
+
+func (q *Queries) GetUserByID(ctx context.Context, id uuid.UUID) (GetUserByIDRow, error) {
 	row := q.db.QueryRow(ctx, getUserByID, id)
-	var i AuthUser
+	var i GetUserByIDRow
 	err := row.Scan(
 		&i.ID,
 		&i.Email,
@@ -162,15 +197,30 @@ type ListUsersParams struct {
 	Offset int32 `json:"offset"`
 }
 
-func (q *Queries) ListUsers(ctx context.Context, arg ListUsersParams) ([]AuthUser, error) {
+type ListUsersRow struct {
+	ID           uuid.UUID          `json:"id"`
+	Email        string             `json:"email"`
+	FullName     string             `json:"full_name"`
+	PasswordHash *string            `json:"password_hash"`
+	IsActive     *bool              `json:"is_active"`
+	IsSuperuser  *bool              `json:"is_superuser"`
+	DateFormat   *string            `json:"date_format"`
+	Language     string             `json:"language"`
+	Theme        string             `json:"theme"`
+	AvatarPath   *string            `json:"avatar_path"`
+	CreatedAt    pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt    pgtype.Timestamptz `json:"updated_at"`
+}
+
+func (q *Queries) ListUsers(ctx context.Context, arg ListUsersParams) ([]ListUsersRow, error) {
 	rows, err := q.db.Query(ctx, listUsers, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	items := []AuthUser{}
+	items := []ListUsersRow{}
 	for rows.Next() {
-		var i AuthUser
+		var i ListUsersRow
 		if err := rows.Scan(
 			&i.ID,
 			&i.Email,
@@ -207,9 +257,24 @@ type UpdateUserParams struct {
 	FullName string    `json:"full_name"`
 }
 
-func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (AuthUser, error) {
+type UpdateUserRow struct {
+	ID           uuid.UUID          `json:"id"`
+	Email        string             `json:"email"`
+	FullName     string             `json:"full_name"`
+	PasswordHash *string            `json:"password_hash"`
+	IsActive     *bool              `json:"is_active"`
+	IsSuperuser  *bool              `json:"is_superuser"`
+	DateFormat   *string            `json:"date_format"`
+	Language     string             `json:"language"`
+	Theme        string             `json:"theme"`
+	AvatarPath   *string            `json:"avatar_path"`
+	CreatedAt    pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt    pgtype.Timestamptz `json:"updated_at"`
+}
+
+func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (UpdateUserRow, error) {
 	row := q.db.QueryRow(ctx, updateUser, arg.ID, arg.FullName)
-	var i AuthUser
+	var i UpdateUserRow
 	err := row.Scan(
 		&i.ID,
 		&i.Email,
@@ -239,9 +304,24 @@ type UpdateUserAvatarParams struct {
 	AvatarPath *string   `json:"avatar_path"`
 }
 
-func (q *Queries) UpdateUserAvatar(ctx context.Context, arg UpdateUserAvatarParams) (AuthUser, error) {
+type UpdateUserAvatarRow struct {
+	ID           uuid.UUID          `json:"id"`
+	Email        string             `json:"email"`
+	FullName     string             `json:"full_name"`
+	PasswordHash *string            `json:"password_hash"`
+	IsActive     *bool              `json:"is_active"`
+	IsSuperuser  *bool              `json:"is_superuser"`
+	DateFormat   *string            `json:"date_format"`
+	Language     string             `json:"language"`
+	Theme        string             `json:"theme"`
+	AvatarPath   *string            `json:"avatar_path"`
+	CreatedAt    pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt    pgtype.Timestamptz `json:"updated_at"`
+}
+
+func (q *Queries) UpdateUserAvatar(ctx context.Context, arg UpdateUserAvatarParams) (UpdateUserAvatarRow, error) {
 	row := q.db.QueryRow(ctx, updateUserAvatar, arg.ID, arg.AvatarPath)
-	var i AuthUser
+	var i UpdateUserAvatarRow
 	err := row.Scan(
 		&i.ID,
 		&i.Email,
@@ -271,9 +351,24 @@ type UpdateUserEmailParams struct {
 	Email string    `json:"email"`
 }
 
-func (q *Queries) UpdateUserEmail(ctx context.Context, arg UpdateUserEmailParams) (AuthUser, error) {
+type UpdateUserEmailRow struct {
+	ID           uuid.UUID          `json:"id"`
+	Email        string             `json:"email"`
+	FullName     string             `json:"full_name"`
+	PasswordHash *string            `json:"password_hash"`
+	IsActive     *bool              `json:"is_active"`
+	IsSuperuser  *bool              `json:"is_superuser"`
+	DateFormat   *string            `json:"date_format"`
+	Language     string             `json:"language"`
+	Theme        string             `json:"theme"`
+	AvatarPath   *string            `json:"avatar_path"`
+	CreatedAt    pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt    pgtype.Timestamptz `json:"updated_at"`
+}
+
+func (q *Queries) UpdateUserEmail(ctx context.Context, arg UpdateUserEmailParams) (UpdateUserEmailRow, error) {
 	row := q.db.QueryRow(ctx, updateUserEmail, arg.ID, arg.Email)
-	var i AuthUser
+	var i UpdateUserEmailRow
 	err := row.Scan(
 		&i.ID,
 		&i.Email,
@@ -299,7 +394,7 @@ WHERE id = $1
 
 type UpdateUserPasswordParams struct {
 	ID           uuid.UUID `json:"id"`
-	PasswordHash string    `json:"password_hash"`
+	PasswordHash *string   `json:"password_hash"`
 }
 
 func (q *Queries) UpdateUserPassword(ctx context.Context, arg UpdateUserPasswordParams) error {
@@ -321,14 +416,29 @@ type UpdateUserPreferencesParams struct {
 	Theme      string    `json:"theme"`
 }
 
-func (q *Queries) UpdateUserPreferences(ctx context.Context, arg UpdateUserPreferencesParams) (AuthUser, error) {
+type UpdateUserPreferencesRow struct {
+	ID           uuid.UUID          `json:"id"`
+	Email        string             `json:"email"`
+	FullName     string             `json:"full_name"`
+	PasswordHash *string            `json:"password_hash"`
+	IsActive     *bool              `json:"is_active"`
+	IsSuperuser  *bool              `json:"is_superuser"`
+	DateFormat   *string            `json:"date_format"`
+	Language     string             `json:"language"`
+	Theme        string             `json:"theme"`
+	AvatarPath   *string            `json:"avatar_path"`
+	CreatedAt    pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt    pgtype.Timestamptz `json:"updated_at"`
+}
+
+func (q *Queries) UpdateUserPreferences(ctx context.Context, arg UpdateUserPreferencesParams) (UpdateUserPreferencesRow, error) {
 	row := q.db.QueryRow(ctx, updateUserPreferences,
 		arg.ID,
 		arg.DateFormat,
 		arg.Language,
 		arg.Theme,
 	)
-	var i AuthUser
+	var i UpdateUserPreferencesRow
 	err := row.Scan(
 		&i.ID,
 		&i.Email,

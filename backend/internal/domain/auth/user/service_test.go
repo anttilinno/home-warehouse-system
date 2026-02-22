@@ -161,6 +161,7 @@ func TestReconstruct(t *testing.T) {
 		"Test User",
 		"hashed_password",
 		true,
+		true,
 		false,
 		"YYYY-MM-DD",
 		"en",

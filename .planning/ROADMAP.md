@@ -137,7 +137,7 @@ See `.planning/milestones/v1.7-ROADMAP.md` for full details.
 
 **Milestone Goal:** Add Google and GitHub OAuth login alongside existing email/password authentication, with auto-linking by verified email and connected accounts management in settings.
 
-- [ ] **Phase 40: Database Migration and Backend OAuth Core** - Schema changes, OAuth endpoints, CSRF/PKCE security, auto-link logic, rate limiting
+- [x] **Phase 40: Database Migration and Backend OAuth Core** - Schema changes, OAuth endpoints, CSRF/PKCE security, auto-link logic, rate limiting (completed 2026-02-22)
 - [x] **Phase 41: Frontend OAuth Flow and Connected Accounts** - Callback page, social login buttons, connected accounts settings UI, password UX for OAuth-only users (completed 2026-02-22)
 - [ ] **Phase 42: Error Handling, Internationalization, and Offline Polish** - User-facing error messages, i18n for all OAuth strings, offline-aware social login buttons
 
@@ -153,12 +153,12 @@ See `.planning/milestones/v1.7-ROADMAP.md` for full details.
   3. New user signing up via Google or GitHub OAuth gets an account (no password) and a personal workspace automatically
   4. Existing user with a verified email matching the OAuth provider email is auto-linked to the same account; unverified provider emails are rejected
   5. Callback endpoint is rate-limited and validates CSRF state parameter before processing
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
-- [ ] 40-01: TBD
-- [ ] 40-02: TBD
-- [ ] 40-03: TBD
+- [ ] 40-01-PLAN.md — Database migration (nullable password, has_password) and sqlc queries for oauth_accounts, user entity extension
+- [ ] 40-02-PLAN.md — OAuth domain package: entity, providers (Google/GitHub), FindOrCreateUser service with email verification gate
+- [ ] 40-03-PLAN.md — OAuth HTTP handlers (initiate, callback, exchange, accounts), router wiring with rate limiting
 
 ### Phase 41: Frontend OAuth Flow and Connected Accounts
 **Goal**: Users can complete the full OAuth login/signup flow in the browser and manage their connected providers from Security settings
@@ -206,8 +206,8 @@ Phases execute in numeric order: 40 -> 41 -> 42
 | 27-29 | v1.5 | 9 | Complete | 2026-02-03 |
 | 30-34 | v1.6 | 9 | Complete | 2026-02-08 |
 | 35-39 | v1.7 | 7 | Complete | 2026-02-13 |
-| 40. Backend OAuth Core | v1.8 | 0/? | Not started | - |
-| 41. Frontend OAuth Flow | 2/2 | Complete    | 2026-02-22 | - |
+| 40. Backend OAuth Core | v1.8 | 3/3 | Complete | 2026-02-22 |
+| 41. Frontend OAuth Flow | v1.8 | 2/2 | Complete | 2026-02-22 |
 | 42. Error/i18n/Offline | v1.8 | 0/? | Not started | - |
 
 **Total:** 39 phases complete (112 plans executed) across 8 milestones + 3 phases planned for v1.8

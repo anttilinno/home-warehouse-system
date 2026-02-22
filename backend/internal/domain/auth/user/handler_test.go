@@ -122,6 +122,14 @@ func (m *MockService) Delete(ctx context.Context, userID uuid.UUID) error {
 	return args.Error(0)
 }
 
+func (m *MockService) CreateOAuthUser(ctx context.Context, input user.CreateOAuthUserInput) (*user.User, error) {
+	args := m.Called(ctx, input)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*user.User), args.Error(1)
+}
+
 // MockWorkspaceService implements workspace.ServiceInterface
 type MockWorkspaceService struct {
 	mock.Mock

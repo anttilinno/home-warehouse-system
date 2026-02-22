@@ -733,7 +733,7 @@ type AuthUser struct {
 	ID           uuid.UUID `json:"id"`
 	Email        string    `json:"email"`
 	FullName     string    `json:"full_name"`
-	PasswordHash string    `json:"password_hash"`
+	PasswordHash *string   `json:"password_hash"`
 	IsActive     *bool     `json:"is_active"`
 	IsSuperuser  *bool     `json:"is_superuser"`
 	// User's preferred date format for display (e.g., DD.MM.YYYY, MM/DD/YYYY, YYYY-MM-DD)
@@ -746,6 +746,15 @@ type AuthUser struct {
 	AvatarPath *string            `json:"avatar_path"`
 	CreatedAt  pgtype.Timestamptz `json:"created_at"`
 	UpdatedAt  pgtype.Timestamptz `json:"updated_at"`
+	// User's preferred time format: 12h or 24h
+	TimeFormat string `json:"time_format"`
+	// User's preferred thousand separator for number display: comma, period, or space
+	ThousandSeparator string `json:"thousand_separator"`
+	// User's preferred decimal separator for number display: period or comma
+	DecimalSeparator string `json:"decimal_separator"`
+	// User notification preferences by category. Empty object means all enabled. Keys: enabled, loans, inventory, workspace, system.
+	NotificationPreferences []byte `json:"notification_preferences"`
+	HasPassword             bool   `json:"has_password"`
 }
 
 // External OAuth provider accounts linked to local users for SSO.

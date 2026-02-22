@@ -11,6 +11,7 @@ import (
 // ServiceInterface defines the user service operations.
 type ServiceInterface interface {
 	Create(ctx context.Context, input CreateUserInput) (*User, error)
+	CreateOAuthUser(ctx context.Context, input CreateOAuthUserInput) (*User, error)
 	GetByID(ctx context.Context, id uuid.UUID) (*User, error)
 	GetByEmail(ctx context.Context, email string) (*User, error)
 	Authenticate(ctx context.Context, email, password string) (*User, error)
@@ -56,6 +57,37 @@ func (s *Service) Create(ctx context.Context, input CreateUserInput) (*User, err
 
 	// Create user entity
 	user, err := NewUser(input.Email, input.FullName, input.Password)
+	if err != nil {
+		return nil, err
+	}
+
+	// Persist user
+	if err := s.repo.Save(ctx, user); err != nil {
+		return nil, err
+	}
+
+	return user, nil
+}
+
+// CreateOAuthUserInput holds the input for creating an OAuth user.
+type CreateOAuthUserInput struct {
+	Email    string
+	FullName string
+}
+
+// CreateOAuthUser creates a new OAuth-only user (no password).
+func (s *Service) CreateOAuthUser(ctx context.Context, input CreateOAuthUserInput) (*User, error) {
+	// Check if email is already taken
+	exists, err := s.repo.ExistsByEmail(ctx, input.Email)
+	if err != nil {
+		return nil, err
+	}
+	if exists {
+		return nil, ErrEmailTaken
+	}
+
+	// Create OAuth user entity (no password)
+	user, err := NewOAuthUser(input.Email, input.FullName)
 	if err != nil {
 		return nil, err
 	}
