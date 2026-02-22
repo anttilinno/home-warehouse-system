@@ -217,12 +217,21 @@ run = "cd backend && CGO_ENABLED=0 go build -o bin/photo-admin cmd/photo-admin/m
 [tasks.gen-certs]
 description = "Generate self-signed SSL certs for local production Docker"
 run = """
+if [ -f .data/certs/server.crt ] && [ -f .data/certs/server.key ]; then
+  echo "Certs already exist in .data/certs/, skipping"
+  exit 0
+fi
 mkdir -p .data/certs
 openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
   -keyout .data/certs/server.key -out .data/certs/server.crt \
   -subj '/CN=localhost'
 echo "Certs written to .data/certs/"
 """
+
+[tasks.prod]
+description = "Build and start all production containers"
+depends = ["gen-certs"]
+run = "docker compose --profile prod up --build"
 
 # Frontend Testing
 [tasks.fe-test]
