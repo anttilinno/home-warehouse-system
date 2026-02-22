@@ -108,7 +108,7 @@ run = "DATABASE_URL=$DBMATE_DATABASE_URL dbmate -d backend/db/migrations status"
 # Go Backend Tasks
 [tasks.dev]
 description = "Run Go backend dev server with hot reload"
-depends = ["dc-up", "update-ip"]
+depends = ["dc-up"]
 run = "cd backend && air"
 
 [tasks.run]
@@ -182,7 +182,6 @@ run = "cd backend && go mod download"
 # Frontend Tasks
 [tasks.fe-dev]
 description = "Run frontend dev server"
-depends = ["update-ip"]
 run = "cd frontend && bun run dev"
 
 [tasks.fe-build]

@@ -1,11 +1,11 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { Loader2 } from "lucide-react";
 import { authApi } from "@/lib/api/auth";
 
-export default function OAuthCallbackPage() {
+function OAuthCallbackInner() {
   const searchParams = useSearchParams();
   const exchanged = useRef(false);
   const [error, setError] = useState<string | null>(null);
@@ -69,5 +69,20 @@ export default function OAuthCallbackPage() {
       <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
       <p className="text-sm text-muted-foreground">Completing sign in...</p>
     </div>
+  );
+}
+
+export default function OAuthCallbackPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex flex-col items-center justify-center gap-4 py-16">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+          <p className="text-sm text-muted-foreground">Completing sign in...</p>
+        </div>
+      }
+    >
+      <OAuthCallbackInner />
+    </Suspense>
   );
 }

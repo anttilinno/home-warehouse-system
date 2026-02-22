@@ -137,8 +137,12 @@ services:
       JWT_SECRET: "change-me-in-production"
       DEBUG: "true"
       PHOTO_STORAGE_DIR: "/data/photos"
-      APP_URL: "https://localhost"
-      BACKEND_URL: "https://localhost"
+      APP_URL: "http://localhost"
+      BACKEND_URL: "http://localhost"
+      GOOGLE_CLIENT_ID: "${GOOGLE_CLIENT_ID}"
+      GOOGLE_CLIENT_SECRET: "${GOOGLE_CLIENT_SECRET}"
+      GITHUB_CLIENT_ID: "${GITHUB_CLIENT_ID:-}"
+      GITHUB_CLIENT_SECRET: "${GITHUB_CLIENT_SECRET:-}"
     volumes:
       - photo-storage:/data/photos
     healthcheck:
@@ -214,11 +218,9 @@ services:
         condition: service_healthy
     ports:
       - "80:80"
-      - "443:443"
     volumes:
       - ./docker/angie/angie.conf:/etc/angie/angie.conf:ro
       - ./docker/angie/proxy_params.conf:/etc/angie/proxy_params.conf:ro
-      - ./.data/certs:/etc/angie/certs:ro
     networks:
       - warehouse
 
