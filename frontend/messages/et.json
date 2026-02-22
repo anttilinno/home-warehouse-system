@@ -210,7 +210,43 @@
     "agreeToTerms": "Konto loomisega nõustud meie",
     "termsOfService": "Kasutustingimustega",
     "and": "ja",
-    "privacyPolicy": "Privaatsuspoliitikaga"
+    "privacyPolicy": "Privaatsuspoliitikaga",
+    "oauth": {
+      "continueWithGoogle": "Jätka Google'iga",
+      "continueWithGithub": "Jätka GitHubiga",
+      "offlineRequired": "Sotsiaalseks sisselogimiseks on vajalik internetiühendus",
+      "errors": {
+        "title": "Sisselogimine ebaõnnestus",
+        "cancelled": "Tühistasite sisselogimise. Proovige soovi korral uuesti.",
+        "emailNotVerified": "Teie e-posti aadress selle teenusepakkuja juures pole kinnitatud. Palun kinnitage esmalt oma e-post ja proovige uuesti.",
+        "invalidState": "Sisselogimisseanss on aegunud. Palun proovige uuesti.",
+        "serverError": "Midagi läks valesti. Palun proovige hiljem uuesti.",
+        "providerUnavailable": "See sisselogimisviis on ajutiselt kättesaamatu. Palun proovige hiljem uuesti või kasutage teist viisi."
+      },
+      "connectedAccounts": {
+        "title": "Ühendatud kontod",
+        "description": "Halda ühendatud sotsiaalmeedia kontosid",
+        "link": "Ühenda konto",
+        "unlink": "Eemalda ühendus",
+        "unlinkConfirm": "Kas olete kindel, et soovite lahti ühendada {provider}?",
+        "unlinkLastWarning": "Esmalt seadistage parool enne ainsa sisselogimisviisi eemaldamist.",
+        "unlinkSuccess": "Konto ühendus eemaldatud",
+        "unlinkError": "Konto ühenduse eemaldamine ebaõnnestus",
+        "linkSuccess": "Konto edukalt ühendatud",
+        "noAccounts": "Ühendatud kontod puuduvad",
+        "linkedOn": "Ühendatud {date}"
+      },
+      "setPassword": {
+        "title": "Seadista parool",
+        "description": "Lisa parool, et saaksid ka e-postiga sisse logida",
+        "newPassword": "Uus parool",
+        "confirmPassword": "Kinnita parool",
+        "setButton": "Seadista parool",
+        "setting": "Seadistamine...",
+        "success": "Parool edukalt seadistatud",
+        "error": "Parooli seadistamine ebaõnnestus"
+      }
+    }
   },
   "footer": {
     "tagline": "Korralda kõik, mis sul on, võimsa inventuurihaldusega.",

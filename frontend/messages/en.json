@@ -210,7 +210,43 @@
     "agreeToTerms": "By creating an account, you agree to our",
     "termsOfService": "Terms of Service",
     "and": "and",
-    "privacyPolicy": "Privacy Policy"
+    "privacyPolicy": "Privacy Policy",
+    "oauth": {
+      "continueWithGoogle": "Continue with Google",
+      "continueWithGithub": "Continue with GitHub",
+      "offlineRequired": "Internet connection required for social login",
+      "errors": {
+        "title": "Sign in failed",
+        "cancelled": "You cancelled the sign in. You can try again anytime.",
+        "emailNotVerified": "Your email with this provider isn't verified. Please verify your email first, then try again.",
+        "invalidState": "Your sign in session expired. Please try again.",
+        "serverError": "Something went wrong. Please try again later.",
+        "providerUnavailable": "This sign in method is temporarily unavailable. Please try another method."
+      },
+      "connectedAccounts": {
+        "title": "Connected Accounts",
+        "description": "Manage your linked social login providers",
+        "link": "Link Account",
+        "unlink": "Unlink",
+        "unlinkConfirm": "Are you sure you want to unlink {provider}?",
+        "unlinkLastWarning": "Set a password first before unlinking your only sign in method.",
+        "unlinkSuccess": "Account unlinked successfully",
+        "unlinkError": "Failed to unlink account",
+        "linkSuccess": "Account linked successfully",
+        "noAccounts": "No connected accounts",
+        "linkedOn": "Linked {date}"
+      },
+      "setPassword": {
+        "title": "Set Password",
+        "description": "Add a password to sign in with email too",
+        "newPassword": "New Password",
+        "confirmPassword": "Confirm Password",
+        "setButton": "Set Password",
+        "setting": "Setting...",
+        "success": "Password set successfully",
+        "error": "Failed to set password"
+      }
+    }
   },
   "footer": {
     "tagline": "Organize everything you own with powerful inventory management.",
