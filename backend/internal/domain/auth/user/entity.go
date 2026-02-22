@@ -15,6 +15,7 @@ type User struct {
 	email                   string
 	fullName                string
 	passwordHash            string
+	hasPassword             bool
 	isActive                bool
 	isSuperuser             bool
 	dateFormat              string
@@ -52,6 +53,38 @@ func NewUser(email, fullName, password string) (*User, error) {
 		email:                   email,
 		fullName:                fullName,
 		passwordHash:            string(hash),
+		hasPassword:             true,
+		isActive:                true,
+		isSuperuser:             false,
+		dateFormat:              "YYYY-MM-DD",
+		language:                "en",
+		theme:                   "system",
+		timeFormat:              "24h",
+		thousandSeparator:       ",",
+		decimalSeparator:        ".",
+		notificationPreferences: make(map[string]bool),
+		avatarPath:              nil,
+		createdAt:               now,
+		updatedAt:               now,
+	}, nil
+}
+
+// NewOAuthUser creates a new user for OAuth-only authentication (no password).
+func NewOAuthUser(email, fullName string) (*User, error) {
+	if email == "" {
+		return nil, shared.NewFieldError(shared.ErrInvalidInput, "email", "email is required")
+	}
+	if fullName == "" {
+		return nil, shared.NewFieldError(shared.ErrInvalidInput, "full_name", "full name is required")
+	}
+
+	now := time.Now()
+	return &User{
+		id:                      uuid.New(),
+		email:                   email,
+		fullName:                fullName,
+		passwordHash:            "",
+		hasPassword:             false,
 		isActive:                true,
 		isSuperuser:             false,
 		dateFormat:              "YYYY-MM-DD",
@@ -71,6 +104,7 @@ func NewUser(email, fullName, password string) (*User, error) {
 func Reconstruct(
 	id uuid.UUID,
 	email, fullName, passwordHash string,
+	hasPassword bool,
 	isActive, isSuperuser bool,
 	dateFormat, language, theme string,
 	timeFormat, thousandSeparator, decimalSeparator string,
@@ -86,6 +120,7 @@ func Reconstruct(
 		email:                   email,
 		fullName:                fullName,
 		passwordHash:            passwordHash,
+		hasPassword:             hasPassword,
 		isActive:                isActive,
 		isSuperuser:             isSuperuser,
 		dateFormat:              dateFormat,
@@ -112,6 +147,9 @@ func (u *User) FullName() string { return u.fullName }
 
 // PasswordHash returns the user's password hash.
 func (u *User) PasswordHash() string { return u.passwordHash }
+
+// HasPassword returns whether the user has a password set.
+func (u *User) HasPassword() bool { return u.hasPassword }
 
 // IsActive returns whether the user is active.
 func (u *User) IsActive() bool { return u.isActive }
@@ -150,7 +188,11 @@ func (u *User) CreatedAt() time.Time { return u.createdAt }
 func (u *User) UpdatedAt() time.Time { return u.updatedAt }
 
 // CheckPassword verifies a password against the stored hash.
+// Returns false immediately for OAuth-only users (empty hash) to prevent bcrypt panic.
 func (u *User) CheckPassword(password string) bool {
+	if u.passwordHash == "" {
+		return false
+	}
 	err := bcrypt.CompareHashAndPassword([]byte(u.passwordHash), []byte(password))
 	return err == nil
 }
@@ -177,6 +219,7 @@ func (u *User) UpdatePassword(newPassword string) error {
 	}
 
 	u.passwordHash = string(hash)
+	u.hasPassword = true
 	u.updatedAt = time.Now()
 	return nil
 }

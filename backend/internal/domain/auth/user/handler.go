@@ -346,6 +346,7 @@ func (h *Handler) getMe(ctx context.Context, input *struct{}) (*GetMeOutput, err
 			ID:                      user.ID(),
 			Email:                   user.Email(),
 			FullName:                user.FullName(),
+			HasPassword:             user.HasPassword(),
 			DateFormat:              user.DateFormat(),
 			TimeFormat:              user.TimeFormat(),
 			ThousandSeparator:       user.ThousandSeparator(),
@@ -429,6 +430,7 @@ func (h *Handler) updateMe(ctx context.Context, input *UpdateMeInput) (*UpdateMe
 			ID:                      user.ID(),
 			Email:                   user.Email(),
 			FullName:                user.FullName(),
+			HasPassword:             user.HasPassword(),
 			DateFormat:              user.DateFormat(),
 			TimeFormat:              user.TimeFormat(),
 			ThousandSeparator:       user.ThousandSeparator(),
@@ -482,6 +484,7 @@ func (h *Handler) updatePreferences(ctx context.Context, input *UpdatePrefsReque
 			ID:                      user.ID(),
 			Email:                   user.Email(),
 			FullName:                user.FullName(),
+			HasPassword:             user.HasPassword(),
 			DateFormat:              user.DateFormat(),
 			TimeFormat:              user.TimeFormat(),
 			ThousandSeparator:       user.ThousandSeparator(),
@@ -527,6 +530,7 @@ func (h *Handler) listUsers(ctx context.Context, input *ListUsersInput) (*ListUs
 			ID:                      u.ID(),
 			Email:                   u.Email(),
 			FullName:                u.FullName(),
+			HasPassword:             u.HasPassword(),
 			IsActive:                u.IsActive(),
 			IsSuperuser:             u.IsSuperuser(),
 			DateFormat:              u.DateFormat(),
@@ -574,6 +578,7 @@ func (h *Handler) getUserByID(ctx context.Context, input *GetUserByIDInput) (*Ge
 			ID:                      user.ID(),
 			Email:                   user.Email(),
 			FullName:                user.FullName(),
+			HasPassword:             user.HasPassword(),
 			IsActive:                user.IsActive(),
 			IsSuperuser:             user.IsSuperuser(),
 			DateFormat:              user.DateFormat(),
@@ -775,8 +780,8 @@ func (h *Handler) uploadAvatar(w http.ResponseWriter, r *http.Request) {
 	notifPrefsJSON, _ := json.Marshal(user.NotificationPreferences())
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, `{"id":"%s","email":"%s","full_name":"%s","date_format":"%s","time_format":"%s","thousand_separator":"%s","decimal_separator":"%s","language":"%s","theme":"%s","notification_preferences":%s,"avatar_url":"/users/me/avatar"}`,
-		user.ID(), user.Email(), user.FullName(), user.DateFormat(), user.TimeFormat(), user.ThousandSeparator(), user.DecimalSeparator(), user.Language(), user.Theme(), notifPrefsJSON)
+	fmt.Fprintf(w, `{"id":"%s","email":"%s","full_name":"%s","has_password":%t,"date_format":"%s","time_format":"%s","thousand_separator":"%s","decimal_separator":"%s","language":"%s","theme":"%s","notification_preferences":%s,"avatar_url":"/users/me/avatar"}`,
+		user.ID(), user.Email(), user.FullName(), user.HasPassword(), user.DateFormat(), user.TimeFormat(), user.ThousandSeparator(), user.DecimalSeparator(), user.Language(), user.Theme(), notifPrefsJSON)
 }
 
 // serveAvatar handles GET /users/me/avatar
@@ -1013,6 +1018,7 @@ type UserResponse struct {
 	ID                      uuid.UUID       `json:"id"`
 	Email                   string          `json:"email"`
 	FullName                string          `json:"full_name"`
+	HasPassword             bool            `json:"has_password"`
 	DateFormat              string          `json:"date_format"`
 	TimeFormat              string          `json:"time_format"`
 	ThousandSeparator       string          `json:"thousand_separator"`
@@ -1122,6 +1128,7 @@ type UserAdminResponse struct {
 	ID                      uuid.UUID       `json:"id"`
 	Email                   string          `json:"email"`
 	FullName                string          `json:"full_name"`
+	HasPassword             bool            `json:"has_password"`
 	IsActive                bool            `json:"is_active"`
 	IsSuperuser             bool            `json:"is_superuser"`
 	DateFormat              string          `json:"date_format"`
@@ -1242,6 +1249,7 @@ func RegisterProtectedRoutes(api huma.API, svc ServiceInterface) {
 				ID:                      user.ID(),
 				Email:                   user.Email(),
 				FullName:                user.FullName(),
+				HasPassword:             user.HasPassword(),
 				DateFormat:              user.DateFormat(),
 				TimeFormat:              user.TimeFormat(),
 				ThousandSeparator:       user.ThousandSeparator(),
@@ -1271,6 +1279,7 @@ func RegisterProtectedRoutes(api huma.API, svc ServiceInterface) {
 				ID:                      user.ID(),
 				Email:                   user.Email(),
 				FullName:                user.FullName(),
+				HasPassword:             user.HasPassword(),
 				DateFormat:              user.DateFormat(),
 				TimeFormat:              user.TimeFormat(),
 				ThousandSeparator:       user.ThousandSeparator(),
@@ -1323,6 +1332,7 @@ func RegisterProtectedRoutes(api huma.API, svc ServiceInterface) {
 				ID:                      user.ID(),
 				Email:                   user.Email(),
 				FullName:                user.FullName(),
+				HasPassword:             user.HasPassword(),
 				DateFormat:              user.DateFormat(),
 				TimeFormat:              user.TimeFormat(),
 				ThousandSeparator:       user.ThousandSeparator(),

@@ -11,6 +11,7 @@ import (
 // Repository defines the interface for user persistence.
 type Repository interface {
 	// Save persists a user (create or update).
+	// Handles nullable password_hash: empty string is stored as NULL.
 	Save(ctx context.Context, user *User) error
 
 	// FindByID retrieves a user by ID.
