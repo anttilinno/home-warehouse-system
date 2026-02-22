@@ -207,7 +207,7 @@ Phases execute in numeric order: 40 -> 41 -> 42
 | 27-29 | v1.5 | 9 | Complete | 2026-02-03 |
 | 30-34 | v1.6 | 9 | Complete | 2026-02-08 |
 | 35-39 | v1.7 | 7 | Complete | 2026-02-13 |
-| 40. Backend OAuth Core | 3/3 | Complete   | 2026-02-22 | - |
+| 40. Backend OAuth Core | 3/3 | Complete    | 2026-02-22 | - |
 | 41. Frontend OAuth Flow | v1.8 | 0/? | Not started | - |
 | 42. Error/i18n/Offline | v1.8 | 0/? | Not started | - |
 
