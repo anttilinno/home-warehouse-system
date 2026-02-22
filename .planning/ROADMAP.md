@@ -170,12 +170,11 @@ Plans:
   3. OAuth login sessions appear in the active sessions list in Security settings and can be revoked
   4. User can view connected OAuth providers, link a new provider, and unlink an existing provider from Security settings -- with a lockout guard preventing unlinking the last auth method when no password is set
   5. OAuth-only user can set a password from Security settings without being asked for a current password
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 41-01: TBD
-- [ ] 41-02: TBD
-- [ ] 41-03: TBD
+- [ ] 41-01-PLAN.md — OAuth callback page, SocialLogin button wiring, User type has_password field, OAuth API functions
+- [ ] 41-02-PLAN.md — Backend password fix for OAuth-only users, Connected Accounts UI, PasswordChange adaptation
 
 ### Phase 42: Error Handling, Internationalization, and Offline Polish
 **Goal**: OAuth feature is production-ready with clear error messages, full i18n support, and graceful offline behavior
@@ -208,11 +207,11 @@ Phases execute in numeric order: 40 -> 41 -> 42
 | 30-34 | v1.6 | 9 | Complete | 2026-02-08 |
 | 35-39 | v1.7 | 7 | Complete | 2026-02-13 |
 | 40. Backend OAuth Core | 3/3 | Complete    | 2026-02-22 | - |
-| 41. Frontend OAuth Flow | v1.8 | 0/? | Not started | - |
+| 41. Frontend OAuth Flow | v1.8 | 0/2 | Not started | - |
 | 42. Error/i18n/Offline | 2/2 | Complete    | 2026-02-22 | - |
 
 **Total:** 39 phases complete (112 plans executed) across 8 milestones + 3 phases planned for v1.8
 
 ---
 *Roadmap created: 2026-01-24*
-*Last updated: 2026-02-22 after v1.8 roadmap creation*
+*Last updated: 2026-02-22 after Phase 41 planning*
