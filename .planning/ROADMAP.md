@@ -153,12 +153,12 @@ See `.planning/milestones/v1.7-ROADMAP.md` for full details.
   3. New user signing up via Google or GitHub OAuth gets an account (no password) and a personal workspace automatically
   4. Existing user with a verified email matching the OAuth provider email is auto-linked to the same account; unverified provider emails are rejected
   5. Callback endpoint is rate-limited and validates CSRF state parameter before processing
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
-- [ ] 40-01: TBD
-- [ ] 40-02: TBD
-- [ ] 40-03: TBD
+- [ ] 40-01-PLAN.md — Database migration (nullable password, has_password) and sqlc queries for oauth_accounts, user entity extension
+- [ ] 40-02-PLAN.md — OAuth domain package: entity, providers (Google/GitHub), FindOrCreateUser service with email verification gate
+- [ ] 40-03-PLAN.md — OAuth HTTP handlers (initiate, callback, exchange, accounts), router wiring with rate limiting
 
 ### Phase 41: Frontend OAuth Flow and Connected Accounts
 **Goal**: Users can complete the full OAuth login/signup flow in the browser and manage their connected providers from Security settings
