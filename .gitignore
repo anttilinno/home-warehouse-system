@@ -93,3 +93,4 @@ dist-ssr/
 chunks/
 .claude_state.json
 
+.dmux/

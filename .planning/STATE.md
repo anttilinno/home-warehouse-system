@@ -2,16 +2,19 @@
 
 ## Project Reference
 
-See: `.planning/PROJECT.md` (updated 2026-02-13)
+See: `.planning/PROJECT.md` (updated 2026-02-22)
 
 **Core value:** Reliable inventory access anywhere -- online or offline -- with seamless sync
-**Current focus:** None -- v1.7 complete, ready for next milestone
+**Current focus:** v1.8 Social Login -- Phase 40 (Backend OAuth Core)
 
 ## Current Position
 
-Phase: 39 of 39
-Status: Milestone v1.7 Complete
-Last activity: 2026-02-13 -- v1.7 Modular Settings shipped
+Phase: 40 of 42 (Database Migration and Backend OAuth Core)
+Plan: 0 of ? in current phase
+Status: Ready to plan
+Last activity: 2026-02-22 -- Roadmap created for v1.8 Social Login (3 phases, 25 requirements)
+
+Progress: [░░░░░░░░░░] 0%
 
 ## Performance Metrics
 
@@ -32,18 +35,22 @@ Last activity: 2026-02-13 -- v1.7 Modular Settings shipped
 | v1.5 | 3 | 9 | Complete |
 | v1.6 | 5 | 9 | Complete |
 | v1.7 | 5 | 7 | Complete |
+| v1.8 | 3 | ? | In progress |
 
 ## Accumulated Context
 
 ### Decisions
 
-All v1.7 decisions archived in `.planning/milestones/v1.7-ROADMAP.md`.
+- v1.8: Backend-driven Authorization Code flow (no NextAuth.js or frontend OAuth libraries)
+- v1.8: Single new dependency: golang.org/x/oauth2 v0.35.0 with built-in PKCE
+- v1.8: One-time code exchange pattern for token handoff (avoids cross-origin cookie issues)
+- v1.8: No provider token storage (columns left NULL, avoids encryption complexity)
 
 ### Pending Todos
 
-**Manual Testing Required:**
 - [ ] SCAN-01 through SCAN-07: Barcode scanning manual verification
 - [ ] iOS PWA: Camera permission persistence
+- [ ] Google OAuth Consent Screen verification (external process, start early)
 
 ### Blockers/Concerns
 
@@ -52,11 +59,15 @@ Carried forward:
 - CGO_ENABLED=0 build has webp library issue -- dev builds work fine
 - Jobs package coverage limited by pgxpool/Redis requirements
 
+New for v1.8:
+- PWA standalone mode OAuth on iOS needs physical device testing (Pitfall 8-J)
+- Google Consent Screen verification can take days/weeks (testing mode supports 100 users)
+
 ## Session Continuity
 
-Last session: 2026-02-13
-Stopped at: v1.7 Modular Settings milestone completed and archived
-Next step: `/gsd:new-milestone` for next feature cycle
+Last session: 2026-02-22
+Stopped at: v1.8 roadmap created (3 phases, 25 requirements mapped)
+Next step: `/gsd:plan-phase 40`
 
 ---
-*Updated: 2026-02-13 after v1.7 milestone completion*
+*Updated: 2026-02-22 after v1.8 roadmap creation*

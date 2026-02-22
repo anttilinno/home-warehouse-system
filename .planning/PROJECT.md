@@ -121,7 +121,13 @@ Reliable inventory access anywhere — online or offline — with seamless sync.
 
 ### Active
 
-(None — ready for next milestone)
+<!-- v1.8 Social Login -->
+
+- [ ] Google OAuth login/signup
+- [ ] GitHub OAuth login/signup
+- [ ] Auto-link social account to existing email/password account (same email = same user)
+- [ ] Social login coexists with email/password (user chooses either)
+- [ ] Connected accounts management in Settings (link/unlink providers)
 
 ### Out of Scope
 
@@ -135,7 +141,16 @@ Reliable inventory access anywhere — online or offline — with seamless sync.
 ## Current State
 
 **Shipped:** v1.7 Modular Settings (2026-02-13)
-**Current Milestone:** None — ready for next milestone
+
+## Current Milestone: v1.8 Social Login
+
+**Goal:** Add Google and GitHub OAuth login alongside existing email/password, with auto-linking by email and connected accounts management in settings.
+
+**Target features:**
+- Google OAuth login/signup
+- GitHub OAuth login/signup
+- Auto-link by email (same email = same account)
+- Connected accounts UI in Security settings (link/unlink providers)
 
 **Tech stack:**
 - Backend: Go 1.25, Chi, sqlc, PostgreSQL
@@ -218,4 +233,4 @@ Reliable inventory access anywhere — online or offline — with seamless sync.
 - Go test factories orphaned (not adopted by Phase 23/24 tests)
 
 ---
-*Last updated: 2026-02-13 after v1.7 milestone completion*
+*Last updated: 2026-02-22 after v1.8 milestone start*
