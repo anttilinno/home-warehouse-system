@@ -10,11 +10,11 @@ See: `.planning/PROJECT.md` (updated 2026-02-22)
 ## Current Position
 
 Phase: 40 of 42 (Database Migration and Backend OAuth Core)
-Plan: 0 of ? in current phase
-Status: Ready to plan
-Last activity: 2026-02-22 -- Roadmap created for v1.8 Social Login (3 phases, 25 requirements)
+Plan: 1 of 3 in current phase
+Status: Executing
+Last activity: 2026-02-22 -- Completed 40-01 (database migration + user entity OAuth support)
 
-Progress: [░░░░░░░░░░] 0%
+Progress: [###░░░░░░░] 33%
 
 ## Performance Metrics
 
@@ -36,6 +36,7 @@ Progress: [░░░░░░░░░░] 0%
 | v1.6 | 5 | 9 | Complete |
 | v1.7 | 5 | 7 | Complete |
 | v1.8 | 3 | ? | In progress |
+| Phase 40 P01 | 7min | 2 tasks | 14 files |
 
 ## Accumulated Context
 
@@ -45,6 +46,10 @@ Progress: [░░░░░░░░░░] 0%
 - v1.8: Single new dependency: golang.org/x/oauth2 v0.35.0 with built-in PKCE
 - v1.8: One-time code exchange pattern for token handoff (avoids cross-origin cookie issues)
 - v1.8: No provider token storage (columns left NULL, avoids encryption complexity)
+- 40-01: Empty passwordHash in domain entity maps to NULL in database via *string scanning
+- 40-01: has_password column defaults to true so existing users retain password-based auth
+- 40-01: CheckPassword returns false immediately for empty hash (prevents bcrypt panic)
+- [Phase 40]: Empty passwordHash maps to NULL in DB via *string scanning; has_password defaults to true for existing users
 
 ### Pending Todos
 
@@ -66,8 +71,8 @@ New for v1.8:
 ## Session Continuity
 
 Last session: 2026-02-22
-Stopped at: v1.8 roadmap created (3 phases, 25 requirements mapped)
-Next step: `/gsd:plan-phase 40`
+Stopped at: Completed 40-01-PLAN.md (database migration + user entity OAuth support)
+Next step: Execute 40-02-PLAN.md
 
 ---
-*Updated: 2026-02-22 after v1.8 roadmap creation*
+*Updated: 2026-02-22 after 40-01 execution*

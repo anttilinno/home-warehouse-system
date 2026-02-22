@@ -35,8 +35,8 @@ Requirements for Social Login milestone. Each maps to roadmap phases.
 
 ### Schema
 
-- [ ] **SCHM-01**: Database migration makes password_hash nullable for OAuth-only accounts
-- [ ] **SCHM-02**: Database migration adds has_password boolean column to auth.users
+- [x] **SCHM-01**: Database migration makes password_hash nullable for OAuth-only accounts
+- [x] **SCHM-02**: Database migration adds has_password boolean column to auth.users
 
 ### Error Handling
 
@@ -102,8 +102,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | ACCT-04 | Phase 41 | Pending |
 | ACCT-05 | Phase 41 | Pending |
 | ACCT-06 | Phase 41 | Pending |
-| SCHM-01 | Phase 40 | Pending |
-| SCHM-02 | Phase 40 | Pending |
+| SCHM-01 | Phase 40 | Complete |
+| SCHM-02 | Phase 40 | Complete |
 | ERR-01 | Phase 42 | Pending |
 | ERR-02 | Phase 42 | Pending |
 | ERR-03 | Phase 42 | Pending |
