@@ -213,6 +213,17 @@ run = "cd backend && go run cmd/photo-admin/main.go {{ arg(name='command', defau
 description = "Build photo-admin binary"
 run = "cd backend && CGO_ENABLED=0 go build -o bin/photo-admin cmd/photo-admin/main.go"
 
+# Production
+[tasks.gen-certs]
+description = "Generate self-signed SSL certs for local production Docker"
+run = """
+mkdir -p .data/certs
+openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+  -keyout .data/certs/server.key -out .data/certs/server.crt \
+  -subj '/CN=localhost'
+echo "Certs written to .data/certs/"
+"""
+
 # Frontend Testing
 [tasks.fe-test]
 description = "Run frontend Playwright tests"
