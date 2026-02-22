@@ -361,6 +361,11 @@
     "security": {
       "title": "Turvalisus",
       "description": "Parool ja turvaseaded",
+      "password": {
+        "noPasswordSet": "Logisid sisse sotsiaalse kontoga. Seadista parool, et logida ka e-postiga.",
+        "setButton": "Seadista parool",
+        "setSuccessMessage": "Parool seadistatud"
+      },
       "connectedAccounts": {
         "title": "Seotud kontod",
         "connected": "Seotud",
