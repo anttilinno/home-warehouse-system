@@ -5,6 +5,7 @@ import { Link } from "@/i18n/navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { LoginForm } from "@/features/auth/components/login-form";
+import { OAuthErrorHandler } from "@/features/auth/components/oauth-error-handler";
 import { SocialLogin } from "@/features/auth/components/social-login";
 
 type Props = {
@@ -32,6 +33,7 @@ export default async function LoginPage({ params }: Props) {
         <CardDescription>{t("loginDescription")}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
+        <OAuthErrorHandler />
         <SocialLogin />
 
         <div className="relative">
