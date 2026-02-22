@@ -10,11 +10,11 @@ See: `.planning/PROJECT.md` (updated 2026-02-22)
 ## Current Position
 
 Phase: 42 of 42 (Error Handling, Internationalization, and Offline Polish)
-Plan: 1 of 2 in current phase
-Status: In Progress
-Last activity: 2026-02-22 -- Completed 42-01 (OAuth error handling and i18n)
+Plan: 2 of 2 in current phase
+Status: Phase Complete
+Last activity: 2026-02-22 -- Completed 42-02 (Offline-aware social login buttons)
 
-Progress: [#####-----] 50%
+Progress: [##########] 100%
 
 ## Performance Metrics
 
@@ -40,6 +40,7 @@ Progress: [#####-----] 50%
 | Phase 40 P02 | 3min | 2 tasks | 8 files |
 | Phase 40 P03 | 5min | 2 tasks | 2 files |
 | Phase 42 P01 | 3min | 2 tasks | 5 files |
+| Phase 42 P02 | 1min | 2 tasks | 1 files |
 
 ## Accumulated Context
 
@@ -64,6 +65,8 @@ Progress: [#####-----] 50%
 - 42-01: OAuthErrorHandler uses Suspense boundary wrapper for useSearchParams in Next.js App Router
 - 42-01: URL cleanup via window.history.replaceState avoids re-render cycle
 - 42-01: Toast duration 8000ms for error messages (longer than default for readability)
+- 42-02: Inline text message below buttons (not tooltip) for offline indication -- more accessible on mobile
+- 42-02: No changes needed on register page -- SocialLogin already rendered, offline behavior inherited
 
 ### Pending Todos
 
@@ -85,8 +88,8 @@ New for v1.8:
 ## Session Continuity
 
 Last session: 2026-02-22
-Stopped at: Completed 42-01-PLAN.md (OAuth error handling and i18n)
-Next step: Execute 42-02 (Offline-aware social login buttons).
+Stopped at: Completed 42-02-PLAN.md (Offline-aware social login buttons)
+Next step: Phase 42 complete. All plans in this phase executed.
 
 ---
-*Updated: 2026-02-22 after 42-01 execution*
+*Updated: 2026-02-22 after 42-02 execution*

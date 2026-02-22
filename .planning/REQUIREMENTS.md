@@ -51,7 +51,7 @@ Requirements for Social Login milestone. Each maps to roadmap phases.
 
 ### Offline Behavior
 
-- [ ] **OFFL-01**: Social login buttons show disabled state or "Requires internet" message when offline
+- [x] **OFFL-01**: Social login buttons show disabled state or "Requires internet" message when offline
 
 ## v2+ Requirements
 
@@ -109,7 +109,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | ERR-03 | Phase 42 | Complete |
 | ERR-04 | Phase 42 | Complete |
 | I18N-01 | Phase 42 | Complete |
-| OFFL-01 | Phase 42 | Pending |
+| OFFL-01 | Phase 42 | Complete |
 
 **Coverage:**
 - v1.8 requirements: 25 total
