@@ -10,14 +10,17 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { PasswordChange } from "./password-change";
-import { ConnectedAccounts } from "./connected-accounts";
+import { SetPassword } from "./set-password";
 import { ActiveSessions } from "./active-sessions";
+import { ConnectedAccounts } from "./connected-accounts";
 import { DeleteAccountDialog } from "./delete-account-dialog";
+import { useAuth } from "@/lib/contexts/auth-context";
 
 export function SecuritySettings() {
   const t = useTranslations("settings.security");
   const tAuth = useTranslations("auth");
   const tDanger = useTranslations("settings.dangerZone");
+  const { user } = useAuth();
 
   return (
     <Card>
@@ -35,7 +38,7 @@ export function SecuritySettings() {
             <KeyRound className="h-4 w-4" />
             {t("password.title")}
           </h3>
-          <PasswordChange />
+          {user?.has_password !== false ? <PasswordChange /> : <SetPassword />}
         </div>
 
         {/* Connected Accounts Section */}

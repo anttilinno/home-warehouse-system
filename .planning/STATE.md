@@ -14,7 +14,7 @@ Plan: All complete
 Status: Milestone v1.8 shipped
 Last activity: 2026-02-22 -- v1.8 Social Login milestone completed and archived
 
-Progress: [##########] 100%
+Progress: [######░░░░] 60%
 
 ## Performance Metrics
 
@@ -42,6 +42,18 @@ Progress: [##########] 100%
 ### Decisions
 
 See `.planning/PROJECT.md` Key Decisions table for full list.
+
+Key v1.8 decisions:
+- Backend-driven Authorization Code flow (no NextAuth.js or frontend OAuth libraries)
+- Single new dependency: golang.org/x/oauth2 v0.35.0 with built-in PKCE
+- One-time code exchange pattern for token handoff (avoids cross-origin cookie issues)
+- No provider token storage (columns left NULL, avoids encryption complexity)
+- Empty passwordHash in domain entity maps to NULL in database via *string scanning
+- has_password column defaults to true so existing users retain password-based auth
+- Full page redirect after OAuth exchange (window.location.href) to ensure AuthProvider picks up token
+- sessionStorage for redirect_to preservation across OAuth flow (auto-clears on tab close)
+- OAuthErrorHandler uses Suspense boundary wrapper for useSearchParams in Next.js App Router
+- Inline text message below buttons (not tooltip) for offline indication -- more accessible on mobile
 
 ### Pending Todos
 

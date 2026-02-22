@@ -396,7 +396,23 @@
     },
     "security": {
       "title": "Turvalisus",
-      "description": "Parool ja turvaseaded"
+      "description": "Parool ja turvaseaded",
+      "password": {
+        "noPasswordSet": "Logisid sisse sotsiaalse kontoga. Seadista parool, et logida ka e-postiga.",
+        "setButton": "Seadista parool",
+        "setSuccessMessage": "Parool seadistatud"
+      },
+      "connectedAccounts": {
+        "title": "Seotud kontod",
+        "connected": "Seotud",
+        "connect": "Seosta",
+        "disconnect": "Katkesta",
+        "linkSuccess": "{provider} konto seostatud",
+        "unlinkSuccess": "{provider} konto katkestatud",
+        "unlinkError": "Konto katkestamine ebaonnestus",
+        "setPasswordFirst": "Seadista esmalt parool, et katkestada",
+        "setPasswordWarning": "Seadista parool, et lubada viimase seotud konto katkestamist."
+      }
     },
     "dangerZone": {
       "title": "Ohutsoon",

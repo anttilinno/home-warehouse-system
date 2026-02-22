@@ -27,8 +27,8 @@ export interface OAuthAccount {
   provider: string;
   provider_user_id: string;
   email: string;
-  display_name: string;
-  avatar_url: string;
+  display_name: string | null;
+  avatar_url: string | null;
   created_at: string;
 }
 
@@ -132,6 +132,10 @@ export const authApi = {
       current_password: currentPassword,
       new_password: newPassword,
     });
+  },
+
+  setPassword: async (newPassword: string): Promise<void> => {
+    await apiClient.patch("/users/me/password", { new_password: newPassword });
   },
 
   getSessions: async (): Promise<Session[]> => {

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Loader2 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
@@ -53,6 +54,7 @@ const PROVIDERS = [
 export function ConnectedAccounts() {
   const t = useTranslations("auth.oauth.connectedAccounts");
   const { user, refreshUser } = useAuth();
+  const searchParams = useSearchParams();
   const [accounts, setAccounts] = useState<OAuthAccount[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [unlinkingProvider, setUnlinkingProvider] = useState<string | null>(null);
@@ -72,6 +74,18 @@ export function ConnectedAccounts() {
   useEffect(() => {
     loadAccounts();
   }, [loadAccounts]);
+
+  // Handle success toast when returning from OAuth link flow
+  useEffect(() => {
+    const linked = searchParams.get("linked");
+    if (linked) {
+      toast.success(t("linkSuccess"));
+      const url = new URL(window.location.href);
+      url.searchParams.delete("linked");
+      window.history.replaceState({}, "", url.toString());
+      loadAccounts();
+    }
+  }, [searchParams, t, loadAccounts]);
 
   const handleUnlink = async (provider: string) => {
     try {
@@ -99,7 +113,7 @@ export function ConnectedAccounts() {
 
   const handleLink = (provider: string) => {
     sessionStorage.setItem("oauth_linking", "true");
-    window.location.href = `${API_URL}/auth/oauth/${provider}`;
+    window.location.href = `${API_URL}/auth/oauth/${provider}?action=link`;
   };
 
   if (isLoading) {
