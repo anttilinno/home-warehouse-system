@@ -5,16 +5,16 @@
 See: `.planning/PROJECT.md` (updated 2026-02-22)
 
 **Core value:** Reliable inventory access anywhere -- online or offline -- with seamless sync
-**Current focus:** v1.8 Social Login -- Phase 40 (Backend OAuth Core)
+**Current focus:** v1.8 Social Login -- Phase 41 (Frontend OAuth Flow and Connected Accounts)
 
 ## Current Position
 
-Phase: 40 of 42 (Database Migration and Backend OAuth Core)
-Plan: 0 of ? in current phase
-Status: Ready to plan
-Last activity: 2026-02-22 -- Roadmap created for v1.8 Social Login (3 phases, 25 requirements)
+Phase: 41 of 42 (Frontend OAuth Flow and Connected Accounts)
+Plan: 1 of 2 in current phase
+Status: In progress
+Last activity: 2026-02-22 -- Completed 41-01 (Frontend OAuth Flow)
 
-Progress: [░░░░░░░░░░] 0%
+Progress: [#░░░░░░░░░] 10%
 
 ## Performance Metrics
 
@@ -45,6 +45,9 @@ Progress: [░░░░░░░░░░] 0%
 - v1.8: Single new dependency: golang.org/x/oauth2 v0.35.0 with built-in PKCE
 - v1.8: One-time code exchange pattern for token handoff (avoids cross-origin cookie issues)
 - v1.8: No provider token storage (columns left NULL, avoids encryption complexity)
+- v1.8: Full page redirect after OAuth exchange (window.location.href) to ensure AuthProvider picks up token
+- v1.8: sessionStorage for redirect_to preservation across OAuth flow (auto-clears on tab close)
+- v1.8: Hardcoded English strings on transient callback page (visible <2 seconds, i18n unnecessary)
 
 ### Pending Todos
 
@@ -66,8 +69,8 @@ New for v1.8:
 ## Session Continuity
 
 Last session: 2026-02-22
-Stopped at: v1.8 roadmap created (3 phases, 25 requirements mapped)
-Next step: `/gsd:plan-phase 40`
+Stopped at: Completed 41-01-PLAN.md (Frontend OAuth Flow)
+Next step: Execute 41-02-PLAN.md (Connected Accounts UI)
 
 ---
-*Updated: 2026-02-22 after v1.8 roadmap creation*
+*Updated: 2026-02-22 after completing 41-01 (Frontend OAuth Flow)*
