@@ -14,6 +14,9 @@ const withSerwist = withSerwistInit({
 
 const nextConfig: NextConfig = {
   output: "standalone",
+  devIndicators: process.env.NODE_ENV !== "production" ? {
+    position: "bottom-right",
+  } : undefined,
 };
 
 export default withNextIntl(withSerwist(nextConfig));
