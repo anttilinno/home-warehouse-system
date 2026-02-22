@@ -15,8 +15,8 @@ Requirements for Social Login milestone. Each maps to roadmap phases.
 - [x] **OAUTH-04**: User can sign up via GitHub OAuth (creates account with no password, personal workspace)
 - [x] **OAUTH-05**: Social login auto-links to existing account when provider email matches and is verified
 - [x] **OAUTH-06**: Social login rejects auto-link when provider email is not verified
-- [ ] **OAUTH-07**: Social login redirects user back to intended page after OAuth flow completes
-- [ ] **OAUTH-08**: Social login pre-fills full_name from provider profile on first signup
+- [x] **OAUTH-07**: Social login redirects user back to intended page after OAuth flow completes
+- [x] **OAUTH-08**: Social login pre-fills full_name from provider profile on first signup
 
 ### Security
 
@@ -31,7 +31,7 @@ Requirements for Social Login milestone. Each maps to roadmap phases.
 - [ ] **ACCT-03**: User can unlink an OAuth provider from Security settings
 - [ ] **ACCT-04**: System prevents unlinking last auth method when user has no password (lockout guard)
 - [ ] **ACCT-05**: OAuth-only user can set a password from Security settings (no current password required)
-- [ ] **ACCT-06**: User profile includes `has_password` field to enable correct UI for OAuth-only users
+- [x] **ACCT-06**: User profile includes `has_password` field to enable correct UI for OAuth-only users
 
 ### Schema
 
@@ -91,8 +91,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | OAUTH-04 | Phase 40 | Complete |
 | OAUTH-05 | Phase 40 | Complete |
 | OAUTH-06 | Phase 40 | Complete |
-| OAUTH-07 | Phase 41 | Pending |
-| OAUTH-08 | Phase 41 | Pending |
+| OAUTH-07 | Phase 41 | Complete |
+| OAUTH-08 | Phase 41 | Complete |
 | SEC-01 | Phase 40 | Complete |
 | SEC-02 | Phase 41 | Pending |
 | SEC-03 | Phase 40 | Complete |
@@ -101,7 +101,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | ACCT-03 | Phase 41 | Pending |
 | ACCT-04 | Phase 41 | Pending |
 | ACCT-05 | Phase 41 | Pending |
-| ACCT-06 | Phase 41 | Pending |
+| ACCT-06 | Phase 41 | Complete |
 | SCHM-01 | Phase 40 | Complete |
 | SCHM-02 | Phase 40 | Complete |
 | ERR-01 | Phase 42 | Complete |
