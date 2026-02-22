@@ -5,23 +5,23 @@
 See: `.planning/PROJECT.md` (updated 2026-02-22)
 
 **Core value:** Reliable inventory access anywhere -- online or offline -- with seamless sync
-**Current focus:** v1.8 Social Login -- Phase 41 complete, all phases done
+**Current focus:** Planning next milestone
 
 ## Current Position
 
 Phase: 42 of 42 (all phases complete)
-Plan: 2 of 2 in phase 41 (complete)
-Status: Complete
-Last activity: 2026-02-22 -- Completed 41-02 (Connected accounts settings and OAuth password flow)
+Plan: All complete
+Status: Milestone v1.8 shipped
+Last activity: 2026-02-22 -- v1.8 Social Login milestone completed and archived
 
 Progress: [##########] 100%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 112 (from v1-v1.7)
+- Total plans completed: 119 (v1 through v1.8)
 - Average duration: ~15 min per plan
-- Total execution time: ~28 hours
+- Total execution time: ~30 hours
 
 **By Milestone:**
 
@@ -35,52 +35,20 @@ Progress: [##########] 100%
 | v1.5 | 3 | 9 | Complete |
 | v1.6 | 5 | 9 | Complete |
 | v1.7 | 5 | 7 | Complete |
-| v1.8 | 3 | ? | In progress |
-| Phase 40 P01 | 7min | 2 tasks | 14 files |
-| Phase 40 P02 | 3min | 2 tasks | 8 files |
-| Phase 40 P03 | 5min | 2 tasks | 2 files |
-| Phase 42 P01 | 3min | 2 tasks | 5 files |
-| Phase 42 P02 | 1min | 2 tasks | 1 files |
-| Phase 41 P01 | 3min | 2 tasks | 4 files |
-| Phase 41 P02 | 4min | 2 tasks | 4 files |
+| v1.8 | 3 | 7 | Complete |
 
 ## Accumulated Context
 
 ### Decisions
 
-- v1.8: Backend-driven Authorization Code flow (no NextAuth.js or frontend OAuth libraries)
-- v1.8: Single new dependency: golang.org/x/oauth2 v0.35.0 with built-in PKCE
-- v1.8: One-time code exchange pattern for token handoff (avoids cross-origin cookie issues)
-- v1.8: No provider token storage (columns left NULL, avoids encryption complexity)
-- 40-01: Empty passwordHash in domain entity maps to NULL in database via *string scanning
-- 40-01: has_password column defaults to true so existing users retain password-based auth
-- 40-01: CheckPassword returns false immediately for empty hash (prevents bcrypt panic)
-- [Phase 40]: Empty passwordHash maps to NULL in DB via *string scanning; has_password defaults to true for existing users
-- 40-02: GetProviderConfig is a package-level function (no state needed, just config)
-- 40-02: GitHub profile fetcher always uses /user/emails (Pitfall 8-G: /user may return null email)
-- 40-02: FindOrCreateUser rejects unverified emails before any auto-linking (Pitfall 8-B)
-- 40-02: OAuthRepository.FindByProviderAndID returns (nil, nil) for not-found (matches user repo pattern)
-- 40-03: OAuth handler initialized in router.go (not main.go) to match existing architecture pattern
-- 40-03: WorkspaceCreator adapter wraps workspace service with same name/slug logic as register
-- 40-03: RedisClient interface uses Set/GetDel to avoid importing redis in domain layer
-- 40-03: CSRF state cookie combines state and PKCE verifier in pipe-delimited format
-- 42-01: OAuthErrorHandler uses Suspense boundary wrapper for useSearchParams in Next.js App Router
-- 42-01: URL cleanup via window.history.replaceState avoids re-render cycle
-- 42-01: Toast duration 8000ms for error messages (longer than default for readability)
-- 42-02: Inline text message below buttons (not tooltip) for offline indication -- more accessible on mobile
-- 42-02: No changes needed on register page -- SocialLogin already rendered, offline behavior inherited
-- 41-01: Exposed loadUserData from auth context for OAuth callback post-exchange user loading
-- 41-01: sessionStorage for oauth_return_to and oauth_linking flags (survives full-page redirect chain)
-- 41-01: window.location.href for OAuth initiate (full-page redirect to backend, not router.push)
-- 41-02: Unified Zod schema with conditional refine for current_password (avoids resolver type mismatch with dual schemas)
-- 41-02: React key={String(hasPassword)} to remount PasswordChangeForm when user sets first password
-- 41-02: Proactive frontend unlink button disable when only one account and no password (defense in depth)
+See `.planning/PROJECT.md` Key Decisions table for full list.
 
 ### Pending Todos
 
 - [ ] SCAN-01 through SCAN-07: Barcode scanning manual verification
 - [ ] iOS PWA: Camera permission persistence
-- [ ] Google OAuth Consent Screen verification (external process, start early)
+- [ ] Google OAuth Consent Screen verification (external process)
+- [ ] PWA standalone mode OAuth on iOS: physical device testing
 
 ### Blockers/Concerns
 
@@ -88,16 +56,13 @@ Carried forward:
 - Safari iOS manual testing pending
 - CGO_ENABLED=0 build has webp library issue -- dev builds work fine
 - Jobs package coverage limited by pgxpool/Redis requirements
-
-New for v1.8:
-- PWA standalone mode OAuth on iOS needs physical device testing (Pitfall 8-J)
 - Google Consent Screen verification can take days/weeks (testing mode supports 100 users)
 
 ## Session Continuity
 
 Last session: 2026-02-22
-Stopped at: Completed 41-02-PLAN.md (Connected accounts settings and OAuth password flow)
-Next step: All v1.8 Social Login phases complete (40, 41, 42)
+Stopped at: v1.8 Social Login milestone completed and archived
+Next step: `/gsd:new-milestone` for next milestone
 
 ---
-*Updated: 2026-02-22 after 41-02 execution*
+*Updated: 2026-02-22 after v1.8 milestone completion*

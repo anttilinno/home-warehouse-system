@@ -246,3 +246,47 @@
 
 ---
 
+
+## v1.8 Social Login (Shipped: 2026-02-22)
+
+**Delivered:** Google and GitHub OAuth login alongside email/password authentication, with auto-linking by verified email, connected accounts management in Security settings, full i18n support, and offline-aware social login buttons.
+
+**Phases completed:** 40-42 (7 plans, 14 tasks)
+
+**Key accomplishments:**
+
+- Google and GitHub OAuth login/signup with full Authorization Code + PKCE flow and one-time Redis code exchange
+- Auto-link social accounts to existing users by verified email with security gate rejecting unverified emails
+- Connected accounts management in Security settings — link/unlink providers with lockout guard preventing last-auth-method removal
+- OAuth-only users can set a password from Security settings without requiring a current password
+- Full i18n support for all OAuth UI strings across English, Estonian, and Russian (28 translation keys)
+- Offline-aware social login buttons with disabled state, WifiOff icon, and translated message
+
+**Stats:**
+
+- 36 files created/modified
+- +2,233 / -109 lines of TypeScript/Go
+- 3 phases, 7 plans, 14 tasks
+- 1 day (Feb 22, 2026)
+
+**Git range:** `feat(40-01)` → `feat(41-02)` (13 feature commits)
+
+**Requirements satisfied:** 25/25 (100%)
+- SCHM-01, SCHM-02: Schema changes for OAuth-only accounts
+- OAUTH-01 through OAUTH-08: All satisfied
+- SEC-01 through SEC-03: All satisfied
+- ACCT-01 through ACCT-06: All satisfied
+- ERR-01 through ERR-04: All satisfied
+- I18N-01: All satisfied
+- OFFL-01: All satisfied
+
+**Tech debt carried forward:**
+- No linkSuccess toast after account linking (UX polish)
+- OAuthErrorHandler only on login page, not register page (UX)
+- 3 orphaned translation keys (unused but defined)
+- Locale-prefix gap in backend OAuth redirect (non-English UX)
+
+**What's next:** TBD — ready for next milestone
+
+---
+

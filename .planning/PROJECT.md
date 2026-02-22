@@ -2,7 +2,7 @@
 
 ## What This Is
 
-A multi-tenant home inventory management system with complete offline capabilities and mobile-first UX. Users can access and modify their inventory while offline (e.g., walking around a warehouse without network), with changes syncing automatically when connectivity returns. Mobile users can scan barcodes, use floating action buttons for quick access, and complete forms efficiently with progressive disclosure.
+A multi-tenant home inventory management system with complete offline capabilities, mobile-first UX, and social login support. Users can access and modify their inventory while offline (e.g., walking around a warehouse without network), with changes syncing automatically when connectivity returns. Mobile users can scan barcodes, use floating action buttons for quick access, and complete forms efficiently with progressive disclosure. Authentication supports both email/password and Google/GitHub OAuth with auto-linking by verified email.
 
 ## Core Value
 
@@ -11,6 +11,54 @@ Reliable inventory access anywhere — online or offline — with seamless sync.
 ## Requirements
 
 ### Validated
+
+**v1.8 Social Login (shipped 2026-02-22):**
+
+- ✓ Google OAuth login/signup — Authorization Code + PKCE flow with one-time Redis code exchange
+- ✓ GitHub OAuth login/signup — same flow with /user/emails for private-email users
+- ✓ Auto-link social account to existing account — verified email matching with security gate
+- ✓ Social login coexists with email/password — user chooses either method
+- ✓ Connected accounts management in Settings — link/unlink providers with lockout guard
+
+**v1.7 Modular Settings (shipped 2026-02-13):**
+
+- ✓ Settings landing page with iOS-style grouped rows and subpage navigation
+- ✓ Profile subpage (reorganize existing name/email/avatar editing)
+- ✓ Appearance subpage with light/dark/system theme toggle
+- ✓ Language subpage (surface existing 3-language selector)
+- ✓ Regional Formats subpage (reorganize existing date/time/number preferences)
+- ✓ Security subpage (reorganize password change, active sessions, account deletion)
+- ✓ Notifications subpage with in-app preference toggles for SSE events
+- ✓ Data & Storage subpage (offline storage management + import/export hub)
+
+**v1.6 Format Personalization (shipped 2026-02-08):**
+
+- ✓ Date format applied consistently everywhere (displays, inputs, pickers, validation, exports)
+- ✓ Time format preference (12-hour vs 24-hour)
+- ✓ Number format preference (thousand/decimal separators)
+- ✓ Format settings UI in user settings page
+- ✓ All components use format hooks (useDateFormat, useTimeFormat, useNumberFormat)
+
+**v1.5 Settings Enhancement (shipped 2026-02-03):**
+
+- ✓ User can update profile (name, email)
+- ✓ User can upload/change avatar
+- ✓ User can set date format preference (MM/DD/YY, DD/MM/YYYY, YYYY-MM-DD, custom)
+- ✓ User can change password
+- ✓ User can view active sessions
+- ✓ User can revoke/logout sessions
+- ✓ User can delete their account
+
+**v1.4 Test Overhaul (shipped 2026-01-31):**
+
+- ✓ Go test factories — 8 entity types with functional options, gofakeit integration
+- ✓ Backend coverage — importexport 92.4%, importjob 86.3%, itemphoto 80.5%, repairlog 92.8%
+- ✓ Frontend unit tests — useOfflineMutation (29), SyncManager (34), MultiStepForm (21), BarcodeScanner (18), FAB (28)
+- ✓ CI parallelization — matrix strategy for Go tests, Codecov integration with badge
+- ✓ E2E auth stability — waitForTimeout removed, proper wait conditions
+- ✓ E2E coverage — inventory tests (18), loan CRUD tests (4)
+- ⚠ pendingchange 57.3% — handler.go tested via integration, not unit tests
+- ⚠ jobs 20.1% — architectural constraint (ProcessTask requires database)
 
 **v1.3 Mobile UX Overhaul (shipped 2026-01-31):**
 
@@ -79,55 +127,9 @@ Reliable inventory access anywhere — online or offline — with seamless sync.
 - ✓ Online/offline status detection
 - ✓ Pending uploads indicator UI
 
-**v1.4 Test Overhaul (shipped 2026-01-31):**
-
-- ✓ Go test factories — 8 entity types with functional options, gofakeit integration
-- ✓ Backend coverage — importexport 92.4%, importjob 86.3%, itemphoto 80.5%, repairlog 92.8%
-- ✓ Frontend unit tests — useOfflineMutation (29), SyncManager (34), MultiStepForm (21), BarcodeScanner (18), FAB (28)
-- ✓ CI parallelization — matrix strategy for Go tests, Codecov integration with badge
-- ✓ E2E auth stability — waitForTimeout removed, proper wait conditions
-- ✓ E2E coverage — inventory tests (18), loan CRUD tests (4)
-- ⚠ pendingchange 57.3% — handler.go tested via integration, not unit tests
-- ⚠ jobs 20.1% — architectural constraint (ProcessTask requires database)
-
-**v1.5 Settings Enhancement (shipped 2026-02-03):**
-
-- ✓ User can update profile (name, email)
-- ✓ User can upload/change avatar
-- ✓ User can set date format preference (MM/DD/YY, DD/MM/YYYY, YYYY-MM-DD, custom)
-- ✓ User can change password
-- ✓ User can view active sessions
-- ✓ User can revoke/logout sessions
-- ✓ User can delete their account
-
-**v1.6 Format Personalization (shipped 2026-02-08):**
-
-- ✓ Date format applied consistently everywhere (displays, inputs, pickers, validation, exports)
-- ✓ Time format preference (12-hour vs 24-hour)
-- ✓ Number format preference (thousand/decimal separators)
-- ✓ Format settings UI in user settings page
-- ✓ All components use format hooks (useDateFormat, useTimeFormat, useNumberFormat)
-
-**v1.7 Modular Settings (shipped 2026-02-13):**
-
-- ✓ Settings landing page with iOS-style grouped rows and subpage navigation
-- ✓ Profile subpage (reorganize existing name/email/avatar editing)
-- ✓ Appearance subpage with light/dark/system theme toggle
-- ✓ Language subpage (surface existing 3-language selector)
-- ✓ Regional Formats subpage (reorganize existing date/time/number preferences)
-- ✓ Security subpage (reorganize password change, active sessions, account deletion)
-- ✓ Notifications subpage with in-app preference toggles for SSE events
-- ✓ Data & Storage subpage (offline storage management + import/export hub)
-
 ### Active
 
-<!-- v1.8 Social Login -->
-
-- [ ] Google OAuth login/signup
-- [ ] GitHub OAuth login/signup
-- [ ] Auto-link social account to existing email/password account (same email = same user)
-- [ ] Social login coexists with email/password (user chooses either)
-- [ ] Connected accounts management in Settings (link/unlink providers)
+(No active requirements — next milestone TBD)
 
 ### Out of Scope
 
@@ -137,40 +139,28 @@ Reliable inventory access anywhere — online or offline — with seamless sync.
 - Hardware barcode scanner support — USB/Bluetooth scanners add complexity, camera sufficient
 - AR overlay for item location — high complexity, not core to mobile UX
 - NFC tag scanning — limited device support, QR/barcode covers use cases
+- Auto-link by unverified email — pre-authentication account takeover risk
+- Storing raw OAuth tokens — app never calls provider APIs after login
+- Popup/window-based OAuth flow — popup blockers, mobile issues, PWA incompatibility
 
 ## Current State
 
-**Shipped:** v1.7 Modular Settings (2026-02-13)
-
-## Current Milestone: v1.8 Social Login
-
-**Goal:** Add Google and GitHub OAuth login alongside existing email/password, with auto-linking by email and connected accounts management in settings.
-
-**Target features:**
-- Google OAuth login/signup
-- GitHub OAuth login/signup
-- Auto-link by email (same email = same account)
-- Connected accounts UI in Security settings (link/unlink providers)
+**Shipped:** v1.8 Social Login (2026-02-22)
 
 **Tech stack:**
-- Backend: Go 1.25, Chi, sqlc, PostgreSQL
+- Backend: Go 1.25, Chi, sqlc, PostgreSQL, golang.org/x/oauth2
 - Frontend: Next.js 16, React 19, shadcn/ui, Tailwind CSS 4
 - PWA: Serwist service worker, IndexedDB (idb v8), UUIDv7
 - Mobile UX: Fuse.js 7.1.0, @yudiel/react-qr-scanner, ios-haptics, motion v12.27
 
-**Offline infrastructure:**
-- IndexedDB v4 with 10 stores (7 entities + mutationQueue + conflictLog + formDrafts)
-- SyncManager with iOS fallback (online + visibilitychange)
-- Conflict resolver with critical field classification
-- Fuse.js indices for offline fuzzy search
-- 17+ E2E tests covering offline scenarios
-
-**Mobile infrastructure:**
-- BarcodeScanner with QR/UPC/EAN/Code128 support
-- FloatingActionButton with radial menu and haptic feedback
-- MultiStepForm wizard with draft persistence
-- Smart defaults from recent selections
-- Visual Viewport API for iOS keyboard handling
+**Codebase:**
+- 42 phases across 9 milestones (119 plans executed)
+- Offline: IndexedDB v4 with 10 stores, SyncManager, conflict resolver, Fuse.js search
+- Mobile: BarcodeScanner, FloatingActionButton, MultiStepForm wizard
+- Settings: Modular iOS-style hub with 8 subpages
+- Auth: Email/password + Google/GitHub OAuth with auto-linking, connected accounts management
+- i18n: 3 languages (English, Estonian, Russian)
+- Formats: User-configurable date, time, number formats
 
 ## Key Decisions
 
@@ -198,6 +188,11 @@ Reliable inventory access anywhere — online or offline — with seamless sync.
 | next-themes + ThemeSyncer | Two-layer theme: client (instant) + backend (persist) | ✓ Good — no flash, cross-device |
 | JSONB for notification prefs | Flexible schema, single column on auth.users | ✓ Good — opt-out model, merge semantics |
 | Display-only notification filtering | SSE data sync untouched, filter in dropdown render | ✓ Good — real-time data never interrupted |
+| Backend-driven OAuth (no NextAuth.js) | Full control, no magic, matches existing Go architecture | ✓ Good — clean integration |
+| One-time Redis code exchange | Avoids cross-origin cookie issues in OAuth redirect | ✓ Good — reliable token handoff |
+| No provider token storage | App never calls provider APIs after login | ✓ Good — reduced security surface |
+| PKCE + CSRF state in HttpOnly cookie | Defense against authorization code interception and CSRF | ✓ Good — standard security |
+| golang.org/x/oauth2 for PKCE | Built-in PKCE support, single dependency | ✓ Good — minimal footprint |
 
 ## Constraints
 
@@ -206,6 +201,7 @@ Reliable inventory access anywhere — online or offline — with seamless sync.
 - **Compatibility**: Must work in Safari (limited Background Sync support)
 - **No heavy assets**: Photos, PDFs, attachments excluded from proactive sync
 - **iOS quirks**: Camera permissions volatile in PWA, Visual Viewport API needed for keyboard
+- **OAuth**: Google Consent Screen verification needed for production (testing mode supports 100 users)
 
 ## Test Infrastructure
 
@@ -232,5 +228,11 @@ Reliable inventory access anywhere — online or offline — with seamless sync.
 - 56 waitForTimeout calls remain in 24 lower-priority E2E files
 - Go test factories orphaned (not adopted by Phase 23/24 tests)
 
+**From v1.8:**
+- No linkSuccess toast after account linking (UX polish)
+- OAuthErrorHandler only on login page, not register page
+- 3 orphaned translation keys (setPassword.title, connectedAccounts.linkSuccess, connectedAccounts.noAccounts)
+- Locale-prefix gap in backend OAuth redirect (non-English callback locale)
+
 ---
-*Last updated: 2026-02-22 after v1.8 milestone start*
+*Last updated: 2026-02-22 after v1.8 milestone*
