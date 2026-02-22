@@ -5,16 +5,16 @@
 See: `.planning/PROJECT.md` (updated 2026-02-22)
 
 **Core value:** Reliable inventory access anywhere -- online or offline -- with seamless sync
-**Current focus:** v1.8 Social Login -- Phase 41 (Frontend OAuth Flow and Connected Accounts)
+**Current focus:** v1.8 Social Login -- Phase 41 complete, all phases done
 
 ## Current Position
 
-Phase: 41 of 42 (Frontend OAuth Flow and Connected Accounts)
-Plan: 1 of 2 in current phase
-Status: In Progress
-Last activity: 2026-02-22 -- Completed 41-01 (OAuth callback page and SocialLogin wiring)
+Phase: 42 of 42 (all phases complete)
+Plan: 2 of 2 in phase 41 (complete)
+Status: Complete
+Last activity: 2026-02-22 -- Completed 41-02 (Connected accounts settings and OAuth password flow)
 
-Progress: [#########-] 95%
+Progress: [##########] 100%
 
 ## Performance Metrics
 
@@ -42,6 +42,7 @@ Progress: [#########-] 95%
 | Phase 42 P01 | 3min | 2 tasks | 5 files |
 | Phase 42 P02 | 1min | 2 tasks | 1 files |
 | Phase 41 P01 | 3min | 2 tasks | 4 files |
+| Phase 41 P02 | 4min | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -71,6 +72,9 @@ Progress: [#########-] 95%
 - 41-01: Exposed loadUserData from auth context for OAuth callback post-exchange user loading
 - 41-01: sessionStorage for oauth_return_to and oauth_linking flags (survives full-page redirect chain)
 - 41-01: window.location.href for OAuth initiate (full-page redirect to backend, not router.push)
+- 41-02: Unified Zod schema with conditional refine for current_password (avoids resolver type mismatch with dual schemas)
+- 41-02: React key={String(hasPassword)} to remount PasswordChangeForm when user sets first password
+- 41-02: Proactive frontend unlink button disable when only one account and no password (defense in depth)
 
 ### Pending Todos
 
@@ -92,8 +96,8 @@ New for v1.8:
 ## Session Continuity
 
 Last session: 2026-02-22
-Stopped at: Completed 41-01-PLAN.md (OAuth callback page and SocialLogin wiring)
-Next step: Execute 41-02-PLAN.md (Connected accounts settings page)
+Stopped at: Completed 41-02-PLAN.md (Connected accounts settings and OAuth password flow)
+Next step: All v1.8 Social Login phases complete (40, 41, 42)
 
 ---
-*Updated: 2026-02-22 after 41-01 execution*
+*Updated: 2026-02-22 after 41-02 execution*

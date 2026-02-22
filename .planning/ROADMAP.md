@@ -138,7 +138,7 @@ See `.planning/milestones/v1.7-ROADMAP.md` for full details.
 **Milestone Goal:** Add Google and GitHub OAuth login alongside existing email/password authentication, with auto-linking by verified email and connected accounts management in settings.
 
 - [x] **Phase 40: Database Migration and Backend OAuth Core** - Schema changes, OAuth endpoints, CSRF/PKCE security, auto-link logic, rate limiting (completed 2026-02-22)
-- [ ] **Phase 41: Frontend OAuth Flow and Connected Accounts** - Callback page, social login buttons, connected accounts settings UI, password UX for OAuth-only users
+- [x] **Phase 41: Frontend OAuth Flow and Connected Accounts** - Callback page, social login buttons, connected accounts settings UI, password UX for OAuth-only users (completed 2026-02-22)
 - [x] **Phase 42: Error Handling, Internationalization, and Offline Polish** - User-facing error messages, i18n for all OAuth strings, offline-aware social login buttons (completed 2026-02-22)
 
 ## Phase Details
@@ -207,7 +207,7 @@ Phases execute in numeric order: 40 -> 41 -> 42
 | 30-34 | v1.6 | 9 | Complete | 2026-02-08 |
 | 35-39 | v1.7 | 7 | Complete | 2026-02-13 |
 | 40. Backend OAuth Core | 3/3 | Complete    | 2026-02-22 | - |
-| 41. Frontend OAuth Flow | 1/2 | In Progress|  | - |
+| 41. Frontend OAuth Flow | 2/2 | Complete   | 2026-02-22 | - |
 | 42. Error/i18n/Offline | 2/2 | Complete    | 2026-02-22 | - |
 
 **Total:** 39 phases complete (112 plans executed) across 8 milestones + 3 phases planned for v1.8

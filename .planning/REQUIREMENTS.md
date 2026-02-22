@@ -21,16 +21,16 @@ Requirements for Social Login milestone. Each maps to roadmap phases.
 ### Security
 
 - [x] **SEC-01**: OAuth flow uses CSRF state parameter (random 32-byte, HttpOnly cookie, validated on callback)
-- [ ] **SEC-02**: OAuth sessions appear in active sessions list and are revocable
+- [x] **SEC-02**: OAuth sessions appear in active sessions list and are revocable
 - [x] **SEC-03**: OAuth callback endpoints are rate-limited (10 req/min per IP)
 
 ### Account Management
 
-- [ ] **ACCT-01**: User can view connected OAuth providers in Security settings
-- [ ] **ACCT-02**: User can link additional Google or GitHub account from Security settings
-- [ ] **ACCT-03**: User can unlink an OAuth provider from Security settings
-- [ ] **ACCT-04**: System prevents unlinking last auth method when user has no password (lockout guard)
-- [ ] **ACCT-05**: OAuth-only user can set a password from Security settings (no current password required)
+- [x] **ACCT-01**: User can view connected OAuth providers in Security settings
+- [x] **ACCT-02**: User can link additional Google or GitHub account from Security settings
+- [x] **ACCT-03**: User can unlink an OAuth provider from Security settings
+- [x] **ACCT-04**: System prevents unlinking last auth method when user has no password (lockout guard)
+- [x] **ACCT-05**: OAuth-only user can set a password from Security settings (no current password required)
 - [x] **ACCT-06**: User profile includes `has_password` field to enable correct UI for OAuth-only users
 
 ### Schema
@@ -94,13 +94,13 @@ Which phases cover which requirements. Updated during roadmap creation.
 | OAUTH-07 | Phase 41 | Complete |
 | OAUTH-08 | Phase 41 | Complete |
 | SEC-01 | Phase 40 | Complete |
-| SEC-02 | Phase 41 | Pending |
+| SEC-02 | Phase 41 | Complete |
 | SEC-03 | Phase 40 | Complete |
-| ACCT-01 | Phase 41 | Pending |
-| ACCT-02 | Phase 41 | Pending |
-| ACCT-03 | Phase 41 | Pending |
-| ACCT-04 | Phase 41 | Pending |
-| ACCT-05 | Phase 41 | Pending |
+| ACCT-01 | Phase 41 | Complete |
+| ACCT-02 | Phase 41 | Complete |
+| ACCT-03 | Phase 41 | Complete |
+| ACCT-04 | Phase 41 | Complete |
+| ACCT-05 | Phase 41 | Complete |
 | ACCT-06 | Phase 41 | Complete |
 | SCHM-01 | Phase 40 | Complete |
 | SCHM-02 | Phase 40 | Complete |
