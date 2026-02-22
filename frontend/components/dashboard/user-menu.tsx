@@ -1,11 +1,18 @@
 "use client";
 
-import { Settings } from "lucide-react";
+import { LogOut, Settings } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { Link } from "@/i18n/navigation";
 import { useAuth } from "@/lib/contexts/auth-context";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Skeleton } from "@/components/ui/skeleton";
 
 interface UserMenuProps {
@@ -13,7 +20,7 @@ interface UserMenuProps {
 }
 
 export function UserMenu({ collapsed = false }: UserMenuProps) {
-  const { user, isLoading } = useAuth();
+  const { user, isLoading, logout } = useAuth();
 
   if (isLoading) {
     return (
@@ -45,36 +52,52 @@ export function UserMenu({ collapsed = false }: UserMenuProps) {
     .toUpperCase();
 
   return (
-    <Link
-      href="/dashboard/settings"
-      className={cn(
-        "group relative flex items-center rounded-lg p-2 transition-all duration-200",
-        "hover:bg-muted active:scale-[0.97]",
-        collapsed ? "w-10 justify-center" : "w-full gap-3"
-      )}
-    >
-      <div className="relative">
-        <Avatar className="h-8 w-8 ring-2 ring-transparent transition-all duration-200 group-hover:ring-primary/20">
-          <AvatarImage
-            src={user.avatar_url || undefined}
-            alt={user.full_name}
-          />
-          <AvatarFallback className="text-xs">{initials}</AvatarFallback>
-        </Avatar>
-        <div className="absolute -bottom-0.5 -right-0.5 rounded-full bg-card p-[2px]">
-          <Settings className="h-3 w-3 text-muted-foreground transition-transform duration-300 group-hover:rotate-90" />
-        </div>
-      </div>
-      {!collapsed && (
-        <div className="flex flex-col items-start text-left min-w-0">
-          <span className="text-sm font-medium truncate max-w-[140px]">
-            {user.full_name}
-          </span>
-          <span className="text-xs text-muted-foreground truncate max-w-[140px]">
-            {user.email}
-          </span>
-        </div>
-      )}
-    </Link>
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <button
+          className={cn(
+            "group relative flex items-center rounded-lg p-2 transition-all duration-200",
+            "hover:bg-muted active:scale-[0.97]",
+            collapsed ? "w-10 justify-center" : "w-full gap-3"
+          )}
+        >
+          <div className="relative">
+            <Avatar className="h-8 w-8 ring-2 ring-transparent transition-all duration-200 group-hover:ring-primary/20">
+              <AvatarImage
+                src={user.avatar_url || undefined}
+                alt={user.full_name}
+              />
+              <AvatarFallback className="text-xs">{initials}</AvatarFallback>
+            </Avatar>
+          </div>
+          {!collapsed && (
+            <div className="flex flex-col items-start text-left min-w-0">
+              <span className="text-sm font-medium truncate max-w-[140px]">
+                {user.full_name}
+              </span>
+              <span className="text-xs text-muted-foreground truncate max-w-[140px]">
+                {user.email}
+              </span>
+            </div>
+          )}
+        </button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent side="top" align="start">
+        <DropdownMenuItem asChild>
+          <Link href="/dashboard/settings">
+            <Settings className="mr-2 h-4 w-4" />
+            Settings
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem
+          variant="destructive"
+          onClick={() => logout()}
+        >
+          <LogOut className="mr-2 h-4 w-4" />
+          Log out
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }
