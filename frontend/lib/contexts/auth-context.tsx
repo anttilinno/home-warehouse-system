@@ -16,6 +16,7 @@ interface AuthContextValue {
   logout: () => Promise<void>;
   switchWorkspace: (workspaceId: string) => void;
   refreshUser: () => Promise<void>;
+  loadUserData: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
@@ -155,6 +156,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     logout,
     switchWorkspace,
     refreshUser,
+    loadUserData,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
