@@ -10,11 +10,11 @@ See: `.planning/PROJECT.md` (updated 2026-02-22)
 ## Current Position
 
 Phase: 40 of 42 (Database Migration and Backend OAuth Core)
-Plan: 1 of 3 in current phase
+Plan: 2 of 3 in current phase
 Status: Executing
-Last activity: 2026-02-22 -- Completed 40-01 (database migration + user entity OAuth support)
+Last activity: 2026-02-22 -- Completed 40-02 (OAuth domain package)
 
-Progress: [###░░░░░░░] 33%
+Progress: [######░░░░] 67%
 
 ## Performance Metrics
 
@@ -37,6 +37,7 @@ Progress: [###░░░░░░░] 33%
 | v1.7 | 5 | 7 | Complete |
 | v1.8 | 3 | ? | In progress |
 | Phase 40 P01 | 7min | 2 tasks | 14 files |
+| Phase 40 P02 | 3min | 2 tasks | 8 files |
 
 ## Accumulated Context
 
@@ -50,6 +51,10 @@ Progress: [###░░░░░░░] 33%
 - 40-01: has_password column defaults to true so existing users retain password-based auth
 - 40-01: CheckPassword returns false immediately for empty hash (prevents bcrypt panic)
 - [Phase 40]: Empty passwordHash maps to NULL in DB via *string scanning; has_password defaults to true for existing users
+- 40-02: GetProviderConfig is a package-level function (no state needed, just config)
+- 40-02: GitHub profile fetcher always uses /user/emails (Pitfall 8-G: /user may return null email)
+- 40-02: FindOrCreateUser rejects unverified emails before any auto-linking (Pitfall 8-B)
+- 40-02: OAuthRepository.FindByProviderAndID returns (nil, nil) for not-found (matches user repo pattern)
 
 ### Pending Todos
 
@@ -71,8 +76,8 @@ New for v1.8:
 ## Session Continuity
 
 Last session: 2026-02-22
-Stopped at: Completed 40-01-PLAN.md (database migration + user entity OAuth support)
-Next step: Execute 40-02-PLAN.md
+Stopped at: Completed 40-02-PLAN.md (OAuth domain package)
+Next step: Execute 40-03-PLAN.md
 
 ---
-*Updated: 2026-02-22 after 40-01 execution*
+*Updated: 2026-02-22 after 40-02 execution*

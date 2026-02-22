@@ -9,18 +9,18 @@ Requirements for Social Login milestone. Each maps to roadmap phases.
 
 ### OAuth Login
 
-- [ ] **OAUTH-01**: User can log in with Google OAuth (Authorization Code flow with PKCE)
-- [ ] **OAUTH-02**: User can log in with GitHub OAuth (Authorization Code flow with PKCE)
-- [ ] **OAUTH-03**: User can sign up via Google OAuth (creates account with no password, personal workspace)
-- [ ] **OAUTH-04**: User can sign up via GitHub OAuth (creates account with no password, personal workspace)
-- [ ] **OAUTH-05**: Social login auto-links to existing account when provider email matches and is verified
-- [ ] **OAUTH-06**: Social login rejects auto-link when provider email is not verified
+- [x] **OAUTH-01**: User can log in with Google OAuth (Authorization Code flow with PKCE)
+- [x] **OAUTH-02**: User can log in with GitHub OAuth (Authorization Code flow with PKCE)
+- [x] **OAUTH-03**: User can sign up via Google OAuth (creates account with no password, personal workspace)
+- [x] **OAUTH-04**: User can sign up via GitHub OAuth (creates account with no password, personal workspace)
+- [x] **OAUTH-05**: Social login auto-links to existing account when provider email matches and is verified
+- [x] **OAUTH-06**: Social login rejects auto-link when provider email is not verified
 - [ ] **OAUTH-07**: Social login redirects user back to intended page after OAuth flow completes
 - [ ] **OAUTH-08**: Social login pre-fills full_name from provider profile on first signup
 
 ### Security
 
-- [ ] **SEC-01**: OAuth flow uses CSRF state parameter (random 32-byte, HttpOnly cookie, validated on callback)
+- [x] **SEC-01**: OAuth flow uses CSRF state parameter (random 32-byte, HttpOnly cookie, validated on callback)
 - [ ] **SEC-02**: OAuth sessions appear in active sessions list and are revocable
 - [ ] **SEC-03**: OAuth callback endpoints are rate-limited (10 req/min per IP)
 
@@ -85,15 +85,15 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| OAUTH-01 | Phase 40 | Pending |
-| OAUTH-02 | Phase 40 | Pending |
-| OAUTH-03 | Phase 40 | Pending |
-| OAUTH-04 | Phase 40 | Pending |
-| OAUTH-05 | Phase 40 | Pending |
-| OAUTH-06 | Phase 40 | Pending |
+| OAUTH-01 | Phase 40 | Complete |
+| OAUTH-02 | Phase 40 | Complete |
+| OAUTH-03 | Phase 40 | Complete |
+| OAUTH-04 | Phase 40 | Complete |
+| OAUTH-05 | Phase 40 | Complete |
+| OAUTH-06 | Phase 40 | Complete |
 | OAUTH-07 | Phase 41 | Pending |
 | OAUTH-08 | Phase 41 | Pending |
-| SEC-01 | Phase 40 | Pending |
+| SEC-01 | Phase 40 | Complete |
 | SEC-02 | Phase 41 | Pending |
 | SEC-03 | Phase 40 | Pending |
 | ACCT-01 | Phase 41 | Pending |
