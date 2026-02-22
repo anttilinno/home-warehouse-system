@@ -175,8 +175,12 @@ func (s *Service) UpdatePassword(ctx context.Context, id uuid.UUID, currentPassw
 		return err
 	}
 
-	if !user.CheckPassword(currentPassword) {
-		return ErrInvalidPassword
+	// OAuth-only users (no password) can set their first password
+	// without providing a current password
+	if user.HasPassword() {
+		if !user.CheckPassword(currentPassword) {
+			return ErrInvalidPassword
+		}
 	}
 
 	if err := user.UpdatePassword(newPassword); err != nil {
