@@ -809,7 +809,21 @@
         "errorIncorrect": "Current password is incorrect",
         "errorFailed": "Failed to change password",
         "validationMinLength": "Password must be at least 8 characters",
-        "validationMismatch": "Passwords don't match"
+        "validationMismatch": "Passwords don't match",
+        "noPasswordSet": "You signed in with a social account. Set a password to also sign in with email.",
+        "setButton": "Set Password",
+        "setSuccessMessage": "Password set successfully"
+      },
+      "connectedAccounts": {
+        "title": "Connected Accounts",
+        "connected": "Connected",
+        "connect": "Connect",
+        "disconnect": "Disconnect",
+        "linkSuccess": "{provider} account connected successfully",
+        "unlinkSuccess": "{provider} account disconnected",
+        "unlinkError": "Failed to disconnect account",
+        "setPasswordFirst": "Set a password first to disconnect",
+        "setPasswordWarning": "Set a password to allow disconnecting your last linked account."
       },
       "sessions": {
         "title": "Active Sessions",

@@ -1,7 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { Shield, KeyRound, Smartphone, AlertTriangle } from "lucide-react";
+import { Shield, KeyRound, Smartphone, Link2, AlertTriangle } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -10,12 +10,16 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { PasswordChange } from "./password-change";
+import { SetPassword } from "./set-password";
 import { ActiveSessions } from "./active-sessions";
+import { ConnectedAccounts } from "./connected-accounts";
 import { DeleteAccountDialog } from "./delete-account-dialog";
+import { useAuth } from "@/lib/contexts/auth-context";
 
 export function SecuritySettings() {
   const t = useTranslations("settings.security");
   const tDanger = useTranslations("settings.dangerZone");
+  const { user } = useAuth();
 
   return (
     <Card>
@@ -33,7 +37,7 @@ export function SecuritySettings() {
             <KeyRound className="h-4 w-4" />
             {t("password.title")}
           </h3>
-          <PasswordChange />
+          {user?.has_password !== false ? <PasswordChange /> : <SetPassword />}
         </div>
 
         {/* Sessions Section */}
@@ -43,6 +47,15 @@ export function SecuritySettings() {
             {t("sessions.title")}
           </h3>
           <ActiveSessions />
+        </div>
+
+        {/* Connected Accounts Section */}
+        <div className="space-y-4">
+          <h3 className="text-sm font-medium flex items-center gap-2">
+            <Link2 className="h-4 w-4" />
+            {t("connectedAccounts.title")}
+          </h3>
+          <ConnectedAccounts />
         </div>
 
         {/* Danger Zone Section */}

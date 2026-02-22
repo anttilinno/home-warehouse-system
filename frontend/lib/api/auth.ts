@@ -35,9 +35,18 @@ export interface User {
   language: string;
   theme: string;
   notification_preferences: NotificationPreferences;
+  has_password: boolean;
   avatar_url: string | null;
   created_at: string;
   updated_at: string;
+}
+
+export interface OAuthAccount {
+  provider: string;
+  email: string;
+  display_name: string | null;
+  avatar_url: string | null;
+  created_at: string;
 }
 
 export interface UpdateProfileData {
@@ -147,5 +156,23 @@ export const authApi = {
     if (typeof window !== "undefined") {
       localStorage.removeItem("workspace_id");
     }
+  },
+
+  exchangeOAuthCode: async (code: string): Promise<AuthTokenResponse> => {
+    const response = await apiClient.post<AuthTokenResponse>("/auth/oauth/exchange", { code });
+    apiClient.setToken(response.token);
+    return response;
+  },
+
+  getConnectedAccounts: async (): Promise<OAuthAccount[]> => {
+    return apiClient.get<OAuthAccount[]>("/auth/oauth/accounts");
+  },
+
+  unlinkAccount: async (provider: string): Promise<void> => {
+    await apiClient.delete(`/auth/oauth/accounts/${provider}`);
+  },
+
+  setPassword: async (newPassword: string): Promise<void> => {
+    await apiClient.patch("/users/me/password", { new_password: newPassword });
   },
 };

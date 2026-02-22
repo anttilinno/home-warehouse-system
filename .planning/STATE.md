@@ -5,6 +5,7 @@
 See: `.planning/PROJECT.md` (updated 2026-02-22)
 
 **Core value:** Reliable inventory access anywhere -- online or offline -- with seamless sync
+<<<<<<< HEAD
 **Current focus:** v1.8 Social Login -- Phase 42 (Error Handling, Internationalization, and Offline Polish)
 
 ## Current Position
@@ -13,8 +14,18 @@ Phase: 42 of 42 (Error Handling, Internationalization, and Offline Polish)
 Plan: 2 of 2 in current phase
 Status: Phase Complete
 Last activity: 2026-02-22 -- Completed 42-02 (Offline-aware social login buttons)
+=======
+**Current focus:** v1.8 Social Login -- Phase 41 (Frontend OAuth Flow and Connected Accounts)
 
-Progress: [##########] 100%
+## Current Position
+
+Phase: 41 of 42 (Frontend OAuth Flow and Connected Accounts)
+Plan: 2 of 2 in current phase (COMPLETE)
+Status: Phases 40 and 41 complete
+Last activity: 2026-02-22 -- Completed Phase 40 (Backend OAuth Core) and Phase 41 (Frontend OAuth Flow)
+>>>>>>> phase-41
+
+Progress: [######░░░░] 60%
 
 ## Performance Metrics
 
@@ -62,11 +73,19 @@ Progress: [##########] 100%
 - 40-03: WorkspaceCreator adapter wraps workspace service with same name/slug logic as register
 - 40-03: RedisClient interface uses Set/GetDel to avoid importing redis in domain layer
 - 40-03: CSRF state cookie combines state and PKCE verifier in pipe-delimited format
+<<<<<<< HEAD
 - 42-01: OAuthErrorHandler uses Suspense boundary wrapper for useSearchParams in Next.js App Router
 - 42-01: URL cleanup via window.history.replaceState avoids re-render cycle
 - 42-01: Toast duration 8000ms for error messages (longer than default for readability)
 - 42-02: Inline text message below buttons (not tooltip) for offline indication -- more accessible on mobile
 - 42-02: No changes needed on register page -- SocialLogin already rendered, offline behavior inherited
+=======
+- v1.8: Full page redirect after OAuth exchange (window.location.href) to ensure AuthProvider picks up token
+- v1.8: sessionStorage for redirect_to preservation across OAuth flow (auto-clears on tab close)
+- v1.8: Hardcoded English strings on transient callback page (visible <2 seconds, i18n unnecessary)
+- v1.8: has_password !== false for conditional form rendering (defaults to PasswordChange when user data is loading)
+- v1.8: Inline ProviderIcon component reuses SVGs from social-login.tsx (simple, only 2 providers)
+>>>>>>> phase-41
 
 ### Pending Todos
 
@@ -88,8 +107,16 @@ New for v1.8:
 ## Session Continuity
 
 Last session: 2026-02-22
+<<<<<<< HEAD
 Stopped at: Completed 42-02-PLAN.md (Offline-aware social login buttons)
 Next step: Phase 42 complete. All plans in this phase executed.
 
 ---
 *Updated: 2026-02-22 after 42-02 execution*
+=======
+Stopped at: Merged Phase 40 (Backend OAuth Core) and Phase 41 (Frontend OAuth Flow)
+Next step: Execute Phase 42 (Error Handling, Internationalization, and Offline Polish)
+
+---
+*Updated: 2026-02-22 after merging phases 40 and 41*
+>>>>>>> phase-41
