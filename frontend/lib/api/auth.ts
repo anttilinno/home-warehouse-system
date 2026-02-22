@@ -23,10 +23,20 @@ export interface NotificationPreferences {
   [key: string]: boolean | undefined;
 }
 
+export interface OAuthAccount {
+  provider: string;
+  provider_user_id: string;
+  email: string;
+  display_name: string;
+  avatar_url: string;
+  created_at: string;
+}
+
 export interface User {
   id: string;
   email: string;
   full_name: string;
+  has_password: boolean;
   is_active: boolean;
   date_format: string;
   time_format: string;
@@ -147,5 +157,20 @@ export const authApi = {
     if (typeof window !== "undefined") {
       localStorage.removeItem("workspace_id");
     }
+  },
+
+  exchangeOAuthCode: async (code: string): Promise<AuthTokenResponse> => {
+    const response = await apiClient.post<AuthTokenResponse>("/auth/oauth/exchange", { code });
+    apiClient.setToken(response.token);
+    return response;
+  },
+
+  getConnectedAccounts: async (): Promise<OAuthAccount[]> => {
+    const response = await apiClient.get<{ accounts: OAuthAccount[] }>("/auth/oauth/accounts");
+    return response.accounts;
+  },
+
+  unlinkAccount: async (provider: string): Promise<void> => {
+    await apiClient.delete(`/auth/oauth/accounts/${provider}`);
   },
 };
