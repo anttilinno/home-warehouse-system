@@ -22,7 +22,7 @@ Requirements for Social Login milestone. Each maps to roadmap phases.
 
 - [x] **SEC-01**: OAuth flow uses CSRF state parameter (random 32-byte, HttpOnly cookie, validated on callback)
 - [ ] **SEC-02**: OAuth sessions appear in active sessions list and are revocable
-- [ ] **SEC-03**: OAuth callback endpoints are rate-limited (10 req/min per IP)
+- [x] **SEC-03**: OAuth callback endpoints are rate-limited (10 req/min per IP)
 
 ### Account Management
 
@@ -95,7 +95,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | OAUTH-08 | Phase 41 | Pending |
 | SEC-01 | Phase 40 | Complete |
 | SEC-02 | Phase 41 | Pending |
-| SEC-03 | Phase 40 | Pending |
+| SEC-03 | Phase 40 | Complete |
 | ACCT-01 | Phase 41 | Pending |
 | ACCT-02 | Phase 41 | Pending |
 | ACCT-03 | Phase 41 | Pending |

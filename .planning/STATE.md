@@ -10,11 +10,11 @@ See: `.planning/PROJECT.md` (updated 2026-02-22)
 ## Current Position
 
 Phase: 40 of 42 (Database Migration and Backend OAuth Core)
-Plan: 2 of 3 in current phase
-Status: Executing
-Last activity: 2026-02-22 -- Completed 40-02 (OAuth domain package)
+Plan: 3 of 3 in current phase
+Status: Phase Complete
+Last activity: 2026-02-22 -- Completed 40-03 (OAuth HTTP handlers and router wiring)
 
-Progress: [######░░░░] 67%
+Progress: [##########] 100%
 
 ## Performance Metrics
 
@@ -38,6 +38,7 @@ Progress: [######░░░░] 67%
 | v1.8 | 3 | ? | In progress |
 | Phase 40 P01 | 7min | 2 tasks | 14 files |
 | Phase 40 P02 | 3min | 2 tasks | 8 files |
+| Phase 40 P03 | 5min | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -55,6 +56,10 @@ Progress: [######░░░░] 67%
 - 40-02: GitHub profile fetcher always uses /user/emails (Pitfall 8-G: /user may return null email)
 - 40-02: FindOrCreateUser rejects unverified emails before any auto-linking (Pitfall 8-B)
 - 40-02: OAuthRepository.FindByProviderAndID returns (nil, nil) for not-found (matches user repo pattern)
+- 40-03: OAuth handler initialized in router.go (not main.go) to match existing architecture pattern
+- 40-03: WorkspaceCreator adapter wraps workspace service with same name/slug logic as register
+- 40-03: RedisClient interface uses Set/GetDel to avoid importing redis in domain layer
+- 40-03: CSRF state cookie combines state and PKCE verifier in pipe-delimited format
 
 ### Pending Todos
 
@@ -76,8 +81,8 @@ New for v1.8:
 ## Session Continuity
 
 Last session: 2026-02-22
-Stopped at: Completed 40-02-PLAN.md (OAuth domain package)
-Next step: Execute 40-03-PLAN.md
+Stopped at: Completed 40-03-PLAN.md (OAuth HTTP handlers and router wiring)
+Next step: Phase 40 complete. Proceed to next phase (frontend OAuth integration).
 
 ---
-*Updated: 2026-02-22 after 40-02 execution*
+*Updated: 2026-02-22 after 40-03 execution*
