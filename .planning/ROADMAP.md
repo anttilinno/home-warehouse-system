@@ -209,7 +209,7 @@ Phases execute in numeric order: 40 -> 41 -> 42
 | 35-39 | v1.7 | 7 | Complete | 2026-02-13 |
 | 40. Backend OAuth Core | 3/3 | Complete    | 2026-02-22 | - |
 | 41. Frontend OAuth Flow | v1.8 | 0/? | Not started | - |
-| 42. Error/i18n/Offline | 2/2 | Complete   | 2026-02-22 | - |
+| 42. Error/i18n/Offline | 2/2 | Complete    | 2026-02-22 | - |
 
 **Total:** 39 phases complete (112 plans executed) across 8 milestones + 3 phases planned for v1.8
 
