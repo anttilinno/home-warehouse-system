@@ -71,18 +71,22 @@ export function UserMenu({ collapsed = false }: UserMenuProps) {
             </Avatar>
           </div>
           {!collapsed && (
-            <div className="flex flex-col items-start text-left min-w-0">
-              <span className="text-sm font-medium truncate max-w-[140px]">
+            <div className="flex flex-col items-start text-left min-w-0 flex-1">
+              <span className="text-sm font-medium truncate w-full">
                 {user.full_name}
               </span>
-              <span className="text-xs text-muted-foreground truncate max-w-[140px]">
+              <span className="text-xs text-muted-foreground truncate w-full">
                 {user.email}
               </span>
             </div>
           )}
         </button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent side="top" align="start">
+      <DropdownMenuContent
+        side="top"
+        align="start"
+        style={!collapsed ? { minWidth: '14.5rem' } : undefined}
+      >
         <DropdownMenuItem asChild>
           <Link href="/dashboard/settings">
             <Settings className="mr-2 h-4 w-4" />

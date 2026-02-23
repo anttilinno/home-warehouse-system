@@ -54,7 +54,7 @@ export function ActivityFeed() {
   });
 
   return (
-    <Card className="flex flex-col h-[500px]">
+    <Card className="flex flex-col h-full py-0 gap-0">
       {/* Header */}
       <div className="flex items-center justify-between p-3 border-b bg-muted/30">
         <div className="flex items-center gap-2">
@@ -104,9 +104,9 @@ export function ActivityFeed() {
 
       {/* Content */}
       {!isCollapsed && (
-        <div className="flex-1 overflow-y-auto" ref={scrollRef}>
+        <div className="flex-1 overflow-y-auto max-h-80" ref={scrollRef}>
           {events.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-full text-center p-8">
+            <div className="flex flex-col items-center justify-center text-center py-12 px-8">
               <ActivityIcon className="h-12 w-12 text-muted-foreground/50 mb-3" />
               <p className="text-sm text-muted-foreground">No activity yet</p>
               <p className="text-xs text-muted-foreground/70 mt-1">
