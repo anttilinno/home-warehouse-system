@@ -13,6 +13,7 @@ COPY . .
 # Empty string = relative URLs (proxied through Angie)
 ENV NEXT_PUBLIC_API_URL=""
 ENV NEXT_TELEMETRY_DISABLED=1
+ENV SERWIST_SUPPRESS_TURBOPACK_WARNING=1
 
 RUN bun run build
 
