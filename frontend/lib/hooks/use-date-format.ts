@@ -67,8 +67,9 @@ export function useDateFormat(): UseDateFormatReturn {
     return DEFAULT_FORMAT;
   }, [user?.date_format]);
 
-  // Get date-fns format string (use preset map or custom format string)
-  const dateFnsFormatStr = FORMAT_MAP[format as PresetDateFormat] || format;
+  // Get date-fns format string (use preset map or convert custom format string)
+  const dateFnsFormatStr = FORMAT_MAP[format as PresetDateFormat] ||
+    format.replace(/YYYY/g, "yyyy").replace(/\bDD\b/g, "dd");
 
   // Get placeholder string
   const placeholder = useMemo(() => {
