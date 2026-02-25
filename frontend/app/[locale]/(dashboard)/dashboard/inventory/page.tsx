@@ -24,6 +24,9 @@ import {
   AlertCircle,
   Cloud,
   Wrench,
+  ArrowUp,
+  ArrowDown,
+  ArrowUpDown,
 } from "lucide-react";
 import { toast } from "sonner";
 import { format, parseISO } from "date-fns";
@@ -55,7 +58,6 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-  SortableTableHead,
 } from "@/components/ui/table";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -78,7 +80,7 @@ import { RepairHistory } from "@/components/inventory/repair-history";
 import { InlineEditCell } from "@/components/ui/inline-edit-cell";
 import { InlineEditSelect } from "@/components/ui/inline-edit-select";
 import { useWorkspace } from "@/lib/hooks/use-workspace";
-import { useTableSort } from "@/lib/hooks/use-table-sort";
+import { useTableSort, type SortDirection } from "@/lib/hooks/use-table-sort";
 import { useInfiniteScroll } from "@/lib/hooks/use-infinite-scroll";
 import { useBulkSelection } from "@/lib/hooks/use-bulk-selection";
 import { useFilters } from "@/lib/hooks/use-filters";
@@ -126,6 +128,28 @@ const CURRENCY_OPTIONS = [
   { value: "USD", label: "USD" },
   { value: "GBP", label: "GBP" },
 ];
+
+function SortableGridHead({ children, sortDirection, onSort }: {
+  children: React.ReactNode;
+  sortDirection?: SortDirection;
+  onSort?: () => void;
+}) {
+  const SortIcon = sortDirection === "asc" ? ArrowUp : sortDirection === "desc" ? ArrowDown : ArrowUpDown;
+  return (
+    <div
+      role="columnheader"
+      className="h-10 px-2 flex items-center justify-center font-medium text-muted-foreground cursor-pointer select-none hover:bg-muted/50 transition-colors"
+      onClick={onSort}
+      aria-sort={sortDirection === "asc" ? "ascending" : sortDirection === "desc" ? "descending" : "none"}
+    >
+      <span>{children}</span>
+      <SortIcon
+        className={cn("ml-2 h-4 w-4", sortDirection ? "text-foreground" : "text-muted-foreground/50")}
+        aria-hidden="true"
+      />
+    </div>
+  );
+}
 
 interface InventoryFilterControlsProps {
   locations: Location[];
@@ -1238,92 +1262,86 @@ export default function InventoryPage() {
               </EmptyState>
             ) : (
               <div className="rounded-lg border">
-                <div className="overflow-x-auto">
-                  <Table aria-label="Inventory items">
-                    <caption className="sr-only">
-                      List of inventory items with quantity, location, condition, and status information.
-                      Currently showing {sortedInventories.length} {sortedInventories.length === 1 ? "entry" : "entries"}.
-                    </caption>
-                    <TableHeader className="sticky top-0 z-10 bg-background">
-                      <TableRow>
-                        <TableHead className="w-[50px]">
-                          <Checkbox
-                            checked={isAllSelected(sortedInventories.filter(i => !('_pending' in i && i._pending)).map((i) => i.id))}
-                            onCheckedChange={(checked) => {
-                              if (checked) {
-                                selectAll(sortedInventories.filter(i => !('_pending' in i && i._pending)).map((i) => i.id));
-                              } else {
-                                clearSelection();
-                              }
-                            }}
-                            aria-label="Select all inventory"
-                          />
-                        </TableHead>
-                        <SortableTableHead
-                          sortDirection={getSortDirection("item_name")}
-                          onSort={() => requestSort("item_name")}
-                        >
-                          Item
-                        </SortableTableHead>
-                        <SortableTableHead
-                          sortDirection={getSortDirection("location_name")}
-                          onSort={() => requestSort("location_name")}
-                        >
-                          Location
-                        </SortableTableHead>
-                        <SortableTableHead
-                          sortDirection={getSortDirection("quantity")}
-                          onSort={() => requestSort("quantity")}
-                        >
-                          Qty
-                        </SortableTableHead>
-                        <SortableTableHead
-                          sortDirection={getSortDirection("condition")}
-                          onSort={() => requestSort("condition")}
-                        >
-                          Condition
-                        </SortableTableHead>
-                        <SortableTableHead
-                          sortDirection={getSortDirection("status")}
-                          onSort={() => requestSort("status")}
-                        >
-                          Status
-                        </SortableTableHead>
-                        <SortableTableHead
-                          sortDirection={getSortDirection("purchase_price")}
-                          onSort={() => requestSort("purchase_price")}
-                        >
-                          Price
-                        </SortableTableHead>
-                        <TableHead className="w-[50px]" />
-                      </TableRow>
-                    </TableHeader>
-                  </Table>
-                </div>
-
-                {/* Virtual Scrolling Container */}
                 <div
                   ref={parentRef}
                   className="overflow-auto"
                   style={{ height: '600px' }}
+                  role="table"
+                  aria-label="Inventory items"
                 >
+                  {/* Sticky header row */}
                   <div
-                    style={{
-                      height: `${virtualizer.getTotalSize()}px`,
-                      width: '100%',
-                      position: 'relative',
-                    }}
+                    className="sticky top-0 z-10 bg-background border-b grid items-center text-sm"
+                    style={{ gridTemplateColumns: '50px 1fr 120px 60px 110px 120px 90px 50px' }}
+                    role="row"
                   >
-                    <Table>
-                      <TableBody>
+                    <div className="p-2" role="columnheader">
+                      <Checkbox
+                        checked={isAllSelected(sortedInventories.filter(i => !('_pending' in i && i._pending)).map((i) => i.id))}
+                        onCheckedChange={(checked) => {
+                          if (checked) {
+                            selectAll(sortedInventories.filter(i => !('_pending' in i && i._pending)).map((i) => i.id));
+                          } else {
+                            clearSelection();
+                          }
+                        }}
+                        aria-label="Select all inventory"
+                      />
+                    </div>
+                    <SortableGridHead
+                      sortDirection={getSortDirection("item_name")}
+                      onSort={() => requestSort("item_name")}
+                    >
+                      Item
+                    </SortableGridHead>
+                    <SortableGridHead
+                      sortDirection={getSortDirection("location_name")}
+                      onSort={() => requestSort("location_name")}
+                    >
+                      Location
+                    </SortableGridHead>
+                    <SortableGridHead
+                      sortDirection={getSortDirection("quantity")}
+                      onSort={() => requestSort("quantity")}
+                    >
+                      Qty
+                    </SortableGridHead>
+                    <SortableGridHead
+                      sortDirection={getSortDirection("condition")}
+                      onSort={() => requestSort("condition")}
+                    >
+                      Condition
+                    </SortableGridHead>
+                    <SortableGridHead
+                      sortDirection={getSortDirection("status")}
+                      onSort={() => requestSort("status")}
+                    >
+                      Status
+                    </SortableGridHead>
+                    <SortableGridHead
+                      sortDirection={getSortDirection("purchase_price")}
+                      onSort={() => requestSort("purchase_price")}
+                    >
+                      Price
+                    </SortableGridHead>
+                    <div role="columnheader" />
+                  </div>
+                  {/* Virtual body */}
+                  <div style={{ height: `${virtualizer.getTotalSize()}px`, position: 'relative' }}>
                         {virtualizer.getVirtualItems().map((virtualItem) => {
                           const inventory = sortedInventories[virtualItem.index];
                           const isPending = '_pending' in inventory && inventory._pending;
                           return (
-                            <TableRow
+                            <div
                               key={inventory.id}
-                              className={cn(isPending && "bg-amber-50")}
+                              role="row"
+                              className={cn(
+                                "grid items-center border-b text-sm",
+                                isPending && "bg-amber-50",
+                                !isPending && "hover:bg-muted/50"
+                              )}
                               style={{
+                                gridTemplateColumns: '50px 1fr 120px 60px 110px 120px 90px 50px',
                                 position: 'absolute',
                                 top: 0,
                                 left: 0,
@@ -1332,18 +1350,18 @@ export default function InventoryPage() {
                                 transform: `translateY(${virtualItem.start}px)`,
                               }}
                             >
-                              <TableCell>
+                              <div className="p-2" role="cell">
                                 <Checkbox
                                   checked={isSelected(inventory.id)}
                                   onCheckedChange={() => toggleSelection(inventory.id)}
                                   disabled={isPending}
                                   aria-label={`Select ${getItemName(inventory.item_id)}`}
                                 />
-                              </TableCell>
-                              <TableCell>
+                              </div>
+                              <div className="p-2 min-w-0" role="cell">
                                 <div className="flex items-center gap-2">
-                                  <div>
-                                    <div className="font-medium">{getItemName(inventory.item_id)}</div>
+                                  <div className="min-w-0">
+                                    <div className="font-medium truncate">{getItemName(inventory.item_id)}</div>
                                     <div className="text-sm text-muted-foreground font-mono">
                                       {getItemSKU(inventory.item_id)}
                                     </div>
@@ -1361,22 +1379,22 @@ export default function InventoryPage() {
                                     </Badge>
                                   )}
                                 </div>
-                              </TableCell>
-                              <TableCell>
+                              </div>
+                              <div className="p-2" role="cell">
                                 <div className="flex items-center gap-2">
-                                  <MapPin className="h-4 w-4 text-muted-foreground" />
-                                  <div>
-                                    <div>{getLocationName(inventory.location_id)}</div>
+                                  <MapPin className="h-4 w-4 text-muted-foreground shrink-0" />
+                                  <div className="min-w-0">
+                                    <div className="truncate">{getLocationName(inventory.location_id)}</div>
                                     {inventory.container_id && (
                                       <div className="text-sm text-muted-foreground flex items-center gap-1">
-                                        <Box className="h-3 w-3" />
-                                        {getContainerName(inventory.container_id)}
+                                        <Box className="h-3 w-3 shrink-0" />
+                                        <span className="truncate">{getContainerName(inventory.container_id)}</span>
                                       </div>
                                     )}
                                   </div>
                                 </div>
-                              </TableCell>
-                              <TableCell>
+                              </div>
+                              <div className="p-2" role="cell">
                                 {isPending ? (
                                   <span className="font-medium">{formatNumber(inventory.quantity)}</span>
                                 ) : (
@@ -1390,8 +1408,8 @@ export default function InventoryPage() {
                                     className="font-medium"
                                   />
                                 )}
-                              </TableCell>
-                              <TableCell>
+                              </div>
+                              <div className="p-2" role="cell">
                                 {isPending ? (
                                   <Badge variant="outline">
                                     {CONDITION_OPTIONS.find(c => c.value === inventory.condition)?.label || inventory.condition}
@@ -1408,8 +1426,8 @@ export default function InventoryPage() {
                                     )}
                                   />
                                 )}
-                              </TableCell>
-                              <TableCell>
+                              </div>
+                              <div className="p-2" role="cell">
                                 {isPending ? (
                                   <StatusBadge status={inventory.status} />
                                 ) : (
@@ -1422,11 +1440,11 @@ export default function InventoryPage() {
                                     renderValue={(value) => <StatusBadge status={value as InventoryStatus} />}
                                   />
                                 )}
-                              </TableCell>
-                              <TableCell className="text-right tabular-nums">
+                              </div>
+                              <div className="p-2 text-center tabular-nums" role="cell">
                                 {formatCurrencyValue(inventory.purchase_price, inventory.currency_code)}
-                              </TableCell>
-                              <TableCell>
+                              </div>
+                              <div className="p-2" role="cell">
                                 {!isPending && (
                                   <DropdownMenu>
                                     <DropdownMenuTrigger asChild>
@@ -1467,12 +1485,10 @@ export default function InventoryPage() {
                                     </DropdownMenuContent>
                                   </DropdownMenu>
                                 )}
-                              </TableCell>
-                            </TableRow>
+                              </div>
+                            </div>
                           );
                         })}
-                      </TableBody>
-                    </Table>
                   </div>
                 </div>
               </div>
