@@ -68,6 +68,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { SearchableSelect } from "@/components/ui/searchable-select";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { InfiniteScrollTrigger } from "@/components/ui/infinite-scroll-trigger";
@@ -1522,57 +1523,57 @@ export default function InventoryPage() {
                 <Label htmlFor="item">
                   Item <span className="text-destructive">*</span>
                 </Label>
-                <Select value={formItemId} onValueChange={setFormItemId} required>
-                  <SelectTrigger id="item" aria-required="true">
-                    <SelectValue placeholder="Select item" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {allItems.map((item) => (
-                      <SelectItem key={item.id} value={item.id}>
-                        {item.name} ({item.sku}){'_pending' in item && item._pending ? ' (pending)' : ''}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <SearchableSelect
+                  id="item"
+                  aria-required={true}
+                  placeholder="Select item"
+                  emptyText="No items found."
+                  value={formItemId}
+                  onValueChange={setFormItemId}
+                  options={allItems.map((item) => ({
+                    value: item.id,
+                    label: `${item.name} (${item.sku})${'_pending' in item && item._pending ? ' (pending)' : ''}`,
+                  }))}
+                />
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="location">
                   Location <span className="text-destructive">*</span>
                 </Label>
-                <Select value={formLocationId} onValueChange={setFormLocationId} required>
-                  <SelectTrigger id="location" aria-required="true">
-                    <SelectValue placeholder="Select location" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {allLocations.map((loc) => (
-                      <SelectItem key={loc.id} value={loc.id}>
-                        {loc.name}{'_pending' in loc && loc._pending ? ' (pending)' : ''}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <SearchableSelect
+                  id="location"
+                  aria-required={true}
+                  placeholder="Select location"
+                  emptyText="No locations found."
+                  value={formLocationId}
+                  onValueChange={setFormLocationId}
+                  options={allLocations.map((loc) => ({
+                    value: loc.id,
+                    label: `${loc.name}${'_pending' in loc && loc._pending ? ' (pending)' : ''}`,
+                  }))}
+                />
               </div>
             </div>
 
             <div className="grid grid-cols-3 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="container">Container</Label>
-                <Select value={formContainerId || "none"} onValueChange={(value) => setFormContainerId(value === "none" ? "" : value)}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="None" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">None</SelectItem>
-                    {allContainers
+                <SearchableSelect
+                  placeholder="None"
+                  emptyText="No containers found."
+                  value={formContainerId || "none"}
+                  onValueChange={(value) => setFormContainerId(value === "none" ? "" : value)}
+                  options={[
+                    { value: "none", label: "None" },
+                    ...allContainers
                       .filter(c => !formLocationId || c.location_id === formLocationId)
-                      .map((container) => (
-                        <SelectItem key={container.id} value={container.id}>
-                          {container.name}{'_pending' in container && container._pending ? ' (pending)' : ''}
-                        </SelectItem>
-                      ))}
-                  </SelectContent>
-                </Select>
+                      .map((container) => ({
+                        value: container.id,
+                        label: `${container.name}${'_pending' in container && container._pending ? ' (pending)' : ''}`,
+                      })),
+                  ]}
+                />
               </div>
 
               <div className="space-y-2">

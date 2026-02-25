@@ -59,6 +59,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
+import { SearchableSelect } from "@/components/ui/searchable-select";
 import { ImportDialog, type ImportResult } from "@/components/ui/import-dialog";
 import { useWorkspace } from "@/lib/hooks/use-workspace";
 import { useDebouncedValue } from "@/lib/hooks/use-debounced-value";
@@ -845,27 +846,19 @@ export default function LocationsPage() {
 
             <div className="space-y-2">
               <Label htmlFor="parent">Parent Location</Label>
-              <Select
+              <SearchableSelect
+                placeholder="None (root location)"
+                emptyText="No locations found."
                 value={formParentId || "none"}
                 onValueChange={(value) => setFormParentId(value === "none" ? "" : value)}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="None (root location)" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">
-                    <div className="flex items-center gap-2">
-                      <Home className="h-4 w-4" />
-                      None (root location)
-                    </div>
-                  </SelectItem>
-                  {getAvailableParents().map((loc) => (
-                    <SelectItem key={loc.id} value={loc.id}>
-                      {loc.name}{'_pending' in loc && loc._pending ? ' (pending)' : ''}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                options={[
+                  { value: "none", label: "None (root location)" },
+                  ...getAvailableParents().map((loc) => ({
+                    value: loc.id,
+                    label: `${loc.name}${'_pending' in loc && loc._pending ? ' (pending)' : ''}`,
+                  })),
+                ]}
+              />
             </div>
 
             <div className="space-y-2">

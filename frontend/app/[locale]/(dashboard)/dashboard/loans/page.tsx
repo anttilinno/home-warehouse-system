@@ -62,6 +62,7 @@ import {
 } from "@/components/ui/table";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+import { SearchableSelect } from "@/components/ui/searchable-select";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   Select,
@@ -1206,18 +1207,17 @@ export default function LoansPage() {
             {/* Item Selection */}
             <div className="space-y-2">
               <Label htmlFor="item">Item *</Label>
-              <Select value={formItemId} onValueChange={setFormItemId}>
-                <SelectTrigger id="item">
-                  <SelectValue placeholder="Select an item" />
-                </SelectTrigger>
-                <SelectContent>
-                  {items.map((item) => (
-                    <SelectItem key={item.id} value={item.id}>
-                      {item.name} {item.sku && `(${item.sku})`}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <SearchableSelect
+                id="item"
+                placeholder="Select an item"
+                emptyText="No items found."
+                value={formItemId}
+                onValueChange={setFormItemId}
+                options={items.map((item) => ({
+                  value: item.id,
+                  label: `${item.name}${item.sku ? ` (${item.sku})` : ''}`,
+                }))}
+              />
             </div>
 
             {/* Inventory Selection */}
@@ -1252,19 +1252,17 @@ export default function LoansPage() {
             {/* Borrower Selection */}
             <div className="space-y-2">
               <Label htmlFor="borrower">Borrower *</Label>
-              <Select value={formBorrowerId} onValueChange={setFormBorrowerId}>
-                <SelectTrigger id="borrower">
-                  <SelectValue placeholder="Select a borrower" />
-                </SelectTrigger>
-                <SelectContent>
-                  {borrowers.map((borrower) => (
-                    <SelectItem key={borrower.id} value={borrower.id}>
-                      {borrower.name}
-                      {borrower.email && ` (${borrower.email})`}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <SearchableSelect
+                id="borrower"
+                placeholder="Select a borrower"
+                emptyText="No borrowers found."
+                value={formBorrowerId}
+                onValueChange={setFormBorrowerId}
+                options={borrowers.map((borrower) => ({
+                  value: borrower.id,
+                  label: `${borrower.name}${borrower.email ? ` (${borrower.email})` : ''}`,
+                }))}
+              />
             </div>
 
             <div className="grid grid-cols-2 gap-4">

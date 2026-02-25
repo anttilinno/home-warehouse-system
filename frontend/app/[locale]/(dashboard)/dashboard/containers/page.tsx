@@ -68,6 +68,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
+import { SearchableSelect } from "@/components/ui/searchable-select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { InfiniteScrollTrigger } from "@/components/ui/infinite-scroll-trigger";
 import { BulkActionBar } from "@/components/ui/bulk-action-bar";
@@ -1065,21 +1066,16 @@ export default function ContainersPage() {
               <Label htmlFor="location">
                 Location <span className="text-destructive">*</span>
               </Label>
-              <Select
+              <SearchableSelect
+                placeholder="Select a location"
+                emptyText="No locations found."
                 value={formLocationId}
-                onValueChange={(value) => setFormLocationId(value)}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select a location" />
-                </SelectTrigger>
-                <SelectContent>
-                  {allLocations.filter(loc => !loc.is_archived).map((loc) => (
-                    <SelectItem key={loc.id} value={loc.id}>
-                      {loc.name}{'_pending' in loc && loc._pending ? ' (pending)' : ''}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                onValueChange={setFormLocationId}
+                options={allLocations.filter(loc => !loc.is_archived).map((loc) => ({
+                  value: loc.id,
+                  label: `${loc.name}${'_pending' in loc && loc._pending ? ' (pending)' : ''}`,
+                }))}
+              />
             </div>
 
             <div className="space-y-2">

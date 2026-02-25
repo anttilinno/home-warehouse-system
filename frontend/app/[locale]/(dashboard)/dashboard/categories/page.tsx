@@ -65,6 +65,7 @@ import {
 } from "@/components/ui/select";
 import { ImportDialog, type ImportResult } from "@/components/ui/import-dialog";
 import { Badge } from "@/components/ui/badge";
+import { SearchableSelect } from "@/components/ui/searchable-select";
 import { useWorkspace } from "@/lib/hooks/use-workspace";
 import { useDebouncedValue } from "@/lib/hooks/use-debounced-value";
 import { useSSE, type SSEEvent } from "@/lib/hooks/use-sse";
@@ -898,22 +899,19 @@ export default function CategoriesPage() {
 
             <div className="space-y-2">
               <Label htmlFor="parent">{t("parent")}</Label>
-              <Select
+              <SearchableSelect
+                placeholder={t("parentPlaceholder")}
+                emptyText="No categories found."
                 value={formParentId || "none"}
                 onValueChange={(v) => setFormParentId(v === "none" ? null : v)}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder={t("parentPlaceholder")} />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">{t("parentPlaceholder")}</SelectItem>
-                  {getAvailableParents().map((cat) => (
-                    <SelectItem key={cat.id} value={cat.id}>
-                      {cat.name}{'_pending' in cat && cat._pending ? ' (pending)' : ''}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                options={[
+                  { value: "none", label: t("parentPlaceholder") },
+                  ...getAvailableParents().map((cat) => ({
+                    value: cat.id,
+                    label: `${cat.name}${'_pending' in cat && cat._pending ? ' (pending)' : ''}`,
+                  })),
+                ]}
+              />
             </div>
           </div>
 
