@@ -101,6 +101,7 @@
       "analytics": "Analytics",
       "declutter": "Declutter",
       "outOfStock": "Out of Stock",
+      "inventory": "Inventory",
       "imports": "Imports",
       "approvals": "Approvals",
       "myChanges": "My Changes",
@@ -1159,5 +1160,9 @@
         "createFailed": "Failed to create item"
       }
     }
+  },
+  "inventory": {
+    "purchasePrice": "Purchase Price",
+    "currency": "Currency"
   }
 }

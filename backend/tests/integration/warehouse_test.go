@@ -170,37 +170,61 @@ func TestInventoryCRUD(t *testing.T) {
 		ID uuid.UUID `json:"id"`
 	}](t, resp)
 
-	// Create inventory
+	// Create inventory with purchase price
 	resp = ts.Post(workspacePath+"/inventory", map[string]interface{}{
-		"item_id":     itemResult.ID,
-		"location_id": locResult.ID,
-		"quantity":    10,
-		"condition":   "NEW",
-		"status":      "AVAILABLE",
+		"item_id":        itemResult.ID,
+		"location_id":    locResult.ID,
+		"quantity":       10,
+		"condition":      "NEW",
+		"status":         "AVAILABLE",
+		"purchase_price": 4999,
+		"currency_code":  "EUR",
 	})
 	RequireStatus(t, resp, http.StatusOK)
 
 	var invResult struct {
-		ID        uuid.UUID `json:"id"`
-		Quantity  int       `json:"quantity"`
-		Condition string    `json:"condition"`
-		Status    string    `json:"status"`
+		ID            uuid.UUID `json:"id"`
+		Quantity      int       `json:"quantity"`
+		Condition     string    `json:"condition"`
+		Status        string    `json:"status"`
+		PurchasePrice *int      `json:"purchase_price"`
+		CurrencyCode  *string   `json:"currency_code"`
 	}
 	invResult = ParseResponse[struct {
-		ID        uuid.UUID `json:"id"`
-		Quantity  int       `json:"quantity"`
-		Condition string    `json:"condition"`
-		Status    string    `json:"status"`
+		ID            uuid.UUID `json:"id"`
+		Quantity      int       `json:"quantity"`
+		Condition     string    `json:"condition"`
+		Status        string    `json:"status"`
+		PurchasePrice *int      `json:"purchase_price"`
+		CurrencyCode  *string   `json:"currency_code"`
 	}](t, resp)
 
 	assert.NotEqual(t, uuid.Nil, invResult.ID)
 	assert.Equal(t, 10, invResult.Quantity)
 	assert.Equal(t, "NEW", invResult.Condition)
 	assert.Equal(t, "AVAILABLE", invResult.Status)
+	assert.NotNil(t, invResult.PurchasePrice)
+	assert.Equal(t, 4999, *invResult.PurchasePrice)
+	assert.NotNil(t, invResult.CurrencyCode)
+	assert.Equal(t, "EUR", *invResult.CurrencyCode)
 
-	// Get inventory
+	// Get inventory — verify price persisted through round-trip
 	resp = ts.Get(fmt.Sprintf("%s/inventory/%s", workspacePath, invResult.ID))
 	RequireStatus(t, resp, http.StatusOK)
+
+	var getResult struct {
+		PurchasePrice *int    `json:"purchase_price"`
+		CurrencyCode  *string `json:"currency_code"`
+	}
+	getResult = ParseResponse[struct {
+		PurchasePrice *int    `json:"purchase_price"`
+		CurrencyCode  *string `json:"currency_code"`
+	}](t, resp)
+
+	assert.NotNil(t, getResult.PurchasePrice)
+	assert.Equal(t, 4999, *getResult.PurchasePrice)
+	assert.NotNil(t, getResult.CurrencyCode)
+	assert.Equal(t, "EUR", *getResult.CurrencyCode)
 
 	// Get total quantity for item
 	resp = ts.Get(fmt.Sprintf("%s/inventory/total-quantity/%s", workspacePath, itemResult.ID))

@@ -101,6 +101,7 @@
       "analytics": "Analüütika",
       "declutter": "Korrastus",
       "outOfStock": "Otsas",
+      "inventory": "Inventar",
       "imports": "Import",
       "approvals": "Kinnitused",
       "myChanges": "Minu muudatused",
@@ -1003,5 +1004,9 @@
         "createFailed": "Eseme loomine ebaõnnestus"
       }
     }
+  },
+  "inventory": {
+    "purchasePrice": "Ostuhind",
+    "currency": "Valuuta"
   }
 }

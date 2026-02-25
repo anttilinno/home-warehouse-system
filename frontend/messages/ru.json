@@ -101,6 +101,7 @@
       "analytics": "Аналитика",
       "declutter": "Расхламление",
       "outOfStock": "Нет в наличии",
+      "inventory": "Инвентарь",
       "imports": "Импорт",
       "approvals": "Утверждения",
       "myChanges": "Мои изменения",
@@ -1003,5 +1004,9 @@
         "createFailed": "Не удалось создать предмет"
       }
     }
+  },
+  "inventory": {
+    "purchasePrice": "Цена покупки",
+    "currency": "Валюта"
   }
 }

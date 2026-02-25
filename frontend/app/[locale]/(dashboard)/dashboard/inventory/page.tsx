@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo, useRef } from "react";
+import { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import { useTranslations } from "next-intl";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { useDateFormat } from "@/lib/hooks/use-date-format";
@@ -119,6 +119,12 @@ const STATUS_OPTIONS: {
   { value: "IN_TRANSIT", label: "In Transit", color: "bg-orange-500", icon: Move },
   { value: "DISPOSED", label: "Disposed", color: "bg-gray-500", icon: Archive },
   { value: "MISSING", label: "Missing", color: "bg-red-500", icon: AlertCircle },
+];
+
+const CURRENCY_OPTIONS = [
+  { value: "EUR", label: "EUR" },
+  { value: "USD", label: "USD" },
+  { value: "GBP", label: "GBP" },
 ];
 
 interface InventoryFilterControlsProps {
@@ -439,6 +445,14 @@ export default function InventoryPage() {
   const { formatDate } = useDateFormat();
   const { formatNumber } = useNumberFormat();
 
+  const formatCurrencyValue = useCallback((amountCents: number | null | undefined, currencyCode: string | null | undefined): string => {
+    if (amountCents === null || amountCents === undefined) return "-";
+    const amount = amountCents / 100;
+    const currency = currencyCode || "EUR";
+    const symbol = currency === "USD" ? "$" : currency === "EUR" ? "\u20AC" : currency + " ";
+    return `${symbol}${formatNumber(amount, 2)}`;
+  }, [formatNumber]);
+
   const [items, setItems] = useState<Item[]>([]);
   const [locations, setLocations] = useState<Location[]>([]);
   const [containers, setContainers] = useState<Container[]>([]);
@@ -475,6 +489,8 @@ export default function InventoryPage() {
   const [formQuantity, setFormQuantity] = useState(1);
   const [formCondition, setFormCondition] = useState<InventoryCondition>("GOOD");
   const [formStatus, setFormStatus] = useState<InventoryStatus>("AVAILABLE");
+  const [formPurchasePrice, setFormPurchasePrice] = useState("");
+  const [formCurrencyCode, setFormCurrencyCode] = useState("EUR");
   const [formNotes, setFormNotes] = useState("");
   const [isSaving, setIsSaving] = useState(false);
 
@@ -795,6 +811,27 @@ export default function InventoryPage() {
     });
   }, [mergedInventories, showArchived, debouncedSearchQuery, allItems, allLocations, activeFilters]);
 
+  const getItemName = (itemId: string) => {
+    const item = allItems.find(i => i.id === itemId);
+    return item?.name || "Unknown Item";
+  };
+
+  const getItemSKU = (itemId: string) => {
+    const item = allItems.find(i => i.id === itemId);
+    return item?.sku || "";
+  };
+
+  const getLocationName = (locationId: string) => {
+    const location = allLocations.find(l => l.id === locationId);
+    return location?.name || "Unknown Location";
+  };
+
+  const getContainerName = (containerId: string | null | undefined) => {
+    if (!containerId) return null;
+    const container = allContainers.find(c => c.id === containerId);
+    return container?.name || null;
+  };
+
   // Flatten inventory data for sorting (add item name, location name, container name)
   const flattenedInventories = useMemo(() => {
     return filteredInventories.map(inv => ({
@@ -883,27 +920,6 @@ export default function InventoryPage() {
     ignoreInputFields: true,
   });
 
-  const getItemName = (itemId: string) => {
-    const item = allItems.find(i => i.id === itemId);
-    return item?.name || "Unknown Item";
-  };
-
-  const getItemSKU = (itemId: string) => {
-    const item = allItems.find(i => i.id === itemId);
-    return item?.sku || "";
-  };
-
-  const getLocationName = (locationId: string) => {
-    const location = allLocations.find(l => l.id === locationId);
-    return location?.name || "Unknown Location";
-  };
-
-  const getContainerName = (containerId: string | null | undefined) => {
-    if (!containerId) return null;
-    const container = allContainers.find(c => c.id === containerId);
-    return container?.name || null;
-  };
-
   // Export columns definition
   const exportColumns: ColumnDefinition<Inventory>[] = useMemo(() => [
     { key: "item_id", label: "Item", formatter: (_, inv) => getItemName(inv.item_id) },
@@ -913,12 +929,14 @@ export default function InventoryPage() {
     { key: "quantity", label: "Quantity" },
     { key: "condition", label: "Condition" },
     { key: "status", label: "Status" },
+    { key: "purchase_price", label: "Purchase Price", formatter: (value, inv) => formatCurrencyValue(value, inv.currency_code) },
+    { key: "currency_code", label: "Currency" },
     { key: "unit_price", label: "Unit Price", formatter: (value) => value ? `$${formatNumber(value / 100, 2)}` : "-" },
     { key: "total_value", label: "Total Value", formatter: (value) => value ? `$${formatNumber(value / 100, 2)}` : "-" },
     { key: "notes", label: "Notes" },
     { key: "created_at", label: "Created Date", formatter: (value) => formatDate(value) },
     { key: "updated_at", label: "Updated Date", formatter: (value) => formatDate(value) },
-  ], [items, locations, containers, formatDate, formatNumber]);
+  ], [items, locations, containers, formatDate, formatNumber, formatCurrencyValue]);
 
   const openCreateDialog = () => {
     setEditingInventory(null);
@@ -928,6 +946,8 @@ export default function InventoryPage() {
     setFormQuantity(1);
     setFormCondition("GOOD");
     setFormStatus("AVAILABLE");
+    setFormPurchasePrice("");
+    setFormCurrencyCode("EUR");
     setFormNotes("");
     setDialogOpen(true);
   };
@@ -962,6 +982,8 @@ export default function InventoryPage() {
         quantity: formQuantity,
         condition: formCondition,
         status: formStatus,
+        purchase_price: formPurchasePrice ? Math.round(parseFloat(formPurchasePrice) * 100) : undefined,
+        currency_code: formPurchasePrice ? formCurrencyCode : undefined,
         notes: formNotes || undefined,
       };
       await createInventoryOffline(createPayload, undefined, dependsOn.length > 0 ? dependsOn : undefined);
@@ -1267,6 +1289,12 @@ export default function InventoryPage() {
                         >
                           Status
                         </SortableTableHead>
+                        <SortableTableHead
+                          sortDirection={getSortDirection("purchase_price")}
+                          onSort={() => requestSort("purchase_price")}
+                        >
+                          Price
+                        </SortableTableHead>
                         <TableHead className="w-[50px]" />
                       </TableRow>
                     </TableHeader>
@@ -1394,6 +1422,9 @@ export default function InventoryPage() {
                                     renderValue={(value) => <StatusBadge status={value as InventoryStatus} />}
                                   />
                                 )}
+                              </TableCell>
+                              <TableCell className="text-right tabular-nums">
+                                {formatCurrencyValue(inventory.purchase_price, inventory.currency_code)}
                               </TableCell>
                               <TableCell>
                                 {!isPending && (
@@ -1573,6 +1604,36 @@ export default function InventoryPage() {
                   ))}
                 </SelectContent>
               </Select>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="purchasePrice">{t("purchasePrice")}</Label>
+                <Input
+                  id="purchasePrice"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  value={formPurchasePrice}
+                  onChange={(e) => setFormPurchasePrice(e.target.value)}
+                  placeholder="0.00"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="currency">{t("currency")}</Label>
+                <Select value={formCurrencyCode} onValueChange={setFormCurrencyCode}>
+                  <SelectTrigger id="currency">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {CURRENCY_OPTIONS.map((opt) => (
+                      <SelectItem key={opt.value} value={opt.value}>
+                        {opt.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
 
             <div className="space-y-2">

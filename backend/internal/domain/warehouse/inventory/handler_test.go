@@ -144,6 +144,35 @@ func TestInventoryHandler_Create(t *testing.T) {
 		mockSvc.AssertExpectations(t)
 	})
 
+	t.Run("creates inventory with purchase price and currency", func(t *testing.T) {
+		itemID := uuid.New()
+		locationID := uuid.New()
+
+		testInv, _ := inventory.NewInventory(
+			setup.WorkspaceID,
+			itemID,
+			locationID,
+			nil,
+			1,
+			inventory.ConditionNew,
+			inventory.StatusAvailable,
+			nil,
+		)
+
+		mockSvc.On("Create", mock.Anything, mock.MatchedBy(func(input inventory.CreateInput) bool {
+			return input.ItemID == itemID &&
+				input.PurchasePrice != nil && *input.PurchasePrice == 4999 &&
+				input.CurrencyCode != nil && *input.CurrencyCode == "EUR"
+		})).Return(testInv, nil).Once()
+
+		body := fmt.Sprintf(`{"item_id":"%s","location_id":"%s","quantity":1,"condition":"NEW","status":"AVAILABLE","purchase_price":4999,"currency_code":"EUR"}`,
+			itemID, locationID)
+		rec := setup.Post("/inventory", body)
+
+		testutil.AssertStatus(t, rec, http.StatusOK)
+		mockSvc.AssertExpectations(t)
+	})
+
 	t.Run("returns 422 for invalid condition", func(t *testing.T) {
 		// Huma validates enum at framework level before handler, returning 422
 		body := `{"item_id":"00000000-0000-0000-0000-000000000000","location_id":"00000000-0000-0000-0000-000000000000","quantity":1,"condition":"INVALID","status":"AVAILABLE"}`
@@ -227,6 +256,33 @@ func TestInventoryHandler_Update(t *testing.T) {
 			Return(testInv, nil).Once()
 
 		body := fmt.Sprintf(`{"location_id":"%s","quantity":15,"condition":"EXCELLENT"}`, locationID)
+		rec := setup.Patch(fmt.Sprintf("/inventory/%s", invID), body)
+
+		testutil.AssertStatus(t, rec, http.StatusOK)
+		mockSvc.AssertExpectations(t)
+	})
+
+	t.Run("updates inventory with purchase price and currency", func(t *testing.T) {
+		itemID := uuid.New()
+		locationID := uuid.New()
+		testInv, _ := inventory.NewInventory(
+			setup.WorkspaceID,
+			itemID,
+			locationID,
+			nil,
+			5,
+			inventory.ConditionGood,
+			inventory.StatusAvailable,
+			nil,
+		)
+		invID := testInv.ID()
+
+		mockSvc.On("Update", mock.Anything, invID, setup.WorkspaceID, mock.MatchedBy(func(input inventory.UpdateInput) bool {
+			return input.PurchasePrice != nil && *input.PurchasePrice == 19999 &&
+				input.CurrencyCode != nil && *input.CurrencyCode == "USD"
+		})).Return(testInv, nil).Once()
+
+		body := fmt.Sprintf(`{"location_id":"%s","quantity":5,"condition":"GOOD","purchase_price":19999,"currency_code":"USD"}`, locationID)
 		rec := setup.Patch(fmt.Sprintf("/inventory/%s", invID), body)
 
 		testutil.AssertStatus(t, rec, http.StatusOK)
