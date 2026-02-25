@@ -251,11 +251,9 @@ export function PendingChangesDrawer({ open, onOpenChange }: PendingChangesDrawe
                         </p>
 
                         {mutation.lastError && (
-                          <p className="text-xs text-red-500 mt-1 flex items-center gap-1">
-                            <AlertCircle className="h-3 w-3" />
-                            {mutation.lastError.length > 50
-                              ? mutation.lastError.substring(0, 50) + "..."
-                              : mutation.lastError}
+                          <p className="text-xs text-red-500 mt-1 flex items-start gap-1 break-all">
+                            <AlertCircle className="h-3 w-3 flex-shrink-0 mt-0.5" />
+                            {mutation.lastError}
                           </p>
                         )}
                       </div>

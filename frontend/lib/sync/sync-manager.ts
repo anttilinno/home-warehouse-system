@@ -349,6 +349,8 @@ export class SyncManager {
     const syncedKeys = new Set<string>();
     // Track failed idempotency keys for cascade failure
     const failedKeys = new Set<string>();
+    // Map idempotency keys to real server IDs for dependent mutations
+    const resolvedIds = new Map<string, string>();
 
     try {
       const pending = await getPendingMutations();
@@ -407,7 +409,7 @@ export class SyncManager {
             continue;
           }
 
-          const success = await this.processMutation(mutation);
+          const success = await this.processMutation(mutation, resolvedIds);
 
           if (success) {
             syncedKeys.add(mutation.idempotencyKey);
@@ -439,7 +441,10 @@ export class SyncManager {
    * @param mutation - The mutation to process
    * @returns True if successful, false if needs retry
    */
-  private async processMutation(mutation: MutationQueueEntry): Promise<boolean> {
+  private async processMutation(
+    mutation: MutationQueueEntry,
+    resolvedIds: Map<string, string>,
+  ): Promise<boolean> {
     // Mark as syncing
     await updateMutationStatus(mutation.id, { status: "syncing" });
 
@@ -447,22 +452,38 @@ export class SyncManager {
       const url = this.buildApiUrl(mutation);
       const method = mutation.operation === "create" ? "POST" : "PATCH";
 
+      // Resolve temp IDs in the payload before sending
+      const payload = this.resolvePayloadIds(prepareSyncPayload(mutation), resolvedIds);
+
       console.log(`[SyncManager] Sending ${method} to ${url}`);
 
-      // Use prepareSyncPayload to include updated_at for conflict detection
       const response = await fetch(url, {
         method,
         headers: {
           "Content-Type": "application/json",
           "Idempotency-Key": mutation.idempotencyKey,
         },
-        body: JSON.stringify(prepareSyncPayload(mutation)),
+        body: JSON.stringify(payload),
         credentials: "include",
       });
 
       if (response.ok || response.status === 202) {
         // Success or accepted (approval pipeline)
         console.log(`[SyncManager] Mutation ${mutation.id} synced successfully`);
+
+        // For create operations, map the temp ID to the real server ID
+        if (mutation.operation === "create") {
+          try {
+            const data = await response.clone().json();
+            if (data?.id && data.id !== mutation.idempotencyKey) {
+              resolvedIds.set(mutation.idempotencyKey, data.id);
+              console.log(`[SyncManager] Resolved ${mutation.idempotencyKey} -> ${data.id}`);
+            }
+          } catch {
+            // Response may not be JSON - that's OK
+          }
+        }
+
         await removeMutation(mutation.id);
         this.broadcast({ type: "MUTATION_SYNCED", payload: { mutation } });
         return true;
@@ -484,7 +505,10 @@ export class SyncManager {
       if (!shouldRetry(new Error(`HTTP ${response.status}`), response)) {
         // Client error (4xx except 429, 408, 409), don't retry
         const errorText = await response.text();
-        console.log(`[SyncManager] Mutation ${mutation.id} failed permanently: ${response.status}`);
+        console.error(
+          `[SyncManager] Mutation ${mutation.id} failed permanently: ${response.status}`,
+          { error: errorText, entity: mutation.entity, operation: mutation.operation, payload: mutation.payload }
+        );
         await updateMutationStatus(mutation.id, {
           status: "failed",
           lastError: `HTTP ${response.status}: ${errorText.slice(0, 200)}`,
@@ -724,6 +748,27 @@ export class SyncManager {
     }
 
     return entityPath;
+  }
+
+  /**
+   * Resolve temporary IDs (idempotency keys) in a payload with real server IDs.
+   * Scans all string values ending in _id for matches in the resolved map.
+   */
+  private resolvePayloadIds(
+    payload: Record<string, unknown>,
+    resolvedIds: Map<string, string>,
+  ): Record<string, unknown> {
+    if (resolvedIds.size === 0) return payload;
+
+    const resolved = { ...payload };
+    for (const [key, value] of Object.entries(resolved)) {
+      if (typeof value === "string" && key.endsWith("_id") && resolvedIds.has(value)) {
+        const realId = resolvedIds.get(value)!;
+        console.log(`[SyncManager] Resolving ${key}: ${value} -> ${realId}`);
+        resolved[key] = realId;
+      }
+    }
+    return resolved;
   }
 
   // ==========================================================================

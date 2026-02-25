@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useOffline } from "@/lib/contexts/offline-context";
 import { Badge } from "@/components/ui/badge";
-import { Cloud, CloudOff, RefreshCw, Check, Clock } from "lucide-react";
+import { Cloud, CloudOff, RefreshCw, Check, Clock, AlertCircle } from "lucide-react";
 import { PendingChangesDrawer } from "./pending-changes-drawer";
 
 /**
@@ -31,6 +31,7 @@ function formatRelativeTime(timestamp: number): string {
  * States:
  * - Offline: Shows "Offline" with cloud-off icon and pending count
  * - Syncing: Shows "Syncing..." with spinning refresh icon and pending count
+ * - Failed: Shows "{count} failed" with alert icon, clickable to open drawer
  * - Pending: Shows "{count} pending" with clock icon, clickable to open drawer
  * - Synced: Shows relative time (e.g., "2m ago") with green checkmark, clickable to trigger sync
  * - Not synced: Shows "Not synced" with cloud icon
@@ -42,9 +43,12 @@ export function SyncStatusIndicator() {
     lastSyncTimestamp,
     triggerSync,
     pendingMutationCount,
+    failedMutationCount,
     isMutationSyncing,
   } = useOffline();
   const [drawerOpen, setDrawerOpen] = useState(false);
+
+  const totalQueueCount = pendingMutationCount + failedMutationCount;
 
   // Offline state - highest priority
   if (!isOnline) {
@@ -53,14 +57,14 @@ export function SyncStatusIndicator() {
         <Badge
           variant="secondary"
           className="gap-1.5 text-xs cursor-pointer hover:bg-accent"
-          onClick={() => pendingMutationCount > 0 && setDrawerOpen(true)}
-          title={pendingMutationCount > 0 ? "Click to view pending changes" : undefined}
+          onClick={() => totalQueueCount > 0 && setDrawerOpen(true)}
+          title={totalQueueCount > 0 ? "Click to view pending changes" : undefined}
         >
           <CloudOff className="h-3 w-3" />
           Offline
-          {pendingMutationCount > 0 && (
+          {totalQueueCount > 0 && (
             <span className="ml-1 rounded-full bg-yellow-500 px-1.5 text-[10px] text-white">
-              {pendingMutationCount}
+              {totalQueueCount}
             </span>
           )}
         </Badge>
@@ -76,14 +80,40 @@ export function SyncStatusIndicator() {
         <Badge
           variant="secondary"
           className="gap-1.5 text-xs cursor-pointer hover:bg-accent"
-          onClick={() => pendingMutationCount > 0 && setDrawerOpen(true)}
-          title={pendingMutationCount > 0 ? "Click to view pending changes" : undefined}
+          onClick={() => totalQueueCount > 0 && setDrawerOpen(true)}
+          title={totalQueueCount > 0 ? "Click to view pending changes" : undefined}
         >
           <RefreshCw className="h-3 w-3 animate-spin" />
           Syncing...
-          {pendingMutationCount > 0 && (
+          {totalQueueCount > 0 && (
             <span className="ml-1 rounded-full bg-blue-500 px-1.5 text-[10px] text-white">
-              {pendingMutationCount}
+              {totalQueueCount}
+            </span>
+          )}
+        </Badge>
+        <PendingChangesDrawer open={drawerOpen} onOpenChange={setDrawerOpen} />
+      </>
+    );
+  }
+
+  // Has failed mutations - show with error styling
+  if (failedMutationCount > 0) {
+    return (
+      <>
+        <Badge
+          variant="destructive"
+          className="gap-1.5 text-xs cursor-pointer hover:bg-destructive/80"
+          role="button"
+          tabIndex={0}
+          onClick={() => setDrawerOpen(true)}
+          onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") setDrawerOpen(true); }}
+          title="Click to view failed changes"
+        >
+          <AlertCircle className="h-3 w-3" />
+          {failedMutationCount} failed
+          {pendingMutationCount > 0 && (
+            <span className="ml-1 rounded-full bg-yellow-500 px-1.5 text-[10px] text-white">
+              +{pendingMutationCount}
             </span>
           )}
         </Badge>

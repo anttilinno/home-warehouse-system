@@ -188,6 +188,17 @@ export async function getPendingMutationCount(): Promise<number> {
 }
 
 /**
+ * Get count of failed mutations.
+ * Useful for UI indicators showing mutations that need attention.
+ *
+ * @returns Number of failed mutations
+ */
+export async function getFailedMutationCount(): Promise<number> {
+  const db = await getDB();
+  return db.countFromIndex("mutationQueue", "status", "failed");
+}
+
+/**
  * Update parameters for a mutation
  */
 export interface UpdateMutationParams {

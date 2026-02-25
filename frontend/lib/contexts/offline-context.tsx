@@ -4,7 +4,7 @@ import React, { createContext, useContext, useState, useEffect, useCallback, use
 import { initDB, getSyncMeta } from "@/lib/db/offline-db";
 import { syncWorkspaceData, type SyncResult, type EntityType } from "@/lib/db/sync-operations";
 import { syncManager } from "@/lib/sync/sync-manager";
-import { getPendingMutationCount } from "@/lib/sync/mutation-queue";
+import { getPendingMutationCount, getFailedMutationCount } from "@/lib/sync/mutation-queue";
 
 interface OfflineContextValue {
   isOnline: boolean;
@@ -29,6 +29,8 @@ interface OfflineContextValue {
   triggerSync: () => Promise<void>;
   /** Count of pending offline mutations */
   pendingMutationCount: number;
+  /** Count of failed offline mutations that need attention */
+  failedMutationCount: number;
   /** Whether mutations are currently syncing */
   isMutationSyncing: boolean;
   /** Manually trigger mutation queue processing */
@@ -52,6 +54,7 @@ export function OfflineProvider({ children }: { children: ReactNode }) {
 
   // Mutation queue state
   const [pendingMutationCount, setPendingMutationCount] = useState(0);
+  const [failedMutationCount, setFailedMutationCount] = useState(0);
   const [isMutationSyncing, setIsMutationSyncing] = useState(false);
 
   // Track if initial sync has been triggered to prevent double-sync
@@ -207,8 +210,9 @@ export function OfflineProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!syncManager) return;
 
-    // Get initial pending mutation count
+    // Get initial mutation counts
     getPendingMutationCount().then(setPendingMutationCount);
+    getFailedMutationCount().then(setFailedMutationCount);
 
     // Subscribe to sync events
     const unsubscribe = syncManager.subscribe((event) => {
@@ -222,11 +226,13 @@ export function OfflineProvider({ children }: { children: ReactNode }) {
           if (event.payload?.queueLength !== undefined) {
             setPendingMutationCount(event.payload.queueLength);
           }
+          getFailedMutationCount().then(setFailedMutationCount);
           break;
         case "QUEUE_UPDATED":
         case "MUTATION_SYNCED":
         case "MUTATION_FAILED":
           getPendingMutationCount().then(setPendingMutationCount);
+          getFailedMutationCount().then(setFailedMutationCount);
           break;
       }
     });
@@ -262,6 +268,7 @@ export function OfflineProvider({ children }: { children: ReactNode }) {
     syncCounts,
     triggerSync,
     pendingMutationCount,
+    failedMutationCount,
     isMutationSyncing,
     processMutationQueue,
   };
