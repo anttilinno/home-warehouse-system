@@ -717,7 +717,7 @@ export class SyncManager {
     }
 
     const baseUrl = process.env.NEXT_PUBLIC_API_URL || "";
-    const entityPath = `${baseUrl}/api/workspaces/${workspaceId}/${mutation.entity}`;
+    const entityPath = `${baseUrl}/workspaces/${workspaceId}/${mutation.entity}`;
 
     if (mutation.operation === "update" && mutation.entityId) {
       return `${entityPath}/${mutation.entityId}`;

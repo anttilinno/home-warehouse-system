@@ -5,6 +5,7 @@ import { Moon, Sun } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
+import { persistThemeToBackend } from "@/components/providers/theme-provider";
 
 export function ThemeToggle() {
   const { resolvedTheme, setTheme } = useTheme();
@@ -25,12 +26,18 @@ export function ThemeToggle() {
 
   const isDark = resolvedTheme === "dark";
 
+  const handleToggle = () => {
+    const newTheme = isDark ? "light" : "dark";
+    setTheme(newTheme);
+    persistThemeToBackend(newTheme);
+  };
+
   return (
     <Button
       variant="ghost"
       size="icon"
       className="h-9 w-9"
-      onClick={() => setTheme(isDark ? "light" : "dark")}
+      onClick={handleToggle}
       aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
     >
       {isDark ? (

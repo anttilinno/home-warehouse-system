@@ -28,6 +28,7 @@ import {
   Laptop,
   AlertCircle,
 } from "lucide-react";
+import { persistThemeToBackend } from "@/components/providers/theme-provider";
 
 export interface CommandPaletteProps {
   open: boolean;
@@ -208,6 +209,7 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
       icon: Sun,
       onSelect: () => {
         setTheme("light");
+        persistThemeToBackend("light");
         onOpenChange(false);
       },
       category: "actions",
@@ -218,6 +220,7 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
       icon: Moon,
       onSelect: () => {
         setTheme("dark");
+        persistThemeToBackend("dark");
         onOpenChange(false);
       },
       category: "actions",
@@ -228,6 +231,7 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
       icon: Laptop,
       onSelect: () => {
         setTheme("system");
+        persistThemeToBackend("system");
         onOpenChange(false);
       },
       category: "actions",

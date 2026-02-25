@@ -19,6 +19,7 @@ import {
   Clock,
   History,
   Trash2,
+  ClipboardList,
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
@@ -96,6 +97,7 @@ export function Sidebar({ collapsed, onToggle, onNavClick }: SidebarProps) {
   const navItems = [
     { icon: LayoutDashboard, label: t("dashboard"), href: "/dashboard" },
     { icon: Package, label: t("items"), href: "/dashboard/items" },
+    { icon: ClipboardList, label: t("inventory"), href: "/dashboard/inventory" },
     { icon: MapPin, label: t("locations"), href: "/dashboard/locations" },
     { icon: Box, label: t("containers"), href: "/dashboard/containers" },
     { icon: FolderTree, label: t("categories"), href: "/dashboard/categories" },

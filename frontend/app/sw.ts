@@ -220,7 +220,7 @@ self.addEventListener("fetch", (event) => {
   // Detect photo upload requests
   if (
     request.method === "POST" &&
-    request.url.includes("/api/workspaces/") &&
+    request.url.includes("/workspaces/") &&
     request.url.includes("/items/") &&
     request.url.includes("/photos")
   ) {
