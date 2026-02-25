@@ -85,6 +85,8 @@ export interface QueueMutationParams {
   entity: MutationEntityType;
   entityId?: string;
   payload: Record<string, unknown>;
+  /** Workspace ID to use when syncing (captured at queue time) */
+  workspaceId: string;
   /** Cached updated_at timestamp from entity (for conflict detection on updates) */
   cachedUpdatedAt?: string;
   /** Optional array of idempotency keys this mutation depends on */
@@ -109,6 +111,7 @@ export async function queueMutation(
     entity: params.entity,
     entityId: params.entityId,
     payload: params.payload,
+    workspaceId: params.workspaceId,
     timestamp: Date.now(),
     retries: 0,
     status: "pending",

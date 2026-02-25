@@ -4,9 +4,11 @@ import (
 	"context"
 	"crypto/rand"
 	"encoding/base32"
+	"fmt"
 
 	"github.com/google/uuid"
 
+	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/location"
 	"github.com/antti/home-warehouse/go-backend/internal/shared"
 )
 
@@ -30,11 +32,12 @@ type ServiceInterface interface {
 }
 
 type Service struct {
-	repo Repository
+	repo         Repository
+	locationRepo location.Repository
 }
 
-func NewService(repo Repository) *Service {
-	return &Service{repo: repo}
+func NewService(repo Repository, locationRepo location.Repository) *Service {
+	return &Service{repo: repo, locationRepo: locationRepo}
 }
 
 type CreateInput struct {
@@ -75,6 +78,14 @@ func (s *Service) Create(ctx context.Context, input CreateInput) (*Container, er
 		if shortCode == "" {
 			return nil, ErrShortCodeTaken
 		}
+	}
+
+	// Validate location belongs to the same workspace
+	if _, err := s.locationRepo.FindByID(ctx, input.LocationID, input.WorkspaceID); err != nil {
+		if shared.IsNotFound(err) {
+			return nil, shared.NewFieldError(shared.ErrNotFound, "location_id", fmt.Sprintf("location %s not found in this workspace", input.LocationID))
+		}
+		return nil, err
 	}
 
 	container, err := NewContainer(input.WorkspaceID, input.LocationID, input.Name, input.Description, input.Capacity, shortCode)
@@ -120,6 +131,14 @@ type UpdateInput struct {
 func (s *Service) Update(ctx context.Context, id, workspaceID uuid.UUID, input UpdateInput) (*Container, error) {
 	container, err := s.GetByID(ctx, id, workspaceID)
 	if err != nil {
+		return nil, err
+	}
+
+	// Validate location belongs to the same workspace
+	if _, err := s.locationRepo.FindByID(ctx, input.LocationID, workspaceID); err != nil {
+		if shared.IsNotFound(err) {
+			return nil, shared.NewFieldError(shared.ErrNotFound, "location_id", fmt.Sprintf("location %s not found in this workspace", input.LocationID))
+		}
 		return nil, err
 	}
 

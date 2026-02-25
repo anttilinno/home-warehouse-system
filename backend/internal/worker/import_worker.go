@@ -162,7 +162,8 @@ func (w *ImportWorker) processItemImport(ctx context.Context, job *importjob.Imp
 
 	// Initialize repositories
 	itemRepo := postgres.NewItemRepository(w.dbPool)
-	itemService := item.NewService(itemRepo)
+	categoryRepo := postgres.NewCategoryRepository(w.dbPool)
+	itemService := item.NewService(itemRepo, categoryRepo)
 
 	// Process rows
 	processedRows := 0
@@ -357,7 +358,7 @@ func (w *ImportWorker) processContainerImport(ctx context.Context, job *importjo
 
 	locationRepo := postgres.NewLocationRepository(w.dbPool)
 	containerRepo := postgres.NewContainerRepository(w.dbPool)
-	containerService := container.NewService(containerRepo)
+	containerService := container.NewService(containerRepo, locationRepo)
 
 	// Build location cache for lookups
 	existingLocations, _, _ := locationRepo.FindByWorkspace(ctx, job.WorkspaceID(), shared.Pagination{Page: 1, PageSize: 10000})
@@ -604,7 +605,7 @@ func (w *ImportWorker) processInventoryImport(ctx context.Context, job *importjo
 	inventoryRepo := postgres.NewInventoryRepository(w.dbPool)
 	movementRepo := postgres.NewMovementRepository(w.dbPool)
 	movementService := movement.NewService(movementRepo)
-	inventoryService := inventory.NewService(inventoryRepo, movementService)
+	inventoryService := inventory.NewService(inventoryRepo, movementService, itemRepo, locationRepo, containerRepo)
 
 	// Build caches for lookups
 	existingItems, _, _ := itemRepo.FindByWorkspace(ctx, job.WorkspaceID(), shared.Pagination{Page: 1, PageSize: 10000})

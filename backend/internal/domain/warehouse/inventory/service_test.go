@@ -10,6 +10,9 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 
+	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/container"
+	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/item"
+	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/location"
 	"github.com/antti/home-warehouse/go-backend/internal/shared"
 )
 
@@ -79,6 +82,133 @@ func (m *MockRepository) List(ctx context.Context, workspaceID uuid.UUID, pagina
 		return nil, args.Int(1), args.Error(2)
 	}
 	return args.Get(0).([]*Inventory), args.Int(1), args.Error(2)
+}
+
+// mockItemRepo is a permissive mock that returns a valid item for any FindByID call.
+type mockItemRepo struct{ mock.Mock }
+
+func (m *mockItemRepo) Save(ctx context.Context, i *item.Item) error { return nil }
+func (m *mockItemRepo) FindByID(ctx context.Context, id, wsID uuid.UUID) (*item.Item, error) {
+	args := m.Called(ctx, id, wsID)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*item.Item), args.Error(1)
+}
+func (m *mockItemRepo) FindBySKU(ctx context.Context, wsID uuid.UUID, sku string) (*item.Item, error) {
+	return nil, nil
+}
+func (m *mockItemRepo) FindByShortCode(ctx context.Context, wsID uuid.UUID, sc string) (*item.Item, error) {
+	return nil, nil
+}
+func (m *mockItemRepo) FindByBarcode(ctx context.Context, wsID uuid.UUID, bc string) (*item.Item, error) {
+	return nil, nil
+}
+func (m *mockItemRepo) FindByWorkspace(ctx context.Context, wsID uuid.UUID, p shared.Pagination) ([]*item.Item, int, error) {
+	return nil, 0, nil
+}
+func (m *mockItemRepo) FindByCategory(ctx context.Context, wsID, catID uuid.UUID, p shared.Pagination) ([]*item.Item, error) {
+	return nil, nil
+}
+func (m *mockItemRepo) Search(ctx context.Context, wsID uuid.UUID, q string, l int) ([]*item.Item, error) {
+	return nil, nil
+}
+func (m *mockItemRepo) Delete(ctx context.Context, id uuid.UUID) error { return nil }
+func (m *mockItemRepo) SKUExists(ctx context.Context, wsID uuid.UUID, sku string) (bool, error) {
+	return false, nil
+}
+func (m *mockItemRepo) ShortCodeExists(ctx context.Context, wsID uuid.UUID, sc string) (bool, error) {
+	return false, nil
+}
+func (m *mockItemRepo) AttachLabel(ctx context.Context, itemID, labelID uuid.UUID) error { return nil }
+func (m *mockItemRepo) DetachLabel(ctx context.Context, itemID, labelID uuid.UUID) error { return nil }
+func (m *mockItemRepo) GetItemLabels(ctx context.Context, itemID uuid.UUID) ([]uuid.UUID, error) {
+	return nil, nil
+}
+
+// mockLocationRepo is a permissive mock that returns a valid location for any FindByID call.
+type mockLocationRepo struct{ mock.Mock }
+
+func (m *mockLocationRepo) Save(ctx context.Context, l *location.Location) error { return nil }
+func (m *mockLocationRepo) FindByID(ctx context.Context, id, wsID uuid.UUID) (*location.Location, error) {
+	args := m.Called(ctx, id, wsID)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*location.Location), args.Error(1)
+}
+func (m *mockLocationRepo) FindByShortCode(ctx context.Context, wsID uuid.UUID, sc string) (*location.Location, error) {
+	return nil, nil
+}
+func (m *mockLocationRepo) FindByWorkspace(ctx context.Context, wsID uuid.UUID, p shared.Pagination) ([]*location.Location, int, error) {
+	return nil, 0, nil
+}
+func (m *mockLocationRepo) FindRootLocations(ctx context.Context, wsID uuid.UUID) ([]*location.Location, error) {
+	return nil, nil
+}
+func (m *mockLocationRepo) Delete(ctx context.Context, id uuid.UUID) error { return nil }
+func (m *mockLocationRepo) ShortCodeExists(ctx context.Context, wsID uuid.UUID, sc string) (bool, error) {
+	return false, nil
+}
+func (m *mockLocationRepo) Search(ctx context.Context, wsID uuid.UUID, q string, l int) ([]*location.Location, error) {
+	return nil, nil
+}
+
+// mockContainerRepo is a permissive mock that returns a valid container for any FindByID call.
+type mockContainerRepo struct{ mock.Mock }
+
+func (m *mockContainerRepo) Save(ctx context.Context, c *container.Container) error { return nil }
+func (m *mockContainerRepo) FindByID(ctx context.Context, id, wsID uuid.UUID) (*container.Container, error) {
+	args := m.Called(ctx, id, wsID)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*container.Container), args.Error(1)
+}
+func (m *mockContainerRepo) FindByLocation(ctx context.Context, wsID, locID uuid.UUID) ([]*container.Container, error) {
+	return nil, nil
+}
+func (m *mockContainerRepo) FindByShortCode(ctx context.Context, wsID uuid.UUID, sc string) (*container.Container, error) {
+	return nil, nil
+}
+func (m *mockContainerRepo) FindByWorkspace(ctx context.Context, wsID uuid.UUID, p shared.Pagination) ([]*container.Container, int, error) {
+	return nil, 0, nil
+}
+func (m *mockContainerRepo) Delete(ctx context.Context, id uuid.UUID) error { return nil }
+func (m *mockContainerRepo) ShortCodeExists(ctx context.Context, wsID uuid.UUID, sc string) (bool, error) {
+	return false, nil
+}
+func (m *mockContainerRepo) Search(ctx context.Context, wsID uuid.UUID, q string, l int) ([]*container.Container, error) {
+	return nil, nil
+}
+
+// newTestService creates a Service with the given inventory repo and permissive FK validation repos.
+func newTestService(mockRepo *MockRepository) *Service {
+	itemR, locR, contR := newPermissiveFKRepos()
+	return NewService(mockRepo, nil, itemR, locR, contR)
+}
+
+// newPermissiveFKRepos creates mock FK repos that return valid entities for any FindByID call.
+func newPermissiveFKRepos() (*mockItemRepo, *mockLocationRepo, *mockContainerRepo) {
+	now := time.Now()
+	itemR := new(mockItemRepo)
+	locR := new(mockLocationRepo)
+	contR := new(mockContainerRepo)
+
+	itemR.On("FindByID", mock.Anything, mock.Anything, mock.Anything).Return(
+		item.Reconstruct(uuid.New(), uuid.New(), "SKU", "item", nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, 0, "SC", nil, nil, now, now),
+		nil,
+	).Maybe()
+	locR.On("FindByID", mock.Anything, mock.Anything, mock.Anything).Return(
+		location.Reconstruct(uuid.New(), uuid.New(), "loc", nil, nil, "LC", false, now, now),
+		nil,
+	).Maybe()
+	contR.On("FindByID", mock.Anything, mock.Anything, mock.Anything).Return(
+		container.Reconstruct(uuid.New(), uuid.New(), uuid.New(), "cont", nil, nil, "CC", false, now, now),
+		nil,
+	).Maybe()
+
+	return itemR, locR, contR
 }
 
 // Helper functions
@@ -815,7 +945,7 @@ func TestService_Create(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.testName, func(t *testing.T) {
 			mockRepo := new(MockRepository)
-			svc := NewService(mockRepo, nil)
+			svc := newTestService(mockRepo)
 
 			tt.setupMock(mockRepo)
 
@@ -890,7 +1020,7 @@ func TestService_GetByID(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.testName, func(t *testing.T) {
 			mockRepo := new(MockRepository)
-			svc := NewService(mockRepo, nil)
+			svc := newTestService(mockRepo)
 
 			tt.setupMock(mockRepo)
 
@@ -1021,7 +1151,7 @@ func TestService_Update(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.testName, func(t *testing.T) {
 			mockRepo := new(MockRepository)
-			svc := NewService(mockRepo, nil)
+			svc := newTestService(mockRepo)
 
 			tt.setupMock(mockRepo)
 
@@ -1104,7 +1234,7 @@ func TestService_UpdateStatus(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.testName, func(t *testing.T) {
 			mockRepo := new(MockRepository)
-			svc := NewService(mockRepo, nil)
+			svc := newTestService(mockRepo)
 
 			tt.setupMock(mockRepo)
 
@@ -1201,7 +1331,7 @@ func TestService_UpdateQuantity(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.testName, func(t *testing.T) {
 			mockRepo := new(MockRepository)
-			svc := NewService(mockRepo, nil)
+			svc := newTestService(mockRepo)
 
 			tt.setupMock(mockRepo)
 
@@ -1308,7 +1438,7 @@ func TestService_Move(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.testName, func(t *testing.T) {
 			mockRepo := new(MockRepository)
-			svc := NewService(mockRepo, nil)
+			svc := newTestService(mockRepo)
 
 			tt.setupMock(mockRepo)
 
@@ -1388,7 +1518,7 @@ func TestService_Archive(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.testName, func(t *testing.T) {
 			mockRepo := new(MockRepository)
-			svc := NewService(mockRepo, nil)
+			svc := newTestService(mockRepo)
 
 			tt.setupMock(mockRepo)
 
@@ -1448,7 +1578,7 @@ func TestService_Restore(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.testName, func(t *testing.T) {
 			mockRepo := new(MockRepository)
-			svc := NewService(mockRepo, nil)
+			svc := newTestService(mockRepo)
 
 			tt.setupMock(mockRepo)
 
@@ -1512,7 +1642,7 @@ func TestService_ListByItem(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.testName, func(t *testing.T) {
 			mockRepo := new(MockRepository)
-			svc := NewService(mockRepo, nil)
+			svc := newTestService(mockRepo)
 
 			tt.setupMock(mockRepo)
 
@@ -1568,7 +1698,7 @@ func TestService_ListByLocation(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.testName, func(t *testing.T) {
 			mockRepo := new(MockRepository)
-			svc := NewService(mockRepo, nil)
+			svc := newTestService(mockRepo)
 
 			tt.setupMock(mockRepo)
 
@@ -1622,7 +1752,7 @@ func TestService_ListByContainer(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.testName, func(t *testing.T) {
 			mockRepo := new(MockRepository)
-			svc := NewService(mockRepo, nil)
+			svc := newTestService(mockRepo)
 
 			tt.setupMock(mockRepo)
 
@@ -1685,7 +1815,7 @@ func TestService_GetAvailable(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.testName, func(t *testing.T) {
 			mockRepo := new(MockRepository)
-			svc := NewService(mockRepo, nil)
+			svc := newTestService(mockRepo)
 
 			tt.setupMock(mockRepo)
 
@@ -1744,7 +1874,7 @@ func TestService_GetTotalQuantity(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.testName, func(t *testing.T) {
 			mockRepo := new(MockRepository)
-			svc := NewService(mockRepo, nil)
+			svc := newTestService(mockRepo)
 
 			tt.setupMock(mockRepo)
 
@@ -1773,7 +1903,7 @@ func TestService_UpdateStatus_SaveError(t *testing.T) {
 	repoErr := errors.New("repository error")
 
 	mockRepo := new(MockRepository)
-	svc := NewService(mockRepo, nil)
+	svc := newTestService(mockRepo)
 
 	inv := &Inventory{
 		id:          invID,
@@ -1799,7 +1929,7 @@ func TestService_UpdateQuantity_SaveError(t *testing.T) {
 	repoErr := errors.New("repository error")
 
 	mockRepo := new(MockRepository)
-	svc := NewService(mockRepo, nil)
+	svc := newTestService(mockRepo)
 
 	inv := &Inventory{
 		id:          invID,
@@ -1826,7 +1956,7 @@ func TestService_Move_SaveError(t *testing.T) {
 	repoErr := errors.New("repository error")
 
 	mockRepo := new(MockRepository)
-	svc := NewService(mockRepo, nil)
+	svc := newTestService(mockRepo)
 
 	inv := &Inventory{
 		id:          invID,

@@ -106,11 +106,17 @@ export function useOfflineMutation<TPayload extends Record<string, unknown>>({
   const mutate = useCallback(
     async (payload: TPayload, entityId?: string, dependsOn?: string[]): Promise<string> => {
       // 1. Queue mutation to IndexedDB FIRST (persist before optimistic update)
+      // Capture workspace_id NOW (at mutation time), not at sync time
+      const workspaceId = typeof localStorage !== "undefined"
+        ? localStorage.getItem("workspace_id") ?? ""
+        : "";
+
       const entry = await queueMutation({
         operation,
         entity,
         entityId,
         payload: payload as Record<string, unknown>,
+        workspaceId,
         dependsOn,
       });
 

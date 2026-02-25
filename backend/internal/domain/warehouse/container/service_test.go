@@ -9,6 +9,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 
+	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/location"
 	"github.com/antti/home-warehouse/go-backend/internal/shared"
 )
 
@@ -70,6 +71,66 @@ func (m *MockRepository) Search(ctx context.Context, workspaceID uuid.UUID, quer
 		return nil, args.Error(1)
 	}
 	return args.Get(0).([]*Container), args.Error(1)
+}
+
+// MockLocationRepository is a mock implementation of the location.Repository interface
+type MockLocationRepository struct {
+	mock.Mock
+}
+
+func (m *MockLocationRepository) Save(ctx context.Context, loc *location.Location) error {
+	args := m.Called(ctx, loc)
+	return args.Error(0)
+}
+
+func (m *MockLocationRepository) FindByID(ctx context.Context, id, workspaceID uuid.UUID) (*location.Location, error) {
+	args := m.Called(ctx, id, workspaceID)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*location.Location), args.Error(1)
+}
+
+func (m *MockLocationRepository) FindByShortCode(ctx context.Context, workspaceID uuid.UUID, shortCode string) (*location.Location, error) {
+	args := m.Called(ctx, workspaceID, shortCode)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*location.Location), args.Error(1)
+}
+
+func (m *MockLocationRepository) FindByWorkspace(ctx context.Context, workspaceID uuid.UUID, pagination shared.Pagination) ([]*location.Location, int, error) {
+	args := m.Called(ctx, workspaceID, pagination)
+	if args.Get(0) == nil {
+		return nil, 0, args.Error(2)
+	}
+	return args.Get(0).([]*location.Location), args.Int(1), args.Error(2)
+}
+
+func (m *MockLocationRepository) FindRootLocations(ctx context.Context, workspaceID uuid.UUID) ([]*location.Location, error) {
+	args := m.Called(ctx, workspaceID)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).([]*location.Location), args.Error(1)
+}
+
+func (m *MockLocationRepository) Delete(ctx context.Context, id uuid.UUID) error {
+	args := m.Called(ctx, id)
+	return args.Error(0)
+}
+
+func (m *MockLocationRepository) ShortCodeExists(ctx context.Context, workspaceID uuid.UUID, shortCode string) (bool, error) {
+	args := m.Called(ctx, workspaceID, shortCode)
+	return args.Bool(0), args.Error(1)
+}
+
+func (m *MockLocationRepository) Search(ctx context.Context, workspaceID uuid.UUID, query string, limit int) ([]*location.Location, error) {
+	args := m.Called(ctx, workspaceID, query, limit)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).([]*location.Location), args.Error(1)
 }
 
 func ptrString(s string) *string {
@@ -328,7 +389,12 @@ func TestService_Create(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.testName, func(t *testing.T) {
 			mockRepo := new(MockRepository)
-			svc := NewService(mockRepo)
+			mockLocRepo := new(MockLocationRepository)
+			now := time.Now()
+			mockLocRepo.On("FindByID", ctx, mock.Anything, mock.Anything).Return(
+				location.Reconstruct(locationID, workspaceID, "Test Location", nil, nil, "LOC001", false, now, now), nil,
+			).Maybe()
+			svc := NewService(mockRepo, mockLocRepo)
 
 			tt.setupMock(mockRepo)
 
@@ -399,7 +465,7 @@ func TestService_GetByID(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.testName, func(t *testing.T) {
 			mockRepo := new(MockRepository)
-			svc := NewService(mockRepo)
+			svc := NewService(mockRepo, nil)
 
 			tt.setupMock(mockRepo)
 
@@ -432,7 +498,7 @@ func TestService_ListByWorkspace(t *testing.T) {
 	}
 
 	mockRepo := new(MockRepository)
-	svc := NewService(mockRepo)
+	svc := NewService(mockRepo, nil)
 
 	mockRepo.On("FindByWorkspace", ctx, workspaceID, pagination).Return(containers, 2, nil)
 
@@ -484,7 +550,7 @@ func TestService_Archive(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.testName, func(t *testing.T) {
 			mockRepo := new(MockRepository)
-			svc := NewService(mockRepo)
+			svc := NewService(mockRepo, nil)
 
 			tt.setupMock(mockRepo)
 
@@ -521,7 +587,12 @@ func TestService_Update(t *testing.T) {
 	}
 
 	mockRepo := new(MockRepository)
-	svc := NewService(mockRepo)
+	mockLocRepo := new(MockLocationRepository)
+	now := time.Now()
+	mockLocRepo.On("FindByID", ctx, newLocationID, workspaceID).Return(
+		location.Reconstruct(newLocationID, workspaceID, "Test Location", nil, nil, "LOC001", false, now, now), nil,
+	)
+	svc := NewService(mockRepo, mockLocRepo)
 
 	mockRepo.On("FindByID", ctx, containerID, workspaceID).Return(container, nil)
 	mockRepo.On("Save", ctx, mock.Anything).Return(nil)
@@ -536,6 +607,7 @@ func TestService_Update(t *testing.T) {
 	assert.Equal(t, "100 items", *updatedContainer.Capacity())
 
 	mockRepo.AssertExpectations(t)
+	mockLocRepo.AssertExpectations(t)
 }
 
 func TestService_Delete(t *testing.T) {
@@ -589,7 +661,7 @@ func TestService_Delete(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.testName, func(t *testing.T) {
 			mockRepo := new(MockRepository)
-			svc := NewService(mockRepo)
+			svc := NewService(mockRepo, nil)
 
 			tt.setupMock(mockRepo)
 
@@ -631,7 +703,7 @@ func TestService_Restore(t *testing.T) {
 
 	t.Run("successful restore", func(t *testing.T) {
 		mockRepo := new(MockRepository)
-		svc := NewService(mockRepo)
+		svc := NewService(mockRepo, nil)
 
 		container := &Container{id: containerID, workspaceID: workspaceID, name: "Test", isArchived: true}
 		mockRepo.On("FindByID", ctx, containerID, workspaceID).Return(container, nil)
@@ -645,7 +717,7 @@ func TestService_Restore(t *testing.T) {
 
 	t.Run("container not found", func(t *testing.T) {
 		mockRepo := new(MockRepository)
-		svc := NewService(mockRepo)
+		svc := NewService(mockRepo, nil)
 
 		mockRepo.On("FindByID", ctx, containerID, workspaceID).Return(nil, nil)
 
@@ -658,7 +730,7 @@ func TestService_Restore(t *testing.T) {
 
 	t.Run("Save returns error", func(t *testing.T) {
 		mockRepo := new(MockRepository)
-		svc := NewService(mockRepo)
+		svc := NewService(mockRepo, nil)
 
 		container := &Container{id: containerID, workspaceID: workspaceID, name: "Test", isArchived: true}
 		mockRepo.On("FindByID", ctx, containerID, workspaceID).Return(container, nil)
@@ -679,7 +751,7 @@ func TestService_GetByID_RepoError(t *testing.T) {
 	repoErr := assert.AnError
 
 	mockRepo := new(MockRepository)
-	svc := NewService(mockRepo)
+	svc := NewService(mockRepo, nil)
 
 	mockRepo.On("FindByID", ctx, containerID, workspaceID).Return(nil, repoErr)
 
@@ -699,7 +771,7 @@ func TestService_Create_ErrorPaths(t *testing.T) {
 
 	t.Run("ShortCodeExists returns error", func(t *testing.T) {
 		mockRepo := new(MockRepository)
-		svc := NewService(mockRepo)
+		svc := NewService(mockRepo, nil) // locationRepo nil is fine - error before location check
 
 		mockRepo.On("ShortCodeExists", ctx, workspaceID, "CODE").Return(false, repoErr)
 
@@ -718,7 +790,12 @@ func TestService_Create_ErrorPaths(t *testing.T) {
 
 	t.Run("Save returns error", func(t *testing.T) {
 		mockRepo := new(MockRepository)
-		svc := NewService(mockRepo)
+		mockLocRepo := new(MockLocationRepository)
+		now := time.Now()
+		mockLocRepo.On("FindByID", ctx, locationID, workspaceID).Return(
+			location.Reconstruct(locationID, workspaceID, "Loc", nil, nil, "L1", false, now, now), nil,
+		)
+		svc := NewService(mockRepo, mockLocRepo)
 
 		mockRepo.On("ShortCodeExists", ctx, workspaceID, mock.AnythingOfType("string")).Return(false, nil)
 		mockRepo.On("Save", ctx, mock.AnythingOfType("*container.Container")).Return(repoErr)
@@ -743,7 +820,7 @@ func TestService_ListByWorkspace_Error(t *testing.T) {
 	repoErr := assert.AnError
 
 	mockRepo := new(MockRepository)
-	svc := NewService(mockRepo)
+	svc := NewService(mockRepo, nil)
 
 	mockRepo.On("FindByWorkspace", ctx, workspaceID, pagination).Return(nil, 0, repoErr)
 
@@ -763,7 +840,7 @@ func TestService_Update_ErrorPaths(t *testing.T) {
 
 	t.Run("container not found", func(t *testing.T) {
 		mockRepo := new(MockRepository)
-		svc := NewService(mockRepo)
+		svc := NewService(mockRepo, nil)
 
 		mockRepo.On("FindByID", ctx, containerID, workspaceID).Return(nil, nil)
 
@@ -777,7 +854,12 @@ func TestService_Update_ErrorPaths(t *testing.T) {
 
 	t.Run("invalid update - empty name", func(t *testing.T) {
 		mockRepo := new(MockRepository)
-		svc := NewService(mockRepo)
+		mockLocRepo := new(MockLocationRepository)
+		now := time.Now()
+		mockLocRepo.On("FindByID", ctx, mock.Anything, workspaceID).Return(
+			location.Reconstruct(uuid.New(), workspaceID, "Loc", nil, nil, "L1", false, now, now), nil,
+		).Maybe()
+		svc := NewService(mockRepo, mockLocRepo)
 
 		container := &Container{id: containerID, workspaceID: workspaceID, name: "Original", locationID: uuid.New()}
 		mockRepo.On("FindByID", ctx, containerID, workspaceID).Return(container, nil)
@@ -791,7 +873,12 @@ func TestService_Update_ErrorPaths(t *testing.T) {
 
 	t.Run("Save returns error", func(t *testing.T) {
 		mockRepo := new(MockRepository)
-		svc := NewService(mockRepo)
+		mockLocRepo := new(MockLocationRepository)
+		now := time.Now()
+		mockLocRepo.On("FindByID", ctx, mock.Anything, workspaceID).Return(
+			location.Reconstruct(uuid.New(), workspaceID, "Loc", nil, nil, "L1", false, now, now), nil,
+		).Maybe()
+		svc := NewService(mockRepo, mockLocRepo)
 
 		container := &Container{id: containerID, workspaceID: workspaceID, name: "Original", locationID: uuid.New()}
 		mockRepo.On("FindByID", ctx, containerID, workspaceID).Return(container, nil)
@@ -813,7 +900,7 @@ func TestService_Archive_SaveError(t *testing.T) {
 	repoErr := assert.AnError
 
 	mockRepo := new(MockRepository)
-	svc := NewService(mockRepo)
+	svc := NewService(mockRepo, nil)
 
 	container := &Container{id: containerID, workspaceID: workspaceID, name: "Test"}
 	mockRepo.On("FindByID", ctx, containerID, workspaceID).Return(container, nil)

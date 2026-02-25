@@ -2,10 +2,14 @@ package inventory
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/google/uuid"
 
+	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/container"
+	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/item"
+	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/location"
 	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/movement"
 	"github.com/antti/home-warehouse/go-backend/internal/shared"
 )
@@ -31,12 +35,18 @@ type ServiceInterface interface {
 type Service struct {
 	repo          Repository
 	movementSvc   movement.ServiceInterface
+	itemRepo      item.Repository
+	locationRepo  location.Repository
+	containerRepo container.Repository
 }
 
-func NewService(repo Repository, movementSvc movement.ServiceInterface) *Service {
+func NewService(repo Repository, movementSvc movement.ServiceInterface, itemRepo item.Repository, locationRepo location.Repository, containerRepo container.Repository) *Service {
 	return &Service{
-		repo:        repo,
-		movementSvc: movementSvc,
+		repo:          repo,
+		movementSvc:   movementSvc,
+		itemRepo:      itemRepo,
+		locationRepo:  locationRepo,
+		containerRepo: containerRepo,
 	}
 }
 
@@ -57,6 +67,32 @@ type CreateInput struct {
 }
 
 func (s *Service) Create(ctx context.Context, input CreateInput) (*Inventory, error) {
+	// Validate item belongs to the same workspace
+	if _, err := s.itemRepo.FindByID(ctx, input.ItemID, input.WorkspaceID); err != nil {
+		if shared.IsNotFound(err) {
+			return nil, shared.NewFieldError(shared.ErrNotFound, "item_id", fmt.Sprintf("item %s not found in this workspace", input.ItemID))
+		}
+		return nil, err
+	}
+
+	// Validate location belongs to the same workspace
+	if _, err := s.locationRepo.FindByID(ctx, input.LocationID, input.WorkspaceID); err != nil {
+		if shared.IsNotFound(err) {
+			return nil, shared.NewFieldError(shared.ErrNotFound, "location_id", fmt.Sprintf("location %s not found in this workspace", input.LocationID))
+		}
+		return nil, err
+	}
+
+	// Validate container belongs to the same workspace (if provided)
+	if input.ContainerID != nil {
+		if _, err := s.containerRepo.FindByID(ctx, *input.ContainerID, input.WorkspaceID); err != nil {
+			if shared.IsNotFound(err) {
+				return nil, shared.NewFieldError(shared.ErrNotFound, "container_id", fmt.Sprintf("container %s not found in this workspace", *input.ContainerID))
+			}
+			return nil, err
+		}
+	}
+
 	inv, err := NewInventory(
 		input.WorkspaceID,
 		input.ItemID,
@@ -149,6 +185,24 @@ func (s *Service) Move(ctx context.Context, id, workspaceID, locationID uuid.UUI
 	inv, err := s.GetByID(ctx, id, workspaceID)
 	if err != nil {
 		return nil, err
+	}
+
+	// Validate target location belongs to the same workspace
+	if _, err := s.locationRepo.FindByID(ctx, locationID, workspaceID); err != nil {
+		if shared.IsNotFound(err) {
+			return nil, shared.NewFieldError(shared.ErrNotFound, "location_id", fmt.Sprintf("location %s not found in this workspace", locationID))
+		}
+		return nil, err
+	}
+
+	// Validate target container belongs to the same workspace (if provided)
+	if containerID != nil {
+		if _, err := s.containerRepo.FindByID(ctx, *containerID, workspaceID); err != nil {
+			if shared.IsNotFound(err) {
+				return nil, shared.NewFieldError(shared.ErrNotFound, "container_id", fmt.Sprintf("container %s not found in this workspace", *containerID))
+			}
+			return nil, err
+		}
 	}
 
 	// Capture old location/container for movement record

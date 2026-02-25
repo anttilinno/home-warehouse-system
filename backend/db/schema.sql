@@ -1,7 +1,7 @@
-\restrict if2kdQoltIlVmAoJokhEeDWpeK2aK364WZvcBXjL1K0K2hJOT49xdgWnGPUB2Sx
+\restrict s8mPnr6gvzGSvGPZFXzkVMJYyeltavNS4IFqPRoavTYzLWn70kbFi3IYa5GXDq5
 
 -- Dumped from database version 18.1 (Debian 18.1-1.pgdg13+2)
--- Dumped by pg_dump version 18.1
+-- Dumped by pg_dump version 18.2
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -456,6 +456,58 @@ COMMENT ON COLUMN auth.user_oauth_accounts.access_token IS 'OAuth access token. 
 
 
 --
+-- Name: user_sessions; Type: TABLE; Schema: auth; Owner: -
+--
+
+CREATE TABLE auth.user_sessions (
+    id uuid DEFAULT uuidv7() NOT NULL,
+    user_id uuid NOT NULL,
+    refresh_token_hash character varying(64) NOT NULL,
+    device_info character varying(200),
+    ip_address inet,
+    user_agent text,
+    last_active_at timestamp with time zone DEFAULT now() NOT NULL,
+    expires_at timestamp with time zone NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL
+);
+
+
+--
+-- Name: TABLE user_sessions; Type: COMMENT; Schema: auth; Owner: -
+--
+
+COMMENT ON TABLE auth.user_sessions IS 'Tracks active user sessions for multi-device management and token revocation.';
+
+
+--
+-- Name: COLUMN user_sessions.refresh_token_hash; Type: COMMENT; Schema: auth; Owner: -
+--
+
+COMMENT ON COLUMN auth.user_sessions.refresh_token_hash IS 'SHA-256 hash of the refresh token. Never store plain tokens.';
+
+
+--
+-- Name: COLUMN user_sessions.device_info; Type: COMMENT; Schema: auth; Owner: -
+--
+
+COMMENT ON COLUMN auth.user_sessions.device_info IS 'Human-readable device description parsed from user agent (e.g., Chrome on Windows).';
+
+
+--
+-- Name: COLUMN user_sessions.ip_address; Type: COMMENT; Schema: auth; Owner: -
+--
+
+COMMENT ON COLUMN auth.user_sessions.ip_address IS 'Client IP address at login time.';
+
+
+--
+-- Name: COLUMN user_sessions.last_active_at; Type: COMMENT; Schema: auth; Owner: -
+--
+
+COMMENT ON COLUMN auth.user_sessions.last_active_at IS 'Updated on token refresh to track session activity.';
+
+
+--
 -- Name: users; Type: TABLE; Schema: auth; Owner: -
 --
 
@@ -463,14 +515,20 @@ CREATE TABLE auth.users (
     id uuid DEFAULT uuidv7() NOT NULL,
     email character varying(255) NOT NULL,
     full_name character varying(100) NOT NULL,
-    password_hash character varying(255) NOT NULL,
+    password_hash character varying(255),
     is_active boolean DEFAULT true,
     is_superuser boolean DEFAULT false,
     date_format character varying(20) DEFAULT 'DD.MM.YYYY'::character varying,
     language character varying(5) DEFAULT 'en'::character varying NOT NULL,
     theme character varying(20) DEFAULT 'system'::character varying NOT NULL,
     created_at timestamp with time zone DEFAULT now(),
-    updated_at timestamp with time zone DEFAULT now()
+    updated_at timestamp with time zone DEFAULT now(),
+    avatar_path character varying(500),
+    time_format character varying(10) DEFAULT '24h'::character varying NOT NULL,
+    thousand_separator character varying(5) DEFAULT ','::character varying NOT NULL,
+    decimal_separator character varying(5) DEFAULT '.'::character varying NOT NULL,
+    notification_preferences jsonb DEFAULT '{}'::jsonb NOT NULL,
+    has_password boolean DEFAULT true NOT NULL
 );
 
 
@@ -493,6 +551,34 @@ COMMENT ON COLUMN auth.users.language IS 'User''s preferred language code (e.g.,
 --
 
 COMMENT ON COLUMN auth.users.theme IS 'User''s preferred UI theme: light, dark, or system';
+
+
+--
+-- Name: COLUMN users.time_format; Type: COMMENT; Schema: auth; Owner: -
+--
+
+COMMENT ON COLUMN auth.users.time_format IS 'User''s preferred time format: 12h or 24h';
+
+
+--
+-- Name: COLUMN users.thousand_separator; Type: COMMENT; Schema: auth; Owner: -
+--
+
+COMMENT ON COLUMN auth.users.thousand_separator IS 'User''s preferred thousand separator for number display: comma, period, or space';
+
+
+--
+-- Name: COLUMN users.decimal_separator; Type: COMMENT; Schema: auth; Owner: -
+--
+
+COMMENT ON COLUMN auth.users.decimal_separator IS 'User''s preferred decimal separator for number display: period or comma';
+
+
+--
+-- Name: COLUMN users.notification_preferences; Type: COMMENT; Schema: auth; Owner: -
+--
+
+COMMENT ON COLUMN auth.users.notification_preferences IS 'User notification preferences by category. Empty object means all enabled. Keys: enabled, loans, inventory, workspace, system.';
 
 
 --
@@ -1463,6 +1549,14 @@ ALTER TABLE ONLY auth.user_oauth_accounts
 
 
 --
+-- Name: user_sessions user_sessions_pkey; Type: CONSTRAINT; Schema: auth; Owner: -
+--
+
+ALTER TABLE ONLY auth.user_sessions
+    ADD CONSTRAINT user_sessions_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: users users_email_key; Type: CONSTRAINT; Schema: auth; Owner: -
 --
 
@@ -1812,6 +1906,27 @@ ALTER TABLE ONLY warehouse.items
 
 ALTER TABLE ONLY warehouse.locations
     ADD CONSTRAINT uq_locations_workspace_short_code UNIQUE (workspace_id, short_code);
+
+
+--
+-- Name: idx_user_sessions_expires_at; Type: INDEX; Schema: auth; Owner: -
+--
+
+CREATE INDEX idx_user_sessions_expires_at ON auth.user_sessions USING btree (expires_at);
+
+
+--
+-- Name: idx_user_sessions_token_hash; Type: INDEX; Schema: auth; Owner: -
+--
+
+CREATE INDEX idx_user_sessions_token_hash ON auth.user_sessions USING btree (refresh_token_hash);
+
+
+--
+-- Name: idx_user_sessions_user_id; Type: INDEX; Schema: auth; Owner: -
+--
+
+CREATE INDEX idx_user_sessions_user_id ON auth.user_sessions USING btree (user_id);
 
 
 --
@@ -2583,6 +2698,14 @@ ALTER TABLE ONLY auth.user_oauth_accounts
 
 
 --
+-- Name: user_sessions user_sessions_user_id_fkey; Type: FK CONSTRAINT; Schema: auth; Owner: -
+--
+
+ALTER TABLE ONLY auth.user_sessions
+    ADD CONSTRAINT user_sessions_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE;
+
+
+--
 -- Name: workspace_docspell_settings workspace_docspell_settings_workspace_id_fkey; Type: FK CONSTRAINT; Schema: auth; Owner: -
 --
 
@@ -3106,7 +3229,7 @@ ALTER TABLE ONLY warehouse.repair_photos
 -- PostgreSQL database dump complete
 --
 
-\unrestrict if2kdQoltIlVmAoJokhEeDWpeK2aK364WZvcBXjL1K0K2hJOT49xdgWnGPUB2Sx
+\unrestrict s8mPnr6gvzGSvGPZFXzkVMJYyeltavNS4IFqPRoavTYzLWn70kbFi3IYa5GXDq5
 
 
 --
@@ -3121,4 +3244,8 @@ INSERT INTO public.schema_migrations (version) VALUES
     ('005'),
     ('006'),
     ('007'),
-    ('008');
+    ('008'),
+    ('009'),
+    ('010'),
+    ('011'),
+    ('012');

@@ -4,9 +4,11 @@ import (
 	"context"
 	"crypto/rand"
 	"encoding/base32"
+	"fmt"
 
 	"github.com/google/uuid"
 
+	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/category"
 	"github.com/antti/home-warehouse/go-backend/internal/shared"
 )
 
@@ -33,11 +35,12 @@ type ServiceInterface interface {
 }
 
 type Service struct {
-	repo Repository
+	repo         Repository
+	categoryRepo category.Repository
 }
 
-func NewService(repo Repository) *Service {
-	return &Service{repo: repo}
+func NewService(repo Repository, categoryRepo category.Repository) *Service {
+	return &Service{repo: repo, categoryRepo: categoryRepo}
 }
 
 type CreateInput struct {
@@ -99,6 +102,16 @@ func (s *Service) Create(ctx context.Context, input CreateInput) (*Item, error) 
 		}
 		if shortCode == "" {
 			return nil, ErrShortCodeTaken
+		}
+	}
+
+	// Validate category belongs to the same workspace (if provided)
+	if input.CategoryID != nil {
+		if _, err := s.categoryRepo.FindByID(ctx, *input.CategoryID, input.WorkspaceID); err != nil {
+			if shared.IsNotFound(err) {
+				return nil, shared.NewFieldError(shared.ErrNotFound, "category_id", fmt.Sprintf("category %s not found in this workspace", *input.CategoryID))
+			}
+			return nil, err
 		}
 	}
 

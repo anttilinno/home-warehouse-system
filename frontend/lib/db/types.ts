@@ -81,6 +81,8 @@ export interface MutationQueueEntry {
   entityId?: string;
   /** The mutation payload to send to server */
   payload: Record<string, unknown>;
+  /** Workspace ID captured at queue time (ensures correct workspace on sync) */
+  workspaceId: string;
   /** Timestamp when mutation was queued (ms since epoch) */
   timestamp: number;
   /** Number of retry attempts */

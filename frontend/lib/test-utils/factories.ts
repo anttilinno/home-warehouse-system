@@ -118,6 +118,7 @@ export function createMutationEntry(
     operation: partial.operation ?? "create",
     entity: partial.entity ?? "items",
     entityId: partial.entityId,
+    workspaceId: partial.workspaceId ?? "test-workspace-id",
     payload: partial.payload ?? {},
     timestamp: partial.timestamp ?? Date.now(),
     retries: partial.retries ?? 0,

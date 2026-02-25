@@ -3,14 +3,17 @@ package inventory
 import (
 	"context"
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgconn"
 
 	appMiddleware "github.com/antti/home-warehouse/go-backend/internal/api/middleware"
 	"github.com/antti/home-warehouse/go-backend/internal/infra/events"
 	"github.com/antti/home-warehouse/go-backend/internal/shared"
+	"github.com/antti/home-warehouse/go-backend/internal/shared/apierror"
 )
 
 // RegisterRoutes registers inventory routes.
@@ -385,13 +388,27 @@ func mapInventoryError(err error, fallbackMsg string) error {
 	if err == nil {
 		return nil
 	}
-	if errors.Is(err, ErrInventoryNotFound) {
+	if errors.Is(err, ErrInventoryNotFound) || errors.Is(err, shared.ErrNotFound) {
 		return huma.Error404NotFound("inventory not found")
 	}
 	if errors.Is(err, ErrInvalidCondition) || errors.Is(err, ErrInvalidStatus) || errors.Is(err, ErrInsufficientQuantity) {
 		return huma.Error400BadRequest(err.Error())
 	}
-	return huma.Error500InternalServerError(fallbackMsg)
+	var pgErr *pgconn.PgError
+	if errors.As(err, &pgErr) {
+		switch pgErr.Code {
+		case "23503": // foreign_key_violation
+			return huma.Error400BadRequest(fmt.Sprintf("referenced record not found: %s", pgErr.ConstraintName))
+		case "23505": // unique_violation
+			return huma.Error409Conflict(fmt.Sprintf("duplicate entry: %s", pgErr.ConstraintName))
+		}
+	}
+	var apiErr *apierror.APIError
+	if errors.As(err, &apiErr) {
+		return huma.Error400BadRequest(apiErr.Error())
+	}
+	fmt.Printf("[inventory] %s: %v\n", fallbackMsg, err)
+	return huma.Error500InternalServerError(fmt.Sprintf("%s: %v", fallbackMsg, err))
 }
 
 // toInventoryResponses converts a slice of Inventory to InventoryResponse.

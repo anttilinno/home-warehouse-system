@@ -194,12 +194,12 @@ func NewRouter(pool *pgxpool.Pool, cfg *config.Config) chi.Router {
 	// Phase 1 services
 	categorySvc := category.NewService(categoryRepo)
 	locationSvc := location.NewService(locationRepo)
-	containerSvc := container.NewService(containerRepo)
+	containerSvc := container.NewService(containerRepo, locationRepo)
 	// Phase 2 services
 	companySvc := company.NewService(companyRepo)
 	labelSvc := label.NewService(labelRepo)
 	// Phase 3 services
-	itemSvc := item.NewService(itemRepo)
+	itemSvc := item.NewService(itemRepo, categoryRepo)
 
 	// Initialize storage and image processor for item photos
 	uploadDir := getUploadDir()
@@ -215,7 +215,7 @@ func NewRouter(pool *pgxpool.Pool, cfg *config.Config) chi.Router {
 	itemPhotoSvc.SetHasher(imageHasher)      // Enable duplicate detection
 	// Phase 5 services (movement service created before inventory to allow dependency)
 	movementSvc := movement.NewService(movementRepo)
-	inventorySvc := inventory.NewService(inventoryRepo, movementSvc)
+	inventorySvc := inventory.NewService(inventoryRepo, movementSvc, itemRepo, locationRepo, containerRepo)
 	// Phase 4 services
 	borrowerSvc := borrower.NewService(borrowerRepo)
 	loanSvc := loan.NewService(loanRepo, inventoryRepo)

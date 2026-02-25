@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { useFormContext } from "react-hook-form";
 import { useTranslations } from "next-intl";
+import { Loader2 } from "lucide-react";
 
 import {
   MobileFormField,
@@ -22,6 +23,12 @@ interface DetailsStepProps {
   isSubmitting: boolean;
   keyboardStyle?: React.CSSProperties;
   isKeyboardOpen?: boolean;
+  /** When true, renders a submit button instead of "Next" */
+  isLastStep?: boolean;
+  /** Label for the submit button (used when isLastStep is true) */
+  submitLabel?: string;
+  /** Label shown while submitting (used when isLastStep is true) */
+  submittingLabel?: string;
 }
 
 export function DetailsStep({
@@ -30,6 +37,9 @@ export function DetailsStep({
   isSubmitting,
   keyboardStyle,
   isKeyboardOpen,
+  isLastStep,
+  submitLabel,
+  submittingLabel,
 }: DetailsStepProps) {
   const t = useTranslations("items.create");
   const { watch, setValue } = useFormContext<CreateItemFormData>();
@@ -214,12 +224,19 @@ export function DetailsStep({
           {t("back")}
         </Button>
         <Button
-          type="button"
-          onClick={onNext}
+          type={isLastStep ? "submit" : "button"}
+          onClick={isLastStep ? undefined : onNext}
           disabled={isSubmitting}
           className="min-h-[44px] min-w-[120px]"
         >
-          {t("next")}
+          {isLastStep && isSubmitting ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              {submittingLabel || t("next")}
+            </>
+          ) : (
+            isLastStep ? (submitLabel || t("next")) : t("next")
+          )}
         </Button>
       </div>
     </div>

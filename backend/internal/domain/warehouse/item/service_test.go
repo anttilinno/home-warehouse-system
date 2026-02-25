@@ -10,6 +10,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 
+	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/category"
 	"github.com/antti/home-warehouse/go-backend/internal/shared"
 )
 
@@ -110,6 +111,58 @@ func (m *MockRepository) GetItemLabels(ctx context.Context, itemID uuid.UUID) ([
 		return nil, args.Error(1)
 	}
 	return args.Get(0).([]uuid.UUID), args.Error(1)
+}
+
+// MockCategoryRepository is a mock implementation of the category.Repository interface
+type MockCategoryRepository struct {
+	mock.Mock
+}
+
+func (m *MockCategoryRepository) Save(ctx context.Context, cat *category.Category) error {
+	args := m.Called(ctx, cat)
+	return args.Error(0)
+}
+
+func (m *MockCategoryRepository) FindByID(ctx context.Context, id, workspaceID uuid.UUID) (*category.Category, error) {
+	args := m.Called(ctx, id, workspaceID)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*category.Category), args.Error(1)
+}
+
+func (m *MockCategoryRepository) FindByWorkspace(ctx context.Context, workspaceID uuid.UUID) ([]*category.Category, error) {
+	args := m.Called(ctx, workspaceID)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).([]*category.Category), args.Error(1)
+}
+
+func (m *MockCategoryRepository) FindByParent(ctx context.Context, workspaceID, parentID uuid.UUID) ([]*category.Category, error) {
+	args := m.Called(ctx, workspaceID, parentID)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).([]*category.Category), args.Error(1)
+}
+
+func (m *MockCategoryRepository) FindRootCategories(ctx context.Context, workspaceID uuid.UUID) ([]*category.Category, error) {
+	args := m.Called(ctx, workspaceID)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).([]*category.Category), args.Error(1)
+}
+
+func (m *MockCategoryRepository) Delete(ctx context.Context, id uuid.UUID) error {
+	args := m.Called(ctx, id)
+	return args.Error(0)
+}
+
+func (m *MockCategoryRepository) HasChildren(ctx context.Context, id uuid.UUID) (bool, error) {
+	args := m.Called(ctx, id)
+	return args.Bool(0), args.Error(1)
 }
 
 // Helper functions
@@ -711,7 +764,12 @@ func TestService_Create(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.testName, func(t *testing.T) {
 			mockRepo := new(MockRepository)
-			svc := NewService(mockRepo)
+			mockCatRepo := new(MockCategoryRepository)
+			now := time.Now()
+			mockCatRepo.On("FindByID", ctx, mock.Anything, mock.Anything).Return(
+				category.Reconstruct(categoryID, workspaceID, "Test Category", nil, nil, false, now, now), nil,
+			).Maybe()
+			svc := NewService(mockRepo, mockCatRepo)
 
 			tt.setupMock(mockRepo)
 
@@ -797,7 +855,7 @@ func TestService_GetByID(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.testName, func(t *testing.T) {
 			mockRepo := new(MockRepository)
-			svc := NewService(mockRepo)
+			svc := NewService(mockRepo, nil)
 
 			tt.setupMock(mockRepo)
 
@@ -938,7 +996,7 @@ func TestService_Update(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.testName, func(t *testing.T) {
 			mockRepo := new(MockRepository)
-			svc := NewService(mockRepo)
+			svc := NewService(mockRepo, nil)
 
 			tt.setupMock(mockRepo)
 
@@ -1027,7 +1085,7 @@ func TestService_Archive(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.testName, func(t *testing.T) {
 			mockRepo := new(MockRepository)
-			svc := NewService(mockRepo)
+			svc := NewService(mockRepo, nil)
 
 			tt.setupMock(mockRepo)
 
@@ -1111,7 +1169,7 @@ func TestService_Restore(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.testName, func(t *testing.T) {
 			mockRepo := new(MockRepository)
-			svc := NewService(mockRepo)
+			svc := NewService(mockRepo, nil)
 
 			tt.setupMock(mockRepo)
 
@@ -1214,7 +1272,7 @@ func TestService_Search(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.testName, func(t *testing.T) {
 			mockRepo := new(MockRepository)
-			svc := NewService(mockRepo)
+			svc := NewService(mockRepo, nil)
 
 			tt.setupMock(mockRepo)
 
@@ -1303,7 +1361,7 @@ func TestService_List(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.testName, func(t *testing.T) {
 			mockRepo := new(MockRepository)
-			svc := NewService(mockRepo)
+			svc := NewService(mockRepo, nil)
 
 			tt.setupMock(mockRepo)
 
@@ -1379,7 +1437,7 @@ func TestService_ListByCategory(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.testName, func(t *testing.T) {
 			mockRepo := new(MockRepository)
-			svc := NewService(mockRepo)
+			svc := NewService(mockRepo, nil)
 
 			tt.setupMock(mockRepo)
 
@@ -1510,7 +1568,7 @@ func TestService_AttachLabel(t *testing.T) {
 
 	t.Run("successful attach", func(t *testing.T) {
 		mockRepo := new(MockRepository)
-		svc := NewService(mockRepo)
+		svc := NewService(mockRepo, nil)
 
 		mockRepo.On("FindByID", ctx, itemID, workspaceID).Return(createItem(), nil)
 		mockRepo.On("AttachLabel", ctx, itemID, labelID).Return(nil)
@@ -1523,7 +1581,7 @@ func TestService_AttachLabel(t *testing.T) {
 
 	t.Run("item not found", func(t *testing.T) {
 		mockRepo := new(MockRepository)
-		svc := NewService(mockRepo)
+		svc := NewService(mockRepo, nil)
 
 		mockRepo.On("FindByID", ctx, itemID, workspaceID).Return(nil, ErrItemNotFound)
 
@@ -1535,7 +1593,7 @@ func TestService_AttachLabel(t *testing.T) {
 
 	t.Run("repository error on find", func(t *testing.T) {
 		mockRepo := new(MockRepository)
-		svc := NewService(mockRepo)
+		svc := NewService(mockRepo, nil)
 
 		repoErr := errors.New("database error")
 		mockRepo.On("FindByID", ctx, itemID, workspaceID).Return(nil, repoErr)
@@ -1548,7 +1606,7 @@ func TestService_AttachLabel(t *testing.T) {
 
 	t.Run("repository error on attach", func(t *testing.T) {
 		mockRepo := new(MockRepository)
-		svc := NewService(mockRepo)
+		svc := NewService(mockRepo, nil)
 
 		mockRepo.On("FindByID", ctx, itemID, workspaceID).Return(createItem(), nil)
 		repoErr := errors.New("attach error")
@@ -1574,7 +1632,7 @@ func TestService_DetachLabel(t *testing.T) {
 
 	t.Run("successful detach", func(t *testing.T) {
 		mockRepo := new(MockRepository)
-		svc := NewService(mockRepo)
+		svc := NewService(mockRepo, nil)
 
 		mockRepo.On("FindByID", ctx, itemID, workspaceID).Return(createItem(), nil)
 		mockRepo.On("DetachLabel", ctx, itemID, labelID).Return(nil)
@@ -1587,7 +1645,7 @@ func TestService_DetachLabel(t *testing.T) {
 
 	t.Run("item not found", func(t *testing.T) {
 		mockRepo := new(MockRepository)
-		svc := NewService(mockRepo)
+		svc := NewService(mockRepo, nil)
 
 		mockRepo.On("FindByID", ctx, itemID, workspaceID).Return(nil, ErrItemNotFound)
 
@@ -1599,7 +1657,7 @@ func TestService_DetachLabel(t *testing.T) {
 
 	t.Run("repository error on detach", func(t *testing.T) {
 		mockRepo := new(MockRepository)
-		svc := NewService(mockRepo)
+		svc := NewService(mockRepo, nil)
 
 		mockRepo.On("FindByID", ctx, itemID, workspaceID).Return(createItem(), nil)
 		repoErr := errors.New("detach error")
@@ -1624,7 +1682,7 @@ func TestService_GetItemLabels(t *testing.T) {
 
 	t.Run("successful get labels", func(t *testing.T) {
 		mockRepo := new(MockRepository)
-		svc := NewService(mockRepo)
+		svc := NewService(mockRepo, nil)
 
 		expectedLabels := []uuid.UUID{uuid.New(), uuid.New()}
 		mockRepo.On("FindByID", ctx, itemID, workspaceID).Return(createItem(), nil)
@@ -1639,7 +1697,7 @@ func TestService_GetItemLabels(t *testing.T) {
 
 	t.Run("item not found", func(t *testing.T) {
 		mockRepo := new(MockRepository)
-		svc := NewService(mockRepo)
+		svc := NewService(mockRepo, nil)
 
 		mockRepo.On("FindByID", ctx, itemID, workspaceID).Return(nil, ErrItemNotFound)
 
@@ -1652,7 +1710,7 @@ func TestService_GetItemLabels(t *testing.T) {
 
 	t.Run("repository error on get labels", func(t *testing.T) {
 		mockRepo := new(MockRepository)
-		svc := NewService(mockRepo)
+		svc := NewService(mockRepo, nil)
 
 		mockRepo.On("FindByID", ctx, itemID, workspaceID).Return(createItem(), nil)
 		repoErr := errors.New("get labels error")

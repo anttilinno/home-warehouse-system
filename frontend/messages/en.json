@@ -1159,6 +1159,17 @@
         "noWorkspace": "No workspace selected",
         "createFailed": "Failed to create item"
       }
+    },
+    "edit": {
+      "title": "Edit Item",
+      "subtitle": "Update item details",
+      "save": "Save Changes",
+      "saving": "Saving...",
+      "success": "Item updated successfully",
+      "errors": {
+        "loadFailed": "Failed to load item",
+        "updateFailed": "Failed to update item"
+      }
     }
   },
   "inventory": {

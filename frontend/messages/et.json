@@ -1003,6 +1003,17 @@
         "noWorkspace": "Tööruum pole valitud",
         "createFailed": "Eseme loomine ebaõnnestus"
       }
+    },
+    "edit": {
+      "title": "Muuda eset",
+      "subtitle": "Uuenda eseme andmeid",
+      "save": "Salvesta muudatused",
+      "saving": "Salvestamine...",
+      "success": "Ese edukalt uuendatud",
+      "errors": {
+        "loadFailed": "Eseme laadimine ebaõnnestus",
+        "updateFailed": "Eseme uuendamine ebaõnnestus"
+      }
     }
   },
   "inventory": {

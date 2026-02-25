@@ -2,9 +2,11 @@ services:
   # ──────────────────────────────────────────────
   # Infrastructure (no profile — always starts)
   # ──────────────────────────────────────────────
-  postgres:
+
+  # Dev database — for local development (backend runs on host)
+  postgres-dev:
     image: postgres:18
-    container_name: warehouse-postgres
+    container_name: warehouse-postgres-dev
     environment:
       POSTGRES_USER: wh
       POSTGRES_PASSWORD: wh
@@ -13,7 +15,7 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - ./.data/postgres:/var/lib/postgresql/data
+      - ./.data/postgres-dev:/var/lib/postgresql/data
       - ./docker/postgres:/docker-entrypoint-initdb.d
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U wh -d warehouse_dev"]
@@ -106,15 +108,36 @@ services:
   # Production app services (profile: prod)
   # ──────────────────────────────────────────────
 
+  # Prod database — separate container and volume from dev
+  postgres-prod:
+    image: postgres:18
+    container_name: warehouse-postgres-prod
+    profiles: ["prod"]
+    environment:
+      POSTGRES_USER: wh
+      POSTGRES_PASSWORD: wh
+      POSTGRES_DB: warehouse
+      PGDATA: /var/lib/postgresql/data
+    volumes:
+      - ./.data/postgres-prod:/var/lib/postgresql/data
+      - ./docker/postgres:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U wh -d warehouse"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - warehouse
+
   # One-shot migration runner
   migrate:
     image: ghcr.io/amacneil/dbmate:2
     profiles: ["prod"]
     depends_on:
-      postgres:
+      postgres-prod:
         condition: service_healthy
     environment:
-      DATABASE_URL: "postgresql://wh:wh@postgres:5432/warehouse_dev?sslmode=disable"
+      DATABASE_URL: "postgresql://wh:wh@postgres-prod:5432/warehouse?sslmode=disable"
     volumes:
       - ./backend/db/migrations:/db/migrations
     command: ["--wait", "--no-dump-schema", "migrate"]
@@ -132,7 +155,7 @@ services:
       redis:
         condition: service_healthy
     environment:
-      DATABASE_URL: "postgresql://wh:wh@postgres:5432/warehouse_dev?sslmode=disable"
+      DATABASE_URL: "postgresql://wh:wh@postgres-prod:5432/warehouse?sslmode=disable"
       REDIS_URL: "redis://redis:6379"
       JWT_SECRET: "change-me-in-production"
       DEBUG: "true"
@@ -166,7 +189,7 @@ services:
       redis:
         condition: service_healthy
     environment:
-      GO_DATABASE_URL: "postgresql://wh:wh@postgres:5432/warehouse_dev?sslmode=disable"
+      GO_DATABASE_URL: "postgresql://wh:wh@postgres-prod:5432/warehouse?sslmode=disable"
       REDIS_URL: "redis://redis:6379"
       PHOTO_STORAGE_DIR: "/data/photos"
     volumes:
@@ -186,7 +209,7 @@ services:
       redis:
         condition: service_healthy
     environment:
-      DATABASE_URL: "postgresql://wh:wh@postgres:5432/warehouse_dev?sslmode=disable"
+      DATABASE_URL: "postgresql://wh:wh@postgres-prod:5432/warehouse?sslmode=disable"
       REDIS_URL: "redis:6379"
       PHOTO_STORAGE_DIR: "/data/photos"
     volumes:

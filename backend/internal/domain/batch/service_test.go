@@ -1149,15 +1149,15 @@ func (m *MockCompanyRepository) FindByName(ctx context.Context, workspaceID uuid
 // =============================================================================
 
 func createTestItemService(repo *MockItemRepository) *item.Service {
-	return item.NewService(repo)
+	return item.NewService(repo, nil)
 }
 
 func createTestLocationService(repo *MockLocationRepository) *location.Service {
 	return location.NewService(repo)
 }
 
-func createTestContainerService(repo *MockContainerRepository) *container.Service {
-	return container.NewService(repo)
+func createTestContainerService(repo *MockContainerRepository, locationRepo *MockLocationRepository) *container.Service {
+	return container.NewService(repo, locationRepo)
 }
 
 func createTestCategoryService(repo *MockCategoryRepository) *category.Service {
@@ -1543,14 +1543,19 @@ func TestProcessBatch_ContainerUpdate_Success(t *testing.T) {
 	now := time.Now()
 
 	mockContainerRepo := new(MockContainerRepository)
-	containerSvc := createTestContainerService(mockContainerRepo)
+	mockLocationRepo := new(MockLocationRepository)
+	containerSvc := createTestContainerService(mockContainerRepo, mockLocationRepo)
 	svc := NewService(nil, nil, containerSvc, nil, nil, nil, nil)
 
 	existingContainer := container.Reconstruct(
 		containerID, workspaceID, locationID, "Original Box", nil, nil, "CON001", false, now, now,
 	)
+	existingLocation := location.Reconstruct(
+		locationID, workspaceID, "Test Location", nil, nil, "LOC001", false, now, now,
+	)
 
 	mockContainerRepo.On("FindByID", ctx, containerID, workspaceID).Return(existingContainer, nil)
+	mockLocationRepo.On("FindByID", ctx, mock.Anything, workspaceID).Return(existingLocation, nil)
 	mockContainerRepo.On("Save", ctx, mock.AnythingOfType("*container.Container")).Return(nil)
 
 	updateData := json.RawMessage(`{"name":"Updated Box","location_id":"` + locationID.String() + `"}`)
@@ -1571,6 +1576,7 @@ func TestProcessBatch_ContainerUpdate_Success(t *testing.T) {
 	assert.Equal(t, 1, resp.Succeeded)
 
 	mockContainerRepo.AssertExpectations(t)
+	mockLocationRepo.AssertExpectations(t)
 }
 
 func TestProcessBatch_ContainerDelete_Success(t *testing.T) {
@@ -1581,7 +1587,7 @@ func TestProcessBatch_ContainerDelete_Success(t *testing.T) {
 	now := time.Now()
 
 	mockContainerRepo := new(MockContainerRepository)
-	containerSvc := createTestContainerService(mockContainerRepo)
+	containerSvc := createTestContainerService(mockContainerRepo, nil)
 	svc := NewService(nil, nil, containerSvc, nil, nil, nil, nil)
 
 	existingContainer := container.Reconstruct(

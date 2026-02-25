@@ -731,10 +731,12 @@ export class SyncManager {
    * @returns The full API URL
    */
   private buildApiUrl(mutation: MutationQueueEntry): string {
+    // Use workspace ID captured at queue time, falling back to localStorage
     const workspaceId =
-      typeof localStorage !== "undefined"
+      mutation.workspaceId ||
+      (typeof localStorage !== "undefined"
         ? localStorage.getItem("workspace_id")
-        : null;
+        : null);
 
     if (!workspaceId) {
       throw new Error("No workspace ID available");

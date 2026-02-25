@@ -24,6 +24,7 @@ CREATE TYPE auth.notification_type_enum AS ENUM (
     'LOAN_DUE_SOON',      -- Loan due date approaching
     'LOAN_OVERDUE',       -- Loan is past due date
     'LOAN_RETURNED',      -- Item has been returned
+    'REPAIR_REMINDER',    -- Maintenance/repair reminder
     'LOW_STOCK',          -- Inventory below threshold
     'WORKSPACE_INVITE',   -- Invited to a workspace
     'MEMBER_JOINED',      -- New member joined workspace
@@ -79,6 +80,18 @@ CREATE TYPE warehouse.import_status_enum AS ENUM (
 CREATE TYPE warehouse.pending_change_action_enum AS ENUM ('create', 'update', 'delete');
 CREATE TYPE warehouse.pending_change_status_enum AS ENUM ('pending', 'approved', 'rejected');
 
+CREATE TYPE warehouse.repair_status_enum AS ENUM (
+    'PENDING',
+    'IN_PROGRESS',
+    'COMPLETED'
+);
+
+CREATE TYPE warehouse.repair_photo_type_enum AS ENUM (
+    'BEFORE',
+    'DURING',
+    'AFTER'
+);
+
 -- ============================================================================
 -- Auth Schema Tables
 -- ============================================================================
@@ -110,13 +123,18 @@ CREATE TABLE auth.users (
     id uuid DEFAULT uuidv7() PRIMARY KEY,
     email VARCHAR(255) UNIQUE NOT NULL,
     full_name VARCHAR(100) NOT NULL,
-    password_hash VARCHAR(255) NOT NULL,
+    password_hash VARCHAR(255),
+    has_password BOOLEAN NOT NULL DEFAULT true,
     is_active BOOLEAN DEFAULT true,
     is_superuser BOOLEAN DEFAULT false,
     date_format VARCHAR(20) DEFAULT 'DD.MM.YYYY',
+    time_format VARCHAR(10) NOT NULL DEFAULT '24h',
+    thousand_separator VARCHAR(5) NOT NULL DEFAULT ',',
+    decimal_separator VARCHAR(5) NOT NULL DEFAULT '.',
     language VARCHAR(5) NOT NULL DEFAULT 'en',
     theme VARCHAR(20) NOT NULL DEFAULT 'system',
     avatar_path VARCHAR(500),
+    notification_preferences JSONB NOT NULL DEFAULT '{}'::jsonb,
     created_at TIMESTAMPTZ DEFAULT now(),
     updated_at TIMESTAMPTZ DEFAULT now()
 );
@@ -124,11 +142,26 @@ CREATE TABLE auth.users (
 COMMENT ON COLUMN auth.users.date_format IS
 'User''s preferred date format for display (e.g., DD.MM.YYYY, MM/DD/YYYY, YYYY-MM-DD)';
 
+COMMENT ON COLUMN auth.users.time_format IS
+'User''s preferred time format: 12h or 24h';
+
+COMMENT ON COLUMN auth.users.thousand_separator IS
+'User''s preferred thousand separator for number display: comma, period, or space';
+
+COMMENT ON COLUMN auth.users.decimal_separator IS
+'User''s preferred decimal separator for number display: period or comma';
+
 COMMENT ON COLUMN auth.users.language IS
 'User''s preferred language code (e.g., en, fi, de)';
 
 COMMENT ON COLUMN auth.users.theme IS
 'User''s preferred UI theme: light, dark, or system';
+
+COMMENT ON COLUMN auth.users.avatar_path IS
+'Storage path to user avatar image. Null if user has no custom avatar.';
+
+COMMENT ON COLUMN auth.users.notification_preferences IS
+'User notification preferences by category. Empty object means all enabled. Keys: enabled, loans, inventory, workspace, system.';
 
 -- Workspace membership
 CREATE TABLE auth.workspace_members (
@@ -175,9 +208,6 @@ COMMENT ON COLUMN auth.user_oauth_accounts.access_token IS
 
 CREATE INDEX ix_oauth_accounts_user ON auth.user_oauth_accounts(user_id);
 CREATE INDEX ix_oauth_accounts_provider ON auth.user_oauth_accounts(provider, provider_user_id);
-
-COMMENT ON COLUMN auth.users.avatar_path IS
-'Storage path to user avatar image. Null if user has no custom avatar.';
 
 CREATE TABLE auth.password_reset_tokens (
     id uuid DEFAULT uuidv7() PRIMARY KEY,
@@ -264,6 +294,69 @@ COMMENT ON COLUMN auth.workspace_docspell_settings.collective_name IS
 'Docspell collective name - equivalent to a tenant/organization in Docspell.';
 
 CREATE INDEX ix_workspace_docspell_settings_workspace ON auth.workspace_docspell_settings(workspace_id);
+
+-- Push subscriptions for web push notifications
+CREATE TABLE auth.push_subscriptions (
+    id uuid DEFAULT uuidv7() PRIMARY KEY,
+    user_id uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+    endpoint TEXT NOT NULL,
+    p256dh TEXT NOT NULL,
+    auth TEXT NOT NULL,
+    user_agent TEXT,
+    created_at TIMESTAMPTZ DEFAULT now(),
+    updated_at TIMESTAMPTZ DEFAULT now(),
+    UNIQUE(user_id, endpoint)
+);
+
+COMMENT ON TABLE auth.push_subscriptions IS
+'Web Push API subscriptions for sending push notifications to user devices.';
+
+COMMENT ON COLUMN auth.push_subscriptions.endpoint IS
+'The push service URL where messages should be sent.';
+
+COMMENT ON COLUMN auth.push_subscriptions.p256dh IS
+'The client public key for message encryption (P-256 curve, base64 encoded).';
+
+COMMENT ON COLUMN auth.push_subscriptions.auth IS
+'The authentication secret for message encryption (base64 encoded).';
+
+COMMENT ON COLUMN auth.push_subscriptions.user_agent IS
+'User agent string to identify the device/browser.';
+
+CREATE INDEX ix_push_subscriptions_user ON auth.push_subscriptions(user_id);
+CREATE INDEX ix_push_subscriptions_endpoint ON auth.push_subscriptions(endpoint);
+
+-- User sessions for multi-device management
+CREATE TABLE auth.user_sessions (
+    id UUID PRIMARY KEY DEFAULT uuidv7(),
+    user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+    refresh_token_hash VARCHAR(64) NOT NULL,
+    device_info VARCHAR(200),
+    ip_address INET,
+    user_agent TEXT,
+    last_active_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    expires_at TIMESTAMPTZ NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+COMMENT ON TABLE auth.user_sessions IS
+'Tracks active user sessions for multi-device management and token revocation.';
+
+COMMENT ON COLUMN auth.user_sessions.refresh_token_hash IS
+'SHA-256 hash of the refresh token. Never store plain tokens.';
+
+COMMENT ON COLUMN auth.user_sessions.device_info IS
+'Human-readable device description parsed from user agent (e.g., Chrome on Windows).';
+
+COMMENT ON COLUMN auth.user_sessions.ip_address IS
+'Client IP address at login time.';
+
+COMMENT ON COLUMN auth.user_sessions.last_active_at IS
+'Updated on token refresh to track session activity.';
+
+CREATE INDEX idx_user_sessions_user_id ON auth.user_sessions(user_id);
+CREATE INDEX idx_user_sessions_token_hash ON auth.user_sessions(refresh_token_hash);
+CREATE INDEX idx_user_sessions_expires_at ON auth.user_sessions(expires_at);
 
 -- ============================================================================
 -- Warehouse Schema Tables
@@ -458,13 +551,52 @@ CREATE TABLE warehouse.item_photos (
     is_primary BOOLEAN NOT NULL DEFAULT false,
     caption TEXT,
     uploaded_by UUID NOT NULL REFERENCES auth.users(id),
+    thumbnail_status VARCHAR(20) NOT NULL DEFAULT 'pending',
+    thumbnail_small_path VARCHAR(500),
+    thumbnail_medium_path VARCHAR(500),
+    thumbnail_large_path VARCHAR(500),
+    thumbnail_attempts INTEGER NOT NULL DEFAULT 0,
+    thumbnail_error TEXT,
+    perceptual_hash BIGINT,
     created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT item_photos_thumbnail_status_check
+        CHECK (thumbnail_status IN ('pending', 'processing', 'complete', 'failed'))
 );
+
+COMMENT ON COLUMN warehouse.item_photos.thumbnail_status IS
+'Thumbnail generation status: pending (not started), processing (in queue), complete (ready), failed (max retries exceeded)';
+
+COMMENT ON COLUMN warehouse.item_photos.thumbnail_small_path IS
+'Path to 150px thumbnail (used for lists/grids)';
+
+COMMENT ON COLUMN warehouse.item_photos.thumbnail_medium_path IS
+'Path to 400px thumbnail (used for detail views)';
+
+COMMENT ON COLUMN warehouse.item_photos.thumbnail_large_path IS
+'Path to 800px thumbnail (used for lightbox/preview)';
+
+COMMENT ON COLUMN warehouse.item_photos.thumbnail_attempts IS
+'Number of thumbnail generation attempts (max 5 before marked failed)';
+
+COMMENT ON COLUMN warehouse.item_photos.thumbnail_error IS
+'Last error message if thumbnail generation failed';
+
+COMMENT ON COLUMN warehouse.item_photos.perceptual_hash IS
+'64-bit difference hash (dHash) for duplicate detection. Similar images have similar hashes with small Hamming distance.';
 
 CREATE INDEX idx_item_photos_item ON warehouse.item_photos(item_id, display_order);
 CREATE INDEX idx_item_photos_workspace ON warehouse.item_photos(workspace_id);
 CREATE UNIQUE INDEX idx_item_photos_primary ON warehouse.item_photos(item_id, is_primary) WHERE is_primary = true;
+CREATE INDEX idx_item_photos_thumbnail_pending
+    ON warehouse.item_photos(thumbnail_status)
+    WHERE thumbnail_status IN ('pending', 'processing');
+CREATE INDEX idx_item_photos_perceptual_hash
+    ON warehouse.item_photos(perceptual_hash)
+    WHERE perceptual_hash IS NOT NULL;
+CREATE INDEX idx_item_photos_workspace_hash
+    ON warehouse.item_photos(workspace_id, perceptual_hash)
+    WHERE perceptual_hash IS NOT NULL;
 
 -- Files (uploaded files storage metadata)
 CREATE TABLE warehouse.files (
@@ -529,11 +661,15 @@ CREATE TABLE warehouse.inventory (
     warranty_expires DATE,
     expiration_date DATE,
     notes TEXT,
+    last_used_at TIMESTAMPTZ,
     is_archived BOOLEAN NOT NULL DEFAULT false,
     created_at TIMESTAMPTZ DEFAULT now(),
     updated_at TIMESTAMPTZ DEFAULT now(),
     CONSTRAINT chk_inventory_quantity_non_negative CHECK (quantity >= 0)
 );
+
+COMMENT ON COLUMN warehouse.inventory.last_used_at IS
+'Timestamp when this inventory was last marked as "used". Used for declutter assistant.';
 
 CREATE INDEX ix_inventory_workspace ON warehouse.inventory(workspace_id);
 CREATE INDEX ix_inventory_item_id ON warehouse.inventory(item_id);
@@ -541,6 +677,8 @@ CREATE INDEX ix_inventory_location_id ON warehouse.inventory(location_id);
 CREATE INDEX ix_inventory_container_id ON warehouse.inventory(container_id);
 CREATE INDEX ix_inventory_available ON warehouse.inventory(workspace_id, item_id) WHERE status = 'AVAILABLE';
 CREATE INDEX ix_inventory_active ON warehouse.inventory(workspace_id, item_id, location_id)
+    WHERE is_archived = false;
+CREATE INDEX ix_inventory_last_used ON warehouse.inventory(workspace_id, last_used_at)
     WHERE is_archived = false;
 
 -- Container tags (RFID/NFC/QR)
@@ -757,6 +895,105 @@ CREATE TABLE warehouse.pending_changes (
 CREATE INDEX idx_pending_changes_workspace_status ON warehouse.pending_changes (workspace_id, status);
 CREATE INDEX idx_pending_changes_requester ON warehouse.pending_changes (requester_id);
 CREATE INDEX idx_pending_changes_entity ON warehouse.pending_changes (entity_type, entity_id);
+
+-- ============================================================================
+-- Repair Log System
+-- ============================================================================
+
+-- Repair logs
+CREATE TABLE warehouse.repair_logs (
+    id uuid DEFAULT uuidv7() PRIMARY KEY,
+    workspace_id uuid NOT NULL REFERENCES auth.workspaces(id) ON DELETE CASCADE,
+    inventory_id uuid NOT NULL REFERENCES warehouse.inventory(id) ON DELETE CASCADE,
+    status warehouse.repair_status_enum NOT NULL DEFAULT 'PENDING',
+    description TEXT NOT NULL,
+    repair_date DATE,
+    cost INTEGER,
+    currency_code VARCHAR(3) DEFAULT 'EUR',
+    service_provider VARCHAR(200),
+    completed_at TIMESTAMPTZ,
+    new_condition warehouse.item_condition_enum,
+    notes TEXT,
+    is_warranty_claim BOOLEAN NOT NULL DEFAULT false,
+    reminder_date DATE,
+    reminder_sent BOOLEAN NOT NULL DEFAULT false,
+    created_at TIMESTAMPTZ DEFAULT now(),
+    updated_at TIMESTAMPTZ DEFAULT now()
+);
+
+COMMENT ON TABLE warehouse.repair_logs IS
+'Tracks repair history for inventory items. Status workflow: PENDING -> IN_PROGRESS -> COMPLETED.';
+
+COMMENT ON COLUMN warehouse.repair_logs.cost IS
+'Repair cost in cents for the specified currency.';
+
+COMMENT ON COLUMN warehouse.repair_logs.new_condition IS
+'The condition to set on the inventory item when the repair is completed.';
+
+COMMENT ON COLUMN warehouse.repair_logs.completed_at IS
+'Timestamp when the repair status was set to COMPLETED.';
+
+COMMENT ON COLUMN warehouse.repair_logs.is_warranty_claim IS
+'Whether this repair was covered under warranty.';
+
+COMMENT ON COLUMN warehouse.repair_logs.reminder_date IS
+'Optional future date for maintenance reminder notification.';
+
+COMMENT ON COLUMN warehouse.repair_logs.reminder_sent IS
+'Whether the reminder notification has been sent.';
+
+CREATE INDEX ix_repair_logs_workspace ON warehouse.repair_logs(workspace_id);
+CREATE INDEX ix_repair_logs_inventory ON warehouse.repair_logs(inventory_id);
+CREATE INDEX ix_repair_logs_status ON warehouse.repair_logs(workspace_id, status);
+CREATE INDEX ix_repair_logs_reminder ON warehouse.repair_logs(reminder_date)
+    WHERE reminder_date IS NOT NULL AND reminder_sent = false;
+
+-- Repair photos
+CREATE TABLE warehouse.repair_photos (
+    id UUID PRIMARY KEY DEFAULT uuidv7(),
+    repair_log_id UUID NOT NULL REFERENCES warehouse.repair_logs(id) ON DELETE CASCADE,
+    workspace_id UUID NOT NULL REFERENCES auth.workspaces(id) ON DELETE CASCADE,
+    photo_type warehouse.repair_photo_type_enum NOT NULL DEFAULT 'DURING',
+    filename VARCHAR(255) NOT NULL,
+    storage_path VARCHAR(500) NOT NULL,
+    thumbnail_path VARCHAR(500) NOT NULL,
+    file_size BIGINT NOT NULL,
+    mime_type VARCHAR(100) NOT NULL,
+    width INTEGER NOT NULL,
+    height INTEGER NOT NULL,
+    display_order INTEGER NOT NULL DEFAULT 0,
+    caption TEXT,
+    uploaded_by UUID NOT NULL REFERENCES auth.users(id),
+    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+COMMENT ON TABLE warehouse.repair_photos IS
+'Photos attached to repair logs, categorized by when they were taken (before/during/after repair).';
+
+COMMENT ON COLUMN warehouse.repair_photos.photo_type IS
+'Categorizes when the photo was taken: BEFORE repair, DURING the repair process, or AFTER completion.';
+
+CREATE INDEX idx_repair_photos_repair ON warehouse.repair_photos(repair_log_id, display_order);
+CREATE INDEX idx_repair_photos_workspace ON warehouse.repair_photos(workspace_id);
+
+-- Repair attachments
+CREATE TABLE warehouse.repair_attachments (
+    id UUID PRIMARY KEY DEFAULT uuidv7(),
+    repair_log_id UUID NOT NULL REFERENCES warehouse.repair_logs(id) ON DELETE CASCADE,
+    workspace_id UUID NOT NULL REFERENCES auth.workspaces(id) ON DELETE CASCADE,
+    file_id UUID NOT NULL REFERENCES warehouse.files(id) ON DELETE CASCADE,
+    attachment_type warehouse.attachment_type_enum NOT NULL,
+    title VARCHAR(200),
+    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+COMMENT ON TABLE warehouse.repair_attachments IS
+'Links repair logs to uploaded files (receipts, invoices, warranty documents).';
+
+CREATE INDEX ix_repair_attachments_repair ON warehouse.repair_attachments(repair_log_id);
+CREATE INDEX ix_repair_attachments_workspace ON warehouse.repair_attachments(workspace_id);
 
 -- ============================================================================
 -- Search Vector Triggers
