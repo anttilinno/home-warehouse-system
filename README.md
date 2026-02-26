@@ -3,20 +3,32 @@
 [![codecov](https://codecov.io/gh/anttilinno/home-warehouse-system/graph/badge.svg)](https://codecov.io/gh/anttilinno/home-warehouse-system)
 [![CI](https://github.com/anttilinno/home-warehouse-system/actions/workflows/ci.yml/badge.svg)](https://github.com/anttilinno/home-warehouse-system/actions/workflows/ci.yml)
 
-A multi-tenant home inventory management system for tracking items, locations, containers, and loans. Built with Go, Next.js, and PostgreSQL.
+**Organize Everything You Own.**
+
+Track items, locations, and loans across your home with a powerful inventory management system. Know exactly what you have and where it is.
+
+A self-hosted home inventory app for families and hobbyists. Built with Go, Next.js, and PostgreSQL.
 
 ## Features
 
-- **Multi-tenant Workspaces** - Isolated environments for different users/teams with role-based access control
-- **Approval Pipeline** - Member changes require admin approval for data integrity
-- **Item Management** - Track items with SKU, brand, model, serial numbers
-- **Item Photos** - Multiple photos per item with thumbnails, captions, and automatic compression
-- **Location Hierarchy** - Organize storage by rooms, zones, shelves, bins
-- **Container Management** - Group items in boxes and containers
-- **Loan Tracking** - Monitor who borrowed what and when
-- **Background Import System** - Bulk import data via CSV files
-- **Real-time Updates** - SSE-based live updates for import progress and approvals
-- **PWA Support** - Progressive Web App with offline capability and cached photos
+- **Item Catalog** - Track items with SKU, brand, model, serial numbers, and custom categories. Full-text search across your inventory.
+- **Location Hierarchy** - Organize by rooms, zones, shelves, and bins. Create a complete map of your storage spaces.
+- **Containers** - Group items in boxes, drawers, and containers. Perfect for seasonal storage and moving.
+- **Multi-User Workspaces** - Collaborate with family or roommates. Role-based access control keeps everyone organized.
+- **Barcode Scanning** - Scan barcodes and QR codes with your phone. Generate labels for containers and locations.
+- **Loan Tracking** - Track who borrowed what and when it's due. Never lose track of lent items again.
+- **Smart Alerts** - Get notified about low stock, expiring items, warranty deadlines, and overdue loans.
+- **Import & Export** - Bulk import from CSV/Excel. Export your data anytime for backup or migration.
+- **Item Photos** - Multiple photos per item with thumbnails, captions, and automatic compression.
+- **Approval Pipeline** - Member changes require admin approval for data integrity.
+- **Real-time Updates** - SSE-based live updates for import progress and approvals.
+- **PWA Support** - Progressive Web App with offline capability and cached photos.
+
+### How It Works
+
+1. **Create your workspace** - Sign up and create a workspace for your home, garage, or collection. Invite family members to collaborate.
+2. **Add locations & items** - Set up your storage hierarchy and start adding items. Import from spreadsheets or scan barcodes.
+3. **Find anything instantly** - Search across all your items and locations. Always know exactly where everything is stored.
 
 ## Quick Start
 
