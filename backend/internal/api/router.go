@@ -282,8 +282,8 @@ func NewRouter(pool *pgxpool.Pool, cfg *config.Config) chi.Router {
 	importExportHandler := importexport.NewHandler(importExportSvc, workspaceBackupSvc)
 	syncHandler := sync.NewHandler(syncSvc)
 
-	// Rate limiter for auth endpoints (5 requests per minute per IP)
-	authRateLimiter := appMiddleware.NewRateLimiter(5, time.Minute)
+	// Rate limiter for auth endpoints (20 requests per minute per IP)
+	authRateLimiter := appMiddleware.NewRateLimiter(20, time.Minute)
 
 	// Register public routes with rate limiting for auth endpoints
 	r.Group(func(r chi.Router) {
