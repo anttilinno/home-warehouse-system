@@ -2,7 +2,6 @@ import { setRequestLocale } from "next-intl/server";
 import { getTranslations } from "next-intl/server";
 
 import { Link } from "@/i18n/navigation";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { LoginForm } from "@/features/auth/components/login-form";
 import { OAuthErrorHandler } from "@/features/auth/components/oauth-error-handler";
@@ -27,35 +26,37 @@ export default async function LoginPage({ params }: Props) {
   const t = await getTranslations({ locale, namespace: "auth" });
 
   return (
-    <Card>
-      <CardHeader className="text-center">
-        <CardTitle className="text-2xl">{t("welcomeBack")}</CardTitle>
-        <CardDescription>{t("loginDescription")}</CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-6">
-        <OAuthErrorHandler />
-        <SocialLogin />
+    <div className="space-y-5">
+      <div className="text-center space-y-1">
+        <h2 className="text-xl font-bold font-[family-name:var(--font-quicksand)]">
+          {t("welcomeBack")}
+        </h2>
+        <p className="text-sm text-muted-foreground">{t("loginDescription")}</p>
+      </div>
 
-        <div className="relative">
-          <div className="absolute inset-0 flex items-center">
-            <Separator className="w-full" />
-          </div>
-          <div className="relative flex justify-center text-xs uppercase">
-            <span className="bg-card px-2 text-muted-foreground">
-              {t("orContinueWith")}
-            </span>
-          </div>
+      <OAuthErrorHandler />
+
+      <LoginForm />
+
+      <div className="relative">
+        <div className="absolute inset-0 flex items-center">
+          <Separator className="w-full" />
         </div>
+        <div className="relative flex justify-center text-xs uppercase">
+          <span className="bg-background/95 px-2 text-muted-foreground">
+            {t("orContinueWith")}
+          </span>
+        </div>
+      </div>
 
-        <LoginForm />
+      <SocialLogin />
 
-        <p className="text-center text-sm text-muted-foreground">
-          {t("noAccount")}{" "}
-          <Link href="/register" className="text-primary hover:underline">
-            {t("signUp")}
-          </Link>
-        </p>
-      </CardContent>
-    </Card>
+      <p className="text-center text-sm text-muted-foreground">
+        {t("noAccount")}{" "}
+        <Link href="/register" className="text-primary font-medium hover:underline">
+          {t("signUp")}
+        </Link>
+      </p>
+    </div>
   );
 }

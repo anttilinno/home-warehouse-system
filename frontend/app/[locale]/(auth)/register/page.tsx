@@ -2,7 +2,6 @@ import { setRequestLocale } from "next-intl/server";
 import { getTranslations } from "next-intl/server";
 
 import { Link } from "@/i18n/navigation";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { SignupForm } from "@/features/auth/components/signup-form";
 import { SocialLogin } from "@/features/auth/components/social-login";
@@ -26,34 +25,35 @@ export default async function RegisterPage({ params }: Props) {
   const t = await getTranslations({ locale, namespace: "auth" });
 
   return (
-    <Card>
-      <CardHeader className="text-center">
-        <CardTitle className="text-2xl">{t("createAccount")}</CardTitle>
-        <CardDescription>{t("signupDescription")}</CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-6">
-        <SocialLogin />
+    <div className="space-y-5">
+      <div className="text-center space-y-1">
+        <h2 className="text-xl font-bold font-[family-name:var(--font-quicksand)]">
+          {t("createAccount")}
+        </h2>
+        <p className="text-sm text-muted-foreground">{t("signupDescription")}</p>
+      </div>
 
-        <div className="relative">
-          <div className="absolute inset-0 flex items-center">
-            <Separator className="w-full" />
-          </div>
-          <div className="relative flex justify-center text-xs uppercase">
-            <span className="bg-card px-2 text-muted-foreground">
-              {t("orContinueWith")}
-            </span>
-          </div>
+      <SocialLogin />
+
+      <div className="relative">
+        <div className="absolute inset-0 flex items-center">
+          <Separator className="w-full" />
         </div>
+        <div className="relative flex justify-center text-xs uppercase">
+          <span className="bg-background/95 px-2 text-muted-foreground">
+            {t("orContinueWith")}
+          </span>
+        </div>
+      </div>
 
-        <SignupForm />
+      <SignupForm />
 
-        <p className="text-center text-sm text-muted-foreground">
-          {t("haveAccount")}{" "}
-          <Link href="/login" className="text-primary hover:underline">
-            {t("signIn")}
-          </Link>
-        </p>
-      </CardContent>
-    </Card>
+      <p className="text-center text-sm text-muted-foreground">
+        {t("haveAccount")}{" "}
+        <Link href="/login" className="text-primary font-medium hover:underline">
+          {t("signIn")}
+        </Link>
+      </p>
+    </div>
   );
 }

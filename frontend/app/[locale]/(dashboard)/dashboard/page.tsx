@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 
+import { cn } from "@/lib/utils";
 import { useAuth } from "@/lib/contexts/auth-context";
 import { useSSE, type SSEEvent } from "@/lib/hooks/use-sse";
 import { useDateFormat } from "@/lib/hooks/use-date-format";
@@ -27,6 +28,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ActivityFeed } from "@/components/dashboard/activity-feed";
 import { ActivityFeedMobile } from "@/components/dashboard/activity-feed-mobile";
+import { PawPrint } from "@/components/shared/paw-print";
 
 interface FrontendActivity {
   id: string;
@@ -252,9 +254,12 @@ export default function DashboardPage() {
   return (
     <div className="space-y-6">
       {/* Page header */}
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">{t("title")}</h1>
-        <p className="text-muted-foreground">{t("subtitle")}</p>
+      <div className="flex items-center gap-3">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight font-[family-name:var(--font-quicksand)]">{t("title")}</h1>
+          <p className="text-muted-foreground">{t("subtitle")}</p>
+        </div>
+        <PawPrint size={28} className="text-primary/20 ml-auto hidden sm:block animate-paw-bounce" />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
@@ -266,21 +271,25 @@ export default function DashboardPage() {
           title={t("stats.totalItems")}
           value={formatNumber(stats.total_items)}
           icon={Package}
+          color="pink"
         />
         <StatsCard
           title={t("stats.locations")}
           value={formatNumber(stats.total_locations)}
           icon={MapPin}
+          color="green"
         />
         <StatsCard
           title={t("stats.containers")}
           value={formatNumber(stats.total_containers)}
           icon={Box}
+          color="purple"
         />
         <StatsCard
           title={t("stats.activeLoans")}
           value={formatNumber(stats.active_loans)}
           icon={HandCoins}
+          color="orange"
         />
         </div>
 
@@ -290,7 +299,7 @@ export default function DashboardPage() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <AlertTriangle className="h-5 w-5 text-amber-500" />
+              <PawPrint size={18} className="text-amber-500" />
               {t("alerts.title")}
             </CardTitle>
             <CardDescription>{t("alerts.description")}</CardDescription>
@@ -305,11 +314,17 @@ export default function DashboardPage() {
                 {alerts.map((alert) => (
                   <div
                     key={alert.id}
-                    className="flex items-center justify-between rounded-lg border p-3"
+                    className={cn(
+                      "flex items-center justify-between rounded-xl p-3",
+                      alert.severity === "error"
+                        ? "bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/50"
+                        : "bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/50"
+                    )}
                   >
                     <span className="text-sm">{alert.message}</span>
                     <Badge
                       variant={alert.severity === "error" ? "destructive" : "secondary"}
+                      className="shrink-0"
                     >
                       {alert.severity === "error" ? t("alerts.urgent") : t("alerts.warning")}
                     </Badge>
@@ -324,7 +339,7 @@ export default function DashboardPage() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Clock className="h-5 w-5" />
+              <PawPrint size={18} className="text-primary" />
               {t("activity.title")}
             </CardTitle>
             <CardDescription>{t("activity.description")}</CardDescription>
@@ -340,13 +355,13 @@ export default function DashboardPage() {
                   <div key={activity.id} className="flex items-start gap-3">
                     <div className="mt-0.5">
                       {activity.type === "add" && (
-                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/30">
-                          <TrendingUp className="h-4 w-4 text-green-600 dark:text-green-400" />
+                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-100 dark:bg-emerald-900/30">
+                          <TrendingUp className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
                         </div>
                       )}
                       {activity.type === "move" && (
-                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900/30">
-                          <MapPin className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-violet-100 dark:bg-violet-900/30">
+                          <MapPin className="h-4 w-4 text-violet-600 dark:text-violet-400" />
                         </div>
                       )}
                       {activity.type === "loan" && (
@@ -355,8 +370,8 @@ export default function DashboardPage() {
                         </div>
                       )}
                       {activity.type === "return" && (
-                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/30">
-                          <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400" />
+                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-pink-100 dark:bg-pink-900/30">
+                          <CheckCircle className="h-4 w-4 text-pink-600 dark:text-pink-400" />
                         </div>
                       )}
                     </div>

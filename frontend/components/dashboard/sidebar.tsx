@@ -34,6 +34,8 @@ import { UserMenu } from "./user-menu";
 import { useWorkspace } from "@/lib/hooks/use-workspace";
 import { pendingChangesApi } from "@/lib/api";
 import { pollingIntervals } from "@/lib/config/constants";
+import { PawPrint } from "@/components/shared/paw-print";
+import { KittenMascot } from "@/components/shared/pet-mascots";
 
 interface SidebarProps {
   collapsed: boolean;
@@ -48,6 +50,7 @@ export function Sidebar({ collapsed, onToggle, onNavClick }: SidebarProps) {
 
   const [pendingCount, setPendingCount] = useState(0);
   const [myPendingCount, setMyPendingCount] = useState(0);
+  const [logoWiggle, setLogoWiggle] = useState(false);
 
   // Check if user can view approvals (owner or admin)
   const canViewApprovals = currentMember?.role === "owner" || currentMember?.role === "admin";
@@ -154,21 +157,21 @@ export function Sidebar({ collapsed, onToggle, onNavClick }: SidebarProps) {
         href={item.href}
         onClick={onNavClick}
         className={cn(
-          "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+          "group flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
           isActive
             ? "bg-primary text-primary-foreground"
             : "text-muted-foreground hover:bg-muted hover:text-foreground",
           collapsed && "justify-center px-2"
         )}
       >
-        <Icon className="h-5 w-5 shrink-0" />
+        <Icon className="h-5 w-5 shrink-0 transition-transform group-hover:animate-wiggle" />
         {!collapsed && (
           <>
             <span className="flex-1">{item.label}</span>
             {showBadge && (
               <Badge
                 variant="secondary"
-                className="h-5 min-w-5 px-1 text-xs bg-yellow-500/20 text-yellow-700 hover:bg-yellow-500/30"
+                className="h-5 min-w-5 px-1 text-xs bg-orange-400/20 text-orange-700 dark:text-orange-300 hover:bg-orange-400/30"
               >
                 {badgeCount}
               </Badge>
@@ -176,7 +179,7 @@ export function Sidebar({ collapsed, onToggle, onNavClick }: SidebarProps) {
           </>
         )}
         {collapsed && showBadge && (
-          <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-yellow-500 text-[10px] font-bold text-white">
+          <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-orange-400 text-[10px] font-bold text-white">
             {badgeCount > 9 ? "9+" : badgeCount}
           </span>
         )}
@@ -204,43 +207,75 @@ export function Sidebar({ collapsed, onToggle, onNavClick }: SidebarProps) {
     <TooltipProvider>
       <aside
         className={cn(
-          "fixed left-0 top-0 z-40 flex h-screen flex-col border-r bg-card transition-all duration-300",
+          "fixed left-0 top-0 z-40 flex h-screen flex-col border-r bg-card transition-all duration-300 overflow-hidden",
           collapsed ? "w-16" : "w-64"
         )}
       >
+        {/* Paw print watermark background */}
+        <div className="absolute inset-0 pointer-events-none overflow-hidden -z-0">
+          <PawPrint
+            size={80}
+            className="absolute -bottom-2 -right-4 text-primary opacity-[0.04] rotate-[-20deg]"
+          />
+          <PawPrint
+            size={50}
+            className="absolute top-1/3 -left-3 text-primary opacity-[0.03] rotate-[15deg]"
+          />
+          {!collapsed && (
+            <PawPrint
+              size={35}
+              className="absolute top-2/3 right-6 text-primary opacity-[0.03] rotate-[40deg]"
+            />
+          )}
+        </div>
+
         {/* Logo - click to collapse */}
         <div
           className={cn(
-            "flex h-16 items-center border-b px-4",
+            "relative z-10 flex h-16 items-center border-b px-4",
             collapsed && "justify-center px-2"
           )}
         >
           <button
             onClick={onToggle}
+            onMouseEnter={() => setLogoWiggle(true)}
+            onAnimationEnd={() => setLogoWiggle(false)}
             className="flex items-center gap-2 hover:opacity-80 transition-opacity"
             aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
           >
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
-              <Package className="h-5 w-5 text-primary-foreground" />
+            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary">
+              <PawPrint
+                size={20}
+                className={`text-primary-foreground ${logoWiggle ? "animate-wiggle" : ""}`}
+              />
             </div>
             {!collapsed && (
-              <span className="text-lg font-bold">Home Warehouse</span>
+              <span className="text-lg font-bold font-[family-name:var(--font-quicksand)]">
+                Home Warehouse
+              </span>
             )}
           </button>
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 space-y-1 overflow-y-auto p-3">
+        <nav className="relative z-10 flex-1 space-y-1 overflow-y-auto p-3">
           {navItems.map((item) => (
             <NavLink key={item.href} item={item} />
           ))}
         </nav>
 
         {/* Bottom section */}
-        <div className="p-3 space-y-1">
+        <div className="relative z-10 p-3 space-y-1">
           {bottomItems.map((item) => (
             <NavLink key={item.href} item={item} />
           ))}
+
+          {/* Pet mascot */}
+          {!collapsed && (
+            <div className="flex justify-center py-2">
+              <KittenMascot size={48} className="text-primary opacity-30" />
+            </div>
+          )}
 
           {/* User menu */}
           <div
