@@ -260,6 +260,7 @@ func mapItems(items []queries.WarehouseItem) []ItemSyncData {
 			Barcode:          item.Barcode,
 			IsInsured:        boolPtrToBool(item.IsInsured),
 			LifetimeWarranty: boolPtrToBool(item.LifetimeWarranty),
+			NeedsReview:      boolPtrToBool(item.NeedsReview),
 			WarrantyDetails:  item.WarrantyDetails,
 			PurchasedFrom:    pguuidToUUIDPtr(item.PurchasedFrom),
 			MinStockLevel:    int32ToInt32Ptr(item.MinStockLevel),

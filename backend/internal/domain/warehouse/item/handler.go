@@ -22,7 +22,16 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 		}
 
 		pagination := shared.Pagination{Page: input.Page, PageSize: input.Limit}
-		items, total, err := svc.List(ctx, workspaceID, pagination)
+
+		var items []*Item
+		var total int
+		var err error
+
+		if input.NeedsReview != nil && *input.NeedsReview {
+			items, total, err = svc.ListNeedingReview(ctx, workspaceID, pagination)
+		} else {
+			items, total, err = svc.List(ctx, workspaceID, pagination)
+		}
 		if err != nil {
 			return nil, huma.Error500InternalServerError("failed to list items")
 		}
@@ -145,6 +154,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 			ShortCode:         shortCode,
 			ObsidianVaultPath: input.Body.ObsidianVaultPath,
 			ObsidianNotePath:  input.Body.ObsidianNotePath,
+			NeedsReview:       input.Body.NeedsReview,
 		})
 		if err != nil {
 			if err == ErrSKUTaken {
@@ -217,6 +227,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 			MinStockLevel:     currentItem.MinStockLevel(),
 			ObsidianVaultPath: input.Body.ObsidianVaultPath,
 			ObsidianNotePath:  input.Body.ObsidianNotePath,
+			NeedsReview:       input.Body.NeedsReview,
 		}
 
 		if input.Body.Name != nil {
@@ -397,6 +408,7 @@ func toItemResponse(i *Item) ItemResponse {
 		IsInsured:         i.IsInsured(),
 		IsArchived:        i.IsArchived(),
 		LifetimeWarranty:  i.LifetimeWarranty(),
+		NeedsReview:       i.NeedsReview(),
 		WarrantyDetails:   i.WarrantyDetails(),
 		PurchasedFrom:     i.PurchasedFrom(),
 		MinStockLevel:     i.MinStockLevel(),
@@ -412,8 +424,9 @@ func toItemResponse(i *Item) ItemResponse {
 // Request/Response types
 
 type ListItemsInput struct {
-	Page  int `query:"page" default:"1" minimum:"1"`
-	Limit int `query:"limit" default:"50" minimum:"1" maximum:"100"`
+	Page        int  `query:"page" default:"1" minimum:"1"`
+	Limit       int  `query:"limit" default:"50" minimum:"1" maximum:"100"`
+	NeedsReview *bool `query:"needs_review,omitempty" doc:"Filter by needs_review status"`
 }
 
 type ListItemsOutput struct {
@@ -470,6 +483,7 @@ type CreateItemInput struct {
 		ShortCode         *string    `json:"short_code,omitempty" maxLength:"20" doc:"Short code for QR labels"`
 		ObsidianVaultPath *string    `json:"obsidian_vault_path,omitempty" doc:"Obsidian vault path"`
 		ObsidianNotePath  *string    `json:"obsidian_note_path,omitempty" doc:"Obsidian note path"`
+		NeedsReview       *bool      `json:"needs_review,omitempty" doc:"Whether the item needs review"`
 	}
 }
 
@@ -496,6 +510,7 @@ type UpdateItemInput struct {
 		MinStockLevel     *int       `json:"min_stock_level,omitempty" minimum:"0" doc:"Minimum stock level"`
 		ObsidianVaultPath *string    `json:"obsidian_vault_path,omitempty" doc:"Obsidian vault path"`
 		ObsidianNotePath  *string    `json:"obsidian_note_path,omitempty" doc:"Obsidian note path"`
+		NeedsReview       *bool      `json:"needs_review,omitempty" doc:"Whether the item needs review"`
 	}
 }
 
@@ -519,6 +534,7 @@ type ItemResponse struct {
 	IsInsured         *bool      `json:"is_insured,omitempty"`
 	IsArchived        *bool      `json:"is_archived,omitempty"`
 	LifetimeWarranty  *bool      `json:"lifetime_warranty,omitempty"`
+	NeedsReview       *bool      `json:"needs_review,omitempty"`
 	WarrantyDetails   *string    `json:"warranty_details,omitempty"`
 	PurchasedFrom     *uuid.UUID `json:"purchased_from,omitempty"`
 	MinStockLevel     int        `json:"min_stock_level"`

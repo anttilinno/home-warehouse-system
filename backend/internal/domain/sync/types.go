@@ -88,6 +88,7 @@ type ItemSyncData struct {
 	Barcode          *string    `json:"barcode,omitempty"`
 	IsInsured        bool       `json:"is_insured"`
 	LifetimeWarranty bool       `json:"lifetime_warranty"`
+	NeedsReview      bool       `json:"needs_review"`
 	WarrantyDetails  *string    `json:"warranty_details,omitempty"`
 	PurchasedFrom    *uuid.UUID `json:"purchased_from,omitempty"`
 	MinStockLevel    *int32     `json:"min_stock_level,omitempty"`
