@@ -12,11 +12,11 @@ Requirements for Quick Capture milestone. Each maps to roadmap phases.
 - [x] **QC-01**: User can open quick capture mode from the floating action button
 - [x] **QC-02**: User sees camera viewfinder immediately on entering quick capture
 - [x] **QC-03**: User can take 1-5 photos per item with tap-to-capture
-- [ ] **QC-04**: User types only item name to save (single required field)
+- [x] **QC-04**: User types only item name to save (single required field)
 - [x] **QC-05**: System auto-generates SKU for quick-captured items
-- [ ] **QC-06**: After saving, form resets instantly and camera is ready for next item
-- [ ] **QC-07**: User sees running count of items captured this session
-- [ ] **QC-08**: User feels haptic/audio feedback on successful save
+- [x] **QC-06**: After saving, form resets instantly and camera is ready for next item
+- [x] **QC-07**: User sees running count of items captured this session
+- [x] **QC-08**: User feels haptic/audio feedback on successful save
 
 ### Batch Settings
 
@@ -70,11 +70,11 @@ Which phases cover which requirements. Updated during roadmap creation.
 | QC-01 | Phase 45 | Complete |
 | QC-02 | Phase 45 | Complete |
 | QC-03 | Phase 45 | Complete |
-| QC-04 | Phase 45 | Pending |
+| QC-04 | Phase 45 | Complete |
 | QC-05 | Phase 44 | Complete |
-| QC-06 | Phase 45 | Pending |
-| QC-07 | Phase 45 | Pending |
-| QC-08 | Phase 45 | Pending |
+| QC-06 | Phase 45 | Complete |
+| QC-07 | Phase 45 | Complete |
+| QC-08 | Phase 45 | Complete |
 | BATCH-01 | Phase 44 | Complete |
 | BATCH-02 | Phase 44 | Complete |
 | BATCH-03 | Phase 44 | Complete |
