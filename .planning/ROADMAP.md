@@ -174,7 +174,9 @@ See `.planning/milestones/v1.9-ROADMAP.md` for full phase details.
   3. Batch settings context provides sticky category and location that persist across captures within a session but reset on session end
   4. Offline item creation via useOfflineMutation works with needs_review=true and auto-generated SKU
   5. Batch settings bar component renders current category/location defaults
-**Plans**: TBD
+**Plans**: 2 plans
+  - [ ] 44-01-PLAN.md -- IndexedDB v5 schema, photo store types, auto-SKU hook, capture photos hook
+  - [ ] 44-02-PLAN.md -- Batch capture context with sessionStorage persistence, batch settings bar component
 
 #### Phase 45: Quick Capture UI
 **Goal**: Users can rapidly capture items with photos on mobile using a camera-first flow that never leaves the page
@@ -223,7 +225,7 @@ See `.planning/milestones/v1.9-ROADMAP.md` for full phase details.
 | 30-34 | v1.6 | 9 | Complete | 2026-02-08 |
 | 35-39 | v1.7 | 7 | Complete | 2026-02-13 |
 | 40-42 | v1.8 | 7 | Complete | 2026-02-22 |
-| 43 | v1.9 | 2/2 | Complete | 2026-02-27 |
+| 43 | v1.9 | Complete    | 2026-02-27 | 2026-02-27 |
 | 44 | v1.9 | 0/TBD | Not started | - |
 | 45 | v1.9 | 0/TBD | Not started | - |
 | 46 | v1.9 | 0/TBD | Not started | - |
