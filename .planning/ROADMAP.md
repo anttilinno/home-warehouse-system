@@ -161,8 +161,8 @@ See `.planning/milestones/v1.9-ROADMAP.md` for full phase details.
   3. Item list endpoint supports filtering by needs_review=true
   4. User can PATCH an item to set needs_review=false (mark as complete)
 **Plans**: 2 plans
-  - [ ] 43-01-PLAN.md -- Schema migration, sqlc queries, domain entity, repository, and factory
-  - [ ] 43-02-PLAN.md -- Handler API, sync endpoint, and tests
+  - [x] 43-01-PLAN.md -- Schema migration, sqlc queries, domain entity, repository, and factory
+  - [x] 43-02-PLAN.md -- Handler API, sync endpoint, and tests
 
 #### Phase 44: Capture Infrastructure
 **Goal**: All data layer and hook foundations are in place for the capture UI to build against
@@ -223,14 +223,14 @@ See `.planning/milestones/v1.9-ROADMAP.md` for full phase details.
 | 30-34 | v1.6 | 9 | Complete | 2026-02-08 |
 | 35-39 | v1.7 | 7 | Complete | 2026-02-13 |
 | 40-42 | v1.8 | 7 | Complete | 2026-02-22 |
-| 43 | 1/2 | In Progress|  | - |
+| 43 | v1.9 | 2/2 | Complete | 2026-02-27 |
 | 44 | v1.9 | 0/TBD | Not started | - |
 | 45 | v1.9 | 0/TBD | Not started | - |
 | 46 | v1.9 | 0/TBD | Not started | - |
 | 47 | v1.9 | 0/TBD | Not started | - |
 
-**Total:** 42 phases complete (119 plans executed) across 9 milestones + 5 phases planned for v1.9
+**Total:** 43 phases complete (121 plans executed) across 9 milestones + 4 phases remaining for v1.9
 
 ---
 *Roadmap created: 2026-01-24*
-*Last updated: 2026-02-27 after v1.9 milestone roadmap creation*
+*Last updated: 2026-02-27 after Phase 43 completion*

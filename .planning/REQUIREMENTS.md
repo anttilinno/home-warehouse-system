@@ -35,8 +35,8 @@ Requirements for Quick Capture milestone. Each maps to roadmap phases.
 ### Completion Workflow
 
 - [x] **COMP-01**: Quick-captured items are flagged as "needs details" in the database
-- [ ] **COMP-02**: User can filter item list to show only "needs details" items
-- [ ] **COMP-03**: User can mark an item as complete (remove "needs details" flag)
+- [x] **COMP-02**: User can filter item list to show only "needs details" items
+- [x] **COMP-03**: User can mark an item as complete (remove "needs details" flag)
 - [ ] **COMP-04**: User sees session summary when ending quick capture (count + thumbnails)
 
 ## Future Requirements
@@ -84,8 +84,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | SYNC-03 | Phase 46 | Pending |
 | SYNC-04 | Phase 46 | Pending |
 | COMP-01 | Phase 43 | Complete |
-| COMP-02 | Phase 43 | Pending |
-| COMP-03 | Phase 43 | Pending |
+| COMP-02 | Phase 43 | Complete |
+| COMP-03 | Phase 43 | Complete |
 | COMP-04 | Phase 47 | Pending |
 
 **Coverage:**
@@ -95,4 +95,4 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 ---
 *Requirements defined: 2026-02-27*
-*Last updated: 2026-02-27 after roadmap creation*
+*Last updated: 2026-02-27 after Phase 43 completion (COMP-02, COMP-03 complete)*
