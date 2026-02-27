@@ -140,6 +140,28 @@ export interface ConflictLogEntry {
 }
 
 /**
+ * Upload status for a capture photo
+ */
+export type CapturePhotoStatus = "pending" | "uploading" | "uploaded" | "failed";
+
+/**
+ * Photo captured during quick capture flow.
+ * Stored as blobs in IndexedDB for offline-first support.
+ */
+export interface CapturePhoto {
+  /** Auto-incremented ID */
+  id: number;
+  /** Links to mutation queue entry's idempotency key */
+  tempItemId: string;
+  /** Compressed image blob */
+  blob: Blob;
+  /** Capture timestamp (ms since epoch) */
+  capturedAt: number;
+  /** Upload status */
+  status: CapturePhotoStatus;
+}
+
+/**
  * IndexedDB schema definition for the offline database.
  * Extends idb's DBSchema for type-safe database operations.
  */
@@ -198,6 +220,14 @@ export interface OfflineDBSchema extends DBSchema {
   formDrafts: {
     key: string;
     value: FormDraft;
+  };
+  quickCapturePhotos: {
+    key: number;
+    value: CapturePhoto;
+    indexes: {
+      tempItemId: string;
+      status: CapturePhotoStatus;
+    };
   };
 }
 

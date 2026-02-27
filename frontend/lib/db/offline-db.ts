@@ -9,7 +9,7 @@ import { openDB as idbOpen, type IDBPDatabase, type StoreNames } from "idb";
 import type { OfflineDBSchema, SyncMeta } from "./types";
 
 const DB_NAME = "hws-offline-v1";
-const DB_VERSION = 4;
+const DB_VERSION = 5;
 
 // Singleton promise for the database connection
 let dbPromise: Promise<IDBPDatabase<OfflineDBSchema>> | null = null;
@@ -113,6 +113,18 @@ export async function getDB(): Promise<IDBPDatabase<OfflineDBSchema>> {
           if (!db.objectStoreNames.contains("formDrafts")) {
             db.createObjectStore("formDrafts", { keyPath: "id" });
           }
+        }
+
+        // Quick capture photo store for offline photo blobs (v5)
+        if (oldVersion < 5) {
+          const photoStore = db.createObjectStore("quickCapturePhotos", {
+            keyPath: "id",
+            autoIncrement: true,
+          });
+          photoStore.createIndex("tempItemId", "tempItemId", {
+            unique: false,
+          });
+          photoStore.createIndex("status", "status", { unique: false });
         }
 
         console.log(

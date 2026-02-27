@@ -13,6 +13,7 @@ export interface Item {
   barcode?: string | null;
   is_insured?: boolean | null;
   is_archived?: boolean | null;
+  needs_review?: boolean | null;
   lifetime_warranty?: boolean | null;
   warranty_details?: string | null;
   purchased_from?: string | null;
@@ -44,6 +45,7 @@ export interface ItemCreate {
   manufacturer?: string;
   barcode?: string;
   is_insured?: boolean;
+  needs_review?: boolean;
   lifetime_warranty?: boolean;
   warranty_details?: string;
   purchased_from?: string;
@@ -64,6 +66,7 @@ export interface ItemUpdate {
   manufacturer?: string;
   barcode?: string;
   is_insured?: boolean;
+  needs_review?: boolean;
   lifetime_warranty?: boolean;
   warranty_details?: string;
   purchased_from?: string;
