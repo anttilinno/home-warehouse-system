@@ -188,7 +188,9 @@ See `.planning/milestones/v1.9-ROADMAP.md` for full phase details.
   3. After saving, the form resets instantly with camera ready for the next item (no page navigation)
   4. User sees a running count of items captured this session and feels haptic/audio feedback on each save
   5. The entire capture flow stays on a single route (iOS camera permission persistence)
-**Plans**: TBD
+**Plans**: 2 plans
+  - [ ] 45-01-PLAN.md -- FAB action, route page, i18n keys, CapturePhotoStrip component
+  - [ ] 45-02-PLAN.md -- Full QuickCapturePage with camera capture, save-reset loop, counter, and feedback
 
 #### Phase 46: Photo Sync Pipeline
 **Goal**: Photos captured offline upload automatically after their parent items sync to the server
@@ -226,7 +228,7 @@ See `.planning/milestones/v1.9-ROADMAP.md` for full phase details.
 | 35-39 | v1.7 | 7 | Complete | 2026-02-13 |
 | 40-42 | v1.8 | 7 | Complete | 2026-02-22 |
 | 43 | v1.9 | Complete    | 2026-02-27 | 2026-02-27 |
-| 44 | 2/2 | Complete   | 2026-02-27 | - |
+| 44 | 2/2 | Complete    | 2026-02-27 | - |
 | 45 | v1.9 | 0/TBD | Not started | - |
 | 46 | v1.9 | 0/TBD | Not started | - |
 | 47 | v1.9 | 0/TBD | Not started | - |
