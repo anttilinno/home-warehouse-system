@@ -1083,7 +1083,8 @@
     "logLoan": "Log loan",
     "addContainer": "Add container",
     "addLocation": "Add location",
-    "quickCount": "Quick count"
+    "quickCount": "Quick count",
+    "quickCapture": "Quick capture"
   },
   "forms": {
     "photoCapture": {
@@ -1175,5 +1176,23 @@
   "inventory": {
     "purchasePrice": "Purchase Price",
     "currency": "Currency"
+  },
+  "quickCapture": {
+    "title": "Quick Capture",
+    "takePhoto": "Take Photo",
+    "addPhoto": "Add Photo",
+    "photosCount": "{count}/5 photos",
+    "namePlaceholder": "Item name",
+    "nameRequired": "Name is required",
+    "save": "Save",
+    "saving": "Saving...",
+    "done": "Done",
+    "capturedCount": "{count} captured",
+    "noPhotos": "Take at least one photo",
+    "maxPhotos": "Maximum 5 photos reached",
+    "removePhoto": "Remove photo",
+    "selectCategory": "Select Category",
+    "selectLocation": "Select Location",
+    "noneSelected": "None"
   }
 }

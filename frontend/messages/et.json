@@ -929,7 +929,8 @@
     "logLoan": "Kirja laen",
     "addContainer": "Lisa konteiner",
     "addLocation": "Lisa asukoht",
-    "quickCount": "Kiire loendus"
+    "quickCount": "Kiire loendus",
+    "quickCapture": "Kiirjäädvustus"
   },
   "forms": {
     "photoCapture": {
@@ -1019,5 +1020,23 @@
   "inventory": {
     "purchasePrice": "Ostuhind",
     "currency": "Valuuta"
+  },
+  "quickCapture": {
+    "title": "Kiirjäädvustus",
+    "takePhoto": "Pildista",
+    "addPhoto": "Lisa foto",
+    "photosCount": "{count}/5 fotot",
+    "namePlaceholder": "Eseme nimi",
+    "nameRequired": "Nimi on kohustuslik",
+    "save": "Salvesta",
+    "saving": "Salvestamine...",
+    "done": "Valmis",
+    "capturedCount": "{count} jäädvustatud",
+    "noPhotos": "Tee vähemalt üks foto",
+    "maxPhotos": "Maksimaalselt 5 fotot",
+    "removePhoto": "Eemalda foto",
+    "selectCategory": "Vali kategooria",
+    "selectLocation": "Vali asukoht",
+    "noneSelected": "Valimata"
   }
 }

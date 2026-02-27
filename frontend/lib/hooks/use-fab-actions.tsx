@@ -10,6 +10,7 @@ import {
   Box,
   MapPin,
   ClipboardList,
+  Camera,
 } from "lucide-react";
 import type { FABAction } from "@/components/fab";
 
@@ -72,16 +73,28 @@ export function useFABActions(): FABAction[] {
       onClick: () => router.push("/dashboard/inventory/count"),
     };
 
-    // Default actions (3 items - scan, add item, log loan)
-    const defaultActions = [scanAction, addItemAction, logLoanAction];
+    const quickCaptureAction: FABAction = {
+      id: "quick-capture",
+      icon: <Camera className="h-5 w-5" />,
+      label: "Quick capture",
+      onClick: () => router.push("/dashboard/items/quick-capture"),
+    };
+
+    // Default actions (4 items - scan, quick capture, add item, log loan)
+    const defaultActions = [scanAction, quickCaptureAction, addItemAction, logLoanAction];
 
     // Route-specific customization
-    // Items page: Add Item as first action
+    // Items page: Quick Capture as first action
     if (
       pathname === "/dashboard/items" ||
       pathname.startsWith("/dashboard/items/")
     ) {
+      // Hide FAB on quick capture page itself
+      if (pathname === "/dashboard/items/quick-capture") {
+        return [];
+      }
       return [
+        quickCaptureAction,
         { ...addItemAction, icon: <Plus className="h-5 w-5" /> },
         scanAction,
         logLoanAction,

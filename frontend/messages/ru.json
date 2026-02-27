@@ -929,7 +929,8 @@
     "logLoan": "Записать заём",
     "addContainer": "Добавить контейнер",
     "addLocation": "Добавить место",
-    "quickCount": "Быстрый подсчёт"
+    "quickCount": "Быстрый подсчёт",
+    "quickCapture": "Быстрый захват"
   },
   "forms": {
     "photoCapture": {
@@ -1019,5 +1020,23 @@
   "inventory": {
     "purchasePrice": "Цена покупки",
     "currency": "Валюта"
+  },
+  "quickCapture": {
+    "title": "Быстрый захват",
+    "takePhoto": "Сфотографировать",
+    "addPhoto": "Добавить фото",
+    "photosCount": "{count}/5 фото",
+    "namePlaceholder": "Название предмета",
+    "nameRequired": "Название обязательно",
+    "save": "Сохранить",
+    "saving": "Сохранение...",
+    "done": "Готово",
+    "capturedCount": "{count} захвачено",
+    "noPhotos": "Сделайте хотя бы одно фото",
+    "maxPhotos": "Максимум 5 фото",
+    "removePhoto": "Удалить фото",
+    "selectCategory": "Выбрать категорию",
+    "selectLocation": "Выбрать место",
+    "noneSelected": "Не выбрано"
   }
 }
