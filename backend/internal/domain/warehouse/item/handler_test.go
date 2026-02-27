@@ -42,6 +42,11 @@ func (m *MockService) List(ctx context.Context, workspaceID uuid.UUID, paginatio
 	return args.Get(0).([]*item.Item), args.Int(1), args.Error(2)
 }
 
+func (m *MockService) ListNeedingReview(ctx context.Context, workspaceID uuid.UUID, pagination shared.Pagination) ([]*item.Item, int, error) {
+	args := m.Called(ctx, workspaceID, pagination)
+	return args.Get(0).([]*item.Item), args.Int(1), args.Error(2)
+}
+
 func (m *MockService) Update(ctx context.Context, id, workspaceID uuid.UUID, input item.UpdateInput) (*item.Item, error) {
 	args := m.Called(ctx, id, workspaceID, input)
 	if args.Get(0) == nil {

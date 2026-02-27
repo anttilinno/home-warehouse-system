@@ -216,6 +216,10 @@ func (m *MockItemRepository) FindByWorkspace(ctx context.Context, workspaceID uu
 	return nil, 0, nil
 }
 
+func (m *MockItemRepository) FindNeedingReview(ctx context.Context, workspaceID uuid.UUID, pagination shared.Pagination) ([]*item.Item, int, error) {
+	return nil, 0, nil
+}
+
 func (m *MockItemRepository) FindByCategory(ctx context.Context, workspaceID, categoryID uuid.UUID, pagination shared.Pagination) ([]*item.Item, error) {
 	return nil, nil
 }

@@ -26,6 +26,7 @@ type Item struct {
 	isInsured         *bool
 	isArchived        *bool
 	lifetimeWarranty  *bool
+	needsReview       *bool
 	warrantyDetails   *string
 	purchasedFrom     *uuid.UUID
 	minStockLevel     int
@@ -61,6 +62,7 @@ func NewItem(workspaceID uuid.UUID, name, sku string, minStockLevel int) (*Item,
 		isInsured:        &falseVal,
 		isArchived:       &falseVal,
 		lifetimeWarranty: &falseVal,
+		needsReview:      &falseVal,
 		createdAt:        now,
 		updatedAt:        now,
 	}, nil
@@ -79,6 +81,7 @@ func Reconstruct(
 	minStockLevel int,
 	shortCode string,
 	obsidianVaultPath, obsidianNotePath *string,
+	needsReview *bool,
 	createdAt, updatedAt time.Time,
 ) *Item {
 	return &Item{
@@ -103,6 +106,7 @@ func Reconstruct(
 		shortCode:         shortCode,
 		obsidianVaultPath: obsidianVaultPath,
 		obsidianNotePath:  obsidianNotePath,
+		needsReview:       needsReview,
 		createdAt:         createdAt,
 		updatedAt:         updatedAt,
 	}
@@ -124,6 +128,7 @@ func (i *Item) Barcode() *string           { return i.barcode }
 func (i *Item) IsInsured() *bool           { return i.isInsured }
 func (i *Item) IsArchived() *bool          { return i.isArchived }
 func (i *Item) LifetimeWarranty() *bool    { return i.lifetimeWarranty }
+func (i *Item) NeedsReview() *bool         { return i.needsReview }
 func (i *Item) WarrantyDetails() *string   { return i.warrantyDetails }
 func (i *Item) PurchasedFrom() *uuid.UUID  { return i.purchasedFrom }
 func (i *Item) MinStockLevel() int         { return i.minStockLevel }
@@ -150,6 +155,7 @@ type UpdateInput struct {
 	MinStockLevel     int
 	ObsidianVaultPath *string
 	ObsidianNotePath  *string
+	NeedsReview       *bool
 }
 
 func (i *Item) Update(input UpdateInput) error {
@@ -176,6 +182,9 @@ func (i *Item) Update(input UpdateInput) error {
 	i.minStockLevel = input.MinStockLevel
 	i.obsidianVaultPath = input.ObsidianVaultPath
 	i.obsidianNotePath = input.ObsidianNotePath
+	if input.NeedsReview != nil {
+		i.needsReview = input.NeedsReview
+	}
 	i.updatedAt = time.Now()
 	return nil
 }
@@ -187,6 +196,11 @@ func (i *Item) SetSKU(sku string) {
 
 func (i *Item) SetShortCode(shortCode string) {
 	i.shortCode = shortCode
+	i.updatedAt = time.Now()
+}
+
+func (i *Item) SetNeedsReview(v bool) {
+	i.needsReview = &v
 	i.updatedAt = time.Now()
 }
 

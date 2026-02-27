@@ -64,6 +64,14 @@ func (m *MockRepository) FindByWorkspace(ctx context.Context, workspaceID uuid.U
 	return args.Get(0).([]*Item), args.Int(1), args.Error(2)
 }
 
+func (m *MockRepository) FindNeedingReview(ctx context.Context, workspaceID uuid.UUID, pagination shared.Pagination) ([]*Item, int, error) {
+	args := m.Called(ctx, workspaceID, pagination)
+	if args.Get(0) == nil {
+		return nil, args.Int(1), args.Error(2)
+	}
+	return args.Get(0).([]*Item), args.Int(1), args.Error(2)
+}
+
 func (m *MockRepository) FindByCategory(ctx context.Context, workspaceID, categoryID uuid.UUID, pagination shared.Pagination) ([]*Item, error) {
 	args := m.Called(ctx, workspaceID, categoryID, pagination)
 	if args.Get(0) == nil {
@@ -331,6 +339,7 @@ func TestReconstruct(t *testing.T) {
 		"SHORT1",
 		ptrString("/vault/path"),
 		ptrString("/note/path"),
+		ptrBool(false),
 		now,
 		now,
 	)
@@ -373,7 +382,7 @@ func TestReconstruct_MinimalFields(t *testing.T) {
 		nil, nil, nil, nil, nil, nil, nil, nil,
 		nil, nil, nil, nil, nil,
 		0,
-		"", nil, nil,
+		"", nil, nil, nil,
 		now,
 		now,
 	)
@@ -1535,6 +1544,7 @@ func TestItem_ObsidianURI(t *testing.T) {
 				"",
 				tt.vaultPath,
 				tt.notePath,
+				nil,
 				now,
 				now,
 			)
@@ -1563,7 +1573,7 @@ func TestService_AttachLabel(t *testing.T) {
 	now := time.Now()
 
 	createItem := func() *Item {
-		return Reconstruct(itemID, workspaceID, "SKU-001", "Test Item", nil, nil, nil, nil, nil, nil, nil, nil, ptrBool(false), ptrBool(false), ptrBool(false), nil, nil, 0, "ABC123", nil, nil, now, now)
+		return Reconstruct(itemID, workspaceID, "SKU-001", "Test Item", nil, nil, nil, nil, nil, nil, nil, nil, ptrBool(false), ptrBool(false), ptrBool(false), nil, nil, 0, "ABC123", nil, nil, ptrBool(false), now, now)
 	}
 
 	t.Run("successful attach", func(t *testing.T) {
@@ -1627,7 +1637,7 @@ func TestService_DetachLabel(t *testing.T) {
 	now := time.Now()
 
 	createItem := func() *Item {
-		return Reconstruct(itemID, workspaceID, "SKU-001", "Test Item", nil, nil, nil, nil, nil, nil, nil, nil, ptrBool(false), ptrBool(false), ptrBool(false), nil, nil, 0, "ABC123", nil, nil, now, now)
+		return Reconstruct(itemID, workspaceID, "SKU-001", "Test Item", nil, nil, nil, nil, nil, nil, nil, nil, ptrBool(false), ptrBool(false), ptrBool(false), nil, nil, 0, "ABC123", nil, nil, ptrBool(false), now, now)
 	}
 
 	t.Run("successful detach", func(t *testing.T) {
@@ -1677,7 +1687,7 @@ func TestService_GetItemLabels(t *testing.T) {
 	now := time.Now()
 
 	createItem := func() *Item {
-		return Reconstruct(itemID, workspaceID, "SKU-001", "Test Item", nil, nil, nil, nil, nil, nil, nil, nil, ptrBool(false), ptrBool(false), ptrBool(false), nil, nil, 0, "ABC123", nil, nil, now, now)
+		return Reconstruct(itemID, workspaceID, "SKU-001", "Test Item", nil, nil, nil, nil, nil, nil, nil, nil, ptrBool(false), ptrBool(false), ptrBool(false), nil, nil, 0, "ABC123", nil, nil, ptrBool(false), now, now)
 	}
 
 	t.Run("successful get labels", func(t *testing.T) {

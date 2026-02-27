@@ -73,6 +73,7 @@ func (r *ItemRepository) Save(ctx context.Context, i *item.Item) error {
 			MinStockLevel:     int32(i.MinStockLevel()),
 			ObsidianVaultPath: i.ObsidianVaultPath(),
 			ObsidianNotePath:  i.ObsidianNotePath(),
+			NeedsReview:       i.NeedsReview(),
 		})
 		return err
 	}
@@ -99,6 +100,7 @@ func (r *ItemRepository) Save(ctx context.Context, i *item.Item) error {
 		ShortCode:         i.ShortCode(),
 		ObsidianVaultPath: i.ObsidianVaultPath(),
 		ObsidianNotePath:  i.ObsidianNotePath(),
+		NeedsReview:       i.NeedsReview(),
 	})
 	return err
 }
@@ -179,6 +181,29 @@ func (r *ItemRepository) FindByWorkspace(ctx context.Context, workspaceID uuid.U
 	}
 
 	return items, len(items), nil
+}
+
+func (r *ItemRepository) FindNeedingReview(ctx context.Context, workspaceID uuid.UUID, pagination shared.Pagination) ([]*item.Item, int, error) {
+	rows, err := r.queries.ListItemsNeedingReview(ctx, queries.ListItemsNeedingReviewParams{
+		WorkspaceID: workspaceID,
+		Limit:       int32(pagination.Limit()),
+		Offset:      int32(pagination.Offset()),
+	})
+	if err != nil {
+		return nil, 0, err
+	}
+
+	count, err := r.queries.CountItemsNeedingReview(ctx, workspaceID)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	items := make([]*item.Item, 0, len(rows))
+	for _, row := range rows {
+		items = append(items, r.rowToItem(row))
+	}
+
+	return items, int(count), nil
 }
 
 func (r *ItemRepository) FindByCategory(ctx context.Context, workspaceID, categoryID uuid.UUID, pagination shared.Pagination) ([]*item.Item, error) {
@@ -296,6 +321,7 @@ func (r *ItemRepository) rowToItem(row queries.WarehouseItem) *item.Item {
 		row.ShortCode,
 		row.ObsidianVaultPath,
 		row.ObsidianNotePath,
+		row.NeedsReview,
 		row.CreatedAt.Time,
 		row.UpdatedAt.Time,
 	)

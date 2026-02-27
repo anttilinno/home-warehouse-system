@@ -155,6 +155,13 @@ func WithItemDescription(description string) ItemOpt {
 	}
 }
 
+// WithItemNeedsReview sets the item's needs_review flag.
+func WithItemNeedsReview(v bool) ItemOpt {
+	return func(i *item.Item) {
+		i.SetNeedsReview(v)
+	}
+}
+
 // WithItemBarcode sets the item's barcode.
 func WithItemBarcode(barcode string) ItemOpt {
 	return func(i *item.Item) {

@@ -445,6 +445,7 @@ func TestItem_Reconstruct(t *testing.T) {
 		shortCode,
 		&vaultPath,
 		&notePath,
+		&falseVal,
 		now,
 		now,
 	)

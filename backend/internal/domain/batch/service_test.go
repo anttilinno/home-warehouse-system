@@ -835,6 +835,14 @@ func (m *MockItemRepository) FindByWorkspace(ctx context.Context, workspaceID uu
 	return args.Get(0).([]*item.Item), args.Int(1), args.Error(2)
 }
 
+func (m *MockItemRepository) FindNeedingReview(ctx context.Context, workspaceID uuid.UUID, pagination shared.Pagination) ([]*item.Item, int, error) {
+	args := m.Called(ctx, workspaceID, pagination)
+	if args.Get(0) == nil {
+		return nil, args.Int(1), args.Error(2)
+	}
+	return args.Get(0).([]*item.Item), args.Int(1), args.Error(2)
+}
+
 func (m *MockItemRepository) FindByCategory(ctx context.Context, workspaceID, categoryID uuid.UUID, pagination shared.Pagination) ([]*item.Item, error) {
 	args := m.Called(ctx, workspaceID, categoryID, pagination)
 	if args.Get(0) == nil {
@@ -1190,7 +1198,7 @@ func TestProcessBatch_ItemUpdate_Success(t *testing.T) {
 		itemID, workspaceID, "SKU-001", "Original Name",
 		nil, nil, nil, nil, nil, nil, nil, nil,
 		ptrBool(false), ptrBool(false), ptrBool(false), nil, nil,
-		5, "SHORT1", nil, nil, now, now,
+		5, "SHORT1", nil, nil, ptrBool(false), now, now,
 	)
 
 	mockItemRepo.On("FindByID", ctx, itemID, workspaceID).Return(existingItem, nil)
@@ -1270,7 +1278,7 @@ func TestProcessBatch_ItemUpdate_Conflict(t *testing.T) {
 		itemID, workspaceID, "SKU-001", "Server Name",
 		nil, nil, nil, nil, nil, nil, nil, nil,
 		ptrBool(false), ptrBool(false), ptrBool(false), nil, nil,
-		5, "SHORT1", nil, nil, serverTime, serverTime,
+		5, "SHORT1", nil, nil, ptrBool(false), serverTime, serverTime,
 	)
 
 	mockItemRepo.On("FindByID", ctx, itemID, workspaceID).Return(existingItem, nil)
@@ -1316,7 +1324,7 @@ func TestProcessBatch_ItemUpdate_InvalidData(t *testing.T) {
 		itemID, workspaceID, "SKU-001", "Original Name",
 		nil, nil, nil, nil, nil, nil, nil, nil,
 		ptrBool(false), ptrBool(false), ptrBool(false), nil, nil,
-		5, "SHORT1", nil, nil, now, now,
+		5, "SHORT1", nil, nil, ptrBool(false), now, now,
 	)
 
 	mockItemRepo.On("FindByID", ctx, itemID, workspaceID).Return(existingItem, nil)
@@ -1357,7 +1365,7 @@ func TestProcessBatch_ItemDelete_Success(t *testing.T) {
 		itemID, workspaceID, "SKU-001", "Test Item",
 		nil, nil, nil, nil, nil, nil, nil, nil,
 		ptrBool(false), ptrBool(false), ptrBool(false), nil, nil,
-		5, "SHORT1", nil, nil, now, now,
+		5, "SHORT1", nil, nil, ptrBool(false), now, now,
 	)
 
 	mockItemRepo.On("FindByID", ctx, itemID, workspaceID).Return(existingItem, nil)
@@ -1860,7 +1868,7 @@ func TestProcessBatch_MixedOperations_PartialSuccess(t *testing.T) {
 		itemID, workspaceID, "SKU-001", "Original Item",
 		nil, nil, nil, nil, nil, nil, nil, nil,
 		ptrBool(false), ptrBool(false), ptrBool(false), nil, nil,
-		5, "SHORT1", nil, nil, now, now,
+		5, "SHORT1", nil, nil, ptrBool(false), now, now,
 	)
 	mockItemRepo.On("FindByID", ctx, itemID, workspaceID).Return(existingItem, nil)
 	mockItemRepo.On("Save", ctx, mock.AnythingOfType("*item.Item")).Return(nil)
@@ -1915,7 +1923,7 @@ func TestProcessBatch_MixedOperations_AllSuccess(t *testing.T) {
 		itemID, workspaceID, "SKU-001", "Original Item",
 		nil, nil, nil, nil, nil, nil, nil, nil,
 		ptrBool(false), ptrBool(false), ptrBool(false), nil, nil,
-		5, "SHORT1", nil, nil, now, now,
+		5, "SHORT1", nil, nil, ptrBool(false), now, now,
 	)
 	existingLocation := location.Reconstruct(
 		locationID, workspaceID, "Original Room", nil, nil, "LOC001", false, now, now,
@@ -2018,7 +2026,7 @@ func TestProcessBatch_MixedOperations_WithConflicts(t *testing.T) {
 		itemID, workspaceID, "SKU-001", "Server Item",
 		nil, nil, nil, nil, nil, nil, nil, nil,
 		ptrBool(false), ptrBool(false), ptrBool(false), nil, nil,
-		5, "SHORT1", nil, nil, serverTime, serverTime,
+		5, "SHORT1", nil, nil, ptrBool(false), serverTime, serverTime,
 	)
 	existingLocation := location.Reconstruct(
 		locationID, workspaceID, "Server Room", nil, nil, "LOC001", false, serverTime, serverTime,
@@ -2076,11 +2084,11 @@ func TestProcessBatch_LargeBatch_AllSuccess(t *testing.T) {
 	id1, id2, id3, id4, id5 := uuid.New(), uuid.New(), uuid.New(), uuid.New(), uuid.New()
 
 	// Set up mocks for each
-	item1 := item.Reconstruct(id1, workspaceID, "SKU-001", "Item 1", nil, nil, nil, nil, nil, nil, nil, nil, ptrBool(false), ptrBool(false), ptrBool(false), nil, nil, 5, "SHORT1", nil, nil, now, now)
-	item2 := item.Reconstruct(id2, workspaceID, "SKU-002", "Item 2", nil, nil, nil, nil, nil, nil, nil, nil, ptrBool(false), ptrBool(false), ptrBool(false), nil, nil, 5, "SHORT2", nil, nil, now, now)
-	item3 := item.Reconstruct(id3, workspaceID, "SKU-003", "Item 3", nil, nil, nil, nil, nil, nil, nil, nil, ptrBool(false), ptrBool(false), ptrBool(false), nil, nil, 5, "SHORT3", nil, nil, now, now)
-	item4 := item.Reconstruct(id4, workspaceID, "SKU-004", "Item 4", nil, nil, nil, nil, nil, nil, nil, nil, ptrBool(false), ptrBool(false), ptrBool(false), nil, nil, 5, "SHORT4", nil, nil, now, now)
-	item5 := item.Reconstruct(id5, workspaceID, "SKU-005", "Item 5", nil, nil, nil, nil, nil, nil, nil, nil, ptrBool(false), ptrBool(false), ptrBool(false), nil, nil, 5, "SHORT5", nil, nil, now, now)
+	item1 := item.Reconstruct(id1, workspaceID, "SKU-001", "Item 1", nil, nil, nil, nil, nil, nil, nil, nil, ptrBool(false), ptrBool(false), ptrBool(false), nil, nil, 5, "SHORT1", nil, nil, ptrBool(false), now, now)
+	item2 := item.Reconstruct(id2, workspaceID, "SKU-002", "Item 2", nil, nil, nil, nil, nil, nil, nil, nil, ptrBool(false), ptrBool(false), ptrBool(false), nil, nil, 5, "SHORT2", nil, nil, ptrBool(false), now, now)
+	item3 := item.Reconstruct(id3, workspaceID, "SKU-003", "Item 3", nil, nil, nil, nil, nil, nil, nil, nil, ptrBool(false), ptrBool(false), ptrBool(false), nil, nil, 5, "SHORT3", nil, nil, ptrBool(false), now, now)
+	item4 := item.Reconstruct(id4, workspaceID, "SKU-004", "Item 4", nil, nil, nil, nil, nil, nil, nil, nil, ptrBool(false), ptrBool(false), ptrBool(false), nil, nil, 5, "SHORT4", nil, nil, ptrBool(false), now, now)
+	item5 := item.Reconstruct(id5, workspaceID, "SKU-005", "Item 5", nil, nil, nil, nil, nil, nil, nil, nil, ptrBool(false), ptrBool(false), ptrBool(false), nil, nil, 5, "SHORT5", nil, nil, ptrBool(false), now, now)
 
 	mockItemRepo.On("FindByID", ctx, id1, workspaceID).Return(item1, nil)
 	mockItemRepo.On("FindByID", ctx, id2, workspaceID).Return(item2, nil)
@@ -2154,7 +2162,7 @@ func TestProcessBatch_NilUpdatedAt_NoConflictCheck(t *testing.T) {
 		itemID, workspaceID, "SKU-001", "Original Name",
 		nil, nil, nil, nil, nil, nil, nil, nil,
 		ptrBool(false), ptrBool(false), ptrBool(false), nil, nil,
-		5, "SHORT1", nil, nil, now, now,
+		5, "SHORT1", nil, nil, ptrBool(false), now, now,
 	)
 
 	mockItemRepo.On("FindByID", ctx, itemID, workspaceID).Return(existingItem, nil)
@@ -2195,7 +2203,7 @@ func TestProcessBatch_UpdateFailure(t *testing.T) {
 		itemID, workspaceID, "SKU-001", "Original Name",
 		nil, nil, nil, nil, nil, nil, nil, nil,
 		ptrBool(false), ptrBool(false), ptrBool(false), nil, nil,
-		5, "SHORT1", nil, nil, now, now,
+		5, "SHORT1", nil, nil, ptrBool(false), now, now,
 	)
 
 	mockItemRepo.On("FindByID", ctx, itemID, workspaceID).Return(existingItem, nil)

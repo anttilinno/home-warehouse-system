@@ -15,6 +15,7 @@ type Repository interface {
 	FindByShortCode(ctx context.Context, workspaceID uuid.UUID, shortCode string) (*Item, error)
 	FindByBarcode(ctx context.Context, workspaceID uuid.UUID, barcode string) (*Item, error)
 	FindByWorkspace(ctx context.Context, workspaceID uuid.UUID, pagination shared.Pagination) ([]*Item, int, error)
+	FindNeedingReview(ctx context.Context, workspaceID uuid.UUID, pagination shared.Pagination) ([]*Item, int, error)
 	FindByCategory(ctx context.Context, workspaceID, categoryID uuid.UUID, pagination shared.Pagination) ([]*Item, error)
 	Search(ctx context.Context, workspaceID uuid.UUID, query string, limit int) ([]*Item, error)
 	Delete(ctx context.Context, id uuid.UUID) error

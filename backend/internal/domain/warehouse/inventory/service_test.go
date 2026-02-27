@@ -107,6 +107,9 @@ func (m *mockItemRepo) FindByBarcode(ctx context.Context, wsID uuid.UUID, bc str
 func (m *mockItemRepo) FindByWorkspace(ctx context.Context, wsID uuid.UUID, p shared.Pagination) ([]*item.Item, int, error) {
 	return nil, 0, nil
 }
+func (m *mockItemRepo) FindNeedingReview(ctx context.Context, wsID uuid.UUID, p shared.Pagination) ([]*item.Item, int, error) {
+	return nil, 0, nil
+}
 func (m *mockItemRepo) FindByCategory(ctx context.Context, wsID, catID uuid.UUID, p shared.Pagination) ([]*item.Item, error) {
 	return nil, nil
 }
@@ -196,7 +199,7 @@ func newPermissiveFKRepos() (*mockItemRepo, *mockLocationRepo, *mockContainerRep
 	contR := new(mockContainerRepo)
 
 	itemR.On("FindByID", mock.Anything, mock.Anything, mock.Anything).Return(
-		item.Reconstruct(uuid.New(), uuid.New(), "SKU", "item", nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, 0, "SC", nil, nil, now, now),
+		item.Reconstruct(uuid.New(), uuid.New(), "SKU", "item", nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, 0, "SC", nil, nil, nil, now, now),
 		nil,
 	).Maybe()
 	locR.On("FindByID", mock.Anything, mock.Anything, mock.Anything).Return(

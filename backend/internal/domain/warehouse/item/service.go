@@ -24,6 +24,7 @@ type ServiceInterface interface {
 	Create(ctx context.Context, input CreateInput) (*Item, error)
 	GetByID(ctx context.Context, id, workspaceID uuid.UUID) (*Item, error)
 	List(ctx context.Context, workspaceID uuid.UUID, pagination shared.Pagination) ([]*Item, int, error)
+	ListNeedingReview(ctx context.Context, workspaceID uuid.UUID, pagination shared.Pagination) ([]*Item, int, error)
 	Update(ctx context.Context, id, workspaceID uuid.UUID, input UpdateInput) (*Item, error)
 	Archive(ctx context.Context, id, workspaceID uuid.UUID) error
 	Restore(ctx context.Context, id, workspaceID uuid.UUID) error
@@ -63,6 +64,7 @@ type CreateInput struct {
 	ShortCode         string // Optional - will be auto-generated if empty
 	ObsidianVaultPath *string
 	ObsidianNotePath  *string
+	NeedsReview       *bool
 }
 
 func (s *Service) Create(ctx context.Context, input CreateInput) (*Item, error) {
@@ -136,6 +138,9 @@ func (s *Service) Create(ctx context.Context, input CreateInput) (*Item, error) 
 	item.shortCode = shortCode
 	item.obsidianVaultPath = input.ObsidianVaultPath
 	item.obsidianNotePath = input.ObsidianNotePath
+	if input.NeedsReview != nil && *input.NeedsReview {
+		item.SetNeedsReview(true)
+	}
 
 	if err := s.repo.Save(ctx, item); err != nil {
 		return nil, err
@@ -199,6 +204,10 @@ func (s *Service) Search(ctx context.Context, workspaceID uuid.UUID, query strin
 
 func (s *Service) List(ctx context.Context, workspaceID uuid.UUID, pagination shared.Pagination) ([]*Item, int, error) {
 	return s.repo.FindByWorkspace(ctx, workspaceID, pagination)
+}
+
+func (s *Service) ListNeedingReview(ctx context.Context, workspaceID uuid.UUID, pagination shared.Pagination) ([]*Item, int, error) {
+	return s.repo.FindNeedingReview(ctx, workspaceID, pagination)
 }
 
 func (s *Service) ListByCategory(ctx context.Context, workspaceID, categoryID uuid.UUID, pagination shared.Pagination) ([]*Item, error) {
