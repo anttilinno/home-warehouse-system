@@ -13,7 +13,7 @@ Requirements for Quick Capture milestone. Each maps to roadmap phases.
 - [ ] **QC-02**: User sees camera viewfinder immediately on entering quick capture
 - [ ] **QC-03**: User can take 1-5 photos per item with tap-to-capture
 - [ ] **QC-04**: User types only item name to save (single required field)
-- [ ] **QC-05**: System auto-generates SKU for quick-captured items
+- [x] **QC-05**: System auto-generates SKU for quick-captured items
 - [ ] **QC-06**: After saving, form resets instantly and camera is ready for next item
 - [ ] **QC-07**: User sees running count of items captured this session
 - [ ] **QC-08**: User feels haptic/audio feedback on successful save
@@ -28,7 +28,7 @@ Requirements for Quick Capture milestone. Each maps to roadmap phases.
 ### Offline & Sync
 
 - [ ] **SYNC-01**: Quick capture works fully offline — items queued in IndexedDB
-- [ ] **SYNC-02**: Photos stored as blobs in IndexedDB for offline display
+- [x] **SYNC-02**: Photos stored as blobs in IndexedDB for offline display
 - [ ] **SYNC-03**: Photos upload automatically after item syncs to server (chained sync)
 - [ ] **SYNC-04**: Offline-captured items appear in item list with pending indicator
 
@@ -71,7 +71,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | QC-02 | Phase 45 | Pending |
 | QC-03 | Phase 45 | Pending |
 | QC-04 | Phase 45 | Pending |
-| QC-05 | Phase 44 | Pending |
+| QC-05 | Phase 44 | Complete |
 | QC-06 | Phase 45 | Pending |
 | QC-07 | Phase 45 | Pending |
 | QC-08 | Phase 45 | Pending |
@@ -80,7 +80,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | BATCH-03 | Phase 44 | Pending |
 | BATCH-04 | Phase 44 | Pending |
 | SYNC-01 | Phase 44 | Pending |
-| SYNC-02 | Phase 44 | Pending |
+| SYNC-02 | Phase 44 | Complete |
 | SYNC-03 | Phase 46 | Pending |
 | SYNC-04 | Phase 46 | Pending |
 | COMP-01 | Phase 43 | Complete |

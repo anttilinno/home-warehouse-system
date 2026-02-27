@@ -1,3 +1,16 @@
+---
+gsd_state_version: 1.0
+milestone: v1.1
+milestone_name: Quick Capture
+status: unknown
+last_updated: "2026-02-27T13:26:21.247Z"
+progress:
+  total_phases: 42
+  completed_phases: 39
+  total_plans: 121
+  completed_plans: 117
+---
+
 # Project State: Home Warehouse System
 
 ## Project Reference
@@ -5,16 +18,16 @@
 See: `.planning/PROJECT.md` (updated 2026-02-27)
 
 **Core value:** Reliable inventory access anywhere -- online or offline -- with seamless sync
-**Current focus:** v1.9 Quick Capture -- Phase 43 Backend Schema and Needs Review API
+**Current focus:** v1.9 Quick Capture -- Phase 44 Capture Infrastructure
 
 ## Current Position
 
-Phase: 43 (1 of 5 in v1.9) (Backend Schema and Needs Review API) -- COMPLETE
-Plan: 2 of 2 in current phase
-Status: Phase complete
-Last activity: 2026-02-27 -- Completed 43-02 (needs_review HTTP API and sync endpoint)
+Phase: 44 (2 of 5 in v1.9) (Capture Infrastructure)
+Plan: 1 of 2 in current phase -- COMPLETE
+Status: Plan 44-01 complete, 44-02 remaining
+Last activity: 2026-02-27 -- Completed 44-01 (capture infrastructure data layer)
 
-Progress: [██░░░░░░░░] 20%
+Progress: [██░░░░░░░░] 30%
 
 ## Performance Metrics
 
@@ -38,6 +51,12 @@ Progress: [██░░░░░░░░] 20%
 | v1.8 | 3 | 7 | Complete |
 | v1.9 | 5 | TBD | In progress |
 
+**Recent plan metrics:**
+
+| Phase-Plan | Duration | Tasks | Files |
+|------------|----------|-------|-------|
+| 44-01 | 2min | 2 | 5 |
+
 ## Accumulated Context
 
 ### Decisions
@@ -52,6 +71,7 @@ Recent decisions affecting current work:
 - [43-01]: Used shared.Pagination for FindNeedingReview to match existing patterns
 - [43-01]: needsReview parameter placed before createdAt/updatedAt in Reconstruct
 - [43-02]: Used bool (not *bool) for needs_review query param due to huma framework constraint
+- [Phase 44]: CapturePhotoStatus as union type for tree-shaking; auto-increment key for quickCapturePhotos IndexedDB performance
 
 ### Pending Todos
 
@@ -75,8 +95,8 @@ v1.9 specific:
 ## Session Continuity
 
 Last session: 2026-02-27
-Stopped at: Completed 43-02-PLAN.md (Phase 43 complete)
-Next step: Begin Phase 44 planning
+Stopped at: Completed 44-01-PLAN.md
+Next step: Execute 44-02-PLAN.md (batch settings and offline wiring)
 
 ---
-*Updated: 2026-02-27 after completing 43-02 (needs_review HTTP API and sync endpoint)*
+*Updated: 2026-02-27 after completing 44-01 (capture infrastructure data layer)*
