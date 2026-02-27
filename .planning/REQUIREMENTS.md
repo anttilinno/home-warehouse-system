@@ -9,9 +9,9 @@ Requirements for Quick Capture milestone. Each maps to roadmap phases.
 
 ### Quick Capture Core
 
-- [ ] **QC-01**: User can open quick capture mode from the floating action button
-- [ ] **QC-02**: User sees camera viewfinder immediately on entering quick capture
-- [ ] **QC-03**: User can take 1-5 photos per item with tap-to-capture
+- [x] **QC-01**: User can open quick capture mode from the floating action button
+- [x] **QC-02**: User sees camera viewfinder immediately on entering quick capture
+- [x] **QC-03**: User can take 1-5 photos per item with tap-to-capture
 - [ ] **QC-04**: User types only item name to save (single required field)
 - [x] **QC-05**: System auto-generates SKU for quick-captured items
 - [ ] **QC-06**: After saving, form resets instantly and camera is ready for next item
@@ -67,9 +67,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| QC-01 | Phase 45 | Pending |
-| QC-02 | Phase 45 | Pending |
-| QC-03 | Phase 45 | Pending |
+| QC-01 | Phase 45 | Complete |
+| QC-02 | Phase 45 | Complete |
+| QC-03 | Phase 45 | Complete |
 | QC-04 | Phase 45 | Pending |
 | QC-05 | Phase 44 | Complete |
 | QC-06 | Phase 45 | Pending |

@@ -229,7 +229,7 @@ See `.planning/milestones/v1.9-ROADMAP.md` for full phase details.
 | 40-42 | v1.8 | 7 | Complete | 2026-02-22 |
 | 43 | v1.9 | Complete    | 2026-02-27 | 2026-02-27 |
 | 44 | 2/2 | Complete    | 2026-02-27 | - |
-| 45 | v1.9 | 0/TBD | Not started | - |
+| 45 | 1/2 | In Progress|  | - |
 | 46 | v1.9 | 0/TBD | Not started | - |
 | 47 | v1.9 | 0/TBD | Not started | - |
 
