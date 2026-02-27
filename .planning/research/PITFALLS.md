@@ -1,385 +1,236 @@
-# Domain Pitfalls: Social Login (v1.8)
+# Domain Pitfalls: Quick Capture (v1.9)
 
-**Domain:** Adding Google OAuth and GitHub OAuth to existing email/password auth system
-**Researched:** 2026-02-22
+**Domain:** Adding rapid camera-first item capture with offline photo storage to existing PWA inventory system
+**Researched:** 2026-02-27
 **Confidence:** HIGH
-**Scope:** Pitfalls specific to adding social login to the Home Warehouse System
+**Scope:** Pitfalls specific to adding quick-capture features to the Home Warehouse System
 
 ---
 
-## v1.8 Critical Pitfalls
+## Critical Pitfalls
 
-Mistakes that cause security vulnerabilities, account lockout, or require rewrites.
+Mistakes that cause rewrites, data loss, or major regressions in existing functionality.
 
-### Pitfall 8-A: password_hash NOT NULL Blocks OAuth-Only User Creation (CRITICAL)
+### Pitfall 1: Two Separate Photo Upload Queues Diverging
 
-**What goes wrong:**
-The `auth.users` table has `password_hash VARCHAR(255) NOT NULL` (migration 001, line 113). Users who sign up exclusively via Google or GitHub have no password. The INSERT fails with a NOT NULL constraint violation. The only current code path for creating users is `NewUser(email, fullName, password)` in `entity.go`, which requires and hashes a password.
+**What goes wrong:** The system already has a `PhotoUploadQueue` IndexedDB database in the service worker (`sw.ts` lines 276-342) that intercepts failed POST requests to `/photos` and queues them. Quick capture needs to store photos in IndexedDB BEFORE any upload attempt (since items don't exist on server yet). If you create a second queuing mechanism without coordinating with the existing one, you get duplicate uploads, lost photos, or race conditions where both queues try to upload the same photo.
 
-**Why it happens:**
-The schema was designed before social login existed. Every user creation path in the codebase assumes a password is provided. The `CheckPassword()` method on the entity would also behave unexpectedly with an empty or sentinel hash value -- `bcrypt.CompareHashAndPassword` returns an error for empty input, but a random hash could let a brute-force attack "guess" the sentinel.
+**Why it happens:** The existing SW-based queue is request-level (intercepts fetch failures), while quick capture needs an application-level queue (photos captured before the item even has a server ID). These are fundamentally different lifecycles but target the same endpoint.
 
-**How to avoid:**
-1. Add migration: `ALTER TABLE auth.users ALTER COLUMN password_hash DROP NOT NULL;`
-2. Add `NewOAuthUser(email, fullName string) (*User, error)` constructor in `entity.go` that leaves `passwordHash` as empty string
-3. Update `CheckPassword()` to return `false` immediately when `passwordHash` is empty -- never run bcrypt on empty/sentinel values
-4. Update the password change handler to skip `current_password` requirement when user has no password (first-time password creation for OAuth-only users)
-5. Update `scanUser` in `user_repository.go` to handle NULL password_hash from Postgres (use `*string` or handle `pgx.ErrNoRows` for the column)
-6. Add a `HasPassword() bool` method to the User entity and expose it in the `/users/me` API response
+**Consequences:** Duplicate photos on items. Photos uploaded to wrong items. Upload count indicators (`PendingUploadsIndicator`) showing wrong numbers. Lost photos when both queues process simultaneously.
 
-**Warning signs:**
-- OAuth signup returns 500 errors in testing
-- Database INSERT failure on user creation during OAuth callback
-- Password change UI shows "current password" field for users who never set one
+**Prevention:**
+- Unify into a single photo queue in the main IndexedDB (`hws-offline-v1`) as a new store, NOT the separate `PhotoUploadQueue` database
+- Quick capture photos get queued with a reference to the item's idempotency key (temp ID from UUIDv7)
+- Photo uploads happen AFTER the item mutation syncs successfully (use `dependsOn` mechanism already in SyncManager)
+- Deprecate or bypass the SW-level photo queue for items created via quick capture
+- The SW intercept remains as fallback only for the existing full item-creation flow
 
-**Phase to address:**
-Phase 1 (Database migration + Backend OAuth) -- must be the very first change before any OAuth code runs
+**Detection:** Test by creating 5 items offline with photos, going online, and verifying exactly 5 items with exactly 1 photo each appear. Any duplicates or mismatches indicate queue divergence.
 
----
+### Pitfall 2: IndexedDB Blob Storage Exhausting Quota on iOS
 
-### Pitfall 8-B: Account Takeover via Unverified OAuth Email Auto-Linking (CRITICAL)
+**What goes wrong:** Each camera photo from a modern phone is 3-8MB. Even after compression to ~1MB, capturing 50 items in a batch session stores 50MB+ of blobs in IndexedDB. iOS Safari grants up to 500MB but can evict data aggressively -- if the PWA hasn't been interacted with for 7 days, or if the device is low on storage, Safari silently deletes IndexedDB data.
 
-**What goes wrong:**
-The project spec says "Auto-link social account to existing email/password account (same email = same user)." If the system blindly trusts the email from an OAuth provider without checking the `email_verified` claim, an attacker can: (1) find out victim's email, (2) add that email to their GitHub account without verifying it, (3) initiate GitHub OAuth login, (4) get auto-linked to the victim's existing account with full access.
+**Why it happens:** The existing system explicitly avoids storing photos in IndexedDB (PROJECT.md: "No heavy assets: Photos, PDFs, attachments excluded from proactive sync"). Quick capture inverts this by requiring blob storage as a core path.
 
-**Why it happens:**
-Developers assume all OAuth providers verify all emails. Google does verify emails for `@gmail.com` and Google Workspace. But GitHub explicitly allows adding unverified emails to accounts. GitHub's basic `/user` endpoint may return an unverified email or null. The `email_verified` field is not checked because "it's just an email match."
+**Consequences:** Silent data loss. User captures 30 items, comes back later, photos are gone. No error message because eviction is silent. Even worse: item mutations succeed but photos are evicted before upload, creating items with no photos -- defeating the entire purpose of camera-first capture.
 
-**How to avoid:**
-1. **Google:** Trust the `email_verified` claim from the ID token (Google OIDC tokens include this field). Only auto-link when `email_verified: true`.
-2. **GitHub:** Call `GET /user/emails` API with the access token. Filter for emails where BOTH `verified: true` AND `primary: true`. Never use the email from the basic `/user` profile endpoint alone.
-3. **If email is not verified:** Create a standalone new account (do NOT auto-link). Prompt the user to verify their email or manually link accounts from settings.
-4. **Log all auto-link events** in the activity log for audit purposes.
-5. **Add test case:** Create a GitHub account with an unverified email matching an existing user, attempt OAuth login -- must NOT auto-link.
+**Prevention:**
+- Compress aggressively before IndexedDB storage (target 200-400KB per photo using lower quality 0.6-0.7 and max 1200px dimension, not the existing 1920px/0.85)
+- Store thumbnail-quality previews in IndexedDB, queue full-res upload immediately when online
+- Show storage usage estimate in the capture UI (use `navigator.storage.estimate()`)
+- Set a hard cap on queued photos (e.g., 100 photos max) with clear warning
+- Request persistent storage (`navigator.storage.persist()`) -- already called in `offline-db.ts` but verify it succeeds on the capture screen
+- Upload photos eagerly when online, even mid-batch, don't wait for session end
+- Monitor `QuotaExceededError` and show actionable error ("Connect to WiFi to upload queued photos before capturing more")
 
-**Warning signs:**
-- OAuth callback handler does a simple `SELECT * FROM auth.users WHERE email = ?` without checking verification
-- No code path for "email not verified by provider"
-- Integration tests only test the happy path (verified email)
+**Detection:** Test on a real iOS device (not simulator) with limited storage. Capture 50+ items, lock phone for 10 minutes, return and verify all photos still present.
 
-**Phase to address:**
-Phase 1 (Backend OAuth callback handler) -- this is the core security decision
+### Pitfall 3: Auto-SKU Collisions When Multiple Devices Are Offline
 
----
+**What goes wrong:** The backend requires `UNIQUE (workspace_id, sku)` on the items table. If SKUs are auto-generated client-side, two family members capturing items on separate phones offline will generate SKUs that look unique locally but collide when synced. The backend's `ErrSKUTaken` error (409 conflict) causes item creation to fail.
 
-### Pitfall 8-C: CSRF Attack via Missing/Weak OAuth State Parameter (CRITICAL)
+**Why it happens:** SKU generation is currently server-side (item.service.go `Create` method checks `SKUExists`). Moving auto-generation to the client for offline support means losing the uniqueness guarantee.
 
-**What goes wrong:**
-Without a proper `state` parameter in the OAuth authorization URL, an attacker crafts a malicious link that completes an OAuth flow in the victim's browser, linking the ATTACKER's social account to the VICTIM's authenticated session. The victim clicks the link, the browser follows the redirect chain, the callback fires in the victim's session, and the attacker's Google/GitHub account gets linked.
+**Consequences:** Sync failures for items created offline. Items stuck in "failed" state in mutation queue. User frustration when items they thought were saved actually weren't.
 
-**Why it happens:**
-Go's `golang.org/x/oauth2` library generates the authorization URL with whatever state you pass in, but does NOT validate state on callback -- that is the application's responsibility. Developers skip state validation because "it works without it" or use a constant/predictable value. RFC 9700 (OAuth 2.0 Security BCP) mandates one-time-use CSRF tokens in the state parameter.
+**Prevention:**
+- Generate SKUs with a format that includes device-unique entropy: `QC-{timestamp_base36}-{random4}` (e.g., `QC-M3KA-7F2X`)
+- Include the UUIDv7 idempotency key's first 8 chars as part of the SKU to guarantee global uniqueness
+- Make the backend accept a `needs_sku_assignment: true` flag where the server assigns the final SKU on sync, and the client SKU is just a placeholder
+- Best approach: let the server assign the real SKU on create, send items without a client-generated SKU, and have the backend auto-generate one (the import worker already handles `items_auto_sku.csv` -- this pattern exists)
+- If using client-side SKU: handle 409 gracefully by auto-regenerating and retrying (add to SyncManager's conflict handling)
 
-**How to avoid:**
-1. Generate a cryptographically random state string (32 bytes, base64url-encoded) for every OAuth initiation request
-2. Store the state in an HttpOnly, SameSite=Lax, short-lived cookie (NOT localStorage -- cookies are the only storage available during redirect-based flows)
-3. On callback, compare `state` query param with cookie value. Reject on mismatch with 403.
-4. Delete the state cookie after validation (one-time use)
-5. Set TTL of 5-10 minutes on the state cookie to prevent replay attacks
-6. ALSO implement PKCE (code_verifier/code_challenge) for additional protection of the authorization code exchange
+**Detection:** Test with two browser instances both offline, each creating 10 items, then bringing both online simultaneously.
 
-**Warning signs:**
-- OAuth flow works without any state validation code
-- State is stored in localStorage (not available during redirect)
-- State cookie has no expiry or uses a predictable value
-- No test case that sends a callback with an incorrect state parameter
+### Pitfall 4: Photo-to-Item Association Lost During Offline Sync
 
-**Phase to address:**
-Phase 1 (Backend OAuth initiation + callback handlers)
+**What goes wrong:** Quick capture creates an item with a temporary UUIDv7 ID. Photos are associated with this temp ID in IndexedDB. When the item syncs, the server returns a real ID. If photos are uploaded using the temp ID in the URL path (`/items/{tempId}/photos`), the upload fails with 404 because the server doesn't know the temp ID.
+
+**Why it happens:** The existing `SyncManager.resolvePayloadIds()` only resolves `_id` suffixed fields in mutation payloads. Photo uploads use URL paths, not payloads. The photo queue doesn't participate in the `resolvedIds` map.
+
+**Consequences:** All photos for offline-created items fail to upload. Items appear on server without photos.
+
+**Prevention:**
+- Photo upload queue entries must store the item's idempotency key, not a URL
+- When processing the photo queue, look up the resolved real ID from the idempotency key mapping (extend `resolvedIds` map to persist across sync runs, or store the mapping in IndexedDB)
+- Process photos ONLY after their parent item has been synced (use `dependsOn` in mutation queue)
+- Store the temp-to-real ID mapping in a new IndexedDB store or in syncMeta so it survives page reloads
+- Alternatively: send photos as part of the item create payload (multipart) rather than as separate requests -- this avoids the mapping problem entirely but requires backend changes
+
+**Detection:** Create 3 items with photos while offline. Go online. Verify all 3 items have their photos on the server. Check for 404 errors in the network tab.
 
 ---
 
-### Pitfall 8-D: OAuth Callback Cookies Lost in Cross-Origin Production Setup (CRITICAL)
+## Moderate Pitfalls
 
-**What goes wrong:**
-The current system uses `SameSite=Lax` HttpOnly cookies for auth tokens (see `createAuthCookie` in `handler.go`). The OAuth flow redirects user to Google/GitHub (third-party domain), which then redirects to the Go backend callback URL. In production where frontend (`app.example.com`) and backend (`api.example.com`) are separate origins, the auth cookies set during the callback may not be sent on the redirect to the frontend. The user appears to complete OAuth but arrives at the frontend unauthenticated.
+### Pitfall 5: Batch Session State Lost on iOS PWA Kill
 
-**Why it happens:**
-`SameSite=Lax` cookies are sent on top-level GET navigations (which is why the callback itself works). The problem is the redirect chain: Provider -> Backend callback (sets cookies) -> Frontend redirect. The browser may not send the new cookies on the frontend redirect because it is a cross-site redirect sequence. This works perfectly in development (everything on localhost) but breaks in production.
+**What goes wrong:** User is mid-batch (location=Garage, category=Tools, 12 items captured). iOS kills the PWA process (memory pressure, user switches apps for too long). When they reopen, the batch session context (sticky location, sticky category, item count) is gone.
 
-**How to avoid:**
-The recommended pattern for this project (matches existing auth architecture):
-1. Backend OAuth callback validates the code, creates/links user, generates a one-time authorization code
-2. Backend redirects to frontend: `${APP_URL}/auth/callback?code=ONETIME_CODE`
-3. Frontend `/auth/callback` page exchanges the one-time code with the backend for JWT tokens via same-origin API call
-4. This mirrors the existing flow where frontend calls `/auth/login` and receives tokens in the response body + cookies
+**Why it happens:** React state doesn't survive process kill. The existing `useFormDraft` hook saves form data to IndexedDB with 1-second debounce, but batch session metadata (which location, which category, batch mode active) isn't a form -- it's session state.
 
-This avoids all cross-origin cookie issues because the final token exchange happens same-origin.
+**Prevention:**
+- Persist batch session state to IndexedDB immediately on each change (not debounced):
+  - `batchSessionId`, `stickyLocationId`, `stickyCategoryId`, `itemsCapturedCount`, `isActive`, `startedAt`
+- On app mount, check for active batch session and offer "Resume batch?" prompt
+- Store in the existing `formDrafts` store with a well-known key like `quickCapture-batch-session`
+- Use `visibilitychange` event to force-save session state when app goes to background
 
-**Warning signs:**
-- OAuth works in localhost development but fails silently in staging/production
-- User completes OAuth consent screen but lands on login page
-- Cookies appear in DevTools but are not sent with subsequent requests
-- Works in Chrome but fails in Safari (Safari is stricter about cross-site cookies)
+**Detection:** Start a batch on iOS, switch to another app for 30 seconds, force-kill the PWA from app switcher, reopen. Verify batch context is recoverable.
 
-**Phase to address:**
-Phase 1 (Backend callback) and Phase 2 (Frontend callback page) -- the redirect strategy must be designed upfront
+### Pitfall 6: Camera Permission Re-prompt on iOS PWA Navigation
 
----
+**What goes wrong:** iOS PWAs lose camera permission grants when the page navigates. The existing system handles this with "Single-page scan flow" (PROJECT.md key decision). But quick capture might involve navigating away to view captured items, then returning to capture more -- each return triggers a new permission prompt.
 
-### Pitfall 8-E: Workspace Not Created for New OAuth Signups (CRITICAL)
+**Why it happens:** iOS Safari in standalone mode (PWA) treats each page load as a new permission context. The existing barcode scanner stays on one page. Quick capture's "save and continue" flow might cause a route change.
 
-**What goes wrong:**
-When a brand new user signs up via OAuth (no existing account with that email), the system creates a user row but forgets to create their personal workspace. The user sees a successful login but the dashboard fails because they have zero workspaces. The `AuthProvider` in `auth-context.tsx` sets `isAuthenticated = false` because `workspaceId` is null (line 144: `const isAuthenticated = !!user && !!workspaceId`).
+**Prevention:**
+- Keep the entire quick capture flow on a SINGLE route (e.g., `/dashboard/quick-capture`)
+- Use client-side state/tabs to show "capture" vs "review" views without route changes
+- Never use `router.push()` during active capture session
+- If user needs to review items, use a sheet/drawer overlay, not a page navigation
+- The capture input (`<input capture="environment">`) is less affected than `getUserMedia()` but still test thoroughly on real iOS devices
 
-**Why it happens:**
-The workspace creation logic is embedded in the `register` HTTP handler (lines 178-190 of `handler.go`):
-```go
-workspaceName := fmt.Sprintf("%s's Workspace", user.FullName())
-workspaceSlug := fmt.Sprintf("user-%s", user.ID().String())
-_, err = h.workspaceSvc.Create(ctx, workspace.CreateWorkspaceInput{...})
-```
-This is NOT in a shared service -- it is handler-level code. The new OAuth callback handler is a separate code path that must replicate this.
+**Detection:** On iOS PWA, capture a photo, view the captured items list, return to capture another. If a permission dialog appears on the second capture, the navigation is breaking the permission context.
 
-**How to avoid:**
-1. Extract workspace creation into a shared `RegisterUser(email, fullName string) (*User, *Workspace, error)` method in a registration service or the user service
-2. Both the email/password register handler and the OAuth callback handler must call this same method for new users
-3. Add integration test: OAuth signup with new email -> `GET /users/me/workspaces` returns 1+ workspace
-4. Add integration test: OAuth login with existing email -> existing workspaces preserved
+### Pitfall 7: "Needs Details" Schema Change Breaking Existing Sync
 
-**Warning signs:**
-- OAuth signup appears to work but dashboard shows empty state
-- `loadUserData()` in `auth-context.tsx` returns empty workspaces array
-- Manual database inspection shows user row exists but no `workspace_members` entry
+**What goes wrong:** Adding a `needs_details` boolean column to the items table requires a migration. If the frontend sends `needs_details: true` in offline mutations but the backend hasn't been updated yet (stale deployment, rolling update), the mutation fails. Worse: existing offline mutations queued before the migration don't include the field, so sync behavior diverges.
 
-**Phase to address:**
-Phase 1 (Backend OAuth) -- must be part of the OAuth signup flow from day one
+**Why it happens:** Schema changes in offline-first systems are inherently dangerous because client and server can be on different schema versions.
 
----
+**Consequences:** Sync failures during rollout. Items created in quick capture mode fail to sync if they include `needs_details` and the backend hasn't migrated yet.
 
-### Pitfall 8-F: Unlinking Last Auth Method Locks User Out (CRITICAL)
+**Prevention:**
+- Make `needs_details` column nullable with DEFAULT false in the migration -- existing items and old clients are unaffected
+- Backend: accept and ignore unknown fields in the create/update payload (the Go handler already uses struct binding which silently ignores extra fields)
+- Frontend: only send `needs_details` field if the feature is enabled, not in every item mutation
+- Add the column to the backend first, deploy backend, then deploy frontend -- never the reverse
+- The field should be backend-optional: items created without it default to `false`
 
-**What goes wrong:**
-The connected accounts UI allows users to unlink their Google or GitHub account. A user who signed up via Google (no password set) unlinks Google. They now have zero ways to log in. The account is permanently inaccessible without admin intervention. There is no password reset flow for a user with no password and no linked providers.
+**Detection:** Queue an item mutation offline with the old frontend, update the frontend, queue another mutation with the new frontend, go online. Both should sync successfully.
 
-**Why it happens:**
-The unlink endpoint checks "does this provider link exist?" but not "will the user have any remaining auth method after unlinking?" Password auth and OAuth are independent subsystems with no cross-check.
+### Pitfall 8: Rapid Sequential Saves Overwhelming IndexedDB Transactions
 
-**How to avoid:**
-1. Before allowing unlink, run a guard check: `(password_hash IS NOT NULL AND password_hash != '') OR (COUNT(other_oauth_providers) >= 1)`
-2. If unlinking would leave zero auth methods, return 409: "Set a password before unlinking your last social account"
-3. Add `has_password: bool` to the `/users/me` API response so the frontend can show/hide UI elements intelligently
-4. Frontend: when user tries to unlink last provider and has no password, show inline "Set a password first" prompt
-5. Add test: OAuth-only user attempts unlink of sole provider -> 409 error
+**What goes wrong:** User captures items rapidly (one every 3-5 seconds). Each capture triggers: (1) item mutation queue write, (2) optimistic item store write, (3) photo blob write, (4) batch session state update, (5) form draft save. That's 5+ IndexedDB transactions in quick succession. IndexedDB transactions are serialized per database -- if one blocks, they all queue up. UI freezes between captures.
 
-**Warning signs:**
-- No validation logic in unlink endpoint beyond "does this link exist?"
-- No test case for "unlink last provider without password"
-- Password reset endpoint cannot handle users with no password
+**Why it happens:** IndexedDB has good throughput for reads but writes are serialized per object store. The existing system handles single mutations fine, but rapid-fire batch writes are a different load pattern.
 
-**Phase to address:**
-Phase 1 (Backend unlink endpoint guard) and Phase 2 (Frontend connected accounts UI)
+**Consequences:** Laggy capture experience. "Save" button appears stuck. User taps multiple times creating duplicate items. On slower devices (older iPhones), the UI can freeze for 1-2 seconds per item.
 
----
+**Prevention:**
+- Batch all writes for a single capture into ONE IndexedDB transaction (item + photo + session update in a single `readwrite` transaction)
+- Use the existing `putAll` batch pattern from `offline-db.ts` but extended to cross-store transactions
+- Debounce the batch session counter update
+- Show immediate visual feedback (haptic + animation) BEFORE the IndexedDB write completes
+- Consider storing photos as `ArrayBuffer` instead of `Blob` for faster writes (blobs can trigger additional I/O)
+- Test on a real low-end device (iPhone SE 2, budget Android)
 
-## v1.8 Moderate Pitfalls
+**Detection:** Profile with Chrome DevTools Performance tab. Capture 10 items in rapid succession (3-second intervals). Check for long tasks (>50ms) related to IndexedDB.
 
-### Pitfall 8-G: GitHub Users With Private Email Get Null Email (MODERATE)
+### Pitfall 9: Existing Offline Search Index Not Updating with Quick-Capture Items
 
-**What goes wrong:**
-Many GitHub users have their email set to private. The `GET /user` endpoint returns `email: null` for these users. If the OAuth callback only reads email from the basic profile, it cannot create a user account (email is required and unique in `auth.users`), cannot auto-link to existing accounts, and the signup fails with an unhelpful error.
+**What goes wrong:** The system uses Fuse.js for offline search with indices built from the IndexedDB items store. Quick-capture items are written to IndexedDB with `_pending: true` marker. If the Fuse.js index isn't rebuilt after each capture, newly created items won't appear in search, making the "review what I just captured" use case broken.
 
-**Why it happens:**
-Developers test with their own GitHub account (email public) and never encounter the null email case. The `user:email` scope grants access to `GET /user/emails` which returns all emails including private ones, but this separate API call is often skipped.
+**Why it happens:** The existing search index is built on app load or data sync. Quick capture adds items locally without triggering a full sync cycle.
 
-**How to avoid:**
-1. Request the `user:email` scope in the GitHub OAuth authorization URL
-2. After getting the access token, call `GET /user/emails` (not `/user`) to get the email list
-3. Filter for the email where `primary: true AND verified: true`
-4. If no verified primary email exists, reject the OAuth flow with a clear error message
-5. Store the `provider_user_id` as GitHub's numeric user ID (from `/user` response `id` field), not the email
+**Prevention:**
+- After each quick-capture item write, add the new item to the existing Fuse.js collection (Fuse.js supports `collection.add()` for incremental updates)
+- Or: for the quick capture review screen, query IndexedDB directly rather than going through the Fuse.js search
+- Ensure the items store query in `use-offline-data.ts` includes `_pending` items
 
-**Warning signs:**
-- OAuth works for some GitHub users but not others
-- Error logs show "email is required" during user creation
-- Test accounts all have public emails
-
-**Phase to address:**
-Phase 1 (Backend GitHub OAuth callback)
+**Detection:** Capture 3 items offline, then use the search bar to find one by name. If it doesn't appear, the index isn't updating.
 
 ---
 
-### Pitfall 8-H: OAuth Tokens Stored in Plaintext Violating Schema Contract (MODERATE)
+## Minor Pitfalls
 
-**What goes wrong:**
-The `auth.user_oauth_accounts` table has a comment: "OAuth access token. Must be encrypted at application layer." If the implementation stores tokens in plaintext, a database compromise exposes all OAuth access tokens, allowing the attacker to access users' Google/GitHub accounts and potentially read their emails, repos, and other data.
+### Pitfall 10: Object URL Memory Leaks in Rapid Capture
 
-**Why it happens:**
-Encryption adds complexity (key management, key rotation). "We'll add encryption later" is a common shortcut. The schema comment is aspirational but not enforced.
+**What goes wrong:** Each photo preview creates an object URL via `URL.createObjectURL()`. In rapid capture, if these aren't revoked promptly, memory usage climbs. After 50+ captures, the PWA can become sluggish or crash on memory-constrained mobile devices.
 
-**How to avoid:**
-1. Use AES-256-GCM encryption with a server-side key from an environment variable
-2. Encrypt before INSERT, decrypt after SELECT
-3. Store the encryption key in `OAUTH_TOKEN_ENCRYPTION_KEY` env var
-4. Alternatively, consider whether you even NEED to store the tokens -- if you only need them during the OAuth callback for profile data, process them immediately and don't store them
-5. If tokens are not needed after initial auth, store only the `provider_user_id` and discard the tokens
+**Prevention:**
+- Revoke object URLs immediately after the photo is written to IndexedDB as a blob
+- For the capture preview (the brief flash showing what was just captured), use a very short-lived URL and revoke after 2 seconds
+- Don't hold preview URLs in React state beyond the current capture
 
-**Warning signs:**
-- `SELECT access_token FROM auth.user_oauth_accounts` returns readable bearer tokens
-- No encryption key in environment configuration
-- No encrypt/decrypt functions in the OAuth repository code
+### Pitfall 11: UUIDv7 Ordering Assumption in Quick Capture
 
-**Phase to address:**
-Phase 1 (Backend OAuth account storage) -- decide upfront: store encrypted tokens or don't store tokens at all
+**What goes wrong:** UUIDv7 includes a timestamp component, making IDs monotonically increasing. If two items are captured in the same millisecond (fast tapper), the random component ensures uniqueness but the ordering might not match user expectation. More importantly, if the client clock is wrong, UUIDv7s will sort incorrectly server-side.
 
----
+**Prevention:**
+- Don't rely on UUIDv7 ordering for display order of captured items
+- Maintain a separate `captureOrder` integer in the batch session
+- The existing UUIDv7 generation (`shared.NewUUID()`) is fine for uniqueness
 
-### Pitfall 8-I: Session Not Created for OAuth Login (MODERATE)
+### Pitfall 12: Compression Blocking the Main Thread
 
-**What goes wrong:**
-The existing login handler creates a session entry in `auth.user_sessions` via `sessionSvc.Create()` (handler.go line 237). The new OAuth callback handler skips this step. Users who log in via OAuth don't appear in the active sessions list, cannot revoke their OAuth sessions, and the session management UI in Security settings shows no sessions.
+**What goes wrong:** The existing `compressImage()` function in `image.ts` uses `canvas.toBlob()` which runs on the main thread. During rapid capture, compressing a 5MB photo while the user is trying to capture the next item causes jank.
 
-**Why it happens:**
-The session creation code is in the password login handler, not in a shared "post-authentication" function. The OAuth callback is a new code path that needs to replicate session tracking.
+**Prevention:**
+- Move compression to a Web Worker (create `photo-compress.worker.ts`)
+- Or use `createImageBitmap()` + `OffscreenCanvas` for off-main-thread compression
+- At minimum: don't block the "next capture" action on compression completing -- queue compression and let it happen in the background
 
-**How to avoid:**
-1. Extract a `createAuthSession(ctx, userID, refreshToken, userAgent, ipAddress)` helper function
-2. Call it from both the password login handler and the OAuth callback handler
-3. Add test: OAuth login -> `GET /users/me/sessions` returns the new session
-4. Ensure session includes device info and IP like the password login path does
+### Pitfall 13: Haptic Feedback Fatigue in Batch Mode
 
-**Warning signs:**
-- Sessions page shows no sessions for OAuth-logged-in users
-- "Revoke all sessions" doesn't log out OAuth users
-- OAuth sessions cannot be individually revoked
+**What goes wrong:** The existing system uses haptic feedback on FAB press and scan detection. In rapid capture mode, haptic firing on every single save becomes annoying rather than helpful.
 
-**Phase to address:**
-Phase 1 (Backend OAuth callback)
+**Prevention:**
+- Use subtle haptic (light tap) for rapid saves, not the full pattern used for barcode scans
+- Consider disabling haptic after the 5th consecutive capture in a batch, or making it configurable
+- Test with real users -- what feels good for one action feels terrible at 30 repetitions
 
 ---
 
-### Pitfall 8-J: OAuth Popup/Redirect Breaks PWA Standalone Mode (MODERATE)
+## Phase-Specific Warnings
 
-**What goes wrong:**
-On iOS, PWA standalone mode opens OAuth redirects in an in-app browser or Safari, not in the PWA context. After completing OAuth consent, the redirect back to the app fails or opens a new Safari tab instead of returning to the PWA. The user is stuck in Safari with a callback URL that was meant for the PWA.
-
-**Why it happens:**
-iOS PWA standalone mode does not handle `window.location.href` redirects to external domains the same way as a browser tab. External URLs may open in Safari, and the callback redirect back cannot target the PWA standalone window.
-
-**How to avoid:**
-1. Use `target="_self"` for the OAuth redirect link (not `window.open`)
-2. Set the callback redirect URL to the PWA's URL scope so iOS routes back to the PWA
-3. On iOS, detect standalone mode with `window.matchMedia('(display-mode: standalone)')` and add special handling
-4. Test the complete OAuth flow specifically in PWA standalone mode on iOS (home screen app), not just Safari
-5. Consider using the popup approach on desktop and redirect approach on mobile
-
-**Warning signs:**
-- OAuth completes but user ends up in Safari instead of the PWA
-- Callback URL opens a new tab instead of returning to the app
-- Users report "login opens Safari" on iOS
-
-**Phase to address:**
-Phase 2 (Frontend OAuth initiation) -- must be tested on actual iOS device in standalone mode
+| Phase Topic | Likely Pitfall | Mitigation |
+|-------------|---------------|------------|
+| Camera-first flow UI | Pitfall 6 (iOS permission loss on navigation) | Keep capture on single route, use overlays for review |
+| Offline photo storage | Pitfall 2 (quota exhaustion), Pitfall 1 (dual queues) | Aggressive compression, unified queue in main DB |
+| Auto-SKU generation | Pitfall 3 (collision), Pitfall 7 (schema change) | Server-assigned SKU on sync, nullable needs_details column |
+| Batch session state | Pitfall 5 (state loss on kill), Pitfall 8 (transaction overload) | IndexedDB persistence, batched transactions |
+| Photo-item sync | Pitfall 4 (temp ID to real ID mapping) | Persist resolvedIds map, process photos after item sync |
+| "Needs details" filter | Pitfall 7 (migration timing), Pitfall 9 (search index) | Deploy backend first, incremental Fuse.js updates |
+| Rapid sequential capture | Pitfall 8, 10, 12 (performance) | Batched writes, revoke URLs, off-thread compression |
 
 ---
 
-## Technical Debt Patterns
+## Integration Risk Summary
 
-| Shortcut | Immediate Benefit | Long-term Cost | When Acceptable |
-|----------|-------------------|----------------|-----------------|
-| Store OAuth tokens in plaintext | No encryption key management | Security vulnerability if DB compromised; violates schema's own documentation | Never -- either encrypt or don't store tokens at all |
-| Skip PKCE for code exchange | 3 fewer lines of code | Authorization code interception attacks possible; OAuth 2.1 mandates PKCE | Never -- both Google and GitHub support PKCE |
-| Use provider avatar URL directly | No download/storage needed | URL may expire, third-party image load is a privacy leak | Acceptable for initial implementation -- can download later |
-| Auto-link without confirmation | Smoother UX, fewer clicks | Account merging without user awareness | Acceptable ONLY when email is verified by provider |
-| No token encryption | Faster development | Security audit failure, credential theft risk | Never |
-| Hardcode callback URLs in handler code | Quick to implement | Harder to configure per environment | Acceptable if using env vars for the domain portion |
+The highest-risk integration point is the **photo upload pipeline** (Pitfalls 1, 2, 4). The existing system has two separate mechanisms for photo handling:
+1. Service worker fetch intercept (`sw.ts`) with its own `PhotoUploadQueue` IndexedDB
+2. Application-level mutation queue (`hws-offline-v1` / `mutationQueue` store)
 
-## Integration Gotchas
-
-| Integration | Common Mistake | Correct Approach |
-|-------------|----------------|------------------|
-| Google OAuth | Using `email` from userinfo without checking `email_verified` | Check `email_verified: true` in the OIDC ID token JWT claims |
-| GitHub OAuth | Trusting the `email` from `GET /user` | Call `GET /user/emails`, filter for `primary: true AND verified: true` |
-| GitHub OAuth | Assuming user has a public email | Many users have private email. Must use `user:email` scope and `/user/emails` endpoint. Without the scope, email may be null. |
-| Google OAuth | Using `email` as the immutable provider identifier | Use the `sub` claim (stable numeric ID). Email can change. |
-| GitHub OAuth | Using `login` (username) as the provider identifier | Use the numeric `id` field from `/user`. Usernames can change. |
-| Both providers | Not handling `?error=access_denied` on callback | User cancels at provider consent screen. Callback receives error params, not code. Must redirect to login with friendly message. |
-| Both providers | Using redirect_uri as a query parameter from client | Hardcode callback URL on server. Never accept redirect_uri from user input -- open redirect vulnerability. |
-| Both providers | Logging tokens in error messages or access logs | Never log access_token, refresh_token, or authorization code values. Log provider name and user ID only. |
-| Existing auth | Not updating JWT claims after OAuth auto-link | When linking an OAuth account to an existing user, the user's name/email in the JWT may be stale. Regenerate the JWT after linking. |
-
-## Security Mistakes
-
-| Mistake | Risk | Prevention |
-|---------|------|------------|
-| Storing OAuth state in localStorage | XSS can steal state; not available during redirect flow | Use HttpOnly SameSite=Lax short-lived cookie |
-| Accepting arbitrary redirect_uri | Open redirect; authorization code sent to attacker | Hardcode callback URL in provider console AND server validation |
-| Not validating ID token `iss` and `aud` claims (Google) | Token substitution -- token from different OAuth client accepted | Verify `iss` is `https://accounts.google.com` and `aud` matches YOUR client ID |
-| Logging tokens in access logs | Token theft from log aggregation | Strip tokens from all log output; log only provider + user_id |
-| Not setting token expiry in database | Leaked tokens remain valid forever | Always populate `token_expires_at` column and check before use |
-| No rate limiting on OAuth callback endpoint | Brute-force authorization code guessing | Rate limit callback to ~10 req/min per IP |
-| Using HTTP for callback in production | Token interception via MITM | Enforce HTTPS callback URLs; reject HTTP in production |
-
-## UX Pitfalls
-
-| Pitfall | User Impact | Better Approach |
-|---------|-------------|-----------------|
-| Social buttons present but non-functional (CURRENT STATE) | Users click Google/GitHub and nothing happens -- frustration | Current `SocialLogin` component has buttons with no onClick. Either hide until implemented or show "coming soon" tooltip. |
-| No loading state during OAuth redirect | Screen goes blank for 1-3 seconds during redirect to Google | Show "Redirecting to Google..." spinner before `window.location.href` change |
-| Generic "login failed" on OAuth error | User has no idea why (cancelled? wrong account? email conflict?) | Map errors: "You cancelled the login", "No verified email found on your GitHub account", "This email is already registered -- try logging in with your password" |
-| Password change UI shows "current password" for OAuth-only users | Users who signed up via Google see a required field they cannot fill | Detect `has_password: false` and show "Set a new password" with no current password requirement |
-| Connected accounts not discoverable | Users cannot find where to link/unlink providers | Add "Connected Accounts" subsection to Security settings with clear provider icons |
-| No visual indicator of how user is logged in | User forgets auth method, tries wrong login next time | Show connected provider badges in profile; show "No password set" in Security settings for OAuth-only users |
-| Email change disconnects from OAuth | User changes email in profile, then OAuth provider email no longer matches | Warn user: "Changing your email will disconnect your linked Google account" or keep the link based on provider_user_id, not email |
-
-## "Looks Done But Isn't" Checklist
-
-- [ ] **OAuth login flow:** Often missing error handling for user cancellation -- verify callback handles `?error=access_denied` gracefully
-- [ ] **Account linking:** Often missing `email_verified` check -- verify GitHub emails checked via `/user/emails` API with `verified: true` filter
-- [ ] **New user via OAuth:** Often missing personal workspace creation -- verify `GET /users/me/workspaces` returns a workspace after new OAuth signup
-- [ ] **Unlink provider:** Often missing "last auth method" guard -- verify unlinking sole provider with no password returns 409 error
-- [ ] **Password change for OAuth users:** Often requires current password when none exists -- verify OAuth-only users can set password without current password
-- [ ] **State parameter:** Often present but validation skipped -- verify callback rejects requests with missing or wrong state value
-- [ ] **Session tracking:** Often creates user but no session row -- verify `auth.user_sessions` gets entry after OAuth login
-- [ ] **Token storage:** Schema says "Must be encrypted" -- verify tokens in `user_oauth_accounts.access_token` are encrypted or not stored
-- [ ] **PKCE:** Often skipped because "it works without it" -- verify `code_verifier` sent in token exchange
-- [ ] **Provider user_id:** Often stores email instead of immutable ID -- verify `provider_user_id` uses Google `sub` claim / GitHub numeric `id`, not email
-- [ ] **PWA standalone mode:** Often only tested in browser -- verify full OAuth flow works when app is launched from iOS home screen
-- [ ] **GitHub private email:** Often only tested with own account -- verify OAuth handles GitHub users with private email setting
-
-## Recovery Strategies
-
-| Pitfall | Recovery Cost | Recovery Steps |
-|---------|---------------|----------------|
-| password_hash NOT NULL blocks signup | LOW | Single migration to drop NOT NULL. No data loss. Backward compatible (existing users keep their hashes). |
-| Account takeover via unverified email | HIGH | Audit all OAuth-linked accounts. Cross-reference with provider email verification status. Force re-verification for suspicious links. Notify affected users. Revoke all sessions. |
-| Missing workspace for OAuth users | MEDIUM | Script: find users with zero workspace_members entries, create personal workspace for each. One-time fix. |
-| User locked out (unlinked last provider) | MEDIUM | Admin endpoint to set a password hash directly, or re-link OAuth. Manual per-user intervention required. |
-| CSRF via missing state | HIGH | Cannot determine which links were attacker-initiated. Must audit all recently linked OAuth accounts and potentially force re-linking. |
-| Tokens stored in plaintext | HIGH | Rotate all stored tokens. Add encryption. Migration requires all users to re-authenticate with providers to get new tokens. |
-| Missing sessions for OAuth users | LOW | Users can log out and log back in to create session. Or run migration to create session entries for existing OAuth users. |
-
-## Pitfall-to-Phase Mapping
-
-| Pitfall | Prevention Phase | Verification |
-|---------|------------------|--------------|
-| 8-A: password_hash NOT NULL | Phase 1: DB migration | `\d auth.users` shows `password_hash` nullable; OAuth signup succeeds |
-| 8-B: Unverified email linking | Phase 1: OAuth callback | Test: GitHub account with unverified email -> does NOT auto-link |
-| 8-C: Missing CSRF state | Phase 1: OAuth init + callback | Test: callback with random state -> 403 Forbidden |
-| 8-D: Cross-origin cookies | Phase 1 + 2: Callback strategy | Test: full OAuth flow in production-like environment (separate domains) |
-| 8-E: Missing workspace | Phase 1: OAuth signup | Test: new OAuth user -> `GET /users/me/workspaces` returns 1+ workspace |
-| 8-F: Unlink lockout | Phase 1 (backend) + Phase 2 (UI) | Test: OAuth-only user unlinks sole provider -> 409 |
-| 8-G: GitHub private email | Phase 1: GitHub callback | Test: OAuth with private-email GitHub account -> uses email from `/user/emails` |
-| 8-H: Plaintext tokens | Phase 1: OAuth storage | Verify: SELECT from user_oauth_accounts returns encrypted blob, not bearer token |
-| 8-I: Missing session | Phase 1: OAuth callback | Test: OAuth login -> `GET /users/me/sessions` shows new session |
-| 8-J: PWA standalone mode | Phase 2: Frontend OAuth | Test: full OAuth flow from iOS home screen PWA |
+Quick capture must bridge both without breaking either. The recommended approach is to handle quick-capture photos entirely through the application-level system (extending `mutationQueue` or adding a `photoQueue` store to `hws-offline-v1`), keeping the SW intercept as a legacy fallback for the existing full item-creation wizard.
 
 ## Sources
 
-- [PortSwigger: OAuth 2.0 authentication vulnerabilities](https://portswigger.net/web-security/oauth) -- comprehensive attack taxonomy
-- [Doyensec: Common OAuth Vulnerabilities (2025)](https://blog.doyensec.com/2025/01/30/oauth-common-vulnerabilities.html) -- recent vulnerability patterns
-- [Auth0: Prevent CSRF Attacks in OAuth 2.0](https://auth0.com/blog/prevent-csrf-attacks-in-oauth-2-implementations/) -- state parameter best practices
-- [RFC 9700: Best Current Practice for OAuth 2.0 Security](https://datatracker.ietf.org/doc/rfc9700/) -- authoritative security guidance
-- [Curity: How to Integrate Social Logins the Right Way](https://curity.medium.com/how-to-integrate-social-logins-the-right-way-7e8c075b484a) -- integration patterns
-- [WorkOS: Defending OAuth - Common Attacks](https://workos.com/blog/oauth-common-attacks-and-how-to-prevent-them) -- attack prevention
-- [Curity: OAuth and Cookies in Browser Based Apps](https://curity.io/resources/learn/oauth-cookie-best-practices/) -- cookie handling
-- [CodeQL: Use of constant state value in OAuth 2.0 (Go)](https://codeql.github.com/codeql-query-help/go/go-constant-oauth2-state/) -- Go-specific CSRF detection
-- [Authentik: email_verified true by default is unsafe](https://github.com/goauthentik/authentik/issues/16205) -- email verification pitfall
-- [NextAuth: OAuthAccountNotLinked errors](https://github.com/nextauthjs/next-auth/discussions/2808) -- account linking edge cases
-- [better-auth: Can't unlink if only OAuth provider](https://github.com/better-auth/better-auth/issues/4742) -- unlink lockout pattern
-- [Auth0 Community: PWA offline mode with OAuth tokens](https://community.auth0.com/t/spa-pwa-offline-mode-localstorage-rotating-tokens/46576) -- PWA + OAuth token management
-- Codebase analysis: `backend/db/migrations/001_initial_schema.sql`, `backend/internal/domain/auth/user/entity.go`, `backend/internal/domain/auth/user/handler.go`, `backend/internal/api/middleware/auth.go`, `frontend/lib/contexts/auth-context.tsx`, `frontend/features/auth/components/social-login.tsx`
-
----
-*Pitfalls research for: Adding Google/GitHub OAuth to Home Warehouse System (v1.8 Social Login)*
-*Researched: 2026-02-22*
+- [WebKit Storage Policy Updates](https://webkit.org/blog/14403/updates-to-storage-policy/)
+- [MDN Storage Quotas and Eviction Criteria](https://developer.mozilla.org/en-US/docs/Web/API/Storage_API/Storage_quotas_and_eviction_criteria)
+- [RxDB IndexedDB Max Storage Size Limit](https://rxdb.info/articles/indexeddb-max-storage-limit.html)
+- [PWA iOS Limitations and Safari Support Guide](https://www.magicbell.com/blog/pwa-ios-limitations-safari-support-complete-guide)
+- Codebase analysis: `sw.ts`, `offline-db.ts`, `sync-manager.ts`, `use-offline-mutation.ts`, `inline-photo-capture.tsx`, `item/service.go`, `001_initial_schema.sql`

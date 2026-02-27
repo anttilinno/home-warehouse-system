@@ -1,682 +1,522 @@
-# Architecture Research: Social Login (Google OAuth + GitHub OAuth)
+# Architecture: Quick-Capture Integration
 
-**Domain:** OAuth2 social login integration into existing Go + Next.js auth system
-**Researched:** 2026-02-22
-**Confidence:** HIGH
+**Domain:** Rapid item entry mode for existing home inventory PWA
+**Researched:** 2026-02-27
+**Confidence:** HIGH (based on thorough codebase analysis)
 
-## System Overview
+## Recommended Architecture
 
-The OAuth flow follows a backend-driven Authorization Code pattern. The frontend initiates by redirecting to the provider, but the backend handles all token exchange and account logic. This avoids exposing client secrets to the browser.
+Quick-capture is NOT a separate system. It is a **new frontend flow** that reuses existing backend APIs with minimal schema additions. The key architectural insight: the existing `CreateItemWizard` uses direct API calls (not `useOfflineMutation`), while quick-capture MUST use the offline mutation path for its core value proposition (rapid capture while walking around a warehouse without network).
 
-```
-                          OAUTH LOGIN FLOW
-                          ================
-
- Browser                    Go Backend                 OAuth Provider
- -------                    ----------                 --------------
-    |                           |                           |
-    |  1. Click "Login with     |                           |
-    |     Google/GitHub"        |                           |
-    |  ---------------------->  |                           |
-    |                           |                           |
-    |  2. 302 Redirect to       |                           |
-    |     provider auth URL     |                           |
-    |  <----------------------  |                           |
-    |                           |                           |
-    |  3. User authenticates    |                           |
-    |  -------------------------------------------->        |
-    |                           |                           |
-    |  4. Provider redirects    |                           |
-    |     to backend callback   |                           |
-    |     with ?code=xxx        |                           |
-    |  ---------------------->  |                           |
-    |                           |  5. Exchange code for     |
-    |                           |     tokens                |
-    |                           |  ---------------------->  |
-    |                           |                           |
-    |                           |  6. Fetch user profile    |
-    |                           |  ---------------------->  |
-    |                           |                           |
-    |                           |  7. Find-or-create user   |
-    |                           |     Link OAuth account    |
-    |                           |     Issue JWT + session   |
-    |                           |                           |
-    |  8. 302 Redirect to       |                           |
-    |     frontend /auth/       |                           |
-    |     callback?token=xxx    |                           |
-    |  <----------------------  |                           |
-    |                           |                           |
-    |  9. Frontend stores       |                           |
-    |     token, loads user     |                           |
-    |     data, navigates to    |                           |
-    |     /dashboard            |                           |
-    |                           |                           |
-
-
-                     CONNECT ACCOUNT FLOW (Settings)
-                     ================================
-
- Browser (authenticated)    Go Backend                 OAuth Provider
- -----------------------    ----------                 --------------
-    |                           |                           |
-    |  1. Click "Connect        |                           |
-    |     Google/GitHub"        |                           |
-    |  ---------------------->  |                           |
-    |                           |                           |
-    |  2. 302 Redirect with     |                           |
-    |     state=link:{user_id}  |                           |
-    |  <----------------------  |                           |
-    |                           |                           |
-    |  3-6. Same OAuth flow     |                           |
-    |                           |                           |
-    |                           |  7. Decode state,         |
-    |                           |     link to existing      |
-    |                           |     user (no new user)    |
-    |                           |                           |
-    |  8. Redirect to           |                           |
-    |     /settings/security    |                           |
-    |     ?linked=google        |                           |
-    |  <----------------------  |                           |
-```
-
-### Component Responsibilities
-
-| Component | Responsibility | New vs Modified |
-|-----------|----------------|-----------------|
-| `backend/internal/domain/auth/oauth/` | NEW: OAuth service, provider configs, token exchange, user resolution | **NEW domain package** |
-| `backend/internal/domain/auth/oauth/handler.go` | NEW: HTTP handlers for `/auth/oauth/{provider}` and `/auth/oauth/{provider}/callback` | **NEW** |
-| `backend/internal/domain/auth/oauth/service.go` | NEW: Business logic for find-or-create user, auto-link by email, account linking | **NEW** |
-| `backend/internal/domain/auth/oauth/repository.go` | NEW: Interface for `auth.user_oauth_accounts` CRUD | **NEW** |
-| `backend/internal/domain/auth/oauth/providers.go` | NEW: Google and GitHub provider config structs | **NEW** |
-| `backend/internal/infra/postgres/oauth_repository.go` | NEW: PostgreSQL implementation of OAuth repository | **NEW** |
-| `backend/internal/domain/auth/user/entity.go` | MODIFIED: Allow nullable password_hash for OAuth-only users | **MODIFIED** |
-| `backend/internal/domain/auth/user/service.go` | MODIFIED: Add `CreateOAuthUser` method (no password required) | **MODIFIED** |
-| `backend/internal/domain/auth/user/repository.go` | Existing `FindByEmail` already sufficient | **UNCHANGED** |
-| `backend/internal/api/router.go` | MODIFIED: Register OAuth routes in public group | **MODIFIED** |
-| `backend/db/migrations/012_oauth_nullable_password.sql` | NEW: Make password_hash nullable for OAuth-only users | **NEW** |
-| `frontend/features/auth/components/social-login.tsx` | MODIFIED: Add click handlers to initiate OAuth flow | **MODIFIED** |
-| `frontend/app/[locale]/(auth)/callback/page.tsx` | NEW: OAuth callback landing page that stores token and redirects | **NEW** |
-| `frontend/lib/api/auth.ts` | MODIFIED: Add OAuth-related API methods | **MODIFIED** |
-| `frontend/components/settings/security-settings.tsx` | MODIFIED: Add Connected Accounts section | **MODIFIED** |
-| `frontend/components/settings/connected-accounts.tsx` | NEW: Link/unlink Google and GitHub accounts UI | **NEW** |
-
-## Recommended Project Structure
-
-### Backend (new files only)
+### High-Level Data Flow
 
 ```
-backend/
-├── internal/
-│   └── domain/
-│       └── auth/
-│           └── oauth/                    # NEW: OAuth domain package
-│               ├── entity.go             # OAuthAccount domain entity
-│               ├── handler.go            # HTTP handlers (initiate, callback)
-│               ├── service.go            # Business logic (find-or-create, link/unlink)
-│               ├── repository.go         # Repository interface
-│               ├── providers.go          # Google/GitHub provider configs
-│               ├── errors.go             # Domain errors
-│               ├── handler_test.go       # Handler unit tests
-│               └── service_test.go       # Service unit tests
-├── internal/
-│   └── infra/
-│       └── postgres/
-│           └── oauth_repository.go       # NEW: PostgreSQL OAuth repo
-├── db/
-│   └── migrations/
-│       └── 012_oauth_nullable_password.sql  # NEW: Make password_hash nullable
-└── db/
-    └── queries/
-        └── oauth_accounts.sql            # NEW: sqlc queries for oauth table
+Camera -> Photo blob -> IndexedDB (quickCapturePhotos store)
+  |
+  v
+Name input -> QuickCaptureForm -> useOfflineMutation("items", "create")
+  |                                    |
+  |                                    v
+  |                              mutationQueue (IndexedDB)
+  |                                    |
+  v                                    v
+Sticky batch state (React state     SyncManager.processQueue()
+  + sessionStorage)                    |
+                                       v
+                                  POST /items (with needs_review=true)
+                                       |
+                                       v
+                                  Response: { id: "real-id" }
+                                       |
+                                       v
+                                  Photo upload queue processes
+                                  (POST /items/{realId}/photos)
 ```
 
-### Frontend (new files only)
+### Component Boundaries
 
-```
-frontend/
-├── app/
-│   └── [locale]/
-│       └── (auth)/
-│           └── callback/
-│               └── page.tsx              # NEW: OAuth callback handler page
-├── features/
-│   └── auth/
-│       └── components/
-│           └── social-login.tsx          # MODIFIED: Add OAuth initiation
-├── components/
-│   └── settings/
-│       ├── security-settings.tsx         # MODIFIED: Add connected accounts section
-│       └── connected-accounts.tsx        # NEW: Link/unlink providers UI
-└── lib/
-    └── api/
-        └── auth.ts                       # MODIFIED: Add OAuth API methods
-```
+| Component | Responsibility | New/Modified | Communicates With |
+|-----------|---------------|--------------|-------------------|
+| `QuickCapturePage` | Full-screen camera-first capture flow | **NEW** | InlinePhotoCapture, QuickCaptureForm |
+| `QuickCaptureForm` | Minimal form: name only (+ hidden batch fields) | **NEW** | useOfflineMutation, useBatchSettings |
+| `useBatchSettings` | Sticky location/category across capture sessions | **NEW** | sessionStorage, QuickCaptureForm |
+| `useQuickCaptureSKU` | Client-side auto-SKU generation (prefix + timestamp) | **NEW** | QuickCaptureForm |
+| `QuickCaptureReview` | "Needs details" item list with filter + edit | **NEW** | itemsApi, items page filters |
+| `InlinePhotoCapture` | Camera/gallery capture with compression | **REUSE** (no changes) | QuickCaptureForm |
+| `useOfflineMutation` | Queue item create to IndexedDB | **REUSE** (no changes) | SyncManager |
+| `SyncManager` | Process mutation queue, resolve temp IDs | **MODIFY** (photo upload chaining) | Backend APIs |
+| `FloatingActionButton` | Radial menu entry point | **REUSE** (no changes) | - |
+| `useFABActions` | Add "Quick Capture" action to FAB menu | **MODIFY** (add action) | QuickCapturePage |
+| Backend `item` entity | Add `needs_review` boolean column | **MODIFY** (schema + entity + handler) | PostgreSQL |
+| Backend item handler | Accept `needs_review` field, add list filter | **MODIFY** | item service |
 
-### Structure Rationale
+## Integration Points (Detailed)
 
-- **`oauth/` as a separate domain package:** Follows the existing pattern (user, session, workspace, member, notification are all separate packages under `domain/auth/`). OAuth has its own entity (`OAuthAccount`), its own repository (the `user_oauth_accounts` table), and its own handlers. Keeping it separate avoids bloating the user package.
-- **No NextAuth.js:** The app already has a fully custom auth system (JWT + refresh tokens + sessions + cookies). Adding NextAuth would create a parallel auth system. Instead, the backend drives the OAuth flow and the frontend just handles the redirect result.
-- **Callback page in frontend:** A simple client-side page at `/auth/callback` that reads the token from the URL, stores it, and redirects to `/dashboard`. This avoids needing the backend to set cookies cross-origin (which would require same-domain deployment).
+### 1. FAB Entry Point (Modify `useFABActions`)
 
-## Architectural Patterns
+**Current state:** FAB has 3 default actions: Scan, Add Item, Log Loan. On items page, it swaps Add Item to primary position with Plus icon. The FAB component supports up to 5 actions in its radial menu.
 
-### Pattern 1: Backend-Driven Authorization Code Flow
-
-**What:** The backend generates the OAuth authorization URL (with state parameter for CSRF protection) and handles the callback. The frontend never touches client secrets or authorization codes.
-
-**When to use:** Always for server-rendered or API-backed apps. The client secret stays on the server.
-
-**Trade-offs:**
-- PRO: Client secret never exposed to browser
-- PRO: Server controls the full flow (rate limiting, logging, account linking logic)
-- CON: Requires two redirects (browser -> provider -> backend -> frontend)
-
-**Example:**
-
-```go
-// handler.go - Initiate OAuth
-func (h *Handler) initiateOAuth(w http.ResponseWriter, r *http.Request) {
-    provider := chi.URLParam(r, "provider")
-
-    // Generate CSRF state token, store in cookie
-    state := generateState()
-    http.SetCookie(w, &http.Cookie{
-        Name:     "oauth_state",
-        Value:    state,
-        Path:     "/",
-        MaxAge:   600, // 10 minutes
-        HttpOnly: true,
-        Secure:   isSecureCookie(),
-        SameSite: http.SameSiteLaxMode,
-    })
-
-    cfg := h.getProviderConfig(provider)
-    url := cfg.AuthCodeURL(state, oauth2.AccessTypeOffline)
-    http.Redirect(w, r, url, http.StatusTemporaryRedirect)
-}
-```
-
-### Pattern 2: Email-Based Auto-Linking
-
-**What:** When a user logs in with OAuth and their email matches an existing account, the OAuth account is automatically linked to the existing user rather than creating a duplicate.
-
-**When to use:** For apps where email is the canonical identity (like this one).
-
-**Trade-offs:**
-- PRO: Seamless UX -- user with email/password who later clicks "Login with Google" gets the same account
-- PRO: No duplicate accounts for same person
-- CON: Relies on email being verified by the provider (both Google and GitHub verify emails)
-- CON: Potential security concern if provider allows unverified emails (mitigated by only trusting verified emails)
-
-**Decision:** Auto-link is safe here because:
-1. Google always verifies email addresses
-2. GitHub's `user:email` scope returns verified status per email; we only trust `verified: true` emails
-3. The existing system already uses email as the unique identifier (`UNIQUE` constraint on `auth.users.email`)
-
-**Example:**
-
-```go
-// service.go - Find or create user from OAuth profile
-func (s *Service) FindOrCreateUser(ctx context.Context, profile OAuthProfile) (*user.User, error) {
-    // 1. Check if OAuth account already linked
-    existing, err := s.oauthRepo.FindByProviderAndID(ctx, profile.Provider, profile.ProviderUserID)
-    if err == nil && existing != nil {
-        return s.userSvc.GetByID(ctx, existing.UserID)
-    }
-
-    // 2. Check if email matches existing user (auto-link)
-    existingUser, err := s.userSvc.GetByEmail(ctx, profile.Email)
-    if err == nil && existingUser != nil {
-        // Link OAuth account to existing user
-        err = s.oauthRepo.Create(ctx, existingUser.ID(), profile)
-        return existingUser, err
-    }
-
-    // 3. Create new user (no password)
-    newUser, err := s.userSvc.CreateOAuthUser(ctx, user.CreateOAuthUserInput{
-        Email:    profile.Email,
-        FullName: profile.DisplayName,
-    })
-    if err != nil {
-        return nil, err
-    }
-
-    // 4. Link OAuth account and create personal workspace
-    err = s.oauthRepo.Create(ctx, newUser.ID(), profile)
-    return newUser, err
-}
-```
-
-### Pattern 3: State Parameter for CSRF and Flow Type
-
-**What:** The OAuth `state` parameter serves double duty: CSRF protection AND encoding the flow type (login vs. account linking).
-
-**When to use:** When the same OAuth callback handler needs to differentiate between "logging in" and "connecting an account from settings."
-
-**Trade-offs:**
-- PRO: Single callback URL per provider (simpler config)
-- PRO: CSRF protection built into the same mechanism
-- CON: State must be parsed carefully
-
-**Example:**
-
-```go
-// State format: {random}:{action}
-// Login:   "abc123:login"
-// Link:    "abc123:link"
-
-func generateState(action string) string {
-    random := make([]byte, 16)
-    rand.Read(random)
-    return base64.URLEncoding.EncodeToString(random) + ":" + action
-}
-
-func parseState(state string) (random, action string, err error) {
-    parts := strings.SplitN(state, ":", 2)
-    if len(parts) != 2 {
-        return "", "", errors.New("invalid state format")
-    }
-    return parts[0], parts[1], nil
-}
-```
-
-### Pattern 4: Token Handoff via URL Parameter
-
-**What:** After OAuth callback processing, the backend redirects to the frontend with the JWT token as a URL query parameter. The frontend callback page reads it, stores it, and navigates to the dashboard.
-
-**When to use:** When backend and frontend are on different origins (as in this project: Go on :8080, Next.js on :3000).
-
-**Trade-offs:**
-- PRO: Works regardless of CORS/cookie domain issues
-- PRO: Simple to implement
-- CON: Token briefly visible in URL (mitigated by immediate redirect and short-lived nature)
-- CON: Token in server logs if not careful
-
-**Mitigation for production:** Use a short-lived one-time code instead of the JWT directly. Backend stores code -> token mapping in Redis (TTL 60s), frontend exchanges code for token via POST. This is more secure but adds complexity. For a self-hosted home inventory app, direct token in URL is acceptable.
-
-**Example:**
+**Change:** Add "Quick Capture" as a 4th action (Camera icon). On items page, make it the primary action.
 
 ```typescript
-// frontend/app/[locale]/(auth)/callback/page.tsx
-"use client";
+// In use-fab-actions.tsx - add to imports and default actions
+const quickCaptureAction: FABAction = {
+  id: "quick-capture",
+  icon: <Camera className="h-5 w-5" />,
+  label: "Quick capture",
+  onClick: () => router.push("/dashboard/items/quick-capture"),
+};
 
-import { useEffect } from "react";
-import { useSearchParams } from "next/navigation";
-import { useRouter } from "@/i18n/navigation";
-import { apiClient } from "@/lib/api/client";
+// Default: [quickCaptureAction, scanAction, addItemAction, logLoanAction]
+// Items page: [quickCaptureAction, addItemAction, scanAction]
+```
 
-export default function OAuthCallbackPage() {
-  const searchParams = useSearchParams();
-  const router = useRouter();
+**Integration risk:** LOW. The FAB already supports variable action counts. Adding a 4th action to defaults is straightforward -- the radial arc calculation in `getActionPosition` handles any count.
 
-  useEffect(() => {
-    const token = searchParams.get("token");
-    const error = searchParams.get("error");
+### 2. Quick Capture Page (New Route)
 
-    if (error) {
-      router.push(`/login?error=${encodeURIComponent(error)}`);
-      return;
-    }
+**Route:** `/app/[locale]/(dashboard)/dashboard/items/quick-capture/page.tsx`
+**Layout:** Full-screen mobile-optimized. Single-screen with camera dominant, name field below, save button.
 
-    if (token) {
-      apiClient.setToken(token);
-      router.push("/dashboard");
-    } else {
-      router.push("/login?error=missing_token");
-    }
-  }, [searchParams, router]);
+**Why NOT reuse MultiStepForm/CreateItemWizard:**
+- `CreateItemWizard` is a 3-step form designed for thorough entry with Basic -> Details -> Photos flow
+- Its `handleSubmit` calls `itemsApi.create()` directly -- this FAILS offline
+- Quick capture needs a single screen with immediate camera access and a save-and-repeat loop
+- The "save & next" rapid cycle is fundamentally different from "fill 3 steps and submit once"
 
-  return <div>Completing sign in...</div>;
+**Component structure:**
+```
+QuickCapturePage
+  |-- BatchSettingsBar (location/category pills, tap to change)
+  |-- InlinePhotoCapture (camera-first, large capture area)
+  |-- QuickCaptureNameInput (single text field, auto-focused after photo)
+  |-- QuickCaptureActions (Save & Next / Save & Done buttons)
+  |-- CaptureCounter (shows "5 items captured this session")
+```
+
+**The InlinePhotoCapture component can be reused as-is.** It already:
+- Handles camera via `capture="environment"` for rear camera
+- Handles gallery selection as fallback
+- Compresses images above 2MB threshold
+- Creates preview URLs for display
+- Returns processed `File` objects via `onCapture` callback
+
+### 3. Auto-SKU Generation (New Hook: `useQuickCaptureSKU`)
+
+**Current state:** CreateItemWizard requires manual SKU entry (step 1, required field). Backend validates SKU uniqueness via `repo.SKUExists()` and rejects duplicates with `ErrSKUTaken`. Backend does NOT auto-generate SKUs (only short_code is auto-generated).
+
+**Design:** Generate SKU client-side using `QC-{timestamp}-{random}` pattern.
+
+```typescript
+function generateQuickCaptureSKU(): string {
+  const ts = Date.now().toString(36); // compact timestamp
+  const rand = Math.random().toString(36).substring(2, 6);
+  return `QC-${ts}-${rand}`; // e.g., "QC-m2k4f7a-a3b1"
 }
 ```
 
-## Data Flow
+**Why client-side:**
+- Offline-first: must work without server
+- UUIDv7 idempotency key already prevents duplicate item creation at sync time
+- `QC-` prefix makes quick-capture items visually identifiable in the items list
+- SKU uniqueness is validated at sync time by the existing `repo.SKUExists()` check
+- Collision is astronomically unlikely with timestamp + random (same millisecond + same 4 random chars)
+- If collision occurs at sync, SyncManager gets a 400/422 error -- needs a retry handler that regenerates the SKU
 
-### OAuth Login Flow (Detailed)
+**Backend impact:** None for auto-generation. The SKU column is VARCHAR(50), plenty of room for the `QC-` prefix pattern.
 
-```
-1. User clicks "Login with Google" button
-   Frontend: window.location.href = "{BACKEND_URL}/auth/oauth/google"
+### 4. Offline Item Creation via `useOfflineMutation` (Reuse)
 
-2. Backend generates authorization URL
-   - Creates random state token
-   - Stores state in HTTP-only cookie (oauth_state, 10min TTL)
-   - Builds Google OAuth URL with: client_id, redirect_uri, scope, state
-   - Returns 302 redirect to Google
+**Current state:** `CreateItemWizard.handleSubmit()` calls `itemsApi.create()` directly. Meanwhile, five other entities (categories, locations, borrowers, containers, inventory) already use `useOfflineMutation` successfully.
 
-3. User authenticates with Google
-   - Google shows consent screen
-   - User approves
+**Quick capture integration:**
+```typescript
+const { mutate } = useOfflineMutation<ItemCreatePayload>({
+  entity: "items",
+  operation: "create",
+  onMutate: (payload, tempId) => {
+    // Optimistic: increment capture counter
+    setCaptureCount(prev => prev + 1);
+  },
+});
 
-4. Google redirects to backend callback
-   GET {BACKEND_URL}/auth/oauth/google/callback?code=xxx&state=yyy
-
-5. Backend validates state (CSRF check)
-   - Read oauth_state cookie
-   - Compare with state query param
-   - Clear cookie
-
-6. Backend exchanges code for tokens
-   - POST to Google token endpoint with code + client_secret
-   - Receives access_token (+ optional refresh_token)
-
-7. Backend fetches user profile
-   - GET Google userinfo endpoint with access_token
-   - Receives: sub (provider ID), email, name, picture
-
-8. Backend resolves user (find-or-create)
-   a. Look up user_oauth_accounts by (provider, provider_user_id)
-      -> Found: return existing user
-   b. Look up auth.users by email
-      -> Found: auto-link OAuth account to existing user
-   c. Neither found: create new user + OAuth account + personal workspace
-
-9. Backend issues JWT + refresh token
-   - Same logic as existing login handler
-   - Creates session record
-
-10. Backend redirects to frontend
-    302 -> {FRONTEND_URL}/auth/callback?token={jwt}
-
-11. Frontend callback page
-    - Reads token from URL
-    - Stores in localStorage via apiClient.setToken()
-    - AuthProvider.loadUserData() fetches user + workspaces
-    - Navigates to /dashboard
+async function handleCapture(name: string, photos: File[]) {
+  const sku = generateQuickCaptureSKU();
+  const tempId = await mutate({
+    sku,
+    name,
+    needs_review: true,
+    category_id: batchSettings.categoryId || undefined,
+  });
+  // Queue photos for upload linked to tempId
+  for (const photo of photos) {
+    await storeQuickCapturePhoto(tempId, photo);
+  }
+}
 ```
 
-### Account Linking Flow (Settings)
+**The `useOfflineMutation` hook already handles everything needed:**
+- Queuing to IndexedDB `mutationQueue` store with UUIDv7 idempotency key
+- Writing optimistic item to `items` store with `_pending: true` marker
+- Capturing `workspaceId` from localStorage at mutation time
+- Triggering `SyncManager.processQueue()` when online
+- Entity-type ordered sync (items process after categories, so batch category exists first)
 
+**No changes needed to `useOfflineMutation` itself.**
+
+### 5. Photo Queuing for Offline (New IndexedDB Store)
+
+**Current state:** Two separate photo upload systems exist:
+1. `CreateItemWizard` uploads photos sequentially via XHR after successful item creation (online only)
+2. Service worker intercepts failed photo uploads to a separate `PhotoUploadQueue` IndexedDB database
+
+**Problem for quick capture:** Photos are captured BEFORE the item exists on the server. The item has only a temp ID (UUIDv7 idempotency key). Photos cannot be uploaded until the item mutation syncs and a real server ID is returned from the response.
+
+**Solution: New IndexedDB store + SyncManager photo chaining**
+
+Add a `quickCapturePhotos` store to the main offline database (`hws-offline-v1`):
+
+```typescript
+// Add to OfflineDBSchema in lib/db/types.ts
+quickCapturePhotos: {
+  key: number;
+  value: {
+    id: number;           // auto-increment
+    tempItemId: string;   // links to mutation idempotency key
+    blob: Blob;           // compressed photo data
+    timestamp: number;
+    status: "pending" | "uploading" | "uploaded" | "failed";
+  };
+  indexes: {
+    tempItemId: string;
+    status: string;
+  };
+};
 ```
-1. Authenticated user clicks "Connect Google" in Security settings
-   Frontend: window.location.href = "{BACKEND_URL}/auth/oauth/google?action=link"
-   (Backend reads JWT from cookie to know who is linking)
 
-2. Backend generates authorization URL with state="{random}:link"
+**Why a new store in the main DB instead of reusing `PhotoUploadQueue`:**
+- `PhotoUploadQueue` is a separate IndexedDB database managed entirely by the service worker
+- It stores the full upload URL (expects the item already exists on the server with a real ID)
+- Quick capture photos have no upload URL yet because the item only has a temp ID
+- The main offline DB (`hws-offline-v1`) is managed by application code with a typed schema via `idb`
+- Keeping photo blobs in the main DB lets SyncManager chain: item create -> resolve real ID -> photo upload
 
-3-6. Same OAuth flow as login
+**DB version bump:** IndexedDB version goes from 4 to 5. The `upgrade` callback in `offline-db.ts` adds the new store.
 
-7. Backend callback detects action=link in state
-   - Reads JWT from cookie to get current user ID
-   - Links OAuth account to current user
-   - Does NOT create new user or issue new token
+**Storage budget:** Each compressed photo is ~200KB-2MB after `InlinePhotoCapture`'s compression (1920x1920, quality 0.85). For a batch of 50 items with 1 photo each: 10-100MB. IndexedDB quota is 50MB minimum, typically much higher on mobile. The `requestPersistentStorage()` call (already implemented) helps prevent eviction. Add a capture limit warning at ~30 items or when storage estimate exceeds 80% of quota.
 
-8. Backend redirects to frontend settings
-   302 -> {FRONTEND_URL}/dashboard/settings/security?linked=google
+### 6. SyncManager Photo Chaining (Modify `SyncManager.processMutation`)
 
-9. Frontend shows success toast
+**Current state:** After a successful item create, `SyncManager` maps `tempId -> realId` in the `resolvedIds` Map and broadcasts `MUTATION_SYNCED`. It does NOT trigger any follow-up actions.
+
+**Change:** After item create succeeds, check `quickCapturePhotos` store for pending photos:
+
+```typescript
+// In processMutation(), after successful create for items:
+if (mutation.entity === "items" && mutation.operation === "create") {
+  const realId = resolvedIds.get(mutation.idempotencyKey);
+  if (realId) {
+    await this.uploadQueuedPhotos(
+      mutation.idempotencyKey, realId, mutation.workspaceId
+    );
+  }
+}
 ```
 
-### Account Unlinking Flow
+**The `uploadQueuedPhotos` method:**
+1. Read all entries from `quickCapturePhotos` where `tempItemId === idempotencyKey`
+2. For each, create `FormData` with the blob and POST to `/workspaces/{wsId}/items/{realId}/photos`
+3. On success, delete the entry from the store
+4. On failure, mark as `"failed"` (retry on next sync cycle)
+5. Broadcast progress events (`PHOTO_UPLOAD_PROGRESS`, `PHOTO_UPLOAD_COMPLETE`) for UI feedback
 
+**Critical design detail:** Process photos AFTER all item mutations in the current batch complete, not inline during mutation processing. This prevents photo uploads from blocking other mutations. Add a `processQueuedPhotos()` phase after the main entity sync loop:
+
+```typescript
+// In processQueue(), after the entity sync loop:
+await this.processQueuedPhotos(resolvedIds);
 ```
-1. User clicks "Disconnect Google" in Security settings
-   Frontend: DELETE /auth/oauth/accounts/google
 
-2. Backend validates:
-   - User has at least one other auth method (password OR another provider)
-   - Deletes oauth account record
+**Integration risk:** MEDIUM. Adding async photo upload work to `processQueue()` increases processing time. Must handle: upload timeout, partial failures (some photos upload, some fail), network loss mid-batch.
 
-3. Frontend refreshes connected accounts list
+### 7. Sticky Batch Settings (New Hook: `useBatchSettings`)
+
+**Current state:** No batch settings concept exists anywhere in the codebase.
+
+**Design:**
+```typescript
+interface BatchSettings {
+  categoryId: string | null;
+  locationId: string | null;   // for future inventory creation
+  containerId: string | null;  // for future inventory creation
+}
+
+function useBatchSettings() {
+  // sessionStorage: dies on tab close, which is correct behavior
+  const [settings, setSettings] = useState<BatchSettings>(() => {
+    if (typeof sessionStorage === "undefined") return DEFAULT;
+    const saved = sessionStorage.getItem("quickCaptureBatch");
+    return saved ? JSON.parse(saved) : DEFAULT;
+  });
+  // ... setter that writes to sessionStorage + state
+}
 ```
 
-## Database Changes
+**Why sessionStorage (not localStorage, not IndexedDB):**
+- Batch settings are intentionally ephemeral -- they represent "I'm in the garage right now"
+- When the user closes the tab, batch context should reset (next time they may be somewhere else)
+- localStorage would persist across sessions, which is wrong for spatial context
+- IndexedDB is overkill for 3 nullable string values of ephemeral UI state
 
-### Migration 012: Make password_hash nullable
+**UI:** A horizontal bar at the top of the quick capture screen showing current batch settings as tappable pills (e.g., `[Garage] [Tools]`). Tapping opens a bottom sheet selector populated from cached IndexedDB data (categories/locations stores), so it works offline.
 
+### 8. "Needs Review" Flag (Modify Backend + Frontend)
+
+**Backend changes:**
+
+1. **Migration:** Add column to `warehouse.items`:
 ```sql
--- migrate:up
-ALTER TABLE auth.users ALTER COLUMN password_hash DROP NOT NULL;
-
--- migrate:down
--- Set a placeholder hash for any OAuth-only users before re-adding constraint
-UPDATE auth.users SET password_hash = '$2a$10$placeholder' WHERE password_hash IS NULL;
-ALTER TABLE auth.users ALTER COLUMN password_hash SET NOT NULL;
+ALTER TABLE warehouse.items ADD COLUMN needs_review BOOLEAN DEFAULT false;
 ```
 
-**Rationale:** OAuth-only users have no password. The existing `auth.user_oauth_accounts` table already exists in the initial migration (001) with the correct schema, so no new table is needed. The only schema change is making `password_hash` nullable.
+2. **Entity (`entity.go`):** Add `needsReview *bool` field to `Item` struct, getter, include in `Reconstruct`, `NewItem` (defaults false), and `Update`.
 
-### Existing Table: auth.user_oauth_accounts
+3. **CreateInput/UpdateInput (`service.go`):** Add `NeedsReview *bool` field to both structs. Service passes through to entity.
 
-Already defined in 001_initial_schema.sql with:
-- `id` UUID PK
-- `user_id` UUID FK -> auth.users (CASCADE)
-- `provider` VARCHAR(20) -- "google" or "github"
-- `provider_user_id` VARCHAR(255) -- Google sub or GitHub user ID
-- `email` VARCHAR(255)
-- `display_name` VARCHAR(100)
-- `avatar_url` VARCHAR(500)
-- `access_token` TEXT -- encrypted at app layer
-- `refresh_token` TEXT
-- `token_expires_at` TIMESTAMPTZ
-- `created_at`, `updated_at`
-- UNIQUE(provider, provider_user_id)
-- INDEX on user_id
-- INDEX on (provider, provider_user_id)
+4. **Handler (`handler.go`):** Accept `needs_review` in create/update request bodies. Add `?needs_review=true|false` query parameter to the list endpoint.
 
-This table is well-designed for the use case. No modifications needed.
+5. **Repository/sqlc:** Add `needs_review` to insert/update/select queries. Add `ListItemsNeedingReview` query or parameterize existing `ListItems`.
 
-## API Routes
+6. **Response mapping (`toItemResponse`):** Include `needs_review` in JSON response.
 
-### New Public Routes (no auth required)
+**Frontend changes:**
 
-| Method | Path | Purpose |
-|--------|------|---------|
-| GET | `/auth/oauth/{provider}` | Initiate OAuth flow (redirects to provider) |
-| GET | `/auth/oauth/{provider}/callback` | Handle provider callback (exchanges code, issues JWT) |
+1. **Item type (`lib/types/items.ts`):** Add `needs_review?: boolean` to `Item`, `ItemCreate`, `ItemUpdate` interfaces.
 
-### New Protected Routes (auth required)
+2. **Items list page:** Add "Needs Review" filter chip/toggle in the existing `FilterBar` component. The page already uses `useFilters` hook and `FilterPopover` for category/archived filtering.
 
-| Method | Path | Purpose |
-|--------|------|---------|
-| GET | `/auth/oauth/accounts` | List connected OAuth accounts for current user |
-| DELETE | `/auth/oauth/accounts/{provider}` | Unlink an OAuth account |
+3. **Item detail page:** Show "Needs Review" badge when true. Add "Mark as Reviewed" action button that PATCHes `needs_review: false`.
 
-### Frontend Routes
+4. **Quick capture review page (or section):** A dedicated view at `/dashboard/items?needs_review=true` or a tab on the items page. Shows quick-captured items with photo thumbnails, name, auto-SKU. Each row has an "Edit" action that opens the full edit form for detail completion.
 
-| Route | Purpose |
-|-------|---------|
-| `/auth/callback` | NEW: OAuth callback landing page (stores token, redirects) |
-| `/dashboard/settings/security` | MODIFIED: Add Connected Accounts section |
-
-## Provider Configuration
-
-### Google OAuth
-
-| Setting | Value |
-|---------|-------|
-| Auth URL | `https://accounts.google.com/o/oauth2/v2/auth` |
-| Token URL | `https://oauth2.googleapis.com/token` |
-| UserInfo URL | `https://www.googleapis.com/oauth2/v3/userinfo` |
-| Scopes | `openid email profile` |
-| Callback URL | `{BACKEND_URL}/auth/oauth/google/callback` |
-| Response fields | `sub` (ID), `email`, `name`, `picture` |
-| Email verified | Always verified by Google |
-
-### GitHub OAuth
-
-| Setting | Value |
-|---------|-------|
-| Auth URL | `https://github.com/login/oauth/authorize` |
-| Token URL | `https://github.com/login/oauth/access_token` |
-| User URL | `https://api.github.com/user` |
-| Email URL | `https://api.github.com/user/emails` |
-| Scopes | `read:user user:email` |
-| Callback URL | `{BACKEND_URL}/auth/oauth/github/callback` |
-| Response fields | `id` (ID), `login`, `name`, `avatar_url` |
-| Email handling | Must fetch from `/user/emails` and pick primary verified email |
-
-### Environment Variables (already in config.go)
-
-```bash
-GOOGLE_CLIENT_ID=     # From Google Cloud Console
-GOOGLE_CLIENT_SECRET= # From Google Cloud Console
-GITHUB_CLIENT_ID=     # From GitHub Developer Settings
-GITHUB_CLIENT_SECRET= # From GitHub Developer Settings
-APP_URL=http://localhost:3000   # Frontend URL (already exists)
-BACKEND_URL=http://localhost:8080 # Backend URL (already exists)
+**The review flow:**
+```
+Quick capture (mobile, offline) -> Items created with needs_review=true
+  |
+  v
+Desktop user visits items page, clicks "Needs Review" filter
+  |
+  v
+Sees list of quick-captured items with photos but minimal details
+  |
+  v
+Clicks item -> Full edit form (existing edit-item-wizard)
+  |
+  v
+Fills in details (brand, model, serial, etc) -> saves -> needs_review set to false
 ```
 
-## Integration Points
+### 9. Location/Inventory Integration (Deferred to Phase 2)
 
-### External Services
+**Important architectural note:** The `warehouse.items` table does NOT have a `location_id` column. Location is tracked via the `warehouse.inventory` table -- items have inventory entries that are placed in locations/containers.
 
-| Service | Integration Pattern | Notes |
-|---------|---------------------|-------|
-| Google OAuth | Authorization Code flow via `golang.org/x/oauth2` + `golang.org/x/oauth2/google` | Register OAuth app in Google Cloud Console |
-| GitHub OAuth | Authorization Code flow via `golang.org/x/oauth2` + `golang.org/x/oauth2/github` | Create OAuth App in GitHub Developer Settings |
+**For quick capture MVP:** Only apply `category_id` from batch settings to the item itself. Location/container from batch settings are stored in sessionStorage but NOT used to create inventory entries in Phase 1.
 
-### Internal Boundaries
+**Why defer:** Creating an inventory entry requires a separate mutation that depends on:
+1. The item existing (must sync first)
+2. The location existing (may also be a temp ID if created offline)
+3. Container existing (optional, same dependency issue)
 
-| Boundary | Communication | Notes |
-|----------|---------------|-------|
-| OAuth handler -> OAuth service | Direct method call | Handler validates HTTP, service handles business logic |
-| OAuth service -> User service | Direct method call | Reuses existing `GetByEmail`, adds `CreateOAuthUser` |
-| OAuth service -> OAuth repository | Direct method call | CRUD on `user_oauth_accounts` table |
-| OAuth service -> Session service | Direct method call | Creates session same as email/password login |
-| OAuth service -> Workspace service | Direct method call | Creates personal workspace for new OAuth users |
-| OAuth handler -> JWT service | Direct method call | Issues access + refresh tokens |
-| Frontend social-login -> Backend OAuth endpoint | Browser redirect | `window.location.href` (not fetch) |
-| Backend callback -> Frontend callback page | HTTP 302 redirect | Token passed as query parameter |
+The `dependsOn` mechanism in `useOfflineMutation` and `SyncManager.areDependenciesSynced()` already supports this, but it adds failure modes and complexity. Better to ship item capture first, then add inventory auto-creation as enhancement.
 
-### Code Changes to Existing Files
+**Phase 2 approach:** After item mutation syncs, auto-create an inventory entry:
+```typescript
+const itemTempId = await mutate(itemPayload);
+const inventoryTempId = await mutate(
+  { item_id: itemTempId, location_id: batchSettings.locationId, quantity: 1 },
+  undefined,
+  [itemTempId] // dependsOn: wait for item to sync first
+);
+```
 
-**`backend/internal/domain/auth/user/entity.go`:**
-- `NewUser` stays as-is (password required for email/password registration)
-- Add `NewOAuthUser(email, fullName string) *User` -- creates user with empty password_hash
-- `CheckPassword` must handle nil/empty password_hash (return false)
-
-**`backend/internal/domain/auth/user/service.go`:**
-- Add `CreateOAuthUser(ctx, CreateOAuthUserInput) (*User, error)` method
-- `ServiceInterface` gets new method
-
-**`backend/internal/domain/auth/user/handler.go`:**
-- `updatePassword` must check if user has a password (OAuth-only users cannot "change" password, they must "set" password)
-- Add `has_password` field to `/users/me` response so frontend knows which UI to show
-
-**`backend/internal/infra/postgres/user_repository.go`:**
-- `Save` method: password_hash already handled, but the INSERT must tolerate NULL value now
-- `scanUser` helper: handle nullable password_hash in scan
-
-**`backend/internal/api/router.go`:**
-- Import `oauth` package
-- Initialize OAuth repository, service, handler with dependencies
-- Register OAuth routes: initiate and callback in rate-limited public group, accounts list/unlink in protected group
-
-**`frontend/features/auth/components/social-login.tsx`:**
-- Add `onClick` handlers that redirect to backend OAuth URLs
-- Show loading state during redirect
-
-**`frontend/lib/api/auth.ts`:**
-- Add `OAuthAccount` type
-- Add `getConnectedAccounts(): Promise<OAuthAccount[]>`
-- Add `unlinkAccount(provider: string): Promise<void>`
-- Add `has_password` to `User` type
-
-**`frontend/components/settings/security-settings.tsx`:**
-- Add Connected Accounts section between Sessions and Danger Zone
-- Import and render new `ConnectedAccounts` component
-
-## Scaling Considerations
-
-| Scale | Architecture Adjustments |
-|-------|--------------------------|
-| 1-100 users | Current design is fine. State in cookies, tokens in DB. |
-| 100-10K users | Consider moving OAuth state to Redis (already available) instead of cookies for better server-side validation |
-| 10K+ users | Rate limit OAuth initiation per IP. Implement token encryption for `user_oauth_accounts.access_token` |
-
-### Scaling Priorities
-
-1. **First concern:** OAuth state cookie-based CSRF works fine at small scale. If deploying behind multiple backend instances, cookies are already scoped to the domain so this works without session affinity.
-2. **Token storage:** The `access_token` and `refresh_token` in `user_oauth_accounts` are noted as "must be encrypted at application layer" in the schema comments. For a home inventory app, these tokens are not actively used after initial login (we don't call Google/GitHub APIs on behalf of users). Store them for completeness but they can be left null if not needed for future features.
-
-## Anti-Patterns
-
-### Anti-Pattern 1: Using NextAuth.js Alongside Custom Auth
-
-**What people do:** Drop in NextAuth.js to handle OAuth while keeping the existing custom JWT auth system.
-**Why it's wrong:** Creates two parallel auth systems. NextAuth manages its own sessions and tokens, conflicting with the existing JWT + refresh token + session tracking system. Double the session management, double the logout logic, double the security surface.
-**Do this instead:** Implement OAuth directly in the Go backend using `golang.org/x/oauth2`. The backend already has all the infrastructure (JWT service, session service, cookie management). OAuth is just a different way to authenticate -- the token issuance after authentication is identical.
-
-### Anti-Pattern 2: Exchanging OAuth Tokens in the Frontend
-
-**What people do:** Use Google's JavaScript SDK to get tokens client-side, then send them to the backend.
-**Why it's wrong:** The backend cannot verify the token came from a legitimate OAuth flow (not a forged request). Also requires the client_secret in the frontend (for code exchange) or uses the implicit flow (less secure, no refresh tokens).
-**Do this instead:** Backend-driven Authorization Code flow. The backend generates the auth URL, handles the callback, and exchanges the code server-side. Client secret never leaves the server.
-
-### Anti-Pattern 3: Creating Duplicate Accounts on OAuth Login
-
-**What people do:** Always create a new user when someone logs in with OAuth, ignoring existing email/password accounts.
-**Why it's wrong:** Users end up with two accounts for the same email. Their existing data (workspaces, inventory, preferences) is in the email/password account, but they are logged into a new empty OAuth account.
-**Do this instead:** Auto-link by email. Check `auth.users.email` before creating a new user. If an existing user has the same email, link the OAuth account to that user.
-
-### Anti-Pattern 4: Allowing Unlink of Last Auth Method
-
-**What people do:** Let users disconnect their only OAuth provider without having a password set, locking themselves out.
-**Why it's wrong:** User cannot log back in.
-**Do this instead:** Before unlinking, check: does the user have a password set? Do they have another OAuth provider linked? If unlinking would leave them with zero auth methods, block the operation and show an error explaining they need to set a password first.
-
-## Build Order
-
-Based on dependency analysis, the recommended build order is:
-
-### Phase 1: Database + Backend Core
-1. **Migration 012** -- Make `password_hash` nullable
-2. **OAuth entity + repository** -- `OAuthAccount` domain entity, repository interface, PostgreSQL implementation
-3. **User entity changes** -- `NewOAuthUser`, handle nullable password in `CheckPassword`
-4. **OAuth service** -- `FindOrCreateUser`, `LinkAccount`, `UnlinkAccount`, `GetConnectedAccounts`
-5. **OAuth handler** -- `initiateOAuth`, `handleCallback` (Google first, then GitHub)
-6. **Router registration** -- Wire everything up in `router.go`
-
-### Phase 2: Frontend
-7. **OAuth callback page** -- `/auth/callback` that stores token and redirects
-8. **Social login buttons** -- Add `onClick` handlers to existing `SocialLogin` component
-9. **Auth API additions** -- `getConnectedAccounts`, `unlinkAccount`
-10. **Connected Accounts UI** -- New section in Security settings with link/unlink
-
-### Phase 3: Polish
-11. **Error handling** -- OAuth failures redirect to login with error messages
-12. **Password UX for OAuth users** -- "Set password" instead of "Change password" for OAuth-only users
-13. **i18n** -- Translation keys for all new strings
-14. **Tests** -- Backend unit tests for OAuth service, handler tests, frontend component tests
-
-## Key Dependencies
+## Data Flow: Complete Offline Capture Sequence
 
 ```
-Migration 012 (nullable password)
-    |
-    v
-User entity changes (NewOAuthUser)
-    |
-    v
-OAuth repository -------> OAuth service <------- User service (GetByEmail)
-                               |                      |
-                               v                      v
-                         OAuth handler ---------> JWT service
-                               |                      |
-                               v                      v
-                         Router registration      Session service
-                               |
-                               v
-                    Frontend callback page
-                               |
-                               v
-                    Social login buttons (modified)
-                               |
-                               v
-                    Connected accounts UI (settings)
+ 1. User taps "Quick Capture" in FAB
+ 2. Route: /dashboard/items/quick-capture
+ 3. Camera opens immediately (InlinePhotoCapture with capture="environment")
+ 4. User snaps photo -> compressed File blob stored in component state
+ 5. User types item name (single field, auto-focused after photo capture)
+ 6. User taps "Save & Next"
+ 7. Client generates SKU: "QC-m2k4f7a-a3b1"
+ 8. useOfflineMutation queues to IndexedDB mutationQueue:
+    { entity: "items", operation: "create",
+      payload: { sku, name, needs_review: true, category_id } }
+ 9. Optimistic item written to IndexedDB items store with _pending: true
+10. Photo blob stored to quickCapturePhotos store:
+    { tempItemId: idempotencyKey, blob, status: "pending" }
+11. Form resets, camera re-opens for next item
+12. Counter shows "1 item captured"
+13. Steps 3-12 repeat for each item
+
+--- Later, when online ---
+
+14. SyncManager.processQueue() runs (triggered by online event or visibility change)
+15. Processes items mutations in ENTITY_SYNC_ORDER (after categories)
+16. POST /workspaces/{wsId}/items with JSON payload
+    -> Server validates SKU uniqueness, creates item, returns { id: "real-server-id" }
+17. resolvedIds.set(tempId, realServerId)
+18. After all mutations processed, SyncManager.processQueuedPhotos() runs
+19. For each entry in quickCapturePhotos matching a resolved tempId:
+    POST /workspaces/{wsId}/items/{realServerId}/photos with FormData
+20. On success: photo entry removed from quickCapturePhotos store
+21. Broadcast MUTATION_SYNCED + PHOTO_UPLOADED events for UI feedback
+22. PendingUploadsIndicator updates to reflect progress
+```
+
+## Anti-Patterns to Avoid
+
+### Anti-Pattern 1: Reusing CreateItemWizard for Quick Capture
+**What:** Trying to add a "quick mode" toggle to the existing 3-step wizard.
+**Why bad:** The wizard uses direct API calls (`itemsApi.create()`), has no offline support, uses `MultiStepForm` with form draft persistence and iOS keyboard handling. Quick capture needs a fundamentally different UX loop (capture -> save -> repeat immediately) not a multi-step form submission.
+**Instead:** Build a new single-screen component that uses `useOfflineMutation` directly.
+
+### Anti-Pattern 2: Storing Photos as Base64 in Mutation Payload
+**What:** Converting photos to base64 strings and including them in the mutation queue payload.
+**Why bad:** Base64 inflates size by 33% (2MB photo -> 2.7MB string). The mutation queue is designed for JSON payloads. SyncManager sends mutations via `fetch` with `Content-Type: application/json` -- you cannot send multipart FormData through the existing mutation queue pipeline.
+**Instead:** Store photo Blobs in a separate IndexedDB store. Chain photo upload (multipart POST) after item sync completes.
+
+### Anti-Pattern 3: Client-Side SKU Validation Against Server
+**What:** Checking SKU uniqueness by calling `itemsApi.search()` before saving offline.
+**Why bad:** Defeats the purpose of offline-first. The whole point is capturing without network.
+**Instead:** Use timestamp+random SKU pattern that is statistically unique. Let the server validate at sync time. Handle the rare collision gracefully with a retry.
+
+### Anti-Pattern 4: Using localStorage for Photo Blobs
+**What:** Serializing photos and storing in localStorage.
+**Why bad:** localStorage has a 5MB hard limit across ALL keys, is synchronous (blocks main thread during writes), and only stores strings (requiring base64 encoding which inflates size).
+**Instead:** IndexedDB stores `Blob` objects natively without serialization overhead and has much higher quotas (50MB minimum, typically hundreds of MB).
+
+### Anti-Pattern 5: Creating Inventory Entries in Phase 1
+**What:** Auto-creating inventory records (for location placement) as part of the same quick capture action.
+**Why bad:** Adds cross-entity dependency complexity. The inventory mutation depends on items + locations + containers in the sync order. The `dependsOn` mechanism works but adds failure modes (cascade failures if item sync fails). Users may not even want inventory tracking for every captured item.
+**Instead:** Phase 1 captures items only (with category from batch). Location/inventory is a Phase 2 enhancement or handled during "needs review" desktop completion.
+
+## Suggested Build Order
+
+Build order follows the dependency chain. Each phase produces a testable increment.
+
+### Phase 1: Backend Schema + API (no frontend dependency)
+1. Add `needs_review` column via migration
+2. Update item entity, CreateInput, UpdateInput, Reconstruct, handler, repository
+3. Add `?needs_review=true` filter to list endpoint
+4. Update sqlc queries (insert, update, select, list)
+5. Unit tests for new field + filter
+
+### Phase 2: Auto-SKU + Batch Settings Hooks (no backend dependency)
+1. `useQuickCaptureSKU` hook with `QC-{ts}-{rand}` generation
+2. `useBatchSettings` hook with sessionStorage persistence
+3. Unit tests for both hooks
+
+### Phase 3: Quick Capture Photo Store (IndexedDB)
+1. Add `quickCapturePhotos` store to `OfflineDBSchema`
+2. Bump DB version from 4 to 5 in `offline-db.ts`
+3. CRUD helper functions: `storeQuickCapturePhoto`, `getPhotosForItem`, `deletePhoto`
+4. Unit tests for photo store operations
+
+### Phase 4: Quick Capture UI
+1. `QuickCapturePage` component at `/dashboard/items/quick-capture`
+2. Integrate `InlinePhotoCapture` (reuse), name input, batch settings bar
+3. Wire up `useOfflineMutation` for item creation with `needs_review: true`
+4. Wire up photo blob storage to `quickCapturePhotos` store
+5. Save & Next loop with capture counter and haptic feedback
+6. Add "Quick Capture" action to `useFABActions`
+
+### Phase 5: SyncManager Photo Chaining
+1. Add `uploadQueuedPhotos` method to `SyncManager`
+2. Add `processQueuedPhotos` phase after entity sync loop
+3. Handle upload failures, retries, and partial success
+4. Broadcast photo sync events for `PendingUploadsIndicator`
+5. Integration tests for the full chain: queue item -> sync -> upload photos
+
+### Phase 6: Needs Review UI
+1. Add `needs_review` to frontend `Item`, `ItemCreate`, `ItemUpdate` types
+2. Add "Needs Review" filter chip to items list `FilterBar`
+3. Badge on item detail page, "Mark as Reviewed" action
+4. Inline editing for quick detail completion from the items list
+
+### Phase 7: Polish + Edge Cases
+1. Storage quota warning (check `navigator.storage.estimate()` before each capture)
+2. SKU collision handling at sync time (regenerate SKU on 400/422 and retry)
+3. Haptic feedback on capture success via existing `triggerHaptic`
+4. i18n: add all new translation keys to en.json, et.json, ru.json
+5. E2E tests for the quick capture flow (Playwright)
+
+## Project Structure (New Files)
+
+### Frontend
+```
+frontend/
+  app/[locale]/(dashboard)/dashboard/items/
+    quick-capture/
+      page.tsx                          # NEW: Quick capture route
+  components/items/
+    quick-capture/
+      quick-capture-page.tsx            # NEW: Main capture component
+      batch-settings-bar.tsx            # NEW: Sticky settings pills
+      capture-counter.tsx               # NEW: Session counter display
+  lib/hooks/
+    use-batch-settings.ts               # NEW: sessionStorage batch state
+    use-quick-capture-sku.ts            # NEW: Auto-SKU generation
+  lib/db/
+    quick-capture-photos.ts             # NEW: Photo blob CRUD helpers
+    types.ts                            # MODIFY: Add quickCapturePhotos store
+    offline-db.ts                       # MODIFY: Bump version, add store
+  lib/sync/
+    sync-manager.ts                     # MODIFY: Add photo chaining
+  lib/hooks/
+    use-fab-actions.tsx                 # MODIFY: Add quick capture action
+  lib/types/
+    items.ts                            # MODIFY: Add needs_review field
+```
+
+### Backend
+```
+backend/
+  db/migrations/
+    NNN_add_needs_review.sql            # NEW: Add needs_review column
+  db/queries/
+    items.sql                           # MODIFY: Add needs_review to queries
+  internal/domain/warehouse/item/
+    entity.go                           # MODIFY: Add needsReview field
+    service.go                          # MODIFY: Add to CreateInput/UpdateInput
+    handler.go                          # MODIFY: Accept needs_review, add filter
+    repository.go                       # MODIFY: Add to interface if needed
 ```
 
 ## Sources
 
-- [golang.org/x/oauth2 package documentation](https://pkg.go.dev/golang.org/x/oauth2)
-- [Google OpenID Connect documentation](https://developers.google.com/identity/openid-connect/openid-connect)
-- [GitHub OAuth Apps - Authorizing](https://docs.github.com/en/apps/oauth-apps/using-oauth-apps/authorizing-oauth-apps)
-- [GitHub OAuth scopes documentation](https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/scopes-for-oauth-apps)
-- [Google OAuth2 scopes reference](https://developers.google.com/identity/protocols/oauth2/scopes)
-- [OAuth PKCE with Go](https://chrisguitarguy.com/2022/12/07/oauth-pkce-with-go/)
-- [Securing OAuth 2.0 with PKCE in Go](https://medium.com/@sanhdoan/securing-your-oauth-2-0-flow-with-pkce-a-practical-guide-with-go-4cd5ec72044b)
+- Direct codebase analysis of:
+  - `frontend/components/items/create-item-wizard/index.tsx` -- current item creation flow, direct API calls
+  - `frontend/components/items/create-item-wizard/schema.ts` -- form schema, SKU required
+  - `frontend/lib/hooks/use-offline-mutation.ts` -- offline mutation queue infrastructure
+  - `frontend/lib/sync/sync-manager.ts` -- sync processing, entity ordering, dependency resolution, ID mapping
+  - `frontend/lib/sync/mutation-queue.ts` -- queue operations, retry config
+  - `frontend/components/forms/inline-photo-capture.tsx` -- camera capture with compression
+  - `frontend/components/forms/multi-step-form.tsx` -- wizard framework (not reused)
+  - `frontend/components/fab/floating-action-button.tsx` -- FAB radial menu, variable action count
+  - `frontend/lib/hooks/use-fab-actions.tsx` -- route-aware FAB actions, existing patterns
+  - `frontend/lib/db/types.ts` -- IndexedDB schema v4, 10 stores, mutation queue types
+  - `frontend/lib/db/offline-db.ts` -- DB singleton, version upgrades, persistent storage
+  - `frontend/app/sw.ts` -- service worker PhotoUploadQueue (separate DB)
+  - `frontend/lib/contexts/offline-context.tsx` -- pending uploads tracking
+  - `frontend/lib/types/items.ts` -- Item, ItemCreate, ItemUpdate interfaces
+  - `frontend/lib/api/items.ts` -- items API client
+  - `frontend/lib/api/item-photos.ts` -- photo upload via XHR with progress
+  - `backend/internal/domain/warehouse/item/entity.go` -- Item domain model, all fields
+  - `backend/internal/domain/warehouse/item/service.go` -- SKU uniqueness validation, CreateInput
+  - `backend/internal/domain/warehouse/item/handler.go` -- HTTP handler, Huma framework
+  - `backend/db/schema.sql` -- warehouse.items table definition
 
 ---
-*Architecture research for: Social Login (Google OAuth + GitHub OAuth)*
-*Researched: 2026-02-22*
+*Architecture research for: Quick-Capture Integration*
+*Researched: 2026-02-27*
