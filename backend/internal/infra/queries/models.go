@@ -734,27 +734,27 @@ type AuthUser struct {
 	Email        string    `json:"email"`
 	FullName     string    `json:"full_name"`
 	PasswordHash *string   `json:"password_hash"`
+	HasPassword  bool      `json:"has_password"`
 	IsActive     *bool     `json:"is_active"`
 	IsSuperuser  *bool     `json:"is_superuser"`
 	// User's preferred date format for display (e.g., DD.MM.YYYY, MM/DD/YYYY, YYYY-MM-DD)
 	DateFormat *string `json:"date_format"`
-	// User's preferred language code (e.g., en, fi, de)
-	Language string `json:"language"`
-	// User's preferred UI theme: light, dark, or system
-	Theme string `json:"theme"`
-	// Storage path to user avatar image. Null if user has no custom avatar.
-	AvatarPath *string            `json:"avatar_path"`
-	CreatedAt  pgtype.Timestamptz `json:"created_at"`
-	UpdatedAt  pgtype.Timestamptz `json:"updated_at"`
 	// User's preferred time format: 12h or 24h
 	TimeFormat string `json:"time_format"`
 	// User's preferred thousand separator for number display: comma, period, or space
 	ThousandSeparator string `json:"thousand_separator"`
 	// User's preferred decimal separator for number display: period or comma
 	DecimalSeparator string `json:"decimal_separator"`
+	// User's preferred language code (e.g., en, fi, de)
+	Language string `json:"language"`
+	// User's preferred UI theme: light, dark, or system
+	Theme string `json:"theme"`
+	// Storage path to user avatar image. Null if user has no custom avatar.
+	AvatarPath *string `json:"avatar_path"`
 	// User notification preferences by category. Empty object means all enabled. Keys: enabled, loans, inventory, workspace, system.
-	NotificationPreferences []byte `json:"notification_preferences"`
-	HasPassword             bool   `json:"has_password"`
+	NotificationPreferences []byte             `json:"notification_preferences"`
+	CreatedAt               pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt               pgtype.Timestamptz `json:"updated_at"`
 }
 
 // External OAuth provider accounts linked to local users for SSO.
@@ -1015,11 +1015,11 @@ type WarehouseInventory struct {
 	WarrantyExpires pgtype.Date                    `json:"warranty_expires"`
 	ExpirationDate  pgtype.Date                    `json:"expiration_date"`
 	Notes           *string                        `json:"notes"`
-	IsArchived      bool                           `json:"is_archived"`
-	CreatedAt       pgtype.Timestamptz             `json:"created_at"`
-	UpdatedAt       pgtype.Timestamptz             `json:"updated_at"`
-	// Timestamp when this inventory was last marked as "used". Used for declutter assistant. Defaults to created_at for existing records.
+	// Timestamp when this inventory was last marked as "used". Used for declutter assistant.
 	LastUsedAt pgtype.Timestamptz `json:"last_used_at"`
+	IsArchived bool               `json:"is_archived"`
+	CreatedAt  pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt  pgtype.Timestamptz `json:"updated_at"`
 }
 
 type WarehouseInventoryMovement struct {
@@ -1066,6 +1066,7 @@ type WarehouseItem struct {
 	SearchVector     interface{}        `json:"search_vector"`
 	CreatedAt        pgtype.Timestamptz `json:"created_at"`
 	UpdatedAt        pgtype.Timestamptz `json:"updated_at"`
+	NeedsReview      *bool              `json:"needs_review"`
 }
 
 type WarehouseItemLabel struct {
@@ -1088,8 +1089,6 @@ type WarehouseItemPhoto struct {
 	IsPrimary     bool      `json:"is_primary"`
 	Caption       *string   `json:"caption"`
 	UploadedBy    uuid.UUID `json:"uploaded_by"`
-	CreatedAt     time.Time `json:"created_at"`
-	UpdatedAt     time.Time `json:"updated_at"`
 	// Thumbnail generation status: pending (not started), processing (in queue), complete (ready), failed (max retries exceeded)
 	ThumbnailStatus string `json:"thumbnail_status"`
 	// Path to 150px thumbnail (used for lists/grids)
@@ -1103,7 +1102,9 @@ type WarehouseItemPhoto struct {
 	// Last error message if thumbnail generation failed
 	ThumbnailError *string `json:"thumbnail_error"`
 	// 64-bit difference hash (dHash) for duplicate detection. Similar images have similar hashes with small Hamming distance.
-	PerceptualHash *int64 `json:"perceptual_hash"`
+	PerceptualHash *int64    `json:"perceptual_hash"`
+	CreatedAt      time.Time `json:"created_at"`
+	UpdatedAt      time.Time `json:"updated_at"`
 }
 
 type WarehouseLabel struct {
@@ -1190,14 +1191,14 @@ type WarehouseRepairLog struct {
 	// The condition to set on the inventory item when the repair is completed.
 	NewCondition NullWarehouseItemConditionEnum `json:"new_condition"`
 	Notes        *string                        `json:"notes"`
-	CreatedAt    pgtype.Timestamptz             `json:"created_at"`
-	UpdatedAt    pgtype.Timestamptz             `json:"updated_at"`
 	// Whether this repair was covered under warranty.
 	IsWarrantyClaim bool `json:"is_warranty_claim"`
 	// Optional future date for maintenance reminder notification.
 	ReminderDate pgtype.Date `json:"reminder_date"`
 	// Whether the reminder notification has been sent.
-	ReminderSent bool `json:"reminder_sent"`
+	ReminderSent bool               `json:"reminder_sent"`
+	CreatedAt    pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt    pgtype.Timestamptz `json:"updated_at"`
 }
 
 // Photos attached to repair logs, categorized by when they were taken (before/during/after repair).

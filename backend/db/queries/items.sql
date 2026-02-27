@@ -19,9 +19,9 @@ INSERT INTO warehouse.items (
     id, workspace_id, sku, name, description, category_id, brand, model,
     image_url, serial_number, manufacturer, barcode, is_insured,
     lifetime_warranty, warranty_details, purchased_from, min_stock_level,
-    short_code, obsidian_vault_path, obsidian_note_path
+    short_code, obsidian_vault_path, obsidian_note_path, needs_review
 )
-VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21)
 RETURNING *;
 
 -- name: UpdateItem :one
@@ -30,7 +30,7 @@ SET name = $2, description = $3, category_id = $4, brand = $5, model = $6,
     image_url = $7, serial_number = $8, manufacturer = $9, barcode = $10,
     is_insured = $11, lifetime_warranty = $12, warranty_details = $13,
     purchased_from = $14, min_stock_level = $15, obsidian_vault_path = $16,
-    obsidian_note_path = $17, updated_at = now()
+    obsidian_note_path = $17, needs_review = $18, updated_at = now()
 WHERE id = $1
 RETURNING *;
 
@@ -96,3 +96,13 @@ FROM warehouse.items i
 LEFT JOIN warehouse.categories c ON i.category_id = c.id
 LEFT JOIN warehouse.companies co ON i.purchased_from = co.id
 WHERE i.id = $1 AND i.workspace_id = $2;
+
+-- name: ListItemsNeedingReview :many
+SELECT * FROM warehouse.items
+WHERE workspace_id = $1 AND needs_review = true AND is_archived = false
+ORDER BY updated_at DESC
+LIMIT $2 OFFSET $3;
+
+-- name: CountItemsNeedingReview :one
+SELECT COUNT(*) FROM warehouse.items
+WHERE workspace_id = $1 AND needs_review = true AND is_archived = false;

@@ -20,7 +20,7 @@ SET
     new_condition = $2,
     updated_at = now()
 WHERE id = $1
-RETURNING id, workspace_id, inventory_id, status, description, repair_date, cost, currency_code, service_provider, completed_at, new_condition, notes, created_at, updated_at, is_warranty_claim, reminder_date, reminder_sent
+RETURNING id, workspace_id, inventory_id, status, description, repair_date, cost, currency_code, service_provider, completed_at, new_condition, notes, is_warranty_claim, reminder_date, reminder_sent, created_at, updated_at
 `
 
 type CompleteRepairLogParams struct {
@@ -44,11 +44,11 @@ func (q *Queries) CompleteRepairLog(ctx context.Context, arg CompleteRepairLogPa
 		&i.CompletedAt,
 		&i.NewCondition,
 		&i.Notes,
-		&i.CreatedAt,
-		&i.UpdatedAt,
 		&i.IsWarrantyClaim,
 		&i.ReminderDate,
 		&i.ReminderSent,
+		&i.CreatedAt,
+		&i.UpdatedAt,
 	)
 	return i, err
 }
@@ -76,7 +76,7 @@ INSERT INTO warehouse.repair_logs (
     repair_date, cost, currency_code, service_provider, notes
 )
 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
-RETURNING id, workspace_id, inventory_id, status, description, repair_date, cost, currency_code, service_provider, completed_at, new_condition, notes, created_at, updated_at, is_warranty_claim, reminder_date, reminder_sent
+RETURNING id, workspace_id, inventory_id, status, description, repair_date, cost, currency_code, service_provider, completed_at, new_condition, notes, is_warranty_claim, reminder_date, reminder_sent, created_at, updated_at
 `
 
 type CreateRepairLogParams struct {
@@ -119,11 +119,11 @@ func (q *Queries) CreateRepairLog(ctx context.Context, arg CreateRepairLogParams
 		&i.CompletedAt,
 		&i.NewCondition,
 		&i.Notes,
-		&i.CreatedAt,
-		&i.UpdatedAt,
 		&i.IsWarrantyClaim,
 		&i.ReminderDate,
 		&i.ReminderSent,
+		&i.CreatedAt,
+		&i.UpdatedAt,
 	)
 	return i, err
 }
@@ -135,7 +135,7 @@ INSERT INTO warehouse.repair_logs (
     is_warranty_claim, reminder_date
 )
 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
-RETURNING id, workspace_id, inventory_id, status, description, repair_date, cost, currency_code, service_provider, completed_at, new_condition, notes, created_at, updated_at, is_warranty_claim, reminder_date, reminder_sent
+RETURNING id, workspace_id, inventory_id, status, description, repair_date, cost, currency_code, service_provider, completed_at, new_condition, notes, is_warranty_claim, reminder_date, reminder_sent, created_at, updated_at
 `
 
 type CreateRepairLogWithWarrantyParams struct {
@@ -182,11 +182,11 @@ func (q *Queries) CreateRepairLogWithWarranty(ctx context.Context, arg CreateRep
 		&i.CompletedAt,
 		&i.NewCondition,
 		&i.Notes,
-		&i.CreatedAt,
-		&i.UpdatedAt,
 		&i.IsWarrantyClaim,
 		&i.ReminderDate,
 		&i.ReminderSent,
+		&i.CreatedAt,
+		&i.UpdatedAt,
 	)
 	return i, err
 }
@@ -202,7 +202,7 @@ func (q *Queries) DeleteRepairLog(ctx context.Context, id uuid.UUID) error {
 }
 
 const getRepairLog = `-- name: GetRepairLog :one
-SELECT id, workspace_id, inventory_id, status, description, repair_date, cost, currency_code, service_provider, completed_at, new_condition, notes, created_at, updated_at, is_warranty_claim, reminder_date, reminder_sent FROM warehouse.repair_logs
+SELECT id, workspace_id, inventory_id, status, description, repair_date, cost, currency_code, service_provider, completed_at, new_condition, notes, is_warranty_claim, reminder_date, reminder_sent, created_at, updated_at FROM warehouse.repair_logs
 WHERE id = $1 AND workspace_id = $2
 `
 
@@ -227,11 +227,11 @@ func (q *Queries) GetRepairLog(ctx context.Context, arg GetRepairLogParams) (War
 		&i.CompletedAt,
 		&i.NewCondition,
 		&i.Notes,
-		&i.CreatedAt,
-		&i.UpdatedAt,
 		&i.IsWarrantyClaim,
 		&i.ReminderDate,
 		&i.ReminderSent,
+		&i.CreatedAt,
+		&i.UpdatedAt,
 	)
 	return i, err
 }
@@ -280,7 +280,7 @@ func (q *Queries) GetTotalRepairCostByInventory(ctx context.Context, arg GetTota
 }
 
 const listRepairLogsByInventory = `-- name: ListRepairLogsByInventory :many
-SELECT id, workspace_id, inventory_id, status, description, repair_date, cost, currency_code, service_provider, completed_at, new_condition, notes, created_at, updated_at, is_warranty_claim, reminder_date, reminder_sent FROM warehouse.repair_logs
+SELECT id, workspace_id, inventory_id, status, description, repair_date, cost, currency_code, service_provider, completed_at, new_condition, notes, is_warranty_claim, reminder_date, reminder_sent, created_at, updated_at FROM warehouse.repair_logs
 WHERE workspace_id = $1 AND inventory_id = $2
 ORDER BY created_at DESC
 `
@@ -312,11 +312,11 @@ func (q *Queries) ListRepairLogsByInventory(ctx context.Context, arg ListRepairL
 			&i.CompletedAt,
 			&i.NewCondition,
 			&i.Notes,
-			&i.CreatedAt,
-			&i.UpdatedAt,
 			&i.IsWarrantyClaim,
 			&i.ReminderDate,
 			&i.ReminderSent,
+			&i.CreatedAt,
+			&i.UpdatedAt,
 		); err != nil {
 			return nil, err
 		}
@@ -329,7 +329,7 @@ func (q *Queries) ListRepairLogsByInventory(ctx context.Context, arg ListRepairL
 }
 
 const listRepairLogsByStatus = `-- name: ListRepairLogsByStatus :many
-SELECT id, workspace_id, inventory_id, status, description, repair_date, cost, currency_code, service_provider, completed_at, new_condition, notes, created_at, updated_at, is_warranty_claim, reminder_date, reminder_sent FROM warehouse.repair_logs
+SELECT id, workspace_id, inventory_id, status, description, repair_date, cost, currency_code, service_provider, completed_at, new_condition, notes, is_warranty_claim, reminder_date, reminder_sent, created_at, updated_at FROM warehouse.repair_logs
 WHERE workspace_id = $1 AND status = $2
 ORDER BY created_at DESC
 LIMIT $3 OFFSET $4
@@ -369,11 +369,11 @@ func (q *Queries) ListRepairLogsByStatus(ctx context.Context, arg ListRepairLogs
 			&i.CompletedAt,
 			&i.NewCondition,
 			&i.Notes,
-			&i.CreatedAt,
-			&i.UpdatedAt,
 			&i.IsWarrantyClaim,
 			&i.ReminderDate,
 			&i.ReminderSent,
+			&i.CreatedAt,
+			&i.UpdatedAt,
 		); err != nil {
 			return nil, err
 		}
@@ -386,7 +386,7 @@ func (q *Queries) ListRepairLogsByStatus(ctx context.Context, arg ListRepairLogs
 }
 
 const listRepairLogsByWorkspace = `-- name: ListRepairLogsByWorkspace :many
-SELECT id, workspace_id, inventory_id, status, description, repair_date, cost, currency_code, service_provider, completed_at, new_condition, notes, created_at, updated_at, is_warranty_claim, reminder_date, reminder_sent FROM warehouse.repair_logs
+SELECT id, workspace_id, inventory_id, status, description, repair_date, cost, currency_code, service_provider, completed_at, new_condition, notes, is_warranty_claim, reminder_date, reminder_sent, created_at, updated_at FROM warehouse.repair_logs
 WHERE workspace_id = $1
 ORDER BY created_at DESC
 LIMIT $2 OFFSET $3
@@ -420,11 +420,11 @@ func (q *Queries) ListRepairLogsByWorkspace(ctx context.Context, arg ListRepairL
 			&i.CompletedAt,
 			&i.NewCondition,
 			&i.Notes,
-			&i.CreatedAt,
-			&i.UpdatedAt,
 			&i.IsWarrantyClaim,
 			&i.ReminderDate,
 			&i.ReminderSent,
+			&i.CreatedAt,
+			&i.UpdatedAt,
 		); err != nil {
 			return nil, err
 		}
@@ -509,7 +509,7 @@ SET
     notes = $7,
     updated_at = now()
 WHERE id = $1
-RETURNING id, workspace_id, inventory_id, status, description, repair_date, cost, currency_code, service_provider, completed_at, new_condition, notes, created_at, updated_at, is_warranty_claim, reminder_date, reminder_sent
+RETURNING id, workspace_id, inventory_id, status, description, repair_date, cost, currency_code, service_provider, completed_at, new_condition, notes, is_warranty_claim, reminder_date, reminder_sent, created_at, updated_at
 `
 
 type UpdateRepairLogParams struct {
@@ -546,11 +546,11 @@ func (q *Queries) UpdateRepairLog(ctx context.Context, arg UpdateRepairLogParams
 		&i.CompletedAt,
 		&i.NewCondition,
 		&i.Notes,
-		&i.CreatedAt,
-		&i.UpdatedAt,
 		&i.IsWarrantyClaim,
 		&i.ReminderDate,
 		&i.ReminderSent,
+		&i.CreatedAt,
+		&i.UpdatedAt,
 	)
 	return i, err
 }
@@ -559,7 +559,7 @@ const updateRepairLogReminderDate = `-- name: UpdateRepairLogReminderDate :one
 UPDATE warehouse.repair_logs
 SET reminder_date = $2, reminder_sent = false, updated_at = now()
 WHERE id = $1 AND workspace_id = $3
-RETURNING id, workspace_id, inventory_id, status, description, repair_date, cost, currency_code, service_provider, completed_at, new_condition, notes, created_at, updated_at, is_warranty_claim, reminder_date, reminder_sent
+RETURNING id, workspace_id, inventory_id, status, description, repair_date, cost, currency_code, service_provider, completed_at, new_condition, notes, is_warranty_claim, reminder_date, reminder_sent, created_at, updated_at
 `
 
 type UpdateRepairLogReminderDateParams struct {
@@ -584,11 +584,11 @@ func (q *Queries) UpdateRepairLogReminderDate(ctx context.Context, arg UpdateRep
 		&i.CompletedAt,
 		&i.NewCondition,
 		&i.Notes,
-		&i.CreatedAt,
-		&i.UpdatedAt,
 		&i.IsWarrantyClaim,
 		&i.ReminderDate,
 		&i.ReminderSent,
+		&i.CreatedAt,
+		&i.UpdatedAt,
 	)
 	return i, err
 }
@@ -597,7 +597,7 @@ const updateRepairLogStatus = `-- name: UpdateRepairLogStatus :one
 UPDATE warehouse.repair_logs
 SET status = $2, updated_at = now()
 WHERE id = $1
-RETURNING id, workspace_id, inventory_id, status, description, repair_date, cost, currency_code, service_provider, completed_at, new_condition, notes, created_at, updated_at, is_warranty_claim, reminder_date, reminder_sent
+RETURNING id, workspace_id, inventory_id, status, description, repair_date, cost, currency_code, service_provider, completed_at, new_condition, notes, is_warranty_claim, reminder_date, reminder_sent, created_at, updated_at
 `
 
 type UpdateRepairLogStatusParams struct {
@@ -621,11 +621,11 @@ func (q *Queries) UpdateRepairLogStatus(ctx context.Context, arg UpdateRepairLog
 		&i.CompletedAt,
 		&i.NewCondition,
 		&i.Notes,
-		&i.CreatedAt,
-		&i.UpdatedAt,
 		&i.IsWarrantyClaim,
 		&i.ReminderDate,
 		&i.ReminderSent,
+		&i.CreatedAt,
+		&i.UpdatedAt,
 	)
 	return i, err
 }
@@ -634,7 +634,7 @@ const updateRepairLogWarrantyClaim = `-- name: UpdateRepairLogWarrantyClaim :one
 UPDATE warehouse.repair_logs
 SET is_warranty_claim = $2, updated_at = now()
 WHERE id = $1 AND workspace_id = $3
-RETURNING id, workspace_id, inventory_id, status, description, repair_date, cost, currency_code, service_provider, completed_at, new_condition, notes, created_at, updated_at, is_warranty_claim, reminder_date, reminder_sent
+RETURNING id, workspace_id, inventory_id, status, description, repair_date, cost, currency_code, service_provider, completed_at, new_condition, notes, is_warranty_claim, reminder_date, reminder_sent, created_at, updated_at
 `
 
 type UpdateRepairLogWarrantyClaimParams struct {
@@ -659,11 +659,11 @@ func (q *Queries) UpdateRepairLogWarrantyClaim(ctx context.Context, arg UpdateRe
 		&i.CompletedAt,
 		&i.NewCondition,
 		&i.Notes,
-		&i.CreatedAt,
-		&i.UpdatedAt,
 		&i.IsWarrantyClaim,
 		&i.ReminderDate,
 		&i.ReminderSent,
+		&i.CreatedAt,
+		&i.UpdatedAt,
 	)
 	return i, err
 }

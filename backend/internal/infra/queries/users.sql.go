@@ -26,7 +26,7 @@ func (q *Queries) CountActiveUsers(ctx context.Context) (int64, error) {
 const createUser = `-- name: CreateUser :one
 INSERT INTO auth.users (id, email, full_name, password_hash, is_active, is_superuser, date_format, language, theme, avatar_path, created_at, updated_at)
 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
-RETURNING id, email, full_name, password_hash, is_active, is_superuser, date_format, language, theme, avatar_path, created_at, updated_at, time_format, thousand_separator, decimal_separator, notification_preferences, has_password
+RETURNING id, email, full_name, password_hash, has_password, is_active, is_superuser, date_format, time_format, thousand_separator, decimal_separator, language, theme, avatar_path, notification_preferences, created_at, updated_at
 `
 
 type CreateUserParams struct {
@@ -65,19 +65,19 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (AuthUse
 		&i.Email,
 		&i.FullName,
 		&i.PasswordHash,
+		&i.HasPassword,
 		&i.IsActive,
 		&i.IsSuperuser,
 		&i.DateFormat,
-		&i.Language,
-		&i.Theme,
-		&i.AvatarPath,
-		&i.CreatedAt,
-		&i.UpdatedAt,
 		&i.TimeFormat,
 		&i.ThousandSeparator,
 		&i.DecimalSeparator,
+		&i.Language,
+		&i.Theme,
+		&i.AvatarPath,
 		&i.NotificationPreferences,
-		&i.HasPassword,
+		&i.CreatedAt,
+		&i.UpdatedAt,
 	)
 	return i, err
 }

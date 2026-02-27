@@ -39,15 +39,27 @@ func (q *Queries) AttachLabel(ctx context.Context, arg AttachLabelParams) error 
 	return err
 }
 
+const countItemsNeedingReview = `-- name: CountItemsNeedingReview :one
+SELECT COUNT(*) FROM warehouse.items
+WHERE workspace_id = $1 AND needs_review = true AND is_archived = false
+`
+
+func (q *Queries) CountItemsNeedingReview(ctx context.Context, workspaceID uuid.UUID) (int64, error) {
+	row := q.db.QueryRow(ctx, countItemsNeedingReview, workspaceID)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
 const createItem = `-- name: CreateItem :one
 INSERT INTO warehouse.items (
     id, workspace_id, sku, name, description, category_id, brand, model,
     image_url, serial_number, manufacturer, barcode, is_insured,
     lifetime_warranty, warranty_details, purchased_from, min_stock_level,
-    short_code, obsidian_vault_path, obsidian_note_path
+    short_code, obsidian_vault_path, obsidian_note_path, needs_review
 )
-VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20)
-RETURNING id, workspace_id, sku, name, description, category_id, brand, model, image_url, serial_number, manufacturer, barcode, is_insured, is_archived, lifetime_warranty, warranty_details, purchased_from, min_stock_level, short_code, obsidian_vault_path, obsidian_note_path, search_vector, created_at, updated_at
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21)
+RETURNING id, workspace_id, sku, name, description, category_id, brand, model, image_url, serial_number, manufacturer, barcode, is_insured, is_archived, lifetime_warranty, warranty_details, purchased_from, min_stock_level, short_code, obsidian_vault_path, obsidian_note_path, search_vector, created_at, updated_at, needs_review
 `
 
 type CreateItemParams struct {
@@ -71,6 +83,7 @@ type CreateItemParams struct {
 	ShortCode         string      `json:"short_code"`
 	ObsidianVaultPath *string     `json:"obsidian_vault_path"`
 	ObsidianNotePath  *string     `json:"obsidian_note_path"`
+	NeedsReview       *bool       `json:"needs_review"`
 }
 
 func (q *Queries) CreateItem(ctx context.Context, arg CreateItemParams) (WarehouseItem, error) {
@@ -95,6 +108,7 @@ func (q *Queries) CreateItem(ctx context.Context, arg CreateItemParams) (Warehou
 		arg.ShortCode,
 		arg.ObsidianVaultPath,
 		arg.ObsidianNotePath,
+		arg.NeedsReview,
 	)
 	var i WarehouseItem
 	err := row.Scan(
@@ -122,6 +136,7 @@ func (q *Queries) CreateItem(ctx context.Context, arg CreateItemParams) (Warehou
 		&i.SearchVector,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.NeedsReview,
 	)
 	return i, err
 }
@@ -142,7 +157,7 @@ func (q *Queries) DetachLabel(ctx context.Context, arg DetachLabelParams) error 
 }
 
 const getItem = `-- name: GetItem :one
-SELECT id, workspace_id, sku, name, description, category_id, brand, model, image_url, serial_number, manufacturer, barcode, is_insured, is_archived, lifetime_warranty, warranty_details, purchased_from, min_stock_level, short_code, obsidian_vault_path, obsidian_note_path, search_vector, created_at, updated_at FROM warehouse.items
+SELECT id, workspace_id, sku, name, description, category_id, brand, model, image_url, serial_number, manufacturer, barcode, is_insured, is_archived, lifetime_warranty, warranty_details, purchased_from, min_stock_level, short_code, obsidian_vault_path, obsidian_note_path, search_vector, created_at, updated_at, needs_review FROM warehouse.items
 WHERE id = $1 AND workspace_id = $2
 `
 
@@ -179,12 +194,13 @@ func (q *Queries) GetItem(ctx context.Context, arg GetItemParams) (WarehouseItem
 		&i.SearchVector,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.NeedsReview,
 	)
 	return i, err
 }
 
 const getItemByBarcode = `-- name: GetItemByBarcode :one
-SELECT id, workspace_id, sku, name, description, category_id, brand, model, image_url, serial_number, manufacturer, barcode, is_insured, is_archived, lifetime_warranty, warranty_details, purchased_from, min_stock_level, short_code, obsidian_vault_path, obsidian_note_path, search_vector, created_at, updated_at FROM warehouse.items
+SELECT id, workspace_id, sku, name, description, category_id, brand, model, image_url, serial_number, manufacturer, barcode, is_insured, is_archived, lifetime_warranty, warranty_details, purchased_from, min_stock_level, short_code, obsidian_vault_path, obsidian_note_path, search_vector, created_at, updated_at, needs_review FROM warehouse.items
 WHERE workspace_id = $1 AND barcode = $2
 `
 
@@ -221,12 +237,13 @@ func (q *Queries) GetItemByBarcode(ctx context.Context, arg GetItemByBarcodePara
 		&i.SearchVector,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.NeedsReview,
 	)
 	return i, err
 }
 
 const getItemBySKU = `-- name: GetItemBySKU :one
-SELECT id, workspace_id, sku, name, description, category_id, brand, model, image_url, serial_number, manufacturer, barcode, is_insured, is_archived, lifetime_warranty, warranty_details, purchased_from, min_stock_level, short_code, obsidian_vault_path, obsidian_note_path, search_vector, created_at, updated_at FROM warehouse.items
+SELECT id, workspace_id, sku, name, description, category_id, brand, model, image_url, serial_number, manufacturer, barcode, is_insured, is_archived, lifetime_warranty, warranty_details, purchased_from, min_stock_level, short_code, obsidian_vault_path, obsidian_note_path, search_vector, created_at, updated_at, needs_review FROM warehouse.items
 WHERE workspace_id = $1 AND sku = $2
 `
 
@@ -263,12 +280,13 @@ func (q *Queries) GetItemBySKU(ctx context.Context, arg GetItemBySKUParams) (War
 		&i.SearchVector,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.NeedsReview,
 	)
 	return i, err
 }
 
 const getItemByShortCode = `-- name: GetItemByShortCode :one
-SELECT id, workspace_id, sku, name, description, category_id, brand, model, image_url, serial_number, manufacturer, barcode, is_insured, is_archived, lifetime_warranty, warranty_details, purchased_from, min_stock_level, short_code, obsidian_vault_path, obsidian_note_path, search_vector, created_at, updated_at FROM warehouse.items
+SELECT id, workspace_id, sku, name, description, category_id, brand, model, image_url, serial_number, manufacturer, barcode, is_insured, is_archived, lifetime_warranty, warranty_details, purchased_from, min_stock_level, short_code, obsidian_vault_path, obsidian_note_path, search_vector, created_at, updated_at, needs_review FROM warehouse.items
 WHERE workspace_id = $1 AND short_code = $2
 `
 
@@ -305,6 +323,7 @@ func (q *Queries) GetItemByShortCode(ctx context.Context, arg GetItemByShortCode
 		&i.SearchVector,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.NeedsReview,
 	)
 	return i, err
 }
@@ -345,7 +364,7 @@ func (q *Queries) GetItemLabels(ctx context.Context, itemID uuid.UUID) ([]Wareho
 }
 
 const getItemWithDetails = `-- name: GetItemWithDetails :one
-SELECT i.id, i.workspace_id, i.sku, i.name, i.description, i.category_id, i.brand, i.model, i.image_url, i.serial_number, i.manufacturer, i.barcode, i.is_insured, i.is_archived, i.lifetime_warranty, i.warranty_details, i.purchased_from, i.min_stock_level, i.short_code, i.obsidian_vault_path, i.obsidian_note_path, i.search_vector, i.created_at, i.updated_at, c.name as category_name, co.name as company_name
+SELECT i.id, i.workspace_id, i.sku, i.name, i.description, i.category_id, i.brand, i.model, i.image_url, i.serial_number, i.manufacturer, i.barcode, i.is_insured, i.is_archived, i.lifetime_warranty, i.warranty_details, i.purchased_from, i.min_stock_level, i.short_code, i.obsidian_vault_path, i.obsidian_note_path, i.search_vector, i.created_at, i.updated_at, i.needs_review, c.name as category_name, co.name as company_name
 FROM warehouse.items i
 LEFT JOIN warehouse.categories c ON i.category_id = c.id
 LEFT JOIN warehouse.companies co ON i.purchased_from = co.id
@@ -382,6 +401,7 @@ type GetItemWithDetailsRow struct {
 	SearchVector      interface{}        `json:"search_vector"`
 	CreatedAt         pgtype.Timestamptz `json:"created_at"`
 	UpdatedAt         pgtype.Timestamptz `json:"updated_at"`
+	NeedsReview       *bool              `json:"needs_review"`
 	CategoryName      *string            `json:"category_name"`
 	CompanyName       *string            `json:"company_name"`
 }
@@ -414,6 +434,7 @@ func (q *Queries) GetItemWithDetails(ctx context.Context, arg GetItemWithDetails
 		&i.SearchVector,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.NeedsReview,
 		&i.CategoryName,
 		&i.CompanyName,
 	)
@@ -459,7 +480,7 @@ func (q *Queries) ItemShortCodeExists(ctx context.Context, arg ItemShortCodeExis
 }
 
 const listItems = `-- name: ListItems :many
-SELECT id, workspace_id, sku, name, description, category_id, brand, model, image_url, serial_number, manufacturer, barcode, is_insured, is_archived, lifetime_warranty, warranty_details, purchased_from, min_stock_level, short_code, obsidian_vault_path, obsidian_note_path, search_vector, created_at, updated_at FROM warehouse.items
+SELECT id, workspace_id, sku, name, description, category_id, brand, model, image_url, serial_number, manufacturer, barcode, is_insured, is_archived, lifetime_warranty, warranty_details, purchased_from, min_stock_level, short_code, obsidian_vault_path, obsidian_note_path, search_vector, created_at, updated_at, needs_review FROM warehouse.items
 WHERE workspace_id = $1 AND is_archived = false
 ORDER BY name
 LIMIT $2 OFFSET $3
@@ -505,6 +526,7 @@ func (q *Queries) ListItems(ctx context.Context, arg ListItemsParams) ([]Warehou
 			&i.SearchVector,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.NeedsReview,
 		); err != nil {
 			return nil, err
 		}
@@ -517,7 +539,7 @@ func (q *Queries) ListItems(ctx context.Context, arg ListItemsParams) ([]Warehou
 }
 
 const listItemsByCategory = `-- name: ListItemsByCategory :many
-SELECT id, workspace_id, sku, name, description, category_id, brand, model, image_url, serial_number, manufacturer, barcode, is_insured, is_archived, lifetime_warranty, warranty_details, purchased_from, min_stock_level, short_code, obsidian_vault_path, obsidian_note_path, search_vector, created_at, updated_at FROM warehouse.items
+SELECT id, workspace_id, sku, name, description, category_id, brand, model, image_url, serial_number, manufacturer, barcode, is_insured, is_archived, lifetime_warranty, warranty_details, purchased_from, min_stock_level, short_code, obsidian_vault_path, obsidian_note_path, search_vector, created_at, updated_at, needs_review FROM warehouse.items
 WHERE workspace_id = $1 AND category_id = $2 AND is_archived = false
 ORDER BY name
 LIMIT $3 OFFSET $4
@@ -569,6 +591,66 @@ func (q *Queries) ListItemsByCategory(ctx context.Context, arg ListItemsByCatego
 			&i.SearchVector,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.NeedsReview,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listItemsNeedingReview = `-- name: ListItemsNeedingReview :many
+SELECT id, workspace_id, sku, name, description, category_id, brand, model, image_url, serial_number, manufacturer, barcode, is_insured, is_archived, lifetime_warranty, warranty_details, purchased_from, min_stock_level, short_code, obsidian_vault_path, obsidian_note_path, search_vector, created_at, updated_at, needs_review FROM warehouse.items
+WHERE workspace_id = $1 AND needs_review = true AND is_archived = false
+ORDER BY updated_at DESC
+LIMIT $2 OFFSET $3
+`
+
+type ListItemsNeedingReviewParams struct {
+	WorkspaceID uuid.UUID `json:"workspace_id"`
+	Limit       int32     `json:"limit"`
+	Offset      int32     `json:"offset"`
+}
+
+func (q *Queries) ListItemsNeedingReview(ctx context.Context, arg ListItemsNeedingReviewParams) ([]WarehouseItem, error) {
+	rows, err := q.db.Query(ctx, listItemsNeedingReview, arg.WorkspaceID, arg.Limit, arg.Offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []WarehouseItem{}
+	for rows.Next() {
+		var i WarehouseItem
+		if err := rows.Scan(
+			&i.ID,
+			&i.WorkspaceID,
+			&i.Sku,
+			&i.Name,
+			&i.Description,
+			&i.CategoryID,
+			&i.Brand,
+			&i.Model,
+			&i.ImageUrl,
+			&i.SerialNumber,
+			&i.Manufacturer,
+			&i.Barcode,
+			&i.IsInsured,
+			&i.IsArchived,
+			&i.LifetimeWarranty,
+			&i.WarrantyDetails,
+			&i.PurchasedFrom,
+			&i.MinStockLevel,
+			&i.ShortCode,
+			&i.ObsidianVaultPath,
+			&i.ObsidianNotePath,
+			&i.SearchVector,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.NeedsReview,
 		); err != nil {
 			return nil, err
 		}
@@ -592,7 +674,7 @@ func (q *Queries) RestoreItem(ctx context.Context, id uuid.UUID) error {
 }
 
 const searchItems = `-- name: SearchItems :many
-SELECT id, workspace_id, sku, name, description, category_id, brand, model, image_url, serial_number, manufacturer, barcode, is_insured, is_archived, lifetime_warranty, warranty_details, purchased_from, min_stock_level, short_code, obsidian_vault_path, obsidian_note_path, search_vector, created_at, updated_at FROM warehouse.items
+SELECT id, workspace_id, sku, name, description, category_id, brand, model, image_url, serial_number, manufacturer, barcode, is_insured, is_archived, lifetime_warranty, warranty_details, purchased_from, min_stock_level, short_code, obsidian_vault_path, obsidian_note_path, search_vector, created_at, updated_at, needs_review FROM warehouse.items
 WHERE workspace_id = $1
   AND is_archived = false
   AND search_vector @@ plainto_tsquery('english', $2)
@@ -640,6 +722,7 @@ func (q *Queries) SearchItems(ctx context.Context, arg SearchItemsParams) ([]War
 			&i.SearchVector,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.NeedsReview,
 		); err != nil {
 			return nil, err
 		}
@@ -657,9 +740,9 @@ SET name = $2, description = $3, category_id = $4, brand = $5, model = $6,
     image_url = $7, serial_number = $8, manufacturer = $9, barcode = $10,
     is_insured = $11, lifetime_warranty = $12, warranty_details = $13,
     purchased_from = $14, min_stock_level = $15, obsidian_vault_path = $16,
-    obsidian_note_path = $17, updated_at = now()
+    obsidian_note_path = $17, needs_review = $18, updated_at = now()
 WHERE id = $1
-RETURNING id, workspace_id, sku, name, description, category_id, brand, model, image_url, serial_number, manufacturer, barcode, is_insured, is_archived, lifetime_warranty, warranty_details, purchased_from, min_stock_level, short_code, obsidian_vault_path, obsidian_note_path, search_vector, created_at, updated_at
+RETURNING id, workspace_id, sku, name, description, category_id, brand, model, image_url, serial_number, manufacturer, barcode, is_insured, is_archived, lifetime_warranty, warranty_details, purchased_from, min_stock_level, short_code, obsidian_vault_path, obsidian_note_path, search_vector, created_at, updated_at, needs_review
 `
 
 type UpdateItemParams struct {
@@ -680,6 +763,7 @@ type UpdateItemParams struct {
 	MinStockLevel     int32       `json:"min_stock_level"`
 	ObsidianVaultPath *string     `json:"obsidian_vault_path"`
 	ObsidianNotePath  *string     `json:"obsidian_note_path"`
+	NeedsReview       *bool       `json:"needs_review"`
 }
 
 func (q *Queries) UpdateItem(ctx context.Context, arg UpdateItemParams) (WarehouseItem, error) {
@@ -701,6 +785,7 @@ func (q *Queries) UpdateItem(ctx context.Context, arg UpdateItemParams) (Warehou
 		arg.MinStockLevel,
 		arg.ObsidianVaultPath,
 		arg.ObsidianNotePath,
+		arg.NeedsReview,
 	)
 	var i WarehouseItem
 	err := row.Scan(
@@ -728,6 +813,7 @@ func (q *Queries) UpdateItem(ctx context.Context, arg UpdateItemParams) (Warehou
 		&i.SearchVector,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.NeedsReview,
 	)
 	return i, err
 }

@@ -204,7 +204,7 @@ const markInventoryUsed = `-- name: MarkInventoryUsed :one
 UPDATE warehouse.inventory
 SET last_used_at = NOW(), updated_at = NOW()
 WHERE id = $1 AND workspace_id = $2
-RETURNING id, workspace_id, item_id, location_id, container_id, quantity, condition, status, date_acquired, purchase_price, currency_code, warranty_expires, expiration_date, notes, is_archived, created_at, updated_at, last_used_at
+RETURNING id, workspace_id, item_id, location_id, container_id, quantity, condition, status, date_acquired, purchase_price, currency_code, warranty_expires, expiration_date, notes, last_used_at, is_archived, created_at, updated_at
 `
 
 type MarkInventoryUsedParams struct {
@@ -231,10 +231,10 @@ func (q *Queries) MarkInventoryUsed(ctx context.Context, arg MarkInventoryUsedPa
 		&i.WarrantyExpires,
 		&i.ExpirationDate,
 		&i.Notes,
+		&i.LastUsedAt,
 		&i.IsArchived,
 		&i.CreatedAt,
 		&i.UpdatedAt,
-		&i.LastUsedAt,
 	)
 	return i, err
 }
