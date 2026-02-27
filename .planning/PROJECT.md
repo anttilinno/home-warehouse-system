@@ -129,7 +129,13 @@ Reliable inventory access anywhere — online or offline — with seamless sync.
 
 ### Active
 
-(No active requirements — next milestone TBD)
+**v1.9 Quick Capture (started 2026-02-27):**
+
+- Rapid item entry mode for mobile bulk onboarding
+- Camera-first flow: snap photos → type name → save → next item
+- Auto-generated SKU, sticky batch settings (location/category)
+- Full offline support with queued sync
+- "Needs details" flag and filter for desktop completion
 
 ### Out of Scope
 
@@ -146,6 +152,7 @@ Reliable inventory access anywhere — online or offline — with seamless sync.
 ## Current State
 
 **Shipped:** v1.8 Social Login (2026-02-22)
+**Active:** v1.9 Quick Capture (started 2026-02-27)
 
 **Tech stack:**
 - Backend: Go 1.25, Chi, sqlc, PostgreSQL, golang.org/x/oauth2
@@ -235,4 +242,4 @@ Reliable inventory access anywhere — online or offline — with seamless sync.
 - Locale-prefix gap in backend OAuth redirect (non-English callback locale)
 
 ---
-*Last updated: 2026-02-22 after v1.8 milestone*
+*Last updated: 2026-02-27 after v1.9 milestone start*

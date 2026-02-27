@@ -2,12 +2,12 @@
 gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Quick Capture
-status: in-progress
-last_updated: "2026-02-27T14:10:13.000Z"
+status: unknown
+last_updated: "2026-02-27T14:15:06.564Z"
 progress:
-  total_phases: 42
+  total_phases: 43
   completed_phases: 41
-  total_plans: 122
+  total_plans: 123
   completed_plans: 120
 ---
 
