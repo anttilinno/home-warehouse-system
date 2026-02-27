@@ -2,19 +2,19 @@
 
 ## Project Reference
 
-See: `.planning/PROJECT.md` (updated 2026-02-22)
+See: `.planning/PROJECT.md` (updated 2026-02-27)
 
 **Core value:** Reliable inventory access anywhere -- online or offline -- with seamless sync
-**Current focus:** Planning next milestone
+**Current focus:** v1.9 Quick Capture -- Phase 43 Backend Schema and Needs Review API
 
 ## Current Position
 
-Phase: 42 of 42 (all phases complete)
-Plan: All complete
-Status: Milestone v1.8 shipped
-Last activity: 2026-02-22 -- v1.8 Social Login milestone completed and archived
+Phase: 43 (1 of 5 in v1.9) (Backend Schema and Needs Review API)
+Plan: 1 of 2 in current phase
+Status: Executing
+Last activity: 2026-02-27 -- Completed 43-01 (needs_review data layer)
 
-Progress: [######░░░░] 60%
+Progress: [█░░░░░░░░░] 10%
 
 ## Performance Metrics
 
@@ -36,24 +36,21 @@ Progress: [######░░░░] 60%
 | v1.6 | 5 | 9 | Complete |
 | v1.7 | 5 | 7 | Complete |
 | v1.8 | 3 | 7 | Complete |
+| v1.9 | 5 | TBD | In progress |
 
 ## Accumulated Context
 
 ### Decisions
 
 See `.planning/PROJECT.md` Key Decisions table for full list.
+Recent decisions affecting current work:
 
-Key v1.8 decisions:
-- Backend-driven Authorization Code flow (no NextAuth.js or frontend OAuth libraries)
-- Single new dependency: golang.org/x/oauth2 v0.35.0 with built-in PKCE
-- One-time code exchange pattern for token handoff (avoids cross-origin cookie issues)
-- No provider token storage (columns left NULL, avoids encryption complexity)
-- Empty passwordHash in domain entity maps to NULL in database via *string scanning
-- has_password column defaults to true so existing users retain password-based auth
-- Full page redirect after OAuth exchange (window.location.href) to ensure AuthProvider picks up token
-- sessionStorage for redirect_to preservation across OAuth flow (auto-clears on tab close)
-- OAuthErrorHandler uses Suspense boundary wrapper for useSearchParams in Next.js App Router
-- Inline text message below buttons (not tooltip) for offline indication -- more accessible on mobile
+- [v1.9 research]: Single-route design for iOS camera permission persistence
+- [v1.9 research]: Photos separate from mutation queue -- new IndexedDB store, chained upload after item sync
+- [v1.9 research]: Zero new npm dependencies
+- [v1.9 research]: needs_review is a simple boolean column with default false
+- [43-01]: Used shared.Pagination for FindNeedingReview to match existing patterns
+- [43-01]: needsReview parameter placed before createdAt/updatedAt in Reconstruct
 
 ### Pending Todos
 
@@ -70,11 +67,15 @@ Carried forward:
 - Jobs package coverage limited by pgxpool/Redis requirements
 - Google Consent Screen verification can take days/weeks (testing mode supports 100 users)
 
+v1.9 specific:
+- SyncManager.resolvedIds persistence across page reloads needs code verification before Phase 46
+- iOS storage eviction under real device conditions -- validate compression parameters in Phase 44
+
 ## Session Continuity
 
-Last session: 2026-02-22
-Stopped at: v1.8 Social Login milestone completed and archived
-Next step: `/gsd:new-milestone` for next milestone
+Last session: 2026-02-27
+Stopped at: Completed 43-01-PLAN.md
+Next step: Execute 43-02-PLAN.md
 
 ---
-*Updated: 2026-02-22 after v1.8 milestone completion*
+*Updated: 2026-02-27 after completing 43-01 (needs_review data layer)*

@@ -1,0 +1,98 @@
+# Requirements: Home Warehouse System
+
+**Defined:** 2026-02-27
+**Core Value:** Reliable inventory access anywhere — online or offline — with seamless sync
+
+## v1.9 Requirements
+
+Requirements for Quick Capture milestone. Each maps to roadmap phases.
+
+### Quick Capture Core
+
+- [ ] **QC-01**: User can open quick capture mode from the floating action button
+- [ ] **QC-02**: User sees camera viewfinder immediately on entering quick capture
+- [ ] **QC-03**: User can take 1-5 photos per item with tap-to-capture
+- [ ] **QC-04**: User types only item name to save (single required field)
+- [ ] **QC-05**: System auto-generates SKU for quick-captured items
+- [ ] **QC-06**: After saving, form resets instantly and camera is ready for next item
+- [ ] **QC-07**: User sees running count of items captured this session
+- [ ] **QC-08**: User feels haptic/audio feedback on successful save
+
+### Batch Settings
+
+- [ ] **BATCH-01**: User can set a default category that applies to all items in the session
+- [ ] **BATCH-02**: User can set a default location that applies to all items in the session
+- [ ] **BATCH-03**: User sees a batch settings bar showing current category/location defaults
+- [ ] **BATCH-04**: Batch settings persist across items but reset when session ends
+
+### Offline & Sync
+
+- [ ] **SYNC-01**: Quick capture works fully offline — items queued in IndexedDB
+- [ ] **SYNC-02**: Photos stored as blobs in IndexedDB for offline display
+- [ ] **SYNC-03**: Photos upload automatically after item syncs to server (chained sync)
+- [ ] **SYNC-04**: Offline-captured items appear in item list with pending indicator
+
+### Completion Workflow
+
+- [x] **COMP-01**: Quick-captured items are flagged as "needs details" in the database
+- [ ] **COMP-02**: User can filter item list to show only "needs details" items
+- [ ] **COMP-03**: User can mark an item as complete (remove "needs details" flag)
+- [ ] **COMP-04**: User sees session summary when ending quick capture (count + thumbnails)
+
+## Future Requirements
+
+Deferred to future releases. Tracked but not in current roadmap.
+
+### Batch Enhancements
+
+- **BATCH-05**: Barcode scanning integration in quick capture (scan barcode → auto-fill name from lookup)
+- **BATCH-06**: Voice-to-text for item naming (hands-free capture)
+
+### Import Integration
+
+- **IMP-01**: CSV-imported items with missing fields flagged as "needs details"
+
+## Out of Scope
+
+| Feature | Reason |
+|---------|--------|
+| Capture without photo (name-only) | Camera-first is the core value prop; regular wizard handles text-only |
+| Location auto-creation during capture | Cross-entity dependency adds sync complexity; pick from existing list |
+| Inventory entry during capture | Inventory is a separate entity with quantity/status; capture is for item catalog |
+| AI-based item recognition from photo | High complexity, API dependency, not core to rapid capture |
+
+## Traceability
+
+Which phases cover which requirements. Updated during roadmap creation.
+
+| Requirement | Phase | Status |
+|-------------|-------|--------|
+| QC-01 | Phase 45 | Pending |
+| QC-02 | Phase 45 | Pending |
+| QC-03 | Phase 45 | Pending |
+| QC-04 | Phase 45 | Pending |
+| QC-05 | Phase 44 | Pending |
+| QC-06 | Phase 45 | Pending |
+| QC-07 | Phase 45 | Pending |
+| QC-08 | Phase 45 | Pending |
+| BATCH-01 | Phase 44 | Pending |
+| BATCH-02 | Phase 44 | Pending |
+| BATCH-03 | Phase 44 | Pending |
+| BATCH-04 | Phase 44 | Pending |
+| SYNC-01 | Phase 44 | Pending |
+| SYNC-02 | Phase 44 | Pending |
+| SYNC-03 | Phase 46 | Pending |
+| SYNC-04 | Phase 46 | Pending |
+| COMP-01 | Phase 43 | Complete |
+| COMP-02 | Phase 43 | Pending |
+| COMP-03 | Phase 43 | Pending |
+| COMP-04 | Phase 47 | Pending |
+
+**Coverage:**
+- v1.9 requirements: 16 total
+- Mapped to phases: 16
+- Unmapped: 0
+
+---
+*Requirements defined: 2026-02-27*
+*Last updated: 2026-02-27 after roadmap creation*
