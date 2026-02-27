@@ -20,14 +20,14 @@ Requirements for Quick Capture milestone. Each maps to roadmap phases.
 
 ### Batch Settings
 
-- [ ] **BATCH-01**: User can set a default category that applies to all items in the session
-- [ ] **BATCH-02**: User can set a default location that applies to all items in the session
-- [ ] **BATCH-03**: User sees a batch settings bar showing current category/location defaults
-- [ ] **BATCH-04**: Batch settings persist across items but reset when session ends
+- [x] **BATCH-01**: User can set a default category that applies to all items in the session
+- [x] **BATCH-02**: User can set a default location that applies to all items in the session
+- [x] **BATCH-03**: User sees a batch settings bar showing current category/location defaults
+- [x] **BATCH-04**: Batch settings persist across items but reset when session ends
 
 ### Offline & Sync
 
-- [ ] **SYNC-01**: Quick capture works fully offline — items queued in IndexedDB
+- [x] **SYNC-01**: Quick capture works fully offline — items queued in IndexedDB
 - [x] **SYNC-02**: Photos stored as blobs in IndexedDB for offline display
 - [ ] **SYNC-03**: Photos upload automatically after item syncs to server (chained sync)
 - [ ] **SYNC-04**: Offline-captured items appear in item list with pending indicator
@@ -75,11 +75,11 @@ Which phases cover which requirements. Updated during roadmap creation.
 | QC-06 | Phase 45 | Pending |
 | QC-07 | Phase 45 | Pending |
 | QC-08 | Phase 45 | Pending |
-| BATCH-01 | Phase 44 | Pending |
-| BATCH-02 | Phase 44 | Pending |
-| BATCH-03 | Phase 44 | Pending |
-| BATCH-04 | Phase 44 | Pending |
-| SYNC-01 | Phase 44 | Pending |
+| BATCH-01 | Phase 44 | Complete |
+| BATCH-02 | Phase 44 | Complete |
+| BATCH-03 | Phase 44 | Complete |
+| BATCH-04 | Phase 44 | Complete |
+| SYNC-01 | Phase 44 | Complete |
 | SYNC-02 | Phase 44 | Complete |
 | SYNC-03 | Phase 46 | Pending |
 | SYNC-04 | Phase 46 | Pending |
