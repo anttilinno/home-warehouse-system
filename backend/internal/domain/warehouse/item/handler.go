@@ -27,7 +27,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 		var total int
 		var err error
 
-		if input.NeedsReview != nil && *input.NeedsReview {
+		if input.NeedsReview {
 			items, total, err = svc.ListNeedingReview(ctx, workspaceID, pagination)
 		} else {
 			items, total, err = svc.List(ctx, workspaceID, pagination)
@@ -426,7 +426,7 @@ func toItemResponse(i *Item) ItemResponse {
 type ListItemsInput struct {
 	Page        int  `query:"page" default:"1" minimum:"1"`
 	Limit       int  `query:"limit" default:"50" minimum:"1" maximum:"100"`
-	NeedsReview *bool `query:"needs_review,omitempty" doc:"Filter by needs_review status"`
+	NeedsReview bool `query:"needs_review,omitempty" doc:"Filter by needs_review status"`
 }
 
 type ListItemsOutput struct {

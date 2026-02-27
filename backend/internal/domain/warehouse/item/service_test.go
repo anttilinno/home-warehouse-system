@@ -1733,3 +1733,58 @@ func TestService_GetItemLabels(t *testing.T) {
 		assert.Equal(t, repoErr, err)
 	})
 }
+
+func TestService_Create_WithNeedsReview(t *testing.T) {
+	ctx := context.Background()
+	workspaceID := uuid.New()
+
+	mockRepo := new(MockRepository)
+	mockCatRepo := new(MockCategoryRepository)
+	svc := NewService(mockRepo, mockCatRepo)
+
+	mockRepo.On("SKUExists", ctx, workspaceID, "NR-001").Return(false, nil)
+	mockRepo.On("ShortCodeExists", ctx, workspaceID, mock.AnythingOfType("string")).Return(false, nil)
+	mockRepo.On("Save", ctx, mock.MatchedBy(func(item *Item) bool {
+		return item.NeedsReview() != nil && *item.NeedsReview() == true
+	})).Return(nil)
+
+	item, err := svc.Create(ctx, CreateInput{
+		WorkspaceID:   workspaceID,
+		SKU:           "NR-001",
+		Name:          "Needs Review Item",
+		MinStockLevel: 0,
+		NeedsReview:   ptrBool(true),
+	})
+
+	assert.NoError(t, err)
+	assert.NotNil(t, item)
+	assert.NotNil(t, item.NeedsReview())
+	assert.True(t, *item.NeedsReview())
+	mockRepo.AssertExpectations(t)
+}
+
+func TestService_ListNeedingReview(t *testing.T) {
+	ctx := context.Background()
+	workspaceID := uuid.New()
+
+	mockRepo := new(MockRepository)
+	svc := NewService(mockRepo, nil)
+
+	item1, _ := NewItem(workspaceID, "Review Item 1", "REV-001", 0)
+	item1.SetNeedsReview(true)
+	item2, _ := NewItem(workspaceID, "Review Item 2", "REV-002", 0)
+	item2.SetNeedsReview(true)
+	items := []*Item{item1, item2}
+
+	pagination := shared.Pagination{Page: 1, PageSize: 50}
+	mockRepo.On("FindNeedingReview", ctx, workspaceID, pagination).Return(items, 2, nil)
+
+	result, count, err := svc.ListNeedingReview(ctx, workspaceID, pagination)
+
+	assert.NoError(t, err)
+	assert.Equal(t, 2, count)
+	assert.Len(t, result, 2)
+	assert.True(t, *result[0].NeedsReview())
+	assert.True(t, *result[1].NeedsReview())
+	mockRepo.AssertExpectations(t)
+}

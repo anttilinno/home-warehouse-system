@@ -474,6 +474,68 @@ func TestItem_Reconstruct(t *testing.T) {
 	assert.Equal(t, &notePath, reconstructed.ObsidianNotePath())
 }
 
+func TestItem_NewItem_DefaultsNeedsReviewToFalse(t *testing.T) {
+	workspaceID := uuid.New()
+	testItem, err := item.NewItem(workspaceID, "Test Item", "TEST-001", 0)
+	assert.NoError(t, err)
+	assert.NotNil(t, testItem.NeedsReview())
+	assert.False(t, *testItem.NeedsReview())
+}
+
+func TestItem_SetNeedsReview(t *testing.T) {
+	workspaceID := uuid.New()
+	testItem, err := item.NewItem(workspaceID, "Test Item", "TEST-001", 0)
+	assert.NoError(t, err)
+
+	// Initially false
+	assert.False(t, *testItem.NeedsReview())
+
+	originalUpdatedAt := testItem.UpdatedAt()
+	testItem.SetNeedsReview(true)
+
+	assert.NotNil(t, testItem.NeedsReview())
+	assert.True(t, *testItem.NeedsReview())
+	assert.True(t, testItem.UpdatedAt().After(originalUpdatedAt))
+
+	// Set back to false
+	testItem.SetNeedsReview(false)
+	assert.NotNil(t, testItem.NeedsReview())
+	assert.False(t, *testItem.NeedsReview())
+}
+
+func TestItem_Update_WithNeedsReview(t *testing.T) {
+	workspaceID := uuid.New()
+
+	t.Run("update with NeedsReview=true", func(t *testing.T) {
+		testItem, _ := item.NewItem(workspaceID, "Test Item", "TEST-001", 0)
+		assert.False(t, *testItem.NeedsReview())
+
+		trueVal := true
+		err := testItem.Update(item.UpdateInput{
+			Name:          "Test Item",
+			MinStockLevel: 0,
+			NeedsReview:   &trueVal,
+		})
+		assert.NoError(t, err)
+		assert.True(t, *testItem.NeedsReview())
+	})
+
+	t.Run("update with NeedsReview=nil preserves value", func(t *testing.T) {
+		testItem, _ := item.NewItem(workspaceID, "Test Item", "TEST-001", 0)
+		testItem.SetNeedsReview(true)
+		assert.True(t, *testItem.NeedsReview())
+
+		err := testItem.Update(item.UpdateInput{
+			Name:          "Test Item",
+			MinStockLevel: 0,
+			NeedsReview:   nil,
+		})
+		assert.NoError(t, err)
+		// Should stay true when nil is passed
+		assert.True(t, *testItem.NeedsReview())
+	})
+}
+
 // Helper function
 func strPtr(s string) *string {
 	return &s

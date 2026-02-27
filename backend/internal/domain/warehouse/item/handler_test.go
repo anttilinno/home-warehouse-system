@@ -492,6 +492,88 @@ func TestItemHandler_DetachLabel(t *testing.T) {
 	})
 }
 
+// NeedsReview Tests
+
+func TestItemHandler_ListItems_FilterByNeedsReview(t *testing.T) {
+	setup := testutil.NewHandlerTestSetup()
+	mockSvc := new(MockService)
+	item.RegisterRoutes(setup.API, mockSvc, nil)
+
+	t.Run("filters items by needs_review=true", func(t *testing.T) {
+		item1, _ := item.NewItem(setup.WorkspaceID, "Review Item", "REV-001", 0)
+		item1.SetNeedsReview(true)
+		items := []*item.Item{item1}
+
+		mockSvc.On("ListNeedingReview", mock.Anything, setup.WorkspaceID, mock.MatchedBy(func(p shared.Pagination) bool {
+			return p.Page == 1 && p.PageSize == 50
+		})).Return(items, 1, nil).Once()
+
+		rec := setup.Get("/items?needs_review=true")
+
+		testutil.AssertStatus(t, rec, http.StatusOK)
+		mockSvc.AssertExpectations(t)
+	})
+
+	t.Run("without needs_review filter calls List", func(t *testing.T) {
+		item1, _ := item.NewItem(setup.WorkspaceID, "Normal Item", "NRM-001", 0)
+		items := []*item.Item{item1}
+
+		mockSvc.On("List", mock.Anything, setup.WorkspaceID, mock.MatchedBy(func(p shared.Pagination) bool {
+			return p.Page == 1 && p.PageSize == 50
+		})).Return(items, 1, nil).Once()
+
+		rec := setup.Get("/items")
+
+		testutil.AssertStatus(t, rec, http.StatusOK)
+		mockSvc.AssertExpectations(t)
+	})
+}
+
+func TestItemHandler_CreateItem_WithNeedsReview(t *testing.T) {
+	setup := testutil.NewHandlerTestSetup()
+	mockSvc := new(MockService)
+	item.RegisterRoutes(setup.API, mockSvc, nil)
+
+	testItem, _ := item.NewItem(setup.WorkspaceID, "Quick Capture", "QC-001", 0)
+	testItem.SetNeedsReview(true)
+
+	mockSvc.On("Create", mock.Anything, mock.MatchedBy(func(input item.CreateInput) bool {
+		return input.Name == "Quick Capture" && input.NeedsReview != nil && *input.NeedsReview == true
+	})).Return(testItem, nil).Once()
+
+	body := `{"name":"Quick Capture","sku":"QC-001","min_stock_level":0,"needs_review":true}`
+	rec := setup.Post("/items", body)
+
+	testutil.AssertStatus(t, rec, http.StatusOK)
+	assert.Contains(t, rec.Body.String(), `"needs_review":true`)
+	mockSvc.AssertExpectations(t)
+}
+
+func TestItemHandler_UpdateItem_ClearNeedsReview(t *testing.T) {
+	setup := testutil.NewHandlerTestSetup()
+	mockSvc := new(MockService)
+	item.RegisterRoutes(setup.API, mockSvc, nil)
+
+	currentItem, _ := item.NewItem(setup.WorkspaceID, "Review Item", "REV-001", 0)
+	currentItem.SetNeedsReview(true)
+	itemID := currentItem.ID()
+
+	updatedItem, _ := item.NewItem(setup.WorkspaceID, "Review Item", "REV-001", 0)
+	// needs_review stays false (default)
+
+	mockSvc.On("GetByID", mock.Anything, itemID, setup.WorkspaceID).
+		Return(currentItem, nil).Once()
+	mockSvc.On("Update", mock.Anything, itemID, setup.WorkspaceID, mock.MatchedBy(func(input item.UpdateInput) bool {
+		return input.NeedsReview != nil && *input.NeedsReview == false
+	})).Return(updatedItem, nil).Once()
+
+	body := `{"needs_review":false}`
+	rec := setup.Patch(fmt.Sprintf("/items/%s", itemID), body)
+
+	testutil.AssertStatus(t, rec, http.StatusOK)
+	mockSvc.AssertExpectations(t)
+}
+
 // Event Publishing Tests
 
 func TestItemHandler_Create_PublishesEvent(t *testing.T) {
