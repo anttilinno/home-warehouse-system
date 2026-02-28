@@ -5,7 +5,6 @@ import { useTranslations } from "next-intl";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import {
   Plus,
-  Search,
   HandCoins,
   MoreHorizontal,
   CheckCircle2,
@@ -20,6 +19,7 @@ import { toast } from "sonner";
 import { format, parseISO } from "date-fns";
 
 import { Button } from "@/components/ui/button";
+import { CollapsibleSearch } from "@/components/ui/collapsible-search";
 import { useDateFormat } from "@/lib/hooks/use-date-format";
 import { useNumberFormat } from "@/lib/hooks/use-number-format";
 import { Input } from "@/components/ui/input";
@@ -831,33 +831,51 @@ export default function LoansPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Loans</h1>
-        <p className="text-muted-foreground">
+        <p className="text-muted-foreground hidden sm:block">
           Track borrowed items and manage returns
         </p>
       </div>
 
       {/* Stats */}
       {loans.length > 0 && (
-        <div className="grid gap-4 md:grid-cols-3">
-          <Card>
-            <CardHeader className="pb-3">
-              <CardDescription>Active Loans</CardDescription>
-              <CardTitle className="text-3xl">{activeCount}</CardTitle>
-            </CardHeader>
-          </Card>
-          <Card>
-            <CardHeader className="pb-3">
-              <CardDescription>Overdue</CardDescription>
-              <CardTitle className="text-3xl text-destructive">{overdueCount}</CardTitle>
-            </CardHeader>
-          </Card>
-          <Card>
-            <CardHeader className="pb-3">
-              <CardDescription>Returned</CardDescription>
-              <CardTitle className="text-3xl">{loans.length - activeCount}</CardTitle>
-            </CardHeader>
-          </Card>
-        </div>
+        <>
+          {/* Mobile: compact inline */}
+          <div className="flex sm:hidden items-center justify-center gap-6">
+            <div className="flex items-center gap-1.5">
+              <HandCoins className="h-4 w-4 text-blue-600" />
+              <span className="text-sm font-semibold">{activeCount}</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <AlertCircle className="h-4 w-4 text-destructive" />
+              <span className="text-sm font-semibold text-destructive">{overdueCount}</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <CheckCircle2 className="h-4 w-4 text-green-600" />
+              <span className="text-sm font-semibold">{loans.length - activeCount}</span>
+            </div>
+          </div>
+          {/* Desktop: full cards */}
+          <div className="hidden sm:grid gap-4 md:grid-cols-3">
+            <Card>
+              <CardHeader className="pb-3">
+                <CardDescription>Active Loans</CardDescription>
+                <CardTitle className="text-3xl">{activeCount}</CardTitle>
+              </CardHeader>
+            </Card>
+            <Card>
+              <CardHeader className="pb-3">
+                <CardDescription>Overdue</CardDescription>
+                <CardTitle className="text-3xl text-destructive">{overdueCount}</CardTitle>
+              </CardHeader>
+            </Card>
+            <Card>
+              <CardHeader className="pb-3">
+                <CardDescription>Returned</CardDescription>
+                <CardTitle className="text-3xl">{loans.length - activeCount}</CardTitle>
+              </CardHeader>
+            </Card>
+          </div>
+        </>
       )}
 
       <Card>
@@ -879,16 +897,12 @@ export default function LoansPage() {
         <CardContent>
           <div className="space-y-4">
             {/* Search and filters */}
-            <div className="flex items-center gap-2">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Search by borrower or inventory..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-9"
-                />
-              </div>
+            <div className="flex items-center gap-2 relative">
+              <CollapsibleSearch
+                placeholder="Search by borrower or inventory..."
+                value={searchQuery}
+                onChange={setSearchQuery}
+              />
               <FilterPopover activeFilterCount={activeFilterCount}>
                 <LoansFilterControls
                   borrowers={borrowers}
@@ -903,8 +917,8 @@ export default function LoansPage() {
                 onClick={() => setExportDialogOpen(true)}
                 disabled={filteredLoans.length === 0}
               >
-                <Download className="mr-2 h-4 w-4" />
-                Export
+                <Download className="sm:mr-2 h-4 w-4" />
+                <span className="hidden sm:inline">Export</span>
               </Button>
             </div>
 
@@ -937,15 +951,14 @@ export default function LoansPage() {
               </EmptyState>
             ) : (
               <div className="rounded-lg border">
-                {/* Header Table - pr-[15px] accounts for body scrollbar width */}
-                <div className="overflow-x-auto pr-[15px]">
+                <div className="overflow-x-auto">
                   <table className="w-full caption-bottom text-sm">
                     <caption className="sr-only">
                       List of borrowed items with borrower, inventory details, loan dates, and status information.
                       Currently showing {sortedLoans.length} {sortedLoans.length === 1 ? "loan" : "loans"}.
                     </caption>
                     <TableHeader className="sticky top-0 z-10 bg-background">
-                      <TableRow className="flex items-center">
+                      <TableRow className="flex items-center [&>th:not(.hidden)]:flex [&>th:not(.hidden)]:items-center">
                         <TableHead className="w-[50px] flex-none">
                           <Checkbox
                             checked={isAllSelected(sortedLoans.map((l) => l.id))}
@@ -960,42 +973,42 @@ export default function LoansPage() {
                           />
                         </TableHead>
                         <SortableTableHead
-                          className="w-[100px] flex-none"
+                          className="w-[80px] sm:w-[100px] flex-none"
                           sortDirection={getSortDirection("is_active")}
                           onSort={() => requestSort("is_active")}
                         >
                           Status
                         </SortableTableHead>
                         <SortableTableHead
-                          className="w-[150px] flex-none"
+                          className="flex-1 min-w-0 sm:w-[150px] sm:flex-none"
                           sortDirection={getSortDirection("borrower_name")}
                           onSort={() => requestSort("borrower_name")}
                         >
                           Borrower
                         </SortableTableHead>
                         <SortableTableHead
-                          className="flex-1 min-w-0"
+                          className="flex-1 min-w-0 hidden sm:flex"
                           sortDirection={getSortDirection("inventory_id")}
                           onSort={() => requestSort("inventory_id")}
                         >
                           Inventory ID
                         </SortableTableHead>
                         <SortableTableHead
-                          className="w-[60px] flex-none"
+                          className="w-[60px] flex-none hidden sm:flex"
                           sortDirection={getSortDirection("quantity")}
                           onSort={() => requestSort("quantity")}
                         >
                           Qty
                         </SortableTableHead>
                         <SortableTableHead
-                          className="w-[110px] flex-none"
+                          className="w-[110px] flex-none hidden sm:flex"
                           sortDirection={getSortDirection("loaned_at")}
                           onSort={() => requestSort("loaned_at")}
                         >
                           Loaned
                         </SortableTableHead>
                         <SortableTableHead
-                          className="w-[110px] flex-none"
+                          className="w-[110px] flex-none hidden sm:flex"
                           sortDirection={getSortDirection("due_date")}
                           onSort={() => requestSort("due_date")}
                         >
@@ -1010,7 +1023,7 @@ export default function LoansPage() {
                 {/* Virtual Scrolling Container */}
                 <div
                   ref={parentRef}
-                  className="overflow-auto"
+                  className="overflow-auto [scrollbar-gutter:stable]"
                   style={{ height: '600px' }}
                 >
                   <div
@@ -1045,16 +1058,16 @@ export default function LoansPage() {
                                   aria-label={`Select loan for ${getBorrowerName(loan.borrower_id)}`}
                                 />
                               </TableCell>
-                              <TableCell className="w-[100px] flex-none">
+                              <TableCell className="w-[80px] sm:w-[100px] flex-none">
                                 <LoanStatusBadge loan={loan} />
                               </TableCell>
-                              <TableCell className="w-[150px] flex-none">
+                              <TableCell className="flex-1 min-w-0 sm:w-[150px] sm:flex-none">
                                 <div className="flex items-center gap-2 truncate">
                                   <User className="h-4 w-4 text-muted-foreground flex-none" />
                                   <span className="truncate">{getBorrowerName(loan.borrower_id)}</span>
                                 </div>
                               </TableCell>
-                              <TableCell className="flex-1 min-w-0">
+                              <TableCell className="flex-1 min-w-0 hidden sm:flex">
                                 <div className="font-mono text-xs truncate">{loan.inventory_id}</div>
                                 {loan.notes && (
                                   <div className="text-sm text-muted-foreground truncate mt-1">
@@ -1062,13 +1075,13 @@ export default function LoansPage() {
                                   </div>
                                 )}
                               </TableCell>
-                              <TableCell className="w-[60px] flex-none">{formatNumber(loan.quantity)}</TableCell>
-                              <TableCell className="w-[110px] flex-none">
+                              <TableCell className="w-[60px] flex-none hidden sm:flex">{formatNumber(loan.quantity)}</TableCell>
+                              <TableCell className="w-[110px] flex-none hidden sm:flex">
                                 <div className="text-sm">
                                   {formatDate(loan.loaned_at)}
                                 </div>
                               </TableCell>
-                              <TableCell className="w-[110px] flex-none">
+                              <TableCell className="w-[110px] flex-none hidden sm:flex">
                                 {loan.due_date ? (
                                   <div className={cn(
                                     "text-sm flex items-center gap-1",

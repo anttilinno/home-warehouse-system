@@ -67,7 +67,7 @@ export function DashboardShell({ children }: DashboardShellProps) {
             );
           }}
         >
-          <div className="min-h-screen bg-gradient-to-br from-pink-50/30 via-muted/30 to-violet-50/30 dark:from-pink-950/10 dark:via-background dark:to-violet-950/10">
+          <div className="min-h-screen overflow-x-hidden bg-gradient-to-br from-pink-50/30 via-muted/30 to-violet-50/30 dark:from-pink-950/10 dark:via-background dark:to-violet-950/10">
             <OfflineIndicator />
             <PendingUploadsIndicator />
             <SkipLinks />

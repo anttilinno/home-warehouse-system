@@ -266,7 +266,7 @@ export default function DashboardPage() {
       {/* Main content (3 columns on desktop) */}
       <div className="lg:col-span-3 space-y-6">
         {/* Stats grid */}
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid grid-cols-4 gap-2 sm:grid-cols-2 sm:gap-4 lg:grid-cols-4">
         <StatsCard
           title={t("stats.totalItems")}
           value={formatNumber(stats.total_items)}
@@ -335,8 +335,8 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
 
-        {/* Recent Activity */}
-        <Card>
+        {/* Recent Activity - hidden on mobile, accessible via floating activity button */}
+        <Card className="hidden sm:block">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <PawPrint size={18} className="text-primary" />
@@ -400,7 +400,7 @@ export default function DashboardPage() {
 
       {/* Activity Feed - Mobile (floating button) */}
       <div className="lg:hidden">
-        <ActivityFeedMobile />
+        <ActivityFeedMobile hasActivity={recentActivity.length > 0} />
       </div>
       </div>
     </div>

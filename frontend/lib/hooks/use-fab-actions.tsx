@@ -5,11 +5,7 @@ import { usePathname, useRouter } from "@/i18n/navigation";
 import {
   ScanLine,
   Package,
-  HandCoins,
   Plus,
-  Box,
-  MapPin,
-  ClipboardList,
   Camera,
 } from "lucide-react";
 import type { FABAction } from "@/components/fab";
@@ -17,20 +13,16 @@ import type { FABAction } from "@/components/fab";
 /**
  * Returns context-aware FAB actions based on current route
  *
- * Route-specific behavior:
- * - /dashboard/items: Add Item as primary action
- * - /dashboard/inventory: Quick Count as primary action
- * - /dashboard/containers: Add Container as primary action
- * - /dashboard/locations: Add Location as primary action
- * - /dashboard/loans: Log Loan as primary action
- * - Default: Scan, Add Item, Log Loan
+ * Only includes actions for pages that exist:
+ * - /dashboard/scan
+ * - /dashboard/items/new
+ * - /dashboard/items/quick-capture
  */
 export function useFABActions(): FABAction[] {
   const pathname = usePathname();
   const router = useRouter();
 
   return useMemo(() => {
-    // Base actions available on most screens
     const scanAction: FABAction = {
       id: "scan",
       icon: <ScanLine className="h-5 w-5" />,
@@ -45,34 +37,6 @@ export function useFABActions(): FABAction[] {
       onClick: () => router.push("/dashboard/items/new"),
     };
 
-    const logLoanAction: FABAction = {
-      id: "log-loan",
-      icon: <HandCoins className="h-5 w-5" />,
-      label: "Log loan",
-      onClick: () => router.push("/dashboard/loans/new"),
-    };
-
-    const addContainerAction: FABAction = {
-      id: "add-container",
-      icon: <Box className="h-5 w-5" />,
-      label: "Add container",
-      onClick: () => router.push("/dashboard/containers/new"),
-    };
-
-    const addLocationAction: FABAction = {
-      id: "add-location",
-      icon: <MapPin className="h-5 w-5" />,
-      label: "Add location",
-      onClick: () => router.push("/dashboard/locations/new"),
-    };
-
-    const quickCountAction: FABAction = {
-      id: "quick-count",
-      icon: <ClipboardList className="h-5 w-5" />,
-      label: "Quick count",
-      onClick: () => router.push("/dashboard/inventory/count"),
-    };
-
     const quickCaptureAction: FABAction = {
       id: "quick-capture",
       icon: <Camera className="h-5 w-5" />,
@@ -80,71 +44,24 @@ export function useFABActions(): FABAction[] {
       onClick: () => router.push("/dashboard/items/quick-capture"),
     };
 
-    // Default actions (4 items - scan, quick capture, add item, log loan)
-    const defaultActions = [scanAction, quickCaptureAction, addItemAction, logLoanAction];
+    // Hide FAB on pages where it's not needed
+    if (pathname === "/dashboard/items/quick-capture" || pathname === "/dashboard/scan") {
+      return [];
+    }
 
-    // Route-specific customization
     // Items page: Quick Capture as first action
     if (
       pathname === "/dashboard/items" ||
       pathname.startsWith("/dashboard/items/")
     ) {
-      // Hide FAB on quick capture page itself
-      if (pathname === "/dashboard/items/quick-capture") {
-        return [];
-      }
       return [
         quickCaptureAction,
         { ...addItemAction, icon: <Plus className="h-5 w-5" /> },
         scanAction,
-        logLoanAction,
       ];
     }
 
-    // Inventory page: Quick Count as first action
-    if (
-      pathname === "/dashboard/inventory" ||
-      pathname.startsWith("/dashboard/inventory/")
-    ) {
-      return [quickCountAction, scanAction, addItemAction, logLoanAction].slice(
-        0,
-        4
-      );
-    }
-
-    // Containers page: Add Container as first action
-    if (
-      pathname === "/dashboard/containers" ||
-      pathname.startsWith("/dashboard/containers/")
-    ) {
-      return [addContainerAction, scanAction, addItemAction].slice(0, 4);
-    }
-
-    // Locations page: Add Location as first action
-    if (
-      pathname === "/dashboard/locations" ||
-      pathname.startsWith("/dashboard/locations/")
-    ) {
-      return [addLocationAction, scanAction, addItemAction].slice(0, 4);
-    }
-
-    // Loans page: Log Loan as first action
-    if (
-      pathname === "/dashboard/loans" ||
-      pathname.startsWith("/dashboard/loans/")
-    ) {
-      return [
-        { ...logLoanAction, icon: <Plus className="h-5 w-5" /> },
-        scanAction,
-        addItemAction,
-      ];
-    }
-
-    // Scan page: Hide FAB (return empty to let consumer decide)
-    if (pathname === "/dashboard/scan") {
-      return [];
-    }
-
-    return defaultActions;
+    // Default: scan, quick capture, add item
+    return [scanAction, quickCaptureAction, addItemAction];
   }, [pathname, router]);
 }

@@ -4,7 +4,6 @@ import { useState, useEffect, useCallback, useMemo } from "react";
 import { useTranslations } from "next-intl";
 import {
   Plus,
-  Search,
   MapPin,
   MoreHorizontal,
   Pencil,
@@ -21,6 +20,7 @@ import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { CollapsibleSearch } from "@/components/ui/collapsible-search";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -157,11 +157,11 @@ function LocationRow({
     <>
       <div
         className={cn(
-          "flex items-center gap-2 py-2 px-3 hover:bg-muted/50 rounded-lg group",
+          "flex items-center gap-1 sm:gap-2 py-2 px-2 sm:px-3 hover:bg-muted/50 rounded-lg group",
           location.is_archived && "opacity-60",
           location._pending && "bg-amber-50"
         )}
-        style={{ marginLeft: level * 24 }}
+        style={{ marginLeft: `calc(${level} * var(--location-indent, 24px))` }}
         role="treeitem"
         aria-expanded={hasChildren ? location.expanded : undefined}
         aria-level={level + 1}
@@ -170,8 +170,8 @@ function LocationRow({
           onClick={() => hasChildren && onToggle(location.id)}
           onKeyDown={handleKeyDown}
           className={cn(
-            "p-1 rounded hover:bg-muted",
-            !hasChildren && "invisible"
+            "p-1 rounded hover:bg-muted shrink-0",
+            !hasChildren && "hidden sm:block sm:invisible"
           )}
           aria-label={
             hasChildren
@@ -214,14 +214,14 @@ function LocationRow({
             )}
           </div>
           {location.description && (
-            <div className="text-sm text-muted-foreground truncate">
+            <div className="text-sm text-muted-foreground truncate hidden sm:block">
               {location.description}
             </div>
           )}
         </div>
 
         {hasChildren && (
-          <span className="text-xs text-muted-foreground">
+          <span className="text-xs text-muted-foreground hidden sm:inline shrink-0">
             {location.children.length} sub-location{location.children.length !== 1 ? "s" : ""}
           </span>
         )}
@@ -714,7 +714,7 @@ export default function LocationsPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Locations</h1>
-        <p className="text-muted-foreground">
+        <p className="text-muted-foreground hidden sm:block">
           Manage storage locations with hierarchical organization
         </p>
       </div>
@@ -734,12 +734,12 @@ export default function LocationsPage() {
                 size="sm"
                 onClick={() => setImportDialogOpen(true)}
               >
-                <Upload className="mr-2 h-4 w-4" />
-                Import
+                <Upload className="sm:mr-2 h-4 w-4" />
+                <span className="hidden sm:inline">Import</span>
               </Button>
               <Button onClick={openCreateDialog}>
-                <Plus className="mr-2 h-4 w-4" />
-                Add Location
+                <Plus className="sm:mr-2 h-4 w-4" />
+                <span className="hidden sm:inline">Add Location</span>
               </Button>
             </div>
           </div>
@@ -747,23 +747,19 @@ export default function LocationsPage() {
         <CardContent>
           <div className="space-y-4">
             {/* Search and filters */}
-            <div className="flex items-center gap-2">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Search locations..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-9"
-                />
-              </div>
+            <div className="flex items-center gap-2 relative">
+              <CollapsibleSearch
+                placeholder="Search locations..."
+                value={searchQuery}
+                onChange={setSearchQuery}
+              />
               <Button
                 variant={showArchived ? "default" : "outline"}
                 size="sm"
                 onClick={() => setShowArchived(!showArchived)}
               >
-                <Archive className="mr-2 h-4 w-4" />
-                {showArchived ? "Archived" : "Active"}
+                <Archive className="sm:mr-2 h-4 w-4" />
+                <span className="hidden sm:inline">{showArchived ? "Archived" : "Active"}</span>
               </Button>
             </div>
 
@@ -794,7 +790,7 @@ export default function LocationsPage() {
                 )}
               </EmptyState>
             ) : (
-              <div className="space-y-1" role="tree" aria-label="Location hierarchy">
+              <div className="space-y-1 [--location-indent:12px] sm:[--location-indent:24px]" role="tree" aria-label="Location hierarchy">
                 {filteredTree.map((location) => (
                   <LocationRow
                     key={location.id}

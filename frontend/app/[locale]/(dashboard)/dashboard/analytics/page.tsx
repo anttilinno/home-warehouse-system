@@ -70,16 +70,24 @@ function StatsCard({
   color?: string;
 }) {
   return (
-    <Card>
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-sm font-medium">{title}</CardTitle>
-        <Icon className={`h-4 w-4 ${color}`} />
-      </CardHeader>
-      <CardContent>
-        <div className="text-2xl font-bold">{value}</div>
-        {trend && <p className="text-xs text-muted-foreground">{trend}</p>}
-      </CardContent>
-    </Card>
+    <>
+      {/* Mobile: compact icon + number */}
+      <div className="flex sm:hidden flex-col items-center gap-1 py-2">
+        <Icon className={`h-5 w-5 ${color}`} />
+        <p className="text-lg font-bold tabular-nums">{value}</p>
+      </div>
+      {/* Desktop: full card */}
+      <Card className="hidden sm:block">
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-sm font-medium">{title}</CardTitle>
+          <Icon className={`h-4 w-4 ${color}`} />
+        </CardHeader>
+        <CardContent>
+          <div className="text-2xl font-bold">{value}</div>
+          {trend && <p className="text-xs text-muted-foreground">{trend}</p>}
+        </CardContent>
+      </Card>
+    </>
   );
 }
 
@@ -209,13 +217,13 @@ export default function AnalyticsPage() {
       {/* Page Header */}
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Analytics</h1>
-        <p className="text-muted-foreground">
+        <p className="text-muted-foreground hidden sm:block">
           Comprehensive insights into your inventory and loan activity
         </p>
       </div>
 
       {/* Key Metrics */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-4 gap-2 sm:grid-cols-2 sm:gap-4 lg:grid-cols-4">
         <StatsCard
           title="Total Items"
           value={formatNumber(dashboardStats.total_items)}
@@ -242,7 +250,7 @@ export default function AnalyticsPage() {
         />
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-4 gap-2 sm:grid-cols-2 sm:gap-4 lg:grid-cols-4">
         <StatsCard
           title="Locations"
           value={formatNumber(dashboardStats.total_locations)}
@@ -455,32 +463,54 @@ export default function AnalyticsPage() {
 
       {/* Loan Stats Summary */}
       {loanStats && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Loan Summary</CardTitle>
-            <CardDescription>Overall loan statistics</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="grid gap-4 md:grid-cols-4">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Total Loans</p>
-                <p className="text-2xl font-bold">{formatNumber(loanStats.total_loans)}</p>
-              </div>
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Active</p>
-                <p className="text-2xl font-bold text-blue-500">{formatNumber(loanStats.active_loans)}</p>
-              </div>
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Returned</p>
-                <p className="text-2xl font-bold text-green-500">{formatNumber(loanStats.returned_loans)}</p>
-              </div>
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Overdue</p>
-                <p className="text-2xl font-bold text-red-500">{formatNumber(loanStats.overdue_loans)}</p>
-              </div>
+        <>
+          {/* Mobile: compact inline */}
+          <div className="flex sm:hidden items-center justify-center gap-4 py-2">
+            <div className="flex items-center gap-1.5">
+              <HandCoins className="h-4 w-4 text-muted-foreground" />
+              <span className="text-sm font-semibold">{formatNumber(loanStats.total_loans)}</span>
             </div>
-          </CardContent>
-        </Card>
+            <div className="flex items-center gap-1.5">
+              <span className="h-2 w-2 rounded-full bg-blue-500" />
+              <span className="text-sm font-semibold text-blue-500">{formatNumber(loanStats.active_loans)}</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <span className="h-2 w-2 rounded-full bg-green-500" />
+              <span className="text-sm font-semibold text-green-500">{formatNumber(loanStats.returned_loans)}</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <span className="h-2 w-2 rounded-full bg-red-500" />
+              <span className="text-sm font-semibold text-red-500">{formatNumber(loanStats.overdue_loans)}</span>
+            </div>
+          </div>
+          {/* Desktop: full card */}
+          <Card className="hidden sm:block">
+            <CardHeader>
+              <CardTitle>Loan Summary</CardTitle>
+              <CardDescription>Overall loan statistics</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid gap-4 md:grid-cols-4">
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Total Loans</p>
+                  <p className="text-2xl font-bold">{formatNumber(loanStats.total_loans)}</p>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Active</p>
+                  <p className="text-2xl font-bold text-blue-500">{formatNumber(loanStats.active_loans)}</p>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Returned</p>
+                  <p className="text-2xl font-bold text-green-500">{formatNumber(loanStats.returned_loans)}</p>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Overdue</p>
+                  <p className="text-2xl font-bold text-red-500">{formatNumber(loanStats.overdue_loans)}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </>
       )}
     </div>
   );

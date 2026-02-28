@@ -66,7 +66,7 @@ export function WorkspaceSwitcher() {
 
   if (isLoading) {
     return (
-      <Button variant="outline" className="w-[200px]" disabled>
+      <Button variant="outline" className="w-auto max-w-[200px]" disabled>
         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
         <span>Loading...</span>
       </Button>
@@ -75,7 +75,7 @@ export function WorkspaceSwitcher() {
 
   if (!currentWorkspace) {
     return (
-      <Button variant="outline" className="w-[200px]" disabled>
+      <Button variant="outline" className="w-auto max-w-[200px]" disabled>
         <span>No workspace</span>
       </Button>
     );
@@ -86,7 +86,7 @@ export function WorkspaceSwitcher() {
       <DropdownMenuTrigger asChild>
         <Button
           variant="outline"
-          className="w-[200px] justify-between"
+          className="w-auto max-w-[200px] justify-between"
           role="combobox"
           disabled={isSwitching}
         >

@@ -9,7 +9,6 @@ import { useDateFormat } from "@/lib/hooks/use-date-format";
 import { useNumberFormat } from "@/lib/hooks/use-number-format";
 import {
   Plus,
-  Search,
   MoreHorizontal,
   Pencil,
   Trash2,
@@ -27,6 +26,7 @@ import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { CollapsibleSearch } from "@/components/ui/collapsible-search";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   DropdownMenu,
@@ -1051,7 +1051,7 @@ export default function ItemsPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Items</h1>
-        <p className="text-muted-foreground">
+        <p className="text-muted-foreground hidden sm:block">
           Manage your item catalog with SKUs, categories, and attributes
         </p>
       </div>
@@ -1075,16 +1075,12 @@ export default function ItemsPage() {
         <CardContent>
           <div className="space-y-4">
             {/* Search and filters */}
-            <div className="flex items-center gap-2">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Search by SKU, name, brand, or model..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-9"
-                />
-              </div>
+            <div className="flex items-center gap-2 relative">
+              <CollapsibleSearch
+                placeholder="Search by SKU, name, brand, or model..."
+                value={searchQuery}
+                onChange={setSearchQuery}
+              />
               <FilterPopover activeFilterCount={activeFilterCount}>
                 <ItemsFilterControls
                   categories={categories}
@@ -1109,8 +1105,8 @@ export default function ItemsPage() {
                 size="sm"
                 onClick={() => setImportDialogOpen(true)}
               >
-                <Upload className="mr-2 h-4 w-4" />
-                Import
+                <Upload className="sm:mr-2 h-4 w-4" />
+                <span className="hidden sm:inline">Import</span>
               </Button>
               <Button
                 variant="outline"
@@ -1118,16 +1114,16 @@ export default function ItemsPage() {
                 onClick={() => setExportDialogOpen(true)}
                 disabled={filteredItems.length === 0}
               >
-                <Download className="mr-2 h-4 w-4" />
-                Export
+                <Download className="sm:mr-2 h-4 w-4" />
+                <span className="hidden sm:inline">Export</span>
               </Button>
               <Button
                 variant={showArchived ? "default" : "outline"}
                 size="sm"
                 onClick={() => setShowArchived(!showArchived)}
               >
-                <Archive className="mr-2 h-4 w-4" />
-                {showArchived ? "Archived" : "Active"}
+                <Archive className="sm:mr-2 h-4 w-4" />
+                <span className="hidden sm:inline">{showArchived ? "Archived" : "Active"}</span>
               </Button>
             </div>
 
@@ -1168,15 +1164,14 @@ export default function ItemsPage() {
               </EmptyState>
             ) : (
               <div className="rounded-lg border">
-                {/* Header Table - pr-[15px] accounts for body scrollbar width */}
-                <div className="overflow-x-auto pr-[15px]">
+                <div className="overflow-x-auto">
                   <table className="w-full caption-bottom text-sm">
                     <caption className="sr-only">
                       List of catalog items with SKU, name, category, brand, model, and minimum stock level information.
                       Currently showing {sortedItems.length} {sortedItems.length === 1 ? "item" : "items"}.
                     </caption>
                     <TableHeader className="sticky top-0 z-10 bg-background">
-                      <TableRow className="flex items-center">
+                      <TableRow className="flex items-center [&>th:not(.hidden)]:flex [&>th:not(.hidden)]:items-center">
                         <TableHead className="w-[50px] flex-none">
                           <Checkbox
                             checked={isAllSelected(sortedItems.map((i) => i.id))}
@@ -1192,42 +1187,42 @@ export default function ItemsPage() {
                         </TableHead>
                         <TableHead className="w-[60px] flex-none">Photo</TableHead>
                         <SortableTableHead
-                          className="w-[140px] flex-none"
+                          className="flex-1 min-w-0 sm:w-[140px] sm:flex-none"
                           sortDirection={getSortDirection("sku")}
                           onSort={() => requestSort("sku")}
                         >
                           SKU
                         </SortableTableHead>
                         <SortableTableHead
-                          className="flex-1 min-w-0"
+                          className="flex-1 min-w-0 hidden sm:flex"
                           sortDirection={getSortDirection("name")}
                           onSort={() => requestSort("name")}
                         >
                           Name
                         </SortableTableHead>
                         <SortableTableHead
-                          className="w-[120px] flex-none"
+                          className="w-[120px] flex-none hidden sm:flex"
                           sortDirection={getSortDirection("category_id")}
                           onSort={() => requestSort("category_id")}
                         >
                           Category
                         </SortableTableHead>
                         <SortableTableHead
-                          className="w-[100px] flex-none"
+                          className="w-[100px] flex-none hidden sm:flex"
                           sortDirection={getSortDirection("brand")}
                           onSort={() => requestSort("brand")}
                         >
                           Brand
                         </SortableTableHead>
                         <SortableTableHead
-                          className="w-[100px] flex-none"
+                          className="w-[100px] flex-none hidden sm:flex"
                           sortDirection={getSortDirection("model")}
                           onSort={() => requestSort("model")}
                         >
                           Model
                         </SortableTableHead>
                         <SortableTableHead
-                          className="w-[90px] flex-none"
+                          className="w-[90px] flex-none hidden sm:flex"
                           sortDirection={getSortDirection("min_stock_level")}
                           onSort={() => requestSort("min_stock_level")}
                         >
@@ -1242,7 +1237,7 @@ export default function ItemsPage() {
                 {/* Virtual Scrolling Container */}
                 <div
                   ref={parentRef}
-                  className="overflow-auto"
+                  className="overflow-auto [scrollbar-gutter:stable]"
                   style={{ height: '600px' }}
                 >
                   <div
@@ -1321,7 +1316,7 @@ export default function ItemsPage() {
                                   )}
                                 </div>
                               </TableCell>
-                              <TableCell className="w-[140px] flex-none font-mono text-sm">
+                              <TableCell className="flex-1 min-w-0 sm:w-[140px] sm:flex-none font-mono text-sm">
                                 {item.sku}
                                 {item.short_code && (
                                   <Badge variant="outline" className="ml-2 text-xs">
@@ -1329,7 +1324,7 @@ export default function ItemsPage() {
                                   </Badge>
                                 )}
                               </TableCell>
-                              <TableCell className="flex-1 min-w-0">
+                              <TableCell className="flex-1 min-w-0 hidden sm:flex">
                                 <div className="truncate">
                                   <div className="flex items-center gap-2">
                                     <span className="font-medium truncate">{item.name}</span>
@@ -1347,10 +1342,10 @@ export default function ItemsPage() {
                                   )}
                                 </div>
                               </TableCell>
-                              <TableCell className="w-[120px] flex-none">{getCategoryName(item.category_id)}</TableCell>
-                              <TableCell className="w-[100px] flex-none">{item.brand || "-"}</TableCell>
-                              <TableCell className="w-[100px] flex-none">{item.model || "-"}</TableCell>
-                              <TableCell className="w-[90px] flex-none">{formatNumber(item.min_stock_level)}</TableCell>
+                              <TableCell className="w-[120px] flex-none hidden sm:flex">{getCategoryName(item.category_id)}</TableCell>
+                              <TableCell className="w-[100px] flex-none hidden sm:flex">{item.brand || "-"}</TableCell>
+                              <TableCell className="w-[100px] flex-none hidden sm:flex">{item.model || "-"}</TableCell>
+                              <TableCell className="w-[90px] flex-none hidden sm:flex">{formatNumber(item.min_stock_level)}</TableCell>
                               <TableCell className="w-[50px] flex-none" onClick={(e) => e.stopPropagation()}>
                                 {!isPending && (
                                   <DropdownMenu>

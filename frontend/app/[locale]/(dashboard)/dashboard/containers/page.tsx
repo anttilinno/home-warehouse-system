@@ -5,7 +5,6 @@ import { useTranslations } from "next-intl";
 import { useDateFormat } from "@/lib/hooks/use-date-format";
 import {
   Plus,
-  Search,
   Box,
   MoreHorizontal,
   Pencil,
@@ -21,6 +20,7 @@ import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { CollapsibleSearch } from "@/components/ui/collapsible-search";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -770,7 +770,7 @@ export default function ContainersPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Containers</h1>
-        <p className="text-muted-foreground">
+        <p className="text-muted-foreground hidden sm:block">
           Manage storage containers within locations for organized inventory
         </p>
       </div>
@@ -794,16 +794,12 @@ export default function ContainersPage() {
         <CardContent>
           <div className="space-y-4">
             {/* Search and filters */}
-            <div className="flex items-center gap-2">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Search by name, location, or short code..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-9"
-                />
-              </div>
+            <div className="flex items-center gap-2 relative">
+              <CollapsibleSearch
+                placeholder="Search by name, location, or short code..."
+                value={searchQuery}
+                onChange={setSearchQuery}
+              />
               <FilterPopover activeFilterCount={activeFilterCount}>
                 <ContainersFilterControls
                   locations={locations}
@@ -816,8 +812,8 @@ export default function ContainersPage() {
                 size="sm"
                 onClick={() => setImportDialogOpen(true)}
               >
-                <Upload className="mr-2 h-4 w-4" />
-                Import
+                <Upload className="sm:mr-2 h-4 w-4" />
+                <span className="hidden sm:inline">Import</span>
               </Button>
               <Button
                 variant="outline"
@@ -825,16 +821,16 @@ export default function ContainersPage() {
                 onClick={() => setExportDialogOpen(true)}
                 disabled={filteredContainers.length === 0}
               >
-                <Download className="mr-2 h-4 w-4" />
-                Export
+                <Download className="sm:mr-2 h-4 w-4" />
+                <span className="hidden sm:inline">Export</span>
               </Button>
               <Button
                 variant={showArchived ? "default" : "outline"}
                 size="sm"
                 onClick={() => setShowArchived(!showArchived)}
               >
-                <Archive className="mr-2 h-4 w-4" />
-                {showArchived ? "Archived" : "Active"}
+                <Archive className="sm:mr-2 h-4 w-4" />
+                <span className="hidden sm:inline">{showArchived ? "Archived" : "Active"}</span>
               </Button>
             </div>
 
@@ -910,12 +906,14 @@ export default function ContainersPage() {
                       <SortableTableHead
                         sortDirection={getSortDirection("capacity")}
                         onSort={() => requestSort("capacity")}
+                        className="hidden sm:table-cell"
                       >
                         Capacity
                       </SortableTableHead>
                       <SortableTableHead
                         sortDirection={getSortDirection("short_code")}
                         onSort={() => requestSort("short_code")}
+                        className="hidden sm:table-cell"
                       >
                         Short Code
                       </SortableTableHead>
@@ -953,7 +951,7 @@ export default function ContainersPage() {
                               )}
                             </div>
                             {container.description && (
-                              <div className="text-sm text-muted-foreground line-clamp-1">
+                              <div className="text-sm text-muted-foreground line-clamp-1 hidden sm:block">
                                 {container.description}
                               </div>
                             )}
@@ -961,12 +959,12 @@ export default function ContainersPage() {
                         </TableCell>
                         <TableCell>
                           <div className="flex items-center gap-2">
-                            <MapPin className="h-4 w-4 text-muted-foreground" />
+                            <MapPin className="h-4 w-4 text-muted-foreground shrink-0" />
                             {getLocationName(container.location_id)}
                           </div>
                         </TableCell>
-                        <TableCell>{container.capacity || "-"}</TableCell>
-                        <TableCell>
+                        <TableCell className="hidden sm:table-cell">{container.capacity || "-"}</TableCell>
+                        <TableCell className="hidden sm:table-cell">
                           {container.short_code ? (
                             <Badge variant="outline" className="font-mono">
                               {container.short_code}

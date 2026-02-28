@@ -426,6 +426,24 @@ export default function ApprovalsPage() {
         </div>
       </div>
 
+      {/* Compact stats - mobile only */}
+      {!isLoading && safeChanges.length > 0 && (
+        <div className="flex sm:hidden items-center justify-center gap-6">
+          <div className="flex items-center gap-1.5">
+            <Clock className="h-4 w-4 text-yellow-600" />
+            <span className="text-sm font-semibold">{pendingCount}</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <CheckCircle2 className="h-4 w-4 text-green-600" />
+            <span className="text-sm font-semibold">{safeChanges.filter((c) => c.status === "approved").length}</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <XCircle className="h-4 w-4 text-red-600" />
+            <span className="text-sm font-semibold">{safeChanges.filter((c) => c.status === "rejected").length}</span>
+          </div>
+        </div>
+      )}
+
       {/* Filters */}
       <div className="flex flex-col sm:flex-row gap-4">
         <div className="relative flex-1">
@@ -494,9 +512,9 @@ export default function ApprovalsPage() {
         </div>
       )}
 
-      {/* Stats */}
+      {/* Stats - desktop only */}
       {!isLoading && filteredChanges.length > 0 && (
-        <Card>
+        <Card className="hidden sm:block">
           <CardHeader>
             <CardTitle>{t("stats.title")}</CardTitle>
             <CardDescription>{t("stats.description")}</CardDescription>

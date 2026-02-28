@@ -179,8 +179,8 @@ function CategoryRow({
         ref={setNodeRef}
         style={style}
         className={cn(
-          "flex items-center gap-2 py-2 px-3 hover:bg-muted/50 rounded-lg group",
-          level > 0 && "ml-6",
+          "flex items-center gap-1 sm:gap-2 py-2 px-2 sm:px-3 hover:bg-muted/50 rounded-lg group",
+          level > 0 && "ml-3 sm:ml-6",
           isDragging && "cursor-grabbing",
           category._pending && "bg-amber-50"
         )}
@@ -193,14 +193,14 @@ function CategoryRow({
         {!category._pending && (
           <div
             {...listeners}
-            className="cursor-grab active:cursor-grabbing p-1 rounded hover:bg-muted opacity-0 group-hover:opacity-100"
+            className="cursor-grab active:cursor-grabbing p-1 rounded hover:bg-muted opacity-0 group-hover:opacity-100 hidden sm:block"
             style={{ marginLeft: level * 24 }}
           >
             <GripVertical className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
           </div>
         )}
         {category._pending && (
-          <div style={{ marginLeft: level * 24, width: 32 }} />
+          <div className="hidden sm:block" style={{ marginLeft: level * 24, width: 32 }} />
         )}
 
         <button
@@ -208,7 +208,7 @@ function CategoryRow({
           onKeyDown={handleKeyDown}
           className={cn(
             "p-1 rounded hover:bg-muted",
-            !hasChildren && "invisible"
+            !hasChildren && "hidden sm:block sm:invisible"
           )}
           aria-label={
             hasChildren
@@ -749,12 +749,12 @@ export default function CategoriesPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">{t("title")}</h1>
           <p className="text-muted-foreground">{t("subtitle")}</p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 shrink-0">
           <Button
             variant="outline"
             size="sm"

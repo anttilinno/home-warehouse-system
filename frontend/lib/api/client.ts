@@ -80,6 +80,7 @@ class ApiClient {
       const error: ApiError = await response.json().catch(() => ({
         message: `HTTP ${response.status}: ${response.statusText || "Request failed"}`,
       }));
+      console.error(`[API] ${options.method || "GET"} ${this.baseUrl}${endpoint} → ${response.status}`, error.message);
       throw new Error(error.message || `HTTP ${response.status}`);
     }
 
@@ -163,6 +164,7 @@ class ApiClient {
       const error: ApiError = await response.json().catch(() => ({
         message: `HTTP ${response.status}: ${response.statusText || "Request failed"}`,
       }));
+      console.error(`[API] POST ${this.baseUrl}${endpoint} → ${response.status}`, error.message);
       throw new Error(error.message || `HTTP ${response.status}`);
     }
 

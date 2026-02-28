@@ -17,9 +17,10 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 interface UserMenuProps {
   collapsed?: boolean;
+  onNavClick?: () => void;
 }
 
-export function UserMenu({ collapsed = false }: UserMenuProps) {
+export function UserMenu({ collapsed = false, onNavClick }: UserMenuProps) {
   const { user, isLoading, logout } = useAuth();
 
   if (isLoading) {
@@ -88,7 +89,7 @@ export function UserMenu({ collapsed = false }: UserMenuProps) {
         style={!collapsed ? { minWidth: '14.5rem' } : undefined}
       >
         <DropdownMenuItem asChild>
-          <Link href="/dashboard/settings">
+          <Link href="/dashboard/settings" onClick={onNavClick}>
             <Settings className="mr-2 h-4 w-4" />
             Settings
           </Link>

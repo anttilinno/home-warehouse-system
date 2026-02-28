@@ -15,7 +15,11 @@ import { useSSE, type SSEEvent } from '@/lib/hooks/use-sse';
 import { useAuth } from '@/lib/contexts/auth-context';
 import { ActivityFeed } from './activity-feed';
 
-export function ActivityFeedMobile() {
+interface ActivityFeedMobileProps {
+  hasActivity?: boolean;
+}
+
+export function ActivityFeedMobile({ hasActivity }: ActivityFeedMobileProps) {
   const { user } = useAuth();
   const [unreadCount, setUnreadCount] = useState(0);
   const [isOpen, setIsOpen] = useState(false);
@@ -48,17 +52,19 @@ export function ActivityFeedMobile() {
         <Button
           variant="default"
           size="icon"
-          className="fixed bottom-4 right-4 h-14 w-14 rounded-full shadow-lg z-50"
+          className="fixed bottom-20 right-4 h-14 w-14 rounded-full shadow-lg z-50 md:hidden"
         >
           <Activity className="h-6 w-6" />
-          {unreadCount > 0 && (
+          {unreadCount > 0 ? (
             <Badge
               variant="destructive"
               className="absolute -top-1 -right-1 h-6 w-6 flex items-center justify-center p-0 text-xs"
             >
               {unreadCount > 99 ? '99+' : unreadCount}
             </Badge>
-          )}
+          ) : hasActivity ? (
+            <span className="absolute -top-0.5 -right-0.5 h-3 w-3 rounded-full bg-amber-400 border-2 border-white dark:border-gray-900" />
+          ) : null}
         </Button>
       </SheetTrigger>
       <SheetContent side="bottom" className="h-[80vh] p-0">

@@ -284,7 +284,7 @@ export function Sidebar({ collapsed, onToggle, onNavClick }: SidebarProps) {
               collapsed && "flex justify-center"
             )}
           >
-            <UserMenu collapsed={collapsed} />
+            <UserMenu collapsed={collapsed} onNavClick={onNavClick} />
           </div>
         </div>
       </aside>

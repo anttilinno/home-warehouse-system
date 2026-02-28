@@ -26,7 +26,10 @@ export function DashboardHeader({ onMenuClick }: HeaderProps) {
 
   // Global search state
   const [searchOpen, setSearchOpen] = useState(false);
+  const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
+  const mobileSearchRef = useRef<HTMLDivElement>(null);
+  const mobileInputRef = useRef<HTMLInputElement>(null);
 
   const {
     query,
@@ -112,7 +115,7 @@ export function DashboardHeader({ onMenuClick }: HeaderProps) {
   }, []);
 
   return (
-    <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b bg-background px-4">
+    <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b bg-background px-4 overflow-hidden">
       {/* Mobile menu button */}
       <Button
         variant="ghost"
@@ -128,8 +131,8 @@ export function DashboardHeader({ onMenuClick }: HeaderProps) {
       {/* Workspace switcher */}
       <WorkspaceSwitcher />
 
-      {/* Global Search */}
-      <div className="flex-1 max-w-md" ref={searchRef}>
+      {/* Global Search - Desktop: inline input */}
+      <div className="hidden sm:block flex-1 min-w-0 max-w-md" ref={searchRef}>
         <div className="relative">
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground pointer-events-none" />
           <Input
@@ -179,12 +182,83 @@ export function DashboardHeader({ onMenuClick }: HeaderProps) {
         </div>
       </div>
 
+      {/* Global Search - Mobile: icon button that opens overlay */}
+      <div className="sm:hidden flex-1" />
+      <Button
+        variant="ghost"
+        size="icon"
+        className="sm:hidden shrink-0"
+        onClick={() => setMobileSearchOpen(true)}
+        aria-label="Open search"
+      >
+        <Search className="h-5 w-5" />
+      </Button>
+
+      {/* Mobile search overlay */}
+      {mobileSearchOpen && (
+        <div className="sm:hidden fixed inset-0 z-50 bg-background" ref={mobileSearchRef}>
+          <div className="flex h-16 items-center gap-2 border-b px-4">
+            <Search className="h-4 w-4 text-muted-foreground shrink-0" />
+            <Input
+              ref={mobileInputRef}
+              type="search"
+              placeholder={t("search")}
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              onKeyDown={(e) => {
+                handleKeyDown(e);
+                if (e.key === "Escape") {
+                  setMobileSearchOpen(false);
+                }
+              }}
+              className="flex-1 border-0 shadow-none focus-visible:ring-0 px-0"
+              aria-label="Global search"
+              autoFocus
+            />
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => {
+                setMobileSearchOpen(false);
+                clearSearch();
+              }}
+              aria-label="Close search"
+            >
+              <X className="h-5 w-5" />
+            </Button>
+          </div>
+          <div className="overflow-y-auto max-h-[calc(100vh-4rem)] relative [&>div]:static [&>div]:mt-0 [&>div]:border-0 [&>div]:shadow-none [&>div]:rounded-none [&>div]:max-h-none">
+            <GlobalSearchResults
+              results={results?.results || { items: [], borrowers: [], containers: [], locations: [] }}
+              totalCount={results?.totalCount || 0}
+              isLoading={isLoading}
+              error={error}
+              query={query}
+              selectedIndex={selectedIndex}
+              onSelectResult={(result) => {
+                console.log("Selected:", result);
+                setMobileSearchOpen(false);
+              }}
+              onClose={() => {
+                setMobileSearchOpen(false);
+                clearSearch();
+              }}
+              recentSearches={recentSearches}
+              onSelectRecentSearch={selectRecentSearch}
+              onClearRecent={clearRecent}
+            />
+          </div>
+        </div>
+      )}
+
       {/* Right side */}
-      <div className="flex items-center gap-2 ml-auto">
-        <SyncStatusIndicator />
-        <SSEStatusIndicator className="mr-2" />
-        <LanguageSwitcher />
-        <ThemeToggle />
+      <div className="flex items-center gap-2 ml-auto shrink-0">
+        <div className="hidden md:contents">
+          <SyncStatusIndicator />
+          <SSEStatusIndicator className="mr-2" />
+          <LanguageSwitcher />
+          <ThemeToggle />
+        </div>
 
         {/* Notifications */}
         <NotificationsDropdown />

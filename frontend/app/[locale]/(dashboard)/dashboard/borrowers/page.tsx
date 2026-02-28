@@ -5,7 +5,6 @@ import { useTranslations } from "next-intl";
 import { useDateFormat } from "@/lib/hooks/use-date-format";
 import {
   Plus,
-  Search,
   Users,
   MoreHorizontal,
   Pencil,
@@ -25,6 +24,7 @@ import type { SyncEvent } from "@/lib/sync/sync-manager";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { CollapsibleSearch } from "@/components/ui/collapsible-search";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -588,7 +588,7 @@ export default function BorrowersPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Borrowers</h1>
-        <p className="text-muted-foreground">
+        <p className="text-muted-foreground hidden sm:block">
           Manage people who can borrow items from your warehouse
         </p>
       </div>
@@ -612,23 +612,19 @@ export default function BorrowersPage() {
         <CardContent>
           <div className="space-y-4">
             {/* Search */}
-            <div className="flex items-center gap-2">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Search by name, email, or phone..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-9"
-                />
-              </div>
+            <div className="flex items-center gap-2 relative">
+              <CollapsibleSearch
+                placeholder="Search by name, email, or phone..."
+                value={searchQuery}
+                onChange={setSearchQuery}
+              />
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => setImportDialogOpen(true)}
               >
-                <Upload className="mr-2 h-4 w-4" />
-                Import
+                <Upload className="sm:mr-2 h-4 w-4" />
+                <span className="hidden sm:inline">Import</span>
               </Button>
               <Button
                 variant="outline"
@@ -636,8 +632,8 @@ export default function BorrowersPage() {
                 onClick={() => setExportDialogOpen(true)}
                 disabled={sortedBorrowers.length === 0}
               >
-                <Download className="mr-2 h-4 w-4" />
-                Export
+                <Download className="sm:mr-2 h-4 w-4" />
+                <span className="hidden sm:inline">Export</span>
               </Button>
             </div>
 
@@ -696,6 +692,7 @@ export default function BorrowersPage() {
                       <SortableTableHead
                         sortDirection={getSortDirection("phone")}
                         onSort={() => requestSort("phone")}
+                        className="hidden sm:table-cell"
                       >
                         Phone
                       </SortableTableHead>
@@ -766,7 +763,7 @@ export default function BorrowersPage() {
                             />
                           </div>
                         </TableCell>
-                        <TableCell>
+                        <TableCell className="hidden sm:table-cell">
                           <div className="flex items-center gap-2">
                             <Phone className="h-4 w-4 text-muted-foreground shrink-0" />
                             <InlineEditCell

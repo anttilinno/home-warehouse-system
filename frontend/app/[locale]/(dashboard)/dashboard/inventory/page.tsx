@@ -7,7 +7,6 @@ import { useDateFormat } from "@/lib/hooks/use-date-format";
 import { useNumberFormat } from "@/lib/hooks/use-number-format";
 import {
   Plus,
-  Search,
   Package,
   MoreHorizontal,
   Pencil,
@@ -33,6 +32,7 @@ import { format, parseISO } from "date-fns";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { CollapsibleSearch } from "@/components/ui/collapsible-search";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -130,16 +130,17 @@ const CURRENCY_OPTIONS = [
   { value: "GBP", label: "GBP" },
 ];
 
-function SortableGridHead({ children, sortDirection, onSort }: {
+function SortableGridHead({ children, sortDirection, onSort, className }: {
   children: React.ReactNode;
   sortDirection?: SortDirection;
   onSort?: () => void;
+  className?: string;
 }) {
   const SortIcon = sortDirection === "asc" ? ArrowUp : sortDirection === "desc" ? ArrowDown : ArrowUpDown;
   return (
     <div
       role="columnheader"
-      className="h-10 px-2 flex items-center justify-center font-medium text-muted-foreground cursor-pointer select-none hover:bg-muted/50 transition-colors"
+      className={cn("h-10 px-2 flex items-center justify-center font-medium text-muted-foreground cursor-pointer select-none hover:bg-muted/50 transition-colors", className)}
       onClick={onSort}
       aria-sort={sortDirection === "asc" ? "ascending" : sortDirection === "desc" ? "descending" : "none"}
     >
@@ -1157,7 +1158,7 @@ export default function InventoryPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Inventory</h1>
-        <p className="text-muted-foreground">
+        <p className="text-muted-foreground hidden sm:block">
           Track physical instances of items at specific locations
         </p>
       </div>
@@ -1181,16 +1182,12 @@ export default function InventoryPage() {
         <CardContent>
           <div className="space-y-4">
             {/* Search and filters */}
-            <div className="flex items-center gap-2">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Search by item, SKU, or location..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-9"
-                />
-              </div>
+            <div className="flex items-center gap-2 relative">
+              <CollapsibleSearch
+                placeholder="Search by item, SKU, or location..."
+                value={searchQuery}
+                onChange={setSearchQuery}
+              />
               <FilterPopover activeFilterCount={activeFilterCount}>
                 <InventoryFilterControls
                   locations={locations}
@@ -1204,8 +1201,8 @@ export default function InventoryPage() {
                 size="sm"
                 onClick={() => setImportDialogOpen(true)}
               >
-                <Upload className="mr-2 h-4 w-4" />
-                Import
+                <Upload className="sm:mr-2 h-4 w-4" />
+                <span className="hidden sm:inline">Import</span>
               </Button>
               <Button
                 variant="outline"
@@ -1213,16 +1210,16 @@ export default function InventoryPage() {
                 onClick={() => setExportDialogOpen(true)}
                 disabled={filteredInventories.length === 0}
               >
-                <Download className="mr-2 h-4 w-4" />
-                Export
+                <Download className="sm:mr-2 h-4 w-4" />
+                <span className="hidden sm:inline">Export</span>
               </Button>
               <Button
                 variant={showArchived ? "default" : "outline"}
                 size="sm"
                 onClick={() => setShowArchived(!showArchived)}
               >
-                <Archive className="mr-2 h-4 w-4" />
-                {showArchived ? "Archived" : "Active"}
+                <Archive className="sm:mr-2 h-4 w-4" />
+                <span className="hidden sm:inline">{showArchived ? "Archived" : "Active"}</span>
               </Button>
             </div>
 
@@ -1265,7 +1262,7 @@ export default function InventoryPage() {
               <div className="rounded-lg border">
                 <div
                   ref={parentRef}
-                  className="overflow-auto"
+                  className="overflow-auto [--inv-cols:36px_1fr_80px_40px_40px] sm:[--inv-cols:50px_1fr_120px_60px_110px_120px_90px_50px]"
                   style={{ height: '600px' }}
                   role="table"
                   aria-label="Inventory items"
@@ -1273,7 +1270,7 @@ export default function InventoryPage() {
                   {/* Sticky header row */}
                   <div
                     className="sticky top-0 z-10 bg-background border-b grid items-center text-sm"
-                    style={{ gridTemplateColumns: '50px 1fr 120px 60px 110px 120px 90px 50px' }}
+                    style={{ gridTemplateColumns: 'var(--inv-cols)' }}
                     role="row"
                   >
                     <div className="p-2" role="columnheader">
@@ -1310,18 +1307,21 @@ export default function InventoryPage() {
                     <SortableGridHead
                       sortDirection={getSortDirection("condition")}
                       onSort={() => requestSort("condition")}
+                      className="hidden sm:flex"
                     >
                       Condition
                     </SortableGridHead>
                     <SortableGridHead
                       sortDirection={getSortDirection("status")}
                       onSort={() => requestSort("status")}
+                      className="hidden sm:flex"
                     >
                       Status
                     </SortableGridHead>
                     <SortableGridHead
                       sortDirection={getSortDirection("purchase_price")}
                       onSort={() => requestSort("purchase_price")}
+                      className="hidden sm:flex"
                     >
                       Price
                     </SortableGridHead>
@@ -1342,7 +1342,7 @@ export default function InventoryPage() {
                                 !isPending && "hover:bg-muted/50"
                               )}
                               style={{
-                                gridTemplateColumns: '50px 1fr 120px 60px 110px 120px 90px 50px',
+                                gridTemplateColumns: 'var(--inv-cols)',
                                 position: 'absolute',
                                 top: 0,
                                 left: 0,
@@ -1363,7 +1363,7 @@ export default function InventoryPage() {
                                 <div className="flex items-center gap-2">
                                   <div className="min-w-0">
                                     <div className="font-medium truncate">{getItemName(inventory.item_id)}</div>
-                                    <div className="text-sm text-muted-foreground font-mono">
+                                    <div className="text-sm text-muted-foreground font-mono hidden sm:block">
                                       {getItemSKU(inventory.item_id)}
                                     </div>
                                   </div>
@@ -1410,7 +1410,7 @@ export default function InventoryPage() {
                                   />
                                 )}
                               </div>
-                              <div className="p-2" role="cell">
+                              <div className="p-2 hidden sm:block" role="cell">
                                 {isPending ? (
                                   <Badge variant="outline">
                                     {CONDITION_OPTIONS.find(c => c.value === inventory.condition)?.label || inventory.condition}
@@ -1428,7 +1428,7 @@ export default function InventoryPage() {
                                   />
                                 )}
                               </div>
-                              <div className="p-2" role="cell">
+                              <div className="p-2 hidden sm:block" role="cell">
                                 {isPending ? (
                                   <StatusBadge status={inventory.status} />
                                 ) : (
@@ -1442,7 +1442,7 @@ export default function InventoryPage() {
                                   />
                                 )}
                               </div>
-                              <div className="p-2 text-center tabular-nums" role="cell">
+                              <div className="p-2 text-center tabular-nums hidden sm:block" role="cell">
                                 {formatCurrencyValue(inventory.purchase_price, inventory.currency_code)}
                               </div>
                               <div className="p-2" role="cell">
