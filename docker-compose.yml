@@ -241,9 +241,11 @@ services:
         condition: service_healthy
     ports:
       - "80:80"
+      - "443:443"
     volumes:
       - ./docker/angie/angie.conf:/etc/angie/angie.conf:ro
       - ./docker/angie/proxy_params.conf:/etc/angie/proxy_params.conf:ro
+      - ./.data/certs:/etc/angie/certs:ro
     networks:
       - warehouse
 

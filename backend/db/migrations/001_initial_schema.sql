@@ -484,6 +484,7 @@ CREATE TABLE warehouse.items (
     barcode VARCHAR(50),
     is_insured BOOLEAN DEFAULT false,
     is_archived BOOLEAN DEFAULT false,
+    needs_review BOOLEAN DEFAULT false,
     lifetime_warranty BOOLEAN DEFAULT false,
     warranty_details TEXT,
     purchased_from uuid REFERENCES warehouse.companies(id) ON DELETE SET NULL,

@@ -214,16 +214,27 @@ run = "cd backend && CGO_ENABLED=0 go build -o bin/photo-admin cmd/photo-admin/m
 
 # Production
 [tasks.gen-certs]
-description = "Generate self-signed SSL certs for local production Docker"
+description = "Generate self-signed SSL certs for local production Docker (includes LAN IP)"
 run = """
 if [ -f .data/certs/server.crt ] && [ -f .data/certs/server.key ]; then
-  echo "Certs already exist in .data/certs/, skipping"
+  echo "Certs already exist in .data/certs/, skipping (delete .data/certs/ to regenerate)"
   exit 0
 fi
 mkdir -p .data/certs
+
+IP=$(ip -4 addr show | grep -oP '192\\.168\\.\\d+\\.\\d+' | head -1)
+if [ -z "$IP" ]; then
+  echo "Could not detect LAN IP, cert will only cover localhost"
+  SAN="subjectAltName=DNS:localhost,IP:127.0.0.1"
+else
+  echo "Detected LAN IP: $IP"
+  SAN="subjectAltName=DNS:localhost,IP:127.0.0.1,IP:${IP}"
+fi
+
 openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
   -keyout .data/certs/server.key -out .data/certs/server.crt \
-  -subj '/CN=localhost'
+  -subj '/CN=localhost' \
+  -addext "$SAN"
 echo "Certs written to .data/certs/"
 """
 

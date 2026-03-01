@@ -1,7 +1,8 @@
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
 interface ApiError {
-  message: string;
+  message?: string;
+  detail?: string; // Huma error format
   code?: string;
 }
 
@@ -80,8 +81,8 @@ class ApiClient {
       const error: ApiError = await response.json().catch(() => ({
         message: `HTTP ${response.status}: ${response.statusText || "Request failed"}`,
       }));
-      console.error(`[API] ${options.method || "GET"} ${this.baseUrl}${endpoint} → ${response.status}`, error.message);
-      throw new Error(error.message || `HTTP ${response.status}`);
+      console.error(`[API] ${options.method || "GET"} ${this.baseUrl}${endpoint} → ${response.status}`, error.detail || error.message);
+      throw new Error(error.detail || error.message || `HTTP ${response.status}`);
     }
 
     // Handle empty responses (204 No Content)
@@ -164,8 +165,8 @@ class ApiClient {
       const error: ApiError = await response.json().catch(() => ({
         message: `HTTP ${response.status}: ${response.statusText || "Request failed"}`,
       }));
-      console.error(`[API] POST ${this.baseUrl}${endpoint} → ${response.status}`, error.message);
-      throw new Error(error.message || `HTTP ${response.status}`);
+      console.error(`[API] POST ${this.baseUrl}${endpoint} → ${response.status}`, error.detail || error.message);
+      throw new Error(error.detail || error.message || `HTTP ${response.status}`);
     }
 
     return response.json();
