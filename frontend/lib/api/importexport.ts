@@ -91,7 +91,7 @@ class ImportExportAPI {
       include_archived: includeArchived.toString(),
     });
 
-    const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+    const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
     const response = await fetch(
       `${API_URL}/export/${entityType}?${params}`,
       { headers }
@@ -133,7 +133,7 @@ class ImportExportAPI {
       include_archived: includeArchived.toString(),
     });
 
-    const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+    const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
     const response = await fetch(
       `${API_URL}/export/workspace?${params}`,
       { headers }
@@ -186,7 +186,7 @@ class ImportExportAPI {
       (headers as Record<string, string>)["Authorization"] = `Bearer ${token}`;
     }
 
-    const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+    const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
     const response = await fetch(`${API_URL}/import/workspace`, {
       method: "POST",
       headers,

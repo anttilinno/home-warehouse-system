@@ -72,7 +72,7 @@ export const itemPhotosApi = {
 
       // Get auth token and build headers
       const token = apiClient.getToken();
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
       xhr.open("POST", `${apiUrl}/workspaces/${workspaceId}/items/${itemId}/photos`);
       xhr.withCredentials = true;
@@ -205,7 +205,7 @@ export const itemPhotosApi = {
     photoIds?: string[]
   ): Promise<void> => {
     const token = apiClient.getToken();
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
     let url = `${apiUrl}/workspaces/${workspaceId}/items/${itemId}/photos/download`;
     if (photoIds && photoIds.length > 0) {
       url += `?ids=${photoIds.join(",")}`;
@@ -248,7 +248,7 @@ export const itemPhotosApi = {
     formData.append("photo", file);
 
     const token = apiClient.getToken();
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
     const response = await fetch(
       `${apiUrl}/workspaces/${workspaceId}/items/${itemId}/photos/check-duplicate`,

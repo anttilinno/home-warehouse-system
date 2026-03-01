@@ -35,7 +35,7 @@ export async function exportWorkspace(
     include_archived: includeArchived.toString(),
   });
 
-  const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+  const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000';
   const token = apiClient.getToken();
   const headers: HeadersInit = {
     'X-Workspace-ID': workspaceId,
@@ -71,7 +71,7 @@ export async function importWorkspace(
   // Convert file to base64
   const base64Data = await fileToBase64(file);
 
-  const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+  const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000';
   const token = apiClient.getToken();
   const headers: HeadersInit = {
     'Content-Type': 'application/json',

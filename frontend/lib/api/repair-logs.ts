@@ -153,7 +153,7 @@ export const repairLogsApi = {
       });
 
       const token = apiClient.getToken();
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
       xhr.open("POST", `${apiUrl}/workspaces/${workspaceId}/repairs/${repairLogId}/photos`);
       xhr.withCredentials = true;
