@@ -21,6 +21,7 @@ import {
   Upload,
   Archive as ArchiveIcon,
   Cloud,
+  ScanBarcode,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -53,6 +54,13 @@ import {
   SortableTableHead,
 } from "@/components/ui/table";
 import { Label } from "@/components/ui/label";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
+import { BarcodeScanner } from "@/components/scanner";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -443,6 +451,7 @@ export default function ItemsPage() {
   const [deletingItem, setDeletingItem] = useState<Item | null>(null);
   const [exportDialogOpen, setExportDialogOpen] = useState(false);
   const [importDialogOpen, setImportDialogOpen] = useState(false);
+  const [barcodeScannerOpen, setBarcodeScannerOpen] = useState(false);
 
   // Form state
   const [formData, setFormData] = useState<ItemFormData>({
@@ -1531,12 +1540,25 @@ export default function ItemsPage() {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="barcode">Barcode</Label>
-                  <Input
-                    id="barcode"
-                    value={formData.barcode}
-                    onChange={(e) => setFormData({ ...formData, barcode: e.target.value })}
-                    placeholder="Barcode or UPC"
-                  />
+                  <div className="flex items-center gap-2">
+                    <Input
+                      id="barcode"
+                      value={formData.barcode}
+                      onChange={(e) => setFormData({ ...formData, barcode: e.target.value })}
+                      placeholder="Barcode or UPC"
+                      className="flex-1"
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      className="min-h-[44px] min-w-[44px] shrink-0"
+                      onClick={() => setBarcodeScannerOpen(true)}
+                      aria-label="Scan barcode"
+                    >
+                      <ScanBarcode className="h-5 w-5" />
+                    </Button>
+                  </div>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="min_stock_level">Minimum Stock Level</Label>
@@ -1607,6 +1629,27 @@ export default function ItemsPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Barcode Scanner Sheet */}
+      <Sheet open={barcodeScannerOpen} onOpenChange={setBarcodeScannerOpen}>
+        <SheetContent side="bottom" className="h-[70vh] p-0">
+          <SheetHeader className="px-4 pt-4">
+            <SheetTitle>Scan Barcode</SheetTitle>
+          </SheetHeader>
+          <div className="flex-1 overflow-hidden">
+            <BarcodeScanner
+              onScan={(results) => {
+                if (results.length > 0 && results[0].rawValue) {
+                  setFormData((prev) => ({ ...prev, barcode: results[0].rawValue }));
+                  setBarcodeScannerOpen(false);
+                }
+              }}
+              paused={!barcodeScannerOpen}
+              className="h-full"
+            />
+          </div>
+        </SheetContent>
+      </Sheet>
 
       {/* Bulk Action Bar */}
       <BulkActionBar selectedCount={selectedCount} onClear={clearSelection}>
