@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
+import dynamic from "next/dynamic";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { useDebouncedValue } from "@/lib/hooks/use-debounced-value";
 import { useDateFormat } from "@/lib/hooks/use-date-format";
@@ -60,7 +61,10 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
-import { BarcodeScanner } from "@/components/scanner";
+const BarcodeScanner = dynamic(
+  () => import("@/components/scanner").then((mod) => mod.BarcodeScanner),
+  { ssr: false }
+);
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -91,7 +95,10 @@ import { useSSE, type SSEEvent } from "@/lib/hooks/use-sse";
 import { itemsApi, categoriesApi, importExportApi, type Category } from "@/lib/api";
 import type { Item, ItemCreate, ItemUpdate } from "@/lib/types/items";
 import { PhotoPlaceholder } from "@/components/items/photo-placeholder";
-import { PhotoUpload } from "@/components/items/photo-upload";
+const PhotoUpload = dynamic(
+  () => import("@/components/items/photo-upload").then((mod) => mod.PhotoUpload),
+  { ssr: false }
+);
 import { cn } from "@/lib/utils";
 import { useOfflineMutation } from "@/lib/hooks/use-offline-mutation";
 import { syncManager } from "@/lib/sync/sync-manager";
