@@ -12,6 +12,13 @@ import (
 	"github.com/antti/home-warehouse/go-backend/internal/shared"
 )
 
+func derefInt(p *int, fallback int) int {
+	if p != nil {
+		return *p
+	}
+	return fallback
+}
+
 // RegisterRoutes registers item routes.
 func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broadcaster) {
 	// List items
@@ -150,7 +157,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 			LifetimeWarranty:  input.Body.LifetimeWarranty,
 			WarrantyDetails:   input.Body.WarrantyDetails,
 			PurchasedFrom:     input.Body.PurchasedFrom,
-			MinStockLevel:     input.Body.MinStockLevel,
+			MinStockLevel:     derefInt(input.Body.MinStockLevel, 0),
 			ShortCode:         shortCode,
 			ObsidianVaultPath: input.Body.ObsidianVaultPath,
 			ObsidianNotePath:  input.Body.ObsidianNotePath,
@@ -479,7 +486,7 @@ type CreateItemInput struct {
 		LifetimeWarranty  *bool      `json:"lifetime_warranty,omitempty" doc:"Whether the item has lifetime warranty"`
 		WarrantyDetails   *string    `json:"warranty_details,omitempty" doc:"Warranty details"`
 		PurchasedFrom     *uuid.UUID `json:"purchased_from,omitempty" doc:"Company ID where purchased from"`
-		MinStockLevel     int        `json:"min_stock_level" default:"0" minimum:"0" doc:"Minimum stock level"`
+		MinStockLevel     *int       `json:"min_stock_level,omitempty" default:"0" minimum:"0" doc:"Minimum stock level"`
 		ShortCode         *string    `json:"short_code,omitempty" maxLength:"20" doc:"Short code for QR labels"`
 		ObsidianVaultPath *string    `json:"obsidian_vault_path,omitempty" doc:"Obsidian vault path"`
 		ObsidianNotePath  *string    `json:"obsidian_note_path,omitempty" doc:"Obsidian note path"`

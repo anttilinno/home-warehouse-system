@@ -167,6 +167,7 @@ function QuickCapturePage() {
         sku,
         name: name.trim(),
         needs_review: true,
+        min_stock_level: 0,
       };
       if (settings.categoryId) payload.category_id = settings.categoryId;
 
