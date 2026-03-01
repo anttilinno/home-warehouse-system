@@ -1,6 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef, type ReactNode } from "react";
+import { toast } from "sonner";
 import { initDB, getSyncMeta } from "@/lib/db/offline-db";
 import { syncWorkspaceData, type SyncResult, type EntityType } from "@/lib/db/sync-operations";
 import { syncManager } from "@/lib/sync/sync-manager";
@@ -230,9 +231,18 @@ export function OfflineProvider({ children }: { children: ReactNode }) {
           break;
         case "QUEUE_UPDATED":
         case "MUTATION_SYNCED":
-        case "MUTATION_FAILED":
           getPendingMutationCount().then(setPendingMutationCount);
           getFailedMutationCount().then(setFailedMutationCount);
+          break;
+        case "MUTATION_FAILED":
+        case "MUTATION_CASCADE_FAILED":
+          getPendingMutationCount().then(setPendingMutationCount);
+          getFailedMutationCount().then(setFailedMutationCount);
+          toast.error("Failed to sync an offline change", {
+            description: event.payload?.mutation
+              ? `${event.payload.mutation.entity} ${event.payload.mutation.operation} failed`
+              : undefined,
+          });
           break;
       }
     });

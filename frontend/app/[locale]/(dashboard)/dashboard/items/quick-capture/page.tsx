@@ -161,13 +161,16 @@ function QuickCapturePage() {
 
     try {
       const sku = generateSKU();
-      const tempId = await mutate({
+      // Note: location_id is not part of the items API — it belongs to inventory.
+      // We only send fields the items endpoint accepts.
+      const payload: Record<string, unknown> = {
         sku,
         name: name.trim(),
         needs_review: true,
-        category_id: settings.categoryId || undefined,
-        location_id: settings.locationId || undefined,
-      } as Record<string, unknown>);
+      };
+      if (settings.categoryId) payload.category_id = settings.categoryId;
+
+      const tempId = await mutate(payload);
 
       // Store photos in IndexedDB linked to tempId
       for (const photo of photos) {
@@ -206,7 +209,7 @@ function QuickCapturePage() {
   const canSave = name.trim().length > 0 && photos.length > 0 && !isSaving && !isPending;
 
   return (
-    <div className="flex h-[100dvh] flex-col">
+    <div className="fixed inset-0 z-50 flex flex-col bg-background">
       {/* Header */}
       <div className="flex items-center justify-between border-b px-4 py-3">
         <div className="flex items-center gap-2">
