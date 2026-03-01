@@ -717,6 +717,7 @@
       "dropFiles": "Перетащите файлы сюда",
       "dropZoneLabel": "Зона загрузки фото. Нажмите или Enter для выбора файлов.",
       "browse": "Выбрать файлы",
+      "takePhoto": "Сфотографировать",
       "fileInput": "Выберите файлы изображений для загрузки",
       "acceptedFormats": "Допустимые форматы: JPEG, PNG, GIF, WebP (макс. 10МБ)",
       "selectedFiles": "{count, plural, =1 {1 файл выбран} other {# файлов выбрано}}",
@@ -995,6 +996,7 @@
         "purchasedFrom": "напр., Amazon",
         "warrantyDetails": "Опишите условия гарантии"
       },
+      "scanBarcode": "Сканировать штрихкод",
       "next": "Далее",
       "back": "Назад",
       "createItem": "Создать предмет",

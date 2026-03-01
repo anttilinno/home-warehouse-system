@@ -717,6 +717,7 @@
       "dropFiles": "Lohistage failid siia",
       "dropZoneLabel": "Foto uleslaadimise ala. Klopsake voi vajutage Enter failide sirvimiseks.",
       "browse": "Sirvi faile",
+      "takePhoto": "Pildista",
       "fileInput": "Valige pildifailid uleslaadimiseks",
       "acceptedFormats": "Aktsepteeritud vormingud: JPEG, PNG, GIF, WebP (max 10MB)",
       "selectedFiles": "{count, plural, =1 {1 fail valitud} other {# faili valitud}}",
@@ -995,6 +996,7 @@
         "purchasedFrom": "nt Amazon",
         "warrantyDetails": "Kirjelda garantii tingimusi"
       },
+      "scanBarcode": "Skaneeri ribakood",
       "next": "Edasi",
       "back": "Tagasi",
       "createItem": "Loo ese",

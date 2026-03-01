@@ -504,6 +504,7 @@
       "dropFiles": "Drop files here to upload",
       "dropZoneLabel": "Photo upload drop zone. Click or press Enter to browse files.",
       "browse": "Browse Files",
+      "takePhoto": "Take Photo",
       "fileInput": "Choose image files to upload",
       "acceptedFormats": "Accepted formats: JPEG, PNG, GIF, WebP (max 10MB each)",
       "selectedFiles": "{count, plural, =1 {1 file selected} other {# files selected}}",
@@ -1151,6 +1152,7 @@
         "purchasedFrom": "e.g., Amazon",
         "warrantyDetails": "Describe warranty coverage"
       },
+      "scanBarcode": "Scan Barcode",
       "next": "Next",
       "back": "Back",
       "createItem": "Create Item",

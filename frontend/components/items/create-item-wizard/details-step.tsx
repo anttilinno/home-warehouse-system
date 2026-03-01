@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useFormContext } from "react-hook-form";
 import { useTranslations } from "next-intl";
-import { Loader2 } from "lucide-react";
+import { Loader2, ScanBarcode } from "lucide-react";
 
 import {
   MobileFormField,
@@ -13,8 +13,15 @@ import {
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
 import { useSmartDefaults } from "@/lib/hooks/use-smart-defaults";
+import { BarcodeScanner } from "@/components/scanner";
 import type { CreateItemFormData } from "./schema";
 
 interface DetailsStepProps {
@@ -48,6 +55,15 @@ export function DetailsStep({
   const brandDefaults = useSmartDefaults("item-brand");
   const manufacturerDefaults = useSmartDefaults("item-manufacturer");
   const purchasedFromDefaults = useSmartDefaults("item-purchased-from");
+
+  const [scannerOpen, setScannerOpen] = useState(false);
+
+  const handleBarcodeScan = useCallback((results: { rawValue: string }[]) => {
+    if (results.length > 0 && results[0].rawValue) {
+      setValue("barcode", results[0].rawValue);
+      setScannerOpen(false);
+    }
+  }, [setValue]);
 
   const isInsured = watch("is_insured");
   const lifetimeWarranty = watch("lifetime_warranty");
@@ -116,11 +132,25 @@ export function DetailsStep({
             placeholder={t("placeholders.serialNumber")}
           />
 
-          <MobileFormField<CreateItemFormData>
-            name="barcode"
-            label={t("fields.barcode")}
-            placeholder={t("placeholders.barcode")}
-          />
+          <div className="flex items-end gap-2">
+            <div className="flex-1">
+              <MobileFormField<CreateItemFormData>
+                name="barcode"
+                label={t("fields.barcode")}
+                placeholder={t("placeholders.barcode")}
+              />
+            </div>
+            <Button
+              type="button"
+              variant="outline"
+              size="icon"
+              className="min-h-[44px] min-w-[44px] shrink-0"
+              onClick={() => setScannerOpen(true)}
+              aria-label={t("scanBarcode")}
+            >
+              <ScanBarcode className="h-5 w-5" />
+            </Button>
+          </div>
 
           <MobileFormField<CreateItemFormData>
             name="short_code"
@@ -204,6 +234,22 @@ export function DetailsStep({
           />
         </div>
       </CollapsibleSection>
+
+      {/* Barcode Scanner Sheet */}
+      <Sheet open={scannerOpen} onOpenChange={setScannerOpen}>
+        <SheetContent side="bottom" className="h-[70vh] p-0">
+          <SheetHeader className="px-4 pt-4">
+            <SheetTitle>{t("scanBarcode")}</SheetTitle>
+          </SheetHeader>
+          <div className="flex-1 overflow-hidden">
+            <BarcodeScanner
+              onScan={handleBarcodeScan}
+              paused={!scannerOpen}
+              className="h-full"
+            />
+          </div>
+        </SheetContent>
+      </Sheet>
 
       {/* Navigation */}
       <div

@@ -3,7 +3,7 @@
 import { useState, useCallback, useRef, useEffect, useMemo } from "react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
-import { Upload, X, CheckCircle2, AlertCircle, Loader2, ImagePlus } from "lucide-react";
+import { Upload, X, CheckCircle2, AlertCircle, Loader2, ImagePlus, Camera } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -52,6 +52,7 @@ export function PhotoUpload({
   const [isDragging, setIsDragging] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
   const dropZoneRef = useRef<HTMLDivElement>(null);
   const [statusAnnouncement, setStatusAnnouncement] = useState("");
 
@@ -353,14 +354,16 @@ export function PhotoUpload({
     const selectedFiles = e.target.files ? Array.from(e.target.files) : [];
     addFiles(selectedFiles);
 
-    // Reset input so the same file can be selected again
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
-    }
+    // Reset inputs so the same file can be selected again
+    e.target.value = "";
   }, [addFiles]);
 
   const handleBrowseClick = useCallback(() => {
     fileInputRef.current?.click();
+  }, []);
+
+  const handleCameraClick = useCallback(() => {
+    cameraInputRef.current?.click();
   }, []);
 
   const hasFiles = files.length > 0;
@@ -423,19 +426,43 @@ export function PhotoUpload({
             {t("instructions")}
           </p>
 
-          <Button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              handleBrowseClick();
-            }}
-            disabled={isProcessing}
-            className="touch-manipulation"
-          >
-            <ImagePlus className="h-4 w-4 mr-2" />
-            {t("browse")}
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleCameraClick();
+              }}
+              disabled={isProcessing}
+              className="touch-manipulation"
+            >
+              <Camera className="h-4 w-4 mr-2" />
+              {t("takePhoto")}
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleBrowseClick();
+              }}
+              disabled={isProcessing}
+              className="touch-manipulation"
+            >
+              <ImagePlus className="h-4 w-4 mr-2" />
+              {t("browse")}
+            </Button>
+          </div>
 
+          <input
+            ref={cameraInputRef}
+            type="file"
+            accept="image/*"
+            capture="environment"
+            onChange={handleFileInputChange}
+            className="sr-only"
+            aria-label={t("takePhoto")}
+          />
           <input
             ref={fileInputRef}
             type="file"
