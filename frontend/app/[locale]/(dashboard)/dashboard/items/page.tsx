@@ -91,6 +91,7 @@ import { useSSE, type SSEEvent } from "@/lib/hooks/use-sse";
 import { itemsApi, categoriesApi, importExportApi, type Category } from "@/lib/api";
 import type { Item, ItemCreate, ItemUpdate } from "@/lib/types/items";
 import { PhotoPlaceholder } from "@/components/items/photo-placeholder";
+import { PhotoUpload } from "@/components/items/photo-upload";
 import { cn } from "@/lib/utils";
 import { useOfflineMutation } from "@/lib/hooks/use-offline-mutation";
 import { syncManager } from "@/lib/sync/sync-manager";
@@ -1617,6 +1618,17 @@ export default function ItemsPage() {
                 </div>
               </div>
             </div>
+
+            {/* Photos - only shown when editing an existing item */}
+            {editingItem && workspaceId && (
+              <div className="space-y-4">
+                <h3 className="text-sm font-semibold">Photos</h3>
+                <PhotoUpload
+                  workspaceId={workspaceId}
+                  itemId={editingItem.id}
+                />
+              </div>
+            )}
           </div>
 
           <DialogFooter>
