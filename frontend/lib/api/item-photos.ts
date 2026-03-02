@@ -10,6 +10,54 @@ import type {
   DuplicateCheckResponse,
 } from "../types/item-photo";
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+
+/**
+ * Rewrite a backend photo URL to go through our same-origin proxy
+ * to avoid CORS/ORB issues with cross-origin image loading.
+ * e.g. http://localhost:8080/workspaces/…/photos/xyz
+ *   -> /api/photos/workspaces/…/photos/xyz
+ */
+function proxyUrl(backendUrl: string): string {
+  if (!backendUrl) return backendUrl;
+  try {
+    const url = new URL(backendUrl);
+    // Strip any /api/v1 prefix from the path
+    const path = url.pathname.replace(/^\/api\/v1/, "");
+    return `/api/photos${path}`;
+  } catch {
+    return backendUrl;
+  }
+}
+
+/**
+ * Map raw API photo response to ItemPhoto with urls object.
+ * The backend returns flat `url` and `thumbnail_url` fields,
+ * but the frontend expects a `urls` object with size variants.
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function mapPhoto(raw: any): ItemPhoto {
+  if (raw.urls) return raw as ItemPhoto;
+  const photoUrl = raw.url ? proxyUrl(raw.url) : undefined;
+  // thumbnail_url endpoint may not exist yet; fall back to main photo URL
+  const thumbUrl = raw.thumbnail_url ? proxyUrl(raw.thumbnail_url) : photoUrl;
+  // Verify thumbnail exists by testing the URL pattern - if it ends in /thumbnail
+  // and the backend doesn't support it, just use the main photo URL
+  const safeThumbUrl = thumbUrl?.endsWith("/thumbnail") ? photoUrl : thumbUrl;
+  return {
+    ...raw,
+    thumbnail_status: raw.thumbnail_status ?? (raw.thumbnail_url ? "complete" : "pending"),
+    urls: photoUrl
+      ? {
+          original: photoUrl,
+          large: photoUrl,
+          medium: safeThumbUrl ?? photoUrl,
+          small: safeThumbUrl ?? photoUrl,
+        }
+      : undefined,
+  } as ItemPhoto;
+}
+
 /**
  * API client for item photo management
  */
@@ -47,8 +95,8 @@ export const itemPhotosApi = {
       xhr.addEventListener("load", () => {
         if (xhr.status >= 200 && xhr.status < 300) {
           try {
-            const response: UploadPhotoResponse = JSON.parse(xhr.responseText);
-            resolve(response.photo);
+            const response = JSON.parse(xhr.responseText);
+            resolve(mapPhoto(response.photo ?? response));
           } catch (error) {
             reject(new Error("Failed to parse response"));
           }
@@ -90,11 +138,11 @@ export const itemPhotosApi = {
    * Get all photos for an item
    */
   getItemPhotos: async (workspaceId: string, itemId: string): Promise<ItemPhoto[]> => {
-    const response = await apiClient.get<{ items: ItemPhoto[] }>(
+    const response = await apiClient.get<{ items: unknown[] }>(
       `/workspaces/${workspaceId}/items/${itemId}/photos/list`,
       workspaceId
     );
-    return response.items || [];
+    return (response.items || []).map(mapPhoto);
   },
 
   /**
@@ -105,7 +153,7 @@ export const itemPhotosApi = {
       `/workspaces/${workspaceId}/photos/${photoId}`,
       workspaceId
     );
-    return response.photo;
+    return mapPhoto(response.photo);
   },
 
   /**
@@ -117,7 +165,7 @@ export const itemPhotosApi = {
       undefined,
       workspaceId
     );
-    return response.photo;
+    return mapPhoto(response.photo);
   },
 
   /**
@@ -134,7 +182,7 @@ export const itemPhotosApi = {
       body,
       workspaceId
     );
-    return response.photo;
+    return mapPhoto(response.photo);
   },
 
   /**
@@ -146,12 +194,12 @@ export const itemPhotosApi = {
     photoIds: string[]
   ): Promise<ItemPhoto[]> => {
     const body: ReorderPhotosRequest = { photo_ids: photoIds };
-    const response = await apiClient.post<{ items: ItemPhoto[] }>(
+    const response = await apiClient.post<{ items: unknown[] }>(
       `/workspaces/${workspaceId}/items/${itemId}/photos/order`,
       body,
       workspaceId
     );
-    return response.items || [];
+    return (response.items || []).map(mapPhoto);
   },
 
   /**

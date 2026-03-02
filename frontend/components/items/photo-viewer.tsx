@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { useState, useEffect, useCallback } from "react";
-import { X, ChevronLeft, ChevronRight, ZoomIn, ZoomOut, Download } from "lucide-react";
+import { X, ChevronLeft, ChevronRight, ZoomIn, ZoomOut, Download, Loader2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
 
@@ -67,7 +67,7 @@ export function PhotoViewer({
 
   const handleDownload = useCallback(() => {
     if (currentPhoto) {
-      window.open(currentPhoto.urls.original, "_blank");
+      window.open(currentPhoto.urls?.original, "_blank");
     }
   }, [currentPhoto]);
 
@@ -218,14 +218,20 @@ export function PhotoViewer({
               maxHeight: "100%",
             }}
           >
-            <Image
-              src={currentPhoto.urls.large}
-              alt={currentPhoto.caption || `Photo ${currentIndex + 1}`}
-              width={currentPhoto.width}
-              height={currentPhoto.height}
-              className="max-h-[calc(100vh-8rem)] max-w-full object-contain"
-              priority
-            />
+            {currentPhoto.urls ? (
+              <Image
+                src={currentPhoto.urls.large ?? currentPhoto.urls.original}
+                alt={currentPhoto.caption || `Photo ${currentIndex + 1}`}
+                width={currentPhoto.width}
+                height={currentPhoto.height}
+                className="max-h-[calc(100vh-8rem)] max-w-full object-contain"
+                priority
+              />
+            ) : (
+              <div className="flex h-48 w-48 items-center justify-center rounded-lg bg-muted">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+              </div>
+            )}
           </div>
         </div>
 

@@ -155,11 +155,11 @@ function SortablePhotoItem({
         className="relative h-full w-full cursor-pointer"
         onClick={handleClick}
       >
-        {isThumbnailProcessing(photo) ? (
+        {isThumbnailProcessing(photo) || !photo.urls ? (
           <PhotoThumbnail photo={photo} className="h-full w-full" />
         ) : (
           <LazyPhoto
-            src={photo.urls.medium}
+            src={photo.urls.medium ?? photo.urls.original}
             thumbnailSrc={photo.urls.small}
             alt={photo.caption || `Photo ${index + 1}`}
             fill
@@ -326,7 +326,7 @@ export function PhotoGallery({
 
   const handleDownload = (photo: ItemPhoto) => {
     // Download the original image
-    window.open(photo.urls.original, "_blank");
+    window.open(photo.urls?.original, "_blank");
   };
 
   const handleDeleteConfirm = async () => {

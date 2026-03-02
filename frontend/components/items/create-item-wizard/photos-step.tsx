@@ -35,7 +35,8 @@ export function PhotosStep({
     (file: File, preview: string) => {
       setPhotos((prev) => {
         const updated = [...prev, { file, preview }];
-        onPhotosChange(updated.map((p) => p.file));
+        // Defer parent state update to avoid setState-during-render
+        queueMicrotask(() => onPhotosChange(updated.map((p) => p.file)));
         return updated;
       });
     },
@@ -48,7 +49,8 @@ export function PhotosStep({
         // Revoke the blob URL before removing
         URL.revokeObjectURL(prev[index].preview);
         const updated = prev.filter((_, i) => i !== index);
-        onPhotosChange(updated.map((p) => p.file));
+        // Defer parent state update to avoid setState-during-render
+        queueMicrotask(() => onPhotosChange(updated.map((p) => p.file)));
         return updated;
       });
     },

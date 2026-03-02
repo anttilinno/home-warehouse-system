@@ -12,11 +12,29 @@ const withSerwist = withSerwistInit({
   disable: process.env.NODE_ENV === "development",
 });
 
+// Parse API URL to allow Next.js Image to load photos from the backend
+const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+const parsedApi = new URL(apiUrl);
+
 const nextConfig: NextConfig = {
   output: "standalone",
   devIndicators: process.env.NODE_ENV !== "production" ? {
     position: "bottom-right",
   } : undefined,
+  images: {
+    remotePatterns: [
+      {
+        protocol: "http",
+        hostname: parsedApi.hostname,
+        ...(parsedApi.port ? { port: parsedApi.port } : {}),
+      },
+      {
+        protocol: "https",
+        hostname: parsedApi.hostname,
+        ...(parsedApi.port ? { port: parsedApi.port } : {}),
+      },
+    ],
+  },
 };
 
 export default withNextIntl(withSerwist(nextConfig));
