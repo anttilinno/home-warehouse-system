@@ -1177,7 +1177,8 @@
   },
   "inventory": {
     "purchasePrice": "Purchase Price",
-    "currency": "Currency"
+    "currency": "Currency",
+    "dateAcquired": "Purchase Date"
   },
   "quickCapture": {
     "title": "Quick Capture",

@@ -99,6 +99,10 @@ const PhotoUpload = dynamic(
   () => import("@/components/items/photo-upload").then((mod) => mod.PhotoUpload),
   { ssr: false }
 );
+const CompactPhotoGrid = dynamic(
+  () => import("@/components/items/compact-photo-grid").then((mod) => mod.CompactPhotoGrid),
+  { ssr: false }
+);
 import { cn } from "@/lib/utils";
 import { useOfflineMutation } from "@/lib/hooks/use-offline-mutation";
 import { syncManager } from "@/lib/sync/sync-manager";
@@ -383,6 +387,9 @@ export default function ItemsPage() {
   // Optimistic items state for offline mutations
   const [optimisticItems, setOptimisticItems] = useState<(Item & { _pending?: boolean })[]>([]);
 
+  // Photo gallery refresh
+  const photoGalleryRefreshRef = useRef<(() => void) | null>(null);
+
   // Virtual scrolling
   const parentRef = useRef<HTMLDivElement>(null);
 
@@ -516,8 +523,18 @@ export default function ItemsPage() {
             const data = await response.json();
             // Find primary photo or use first one
             const photos = data.items || [];
-            const primaryPhoto = photos.find((p: any) => p.is_primary) || photos[0] || null;
-            return { itemId, photo: primaryPhoto, count: photos.length };
+            const raw = photos.find((p: any) => p.is_primary) || photos[0] || null;
+            // Map flat url/thumbnail_url to urls object expected by the UI
+            const photo = raw && !raw.urls ? {
+              ...raw,
+              urls: raw.url ? {
+                original: `/api/photos${new URL(raw.url).pathname.replace(/^\/api\/v1/, "")}`,
+                large: `/api/photos${new URL(raw.url).pathname.replace(/^\/api\/v1/, "")}`,
+                medium: `/api/photos${new URL(raw.url).pathname.replace(/^\/api\/v1/, "")}`,
+                small: `/api/photos${new URL(raw.url).pathname.replace(/^\/api\/v1/, "")}`,
+              } : undefined,
+            } : raw;
+            return { itemId, photo, count: photos.length };
           }
           return { itemId, photo: null, count: 0 };
         } catch {
@@ -1306,7 +1323,7 @@ export default function ItemsPage() {
                                 <div className="relative">
                                   {(() => {
                                     const photo = itemPhotos[item.id];
-                                    if (photo) {
+                                    if (photo?.urls) {
                                       return (
                                         <div className="h-12 w-12 overflow-hidden rounded-md border">
                                           <img
@@ -1440,7 +1457,6 @@ export default function ItemsPage() {
                     id="sku"
                     value={formData.sku}
                     onChange={(e) => setFormData({ ...formData, sku: e.target.value })}
-                    disabled={!!editingItem}
                     placeholder="ITEM-001"
                   />
                 </div>
@@ -1630,9 +1646,15 @@ export default function ItemsPage() {
             {editingItem && workspaceId && (
               <div className="space-y-4">
                 <h3 className="text-sm font-semibold">Photos</h3>
+                <CompactPhotoGrid
+                  workspaceId={workspaceId}
+                  itemId={editingItem.id}
+                  refreshRef={photoGalleryRefreshRef}
+                />
                 <PhotoUpload
                   workspaceId={workspaceId}
                   itemId={editingItem.id}
+                  onUploadComplete={() => photoGalleryRefreshRef.current?.()}
                 />
               </div>
             )}

@@ -427,13 +427,16 @@ func (q *Queries) GetNextDisplayOrder(ctx context.Context, arg GetNextDisplayOrd
 }
 
 const getPhotosWithHashes = `-- name: GetPhotosWithHashes :many
-SELECT id, item_id, workspace_id, filename, storage_path, thumbnail_path, file_size, mime_type, width, height, display_order, is_primary, caption, uploaded_by, thumbnail_status, thumbnail_small_path, thumbnail_medium_path, thumbnail_large_path, thumbnail_attempts, thumbnail_error, perceptual_hash, created_at, updated_at FROM warehouse.item_photos
-WHERE workspace_id = $1
-  AND perceptual_hash IS NOT NULL
-ORDER BY created_at DESC
+SELECT ip.id, ip.item_id, ip.workspace_id, ip.filename, ip.storage_path, ip.thumbnail_path, ip.file_size, ip.mime_type, ip.width, ip.height, ip.display_order, ip.is_primary, ip.caption, ip.uploaded_by, ip.thumbnail_status, ip.thumbnail_small_path, ip.thumbnail_medium_path, ip.thumbnail_large_path, ip.thumbnail_attempts, ip.thumbnail_error, ip.perceptual_hash, ip.created_at, ip.updated_at FROM warehouse.item_photos ip
+JOIN warehouse.items i ON i.id = ip.item_id
+WHERE ip.workspace_id = $1
+  AND ip.perceptual_hash IS NOT NULL
+  AND i.is_archived = false
+ORDER BY ip.created_at DESC
 `
 
 // Get photos with perceptual hashes for duplicate detection within a workspace
+// Excludes photos belonging to archived items
 func (q *Queries) GetPhotosWithHashes(ctx context.Context, workspaceID uuid.UUID) ([]WarehouseItemPhoto, error) {
 	rows, err := q.db.Query(ctx, getPhotosWithHashes, workspaceID)
 	if err != nil {

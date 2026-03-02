@@ -1052,6 +1052,7 @@ type WarehouseItem struct {
 	Barcode          *string     `json:"barcode"`
 	IsInsured        *bool       `json:"is_insured"`
 	IsArchived       *bool       `json:"is_archived"`
+	NeedsReview      *bool       `json:"needs_review"`
 	LifetimeWarranty *bool       `json:"lifetime_warranty"`
 	WarrantyDetails  *string     `json:"warranty_details"`
 	PurchasedFrom    pgtype.UUID `json:"purchased_from"`
@@ -1066,7 +1067,6 @@ type WarehouseItem struct {
 	SearchVector     interface{}        `json:"search_vector"`
 	CreatedAt        pgtype.Timestamptz `json:"created_at"`
 	UpdatedAt        pgtype.Timestamptz `json:"updated_at"`
-	NeedsReview      *bool              `json:"needs_review"`
 }
 
 type WarehouseItemLabel struct {

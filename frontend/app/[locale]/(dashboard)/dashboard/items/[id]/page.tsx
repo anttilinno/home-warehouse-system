@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { ArrowLeft, Pencil, Archive, ArchiveRestore, Package, Barcode, Tag, Shield, FileText, Clock, Camera, ImagePlus } from "lucide-react";
@@ -13,7 +13,6 @@ import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { PhotoGalleryContainer } from "@/components/items/photo-gallery-container";
 import { PhotoUpload } from "@/components/items/photo-upload";
-import { PhotoPlaceholder } from "@/components/items/photo-placeholder";
 import { useWorkspace } from "@/lib/hooks/use-workspace";
 import { useSSE, type SSEEvent } from "@/lib/hooks/use-sse";
 import { useItemPhotos } from "@/lib/hooks/use-item-photos";
@@ -37,11 +36,11 @@ export default function ItemDetailPage() {
   const [item, setItem] = useState<Item | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [showUploadSection, setShowUploadSection] = useState(false);
+  const photoGalleryRefreshRef = useRef<(() => void) | null>(null);
 
   // Fetch item photos
   const {
     photos,
-    primaryPhoto,
     loading: photosLoading,
     refresh: refetchPhotos,
   } = useItemPhotos({ workspaceId: workspaceId || "", itemId, autoFetch: !!workspaceId });
@@ -225,21 +224,13 @@ export default function ItemDetailPage() {
             </div>
           </CardHeader>
           <CardContent className="space-y-4">
-            {/* Primary Photo Display */}
-            {primaryPhoto ? (
-              <div className="aspect-square overflow-hidden rounded-lg border bg-muted">
-                <img
-                  src={primaryPhoto.urls?.medium || primaryPhoto.urls?.small || primaryPhoto.urls?.original}
-                  alt={primaryPhoto.caption || item.name}
-                  className="h-full w-full object-cover transition-transform hover:scale-105"
-                  loading="lazy"
-                />
-              </div>
-            ) : (
-              <PhotoPlaceholder
-                size="xl"
-                className="w-full aspect-square"
-                ariaLabel={`No photos for ${item.name}`}
+            {/* Photo Gallery with full functionality */}
+            {workspaceId && (
+              <PhotoGalleryContainer
+                workspaceId={workspaceId}
+                itemId={itemId}
+                onUploadClick={canEdit ? () => setShowUploadSection(true) : undefined}
+                refreshRef={photoGalleryRefreshRef}
               />
             )}
 
@@ -250,30 +241,13 @@ export default function ItemDetailPage() {
                 itemId={itemId}
                 onUploadComplete={(uploadedPhotos: ItemPhoto[]) => {
                   refetchPhotos();
+                  photoGalleryRefreshRef.current?.();
                   if (uploadedPhotos.length > 0) {
                     setShowUploadSection(false);
                   }
                 }}
                 maxFiles={10}
               />
-            )}
-
-            {/* Photo Gallery with full functionality */}
-            {photos.length > 0 && workspaceId && (
-              <div className="pt-2">
-                <PhotoGalleryContainer
-                  workspaceId={workspaceId}
-                  itemId={itemId}
-                  onUploadClick={canEdit ? () => setShowUploadSection(true) : undefined}
-                />
-              </div>
-            )}
-
-            {/* Empty state prompt for adding photos */}
-            {photos.length === 0 && !canEdit && (
-              <p className="text-sm text-muted-foreground text-center py-4">
-                No photos have been added to this item yet.
-              </p>
             )}
           </CardContent>
         </Card>

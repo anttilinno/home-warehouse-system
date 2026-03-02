@@ -1021,7 +1021,8 @@
   },
   "inventory": {
     "purchasePrice": "Ostuhind",
-    "currency": "Valuuta"
+    "currency": "Valuuta",
+    "dateAcquired": "Ostukuupäev"
   },
   "quickCapture": {
     "title": "Kiirjäädvustus",

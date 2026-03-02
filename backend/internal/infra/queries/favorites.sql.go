@@ -112,7 +112,7 @@ func (q *Queries) GetFavorite(ctx context.Context, id uuid.UUID) (WarehouseFavor
 }
 
 const getFavoriteItems = `-- name: GetFavoriteItems :many
-SELECT f.id as favorite_id, f.created_at as favorited_at, i.id, i.workspace_id, i.sku, i.name, i.description, i.category_id, i.brand, i.model, i.image_url, i.serial_number, i.manufacturer, i.barcode, i.is_insured, i.is_archived, i.lifetime_warranty, i.warranty_details, i.purchased_from, i.min_stock_level, i.short_code, i.obsidian_vault_path, i.obsidian_note_path, i.search_vector, i.created_at, i.updated_at, i.needs_review
+SELECT f.id as favorite_id, f.created_at as favorited_at, i.id, i.workspace_id, i.sku, i.name, i.description, i.category_id, i.brand, i.model, i.image_url, i.serial_number, i.manufacturer, i.barcode, i.is_insured, i.is_archived, i.needs_review, i.lifetime_warranty, i.warranty_details, i.purchased_from, i.min_stock_level, i.short_code, i.obsidian_vault_path, i.obsidian_note_path, i.search_vector, i.created_at, i.updated_at
 FROM warehouse.favorites f
 JOIN warehouse.items i ON f.item_id = i.id
 WHERE f.user_id = $1 AND f.workspace_id = $2 AND f.favorite_type = 'ITEM'
@@ -141,6 +141,7 @@ type GetFavoriteItemsRow struct {
 	Barcode           *string            `json:"barcode"`
 	IsInsured         *bool              `json:"is_insured"`
 	IsArchived        *bool              `json:"is_archived"`
+	NeedsReview       *bool              `json:"needs_review"`
 	LifetimeWarranty  *bool              `json:"lifetime_warranty"`
 	WarrantyDetails   *string            `json:"warranty_details"`
 	PurchasedFrom     pgtype.UUID        `json:"purchased_from"`
@@ -151,7 +152,6 @@ type GetFavoriteItemsRow struct {
 	SearchVector      interface{}        `json:"search_vector"`
 	CreatedAt         pgtype.Timestamptz `json:"created_at"`
 	UpdatedAt         pgtype.Timestamptz `json:"updated_at"`
-	NeedsReview       *bool              `json:"needs_review"`
 }
 
 func (q *Queries) GetFavoriteItems(ctx context.Context, arg GetFavoriteItemsParams) ([]GetFavoriteItemsRow, error) {
@@ -180,6 +180,7 @@ func (q *Queries) GetFavoriteItems(ctx context.Context, arg GetFavoriteItemsPara
 			&i.Barcode,
 			&i.IsInsured,
 			&i.IsArchived,
+			&i.NeedsReview,
 			&i.LifetimeWarranty,
 			&i.WarrantyDetails,
 			&i.PurchasedFrom,
@@ -190,7 +191,6 @@ func (q *Queries) GetFavoriteItems(ctx context.Context, arg GetFavoriteItemsPara
 			&i.SearchVector,
 			&i.CreatedAt,
 			&i.UpdatedAt,
-			&i.NeedsReview,
 		); err != nil {
 			return nil, err
 		}

@@ -1021,7 +1021,8 @@
   },
   "inventory": {
     "purchasePrice": "Цена покупки",
-    "currency": "Валюта"
+    "currency": "Валюта",
+    "dateAcquired": "Дата покупки"
   },
   "quickCapture": {
     "title": "Быстрый захват",

@@ -222,6 +222,8 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
     profiles: ["prod"]
+    environment:
+      INTERNAL_API_URL: "http://backend:8080"
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://127.0.0.1:3000"]
       interval: 5s

@@ -517,6 +517,7 @@ export default function InventoryPage() {
   const [formStatus, setFormStatus] = useState<InventoryStatus>("AVAILABLE");
   const [formPurchasePrice, setFormPurchasePrice] = useState("");
   const [formCurrencyCode, setFormCurrencyCode] = useState("EUR");
+  const [formDateAcquired, setFormDateAcquired] = useState("");
   const [formNotes, setFormNotes] = useState("");
   const [isSaving, setIsSaving] = useState(false);
 
@@ -957,6 +958,7 @@ export default function InventoryPage() {
     { key: "status", label: "Status" },
     { key: "purchase_price", label: "Purchase Price", formatter: (value, inv) => formatCurrencyValue(value, inv.currency_code) },
     { key: "currency_code", label: "Currency" },
+    { key: "date_acquired", label: "Purchase Date", formatter: (value) => value ? formatDate(value) : "-" },
     { key: "unit_price", label: "Unit Price", formatter: (value) => value ? `$${formatNumber(value / 100, 2)}` : "-" },
     { key: "total_value", label: "Total Value", formatter: (value) => value ? `$${formatNumber(value / 100, 2)}` : "-" },
     { key: "notes", label: "Notes" },
@@ -974,6 +976,7 @@ export default function InventoryPage() {
     setFormStatus("AVAILABLE");
     setFormPurchasePrice("");
     setFormCurrencyCode("EUR");
+    setFormDateAcquired("");
     setFormNotes("");
     setDialogOpen(true);
   };
@@ -1010,6 +1013,7 @@ export default function InventoryPage() {
         status: formStatus,
         purchase_price: formPurchasePrice ? Math.round(parseFloat(formPurchasePrice) * 100) : undefined,
         currency_code: formPurchasePrice ? formCurrencyCode : undefined,
+        date_acquired: formDateAcquired || undefined,
         notes: formNotes || undefined,
       };
       await createInventoryOffline(createPayload, undefined, dependsOn.length > 0 ? dependsOn : undefined);
@@ -1651,6 +1655,16 @@ export default function InventoryPage() {
                   </SelectContent>
                 </Select>
               </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="dateAcquired">{t("dateAcquired")}</Label>
+              <Input
+                id="dateAcquired"
+                type="date"
+                value={formDateAcquired}
+                onChange={(e) => setFormDateAcquired(e.target.value)}
+              />
             </div>
 
             <div className="space-y-2">

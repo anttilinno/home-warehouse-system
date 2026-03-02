@@ -127,10 +127,13 @@ WHERE id = @id AND workspace_id = @workspace_id;
 
 -- name: GetPhotosWithHashes :many
 -- Get photos with perceptual hashes for duplicate detection within a workspace
-SELECT * FROM warehouse.item_photos
-WHERE workspace_id = @workspace_id
-  AND perceptual_hash IS NOT NULL
-ORDER BY created_at DESC;
+-- Excludes photos belonging to archived items
+SELECT ip.* FROM warehouse.item_photos ip
+JOIN warehouse.items i ON i.id = ip.item_id
+WHERE ip.workspace_id = @workspace_id
+  AND ip.perceptual_hash IS NOT NULL
+  AND i.is_archived = false
+ORDER BY ip.created_at DESC;
 
 -- name: GetItemPhotosWithHashes :many
 -- Get photos with perceptual hashes for a specific item

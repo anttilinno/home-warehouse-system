@@ -501,7 +501,7 @@ func (q *Queries) ListAllInventory(ctx context.Context, workspaceID uuid.UUID) (
 
 const listAllItems = `-- name: ListAllItems :many
 
-SELECT id, workspace_id, sku, name, description, category_id, brand, model, image_url, serial_number, manufacturer, barcode, is_insured, is_archived, lifetime_warranty, warranty_details, purchased_from, min_stock_level, short_code, obsidian_vault_path, obsidian_note_path, search_vector, created_at, updated_at, needs_review FROM warehouse.items
+SELECT id, workspace_id, sku, name, description, category_id, brand, model, image_url, serial_number, manufacturer, barcode, is_insured, is_archived, needs_review, lifetime_warranty, warranty_details, purchased_from, min_stock_level, short_code, obsidian_vault_path, obsidian_note_path, search_vector, created_at, updated_at FROM warehouse.items
 WHERE workspace_id = $1 
   AND ($2::boolean OR is_archived = false)
 ORDER BY name
@@ -538,6 +538,7 @@ func (q *Queries) ListAllItems(ctx context.Context, arg ListAllItemsParams) ([]W
 			&i.Barcode,
 			&i.IsInsured,
 			&i.IsArchived,
+			&i.NeedsReview,
 			&i.LifetimeWarranty,
 			&i.WarrantyDetails,
 			&i.PurchasedFrom,
@@ -548,7 +549,6 @@ func (q *Queries) ListAllItems(ctx context.Context, arg ListAllItemsParams) ([]W
 			&i.SearchVector,
 			&i.CreatedAt,
 			&i.UpdatedAt,
-			&i.NeedsReview,
 		); err != nil {
 			return nil, err
 		}
@@ -561,7 +561,7 @@ func (q *Queries) ListAllItems(ctx context.Context, arg ListAllItemsParams) ([]W
 }
 
 const listAllItemsIncludingArchived = `-- name: ListAllItemsIncludingArchived :many
-SELECT id, workspace_id, sku, name, description, category_id, brand, model, image_url, serial_number, manufacturer, barcode, is_insured, is_archived, lifetime_warranty, warranty_details, purchased_from, min_stock_level, short_code, obsidian_vault_path, obsidian_note_path, search_vector, created_at, updated_at, needs_review FROM warehouse.items
+SELECT id, workspace_id, sku, name, description, category_id, brand, model, image_url, serial_number, manufacturer, barcode, is_insured, is_archived, needs_review, lifetime_warranty, warranty_details, purchased_from, min_stock_level, short_code, obsidian_vault_path, obsidian_note_path, search_vector, created_at, updated_at FROM warehouse.items
 WHERE workspace_id = $1
 ORDER BY created_at
 `
@@ -590,6 +590,7 @@ func (q *Queries) ListAllItemsIncludingArchived(ctx context.Context, workspaceID
 			&i.Barcode,
 			&i.IsInsured,
 			&i.IsArchived,
+			&i.NeedsReview,
 			&i.LifetimeWarranty,
 			&i.WarrantyDetails,
 			&i.PurchasedFrom,
@@ -600,7 +601,6 @@ func (q *Queries) ListAllItemsIncludingArchived(ctx context.Context, workspaceID
 			&i.SearchVector,
 			&i.CreatedAt,
 			&i.UpdatedAt,
-			&i.NeedsReview,
 		); err != nil {
 			return nil, err
 		}

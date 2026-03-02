@@ -10,7 +10,7 @@
  */
 
 import * as React from "react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { useTranslations } from "next-intl";
 import { CheckSquare, X } from "lucide-react";
@@ -29,6 +29,7 @@ interface PhotoGalleryContainerProps {
   workspaceId: string;
   itemId: string;
   onUploadClick?: () => void;
+  refreshRef?: React.MutableRefObject<(() => void) | null>;
 }
 
 /**
@@ -38,6 +39,7 @@ export function PhotoGalleryContainer({
   workspaceId,
   itemId,
   onUploadClick,
+  refreshRef,
 }: PhotoGalleryContainerProps) {
   const t = useTranslations("photos");
   const [viewerOpen, setViewerOpen] = useState(false);
@@ -69,6 +71,14 @@ export function PhotoGalleryContainer({
     deletePhoto,
     refresh: refreshPhotos,
   } = useItemPhotos({ workspaceId, itemId });
+
+  // Expose refreshPhotos to parent via ref
+  useEffect(() => {
+    if (refreshRef) {
+      refreshRef.current = refreshPhotos;
+      return () => { refreshRef.current = null; };
+    }
+  }, [refreshRef, refreshPhotos]);
 
   // Handle photo click to open viewer
   const handlePhotoClick = (photo: ItemPhoto, index: number) => {
