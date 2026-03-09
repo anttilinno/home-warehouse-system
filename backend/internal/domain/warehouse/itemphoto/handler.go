@@ -779,7 +779,11 @@ func (h *ServePhotoHandler) servePhoto(w http.ResponseWriter, r *http.Request, t
 	// Get storage path
 	storagePath := photo.StoragePath
 	if thumbnail {
-		storagePath = photo.ThumbnailPath
+		storagePath = photo.GetBestThumbnail()
+		if storagePath == "" {
+			// No thumbnail available, fall back to original
+			storagePath = photo.StoragePath
+		}
 	}
 
 	// Get file from storage

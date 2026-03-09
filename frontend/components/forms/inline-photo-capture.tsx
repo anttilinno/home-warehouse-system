@@ -13,6 +13,7 @@ import {
   validateImageFile,
 } from "@/lib/utils/image";
 import { cn } from "@/lib/utils";
+import { useIsStandalone } from "@/lib/hooks/use-standalone";
 
 interface CapturedPhoto {
   file: File;
@@ -58,6 +59,7 @@ export function InlinePhotoCapture({
   const [localPreview, setLocalPreview] = useState<CapturedPhoto | null>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
   const galleryInputRef = useRef<HTMLInputElement>(null);
+  const isStandalone = useIsStandalone();
 
   // Use prop preview or local preview
   const displayPreview = preview || localPreview?.preview;
@@ -219,7 +221,7 @@ export function InlinePhotoCapture({
             ref={cameraInputRef}
             type="file"
             accept="image/*"
-            capture="environment"
+            capture={isStandalone ? undefined : "environment"}
             onChange={handleCameraChange}
             className="sr-only"
             aria-label={t("cameraInput")}

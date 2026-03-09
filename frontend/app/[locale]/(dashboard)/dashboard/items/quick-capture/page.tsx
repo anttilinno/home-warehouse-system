@@ -19,6 +19,7 @@ import { useAutoSKU } from "@/lib/hooks/use-auto-sku";
 import { useCapturePhotos } from "@/lib/hooks/use-capture-photos";
 import { useOfflineMutation } from "@/lib/hooks/use-offline-mutation";
 import { triggerHaptic } from "@/lib/hooks/use-haptic";
+import { useIsStandalone } from "@/lib/hooks/use-standalone";
 import { initAudioContext, playSuccessBeep } from "@/lib/scanner/feedback";
 import { validateImageFile, compressImage } from "@/lib/utils/image";
 import { getAll } from "@/lib/db/offline-db";
@@ -65,6 +66,7 @@ function QuickCapturePage() {
   const [locations, setLocations] = useState<Location[]>([]);
   const cameraInputRef = useRef<HTMLInputElement>(null);
   const nameInputRef = useRef<HTMLInputElement>(null);
+  const isStandalone = useIsStandalone();
 
   // ---- Hooks ----
   const { generateSKU } = useAutoSKU();
@@ -96,8 +98,16 @@ function QuickCapturePage() {
     };
   }, []);
 
+  // ---- Lifecycle logging ----
+  const mountId = useRef(Math.random().toString(36).slice(2, 10));
+  useEffect(() => {
+    console.log(`[QuickCapture:${mountId.current}] mounted, standalone=${isStandalone}`);
+    return () => console.log(`[QuickCapture:${mountId.current}] unmounted`);
+  }, [isStandalone]);
+
   // ---- Auto-trigger camera on mount (best-effort, may be blocked) ----
   useEffect(() => {
+    console.log(`[QuickCapture:${mountId.current}] auto-triggering camera`);
     const timer = setTimeout(() => {
       cameraInputRef.current?.click();
     }, 300);
@@ -116,25 +126,41 @@ function QuickCapturePage() {
   // ---- Camera capture handler ----
   const handleCapture = useCallback(
     async (e: React.ChangeEvent<HTMLInputElement>) => {
+      const tag = `[QuickCapture:${mountId.current}]`;
+      console.log(`${tag} onChange fired, files=${e.target.files?.length ?? 0}`);
+
       const file = e.target.files?.[0];
       // Reset the input so the same file can be re-selected
       e.target.value = "";
-      if (!file) return;
+      if (!file) {
+        console.warn(`${tag} no file in input`);
+        return;
+      }
+
+      console.log(`${tag} file: name=${file.name} type=${file.type} size=${file.size}`);
 
       const validation = validateImageFile(file);
-      if (!validation.valid) return;
+      if (!validation.valid) {
+        console.warn(`${tag} validation failed:`, validation.error);
+        return;
+      }
 
       try {
+        console.log(`${tag} compressing…`);
         const compressed = await compressImage(file, 1920, 1920, 0.85);
+        console.log(`${tag} compressed: size=${compressed.size} type=${compressed.type}`);
         const preview = URL.createObjectURL(compressed);
-        const id = crypto.randomUUID();
+        const id = crypto.randomUUID?.() ?? Math.random().toString(36).slice(2) + Date.now().toString(36);
 
-        setPhotos((prev) => [...prev, { id, blob: compressed, preview }]);
+        setPhotos((prev) => {
+          console.log(`${tag} setPhotos: prev=${prev.length} → ${prev.length + 1}`);
+          return [...prev, { id, blob: compressed, preview }];
+        });
 
         // Auto-focus name input after first photo
         setTimeout(() => nameInputRef.current?.focus(), 100);
-      } catch {
-        // Compression failed -- skip this photo silently
+      } catch (err) {
+        console.error(`${tag} compression error:`, err);
       }
     },
     []
@@ -151,11 +177,14 @@ function QuickCapturePage() {
 
   // ---- Take photo trigger ----
   const handleTakePhoto = useCallback(() => {
+    console.log(`[QuickCapture:${mountId.current}] takePhoto clicked, inputRef exists=${!!cameraInputRef.current}`);
     cameraInputRef.current?.click();
   }, []);
 
   // ---- Save flow ----
   const handleSave = useCallback(async () => {
+    const tag = `[QuickCapture:${mountId.current}]`;
+    console.log(`${tag} save: name="${name.trim()}" photos=${photos.length} isSaving=${isSaving}`);
     if (!name.trim() || photos.length === 0 || isSaving) return;
     setIsSaving(true);
 
@@ -171,10 +200,13 @@ function QuickCapturePage() {
       };
       if (settings.categoryId) payload.category_id = settings.categoryId;
 
+      console.log(`${tag} mutating with sku=${sku}`);
       const tempId = await mutate(payload);
+      console.log(`${tag} mutate returned tempId=${tempId}`);
 
       // Store photos in IndexedDB linked to tempId
       for (const photo of photos) {
+        console.log(`${tag} storing photo id=${photo.id} size=${photo.blob.size}`);
         await storePhoto(tempId, photo.blob);
       }
 
@@ -187,9 +219,12 @@ function QuickCapturePage() {
       photos.forEach((p) => URL.revokeObjectURL(p.preview));
       setPhotos([]);
       setName("");
+      console.log(`${tag} save complete, resetting form`);
 
       // Re-trigger camera for next capture
       setTimeout(() => cameraInputRef.current?.click(), 100);
+    } catch (err) {
+      console.error(`${tag} save error:`, err);
     } finally {
       setIsSaving(false);
     }
@@ -280,11 +315,13 @@ function QuickCapturePage() {
       </div>
 
       {/* Hidden camera input */}
+      {/* In standalone PWA mode, omit capture to prevent the OS from
+          suspending the webview when the native camera opens */}
       <input
         ref={cameraInputRef}
         type="file"
         accept="image/*"
-        capture="environment"
+        capture={isStandalone ? undefined : "environment"}
         className="sr-only"
         onChange={handleCapture}
       />

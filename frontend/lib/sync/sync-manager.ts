@@ -90,6 +90,8 @@ export interface SyncEvent {
   payload?: {
     queueLength?: number;
     mutation?: MutationQueueEntry;
+    /** Server-assigned ID after a create mutation is synced */
+    resolvedId?: string;
     error?: string;
     source?: string;
     conflict?: ConflictEventPayload;
@@ -485,7 +487,13 @@ export class SyncManager {
         }
 
         await removeMutation(mutation.id);
-        this.broadcast({ type: "MUTATION_SYNCED", payload: { mutation } });
+        this.broadcast({
+          type: "MUTATION_SYNCED",
+          payload: {
+            mutation,
+            resolvedId: resolvedIds.get(mutation.idempotencyKey),
+          },
+        });
         return true;
       }
 

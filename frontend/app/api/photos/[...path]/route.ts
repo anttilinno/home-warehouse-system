@@ -19,7 +19,10 @@ export async function GET(
   { params }: { params: Promise<{ path: string[] }> }
 ) {
   const { path } = await params;
-  const backendUrl = `${API_URL}/${path.join("/")}`;
+  const joinedPath = path.join("/");
+  // The proxyUrl() helper strips /api/v1 from backend-generated URLs,
+  // so we need to add it back when forwarding to the backend.
+  const backendUrl = `${API_URL}/api/v1/${joinedPath}`;
 
   const cookieStore = await cookies();
   const token = cookieStore.get("access_token")?.value;

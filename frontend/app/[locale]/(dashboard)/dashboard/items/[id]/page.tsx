@@ -148,30 +148,31 @@ export default function ItemDetailPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-center gap-4 min-w-0">
           <Button
             variant="ghost"
             size="icon"
+            className="shrink-0"
             onClick={() => router.push("/dashboard/items")}
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
-          <div>
+          <div className="min-w-0">
             <div className="flex items-center gap-2">
-              <h1 className="text-3xl font-bold tracking-tight">{item.name}</h1>
+              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight truncate">{item.name}</h1>
               {item.is_archived && (
-                <Badge variant="secondary">Archived</Badge>
+                <Badge variant="secondary" className="shrink-0">Archived</Badge>
               )}
             </div>
-            <p className="text-muted-foreground">
+            <p className="text-muted-foreground text-sm truncate">
               SKU: {item.sku}
               {item.short_code && ` • ${item.short_code}`}
             </p>
           </div>
         </div>
 
-        <div className="flex gap-2">
+        <div className="flex gap-2 shrink-0">
           {canEdit && (
             <>
               <Button variant="outline" onClick={handleEdit}>
@@ -234,8 +235,8 @@ export default function ItemDetailPage() {
               />
             )}
 
-            {/* Photo Upload Section */}
-            {canEdit && (showUploadSection || photos.length === 0) && workspaceId && (
+            {/* Photo Upload Section (shown when explicitly toggled) */}
+            {canEdit && showUploadSection && workspaceId && (
               <PhotoUpload
                 workspaceId={workspaceId}
                 itemId={itemId}

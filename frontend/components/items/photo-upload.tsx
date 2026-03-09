@@ -13,6 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { validateImageFile, createImagePreview, revokeImagePreview, formatFileSize, compressImage } from "@/lib/utils/image";
 import type { ItemPhoto, DuplicateCheckResponse } from "@/lib/types/item-photo";
+import { useIsStandalone } from "@/lib/hooks/use-standalone";
 import { DuplicateWarningDialog } from "./duplicate-warning-dialog";
 
 interface PhotoUploadProps {
@@ -53,6 +54,7 @@ export function PhotoUpload({
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
+  const isStandalone = useIsStandalone();
   const dropZoneRef = useRef<HTMLDivElement>(null);
   const [statusAnnouncement, setStatusAnnouncement] = useState("");
 
@@ -458,7 +460,7 @@ export function PhotoUpload({
             ref={cameraInputRef}
             type="file"
             accept="image/*"
-            capture="environment"
+            capture={isStandalone ? undefined : "environment"}
             onChange={handleFileInputChange}
             className="sr-only"
             aria-label={t("takePhoto")}

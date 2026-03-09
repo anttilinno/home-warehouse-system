@@ -6,6 +6,7 @@ import { initDB, getSyncMeta } from "@/lib/db/offline-db";
 import { syncWorkspaceData, type SyncResult, type EntityType } from "@/lib/db/sync-operations";
 import { syncManager } from "@/lib/sync/sync-manager";
 import { getPendingMutationCount, getFailedMutationCount } from "@/lib/sync/mutation-queue";
+import { handleItemSynced } from "@/lib/sync/capture-photo-uploader";
 
 interface OfflineContextValue {
   isOnline: boolean;
@@ -230,9 +231,21 @@ export function OfflineProvider({ children }: { children: ReactNode }) {
           getFailedMutationCount().then(setFailedMutationCount);
           break;
         case "QUEUE_UPDATED":
+          getPendingMutationCount().then(setPendingMutationCount);
+          getFailedMutationCount().then(setFailedMutationCount);
+          break;
         case "MUTATION_SYNCED":
           getPendingMutationCount().then(setPendingMutationCount);
           getFailedMutationCount().then(setFailedMutationCount);
+          // Upload any quick-capture photos after item creation syncs
+          if (event.payload?.mutation?.entity === "items" && event.payload?.mutation?.operation === "create") {
+            const wsId = event.payload.mutation.workspaceId;
+            if (wsId) {
+              handleItemSynced(event, wsId).catch((err) =>
+                console.error("[OfflineContext] photo upload after sync failed:", err)
+              );
+            }
+          }
           break;
         case "MUTATION_FAILED":
         case "MUTATION_CASCADE_FAILED":

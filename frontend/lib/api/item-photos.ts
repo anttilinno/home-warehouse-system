@@ -39,11 +39,7 @@ function proxyUrl(backendUrl: string): string {
 function mapPhoto(raw: any): ItemPhoto {
   if (raw.urls) return raw as ItemPhoto;
   const photoUrl = raw.url ? proxyUrl(raw.url) : undefined;
-  // thumbnail_url endpoint may not exist yet; fall back to main photo URL
   const thumbUrl = raw.thumbnail_url ? proxyUrl(raw.thumbnail_url) : photoUrl;
-  // Verify thumbnail exists by testing the URL pattern - if it ends in /thumbnail
-  // and the backend doesn't support it, just use the main photo URL
-  const safeThumbUrl = thumbUrl?.endsWith("/thumbnail") ? photoUrl : thumbUrl;
   return {
     ...raw,
     thumbnail_status: raw.thumbnail_status ?? (raw.thumbnail_url ? "complete" : "pending"),
@@ -51,8 +47,8 @@ function mapPhoto(raw: any): ItemPhoto {
       ? {
           original: photoUrl,
           large: photoUrl,
-          medium: safeThumbUrl ?? photoUrl,
-          small: safeThumbUrl ?? photoUrl,
+          medium: thumbUrl ?? photoUrl,
+          small: thumbUrl ?? photoUrl,
         }
       : undefined,
   } as ItemPhoto;
