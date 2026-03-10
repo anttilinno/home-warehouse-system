@@ -113,6 +113,28 @@ func (ts *TestServer) Delete(path string) *http.Response {
 	return ts.Request(http.MethodDelete, path, nil)
 }
 
+// PostRaw makes a POST request with raw body and custom content type.
+func (ts *TestServer) PostRaw(path string, body *bytes.Buffer, contentType string) *http.Response {
+	ts.t.Helper()
+
+	req, err := http.NewRequest(http.MethodPost, ts.Server.URL+path, body)
+	if err != nil {
+		ts.t.Fatalf("failed to create request: %v", err)
+	}
+
+	req.Header.Set("Content-Type", contentType)
+	if ts.Token != "" {
+		req.Header.Set("Authorization", "Bearer "+ts.Token)
+	}
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		ts.t.Fatalf("failed to make request: %v", err)
+	}
+
+	return resp
+}
+
 // ParseResponse parses the response body into the given struct.
 func ParseResponse[T any](t *testing.T, resp *http.Response) T {
 	t.Helper()
