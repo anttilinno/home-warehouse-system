@@ -9,7 +9,6 @@ import {
   AlertTriangle,
   HandCoins,
   TrendingUp,
-  Clock,
   CheckCircle,
   RefreshCw,
 } from "lucide-react";
@@ -20,7 +19,7 @@ import { useAuth } from "@/lib/contexts/auth-context";
 import { useSSE, type SSEEvent } from "@/lib/hooks/use-sse";
 import { useDateFormat } from "@/lib/hooks/use-date-format";
 import { useNumberFormat } from "@/lib/hooks/use-number-format";
-import { analyticsApi, notificationsApi, type AnalyticsSummary, type RecentActivity } from "@/lib/api";
+import { analyticsApi, type AnalyticsSummary, type RecentActivity } from "@/lib/api";
 import { StatsCard } from "@/components/dashboard/stats-card";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -37,7 +36,7 @@ interface FrontendActivity {
   location?: string;
   borrower?: string;
   time: string;
-  created_at: string; // Store the ISO date for formatting later
+  created_at: string;
 }
 
 function DashboardSkeleton() {
@@ -124,7 +123,7 @@ function mapActivityToFrontend(activity: RecentActivity): FrontendActivity | nul
     if (actionLower === "return" || actionLower === "returned") return "return";
     if (actionLower === "update" || actionLower === "updated") return "move";
 
-    return "add"; // default
+    return "add";
   };
 
   return {
@@ -133,7 +132,7 @@ function mapActivityToFrontend(activity: RecentActivity): FrontendActivity | nul
     item: activity.entity_name || "Unknown Item",
     location: undefined,
     borrower: undefined,
-    time: "", // Will be formatted in the component
+    time: "",
     created_at: activity.created_at,
   };
 }
@@ -171,14 +170,9 @@ export default function DashboardPage() {
       setIsLoading(true);
       setError(null);
 
-      // Fetch analytics summary and notification count in parallel
-      const [summaryData, notifCount] = await Promise.all([
-        analyticsApi.getSummary(workspaceId),
-        notificationsApi.getUnreadCount().catch(() => ({ count: 0 })), // Graceful fallback
-      ]);
-
+      const summaryData = await analyticsApi.getSummary(workspaceId);
       setSummary(summaryData);
-      setUnreadCount(notifCount.count);
+      setUnreadCount(0);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Failed to load dashboard data";
       setError(errorMessage);
@@ -226,7 +220,7 @@ export default function DashboardPage() {
       ...activity,
       time: formatRelativeTime(activity.created_at)
     }))
-    .slice(0, 4); // Show only 4 most recent
+    .slice(0, 4);
 
   // Generate alerts dynamically from stats
   const alerts = [];
@@ -246,10 +240,6 @@ export default function DashboardPage() {
       severity: "error" as const,
     });
   }
-  // Note: Backend doesn't provide expiring items data yet
-  // if (expiringItems > 0) {
-  //   alerts.push({ id: "expiring", type: "expiring", message: t("alerts.expiring", { count: expiringItems }), severity: "warning" });
-  // }
 
   return (
     <div className="space-y-6">
@@ -272,24 +262,28 @@ export default function DashboardPage() {
           value={formatNumber(stats.total_items)}
           icon={Package}
           color="pink"
+          href="/dashboard/items"
         />
         <StatsCard
           title={t("stats.locations")}
           value={formatNumber(stats.total_locations)}
           icon={MapPin}
           color="green"
+          href="/dashboard/locations"
         />
         <StatsCard
           title={t("stats.containers")}
           value={formatNumber(stats.total_containers)}
           icon={Box}
           color="purple"
+          href="/dashboard/containers"
         />
         <StatsCard
           title={t("stats.activeLoans")}
           value={formatNumber(stats.active_loans)}
           icon={HandCoins}
           color="orange"
+          href="/dashboard/loans"
         />
         </div>
 
@@ -335,7 +329,7 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
 
-        {/* Recent Activity - hidden on mobile, accessible via floating activity button */}
+        {/* Recent Activity */}
         <Card className="hidden sm:block">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">

@@ -3,7 +3,8 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Plus, Loader } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -15,6 +16,7 @@ import {
 import { BatchSettingsBar } from "@/components/quick-capture/batch-settings-bar";
 import { CapturePhotoStrip } from "@/components/quick-capture/capture-photo-strip";
 import { BatchCaptureProvider, useBatchCapture } from "@/lib/contexts/batch-capture-context";
+import { useAuth } from "@/lib/contexts/auth-context";
 import { useAutoSKU } from "@/lib/hooks/use-auto-sku";
 import { useCapturePhotos } from "@/lib/hooks/use-capture-photos";
 import { useOfflineMutation } from "@/lib/hooks/use-offline-mutation";
@@ -22,7 +24,9 @@ import { triggerHaptic } from "@/lib/hooks/use-haptic";
 import { useIsStandalone } from "@/lib/hooks/use-standalone";
 import { initAudioContext, playSuccessBeep } from "@/lib/scanner/feedback";
 import { validateImageFile, compressImage } from "@/lib/utils/image";
-import { getAll } from "@/lib/db/offline-db";
+import { getAll, put } from "@/lib/db/offline-db";
+import { categoriesApi } from "@/lib/api/categories";
+import { locationsApi } from "@/lib/api/locations";
 import type { Category } from "@/lib/api/categories";
 import type { Location } from "@/lib/types/locations";
 
@@ -55,6 +59,7 @@ export default function QuickCaptureRoute() {
 function QuickCapturePage() {
   const t = useTranslations("quickCapture");
   const router = useRouter();
+  const { workspaceId } = useAuth();
 
   // ---- State ----
   const [photos, setPhotos] = useState<CapturedPhotoLocal[]>([]);
@@ -64,8 +69,14 @@ function QuickCapturePage() {
   const [locationSheetOpen, setLocationSheetOpen] = useState(false);
   const [categories, setCategories] = useState<Category[]>([]);
   const [locations, setLocations] = useState<Location[]>([]);
+  const [creatingCategory, setCreatingCategory] = useState(false);
+  const [creatingLocation, setCreatingLocation] = useState(false);
+  const [categorySearch, setCategorySearch] = useState("");
+  const [locationSearch, setLocationSearch] = useState("");
   const cameraInputRef = useRef<HTMLInputElement>(null);
   const nameInputRef = useRef<HTMLInputElement>(null);
+  const newCategoryInputRef = useRef<HTMLInputElement>(null);
+  const newLocationInputRef = useRef<HTMLInputElement>(null);
   const isStandalone = useIsStandalone();
 
   // ---- Hooks ----
@@ -241,6 +252,58 @@ function QuickCapturePage() {
     setLocationSheetOpen(true);
   }, []);
 
+  // ---- Create category handler ----
+  const handleCreateCategory = useCallback(async (name: string) => {
+    if (!workspaceId || !name.trim()) return;
+
+    try {
+      setCreatingCategory(true);
+      const newCategory = await categoriesApi.create(workspaceId, {
+        name: name.trim(),
+      });
+
+      // Add to IndexedDB cache so the context can resolve the name
+      await put("categories", newCategory);
+
+      setCategories((prev) => [...prev, newCategory]);
+      setCategoryId(newCategory.id);
+      setCategorySearch("");
+      setCategorySheetOpen(false);
+      toast.success("Category created", { duration: 2000 });
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Failed to create category";
+      toast.error(message);
+    } finally {
+      setCreatingCategory(false);
+    }
+  }, [workspaceId, setCategoryId]);
+
+  // ---- Create location handler ----
+  const handleCreateLocation = useCallback(async (name: string) => {
+    if (!workspaceId || !name.trim()) return;
+
+    try {
+      setCreatingLocation(true);
+      const newLocation = await locationsApi.create(workspaceId, {
+        name: name.trim(),
+      });
+
+      // Add to IndexedDB cache so the context can resolve the name
+      await put("locations", newLocation);
+
+      setLocations((prev) => [...prev, newLocation]);
+      setLocationId(newLocation.id);
+      setLocationSearch("");
+      setLocationSheetOpen(false);
+      toast.success("Location created", { duration: 2000 });
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Failed to create location";
+      toast.error(message);
+    } finally {
+      setCreatingLocation(false);
+    }
+  }, [workspaceId, setLocationId]);
+
   // ---- Derived state ----
   const canSave = name.trim().length > 0 && photos.length > 0 && !isSaving && !isPending;
 
@@ -328,72 +391,198 @@ function QuickCapturePage() {
 
       {/* Category Sheet */}
       <Sheet open={categorySheetOpen} onOpenChange={setCategorySheetOpen}>
-        <SheetContent side="bottom" className="max-h-[60vh]">
+        <SheetContent side="bottom" className="max-h-[60vh] flex flex-col">
           <SheetHeader>
             <SheetTitle>{t("selectCategory")}</SheetTitle>
           </SheetHeader>
-          <div className="overflow-y-auto py-2">
-            <button
-              type="button"
-              className="flex w-full items-center px-4 text-left text-muted-foreground"
-              style={{ minHeight: 44 }}
-              onClick={() => {
-                setCategoryId(null);
-                setCategorySheetOpen(false);
-              }}
-            >
-              {t("noneSelected")}
-            </button>
-            {categories.map((cat) => (
-              <button
-                key={cat.id}
-                type="button"
-                className="flex w-full items-center px-4 text-left"
-                style={{ minHeight: 44 }}
-                onClick={() => {
-                  setCategoryId(cat.id);
-                  setCategorySheetOpen(false);
-                }}
-              >
-                {cat.name}
-              </button>
-            ))}
+          <div className="px-4 py-2 flex-shrink-0">
+            <Input
+              ref={newCategoryInputRef}
+              type="text"
+              placeholder="Search or type to create..."
+              value={categorySearch}
+              onChange={(e) => setCategorySearch(e.target.value)}
+              disabled={creatingCategory}
+              autoComplete="off"
+            />
+          </div>
+          <div className="overflow-y-auto py-2 flex-1">
+            {categorySearch === "" ? (
+              <>
+                <button
+                  type="button"
+                  className="flex w-full items-center px-4 text-left text-muted-foreground"
+                  style={{ minHeight: 44 }}
+                  onClick={() => {
+                    setCategoryId(null);
+                    setCategorySheetOpen(false);
+                  }}
+                >
+                  {t("noneSelected")}
+                </button>
+                {categories.map((cat) => (
+                  <button
+                    key={cat.id}
+                    type="button"
+                    className="flex w-full items-center px-4 text-left hover:bg-accent"
+                    style={{ minHeight: 44 }}
+                    onClick={() => {
+                      setCategoryId(cat.id);
+                      setCategorySheetOpen(false);
+                    }}
+                  >
+                    {cat.name}
+                  </button>
+                ))}
+              </>
+            ) : (
+              <>
+                {categories
+                  .filter((cat) =>
+                    cat.name.toLowerCase().includes(categorySearch.toLowerCase())
+                  )
+                  .map((cat) => (
+                    <button
+                      key={cat.id}
+                      type="button"
+                      className="flex w-full items-center px-4 text-left hover:bg-accent"
+                      style={{ minHeight: 44 }}
+                      onClick={() => {
+                        setCategoryId(cat.id);
+                        setCategorySearch("");
+                        setCategorySheetOpen(false);
+                      }}
+                    >
+                      {cat.name}
+                    </button>
+                  ))}
+                {categories.every(
+                  (cat) =>
+                    !cat.name.toLowerCase().includes(categorySearch.toLowerCase())
+                ) && (
+                  <button
+                    type="button"
+                    className="flex w-full items-center gap-2 px-4 text-left text-primary font-medium hover:bg-accent"
+                    style={{ minHeight: 44 }}
+                    onClick={() =>
+                      handleCreateCategory(categorySearch)
+                    }
+                    disabled={creatingCategory}
+                  >
+                    {creatingCategory ? (
+                      <>
+                        <Loader className="h-4 w-4 animate-spin" />
+                        Creating...
+                      </>
+                    ) : (
+                      <>
+                        <Plus className="h-4 w-4" />
+                        Create "{categorySearch}"
+                      </>
+                    )}
+                  </button>
+                )}
+              </>
+            )}
           </div>
         </SheetContent>
       </Sheet>
 
       {/* Location Sheet */}
       <Sheet open={locationSheetOpen} onOpenChange={setLocationSheetOpen}>
-        <SheetContent side="bottom" className="max-h-[60vh]">
+        <SheetContent side="bottom" className="max-h-[60vh] flex flex-col">
           <SheetHeader>
             <SheetTitle>{t("selectLocation")}</SheetTitle>
           </SheetHeader>
-          <div className="overflow-y-auto py-2">
-            <button
-              type="button"
-              className="flex w-full items-center px-4 text-left text-muted-foreground"
-              style={{ minHeight: 44 }}
-              onClick={() => {
-                setLocationId(null);
-                setLocationSheetOpen(false);
-              }}
-            >
-              {t("noneSelected")}
-            </button>
-            {locations.map((loc) => (
-              <button
-                key={loc.id}
-                type="button"
-                className="flex w-full items-center px-4 text-left"
-                style={{ minHeight: 44 }}
-                onClick={() => {
-                  setLocationId(loc.id);
-                  setLocationSheetOpen(false);
-                }}
-              >
-                {loc.name}
-              </button>
-            ))}
+          <div className="px-4 py-2 flex-shrink-0">
+            <Input
+              ref={newLocationInputRef}
+              type="text"
+              placeholder="Search or type to create..."
+              value={locationSearch}
+              onChange={(e) => setLocationSearch(e.target.value)}
+              disabled={creatingLocation}
+              autoComplete="off"
+            />
+          </div>
+          <div className="overflow-y-auto py-2 flex-1">
+            {locationSearch === "" ? (
+              <>
+                <button
+                  type="button"
+                  className="flex w-full items-center px-4 text-left text-muted-foreground"
+                  style={{ minHeight: 44 }}
+                  onClick={() => {
+                    setLocationId(null);
+                    setLocationSheetOpen(false);
+                  }}
+                >
+                  {t("noneSelected")}
+                </button>
+                {locations.map((loc) => (
+                  <button
+                    key={loc.id}
+                    type="button"
+                    className="flex w-full items-center px-4 text-left hover:bg-accent"
+                    style={{ minHeight: 44 }}
+                    onClick={() => {
+                      setLocationId(loc.id);
+                      setLocationSheetOpen(false);
+                    }}
+                  >
+                    {loc.name}
+                  </button>
+                ))}
+              </>
+            ) : (
+              <>
+                {locations
+                  .filter((loc) =>
+                    loc.name.toLowerCase().includes(locationSearch.toLowerCase())
+                  )
+                  .map((loc) => (
+                    <button
+                      key={loc.id}
+                      type="button"
+                      className="flex w-full items-center px-4 text-left hover:bg-accent"
+                      style={{ minHeight: 44 }}
+                      onClick={() => {
+                        setLocationId(loc.id);
+                        setLocationSearch("");
+                        setLocationSheetOpen(false);
+                      }}
+                    >
+                      {loc.name}
+                    </button>
+                  ))}
+                {locations.every(
+                  (loc) =>
+                    !loc.name.toLowerCase().includes(locationSearch.toLowerCase())
+                ) && (
+                  <button
+                    type="button"
+                    className="flex w-full items-center gap-2 px-4 text-left text-primary font-medium hover:bg-accent"
+                    style={{ minHeight: 44 }}
+                    onClick={() =>
+                      handleCreateLocation(locationSearch)
+                    }
+                    disabled={creatingLocation}
+                  >
+                    {creatingLocation ? (
+                      <>
+                        <Loader className="h-4 w-4 animate-spin" />
+                        Creating...
+                      </>
+                    ) : (
+                      <>
+                        <Plus className="h-4 w-4" />
+                        Create "{locationSearch}"
+                      </>
+                    )}
+                  </button>
+                )}
+              </>
+            )}
           </div>
         </SheetContent>
       </Sheet>

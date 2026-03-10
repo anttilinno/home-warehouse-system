@@ -94,3 +94,6 @@ chunks/
 .claude_state.json
 
 .dmux/
+
+# Backend uploads (generated files)
+backend/uploads/
