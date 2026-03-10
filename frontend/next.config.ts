@@ -19,7 +19,7 @@ const parsedApi = new URL(apiUrl);
 const nextConfig: NextConfig = {
   output: "standalone",
   devIndicators: process.env.NODE_ENV !== "production" ? {
-    position: "bottom-right",
+    position: "bottom-left",
   } : undefined,
   images: {
     remotePatterns: [

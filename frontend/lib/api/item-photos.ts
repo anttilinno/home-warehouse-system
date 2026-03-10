@@ -22,9 +22,7 @@ function proxyUrl(backendUrl: string): string {
   if (!backendUrl) return backendUrl;
   try {
     const url = new URL(backendUrl);
-    // Strip any /api/v1 prefix from the path
-    const path = url.pathname.replace(/^\/api\/v1/, "");
-    return `/api/photos${path}`;
+    return `/api/photos${url.pathname}`;
   } catch {
     return backendUrl;
   }

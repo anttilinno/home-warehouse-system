@@ -49,7 +49,7 @@ func main() {
 		Addr:         ":" + port,
 		Handler:      router,
 		ReadTimeout:  15 * time.Second,
-		WriteTimeout: 15 * time.Second,
+		WriteTimeout: 0, // Disabled: SSE requires long-lived writes; per-route timeouts handled by middleware
 		IdleTimeout:  60 * time.Second,
 	}
 

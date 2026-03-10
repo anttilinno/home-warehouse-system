@@ -528,10 +528,10 @@ export default function ItemsPage() {
             const photo = raw && !raw.urls ? {
               ...raw,
               urls: raw.url ? {
-                original: `/api/photos${new URL(raw.url).pathname.replace(/^\/api\/v1/, "")}`,
-                large: `/api/photos${new URL(raw.url).pathname.replace(/^\/api\/v1/, "")}`,
-                medium: `/api/photos${new URL(raw.url).pathname.replace(/^\/api\/v1/, "")}`,
-                small: `/api/photos${new URL(raw.url).pathname.replace(/^\/api\/v1/, "")}`,
+                original: `/api/photos${new URL(raw.url).pathname}`,
+                large: `/api/photos${new URL(raw.url).pathname}`,
+                medium: `/api/photos${new URL(raw.url).pathname}`,
+                small: `/api/photos${new URL(raw.url).pathname}`,
               } : undefined,
             } : raw;
             return { itemId, photo, count: photos.length };

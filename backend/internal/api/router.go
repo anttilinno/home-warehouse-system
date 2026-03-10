@@ -75,7 +75,7 @@ func NewRouter(pool *pgxpool.Pool, cfg *config.Config) chi.Router {
 	r.Use(middleware.RealIP)
 	r.Use(appMiddleware.StructuredLogger(logger))  // Structured logging with user context
 	r.Use(middleware.Recoverer)
-	r.Use(middleware.Timeout(60 * time.Second))
+	r.Use(appMiddleware.TimeoutWithSkip(60*time.Second, "/sse"))
 	r.Use(appMiddleware.CORS)
 
 	// Create JWT service
@@ -394,10 +394,10 @@ func NewRouter(pool *pgxpool.Pool, cfg *config.Config) chi.Router {
 			// Register item photo routes
 			photoURLGenerator := func(workspaceID, itemID, photoID uuid.UUID, isThumbnail bool) string {
 				if isThumbnail {
-					return fmt.Sprintf("%s/api/v1/workspaces/%s/items/%s/photos/%s/thumbnail",
+					return fmt.Sprintf("%s/workspaces/%s/items/%s/photos/%s/thumbnail",
 						cfg.BackendURL, workspaceID, itemID, photoID)
 				}
-				return fmt.Sprintf("%s/api/v1/workspaces/%s/items/%s/photos/%s",
+				return fmt.Sprintf("%s/workspaces/%s/items/%s/photos/%s",
 					cfg.BackendURL, workspaceID, itemID, photoID)
 			}
 			itemphoto.RegisterRoutes(wsAPI, itemPhotoSvc, broadcaster, photoURLGenerator)
@@ -418,10 +418,10 @@ func NewRouter(pool *pgxpool.Pool, cfg *config.Config) chi.Router {
 			// Register repair photo routes
 			repairPhotoURLGenerator := func(workspaceID, repairLogID, photoID uuid.UUID, isThumbnail bool) string {
 				if isThumbnail {
-					return fmt.Sprintf("%s/api/v1/workspaces/%s/repairs/%s/photos/%s/thumbnail",
+					return fmt.Sprintf("%s/workspaces/%s/repairs/%s/photos/%s/thumbnail",
 						cfg.BackendURL, workspaceID, repairLogID, photoID)
 				}
-				return fmt.Sprintf("%s/api/v1/workspaces/%s/repairs/%s/photos/%s/file",
+				return fmt.Sprintf("%s/workspaces/%s/repairs/%s/photos/%s/file",
 					cfg.BackendURL, workspaceID, repairLogID, photoID)
 			}
 			repairphoto.RegisterRoutes(wsAPI, repairPhotoSvc, broadcaster, repairPhotoURLGenerator)
