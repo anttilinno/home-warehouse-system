@@ -127,6 +127,7 @@ export function PhotoThumbnail({
         src={thumbnailUrl}
         alt={photo.caption || "Photo"}
         fill
+        unoptimized
         className="object-cover"
         onError={() => setImageError(true)}
         sizes={`${dimensions.width}px`}

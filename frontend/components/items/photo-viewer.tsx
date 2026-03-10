@@ -224,6 +224,7 @@ export function PhotoViewer({
                 alt={currentPhoto.caption || `Photo ${currentIndex + 1}`}
                 width={currentPhoto.width}
                 height={currentPhoto.height}
+                unoptimized
                 className="max-h-[calc(100vh-8rem)] max-w-full object-contain"
                 priority
               />

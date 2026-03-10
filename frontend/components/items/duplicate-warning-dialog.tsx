@@ -62,6 +62,7 @@ export function DuplicateWarningDialog({
                     alt={t("existingPhoto")}
                     width={80}
                     height={80}
+                    unoptimized
                     className="rounded border object-cover"
                   />
                 ) : (

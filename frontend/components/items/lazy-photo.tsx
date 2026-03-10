@@ -147,6 +147,7 @@ export function LazyPhoto({
           src={thumbnailSrc}
           alt=""
           fill={fill}
+          unoptimized
           width={!fill ? width : undefined}
           height={!fill ? height : undefined}
           className={cn(imageClassName, "blur-lg scale-110")}
@@ -161,6 +162,7 @@ export function LazyPhoto({
           src={src}
           alt={alt}
           fill={fill}
+          unoptimized
           width={!fill ? width : undefined}
           height={!fill ? height : undefined}
           className={cn(
