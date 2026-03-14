@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.9
 milestone_name: Quick Capture
 status: completed
-stopped_at: Completed 47-01-PLAN.md
-last_updated: "2026-03-14T19:13:43.564Z"
+stopped_at: "Checkpoint Task 3 (human-verify): 47-02 Tasks 1-2 complete, awaiting human verification"
+last_updated: "2026-03-14T19:17:58.081Z"
 last_activity: 2026-02-27 -- Completed 45-02 (Full QuickCapturePage with camera capture and save-reset loop)
 progress:
   total_phases: 5
-  completed_phases: 4
+  completed_phases: 5
   total_plans: 9
-  completed_plans: 8
+  completed_plans: 9
   percent: 100
 ---
 
@@ -64,6 +64,7 @@ Progress: [██████████] 100%
 | 45-02 | 2min | 1 | 1 |
 | Phase 46 P01 | 5 | 2 tasks | 6 files |
 | Phase 47 P01 | 15 | 3 tasks | 6 files |
+| Phase 47 P02 | 2min | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -90,6 +91,8 @@ Recent decisions affecting current work:
 - [Phase 47-01]: Session thumbnails stored as object URLs (strings) in context, not Blob objects
 - [Phase 47-01]: needs_review passed as showNeedsReview || undefined to avoid spurious false query param
 - [Phase 47-01]: Needs Review and Show Archived are mutually exclusive — toggling either resets the other
+- [Phase 47-02]: handleMarkAsReviewed uses itemsApi.update(wsId, id, { needs_review: false }) — no new API method needed
+- [Phase 47-02]: Amber banner placed between header and main content grid; isMarkingReviewed prevents double-tap
 
 ### Pending Todos
 
@@ -112,8 +115,8 @@ v1.9 specific:
 
 ## Session Continuity
 
-Last session: 2026-03-14T19:13:43.562Z
-Stopped at: Completed 47-01-PLAN.md
+Last session: 2026-03-14T19:17:50.259Z
+Stopped at: Checkpoint Task 3 (human-verify): 47-02 Tasks 1-2 complete, awaiting human verification
 Next step: Phase 45 complete. Next phase in v1.9 milestone.
 
 ---
