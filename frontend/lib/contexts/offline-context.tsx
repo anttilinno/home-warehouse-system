@@ -6,7 +6,7 @@ import { initDB, getSyncMeta } from "@/lib/db/offline-db";
 import { syncWorkspaceData, type SyncResult, type EntityType } from "@/lib/db/sync-operations";
 import { syncManager } from "@/lib/sync/sync-manager";
 import { getPendingMutationCount, getFailedMutationCount } from "@/lib/sync/mutation-queue";
-import { handleItemSynced } from "@/lib/sync/capture-photo-uploader";
+import { handleItemSynced, retryFailedPhotoUploads } from "@/lib/sync/capture-photo-uploader";
 
 interface OfflineContextValue {
   isOnline: boolean;
@@ -223,6 +223,20 @@ export function OfflineProvider({ children }: { children: ReactNode }) {
           setIsMutationSyncing(true);
           break;
         case "SYNC_COMPLETE":
+          setIsMutationSyncing(false);
+          if (event.payload?.queueLength !== undefined) {
+            setPendingMutationCount(event.payload.queueLength);
+          }
+          getFailedMutationCount().then(setFailedMutationCount);
+          {
+            const wsId = typeof localStorage !== "undefined" ? localStorage.getItem("workspace_id") : null;
+            if (wsId) {
+              retryFailedPhotoUploads(wsId).catch(err =>
+                console.error("[OfflineContext] photo retry on SYNC_COMPLETE failed:", err)
+              );
+            }
+          }
+          break;
         case "SYNC_ERROR":
           setIsMutationSyncing(false);
           if (event.payload?.queueLength !== undefined) {
@@ -269,10 +283,16 @@ export function OfflineProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
-  // Process mutation queue when coming back online
+  // Process mutation queue when coming back online; also retry any failed photo uploads
   useEffect(() => {
     if (wasOffline && isOnline && dbReady) {
       processMutationQueue();
+      const wsId = typeof localStorage !== "undefined" ? localStorage.getItem("workspace_id") : null;
+      if (wsId) {
+        retryFailedPhotoUploads(wsId).catch(err =>
+          console.error("[OfflineContext] photo retry on online failed:", err)
+        );
+      }
     }
   }, [wasOffline, isOnline, dbReady, processMutationQueue]);
 

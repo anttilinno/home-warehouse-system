@@ -22,9 +22,11 @@ import type { CapturePhoto } from "@/lib/db/types";
 // Mocks
 // ---------------------------------------------------------------------------
 
-const { mockDbAdd, mockDbGetAllFromIndex, mockDbTransaction, mockUploadItemPhoto, mockQueueMutation } = vi.hoisted(() => ({
+const { mockDbAdd, mockDbGetAllFromIndex, mockDbDelete, mockDbPut, mockDbTransaction, mockUploadItemPhoto, mockQueueMutation } = vi.hoisted(() => ({
   mockDbAdd: vi.fn(),
   mockDbGetAllFromIndex: vi.fn(),
+  mockDbDelete: vi.fn().mockResolvedValue(undefined),
+  mockDbPut: vi.fn().mockResolvedValue(undefined),
   mockDbTransaction: vi.fn(),
   mockUploadItemPhoto: vi.fn(),
   mockQueueMutation: vi.fn(),
@@ -157,6 +159,8 @@ describe("Photo storage flow", () => {
     vi.mocked(getDB).mockResolvedValue({
       add: mockDbAdd,
       getAllFromIndex: mockDbGetAllFromIndex,
+      delete: mockDbDelete,
+      put: mockDbPut,
       transaction: mockDbTransaction,
     } as never);
   });
@@ -193,6 +197,8 @@ describe("Post-sync photo upload (capture-photo-uploader)", () => {
     vi.mocked(getDB).mockResolvedValue({
       add: mockDbAdd,
       getAllFromIndex: mockDbGetAllFromIndex,
+      delete: mockDbDelete,
+      put: mockDbPut,
       transaction: mockDbTransaction,
     } as never);
   });
@@ -244,8 +250,10 @@ describe("Post-sync photo upload (capture-photo-uploader)", () => {
       expect.any(File)
     );
 
-    // 5. Verify IndexedDB cleanup
-    expect(mockDbTransaction).toHaveBeenCalledWith("quickCapturePhotos", "readwrite");
+    // 5. Verify IndexedDB cleanup — photos deleted individually per upload
+    expect(mockDbDelete).toHaveBeenCalledTimes(2);
+    expect(mockDbDelete).toHaveBeenCalledWith("quickCapturePhotos", 1);
+    expect(mockDbDelete).toHaveBeenCalledWith("quickCapturePhotos", 2);
   });
 
   it("uses temp ID as fallback when server doesn't return resolved ID", async () => {

@@ -104,7 +104,7 @@ const CompactPhotoGrid = dynamic(
   { ssr: false }
 );
 import { cn } from "@/lib/utils";
-import { useOfflineMutation } from "@/lib/hooks/use-offline-mutation";
+import { useOfflineMutation, getPendingCreates } from "@/lib/hooks/use-offline-mutation";
 import { syncManager } from "@/lib/sync/sync-manager";
 import type { SyncEvent } from "@/lib/sync/sync-manager";
 import { exportToCSV, generateFilename, type ColumnDefinition } from "@/lib/utils/csv-export";
@@ -386,6 +386,20 @@ export default function ItemsPage() {
 
   // Optimistic items state for offline mutations
   const [optimisticItems, setOptimisticItems] = useState<(Item & { _pending?: boolean })[]>([]);
+
+  // Load pending creates from IndexedDB on mount (e.g., items created via quick-capture route)
+  useEffect(() => {
+    async function loadQuickCapturePending() {
+      const pending = await getPendingCreates<Item>("items");
+      if (pending.length === 0) return;
+      setOptimisticItems(prev => {
+        const existingIds = new Set(prev.map(i => i.id));
+        const newPending = pending.filter(p => !existingIds.has(p.id));
+        return newPending.length > 0 ? [...prev, ...newPending] : prev;
+      });
+    }
+    loadQuickCapturePending();
+  }, []); // Mount-only: MUTATION_SYNCED subscription handles removal
 
   // Photo gallery refresh
   const photoGalleryRefreshRef = useRef<(() => void) | null>(null);
