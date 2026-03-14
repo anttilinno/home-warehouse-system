@@ -58,6 +58,34 @@
 
 ---
 
+## v1.6 Format Personalization (Shipped: 2026-02-08)
+
+**Delivered:** User-configurable date, time, and number format preferences applied consistently everywhere — displays, inputs, pickers, validation, and CSV exports all respect user's chosen format.
+
+**Phases completed:** 30-34 (5 phases, 9 plans)
+
+**Key accomplishments:**
+
+- Format hook system — `useDateFormat`, `useTimeFormat`, `useNumberFormat` centralize format logic
+- Format settings UI — date format (4 options), time format (12h/24h), number format (locale separators)
+- Date format rollout — all display components, inputs, pickers, validation, and CSV exports use `useDateFormat`
+- Time format rollout — all time display sites use `useTimeFormat` (12h/24h toggle)
+- Number format rollout — all numeric displays and inputs use `useNumberFormat`
+
+**Stats:**
+
+- 5 phases, 9 plans
+- Shipped 2026-02-08
+
+**Requirements satisfied:** 5/5 (100%)
+
+**Tech debt carried forward:**
+- None significant
+
+**What's next:** TBD — ready for next milestone
+
+---
+
 ## v1.4 Test Overhaul (Shipped: 2026-01-31)
 
 **Delivered:** Comprehensive test infrastructure and coverage bringing critical packages to 80%+ with CI parallelization, Codecov integration, and stable E2E tests.
