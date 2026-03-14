@@ -28,6 +28,10 @@ interface BatchCaptureContextValue {
   categoryName: string | null;
   /** Resolved display name for the current location (null if none set or not found in cache) */
   locationName: string | null;
+  /** Object URLs for session thumbnails (one per saved item, from first photo blob) */
+  sessionThumbnails: string[];
+  addSessionThumbnail: (url: string) => void;
+  clearSessionThumbnails: () => void;
 }
 
 const DEFAULT_SETTINGS: BatchSettings = {
@@ -55,12 +59,23 @@ export function BatchCaptureProvider({ children }: { children: ReactNode }) {
   const [captureCount, setCaptureCount] = useState(0);
   const [categoryName, setCategoryName] = useState<string | null>(null);
   const [locationName, setLocationName] = useState<string | null>(null);
+  const [sessionThumbnails, setSessionThumbnails] = useState<string[]>([]);
 
   // Persist settings to sessionStorage on every change
   useEffect(() => {
     if (typeof sessionStorage === "undefined") return;
     sessionStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(settings));
   }, [settings]);
+
+  // Revoke all thumbnail object URLs on provider unmount
+  useEffect(() => {
+    return () => {
+      setSessionThumbnails(prev => {
+        prev.forEach(url => URL.revokeObjectURL(url));
+        return [];
+      });
+    };
+  }, []);
 
   // Resolve category display name from IndexedDB cache
   useEffect(() => {
@@ -97,6 +112,21 @@ export function BatchCaptureProvider({ children }: { children: ReactNode }) {
   const resetSettings = useCallback(() => {
     setSettings(DEFAULT_SETTINGS);
     setCaptureCount(0);
+    setSessionThumbnails(prev => {
+      prev.forEach(url => URL.revokeObjectURL(url));
+      return [];
+    });
+  }, []);
+
+  const addSessionThumbnail = useCallback((url: string) => {
+    setSessionThumbnails(prev => [...prev, url]);
+  }, []);
+
+  const clearSessionThumbnails = useCallback(() => {
+    setSessionThumbnails(prev => {
+      prev.forEach(url => URL.revokeObjectURL(url));
+      return [];
+    });
   }, []);
 
   const incrementCaptureCount = useCallback(() => {
@@ -112,6 +142,9 @@ export function BatchCaptureProvider({ children }: { children: ReactNode }) {
     incrementCaptureCount,
     categoryName,
     locationName,
+    sessionThumbnails,
+    addSessionThumbnail,
+    clearSessionThumbnails,
   };
 
   return (
