@@ -1,5 +1,28 @@
 # Project Milestones: Home Warehouse System
 
+## v1.9 Quick Capture (Shipped: 2026-03-14)
+
+**Phases completed:** 43-47 (5 phases, 9 plans)
+
+**Key accomplishments:**
+
+- Backend `needs_review` boolean column + filter endpoint + PATCH mark-complete + sync payload inclusion (Phase 43)
+- IndexedDB v5 `quickCapturePhotos` blob store, `useAutoSKU` QC-prefixed SKU hook, `useCapturePhotos` CRUD hook (Phase 44)
+- `BatchCaptureProvider` with sessionStorage-persisted category/location + `BatchSettingsBar` component (Phase 44)
+- Camera-first `QuickCapturePage` — single-route for iOS camera persistence, save-reset loop, session counter, haptic/audio feedback (Phase 45)
+- Photo sync pipeline — temp→real ID resolution, per-photo delete on success, failed-status retry on reconnect (Phase 46)
+- Session summary sheet with thumbnails, Needs Review filter chip, amber banner + Mark as Reviewed, full ET/RU i18n (Phase 47)
+
+**Stats:**
+
+- 5 phases, 9 plans
+- 16/16 requirements satisfied (100%)
+- Audit status: tech_debt (all requirements met, 2 non-blocking design decisions noted)
+
+**What's next:** TBD — ready for next milestone
+
+---
+
 ## v1.5 Settings Enhancement (Shipped: 2026-02-03)
 
 **Delivered:** Complete user settings experience with profile management, security controls, and account lifecycle.

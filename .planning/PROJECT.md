@@ -12,6 +12,22 @@ Reliable inventory access anywhere — online or offline — with seamless sync.
 
 ### Validated
 
+**v1.9 Quick Capture (shipped 2026-03-14):**
+
+- ✓ User can open quick capture from FAB and see camera viewfinder immediately — v1.9
+- ✓ Camera-first capture: take 1-5 photos, type only item name to save — v1.9
+- ✓ Save-reset loop: form resets instantly, camera auto-triggers for next item — v1.9
+- ✓ Session counter badge + haptic/audio feedback on each save — v1.9
+- ✓ Auto-generated SKU (QC-{timestamp}-{random}) — v1.9
+- ✓ Sticky batch settings (category/location) persist in session, reset on end — v1.9
+- ✓ Full offline support — items queued in IndexedDB, photos stored as blobs — v1.9
+- ✓ Chained photo sync — photos upload after parent item syncs, per-photo retry — v1.9
+- ✓ Offline items show pending indicator in items list — v1.9
+- ✓ Quick-captured items flagged needs_review in DB — v1.9
+- ✓ Needs Review filter chip in items list — v1.9
+- ✓ One-tap Mark as Reviewed on item detail — v1.9
+- ✓ Session summary sheet with count + thumbnail grid when ending capture — v1.9
+
 **v1.8 Social Login (shipped 2026-02-22):**
 
 - ✓ Google OAuth login/signup — Authorization Code + PKCE flow with one-time Redis code exchange
@@ -129,13 +145,7 @@ Reliable inventory access anywhere — online or offline — with seamless sync.
 
 ### Active
 
-**v1.9 Quick Capture (started 2026-02-27):**
-
-- Rapid item entry mode for mobile bulk onboarding
-- Camera-first flow: snap photos → type name → save → next item
-- Auto-generated SKU, sticky batch settings (location/category)
-- Full offline support with queued sync
-- "Needs details" flag and filter for desktop completion
+*(No active milestone — v1.9 shipped. Run `/gsd:new-milestone` to start the next one.)*
 
 ### Out of Scope
 
@@ -151,18 +161,19 @@ Reliable inventory access anywhere — online or offline — with seamless sync.
 
 ## Current State
 
-**Shipped:** v1.8 Social Login (2026-02-22)
-**Active:** v1.9 Quick Capture (started 2026-02-27)
+**Shipped:** v1.9 Quick Capture (2026-03-14)
+**Active:** Planning next milestone
 
 **Tech stack:**
 - Backend: Go 1.25, Chi, sqlc, PostgreSQL, golang.org/x/oauth2
 - Frontend: Next.js 16, React 19, shadcn/ui, Tailwind CSS 4
-- PWA: Serwist service worker, IndexedDB (idb v8), UUIDv7
-- Mobile UX: Fuse.js 7.1.0, @yudiel/react-qr-scanner, ios-haptics, motion v12.27
+- PWA: Serwist service worker, IndexedDB (idb v8, v5 schema), UUIDv7
+- Mobile UX: Fuse.js 7.1.0, @yudiel/react-qr-scanner, ios-haptics, motion v12.27, AudioContext
 
 **Codebase:**
-- 42 phases across 9 milestones (119 plans executed)
-- Offline: IndexedDB v4 with 10 stores, SyncManager, conflict resolver, Fuse.js search
+- 47 phases across 10 milestones (130 plans executed)
+- Offline: IndexedDB v5 with 11 stores (incl. quickCapturePhotos), SyncManager, conflict resolver, Fuse.js search
+- Capture: QuickCapturePage, CapturePhotoStrip, BatchCaptureProvider, photo sync pipeline with retry
 - Mobile: BarcodeScanner, FloatingActionButton, MultiStepForm wizard
 - Settings: Modular iOS-style hub with 8 subpages
 - Auth: Email/password + Google/GitHub OAuth with auto-linking, connected accounts management
@@ -200,6 +211,11 @@ Reliable inventory access anywhere — online or offline — with seamless sync.
 | No provider token storage | App never calls provider APIs after login | ✓ Good — reduced security surface |
 | PKCE + CSRF state in HttpOnly cookie | Defense against authorization code interception and CSRF | ✓ Good — standard security |
 | golang.org/x/oauth2 for PKCE | Built-in PKCE support, single dependency | ✓ Good — minimal footprint |
+| Single-route quick capture design | iOS PWA camera permission resets on navigation | ✓ Good — avoids re-permission prompts |
+| Photos separate from mutation queue | New `quickCapturePhotos` store; chained upload after item sync | ✓ Good — clean separation |
+| Pre-write `resolvedItemId` pattern | Ensures photo retry is always stateless if process interrupted | ✓ Good — robust failure recovery |
+| Zero new npm dependencies for v1.9 | All features built on existing stack (IndexedDB, AudioContext, ios-haptics) | ✓ Good — no bundle growth |
+| Location pill cosmetic during capture | Location belongs to inventory, not items; add at completion step | — Design decision (documented) |
 
 ## Constraints
 
@@ -241,5 +257,11 @@ Reliable inventory access anywhere — online or offline — with seamless sync.
 - 3 orphaned translation keys (setPassword.title, connectedAccounts.linkSuccess, connectedAccounts.noAccounts)
 - Locale-prefix gap in backend OAuth redirect (non-English callback locale)
 
+**From v1.9:**
+- Stale closure in QuickCapturePage unmount useEffect — photos at mount may not revoke on navigate-away (mitigated per-action)
+- 2 pre-existing test failures in `use-offline-mutation.test.ts` (workspaceId assertions)
+- 4 pre-existing test failures in `frontend/lib/api/__tests__/client.test.ts`
+- Nyquist compliance PARTIAL for all v1.9 phases — run `/gsd:validate-phase 43-47` retroactively
+
 ---
-*Last updated: 2026-02-27 after v1.9 milestone start*
+*Last updated: 2026-03-14 after v1.9 milestone completion*
