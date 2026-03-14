@@ -755,6 +755,7 @@
       "uploadPhotos": "Загрузить фото",
       "primary": "Основное",
       "actions": "Действия с фото",
+      "view": "Просмотр",
       "setPrimary": "Сделать основным",
       "editCaption": "Изменить подпись",
       "download": "Скачать",
@@ -1040,6 +1041,10 @@
     "removePhoto": "Удалить фото",
     "selectCategory": "Выбрать категорию",
     "selectLocation": "Выбрать место",
-    "noneSelected": "Не выбрано"
+    "noneSelected": "Не выбрано",
+    "sessionSummary": "Сессия завершена",
+    "sessionSummaryDescription": "{count} {count, plural, one {предмет} few {предмета} other {предметов}} захвачено",
+    "sessionSummaryContinue": "К предметам",
+    "sessionSummaryCapture": "Ещё захват"
   }
 }

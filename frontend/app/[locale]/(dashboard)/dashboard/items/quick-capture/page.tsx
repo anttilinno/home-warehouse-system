@@ -73,6 +73,7 @@ function QuickCapturePage() {
   const [creatingLocation, setCreatingLocation] = useState(false);
   const [categorySearch, setCategorySearch] = useState("");
   const [locationSearch, setLocationSearch] = useState("");
+  const [summaryOpen, setSummaryOpen] = useState(false);
   const cameraInputRef = useRef<HTMLInputElement>(null);
   const nameInputRef = useRef<HTMLInputElement>(null);
   const newCategoryInputRef = useRef<HTMLInputElement>(null);
@@ -86,8 +87,12 @@ function QuickCapturePage() {
     settings,
     captureCount,
     incrementCaptureCount,
+    resetSettings,
     setCategoryId,
     setLocationId,
+    addSessionThumbnail,
+    clearSessionThumbnails,
+    sessionThumbnails,
   } = useBatchCapture();
   const { mutate, isPending } = useOfflineMutation<Record<string, unknown>>({
     entity: "items",
@@ -226,6 +231,12 @@ function QuickCapturePage() {
       playSuccessBeep();
       incrementCaptureCount();
 
+      // Capture summary thumbnail from first photo before object URLs are revoked
+      if (photos[0]) {
+        const summaryThumb = URL.createObjectURL(photos[0].blob);
+        addSessionThumbnail(summaryThumb);
+      }
+
       // Reset form for next item
       photos.forEach((p) => URL.revokeObjectURL(p.preview));
       setPhotos([]);
@@ -239,7 +250,7 @@ function QuickCapturePage() {
     } finally {
       setIsSaving(false);
     }
-  }, [name, photos, isSaving, generateSKU, mutate, settings, storePhoto, incrementCaptureCount]);
+  }, [name, photos, isSaving, generateSKU, mutate, settings, storePhoto, incrementCaptureCount, addSessionThumbnail]);
 
   // ---- Load categories/locations for sheets ----
   const openCategorySheet = useCallback(() => {
@@ -251,6 +262,22 @@ function QuickCapturePage() {
     getAll<Location>("locations").then(setLocations);
     setLocationSheetOpen(true);
   }, []);
+
+  // ---- Done / Session summary ----
+  const handleDone = useCallback(() => {
+    if (captureCount > 0) {
+      setSummaryOpen(true);
+    } else {
+      router.push("/dashboard/items");
+    }
+  }, [captureCount, router]);
+
+  const handleDismissSummary = useCallback(() => {
+    setSummaryOpen(false);
+    clearSessionThumbnails();
+    resetSettings();
+    router.push("/dashboard/items");
+  }, [clearSessionThumbnails, resetSettings, router]);
 
   // ---- Create category handler ----
   const handleCreateCategory = useCallback(async (name: string) => {
@@ -322,7 +349,7 @@ function QuickCapturePage() {
         <Button
           variant="ghost"
           size="sm"
-          onClick={() => router.push("/dashboard/items")}
+          onClick={handleDone}
           className="gap-1"
         >
           <ArrowLeft className="h-4 w-4" />
@@ -484,6 +511,45 @@ function QuickCapturePage() {
                 )}
               </>
             )}
+          </div>
+        </SheetContent>
+      </Sheet>
+
+      {/* Session Summary Sheet */}
+      <Sheet open={summaryOpen} onOpenChange={(open) => { if (!open) handleDismissSummary(); }}>
+        <SheetContent side="bottom">
+          <SheetHeader>
+            <SheetTitle>{t("sessionSummary")}</SheetTitle>
+          </SheetHeader>
+          <div className="py-4">
+            <p className="text-center text-lg font-semibold">
+              {t("sessionSummaryDescription", { count: captureCount })}
+            </p>
+            {sessionThumbnails.length > 0 && (
+              <div className="mt-4 flex gap-2 overflow-x-auto pb-2">
+                {sessionThumbnails.slice(0, 8).map((url, i) => (
+                  <img
+                    key={i}
+                    src={url}
+                    alt=""
+                    className="h-16 w-16 rounded-md object-cover shrink-0"
+                  />
+                ))}
+                {captureCount > 8 && (
+                  <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-md bg-muted text-xs text-muted-foreground">
+                    +{captureCount - 8}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+          <div className="flex gap-2 pb-4">
+            <Button variant="outline" className="flex-1" onClick={() => setSummaryOpen(false)}>
+              {t("sessionSummaryCapture")}
+            </Button>
+            <Button className="flex-1" onClick={handleDismissSummary}>
+              {t("sessionSummaryContinue")}
+            </Button>
           </div>
         </SheetContent>
       </Sheet>

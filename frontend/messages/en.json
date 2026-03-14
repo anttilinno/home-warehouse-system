@@ -542,6 +542,7 @@
       "uploadPhotos": "Upload Photos",
       "primary": "Primary",
       "actions": "Photo actions",
+      "view": "View",
       "setPrimary": "Set as Primary",
       "editCaption": "Edit Caption",
       "download": "Download",
@@ -1196,6 +1197,10 @@
     "removePhoto": "Remove photo",
     "selectCategory": "Select Category",
     "selectLocation": "Select Location",
-    "noneSelected": "None"
+    "noneSelected": "None",
+    "sessionSummary": "Session Complete",
+    "sessionSummaryDescription": "{count} {count, plural, one {item} other {items}} captured",
+    "sessionSummaryContinue": "Go to Items",
+    "sessionSummaryCapture": "Capture More"
   }
 }
