@@ -90,6 +90,7 @@ function createPendingMutation(
     entity: partial.entity ?? "items",
     entityId: partial.entityId,
     payload: partial.payload ?? {},
+    workspaceId: partial.workspaceId ?? "test-workspace",
     timestamp: partial.timestamp ?? Date.now(),
     retries: 0,
     status: "pending",

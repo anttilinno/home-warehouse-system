@@ -1,4 +1,10 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+// In the browser, use the relative /api proxy so any device on the LAN can reach
+// the backend without knowing its address. On the server side (SSR/RSC), use the
+// absolute URL so Next.js can reach the backend directly.
+const API_URL =
+  typeof window !== "undefined"
+    ? "/api"
+    : (process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000");
 
 interface ApiError {
   message?: string;

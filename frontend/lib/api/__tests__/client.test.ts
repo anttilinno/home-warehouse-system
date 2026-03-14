@@ -125,7 +125,7 @@ describe("ApiClient", () => {
       expect(apiClient.getToken()).toBeNull();
       expect(window.location.href).toBe("/login");
 
-      window.location = originalLocation;
+      window.location = originalLocation as unknown as (string & Location);
     });
 
     it("throws error with message from response body on non-401 error", async () => {

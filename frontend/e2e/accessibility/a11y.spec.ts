@@ -359,9 +359,8 @@ test.describe("Accessibility", () => {
 
         // Check for focus ring or outline
         return (
-          outline !== "none" ||
-          outline !== "0px" ||
-          (boxShadow && boxShadow !== "none")
+          (outline !== "none" && outline !== "0px") ||
+          (boxShadow !== "" && boxShadow !== "none")
         );
       });
 

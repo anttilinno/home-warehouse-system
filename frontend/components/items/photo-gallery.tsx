@@ -28,6 +28,7 @@ import {
   GripVertical,
   Image as ImageIcon,
   Check,
+  Maximize2,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import type { ItemPhoto } from "@/lib/types/item-photo";
@@ -86,6 +87,7 @@ interface SortablePhotoItemProps {
   onEditCaption: () => void;
   onDownload: () => void;
   onDelete: () => void;
+  onView: () => void;
   /** Selection mode props */
   selectionMode?: boolean;
   isSelected?: boolean;
@@ -101,6 +103,7 @@ function SortablePhotoItem({
   onEditCaption,
   onDownload,
   onDelete,
+  onView,
   selectionMode = false,
   isSelected = false,
   onToggleSelect,
@@ -172,6 +175,19 @@ function SortablePhotoItem({
 
       {/* Overlay with actions (visible on hover) */}
       <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20 opacity-0 transition-opacity group-hover:opacity-100">
+        {/* Center expand button */}
+        {!selectionMode && (
+          <button
+            onClick={onPhotoClick}
+            className="absolute inset-0 flex items-center justify-center opacity-0 transition-opacity group-hover:opacity-100"
+            aria-label="Expand photo"
+          >
+            <div className="rounded-full bg-white/20 p-3 hover:bg-white/30 transition-colors">
+              <Maximize2 className="h-8 w-8 text-white" />
+            </div>
+          </button>
+        )}
+
         {/* Top badges */}
         <div className="absolute top-2 left-2 flex gap-2">
           {isPrimary && (
@@ -211,6 +227,11 @@ function SortablePhotoItem({
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={onView}>
+                <Maximize2 className="mr-2 h-4 w-4" />
+                {t("view")}
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
               {!isPrimary && (
                 <>
                   <DropdownMenuItem onClick={onSetPrimary}>
@@ -419,6 +440,7 @@ export function PhotoGallery({
                 index={index}
                 isPrimary={photo.is_primary}
                 onPhotoClick={() => onPhotoClick?.(photo, index)}
+                onView={() => onPhotoClick?.(photo, index)}
                 onSetPrimary={() => handleSetPrimary(photo.id)}
                 onEditCaption={() =>
                   handleEditCaption(photo.id, photo.caption)

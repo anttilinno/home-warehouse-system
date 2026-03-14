@@ -15,6 +15,7 @@ import {
   Download,
   Upload,
   Cloud,
+  ScanBarcode,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -76,6 +77,13 @@ import { FilterBar } from "@/components/ui/filter-bar";
 import { FilterPopover } from "@/components/ui/filter-popover";
 import { ExportDialog } from "@/components/ui/export-dialog";
 import { ImportDialog, type ImportResult } from "@/components/ui/import-dialog";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
+import { BarcodeScanner } from "@/components/scanner";
 import { useWorkspace } from "@/lib/hooks/use-workspace";
 import { useTableSort } from "@/lib/hooks/use-table-sort";
 import { useInfiniteScroll } from "@/lib/hooks/use-infinite-scroll";
@@ -278,6 +286,14 @@ export default function ContainersPage() {
   const [formCapacity, setFormCapacity] = useState("");
   const [formShortCode, setFormShortCode] = useState("");
   const [isSaving, setIsSaving] = useState(false);
+  const [scannerOpen, setScannerOpen] = useState(false);
+
+  const handleBarcodeScan = useCallback((results: { rawValue: string }[]) => {
+    if (results.length > 0 && results[0].rawValue) {
+      setFormShortCode(results[0].rawValue.slice(0, 20));
+      setScannerOpen(false);
+    }
+  }, []);
 
   // Optimistic state for offline mutations
   const [optimisticContainers, setOptimisticContainers] = useState<(Container & { _pending?: boolean })[]>([]);
@@ -1089,13 +1105,25 @@ export default function ContainersPage() {
             {!editingContainer && (
               <div className="space-y-2">
                 <Label htmlFor="short_code">Short Code (QR Label)</Label>
-                <Input
-                  id="short_code"
-                  value={formShortCode}
-                  onChange={(e) => setFormShortCode(e.target.value)}
-                  placeholder="e.g., CON-001"
-                  maxLength={20}
-                />
+                <div className="flex items-center gap-2">
+                  <Input
+                    id="short_code"
+                    value={formShortCode}
+                    onChange={(e) => setFormShortCode(e.target.value)}
+                    placeholder="e.g., CON-001"
+                    maxLength={20}
+                    className="flex-1"
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    onClick={() => setScannerOpen(true)}
+                    aria-label="Scan QR code"
+                  >
+                    <ScanBarcode className="h-4 w-4" />
+                  </Button>
+                </div>
               </div>
             )}
 
@@ -1121,6 +1149,22 @@ export default function ContainersPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* QR Code Scanner Sheet */}
+      <Sheet open={scannerOpen} onOpenChange={setScannerOpen}>
+        <SheetContent side="bottom" className="h-[70vh] p-0">
+          <SheetHeader className="px-4 pt-4">
+            <SheetTitle>Scan QR Code</SheetTitle>
+          </SheetHeader>
+          <div className="flex-1 overflow-hidden">
+            <BarcodeScanner
+              onScan={handleBarcodeScan}
+              paused={!scannerOpen}
+              className="h-full"
+            />
+          </div>
+        </SheetContent>
+      </Sheet>
 
       {/* Delete Confirmation Dialog */}
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>

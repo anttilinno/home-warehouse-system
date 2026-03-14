@@ -77,6 +77,12 @@ import {
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { EmptyState, EmptyStateList, EmptyStateBenefits } from "@/components/ui/empty-state";
 import { InfiniteScrollTrigger } from "@/components/ui/infinite-scroll-trigger";
 import { BulkActionBar } from "@/components/ui/bulk-action-bar";
@@ -1129,20 +1135,35 @@ export default function ItemsPage() {
         <CardContent>
           <div className="space-y-4">
             {/* Search and filters */}
+            <TooltipProvider delayDuration={400}>
             <div className="flex items-center gap-2 relative">
-              <CollapsibleSearch
-                placeholder="Search by SKU, name, brand, or model..."
-                value={searchQuery}
-                onChange={setSearchQuery}
-              />
-              <FilterPopover activeFilterCount={activeFilterCount}>
-                <ItemsFilterControls
-                  categories={categories}
-                  uniqueBrands={uniqueBrands}
-                  addFilter={addFilter}
-                  getFilter={getFilter}
-                />
-              </FilterPopover>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span>
+                    <CollapsibleSearch
+                      placeholder="Search by SKU, name, brand, or model..."
+                      value={searchQuery}
+                      onChange={setSearchQuery}
+                    />
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent>Search items</TooltipContent>
+              </Tooltip>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span>
+                    <FilterPopover activeFilterCount={activeFilterCount}>
+                      <ItemsFilterControls
+                        categories={categories}
+                        uniqueBrands={uniqueBrands}
+                        addFilter={addFilter}
+                        getFilter={getFilter}
+                      />
+                    </FilterPopover>
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent>Filter items</TooltipContent>
+              </Tooltip>
               <SavedFilters
                 savedFilters={savedFilters}
                 currentFilters={getCurrentFilters()}
@@ -1154,47 +1175,89 @@ export default function ItemsPage() {
                 onSetDefault={setAsDefault}
                 hasActiveFilters={activeFilterCount > 0 || !!searchQuery || showArchived}
               />
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setImportDialogOpen(true)}
-              >
-                <Upload className="sm:mr-2 h-4 w-4" />
-                <span className="hidden sm:inline">Import</span>
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setExportDialogOpen(true)}
-                disabled={filteredItems.length === 0}
-              >
-                <Download className="sm:mr-2 h-4 w-4" />
-                <span className="hidden sm:inline">Export</span>
-              </Button>
-              <Button
-                variant={showNeedsReview ? "default" : "outline"}
-                size="sm"
-                onClick={() => {
-                  const next = !showNeedsReview;
-                  setShowNeedsReview(next);
-                  if (next) setShowArchived(false);
-                }}
-              >
-                <ClipboardList className="sm:mr-2 h-4 w-4" />
-                <span className="hidden sm:inline">{t("needsReview")}</span>
-              </Button>
-              <Button
-                variant={showArchived ? "default" : "outline"}
-                size="sm"
-                onClick={() => {
-                  setShowArchived(!showArchived);
-                  setShowNeedsReview(false);
-                }}
-              >
-                <Archive className="sm:mr-2 h-4 w-4" />
-                <span className="hidden sm:inline">{showArchived ? "Archived" : "Active"}</span>
-              </Button>
+
+              {/* Import / Export — visible individually on desktop, collapsed into More on mobile */}
+              <div className="hidden sm:flex items-center gap-2">
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button variant="outline" size="sm" onClick={() => setImportDialogOpen(true)}>
+                      <Upload className="mr-2 h-4 w-4" />
+                      Import
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Import items from CSV</TooltipContent>
+                </Tooltip>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button variant="outline" size="sm" onClick={() => setExportDialogOpen(true)} disabled={filteredItems.length === 0}>
+                      <Download className="mr-2 h-4 w-4" />
+                      Export
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Export items to CSV</TooltipContent>
+                </Tooltip>
+              </div>
+
+              {/* More menu on mobile — Import + Export */}
+              <DropdownMenu>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="outline" size="sm" className="sm:hidden">
+                        <MoreHorizontal className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                  </TooltipTrigger>
+                  <TooltipContent>More actions</TooltipContent>
+                </Tooltip>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={() => setImportDialogOpen(true)}>
+                    <Upload className="mr-2 h-4 w-4" />
+                    Import
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setExportDialogOpen(true)} disabled={filteredItems.length === 0}>
+                    <Download className="mr-2 h-4 w-4" />
+                    Export
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant={showNeedsReview ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => {
+                      const next = !showNeedsReview;
+                      setShowNeedsReview(next);
+                      if (next) setShowArchived(false);
+                    }}
+                  >
+                    <ClipboardList className="sm:mr-2 h-4 w-4" />
+                    <span className="hidden sm:inline">{t("needsReview")}</span>
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Show items awaiting review</TooltipContent>
+              </Tooltip>
+
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant={showArchived ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => {
+                      setShowArchived(!showArchived);
+                      setShowNeedsReview(false);
+                    }}
+                  >
+                    <Archive className="sm:mr-2 h-4 w-4" />
+                    <span className="hidden sm:inline">{showArchived ? "Archived" : "Active"}</span>
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>{showArchived ? "Showing archived items" : "Showing active items"}</TooltipContent>
+              </Tooltip>
             </div>
+            </TooltipProvider>
 
             {/* Filter chips */}
             {filterChips.length > 0 && (

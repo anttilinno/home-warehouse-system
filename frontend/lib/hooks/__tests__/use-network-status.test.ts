@@ -68,7 +68,7 @@ describe("useNetworkStatus", () => {
     const { result } = renderHook(() => useNetworkStatus());
 
     const offlineHandler = addSpy.mock.calls.find(
-      (c) => c[0] === "offline"
+      (c: unknown[]) => c[0] === "offline"
     )?.[1] as EventListener;
 
     act(() => {
@@ -83,10 +83,10 @@ describe("useNetworkStatus", () => {
     const { result } = renderHook(() => useNetworkStatus());
 
     const offlineHandler = addSpy.mock.calls.find(
-      (c) => c[0] === "offline"
+      (c: unknown[]) => c[0] === "offline"
     )?.[1] as EventListener;
     const onlineHandler = addSpy.mock.calls.find(
-      (c) => c[0] === "online"
+      (c: unknown[]) => c[0] === "online"
     )?.[1] as EventListener;
 
     // Go offline
@@ -107,10 +107,10 @@ describe("useNetworkStatus", () => {
     const { result } = renderHook(() => useNetworkStatus());
 
     const offlineHandler = addSpy.mock.calls.find(
-      (c) => c[0] === "offline"
+      (c: unknown[]) => c[0] === "offline"
     )?.[1] as EventListener;
     const onlineHandler = addSpy.mock.calls.find(
-      (c) => c[0] === "online"
+      (c: unknown[]) => c[0] === "online"
     )?.[1] as EventListener;
 
     // Go offline then online
@@ -135,10 +135,10 @@ describe("useNetworkStatus", () => {
     unmount();
 
     const removedOnline = removeSpy.mock.calls.find(
-      (c) => c[0] === "online"
+      (c: unknown[]) => c[0] === "online"
     );
     const removedOffline = removeSpy.mock.calls.find(
-      (c) => c[0] === "offline"
+      (c: unknown[]) => c[0] === "offline"
     );
 
     expect(removedOnline).toBeDefined();

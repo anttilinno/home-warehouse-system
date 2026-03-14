@@ -8,7 +8,7 @@ import Image from "next/image";
 
 import type { ItemPhoto } from "@/lib/types/item-photo";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogClose } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogClose, DialogTitle } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 
 interface PhotoViewerProps {
@@ -146,6 +146,9 @@ export function PhotoViewer({
         className="max-w-screen max-h-screen h-screen w-screen border-0 p-0 bg-black/95"
         onPointerDownOutside={(e) => e.preventDefault()}
       >
+        <DialogTitle className="sr-only">
+          Photo {currentIndex + 1} of {photos.length}
+        </DialogTitle>
         {/* Header with controls */}
         <div className="absolute top-0 left-0 right-0 z-50 flex items-center justify-between bg-gradient-to-b from-black/80 to-transparent p-4">
           <div className="flex items-center gap-2">

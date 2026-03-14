@@ -7,8 +7,10 @@ type CustomFixtures = {
 };
 
 export const test = base.extend<CustomFixtures>({
-  locale: ["en", { option: true }],
-  apiURL: [process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000", { option: true }],
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  locale: ["en", { option: true }] as any,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  apiURL: [process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000", { option: true }] as any,
 
   // Collect page errors and fail test if any occur
   pageErrors: [async ({ page }, use) => {

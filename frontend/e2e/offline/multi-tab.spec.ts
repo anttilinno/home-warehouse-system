@@ -1,4 +1,4 @@
-import { test, expect, type BrowserContext, type Page } from "@playwright/test";
+import { test, expect, type BrowserContext, type Page, type Browser } from "@playwright/test";
 
 /**
  * Multi-tab E2E tests for offline scenarios using multiple browser contexts.
@@ -18,7 +18,7 @@ test.describe("Multi-Tab Offline Scenarios", () => {
   test.describe.configure({ mode: "serial" });
 
   // Helper to create an authenticated context with a page
-  async function createAuthenticatedContext(browser: typeof test.info.prototype.project.use.browserName extends "chromium" ? Parameters<typeof test.info>[0]["browser"] : never): Promise<{ context: BrowserContext; page: Page }> {
+  async function createAuthenticatedContext(browser: Browser): Promise<{ context: BrowserContext; page: Page }> {
     const context = await browser.newContext({
       storageState: "playwright/.auth/user.json",
     });

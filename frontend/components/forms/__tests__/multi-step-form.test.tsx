@@ -51,7 +51,7 @@ const testStepFields: Array<Array<"name" | "email">> = [["name"], ["email"]];
 const mockLoadDraft = vi.fn();
 const mockSaveDraft = vi.fn();
 const mockClearDraft = vi.fn();
-const mockGetFixedBottomStyle = vi.fn(() => ({ position: "fixed", bottom: 0 }));
+const mockGetFixedBottomStyle = vi.fn(() => ({ position: "fixed" as const, bottom: 0 }));
 
 // Test child component that exposes form state
 function TestFormContent({

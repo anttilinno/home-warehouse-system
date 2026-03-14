@@ -17,6 +17,7 @@ const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 const parsedApi = new URL(apiUrl);
 
 const nextConfig: NextConfig = {
+  allowedDevOrigins: ["192.168.0.0/16"],
   output: "standalone",
   devIndicators: process.env.NODE_ENV !== "production" ? {
     position: "bottom-left",
