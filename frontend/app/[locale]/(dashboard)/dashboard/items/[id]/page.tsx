@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { ArrowLeft, Pencil, Archive, ArchiveRestore, Package, Barcode, Tag, Shield, FileText, Clock, Camera, ImagePlus } from "lucide-react";
+import { ArrowLeft, Pencil, Archive, ArchiveRestore, Package, Barcode, Tag, Shield, FileText, Clock, Camera, ImagePlus, ClipboardList } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -36,6 +36,7 @@ export default function ItemDetailPage() {
   const [item, setItem] = useState<Item | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [showUploadSection, setShowUploadSection] = useState(false);
+  const [isMarkingReviewed, setIsMarkingReviewed] = useState(false);
   const photoGalleryRefreshRef = useRef<(() => void) | null>(null);
 
   // Fetch item photos
@@ -122,6 +123,20 @@ export default function ItemDetailPage() {
     }
   };
 
+  const handleMarkAsReviewed = async () => {
+    if (!item || !workspaceId) return;
+    setIsMarkingReviewed(true);
+    try {
+      await itemsApi.update(workspaceId, item.id, { needs_review: false });
+      toast.success(t("markedAsReviewed"));
+      loadItem();
+    } catch {
+      toast.error(t("markReviewedFailed"));
+    } finally {
+      setIsMarkingReviewed(false);
+    }
+  };
+
   const handleEdit = () => {
     router.push(`/dashboard/items/${itemId}/edit`);
   };
@@ -196,6 +211,24 @@ export default function ItemDetailPage() {
           )}
         </div>
       </div>
+
+      {/* Needs Review Banner */}
+      {item.needs_review && (
+        <div className="flex items-center justify-between rounded-lg border border-amber-200 bg-amber-50 dark:bg-amber-900/20 px-4 py-3">
+          <div className="flex items-center gap-2 text-amber-800 dark:text-amber-200">
+            <ClipboardList className="h-4 w-4" />
+            <span className="text-sm font-medium">{t("needsReview")}</span>
+          </div>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={handleMarkAsReviewed}
+            disabled={isMarkingReviewed}
+          >
+            {isMarkingReviewed ? t("marking") : t("markAsReviewed")}
+          </Button>
+        </div>
+      )}
 
       {/* Main Content Grid */}
       <div className="grid gap-6 md:grid-cols-3">

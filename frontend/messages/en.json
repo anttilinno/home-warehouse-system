@@ -1175,7 +1175,11 @@
         "loadFailed": "Failed to load item",
         "updateFailed": "Failed to update item"
       }
-    }
+    },
+    "markAsReviewed": "Mark as Reviewed",
+    "marking": "Marking...",
+    "markedAsReviewed": "Marked as reviewed",
+    "markReviewedFailed": "Failed to mark as reviewed"
   },
   "inventory": {
     "purchasePrice": "Purchase Price",
