@@ -29,8 +29,8 @@ Requirements for Quick Capture milestone. Each maps to roadmap phases.
 
 - [x] **SYNC-01**: Quick capture works fully offline — items queued in IndexedDB
 - [x] **SYNC-02**: Photos stored as blobs in IndexedDB for offline display
-- [ ] **SYNC-03**: Photos upload automatically after item syncs to server (chained sync)
-- [ ] **SYNC-04**: Offline-captured items appear in item list with pending indicator
+- [x] **SYNC-03**: Photos upload automatically after item syncs to server (chained sync)
+- [x] **SYNC-04**: Offline-captured items appear in item list with pending indicator
 
 ### Completion Workflow
 
@@ -81,8 +81,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | BATCH-04 | Phase 44 | Complete |
 | SYNC-01 | Phase 44 | Complete |
 | SYNC-02 | Phase 44 | Complete |
-| SYNC-03 | Phase 46 | Pending |
-| SYNC-04 | Phase 46 | Pending |
+| SYNC-03 | Phase 46 | Complete |
+| SYNC-04 | Phase 46 | Complete |
 | COMP-01 | Phase 43 | Complete |
 | COMP-02 | Phase 43 | Complete |
 | COMP-03 | Phase 43 | Complete |

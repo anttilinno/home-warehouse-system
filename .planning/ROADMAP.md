@@ -232,7 +232,7 @@ Plans:
 | 43 | v1.9 | Complete    | 2026-02-27 | 2026-02-27 |
 | 44 | 2/2 | Complete    | 2026-02-27 | - |
 | 45 | 2/2 | Complete    | 2026-02-27 | - |
-| 46 | v1.9 | 0/1 | Not started | - |
+| 46 | 1/1 | Complete   | 2026-03-14 | - |
 | 47 | v1.9 | 0/TBD | Not started | - |
 
 **Total:** 43 phases complete (121 plans executed) across 9 milestones + 4 phases remaining for v1.9
