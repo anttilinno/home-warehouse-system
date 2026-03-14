@@ -1017,7 +1017,12 @@
         "loadFailed": "Eseme laadimine ebaõnnestus",
         "updateFailed": "Eseme uuendamine ebaõnnestus"
       }
-    }
+    },
+    "needsReview": "Vajab ülevaatust",
+    "markAsReviewed": "Märgi ülevaadatuks",
+    "marking": "Märkimine...",
+    "markedAsReviewed": "Märgitud ülevaadatuks",
+    "markReviewedFailed": "Ülevaadatuks märkimine ebaõnnestus"
   },
   "inventory": {
     "purchasePrice": "Ostuhind",
@@ -1040,6 +1045,10 @@
     "removePhoto": "Eemalda foto",
     "selectCategory": "Vali kategooria",
     "selectLocation": "Vali asukoht",
-    "noneSelected": "Valimata"
+    "noneSelected": "Valimata",
+    "sessionSummary": "Seanss lõpetatud",
+    "sessionSummaryDescription": "{count} {count, plural, one {ese} other {eset}} jäädvustatud",
+    "sessionSummaryContinue": "Mine esemete juurde",
+    "sessionSummaryCapture": "Jäädvusta veel"
   }
 }

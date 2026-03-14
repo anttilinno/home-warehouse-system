@@ -1019,7 +1019,11 @@
         "loadFailed": "Не удалось загрузить предмет",
         "updateFailed": "Не удалось обновить предмет"
       }
-    }
+    },
+    "markAsReviewed": "Отметить как проверенное",
+    "marking": "Отмечаем...",
+    "markedAsReviewed": "Отмечено как проверенное",
+    "markReviewedFailed": "Не удалось отметить как проверенное"
   },
   "inventory": {
     "purchasePrice": "Цена покупки",
