@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.9
 milestone_name: Quick Capture
 status: completed
-stopped_at: Completed 46-01-PLAN.md
-last_updated: "2026-03-14T18:23:39.160Z"
+stopped_at: Completed 47-01-PLAN.md
+last_updated: "2026-03-14T19:13:43.564Z"
 last_activity: 2026-02-27 -- Completed 45-02 (Full QuickCapturePage with camera capture and save-reset loop)
 progress:
   total_phases: 5
   completed_phases: 4
-  total_plans: 7
-  completed_plans: 7
+  total_plans: 9
+  completed_plans: 8
   percent: 100
 ---
 
@@ -63,6 +63,7 @@ Progress: [██████████] 100%
 | 45-01 | 2min | 2 | 6 |
 | 45-02 | 2min | 1 | 1 |
 | Phase 46 P01 | 5 | 2 tasks | 6 files |
+| Phase 47 P01 | 15 | 3 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -86,6 +87,9 @@ Recent decisions affecting current work:
 - [45-02]: Object URLs revoked in three places (removal, save reset, unmount) to prevent memory leaks
 - [Phase 46]: Pre-write resolvedItemId before upload loop ensures stateless retry even if process interrupted mid-loop
 - [Phase 46]: Per-photo delete replaces bulk deletePhotosByTempId — failed photos survive with status=failed+resolvedItemId for retry via status index
+- [Phase 47-01]: Session thumbnails stored as object URLs (strings) in context, not Blob objects
+- [Phase 47-01]: needs_review passed as showNeedsReview || undefined to avoid spurious false query param
+- [Phase 47-01]: Needs Review and Show Archived are mutually exclusive — toggling either resets the other
 
 ### Pending Todos
 
@@ -108,8 +112,8 @@ v1.9 specific:
 
 ## Session Continuity
 
-Last session: 2026-03-14T18:23:39.158Z
-Stopped at: Completed 46-01-PLAN.md
+Last session: 2026-03-14T19:13:43.562Z
+Stopped at: Completed 47-01-PLAN.md
 Next step: Phase 45 complete. Next phase in v1.9 milestone.
 
 ---
