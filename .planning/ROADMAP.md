@@ -214,7 +214,10 @@ Plans:
   2. "Needs Review" filter chip is visible in the items list and shows only quick-captured items awaiting details
   3. "Needs Review" badge appears on item detail with a one-tap "Mark as Reviewed" action
   4. All new UI strings are translated in English, Estonian, and Russian
-**Plans**: TBD
+**Plans**: 2 plans
+Plans:
+- [ ] 47-01-PLAN.md -- Session summary sheet + Needs Review filter in items list (COMP-04)
+- [ ] 47-02-PLAN.md -- Needs Review banner + Mark as Reviewed on item detail + i18n sweep (COMP-04)
 
 ## Progress
 
@@ -232,8 +235,8 @@ Plans:
 | 43 | v1.9 | Complete    | 2026-02-27 | 2026-02-27 |
 | 44 | 2/2 | Complete    | 2026-02-27 | - |
 | 45 | 2/2 | Complete    | 2026-02-27 | - |
-| 46 | 1/1 | Complete   | 2026-03-14 | - |
-| 47 | v1.9 | 0/TBD | Not started | - |
+| 46 | 1/1 | Complete    | 2026-03-14 | - |
+| 47 | v1.9 | 0/2 | Not started | - |
 
 **Total:** 43 phases complete (121 plans executed) across 9 milestones + 4 phases remaining for v1.9
 
