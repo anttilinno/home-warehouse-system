@@ -159,6 +159,8 @@ export interface CapturePhoto {
   capturedAt: number;
   /** Upload status */
   status: CapturePhotoStatus;
+  /** Real server item ID, set when upload is first attempted. Used for retry. */
+  resolvedItemId?: string;
 }
 
 /**
