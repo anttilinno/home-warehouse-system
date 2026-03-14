@@ -201,7 +201,9 @@ See `.planning/milestones/v1.9-ROADMAP.md` for full phase details.
   2. Offline-captured items appear in the item list with a pending indicator before sync completes
   3. Partial photo upload failures are retried on the next sync cycle without duplicating successful uploads
   4. Photos captured offline display correctly from IndexedDB blobs before sync
-**Plans**: TBD
+**Plans**: 1 plan
+Plans:
+- [ ] 46-01-PLAN.md — Per-photo upload retry (SYNC-03) and cross-page pending indicator (SYNC-04)
 
 #### Phase 47: Completion Workflow and Polish
 **Goal**: Users have a complete capture-to-completion workflow with session summary, review filtering, and production-ready polish
@@ -230,7 +232,7 @@ See `.planning/milestones/v1.9-ROADMAP.md` for full phase details.
 | 43 | v1.9 | Complete    | 2026-02-27 | 2026-02-27 |
 | 44 | 2/2 | Complete    | 2026-02-27 | - |
 | 45 | 2/2 | Complete    | 2026-02-27 | - |
-| 46 | v1.9 | 0/TBD | Not started | - |
+| 46 | v1.9 | 0/1 | Not started | - |
 | 47 | v1.9 | 0/TBD | Not started | - |
 
 **Total:** 43 phases complete (121 plans executed) across 9 milestones + 4 phases remaining for v1.9
