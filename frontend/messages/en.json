@@ -1099,6 +1099,7 @@
     }
   },
   "items": {
+    "needsReview": "Needs Review",
     "create": {
       "title": "Create New Item",
       "subtitle": "Add a new item to your inventory",

@@ -5,10 +5,11 @@ export const itemsApi = {
   /**
    * List items with pagination
    */
-  list: async (workspaceId: string, params?: { page?: number; limit?: number }): Promise<ItemListResponse> => {
+  list: async (workspaceId: string, params?: { page?: number; limit?: number; needs_review?: boolean }): Promise<ItemListResponse> => {
     const queryParams = new URLSearchParams();
     if (params?.page) queryParams.append("page", params.page.toString());
     if (params?.limit) queryParams.append("limit", params.limit.toString());
+    if (params?.needs_review) queryParams.append("needs_review", "true");
 
     const url = `/workspaces/${workspaceId}/items${queryParams.toString() ? `?${queryParams.toString()}` : ""}`;
     return apiClient.get<ItemListResponse>(url);

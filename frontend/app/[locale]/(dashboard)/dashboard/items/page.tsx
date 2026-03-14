@@ -23,6 +23,7 @@ import {
   Archive as ArchiveIcon,
   Cloud,
   ScanBarcode,
+  ClipboardList,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -381,6 +382,7 @@ export default function ItemsPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const debouncedSearchQuery = useDebouncedValue(searchQuery, 300);
   const [showArchived, setShowArchived] = useState(false);
+  const [showNeedsReview, setShowNeedsReview] = useState(false);
   const [itemPhotos, setItemPhotos] = useState<Record<string, { urls: { small: string; medium: string; original: string; large: string } } | null>>({});
   const [photoCount, setPhotoCount] = useState<Record<string, number>>({});
 
@@ -584,10 +586,14 @@ export default function ItemsPage() {
       if (!workspaceId) {
         return { items: [], total: 0, page: 1, total_pages: 0 };
       }
-      return await itemsApi.list(workspaceId, { page, limit: 50 });
+      return await itemsApi.list(workspaceId, {
+        page,
+        limit: 50,
+        needs_review: showNeedsReview || undefined,
+      });
     },
     pageSize: 50,
-    dependencies: [workspaceId],
+    dependencies: [workspaceId, showNeedsReview],
     autoFetch: !!workspaceId,
   });
 
@@ -1166,9 +1172,24 @@ export default function ItemsPage() {
                 <span className="hidden sm:inline">Export</span>
               </Button>
               <Button
+                variant={showNeedsReview ? "default" : "outline"}
+                size="sm"
+                onClick={() => {
+                  const next = !showNeedsReview;
+                  setShowNeedsReview(next);
+                  if (next) setShowArchived(false);
+                }}
+              >
+                <ClipboardList className="sm:mr-2 h-4 w-4" />
+                <span className="hidden sm:inline">{t("needsReview")}</span>
+              </Button>
+              <Button
                 variant={showArchived ? "default" : "outline"}
                 size="sm"
-                onClick={() => setShowArchived(!showArchived)}
+                onClick={() => {
+                  setShowArchived(!showArchived);
+                  setShowNeedsReview(false);
+                }}
               >
                 <Archive className="sm:mr-2 h-4 w-4" />
                 <span className="hidden sm:inline">{showArchived ? "Archived" : "Active"}</span>
