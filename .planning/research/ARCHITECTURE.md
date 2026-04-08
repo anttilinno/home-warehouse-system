@@ -1,522 +1,656 @@
-# Architecture: Quick-Capture Integration
+# Architecture Research
 
-**Domain:** Rapid item entry mode for existing home inventory PWA
-**Researched:** 2026-02-27
-**Confidence:** HIGH (based on thorough codebase analysis)
+**Domain:** Retro-styled second frontend (SPA) for existing Go backend
+**Researched:** 2026-04-08
+**Confidence:** HIGH
 
-## Recommended Architecture
-
-Quick-capture is NOT a separate system. It is a **new frontend flow** that reuses existing backend APIs with minimal schema additions. The key architectural insight: the existing `CreateItemWizard` uses direct API calls (not `useOfflineMutation`), while quick-capture MUST use the offline mutation path for its core value proposition (rapid capture while walking around a warehouse without network).
-
-### High-Level Data Flow
+## System Overview
 
 ```
-Camera -> Photo blob -> IndexedDB (quickCapturePhotos store)
-  |
-  v
-Name input -> QuickCaptureForm -> useOfflineMutation("items", "create")
-  |                                    |
-  |                                    v
-  |                              mutationQueue (IndexedDB)
-  |                                    |
-  v                                    v
-Sticky batch state (React state     SyncManager.processQueue()
-  + sessionStorage)                    |
-                                       v
-                                  POST /items (with needs_review=true)
-                                       |
-                                       v
-                                  Response: { id: "real-id" }
-                                       |
-                                       v
-                                  Photo upload queue processes
-                                  (POST /items/{realId}/photos)
+                           Production (Angie reverse proxy :80)
+ ┌──────────────────────────────────────────────────────────────────────┐
+ │                                                                      │
+ │  /retro/*  ──────────► frontend2 (Vite SPA :3001)                   │
+ │  /auth/retro/callback ► frontend2                                    │
+ │                                                                      │
+ │  /auth/*, /users/*, /workspaces/*, /health, /barcode/*              │
+ │           ──────────► backend (Go :8080)                             │
+ │                                                                      │
+ │  /* (default) ──────► frontend1 (Next.js :3000)                     │
+ │                                                                      │
+ └──────────────────────────────────────────────────────────────────────┘
+
+                           Development
+ ┌──────────────────────────────────────────────────────────────────────┐
+ │                                                                      │
+ │  frontend2 Vite dev :3001                                           │
+ │    └── proxy /auth/*, /users/*, /workspaces/* ──► backend :8080     │
+ │                                                                      │
+ │  frontend1 Next.js dev :3000                                        │
+ │    └── (existing, unchanged)                                         │
+ │                                                                      │
+ │  backend Go :8080                                                   │
+ │    └── CORS allows :3000 and :3001 (already configured)             │
+ │                                                                      │
+ └──────────────────────────────────────────────────────────────────────┘
 ```
 
-### Component Boundaries
+### Component Responsibilities
 
-| Component | Responsibility | New/Modified | Communicates With |
-|-----------|---------------|--------------|-------------------|
-| `QuickCapturePage` | Full-screen camera-first capture flow | **NEW** | InlinePhotoCapture, QuickCaptureForm |
-| `QuickCaptureForm` | Minimal form: name only (+ hidden batch fields) | **NEW** | useOfflineMutation, useBatchSettings |
-| `useBatchSettings` | Sticky location/category across capture sessions | **NEW** | sessionStorage, QuickCaptureForm |
-| `useQuickCaptureSKU` | Client-side auto-SKU generation (prefix + timestamp) | **NEW** | QuickCaptureForm |
-| `QuickCaptureReview` | "Needs details" item list with filter + edit | **NEW** | itemsApi, items page filters |
-| `InlinePhotoCapture` | Camera/gallery capture with compression | **REUSE** (no changes) | QuickCaptureForm |
-| `useOfflineMutation` | Queue item create to IndexedDB | **REUSE** (no changes) | SyncManager |
-| `SyncManager` | Process mutation queue, resolve temp IDs | **MODIFY** (photo upload chaining) | Backend APIs |
-| `FloatingActionButton` | Radial menu entry point | **REUSE** (no changes) | - |
-| `useFABActions` | Add "Quick Capture" action to FAB menu | **MODIFY** (add action) | QuickCapturePage |
-| Backend `item` entity | Add `needs_review` boolean column | **MODIFY** (schema + entity + handler) | PostgreSQL |
-| Backend item handler | Accept `needs_review` field, add list filter | **MODIFY** | item service |
+| Component | Responsibility | Implementation |
+|-----------|----------------|----------------|
+| Vite Dev Server | Serves SPA, proxies API in dev | `vite.config.ts` with `server.proxy` |
+| React Router v7 | Client-side routing (library mode) | `createBrowserRouter` + `RouterProvider` |
+| API Client | HTTP calls to Go backend | Adapted from frontend1's `ApiClient` class |
+| Auth Context | JWT management, user state, workspace selection | React context wrapping `apiClient` |
+| SSE Provider | Real-time event connection | EventSource to `/workspaces/{id}/sse` |
+| i18n | EN + ET translations | `react-i18next` with JSON namespace files |
+| Design System | Retro industrial component library | Custom components over Tailwind CSS 4 |
 
-## Integration Points (Detailed)
+## Recommended Project Structure
 
-### 1. FAB Entry Point (Modify `useFABActions`)
+```
+frontend2/
+├── index.html                  # Vite entry point
+├── vite.config.ts              # Vite config with proxy + path aliases
+├── tailwind.config.ts          # Tailwind CSS 4 config (retro theme tokens)
+├── tsconfig.json
+├── package.json
+├── public/
+│   └── favicon.ico
+├── src/
+│   ├── main.tsx                # App bootstrap: i18n init, RouterProvider
+│   ├── router.tsx              # createBrowserRouter route tree
+│   ├── app.tsx                 # Root layout (nav shell, providers)
+│   │
+│   ├── api/                    # API client layer
+│   │   ├── client.ts           # ApiClient class (adapted from frontend1)
+│   │   ├── auth.ts             # Auth endpoints + types
+│   │   ├── items.ts            # Item CRUD + types
+│   │   ├── inventory.ts        # Inventory endpoints + types
+│   │   ├── loans.ts            # Loan endpoints + types
+│   │   ├── borrowers.ts        # Borrower endpoints + types
+│   │   ├── categories.ts       # Category endpoints + types
+│   │   ├── locations.ts        # Location endpoints + types
+│   │   ├── containers.ts       # Container endpoints + types
+│   │   ├── item-photos.ts      # Photo upload/serve + types
+│   │   ├── notifications.ts    # Notification endpoints + types
+│   │   ├── repair-logs.ts      # Repair log endpoints + types
+│   │   ├── analytics.ts        # Dashboard analytics + types
+│   │   ├── declutter.ts        # Declutter assistant + types
+│   │   ├── importexport.ts     # Import/export + types
+│   │   └── search.ts           # Search endpoint + types
+│   │
+│   ├── contexts/               # React contexts (global state)
+│   │   ├── auth-context.tsx    # User, workspace, login/logout
+│   │   ├── sse-context.tsx     # SSE connection + event distribution
+│   │   └── theme-context.tsx   # Dark/light theme
+│   │
+│   ├── hooks/                  # Shared custom hooks
+│   │   ├── use-sse.ts          # SSE subscription hook
+│   │   ├── use-date-format.ts  # User date format preference
+│   │   ├── use-time-format.ts  # User time format preference
+│   │   ├── use-number-format.ts # User number format preference
+│   │   └── use-debounce.ts     # Input debouncing
+│   │
+│   ├── components/             # Design system (retro components)
+│   │   ├── ui/                 # Primitive UI components
+│   │   │   ├── retro-button.tsx
+│   │   │   ├── retro-input.tsx
+│   │   │   ├── retro-card.tsx
+│   │   │   ├── retro-panel.tsx
+│   │   │   ├── retro-dialog.tsx
+│   │   │   ├── retro-badge.tsx
+│   │   │   ├── retro-select.tsx
+│   │   │   ├── retro-table.tsx
+│   │   │   ├── retro-tabs.tsx
+│   │   │   └── retro-toast.tsx
+│   │   ├── layout/             # Layout shells
+│   │   │   ├── app-shell.tsx   # Main authenticated layout
+│   │   │   ├── auth-shell.tsx  # Login/register layout
+│   │   │   ├── sidebar.tsx     # Navigation sidebar
+│   │   │   └── header.tsx      # Top bar
+│   │   └── shared/             # Composite reusable components
+│   │       ├── data-table.tsx  # Table with sort/filter/pagination
+│   │       ├── form-field.tsx  # Label + input + error
+│   │       ├── empty-state.tsx
+│   │       ├── loading-state.tsx
+│   │       └── confirm-dialog.tsx
+│   │
+│   ├── pages/                  # Route page components
+│   │   ├── auth/
+│   │   │   ├── login.tsx
+│   │   │   ├── register.tsx
+│   │   │   └── oauth-callback.tsx
+│   │   ├── dashboard/
+│   │   │   └── index.tsx
+│   │   ├── items/
+│   │   │   ├── list.tsx
+│   │   │   ├── detail.tsx
+│   │   │   └── create.tsx
+│   │   ├── inventory/
+│   │   │   └── index.tsx
+│   │   ├── loans/
+│   │   │   ├── list.tsx
+│   │   │   └── detail.tsx
+│   │   ├── borrowers/
+│   │   │   ├── list.tsx
+│   │   │   └── detail.tsx
+│   │   ├── categories/
+│   │   │   └── index.tsx
+│   │   ├── locations/
+│   │   │   └── index.tsx
+│   │   ├── containers/
+│   │   │   └── index.tsx
+│   │   ├── scanner/
+│   │   │   └── index.tsx
+│   │   ├── settings/
+│   │   │   ├── index.tsx       # Settings hub
+│   │   │   ├── profile.tsx
+│   │   │   ├── appearance.tsx
+│   │   │   ├── language.tsx
+│   │   │   ├── regional.tsx
+│   │   │   ├── security.tsx
+│   │   │   ├── notifications.tsx
+│   │   │   └── connected-accounts.tsx
+│   │   └── not-found.tsx
+│   │
+│   ├── i18n/                   # Internationalization
+│   │   ├── config.ts           # i18next init
+│   │   └── locales/
+│   │       ├── en/
+│   │       │   ├── common.json
+│   │       │   ├── auth.json
+│   │       │   ├── items.json
+│   │       │   ├── inventory.json
+│   │       │   ├── loans.json
+│   │       │   └── settings.json
+│   │       └── et/
+│   │           ├── common.json
+│   │           ├── auth.json
+│   │           ├── items.json
+│   │           ├── inventory.json
+│   │           ├── loans.json
+│   │           └── settings.json
+│   │
+│   ├── lib/                    # Utilities
+│   │   ├── utils.ts            # cn(), formatDate(), etc.
+│   │   └── constants.ts        # App-wide constants
+│   │
+│   └── styles/
+│       └── globals.css         # Tailwind directives + retro base styles
+```
 
-**Current state:** FAB has 3 default actions: Scan, Add Item, Log Loan. On items page, it swaps Add Item to primary position with Plus icon. The FAB component supports up to 5 actions in its radial menu.
+### Structure Rationale
 
-**Change:** Add "Quick Capture" as a 4th action (Camera icon). On items page, make it the primary action.
+- **`api/` flat files:** Each file maps 1:1 to a backend domain. Types are co-located with endpoints (no separate `types/` folder) because frontend2 has no offline layer -- types only serve the API client. This differs from frontend1 which split types out for IndexedDB/sync use.
+- **`components/ui/` prefix `retro-`:** Explicit naming prevents confusion when reading code -- every component is obviously from the custom design system, not a third-party library. When the design system stabilizes, these could be extracted to a package.
+- **`pages/` mirrors routes:** Each subfolder maps to a URL segment. Page components are thin -- they compose API hooks and UI components. Business logic lives in hooks and API layer, not in pages.
+- **`contexts/` minimal set:** Only three contexts needed (auth, SSE, theme). No offline context, no sync context -- frontend2 is online-only.
+- **`i18n/locales/` namespaced JSON:** Namespace per feature domain prevents one massive translation file. Only EN + ET for v2.0 (no RU, unlike frontend1 which has 3 languages).
+- **No `features/` folder:** Frontend1 has `features/auth/components/` but frontend2 keeps it simpler. With online-only and no PWA, the codebase is small enough that flat `pages/` + `components/` is clearer than feature slicing.
 
+## Architectural Patterns
+
+### Pattern 1: React Router v7 Library Mode (not Framework Mode)
+
+**What:** Use React Router v7 as a client-side routing library with `createBrowserRouter`, not in framework mode (which would add SSR/RSC complexity matching Remix).
+
+**When to use:** Pure SPA without server-side rendering requirements. Frontend2 is online-only and does not need SSR, so library mode keeps the stack simple.
+
+**Trade-offs:** No SSR means slower first paint vs Next.js, but avoids the complexity of a second SSR framework running alongside Next.js. The retro UI is a secondary/fun frontend, not the primary production app.
+
+**Example:**
 ```typescript
-// In use-fab-actions.tsx - add to imports and default actions
-const quickCaptureAction: FABAction = {
-  id: "quick-capture",
-  icon: <Camera className="h-5 w-5" />,
-  label: "Quick capture",
-  onClick: () => router.push("/dashboard/items/quick-capture"),
-};
+// src/router.tsx
+import { createBrowserRouter } from "react-router";
+import { AppShell } from "./components/layout/app-shell";
+import { AuthShell } from "./components/layout/auth-shell";
 
-// Default: [quickCaptureAction, scanAction, addItemAction, logLoanAction]
-// Items page: [quickCaptureAction, addItemAction, scanAction]
+export const router = createBrowserRouter([
+  {
+    path: "/login",
+    element: <AuthShell />,
+    children: [
+      { index: true, lazy: () => import("./pages/auth/login") },
+    ],
+  },
+  {
+    path: "/register",
+    element: <AuthShell />,
+    children: [
+      { index: true, lazy: () => import("./pages/auth/register") },
+    ],
+  },
+  {
+    path: "/auth/callback",
+    lazy: () => import("./pages/auth/oauth-callback"),
+  },
+  {
+    path: "/",
+    element: <AppShell />,   // Authenticated layout with sidebar
+    children: [
+      { path: "dashboard", lazy: () => import("./pages/dashboard") },
+      { path: "items", lazy: () => import("./pages/items/list") },
+      { path: "items/new", lazy: () => import("./pages/items/create") },
+      { path: "items/:id", lazy: () => import("./pages/items/detail") },
+      // ... remaining routes
+    ],
+  },
+]);
 ```
 
-**Integration risk:** LOW. The FAB already supports variable action counts. Adding a 4th action to defaults is straightforward -- the radial arc calculation in `getActionPosition` handles any count.
+### Pattern 2: Adapted API Client (Copy, Do Not Share)
 
-### 2. Quick Capture Page (New Route)
+**What:** Copy the API client pattern from frontend1 and adapt it for Vite (no `process.env`, use `import.meta.env`). Do not create a shared package between frontends.
 
-**Route:** `/app/[locale]/(dashboard)/dashboard/items/quick-capture/page.tsx`
-**Layout:** Full-screen mobile-optimized. Single-screen with camera dominant, name field below, save button.
+**When to use:** Always. The two frontends have different env var patterns (Next.js `NEXT_PUBLIC_*` vs Vite `VITE_*`), different build systems, and different runtime assumptions (SSR vs SPA). A shared package creates coupling that slows both down.
 
-**Why NOT reuse MultiStepForm/CreateItemWizard:**
-- `CreateItemWizard` is a 3-step form designed for thorough entry with Basic -> Details -> Photos flow
-- Its `handleSubmit` calls `itemsApi.create()` directly -- this FAILS offline
-- Quick capture needs a single screen with immediate camera access and a save-and-repeat loop
-- The "save & next" rapid cycle is fundamentally different from "fill 3 steps and submit once"
+**Trade-offs:** Duplicated type definitions. Worth it because: (a) types diverge over time (frontend1 has offline types, frontend2 does not), (b) no build orchestration overhead, (c) each frontend evolves independently.
 
-**Component structure:**
-```
-QuickCapturePage
-  |-- BatchSettingsBar (location/category pills, tap to change)
-  |-- InlinePhotoCapture (camera-first, large capture area)
-  |-- QuickCaptureNameInput (single text field, auto-focused after photo)
-  |-- QuickCaptureActions (Save & Next / Save & Done buttons)
-  |-- CaptureCounter (shows "5 items captured this session")
-```
-
-**The InlinePhotoCapture component can be reused as-is.** It already:
-- Handles camera via `capture="environment"` for rear camera
-- Handles gallery selection as fallback
-- Compresses images above 2MB threshold
-- Creates preview URLs for display
-- Returns processed `File` objects via `onCapture` callback
-
-### 3. Auto-SKU Generation (New Hook: `useQuickCaptureSKU`)
-
-**Current state:** CreateItemWizard requires manual SKU entry (step 1, required field). Backend validates SKU uniqueness via `repo.SKUExists()` and rejects duplicates with `ErrSKUTaken`. Backend does NOT auto-generate SKUs (only short_code is auto-generated).
-
-**Design:** Generate SKU client-side using `QC-{timestamp}-{random}` pattern.
-
+**Example:**
 ```typescript
-function generateQuickCaptureSKU(): string {
-  const ts = Date.now().toString(36); // compact timestamp
-  const rand = Math.random().toString(36).substring(2, 6);
-  return `QC-${ts}-${rand}`; // e.g., "QC-m2k4f7a-a3b1"
+// src/api/client.ts
+const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:8080";
+
+class ApiClient {
+  private baseUrl: string;
+  private token: string | null = null;
+
+  constructor(baseUrl: string) {
+    this.baseUrl = baseUrl;
+    this.token = localStorage.getItem("auth_token");
+  }
+
+  // Same request pattern as frontend1 but:
+  // - No "typeof window" checks (always in browser)
+  // - credentials: "include" for cookies
+  // - 401 redirects to /login (not /[locale]/login)
+  // - No SSR considerations
 }
+
+export const apiClient = new ApiClient(API_URL);
 ```
 
-**Why client-side:**
-- Offline-first: must work without server
-- UUIDv7 idempotency key already prevents duplicate item creation at sync time
-- `QC-` prefix makes quick-capture items visually identifiable in the items list
-- SKU uniqueness is validated at sync time by the existing `repo.SKUExists()` check
-- Collision is astronomically unlikely with timestamp + random (same millisecond + same 4 random chars)
-- If collision occurs at sync, SyncManager gets a 400/422 error -- needs a retry handler that regenerates the SKU
+### Pattern 3: Vite Dev Proxy for Backend
 
-**Backend impact:** None for auto-generation. The SKU column is VARCHAR(50), plenty of room for the `QC-` prefix pattern.
+**What:** Use Vite's built-in `server.proxy` to forward API requests to the Go backend during development, avoiding CORS issues.
 
-### 4. Offline Item Creation via `useOfflineMutation` (Reuse)
+**When to use:** Development. In production, Angie reverse proxy handles routing.
 
-**Current state:** `CreateItemWizard.handleSubmit()` calls `itemsApi.create()` directly. Meanwhile, five other entities (categories, locations, borrowers, containers, inventory) already use `useOfflineMutation` successfully.
+**Trade-offs:** Simpler than configuring CORS for a third origin. The backend already allows `:3001` in CORS defaults, so direct calls would work too, but the proxy approach matches what most Vite+API projects use.
 
-**Quick capture integration:**
+**Example:**
 ```typescript
-const { mutate } = useOfflineMutation<ItemCreatePayload>({
-  entity: "items",
-  operation: "create",
-  onMutate: (payload, tempId) => {
-    // Optimistic: increment capture counter
-    setCaptureCount(prev => prev + 1);
+// vite.config.ts
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
+import tailwindcss from "@tailwindcss/vite";
+
+export default defineConfig({
+  plugins: [react(), tailwindcss()],
+  resolve: {
+    alias: { "@": "/src" },
+  },
+  server: {
+    port: 3001,
+    proxy: {
+      "/auth": {
+        target: "http://localhost:8080",
+        changeOrigin: true,
+      },
+      "/users": {
+        target: "http://localhost:8080",
+        changeOrigin: true,
+      },
+      "/workspaces": {
+        target: "http://localhost:8080",
+        changeOrigin: true,
+      },
+      "/health": {
+        target: "http://localhost:8080",
+        changeOrigin: true,
+      },
+      "/notifications": {
+        target: "http://localhost:8080",
+        changeOrigin: true,
+      },
+      "/barcode": {
+        target: "http://localhost:8080",
+        changeOrigin: true,
+      },
+      "/push": {
+        target: "http://localhost:8080",
+        changeOrigin: true,
+      },
+      "/api/v1": {
+        target: "http://localhost:8080",
+        changeOrigin: true,
+      },
+    },
   },
 });
+```
 
-async function handleCapture(name: string, photos: File[]) {
-  const sku = generateQuickCaptureSKU();
-  const tempId = await mutate({
-    sku,
-    name,
-    needs_review: true,
-    category_id: batchSettings.categoryId || undefined,
-  });
-  // Queue photos for upload linked to tempId
-  for (const photo of photos) {
-    await storeQuickCapturePhoto(tempId, photo);
-  }
+### Pattern 4: OAuth Integration via APP_URL Configuration
+
+**What:** The backend's OAuth flow redirects to `{APP_URL}/auth/callback` after successful authentication. Frontend2 needs its own callback route that exchanges the one-time code for a JWT token.
+
+**When to use:** OAuth login (Google, GitHub).
+
+**Critical integration detail:** The backend's `APP_URL` env var determines where OAuth callbacks redirect. In dev, this points to `http://localhost:3000` (frontend1). For frontend2 to work with OAuth in dev, the Vite proxy approach solves this -- when the backend redirects to `{APP_URL}/auth/callback` and APP_URL is `http://localhost:3001`, the callback hits frontend2's Vite dev server which serves the SPA route.
+
+Set `APP_URL=http://localhost:3001` when developing frontend2 with OAuth. Or, more practically, skip OAuth in early phases and use email/password login (works immediately, no config changes).
+
+In production with Angie, both frontends share the same origin (`:80`), so the OAuth callback path just needs to be routed to the correct frontend.
+
+**Example:**
+```typescript
+// src/pages/auth/oauth-callback.tsx
+import { useEffect, useRef } from "react";
+import { useSearchParams, useNavigate } from "react-router";
+import { authApi } from "../../api/auth";
+
+export default function OAuthCallback() {
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const exchanged = useRef(false);
+
+  useEffect(() => {
+    const code = searchParams.get("code");
+    const error = searchParams.get("error");
+
+    if (error) {
+      navigate(`/login?error=${encodeURIComponent(error)}`);
+      return;
+    }
+    if (!code || exchanged.current) return;
+    exchanged.current = true;
+
+    authApi.exchangeOAuthCode(code)
+      .then(() => navigate("/dashboard"))
+      .catch(() => navigate("/login?error=exchange_failed"));
+  }, [searchParams, navigate]);
+
+  return <div>Completing sign in...</div>;
 }
 ```
 
-**The `useOfflineMutation` hook already handles everything needed:**
-- Queuing to IndexedDB `mutationQueue` store with UUIDv7 idempotency key
-- Writing optimistic item to `items` store with `_pending: true` marker
-- Capturing `workspaceId` from localStorage at mutation time
-- Triggering `SyncManager.processQueue()` when online
-- Entity-type ordered sync (items process after categories, so batch category exists first)
+### Pattern 5: SSE Connection via Shared Context
 
-**No changes needed to `useOfflineMutation` itself.**
+**What:** A single EventSource connection per workspace, managed in a React context. Components subscribe to events via a hook. Simplified from frontend1 -- no offline/sync concerns.
 
-### 5. Photo Queuing for Offline (New IndexedDB Store)
+**When to use:** Any page that needs real-time updates (inventory changes, loan events, notifications).
 
-**Current state:** Two separate photo upload systems exist:
-1. `CreateItemWizard` uploads photos sequentially via XHR after successful item creation (online only)
-2. Service worker intercepts failed photo uploads to a separate `PhotoUploadQueue` IndexedDB database
+**Key detail:** EventSource does not support custom headers. The existing frontend1 uses `credentials: "include"` (cookies). Frontend2 should do the same -- the HttpOnly JWT cookie set by the backend during login is automatically sent with EventSource connections since they are same-origin (via proxy in dev, via Angie in prod).
 
-**Problem for quick capture:** Photos are captured BEFORE the item exists on the server. The item has only a temp ID (UUIDv7 idempotency key). Photos cannot be uploaded until the item mutation syncs and a real server ID is returned from the response.
-
-**Solution: New IndexedDB store + SyncManager photo chaining**
-
-Add a `quickCapturePhotos` store to the main offline database (`hws-offline-v1`):
-
+**Example:**
 ```typescript
-// Add to OfflineDBSchema in lib/db/types.ts
-quickCapturePhotos: {
-  key: number;
-  value: {
-    id: number;           // auto-increment
-    tempItemId: string;   // links to mutation idempotency key
-    blob: Blob;           // compressed photo data
-    timestamp: number;
-    status: "pending" | "uploading" | "uploaded" | "failed";
-  };
-  indexes: {
-    tempItemId: string;
-    status: string;
-  };
-};
+// src/contexts/sse-context.tsx
+const url = `/workspaces/${workspaceId}/sse`;
+const eventSource = new EventSource(url, { withCredentials: true });
 ```
 
-**Why a new store in the main DB instead of reusing `PhotoUploadQueue`:**
-- `PhotoUploadQueue` is a separate IndexedDB database managed entirely by the service worker
-- It stores the full upload URL (expects the item already exists on the server with a real ID)
-- Quick capture photos have no upload URL yet because the item only has a temp ID
-- The main offline DB (`hws-offline-v1`) is managed by application code with a typed schema via `idb`
-- Keeping photo blobs in the main DB lets SyncManager chain: item create -> resolve real ID -> photo upload
+## Data Flow
 
-**DB version bump:** IndexedDB version goes from 4 to 5. The `upgrade` callback in `offline-db.ts` adds the new store.
+### Auth Flow
 
-**Storage budget:** Each compressed photo is ~200KB-2MB after `InlinePhotoCapture`'s compression (1920x1920, quality 0.85). For a batch of 50 items with 1 photo each: 10-100MB. IndexedDB quota is 50MB minimum, typically much higher on mobile. The `requestPersistentStorage()` call (already implemented) helps prevent eviction. Add a capture limit warning at ~30 items or when storage estimate exceeds 80% of quota.
+```
+User visits /login
+    |
+    ├── Email/Password ──► POST /auth/login ──► JWT token + HttpOnly cookie
+    │                                            ├── Store token in localStorage
+    │                                            └── navigate("/dashboard")
+    │
+    └── OAuth (Google/GitHub)
+         ├── Click ──► GET /auth/oauth/{provider} ──► Redirect to provider
+         ├── Provider callback ──► GET /auth/oauth/{provider}/callback
+         │                          └── Backend exchanges code, stores in Redis
+         │                          └── Redirect to {APP_URL}/auth/callback?code=XXX
+         └── Frontend callback page ──► POST /auth/oauth/exchange {code}
+                                         ├── JWT token + HttpOnly cookie
+                                         └── navigate("/dashboard")
+```
 
-### 6. SyncManager Photo Chaining (Modify `SyncManager.processMutation`)
+### API Request Flow
 
-**Current state:** After a successful item create, `SyncManager` maps `tempId -> realId` in the `resolvedIds` Map and broadcasts `MUTATION_SYNCED`. It does NOT trigger any follow-up actions.
+```
+Component
+    ↓ calls hook or api function
+ApiClient.get/post/patch/delete(endpoint, workspaceId?)
+    ↓ adds headers: Authorization (Bearer token), X-Workspace-ID, credentials: "include"
+    ↓
+  [Dev] Vite proxy ──► Go backend :8080
+  [Prod] Angie proxy ──► Go backend :8080
+    ↓
+  Response JSON
+    ↓ 401? → clear token, redirect /login
+    ↓ ok? → return typed data
+Component re-renders
+```
 
-**Change:** After item create succeeds, check `quickCapturePhotos` store for pending photos:
+### SSE Event Flow
 
-```typescript
-// In processMutation(), after successful create for items:
-if (mutation.entity === "items" && mutation.operation === "create") {
-  const realId = resolvedIds.get(mutation.idempotencyKey);
-  if (realId) {
-    await this.uploadQueuedPhotos(
-      mutation.idempotencyKey, realId, mutation.workspaceId
-    );
-  }
+```
+AuthContext confirms: isAuthenticated + currentWorkspace
+    ↓
+SSEProvider creates EventSource
+    URL: /workspaces/{workspace_id}/sse (cookies sent automatically)
+    ↓ (persistent connection)
+Backend broadcasts events (CRUD, notifications)
+    ↓
+SSEProvider distributes to subscribers
+    ↓
+Components re-fetch affected data or update local state
+```
+
+### Key Data Flows
+
+1. **Auth token lifecycle:** Login sets token in localStorage + cookie. ApiClient reads from localStorage on construction. 401 response clears both and redirects to /login. OAuth uses one-time Redis code exchange to avoid cross-origin cookie issues.
+2. **Workspace scoping:** Every API call after auth includes `X-Workspace-ID` header. User selects workspace after login. All data queries are workspace-scoped on the backend.
+3. **SSE real-time updates:** Single connection per workspace. Events trigger component-level re-fetches (not global state updates). If disconnected, reconnect with exponential backoff and re-fetch.
+
+## Integration Points
+
+### Existing Backend -- No Modifications Required
+
+| Integration | Mechanism | Notes |
+|-------------|-----------|-------|
+| REST API | Same endpoints as frontend1 | All at `:8080`, no API versioning needed |
+| Auth (email/pw) | `POST /auth/login`, `POST /auth/register` | Returns JWT, sets HttpOnly cookie |
+| Auth (OAuth) | `GET /auth/oauth/{provider}` | Redirects to provider, callback returns to `{APP_URL}/auth/callback` |
+| OAuth exchange | `POST /auth/oauth/exchange` | One-time code from Redis, returns JWT |
+| SSE | `GET /workspaces/{id}/sse` | EventSource with cookies (withCredentials: true) |
+| File uploads | `POST` with `multipart/form-data` | Photos, avatars, imports |
+| CORS | Already allows `:3001` | `cors.go` line 14: `"http://localhost:3001"` in default origins |
+
+### Backend/Infrastructure Modifications Needed
+
+| Change | Why | Scope |
+|--------|-----|-------|
+| Angie config update | Route frontend2 traffic to its container | Add upstream + location blocks |
+| `docker-compose.yml` | Add `frontend2` service in prod profile | New service definition |
+| `APP_URL` in dev | OAuth redirects to frontend2 when testing OAuth | Env var change (temporary, per-dev) |
+| `CORS_ALLOWED_ORIGINS` | Production may need explicit frontend2 origin | Only if frontend2 runs on separate domain/subdomain |
+
+### OAuth Callback Strategy
+
+**Recommended approach for v2.0:** Build email/password login first (works immediately with zero backend changes). Add OAuth in a later phase once the deployment topology is decided.
+
+For OAuth when ready, two options:
+
+**Option A -- Path-based routing (simpler):** Frontend2 at `/retro/`, callback at `/retro/auth/callback`. Requires backend change to make the redirect path configurable per OAuth initiation (add a `redirect_to` param to the initiate endpoint). More invasive.
+
+**Option B -- Dev: separate APP_URL, Prod: shared origin (recommended):**
+- Dev: Set `APP_URL=http://localhost:3001` when working on frontend2 OAuth. Frontend1 OAuth breaks, but that is fine -- you are developing frontend2.
+- Prod: Both frontends behind Angie on same origin. Angie routes `/auth/callback` to whichever frontend the user was using (can be determined by a cookie or simply route to frontend1 and have frontend1's callback be a thin redirect based on a `source` param).
+
+**Pragmatic v2.0 answer:** Email/password in early phases. OAuth in final phase after deployment is tested.
+
+## Coexistence with Frontend1
+
+### Development
+
+Both frontends run simultaneously:
+- Frontend1: `cd frontend && npm run dev` (port 3000)
+- Frontend2: `cd frontend2 && npm run dev` (port 3001)
+- Backend: `cd backend && go run ./cmd/server` (port 8080)
+
+No conflicts. CORS already allows both ports. Each has independent `node_modules`, `package.json`, and build config.
+
+### Production (Docker Compose)
+
+```yaml
+# Addition to docker-compose.yml
+frontend2:
+  build:
+    context: ./frontend2
+    dockerfile: Dockerfile
+  profiles: ["prod"]
+  healthcheck:
+    test: ["CMD", "wget", "-qO-", "http://127.0.0.1:3001"]
+    interval: 5s
+    timeout: 5s
+    retries: 10
+    start_period: 10s
+  networks:
+    - warehouse
+```
+
+Frontend2 Dockerfile (simpler than frontend1, no Next.js standalone build):
+```dockerfile
+FROM node:22-alpine AS build
+WORKDIR /app
+COPY package.json package-lock.json ./
+RUN npm ci
+COPY . .
+RUN npm run build
+
+FROM nginx:alpine
+COPY --from=build /app/dist /usr/share/nginx/html
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+EXPOSE 3001
+```
+
+SPA requires nginx `try_files` for client-side routing:
+```nginx
+server {
+    listen 3001;
+    root /usr/share/nginx/html;
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
 }
 ```
 
-**The `uploadQueuedPhotos` method:**
-1. Read all entries from `quickCapturePhotos` where `tempItemId === idempotencyKey`
-2. For each, create `FormData` with the blob and POST to `/workspaces/{wsId}/items/{realId}/photos`
-3. On success, delete the entry from the store
-4. On failure, mark as `"failed"` (retry on next sync cycle)
-5. Broadcast progress events (`PHOTO_UPLOAD_PROGRESS`, `PHOTO_UPLOAD_COMPLETE`) for UI feedback
+### Angie Routing (Production)
 
-**Critical design detail:** Process photos AFTER all item mutations in the current batch complete, not inline during mutation processing. This prevents photo uploads from blocking other mutations. Add a `processQueuedPhotos()` phase after the main entity sync loop:
-
-```typescript
-// In processQueue(), after the entity sync loop:
-await this.processQueuedPhotos(resolvedIds);
-```
-
-**Integration risk:** MEDIUM. Adding async photo upload work to `processQueue()` increases processing time. Must handle: upload timeout, partial failures (some photos upload, some fail), network loss mid-batch.
-
-### 7. Sticky Batch Settings (New Hook: `useBatchSettings`)
-
-**Current state:** No batch settings concept exists anywhere in the codebase.
-
-**Design:**
-```typescript
-interface BatchSettings {
-  categoryId: string | null;
-  locationId: string | null;   // for future inventory creation
-  containerId: string | null;  // for future inventory creation
+Add to `angie.conf`:
+```nginx
+upstream frontend2 {
+    server frontend2:3001;
 }
 
-function useBatchSettings() {
-  // sessionStorage: dies on tab close, which is correct behavior
-  const [settings, setSettings] = useState<BatchSettings>(() => {
-    if (typeof sessionStorage === "undefined") return DEFAULT;
-    const saved = sessionStorage.getItem("quickCaptureBatch");
-    return saved ? JSON.parse(saved) : DEFAULT;
-  });
-  // ... setter that writes to sessionStorage + state
+# Path-based routing (simpler, no DNS changes needed)
+location /retro/ {
+    proxy_pass http://frontend2/;
+    proxy_http_version 1.1;
+}
+location /retro {
+    return 301 /retro/;
 }
 ```
 
-**Why sessionStorage (not localStorage, not IndexedDB):**
-- Batch settings are intentionally ephemeral -- they represent "I'm in the garage right now"
-- When the user closes the tab, batch context should reset (next time they may be somewhere else)
-- localStorage would persist across sessions, which is wrong for spatial context
-- IndexedDB is overkill for 3 nullable string values of ephemeral UI state
+### What Is New vs Modified
 
-**UI:** A horizontal bar at the top of the quick capture screen showing current batch settings as tappable pills (e.g., `[Garage] [Tools]`). Tapping opens a bottom sheet selector populated from cached IndexedDB data (categories/locations stores), so it works offline.
+| Category | New (frontend2 only) | Modified (existing infra) |
+|----------|---------------------|---------------------------|
+| Code | Entire `/frontend2` directory | None in `/frontend` or `/backend` |
+| Config | Frontend2 Dockerfile + nginx.conf | `docker-compose.yml` (add service) |
+| Config | Frontend2 `package.json`, `vite.config.ts` | `docker/angie/angie.conf` (add routing) |
+| Backend | Nothing | Nothing (CORS already covers :3001) |
+| CI | Frontend2 build/test step | Pipeline config (add parallel job) |
 
-### 8. "Needs Review" Flag (Modify Backend + Frontend)
+## Build Order for Phased Development
 
-**Backend changes:**
+### Phase 1: Foundation
+Scaffold Vite + React 19 + Router v7 + Tailwind CSS 4. ApiClient adapted from frontend1. Auth context with email/password login. One protected route (dashboard placeholder). Vite proxy config. Verify API calls work end-to-end.
+**Why first:** Everything else depends on auth and routing working. Proves the integration with existing backend.
 
-1. **Migration:** Add column to `warehouse.items`:
-```sql
-ALTER TABLE warehouse.items ADD COLUMN needs_review BOOLEAN DEFAULT false;
-```
+### Phase 2: Design System Core
+Retro UI primitives (button, input, card, panel, dialog, badge, table). Layout shells (app-shell with sidebar + header, auth-shell). Theme tokens in Tailwind config. Dark/light theme toggle.
+**Why second:** All feature pages need these components. Building them before features prevents throwaway work.
 
-2. **Entity (`entity.go`):** Add `needsReview *bool` field to `Item` struct, getter, include in `Reconstruct`, `NewItem` (defaults false), and `Update`.
+### Phase 3: i18n Setup
+react-i18next config with EN + ET. Translation files for common + auth namespaces. Language switcher. Wire existing pages to use `useTranslation`.
+**Why third:** Better to wire i18n before building all pages. Retrofitting i18n into existing pages is painful and error-prone.
 
-3. **CreateInput/UpdateInput (`service.go`):** Add `NeedsReview *bool` field to both structs. Service passes through to entity.
+### Phase 4: Core Feature Pages
+Dashboard (analytics), items CRUD, inventory management, categories, locations, containers. Data tables with sort/filter/pagination. Search.
+**Why fourth:** Core data model pages using the design system and API client from phases 1-3. Largest phase by page count.
 
-4. **Handler (`handler.go`):** Accept `needs_review` in create/update request bodies. Add `?needs_review=true|false` query parameter to the list endpoint.
+### Phase 5: Secondary Feature Pages
+Loans, borrowers, repair logs, scanner (barcode/QR), declutter assistant, import/export. Settings hub with all 8 subpages (profile, appearance, language, regional, security, notifications, data, connected accounts).
+**Why fifth:** Depends on item/inventory infrastructure. Settings uses auth context from phase 1.
 
-5. **Repository/sqlc:** Add `needs_review` to insert/update/select queries. Add `ListItemsNeedingReview` query or parameterize existing `ListItems`.
+### Phase 6: Real-time and Polish
+SSE connection + notification dropdown. OAuth login (Google, GitHub). Error boundaries. Loading skeletons. Toast notifications. Final responsive/mobile polish.
+**Why last:** SSE is an enhancement, not a blocker for feature development. OAuth requires deployment topology to be decided. Polish makes sense after all pages exist.
 
-6. **Response mapping (`toItemResponse`):** Include `needs_review` in JSON response.
+## Anti-Patterns
 
-**Frontend changes:**
+### Anti-Pattern 1: Shared Package Between Frontends
 
-1. **Item type (`lib/types/items.ts`):** Add `needs_review?: boolean` to `Item`, `ItemCreate`, `ItemUpdate` interfaces.
+**What people do:** Create a `packages/shared` with types and utilities used by both frontends.
+**Why it's wrong:** Couples two independent frontends with different build systems (Next.js vs Vite), different env var patterns (`NEXT_PUBLIC_*` vs `VITE_*`), different runtime assumptions (SSR vs SPA). One breaking change blocks both. Monorepo tooling (Turborepo) adds complexity for marginal benefit when the shared surface is just TypeScript interfaces.
+**Do this instead:** Copy types. They are small. Each frontend owns its type definitions and evolves independently. Frontend1 has offline types, frontend2 does not -- they diverge naturally.
 
-2. **Items list page:** Add "Needs Review" filter chip/toggle in the existing `FilterBar` component. The page already uses `useFilters` hook and `FilterPopover` for category/archived filtering.
+### Anti-Pattern 2: React Router Framework Mode for an SPA
 
-3. **Item detail page:** Show "Needs Review" badge when true. Add "Mark as Reviewed" action button that PATCHes `needs_review: false`.
+**What people do:** Use React Router v7 in framework mode because "it's the new way" (it evolved from Remix).
+**Why it's wrong:** Framework mode adds SSR, server loaders, server actions -- none of which frontend2 needs. It requires the `@react-router/dev` Vite plugin with its own file conventions (`app/root.tsx`, `app/routes.ts`), adding complexity for no benefit in a pure SPA.
+**Do this instead:** Use library mode with `createBrowserRouter`. Import from `react-router` (not `react-router-dom`, which is deprecated in v7). Define routes as a code array with lazy imports for code splitting.
 
-4. **Quick capture review page (or section):** A dedicated view at `/dashboard/items?needs_review=true` or a tab on the items page. Shows quick-captured items with photo thumbnails, name, auto-SKU. Each row has an "Edit" action that opens the full edit form for detail completion.
+### Anti-Pattern 3: next-intl in a Vite SPA
 
-**The review flow:**
-```
-Quick capture (mobile, offline) -> Items created with needs_review=true
-  |
-  v
-Desktop user visits items page, clicks "Needs Review" filter
-  |
-  v
-Sees list of quick-captured items with photos but minimal details
-  |
-  v
-Clicks item -> Full edit form (existing edit-item-wizard)
-  |
-  v
-Fills in details (brand, model, serial, etc) -> saves -> needs_review set to false
-```
+**What people do:** Try to use the same i18n library as frontend1 (`next-intl`) for consistency.
+**Why it's wrong:** `next-intl` is tightly coupled to Next.js middleware, server components, and `[locale]` URL path segments. It does not work outside Next.js.
+**Do this instead:** Use `react-i18next` + `i18next`. It is the standard for React SPAs. Translation JSON structure can be similar but files are independent. No URL-based locale prefix needed -- store locale in user preferences (already persisted in backend `users.language` column).
 
-### 9. Location/Inventory Integration (Deferred to Phase 2)
+### Anti-Pattern 4: Running Backend with Two APP_URLs for OAuth
 
-**Important architectural note:** The `warehouse.items` table does NOT have a `location_id` column. Location is tracked via the `warehouse.inventory` table -- items have inventory entries that are placed in locations/containers.
+**What people do:** Try to make the backend serve both frontends for OAuth by switching `APP_URL` dynamically per request.
+**Why it's wrong:** `APP_URL` is a startup config read once at boot, not a per-request setting. OAuth state cookies and PKCE verifiers are tied to the callback URL.
+**Do this instead:** In dev, use email/password auth for frontend2 (or temporarily change `APP_URL` to `:3001`). In prod, put both frontends behind the same origin (Angie) so `APP_URL` works for both via path routing.
 
-**For quick capture MVP:** Only apply `category_id` from batch settings to the item itself. Location/container from batch settings are stored in sessionStorage but NOT used to create inventory entries in Phase 1.
+## Scaling Considerations
 
-**Why defer:** Creating an inventory entry requires a separate mutation that depends on:
-1. The item existing (must sync first)
-2. The location existing (may also be a temp ID if created offline)
-3. Container existing (optional, same dependency issue)
+| Scale | Architecture Adjustments |
+|-------|--------------------------|
+| Single user (dev) | Current architecture is fine. Vite dev server + Go backend. |
+| 10-100 users | Add Angie routing for frontend2 in prod. Static SPA served from nginx is effectively free to scale. |
+| Frontend2 replaces frontend1 | Consider adding SSR (switch to framework mode), PWA/offline (port sync infra). These are v3.0+ concerns. |
 
-The `dependsOn` mechanism in `useOfflineMutation` and `SyncManager.areDependenciesSynced()` already supports this, but it adds failure modes and complexity. Better to ship item capture first, then add inventory auto-creation as enhancement.
+### Scaling Priorities
 
-**Phase 2 approach:** After item mutation syncs, auto-create an inventory entry:
-```typescript
-const itemTempId = await mutate(itemPayload);
-const inventoryTempId = await mutate(
-  { item_id: itemTempId, location_id: batchSettings.locationId, quantity: 1 },
-  undefined,
-  [itemTempId] // dependsOn: wait for item to sync first
-);
-```
-
-## Data Flow: Complete Offline Capture Sequence
-
-```
- 1. User taps "Quick Capture" in FAB
- 2. Route: /dashboard/items/quick-capture
- 3. Camera opens immediately (InlinePhotoCapture with capture="environment")
- 4. User snaps photo -> compressed File blob stored in component state
- 5. User types item name (single field, auto-focused after photo capture)
- 6. User taps "Save & Next"
- 7. Client generates SKU: "QC-m2k4f7a-a3b1"
- 8. useOfflineMutation queues to IndexedDB mutationQueue:
-    { entity: "items", operation: "create",
-      payload: { sku, name, needs_review: true, category_id } }
- 9. Optimistic item written to IndexedDB items store with _pending: true
-10. Photo blob stored to quickCapturePhotos store:
-    { tempItemId: idempotencyKey, blob, status: "pending" }
-11. Form resets, camera re-opens for next item
-12. Counter shows "1 item captured"
-13. Steps 3-12 repeat for each item
-
---- Later, when online ---
-
-14. SyncManager.processQueue() runs (triggered by online event or visibility change)
-15. Processes items mutations in ENTITY_SYNC_ORDER (after categories)
-16. POST /workspaces/{wsId}/items with JSON payload
-    -> Server validates SKU uniqueness, creates item, returns { id: "real-server-id" }
-17. resolvedIds.set(tempId, realServerId)
-18. After all mutations processed, SyncManager.processQueuedPhotos() runs
-19. For each entry in quickCapturePhotos matching a resolved tempId:
-    POST /workspaces/{wsId}/items/{realServerId}/photos with FormData
-20. On success: photo entry removed from quickCapturePhotos store
-21. Broadcast MUTATION_SYNCED + PHOTO_UPLOADED events for UI feedback
-22. PendingUploadsIndicator updates to reflect progress
-```
-
-## Anti-Patterns to Avoid
-
-### Anti-Pattern 1: Reusing CreateItemWizard for Quick Capture
-**What:** Trying to add a "quick mode" toggle to the existing 3-step wizard.
-**Why bad:** The wizard uses direct API calls (`itemsApi.create()`), has no offline support, uses `MultiStepForm` with form draft persistence and iOS keyboard handling. Quick capture needs a fundamentally different UX loop (capture -> save -> repeat immediately) not a multi-step form submission.
-**Instead:** Build a new single-screen component that uses `useOfflineMutation` directly.
-
-### Anti-Pattern 2: Storing Photos as Base64 in Mutation Payload
-**What:** Converting photos to base64 strings and including them in the mutation queue payload.
-**Why bad:** Base64 inflates size by 33% (2MB photo -> 2.7MB string). The mutation queue is designed for JSON payloads. SyncManager sends mutations via `fetch` with `Content-Type: application/json` -- you cannot send multipart FormData through the existing mutation queue pipeline.
-**Instead:** Store photo Blobs in a separate IndexedDB store. Chain photo upload (multipart POST) after item sync completes.
-
-### Anti-Pattern 3: Client-Side SKU Validation Against Server
-**What:** Checking SKU uniqueness by calling `itemsApi.search()` before saving offline.
-**Why bad:** Defeats the purpose of offline-first. The whole point is capturing without network.
-**Instead:** Use timestamp+random SKU pattern that is statistically unique. Let the server validate at sync time. Handle the rare collision gracefully with a retry.
-
-### Anti-Pattern 4: Using localStorage for Photo Blobs
-**What:** Serializing photos and storing in localStorage.
-**Why bad:** localStorage has a 5MB hard limit across ALL keys, is synchronous (blocks main thread during writes), and only stores strings (requiring base64 encoding which inflates size).
-**Instead:** IndexedDB stores `Blob` objects natively without serialization overhead and has much higher quotas (50MB minimum, typically hundreds of MB).
-
-### Anti-Pattern 5: Creating Inventory Entries in Phase 1
-**What:** Auto-creating inventory records (for location placement) as part of the same quick capture action.
-**Why bad:** Adds cross-entity dependency complexity. The inventory mutation depends on items + locations + containers in the sync order. The `dependsOn` mechanism works but adds failure modes (cascade failures if item sync fails). Users may not even want inventory tracking for every captured item.
-**Instead:** Phase 1 captures items only (with category from batch). Location/inventory is a Phase 2 enhancement or handled during "needs review" desktop completion.
-
-## Suggested Build Order
-
-Build order follows the dependency chain. Each phase produces a testable increment.
-
-### Phase 1: Backend Schema + API (no frontend dependency)
-1. Add `needs_review` column via migration
-2. Update item entity, CreateInput, UpdateInput, Reconstruct, handler, repository
-3. Add `?needs_review=true` filter to list endpoint
-4. Update sqlc queries (insert, update, select, list)
-5. Unit tests for new field + filter
-
-### Phase 2: Auto-SKU + Batch Settings Hooks (no backend dependency)
-1. `useQuickCaptureSKU` hook with `QC-{ts}-{rand}` generation
-2. `useBatchSettings` hook with sessionStorage persistence
-3. Unit tests for both hooks
-
-### Phase 3: Quick Capture Photo Store (IndexedDB)
-1. Add `quickCapturePhotos` store to `OfflineDBSchema`
-2. Bump DB version from 4 to 5 in `offline-db.ts`
-3. CRUD helper functions: `storeQuickCapturePhoto`, `getPhotosForItem`, `deletePhoto`
-4. Unit tests for photo store operations
-
-### Phase 4: Quick Capture UI
-1. `QuickCapturePage` component at `/dashboard/items/quick-capture`
-2. Integrate `InlinePhotoCapture` (reuse), name input, batch settings bar
-3. Wire up `useOfflineMutation` for item creation with `needs_review: true`
-4. Wire up photo blob storage to `quickCapturePhotos` store
-5. Save & Next loop with capture counter and haptic feedback
-6. Add "Quick Capture" action to `useFABActions`
-
-### Phase 5: SyncManager Photo Chaining
-1. Add `uploadQueuedPhotos` method to `SyncManager`
-2. Add `processQueuedPhotos` phase after entity sync loop
-3. Handle upload failures, retries, and partial success
-4. Broadcast photo sync events for `PendingUploadsIndicator`
-5. Integration tests for the full chain: queue item -> sync -> upload photos
-
-### Phase 6: Needs Review UI
-1. Add `needs_review` to frontend `Item`, `ItemCreate`, `ItemUpdate` types
-2. Add "Needs Review" filter chip to items list `FilterBar`
-3. Badge on item detail page, "Mark as Reviewed" action
-4. Inline editing for quick detail completion from the items list
-
-### Phase 7: Polish + Edge Cases
-1. Storage quota warning (check `navigator.storage.estimate()` before each capture)
-2. SKU collision handling at sync time (regenerate SKU on 400/422 and retry)
-3. Haptic feedback on capture success via existing `triggerHaptic`
-4. i18n: add all new translation keys to en.json, et.json, ru.json
-5. E2E tests for the quick capture flow (Playwright)
-
-## Project Structure (New Files)
-
-### Frontend
-```
-frontend/
-  app/[locale]/(dashboard)/dashboard/items/
-    quick-capture/
-      page.tsx                          # NEW: Quick capture route
-  components/items/
-    quick-capture/
-      quick-capture-page.tsx            # NEW: Main capture component
-      batch-settings-bar.tsx            # NEW: Sticky settings pills
-      capture-counter.tsx               # NEW: Session counter display
-  lib/hooks/
-    use-batch-settings.ts               # NEW: sessionStorage batch state
-    use-quick-capture-sku.ts            # NEW: Auto-SKU generation
-  lib/db/
-    quick-capture-photos.ts             # NEW: Photo blob CRUD helpers
-    types.ts                            # MODIFY: Add quickCapturePhotos store
-    offline-db.ts                       # MODIFY: Bump version, add store
-  lib/sync/
-    sync-manager.ts                     # MODIFY: Add photo chaining
-  lib/hooks/
-    use-fab-actions.tsx                 # MODIFY: Add quick capture action
-  lib/types/
-    items.ts                            # MODIFY: Add needs_review field
-```
-
-### Backend
-```
-backend/
-  db/migrations/
-    NNN_add_needs_review.sql            # NEW: Add needs_review column
-  db/queries/
-    items.sql                           # MODIFY: Add needs_review to queries
-  internal/domain/warehouse/item/
-    entity.go                           # MODIFY: Add needsReview field
-    service.go                          # MODIFY: Add to CreateInput/UpdateInput
-    handler.go                          # MODIFY: Accept needs_review, add filter
-    repository.go                       # MODIFY: Add to interface if needed
-```
+1. **First bottleneck:** Will not be frontend2. It is a static SPA -- nginx serves pre-built files. Backend API and database are the shared bottleneck, already handled by frontend1's architecture.
+2. **Second bottleneck:** Bundle size. Use React Router lazy imports for code splitting. Vite's tree-shaking handles the rest. Monitor with `vite-plugin-visualizer`.
 
 ## Sources
 
-- Direct codebase analysis of:
-  - `frontend/components/items/create-item-wizard/index.tsx` -- current item creation flow, direct API calls
-  - `frontend/components/items/create-item-wizard/schema.ts` -- form schema, SKU required
-  - `frontend/lib/hooks/use-offline-mutation.ts` -- offline mutation queue infrastructure
-  - `frontend/lib/sync/sync-manager.ts` -- sync processing, entity ordering, dependency resolution, ID mapping
-  - `frontend/lib/sync/mutation-queue.ts` -- queue operations, retry config
-  - `frontend/components/forms/inline-photo-capture.tsx` -- camera capture with compression
-  - `frontend/components/forms/multi-step-form.tsx` -- wizard framework (not reused)
-  - `frontend/components/fab/floating-action-button.tsx` -- FAB radial menu, variable action count
-  - `frontend/lib/hooks/use-fab-actions.tsx` -- route-aware FAB actions, existing patterns
-  - `frontend/lib/db/types.ts` -- IndexedDB schema v4, 10 stores, mutation queue types
-  - `frontend/lib/db/offline-db.ts` -- DB singleton, version upgrades, persistent storage
-  - `frontend/app/sw.ts` -- service worker PhotoUploadQueue (separate DB)
-  - `frontend/lib/contexts/offline-context.tsx` -- pending uploads tracking
-  - `frontend/lib/types/items.ts` -- Item, ItemCreate, ItemUpdate interfaces
-  - `frontend/lib/api/items.ts` -- items API client
-  - `frontend/lib/api/item-photos.ts` -- photo upload via XHR with progress
-  - `backend/internal/domain/warehouse/item/entity.go` -- Item domain model, all fields
-  - `backend/internal/domain/warehouse/item/service.go` -- SKU uniqueness validation, CreateInput
-  - `backend/internal/domain/warehouse/item/handler.go` -- HTTP handler, Huma framework
-  - `backend/db/schema.sql` -- warehouse.items table definition
+- [React Router Modes Documentation](https://reactrouter.com/start/modes) - Library vs Framework vs Data mode
+- [React Router Installation (Data/Library mode)](https://reactrouter.com/start/data/installation) - createBrowserRouter setup
+- [react-i18next Quick Start](https://react.i18next.com/guides/quick-start) - i18n for React SPAs
+- Backend CORS config: `backend/internal/api/middleware/cors.go` (`:3001` already in default allowed origins)
+- Backend OAuth flow: `backend/internal/domain/auth/oauth/handler.go` (APP_URL-based redirects)
+- Backend router: `backend/internal/api/router.go` (complete API surface)
+- Production proxy: `docker/angie/angie.conf` (reverse proxy routing pattern)
+- Frontend1 API client: `frontend/lib/api/client.ts` (pattern to adapt for Vite)
+- Frontend1 OAuth callback: `frontend/app/[locale]/(auth)/callback/page.tsx` (exchange flow to replicate)
+- Frontend1 SSE context: `frontend/lib/contexts/sse-context.tsx` (EventSource pattern to simplify)
+- Frontend1 i18n config: `frontend/i18n/config.ts` (locale list: en, et, ru)
+- Docker Compose: `docker-compose.yml` (production service topology)
 
 ---
-*Architecture research for: Quick-Capture Integration*
-*Researched: 2026-02-27*
+*Architecture research for: Retro-styled second frontend (SPA) for existing Go backend*
+*Researched: 2026-04-08*
