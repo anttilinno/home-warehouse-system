@@ -1,40 +1,42 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.9
-milestone_name: Quick Capture
-status: milestone_complete
-stopped_at: v1.9 milestone archived 2026-03-14 — ready for next milestone
-last_updated: "2026-03-14T22:00:00.000Z"
-last_activity: 2026-02-27 -- Completed 45-02 (Full QuickCapturePage with camera capture and save-reset loop)
+milestone: v2.0
+milestone_name: Retro Frontend
+status: planning
+stopped_at: Phase 48 context gathered
+last_updated: "2026-04-08T09:13:00.702Z"
+last_activity: 2026-04-08 -- v2.0 roadmap created (6 phases, 33 requirements)
 progress:
-  total_phases: 5
-  completed_phases: 5
-  total_plans: 9
-  completed_plans: 9
-  percent: 100
+  total_phases: 6
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
+  percent: 80
 ---
 
 # Project State: Home Warehouse System
 
 ## Project Reference
 
-See: `.planning/PROJECT.md` (updated 2026-03-14)
+See: `.planning/PROJECT.md` (updated 2026-04-08)
 
 **Core value:** Reliable inventory access anywhere -- online or offline -- with seamless sync
-**Current focus:** Planning next milestone (v1.9 complete)
+**Current focus:** v2.0 Retro Frontend -- Phase 48 (Project Scaffold)
 
 ## Current Position
 
-Milestone: v1.9 Quick Capture -- COMPLETE (archived 2026-03-14)
-Status: All 5 phases, 9 plans complete — ready for next milestone
-Last activity: 2026-03-14 -- v1.9 milestone archived
+Phase: 48 of 53 (Project Scaffold) -- first phase of v2.0 milestone
+Plan: 0 of TBD in current phase
+Status: Ready to plan
+Last activity: 2026-04-08 -- v2.0 roadmap created (6 phases, 33 requirements)
 
-Progress: [██████████] 100%
+Progress: [========================------] 80%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 120 (v1 through v1.9 Phase 45-02)
+
+- Total plans completed: 121
 - Average duration: ~15 min per plan
 - Total execution time: ~30 hours
 
@@ -51,51 +53,18 @@ Progress: [██████████] 100%
 | v1.6 | 5 | 9 | Complete |
 | v1.7 | 5 | 7 | Complete |
 | v1.8 | 3 | 7 | Complete |
-| v1.9 | 5 | TBD | In progress |
-
-**Recent plan metrics:**
-
-| Phase-Plan | Duration | Tasks | Files |
-|------------|----------|-------|-------|
-| 44-01 | 2min | 2 | 5 |
-| 44-02 | 2min | 2 | 2 |
-| 45-01 | 2min | 2 | 6 |
-| 45-02 | 2min | 1 | 1 |
-| Phase 46 P01 | 5 | 2 tasks | 6 files |
-| Phase 47 P01 | 15 | 3 tasks | 6 files |
-| Phase 47 P02 | 2min | 2 tasks | 4 files |
-| Phase 47 P02 | 5 | 3 tasks | 4 files |
+| v1.9 | 5 | 9 | Complete |
+| v2.0 | 6 | 0/TBD | Planned |
 
 ## Accumulated Context
 
 ### Decisions
 
-See `.planning/PROJECT.md` Key Decisions table for full list.
-Recent decisions affecting current work:
-
-- [v1.9 research]: Single-route design for iOS camera permission persistence
-- [v1.9 research]: Photos separate from mutation queue -- new IndexedDB store, chained upload after item sync
-- [v1.9 research]: Zero new npm dependencies
-- [v1.9 research]: needs_review is a simple boolean column with default false
-- [43-01]: Used shared.Pagination for FindNeedingReview to match existing patterns
-- [43-01]: needsReview parameter placed before createdAt/updatedAt in Reconstruct
-- [43-02]: Used bool (not *bool) for needs_review query param due to huma framework constraint
-- [Phase 44]: CapturePhotoStatus as union type for tree-shaking; auto-increment key for quickCapturePhotos IndexedDB performance
-- [44-02]: captureCount not persisted to sessionStorage -- ephemeral within provider lifecycle
-- [44-02]: Display names resolved from IndexedDB cache for offline support
-- [45-01]: Quick Capture FAB action placed first in items page actions and included in default actions
-- [45-02]: Category/Location sheets load data fresh from IndexedDB on each open for offline reliability
-- [45-02]: Object URLs revoked in three places (removal, save reset, unmount) to prevent memory leaks
-- [Phase 46]: Pre-write resolvedItemId before upload loop ensures stateless retry even if process interrupted mid-loop
-- [Phase 46]: Per-photo delete replaces bulk deletePhotosByTempId — failed photos survive with status=failed+resolvedItemId for retry via status index
-- [Phase 47-01]: Session thumbnails stored as object URLs (strings) in context, not Blob objects
-- [Phase 47-01]: needs_review passed as showNeedsReview || undefined to avoid spurious false query param
-- [Phase 47-01]: Needs Review and Show Archived are mutually exclusive — toggling either resets the other
-- [Phase 47-02]: handleMarkAsReviewed uses itemsApi.update(wsId, id, { needs_review: false }) — no new API method needed
-- [Phase 47-02]: Amber banner placed between header and main content grid; isMarkingReviewed prevents double-tap
-- [Phase 47-02]: handleMarkAsReviewed uses itemsApi.update(wsId, id, { needs_review: false }) — no new API method needed
-- [Phase 47-02]: Amber banner placed between header row and main content grid; isMarkingReviewed prevents double-tap
-- [Phase 47-02]: i18n parity enforced: every key added to en.json must also be added to et.json and ru.json in the same commit
+- v2.0: React Router v7 library mode (not framework mode) -- SPA sufficient, no SSR needed
+- v2.0: Lingui v5 for i18n -- compile-time catalogs, EN + ET to start
+- v2.0: Fully custom component library -- shadcn/ui fights retro aesthetic
+- v2.0: Online-only for this milestone -- reduces 30-40% complexity
+- v2.0: Backend CORS origin update needed for Vite dev server (minor, Phase 48)
 
 ### Pending Todos
 
@@ -107,20 +76,16 @@ Recent decisions affecting current work:
 ### Blockers/Concerns
 
 Carried forward:
-- Safari iOS manual testing pending
-- CGO_ENABLED=0 build has webp library issue -- dev builds work fine
-- Jobs package coverage limited by pgxpool/Redis requirements
-- Google Consent Screen verification can take days/weeks (testing mode supports 100 users)
 
-v1.9 specific:
-- SyncManager.resolvedIds persistence across page reloads needs code verification before Phase 46
-- iOS storage eviction under real device conditions -- validate compression parameters in Phase 44
+- v1.9 phases 46-47 still pending -- v2.0 is independent (separate `/frontend2`), no blocker
+- Google Consent Screen verification can take days/weeks (testing mode supports 100 users)
 
 ## Session Continuity
 
-Last session: 2026-03-14T20:24:02.413Z
-Stopped at: Completed 47-02 (Needs Review banner + i18n sweep — COMP-04)
-Next step: Phase 45 complete. Next phase in v1.9 milestone.
+Last session: 2026-04-08T09:13:00.699Z
+Stopped at: Phase 48 context gathered
+Next step: Plan Phase 48 (Project Scaffold)
+Resume file: .planning/phases/48-project-scaffold/48-CONTEXT.md
 
 ---
-*Updated: 2026-02-27 after completing 45-02 (Full QuickCapturePage with camera capture, save-reset loop, feedback)*
+*Updated: 2026-04-08 after v2.0 Retro Frontend roadmap creation*
