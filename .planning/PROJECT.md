@@ -145,7 +145,14 @@ Reliable inventory access anywhere — online or offline — with seamless sync.
 
 ### Active
 
-*(No active milestone — v1.9 shipped. Run `/gsd:new-milestone` to start the next one.)*
+**v2.0 Retro Frontend (started 2026-04-08):**
+
+- Second standalone frontend (`/frontend2`) with retro industrial game UI aesthetic
+- Vite + React 19 + Tailwind CSS 4 + React Router v7 stack
+- Custom component library: thick outlines, hazard stripes, beveled buttons, industrial panels, color-coded icons
+- 1:1 feature parity with existing frontend (auth, items, loans, scanning, settings, etc.)
+- i18n: EN + ET (extendable architecture)
+- Online-only (no offline/PWA for this milestone)
 
 ### Out of Scope
 
@@ -159,14 +166,26 @@ Reliable inventory access anywhere — online or offline — with seamless sync.
 - Storing raw OAuth tokens — app never calls provider APIs after login
 - Popup/window-based OAuth flow — popup blockers, mobile issues, PWA incompatibility
 
+## Current Milestone: v2.0 Retro Frontend
+
+**Goal:** Build a second, standalone frontend (`/frontend2`) with a retro industrial game UI aesthetic — full feature parity with the existing frontend, online-only to start.
+
+**Target features:**
+- Custom retro component library (BAM-inspired design language)
+- Vite + React 19 + Tailwind CSS 4 + React Router v7
+- 1:1 feature parity with frontend1
+- i18n: EN + ET (extendable)
+- Online-only (no offline/PWA)
+
 ## Current State
 
 **Shipped:** v1.9 Quick Capture (2026-03-14)
-**Active:** Planning next milestone
+**Active:** v2.0 Retro Frontend (started 2026-04-08)
 
 **Tech stack:**
 - Backend: Go 1.25, Chi, sqlc, PostgreSQL, golang.org/x/oauth2
-- Frontend: Next.js 16, React 19, shadcn/ui, Tailwind CSS 4
+- Frontend 1: Next.js 16, React 19, shadcn/ui, Tailwind CSS 4
+- Frontend 2: Vite, React 19, Tailwind CSS 4, React Router v7 (retro UI)
 - PWA: Serwist service worker, IndexedDB (idb v8, v5 schema), UUIDv7
 - Mobile UX: Fuse.js 7.1.0, @yudiel/react-qr-scanner, ios-haptics, motion v12.27, AudioContext
 
@@ -264,4 +283,4 @@ Reliable inventory access anywhere — online or offline — with seamless sync.
 - Nyquist compliance PARTIAL for all v1.9 phases — run `/gsd:validate-phase 43-47` retroactively
 
 ---
-*Last updated: 2026-03-14 after v1.9 milestone completion*
+*Last updated: 2026-04-08 after v2.0 milestone start*
