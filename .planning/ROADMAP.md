@@ -12,6 +12,7 @@
 - ✅ **v1.7 Modular Settings** — Phases 35-39 (shipped 2026-02-13)
 - ✅ **v1.8 Social Login** — Phases 40-42 (shipped 2026-02-22)
 - ✅ **v1.9 Quick Capture** — Phases 43-47 (shipped 2026-03-14)
+- 📋 **v2.0 Retro Frontend** — Phases 48-53 (planned)
 
 ## Phases
 
@@ -160,7 +161,99 @@ See `.planning/milestones/v1.9-ROADMAP.md` for full details.
 
 </details>
 
+### 📋 v2.0 Retro Frontend (Planned)
+
+**Milestone Goal:** Build a second standalone frontend (`/frontend2`) with a retro industrial game UI aesthetic -- Vite + React 19 + Tailwind CSS 4 + React Router v7, custom component library, 1:1 feature parity foundation (auth, dashboard, settings), i18n EN + ET, online-only.
+
+- [ ] **Phase 48: Project Scaffold** - Vite + React 19 project with routing, Tailwind retro tokens, Lingui i18n, and backend proxy
+- [ ] **Phase 49: Auth & API Client** - Login, register, logout, route protection, and JWT-based API client
+- [ ] **Phase 50: Design System** - Ten retro-styled components (buttons, panels, inputs, cards, dialogs, tables, tabs, toasts, badges) with demo page
+- [ ] **Phase 51: App Layout** - Retro sidebar navigation, top bar, mobile-responsive shell, loading states, and error boundaries
+- [ ] **Phase 52: Dashboard** - HUD-style inventory stats, retro terminal activity feed, and quick-access action cards
+- [ ] **Phase 53: Settings Hub** - Eight settings subpages with retro panel navigation (profile, security, appearance, language, formats, notifications, data)
+
+## Phase Details
+
+### Phase 48: Project Scaffold
+**Goal**: A working Vite + React 19 development environment with routing, retro design tokens, i18n extraction, and backend API proxy
+**Depends on**: Nothing (first phase of v2.0)
+**Requirements**: SCAF-01, SCAF-02, SCAF-03, SCAF-04
+**Success Criteria** (what must be TRUE):
+  1. Running `bun run dev` in `/frontend2` starts a Vite dev server that proxies API requests to the Go backend
+  2. Navigating between at least two placeholder routes works via React Router v7 (library mode) without full page reloads
+  3. Tailwind utility classes using retro design tokens (e.g., `bg-retro-cream`, `border-retro-thick`) render correctly in the browser
+  4. A test string wrapped in Lingui `t` macro renders in English by default and Estonian when locale is switched
+**Plans:** 2 plans
+Plans:
+- [ ] 48-01-PLAN.md — Scaffold Vite + React 19 project with Tailwind CSS 4 retro design tokens
+- [ ] 48-02-PLAN.md — React Router v7 routing, Lingui i18n, and placeholder pages
+
+### Phase 49: Auth & API Client
+**Goal**: Users can log in, register, and log out, with protected routes redirecting unauthenticated visitors to the login page
+**Depends on**: Phase 48
+**Requirements**: AUTH-01, AUTH-02, AUTH-03, AUTH-04, AUTH-05
+**Success Criteria** (what must be TRUE):
+  1. User can log in with email and password and land on an authenticated page
+  2. User visiting a protected route without a session is redirected to the login page
+  3. User can register a new account and be logged in automatically
+  4. User can log out from the app and is returned to the login page
+  5. API client automatically refreshes expired JWT tokens via HttpOnly cookie without user action
+**Plans**: TBD
+**UI hint**: yes
+
+### Phase 50: Design System
+**Goal**: A complete set of retro-styled UI primitives that all feature pages build on, visually validated through a demo page
+**Depends on**: Phase 48
+**Requirements**: DS-01, DS-02, DS-03, DS-04, DS-05, DS-06, DS-07, DS-08, DS-09, DS-10
+**Success Criteria** (what must be TRUE):
+  1. All ten retro components (Button, Panel, Input, Card, Dialog, Table, Tabs, Toast, Badge, HazardStripe) render with thick outlines, beveled borders, and industrial styling
+  2. RetroButton shows distinct visual states for default, hover, and pressed, with color variants (primary, danger, neutral)
+  3. RetroInput displays monospace text, icon prefixes, and inline validation error states
+  4. The `/demo` page showcases every component with interactive states, serving as a living style guide
+  5. Components accept standard props (className, children, disabled, etc.) and compose cleanly with each other
+**Plans**: TBD
+**UI hint**: yes
+
+### Phase 51: App Layout
+**Goal**: Users navigate the app through a retro-styled sidebar and top bar that adapts to mobile screens, with consistent loading and error states
+**Depends on**: Phase 49, Phase 50
+**Requirements**: LAY-01, LAY-02, LAY-03
+**Success Criteria** (what must be TRUE):
+  1. Authenticated users see a sidebar with navigation links and a top bar with user info, styled in the retro industrial aesthetic
+  2. On mobile viewports, the sidebar collapses into a hamburger menu or bottom navigation that preserves the retro look
+  3. Route transitions show a retro-styled loading indicator, and uncaught errors display a retro error boundary page instead of a white screen
+**Plans**: TBD
+**UI hint**: yes
+
+### Phase 52: Dashboard
+**Goal**: Users land on a retro HUD-style dashboard showing inventory stats, recent activity, and quick-access actions
+**Depends on**: Phase 51
+**Requirements**: DASH-01, DASH-02, DASH-03
+**Success Criteria** (what must be TRUE):
+  1. User sees a dashboard with retro HUD panels displaying total items, categories, and locations counts from the API
+  2. A retro terminal-styled activity feed shows the most recent inventory actions (adds, edits, loans)
+  3. Quick-access cards for "Add Item", "Scan Barcode", and "View Loans" are visible and navigate to their respective routes
+**Plans**: TBD
+**UI hint**: yes
+
+### Phase 53: Settings Hub
+**Goal**: Users can manage all account and app preferences through eight retro-styled settings subpages
+**Depends on**: Phase 51
+**Requirements**: SET-01, SET-02, SET-03, SET-04, SET-05, SET-06, SET-07, SET-08
+**Success Criteria** (what must be TRUE):
+  1. Settings hub displays eight grouped navigation rows (profile, security, appearance, language, formats, notifications, data) with retro panel styling
+  2. User can edit their name, email, and avatar from the Profile subpage and see changes persist after page reload
+  3. User can change their password and view active sessions from the Security subpage
+  4. Appearance toggle switches between retro-light and retro-dark themes, and Language toggle switches between English and Estonian with all UI strings updating
+  5. Regional Formats, Notifications, and Data subpages render their respective preference controls and save changes to the API
+**Plans**: TBD
+**UI hint**: yes
+
 ## Progress
+
+**Execution Order:**
+Phases execute in numeric order: 48 -> 49 -> 50 -> 51 -> 52 -> 53
+(Note: Phase 49 and 50 depend only on 48, so could run in parallel if desired.)
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
@@ -178,9 +271,15 @@ See `.planning/milestones/v1.9-ROADMAP.md` for full details.
 | 45 | v1.9 | 2/2 | Complete | 2026-02-27 |
 | 46 | v1.9 | 1/1 | Complete | 2026-03-14 |
 | 47 | v1.9 | 2/2 | Complete | 2026-03-14 |
+| 48. Scaffold | v2.0 | 0/2 | Not started | - |
+| 49. Auth & API Client | v2.0 | 0/TBD | Not started | - |
+| 50. Design System | v2.0 | 0/TBD | Not started | - |
+| 51. App Layout | v2.0 | 0/TBD | Not started | - |
+| 52. Dashboard | v2.0 | 0/TBD | Not started | - |
+| 53. Settings Hub | v2.0 | 0/TBD | Not started | - |
 
-**Total:** 47 phases complete (130 plans executed) across 10 milestones
+**Total:** 47 phases complete (130 plans executed) across 10 milestones + 6 phases planned for v2.0
 
 ---
 *Roadmap created: 2026-01-24*
-*Last updated: 2026-03-14 after v1.9 milestone completion*
+*Last updated: 2026-04-08 after Phase 48 planning (2 plans created)*
