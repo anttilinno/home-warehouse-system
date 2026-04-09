@@ -1,15 +1,23 @@
+import { useEffect, useState } from "react";
+import { BrowserRouter } from "react-router";
+import { I18nProvider } from "@lingui/react";
+import { i18n, loadCatalog, defaultLocale } from "@/lib/i18n";
+import { AppRoutes } from "@/routes";
+
 export default function App() {
+  const [ready, setReady] = useState(false);
+
+  useEffect(() => {
+    loadCatalog(defaultLocale).then(() => setReady(true));
+  }, []);
+
+  if (!ready) return null;
+
   return (
-    <div className="min-h-screen bg-retro-charcoal flex items-center justify-center">
-      <div className="bg-retro-cream border-retro-thick border-retro-ink shadow-retro-raised p-lg max-w-[640px] w-full">
-        <div className="bg-hazard-stripe h-[8px] mb-md" />
-        <h1 className="text-[20px] font-bold uppercase text-retro-ink">
-          HOME WAREHOUSE
-        </h1>
-        <p className="text-retro-ink mt-sm">
-          System online. Navigate to a section to begin.
-        </p>
-      </div>
-    </div>
+    <I18nProvider i18n={i18n}>
+      <BrowserRouter>
+        <AppRoutes />
+      </BrowserRouter>
+    </I18nProvider>
   );
 }
