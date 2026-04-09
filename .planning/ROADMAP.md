@@ -165,7 +165,7 @@ See `.planning/milestones/v1.9-ROADMAP.md` for full details.
 
 **Milestone Goal:** Build a second standalone frontend (`/frontend2`) with a retro industrial game UI aesthetic -- Vite + React 19 + Tailwind CSS 4 + React Router v7, custom component library, 1:1 feature parity foundation (auth, dashboard, settings), i18n EN + ET, online-only.
 
-- [ ] **Phase 48: Project Scaffold** - Vite + React 19 project with routing, Tailwind retro tokens, Lingui i18n, and backend proxy
+- [x] **Phase 48: Project Scaffold** - Vite + React 19 project with routing, Tailwind retro tokens, Lingui i18n, and backend proxy (completed 2026-04-09)
 - [ ] **Phase 49: Auth & API Client** - Login, register, logout, route protection, and JWT-based API client
 - [ ] **Phase 50: Design System** - Ten retro-styled components (buttons, panels, inputs, cards, dialogs, tables, tabs, toasts, badges) with demo page
 - [ ] **Phase 51: App Layout** - Retro sidebar navigation, top bar, mobile-responsive shell, loading states, and error boundaries
@@ -183,10 +183,10 @@ See `.planning/milestones/v1.9-ROADMAP.md` for full details.
   2. Navigating between at least two placeholder routes works via React Router v7 (library mode) without full page reloads
   3. Tailwind utility classes using retro design tokens (e.g., `bg-retro-cream`, `border-retro-thick`) render correctly in the browser
   4. A test string wrapped in Lingui `t` macro renders in English by default and Estonian when locale is switched
-**Plans:** 2 plans
+**Plans:** 2/2 plans complete
 Plans:
-- [ ] 48-01-PLAN.md — Scaffold Vite + React 19 project with Tailwind CSS 4 retro design tokens
-- [ ] 48-02-PLAN.md — React Router v7 routing, Lingui i18n, and placeholder pages
+- [x] 48-01-PLAN.md — Scaffold Vite + React 19 project with Tailwind CSS 4 retro design tokens
+- [x] 48-02-PLAN.md — React Router v7 routing, Lingui i18n, and placeholder pages
 
 ### Phase 49: Auth & API Client
 **Goal**: Users can log in, register, and log out, with protected routes redirecting unauthenticated visitors to the login page
@@ -271,7 +271,7 @@ Phases execute in numeric order: 48 -> 49 -> 50 -> 51 -> 52 -> 53
 | 45 | v1.9 | 2/2 | Complete | 2026-02-27 |
 | 46 | v1.9 | 1/1 | Complete | 2026-03-14 |
 | 47 | v1.9 | 2/2 | Complete | 2026-03-14 |
-| 48. Scaffold | v2.0 | 0/2 | Not started | - |
+| 48. Scaffold | v2.0 | 2/2 | Complete    | 2026-04-09 |
 | 49. Auth & API Client | v2.0 | 0/TBD | Not started | - |
 | 50. Design System | v2.0 | 0/TBD | Not started | - |
 | 51. App Layout | v2.0 | 0/TBD | Not started | - |
