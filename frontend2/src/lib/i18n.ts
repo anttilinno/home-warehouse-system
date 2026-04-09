@@ -1,4 +1,4 @@
-import { i18n } from "@lingui/core";
+import { i18n, type Messages } from "@lingui/core";
 
 export const locales = {
   en: "English",
@@ -9,8 +9,13 @@ export type Locale = keyof typeof locales;
 
 export const defaultLocale: Locale = "en";
 
+const catalogImports: Record<string, () => Promise<{ messages: Messages }>> = {
+  en: () => import("../../locales/en/messages.ts"),
+  et: () => import("../../locales/et/messages.ts"),
+};
+
 export async function loadCatalog(locale: string) {
-  const { messages } = await import(`../locales/${locale}/messages.po`);
+  const { messages } = await catalogImports[locale]();
   i18n.load(locale, messages);
   i18n.activate(locale);
 }

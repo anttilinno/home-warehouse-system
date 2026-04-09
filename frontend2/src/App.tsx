@@ -8,7 +8,12 @@ export default function App() {
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    loadCatalog(defaultLocale).then(() => setReady(true));
+    loadCatalog(defaultLocale)
+      .then(() => setReady(true))
+      .catch((err) => {
+        console.error("Failed to load catalog:", err);
+        setReady(true);
+      });
   }, []);
 
   if (!ready) return null;
