@@ -2,6 +2,7 @@ import { Routes, Route, Link } from "react-router";
 import { useLingui } from "@lingui/react/macro";
 import { useLingui as useLinguiRuntime } from "@lingui/react";
 import { loadCatalog, locales } from "@/lib/i18n";
+import { RequireAuth } from "@/features/auth/RequireAuth";
 
 function NavBar() {
   return (
@@ -98,11 +99,43 @@ function NotFoundPage() {
   );
 }
 
+function LoginPlaceholder() {
+  return (
+    <RetroPanel>
+      <p className="text-retro-ink">Auth loading...</p>
+    </RetroPanel>
+  );
+}
+
+function CallbackPlaceholder() {
+  return (
+    <RetroPanel>
+      <p className="text-retro-ink">Callback loading...</p>
+    </RetroPanel>
+  );
+}
+
 export function AppRoutes() {
   return (
     <Routes>
-      <Route path="/" element={<DashboardPage />} />
-      <Route path="/settings" element={<SettingsPage />} />
+      <Route path="/login" element={<LoginPlaceholder />} />
+      <Route path="/auth/callback" element={<CallbackPlaceholder />} />
+      <Route
+        path="/"
+        element={
+          <RequireAuth>
+            <DashboardPage />
+          </RequireAuth>
+        }
+      />
+      <Route
+        path="/settings"
+        element={
+          <RequireAuth>
+            <SettingsPage />
+          </RequireAuth>
+        }
+      />
       <Route path="*" element={<NotFoundPage />} />
     </Routes>
   );

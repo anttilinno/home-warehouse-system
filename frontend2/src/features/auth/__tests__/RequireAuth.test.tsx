@@ -1,82 +1,99 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
-import { MemoryRouter } from "react-router";
-import { RequireAuth } from "../RequireAuth";
+import { MemoryRouter, Routes, Route, useLocation } from "react-router";
 
-// Mock useAuth
-const mockUseAuth = vi.fn();
-vi.mock("@/features/auth/AuthContext", () => ({
-  useAuth: () => mockUseAuth(),
+let authState = { isAuthenticated: false, isLoading: false };
+
+vi.mock("../AuthContext", () => ({
+  useAuth: () => authState,
 }));
 
-// Helper to capture navigation
-function TestRoutes({ initialEntries }: { initialEntries: string[] }) {
-  return (
-    <MemoryRouter initialEntries={initialEntries}>
-      <RequireAuth>
-        <div data-testid="protected">Protected Content</div>
-      </RequireAuth>
-    </MemoryRouter>
-  );
+import { RequireAuth } from "../RequireAuth";
+
+function LoginPage() {
+  return <div data-testid="login-page">Login</div>;
 }
 
 describe("RequireAuth", () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
   it("when authenticated, renders children", () => {
-    mockUseAuth.mockReturnValue({
-      isAuthenticated: true,
-      isLoading: false,
-    });
+    authState = { isAuthenticated: true, isLoading: false };
 
-    render(<TestRoutes initialEntries={["/dashboard"]} />);
+    render(
+      <MemoryRouter initialEntries={["/dashboard"]}>
+        <Routes>
+          <Route
+            path="/dashboard"
+            element={
+              <RequireAuth>
+                <div data-testid="protected">Protected Content</div>
+              </RequireAuth>
+            }
+          />
+          <Route path="/login" element={<LoginPage />} />
+        </Routes>
+      </MemoryRouter>
+    );
 
     expect(screen.getByTestId("protected")).toBeInTheDocument();
+    expect(screen.queryByTestId("login-page")).not.toBeInTheDocument();
   });
 
   it("when not authenticated and not loading, redirects to /login", () => {
-    mockUseAuth.mockReturnValue({
-      isAuthenticated: false,
-      isLoading: false,
-    });
+    authState = { isAuthenticated: false, isLoading: false };
 
-    const { container } = render(
-      <TestRoutes initialEntries={["/dashboard"]} />
+    render(
+      <MemoryRouter initialEntries={["/dashboard"]}>
+        <Routes>
+          <Route
+            path="/dashboard"
+            element={
+              <RequireAuth>
+                <div data-testid="protected">Protected Content</div>
+              </RequireAuth>
+            }
+          />
+          <Route path="/login" element={<LoginPage />} />
+        </Routes>
+      </MemoryRouter>
     );
 
-    // Should not render children
     expect(screen.queryByTestId("protected")).not.toBeInTheDocument();
-    // Navigate component renders nothing visible
-    expect(container.innerHTML).toBe("");
+    expect(screen.getByTestId("login-page")).toBeInTheDocument();
   });
 
   it("when loading, renders nothing", () => {
-    mockUseAuth.mockReturnValue({
-      isAuthenticated: false,
-      isLoading: true,
-    });
+    authState = { isAuthenticated: false, isLoading: true };
 
-    const { container } = render(
-      <TestRoutes initialEntries={["/dashboard"]} />
+    render(
+      <MemoryRouter initialEntries={["/dashboard"]}>
+        <Routes>
+          <Route
+            path="/dashboard"
+            element={
+              <RequireAuth>
+                <div data-testid="protected">Protected Content</div>
+              </RequireAuth>
+            }
+          />
+          <Route path="/login" element={<LoginPage />} />
+        </Routes>
+      </MemoryRouter>
     );
 
     expect(screen.queryByTestId("protected")).not.toBeInTheDocument();
-    expect(container.innerHTML).toBe("");
+    expect(screen.queryByTestId("login-page")).not.toBeInTheDocument();
   });
 
   it("passes current location in state.from for post-login redirect", () => {
-    // We use a more detailed test: render with Routes to capture Navigate's target
-    mockUseAuth.mockReturnValue({
-      isAuthenticated: false,
-      isLoading: false,
-    });
+    authState = { isAuthenticated: false, isLoading: false };
 
     let capturedState: unknown = null;
 
-    // Use Routes to capture the redirect
-    const { Route, Routes } = require("react-router");
+    function LoginCapture() {
+      const location = useLocation();
+      capturedState = location.state;
+      return <div data-testid="login-capture">Login</div>;
+    }
 
     render(
       <MemoryRouter initialEntries={["/settings"]}>
@@ -89,31 +106,15 @@ describe("RequireAuth", () => {
               </RequireAuth>
             }
           />
-          <Route
-            path="/login"
-            element={
-              <LoginCapture
-                onCapture={(state: unknown) => {
-                  capturedState = state;
-                }}
-              />
-            }
-          />
+          <Route path="/login" element={<LoginCapture />} />
         </Routes>
       </MemoryRouter>
     );
 
+    expect(screen.getByTestId("login-capture")).toBeInTheDocument();
     expect(capturedState).toBeTruthy();
-    expect((capturedState as { from: { pathname: string } }).from.pathname).toBe(
-      "/settings"
-    );
+    expect(
+      (capturedState as { from: { pathname: string } }).from.pathname
+    ).toBe("/settings");
   });
 });
-
-// Helper component to capture location state
-function LoginCapture({ onCapture }: { onCapture: (state: unknown) => void }) {
-  const { useLocation } = require("react-router");
-  const location = useLocation();
-  onCapture(location.state);
-  return <div>Login Page</div>;
-}
