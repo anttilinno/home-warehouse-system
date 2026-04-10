@@ -166,7 +166,7 @@ See `.planning/milestones/v1.9-ROADMAP.md` for full details.
 **Milestone Goal:** Build a second standalone frontend (`/frontend2`) with a retro industrial game UI aesthetic -- Vite + React 19 + Tailwind CSS 4 + React Router v7, custom component library, 1:1 feature parity foundation (auth, dashboard, settings), i18n EN + ET, online-only.
 
 - [x] **Phase 48: Project Scaffold** - Vite + React 19 project with routing, Tailwind retro tokens, Lingui i18n, and backend proxy (completed 2026-04-09)
-- [ ] **Phase 49: Auth & API Client** - Login, register, logout, route protection, and JWT-based API client
+- [x] **Phase 49: Auth & API Client** - Login, register, logout, route protection, and JWT-based API client (completed 2026-04-10)
 - [ ] **Phase 50: Design System** - Ten retro-styled components (buttons, panels, inputs, cards, dialogs, tables, tabs, toasts, badges) with demo page
 - [ ] **Phase 51: App Layout** - Retro sidebar navigation, top bar, mobile-responsive shell, loading states, and error boundaries
 - [ ] **Phase 52: Dashboard** - HUD-style inventory stats, retro terminal activity feed, and quick-access action cards
@@ -222,7 +222,10 @@ Plans:
   1. Authenticated users see a sidebar with navigation links and a top bar with user info, styled in the retro industrial aesthetic
   2. On mobile viewports, the sidebar collapses into a hamburger menu or bottom navigation that preserves the retro look
   3. Route transitions show a retro-styled loading indicator, and uncaught errors display a retro error boundary page instead of a white screen
-**Plans**: TBD
+**Plans:** 2 plans
+Plans:
+- [ ] 51-01-PLAN.md — Test stubs + layout components (Sidebar, TopBar, LoadingBar, ErrorBoundaryPage)
+- [ ] 51-02-PLAN.md — AppShell assembly + mobile drawer + route restructure
 **UI hint**: yes
 
 ### Phase 52: Dashboard
@@ -272,7 +275,7 @@ Phases execute in numeric order: 48 -> 49 -> 50 -> 51 -> 52 -> 53
 | 46 | v1.9 | 1/1 | Complete | 2026-03-14 |
 | 47 | v1.9 | 2/2 | Complete | 2026-03-14 |
 | 48. Scaffold | v2.0 | 2/2 | Complete    | 2026-04-09 |
-| 49. Auth & API Client | v2.0 | 0/TBD | Not started | - |
+| 49. Auth & API Client | v2.0 | 2/2 | Complete   | 2026-04-10 |
 | 50. Design System | v2.0 | 0/TBD | Not started | - |
 | 51. App Layout | v2.0 | 0/TBD | Not started | - |
 | 52. Dashboard | v2.0 | 0/TBD | Not started | - |
