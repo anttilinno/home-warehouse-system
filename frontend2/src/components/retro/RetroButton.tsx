@@ -1,13 +1,14 @@
 import { forwardRef, type ButtonHTMLAttributes } from "react";
 
 interface RetroButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: "primary" | "danger" | "neutral";
+  variant?: "primary" | "danger" | "neutral" | "secondary";
 }
 
 const variantClasses = {
   primary: "bg-retro-amber text-retro-ink hover:brightness-110",
   danger: "bg-retro-red text-white hover:brightness-110",
   neutral: "bg-retro-cream text-retro-ink hover:bg-retro-amber",
+  secondary: "bg-retro-blue text-white hover:brightness-110",
 } as const;
 
 const baseClasses =
