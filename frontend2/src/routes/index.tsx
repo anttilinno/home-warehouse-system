@@ -2,6 +2,11 @@ import { Routes, Route, Link } from "react-router";
 import { useLingui } from "@lingui/react/macro";
 import { useLingui as useLinguiRuntime } from "@lingui/react";
 import { loadCatalog, locales } from "@/lib/i18n";
+import { RequireAuth } from "@/features/auth/RequireAuth";
+import { AuthPage } from "@/features/auth/AuthPage";
+import { AuthCallbackPage } from "@/features/auth/AuthCallbackPage";
+import { RetroPanel } from "@/components/retro";
+import { DemoPage } from "@/pages/DemoPage";
 
 function NavBar() {
   return (
@@ -22,13 +27,12 @@ function NavBar() {
   );
 }
 
-function RetroPanel({ children }: { children: React.ReactNode }) {
+function PageShell({ children }: { children: React.ReactNode }) {
   return (
-    <div className="min-h-screen bg-retro-charcoal flex items-center justify-center p-lg">
-      <div className="bg-retro-cream border-retro-thick border-retro-ink shadow-retro-raised p-lg max-w-[640px] w-full">
-        <div className="bg-hazard-stripe h-[8px] mb-md" />
+    <div className="min-h-dvh bg-retro-charcoal flex items-center justify-center p-lg">
+      <RetroPanel showHazardStripe className="max-w-[640px] w-full">
         {children}
-      </div>
+      </RetroPanel>
     </div>
   );
 }
@@ -38,7 +42,7 @@ function DashboardPage() {
   const { i18n } = useLinguiRuntime();
 
   return (
-    <RetroPanel>
+    <PageShell>
       <NavBar />
       <h1 className="text-[20px] font-bold uppercase text-retro-ink">
         DASHBOARD
@@ -63,25 +67,25 @@ function DashboardPage() {
           ))}
         </select>
       </div>
-    </RetroPanel>
+    </PageShell>
   );
 }
 
 function SettingsPage() {
   return (
-    <RetroPanel>
+    <PageShell>
       <NavBar />
       <h1 className="text-[20px] font-bold uppercase text-retro-ink">
         SETTINGS
       </h1>
       <p className="text-retro-ink mt-sm">Configuration panels standing by.</p>
-    </RetroPanel>
+    </PageShell>
   );
 }
 
 function NotFoundPage() {
   return (
-    <RetroPanel>
+    <PageShell>
       <h1 className="text-[20px] font-bold uppercase text-retro-ink">
         SECTOR NOT FOUND
       </h1>
@@ -94,15 +98,32 @@ function NotFoundPage() {
       >
         RETURN TO BASE
       </Link>
-    </RetroPanel>
+    </PageShell>
   );
 }
 
 export function AppRoutes() {
   return (
     <Routes>
-      <Route path="/" element={<DashboardPage />} />
-      <Route path="/settings" element={<SettingsPage />} />
+      <Route path="/login" element={<AuthPage />} />
+      <Route path="/auth/callback" element={<AuthCallbackPage />} />
+      <Route path="/demo" element={<DemoPage />} />
+      <Route
+        path="/"
+        element={
+          <RequireAuth>
+            <DashboardPage />
+          </RequireAuth>
+        }
+      />
+      <Route
+        path="/settings"
+        element={
+          <RequireAuth>
+            <SettingsPage />
+          </RequireAuth>
+        }
+      />
       <Route path="*" element={<NotFoundPage />} />
     </Routes>
   );
