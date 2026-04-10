@@ -166,7 +166,7 @@ See `.planning/milestones/v1.9-ROADMAP.md` for full details.
 **Milestone Goal:** Build a second standalone frontend (`/frontend2`) with a retro industrial game UI aesthetic -- Vite + React 19 + Tailwind CSS 4 + React Router v7, custom component library, 1:1 feature parity foundation (auth, dashboard, settings), i18n EN + ET, online-only.
 
 - [x] **Phase 48: Project Scaffold** - Vite + React 19 project with routing, Tailwind retro tokens, Lingui i18n, and backend proxy (completed 2026-04-09)
-- [x] **Phase 49: Auth & API Client** - Login, register, logout, route protection, and JWT-based API client (completed 2026-04-10)
+- [ ] **Phase 49: Auth & API Client** - Login, register, logout, route protection, and JWT-based API client
 - [ ] **Phase 50: Design System** - Ten retro-styled components (buttons, panels, inputs, cards, dialogs, tables, tabs, toasts, badges) with demo page
 - [ ] **Phase 51: App Layout** - Retro sidebar navigation, top bar, mobile-responsive shell, loading states, and error boundaries
 - [ ] **Phase 52: Dashboard** - HUD-style inventory stats, retro terminal activity feed, and quick-access action cards
@@ -198,11 +198,7 @@ Plans:
   3. User can register a new account and be logged in automatically
   4. User can log out from the app and is returned to the login page
   5. API client automatically refreshes expired JWT tokens via HttpOnly cookie without user action
-**Plans:** 3/3 plans complete
-Plans:
-- [x] 49-01-PLAN.md — API client with 401 refresh-retry, shared auth types, Vite proxy fix, test infrastructure
-- [x] 49-02-PLAN.md — Auth context provider, RequireAuth route guard, route and App wiring
-- [x] 49-03-PLAN.md — Auth UI pages (login/register forms, OAuth buttons, callback page)
+**Plans**: TBD
 **UI hint**: yes
 
 ### Phase 50: Design System
@@ -215,12 +211,7 @@ Plans:
   3. RetroInput displays monospace text, icon prefixes, and inline validation error states
   4. The `/demo` page showcases every component with interactive states, serving as a living style guide
   5. Components accept standard props (className, children, disabled, etc.) and compose cleanly with each other
-**Plans:** 4 plans
-Plans:
-- [ ] 50-01-PLAN.md -- Core retro primitives (RetroButton, RetroPanel, RetroInput, HazardStripe)
-- [ ] 50-02-PLAN.md -- Secondary primitives (RetroCard, RetroDialog, RetroTable, RetroTabs, RetroBadge)
-- [ ] 50-03-PLAN.md -- RetroToast notification system (provider, hook, animations)
-- [ ] 50-04-PLAN.md -- Interactive demo page, auth refactor, ToastProvider wiring
+**Plans**: TBD
 **UI hint**: yes
 
 ### Phase 51: App Layout
@@ -281,7 +272,7 @@ Phases execute in numeric order: 48 -> 49 -> 50 -> 51 -> 52 -> 53
 | 46 | v1.9 | 1/1 | Complete | 2026-03-14 |
 | 47 | v1.9 | 2/2 | Complete | 2026-03-14 |
 | 48. Scaffold | v2.0 | 2/2 | Complete    | 2026-04-09 |
-| 49. Auth & API Client | v2.0 | 3/3 | Complete   | 2026-04-10 |
+| 49. Auth & API Client | v2.0 | 0/TBD | Not started | - |
 | 50. Design System | v2.0 | 0/TBD | Not started | - |
 | 51. App Layout | v2.0 | 0/TBD | Not started | - |
 | 52. Dashboard | v2.0 | 0/TBD | Not started | - |

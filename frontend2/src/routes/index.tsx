@@ -2,9 +2,6 @@ import { Routes, Route, Link } from "react-router";
 import { useLingui } from "@lingui/react/macro";
 import { useLingui as useLinguiRuntime } from "@lingui/react";
 import { loadCatalog, locales } from "@/lib/i18n";
-import { RequireAuth } from "@/features/auth/RequireAuth";
-import { AuthPage } from "@/features/auth/AuthPage";
-import { AuthCallbackPage } from "@/features/auth/AuthCallbackPage";
 
 function NavBar() {
   return (
@@ -27,7 +24,7 @@ function NavBar() {
 
 function RetroPanel({ children }: { children: React.ReactNode }) {
   return (
-    <div className="min-h-dvh bg-retro-charcoal flex items-center justify-center p-lg">
+    <div className="min-h-screen bg-retro-charcoal flex items-center justify-center p-lg">
       <div className="bg-retro-cream border-retro-thick border-retro-ink shadow-retro-raised p-lg max-w-[640px] w-full">
         <div className="bg-hazard-stripe h-[8px] mb-md" />
         {children}
@@ -104,24 +101,8 @@ function NotFoundPage() {
 export function AppRoutes() {
   return (
     <Routes>
-      <Route path="/login" element={<AuthPage />} />
-      <Route path="/auth/callback" element={<AuthCallbackPage />} />
-      <Route
-        path="/"
-        element={
-          <RequireAuth>
-            <DashboardPage />
-          </RequireAuth>
-        }
-      />
-      <Route
-        path="/settings"
-        element={
-          <RequireAuth>
-            <SettingsPage />
-          </RequireAuth>
-        }
-      />
+      <Route path="/" element={<DashboardPage />} />
+      <Route path="/settings" element={<SettingsPage />} />
       <Route path="*" element={<NotFoundPage />} />
     </Routes>
   );

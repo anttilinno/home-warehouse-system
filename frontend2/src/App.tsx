@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { BrowserRouter } from "react-router";
 import { I18nProvider } from "@lingui/react";
 import { i18n, loadCatalog, defaultLocale } from "@/lib/i18n";
-import { AuthProvider } from "@/features/auth/AuthContext";
 import { AppRoutes } from "@/routes";
 
 export default function App() {
@@ -22,9 +21,7 @@ export default function App() {
   return (
     <I18nProvider i18n={i18n}>
       <BrowserRouter>
-        <AuthProvider>
-          <AppRoutes />
-        </AuthProvider>
+        <AppRoutes />
       </BrowserRouter>
     </I18nProvider>
   );
