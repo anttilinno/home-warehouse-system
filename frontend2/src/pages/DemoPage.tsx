@@ -66,9 +66,9 @@ function DemoContent() {
           </h2>
           <HazardStripe className="mb-md" />
           <div className="flex gap-md flex-wrap mb-md">
-            <RetroButton variant="primary">EXECUTE</RetroButton>
-            <RetroButton variant="danger">ABORT MISSION</RetroButton>
-            <RetroButton variant="secondary">STANDBY</RetroButton>
+            <RetroButton variant="neutral">EXECUTE</RetroButton>
+            <RetroButton variant="primary">ABORT MISSION</RetroButton>
+            <RetroButton variant="danger">STANDBY</RetroButton>
           </div>
           <div className="flex gap-md flex-wrap">
             <RetroButton disabled>DISABLED</RetroButton>
