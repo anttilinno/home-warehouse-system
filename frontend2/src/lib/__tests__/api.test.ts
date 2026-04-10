@@ -103,17 +103,31 @@ describe("API client", () => {
     setRefreshToken("rt1");
     const mockFetch = vi.mocked(fetch);
 
-    // First two calls: 401 (concurrent requests to /a and /b)
-    mockFetch.mockResolvedValueOnce(makeResponse(401, {}));
-    mockFetch.mockResolvedValueOnce(makeResponse(401, {}));
-    // Refresh call: 200
-    mockFetch.mockResolvedValueOnce(
-      makeResponse(200, { token: "t2", refresh_token: "rt2" })
-    );
-    // Retry for /a: 200
-    mockFetch.mockResolvedValueOnce(makeResponse(200, { name: "a" }));
-    // Retry for /b: 200
-    mockFetch.mockResolvedValueOnce(makeResponse(200, { name: "b" }));
+    // Track call counts per URL so responses are dispatched by URL, not by
+    // positional mock slot. This avoids relying on microtask scheduling order
+    // when two concurrent requests race to the mock queue.
+    const callCounts: Record<string, number> = {};
+    mockFetch.mockImplementation(async (url: RequestInfo | URL) => {
+      const u = url as string;
+      callCounts[u] = (callCounts[u] ?? 0) + 1;
+
+      if (u.includes("/auth/refresh")) {
+        return makeResponse(200, { token: "t2", refresh_token: "rt2" });
+      }
+      if (u === "/api/a") {
+        // First visit: 401; after refresh retry: 200
+        return callCounts[u] === 1
+          ? makeResponse(401, {})
+          : makeResponse(200, { name: "a" });
+      }
+      if (u === "/api/b") {
+        // First visit: 401; after refresh retry: 200
+        return callCounts[u] === 1
+          ? makeResponse(401, {})
+          : makeResponse(200, { name: "b" });
+      }
+      return makeResponse(500, { detail: "unexpected url" });
+    });
 
     const [resultA, resultB] = await Promise.all([
       get<{ name: string }>("/a"),
@@ -139,6 +153,9 @@ describe("API client", () => {
     mockFetch.mockResolvedValueOnce(makeResponse(401, {}));
 
     await expect(get("/fail")).rejects.toThrow("Session expired");
+    // Verify the stale refresh token is cleared after refresh failure so
+    // subsequent calls surface the session-expired error immediately.
+    expect(getRefreshToken()).toBeNull();
   });
 
   it("handles 204 No Content responses", async () => {
