@@ -49,6 +49,7 @@ export function OAuthButtons() {
       <div className="flex flex-col gap-sm">
         <RetroButton
           type="button"
+          variant="secondary"
           aria-label={t`Sign in with Google`}
           onClick={() => {
             window.location.href = "/api/auth/oauth/google";
@@ -61,6 +62,7 @@ export function OAuthButtons() {
 
         <RetroButton
           type="button"
+          variant="secondary"
           aria-label={t`Sign in with GitHub`}
           onClick={() => {
             window.location.href = "/api/auth/oauth/github";
