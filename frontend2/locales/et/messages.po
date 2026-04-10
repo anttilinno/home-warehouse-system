@@ -13,6 +13,123 @@ msgstr ""
 "Language-Team: \n"
 "Plural-Forms: \n"
 
-#: src/routes/index.tsx:48
+#: src/features/auth/RegisterForm.tsx:37
+msgid "An account with this email already exists. Try logging in instead."
+msgstr ""
+
+#: src/features/auth/AuthCallbackPage.tsx:68
+msgid "AUTHENTICATING..."
+msgstr ""
+
+#: src/features/auth/AuthCallbackPage.tsx:55
+msgid "AUTHENTICATION FAILED"
+msgstr ""
+
+#: src/features/auth/AuthCallbackPage.tsx:23
+#: src/features/auth/AuthCallbackPage.tsx:29
+#: src/features/auth/AuthCallbackPage.tsx:42
+msgid "Authentication failed. Try a different sign-in method."
+msgstr ""
+
+#: src/features/auth/RegisterForm.tsx:195
+msgid "Confirm password"
+msgstr ""
+
+#: src/features/auth/RegisterForm.tsx:206
+msgid "CONFIRM PASSWORD"
+msgstr ""
+
+#: src/features/auth/LoginForm.tsx:41
+#: src/features/auth/RegisterForm.tsx:45
+msgid "Connection failed. Check your network and try again."
+msgstr ""
+
+#: src/features/auth/RegisterForm.tsx:233
+msgid "CREATE ACCOUNT"
+msgstr ""
+
+#: src/features/auth/LoginForm.tsx:55
+#: src/features/auth/RegisterForm.tsx:155
+msgid "Email"
+msgstr ""
+
+#: src/features/auth/LoginForm.tsx:89
+#: src/features/auth/RegisterForm.tsx:166
+msgid "EMAIL ADDRESS"
+msgstr ""
+
+#: src/features/auth/RegisterForm.tsx:135
+msgid "Full name"
+msgstr ""
+
+#: src/features/auth/RegisterForm.tsx:146
+msgid "FULL NAME"
+msgstr ""
+
+#: src/features/auth/LoginForm.tsx:33
+msgid "Invalid email or password. Check your credentials and try again."
+msgstr ""
+
+#: src/features/auth/LoginForm.tsx:160
+msgid "LOG IN"
+msgstr ""
+
+#: src/features/auth/AuthPage.tsx:39
+msgid "LOGIN"
+msgstr ""
+
+#: src/features/auth/OAuthButtons.tsx:14
+msgid "OR"
+msgstr ""
+
+#: src/features/auth/LoginForm.tsx:98
+#: src/features/auth/RegisterForm.tsx:175
+msgid "Password"
+msgstr ""
+
+#: src/features/auth/LoginForm.tsx:133
+#: src/features/auth/RegisterForm.tsx:186
+msgid "PASSWORD"
+msgstr ""
+
+#: src/features/auth/RegisterForm.tsx:23
+msgid "Passwords do not match."
+msgstr ""
+
+#: src/features/auth/LoginForm.tsx:160
+#: src/features/auth/RegisterForm.tsx:233
+msgid "PROCESSING..."
+msgstr ""
+
+#: src/features/auth/AuthPage.tsx:48
+msgid "REGISTER"
+msgstr ""
+
+#: src/features/auth/AuthCallbackPage.tsx:62
+msgid "RETURN TO LOGIN"
+msgstr ""
+
+#: src/features/auth/OAuthButtons.tsx:58
+msgid "Sign in with GitHub"
+msgstr ""
+
+#: src/features/auth/OAuthButtons.tsx:77
+msgid "SIGN IN WITH GITHUB"
+msgstr ""
+
+#: src/features/auth/OAuthButtons.tsx:23
+msgid "Sign in with Google"
+msgstr ""
+
+#: src/features/auth/OAuthButtons.tsx:52
+msgid "SIGN IN WITH GOOGLE"
+msgstr ""
+
+#: src/features/auth/LoginForm.tsx:44
+#: src/features/auth/RegisterForm.tsx:48
+msgid "Something went wrong. Try again in a moment."
+msgstr ""
+
+#: src/routes/index.tsx:51
 msgid "Welcome to Home Warehouse"
 msgstr "Tere tulemast Home Warehouse'i"

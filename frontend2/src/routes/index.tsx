@@ -3,6 +3,8 @@ import { useLingui } from "@lingui/react/macro";
 import { useLingui as useLinguiRuntime } from "@lingui/react";
 import { loadCatalog, locales } from "@/lib/i18n";
 import { RequireAuth } from "@/features/auth/RequireAuth";
+import { AuthPage } from "@/features/auth/AuthPage";
+import { AuthCallbackPage } from "@/features/auth/AuthCallbackPage";
 
 function NavBar() {
   return (
@@ -99,27 +101,11 @@ function NotFoundPage() {
   );
 }
 
-function LoginPlaceholder() {
-  return (
-    <RetroPanel>
-      <p className="text-retro-ink">Auth loading...</p>
-    </RetroPanel>
-  );
-}
-
-function CallbackPlaceholder() {
-  return (
-    <RetroPanel>
-      <p className="text-retro-ink">Callback loading...</p>
-    </RetroPanel>
-  );
-}
-
 export function AppRoutes() {
   return (
     <Routes>
-      <Route path="/login" element={<LoginPlaceholder />} />
-      <Route path="/auth/callback" element={<CallbackPlaceholder />} />
+      <Route path="/login" element={<AuthPage />} />
+      <Route path="/auth/callback" element={<AuthCallbackPage />} />
       <Route
         path="/"
         element={

@@ -4,6 +4,7 @@ import { useLingui } from "@lingui/react/macro";
 import { useAuth } from "./AuthContext";
 import { LoginForm } from "./LoginForm";
 import { RegisterForm } from "./RegisterForm";
+import { OAuthButtons } from "./OAuthButtons";
 
 type Tab = "login" | "register";
 
@@ -66,6 +67,9 @@ export function AuthPage() {
 
           {/* Form */}
           {activeTab === "login" ? <LoginForm /> : <RegisterForm />}
+
+          {/* OAuth */}
+          <OAuthButtons />
         </div>
       </div>
     </div>
