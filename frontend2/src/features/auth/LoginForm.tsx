@@ -129,7 +129,7 @@ export function LoginForm() {
         </p>
       )}
 
-      <RetroButton type="submit" disabled={isSubmitting} className="w-full">
+      <RetroButton type="submit" variant="primary" disabled={isSubmitting} className="w-full">
         {isSubmitting ? t`PROCESSING...` : t`LOG IN`}
       </RetroButton>
     </form>

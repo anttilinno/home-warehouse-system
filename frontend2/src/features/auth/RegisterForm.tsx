@@ -175,7 +175,7 @@ export function RegisterForm() {
         </p>
       )}
 
-      <RetroButton type="submit" disabled={isSubmitting} className="w-full">
+      <RetroButton type="submit" variant="primary" disabled={isSubmitting} className="w-full">
         {isSubmitting ? t`PROCESSING...` : t`CREATE ACCOUNT`}
       </RetroButton>
     </form>
