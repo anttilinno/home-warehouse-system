@@ -27,9 +27,9 @@ decisions:
   - "Inline SVG icons instead of icon library -- minimal Google/GitHub logos and form field icons"
   - "useRef(false) guard for OAuth callback strict-mode double-mount protection"
 metrics:
-  duration: 236s
+  duration: 300s
   completed: "2026-04-10"
-  tasks_completed: 2
+  tasks_completed: 3
   tasks_total: 3
   tests_added: 0
 ---
@@ -70,9 +70,12 @@ Retro-styled auth UI with tab-toggled login/register panel, OAuth buttons with O
 - Added blink keyframes animation to `globals.css`
 - Updated i18n catalogs (28 total strings, 27 missing ET translations)
 
-### Task 3: Visual Verification (Checkpoint)
+### Task 3: Visual Verification (Checkpoint) -- APPROVED
 
-Awaiting human visual verification of auth UI against BAM reference image.
+Human verified auth UI against BAM reference image. Two post-checkpoint fixes were applied:
+
+1. **min-h-dvh fix (665761c):** Replaced `min-h-screen` with `min-h-dvh` on the AuthPage container to prevent mobile viewport jump when the URL bar collapses.
+2. **Anchor to top fix (21e6023):** Anchored auth page content to the top of the panel to prevent layout shift when switching between LOGIN and REGISTER tabs (which have different form heights).
 
 ## Commits
 
@@ -80,10 +83,26 @@ Awaiting human visual verification of auth UI against BAM reference image.
 |------|--------|-------------|
 | 1 | 8d5f146 | Build AuthPage with tab toggle, LoginForm, and RegisterForm |
 | 2 | 1c276c6 | Add OAuthButtons, AuthCallbackPage, wire auth routes |
+| 3 (fix) | 665761c | Replace min-h-screen with min-h-dvh for mobile viewport |
+| 3 (fix) | 21e6023 | Anchor auth page to top to prevent layout shift on tab switch |
 
 ## Deviations from Plan
 
-None -- plan executed exactly as written.
+### Auto-fixed Issues
+
+**1. [Rule 1 - Bug] Mobile viewport jump with min-h-screen**
+- **Found during:** Task 3 visual verification
+- **Issue:** `min-h-screen` uses CSS `vh` units which cause layout jump on mobile when the browser URL bar collapses/expands
+- **Fix:** Replaced with `min-h-dvh` (dynamic viewport height) on AuthPage container
+- **Files modified:** frontend2/src/features/auth/AuthPage.tsx
+- **Commit:** 665761c
+
+**2. [Rule 1 - Bug] Layout shift on tab switch**
+- **Found during:** Task 3 visual verification
+- **Issue:** Switching between LOGIN (2 fields) and REGISTER (4 fields) tabs caused the panel to visually jump as content height changed with centered layout
+- **Fix:** Anchored auth page content to the top of the viewport instead of vertical centering, so the panel grows downward on tab switch
+- **Files modified:** frontend2/src/features/auth/AuthPage.tsx
+- **Commit:** 21e6023
 
 ## Verification Results
 
