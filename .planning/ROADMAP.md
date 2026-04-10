@@ -198,7 +198,11 @@ Plans:
   3. User can register a new account and be logged in automatically
   4. User can log out from the app and is returned to the login page
   5. API client automatically refreshes expired JWT tokens via HttpOnly cookie without user action
-**Plans**: TBD
+**Plans:** 3 plans
+Plans:
+- [ ] 49-01-PLAN.md — API client with 401 refresh-retry, shared auth types, Vite proxy fix, test infrastructure
+- [ ] 49-02-PLAN.md — Auth context provider, RequireAuth route guard, route and App wiring
+- [ ] 49-03-PLAN.md — Auth UI pages (login/register forms, OAuth buttons, callback page)
 **UI hint**: yes
 
 ### Phase 50: Design System
