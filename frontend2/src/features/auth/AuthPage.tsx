@@ -5,6 +5,7 @@ import { useAuth } from "./AuthContext";
 import { LoginForm } from "./LoginForm";
 import { RegisterForm } from "./RegisterForm";
 import { OAuthButtons } from "./OAuthButtons";
+import { RetroTabs, RetroPanel } from "@/components/retro";
 
 type Tab = "login" | "register";
 
@@ -21,56 +22,27 @@ export function AuthPage() {
     setActiveTab(tab);
   };
 
-  const tabBase =
-    "min-w-[120px] h-[36px] text-[14px] font-bold uppercase border-retro-thick border-retro-ink cursor-pointer";
-  const activeTabClass = `${tabBase} bg-retro-cream border-b-0`;
-  const inactiveTabClass = `${tabBase} bg-retro-gray`;
-
   return (
     <div className="min-h-dvh bg-retro-charcoal flex items-start justify-center pt-[10vh] px-lg pb-lg">
       <div className="w-full max-w-[420px] max-sm:mx-md">
         {/* Tabs */}
-        <div className="flex">
-          <button
-            type="button"
-            className={activeTab === "login" ? activeTabClass : inactiveTabClass}
-            onClick={() => switchTab("login")}
-          >
-            {t`LOGIN`}
-          </button>
-          <button
-            type="button"
-            className={
-              activeTab === "register" ? activeTabClass : inactiveTabClass
-            }
-            onClick={() => switchTab("register")}
-          >
-            {t`REGISTER`}
-          </button>
-        </div>
+        <RetroTabs
+          tabs={[
+            { key: "login", label: t`LOGIN` },
+            { key: "register", label: t`REGISTER` },
+          ]}
+          activeTab={activeTab}
+          onTabChange={(key) => switchTab(key as Tab)}
+        />
 
         {/* Panel */}
-        <div className="bg-retro-cream border-retro-thick border-retro-ink shadow-retro-raised p-lg relative">
-          {/* Decorative X button */}
-          <button
-            type="button"
-            aria-hidden="true"
-            tabIndex={-1}
-            onClick={(e) => e.preventDefault()}
-            className="absolute top-sm right-sm w-[24px] h-[24px] bg-retro-red border-retro-thick border-retro-ink flex items-center justify-center text-white text-[12px] font-bold leading-none"
-          >
-            X
-          </button>
-
-          {/* Hazard stripe */}
-          <div className="bg-hazard-stripe h-[8px] mb-md" />
-
+        <RetroPanel showHazardStripe showClose onClose={() => {}}>
           {/* Form */}
           {activeTab === "login" ? <LoginForm /> : <RegisterForm />}
 
           {/* OAuth */}
           <OAuthButtons />
-        </div>
+        </RetroPanel>
       </div>
     </div>
   );
