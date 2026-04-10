@@ -13,6 +13,123 @@ msgstr ""
 "Language-Team: \n"
 "Plural-Forms: \n"
 
-#: src/routes/index.tsx:48
+#: src/features/auth/RegisterForm.tsx:88
+msgid "An account with this email already exists. Try logging in instead."
+msgstr "Selle e-postiga konto on juba olemas. Proovi hoopis sisse logida."
+
+#: src/features/auth/AuthCallbackPage.tsx:68
+msgid "AUTHENTICATING..."
+msgstr "AUTENTIMINE..."
+
+#: src/features/auth/AuthCallbackPage.tsx:55
+msgid "AUTHENTICATION FAILED"
+msgstr "AUTENTIMINE EBAONNESTUS"
+
+#: src/features/auth/AuthCallbackPage.tsx:23
+#: src/features/auth/AuthCallbackPage.tsx:29
+#: src/features/auth/AuthCallbackPage.tsx:42
+msgid "Authentication failed. Try a different sign-in method."
+msgstr "Autentimine ebaonnestus. Proovi teist sisselogimisviisi."
+
+#: src/features/auth/RegisterForm.tsx:155
+msgid "Confirm password"
+msgstr "Kinnita parool"
+
+#: src/features/auth/RegisterForm.tsx:162
+msgid "CONFIRM PASSWORD"
+msgstr "KINNITA PAROOL"
+
+#: src/features/auth/LoginForm.tsx:80
+#: src/features/auth/RegisterForm.tsx:96
+msgid "Connection failed. Check your network and try again."
+msgstr "Uhendus ebaonnestus. Kontrolli vorguuhendust ja proovi uuesti."
+
+#: src/features/auth/RegisterForm.tsx:179
+msgid "CREATE ACCOUNT"
+msgstr "LOO KONTO"
+
+#: src/features/auth/LoginForm.tsx:94
+#: src/features/auth/RegisterForm.tsx:125
+msgid "Email"
+msgstr "E-post"
+
+#: src/features/auth/LoginForm.tsx:101
+#: src/features/auth/RegisterForm.tsx:132
+msgid "EMAIL ADDRESS"
+msgstr "E-POSTI AADRESS"
+
+#: src/features/auth/RegisterForm.tsx:110
+msgid "Full name"
+msgstr "Taisnimi"
+
+#: src/features/auth/RegisterForm.tsx:117
+msgid "FULL NAME"
+msgstr "TAISNIMI"
+
+#: src/features/auth/LoginForm.tsx:72
+msgid "Invalid email or password. Check your credentials and try again."
+msgstr "Vale e-post voi parool. Kontrolli oma andmeid ja proovi uuesti."
+
+#: src/features/auth/LoginForm.tsx:133
+msgid "LOG IN"
+msgstr "LOGI SISSE"
+
+#: src/features/auth/AuthPage.tsx:31
+msgid "LOGIN"
+msgstr "LOGI SISSE"
+
+#: src/features/auth/OAuthButtons.tsx:44
+msgid "OR"
+msgstr "VOI"
+
+#: src/features/auth/LoginForm.tsx:109
+#: src/features/auth/RegisterForm.tsx:140
+msgid "Password"
+msgstr "Parool"
+
+#: src/features/auth/LoginForm.tsx:116
+#: src/features/auth/RegisterForm.tsx:147
+msgid "PASSWORD"
+msgstr "PAROOL"
+
+#: src/features/auth/RegisterForm.tsx:74
+msgid "Passwords do not match."
+msgstr "Paroolid ei kattu."
+
+#: src/features/auth/LoginForm.tsx:133
+#: src/features/auth/RegisterForm.tsx:179
+msgid "PROCESSING..."
+msgstr "TOOTLEMINE..."
+
+#: src/features/auth/AuthPage.tsx:32
+msgid "REGISTER"
+msgstr "REGISTREERU"
+
+#: src/features/auth/AuthCallbackPage.tsx:62
+msgid "RETURN TO LOGIN"
+msgstr "TAGASI SISSELOGIMISELE"
+
+#: src/features/auth/OAuthButtons.tsx:66
+msgid "Sign in with GitHub"
+msgstr "Logi sisse GitHub'iga"
+
+#: src/features/auth/OAuthButtons.tsx:73
+msgid "SIGN IN WITH GITHUB"
+msgstr "LOGI SISSE GITHUB'IGA"
+
+#: src/features/auth/OAuthButtons.tsx:53
+msgid "Sign in with Google"
+msgstr "Logi sisse Google'iga"
+
+#: src/features/auth/OAuthButtons.tsx:60
+msgid "SIGN IN WITH GOOGLE"
+msgstr "LOGI SISSE GOOGLE'IGA"
+
+#: src/features/auth/LoginForm.tsx:83
+#: src/features/auth/RegisterForm.tsx:99
+msgid "Something went wrong. Try again in a moment."
+msgstr "Midagi laks valesti. Proovi hetke parast uuesti."
+
+#: src/routes/index.tsx:52
 msgid "Welcome to Home Warehouse"
 msgstr "Tere tulemast Home Warehouse'i"
