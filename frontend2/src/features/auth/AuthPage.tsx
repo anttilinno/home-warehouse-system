@@ -27,7 +27,7 @@ export function AuthPage() {
   const inactiveTabClass = `${tabBase} bg-retro-gray`;
 
   return (
-    <div className="min-h-screen bg-retro-charcoal flex items-center justify-center p-lg">
+    <div className="min-h-dvh bg-retro-charcoal flex items-center justify-center p-lg">
       <div className="w-full max-w-[420px] max-sm:mx-md">
         {/* Tabs */}
         <div className="flex">

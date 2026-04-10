@@ -45,7 +45,7 @@ export function AuthCallbackPage() {
   }, [searchParams, navigate, refreshUser, t]);
 
   return (
-    <div className="min-h-screen bg-retro-charcoal flex items-center justify-center p-lg">
+    <div className="min-h-dvh bg-retro-charcoal flex items-center justify-center p-lg">
       <div className="bg-retro-cream border-retro-thick border-retro-ink shadow-retro-raised p-lg max-w-[420px] w-full max-sm:mx-md text-center">
         <div className="bg-hazard-stripe h-[8px] mb-md" />
 

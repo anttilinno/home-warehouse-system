@@ -27,7 +27,7 @@ function NavBar() {
 
 function RetroPanel({ children }: { children: React.ReactNode }) {
   return (
-    <div className="min-h-screen bg-retro-charcoal flex items-center justify-center p-lg">
+    <div className="min-h-dvh bg-retro-charcoal flex items-center justify-center p-lg">
       <div className="bg-retro-cream border-retro-thick border-retro-ink shadow-retro-raised p-lg max-w-[640px] w-full">
         <div className="bg-hazard-stripe h-[8px] mb-md" />
         {children}
