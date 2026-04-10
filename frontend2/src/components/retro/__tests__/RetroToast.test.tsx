@@ -1,4 +1,4 @@
-import { render, screen, act } from "@testing-library/react";
+import { render, screen, act, fireEvent } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { useEffect } from "react";
 import { ToastProvider, useToast } from "../RetroToast";
@@ -138,9 +138,8 @@ describe("RetroToast", () => {
     spy.mockRestore();
   });
 
-  it("auto-dismisses toast after 4000ms", async () => {
+  it("auto-dismisses toast after 4000ms", () => {
     vi.useFakeTimers();
-    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
 
     render(
       <ToastProvider>
@@ -148,7 +147,7 @@ describe("RetroToast", () => {
       </ToastProvider>
     );
 
-    await user.click(screen.getByText("Add Toast"));
+    fireEvent.click(screen.getByText("Add Toast"));
     expect(screen.getByText("Auto dismiss")).toBeInTheDocument();
 
     act(() => {

@@ -8,3 +8,4 @@ export type { RetroDialogHandle } from "./RetroDialog";
 export { RetroTable } from "./RetroTable";
 export { RetroTabs } from "./RetroTabs";
 export { RetroBadge } from "./RetroBadge";
+export { ToastProvider, useToast } from "./RetroToast";
