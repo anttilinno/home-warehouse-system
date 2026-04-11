@@ -12,7 +12,7 @@
 - ✅ **v1.7 Modular Settings** — Phases 35-39 (shipped 2026-02-13)
 - ✅ **v1.8 Social Login** — Phases 40-42 (shipped 2026-02-22)
 - ✅ **v1.9 Quick Capture** — Phases 43-47 (shipped 2026-03-14)
-- 📋 **v2.0 Retro Frontend** — Phases 48-53 (planned)
+- 📋 **v2.0 Retro Frontend** — Phases 48-55 (planned)
 
 ## Phases
 
@@ -168,9 +168,11 @@ See `.planning/milestones/v1.9-ROADMAP.md` for full details.
 - [x] **Phase 48: Project Scaffold** - Vite + React 19 project with routing, Tailwind retro tokens, Lingui i18n, and backend proxy (completed 2026-04-09)
 - [x] **Phase 49: Auth & API Client** - Login, register, logout, route protection, and JWT-based API client (completed 2026-04-10)
 - [ ] **Phase 50: Design System** - Ten retro-styled components (buttons, panels, inputs, cards, dialogs, tables, tabs, toasts, badges) with demo page
-- [ ] **Phase 51: App Layout** - Retro sidebar navigation, top bar, mobile-responsive shell, loading states, and error boundaries
+- [x] **Phase 51: App Layout** - Retro sidebar navigation, top bar, mobile-responsive shell, loading states, and error boundaries (completed 2026-04-11)
 - [ ] **Phase 52: Dashboard** - HUD-style inventory stats, retro terminal activity feed, and quick-access action cards
 - [x] **Phase 53: Settings Hub** - Eight settings subpages with retro panel navigation (profile, security, appearance, language, formats, notifications, data) (completed 2026-04-11)
+- [ ] **Phase 54: v2.0 Tech Debt — Code Fixes** - Sidebar nav entries, AuthContext error handling, DataPage null-guard, type fixes, i18n, and component consistency
+- [ ] **Phase 55: v2.0 Validation & Requirements Cleanup** - Nyquist VALIDATION.md for phases 48–53, requirements file section fixes, checkbox sign-off, and traceability table
 
 ## Phase Details
 
@@ -222,10 +224,10 @@ Plans:
   1. Authenticated users see a sidebar with navigation links and a top bar with user info, styled in the retro industrial aesthetic
   2. On mobile viewports, the sidebar collapses into a hamburger menu or bottom navigation that preserves the retro look
   3. Route transitions show a retro-styled loading indicator, and uncaught errors display a retro error boundary page instead of a white screen
-**Plans:** 2 plans
+**Plans:** 2/2 plans complete
 Plans:
-- [ ] 51-01-PLAN.md — Test stubs + layout components (Sidebar, TopBar, LoadingBar, ErrorBoundaryPage)
-- [ ] 51-02-PLAN.md — AppShell assembly + mobile drawer + route restructure
+- [x] 51-01-PLAN.md — Test stubs + layout components (Sidebar, TopBar, LoadingBar, ErrorBoundaryPage)
+- [x] 51-02-PLAN.md — AppShell assembly + mobile drawer + route restructure
 **UI hint**: yes
 
 ### Phase 52: Dashboard
@@ -252,6 +254,33 @@ Plans:
 **Plans**: TBD
 **UI hint**: yes
 
+### Phase 54: v2.0 Tech Debt — Code Fixes
+**Goal**: Close all actionable code-level tech debt from the v2.0 audit: complete sidebar navigation, harden auth error handling, fix type correctness, and ensure i18n and component consistency
+**Depends on**: Phase 53
+**Gap Closure**: Closes audit integration gap (Sidebar → /items + /loans) and 5 code-level tech debt items
+**Success Criteria** (what must be TRUE):
+  1. Sidebar shows 4 NavLinks: DASHBOARD, ITEMS, LOANS, SETTINGS
+  2. AuthContext only clears refresh token on explicit auth errors (401/403), not transient network failures
+  3. DataPage export/import buttons are disabled when `workspaceId` is null/undefined
+  4. `lib/types.ts` `entity_name` typed as `string | null` matching backend contract
+  5. NotFoundPage strings wrapped in `t` macro and present in EN + ET catalogs
+  6. AuthCallbackPage uses `<HazardStripe>` component instead of inline div
+  7. All settings pages import `useToast` from the barrel (`@/components/retro`)
+**Plans**: TBD
+
+### Phase 55: v2.0 Validation & Requirements Cleanup
+**Goal**: Bring Nyquist validation status current for all v2.0 phases, fix the requirements file to accurately reflect v2.0 scope, and mark all verified requirements as complete
+**Depends on**: Phase 54
+**Gap Closure**: Closes Nyquist gaps for phases 48–53 and fixes requirements documentation gaps from audit
+**Success Criteria** (what must be TRUE):
+  1. Phase 48 has a VALIDATION.md with `nyquist_compliant: true`
+  2. Phases 49, 50, 52, 53 VALIDATION.md frontmatter updated to `nyquist_compliant: true` with sign-off date
+  3. Requirements file Design System section lists DS-01 through DS-10 (not SYNC-01–04)
+  4. Requirements file Dashboard section lists DASH-01 through DASH-03 (not COMP-01–04)
+  5. All 33 v2.0 requirement checkboxes checked `[x]` (SCAF, AUTH, DS, LAY, DASH, SET)
+  6. Traceability table includes all v2.0 REQ-IDs mapped to their phases with status Complete
+**Plans**: TBD
+
 ## Progress
 
 **Execution Order:**
@@ -277,11 +306,13 @@ Phases execute in numeric order: 48 -> 49 -> 50 -> 51 -> 52 -> 53
 | 48. Scaffold | v2.0 | 2/2 | Complete    | 2026-04-09 |
 | 49. Auth & API Client | v2.0 | 2/2 | Complete   | 2026-04-10 |
 | 50. Design System | v2.0 | 0/TBD | Not started | - |
-| 51. App Layout | v2.0 | 0/TBD | Not started | - |
+| 51. App Layout | v2.0 | 2/2 | Complete   | 2026-04-11 |
 | 52. Dashboard | v2.0 | 0/TBD | Not started | - |
 | 53. Settings Hub | v2.0 | 3/3 | Complete   | 2026-04-11 |
+| 54. Tech Debt Code Fixes | v2.0 | 0/TBD | Not started | - |
+| 55. Validation & Requirements Cleanup | v2.0 | 0/TBD | Not started | - |
 
-**Total:** 47 phases complete (130 plans executed) across 10 milestones + 6 phases planned for v2.0
+**Total:** 47 phases complete (130 plans executed) across 10 milestones + 8 phases planned for v2.0
 
 ---
 *Roadmap created: 2026-01-24*
