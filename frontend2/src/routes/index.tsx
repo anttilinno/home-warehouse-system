@@ -9,6 +9,13 @@ import { LoansPage } from "@/features/loans/LoansPage";
 import { ScanPage } from "@/features/scan/ScanPage";
 import { SetupPage } from "@/features/setup/SetupPage";
 import { SettingsPage } from "@/features/settings/SettingsPage";
+import { ProfilePage } from "@/features/settings/ProfilePage";
+import { SecurityPage } from "@/features/settings/SecurityPage";
+import { AppearancePage } from "@/features/settings/AppearancePage";
+import { LanguagePage } from "@/features/settings/LanguagePage";
+import { FormatsPage } from "@/features/settings/FormatsPage";
+import { NotificationsPage } from "@/features/settings/NotificationsPage";
+import { DataPage } from "@/features/settings/DataPage";
 import { RetroPanel } from "@/components/retro";
 
 function NotFoundPage() {
@@ -88,6 +95,62 @@ export function AppRoutes() {
         element={
           <RequireAuth>
             <SettingsPage />
+          </RequireAuth>
+        }
+      />
+      <Route
+        path="/settings/profile"
+        element={
+          <RequireAuth>
+            <ProfilePage />
+          </RequireAuth>
+        }
+      />
+      <Route
+        path="/settings/security"
+        element={
+          <RequireAuth>
+            <SecurityPage />
+          </RequireAuth>
+        }
+      />
+      <Route
+        path="/settings/appearance"
+        element={
+          <RequireAuth>
+            <AppearancePage />
+          </RequireAuth>
+        }
+      />
+      <Route
+        path="/settings/language"
+        element={
+          <RequireAuth>
+            <LanguagePage />
+          </RequireAuth>
+        }
+      />
+      <Route
+        path="/settings/formats"
+        element={
+          <RequireAuth>
+            <FormatsPage />
+          </RequireAuth>
+        }
+      />
+      <Route
+        path="/settings/notifications"
+        element={
+          <RequireAuth>
+            <NotificationsPage />
+          </RequireAuth>
+        }
+      />
+      <Route
+        path="/settings/data"
+        element={
+          <RequireAuth>
+            <DataPage />
           </RequireAuth>
         }
       />

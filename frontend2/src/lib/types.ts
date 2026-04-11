@@ -1,3 +1,40 @@
+export interface NotificationPreferences {
+  enabled: boolean;
+  loans?: boolean;
+  inventory?: boolean;
+  workspace?: boolean;
+  system?: boolean;
+}
+
+export interface Session {
+  id: string;
+  device_info: string;
+  ip_address?: string;
+  last_active_at: string;
+  created_at: string;
+  is_current: boolean;
+}
+
+export interface OAuthAccount {
+  provider: string;
+  email?: string;
+  created_at: string;
+}
+
+export interface ImportError {
+  row: number;
+  column?: string;
+  message: string;
+  code: string;
+}
+
+export interface ImportResult {
+  total_rows: number;
+  succeeded: number;
+  failed: number;
+  errors?: ImportError[];
+}
+
 export interface User {
   id: string;
   email: string;
@@ -11,6 +48,7 @@ export interface User {
   language: string;
   theme: string;
   avatar_url: string | null;
+  notification_preferences?: NotificationPreferences;
   created_at: string;
   updated_at: string;
 }
