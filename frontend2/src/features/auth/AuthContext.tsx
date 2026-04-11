@@ -7,10 +7,16 @@ import {
   type ReactNode,
 } from "react";
 import { get, post, setRefreshToken } from "@/lib/api";
-import type { User, AuthTokenResponse, RegisterData } from "@/lib/types";
+import type {
+  User,
+  AuthTokenResponse,
+  RegisterData,
+  WorkspaceListResponse,
+} from "@/lib/types";
 
 interface AuthContextValue {
   user: User | null;
+  workspaceId: string | null;
   isLoading: boolean;
   isAuthenticated: boolean;
   login: (email: string, password: string) => Promise<void>;
@@ -29,14 +35,25 @@ export function useAuth(): AuthContextValue {
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
+  const [workspaceId, setWorkspaceId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   const loadUser = useCallback(async () => {
     try {
       const me = await get<User>("/users/me");
       setUser(me);
+      // Resolve workspace (per D-01)
+      const wsRes = await get<WorkspaceListResponse>("/workspaces");
+      if (wsRes.items.length > 0) {
+        // Prefer personal workspace, fall back to first
+        const personal = wsRes.items.find((ws) => ws.is_personal);
+        setWorkspaceId(personal ? personal.id : wsRes.items[0].id);
+      } else {
+        setWorkspaceId(null);
+      }
     } catch {
       setUser(null);
+      setWorkspaceId(null);
       setRefreshToken(null);
     }
   }, []);
@@ -75,6 +92,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
     setRefreshToken(null);
     setUser(null);
+    setWorkspaceId(null);
   }, []);
 
   const refreshUser = useCallback(async () => {
@@ -85,6 +103,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     <AuthContext.Provider
       value={{
         user,
+        workspaceId,
         isLoading,
         isAuthenticated: !!user,
         login,

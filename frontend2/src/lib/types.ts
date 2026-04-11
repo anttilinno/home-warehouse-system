@@ -32,3 +32,40 @@ export interface ApiError {
   detail?: string;
   code?: string;
 }
+
+export interface Workspace {
+  id: string;
+  name: string;
+  slug: string;
+  description?: string;
+  is_personal: boolean;
+  role?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface WorkspaceListResponse {
+  items: Workspace[];
+}
+
+export interface DashboardStats {
+  total_items: number;
+  total_inventory: number;
+  total_locations: number;
+  total_containers: number;
+  active_loans: number;
+  overdue_loans: number;
+  low_stock_items: number;
+  total_categories: number;
+  total_borrowers: number;
+}
+
+export interface RecentActivity {
+  id: string;
+  user_id?: string;
+  action: string;
+  entity_type: string;
+  entity_id: string;
+  entity_name?: string;
+  created_at: string;
+}
