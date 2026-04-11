@@ -78,28 +78,33 @@ export function FormatsPage() {
   );
 
   async function handleDateFormatChange(value: string) {
+    const prev = dateFormat;
     setDateFormat(value);
     try {
       await patch<User>("/users/me/preferences", { date_format: value });
       await refreshUser();
       addToast(t`CHANGES SAVED`, "success");
     } catch {
+      setDateFormat(prev);
       addToast(t`Failed to save changes. Check your connection and try again.`, "error");
     }
   }
 
   async function handleTimeFormatChange(value: string) {
+    const prev = timeFormat;
     setTimeFormat(value);
     try {
       await patch<User>("/users/me/preferences", { time_format: value });
       await refreshUser();
       addToast(t`CHANGES SAVED`, "success");
     } catch {
+      setTimeFormat(prev);
       addToast(t`Failed to save changes. Check your connection and try again.`, "error");
     }
   }
 
   async function handleNumberFormatChange(value: string) {
+    const prev = numberFormat;
     setNumberFormat(value);
     const { thousand_separator, decimal_separator } = parseNumberFormat(value);
     try {
@@ -107,6 +112,7 @@ export function FormatsPage() {
       await refreshUser();
       addToast(t`CHANGES SAVED`, "success");
     } catch {
+      setNumberFormat(prev);
       addToast(t`Failed to save changes. Check your connection and try again.`, "error");
     }
   }
