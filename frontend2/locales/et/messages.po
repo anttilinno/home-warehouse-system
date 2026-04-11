@@ -522,6 +522,10 @@ msgstr ""
 msgid "SETTINGS"
 msgstr "SEADED"
 
+#: src/components/layout/ErrorBoundaryPage.tsx:31
+msgid "SYSTEM ERROR"
+msgstr "SÜSTEEMIVIGA"
+
 #: src/features/auth/OAuthButtons.tsx:66
 msgid "Sign in with GitHub"
 msgstr "Logi sisse GitHub'iga"

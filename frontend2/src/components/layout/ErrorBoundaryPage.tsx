@@ -28,7 +28,7 @@ export function ErrorBoundaryPage({ error: errorProp }: ErrorBoundaryPageProps) 
       <RetroPanel showHazardStripe className="max-w-[480px] w-full">
         <div className="flex flex-col gap-md">
           <h1 className="text-[20px] font-bold uppercase text-retro-ink">
-            SYSTEM ERROR
+            {t`SYSTEM ERROR`}
           </h1>
           <p className="bg-retro-charcoal text-retro-cream p-md border-retro-thick border-retro-ink font-mono text-[14px]">
             {errorMessage}
