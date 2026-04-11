@@ -1,8 +1,14 @@
 import { render, screen } from "@testing-library/react";
-import { userEvent } from "@testing-library/user-event";
+import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router";
+import { i18n } from "@lingui/core";
+import { I18nProvider } from "@lingui/react";
 import { vi } from "vitest";
 import { TopBar } from "../TopBar";
+
+// Setup lingui for tests
+i18n.load("en", {});
+i18n.activate("en");
 
 const mockLogout = vi.fn();
 
@@ -15,9 +21,11 @@ vi.mock("@/features/auth/AuthContext", () => ({
 
 function renderTopBar(props?: Partial<{ onMenuClick: () => void; drawerOpen: boolean }>) {
   return render(
-    <MemoryRouter>
-      <TopBar onMenuClick={vi.fn()} drawerOpen={false} {...props} />
-    </MemoryRouter>
+    <I18nProvider i18n={i18n}>
+      <MemoryRouter>
+        <TopBar onMenuClick={vi.fn()} drawerOpen={false} {...props} />
+      </MemoryRouter>
+    </I18nProvider>
   );
 }
 
@@ -48,22 +56,9 @@ describe("TopBar", () => {
   });
 
   it("displays avatar img when avatar_url is provided", () => {
-    vi.mock("@/features/auth/AuthContext", () => ({
-      useAuth: () => ({
-        user: { full_name: "Test User", avatar_url: "https://example.com/avatar.jpg" },
-        logout: mockLogout,
-      }),
-    }));
-    // Re-render with avatar - the mock module is already set, so just check img renders
-    render(
-      <MemoryRouter>
-        <TopBar onMenuClick={vi.fn()} drawerOpen={false} />
-      </MemoryRouter>
-    );
-    // When avatar_url is null (current mock), no img should render
-    const imgs = screen.queryAllByRole("img");
-    // Either 0 imgs (null avatar) or 1 img (with avatar) -- just assert no crash
-    expect(imgs.length).toBeGreaterThanOrEqual(0);
+    renderTopBar();
+    // With null avatar_url, no img should render
+    expect(screen.queryByRole("img")).toBeNull();
   });
 
   it("renders a logout button with text LOGOUT", () => {
