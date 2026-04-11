@@ -29,27 +29,32 @@ vi.mock("react-router", async () => {
 
 // EventSource mock (jsdom doesn't have it)
 const mockClose = vi.fn();
-const mockEventSourceInstances: Array<{
+interface MockESInstance {
   onmessage: ((ev: MessageEvent) => void) | null;
   onerror: ((ev: Event) => void) | null;
   close: ReturnType<typeof vi.fn>;
-}> = [];
+}
+const mockEventSourceInstances: MockESInstance[] = [];
+const mockEventSourceConstructor = vi.fn();
 
-global.EventSource = vi.fn().mockImplementation(() => {
-  const instance = {
-    onmessage: null as ((ev: MessageEvent) => void) | null,
-    onerror: null as ((ev: Event) => void) | null,
-    close: mockClose,
-    addEventListener: vi.fn(),
-    removeEventListener: vi.fn(),
-    readyState: 0,
-    CONNECTING: 0,
-    OPEN: 1,
-    CLOSED: 2,
-  };
-  mockEventSourceInstances.push(instance);
-  return instance;
-}) as unknown as typeof EventSource;
+class MockEventSource {
+  onmessage: ((ev: MessageEvent) => void) | null = null;
+  onerror: ((ev: Event) => void) | null = null;
+  close = mockClose;
+  addEventListener = vi.fn();
+  removeEventListener = vi.fn();
+  readyState = 0;
+  CONNECTING = 0;
+  OPEN = 1;
+  CLOSED = 2;
+
+  constructor(url: string, init?: EventSourceInit) {
+    mockEventSourceConstructor(url, init);
+    mockEventSourceInstances.push(this);
+  }
+}
+
+global.EventSource = MockEventSource as unknown as typeof EventSource;
 
 import { get } from "@/lib/api";
 import { StatPanel } from "../StatPanel";
@@ -130,8 +135,13 @@ describe("DashboardPage", () => {
   });
 
   it("fetches dashboard stats on mount and renders 3 stat panels", async () => {
-    mockGet.mockResolvedValueOnce(fakeStats); // analytics/dashboard
-    mockGet.mockResolvedValueOnce([]); // analytics/activity
+    mockGet.mockImplementation((endpoint: string) => {
+      if (endpoint.includes("analytics/dashboard"))
+        return Promise.resolve(fakeStats);
+      if (endpoint.includes("analytics/activity"))
+        return Promise.resolve([]);
+      return Promise.resolve(null);
+    });
 
     renderWithProviders(<DashboardPage />);
 
@@ -148,7 +158,7 @@ describe("DashboardPage", () => {
 
   it('shows "---" in stat panels while loading', () => {
     // get never resolves
-    mockGet.mockReturnValue(new Promise(() => {}));
+    mockGet.mockImplementation(() => new Promise(() => {}));
 
     renderWithProviders(<DashboardPage />);
 
@@ -231,7 +241,7 @@ describe("ActivityFeed", () => {
     );
 
     await waitFor(() => {
-      expect(global.EventSource).toHaveBeenCalledWith(
+      expect(mockEventSourceConstructor).toHaveBeenCalledWith(
         "/api/workspaces/ws-1/sse",
         { withCredentials: true }
       );

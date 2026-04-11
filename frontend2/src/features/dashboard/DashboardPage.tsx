@@ -5,6 +5,8 @@ import { useAuth } from "@/features/auth/AuthContext";
 import { get } from "@/lib/api";
 import type { DashboardStats } from "@/lib/types";
 import { StatPanel } from "./StatPanel";
+import { ActivityFeed } from "./ActivityFeed";
+import { QuickActionCards } from "./QuickActionCards";
 
 export function DashboardPage() {
   const { t } = useLingui();
@@ -55,7 +57,11 @@ export function DashboardPage() {
         />
       </div>
 
-      {/* ActivityFeed and QuickActionCards will be added in Task 2 */}
+      {/* Activity feed -- per D-06, D-07, D-08 */}
+      <ActivityFeed workspaceId={workspaceId} />
+
+      {/* Quick actions -- per D-09 */}
+      <QuickActionCards />
     </div>
   );
 }
