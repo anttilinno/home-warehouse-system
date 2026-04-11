@@ -266,7 +266,10 @@ Plans:
   5. NotFoundPage strings wrapped in `t` macro and present in EN + ET catalogs
   6. AuthCallbackPage uses `<HazardStripe>` component instead of inline div
   7. All settings pages import `useToast` from the barrel (`@/components/retro`)
-**Plans**: TBD
+**Plans**: 2 plans
+Plans:
+- [ ] 54-01-PLAN.md — Nav + Auth hardening: Sidebar ITEMS/LOANS links, HttpError class, AuthContext 401/403-only token clear, DataPage null-guard
+- [ ] 54-02-PLAN.md — i18n + Type + Consistency: entity_name type fix, NotFoundPage t macro + catalogs, AuthCallbackPage HazardStripe, barrel imports for useToast
 
 ### Phase 55: v2.0 Validation & Requirements Cleanup
 **Goal**: Bring Nyquist validation status current for all v2.0 phases, fix the requirements file to accurately reflect v2.0 scope, and mark all verified requirements as complete
@@ -309,7 +312,7 @@ Phases execute in numeric order: 48 -> 49 -> 50 -> 51 -> 52 -> 53
 | 51. App Layout | v2.0 | 2/2 | Complete   | 2026-04-11 |
 | 52. Dashboard | v2.0 | 0/TBD | Not started | - |
 | 53. Settings Hub | v2.0 | 3/3 | Complete   | 2026-04-11 |
-| 54. Tech Debt Code Fixes | v2.0 | 0/TBD | Not started | - |
+| 54. Tech Debt Code Fixes | v2.0 | 0/2 | Not started | - |
 | 55. Validation & Requirements Cleanup | v2.0 | 0/TBD | Not started | - |
 
 **Total:** 47 phases complete (130 plans executed) across 10 milestones + 8 phases planned for v2.0
