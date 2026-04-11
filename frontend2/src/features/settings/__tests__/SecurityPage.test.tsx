@@ -5,12 +5,20 @@ import { i18n } from "@lingui/core";
 import { I18nProvider } from "@lingui/react";
 
 vi.mock("@/lib/api", () => ({
-  get: vi.fn(),
+  get: vi.fn().mockResolvedValue([]),
   post: vi.fn(),
   patch: vi.fn(),
   del: vi.fn(),
   setRefreshToken: vi.fn(),
 }));
+
+vi.mock("@/components/retro", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@/components/retro")>();
+  return {
+    ...actual,
+    useToast: () => ({ addToast: vi.fn() }),
+  };
+});
 
 vi.mock("@/features/auth/AuthContext", () => ({
   useAuth: () => ({
