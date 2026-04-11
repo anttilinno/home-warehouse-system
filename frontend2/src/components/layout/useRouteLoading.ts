@@ -14,16 +14,19 @@ export function useRouteLoading() {
     setIsLoading(true);
     setProgress(90);
 
+    let t2: ReturnType<typeof setTimeout>;
     const t1 = setTimeout(() => {
       setProgress(100);
-      const t2 = setTimeout(() => {
+      t2 = setTimeout(() => {
         setIsLoading(false);
         setProgress(0);
       }, 200);
-      return () => clearTimeout(t2);
     }, 300);
 
-    return () => clearTimeout(t1);
+    return () => {
+      clearTimeout(t1);
+      clearTimeout(t2);
+    };
   }, [location.pathname]);
 
   return { isLoading, progress };
