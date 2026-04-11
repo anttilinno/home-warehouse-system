@@ -1,10 +1,11 @@
 ---
 phase: 51
 slug: app-layout
-status: draft
-nyquist_compliant: false
-wave_0_complete: false
+status: complete
+nyquist_compliant: true
+wave_0_complete: true
 created: 2026-04-11
+audited: 2026-04-11
 ---
 
 # Phase 51 — Validation Strategy
@@ -38,17 +39,17 @@ created: 2026-04-11
 
 | Task ID | Plan | Wave | Requirement | Threat Ref | Secure Behavior | Test Type | Automated Command | File Exists | Status |
 |---------|------|------|-------------|------------|-----------------|-----------|-------------------|-------------|--------|
-| 51-01-01 | 01 | 0 | LAY-01 | — | N/A | unit stub | `cd frontend2 && bun vitest run src/components/layout/__tests__/AppShell.test.tsx` | ❌ W0 | ⬜ pending |
-| 51-01-02 | 01 | 0 | LAY-01 | — | N/A | unit stub | `cd frontend2 && bun vitest run src/components/layout/__tests__/Sidebar.test.tsx` | ❌ W0 | ⬜ pending |
-| 51-01-03 | 01 | 0 | LAY-01 | — | N/A | unit stub | `cd frontend2 && bun vitest run src/components/layout/__tests__/TopBar.test.tsx` | ❌ W0 | ⬜ pending |
-| 51-01-04 | 01 | 0 | LAY-03 | — | N/A | unit stub | `cd frontend2 && bun vitest run src/components/layout/__tests__/LoadingBar.test.tsx` | ❌ W0 | ⬜ pending |
-| 51-01-05 | 01 | 0 | LAY-03 | — | N/A | unit stub | `cd frontend2 && bun vitest run src/components/layout/__tests__/ErrorBoundary.test.tsx` | ❌ W0 | ⬜ pending |
-| 51-02-01 | 02 | 1 | LAY-01 | — | N/A | unit | `cd frontend2 && bun vitest run src/components/layout/__tests__/Sidebar.test.tsx` | ✅ | ⬜ pending |
-| 51-02-02 | 02 | 1 | LAY-01 | — | N/A | unit | `cd frontend2 && bun vitest run src/components/layout/__tests__/TopBar.test.tsx` | ✅ | ⬜ pending |
-| 51-02-03 | 02 | 1 | LAY-02 | — | N/A | unit | `cd frontend2 && bun vitest run src/components/layout/__tests__/AppShell.test.tsx` | ✅ | ⬜ pending |
-| 51-02-04 | 02 | 1 | LAY-03 | — | N/A | unit | `cd frontend2 && bun vitest run src/components/layout/__tests__/LoadingBar.test.tsx` | ✅ | ⬜ pending |
-| 51-02-05 | 02 | 1 | LAY-03 | — | N/A | unit | `cd frontend2 && bun vitest run src/components/layout/__tests__/ErrorBoundary.test.tsx` | ✅ | ⬜ pending |
-| 51-03-01 | 03 | 2 | LAY-01, LAY-02, LAY-03 | — | Auth routes excluded from shell | integration | `cd frontend2 && bun run test && bun run build` | ✅ | ⬜ pending |
+| 51-01-01 | 01 | 0 | LAY-01 | — | N/A | unit stub | `cd frontend2 && bun vitest run src/components/layout/__tests__/AppShell.test.tsx` | ✅ | ✅ green |
+| 51-01-02 | 01 | 0 | LAY-01 | — | N/A | unit stub | `cd frontend2 && bun vitest run src/components/layout/__tests__/Sidebar.test.tsx` | ✅ | ✅ green |
+| 51-01-03 | 01 | 0 | LAY-01 | — | N/A | unit stub | `cd frontend2 && bun vitest run src/components/layout/__tests__/TopBar.test.tsx` | ✅ | ✅ green |
+| 51-01-04 | 01 | 0 | LAY-03 | — | N/A | unit stub | `cd frontend2 && bun vitest run src/components/layout/__tests__/LoadingBar.test.tsx` | ✅ | ✅ green |
+| 51-01-05 | 01 | 0 | LAY-03 | — | N/A | unit stub | `cd frontend2 && bun vitest run src/components/layout/__tests__/ErrorBoundary.test.tsx` | ✅ | ✅ green |
+| 51-02-01 | 02 | 1 | LAY-01 | — | N/A | unit | `cd frontend2 && bun vitest run src/components/layout/__tests__/Sidebar.test.tsx` | ✅ | ✅ green |
+| 51-02-02 | 02 | 1 | LAY-01 | — | N/A | unit | `cd frontend2 && bun vitest run src/components/layout/__tests__/TopBar.test.tsx` | ✅ | ✅ green |
+| 51-02-03 | 02 | 1 | LAY-02 | — | N/A | unit | `cd frontend2 && bun vitest run src/components/layout/__tests__/AppShell.test.tsx` | ✅ | ✅ green |
+| 51-02-04 | 02 | 1 | LAY-03 | — | N/A | unit | `cd frontend2 && bun vitest run src/components/layout/__tests__/LoadingBar.test.tsx` | ✅ | ✅ green |
+| 51-02-05 | 02 | 1 | LAY-03 | — | N/A | unit | `cd frontend2 && bun vitest run src/components/layout/__tests__/ErrorBoundary.test.tsx` | ✅ | ✅ green |
+| 51-03-01 | 02 | 2 | LAY-01, LAY-02, LAY-03 | — | Auth routes excluded from shell | integration | `cd frontend2 && bun run test && bun run build` | ✅ | ✅ green |
 
 *Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
 
@@ -56,13 +57,13 @@ created: 2026-04-11
 
 ## Wave 0 Requirements
 
-- [ ] `frontend2/src/components/layout/__tests__/AppShell.test.tsx` — stubs for LAY-01a, LAY-02a, LAY-02b, LAY-02c
-- [ ] `frontend2/src/components/layout/__tests__/Sidebar.test.tsx` — stubs for LAY-01b, LAY-01c
-- [ ] `frontend2/src/components/layout/__tests__/TopBar.test.tsx` — stubs for LAY-01d
-- [ ] `frontend2/src/components/layout/__tests__/LoadingBar.test.tsx` — stub for LAY-03a
-- [ ] `frontend2/src/components/layout/__tests__/ErrorBoundary.test.tsx` — stub for LAY-03b
+- [x] `frontend2/src/components/layout/__tests__/AppShell.test.tsx` — stubs for LAY-01a, LAY-02a, LAY-02b, LAY-02c
+- [x] `frontend2/src/components/layout/__tests__/Sidebar.test.tsx` — stubs for LAY-01b, LAY-01c
+- [x] `frontend2/src/components/layout/__tests__/TopBar.test.tsx` — stubs for LAY-01d
+- [x] `frontend2/src/components/layout/__tests__/LoadingBar.test.tsx` — stub for LAY-03a
+- [x] `frontend2/src/components/layout/__tests__/ErrorBoundary.test.tsx` — stub for LAY-03b
 
-*All test files are Wave 0 — must be created as stubs before implementation begins.*
+*All test files created and passing (150/150 tests green, build clean).*
 
 ---
 
@@ -79,11 +80,23 @@ created: 2026-04-11
 
 ## Validation Sign-Off
 
-- [ ] All tasks have `<automated>` verify or Wave 0 dependencies
-- [ ] Sampling continuity: no 3 consecutive tasks without automated verify
-- [ ] Wave 0 covers all MISSING references
-- [ ] No watch-mode flags
-- [ ] Feedback latency < 15s
-- [ ] `nyquist_compliant: true` set in frontmatter
+- [x] All tasks have `<automated>` verify or Wave 0 dependencies
+- [x] Sampling continuity: no 3 consecutive tasks without automated verify
+- [x] Wave 0 covers all MISSING references
+- [x] No watch-mode flags
+- [x] Feedback latency < 15s
+- [x] `nyquist_compliant: true` set in frontmatter
 
-**Approval:** pending
+**Approval:** 2026-04-11 — audit pass, 0 gaps found, 150/150 tests green, build clean
+
+---
+
+## Validation Audit 2026-04-11
+
+| Metric | Count |
+|--------|-------|
+| Gaps found | 0 |
+| Resolved | 0 |
+| Escalated | 0 |
+| Tests passing | 150 / 150 |
+| Build | clean |
