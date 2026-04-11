@@ -13,6 +13,18 @@ msgstr ""
 "Language-Team: \n"
 "Plural-Forms: \n"
 
+#: src/features/dashboard/ActivityFeed.tsx:59
+msgid "Activity log"
+msgstr "Tegevuste logi"
+
+#: src/features/dashboard/ActivityFeed.tsx:65
+msgid "ACTIVITY LOG"
+msgstr "TEGEVUSTE LOGI"
+
+#: src/features/dashboard/QuickActionCards.tsx:16
+msgid "ADD ITEM"
+msgstr "LISA ESE"
+
 #: src/features/auth/RegisterForm.tsx:88
 msgid "An account with this email already exists. Try logging in instead."
 msgstr "Selle e-postiga konto on juba olemas. Proovi hoopis sisse logida."
@@ -31,6 +43,10 @@ msgstr "AUTENTIMINE EBAONNESTUS"
 msgid "Authentication failed. Try a different sign-in method."
 msgstr "Autentimine ebaonnestus. Proovi teist sisselogimisviisi."
 
+#: src/features/dashboard/DashboardPage.tsx:51
+msgid "CATEGORIES"
+msgstr "KATEGOORIAD"
+
 #: src/features/auth/RegisterForm.tsx:155
 msgid "Confirm password"
 msgstr "Kinnita parool"
@@ -47,6 +63,10 @@ msgstr "Uhendus ebaonnestus. Kontrolli vorguuhendust ja proovi uuesti."
 #: src/features/auth/RegisterForm.tsx:179
 msgid "CREATE ACCOUNT"
 msgstr "LOO KONTO"
+
+#: src/components/layout/Sidebar.tsx:15
+msgid "DASHBOARD"
+msgstr "TOOTEPANEEL"
 
 #: src/features/auth/LoginForm.tsx:94
 #: src/features/auth/RegisterForm.tsx:125
@@ -70,6 +90,21 @@ msgstr "TAISNIMI"
 msgid "Invalid email or password. Check your credentials and try again."
 msgstr "Vale e-post voi parool. Kontrolli oma andmeid ja proovi uuesti."
 
+#: src/components/layout/Sidebar.tsx:16
+#: src/features/dashboard/DashboardPage.tsx:49
+#: src/features/items/ItemsPage.tsx:8
+msgid "ITEMS"
+msgstr "ESEMED"
+
+#: src/components/layout/Sidebar.tsx:17
+#: src/features/loans/LoansPage.tsx:8
+msgid "LOANS"
+msgstr "LAENUTUSED"
+
+#: src/features/dashboard/DashboardPage.tsx:55
+msgid "LOCATIONS"
+msgstr "ASUKOHAD"
+
 #: src/features/auth/LoginForm.tsx:133
 msgid "LOG IN"
 msgstr "LOGI SISSE"
@@ -78,9 +113,24 @@ msgstr "LOGI SISSE"
 msgid "LOGIN"
 msgstr "LOGI SISSE"
 
+#: src/features/dashboard/ActivityFeed.tsx:70
+msgid "NO ACTIVITY YET"
+msgstr "TEGEVUSI VEEL POLE"
+
+#: src/features/setup/SetupPage.tsx:13
+msgid "No workspace found. Please create a workspace to get started."
+msgstr "Toopinda ei leitud. Alustamiseks loo toopind."
+
 #: src/features/auth/OAuthButtons.tsx:44
 msgid "OR"
 msgstr "VOI"
+
+#: src/features/items/ItemsPage.tsx:10
+#: src/features/loans/LoansPage.tsx:10
+#: src/features/scan/ScanPage.tsx:10
+#: src/features/settings/SettingsPage.tsx:10
+msgid "PAGE UNDER CONSTRUCTION"
+msgstr "LEHT ON EHITUSEL"
 
 #: src/features/auth/LoginForm.tsx:109
 #: src/features/auth/RegisterForm.tsx:140
@@ -109,6 +159,19 @@ msgstr "REGISTREERU"
 msgid "RETURN TO LOGIN"
 msgstr "TAGASI SISSELOGIMISELE"
 
+#: src/features/scan/ScanPage.tsx:8
+msgid "SCAN"
+msgstr "SKANEERI"
+
+#: src/features/dashboard/QuickActionCards.tsx:17
+msgid "SCAN BARCODE"
+msgstr "SKANEERI TRIIPKOODI"
+
+#: src/components/layout/Sidebar.tsx:18
+#: src/features/settings/SettingsPage.tsx:8
+msgid "SETTINGS"
+msgstr "SEADED"
+
 #: src/features/auth/OAuthButtons.tsx:66
 msgid "Sign in with GitHub"
 msgstr "Logi sisse GitHub'iga"
@@ -130,6 +193,14 @@ msgstr "LOGI SISSE GOOGLE'IGA"
 msgid "Something went wrong. Try again in a moment."
 msgstr "Midagi laks valesti. Proovi hetke parast uuesti."
 
+#: src/features/dashboard/QuickActionCards.tsx:18
+msgid "VIEW LOANS"
+msgstr "VAATA LAENUTUSI"
+
 #: src/routes/index.tsx:52
-msgid "Welcome to Home Warehouse"
-msgstr "Tere tulemast Home Warehouse'i"
+#~ msgid "Welcome to Home Warehouse"
+#~ msgstr "Tere tulemast Home Warehouse'i"
+
+#: src/features/setup/SetupPage.tsx:10
+msgid "WORKSPACE SETUP"
+msgstr "TOOPINNA SEADISTAMINE"

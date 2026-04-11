@@ -13,6 +13,18 @@ msgstr ""
 "Language-Team: \n"
 "Plural-Forms: \n"
 
+#: src/features/dashboard/ActivityFeed.tsx:59
+msgid "Activity log"
+msgstr "Activity log"
+
+#: src/features/dashboard/ActivityFeed.tsx:65
+msgid "ACTIVITY LOG"
+msgstr "ACTIVITY LOG"
+
+#: src/features/dashboard/QuickActionCards.tsx:16
+msgid "ADD ITEM"
+msgstr "ADD ITEM"
+
 #: src/features/auth/RegisterForm.tsx:88
 msgid "An account with this email already exists. Try logging in instead."
 msgstr "An account with this email already exists. Try logging in instead."
@@ -31,6 +43,10 @@ msgstr "AUTHENTICATION FAILED"
 msgid "Authentication failed. Try a different sign-in method."
 msgstr "Authentication failed. Try a different sign-in method."
 
+#: src/features/dashboard/DashboardPage.tsx:51
+msgid "CATEGORIES"
+msgstr "CATEGORIES"
+
 #: src/features/auth/RegisterForm.tsx:155
 msgid "Confirm password"
 msgstr "Confirm password"
@@ -47,6 +63,10 @@ msgstr "Connection failed. Check your network and try again."
 #: src/features/auth/RegisterForm.tsx:179
 msgid "CREATE ACCOUNT"
 msgstr "CREATE ACCOUNT"
+
+#: src/components/layout/Sidebar.tsx:15
+msgid "DASHBOARD"
+msgstr "DASHBOARD"
 
 #: src/features/auth/LoginForm.tsx:94
 #: src/features/auth/RegisterForm.tsx:125
@@ -70,6 +90,21 @@ msgstr "FULL NAME"
 msgid "Invalid email or password. Check your credentials and try again."
 msgstr "Invalid email or password. Check your credentials and try again."
 
+#: src/components/layout/Sidebar.tsx:16
+#: src/features/dashboard/DashboardPage.tsx:49
+#: src/features/items/ItemsPage.tsx:8
+msgid "ITEMS"
+msgstr "ITEMS"
+
+#: src/components/layout/Sidebar.tsx:17
+#: src/features/loans/LoansPage.tsx:8
+msgid "LOANS"
+msgstr "LOANS"
+
+#: src/features/dashboard/DashboardPage.tsx:55
+msgid "LOCATIONS"
+msgstr "LOCATIONS"
+
 #: src/features/auth/LoginForm.tsx:133
 msgid "LOG IN"
 msgstr "LOG IN"
@@ -78,9 +113,24 @@ msgstr "LOG IN"
 msgid "LOGIN"
 msgstr "LOGIN"
 
+#: src/features/dashboard/ActivityFeed.tsx:70
+msgid "NO ACTIVITY YET"
+msgstr "NO ACTIVITY YET"
+
+#: src/features/setup/SetupPage.tsx:13
+msgid "No workspace found. Please create a workspace to get started."
+msgstr "No workspace found. Please create a workspace to get started."
+
 #: src/features/auth/OAuthButtons.tsx:44
 msgid "OR"
 msgstr "OR"
+
+#: src/features/items/ItemsPage.tsx:10
+#: src/features/loans/LoansPage.tsx:10
+#: src/features/scan/ScanPage.tsx:10
+#: src/features/settings/SettingsPage.tsx:10
+msgid "PAGE UNDER CONSTRUCTION"
+msgstr "PAGE UNDER CONSTRUCTION"
 
 #: src/features/auth/LoginForm.tsx:109
 #: src/features/auth/RegisterForm.tsx:140
@@ -109,6 +159,19 @@ msgstr "REGISTER"
 msgid "RETURN TO LOGIN"
 msgstr "RETURN TO LOGIN"
 
+#: src/features/scan/ScanPage.tsx:8
+msgid "SCAN"
+msgstr "SCAN"
+
+#: src/features/dashboard/QuickActionCards.tsx:17
+msgid "SCAN BARCODE"
+msgstr "SCAN BARCODE"
+
+#: src/components/layout/Sidebar.tsx:18
+#: src/features/settings/SettingsPage.tsx:8
+msgid "SETTINGS"
+msgstr "SETTINGS"
+
 #: src/features/auth/OAuthButtons.tsx:66
 msgid "Sign in with GitHub"
 msgstr "Sign in with GitHub"
@@ -130,6 +193,14 @@ msgstr "SIGN IN WITH GOOGLE"
 msgid "Something went wrong. Try again in a moment."
 msgstr "Something went wrong. Try again in a moment."
 
+#: src/features/dashboard/QuickActionCards.tsx:18
+msgid "VIEW LOANS"
+msgstr "VIEW LOANS"
+
 #: src/routes/index.tsx:52
-msgid "Welcome to Home Warehouse"
-msgstr "Welcome to Home Warehouse"
+#~ msgid "Welcome to Home Warehouse"
+#~ msgstr "Welcome to Home Warehouse"
+
+#: src/features/setup/SetupPage.tsx:10
+msgid "WORKSPACE SETUP"
+msgstr "WORKSPACE SETUP"
