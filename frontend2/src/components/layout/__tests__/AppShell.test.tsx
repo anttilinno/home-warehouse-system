@@ -36,9 +36,7 @@ function renderAppShell(initialEntries: string[] = ["/"]) {
     <I18nProvider i18n={i18n}>
       <MemoryRouter initialEntries={initialEntries}>
         <Routes>
-          <Route
-            element={<AppShell />}
-          >
+          <Route element={<AppShell />}>
             <Route index element={<div>child content</div>} />
           </Route>
         </Routes>
@@ -50,7 +48,9 @@ function renderAppShell(initialEntries: string[] = ["/"]) {
 describe("AppShell", () => {
   it("renders nav, header, and main landmarks", () => {
     renderAppShell();
-    expect(screen.getByRole("navigation")).toBeInTheDocument();
+    // AppShell renders two nav elements: desktop sidebar + mobile drawer sidebar
+    const navElements = screen.getAllByRole("navigation");
+    expect(navElements.length).toBeGreaterThanOrEqual(1);
     expect(screen.getByRole("banner")).toBeInTheDocument();
     expect(screen.getByRole("main")).toBeInTheDocument();
     expect(screen.getByRole("main")).toHaveAttribute("id", "main-content");
@@ -64,19 +64,14 @@ describe("AppShell", () => {
 
   it("LoadingBar is rendered in the DOM", () => {
     renderAppShell();
-    // LoadingBar renders null when not loading but its container is in DOM via the hook mock
-    // The component itself may render null when progress=0, but it's imported into AppShell
-    // We verify AppShell renders by checking the main structure
+    // LoadingBar renders null when isLoading=false and progress=0, but AppShell renders
+    // We verify the shell structure works
     expect(screen.getByRole("main")).toBeInTheDocument();
   });
 
   it("hamburger button opens the mobile drawer on click", () => {
     renderAppShell();
     const hamburger = screen.getByLabelText("Open navigation");
-    // Drawer should be closed initially (has -translate-x-full)
-    // Find the drawer panel element
-    const drawerPanel = hamburger.closest("[class*='fixed']")?.parentElement
-      ?.querySelector("[class*='translate']");
     fireEvent.click(hamburger);
     // After click, drawer should be open -- check for translate-x-0
     const openedDrawer = document.querySelector("[class*='translate-x-0']");
@@ -88,9 +83,10 @@ describe("AppShell", () => {
     const hamburger = screen.getByLabelText("Open navigation");
     fireEvent.click(hamburger);
     // Backdrop should now be visible (opacity-100, not pointer-events-none)
-    const backdrop = document.querySelector("[class*='bg-black\\/50']");
+    const backdrop = document.querySelector("[aria-hidden='true']") as HTMLElement;
     expect(backdrop).toBeInTheDocument();
     expect(backdrop?.className).toContain("opacity-100");
+    expect(backdrop?.className).not.toContain("pointer-events-none");
   });
 
   it("clicking backdrop closes the drawer", () => {
@@ -99,16 +95,14 @@ describe("AppShell", () => {
     fireEvent.click(hamburger);
 
     // Verify drawer is open
-    expect(document.querySelector("[class*='translate-x-0']")).toBeInTheDocument();
+    const mobileDrawer = document.querySelector(".md\\:hidden[class*='translate']") as HTMLElement;
+    expect(mobileDrawer?.className).toContain("translate-x-0");
 
     // Click the backdrop
     const backdrop = document.querySelector("[aria-hidden='true']") as HTMLElement;
     fireEvent.click(backdrop);
 
-    // Drawer should close (hamburger label back to "Open navigation")
-    expect(screen.getByLabelText("Open navigation")).toBeInTheDocument();
-    // Check drawer no longer has translate-x-0 on the mobile drawer panel
-    const mobileDrawer = document.querySelector(".md\\:hidden[class*='translate']");
+    // Check drawer now has -translate-x-full
     expect(mobileDrawer?.className).toContain("-translate-x-full");
   });
 
@@ -118,13 +112,14 @@ describe("AppShell", () => {
     fireEvent.click(hamburger);
 
     // Verify drawer is open
-    expect(document.querySelector("[class*='translate-x-0']")).toBeInTheDocument();
+    const mobileDrawer = document.querySelector(".md\\:hidden[class*='translate']") as HTMLElement;
+    expect(mobileDrawer?.className).toContain("translate-x-0");
 
     // Press Escape
     fireEvent.keyDown(document, { key: "Escape" });
 
     // Drawer should close
-    expect(screen.getByLabelText("Open navigation")).toBeInTheDocument();
+    expect(mobileDrawer?.className).toContain("-translate-x-full");
   });
 
   it("clicking a nav item in the drawer closes the drawer", () => {
@@ -133,14 +128,16 @@ describe("AppShell", () => {
     fireEvent.click(hamburger);
 
     // Verify drawer is open
-    expect(document.querySelector("[class*='translate-x-0']")).toBeInTheDocument();
+    const mobileDrawer = document.querySelector(".md\\:hidden[class*='translate']") as HTMLElement;
+    expect(mobileDrawer?.className).toContain("translate-x-0");
 
-    // Click DASHBOARD nav link
+    // Click DASHBOARD nav link in the mobile drawer
     const dashboardLinks = screen.getAllByText("DASHBOARD");
-    // Click the one in the mobile drawer
-    fireEvent.click(dashboardLinks[0]);
+    // dashboardLinks[0] is in the desktop sidebar (hidden), dashboardLinks[1] is in mobile drawer
+    // Either way, clicking it should trigger onNavClick which closes the drawer
+    fireEvent.click(dashboardLinks[dashboardLinks.length - 1]);
 
     // Drawer should close
-    expect(screen.getByLabelText("Open navigation")).toBeInTheDocument();
+    expect(mobileDrawer?.className).toContain("-translate-x-full");
   });
 });
