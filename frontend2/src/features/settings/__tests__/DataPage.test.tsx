@@ -3,6 +3,7 @@ import { render } from "@testing-library/react";
 import { MemoryRouter } from "react-router";
 import { i18n } from "@lingui/core";
 import { I18nProvider } from "@lingui/react";
+import { ToastProvider } from "@/components/retro/RetroToast";
 
 vi.mock("@/lib/api", () => ({
   get: vi.fn(),
@@ -46,7 +47,9 @@ i18n.activate("en");
 function renderWithProviders(ui: React.ReactElement) {
   return render(
     <I18nProvider i18n={i18n}>
-      <MemoryRouter>{ui}</MemoryRouter>
+      <ToastProvider>
+        <MemoryRouter>{ui}</MemoryRouter>
+      </ToastProvider>
     </I18nProvider>
   );
 }
