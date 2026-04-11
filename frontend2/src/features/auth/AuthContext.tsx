@@ -51,10 +51,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       } else {
         setWorkspaceId(null);
       }
-    } catch {
+    } catch (err) {
       setUser(null);
       setWorkspaceId(null);
-      setRefreshToken(null);
+      // Do not clear the refresh token on transient network errors (TypeError).
+      // Only clear on definitive auth failures so a brief network interruption
+      // does not permanently log the user out.
+      if (!(err instanceof TypeError)) {
+        setRefreshToken(null);
+      }
     }
   }, []);
 
