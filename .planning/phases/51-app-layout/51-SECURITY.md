@@ -53,6 +53,7 @@ created: 2026-04-11
 | Audit Date | Threats Total | Closed | Open | Run By |
 |------------|---------------|--------|------|--------|
 | 2026-04-11 | 6 | 6 | 0 | gsd-security-auditor (State B — from PLAN.md artifacts) |
+| 2026-04-11 | 6 | 6 | 0 | /gsd-secure-phase re-audit (State A — mitigations verified in codebase) |
 
 ---
 
