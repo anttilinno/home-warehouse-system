@@ -7,6 +7,7 @@ import { AuthPage } from "@/features/auth/AuthPage";
 import { AuthCallbackPage } from "@/features/auth/AuthCallbackPage";
 import { RetroPanel } from "@/components/retro";
 import { DemoPage } from "@/pages/DemoPage";
+import { SetupPage } from "@/features/setup/SetupPage";
 
 function NavBar() {
   return (
@@ -121,6 +122,14 @@ export function AppRoutes() {
         element={
           <RequireAuth>
             <SettingsPage />
+          </RequireAuth>
+        }
+      />
+      <Route
+        path="/setup"
+        element={
+          <RequireAuth>
+            <SetupPage />
           </RequireAuth>
         }
       />
