@@ -114,8 +114,8 @@ export function SecurityPage() {
 
   const fetchAccounts = async () => {
     try {
-      const data = await get<OAuthAccount[]>("/auth/oauth/accounts");
-      setAccounts(data);
+      const data = await get<{ accounts: OAuthAccount[] }>("/auth/oauth/accounts");
+      setAccounts(data.accounts ?? []);
     } catch {
       addToast(t`Failed to load connected accounts.`, "error");
     }

@@ -780,7 +780,7 @@ func (h *Handler) uploadAvatar(w http.ResponseWriter, r *http.Request) {
 	notifPrefsJSON, _ := json.Marshal(user.NotificationPreferences())
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, `{"id":"%s","email":"%s","full_name":"%s","has_password":%t,"date_format":"%s","time_format":"%s","thousand_separator":"%s","decimal_separator":"%s","language":"%s","theme":"%s","notification_preferences":%s,"avatar_url":"/users/me/avatar"}`,
+	fmt.Fprintf(w, `{"id":"%s","email":"%s","full_name":"%s","has_password":%t,"date_format":"%s","time_format":"%s","thousand_separator":"%s","decimal_separator":"%s","language":"%s","theme":"%s","notification_preferences":%s,"avatar_url":"/api/users/me/avatar"}`,
 		user.ID(), user.Email(), user.FullName(), user.HasPassword(), user.DateFormat(), user.TimeFormat(), user.ThousandSeparator(), user.DecimalSeparator(), user.Language(), user.Theme(), notifPrefsJSON)
 }
 
@@ -1034,7 +1034,7 @@ func generateAvatarURL(avatarPath *string) *string {
 	if avatarPath == nil || *avatarPath == "" {
 		return nil
 	}
-	url := "/users/me/avatar"
+	url := "/api/users/me/avatar"
 	return &url
 }
 

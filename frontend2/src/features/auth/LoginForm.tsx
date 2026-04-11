@@ -48,8 +48,8 @@ export function LoginForm() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState("seeder@test.local");
+  const [password, setPassword] = useState("password123");
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
