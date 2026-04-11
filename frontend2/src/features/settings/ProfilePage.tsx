@@ -34,12 +34,13 @@ export function ProfilePage() {
     formData.append("avatar", file);
     setAvatarLoading(true);
     try {
-      await fetch("/api/users/me/avatar", {
+      const response = await fetch("/api/users/me/avatar", {
         method: "POST",
         credentials: "include",
         body: formData,
         // DO NOT set Content-Type header — browser sets it with boundary
       });
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
       await refreshUser();
       addToast(t`AVATAR UPLOADED`, "success");
     } catch {
