@@ -54,6 +54,8 @@ global.EventSource = vi.fn().mockImplementation(() => {
 import { get } from "@/lib/api";
 import { StatPanel } from "../StatPanel";
 import { DashboardPage } from "../DashboardPage";
+import { ActivityFeed } from "../ActivityFeed";
+import { QuickActionCards } from "../QuickActionCards";
 
 const mockGet = vi.mocked(get);
 
@@ -163,5 +165,118 @@ describe("DashboardPage", () => {
     renderWithProviders(<DashboardPage />);
 
     expect(mockNavigate).toHaveBeenCalledWith("/setup", { replace: true });
+  });
+});
+
+const fakeActivity = [
+  {
+    id: "a1",
+    action: "created",
+    entity_type: "item",
+    entity_id: "i1",
+    entity_name: "Drill Press",
+    created_at: "2026-04-11T14:30:00Z",
+  },
+  {
+    id: "a2",
+    action: "moved",
+    entity_type: "container",
+    entity_id: "c1",
+    entity_name: null,
+    created_at: "2026-04-11T09:15:00Z",
+  },
+];
+
+describe("ActivityFeed", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockEventSourceInstances.length = 0;
+  });
+
+  it("renders formatted log lines as [HH:MM] ACTION entity_type: entity_name", async () => {
+    mockGet.mockResolvedValueOnce(fakeActivity);
+
+    renderWithProviders(<ActivityFeed workspaceId="ws-1" />);
+
+    await waitFor(() => {
+      expect(screen.getByText(/CREATED item: Drill Press/)).toBeInTheDocument();
+    });
+  });
+
+  it("renders [HH:MM] ACTION entity_type when entity_name is null", async () => {
+    mockGet.mockResolvedValueOnce(fakeActivity);
+
+    renderWithProviders(<ActivityFeed workspaceId="ws-1" />);
+
+    await waitFor(() => {
+      expect(screen.getByText(/MOVED container$/)).toBeInTheDocument();
+    });
+  });
+
+  it('shows "> NO ACTIVITY YET" when entries array is empty', async () => {
+    mockGet.mockResolvedValueOnce([]);
+
+    renderWithProviders(<ActivityFeed workspaceId="ws-1" />);
+
+    await waitFor(() => {
+      expect(screen.getByRole("status")).toHaveTextContent("NO ACTIVITY YET");
+    });
+  });
+
+  it("opens EventSource with withCredentials on mount and closes on unmount", async () => {
+    mockGet.mockResolvedValueOnce([]);
+
+    const { unmount } = renderWithProviders(
+      <ActivityFeed workspaceId="ws-1" />
+    );
+
+    await waitFor(() => {
+      expect(global.EventSource).toHaveBeenCalledWith(
+        "/api/workspaces/ws-1/sse",
+        { withCredentials: true }
+      );
+    });
+
+    unmount();
+
+    expect(mockClose).toHaveBeenCalled();
+  });
+
+  it("re-fetches activity when EventSource fires onmessage", async () => {
+    mockGet.mockResolvedValueOnce([]); // initial fetch
+
+    renderWithProviders(<ActivityFeed workspaceId="ws-1" />);
+
+    await waitFor(() => {
+      expect(mockEventSourceInstances.length).toBe(1);
+    });
+
+    // Clear mock call count to isolate re-fetch
+    mockGet.mockClear();
+    mockGet.mockResolvedValueOnce(fakeActivity);
+
+    // Fire SSE message
+    const esInstance = mockEventSourceInstances[0];
+    esInstance.onmessage!({} as MessageEvent);
+
+    await waitFor(() => {
+      expect(mockGet).toHaveBeenCalledWith(
+        "/workspaces/ws-1/analytics/activity?limit=10"
+      );
+    });
+  });
+});
+
+describe("QuickActionCards", () => {
+  it("renders 3 cards with links to /items, /scan, /loans", () => {
+    renderWithProviders(<QuickActionCards />);
+
+    const links = screen.getAllByRole("link");
+    const hrefs = links.map((l) => l.getAttribute("href"));
+
+    expect(hrefs).toContain("/items");
+    expect(hrefs).toContain("/scan");
+    expect(hrefs).toContain("/loans");
+    expect(links.length).toBe(3);
   });
 });
