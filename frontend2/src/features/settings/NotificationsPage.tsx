@@ -76,24 +76,32 @@ export function NotificationsPage() {
       workspace: categories.workspace,
       system: categories.system,
     };
+    await patch<User>("/users/me/preferences", { notification_preferences: prefs });
+    await refreshUser();
+    addToast(t`CHANGES SAVED`, "success");
+  }
+
+  async function handleMasterChange(value: boolean) {
+    const prev = masterEnabled;
+    setMasterEnabled(value);
     try {
-      await patch<User>("/users/me/preferences", { notification_preferences: prefs });
-      await refreshUser();
-      addToast(t`CHANGES SAVED`, "success");
+      await savePreferences(value, categoryStates);
     } catch {
+      setMasterEnabled(prev);
       addToast(t`Failed to save changes. Check your connection and try again.`, "error");
     }
   }
 
-  async function handleMasterChange(value: boolean) {
-    setMasterEnabled(value);
-    await savePreferences(value, categoryStates);
-  }
-
   async function handleCategoryChange(key: keyof typeof categoryStates, value: boolean) {
+    const prev = categoryStates;
     const next = { ...categoryStates, [key]: value };
     setCategoryStates(next);
-    await savePreferences(masterEnabled, next);
+    try {
+      await savePreferences(masterEnabled, next);
+    } catch {
+      setCategoryStates(prev);
+      addToast(t`Failed to save changes. Check your connection and try again.`, "error");
+    }
   }
 
   const categories: { key: keyof typeof categoryStates; label: string }[] = [
