@@ -33,6 +33,26 @@ const fakeUser = {
   updated_at: "2026-01-01T00:00:00Z",
 };
 
+const fakeWorkspace = {
+  id: "ws-1",
+  name: "Personal",
+  slug: "personal",
+  is_personal: true,
+  role: "owner",
+  created_at: "2026-01-01T00:00:00Z",
+  updated_at: "2026-01-01T00:00:00Z",
+};
+
+const fakeNonPersonalWorkspace = {
+  id: "ws-2",
+  name: "Shared",
+  slug: "shared",
+  is_personal: false,
+  role: "member",
+  created_at: "2026-01-01T00:00:00Z",
+  updated_at: "2026-01-01T00:00:00Z",
+};
+
 function wrapper({ children }: { children: ReactNode }) {
   return <AuthProvider>{children}</AuthProvider>;
 }
@@ -44,6 +64,7 @@ describe("AuthContext", () => {
 
   it("on mount, calls GET /users/me and sets authenticated on success", async () => {
     mockGet.mockResolvedValueOnce(fakeUser);
+    mockGet.mockResolvedValueOnce({ items: [fakeWorkspace] });
 
     const { result } = renderHook(() => useAuth(), { wrapper });
 
@@ -73,9 +94,10 @@ describe("AuthContext", () => {
     const { result } = renderHook(() => useAuth(), { wrapper });
     await waitFor(() => expect(result.current.isLoading).toBe(false));
 
-    // Login
+    // Login: loadUser calls /users/me then /workspaces
     mockPost.mockResolvedValueOnce({ token: "t", refresh_token: "rt" });
     mockGet.mockResolvedValueOnce(fakeUser);
+    mockGet.mockResolvedValueOnce({ items: [fakeWorkspace] });
 
     await act(async () => {
       await result.current.login("test@example.com", "password");
@@ -98,9 +120,10 @@ describe("AuthContext", () => {
     const { result } = renderHook(() => useAuth(), { wrapper });
     await waitFor(() => expect(result.current.isLoading).toBe(false));
 
-    // Register
+    // Register: loadUser calls /users/me then /workspaces
     mockPost.mockResolvedValueOnce({ token: "t", refresh_token: "rt" });
     mockGet.mockResolvedValueOnce(fakeUser);
+    mockGet.mockResolvedValueOnce({ items: [fakeWorkspace] });
 
     await act(async () => {
       await result.current.register({
@@ -122,6 +145,7 @@ describe("AuthContext", () => {
   it("logout() calls POST /auth/logout and clears user", async () => {
     // Mount: authenticated
     mockGet.mockResolvedValueOnce(fakeUser);
+    mockGet.mockResolvedValueOnce({ items: [fakeWorkspace] });
 
     const { result } = renderHook(() => useAuth(), { wrapper });
     await waitFor(() => expect(result.current.isAuthenticated).toBe(true));
@@ -147,7 +171,9 @@ describe("AuthContext", () => {
     // Initially loading
     expect(result.current.isLoading).toBe(true);
 
-    // Resolve the session check
+    // Resolve the session check -- also need /workspaces mock
+    mockGet.mockResolvedValueOnce({ items: [fakeWorkspace] });
+
     await act(async () => {
       resolveGet!(fakeUser);
     });
@@ -164,5 +190,91 @@ describe("AuthContext", () => {
     }).toThrow("useAuth must be used within AuthProvider");
 
     spy.mockRestore();
+  });
+
+  // --- New workspace tests ---
+
+  it("after mount with personal workspace, workspaceId equals the personal workspace id", async () => {
+    mockGet.mockResolvedValueOnce(fakeUser);
+    mockGet.mockResolvedValueOnce({ items: [fakeNonPersonalWorkspace, fakeWorkspace] });
+
+    const { result } = renderHook(() => useAuth(), { wrapper });
+
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+    expect(result.current.workspaceId).toBe("ws-1");
+  });
+
+  it("after mount with no personal workspace, workspaceId falls back to first workspace", async () => {
+    mockGet.mockResolvedValueOnce(fakeUser);
+    mockGet.mockResolvedValueOnce({ items: [fakeNonPersonalWorkspace] });
+
+    const { result } = renderHook(() => useAuth(), { wrapper });
+
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+    expect(result.current.workspaceId).toBe("ws-2");
+  });
+
+  it("after mount with empty workspaces, workspaceId is null", async () => {
+    mockGet.mockResolvedValueOnce(fakeUser);
+    mockGet.mockResolvedValueOnce({ items: [] });
+
+    const { result } = renderHook(() => useAuth(), { wrapper });
+
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+    expect(result.current.workspaceId).toBeNull();
+  });
+
+  it("after login, workspaceId is set from /workspaces", async () => {
+    // Mount: /users/me fails
+    mockGet.mockRejectedValueOnce(new Error("Unauthorized"));
+
+    const { result } = renderHook(() => useAuth(), { wrapper });
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+    expect(result.current.workspaceId).toBeNull();
+
+    // Login
+    mockPost.mockResolvedValueOnce({ token: "t", refresh_token: "rt" });
+    mockGet.mockResolvedValueOnce(fakeUser);
+    mockGet.mockResolvedValueOnce({ items: [fakeWorkspace] });
+
+    await act(async () => {
+      await result.current.login("test@example.com", "password");
+    });
+
+    expect(result.current.workspaceId).toBe("ws-1");
+  });
+
+  it("after logout, workspaceId is null", async () => {
+    // Mount: authenticated with workspace
+    mockGet.mockResolvedValueOnce(fakeUser);
+    mockGet.mockResolvedValueOnce({ items: [fakeWorkspace] });
+
+    const { result } = renderHook(() => useAuth(), { wrapper });
+    await waitFor(() => expect(result.current.isAuthenticated).toBe(true));
+
+    expect(result.current.workspaceId).toBe("ws-1");
+
+    await act(async () => {
+      await result.current.logout();
+    });
+
+    expect(result.current.workspaceId).toBeNull();
+  });
+
+  it("if /users/me fails on mount, workspaceId stays null (no /workspaces call)", async () => {
+    mockGet.mockRejectedValueOnce(new Error("Unauthorized"));
+
+    const { result } = renderHook(() => useAuth(), { wrapper });
+
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+    expect(result.current.workspaceId).toBeNull();
+    // Only 1 call made (/users/me), not 2
+    expect(mockGet).toHaveBeenCalledTimes(1);
+    expect(mockGet).toHaveBeenCalledWith("/users/me");
   });
 });
