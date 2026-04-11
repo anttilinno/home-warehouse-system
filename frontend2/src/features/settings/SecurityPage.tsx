@@ -144,7 +144,7 @@ export function SecurityPage() {
   };
 
   const isUnlinkDisabled =
-    accounts.length === 1 && !user?.has_password;
+    accounts.length <= 1 && !user?.has_password;
 
   return (
     <div className="max-w-[600px] mx-auto p-lg flex flex-col gap-md">
