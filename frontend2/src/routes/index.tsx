@@ -16,6 +16,7 @@ import { LanguagePage } from "@/features/settings/LanguagePage";
 import { FormatsPage } from "@/features/settings/FormatsPage";
 import { NotificationsPage } from "@/features/settings/NotificationsPage";
 import { DataPage } from "@/features/settings/DataPage";
+import { AppShell, ErrorBoundaryPage } from "@/components/layout";
 import { RetroPanel } from "@/components/retro";
 
 function NotFoundPage() {
@@ -42,7 +43,7 @@ function NotFoundPage() {
 export function AppRoutes() {
   return (
     <Routes>
-      {/* Public routes */}
+      {/* Public routes -- no shell */}
       <Route path="/login" element={<AuthPage />} />
       <Route path="/auth/callback" element={<AuthCallbackPage />} />
       <Route path="/demo" element={<DemoPage />} />
@@ -57,103 +58,28 @@ export function AppRoutes() {
         }
       />
 
-      {/* Authenticated routes */}
+      {/* Authenticated routes -- nested in AppShell with single RequireAuth */}
       <Route
-        path="/"
         element={
           <RequireAuth>
-            <DashboardPage />
+            <AppShell />
           </RequireAuth>
         }
-      />
-      <Route
-        path="/items"
-        element={
-          <RequireAuth>
-            <ItemsPage />
-          </RequireAuth>
-        }
-      />
-      <Route
-        path="/loans"
-        element={
-          <RequireAuth>
-            <LoansPage />
-          </RequireAuth>
-        }
-      />
-      <Route
-        path="/scan"
-        element={
-          <RequireAuth>
-            <ScanPage />
-          </RequireAuth>
-        }
-      />
-      <Route
-        path="/settings"
-        element={
-          <RequireAuth>
-            <SettingsPage />
-          </RequireAuth>
-        }
-      />
-      <Route
-        path="/settings/profile"
-        element={
-          <RequireAuth>
-            <ProfilePage />
-          </RequireAuth>
-        }
-      />
-      <Route
-        path="/settings/security"
-        element={
-          <RequireAuth>
-            <SecurityPage />
-          </RequireAuth>
-        }
-      />
-      <Route
-        path="/settings/appearance"
-        element={
-          <RequireAuth>
-            <AppearancePage />
-          </RequireAuth>
-        }
-      />
-      <Route
-        path="/settings/language"
-        element={
-          <RequireAuth>
-            <LanguagePage />
-          </RequireAuth>
-        }
-      />
-      <Route
-        path="/settings/formats"
-        element={
-          <RequireAuth>
-            <FormatsPage />
-          </RequireAuth>
-        }
-      />
-      <Route
-        path="/settings/notifications"
-        element={
-          <RequireAuth>
-            <NotificationsPage />
-          </RequireAuth>
-        }
-      />
-      <Route
-        path="/settings/data"
-        element={
-          <RequireAuth>
-            <DataPage />
-          </RequireAuth>
-        }
-      />
+        errorElement={<ErrorBoundaryPage />}
+      >
+        <Route index element={<DashboardPage />} />
+        <Route path="items" element={<ItemsPage />} />
+        <Route path="loans" element={<LoansPage />} />
+        <Route path="scan" element={<ScanPage />} />
+        <Route path="settings" element={<SettingsPage />} />
+        <Route path="settings/profile" element={<ProfilePage />} />
+        <Route path="settings/security" element={<SecurityPage />} />
+        <Route path="settings/appearance" element={<AppearancePage />} />
+        <Route path="settings/language" element={<LanguagePage />} />
+        <Route path="settings/formats" element={<FormatsPage />} />
+        <Route path="settings/notifications" element={<NotificationsPage />} />
+        <Route path="settings/data" element={<DataPage />} />
+      </Route>
 
       {/* 404 */}
       <Route path="*" element={<NotFoundPage />} />

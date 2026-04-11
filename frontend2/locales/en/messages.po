@@ -13,6 +13,18 @@ msgstr ""
 "Language-Team: \n"
 "Plural-Forms: \n"
 
+#: src/features/settings/SettingsPage.tsx:22
+msgid "ACCOUNT"
+msgstr "ACCOUNT"
+
+#: src/features/settings/SecurityPage.tsx:134
+msgid "ACCOUNT UNLINKED"
+msgstr "ACCOUNT UNLINKED"
+
+#: src/features/settings/SecurityPage.tsx:227
+msgid "ACTIVE SESSIONS"
+msgstr "ACTIVE SESSIONS"
+
 #: src/features/dashboard/ActivityFeed.tsx:59
 msgid "Activity log"
 msgstr "Activity log"
@@ -29,6 +41,11 @@ msgstr "ADD ITEM"
 msgid "An account with this email already exists. Try logging in instead."
 msgstr "An account with this email already exists. Try logging in instead."
 
+#: src/features/settings/AppearancePage.tsx:73
+#: src/features/settings/SettingsPage.tsx:37
+msgid "APPEARANCE"
+msgstr "APPEARANCE"
+
 #: src/features/auth/AuthCallbackPage.tsx:68
 msgid "AUTHENTICATING..."
 msgstr "AUTHENTICATING..."
@@ -43,9 +60,53 @@ msgstr "AUTHENTICATION FAILED"
 msgid "Authentication failed. Try a different sign-in method."
 msgstr "Authentication failed. Try a different sign-in method."
 
+#: src/features/settings/ProfilePage.tsx:60
+msgid "AVATAR REMOVED"
+msgstr "AVATAR REMOVED"
+
+#: src/features/settings/ProfilePage.tsx:45
+msgid "AVATAR UPLOADED"
+msgstr "AVATAR UPLOADED"
+
+#: src/features/settings/AppearancePage.tsx:71
+#: src/features/settings/DataPage.tsx:87
+#: src/features/settings/FormatsPage.tsx:142
+#: src/features/settings/LanguagePage.tsx:39
+#: src/features/settings/NotificationsPage.tsx:117
+#: src/features/settings/ProfilePage.tsx:95
+#: src/features/settings/SecurityPage.tsx:162
+msgid "BACK"
+msgstr "BACK"
+
+#: src/features/settings/SecurityPage.tsx:304
+msgid "Cannot unlink last auth method"
+msgstr "Cannot unlink last auth method"
+
 #: src/features/dashboard/DashboardPage.tsx:51
 msgid "CATEGORIES"
 msgstr "CATEGORIES"
+
+#: src/features/settings/SecurityPage.tsx:169
+msgid "CHANGE PASSWORD"
+msgstr "CHANGE PASSWORD"
+
+#: src/features/settings/AppearancePage.tsx:53
+#: src/features/settings/FormatsPage.tsx:86
+#: src/features/settings/FormatsPage.tsx:99
+#: src/features/settings/FormatsPage.tsx:113
+#: src/features/settings/LanguagePage.tsx:22
+#: src/features/settings/NotificationsPage.tsx:81
+#: src/features/settings/ProfilePage.tsx:74
+msgid "CHANGES SAVED"
+msgstr "CHANGES SAVED"
+
+#: src/components/layout/TopBar.tsx:22
+msgid "Close navigation"
+msgstr "Close navigation"
+
+#: src/features/settings/SecurityPage.tsx:346
+msgid "CONFIRM DELETE"
+msgstr "CONFIRM DELETE"
 
 #: src/features/auth/RegisterForm.tsx:155
 msgid "Confirm password"
@@ -54,6 +115,10 @@ msgstr "Confirm password"
 #: src/features/auth/RegisterForm.tsx:162
 msgid "CONFIRM PASSWORD"
 msgstr "CONFIRM PASSWORD"
+
+#: src/features/settings/SecurityPage.tsx:275
+msgid "CONNECTED ACCOUNTS"
+msgstr "CONNECTED ACCOUNTS"
 
 #: src/features/auth/LoginForm.tsx:80
 #: src/features/auth/RegisterForm.tsx:96
@@ -64,19 +129,139 @@ msgstr "Connection failed. Check your network and try again."
 msgid "CREATE ACCOUNT"
 msgstr "CREATE ACCOUNT"
 
-#: src/components/layout/Sidebar.tsx:15
+#: src/features/settings/SecurityPage.tsx:251
+msgid "CURRENT"
+msgstr "CURRENT"
+
+#: src/features/settings/SecurityPage.tsx:178
+msgid "CURRENT PASSWORD"
+msgstr "CURRENT PASSWORD"
+
+#: src/features/settings/SecurityPage.tsx:57
+msgid "Current password is incorrect"
+msgstr "Current password is incorrect"
+
+#: src/features/settings/AppearancePage.tsx:64
+msgid "DARK"
+msgstr "DARK"
+
+#: src/components/layout/Sidebar.tsx:32
 msgid "DASHBOARD"
 msgstr "DASHBOARD"
+
+#: src/features/settings/DataPage.tsx:89
+#: src/features/settings/SettingsPage.tsx:58
+msgid "DATA"
+msgstr "DATA"
+
+#: src/features/settings/FormatsPage.tsx:155
+msgid "Date format"
+msgstr "Date format"
+
+#: src/features/settings/FormatsPage.tsx:149
+msgid "DATE FORMAT"
+msgstr "DATE FORMAT"
+
+#: src/features/settings/SecurityPage.tsx:334
+msgid "DELETE ACCOUNT"
+msgstr "DELETE ACCOUNT"
+
+#: src/features/settings/DataPage.tsx:97
+msgid "Download all workspace data as a JSON file."
+msgstr "Download all workspace data as a JSON file."
+
+#: src/features/settings/LanguagePage.tsx:33
+msgid "EESTI"
+msgstr "EESTI"
 
 #: src/features/auth/LoginForm.tsx:94
 #: src/features/auth/RegisterForm.tsx:125
 msgid "Email"
 msgstr "Email"
 
+#: src/features/settings/ProfilePage.tsx:168
+msgid "EMAIL"
+msgstr "EMAIL"
+
 #: src/features/auth/LoginForm.tsx:101
 #: src/features/auth/RegisterForm.tsx:132
 msgid "EMAIL ADDRESS"
 msgstr "EMAIL ADDRESS"
+
+#: src/features/settings/ProfilePage.tsx:78
+msgid "Email already in use"
+msgstr "Email already in use"
+
+#: src/features/settings/LanguagePage.tsx:32
+msgid "ENGLISH"
+msgstr "ENGLISH"
+
+#: src/features/settings/DataPage.tsx:104
+msgid "EXPORT"
+msgstr "EXPORT"
+
+#: src/features/settings/DataPage.tsx:38
+msgid "EXPORT COMPLETE"
+msgstr "EXPORT COMPLETE"
+
+#: src/features/settings/DataPage.tsx:94
+msgid "EXPORT WORKSPACE"
+msgstr "EXPORT WORKSPACE"
+
+#: src/features/settings/DataPage.tsx:104
+msgid "EXPORTING..."
+msgstr "EXPORTING..."
+
+#: src/features/settings/SecurityPage.tsx:152
+msgid "Failed to delete account"
+msgstr "Failed to delete account"
+
+#: src/features/settings/DataPage.tsx:40
+msgid "Failed to export workspace"
+msgstr "Failed to export workspace"
+
+#: src/features/settings/SecurityPage.tsx:120
+msgid "Failed to load connected accounts."
+msgstr "Failed to load connected accounts."
+
+#: src/features/settings/SecurityPage.tsx:81
+msgid "Failed to load sessions."
+msgstr "Failed to load sessions."
+
+#: src/features/settings/ProfilePage.tsx:62
+msgid "Failed to remove avatar"
+msgstr "Failed to remove avatar"
+
+#: src/features/settings/SecurityPage.tsx:98
+msgid "Failed to revoke session"
+msgstr "Failed to revoke session"
+
+#: src/features/settings/SecurityPage.tsx:108
+msgid "Failed to revoke sessions"
+msgstr "Failed to revoke sessions"
+
+#: src/features/settings/AppearancePage.tsx:56
+#: src/features/settings/FormatsPage.tsx:89
+#: src/features/settings/FormatsPage.tsx:102
+#: src/features/settings/FormatsPage.tsx:116
+#: src/features/settings/LanguagePage.tsx:25
+#: src/features/settings/NotificationsPage.tsx:91
+#: src/features/settings/NotificationsPage.tsx:103
+#: src/features/settings/ProfilePage.tsx:81
+msgid "Failed to save changes. Check your connection and try again."
+msgstr "Failed to save changes. Check your connection and try again."
+
+#: src/features/settings/SecurityPage.tsx:136
+msgid "Failed to unlink account"
+msgstr "Failed to unlink account"
+
+#: src/features/settings/SecurityPage.tsx:65
+msgid "Failed to update password"
+msgstr "Failed to update password"
+
+#: src/features/settings/ProfilePage.tsx:47
+msgid "Failed to upload avatar"
+msgstr "Failed to upload avatar"
 
 #: src/features/auth/RegisterForm.tsx:110
 msgid "Full name"
@@ -86,18 +271,80 @@ msgstr "Full name"
 msgid "FULL NAME"
 msgstr "FULL NAME"
 
+#: src/features/settings/DataPage.tsx:123
+msgid "IMPORT"
+msgstr "IMPORT"
+
+#: src/features/settings/SettingsPage.tsx:60
+msgid "IMPORT / EXPORT"
+msgstr "IMPORT / EXPORT"
+
+#: src/features/settings/DataPage.tsx:70
+#: src/features/settings/DataPage.tsx:74
+msgid "IMPORT COMPLETE"
+msgstr "IMPORT COMPLETE"
+
+#: src/features/settings/DataPage.tsx:77
+msgid "IMPORT FAILED"
+msgstr "IMPORT FAILED"
+
+#: src/features/settings/DataPage.tsx:113
+msgid "IMPORT WORKSPACE"
+msgstr "IMPORT WORKSPACE"
+
+#: src/features/settings/DataPage.tsx:129
+msgid "Import workspace file"
+msgstr "Import workspace file"
+
+#: src/features/settings/DataPage.tsx:123
+msgid "IMPORTING..."
+msgstr "IMPORTING..."
+
 #: src/features/auth/LoginForm.tsx:72
 msgid "Invalid email or password. Check your credentials and try again."
 msgstr "Invalid email or password. Check your credentials and try again."
 
-#: src/components/layout/Sidebar.tsx:16
+#: src/features/settings/NotificationsPage.tsx:109
+msgid "INVENTORY"
+msgstr "INVENTORY"
+
 #: src/features/dashboard/DashboardPage.tsx:49
 #: src/features/items/ItemsPage.tsx:8
 msgid "ITEMS"
 msgstr "ITEMS"
 
-#: src/components/layout/Sidebar.tsx:17
+#: src/features/settings/SecurityPage.tsx:352
+msgid "KEEP ACCOUNT"
+msgstr "KEEP ACCOUNT"
+
+#: src/features/settings/LanguagePage.tsx:50
+msgid "Language"
+msgstr "Language"
+
+#: src/features/settings/LanguagePage.tsx:41
+#: src/features/settings/LanguagePage.tsx:44
+#: src/features/settings/SettingsPage.tsx:42
+msgid "LANGUAGE"
+msgstr "LANGUAGE"
+
+#: src/features/settings/AppearancePage.tsx:63
+msgid "LIGHT"
+msgstr "LIGHT"
+
+#: src/features/settings/SecurityPage.tsx:319
+msgid "LINK"
+msgstr "LINK"
+
+#: src/components/layout/LoadingBar.tsx:13
+msgid "Loading page"
+msgstr "Loading page"
+
+#: src/features/settings/SecurityPage.tsx:231
+msgid "Loading..."
+msgstr "Loading..."
+
 #: src/features/loans/LoansPage.tsx:8
+#: src/features/settings/NotificationsPage.tsx:108
 msgid "LOANS"
 msgstr "LOANS"
 
@@ -113,6 +360,18 @@ msgstr "LOG IN"
 msgid "LOGIN"
 msgstr "LOGIN"
 
+#: src/components/layout/TopBar.tsx:66
+msgid "LOGOUT"
+msgstr "LOGOUT"
+
+#: src/features/settings/ProfilePage.tsx:153
+msgid "NAME"
+msgstr "NAME"
+
+#: src/features/settings/SecurityPage.tsx:198
+msgid "NEW PASSWORD"
+msgstr "NEW PASSWORD"
+
 #: src/features/dashboard/ActivityFeed.tsx:70
 msgid "NO ACTIVITY YET"
 msgstr "NO ACTIVITY YET"
@@ -121,14 +380,50 @@ msgstr "NO ACTIVITY YET"
 msgid "No workspace found. Please create a workspace to get started."
 msgstr "No workspace found. Please create a workspace to get started."
 
+#: src/features/settings/NotificationsPage.tsx:119
+#: src/features/settings/SettingsPage.tsx:52
+msgid "NOTIFICATIONS"
+msgstr "NOTIFICATIONS"
+
+#: src/features/settings/NotificationsPage.tsx:129
+msgid "Notifications enabled"
+msgstr "Notifications enabled"
+
+#: src/features/settings/NotificationsPage.tsx:124
+msgid "NOTIFICATIONS ENABLED"
+msgstr "NOTIFICATIONS ENABLED"
+
+#: src/features/settings/FormatsPage.tsx:193
+msgid "Number format"
+msgstr "Number format"
+
+#: src/features/settings/FormatsPage.tsx:187
+msgid "NUMBER FORMAT"
+msgstr "NUMBER FORMAT"
+
+#: src/features/settings/SettingsPage.tsx:18
+msgid "OFF"
+msgstr "OFF"
+
+#: src/features/settings/SettingsPage.tsx:18
+msgid "ON"
+msgstr "ON"
+
+#: src/components/layout/TopBar.tsx:22
+msgid "Open navigation"
+msgstr "Open navigation"
+
 #: src/features/auth/OAuthButtons.tsx:44
 msgid "OR"
 msgstr "OR"
 
+#: src/features/settings/SecurityPage.tsx:106
+msgid "OTHER SESSIONS REVOKED"
+msgstr "OTHER SESSIONS REVOKED"
+
 #: src/features/items/ItemsPage.tsx:10
 #: src/features/loans/LoansPage.tsx:10
 #: src/features/scan/ScanPage.tsx:10
-#: src/features/settings/SettingsPage.tsx:10
 msgid "PAGE UNDER CONSTRUCTION"
 msgstr "PAGE UNDER CONSTRUCTION"
 
@@ -142,22 +437,64 @@ msgstr "Password"
 msgid "PASSWORD"
 msgstr "PASSWORD"
 
+#: src/features/settings/SecurityPage.tsx:63
+msgid "Password does not meet requirements"
+msgstr "Password does not meet requirements"
+
+#: src/features/settings/SecurityPage.tsx:47
+msgid "PASSWORD UPDATED"
+msgstr "PASSWORD UPDATED"
+
 #: src/features/auth/RegisterForm.tsx:74
 msgid "Passwords do not match."
 msgstr "Passwords do not match."
+
+#: src/features/settings/SettingsPage.tsx:33
+msgid "PREFERENCES"
+msgstr "PREFERENCES"
 
 #: src/features/auth/LoginForm.tsx:133
 #: src/features/auth/RegisterForm.tsx:179
 msgid "PROCESSING..."
 msgstr "PROCESSING..."
 
+#: src/features/settings/ProfilePage.tsx:97
+#: src/features/settings/SettingsPage.tsx:26
+msgid "PROFILE"
+msgstr "PROFILE"
+
+#: src/features/settings/FormatsPage.tsx:144
+#: src/features/settings/SettingsPage.tsx:47
+msgid "REGIONAL FORMATS"
+msgstr "REGIONAL FORMATS"
+
 #: src/features/auth/AuthPage.tsx:32
 msgid "REGISTER"
 msgstr "REGISTER"
 
+#: src/features/settings/ProfilePage.tsx:140
+msgid "REMOVE"
+msgstr "REMOVE"
+
+#: src/components/layout/ErrorBoundaryPage.tsx:40
+msgid "RETURN TO BASE"
+msgstr "RETURN TO BASE"
+
 #: src/features/auth/AuthCallbackPage.tsx:62
 msgid "RETURN TO LOGIN"
 msgstr "RETURN TO LOGIN"
+
+#: src/features/settings/SecurityPage.tsx:257
+msgid "REVOKE"
+msgstr "REVOKE"
+
+#: src/features/settings/SecurityPage.tsx:264
+msgid "REVOKE ALL OTHERS"
+msgstr "REVOKE ALL OTHERS"
+
+#: src/features/settings/ProfilePage.tsx:190
+msgid "SAVE CHANGES"
+msgstr "SAVE CHANGES"
 
 #: src/features/scan/ScanPage.tsx:8
 msgid "SCAN"
@@ -167,8 +504,21 @@ msgstr "SCAN"
 msgid "SCAN BARCODE"
 msgstr "SCAN BARCODE"
 
-#: src/components/layout/Sidebar.tsx:18
-#: src/features/settings/SettingsPage.tsx:8
+#: src/features/settings/SecurityPage.tsx:164
+#: src/features/settings/SettingsPage.tsx:29
+msgid "SECURITY"
+msgstr "SECURITY"
+
+#: src/features/settings/SecurityPage.tsx:96
+msgid "SESSION REVOKED"
+msgstr "SESSION REVOKED"
+
+#: src/features/settings/SecurityPage.tsx:169
+#: src/features/settings/SecurityPage.tsx:217
+msgid "SET PASSWORD"
+msgstr "SET PASSWORD"
+
+#: src/components/layout/Sidebar.tsx:41
 msgid "SETTINGS"
 msgstr "SETTINGS"
 
@@ -188,10 +538,59 @@ msgstr "Sign in with Google"
 msgid "SIGN IN WITH GOOGLE"
 msgstr "SIGN IN WITH GOOGLE"
 
+#: src/components/layout/AppShell.tsx:35
+msgid "Skip to main content"
+msgstr "Skip to main content"
+
+#: src/components/layout/ErrorBoundaryPage.tsx:23
+msgid "Something went wrong. Return to the home screen or reload the page to try again."
+msgstr "Something went wrong. Return to the home screen or reload the page to try again."
+
 #: src/features/auth/LoginForm.tsx:83
 #: src/features/auth/RegisterForm.tsx:99
 msgid "Something went wrong. Try again in a moment."
 msgstr "Something went wrong. Try again in a moment."
+
+#: src/features/settings/AppearancePage.tsx:65
+#: src/features/settings/NotificationsPage.tsx:111
+msgid "SYSTEM"
+msgstr "SYSTEM"
+
+#: src/features/settings/AppearancePage.tsx:82
+msgid "Theme"
+msgstr "Theme"
+
+#: src/features/settings/AppearancePage.tsx:76
+msgid "THEME"
+msgstr "THEME"
+
+#: src/features/settings/SecurityPage.tsx:342
+msgid "This will permanently delete your account and all associated data. This action cannot be undone."
+msgstr "This will permanently delete your account and all associated data. This action cannot be undone."
+
+#: src/features/settings/FormatsPage.tsx:174
+msgid "Time format"
+msgstr "Time format"
+
+#: src/features/settings/FormatsPage.tsx:168
+msgid "TIME FORMAT"
+msgstr "TIME FORMAT"
+
+#: src/features/settings/SecurityPage.tsx:308
+msgid "UNLINK"
+msgstr "UNLINK"
+
+#: src/features/settings/SecurityPage.tsx:217
+msgid "UPDATE PASSWORD"
+msgstr "UPDATE PASSWORD"
+
+#: src/features/settings/ProfilePage.tsx:132
+msgid "UPLOAD"
+msgstr "UPLOAD"
+
+#: src/features/settings/DataPage.tsx:116
+msgid "Upload a workspace JSON file to import data."
+msgstr "Upload a workspace JSON file to import data."
 
 #: src/features/dashboard/QuickActionCards.tsx:18
 msgid "VIEW LOANS"
@@ -200,6 +599,10 @@ msgstr "VIEW LOANS"
 #: src/routes/index.tsx:52
 #~ msgid "Welcome to Home Warehouse"
 #~ msgstr "Welcome to Home Warehouse"
+
+#: src/features/settings/NotificationsPage.tsx:110
+msgid "WORKSPACE"
+msgstr "WORKSPACE"
 
 #: src/features/setup/SetupPage.tsx:10
 msgid "WORKSPACE SETUP"

@@ -13,6 +13,18 @@ msgstr ""
 "Language-Team: \n"
 "Plural-Forms: \n"
 
+#: src/features/settings/SettingsPage.tsx:22
+msgid "ACCOUNT"
+msgstr ""
+
+#: src/features/settings/SecurityPage.tsx:134
+msgid "ACCOUNT UNLINKED"
+msgstr ""
+
+#: src/features/settings/SecurityPage.tsx:227
+msgid "ACTIVE SESSIONS"
+msgstr ""
+
 #: src/features/dashboard/ActivityFeed.tsx:59
 msgid "Activity log"
 msgstr "Tegevuste logi"
@@ -29,6 +41,11 @@ msgstr "LISA ESE"
 msgid "An account with this email already exists. Try logging in instead."
 msgstr "Selle e-postiga konto on juba olemas. Proovi hoopis sisse logida."
 
+#: src/features/settings/AppearancePage.tsx:73
+#: src/features/settings/SettingsPage.tsx:37
+msgid "APPEARANCE"
+msgstr ""
+
 #: src/features/auth/AuthCallbackPage.tsx:68
 msgid "AUTHENTICATING..."
 msgstr "AUTENTIMINE..."
@@ -43,9 +60,53 @@ msgstr "AUTENTIMINE EBAONNESTUS"
 msgid "Authentication failed. Try a different sign-in method."
 msgstr "Autentimine ebaonnestus. Proovi teist sisselogimisviisi."
 
+#: src/features/settings/ProfilePage.tsx:60
+msgid "AVATAR REMOVED"
+msgstr ""
+
+#: src/features/settings/ProfilePage.tsx:45
+msgid "AVATAR UPLOADED"
+msgstr ""
+
+#: src/features/settings/AppearancePage.tsx:71
+#: src/features/settings/DataPage.tsx:87
+#: src/features/settings/FormatsPage.tsx:142
+#: src/features/settings/LanguagePage.tsx:39
+#: src/features/settings/NotificationsPage.tsx:117
+#: src/features/settings/ProfilePage.tsx:95
+#: src/features/settings/SecurityPage.tsx:162
+msgid "BACK"
+msgstr ""
+
+#: src/features/settings/SecurityPage.tsx:304
+msgid "Cannot unlink last auth method"
+msgstr ""
+
 #: src/features/dashboard/DashboardPage.tsx:51
 msgid "CATEGORIES"
 msgstr "KATEGOORIAD"
+
+#: src/features/settings/SecurityPage.tsx:169
+msgid "CHANGE PASSWORD"
+msgstr ""
+
+#: src/features/settings/AppearancePage.tsx:53
+#: src/features/settings/FormatsPage.tsx:86
+#: src/features/settings/FormatsPage.tsx:99
+#: src/features/settings/FormatsPage.tsx:113
+#: src/features/settings/LanguagePage.tsx:22
+#: src/features/settings/NotificationsPage.tsx:81
+#: src/features/settings/ProfilePage.tsx:74
+msgid "CHANGES SAVED"
+msgstr ""
+
+#: src/components/layout/TopBar.tsx:22
+msgid "Close navigation"
+msgstr "Sulge navigatsioon"
+
+#: src/features/settings/SecurityPage.tsx:346
+msgid "CONFIRM DELETE"
+msgstr ""
 
 #: src/features/auth/RegisterForm.tsx:155
 msgid "Confirm password"
@@ -54,6 +115,10 @@ msgstr "Kinnita parool"
 #: src/features/auth/RegisterForm.tsx:162
 msgid "CONFIRM PASSWORD"
 msgstr "KINNITA PAROOL"
+
+#: src/features/settings/SecurityPage.tsx:275
+msgid "CONNECTED ACCOUNTS"
+msgstr ""
 
 #: src/features/auth/LoginForm.tsx:80
 #: src/features/auth/RegisterForm.tsx:96
@@ -64,19 +129,139 @@ msgstr "Uhendus ebaonnestus. Kontrolli vorguuhendust ja proovi uuesti."
 msgid "CREATE ACCOUNT"
 msgstr "LOO KONTO"
 
-#: src/components/layout/Sidebar.tsx:15
+#: src/features/settings/SecurityPage.tsx:251
+msgid "CURRENT"
+msgstr ""
+
+#: src/features/settings/SecurityPage.tsx:178
+msgid "CURRENT PASSWORD"
+msgstr ""
+
+#: src/features/settings/SecurityPage.tsx:57
+msgid "Current password is incorrect"
+msgstr ""
+
+#: src/features/settings/AppearancePage.tsx:64
+msgid "DARK"
+msgstr ""
+
+#: src/components/layout/Sidebar.tsx:32
 msgid "DASHBOARD"
-msgstr "TOOTEPANEEL"
+msgstr "JUHTPANEEL"
+
+#: src/features/settings/DataPage.tsx:89
+#: src/features/settings/SettingsPage.tsx:58
+msgid "DATA"
+msgstr ""
+
+#: src/features/settings/FormatsPage.tsx:155
+msgid "Date format"
+msgstr ""
+
+#: src/features/settings/FormatsPage.tsx:149
+msgid "DATE FORMAT"
+msgstr ""
+
+#: src/features/settings/SecurityPage.tsx:334
+msgid "DELETE ACCOUNT"
+msgstr ""
+
+#: src/features/settings/DataPage.tsx:97
+msgid "Download all workspace data as a JSON file."
+msgstr ""
+
+#: src/features/settings/LanguagePage.tsx:33
+msgid "EESTI"
+msgstr ""
 
 #: src/features/auth/LoginForm.tsx:94
 #: src/features/auth/RegisterForm.tsx:125
 msgid "Email"
 msgstr "E-post"
 
+#: src/features/settings/ProfilePage.tsx:168
+msgid "EMAIL"
+msgstr ""
+
 #: src/features/auth/LoginForm.tsx:101
 #: src/features/auth/RegisterForm.tsx:132
 msgid "EMAIL ADDRESS"
 msgstr "E-POSTI AADRESS"
+
+#: src/features/settings/ProfilePage.tsx:78
+msgid "Email already in use"
+msgstr ""
+
+#: src/features/settings/LanguagePage.tsx:32
+msgid "ENGLISH"
+msgstr ""
+
+#: src/features/settings/DataPage.tsx:104
+msgid "EXPORT"
+msgstr ""
+
+#: src/features/settings/DataPage.tsx:38
+msgid "EXPORT COMPLETE"
+msgstr ""
+
+#: src/features/settings/DataPage.tsx:94
+msgid "EXPORT WORKSPACE"
+msgstr ""
+
+#: src/features/settings/DataPage.tsx:104
+msgid "EXPORTING..."
+msgstr ""
+
+#: src/features/settings/SecurityPage.tsx:152
+msgid "Failed to delete account"
+msgstr ""
+
+#: src/features/settings/DataPage.tsx:40
+msgid "Failed to export workspace"
+msgstr ""
+
+#: src/features/settings/SecurityPage.tsx:120
+msgid "Failed to load connected accounts."
+msgstr ""
+
+#: src/features/settings/SecurityPage.tsx:81
+msgid "Failed to load sessions."
+msgstr ""
+
+#: src/features/settings/ProfilePage.tsx:62
+msgid "Failed to remove avatar"
+msgstr ""
+
+#: src/features/settings/SecurityPage.tsx:98
+msgid "Failed to revoke session"
+msgstr ""
+
+#: src/features/settings/SecurityPage.tsx:108
+msgid "Failed to revoke sessions"
+msgstr ""
+
+#: src/features/settings/AppearancePage.tsx:56
+#: src/features/settings/FormatsPage.tsx:89
+#: src/features/settings/FormatsPage.tsx:102
+#: src/features/settings/FormatsPage.tsx:116
+#: src/features/settings/LanguagePage.tsx:25
+#: src/features/settings/NotificationsPage.tsx:91
+#: src/features/settings/NotificationsPage.tsx:103
+#: src/features/settings/ProfilePage.tsx:81
+msgid "Failed to save changes. Check your connection and try again."
+msgstr ""
+
+#: src/features/settings/SecurityPage.tsx:136
+msgid "Failed to unlink account"
+msgstr ""
+
+#: src/features/settings/SecurityPage.tsx:65
+msgid "Failed to update password"
+msgstr ""
+
+#: src/features/settings/ProfilePage.tsx:47
+msgid "Failed to upload avatar"
+msgstr ""
 
 #: src/features/auth/RegisterForm.tsx:110
 msgid "Full name"
@@ -86,18 +271,80 @@ msgstr "Taisnimi"
 msgid "FULL NAME"
 msgstr "TAISNIMI"
 
+#: src/features/settings/DataPage.tsx:123
+msgid "IMPORT"
+msgstr ""
+
+#: src/features/settings/SettingsPage.tsx:60
+msgid "IMPORT / EXPORT"
+msgstr ""
+
+#: src/features/settings/DataPage.tsx:70
+#: src/features/settings/DataPage.tsx:74
+msgid "IMPORT COMPLETE"
+msgstr ""
+
+#: src/features/settings/DataPage.tsx:77
+msgid "IMPORT FAILED"
+msgstr ""
+
+#: src/features/settings/DataPage.tsx:113
+msgid "IMPORT WORKSPACE"
+msgstr ""
+
+#: src/features/settings/DataPage.tsx:129
+msgid "Import workspace file"
+msgstr ""
+
+#: src/features/settings/DataPage.tsx:123
+msgid "IMPORTING..."
+msgstr ""
+
 #: src/features/auth/LoginForm.tsx:72
 msgid "Invalid email or password. Check your credentials and try again."
 msgstr "Vale e-post voi parool. Kontrolli oma andmeid ja proovi uuesti."
 
-#: src/components/layout/Sidebar.tsx:16
+#: src/features/settings/NotificationsPage.tsx:109
+msgid "INVENTORY"
+msgstr ""
+
 #: src/features/dashboard/DashboardPage.tsx:49
 #: src/features/items/ItemsPage.tsx:8
 msgid "ITEMS"
 msgstr "ESEMED"
 
-#: src/components/layout/Sidebar.tsx:17
+#: src/features/settings/SecurityPage.tsx:352
+msgid "KEEP ACCOUNT"
+msgstr ""
+
+#: src/features/settings/LanguagePage.tsx:50
+msgid "Language"
+msgstr ""
+
+#: src/features/settings/LanguagePage.tsx:41
+#: src/features/settings/LanguagePage.tsx:44
+#: src/features/settings/SettingsPage.tsx:42
+msgid "LANGUAGE"
+msgstr ""
+
+#: src/features/settings/AppearancePage.tsx:63
+msgid "LIGHT"
+msgstr ""
+
+#: src/features/settings/SecurityPage.tsx:319
+msgid "LINK"
+msgstr ""
+
+#: src/components/layout/LoadingBar.tsx:13
+msgid "Loading page"
+msgstr "Lehe laadimine"
+
+#: src/features/settings/SecurityPage.tsx:231
+msgid "Loading..."
+msgstr ""
+
 #: src/features/loans/LoansPage.tsx:8
+#: src/features/settings/NotificationsPage.tsx:108
 msgid "LOANS"
 msgstr "LAENUTUSED"
 
@@ -113,6 +360,18 @@ msgstr "LOGI SISSE"
 msgid "LOGIN"
 msgstr "LOGI SISSE"
 
+#: src/components/layout/TopBar.tsx:66
+msgid "LOGOUT"
+msgstr "LOGI VALJA"
+
+#: src/features/settings/ProfilePage.tsx:153
+msgid "NAME"
+msgstr ""
+
+#: src/features/settings/SecurityPage.tsx:198
+msgid "NEW PASSWORD"
+msgstr ""
+
 #: src/features/dashboard/ActivityFeed.tsx:70
 msgid "NO ACTIVITY YET"
 msgstr "TEGEVUSI VEEL POLE"
@@ -121,14 +380,50 @@ msgstr "TEGEVUSI VEEL POLE"
 msgid "No workspace found. Please create a workspace to get started."
 msgstr "Toopinda ei leitud. Alustamiseks loo toopind."
 
+#: src/features/settings/NotificationsPage.tsx:119
+#: src/features/settings/SettingsPage.tsx:52
+msgid "NOTIFICATIONS"
+msgstr ""
+
+#: src/features/settings/NotificationsPage.tsx:129
+msgid "Notifications enabled"
+msgstr ""
+
+#: src/features/settings/NotificationsPage.tsx:124
+msgid "NOTIFICATIONS ENABLED"
+msgstr ""
+
+#: src/features/settings/FormatsPage.tsx:193
+msgid "Number format"
+msgstr ""
+
+#: src/features/settings/FormatsPage.tsx:187
+msgid "NUMBER FORMAT"
+msgstr ""
+
+#: src/features/settings/SettingsPage.tsx:18
+msgid "OFF"
+msgstr ""
+
+#: src/features/settings/SettingsPage.tsx:18
+msgid "ON"
+msgstr ""
+
+#: src/components/layout/TopBar.tsx:22
+msgid "Open navigation"
+msgstr "Ava navigatsioon"
+
 #: src/features/auth/OAuthButtons.tsx:44
 msgid "OR"
 msgstr "VOI"
 
+#: src/features/settings/SecurityPage.tsx:106
+msgid "OTHER SESSIONS REVOKED"
+msgstr ""
+
 #: src/features/items/ItemsPage.tsx:10
 #: src/features/loans/LoansPage.tsx:10
 #: src/features/scan/ScanPage.tsx:10
-#: src/features/settings/SettingsPage.tsx:10
 msgid "PAGE UNDER CONSTRUCTION"
 msgstr "LEHT ON EHITUSEL"
 
@@ -142,22 +437,64 @@ msgstr "Parool"
 msgid "PASSWORD"
 msgstr "PAROOL"
 
+#: src/features/settings/SecurityPage.tsx:63
+msgid "Password does not meet requirements"
+msgstr ""
+
+#: src/features/settings/SecurityPage.tsx:47
+msgid "PASSWORD UPDATED"
+msgstr ""
+
 #: src/features/auth/RegisterForm.tsx:74
 msgid "Passwords do not match."
 msgstr "Paroolid ei kattu."
+
+#: src/features/settings/SettingsPage.tsx:33
+msgid "PREFERENCES"
+msgstr ""
 
 #: src/features/auth/LoginForm.tsx:133
 #: src/features/auth/RegisterForm.tsx:179
 msgid "PROCESSING..."
 msgstr "TOOTLEMINE..."
 
+#: src/features/settings/ProfilePage.tsx:97
+#: src/features/settings/SettingsPage.tsx:26
+msgid "PROFILE"
+msgstr ""
+
+#: src/features/settings/FormatsPage.tsx:144
+#: src/features/settings/SettingsPage.tsx:47
+msgid "REGIONAL FORMATS"
+msgstr ""
+
 #: src/features/auth/AuthPage.tsx:32
 msgid "REGISTER"
 msgstr "REGISTREERU"
 
+#: src/features/settings/ProfilePage.tsx:140
+msgid "REMOVE"
+msgstr ""
+
+#: src/components/layout/ErrorBoundaryPage.tsx:40
+msgid "RETURN TO BASE"
+msgstr "TAGASI BAASI"
+
 #: src/features/auth/AuthCallbackPage.tsx:62
 msgid "RETURN TO LOGIN"
 msgstr "TAGASI SISSELOGIMISELE"
+
+#: src/features/settings/SecurityPage.tsx:257
+msgid "REVOKE"
+msgstr ""
+
+#: src/features/settings/SecurityPage.tsx:264
+msgid "REVOKE ALL OTHERS"
+msgstr ""
+
+#: src/features/settings/ProfilePage.tsx:190
+msgid "SAVE CHANGES"
+msgstr ""
 
 #: src/features/scan/ScanPage.tsx:8
 msgid "SCAN"
@@ -167,8 +504,21 @@ msgstr "SKANEERI"
 msgid "SCAN BARCODE"
 msgstr "SKANEERI TRIIPKOODI"
 
-#: src/components/layout/Sidebar.tsx:18
-#: src/features/settings/SettingsPage.tsx:8
+#: src/features/settings/SecurityPage.tsx:164
+#: src/features/settings/SettingsPage.tsx:29
+msgid "SECURITY"
+msgstr ""
+
+#: src/features/settings/SecurityPage.tsx:96
+msgid "SESSION REVOKED"
+msgstr ""
+
+#: src/features/settings/SecurityPage.tsx:169
+#: src/features/settings/SecurityPage.tsx:217
+msgid "SET PASSWORD"
+msgstr ""
+
+#: src/components/layout/Sidebar.tsx:41
 msgid "SETTINGS"
 msgstr "SEADED"
 
@@ -188,10 +538,59 @@ msgstr "Logi sisse Google'iga"
 msgid "SIGN IN WITH GOOGLE"
 msgstr "LOGI SISSE GOOGLE'IGA"
 
+#: src/components/layout/AppShell.tsx:35
+msgid "Skip to main content"
+msgstr "Liigu pohisisu juurde"
+
+#: src/components/layout/ErrorBoundaryPage.tsx:23
+msgid "Something went wrong. Return to the home screen or reload the page to try again."
+msgstr "Midagi laks valesti. Minge tagasi avakuvale voi laadige leht uuesti."
+
 #: src/features/auth/LoginForm.tsx:83
 #: src/features/auth/RegisterForm.tsx:99
 msgid "Something went wrong. Try again in a moment."
 msgstr "Midagi laks valesti. Proovi hetke parast uuesti."
+
+#: src/features/settings/AppearancePage.tsx:65
+#: src/features/settings/NotificationsPage.tsx:111
+msgid "SYSTEM"
+msgstr ""
+
+#: src/features/settings/AppearancePage.tsx:82
+msgid "Theme"
+msgstr ""
+
+#: src/features/settings/AppearancePage.tsx:76
+msgid "THEME"
+msgstr ""
+
+#: src/features/settings/SecurityPage.tsx:342
+msgid "This will permanently delete your account and all associated data. This action cannot be undone."
+msgstr ""
+
+#: src/features/settings/FormatsPage.tsx:174
+msgid "Time format"
+msgstr ""
+
+#: src/features/settings/FormatsPage.tsx:168
+msgid "TIME FORMAT"
+msgstr ""
+
+#: src/features/settings/SecurityPage.tsx:308
+msgid "UNLINK"
+msgstr ""
+
+#: src/features/settings/SecurityPage.tsx:217
+msgid "UPDATE PASSWORD"
+msgstr ""
+
+#: src/features/settings/ProfilePage.tsx:132
+msgid "UPLOAD"
+msgstr ""
+
+#: src/features/settings/DataPage.tsx:116
+msgid "Upload a workspace JSON file to import data."
+msgstr ""
 
 #: src/features/dashboard/QuickActionCards.tsx:18
 msgid "VIEW LOANS"
@@ -200,6 +599,10 @@ msgstr "VAATA LAENUTUSI"
 #: src/routes/index.tsx:52
 #~ msgid "Welcome to Home Warehouse"
 #~ msgstr "Tere tulemast Home Warehouse'i"
+
+#: src/features/settings/NotificationsPage.tsx:110
+msgid "WORKSPACE"
+msgstr ""
 
 #: src/features/setup/SetupPage.tsx:10
 msgid "WORKSPACE SETUP"
