@@ -12,6 +12,14 @@ vi.mock("@/lib/api", () => ({
   setRefreshToken: vi.fn(),
 }));
 
+vi.mock("@/components/retro", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@/components/retro")>();
+  return {
+    ...actual,
+    useToast: () => ({ addToast: vi.fn() }),
+  };
+});
+
 vi.mock("@/features/auth/AuthContext", () => ({
   useAuth: () => ({
     user: {
