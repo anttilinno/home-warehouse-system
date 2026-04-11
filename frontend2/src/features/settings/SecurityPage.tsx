@@ -29,10 +29,14 @@ export function SecurityPage() {
   const [passwordError, setPasswordError] = useState<string | undefined>(
     undefined
   );
+  const [newPasswordError, setNewPasswordError] = useState<string | undefined>(
+    undefined
+  );
   const [savingPassword, setSavingPassword] = useState(false);
 
   const handlePasswordUpdate = async () => {
     setPasswordError(undefined);
+    setNewPasswordError(undefined);
     setSavingPassword(true);
     try {
       const body: Record<string, string> = { new_password: newPassword };
@@ -51,6 +55,12 @@ export function SecurityPage() {
         message.toLowerCase().includes("wrong")
       ) {
         setPasswordError(t`Current password is incorrect`);
+      } else if (
+        message.toLowerCase().includes("complexity") ||
+        message.toLowerCase().includes("length") ||
+        message.toLowerCase().includes("requirement")
+      ) {
+        setNewPasswordError(t`Password does not meet requirements`);
       } else {
         addToast(t`Failed to update password`, "error");
       }
@@ -192,7 +202,11 @@ export function SecurityPage() {
                   type="password"
                   autoComplete="new-password"
                   value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
+                  onChange={(e) => {
+                    setNewPassword(e.target.value);
+                    setNewPasswordError(undefined);
+                  }}
+                  error={newPasswordError}
                 />
               </div>
               <RetroButton
