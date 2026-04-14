@@ -99,7 +99,7 @@ export function DataPage() {
             <RetroButton
               variant="neutral"
               onClick={handleExport}
-              disabled={exporting}
+              disabled={exporting || !workspaceId}
             >
               {exporting ? t`EXPORTING...` : t`EXPORT`}
             </RetroButton>
@@ -118,7 +118,7 @@ export function DataPage() {
             <RetroButton
               variant="neutral"
               onClick={() => fileInputRef.current?.click()}
-              disabled={importing}
+              disabled={importing || !workspaceId}
             >
               {importing ? t`IMPORTING...` : t`IMPORT`}
             </RetroButton>
