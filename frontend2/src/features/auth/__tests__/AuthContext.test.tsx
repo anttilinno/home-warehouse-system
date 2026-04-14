@@ -3,14 +3,18 @@ import { renderHook, act, waitFor } from "@testing-library/react";
 import { AuthProvider, useAuth } from "../AuthContext";
 import type { ReactNode } from "react";
 
-// Mock @/lib/api
-vi.mock("@/lib/api", () => ({
-  get: vi.fn(),
-  post: vi.fn(),
-  setRefreshToken: vi.fn(),
-}));
+// Mock @/lib/api — use importOriginal to preserve HttpError class
+vi.mock("@/lib/api", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@/lib/api")>();
+  return {
+    ...actual,
+    get: vi.fn(),
+    post: vi.fn(),
+    setRefreshToken: vi.fn(),
+  };
+});
 
-import { get, post, setRefreshToken } from "@/lib/api";
+import { get, post, setRefreshToken, HttpError } from "@/lib/api";
 
 const mockGet = vi.mocked(get);
 const mockPost = vi.mocked(post);
@@ -76,7 +80,7 @@ describe("AuthContext", () => {
   });
 
   it("on mount, handles /users/me failure gracefully (unauthenticated)", async () => {
-    mockGet.mockRejectedValueOnce(new Error("Unauthorized"));
+    mockGet.mockRejectedValueOnce(new HttpError(401, "Unauthorized"));
 
     const { result } = renderHook(() => useAuth(), { wrapper });
 

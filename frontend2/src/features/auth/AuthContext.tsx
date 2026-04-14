@@ -6,7 +6,7 @@ import {
   useCallback,
   type ReactNode,
 } from "react";
-import { get, post, setRefreshToken } from "@/lib/api";
+import { get, post, setRefreshToken, HttpError } from "@/lib/api";
 import type {
   User,
   AuthTokenResponse,
@@ -54,10 +54,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } catch (err) {
       setUser(null);
       setWorkspaceId(null);
-      // Do not clear the refresh token on transient network errors (TypeError).
-      // Only clear on definitive auth failures so a brief network interruption
-      // does not permanently log the user out.
-      if (!(err instanceof TypeError)) {
+      // Only clear the refresh token on definitive auth rejections (401/403).
+      // Transient network failures and server errors do not invalidate the session.
+      if (err instanceof HttpError && (err.status === 401 || err.status === 403)) {
         setRefreshToken(null);
       }
     }

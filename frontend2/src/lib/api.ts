@@ -2,6 +2,16 @@ import type { ApiError } from "./types";
 
 const BASE_URL = "/api";
 
+export class HttpError extends Error {
+  constructor(
+    public readonly status: number,
+    message: string
+  ) {
+    super(message);
+    this.name = "HttpError";
+  }
+}
+
 // In-memory refresh token storage (lost on page reload -- access_token cookie survives)
 let storedRefreshToken: string | null = null;
 let refreshPromise: Promise<void> | null = null;
@@ -14,12 +24,13 @@ export function getRefreshToken(): string | null {
   return storedRefreshToken;
 }
 
-async function parseError(response: Response): Promise<Error> {
+async function parseError(response: Response): Promise<HttpError> {
   try {
     const error: ApiError = await response.json();
-    return new Error(error.detail || error.message || `HTTP ${response.status}`);
+    return new HttpError(response.status, error.detail || error.message || `HTTP ${response.status}`);
   } catch {
-    return new Error(
+    return new HttpError(
+      response.status,
       `HTTP ${response.status}: ${response.statusText || "Request failed"}`
     );
   }
