@@ -308,6 +308,7 @@ msgstr "Invalid email or password. Check your credentials and try again."
 msgid "INVENTORY"
 msgstr "INVENTORY"
 
+#: src/components/layout/Sidebar.tsx:41
 #: src/features/dashboard/DashboardPage.tsx:49
 #: src/features/items/ItemsPage.tsx:8
 msgid "ITEMS"
@@ -343,6 +344,7 @@ msgstr "Loading page"
 msgid "Loading..."
 msgstr "Loading..."
 
+#: src/components/layout/Sidebar.tsx:50
 #: src/features/loans/LoansPage.tsx:8
 #: src/features/settings/NotificationsPage.tsx:108
 msgid "LOANS"
@@ -477,6 +479,7 @@ msgid "REMOVE"
 msgstr "REMOVE"
 
 #: src/components/layout/ErrorBoundaryPage.tsx:40
+#: src/routes/index.tsx:38
 msgid "RETURN TO BASE"
 msgstr "RETURN TO BASE"
 
@@ -504,6 +507,10 @@ msgstr "SCAN"
 msgid "SCAN BARCODE"
 msgstr "SCAN BARCODE"
 
+#: src/routes/index.tsx:29
+msgid "SECTOR NOT FOUND"
+msgstr "SECTOR NOT FOUND"
+
 #: src/features/settings/SecurityPage.tsx:164
 #: src/features/settings/SettingsPage.tsx:29
 msgid "SECURITY"
@@ -518,13 +525,9 @@ msgstr "SESSION REVOKED"
 msgid "SET PASSWORD"
 msgstr "SET PASSWORD"
 
-#: src/components/layout/Sidebar.tsx:41
+#: src/components/layout/Sidebar.tsx:59
 msgid "SETTINGS"
 msgstr "SETTINGS"
-
-#: src/components/layout/ErrorBoundaryPage.tsx:31
-msgid "SYSTEM ERROR"
-msgstr "SYSTEM ERROR"
 
 #: src/features/auth/OAuthButtons.tsx:66
 msgid "Sign in with GitHub"
@@ -559,6 +562,14 @@ msgstr "Something went wrong. Try again in a moment."
 #: src/features/settings/NotificationsPage.tsx:111
 msgid "SYSTEM"
 msgstr "SYSTEM"
+
+#: src/components/layout/ErrorBoundaryPage.tsx:31
+msgid "SYSTEM ERROR"
+msgstr "SYSTEM ERROR"
+
+#: src/routes/index.tsx:32
+msgid "The requested area does not exist. Return to base."
+msgstr "The requested area does not exist. Return to base."
 
 #: src/features/settings/AppearancePage.tsx:82
 msgid "Theme"

@@ -308,6 +308,7 @@ msgstr "Vale e-post voi parool. Kontrolli oma andmeid ja proovi uuesti."
 msgid "INVENTORY"
 msgstr ""
 
+#: src/components/layout/Sidebar.tsx:41
 #: src/features/dashboard/DashboardPage.tsx:49
 #: src/features/items/ItemsPage.tsx:8
 msgid "ITEMS"
@@ -343,6 +344,7 @@ msgstr "Lehe laadimine"
 msgid "Loading..."
 msgstr ""
 
+#: src/components/layout/Sidebar.tsx:50
 #: src/features/loans/LoansPage.tsx:8
 #: src/features/settings/NotificationsPage.tsx:108
 msgid "LOANS"
@@ -477,6 +479,7 @@ msgid "REMOVE"
 msgstr ""
 
 #: src/components/layout/ErrorBoundaryPage.tsx:40
+#: src/routes/index.tsx:38
 msgid "RETURN TO BASE"
 msgstr "TAGASI BAASI"
 
@@ -504,6 +507,10 @@ msgstr "SKANEERI"
 msgid "SCAN BARCODE"
 msgstr "SKANEERI TRIIPKOODI"
 
+#: src/routes/index.tsx:29
+msgid "SECTOR NOT FOUND"
+msgstr "SEKTOR EI LEITUD"
+
 #: src/features/settings/SecurityPage.tsx:164
 #: src/features/settings/SettingsPage.tsx:29
 msgid "SECURITY"
@@ -518,13 +525,9 @@ msgstr ""
 msgid "SET PASSWORD"
 msgstr ""
 
-#: src/components/layout/Sidebar.tsx:41
+#: src/components/layout/Sidebar.tsx:59
 msgid "SETTINGS"
 msgstr "SEADED"
-
-#: src/components/layout/ErrorBoundaryPage.tsx:31
-msgid "SYSTEM ERROR"
-msgstr "SÜSTEEMIVIGA"
 
 #: src/features/auth/OAuthButtons.tsx:66
 msgid "Sign in with GitHub"
@@ -559,6 +562,14 @@ msgstr "Midagi laks valesti. Proovi hetke parast uuesti."
 #: src/features/settings/NotificationsPage.tsx:111
 msgid "SYSTEM"
 msgstr ""
+
+#: src/components/layout/ErrorBoundaryPage.tsx:31
+msgid "SYSTEM ERROR"
+msgstr "SÜSTEEMIVIGA"
+
+#: src/routes/index.tsx:32
+msgid "The requested area does not exist. Return to base."
+msgstr "Soovitud ala ei eksisteeri. Naase baasi."
 
 #: src/features/settings/AppearancePage.tsx:82
 msgid "Theme"

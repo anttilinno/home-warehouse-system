@@ -1,4 +1,5 @@
 import { Routes, Route, Link } from "react-router";
+import { useLingui } from "@lingui/react/macro";
 import { RequireAuth } from "@/features/auth/RequireAuth";
 import { AuthPage } from "@/features/auth/AuthPage";
 import { AuthCallbackPage } from "@/features/auth/AuthCallbackPage";
@@ -20,20 +21,21 @@ import { AppShell, ErrorBoundaryPage } from "@/components/layout";
 import { RetroPanel } from "@/components/retro";
 
 function NotFoundPage() {
+  const { t } = useLingui();
   return (
     <div className="min-h-dvh bg-retro-charcoal flex items-center justify-center p-lg">
       <RetroPanel showHazardStripe className="max-w-[640px] w-full">
         <h1 className="text-[20px] font-bold uppercase text-retro-ink">
-          SECTOR NOT FOUND
+          {t`SECTOR NOT FOUND`}
         </h1>
         <p className="text-retro-ink mt-sm">
-          The requested area does not exist. Return to base.
+          {t`The requested area does not exist. Return to base.`}
         </p>
         <Link
           to="/"
           className="inline-block mt-md text-retro-ink font-bold uppercase text-[14px] border-retro-thick border-retro-ink bg-retro-cream px-md py-sm shadow-retro-raised hover:shadow-retro-pressed"
         >
-          RETURN TO BASE
+          {t`RETURN TO BASE`}
         </Link>
       </RetroPanel>
     </div>
