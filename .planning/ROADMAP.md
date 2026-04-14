@@ -167,9 +167,9 @@ See `.planning/milestones/v1.9-ROADMAP.md` for full details.
 
 - [x] **Phase 48: Project Scaffold** - Vite + React 19 project with routing, Tailwind retro tokens, Lingui i18n, and backend proxy (completed 2026-04-09)
 - [x] **Phase 49: Auth & API Client** - Login, register, logout, route protection, and JWT-based API client (completed 2026-04-10)
-- [ ] **Phase 50: Design System** - Ten retro-styled components (buttons, panels, inputs, cards, dialogs, tables, tabs, toasts, badges) with demo page
+- [x] **Phase 50: Design System** - Ten retro-styled components (buttons, panels, inputs, cards, dialogs, tables, tabs, toasts, badges) with demo page (completed 2026-04-14)
 - [x] **Phase 51: App Layout** - Retro sidebar navigation, top bar, mobile-responsive shell, loading states, and error boundaries (completed 2026-04-11)
-- [ ] **Phase 52: Dashboard** - HUD-style inventory stats, retro terminal activity feed, and quick-access action cards
+- [x] **Phase 52: Dashboard** - HUD-style inventory stats, retro terminal activity feed, and quick-access action cards (completed 2026-04-14)
 - [x] **Phase 53: Settings Hub** - Eight settings subpages with retro panel navigation (profile, security, appearance, language, formats, notifications, data) (completed 2026-04-11)
 - [ ] **Phase 54: v2.0 Tech Debt — Code Fixes** - Sidebar nav entries, AuthContext error handling, DataPage null-guard, type fixes, i18n, and component consistency
 - [ ] **Phase 55: v2.0 Validation & Requirements Cleanup** - Nyquist VALIDATION.md for phases 48–53, requirements file section fixes, checkbox sign-off, and traceability table
@@ -268,7 +268,7 @@ Plans:
   7. All settings pages import `useToast` from the barrel (`@/components/retro`)
 **Plans**: 2 plans
 Plans:
-- [ ] 54-01-PLAN.md — Nav + Auth hardening: Sidebar ITEMS/LOANS links, HttpError class, AuthContext 401/403-only token clear, DataPage null-guard
+- [x] 54-01-PLAN.md — Nav + Auth hardening: Sidebar ITEMS/LOANS links, HttpError class, AuthContext 401/403-only token clear, DataPage null-guard
 - [ ] 54-02-PLAN.md — i18n + Type + Consistency: entity_name type fix, NotFoundPage t macro + catalogs, AuthCallbackPage HazardStripe, barrel imports for useToast
 
 ### Phase 55: v2.0 Validation & Requirements Cleanup
@@ -312,7 +312,7 @@ Phases execute in numeric order: 48 -> 49 -> 50 -> 51 -> 52 -> 53
 | 51. App Layout | v2.0 | 2/2 | Complete   | 2026-04-11 |
 | 52. Dashboard | v2.0 | 0/TBD | Not started | - |
 | 53. Settings Hub | v2.0 | 3/3 | Complete   | 2026-04-11 |
-| 54. Tech Debt Code Fixes | v2.0 | 0/2 | Not started | - |
+| 54. Tech Debt Code Fixes | v2.0 | 1/2 | In Progress|  |
 | 55. Validation & Requirements Cleanup | v2.0 | 0/TBD | Not started | - |
 
 **Total:** 47 phases complete (130 plans executed) across 10 milestones + 8 phases planned for v2.0
