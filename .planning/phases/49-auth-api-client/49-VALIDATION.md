@@ -1,10 +1,11 @@
 ---
 phase: 49
 slug: auth-api-client
-status: draft
-nyquist_compliant: false
-wave_0_complete: false
+status: complete
+nyquist_compliant: true
+wave_0_complete: true
 created: 2026-04-09
+signed_off: 2026-04-14
 ---
 
 # Phase 49 — Validation Strategy
@@ -38,12 +39,12 @@ created: 2026-04-09
 
 | Task ID | Plan | Wave | Requirement | Threat Ref | Secure Behavior | Test Type | Automated Command | File Exists | Status |
 |---------|------|------|-------------|------------|-----------------|-----------|-------------------|-------------|--------|
-| 49-01-01 | 01 | 1 | AUTH-03 | T-49-01 | API client uses credentials: "include" for HttpOnly cookies | unit | `cd frontend2 && bunx vitest run src/lib/__tests__/api.test.ts` | ❌ W0 | ⬜ pending |
-| 49-01-02 | 01 | 1 | AUTH-03 | T-49-02 | 401 retry sends refresh via cookie, not body | unit | `cd frontend2 && bunx vitest run src/lib/__tests__/api.test.ts` | ❌ W0 | ⬜ pending |
-| 49-02-01 | 02 | 1 | AUTH-01 | — | Login calls POST /auth/login and updates auth state | unit | `cd frontend2 && bunx vitest run src/features/auth/__tests__/AuthContext.test.tsx` | ❌ W0 | ⬜ pending |
-| 49-02-02 | 02 | 1 | AUTH-04 | — | Register calls POST /auth/register and auto-logs in | unit | `cd frontend2 && bunx vitest run src/features/auth/__tests__/AuthContext.test.tsx` | ❌ W0 | ⬜ pending |
-| 49-02-03 | 02 | 1 | AUTH-05 | — | Logout calls POST /auth/logout and clears state | unit | `cd frontend2 && bunx vitest run src/features/auth/__tests__/AuthContext.test.tsx` | ❌ W0 | ⬜ pending |
-| 49-03-01 | 03 | 1 | AUTH-02 | T-49-03 | RequireAuth redirects unauthenticated to /login | unit | `cd frontend2 && bunx vitest run src/features/auth/__tests__/RequireAuth.test.tsx` | ❌ W0 | ⬜ pending |
+| 49-01-01 | 01 | 1 | AUTH-03 | T-49-01 | API client uses credentials: "include" for HttpOnly cookies | unit | `cd frontend2 && bunx vitest run src/lib/__tests__/api.test.ts` | ✅ | ✅ green |
+| 49-01-02 | 01 | 1 | AUTH-03 | T-49-02 | 401 retry sends refresh via cookie, not body | unit | `cd frontend2 && bunx vitest run src/lib/__tests__/api.test.ts` | ✅ | ✅ green |
+| 49-02-01 | 02 | 1 | AUTH-01 | — | Login calls POST /auth/login and updates auth state | unit | `cd frontend2 && bunx vitest run src/features/auth/__tests__/AuthContext.test.tsx` | ✅ | ✅ green |
+| 49-02-02 | 02 | 1 | AUTH-04 | — | Register calls POST /auth/register and auto-logs in | unit | `cd frontend2 && bunx vitest run src/features/auth/__tests__/AuthContext.test.tsx` | ✅ | ✅ green |
+| 49-02-03 | 02 | 1 | AUTH-05 | — | Logout calls POST /auth/logout and clears state | unit | `cd frontend2 && bunx vitest run src/features/auth/__tests__/AuthContext.test.tsx` | ✅ | ✅ green |
+| 49-03-01 | 03 | 1 | AUTH-02 | T-49-03 | RequireAuth redirects unauthenticated to /login | unit | `cd frontend2 && bunx vitest run src/features/auth/__tests__/RequireAuth.test.tsx` | ✅ | ✅ green |
 
 *Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
 
@@ -51,12 +52,12 @@ created: 2026-04-09
 
 ## Wave 0 Requirements
 
-- [ ] `frontend2/src/lib/__tests__/api.test.ts` — stubs for AUTH-03 (API client refresh)
-- [ ] `frontend2/src/features/auth/__tests__/AuthContext.test.tsx` — stubs for AUTH-01, AUTH-04, AUTH-05
-- [ ] `frontend2/src/features/auth/__tests__/RequireAuth.test.tsx` — stubs for AUTH-02
-- [ ] Test setup: jsdom environment config in vitest
-- [ ] Mock fetch utility for API client tests
-- [ ] React Router test wrapper (MemoryRouter) for route guard tests
+- [x] `frontend2/src/lib/__tests__/api.test.ts` — stubs for AUTH-03 (API client refresh)
+- [x] `frontend2/src/features/auth/__tests__/AuthContext.test.tsx` — stubs for AUTH-01, AUTH-04, AUTH-05
+- [x] `frontend2/src/features/auth/__tests__/RequireAuth.test.tsx` — stubs for AUTH-02
+- [x] Test setup: jsdom environment config in vitest
+- [x] Mock fetch utility for API client tests
+- [x] React Router test wrapper (MemoryRouter) for route guard tests
 
 ---
 
@@ -72,11 +73,11 @@ created: 2026-04-09
 
 ## Validation Sign-Off
 
-- [ ] All tasks have `<automated>` verify or Wave 0 dependencies
-- [ ] Sampling continuity: no 3 consecutive tasks without automated verify
-- [ ] Wave 0 covers all MISSING references
-- [ ] No watch-mode flags
-- [ ] Feedback latency < 5s
-- [ ] `nyquist_compliant: true` set in frontmatter
+- [x] All tasks have `<automated>` verify or Wave 0 dependencies
+- [x] Sampling continuity: no 3 consecutive tasks without automated verify
+- [x] Wave 0 covers all MISSING references
+- [x] No watch-mode flags
+- [x] Feedback latency < 5s
+- [x] `nyquist_compliant: true` set in frontmatter
 
-**Approval:** pending
+**Approval:** Signed off 2026-04-14 — all 5 AUTH requirements satisfied per 49-VERIFICATION.md (5/5 truths verified, 92 tests pass, human visual verification complete per 49-02-SUMMARY.md)
