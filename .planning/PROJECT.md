@@ -143,16 +143,26 @@ Reliable inventory access anywhere — online or offline — with seamless sync.
 - ✓ Online/offline status detection
 - ✓ Pending uploads indicator UI
 
+### Validated
+
+**v2.0 Retro Frontend (shipped 2026-04-14):**
+
+- ✓ Vite + React 19 + Tailwind CSS 4 + React Router v7 `/frontend2` scaffold with retro tokens and Lingui i18n
+- ✓ Auth & API client — login, register, logout, JWT-based, route protection
+- ✓ Custom retro component library — buttons, panels, inputs, cards, dialogs, tables, tabs, toasts, badges
+- ✓ App layout — retro sidebar navigation, top bar, mobile-responsive shell
+- ✓ Dashboard — HUD-style inventory stats, terminal activity feed, quick-access cards
+- ✓ Settings hub — 8 subpages (profile, security, appearance, language, formats, notifications, data)
+
 ### Active
 
-**v2.0 Retro Frontend (started 2026-04-08):**
+**v2.1 Feature Parity — Items, Loans & Scanning (started 2026-04-14):**
 
-- Second standalone frontend (`/frontend2`) with retro industrial game UI aesthetic
-- Vite + React 19 + Tailwind CSS 4 + React Router v7 stack
-- Custom component library: thick outlines, hazard stripes, beveled buttons, industrial panels, color-coded icons
-- 1:1 feature parity with existing frontend (auth, items, loans, scanning, settings, etc.)
-- i18n: EN + ET (extendable architecture)
-- Online-only (no offline/PWA for this milestone)
+- Items CRUD — list, view, create, edit, delete inventory items with photos
+- Loan management — loan items to borrowers, track returns, loan history
+- Barcode scanning — scan to find or create items (reuse existing retro UI patterns)
+- Categories & Locations — manage categories, locations, and containers
+- Online-only, lean implementation
 
 ### Out of Scope
 
@@ -166,21 +176,20 @@ Reliable inventory access anywhere — online or offline — with seamless sync.
 - Storing raw OAuth tokens — app never calls provider APIs after login
 - Popup/window-based OAuth flow — popup blockers, mobile issues, PWA incompatibility
 
-## Current Milestone: v2.0 Retro Frontend
+## Current Milestone: v2.1 Feature Parity — Items, Loans & Scanning
 
-**Goal:** Build a second, standalone frontend (`/frontend2`) with a retro industrial game UI aesthetic — full feature parity with the existing frontend, online-only to start.
+**Goal:** Bring `/frontend2` to core feature parity — items CRUD, loan management, barcode scanning, and category/location management. Online-only, lean implementation.
 
 **Target features:**
-- Custom retro component library (BAM-inspired design language)
-- Vite + React 19 + Tailwind CSS 4 + React Router v7
-- 1:1 feature parity with frontend1
-- i18n: EN + ET (extendable)
-- Online-only (no offline/PWA)
+- Items CRUD — list, view, create, edit, delete inventory items with photos
+- Loan management — loan items to borrowers, track returns, loan history
+- Barcode scanning — scan to find or create items (reuse existing retro UI patterns)
+- Categories & Locations — manage categories, locations, and containers
 
 ## Current State
 
-**Shipped:** v1.9 Quick Capture (2026-03-14)
-**Active:** v2.0 Retro Frontend (started 2026-04-08)
+**Shipped:** v2.0 Retro Frontend (2026-04-14)
+**Active:** v2.1 Feature Parity — Items, Loans & Scanning (started 2026-04-14)
 
 **Tech stack:**
 - Backend: Go 1.25, Chi, sqlc, PostgreSQL, golang.org/x/oauth2
@@ -283,4 +292,4 @@ Reliable inventory access anywhere — online or offline — with seamless sync.
 - Nyquist compliance PARTIAL for all v1.9 phases — run `/gsd:validate-phase 43-47` retroactively
 
 ---
-*Last updated: 2026-04-08 after v2.0 milestone start*
+*Last updated: 2026-04-14 after v2.1 milestone start*

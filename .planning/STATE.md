@@ -1,44 +1,42 @@
 ---
 gsd_state_version: 1.0
-milestone: v2.0
-milestone_name: Retro Frontend
-status: verifying
-stopped_at: Completed 54-tech-debt-code-fixes-02-PLAN.md
-last_updated: "2026-04-14T17:16:02.174Z"
+milestone: v2.1
+milestone_name: Feature Parity — Items, Loans & Scanning
+status: planning
+stopped_at: Roadmap complete — Phases 56-63 defined
+last_updated: "2026-04-14T00:00:00.000Z"
 last_activity: 2026-04-14
 progress:
-  total_phases: 6
-  completed_phases: 6
-  total_plans: 16
-  completed_plans: 16
-  percent: 100
+  total_phases: 8
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
+  percent: 0
 ---
 
 # Project State: Home Warehouse System
 
 ## Project Reference
 
-See: `.planning/PROJECT.md` (updated 2026-04-08)
+See: `.planning/PROJECT.md` (updated 2026-04-14)
 
 **Core value:** Reliable inventory access anywhere -- online or offline -- with seamless sync
-**Current focus:** Phase 54 — tech-debt-code-fixes
+**Current focus:** Milestone v2.1 — Feature Parity — Items, Loans & Scanning
 
 ## Current Position
 
-Phase: 54 (tech-debt-code-fixes) — EXECUTING
-Plan: 2 of 2
-Status: Phase complete — ready for verification
-Last activity: 2026-04-14
-
-Progress: [========================------] 80%
+Phase: 56 (not started) — Foundation — API Client & React Query
+Plan: —
+Status: Roadmap defined, ready to plan Phase 56
+Last activity: 2026-04-14 — v2.1 roadmap drafted (Phases 56-63)
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 123
+- Total plans completed: 148
 - Average duration: ~15 min per plan
-- Total execution time: ~30 hours
+- Total execution time: ~37 hours
 
 **By Milestone:**
 
@@ -54,9 +52,8 @@ Progress: [========================------] 80%
 | v1.7 | 5 | 7 | Complete |
 | v1.8 | 3 | 7 | Complete |
 | v1.9 | 5 | 9 | Complete |
-| v2.0 | 6 | 0/TBD | Planned |
-| Phase 54-tech-debt-code-fixes P01 | 6 | 3 tasks | 6 files |
-| Phase 54-tech-debt-code-fixes P02 | 10 | 3 tasks | 15 files |
+| v2.0 | 8 | 18 | Complete |
+| v2.1 | 8 | TBD | Planning |
 
 ## Accumulated Context
 
@@ -66,32 +63,34 @@ Progress: [========================------] 80%
 - v2.0: Lingui v5 for i18n -- compile-time catalogs, EN + ET to start
 - v2.0: Fully custom component library -- shadcn/ui fights retro aesthetic
 - v2.0: Online-only for this milestone -- reduces 30-40% complexity
-- v2.0: Backend CORS origin update needed for Vite dev server (minor, Phase 48)
-- [Phase 54-tech-debt-code-fixes]: HttpError class introduced in api.ts so callers can distinguish HTTP status codes from network failures
-- [Phase 54-tech-debt-code-fixes]: AuthContext catch block guards on HttpError 401/403 only — transient network errors no longer clear the session
-- [Phase 54-tech-debt-code-fixes]: entity_name always present in API responses (nullable, never absent) — optional marker ? was incorrect and removed
-- [Phase 54-tech-debt-code-fixes]: All retro component imports consolidated to @/components/retro barrel including test files
+- v2.0: HttpError class in api.ts -- callers distinguish HTTP status codes from network failures
+- v2.0: AuthContext guards on HttpError 401/403 only -- transient network errors don't clear session
+- v2.0: All retro component imports consolidated to @/components/retro barrel
+- v2.1: Online-only, lean implementation -- match v2.0 approach, no offline/PWA
+- v2.1: TanStack Query for server state -- centralised cache, per-entity mutation hooks with invalidation
+- v2.1: react-hook-form + zod via RetroFormField -- standard form substrate before any CRUD
+- v2.1: Photos via native FormData + fetch multipart -- no extra upload library
+- v2.1: Barcode scanning deferred to v2.2 -- out of scope for this milestone
+- v2.1: CI grep guard in frontend2 -- fail on idb/serwist/offline/sync imports
 
 ### Pending Todos
 
-- [ ] SCAN-01 through SCAN-07: Barcode scanning manual verification
-- [ ] iOS PWA: Camera permission persistence
-- [ ] Google OAuth Consent Screen verification (external process)
-- [ ] PWA standalone mode OAuth on iOS: physical device testing
+- [ ] Plan Phase 56 (Foundation — API Client & React Query)
+- [ ] Resolve pagination envelope per endpoint (cursor vs page/pageSize)
+- [ ] Confirm backend itemphoto max size limit
+- [ ] Confirm canonical barcode lookup path (v2.2 prep)
+- [ ] Confirm @yudiel/react-qr-scanner@2.5.1 React 19 peerDep (v2.2 prep)
+- [ ] Confirm cascade policy for category/location delete (block vs cascade vs un-set)
 
 ### Blockers/Concerns
 
-Carried forward:
-
-- v1.9 phases 46-47 still pending -- v2.0 is independent (separate `/frontend2`), no blocker
-- Google Consent Screen verification can take days/weeks (testing mode supports 100 users)
+- None for v2.1 start — backend endpoints all exist
 
 ## Session Continuity
 
-Last session: 2026-04-14T17:16:02.171Z
-Stopped at: Completed 54-tech-debt-code-fixes-02-PLAN.md
-Next step: Plan Phase 48 (Project Scaffold)
-Resume file: None
+Last session: 2026-04-14
+Stopped at: v2.1 roadmap complete (Phases 56-63 defined)
+Next step: `/gsd-plan-phase 56`
 
 ---
-*Updated: 2026-04-08 after v2.0 Retro Frontend roadmap creation*
+*Updated: 2026-04-14 after v2.1 roadmap definition*

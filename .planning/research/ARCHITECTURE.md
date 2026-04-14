@@ -1,656 +1,319 @@
-# Architecture Research
+# Architecture Patterns — v2.1 Items, Loans & Scanning Integration
 
-**Domain:** Retro-styled second frontend (SPA) for existing Go backend
-**Researched:** 2026-04-08
-**Confidence:** HIGH
+**Domain:** `/frontend2` feature-parity build-out (online-only, retro UI)
+**Researched:** 2026-04-14
+**Confidence:** HIGH (verified against live source)
 
-## System Overview
+## Executive Summary
 
-```
-                           Production (Angie reverse proxy :80)
- ┌──────────────────────────────────────────────────────────────────────┐
- │                                                                      │
- │  /retro/*  ──────────► frontend2 (Vite SPA :3001)                   │
- │  /auth/retro/callback ► frontend2                                    │
- │                                                                      │
- │  /auth/*, /users/*, /workspaces/*, /health, /barcode/*              │
- │           ──────────► backend (Go :8080)                             │
- │                                                                      │
- │  /* (default) ──────► frontend1 (Next.js :3000)                     │
- │                                                                      │
- └──────────────────────────────────────────────────────────────────────┘
+`/frontend2` is a clean Vite + React 19 + React Router v7 SPA with a **feature-folder** layout under `src/features/<feature>/` and a centralized `src/lib/api.ts` fetch client. Four feature folders (`items/`, `loans/`, `scan/`, plus new `categories/` and `locations/`) already exist as stub pages. The v2.1 work is therefore **additive**: fill in the existing feature folders, extend `api.ts` with typed per-entity modules, add nested routes, and reuse the existing retro component library plus `@yudiel/react-qr-scanner`.
 
-                           Development
- ┌──────────────────────────────────────────────────────────────────────┐
- │                                                                      │
- │  frontend2 Vite dev :3001                                           │
- │    └── proxy /auth/*, /users/*, /workspaces/* ──► backend :8080     │
- │                                                                      │
- │  frontend1 Next.js dev :3000                                        │
- │    └── (existing, unchanged)                                         │
- │                                                                      │
- │  backend Go :8080                                                   │
- │    └── CORS allows :3000 and :3001 (already configured)             │
- │                                                                      │
- └──────────────────────────────────────────────────────────────────────┘
-```
+There is **no** IndexedDB layer, no SyncManager, no offline queue, no react-query — all server reads/writes go through `api.ts` directly. New feature code should follow that same thin pattern: local component state + `useEffect` fetch, or small custom hooks (e.g., `useItems()`), returning data from `api.ts` methods.
 
-### Component Responsibilities
+The scanner from `/frontend` (`components/scanner/barcode-scanner.tsx`) uses `@yudiel/react-qr-scanner` which is already a documented project dependency. It **cannot drop in as-is** — it imports `next/dynamic`, shadcn `@/components/ui/*`, and `lucide-react`, none of which exist in frontend2. It must be ported to retro components and a static `import()` wrapper.
 
-| Component | Responsibility | Implementation |
-|-----------|----------------|----------------|
-| Vite Dev Server | Serves SPA, proxies API in dev | `vite.config.ts` with `server.proxy` |
-| React Router v7 | Client-side routing (library mode) | `createBrowserRouter` + `RouterProvider` |
-| API Client | HTTP calls to Go backend | Adapted from frontend1's `ApiClient` class |
-| Auth Context | JWT management, user state, workspace selection | React context wrapping `apiClient` |
-| SSE Provider | Real-time event connection | EventSource to `/workspaces/{id}/sse` |
-| i18n | EN + ET translations | `react-i18next` with JSON namespace files |
-| Design System | Retro industrial component library | Custom components over Tailwind CSS 4 |
+## Existing Architecture (as of 2026-04-14)
 
-## Recommended Project Structure
+### Layout
 
 ```
-frontend2/
-├── index.html                  # Vite entry point
-├── vite.config.ts              # Vite config with proxy + path aliases
-├── tailwind.config.ts          # Tailwind CSS 4 config (retro theme tokens)
-├── tsconfig.json
-├── package.json
-├── public/
-│   └── favicon.ico
-├── src/
-│   ├── main.tsx                # App bootstrap: i18n init, RouterProvider
-│   ├── router.tsx              # createBrowserRouter route tree
-│   ├── app.tsx                 # Root layout (nav shell, providers)
-│   │
-│   ├── api/                    # API client layer
-│   │   ├── client.ts           # ApiClient class (adapted from frontend1)
-│   │   ├── auth.ts             # Auth endpoints + types
-│   │   ├── items.ts            # Item CRUD + types
-│   │   ├── inventory.ts        # Inventory endpoints + types
-│   │   ├── loans.ts            # Loan endpoints + types
-│   │   ├── borrowers.ts        # Borrower endpoints + types
-│   │   ├── categories.ts       # Category endpoints + types
-│   │   ├── locations.ts        # Location endpoints + types
-│   │   ├── containers.ts       # Container endpoints + types
-│   │   ├── item-photos.ts      # Photo upload/serve + types
-│   │   ├── notifications.ts    # Notification endpoints + types
-│   │   ├── repair-logs.ts      # Repair log endpoints + types
-│   │   ├── analytics.ts        # Dashboard analytics + types
-│   │   ├── declutter.ts        # Declutter assistant + types
-│   │   ├── importexport.ts     # Import/export + types
-│   │   └── search.ts           # Search endpoint + types
-│   │
-│   ├── contexts/               # React contexts (global state)
-│   │   ├── auth-context.tsx    # User, workspace, login/logout
-│   │   ├── sse-context.tsx     # SSE connection + event distribution
-│   │   └── theme-context.tsx   # Dark/light theme
-│   │
-│   ├── hooks/                  # Shared custom hooks
-│   │   ├── use-sse.ts          # SSE subscription hook
-│   │   ├── use-date-format.ts  # User date format preference
-│   │   ├── use-time-format.ts  # User time format preference
-│   │   ├── use-number-format.ts # User number format preference
-│   │   └── use-debounce.ts     # Input debouncing
-│   │
-│   ├── components/             # Design system (retro components)
-│   │   ├── ui/                 # Primitive UI components
-│   │   │   ├── retro-button.tsx
-│   │   │   ├── retro-input.tsx
-│   │   │   ├── retro-card.tsx
-│   │   │   ├── retro-panel.tsx
-│   │   │   ├── retro-dialog.tsx
-│   │   │   ├── retro-badge.tsx
-│   │   │   ├── retro-select.tsx
-│   │   │   ├── retro-table.tsx
-│   │   │   ├── retro-tabs.tsx
-│   │   │   └── retro-toast.tsx
-│   │   ├── layout/             # Layout shells
-│   │   │   ├── app-shell.tsx   # Main authenticated layout
-│   │   │   ├── auth-shell.tsx  # Login/register layout
-│   │   │   ├── sidebar.tsx     # Navigation sidebar
-│   │   │   └── header.tsx      # Top bar
-│   │   └── shared/             # Composite reusable components
-│   │       ├── data-table.tsx  # Table with sort/filter/pagination
-│   │       ├── form-field.tsx  # Label + input + error
-│   │       ├── empty-state.tsx
-│   │       ├── loading-state.tsx
-│   │       └── confirm-dialog.tsx
-│   │
-│   ├── pages/                  # Route page components
-│   │   ├── auth/
-│   │   │   ├── login.tsx
-│   │   │   ├── register.tsx
-│   │   │   └── oauth-callback.tsx
-│   │   ├── dashboard/
-│   │   │   └── index.tsx
-│   │   ├── items/
-│   │   │   ├── list.tsx
-│   │   │   ├── detail.tsx
-│   │   │   └── create.tsx
-│   │   ├── inventory/
-│   │   │   └── index.tsx
-│   │   ├── loans/
-│   │   │   ├── list.tsx
-│   │   │   └── detail.tsx
-│   │   ├── borrowers/
-│   │   │   ├── list.tsx
-│   │   │   └── detail.tsx
-│   │   ├── categories/
-│   │   │   └── index.tsx
-│   │   ├── locations/
-│   │   │   └── index.tsx
-│   │   ├── containers/
-│   │   │   └── index.tsx
-│   │   ├── scanner/
-│   │   │   └── index.tsx
-│   │   ├── settings/
-│   │   │   ├── index.tsx       # Settings hub
-│   │   │   ├── profile.tsx
-│   │   │   ├── appearance.tsx
-│   │   │   ├── language.tsx
-│   │   │   ├── regional.tsx
-│   │   │   ├── security.tsx
-│   │   │   ├── notifications.tsx
-│   │   │   └── connected-accounts.tsx
-│   │   └── not-found.tsx
-│   │
-│   ├── i18n/                   # Internationalization
-│   │   ├── config.ts           # i18next init
-│   │   └── locales/
-│   │       ├── en/
-│   │       │   ├── common.json
-│   │       │   ├── auth.json
-│   │       │   ├── items.json
-│   │       │   ├── inventory.json
-│   │       │   ├── loans.json
-│   │       │   └── settings.json
-│   │       └── et/
-│   │           ├── common.json
-│   │           ├── auth.json
-│   │           ├── items.json
-│   │           ├── inventory.json
-│   │           ├── loans.json
-│   │           └── settings.json
-│   │
-│   ├── lib/                    # Utilities
-│   │   ├── utils.ts            # cn(), formatDate(), etc.
-│   │   └── constants.ts        # App-wide constants
-│   │
-│   └── styles/
-│       └── globals.css         # Tailwind directives + retro base styles
+frontend2/src/
+├── App.tsx                 # AuthProvider, ToastProvider, I18nProvider, router
+├── main.tsx
+├── routes/index.tsx        # AppRoutes -- <Routes> tree (NOT file-based)
+├── lib/
+│   ├── api.ts              # request/get/post/patch/del + HttpError + refresh
+│   ├── types.ts            # User, Session, Workspace, DashboardStats...
+│   └── i18n.ts
+├── components/
+│   ├── layout/             # AppShell, ErrorBoundaryPage, sidebar, topbar
+│   └── retro/              # RetroButton, Panel, Input, Card, Dialog, Table,
+│                           #  Tabs, Badge, Toast, HazardStripe (barrel index.ts)
+├── features/
+│   ├── auth/               # RequireAuth, AuthContext, AuthPage, callback
+│   ├── dashboard/          # DashboardPage + StatPanel + ActivityFeed + cards
+│   ├── items/              # stub ItemsPage
+│   ├── loans/              # stub LoansPage
+│   ├── scan/               # stub ScanPage
+│   ├── settings/           # 8 subpages
+│   └── setup/
+├── pages/DemoPage.tsx
+├── hooks/
+└── styles/
 ```
 
-### Structure Rationale
+### Router (important: NOT file-based)
 
-- **`api/` flat files:** Each file maps 1:1 to a backend domain. Types are co-located with endpoints (no separate `types/` folder) because frontend2 has no offline layer -- types only serve the API client. This differs from frontend1 which split types out for IndexedDB/sync use.
-- **`components/ui/` prefix `retro-`:** Explicit naming prevents confusion when reading code -- every component is obviously from the custom design system, not a third-party library. When the design system stabilizes, these could be extracted to a package.
-- **`pages/` mirrors routes:** Each subfolder maps to a URL segment. Page components are thin -- they compose API hooks and UI components. Business logic lives in hooks and API layer, not in pages.
-- **`contexts/` minimal set:** Only three contexts needed (auth, SSE, theme). No offline context, no sync context -- frontend2 is online-only.
-- **`i18n/locales/` namespaced JSON:** Namespace per feature domain prevents one massive translation file. Only EN + ET for v2.0 (no RU, unlike frontend1 which has 3 languages).
-- **No `features/` folder:** Frontend1 has `features/auth/components/` but frontend2 keeps it simpler. With online-only and no PWA, the codebase is small enough that flat `pages/` + `components/` is clearer than feature slicing.
+Despite the prompt's claim, routing is **declarative `<Routes>/<Route>`** in `routes/index.tsx`. Authenticated routes are nested under `<Route element={<RequireAuth><AppShell/></RequireAuth>} errorElement={<ErrorBoundaryPage/>}>`. New routes must be registered here.
 
-## Architectural Patterns
+### API Client
 
-### Pattern 1: React Router v7 Library Mode (not Framework Mode)
+`lib/api.ts` exports:
+- `get<T>(path)`, `post<T>(path, body?)`, `patch<T>(path, body)`, `del<T>(path)`
+- `HttpError` with `status` + `message` (use `err.status === 404/409/...`)
+- Transparent 401 → `/auth/refresh` retry (single-flight `refreshPromise`)
+- Always `credentials: "include"`, JSON-only (no multipart helper yet)
+- BASE_URL = `/api` (Vite dev proxy)
 
-**What:** Use React Router v7 as a client-side routing library with `createBrowserRouter`, not in framework mode (which would add SSR/RSC complexity matching Remix).
+There is **no** per-entity typed module yet — all entity types live in `lib/types.ts`. v2.1 should introduce `lib/api/<entity>.ts` modules that wrap `get/post/patch/del` with typed helpers.
 
-**When to use:** Pure SPA without server-side rendering requirements. Frontend2 is online-only and does not need SSR, so library mode keeps the stack simple.
+### Retro Component Library
 
-**Trade-offs:** No SSR means slower first paint vs Next.js, but avoids the complexity of a second SSR framework running alongside Next.js. The retro UI is a secondary/fun frontend, not the primary production app.
+`components/retro/index.ts` exports: `RetroButton`, `RetroPanel`, `RetroInput`, `RetroCard`, `RetroDialog` (+ `RetroDialogHandle`), `RetroTable`, `RetroTabs`, `RetroBadge`, `HazardStripe`, `ToastProvider`, `useToast`.
 
-**Example:**
-```typescript
-// src/router.tsx
-import { createBrowserRouter } from "react-router";
-import { AppShell } from "./components/layout/app-shell";
-import { AuthShell } from "./components/layout/auth-shell";
+**Gaps for v2.1** (not yet in library, will need new retro components):
+- `RetroSelect` / dropdown (needed for category/location pickers)
+- `RetroTextarea` (notes/description)
+- `RetroCheckbox` / `RetroRadio`
+- `RetroFileInput` / photo uploader (multipart — see "API Client Extensions" below)
+- `RetroDatePicker` (loan due dates) — may use native `<input type="date">` styled retro
+- `RetroConfirmDialog` (delete/archive confirmations) — wrap `RetroDialog`
+- `RetroEmptyState`
+- `RetroPagination`
 
-export const router = createBrowserRouter([
-  {
-    path: "/login",
-    element: <AuthShell />,
-    children: [
-      { index: true, lazy: () => import("./pages/auth/login") },
-    ],
-  },
-  {
-    path: "/register",
-    element: <AuthShell />,
-    children: [
-      { index: true, lazy: () => import("./pages/auth/register") },
-    ],
-  },
-  {
-    path: "/auth/callback",
-    lazy: () => import("./pages/auth/oauth-callback"),
-  },
-  {
-    path: "/",
-    element: <AppShell />,   // Authenticated layout with sidebar
-    children: [
-      { path: "dashboard", lazy: () => import("./pages/dashboard") },
-      { path: "items", lazy: () => import("./pages/items/list") },
-      { path: "items/new", lazy: () => import("./pages/items/create") },
-      { path: "items/:id", lazy: () => import("./pages/items/detail") },
-      // ... remaining routes
-    ],
-  },
-]);
+## Backend API Surface (already shipped, Huma/OpenAPI)
+
+All endpoints below are live. Note: the backend uses **Huma** on top of Chi, producing OpenAPI-described routes. Source: `backend/internal/domain/warehouse/*/handler.go`.
+
+### Items (`/api/items`)
+- `GET /items` — list (with filters)
+- `GET /items/search` — fuzzy search
+- `GET /items/{id}`
+- `GET /items/by-category/{category_id}`
+- `POST /items` — create
+- `PATCH /items/{id}` — update
+- `POST /items/{id}/archive` / `POST /items/{id}/restore`
+- `GET /items/{id}/labels`, `POST /items/{id}/labels/{label_id}`, `DELETE /items/{id}/labels/{label_id}`
+
+### Item Photos (`/api/items/{item_id}/photos`)
+- `POST` (multipart upload), `GET .../download`, `GET .../{photo_id}`, `GET .../{photo_id}/thumbnail`
+- `POST .../bulk-delete`, `POST .../bulk-caption`, `POST .../check-duplicate`
+
+### Loans (`/api/loans`)
+- `GET /loans`, `GET /loans/active`, `GET /loans/overdue`
+- `GET /loans/{id}`
+- `POST /loans` — create
+- `POST /loans/{id}/return`
+- `PATCH /loans/{id}/extend`
+- `GET /borrowers/{borrower_id}/loans`
+- `GET /inventory/{inventory_id}/loans`
+
+### Borrowers (`/api/borrowers`)
+- `GET`, `GET /{id}`, `POST`, `PATCH /{id}`, `DELETE /{id}`, `GET /search`
+
+### Categories (`/api/categories`)
+- `GET`, `GET /root`, `GET /{id}`, `GET /{id}/children`, `GET /{id}/breadcrumb`
+- `POST`, `PATCH /{id}`, `DELETE /{id}`
+- `POST /{id}/archive`, `POST /{id}/restore`
+
+### Locations (`/api/locations`)
+- `GET`, `GET /{id}`, `GET /{id}/breadcrumb`, `GET /search`
+- `POST`, `PATCH /{id}`, `DELETE /{id}`
+- `POST /{id}/archive`, `POST /{id}/restore`
+
+### Containers (`/api/containers`)
+- `GET`, `GET /{id}`, `GET /search`
+- `POST`, `PATCH /{id}`, `DELETE /{id}`
+- `POST /{id}/archive`, `POST /{id}/restore`
+
+## Recommended Architecture for v2.1
+
+### Component Boundaries
+
+| Layer | Responsibility | Location |
+|-------|---------------|----------|
+| Route page | URL binding, data fetching orchestration, layout | `features/<x>/<X>Page.tsx` |
+| Feature components | Entity-specific UI (ItemCard, LoanForm) | `features/<x>/*.tsx` |
+| Entity hook | `useItems()`, `useItem(id)`, `useLoans()` — fetch+local state | `features/<x>/hooks.ts` |
+| API module | Typed wrappers around `api.ts` primitives | `lib/api/<entity>.ts` |
+| Entity types | Interfaces for domain entities | `lib/api/<entity>.ts` (co-located) |
+| Retro primitives | Generic UI atoms | `components/retro/*` |
+
+### Data Flow
+
+```
+Route page  ->  useEntity() hook  ->  lib/api/<entity>.ts  ->  api.ts  ->  /api/<path>
+                              <-  setState(data)      <-  typed response
 ```
 
-### Pattern 2: Adapted API Client (Copy, Do Not Share)
+No react-query, no SWR. Simple `useEffect + useState` with AbortController, or a tiny shared `useFetch<T>()` hook if the team prefers.
 
-**What:** Copy the API client pattern from frontend1 and adapt it for Vite (no `process.env`, use `import.meta.env`). Do not create a shared package between frontends.
+### Patterns to Follow
 
-**When to use:** Always. The two frontends have different env var patterns (Next.js `NEXT_PUBLIC_*` vs Vite `VITE_*`), different build systems, and different runtime assumptions (SSR vs SPA). A shared package creates coupling that slows both down.
-
-**Trade-offs:** Duplicated type definitions. Worth it because: (a) types diverge over time (frontend1 has offline types, frontend2 does not), (b) no build orchestration overhead, (c) each frontend evolves independently.
-
-**Example:**
-```typescript
-// src/api/client.ts
-const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:8080";
-
-class ApiClient {
-  private baseUrl: string;
-  private token: string | null = null;
-
-  constructor(baseUrl: string) {
-    this.baseUrl = baseUrl;
-    this.token = localStorage.getItem("auth_token");
-  }
-
-  // Same request pattern as frontend1 but:
-  // - No "typeof window" checks (always in browser)
-  // - credentials: "include" for cookies
-  // - 401 redirects to /login (not /[locale]/login)
-  // - No SSR considerations
-}
-
-export const apiClient = new ApiClient(API_URL);
+**Pattern 1: Typed API module per entity**
+```ts
+// lib/api/items.ts
+import { get, post, patch, del } from "@/lib/api";
+export interface Item { id: string; name: string; sku: string; /* ... */ }
+export interface ItemListResponse { items: Item[]; total: number; }
+export const itemsApi = {
+  list: (params?: ListParams) => get<ItemListResponse>(`/items${qs(params)}`),
+  get:  (id: string) => get<{ item: Item }>(`/items/${id}`),
+  create: (body: CreateItemBody) => post<{ item: Item }>("/items", body),
+  update: (id: string, body: Partial<Item>) => patch<{ item: Item }>(`/items/${id}`, body),
+  archive: (id: string) => post<void>(`/items/${id}/archive`),
+};
 ```
 
-### Pattern 3: Vite Dev Proxy for Backend
-
-**What:** Use Vite's built-in `server.proxy` to forward API requests to the Go backend during development, avoiding CORS issues.
-
-**When to use:** Development. In production, Angie reverse proxy handles routing.
-
-**Trade-offs:** Simpler than configuring CORS for a third origin. The backend already allows `:3001` in CORS defaults, so direct calls would work too, but the proxy approach matches what most Vite+API projects use.
-
-**Example:**
-```typescript
-// vite.config.ts
-import { defineConfig } from "vite";
-import react from "@vitejs/plugin-react";
-import tailwindcss from "@tailwindcss/vite";
-
-export default defineConfig({
-  plugins: [react(), tailwindcss()],
-  resolve: {
-    alias: { "@": "/src" },
-  },
-  server: {
-    port: 3001,
-    proxy: {
-      "/auth": {
-        target: "http://localhost:8080",
-        changeOrigin: true,
-      },
-      "/users": {
-        target: "http://localhost:8080",
-        changeOrigin: true,
-      },
-      "/workspaces": {
-        target: "http://localhost:8080",
-        changeOrigin: true,
-      },
-      "/health": {
-        target: "http://localhost:8080",
-        changeOrigin: true,
-      },
-      "/notifications": {
-        target: "http://localhost:8080",
-        changeOrigin: true,
-      },
-      "/barcode": {
-        target: "http://localhost:8080",
-        changeOrigin: true,
-      },
-      "/push": {
-        target: "http://localhost:8080",
-        changeOrigin: true,
-      },
-      "/api/v1": {
-        target: "http://localhost:8080",
-        changeOrigin: true,
-      },
-    },
-  },
-});
-```
-
-### Pattern 4: OAuth Integration via APP_URL Configuration
-
-**What:** The backend's OAuth flow redirects to `{APP_URL}/auth/callback` after successful authentication. Frontend2 needs its own callback route that exchanges the one-time code for a JWT token.
-
-**When to use:** OAuth login (Google, GitHub).
-
-**Critical integration detail:** The backend's `APP_URL` env var determines where OAuth callbacks redirect. In dev, this points to `http://localhost:3000` (frontend1). For frontend2 to work with OAuth in dev, the Vite proxy approach solves this -- when the backend redirects to `{APP_URL}/auth/callback` and APP_URL is `http://localhost:3001`, the callback hits frontend2's Vite dev server which serves the SPA route.
-
-Set `APP_URL=http://localhost:3001` when developing frontend2 with OAuth. Or, more practically, skip OAuth in early phases and use email/password login (works immediately, no config changes).
-
-In production with Angie, both frontends share the same origin (`:80`), so the OAuth callback path just needs to be routed to the correct frontend.
-
-**Example:**
-```typescript
-// src/pages/auth/oauth-callback.tsx
-import { useEffect, useRef } from "react";
-import { useSearchParams, useNavigate } from "react-router";
-import { authApi } from "../../api/auth";
-
-export default function OAuthCallback() {
-  const [searchParams] = useSearchParams();
-  const navigate = useNavigate();
-  const exchanged = useRef(false);
-
+**Pattern 2: Feature-scoped hook**
+```ts
+// features/items/hooks.ts
+export function useItems(filters: Filters) {
+  const [data, setData] = useState<ItemListResponse | null>(null);
+  const [error, setError] = useState<HttpError | null>(null);
+  const [loading, setLoading] = useState(true);
   useEffect(() => {
-    const code = searchParams.get("code");
-    const error = searchParams.get("error");
-
-    if (error) {
-      navigate(`/login?error=${encodeURIComponent(error)}`);
-      return;
-    }
-    if (!code || exchanged.current) return;
-    exchanged.current = true;
-
-    authApi.exchangeOAuthCode(code)
-      .then(() => navigate("/dashboard"))
-      .catch(() => navigate("/login?error=exchange_failed"));
-  }, [searchParams, navigate]);
-
-  return <div>Completing sign in...</div>;
+    const ac = new AbortController();
+    itemsApi.list(filters).then(setData).catch(setError).finally(() => setLoading(false));
+    return () => ac.abort();
+  }, [JSON.stringify(filters)]);
+  return { data, error, loading };
 }
 ```
 
-### Pattern 5: SSE Connection via Shared Context
-
-**What:** A single EventSource connection per workspace, managed in a React context. Components subscribe to events via a hook. Simplified from frontend1 -- no offline/sync concerns.
-
-**When to use:** Any page that needs real-time updates (inventory changes, loan events, notifications).
-
-**Key detail:** EventSource does not support custom headers. The existing frontend1 uses `credentials: "include"` (cookies). Frontend2 should do the same -- the HttpOnly JWT cookie set by the backend during login is automatically sent with EventSource connections since they are same-origin (via proxy in dev, via Angie in prod).
-
-**Example:**
-```typescript
-// src/contexts/sse-context.tsx
-const url = `/workspaces/${workspaceId}/sse`;
-const eventSource = new EventSource(url, { withCredentials: true });
+**Pattern 3: Nested routes for detail views**
+```tsx
+<Route path="items" element={<ItemsPage />} />
+<Route path="items/new" element={<ItemEditPage mode="create" />} />
+<Route path="items/:id" element={<ItemDetailPage />} />
+<Route path="items/:id/edit" element={<ItemEditPage mode="edit" />} />
 ```
 
-## Data Flow
-
-### Auth Flow
-
-```
-User visits /login
-    |
-    ├── Email/Password ──► POST /auth/login ──► JWT token + HttpOnly cookie
-    │                                            ├── Store token in localStorage
-    │                                            └── navigate("/dashboard")
-    │
-    └── OAuth (Google/GitHub)
-         ├── Click ──► GET /auth/oauth/{provider} ──► Redirect to provider
-         ├── Provider callback ──► GET /auth/oauth/{provider}/callback
-         │                          └── Backend exchanges code, stores in Redis
-         │                          └── Redirect to {APP_URL}/auth/callback?code=XXX
-         └── Frontend callback page ──► POST /auth/oauth/exchange {code}
-                                         ├── JWT token + HttpOnly cookie
-                                         └── navigate("/dashboard")
-```
-
-### API Request Flow
-
-```
-Component
-    ↓ calls hook or api function
-ApiClient.get/post/patch/delete(endpoint, workspaceId?)
-    ↓ adds headers: Authorization (Bearer token), X-Workspace-ID, credentials: "include"
-    ↓
-  [Dev] Vite proxy ──► Go backend :8080
-  [Prod] Angie proxy ──► Go backend :8080
-    ↓
-  Response JSON
-    ↓ 401? → clear token, redirect /login
-    ↓ ok? → return typed data
-Component re-renders
-```
-
-### SSE Event Flow
-
-```
-AuthContext confirms: isAuthenticated + currentWorkspace
-    ↓
-SSEProvider creates EventSource
-    URL: /workspaces/{workspace_id}/sse (cookies sent automatically)
-    ↓ (persistent connection)
-Backend broadcasts events (CRUD, notifications)
-    ↓
-SSEProvider distributes to subscribers
-    ↓
-Components re-fetch affected data or update local state
-```
-
-### Key Data Flows
-
-1. **Auth token lifecycle:** Login sets token in localStorage + cookie. ApiClient reads from localStorage on construction. 401 response clears both and redirects to /login. OAuth uses one-time Redis code exchange to avoid cross-origin cookie issues.
-2. **Workspace scoping:** Every API call after auth includes `X-Workspace-ID` header. User selects workspace after login. All data queries are workspace-scoped on the backend.
-3. **SSE real-time updates:** Single connection per workspace. Events trigger component-level re-fetches (not global state updates). If disconnected, reconnect with exponential backoff and re-fetch.
-
-## Integration Points
-
-### Existing Backend -- No Modifications Required
-
-| Integration | Mechanism | Notes |
-|-------------|-----------|-------|
-| REST API | Same endpoints as frontend1 | All at `:8080`, no API versioning needed |
-| Auth (email/pw) | `POST /auth/login`, `POST /auth/register` | Returns JWT, sets HttpOnly cookie |
-| Auth (OAuth) | `GET /auth/oauth/{provider}` | Redirects to provider, callback returns to `{APP_URL}/auth/callback` |
-| OAuth exchange | `POST /auth/oauth/exchange` | One-time code from Redis, returns JWT |
-| SSE | `GET /workspaces/{id}/sse` | EventSource with cookies (withCredentials: true) |
-| File uploads | `POST` with `multipart/form-data` | Photos, avatars, imports |
-| CORS | Already allows `:3001` | `cors.go` line 14: `"http://localhost:3001"` in default origins |
-
-### Backend/Infrastructure Modifications Needed
-
-| Change | Why | Scope |
-|--------|-----|-------|
-| Angie config update | Route frontend2 traffic to its container | Add upstream + location blocks |
-| `docker-compose.yml` | Add `frontend2` service in prod profile | New service definition |
-| `APP_URL` in dev | OAuth redirects to frontend2 when testing OAuth | Env var change (temporary, per-dev) |
-| `CORS_ALLOWED_ORIGINS` | Production may need explicit frontend2 origin | Only if frontend2 runs on separate domain/subdomain |
-
-### OAuth Callback Strategy
-
-**Recommended approach for v2.0:** Build email/password login first (works immediately with zero backend changes). Add OAuth in a later phase once the deployment topology is decided.
-
-For OAuth when ready, two options:
-
-**Option A -- Path-based routing (simpler):** Frontend2 at `/retro/`, callback at `/retro/auth/callback`. Requires backend change to make the redirect path configurable per OAuth initiation (add a `redirect_to` param to the initiate endpoint). More invasive.
-
-**Option B -- Dev: separate APP_URL, Prod: shared origin (recommended):**
-- Dev: Set `APP_URL=http://localhost:3001` when working on frontend2 OAuth. Frontend1 OAuth breaks, but that is fine -- you are developing frontend2.
-- Prod: Both frontends behind Angie on same origin. Angie routes `/auth/callback` to whichever frontend the user was using (can be determined by a cookie or simply route to frontend1 and have frontend1's callback be a thin redirect based on a `source` param).
-
-**Pragmatic v2.0 answer:** Email/password in early phases. OAuth in final phase after deployment is tested.
-
-## Coexistence with Frontend1
-
-### Development
-
-Both frontends run simultaneously:
-- Frontend1: `cd frontend && npm run dev` (port 3000)
-- Frontend2: `cd frontend2 && npm run dev` (port 3001)
-- Backend: `cd backend && go run ./cmd/server` (port 8080)
-
-No conflicts. CORS already allows both ports. Each has independent `node_modules`, `package.json`, and build config.
-
-### Production (Docker Compose)
-
-```yaml
-# Addition to docker-compose.yml
-frontend2:
-  build:
-    context: ./frontend2
-    dockerfile: Dockerfile
-  profiles: ["prod"]
-  healthcheck:
-    test: ["CMD", "wget", "-qO-", "http://127.0.0.1:3001"]
-    interval: 5s
-    timeout: 5s
-    retries: 10
-    start_period: 10s
-  networks:
-    - warehouse
-```
-
-Frontend2 Dockerfile (simpler than frontend1, no Next.js standalone build):
-```dockerfile
-FROM node:22-alpine AS build
-WORKDIR /app
-COPY package.json package-lock.json ./
-RUN npm ci
-COPY . .
-RUN npm run build
-
-FROM nginx:alpine
-COPY --from=build /app/dist /usr/share/nginx/html
-COPY nginx.conf /etc/nginx/conf.d/default.conf
-EXPOSE 3001
-```
-
-SPA requires nginx `try_files` for client-side routing:
-```nginx
-server {
-    listen 3001;
-    root /usr/share/nginx/html;
-    location / {
-        try_files $uri $uri/ /index.html;
-    }
+**Pattern 4: Multipart photo upload helper**
+Add to `lib/api.ts`:
+```ts
+export async function postMultipart<T>(endpoint: string, form: FormData): Promise<T> {
+  // same refresh logic, but no JSON Content-Type (browser sets boundary)
 }
 ```
 
-### Angie Routing (Production)
+### Anti-Patterns to Avoid
 
-Add to `angie.conf`:
-```nginx
-upstream frontend2 {
-    server frontend2:3001;
-}
+- **Do not** re-introduce IndexedDB / SyncManager / offline queue (explicitly out of scope per PROJECT.md v2.1).
+- **Do not** mix `api.ts` calls with Next.js primitives (`next/dynamic`, `next/image`) when porting components from `/frontend`.
+- **Do not** place entity types in `lib/types.ts` — co-locate them in `lib/api/<entity>.ts` to keep `types.ts` for cross-cutting concerns.
+- **Do not** add react-query yet — the current dashboard/settings pattern is simpler and the online-only scope makes caching overhead unjustified. Revisit if hook boilerplate proliferates.
+- **Do not** gate the scanner route behind `<RequireAuth>` without ensuring the `<AppShell>` does not remount the scanner on every nav (iOS PWA camera permission resets — see Pitfall S-01).
 
-# Path-based routing (simpler, no DNS changes needed)
-location /retro/ {
-    proxy_pass http://frontend2/;
-    proxy_http_version 1.1;
-}
-location /retro {
-    return 301 /retro/;
-}
+## Barcode Scanner Integration Assessment
+
+### Can `@yudiel/react-qr-scanner` drop in as-is?
+
+**No — but the dependency itself is fine.** The library is listed as a v2.0 project decision, is active, ZXing-based, and React 19-compatible. It works in Vite with a standard dynamic `import()`.
+
+The existing `frontend/components/scanner/barcode-scanner.tsx` has **three frontend1-specific coupling points** that prevent straight copy-paste:
+
+1. `import dynamic from "next/dynamic"` — Next.js only. Replace with `React.lazy(() => import("@yudiel/react-qr-scanner").then(m => ({ default: m.Scanner })))` wrapped in `<Suspense>`.
+2. `import { Button } from "@/components/ui/button"` and `@/components/ui/alert` — shadcn. Replace with `RetroButton` and a hazard-striped `RetroPanel` for errors.
+3. `lucide-react` icons (`Flashlight`, `Camera`, etc.) — `/frontend2` does not currently declare lucide-react. Either add the dep (~40KB tree-shaken) or render text/ASCII glyphs consistent with the retro theme (`[◉]`, `[>>]`). **Recommendation:** add `lucide-react` — it's already in the v2.0 ecosystem and tree-shakes well.
+
+### Install additions required
+
+```bash
+cd frontend2
+npm install @yudiel/react-qr-scanner@^2.5.1 barcode-detector lucide-react
 ```
 
-### What Is New vs Modified
+(`barcode-detector` is the polyfill imported by the existing `lib/scanner/` module in frontend1; port that module too.)
 
-| Category | New (frontend2 only) | Modified (existing infra) |
-|----------|---------------------|---------------------------|
-| Code | Entire `/frontend2` directory | None in `/frontend` or `/backend` |
-| Config | Frontend2 Dockerfile + nginx.conf | `docker-compose.yml` (add service) |
-| Config | Frontend2 `package.json`, `vite.config.ts` | `docker/angie/angie.conf` (add routing) |
-| Backend | Nothing | Nothing (CORS already covers :3001) |
-| CI | Frontend2 build/test step | Pipeline config (add parallel job) |
+### iOS PWA camera permission — critical constraint (carried from v1.3)
 
-## Build Order for Phased Development
+The camera permission resets on page navigation in iOS PWAs. The v1.3 pattern mandates a **single-page scan flow** where the `Scanner` component stays mounted across states and uses its `paused` prop. For frontend2:
 
-### Phase 1: Foundation
-Scaffold Vite + React 19 + Router v7 + Tailwind CSS 4. ApiClient adapted from frontend1. Auth context with email/password login. One protected route (dashboard placeholder). Vite proxy config. Verify API calls work end-to-end.
-**Why first:** Everything else depends on auth and routing working. Proves the integration with existing backend.
+- `/scan` route renders a long-lived `ScanPage` with the `Scanner` always mounted.
+- Post-scan "quick action menu" (View / Create / Loan / Move) must render **over** the scanner, not navigate away, until the user explicitly leaves.
+- When navigating away, warn the user once that returning will re-prompt permission (match v1.3 UX).
 
-### Phase 2: Design System Core
-Retro UI primitives (button, input, card, panel, dialog, badge, table). Layout shells (app-shell with sidebar + header, auth-shell). Theme tokens in Tailwind config. Dark/light theme toggle.
-**Why second:** All feature pages need these components. Building them before features prevents throwaway work.
+### Related additions to port
 
-### Phase 3: i18n Setup
-react-i18next config with EN + ET. Translation files for common + auth namespaces. Language switcher. Wire existing pages to use `useTranslation`.
-**Why third:** Better to wire i18n before building all pages. Retrofitting i18n into existing pages is painful and error-prone.
+- `frontend/lib/scanner/` — polyfill init, `SUPPORTED_FORMATS`, torch detection (small, pure TS — port verbatim minus Next imports).
+- Optional: audio beep (AudioContext) and `navigator.vibrate` haptics — trivial to re-implement without ios-haptics, which targets iOS 17.4+ only and is optional for v2.1 (online-only scope).
 
-### Phase 4: Core Feature Pages
-Dashboard (analytics), items CRUD, inventory management, categories, locations, containers. Data tables with sort/filter/pagination. Search.
-**Why fourth:** Core data model pages using the design system and API client from phases 1-3. Largest phase by page count.
+## New Routes (add to `routes/index.tsx`)
 
-### Phase 5: Secondary Feature Pages
-Loans, borrowers, repair logs, scanner (barcode/QR), declutter assistant, import/export. Settings hub with all 8 subpages (profile, appearance, language, regional, security, notifications, data, connected accounts).
-**Why fifth:** Depends on item/inventory infrastructure. Settings uses auth context from phase 1.
+| Path | Component | Notes |
+|------|-----------|-------|
+| `/items` | `ItemsPage` | Exists as stub — fill in list view |
+| `/items/new` | `ItemEditPage` | mode="create" |
+| `/items/:id` | `ItemDetailPage` | Detail + photos + loan history |
+| `/items/:id/edit` | `ItemEditPage` | mode="edit" |
+| `/loans` | `LoansPage` | Exists as stub — tabs: Active / Overdue / History |
+| `/loans/new` | `LoanCreatePage` | Borrower + item picker |
+| `/loans/:id` | `LoanDetailPage` | Return / extend actions |
+| `/scan` | `ScanPage` | Exists as stub — single-page scan flow |
+| `/borrowers` | `BorrowersPage` | New feature folder |
+| `/borrowers/:id` | `BorrowerDetailPage` | Loan history |
+| `/categories` | `CategoriesPage` | Tree view w/ children/breadcrumb endpoints |
+| `/locations` | `LocationsPage` | Tree view w/ containers nested |
+| `/locations/:id/containers` | `ContainersPage` | Optional nested or tab-in-location |
 
-### Phase 6: Real-time and Polish
-SSE connection + notification dropdown. OAuth login (Google, GitHub). Error boundaries. Loading skeletons. Toast notifications. Final responsive/mobile polish.
-**Why last:** SSE is an enhancement, not a blocker for feature development. OAuth requires deployment topology to be decided. Polish makes sense after all pages exist.
+Register all under the authenticated `<AppShell>` block, after `settings/data`.
 
-## Anti-Patterns
+## New vs Modified Files
 
-### Anti-Pattern 1: Shared Package Between Frontends
+### Modified
+- `src/routes/index.tsx` — add 12+ routes
+- `src/lib/api.ts` — add `postMultipart` helper; optionally split into `lib/api/client.ts` + `lib/api/<entity>.ts`
+- `src/lib/types.ts` — keep cross-cutting types only; remove anything entity-specific as modules are introduced
+- `src/components/retro/index.ts` — export new primitives
+- `src/components/layout/AppShell.tsx` — add sidebar links (Items, Loans, Scan, Borrowers, Categories, Locations)
+- `src/features/items/ItemsPage.tsx`, `loans/LoansPage.tsx`, `scan/ScanPage.tsx` — replace stubs
+- `frontend2/package.json` — add `@yudiel/react-qr-scanner`, `barcode-detector`, `lucide-react`
 
-**What people do:** Create a `packages/shared` with types and utilities used by both frontends.
-**Why it's wrong:** Couples two independent frontends with different build systems (Next.js vs Vite), different env var patterns (`NEXT_PUBLIC_*` vs `VITE_*`), different runtime assumptions (SSR vs SPA). One breaking change blocks both. Monorepo tooling (Turborepo) adds complexity for marginal benefit when the shared surface is just TypeScript interfaces.
-**Do this instead:** Copy types. They are small. Each frontend owns its type definitions and evolves independently. Frontend1 has offline types, frontend2 does not -- they diverge naturally.
+### New
+- `src/lib/api/items.ts`, `loans.ts`, `borrowers.ts`, `categories.ts`, `locations.ts`, `containers.ts`, `itemPhotos.ts`
+- `src/lib/scanner/` — ported polyfill + format config
+- `src/components/retro/RetroSelect.tsx`, `RetroTextarea.tsx`, `RetroCheckbox.tsx`, `RetroFileInput.tsx`, `RetroEmptyState.tsx`, `RetroPagination.tsx`, `RetroConfirmDialog.tsx`
+- `src/components/BarcodeScanner/BarcodeScanner.tsx` — retro-themed port of frontend1 scanner
+- `src/features/items/` — `ItemsPage.tsx`, `ItemEditPage.tsx`, `ItemDetailPage.tsx`, `ItemCard.tsx`, `ItemForm.tsx`, `ItemPhotoGallery.tsx`, `hooks.ts`
+- `src/features/loans/` — `LoansPage.tsx`, `LoanCreatePage.tsx`, `LoanDetailPage.tsx`, `LoanForm.tsx`, `LoanStatusBadge.tsx`, `hooks.ts`
+- `src/features/borrowers/` — `BorrowersPage.tsx`, `BorrowerDetailPage.tsx`, `BorrowerForm.tsx`, `hooks.ts`
+- `src/features/categories/` — `CategoriesPage.tsx`, `CategoryTree.tsx`, `CategoryForm.tsx`, `hooks.ts`
+- `src/features/locations/` — `LocationsPage.tsx`, `LocationTree.tsx`, `LocationForm.tsx`, `ContainerForm.tsx`, `hooks.ts`
+- `src/features/scan/` — expanded `ScanPage.tsx`, `ScanActionMenu.tsx`, `hooks.ts`
 
-### Anti-Pattern 2: React Router Framework Mode for an SPA
+## Suggested Build Order (Dependency-Aware)
 
-**What people do:** Use React Router v7 in framework mode because "it's the new way" (it evolved from Remix).
-**Why it's wrong:** Framework mode adds SSR, server loaders, server actions -- none of which frontend2 needs. It requires the `@react-router/dev` Vite plugin with its own file conventions (`app/root.tsx`, `app/routes.ts`), adding complexity for no benefit in a pure SPA.
-**Do this instead:** Use library mode with `createBrowserRouter`. Import from `react-router` (not `react-router-dom`, which is deprecated in v7). Define routes as a code array with lazy imports for code splitting.
+1. **Foundation (Phase 1)** — API client split + entity type modules (no UI). Deliverables: `lib/api/*.ts` with full CRUD for items/loans/borrowers/categories/locations/containers, typed. Zero route changes. Unit tests for each module using fetch mocks.
 
-### Anti-Pattern 3: next-intl in a Vite SPA
+2. **Retro primitives extension (Phase 2)** — `RetroSelect`, `RetroTextarea`, `RetroCheckbox`, `RetroFileInput`, `RetroEmptyState`, `RetroPagination`, `RetroConfirmDialog`. Add demo page entries. No feature work yet; unblocks all forms.
 
-**What people do:** Try to use the same i18n library as frontend1 (`next-intl`) for consistency.
-**Why it's wrong:** `next-intl` is tightly coupled to Next.js middleware, server components, and `[locale]` URL path segments. It does not work outside Next.js.
-**Do this instead:** Use `react-i18next` + `i18next`. It is the standard for React SPAs. Translation JSON structure can be similar but files are independent. No URL-based locale prefix needed -- store locale in user preferences (already persisted in backend `users.language` column).
+3. **Categories & Locations (Phase 3)** — tree views + CRUD. These are **prerequisites for items** (items require category_id + location_id). Simpler domain (flat-ish CRUD), good shakedown for the patterns. Include containers as a sub-resource of locations.
 
-### Anti-Pattern 4: Running Backend with Two APP_URLs for OAuth
+4. **Borrowers (Phase 4)** — simple CRUD. Prerequisite for loan creation. Small, low-risk. Can run in parallel with Phase 3 if staffing allows.
 
-**What people do:** Try to make the backend serve both frontends for OAuth by switching `APP_URL` dynamically per request.
-**Why it's wrong:** `APP_URL` is a startup config read once at boot, not a per-request setting. OAuth state cookies and PKCE verifiers are tied to the callback URL.
-**Do this instead:** In dev, use email/password auth for frontend2 (or temporarily change `APP_URL` to `:3001`). In prod, put both frontends behind the same origin (Angie) so `APP_URL` works for both via path routing.
+5. **Items CRUD (Phase 5)** — list (filters, pagination, search), detail, create/edit, archive/restore. Depends on categories + locations. Defer photos to Phase 6.
 
-## Scaling Considerations
+6. **Item photos (Phase 6)** — multipart upload via `postMultipart`, gallery, thumbnails, delete. Requires items pages to exist.
 
-| Scale | Architecture Adjustments |
-|-------|--------------------------|
-| Single user (dev) | Current architecture is fine. Vite dev server + Go backend. |
-| 10-100 users | Add Angie routing for frontend2 in prod. Static SPA served from nginx is effectively free to scale. |
-| Frontend2 replaces frontend1 | Consider adding SSR (switch to framework mode), PWA/offline (port sync infra). These are v3.0+ concerns. |
+7. **Loans (Phase 7)** — active/overdue/history tabs, create flow (borrower picker + item picker), return, extend. Depends on items + borrowers.
 
-### Scaling Priorities
+8. **Barcode scanner (Phase 8)** — install deps, port scanner component and polyfill, implement single-page `/scan` flow, post-scan action menu (View → item detail; Create → new item pre-filled with SKU; Loan → loan create with item pre-selected). Depends on items and loans.
 
-1. **First bottleneck:** Will not be frontend2. It is a static SPA -- nginx serves pre-built files. Backend API and database are the shared bottleneck, already handled by frontend1's architecture.
-2. **Second bottleneck:** Bundle size. Use React Router lazy imports for code splitting. Vite's tree-shaking handles the rest. Monitor with `vite-plugin-visualizer`.
+9. **Polish & nav (Phase 9)** — sidebar links, empty states, error boundaries per route, i18n catalog extraction. Verification phase.
+
+**Rationale:** categories/locations before items because items require them as FKs; borrowers before loans; items before item-photos (server couples photos to item_id); items + loans before scanner (scanner's post-scan actions depend on both). Retro primitives early because every subsequent form uses them.
+
+## Scalability Considerations
+
+| Concern | Approach |
+|---------|----------|
+| Items list at 10k+ rows | Server-side pagination (backend `/items` already supports it); client uses `RetroPagination`. Avoid virtualization in v2.1. |
+| Loan list growth | Filter by tab (active/overdue) — bounded by real-world loan counts (< few hundred). |
+| Photo upload size | Rely on backend image processor (v1.2 shipped async thumbnails); client just POSTs. |
+| Category tree depth | Use `/categories/{id}/children` lazy expansion rather than full tree fetch. |
+
+## Pitfalls Flagged
+
+- **S-01 — iOS PWA camera remount**: scanner must stay mounted. Single-page scan flow is non-negotiable (validated in v1.3).
+- **S-02 — Multipart + JWT refresh**: the current `request<T>` sets `Content-Type: application/json` unconditionally. `postMultipart` must omit it so the browser can set the boundary. Also must replicate the 401 refresh path.
+- **S-03 — HttpError status handling**: feature hooks must branch on `err.status` (404 → not-found UI, 409 → concurrency conflict UI, 422 → validation). No generic "something went wrong" toasts.
+- **S-04 — Lucide bundle**: use named imports (`import { Camera } from "lucide-react"`) and rely on Vite tree-shaking; verify size in production build.
+- **S-05 — Nested route errorElement**: `ErrorBoundaryPage` is attached at the AppShell level; per-feature routes should throw typed errors or provide their own boundaries for better UX.
 
 ## Sources
 
-- [React Router Modes Documentation](https://reactrouter.com/start/modes) - Library vs Framework vs Data mode
-- [React Router Installation (Data/Library mode)](https://reactrouter.com/start/data/installation) - createBrowserRouter setup
-- [react-i18next Quick Start](https://react.i18next.com/guides/quick-start) - i18n for React SPAs
-- Backend CORS config: `backend/internal/api/middleware/cors.go` (`:3001` already in default allowed origins)
-- Backend OAuth flow: `backend/internal/domain/auth/oauth/handler.go` (APP_URL-based redirects)
-- Backend router: `backend/internal/api/router.go` (complete API surface)
-- Production proxy: `docker/angie/angie.conf` (reverse proxy routing pattern)
-- Frontend1 API client: `frontend/lib/api/client.ts` (pattern to adapt for Vite)
-- Frontend1 OAuth callback: `frontend/app/[locale]/(auth)/callback/page.tsx` (exchange flow to replicate)
-- Frontend1 SSE context: `frontend/lib/contexts/sse-context.tsx` (EventSource pattern to simplify)
-- Frontend1 i18n config: `frontend/i18n/config.ts` (locale list: en, et, ru)
-- Docker Compose: `docker-compose.yml` (production service topology)
-
----
-*Architecture research for: Retro-styled second frontend (SPA) for existing Go backend*
-*Researched: 2026-04-08*
+- `frontend2/src/lib/api.ts`, `routes/index.tsx`, `components/retro/index.ts`, `features/*/`, `lib/types.ts`, `package.json` (read 2026-04-14)
+- Backend handlers: `backend/internal/domain/warehouse/{item,loan,borrower,category,location,container,itemphoto}/handler.go` (Huma/Chi routes verified)
+- `frontend/components/scanner/barcode-scanner.tsx` and `frontend/package.json` (reference scanner, @yudiel/react-qr-scanner ^2.5.1)
+- `.planning/PROJECT.md` v2.1 scope and key decisions (HIGH confidence — project-owned doc)

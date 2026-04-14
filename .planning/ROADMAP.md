@@ -12,7 +12,8 @@
 - ✅ **v1.7 Modular Settings** — Phases 35-39 (shipped 2026-02-13)
 - ✅ **v1.8 Social Login** — Phases 40-42 (shipped 2026-02-22)
 - ✅ **v1.9 Quick Capture** — Phases 43-47 (shipped 2026-03-14)
-- 📋 **v2.0 Retro Frontend** — Phases 48-55 (planned)
+- ✅ **v2.0 Retro Frontend** — Phases 48-55 (shipped 2026-04-14)
+- 📋 **v2.1 Feature Parity — Items, Loans & Scanning** — Phases 56-63 (planned)
 
 ## Phases
 
@@ -161,18 +162,34 @@ See `.planning/milestones/v1.9-ROADMAP.md` for full details.
 
 </details>
 
-### 📋 v2.0 Retro Frontend (Planned)
+<details>
+<summary>✅ v2.0 Retro Frontend (Phases 48-55) — SHIPPED 2026-04-14</summary>
 
-**Milestone Goal:** Build a second standalone frontend (`/frontend2`) with a retro industrial game UI aesthetic -- Vite + React 19 + Tailwind CSS 4 + React Router v7, custom component library, 1:1 feature parity foundation (auth, dashboard, settings), i18n EN + ET, online-only.
+**Delivered:** Standalone `/frontend2` (Vite + React 19 + Tailwind CSS 4 + React Router v7) with retro industrial aesthetic: auth, design system, layout, dashboard, settings hub. 33/33 requirements satisfied.
 
-- [x] **Phase 48: Project Scaffold** - Vite + React 19 project with routing, Tailwind retro tokens, Lingui i18n, and backend proxy (completed 2026-04-09)
-- [x] **Phase 49: Auth & API Client** - Login, register, logout, route protection, and JWT-based API client (completed 2026-04-10)
-- [x] **Phase 50: Design System** - Ten retro-styled components (buttons, panels, inputs, cards, dialogs, tables, tabs, toasts, badges) with demo page (completed 2026-04-14)
-- [x] **Phase 51: App Layout** - Retro sidebar navigation, top bar, mobile-responsive shell, loading states, and error boundaries (completed 2026-04-11)
-- [x] **Phase 52: Dashboard** - HUD-style inventory stats, retro terminal activity feed, and quick-access action cards (completed 2026-04-14)
-- [x] **Phase 53: Settings Hub** - Eight settings subpages with retro panel navigation (profile, security, appearance, language, formats, notifications, data) (completed 2026-04-11)
-- [x] **Phase 54: v2.0 Tech Debt — Code Fixes** - Sidebar nav entries, AuthContext error handling, DataPage null-guard, type fixes, i18n, and component consistency (completed 2026-04-14)
-- [ ] **Phase 55: v2.0 Validation & Requirements Cleanup** - Nyquist VALIDATION.md for phases 48–53, requirements file section fixes, checkbox sign-off, and traceability table
+- [x] Phase 48: Project Scaffold (2 plans)
+- [x] Phase 49: Auth & API Client (2 plans)
+- [x] Phase 50: Design System (3 plans)
+- [x] Phase 51: App Layout (2 plans)
+- [x] Phase 52: Dashboard (2 plans)
+- [x] Phase 53: Settings Hub (3 plans)
+- [x] Phase 54: Tech Debt Code Fixes (2 plans)
+- [x] Phase 55: Validation & Requirements Cleanup (2 plans)
+
+</details>
+
+### 📋 v2.1 Feature Parity — Items, Loans & Scanning (Planned)
+
+**Milestone Goal:** Bring `/frontend2` to core feature parity: Items CRUD (with photos), Loans + Borrowers, Categories/Locations/Containers taxonomy, and navigation wiring. Online-only, lean. Barcode scanning deferred to v2.2.
+
+- [ ] **Phase 56: Foundation — API Client & React Query** - Typed entity API modules and TanStack Query setup on top of existing `lib/api.ts`
+- [ ] **Phase 57: Retro Form Primitives** - RetroSelect, RetroCombobox, RetroTextarea, RetroCheckbox, RetroFileInput, RetroPagination, RetroConfirmDialog, RetroEmptyState, RetroFormField
+- [ ] **Phase 58: Taxonomy — Categories, Locations, Containers** - Hierarchical tree CRUD for categories and locations, container CRUD grouped by location
+- [ ] **Phase 59: Borrowers CRUD** - Flat borrower list, create/edit/delete with active-loan guard, detail page with loan history
+- [ ] **Phase 60: Items CRUD** - Paginated list with search/filter/sort, detail view, create/edit/delete, archive/unarchive toggle
+- [ ] **Phase 61: Item Photos** - Multipart photo upload, gallery viewer, photo delete, primary thumbnail on list + detail
+- [ ] **Phase 62: Loans** - Tabbed Active/Overdue/History list, create loan, mark returned, edit, per-item and per-borrower history
+- [ ] **Phase 63: Navigation & Polish** - Sidebar links for Items/Loans/Borrowers/Taxonomy, dashboard quick-access wiring, i18n sweep, empty states
 
 ## Phase Details
 
@@ -284,11 +301,113 @@ Plans:
   6. Traceability table includes all v2.0 REQ-IDs mapped to their phases with status Complete
 **Plans**: TBD
 
+### Phase 56: Foundation — API Client & React Query
+**Goal**: Typed entity API modules and TanStack Query provider in place so every subsequent CRUD phase has a consistent server-state substrate
+**Depends on**: Phase 55 (prior milestone complete)
+**Requirements**: (infrastructure — no user-facing REQs; unblocks all v2.1 CRUD phases)
+**Success Criteria** (what must be TRUE):
+  1. `QueryClientProvider` wraps the app in `App.tsx` and React Query Devtools is available in dev mode
+  2. `lib/api/` contains typed per-entity modules (items, itemPhotos, loans, borrowers, categories, locations, containers) exposing list/get/create/update/delete functions
+  3. `lib/api.ts` provides a `postMultipart<T>` helper usable by future photo uploads
+  4. A smoke test (or demo route) fetches one real list endpoint through React Query and shows loading/success/error states
+  5. CI grep guard fails the build if `frontend2/src/**` imports `idb`, `serwist`, or any `*offline*`/`*sync*` module
+**Plans**: TBD
+
+### Phase 57: Retro Form Primitives
+**Goal**: A full set of retro-styled form and list primitives so every CRUD page can compose forms, pickers, pagination, and confirmations without ad-hoc components
+**Depends on**: Phase 56
+**Requirements**: (infrastructure — no user-facing REQs; unblocks all CRUD forms)
+**Success Criteria** (what must be TRUE):
+  1. RetroSelect, RetroCombobox, RetroTextarea, RetroCheckbox, RetroFileInput, RetroPagination, RetroConfirmDialog, RetroEmptyState, and RetroFormField each render in the `/demo` page with interactive states
+  2. RetroFormField integrates with react-hook-form + zod and surfaces inline validation errors in retro styling
+  3. RetroCombobox supports async option loading with keyboard navigation and mobile-friendly 44px targets
+  4. RetroPagination exposes page-size-aware navigation and shows "N of M" for any list
+  5. All new primitives are exported from the `@/components/retro` barrel and consumed by at least one test or demo story
+**Plans**: TBD
+**UI hint**: yes
+
+### Phase 58: Taxonomy — Categories, Locations, Containers
+**Goal**: Users can manage the taxonomy that items depend on: hierarchical categories and locations, plus containers grouped by location, with full CRUD and usage-aware delete
+**Depends on**: Phase 57
+**Requirements**: TAX-01, TAX-02, TAX-03, TAX-04, TAX-05, TAX-06, TAX-07, TAX-08, TAX-09, TAX-10, TAX-11, TAX-12
+**Success Criteria** (what must be TRUE):
+  1. User can view categories and locations as indented hierarchical trees and create/edit nodes with an optional parent picker and description
+  2. User can view containers grouped by their parent location and create/edit containers with a required location and optional description
+  3. User can archive or delete any taxonomy node; the UI shows the current usage count and warns when items are still assigned (handling 409 cascade responses)
+  4. Taxonomy changes propagate to dependent selectors (e.g., item create/edit) on next open via React Query cache invalidation
+  5. A unified `/taxonomy` tabbed page exposes Categories, Locations, and Containers with retro styling and empty states
+**Plans**: TBD
+**UI hint**: yes
+
+### Phase 59: Borrowers CRUD
+**Goal**: Users can manage borrowers as a flat list and see each borrower's active and historical loans on a detail page
+**Depends on**: Phase 57 (can run in parallel with Phase 58)
+**Requirements**: BORR-01, BORR-02, BORR-03, BORR-04, BORR-05
+**Success Criteria** (what must be TRUE):
+  1. User can view a borrowers list showing each borrower's name and active loan count
+  2. User can create a borrower with required name and optional email, phone, and notes, and edit any of those fields later
+  3. Attempting to delete a borrower with active loans is blocked and surfaces a clear retro error message
+  4. Borrower detail page renders the borrower's active loans and historical loans in separate sections (loan data wired up in Phase 62)
+  5. Empty states render a retro "no borrowers yet" panel with a primary create action
+**Plans**: TBD
+**UI hint**: yes
+
+### Phase 60: Items CRUD
+**Goal**: Users can list, view, create, edit, archive, and delete inventory items with full search, filter, and sort over the paginated list
+**Depends on**: Phase 58 (taxonomy FKs required)
+**Requirements**: ITEM-01, ITEM-02, ITEM-03, ITEM-04, ITEM-05, ITEM-06, ITEM-07, ITEM-08
+**Success Criteria** (what must be TRUE):
+  1. User sees a paginated items list (25/page) with retro pagination and can search by name, SKU, or barcode
+  2. User can filter the list by category and location and sort by name, SKU, created date, or updated date; a toggle shows or hides archived items
+  3. User can open an item detail page that displays name, SKU, barcode, description, category, location, container, status, and notes
+  4. User can create a new item with required name and all optional fields, edit any item, and delete an item after confirming via RetroConfirmDialog
+  5. User can archive and unarchive an item from the detail page; archived items are excluded from the default list view
+**Plans**: TBD
+**UI hint**: yes
+
+### Phase 61: Item Photos
+**Goal**: Users can attach photos to items, view them in a gallery, delete them, and see the primary thumbnail in the items list and detail header
+**Depends on**: Phase 60
+**Requirements**: PHOTO-01, PHOTO-02, PHOTO-03, PHOTO-04
+**Success Criteria** (what must be TRUE):
+  1. User can upload one or more photos (JPEG/PNG/HEIC) from the item detail page with client-side resize and a ~10 MB max enforced before upload
+  2. Uploaded photos appear in a retro gallery viewer on the item detail page with previous/next navigation
+  3. User can delete a photo from the gallery with a confirmation step and the gallery updates immediately
+  4. Items list rows and item detail header show the primary/thumbnail photo when available and a retro placeholder otherwise
+  5. Photo `ObjectURL`s are revoked via ref on unmount so repeated uploads do not leak memory (v1.9 lesson)
+**Plans**: TBD
+**UI hint**: yes
+
+### Phase 62: Loans
+**Goal**: Users can loan items to borrowers, track returns, and review loan history from both the item and borrower perspectives
+**Depends on**: Phase 60 (items), Phase 59 (borrowers)
+**Requirements**: LOAN-01, LOAN-02, LOAN-03, LOAN-04, LOAN-05, LOAN-06
+**Success Criteria** (what must be TRUE):
+  1. User can view loans on a tabbed page showing Active, Overdue, and History with counts in each tab
+  2. User can create a loan by picking an item and a borrower via RetroCombobox and optionally setting a due date and notes
+  3. User can mark any active loan as returned, and the loan moves to History immediately
+  4. User can edit a non-returned loan's due date and notes without creating a new loan
+  5. Item detail and borrower detail pages each show the entity's current active loan (if any) and historical loans
+**Plans**: TBD
+**UI hint**: yes
+
+### Phase 63: Navigation & Polish
+**Goal**: The retro sidebar and dashboard are wired to every new v2.1 section, i18n catalogs are complete, and every list has a proper empty state
+**Depends on**: Phase 58, Phase 59, Phase 60, Phase 61, Phase 62
+**Requirements**: NAV-01, NAV-02
+**Success Criteria** (what must be TRUE):
+  1. Retro sidebar shows links to Items, Loans, Borrowers, and Taxonomy in addition to Dashboard and Settings
+  2. Dashboard quick-access action cards route to the Items list and Loans list (completing the v2.0 placeholders)
+  3. Every v2.1 list page (items, loans, borrowers, categories, locations, containers) renders a RetroEmptyState with a primary action when empty
+  4. All user-visible strings introduced in phases 56–62 are present in English and Estonian Lingui catalogs with no orphan keys
+**Plans**: TBD
+**UI hint**: yes
+
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 48 -> 49 -> 50 -> 51 -> 52 -> 53
-(Note: Phase 49 and 50 depend only on 48, so could run in parallel if desired.)
+Phases execute in numeric order: 56 -> 57 -> (58 || 59) -> 60 -> 61 -> 62 -> 63
+(Phase 58 and 59 depend only on Phase 57 and can run in parallel. Phase 61 follows 60. Phase 62 needs both 60 and 59.)
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
@@ -301,22 +420,19 @@ Phases execute in numeric order: 48 -> 49 -> 50 -> 51 -> 52 -> 53
 | 30-34 | v1.6 | 9 | Complete | 2026-02-08 |
 | 35-39 | v1.7 | 7 | Complete | 2026-02-13 |
 | 40-42 | v1.8 | 7 | Complete | 2026-02-22 |
-| 43 | v1.9 | 2/2 | Complete | 2026-02-27 |
-| 44 | v1.9 | 2/2 | Complete | 2026-02-27 |
-| 45 | v1.9 | 2/2 | Complete | 2026-02-27 |
-| 46 | v1.9 | 1/1 | Complete | 2026-03-14 |
-| 47 | v1.9 | 2/2 | Complete | 2026-03-14 |
-| 48. Scaffold | v2.0 | 2/2 | Complete    | 2026-04-09 |
-| 49. Auth & API Client | v2.0 | 2/2 | Complete   | 2026-04-10 |
-| 50. Design System | v2.0 | 0/TBD | Not started | - |
-| 51. App Layout | v2.0 | 2/2 | Complete   | 2026-04-11 |
-| 52. Dashboard | v2.0 | 0/TBD | Not started | - |
-| 53. Settings Hub | v2.0 | 3/3 | Complete   | 2026-04-11 |
-| 54. Tech Debt Code Fixes | v2.0 | 2/2 | Complete   | 2026-04-14 |
-| 55. Validation & Requirements Cleanup | v2.0 | 0/TBD | Not started | - |
+| 43-47 | v1.9 | 9 | Complete | 2026-03-14 |
+| 48-55 | v2.0 | 18 | Complete | 2026-04-14 |
+| 56. Foundation — API Client & React Query | v2.1 | 0/TBD | Not started | - |
+| 57. Retro Form Primitives | v2.1 | 0/TBD | Not started | - |
+| 58. Taxonomy — Categories, Locations, Containers | v2.1 | 0/TBD | Not started | - |
+| 59. Borrowers CRUD | v2.1 | 0/TBD | Not started | - |
+| 60. Items CRUD | v2.1 | 0/TBD | Not started | - |
+| 61. Item Photos | v2.1 | 0/TBD | Not started | - |
+| 62. Loans | v2.1 | 0/TBD | Not started | - |
+| 63. Navigation & Polish | v2.1 | 0/TBD | Not started | - |
 
-**Total:** 47 phases complete (130 plans executed) across 10 milestones + 8 phases planned for v2.0
+**Total:** 55 phases complete (148 plans executed) across 11 milestones + 8 phases planned for v2.1
 
 ---
 *Roadmap created: 2026-01-24*
-*Last updated: 2026-04-08 after Phase 48 planning (2 plans created)*
+*Last updated: 2026-04-14 after v2.1 roadmap planning (Phases 56-63)*
