@@ -32,6 +32,24 @@ export function Sidebar({ className, onNavClick }: SidebarProps) {
         {t`DASHBOARD`}
       </NavLink>
       <NavLink
+        to="/items"
+        className={({ isActive }) =>
+          `${navItemBase} ${isActive ? navItemActive : navItemDefault}`
+        }
+        onClick={onNavClick}
+      >
+        {t`ITEMS`}
+      </NavLink>
+      <NavLink
+        to="/loans"
+        className={({ isActive }) =>
+          `${navItemBase} ${isActive ? navItemActive : navItemDefault}`
+        }
+        onClick={onNavClick}
+      >
+        {t`LOANS`}
+      </NavLink>
+      <NavLink
         to="/settings"
         className={({ isActive }) =>
           `${navItemBase} ${isActive ? navItemActive : navItemDefault}`

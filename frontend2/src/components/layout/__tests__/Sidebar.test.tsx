@@ -28,14 +28,20 @@ describe("Sidebar", () => {
   it("renders two NavLinks with text DASHBOARD and SETTINGS", () => {
     renderSidebar();
     expect(screen.getByText("DASHBOARD")).toBeInTheDocument();
+    expect(screen.getByText("ITEMS")).toBeInTheDocument();
+    expect(screen.getByText("LOANS")).toBeInTheDocument();
     expect(screen.getByText("SETTINGS")).toBeInTheDocument();
   });
 
   it("Dashboard NavLink has to='/' and Settings NavLink has to='/settings'", () => {
     renderSidebar();
     const dashboard = screen.getByText("DASHBOARD").closest("a");
+    const items = screen.getByText("ITEMS").closest("a");
+    const loans = screen.getByText("LOANS").closest("a");
     const settings = screen.getByText("SETTINGS").closest("a");
     expect(dashboard).toHaveAttribute("href", "/");
+    expect(items).toHaveAttribute("href", "/items");
+    expect(loans).toHaveAttribute("href", "/loans");
     expect(settings).toHaveAttribute("href", "/settings");
   });
 
@@ -58,6 +64,20 @@ describe("Sidebar", () => {
     const settings = screen.getByText("SETTINGS").closest("a");
     expect(settings?.className).toContain("bg-retro-amber");
     expect(settings?.className).toContain("shadow-retro-pressed");
+  });
+
+  it("active NavLink (Items at /items) has class bg-retro-amber and shadow-retro-pressed", () => {
+    renderSidebar(["/items"]);
+    const items = screen.getByText("ITEMS").closest("a");
+    expect(items?.className).toContain("bg-retro-amber");
+    expect(items?.className).toContain("shadow-retro-pressed");
+  });
+
+  it("active NavLink (Loans at /loans) has class bg-retro-amber and shadow-retro-pressed", () => {
+    renderSidebar(["/loans"]);
+    const loans = screen.getByText("LOANS").closest("a");
+    expect(loans?.className).toContain("bg-retro-amber");
+    expect(loans?.className).toContain("shadow-retro-pressed");
   });
 
   it("NavLinks have retro styling classes: border-retro-thick, border-retro-ink, font-bold, uppercase", () => {
