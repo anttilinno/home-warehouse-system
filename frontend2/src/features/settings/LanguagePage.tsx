@@ -1,9 +1,8 @@
 import { useNavigate } from "react-router";
 import { useLingui } from "@lingui/react/macro";
-import { RetroPanel, RetroButton } from "@/components/retro";
+import { RetroPanel, RetroButton, useToast } from "@/components/retro";
 import { ToggleGroup } from "./ToggleGroup";
 import { useAuth } from "@/features/auth/AuthContext";
-import { useToast } from "@/components/retro/RetroToast";
 import { patch } from "@/lib/api";
 import { loadCatalog } from "@/lib/i18n";
 import type { User } from "@/lib/types";

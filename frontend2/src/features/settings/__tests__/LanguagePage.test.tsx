@@ -3,7 +3,7 @@ import { render } from "@testing-library/react";
 import { MemoryRouter } from "react-router";
 import { i18n } from "@lingui/core";
 import { I18nProvider } from "@lingui/react";
-import { ToastProvider } from "@/components/retro/RetroToast";
+import { ToastProvider } from "@/components/retro";
 
 vi.mock("@/lib/api", () => ({
   get: vi.fn(),

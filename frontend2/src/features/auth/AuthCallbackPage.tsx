@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useSearchParams, useNavigate, Link } from "react-router";
 import { useLingui } from "@lingui/react/macro";
+import { HazardStripe } from "@/components/retro";
 import { post, setRefreshToken } from "@/lib/api";
 import type { AuthTokenResponse } from "@/lib/types";
 import { useAuth } from "./AuthContext";
@@ -47,7 +48,7 @@ export function AuthCallbackPage() {
   return (
     <div className="min-h-screen bg-retro-charcoal flex items-center justify-center p-lg">
       <div className="bg-retro-cream border-retro-thick border-retro-ink shadow-retro-raised p-lg max-w-[420px] w-full max-sm:mx-md text-center">
-        <div className="bg-hazard-stripe h-[8px] mb-md" />
+        <HazardStripe className="mb-md" />
 
         {error ? (
           <div>

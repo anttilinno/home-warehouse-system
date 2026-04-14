@@ -1,10 +1,8 @@
 import { useState } from "react";
 import { useNavigate } from "react-router";
 import { useLingui } from "@lingui/react/macro";
-import { RetroPanel, RetroButton } from "@/components/retro";
-import { HazardStripe } from "@/components/retro/HazardStripe";
+import { RetroPanel, RetroButton, HazardStripe, useToast } from "@/components/retro";
 import { useAuth } from "@/features/auth/AuthContext";
-import { useToast } from "@/components/retro/RetroToast";
 import { patch } from "@/lib/api";
 import type { User, NotificationPreferences } from "@/lib/types";
 
