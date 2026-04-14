@@ -104,6 +104,6 @@ export interface RecentActivity {
   action: string;
   entity_type: string;
   entity_id: string;
-  entity_name?: string | null;
+  entity_name: string | null;
   created_at: string;
 }
