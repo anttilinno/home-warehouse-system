@@ -1,0 +1,100 @@
+import { get, post, patch } from "@/lib/api";
+
+export interface Item {
+  id: string;
+  workspace_id: string;
+  sku: string;
+  name: string;
+  description?: string | null;
+  category_id?: string | null;
+  brand?: string | null;
+  model?: string | null;
+  image_url?: string | null;
+  serial_number?: string | null;
+  manufacturer?: string | null;
+  barcode?: string | null;
+  is_insured?: boolean | null;
+  is_archived?: boolean | null;
+  lifetime_warranty?: boolean | null;
+  needs_review?: boolean | null;
+  warranty_details?: string | null;
+  purchased_from?: string | null;
+  min_stock_level: number;
+  short_code: string;
+  obsidian_vault_path?: string | null;
+  obsidian_note_path?: string | null;
+  obsidian_uri?: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ItemListResponse {
+  items: Item[];
+  total: number;
+  page: number;
+  total_pages: number;
+}
+
+export interface ItemListParams {
+  page?: number;
+  limit?: number;
+  needs_review?: boolean;
+  archived?: boolean;
+  search?: string;
+  category_id?: string;
+  location_id?: string;
+  sort?: string;
+}
+
+export interface CreateItemInput {
+  name: string;
+  sku?: string;
+  barcode?: string;
+  description?: string;
+  category_id?: string;
+  brand?: string;
+  model?: string;
+  image_url?: string;
+  serial_number?: string;
+  manufacturer?: string;
+  is_insured?: boolean;
+  lifetime_warranty?: boolean;
+  warranty_details?: string;
+  purchased_from?: string;
+  min_stock_level?: number;
+  short_code?: string;
+  obsidian_vault_path?: string;
+  obsidian_note_path?: string;
+  needs_review?: boolean;
+}
+
+export type UpdateItemInput = Partial<CreateItemInput>;
+
+function toQuery(params: Record<string, unknown>): string {
+  const sp = new URLSearchParams();
+  for (const [k, v] of Object.entries(params))
+    if (v !== undefined && v !== null) sp.set(k, String(v));
+  const s = sp.toString();
+  return s ? `?${s}` : "";
+}
+
+const base = (wsId: string) => `/workspaces/${wsId}/items`;
+
+export const itemsApi = {
+  list: (wsId: string, params: ItemListParams = {}) =>
+    get<ItemListResponse>(`${base(wsId)}${toQuery(params as Record<string, unknown>)}`),
+  get: (wsId: string, id: string) => get<Item>(`${base(wsId)}/${id}`),
+  create: (wsId: string, body: CreateItemInput) => post<Item>(base(wsId), body),
+  update: (wsId: string, id: string, body: UpdateItemInput) =>
+    patch<Item>(`${base(wsId)}/${id}`, body),
+  archive: (wsId: string, id: string) => post<void>(`${base(wsId)}/${id}/archive`),
+  restore: (wsId: string, id: string) => post<void>(`${base(wsId)}/${id}/restore`),
+};
+
+export const itemKeys = {
+  all: ["items"] as const,
+  lists: () => [...itemKeys.all, "list"] as const,
+  list: (params: ItemListParams) => [...itemKeys.lists(), params] as const,
+  details: () => [...itemKeys.all, "detail"] as const,
+  detail: (id: string) => [...itemKeys.details(), id] as const,
+};
