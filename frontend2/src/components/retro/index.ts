@@ -1,6 +1,10 @@
 export { RetroButton } from "./RetroButton";
 export { RetroPanel } from "./RetroPanel";
 export { RetroInput } from "./RetroInput";
+export { RetroTextarea } from "./RetroTextarea";
+export type { RetroTextareaProps } from "./RetroTextarea";
+export { RetroCheckbox } from "./RetroCheckbox";
+export type { RetroCheckboxProps } from "./RetroCheckbox";
 export { HazardStripe } from "./HazardStripe";
 export { RetroCard } from "./RetroCard";
 export { RetroDialog } from "./RetroDialog";
