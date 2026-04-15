@@ -182,7 +182,7 @@ See `.planning/milestones/v1.9-ROADMAP.md` for full details.
 
 **Milestone Goal:** Bring `/frontend2` to core feature parity: Items CRUD (with photos), Loans + Borrowers, Categories/Locations/Containers taxonomy, and navigation wiring. Online-only, lean. Barcode scanning deferred to v2.2.
 
-- [ ] **Phase 56: Foundation — API Client & React Query** - Typed entity API modules and TanStack Query setup on top of existing `lib/api.ts`
+- [x] **Phase 56: Foundation — API Client & React Query** - Typed entity API modules and TanStack Query setup on top of existing `lib/api.ts` (completed 2026-04-15)
 - [ ] **Phase 57: Retro Form Primitives** - RetroSelect, RetroCombobox, RetroTextarea, RetroCheckbox, RetroFileInput, RetroPagination, RetroConfirmDialog, RetroEmptyState, RetroFormField
 - [ ] **Phase 58: Taxonomy — Categories, Locations, Containers** - Hierarchical tree CRUD for categories and locations, container CRUD grouped by location
 - [ ] **Phase 59: Borrowers CRUD** - Flat borrower list, create/edit/delete with active-loan guard, detail page with loan history
@@ -311,7 +311,12 @@ Plans:
   3. `lib/api.ts` provides a `postMultipart<T>` helper usable by future photo uploads
   4. A smoke test (or demo route) fetches one real list endpoint through React Query and shows loading/success/error states
   5. CI grep guard fails the build if `frontend2/src/**` imports `idb`, `serwist`, or any `*offline*`/`*sync*` module
-**Plans**: TBD
+**Plans:** 4/4 plans complete
+Plans:
+- [x] 56-01-PLAN.md — Install TanStack Query v5, QueryClient singleton, QueryClientProvider + lazy Devtools, postMultipart helper
+- [x] 56-02-PLAN.md — Seven typed per-entity API modules (items, itemPhotos, loans, borrowers, categories, locations, containers) with TK-dodo queryKeys factories + barrel
+- [x] 56-03-PLAN.md — Public /api-demo route demonstrating React Query loading/success/error/empty/anonymous states + Lingui catalogs
+- [x] 56-04-PLAN.md — CI grep guard blocking idb/serwist/*offline*/*sync* imports under frontend2/src, wired to prebuild
 
 ### Phase 57: Retro Form Primitives
 **Goal**: A full set of retro-styled form and list primitives so every CRUD page can compose forms, pickers, pagination, and confirmations without ad-hoc components
@@ -422,7 +427,7 @@ Phases execute in numeric order: 56 -> 57 -> (58 || 59) -> 60 -> 61 -> 62 -> 63
 | 40-42 | v1.8 | 7 | Complete | 2026-02-22 |
 | 43-47 | v1.9 | 9 | Complete | 2026-03-14 |
 | 48-55 | v2.0 | 18 | Complete | 2026-04-14 |
-| 56. Foundation — API Client & React Query | v2.1 | 0/TBD | Not started | - |
+| 56. Foundation — API Client & React Query | v2.1 | 4/4 | Complete   | 2026-04-15 |
 | 57. Retro Form Primitives | v2.1 | 0/TBD | Not started | - |
 | 58. Taxonomy — Categories, Locations, Containers | v2.1 | 0/TBD | Not started | - |
 | 59. Borrowers CRUD | v2.1 | 0/TBD | Not started | - |
