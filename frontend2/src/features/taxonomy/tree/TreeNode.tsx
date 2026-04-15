@@ -1,6 +1,6 @@
 import { type KeyboardEvent } from "react";
 import { useLingui } from "@lingui/react/macro";
-import { ChevronRight, ChevronDown, Pencil, Archive, Undo2 } from "lucide-react";
+import { ChevronRight, ChevronDown, Pencil, Archive, Undo2 } from "../icons";
 import { RetroBadge } from "@/components/retro";
 import type { TreeNode as TreeNodeData } from "./buildTree";
 
@@ -28,7 +28,7 @@ export interface TreeNodeProps<T extends TreeNodeItem> {
 export function TreeNode<T extends TreeNodeItem>({
   node,
   isExpanded,
-  expandedIds,
+  expandedIds: _expandedIds,
   focusedId,
   onToggle,
   onFocus,

@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useState, type KeyboardEvent } from "react";
 import { useLingui } from "@lingui/react/macro";
-import { ChevronRight, ChevronDown } from "lucide-react";
+import { ChevronRight, ChevronDown } from "../icons";
 import { TreeNode, type TreeNodeItem } from "./TreeNode";
 import type { TreeNode as TreeNodeData } from "./buildTree";
 

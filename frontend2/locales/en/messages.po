@@ -13,9 +13,31 @@ msgstr ""
 "Language-Team: \n"
 "Plural-Forms: \n"
 
+#: src/features/taxonomy/actions/ArchiveDeleteFlow.tsx:95
+#: src/features/taxonomy/actions/ArchiveDeleteFlow.tsx:108
+#: src/features/taxonomy/panel/EntityPanel.tsx:189
+#: src/features/taxonomy/panel/SlideOverPanel.tsx:130
+msgid "← BACK"
+msgstr "← BACK"
+
 #: src/components/retro/RetroPagination.tsx:47
 msgid "← PREV"
 msgstr "← PREV"
+
+#: src/features/taxonomy/tabs/CategoriesTab.tsx:111
+#: src/features/taxonomy/tabs/CategoriesTab.tsx:139
+msgid "+ NEW CATEGORY"
+msgstr "+ NEW CATEGORY"
+
+#: src/features/taxonomy/tabs/ContainersTab.tsx:134
+#: src/features/taxonomy/tabs/ContainersTab.tsx:175
+msgid "+ NEW CONTAINER"
+msgstr "+ NEW CONTAINER"
+
+#: src/features/taxonomy/tabs/LocationsTab.tsx:113
+#: src/features/taxonomy/tabs/LocationsTab.tsx:141
+msgid "+ NEW LOCATION"
+msgstr "+ NEW LOCATION"
 
 #: src/features/settings/SettingsPage.tsx:22
 msgid "ACCOUNT"
@@ -38,9 +60,13 @@ msgid "ACTIVITY LOG"
 msgstr "ACTIVITY LOG"
 
 #: src/features/dashboard/QuickActionCards.tsx:16
-#: src/pages/DemoPage.tsx:269
+#: src/pages/DemoPage.tsx:268
 msgid "ADD ITEM"
 msgstr "ADD ITEM"
+
+#: src/features/taxonomy/tabs/ContainersTab.tsx:62
+msgid "All locations"
+msgstr "All locations"
 
 #: src/features/auth/RegisterForm.tsx:88
 msgid "An account with this email already exists. Try logging in instead."
@@ -55,9 +81,39 @@ msgstr "API Demo"
 msgid "APPEARANCE"
 msgstr "APPEARANCE"
 
-#: src/pages/DemoPage.tsx:178
+#: src/features/taxonomy/tabs/ContainersTab.tsx:235
+#: src/features/taxonomy/tree/TreeNode.tsx:122
+msgid "ARCHIVE"
+msgstr "ARCHIVE"
+
+#. placeholder {0}: c.name
+#. placeholder {0}: item.name
+#: src/features/taxonomy/tabs/ContainersTab.tsx:230
+#: src/features/taxonomy/tree/TreeNode.tsx:117
+msgid "Archive {0}"
+msgstr "Archive {0}"
+
+#: src/features/taxonomy/actions/ArchiveDeleteFlow.tsx:47
+msgid "ARCHIVE CATEGORY"
+msgstr "ARCHIVE CATEGORY"
+
+#: src/features/taxonomy/actions/ArchiveDeleteFlow.tsx:50
+msgid "ARCHIVE CONTAINER"
+msgstr "ARCHIVE CONTAINER"
+
+#: src/pages/DemoPage.tsx:177
 msgid "ARCHIVE FLAG"
 msgstr "ARCHIVE FLAG"
+
+#: src/features/taxonomy/actions/ArchiveDeleteFlow.tsx:49
+msgid "ARCHIVE LOCATION"
+msgstr "ARCHIVE LOCATION"
+
+#: src/features/taxonomy/tabs/ContainersTab.tsx:214
+#: src/features/taxonomy/tree/TaxonomyTree.tsx:196
+#: src/features/taxonomy/tree/TreeNode.tsx:99
+msgid "ARCHIVED"
+msgstr "ARCHIVED"
 
 #: src/features/auth/AuthCallbackPage.tsx:69
 msgid "AUTHENTICATING..."
@@ -96,12 +152,33 @@ msgid "Cannot unlink last auth method"
 msgstr "Cannot unlink last auth method"
 
 #: src/features/dashboard/DashboardPage.tsx:51
+#: src/features/taxonomy/TaxonomyPage.tsx:22
 msgid "CATEGORIES"
 msgstr "CATEGORIES"
 
-#: src/pages/DemoPage.tsx:156
+#: src/pages/DemoPage.tsx:155
 msgid "CATEGORY"
 msgstr "CATEGORY"
+
+#: src/features/taxonomy/hooks/useCategoryMutations.ts:60
+msgid "Category archived."
+msgstr "Category archived."
+
+#: src/features/taxonomy/hooks/useCategoryMutations.ts:23
+msgid "Category created."
+msgstr "Category created."
+
+#: src/features/taxonomy/hooks/useCategoryMutations.ts:92
+msgid "Category deleted."
+msgstr "Category deleted."
+
+#: src/features/taxonomy/hooks/useCategoryMutations.ts:76
+msgid "Category restored."
+msgstr "Category restored."
+
+#: src/features/taxonomy/hooks/useCategoryMutations.ts:44
+msgid "Category saved."
+msgstr "Category saved."
 
 #: src/features/settings/SecurityPage.tsx:169
 msgid "CHANGE PASSWORD"
@@ -125,8 +202,26 @@ msgstr "CHOOSE FILES"
 msgid "Close navigation"
 msgstr "Close navigation"
 
+#: src/features/taxonomy/panel/SlideOverPanel.tsx:113
+msgid "Close panel"
+msgstr "Close panel"
+
+#. placeholder {0}: item.name
+#: src/features/taxonomy/tree/TreeNode.tsx:69
+msgid "Collapse {0}"
+msgstr "Collapse {0}"
+
+#: src/features/taxonomy/tree/TaxonomyTree.tsx:186
+msgid "Collapse ARCHIVED"
+msgstr "Collapse ARCHIVED"
+
+#: src/features/taxonomy/actions/ArchiveDeleteFlow.tsx:92
+msgid "CONFIRM ARCHIVE"
+msgstr "CONFIRM ARCHIVE"
+
 #: src/features/settings/SecurityPage.tsx:346
-#: src/pages/DemoPage.tsx:238
+#: src/features/taxonomy/actions/ArchiveDeleteFlow.tsx:106
+#: src/pages/DemoPage.tsx:237
 msgid "CONFIRM DELETE"
 msgstr "CONFIRM DELETE"
 
@@ -147,17 +242,102 @@ msgstr "CONNECTED ACCOUNTS"
 msgid "Connection failed. Check your network and try again."
 msgstr "Connection failed. Check your network and try again."
 
+#: src/features/taxonomy/hooks/useCategoryMutations.ts:26
+#: src/features/taxonomy/hooks/useCategoryMutations.ts:47
+#: src/features/taxonomy/hooks/useCategoryMutations.ts:79
+#: src/features/taxonomy/hooks/useCategoryMutations.ts:99
+#: src/features/taxonomy/hooks/useContainerMutations.ts:25
+#: src/features/taxonomy/hooks/useContainerMutations.ts:46
+#: src/features/taxonomy/hooks/useContainerMutations.ts:78
+#: src/features/taxonomy/hooks/useContainerMutations.ts:94
+#: src/features/taxonomy/hooks/useLocationMutations.ts:25
+#: src/features/taxonomy/hooks/useLocationMutations.ts:46
+#: src/features/taxonomy/hooks/useLocationMutations.ts:78
+#: src/features/taxonomy/hooks/useLocationMutations.ts:94
+msgid "Connection lost. Your change was not saved."
+msgstr "Connection lost. Your change was not saved."
+
+#: src/features/taxonomy/hooks/useContainerMutations.ts:59
+msgid "Container archived."
+msgstr "Container archived."
+
+#: src/features/taxonomy/hooks/useContainerMutations.ts:22
+msgid "Container created."
+msgstr "Container created."
+
+#: src/features/taxonomy/hooks/useContainerMutations.ts:91
+msgid "Container deleted."
+msgstr "Container deleted."
+
+#: src/features/taxonomy/hooks/useContainerMutations.ts:75
+msgid "Container restored."
+msgstr "Container restored."
+
+#: src/features/taxonomy/hooks/useContainerMutations.ts:43
+msgid "Container saved."
+msgstr "Container saved."
+
+#: src/features/taxonomy/TaxonomyPage.tsx:24
+msgid "CONTAINERS"
+msgstr "CONTAINERS"
+
+#: src/features/taxonomy/tabs/ContainersTab.tsx:168
+msgid "Containers belong to a location. Create a location first, then add containers inside it."
+msgstr "Containers belong to a location. Create a location first, then add containers inside it."
+
+#: src/features/taxonomy/hooks/useCategoryMutations.ts:63
+#: src/features/taxonomy/hooks/useContainerMutations.ts:62
+#: src/features/taxonomy/hooks/useLocationMutations.ts:62
+msgid "Could not archive. Try again."
+msgstr "Could not archive. Try again."
+
+#: src/features/taxonomy/tabs/CategoriesTab.tsx:125
+msgid "Could not load categories."
+msgstr "Could not load categories."
+
+#: src/features/taxonomy/tabs/ContainersTab.tsx:154
+msgid "Could not load containers."
+msgstr "Could not load containers."
+
+#: src/features/taxonomy/tabs/LocationsTab.tsx:127
+msgid "Could not load locations."
+msgstr "Could not load locations."
+
 #: src/pages/ApiDemoPage.tsx:50
 msgid "Could not reach the API. Check your network and the backend URL, then retry."
 msgstr "Could not reach the API. Check your network and the backend URL, then retry."
+
+#: src/features/taxonomy/tabs/ContainersTab.tsx:138
+msgid "Create a location first."
+msgstr "Create a location first."
 
 #: src/features/auth/RegisterForm.tsx:179
 msgid "CREATE ACCOUNT"
 msgstr "CREATE ACCOUNT"
 
+#: src/features/taxonomy/panel/EntityPanel.tsx:92
+msgid "CREATE CATEGORY"
+msgstr "CREATE CATEGORY"
+
+#: src/features/taxonomy/panel/EntityPanel.tsx:94
+msgid "CREATE CONTAINER"
+msgstr "CREATE CONTAINER"
+
+#: src/features/taxonomy/panel/EntityPanel.tsx:93
+msgid "CREATE LOCATION"
+msgstr "CREATE LOCATION"
+
+#: src/features/taxonomy/tabs/CategoriesTab.tsx:136
+msgid "Create your first category to start organizing items."
+msgstr "Create your first category to start organizing items."
+
 #: src/components/retro/RetroEmptyState.tsx:26
 msgid "Create your first entry to populate this list."
 msgstr "Create your first entry to populate this list."
+
+#: src/features/taxonomy/tabs/LocationsTab.tsx:138
+msgid "Create your first location to describe where items live."
+msgstr "Create your first location to describe where items live."
 
 #: src/features/settings/SecurityPage.tsx:251
 msgid "CURRENT"
@@ -200,21 +380,75 @@ msgstr "DATE FORMAT"
 msgid "DELETE ACCOUNT"
 msgstr "DELETE ACCOUNT"
 
-#: src/pages/DemoPage.tsx:241
+#: src/features/taxonomy/actions/ArchiveDeleteFlow.tsx:53
+msgid "DELETE CATEGORY"
+msgstr "DELETE CATEGORY"
+
+#: src/features/taxonomy/actions/ArchiveDeleteFlow.tsx:56
+msgid "DELETE CONTAINER"
+msgstr "DELETE CONTAINER"
+
+#: src/pages/DemoPage.tsx:240
 msgid "DELETE ITEM"
 msgstr "DELETE ITEM"
 
-#: src/pages/DemoPage.tsx:244
+#: src/features/taxonomy/actions/ArchiveDeleteFlow.tsx:55
+msgid "DELETE LOCATION"
+msgstr "DELETE LOCATION"
+
+#: src/features/taxonomy/actions/ArchiveDeleteFlow.tsx:99
+msgid "delete permanently"
+msgstr "delete permanently"
+
+#: src/pages/DemoPage.tsx:243
 msgid "Deleted."
 msgstr "Deleted."
+
+#: src/features/taxonomy/forms/CategoryForm.tsx:89
+#: src/features/taxonomy/forms/ContainerForm.tsx:123
+#: src/features/taxonomy/forms/LocationForm.tsx:124
+msgid "DESCRIPTION"
+msgstr "DESCRIPTION"
+
+#: src/features/taxonomy/panel/SlideOverPanel.tsx:131
+msgid "DISCARD"
+msgstr "DISCARD"
+
+#: src/features/taxonomy/panel/SlideOverPanel.tsx:128
+msgid "DISCARD CHANGES?"
+msgstr "DISCARD CHANGES?"
 
 #: src/features/settings/DataPage.tsx:95
 msgid "Download all workspace data as a JSON file."
 msgstr "Download all workspace data as a JSON file."
 
-#: src/pages/DemoPage.tsx:145
+#: src/pages/DemoPage.tsx:144
 msgid "e.g. DeWalt drill"
 msgstr "e.g. DeWalt drill"
+
+#: src/features/taxonomy/tabs/ContainersTab.tsx:225
+#: src/features/taxonomy/tree/TreeNode.tsx:112
+msgid "EDIT"
+msgstr "EDIT"
+
+#. placeholder {0}: c.name
+#. placeholder {0}: item.name
+#: src/features/taxonomy/tabs/ContainersTab.tsx:220
+#: src/features/taxonomy/tree/TreeNode.tsx:106
+msgid "Edit {0}"
+msgstr "Edit {0}"
+
+#: src/features/taxonomy/panel/EntityPanel.tsx:87
+msgid "EDIT CATEGORY"
+msgstr "EDIT CATEGORY"
+
+#: src/features/taxonomy/panel/EntityPanel.tsx:89
+msgid "EDIT CONTAINER"
+msgstr "EDIT CONTAINER"
+
+#: src/features/taxonomy/panel/EntityPanel.tsx:88
+msgid "EDIT LOCATION"
+msgstr "EDIT LOCATION"
 
 #: src/features/settings/LanguagePage.tsx:32
 msgid "EESTI"
@@ -241,6 +475,15 @@ msgstr "Email already in use"
 #: src/features/settings/LanguagePage.tsx:31
 msgid "ENGLISH"
 msgstr "ENGLISH"
+
+#. placeholder {0}: item.name
+#: src/features/taxonomy/tree/TreeNode.tsx:69
+msgid "Expand {0}"
+msgstr "Expand {0}"
+
+#: src/features/taxonomy/tree/TaxonomyTree.tsx:187
+msgid "Expand ARCHIVED"
+msgstr "Expand ARCHIVED"
 
 #: src/features/settings/DataPage.tsx:102
 msgid "EXPORT"
@@ -309,6 +552,10 @@ msgstr "Failed to update password"
 msgid "Failed to upload avatar"
 msgstr "Failed to upload avatar"
 
+#: src/features/taxonomy/tabs/ContainersTab.tsx:118
+msgid "Filter by location…"
+msgstr "Filter by location…"
+
 #: src/features/auth/RegisterForm.tsx:110
 msgid "Full name"
 msgstr "Full name"
@@ -316,6 +563,10 @@ msgstr "Full name"
 #: src/features/auth/RegisterForm.tsx:117
 msgid "FULL NAME"
 msgstr "FULL NAME"
+
+#: src/features/taxonomy/actions/ArchiveDeleteFlow.tsx:94
+msgid "HIDES FROM PICKERS"
+msgstr "HIDES FROM PICKERS"
 
 #: src/features/settings/DataPage.tsx:121
 msgid "IMPORT"
@@ -346,7 +597,7 @@ msgstr "Import workspace file"
 msgid "IMPORTING..."
 msgstr "IMPORTING..."
 
-#: src/pages/DemoPage.tsx:181
+#: src/pages/DemoPage.tsx:180
 msgid "Include archived items"
 msgstr "Include archived items"
 
@@ -358,7 +609,7 @@ msgstr "Invalid email or password. Check your credentials and try again."
 msgid "INVENTORY"
 msgstr "INVENTORY"
 
-#: src/pages/DemoPage.tsx:141
+#: src/pages/DemoPage.tsx:140
 msgid "ITEM NAME"
 msgstr "ITEM NAME"
 
@@ -376,11 +627,11 @@ msgstr "JPEG, PNG, or HEIC up to 10 MB each."
 msgid "KEEP ACCOUNT"
 msgstr "KEEP ACCOUNT"
 
-#: src/pages/DemoPage.tsx:240
+#: src/pages/DemoPage.tsx:239
 msgid "KEEP ITEM"
 msgstr "KEEP ITEM"
 
-#: src/pages/DemoPage.tsx:252
+#: src/pages/DemoPage.tsx:251
 msgid "KEEP OPEN"
 msgstr "KEEP OPEN"
 
@@ -415,6 +666,9 @@ msgid "Loading..."
 msgstr "Loading..."
 
 #: src/components/retro/RetroCombobox.tsx:190
+#: src/features/taxonomy/tabs/CategoriesTab.tsx:117
+#: src/features/taxonomy/tabs/ContainersTab.tsx:146
+#: src/features/taxonomy/tabs/LocationsTab.tsx:119
 msgid "Loading…"
 msgstr "Loading…"
 
@@ -424,11 +678,33 @@ msgstr "Loading…"
 msgid "LOANS"
 msgstr "LOANS"
 
-#: src/pages/DemoPage.tsx:166
+#: src/features/taxonomy/forms/ContainerForm.tsx:113
+#: src/pages/DemoPage.tsx:165
 msgid "LOCATION"
 msgstr "LOCATION"
 
+#: src/features/taxonomy/hooks/useLocationMutations.ts:59
+msgid "Location archived."
+msgstr "Location archived."
+
+#: src/features/taxonomy/hooks/useLocationMutations.ts:22
+msgid "Location created."
+msgstr "Location created."
+
+#: src/features/taxonomy/hooks/useLocationMutations.ts:91
+msgid "Location deleted."
+msgstr "Location deleted."
+
+#: src/features/taxonomy/hooks/useLocationMutations.ts:75
+msgid "Location restored."
+msgstr "Location restored."
+
+#: src/features/taxonomy/hooks/useLocationMutations.ts:43
+msgid "Location saved."
+msgstr "Location saved."
+
 #: src/features/dashboard/DashboardPage.tsx:55
+#: src/features/taxonomy/TaxonomyPage.tsx:23
 msgid "LOCATIONS"
 msgstr "LOCATIONS"
 
@@ -444,17 +720,36 @@ msgstr "LOGIN"
 msgid "LOGOUT"
 msgstr "LOGOUT"
 
-#: src/pages/DemoPage.tsx:250
+#: src/pages/DemoPage.tsx:249
 msgid "MARK LOAN RETURNED"
 msgstr "MARK LOAN RETURNED"
 
-#: src/pages/DemoPage.tsx:253
+#: src/pages/DemoPage.tsx:252
 msgid "MARK RETURNED"
 msgstr "MARK RETURNED"
 
+#: src/features/taxonomy/hooks/useCategoryMutations.ts:96
+msgid "Move or delete child nodes first."
+msgstr "Move or delete child nodes first."
+
 #: src/features/settings/ProfilePage.tsx:153
+#: src/features/taxonomy/forms/CategoryForm.tsx:73
+#: src/features/taxonomy/forms/ContainerForm.tsx:80
+#: src/features/taxonomy/forms/LocationForm.tsx:81
 msgid "NAME"
 msgstr "NAME"
+
+#: src/features/taxonomy/panel/EntityPanel.tsx:87
+msgid "NEW CATEGORY"
+msgstr "NEW CATEGORY"
+
+#: src/features/taxonomy/panel/EntityPanel.tsx:89
+msgid "NEW CONTAINER"
+msgstr "NEW CONTAINER"
+
+#: src/features/taxonomy/panel/EntityPanel.tsx:88
+msgid "NEW LOCATION"
+msgstr "NEW LOCATION"
 
 #: src/features/settings/SecurityPage.tsx:198
 msgid "NEW PASSWORD"
@@ -468,15 +763,27 @@ msgstr "NEXT →"
 msgid "NO ACTIVITY YET"
 msgstr "NO ACTIVITY YET"
 
+#: src/features/taxonomy/tabs/CategoriesTab.tsx:135
+msgid "NO CATEGORIES YET"
+msgstr "NO CATEGORIES YET"
+
+#: src/features/taxonomy/tabs/ContainersTab.tsx:167
+msgid "NO CONTAINERS YET"
+msgstr "NO CONTAINERS YET"
+
 #: src/pages/ApiDemoPage.tsx:62
 msgid "No data returned"
 msgstr "No data returned"
+
+#: src/features/taxonomy/tabs/LocationsTab.tsx:137
+msgid "NO LOCATIONS YET"
+msgstr "NO LOCATIONS YET"
 
 #: src/components/retro/RetroCombobox.tsx:195
 msgid "No matches found."
 msgstr "No matches found."
 
-#: src/pages/DemoPage.tsx:267
+#: src/pages/DemoPage.tsx:266
 msgid "NO RECORDS YET"
 msgstr "NO RECORDS YET"
 
@@ -484,7 +791,7 @@ msgstr "NO RECORDS YET"
 msgid "No workspace found. Please create a workspace to get started."
 msgstr "No workspace found. Please create a workspace to get started."
 
-#: src/pages/DemoPage.tsx:149
+#: src/pages/DemoPage.tsx:148
 msgid "NOTES"
 msgstr "NOTES"
 
@@ -521,7 +828,7 @@ msgstr "ON"
 msgid "Open navigation"
 msgstr "Open navigation"
 
-#: src/pages/DemoPage.tsx:152
+#: src/pages/DemoPage.tsx:151
 msgid "Optional free text…"
 msgstr "Optional free text…"
 
@@ -542,6 +849,14 @@ msgstr "Page {page} of {totalPages}"
 #: src/features/scan/ScanPage.tsx:10
 msgid "PAGE UNDER CONSTRUCTION"
 msgstr "PAGE UNDER CONSTRUCTION"
+
+#: src/features/taxonomy/forms/CategoryForm.tsx:79
+msgid "PARENT CATEGORY"
+msgstr "PARENT CATEGORY"
+
+#: src/features/taxonomy/forms/LocationForm.tsx:114
+msgid "PARENT LOCATION"
+msgstr "PARENT LOCATION"
 
 #: src/features/auth/LoginForm.tsx:109
 #: src/features/auth/RegisterForm.tsx:140
@@ -565,7 +880,7 @@ msgstr "PASSWORD UPDATED"
 msgid "Passwords do not match."
 msgstr "Passwords do not match."
 
-#: src/pages/DemoPage.tsx:185
+#: src/pages/DemoPage.tsx:184
 msgid "PHOTOS"
 msgstr "PHOTOS"
 
@@ -601,20 +916,38 @@ msgstr "REMOVE"
 msgid "Remove {0}"
 msgstr "Remove {0}"
 
-#: src/pages/DemoPage.tsx:143
+#: src/pages/DemoPage.tsx:142
 msgid "Required. Up to 255 characters."
 msgstr "Required. Up to 255 characters."
+
+#: src/features/taxonomy/tabs/ContainersTab.tsx:245
+#: src/features/taxonomy/tree/TreeNode.tsx:132
+msgid "RESTORE"
+msgstr "RESTORE"
+
+#. placeholder {0}: c.name
+#. placeholder {0}: item.name
+#: src/features/taxonomy/tabs/ContainersTab.tsx:240
+#: src/features/taxonomy/tree/TreeNode.tsx:127
+msgid "Restore {0}"
+msgstr "Restore {0}"
 
 #: src/pages/DemoPage.tsx:128
 msgid "RETRO FORM PRIMITIVES"
 msgstr "RETRO FORM PRIMITIVES"
+
+#: src/features/taxonomy/tabs/CategoriesTab.tsx:128
+#: src/features/taxonomy/tabs/ContainersTab.tsx:160
+#: src/features/taxonomy/tabs/LocationsTab.tsx:130
+msgid "Retry"
+msgstr "Retry"
 
 #: src/pages/ApiDemoPage.tsx:53
 msgid "Retry fetch"
 msgstr "Retry fetch"
 
 #: src/components/layout/ErrorBoundaryPage.tsx:40
-#: src/routes/index.tsx:39
+#: src/routes/index.tsx:40
 msgid "RETURN TO BASE"
 msgstr "RETURN TO BASE"
 
@@ -630,10 +963,22 @@ msgstr "REVOKE"
 msgid "REVOKE ALL OTHERS"
 msgstr "REVOKE ALL OTHERS"
 
+#: src/features/taxonomy/panel/EntityPanel.tsx:92
+msgid "SAVE CATEGORY"
+msgstr "SAVE CATEGORY"
+
 #: src/features/settings/ProfilePage.tsx:190
-#: src/pages/DemoPage.tsx:192
+#: src/pages/DemoPage.tsx:191
 msgid "SAVE CHANGES"
 msgstr "SAVE CHANGES"
+
+#: src/features/taxonomy/panel/EntityPanel.tsx:94
+msgid "SAVE CONTAINER"
+msgstr "SAVE CONTAINER"
+
+#: src/features/taxonomy/panel/EntityPanel.tsx:93
+msgid "SAVE LOCATION"
+msgstr "SAVE LOCATION"
 
 #: src/features/scan/ScanPage.tsx:8
 msgid "SCAN"
@@ -643,7 +988,16 @@ msgstr "SCAN"
 msgid "SCAN BARCODE"
 msgstr "SCAN BARCODE"
 
-#: src/routes/index.tsx:30
+#: src/features/taxonomy/forms/CategoryForm.tsx:83
+msgid "Search categories…"
+msgstr "Search categories…"
+
+#: src/features/taxonomy/forms/ContainerForm.tsx:117
+#: src/features/taxonomy/forms/LocationForm.tsx:118
+msgid "Search locations…"
+msgstr "Search locations…"
+
+#: src/routes/index.tsx:31
 msgid "SECTOR NOT FOUND"
 msgstr "SECTOR NOT FOUND"
 
@@ -652,7 +1006,7 @@ msgstr "SECTOR NOT FOUND"
 msgid "SECURITY"
 msgstr "SECURITY"
 
-#: src/pages/DemoPage.tsx:161
+#: src/pages/DemoPage.tsx:160
 msgid "Select category…"
 msgstr "Select category…"
 
@@ -673,6 +1027,17 @@ msgstr "SET PASSWORD"
 #: src/components/layout/Sidebar.tsx:59
 msgid "SETTINGS"
 msgstr "SETTINGS"
+
+#: src/features/taxonomy/forms/ContainerForm.tsx:92
+#: src/features/taxonomy/forms/LocationForm.tsx:93
+msgid "SHORT CODE"
+msgstr "SHORT CODE"
+
+#: src/features/taxonomy/tabs/CategoriesTab.tsx:105
+#: src/features/taxonomy/tabs/ContainersTab.tsx:122
+#: src/features/taxonomy/tabs/LocationsTab.tsx:107
+msgid "Show archived"
+msgstr "Show archived"
 
 #: src/pages/ApiDemoPage.tsx:33
 msgid "Sign in to run the real API fetch. This page is public for reachability; the underlying endpoint requires authentication."
@@ -716,15 +1081,19 @@ msgstr "SYSTEM"
 msgid "SYSTEM ERROR"
 msgstr "SYSTEM ERROR"
 
+#: src/features/taxonomy/TaxonomyPage.tsx:18
+msgid "TAXONOMY"
+msgstr "TAXONOMY"
+
 #: src/pages/ApiDemoPage.tsx:65
 msgid "The endpoint responded successfully but returned zero records. Create a record in the backend, then retry."
 msgstr "The endpoint responded successfully but returned zero records. Create a record in the backend, then retry."
 
-#: src/pages/DemoPage.tsx:251
+#: src/pages/DemoPage.tsx:250
 msgid "The item will move to loan history."
 msgstr "The item will move to loan history."
 
-#: src/routes/index.tsx:33
+#: src/routes/index.tsx:34
 msgid "The requested area does not exist. Return to base."
 msgstr "The requested area does not exist. Return to base."
 
@@ -736,9 +1105,17 @@ msgstr "Theme"
 msgid "THEME"
 msgstr "THEME"
 
-#: src/pages/DemoPage.tsx:239
+#: src/pages/DemoPage.tsx:238
 msgid "This action cannot be undone."
 msgstr "This action cannot be undone."
+
+#: src/features/taxonomy/actions/ArchiveDeleteFlow.tsx:107
+msgid "This permanently deletes '{nodeName}'. This action cannot be undone."
+msgstr "This permanently deletes '{nodeName}'. This action cannot be undone."
+
+#: src/features/taxonomy/actions/ArchiveDeleteFlow.tsx:93
+msgid "This will hide '{nodeName}' from item pickers. You can restore it later."
+msgstr "This will hide '{nodeName}' from item pickers. You can restore it later."
 
 #: src/features/settings/SecurityPage.tsx:342
 msgid "This will permanently delete your account and all associated data. This action cannot be undone."
@@ -752,15 +1129,15 @@ msgstr "Time format"
 msgid "TIME FORMAT"
 msgstr "TIME FORMAT"
 
-#: src/pages/DemoPage.tsx:226
+#: src/pages/DemoPage.tsx:225
 msgid "TRIGGER DELETE"
 msgstr "TRIGGER DELETE"
 
-#: src/pages/DemoPage.tsx:232
+#: src/pages/DemoPage.tsx:231
 msgid "TRIGGER RETURN"
 msgstr "TRIGGER RETURN"
 
-#: src/pages/DemoPage.tsx:173
+#: src/pages/DemoPage.tsx:172
 msgid "Type to search…"
 msgstr "Type to search…"
 
@@ -788,7 +1165,8 @@ msgstr "VIEW LOANS"
 #~ msgid "Welcome to Home Warehouse"
 #~ msgstr "Welcome to Home Warehouse"
 
-#: src/components/retro/RetroConfirmDialog.tsx:89
+#: src/components/retro/RetroConfirmDialog.tsx:116
+#: src/features/taxonomy/panel/EntityPanel.tsx:106
 msgid "WORKING…"
 msgstr "WORKING…"
 
@@ -799,3 +1177,7 @@ msgstr "WORKSPACE"
 #: src/features/setup/SetupPage.tsx:10
 msgid "WORKSPACE SETUP"
 msgstr "WORKSPACE SETUP"
+
+#: src/features/taxonomy/panel/SlideOverPanel.tsx:129
+msgid "Your edits will be lost."
+msgstr "Your edits will be lost."
