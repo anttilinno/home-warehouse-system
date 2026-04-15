@@ -2,8 +2,8 @@ import {
   forwardRef,
   useCallback,
   type TextareaHTMLAttributes,
-  type FormEvent,
 } from "react";
+import type { InputEvent as ReactInputEvent } from "react";
 
 interface RetroTextareaProps
   extends TextareaHTMLAttributes<HTMLTextAreaElement> {
@@ -16,7 +16,7 @@ const LINE_HEIGHT = 24; // 16px * 1.5
 const RetroTextarea = forwardRef<HTMLTextAreaElement, RetroTextareaProps>(
   ({ error, className, onInput, ...rest }, ref) => {
     const handleInput = useCallback(
-      (e: FormEvent<HTMLTextAreaElement>) => {
+      (e: ReactInputEvent<HTMLTextAreaElement>) => {
         const el = e.currentTarget;
         el.style.height = "auto";
         const next = Math.min(
