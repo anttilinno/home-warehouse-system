@@ -6,11 +6,11 @@ interface RetroTabsProps {
 }
 
 const tabBase =
-  "min-w-[120px] h-[36px] text-[14px] font-bold uppercase border-retro-thick border-retro-ink cursor-pointer outline-2 outline-offset-2 outline-transparent focus-visible:outline-retro-amber";
+  "flex-shrink-0 min-w-[120px] h-[36px] text-[14px] font-bold uppercase border-retro-thick border-retro-ink cursor-pointer outline-2 outline-offset-2 outline-transparent focus-visible:outline-retro-amber";
 
 function RetroTabs({ tabs, activeTab, onTabChange, className }: RetroTabsProps) {
   return (
-    <div className={`flex ${className || ""}`}>
+    <div className={`flex overflow-x-auto ${className || ""}`}>
       {tabs.map((tab) => {
         const isActive = tab.key === activeTab;
         return (
