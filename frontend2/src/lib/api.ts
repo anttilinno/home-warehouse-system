@@ -68,8 +68,9 @@ async function request<T>(
   endpoint: string,
   options: RequestInit = {}
 ): Promise<T> {
+  const isFormData = options.body instanceof FormData;
   const headers: Record<string, string> = {
-    "Content-Type": "application/json",
+    ...(isFormData ? {} : { "Content-Type": "application/json" }),
     ...(options.headers as Record<string, string>),
   };
 
@@ -113,6 +114,10 @@ export function post<T>(endpoint: string, data?: unknown): Promise<T> {
     method: "POST",
     body: data ? JSON.stringify(data) : undefined,
   });
+}
+
+export function postMultipart<T>(endpoint: string, form: FormData): Promise<T> {
+  return request<T>(endpoint, { method: "POST", body: form });
 }
 
 export function patch<T>(endpoint: string, data: unknown): Promise<T> {
