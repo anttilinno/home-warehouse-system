@@ -1,4 +1,9 @@
 import { useState, useRef } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { useLingui } from "@lingui/react/macro";
+import { useQuery } from "@tanstack/react-query";
 import {
   RetroButton,
   RetroPanel,
@@ -11,14 +16,80 @@ import {
   HazardStripe,
   ToastProvider,
   useToast,
+  RetroTextarea,
+  RetroCheckbox,
+  RetroFileInput,
+  RetroSelect,
+  RetroCombobox,
+  RetroFormField,
+  RetroPagination,
+  RetroConfirmDialog,
+  RetroEmptyState,
 } from "@/components/retro";
-import type { RetroDialogHandle } from "@/components/retro";
+import type {
+  RetroDialogHandle,
+  RetroConfirmDialogHandle,
+  RetroOption,
+} from "@/components/retro";
+import { categoriesApi, categoryKeys } from "@/lib/api/categories";
+import { useAuth } from "@/features/auth/AuthContext";
 
 function DemoContent() {
+  const { t } = useLingui();
   const { addToast } = useToast();
+  const { workspaceId } = useAuth();
   const dialogRef = useRef<RetroDialogHandle>(null);
+  const destructiveRef = useRef<RetroConfirmDialogHandle>(null);
+  const softRef = useRef<RetroConfirmDialogHandle>(null);
   const [activeTab, setActiveTab] = useState("alpha");
   const [inputValue, setInputValue] = useState("");
+  const [page, setPage] = useState(1);
+  const [locationQuery, setLocationQuery] = useState("");
+
+  const schema = z.object({
+    name: z.string().min(1, { message: "Name is required." }),
+    notes: z.string().optional(),
+    category: z.string().min(1, { message: "Category is required." }),
+    location: z.string().optional(),
+    archived: z.boolean(),
+    photos: z.array(z.instanceof(File)).optional(),
+  });
+
+  const { control, handleSubmit } = useForm({
+    resolver: zodResolver(schema),
+    defaultValues: {
+      name: "",
+      notes: "",
+      category: "",
+      location: "",
+      archived: false,
+      photos: [],
+    },
+  });
+
+  const staticCategoryOptions: RetroOption[] = [
+    { value: "tools", label: "Tools" },
+    { value: "kitchen", label: "Kitchen" },
+    { value: "electronics", label: "Electronics" },
+  ];
+
+  const locationsQuery = useQuery({
+    queryKey: [
+      ...categoryKeys.list({}),
+      { search: locationQuery, ws: workspaceId },
+    ],
+    queryFn: () => {
+      if (!workspaceId) return Promise.resolve({ items: [] });
+      return categoriesApi.list(workspaceId);
+    },
+    enabled: Boolean(workspaceId) && locationQuery.length > 0,
+  });
+
+  const locationOptions: RetroOption[] = (locationsQuery.data?.items ?? [])
+    .filter((c) =>
+      c.name.toLowerCase().includes(locationQuery.toLowerCase())
+    )
+    .map((c) => ({ value: c.id, label: c.name }));
 
   const tableColumns = [
     { key: "id", header: "ID" },
@@ -51,6 +122,154 @@ function DemoContent() {
   return (
     <div className="min-h-dvh bg-retro-charcoal p-xl">
       <div className="max-w-[960px] mx-auto">
+        {/* FOCAL: Retro Form Primitives Showcase */}
+        <section className="mb-2xl">
+          <h1 className="text-[32px] font-bold uppercase text-retro-cream mb-sm">
+            {t`RETRO FORM PRIMITIVES`}
+          </h1>
+          <HazardStripe className="mb-md" />
+          <RetroPanel>
+            <form
+              onSubmit={handleSubmit((vals) => {
+                console.log("submit", vals);
+              })}
+              className="flex flex-col gap-md"
+            >
+              <RetroFormField
+                name="name"
+                label={t`ITEM NAME`}
+                control={control}
+                helper={t`Required. Up to 255 characters.`}
+              >
+                <RetroInput placeholder={t`e.g. DeWalt drill`} />
+              </RetroFormField>
+              <RetroFormField
+                name="notes"
+                label={t`NOTES`}
+                control={control}
+              >
+                <RetroTextarea placeholder={t`Optional free text…`} />
+              </RetroFormField>
+              <RetroFormField
+                name="category"
+                label={t`CATEGORY`}
+                control={control}
+              >
+                <RetroSelect
+                  options={staticCategoryOptions}
+                  placeholder={t`Select category…`}
+                />
+              </RetroFormField>
+              <RetroFormField
+                name="location"
+                label={t`LOCATION`}
+                control={control}
+              >
+                <RetroCombobox
+                  options={locationOptions}
+                  onSearch={setLocationQuery}
+                  loading={locationsQuery.isFetching}
+                  placeholder={t`Type to search…`}
+                />
+              </RetroFormField>
+              <RetroFormField
+                name="archived"
+                label={t`ARCHIVE FLAG`}
+                control={control}
+              >
+                <RetroCheckbox label={t`Include archived items`} />
+              </RetroFormField>
+              <RetroFormField
+                name="photos"
+                label={t`PHOTOS`}
+                control={control}
+              >
+                <RetroFileInput />
+              </RetroFormField>
+              <div className="flex justify-end">
+                <RetroButton variant="primary" type="submit">
+                  {t`SAVE CHANGES`}
+                </RetroButton>
+              </div>
+            </form>
+          </RetroPanel>
+        </section>
+
+        {/* RETROPAGINATION */}
+        <section className="mb-2xl">
+          <h2 className="text-[20px] font-bold uppercase text-retro-cream mb-sm">
+            RETROPAGINATION
+          </h2>
+          <HazardStripe className="mb-md" />
+          <RetroPanel>
+            <RetroPagination
+              page={page}
+              pageSize={25}
+              totalCount={137}
+              onChange={setPage}
+            />
+          </RetroPanel>
+        </section>
+
+        {/* RETROCONFIRMDIALOG */}
+        <section className="mb-2xl">
+          <h2 className="text-[20px] font-bold uppercase text-retro-cream mb-sm">
+            RETROCONFIRMDIALOG
+          </h2>
+          <HazardStripe className="mb-md" />
+          <div className="flex gap-md flex-wrap">
+            <RetroButton
+              variant="danger"
+              onClick={() => destructiveRef.current?.open()}
+            >
+              {t`TRIGGER DELETE`}
+            </RetroButton>
+            <RetroButton
+              variant="primary"
+              onClick={() => softRef.current?.open()}
+            >
+              {t`TRIGGER RETURN`}
+            </RetroButton>
+          </div>
+          <RetroConfirmDialog
+            ref={destructiveRef}
+            variant="destructive"
+            title={t`CONFIRM DELETE`}
+            body={t`This action cannot be undone.`}
+            escapeLabel={t`KEEP ITEM`}
+            destructiveLabel={t`DELETE ITEM`}
+            onConfirm={async () => {
+              await new Promise((r) => setTimeout(r, 400));
+              addToast(t`Deleted.`, "success");
+            }}
+          />
+          <RetroConfirmDialog
+            ref={softRef}
+            variant="soft"
+            title={t`MARK LOAN RETURNED`}
+            body={t`The item will move to loan history.`}
+            escapeLabel={t`KEEP OPEN`}
+            destructiveLabel={t`MARK RETURNED`}
+            onConfirm={async () => {
+              await new Promise((r) => setTimeout(r, 400));
+            }}
+          />
+        </section>
+
+        {/* RETROEMPTYSTATE */}
+        <section className="mb-2xl">
+          <h2 className="text-[20px] font-bold uppercase text-retro-cream mb-sm">
+            RETROEMPTYSTATE
+          </h2>
+          <HazardStripe className="mb-md" />
+          <RetroEmptyState
+            title={t`NO RECORDS YET`}
+            action={
+              <RetroButton variant="primary">{t`ADD ITEM`}</RetroButton>
+            }
+          />
+        </section>
+
         {/* Page header */}
         <h1 className="text-[28px] font-bold uppercase text-retro-cream mb-xs">
           RETRO COMPONENT LIBRARY
@@ -114,12 +333,7 @@ function DemoContent() {
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
               icon={
-                <svg
-                  width="20"
-                  height="20"
-                  viewBox="0 0 20 20"
-                  fill="none"
-                >
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
                   <rect
                     x="2"
                     y="4"
@@ -155,9 +369,9 @@ function DemoContent() {
           <HazardStripe className="mb-md" />
           <RetroCard>
             <p className="text-[14px] text-retro-ink mb-sm">
-              RetroCard is a lightweight content container with thick borders and
-              raised shadow. It has smaller padding than RetroPanel and no close
-              button or hazard stripe.
+              RetroCard is a lightweight content container with thick borders
+              and raised shadow. It has smaller padding than RetroPanel and no
+              close button or hazard stripe.
             </p>
             <p className="text-[14px] text-retro-ink">
               Use it for grouping content inside panels or as standalone

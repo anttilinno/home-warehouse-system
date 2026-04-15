@@ -13,6 +13,10 @@ msgstr ""
 "Language-Team: \n"
 "Plural-Forms: \n"
 
+#: src/components/retro/RetroPagination.tsx:47
+msgid "← PREV"
+msgstr "[ET] ← PREV"
+
 #: src/features/settings/SettingsPage.tsx:22
 msgid "ACCOUNT"
 msgstr ""
@@ -34,6 +38,7 @@ msgid "ACTIVITY LOG"
 msgstr "TEGEVUSTE LOGI"
 
 #: src/features/dashboard/QuickActionCards.tsx:16
+#: src/pages/DemoPage.tsx:269
 msgid "ADD ITEM"
 msgstr "LISA ESE"
 
@@ -49,6 +54,10 @@ msgstr "API DEMO"
 #: src/features/settings/SettingsPage.tsx:37
 msgid "APPEARANCE"
 msgstr ""
+
+#: src/pages/DemoPage.tsx:178
+msgid "ARCHIVE FLAG"
+msgstr "[ET] ARCHIVE FLAG"
 
 #: src/features/auth/AuthCallbackPage.tsx:69
 msgid "AUTHENTICATING..."
@@ -90,6 +99,10 @@ msgstr ""
 msgid "CATEGORIES"
 msgstr "KATEGOORIAD"
 
+#: src/pages/DemoPage.tsx:156
+msgid "CATEGORY"
+msgstr "[ET] CATEGORY"
+
 #: src/features/settings/SecurityPage.tsx:169
 msgid "CHANGE PASSWORD"
 msgstr ""
@@ -104,13 +117,18 @@ msgstr ""
 msgid "CHANGES SAVED"
 msgstr ""
 
+#: src/components/retro/RetroFileInput.tsx:91
+msgid "CHOOSE FILES"
+msgstr "[ET] CHOOSE FILES"
+
 #: src/components/layout/TopBar.tsx:22
 msgid "Close navigation"
 msgstr "Sulge navigatsioon"
 
 #: src/features/settings/SecurityPage.tsx:346
+#: src/pages/DemoPage.tsx:238
 msgid "CONFIRM DELETE"
-msgstr ""
+msgstr "[ET] CONFIRM DELETE"
 
 #: src/features/auth/RegisterForm.tsx:155
 msgid "Confirm password"
@@ -136,6 +154,10 @@ msgstr "API-ni ei saanud ühendust. Kontrolli võrku ja taustateenuse URL-i, see
 #: src/features/auth/RegisterForm.tsx:179
 msgid "CREATE ACCOUNT"
 msgstr "LOO KONTO"
+
+#: src/components/retro/RetroEmptyState.tsx:26
+msgid "Create your first entry to populate this list."
+msgstr "[ET] Create your first entry to populate this list."
 
 #: src/features/settings/SecurityPage.tsx:251
 msgid "CURRENT"
@@ -178,9 +200,21 @@ msgstr ""
 msgid "DELETE ACCOUNT"
 msgstr ""
 
+#: src/pages/DemoPage.tsx:241
+msgid "DELETE ITEM"
+msgstr "[ET] DELETE ITEM"
+
+#: src/pages/DemoPage.tsx:244
+msgid "Deleted."
+msgstr "[ET] Deleted."
+
 #: src/features/settings/DataPage.tsx:95
 msgid "Download all workspace data as a JSON file."
 msgstr ""
+
+#: src/pages/DemoPage.tsx:145
+msgid "e.g. DeWalt drill"
+msgstr "[ET] e.g. DeWalt drill"
 
 #: src/features/settings/LanguagePage.tsx:32
 msgid "EESTI"
@@ -312,6 +346,10 @@ msgstr ""
 msgid "IMPORTING..."
 msgstr ""
 
+#: src/pages/DemoPage.tsx:181
+msgid "Include archived items"
+msgstr "[ET] Include archived items"
+
 #: src/features/auth/LoginForm.tsx:72
 msgid "Invalid email or password. Check your credentials and try again."
 msgstr "Vale e-post voi parool. Kontrolli oma andmeid ja proovi uuesti."
@@ -320,15 +358,31 @@ msgstr "Vale e-post voi parool. Kontrolli oma andmeid ja proovi uuesti."
 msgid "INVENTORY"
 msgstr ""
 
+#: src/pages/DemoPage.tsx:141
+msgid "ITEM NAME"
+msgstr "[ET] ITEM NAME"
+
 #: src/components/layout/Sidebar.tsx:41
 #: src/features/dashboard/DashboardPage.tsx:49
 #: src/features/items/ItemsPage.tsx:8
 msgid "ITEMS"
 msgstr "ESEMED"
 
+#: src/components/retro/RetroFileInput.tsx:121
+msgid "JPEG, PNG, or HEIC up to 10 MB each."
+msgstr "[ET] JPEG, PNG, or HEIC up to 10 MB each."
+
 #: src/features/settings/SecurityPage.tsx:352
 msgid "KEEP ACCOUNT"
 msgstr ""
+
+#: src/pages/DemoPage.tsx:240
+msgid "KEEP ITEM"
+msgstr "[ET] KEEP ITEM"
+
+#: src/pages/DemoPage.tsx:252
+msgid "KEEP OPEN"
+msgstr "[ET] KEEP OPEN"
 
 #: src/features/settings/LanguagePage.tsx:49
 msgid "Language"
@@ -360,11 +414,19 @@ msgstr "Lehe laadimine"
 msgid "Loading..."
 msgstr ""
 
+#: src/components/retro/RetroCombobox.tsx:190
+msgid "Loading…"
+msgstr "[ET] Loading…"
+
 #: src/components/layout/Sidebar.tsx:50
 #: src/features/loans/LoansPage.tsx:8
 #: src/features/settings/NotificationsPage.tsx:106
 msgid "LOANS"
 msgstr "LAENUTUSED"
+
+#: src/pages/DemoPage.tsx:166
+msgid "LOCATION"
+msgstr "[ET] LOCATION"
 
 #: src/features/dashboard/DashboardPage.tsx:55
 msgid "LOCATIONS"
@@ -382,6 +444,14 @@ msgstr "LOGI SISSE"
 msgid "LOGOUT"
 msgstr "LOGI VALJA"
 
+#: src/pages/DemoPage.tsx:250
+msgid "MARK LOAN RETURNED"
+msgstr "[ET] MARK LOAN RETURNED"
+
+#: src/pages/DemoPage.tsx:253
+msgid "MARK RETURNED"
+msgstr "[ET] MARK RETURNED"
+
 #: src/features/settings/ProfilePage.tsx:153
 msgid "NAME"
 msgstr ""
@@ -389,6 +459,10 @@ msgstr ""
 #: src/features/settings/SecurityPage.tsx:198
 msgid "NEW PASSWORD"
 msgstr ""
+
+#: src/components/retro/RetroPagination.tsx:76
+msgid "NEXT →"
+msgstr "[ET] NEXT →"
 
 #: src/features/dashboard/ActivityFeed.tsx:70
 msgid "NO ACTIVITY YET"
@@ -398,9 +472,21 @@ msgstr "TEGEVUSI VEEL POLE"
 msgid "No data returned"
 msgstr "Andmeid ei tagastatud"
 
+#: src/components/retro/RetroCombobox.tsx:195
+msgid "No matches found."
+msgstr "[ET] No matches found."
+
+#: src/pages/DemoPage.tsx:267
+msgid "NO RECORDS YET"
+msgstr "[ET] NO RECORDS YET"
+
 #: src/features/setup/SetupPage.tsx:13
 msgid "No workspace found. Please create a workspace to get started."
 msgstr "Toopinda ei leitud. Alustamiseks loo toopind."
+
+#: src/pages/DemoPage.tsx:149
+msgid "NOTES"
+msgstr "[ET] NOTES"
 
 #: src/features/settings/NotificationsPage.tsx:117
 #: src/features/settings/SettingsPage.tsx:52
@@ -435,6 +521,10 @@ msgstr ""
 msgid "Open navigation"
 msgstr "Ava navigatsioon"
 
+#: src/pages/DemoPage.tsx:152
+msgid "Optional free text…"
+msgstr "[ET] Optional free text…"
+
 #: src/features/auth/OAuthButtons.tsx:44
 msgid "OR"
 msgstr "VOI"
@@ -442,6 +532,10 @@ msgstr "VOI"
 #: src/features/settings/SecurityPage.tsx:106
 msgid "OTHER SESSIONS REVOKED"
 msgstr ""
+
+#: src/components/retro/RetroPagination.tsx:79
+msgid "Page {page} of {totalPages}"
+msgstr "[ET] Page {page} of {totalPages}"
 
 #: src/features/items/ItemsPage.tsx:10
 #: src/features/loans/LoansPage.tsx:10
@@ -471,6 +565,10 @@ msgstr ""
 msgid "Passwords do not match."
 msgstr "Paroolid ei kattu."
 
+#: src/pages/DemoPage.tsx:185
+msgid "PHOTOS"
+msgstr "[ET] PHOTOS"
+
 #: src/features/settings/SettingsPage.tsx:33
 msgid "PREFERENCES"
 msgstr ""
@@ -498,6 +596,19 @@ msgstr "REGISTREERU"
 msgid "REMOVE"
 msgstr ""
 
+#. placeholder {0}: file.name
+#: src/components/retro/RetroFileInput.tsx:106
+msgid "Remove {0}"
+msgstr ""
+
+#: src/pages/DemoPage.tsx:143
+msgid "Required. Up to 255 characters."
+msgstr "[ET] Required. Up to 255 characters."
+
+#: src/pages/DemoPage.tsx:128
+msgid "RETRO FORM PRIMITIVES"
+msgstr "[ET] RETRO FORM PRIMITIVES"
+
 #: src/pages/ApiDemoPage.tsx:53
 msgid "Retry fetch"
 msgstr "Proovi uuesti"
@@ -520,8 +631,9 @@ msgid "REVOKE ALL OTHERS"
 msgstr ""
 
 #: src/features/settings/ProfilePage.tsx:190
+#: src/pages/DemoPage.tsx:192
 msgid "SAVE CHANGES"
-msgstr ""
+msgstr "[ET] SAVE CHANGES"
 
 #: src/features/scan/ScanPage.tsx:8
 msgid "SCAN"
@@ -539,6 +651,15 @@ msgstr "SEKTOR EI LEITUD"
 #: src/features/settings/SettingsPage.tsx:29
 msgid "SECURITY"
 msgstr ""
+
+#: src/pages/DemoPage.tsx:161
+msgid "Select category…"
+msgstr "[ET] Select category…"
+
+#: src/components/retro/RetroCombobox.tsx:157
+#: src/components/retro/RetroSelect.tsx:155
+msgid "Select option…"
+msgstr "[ET] Select option…"
 
 #: src/features/settings/SecurityPage.tsx:96
 msgid "SESSION REVOKED"
@@ -599,6 +720,10 @@ msgstr "SÜSTEEMIVIGA"
 msgid "The endpoint responded successfully but returned zero records. Create a record in the backend, then retry."
 msgstr "Otspunkt vastas edukalt, kuid tagastas null kirjet. Loo taustateenuses kirje ja proovi uuesti."
 
+#: src/pages/DemoPage.tsx:251
+msgid "The item will move to loan history."
+msgstr "[ET] The item will move to loan history."
+
 #: src/routes/index.tsx:33
 msgid "The requested area does not exist. Return to base."
 msgstr "Soovitud ala ei eksisteeri. Naase baasi."
@@ -611,6 +736,10 @@ msgstr ""
 msgid "THEME"
 msgstr ""
 
+#: src/pages/DemoPage.tsx:239
+msgid "This action cannot be undone."
+msgstr "[ET] This action cannot be undone."
+
 #: src/features/settings/SecurityPage.tsx:342
 msgid "This will permanently delete your account and all associated data. This action cannot be undone."
 msgstr ""
@@ -622,6 +751,18 @@ msgstr ""
 #: src/features/settings/FormatsPage.tsx:167
 msgid "TIME FORMAT"
 msgstr ""
+
+#: src/pages/DemoPage.tsx:226
+msgid "TRIGGER DELETE"
+msgstr "[ET] TRIGGER DELETE"
+
+#: src/pages/DemoPage.tsx:232
+msgid "TRIGGER RETURN"
+msgstr "[ET] TRIGGER RETURN"
+
+#: src/pages/DemoPage.tsx:173
+msgid "Type to search…"
+msgstr "[ET] Type to search…"
 
 #: src/features/settings/SecurityPage.tsx:308
 msgid "UNLINK"
@@ -646,6 +787,10 @@ msgstr "VAATA LAENUTUSI"
 #: src/routes/index.tsx:52
 #~ msgid "Welcome to Home Warehouse"
 #~ msgstr "Tere tulemast Home Warehouse'i"
+
+#: src/components/retro/RetroConfirmDialog.tsx:89
+msgid "WORKING…"
+msgstr "[ET] WORKING…"
 
 #: src/features/settings/NotificationsPage.tsx:108
 msgid "WORKSPACE"
