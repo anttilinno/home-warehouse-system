@@ -26,7 +26,7 @@ const resolver: typeof baseResolver = (values, ctx, opts) => {
     parent_location: v.parent_location === "" ? undefined : v.parent_location,
     description: v.description === "" ? undefined : v.description,
   };
-  return baseResolver(cleaned, ctx, opts);
+  return baseResolver(cleaned as LocationCreateValues, ctx, opts);
 };
 
 export interface LocationFormProps {

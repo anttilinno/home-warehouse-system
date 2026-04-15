@@ -25,7 +25,7 @@ const resolver: typeof baseResolver = (values, ctx, opts) => {
     short_code: v.short_code === "" ? undefined : v.short_code,
     description: v.description === "" ? undefined : v.description,
   };
-  return baseResolver(cleaned, ctx, opts);
+  return baseResolver(cleaned as ContainerCreateValues, ctx, opts);
 };
 
 export interface ContainerFormProps {

@@ -10,6 +10,7 @@ import { ItemsPage } from "@/features/items/ItemsPage";
 import { LoansPage } from "@/features/loans/LoansPage";
 import { ScanPage } from "@/features/scan/ScanPage";
 import { SetupPage } from "@/features/setup/SetupPage";
+import TaxonomyPage from "@/features/taxonomy/TaxonomyPage";
 import { SettingsPage } from "@/features/settings/SettingsPage";
 import { ProfilePage } from "@/features/settings/ProfilePage";
 import { SecurityPage } from "@/features/settings/SecurityPage";
@@ -73,6 +74,7 @@ export function AppRoutes() {
       >
         <Route index element={<DashboardPage />} />
         <Route path="items" element={<ItemsPage />} />
+        <Route path="taxonomy" element={<TaxonomyPage />} />
         <Route path="loans" element={<LoansPage />} />
         <Route path="scan" element={<ScanPage />} />
         <Route path="settings" element={<SettingsPage />} />

@@ -26,7 +26,7 @@ const resolver: typeof baseResolver = (values, ctx, opts) => {
       v.parent_category_id === "" ? undefined : v.parent_category_id,
     description: v.description === "" ? undefined : v.description,
   };
-  return baseResolver(cleaned, ctx, opts);
+  return baseResolver(cleaned as CategoryCreateValues, ctx, opts);
 };
 
 export interface CategoryFormProps {

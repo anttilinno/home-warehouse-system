@@ -44,7 +44,7 @@ export function ApiDemoPage() {
 
       {/* Error state */}
       {workspaceId && query.isError && (
-        <RetroPanel style={{ borderColor: "var(--color-retro-red)" }}>
+        <RetroPanel>
           <HazardStripe className="mb-md" />
           <p className="text-retro-red mb-md">
             {t`Could not reach the API. Check your network and the backend URL, then retry.`}
