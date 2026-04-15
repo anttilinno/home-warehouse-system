@@ -82,15 +82,15 @@ async function request<T>(
 
   if (response.status === 401) {
     if (!refreshPromise) {
-      refreshPromise = doRefresh();
+      refreshPromise = doRefresh().finally(() => {
+        refreshPromise = null;
+      });
     }
     try {
       await refreshPromise;
     } catch (err) {
-      refreshPromise = null;
       throw err;
     }
-    refreshPromise = null;
 
     const retryResponse = await fetch(`${BASE_URL}${endpoint}`, {
       ...options,

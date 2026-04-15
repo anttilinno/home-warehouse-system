@@ -11,6 +11,12 @@ const REPO_ROOT = resolve(__dirname, "..");
 // Allow override for tests: first CLI arg = scan root.
 const SCAN_ROOT = resolve(process.argv[2] || join(REPO_ROOT, "frontend2", "src"));
 
+// Guard: fail loudly if the scan root doesn't exist (catches cwd-relative invocations from repo root)
+try { statSync(SCAN_ROOT); } catch {
+  console.error(`check-forbidden-imports: scan root not found: ${SCAN_ROOT}`);
+  process.exit(1);
+}
+
 // Match only module specifiers inside `from '...'`, `from "..."`, `import('...')`, or `import("...")`
 // Forbidden: exact `idb`, exact `serwist` / `@serwist/*`, or any specifier containing `offline` or `sync` (case-insensitive).
 const SPECIFIER_RE = /(?:from|import)\s*\(?\s*["']([^"']+)["']/g;
