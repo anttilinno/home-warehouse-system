@@ -7,6 +7,8 @@
       "dependencies": {
         "@lingui/core": "^5.9.5",
         "@lingui/react": "^5.9.5",
+        "@tanstack/react-query": "^5",
+        "@tanstack/react-query-devtools": "^5",
         "react": "^19.2.5",
         "react-dom": "^19.2.5",
         "react-router": "^7.14.0",
@@ -312,6 +314,14 @@
     "@tailwindcss/oxide-win32-x64-msvc": ["@tailwindcss/oxide-win32-x64-msvc@4.2.2", "", { "os": "win32", "cpu": "x64" }, "sha512-1T/37VvI7WyH66b+vqHj/cLwnCxt7Qt3WFu5Q8hk65aOvlwAhs7rAp1VkulBJw/N4tMirXjVnylTR72uI0HGcA=="],
 
     "@tailwindcss/vite": ["@tailwindcss/vite@4.2.2", "", { "dependencies": { "@tailwindcss/node": "4.2.2", "@tailwindcss/oxide": "4.2.2", "tailwindcss": "4.2.2" }, "peerDependencies": { "vite": "^5.2.0 || ^6 || ^7 || ^8" } }, "sha512-mEiF5HO1QqCLXoNEfXVA1Tzo+cYsrqV7w9Juj2wdUFyW07JRenqMG225MvPwr3ZD9N1bFQj46X7r33iHxLUW0w=="],
+
+    "@tanstack/query-core": ["@tanstack/query-core@5.99.0", "", {}, "sha512-3Jv3WQG0BCcH7G+7lf/bP8QyBfJOXeY+T08Rin3GZ1bshvwlbPt7NrDHMEzGdKIOmOzvIQmxjk28YEQX60k7pQ=="],
+
+    "@tanstack/query-devtools": ["@tanstack/query-devtools@5.99.0", "", {}, "sha512-m4ufXaJ8FjWXw7xDtyzE/6fkZAyQFg9WrbMrUpt8ZecRJx58jiFOZ2lxZMphZdIpAnIeto/S8stbwLKLusyckQ=="],
+
+    "@tanstack/react-query": ["@tanstack/react-query@5.99.0", "", { "dependencies": { "@tanstack/query-core": "5.99.0" }, "peerDependencies": { "react": "^18 || ^19" } }, "sha512-OY2bCqPemT1LlqJ8Y2CUau4KELnIhhG9Ol3ZndPbdnB095pRbPo1cHuXTndg8iIwtoHTgwZjyaDnQ0xD0mYwAw=="],
+
+    "@tanstack/react-query-devtools": ["@tanstack/react-query-devtools@5.99.0", "", { "dependencies": { "@tanstack/query-devtools": "5.99.0" }, "peerDependencies": { "@tanstack/react-query": "^5.99.0", "react": "^18 || ^19" } }, "sha512-CqqX7LCU9yOfCY/vBURSx2YSD83ryfX+QkfkaKionTfg1s2Hdm572Ro99gW3QPoJjzvsj1HM4pnN4nbDy3MXKA=="],
 
     "@testing-library/dom": ["@testing-library/dom@10.4.1", "", { "dependencies": { "@babel/code-frame": "^7.10.4", "@babel/runtime": "^7.12.5", "@types/aria-query": "^5.0.1", "aria-query": "5.3.0", "dom-accessibility-api": "^0.5.9", "lz-string": "^1.5.0", "picocolors": "1.1.1", "pretty-format": "^27.0.2" } }, "sha512-o4PXJQidqJl82ckFaXUeoAW+XysPLauYI43Abki5hABd853iMhitooc6znOnczgbTYmEP6U6/y1ZyKAIsvMKGg=="],
 
