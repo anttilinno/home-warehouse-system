@@ -23,9 +23,9 @@ describe("RetroSelect", () => {
     renderWithI18n(
       <RetroSelect options={OPTIONS} placeholder="Select category" />
     );
-    expect(
-      screen.getByRole("combobox", { name: /select category/i })
-    ).toBeInTheDocument();
+    const trigger = screen.getByRole("combobox");
+    expect(trigger).toBeInTheDocument();
+    expect(trigger).toHaveTextContent(/select category/i);
   });
 
   it("opens listbox on click and renders role=option per option", async () => {
