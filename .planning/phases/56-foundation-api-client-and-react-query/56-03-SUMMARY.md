@@ -4,7 +4,7 @@ plan: 03
 subsystem: frontend2/api-demo-page
 tags: [react-query, tanstack, lingui, public-route, smoke-test]
 completed: "2026-04-15"
-duration_minutes: 12
+duration_minutes: 25
 
 dependency_graph:
   requires:
@@ -13,7 +13,7 @@ dependency_graph:
     - useAuth hook + AuthContext (v2.0 provides)
   provides:
     - frontend2/src/pages/ApiDemoPage.tsx (smoke-test page — 5 visual states)
-    - /api-demo public route registered in routes/index.tsx
+    - /rq-demo public route registered in routes/index.tsx
     - 8 new Lingui msgids in EN catalog + full ET translations
   affects:
     - Human verification of full React Query stack (loading/success/error/empty/anonymous)
@@ -26,12 +26,13 @@ tech_stack:
     - 5-state UI pattern — authLoading early return, anonymous, isPending, isError, isSuccess
     - useLingui().t macro for all visible strings (consistent with routes/index.tsx)
     - Public route placement in "no shell" block (sibling to /demo, outside RequireAuth)
+    - Inline style for error border (CSS specificity override — RetroPanel className override blocked by Tailwind merge)
 
 key_files:
   created:
     - frontend2/src/pages/ApiDemoPage.tsx
   modified:
-    - frontend2/src/routes/index.tsx (import + Route added)
+    - frontend2/src/routes/index.tsx (import + Route added; path changed to /rq-demo)
     - frontend2/locales/en/messages.po (8 new msgids extracted)
     - frontend2/locales/et/messages.po (8 Estonian translations populated)
 
@@ -39,10 +40,11 @@ decisions:
   - "authLoading early return renders null — avoids flashing anonymous panel before auth check resolves"
   - "enabled: !!workspaceId — query never fires when user is anonymous; backend 401 is not consumed unnecessarily"
   - "HazardStripe placed as child inside error RetroPanel — RetroPanel showHazardStripe prop places stripe before title, but error panel has no title; explicit child gives control over order relative to error text"
-  - "Route placed in public block without AppShell — /api-demo is a dev/smoke-test page, same posture as /demo"
+  - "Route renamed /api-demo -> /rq-demo — Vite dev proxy intercepts all /api/* paths and forwards to backend; /api-demo was unreachable as a frontend route"
+  - "Error border applied via inline style — RetroPanel className override insufficient due to Tailwind merge priority; style={{ borderColor: 'var(--color-retro-red)' }} gave reliable specificity"
 
 metrics:
-  tasks_completed: 2
+  tasks_completed: 3
   tasks_total: 3
   files_created: 1
   files_modified: 3
@@ -52,28 +54,19 @@ metrics:
 
 # Phase 56 Plan 03: API Demo Page Summary
 
-**One-liner:** Public `/api-demo` route created with 5 visual states (anonymous, loading, error+retry, empty, success) exercising the full React Query stack — itemsApi.list through QueryClientProvider — with Lingui EN+ET catalog entries.
+**One-liner:** Public `/rq-demo` route created with 5 visual states (anonymous, loading, error+retry, empty, success) exercising the full React Query stack — itemsApi.list through QueryClientProvider — with Lingui EN+ET catalog entries; human smoke-test approved.
 
 ## Tasks Completed
 
 | Task | Name | Commit | Files |
 |------|------|--------|-------|
 | 1 | Create ApiDemoPage with 5 visual states | cbf8ee0 | src/pages/ApiDemoPage.tsx |
-| 2 | Register /api-demo route + Lingui catalogs | 56a497e | src/routes/index.tsx, locales/en/messages.po, locales/et/messages.po |
+| 2 | Register /rq-demo route + Lingui catalogs | 56a497e, 6e41f3f | src/routes/index.tsx, locales/en/messages.po, locales/et/messages.po |
+| 3 | Human smoke-test /rq-demo against live backend | (human verified) | — |
 
-## Task 3: Awaiting Human Verification
+## Task 3: Human Verification — APPROVED
 
-Task 3 is a `checkpoint:human-verify`. The automation stopped here per plan. The following 9 steps require manual verification:
-
-1. Start backend (`make dev-backend`)
-2. Start frontend (`cd frontend2 && bun run dev`)
-3. Visit `/api-demo` anonymously — expect "Sign in to run the real API fetch…" panel
-4. Sign in and visit `/api-demo` — expect loading then data or empty state
-5. Set network offline, click "Retry fetch" — expect error panel with retro-red border
-6. Re-enable network, click "Retry fetch" — expect loading then success
-7. Open React Query Devtools — expect `["items","list",{page:1,limit:10}]` query in cache
-8. Switch language to Estonian — expect all copy in Estonian
-9. Production build check: `bun run build && rg -l "react-query-devtools" dist/` — expect no matches
+All 9 verification steps passed. User confirmed approval after checkpoint.
 
 ## Decisions Made
 
@@ -87,7 +80,21 @@ Task 3 is a `checkpoint:human-verify`. The automation stopped here per plan. The
 
 ## Deviations from Plan
 
-None — plan executed exactly as written. All component prop names (`showHazardStripe`, `variant="primary"`, `className`) were verified against the actual `RetroPanel`, `RetroButton`, and `HazardStripe` implementations before use.
+### Auto-fixed Issues
+
+**1. [Rule 3 - Blocking] Route renamed /api-demo to /rq-demo**
+- **Found during:** Task 2 (post-checkpoint fix, commit 6e41f3f)
+- **Issue:** Vite dev server proxies all requests matching `/api/*` to the backend. The path `/api-demo` was intercepted before React Router could handle it, making the page unreachable in the browser.
+- **Fix:** Renamed the route path from `/api-demo` to `/rq-demo` in `src/routes/index.tsx`. The component name `ApiDemoPage` and file name were left unchanged (the naming remains accurate for the page's purpose).
+- **Files modified:** `frontend2/src/routes/index.tsx`
+- **Commit:** 6e41f3f
+
+**2. [Rule 1 - Bug] Error state border applied via inline style**
+- **Found during:** Task 3 (human verification — retro-red border not visible)
+- **Issue:** `RetroPanel` applies its own border via Tailwind classes. Passing `className="border-retro-red"` was overridden by RetroPanel's internal class merge order, so the error border did not appear.
+- **Fix:** Applied `style={{ borderColor: 'var(--color-retro-red)' }}` on the error `RetroPanel` to bypass CSS class specificity ordering. Inline style wins over Tailwind utility classes unconditionally.
+- **Files modified:** `frontend2/src/pages/ApiDemoPage.tsx`
+- **Commit:** included in 6e41f3f
 
 ## Known Stubs
 
@@ -103,15 +110,19 @@ None — no new network endpoints. The `/api-demo` route follows the same public
 - `bun run test -- --run`: 191/191 passing (no regressions)
 - `bun run build`: succeeds (128 modules, no errors)
 - `rg -l "react-query-devtools" dist/`: no matches (Devtools tree-shaken from prod)
-- `grep -q '"/api-demo"' src/routes/index.tsx`: MATCH
+- `grep -q '"/rq-demo"' src/routes/index.tsx`: MATCH (post-rename)
 - `grep -q "ApiDemoPage" src/routes/index.tsx`: MATCH
 - `grep -q "API Demo" locales/en/messages.po`: MATCH
 - `grep -q "Laadin andmeid" locales/et/messages.po`: MATCH
 
+## Verification Results (human — Task 3)
+
+All 9 steps passed. User approved at checkpoint.
+
 ## Self-Check: PASSED
 
-- `frontend2/src/pages/ApiDemoPage.tsx`: FOUND (91 lines, useQuery, itemKeys.list, 5 states)
-- `frontend2/src/routes/index.tsx` contains `/api-demo`: FOUND
+- `frontend2/src/pages/ApiDemoPage.tsx`: FOUND (useQuery, itemKeys.list, 5 states)
+- `frontend2/src/routes/index.tsx` contains `/rq-demo`: FOUND (renamed from /api-demo)
 - `frontend2/locales/en/messages.po` contains `API Demo`: FOUND
 - `frontend2/locales/et/messages.po` contains `Laadin andmeid API-st…`: FOUND
-- Commits cbf8ee0 and 56a497e: both present in git log
+- Commits cbf8ee0, 56a497e, and 6e41f3f: all present in git log
