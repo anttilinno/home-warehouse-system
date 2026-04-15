@@ -41,22 +41,26 @@ msgstr "LISA ESE"
 msgid "An account with this email already exists. Try logging in instead."
 msgstr "Selle e-postiga konto on juba olemas. Proovi hoopis sisse logida."
 
-#: src/features/settings/AppearancePage.tsx:73
+#: src/pages/ApiDemoPage.tsx:25
+msgid "API Demo"
+msgstr "API DEMO"
+
+#: src/features/settings/AppearancePage.tsx:72
 #: src/features/settings/SettingsPage.tsx:37
 msgid "APPEARANCE"
 msgstr ""
 
-#: src/features/auth/AuthCallbackPage.tsx:68
+#: src/features/auth/AuthCallbackPage.tsx:69
 msgid "AUTHENTICATING..."
 msgstr "AUTENTIMINE..."
 
-#: src/features/auth/AuthCallbackPage.tsx:55
+#: src/features/auth/AuthCallbackPage.tsx:56
 msgid "AUTHENTICATION FAILED"
 msgstr "AUTENTIMINE EBAONNESTUS"
 
-#: src/features/auth/AuthCallbackPage.tsx:23
-#: src/features/auth/AuthCallbackPage.tsx:29
-#: src/features/auth/AuthCallbackPage.tsx:42
+#: src/features/auth/AuthCallbackPage.tsx:24
+#: src/features/auth/AuthCallbackPage.tsx:30
+#: src/features/auth/AuthCallbackPage.tsx:43
 msgid "Authentication failed. Try a different sign-in method."
 msgstr "Autentimine ebaonnestus. Proovi teist sisselogimisviisi."
 
@@ -68,11 +72,11 @@ msgstr ""
 msgid "AVATAR UPLOADED"
 msgstr ""
 
-#: src/features/settings/AppearancePage.tsx:71
-#: src/features/settings/DataPage.tsx:87
-#: src/features/settings/FormatsPage.tsx:142
-#: src/features/settings/LanguagePage.tsx:39
-#: src/features/settings/NotificationsPage.tsx:117
+#: src/features/settings/AppearancePage.tsx:70
+#: src/features/settings/DataPage.tsx:85
+#: src/features/settings/FormatsPage.tsx:141
+#: src/features/settings/LanguagePage.tsx:38
+#: src/features/settings/NotificationsPage.tsx:115
 #: src/features/settings/ProfilePage.tsx:95
 #: src/features/settings/SecurityPage.tsx:162
 msgid "BACK"
@@ -90,12 +94,12 @@ msgstr "KATEGOORIAD"
 msgid "CHANGE PASSWORD"
 msgstr ""
 
-#: src/features/settings/AppearancePage.tsx:53
-#: src/features/settings/FormatsPage.tsx:86
-#: src/features/settings/FormatsPage.tsx:99
-#: src/features/settings/FormatsPage.tsx:113
-#: src/features/settings/LanguagePage.tsx:22
-#: src/features/settings/NotificationsPage.tsx:81
+#: src/features/settings/AppearancePage.tsx:52
+#: src/features/settings/FormatsPage.tsx:85
+#: src/features/settings/FormatsPage.tsx:98
+#: src/features/settings/FormatsPage.tsx:112
+#: src/features/settings/LanguagePage.tsx:21
+#: src/features/settings/NotificationsPage.tsx:79
 #: src/features/settings/ProfilePage.tsx:74
 msgid "CHANGES SAVED"
 msgstr ""
@@ -125,6 +129,10 @@ msgstr ""
 msgid "Connection failed. Check your network and try again."
 msgstr "Uhendus ebaonnestus. Kontrolli vorguuhendust ja proovi uuesti."
 
+#: src/pages/ApiDemoPage.tsx:50
+msgid "Could not reach the API. Check your network and the backend URL, then retry."
+msgstr "API-ni ei saanud ühendust. Kontrolli võrku ja taustateenuse URL-i, seejärel proovi uuesti."
+
 #: src/features/auth/RegisterForm.tsx:179
 msgid "CREATE ACCOUNT"
 msgstr "LOO KONTO"
@@ -141,7 +149,7 @@ msgstr ""
 msgid "Current password is incorrect"
 msgstr ""
 
-#: src/features/settings/AppearancePage.tsx:64
+#: src/features/settings/AppearancePage.tsx:63
 msgid "DARK"
 msgstr ""
 
@@ -149,16 +157,20 @@ msgstr ""
 msgid "DASHBOARD"
 msgstr "JUHTPANEEL"
 
-#: src/features/settings/DataPage.tsx:89
+#: src/features/settings/DataPage.tsx:87
 #: src/features/settings/SettingsPage.tsx:58
 msgid "DATA"
 msgstr ""
 
-#: src/features/settings/FormatsPage.tsx:155
+#: src/pages/ApiDemoPage.tsx:74
+msgid "Data loaded"
+msgstr "Andmed laaditud"
+
+#: src/features/settings/FormatsPage.tsx:154
 msgid "Date format"
 msgstr ""
 
-#: src/features/settings/FormatsPage.tsx:149
+#: src/features/settings/FormatsPage.tsx:148
 msgid "DATE FORMAT"
 msgstr ""
 
@@ -166,11 +178,11 @@ msgstr ""
 msgid "DELETE ACCOUNT"
 msgstr ""
 
-#: src/features/settings/DataPage.tsx:97
+#: src/features/settings/DataPage.tsx:95
 msgid "Download all workspace data as a JSON file."
 msgstr ""
 
-#: src/features/settings/LanguagePage.tsx:33
+#: src/features/settings/LanguagePage.tsx:32
 msgid "EESTI"
 msgstr ""
 
@@ -192,23 +204,23 @@ msgstr "E-POSTI AADRESS"
 msgid "Email already in use"
 msgstr ""
 
-#: src/features/settings/LanguagePage.tsx:32
+#: src/features/settings/LanguagePage.tsx:31
 msgid "ENGLISH"
 msgstr ""
 
-#: src/features/settings/DataPage.tsx:104
+#: src/features/settings/DataPage.tsx:102
 msgid "EXPORT"
 msgstr ""
 
-#: src/features/settings/DataPage.tsx:38
+#: src/features/settings/DataPage.tsx:36
 msgid "EXPORT COMPLETE"
 msgstr ""
 
-#: src/features/settings/DataPage.tsx:94
+#: src/features/settings/DataPage.tsx:92
 msgid "EXPORT WORKSPACE"
 msgstr ""
 
-#: src/features/settings/DataPage.tsx:104
+#: src/features/settings/DataPage.tsx:102
 msgid "EXPORTING..."
 msgstr ""
 
@@ -216,7 +228,7 @@ msgstr ""
 msgid "Failed to delete account"
 msgstr ""
 
-#: src/features/settings/DataPage.tsx:40
+#: src/features/settings/DataPage.tsx:38
 msgid "Failed to export workspace"
 msgstr ""
 
@@ -240,13 +252,13 @@ msgstr ""
 msgid "Failed to revoke sessions"
 msgstr ""
 
-#: src/features/settings/AppearancePage.tsx:56
-#: src/features/settings/FormatsPage.tsx:89
-#: src/features/settings/FormatsPage.tsx:102
-#: src/features/settings/FormatsPage.tsx:116
-#: src/features/settings/LanguagePage.tsx:25
-#: src/features/settings/NotificationsPage.tsx:91
-#: src/features/settings/NotificationsPage.tsx:103
+#: src/features/settings/AppearancePage.tsx:55
+#: src/features/settings/FormatsPage.tsx:88
+#: src/features/settings/FormatsPage.tsx:101
+#: src/features/settings/FormatsPage.tsx:115
+#: src/features/settings/LanguagePage.tsx:24
+#: src/features/settings/NotificationsPage.tsx:89
+#: src/features/settings/NotificationsPage.tsx:101
 #: src/features/settings/ProfilePage.tsx:81
 msgid "Failed to save changes. Check your connection and try again."
 msgstr ""
@@ -271,7 +283,7 @@ msgstr "Taisnimi"
 msgid "FULL NAME"
 msgstr "TAISNIMI"
 
-#: src/features/settings/DataPage.tsx:123
+#: src/features/settings/DataPage.tsx:121
 msgid "IMPORT"
 msgstr ""
 
@@ -279,24 +291,24 @@ msgstr ""
 msgid "IMPORT / EXPORT"
 msgstr ""
 
-#: src/features/settings/DataPage.tsx:70
-#: src/features/settings/DataPage.tsx:74
+#: src/features/settings/DataPage.tsx:68
+#: src/features/settings/DataPage.tsx:72
 msgid "IMPORT COMPLETE"
 msgstr ""
 
-#: src/features/settings/DataPage.tsx:77
+#: src/features/settings/DataPage.tsx:75
 msgid "IMPORT FAILED"
 msgstr ""
 
-#: src/features/settings/DataPage.tsx:113
+#: src/features/settings/DataPage.tsx:111
 msgid "IMPORT WORKSPACE"
 msgstr ""
 
-#: src/features/settings/DataPage.tsx:129
+#: src/features/settings/DataPage.tsx:127
 msgid "Import workspace file"
 msgstr ""
 
-#: src/features/settings/DataPage.tsx:123
+#: src/features/settings/DataPage.tsx:121
 msgid "IMPORTING..."
 msgstr ""
 
@@ -304,7 +316,7 @@ msgstr ""
 msgid "Invalid email or password. Check your credentials and try again."
 msgstr "Vale e-post voi parool. Kontrolli oma andmeid ja proovi uuesti."
 
-#: src/features/settings/NotificationsPage.tsx:109
+#: src/features/settings/NotificationsPage.tsx:107
 msgid "INVENTORY"
 msgstr ""
 
@@ -318,23 +330,27 @@ msgstr "ESEMED"
 msgid "KEEP ACCOUNT"
 msgstr ""
 
-#: src/features/settings/LanguagePage.tsx:50
+#: src/features/settings/LanguagePage.tsx:49
 msgid "Language"
 msgstr ""
 
-#: src/features/settings/LanguagePage.tsx:41
-#: src/features/settings/LanguagePage.tsx:44
+#: src/features/settings/LanguagePage.tsx:40
+#: src/features/settings/LanguagePage.tsx:43
 #: src/features/settings/SettingsPage.tsx:42
 msgid "LANGUAGE"
 msgstr ""
 
-#: src/features/settings/AppearancePage.tsx:63
+#: src/features/settings/AppearancePage.tsx:62
 msgid "LIGHT"
 msgstr ""
 
 #: src/features/settings/SecurityPage.tsx:319
 msgid "LINK"
 msgstr ""
+
+#: src/pages/ApiDemoPage.tsx:41
+msgid "Loading data from API…"
+msgstr "Laadin andmeid API-st…"
 
 #: src/components/layout/LoadingBar.tsx:13
 msgid "Loading page"
@@ -346,7 +362,7 @@ msgstr ""
 
 #: src/components/layout/Sidebar.tsx:50
 #: src/features/loans/LoansPage.tsx:8
-#: src/features/settings/NotificationsPage.tsx:108
+#: src/features/settings/NotificationsPage.tsx:106
 msgid "LOANS"
 msgstr "LAENUTUSED"
 
@@ -378,28 +394,32 @@ msgstr ""
 msgid "NO ACTIVITY YET"
 msgstr "TEGEVUSI VEEL POLE"
 
+#: src/pages/ApiDemoPage.tsx:62
+msgid "No data returned"
+msgstr "Andmeid ei tagastatud"
+
 #: src/features/setup/SetupPage.tsx:13
 msgid "No workspace found. Please create a workspace to get started."
 msgstr "Toopinda ei leitud. Alustamiseks loo toopind."
 
-#: src/features/settings/NotificationsPage.tsx:119
+#: src/features/settings/NotificationsPage.tsx:117
 #: src/features/settings/SettingsPage.tsx:52
 msgid "NOTIFICATIONS"
 msgstr ""
 
-#: src/features/settings/NotificationsPage.tsx:129
+#: src/features/settings/NotificationsPage.tsx:127
 msgid "Notifications enabled"
 msgstr ""
 
-#: src/features/settings/NotificationsPage.tsx:124
+#: src/features/settings/NotificationsPage.tsx:122
 msgid "NOTIFICATIONS ENABLED"
 msgstr ""
 
-#: src/features/settings/FormatsPage.tsx:193
+#: src/features/settings/FormatsPage.tsx:192
 msgid "Number format"
 msgstr ""
 
-#: src/features/settings/FormatsPage.tsx:187
+#: src/features/settings/FormatsPage.tsx:186
 msgid "NUMBER FORMAT"
 msgstr ""
 
@@ -465,7 +485,7 @@ msgstr "TOOTLEMINE..."
 msgid "PROFILE"
 msgstr ""
 
-#: src/features/settings/FormatsPage.tsx:144
+#: src/features/settings/FormatsPage.tsx:143
 #: src/features/settings/SettingsPage.tsx:47
 msgid "REGIONAL FORMATS"
 msgstr ""
@@ -478,12 +498,16 @@ msgstr "REGISTREERU"
 msgid "REMOVE"
 msgstr ""
 
+#: src/pages/ApiDemoPage.tsx:53
+msgid "Retry fetch"
+msgstr "Proovi uuesti"
+
 #: src/components/layout/ErrorBoundaryPage.tsx:40
-#: src/routes/index.tsx:38
+#: src/routes/index.tsx:39
 msgid "RETURN TO BASE"
 msgstr "TAGASI BAASI"
 
-#: src/features/auth/AuthCallbackPage.tsx:62
+#: src/features/auth/AuthCallbackPage.tsx:63
 msgid "RETURN TO LOGIN"
 msgstr "TAGASI SISSELOGIMISELE"
 
@@ -507,7 +531,7 @@ msgstr "SKANEERI"
 msgid "SCAN BARCODE"
 msgstr "SKANEERI TRIIPKOODI"
 
-#: src/routes/index.tsx:29
+#: src/routes/index.tsx:30
 msgid "SECTOR NOT FOUND"
 msgstr "SEKTOR EI LEITUD"
 
@@ -528,6 +552,10 @@ msgstr ""
 #: src/components/layout/Sidebar.tsx:59
 msgid "SETTINGS"
 msgstr "SEADED"
+
+#: src/pages/ApiDemoPage.tsx:33
+msgid "Sign in to run the real API fetch. This page is public for reachability; the underlying endpoint requires authentication."
+msgstr "Logi sisse päringu käivitamiseks. See leht on avalik kättesaadavuse huvides; aluseks olev otspunkt nõuab autentimist."
 
 #: src/features/auth/OAuthButtons.tsx:66
 msgid "Sign in with GitHub"
@@ -558,8 +586,8 @@ msgstr "Midagi laks valesti. Minge tagasi avakuvale voi laadige leht uuesti."
 msgid "Something went wrong. Try again in a moment."
 msgstr "Midagi laks valesti. Proovi hetke parast uuesti."
 
-#: src/features/settings/AppearancePage.tsx:65
-#: src/features/settings/NotificationsPage.tsx:111
+#: src/features/settings/AppearancePage.tsx:64
+#: src/features/settings/NotificationsPage.tsx:109
 msgid "SYSTEM"
 msgstr ""
 
@@ -567,15 +595,19 @@ msgstr ""
 msgid "SYSTEM ERROR"
 msgstr "SÜSTEEMIVIGA"
 
-#: src/routes/index.tsx:32
+#: src/pages/ApiDemoPage.tsx:65
+msgid "The endpoint responded successfully but returned zero records. Create a record in the backend, then retry."
+msgstr "Otspunkt vastas edukalt, kuid tagastas null kirjet. Loo taustateenuses kirje ja proovi uuesti."
+
+#: src/routes/index.tsx:33
 msgid "The requested area does not exist. Return to base."
 msgstr "Soovitud ala ei eksisteeri. Naase baasi."
 
-#: src/features/settings/AppearancePage.tsx:82
+#: src/features/settings/AppearancePage.tsx:81
 msgid "Theme"
 msgstr ""
 
-#: src/features/settings/AppearancePage.tsx:76
+#: src/features/settings/AppearancePage.tsx:75
 msgid "THEME"
 msgstr ""
 
@@ -583,11 +615,11 @@ msgstr ""
 msgid "This will permanently delete your account and all associated data. This action cannot be undone."
 msgstr ""
 
-#: src/features/settings/FormatsPage.tsx:174
+#: src/features/settings/FormatsPage.tsx:173
 msgid "Time format"
 msgstr ""
 
-#: src/features/settings/FormatsPage.tsx:168
+#: src/features/settings/FormatsPage.tsx:167
 msgid "TIME FORMAT"
 msgstr ""
 
@@ -603,7 +635,7 @@ msgstr ""
 msgid "UPLOAD"
 msgstr ""
 
-#: src/features/settings/DataPage.tsx:116
+#: src/features/settings/DataPage.tsx:114
 msgid "Upload a workspace JSON file to import data."
 msgstr ""
 
@@ -615,7 +647,7 @@ msgstr "VAATA LAENUTUSI"
 #~ msgid "Welcome to Home Warehouse"
 #~ msgstr "Tere tulemast Home Warehouse'i"
 
-#: src/features/settings/NotificationsPage.tsx:110
+#: src/features/settings/NotificationsPage.tsx:108
 msgid "WORKSPACE"
 msgstr ""
 

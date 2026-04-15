@@ -4,6 +4,7 @@ import { RequireAuth } from "@/features/auth/RequireAuth";
 import { AuthPage } from "@/features/auth/AuthPage";
 import { AuthCallbackPage } from "@/features/auth/AuthCallbackPage";
 import { DemoPage } from "@/pages/DemoPage";
+import { ApiDemoPage } from "@/pages/ApiDemoPage";
 import { DashboardPage } from "@/features/dashboard/DashboardPage";
 import { ItemsPage } from "@/features/items/ItemsPage";
 import { LoansPage } from "@/features/loans/LoansPage";
@@ -49,6 +50,7 @@ export function AppRoutes() {
       <Route path="/login" element={<AuthPage />} />
       <Route path="/auth/callback" element={<AuthCallbackPage />} />
       <Route path="/demo" element={<DemoPage />} />
+      <Route path="/api-demo" element={<ApiDemoPage />} />
 
       {/* Setup route -- outside AppShell, per D-02 */}
       <Route
