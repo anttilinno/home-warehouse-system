@@ -328,7 +328,11 @@ Plans:
   3. RetroCombobox supports async option loading with keyboard navigation and mobile-friendly 44px targets
   4. RetroPagination exposes page-size-aware navigation and shows "N of M" for any list
   5. All new primitives are exported from the `@/components/retro` barrel and consumed by at least one test or demo story
-**Plans**: TBD
+**Plans:** 3 plans
+Plans:
+- [ ] 57-01-PLAN.md — Install RHF/zod/floating-ui deps + RetroTextarea/Checkbox/FileInput
+- [ ] 57-02-PLAN.md — RetroSelect/Combobox (floating-ui) + RetroFormField (RHF Controller)
+- [ ] 57-03-PLAN.md — RetroPagination/ConfirmDialog/EmptyState + /demo wiring + i18n catalogs
 **UI hint**: yes
 
 ### Phase 58: Taxonomy — Categories, Locations, Containers
