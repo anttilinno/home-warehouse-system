@@ -8,6 +8,7 @@ import { HazardStripe } from "./HazardStripe";
 
 interface RetroDialogProps {
   onClose?: () => void;
+  hideHazardStripe?: boolean;
   children: ReactNode;
 }
 
@@ -17,7 +18,7 @@ export interface RetroDialogHandle {
 }
 
 const RetroDialog = forwardRef<RetroDialogHandle, RetroDialogProps>(
-  ({ onClose, children }, ref) => {
+  ({ onClose, hideHazardStripe, children }, ref) => {
     const dialogRef = useRef<HTMLDialogElement>(null);
 
     useImperativeHandle(ref, () => ({
@@ -40,7 +41,7 @@ const RetroDialog = forwardRef<RetroDialogHandle, RetroDialogProps>(
           >
             X
           </button>
-          <HazardStripe className="mb-md" />
+          {!hideHazardStripe && <HazardStripe className="mb-md" />}
           {children}
         </div>
       </dialog>

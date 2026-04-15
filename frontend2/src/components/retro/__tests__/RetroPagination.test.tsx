@@ -42,8 +42,12 @@ describe("RetroPagination", () => {
     const { container } = renderWithI18n(
       <RetroPagination page={2} pageSize={25} totalCount={137} onChange={() => {}} />
     );
-    const counter = container.querySelector(".font-mono");
+    const monos = container.querySelectorAll(".font-mono");
+    const counter = Array.from(monos).find((el) =>
+      /Page/i.test(el.textContent || "")
+    );
     expect(counter).toBeTruthy();
     expect(counter!.textContent).toMatch(/Page\s*2\s*of\s*6/);
+    expect(counter!.className).toContain("font-mono");
   });
 });
