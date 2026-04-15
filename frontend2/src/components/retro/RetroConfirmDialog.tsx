@@ -10,6 +10,11 @@ import { useLingui } from "@lingui/react/macro";
 import { RetroDialog, type RetroDialogHandle } from "./RetroDialog";
 import { RetroButton } from "./RetroButton";
 
+interface RetroConfirmDialogSecondaryLink {
+  label: string;
+  onClick: () => void;
+}
+
 interface RetroConfirmDialogProps {
   title: string;
   body: ReactNode;
@@ -18,6 +23,10 @@ interface RetroConfirmDialogProps {
   variant: "destructive" | "soft";
   onConfirm: () => void | Promise<void>;
   onCancel?: () => void;
+  /** Optional small mono chip rendered below the title (used for soft variant warnings). */
+  headerBadge?: string;
+  /** Optional small text-button rendered below the primary buttons (e.g. "delete permanently"). */
+  secondaryLink?: RetroConfirmDialogSecondaryLink;
 }
 
 interface RetroConfirmDialogHandle {
@@ -30,7 +39,17 @@ const RetroConfirmDialog = forwardRef<
   RetroConfirmDialogProps
 >(
   (
-    { title, body, escapeLabel, destructiveLabel, variant, onConfirm, onCancel },
+    {
+      title,
+      body,
+      escapeLabel,
+      destructiveLabel,
+      variant,
+      onConfirm,
+      onCancel,
+      headerBadge,
+      secondaryLink,
+    },
     ref
   ) => {
     const { t } = useLingui();
@@ -68,10 +87,18 @@ const RetroConfirmDialog = forwardRef<
       >
         <h2
           id={titleId}
-          className="text-[20px] font-bold uppercase text-retro-ink mb-md"
+          className="text-[20px] font-bold uppercase text-retro-ink mb-sm"
         >
           {title}
         </h2>
+        {headerBadge && variant === "soft" && (
+          <span
+            className="inline-block mb-md px-sm py-xs font-mono text-[12px] uppercase border-retro-thick border-retro-ink"
+            style={{ backgroundColor: "var(--color-retro-orange)" }}
+          >
+            {headerBadge}
+          </span>
+        )}
         <div className="text-[14px] text-retro-ink mb-lg">{body}</div>
         <div className="flex justify-end gap-sm mt-lg">
           <RetroButton
@@ -89,6 +116,18 @@ const RetroConfirmDialog = forwardRef<
             {pending ? t`WORKING…` : destructiveLabel}
           </RetroButton>
         </div>
+        {secondaryLink && (
+          <div className="flex justify-end mt-sm">
+            <button
+              type="button"
+              onClick={secondaryLink.onClick}
+              disabled={pending}
+              className="text-[14px] text-retro-charcoal/70 hover:text-retro-ink underline cursor-pointer disabled:cursor-not-allowed"
+            >
+              {secondaryLink.label}
+            </button>
+          </div>
+        )}
       </RetroDialog>
     );
   }
