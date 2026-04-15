@@ -159,6 +159,7 @@ const RetroSelect = forwardRef<HTMLButtonElement, RetroSelectProps>(
           <FloatingPortal>
             <FloatingFocusManager context={context} modal={false} initialFocus={-1}>
               <ul
+                // eslint-disable-next-line react-hooks/refs -- setter callback, not ref read
                 ref={refs.setFloating}
                 style={floatingStyles}
                 {...getFloatingProps()}

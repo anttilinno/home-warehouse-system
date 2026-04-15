@@ -176,6 +176,7 @@ const RetroCombobox = forwardRef<HTMLInputElement, RetroComboboxProps>(
           <FloatingPortal>
             <ul
               id={listboxId}
+              // eslint-disable-next-line react-hooks/refs -- setter callback, not ref read
               ref={refs.setFloating}
               style={floatingStyles}
               {...getFloatingProps()}

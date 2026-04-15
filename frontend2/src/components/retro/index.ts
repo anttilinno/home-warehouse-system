@@ -11,6 +11,8 @@ export { RetroSelect } from "./RetroSelect";
 export type { RetroSelectProps, RetroOption } from "./RetroSelect";
 export { RetroCombobox } from "./RetroCombobox";
 export type { RetroComboboxProps } from "./RetroCombobox";
+export { RetroFormField } from "./RetroFormField";
+export type { RetroFormFieldProps } from "./RetroFormField";
 export { HazardStripe } from "./HazardStripe";
 export { RetroCard } from "./RetroCard";
 export { RetroDialog } from "./RetroDialog";

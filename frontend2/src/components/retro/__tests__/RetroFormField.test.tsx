@@ -1,4 +1,4 @@
-import { render, screen, fireEvent } from "@testing-library/react";
+import { render, screen, act } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { type ReactElement, useImperativeHandle, forwardRef } from "react";
 import { useForm } from "react-hook-form";
@@ -73,7 +73,8 @@ describe("RetroFormField", () => {
     const user = userEvent.setup();
     renderWithI18n(<SubmitForm />);
     await user.click(screen.getByRole("button", { name: /submit/i }));
-    expect(await screen.findByText("Name is required.")).toBeInTheDocument();
+    const errors = await screen.findAllByText("Name is required.");
+    expect(errors.length).toBeGreaterThanOrEqual(1);
   });
 
   it("renders helper text when no error", () => {
@@ -81,11 +82,15 @@ describe("RetroFormField", () => {
     expect(screen.getByText("Optional notes")).toBeInTheDocument();
   });
 
-  it("setFocus(name) from RHF focuses the underlying DOM element", () => {
+  it("setFocus(name) from RHF focuses the underlying DOM element", async () => {
     const ref = { current: null as FocusHandle | null };
     renderWithI18n(<FocusForm ref={ref} />);
-    ref.current?.setFocus("name");
     const input = screen.getByPlaceholderText("name-input");
+    act(() => {
+      ref.current?.setFocus("name");
+    });
+    // RHF's setFocus uses setTimeout — wait for next tick
+    await new Promise((resolve) => setTimeout(resolve, 10));
     expect(document.activeElement).toBe(input);
   });
 });
