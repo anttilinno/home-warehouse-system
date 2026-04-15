@@ -50,7 +50,7 @@ export function AppRoutes() {
       <Route path="/login" element={<AuthPage />} />
       <Route path="/auth/callback" element={<AuthCallbackPage />} />
       <Route path="/demo" element={<DemoPage />} />
-      <Route path="/api-demo" element={<ApiDemoPage />} />
+      <Route path="/rq-demo" element={<ApiDemoPage />} />
 
       {/* Setup route -- outside AppShell, per D-02 */}
       <Route
