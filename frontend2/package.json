@@ -6,8 +6,10 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "prebuild": "bun run lint:imports",
     "preview": "vite preview",
     "lint": "eslint .",
+    "lint:imports": "node ../scripts/check-forbidden-imports.mjs src",
     "test": "vitest run",
     "test:watch": "vitest",
     "i18n:extract": "lingui extract",
