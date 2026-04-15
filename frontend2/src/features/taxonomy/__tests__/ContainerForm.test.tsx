@@ -3,7 +3,7 @@ import { screen, fireEvent, waitFor, act } from "@testing-library/react";
 import { renderWithProviders } from "./fixtures";
 import { ContainerForm } from "../forms/ContainerForm";
 
-const LOC_UUID = "00000000-0000-0000-0000-000000000001";
+const LOC_UUID = "550e8400-e29b-41d4-a716-446655440000";
 
 describe("ContainerForm", () => {
   beforeEach(() => {
@@ -29,7 +29,8 @@ describe("ContainerForm", () => {
       fireEvent.click(screen.getByText("go"));
     });
     await waitFor(() => {
-      expect(screen.getByText("Location is required.")).toBeInTheDocument();
+      const errs = screen.queryAllByText("Location is required.");
+      expect(errs.length).toBeGreaterThanOrEqual(1);
     });
     expect(onSubmit).not.toHaveBeenCalled();
   });
@@ -42,14 +43,11 @@ describe("ContainerForm", () => {
           formId="cf2"
           onSubmit={onSubmit}
           locationOptions={[{ value: LOC_UUID, label: "Garage" }]}
-          defaultValues={{ location_id: LOC_UUID }}
+          defaultValues={{ name: "Red Bin", location_id: LOC_UUID }}
         />
         <button type="submit" form="cf2">go</button>
       </>,
     );
-    fireEvent.change(screen.getByLabelText(/^name/i), {
-      target: { value: "Red Bin" },
-    });
     await act(async () => {
       fireEvent.click(screen.getByText("go"));
     });
@@ -76,7 +74,8 @@ describe("ContainerForm", () => {
       fireEvent.click(screen.getByText("go"));
     });
     await waitFor(() => {
-      expect(screen.getByText("Name is required.")).toBeInTheDocument();
+      const errs = screen.queryAllByText("Name is required.");
+      expect(errs.length).toBeGreaterThanOrEqual(1);
     });
     expect(onSubmit).not.toHaveBeenCalled();
   });

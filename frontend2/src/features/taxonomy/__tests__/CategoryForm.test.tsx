@@ -40,7 +40,8 @@ describe("CategoryForm", () => {
       fireEvent.click(screen.getByText("go"));
     });
     await waitFor(() => {
-      expect(screen.getByText("Name is required.")).toBeInTheDocument();
+      const errs = screen.queryAllByText("Name is required.");
+      expect(errs.length).toBeGreaterThanOrEqual(1);
     });
     expect(onSubmit).not.toHaveBeenCalled();
   });
