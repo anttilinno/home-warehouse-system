@@ -13,6 +13,9 @@ msgstr ""
 "Language-Team: \n"
 "Plural-Forms: \n"
 
+#: src/features/borrowers/actions/BorrowerArchiveDeleteFlow.tsx:80
+#: src/features/borrowers/actions/BorrowerArchiveDeleteFlow.tsx:93
+#: src/features/borrowers/panel/BorrowerPanel.tsx:95
 #: src/features/taxonomy/actions/ArchiveDeleteFlow.tsx:95
 #: src/features/taxonomy/actions/ArchiveDeleteFlow.tsx:108
 #: src/features/taxonomy/panel/EntityPanel.tsx:189
@@ -23,6 +26,11 @@ msgstr "← BACK"
 #: src/components/retro/RetroPagination.tsx:47
 msgid "← PREV"
 msgstr "← PREV"
+
+#: src/features/borrowers/BorrowersListPage.tsx:162
+#: src/features/borrowers/BorrowersListPage.tsx:201
+msgid "+ NEW BORROWER"
+msgstr "+ NEW BORROWER"
 
 #: src/features/taxonomy/tabs/CategoriesTab.tsx:111
 #: src/features/taxonomy/tabs/CategoriesTab.tsx:139
@@ -39,6 +47,10 @@ msgstr "+ NEW CONTAINER"
 msgid "+ NEW LOCATION"
 msgstr "+ NEW LOCATION"
 
+#: src/features/borrowers/forms/BorrowerForm.tsx:78
+msgid "+372 555 0101"
+msgstr "+372 555 0101"
+
 #: src/features/settings/SettingsPage.tsx:22
 msgid "ACCOUNT"
 msgstr "ACCOUNT"
@@ -46,6 +58,14 @@ msgstr "ACCOUNT"
 #: src/features/settings/SecurityPage.tsx:134
 msgid "ACCOUNT UNLINKED"
 msgstr "ACCOUNT UNLINKED"
+
+#: src/features/borrowers/BorrowersListPage.tsx:67
+msgid "ACTIONS"
+msgstr "ACTIONS"
+
+#: src/features/borrowers/BorrowerDetailPage.tsx:110
+msgid "ACTIVE LOANS"
+msgstr "ACTIVE LOANS"
 
 #: src/features/settings/SecurityPage.tsx:227
 msgid "ACTIVE SESSIONS"
@@ -64,6 +84,10 @@ msgstr "ACTIVITY LOG"
 msgid "ADD ITEM"
 msgstr "ADD ITEM"
 
+#: src/features/borrowers/forms/BorrowerForm.tsx:75
+msgid "alice@example.com"
+msgstr "alice@example.com"
+
 #: src/features/taxonomy/tabs/ContainersTab.tsx:62
 msgid "All locations"
 msgstr "All locations"
@@ -81,17 +105,24 @@ msgstr "API Demo"
 msgid "APPEARANCE"
 msgstr "APPEARANCE"
 
+#: src/features/borrowers/BorrowersListPage.tsx:124
 #: src/features/taxonomy/tabs/ContainersTab.tsx:235
 #: src/features/taxonomy/tree/TreeNode.tsx:122
 msgid "ARCHIVE"
 msgstr "ARCHIVE"
 
+#. placeholder {0}: b.name
 #. placeholder {0}: c.name
 #. placeholder {0}: item.name
+#: src/features/borrowers/BorrowersListPage.tsx:119
 #: src/features/taxonomy/tabs/ContainersTab.tsx:230
 #: src/features/taxonomy/tree/TreeNode.tsx:117
 msgid "Archive {0}"
 msgstr "Archive {0}"
+
+#: src/features/borrowers/actions/BorrowerArchiveDeleteFlow.tsx:81
+msgid "ARCHIVE BORROWER"
+msgstr "ARCHIVE BORROWER"
 
 #: src/features/taxonomy/actions/ArchiveDeleteFlow.tsx:47
 msgid "ARCHIVE CATEGORY"
@@ -109,6 +140,8 @@ msgstr "ARCHIVE FLAG"
 msgid "ARCHIVE LOCATION"
 msgstr "ARCHIVE LOCATION"
 
+#: src/features/borrowers/BorrowerDetailPage.tsx:68
+#: src/features/borrowers/BorrowersListPage.tsx:81
 #: src/features/taxonomy/tabs/ContainersTab.tsx:214
 #: src/features/taxonomy/tree/TaxonomyTree.tsx:196
 #: src/features/taxonomy/tree/TreeNode.tsx:99
@@ -146,6 +179,43 @@ msgstr "AVATAR UPLOADED"
 #: src/features/settings/SecurityPage.tsx:162
 msgid "BACK"
 msgstr "BACK"
+
+#: src/features/borrowers/BorrowerDetailPage.tsx:43
+msgid "BACK TO BORROWERS"
+msgstr "BACK TO BORROWERS"
+
+#: src/features/borrowers/hooks/useBorrowerMutations.ts:60
+msgid "Borrower archived."
+msgstr "Borrower archived."
+
+#: src/features/borrowers/hooks/useBorrowerMutations.ts:23
+msgid "Borrower created."
+msgstr "Borrower created."
+
+#: src/features/borrowers/hooks/useBorrowerMutations.ts:92
+msgid "Borrower deleted."
+msgstr "Borrower deleted."
+
+#: src/features/borrowers/BorrowerDetailPage.tsx:33
+msgid "BORROWER NOT FOUND"
+msgstr "BORROWER NOT FOUND"
+
+#: src/features/borrowers/hooks/useBorrowerMutations.ts:76
+msgid "Borrower restored."
+msgstr "Borrower restored."
+
+#: src/features/borrowers/hooks/useBorrowerMutations.ts:44
+msgid "Borrower saved."
+msgstr "Borrower saved."
+
+#: src/features/borrowers/BorrowerDetailPage.tsx:59
+#: src/features/borrowers/BorrowersListPage.tsx:158
+msgid "BORROWERS"
+msgstr "BORROWERS"
+
+#: src/features/borrowers/hooks/useBorrowerMutations.ts:98
+msgid "Cannot delete: this borrower has active loans."
+msgstr "Cannot delete: this borrower has active loans."
 
 #: src/features/settings/SecurityPage.tsx:304
 msgid "Cannot unlink last auth method"
@@ -215,10 +285,12 @@ msgstr "Collapse {0}"
 msgid "Collapse ARCHIVED"
 msgstr "Collapse ARCHIVED"
 
+#: src/features/borrowers/actions/BorrowerArchiveDeleteFlow.tsx:77
 #: src/features/taxonomy/actions/ArchiveDeleteFlow.tsx:92
 msgid "CONFIRM ARCHIVE"
 msgstr "CONFIRM ARCHIVE"
 
+#: src/features/borrowers/actions/BorrowerArchiveDeleteFlow.tsx:91
 #: src/features/settings/SecurityPage.tsx:346
 #: src/features/taxonomy/actions/ArchiveDeleteFlow.tsx:106
 #: src/pages/DemoPage.tsx:237
@@ -242,6 +314,10 @@ msgstr "CONNECTED ACCOUNTS"
 msgid "Connection failed. Check your network and try again."
 msgstr "Connection failed. Check your network and try again."
 
+#: src/features/borrowers/hooks/useBorrowerMutations.ts:26
+#: src/features/borrowers/hooks/useBorrowerMutations.ts:47
+#: src/features/borrowers/hooks/useBorrowerMutations.ts:79
+#: src/features/borrowers/hooks/useBorrowerMutations.ts:103
 #: src/features/taxonomy/hooks/useCategoryMutations.ts:26
 #: src/features/taxonomy/hooks/useCategoryMutations.ts:47
 #: src/features/taxonomy/hooks/useCategoryMutations.ts:79
@@ -256,6 +332,10 @@ msgstr "Connection failed. Check your network and try again."
 #: src/features/taxonomy/hooks/useLocationMutations.ts:94
 msgid "Connection lost. Your change was not saved."
 msgstr "Connection lost. Your change was not saved."
+
+#: src/features/borrowers/BorrowerDetailPage.tsx:75
+msgid "CONTACT"
+msgstr "CONTACT"
 
 #: src/features/taxonomy/hooks/useContainerMutations.ts:59
 msgid "Container archived."
@@ -285,11 +365,16 @@ msgstr "CONTAINERS"
 msgid "Containers belong to a location. Create a location first, then add containers inside it."
 msgstr "Containers belong to a location. Create a location first, then add containers inside it."
 
+#: src/features/borrowers/hooks/useBorrowerMutations.ts:63
 #: src/features/taxonomy/hooks/useCategoryMutations.ts:63
 #: src/features/taxonomy/hooks/useContainerMutations.ts:62
 #: src/features/taxonomy/hooks/useLocationMutations.ts:62
 msgid "Could not archive. Try again."
 msgstr "Could not archive. Try again."
+
+#: src/features/borrowers/BorrowersListPage.tsx:184
+msgid "Could not load borrowers."
+msgstr "Could not load borrowers."
 
 #: src/features/taxonomy/tabs/CategoriesTab.tsx:125
 msgid "Could not load categories."
@@ -315,6 +400,10 @@ msgstr "Create a location first."
 msgid "CREATE ACCOUNT"
 msgstr "CREATE ACCOUNT"
 
+#: src/features/borrowers/panel/BorrowerPanel.tsx:60
+msgid "CREATE BORROWER"
+msgstr "CREATE BORROWER"
+
 #: src/features/taxonomy/panel/EntityPanel.tsx:92
 msgid "CREATE CATEGORY"
 msgstr "CREATE CATEGORY"
@@ -326,6 +415,10 @@ msgstr "CREATE CONTAINER"
 #: src/features/taxonomy/panel/EntityPanel.tsx:93
 msgid "CREATE LOCATION"
 msgstr "CREATE LOCATION"
+
+#: src/features/borrowers/BorrowersListPage.tsx:198
+msgid "Create your first borrower to start tracking loans."
+msgstr "Create your first borrower to start tracking loans."
 
 #: src/features/taxonomy/tabs/CategoriesTab.tsx:136
 msgid "Create your first category to start organizing items."
@@ -376,9 +469,22 @@ msgstr "Date format"
 msgid "DATE FORMAT"
 msgstr "DATE FORMAT"
 
+#: src/features/borrowers/BorrowersListPage.tsx:146
+msgid "DELETE"
+msgstr "DELETE"
+
+#. placeholder {0}: b.name
+#: src/features/borrowers/BorrowersListPage.tsx:141
+msgid "Delete {0}"
+msgstr "Delete {0}"
+
 #: src/features/settings/SecurityPage.tsx:334
 msgid "DELETE ACCOUNT"
 msgstr "DELETE ACCOUNT"
+
+#: src/features/borrowers/actions/BorrowerArchiveDeleteFlow.tsx:94
+msgid "DELETE BORROWER"
+msgstr "DELETE BORROWER"
 
 #: src/features/taxonomy/actions/ArchiveDeleteFlow.tsx:53
 msgid "DELETE CATEGORY"
@@ -396,6 +502,7 @@ msgstr "DELETE ITEM"
 msgid "DELETE LOCATION"
 msgstr "DELETE LOCATION"
 
+#: src/features/borrowers/actions/BorrowerArchiveDeleteFlow.tsx:84
 #: src/features/taxonomy/actions/ArchiveDeleteFlow.tsx:99
 msgid "delete permanently"
 msgstr "delete permanently"
@@ -422,21 +529,32 @@ msgstr "DISCARD CHANGES?"
 msgid "Download all workspace data as a JSON file."
 msgstr "Download all workspace data as a JSON file."
 
+#: src/features/borrowers/forms/BorrowerForm.tsx:72
+msgid "e.g. Alice Smith"
+msgstr "e.g. Alice Smith"
+
 #: src/pages/DemoPage.tsx:144
 msgid "e.g. DeWalt drill"
 msgstr "e.g. DeWalt drill"
 
+#: src/features/borrowers/BorrowersListPage.tsx:115
 #: src/features/taxonomy/tabs/ContainersTab.tsx:225
 #: src/features/taxonomy/tree/TreeNode.tsx:112
 msgid "EDIT"
 msgstr "EDIT"
 
+#. placeholder {0}: b.name
 #. placeholder {0}: c.name
 #. placeholder {0}: item.name
+#: src/features/borrowers/BorrowersListPage.tsx:110
 #: src/features/taxonomy/tabs/ContainersTab.tsx:220
 #: src/features/taxonomy/tree/TreeNode.tsx:106
 msgid "Edit {0}"
 msgstr "Edit {0}"
+
+#: src/features/borrowers/panel/BorrowerPanel.tsx:56
+msgid "EDIT BORROWER"
+msgstr "EDIT BORROWER"
 
 #: src/features/taxonomy/panel/EntityPanel.tsx:87
 msgid "EDIT CATEGORY"
@@ -459,6 +577,9 @@ msgstr "EESTI"
 msgid "Email"
 msgstr "Email"
 
+#: src/features/borrowers/BorrowerDetailPage.tsx:79
+#: src/features/borrowers/BorrowersListPage.tsx:65
+#: src/features/borrowers/forms/BorrowerForm.tsx:74
 #: src/features/settings/ProfilePage.tsx:168
 msgid "EMAIL"
 msgstr "EMAIL"
@@ -564,6 +685,10 @@ msgstr "Full name"
 msgid "FULL NAME"
 msgstr "FULL NAME"
 
+#: src/features/borrowers/actions/BorrowerArchiveDeleteFlow.tsx:79
+msgid "HIDES FROM LOAN PICKERS"
+msgstr "HIDES FROM LOAN PICKERS"
+
 #: src/features/taxonomy/actions/ArchiveDeleteFlow.tsx:94
 msgid "HIDES FROM PICKERS"
 msgstr "HIDES FROM PICKERS"
@@ -666,11 +791,25 @@ msgid "Loading..."
 msgstr "Loading..."
 
 #: src/components/retro/RetroCombobox.tsx:190
+#: src/features/borrowers/BorrowerDetailPage.tsx:21
+#: src/features/borrowers/BorrowersListPage.tsx:176
 #: src/features/taxonomy/tabs/CategoriesTab.tsx:117
 #: src/features/taxonomy/tabs/ContainersTab.tsx:146
 #: src/features/taxonomy/tabs/LocationsTab.tsx:119
 msgid "Loading…"
 msgstr "Loading…"
+
+#: src/features/borrowers/BorrowerDetailPage.tsx:114
+msgid "Loan data will be available soon."
+msgstr "Loan data will be available soon."
+
+#: src/features/borrowers/BorrowerDetailPage.tsx:123
+msgid "LOAN HISTORY"
+msgstr "LOAN HISTORY"
+
+#: src/features/borrowers/BorrowerDetailPage.tsx:127
+msgid "Loan history will appear here once loans are wired."
+msgstr "Loan history will appear here once loans are wired."
 
 #: src/components/layout/Sidebar.tsx:50
 #: src/features/loans/LoansPage.tsx:8
@@ -732,12 +871,18 @@ msgstr "MARK RETURNED"
 msgid "Move or delete child nodes first."
 msgstr "Move or delete child nodes first."
 
+#: src/features/borrowers/BorrowersListPage.tsx:64
+#: src/features/borrowers/forms/BorrowerForm.tsx:71
 #: src/features/settings/ProfilePage.tsx:153
 #: src/features/taxonomy/forms/CategoryForm.tsx:73
 #: src/features/taxonomy/forms/ContainerForm.tsx:80
 #: src/features/taxonomy/forms/LocationForm.tsx:81
 msgid "NAME"
 msgstr "NAME"
+
+#: src/features/borrowers/panel/BorrowerPanel.tsx:56
+msgid "NEW BORROWER"
+msgstr "NEW BORROWER"
 
 #: src/features/taxonomy/panel/EntityPanel.tsx:87
 msgid "NEW CATEGORY"
@@ -759,9 +904,17 @@ msgstr "NEW PASSWORD"
 msgid "NEXT →"
 msgstr "NEXT →"
 
+#: src/features/borrowers/BorrowerDetailPage.tsx:113
+msgid "NO ACTIVE LOANS"
+msgstr "NO ACTIVE LOANS"
+
 #: src/features/dashboard/ActivityFeed.tsx:70
 msgid "NO ACTIVITY YET"
 msgstr "NO ACTIVITY YET"
+
+#: src/features/borrowers/BorrowersListPage.tsx:197
+msgid "NO BORROWERS YET"
+msgstr "NO BORROWERS YET"
 
 #: src/features/taxonomy/tabs/CategoriesTab.tsx:135
 msgid "NO CATEGORIES YET"
@@ -774,6 +927,10 @@ msgstr "NO CONTAINERS YET"
 #: src/pages/ApiDemoPage.tsx:62
 msgid "No data returned"
 msgstr "No data returned"
+
+#: src/features/borrowers/BorrowerDetailPage.tsx:126
+msgid "NO LOAN HISTORY"
+msgstr "NO LOAN HISTORY"
 
 #: src/features/taxonomy/tabs/LocationsTab.tsx:137
 msgid "NO LOCATIONS YET"
@@ -791,6 +948,8 @@ msgstr "NO RECORDS YET"
 msgid "No workspace found. Please create a workspace to get started."
 msgstr "No workspace found. Please create a workspace to get started."
 
+#: src/features/borrowers/BorrowerDetailPage.tsx:95
+#: src/features/borrowers/forms/BorrowerForm.tsx:80
 #: src/pages/DemoPage.tsx:148
 msgid "NOTES"
 msgstr "NOTES"
@@ -880,9 +1039,23 @@ msgstr "PASSWORD UPDATED"
 msgid "Passwords do not match."
 msgstr "Passwords do not match."
 
+#: src/features/borrowers/actions/BorrowerArchiveDeleteFlow.tsx:92
+msgid "Permanently delete '{nodeName}'? This action cannot be undone."
+msgstr "Permanently delete '{nodeName}'? This action cannot be undone."
+
+#: src/features/borrowers/BorrowerDetailPage.tsx:87
+#: src/features/borrowers/BorrowersListPage.tsx:66
+#: src/features/borrowers/forms/BorrowerForm.tsx:77
+msgid "PHONE"
+msgstr "PHONE"
+
 #: src/pages/DemoPage.tsx:184
 msgid "PHOTOS"
 msgstr "PHOTOS"
+
+#: src/features/borrowers/forms/BorrowerForm.tsx:83
+msgid "Pickup preferences, shared items, etc."
+msgstr "Pickup preferences, shared items, etc."
 
 #: src/features/settings/SettingsPage.tsx:33
 msgid "PREFERENCES"
@@ -920,13 +1093,16 @@ msgstr "Remove {0}"
 msgid "Required. Up to 255 characters."
 msgstr "Required. Up to 255 characters."
 
+#: src/features/borrowers/BorrowersListPage.tsx:137
 #: src/features/taxonomy/tabs/ContainersTab.tsx:245
 #: src/features/taxonomy/tree/TreeNode.tsx:132
 msgid "RESTORE"
 msgstr "RESTORE"
 
+#. placeholder {0}: b.name
 #. placeholder {0}: c.name
 #. placeholder {0}: item.name
+#: src/features/borrowers/BorrowersListPage.tsx:131
 #: src/features/taxonomy/tabs/ContainersTab.tsx:240
 #: src/features/taxonomy/tree/TreeNode.tsx:127
 msgid "Restore {0}"
@@ -936,6 +1112,7 @@ msgstr "Restore {0}"
 msgid "RETRO FORM PRIMITIVES"
 msgstr "RETRO FORM PRIMITIVES"
 
+#: src/features/borrowers/BorrowersListPage.tsx:190
 #: src/features/taxonomy/tabs/CategoriesTab.tsx:128
 #: src/features/taxonomy/tabs/ContainersTab.tsx:160
 #: src/features/taxonomy/tabs/LocationsTab.tsx:130
@@ -947,7 +1124,7 @@ msgid "Retry fetch"
 msgstr "Retry fetch"
 
 #: src/components/layout/ErrorBoundaryPage.tsx:40
-#: src/routes/index.tsx:40
+#: src/routes/index.tsx:42
 msgid "RETURN TO BASE"
 msgstr "RETURN TO BASE"
 
@@ -962,6 +1139,10 @@ msgstr "REVOKE"
 #: src/features/settings/SecurityPage.tsx:264
 msgid "REVOKE ALL OTHERS"
 msgstr "REVOKE ALL OTHERS"
+
+#: src/features/borrowers/panel/BorrowerPanel.tsx:61
+msgid "SAVE BORROWER"
+msgstr "SAVE BORROWER"
 
 #: src/features/taxonomy/panel/EntityPanel.tsx:92
 msgid "SAVE CATEGORY"
@@ -997,7 +1178,7 @@ msgstr "Search categories…"
 msgid "Search locations…"
 msgstr "Search locations…"
 
-#: src/routes/index.tsx:31
+#: src/routes/index.tsx:33
 msgid "SECTOR NOT FOUND"
 msgstr "SECTOR NOT FOUND"
 
@@ -1033,6 +1214,7 @@ msgstr "SETTINGS"
 msgid "SHORT CODE"
 msgstr "SHORT CODE"
 
+#: src/features/borrowers/BorrowersListPage.tsx:168
 #: src/features/taxonomy/tabs/CategoriesTab.tsx:105
 #: src/features/taxonomy/tabs/ContainersTab.tsx:122
 #: src/features/taxonomy/tabs/LocationsTab.tsx:107
@@ -1093,7 +1275,7 @@ msgstr "The endpoint responded successfully but returned zero records. Create a 
 msgid "The item will move to loan history."
 msgstr "The item will move to loan history."
 
-#: src/routes/index.tsx:34
+#: src/routes/index.tsx:36
 msgid "The requested area does not exist. Return to base."
 msgstr "The requested area does not exist. Return to base."
 
@@ -1109,6 +1291,10 @@ msgstr "THEME"
 msgid "This action cannot be undone."
 msgstr "This action cannot be undone."
 
+#: src/features/borrowers/BorrowerDetailPage.tsx:36
+msgid "This borrower may have been deleted."
+msgstr "This borrower may have been deleted."
+
 #: src/features/taxonomy/actions/ArchiveDeleteFlow.tsx:107
 msgid "This permanently deletes '{nodeName}'. This action cannot be undone."
 msgstr "This permanently deletes '{nodeName}'. This action cannot be undone."
@@ -1116,6 +1302,10 @@ msgstr "This permanently deletes '{nodeName}'. This action cannot be undone."
 #: src/features/taxonomy/actions/ArchiveDeleteFlow.tsx:93
 msgid "This will hide '{nodeName}' from item pickers. You can restore it later."
 msgstr "This will hide '{nodeName}' from item pickers. You can restore it later."
+
+#: src/features/borrowers/actions/BorrowerArchiveDeleteFlow.tsx:78
+msgid "This will hide '{nodeName}' from loan pickers. You can restore them later."
+msgstr "This will hide '{nodeName}' from loan pickers. You can restore them later."
 
 #: src/features/settings/SecurityPage.tsx:342
 msgid "This will permanently delete your account and all associated data. This action cannot be undone."
@@ -1166,6 +1356,7 @@ msgstr "VIEW LOANS"
 #~ msgstr "Welcome to Home Warehouse"
 
 #: src/components/retro/RetroConfirmDialog.tsx:116
+#: src/features/borrowers/panel/BorrowerPanel.tsx:58
 #: src/features/taxonomy/panel/EntityPanel.tsx:106
 msgid "WORKING…"
 msgstr "WORKING…"

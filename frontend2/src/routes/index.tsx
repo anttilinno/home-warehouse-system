@@ -11,6 +11,8 @@ import { LoansPage } from "@/features/loans/LoansPage";
 import { ScanPage } from "@/features/scan/ScanPage";
 import { SetupPage } from "@/features/setup/SetupPage";
 import TaxonomyPage from "@/features/taxonomy/TaxonomyPage";
+import { BorrowersListPage } from "@/features/borrowers/BorrowersListPage";
+import { BorrowerDetailPage } from "@/features/borrowers/BorrowerDetailPage";
 import { SettingsPage } from "@/features/settings/SettingsPage";
 import { ProfilePage } from "@/features/settings/ProfilePage";
 import { SecurityPage } from "@/features/settings/SecurityPage";
@@ -73,6 +75,8 @@ export function AppRoutes() {
         errorElement={<ErrorBoundaryPage />}
       >
         <Route index element={<DashboardPage />} />
+        <Route path="borrowers" element={<BorrowersListPage />} />
+        <Route path="borrowers/:id" element={<BorrowerDetailPage />} />
         <Route path="items" element={<ItemsPage />} />
         <Route path="taxonomy" element={<TaxonomyPage />} />
         <Route path="loans" element={<LoansPage />} />
