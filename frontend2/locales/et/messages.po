@@ -44,6 +44,12 @@ msgstr "[ET] + NEW CATEGORY"
 msgid "+ NEW CONTAINER"
 msgstr "[ET] + NEW CONTAINER"
 
+#: src/features/items/ItemsListPage.tsx:202
+#: src/features/items/ItemsListPage.tsx:261
+#: src/features/items/ItemsListPage.tsx:277
+msgid "+ NEW ITEM"
+msgstr "+ UUS KAUP"
+
 #: src/features/taxonomy/tabs/LocationsTab.tsx:113
 #: src/features/taxonomy/tabs/LocationsTab.tsx:141
 msgid "+ NEW LOCATION"
@@ -66,6 +72,7 @@ msgid "ACCOUNT UNLINKED"
 msgstr ""
 
 #: src/features/borrowers/BorrowersListPage.tsx:67
+#: src/features/items/ItemsListPage.tsx:112
 msgid "ACTIONS"
 msgstr ""
 
@@ -98,6 +105,10 @@ msgstr ""
 msgid "All categories"
 msgstr ""
 
+#: src/features/items/ItemsListPage.tsx:258
+msgid "All items are currently archived. Toggle \"Show archived\" to view them."
+msgstr "Kõik kaubad on praegu arhiivis. Lülita \"Näita arhiivitud\" sisse, et neid näha."
+
 #: src/features/taxonomy/tabs/ContainersTab.tsx:62
 msgid "All locations"
 msgstr "[ET] All locations"
@@ -116,6 +127,8 @@ msgid "APPEARANCE"
 msgstr ""
 
 #: src/features/borrowers/BorrowersListPage.tsx:124
+#: src/features/items/ItemDetailPage.tsx:143
+#: src/features/items/ItemsListPage.tsx:165
 #: src/features/taxonomy/tabs/ContainersTab.tsx:235
 #: src/features/taxonomy/tree/TreeNode.tsx:122
 msgid "ARCHIVE"
@@ -125,6 +138,7 @@ msgstr "[ET] ARCHIVE"
 #. placeholder {0}: c.name
 #. placeholder {0}: item.name
 #: src/features/borrowers/BorrowersListPage.tsx:119
+#: src/features/items/ItemsListPage.tsx:160
 #: src/features/taxonomy/tabs/ContainersTab.tsx:230
 #: src/features/taxonomy/tree/TreeNode.tsx:117
 msgid "Archive {0}"
@@ -157,6 +171,8 @@ msgstr "[ET] ARCHIVE LOCATION"
 
 #: src/features/borrowers/BorrowerDetailPage.tsx:64
 #: src/features/borrowers/BorrowersListPage.tsx:81
+#: src/features/items/ItemDetailPage.tsx:128
+#: src/features/items/ItemsListPage.tsx:128
 #: src/features/taxonomy/tabs/ContainersTab.tsx:214
 #: src/features/taxonomy/tree/TaxonomyTree.tsx:196
 #: src/features/taxonomy/tree/TreeNode.tsx:99
@@ -203,9 +219,15 @@ msgstr ""
 msgid "BACK TO BORROWERS"
 msgstr ""
 
+#: src/features/items/ItemDetailPage.tsx:97
+#: src/features/items/ItemDetailPage.tsx:119
+msgid "BACK TO ITEMS"
+msgstr "TAGASI KAUPADE JUURDE"
+
 #: src/features/items/forms/ItemForm.tsx:129
+#: src/features/items/ItemDetailPage.tsx:181
 msgid "BARCODE"
-msgstr ""
+msgstr "VÖÖTKOOD"
 
 #: src/features/borrowers/hooks/useBorrowerMutations.ts:60
 msgid "Borrower archived."
@@ -250,6 +272,8 @@ msgid "CATEGORIES"
 msgstr "KATEGOORIAD"
 
 #: src/features/items/forms/ItemForm.tsx:154
+#: src/features/items/ItemDetailPage.tsx:192
+#: src/features/items/ItemsListPage.tsx:111
 #: src/pages/DemoPage.tsx:155
 msgid "CATEGORY"
 msgstr "[ET] CATEGORY"
@@ -274,7 +298,7 @@ msgstr "[ET] Category restored."
 msgid "Category saved."
 msgstr "[ET] Category saved."
 
-#: src/features/items/filters/ItemsFilterBar.tsx:109
+#: src/features/items/filters/ItemsFilterBar.tsx:113
 msgid "CATEGORY: ALL"
 msgstr ""
 
@@ -292,9 +316,17 @@ msgstr ""
 msgid "CHANGES SAVED"
 msgstr ""
 
+#: src/features/items/ItemsListPage.tsx:225
+msgid "Check your connection and try again."
+msgstr "Kontrolli ühendust ja proovi uuesti."
+
 #: src/components/retro/RetroFileInput.tsx:91
 msgid "CHOOSE FILES"
 msgstr "[ET] CHOOSE FILES"
+
+#: src/features/items/ItemsListPage.tsx:245
+msgid "CLEAR FILTERS"
+msgstr "KUSTUTA FILTRID"
 
 #: src/components/layout/TopBar.tsx:22
 msgid "Close navigation"
@@ -417,6 +449,10 @@ msgstr "[ET] Could not load categories."
 msgid "Could not load containers."
 msgstr "[ET] Could not load containers."
 
+#: src/features/items/ItemsListPage.tsx:222
+msgid "COULD NOT LOAD ITEMS"
+msgstr "KAUPU EI ÕNNESTUNUD LAADIDA"
+
 #: src/features/taxonomy/tabs/LocationsTab.tsx:127
 msgid "Could not load locations."
 msgstr "[ET] Could not load locations."
@@ -475,9 +511,17 @@ msgstr "[ET] Create your first category to start organizing items."
 msgid "Create your first entry to populate this list."
 msgstr "[ET] Create your first entry to populate this list."
 
+#: src/features/items/ItemsListPage.tsx:274
+msgid "Create your first item to start tracking inventory."
+msgstr "Loo oma esimene kaup, et alustada inventari jälgimist."
+
 #: src/features/taxonomy/tabs/LocationsTab.tsx:138
 msgid "Create your first location to describe where items live."
 msgstr "[ET] Create your first location to describe where items live."
+
+#: src/features/items/ItemDetailPage.tsx:214
+msgid "CREATED"
+msgstr "LOODUD"
 
 #: src/features/settings/SecurityPage.tsx:251
 msgid "CURRENT"
@@ -517,11 +561,15 @@ msgid "DATE FORMAT"
 msgstr ""
 
 #: src/features/borrowers/BorrowersListPage.tsx:146
+#: src/features/items/ItemDetailPage.tsx:162
+#: src/features/items/ItemsListPage.tsx:187
 msgid "DELETE"
 msgstr ""
 
 #. placeholder {0}: b.name
+#. placeholder {0}: item.name
 #: src/features/borrowers/BorrowersListPage.tsx:141
+#: src/features/items/ItemsListPage.tsx:182
 msgid "Delete {0}"
 msgstr ""
 
@@ -561,11 +609,16 @@ msgid "Deleted."
 msgstr "[ET] Deleted."
 
 #: src/features/items/forms/ItemForm.tsx:142
+#: src/features/items/ItemDetailPage.tsx:203
 #: src/features/taxonomy/forms/CategoryForm.tsx:89
 #: src/features/taxonomy/forms/ContainerForm.tsx:123
 #: src/features/taxonomy/forms/LocationForm.tsx:124
 msgid "DESCRIPTION"
 msgstr "[ET] DESCRIPTION"
+
+#: src/features/items/ItemDetailPage.tsx:172
+msgid "DETAILS"
+msgstr "DETAILID"
 
 #: src/features/taxonomy/panel/SlideOverPanel.tsx:131
 msgid "DISCARD"
@@ -592,6 +645,7 @@ msgid "e.g. DeWalt drill"
 msgstr "[ET] e.g. DeWalt drill"
 
 #: src/features/borrowers/BorrowersListPage.tsx:115
+#: src/features/items/ItemsListPage.tsx:156
 #: src/features/taxonomy/tabs/ContainersTab.tsx:225
 #: src/features/taxonomy/tree/TreeNode.tsx:112
 msgid "EDIT"
@@ -601,6 +655,7 @@ msgstr "[ET] EDIT"
 #. placeholder {0}: c.name
 #. placeholder {0}: item.name
 #: src/features/borrowers/BorrowersListPage.tsx:110
+#: src/features/items/ItemsListPage.tsx:151
 #: src/features/taxonomy/tabs/ContainersTab.tsx:220
 #: src/features/taxonomy/tree/TreeNode.tsx:106
 msgid "Edit {0}"
@@ -618,6 +673,7 @@ msgstr "[ET] EDIT CATEGORY"
 msgid "EDIT CONTAINER"
 msgstr "[ET] EDIT CONTAINER"
 
+#: src/features/items/ItemDetailPage.tsx:137
 #: src/features/items/panel/ItemPanel.tsx:62
 msgid "EDIT ITEM"
 msgstr ""
@@ -812,6 +868,10 @@ msgstr ""
 msgid "ITEM NAME"
 msgstr "[ET] ITEM NAME"
 
+#: src/features/items/ItemDetailPage.tsx:87
+msgid "ITEM NOT FOUND"
+msgstr "KAUPA EI LEITUD"
+
 #: src/features/items/hooks/useItemMutations.ts:104
 msgid "Item restored."
 msgstr ""
@@ -822,7 +882,7 @@ msgstr ""
 
 #: src/components/layout/Sidebar.tsx:41
 #: src/features/dashboard/DashboardPage.tsx:49
-#: src/features/items/ItemsPage.tsx:8
+#: src/features/items/ItemsListPage.tsx:199
 msgid "ITEMS"
 msgstr "ESEMED"
 
@@ -876,6 +936,8 @@ msgstr ""
 #: src/components/retro/RetroCombobox.tsx:190
 #: src/features/borrowers/BorrowerDetailPage.tsx:20
 #: src/features/borrowers/BorrowersListPage.tsx:175
+#: src/features/items/ItemDetailPage.tsx:77
+#: src/features/items/ItemsListPage.tsx:214
 #: src/features/taxonomy/tabs/CategoriesTab.tsx:117
 #: src/features/taxonomy/tabs/ContainersTab.tsx:146
 #: src/features/taxonomy/tabs/LocationsTab.tsx:119
@@ -891,10 +953,12 @@ msgid "LOAN HISTORY"
 msgstr ""
 
 #: src/features/borrowers/BorrowerDetailPage.tsx:123
+#: src/features/items/ItemDetailPage.tsx:251
 msgid "Loan history will appear here once loans are wired."
 msgstr ""
 
 #: src/components/layout/Sidebar.tsx:50
+#: src/features/items/ItemDetailPage.tsx:247
 #: src/features/loans/LoansPage.tsx:8
 #: src/features/settings/NotificationsPage.tsx:106
 msgid "LOANS"
@@ -957,6 +1021,7 @@ msgstr "[ET] Move or delete child nodes first."
 #: src/features/borrowers/BorrowersListPage.tsx:64
 #: src/features/borrowers/forms/BorrowerForm.tsx:71
 #: src/features/items/forms/ItemForm.tsx:110
+#: src/features/items/ItemsListPage.tsx:109
 #: src/features/settings/ProfilePage.tsx:153
 #: src/features/taxonomy/forms/CategoryForm.tsx:73
 #: src/features/taxonomy/forms/ContainerForm.tsx:80
@@ -992,6 +1057,10 @@ msgstr ""
 msgid "NEXT →"
 msgstr "[ET] NEXT →"
 
+#: src/features/items/ItemsListPage.tsx:257
+msgid "NO ACTIVE ITEMS"
+msgstr "AKTIIVSEID KAUPU POLE"
+
 #: src/features/borrowers/BorrowerDetailPage.tsx:109
 msgid "NO ACTIVE LOANS"
 msgstr ""
@@ -1016,17 +1085,37 @@ msgstr "[ET] NO CONTAINERS YET"
 msgid "No data returned"
 msgstr "Andmeid ei tagastatud"
 
+#: src/features/items/ItemsListPage.tsx:242
+msgid "No items match your filters. Clear them to see all items."
+msgstr "Ükski kaup ei vasta filtritele. Tühjenda, et näha kõiki kaupu."
+
+#: src/features/items/ItemsListPage.tsx:273
+msgid "NO ITEMS YET"
+msgstr "KAUBAD PUUDUVAD"
+
 #: src/features/borrowers/BorrowerDetailPage.tsx:122
 msgid "NO LOAN HISTORY"
 msgstr ""
+
+#: src/features/items/ItemDetailPage.tsx:250
+msgid "NO LOANS"
+msgstr "LAENE POLE"
 
 #: src/features/taxonomy/tabs/LocationsTab.tsx:137
 msgid "NO LOCATIONS YET"
 msgstr "[ET] NO LOCATIONS YET"
 
+#: src/features/items/ItemsListPage.tsx:241
+msgid "NO MATCHES"
+msgstr "KOKKULANGEVUSI POLE"
+
 #: src/components/retro/RetroCombobox.tsx:195
 msgid "No matches found."
 msgstr "[ET] No matches found."
+
+#: src/features/items/ItemDetailPage.tsx:237
+msgid "NO PHOTOS"
+msgstr "FOTOSID POLE"
 
 #: src/pages/DemoPage.tsx:266
 msgid "NO RECORDS YET"
@@ -1100,7 +1189,6 @@ msgstr ""
 msgid "Page {page} of {totalPages}"
 msgstr "[ET] Page {page} of {totalPages}"
 
-#: src/features/items/ItemsPage.tsx:10
 #: src/features/loans/LoansPage.tsx:10
 #: src/features/scan/ScanPage.tsx:10
 msgid "PAGE UNDER CONSTRUCTION"
@@ -1154,9 +1242,14 @@ msgstr ""
 msgid "PHONE"
 msgstr ""
 
+#: src/features/items/ItemDetailPage.tsx:234
 #: src/pages/DemoPage.tsx:184
 msgid "PHOTOS"
 msgstr "[ET] PHOTOS"
+
+#: src/features/items/ItemDetailPage.tsx:238
+msgid "Photos will appear here after Phase 61."
+msgstr "Fotod ilmuvad siia pärast faasi 61."
 
 #: src/features/borrowers/forms/BorrowerForm.tsx:83
 msgid "Pickup preferences, shared items, etc."
@@ -1199,6 +1292,7 @@ msgid "Required. Up to 255 characters."
 msgstr "[ET] Required. Up to 255 characters."
 
 #: src/features/borrowers/BorrowersListPage.tsx:137
+#: src/features/items/ItemsListPage.tsx:178
 #: src/features/taxonomy/tabs/ContainersTab.tsx:245
 #: src/features/taxonomy/tree/TreeNode.tsx:132
 msgid "RESTORE"
@@ -1208,10 +1302,15 @@ msgstr "[ET] RESTORE"
 #. placeholder {0}: c.name
 #. placeholder {0}: item.name
 #: src/features/borrowers/BorrowersListPage.tsx:131
+#: src/features/items/ItemsListPage.tsx:172
 #: src/features/taxonomy/tabs/ContainersTab.tsx:240
 #: src/features/taxonomy/tree/TreeNode.tsx:127
 msgid "Restore {0}"
 msgstr "[ET] Restore {0}"
+
+#: src/features/items/ItemDetailPage.tsx:156
+msgid "RESTORE ITEM"
+msgstr "TAASTA KAUP"
 
 #: src/pages/DemoPage.tsx:128
 msgid "RETRO FORM PRIMITIVES"
@@ -1224,12 +1323,16 @@ msgstr "[ET] RETRO FORM PRIMITIVES"
 msgid "Retry"
 msgstr "[ET] Retry"
 
+#: src/features/items/ItemsListPage.tsx:231
+msgid "RETRY"
+msgstr "PROOVI UUESTI"
+
 #: src/pages/ApiDemoPage.tsx:53
 msgid "Retry fetch"
 msgstr "Proovi uuesti"
 
 #: src/components/layout/ErrorBoundaryPage.tsx:40
-#: src/routes/index.tsx:42
+#: src/routes/index.tsx:43
 msgid "RETURN TO BASE"
 msgstr "TAGASI BAASI"
 
@@ -1283,7 +1386,7 @@ msgstr "SKANEERI TRIIPKOODI"
 msgid "Search categories…"
 msgstr "[ET] Search categories…"
 
-#: src/features/items/filters/ItemsFilterBar.tsx:103
+#: src/features/items/filters/ItemsFilterBar.tsx:107
 msgid "Search items"
 msgstr ""
 
@@ -1292,11 +1395,11 @@ msgstr ""
 msgid "Search locations…"
 msgstr "[ET] Search locations…"
 
-#: src/features/items/filters/ItemsFilterBar.tsx:100
+#: src/features/items/filters/ItemsFilterBar.tsx:104
 msgid "Search name, SKU, or barcode…"
 msgstr ""
 
-#: src/routes/index.tsx:33
+#: src/routes/index.tsx:34
 msgid "SECTOR NOT FOUND"
 msgstr "SEKTOR EI LEITUD"
 
@@ -1372,6 +1475,8 @@ msgid "Skip to main content"
 msgstr "Liigu pohisisu juurde"
 
 #: src/features/items/forms/ItemForm.tsx:120
+#: src/features/items/ItemDetailPage.tsx:176
+#: src/features/items/ItemsListPage.tsx:110
 msgid "SKU"
 msgstr ""
 
@@ -1442,7 +1547,7 @@ msgstr "Otspunkt vastas edukalt, kuid tagastas null kirjet. Loo taustateenuses k
 msgid "The item will move to loan history."
 msgstr "[ET] The item will move to loan history."
 
-#: src/routes/index.tsx:36
+#: src/routes/index.tsx:37
 msgid "The requested area does not exist. Return to base."
 msgstr "Soovitud ala ei eksisteeri. Naase baasi."
 
@@ -1461,6 +1566,10 @@ msgstr "[ET] This action cannot be undone."
 #: src/features/borrowers/BorrowerDetailPage.tsx:33
 msgid "This borrower may have been deleted."
 msgstr ""
+
+#: src/features/items/ItemDetailPage.tsx:90
+msgid "This item may have been deleted."
+msgstr "See kaup võib olla kustutatud."
 
 #: src/features/taxonomy/actions/ArchiveDeleteFlow.tsx:107
 msgid "This permanently deletes '{nodeName}'. This action cannot be undone."
@@ -1513,6 +1622,10 @@ msgstr ""
 #: src/features/settings/SecurityPage.tsx:217
 msgid "UPDATE PASSWORD"
 msgstr ""
+
+#: src/features/items/ItemDetailPage.tsx:221
+msgid "UPDATED"
+msgstr "VIIMATI MUUDETUD"
 
 #: src/features/settings/ProfilePage.tsx:132
 msgid "UPLOAD"

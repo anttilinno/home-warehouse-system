@@ -44,6 +44,12 @@ msgstr "+ NEW CATEGORY"
 msgid "+ NEW CONTAINER"
 msgstr "+ NEW CONTAINER"
 
+#: src/features/items/ItemsListPage.tsx:202
+#: src/features/items/ItemsListPage.tsx:261
+#: src/features/items/ItemsListPage.tsx:277
+msgid "+ NEW ITEM"
+msgstr "+ NEW ITEM"
+
 #: src/features/taxonomy/tabs/LocationsTab.tsx:113
 #: src/features/taxonomy/tabs/LocationsTab.tsx:141
 msgid "+ NEW LOCATION"
@@ -66,6 +72,7 @@ msgid "ACCOUNT UNLINKED"
 msgstr "ACCOUNT UNLINKED"
 
 #: src/features/borrowers/BorrowersListPage.tsx:67
+#: src/features/items/ItemsListPage.tsx:112
 msgid "ACTIONS"
 msgstr "ACTIONS"
 
@@ -98,6 +105,10 @@ msgstr "alice@example.com"
 msgid "All categories"
 msgstr "All categories"
 
+#: src/features/items/ItemsListPage.tsx:258
+msgid "All items are currently archived. Toggle \"Show archived\" to view them."
+msgstr "All items are currently archived. Toggle \"Show archived\" to view them."
+
 #: src/features/taxonomy/tabs/ContainersTab.tsx:62
 msgid "All locations"
 msgstr "All locations"
@@ -116,6 +127,8 @@ msgid "APPEARANCE"
 msgstr "APPEARANCE"
 
 #: src/features/borrowers/BorrowersListPage.tsx:124
+#: src/features/items/ItemDetailPage.tsx:143
+#: src/features/items/ItemsListPage.tsx:165
 #: src/features/taxonomy/tabs/ContainersTab.tsx:235
 #: src/features/taxonomy/tree/TreeNode.tsx:122
 msgid "ARCHIVE"
@@ -125,6 +138,7 @@ msgstr "ARCHIVE"
 #. placeholder {0}: c.name
 #. placeholder {0}: item.name
 #: src/features/borrowers/BorrowersListPage.tsx:119
+#: src/features/items/ItemsListPage.tsx:160
 #: src/features/taxonomy/tabs/ContainersTab.tsx:230
 #: src/features/taxonomy/tree/TreeNode.tsx:117
 msgid "Archive {0}"
@@ -157,6 +171,8 @@ msgstr "ARCHIVE LOCATION"
 
 #: src/features/borrowers/BorrowerDetailPage.tsx:64
 #: src/features/borrowers/BorrowersListPage.tsx:81
+#: src/features/items/ItemDetailPage.tsx:128
+#: src/features/items/ItemsListPage.tsx:128
 #: src/features/taxonomy/tabs/ContainersTab.tsx:214
 #: src/features/taxonomy/tree/TaxonomyTree.tsx:196
 #: src/features/taxonomy/tree/TreeNode.tsx:99
@@ -203,7 +219,13 @@ msgstr "BACK"
 msgid "BACK TO BORROWERS"
 msgstr "BACK TO BORROWERS"
 
+#: src/features/items/ItemDetailPage.tsx:97
+#: src/features/items/ItemDetailPage.tsx:119
+msgid "BACK TO ITEMS"
+msgstr "BACK TO ITEMS"
+
 #: src/features/items/forms/ItemForm.tsx:129
+#: src/features/items/ItemDetailPage.tsx:181
 msgid "BARCODE"
 msgstr "BARCODE"
 
@@ -250,6 +272,8 @@ msgid "CATEGORIES"
 msgstr "CATEGORIES"
 
 #: src/features/items/forms/ItemForm.tsx:154
+#: src/features/items/ItemDetailPage.tsx:192
+#: src/features/items/ItemsListPage.tsx:111
 #: src/pages/DemoPage.tsx:155
 msgid "CATEGORY"
 msgstr "CATEGORY"
@@ -274,7 +298,7 @@ msgstr "Category restored."
 msgid "Category saved."
 msgstr "Category saved."
 
-#: src/features/items/filters/ItemsFilterBar.tsx:109
+#: src/features/items/filters/ItemsFilterBar.tsx:113
 msgid "CATEGORY: ALL"
 msgstr "CATEGORY: ALL"
 
@@ -292,9 +316,17 @@ msgstr "CHANGE PASSWORD"
 msgid "CHANGES SAVED"
 msgstr "CHANGES SAVED"
 
+#: src/features/items/ItemsListPage.tsx:225
+msgid "Check your connection and try again."
+msgstr "Check your connection and try again."
+
 #: src/components/retro/RetroFileInput.tsx:91
 msgid "CHOOSE FILES"
 msgstr "CHOOSE FILES"
+
+#: src/features/items/ItemsListPage.tsx:245
+msgid "CLEAR FILTERS"
+msgstr "CLEAR FILTERS"
 
 #: src/components/layout/TopBar.tsx:22
 msgid "Close navigation"
@@ -417,6 +449,10 @@ msgstr "Could not load categories."
 msgid "Could not load containers."
 msgstr "Could not load containers."
 
+#: src/features/items/ItemsListPage.tsx:222
+msgid "COULD NOT LOAD ITEMS"
+msgstr "COULD NOT LOAD ITEMS"
+
 #: src/features/taxonomy/tabs/LocationsTab.tsx:127
 msgid "Could not load locations."
 msgstr "Could not load locations."
@@ -475,9 +511,17 @@ msgstr "Create your first category to start organizing items."
 msgid "Create your first entry to populate this list."
 msgstr "Create your first entry to populate this list."
 
+#: src/features/items/ItemsListPage.tsx:274
+msgid "Create your first item to start tracking inventory."
+msgstr "Create your first item to start tracking inventory."
+
 #: src/features/taxonomy/tabs/LocationsTab.tsx:138
 msgid "Create your first location to describe where items live."
 msgstr "Create your first location to describe where items live."
+
+#: src/features/items/ItemDetailPage.tsx:214
+msgid "CREATED"
+msgstr "CREATED"
 
 #: src/features/settings/SecurityPage.tsx:251
 msgid "CURRENT"
@@ -517,11 +561,15 @@ msgid "DATE FORMAT"
 msgstr "DATE FORMAT"
 
 #: src/features/borrowers/BorrowersListPage.tsx:146
+#: src/features/items/ItemDetailPage.tsx:162
+#: src/features/items/ItemsListPage.tsx:187
 msgid "DELETE"
 msgstr "DELETE"
 
 #. placeholder {0}: b.name
+#. placeholder {0}: item.name
 #: src/features/borrowers/BorrowersListPage.tsx:141
+#: src/features/items/ItemsListPage.tsx:182
 msgid "Delete {0}"
 msgstr "Delete {0}"
 
@@ -561,11 +609,16 @@ msgid "Deleted."
 msgstr "Deleted."
 
 #: src/features/items/forms/ItemForm.tsx:142
+#: src/features/items/ItemDetailPage.tsx:203
 #: src/features/taxonomy/forms/CategoryForm.tsx:89
 #: src/features/taxonomy/forms/ContainerForm.tsx:123
 #: src/features/taxonomy/forms/LocationForm.tsx:124
 msgid "DESCRIPTION"
 msgstr "DESCRIPTION"
+
+#: src/features/items/ItemDetailPage.tsx:172
+msgid "DETAILS"
+msgstr "DETAILS"
 
 #: src/features/taxonomy/panel/SlideOverPanel.tsx:131
 msgid "DISCARD"
@@ -592,6 +645,7 @@ msgid "e.g. DeWalt drill"
 msgstr "e.g. DeWalt drill"
 
 #: src/features/borrowers/BorrowersListPage.tsx:115
+#: src/features/items/ItemsListPage.tsx:156
 #: src/features/taxonomy/tabs/ContainersTab.tsx:225
 #: src/features/taxonomy/tree/TreeNode.tsx:112
 msgid "EDIT"
@@ -601,6 +655,7 @@ msgstr "EDIT"
 #. placeholder {0}: c.name
 #. placeholder {0}: item.name
 #: src/features/borrowers/BorrowersListPage.tsx:110
+#: src/features/items/ItemsListPage.tsx:151
 #: src/features/taxonomy/tabs/ContainersTab.tsx:220
 #: src/features/taxonomy/tree/TreeNode.tsx:106
 msgid "Edit {0}"
@@ -618,6 +673,7 @@ msgstr "EDIT CATEGORY"
 msgid "EDIT CONTAINER"
 msgstr "EDIT CONTAINER"
 
+#: src/features/items/ItemDetailPage.tsx:137
 #: src/features/items/panel/ItemPanel.tsx:62
 msgid "EDIT ITEM"
 msgstr "EDIT ITEM"
@@ -812,6 +868,10 @@ msgstr "Item deleted."
 msgid "ITEM NAME"
 msgstr "ITEM NAME"
 
+#: src/features/items/ItemDetailPage.tsx:87
+msgid "ITEM NOT FOUND"
+msgstr "ITEM NOT FOUND"
+
 #: src/features/items/hooks/useItemMutations.ts:104
 msgid "Item restored."
 msgstr "Item restored."
@@ -822,7 +882,7 @@ msgstr "Item saved."
 
 #: src/components/layout/Sidebar.tsx:41
 #: src/features/dashboard/DashboardPage.tsx:49
-#: src/features/items/ItemsPage.tsx:8
+#: src/features/items/ItemsListPage.tsx:199
 msgid "ITEMS"
 msgstr "ITEMS"
 
@@ -876,6 +936,8 @@ msgstr "Loading..."
 #: src/components/retro/RetroCombobox.tsx:190
 #: src/features/borrowers/BorrowerDetailPage.tsx:20
 #: src/features/borrowers/BorrowersListPage.tsx:175
+#: src/features/items/ItemDetailPage.tsx:77
+#: src/features/items/ItemsListPage.tsx:214
 #: src/features/taxonomy/tabs/CategoriesTab.tsx:117
 #: src/features/taxonomy/tabs/ContainersTab.tsx:146
 #: src/features/taxonomy/tabs/LocationsTab.tsx:119
@@ -891,10 +953,12 @@ msgid "LOAN HISTORY"
 msgstr "LOAN HISTORY"
 
 #: src/features/borrowers/BorrowerDetailPage.tsx:123
+#: src/features/items/ItemDetailPage.tsx:251
 msgid "Loan history will appear here once loans are wired."
 msgstr "Loan history will appear here once loans are wired."
 
 #: src/components/layout/Sidebar.tsx:50
+#: src/features/items/ItemDetailPage.tsx:247
 #: src/features/loans/LoansPage.tsx:8
 #: src/features/settings/NotificationsPage.tsx:106
 msgid "LOANS"
@@ -957,6 +1021,7 @@ msgstr "Move or delete child nodes first."
 #: src/features/borrowers/BorrowersListPage.tsx:64
 #: src/features/borrowers/forms/BorrowerForm.tsx:71
 #: src/features/items/forms/ItemForm.tsx:110
+#: src/features/items/ItemsListPage.tsx:109
 #: src/features/settings/ProfilePage.tsx:153
 #: src/features/taxonomy/forms/CategoryForm.tsx:73
 #: src/features/taxonomy/forms/ContainerForm.tsx:80
@@ -992,6 +1057,10 @@ msgstr "NEW PASSWORD"
 msgid "NEXT →"
 msgstr "NEXT →"
 
+#: src/features/items/ItemsListPage.tsx:257
+msgid "NO ACTIVE ITEMS"
+msgstr "NO ACTIVE ITEMS"
+
 #: src/features/borrowers/BorrowerDetailPage.tsx:109
 msgid "NO ACTIVE LOANS"
 msgstr "NO ACTIVE LOANS"
@@ -1016,17 +1085,37 @@ msgstr "NO CONTAINERS YET"
 msgid "No data returned"
 msgstr "No data returned"
 
+#: src/features/items/ItemsListPage.tsx:242
+msgid "No items match your filters. Clear them to see all items."
+msgstr "No items match your filters. Clear them to see all items."
+
+#: src/features/items/ItemsListPage.tsx:273
+msgid "NO ITEMS YET"
+msgstr "NO ITEMS YET"
+
 #: src/features/borrowers/BorrowerDetailPage.tsx:122
 msgid "NO LOAN HISTORY"
 msgstr "NO LOAN HISTORY"
+
+#: src/features/items/ItemDetailPage.tsx:250
+msgid "NO LOANS"
+msgstr "NO LOANS"
 
 #: src/features/taxonomy/tabs/LocationsTab.tsx:137
 msgid "NO LOCATIONS YET"
 msgstr "NO LOCATIONS YET"
 
+#: src/features/items/ItemsListPage.tsx:241
+msgid "NO MATCHES"
+msgstr "NO MATCHES"
+
 #: src/components/retro/RetroCombobox.tsx:195
 msgid "No matches found."
 msgstr "No matches found."
+
+#: src/features/items/ItemDetailPage.tsx:237
+msgid "NO PHOTOS"
+msgstr "NO PHOTOS"
 
 #: src/pages/DemoPage.tsx:266
 msgid "NO RECORDS YET"
@@ -1100,7 +1189,6 @@ msgstr "OTHER SESSIONS REVOKED"
 msgid "Page {page} of {totalPages}"
 msgstr "Page {page} of {totalPages}"
 
-#: src/features/items/ItemsPage.tsx:10
 #: src/features/loans/LoansPage.tsx:10
 #: src/features/scan/ScanPage.tsx:10
 msgid "PAGE UNDER CONSTRUCTION"
@@ -1154,9 +1242,14 @@ msgstr "Permanently delete {nodeName}? This cannot be undone."
 msgid "PHONE"
 msgstr "PHONE"
 
+#: src/features/items/ItemDetailPage.tsx:234
 #: src/pages/DemoPage.tsx:184
 msgid "PHOTOS"
 msgstr "PHOTOS"
+
+#: src/features/items/ItemDetailPage.tsx:238
+msgid "Photos will appear here after Phase 61."
+msgstr "Photos will appear here after Phase 61."
 
 #: src/features/borrowers/forms/BorrowerForm.tsx:83
 msgid "Pickup preferences, shared items, etc."
@@ -1199,6 +1292,7 @@ msgid "Required. Up to 255 characters."
 msgstr "Required. Up to 255 characters."
 
 #: src/features/borrowers/BorrowersListPage.tsx:137
+#: src/features/items/ItemsListPage.tsx:178
 #: src/features/taxonomy/tabs/ContainersTab.tsx:245
 #: src/features/taxonomy/tree/TreeNode.tsx:132
 msgid "RESTORE"
@@ -1208,10 +1302,15 @@ msgstr "RESTORE"
 #. placeholder {0}: c.name
 #. placeholder {0}: item.name
 #: src/features/borrowers/BorrowersListPage.tsx:131
+#: src/features/items/ItemsListPage.tsx:172
 #: src/features/taxonomy/tabs/ContainersTab.tsx:240
 #: src/features/taxonomy/tree/TreeNode.tsx:127
 msgid "Restore {0}"
 msgstr "Restore {0}"
+
+#: src/features/items/ItemDetailPage.tsx:156
+msgid "RESTORE ITEM"
+msgstr "RESTORE ITEM"
 
 #: src/pages/DemoPage.tsx:128
 msgid "RETRO FORM PRIMITIVES"
@@ -1224,12 +1323,16 @@ msgstr "RETRO FORM PRIMITIVES"
 msgid "Retry"
 msgstr "Retry"
 
+#: src/features/items/ItemsListPage.tsx:231
+msgid "RETRY"
+msgstr "RETRY"
+
 #: src/pages/ApiDemoPage.tsx:53
 msgid "Retry fetch"
 msgstr "Retry fetch"
 
 #: src/components/layout/ErrorBoundaryPage.tsx:40
-#: src/routes/index.tsx:42
+#: src/routes/index.tsx:43
 msgid "RETURN TO BASE"
 msgstr "RETURN TO BASE"
 
@@ -1283,7 +1386,7 @@ msgstr "SCAN BARCODE"
 msgid "Search categories…"
 msgstr "Search categories…"
 
-#: src/features/items/filters/ItemsFilterBar.tsx:103
+#: src/features/items/filters/ItemsFilterBar.tsx:107
 msgid "Search items"
 msgstr "Search items"
 
@@ -1292,11 +1395,11 @@ msgstr "Search items"
 msgid "Search locations…"
 msgstr "Search locations…"
 
-#: src/features/items/filters/ItemsFilterBar.tsx:100
+#: src/features/items/filters/ItemsFilterBar.tsx:104
 msgid "Search name, SKU, or barcode…"
 msgstr "Search name, SKU, or barcode…"
 
-#: src/routes/index.tsx:33
+#: src/routes/index.tsx:34
 msgid "SECTOR NOT FOUND"
 msgstr "SECTOR NOT FOUND"
 
@@ -1372,6 +1475,8 @@ msgid "Skip to main content"
 msgstr "Skip to main content"
 
 #: src/features/items/forms/ItemForm.tsx:120
+#: src/features/items/ItemDetailPage.tsx:176
+#: src/features/items/ItemsListPage.tsx:110
 msgid "SKU"
 msgstr "SKU"
 
@@ -1442,7 +1547,7 @@ msgstr "The endpoint responded successfully but returned zero records. Create a 
 msgid "The item will move to loan history."
 msgstr "The item will move to loan history."
 
-#: src/routes/index.tsx:36
+#: src/routes/index.tsx:37
 msgid "The requested area does not exist. Return to base."
 msgstr "The requested area does not exist. Return to base."
 
@@ -1461,6 +1566,10 @@ msgstr "This action cannot be undone."
 #: src/features/borrowers/BorrowerDetailPage.tsx:33
 msgid "This borrower may have been deleted."
 msgstr "This borrower may have been deleted."
+
+#: src/features/items/ItemDetailPage.tsx:90
+msgid "This item may have been deleted."
+msgstr "This item may have been deleted."
 
 #: src/features/taxonomy/actions/ArchiveDeleteFlow.tsx:107
 msgid "This permanently deletes '{nodeName}'. This action cannot be undone."
@@ -1513,6 +1622,10 @@ msgstr "UNLINK"
 #: src/features/settings/SecurityPage.tsx:217
 msgid "UPDATE PASSWORD"
 msgstr "UPDATE PASSWORD"
+
+#: src/features/items/ItemDetailPage.tsx:221
+msgid "UPDATED"
+msgstr "UPDATED"
 
 #: src/features/settings/ProfilePage.tsx:132
 msgid "UPLOAD"

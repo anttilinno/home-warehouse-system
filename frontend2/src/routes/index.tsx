@@ -6,7 +6,8 @@ import { AuthCallbackPage } from "@/features/auth/AuthCallbackPage";
 import { DemoPage } from "@/pages/DemoPage";
 import { ApiDemoPage } from "@/pages/ApiDemoPage";
 import { DashboardPage } from "@/features/dashboard/DashboardPage";
-import { ItemsPage } from "@/features/items/ItemsPage";
+import { ItemsListPage } from "@/features/items/ItemsListPage";
+import { ItemDetailPage } from "@/features/items/ItemDetailPage";
 import { LoansPage } from "@/features/loans/LoansPage";
 import { ScanPage } from "@/features/scan/ScanPage";
 import { SetupPage } from "@/features/setup/SetupPage";
@@ -77,7 +78,8 @@ export function AppRoutes() {
         <Route index element={<DashboardPage />} />
         <Route path="borrowers" element={<BorrowersListPage />} />
         <Route path="borrowers/:id" element={<BorrowerDetailPage />} />
-        <Route path="items" element={<ItemsPage />} />
+        <Route path="items" element={<ItemsListPage />} />
+        <Route path="items/:id" element={<ItemDetailPage />} />
         <Route path="taxonomy" element={<TaxonomyPage />} />
         <Route path="loans" element={<LoansPage />} />
         <Route path="scan" element={<ScanPage />} />
