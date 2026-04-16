@@ -26,7 +26,9 @@ describe("ItemPhotoTile", () => {
     const img = document.querySelector("img") as HTMLImageElement | null;
     expect(img).not.toBeNull();
     expect(img!.src).toContain("https://cdn.example.com/thumb.jpg");
-    expect(img!.loading).toBe("lazy");
+    // jsdom does not implement the HTMLImageElement.loading IDL property,
+    // but it does reflect the attribute; check via getAttribute.
+    expect(img!.getAttribute("loading")).toBe("lazy");
     expect(screen.queryByText(/PROCESSING/i)).toBeNull();
   });
 
