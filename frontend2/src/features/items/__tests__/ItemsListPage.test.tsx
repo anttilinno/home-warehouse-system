@@ -280,3 +280,71 @@ describe("ItemsListPage — interactions", () => {
     ).toBeVisible();
   });
 });
+
+describe("ItemsListPage — THUMB column (Phase 61-04)", () => {
+  beforeEach(() => {
+    setupDialogMocks();
+    vi.clearAllMocks();
+  });
+
+  it("renders THUMB column as the first column with sr-only header + cells", async () => {
+    const withThumb = makeItem({
+      id: "item-with-thumb",
+      name: "Drill",
+      primary_photo_thumbnail_url: "https://x.test/thumb.jpg",
+    });
+    const withoutThumb = makeItem({
+      id: "item-no-thumb",
+      name: "Hammer",
+      primary_photo_thumbnail_url: null,
+    });
+    withArchivedCount(0, { items: [withThumb, withoutThumb], total: 2 });
+    renderList();
+
+    await screen.findByText("Drill");
+    await screen.findByText("Hammer");
+
+    // sr-only "Thumbnail" label in the header
+    const headerLabel = screen.getByText(/Thumbnail/i);
+    expect(headerLabel.className).toContain("sr-only");
+
+    // Verify THUMB column is the FIRST column of each row.
+    const rows = screen.getAllByRole("row");
+    // rows[0] is the header row; rows[1..] are data rows.
+    const dataRows = rows.slice(1);
+    expect(dataRows.length).toBe(2);
+
+    const firstCellOfRow0 = dataRows[0].querySelector("td");
+    const firstCellOfRow1 = dataRows[1].querySelector("td");
+
+    // Row 0 has thumbnail URL → renders an <img>.
+    expect(firstCellOfRow0?.querySelector("img")).not.toBeNull();
+    expect(
+      firstCellOfRow0
+        ?.querySelector("img")
+        ?.getAttribute("src"),
+    ).toBe("https://x.test/thumb.jpg");
+
+    // Row 1 has no thumbnail → placeholder SVG (ImageOff) instead of <img>.
+    expect(firstCellOfRow1?.querySelector("img")).toBeNull();
+    expect(firstCellOfRow1?.querySelector("svg")).not.toBeNull();
+  });
+
+  it("dims the thumb cell for archived rows", async () => {
+    const archived = makeItem({
+      id: "item-x",
+      name: "Old Saw",
+      is_archived: true,
+      primary_photo_thumbnail_url: "https://x.test/thumb.jpg",
+    });
+    withArchivedCount(1, { items: [archived], total: 1 });
+    renderList("/items?archived=1");
+
+    await screen.findByText("Old Saw");
+
+    const rows = screen.getAllByRole("row");
+    const firstCell = rows[1].querySelector("td");
+    const thumbBox = firstCell?.querySelector("div");
+    expect(thumbBox?.className).toMatch(/opacity-50/);
+  });
+});
