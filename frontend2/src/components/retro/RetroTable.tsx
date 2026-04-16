@@ -15,7 +15,7 @@ interface RetroTableProps {
 function RetroTable({ columns, data, className }: RetroTableProps) {
   return (
     <div className={`overflow-x-auto ${className || ""}`}>
-      <table className="w-full border-collapse">
+      <table className="min-w-full border-collapse">
         <thead>
           <tr>
             {columns.map((col) => (
