@@ -3,9 +3,9 @@ gsd_state_version: 1.0
 milestone: v2.1
 milestone_name: Feature Parity — Items, Loans & Scanning
 status: executing
-stopped_at: Phase 59 complete — UAT issues resolved
-last_updated: "2026-04-16T17:52:00.000Z"
-last_activity: 2026-04-16 -- Phase 59 closed (UAT fixes: dialog title + archived row strikethrough)
+stopped_at: Phase 61 UI-SPEC approved
+last_updated: "2026-04-16T17:16:35.250Z"
+last_activity: 2026-04-16 -- Phase 61 execution started
 progress:
   total_phases: 6
   completed_phases: 6
@@ -21,14 +21,14 @@ progress:
 See: `.planning/PROJECT.md` (updated 2026-04-14)
 
 **Core value:** Reliable inventory access anywhere -- online or offline -- with seamless sync
-**Current focus:** Phase 60 — items-crud
+**Current focus:** Phase 61 — item-photos
 
 ## Current Position
 
-Phase: 60 (items-crud) — EXECUTING
+Phase: 61 (item-photos) — EXECUTING
 Plan: 1 of 4
-Status: Executing Phase 60
-Last activity: 2026-04-16 -- Phase 60 execution started
+Status: Executing Phase 61
+Last activity: 2026-04-16 -- Phase 61 execution started
 
 ## Performance Metrics
 
@@ -88,8 +88,8 @@ Last activity: 2026-04-16 -- Phase 60 execution started
 
 ## Session Continuity
 
-Last session: 2026-04-16T12:28:49.006Z
-Stopped at: Phase 60 UI-SPEC approved
+Last session: 2026-04-16T15:33:18.635Z
+Stopped at: Phase 61 UI-SPEC approved
 Next step: `/gsd-plan-phase 56`
 
 ---

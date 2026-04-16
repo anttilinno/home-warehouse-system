@@ -45,6 +45,9 @@ export function useItemPhotoGallery(itemId: string): UseItemPhotoGalleryResult {
   const [isUploading, setIsUploading] = useState(false);
 
   useEffect(() => {
+    // Reset on (re)mount — guards against React 18 StrictMode double-mount
+    // where the cleanup sets this to true but a second mount never resets it.
+    unmountedRef.current = false;
     return () => {
       unmountedRef.current = true;
       // D-12: revoke every tracked ObjectURL on unmount (success criterion #5).

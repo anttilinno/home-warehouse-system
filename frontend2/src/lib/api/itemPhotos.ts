@@ -21,7 +21,8 @@ export interface ItemPhoto {
 
 export const itemPhotosApi = {
   listForItem: (wsId: string, itemId: string) =>
-    get<ItemPhoto[]>(`/workspaces/${wsId}/items/${itemId}/photos/list`),
+    get<{ items: ItemPhoto[] }>(`/workspaces/${wsId}/items/${itemId}/photos/list`)
+      .then((r) => r.items),
   get: (wsId: string, photoId: string) =>
     get<ItemPhoto>(`/workspaces/${wsId}/photos/${photoId}`),
   upload: (wsId: string, itemId: string, file: File) => {
