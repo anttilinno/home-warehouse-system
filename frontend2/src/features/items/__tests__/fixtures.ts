@@ -4,6 +4,7 @@
  * item-specific entity factory.
  */
 import type { Item } from "@/lib/api/items";
+import type { ItemPhoto } from "@/lib/api/itemPhotos";
 
 export {
   TestAuthContext,
@@ -12,7 +13,7 @@ export {
 } from "@/features/taxonomy/__tests__/fixtures";
 
 export const DEFAULT_WORKSPACE_ID = "00000000-0000-0000-0000-000000000001";
-const NOW = "2026-04-16T12:00:00.000Z";
+export const NOW = "2026-04-16T12:00:00.000Z";
 
 /**
  * makeItem — factory for Item test fixtures with sensible defaults.
@@ -48,6 +49,35 @@ export function makeItem(overrides: Partial<Item> = {}): Item {
     obsidian_uri: overrides.obsidian_uri ?? null,
     created_at: overrides.created_at ?? NOW,
     updated_at: overrides.updated_at ?? NOW,
+    ...overrides,
+  };
+}
+
+/**
+ * makeItemPhoto — factory for ItemPhoto test fixtures with sensible defaults.
+ *
+ * Matches the ItemPhoto interface (61-01) including thumbnail_status so gallery
+ * tests can exercise pending/processing/complete/failed placeholder rendering.
+ * Override any field via the overrides object.
+ */
+export function makeItemPhoto(overrides: Partial<ItemPhoto> = {}): ItemPhoto {
+  return {
+    id: "photo-aaaaaaaa-0001",
+    item_id: "55555555-5555-5555-5555-555555555555",
+    workspace_id: DEFAULT_WORKSPACE_ID,
+    filename: "test.jpg",
+    file_size: 102400,
+    mime_type: "image/jpeg",
+    width: 800,
+    height: 600,
+    display_order: 0,
+    is_primary: false,
+    caption: null,
+    url: "https://example.com/photos/test.jpg",
+    thumbnail_url: "https://example.com/photos/test_thumb.jpg",
+    thumbnail_status: "complete",
+    created_at: NOW,
+    updated_at: NOW,
     ...overrides,
   };
 }

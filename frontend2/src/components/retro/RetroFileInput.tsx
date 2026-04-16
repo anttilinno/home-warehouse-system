@@ -19,7 +19,7 @@ interface RetroFileInputProps {
   className?: string;
 }
 
-const DEFAULT_ACCEPT = "image/jpeg,image/png,image/heic";
+const DEFAULT_ACCEPT = "image/jpeg,image/png,image/webp";
 const DEFAULT_MAX_SIZE = 10 * 1024 * 1024; // 10 MB
 
 function mergeRefs<T>(...refs: Array<Ref<T> | undefined>) {
@@ -118,7 +118,7 @@ const RetroFileInput = forwardRef<HTMLInputElement, RetroFileInputProps>(
           <p className="text-retro-red text-[12px] mt-xs">{error}</p>
         ) : (
           <p className="text-[14px] text-retro-charcoal/70 mt-xs">
-            {t`JPEG, PNG, or HEIC up to 10 MB each.`}
+            {t`JPEG, PNG, or WebP up to 10 MB each.`}
           </p>
         )}
       </div>

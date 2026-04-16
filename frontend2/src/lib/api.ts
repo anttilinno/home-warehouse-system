@@ -127,6 +127,13 @@ export function patch<T>(endpoint: string, data: unknown): Promise<T> {
   });
 }
 
+export function put<T>(endpoint: string, data?: unknown): Promise<T> {
+  return request<T>(endpoint, {
+    method: "PUT",
+    body: data ? JSON.stringify(data) : undefined,
+  });
+}
+
 export function del<T = void>(endpoint: string): Promise<T> {
   return request<T>(endpoint, { method: "DELETE" });
 }

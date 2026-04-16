@@ -24,6 +24,10 @@ export interface Item {
   obsidian_vault_path?: string | null;
   obsidian_note_path?: string | null;
   obsidian_uri?: string | null;
+  // Primary photo (decorative) — backend decorates list + detail responses
+  // with these when the item has a primary photo; undefined otherwise.
+  primary_photo_thumbnail_url?: string | null;
+  primary_photo_url?: string | null;
   created_at: string;
   updated_at: string;
 }

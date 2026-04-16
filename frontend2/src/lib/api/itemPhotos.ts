@@ -1,4 +1,4 @@
-import { get, del, postMultipart } from "@/lib/api";
+import { get, del, postMultipart, put } from "@/lib/api";
 
 export interface ItemPhoto {
   id: string;
@@ -14,6 +14,7 @@ export interface ItemPhoto {
   caption?: string | null;
   url: string;
   thumbnail_url: string;
+  thumbnail_status?: "pending" | "processing" | "complete" | "failed";
   created_at: string;
   updated_at: string;
 }
@@ -25,11 +26,15 @@ export const itemPhotosApi = {
     get<ItemPhoto>(`/workspaces/${wsId}/photos/${photoId}`),
   upload: (wsId: string, itemId: string, file: File) => {
     const form = new FormData();
-    form.append("file", file);
+    // Field key MUST be "photo" — backend HandleUpload reads r.FormFile("photo")
+    // (61-01 T-61-01 mitigation: mismatched key silently dropped uploads).
+    form.append("photo", file);
     return postMultipart<ItemPhoto>(`/workspaces/${wsId}/items/${itemId}/photos`, form);
   },
   remove: (wsId: string, photoId: string) =>
     del<void>(`/workspaces/${wsId}/photos/${photoId}`),
+  setPrimary: (wsId: string, photoId: string) =>
+    put<void>(`/workspaces/${wsId}/photos/${photoId}/primary`),
 };
 
 export const itemPhotoKeys = {
