@@ -16,6 +16,8 @@ msgstr ""
 #: src/features/borrowers/actions/BorrowerArchiveDeleteFlow.tsx:80
 #: src/features/borrowers/actions/BorrowerArchiveDeleteFlow.tsx:93
 #: src/features/borrowers/panel/BorrowerPanel.tsx:95
+#: src/features/items/actions/ItemArchiveDeleteFlow.tsx:84
+#: src/features/items/panel/ItemPanel.tsx:110
 #: src/features/taxonomy/actions/ArchiveDeleteFlow.tsx:95
 #: src/features/taxonomy/actions/ArchiveDeleteFlow.tsx:108
 #: src/features/taxonomy/panel/EntityPanel.tsx:189
@@ -50,6 +52,10 @@ msgstr "+ NEW LOCATION"
 #: src/features/borrowers/forms/BorrowerForm.tsx:78
 msgid "+372 555 0101"
 msgstr "+372 555 0101"
+
+#: src/features/items/forms/ItemForm.tsx:134
+msgid "0123456789012"
+msgstr "0123456789012"
 
 #: src/features/settings/SettingsPage.tsx:22
 msgid "ACCOUNT"
@@ -87,6 +93,10 @@ msgstr "ADD ITEM"
 #: src/features/borrowers/forms/BorrowerForm.tsx:75
 msgid "alice@example.com"
 msgstr "alice@example.com"
+
+#: src/features/items/filters/ItemsFilterBar.tsx:53
+msgid "All categories"
+msgstr "All categories"
 
 #: src/features/taxonomy/tabs/ContainersTab.tsx:62
 msgid "All locations"
@@ -136,6 +146,11 @@ msgstr "ARCHIVE CONTAINER"
 msgid "ARCHIVE FLAG"
 msgstr "ARCHIVE FLAG"
 
+#: src/features/items/actions/ItemArchiveDeleteFlow.tsx:81
+#: src/features/items/actions/ItemArchiveDeleteFlow.tsx:85
+msgid "ARCHIVE ITEM"
+msgstr "ARCHIVE ITEM"
+
 #: src/features/taxonomy/actions/ArchiveDeleteFlow.tsx:49
 msgid "ARCHIVE LOCATION"
 msgstr "ARCHIVE LOCATION"
@@ -162,6 +177,10 @@ msgstr "AUTHENTICATION FAILED"
 msgid "Authentication failed. Try a different sign-in method."
 msgstr "Authentication failed. Try a different sign-in method."
 
+#: src/features/items/forms/ItemForm.tsx:121
+msgid "Auto-generated — editable"
+msgstr "Auto-generated — editable"
+
 #: src/features/settings/ProfilePage.tsx:60
 msgid "AVATAR REMOVED"
 msgstr "AVATAR REMOVED"
@@ -183,6 +202,10 @@ msgstr "BACK"
 #: src/features/borrowers/BorrowerDetailPage.tsx:40
 msgid "BACK TO BORROWERS"
 msgstr "BACK TO BORROWERS"
+
+#: src/features/items/forms/ItemForm.tsx:129
+msgid "BARCODE"
+msgstr "BARCODE"
 
 #: src/features/borrowers/hooks/useBorrowerMutations.ts:60
 msgid "Borrower archived."
@@ -226,6 +249,7 @@ msgstr "Cannot unlink last auth method"
 msgid "CATEGORIES"
 msgstr "CATEGORIES"
 
+#: src/features/items/forms/ItemForm.tsx:154
 #: src/pages/DemoPage.tsx:155
 msgid "CATEGORY"
 msgstr "CATEGORY"
@@ -249,6 +273,10 @@ msgstr "Category restored."
 #: src/features/taxonomy/hooks/useCategoryMutations.ts:44
 msgid "Category saved."
 msgstr "Category saved."
+
+#: src/features/items/filters/ItemsFilterBar.tsx:109
+msgid "CATEGORY: ALL"
+msgstr "CATEGORY: ALL"
 
 #: src/features/settings/SecurityPage.tsx:169
 msgid "CHANGE PASSWORD"
@@ -291,6 +319,7 @@ msgid "CONFIRM ARCHIVE"
 msgstr "CONFIRM ARCHIVE"
 
 #: src/features/borrowers/actions/BorrowerArchiveDeleteFlow.tsx:91
+#: src/features/items/actions/ItemArchiveDeleteFlow.tsx:95
 #: src/features/settings/SecurityPage.tsx:346
 #: src/features/taxonomy/actions/ArchiveDeleteFlow.tsx:106
 #: src/pages/DemoPage.tsx:237
@@ -372,6 +401,10 @@ msgstr "Containers belong to a location. Create a location first, then add conta
 msgid "Could not archive. Try again."
 msgstr "Could not archive. Try again."
 
+#: src/features/items/hooks/useItemMutations.ts:126
+msgid "Could not delete item. Try again."
+msgstr "Could not delete item. Try again."
+
 #: src/features/borrowers/BorrowersListPage.tsx:183
 msgid "Could not load borrowers."
 msgstr "Could not load borrowers."
@@ -392,6 +425,16 @@ msgstr "Could not load locations."
 msgid "Could not reach the API. Check your network and the backend URL, then retry."
 msgstr "Could not reach the API. Check your network and the backend URL, then retry."
 
+#: src/features/items/hooks/useItemMutations.ts:51
+#: src/features/items/hooks/useItemMutations.ts:75
+msgid "Could not save item. Check your connection and try again."
+msgstr "Could not save item. Check your connection and try again."
+
+#: src/features/items/hooks/useItemMutations.ts:91
+#: src/features/items/hooks/useItemMutations.ts:106
+msgid "Could not update item. Try again."
+msgstr "Could not update item. Try again."
+
 #: src/features/taxonomy/tabs/ContainersTab.tsx:138
 msgid "Create a location first."
 msgstr "Create a location first."
@@ -411,6 +454,10 @@ msgstr "CREATE CATEGORY"
 #: src/features/taxonomy/panel/EntityPanel.tsx:94
 msgid "CREATE CONTAINER"
 msgstr "CREATE CONTAINER"
+
+#: src/features/items/panel/ItemPanel.tsx:66
+msgid "CREATE ITEM"
+msgstr "CREATE ITEM"
 
 #: src/features/taxonomy/panel/EntityPanel.tsx:93
 msgid "CREATE LOCATION"
@@ -494,6 +541,7 @@ msgstr "DELETE CATEGORY"
 msgid "DELETE CONTAINER"
 msgstr "DELETE CONTAINER"
 
+#: src/features/items/actions/ItemArchiveDeleteFlow.tsx:98
 #: src/pages/DemoPage.tsx:240
 msgid "DELETE ITEM"
 msgstr "DELETE ITEM"
@@ -503,6 +551,7 @@ msgid "DELETE LOCATION"
 msgstr "DELETE LOCATION"
 
 #: src/features/borrowers/actions/BorrowerArchiveDeleteFlow.tsx:84
+#: src/features/items/actions/ItemArchiveDeleteFlow.tsx:88
 #: src/features/taxonomy/actions/ArchiveDeleteFlow.tsx:99
 msgid "delete permanently"
 msgstr "delete permanently"
@@ -511,6 +560,7 @@ msgstr "delete permanently"
 msgid "Deleted."
 msgstr "Deleted."
 
+#: src/features/items/forms/ItemForm.tsx:142
 #: src/features/taxonomy/forms/CategoryForm.tsx:89
 #: src/features/taxonomy/forms/ContainerForm.tsx:123
 #: src/features/taxonomy/forms/LocationForm.tsx:124
@@ -532,6 +582,10 @@ msgstr "Download all workspace data as a JSON file."
 #: src/features/borrowers/forms/BorrowerForm.tsx:72
 msgid "e.g. Alice Smith"
 msgstr "e.g. Alice Smith"
+
+#: src/features/items/forms/ItemForm.tsx:113
+msgid "e.g. Cordless Drill"
+msgstr "e.g. Cordless Drill"
 
 #: src/pages/DemoPage.tsx:144
 msgid "e.g. DeWalt drill"
@@ -563,6 +617,10 @@ msgstr "EDIT CATEGORY"
 #: src/features/taxonomy/panel/EntityPanel.tsx:89
 msgid "EDIT CONTAINER"
 msgstr "EDIT CONTAINER"
+
+#: src/features/items/panel/ItemPanel.tsx:62
+msgid "EDIT ITEM"
+msgstr "EDIT ITEM"
 
 #: src/features/taxonomy/panel/EntityPanel.tsx:88
 msgid "EDIT LOCATION"
@@ -685,6 +743,10 @@ msgstr "Full name"
 msgid "FULL NAME"
 msgstr "FULL NAME"
 
+#: src/features/items/actions/ItemArchiveDeleteFlow.tsx:83
+msgid "HIDES FROM DEFAULT VIEW"
+msgstr "HIDES FROM DEFAULT VIEW"
+
 #: src/features/borrowers/actions/BorrowerArchiveDeleteFlow.tsx:79
 msgid "HIDES FROM LOAN PICKERS"
 msgstr "HIDES FROM LOAN PICKERS"
@@ -734,9 +796,29 @@ msgstr "Invalid email or password. Check your credentials and try again."
 msgid "INVENTORY"
 msgstr "INVENTORY"
 
+#: src/features/items/hooks/useItemMutations.ts:89
+msgid "Item archived."
+msgstr "Item archived."
+
+#: src/features/items/hooks/useItemMutations.ts:41
+msgid "Item created."
+msgstr "Item created."
+
+#: src/features/items/hooks/useItemMutations.ts:123
+msgid "Item deleted."
+msgstr "Item deleted."
+
 #: src/pages/DemoPage.tsx:140
 msgid "ITEM NAME"
 msgstr "ITEM NAME"
+
+#: src/features/items/hooks/useItemMutations.ts:104
+msgid "Item restored."
+msgstr "Item restored."
+
+#: src/features/items/hooks/useItemMutations.ts:65
+msgid "Item saved."
+msgstr "Item saved."
 
 #: src/components/layout/Sidebar.tsx:41
 #: src/features/dashboard/DashboardPage.tsx:49
@@ -752,6 +834,7 @@ msgstr "JPEG, PNG, or HEIC up to 10 MB each."
 msgid "KEEP ACCOUNT"
 msgstr "KEEP ACCOUNT"
 
+#: src/features/items/actions/ItemArchiveDeleteFlow.tsx:97
 #: src/pages/DemoPage.tsx:239
 msgid "KEEP ITEM"
 msgstr "KEEP ITEM"
@@ -873,6 +956,7 @@ msgstr "Move or delete child nodes first."
 
 #: src/features/borrowers/BorrowersListPage.tsx:64
 #: src/features/borrowers/forms/BorrowerForm.tsx:71
+#: src/features/items/forms/ItemForm.tsx:110
 #: src/features/settings/ProfilePage.tsx:153
 #: src/features/taxonomy/forms/CategoryForm.tsx:73
 #: src/features/taxonomy/forms/ContainerForm.tsx:80
@@ -891,6 +975,10 @@ msgstr "NEW CATEGORY"
 #: src/features/taxonomy/panel/EntityPanel.tsx:89
 msgid "NEW CONTAINER"
 msgstr "NEW CONTAINER"
+
+#: src/features/items/panel/ItemPanel.tsx:62
+msgid "NEW ITEM"
+msgstr "NEW ITEM"
 
 #: src/features/taxonomy/panel/EntityPanel.tsx:88
 msgid "NEW LOCATION"
@@ -987,6 +1075,15 @@ msgstr "ON"
 msgid "Open navigation"
 msgstr "Open navigation"
 
+#: src/features/items/forms/ItemForm.tsx:130
+#: src/features/items/forms/ItemForm.tsx:155
+msgid "Optional"
+msgstr "Optional"
+
+#: src/features/items/forms/ItemForm.tsx:143
+msgid "Optional — up to 2000 characters"
+msgstr "Optional — up to 2000 characters"
+
 #: src/pages/DemoPage.tsx:151
 msgid "Optional free text…"
 msgstr "Optional free text…"
@@ -1046,6 +1143,10 @@ msgstr "Passwords do not match."
 #: src/features/borrowers/actions/BorrowerArchiveDeleteFlow.tsx:92
 msgid "Permanently delete {nodeName}? This action cannot be undone."
 msgstr "Permanently delete {nodeName}? This action cannot be undone."
+
+#: src/features/items/actions/ItemArchiveDeleteFlow.tsx:96
+msgid "Permanently delete {nodeName}? This cannot be undone."
+msgstr "Permanently delete {nodeName}? This cannot be undone."
 
 #: src/features/borrowers/BorrowerDetailPage.tsx:83
 #: src/features/borrowers/BorrowersListPage.tsx:66
@@ -1161,6 +1262,10 @@ msgstr "SAVE CHANGES"
 msgid "SAVE CONTAINER"
 msgstr "SAVE CONTAINER"
 
+#: src/features/items/panel/ItemPanel.tsx:67
+msgid "SAVE ITEM"
+msgstr "SAVE ITEM"
+
 #: src/features/taxonomy/panel/EntityPanel.tsx:93
 msgid "SAVE LOCATION"
 msgstr "SAVE LOCATION"
@@ -1173,14 +1278,23 @@ msgstr "SCAN"
 msgid "SCAN BARCODE"
 msgstr "SCAN BARCODE"
 
+#: src/features/items/forms/ItemForm.tsx:159
 #: src/features/taxonomy/forms/CategoryForm.tsx:83
 msgid "Search categories…"
 msgstr "Search categories…"
+
+#: src/features/items/filters/ItemsFilterBar.tsx:103
+msgid "Search items"
+msgstr "Search items"
 
 #: src/features/taxonomy/forms/ContainerForm.tsx:117
 #: src/features/taxonomy/forms/LocationForm.tsx:118
 msgid "Search locations…"
 msgstr "Search locations…"
+
+#: src/features/items/filters/ItemsFilterBar.tsx:100
+msgid "Search name, SKU, or barcode…"
+msgstr "Search name, SKU, or barcode…"
 
 #: src/routes/index.tsx:33
 msgid "SECTOR NOT FOUND"
@@ -1225,6 +1339,14 @@ msgstr "SHORT CODE"
 msgid "Show archived"
 msgstr "Show archived"
 
+#: src/features/items/filters/ShowArchivedChip.tsx:34
+msgid "SHOW ARCHIVED"
+msgstr "SHOW ARCHIVED"
+
+#: src/features/items/filters/ShowArchivedChip.tsx:34
+msgid "SHOWING ARCHIVED"
+msgstr "SHOWING ARCHIVED"
+
 #: src/pages/ApiDemoPage.tsx:33
 msgid "Sign in to run the real API fetch. This page is public for reachability; the underlying endpoint requires authentication."
 msgstr "Sign in to run the real API fetch. This page is public for reachability; the underlying endpoint requires authentication."
@@ -1249,6 +1371,10 @@ msgstr "SIGN IN WITH GOOGLE"
 msgid "Skip to main content"
 msgstr "Skip to main content"
 
+#: src/features/items/forms/ItemForm.tsx:120
+msgid "SKU"
+msgstr "SKU"
+
 #: src/components/layout/ErrorBoundaryPage.tsx:23
 msgid "Something went wrong. Return to the home screen or reload the page to try again."
 msgstr "Something went wrong. Return to the home screen or reload the page to try again."
@@ -1257,6 +1383,38 @@ msgstr "Something went wrong. Return to the home screen or reload the page to tr
 #: src/features/auth/RegisterForm.tsx:99
 msgid "Something went wrong. Try again in a moment."
 msgstr "Something went wrong. Try again in a moment."
+
+#: src/features/items/filters/ItemsFilterBar.tsx:69
+msgid "SORT: CREATED (NEWEST FIRST)"
+msgstr "SORT: CREATED (NEWEST FIRST)"
+
+#: src/features/items/filters/ItemsFilterBar.tsx:70
+msgid "SORT: CREATED (OLDEST FIRST)"
+msgstr "SORT: CREATED (OLDEST FIRST)"
+
+#: src/features/items/filters/ItemsFilterBar.tsx:65
+msgid "SORT: NAME (A → Z)"
+msgstr "SORT: NAME (A → Z)"
+
+#: src/features/items/filters/ItemsFilterBar.tsx:66
+msgid "SORT: NAME (Z → A)"
+msgstr "SORT: NAME (Z → A)"
+
+#: src/features/items/filters/ItemsFilterBar.tsx:67
+msgid "SORT: SKU (A → Z)"
+msgstr "SORT: SKU (A → Z)"
+
+#: src/features/items/filters/ItemsFilterBar.tsx:68
+msgid "SORT: SKU (Z → A)"
+msgstr "SORT: SKU (Z → A)"
+
+#: src/features/items/filters/ItemsFilterBar.tsx:71
+msgid "SORT: UPDATED (NEWEST FIRST)"
+msgstr "SORT: UPDATED (NEWEST FIRST)"
+
+#: src/features/items/filters/ItemsFilterBar.tsx:72
+msgid "SORT: UPDATED (OLDEST FIRST)"
+msgstr "SORT: UPDATED (OLDEST FIRST)"
 
 #: src/features/settings/AppearancePage.tsx:64
 #: src/features/settings/NotificationsPage.tsx:109
@@ -1270,6 +1428,11 @@ msgstr "SYSTEM ERROR"
 #: src/features/taxonomy/TaxonomyPage.tsx:18
 msgid "TAXONOMY"
 msgstr "TAXONOMY"
+
+#: src/features/items/hooks/useItemMutations.ts:46
+#: src/features/items/hooks/useItemMutations.ts:70
+msgid "That SKU is already in use. Please regenerate or choose another."
+msgstr "That SKU is already in use. Please regenerate or choose another."
 
 #: src/pages/ApiDemoPage.tsx:65
 msgid "The endpoint responded successfully but returned zero records. Create a record in the backend, then retry."
@@ -1314,6 +1477,10 @@ msgstr "This will hide '{nodeName}' from item pickers. You can restore it later.
 #: src/features/borrowers/actions/BorrowerArchiveDeleteFlow.tsx:78
 msgid "This will hide {nodeName} from loan pickers. You can restore them later."
 msgstr "This will hide {nodeName} from loan pickers. You can restore them later."
+
+#: src/features/items/actions/ItemArchiveDeleteFlow.tsx:82
+msgid "This will hide {nodeName} from the items list. You can restore it later."
+msgstr "This will hide {nodeName} from the items list. You can restore it later."
 
 #: src/features/settings/SecurityPage.tsx:342
 msgid "This will permanently delete your account and all associated data. This action cannot be undone."
@@ -1363,8 +1530,13 @@ msgstr "VIEW LOANS"
 #~ msgid "Welcome to Home Warehouse"
 #~ msgstr "Welcome to Home Warehouse"
 
+#: src/features/items/forms/ItemForm.tsx:147
+msgid "What's in the box, condition, accessories, etc."
+msgstr "What's in the box, condition, accessories, etc."
+
 #: src/components/retro/RetroConfirmDialog.tsx:116
 #: src/features/borrowers/panel/BorrowerPanel.tsx:58
+#: src/features/items/panel/ItemPanel.tsx:64
 #: src/features/taxonomy/panel/EntityPanel.tsx:106
 msgid "WORKING…"
 msgstr "WORKING…"

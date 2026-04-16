@@ -78,9 +78,13 @@ export function ItemsFilterBar({
   // Search — controlled local input, debounced write-through to URL.
   const [searchInput, setSearchInput] = useState(state.q);
 
-  // If URL state changes externally (browser back, clearFilters), resync the
-  // local input.
+  // If the URL state changes externally (browser back, clearFilters), resync
+  // the local input. The matching react-hooks lint rule fires on this
+  // pattern; it is also fired on many pre-existing files (AuthContext,
+  // AppShell, ActivityFeed, …) — this is the project convention for syncing
+  // controlled state to an external source.
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setSearchInput(state.q);
   }, [state.q]);
 

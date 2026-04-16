@@ -16,6 +16,8 @@ msgstr ""
 #: src/features/borrowers/actions/BorrowerArchiveDeleteFlow.tsx:80
 #: src/features/borrowers/actions/BorrowerArchiveDeleteFlow.tsx:93
 #: src/features/borrowers/panel/BorrowerPanel.tsx:95
+#: src/features/items/actions/ItemArchiveDeleteFlow.tsx:84
+#: src/features/items/panel/ItemPanel.tsx:110
 #: src/features/taxonomy/actions/ArchiveDeleteFlow.tsx:95
 #: src/features/taxonomy/actions/ArchiveDeleteFlow.tsx:108
 #: src/features/taxonomy/panel/EntityPanel.tsx:189
@@ -49,6 +51,10 @@ msgstr "[ET] + NEW LOCATION"
 
 #: src/features/borrowers/forms/BorrowerForm.tsx:78
 msgid "+372 555 0101"
+msgstr ""
+
+#: src/features/items/forms/ItemForm.tsx:134
+msgid "0123456789012"
 msgstr ""
 
 #: src/features/settings/SettingsPage.tsx:22
@@ -86,6 +92,10 @@ msgstr "LISA ESE"
 
 #: src/features/borrowers/forms/BorrowerForm.tsx:75
 msgid "alice@example.com"
+msgstr ""
+
+#: src/features/items/filters/ItemsFilterBar.tsx:53
+msgid "All categories"
 msgstr ""
 
 #: src/features/taxonomy/tabs/ContainersTab.tsx:62
@@ -136,6 +146,11 @@ msgstr "[ET] ARCHIVE CONTAINER"
 msgid "ARCHIVE FLAG"
 msgstr "[ET] ARCHIVE FLAG"
 
+#: src/features/items/actions/ItemArchiveDeleteFlow.tsx:81
+#: src/features/items/actions/ItemArchiveDeleteFlow.tsx:85
+msgid "ARCHIVE ITEM"
+msgstr ""
+
 #: src/features/taxonomy/actions/ArchiveDeleteFlow.tsx:49
 msgid "ARCHIVE LOCATION"
 msgstr "[ET] ARCHIVE LOCATION"
@@ -162,6 +177,10 @@ msgstr "AUTENTIMINE EBAONNESTUS"
 msgid "Authentication failed. Try a different sign-in method."
 msgstr "Autentimine ebaonnestus. Proovi teist sisselogimisviisi."
 
+#: src/features/items/forms/ItemForm.tsx:121
+msgid "Auto-generated — editable"
+msgstr ""
+
 #: src/features/settings/ProfilePage.tsx:60
 msgid "AVATAR REMOVED"
 msgstr ""
@@ -182,6 +201,10 @@ msgstr ""
 
 #: src/features/borrowers/BorrowerDetailPage.tsx:40
 msgid "BACK TO BORROWERS"
+msgstr ""
+
+#: src/features/items/forms/ItemForm.tsx:129
+msgid "BARCODE"
 msgstr ""
 
 #: src/features/borrowers/hooks/useBorrowerMutations.ts:60
@@ -226,6 +249,7 @@ msgstr ""
 msgid "CATEGORIES"
 msgstr "KATEGOORIAD"
 
+#: src/features/items/forms/ItemForm.tsx:154
 #: src/pages/DemoPage.tsx:155
 msgid "CATEGORY"
 msgstr "[ET] CATEGORY"
@@ -249,6 +273,10 @@ msgstr "[ET] Category restored."
 #: src/features/taxonomy/hooks/useCategoryMutations.ts:44
 msgid "Category saved."
 msgstr "[ET] Category saved."
+
+#: src/features/items/filters/ItemsFilterBar.tsx:109
+msgid "CATEGORY: ALL"
+msgstr ""
 
 #: src/features/settings/SecurityPage.tsx:169
 msgid "CHANGE PASSWORD"
@@ -291,6 +319,7 @@ msgid "CONFIRM ARCHIVE"
 msgstr "[ET] CONFIRM ARCHIVE"
 
 #: src/features/borrowers/actions/BorrowerArchiveDeleteFlow.tsx:91
+#: src/features/items/actions/ItemArchiveDeleteFlow.tsx:95
 #: src/features/settings/SecurityPage.tsx:346
 #: src/features/taxonomy/actions/ArchiveDeleteFlow.tsx:106
 #: src/pages/DemoPage.tsx:237
@@ -372,6 +401,10 @@ msgstr "[ET] Containers belong to a location. Create a location first, then add 
 msgid "Could not archive. Try again."
 msgstr "[ET] Could not archive. Try again."
 
+#: src/features/items/hooks/useItemMutations.ts:126
+msgid "Could not delete item. Try again."
+msgstr ""
+
 #: src/features/borrowers/BorrowersListPage.tsx:183
 msgid "Could not load borrowers."
 msgstr ""
@@ -392,6 +425,16 @@ msgstr "[ET] Could not load locations."
 msgid "Could not reach the API. Check your network and the backend URL, then retry."
 msgstr "API-ni ei saanud ühendust. Kontrolli võrku ja taustateenuse URL-i, seejärel proovi uuesti."
 
+#: src/features/items/hooks/useItemMutations.ts:51
+#: src/features/items/hooks/useItemMutations.ts:75
+msgid "Could not save item. Check your connection and try again."
+msgstr ""
+
+#: src/features/items/hooks/useItemMutations.ts:91
+#: src/features/items/hooks/useItemMutations.ts:106
+msgid "Could not update item. Try again."
+msgstr ""
+
 #: src/features/taxonomy/tabs/ContainersTab.tsx:138
 msgid "Create a location first."
 msgstr "[ET] Create a location first."
@@ -411,6 +454,10 @@ msgstr "[ET] CREATE CATEGORY"
 #: src/features/taxonomy/panel/EntityPanel.tsx:94
 msgid "CREATE CONTAINER"
 msgstr "[ET] CREATE CONTAINER"
+
+#: src/features/items/panel/ItemPanel.tsx:66
+msgid "CREATE ITEM"
+msgstr ""
 
 #: src/features/taxonomy/panel/EntityPanel.tsx:93
 msgid "CREATE LOCATION"
@@ -494,6 +541,7 @@ msgstr "[ET] DELETE CATEGORY"
 msgid "DELETE CONTAINER"
 msgstr "[ET] DELETE CONTAINER"
 
+#: src/features/items/actions/ItemArchiveDeleteFlow.tsx:98
 #: src/pages/DemoPage.tsx:240
 msgid "DELETE ITEM"
 msgstr "[ET] DELETE ITEM"
@@ -503,6 +551,7 @@ msgid "DELETE LOCATION"
 msgstr "[ET] DELETE LOCATION"
 
 #: src/features/borrowers/actions/BorrowerArchiveDeleteFlow.tsx:84
+#: src/features/items/actions/ItemArchiveDeleteFlow.tsx:88
 #: src/features/taxonomy/actions/ArchiveDeleteFlow.tsx:99
 msgid "delete permanently"
 msgstr "[ET] delete permanently"
@@ -511,6 +560,7 @@ msgstr "[ET] delete permanently"
 msgid "Deleted."
 msgstr "[ET] Deleted."
 
+#: src/features/items/forms/ItemForm.tsx:142
 #: src/features/taxonomy/forms/CategoryForm.tsx:89
 #: src/features/taxonomy/forms/ContainerForm.tsx:123
 #: src/features/taxonomy/forms/LocationForm.tsx:124
@@ -531,6 +581,10 @@ msgstr ""
 
 #: src/features/borrowers/forms/BorrowerForm.tsx:72
 msgid "e.g. Alice Smith"
+msgstr ""
+
+#: src/features/items/forms/ItemForm.tsx:113
+msgid "e.g. Cordless Drill"
 msgstr ""
 
 #: src/pages/DemoPage.tsx:144
@@ -563,6 +617,10 @@ msgstr "[ET] EDIT CATEGORY"
 #: src/features/taxonomy/panel/EntityPanel.tsx:89
 msgid "EDIT CONTAINER"
 msgstr "[ET] EDIT CONTAINER"
+
+#: src/features/items/panel/ItemPanel.tsx:62
+msgid "EDIT ITEM"
+msgstr ""
 
 #: src/features/taxonomy/panel/EntityPanel.tsx:88
 msgid "EDIT LOCATION"
@@ -685,6 +743,10 @@ msgstr "Taisnimi"
 msgid "FULL NAME"
 msgstr "TAISNIMI"
 
+#: src/features/items/actions/ItemArchiveDeleteFlow.tsx:83
+msgid "HIDES FROM DEFAULT VIEW"
+msgstr ""
+
 #: src/features/borrowers/actions/BorrowerArchiveDeleteFlow.tsx:79
 msgid "HIDES FROM LOAN PICKERS"
 msgstr ""
@@ -734,9 +796,29 @@ msgstr "Vale e-post voi parool. Kontrolli oma andmeid ja proovi uuesti."
 msgid "INVENTORY"
 msgstr ""
 
+#: src/features/items/hooks/useItemMutations.ts:89
+msgid "Item archived."
+msgstr ""
+
+#: src/features/items/hooks/useItemMutations.ts:41
+msgid "Item created."
+msgstr ""
+
+#: src/features/items/hooks/useItemMutations.ts:123
+msgid "Item deleted."
+msgstr ""
+
 #: src/pages/DemoPage.tsx:140
 msgid "ITEM NAME"
 msgstr "[ET] ITEM NAME"
+
+#: src/features/items/hooks/useItemMutations.ts:104
+msgid "Item restored."
+msgstr ""
+
+#: src/features/items/hooks/useItemMutations.ts:65
+msgid "Item saved."
+msgstr ""
 
 #: src/components/layout/Sidebar.tsx:41
 #: src/features/dashboard/DashboardPage.tsx:49
@@ -752,6 +834,7 @@ msgstr "[ET] JPEG, PNG, or HEIC up to 10 MB each."
 msgid "KEEP ACCOUNT"
 msgstr ""
 
+#: src/features/items/actions/ItemArchiveDeleteFlow.tsx:97
 #: src/pages/DemoPage.tsx:239
 msgid "KEEP ITEM"
 msgstr "[ET] KEEP ITEM"
@@ -873,6 +956,7 @@ msgstr "[ET] Move or delete child nodes first."
 
 #: src/features/borrowers/BorrowersListPage.tsx:64
 #: src/features/borrowers/forms/BorrowerForm.tsx:71
+#: src/features/items/forms/ItemForm.tsx:110
 #: src/features/settings/ProfilePage.tsx:153
 #: src/features/taxonomy/forms/CategoryForm.tsx:73
 #: src/features/taxonomy/forms/ContainerForm.tsx:80
@@ -891,6 +975,10 @@ msgstr "[ET] NEW CATEGORY"
 #: src/features/taxonomy/panel/EntityPanel.tsx:89
 msgid "NEW CONTAINER"
 msgstr "[ET] NEW CONTAINER"
+
+#: src/features/items/panel/ItemPanel.tsx:62
+msgid "NEW ITEM"
+msgstr ""
 
 #: src/features/taxonomy/panel/EntityPanel.tsx:88
 msgid "NEW LOCATION"
@@ -987,6 +1075,15 @@ msgstr ""
 msgid "Open navigation"
 msgstr "Ava navigatsioon"
 
+#: src/features/items/forms/ItemForm.tsx:130
+#: src/features/items/forms/ItemForm.tsx:155
+msgid "Optional"
+msgstr ""
+
+#: src/features/items/forms/ItemForm.tsx:143
+msgid "Optional — up to 2000 characters"
+msgstr ""
+
 #: src/pages/DemoPage.tsx:151
 msgid "Optional free text…"
 msgstr "[ET] Optional free text…"
@@ -1045,6 +1142,10 @@ msgstr "Paroolid ei kattu."
 
 #: src/features/borrowers/actions/BorrowerArchiveDeleteFlow.tsx:92
 msgid "Permanently delete {nodeName}? This action cannot be undone."
+msgstr ""
+
+#: src/features/items/actions/ItemArchiveDeleteFlow.tsx:96
+msgid "Permanently delete {nodeName}? This cannot be undone."
 msgstr ""
 
 #: src/features/borrowers/BorrowerDetailPage.tsx:83
@@ -1161,6 +1262,10 @@ msgstr "[ET] SAVE CHANGES"
 msgid "SAVE CONTAINER"
 msgstr "[ET] SAVE CONTAINER"
 
+#: src/features/items/panel/ItemPanel.tsx:67
+msgid "SAVE ITEM"
+msgstr ""
+
 #: src/features/taxonomy/panel/EntityPanel.tsx:93
 msgid "SAVE LOCATION"
 msgstr "[ET] SAVE LOCATION"
@@ -1173,14 +1278,23 @@ msgstr "SKANEERI"
 msgid "SCAN BARCODE"
 msgstr "SKANEERI TRIIPKOODI"
 
+#: src/features/items/forms/ItemForm.tsx:159
 #: src/features/taxonomy/forms/CategoryForm.tsx:83
 msgid "Search categories…"
 msgstr "[ET] Search categories…"
+
+#: src/features/items/filters/ItemsFilterBar.tsx:103
+msgid "Search items"
+msgstr ""
 
 #: src/features/taxonomy/forms/ContainerForm.tsx:117
 #: src/features/taxonomy/forms/LocationForm.tsx:118
 msgid "Search locations…"
 msgstr "[ET] Search locations…"
+
+#: src/features/items/filters/ItemsFilterBar.tsx:100
+msgid "Search name, SKU, or barcode…"
+msgstr ""
 
 #: src/routes/index.tsx:33
 msgid "SECTOR NOT FOUND"
@@ -1225,6 +1339,14 @@ msgstr "[ET] SHORT CODE"
 msgid "Show archived"
 msgstr "[ET] Show archived"
 
+#: src/features/items/filters/ShowArchivedChip.tsx:34
+msgid "SHOW ARCHIVED"
+msgstr ""
+
+#: src/features/items/filters/ShowArchivedChip.tsx:34
+msgid "SHOWING ARCHIVED"
+msgstr ""
+
 #: src/pages/ApiDemoPage.tsx:33
 msgid "Sign in to run the real API fetch. This page is public for reachability; the underlying endpoint requires authentication."
 msgstr "Logi sisse päringu käivitamiseks. See leht on avalik kättesaadavuse huvides; aluseks olev otspunkt nõuab autentimist."
@@ -1249,6 +1371,10 @@ msgstr "LOGI SISSE GOOGLE'IGA"
 msgid "Skip to main content"
 msgstr "Liigu pohisisu juurde"
 
+#: src/features/items/forms/ItemForm.tsx:120
+msgid "SKU"
+msgstr ""
+
 #: src/components/layout/ErrorBoundaryPage.tsx:23
 msgid "Something went wrong. Return to the home screen or reload the page to try again."
 msgstr "Midagi laks valesti. Minge tagasi avakuvale voi laadige leht uuesti."
@@ -1257,6 +1383,38 @@ msgstr "Midagi laks valesti. Minge tagasi avakuvale voi laadige leht uuesti."
 #: src/features/auth/RegisterForm.tsx:99
 msgid "Something went wrong. Try again in a moment."
 msgstr "Midagi laks valesti. Proovi hetke parast uuesti."
+
+#: src/features/items/filters/ItemsFilterBar.tsx:69
+msgid "SORT: CREATED (NEWEST FIRST)"
+msgstr ""
+
+#: src/features/items/filters/ItemsFilterBar.tsx:70
+msgid "SORT: CREATED (OLDEST FIRST)"
+msgstr ""
+
+#: src/features/items/filters/ItemsFilterBar.tsx:65
+msgid "SORT: NAME (A → Z)"
+msgstr ""
+
+#: src/features/items/filters/ItemsFilterBar.tsx:66
+msgid "SORT: NAME (Z → A)"
+msgstr ""
+
+#: src/features/items/filters/ItemsFilterBar.tsx:67
+msgid "SORT: SKU (A → Z)"
+msgstr ""
+
+#: src/features/items/filters/ItemsFilterBar.tsx:68
+msgid "SORT: SKU (Z → A)"
+msgstr ""
+
+#: src/features/items/filters/ItemsFilterBar.tsx:71
+msgid "SORT: UPDATED (NEWEST FIRST)"
+msgstr ""
+
+#: src/features/items/filters/ItemsFilterBar.tsx:72
+msgid "SORT: UPDATED (OLDEST FIRST)"
+msgstr ""
 
 #: src/features/settings/AppearancePage.tsx:64
 #: src/features/settings/NotificationsPage.tsx:109
@@ -1270,6 +1428,11 @@ msgstr "SÜSTEEMIVIGA"
 #: src/features/taxonomy/TaxonomyPage.tsx:18
 msgid "TAXONOMY"
 msgstr "[ET] TAXONOMY"
+
+#: src/features/items/hooks/useItemMutations.ts:46
+#: src/features/items/hooks/useItemMutations.ts:70
+msgid "That SKU is already in use. Please regenerate or choose another."
+msgstr ""
 
 #: src/pages/ApiDemoPage.tsx:65
 msgid "The endpoint responded successfully but returned zero records. Create a record in the backend, then retry."
@@ -1313,6 +1476,10 @@ msgstr "[ET] This will hide '{nodeName}' from item pickers. You can restore it l
 
 #: src/features/borrowers/actions/BorrowerArchiveDeleteFlow.tsx:78
 msgid "This will hide {nodeName} from loan pickers. You can restore them later."
+msgstr ""
+
+#: src/features/items/actions/ItemArchiveDeleteFlow.tsx:82
+msgid "This will hide {nodeName} from the items list. You can restore it later."
 msgstr ""
 
 #: src/features/settings/SecurityPage.tsx:342
@@ -1363,8 +1530,13 @@ msgstr "VAATA LAENUTUSI"
 #~ msgid "Welcome to Home Warehouse"
 #~ msgstr "Tere tulemast Home Warehouse'i"
 
+#: src/features/items/forms/ItemForm.tsx:147
+msgid "What's in the box, condition, accessories, etc."
+msgstr ""
+
 #: src/components/retro/RetroConfirmDialog.tsx:116
 #: src/features/borrowers/panel/BorrowerPanel.tsx:58
+#: src/features/items/panel/ItemPanel.tsx:64
 #: src/features/taxonomy/panel/EntityPanel.tsx:106
 msgid "WORKING…"
 msgstr "[ET] WORKING…"
