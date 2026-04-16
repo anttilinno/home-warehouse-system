@@ -49,7 +49,7 @@ export function BorrowerForm({
       phone: defaultValues?.phone ?? "",
       notes: defaultValues?.notes ?? "",
     } as BorrowerCreateValues,
-    mode: "onBlur",
+    mode: "onSubmit",
   });
 
   useEffect(() => {

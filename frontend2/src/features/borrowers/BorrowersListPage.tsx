@@ -1,7 +1,7 @@
 import { useMemo, useRef, useState } from "react";
 import { Link } from "react-router";
 import { useLingui } from "@lingui/react/macro";
-import { Plus, Pencil, Archive, Undo2, Trash2 } from "./icons";
+import { Pencil, Archive, Undo2, Trash2 } from "./icons";
 import {
   RetroPanel,
   RetroButton,
@@ -154,11 +154,10 @@ export function BorrowersListPage() {
   return (
     <div className="flex flex-col gap-lg p-lg">
       <div className="flex items-center justify-between gap-md flex-wrap">
-        <h1 className="text-[20px] font-semibold uppercase tracking-wider text-retro-ink">
+        <h1 className="text-[20px] font-semibold uppercase tracking-wider text-retro-cream">
           {t`BORROWERS`}
         </h1>
         <RetroButton variant="primary" onClick={handleNew}>
-          <Plus size={14} />
           {t`+ NEW BORROWER`}
         </RetroButton>
       </div>

@@ -64,7 +64,7 @@ describe("BorrowerForm", () => {
     });
   });
 
-  it("rejects invalid email format with visible error (onBlur validation)", async () => {
+  it("rejects invalid email format with visible error on submit", async () => {
     const onSubmit = vi.fn();
     renderWithProviders(
       <>
@@ -72,11 +72,16 @@ describe("BorrowerForm", () => {
         <button type="submit" form="bf4">go</button>
       </>,
     );
+    const nameInput = screen.getByLabelText(/name/i);
     const emailInput = screen.getByLabelText(/email/i);
-    // form.mode === "onBlur" — fill invalid email, then blur to trigger zod
+    fireEvent.change(nameInput, { target: { value: "Alice" } });
     fireEvent.change(emailInput, { target: { value: "not-an-email" } });
+    // Use fireEvent.submit on the form directly — clicking the external submit
+    // button triggers jsdom HTML5 email constraint validation which blocks the
+    // submit event before RHF can run, so zod never fires.
+    const form = document.getElementById("bf4") as HTMLFormElement;
     await act(async () => {
-      fireEvent.blur(emailInput);
+      fireEvent.submit(form);
     });
     await waitFor(() => {
       const errs = screen.queryAllByText("Enter a valid email address.");
