@@ -16,7 +16,11 @@ import (
 // generateShortCode generates a random 8-character alphanumeric code
 func generateShortCode() string {
 	b := make([]byte, 5) // 5 bytes = 40 bits, base32 encodes to 8 chars
-	rand.Read(b)
+	if _, err := rand.Read(b); err != nil {
+		// crypto/rand.Read only fails if the OS PRNG is unavailable, which is
+		// a catastrophic environment failure — panic is the correct response.
+		panic("crypto/rand unavailable: " + err.Error())
+	}
 	return base32.StdEncoding.WithPadding(base32.NoPadding).EncodeToString(b)
 }
 
