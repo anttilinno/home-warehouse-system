@@ -62,6 +62,15 @@ func (q *Queries) CreateBorrower(ctx context.Context, arg CreateBorrowerParams) 
 	return i, err
 }
 
+const deleteBorrower = `-- name: DeleteBorrower :exec
+DELETE FROM warehouse.borrowers WHERE id = $1
+`
+
+func (q *Queries) DeleteBorrower(ctx context.Context, id uuid.UUID) error {
+	_, err := q.db.Exec(ctx, deleteBorrower, id)
+	return err
+}
+
 const getBorrower = `-- name: GetBorrower :one
 SELECT id, workspace_id, name, email, phone, notes, is_archived, search_vector, created_at, updated_at FROM warehouse.borrowers
 WHERE id = $1 AND workspace_id = $2
@@ -106,7 +115,8 @@ func (q *Queries) HasActiveLoans(ctx context.Context, borrowerID uuid.UUID) (boo
 
 const listBorrowers = `-- name: ListBorrowers :many
 SELECT id, workspace_id, name, email, phone, notes, is_archived, search_vector, created_at, updated_at FROM warehouse.borrowers
-WHERE workspace_id = $1 AND is_archived = false
+WHERE workspace_id = $1
+  AND ($4::bool IS NULL OR $4::bool = true OR is_archived = false)
 ORDER BY name
 LIMIT $2 OFFSET $3
 `
@@ -115,10 +125,16 @@ type ListBorrowersParams struct {
 	WorkspaceID uuid.UUID `json:"workspace_id"`
 	Limit       int32     `json:"limit"`
 	Offset      int32     `json:"offset"`
+	Archived    *bool     `json:"archived"`
 }
 
 func (q *Queries) ListBorrowers(ctx context.Context, arg ListBorrowersParams) ([]WarehouseBorrower, error) {
-	rows, err := q.db.Query(ctx, listBorrowers, arg.WorkspaceID, arg.Limit, arg.Offset)
+	rows, err := q.db.Query(ctx, listBorrowers,
+		arg.WorkspaceID,
+		arg.Limit,
+		arg.Offset,
+		arg.Archived,
+	)
 	if err != nil {
 		return nil, err
 	}

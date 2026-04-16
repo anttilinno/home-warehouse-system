@@ -25,7 +25,8 @@ WHERE id = $1;
 
 -- name: ListBorrowers :many
 SELECT * FROM warehouse.borrowers
-WHERE workspace_id = $1 AND is_archived = false
+WHERE workspace_id = $1
+  AND (sqlc.narg('archived')::bool IS NULL OR sqlc.narg('archived')::bool = true OR is_archived = false)
 ORDER BY name
 LIMIT $2 OFFSET $3;
 
@@ -42,3 +43,6 @@ WHERE workspace_id = $1
   AND search_vector @@ plainto_tsquery('english', $2)
 ORDER BY ts_rank(search_vector, plainto_tsquery('english', $2)) DESC
 LIMIT $3;
+
+-- name: DeleteBorrower :exec
+DELETE FROM warehouse.borrowers WHERE id = $1;
