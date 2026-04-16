@@ -13,6 +13,25 @@ msgstr ""
 "Language-Team: \n"
 "Plural-Forms: \n"
 
+#. placeholder {0}: file.name
+#: src/features/items/photos/ItemPhotoGallery.tsx:94
+msgid "{0} is not a supported image format."
+msgstr "{0} pole toetatud pildivorming."
+
+#. placeholder {0}: file.name
+#: src/features/items/photos/ItemPhotoGallery.tsx:79
+msgid "{0} is over 10 MB. Try a smaller file or compress it first."
+msgstr "{0} on üle 10 MB. Proovi väiksemat faili või tiheda seda."
+
+#. placeholder {0}: files.length
+#: src/features/items/photos/useItemPhotoGallery.ts:91
+msgid "{successCount} of {0} photos uploaded."
+msgstr "{successCount} fotot {0}-st üles laaditud."
+
+#: src/features/items/photos/useItemPhotoGallery.ts:86
+msgid "{successCount} photos uploaded."
+msgstr "{successCount} fotot üles laaditud."
+
 #: src/features/borrowers/actions/BorrowerArchiveDeleteFlow.tsx:80
 #: src/features/borrowers/actions/BorrowerArchiveDeleteFlow.tsx:93
 #: src/features/borrowers/panel/BorrowerPanel.tsx:95
@@ -29,6 +48,11 @@ msgstr "[ET] ← BACK"
 msgid "← PREV"
 msgstr "[ET] ← PREV"
 
+#: src/features/items/photos/ItemPhotoGallery.tsx:157
+#: src/features/items/photos/ItemPhotoGallery.tsx:188
+msgid "+ ADD PHOTOS"
+msgstr "+ LISA FOTOSID"
+
 #: src/features/borrowers/BorrowersListPage.tsx:161
 #: src/features/borrowers/BorrowersListPage.tsx:200
 msgid "+ NEW BORROWER"
@@ -44,9 +68,9 @@ msgstr "[ET] + NEW CATEGORY"
 msgid "+ NEW CONTAINER"
 msgstr "[ET] + NEW CONTAINER"
 
-#: src/features/items/ItemsListPage.tsx:202
-#: src/features/items/ItemsListPage.tsx:261
-#: src/features/items/ItemsListPage.tsx:277
+#: src/features/items/ItemsListPage.tsx:220
+#: src/features/items/ItemsListPage.tsx:279
+#: src/features/items/ItemsListPage.tsx:295
 msgid "+ NEW ITEM"
 msgstr "+ UUS KAUP"
 
@@ -58,6 +82,10 @@ msgstr "[ET] + NEW LOCATION"
 #: src/features/borrowers/forms/BorrowerForm.tsx:78
 msgid "+372 555 0101"
 msgstr ""
+
+#: src/features/items/photos/ItemPhotoLightbox.tsx:215
+msgid "★ PRIMARY"
+msgstr "★ PEAMINE"
 
 #: src/features/items/forms/ItemForm.tsx:134
 msgid "0123456789012"
@@ -72,7 +100,7 @@ msgid "ACCOUNT UNLINKED"
 msgstr ""
 
 #: src/features/borrowers/BorrowersListPage.tsx:67
-#: src/features/items/ItemsListPage.tsx:112
+#: src/features/items/ItemsListPage.tsx:124
 msgid "ACTIONS"
 msgstr ""
 
@@ -97,6 +125,10 @@ msgstr "TEGEVUSTE LOGI"
 msgid "ADD ITEM"
 msgstr "LISA ESE"
 
+#: src/features/items/photos/ItemPhotoGallery.tsx:148
+msgid "Add photos to identify this item in the warehouse and at a glance."
+msgstr "Lisa fotosid, et toodet laos kergemini ära tunda."
+
 #: src/features/borrowers/forms/BorrowerForm.tsx:75
 msgid "alice@example.com"
 msgstr ""
@@ -105,7 +137,7 @@ msgstr ""
 msgid "All categories"
 msgstr ""
 
-#: src/features/items/ItemsListPage.tsx:258
+#: src/features/items/ItemsListPage.tsx:276
 msgid "All items are currently archived. Toggle \"Show archived\" to view them."
 msgstr "Kõik kaubad on praegu arhiivis. Lülita \"Näita arhiivitud\" sisse, et neid näha."
 
@@ -127,8 +159,8 @@ msgid "APPEARANCE"
 msgstr ""
 
 #: src/features/borrowers/BorrowersListPage.tsx:124
-#: src/features/items/ItemDetailPage.tsx:143
-#: src/features/items/ItemsListPage.tsx:165
+#: src/features/items/ItemDetailPage.tsx:149
+#: src/features/items/ItemsListPage.tsx:183
 #: src/features/taxonomy/tabs/ContainersTab.tsx:235
 #: src/features/taxonomy/tree/TreeNode.tsx:122
 msgid "ARCHIVE"
@@ -138,12 +170,13 @@ msgstr "[ET] ARCHIVE"
 #. placeholder {0}: c.name
 #. placeholder {0}: item.name
 #: src/features/borrowers/BorrowersListPage.tsx:119
-#: src/features/items/ItemsListPage.tsx:160
+#: src/features/items/ItemsListPage.tsx:178
 #: src/features/taxonomy/tabs/ContainersTab.tsx:230
 #: src/features/taxonomy/tree/TreeNode.tsx:117
 msgid "Archive {0}"
 msgstr "[ET] Archive {0}"
 
+#: src/features/borrowers/actions/BorrowerArchiveDeleteFlow.tsx:77
 #: src/features/borrowers/actions/BorrowerArchiveDeleteFlow.tsx:81
 msgid "ARCHIVE BORROWER"
 msgstr ""
@@ -171,8 +204,8 @@ msgstr "[ET] ARCHIVE LOCATION"
 
 #: src/features/borrowers/BorrowerDetailPage.tsx:64
 #: src/features/borrowers/BorrowersListPage.tsx:81
-#: src/features/items/ItemDetailPage.tsx:128
-#: src/features/items/ItemsListPage.tsx:128
+#: src/features/items/ItemDetailPage.tsx:134
+#: src/features/items/ItemsListPage.tsx:146
 #: src/features/taxonomy/tabs/ContainersTab.tsx:214
 #: src/features/taxonomy/tree/TaxonomyTree.tsx:196
 #: src/features/taxonomy/tree/TreeNode.tsx:99
@@ -219,13 +252,13 @@ msgstr ""
 msgid "BACK TO BORROWERS"
 msgstr ""
 
-#: src/features/items/ItemDetailPage.tsx:97
-#: src/features/items/ItemDetailPage.tsx:119
+#: src/features/items/ItemDetailPage.tsx:99
+#: src/features/items/ItemDetailPage.tsx:121
 msgid "BACK TO ITEMS"
 msgstr "TAGASI KAUPADE JUURDE"
 
 #: src/features/items/forms/ItemForm.tsx:129
-#: src/features/items/ItemDetailPage.tsx:181
+#: src/features/items/ItemDetailPage.tsx:187
 msgid "BARCODE"
 msgstr "VÖÖTKOOD"
 
@@ -272,8 +305,8 @@ msgid "CATEGORIES"
 msgstr "KATEGOORIAD"
 
 #: src/features/items/forms/ItemForm.tsx:154
-#: src/features/items/ItemDetailPage.tsx:192
-#: src/features/items/ItemsListPage.tsx:111
+#: src/features/items/ItemDetailPage.tsx:198
+#: src/features/items/ItemsListPage.tsx:123
 #: src/pages/DemoPage.tsx:155
 msgid "CATEGORY"
 msgstr "[ET] CATEGORY"
@@ -316,7 +349,8 @@ msgstr ""
 msgid "CHANGES SAVED"
 msgstr ""
 
-#: src/features/items/ItemsListPage.tsx:225
+#: src/features/items/ItemsListPage.tsx:243
+#: src/features/items/photos/ItemPhotoGallery.tsx:120
 msgid "Check your connection and try again."
 msgstr "Kontrolli ühendust ja proovi uuesti."
 
@@ -324,9 +358,13 @@ msgstr "Kontrolli ühendust ja proovi uuesti."
 msgid "CHOOSE FILES"
 msgstr "[ET] CHOOSE FILES"
 
-#: src/features/items/ItemsListPage.tsx:245
+#: src/features/items/ItemsListPage.tsx:263
 msgid "CLEAR FILTERS"
 msgstr "KUSTUTA FILTRID"
+
+#: src/features/items/photos/ItemPhotoLightbox.tsx:152
+msgid "Close lightbox"
+msgstr "Sulge fotovaade"
 
 #: src/components/layout/TopBar.tsx:22
 msgid "Close navigation"
@@ -345,13 +383,13 @@ msgstr "[ET] Collapse {0}"
 msgid "Collapse ARCHIVED"
 msgstr "[ET] Collapse ARCHIVED"
 
-#: src/features/borrowers/actions/BorrowerArchiveDeleteFlow.tsx:77
 #: src/features/taxonomy/actions/ArchiveDeleteFlow.tsx:92
 msgid "CONFIRM ARCHIVE"
 msgstr "[ET] CONFIRM ARCHIVE"
 
 #: src/features/borrowers/actions/BorrowerArchiveDeleteFlow.tsx:91
 #: src/features/items/actions/ItemArchiveDeleteFlow.tsx:95
+#: src/features/items/photos/ItemPhotoLightbox.tsx:237
 #: src/features/settings/SecurityPage.tsx:346
 #: src/features/taxonomy/actions/ArchiveDeleteFlow.tsx:106
 #: src/pages/DemoPage.tsx:237
@@ -437,6 +475,10 @@ msgstr "[ET] Could not archive. Try again."
 msgid "Could not delete item. Try again."
 msgstr ""
 
+#: src/features/items/photos/useItemPhotoGallery.ts:147
+msgid "Could not delete photo. Try again."
+msgstr "Foto kustutamine ebaõnnestus. Proovi uuesti."
+
 #: src/features/borrowers/BorrowersListPage.tsx:183
 msgid "Could not load borrowers."
 msgstr ""
@@ -449,13 +491,17 @@ msgstr "[ET] Could not load categories."
 msgid "Could not load containers."
 msgstr "[ET] Could not load containers."
 
-#: src/features/items/ItemsListPage.tsx:222
+#: src/features/items/ItemsListPage.tsx:240
 msgid "COULD NOT LOAD ITEMS"
 msgstr "KAUPU EI ÕNNESTUNUD LAADIDA"
 
 #: src/features/taxonomy/tabs/LocationsTab.tsx:127
 msgid "Could not load locations."
 msgstr "[ET] Could not load locations."
+
+#: src/features/items/photos/ItemPhotoGallery.tsx:119
+msgid "COULD NOT LOAD PHOTOS"
+msgstr "FOTOSID EI ÕNNESTUNUD LAADIDA"
 
 #: src/pages/ApiDemoPage.tsx:50
 msgid "Could not reach the API. Check your network and the backend URL, then retry."
@@ -470,6 +516,15 @@ msgstr ""
 #: src/features/items/hooks/useItemMutations.ts:106
 msgid "Could not update item. Try again."
 msgstr ""
+
+#: src/features/items/photos/useItemPhotoGallery.ts:119
+msgid "Could not update primary photo. Try again."
+msgstr "Peamise foto uuendamine ebaõnnestus. Proovi uuesti."
+
+#. placeholder {0}: file.name
+#: src/features/items/photos/useItemPhotoGallery.ts:75
+msgid "Couldn't upload {0}. Continuing with the rest."
+msgstr "{0} üleslaadimine ebaõnnestus. Jätkame ülejäänutega."
 
 #: src/features/taxonomy/tabs/ContainersTab.tsx:138
 msgid "Create a location first."
@@ -511,7 +566,7 @@ msgstr "[ET] Create your first category to start organizing items."
 msgid "Create your first entry to populate this list."
 msgstr "[ET] Create your first entry to populate this list."
 
-#: src/features/items/ItemsListPage.tsx:274
+#: src/features/items/ItemsListPage.tsx:292
 msgid "Create your first item to start tracking inventory."
 msgstr "Loo oma esimene kaup, et alustada inventari jälgimist."
 
@@ -519,7 +574,7 @@ msgstr "Loo oma esimene kaup, et alustada inventari jälgimist."
 msgid "Create your first location to describe where items live."
 msgstr "[ET] Create your first location to describe where items live."
 
-#: src/features/items/ItemDetailPage.tsx:214
+#: src/features/items/ItemDetailPage.tsx:220
 msgid "CREATED"
 msgstr "LOODUD"
 
@@ -561,15 +616,15 @@ msgid "DATE FORMAT"
 msgstr ""
 
 #: src/features/borrowers/BorrowersListPage.tsx:146
-#: src/features/items/ItemDetailPage.tsx:162
-#: src/features/items/ItemsListPage.tsx:187
+#: src/features/items/ItemDetailPage.tsx:168
+#: src/features/items/ItemsListPage.tsx:205
 msgid "DELETE"
 msgstr ""
 
 #. placeholder {0}: b.name
 #. placeholder {0}: item.name
 #: src/features/borrowers/BorrowersListPage.tsx:141
-#: src/features/items/ItemsListPage.tsx:182
+#: src/features/items/ItemsListPage.tsx:200
 msgid "Delete {0}"
 msgstr ""
 
@@ -604,19 +659,24 @@ msgstr "[ET] DELETE LOCATION"
 msgid "delete permanently"
 msgstr "[ET] delete permanently"
 
+#: src/features/items/photos/ItemPhotoLightbox.tsx:226
+#: src/features/items/photos/ItemPhotoLightbox.tsx:240
+msgid "DELETE PHOTO"
+msgstr "KUSTUTA FOTO"
+
 #: src/pages/DemoPage.tsx:243
 msgid "Deleted."
 msgstr "[ET] Deleted."
 
 #: src/features/items/forms/ItemForm.tsx:142
-#: src/features/items/ItemDetailPage.tsx:203
+#: src/features/items/ItemDetailPage.tsx:209
 #: src/features/taxonomy/forms/CategoryForm.tsx:89
 #: src/features/taxonomy/forms/ContainerForm.tsx:123
 #: src/features/taxonomy/forms/LocationForm.tsx:124
 msgid "DESCRIPTION"
 msgstr "[ET] DESCRIPTION"
 
-#: src/features/items/ItemDetailPage.tsx:172
+#: src/features/items/ItemDetailPage.tsx:178
 msgid "DETAILS"
 msgstr "DETAILID"
 
@@ -645,7 +705,7 @@ msgid "e.g. DeWalt drill"
 msgstr "[ET] e.g. DeWalt drill"
 
 #: src/features/borrowers/BorrowersListPage.tsx:115
-#: src/features/items/ItemsListPage.tsx:156
+#: src/features/items/ItemsListPage.tsx:174
 #: src/features/taxonomy/tabs/ContainersTab.tsx:225
 #: src/features/taxonomy/tree/TreeNode.tsx:112
 msgid "EDIT"
@@ -655,7 +715,7 @@ msgstr "[ET] EDIT"
 #. placeholder {0}: c.name
 #. placeholder {0}: item.name
 #: src/features/borrowers/BorrowersListPage.tsx:110
-#: src/features/items/ItemsListPage.tsx:151
+#: src/features/items/ItemsListPage.tsx:169
 #: src/features/taxonomy/tabs/ContainersTab.tsx:220
 #: src/features/taxonomy/tree/TreeNode.tsx:106
 msgid "Edit {0}"
@@ -673,7 +733,7 @@ msgstr "[ET] EDIT CATEGORY"
 msgid "EDIT CONTAINER"
 msgstr "[ET] EDIT CONTAINER"
 
-#: src/features/items/ItemDetailPage.tsx:137
+#: src/features/items/ItemDetailPage.tsx:143
 #: src/features/items/panel/ItemPanel.tsx:62
 msgid "EDIT ITEM"
 msgstr ""
@@ -799,6 +859,10 @@ msgstr "Taisnimi"
 msgid "FULL NAME"
 msgstr "TAISNIMI"
 
+#: src/features/items/photos/ItemPhotoGallery.tsx:87
+msgid "HEIC not supported — convert to JPEG or PNG first."
+msgstr "HEIC pole toetatud — teisenda esmalt JPEG-i või PNG-sse."
+
 #: src/features/items/actions/ItemArchiveDeleteFlow.tsx:83
 msgid "HIDES FROM DEFAULT VIEW"
 msgstr ""
@@ -868,7 +932,7 @@ msgstr ""
 msgid "ITEM NAME"
 msgstr "[ET] ITEM NAME"
 
-#: src/features/items/ItemDetailPage.tsx:87
+#: src/features/items/ItemDetailPage.tsx:89
 msgid "ITEM NOT FOUND"
 msgstr "KAUPA EI LEITUD"
 
@@ -882,13 +946,18 @@ msgstr ""
 
 #: src/components/layout/Sidebar.tsx:41
 #: src/features/dashboard/DashboardPage.tsx:49
-#: src/features/items/ItemsListPage.tsx:199
+#: src/features/items/ItemsListPage.tsx:217
 msgid "ITEMS"
 msgstr "ESEMED"
 
 #: src/components/retro/RetroFileInput.tsx:121
-msgid "JPEG, PNG, or HEIC up to 10 MB each."
-msgstr "[ET] JPEG, PNG, or HEIC up to 10 MB each."
+#~ msgid "JPEG, PNG, or HEIC up to 10 MB each."
+#~ msgstr "[ET] JPEG, PNG, or HEIC up to 10 MB each."
+
+#: src/components/retro/RetroFileInput.tsx:121
+#: src/features/items/photos/ItemPhotoGallery.tsx:180
+msgid "JPEG, PNG, or WebP up to 10 MB each."
+msgstr "JPEG, PNG või WebP, kuni 10 MB iga fail."
 
 #: src/features/settings/SecurityPage.tsx:352
 msgid "KEEP ACCOUNT"
@@ -902,6 +971,10 @@ msgstr "[ET] KEEP ITEM"
 #: src/pages/DemoPage.tsx:251
 msgid "KEEP OPEN"
 msgstr "[ET] KEEP OPEN"
+
+#: src/features/items/photos/ItemPhotoLightbox.tsx:239
+msgid "KEEP PHOTO"
+msgstr "JÄTA ALLES"
 
 #: src/features/settings/LanguagePage.tsx:49
 msgid "Language"
@@ -936,8 +1009,8 @@ msgstr ""
 #: src/components/retro/RetroCombobox.tsx:190
 #: src/features/borrowers/BorrowerDetailPage.tsx:20
 #: src/features/borrowers/BorrowersListPage.tsx:175
-#: src/features/items/ItemDetailPage.tsx:77
-#: src/features/items/ItemsListPage.tsx:214
+#: src/features/items/ItemDetailPage.tsx:79
+#: src/features/items/ItemsListPage.tsx:232
 #: src/features/taxonomy/tabs/CategoriesTab.tsx:117
 #: src/features/taxonomy/tabs/ContainersTab.tsx:146
 #: src/features/taxonomy/tabs/LocationsTab.tsx:119
@@ -953,12 +1026,12 @@ msgid "LOAN HISTORY"
 msgstr ""
 
 #: src/features/borrowers/BorrowerDetailPage.tsx:123
-#: src/features/items/ItemDetailPage.tsx:251
+#: src/features/items/ItemDetailPage.tsx:258
 msgid "Loan history will appear here once loans are wired."
 msgstr ""
 
 #: src/components/layout/Sidebar.tsx:50
-#: src/features/items/ItemDetailPage.tsx:247
+#: src/features/items/ItemDetailPage.tsx:254
 #: src/features/loans/LoansPage.tsx:8
 #: src/features/settings/NotificationsPage.tsx:106
 msgid "LOANS"
@@ -1021,7 +1094,7 @@ msgstr "[ET] Move or delete child nodes first."
 #: src/features/borrowers/BorrowersListPage.tsx:64
 #: src/features/borrowers/forms/BorrowerForm.tsx:71
 #: src/features/items/forms/ItemForm.tsx:110
-#: src/features/items/ItemsListPage.tsx:109
+#: src/features/items/ItemsListPage.tsx:121
 #: src/features/settings/ProfilePage.tsx:153
 #: src/features/taxonomy/forms/CategoryForm.tsx:73
 #: src/features/taxonomy/forms/ContainerForm.tsx:80
@@ -1053,11 +1126,19 @@ msgstr "[ET] NEW LOCATION"
 msgid "NEW PASSWORD"
 msgstr ""
 
+#: src/features/items/photos/ItemPhotoLightbox.tsx:194
+msgid "NEXT"
+msgstr "JÄRGMINE"
+
 #: src/components/retro/RetroPagination.tsx:76
 msgid "NEXT →"
 msgstr "[ET] NEXT →"
 
-#: src/features/items/ItemsListPage.tsx:257
+#: src/features/items/photos/ItemPhotoLightbox.tsx:192
+msgid "Next photo"
+msgstr "Järgmine foto"
+
+#: src/features/items/ItemsListPage.tsx:275
 msgid "NO ACTIVE ITEMS"
 msgstr "AKTIIVSEID KAUPU POLE"
 
@@ -1085,11 +1166,11 @@ msgstr "[ET] NO CONTAINERS YET"
 msgid "No data returned"
 msgstr "Andmeid ei tagastatud"
 
-#: src/features/items/ItemsListPage.tsx:242
+#: src/features/items/ItemsListPage.tsx:260
 msgid "No items match your filters. Clear them to see all items."
 msgstr "Ükski kaup ei vasta filtritele. Tühjenda, et näha kõiki kaupu."
 
-#: src/features/items/ItemsListPage.tsx:273
+#: src/features/items/ItemsListPage.tsx:291
 msgid "NO ITEMS YET"
 msgstr "KAUBAD PUUDUVAD"
 
@@ -1097,7 +1178,7 @@ msgstr "KAUBAD PUUDUVAD"
 msgid "NO LOAN HISTORY"
 msgstr ""
 
-#: src/features/items/ItemDetailPage.tsx:250
+#: src/features/items/ItemDetailPage.tsx:257
 msgid "NO LOANS"
 msgstr "LAENE POLE"
 
@@ -1105,7 +1186,7 @@ msgstr "LAENE POLE"
 msgid "NO LOCATIONS YET"
 msgstr "[ET] NO LOCATIONS YET"
 
-#: src/features/items/ItemsListPage.tsx:241
+#: src/features/items/ItemsListPage.tsx:259
 msgid "NO MATCHES"
 msgstr "KOKKULANGEVUSI POLE"
 
@@ -1114,8 +1195,12 @@ msgid "No matches found."
 msgstr "[ET] No matches found."
 
 #: src/features/items/ItemDetailPage.tsx:237
-msgid "NO PHOTOS"
-msgstr "FOTOSID POLE"
+#~ msgid "NO PHOTOS"
+#~ msgstr "FOTOSID POLE"
+
+#: src/features/items/photos/ItemPhotoGallery.tsx:147
+msgid "NO PHOTOS YET"
+msgstr "FOTOSID VEEL POLE"
 
 #: src/pages/DemoPage.tsx:266
 msgid "NO RECORDS YET"
@@ -1163,6 +1248,11 @@ msgstr ""
 #: src/components/layout/TopBar.tsx:22
 msgid "Open navigation"
 msgstr "Ava navigatsioon"
+
+#. placeholder {0}: photo.filename
+#: src/features/items/photos/ItemPhotoTile.tsx:34
+msgid "Open photo {0}"
+msgstr "Ava foto {0}"
 
 #: src/features/items/forms/ItemForm.tsx:130
 #: src/features/items/forms/ItemForm.tsx:155
@@ -1236,20 +1326,44 @@ msgstr ""
 msgid "Permanently delete {nodeName}? This cannot be undone."
 msgstr ""
 
+#: src/features/items/photos/ItemPhotoLightbox.tsx:238
+msgid "Permanently delete this photo? This cannot be undone."
+msgstr "Kustuta foto jäädavalt? Seda ei saa tagasi võtta."
+
 #: src/features/borrowers/BorrowerDetailPage.tsx:83
 #: src/features/borrowers/BorrowersListPage.tsx:66
 #: src/features/borrowers/forms/BorrowerForm.tsx:77
 msgid "PHONE"
 msgstr ""
 
-#: src/features/items/ItemDetailPage.tsx:234
+#. placeholder {0}: safeIndex + 1
+#. placeholder {1}: photos.length
+#: src/features/items/photos/ItemPhotoLightbox.tsx:144
+msgid "Photo {0} of {1} for {itemName}"
+msgstr "Foto {0} / {1} tootele {itemName}"
+
+#: src/features/items/photos/useItemPhotoGallery.ts:145
+msgid "Photo deleted."
+msgstr "Foto kustutatud."
+
+#. placeholder {0}: safeIndex + 1
+#. placeholder {1}: photos.length
+#: src/features/items/photos/ItemPhotoLightbox.tsx:161
+msgid "Photo of {itemName}, {0} of {1}"
+msgstr "{itemName} foto, {0} / {1}"
+
+#: src/features/items/photos/useItemPhotoGallery.ts:85
+msgid "Photo uploaded."
+msgstr "Foto üles laaditud."
+
+#: src/features/items/ItemDetailPage.tsx:240
 #: src/pages/DemoPage.tsx:184
 msgid "PHOTOS"
 msgstr "[ET] PHOTOS"
 
 #: src/features/items/ItemDetailPage.tsx:238
-msgid "Photos will appear here after Phase 61."
-msgstr "Fotod ilmuvad siia pärast faasi 61."
+#~ msgid "Photos will appear here after Phase 61."
+#~ msgstr "Fotod ilmuvad siia pärast faasi 61."
 
 #: src/features/borrowers/forms/BorrowerForm.tsx:83
 msgid "Pickup preferences, shared items, etc."
@@ -1259,10 +1373,30 @@ msgstr ""
 msgid "PREFERENCES"
 msgstr ""
 
+#: src/features/items/photos/ItemPhotoLightbox.tsx:176
+msgid "PREV"
+msgstr "EELMINE"
+
+#: src/features/items/photos/ItemPhotoLightbox.tsx:173
+msgid "Previous photo"
+msgstr "Eelmine foto"
+
+#: src/features/items/photos/ItemPhotoTile.tsx:57
+msgid "PRIMARY"
+msgstr "PEAMINE"
+
+#: src/features/items/photos/useItemPhotoGallery.ts:127
+msgid "Primary photo updated."
+msgstr "Peamine foto uuendatud."
+
 #: src/features/auth/LoginForm.tsx:133
 #: src/features/auth/RegisterForm.tsx:179
 msgid "PROCESSING..."
 msgstr "TOOTLEMINE..."
+
+#: src/features/items/photos/ItemPhotoTile.tsx:44
+msgid "PROCESSING…"
+msgstr "TÖÖTLEMISEL…"
 
 #: src/features/settings/ProfilePage.tsx:97
 #: src/features/settings/SettingsPage.tsx:26
@@ -1292,7 +1426,7 @@ msgid "Required. Up to 255 characters."
 msgstr "[ET] Required. Up to 255 characters."
 
 #: src/features/borrowers/BorrowersListPage.tsx:137
-#: src/features/items/ItemsListPage.tsx:178
+#: src/features/items/ItemsListPage.tsx:196
 #: src/features/taxonomy/tabs/ContainersTab.tsx:245
 #: src/features/taxonomy/tree/TreeNode.tsx:132
 msgid "RESTORE"
@@ -1302,13 +1436,13 @@ msgstr "[ET] RESTORE"
 #. placeholder {0}: c.name
 #. placeholder {0}: item.name
 #: src/features/borrowers/BorrowersListPage.tsx:131
-#: src/features/items/ItemsListPage.tsx:172
+#: src/features/items/ItemsListPage.tsx:190
 #: src/features/taxonomy/tabs/ContainersTab.tsx:240
 #: src/features/taxonomy/tree/TreeNode.tsx:127
 msgid "Restore {0}"
 msgstr "[ET] Restore {0}"
 
-#: src/features/items/ItemDetailPage.tsx:156
+#: src/features/items/ItemDetailPage.tsx:162
 msgid "RESTORE ITEM"
 msgstr "TAASTA KAUP"
 
@@ -1323,7 +1457,7 @@ msgstr "[ET] RETRO FORM PRIMITIVES"
 msgid "Retry"
 msgstr "[ET] Retry"
 
-#: src/features/items/ItemsListPage.tsx:231
+#: src/features/items/ItemsListPage.tsx:249
 msgid "RETRY"
 msgstr "PROOVI UUESTI"
 
@@ -1421,6 +1555,10 @@ msgstr "[ET] Select option…"
 msgid "SESSION REVOKED"
 msgstr ""
 
+#: src/features/items/photos/ItemPhotoLightbox.tsx:216
+msgid "SET AS PRIMARY"
+msgstr "MÄÄRA PEAMISEKS"
+
 #: src/features/settings/SecurityPage.tsx:169
 #: src/features/settings/SecurityPage.tsx:217
 msgid "SET PASSWORD"
@@ -1475,8 +1613,8 @@ msgid "Skip to main content"
 msgstr "Liigu pohisisu juurde"
 
 #: src/features/items/forms/ItemForm.tsx:120
-#: src/features/items/ItemDetailPage.tsx:176
-#: src/features/items/ItemsListPage.tsx:110
+#: src/features/items/ItemDetailPage.tsx:182
+#: src/features/items/ItemsListPage.tsx:122
 msgid "SKU"
 msgstr ""
 
@@ -1567,7 +1705,7 @@ msgstr "[ET] This action cannot be undone."
 msgid "This borrower may have been deleted."
 msgstr ""
 
-#: src/features/items/ItemDetailPage.tsx:90
+#: src/features/items/ItemDetailPage.tsx:92
 msgid "This item may have been deleted."
 msgstr "See kaup võib olla kustutatud."
 
@@ -1594,6 +1732,10 @@ msgstr ""
 #: src/features/settings/SecurityPage.tsx:342
 msgid "This will permanently delete your account and all associated data. This action cannot be undone."
 msgstr ""
+
+#: src/features/items/ItemsListPage.tsx:118
+msgid "Thumbnail"
+msgstr "Pisipilt"
 
 #: src/features/settings/FormatsPage.tsx:173
 msgid "Time format"
@@ -1623,7 +1765,7 @@ msgstr ""
 msgid "UPDATE PASSWORD"
 msgstr ""
 
-#: src/features/items/ItemDetailPage.tsx:221
+#: src/features/items/ItemDetailPage.tsx:227
 msgid "UPDATED"
 msgstr "VIIMATI MUUDETUD"
 
@@ -1650,6 +1792,10 @@ msgstr ""
 #: src/components/retro/RetroConfirmDialog.tsx:116
 #: src/features/borrowers/panel/BorrowerPanel.tsx:58
 #: src/features/items/panel/ItemPanel.tsx:64
+#: src/features/items/photos/ItemPhotoGallery.tsx:157
+#: src/features/items/photos/ItemPhotoGallery.tsx:188
+#: src/features/items/photos/ItemPhotoLightbox.tsx:213
+#: src/features/items/photos/ItemPhotoLightbox.tsx:226
 #: src/features/taxonomy/panel/EntityPanel.tsx:106
 msgid "WORKING…"
 msgstr "[ET] WORKING…"
