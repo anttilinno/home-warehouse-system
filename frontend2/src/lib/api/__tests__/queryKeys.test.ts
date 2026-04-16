@@ -93,6 +93,12 @@ describe("borrowerKeys factory", () => {
   it("detail(id) equals ['borrowers', 'detail', id]", () => {
     expect(borrowerKeys.detail("borrower-1")).toEqual(["borrowers", "detail", "borrower-1"]);
   });
+
+  it("list distinguishes archived filter from default (active-only)", () => {
+    const active = borrowerKeys.list({ page: 1, limit: 100 });
+    const all = borrowerKeys.list({ page: 1, limit: 100, archived: true });
+    expect(active).not.toEqual(all);
+  });
 });
 
 describe("categoryKeys factory", () => {

@@ -19,6 +19,7 @@ export interface BorrowerListResponse {
 export interface BorrowerListParams {
   page?: number;
   limit?: number;
+  archived?: boolean;
 }
 
 export interface CreateBorrowerInput {
@@ -52,6 +53,8 @@ export const borrowersApi = {
   create: (wsId: string, body: CreateBorrowerInput) => post<Borrower>(base(wsId), body),
   update: (wsId: string, id: string, body: UpdateBorrowerInput) =>
     patch<Borrower>(`${base(wsId)}/${id}`, body),
+  archive: (wsId: string, id: string) => post<void>(`${base(wsId)}/${id}/archive`),
+  restore: (wsId: string, id: string) => post<void>(`${base(wsId)}/${id}/restore`),
   remove: (wsId: string, id: string) => del<void>(`${base(wsId)}/${id}`),
 };
 
