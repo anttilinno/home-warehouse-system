@@ -164,6 +164,6 @@ describe("BorrowersListPage", () => {
     await user.click(
       screen.getByRole("button", { name: /Archive Alice/i }),
     );
-    expect(await screen.findByText(/CONFIRM ARCHIVE/i)).toBeVisible();
+    expect(await screen.findByRole("heading", { name: /ARCHIVE BORROWER/i })).toBeVisible();
   });
 });

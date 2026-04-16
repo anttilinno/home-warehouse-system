@@ -27,7 +27,7 @@ describe("BorrowerArchiveDeleteFlow", () => {
     vi.clearAllMocks();
   });
 
-  it("open() shows CONFIRM ARCHIVE dialog with ARCHIVE BORROWER button", () => {
+  it("open() shows ARCHIVE BORROWER dialog with ARCHIVE BORROWER button", () => {
     const ref = createRef<BorrowerArchiveDeleteFlowHandle>();
     renderWithProviders(
       <BorrowerArchiveDeleteFlow
@@ -40,7 +40,7 @@ describe("BorrowerArchiveDeleteFlow", () => {
     act(() => {
       ref.current!.open();
     });
-    expect(isVisibleDialog("CONFIRM ARCHIVE")).toBe(true);
+    expect(isVisibleDialog("ARCHIVE BORROWER")).toBe(true);
     expect(
       screen.getByRole("button", { name: /archive borrower/i }),
     ).toBeInTheDocument();
@@ -71,7 +71,7 @@ describe("BorrowerArchiveDeleteFlow", () => {
     expect(onArchive).toHaveBeenCalled();
     expect(onDelete).not.toHaveBeenCalled();
     await waitFor(() => {
-      expect(isVisibleDialog("CONFIRM ARCHIVE")).toBe(false);
+      expect(isVisibleDialog("ARCHIVE BORROWER")).toBe(false);
     });
   });
 
@@ -88,14 +88,14 @@ describe("BorrowerArchiveDeleteFlow", () => {
     act(() => {
       ref.current!.open();
     });
-    expect(isVisibleDialog("CONFIRM ARCHIVE")).toBe(true);
+    expect(isVisibleDialog("ARCHIVE BORROWER")).toBe(true);
     await act(async () => {
       fireEvent.click(screen.getByText("delete permanently"));
     });
     await waitFor(() => {
       expect(isVisibleDialog("CONFIRM DELETE")).toBe(true);
     });
-    expect(isVisibleDialog("CONFIRM ARCHIVE")).toBe(false);
+    expect(isVisibleDialog("ARCHIVE BORROWER")).toBe(false);
   });
 
   it("clicking DELETE BORROWER calls onDelete then closes the delete dialog", async () => {
@@ -161,7 +161,7 @@ describe("BorrowerArchiveDeleteFlow", () => {
     await waitFor(() => {
       expect(isVisibleDialog("CONFIRM DELETE")).toBe(false);
     });
-    expect(isVisibleDialog("CONFIRM ARCHIVE")).toBe(false);
+    expect(isVisibleDialog("ARCHIVE BORROWER")).toBe(false);
   });
 
   it("non-HTTP error on delete is swallowed (no unhandled rejection); hook toast conveys the failure", async () => {

@@ -74,7 +74,7 @@ export const BorrowerArchiveDeleteFlow = forwardRef<
       <RetroConfirmDialog
         ref={archiveRef}
         variant="soft"
-        title={t`CONFIRM ARCHIVE`}
+        title={t`ARCHIVE BORROWER`}
         body={t`This will hide ${nodeName} from loan pickers. You can restore them later.`}
         headerBadge={t`HIDES FROM LOAN PICKERS`}
         escapeLabel={t`← BACK`}

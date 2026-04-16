@@ -71,8 +71,8 @@ export function BorrowersListPage() {
     name: (
       <Link
         to={`/borrowers/${b.id}`}
-        className={`font-sans no-underline ${
-          b.is_archived ? "line-through text-retro-gray" : "text-retro-ink"
+        className={`font-sans ${
+          b.is_archived ? "line-through text-retro-gray" : "no-underline text-retro-ink"
         }`}
       >
         {b.name}
