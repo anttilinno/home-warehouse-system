@@ -69,7 +69,7 @@ echo "Updated backend/.env"
 [tasks.start]
 description = "Start all services (containers, backend, frontend)"
 depends = ["dc-up", "migrate"]
-run = "mise run dev & mise run fe-dev"
+run = "mise run dev & mise run worker & mise run fe-dev"
 
 [tasks.dc-up]
 description = "Start all containers (PostgreSQL + Redis)"
