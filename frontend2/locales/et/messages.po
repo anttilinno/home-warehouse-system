@@ -27,8 +27,8 @@ msgstr "[ET] ← BACK"
 msgid "← PREV"
 msgstr "[ET] ← PREV"
 
-#: src/features/borrowers/BorrowersListPage.tsx:162
-#: src/features/borrowers/BorrowersListPage.tsx:201
+#: src/features/borrowers/BorrowersListPage.tsx:161
+#: src/features/borrowers/BorrowersListPage.tsx:200
 msgid "+ NEW BORROWER"
 msgstr ""
 
@@ -63,7 +63,7 @@ msgstr ""
 msgid "ACTIONS"
 msgstr ""
 
-#: src/features/borrowers/BorrowerDetailPage.tsx:110
+#: src/features/borrowers/BorrowerDetailPage.tsx:106
 msgid "ACTIVE LOANS"
 msgstr ""
 
@@ -140,7 +140,7 @@ msgstr "[ET] ARCHIVE FLAG"
 msgid "ARCHIVE LOCATION"
 msgstr "[ET] ARCHIVE LOCATION"
 
-#: src/features/borrowers/BorrowerDetailPage.tsx:68
+#: src/features/borrowers/BorrowerDetailPage.tsx:64
 #: src/features/borrowers/BorrowersListPage.tsx:81
 #: src/features/taxonomy/tabs/ContainersTab.tsx:214
 #: src/features/taxonomy/tree/TaxonomyTree.tsx:196
@@ -180,7 +180,7 @@ msgstr ""
 msgid "BACK"
 msgstr ""
 
-#: src/features/borrowers/BorrowerDetailPage.tsx:43
+#: src/features/borrowers/BorrowerDetailPage.tsx:40
 msgid "BACK TO BORROWERS"
 msgstr ""
 
@@ -196,7 +196,7 @@ msgstr ""
 msgid "Borrower deleted."
 msgstr ""
 
-#: src/features/borrowers/BorrowerDetailPage.tsx:33
+#: src/features/borrowers/BorrowerDetailPage.tsx:30
 msgid "BORROWER NOT FOUND"
 msgstr ""
 
@@ -208,7 +208,7 @@ msgstr ""
 msgid "Borrower saved."
 msgstr ""
 
-#: src/features/borrowers/BorrowerDetailPage.tsx:59
+#: src/features/borrowers/BorrowerDetailPage.tsx:55
 #: src/features/borrowers/BorrowersListPage.tsx:158
 msgid "BORROWERS"
 msgstr ""
@@ -333,7 +333,7 @@ msgstr "Uhendus ebaonnestus. Kontrolli vorguuhendust ja proovi uuesti."
 msgid "Connection lost. Your change was not saved."
 msgstr "[ET] Connection lost. Your change was not saved."
 
-#: src/features/borrowers/BorrowerDetailPage.tsx:75
+#: src/features/borrowers/BorrowerDetailPage.tsx:71
 msgid "CONTACT"
 msgstr ""
 
@@ -372,7 +372,7 @@ msgstr "[ET] Containers belong to a location. Create a location first, then add 
 msgid "Could not archive. Try again."
 msgstr "[ET] Could not archive. Try again."
 
-#: src/features/borrowers/BorrowersListPage.tsx:184
+#: src/features/borrowers/BorrowersListPage.tsx:183
 msgid "Could not load borrowers."
 msgstr ""
 
@@ -416,7 +416,7 @@ msgstr "[ET] CREATE CONTAINER"
 msgid "CREATE LOCATION"
 msgstr "[ET] CREATE LOCATION"
 
-#: src/features/borrowers/BorrowersListPage.tsx:198
+#: src/features/borrowers/BorrowersListPage.tsx:197
 msgid "Create your first borrower to start tracking loans."
 msgstr ""
 
@@ -577,7 +577,7 @@ msgstr ""
 msgid "Email"
 msgstr "E-post"
 
-#: src/features/borrowers/BorrowerDetailPage.tsx:79
+#: src/features/borrowers/BorrowerDetailPage.tsx:75
 #: src/features/borrowers/BorrowersListPage.tsx:65
 #: src/features/borrowers/forms/BorrowerForm.tsx:74
 #: src/features/settings/ProfilePage.tsx:168
@@ -791,23 +791,23 @@ msgid "Loading..."
 msgstr ""
 
 #: src/components/retro/RetroCombobox.tsx:190
-#: src/features/borrowers/BorrowerDetailPage.tsx:21
-#: src/features/borrowers/BorrowersListPage.tsx:176
+#: src/features/borrowers/BorrowerDetailPage.tsx:20
+#: src/features/borrowers/BorrowersListPage.tsx:175
 #: src/features/taxonomy/tabs/CategoriesTab.tsx:117
 #: src/features/taxonomy/tabs/ContainersTab.tsx:146
 #: src/features/taxonomy/tabs/LocationsTab.tsx:119
 msgid "Loading…"
 msgstr "[ET] Loading…"
 
-#: src/features/borrowers/BorrowerDetailPage.tsx:114
+#: src/features/borrowers/BorrowerDetailPage.tsx:110
 msgid "Loan data will be available soon."
 msgstr ""
 
-#: src/features/borrowers/BorrowerDetailPage.tsx:123
+#: src/features/borrowers/BorrowerDetailPage.tsx:119
 msgid "LOAN HISTORY"
 msgstr ""
 
-#: src/features/borrowers/BorrowerDetailPage.tsx:127
+#: src/features/borrowers/BorrowerDetailPage.tsx:123
 msgid "Loan history will appear here once loans are wired."
 msgstr ""
 
@@ -904,7 +904,7 @@ msgstr ""
 msgid "NEXT →"
 msgstr "[ET] NEXT →"
 
-#: src/features/borrowers/BorrowerDetailPage.tsx:113
+#: src/features/borrowers/BorrowerDetailPage.tsx:109
 msgid "NO ACTIVE LOANS"
 msgstr ""
 
@@ -912,7 +912,7 @@ msgstr ""
 msgid "NO ACTIVITY YET"
 msgstr "TEGEVUSI VEEL POLE"
 
-#: src/features/borrowers/BorrowersListPage.tsx:197
+#: src/features/borrowers/BorrowersListPage.tsx:196
 msgid "NO BORROWERS YET"
 msgstr ""
 
@@ -928,7 +928,7 @@ msgstr "[ET] NO CONTAINERS YET"
 msgid "No data returned"
 msgstr "Andmeid ei tagastatud"
 
-#: src/features/borrowers/BorrowerDetailPage.tsx:126
+#: src/features/borrowers/BorrowerDetailPage.tsx:122
 msgid "NO LOAN HISTORY"
 msgstr ""
 
@@ -948,7 +948,7 @@ msgstr "[ET] NO RECORDS YET"
 msgid "No workspace found. Please create a workspace to get started."
 msgstr "Toopinda ei leitud. Alustamiseks loo toopind."
 
-#: src/features/borrowers/BorrowerDetailPage.tsx:95
+#: src/features/borrowers/BorrowerDetailPage.tsx:91
 #: src/features/borrowers/forms/BorrowerForm.tsx:80
 #: src/pages/DemoPage.tsx:148
 msgid "NOTES"
@@ -1040,10 +1040,14 @@ msgid "Passwords do not match."
 msgstr "Paroolid ei kattu."
 
 #: src/features/borrowers/actions/BorrowerArchiveDeleteFlow.tsx:92
-msgid "Permanently delete '{nodeName}'? This action cannot be undone."
+#~ msgid "Permanently delete '{nodeName}'? This action cannot be undone."
+#~ msgstr ""
+
+#: src/features/borrowers/actions/BorrowerArchiveDeleteFlow.tsx:92
+msgid "Permanently delete {nodeName}? This action cannot be undone."
 msgstr ""
 
-#: src/features/borrowers/BorrowerDetailPage.tsx:87
+#: src/features/borrowers/BorrowerDetailPage.tsx:83
 #: src/features/borrowers/BorrowersListPage.tsx:66
 #: src/features/borrowers/forms/BorrowerForm.tsx:77
 msgid "PHONE"
@@ -1112,7 +1116,7 @@ msgstr "[ET] Restore {0}"
 msgid "RETRO FORM PRIMITIVES"
 msgstr "[ET] RETRO FORM PRIMITIVES"
 
-#: src/features/borrowers/BorrowersListPage.tsx:190
+#: src/features/borrowers/BorrowersListPage.tsx:189
 #: src/features/taxonomy/tabs/CategoriesTab.tsx:128
 #: src/features/taxonomy/tabs/ContainersTab.tsx:160
 #: src/features/taxonomy/tabs/LocationsTab.tsx:130
@@ -1214,7 +1218,7 @@ msgstr "SEADED"
 msgid "SHORT CODE"
 msgstr "[ET] SHORT CODE"
 
-#: src/features/borrowers/BorrowersListPage.tsx:168
+#: src/features/borrowers/BorrowersListPage.tsx:167
 #: src/features/taxonomy/tabs/CategoriesTab.tsx:105
 #: src/features/taxonomy/tabs/ContainersTab.tsx:122
 #: src/features/taxonomy/tabs/LocationsTab.tsx:107
@@ -1291,7 +1295,7 @@ msgstr ""
 msgid "This action cannot be undone."
 msgstr "[ET] This action cannot be undone."
 
-#: src/features/borrowers/BorrowerDetailPage.tsx:36
+#: src/features/borrowers/BorrowerDetailPage.tsx:33
 msgid "This borrower may have been deleted."
 msgstr ""
 
@@ -1304,7 +1308,11 @@ msgid "This will hide '{nodeName}' from item pickers. You can restore it later."
 msgstr "[ET] This will hide '{nodeName}' from item pickers. You can restore it later."
 
 #: src/features/borrowers/actions/BorrowerArchiveDeleteFlow.tsx:78
-msgid "This will hide '{nodeName}' from loan pickers. You can restore them later."
+#~ msgid "This will hide '{nodeName}' from loan pickers. You can restore them later."
+#~ msgstr ""
+
+#: src/features/borrowers/actions/BorrowerArchiveDeleteFlow.tsx:78
+msgid "This will hide {nodeName} from loan pickers. You can restore them later."
 msgstr ""
 
 #: src/features/settings/SecurityPage.tsx:342
