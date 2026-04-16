@@ -262,7 +262,7 @@ func TestBorrowerHandler_Delete(t *testing.T) {
 	t.Run("deletes borrower successfully", func(t *testing.T) {
 		borrowerID := uuid.New()
 
-		mockSvc.On("Archive", mock.Anything, borrowerID, setup.WorkspaceID).
+		mockSvc.On("Delete", mock.Anything, borrowerID, setup.WorkspaceID).
 			Return(nil).Once()
 
 		rec := setup.Delete(fmt.Sprintf("/borrowers/%s", borrowerID))
@@ -274,12 +274,43 @@ func TestBorrowerHandler_Delete(t *testing.T) {
 	t.Run("returns 400 when borrower has active loans", func(t *testing.T) {
 		borrowerID := uuid.New()
 
-		mockSvc.On("Archive", mock.Anything, borrowerID, setup.WorkspaceID).
+		mockSvc.On("Delete", mock.Anything, borrowerID, setup.WorkspaceID).
 			Return(borrower.ErrHasActiveLoans).Once()
 
 		rec := setup.Delete(fmt.Sprintf("/borrowers/%s", borrowerID))
 
 		testutil.AssertStatus(t, rec, http.StatusBadRequest)
+		assert.Contains(t, rec.Body.String(), "cannot delete borrower with active loans")
+		mockSvc.AssertExpectations(t)
+	})
+
+	t.Run("returns 400 when borrower not found", func(t *testing.T) {
+		borrowerID := uuid.New()
+
+		mockSvc.On("Delete", mock.Anything, borrowerID, setup.WorkspaceID).
+			Return(borrower.ErrBorrowerNotFound).Once()
+
+		rec := setup.Delete(fmt.Sprintf("/borrowers/%s", borrowerID))
+
+		testutil.AssertStatus(t, rec, http.StatusBadRequest)
+		mockSvc.AssertExpectations(t)
+	})
+}
+
+func TestBorrowerHandler_Archive(t *testing.T) {
+	setup := testutil.NewHandlerTestSetup()
+	mockSvc := new(MockService)
+	borrower.RegisterRoutes(setup.API, mockSvc, nil)
+
+	t.Run("archives borrower successfully", func(t *testing.T) {
+		borrowerID := uuid.New()
+
+		mockSvc.On("Archive", mock.Anything, borrowerID, setup.WorkspaceID).
+			Return(nil).Once()
+
+		rec := setup.Post(fmt.Sprintf("/borrowers/%s/archive", borrowerID), "")
+
+		testutil.AssertStatus(t, rec, http.StatusNoContent)
 		mockSvc.AssertExpectations(t)
 	})
 
@@ -289,11 +320,69 @@ func TestBorrowerHandler_Delete(t *testing.T) {
 		mockSvc.On("Archive", mock.Anything, borrowerID, setup.WorkspaceID).
 			Return(borrower.ErrBorrowerNotFound).Once()
 
-		rec := setup.Delete(fmt.Sprintf("/borrowers/%s", borrowerID))
+		rec := setup.Post(fmt.Sprintf("/borrowers/%s/archive", borrowerID), "")
 
 		testutil.AssertStatus(t, rec, http.StatusBadRequest)
 		mockSvc.AssertExpectations(t)
 	})
+}
+
+func TestBorrowerHandler_Restore(t *testing.T) {
+	setup := testutil.NewHandlerTestSetup()
+	mockSvc := new(MockService)
+	borrower.RegisterRoutes(setup.API, mockSvc, nil)
+
+	t.Run("restores borrower successfully", func(t *testing.T) {
+		borrowerID := uuid.New()
+
+		mockSvc.On("Restore", mock.Anything, borrowerID, setup.WorkspaceID).
+			Return(nil).Once()
+
+		rec := setup.Post(fmt.Sprintf("/borrowers/%s/restore", borrowerID), "")
+
+		testutil.AssertStatus(t, rec, http.StatusNoContent)
+		mockSvc.AssertExpectations(t)
+	})
+
+	t.Run("returns 400 when borrower not found", func(t *testing.T) {
+		borrowerID := uuid.New()
+
+		mockSvc.On("Restore", mock.Anything, borrowerID, setup.WorkspaceID).
+			Return(borrower.ErrBorrowerNotFound).Once()
+
+		rec := setup.Post(fmt.Sprintf("/borrowers/%s/restore", borrowerID), "")
+
+		testutil.AssertStatus(t, rec, http.StatusBadRequest)
+		mockSvc.AssertExpectations(t)
+	})
+}
+
+func TestBorrowerHandler_List_ArchivedFalse_ExcludesArchived(t *testing.T) {
+	setup := testutil.NewHandlerTestSetup()
+	mockSvc := new(MockService)
+	borrower.RegisterRoutes(setup.API, mockSvc, nil)
+
+	mockSvc.On("List", mock.Anything, setup.WorkspaceID, mock.Anything, false).
+		Return([]*borrower.Borrower{}, 0, nil).Once()
+
+	rec := setup.Get("/borrowers")
+
+	testutil.AssertStatus(t, rec, http.StatusOK)
+	mockSvc.AssertExpectations(t)
+}
+
+func TestBorrowerHandler_List_ArchivedTrue_IncludesArchived(t *testing.T) {
+	setup := testutil.NewHandlerTestSetup()
+	mockSvc := new(MockService)
+	borrower.RegisterRoutes(setup.API, mockSvc, nil)
+
+	mockSvc.On("List", mock.Anything, setup.WorkspaceID, mock.Anything, true).
+		Return([]*borrower.Borrower{}, 0, nil).Once()
+
+	rec := setup.Get("/borrowers?archived=true")
+
+	testutil.AssertStatus(t, rec, http.StatusOK)
+	mockSvc.AssertExpectations(t)
 }
 
 // Event Publishing Tests
@@ -380,7 +469,7 @@ func TestBorrowerHandler_Delete_PublishesEvent(t *testing.T) {
 
 	borrowerID := uuid.New()
 
-	mockSvc.On("Archive", mock.Anything, borrowerID, setup.WorkspaceID).
+	mockSvc.On("Delete", mock.Anything, borrowerID, setup.WorkspaceID).
 		Return(nil).Once()
 
 	rec := setup.Delete(fmt.Sprintf("/borrowers/%s", borrowerID))
@@ -394,6 +483,66 @@ func TestBorrowerHandler_Delete_PublishesEvent(t *testing.T) {
 	event := capture.GetLastEvent()
 	assert.NotNil(t, event)
 	assert.Equal(t, "borrower.deleted", event.Type)
+	assert.Equal(t, "borrower", event.EntityType)
+	assert.Equal(t, setup.WorkspaceID, event.WorkspaceID)
+	assert.Equal(t, setup.UserID, event.UserID)
+	assert.Equal(t, borrowerID.String(), event.EntityID)
+}
+
+func TestBorrowerHandler_Archive_PublishesEvent(t *testing.T) {
+	setup := testutil.NewHandlerTestSetup()
+	mockSvc := new(MockService)
+	capture := testutil.NewEventCapture(setup.WorkspaceID, setup.UserID)
+	capture.Start()
+	defer capture.Stop()
+
+	borrower.RegisterRoutes(setup.API, mockSvc, capture.GetBroadcaster())
+
+	borrowerID := uuid.New()
+
+	mockSvc.On("Archive", mock.Anything, borrowerID, setup.WorkspaceID).
+		Return(nil).Once()
+
+	rec := setup.Post(fmt.Sprintf("/borrowers/%s/archive", borrowerID), "")
+
+	testutil.AssertStatus(t, rec, http.StatusNoContent)
+	mockSvc.AssertExpectations(t)
+
+	assert.True(t, capture.WaitForEvents(1, 500*time.Millisecond), "Event should be published")
+
+	event := capture.GetLastEvent()
+	assert.NotNil(t, event)
+	assert.Equal(t, "borrower.archived", event.Type)
+	assert.Equal(t, "borrower", event.EntityType)
+	assert.Equal(t, setup.WorkspaceID, event.WorkspaceID)
+	assert.Equal(t, setup.UserID, event.UserID)
+	assert.Equal(t, borrowerID.String(), event.EntityID)
+}
+
+func TestBorrowerHandler_Restore_PublishesEvent(t *testing.T) {
+	setup := testutil.NewHandlerTestSetup()
+	mockSvc := new(MockService)
+	capture := testutil.NewEventCapture(setup.WorkspaceID, setup.UserID)
+	capture.Start()
+	defer capture.Stop()
+
+	borrower.RegisterRoutes(setup.API, mockSvc, capture.GetBroadcaster())
+
+	borrowerID := uuid.New()
+
+	mockSvc.On("Restore", mock.Anything, borrowerID, setup.WorkspaceID).
+		Return(nil).Once()
+
+	rec := setup.Post(fmt.Sprintf("/borrowers/%s/restore", borrowerID), "")
+
+	testutil.AssertStatus(t, rec, http.StatusNoContent)
+	mockSvc.AssertExpectations(t)
+
+	assert.True(t, capture.WaitForEvents(1, 500*time.Millisecond), "Event should be published")
+
+	event := capture.GetLastEvent()
+	assert.NotNil(t, event)
+	assert.Equal(t, "borrower.restored", event.Type)
 	assert.Equal(t, "borrower", event.EntityType)
 	assert.Equal(t, setup.WorkspaceID, event.WorkspaceID)
 	assert.Equal(t, setup.UserID, event.UserID)

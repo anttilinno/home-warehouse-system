@@ -2,6 +2,7 @@ package borrower
 
 import (
 	"context"
+	"errors"
 	"time"
 
 	"github.com/danielgtaylor/huma/v2"
@@ -22,7 +23,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 		}
 
 		pagination := shared.Pagination{Page: input.Page, PageSize: input.Limit}
-		borrowers, _, err := svc.List(ctx, workspaceID, pagination, false)
+		borrowers, _, err := svc.List(ctx, workspaceID, pagination, input.Archived)
 		if err != nil {
 			return nil, huma.Error500InternalServerError("failed to list borrowers")
 		}
@@ -139,7 +140,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 		}, nil
 	})
 
-	// Archive borrower
+	// Delete borrower (hard delete; archive endpoint is separate)
 	huma.Delete(api, "/borrowers/{id}", func(ctx context.Context, input *DeleteBorrowerInput) (*struct{}, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
@@ -148,9 +149,8 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 
 		authUser, _ := appMiddleware.GetAuthUser(ctx)
 
-		err := svc.Archive(ctx, input.ID, workspaceID)
-		if err != nil {
-			if err == ErrHasActiveLoans {
+		if err := svc.Delete(ctx, input.ID, workspaceID); err != nil {
+			if errors.Is(err, ErrHasActiveLoans) {
 				return nil, huma.Error400BadRequest("cannot delete borrower with active loans")
 			}
 			return nil, huma.Error400BadRequest(err.Error())
@@ -164,9 +164,67 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 				EntityID:   input.ID.String(),
 				EntityType: "borrower",
 				UserID:     authUser.ID,
-			Data: map[string]any{
-				"user_name": userName,
-			},
+				Data: map[string]any{
+					"user_name": userName,
+				},
+			})
+		}
+
+		return nil, nil
+	})
+
+	// Archive borrower (soft; always succeeds regardless of active loans per D-02)
+	huma.Post(api, "/borrowers/{id}/archive", func(ctx context.Context, input *GetBorrowerInput) (*struct{}, error) {
+		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
+		if !ok {
+			return nil, huma.Error401Unauthorized("workspace context required")
+		}
+
+		authUser, _ := appMiddleware.GetAuthUser(ctx)
+
+		if err := svc.Archive(ctx, input.ID, workspaceID); err != nil {
+			return nil, huma.Error400BadRequest(err.Error())
+		}
+
+		if broadcaster != nil && authUser != nil {
+			userName := appMiddleware.GetUserDisplayName(ctx)
+			broadcaster.Publish(workspaceID, events.Event{
+				Type:       "borrower.archived",
+				EntityID:   input.ID.String(),
+				EntityType: "borrower",
+				UserID:     authUser.ID,
+				Data: map[string]any{
+					"user_name": userName,
+				},
+			})
+		}
+
+		return nil, nil
+	})
+
+	// Restore borrower (unarchive)
+	huma.Post(api, "/borrowers/{id}/restore", func(ctx context.Context, input *GetBorrowerInput) (*struct{}, error) {
+		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
+		if !ok {
+			return nil, huma.Error401Unauthorized("workspace context required")
+		}
+
+		authUser, _ := appMiddleware.GetAuthUser(ctx)
+
+		if err := svc.Restore(ctx, input.ID, workspaceID); err != nil {
+			return nil, huma.Error400BadRequest(err.Error())
+		}
+
+		if broadcaster != nil && authUser != nil {
+			userName := appMiddleware.GetUserDisplayName(ctx)
+			broadcaster.Publish(workspaceID, events.Event{
+				Type:       "borrower.restored",
+				EntityID:   input.ID.String(),
+				EntityType: "borrower",
+				UserID:     authUser.ID,
+				Data: map[string]any{
+					"user_name": userName,
+				},
 			})
 		}
 
@@ -215,8 +273,9 @@ func toBorrowerResponse(b *Borrower) BorrowerResponse {
 // Request/Response types
 
 type ListBorrowersInput struct {
-	Page  int `query:"page" default:"1" minimum:"1"`
-	Limit int `query:"limit" default:"50" minimum:"1" maximum:"100"`
+	Page     int  `query:"page" default:"1" minimum:"1"`
+	Limit    int  `query:"limit" default:"50" minimum:"1" maximum:"100"`
+	Archived bool `query:"archived" default:"false" doc:"When true, include archived borrowers in the list"`
 }
 
 type ListBorrowersOutput struct {
