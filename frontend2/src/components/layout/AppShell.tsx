@@ -59,7 +59,7 @@ export function AppShell() {
         </div>
 
         {/* Main content column */}
-        <div className="flex-1 md:ml-[240px]">
+        <div className="flex-1 md:ml-[240px] min-w-0">
           <TopBar
             onMenuClick={() => setDrawerOpen(!drawerOpen)}
             drawerOpen={drawerOpen}
