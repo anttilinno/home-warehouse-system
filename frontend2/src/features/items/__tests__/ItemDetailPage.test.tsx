@@ -64,6 +64,31 @@ vi.mock("@/lib/api/categories", async (importOriginal) => {
   };
 });
 
+// Stub ItemPhotoGallery so the detail-page tests don't need to mock the
+// itemPhotosApi + React Query list fetch; the gallery is exercised by its own
+// suite. We assert that the stub renders (i.e. the page wires it) + that the
+// archived prop propagates correctly.
+vi.mock("../photos/ItemPhotoGallery", () => ({
+  ItemPhotoGallery: ({
+    itemId,
+    itemName,
+    archived,
+  }: {
+    itemId: string;
+    itemName: string;
+    archived: boolean;
+  }) => (
+    <div
+      data-testid="item-photo-gallery"
+      data-item-id={itemId}
+      data-item-name={itemName}
+      data-archived={archived ? "true" : "false"}
+    >
+      GALLERY
+    </div>
+  ),
+}));
+
 import { itemsApi } from "@/lib/api/items";
 import { ItemDetailPage } from "../ItemDetailPage";
 
@@ -151,23 +176,83 @@ describe("ItemDetailPage — states", () => {
   });
 });
 
-describe("ItemDetailPage — placeholder sections (Phase 61/62 seams)", () => {
+describe("ItemDetailPage — PHOTOS section wires ItemPhotoGallery (Phase 61)", () => {
   beforeEach(() => {
     setupDialogMocks();
     vi.clearAllMocks();
   });
 
-  it("renders PHOTOS placeholder with Phase 61 copy", async () => {
+  it("renders ItemPhotoGallery with itemId / itemName / archived=false", async () => {
+    mockedApi.get.mockResolvedValue(
+      makeItem({ id: "item-1", name: "Cordless Drill" }),
+    );
+    renderDetail("item-1");
+    const gallery = await screen.findByTestId("item-photo-gallery");
+    expect(gallery).toBeVisible();
+    expect(gallery.getAttribute("data-item-id")).toBe("item-1");
+    expect(gallery.getAttribute("data-item-name")).toBe("Cordless Drill");
+    expect(gallery.getAttribute("data-archived")).toBe("false");
+  });
+
+  it("passes archived=true into the gallery for archived items", async () => {
+    mockedApi.get.mockResolvedValue(
+      makeItem({ id: "item-1", is_archived: true }),
+    );
+    renderDetail("item-1");
+    const gallery = await screen.findByTestId("item-photo-gallery");
+    expect(gallery.getAttribute("data-archived")).toBe("true");
+  });
+
+  it("no longer renders the old Phase 61 placeholder copy", async () => {
     mockedApi.get.mockResolvedValue(makeItem());
     renderDetail("item-1");
-    expect(await screen.findByText(/NO PHOTOS/i)).toBeVisible();
-    expect(screen.getByText(/Phase 61/i)).toBeVisible();
+    await screen.findByTestId("item-photo-gallery");
+    expect(screen.queryByText(/Photos will appear here after Phase 61/i))
+      .toBeNull();
   });
 
   it("renders LOANS placeholder", async () => {
     mockedApi.get.mockResolvedValue(makeItem());
     renderDetail("item-1");
     expect(await screen.findByText(/NO LOANS/i)).toBeVisible();
+  });
+});
+
+describe("ItemDetailPage — header thumbnail (Phase 61)", () => {
+  beforeEach(() => {
+    setupDialogMocks();
+    vi.clearAllMocks();
+  });
+
+  it("renders ItemHeaderThumbnail with primary_photo_thumbnail_url as <img> when available", async () => {
+    const item = makeItem({
+      id: "item-1",
+      name: "Cordless Drill",
+      primary_photo_thumbnail_url: "https://x.test/thumb.jpg",
+    });
+    mockedApi.get.mockResolvedValue(item);
+    renderDetail("item-1");
+    await screen.findByText("Cordless Drill");
+    // The thumbnail box renders an img with the thumbnail URL (decorative alt).
+    const imgs = document.querySelectorAll('img[src="https://x.test/thumb.jpg"]');
+    expect(imgs.length).toBeGreaterThan(0);
+  });
+
+  it("dims the header thumbnail for archived items", async () => {
+    const item = makeItem({
+      id: "item-1",
+      name: "Old Saw",
+      is_archived: true,
+      primary_photo_thumbnail_url: "https://x.test/thumb.jpg",
+    });
+    mockedApi.get.mockResolvedValue(item);
+    renderDetail("item-1");
+    await screen.findByText("Old Saw");
+    const img = document.querySelector('img[src="https://x.test/thumb.jpg"]');
+    expect(img).not.toBeNull();
+    // opacity-50 lives on the surrounding box wrapper.
+    const wrapper = img?.closest("div");
+    expect(wrapper?.className).toMatch(/opacity-50/);
   });
 });
 
