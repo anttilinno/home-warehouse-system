@@ -1,4 +1,4 @@
-import { get, post, patch } from "@/lib/api";
+import { get, post, patch, del } from "@/lib/api";
 
 export interface Item {
   id: string;
@@ -38,12 +38,11 @@ export interface ItemListResponse {
 export interface ItemListParams {
   page?: number;
   limit?: number;
-  needs_review?: boolean;
-  archived?: boolean;
   search?: string;
   category_id?: string;
-  location_id?: string;
-  sort?: string;
+  archived?: boolean;
+  sort?: "name" | "sku" | "created_at" | "updated_at";
+  sort_dir?: "asc" | "desc";
 }
 
 export interface CreateItemInput {
@@ -89,6 +88,7 @@ export const itemsApi = {
     patch<Item>(`${base(wsId)}/${id}`, body),
   archive: (wsId: string, id: string) => post<void>(`${base(wsId)}/${id}/archive`),
   restore: (wsId: string, id: string) => post<void>(`${base(wsId)}/${id}/restore`),
+  delete: (wsId: string, id: string) => del<void>(`${base(wsId)}/${id}`),
 };
 
 export const itemKeys = {
