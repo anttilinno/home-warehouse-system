@@ -4,8 +4,8 @@ milestone: v2.1
 milestone_name: Feature Parity — Items, Loans & Scanning
 status: executing
 stopped_at: Phase 61 UI-SPEC approved
-last_updated: "2026-04-16T17:16:35.250Z"
-last_activity: 2026-04-16 -- Phase 61 execution started
+last_updated: "2026-04-16T19:21:31.337Z"
+last_activity: 2026-04-16
 progress:
   total_phases: 6
   completed_phases: 6
@@ -25,16 +25,16 @@ See: `.planning/PROJECT.md` (updated 2026-04-14)
 
 ## Current Position
 
-Phase: 61 (item-photos) — EXECUTING
-Plan: 1 of 4
+Phase: 61
+Plan: Not started
 Status: Executing Phase 61
-Last activity: 2026-04-16 -- Phase 61 execution started
+Last activity: 2026-04-16
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 148
+- Total plans completed: 153
 - Average duration: ~15 min per plan
 - Total execution time: ~37 hours
 

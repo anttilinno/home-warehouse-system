@@ -187,7 +187,7 @@ See `.planning/milestones/v1.9-ROADMAP.md` for full details.
 - [x] **Phase 58: Taxonomy — Categories, Locations, Containers** - Hierarchical tree CRUD for categories and locations, container CRUD grouped by location (completed 2026-04-15)
 - [ ] **Phase 59: Borrowers CRUD** - Flat borrower list, create/edit/delete with active-loan guard, detail page with loan history
 - [x] **Phase 60: Items CRUD** - Paginated list with search/filter/sort, detail view, create/edit/delete, archive/unarchive toggle (completed 2026-04-16)
-- [ ] **Phase 61: Item Photos** - Multipart photo upload, gallery viewer, photo delete, primary thumbnail on list + detail
+- [x] **Phase 61: Item Photos** - Multipart photo upload, gallery viewer, photo delete, primary thumbnail on list + detail (completed 2026-04-16)
 - [ ] **Phase 62: Loans** - Tabbed Active/Overdue/History list, create loan, mark returned, edit, per-item and per-borrower history
 - [ ] **Phase 63: Navigation & Polish** - Sidebar links for Items/Loans/Borrowers/Taxonomy, dashboard quick-access wiring, i18n sweep, empty states
 
@@ -399,12 +399,12 @@ Plans:
   3. User can delete a photo from the gallery with a confirmation step and the gallery updates immediately
   4. Items list rows and item detail header show the primary/thumbnail photo when available and a retro placeholder otherwise
   5. Photo `ObjectURL`s are revoked via ref on unmount so repeated uploads do not leak memory (v1.9 lesson)
-**Plans:** 3/4 plans executed
+**Plans:** 5/5 plans complete
 Plans:
 - [x] 61-01-PLAN.md — Foundation: backend PhotoResponse.thumbnail_status + ItemResponse.primary_photo_* (server-side join) + frontend put/setPrimary/multipart-field-fix + RetroFileInput HEIC→WebP + Wave 0 test scaffolds
 - [x] 61-02-PLAN.md — Presentational family: ItemPhotoTile (HazardStripe placeholder + PRIMARY badge) + ItemPhotoGrid (responsive 3/4 col) + ItemThumbnailCell (40×40 list cell) + ItemHeaderThumbnail (64×64 detail header)
 - [x] 61-03-PLAN.md — Stateful composition: useItemPhotoGallery hook (sequential upload + optimistic setPrimary + delete + ObjectURL tracking) + ItemPhotoLightbox (FloatingPortal overlay + nested RetroConfirmDialog) + ItemPhotoGallery orchestrator
-- [ ] 61-04-PLAN.md — Page wiring + i18n + checkpoint: ItemDetailPage PHOTOS swap + header thumbnail, ItemsListPage THUMB column, Lingui EN + ET extract, human-verify end-to-end
+- [x] 61-04-PLAN.md — Page wiring + i18n + checkpoint: ItemDetailPage PHOTOS swap + header thumbnail, ItemsListPage THUMB column, Lingui EN + ET extract, human-verify end-to-end
 **UI hint**: yes
 
 ### Phase 62: Loans
@@ -456,7 +456,7 @@ Phases execute in numeric order: 56 -> 57 -> (58 || 59) -> 60 -> 61 -> 62 -> 63
 | 58. Taxonomy — Categories, Locations, Containers | v2.1 | 4/4 | Complete   | 2026-04-15 |
 | 59. Borrowers CRUD | v2.1 | 4/4 | Complete   | 2026-04-16 |
 | 60. Items CRUD | v2.1 | 4/4 | Complete   | 2026-04-16 |
-| 61. Item Photos | v2.1 | 3/4 | In Progress|  |
+| 61. Item Photos | v2.1 | 5/5 | Complete    | 2026-04-16 |
 | 62. Loans | v2.1 | 0/TBD | Not started | - |
 | 63. Navigation & Polish | v2.1 | 0/TBD | Not started | - |
 
