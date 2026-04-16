@@ -2,6 +2,7 @@ package item_test
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"testing"
@@ -165,8 +166,8 @@ func TestItemHandler_List(t *testing.T) {
 		item2, _ := item.NewItem(setup.WorkspaceID, "Item 2", "IT-002", 0)
 		items := []*item.Item{item1, item2}
 
-		mockSvc.On("List", mock.Anything, setup.WorkspaceID, mock.MatchedBy(func(p shared.Pagination) bool {
-			return p.Page == 1 && p.PageSize == 50
+		mockSvc.On("ListFiltered", mock.Anything, setup.WorkspaceID, mock.Anything, mock.MatchedBy(func(p shared.Pagination) bool {
+			return p.Page == 1 && p.PageSize == 25
 		})).Return(items, 2, nil).Once()
 
 		rec := setup.Get("/items")
@@ -176,7 +177,7 @@ func TestItemHandler_List(t *testing.T) {
 	})
 
 	t.Run("handles pagination", func(t *testing.T) {
-		mockSvc.On("List", mock.Anything, setup.WorkspaceID, mock.MatchedBy(func(p shared.Pagination) bool {
+		mockSvc.On("ListFiltered", mock.Anything, setup.WorkspaceID, mock.Anything, mock.MatchedBy(func(p shared.Pagination) bool {
 			return p.Page == 2 && p.PageSize == 10
 		})).Return([]*item.Item{}, 50, nil).Once()
 
@@ -187,7 +188,7 @@ func TestItemHandler_List(t *testing.T) {
 	})
 
 	t.Run("returns empty list when no items", func(t *testing.T) {
-		mockSvc.On("List", mock.Anything, setup.WorkspaceID, mock.Anything).
+		mockSvc.On("ListFiltered", mock.Anything, setup.WorkspaceID, mock.Anything, mock.Anything).
 			Return([]*item.Item{}, 0, nil).Once()
 
 		rec := setup.Get("/items")
@@ -515,7 +516,7 @@ func TestItemHandler_ListItems_FilterByNeedsReview(t *testing.T) {
 		items := []*item.Item{item1}
 
 		mockSvc.On("ListNeedingReview", mock.Anything, setup.WorkspaceID, mock.MatchedBy(func(p shared.Pagination) bool {
-			return p.Page == 1 && p.PageSize == 50
+			return p.Page == 1 && p.PageSize == 25
 		})).Return(items, 1, nil).Once()
 
 		rec := setup.Get("/items?needs_review=true")
@@ -524,12 +525,12 @@ func TestItemHandler_ListItems_FilterByNeedsReview(t *testing.T) {
 		mockSvc.AssertExpectations(t)
 	})
 
-	t.Run("without needs_review filter calls List", func(t *testing.T) {
+	t.Run("without needs_review filter calls ListFiltered", func(t *testing.T) {
 		item1, _ := item.NewItem(setup.WorkspaceID, "Normal Item", "NRM-001", 0)
 		items := []*item.Item{item1}
 
-		mockSvc.On("List", mock.Anything, setup.WorkspaceID, mock.MatchedBy(func(p shared.Pagination) bool {
-			return p.Page == 1 && p.PageSize == 50
+		mockSvc.On("ListFiltered", mock.Anything, setup.WorkspaceID, mock.Anything, mock.MatchedBy(func(p shared.Pagination) bool {
+			return p.Page == 1 && p.PageSize == 25
 		})).Return(items, 1, nil).Once()
 
 		rec := setup.Get("/items")
@@ -709,6 +710,181 @@ func TestItemHandler_Create_NilBroadcaster_NoError(t *testing.T) {
 
 	// Should not panic and should succeed
 	testutil.AssertStatus(t, rec, http.StatusOK)
+	mockSvc.AssertExpectations(t)
+}
+
+// Phase 60-01: Delete + filtered list tests
+
+func TestItemHandler_Delete_Success(t *testing.T) {
+	setup := testutil.NewHandlerTestSetup()
+	mockSvc := new(MockService)
+	capture := testutil.NewEventCapture(setup.WorkspaceID, setup.UserID)
+	capture.Start()
+	defer capture.Stop()
+
+	item.RegisterRoutes(setup.API, mockSvc, capture.GetBroadcaster())
+
+	itemID := uuid.New()
+
+	mockSvc.On("Delete", mock.Anything, itemID, setup.WorkspaceID).
+		Return(nil).Once()
+
+	rec := setup.Delete(fmt.Sprintf("/items/%s", itemID))
+
+	testutil.AssertStatus(t, rec, http.StatusNoContent)
+	mockSvc.AssertExpectations(t)
+
+	assert.True(t, capture.WaitForEvents(1, 500*time.Millisecond), "expected item.deleted event")
+	event := capture.GetLastEvent()
+	assert.NotNil(t, event)
+	assert.Equal(t, "item.deleted", event.Type)
+	assert.Equal(t, "item", event.EntityType)
+	assert.Equal(t, itemID.String(), event.EntityID)
+	assert.Equal(t, setup.WorkspaceID, event.WorkspaceID)
+	assert.Equal(t, setup.UserID, event.UserID)
+	// Event payload must not leak item details (only user_name).
+	if assert.NotNil(t, event.Data) {
+		_, hasSKU := event.Data["sku"]
+		_, hasName := event.Data["name"]
+		assert.False(t, hasSKU, "event.data must not contain sku")
+		assert.False(t, hasName, "event.data must not contain name")
+	}
+}
+
+func TestItemHandler_Delete_CrossWorkspace_Returns404(t *testing.T) {
+	setup := testutil.NewHandlerTestSetup()
+	mockSvc := new(MockService)
+	item.RegisterRoutes(setup.API, mockSvc, nil)
+
+	itemID := uuid.New()
+	mockSvc.On("Delete", mock.Anything, itemID, setup.WorkspaceID).
+		Return(item.ErrItemNotFound).Once()
+
+	rec := setup.Delete(fmt.Sprintf("/items/%s", itemID))
+
+	testutil.AssertStatus(t, rec, http.StatusNotFound)
+	mockSvc.AssertExpectations(t)
+}
+
+func TestItemHandler_List_Search_ForwardsToService(t *testing.T) {
+	setup := testutil.NewHandlerTestSetup()
+	mockSvc := new(MockService)
+	item.RegisterRoutes(setup.API, mockSvc, nil)
+
+	mockSvc.On("ListFiltered", mock.Anything, setup.WorkspaceID,
+		mock.MatchedBy(func(f item.ListFilters) bool { return f.Search == "drill" }),
+		mock.Anything).Return([]*item.Item{}, 0, nil).Once()
+
+	rec := setup.Get("/items?search=drill")
+
+	testutil.AssertStatus(t, rec, http.StatusOK)
+	mockSvc.AssertExpectations(t)
+}
+
+func TestItemHandler_List_ArchivedTrue_ForwardsToService(t *testing.T) {
+	setup := testutil.NewHandlerTestSetup()
+	mockSvc := new(MockService)
+	item.RegisterRoutes(setup.API, mockSvc, nil)
+
+	mockSvc.On("ListFiltered", mock.Anything, setup.WorkspaceID,
+		mock.MatchedBy(func(f item.ListFilters) bool { return f.IncludeArchived }),
+		mock.Anything).Return([]*item.Item{}, 0, nil).Once()
+
+	rec := setup.Get("/items?archived=true")
+
+	testutil.AssertStatus(t, rec, http.StatusOK)
+	mockSvc.AssertExpectations(t)
+}
+
+func TestItemHandler_List_Sort_ForwardsToService(t *testing.T) {
+	setup := testutil.NewHandlerTestSetup()
+	mockSvc := new(MockService)
+	item.RegisterRoutes(setup.API, mockSvc, nil)
+
+	mockSvc.On("ListFiltered", mock.Anything, setup.WorkspaceID,
+		mock.MatchedBy(func(f item.ListFilters) bool {
+			return f.Sort == "created_at" && f.SortDir == "desc"
+		}),
+		mock.Anything).Return([]*item.Item{}, 0, nil).Once()
+
+	rec := setup.Get("/items?sort=created_at&sort_dir=desc")
+
+	testutil.AssertStatus(t, rec, http.StatusOK)
+	mockSvc.AssertExpectations(t)
+}
+
+func TestItemHandler_List_Sort_ValidatesEnum(t *testing.T) {
+	setup := testutil.NewHandlerTestSetup()
+	mockSvc := new(MockService)
+	item.RegisterRoutes(setup.API, mockSvc, nil)
+
+	rec := setup.Get("/items?sort=bogus")
+
+	// huma enum validation rejects before reaching the service — accept
+	// either 400 or 422 depending on huma's version mapping.
+	assert.Contains(t, []int{http.StatusBadRequest, http.StatusUnprocessableEntity}, rec.Code,
+		"expected 400 or 422 for invalid sort enum, got %d", rec.Code)
+	// Service must not be invoked on validation failure.
+	mockSvc.AssertNotCalled(t, "ListFiltered", mock.Anything, mock.Anything, mock.Anything, mock.Anything)
+}
+
+func TestItemHandler_List_Category_InvalidUUID_IgnoredNotErrored(t *testing.T) {
+	setup := testutil.NewHandlerTestSetup()
+	mockSvc := new(MockService)
+	item.RegisterRoutes(setup.API, mockSvc, nil)
+
+	mockSvc.On("ListFiltered", mock.Anything, setup.WorkspaceID,
+		mock.MatchedBy(func(f item.ListFilters) bool { return f.CategoryID == nil }),
+		mock.Anything).Return([]*item.Item{}, 0, nil).Once()
+
+	rec := setup.Get("/items?category_id=not-a-uuid")
+
+	// 200 OK, not 400 — malformed UUID is silently ignored per Pitfall 10.
+	testutil.AssertStatus(t, rec, http.StatusOK)
+	mockSvc.AssertExpectations(t)
+}
+
+func TestItemHandler_List_Category_ValidUUID_ForwardsPointer(t *testing.T) {
+	setup := testutil.NewHandlerTestSetup()
+	mockSvc := new(MockService)
+	item.RegisterRoutes(setup.API, mockSvc, nil)
+
+	catID := uuid.New()
+	mockSvc.On("ListFiltered", mock.Anything, setup.WorkspaceID,
+		mock.MatchedBy(func(f item.ListFilters) bool { return f.CategoryID != nil && *f.CategoryID == catID }),
+		mock.Anything).Return([]*item.Item{}, 0, nil).Once()
+
+	rec := setup.Get(fmt.Sprintf("/items?category_id=%s", catID))
+
+	testutil.AssertStatus(t, rec, http.StatusOK)
+	mockSvc.AssertExpectations(t)
+}
+
+func TestItemHandler_List_TotalComputedCorrectly(t *testing.T) {
+	setup := testutil.NewHandlerTestSetup()
+	mockSvc := new(MockService)
+	item.RegisterRoutes(setup.API, mockSvc, nil)
+
+	// Two rows on the page, 47 total — with limit=25 expect TotalPages=2.
+	it1, _ := item.NewItem(setup.WorkspaceID, "A", "TP-001", 0)
+	it2, _ := item.NewItem(setup.WorkspaceID, "B", "TP-002", 0)
+	mockSvc.On("ListFiltered", mock.Anything, setup.WorkspaceID, mock.Anything, mock.Anything).
+		Return([]*item.Item{it1, it2}, 47, nil).Once()
+
+	rec := setup.Get("/items?limit=25")
+
+	testutil.AssertStatus(t, rec, http.StatusOK)
+
+	var body struct {
+		Total      int `json:"total"`
+		Page       int `json:"page"`
+		TotalPages int `json:"total_pages"`
+	}
+	require := assert.New(t)
+	require.NoError(json.Unmarshal(rec.Body.Bytes(), &body))
+	assert.Equal(t, 47, body.Total)
+	assert.Equal(t, 2, body.TotalPages)
+	assert.Equal(t, 1, body.Page)
 	mockSvc.AssertExpectations(t)
 }
 

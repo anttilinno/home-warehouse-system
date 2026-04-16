@@ -2,6 +2,7 @@ package item
 
 import (
 	"context"
+	"errors"
 	"time"
 
 	"github.com/danielgtaylor/huma/v2"
@@ -34,10 +35,31 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 		var total int
 		var err error
 
-		if input.NeedsReview {
+		switch {
+		case input.NeedsReview:
+			// Preserve legacy needs-review listing (orthogonal to filtered list).
 			items, total, err = svc.ListNeedingReview(ctx, workspaceID, pagination)
-		} else {
-			items, total, err = svc.List(ctx, workspaceID, pagination)
+		default:
+			// Parse CategoryID — malformed UUID is silently treated as no filter
+			// (Pitfall 10 adjacent — defense in depth against malformed input).
+			var categoryID *uuid.UUID
+			if input.CategoryID != "" {
+				if id, perr := uuid.Parse(input.CategoryID); perr == nil {
+					categoryID = &id
+				}
+			}
+
+			filters := ListFilters{
+				// Empty search normalized to "no filter" by both SQL and repo
+				// (Pitfall 2 — defense in depth).
+				Search:          input.Search,
+				CategoryID:      categoryID,
+				IncludeArchived: input.Archived,
+				Sort:            input.Sort,
+				SortDir:         input.SortDir,
+			}
+
+			items, total, err = svc.ListFiltered(ctx, workspaceID, filters, pagination)
 		}
 		if err != nil {
 			return nil, huma.Error500InternalServerError("failed to list items")
@@ -48,12 +70,17 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 			responses[i] = toItemResponse(item)
 		}
 
+		totalPages := 1
+		if total > 0 && input.Limit > 0 {
+			totalPages = (total + input.Limit - 1) / input.Limit
+		}
+
 		return &ListItemsOutput{
 			Body: ItemListResponse{
 				Items:      responses,
 				Total:      total,
 				Page:       input.Page,
-				TotalPages: (total + input.Limit - 1) / input.Limit,
+				TotalPages: totalPages,
 			},
 		}, nil
 	})
@@ -341,6 +368,37 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 		return nil, nil
 	})
 
+	// Delete item (hard delete; archive endpoint is separate)
+	huma.Delete(api, "/items/{id}", func(ctx context.Context, input *GetItemInput) (*struct{}, error) {
+		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
+		if !ok {
+			return nil, huma.Error401Unauthorized("workspace context required")
+		}
+
+		authUser, _ := appMiddleware.GetAuthUser(ctx)
+
+		if err := svc.Delete(ctx, input.ID, workspaceID); err != nil {
+			if errors.Is(err, ErrItemNotFound) {
+				return nil, huma.Error404NotFound("item not found")
+			}
+			return nil, huma.Error400BadRequest(err.Error())
+		}
+
+		if broadcaster != nil && authUser != nil {
+			userName := appMiddleware.GetUserDisplayName(ctx)
+			broadcaster.Publish(workspaceID, events.Event{
+				Type:       "item.deleted",
+				EntityID:   input.ID.String(),
+				EntityType: "item",
+				UserID:     authUser.ID,
+				Data: map[string]any{
+					"user_name": userName,
+				},
+			})
+		}
+		return nil, nil
+	})
+
 	// Get item labels
 	huma.Get(api, "/items/{id}/labels", func(ctx context.Context, input *GetItemInput) (*GetItemLabelsOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
@@ -431,9 +489,14 @@ func toItemResponse(i *Item) ItemResponse {
 // Request/Response types
 
 type ListItemsInput struct {
-	Page        int  `query:"page" default:"1" minimum:"1"`
-	Limit       int  `query:"limit" default:"50" minimum:"1" maximum:"100"`
-	NeedsReview bool `query:"needs_review,omitempty" doc:"Filter by needs_review status"`
+	Page        int    `query:"page" default:"1" minimum:"1"`
+	Limit       int    `query:"limit" default:"25" minimum:"1" maximum:"100"`
+	Search      string `query:"search,omitempty" maxLength:"200" doc:"Full-text search over name, SKU, and barcode"`
+	CategoryID  string `query:"category_id,omitempty" doc:"Filter by category UUID"`
+	Archived    bool   `query:"archived" default:"false" doc:"When true, include archived items in the list"`
+	Sort        string `query:"sort" default:"name" enum:"name,sku,created_at,updated_at" doc:"Sort field"`
+	SortDir     string `query:"sort_dir" default:"asc" enum:"asc,desc" doc:"Sort direction"`
+	NeedsReview bool   `query:"needs_review,omitempty" doc:"Filter by needs_review status (orthogonal to filtered list)"`
 }
 
 type ListItemsOutput struct {
