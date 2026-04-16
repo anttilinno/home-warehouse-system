@@ -207,7 +207,9 @@ export function BorrowersListPage() {
       {workspaceId &&
         borrowersQuery.isSuccess &&
         borrowers.length > 0 && (
-          <RetroTable columns={columns} data={rows} />
+          <RetroPanel>
+            <RetroTable columns={columns} data={rows} />
+          </RetroPanel>
         )}
 
       <BorrowerPanel ref={panelRef} />

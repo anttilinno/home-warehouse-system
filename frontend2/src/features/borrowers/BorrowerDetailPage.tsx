@@ -16,18 +16,15 @@ export function BorrowerDetailPage() {
 
   if (borrowerQuery.isPending) {
     return (
-      <div className="p-lg">
-        <RetroPanel>
-          <p className="font-mono text-retro-charcoal">{t`Loading…`}</p>
-        </RetroPanel>
-      </div>
+      <RetroPanel>
+        <p className="font-mono text-retro-charcoal">{t`Loading…`}</p>
+      </RetroPanel>
     );
   }
 
   if (borrowerQuery.isError || !borrowerQuery.data) {
     return (
-      <div className="p-lg">
-        <RetroPanel>
+      <RetroPanel>
           <HazardStripe className="mb-md" />
           <h1 className="text-[20px] font-bold uppercase text-retro-ink mb-sm">
             {t`BORROWER NOT FOUND`}
@@ -42,8 +39,7 @@ export function BorrowerDetailPage() {
             <ArrowLeft size={14} />
             {t`BACK TO BORROWERS`}
           </Link>
-        </RetroPanel>
-      </div>
+      </RetroPanel>
     );
   }
 
