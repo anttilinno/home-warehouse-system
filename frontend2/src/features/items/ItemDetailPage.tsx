@@ -21,6 +21,8 @@ import {
   ItemArchiveDeleteFlow,
   type ItemArchiveDeleteFlowHandle,
 } from "./actions/ItemArchiveDeleteFlow";
+import { ItemPhotoGallery } from "./photos/ItemPhotoGallery";
+import { ItemHeaderThumbnail } from "./photos/ItemHeaderThumbnail";
 
 /**
  * Items detail page — /items/:id route.
@@ -120,6 +122,10 @@ export function ItemDetailPage() {
       </Link>
 
       <div className="border-l-2 border-retro-amber pl-md flex items-center gap-md flex-wrap">
+        <ItemHeaderThumbnail
+          thumbnailUrl={item.primary_photo_thumbnail_url}
+          dimmed={item.is_archived ?? false}
+        />
         <h1 className="text-[24px] font-bold uppercase text-retro-ink">
           {item.name}
         </h1>
@@ -233,9 +239,10 @@ export function ItemDetailPage() {
         >
           {t`PHOTOS`}
         </h2>
-        <RetroEmptyState
-          title={t`NO PHOTOS`}
-          body={t`Photos will appear here after Phase 61.`}
+        <ItemPhotoGallery
+          itemId={item.id}
+          itemName={item.name}
+          archived={item.is_archived ?? false}
         />
       </section>
 
