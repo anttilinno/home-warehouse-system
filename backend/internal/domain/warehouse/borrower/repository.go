@@ -9,6 +9,7 @@ import (
 )
 
 type Repository interface {
+	Create(ctx context.Context, borrower *Borrower) error
 	Save(ctx context.Context, borrower *Borrower) error
 	FindByID(ctx context.Context, id, workspaceID uuid.UUID) (*Borrower, error)
 	FindByWorkspace(ctx context.Context, workspaceID uuid.UUID, pagination shared.Pagination, includeArchived bool) ([]*Borrower, int, error)

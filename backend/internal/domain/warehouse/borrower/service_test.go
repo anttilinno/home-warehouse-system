@@ -18,6 +18,11 @@ type MockRepository struct {
 	mock.Mock
 }
 
+func (m *MockRepository) Create(ctx context.Context, borrower *Borrower) error {
+	args := m.Called(ctx, borrower)
+	return args.Error(0)
+}
+
 func (m *MockRepository) Save(ctx context.Context, borrower *Borrower) error {
 	args := m.Called(ctx, borrower)
 	return args.Error(0)
@@ -338,7 +343,7 @@ func TestService_Create(t *testing.T) {
 				Notes:       ptrString("Notes"),
 			},
 			setupMock: func(m *MockRepository) {
-				m.On("Save", ctx, mock.AnythingOfType("*borrower.Borrower")).Return(nil)
+				m.On("Create", ctx, mock.AnythingOfType("*borrower.Borrower")).Return(nil)
 			},
 			expectError: false,
 		},
@@ -349,7 +354,7 @@ func TestService_Create(t *testing.T) {
 				Name:        "Jane Smith",
 			},
 			setupMock: func(m *MockRepository) {
-				m.On("Save", ctx, mock.AnythingOfType("*borrower.Borrower")).Return(nil)
+				m.On("Create", ctx, mock.AnythingOfType("*borrower.Borrower")).Return(nil)
 			},
 			expectError: false,
 		},
@@ -378,7 +383,7 @@ func TestService_Create(t *testing.T) {
 				Name:        "Test User",
 			},
 			setupMock: func(m *MockRepository) {
-				m.On("Save", ctx, mock.AnythingOfType("*borrower.Borrower")).Return(errors.New("save error"))
+				m.On("Create", ctx, mock.AnythingOfType("*borrower.Borrower")).Return(errors.New("save error"))
 			},
 			expectError: true,
 		},

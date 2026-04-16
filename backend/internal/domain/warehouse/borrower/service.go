@@ -42,7 +42,7 @@ func (s *Service) Create(ctx context.Context, input CreateInput) (*Borrower, err
 		return nil, err
 	}
 
-	if err := s.repo.Save(ctx, borrower); err != nil {
+	if err := s.repo.Create(ctx, borrower); err != nil {
 		return nil, err
 	}
 

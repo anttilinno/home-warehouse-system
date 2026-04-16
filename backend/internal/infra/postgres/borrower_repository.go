@@ -25,7 +25,7 @@ func NewBorrowerRepository(pool *pgxpool.Pool) *BorrowerRepository {
 	}
 }
 
-func (r *BorrowerRepository) Save(ctx context.Context, b *borrower.Borrower) error {
+func (r *BorrowerRepository) Create(ctx context.Context, b *borrower.Borrower) error {
 	_, err := r.queries.CreateBorrower(ctx, queries.CreateBorrowerParams{
 		ID:          b.ID(),
 		WorkspaceID: b.WorkspaceID(),
@@ -33,6 +33,17 @@ func (r *BorrowerRepository) Save(ctx context.Context, b *borrower.Borrower) err
 		Email:       b.Email(),
 		Phone:       b.Phone(),
 		Notes:       b.Notes(),
+	})
+	return err
+}
+
+func (r *BorrowerRepository) Save(ctx context.Context, b *borrower.Borrower) error {
+	_, err := r.queries.UpdateBorrower(ctx, queries.UpdateBorrowerParams{
+		ID:    b.ID(),
+		Name:  b.Name(),
+		Email: b.Email(),
+		Phone: b.Phone(),
+		Notes: b.Notes(),
 	})
 	return err
 }
