@@ -184,6 +184,12 @@ func (r *ItemRepository) FindByWorkspace(ctx context.Context, workspaceID uuid.U
 		items = append(items, r.rowToItem(row))
 	}
 
+	// NOTE: returns len(items) (page size), not a true COUNT(*). This violates
+	// the documented int-total contract for large datasets. The public handler
+	// routes all list requests through FindByWorkspaceFiltered which uses a
+	// real COUNT(*), so this path is only hit by internal/legacy callers.
+	// TODO: replace with a CountItems query if this method is ever exposed
+	// directly to user-facing request paths.
 	return items, len(items), nil
 }
 
