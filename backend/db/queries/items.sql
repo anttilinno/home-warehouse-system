@@ -106,3 +106,40 @@ LIMIT $2 OFFSET $3;
 -- name: CountItemsNeedingReview :one
 SELECT COUNT(*) FROM warehouse.items
 WHERE workspace_id = $1 AND needs_review = true AND is_archived = false;
+
+-- name: ListItemsFiltered :many
+SELECT * FROM warehouse.items
+WHERE workspace_id = $1
+  AND (sqlc.narg('archived')::bool IS NULL
+       OR sqlc.narg('archived')::bool = true
+       OR is_archived = false)
+  AND (sqlc.narg('search')::text IS NULL
+       OR sqlc.narg('search')::text = ''
+       OR search_vector @@ plainto_tsquery('english', sqlc.narg('search')::text))
+  AND (sqlc.narg('category_id')::uuid IS NULL
+       OR category_id = sqlc.narg('category_id')::uuid)
+ORDER BY
+  CASE WHEN sqlc.arg('sort_field')::text = 'name'        AND sqlc.arg('sort_dir')::text = 'asc'  THEN name        END ASC NULLS LAST,
+  CASE WHEN sqlc.arg('sort_field')::text = 'name'        AND sqlc.arg('sort_dir')::text = 'desc' THEN name        END DESC NULLS LAST,
+  CASE WHEN sqlc.arg('sort_field')::text = 'sku'         AND sqlc.arg('sort_dir')::text = 'asc'  THEN sku         END ASC NULLS LAST,
+  CASE WHEN sqlc.arg('sort_field')::text = 'sku'         AND sqlc.arg('sort_dir')::text = 'desc' THEN sku         END DESC NULLS LAST,
+  CASE WHEN sqlc.arg('sort_field')::text = 'created_at'  AND sqlc.arg('sort_dir')::text = 'asc'  THEN created_at  END ASC NULLS LAST,
+  CASE WHEN sqlc.arg('sort_field')::text = 'created_at'  AND sqlc.arg('sort_dir')::text = 'desc' THEN created_at  END DESC NULLS LAST,
+  CASE WHEN sqlc.arg('sort_field')::text = 'updated_at'  AND sqlc.arg('sort_dir')::text = 'asc'  THEN updated_at  END ASC NULLS LAST,
+  CASE WHEN sqlc.arg('sort_field')::text = 'updated_at'  AND sqlc.arg('sort_dir')::text = 'desc' THEN updated_at  END DESC NULLS LAST
+LIMIT $2 OFFSET $3;
+
+-- name: CountItemsFiltered :one
+SELECT COUNT(*) FROM warehouse.items
+WHERE workspace_id = $1
+  AND (sqlc.narg('archived')::bool IS NULL
+       OR sqlc.narg('archived')::bool = true
+       OR is_archived = false)
+  AND (sqlc.narg('search')::text IS NULL
+       OR sqlc.narg('search')::text = ''
+       OR search_vector @@ plainto_tsquery('english', sqlc.narg('search')::text))
+  AND (sqlc.narg('category_id')::uuid IS NULL
+       OR category_id = sqlc.narg('category_id')::uuid);
+
+-- name: DeleteItem :exec
+DELETE FROM warehouse.items WHERE id = $1;

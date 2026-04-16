@@ -39,6 +39,38 @@ func (q *Queries) AttachLabel(ctx context.Context, arg AttachLabelParams) error 
 	return err
 }
 
+const countItemsFiltered = `-- name: CountItemsFiltered :one
+SELECT COUNT(*) FROM warehouse.items
+WHERE workspace_id = $1
+  AND ($2::bool IS NULL
+       OR $2::bool = true
+       OR is_archived = false)
+  AND ($3::text IS NULL
+       OR $3::text = ''
+       OR search_vector @@ plainto_tsquery('english', $3::text))
+  AND ($4::uuid IS NULL
+       OR category_id = $4::uuid)
+`
+
+type CountItemsFilteredParams struct {
+	WorkspaceID uuid.UUID   `json:"workspace_id"`
+	Archived    *bool       `json:"archived"`
+	Search      *string     `json:"search"`
+	CategoryID  pgtype.UUID `json:"category_id"`
+}
+
+func (q *Queries) CountItemsFiltered(ctx context.Context, arg CountItemsFilteredParams) (int64, error) {
+	row := q.db.QueryRow(ctx, countItemsFiltered,
+		arg.WorkspaceID,
+		arg.Archived,
+		arg.Search,
+		arg.CategoryID,
+	)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
 const countItemsNeedingReview = `-- name: CountItemsNeedingReview :one
 SELECT COUNT(*) FROM warehouse.items
 WHERE workspace_id = $1 AND needs_review = true AND is_archived = false
@@ -139,6 +171,15 @@ func (q *Queries) CreateItem(ctx context.Context, arg CreateItemParams) (Warehou
 		&i.UpdatedAt,
 	)
 	return i, err
+}
+
+const deleteItem = `-- name: DeleteItem :exec
+DELETE FROM warehouse.items WHERE id = $1
+`
+
+func (q *Queries) DeleteItem(ctx context.Context, id uuid.UUID) error {
+	_, err := q.db.Exec(ctx, deleteItem, id)
+	return err
 }
 
 const detachLabel = `-- name: DetachLabel :exec
@@ -558,6 +599,95 @@ func (q *Queries) ListItemsByCategory(ctx context.Context, arg ListItemsByCatego
 		arg.CategoryID,
 		arg.Limit,
 		arg.Offset,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []WarehouseItem{}
+	for rows.Next() {
+		var i WarehouseItem
+		if err := rows.Scan(
+			&i.ID,
+			&i.WorkspaceID,
+			&i.Sku,
+			&i.Name,
+			&i.Description,
+			&i.CategoryID,
+			&i.Brand,
+			&i.Model,
+			&i.ImageUrl,
+			&i.SerialNumber,
+			&i.Manufacturer,
+			&i.Barcode,
+			&i.IsInsured,
+			&i.IsArchived,
+			&i.NeedsReview,
+			&i.LifetimeWarranty,
+			&i.WarrantyDetails,
+			&i.PurchasedFrom,
+			&i.MinStockLevel,
+			&i.ShortCode,
+			&i.ObsidianVaultPath,
+			&i.ObsidianNotePath,
+			&i.SearchVector,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listItemsFiltered = `-- name: ListItemsFiltered :many
+SELECT id, workspace_id, sku, name, description, category_id, brand, model, image_url, serial_number, manufacturer, barcode, is_insured, is_archived, needs_review, lifetime_warranty, warranty_details, purchased_from, min_stock_level, short_code, obsidian_vault_path, obsidian_note_path, search_vector, created_at, updated_at FROM warehouse.items
+WHERE workspace_id = $1
+  AND ($4::bool IS NULL
+       OR $4::bool = true
+       OR is_archived = false)
+  AND ($5::text IS NULL
+       OR $5::text = ''
+       OR search_vector @@ plainto_tsquery('english', $5::text))
+  AND ($6::uuid IS NULL
+       OR category_id = $6::uuid)
+ORDER BY
+  CASE WHEN $7::text = 'name'        AND $8::text = 'asc'  THEN name        END ASC NULLS LAST,
+  CASE WHEN $7::text = 'name'        AND $8::text = 'desc' THEN name        END DESC NULLS LAST,
+  CASE WHEN $7::text = 'sku'         AND $8::text = 'asc'  THEN sku         END ASC NULLS LAST,
+  CASE WHEN $7::text = 'sku'         AND $8::text = 'desc' THEN sku         END DESC NULLS LAST,
+  CASE WHEN $7::text = 'created_at'  AND $8::text = 'asc'  THEN created_at  END ASC NULLS LAST,
+  CASE WHEN $7::text = 'created_at'  AND $8::text = 'desc' THEN created_at  END DESC NULLS LAST,
+  CASE WHEN $7::text = 'updated_at'  AND $8::text = 'asc'  THEN updated_at  END ASC NULLS LAST,
+  CASE WHEN $7::text = 'updated_at'  AND $8::text = 'desc' THEN updated_at  END DESC NULLS LAST
+LIMIT $2 OFFSET $3
+`
+
+type ListItemsFilteredParams struct {
+	WorkspaceID uuid.UUID   `json:"workspace_id"`
+	Limit       int32       `json:"limit"`
+	Offset      int32       `json:"offset"`
+	Archived    *bool       `json:"archived"`
+	Search      *string     `json:"search"`
+	CategoryID  pgtype.UUID `json:"category_id"`
+	SortField   string      `json:"sort_field"`
+	SortDir     string      `json:"sort_dir"`
+}
+
+func (q *Queries) ListItemsFiltered(ctx context.Context, arg ListItemsFilteredParams) ([]WarehouseItem, error) {
+	rows, err := q.db.Query(ctx, listItemsFiltered,
+		arg.WorkspaceID,
+		arg.Limit,
+		arg.Offset,
+		arg.Archived,
+		arg.Search,
+		arg.CategoryID,
+		arg.SortField,
+		arg.SortDir,
 	)
 	if err != nil {
 		return nil, err
