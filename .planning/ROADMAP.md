@@ -184,9 +184,9 @@ See `.planning/milestones/v1.9-ROADMAP.md` for full details.
 
 - [x] **Phase 56: Foundation — API Client & React Query** - Typed entity API modules and TanStack Query setup on top of existing `lib/api.ts` (completed 2026-04-15)
 - [ ] **Phase 57: Retro Form Primitives** - RetroSelect, RetroCombobox, RetroTextarea, RetroCheckbox, RetroFileInput, RetroPagination, RetroConfirmDialog, RetroEmptyState, RetroFormField
-- [ ] **Phase 58: Taxonomy — Categories, Locations, Containers** - Hierarchical tree CRUD for categories and locations, container CRUD grouped by location
+- [x] **Phase 58: Taxonomy — Categories, Locations, Containers** - Hierarchical tree CRUD for categories and locations, container CRUD grouped by location (completed 2026-04-15)
 - [ ] **Phase 59: Borrowers CRUD** - Flat borrower list, create/edit/delete with active-loan guard, detail page with loan history
-- [ ] **Phase 60: Items CRUD** - Paginated list with search/filter/sort, detail view, create/edit/delete, archive/unarchive toggle
+- [x] **Phase 60: Items CRUD** - Paginated list with search/filter/sort, detail view, create/edit/delete, archive/unarchive toggle (completed 2026-04-16)
 - [ ] **Phase 61: Item Photos** - Multipart photo upload, gallery viewer, photo delete, primary thumbnail on list + detail
 - [ ] **Phase 62: Loans** - Tabbed Active/Overdue/History list, create loan, mark returned, edit, per-item and per-borrower history
 - [ ] **Phase 63: Navigation & Polish** - Sidebar links for Items/Loans/Borrowers/Taxonomy, dashboard quick-access wiring, i18n sweep, empty states
@@ -345,7 +345,12 @@ Plans:
   3. User can archive or delete any taxonomy node; the UI shows the current usage count and warns when items are still assigned (handling 409 cascade responses)
   4. Taxonomy changes propagate to dependent selectors (e.g., item create/edit) on next open via React Query cache invalidation
   5. A unified `/taxonomy` tabbed page exposes Categories, Locations, and Containers with retro styling and empty states
-**Plans**: TBD
+**Plans:** 4/4 plans complete
+Plans:
+- [x] 58-01-PLAN.md — Pure utilities (buildTree, shortCode, zod schemas, useHashTab) + unit tests
+- [x] 58-02-PLAN.md — Data hooks: read (trees + grouped containers) + CRUD mutations with HttpError 409 handling
+- [x] 58-03-PLAN.md — Forms (Category/Location/Container) + SlideOverPanel + ArchiveDeleteFlow
+- [x] 58-04-PLAN.md — TaxonomyPage + Tree components + tabs + route wiring + i18n + human checkpoint
 **UI hint**: yes
 
 ### Phase 59: Borrowers CRUD
@@ -358,7 +363,12 @@ Plans:
   3. Attempting to delete a borrower with active loans is blocked and surfaces a clear retro error message
   4. Borrower detail page renders the borrower's active loans and historical loans in separate sections (loan data wired up in Phase 62)
   5. Empty states render a retro "no borrowers yet" panel with a primary create action
-**Plans**: TBD
+**Plans:** 3/4 plans executed
+Plans:
+- [x] 59-01-PLAN.md — Backend: add /archive + /restore endpoints, rewire DELETE to hard-delete with ErrHasActiveLoans guard, add archived list filter, split repo Archive/Restore/Delete
+- [x] 59-02-PLAN.md — Frontend API: borrowersApi.archive/restore + archived list param, borrower zod schemas, icons module, test fixtures
+- [x] 59-03-PLAN.md — Frontend composition: 2 query hooks + 5 mutation hooks (400-branch on delete), BorrowerForm + BorrowerPanel + BorrowerArchiveDeleteFlow
+- [ ] 59-04-PLAN.md — Pages + routes: BorrowersListPage + BorrowerDetailPage + /borrowers routes + Lingui extract + human-verify checkpoint
 **UI hint**: yes
 
 ### Phase 60: Items CRUD
@@ -371,7 +381,12 @@ Plans:
   3. User can open an item detail page that displays name, SKU, barcode, description, category, location, container, status, and notes
   4. User can create a new item with required name and all optional fields, edit any item, and delete an item after confirming via RetroConfirmDialog
   5. User can archive and unarchive an item from the detail page; archived items are excluded from the default list view
-**Plans**: TBD
+**Plans:** 4/4 plans complete
+Plans:
+- [x] 60-01-PLAN.md — Backend: ListItemsFiltered + CountItemsFiltered + DeleteItem SQL; fix repo.Delete to true hard-delete; extend ListItemsInput (search/category_id/archived/sort/sort_dir, default 25); register huma.Delete /items/{id}; ListFiltered on ServiceInterface + Delete with workspace ownership check
+- [x] 60-02-PLAN.md — Frontend API + hooks: itemsApi.delete, updated ItemListParams, zod schemas + generateSku, 5 mutation hooks (SKU-collision mapping, removeQueries-before-invalidate on delete), useItemsList + useItem + useCategoryNameMap (archived:true), icons + test fixtures
+- [x] 60-03-PLAN.md — Components: ItemForm (RHF + zod), ItemPanel (slide-over with SKU auto-gen), ItemArchiveDeleteFlow (no 400 branch), ShowArchivedChip (new composition), ItemsFilterBar (debounced search + category + sort), useItemsListQueryParams (URL state with page-reset on filter change)
+- [x] 60-04-PLAN.md — Pages + routes: ItemsListPage + ItemDetailPage with PHOTOS/LOANS placeholders; replace ItemsPage placeholder; /items + /items/:id routes; Lingui EN + ET catalog extraction; human-verify checkpoint
 **UI hint**: yes
 
 ### Phase 61: Item Photos
@@ -432,10 +447,10 @@ Phases execute in numeric order: 56 -> 57 -> (58 || 59) -> 60 -> 61 -> 62 -> 63
 | 43-47 | v1.9 | 9 | Complete | 2026-03-14 |
 | 48-55 | v2.0 | 18 | Complete | 2026-04-14 |
 | 56. Foundation — API Client & React Query | v2.1 | 4/4 | Complete   | 2026-04-15 |
-| 57. Retro Form Primitives | v2.1 | 0/TBD | Not started | - |
-| 58. Taxonomy — Categories, Locations, Containers | v2.1 | 0/TBD | Not started | - |
-| 59. Borrowers CRUD | v2.1 | 0/TBD | Not started | - |
-| 60. Items CRUD | v2.1 | 0/TBD | Not started | - |
+| 57. Retro Form Primitives | v2.1 | 3/3 | Complete   | 2026-04-15 |
+| 58. Taxonomy — Categories, Locations, Containers | v2.1 | 4/4 | Complete   | 2026-04-15 |
+| 59. Borrowers CRUD | v2.1 | 4/4 | Complete   | 2026-04-16 |
+| 60. Items CRUD | v2.1 | 4/4 | Complete   | 2026-04-16 |
 | 61. Item Photos | v2.1 | 0/TBD | Not started | - |
 | 62. Loans | v2.1 | 0/TBD | Not started | - |
 | 63. Navigation & Polish | v2.1 | 0/TBD | Not started | - |

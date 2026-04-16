@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v2.1
 milestone_name: Feature Parity — Items, Loans & Scanning
-status: idle
-stopped_at: Phase 57 complete — human checkpoint approved
-last_updated: "2026-04-15"
-last_activity: 2026-04-15 -- Phase 57 complete (9 retro form primitives, 118 tests, Lingui catalogs)
+status: executing
+stopped_at: Phase 59 complete — UAT issues resolved
+last_updated: "2026-04-16T17:52:00.000Z"
+last_activity: 2026-04-16 -- Phase 59 closed (UAT fixes: dialog title + archived row strikethrough)
 progress:
-  total_phases: 7
-  completed_phases: 7
-  total_plans: 19
-  completed_plans: 19
+  total_phases: 6
+  completed_phases: 6
+  total_plans: 16
+  completed_plans: 16
   percent: 100
 ---
 
@@ -21,14 +21,14 @@ progress:
 See: `.planning/PROJECT.md` (updated 2026-04-14)
 
 **Core value:** Reliable inventory access anywhere -- online or offline -- with seamless sync
-**Current focus:** Phase 56 — foundation-api-client-and-react-query (next)
+**Current focus:** Phase 60 — items-crud
 
 ## Current Position
 
-Phase: 57 (retro-form-primitives) — COMPLETE
-Plan: 3 of 3
-Status: Phase 57 complete — ready for Phase 56
-Last activity: 2026-04-15 -- Phase 57 complete (9 retro form primitives, 118 tests, Lingui catalogs)
+Phase: 60 (items-crud) — EXECUTING
+Plan: 1 of 4
+Status: Executing Phase 60
+Last activity: 2026-04-16 -- Phase 60 execution started
 
 ## Performance Metrics
 
@@ -88,8 +88,8 @@ Last activity: 2026-04-15 -- Phase 57 complete (9 retro form primitives, 118 tes
 
 ## Session Continuity
 
-Last session: 2026-04-15T14:22:02.857Z
-Stopped at: Phase 57 UI-SPEC approved
+Last session: 2026-04-16T12:28:49.006Z
+Stopped at: Phase 60 UI-SPEC approved
 Next step: `/gsd-plan-phase 56`
 
 ---
