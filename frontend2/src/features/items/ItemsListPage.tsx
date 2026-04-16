@@ -86,7 +86,9 @@ export function ItemsListPage() {
   const { map: categoryNameMap } = useCategoryNameMap();
   const archiveMutation = useArchiveItem();
   const restoreMutation = useRestoreItem();
-  const deleteMutation = useDeleteItem();
+  const deleteMutation = useDeleteItem({
+    onAfterDelete: () => setArchiveTarget(null),
+  });
 
   if (authLoading) return null;
 
@@ -300,7 +302,9 @@ export function ItemsListPage() {
         nodeName={archiveTarget?.name ?? ""}
         onArchive={() =>
           archiveTarget
-            ? archiveMutation.mutateAsync(archiveTarget.id)
+            ? archiveMutation
+                .mutateAsync(archiveTarget.id)
+                .then(() => setArchiveTarget(null))
             : Promise.resolve()
         }
         onDelete={() =>
