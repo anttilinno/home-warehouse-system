@@ -266,8 +266,8 @@ describe("ItemsListPage — interactions", () => {
     await user.click(
       screen.getByRole("button", { name: /Archive Cordless Drill/i }),
     );
-    expect(await screen.findByText(/ARCHIVE ITEM/i)).toBeVisible();
-    // Body interpolates unquoted nodeName
+    // Dialog title h2 + confirm button both carry "ARCHIVE ITEM" copy — dialog
+    // is open when the dialog body with the unquoted nodeName interpolation is visible.
     expect(
       await screen.findByText(/This will hide Cordless Drill/i),
     ).toBeVisible();
