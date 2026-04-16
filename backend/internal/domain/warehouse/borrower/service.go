@@ -16,7 +16,7 @@ type ServiceInterface interface {
 	Archive(ctx context.Context, id, workspaceID uuid.UUID) error
 	Restore(ctx context.Context, id, workspaceID uuid.UUID) error
 	Delete(ctx context.Context, id, workspaceID uuid.UUID) error
-	List(ctx context.Context, workspaceID uuid.UUID, pagination shared.Pagination) ([]*Borrower, int, error)
+	List(ctx context.Context, workspaceID uuid.UUID, pagination shared.Pagination, includeArchived bool) ([]*Borrower, int, error)
 	Search(ctx context.Context, workspaceID uuid.UUID, query string, limit int) ([]*Borrower, error)
 }
 
@@ -78,23 +78,19 @@ func (s *Service) Update(ctx context.Context, id, workspaceID uuid.UUID, input U
 }
 
 func (s *Service) Archive(ctx context.Context, id, workspaceID uuid.UUID) error {
-	borrower, err := s.GetByID(ctx, id, workspaceID)
-	if err != nil {
+	if _, err := s.GetByID(ctx, id, workspaceID); err != nil {
 		return err
 	}
 
-	borrower.Archive()
-	return s.repo.Save(ctx, borrower)
+	return s.repo.Archive(ctx, id)
 }
 
 func (s *Service) Restore(ctx context.Context, id, workspaceID uuid.UUID) error {
-	borrower, err := s.GetByID(ctx, id, workspaceID)
-	if err != nil {
+	if _, err := s.GetByID(ctx, id, workspaceID); err != nil {
 		return err
 	}
 
-	borrower.Restore()
-	return s.repo.Save(ctx, borrower)
+	return s.repo.Restore(ctx, id)
 }
 
 func (s *Service) Delete(ctx context.Context, id, workspaceID uuid.UUID) error {
@@ -116,8 +112,8 @@ func (s *Service) Delete(ctx context.Context, id, workspaceID uuid.UUID) error {
 	return s.repo.Delete(ctx, id)
 }
 
-func (s *Service) List(ctx context.Context, workspaceID uuid.UUID, pagination shared.Pagination) ([]*Borrower, int, error) {
-	return s.repo.FindByWorkspace(ctx, workspaceID, pagination)
+func (s *Service) List(ctx context.Context, workspaceID uuid.UUID, pagination shared.Pagination, includeArchived bool) ([]*Borrower, int, error) {
+	return s.repo.FindByWorkspace(ctx, workspaceID, pagination, includeArchived)
 }
 
 // Search searches for borrowers by query string.

@@ -2776,12 +2776,22 @@ func (m *MockBorrowerRepository) FindByID(ctx context.Context, id, workspaceID u
 	return args.Get(0).(*borrower.Borrower), args.Error(1)
 }
 
-func (m *MockBorrowerRepository) FindByWorkspace(ctx context.Context, workspaceID uuid.UUID, pagination shared.Pagination) ([]*borrower.Borrower, int, error) {
-	args := m.Called(ctx, workspaceID, pagination)
+func (m *MockBorrowerRepository) FindByWorkspace(ctx context.Context, workspaceID uuid.UUID, pagination shared.Pagination, includeArchived bool) ([]*borrower.Borrower, int, error) {
+	args := m.Called(ctx, workspaceID, pagination, includeArchived)
 	if args.Get(0) == nil {
 		return nil, 0, args.Error(2)
 	}
 	return args.Get(0).([]*borrower.Borrower), args.Int(1), args.Error(2)
+}
+
+func (m *MockBorrowerRepository) Archive(ctx context.Context, id uuid.UUID) error {
+	args := m.Called(ctx, id)
+	return args.Error(0)
+}
+
+func (m *MockBorrowerRepository) Restore(ctx context.Context, id uuid.UUID) error {
+	args := m.Called(ctx, id)
+	return args.Error(0)
 }
 
 func (m *MockBorrowerRepository) Delete(ctx context.Context, id uuid.UUID) error {

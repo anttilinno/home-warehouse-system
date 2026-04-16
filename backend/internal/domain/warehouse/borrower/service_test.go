@@ -31,12 +31,22 @@ func (m *MockRepository) FindByID(ctx context.Context, id, workspaceID uuid.UUID
 	return args.Get(0).(*Borrower), args.Error(1)
 }
 
-func (m *MockRepository) FindByWorkspace(ctx context.Context, workspaceID uuid.UUID, pagination shared.Pagination) ([]*Borrower, int, error) {
-	args := m.Called(ctx, workspaceID, pagination)
+func (m *MockRepository) FindByWorkspace(ctx context.Context, workspaceID uuid.UUID, pagination shared.Pagination, includeArchived bool) ([]*Borrower, int, error) {
+	args := m.Called(ctx, workspaceID, pagination, includeArchived)
 	if args.Get(0) == nil {
 		return nil, args.Int(1), args.Error(2)
 	}
 	return args.Get(0).([]*Borrower), args.Int(1), args.Error(2)
+}
+
+func (m *MockRepository) Archive(ctx context.Context, id uuid.UUID) error {
+	args := m.Called(ctx, id)
+	return args.Error(0)
+}
+
+func (m *MockRepository) Restore(ctx context.Context, id uuid.UUID) error {
+	args := m.Called(ctx, id)
+	return args.Error(0)
 }
 
 func (m *MockRepository) Delete(ctx context.Context, id uuid.UUID) error {
@@ -606,7 +616,7 @@ func TestService_Archive(t *testing.T) {
 					isArchived:  false,
 				}
 				m.On("FindByID", ctx, borrowerID, workspaceID).Return(borrower, nil)
-				m.On("Save", ctx, mock.AnythingOfType("*borrower.Borrower")).Return(nil)
+				m.On("Archive", ctx, borrowerID).Return(nil)
 			},
 			expectError: false,
 		},
@@ -619,7 +629,7 @@ func TestService_Archive(t *testing.T) {
 			errorType:   ErrBorrowerNotFound,
 		},
 		{
-			testName: "save returns error",
+			testName: "repo archive returns error",
 			setupMock: func(m *MockRepository) {
 				borrower := &Borrower{
 					id:          borrowerID,
@@ -628,7 +638,7 @@ func TestService_Archive(t *testing.T) {
 					isArchived:  false,
 				}
 				m.On("FindByID", ctx, borrowerID, workspaceID).Return(borrower, nil)
-				m.On("Save", ctx, mock.AnythingOfType("*borrower.Borrower")).Return(errors.New("save error"))
+				m.On("Archive", ctx, borrowerID).Return(errors.New("archive error"))
 			},
 			expectError: true,
 		},
@@ -678,7 +688,7 @@ func TestService_Restore(t *testing.T) {
 					isArchived:  true,
 				}
 				m.On("FindByID", ctx, borrowerID, workspaceID).Return(borrower, nil)
-				m.On("Save", ctx, mock.AnythingOfType("*borrower.Borrower")).Return(nil)
+				m.On("Restore", ctx, borrowerID).Return(nil)
 			},
 			expectError: false,
 		},
@@ -835,7 +845,7 @@ func TestService_List(t *testing.T) {
 					{id: uuid.New(), workspaceID: workspaceID, name: "User 2"},
 					{id: uuid.New(), workspaceID: workspaceID, name: "User 3"},
 				}
-				m.On("FindByWorkspace", ctx, workspaceID, shared.Pagination{Page: 1, PageSize: 10}).Return(borrowers, 3, nil)
+				m.On("FindByWorkspace", ctx, workspaceID, shared.Pagination{Page: 1, PageSize: 10}, false).Return(borrowers, 3, nil)
 			},
 			expectLen:   3,
 			expectTotal: 3,
@@ -848,7 +858,7 @@ func TestService_List(t *testing.T) {
 				borrowers := []*Borrower{
 					{id: uuid.New(), workspaceID: workspaceID, name: "User 3"},
 				}
-				m.On("FindByWorkspace", ctx, workspaceID, shared.Pagination{Page: 2, PageSize: 2}).Return(borrowers, 5, nil)
+				m.On("FindByWorkspace", ctx, workspaceID, shared.Pagination{Page: 2, PageSize: 2}, false).Return(borrowers, 5, nil)
 			},
 			expectLen:   1,
 			expectTotal: 5,
@@ -858,7 +868,7 @@ func TestService_List(t *testing.T) {
 			testName:   "empty results",
 			pagination: shared.Pagination{Page: 1, PageSize: 10},
 			setupMock: func(m *MockRepository) {
-				m.On("FindByWorkspace", ctx, workspaceID, shared.Pagination{Page: 1, PageSize: 10}).Return([]*Borrower{}, 0, nil)
+				m.On("FindByWorkspace", ctx, workspaceID, shared.Pagination{Page: 1, PageSize: 10}, false).Return([]*Borrower{}, 0, nil)
 			},
 			expectLen:   0,
 			expectTotal: 0,
@@ -868,7 +878,7 @@ func TestService_List(t *testing.T) {
 			testName:   "repository returns error",
 			pagination: shared.Pagination{Page: 1, PageSize: 10},
 			setupMock: func(m *MockRepository) {
-				m.On("FindByWorkspace", ctx, workspaceID, shared.Pagination{Page: 1, PageSize: 10}).Return(nil, 0, errors.New("database error"))
+				m.On("FindByWorkspace", ctx, workspaceID, shared.Pagination{Page: 1, PageSize: 10}, false).Return(nil, 0, errors.New("database error"))
 			},
 			expectLen:   0,
 			expectTotal: 0,
@@ -883,7 +893,7 @@ func TestService_List(t *testing.T) {
 
 			tt.setupMock(mockRepo)
 
-			borrowers, total, err := svc.List(ctx, workspaceID, tt.pagination)
+			borrowers, total, err := svc.List(ctx, workspaceID, tt.pagination, false)
 
 			if tt.expectError {
 				assert.Error(t, err)

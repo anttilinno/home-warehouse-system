@@ -52,9 +52,14 @@ func (r *BorrowerRepository) FindByID(ctx context.Context, id, workspaceID uuid.
 	return r.rowToBorrower(row), nil
 }
 
-func (r *BorrowerRepository) FindByWorkspace(ctx context.Context, workspaceID uuid.UUID, pagination shared.Pagination) ([]*borrower.Borrower, int, error) {
+func (r *BorrowerRepository) FindByWorkspace(ctx context.Context, workspaceID uuid.UUID, pagination shared.Pagination, includeArchived bool) ([]*borrower.Borrower, int, error) {
+	// Encode includeArchived → nullable archived param:
+	//   includeArchived=true  → pass *bool=true  → SQL includes all rows
+	//   includeArchived=false → pass *bool=false → SQL restricts to non-archived
+	archivedParam := includeArchived
 	rows, err := r.queries.ListBorrowers(ctx, queries.ListBorrowersParams{
 		WorkspaceID: workspaceID,
+		Archived:    &archivedParam,
 		Limit:       int32(pagination.Limit()),
 		Offset:      int32(pagination.Offset()),
 	})
@@ -70,8 +75,19 @@ func (r *BorrowerRepository) FindByWorkspace(ctx context.Context, workspaceID uu
 	return borrowers, len(borrowers), nil
 }
 
-func (r *BorrowerRepository) Delete(ctx context.Context, id uuid.UUID) error {
+// Archive soft-archives a borrower by setting is_archived=true.
+func (r *BorrowerRepository) Archive(ctx context.Context, id uuid.UUID) error {
 	return r.queries.ArchiveBorrower(ctx, id)
+}
+
+// Restore flips is_archived back to false.
+func (r *BorrowerRepository) Restore(ctx context.Context, id uuid.UUID) error {
+	return r.queries.RestoreBorrower(ctx, id)
+}
+
+// Delete hard-deletes a borrower by ID.
+func (r *BorrowerRepository) Delete(ctx context.Context, id uuid.UUID) error {
+	return r.queries.DeleteBorrower(ctx, id)
 }
 
 func (r *BorrowerRepository) HasActiveLoans(ctx context.Context, id uuid.UUID) (bool, error) {

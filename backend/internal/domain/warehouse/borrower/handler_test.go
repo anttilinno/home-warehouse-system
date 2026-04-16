@@ -37,8 +37,8 @@ func (m *MockService) GetByID(ctx context.Context, id, workspaceID uuid.UUID) (*
 	return args.Get(0).(*borrower.Borrower), args.Error(1)
 }
 
-func (m *MockService) List(ctx context.Context, workspaceID uuid.UUID, pagination shared.Pagination) ([]*borrower.Borrower, int, error) {
-	args := m.Called(ctx, workspaceID, pagination)
+func (m *MockService) List(ctx context.Context, workspaceID uuid.UUID, pagination shared.Pagination, includeArchived bool) ([]*borrower.Borrower, int, error) {
+	args := m.Called(ctx, workspaceID, pagination, includeArchived)
 	return args.Get(0).([]*borrower.Borrower), args.Int(1), args.Error(2)
 }
 
@@ -139,7 +139,7 @@ func TestBorrowerHandler_List(t *testing.T) {
 
 		mockSvc.On("List", mock.Anything, setup.WorkspaceID, mock.MatchedBy(func(p shared.Pagination) bool {
 			return p.Page == 1 && p.PageSize == 50
-		})).Return(borrowers, 2, nil).Once()
+		}), false).Return(borrowers, 2, nil).Once()
 
 		rec := setup.Get("/borrowers")
 
@@ -150,7 +150,7 @@ func TestBorrowerHandler_List(t *testing.T) {
 	t.Run("handles pagination", func(t *testing.T) {
 		mockSvc.On("List", mock.Anything, setup.WorkspaceID, mock.MatchedBy(func(p shared.Pagination) bool {
 			return p.Page == 2 && p.PageSize == 10
-		})).Return([]*borrower.Borrower{}, 50, nil).Once()
+		}), false).Return([]*borrower.Borrower{}, 50, nil).Once()
 
 		rec := setup.Get("/borrowers?page=2&limit=10")
 
@@ -159,7 +159,7 @@ func TestBorrowerHandler_List(t *testing.T) {
 	})
 
 	t.Run("returns empty list when no borrowers", func(t *testing.T) {
-		mockSvc.On("List", mock.Anything, setup.WorkspaceID, mock.Anything).
+		mockSvc.On("List", mock.Anything, setup.WorkspaceID, mock.Anything, mock.Anything).
 			Return([]*borrower.Borrower{}, 0, nil).Once()
 
 		rec := setup.Get("/borrowers")

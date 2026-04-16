@@ -22,7 +22,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 		}
 
 		pagination := shared.Pagination{Page: input.Page, PageSize: input.Limit}
-		borrowers, _, err := svc.List(ctx, workspaceID, pagination)
+		borrowers, _, err := svc.List(ctx, workspaceID, pagination, false)
 		if err != nil {
 			return nil, huma.Error500InternalServerError("failed to list borrowers")
 		}

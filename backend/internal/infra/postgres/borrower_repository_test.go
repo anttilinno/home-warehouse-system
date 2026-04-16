@@ -130,7 +130,7 @@ func TestBorrowerRepository_FindByWorkspace(t *testing.T) {
 		}
 
 		pagination := shared.Pagination{Page: 1, PageSize: 3}
-		borrowers, count, err := repo.FindByWorkspace(ctx, workspace, pagination)
+		borrowers, count, err := repo.FindByWorkspace(ctx, workspace, pagination, false)
 		require.NoError(t, err)
 		assert.LessOrEqual(t, len(borrowers), 3)
 		assert.GreaterOrEqual(t, count, 3)
@@ -141,7 +141,7 @@ func TestBorrowerRepository_FindByWorkspace(t *testing.T) {
 		testdb.CreateTestWorkspace(t, pool, workspace)
 
 		pagination := shared.Pagination{Page: 1, PageSize: 10}
-		borrowers, count, err := repo.FindByWorkspace(ctx, workspace, pagination)
+		borrowers, count, err := repo.FindByWorkspace(ctx, workspace, pagination, false)
 		require.NoError(t, err)
 		assert.Empty(t, borrowers)
 		assert.Equal(t, 0, count)
@@ -157,7 +157,7 @@ func TestBorrowerRepository_Delete(t *testing.T) {
 	repo := NewBorrowerRepository(pool)
 	ctx := context.Background()
 
-	t.Run("archives borrower (soft delete)", func(t *testing.T) {
+	t.Run("hard-deletes borrower", func(t *testing.T) {
 		b, err := borrower.NewBorrower(testfixtures.TestWorkspaceID, "To Delete", nil, nil, nil)
 		require.NoError(t, err)
 		err = repo.Save(ctx, b)
@@ -166,8 +166,11 @@ func TestBorrowerRepository_Delete(t *testing.T) {
 		err = repo.Delete(ctx, b.ID())
 		require.NoError(t, err)
 
-		// Archived borrowers may still be found depending on query
-		// The test validates the archive operation succeeds
+		// After hard-delete, the row is gone
+		found, err := repo.FindByID(ctx, b.ID(), testfixtures.TestWorkspaceID)
+		require.Error(t, err)
+		assert.True(t, shared.IsNotFound(err))
+		assert.Nil(t, found)
 	})
 }
 
