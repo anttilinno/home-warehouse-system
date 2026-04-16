@@ -835,6 +835,14 @@ func (m *MockItemRepository) FindByWorkspace(ctx context.Context, workspaceID uu
 	return args.Get(0).([]*item.Item), args.Int(1), args.Error(2)
 }
 
+func (m *MockItemRepository) FindByWorkspaceFiltered(ctx context.Context, workspaceID uuid.UUID, filters item.ListFilters, pagination shared.Pagination) ([]*item.Item, int, error) {
+	args := m.Called(ctx, workspaceID, filters, pagination)
+	if args.Get(0) == nil {
+		return nil, args.Int(1), args.Error(2)
+	}
+	return args.Get(0).([]*item.Item), args.Int(1), args.Error(2)
+}
+
 func (m *MockItemRepository) FindNeedingReview(ctx context.Context, workspaceID uuid.UUID, pagination shared.Pagination) ([]*item.Item, int, error) {
 	args := m.Called(ctx, workspaceID, pagination)
 	if args.Get(0) == nil {

@@ -107,6 +107,9 @@ func (m *mockItemRepo) FindByBarcode(ctx context.Context, wsID uuid.UUID, bc str
 func (m *mockItemRepo) FindByWorkspace(ctx context.Context, wsID uuid.UUID, p shared.Pagination) ([]*item.Item, int, error) {
 	return nil, 0, nil
 }
+func (m *mockItemRepo) FindByWorkspaceFiltered(ctx context.Context, wsID uuid.UUID, filters item.ListFilters, p shared.Pagination) ([]*item.Item, int, error) {
+	return nil, 0, nil
+}
 func (m *mockItemRepo) FindNeedingReview(ctx context.Context, wsID uuid.UUID, p shared.Pagination) ([]*item.Item, int, error) {
 	return nil, 0, nil
 }

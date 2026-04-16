@@ -266,7 +266,7 @@ func TestItemRepository_FindByCategory(t *testing.T) {
 	})
 }
 
-func TestItemRepository_Delete(t *testing.T) {
+func TestItemRepository_Delete_Hard(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping integration test")
 	}
@@ -275,22 +275,187 @@ func TestItemRepository_Delete(t *testing.T) {
 	repo := NewItemRepository(pool)
 	ctx := context.Background()
 
-	t.Run("archives item on delete", func(t *testing.T) {
-		itm, err := item.NewItem(testfixtures.TestWorkspaceID, "To Delete", "SKU-DEL", 0)
+	t.Run("hard-deletes row", func(t *testing.T) {
+		itm, err := item.NewItem(testfixtures.TestWorkspaceID, "To Hard Delete", "SKU-HDEL-"+uuid.NewString()[:8], 0)
 		require.NoError(t, err)
-		err = repo.Save(ctx, itm)
-		require.NoError(t, err)
+		require.NoError(t, repo.Save(ctx, itm))
 
-		err = repo.Delete(ctx, itm.ID())
-		require.NoError(t, err)
+		require.NoError(t, repo.Delete(ctx, itm.ID()))
 
-		// Item should be archived, not deleted
+		// Row MUST be gone — FindByID returns shared.ErrNotFound (Pitfall 3 fix).
 		found, err := repo.FindByID(ctx, itm.ID(), testfixtures.TestWorkspaceID)
+		require.Error(t, err)
+		assert.True(t, shared.IsNotFound(err))
+		assert.Nil(t, found)
+	})
+
+	t.Run("delete of missing id is idempotent (no error)", func(t *testing.T) {
+		// DELETE on a missing row is a no-op in Postgres; sqlc's :exec ignores affected-count.
+		err := repo.Delete(ctx, uuid.New())
 		require.NoError(t, err)
-		// The behavior depends on implementation - check if archived or nil
-		if found != nil {
-			assert.True(t, *found.IsArchived())
+	})
+}
+
+func TestItemRepository_FindByWorkspaceFiltered(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test")
+	}
+
+	pool := testdb.SetupTestDB(t)
+	repo := NewItemRepository(pool)
+	ctx := context.Background()
+
+	mkItem := func(t *testing.T, ws uuid.UUID, name, sku string) *item.Item {
+		t.Helper()
+		itm, err := item.NewItem(ws, name, sku, 0)
+		require.NoError(t, err)
+		// Unique short_code required by uq_items_workspace_short_code constraint (varchar(8)).
+		itm.SetShortCode(uuid.NewString()[:8])
+		require.NoError(t, repo.Save(ctx, itm))
+		return itm
+	}
+
+	archive := func(t *testing.T, itm *item.Item) {
+		t.Helper()
+		itm.Archive()
+		require.NoError(t, repo.Save(ctx, itm))
+	}
+
+	t.Run("ArchivedFalse_ExcludesArchived", func(t *testing.T) {
+		ws := uuid.New()
+		testdb.CreateTestWorkspace(t, pool, ws)
+
+		mkItem(t, ws, "Active A", "FLT-ACT-A-"+uuid.NewString()[:6])
+		mkItem(t, ws, "Active B", "FLT-ACT-B-"+uuid.NewString()[:6])
+		arch := mkItem(t, ws, "Archived", "FLT-ARC-"+uuid.NewString()[:6])
+		archive(t, arch)
+
+		items, total, err := repo.FindByWorkspaceFiltered(ctx, ws,
+			item.ListFilters{IncludeArchived: false, Sort: "name", SortDir: "asc"},
+			shared.Pagination{Page: 1, PageSize: 50})
+		require.NoError(t, err)
+		assert.Equal(t, 2, total)
+		require.Len(t, items, 2)
+		for _, it := range items {
+			assert.False(t, it.IsArchived() != nil && *it.IsArchived(), "archived row leaked into active-only list")
 		}
+	})
+
+	t.Run("ArchivedTrue_IncludesArchived", func(t *testing.T) {
+		ws := uuid.New()
+		testdb.CreateTestWorkspace(t, pool, ws)
+
+		mkItem(t, ws, "Active 1", "FLT-TRUE-A-"+uuid.NewString()[:6])
+		mkItem(t, ws, "Active 2", "FLT-TRUE-B-"+uuid.NewString()[:6])
+		arch := mkItem(t, ws, "Archived 3", "FLT-TRUE-C-"+uuid.NewString()[:6])
+		archive(t, arch)
+
+		items, total, err := repo.FindByWorkspaceFiltered(ctx, ws,
+			item.ListFilters{IncludeArchived: true, Sort: "name", SortDir: "asc"},
+			shared.Pagination{Page: 1, PageSize: 50})
+		require.NoError(t, err)
+		assert.Equal(t, 3, total)
+		assert.Len(t, items, 3)
+	})
+
+	t.Run("SearchMatchesFTS", func(t *testing.T) {
+		ws := uuid.New()
+		testdb.CreateTestWorkspace(t, pool, ws)
+
+		mkItem(t, ws, "Cordless Drill", "FTS-D-"+uuid.NewString()[:6])
+		mkItem(t, ws, "Bench Vice", "FTS-V-"+uuid.NewString()[:6])
+		mkItem(t, ws, "Light Bulbs", "FTS-B-"+uuid.NewString()[:6])
+
+		items, total, err := repo.FindByWorkspaceFiltered(ctx, ws,
+			item.ListFilters{Search: "drill", Sort: "name", SortDir: "asc"},
+			shared.Pagination{Page: 1, PageSize: 50})
+		require.NoError(t, err)
+		assert.Equal(t, 1, total)
+		require.Len(t, items, 1)
+		assert.Contains(t, items[0].Name(), "Drill")
+
+		// Empty search is normalized to no-filter (Pitfall 2).
+		items, total, err = repo.FindByWorkspaceFiltered(ctx, ws,
+			item.ListFilters{Search: "", Sort: "name", SortDir: "asc"},
+			shared.Pagination{Page: 1, PageSize: 50})
+		require.NoError(t, err)
+		assert.Equal(t, 3, total)
+		assert.Len(t, items, 3)
+	})
+
+	t.Run("Sort_Name_AscDesc", func(t *testing.T) {
+		ws := uuid.New()
+		testdb.CreateTestWorkspace(t, pool, ws)
+
+		mkItem(t, ws, "Alpha", "SORT-A-"+uuid.NewString()[:6])
+		mkItem(t, ws, "Charlie", "SORT-C-"+uuid.NewString()[:6])
+		mkItem(t, ws, "Bravo", "SORT-B-"+uuid.NewString()[:6])
+
+		asc, _, err := repo.FindByWorkspaceFiltered(ctx, ws,
+			item.ListFilters{Sort: "name", SortDir: "asc"},
+			shared.Pagination{Page: 1, PageSize: 50})
+		require.NoError(t, err)
+		require.Len(t, asc, 3)
+		assert.Equal(t, "Alpha", asc[0].Name())
+		assert.Equal(t, "Bravo", asc[1].Name())
+		assert.Equal(t, "Charlie", asc[2].Name())
+
+		desc, _, err := repo.FindByWorkspaceFiltered(ctx, ws,
+			item.ListFilters{Sort: "name", SortDir: "desc"},
+			shared.Pagination{Page: 1, PageSize: 50})
+		require.NoError(t, err)
+		require.Len(t, desc, 3)
+		assert.Equal(t, "Charlie", desc[0].Name())
+		assert.Equal(t, "Bravo", desc[1].Name())
+		assert.Equal(t, "Alpha", desc[2].Name())
+	})
+
+	t.Run("TotalIndependentOfLimit", func(t *testing.T) {
+		ws := uuid.New()
+		testdb.CreateTestWorkspace(t, pool, ws)
+
+		for i := 0; i < 5; i++ {
+			mkItem(t, ws, "Tot Item "+uuid.NewString()[:4], "TOT-"+uuid.NewString()[:8])
+		}
+
+		items, total, err := repo.FindByWorkspaceFiltered(ctx, ws,
+			item.ListFilters{Sort: "name", SortDir: "asc"},
+			shared.Pagination{Page: 1, PageSize: 2})
+		require.NoError(t, err)
+		assert.Len(t, items, 2)
+		assert.Equal(t, 5, total, "Total must be COUNT(*), independent of LIMIT — Pitfall 1 fix")
+
+		items, total, err = repo.FindByWorkspaceFiltered(ctx, ws,
+			item.ListFilters{Sort: "name", SortDir: "asc"},
+			shared.Pagination{Page: 2, PageSize: 2})
+		require.NoError(t, err)
+		assert.Len(t, items, 2)
+		assert.Equal(t, 5, total)
+	})
+
+	t.Run("IgnoresOtherWorkspaces", func(t *testing.T) {
+		wsA := uuid.New()
+		wsB := uuid.New()
+		testdb.CreateTestWorkspace(t, pool, wsA)
+		testdb.CreateTestWorkspace(t, pool, wsB)
+
+		mkItem(t, wsA, "A1", "WSA-1-"+uuid.NewString()[:6])
+		mkItem(t, wsA, "A2", "WSA-2-"+uuid.NewString()[:6])
+		mkItem(t, wsB, "B1", "WSB-1-"+uuid.NewString()[:6])
+		mkItem(t, wsB, "B2", "WSB-2-"+uuid.NewString()[:6])
+		mkItem(t, wsB, "B3", "WSB-3-"+uuid.NewString()[:6])
+
+		_, totalA, err := repo.FindByWorkspaceFiltered(ctx, wsA,
+			item.ListFilters{Sort: "name", SortDir: "asc"},
+			shared.Pagination{Page: 1, PageSize: 50})
+		require.NoError(t, err)
+		assert.Equal(t, 2, totalA)
+
+		_, totalB, err := repo.FindByWorkspaceFiltered(ctx, wsB,
+			item.ListFilters{Sort: "name", SortDir: "asc"},
+			shared.Pagination{Page: 1, PageSize: 50})
+		require.NoError(t, err)
+		assert.Equal(t, 3, totalB)
 	})
 }
 

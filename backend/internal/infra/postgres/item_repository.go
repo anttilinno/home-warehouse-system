@@ -243,8 +243,86 @@ func (r *ItemRepository) Search(ctx context.Context, workspaceID uuid.UUID, quer
 	return items, nil
 }
 
+// Delete hard-deletes an item by ID.
+// This is the authoritative hard-delete path. Soft-archive is a separate operation
+// that runs through Save when the entity's is_archived flag flips. Previous
+// implementation wrongly called ArchiveItem — fixed per Phase 60 Pitfall 3
+// (mirrors the Phase 59 borrower fix).
 func (r *ItemRepository) Delete(ctx context.Context, id uuid.UUID) error {
-	return r.queries.ArchiveItem(ctx, id)
+	return r.queries.DeleteItem(ctx, id)
+}
+
+// FindByWorkspaceFiltered returns items matching the filter/sort/pagination params
+// plus the true COUNT(*) total (independent of LIMIT/OFFSET). Filters are
+// parameterized via sqlc.narg; sort is CASE-whitelisted by sort_field + sort_dir.
+// Empty search string is normalized to "no filter" in BOTH the SQL (defense in
+// depth) and the handler (Pitfall 2).
+func (r *ItemRepository) FindByWorkspaceFiltered(
+	ctx context.Context,
+	workspaceID uuid.UUID,
+	filters item.ListFilters,
+	pagination shared.Pagination,
+) ([]*item.Item, int, error) {
+	// Archived: nil pointer → SQL "IS NULL" branch → include all (same as true).
+	// Explicit false → active only. Explicit true → include archived.
+	var archivedParam *bool
+	if !filters.IncludeArchived {
+		v := false
+		archivedParam = &v
+	} else {
+		v := true
+		archivedParam = &v
+	}
+
+	var searchParam *string
+	if filters.Search != "" {
+		s := filters.Search
+		searchParam = &s
+	}
+
+	var categoryParam pgtype.UUID
+	if filters.CategoryID != nil {
+		categoryParam = pgtype.UUID{Bytes: *filters.CategoryID, Valid: true}
+	}
+
+	sortField := filters.Sort
+	if sortField == "" {
+		sortField = "name"
+	}
+	sortDir := filters.SortDir
+	if sortDir == "" {
+		sortDir = "asc"
+	}
+
+	rows, err := r.queries.ListItemsFiltered(ctx, queries.ListItemsFilteredParams{
+		WorkspaceID: workspaceID,
+		Archived:    archivedParam,
+		Search:      searchParam,
+		CategoryID:  categoryParam,
+		SortField:   sortField,
+		SortDir:     sortDir,
+		Limit:       int32(pagination.Limit()),
+		Offset:      int32(pagination.Offset()),
+	})
+	if err != nil {
+		return nil, 0, err
+	}
+
+	total, err := r.queries.CountItemsFiltered(ctx, queries.CountItemsFilteredParams{
+		WorkspaceID: workspaceID,
+		Archived:    archivedParam,
+		Search:      searchParam,
+		CategoryID:  categoryParam,
+	})
+	if err != nil {
+		return nil, 0, err
+	}
+
+	items := make([]*item.Item, 0, len(rows))
+	for _, row := range rows {
+		items = append(items, r.rowToItem(row))
+	}
+	return items, int(total), nil
 }
 
 func (r *ItemRepository) SKUExists(ctx context.Context, workspaceID uuid.UUID, sku string) (bool, error) {
