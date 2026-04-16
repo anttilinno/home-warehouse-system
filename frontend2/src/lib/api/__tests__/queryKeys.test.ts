@@ -29,6 +29,44 @@ describe("itemKeys factory", () => {
   });
 });
 
+describe("itemKeys.list with Phase 60 params", () => {
+  it("discriminates by search param", () => {
+    expect(itemKeys.list({ search: "a" })).not.toEqual(itemKeys.list({ search: "b" }));
+  });
+
+  it("discriminates by archived flag", () => {
+    expect(itemKeys.list({ archived: true })).not.toEqual(itemKeys.list({ archived: false }));
+  });
+
+  it("discriminates by category_id", () => {
+    expect(itemKeys.list({ category_id: "aaa" })).not.toEqual(
+      itemKeys.list({ category_id: "bbb" }),
+    );
+  });
+
+  it("discriminates by sort + sort_dir combo", () => {
+    expect(itemKeys.list({ sort: "name", sort_dir: "asc" })).not.toEqual(
+      itemKeys.list({ sort: "name", sort_dir: "desc" }),
+    );
+    expect(itemKeys.list({ sort: "name", sort_dir: "asc" })).not.toEqual(
+      itemKeys.list({ sort: "created_at", sort_dir: "asc" }),
+    );
+  });
+
+  it("full-filter key is deeply equal to an identical reconstruction", () => {
+    const params = {
+      page: 2,
+      limit: 25,
+      search: "drill",
+      category_id: "cat-1",
+      archived: true,
+      sort: "updated_at" as const,
+      sort_dir: "desc" as const,
+    };
+    expect(itemKeys.list(params)).toEqual(itemKeys.list({ ...params }));
+  });
+});
+
 describe("itemPhotoKeys factory", () => {
   it("all equals ['itemPhotos']", () => {
     expect(itemPhotoKeys.all).toEqual(["itemPhotos"]);
