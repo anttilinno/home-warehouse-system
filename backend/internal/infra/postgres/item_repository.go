@@ -46,12 +46,16 @@ func (r *ItemRepository) Save(ctx context.Context, i *item.Item) error {
 
 	// If item exists, check what kind of update to make
 	if existing.ID != uuid.Nil {
-		// If item is being archived
 		existingArchived := existing.IsArchived != nil && *existing.IsArchived
 		itemArchived := i.IsArchived() != nil && *i.IsArchived()
+
+		// If item is being archived (active → archived)
 		if itemArchived && !existingArchived {
-			err = r.queries.ArchiveItem(ctx, i.ID())
-			return err
+			return r.queries.ArchiveItem(ctx, i.ID())
+		}
+		// If item is being restored (archived → active)
+		if !itemArchived && existingArchived {
+			return r.queries.RestoreItem(ctx, i.ID())
 		}
 
 		// Otherwise, update the item
