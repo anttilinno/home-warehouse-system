@@ -20,6 +20,11 @@ type Repository interface {
 	// GetPrimary retrieves the primary photo for an item
 	GetPrimary(ctx context.Context, itemID, workspaceID uuid.UUID) (*ItemPhoto, error)
 
+	// ListPrimaryByItemIDs retrieves primary photos for a batch of items, keyed by
+	// item_id. Items without a primary photo are absent from the returned map.
+	// Scoped on workspace_id for isolation.
+	ListPrimaryByItemIDs(ctx context.Context, workspaceID uuid.UUID, itemIDs []uuid.UUID) (map[uuid.UUID]*ItemPhoto, error)
+
 	// Update updates an existing item photo
 	Update(ctx context.Context, photo *ItemPhoto) error
 

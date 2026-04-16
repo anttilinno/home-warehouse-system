@@ -107,24 +107,86 @@ func (m *MockService) CheckDuplicates(ctx context.Context, workspaceID uuid.UUID
 	return args.Get(0).([]itemphoto.DuplicateCandidate), args.Error(1)
 }
 
+func (m *MockService) GetPrimary(ctx context.Context, itemID, workspaceID uuid.UUID) (*itemphoto.ItemPhoto, error) {
+	args := m.Called(ctx, itemID, workspaceID)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*itemphoto.ItemPhoto), args.Error(1)
+}
+
+func (m *MockService) ListPrimaryByItemIDs(ctx context.Context, workspaceID uuid.UUID, itemIDs []uuid.UUID) (map[uuid.UUID]*itemphoto.ItemPhoto, error) {
+	args := m.Called(ctx, workspaceID, itemIDs)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(map[uuid.UUID]*itemphoto.ItemPhoto), args.Error(1)
+}
+
 // Helper to create test photo
 func createTestPhoto(itemID uuid.UUID) *itemphoto.ItemPhoto {
 	return &itemphoto.ItemPhoto{
-		ID:            uuid.New(),
-		ItemID:        itemID,
-		WorkspaceID:   uuid.MustParse("00000000-0000-0000-0000-000000000001"),
-		Filename:      "test.jpg",
-		StoragePath:   "test/path.jpg",
-		ThumbnailPath: "test/thumb.jpg",
-		FileSize:      1024,
-		MimeType:      itemphoto.MimeTypeJPEG,
-		Width:         800,
-		Height:        600,
-		DisplayOrder:  0,
-		IsPrimary:     true,
-		Caption:       nil,
-		UploadedBy:    uuid.MustParse("00000000-0000-0000-0000-000000000002"),
+		ID:              uuid.New(),
+		ItemID:          itemID,
+		WorkspaceID:     uuid.MustParse("00000000-0000-0000-0000-000000000001"),
+		Filename:        "test.jpg",
+		StoragePath:     "test/path.jpg",
+		ThumbnailPath:   "test/thumb.jpg",
+		FileSize:        1024,
+		MimeType:        itemphoto.MimeTypeJPEG,
+		Width:           800,
+		Height:          600,
+		DisplayOrder:    0,
+		IsPrimary:       true,
+		Caption:         nil,
+		UploadedBy:      uuid.MustParse("00000000-0000-0000-0000-000000000002"),
+		ThumbnailStatus: itemphoto.ThumbnailStatusPending,
 	}
+}
+
+// TestPhotoHandler_PhotoResponseIncludesThumbnailStatus verifies that the
+// PhotoResponse JSON surfaces the thumbnail_status field so the frontend can
+// render the PROCESSING placeholder while thumbnails are generated (D-11).
+func TestPhotoHandler_PhotoResponseIncludesThumbnailStatus(t *testing.T) {
+	setup := testutil.NewHandlerTestSetup()
+	mockSvc := new(MockService)
+
+	urlGen := func(workspaceID, itemID, photoID uuid.UUID, isThumbnail bool) string {
+		return fmt.Sprintf("/photos/%s", photoID)
+	}
+
+	itemphoto.RegisterRoutes(setup.API, mockSvc, nil, urlGen)
+
+	t.Run("GET /photos/{id} includes thumbnail_status=pending when processing", func(t *testing.T) {
+		itemID := uuid.New()
+		photo := createTestPhoto(itemID)
+		photo.ThumbnailStatus = itemphoto.ThumbnailStatusPending
+
+		mockSvc.On("GetPhoto", mock.Anything, photo.ID).
+			Return(photo, nil).Once()
+
+		rec := setup.Get(fmt.Sprintf("/photos/%s", photo.ID))
+
+		testutil.AssertStatus(t, rec, http.StatusOK)
+		assert.Contains(t, rec.Body.String(), `"thumbnail_status":"pending"`,
+			"PhotoResponse JSON must surface thumbnail_status for UI pending placeholder")
+		mockSvc.AssertExpectations(t)
+	})
+
+	t.Run("GET /photos/{id} reflects thumbnail_status=complete for finished jobs", func(t *testing.T) {
+		itemID := uuid.New()
+		photo := createTestPhoto(itemID)
+		photo.ThumbnailStatus = itemphoto.ThumbnailStatusComplete
+
+		mockSvc.On("GetPhoto", mock.Anything, photo.ID).
+			Return(photo, nil).Once()
+
+		rec := setup.Get(fmt.Sprintf("/photos/%s", photo.ID))
+
+		testutil.AssertStatus(t, rec, http.StatusOK)
+		assert.Contains(t, rec.Body.String(), `"thumbnail_status":"complete"`)
+		mockSvc.AssertExpectations(t)
+	})
 }
 
 // Tests

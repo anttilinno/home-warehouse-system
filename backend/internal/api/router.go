@@ -387,11 +387,8 @@ func NewRouter(pool *pgxpool.Pool, cfg *config.Config) chi.Router {
 			company.RegisterRoutes(wsAPI, companySvc, broadcaster)
 			label.RegisterRoutes(wsAPI, labelSvc, broadcaster)
 
-			// Register Phase 3 domain routes (core inventory)
-			item.RegisterRoutes(wsAPI, itemSvc, broadcaster)
-			inventory.RegisterRoutes(wsAPI, inventorySvc, broadcaster)
-
-			// Register item photo routes
+			// Item photo URL generator — shared by itemphoto routes AND item handler
+			// (the latter uses it to emit primary_photo_thumbnail_url on ItemResponse).
 			photoURLGenerator := func(workspaceID, itemID, photoID uuid.UUID, isThumbnail bool) string {
 				if isThumbnail {
 					return fmt.Sprintf("%s/workspaces/%s/items/%s/photos/%s/thumbnail",
@@ -400,6 +397,14 @@ func NewRouter(pool *pgxpool.Pool, cfg *config.Config) chi.Router {
 				return fmt.Sprintf("%s/workspaces/%s/items/%s/photos/%s",
 					cfg.BackendURL, workspaceID, itemID, photoID)
 			}
+
+			// Register Phase 3 domain routes (core inventory)
+			// Item handler takes the itemphoto service to decorate ItemResponse with
+			// a primary photo thumbnail URL in list/detail endpoints (61-01).
+			item.RegisterRoutes(wsAPI, itemSvc, broadcaster, itemPhotoSvc, photoURLGenerator)
+			inventory.RegisterRoutes(wsAPI, inventorySvc, broadcaster)
+
+			// Register item photo routes
 			itemphoto.RegisterRoutes(wsAPI, itemPhotoSvc, broadcaster, photoURLGenerator)
 
 			// Register photo upload and serve handlers (use Chi directly for multipart)

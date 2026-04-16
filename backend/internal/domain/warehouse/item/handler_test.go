@@ -3,6 +3,7 @@ package item_test
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"testing"
@@ -13,6 +14,7 @@ import (
 	"github.com/stretchr/testify/mock"
 
 	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/item"
+	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/itemphoto"
 	"github.com/antti/home-warehouse/go-backend/internal/shared"
 	"github.com/antti/home-warehouse/go-backend/internal/testutil"
 )
@@ -109,7 +111,7 @@ func (m *MockService) GetItemLabels(ctx context.Context, itemID, workspaceID uui
 func TestItemHandler_Create(t *testing.T) {
 	setup := testutil.NewHandlerTestSetup()
 	mockSvc := new(MockService)
-	item.RegisterRoutes(setup.API, mockSvc, nil)
+	item.RegisterRoutes(setup.API, mockSvc, nil, nil, nil)
 
 	t.Run("creates item successfully", func(t *testing.T) {
 		testItem, _ := item.NewItem(setup.WorkspaceID, "Laptop", "LAP-001", 0)
@@ -159,7 +161,7 @@ func TestItemHandler_Create(t *testing.T) {
 func TestItemHandler_List(t *testing.T) {
 	setup := testutil.NewHandlerTestSetup()
 	mockSvc := new(MockService)
-	item.RegisterRoutes(setup.API, mockSvc, nil)
+	item.RegisterRoutes(setup.API, mockSvc, nil, nil, nil)
 
 	t.Run("lists items successfully", func(t *testing.T) {
 		item1, _ := item.NewItem(setup.WorkspaceID, "Item 1", "IT-001", 0)
@@ -201,7 +203,7 @@ func TestItemHandler_List(t *testing.T) {
 func TestItemHandler_Get(t *testing.T) {
 	setup := testutil.NewHandlerTestSetup()
 	mockSvc := new(MockService)
-	item.RegisterRoutes(setup.API, mockSvc, nil)
+	item.RegisterRoutes(setup.API, mockSvc, nil, nil, nil)
 
 	t.Run("gets item by ID", func(t *testing.T) {
 		testItem, _ := item.NewItem(setup.WorkspaceID, "Laptop", "LAP-001", 0)
@@ -232,7 +234,7 @@ func TestItemHandler_Get(t *testing.T) {
 func TestItemHandler_Update(t *testing.T) {
 	setup := testutil.NewHandlerTestSetup()
 	mockSvc := new(MockService)
-	item.RegisterRoutes(setup.API, mockSvc, nil)
+	item.RegisterRoutes(setup.API, mockSvc, nil, nil, nil)
 
 	t.Run("updates item successfully", func(t *testing.T) {
 		testItem, _ := item.NewItem(setup.WorkspaceID, "Updated Laptop", "LAP-001", 0)
@@ -280,7 +282,7 @@ func TestItemHandler_Update(t *testing.T) {
 func TestItemHandler_Archive(t *testing.T) {
 	setup := testutil.NewHandlerTestSetup()
 	mockSvc := new(MockService)
-	item.RegisterRoutes(setup.API, mockSvc, nil)
+	item.RegisterRoutes(setup.API, mockSvc, nil, nil, nil)
 
 	t.Run("archives item successfully", func(t *testing.T) {
 		itemID := uuid.New()
@@ -310,7 +312,7 @@ func TestItemHandler_Archive(t *testing.T) {
 func TestItemHandler_Restore(t *testing.T) {
 	setup := testutil.NewHandlerTestSetup()
 	mockSvc := new(MockService)
-	item.RegisterRoutes(setup.API, mockSvc, nil)
+	item.RegisterRoutes(setup.API, mockSvc, nil, nil, nil)
 
 	t.Run("restores item successfully", func(t *testing.T) {
 		itemID := uuid.New()
@@ -340,7 +342,7 @@ func TestItemHandler_Restore(t *testing.T) {
 func TestItemHandler_Search(t *testing.T) {
 	setup := testutil.NewHandlerTestSetup()
 	mockSvc := new(MockService)
-	item.RegisterRoutes(setup.API, mockSvc, nil)
+	item.RegisterRoutes(setup.API, mockSvc, nil, nil, nil)
 
 	t.Run("searches items successfully", func(t *testing.T) {
 		testItem, _ := item.NewItem(setup.WorkspaceID, "Laptop", "LAP-001", 0)
@@ -379,7 +381,7 @@ func TestItemHandler_Search(t *testing.T) {
 func TestItemHandler_ListByCategory(t *testing.T) {
 	setup := testutil.NewHandlerTestSetup()
 	mockSvc := new(MockService)
-	item.RegisterRoutes(setup.API, mockSvc, nil)
+	item.RegisterRoutes(setup.API, mockSvc, nil, nil, nil)
 
 	t.Run("lists items by category successfully", func(t *testing.T) {
 		categoryID := uuid.New()
@@ -411,7 +413,7 @@ func TestItemHandler_ListByCategory(t *testing.T) {
 func TestItemHandler_GetItemLabels(t *testing.T) {
 	setup := testutil.NewHandlerTestSetup()
 	mockSvc := new(MockService)
-	item.RegisterRoutes(setup.API, mockSvc, nil)
+	item.RegisterRoutes(setup.API, mockSvc, nil, nil, nil)
 
 	t.Run("gets item labels successfully", func(t *testing.T) {
 		itemID := uuid.New()
@@ -442,7 +444,7 @@ func TestItemHandler_GetItemLabels(t *testing.T) {
 func TestItemHandler_AttachLabel(t *testing.T) {
 	setup := testutil.NewHandlerTestSetup()
 	mockSvc := new(MockService)
-	item.RegisterRoutes(setup.API, mockSvc, nil)
+	item.RegisterRoutes(setup.API, mockSvc, nil, nil, nil)
 
 	t.Run("attaches label successfully", func(t *testing.T) {
 		itemID := uuid.New()
@@ -474,7 +476,7 @@ func TestItemHandler_AttachLabel(t *testing.T) {
 func TestItemHandler_DetachLabel(t *testing.T) {
 	setup := testutil.NewHandlerTestSetup()
 	mockSvc := new(MockService)
-	item.RegisterRoutes(setup.API, mockSvc, nil)
+	item.RegisterRoutes(setup.API, mockSvc, nil, nil, nil)
 
 	t.Run("detaches label successfully", func(t *testing.T) {
 		itemID := uuid.New()
@@ -508,7 +510,7 @@ func TestItemHandler_DetachLabel(t *testing.T) {
 func TestItemHandler_ListItems_FilterByNeedsReview(t *testing.T) {
 	setup := testutil.NewHandlerTestSetup()
 	mockSvc := new(MockService)
-	item.RegisterRoutes(setup.API, mockSvc, nil)
+	item.RegisterRoutes(setup.API, mockSvc, nil, nil, nil)
 
 	t.Run("filters items by needs_review=true", func(t *testing.T) {
 		item1, _ := item.NewItem(setup.WorkspaceID, "Review Item", "REV-001", 0)
@@ -543,7 +545,7 @@ func TestItemHandler_ListItems_FilterByNeedsReview(t *testing.T) {
 func TestItemHandler_CreateItem_WithNeedsReview(t *testing.T) {
 	setup := testutil.NewHandlerTestSetup()
 	mockSvc := new(MockService)
-	item.RegisterRoutes(setup.API, mockSvc, nil)
+	item.RegisterRoutes(setup.API, mockSvc, nil, nil, nil)
 
 	testItem, _ := item.NewItem(setup.WorkspaceID, "Quick Capture", "QC-001", 0)
 	testItem.SetNeedsReview(true)
@@ -563,7 +565,7 @@ func TestItemHandler_CreateItem_WithNeedsReview(t *testing.T) {
 func TestItemHandler_UpdateItem_ClearNeedsReview(t *testing.T) {
 	setup := testutil.NewHandlerTestSetup()
 	mockSvc := new(MockService)
-	item.RegisterRoutes(setup.API, mockSvc, nil)
+	item.RegisterRoutes(setup.API, mockSvc, nil, nil, nil)
 
 	currentItem, _ := item.NewItem(setup.WorkspaceID, "Review Item", "REV-001", 0)
 	currentItem.SetNeedsReview(true)
@@ -594,7 +596,7 @@ func TestItemHandler_Create_PublishesEvent(t *testing.T) {
 	capture.Start()
 	defer capture.Stop()
 
-	item.RegisterRoutes(setup.API, mockSvc, capture.GetBroadcaster())
+	item.RegisterRoutes(setup.API, mockSvc, capture.GetBroadcaster(), nil, nil)
 
 	testItem, _ := item.NewItem(setup.WorkspaceID, "Test Item", "TEST-001", 0)
 
@@ -631,7 +633,7 @@ func TestItemHandler_Update_PublishesEvent(t *testing.T) {
 	capture.Start()
 	defer capture.Stop()
 
-	item.RegisterRoutes(setup.API, mockSvc, capture.GetBroadcaster())
+	item.RegisterRoutes(setup.API, mockSvc, capture.GetBroadcaster(), nil, nil)
 
 	testItem, _ := item.NewItem(setup.WorkspaceID, "Updated Item", "TEST-001", 0)
 	itemID := testItem.ID()
@@ -669,7 +671,7 @@ func TestItemHandler_Archive_PublishesEvent(t *testing.T) {
 	capture.Start()
 	defer capture.Stop()
 
-	item.RegisterRoutes(setup.API, mockSvc, capture.GetBroadcaster())
+	item.RegisterRoutes(setup.API, mockSvc, capture.GetBroadcaster(), nil, nil)
 
 	itemID := uuid.New()
 
@@ -697,7 +699,7 @@ func TestItemHandler_Create_NilBroadcaster_NoError(t *testing.T) {
 	setup := testutil.NewHandlerTestSetup()
 	mockSvc := new(MockService)
 	// Register with nil broadcaster
-	item.RegisterRoutes(setup.API, mockSvc, nil)
+	item.RegisterRoutes(setup.API, mockSvc, nil, nil, nil)
 
 	testItem, _ := item.NewItem(setup.WorkspaceID, "Test Item", "TEST-001", 0)
 
@@ -722,7 +724,7 @@ func TestItemHandler_Delete_Success(t *testing.T) {
 	capture.Start()
 	defer capture.Stop()
 
-	item.RegisterRoutes(setup.API, mockSvc, capture.GetBroadcaster())
+	item.RegisterRoutes(setup.API, mockSvc, capture.GetBroadcaster(), nil, nil)
 
 	itemID := uuid.New()
 
@@ -754,7 +756,7 @@ func TestItemHandler_Delete_Success(t *testing.T) {
 func TestItemHandler_Delete_CrossWorkspace_Returns404(t *testing.T) {
 	setup := testutil.NewHandlerTestSetup()
 	mockSvc := new(MockService)
-	item.RegisterRoutes(setup.API, mockSvc, nil)
+	item.RegisterRoutes(setup.API, mockSvc, nil, nil, nil)
 
 	itemID := uuid.New()
 	mockSvc.On("Delete", mock.Anything, itemID, setup.WorkspaceID).
@@ -769,7 +771,7 @@ func TestItemHandler_Delete_CrossWorkspace_Returns404(t *testing.T) {
 func TestItemHandler_List_Search_ForwardsToService(t *testing.T) {
 	setup := testutil.NewHandlerTestSetup()
 	mockSvc := new(MockService)
-	item.RegisterRoutes(setup.API, mockSvc, nil)
+	item.RegisterRoutes(setup.API, mockSvc, nil, nil, nil)
 
 	mockSvc.On("ListFiltered", mock.Anything, setup.WorkspaceID,
 		mock.MatchedBy(func(f item.ListFilters) bool { return f.Search == "drill" }),
@@ -784,7 +786,7 @@ func TestItemHandler_List_Search_ForwardsToService(t *testing.T) {
 func TestItemHandler_List_ArchivedTrue_ForwardsToService(t *testing.T) {
 	setup := testutil.NewHandlerTestSetup()
 	mockSvc := new(MockService)
-	item.RegisterRoutes(setup.API, mockSvc, nil)
+	item.RegisterRoutes(setup.API, mockSvc, nil, nil, nil)
 
 	mockSvc.On("ListFiltered", mock.Anything, setup.WorkspaceID,
 		mock.MatchedBy(func(f item.ListFilters) bool { return f.IncludeArchived }),
@@ -799,7 +801,7 @@ func TestItemHandler_List_ArchivedTrue_ForwardsToService(t *testing.T) {
 func TestItemHandler_List_Sort_ForwardsToService(t *testing.T) {
 	setup := testutil.NewHandlerTestSetup()
 	mockSvc := new(MockService)
-	item.RegisterRoutes(setup.API, mockSvc, nil)
+	item.RegisterRoutes(setup.API, mockSvc, nil, nil, nil)
 
 	mockSvc.On("ListFiltered", mock.Anything, setup.WorkspaceID,
 		mock.MatchedBy(func(f item.ListFilters) bool {
@@ -816,7 +818,7 @@ func TestItemHandler_List_Sort_ForwardsToService(t *testing.T) {
 func TestItemHandler_List_Sort_ValidatesEnum(t *testing.T) {
 	setup := testutil.NewHandlerTestSetup()
 	mockSvc := new(MockService)
-	item.RegisterRoutes(setup.API, mockSvc, nil)
+	item.RegisterRoutes(setup.API, mockSvc, nil, nil, nil)
 
 	rec := setup.Get("/items?sort=bogus")
 
@@ -831,7 +833,7 @@ func TestItemHandler_List_Sort_ValidatesEnum(t *testing.T) {
 func TestItemHandler_List_Category_InvalidUUID_IgnoredNotErrored(t *testing.T) {
 	setup := testutil.NewHandlerTestSetup()
 	mockSvc := new(MockService)
-	item.RegisterRoutes(setup.API, mockSvc, nil)
+	item.RegisterRoutes(setup.API, mockSvc, nil, nil, nil)
 
 	mockSvc.On("ListFiltered", mock.Anything, setup.WorkspaceID,
 		mock.MatchedBy(func(f item.ListFilters) bool { return f.CategoryID == nil }),
@@ -847,7 +849,7 @@ func TestItemHandler_List_Category_InvalidUUID_IgnoredNotErrored(t *testing.T) {
 func TestItemHandler_List_Category_ValidUUID_ForwardsPointer(t *testing.T) {
 	setup := testutil.NewHandlerTestSetup()
 	mockSvc := new(MockService)
-	item.RegisterRoutes(setup.API, mockSvc, nil)
+	item.RegisterRoutes(setup.API, mockSvc, nil, nil, nil)
 
 	catID := uuid.New()
 	mockSvc.On("ListFiltered", mock.Anything, setup.WorkspaceID,
@@ -863,7 +865,7 @@ func TestItemHandler_List_Category_ValidUUID_ForwardsPointer(t *testing.T) {
 func TestItemHandler_List_TotalComputedCorrectly(t *testing.T) {
 	setup := testutil.NewHandlerTestSetup()
 	mockSvc := new(MockService)
-	item.RegisterRoutes(setup.API, mockSvc, nil)
+	item.RegisterRoutes(setup.API, mockSvc, nil, nil, nil)
 
 	// Two rows on the page, 47 total — with limit=25 expect TotalPages=2.
 	it1, _ := item.NewItem(setup.WorkspaceID, "A", "TP-001", 0)
@@ -888,6 +890,147 @@ func TestItemHandler_List_TotalComputedCorrectly(t *testing.T) {
 	mockSvc.AssertExpectations(t)
 }
 
+// mockPrimaryPhotoLookup implements item.PrimaryPhotoLookup for tests that
+// exercise the primary-photo decoration path.
+type mockPrimaryPhotoLookup struct {
+	mock.Mock
+}
+
+func (m *mockPrimaryPhotoLookup) GetPrimary(ctx context.Context, itemID, workspaceID uuid.UUID) (*itemphoto.ItemPhoto, error) {
+	args := m.Called(ctx, itemID, workspaceID)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*itemphoto.ItemPhoto), args.Error(1)
+}
+
+func (m *mockPrimaryPhotoLookup) ListPrimaryByItemIDs(ctx context.Context, workspaceID uuid.UUID, itemIDs []uuid.UUID) (map[uuid.UUID]*itemphoto.ItemPhoto, error) {
+	args := m.Called(ctx, workspaceID, itemIDs)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(map[uuid.UUID]*itemphoto.ItemPhoto), args.Error(1)
+}
+
+func testPhotoURLGen(workspaceID, itemID, photoID uuid.UUID, isThumbnail bool) string {
+	if isThumbnail {
+		return fmt.Sprintf("/ws/%s/items/%s/photos/%s/thumbnail", workspaceID, itemID, photoID)
+	}
+	return fmt.Sprintf("/ws/%s/items/%s/photos/%s", workspaceID, itemID, photoID)
+}
+
+func TestItemHandler_List_IncludesPrimaryPhotoThumbnailURL(t *testing.T) {
+	setup := testutil.NewHandlerTestSetup()
+	mockSvc := new(MockService)
+	mockPhotos := new(mockPrimaryPhotoLookup)
+	item.RegisterRoutes(setup.API, mockSvc, nil, mockPhotos, testPhotoURLGen)
+
+	testItem, _ := item.NewItem(setup.WorkspaceID, "HasPhoto", "PH-001", 0)
+	photoID := uuid.New()
+	primaryPhoto := &itemphoto.ItemPhoto{
+		ID:              photoID,
+		ItemID:          testItem.ID(),
+		WorkspaceID:     setup.WorkspaceID,
+		Filename:        "primary.jpg",
+		IsPrimary:       true,
+		ThumbnailStatus: itemphoto.ThumbnailStatusComplete,
+	}
+
+	mockSvc.On("ListFiltered", mock.Anything, setup.WorkspaceID, mock.Anything, mock.Anything).
+		Return([]*item.Item{testItem}, 1, nil).Once()
+	mockPhotos.On("ListPrimaryByItemIDs", mock.Anything, setup.WorkspaceID, mock.MatchedBy(func(ids []uuid.UUID) bool {
+		return len(ids) == 1 && ids[0] == testItem.ID()
+	})).Return(map[uuid.UUID]*itemphoto.ItemPhoto{testItem.ID(): primaryPhoto}, nil).Once()
+
+	rec := setup.Get("/items")
+
+	testutil.AssertStatus(t, rec, http.StatusOK)
+	assert.Contains(t, rec.Body.String(), `"primary_photo_thumbnail_url"`,
+		"list response must include primary_photo_thumbnail_url when a primary photo exists")
+	assert.Contains(t, rec.Body.String(), `"primary_photo_url"`,
+		"list response must include primary_photo_url when a primary photo exists")
+	mockSvc.AssertExpectations(t)
+	mockPhotos.AssertExpectations(t)
+}
+
+func TestItemHandler_List_OmitsPrimaryPhotoFieldsWhenNoPrimary(t *testing.T) {
+	setup := testutil.NewHandlerTestSetup()
+	mockSvc := new(MockService)
+	mockPhotos := new(mockPrimaryPhotoLookup)
+	item.RegisterRoutes(setup.API, mockSvc, nil, mockPhotos, testPhotoURLGen)
+
+	testItem, _ := item.NewItem(setup.WorkspaceID, "NoPhoto", "NP-001", 0)
+
+	mockSvc.On("ListFiltered", mock.Anything, setup.WorkspaceID, mock.Anything, mock.Anything).
+		Return([]*item.Item{testItem}, 1, nil).Once()
+	mockPhotos.On("ListPrimaryByItemIDs", mock.Anything, setup.WorkspaceID, mock.Anything).
+		Return(map[uuid.UUID]*itemphoto.ItemPhoto{}, nil).Once()
+
+	rec := setup.Get("/items")
+
+	testutil.AssertStatus(t, rec, http.StatusOK)
+	assert.NotContains(t, rec.Body.String(), `"primary_photo_thumbnail_url"`,
+		"omitempty must hide primary_photo_thumbnail_url when no primary exists")
+	assert.NotContains(t, rec.Body.String(), `"primary_photo_url"`,
+		"omitempty must hide primary_photo_url when no primary exists")
+	mockSvc.AssertExpectations(t)
+	mockPhotos.AssertExpectations(t)
+}
+
+func TestItemHandler_Detail_IncludesPrimaryPhotoURL(t *testing.T) {
+	setup := testutil.NewHandlerTestSetup()
+	mockSvc := new(MockService)
+	mockPhotos := new(mockPrimaryPhotoLookup)
+	item.RegisterRoutes(setup.API, mockSvc, nil, mockPhotos, testPhotoURLGen)
+
+	testItem, _ := item.NewItem(setup.WorkspaceID, "DetailItem", "DT-001", 0)
+	itemID := testItem.ID()
+	photoID := uuid.New()
+	primaryPhoto := &itemphoto.ItemPhoto{
+		ID:              photoID,
+		ItemID:          itemID,
+		WorkspaceID:     setup.WorkspaceID,
+		Filename:        "primary.jpg",
+		IsPrimary:       true,
+		ThumbnailStatus: itemphoto.ThumbnailStatusComplete,
+	}
+
+	mockSvc.On("GetByID", mock.Anything, itemID, setup.WorkspaceID).
+		Return(testItem, nil).Once()
+	mockPhotos.On("GetPrimary", mock.Anything, itemID, setup.WorkspaceID).
+		Return(primaryPhoto, nil).Once()
+
+	rec := setup.Get(fmt.Sprintf("/items/%s", itemID))
+
+	testutil.AssertStatus(t, rec, http.StatusOK)
+	assert.Contains(t, rec.Body.String(), `"primary_photo_thumbnail_url"`,
+		"detail response must include primary_photo_thumbnail_url when a primary exists")
+	mockSvc.AssertExpectations(t)
+	mockPhotos.AssertExpectations(t)
+}
+
+func TestItemHandler_List_PhotoLookupErrorDegradesToNoThumbnail(t *testing.T) {
+	setup := testutil.NewHandlerTestSetup()
+	mockSvc := new(MockService)
+	mockPhotos := new(mockPrimaryPhotoLookup)
+	item.RegisterRoutes(setup.API, mockSvc, nil, mockPhotos, testPhotoURLGen)
+
+	testItem, _ := item.NewItem(setup.WorkspaceID, "ErrItem", "ER-001", 0)
+
+	mockSvc.On("ListFiltered", mock.Anything, setup.WorkspaceID, mock.Anything, mock.Anything).
+		Return([]*item.Item{testItem}, 1, nil).Once()
+	mockPhotos.On("ListPrimaryByItemIDs", mock.Anything, setup.WorkspaceID, mock.Anything).
+		Return(nil, errors.New("db down")).Once()
+
+	rec := setup.Get("/items")
+
+	// Photo lookup failure must NOT fail the request — thumbnails are decorative.
+	testutil.AssertStatus(t, rec, http.StatusOK)
+	assert.NotContains(t, rec.Body.String(), `"primary_photo_thumbnail_url"`)
+	mockSvc.AssertExpectations(t)
+	mockPhotos.AssertExpectations(t)
+}
+
 func TestItemHandler_Restore_PublishesEvent(t *testing.T) {
 	setup := testutil.NewHandlerTestSetup()
 	mockSvc := new(MockService)
@@ -895,7 +1038,7 @@ func TestItemHandler_Restore_PublishesEvent(t *testing.T) {
 	capture.Start()
 	defer capture.Stop()
 
-	item.RegisterRoutes(setup.API, mockSvc, capture.GetBroadcaster())
+	item.RegisterRoutes(setup.API, mockSvc, capture.GetBroadcaster(), nil, nil)
 
 	itemID := uuid.New()
 

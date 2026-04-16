@@ -818,21 +818,22 @@ func (h *ServePhotoHandler) servePhoto(w http.ResponseWriter, r *http.Request, t
 // Helper function to convert entity to response
 func toPhotoResponse(p *ItemPhoto, urlGenerator PhotoURLGenerator) PhotoResponse {
 	return PhotoResponse{
-		ID:           p.ID,
-		ItemID:       p.ItemID,
-		WorkspaceID:  p.WorkspaceID,
-		Filename:     p.Filename,
-		FileSize:     p.FileSize,
-		MimeType:     p.MimeType,
-		Width:        p.Width,
-		Height:       p.Height,
-		DisplayOrder: p.DisplayOrder,
-		IsPrimary:    p.IsPrimary,
-		Caption:      p.Caption,
-		URL:          urlGenerator(p.WorkspaceID, p.ItemID, p.ID, false),
-		ThumbnailURL: urlGenerator(p.WorkspaceID, p.ItemID, p.ID, true),
-		CreatedAt:    p.CreatedAt,
-		UpdatedAt:    p.UpdatedAt,
+		ID:              p.ID,
+		ItemID:          p.ItemID,
+		WorkspaceID:     p.WorkspaceID,
+		Filename:        p.Filename,
+		FileSize:        p.FileSize,
+		MimeType:        p.MimeType,
+		Width:           p.Width,
+		Height:          p.Height,
+		DisplayOrder:    p.DisplayOrder,
+		IsPrimary:       p.IsPrimary,
+		Caption:         p.Caption,
+		URL:             urlGenerator(p.WorkspaceID, p.ItemID, p.ID, false),
+		ThumbnailURL:    urlGenerator(p.WorkspaceID, p.ItemID, p.ID, true),
+		ThumbnailStatus: string(p.ThumbnailStatus),
+		CreatedAt:       p.CreatedAt,
+		UpdatedAt:       p.UpdatedAt,
 	}
 }
 
@@ -881,19 +882,20 @@ type ReorderPhotosInput struct {
 }
 
 type PhotoResponse struct {
-	ID           uuid.UUID  `json:"id"`
-	ItemID       uuid.UUID  `json:"item_id"`
-	WorkspaceID  uuid.UUID  `json:"workspace_id"`
-	Filename     string     `json:"filename"`
-	FileSize     int64      `json:"file_size"`
-	MimeType     string     `json:"mime_type"`
-	Width        int32      `json:"width"`
-	Height       int32      `json:"height"`
-	DisplayOrder int32      `json:"display_order"`
-	IsPrimary    bool       `json:"is_primary"`
-	Caption      *string    `json:"caption,omitempty"`
-	URL          string     `json:"url" doc:"Full-size photo URL"`
-	ThumbnailURL string     `json:"thumbnail_url" doc:"Thumbnail photo URL"`
-	CreatedAt    time.Time  `json:"created_at"`
-	UpdatedAt    time.Time  `json:"updated_at"`
+	ID              uuid.UUID `json:"id"`
+	ItemID          uuid.UUID `json:"item_id"`
+	WorkspaceID     uuid.UUID `json:"workspace_id"`
+	Filename        string    `json:"filename"`
+	FileSize        int64     `json:"file_size"`
+	MimeType        string    `json:"mime_type"`
+	Width           int32     `json:"width"`
+	Height          int32     `json:"height"`
+	DisplayOrder    int32     `json:"display_order"`
+	IsPrimary       bool      `json:"is_primary"`
+	Caption         *string   `json:"caption,omitempty"`
+	URL             string    `json:"url" doc:"Full-size photo URL"`
+	ThumbnailURL    string    `json:"thumbnail_url" doc:"Thumbnail photo URL"`
+	ThumbnailStatus string    `json:"thumbnail_status" doc:"Thumbnail processing status: pending|processing|complete|failed"`
+	CreatedAt       time.Time `json:"created_at"`
+	UpdatedAt       time.Time `json:"updated_at"`
 }

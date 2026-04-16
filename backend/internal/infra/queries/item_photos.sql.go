@@ -523,6 +523,64 @@ func (q *Queries) GetPrimaryItemPhoto(ctx context.Context, arg GetPrimaryItemPho
 	return i, err
 }
 
+const getPrimaryPhotosByItemIDs = `-- name: GetPrimaryPhotosByItemIDs :many
+SELECT id, item_id, workspace_id, filename, storage_path, thumbnail_path, file_size, mime_type, width, height, display_order, is_primary, caption, uploaded_by, thumbnail_status, thumbnail_small_path, thumbnail_medium_path, thumbnail_large_path, thumbnail_attempts, thumbnail_error, perceptual_hash, created_at, updated_at FROM warehouse.item_photos
+WHERE workspace_id = $1
+  AND item_id = ANY($2::uuid[])
+  AND is_primary = true
+`
+
+type GetPrimaryPhotosByItemIDsParams struct {
+	WorkspaceID uuid.UUID   `json:"workspace_id"`
+	ItemIds     []uuid.UUID `json:"item_ids"`
+}
+
+// Batched fetch of primary photos for a list of items (items-list thumbnail column).
+// Returns zero or one row per item. Scoped on workspace_id for isolation.
+func (q *Queries) GetPrimaryPhotosByItemIDs(ctx context.Context, arg GetPrimaryPhotosByItemIDsParams) ([]WarehouseItemPhoto, error) {
+	rows, err := q.db.Query(ctx, getPrimaryPhotosByItemIDs, arg.WorkspaceID, arg.ItemIds)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []WarehouseItemPhoto{}
+	for rows.Next() {
+		var i WarehouseItemPhoto
+		if err := rows.Scan(
+			&i.ID,
+			&i.ItemID,
+			&i.WorkspaceID,
+			&i.Filename,
+			&i.StoragePath,
+			&i.ThumbnailPath,
+			&i.FileSize,
+			&i.MimeType,
+			&i.Width,
+			&i.Height,
+			&i.DisplayOrder,
+			&i.IsPrimary,
+			&i.Caption,
+			&i.UploadedBy,
+			&i.ThumbnailStatus,
+			&i.ThumbnailSmallPath,
+			&i.ThumbnailMediumPath,
+			&i.ThumbnailLargePath,
+			&i.ThumbnailAttempts,
+			&i.ThumbnailError,
+			&i.PerceptualHash,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listItemPhotosByItem = `-- name: ListItemPhotosByItem :many
 SELECT id, item_id, workspace_id, filename, storage_path, thumbnail_path, file_size, mime_type, width, height, display_order, is_primary, caption, uploaded_by, thumbnail_status, thumbnail_small_path, thumbnail_medium_path, thumbnail_large_path, thumbnail_attempts, thumbnail_error, perceptual_hash, created_at, updated_at FROM warehouse.item_photos
 WHERE item_id = $1 AND workspace_id = $2

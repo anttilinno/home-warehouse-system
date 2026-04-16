@@ -25,6 +25,14 @@ SELECT * FROM warehouse.item_photos
 WHERE item_id = $1 AND workspace_id = $2 AND is_primary = true
 LIMIT 1;
 
+-- name: GetPrimaryPhotosByItemIDs :many
+-- Batched fetch of primary photos for a list of items (items-list thumbnail column).
+-- Returns zero or one row per item. Scoped on workspace_id for isolation.
+SELECT * FROM warehouse.item_photos
+WHERE workspace_id = @workspace_id
+  AND item_id = ANY(@item_ids::uuid[])
+  AND is_primary = true;
+
 -- name: UpdateItemPhoto :one
 UPDATE warehouse.item_photos
 SET

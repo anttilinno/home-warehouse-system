@@ -14,6 +14,7 @@ import (
 	"github.com/hibiken/asynq"
 
 	"github.com/antti/home-warehouse/go-backend/internal/jobs"
+	"github.com/antti/home-warehouse/go-backend/internal/shared"
 )
 
 const (
@@ -63,6 +64,10 @@ type ServiceInterface interface {
 	UpdateCaption(ctx context.Context, photoID, workspaceID uuid.UUID, caption *string) error
 	ReorderPhotos(ctx context.Context, itemID, workspaceID uuid.UUID, photoIDs []uuid.UUID) error
 	DeletePhoto(ctx context.Context, id, workspaceID uuid.UUID) error
+
+	// Primary-photo lookups (used by item handlers to decorate ItemResponse)
+	GetPrimary(ctx context.Context, itemID, workspaceID uuid.UUID) (*ItemPhoto, error)
+	ListPrimaryByItemIDs(ctx context.Context, workspaceID uuid.UUID, itemIDs []uuid.UUID) (map[uuid.UUID]*ItemPhoto, error)
 
 	// Bulk operations
 	BulkDeletePhotos(ctx context.Context, itemID, workspaceID uuid.UUID, photoIDs []uuid.UUID) error
@@ -399,6 +404,34 @@ func (s *Service) DeletePhoto(ctx context.Context, id, workspaceID uuid.UUID) er
 	}
 
 	return nil
+}
+
+// GetPrimary returns the primary photo for an item, or nil if no primary exists.
+// A missing primary is NOT an error — the list handler uses this to decorate
+// ItemResponse.PrimaryPhotoThumbnailURL, and absence is expected for items that
+// haven't had any photos uploaded yet.
+func (s *Service) GetPrimary(ctx context.Context, itemID, workspaceID uuid.UUID) (*ItemPhoto, error) {
+	photo, err := s.repo.GetPrimary(ctx, itemID, workspaceID)
+	if err != nil {
+		// Treat "no primary photo" as nil, not an error. The postgres repo returns
+		// shared.ErrNotFound for pgx.ErrNoRows; ErrPhotoNotFound is the domain
+		// equivalent. Either means "no primary photo exists for this item".
+		if errors.Is(err, ErrPhotoNotFound) || errors.Is(err, shared.ErrNotFound) {
+			return nil, nil
+		}
+		return nil, err
+	}
+	return photo, nil
+}
+
+// ListPrimaryByItemIDs fetches primary photos for a batch of items in one query.
+// Items without a primary photo are absent from the returned map; callers should
+// treat a missing key as "no primary photo for that item" (not an error).
+func (s *Service) ListPrimaryByItemIDs(ctx context.Context, workspaceID uuid.UUID, itemIDs []uuid.UUID) (map[uuid.UUID]*ItemPhoto, error) {
+	if len(itemIDs) == 0 {
+		return map[uuid.UUID]*ItemPhoto{}, nil
+	}
+	return s.repo.ListPrimaryByItemIDs(ctx, workspaceID, itemIDs)
 }
 
 // isValidMimeType checks if a MIME type is allowed

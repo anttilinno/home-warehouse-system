@@ -107,6 +107,30 @@ func (r *ItemPhotoRepository) GetPrimary(ctx context.Context, itemID, workspaceI
 	return r.rowToItemPhoto(row), nil
 }
 
+func (r *ItemPhotoRepository) ListPrimaryByItemIDs(ctx context.Context, workspaceID uuid.UUID, itemIDs []uuid.UUID) (map[uuid.UUID]*itemphoto.ItemPhoto, error) {
+	if len(itemIDs) == 0 {
+		return map[uuid.UUID]*itemphoto.ItemPhoto{}, nil
+	}
+
+	db := GetDBTX(ctx, r.pool)
+	q := queries.New(db)
+
+	rows, err := q.GetPrimaryPhotosByItemIDs(ctx, queries.GetPrimaryPhotosByItemIDsParams{
+		WorkspaceID: workspaceID,
+		ItemIds:     itemIDs,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	result := make(map[uuid.UUID]*itemphoto.ItemPhoto, len(rows))
+	for _, row := range rows {
+		photo := r.rowToItemPhoto(row)
+		result[photo.ItemID] = photo
+	}
+	return result, nil
+}
+
 func (r *ItemPhotoRepository) Update(ctx context.Context, photo *itemphoto.ItemPhoto) error {
 	db := GetDBTX(ctx, r.pool)
 	q := queries.New(db)

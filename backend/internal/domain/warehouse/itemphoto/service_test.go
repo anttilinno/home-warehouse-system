@@ -55,6 +55,14 @@ func (m *MockRepository) GetPrimary(ctx context.Context, itemID, workspaceID uui
 	return args.Get(0).(*itemphoto.ItemPhoto), args.Error(1)
 }
 
+func (m *MockRepository) ListPrimaryByItemIDs(ctx context.Context, workspaceID uuid.UUID, itemIDs []uuid.UUID) (map[uuid.UUID]*itemphoto.ItemPhoto, error) {
+	args := m.Called(ctx, workspaceID, itemIDs)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(map[uuid.UUID]*itemphoto.ItemPhoto), args.Error(1)
+}
+
 func (m *MockRepository) Update(ctx context.Context, photo *itemphoto.ItemPhoto) error {
 	args := m.Called(ctx, photo)
 	return args.Error(0)

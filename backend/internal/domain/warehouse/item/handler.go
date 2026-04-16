@@ -3,15 +3,38 @@ package item
 import (
 	"context"
 	"errors"
+	"log"
 	"time"
 
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/google/uuid"
 
 	appMiddleware "github.com/antti/home-warehouse/go-backend/internal/api/middleware"
+	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/itemphoto"
 	"github.com/antti/home-warehouse/go-backend/internal/infra/events"
 	"github.com/antti/home-warehouse/go-backend/internal/shared"
 )
+
+// PrimaryPhotoLookup is the narrow interface the item handler needs from the
+// itemphoto service to decorate ItemResponse with thumbnail URLs. Defined here
+// so RegisterRoutes can accept nil (degrades gracefully) and tests don't need
+// to mock the full itemphoto.ServiceInterface.
+type PrimaryPhotoLookup interface {
+	GetPrimary(ctx context.Context, itemID, workspaceID uuid.UUID) (*itemphoto.ItemPhoto, error)
+	ListPrimaryByItemIDs(ctx context.Context, workspaceID uuid.UUID, itemIDs []uuid.UUID) (map[uuid.UUID]*itemphoto.ItemPhoto, error)
+}
+
+// PrimaryPhotoURLGenerator mirrors itemphoto.PhotoURLGenerator so the item
+// handler can emit the same URL shape when decorating ItemResponse.
+type PrimaryPhotoURLGenerator func(workspaceID, itemID, photoID uuid.UUID, isThumbnail bool) string
+
+// stringPtrOrNil returns a pointer to s, or nil if s is empty.
+func stringPtrOrNil(s string) *string {
+	if s == "" {
+		return nil
+	}
+	return &s
+}
 
 func derefInt(p *int, fallback int) int {
 	if p != nil {
@@ -21,7 +44,14 @@ func derefInt(p *int, fallback int) int {
 }
 
 // RegisterRoutes registers item routes.
-func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broadcaster) {
+//
+// photos (PrimaryPhotoLookup) is optional — when non-nil, list/detail handlers
+// decorate ItemResponse with primary photo thumbnail/URL fields. Pass nil to
+// skip decoration (e.g., in tests that don't exercise photo integration).
+//
+// photoURLGen is optional — required only when photos is non-nil. Generates the
+// same URL shape as itemphoto.RegisterRoutes for consistent URLs across endpoints.
+func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broadcaster, photos PrimaryPhotoLookup, photoURLGen PrimaryPhotoURLGenerator) {
 	// List items
 	huma.Get(api, "/items", func(ctx context.Context, input *ListItemsInput) (*ListItemsOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
@@ -65,9 +95,11 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 			return nil, huma.Error500InternalServerError("failed to list items")
 		}
 
+		primaryByItem := lookupPrimaryPhotos(ctx, photos, workspaceID, items)
+
 		responses := make([]ItemResponse, len(items))
 		for i, item := range items {
-			responses[i] = toItemResponse(item)
+			responses[i] = toItemResponse(item, primaryByItem[item.ID()], photoURLGen)
 		}
 
 		totalPages := 1
@@ -97,9 +129,11 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 			return nil, huma.Error500InternalServerError("failed to search items")
 		}
 
+		// Search results omit primary-photo decoration — autocomplete/search
+		// callers don't render thumbnails.
 		responses := make([]ItemResponse, len(items))
 		for i, item := range items {
-			responses[i] = toItemResponse(item)
+			responses[i] = toItemResponse(item, nil, photoURLGen)
 		}
 
 		return &SearchItemsOutput{
@@ -124,8 +158,20 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 			return nil, huma.Error500InternalServerError("failed to get item")
 		}
 
+		// Decorate detail view with primary photo (best-effort — failures log and
+		// degrade to no thumbnail rather than failing the whole request).
+		var primary *itemphoto.ItemPhoto
+		if photos != nil {
+			p, perr := photos.GetPrimary(ctx, input.ID, workspaceID)
+			if perr != nil {
+				log.Printf("item detail: primary photo lookup failed for item %s: %v", input.ID, perr)
+			} else {
+				primary = p
+			}
+		}
+
 		return &GetItemOutput{
-			Body: toItemResponse(item),
+			Body: toItemResponse(item, primary, photoURLGen),
 		}, nil
 	})
 
@@ -142,9 +188,11 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 			return nil, huma.Error500InternalServerError("failed to list items by category")
 		}
 
+		primaryByItem := lookupPrimaryPhotos(ctx, photos, workspaceID, items)
+
 		responses := make([]ItemResponse, len(items))
 		for i, item := range items {
-			responses[i] = toItemResponse(item)
+			responses[i] = toItemResponse(item, primaryByItem[item.ID()], photoURLGen)
 		}
 
 		return &ListItemsOutput{
@@ -220,8 +268,9 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 			})
 		}
 
+		// Newly-created items have no photos yet — pass nil primary.
 		return &CreateItemOutput{
-			Body: toItemResponse(item),
+			Body: toItemResponse(item, nil, photoURLGen),
 		}, nil
 	})
 
@@ -295,8 +344,20 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 			})
 		}
 
+		// Update response: look up primary photo to keep thumbnail URL fresh for
+		// callers that re-render the detail view after PATCH.
+		var primary *itemphoto.ItemPhoto
+		if photos != nil {
+			p, perr := photos.GetPrimary(ctx, input.ID, workspaceID)
+			if perr != nil {
+				log.Printf("item update: primary photo lookup failed for item %s: %v", input.ID, perr)
+			} else {
+				primary = p
+			}
+		}
+
 		return &UpdateItemOutput{
-			Body: toItemResponse(item),
+			Body: toItemResponse(item, primary, photoURLGen),
 		}, nil
 	})
 
@@ -456,8 +517,27 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 	})
 }
 
-func toItemResponse(i *Item) ItemResponse {
-	return ItemResponse{
+// lookupPrimaryPhotos wraps the batched primary-photo fetch with graceful
+// degradation: nil photos source or zero items returns empty map; errors log
+// but do not fail the caller (primary photos are decorative on list pages).
+func lookupPrimaryPhotos(ctx context.Context, photos PrimaryPhotoLookup, workspaceID uuid.UUID, items []*Item) map[uuid.UUID]*itemphoto.ItemPhoto {
+	if photos == nil || len(items) == 0 {
+		return nil
+	}
+	itemIDs := make([]uuid.UUID, 0, len(items))
+	for _, it := range items {
+		itemIDs = append(itemIDs, it.ID())
+	}
+	primaryByItem, err := photos.ListPrimaryByItemIDs(ctx, workspaceID, itemIDs)
+	if err != nil {
+		log.Printf("item list: primary photo batch lookup failed for workspace %s: %v", workspaceID, err)
+		return nil
+	}
+	return primaryByItem
+}
+
+func toItemResponse(i *Item, primary *itemphoto.ItemPhoto, photoURLGen PrimaryPhotoURLGenerator) ItemResponse {
+	resp := ItemResponse{
 		ID:                i.ID(),
 		WorkspaceID:       i.WorkspaceID(),
 		SKU:               i.SKU(),
@@ -484,6 +564,15 @@ func toItemResponse(i *Item) ItemResponse {
 		CreatedAt:         i.CreatedAt(),
 		UpdatedAt:         i.UpdatedAt(),
 	}
+
+	if primary != nil && photoURLGen != nil {
+		thumbnailURL := photoURLGen(primary.WorkspaceID, primary.ItemID, primary.ID, true)
+		fullURL := photoURLGen(primary.WorkspaceID, primary.ItemID, primary.ID, false)
+		resp.PrimaryPhotoThumbnailURL = stringPtrOrNil(thumbnailURL)
+		resp.PrimaryPhotoURL = stringPtrOrNil(fullURL)
+	}
+
+	return resp
 }
 
 // Request/Response types
@@ -589,31 +678,33 @@ type UpdateItemOutput struct {
 }
 
 type ItemResponse struct {
-	ID                uuid.UUID  `json:"id"`
-	WorkspaceID       uuid.UUID  `json:"workspace_id"`
-	SKU               string     `json:"sku"`
-	Name              string     `json:"name"`
-	Description       *string    `json:"description,omitempty"`
-	CategoryID        *uuid.UUID `json:"category_id,omitempty"`
-	Brand             *string    `json:"brand,omitempty"`
-	Model             *string    `json:"model,omitempty"`
-	ImageURL          *string    `json:"image_url,omitempty"`
-	SerialNumber      *string    `json:"serial_number,omitempty"`
-	Manufacturer      *string    `json:"manufacturer,omitempty"`
-	Barcode           *string    `json:"barcode,omitempty"`
-	IsInsured         *bool      `json:"is_insured,omitempty"`
-	IsArchived        *bool      `json:"is_archived,omitempty"`
-	LifetimeWarranty  *bool      `json:"lifetime_warranty,omitempty"`
-	NeedsReview       *bool      `json:"needs_review,omitempty"`
-	WarrantyDetails   *string    `json:"warranty_details,omitempty"`
-	PurchasedFrom     *uuid.UUID `json:"purchased_from,omitempty"`
-	MinStockLevel     int        `json:"min_stock_level"`
-	ShortCode         string     `json:"short_code"`
-	ObsidianVaultPath *string    `json:"obsidian_vault_path,omitempty"`
-	ObsidianNotePath  *string    `json:"obsidian_note_path,omitempty"`
-	ObsidianURI       *string    `json:"obsidian_uri,omitempty" doc:"Generated Obsidian deep link URI"`
-	CreatedAt         time.Time  `json:"created_at"`
-	UpdatedAt         time.Time  `json:"updated_at"`
+	ID                       uuid.UUID  `json:"id"`
+	WorkspaceID              uuid.UUID  `json:"workspace_id"`
+	SKU                      string     `json:"sku"`
+	Name                     string     `json:"name"`
+	Description              *string    `json:"description,omitempty"`
+	CategoryID               *uuid.UUID `json:"category_id,omitempty"`
+	Brand                    *string    `json:"brand,omitempty"`
+	Model                    *string    `json:"model,omitempty"`
+	ImageURL                 *string    `json:"image_url,omitempty"`
+	SerialNumber             *string    `json:"serial_number,omitempty"`
+	Manufacturer             *string    `json:"manufacturer,omitempty"`
+	Barcode                  *string    `json:"barcode,omitempty"`
+	IsInsured                *bool      `json:"is_insured,omitempty"`
+	IsArchived               *bool      `json:"is_archived,omitempty"`
+	LifetimeWarranty         *bool      `json:"lifetime_warranty,omitempty"`
+	NeedsReview              *bool      `json:"needs_review,omitempty"`
+	WarrantyDetails          *string    `json:"warranty_details,omitempty"`
+	PurchasedFrom            *uuid.UUID `json:"purchased_from,omitempty"`
+	MinStockLevel            int        `json:"min_stock_level"`
+	ShortCode                string     `json:"short_code"`
+	ObsidianVaultPath        *string    `json:"obsidian_vault_path,omitempty"`
+	ObsidianNotePath         *string    `json:"obsidian_note_path,omitempty"`
+	ObsidianURI              *string    `json:"obsidian_uri,omitempty" doc:"Generated Obsidian deep link URI"`
+	PrimaryPhotoThumbnailURL *string    `json:"primary_photo_thumbnail_url,omitempty" doc:"Thumbnail URL of the primary photo (omitted when no primary exists)"`
+	PrimaryPhotoURL          *string    `json:"primary_photo_url,omitempty" doc:"Full-size URL of the primary photo (omitted when no primary exists)"`
+	CreatedAt                time.Time  `json:"created_at"`
+	UpdatedAt                time.Time  `json:"updated_at"`
 }
 
 // Label management types
