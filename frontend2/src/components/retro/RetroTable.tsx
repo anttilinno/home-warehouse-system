@@ -2,7 +2,10 @@ import type { ReactNode } from "react";
 
 interface RetroTableColumn {
   key: string;
-  header: string;
+  // ReactNode so callers can pass a visually-hidden span (e.g. an
+  // `<span className="sr-only">Thumbnail</span>`) for a column whose
+  // visual header is intentionally empty. Strings remain valid.
+  header: ReactNode;
   className?: string;
 }
 

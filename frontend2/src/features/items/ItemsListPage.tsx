@@ -28,6 +28,7 @@ import {
 } from "./actions/ItemArchiveDeleteFlow";
 import { ItemsFilterBar } from "./filters/ItemsFilterBar";
 import { useItemsListQueryParams } from "./filters/useItemsListQueryParams";
+import { ItemThumbnailCell } from "./photos/ItemThumbnailCell";
 
 const PAGE_SIZE = 25;
 
@@ -107,7 +108,16 @@ export function ItemsListPage() {
   // Columns use RetroTable's `header` field. Default cell font is font-mono
   // (correct for SKU); per-cell overrides apply font-sans for NAME and
   // CATEGORY (Pitfall 5).
+  //
+  // THUMB is the first column (D-08, Phase 61-04): a 40x40 ItemThumbnailCell
+  // with a screen-reader-only "Thumbnail" header so the visual column appears
+  // unlabelled while still being identifiable for AT users.
   const columns = [
+    {
+      key: "thumb",
+      header: <span className="sr-only">{t`Thumbnail`}</span>,
+      className: "w-14",
+    },
     { key: "name", header: t`NAME` },
     { key: "sku", header: t`SKU` },
     { key: "category", header: t`CATEGORY` },
@@ -115,6 +125,12 @@ export function ItemsListPage() {
   ];
 
   const rows = items.map((item) => ({
+    thumb: (
+      <ItemThumbnailCell
+        thumbnailUrl={item.primary_photo_thumbnail_url}
+        dimmed={item.is_archived ?? false}
+      />
+    ),
     name: (
       <Link
         to={`/items/${item.id}`}
