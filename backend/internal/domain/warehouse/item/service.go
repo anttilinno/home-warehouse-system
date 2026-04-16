@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/rand"
 	"encoding/base32"
+	"errors"
 	"fmt"
 
 	"github.com/google/uuid"
@@ -24,10 +25,12 @@ type ServiceInterface interface {
 	Create(ctx context.Context, input CreateInput) (*Item, error)
 	GetByID(ctx context.Context, id, workspaceID uuid.UUID) (*Item, error)
 	List(ctx context.Context, workspaceID uuid.UUID, pagination shared.Pagination) ([]*Item, int, error)
+	ListFiltered(ctx context.Context, workspaceID uuid.UUID, filters ListFilters, pagination shared.Pagination) ([]*Item, int, error)
 	ListNeedingReview(ctx context.Context, workspaceID uuid.UUID, pagination shared.Pagination) ([]*Item, int, error)
 	Update(ctx context.Context, id, workspaceID uuid.UUID, input UpdateInput) (*Item, error)
 	Archive(ctx context.Context, id, workspaceID uuid.UUID) error
 	Restore(ctx context.Context, id, workspaceID uuid.UUID) error
+	Delete(ctx context.Context, id, workspaceID uuid.UUID) error
 	Search(ctx context.Context, workspaceID uuid.UUID, query string, limit int) ([]*Item, error)
 	ListByCategory(ctx context.Context, workspaceID, categoryID uuid.UUID, pagination shared.Pagination) ([]*Item, error)
 	AttachLabel(ctx context.Context, itemID, labelID, workspaceID uuid.UUID) error
@@ -204,6 +207,27 @@ func (s *Service) Search(ctx context.Context, workspaceID uuid.UUID, query strin
 
 func (s *Service) List(ctx context.Context, workspaceID uuid.UUID, pagination shared.Pagination) ([]*Item, int, error) {
 	return s.repo.FindByWorkspace(ctx, workspaceID, pagination)
+}
+
+// ListFiltered returns items matching the filter/sort/pagination params plus
+// the true total count. Pass-through to Repository.FindByWorkspaceFiltered;
+// the count is COUNT(*) not len(page).
+func (s *Service) ListFiltered(ctx context.Context, workspaceID uuid.UUID, filters ListFilters, pagination shared.Pagination) ([]*Item, int, error) {
+	return s.repo.FindByWorkspaceFiltered(ctx, workspaceID, filters, pagination)
+}
+
+// Delete hard-deletes an item after verifying workspace ownership.
+// Returns ErrItemNotFound when the item does not belong to the workspace or
+// does not exist. Unlike Borrower.Delete, items have no HasActiveLoans-style
+// guard (D-04); FK cascades handle downstream rows.
+func (s *Service) Delete(ctx context.Context, id, workspaceID uuid.UUID) error {
+	if _, err := s.GetByID(ctx, id, workspaceID); err != nil {
+		if errors.Is(err, shared.ErrNotFound) {
+			return ErrItemNotFound
+		}
+		return err
+	}
+	return s.repo.Delete(ctx, id)
 }
 
 func (s *Service) ListNeedingReview(ctx context.Context, workspaceID uuid.UUID, pagination shared.Pagination) ([]*Item, int, error) {

@@ -42,6 +42,16 @@ func (m *MockService) List(ctx context.Context, workspaceID uuid.UUID, paginatio
 	return args.Get(0).([]*item.Item), args.Int(1), args.Error(2)
 }
 
+func (m *MockService) ListFiltered(ctx context.Context, workspaceID uuid.UUID, filters item.ListFilters, pagination shared.Pagination) ([]*item.Item, int, error) {
+	args := m.Called(ctx, workspaceID, filters, pagination)
+	return args.Get(0).([]*item.Item), args.Int(1), args.Error(2)
+}
+
+func (m *MockService) Delete(ctx context.Context, id, workspaceID uuid.UUID) error {
+	args := m.Called(ctx, id, workspaceID)
+	return args.Error(0)
+}
+
 func (m *MockService) ListNeedingReview(ctx context.Context, workspaceID uuid.UUID, pagination shared.Pagination) ([]*item.Item, int, error) {
 	args := m.Called(ctx, workspaceID, pagination)
 	return args.Get(0).([]*item.Item), args.Int(1), args.Error(2)

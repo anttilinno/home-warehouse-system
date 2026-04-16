@@ -1771,6 +1771,111 @@ func TestService_Create_WithNeedsReview(t *testing.T) {
 	mockRepo.AssertExpectations(t)
 }
 
+func TestService_Delete_WorkspaceMatch_CallsRepoDelete(t *testing.T) {
+	ctx := context.Background()
+	itemID := uuid.New()
+	workspaceID := uuid.New()
+
+	mockRepo := new(MockRepository)
+	svc := NewService(mockRepo, nil)
+
+	existing := &Item{id: itemID, workspaceID: workspaceID, name: "Owned", sku: "OWN-1"}
+	mockRepo.On("FindByID", ctx, itemID, workspaceID).Return(existing, nil)
+	mockRepo.On("Delete", ctx, itemID).Return(nil).Once()
+
+	err := svc.Delete(ctx, itemID, workspaceID)
+
+	assert.NoError(t, err)
+	mockRepo.AssertExpectations(t)
+}
+
+func TestService_Delete_CrossWorkspace_ReturnsNotFound(t *testing.T) {
+	ctx := context.Background()
+	itemID := uuid.New()
+	wsOwner := uuid.New()
+	wsOther := uuid.New()
+
+	mockRepo := new(MockRepository)
+	svc := NewService(mockRepo, nil)
+
+	// Simulate cross-workspace miss: repo returns shared.ErrNotFound when
+	// the id+wsOther pair is not found (real postgres layer does this).
+	mockRepo.On("FindByID", ctx, itemID, wsOther).Return(nil, shared.ErrNotFound)
+
+	err := svc.Delete(ctx, itemID, wsOther)
+
+	assert.ErrorIs(t, err, ErrItemNotFound)
+	mockRepo.AssertExpectations(t)
+	// Delete must NOT be called when the guard fires.
+	mockRepo.AssertNotCalled(t, "Delete", ctx, itemID)
+	_ = wsOwner
+}
+
+func TestService_Delete_GetByIDReturnsErrItemNotFound_Propagated(t *testing.T) {
+	ctx := context.Background()
+	itemID := uuid.New()
+	workspaceID := uuid.New()
+
+	mockRepo := new(MockRepository)
+	svc := NewService(mockRepo, nil)
+
+	// Some mocks return ErrItemNotFound directly — ensure that is surfaced.
+	mockRepo.On("FindByID", ctx, itemID, workspaceID).Return(nil, ErrItemNotFound)
+
+	err := svc.Delete(ctx, itemID, workspaceID)
+
+	assert.ErrorIs(t, err, ErrItemNotFound)
+	mockRepo.AssertExpectations(t)
+	mockRepo.AssertNotCalled(t, "Delete", ctx, itemID)
+}
+
+func TestService_Delete_RepoError_Propagated(t *testing.T) {
+	ctx := context.Background()
+	itemID := uuid.New()
+	workspaceID := uuid.New()
+
+	mockRepo := new(MockRepository)
+	svc := NewService(mockRepo, nil)
+
+	existing := &Item{id: itemID, workspaceID: workspaceID, name: "Owned", sku: "OWN-1"}
+	repoErr := errors.New("pg: boom")
+	mockRepo.On("FindByID", ctx, itemID, workspaceID).Return(existing, nil)
+	mockRepo.On("Delete", ctx, itemID).Return(repoErr).Once()
+
+	err := svc.Delete(ctx, itemID, workspaceID)
+
+	assert.ErrorIs(t, err, repoErr)
+	mockRepo.AssertExpectations(t)
+}
+
+func TestService_ListFiltered_ForwardsAllFilterFields(t *testing.T) {
+	ctx := context.Background()
+	workspaceID := uuid.New()
+	categoryID := uuid.New()
+
+	mockRepo := new(MockRepository)
+	svc := NewService(mockRepo, nil)
+
+	filters := ListFilters{
+		Search:          "drill",
+		CategoryID:      &categoryID,
+		IncludeArchived: true,
+		Sort:            "created_at",
+		SortDir:         "desc",
+	}
+	pagination := shared.Pagination{Page: 2, PageSize: 25}
+
+	mockRepo.On("FindByWorkspaceFiltered", ctx, workspaceID, filters, pagination).
+		Return([]*Item{}, 47, nil).Once()
+
+	items, total, err := svc.ListFiltered(ctx, workspaceID, filters, pagination)
+
+	assert.NoError(t, err)
+	assert.Empty(t, items)
+	assert.Equal(t, 47, total)
+	mockRepo.AssertExpectations(t)
+}
+
 func TestService_ListNeedingReview(t *testing.T) {
 	ctx := context.Background()
 	workspaceID := uuid.New()
