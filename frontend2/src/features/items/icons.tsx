@@ -8,7 +8,8 @@
  * plan D-intent).
  *
  * Phase 61 additions: `ImageOff` for the items-list and item-detail header
- * thumbnail placeholders (paths mirror the lucide-react ImageOff glyph so
+ * thumbnail placeholders, plus `ChevronLeft`, `Star`, and `X` for the photo
+ * lightbox controls (paths mirror the lucide-react glyphs of the same name so
  * downstream designs that referenced lucide remain visually accurate).
  */
 
@@ -116,6 +117,40 @@ export function ImageOff({ size = 16, className }: IconProps) {
       <line x1="18" x2="21" y1="12" y2="15" />
       <path d="M3.59 3.59A1.99 1.99 0 0 0 3 5v14a2 2 0 0 0 2 2h14c.55 0 1.052-.22 1.41-.59" />
       <path d="M21 15V5a2 2 0 0 0-2-2H9" />
+    </svg>
+  );
+}
+
+/**
+ * ChevronLeft — lightbox PREV button glyph. Mirrors ChevronRight.
+ */
+export function ChevronLeft({ size = 16, className }: IconProps) {
+  return (
+    <svg {...base(size)} className={className} aria-hidden="true">
+      <path d="m15 18-6-6 6-6" />
+    </svg>
+  );
+}
+
+/**
+ * Star — lightbox SET AS PRIMARY glyph; paths mirror the lucide Star.
+ */
+export function Star({ size = 16, className }: IconProps) {
+  return (
+    <svg {...base(size)} className={className} aria-hidden="true">
+      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+    </svg>
+  );
+}
+
+/**
+ * X — lightbox close glyph; a simple cross.
+ */
+export function X({ size = 16, className }: IconProps) {
+  return (
+    <svg {...base(size)} className={className} aria-hidden="true">
+      <path d="M18 6 6 18" />
+      <path d="m6 6 12 12" />
     </svg>
   );
 }
