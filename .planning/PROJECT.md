@@ -190,6 +190,7 @@ Reliable inventory access anywhere — online or offline — with seamless sync.
 
 **Shipped:** v2.0 Retro Frontend (2026-04-14)
 **Active:** v2.1 Feature Parity — Items, Loans & Scanning (started 2026-04-14)
+**Phase 61 complete:** Item photos — upload, thumbnail generation, gallery display (2026-04-16)
 
 **Tech stack:**
 - Backend: Go 1.25, Chi, sqlc, PostgreSQL, golang.org/x/oauth2
@@ -292,4 +293,4 @@ Reliable inventory access anywhere — online or offline — with seamless sync.
 - Nyquist compliance PARTIAL for all v1.9 phases — run `/gsd:validate-phase 43-47` retroactively
 
 ---
-*Last updated: 2026-04-14 after v2.1 milestone start*
+*Last updated: 2026-04-16 after Phase 61 completion*
