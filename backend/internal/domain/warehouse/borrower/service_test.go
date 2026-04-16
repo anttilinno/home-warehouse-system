@@ -908,3 +908,100 @@ func TestService_List(t *testing.T) {
 		})
 	}
 }
+
+// =============================================================================
+// Service-level tests for the split Archive / Restore / Delete semantics
+// introduced in Phase 59-01. These make the behavioural contract explicit:
+//   - Delete runs the HasActiveLoans guard; Archive does not.
+//   - List forwards the includeArchived flag to the repository unchanged.
+// =============================================================================
+
+func TestService_Delete_WithActiveLoans_ReturnsErrAndSkipsRepoDelete(t *testing.T) {
+	ctx := context.Background()
+	borrowerID := uuid.New()
+	workspaceID := uuid.New()
+
+	mockRepo := new(MockRepository)
+	svc := NewService(mockRepo)
+
+	seeded := &Borrower{id: borrowerID, workspaceID: workspaceID, name: "Seeded"}
+	mockRepo.On("FindByID", ctx, borrowerID, workspaceID).Return(seeded, nil)
+	mockRepo.On("HasActiveLoans", ctx, borrowerID).Return(true, nil)
+	// Note: no Delete expectation — guard must short-circuit before repo.Delete
+
+	err := svc.Delete(ctx, borrowerID, workspaceID)
+
+	assert.ErrorIs(t, err, ErrHasActiveLoans)
+	mockRepo.AssertExpectations(t)
+	mockRepo.AssertNotCalled(t, "Delete", mock.Anything)
+}
+
+func TestService_Delete_NoActiveLoans_CallsRepoDelete(t *testing.T) {
+	ctx := context.Background()
+	borrowerID := uuid.New()
+	workspaceID := uuid.New()
+
+	mockRepo := new(MockRepository)
+	svc := NewService(mockRepo)
+
+	seeded := &Borrower{id: borrowerID, workspaceID: workspaceID, name: "Seeded"}
+	mockRepo.On("FindByID", ctx, borrowerID, workspaceID).Return(seeded, nil)
+	mockRepo.On("HasActiveLoans", ctx, borrowerID).Return(false, nil)
+	mockRepo.On("Delete", ctx, borrowerID).Return(nil)
+
+	err := svc.Delete(ctx, borrowerID, workspaceID)
+
+	assert.NoError(t, err)
+	mockRepo.AssertExpectations(t)
+}
+
+func TestService_Archive_DoesNotCheckActiveLoans(t *testing.T) {
+	ctx := context.Background()
+	borrowerID := uuid.New()
+	workspaceID := uuid.New()
+
+	mockRepo := new(MockRepository)
+	svc := NewService(mockRepo)
+
+	seeded := &Borrower{id: borrowerID, workspaceID: workspaceID, name: "Seeded"}
+	mockRepo.On("FindByID", ctx, borrowerID, workspaceID).Return(seeded, nil)
+	// Archive must succeed regardless of loan state — no HasActiveLoans expectation
+	mockRepo.On("Archive", ctx, borrowerID).Return(nil)
+
+	err := svc.Archive(ctx, borrowerID, workspaceID)
+
+	assert.NoError(t, err)
+	mockRepo.AssertExpectations(t)
+	mockRepo.AssertNotCalled(t, "HasActiveLoans", mock.Anything, mock.Anything)
+	mockRepo.AssertNotCalled(t, "Delete", mock.Anything, mock.Anything)
+}
+
+func TestService_List_ForwardsIncludeArchived(t *testing.T) {
+	ctx := context.Background()
+	workspaceID := uuid.New()
+	pagination := shared.Pagination{Page: 1, PageSize: 10}
+
+	t.Run("forwards true", func(t *testing.T) {
+		mockRepo := new(MockRepository)
+		svc := NewService(mockRepo)
+
+		mockRepo.On("FindByWorkspace", ctx, workspaceID, pagination, true).
+			Return([]*Borrower{}, 0, nil)
+
+		_, _, err := svc.List(ctx, workspaceID, pagination, true)
+		assert.NoError(t, err)
+		mockRepo.AssertExpectations(t)
+	})
+
+	t.Run("forwards false", func(t *testing.T) {
+		mockRepo := new(MockRepository)
+		svc := NewService(mockRepo)
+
+		mockRepo.On("FindByWorkspace", ctx, workspaceID, pagination, false).
+			Return([]*Borrower{}, 0, nil)
+
+		_, _, err := svc.List(ctx, workspaceID, pagination, false)
+		assert.NoError(t, err)
+		mockRepo.AssertExpectations(t)
+	})
+}

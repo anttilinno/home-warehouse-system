@@ -194,3 +194,112 @@ func TestBorrowerRepository_HasActiveLoans(t *testing.T) {
 		assert.False(t, hasLoans)
 	})
 }
+
+// Tests for the split Archive/Restore/Delete semantics added in Phase 59-01.
+
+func TestBorrowerRepository_Archive_SetsFlagButKeepsRow(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test")
+	}
+
+	pool := testdb.SetupTestDB(t)
+	repo := NewBorrowerRepository(pool)
+	ctx := context.Background()
+
+	b, err := borrower.NewBorrower(testfixtures.TestWorkspaceID, "To Archive", nil, nil, nil)
+	require.NoError(t, err)
+	require.NoError(t, repo.Save(ctx, b))
+
+	require.NoError(t, repo.Archive(ctx, b.ID()))
+
+	// Row still exists but is_archived=true
+	retrieved, err := repo.FindByID(ctx, b.ID(), testfixtures.TestWorkspaceID)
+	require.NoError(t, err)
+	require.NotNil(t, retrieved)
+	assert.True(t, retrieved.IsArchived())
+}
+
+func TestBorrowerRepository_Restore_ClearsFlag(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test")
+	}
+
+	pool := testdb.SetupTestDB(t)
+	repo := NewBorrowerRepository(pool)
+	ctx := context.Background()
+
+	b, err := borrower.NewBorrower(testfixtures.TestWorkspaceID, "To Restore", nil, nil, nil)
+	require.NoError(t, err)
+	require.NoError(t, repo.Save(ctx, b))
+	require.NoError(t, repo.Archive(ctx, b.ID()))
+
+	require.NoError(t, repo.Restore(ctx, b.ID()))
+
+	retrieved, err := repo.FindByID(ctx, b.ID(), testfixtures.TestWorkspaceID)
+	require.NoError(t, err)
+	require.NotNil(t, retrieved)
+	assert.False(t, retrieved.IsArchived())
+}
+
+func TestBorrowerRepository_Delete_RemovesRow(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test")
+	}
+
+	pool := testdb.SetupTestDB(t)
+	repo := NewBorrowerRepository(pool)
+	ctx := context.Background()
+
+	b, err := borrower.NewBorrower(testfixtures.TestWorkspaceID, "To Hard Delete", nil, nil, nil)
+	require.NoError(t, err)
+	require.NoError(t, repo.Save(ctx, b))
+
+	require.NoError(t, repo.Delete(ctx, b.ID()))
+
+	// Row is gone — FindByID should return shared.ErrNotFound
+	found, err := repo.FindByID(ctx, b.ID(), testfixtures.TestWorkspaceID)
+	require.Error(t, err)
+	assert.True(t, shared.IsNotFound(err))
+	assert.Nil(t, found)
+}
+
+func TestBorrowerRepository_FindByWorkspace_ExcludesArchivedByDefault(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test")
+	}
+
+	pool := testdb.SetupTestDB(t)
+	repo := NewBorrowerRepository(pool)
+	ctx := context.Background()
+
+	workspace := uuid.New()
+	testdb.CreateTestWorkspace(t, pool, workspace)
+
+	// Seed: 1 active + 1 archived borrower in the same workspace
+	active, err := borrower.NewBorrower(workspace, "Active Borrower "+uuid.NewString()[:8], nil, nil, nil)
+	require.NoError(t, err)
+	require.NoError(t, repo.Save(ctx, active))
+
+	archived, err := borrower.NewBorrower(workspace, "Archived Borrower "+uuid.NewString()[:8], nil, nil, nil)
+	require.NoError(t, err)
+	require.NoError(t, repo.Save(ctx, archived))
+	require.NoError(t, repo.Archive(ctx, archived.ID()))
+
+	pagination := shared.Pagination{Page: 1, PageSize: 50}
+
+	t.Run("includeArchived=false returns only active", func(t *testing.T) {
+		rows, count, err := repo.FindByWorkspace(ctx, workspace, pagination, false)
+		require.NoError(t, err)
+		assert.Equal(t, 1, count)
+		require.Len(t, rows, 1)
+		assert.False(t, rows[0].IsArchived())
+		assert.Equal(t, active.ID(), rows[0].ID())
+	})
+
+	t.Run("includeArchived=true returns active and archived", func(t *testing.T) {
+		rows, count, err := repo.FindByWorkspace(ctx, workspace, pagination, true)
+		require.NoError(t, err)
+		assert.Equal(t, 2, count)
+		require.Len(t, rows, 2)
+	})
+}
