@@ -415,7 +415,13 @@ func NewRouter(pool *pgxpool.Pool, cfg *config.Config) chi.Router {
 
 			// Register Phase 4 domain routes (loans & borrowers)
 			borrower.RegisterRoutes(wsAPI, borrowerSvc, broadcaster)
-			loan.RegisterRoutes(wsAPI, loanSvc, broadcaster)
+			// Loan decoration lookup — batches item + primary-photo + borrower
+			// reads into 3 SQL round-trips for every LoanResponse-producing
+			// endpoint (plan 62-01 D-03/D-04, T-62-08). Reuses the same
+			// photoURLGenerator as item/itemphoto handlers so thumbnail URLs
+			// are stable across endpoints.
+			loanDecorationLookup := postgres.NewLoanDecorationLookup(pool, itemPhotoSvc, postgres.PhotoURLGenerator(photoURLGenerator))
+			loan.RegisterRoutes(wsAPI, loanSvc, broadcaster, loanDecorationLookup)
 
 			// Register repair log routes
 			repairlog.RegisterRoutes(wsAPI, repairLogSvc, broadcaster)

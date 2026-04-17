@@ -81,6 +81,36 @@ SELECT COALESCE(SUM(quantity), 0)::int as total
 FROM warehouse.loans
 WHERE inventory_id = $1 AND returned_at IS NULL;
 
+-- name: UpdateLoan :one
+-- Partial update of a loan. CASE preserves existing value when the set_* flag
+-- is false; flags distinguish "unchanged" from "explicitly clear" (SET X = NULL).
+-- Scoped by BOTH id and workspace_id for defence in depth (plan 62-01 T-62-02).
+UPDATE warehouse.loans
+SET due_date = CASE WHEN sqlc.arg('set_due_date')::boolean THEN sqlc.narg('due_date')::date ELSE due_date END,
+    notes    = CASE WHEN sqlc.arg('set_notes')::boolean    THEN sqlc.narg('notes')::text    ELSE notes    END,
+    updated_at = now()
+WHERE id = sqlc.arg('id') AND workspace_id = sqlc.arg('workspace_id')
+RETURNING *;
+
+-- name: ListItemNamesByInventoryIDs :many
+-- Batched fetch of {inventory_id, item_id, item_name} rows for loan-response
+-- decoration (plan 62-01 D-03/D-04). Scoped by workspace_id.
+SELECT inv.id as inventory_id,
+       it.id as item_id,
+       it.name as item_name
+FROM warehouse.inventory inv
+JOIN warehouse.items it ON inv.item_id = it.id
+WHERE inv.workspace_id = @workspace_id
+  AND inv.id = ANY(@inventory_ids::uuid[]);
+
+-- name: ListBorrowerNamesByIDs :many
+-- Batched fetch of {id, name} for borrower decoration on loan responses.
+-- Scoped by workspace_id.
+SELECT id, name
+FROM warehouse.borrowers
+WHERE workspace_id = @workspace_id
+  AND id = ANY(@borrower_ids::uuid[]);
+
 -- name: ListLoansNeedingReminder :many
 -- Lists loans that are due within the specified date and have borrowers with email addresses.
 -- Used by the background job to send reminder notifications.

@@ -2,6 +2,7 @@ package loan
 
 import (
 	"context"
+	"errors"
 	"time"
 
 	"github.com/google/uuid"
@@ -16,6 +17,10 @@ type ServiceInterface interface {
 	GetByID(ctx context.Context, id, workspaceID uuid.UUID) (*Loan, error)
 	Return(ctx context.Context, id, workspaceID uuid.UUID) (*Loan, error)
 	ExtendDueDate(ctx context.Context, id, workspaceID uuid.UUID, newDueDate time.Time) (*Loan, error)
+	// Update applies a partial update (due_date and/or notes) to a non-returned
+	// loan. Nil pointers mean "unchanged"; non-nil pointers overwrite. Returns
+	// ErrLoanNotFound / ErrAlreadyReturned / ErrInvalidDueDate as appropriate.
+	Update(ctx context.Context, id, workspaceID uuid.UUID, dueDate *time.Time, notes *string) (*Loan, error)
 	List(ctx context.Context, workspaceID uuid.UUID, pagination shared.Pagination) ([]*Loan, int, error)
 	ListByBorrower(ctx context.Context, workspaceID, borrowerID uuid.UUID, pagination shared.Pagination) ([]*Loan, error)
 	ListByInventory(ctx context.Context, workspaceID, inventoryID uuid.UUID) ([]*Loan, error)
@@ -157,6 +162,35 @@ func (s *Service) ExtendDueDate(ctx context.Context, id, workspaceID uuid.UUID, 
 	}
 
 	return loan, nil
+}
+
+// Update applies an optional new due date and/or new notes to a non-returned
+// loan, workspace-scoped. Nil pointers mean "unchanged"; non-nil pointers
+// overwrite (pass pointer-to-empty-string to clear notes).
+func (s *Service) Update(ctx context.Context, id, workspaceID uuid.UUID, dueDate *time.Time, notes *string) (*Loan, error) {
+	// Defence in depth: GetByID enforces workspace scoping and translates
+	// shared.ErrNotFound → not-found semantics for the handler.
+	loan, err := s.GetByID(ctx, id, workspaceID)
+	if err != nil {
+		if errors.Is(err, shared.ErrNotFound) {
+			return nil, ErrLoanNotFound
+		}
+		return nil, err
+	}
+
+	// Domain invariants (returned, due-date-vs-loaned-at) enforced by entity.
+	if err := loan.Update(dueDate, notes); err != nil {
+		return nil, err
+	}
+
+	// Persist via workspace-scoped SQL (belt + suspenders).
+	setDueDate := dueDate != nil
+	setNotes := notes != nil
+	updated, err := s.repo.Update(ctx, id, workspaceID, setDueDate, dueDate, setNotes, notes)
+	if err != nil {
+		return nil, err
+	}
+	return updated, nil
 }
 
 func (s *Service) List(ctx context.Context, workspaceID uuid.UUID, pagination shared.Pagination) ([]*Loan, int, error) {

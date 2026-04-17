@@ -204,6 +204,41 @@ func (r *LoanRepository) Delete(ctx context.Context, id uuid.UUID) error {
 	return nil
 }
 
+func (r *LoanRepository) Update(
+	ctx context.Context,
+	loanID, workspaceID uuid.UUID,
+	setDueDate bool, dueDate *time.Time,
+	setNotes bool, notes *string,
+) (*loan.Loan, error) {
+	params := queries.UpdateLoanParams{
+		ID:          loanID,
+		WorkspaceID: workspaceID,
+		SetDueDate:  setDueDate,
+		SetNotes:    setNotes,
+	}
+	if setDueDate && dueDate != nil {
+		params.DueDate = pgtype.Date{Time: *dueDate, Valid: true}
+	} else {
+		params.DueDate = pgtype.Date{Valid: false}
+	}
+	if setNotes && notes != nil {
+		s := *notes
+		params.Notes = &s
+	} else {
+		params.Notes = nil
+	}
+
+	row, err := r.queries.UpdateLoan(ctx, params)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, loan.ErrLoanNotFound
+		}
+		return nil, err
+	}
+
+	return r.rowToLoan(row), nil
+}
+
 func (r *LoanRepository) rowToLoan(row queries.WarehouseLoan) *loan.Loan {
 	var dueDate, returnedAt *time.Time
 	if row.DueDate.Valid {

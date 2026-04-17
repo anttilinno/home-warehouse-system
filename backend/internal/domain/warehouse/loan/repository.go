@@ -2,6 +2,7 @@ package loan
 
 import (
 	"context"
+	"time"
 
 	"github.com/google/uuid"
 
@@ -19,4 +20,8 @@ type Repository interface {
 	FindActiveLoanForInventory(ctx context.Context, inventoryID uuid.UUID) (*Loan, error)
 	GetTotalLoanedQuantity(ctx context.Context, inventoryID uuid.UUID) (int, error)
 	Delete(ctx context.Context, id uuid.UUID) error
+	// Update applies a partial update to a loan scoped by (id, workspaceID).
+	// setDueDate/setNotes flags distinguish "unchanged" (false) from "explicitly set"
+	// (true, with the value in dueDate/notes; pass nil to clear).
+	Update(ctx context.Context, loanID, workspaceID uuid.UUID, setDueDate bool, dueDate *time.Time, setNotes bool, notes *string) (*Loan, error)
 }
