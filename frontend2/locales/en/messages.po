@@ -278,8 +278,8 @@ msgstr "BACK TO ITEMS"
 msgid "BARCODE"
 msgstr "BARCODE"
 
-#: src/features/loans/forms/LoanForm.tsx:273
-#: src/features/loans/forms/LoanForm.tsx:311
+#: src/features/loans/forms/LoanForm.tsx:301
+#: src/features/loans/forms/LoanForm.tsx:355
 #: src/features/loans/table/LoansTable.tsx:42
 msgid "BORROWER"
 msgstr "BORROWER"
@@ -308,6 +308,7 @@ msgstr "Borrower restored."
 msgid "Borrower saved."
 msgstr "Borrower saved."
 
+#: src/components/layout/Sidebar.tsx:59
 #: src/features/borrowers/BorrowerDetailPage.tsx:56
 #: src/features/borrowers/BorrowersListPage.tsx:158
 msgid "BORROWERS"
@@ -502,7 +503,11 @@ msgstr "Containers belong to a location. Create a location first, then add conta
 msgid "Could not archive. Try again."
 msgstr "Could not archive. Try again."
 
-#: src/features/loans/hooks/useLoanMutations.ts:67
+#: src/features/loans/forms/LoanForm.tsx:162
+msgid "Could not check item availability."
+msgstr "Could not check item availability."
+
+#: src/features/loans/hooks/useLoanMutations.ts:72
 msgid "Could not create loan. Check your connection and try again."
 msgstr "Could not create loan. Check your connection and try again."
 
@@ -550,7 +555,7 @@ msgstr "COULD NOT LOAD PHOTOS"
 msgid "Could not reach the API. Check your network and the backend URL, then retry."
 msgstr "Could not reach the API. Check your network and the backend URL, then retry."
 
-#: src/features/loans/hooks/useLoanMutations.ts:122
+#: src/features/loans/hooks/useLoanMutations.ts:131
 msgid "Could not return loan. Try again."
 msgstr "Could not return loan. Try again."
 
@@ -564,7 +569,7 @@ msgstr "Could not save item. Check your connection and try again."
 msgid "Could not update item. Try again."
 msgstr "Could not update item. Try again."
 
-#: src/features/loans/hooks/useLoanMutations.ts:94
+#: src/features/loans/hooks/useLoanMutations.ts:103
 msgid "Could not update loan. Try again."
 msgstr "Could not update loan. Try again."
 
@@ -626,8 +631,12 @@ msgid "Create your first item to start tracking inventory."
 msgstr "Create your first item to start tracking inventory."
 
 #: src/features/taxonomy/tabs/LocationsTab.tsx:138
-msgid "Create your first location to describe where items live."
-msgstr "Create your first location to describe where items live."
+#~ msgid "Create your first location to describe where items live."
+#~ msgstr "Create your first location to describe where items live."
+
+#: src/features/taxonomy/tabs/LocationsTab.tsx:138
+msgid "Create your first location to start placing items."
+msgstr "Create your first location to start placing items."
 
 #: src/features/items/ItemDetailPage.tsx:221
 msgid "CREATED"
@@ -723,7 +732,7 @@ msgstr "DELETE PHOTO"
 msgid "Deleted."
 msgstr "Deleted."
 
-#: src/features/loans/forms/LoanForm.tsx:363
+#: src/features/loans/forms/LoanForm.tsx:407
 msgid "Delivery arrangement, condition on loan, etc."
 msgstr "Delivery arrangement, condition on loan, etc."
 
@@ -756,13 +765,13 @@ msgstr "Download all workspace data as a JSON file."
 msgid "DUE"
 msgstr "DUE"
 
-#: src/features/loans/forms/LoanForm.tsx:349
+#: src/features/loans/forms/LoanForm.tsx:393
 msgid "DUE DATE"
 msgstr "DUE DATE"
 
-#: src/features/loans/forms/LoanForm.tsx:227
-#: src/features/loans/forms/LoanForm.tsx:252
-#: src/features/loans/hooks/useLoanMutations.ts:91
+#: src/features/loans/forms/LoanForm.tsx:255
+#: src/features/loans/forms/LoanForm.tsx:280
+#: src/features/loans/hooks/useLoanMutations.ts:100
 msgid "Due date can't be before the loaned-on date."
 msgstr "Due date can't be before the loaned-on date."
 
@@ -1003,8 +1012,8 @@ msgstr "Invalid email or password. Check your credentials and try again."
 msgid "INVENTORY"
 msgstr "INVENTORY"
 
-#: src/features/loans/forms/LoanForm.tsx:269
-#: src/features/loans/forms/LoanForm.tsx:298
+#: src/features/loans/forms/LoanForm.tsx:297
+#: src/features/loans/forms/LoanForm.tsx:332
 #: src/features/loans/table/LoansTable.tsx:41
 msgid "ITEM"
 msgstr "ITEM"
@@ -1119,7 +1128,7 @@ msgstr "Loading..."
 msgid "Loading…"
 msgstr "Loading…"
 
-#: src/features/loans/hooks/useLoanMutations.ts:51
+#: src/features/loans/hooks/useLoanMutations.ts:56
 msgid "Loan created."
 msgstr "Loan created."
 
@@ -1127,7 +1136,7 @@ msgstr "Loan created."
 #~ msgid "Loan data will be available soon."
 #~ msgstr "Loan data will be available soon."
 
-#: src/features/loans/forms/LoanForm.tsx:265
+#: src/features/loans/forms/LoanForm.tsx:293
 msgid "LOAN DETAILS (LOCKED)"
 msgstr "LOAN DETAILS (LOCKED)"
 
@@ -1141,11 +1150,11 @@ msgstr "LOAN HISTORY"
 #~ msgid "Loan history will appear here once loans are wired."
 #~ msgstr "Loan history will appear here once loans are wired."
 
-#: src/features/loans/hooks/useLoanMutations.ts:115
+#: src/features/loans/hooks/useLoanMutations.ts:124
 msgid "Loan returned."
 msgstr "Loan returned."
 
-#: src/features/loans/hooks/useLoanMutations.ts:83
+#: src/features/loans/hooks/useLoanMutations.ts:92
 msgid "Loan updated."
 msgstr "Loan updated."
 
@@ -1156,12 +1165,12 @@ msgstr "Loan updated."
 msgid "LOANED"
 msgstr "LOANED"
 
-#: src/features/loans/forms/LoanForm.tsx:281
-#: src/features/loans/forms/LoanForm.tsx:338
+#: src/features/loans/forms/LoanForm.tsx:309
+#: src/features/loans/forms/LoanForm.tsx:382
 msgid "LOANED ON"
 msgstr "LOANED ON"
 
-#: src/features/loans/forms/LoanForm.tsx:234
+#: src/features/loans/forms/LoanForm.tsx:262
 msgid "Loaned-on date can't be in the future."
 msgstr "Loaned-on date can't be in the future."
 
@@ -1316,6 +1325,10 @@ msgstr "NO ACTIVE LOANS"
 msgid "NO ACTIVITY YET"
 msgstr "NO ACTIVITY YET"
 
+#: src/features/loans/forms/LoanForm.tsx:156
+msgid "No available units for this item."
+msgstr "No available units for this item."
+
 #: src/features/borrowers/BorrowersListPage.tsx:196
 msgid "NO BORROWERS YET"
 msgstr "NO BORROWERS YET"
@@ -1382,13 +1395,13 @@ msgstr "NO RECORDS YET"
 msgid "No workspace found. Please create a workspace to get started."
 msgstr "No workspace found. Please create a workspace to get started."
 
-#: src/features/loans/hooks/useLoanMutations.ts:63
+#: src/features/loans/hooks/useLoanMutations.ts:68
 msgid "Not enough units available for loan."
 msgstr "Not enough units available for loan."
 
 #: src/features/borrowers/BorrowerDetailPage.tsx:92
 #: src/features/borrowers/forms/BorrowerForm.tsx:80
-#: src/features/loans/forms/LoanForm.tsx:358
+#: src/features/loans/forms/LoanForm.tsx:402
 #: src/pages/DemoPage.tsx:148
 msgid "NOTES"
 msgstr "NOTES"
@@ -1444,11 +1457,11 @@ msgstr "Open photo {0}"
 msgid "Optional"
 msgstr "Optional"
 
-#: src/features/loans/forms/LoanForm.tsx:350
+#: src/features/loans/forms/LoanForm.tsx:394
 msgid "Optional — leave blank for open-ended loans"
 msgstr "Optional — leave blank for open-ended loans"
 
-#: src/features/loans/forms/LoanForm.tsx:359
+#: src/features/loans/forms/LoanForm.tsx:403
 msgid "Optional — up to 1000 characters"
 msgstr "Optional — up to 1000 characters"
 
@@ -1566,11 +1579,11 @@ msgstr "PHOTOS"
 #~ msgid "Photos will appear here after Phase 61."
 #~ msgstr "Photos will appear here after Phase 61."
 
-#: src/features/loans/forms/LoanForm.tsx:314
+#: src/features/loans/forms/LoanForm.tsx:358
 msgid "Pick a borrower…"
 msgstr "Pick a borrower…"
 
-#: src/features/loans/forms/LoanForm.tsx:301
+#: src/features/loans/forms/LoanForm.tsx:337
 msgid "Pick an item…"
 msgstr "Pick an item…"
 
@@ -1616,8 +1629,8 @@ msgstr "PROFILE"
 msgid "QTY"
 msgstr "QTY"
 
-#: src/features/loans/forms/LoanForm.tsx:277
-#: src/features/loans/forms/LoanForm.tsx:322
+#: src/features/loans/forms/LoanForm.tsx:305
+#: src/features/loans/forms/LoanForm.tsx:366
 msgid "QUANTITY"
 msgstr "QUANTITY"
 
@@ -1805,7 +1818,7 @@ msgstr "SET AS PRIMARY"
 msgid "SET PASSWORD"
 msgstr "SET PASSWORD"
 
-#: src/components/layout/Sidebar.tsx:59
+#: src/components/layout/Sidebar.tsx:78
 msgid "SETTINGS"
 msgstr "SETTINGS"
 
@@ -1909,6 +1922,7 @@ msgstr "SYSTEM"
 msgid "SYSTEM ERROR"
 msgstr "SYSTEM ERROR"
 
+#: src/components/layout/Sidebar.tsx:68
 #: src/features/taxonomy/TaxonomyPage.tsx:18
 msgid "TAXONOMY"
 msgstr "TAXONOMY"
@@ -1950,15 +1964,15 @@ msgstr "This borrower isn't holding anything right now."
 msgid "This borrower may have been deleted."
 msgstr "This borrower may have been deleted."
 
-#: src/features/loans/forms/LoanForm.tsx:288
+#: src/features/loans/forms/LoanForm.tsx:316
 msgid "This cannot be changed after creation. Return this loan and create a new one to change the item, borrower, or quantity."
 msgstr "This cannot be changed after creation. Return this loan and create a new one to change the item, borrower, or quantity."
 
-#: src/features/loans/hooks/useLoanMutations.ts:55
+#: src/features/loans/hooks/useLoanMutations.ts:60
 msgid "This item is already on loan."
 msgstr "This item is already on loan."
 
-#: src/features/loans/hooks/useLoanMutations.ts:59
+#: src/features/loans/hooks/useLoanMutations.ts:64
 msgid "This item is not available for loan."
 msgstr "This item is not available for loan."
 
@@ -1970,8 +1984,8 @@ msgstr "This item isn't currently out on loan."
 msgid "This item may have been deleted."
 msgstr "This item may have been deleted."
 
-#: src/features/loans/hooks/useLoanMutations.ts:87
-#: src/features/loans/hooks/useLoanMutations.ts:119
+#: src/features/loans/hooks/useLoanMutations.ts:96
+#: src/features/loans/hooks/useLoanMutations.ts:128
 msgid "This loan has already been returned."
 msgstr "This loan has already been returned."
 
@@ -2011,7 +2025,7 @@ msgstr "Time format"
 msgid "TIME FORMAT"
 msgstr "TIME FORMAT"
 
-#: src/features/loans/forms/LoanForm.tsx:339
+#: src/features/loans/forms/LoanForm.tsx:383
 msgid "Today by default"
 msgstr "Today by default"
 
@@ -2059,7 +2073,7 @@ msgstr "VIEW LOANS"
 msgid "What's in the box, condition, accessories, etc."
 msgstr "What's in the box, condition, accessories, etc."
 
-#: src/features/loans/forms/LoanForm.tsx:323
+#: src/features/loans/forms/LoanForm.tsx:367
 msgid "Whole units only"
 msgstr "Whole units only"
 
