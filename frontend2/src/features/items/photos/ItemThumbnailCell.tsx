@@ -5,26 +5,35 @@ export interface ItemThumbnailCellProps {
   thumbnailUrl?: string | null;
   /** When true, renders at opacity-50 (used for archived item rows). */
   dimmed?: boolean;
+  /**
+   * Edge length in px; defaults to 40. Loan-row layouts (Phase 62) use 24px.
+   * The inner ImageOff glyph scales with the box.
+   */
+  size?: number;
 }
 
 /**
- * 40×40 retro-bordered thumbnail cell used in the items list first column (D-08).
+ * Retro-bordered thumbnail cell used in the items list + loan rows (D-08).
  *
- * Renders either the primary photo thumbnail or an ImageOff placeholder glyph
- * inside the same square box so the list column has a consistent footprint.
- * Pure presentational — no data fetching, no hooks beyond module-level imports.
+ * Default 40×40 matches the items list first column; the `size` prop lets
+ * Phase 62 loan rows render tighter 24×24 cells without introducing a second
+ * component. Pure presentational — no data fetching, no hooks beyond
+ * module-level imports.
  */
 export function ItemThumbnailCell({
   thumbnailUrl,
   dimmed = false,
+  size = 40,
 }: ItemThumbnailCellProps) {
-  const boxClasses = `w-10 h-10 border-2 border-retro-charcoal bg-retro-cream overflow-hidden flex-shrink-0 flex items-center justify-center ${
+  const glyphSize = Math.max(8, Math.round(size * 0.4));
+  const boxClasses = `border-2 border-retro-charcoal bg-retro-cream overflow-hidden flex-shrink-0 flex items-center justify-center ${
     dimmed ? "opacity-50" : ""
   }`;
+  const boxStyle = { width: size, height: size };
 
   if (thumbnailUrl) {
     return (
-      <div className={boxClasses}>
+      <div className={boxClasses} style={boxStyle}>
         <img
           src={thumbnailUrl}
           alt=""
@@ -36,8 +45,8 @@ export function ItemThumbnailCell({
   }
 
   return (
-    <div className={boxClasses} aria-hidden="true">
-      <ImageOff size={16} className="text-retro-gray" />
+    <div className={boxClasses} style={boxStyle} aria-hidden="true">
+      <ImageOff size={glyphSize} className="text-retro-gray" />
     </div>
   );
 }
