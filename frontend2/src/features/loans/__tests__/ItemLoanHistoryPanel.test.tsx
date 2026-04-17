@@ -88,6 +88,7 @@ describe("ItemLoanHistoryPanel", () => {
       id: "loan-1",
       returned_at: "2026-04-15T10:00:00Z",
       is_active: false,
+      borrower_id: "bor-xyz",
       borrower: { id: "bor-xyz", name: "Carol Sample" },
     });
     mockHook.mockReturnValue(baseReturn({ history: [loan] }));
