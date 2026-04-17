@@ -219,9 +219,7 @@ func (r *LoanRepository) GetTotalLoanedQuantity(ctx context.Context, inventoryID
 }
 
 func (r *LoanRepository) Delete(ctx context.Context, id uuid.UUID) error {
-	// Note: This would typically be a hard delete or archive
-	// For now, we'll just return nil as loans are typically not deleted
-	return nil
+	return errors.New("loan deletion is not implemented")
 }
 
 func (r *LoanRepository) Update(
