@@ -135,7 +135,7 @@ export function LocationsTab() {
       {workspaceId && query.isSuccess && allItems.length === 0 && (
         <RetroEmptyState
           title={t`NO LOCATIONS YET`}
-          body={t`Create your first location to describe where items live.`}
+          body={t`Create your first location to start placing items.`}
           action={
             <RetroButton variant="primary" onClick={handleNew}>
               {t`+ NEW LOCATION`}
