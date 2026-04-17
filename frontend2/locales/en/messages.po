@@ -1990,12 +1990,12 @@ msgid "This loan has already been returned."
 msgstr "This loan has already been returned."
 
 #: src/features/taxonomy/actions/ArchiveDeleteFlow.tsx:107
-msgid "This permanently deletes '{nodeName}'. This action cannot be undone."
-msgstr "This permanently deletes '{nodeName}'. This action cannot be undone."
+msgid "This permanently deletes {nodeName}. This action cannot be undone."
+msgstr "This permanently deletes {nodeName}. This action cannot be undone."
 
 #: src/features/taxonomy/actions/ArchiveDeleteFlow.tsx:93
-msgid "This will hide '{nodeName}' from item pickers. You can restore it later."
-msgstr "This will hide '{nodeName}' from item pickers. You can restore it later."
+msgid "This will hide {nodeName} from item pickers. You can restore it later."
+msgstr "This will hide {nodeName} from item pickers. You can restore it later."
 
 #: src/features/borrowers/actions/BorrowerArchiveDeleteFlow.tsx:78
 #~ msgid "This will hide '{nodeName}' from loan pickers. You can restore them later."
