@@ -41,7 +41,12 @@ export function useCreateLoan() {
   const { addToast } = useToast();
   const { t } = useLingui();
   return useMutation<Loan, unknown, CreateLoanInput>({
-    mutationFn: (input) => loansApi.create(workspaceId!, input),
+    mutationFn: (input) =>
+      loansApi.create(workspaceId!, {
+        ...input,
+        loaned_at: input.loaned_at ? `${input.loaned_at}T00:00:00Z` : undefined,
+        due_date: input.due_date ? `${input.due_date}T00:00:00Z` : undefined,
+      }),
     onSuccess: (loan) => {
       qc.invalidateQueries({ queryKey: loanKeys.all });
       qc.invalidateQueries({ queryKey: itemKeys.detail(loan.inventory_id) });
@@ -77,7 +82,11 @@ export function useUpdateLoan() {
   const { addToast } = useToast();
   const { t } = useLingui();
   return useMutation<Loan, unknown, { id: string; input: UpdateLoanInput }>({
-    mutationFn: ({ id, input }) => loansApi.update(workspaceId!, id, input),
+    mutationFn: ({ id, input }) =>
+      loansApi.update(workspaceId!, id, {
+        ...input,
+        due_date: input.due_date ? `${input.due_date}T00:00:00Z` : undefined,
+      }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: loanKeys.all });
       addToast(t`Loan updated.`, "success");

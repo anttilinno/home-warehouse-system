@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from "react";
-import { useForm, type Resolver } from "react-hook-form";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { Controller, useForm, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useLingui } from "@lingui/react/macro";
 import {
@@ -13,6 +13,7 @@ import {
 import { useAuth } from "@/features/auth/AuthContext";
 import { itemsApi } from "@/lib/api/items";
 import { borrowersApi } from "@/lib/api/borrowers";
+import { inventoryApi } from "@/lib/api/inventory";
 import type { Loan } from "@/lib/api/loans";
 import {
   loanCreateSchema,
@@ -87,6 +88,8 @@ export function LoanForm({
     { id: string; name: string; sku?: string | null }[]
   >([]);
   const [itemLoading, setItemLoading] = useState(false);
+  const [inventoryResolving, setInventoryResolving] = useState(false);
+  const [inventoryError, setInventoryError] = useState<string | null>(null);
   const [borrowerOptions, setBorrowerOptions] = useState<
     { id: string; name: string; email?: string | null }[]
   >([]);
@@ -132,13 +135,38 @@ export function LoanForm({
     } as LoanEditValues;
   }, [mode, loan]);
 
-  const { control, handleSubmit, formState, setError, clearErrors } = useForm<
-    LoanCreateValues | LoanEditValues
-  >({
-    mode: "onSubmit",
-    resolver,
-    defaultValues,
-  });
+  const { control, handleSubmit, formState, setError, clearErrors } =
+    useForm<LoanCreateValues | LoanEditValues>({
+      mode: "onSubmit",
+      resolver,
+      defaultValues,
+    });
+
+  // When user picks an item definition, resolve to an available inventory row UUID.
+  // The backend expects an inventory row UUID for inventory_id, not an item def UUID.
+  const resolveInventoryId = useCallback(
+    async (itemDefId: string, fieldOnChange: (v: string) => void) => {
+      if (!workspaceId || !itemDefId) return;
+      setInventoryError(null);
+      setInventoryResolving(true);
+      try {
+        const resp = await inventoryApi.available(workspaceId, itemDefId);
+        const available = resp.items.filter((inv) => !inv.is_archived);
+        if (available.length === 0) {
+          setInventoryError(t`No available units for this item.`);
+          fieldOnChange("");
+        } else {
+          fieldOnChange(available[0].id);
+        }
+      } catch {
+        setInventoryError(t`Could not check item availability.`);
+        fieldOnChange("");
+      } finally {
+        setInventoryResolving(false);
+      }
+    },
+    [workspaceId, t],
+  );
 
   useEffect(() => {
     onDirtyChange?.(formState.isDirty);
@@ -292,18 +320,34 @@ export function LoanForm({
 
       {mode === "create" && (
         <>
-          <RetroFormField
+          <Controller
             name="inventory_id"
             control={control}
-            label={t`ITEM`}
-          >
-            <RetroCombobox
-              placeholder={t`Pick an item…`}
-              options={itemRetroOptions}
-              onSearch={setItemSearch}
-              loading={itemLoading}
-            />
-          </RetroFormField>
+            render={({ field, fieldState }) => (
+              <div className="flex flex-col gap-xs">
+                <label
+                  htmlFor="inventory_id"
+                  className="text-[14px] font-semibold uppercase tracking-wide text-retro-ink"
+                >
+                  {t`ITEM`}
+                </label>
+                <RetroCombobox
+                  id="inventory_id"
+                  name="inventory_id"
+                  placeholder={t`Pick an item…`}
+                  options={itemRetroOptions}
+                  onSearch={setItemSearch}
+                  loading={itemLoading || inventoryResolving}
+                  onChange={(itemDefId) =>
+                    resolveInventoryId(itemDefId, field.onChange)
+                  }
+                  onBlur={field.onBlur}
+                  ref={field.ref}
+                  error={fieldState.error?.message || inventoryError || undefined}
+                />
+              </div>
+            )}
+          />
 
           <RetroFormField
             name="borrower_id"
