@@ -86,6 +86,11 @@ func (m *MockService) GetOverdueLoans(ctx context.Context, workspaceID uuid.UUID
 	return args.Get(0).([]*loan.Loan), args.Error(1)
 }
 
+func (m *MockService) ListByItem(ctx context.Context, workspaceID, itemID uuid.UUID) ([]*loan.Loan, error) {
+	args := m.Called(ctx, workspaceID, itemID)
+	return args.Get(0).([]*loan.Loan), args.Error(1)
+}
+
 // Tests
 
 func TestLoanHandler_Create(t *testing.T) {
