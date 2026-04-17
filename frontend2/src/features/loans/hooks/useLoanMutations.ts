@@ -104,13 +104,13 @@ export function useReturnLoan() {
   return useMutation<
     void,
     unknown,
-    { id: string; inventoryId: string; borrowerId: string }
+    { id: string; itemId: string; borrowerId: string }
   >({
     mutationFn: ({ id }) => loansApi.return(workspaceId!, id),
-    onSuccess: (_void, { id, inventoryId, borrowerId }) => {
+    onSuccess: (_void, { id, itemId, borrowerId }) => {
       qc.invalidateQueries({ queryKey: loanKeys.all });
       qc.invalidateQueries({ queryKey: loanKeys.detail(id) });
-      qc.invalidateQueries({ queryKey: itemKeys.detail(inventoryId) });
+      qc.invalidateQueries({ queryKey: itemKeys.detail(itemId) });
       qc.invalidateQueries({ queryKey: borrowerKeys.detail(borrowerId) });
       addToast(t`Loan returned.`, "success");
     },

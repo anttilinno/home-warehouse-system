@@ -57,7 +57,7 @@ const LoanReturnFlow = forwardRef<LoanReturnFlowHandle, {}>(
       try {
         await returnMutation.mutateAsync({
           id: loan.id,
-          inventoryId: loan.inventory_id,
+          itemId: loan.item.id,
           borrowerId: loan.borrower_id,
         });
         // Success: RetroConfirmDialog closes after the awaited promise resolves.

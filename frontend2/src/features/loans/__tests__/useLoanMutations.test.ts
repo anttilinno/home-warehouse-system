@@ -290,14 +290,14 @@ describe("useUpdateLoan", () => {
 });
 
 describe("useReturnLoan", () => {
-  it("invalidates loanKeys.all + loanKeys.detail(id) + itemKeys.detail(inv) + borrowerKeys.detail(bor) on success", async () => {
+  it("invalidates loanKeys.all + loanKeys.detail(id) + itemKeys.detail(itemId) + borrowerKeys.detail(bor) on success", async () => {
     const { Wrapper, invalidateSpy } = makeWrapper();
     loansApiMock.return.mockResolvedValue(undefined);
     const { result } = renderHook(() => useReturnLoan(), { wrapper: Wrapper });
     await act(async () => {
       await result.current.mutateAsync({
         id: "loan-1",
-        inventoryId: "inv-A",
+        itemId: "item-A",
         borrowerId: "bor-B",
       });
     });
@@ -306,7 +306,7 @@ describe("useReturnLoan", () => {
       queryKey: loanKeys.detail("loan-1"),
     });
     expect(invalidateSpy).toHaveBeenCalledWith({
-      queryKey: itemKeys.detail("inv-A"),
+      queryKey: itemKeys.detail("item-A"),
     });
     expect(invalidateSpy).toHaveBeenCalledWith({
       queryKey: borrowerKeys.detail("bor-B"),
@@ -327,7 +327,7 @@ describe("useReturnLoan", () => {
       try {
         await result.current.mutateAsync({
           id: "loan-1",
-          inventoryId: "inv-A",
+          itemId: "item-A",
           borrowerId: "bor-B",
         });
       } catch {
@@ -348,7 +348,7 @@ describe("useReturnLoan", () => {
       try {
         await result.current.mutateAsync({
           id: "loan-1",
-          inventoryId: "inv-A",
+          itemId: "item-A",
           borrowerId: "bor-B",
         });
       } catch {
