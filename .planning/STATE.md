@@ -4,7 +4,7 @@ milestone: v2.1
 milestone_name: Feature Parity — Items, Loans & Scanning
 status: executing
 stopped_at: Phase 63 context gathered
-last_updated: "2026-04-17T16:42:05.563Z"
+last_updated: "2026-04-17T19:02:24.347Z"
 last_activity: 2026-04-17
 progress:
   total_phases: 6

@@ -154,15 +154,25 @@ Reliable inventory access anywhere — online or offline — with seamless sync.
 - ✓ Dashboard — HUD-style inventory stats, terminal activity feed, quick-access cards
 - ✓ Settings hub — 8 subpages (profile, security, appearance, language, formats, notifications, data)
 
+**v2.1 Feature Parity — Items, Loans & Scanning (shipped 2026-04-17):**
+
+- ✓ Foundation — TanStack Query + typed entity API modules + CI grep guard against offline imports
+- ✓ Retro form primitives — RetroSelect/Combobox/Textarea/Checkbox/FileInput/Pagination/ConfirmDialog/EmptyState/FormField
+- ✓ Hierarchical taxonomy — categories tree, locations tree, containers grouped by location, archive/delete with usage warnings
+- ✓ Borrowers CRUD — flat list, create/edit/delete with active-loan guard, detail with active + historical loans
+- ✓ Items CRUD — paginated list with search/filter/sort, detail view, archive/unarchive
+- ✓ Item photos — multipart upload (JPEG/PNG/HEIC, client-resize, 10 MB), gallery viewer, primary thumbnail
+- ✓ Loans — tabbed Active/Overdue/History, create/edit/return, per-item and per-borrower loan panels
+- ✓ Navigation & polish — sidebar parity, dashboard wiring, full Estonian catalog gap-fill
+
 ### Active
 
-**v2.1 Feature Parity — Items, Loans & Scanning (started 2026-04-14):**
+**v2.2 (planned):**
 
-- Items CRUD — list, view, create, edit, delete inventory items with photos
-- Loan management — loan items to borrowers, track returns, loan history
-- Barcode scanning — scan to find or create items (reuse existing retro UI patterns)
-- Categories & Locations — manage categories, locations, and containers
-- Online-only, lean implementation
+- Barcode scanning — single-route `/scan`, QR + UPC/EAN/Code128 lookup, "not found → create" overlay, flashlight, manual fallback
+- Quick capture flow in `/frontend2`
+- Bulk item operations (bulk delete, bulk archive, bulk export)
+- CSV import/export in `/frontend2`
 
 ### Out of Scope
 
@@ -188,9 +198,8 @@ Reliable inventory access anywhere — online or offline — with seamless sync.
 
 ## Current State
 
-**Shipped:** v2.0 Retro Frontend (2026-04-14)
-**Active:** v2.1 Feature Parity — Items, Loans & Scanning (started 2026-04-14)
-**Phase 61 complete:** Item photos — upload, thumbnail generation, gallery display (2026-04-16)
+**Shipped:** v2.1 Feature Parity — Items, Loans & Scanning (2026-04-17) — `/frontend2` now at parity with the legacy app for everything except barcode scanning
+**Active:** v2.2 (planned) — barcode scanning, bulk operations, CSV import/export
 
 **Tech stack:**
 - Backend: Go 1.25, Chi, sqlc, PostgreSQL, golang.org/x/oauth2
@@ -200,7 +209,7 @@ Reliable inventory access anywhere — online or offline — with seamless sync.
 - Mobile UX: Fuse.js 7.1.0, @yudiel/react-qr-scanner, ios-haptics, motion v12.27, AudioContext
 
 **Codebase:**
-- 47 phases across 10 milestones (130 plans executed)
+- 63 phases across 12 milestones (177 plans executed)
 - Offline: IndexedDB v5 with 11 stores (incl. quickCapturePhotos), SyncManager, conflict resolver, Fuse.js search
 - Capture: QuickCapturePage, CapturePhotoStrip, BatchCaptureProvider, photo sync pipeline with retry
 - Mobile: BarcodeScanner, FloatingActionButton, MultiStepForm wizard
@@ -293,4 +302,4 @@ Reliable inventory access anywhere — online or offline — with seamless sync.
 - Nyquist compliance PARTIAL for all v1.9 phases — run `/gsd:validate-phase 43-47` retroactively
 
 ---
-*Last updated: 2026-04-16 after Phase 61 completion*
+*Last updated: 2026-04-17 after v2.1 milestone close*

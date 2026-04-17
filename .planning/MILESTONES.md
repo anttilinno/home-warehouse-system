@@ -1,5 +1,32 @@
 # Project Milestones: Home Warehouse System
 
+## v2.1 Feature Parity — Items, Loans & Scanning (Shipped: 2026-04-17)
+
+**Phases completed:** 8 phases (56-63), 29 plans, ~344 files changed (+69,438 / -596 LOC)
+**Timeline:** 2026-04-15 → 2026-04-17 (3 days)
+**Requirements:** 37/37 v2.1 requirements satisfied
+**Audit:** `tech_debt` (no critical blockers; documentation gaps noted — see `milestones/v2.1-MILESTONE-AUDIT.md`)
+
+**Delivered:** Brought `/frontend2` to core feature parity with the legacy app — items, item photos, loans, borrowers, hierarchical taxonomy, and full navigation wiring. Online-only, lean. Barcode scanning deferred to v2.2.
+
+**Key accomplishments:**
+
+- **Phase 56 — Foundation:** TanStack Query v5 wired in `App.tsx` with typed entity API modules (items, itemPhotos, loans, borrowers, categories, locations, containers); `postMultipart` helper; CI grep guard against `idb`/`serwist`/`offline`/`sync` imports
+- **Phase 57 — Retro form primitives:** 9 components shipped (RetroSelect, RetroCombobox, RetroTextarea, RetroCheckbox, RetroFileInput, RetroPagination, RetroConfirmDialog, RetroEmptyState, RetroFormField); react-hook-form + zod + @floating-ui/react substrate; full /demo page showcase
+- **Phase 58 — Taxonomy:** Hierarchical tree CRUD for categories and locations, container CRUD grouped by location (TAX-01..12)
+- **Phase 59 — Borrowers CRUD:** Flat borrower list, create/edit/delete with active-loan guard, detail page with active and historical loans (BORR-01..05)
+- **Phase 60 — Items CRUD:** Paginated list (25/page) with search/filter/sort, detail view, create/edit/delete, archive/unarchive toggle (ITEM-01..08)
+- **Phase 61 — Item Photos:** Multipart upload (JPEG/PNG/HEIC, client-resize, 10 MB cap), gallery viewer, delete, primary-thumbnail rendering on list + detail; asynq worker pipeline corrected (PHOTO-01..04)
+- **Phase 62 — Loans:** Tabbed Active/Overdue/History list, create with item + borrower picker, mark returned, edit due date / notes, per-item ACTIVE LOAN + LOAN HISTORY panels, per-borrower ACTIVE LOANS + LOAN HISTORY panels (LOAN-01..06). UAT found and fixed one backend bug (`FindActiveLoanForInventory` returning `ErrNotFound` blocked all creates).
+- **Phase 63 — Navigation & Polish:** Sidebar parity (Dashboard / Items / Loans / Borrowers / Taxonomy / Settings with `mt-auto` spacer), dashboard quick-action wiring verified, full Estonian catalog gap-fill across phases 56–62, empty-state copy audit (NAV-01, NAV-02)
+
+**Known deferred items at close** (recorded in `v2.1-MILESTONE-AUDIT.md`):
+
+- Phase 58 / 59 / 60 — VERIFICATION.md not produced during execution; transitively validated by downstream Phase 61/62/63 HUMAN-UAT
+- Phase 57 — 8 `/demo` human checkpoints unsigned; primitives validated transitively via downstream forms
+
+---
+
 ## v1.9 Quick Capture (Shipped: 2026-03-14)
 
 **Phases completed:** 43-47 (5 phases, 9 plans)
@@ -48,10 +75,12 @@
 **Git range:** `e030519` → `ef7d626` (30+ commits)
 
 **Requirements satisfied:** 8/8 (100%)
+
 - ACCT-01 through ACCT-04: All satisfied
 - SEC-01 through SEC-04: All satisfied
 
 **Tech debt carried forward:**
+
 - None significant
 
 **What's next:** TBD — ready for next milestone
@@ -80,6 +109,7 @@
 **Requirements satisfied:** 5/5 (100%)
 
 **Tech debt carried forward:**
+
 - None significant
 
 **What's next:** TBD — ready for next milestone
@@ -111,12 +141,14 @@
 **Git range:** `feat(22-01)` → `docs(26-04)` (60+ commits)
 
 **Requirements satisfied:** 14/17 (82%)
+
 - INFRA-01 through INFRA-05: All satisfied
 - BE-01, BE-03, BE-05, BE-06: All satisfied (80%+ coverage)
 - FE-01 through FE-05: All satisfied
 - E2E-01 through E2E-03: All satisfied
 
 **Tech debt carried forward:**
+
 - BE-02: pendingchange at 57.3% (handler.go tested via integration, not unit tests)
 - BE-04: jobs at 20.1% (architectural constraint — ProcessTask requires database mocking)
 - API-03: 24-03 validation tests plan not executed
@@ -151,6 +183,7 @@
 **Git range:** `feat(18-01)` → `feat(21-07)` (67 commits)
 
 **Tech debt carried forward:**
+
 - Move action shows "Coming soon" in scanner quick actions
 - SelectableListItem ready but not integrated into list views
 - Physical device testing pending for scanner
@@ -184,6 +217,7 @@
 **Git range:** `88d19c7` → `b702771` (41 commits)
 
 **Tech debt carried forward:**
+
 - Linear retry delay in thumbnail processing (vs exponential backoff)
 - No VERIFICATION.md for Phase 17 (tests serve as verification)
 
@@ -216,6 +250,7 @@
 **Git range:** `aaff4f3` → `3b4b6a8`
 
 **Tech debt carried forward:**
+
 - E2E tests blocked by auth setup timeout (test code correct, infrastructure issue)
 - Modal edit and move dialog features not implemented
 - Bulk status update uses direct API (not offline-enabled)
@@ -249,6 +284,7 @@
 **Git range:** `5c56812` → `b87dce7`
 
 **Tech debt carried forward:**
+
 - Conflict history UI not exposed (getConflictLog function exists)
 - Safari iOS manual testing pending
 
@@ -281,6 +317,7 @@
 **Git range:** `feat(35-01)` → `docs(39-02)` (16 feature commits)
 
 **Requirements satisfied:** 32/32 (100%)
+
 - HUB-01 through HUB-06: All satisfied
 - PROF-01 through PROF-03: All satisfied
 - SECU-01 through SECU-03: All satisfied
@@ -291,12 +328,12 @@
 - NOTF-01 through NOTF-05: All satisfied
 
 **Tech debt carried forward:**
+
 - None from v1.7
 
 **What's next:** TBD -- ready for next milestone
 
 ---
-
 
 ## v1.8 Social Login (Shipped: 2026-02-22)
 
@@ -323,6 +360,7 @@
 **Git range:** `feat(40-01)` → `feat(41-02)` (13 feature commits)
 
 **Requirements satisfied:** 25/25 (100%)
+
 - SCHM-01, SCHM-02: Schema changes for OAuth-only accounts
 - OAUTH-01 through OAUTH-08: All satisfied
 - SEC-01 through SEC-03: All satisfied
@@ -332,6 +370,7 @@
 - OFFL-01: All satisfied
 
 **Tech debt carried forward:**
+
 - No linkSuccess toast after account linking (UX polish)
 - OAuthErrorHandler only on login page, not register page (UX)
 - 3 orphaned translation keys (unused but defined)
@@ -340,4 +379,3 @@
 **What's next:** TBD — ready for next milestone
 
 ---
-
