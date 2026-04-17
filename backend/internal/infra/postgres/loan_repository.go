@@ -41,7 +41,10 @@ func (r *LoanRepository) Save(ctx context.Context, l *loan.Loan) error {
 	if existing.ID != uuid.Nil {
 		// If returnedAt is set and was previously nil, this is a return
 		if l.ReturnedAt() != nil && !existing.ReturnedAt.Valid {
-			_, err = r.queries.ReturnLoan(ctx, l.ID())
+			_, err = r.queries.ReturnLoan(ctx, queries.ReturnLoanParams{
+				ID:          l.ID(),
+				WorkspaceID: l.WorkspaceID(),
+			})
 			return err
 		}
 

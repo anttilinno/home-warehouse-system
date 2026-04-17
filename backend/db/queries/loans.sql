@@ -10,7 +10,7 @@ RETURNING *;
 -- name: ReturnLoan :one
 UPDATE warehouse.loans
 SET returned_at = now(), updated_at = now()
-WHERE id = $1
+WHERE id = $1 AND workspace_id = $2
 RETURNING *;
 
 -- name: ExtendLoanDueDate :one

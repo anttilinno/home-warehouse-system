@@ -700,12 +700,17 @@ func (q *Queries) ListOverdueLoans(ctx context.Context, workspaceID uuid.UUID) (
 const returnLoan = `-- name: ReturnLoan :one
 UPDATE warehouse.loans
 SET returned_at = now(), updated_at = now()
-WHERE id = $1
+WHERE id = $1 AND workspace_id = $2
 RETURNING id, workspace_id, inventory_id, borrower_id, quantity, loaned_at, due_date, returned_at, notes, created_at, updated_at
 `
 
-func (q *Queries) ReturnLoan(ctx context.Context, id uuid.UUID) (WarehouseLoan, error) {
-	row := q.db.QueryRow(ctx, returnLoan, id)
+type ReturnLoanParams struct {
+	ID          uuid.UUID `json:"id"`
+	WorkspaceID uuid.UUID `json:"workspace_id"`
+}
+
+func (q *Queries) ReturnLoan(ctx context.Context, arg ReturnLoanParams) (WarehouseLoan, error) {
+	row := q.db.QueryRow(ctx, returnLoan, arg.ID, arg.WorkspaceID)
 	var i WarehouseLoan
 	err := row.Scan(
 		&i.ID,
