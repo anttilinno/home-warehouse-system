@@ -108,7 +108,7 @@ export function LocationsTab() {
           checked={showArchived}
           onChange={(e) => setShowArchived(e.target.checked)}
         />
-        <RetroButton variant="primary" onClick={handleNew}>
+        <RetroButton variant="primary" onClick={handleNew} disabled={!workspaceId}>
           <Plus size={14} aria-hidden="true" />
           {t`+ NEW LOCATION`}
         </RetroButton>
