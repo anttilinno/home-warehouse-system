@@ -24,7 +24,7 @@ export const loanCreateSchema = z.object({
   inventory_id: z.string().uuid("Pick an item."),
   borrower_id: z.string().uuid("Pick a borrower."),
   quantity: z.coerce
-    .number({ invalid_type_error: "Whole units only." })
+    .number({ error: "Whole units only." })
     .int("Whole units only.")
     .min(1, "Quantity must be between 1 and 999.")
     .max(999, "Quantity must be between 1 and 999."),
