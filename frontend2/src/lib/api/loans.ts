@@ -101,8 +101,8 @@ export const loanKeys = {
   list: (params: LoanListParams) => [...loanKeys.lists(), params] as const,
   details: () => [...loanKeys.all, "detail"] as const,
   detail: (id: string) => [...loanKeys.details(), id] as const,
-  /** D-06: key for the per-item loans fetch. */
-  forItem: (inventoryId: string) => [...loanKeys.all, "forItem", inventoryId] as const,
+  /** D-06: key for the per-item loans fetch. Keyed by item definition ID (not inventory row UUID). */
+  forItem: (itemId: string) => [...loanKeys.all, "forItem", itemId] as const,
   /** D-06: key for the per-borrower loans fetch (kept symmetrical even though it was implied by `listForBorrower`). */
   forBorrower: (borrowerId: string) => [...loanKeys.all, "forBorrower", borrowerId] as const,
 };

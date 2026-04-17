@@ -6,7 +6,7 @@ import { useAuth } from "@/features/auth/AuthContext";
 /**
  * Per-item loans query.
  *
- * Wraps GET /workspaces/{wsId}/inventory/{inventoryId}/loans and partitions
+ * Wraps GET /workspaces/{wsId}/items/{itemId}/loans and partitions
  * the response into:
  *   - activeLoan: the single currently-open loan (inventory items are loaned
  *     one-at-a-time), or null when the item is available
@@ -16,18 +16,18 @@ import { useAuth } from "@/features/auth/AuthContext";
  * Partition is a pure `useMemo` over `query.data` so it's immediately
  * unit-testable and stable across re-renders.
  *
- * Disabled when either workspaceId or inventoryId is falsy; when the
- * inventoryId is not yet known the hook still returns `{ isPending: true,
+ * Disabled when either workspaceId or itemId is falsy; when the
+ * itemId is not yet known the hook still returns `{ isPending: true,
  * activeLoan: null, history: [] }`.
  */
-export function useLoansForItem(inventoryId: string | undefined) {
+export function useLoansForItem(itemId: string | undefined) {
   const { workspaceId } = useAuth();
   const query = useQuery({
-    queryKey: inventoryId
-      ? loanKeys.forItem(inventoryId)
+    queryKey: itemId
+      ? loanKeys.forItem(itemId)
       : ["loans", "forItem", "pending"],
-    queryFn: () => loansApi.listForItem(workspaceId!, inventoryId!),
-    enabled: !!workspaceId && !!inventoryId,
+    queryFn: () => loansApi.listForItem(workspaceId!, itemId!),
+    enabled: !!workspaceId && !!itemId,
   });
   const { activeLoan, history } = useMemo<{
     activeLoan: Loan | null;
