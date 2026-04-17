@@ -90,6 +90,14 @@ func (m *MockRepository) Delete(ctx context.Context, id uuid.UUID) error {
 	return args.Error(0)
 }
 
+func (m *MockRepository) Update(ctx context.Context, loanID, workspaceID uuid.UUID, setDueDate bool, dueDate *time.Time, setNotes bool, notes *string) (*Loan, error) {
+	args := m.Called(ctx, loanID, workspaceID, setDueDate, dueDate, setNotes, notes)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*Loan), args.Error(1)
+}
+
 // MockInventoryRepository is a mock implementation of the inventory Repository interface
 type MockInventoryRepository struct {
 	mock.Mock
@@ -1472,5 +1480,110 @@ func TestService_Create_FindActiveLoanError(t *testing.T) {
 	assert.Error(t, err)
 	assert.Nil(t, loan)
 	assert.Equal(t, repoErr, err)
+}
+
+// =============================================================================
+// Service.Update tests — plan 62-01 Task 1
+// =============================================================================
+
+func TestService_Update_Success(t *testing.T) {
+	ctx := context.Background()
+	loanID := uuid.New()
+	workspaceID := uuid.New()
+	inventoryID := uuid.New()
+	borrowerID := uuid.New()
+	loanedAt := time.Now().Add(-24 * time.Hour)
+	newDueDate := loanedAt.Add(14 * 24 * time.Hour)
+	newNotes := "updated"
+
+	mockLoanRepo := new(MockRepository)
+	mockInvRepo := new(MockInventoryRepository)
+	svc := NewService(mockLoanRepo, mockInvRepo)
+
+	existing := Reconstruct(loanID, workspaceID, inventoryID, borrowerID, 1, loanedAt, nil, nil, nil, loanedAt, loanedAt)
+	updatedPersisted := Reconstruct(loanID, workspaceID, inventoryID, borrowerID, 1, loanedAt, &newDueDate, nil, &newNotes, loanedAt, time.Now())
+
+	mockLoanRepo.On("FindByID", ctx, loanID, workspaceID).Return(existing, nil)
+	mockLoanRepo.On("Update", ctx, loanID, workspaceID, true,
+		mock.MatchedBy(func(d *time.Time) bool { return d != nil && d.Equal(newDueDate) }),
+		true,
+		mock.MatchedBy(func(n *string) bool { return n != nil && *n == newNotes }),
+	).Return(updatedPersisted, nil)
+
+	result, err := svc.Update(ctx, loanID, workspaceID, &newDueDate, &newNotes)
+
+	assert.NoError(t, err)
+	assert.NotNil(t, result)
+	assert.Equal(t, newDueDate, *result.DueDate())
+	assert.Equal(t, newNotes, *result.Notes())
+	mockLoanRepo.AssertExpectations(t)
+}
+
+func TestService_Update_AlreadyReturned(t *testing.T) {
+	ctx := context.Background()
+	loanID := uuid.New()
+	workspaceID := uuid.New()
+	loanedAt := time.Now().Add(-48 * time.Hour)
+	returnedAt := time.Now().Add(-1 * time.Hour)
+	newDueDate := loanedAt.Add(14 * 24 * time.Hour)
+
+	mockLoanRepo := new(MockRepository)
+	mockInvRepo := new(MockInventoryRepository)
+	svc := NewService(mockLoanRepo, mockInvRepo)
+
+	returnedLoan := Reconstruct(loanID, workspaceID, uuid.New(), uuid.New(), 1, loanedAt, nil, &returnedAt, nil, loanedAt, loanedAt)
+	mockLoanRepo.On("FindByID", ctx, loanID, workspaceID).Return(returnedLoan, nil)
+
+	result, err := svc.Update(ctx, loanID, workspaceID, &newDueDate, nil)
+
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	assert.Equal(t, ErrAlreadyReturned, err)
+	mockLoanRepo.AssertExpectations(t)
+}
+
+func TestService_Update_InvalidDueDate(t *testing.T) {
+	ctx := context.Background()
+	loanID := uuid.New()
+	workspaceID := uuid.New()
+	loanedAt := time.Now()
+	// Due date BEFORE loaned date — should fail.
+	badDueDate := loanedAt.Add(-24 * time.Hour)
+
+	mockLoanRepo := new(MockRepository)
+	mockInvRepo := new(MockInventoryRepository)
+	svc := NewService(mockLoanRepo, mockInvRepo)
+
+	existing := Reconstruct(loanID, workspaceID, uuid.New(), uuid.New(), 1, loanedAt, nil, nil, nil, loanedAt, loanedAt)
+	mockLoanRepo.On("FindByID", ctx, loanID, workspaceID).Return(existing, nil)
+
+	result, err := svc.Update(ctx, loanID, workspaceID, &badDueDate, nil)
+
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	assert.Equal(t, ErrInvalidDueDate, err)
+	mockLoanRepo.AssertExpectations(t)
+}
+
+func TestService_Update_NotFound(t *testing.T) {
+	ctx := context.Background()
+	loanID := uuid.New()
+	workspaceID := uuid.New()
+	newDueDate := time.Now().Add(14 * 24 * time.Hour)
+
+	mockLoanRepo := new(MockRepository)
+	mockInvRepo := new(MockInventoryRepository)
+	svc := NewService(mockLoanRepo, mockInvRepo)
+
+	// shared.ErrNotFound from repo → service maps to ErrLoanNotFound so
+	// handler can emit a clean 404 (defence in depth).
+	mockLoanRepo.On("FindByID", ctx, loanID, workspaceID).Return(nil, shared.ErrNotFound)
+
+	result, err := svc.Update(ctx, loanID, workspaceID, &newDueDate, nil)
+
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	assert.Equal(t, ErrLoanNotFound, err)
+	mockLoanRepo.AssertExpectations(t)
 }
 

@@ -417,7 +417,12 @@ Plans:
   3. User can mark any active loan as returned, and the loan moves to History immediately
   4. User can edit a non-returned loan's due date and notes without creating a new loan
   5. Item detail and borrower detail pages each show the entity's current active loan (if any) and historical loans
-**Plans**: TBD
+**Plans:** 4 plans
+Plans:
+- [ ] 62-01-PLAN.md — Backend PATCH /loans/{id} + LoanResponse embed (item + borrower) decoration on all loan endpoints
+- [ ] 62-02-PLAN.md — Frontend loansApi.update/listForItem + query + mutation hooks with UI-SPEC invalidation sets
+- [ ] 62-03-PLAN.md — /loans tabbed list page, LoanForm, LoanPanel slide-over, LoanReturnFlow confirm dialog
+- [ ] 62-04-PLAN.md — Item/borrower detail-page loan panels + router swap to LoansListPage + Lingui extract + human-verify checkpoint
 **UI hint**: yes
 
 ### Phase 63: Navigation & Polish
@@ -457,7 +462,7 @@ Phases execute in numeric order: 56 -> 57 -> (58 || 59) -> 60 -> 61 -> 62 -> 63
 | 59. Borrowers CRUD | v2.1 | 4/4 | Complete   | 2026-04-16 |
 | 60. Items CRUD | v2.1 | 4/4 | Complete   | 2026-04-16 |
 | 61. Item Photos | v2.1 | 5/5 | Complete    | 2026-04-16 |
-| 62. Loans | v2.1 | 0/TBD | Not started | - |
+| 62. Loans | v2.1 | 0/4 | Planned | - |
 | 63. Navigation & Polish | v2.1 | 0/TBD | Not started | - |
 
 **Total:** 55 phases complete (148 plans executed) across 11 milestones + 8 phases planned for v2.1

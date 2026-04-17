@@ -123,3 +123,26 @@ func (l *Loan) ExtendDueDate(newDueDate time.Time) error {
 	l.updatedAt = time.Now()
 	return nil
 }
+
+// Update applies an optional new due date and/or new notes to a non-returned
+// loan. Nil pointers leave the field unchanged; non-nil pointers (including
+// pointers to empty strings) overwrite. Returns ErrAlreadyReturned if the loan
+// has been returned; returns ErrInvalidDueDate if dueDate is before loanedAt.
+func (l *Loan) Update(dueDate *time.Time, notes *string) error {
+	if l.returnedAt != nil {
+		return ErrAlreadyReturned
+	}
+	if dueDate != nil {
+		if dueDate.Before(l.loanedAt) {
+			return ErrInvalidDueDate
+		}
+		d := *dueDate
+		l.dueDate = &d
+	}
+	if notes != nil {
+		n := *notes
+		l.notes = &n
+	}
+	l.updatedAt = time.Now()
+	return nil
+}

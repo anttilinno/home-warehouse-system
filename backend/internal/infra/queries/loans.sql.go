@@ -334,6 +334,88 @@ func (q *Queries) ListActiveLoansWithDetails(ctx context.Context, arg ListActive
 	return items, nil
 }
 
+const listBorrowerNamesByIDs = `-- name: ListBorrowerNamesByIDs :many
+SELECT id, name
+FROM warehouse.borrowers
+WHERE workspace_id = $1
+  AND id = ANY($2::uuid[])
+`
+
+type ListBorrowerNamesByIDsParams struct {
+	WorkspaceID uuid.UUID   `json:"workspace_id"`
+	BorrowerIds []uuid.UUID `json:"borrower_ids"`
+}
+
+type ListBorrowerNamesByIDsRow struct {
+	ID   uuid.UUID `json:"id"`
+	Name string    `json:"name"`
+}
+
+// Batched fetch of {id, name} for borrower decoration on loan responses.
+// Scoped by workspace_id.
+func (q *Queries) ListBorrowerNamesByIDs(ctx context.Context, arg ListBorrowerNamesByIDsParams) ([]ListBorrowerNamesByIDsRow, error) {
+	rows, err := q.db.Query(ctx, listBorrowerNamesByIDs, arg.WorkspaceID, arg.BorrowerIds)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []ListBorrowerNamesByIDsRow{}
+	for rows.Next() {
+		var i ListBorrowerNamesByIDsRow
+		if err := rows.Scan(&i.ID, &i.Name); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listItemNamesByInventoryIDs = `-- name: ListItemNamesByInventoryIDs :many
+SELECT inv.id as inventory_id,
+       it.id as item_id,
+       it.name as item_name
+FROM warehouse.inventory inv
+JOIN warehouse.items it ON inv.item_id = it.id
+WHERE inv.workspace_id = $1
+  AND inv.id = ANY($2::uuid[])
+`
+
+type ListItemNamesByInventoryIDsParams struct {
+	WorkspaceID  uuid.UUID   `json:"workspace_id"`
+	InventoryIds []uuid.UUID `json:"inventory_ids"`
+}
+
+type ListItemNamesByInventoryIDsRow struct {
+	InventoryID uuid.UUID `json:"inventory_id"`
+	ItemID      uuid.UUID `json:"item_id"`
+	ItemName    string    `json:"item_name"`
+}
+
+// Batched fetch of {inventory_id, item_id, item_name} rows for loan-response
+// decoration (plan 62-01 D-03/D-04). Scoped by workspace_id.
+func (q *Queries) ListItemNamesByInventoryIDs(ctx context.Context, arg ListItemNamesByInventoryIDsParams) ([]ListItemNamesByInventoryIDsRow, error) {
+	rows, err := q.db.Query(ctx, listItemNamesByInventoryIDs, arg.WorkspaceID, arg.InventoryIds)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []ListItemNamesByInventoryIDsRow{}
+	for rows.Next() {
+		var i ListItemNamesByInventoryIDsRow
+		if err := rows.Scan(&i.InventoryID, &i.ItemID, &i.ItemName); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listLoansByBorrower = `-- name: ListLoansByBorrower :many
 SELECT id, workspace_id, inventory_id, borrower_id, quantity, loaned_at, due_date, returned_at, notes, created_at, updated_at FROM warehouse.loans
 WHERE workspace_id = $1 AND borrower_id = $2
@@ -580,6 +662,53 @@ RETURNING id, workspace_id, inventory_id, borrower_id, quantity, loaned_at, due_
 
 func (q *Queries) ReturnLoan(ctx context.Context, id uuid.UUID) (WarehouseLoan, error) {
 	row := q.db.QueryRow(ctx, returnLoan, id)
+	var i WarehouseLoan
+	err := row.Scan(
+		&i.ID,
+		&i.WorkspaceID,
+		&i.InventoryID,
+		&i.BorrowerID,
+		&i.Quantity,
+		&i.LoanedAt,
+		&i.DueDate,
+		&i.ReturnedAt,
+		&i.Notes,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const updateLoan = `-- name: UpdateLoan :one
+UPDATE warehouse.loans
+SET due_date = CASE WHEN $1::boolean THEN $2::date ELSE due_date END,
+    notes    = CASE WHEN $3::boolean    THEN $4::text    ELSE notes    END,
+    updated_at = now()
+WHERE id = $5 AND workspace_id = $6
+RETURNING id, workspace_id, inventory_id, borrower_id, quantity, loaned_at, due_date, returned_at, notes, created_at, updated_at
+`
+
+type UpdateLoanParams struct {
+	SetDueDate  bool        `json:"set_due_date"`
+	DueDate     pgtype.Date `json:"due_date"`
+	SetNotes    bool        `json:"set_notes"`
+	Notes       *string     `json:"notes"`
+	ID          uuid.UUID   `json:"id"`
+	WorkspaceID uuid.UUID   `json:"workspace_id"`
+}
+
+// Partial update of a loan. CASE preserves existing value when the set_* flag
+// is false; flags distinguish "unchanged" from "explicitly clear" (SET X = NULL).
+// Scoped by BOTH id and workspace_id for defence in depth (plan 62-01 T-62-02).
+func (q *Queries) UpdateLoan(ctx context.Context, arg UpdateLoanParams) (WarehouseLoan, error) {
+	row := q.db.QueryRow(ctx, updateLoan,
+		arg.SetDueDate,
+		arg.DueDate,
+		arg.SetNotes,
+		arg.Notes,
+		arg.ID,
+		arg.WorkspaceID,
+	)
 	var i WarehouseLoan
 	err := row.Scan(
 		&i.ID,
