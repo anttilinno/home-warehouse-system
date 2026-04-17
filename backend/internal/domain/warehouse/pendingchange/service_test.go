@@ -2798,6 +2798,11 @@ func (m *MockBorrowerRepository) Restore(ctx context.Context, id uuid.UUID) erro
 	return args.Error(0)
 }
 
+func (m *MockBorrowerRepository) Create(ctx context.Context, b *borrower.Borrower) error {
+	args := m.Called(ctx, b)
+	return args.Error(0)
+}
+
 func (m *MockBorrowerRepository) Delete(ctx context.Context, id uuid.UUID) error {
 	args := m.Called(ctx, id)
 	return args.Error(0)
@@ -3850,6 +3855,22 @@ func (m *MockLoanRepository) FindActiveLoanForInventory(ctx context.Context, inv
 func (m *MockLoanRepository) GetTotalLoanedQuantity(ctx context.Context, inventoryID uuid.UUID) (int, error) {
 	args := m.Called(ctx, inventoryID)
 	return args.Int(0), args.Error(1)
+}
+
+func (m *MockLoanRepository) FindByItem(ctx context.Context, workspaceID, itemID uuid.UUID) ([]*loan.Loan, error) {
+	args := m.Called(ctx, workspaceID, itemID)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).([]*loan.Loan), args.Error(1)
+}
+
+func (m *MockLoanRepository) Update(ctx context.Context, loanID, workspaceID uuid.UUID, setDueDate bool, dueDate *time.Time, setNotes bool, notes *string) (*loan.Loan, error) {
+	args := m.Called(ctx, loanID, workspaceID, setDueDate, dueDate, setNotes, notes)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*loan.Loan), args.Error(1)
 }
 
 func (m *MockLoanRepository) Delete(ctx context.Context, id uuid.UUID) error {
