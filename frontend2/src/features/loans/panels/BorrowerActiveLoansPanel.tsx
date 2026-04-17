@@ -83,7 +83,7 @@ export function BorrowerActiveLoansPanel({
                 size={24}
               />
               <Link
-                to={`/items/${loan.inventory_id}`}
+                to={`/items/${loan.item.id}`}
                 className="font-sans text-retro-ink underline flex-1 min-w-0"
               >
                 {loan.item.name}

@@ -74,7 +74,7 @@ export function BorrowerLoanHistoryPanel({
               dimmed
             />
             <Link
-              to={`/items/${loan.inventory_id}`}
+              to={`/items/${loan.item.id}`}
               className="font-sans underline flex-1 min-w-0"
             >
               {loan.item.name}

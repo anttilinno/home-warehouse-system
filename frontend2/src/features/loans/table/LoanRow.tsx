@@ -41,7 +41,7 @@ export function buildLoanRowCells({
 
   const itemCell = (
     <Link
-      to={`/items/${loan.inventory_id}`}
+      to={`/items/${loan.item.id}`}
       className={`font-sans no-underline ${rowTextClass}`}
     >
       {loan.item.name}
