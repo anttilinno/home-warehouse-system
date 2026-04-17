@@ -1,0 +1,46 @@
+{
+  "version": "1.0",
+  "timestamp": "2026-04-17T12:42:56.945Z",
+  "phase": "62",
+  "phase_name": "loans",
+  "phase_dir": ".planning/phases/62-loans",
+  "plan": 4,
+  "task": 4,
+  "total_tasks": 4,
+  "status": "paused",
+  "completed_tasks": [
+    {"id": 1, "name": "62-01: Backend loans domain + repository + API", "status": "done", "commit": "4c59679"},
+    {"id": 2, "name": "62-02: Frontend hooks (useLoansForItem, useLoanMutations, etc)", "status": "done", "commit": "f1c9e4a"},
+    {"id": 3, "name": "62-03: LoansListPage + LoanPanel + LoanForm (create/edit)", "status": "done", "commit": "fbf4b3d"},
+    {"id": 4, "name": "62-04: Item + Borrower detail panels, end-to-end wiring", "status": "done", "commit": "5ada056"},
+    {"id": 5, "name": "Code review fix (8 findings: CR-01 to WR-05)", "status": "done", "commit": "d20a75b"},
+    {"id": 6, "name": "Post-review: inventory resolution + date serialization fixes", "status": "in_progress", "progress": "LoanForm inventory resolver + useLoanMutations date T00:00:00Z patch done, uncommitted"}
+  ],
+  "remaining_tasks": [
+    {"id": 7, "name": "Commit uncommitted post-review fixes (LoanForm.tsx, useLoanMutations.ts, inventory.ts, planning files)", "status": "not_started"},
+    {"id": 8, "name": "Human UAT: 29-step end-to-end loan flow verification (62-HUMAN-UAT.md)", "status": "not_started"},
+    {"id": 9, "name": "Mark phase 62 complete, advance to phase 63 (Navigation & Polish)", "status": "not_started"}
+  ],
+  "blockers": [
+    {"description": "Human UAT required before phase 62 can be closed — 29-step test in 62-HUMAN-UAT.md needs real backend+frontend running", "type": "human_action", "workaround": "none — human gate"}
+  ],
+  "human_actions_pending": [
+    {"action": "Run 29-step UAT in 62-HUMAN-UAT.md (backend on :8000, frontend on :5173)", "context": "Verification is 5/5 automated but plan 62-04 task 4 is a blocking human-verify checkpoint", "blocking": true}
+  ],
+  "decisions": [
+    {"decision": "LoanForm resolves item def ID → available inventory row UUID at pick time via inventoryApi.available", "rationale": "Backend expects inventory_id (row UUID), but UI pickers work with item definition IDs", "phase": "62"},
+    {"decision": "Dates serialized as T00:00:00Z suffix in useLoanMutations before sending to API", "rationale": "HTML date inputs return YYYY-MM-DD; backend expects RFC3339 datetime strings", "phase": "62"},
+    {"decision": "LoanRepository.Delete replaced with explicit error stub instead of silent no-op", "rationale": "CR-02 fix — prevents pendingchange workflow from silently believing deletion succeeded", "phase": "62"},
+    {"decision": "WR-01/WR-02 non-atomic save documented via TODO comments rather than full fix", "rationale": "Transaction wrapping requires TxManager wiring deferred to avoid scope creep", "phase": "62"}
+  ],
+  "uncommitted_files": [
+    "frontend2/src/features/loans/forms/LoanForm.tsx",
+    "frontend2/src/features/loans/hooks/useLoanMutations.ts",
+    "frontend2/src/lib/api/inventory.ts",
+    ".planning/phases/62-loans/62-REVIEW-FIX.md",
+    ".planning/ROADMAP.md",
+    ".planning/STATE.md"
+  ],
+  "next_action": "Commit the uncommitted post-review files (see uncommitted_files list), then run human UAT per 62-HUMAN-UAT.md",
+  "context_notes": "Session ended at context exhaustion. Phase 62 is functionally complete — all 4 plans + 8-finding code review done. Two in-flight improvements (inventory resolution in LoanForm, date serialization in useLoanMutations) are coded but uncommitted. Human UAT is the last gate before closing phase 62 and starting phase 63."
+}
