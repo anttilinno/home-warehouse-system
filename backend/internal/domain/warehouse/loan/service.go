@@ -93,6 +93,9 @@ func (s *Service) Create(ctx context.Context, input CreateInput) (*Loan, error) 
 	}
 
 	// Update inventory status to ON_LOAN
+	// TODO(WR-01): inventoryRepo.Save and repo.Save are not wrapped in a
+	// transaction. A crash between the two leaves inventory stuck ON_LOAN with
+	// no loan record. Wire TxManager (see router.go) to make this atomic.
 	if err := inv.UpdateStatus(inventory.StatusOnLoan); err != nil {
 		return nil, err
 	}
@@ -127,12 +130,18 @@ func (s *Service) Return(ctx context.Context, id, workspaceID uuid.UUID) (*Loan,
 		return nil, err
 	}
 
-	// Update inventory status back to AVAILABLE
+	// Update inventory status back to AVAILABLE.
+	// TODO(WR-01): inventoryRepo.Save and repo.Save are not wrapped in a
+	// transaction. A crash between the two leaves inventory ON_LOAN while the
+	// loan record shows returned. Wire TxManager to make this atomic.
 	inv, err := s.inventoryRepo.FindByID(ctx, loan.InventoryID(), workspaceID)
 	if err != nil {
-		return nil, err
-	}
-	if inv != nil {
+		if !errors.Is(err, shared.ErrNotFound) {
+			return nil, err
+		}
+		// Inventory was deleted; still persist the return — the loan record
+		// is authoritative. Skip the inventory status update.
+	} else {
 		if err := inv.UpdateStatus(inventory.StatusAvailable); err != nil {
 			return nil, err
 		}
