@@ -24,6 +24,7 @@ type ServiceInterface interface {
 	List(ctx context.Context, workspaceID uuid.UUID, pagination shared.Pagination) ([]*Loan, int, error)
 	ListByBorrower(ctx context.Context, workspaceID, borrowerID uuid.UUID, pagination shared.Pagination) ([]*Loan, error)
 	ListByInventory(ctx context.Context, workspaceID, inventoryID uuid.UUID) ([]*Loan, error)
+	ListByItem(ctx context.Context, workspaceID, itemID uuid.UUID) ([]*Loan, error)
 	GetActiveLoans(ctx context.Context, workspaceID uuid.UUID) ([]*Loan, error)
 	GetOverdueLoans(ctx context.Context, workspaceID uuid.UUID) ([]*Loan, error)
 }
@@ -203,6 +204,10 @@ func (s *Service) ListByBorrower(ctx context.Context, workspaceID, borrowerID uu
 
 func (s *Service) ListByInventory(ctx context.Context, workspaceID, inventoryID uuid.UUID) ([]*Loan, error) {
 	return s.repo.FindByInventory(ctx, workspaceID, inventoryID)
+}
+
+func (s *Service) ListByItem(ctx context.Context, workspaceID, itemID uuid.UUID) ([]*Loan, error) {
+	return s.repo.FindByItem(ctx, workspaceID, itemID)
 }
 
 func (s *Service) GetActiveLoans(ctx context.Context, workspaceID uuid.UUID) ([]*Loan, error) {

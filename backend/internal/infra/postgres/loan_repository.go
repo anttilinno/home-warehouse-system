@@ -150,6 +150,23 @@ func (r *LoanRepository) FindByInventory(ctx context.Context, workspaceID, inven
 	return loans, nil
 }
 
+func (r *LoanRepository) FindByItem(ctx context.Context, workspaceID, itemID uuid.UUID) ([]*loan.Loan, error) {
+	rows, err := r.queries.ListLoansByItem(ctx, queries.ListLoansByItemParams{
+		WorkspaceID: workspaceID,
+		ItemID:      itemID,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	loans := make([]*loan.Loan, 0, len(rows))
+	for _, row := range rows {
+		loans = append(loans, r.rowToLoan(row))
+	}
+
+	return loans, nil
+}
+
 func (r *LoanRepository) FindActiveLoans(ctx context.Context, workspaceID uuid.UUID) ([]*loan.Loan, error) {
 	rows, err := r.queries.ListActiveLoans(ctx, workspaceID)
 	if err != nil {

@@ -81,9 +81,9 @@ export const loansApi = {
   listOverdue: (wsId: string) => get<LoanListResponse>(`${base(wsId)}/overdue`),
   listForBorrower: (wsId: string, borrowerId: string) =>
     get<LoanListResponse>(`/workspaces/${wsId}/borrowers/${borrowerId}/loans`),
-  /** D-05: lists loans for a given inventory item (active + historical in one response). */
-  listForItem: (wsId: string, inventoryId: string) =>
-    get<LoanListResponse>(`/workspaces/${wsId}/inventory/${inventoryId}/loans`),
+  /** D-05: lists loans for a given item definition (joins through inventory). */
+  listForItem: (wsId: string, itemId: string) =>
+    get<LoanListResponse>(`/workspaces/${wsId}/items/${itemId}/loans`),
   get: (wsId: string, id: string) => get<Loan>(`${base(wsId)}/${id}`),
   create: (wsId: string, body: CreateLoanInput) => post<Loan>(base(wsId), body),
   /** D-02: unified PATCH replacing the old extend/update-notes split for edit flows. */

@@ -180,7 +180,7 @@ export function LoanForm({
     if (mode !== "create" || !workspaceId) return;
     let cancelled = false;
     borrowersApi
-      .list(workspaceId, { archived: false, limit: 500 })
+      .list(workspaceId, { archived: false, limit: 100 })
       .then((r) => {
         if (cancelled) return;
         setBorrowerOptions(

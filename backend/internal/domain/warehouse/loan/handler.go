@@ -480,6 +480,28 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 		}, nil
 	})
 
+	// List loans by item definition (joins through inventory)
+	huma.Get(api, "/items/{item_id}/loans", func(ctx context.Context, input *ListItemLoansInput) (*ListLoansOutput, error) {
+		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
+		if !ok {
+			return nil, huma.Error401Unauthorized("workspace context required")
+		}
+
+		loans, err := svc.ListByItem(ctx, workspaceID, input.ItemID)
+		if err != nil {
+			return nil, huma.Error500InternalServerError("failed to list loans")
+		}
+
+		items, err := decorateLoans(ctx, lookup, workspaceID, loans)
+		if err != nil {
+			return nil, huma.Error500InternalServerError("failed to decorate loans")
+		}
+
+		return &ListLoansOutput{
+			Body: LoanListResponse{Items: items},
+		}, nil
+	})
+
 	// List loans by inventory
 	huma.Get(api, "/inventory/{inventory_id}/loans", func(ctx context.Context, input *ListInventoryLoansInput) (*ListLoansOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
@@ -611,6 +633,10 @@ type ListBorrowerLoansInput struct {
 	BorrowerID uuid.UUID `path:"borrower_id"`
 	Page       int       `query:"page" default:"1" minimum:"1"`
 	Limit      int       `query:"limit" default:"50" minimum:"1" maximum:"100"`
+}
+
+type ListItemLoansInput struct {
+	ItemID uuid.UUID `path:"item_id"`
 }
 
 type ListInventoryLoansInput struct {

@@ -510,6 +510,50 @@ func (q *Queries) ListLoansByInventory(ctx context.Context, arg ListLoansByInven
 	return items, nil
 }
 
+const listLoansByItem = `-- name: ListLoansByItem :many
+SELECT l.id, l.workspace_id, l.inventory_id, l.borrower_id, l.quantity, l.loaned_at, l.due_date, l.returned_at, l.notes, l.created_at, l.updated_at FROM warehouse.loans l
+JOIN warehouse.inventory i ON l.inventory_id = i.id
+WHERE l.workspace_id = $1 AND i.item_id = $2
+ORDER BY l.loaned_at DESC
+`
+
+type ListLoansByItemParams struct {
+	WorkspaceID uuid.UUID `json:"workspace_id"`
+	ItemID      uuid.UUID `json:"item_id"`
+}
+
+func (q *Queries) ListLoansByItem(ctx context.Context, arg ListLoansByItemParams) ([]WarehouseLoan, error) {
+	rows, err := q.db.Query(ctx, listLoansByItem, arg.WorkspaceID, arg.ItemID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []WarehouseLoan{}
+	for rows.Next() {
+		var i WarehouseLoan
+		if err := rows.Scan(
+			&i.ID,
+			&i.WorkspaceID,
+			&i.InventoryID,
+			&i.BorrowerID,
+			&i.Quantity,
+			&i.LoanedAt,
+			&i.DueDate,
+			&i.ReturnedAt,
+			&i.Notes,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listLoansByWorkspace = `-- name: ListLoansByWorkspace :many
 SELECT id, workspace_id, inventory_id, borrower_id, quantity, loaned_at, due_date, returned_at, notes, created_at, updated_at FROM warehouse.loans
 WHERE workspace_id = $1

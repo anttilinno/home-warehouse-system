@@ -1215,8 +1215,12 @@ msgid "LOGOUT"
 msgstr "LOGOUT"
 
 #: src/features/loans/actions/LoanReturnFlow.tsx:82
-msgid "Mark '{itemName}' returned by '{borrowerName}'? The loan will move to history."
-msgstr "Mark '{itemName}' returned by '{borrowerName}'? The loan will move to history."
+#~ msgid "Mark '{itemName}' returned by '{borrowerName}'? The loan will move to history."
+#~ msgstr "Mark '{itemName}' returned by '{borrowerName}'? The loan will move to history."
+
+#: src/features/loans/actions/LoanReturnFlow.tsx:82
+msgid "Mark {itemName} returned by {borrowerName}? The loan will move to history."
+msgstr "Mark {itemName} returned by {borrowerName}? The loan will move to history."
 
 #. placeholder {0}: loan.item.name
 #. placeholder {1}: loan.borrower.name

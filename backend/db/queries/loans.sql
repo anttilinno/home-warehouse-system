@@ -36,6 +36,12 @@ SELECT * FROM warehouse.loans
 WHERE workspace_id = $1 AND inventory_id = $2
 ORDER BY loaned_at DESC;
 
+-- name: ListLoansByItem :many
+SELECT l.* FROM warehouse.loans l
+JOIN warehouse.inventory i ON l.inventory_id = i.id
+WHERE l.workspace_id = $1 AND i.item_id = $2
+ORDER BY l.loaned_at DESC;
+
 -- name: ListActiveLoans :many
 SELECT * FROM warehouse.loans
 WHERE workspace_id = $1 AND returned_at IS NULL
