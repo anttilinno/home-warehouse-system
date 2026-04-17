@@ -34,11 +34,26 @@ describe("ItemThumbnailCell", () => {
     expect(container.querySelector("svg")).not.toBeNull();
   });
 
-  it("applies the 40x40 sizing (w-10 h-10) on the outer box", () => {
+  it("applies the 40x40 sizing on the outer box by default", () => {
     const { container } = render(
       <ItemThumbnailCell thumbnailUrl="https://x.test/t.jpg" />
     );
-    expect(container.querySelector(".w-10.h-10")).not.toBeNull();
+    // Phase 62 swapped .w-10 .h-10 utility classes for inline styles so the
+    // same component can render 24×24 on loan rows. The observable contract
+    // (a 40px square box by default) is preserved.
+    const box = container.querySelector("div") as HTMLElement | null;
+    expect(box).not.toBeNull();
+    expect(box!.style.width).toBe("40px");
+    expect(box!.style.height).toBe("40px");
+  });
+
+  it("applies a custom size via the size prop", () => {
+    const { container } = render(
+      <ItemThumbnailCell thumbnailUrl="https://x.test/t.jpg" size={24} />
+    );
+    const box = container.querySelector("div") as HTMLElement | null;
+    expect(box!.style.width).toBe("24px");
+    expect(box!.style.height).toBe("24px");
   });
 
   it("applies opacity-50 when dimmed is true", () => {

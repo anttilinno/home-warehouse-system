@@ -64,6 +64,24 @@ vi.mock("@/lib/api/categories", async (importOriginal) => {
   };
 });
 
+// Stub the Phase 62 loan panels so the item-detail-page tests don't need to
+// mock loansApi / the useLoansForItem hook; both panels are exercised by their
+// own suites. We assert that the section structure renders around them.
+vi.mock("@/features/loans/panels/ItemActiveLoanPanel", () => ({
+  ItemActiveLoanPanel: ({ itemId }: { itemId: string }) => (
+    <div data-testid="item-active-loan-panel" data-item-id={itemId}>
+      ACTIVE LOAN PANEL
+    </div>
+  ),
+}));
+vi.mock("@/features/loans/panels/ItemLoanHistoryPanel", () => ({
+  ItemLoanHistoryPanel: ({ itemId }: { itemId: string }) => (
+    <div data-testid="item-loan-history-panel" data-item-id={itemId}>
+      LOAN HISTORY PANEL
+    </div>
+  ),
+}));
+
 // Stub ItemPhotoGallery so the detail-page tests don't need to mock the
 // itemPhotosApi + React Query list fetch; the gallery is exercised by its own
 // suite. We assert that the stub renders (i.e. the page wires it) + that the
@@ -211,10 +229,14 @@ describe("ItemDetailPage — PHOTOS section wires ItemPhotoGallery (Phase 61)", 
       .toBeNull();
   });
 
-  it("renders LOANS placeholder", async () => {
+  it("renders LOANS section with active + history sub-sections (Phase 62)", async () => {
     mockedApi.get.mockResolvedValue(makeItem());
     renderDetail("item-1");
-    expect(await screen.findByText(/NO LOANS/i)).toBeVisible();
+    // LOANS heading remains; Phase 62 replaces the single NO LOANS placeholder
+    // with two sub-sections wired to real hooks.
+    expect(await screen.findByText("LOANS")).toBeVisible();
+    expect(screen.getByText("ACTIVE LOAN")).toBeVisible();
+    expect(screen.getByText("LOAN HISTORY")).toBeVisible();
   });
 });
 

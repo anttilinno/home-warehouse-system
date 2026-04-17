@@ -6,7 +6,6 @@ import {
   RetroPanel,
   RetroButton,
   RetroBadge,
-  RetroEmptyState,
   HazardStripe,
 } from "@/components/retro";
 import { useItem } from "./hooks/useItem";
@@ -23,6 +22,8 @@ import {
 } from "./actions/ItemArchiveDeleteFlow";
 import { ItemPhotoGallery } from "./photos/ItemPhotoGallery";
 import { ItemHeaderThumbnail } from "./photos/ItemHeaderThumbnail";
+import { ItemActiveLoanPanel } from "@/features/loans/panels/ItemActiveLoanPanel";
+import { ItemLoanHistoryPanel } from "@/features/loans/panels/ItemLoanHistoryPanel";
 
 /**
  * Items detail page — /items/:id route.
@@ -253,10 +254,20 @@ export function ItemDetailPage() {
         >
           {t`LOANS`}
         </h2>
-        <RetroEmptyState
-          title={t`NO LOANS`}
-          body={t`Loan history will appear here once loans are wired.`}
-        />
+
+        <div className="mb-lg">
+          <h3 className="text-[14px] font-semibold uppercase tracking-wider text-retro-ink mb-sm">
+            {t`ACTIVE LOAN`}
+          </h3>
+          <ItemActiveLoanPanel itemId={item.id} />
+        </div>
+
+        <div>
+          <h3 className="text-[14px] font-semibold uppercase tracking-wider text-retro-ink mb-sm">
+            {t`LOAN HISTORY`}
+          </h3>
+          <ItemLoanHistoryPanel itemId={item.id} />
+        </div>
       </section>
 
       <ItemPanel ref={panelRef} />

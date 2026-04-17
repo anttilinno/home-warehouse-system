@@ -4,10 +4,11 @@ import { useBorrower } from "./hooks/useBorrower";
 import { ArrowLeft } from "./icons";
 import {
   RetroPanel,
-  RetroEmptyState,
   RetroBadge,
   HazardStripe,
 } from "@/components/retro";
+import { BorrowerActiveLoansPanel } from "@/features/loans/panels/BorrowerActiveLoansPanel";
+import { BorrowerLoanHistoryPanel } from "@/features/loans/panels/BorrowerLoanHistoryPanel";
 
 export function BorrowerDetailPage() {
   const { t } = useLingui();
@@ -105,10 +106,7 @@ export function BorrowerDetailPage() {
         >
           {t`ACTIVE LOANS`}
         </h2>
-        <RetroEmptyState
-          title={t`NO ACTIVE LOANS`}
-          body={t`Loan data will be available soon.`}
-        />
+        <BorrowerActiveLoansPanel borrowerId={b.id} />
       </section>
 
       <section aria-labelledby="loan-history-h2">
@@ -118,10 +116,7 @@ export function BorrowerDetailPage() {
         >
           {t`LOAN HISTORY`}
         </h2>
-        <RetroEmptyState
-          title={t`NO LOAN HISTORY`}
-          body={t`Loan history will appear here once loans are wired.`}
-        />
+        <BorrowerLoanHistoryPanel borrowerId={b.id} />
       </section>
     </div>
   );

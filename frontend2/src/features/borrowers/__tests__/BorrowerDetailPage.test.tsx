@@ -38,6 +38,30 @@ vi.mock("@/lib/api/borrowers", async (importOriginal) => {
   };
 });
 
+// Stub the Phase 62 loan panels so the borrower-detail-page tests don't need
+// to mock loansApi / the useLoansForBorrower hook; both panels are exercised
+// by their own suites. We assert that the section structure renders.
+vi.mock("@/features/loans/panels/BorrowerActiveLoansPanel", () => ({
+  BorrowerActiveLoansPanel: ({ borrowerId }: { borrowerId: string }) => (
+    <div
+      data-testid="borrower-active-loans-panel"
+      data-borrower-id={borrowerId}
+    >
+      NO ACTIVE LOANS
+    </div>
+  ),
+}));
+vi.mock("@/features/loans/panels/BorrowerLoanHistoryPanel", () => ({
+  BorrowerLoanHistoryPanel: ({ borrowerId }: { borrowerId: string }) => (
+    <div
+      data-testid="borrower-loan-history-panel"
+      data-borrower-id={borrowerId}
+    >
+      NO LOAN HISTORY
+    </div>
+  ),
+}));
+
 import { borrowersApi } from "@/lib/api/borrowers";
 import { BorrowerDetailPage } from "../BorrowerDetailPage";
 

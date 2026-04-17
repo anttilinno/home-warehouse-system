@@ -24,11 +24,11 @@ msgid "{0} is over 10 MB. Try a smaller file or compress it first."
 msgstr "{0} on üle 10 MB. Proovi väiksemat faili või tiheda seda."
 
 #. placeholder {0}: files.length
-#: src/features/items/photos/useItemPhotoGallery.ts:91
+#: src/features/items/photos/useItemPhotoGallery.ts:94
 msgid "{successCount} of {0} photos uploaded."
 msgstr "{successCount} fotot {0}-st üles laaditud."
 
-#: src/features/items/photos/useItemPhotoGallery.ts:86
+#: src/features/items/photos/useItemPhotoGallery.ts:89
 msgid "{successCount} photos uploaded."
 msgstr "{successCount} fotot üles laaditud."
 
@@ -37,6 +37,8 @@ msgstr "{successCount} fotot üles laaditud."
 #: src/features/borrowers/panel/BorrowerPanel.tsx:95
 #: src/features/items/actions/ItemArchiveDeleteFlow.tsx:84
 #: src/features/items/panel/ItemPanel.tsx:110
+#: src/features/loans/actions/LoanReturnFlow.tsx:83
+#: src/features/loans/panel/LoanPanel.tsx:107
 #: src/features/taxonomy/actions/ArchiveDeleteFlow.tsx:95
 #: src/features/taxonomy/actions/ArchiveDeleteFlow.tsx:108
 #: src/features/taxonomy/panel/EntityPanel.tsx:189
@@ -74,6 +76,11 @@ msgstr "[ET] + NEW CONTAINER"
 msgid "+ NEW ITEM"
 msgstr "+ UUS KAUP"
 
+#: src/features/loans/LoansListPage.tsx:103
+#: src/features/loans/LoansListPage.tsx:154
+msgid "+ NEW LOAN"
+msgstr ""
+
 #: src/features/taxonomy/tabs/LocationsTab.tsx:113
 #: src/features/taxonomy/tabs/LocationsTab.tsx:141
 msgid "+ NEW LOCATION"
@@ -101,10 +108,19 @@ msgstr ""
 
 #: src/features/borrowers/BorrowersListPage.tsx:67
 #: src/features/items/ItemsListPage.tsx:124
+#: src/features/loans/table/LoansTable.tsx:53
 msgid "ACTIONS"
 msgstr ""
 
-#: src/features/borrowers/BorrowerDetailPage.tsx:106
+#: src/features/loans/LoansListPage.tsx:109
+msgid "ACTIVE"
+msgstr ""
+
+#: src/features/items/ItemDetailPage.tsx:260
+msgid "ACTIVE LOAN"
+msgstr ""
+
+#: src/features/borrowers/BorrowerDetailPage.tsx:107
 msgid "ACTIVE LOANS"
 msgstr ""
 
@@ -159,7 +175,7 @@ msgid "APPEARANCE"
 msgstr ""
 
 #: src/features/borrowers/BorrowersListPage.tsx:124
-#: src/features/items/ItemDetailPage.tsx:149
+#: src/features/items/ItemDetailPage.tsx:150
 #: src/features/items/ItemsListPage.tsx:183
 #: src/features/taxonomy/tabs/ContainersTab.tsx:235
 #: src/features/taxonomy/tree/TreeNode.tsx:122
@@ -202,9 +218,9 @@ msgstr ""
 msgid "ARCHIVE LOCATION"
 msgstr "[ET] ARCHIVE LOCATION"
 
-#: src/features/borrowers/BorrowerDetailPage.tsx:64
+#: src/features/borrowers/BorrowerDetailPage.tsx:65
 #: src/features/borrowers/BorrowersListPage.tsx:81
-#: src/features/items/ItemDetailPage.tsx:134
+#: src/features/items/ItemDetailPage.tsx:135
 #: src/features/items/ItemsListPage.tsx:146
 #: src/features/taxonomy/tabs/ContainersTab.tsx:214
 #: src/features/taxonomy/tree/TaxonomyTree.tsx:196
@@ -248,19 +264,25 @@ msgstr ""
 msgid "BACK"
 msgstr ""
 
-#: src/features/borrowers/BorrowerDetailPage.tsx:40
+#: src/features/borrowers/BorrowerDetailPage.tsx:41
 msgid "BACK TO BORROWERS"
 msgstr ""
 
-#: src/features/items/ItemDetailPage.tsx:99
-#: src/features/items/ItemDetailPage.tsx:121
+#: src/features/items/ItemDetailPage.tsx:100
+#: src/features/items/ItemDetailPage.tsx:122
 msgid "BACK TO ITEMS"
 msgstr "TAGASI KAUPADE JUURDE"
 
 #: src/features/items/forms/ItemForm.tsx:129
-#: src/features/items/ItemDetailPage.tsx:187
+#: src/features/items/ItemDetailPage.tsx:188
 msgid "BARCODE"
 msgstr "VÖÖTKOOD"
+
+#: src/features/loans/forms/LoanForm.tsx:273
+#: src/features/loans/forms/LoanForm.tsx:311
+#: src/features/loans/table/LoansTable.tsx:42
+msgid "BORROWER"
+msgstr ""
 
 #: src/features/borrowers/hooks/useBorrowerMutations.ts:60
 msgid "Borrower archived."
@@ -274,7 +296,7 @@ msgstr ""
 msgid "Borrower deleted."
 msgstr ""
 
-#: src/features/borrowers/BorrowerDetailPage.tsx:30
+#: src/features/borrowers/BorrowerDetailPage.tsx:31
 msgid "BORROWER NOT FOUND"
 msgstr ""
 
@@ -286,7 +308,7 @@ msgstr ""
 msgid "Borrower saved."
 msgstr ""
 
-#: src/features/borrowers/BorrowerDetailPage.tsx:55
+#: src/features/borrowers/BorrowerDetailPage.tsx:56
 #: src/features/borrowers/BorrowersListPage.tsx:158
 msgid "BORROWERS"
 msgstr ""
@@ -305,7 +327,7 @@ msgid "CATEGORIES"
 msgstr "KATEGOORIAD"
 
 #: src/features/items/forms/ItemForm.tsx:154
-#: src/features/items/ItemDetailPage.tsx:198
+#: src/features/items/ItemDetailPage.tsx:199
 #: src/features/items/ItemsListPage.tsx:123
 #: src/pages/DemoPage.tsx:155
 msgid "CATEGORY"
@@ -351,6 +373,11 @@ msgstr ""
 
 #: src/features/items/ItemsListPage.tsx:243
 #: src/features/items/photos/ItemPhotoGallery.tsx:120
+#: src/features/loans/LoansListPage.tsx:134
+#: src/features/loans/panels/BorrowerActiveLoansPanel.tsx:53
+#: src/features/loans/panels/BorrowerLoanHistoryPanel.tsx:44
+#: src/features/loans/panels/ItemActiveLoanPanel.tsx:48
+#: src/features/loans/panels/ItemLoanHistoryPanel.tsx:41
 msgid "Check your connection and try again."
 msgstr "Kontrolli ühendust ja proovi uuesti."
 
@@ -404,6 +431,10 @@ msgstr "Kinnita parool"
 msgid "CONFIRM PASSWORD"
 msgstr "KINNITA PAROOL"
 
+#: src/features/loans/actions/LoanReturnFlow.tsx:81
+msgid "CONFIRM RETURN"
+msgstr ""
+
 #: src/features/settings/SecurityPage.tsx:275
 msgid "CONNECTED ACCOUNTS"
 msgstr ""
@@ -432,7 +463,7 @@ msgstr "Uhendus ebaonnestus. Kontrolli vorguuhendust ja proovi uuesti."
 msgid "Connection lost. Your change was not saved."
 msgstr "[ET] Connection lost. Your change was not saved."
 
-#: src/features/borrowers/BorrowerDetailPage.tsx:71
+#: src/features/borrowers/BorrowerDetailPage.tsx:72
 msgid "CONTACT"
 msgstr ""
 
@@ -471,11 +502,15 @@ msgstr "[ET] Containers belong to a location. Create a location first, then add 
 msgid "Could not archive. Try again."
 msgstr "[ET] Could not archive. Try again."
 
+#: src/features/loans/hooks/useLoanMutations.ts:67
+msgid "Could not create loan. Check your connection and try again."
+msgstr ""
+
 #: src/features/items/hooks/useItemMutations.ts:126
 msgid "Could not delete item. Try again."
 msgstr ""
 
-#: src/features/items/photos/useItemPhotoGallery.ts:147
+#: src/features/items/photos/useItemPhotoGallery.ts:150
 msgid "Could not delete photo. Try again."
 msgstr "Foto kustutamine ebaõnnestus. Proovi uuesti."
 
@@ -495,6 +530,14 @@ msgstr "[ET] Could not load containers."
 msgid "COULD NOT LOAD ITEMS"
 msgstr "KAUPU EI ÕNNESTUNUD LAADIDA"
 
+#: src/features/loans/LoansListPage.tsx:131
+#: src/features/loans/panels/BorrowerActiveLoansPanel.tsx:50
+#: src/features/loans/panels/BorrowerLoanHistoryPanel.tsx:41
+#: src/features/loans/panels/ItemActiveLoanPanel.tsx:45
+#: src/features/loans/panels/ItemLoanHistoryPanel.tsx:38
+msgid "COULD NOT LOAD LOANS"
+msgstr ""
+
 #: src/features/taxonomy/tabs/LocationsTab.tsx:127
 msgid "Could not load locations."
 msgstr "[ET] Could not load locations."
@@ -507,6 +550,10 @@ msgstr "FOTOSID EI ÕNNESTUNUD LAADIDA"
 msgid "Could not reach the API. Check your network and the backend URL, then retry."
 msgstr "API-ni ei saanud ühendust. Kontrolli võrku ja taustateenuse URL-i, seejärel proovi uuesti."
 
+#: src/features/loans/hooks/useLoanMutations.ts:122
+msgid "Could not return loan. Try again."
+msgstr ""
+
 #: src/features/items/hooks/useItemMutations.ts:51
 #: src/features/items/hooks/useItemMutations.ts:75
 msgid "Could not save item. Check your connection and try again."
@@ -517,12 +564,16 @@ msgstr ""
 msgid "Could not update item. Try again."
 msgstr ""
 
-#: src/features/items/photos/useItemPhotoGallery.ts:119
+#: src/features/loans/hooks/useLoanMutations.ts:94
+msgid "Could not update loan. Try again."
+msgstr ""
+
+#: src/features/items/photos/useItemPhotoGallery.ts:122
 msgid "Could not update primary photo. Try again."
 msgstr "Peamise foto uuendamine ebaõnnestus. Proovi uuesti."
 
 #. placeholder {0}: file.name
-#: src/features/items/photos/useItemPhotoGallery.ts:75
+#: src/features/items/photos/useItemPhotoGallery.ts:78
 msgid "Couldn't upload {0}. Continuing with the rest."
 msgstr "{0} üleslaadimine ebaõnnestus. Jätkame ülejäänutega."
 
@@ -550,6 +601,10 @@ msgstr "[ET] CREATE CONTAINER"
 msgid "CREATE ITEM"
 msgstr ""
 
+#: src/features/loans/panel/LoanPanel.tsx:75
+msgid "CREATE LOAN"
+msgstr ""
+
 #: src/features/taxonomy/panel/EntityPanel.tsx:93
 msgid "CREATE LOCATION"
 msgstr "[ET] CREATE LOCATION"
@@ -574,7 +629,7 @@ msgstr "Loo oma esimene kaup, et alustada inventari jälgimist."
 msgid "Create your first location to describe where items live."
 msgstr "[ET] Create your first location to describe where items live."
 
-#: src/features/items/ItemDetailPage.tsx:220
+#: src/features/items/ItemDetailPage.tsx:221
 msgid "CREATED"
 msgstr "LOODUD"
 
@@ -616,7 +671,7 @@ msgid "DATE FORMAT"
 msgstr ""
 
 #: src/features/borrowers/BorrowersListPage.tsx:146
-#: src/features/items/ItemDetailPage.tsx:168
+#: src/features/items/ItemDetailPage.tsx:169
 #: src/features/items/ItemsListPage.tsx:205
 msgid "DELETE"
 msgstr ""
@@ -668,15 +723,19 @@ msgstr "KUSTUTA FOTO"
 msgid "Deleted."
 msgstr "[ET] Deleted."
 
+#: src/features/loans/forms/LoanForm.tsx:363
+msgid "Delivery arrangement, condition on loan, etc."
+msgstr ""
+
 #: src/features/items/forms/ItemForm.tsx:142
-#: src/features/items/ItemDetailPage.tsx:209
+#: src/features/items/ItemDetailPage.tsx:210
 #: src/features/taxonomy/forms/CategoryForm.tsx:89
 #: src/features/taxonomy/forms/ContainerForm.tsx:123
 #: src/features/taxonomy/forms/LocationForm.tsx:124
 msgid "DESCRIPTION"
 msgstr "[ET] DESCRIPTION"
 
-#: src/features/items/ItemDetailPage.tsx:178
+#: src/features/items/ItemDetailPage.tsx:179
 msgid "DETAILS"
 msgstr "DETAILID"
 
@@ -690,6 +749,21 @@ msgstr "[ET] DISCARD CHANGES?"
 
 #: src/features/settings/DataPage.tsx:95
 msgid "Download all workspace data as a JSON file."
+msgstr ""
+
+#: src/features/loans/panels/ItemActiveLoanPanel.tsx:93
+#: src/features/loans/table/LoansTable.tsx:52
+msgid "DUE"
+msgstr ""
+
+#: src/features/loans/forms/LoanForm.tsx:349
+msgid "DUE DATE"
+msgstr ""
+
+#: src/features/loans/forms/LoanForm.tsx:227
+#: src/features/loans/forms/LoanForm.tsx:252
+#: src/features/loans/hooks/useLoanMutations.ts:91
+msgid "Due date can't be before the loaned-on date."
 msgstr ""
 
 #: src/features/borrowers/forms/BorrowerForm.tsx:72
@@ -706,6 +780,7 @@ msgstr "[ET] e.g. DeWalt drill"
 
 #: src/features/borrowers/BorrowersListPage.tsx:115
 #: src/features/items/ItemsListPage.tsx:174
+#: src/features/loans/table/LoanRowActions.tsx:51
 #: src/features/taxonomy/tabs/ContainersTab.tsx:225
 #: src/features/taxonomy/tree/TreeNode.tsx:112
 msgid "EDIT"
@@ -733,9 +808,17 @@ msgstr "[ET] EDIT CATEGORY"
 msgid "EDIT CONTAINER"
 msgstr "[ET] EDIT CONTAINER"
 
-#: src/features/items/ItemDetailPage.tsx:143
+#: src/features/items/ItemDetailPage.tsx:144
 #: src/features/items/panel/ItemPanel.tsx:62
 msgid "EDIT ITEM"
+msgstr ""
+
+#: src/features/loans/panel/LoanPanel.tsx:71
+msgid "EDIT LOAN"
+msgstr ""
+
+#: src/features/loans/table/LoanRowActions.tsx:45
+msgid "Edit loan of {itemName} to {borrowerName}"
 msgstr ""
 
 #: src/features/taxonomy/panel/EntityPanel.tsx:88
@@ -751,7 +834,7 @@ msgstr ""
 msgid "Email"
 msgstr "E-post"
 
-#: src/features/borrowers/BorrowerDetailPage.tsx:75
+#: src/features/borrowers/BorrowerDetailPage.tsx:76
 #: src/features/borrowers/BorrowersListPage.tsx:65
 #: src/features/borrowers/forms/BorrowerForm.tsx:74
 #: src/features/settings/ProfilePage.tsx:168
@@ -875,6 +958,10 @@ msgstr ""
 msgid "HIDES FROM PICKERS"
 msgstr "[ET] HIDES FROM PICKERS"
 
+#: src/features/loans/LoansListPage.tsx:111
+msgid "HISTORY"
+msgstr ""
+
 #: src/features/settings/DataPage.tsx:121
 msgid "IMPORT"
 msgstr ""
@@ -916,6 +1003,12 @@ msgstr "Vale e-post voi parool. Kontrolli oma andmeid ja proovi uuesti."
 msgid "INVENTORY"
 msgstr ""
 
+#: src/features/loans/forms/LoanForm.tsx:269
+#: src/features/loans/forms/LoanForm.tsx:298
+#: src/features/loans/table/LoansTable.tsx:41
+msgid "ITEM"
+msgstr ""
+
 #: src/features/items/hooks/useItemMutations.ts:89
 msgid "Item archived."
 msgstr ""
@@ -932,7 +1025,7 @@ msgstr ""
 msgid "ITEM NAME"
 msgstr "[ET] ITEM NAME"
 
-#: src/features/items/ItemDetailPage.tsx:89
+#: src/features/items/ItemDetailPage.tsx:90
 msgid "ITEM NOT FOUND"
 msgstr "KAUPA EI LEITUD"
 
@@ -942,6 +1035,10 @@ msgstr ""
 
 #: src/features/items/hooks/useItemMutations.ts:65
 msgid "Item saved."
+msgstr ""
+
+#: src/features/loans/table/LoansTable.tsx:38
+msgid "Item thumbnail"
 msgstr ""
 
 #: src/components/layout/Sidebar.tsx:41
@@ -1007,32 +1104,70 @@ msgid "Loading..."
 msgstr ""
 
 #: src/components/retro/RetroCombobox.tsx:190
-#: src/features/borrowers/BorrowerDetailPage.tsx:20
+#: src/features/borrowers/BorrowerDetailPage.tsx:21
 #: src/features/borrowers/BorrowersListPage.tsx:175
-#: src/features/items/ItemDetailPage.tsx:79
+#: src/features/items/ItemDetailPage.tsx:80
 #: src/features/items/ItemsListPage.tsx:232
+#: src/features/loans/LoansListPage.tsx:123
+#: src/features/loans/panels/BorrowerActiveLoansPanel.tsx:40
+#: src/features/loans/panels/BorrowerLoanHistoryPanel.tsx:31
+#: src/features/loans/panels/ItemActiveLoanPanel.tsx:35
+#: src/features/loans/panels/ItemLoanHistoryPanel.tsx:28
 #: src/features/taxonomy/tabs/CategoriesTab.tsx:117
 #: src/features/taxonomy/tabs/ContainersTab.tsx:146
 #: src/features/taxonomy/tabs/LocationsTab.tsx:119
 msgid "Loading…"
 msgstr "[ET] Loading…"
 
-#: src/features/borrowers/BorrowerDetailPage.tsx:110
-msgid "Loan data will be available soon."
+#: src/features/loans/hooks/useLoanMutations.ts:51
+msgid "Loan created."
 msgstr ""
 
-#: src/features/borrowers/BorrowerDetailPage.tsx:119
+#: src/features/borrowers/BorrowerDetailPage.tsx:110
+#~ msgid "Loan data will be available soon."
+#~ msgstr ""
+
+#: src/features/loans/forms/LoanForm.tsx:265
+msgid "LOAN DETAILS (LOCKED)"
+msgstr ""
+
+#: src/features/borrowers/BorrowerDetailPage.tsx:117
+#: src/features/items/ItemDetailPage.tsx:267
 msgid "LOAN HISTORY"
 msgstr ""
 
 #: src/features/borrowers/BorrowerDetailPage.tsx:123
 #: src/features/items/ItemDetailPage.tsx:258
-msgid "Loan history will appear here once loans are wired."
+#~ msgid "Loan history will appear here once loans are wired."
+#~ msgstr ""
+
+#: src/features/loans/hooks/useLoanMutations.ts:115
+msgid "Loan returned."
+msgstr ""
+
+#: src/features/loans/hooks/useLoanMutations.ts:83
+msgid "Loan updated."
+msgstr ""
+
+#: src/features/loans/panels/BorrowerLoanHistoryPanel.tsx:84
+#: src/features/loans/panels/ItemActiveLoanPanel.tsx:87
+#: src/features/loans/panels/ItemLoanHistoryPanel.tsx:76
+#: src/features/loans/table/LoansTable.tsx:44
+msgid "LOANED"
+msgstr ""
+
+#: src/features/loans/forms/LoanForm.tsx:281
+#: src/features/loans/forms/LoanForm.tsx:338
+msgid "LOANED ON"
+msgstr ""
+
+#: src/features/loans/forms/LoanForm.tsx:234
+msgid "Loaned-on date can't be in the future."
 msgstr ""
 
 #: src/components/layout/Sidebar.tsx:50
-#: src/features/items/ItemDetailPage.tsx:254
-#: src/features/loans/LoansPage.tsx:8
+#: src/features/items/ItemDetailPage.tsx:255
+#: src/features/loans/LoansListPage.tsx:99
 #: src/features/settings/NotificationsPage.tsx:106
 msgid "LOANS"
 msgstr "LAENUTUSED"
@@ -1079,10 +1214,28 @@ msgstr "LOGI SISSE"
 msgid "LOGOUT"
 msgstr "LOGI VALJA"
 
+#: src/features/loans/actions/LoanReturnFlow.tsx:82
+msgid "Mark '{itemName}' returned by '{borrowerName}'? The loan will move to history."
+msgstr ""
+
+#. placeholder {0}: loan.item.name
+#. placeholder {1}: loan.borrower.name
+#: src/features/loans/panels/BorrowerActiveLoansPanel.tsx:111
+#: src/features/loans/panels/ItemActiveLoanPanel.tsx:118
+msgid "Mark loan of {0} to {1} as returned"
+msgstr ""
+
+#: src/features/loans/table/LoanRowActions.tsx:35
+msgid "Mark loan of {itemName} to {borrowerName} as returned"
+msgstr ""
+
 #: src/pages/DemoPage.tsx:249
 msgid "MARK LOAN RETURNED"
 msgstr "[ET] MARK LOAN RETURNED"
 
+#: src/features/loans/panels/BorrowerActiveLoansPanel.tsx:116
+#: src/features/loans/panels/ItemActiveLoanPanel.tsx:123
+#: src/features/loans/table/LoanRowActions.tsx:41
 #: src/pages/DemoPage.tsx:252
 msgid "MARK RETURNED"
 msgstr "[ET] MARK RETURNED"
@@ -1118,6 +1271,10 @@ msgstr "[ET] NEW CONTAINER"
 msgid "NEW ITEM"
 msgstr ""
 
+#: src/features/loans/panel/LoanPanel.tsx:71
+msgid "NEW LOAN"
+msgstr ""
+
 #: src/features/taxonomy/panel/EntityPanel.tsx:88
 msgid "NEW LOCATION"
 msgstr "[ET] NEW LOCATION"
@@ -1142,7 +1299,12 @@ msgstr "Järgmine foto"
 msgid "NO ACTIVE ITEMS"
 msgstr "AKTIIVSEID KAUPU POLE"
 
-#: src/features/borrowers/BorrowerDetailPage.tsx:109
+#: src/features/loans/panels/ItemActiveLoanPanel.tsx:61
+msgid "NO ACTIVE LOAN"
+msgstr ""
+
+#: src/features/loans/LoansListPage.tsx:150
+#: src/features/loans/panels/BorrowerActiveLoansPanel.tsx:66
 msgid "NO ACTIVE LOANS"
 msgstr ""
 
@@ -1174,13 +1336,15 @@ msgstr "Ükski kaup ei vasta filtritele. Tühjenda, et näha kõiki kaupu."
 msgid "NO ITEMS YET"
 msgstr "KAUBAD PUUDUVAD"
 
-#: src/features/borrowers/BorrowerDetailPage.tsx:122
+#: src/features/loans/LoansListPage.tsx:173
+#: src/features/loans/panels/BorrowerLoanHistoryPanel.tsx:57
+#: src/features/loans/panels/ItemLoanHistoryPanel.tsx:54
 msgid "NO LOAN HISTORY"
 msgstr ""
 
 #: src/features/items/ItemDetailPage.tsx:257
-msgid "NO LOANS"
-msgstr "LAENE POLE"
+#~ msgid "NO LOANS"
+#~ msgstr "LAENE POLE"
 
 #: src/features/taxonomy/tabs/LocationsTab.tsx:137
 msgid "NO LOCATIONS YET"
@@ -1193,6 +1357,10 @@ msgstr "KOKKULANGEVUSI POLE"
 #: src/components/retro/RetroCombobox.tsx:195
 msgid "No matches found."
 msgstr "[ET] No matches found."
+
+#: src/features/loans/LoansListPage.tsx:164
+msgid "NO OVERDUE LOANS"
+msgstr ""
 
 #: src/features/items/ItemDetailPage.tsx:237
 #~ msgid "NO PHOTOS"
@@ -1210,11 +1378,24 @@ msgstr "[ET] NO RECORDS YET"
 msgid "No workspace found. Please create a workspace to get started."
 msgstr "Toopinda ei leitud. Alustamiseks loo toopind."
 
-#: src/features/borrowers/BorrowerDetailPage.tsx:91
+#: src/features/loans/hooks/useLoanMutations.ts:63
+msgid "Not enough units available for loan."
+msgstr ""
+
+#: src/features/borrowers/BorrowerDetailPage.tsx:92
 #: src/features/borrowers/forms/BorrowerForm.tsx:80
+#: src/features/loans/forms/LoanForm.tsx:358
 #: src/pages/DemoPage.tsx:148
 msgid "NOTES"
 msgstr "[ET] NOTES"
+
+#: src/features/loans/LoansListPage.tsx:151
+msgid "Nothing is currently out on loan."
+msgstr ""
+
+#: src/features/loans/LoansListPage.tsx:165
+msgid "Nothing is past its due date. Nice."
+msgstr ""
 
 #: src/features/settings/NotificationsPage.tsx:117
 #: src/features/settings/SettingsPage.tsx:52
@@ -1259,6 +1440,14 @@ msgstr "Ava foto {0}"
 msgid "Optional"
 msgstr ""
 
+#: src/features/loans/forms/LoanForm.tsx:350
+msgid "Optional — leave blank for open-ended loans"
+msgstr ""
+
+#: src/features/loans/forms/LoanForm.tsx:359
+msgid "Optional — up to 1000 characters"
+msgstr ""
+
 #: src/features/items/forms/ItemForm.tsx:143
 msgid "Optional — up to 2000 characters"
 msgstr ""
@@ -1275,11 +1464,14 @@ msgstr "VOI"
 msgid "OTHER SESSIONS REVOKED"
 msgstr ""
 
+#: src/features/loans/LoansListPage.tsx:110
+msgid "OVERDUE"
+msgstr ""
+
 #: src/components/retro/RetroPagination.tsx:79
 msgid "Page {page} of {totalPages}"
 msgstr "[ET] Page {page} of {totalPages}"
 
-#: src/features/loans/LoansPage.tsx:10
 #: src/features/scan/ScanPage.tsx:10
 msgid "PAGE UNDER CONSTRUCTION"
 msgstr "LEHT ON EHITUSEL"
@@ -1314,6 +1506,11 @@ msgstr ""
 msgid "Passwords do not match."
 msgstr "Paroolid ei kattu."
 
+#: src/features/loans/panels/BorrowerLoanHistoryPanel.tsx:58
+#: src/features/loans/panels/ItemLoanHistoryPanel.tsx:55
+msgid "Past loans will appear here once anything is returned."
+msgstr ""
+
 #: src/features/borrowers/actions/BorrowerArchiveDeleteFlow.tsx:92
 #~ msgid "Permanently delete '{nodeName}'? This action cannot be undone."
 #~ msgstr ""
@@ -1330,7 +1527,7 @@ msgstr ""
 msgid "Permanently delete this photo? This cannot be undone."
 msgstr "Kustuta foto jäädavalt? Seda ei saa tagasi võtta."
 
-#: src/features/borrowers/BorrowerDetailPage.tsx:83
+#: src/features/borrowers/BorrowerDetailPage.tsx:84
 #: src/features/borrowers/BorrowersListPage.tsx:66
 #: src/features/borrowers/forms/BorrowerForm.tsx:77
 msgid "PHONE"
@@ -1342,7 +1539,7 @@ msgstr ""
 msgid "Photo {0} of {1} for {itemName}"
 msgstr "Foto {0} / {1} tootele {itemName}"
 
-#: src/features/items/photos/useItemPhotoGallery.ts:145
+#: src/features/items/photos/useItemPhotoGallery.ts:148
 msgid "Photo deleted."
 msgstr "Foto kustutatud."
 
@@ -1352,11 +1549,11 @@ msgstr "Foto kustutatud."
 msgid "Photo of {itemName}, {0} of {1}"
 msgstr "{itemName} foto, {0} / {1}"
 
-#: src/features/items/photos/useItemPhotoGallery.ts:85
+#: src/features/items/photos/useItemPhotoGallery.ts:88
 msgid "Photo uploaded."
 msgstr "Foto üles laaditud."
 
-#: src/features/items/ItemDetailPage.tsx:240
+#: src/features/items/ItemDetailPage.tsx:241
 #: src/pages/DemoPage.tsx:184
 msgid "PHOTOS"
 msgstr "[ET] PHOTOS"
@@ -1364,6 +1561,14 @@ msgstr "[ET] PHOTOS"
 #: src/features/items/ItemDetailPage.tsx:238
 #~ msgid "Photos will appear here after Phase 61."
 #~ msgstr "Fotod ilmuvad siia pärast faasi 61."
+
+#: src/features/loans/forms/LoanForm.tsx:314
+msgid "Pick a borrower…"
+msgstr ""
+
+#: src/features/loans/forms/LoanForm.tsx:301
+msgid "Pick an item…"
+msgstr ""
 
 #: src/features/borrowers/forms/BorrowerForm.tsx:83
 msgid "Pickup preferences, shared items, etc."
@@ -1385,7 +1590,7 @@ msgstr "Eelmine foto"
 msgid "PRIMARY"
 msgstr "PEAMINE"
 
-#: src/features/items/photos/useItemPhotoGallery.ts:127
+#: src/features/items/photos/useItemPhotoGallery.ts:130
 msgid "Primary photo updated."
 msgstr "Peamine foto uuendatud."
 
@@ -1401,6 +1606,15 @@ msgstr "TÖÖTLEMISEL…"
 #: src/features/settings/ProfilePage.tsx:97
 #: src/features/settings/SettingsPage.tsx:26
 msgid "PROFILE"
+msgstr ""
+
+#: src/features/loans/table/LoansTable.tsx:43
+msgid "QTY"
+msgstr ""
+
+#: src/features/loans/forms/LoanForm.tsx:277
+#: src/features/loans/forms/LoanForm.tsx:322
+msgid "QUANTITY"
 msgstr ""
 
 #: src/features/settings/FormatsPage.tsx:143
@@ -1442,7 +1656,7 @@ msgstr "[ET] RESTORE"
 msgid "Restore {0}"
 msgstr "[ET] Restore {0}"
 
-#: src/features/items/ItemDetailPage.tsx:162
+#: src/features/items/ItemDetailPage.tsx:163
 msgid "RESTORE ITEM"
 msgstr "TAASTA KAUP"
 
@@ -1458,12 +1672,21 @@ msgid "Retry"
 msgstr "[ET] Retry"
 
 #: src/features/items/ItemsListPage.tsx:249
+#: src/features/loans/LoansListPage.tsx:140
+#: src/features/loans/panels/BorrowerActiveLoansPanel.tsx:56
+#: src/features/loans/panels/BorrowerLoanHistoryPanel.tsx:47
+#: src/features/loans/panels/ItemActiveLoanPanel.tsx:51
+#: src/features/loans/panels/ItemLoanHistoryPanel.tsx:44
 msgid "RETRY"
 msgstr "PROOVI UUESTI"
 
 #: src/pages/ApiDemoPage.tsx:53
 msgid "Retry fetch"
 msgstr "Proovi uuesti"
+
+#: src/features/loans/actions/LoanReturnFlow.tsx:84
+msgid "RETURN LOAN"
+msgstr ""
 
 #: src/components/layout/ErrorBoundaryPage.tsx:40
 #: src/routes/index.tsx:43
@@ -1473,6 +1696,16 @@ msgstr "TAGASI BAASI"
 #: src/features/auth/AuthCallbackPage.tsx:63
 msgid "RETURN TO LOGIN"
 msgstr "TAGASI SISSELOGIMISELE"
+
+#: src/features/loans/panels/BorrowerLoanHistoryPanel.tsx:88
+#: src/features/loans/panels/ItemLoanHistoryPanel.tsx:80
+#: src/features/loans/table/LoansTable.tsx:49
+msgid "RETURNED"
+msgstr ""
+
+#: src/features/loans/LoansListPage.tsx:174
+msgid "Returned loans will appear here."
+msgstr ""
 
 #: src/features/settings/SecurityPage.tsx:257
 msgid "REVOKE"
@@ -1501,6 +1734,10 @@ msgstr "[ET] SAVE CONTAINER"
 
 #: src/features/items/panel/ItemPanel.tsx:67
 msgid "SAVE ITEM"
+msgstr ""
+
+#: src/features/loans/panel/LoanPanel.tsx:76
+msgid "SAVE LOAN"
 msgstr ""
 
 #: src/features/taxonomy/panel/EntityPanel.tsx:93
@@ -1613,7 +1850,7 @@ msgid "Skip to main content"
 msgstr "Liigu pohisisu juurde"
 
 #: src/features/items/forms/ItemForm.tsx:120
-#: src/features/items/ItemDetailPage.tsx:182
+#: src/features/items/ItemDetailPage.tsx:183
 #: src/features/items/ItemsListPage.tsx:122
 msgid "SKU"
 msgstr ""
@@ -1701,13 +1938,38 @@ msgstr ""
 msgid "This action cannot be undone."
 msgstr "[ET] This action cannot be undone."
 
-#: src/features/borrowers/BorrowerDetailPage.tsx:33
+#: src/features/loans/panels/BorrowerActiveLoansPanel.tsx:67
+msgid "This borrower isn't holding anything right now."
+msgstr ""
+
+#: src/features/borrowers/BorrowerDetailPage.tsx:34
 msgid "This borrower may have been deleted."
 msgstr ""
 
-#: src/features/items/ItemDetailPage.tsx:92
+#: src/features/loans/forms/LoanForm.tsx:288
+msgid "This cannot be changed after creation. Return this loan and create a new one to change the item, borrower, or quantity."
+msgstr ""
+
+#: src/features/loans/hooks/useLoanMutations.ts:55
+msgid "This item is already on loan."
+msgstr ""
+
+#: src/features/loans/hooks/useLoanMutations.ts:59
+msgid "This item is not available for loan."
+msgstr ""
+
+#: src/features/loans/panels/ItemActiveLoanPanel.tsx:62
+msgid "This item isn't currently out on loan."
+msgstr ""
+
+#: src/features/items/ItemDetailPage.tsx:93
 msgid "This item may have been deleted."
 msgstr "See kaup võib olla kustutatud."
+
+#: src/features/loans/hooks/useLoanMutations.ts:87
+#: src/features/loans/hooks/useLoanMutations.ts:119
+msgid "This loan has already been returned."
+msgstr ""
 
 #: src/features/taxonomy/actions/ArchiveDeleteFlow.tsx:107
 msgid "This permanently deletes '{nodeName}'. This action cannot be undone."
@@ -1745,6 +2007,10 @@ msgstr ""
 msgid "TIME FORMAT"
 msgstr ""
 
+#: src/features/loans/forms/LoanForm.tsx:339
+msgid "Today by default"
+msgstr ""
+
 #: src/pages/DemoPage.tsx:225
 msgid "TRIGGER DELETE"
 msgstr "[ET] TRIGGER DELETE"
@@ -1765,7 +2031,7 @@ msgstr ""
 msgid "UPDATE PASSWORD"
 msgstr ""
 
-#: src/features/items/ItemDetailPage.tsx:227
+#: src/features/items/ItemDetailPage.tsx:228
 msgid "UPDATED"
 msgstr "VIIMATI MUUDETUD"
 
@@ -1789,6 +2055,10 @@ msgstr "VAATA LAENUTUSI"
 msgid "What's in the box, condition, accessories, etc."
 msgstr ""
 
+#: src/features/loans/forms/LoanForm.tsx:323
+msgid "Whole units only"
+msgstr ""
+
 #: src/components/retro/RetroConfirmDialog.tsx:116
 #: src/features/borrowers/panel/BorrowerPanel.tsx:58
 #: src/features/items/panel/ItemPanel.tsx:64
@@ -1796,6 +2066,7 @@ msgstr ""
 #: src/features/items/photos/ItemPhotoGallery.tsx:188
 #: src/features/items/photos/ItemPhotoLightbox.tsx:213
 #: src/features/items/photos/ItemPhotoLightbox.tsx:226
+#: src/features/loans/panel/LoanPanel.tsx:73
 #: src/features/taxonomy/panel/EntityPanel.tsx:106
 msgid "WORKING…"
 msgstr "[ET] WORKING…"

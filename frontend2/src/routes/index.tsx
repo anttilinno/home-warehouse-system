@@ -8,7 +8,7 @@ import { ApiDemoPage } from "@/pages/ApiDemoPage";
 import { DashboardPage } from "@/features/dashboard/DashboardPage";
 import { ItemsListPage } from "@/features/items/ItemsListPage";
 import { ItemDetailPage } from "@/features/items/ItemDetailPage";
-import { LoansPage } from "@/features/loans/LoansPage";
+import { LoansListPage } from "@/features/loans/LoansListPage";
 import { ScanPage } from "@/features/scan/ScanPage";
 import { SetupPage } from "@/features/setup/SetupPage";
 import TaxonomyPage from "@/features/taxonomy/TaxonomyPage";
@@ -81,7 +81,7 @@ export function AppRoutes() {
         <Route path="items" element={<ItemsListPage />} />
         <Route path="items/:id" element={<ItemDetailPage />} />
         <Route path="taxonomy" element={<TaxonomyPage />} />
-        <Route path="loans" element={<LoansPage />} />
+        <Route path="loans" element={<LoansListPage />} />
         <Route path="scan" element={<ScanPage />} />
         <Route path="settings" element={<SettingsPage />} />
         <Route path="settings/profile" element={<ProfilePage />} />
