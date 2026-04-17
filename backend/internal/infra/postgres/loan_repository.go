@@ -206,7 +206,8 @@ func (r *LoanRepository) FindActiveLoanForInventory(ctx context.Context, invento
 	row, err := r.queries.GetActiveLoanForInventory(ctx, inventoryID)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return nil, shared.ErrNotFound
+			// No active loan found — this is the normal state for a loanable item.
+			return nil, nil
 		}
 		return nil, err
 	}
