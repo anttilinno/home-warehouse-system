@@ -1,5 +1,17 @@
 import { get, post, patch } from "@/lib/api";
 
+// Embedded decoration objects populated by the backend (Plan 62-01, D-03/D-04)
+export interface LoanEmbeddedItem {
+  id: string;
+  name: string;
+  primary_photo_thumbnail_url?: string | null;
+}
+
+export interface LoanEmbeddedBorrower {
+  id: string;
+  name: string;
+}
+
 export interface Loan {
   id: string;
   workspace_id: string;
@@ -14,6 +26,8 @@ export interface Loan {
   is_overdue: boolean;
   created_at: string;
   updated_at: string;
+  item: LoanEmbeddedItem;
+  borrower: LoanEmbeddedBorrower;
 }
 
 export interface LoanListResponse {
@@ -37,8 +51,17 @@ export interface CreateLoanInput {
   notes?: string;
 }
 
+/**
+ * @deprecated Phase 62 D-01: use `loansApi.update` instead. `extend` remains available
+ * for backward compatibility with any non-panel caller; do NOT wire new UI code to it.
+ */
 export interface ExtendLoanInput {
   new_due_date: string;
+}
+
+export interface UpdateLoanInput {
+  due_date?: string;
+  notes?: string;
 }
 
 function toQuery(params: Record<string, unknown>): string {
@@ -58,8 +81,15 @@ export const loansApi = {
   listOverdue: (wsId: string) => get<LoanListResponse>(`${base(wsId)}/overdue`),
   listForBorrower: (wsId: string, borrowerId: string) =>
     get<LoanListResponse>(`/workspaces/${wsId}/borrowers/${borrowerId}/loans`),
+  /** D-05: lists loans for a given inventory item (active + historical in one response). */
+  listForItem: (wsId: string, inventoryId: string) =>
+    get<LoanListResponse>(`/workspaces/${wsId}/inventory/${inventoryId}/loans`),
   get: (wsId: string, id: string) => get<Loan>(`${base(wsId)}/${id}`),
   create: (wsId: string, body: CreateLoanInput) => post<Loan>(base(wsId), body),
+  /** D-02: unified PATCH replacing the old extend/update-notes split for edit flows. */
+  update: (wsId: string, id: string, body: UpdateLoanInput) =>
+    patch<Loan>(`${base(wsId)}/${id}`, body),
+  /** @deprecated Phase 62 D-01: use `update` instead. */
   extend: (wsId: string, id: string, body: ExtendLoanInput) =>
     patch<Loan>(`${base(wsId)}/${id}/extend`, body),
   return: (wsId: string, id: string) => post<void>(`${base(wsId)}/${id}/return`),
@@ -71,4 +101,8 @@ export const loanKeys = {
   list: (params: LoanListParams) => [...loanKeys.lists(), params] as const,
   details: () => [...loanKeys.all, "detail"] as const,
   detail: (id: string) => [...loanKeys.details(), id] as const,
+  /** D-06: key for the per-item loans fetch. */
+  forItem: (inventoryId: string) => [...loanKeys.all, "forItem", inventoryId] as const,
+  /** D-06: key for the per-borrower loans fetch (kept symmetrical even though it was implied by `listForBorrower`). */
+  forBorrower: (borrowerId: string) => [...loanKeys.all, "forBorrower", borrowerId] as const,
 };
