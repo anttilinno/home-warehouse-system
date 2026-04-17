@@ -7,6 +7,7 @@ import {
   type ReactNode,
 } from "react";
 import { get, post, setRefreshToken, HttpError } from "@/lib/api";
+import { loadCatalog, defaultLocale } from "@/lib/i18n";
 import type {
   User,
   AuthTokenResponse,
@@ -41,6 +42,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const loadUser = useCallback(async () => {
     try {
       const me = await get<User>("/users/me");
+      await loadCatalog(me.language ?? defaultLocale);
       setUser(me);
       // Resolve workspace (per D-01)
       const wsRes = await get<WorkspaceListResponse>("/workspaces");
