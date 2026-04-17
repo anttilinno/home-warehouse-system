@@ -189,7 +189,7 @@ See `.planning/milestones/v1.9-ROADMAP.md` for full details.
 - [x] **Phase 60: Items CRUD** - Paginated list with search/filter/sort, detail view, create/edit/delete, archive/unarchive toggle (completed 2026-04-16)
 - [x] **Phase 61: Item Photos** - Multipart photo upload, gallery viewer, photo delete, primary thumbnail on list + detail (completed 2026-04-16)
 - [ ] **Phase 62: Loans** - Tabbed Active/Overdue/History list, create loan, mark returned, edit, per-item and per-borrower history
-- [ ] **Phase 63: Navigation & Polish** - Sidebar links for Items/Loans/Borrowers/Taxonomy, dashboard quick-access wiring, i18n sweep, empty states
+- [x] **Phase 63: Navigation & Polish** - Sidebar links for Items/Loans/Borrowers/Taxonomy, dashboard quick-access wiring, i18n sweep, empty states (completed 2026-04-17)
 
 ## Phase Details
 
@@ -417,11 +417,11 @@ Plans:
   3. User can mark any active loan as returned, and the loan moves to History immediately
   4. User can edit a non-returned loan's due date and notes without creating a new loan
   5. Item detail and borrower detail pages each show the entity's current active loan (if any) and historical loans
-**Plans:** 2/4 plans executed
+**Plans:** 3/4 plans executed
 Plans:
 - [x] 62-01-PLAN.md — Backend PATCH /loans/{id} + LoanResponse embed (item + borrower) decoration on all loan endpoints
 - [x] 62-02-PLAN.md — Frontend loansApi.update/listForItem + query + mutation hooks with UI-SPEC invalidation sets
-- [ ] 62-03-PLAN.md — /loans tabbed list page, LoanForm, LoanPanel slide-over, LoanReturnFlow confirm dialog
+- [x] 62-03-PLAN.md — /loans tabbed list page, LoanForm, LoanPanel slide-over, LoanReturnFlow confirm dialog
 - [ ] 62-04-PLAN.md — Item/borrower detail-page loan panels + router swap to LoansListPage + Lingui extract + human-verify checkpoint
 **UI hint**: yes
 
@@ -434,7 +434,9 @@ Plans:
   2. Dashboard quick-access action cards route to the Items list and Loans list (completing the v2.0 placeholders)
   3. Every v2.1 list page (items, loans, borrowers, categories, locations, containers) renders a RetroEmptyState with a primary action when empty
   4. All user-visible strings introduced in phases 56–62 are present in English and Estonian Lingui catalogs with no orphan keys
-**Plans**: TBD
+**Plans:** 1/1 plans complete
+Plans:
+- [x] 63-01-PLAN.md — Sidebar BORROWERS/TAXONOMY links + mt-auto spacer, dashboard card verification, LocationsTab empty-state rewrite, full ET catalog gap-fill + compile, human-verify checkpoint
 **UI hint**: yes
 
 ## Progress
@@ -462,11 +464,11 @@ Phases execute in numeric order: 56 -> 57 -> (58 || 59) -> 60 -> 61 -> 62 -> 63
 | 59. Borrowers CRUD | v2.1 | 4/4 | Complete   | 2026-04-16 |
 | 60. Items CRUD | v2.1 | 4/4 | Complete   | 2026-04-16 |
 | 61. Item Photos | v2.1 | 5/5 | Complete    | 2026-04-16 |
-| 62. Loans | v2.1 | 2/4 | In Progress|  |
-| 63. Navigation & Polish | v2.1 | 0/TBD | Not started | - |
+| 62. Loans | v2.1 | 3/4 | In Progress|  |
+| 63. Navigation & Polish | v2.1 | 1/1 | Complete    | 2026-04-17 |
 
 **Total:** 55 phases complete (148 plans executed) across 11 milestones + 8 phases planned for v2.1
 
 ---
 *Roadmap created: 2026-01-24*
-*Last updated: 2026-04-14 after v2.1 roadmap planning (Phases 56-63)*
+*Last updated: 2026-04-17 after Phase 63 planning (1 plan)*
