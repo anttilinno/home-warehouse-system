@@ -50,6 +50,25 @@ export function Sidebar({ className, onNavClick }: SidebarProps) {
         {t`LOANS`}
       </NavLink>
       <NavLink
+        to="/borrowers"
+        className={({ isActive }) =>
+          `${navItemBase} ${isActive ? navItemActive : navItemDefault}`
+        }
+        onClick={onNavClick}
+      >
+        {t`BORROWERS`}
+      </NavLink>
+      <NavLink
+        to="/taxonomy"
+        className={({ isActive }) =>
+          `${navItemBase} ${isActive ? navItemActive : navItemDefault}`
+        }
+        onClick={onNavClick}
+      >
+        {t`TAXONOMY`}
+      </NavLink>
+      <div className="mt-auto" />
+      <NavLink
         to="/settings"
         className={({ isActive }) =>
           `${navItemBase} ${isActive ? navItemActive : navItemDefault}`
