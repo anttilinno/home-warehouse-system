@@ -27,6 +27,10 @@ func NewLoanRepository(pool *pgxpool.Pool) *LoanRepository {
 	}
 }
 
+// Save handles three mutation cases for existing loans: Create (new record),
+// Return (returnedAt flip), and ExtendDueDate (dueDate change). Notes-only or
+// combined edits on existing loans MUST use repo.Update — they will fall
+// through to "No changes needed" here and be silently discarded.
 func (r *LoanRepository) Save(ctx context.Context, l *loan.Loan) error {
 	// Check if loan already exists
 	existing, err := r.queries.GetLoan(ctx, queries.GetLoanParams{
