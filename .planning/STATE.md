@@ -3,9 +3,9 @@ gsd_state_version: 1.0
 milestone: v2.2
 milestone_name: Scanning & Stabilization
 status: in_progress
-stopped_at: Phase 64 plan 64-08 complete (Wave 2 ScanHistoryList + scan-feature test fixtures — SCAN-06 + SCAN-07 landed, 9 new tests, 594/594 green)
-last_updated: "2026-04-18T21:12:00Z"
-last_activity: 2026-04-18 — Phase 64 plan 64-08 executed (3 commits, ScanHistoryList + fixtures module + 9 new tests, 594/594 green, tsc+lint clean)
+stopped_at: Phase 64 plan 64-09 complete (Wave 3 ScanPage 3-tab orchestration + components/scan barrel + /scan React.lazy route split — 15 new tests, 609/609 green; scanner chunk isolated at ~59 kB gzip)
+last_updated: "2026-04-18T21:20:00Z"
+last_activity: 2026-04-18 — Phase 64 plan 64-09 executed (4 commits, ScanPage orchestration + barrel + routes lazy split, 15 new tests, 609/609 green, tsc+lint+build clean)
 progress:
   total_phases: 6
   completed_phases: 6
@@ -21,15 +21,15 @@ progress:
 See: `.planning/PROJECT.md` (updated 2026-04-18)
 
 **Core value:** Reliable inventory access anywhere -- online or offline -- with seamless sync
-**Current focus:** v2.2 Scanning & Stabilization — Phase 64 context gathered, ready to plan
+**Current focus:** v2.2 Scanning & Stabilization — Phase 64 nearing close (Wave 3 complete, Wave 4 next)
 
 ## Current Position
 
-Phase: 64 (10 plans in 5 waves — 8/10 plans complete)
-Plan: 64-09 (next — Wave 3 ScanPage 3-tab orchestration + components/scan barrel + routes/index.tsx React.lazy)
-Status: In progress — Wave 0 complete; Wave 1 complete; Wave 2 complete (64-05 hooks, 64-06 viewfinder trio, 64-07 manual entry + result banner + 4-variant error panel, 64-08 ScanHistoryList + scan-feature test fixtures); Wave 3 next
-Last activity: 2026-04-18 — Plan 64-08 executed (ScanHistoryList + fixtures module + 9 unit tests, 3 commits, 594/594 green, tsc+lint clean)
-Next step: execute plan 64-09 (Wave 3 ScanPage 3-tab orchestration + components/scan barrel + routes/index.tsx React.lazy)
+Phase: 64 (10 plans in 5 waves — 9/10 plans complete)
+Plan: 64-10 (next — Wave 4 i18n extract + ET gap-fill + [BLOCKING] bundle gate verification)
+Status: In progress — Wave 0–2 complete; Wave 3 complete (64-09 ScanPage 3-tab orchestration + components/scan barrel + /scan React.lazy route split). All seven SCAN-0N requirements have a rendered user path.
+Last activity: 2026-04-18 — Plan 64-09 executed (ScanPage + barrel + routes lazy, 4 commits, 15 new tests, 609/609 green, scanner chunk isolated at ~59 kB gzip)
+Next step: execute plan 64-10 (Wave 4 i18n extract + ET gap-fill + [BLOCKING] bundle gate verification)
 
 ## Performance Metrics
 
@@ -113,9 +113,9 @@ Next step: execute plan 64-09 (Wave 3 ScanPage 3-tab orchestration + components/
 
 ## Session Continuity
 
-Last session: 2026-04-18T21:12:00Z
-Stopped at: Phase 64 plan 64-08 complete (Wave 2 ScanHistoryList + scan-feature test fixtures + 9 unit tests; 594/594 green)
-Next step: execute plan 64-09 (Wave 3 ScanPage 3-tab orchestration + components/scan barrel + routes/index.tsx React.lazy)
+Last session: 2026-04-18T21:20:00Z
+Stopped at: Phase 64 plan 64-09 complete (Wave 3 ScanPage 3-tab orchestration + components/scan barrel + /scan React.lazy route split + 15 new integration tests; 609/609 green; scanner chunk isolated at ~59 kB gzip)
+Next step: execute plan 64-10 (Wave 4 i18n extract + ET gap-fill + [BLOCKING] bundle gate verification)
 
 ---
-*Updated: 2026-04-18 — Phase 64 plan 64-08 executed (ScanHistoryList + scan-feature test fixtures + 9 unit tests; SCAN-06 + SCAN-07 landed)*
+*Updated: 2026-04-18 — Phase 64 plan 64-09 executed (ScanPage 3-tab orchestration + components/scan barrel + /scan React.lazy; all seven SCAN-0N requirements have a rendered user path; D-01 callsite lock covered by automated test)*

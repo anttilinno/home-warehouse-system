@@ -340,7 +340,7 @@ Plans:
 - [x] 64-06-PLAN.md — Wave 2 BarcodeScanner + ScanViewfinderOverlay + ScanTorchToggle (retro viewfinder trio)
 - [x] 64-07-PLAN.md — Wave 2 ManualBarcodeEntry + ScanResultBanner + ScanErrorPanel (4 variants)
 - [x] 64-08-PLAN.md — Wave 2 ScanHistoryList + scan-feature test fixtures (SCAN-07 confirm flow)
-- [ ] 64-09-PLAN.md — Wave 3 ScanPage 3-tab orchestration + components/scan barrel + routes/index.tsx React.lazy
+- [x] 64-09-PLAN.md — Wave 3 ScanPage 3-tab orchestration + components/scan barrel + routes/index.tsx React.lazy
 - [ ] 64-10-PLAN.md — Wave 4 i18n extract + ET gap-fill + [BLOCKING] bundle gate verification
 **UI hint**: yes
 
@@ -451,7 +451,7 @@ Plans:
 | 43-47 | v1.9 | 9 | Complete | 2026-03-14 |
 | 48-55 | v2.0 | 18 | Complete | 2026-04-14 |
 | 56-63 | v2.1 | 29 | Complete | 2026-04-17 |
-| 64 | v2.2 | 1/10 | In progress | - |
+| 64 | v2.2 | 9/10 | In progress | - |
 | 65 | v2.2 | 0/? | Not started | - |
 | 66 | v2.2 | 0/? | Not started | - |
 | 67 | v2.2 | 0/? | Not started | - |
@@ -465,4 +465,4 @@ Plans:
 
 ---
 *Roadmap created: 2026-01-24*
-*Last updated: 2026-04-18 — v2.2 Scanning & Stabilization phases appended (Phases 64-72)*
+*Last updated: 2026-04-18 — Phase 64 plan 64-09 executed (ScanPage 3-tab orchestration + components/scan barrel + /scan React.lazy route split; 609/609 green; scanner chunk isolated at ~59 kB gzip)*

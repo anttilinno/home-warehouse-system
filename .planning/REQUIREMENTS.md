@@ -12,11 +12,11 @@
 
 - [x] **SCAN-01**: User can open `/scan` and see a live rear-camera preview with scanner controls (single-page route, scanner stays mounted during overlays) — BarcodeScanner landed in 64-06 (retro ink-border wrapper + <Scanner> mount + paused-not-stopped); page wire-up completes in 64-09
 - [x] **SCAN-02**: Scanner decodes QR, UPC-A, EAN-13, and Code128 formats using `@yudiel/react-qr-scanner@2.5.1` — formats=["qr_code","upc_a","ean_13","code_128"] passed to <Scanner> in 64-06 BarcodeScanner
-- [ ] **SCAN-03**: On successful scan, user hears an audio beep (AudioContext oscillator), feels haptic feedback on Android via `navigator.vibrate`, and sees a visual flash/checkmark (iOS haptic via `ios-haptics` is deferred out of Phase 64 per Phase 64 CONTEXT.md D-17 — picked up in a later scanner-polish phase)
+- [x] **SCAN-03**: On successful scan, user hears an audio beep (AudioContext oscillator), feels haptic feedback on Android via `navigator.vibrate`, and sees a visual flash/checkmark (iOS haptic via `ios-haptics` is deferred out of Phase 64 per Phase 64 CONTEXT.md D-17 — picked up in a later scanner-polish phase) — hooks landed in 64-05; ScanPage wires useScanFeedback.trigger into handleDecode in 64-09
 - [x] **SCAN-04**: User can toggle the flashlight/torch on Android devices that expose `MediaStreamTrack.getCapabilities().torch` (button auto-hidden on iOS) — ScanTorchToggle (aria-pressed + primary/neutral variant swap) + BarcodeScanner torch-capability probe with iOS UA short-circuit landed in 64-06; actual applyConstraints wiring deferred to Plan 64-09 (manual UAT path per VALIDATION.md)
 - [x] **SCAN-05**: User can manually enter a barcode via a fallback input when camera scan fails or permission is denied — ManualBarcodeEntry landed in 64-07 (RetroInput + LOOK UP CODE button, plain useState trim + 1..256 validation, autoComplete/autoCapitalize/autoCorrect=off, spellCheck=false, maxLength=256); tab wire-up in 64-09
-- [ ] **SCAN-06**: User sees the last 10 scanned codes in a history list (localStorage key `hws-scan-history`), each with timestamp and quick-rescan action
-- [ ] **SCAN-07**: User can clear scan history with a confirm prompt
+- [x] **SCAN-06**: User sees the last 10 scanned codes in a history list (localStorage key `hws-scan-history`), each with timestamp and quick-rescan action — ScanHistoryList (64-08) wired to HISTORY tab in 64-09; row tap re-fires the post-scan flow on the current tab (D-15 + D-20)
+- [x] **SCAN-07**: User can clear scan history with a confirm prompt — CLEAR HISTORY + RetroConfirmDialog landed in 64-08; tab-wired in 64-09
 
 ### Lookup & Not-Found Flow (LOOK)
 
@@ -101,13 +101,13 @@ Every v2.2 REQ-ID maps to exactly one phase. Coverage: 32/32 (100%).
 
 | REQ-ID | Phase | Status |
 |--------|-------|--------|
-| SCAN-01 | Phase 64 | Component landed (64-06 BarcodeScanner); page wire-up in 64-09 |
+| SCAN-01 | Phase 64 | Complete (64-09 ScanPage SCAN tab mounts BarcodeScanner with paused-not-stopped) |
 | SCAN-02 | Phase 64 | Complete (64-06 — 4-format subset passed to <Scanner>) |
-| SCAN-03 | Phase 64 | Hooks landed (64-05); full wire-up in 64-07/09 |
-| SCAN-04 | Phase 64 | Toggle + probe landed (64-06); applyConstraints wiring deferred to 64-09 |
-| SCAN-05 | Phase 64 | Complete (64-07 — ManualBarcodeEntry retro form with trim + 1..256 validation); page tab wire-up in 64-09 |
-| SCAN-06 | Phase 64 | Hook (64-05) + ScanHistoryList view (64-08) landed; page wire-up in 64-09 |
-| SCAN-07 | Phase 64 | ScanHistoryList CLEAR HISTORY + RetroConfirmDialog landed in 64-08; page wire-up in 64-09 |
+| SCAN-03 | Phase 64 | Complete (64-09 handleDecode fires useScanFeedback.trigger) |
+| SCAN-04 | Phase 64 | Toggle + probe landed (64-06); applyConstraints hardware wiring still manual UAT |
+| SCAN-05 | Phase 64 | Complete (64-09 MANUAL tab wired; submit fires shared post-decode flow with format=MANUAL) |
+| SCAN-06 | Phase 64 | Complete (64-09 HISTORY tab wired; row tap re-fires post-scan flow on current tab per D-15 + D-20) |
+| SCAN-07 | Phase 64 | Complete (64-09 CLEAR HISTORY + RetroConfirmDialog tab-wired) |
 | LOOK-01 | Phase 65 | Pending |
 | LOOK-02 | Phase 65 | Pending |
 | LOOK-03 | Phase 65 | Pending |
