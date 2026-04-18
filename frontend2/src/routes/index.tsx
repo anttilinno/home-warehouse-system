@@ -1,3 +1,4 @@
+import { lazy, Suspense } from "react";
 import { Routes, Route, Link } from "react-router";
 import { useLingui } from "@lingui/react/macro";
 import { RequireAuth } from "@/features/auth/RequireAuth";
@@ -9,7 +10,13 @@ import { DashboardPage } from "@/features/dashboard/DashboardPage";
 import { ItemsListPage } from "@/features/items/ItemsListPage";
 import { ItemDetailPage } from "@/features/items/ItemDetailPage";
 import { LoansListPage } from "@/features/loans/LoansListPage";
-import { ScanPage } from "@/features/scan/ScanPage";
+// /scan is route-lazy-split so the scanner chunk (manualChunks-grouped in
+// vite.config.ts — @yudiel/react-qr-scanner + barcode-detector + zxing-wasm
+// + webrtc-adapter) is fetched on demand. Chunk-load failures propagate to
+// the existing route-level ErrorBoundaryPage (Phase 64 D-19 narrowed).
+const ScanPage = lazy(() =>
+  import("@/features/scan/ScanPage").then((m) => ({ default: m.ScanPage })),
+);
 import { SetupPage } from "@/features/setup/SetupPage";
 import TaxonomyPage from "@/features/taxonomy/TaxonomyPage";
 import { BorrowersListPage } from "@/features/borrowers/BorrowersListPage";
@@ -42,6 +49,25 @@ function NotFoundPage() {
         >
           {t`RETURN TO BASE`}
         </Link>
+      </RetroPanel>
+    </div>
+  );
+}
+
+// Suspense fallback for the lazy-loaded /scan route. Owns its own useLingui so
+// the surrounding AppRoutes function stays untouched by i18n. Heading is
+// UPPERCASE per UI-SPEC heading rule.
+function ScannerLoadingFallback() {
+  const { t } = useLingui();
+  return (
+    <div className="max-w-[480px] mx-auto p-lg">
+      <RetroPanel showHazardStripe>
+        <h2 className="text-[20px] font-bold uppercase text-retro-ink">
+          {t`LOADING SCANNER…`}
+        </h2>
+        <p className="font-mono text-retro-charcoal mt-sm">
+          {t`Please wait.`}
+        </p>
       </RetroPanel>
     </div>
   );
@@ -82,7 +108,14 @@ export function AppRoutes() {
         <Route path="items/:id" element={<ItemDetailPage />} />
         <Route path="taxonomy" element={<TaxonomyPage />} />
         <Route path="loans" element={<LoansListPage />} />
-        <Route path="scan" element={<ScanPage />} />
+        <Route
+          path="scan"
+          element={
+            <Suspense fallback={<ScannerLoadingFallback />}>
+              <ScanPage />
+            </Suspense>
+          }
+        />
         <Route path="settings" element={<SettingsPage />} />
         <Route path="settings/profile" element={<ProfilePage />} />
         <Route path="settings/security" element={<SecurityPage />} />
