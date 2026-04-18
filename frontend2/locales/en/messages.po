@@ -13,6 +13,14 @@ msgstr ""
 "Language-Team: \n"
 "Plural-Forms: \n"
 
+#: src/components/scan/ScanTorchToggle.tsx:33
+msgid "[◉] TORCH OFF"
+msgstr "[◉] TORCH OFF"
+
+#: src/components/scan/ScanTorchToggle.tsx:33
+msgid "[◉] TORCH ON"
+msgstr "[◉] TORCH ON"
+
 #. placeholder {0}: file.name
 #: src/features/items/photos/ItemPhotoGallery.tsx:94
 msgid "{0} is not a supported image format."
@@ -149,6 +157,10 @@ msgstr "Add photos to identify this item in the warehouse and at a glance."
 msgid "alice@example.com"
 msgstr "alice@example.com"
 
+#: src/features/scan/ScanHistoryList.tsx:90
+msgid "All 10 most-recent scanned codes on this device will be removed. This cannot be undone."
+msgstr "All 10 most-recent scanned codes on this device will be removed. This cannot be undone."
+
 #: src/features/items/filters/ItemsFilterBar.tsx:53
 msgid "All categories"
 msgstr "All categories"
@@ -164,6 +176,10 @@ msgstr "All locations"
 #: src/features/auth/RegisterForm.tsx:88
 msgid "An account with this email already exists. Try logging in instead."
 msgstr "An account with this email already exists. Try logging in instead."
+
+#: src/components/scan/ManualBarcodeEntry.tsx:73
+msgid "Any code supported — QR text, UPC, EAN, Code128 alphanumeric."
+msgstr "Any code supported — QR text, UPC, EAN, Code128 alphanumeric."
 
 #: src/pages/ApiDemoPage.tsx:25
 msgid "API Demo"
@@ -278,6 +294,14 @@ msgstr "BACK TO ITEMS"
 msgid "BARCODE"
 msgstr "BARCODE"
 
+#: src/components/scan/ManualBarcodeEntry.tsx:54
+msgid "BARCODE OR CODE"
+msgstr "BARCODE OR CODE"
+
+#: src/components/scan/ScanErrorPanel.tsx:70
+msgid "Barcode scanning needs camera permission. You can enable it in your browser settings, or enter codes manually."
+msgstr "Barcode scanning needs camera permission. You can enable it in your browser settings, or enter codes manually."
+
 #: src/features/loans/forms/LoanForm.tsx:301
 #: src/features/loans/forms/LoanForm.tsx:355
 #: src/features/loans/table/LoansTable.tsx:42
@@ -313,6 +337,10 @@ msgstr "Borrower saved."
 #: src/features/borrowers/BorrowersListPage.tsx:158
 msgid "BORROWERS"
 msgstr "BORROWERS"
+
+#: src/components/scan/ScanErrorPanel.tsx:69
+msgid "CAMERA ACCESS DENIED"
+msgstr "CAMERA ACCESS DENIED"
 
 #: src/features/borrowers/hooks/useBorrowerMutations.ts:98
 msgid "Cannot delete: this borrower has active loans."
@@ -390,6 +418,14 @@ msgstr "CHOOSE FILES"
 msgid "CLEAR FILTERS"
 msgstr "CLEAR FILTERS"
 
+#: src/features/scan/ScanHistoryList.tsx:57
+msgid "CLEAR HISTORY"
+msgstr "CLEAR HISTORY"
+
+#: src/features/scan/ScanHistoryList.tsx:89
+msgid "CLEAR SCAN HISTORY"
+msgstr "CLEAR SCAN HISTORY"
+
 #: src/features/items/photos/ItemPhotoLightbox.tsx:152
 msgid "Close lightbox"
 msgstr "Close lightbox"
@@ -401,6 +437,14 @@ msgstr "Close navigation"
 #: src/features/taxonomy/panel/SlideOverPanel.tsx:113
 msgid "Close panel"
 msgstr "Close panel"
+
+#: src/components/scan/ScanResultBanner.tsx:42
+msgid "CODE"
+msgstr "CODE"
+
+#: src/components/scan/ManualBarcodeEntry.tsx:40
+msgid "Code must be 256 characters or fewer."
+msgstr "Code must be 256 characters or fewer."
 
 #. placeholder {0}: item.name
 #: src/features/taxonomy/tree/TreeNode.tsx:69
@@ -863,6 +907,14 @@ msgstr "Email already in use"
 msgid "ENGLISH"
 msgstr "ENGLISH"
 
+#: src/components/scan/ManualBarcodeEntry.tsx:36
+msgid "Enter a code before submitting."
+msgstr "Enter a code before submitting."
+
+#: src/components/scan/ManualBarcodeEntry.tsx:64
+msgid "Enter code manually"
+msgstr "Enter code manually"
+
 #. placeholder {0}: item.name
 #: src/features/taxonomy/tree/TreeNode.tsx:69
 msgid "Expand {0}"
@@ -943,6 +995,10 @@ msgstr "Failed to upload avatar"
 msgid "Filter by location…"
 msgstr "Filter by location…"
 
+#: src/components/scan/ScanResultBanner.tsx:50
+msgid "FORMAT"
+msgstr "FORMAT"
+
 #: src/features/auth/RegisterForm.tsx:110
 msgid "Full name"
 msgstr "Full name"
@@ -968,6 +1024,7 @@ msgid "HIDES FROM PICKERS"
 msgstr "HIDES FROM PICKERS"
 
 #: src/features/loans/LoansListPage.tsx:111
+#: src/features/scan/ScanPage.tsx:171
 msgid "HISTORY"
 msgstr "HISTORY"
 
@@ -1069,6 +1126,10 @@ msgstr "JPEG, PNG, or WebP up to 10 MB each."
 msgid "KEEP ACCOUNT"
 msgstr "KEEP ACCOUNT"
 
+#: src/features/scan/ScanHistoryList.tsx:92
+msgid "KEEP HISTORY"
+msgstr "KEEP HISTORY"
+
 #: src/features/items/actions/ItemArchiveDeleteFlow.tsx:97
 #: src/pages/DemoPage.tsx:239
 msgid "KEEP ITEM"
@@ -1107,6 +1168,10 @@ msgstr "Loading data from API…"
 #: src/components/layout/LoadingBar.tsx:13
 msgid "Loading page"
 msgstr "Loading page"
+
+#: src/routes/index.tsx:66
+msgid "LOADING SCANNER…"
+msgstr "LOADING SCANNER…"
 
 #: src/features/settings/SecurityPage.tsx:231
 msgid "Loading..."
@@ -1223,6 +1288,14 @@ msgstr "LOGIN"
 msgid "LOGOUT"
 msgstr "LOGOUT"
 
+#: src/components/scan/ManualBarcodeEntry.tsx:76
+msgid "LOOK UP CODE"
+msgstr "LOOK UP CODE"
+
+#: src/features/scan/ScanPage.tsx:170
+msgid "MANUAL"
+msgstr "MANUAL"
+
 #: src/features/loans/actions/LoanReturnFlow.tsx:82
 #~ msgid "Mark '{itemName}' returned by '{borrowerName}'? The loan will move to history."
 #~ msgstr "Mark '{itemName}' returned by '{borrowerName}'? The loan will move to history."
@@ -1333,6 +1406,10 @@ msgstr "No available units for this item."
 msgid "NO BORROWERS YET"
 msgstr "NO BORROWERS YET"
 
+#: src/components/scan/ScanErrorPanel.tsx:78
+msgid "NO CAMERA FOUND"
+msgstr "NO CAMERA FOUND"
+
 #: src/features/taxonomy/tabs/CategoriesTab.tsx:135
 msgid "NO CATEGORIES YET"
 msgstr "NO CATEGORIES YET"
@@ -1391,6 +1468,10 @@ msgstr "NO PHOTOS YET"
 msgid "NO RECORDS YET"
 msgstr "NO RECORDS YET"
 
+#: src/features/scan/ScanHistoryList.tsx:41
+msgid "NO SCANS YET"
+msgstr "NO SCANS YET"
+
 #: src/features/setup/SetupPage.tsx:13
 msgid "No workspace found. Please create a workspace to get started."
 msgstr "No workspace found. Please create a workspace to get started."
@@ -1443,6 +1524,14 @@ msgstr "OFF"
 msgid "ON"
 msgstr "ON"
 
+#: src/components/scan/ScanErrorPanel.tsx:73
+msgid "On Android Chrome: tap the lock icon in the address bar → Permissions → Camera → Allow."
+msgstr "On Android Chrome: tap the lock icon in the address bar → Permissions → Camera → Allow."
+
+#: src/components/scan/ScanErrorPanel.tsx:72
+msgid "On iPhone / iPad: Settings → Safari → Camera → Allow."
+msgstr "On iPhone / iPad: Settings → Safari → Camera → Allow."
+
 #: src/components/layout/TopBar.tsx:22
 msgid "Open navigation"
 msgstr "Open navigation"
@@ -1451,6 +1540,10 @@ msgstr "Open navigation"
 #: src/features/items/photos/ItemPhotoTile.tsx:34
 msgid "Open photo {0}"
 msgstr "Open photo {0}"
+
+#: src/components/scan/ScanErrorPanel.tsx:74
+msgid "Open your browser's site settings and allow Camera for this page."
+msgstr "Open your browser's site settings and allow Camera for this page."
 
 #: src/features/items/forms/ItemForm.tsx:130
 #: src/features/items/forms/ItemForm.tsx:155
@@ -1490,8 +1583,8 @@ msgid "Page {page} of {totalPages}"
 msgstr "Page {page} of {totalPages}"
 
 #: src/features/scan/ScanPage.tsx:10
-msgid "PAGE UNDER CONSTRUCTION"
-msgstr "PAGE UNDER CONSTRUCTION"
+#~ msgid "PAGE UNDER CONSTRUCTION"
+#~ msgstr "PAGE UNDER CONSTRUCTION"
 
 #: src/features/taxonomy/forms/CategoryForm.tsx:79
 msgid "PARENT CATEGORY"
@@ -1591,6 +1684,10 @@ msgstr "Pick an item…"
 msgid "Pickup preferences, shared items, etc."
 msgstr "Pickup preferences, shared items, etc."
 
+#: src/routes/index.tsx:69
+msgid "Please wait."
+msgstr "Please wait."
+
 #: src/features/settings/SettingsPage.tsx:33
 msgid "PREFERENCES"
 msgstr "PREFERENCES"
@@ -1643,6 +1740,10 @@ msgstr "REGIONAL FORMATS"
 msgid "REGISTER"
 msgstr "REGISTER"
 
+#: src/components/scan/ScanErrorPanel.tsx:118
+msgid "RELOAD PAGE"
+msgstr "RELOAD PAGE"
+
 #: src/features/settings/ProfilePage.tsx:140
 msgid "REMOVE"
 msgstr "REMOVE"
@@ -1688,6 +1789,7 @@ msgstr "RETRO FORM PRIMITIVES"
 msgid "Retry"
 msgstr "Retry"
 
+#: src/components/scan/ScanErrorPanel.tsx:110
 #: src/features/items/ItemsListPage.tsx:249
 #: src/features/loans/LoansListPage.tsx:140
 #: src/features/loans/panels/BorrowerActiveLoansPanel.tsx:56
@@ -1706,7 +1808,7 @@ msgid "RETURN LOAN"
 msgstr "RETURN LOAN"
 
 #: src/components/layout/ErrorBoundaryPage.tsx:40
-#: src/routes/index.tsx:43
+#: src/routes/index.tsx:50
 msgid "RETURN TO BASE"
 msgstr "RETURN TO BASE"
 
@@ -1761,13 +1863,38 @@ msgstr "SAVE LOAN"
 msgid "SAVE LOCATION"
 msgstr "SAVE LOCATION"
 
-#: src/features/scan/ScanPage.tsx:8
+#: src/features/scan/ScanPage.tsx:164
+#: src/features/scan/ScanPage.tsx:169
 msgid "SCAN"
 msgstr "SCAN"
+
+#: src/components/scan/ScanResultBanner.tsx:65
+msgid "SCAN AGAIN"
+msgstr "SCAN AGAIN"
 
 #: src/features/dashboard/QuickActionCards.tsx:17
 msgid "SCAN BARCODE"
 msgstr "SCAN BARCODE"
+
+#: src/features/scan/ScanHistoryList.tsx:51
+msgid "SCAN HISTORY"
+msgstr "SCAN HISTORY"
+
+#: src/components/scan/ScanResultBanner.tsx:37
+msgid "SCANNED"
+msgstr "SCANNED"
+
+#: src/features/scan/ScanHistoryList.tsx:42
+msgid "Scanned codes appear here. Your last 10 scans are kept on this device."
+msgstr "Scanned codes appear here. Your last 10 scans are kept on this device."
+
+#: src/components/scan/ScanErrorPanel.tsx:82
+msgid "SCANNER FAILED TO LOAD"
+msgstr "SCANNER FAILED TO LOAD"
+
+#: src/components/scan/ScanErrorPanel.tsx:86
+msgid "SCANNING UNSUPPORTED"
+msgstr "SCANNING UNSUPPORTED"
 
 #: src/features/items/forms/ItemForm.tsx:159
 #: src/features/taxonomy/forms/CategoryForm.tsx:83
@@ -1787,7 +1914,7 @@ msgstr "Search locations…"
 msgid "Search name, SKU, or barcode…"
 msgstr "Search name, SKU, or barcode…"
 
-#: src/routes/index.tsx:34
+#: src/routes/index.tsx:41
 msgid "SECTOR NOT FOUND"
 msgstr "SECTOR NOT FOUND"
 
@@ -1932,6 +2059,10 @@ msgstr "TAXONOMY"
 msgid "That SKU is already in use. Please regenerate or choose another."
 msgstr "That SKU is already in use. Please regenerate or choose another."
 
+#: src/components/scan/ScanErrorPanel.tsx:83
+msgid "The barcode engine could not initialize. Check your connection and retry, or enter codes manually."
+msgstr "The barcode engine could not initialize. Check your connection and retry, or enter codes manually."
+
 #: src/pages/ApiDemoPage.tsx:65
 msgid "The endpoint responded successfully but returned zero records. Create a record in the backend, then retry."
 msgstr "The endpoint responded successfully but returned zero records. Create a record in the backend, then retry."
@@ -1940,7 +2071,7 @@ msgstr "The endpoint responded successfully but returned zero records. Create a 
 msgid "The item will move to loan history."
 msgstr "The item will move to loan history."
 
-#: src/routes/index.tsx:37
+#: src/routes/index.tsx:44
 msgid "The requested area does not exist. Return to base."
 msgstr "The requested area does not exist. Return to base."
 
@@ -1964,9 +2095,17 @@ msgstr "This borrower isn't holding anything right now."
 msgid "This borrower may have been deleted."
 msgstr "This borrower may have been deleted."
 
+#: src/components/scan/ScanErrorPanel.tsx:87
+msgid "This browser does not support camera scanning. Try the latest Safari, Chrome, Firefox, or Edge — or enter codes manually."
+msgstr "This browser does not support camera scanning. Try the latest Safari, Chrome, Firefox, or Edge — or enter codes manually."
+
 #: src/features/loans/forms/LoanForm.tsx:316
 msgid "This cannot be changed after creation. Return this loan and create a new one to change the item, borrower, or quantity."
 msgstr "This cannot be changed after creation. Return this loan and create a new one to change the item, borrower, or quantity."
+
+#: src/components/scan/ScanErrorPanel.tsx:79
+msgid "This device does not report a working camera. If one is attached, make sure no other app is using it, then reload."
+msgstr "This device does not report a working camera. If one is attached, make sure no other app is using it, then reload."
 
 #: src/features/loans/hooks/useLoanMutations.ts:60
 msgid "This item is already on loan."
@@ -1993,13 +2132,13 @@ msgstr "This loan has already been returned."
 msgid "This permanently deletes {nodeName}. This action cannot be undone."
 msgstr "This permanently deletes {nodeName}. This action cannot be undone."
 
-#: src/features/taxonomy/actions/ArchiveDeleteFlow.tsx:93
-msgid "This will hide {nodeName} from item pickers. You can restore it later."
-msgstr "This will hide {nodeName} from item pickers. You can restore it later."
-
 #: src/features/borrowers/actions/BorrowerArchiveDeleteFlow.tsx:78
 #~ msgid "This will hide '{nodeName}' from loan pickers. You can restore them later."
 #~ msgstr "This will hide '{nodeName}' from loan pickers. You can restore them later."
+
+#: src/features/taxonomy/actions/ArchiveDeleteFlow.tsx:93
+msgid "This will hide {nodeName} from item pickers. You can restore it later."
+msgstr "This will hide {nodeName} from item pickers. You can restore it later."
 
 #: src/features/borrowers/actions/BorrowerArchiveDeleteFlow.tsx:78
 msgid "This will hide {nodeName} from loan pickers. You can restore them later."
@@ -2061,6 +2200,10 @@ msgstr "UPLOAD"
 msgid "Upload a workspace JSON file to import data."
 msgstr "Upload a workspace JSON file to import data."
 
+#: src/components/scan/ScanErrorPanel.tsx:114
+msgid "USE MANUAL ENTRY"
+msgstr "USE MANUAL ENTRY"
+
 #: src/features/dashboard/QuickActionCards.tsx:18
 msgid "VIEW LOANS"
 msgstr "VIEW LOANS"
@@ -2096,6 +2239,10 @@ msgstr "WORKSPACE"
 #: src/features/setup/SetupPage.tsx:10
 msgid "WORKSPACE SETUP"
 msgstr "WORKSPACE SETUP"
+
+#: src/features/scan/ScanHistoryList.tsx:91
+msgid "YES, CLEAR"
+msgstr "YES, CLEAR"
 
 #: src/features/taxonomy/panel/SlideOverPanel.tsx:129
 msgid "Your edits will be lost."

@@ -13,6 +13,14 @@ msgstr ""
 "Language-Team: \n"
 "Plural-Forms: \n"
 
+#: src/components/scan/ScanTorchToggle.tsx:33
+msgid "[◉] TORCH OFF"
+msgstr "[◉] TULI VÄLJAS"
+
+#: src/components/scan/ScanTorchToggle.tsx:33
+msgid "[◉] TORCH ON"
+msgstr "[◉] TULI SEES"
+
 #. placeholder {0}: file.name
 #: src/features/items/photos/ItemPhotoGallery.tsx:94
 msgid "{0} is not a supported image format."
@@ -149,6 +157,10 @@ msgstr "Lisa fotosid, et toodet laos kergemini ära tunda."
 msgid "alice@example.com"
 msgstr "alice@example.com"
 
+#: src/features/scan/ScanHistoryList.tsx:90
+msgid "All 10 most-recent scanned codes on this device will be removed. This cannot be undone."
+msgstr "Selles seadmes eemaldatakse kõik 10 kõige hiljutisemat skaneeritud koodi. Seda ei saa tagasi võtta."
+
 #: src/features/items/filters/ItemsFilterBar.tsx:53
 msgid "All categories"
 msgstr "Kõik kategooriad"
@@ -164,6 +176,10 @@ msgstr "Kõik asukohad"
 #: src/features/auth/RegisterForm.tsx:88
 msgid "An account with this email already exists. Try logging in instead."
 msgstr "Selle e-postiga konto on juba olemas. Proovi hoopis sisse logida."
+
+#: src/components/scan/ManualBarcodeEntry.tsx:73
+msgid "Any code supported — QR text, UPC, EAN, Code128 alphanumeric."
+msgstr "Toetatud on iga kood — QR-tekst, UPC, EAN, Code128 tähed-numbrid."
 
 #: src/pages/ApiDemoPage.tsx:25
 msgid "API Demo"
@@ -278,6 +294,14 @@ msgstr "TAGASI KAUPADE JUURDE"
 msgid "BARCODE"
 msgstr "VÖÖTKOOD"
 
+#: src/components/scan/ManualBarcodeEntry.tsx:54
+msgid "BARCODE OR CODE"
+msgstr "VÖÖTKOOD VÕI KOOD"
+
+#: src/components/scan/ScanErrorPanel.tsx:70
+msgid "Barcode scanning needs camera permission. You can enable it in your browser settings, or enter codes manually."
+msgstr "Vöötkoodi skaneerimiseks on vaja kaamera luba. Luba saab seadistada brauseris või sisesta koodid käsitsi."
+
 #: src/features/loans/forms/LoanForm.tsx:301
 #: src/features/loans/forms/LoanForm.tsx:355
 #: src/features/loans/table/LoansTable.tsx:42
@@ -313,6 +337,10 @@ msgstr "Laenaja salvestatud."
 #: src/features/borrowers/BorrowersListPage.tsx:158
 msgid "BORROWERS"
 msgstr "LAENAJAD"
+
+#: src/components/scan/ScanErrorPanel.tsx:69
+msgid "CAMERA ACCESS DENIED"
+msgstr "KAAMERALE LIGIPÄÄS KEELATUD"
 
 #: src/features/borrowers/hooks/useBorrowerMutations.ts:98
 msgid "Cannot delete: this borrower has active loans."
@@ -390,6 +418,14 @@ msgstr "VALI FAILID"
 msgid "CLEAR FILTERS"
 msgstr "TÜHJENDA FILTRID"
 
+#: src/features/scan/ScanHistoryList.tsx:57
+msgid "CLEAR HISTORY"
+msgstr "TÜHJENDA AJALUGU"
+
+#: src/features/scan/ScanHistoryList.tsx:89
+msgid "CLEAR SCAN HISTORY"
+msgstr "TÜHJENDA SKANEERIMISE AJALUGU"
+
 #: src/features/items/photos/ItemPhotoLightbox.tsx:152
 msgid "Close lightbox"
 msgstr "Sulge fotovaade"
@@ -401,6 +437,14 @@ msgstr "Sulge navigatsioon"
 #: src/features/taxonomy/panel/SlideOverPanel.tsx:113
 msgid "Close panel"
 msgstr "Sulge paneel"
+
+#: src/components/scan/ScanResultBanner.tsx:42
+msgid "CODE"
+msgstr "KOOD"
+
+#: src/components/scan/ManualBarcodeEntry.tsx:40
+msgid "Code must be 256 characters or fewer."
+msgstr "Kood võib olla maksimaalselt 256 tähemärki."
 
 #. placeholder {0}: item.name
 #: src/features/taxonomy/tree/TreeNode.tsx:69
@@ -863,6 +907,14 @@ msgstr "E-post on juba kasutusel"
 msgid "ENGLISH"
 msgstr "INGLISE"
 
+#: src/components/scan/ManualBarcodeEntry.tsx:36
+msgid "Enter a code before submitting."
+msgstr "Enne saatmist sisesta kood."
+
+#: src/components/scan/ManualBarcodeEntry.tsx:64
+msgid "Enter code manually"
+msgstr "Sisesta kood käsitsi"
+
 #. placeholder {0}: item.name
 #: src/features/taxonomy/tree/TreeNode.tsx:69
 msgid "Expand {0}"
@@ -943,6 +995,10 @@ msgstr "Avatari üleslaadimine ebaõnnestus"
 msgid "Filter by location…"
 msgstr "Filtreeri asukoha järgi…"
 
+#: src/components/scan/ScanResultBanner.tsx:50
+msgid "FORMAT"
+msgstr "FORMAAT"
+
 #: src/features/auth/RegisterForm.tsx:110
 msgid "Full name"
 msgstr "Taisnimi"
@@ -968,6 +1024,7 @@ msgid "HIDES FROM PICKERS"
 msgstr "PEIDAB VALIKUTEST"
 
 #: src/features/loans/LoansListPage.tsx:111
+#: src/features/scan/ScanPage.tsx:171
 msgid "HISTORY"
 msgstr "AJALUGU"
 
@@ -1069,6 +1126,10 @@ msgstr "JPEG, PNG või WebP, kuni 10 MB iga fail."
 msgid "KEEP ACCOUNT"
 msgstr "JÄTA KONTO ALLES"
 
+#: src/features/scan/ScanHistoryList.tsx:92
+msgid "KEEP HISTORY"
+msgstr "HOIA ALLES"
+
 #: src/features/items/actions/ItemArchiveDeleteFlow.tsx:97
 #: src/pages/DemoPage.tsx:239
 msgid "KEEP ITEM"
@@ -1107,6 +1168,10 @@ msgstr "Laadin andmeid API-st…"
 #: src/components/layout/LoadingBar.tsx:13
 msgid "Loading page"
 msgstr "Lehe laadimine"
+
+#: src/routes/index.tsx:66
+msgid "LOADING SCANNER…"
+msgstr "SKÄNNERIT LAADITAKSE…"
 
 #: src/features/settings/SecurityPage.tsx:231
 msgid "Loading..."
@@ -1223,6 +1288,14 @@ msgstr "LOGI SISSE"
 msgid "LOGOUT"
 msgstr "LOGI VALJA"
 
+#: src/components/scan/ManualBarcodeEntry.tsx:76
+msgid "LOOK UP CODE"
+msgstr "OTSI KOOD"
+
+#: src/features/scan/ScanPage.tsx:170
+msgid "MANUAL"
+msgstr "KÄSITSI"
+
 #: src/features/loans/actions/LoanReturnFlow.tsx:82
 #~ msgid "Mark '{itemName}' returned by '{borrowerName}'? The loan will move to history."
 #~ msgstr "Märgi {itemName} laenaja {borrowerName} poolt tagastatuks? Laenutus liigub ajalukku."
@@ -1333,6 +1406,10 @@ msgstr "Sellele esemele pole saadaolevaid ühikuid."
 msgid "NO BORROWERS YET"
 msgstr "LAENAJAID POLE VEEL"
 
+#: src/components/scan/ScanErrorPanel.tsx:78
+msgid "NO CAMERA FOUND"
+msgstr "KAAMERAT EI LEITUD"
+
 #: src/features/taxonomy/tabs/CategoriesTab.tsx:135
 msgid "NO CATEGORIES YET"
 msgstr "KATEGOORIAID POLE VEEL"
@@ -1391,6 +1468,10 @@ msgstr "FOTOSID VEEL POLE"
 msgid "NO RECORDS YET"
 msgstr "KIRJEID POLE VEEL"
 
+#: src/features/scan/ScanHistoryList.tsx:41
+msgid "NO SCANS YET"
+msgstr "SKANEERIMISI POLE VEEL"
+
 #: src/features/setup/SetupPage.tsx:13
 msgid "No workspace found. Please create a workspace to get started."
 msgstr "Toopinda ei leitud. Alustamiseks loo toopind."
@@ -1443,6 +1524,14 @@ msgstr "VÄLJAS"
 msgid "ON"
 msgstr "SEES"
 
+#: src/components/scan/ScanErrorPanel.tsx:73
+msgid "On Android Chrome: tap the lock icon in the address bar → Permissions → Camera → Allow."
+msgstr "Androidi Chrome'is: puuduta aadressiribal luku ikooni → Load → Kaamera → Luba."
+
+#: src/components/scan/ScanErrorPanel.tsx:72
+msgid "On iPhone / iPad: Settings → Safari → Camera → Allow."
+msgstr "iPhone'is / iPadis: Seaded → Safari → Kaamera → Luba."
+
 #: src/components/layout/TopBar.tsx:22
 msgid "Open navigation"
 msgstr "Ava navigatsioon"
@@ -1451,6 +1540,10 @@ msgstr "Ava navigatsioon"
 #: src/features/items/photos/ItemPhotoTile.tsx:34
 msgid "Open photo {0}"
 msgstr "Ava foto {0}"
+
+#: src/components/scan/ScanErrorPanel.tsx:74
+msgid "Open your browser's site settings and allow Camera for this page."
+msgstr "Ava brauseri saidisätted ja luba sellele lehele kaamera kasutamine."
 
 #: src/features/items/forms/ItemForm.tsx:130
 #: src/features/items/forms/ItemForm.tsx:155
@@ -1490,8 +1583,8 @@ msgid "Page {page} of {totalPages}"
 msgstr "Leht {page} / {totalPages}"
 
 #: src/features/scan/ScanPage.tsx:10
-msgid "PAGE UNDER CONSTRUCTION"
-msgstr "LEHT ON EHITUSEL"
+#~ msgid "PAGE UNDER CONSTRUCTION"
+#~ msgstr "LEHT ON EHITUSEL"
 
 #: src/features/taxonomy/forms/CategoryForm.tsx:79
 msgid "PARENT CATEGORY"
@@ -1591,6 +1684,10 @@ msgstr "Vali ese…"
 msgid "Pickup preferences, shared items, etc."
 msgstr "Järeletuleku eelistused, jagatud esemed jms."
 
+#: src/routes/index.tsx:69
+msgid "Please wait."
+msgstr "Palun oota."
+
 #: src/features/settings/SettingsPage.tsx:33
 msgid "PREFERENCES"
 msgstr "EELISTUSED"
@@ -1643,6 +1740,10 @@ msgstr "PIIRKONDLIKUD VORMINGUD"
 msgid "REGISTER"
 msgstr "REGISTREERU"
 
+#: src/components/scan/ScanErrorPanel.tsx:118
+msgid "RELOAD PAGE"
+msgstr "LAE LEHT UUESTI"
+
 #: src/features/settings/ProfilePage.tsx:140
 msgid "REMOVE"
 msgstr "EEMALDA"
@@ -1688,6 +1789,7 @@ msgstr "RETRO VORMI ALGELEMENDID"
 msgid "Retry"
 msgstr "Proovi uuesti"
 
+#: src/components/scan/ScanErrorPanel.tsx:110
 #: src/features/items/ItemsListPage.tsx:249
 #: src/features/loans/LoansListPage.tsx:140
 #: src/features/loans/panels/BorrowerActiveLoansPanel.tsx:56
@@ -1706,7 +1808,7 @@ msgid "RETURN LOAN"
 msgstr "TAGASTA LAENUTUS"
 
 #: src/components/layout/ErrorBoundaryPage.tsx:40
-#: src/routes/index.tsx:43
+#: src/routes/index.tsx:50
 msgid "RETURN TO BASE"
 msgstr "TAGASI BAASI"
 
@@ -1761,13 +1863,38 @@ msgstr "SALVESTA LAENUTUS"
 msgid "SAVE LOCATION"
 msgstr "SALVESTA ASUKOHT"
 
-#: src/features/scan/ScanPage.tsx:8
+#: src/features/scan/ScanPage.tsx:164
+#: src/features/scan/ScanPage.tsx:169
 msgid "SCAN"
 msgstr "SKANEERI"
+
+#: src/components/scan/ScanResultBanner.tsx:65
+msgid "SCAN AGAIN"
+msgstr "SKANEERI UUESTI"
 
 #: src/features/dashboard/QuickActionCards.tsx:17
 msgid "SCAN BARCODE"
 msgstr "SKANEERI TRIIPKOODI"
+
+#: src/features/scan/ScanHistoryList.tsx:51
+msgid "SCAN HISTORY"
+msgstr "SKANEERIMISE AJALUGU"
+
+#: src/components/scan/ScanResultBanner.tsx:37
+msgid "SCANNED"
+msgstr "SKANEERITUD"
+
+#: src/features/scan/ScanHistoryList.tsx:42
+msgid "Scanned codes appear here. Your last 10 scans are kept on this device."
+msgstr "Skaneeritud koodid ilmuvad siia. Selles seadmes hoitakse 10 viimast skaneerimist."
+
+#: src/components/scan/ScanErrorPanel.tsx:82
+msgid "SCANNER FAILED TO LOAD"
+msgstr "SKÄNNER EI LAADINUD"
+
+#: src/components/scan/ScanErrorPanel.tsx:86
+msgid "SCANNING UNSUPPORTED"
+msgstr "SKANEERIMINE POLE TOETATUD"
 
 #: src/features/items/forms/ItemForm.tsx:159
 #: src/features/taxonomy/forms/CategoryForm.tsx:83
@@ -1787,7 +1914,7 @@ msgstr "Otsi asukohti…"
 msgid "Search name, SKU, or barcode…"
 msgstr "Otsi nime, SKU või vöötkoodi järgi…"
 
-#: src/routes/index.tsx:34
+#: src/routes/index.tsx:41
 msgid "SECTOR NOT FOUND"
 msgstr "SEKTOR EI LEITUD"
 
@@ -1932,6 +2059,10 @@ msgstr "TAKSONOOMIA"
 msgid "That SKU is already in use. Please regenerate or choose another."
 msgstr "See SKU on juba kasutusel. Loo uus või vali teine."
 
+#: src/components/scan/ScanErrorPanel.tsx:83
+msgid "The barcode engine could not initialize. Check your connection and retry, or enter codes manually."
+msgstr "Vöötkoodimootor ei käivitunud. Kontrolli ühendust ja proovi uuesti või sisesta koodid käsitsi."
+
 #: src/pages/ApiDemoPage.tsx:65
 msgid "The endpoint responded successfully but returned zero records. Create a record in the backend, then retry."
 msgstr "Otspunkt vastas edukalt, kuid tagastas null kirjet. Loo taustateenuses kirje ja proovi uuesti."
@@ -1940,7 +2071,7 @@ msgstr "Otspunkt vastas edukalt, kuid tagastas null kirjet. Loo taustateenuses k
 msgid "The item will move to loan history."
 msgstr "Ese liigub laenutuste ajalukku."
 
-#: src/routes/index.tsx:37
+#: src/routes/index.tsx:44
 msgid "The requested area does not exist. Return to base."
 msgstr "Soovitud ala ei eksisteeri. Naase baasi."
 
@@ -1964,9 +2095,17 @@ msgstr "See laenaja ei hoia praegu midagi."
 msgid "This borrower may have been deleted."
 msgstr "See laenaja võib olla kustutatud."
 
+#: src/components/scan/ScanErrorPanel.tsx:87
+msgid "This browser does not support camera scanning. Try the latest Safari, Chrome, Firefox, or Edge — or enter codes manually."
+msgstr "See brauser ei toeta kaameraga skaneerimist. Proovi uusimat Safarit, Chrome'i, Firefoxi või Edge'i — või sisesta koodid käsitsi."
+
 #: src/features/loans/forms/LoanForm.tsx:316
 msgid "This cannot be changed after creation. Return this loan and create a new one to change the item, borrower, or quantity."
 msgstr "Seda ei saa pärast loomist muuta. Tagasta see laenutus ja loo uus, et muuta eset, laenajat või kogust."
+
+#: src/components/scan/ScanErrorPanel.tsx:79
+msgid "This device does not report a working camera. If one is attached, make sure no other app is using it, then reload."
+msgstr "See seade ei leia töötavat kaamerat. Kui kaamera on ühendatud, veendu, et ükski teine rakendus seda ei kasuta, ja lae leht uuesti."
 
 #: src/features/loans/hooks/useLoanMutations.ts:60
 msgid "This item is already on loan."
@@ -1993,13 +2132,13 @@ msgstr "See laenutus on juba tagastatud."
 msgid "This permanently deletes {nodeName}. This action cannot be undone."
 msgstr "See kustutab {nodeName} jäädavalt. Seda tegevust ei saa tagasi võtta."
 
-#: src/features/taxonomy/actions/ArchiveDeleteFlow.tsx:93
-msgid "This will hide {nodeName} from item pickers. You can restore it later."
-msgstr "See peidab {nodeName} esemete valikust. Selle saab hiljem taastada."
-
 #: src/features/borrowers/actions/BorrowerArchiveDeleteFlow.tsx:78
 #~ msgid "This will hide '{nodeName}' from loan pickers. You can restore them later."
 #~ msgstr "See peidab {nodeName} laenutuste valikust. Need saab hiljem taastada."
+
+#: src/features/taxonomy/actions/ArchiveDeleteFlow.tsx:93
+msgid "This will hide {nodeName} from item pickers. You can restore it later."
+msgstr "See peidab {nodeName} esemete valikust. Selle saab hiljem taastada."
 
 #: src/features/borrowers/actions/BorrowerArchiveDeleteFlow.tsx:78
 msgid "This will hide {nodeName} from loan pickers. You can restore them later."
@@ -2061,6 +2200,10 @@ msgstr "LAE ÜLES"
 msgid "Upload a workspace JSON file to import data."
 msgstr "Lae üles tööpinna JSON-fail, et andmeid importida."
 
+#: src/components/scan/ScanErrorPanel.tsx:114
+msgid "USE MANUAL ENTRY"
+msgstr "KASUTA KÄSITSI"
+
 #: src/features/dashboard/QuickActionCards.tsx:18
 msgid "VIEW LOANS"
 msgstr "VAATA LAENUTUSI"
@@ -2096,6 +2239,10 @@ msgstr "TÖÖPIND"
 #: src/features/setup/SetupPage.tsx:10
 msgid "WORKSPACE SETUP"
 msgstr "TOOPINNA SEADISTAMINE"
+
+#: src/features/scan/ScanHistoryList.tsx:91
+msgid "YES, CLEAR"
+msgstr "JAH, TÜHJENDA"
 
 #: src/features/taxonomy/panel/SlideOverPanel.tsx:129
 msgid "Your edits will be lost."
