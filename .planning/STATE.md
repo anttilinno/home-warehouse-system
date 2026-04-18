@@ -3,9 +3,9 @@ gsd_state_version: 1.0
 milestone: v2.2
 milestone_name: Scanning & Stabilization
 status: in_progress
-stopped_at: Phase 64 plan 64-07 complete (Wave 2 ManualBarcodeEntry + ScanResultBanner + ScanErrorPanel 4 variants — SCAN-05 landed, 29 new tests)
-last_updated: "2026-04-18T21:06:00Z"
-last_activity: 2026-04-18 — Phase 64 plan 64-07 executed (7 commits, ManualBarcodeEntry + ScanResultBanner + ScanErrorPanel + 29 new tests, 585/585 green, tsc+lint clean)
+stopped_at: Phase 64 plan 64-08 complete (Wave 2 ScanHistoryList + scan-feature test fixtures — SCAN-06 + SCAN-07 landed, 9 new tests, 594/594 green)
+last_updated: "2026-04-18T21:12:00Z"
+last_activity: 2026-04-18 — Phase 64 plan 64-08 executed (3 commits, ScanHistoryList + fixtures module + 9 new tests, 594/594 green, tsc+lint clean)
 progress:
   total_phases: 6
   completed_phases: 6
@@ -25,11 +25,11 @@ See: `.planning/PROJECT.md` (updated 2026-04-18)
 
 ## Current Position
 
-Phase: 64 (10 plans in 5 waves — 7/10 plans complete)
-Plan: 64-08 (next — Wave 2 ScanHistoryList + scan-feature test fixtures, SCAN-07 confirm flow)
-Status: In progress — Wave 0 complete; Wave 1 complete; Wave 2 mostly complete (64-05 hooks, 64-06 viewfinder trio, 64-07 manual entry + result banner + 4-variant error panel done); 64-08 next
-Last activity: 2026-04-18 — Plan 64-07 executed (ManualBarcodeEntry + ScanResultBanner + ScanErrorPanel 4 variants + 29 unit tests, 7 commits, 585/585 green, tsc+lint clean)
-Next step: execute plan 64-08 (Wave 2 ScanHistoryList + scan-feature test fixtures — SCAN-07 clear-history confirm flow)
+Phase: 64 (10 plans in 5 waves — 8/10 plans complete)
+Plan: 64-09 (next — Wave 3 ScanPage 3-tab orchestration + components/scan barrel + routes/index.tsx React.lazy)
+Status: In progress — Wave 0 complete; Wave 1 complete; Wave 2 complete (64-05 hooks, 64-06 viewfinder trio, 64-07 manual entry + result banner + 4-variant error panel, 64-08 ScanHistoryList + scan-feature test fixtures); Wave 3 next
+Last activity: 2026-04-18 — Plan 64-08 executed (ScanHistoryList + fixtures module + 9 unit tests, 3 commits, 594/594 green, tsc+lint clean)
+Next step: execute plan 64-09 (Wave 3 ScanPage 3-tab orchestration + components/scan barrel + routes/index.tsx React.lazy)
 
 ## Performance Metrics
 
@@ -113,9 +113,9 @@ Next step: execute plan 64-08 (Wave 2 ScanHistoryList + scan-feature test fixtur
 
 ## Session Continuity
 
-Last session: 2026-04-18T21:06:00Z
-Stopped at: Phase 64 plan 64-07 complete (Wave 2 ManualBarcodeEntry + ScanResultBanner + ScanErrorPanel 4 variants + 29 unit tests; 585/585 green)
-Next step: execute plan 64-08 (Wave 2 ScanHistoryList + scan-feature test fixtures — SCAN-07 clear-history confirm flow)
+Last session: 2026-04-18T21:12:00Z
+Stopped at: Phase 64 plan 64-08 complete (Wave 2 ScanHistoryList + scan-feature test fixtures + 9 unit tests; 594/594 green)
+Next step: execute plan 64-09 (Wave 3 ScanPage 3-tab orchestration + components/scan barrel + routes/index.tsx React.lazy)
 
 ---
-*Updated: 2026-04-18 — Phase 64 plan 64-07 executed (ManualBarcodeEntry + ScanResultBanner + ScanErrorPanel 4 variants + 29 unit tests; SCAN-05 landed)*
+*Updated: 2026-04-18 — Phase 64 plan 64-08 executed (ScanHistoryList + scan-feature test fixtures + 9 unit tests; SCAN-06 + SCAN-07 landed)*

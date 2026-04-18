@@ -106,8 +106,8 @@ Every v2.2 REQ-ID maps to exactly one phase. Coverage: 32/32 (100%).
 | SCAN-03 | Phase 64 | Hooks landed (64-05); full wire-up in 64-07/09 |
 | SCAN-04 | Phase 64 | Toggle + probe landed (64-06); applyConstraints wiring deferred to 64-09 |
 | SCAN-05 | Phase 64 | Complete (64-07 — ManualBarcodeEntry retro form with trim + 1..256 validation); page tab wire-up in 64-09 |
-| SCAN-06 | Phase 64 | Hook landed (64-05); UI wire-up in 64-08 |
-| SCAN-07 | Phase 64 | Pending |
+| SCAN-06 | Phase 64 | Hook (64-05) + ScanHistoryList view (64-08) landed; page wire-up in 64-09 |
+| SCAN-07 | Phase 64 | ScanHistoryList CLEAR HISTORY + RetroConfirmDialog landed in 64-08; page wire-up in 64-09 |
 | LOOK-01 | Phase 65 | Pending |
 | LOOK-02 | Phase 65 | Pending |
 | LOOK-03 | Phase 65 | Pending |
