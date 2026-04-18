@@ -3,9 +3,9 @@ gsd_state_version: 1.0
 milestone: v2.2
 milestone_name: Scanning & Stabilization
 status: in_progress
-stopped_at: Phase 64 plan 64-02 complete (Wave 0 vite manualChunks + test-infra mocks)
-last_updated: "2026-04-18T17:25:01Z"
-last_activity: 2026-04-18 — Phase 64 plan 64-02 executed (3 commits, scanner chunk rule + yudiel-scanner/media-devices mocks)
+stopped_at: Phase 64 plan 64-03 complete (Wave 1 lib/scanner 5-file port + 28 unit tests)
+last_updated: "2026-04-18T17:35:52Z"
+last_activity: 2026-04-18 — Phase 64 plan 64-03 executed (6 commits, lib/scanner port + feedback/scan-history/init-polyfill unit tests, 514/514 green)
 progress:
   total_phases: 6
   completed_phases: 6
@@ -25,11 +25,11 @@ See: `.planning/PROJECT.md` (updated 2026-04-18)
 
 ## Current Position
 
-Phase: 64 (10 plans in 5 waves — 2/10 plans complete)
-Plan: 64-03 (next — Wave 1 lib/scanner 5-file port + feedback/scan-history/init-polyfill unit tests)
-Status: In progress — Wave 0 complete; Wave 1 next
-Last activity: 2026-04-18 — Plan 64-02 executed (Vite scanner manualChunks rule + yudiel-scanner/media-devices Vitest mocks, 3 commits)
-Next step: execute plan 64-03 to start Wave 1 (lib/scanner port)
+Phase: 64 (10 plans in 5 waves — 3/10 plans complete)
+Plan: 64-04 (next — Wave 1 lib/api/scan.ts scaffold + useScanLookup stub for Phase 65 shape-lock)
+Status: In progress — Wave 0 complete; Wave 1 half-way (64-03 done, 64-04 next)
+Last activity: 2026-04-18 — Plan 64-03 executed (lib/scanner 5-file port + 28 unit tests, 6 commits, 514/514 green, tsc+lint clean)
+Next step: execute plan 64-04 (Wave 1 closes with API-client scaffold + useScanLookup stub)
 
 ## Performance Metrics
 
@@ -113,9 +113,9 @@ Next step: execute plan 64-03 to start Wave 1 (lib/scanner port)
 
 ## Session Continuity
 
-Last session: 2026-04-18T17:25:01Z
-Stopped at: Phase 64 plan 64-02 complete (Wave 0 closed)
-Next step: execute plan 64-03 (Wave 1 — lib/scanner 5-file port + unit tests)
+Last session: 2026-04-18T17:35:52Z
+Stopped at: Phase 64 plan 64-03 complete (Wave 1 lib/scanner port + 28 unit tests; 514/514 green)
+Next step: execute plan 64-04 (Wave 1 closes — lib/api/scan.ts scaffold + useScanLookup stub)
 
 ---
-*Updated: 2026-04-18 — Phase 64 plan 64-02 executed (Vite scanner manualChunks + test-infra mocks; Wave 0 complete)*
+*Updated: 2026-04-18 — Phase 64 plan 64-03 executed (lib/scanner 5-file port + 28 tests; Wave 1 mid-way)*

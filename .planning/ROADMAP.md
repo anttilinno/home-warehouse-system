@@ -330,11 +330,11 @@ Plans:
   3. User on an Android device sees a torch toggle that turns the flashlight on/off; the toggle is hidden on iOS and desktops without `MediaStreamTrack.getCapabilities().torch`
   4. User can switch to a "Manual" tab and submit a typed barcode string when the camera is unavailable or permission is denied
   5. User sees a History tab listing the last 10 scanned codes with timestamps, can tap any entry to re-lookup, and can clear the whole history after a confirm prompt
-**Plans**: 10 plans (2/10 complete)
+**Plans**: 10 plans (3/10 complete)
 Plans:
 - [x] 64-01-PLAN.md — Wave 0 deps + HazardStripe variant prop (no ios-haptics per D-17)
 - [x] 64-02-PLAN.md — Wave 0 Vite manualChunks + test-infra mocks (yudiel-scanner, media-devices)
-- [ ] 64-03-PLAN.md — Wave 1 lib/scanner 5-file port + feedback/scan-history/init-polyfill unit tests
+- [x] 64-03-PLAN.md — Wave 1 lib/scanner 5-file port + feedback/scan-history/init-polyfill unit tests
 - [ ] 64-04-PLAN.md — Wave 1 lib/api/scan.ts scaffold + useScanLookup stub (Phase 65 shape-lock)
 - [ ] 64-05-PLAN.md — Wave 2 useScanHistory + useScanFeedback hooks + tests
 - [ ] 64-06-PLAN.md — Wave 2 BarcodeScanner + ScanViewfinderOverlay + ScanTorchToggle (retro viewfinder trio)
