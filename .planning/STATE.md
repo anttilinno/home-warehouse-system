@@ -3,9 +3,9 @@ gsd_state_version: 1.0
 milestone: v2.2
 milestone_name: Scanning & Stabilization
 status: in_progress
-stopped_at: Phase 64 plan 64-05 complete (Wave 2 opened — useScanHistory + useScanFeedback hooks + 12 unit tests)
-last_updated: "2026-04-18T17:48:08Z"
-last_activity: 2026-04-18 — Phase 64 plan 64-05 executed (4 commits, useScanHistory + useScanFeedback hooks + 12 unit tests, 531/531 green, tsc+lint clean)
+stopped_at: Phase 64 plan 64-06 complete (Wave 2 retro viewfinder trio — BarcodeScanner + ScanViewfinderOverlay + ScanTorchToggle + 25 unit tests)
+last_updated: "2026-04-18T20:55:00Z"
+last_activity: 2026-04-18 — Phase 64 plan 64-06 executed (6 commits, retro viewfinder trio + 25 new tests, 556/556 green, tsc+lint clean)
 progress:
   total_phases: 6
   completed_phases: 6
@@ -25,11 +25,11 @@ See: `.planning/PROJECT.md` (updated 2026-04-18)
 
 ## Current Position
 
-Phase: 64 (10 plans in 5 waves — 5/10 plans complete)
-Plan: 64-06 (next — Wave 2 BarcodeScanner + ScanViewfinderOverlay + ScanTorchToggle retro viewfinder trio)
-Status: In progress — Wave 0 complete; Wave 1 complete (64-03 lib/scanner port + 64-04 API scaffold + stub hook); Wave 2 open (64-05 hooks done); 64-06/07/08 next
-Last activity: 2026-04-18 — Plan 64-05 executed (useScanHistory + useScanFeedback hooks + 12 unit tests, 4 commits, 531/531 green, tsc+lint clean)
-Next step: execute plan 64-06 (Wave 2 retro viewfinder trio — BarcodeScanner + ScanViewfinderOverlay + ScanTorchToggle)
+Phase: 64 (10 plans in 5 waves — 6/10 plans complete)
+Plan: 64-07 (next — Wave 2 ManualBarcodeEntry + ScanResultBanner + ScanErrorPanel 4 variants)
+Status: In progress — Wave 0 complete; Wave 1 complete (64-03 lib/scanner port + 64-04 API scaffold + stub hook); Wave 2 open (64-05 hooks done; 64-06 retro viewfinder trio done); 64-07/08 next
+Last activity: 2026-04-18 — Plan 64-06 executed (BarcodeScanner + ScanViewfinderOverlay + ScanTorchToggle + 25 unit tests, 6 commits, 556/556 green, tsc+lint clean)
+Next step: execute plan 64-07 (Wave 2 ManualBarcodeEntry + ScanResultBanner + ScanErrorPanel — 4 error variants, SCAN-05 manual entry)
 
 ## Performance Metrics
 
@@ -113,9 +113,9 @@ Next step: execute plan 64-06 (Wave 2 retro viewfinder trio — BarcodeScanner +
 
 ## Session Continuity
 
-Last session: 2026-04-18T17:48:08Z
-Stopped at: Phase 64 plan 64-05 complete (Wave 2 opened — useScanHistory + useScanFeedback hooks + 12 unit tests; 531/531 green)
-Next step: execute plan 64-06 (Wave 2 retro viewfinder trio — BarcodeScanner + ScanViewfinderOverlay + ScanTorchToggle)
+Last session: 2026-04-18T20:55:00Z
+Stopped at: Phase 64 plan 64-06 complete (Wave 2 retro viewfinder trio — BarcodeScanner + ScanViewfinderOverlay + ScanTorchToggle + 25 unit tests; 556/556 green)
+Next step: execute plan 64-07 (Wave 2 ManualBarcodeEntry + ScanResultBanner + ScanErrorPanel — 4 error variants, SCAN-05 manual entry)
 
 ---
-*Updated: 2026-04-18 — Phase 64 plan 64-05 executed (useScanHistory + useScanFeedback hooks + 12 unit tests; Wave 2 opened, SCAN-03 + SCAN-06 hooks landed)*
+*Updated: 2026-04-18 — Phase 64 plan 64-06 executed (BarcodeScanner + ScanViewfinderOverlay + ScanTorchToggle + 25 unit tests; SCAN-01, SCAN-02, SCAN-04 probe-path landed)*
