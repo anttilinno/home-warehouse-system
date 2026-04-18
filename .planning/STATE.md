@@ -1,34 +1,34 @@
 ---
 gsd_state_version: 1.0
-milestone: v2.1
-milestone_name: Feature Parity — Items, Loans & Scanning
-status: executing
-stopped_at: Phase 63 context gathered
-last_updated: "2026-04-17T19:02:24.347Z"
-last_activity: 2026-04-17
+milestone: v2.2
+milestone_name: Scanning & Stabilization
+status: defining_requirements
+stopped_at: Milestone v2.2 started — defining requirements
+last_updated: "2026-04-18T00:00:00.000Z"
+last_activity: 2026-04-18
 progress:
-  total_phases: 6
-  completed_phases: 6
-  total_plans: 16
-  completed_plans: 16
-  percent: 100
+  total_phases: 0
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
+  percent: 0
 ---
 
 # Project State: Home Warehouse System
 
 ## Project Reference
 
-See: `.planning/PROJECT.md` (updated 2026-04-14)
+See: `.planning/PROJECT.md` (updated 2026-04-18)
 
 **Core value:** Reliable inventory access anywhere -- online or offline -- with seamless sync
-**Current focus:** Phase 63 — navigation-and-polish
+**Current focus:** v2.2 Scanning & Stabilization — defining requirements
 
 ## Current Position
 
-Phase: 63
-Plan: Not started
-Status: Executing Phase 63
-Last activity: 2026-04-17
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-04-18 — Milestone v2.2 started
 
 ## Performance Metrics
 
@@ -53,7 +53,8 @@ Last activity: 2026-04-17
 | v1.8 | 3 | 7 | Complete |
 | v1.9 | 5 | 9 | Complete |
 | v2.0 | 8 | 18 | Complete |
-| v2.1 | 8 | TBD | Planning |
+| v2.1 | 8 | 29 | Complete |
+| v2.2 | TBD | TBD | Defining requirements |
 
 ## Accumulated Context
 
@@ -75,22 +76,19 @@ Last activity: 2026-04-17
 
 ### Pending Todos
 
-- [ ] Plan Phase 56 (Foundation — API Client & React Query)
-- [ ] Resolve pagination envelope per endpoint (cursor vs page/pageSize)
-- [ ] Confirm backend itemphoto max size limit
 - [ ] Confirm canonical barcode lookup path (v2.2 prep)
 - [ ] Confirm @yudiel/react-qr-scanner@2.5.1 React 19 peerDep (v2.2 prep)
 - [ ] Confirm cascade policy for category/location delete (block vs cascade vs un-set)
 
 ### Blockers/Concerns
 
-- None for v2.1 start — backend endpoints all exist
+- None for v2.2 start — prep items listed above resolve during early phases
 
 ## Session Continuity
 
-Last session: 2026-04-17T14:13:15.566Z
-Stopped at: Phase 63 context gathered
-Next step: `/gsd-plan-phase 56`
+Last session: 2026-04-18T00:00:00.000Z
+Stopped at: Milestone v2.2 started — defining requirements
+Next step: define REQUIREMENTS.md, then create ROADMAP.md
 
 ---
-*Updated: 2026-04-14 after v2.1 roadmap definition*
+*Updated: 2026-04-18 — milestone v2.2 Scanning & Stabilization started*

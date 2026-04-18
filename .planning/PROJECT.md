@@ -186,20 +186,38 @@ Reliable inventory access anywhere — online or offline — with seamless sync.
 - Storing raw OAuth tokens — app never calls provider APIs after login
 - Popup/window-based OAuth flow — popup blockers, mobile issues, PWA incompatibility
 
-## Current Milestone: v2.1 Feature Parity — Items, Loans & Scanning
+## Current Milestone: v2.2 Scanning & Stabilization
 
-**Goal:** Bring `/frontend2` to core feature parity — items CRUD, loan management, barcode scanning, and category/location management. Online-only, lean implementation.
+**Goal:** Bring barcode scanning + mobile FAB to `/frontend2` at full v1.3 parity, wire into loans and quick capture, and close accumulated verification/coverage/hygiene debt from v1.9–v2.1.
 
-**Target features:**
-- Items CRUD — list, view, create, edit, delete inventory items with photos
-- Loan management — loan items to borrowers, track returns, loan history
-- Barcode scanning — scan to find or create items (reuse existing retro UI patterns)
-- Categories & Locations — manage categories, locations, and containers
+**Target features — Scanning (frontend2):**
+- Barcode/QR scanner with camera (QR, UPC/EAN, Code128)
+- Audio/haptic/visual feedback on scan
+- Flashlight/torch toggle
+- Scan history (last 10, localStorage)
+- Manual barcode entry fallback
+- Quick-action menu after scan (View/Loan/Move/Repair, context-aware)
+- "Item not found" → create item flow
+- Scan integration in Loan creation (item + borrower)
+- Scan integration in Quick Capture (barcode autofill)
+- Floating action button with context-aware radial menu (scan/add/loan)
+
+**Target features — Stabilization:**
+- VERIFICATION.md backfill for v2.1 phases 58/59/60
+- Sign off 8 unsigned `/demo` checkpoints for Phase 57 retro primitives
+- Nyquist retroactive validation for v1.9 phases 43–47
+- Backend coverage: pendingchange handler.go unit tests (57.3% → ≥80%), jobs ProcessTask mocking (20.1% → actionable baseline)
+- Test hygiene: remove 56 `waitForTimeout` calls across 24 E2E files, adopt orphaned Go test factories, fix 4 pre-existing Vitest failures
+
+**Prep items:**
+- Confirm canonical barcode-lookup endpoint (backend path + response shape)
+- Confirm `@yudiel/react-qr-scanner@2.5.1` React 19 peerDep (or alternative)
+- Confirm cascade policy for category/location delete (block vs cascade vs un-set)
 
 ## Current State
 
 **Shipped:** v2.1 Feature Parity — Items, Loans & Scanning (2026-04-17) — `/frontend2` now at parity with the legacy app for everything except barcode scanning
-**Active:** v2.2 (planned) — barcode scanning, bulk operations, CSV import/export
+**Active:** v2.2 Scanning & Stabilization — barcode scanning + FAB + debt closure
 
 **Tech stack:**
 - Backend: Go 1.25, Chi, sqlc, PostgreSQL, golang.org/x/oauth2
@@ -301,5 +319,22 @@ Reliable inventory access anywhere — online or offline — with seamless sync.
 - 4 pre-existing test failures in `frontend/lib/api/__tests__/client.test.ts`
 - Nyquist compliance PARTIAL for all v1.9 phases — run `/gsd:validate-phase 43-47` retroactively
 
+## Evolution
+
+This document evolves at phase transitions and milestone boundaries.
+
+**After each phase transition** (via `/gsd-transition`):
+1. Requirements invalidated? → Move to Out of Scope with reason
+2. Requirements validated? → Move to Validated with phase reference
+3. New requirements emerged? → Add to Active
+4. Decisions to log? → Add to Key Decisions
+5. "What This Is" still accurate? → Update if drifted
+
+**After each milestone** (via `/gsd-complete-milestone`):
+1. Full review of all sections
+2. Core Value check — still the right priority?
+3. Audit Out of Scope — reasons still valid?
+4. Update Context with current state
+
 ---
-*Last updated: 2026-04-17 after v2.1 milestone close*
+*Last updated: 2026-04-18 — milestone v2.2 Scanning & Stabilization started*
