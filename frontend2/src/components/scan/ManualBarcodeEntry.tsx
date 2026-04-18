@@ -10,8 +10,8 @@
 // - Pressing Enter in the input submits the form (keyboard-first)
 // - onSubmit receives the trimmed value; input clears on successful submit
 //
-// Plain useState — no react-hook-form / zod (PATTERNS.md §13: "simpler than
-// ItemForm"). One field + a length check — no library needed.
+// Plain useState — no form library / schema validator (PATTERNS.md §13:
+// "simpler than ItemForm"). One field + a length check — no library needed.
 import { useId, useState, type FormEvent } from "react";
 import { useLingui } from "@lingui/react/macro";
 import { RetroInput, RetroButton } from "@/components/retro";
