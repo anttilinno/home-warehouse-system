@@ -39,3 +39,14 @@ export {
   triggerHaptic,
   triggerScanFeedback,
 } from "./feedback";
+
+// History
+export {
+  getScanHistory,
+  addToScanHistory,
+  createHistoryEntry,
+  removeFromScanHistory,
+  clearScanHistory,
+  getLastScan,
+  formatScanTime,
+} from "./scan-history";
