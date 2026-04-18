@@ -1,12 +1,20 @@
 interface HazardStripeProps {
   height?: number;
   className?: string;
+  variant?: "yellow" | "red";
 }
 
-function HazardStripe({ height = 8, className }: HazardStripeProps) {
+function HazardStripe({
+  height = 8,
+  className,
+  variant = "yellow",
+}: HazardStripeProps) {
+  const variantClass =
+    variant === "red" ? "bg-retro-red" : "bg-hazard-stripe";
   return (
     <div
-      className={`bg-hazard-stripe w-full ${className || ""}`}
+      data-variant={variant}
+      className={`${variantClass} w-full ${className || ""}`}
       style={{ height }}
     />
   );
