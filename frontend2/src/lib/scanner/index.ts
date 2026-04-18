@@ -28,3 +28,14 @@ export { SUPPORTED_FORMATS } from "./types";
 
 // Polyfill
 export { initBarcodePolyfill, isBarcodeDetectionAvailable } from "./init-polyfill";
+
+// Feedback
+export {
+  initAudioContext,
+  resumeAudioContext,
+  playBeep,
+  playSuccessBeep,
+  playErrorBeep,
+  triggerHaptic,
+  triggerScanFeedback,
+} from "./feedback";

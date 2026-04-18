@@ -73,7 +73,11 @@ describe("lib/scanner/feedback", () => {
     // audioInitialized) are fresh per test.
     vi.resetModules();
     ctxHarness = makeFakeAudioContext("running");
-    const FakeAudioContext = vi.fn(() => ctxHarness.ctx);
+    // vi.fn() with an arrow factory is not `new`-callable; use a function
+    // expression so `new AudioContextClass()` succeeds.
+    const FakeAudioContext = vi.fn(function (this: unknown) {
+      return ctxHarness.ctx;
+    });
     vi.stubGlobal("AudioContext", FakeAudioContext);
     // Some UA paths check webkitAudioContext; default window already has
     // AudioContext, so no explicit webkit stub needed here.
@@ -110,7 +114,9 @@ describe("lib/scanner/feedback", () => {
   it("Test 3: resumeAudioContext calls ctx.resume() when state is 'suspended'", async () => {
     vi.resetModules();
     const suspended = makeFakeAudioContext("suspended");
-    const FakeAudioContext = vi.fn(() => suspended.ctx);
+    const FakeAudioContext = vi.fn(function (this: unknown) {
+      return suspended.ctx;
+    });
     vi.stubGlobal("AudioContext", FakeAudioContext);
     const mod = await import("../feedback");
     mod.initAudioContext();
