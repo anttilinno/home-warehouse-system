@@ -12,7 +12,7 @@
 
 - [ ] **SCAN-01**: User can open `/scan` and see a live rear-camera preview with scanner controls (single-page route, scanner stays mounted during overlays)
 - [ ] **SCAN-02**: Scanner decodes QR, UPC-A, EAN-13, and Code128 formats using `@yudiel/react-qr-scanner@2.5.1`
-- [ ] **SCAN-03**: On successful scan, user hears an audio beep (AudioContext oscillator), feels haptic feedback (iOS via `ios-haptics`, Android via `navigator.vibrate`), and sees a visual flash/checkmark
+- [ ] **SCAN-03**: On successful scan, user hears an audio beep (AudioContext oscillator), feels haptic feedback on Android via `navigator.vibrate`, and sees a visual flash/checkmark (iOS haptic via `ios-haptics` is deferred out of Phase 64 per Phase 64 CONTEXT.md D-17 — picked up in a later scanner-polish phase)
 - [ ] **SCAN-04**: User can toggle the flashlight/torch on Android devices that expose `MediaStreamTrack.getCapabilities().torch` (button auto-hidden on iOS)
 - [ ] **SCAN-05**: User can manually enter a barcode via a fallback input when camera scan fails or permission is denied
 - [ ] **SCAN-06**: User sees the last 10 scanned codes in a history list (localStorage key `hws-scan-history`), each with timestamp and quick-rescan action

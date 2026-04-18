@@ -326,11 +326,22 @@ Plans:
 **Requirements**: SCAN-01, SCAN-02, SCAN-03, SCAN-04, SCAN-05, SCAN-06, SCAN-07
 **Success Criteria** (what must be TRUE):
   1. User visits `/scan` and sees a live rear-camera preview with retro scan overlay; the scanner stays mounted across overlays (no navigation-induced permission re-prompt on iOS PWA)
-  2. User pointing the camera at a QR, UPC-A, EAN-13, or Code128 code decodes it within a second and hears an audio beep, feels a haptic pulse (iOS via `ios-haptics`, Android via `navigator.vibrate`), and sees a visual flash
+  2. User pointing the camera at a QR, UPC-A, EAN-13, or Code128 code decodes it within a second, hears an audio beep, sees a visual flash, and — on Android devices only — feels a haptic pulse via `navigator.vibrate` (iOS haptic via `ios-haptics` is deferred out of Phase 64 per CONTEXT.md D-17)
   3. User on an Android device sees a torch toggle that turns the flashlight on/off; the toggle is hidden on iOS and desktops without `MediaStreamTrack.getCapabilities().torch`
   4. User can switch to a "Manual" tab and submit a typed barcode string when the camera is unavailable or permission is denied
   5. User sees a History tab listing the last 10 scanned codes with timestamps, can tap any entry to re-lookup, and can clear the whole history after a confirm prompt
-**Plans**: TBD
+**Plans**: 10 plans (2/10 complete)
+Plans:
+- [x] 64-01-PLAN.md — Wave 0 deps + HazardStripe variant prop (no ios-haptics per D-17)
+- [x] 64-02-PLAN.md — Wave 0 Vite manualChunks + test-infra mocks (yudiel-scanner, media-devices)
+- [ ] 64-03-PLAN.md — Wave 1 lib/scanner 5-file port + feedback/scan-history/init-polyfill unit tests
+- [ ] 64-04-PLAN.md — Wave 1 lib/api/scan.ts scaffold + useScanLookup stub (Phase 65 shape-lock)
+- [ ] 64-05-PLAN.md — Wave 2 useScanHistory + useScanFeedback hooks + tests
+- [ ] 64-06-PLAN.md — Wave 2 BarcodeScanner + ScanViewfinderOverlay + ScanTorchToggle (retro viewfinder trio)
+- [ ] 64-07-PLAN.md — Wave 2 ManualBarcodeEntry + ScanResultBanner + ScanErrorPanel (4 variants)
+- [ ] 64-08-PLAN.md — Wave 2 ScanHistoryList + scan-feature test fixtures (SCAN-07 confirm flow)
+- [ ] 64-09-PLAN.md — Wave 3 ScanPage 3-tab orchestration + components/scan barrel + routes/index.tsx React.lazy
+- [ ] 64-10-PLAN.md — Wave 4 i18n extract + ET gap-fill + [BLOCKING] bundle gate verification
 **UI hint**: yes
 
 ### Phase 65: Item Lookup & Not-Found Flow
@@ -440,7 +451,7 @@ Plans:
 | 43-47 | v1.9 | 9 | Complete | 2026-03-14 |
 | 48-55 | v2.0 | 18 | Complete | 2026-04-14 |
 | 56-63 | v2.1 | 29 | Complete | 2026-04-17 |
-| 64 | v2.2 | 0/? | Not started | - |
+| 64 | v2.2 | 1/10 | In progress | - |
 | 65 | v2.2 | 0/? | Not started | - |
 | 66 | v2.2 | 0/? | Not started | - |
 | 67 | v2.2 | 0/? | Not started | - |
