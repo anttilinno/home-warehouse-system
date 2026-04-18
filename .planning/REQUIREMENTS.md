@@ -14,7 +14,7 @@
 - [x] **SCAN-02**: Scanner decodes QR, UPC-A, EAN-13, and Code128 formats using `@yudiel/react-qr-scanner@2.5.1` — formats=["qr_code","upc_a","ean_13","code_128"] passed to <Scanner> in 64-06 BarcodeScanner
 - [ ] **SCAN-03**: On successful scan, user hears an audio beep (AudioContext oscillator), feels haptic feedback on Android via `navigator.vibrate`, and sees a visual flash/checkmark (iOS haptic via `ios-haptics` is deferred out of Phase 64 per Phase 64 CONTEXT.md D-17 — picked up in a later scanner-polish phase)
 - [x] **SCAN-04**: User can toggle the flashlight/torch on Android devices that expose `MediaStreamTrack.getCapabilities().torch` (button auto-hidden on iOS) — ScanTorchToggle (aria-pressed + primary/neutral variant swap) + BarcodeScanner torch-capability probe with iOS UA short-circuit landed in 64-06; actual applyConstraints wiring deferred to Plan 64-09 (manual UAT path per VALIDATION.md)
-- [ ] **SCAN-05**: User can manually enter a barcode via a fallback input when camera scan fails or permission is denied
+- [x] **SCAN-05**: User can manually enter a barcode via a fallback input when camera scan fails or permission is denied — ManualBarcodeEntry landed in 64-07 (RetroInput + LOOK UP CODE button, plain useState trim + 1..256 validation, autoComplete/autoCapitalize/autoCorrect=off, spellCheck=false, maxLength=256); tab wire-up in 64-09
 - [ ] **SCAN-06**: User sees the last 10 scanned codes in a history list (localStorage key `hws-scan-history`), each with timestamp and quick-rescan action
 - [ ] **SCAN-07**: User can clear scan history with a confirm prompt
 
@@ -105,7 +105,7 @@ Every v2.2 REQ-ID maps to exactly one phase. Coverage: 32/32 (100%).
 | SCAN-02 | Phase 64 | Complete (64-06 — 4-format subset passed to <Scanner>) |
 | SCAN-03 | Phase 64 | Hooks landed (64-05); full wire-up in 64-07/09 |
 | SCAN-04 | Phase 64 | Toggle + probe landed (64-06); applyConstraints wiring deferred to 64-09 |
-| SCAN-05 | Phase 64 | Pending |
+| SCAN-05 | Phase 64 | Complete (64-07 — ManualBarcodeEntry retro form with trim + 1..256 validation); page tab wire-up in 64-09 |
 | SCAN-06 | Phase 64 | Hook landed (64-05); UI wire-up in 64-08 |
 | SCAN-07 | Phase 64 | Pending |
 | LOOK-01 | Phase 65 | Pending |
