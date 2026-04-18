@@ -3,9 +3,9 @@ gsd_state_version: 1.0
 milestone: v2.2
 milestone_name: Scanning & Stabilization
 status: in_progress
-stopped_at: Phase 64 plan 64-04 complete (Wave 1 closed — lib/api/scan scaffold + useScanLookup stub; Phase 65 boundary shape-locked)
-last_updated: "2026-04-18T17:41:44Z"
-last_activity: 2026-04-18 — Phase 64 plan 64-04 executed (3 commits, lib/api/scan.ts scaffold + useScanLookup stub + 5 unit tests, 519/519 green, tsc+lint clean)
+stopped_at: Phase 64 plan 64-05 complete (Wave 2 opened — useScanHistory + useScanFeedback hooks + 12 unit tests)
+last_updated: "2026-04-18T17:48:08Z"
+last_activity: 2026-04-18 — Phase 64 plan 64-05 executed (4 commits, useScanHistory + useScanFeedback hooks + 12 unit tests, 531/531 green, tsc+lint clean)
 progress:
   total_phases: 6
   completed_phases: 6
@@ -25,17 +25,17 @@ See: `.planning/PROJECT.md` (updated 2026-04-18)
 
 ## Current Position
 
-Phase: 64 (10 plans in 5 waves — 4/10 plans complete)
-Plan: 64-05 (next — Wave 2 useScanHistory + useScanFeedback hooks + tests)
-Status: In progress — Wave 0 complete; Wave 1 complete (64-03 lib/scanner port + 64-04 API scaffold + stub hook); Wave 2 next
-Last activity: 2026-04-18 — Plan 64-04 executed (lib/api/scan.ts scaffold + useScanLookup stub + 5 unit tests, 3 commits, 519/519 green, tsc+lint clean)
-Next step: execute plan 64-05 (Wave 2 opens with useScanHistory + useScanFeedback hooks + tests)
+Phase: 64 (10 plans in 5 waves — 5/10 plans complete)
+Plan: 64-06 (next — Wave 2 BarcodeScanner + ScanViewfinderOverlay + ScanTorchToggle retro viewfinder trio)
+Status: In progress — Wave 0 complete; Wave 1 complete (64-03 lib/scanner port + 64-04 API scaffold + stub hook); Wave 2 open (64-05 hooks done); 64-06/07/08 next
+Last activity: 2026-04-18 — Plan 64-05 executed (useScanHistory + useScanFeedback hooks + 12 unit tests, 4 commits, 531/531 green, tsc+lint clean)
+Next step: execute plan 64-06 (Wave 2 retro viewfinder trio — BarcodeScanner + ScanViewfinderOverlay + ScanTorchToggle)
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 155
+- Total plans completed: 156
 - Average duration: ~15 min per plan
 - Total execution time: ~37 hours
 
@@ -113,9 +113,9 @@ Next step: execute plan 64-05 (Wave 2 opens with useScanHistory + useScanFeedbac
 
 ## Session Continuity
 
-Last session: 2026-04-18T17:41:44Z
-Stopped at: Phase 64 plan 64-04 complete (Wave 1 closed — lib/api/scan scaffold + useScanLookup stub; 519/519 green)
-Next step: execute plan 64-05 (Wave 2 opens — useScanHistory + useScanFeedback hooks + tests)
+Last session: 2026-04-18T17:48:08Z
+Stopped at: Phase 64 plan 64-05 complete (Wave 2 opened — useScanHistory + useScanFeedback hooks + 12 unit tests; 531/531 green)
+Next step: execute plan 64-06 (Wave 2 retro viewfinder trio — BarcodeScanner + ScanViewfinderOverlay + ScanTorchToggle)
 
 ---
-*Updated: 2026-04-18 — Phase 64 plan 64-04 executed (lib/api/scan scaffold + useScanLookup stub + 5 tests; Wave 1 complete)*
+*Updated: 2026-04-18 — Phase 64 plan 64-05 executed (useScanHistory + useScanFeedback hooks + 12 unit tests; Wave 2 opened, SCAN-03 + SCAN-06 hooks landed)*

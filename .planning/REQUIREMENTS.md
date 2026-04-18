@@ -103,10 +103,10 @@ Every v2.2 REQ-ID maps to exactly one phase. Coverage: 32/32 (100%).
 |--------|-------|--------|
 | SCAN-01 | Phase 64 | Pending |
 | SCAN-02 | Phase 64 | Pending |
-| SCAN-03 | Phase 64 | Pending |
+| SCAN-03 | Phase 64 | Hooks landed (64-05); full wire-up in 64-07/09 |
 | SCAN-04 | Phase 64 | Pending |
 | SCAN-05 | Phase 64 | Pending |
-| SCAN-06 | Phase 64 | Pending |
+| SCAN-06 | Phase 64 | Hook landed (64-05); UI wire-up in 64-08 |
 | SCAN-07 | Phase 64 | Pending |
 | LOOK-01 | Phase 65 | Pending |
 | LOOK-02 | Phase 65 | Pending |
