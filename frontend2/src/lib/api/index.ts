@@ -5,3 +5,4 @@ export * from "./borrowers";
 export * from "./categories";
 export * from "./locations";
 export * from "./containers";
+export * from "./scan";
