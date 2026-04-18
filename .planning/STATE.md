@@ -3,9 +3,9 @@ gsd_state_version: 1.0
 milestone: v2.2
 milestone_name: Scanning & Stabilization
 status: in_progress
-stopped_at: Phase 64 plan 64-09 complete (Wave 3 ScanPage 3-tab orchestration + components/scan barrel + /scan React.lazy route split — 15 new tests, 609/609 green; scanner chunk isolated at ~59 kB gzip)
-last_updated: "2026-04-18T21:20:00Z"
-last_activity: 2026-04-18 — Phase 64 plan 64-09 executed (4 commits, ScanPage orchestration + barrel + routes lazy split, 15 new tests, 609/609 green, tsc+lint+build clean)
+stopped_at: Phase 64 COMPLETE (plan 64-10 Wave 4 i18n extract + ET gap-fill + [BLOCKING] bundle gate — 36 new ET msgstrs, scanner chunk 58.1 kB gzip isolated, main chunk SHRANK 37.8 kB gzip vs pre-phase baseline; 609/609 green; full phase gate clean)
+last_updated: "2026-04-18T21:30:00Z"
+last_activity: 2026-04-18 — Phase 64 plan 64-10 executed (1 commit, 36 EN+ET translations, [BLOCKING] bundle gate verified with −37.8 kB gzip main-chunk delta)
 progress:
   total_phases: 6
   completed_phases: 6
@@ -21,21 +21,21 @@ progress:
 See: `.planning/PROJECT.md` (updated 2026-04-18)
 
 **Core value:** Reliable inventory access anywhere -- online or offline -- with seamless sync
-**Current focus:** v2.2 Scanning & Stabilization — Phase 64 nearing close (Wave 3 complete, Wave 4 next)
+**Current focus:** v2.2 Scanning & Stabilization — Phase 64 COMPLETE; next phase 65 (Item Lookup & Not-Found Flow)
 
 ## Current Position
 
-Phase: 64 (10 plans in 5 waves — 9/10 plans complete)
-Plan: 64-10 (next — Wave 4 i18n extract + ET gap-fill + [BLOCKING] bundle gate verification)
-Status: In progress — Wave 0–2 complete; Wave 3 complete (64-09 ScanPage 3-tab orchestration + components/scan barrel + /scan React.lazy route split). All seven SCAN-0N requirements have a rendered user path.
-Last activity: 2026-04-18 — Plan 64-09 executed (ScanPage + barrel + routes lazy, 4 commits, 15 new tests, 609/609 green, scanner chunk isolated at ~59 kB gzip)
-Next step: execute plan 64-10 (Wave 4 i18n extract + ET gap-fill + [BLOCKING] bundle gate verification)
+Phase: 64 COMPLETE (10/10 plans shipped)
+Plan: —
+Status: Phase 64 done. All seven SCAN-0N requirements have rendered user paths + automated tests + ET translations. [BLOCKING] bundle gate verified.
+Last activity: 2026-04-18 — Plan 64-10 executed (1 commit, EN+ET catalogs filled with 36 new translations, i18n:compile clean, bundle gate PASS with −37.8 kB gzip main-chunk delta vs pre-phase baseline, 609/609 tests green)
+Next step: begin Phase 65 (Item Lookup & Not-Found Flow — LOOK-01..03)
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 156
+- Total plans completed: 157
 - Average duration: ~15 min per plan
 - Total execution time: ~37 hours
 
@@ -61,7 +61,7 @@ Next step: execute plan 64-10 (Wave 4 i18n extract + ET gap-fill + [BLOCKING] bu
 
 | Phase | Name | Reqs | Deps | Status |
 |-------|------|------|------|--------|
-| 64 | Scanner Foundation & Scan Page | SCAN-01..07 (7) | 63 | Not started |
+| 64 | Scanner Foundation & Scan Page | SCAN-01..07 (7) | 63 | Complete (10/10 plans; all SCAN-0N green; bundle gate PASS) |
 | 65 | Item Lookup & Not-Found Flow | LOOK-01..03 (3) | 64 | Not started |
 | 66 | Quick-Action Menu | QA-01..03 (3) | 65 | Not started |
 | 67 | Mobile FAB with Radial Menu | FAB-01..04 (4) | 63 (parallelizable with 64-66) | Not started |
@@ -113,9 +113,9 @@ Next step: execute plan 64-10 (Wave 4 i18n extract + ET gap-fill + [BLOCKING] bu
 
 ## Session Continuity
 
-Last session: 2026-04-18T21:20:00Z
-Stopped at: Phase 64 plan 64-09 complete (Wave 3 ScanPage 3-tab orchestration + components/scan barrel + /scan React.lazy route split + 15 new integration tests; 609/609 green; scanner chunk isolated at ~59 kB gzip)
-Next step: execute plan 64-10 (Wave 4 i18n extract + ET gap-fill + [BLOCKING] bundle gate verification)
+Last session: 2026-04-18T21:30:00Z
+Stopped at: Phase 64 COMPLETE — plan 64-10 Wave 4 i18n extract + ET gap-fill + [BLOCKING] bundle gate verified (36 new ET msgstrs; scanner chunk 58.1 kB gzip isolated; main chunk SHRANK 37.8 kB gzip vs pre-phase 13e3bb8 baseline; full phase gate green test/lint:imports/tsc/build/i18n:compile)
+Next step: begin Phase 65 (Item Lookup & Not-Found Flow — LOOK-01..03)
 
 ---
-*Updated: 2026-04-18 — Phase 64 plan 64-09 executed (ScanPage 3-tab orchestration + components/scan barrel + /scan React.lazy; all seven SCAN-0N requirements have a rendered user path; D-01 callsite lock covered by automated test)*
+*Updated: 2026-04-18 — Phase 64 COMPLETE (10/10 plans; bundle gate PASS; EN+ET catalogs filled; all SCAN-0N requirements shippable)*
