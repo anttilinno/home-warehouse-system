@@ -1,319 +1,662 @@
-# Architecture Patterns — v2.1 Items, Loans & Scanning Integration
+# Architecture Patterns — v2.2 Scanning & FAB Integration
 
-**Domain:** `/frontend2` feature-parity build-out (online-only, retro UI)
-**Researched:** 2026-04-14
-**Confidence:** HIGH (verified against live source)
+**Domain:** `/frontend2` scanner + mobile FAB build-out (online-only, retro UI)
+**Researched:** 2026-04-18
+**Confidence:** HIGH (verified against live source in `frontend2/`, `frontend/`, and `backend/`)
 
 ## Executive Summary
 
-`/frontend2` is a clean Vite + React 19 + React Router v7 SPA with a **feature-folder** layout under `src/features/<feature>/` and a centralized `src/lib/api.ts` fetch client. Four feature folders (`items/`, `loans/`, `scan/`, plus new `categories/` and `locations/`) already exist as stub pages. The v2.1 work is therefore **additive**: fill in the existing feature folders, extend `api.ts` with typed per-entity modules, add nested routes, and reuse the existing retro component library plus `@yudiel/react-qr-scanner`.
+v2.2 is **purely additive** on top of the v2.1 `/frontend2` architecture: one new `src/features/scan/` subtree, one new global `FloatingActionButton` overlay mounted in `AppShell`, one new `lib/scanner/` module ported from legacy, and three thin hooks (`useCameraStream` is not needed — the `@yudiel/react-qr-scanner` `Scanner` component owns the stream). No structural refactor, no offline layer, no new framework — online SPA with TanStack Query remains.
 
-There is **no** IndexedDB layer, no SyncManager, no offline queue, no react-query — all server reads/writes go through `api.ts` directly. New feature code should follow that same thin pattern: local component state + `useEffect` fetch, or small custom hooks (e.g., `useItems()`), returning data from `api.ts` methods.
+**Two assumptions in the research prompt require correction:**
 
-The scanner from `/frontend` (`components/scanner/barcode-scanner.tsx`) uses `@yudiel/react-qr-scanner` which is already a documented project dependency. It **cannot drop in as-is** — it imports `next/dynamic`, shadcn `@/components/ui/*`, and `lucide-react`, none of which exist in frontend2. It must be ported to retro components and a static `import()` wrapper.
+1. **There is NO `/api/items?barcode=<code>` lookup endpoint.** Grepped the backend: `FindByBarcode` exists in the repository layer but is never registered as an HTTP route. The canonical warehouse-item lookup for a scanned code is `GET /api/workspaces/{wsId}/items?search={code}&limit=1` — the existing list endpoint already does FTS over `name`, `sku`, and `barcode` (see `handler.go:583`, search query doc string). No new HTTP endpoint is required; add a thin `itemsApi.lookupByBarcode(wsId, code)` helper that wraps the list call.
 
-## Existing Architecture (as of 2026-04-14)
+2. **The existing `/api/barcode/{barcode}` endpoint is NOT a warehouse lookup** — it's an external product metadata lookup (OpenFoodFacts + OpenProductsDB fallback) that returns `{ name, brand, category, image_url, found }`. It's useful as a **prefill source** for the "item not found → create" flow, not for finding an existing warehouse item. Both endpoints should be wired, but they serve different steps of the scan-action funnel.
 
-### Layout
+Scan events primarily flow to **local component state** in `ScanPage` (the scanned code is an ephemeral UI concern), with TanStack Query handling the actual lookup via `useQuery` so the result is cached (a rescan of the same code is instant). Scan history is localStorage (port verbatim from `frontend/lib/scanner/scan-history.ts`, 10-entry rolling, key `hws-scan-history`). No cache invalidation is required for the scan itself — only for downstream mutations triggered by the post-scan action menu (create, loan, return), which already have their own invalidation hooks from v2.1.
+
+The legacy scanner at `frontend/components/scanner/barcode-scanner.tsx` cannot drop in: it imports `next/dynamic`, `@/components/ui/*` (shadcn), and `lucide-react` — none of those exist in `frontend2`. It must be re-themed around the retro library (`RetroPanel` error state, `RetroButton` torch toggle) with `React.lazy` replacing `next/dynamic`. The auxiliary modules (`init-polyfill.ts`, `feedback.ts`, `scan-history.ts`, `types.ts`) port verbatim after a one-line edit (remove `"use client"` directives — Vite doesn't need them).
+
+The FAB ports cleanly from `frontend/components/fab/floating-action-button.tsx` **if `motion` is added as a dep**; it already uses motion v12.27. Alternatively, re-implement with Tailwind CSS transitions — the animation surface is small (stagger open/close, rotate `+`) and avoiding `motion` saves ~60 KB gzipped. **Recommendation:** re-implement without `motion`. The retro aesthetic favors sharp, mechanical transitions; `motion`'s spring physics work against the design language.
+
+## Existing Architecture (as of 2026-04-18, post-v2.1)
+
+### Layout — what's actually on disk
 
 ```
 frontend2/src/
-├── App.tsx                 # AuthProvider, ToastProvider, I18nProvider, router
+├── App.tsx                        # QueryClientProvider > AuthProvider > ToastProvider > I18nProvider > Router
 ├── main.tsx
-├── routes/index.tsx        # AppRoutes -- <Routes> tree (NOT file-based)
+├── routes/index.tsx               # 17 routes under <AppShell>, <ScanPage> at /scan (stub)
 ├── lib/
-│   ├── api.ts              # request/get/post/patch/del + HttpError + refresh
-│   ├── types.ts            # User, Session, Workspace, DashboardStats...
+│   ├── api.ts                     # get/post/patch/put/del + postMultipart + HttpError + 401 refresh (single-flight)
+│   ├── api/
+│   │   ├── index.ts               # barrel: items, itemPhotos, loans, borrowers, categories, locations, containers
+│   │   ├── items.ts               # workspace-scoped: /workspaces/{wsId}/items; itemKeys query-key factory
+│   │   ├── itemPhotos.ts          # multipart upload
+│   │   ├── loans.ts / borrowers.ts / categories.ts / locations.ts / containers.ts / inventory.ts
+│   │   └── __tests__
+│   ├── types.ts                   # cross-cutting types (User, Session, Workspace, ApiError)
 │   └── i18n.ts
 ├── components/
-│   ├── layout/             # AppShell, ErrorBoundaryPage, sidebar, topbar
-│   └── retro/              # RetroButton, Panel, Input, Card, Dialog, Table,
-│                           #  Tabs, Badge, Toast, HazardStripe (barrel index.ts)
+│   ├── layout/                    # AppShell, ErrorBoundaryPage, Sidebar, TopBar, LoadingBar, useRouteLoading
+│   └── retro/                     # 19 retro atoms — barrel index.ts (see Component Inventory below)
 ├── features/
-│   ├── auth/               # RequireAuth, AuthContext, AuthPage, callback
-│   ├── dashboard/          # DashboardPage + StatPanel + ActivityFeed + cards
-│   ├── items/              # stub ItemsPage
-│   ├── loans/              # stub LoansPage
-│   ├── scan/               # stub ScanPage
-│   ├── settings/           # 8 subpages
+│   ├── auth/                      # AuthContext (workspaceId!), RequireAuth, AuthPage, AuthCallbackPage
+│   ├── dashboard/                 # DashboardPage + QuickActionCards → /items /scan /loans
+│   ├── items/                     # ItemsListPage, ItemDetailPage, ItemForm, ItemPanel, photos/, filters/, hooks/
+│   ├── loans/                     # LoansListPage + tabs (Active/Overdue/History)
+│   ├── borrowers/                 # BorrowersListPage, BorrowerDetailPage
+│   ├── taxonomy/                  # TaxonomyPage (categories + locations + containers unified)
+│   ├── scan/                      # ScanPage (STUB — "PAGE UNDER CONSTRUCTION")
+│   ├── settings/                  # 8 subpages
 │   └── setup/
-├── pages/DemoPage.tsx
-├── hooks/
+├── pages/DemoPage.tsx, ApiDemoPage.tsx
+├── hooks/                         # EMPTY directory
 └── styles/
 ```
 
-### Router (important: NOT file-based)
+### Key facts verified against source
 
-Despite the prompt's claim, routing is **declarative `<Routes>/<Route>`** in `routes/index.tsx`. Authenticated routes are nested under `<Route element={<RequireAuth><AppShell/></RequireAuth>} errorElement={<ErrorBoundaryPage/>}>`. New routes must be registered here.
+- **Router is declarative `<Routes>/<Route>`**, not file-based. `/scan` already registered at `routes/index.tsx:85` as a stub inside the authenticated `<AppShell>` block.
+- **TanStack Query is the data layer** (`@tanstack/react-query@5`). Every entity has a `xxxKeys` query-key factory exported from `lib/api/<entity>.ts`. Mutations invalidate broadly: `useItemMutations.ts` does `qc.invalidateQueries({ queryKey: itemKeys.all })` on every create/update/archive. Pattern is clear and proven.
+- **Workspace-scoped paths**: every API client function takes `wsId` as first arg and targets `/api/workspaces/{wsId}/{entity}`. `useAuth().workspaceId` must be non-null before calling; use TanStack Query's `enabled: !!workspaceId` guard (see `useItemsList.ts`).
+- **Retro library is comprehensive** (`src/components/retro/index.ts` exports 19 components). Unlike at v2.1 start, `RetroSelect`, `RetroTextarea`, `RetroCheckbox`, `RetroFileInput`, `RetroCombobox`, `RetroFormField`, `RetroConfirmDialog`, `RetroEmptyState`, `RetroPagination`, `RetroBadge`, and `ToastProvider/useToast` are all present. **No new retro atoms are required for v2.2.**
+- **`lib/api.ts` already exposes `postMultipart`** (line 119) — added during v2.1 for photo uploads. Camera-captured photos flowing from a "scan → create → add photo" deep-link reuse it directly.
+- **CI grep guard** (`scripts/check-forbidden-imports.mjs`): blocks any `frontend2/src/**` import whose specifier is exactly `idb` / `serwist` / `@serwist/*`, or whose specifier contains `offline` or `sync` (case-insensitive substring, both `from` and `import()` forms). This constrains file/module names inside the scanner module — e.g. **avoid naming anything `scan-sync.ts`** (would trip the `sync` substring rule). Safe alternatives: `scan-history.ts`, `scan-lookup.ts`, `scan-feedback.ts`.
+- **AuthContext token-clear is 401/403 only** (`AuthContext.tsx:61`) — other errors (404 not found, 500, network) do not log the user out. Scanner "item not found" for a UPC that doesn't exist in the workspace manifests as a 200 with empty `items[]`, not a 4xx, so this is moot; the handling lives in the lookup hook.
 
-### API Client
+### Backend endpoints v2.2 uses (all live, workspace-scoped unless noted)
 
-`lib/api.ts` exports:
-- `get<T>(path)`, `post<T>(path, body?)`, `patch<T>(path, body)`, `del<T>(path)`
-- `HttpError` with `status` + `message` (use `err.status === 404/409/...`)
-- Transparent 401 → `/auth/refresh` retry (single-flight `refreshPromise`)
-- Always `credentials: "include"`, JSON-only (no multipart helper yet)
-- BASE_URL = `/api` (Vite dev proxy)
+| Purpose | Method + Path | Notes |
+|---|---|---|
+| Lookup scanned code in workspace | `GET /api/workspaces/{wsId}/items?search={code}&limit=1` | **Canonical.** FTS over name/SKU/barcode. `total > 0` means hit; first `items[0]` is the match candidate. |
+| External product prefill | `GET /api/barcode/{barcode}` | OpenFoodFacts + OpenProductsDB. Returns `{ barcode, name, brand, category, image_url, found }`. **Public, no auth required** (see `router.go:319`). Length constrained to 8–14 chars — QR codes and non-numeric codes bypass this. |
+| Create item (post-scan) | `POST /api/workspaces/{wsId}/items` | Already wired via `useCreateItem()` in `hooks/useItemMutations.ts`. |
+| Create loan (post-scan) | `POST /api/workspaces/{wsId}/loans` | Already wired. |
+| Search borrowers (loan picker) | `GET /api/workspaces/{wsId}/borrowers/search?q=` | Already wired. |
 
-There is **no** per-entity typed module yet — all entity types live in `lib/types.ts`. v2.1 should introduce `lib/api/<entity>.ts` modules that wrap `get/post/patch/del` with typed helpers.
+**No new backend endpoints are required for v2.2.** The "prep item" in `STATE.md` — *confirm canonical barcode-lookup endpoint* — is now answered: use the existing search param on the list endpoint.
 
-### Retro Component Library
+## Answers to the Specific Questions
 
-`components/retro/index.ts` exports: `RetroButton`, `RetroPanel`, `RetroInput`, `RetroCard`, `RetroDialog` (+ `RetroDialogHandle`), `RetroTable`, `RetroTabs`, `RetroBadge`, `HazardStripe`, `ToastProvider`, `useToast`.
+### Q1 — Camera component placement
 
-**Gaps for v2.1** (not yet in library, will need new retro components):
-- `RetroSelect` / dropdown (needed for category/location pickers)
-- `RetroTextarea` (notes/description)
-- `RetroCheckbox` / `RetroRadio`
-- `RetroFileInput` / photo uploader (multipart — see "API Client Extensions" below)
-- `RetroDatePicker` (loan due dates) — may use native `<input type="date">` styled retro
-- `RetroConfirmDialog` (delete/archive confirmations) — wrap `RetroDialog`
-- `RetroEmptyState`
-- `RetroPagination`
+**Recommendation: new `src/components/scan/` module + `src/features/scan/`, NOT `components/retro/`.**
 
-## Backend API Surface (already shipped, Huma/OpenAPI)
-
-All endpoints below are live. Note: the backend uses **Huma** on top of Chi, producing OpenAPI-described routes. Source: `backend/internal/domain/warehouse/*/handler.go`.
-
-### Items (`/api/items`)
-- `GET /items` — list (with filters)
-- `GET /items/search` — fuzzy search
-- `GET /items/{id}`
-- `GET /items/by-category/{category_id}`
-- `POST /items` — create
-- `PATCH /items/{id}` — update
-- `POST /items/{id}/archive` / `POST /items/{id}/restore`
-- `GET /items/{id}/labels`, `POST /items/{id}/labels/{label_id}`, `DELETE /items/{id}/labels/{label_id}`
-
-### Item Photos (`/api/items/{item_id}/photos`)
-- `POST` (multipart upload), `GET .../download`, `GET .../{photo_id}`, `GET .../{photo_id}/thumbnail`
-- `POST .../bulk-delete`, `POST .../bulk-caption`, `POST .../check-duplicate`
-
-### Loans (`/api/loans`)
-- `GET /loans`, `GET /loans/active`, `GET /loans/overdue`
-- `GET /loans/{id}`
-- `POST /loans` — create
-- `POST /loans/{id}/return`
-- `PATCH /loans/{id}/extend`
-- `GET /borrowers/{borrower_id}/loans`
-- `GET /inventory/{inventory_id}/loans`
-
-### Borrowers (`/api/borrowers`)
-- `GET`, `GET /{id}`, `POST`, `PATCH /{id}`, `DELETE /{id}`, `GET /search`
-
-### Categories (`/api/categories`)
-- `GET`, `GET /root`, `GET /{id}`, `GET /{id}/children`, `GET /{id}/breadcrumb`
-- `POST`, `PATCH /{id}`, `DELETE /{id}`
-- `POST /{id}/archive`, `POST /{id}/restore`
-
-### Locations (`/api/locations`)
-- `GET`, `GET /{id}`, `GET /{id}/breadcrumb`, `GET /search`
-- `POST`, `PATCH /{id}`, `DELETE /{id}`
-- `POST /{id}/archive`, `POST /{id}/restore`
-
-### Containers (`/api/containers`)
-- `GET`, `GET /{id}`, `GET /search`
-- `POST`, `PATCH /{id}`, `DELETE /{id}`
-- `POST /{id}/archive`, `POST /{id}/restore`
-
-## Recommended Architecture for v2.1
-
-### Component Boundaries
-
-| Layer | Responsibility | Location |
-|-------|---------------|----------|
-| Route page | URL binding, data fetching orchestration, layout | `features/<x>/<X>Page.tsx` |
-| Feature components | Entity-specific UI (ItemCard, LoanForm) | `features/<x>/*.tsx` |
-| Entity hook | `useItems()`, `useItem(id)`, `useLoans()` — fetch+local state | `features/<x>/hooks.ts` |
-| API module | Typed wrappers around `api.ts` primitives | `lib/api/<entity>.ts` |
-| Entity types | Interfaces for domain entities | `lib/api/<entity>.ts` (co-located) |
-| Retro primitives | Generic UI atoms | `components/retro/*` |
-
-### Data Flow
+Two concerns cleanly split:
 
 ```
-Route page  ->  useEntity() hook  ->  lib/api/<entity>.ts  ->  api.ts  ->  /api/<path>
-                              <-  setState(data)      <-  typed response
+src/components/scan/           # generic, reusable, retro-themed scan primitives
+├── BarcodeScanner.tsx          # camera + overlay (renders @yudiel/react-qr-scanner Scanner)
+├── ScanErrorPanel.tsx          # retro-styled error state (permission denied, lib-load fail, no camera)
+├── ScanOverlay.tsx             # torch toggle + scanning pulse + reticle
+├── ManualBarcodeEntry.tsx      # RetroInput fallback for when camera is unavailable
+└── index.ts                    # barrel export
+
+src/features/scan/              # scan-flow orchestration (route-level)
+├── ScanPage.tsx                # single-page flow: mount BarcodeScanner, handle lookup, show action menu
+├── QuickActionMenu.tsx         # post-scan action sheet (View/Loan/Move/Repair/Create)
+├── ScanHistoryList.tsx         # renders last-10 from localStorage
+├── hooks/
+│   ├── useScanLookup.ts        # useQuery wrapping itemsApi.lookupByBarcode
+│   ├── useScanFeedback.ts      # beep + vibrate + audio context init
+│   └── useScanHistory.ts       # localStorage read/write with React state sync
+└── __tests__
 ```
 
-No react-query, no SWR. Simple `useEffect + useState` with AbortController, or a tiny shared `useFetch<T>()` hook if the team prefers.
+**Why not extend `retro/`:** The retro barrel is for **generic UI atoms** (`RetroButton`, `RetroPanel`, `RetroInput`). A barcode scanner is a domain concept with a camera lifecycle — it belongs with feature components. The retro barrel already has 19 entries; adding `RetroScanner` dilutes its purpose and creates a circular tension (a "retro scanner" has to style things like reticle pulses that are not retro primitives).
 
-### Patterns to Follow
+**Why split `components/scan/` from `features/scan/`:** The `BarcodeScanner` and `ManualBarcodeEntry` are **reused** by `features/loans/LoanCreateForm` (scan an item into the loan picker) and `features/items/QuickCapture` (scan to prefill SKU). Generic scan primitives need a home outside `features/scan/`. Legacy precedent: `frontend/components/scanner/` was separate from any `features/` folder for the same reason.
 
-**Pattern 1: Typed API module per entity**
+**Naming note:** the module path is `src/components/scan/` (singular, matches `frontend/components/scanner/` rename rationale — shorter, consistent with the feature folder). The **exported class-level component** is `BarcodeScanner` (matches legacy, clearer than `RetroScanner`).
+
+### Q2 — State management: scan events
+
+**Three-tier split — no context, no global store.**
+
+| State | Lifetime | Home |
+|---|---|---|
+| "Is scanner active / paused" | Session (while on `/scan` or within a modal) | Local `useState` in `ScanPage` / consumer |
+| Current scanned code + detected format | Per-scan, replaced on each hit | Local `useState` in `ScanPage` |
+| Lookup result (`item | not-found | external-product`) | Cached across scans of the same code | **TanStack Query**: `useQuery({ queryKey: scanKeys.lookup(code), queryFn: () => itemsApi.lookupByBarcode(wsId, code), enabled: !!code })` |
+| Scan history (last 10) | Persistent across sessions | `localStorage` key `hws-scan-history`, mirrored in React state via `useScanHistory()` |
+| Post-scan navigation intent | Transient, consumed on navigate | URL search params (`/items/:id?from=scan`, `/loans/new?itemId=...`) |
+
+**Do NOT create a `ScanContext`.** React Context is the wrong tool when the state is already funneled through a single page (`ScanPage`) or passed as prop (to `LoanCreateForm` as `initialItemId`). A context would add rerender blast radius and is unnecessary for the shallow consumer tree.
+
+**Do NOT invalidate `itemKeys` on scan.** A scan is a read-only event — nothing changed in the warehouse. Invalidation would force a refetch of the items list, wasting a request. The only scan flows that trigger cache invalidation are **downstream mutations** (create item, create loan), which already invalidate correctly via v2.1 mutation hooks.
+
+**"Last scanned barcode" lives in `useScanHistory()`'s first entry** — not a separate piece of state. The hook exposes `{ history, addScan, clearHistory, lastScan }` and is consumed by both `ScanPage` (for recent-scans list rendering) and any other consumer that wants to display "last scanned" (e.g., loan create form breadcrumb). Single source of truth, reactive across tabs via the `storage` event (optional enhancement; v1.3 did not do this).
+
+**Scan-result query key factory** (new, add to `lib/api/items.ts` or a new `lib/api/scan.ts`):
+
 ```ts
-// lib/api/items.ts
-import { get, post, patch, del } from "@/lib/api";
-export interface Item { id: string; name: string; sku: string; /* ... */ }
-export interface ItemListResponse { items: Item[]; total: number; }
-export const itemsApi = {
-  list: (params?: ListParams) => get<ItemListResponse>(`/items${qs(params)}`),
-  get:  (id: string) => get<{ item: Item }>(`/items/${id}`),
-  create: (body: CreateItemBody) => post<{ item: Item }>("/items", body),
-  update: (id: string, body: Partial<Item>) => patch<{ item: Item }>(`/items/${id}`, body),
-  archive: (id: string) => post<void>(`/items/${id}/archive`),
+export const scanKeys = {
+  all: ["scan"] as const,
+  lookup: (code: string) => [...scanKeys.all, "lookup", code] as const,
+  external: (code: string) => [...scanKeys.all, "external", code] as const,
 };
 ```
 
-**Pattern 2: Feature-scoped hook**
+`staleTime: Infinity` is reasonable for scan lookups within a session — the user is unlikely to add/remove the same barcode in the middle of a scan session, and if they do, the "refresh" action on the action menu can call `qc.invalidateQueries({ queryKey: scanKeys.lookup(code) })`.
+
+### Q3 — API integration points
+
+**What's already there:**
+
+| Need | Existing surface | Action |
+|---|---|---|
+| Find warehouse item by code | `itemsApi.list(wsId, { search, limit: 1 })` | Wrap: `itemsApi.lookupByBarcode(wsId, code)` returning `Item | null` |
+| External product metadata | `GET /api/barcode/{barcode}` (no workspace scope, public) | **New** tiny client `scanApi.lookupExternal(code)` in `lib/api/scan.ts` |
+| Create item with barcode prefill | `itemsApi.create()` + `useCreateItem()` | No change — `CreateItemInput.barcode` is already accepted |
+| Create loan with scanned item | `loansApi.create()` + existing create flow | Pass `initialItemId` via URL param or form state |
+
+**New API client additions** (minimal diff):
+
 ```ts
-// features/items/hooks.ts
-export function useItems(filters: Filters) {
-  const [data, setData] = useState<ItemListResponse | null>(null);
-  const [error, setError] = useState<HttpError | null>(null);
-  const [loading, setLoading] = useState(true);
-  useEffect(() => {
-    const ac = new AbortController();
-    itemsApi.list(filters).then(setData).catch(setError).finally(() => setLoading(false));
-    return () => ac.abort();
-  }, [JSON.stringify(filters)]);
-  return { data, error, loading };
-}
+// lib/api/items.ts — ADD to itemsApi
+lookupByBarcode: async (wsId: string, code: string): Promise<Item | null> => {
+  const res = await get<ItemListResponse>(
+    `${base(wsId)}?search=${encodeURIComponent(code)}&limit=1`
+  );
+  // Exact-match guard: FTS can match partial/near matches.
+  // Prefer exact barcode match, fall back to first result if none.
+  const exact = res.items.find(i => i.barcode === code);
+  return exact ?? (res.items.length > 0 ? res.items[0] : null);
+},
 ```
 
-**Pattern 3: Nested routes for detail views**
+```ts
+// lib/api/scan.ts — NEW file, ~40 LOC
+import { get } from "@/lib/api";
+
+export interface ExternalProduct {
+  barcode: string;
+  name: string;
+  brand?: string | null;
+  category?: string | null;
+  image_url?: string | null;
+  found: boolean;
+}
+
+export const scanApi = {
+  // Note: public endpoint, no workspace scope. 8–14 char numeric barcodes only
+  // (Huma enforces minLength/maxLength); QR codes and alphanumeric fail gracefully with 422.
+  lookupExternal: (code: string) =>
+    get<ExternalProduct>(`/barcode/${encodeURIComponent(code)}`),
+};
+
+export const scanKeys = {
+  all: ["scan"] as const,
+  lookup: (code: string) => [...scanKeys.all, "lookup", code] as const,
+  external: (code: string) => [...scanKeys.all, "external", code] as const,
+};
+```
+
+Add `export * from "./scan";` to `lib/api/index.ts`.
+
+**Scan history localStorage namespace:**
+
+- **Key:** `hws-scan-history` (verbatim from legacy — avoids namespace drift across workspaces and preserves history if the user resets auth).
+- **Value shape:** `ScanHistoryEntry[]` as defined in `frontend/lib/scanner/types.ts` (port verbatim). Max 10 entries. Dedupe on `code`.
+- **Not per-workspace-scoped:** Legacy decision; rationale is that scan history is a **local UI convenience**, not workspace data. If a user switches workspaces, the history is still "my last 10 scans" regardless. Acceptable since `entityId` lookups will miss when the entity belongs to a different workspace — the UI just shows "not found" on re-click.
+- **Storage quota:** 10 entries × ~200 bytes = ~2 KB. No pressure.
+
+**No `IDBDatabase`, no `idb` import, no offline store.** Scan history is localStorage-only.
+
+### Q4 — Route changes
+
+**One new standalone route, no modal-over-route.**
+
+Current state (verified): `/scan` exists as a stub route at `routes/index.tsx:85`. Just replace the stub body.
+
+**Final route layout** (diff from v2.1):
+
+```
+  <Route path="scan" element={<ScanPage />} />
++ <Route path="scan/new-item" element={<ItemCreatePage mode="scan-prefill" />} />  // optional, see note
+```
+
+**Why no modal-over-route for scan:**
+- iOS PWA camera permission persists across **remounts within the same document**, not across navigations. A modal-based scanner avoids navigation — good — but so does a single-route flow if we keep the `BarcodeScanner` mounted and use its `paused` prop to freeze the camera while the action menu overlays.
+- A dedicated `/scan` route is **deep-linkable** (scan shortcut on the home screen, PWA install) and URL-bookmark-friendly.
+- A modal would fight the retro design language (which leans on full-screen panels rather than overlay dialogs). Existing `RetroDialog` is not full-screen and not designed for a viewport-filling camera surface.
+
+**Why a single route (not `/scan` + `/scan/result`):**
+- The action menu overlays the paused scanner on the same page. Navigating to `/scan/result` would unmount `BarcodeScanner` → iOS re-prompts camera permission on back-nav (v1.3 D-01 confirms).
+- State is ephemeral enough for component-local `useState`; URL-encoding the scanned code offers no user value.
+
+**Optional sub-route `/scan/new-item`:** if the "item not found → create" flow wants its own URL (so a user can refresh without re-scanning), render `ItemCreatePage` with prefilled `barcode` from a URL search param: `/scan/new-item?barcode=0123456789012&name=Prefilled+Name`. Defer this to the roadmap — v1.3 did not have it; the `/scan` → inline action sheet → navigate to `/items/new?barcode=...` pattern is sufficient.
+
+### Q5 — FAB positioning
+
+**Global overlay in `AppShell`, with `useFABActions()` context-aware hook.**
+
+**Where it mounts:**
 ```tsx
-<Route path="items" element={<ItemsPage />} />
-<Route path="items/new" element={<ItemEditPage mode="create" />} />
-<Route path="items/:id" element={<ItemDetailPage />} />
-<Route path="items/:id/edit" element={<ItemEditPage mode="edit" />} />
+// components/layout/AppShell.tsx — ADD one line inside the main content column
+<main id="main-content" className="p-lg"><Outlet /></main>
+<FloatingActionButton actions={fabActions} />   // {/* fixed position, mobile-only */}
 ```
 
-**Pattern 4: Multipart photo upload helper**
-Add to `lib/api.ts`:
+**Why global, not per-route:**
+- Repeating `<FloatingActionButton />` in every page component is error-prone (easy to forget) and bloats each page.
+- The legacy app did this exactly (`dashboard-shell.tsx:124` mounts FAB once at the shell level, actions come from `useFABActions()`).
+- Context-awareness lives in `useFABActions()`, which reads `useLocation()` and returns route-specific `FABAction[]`. This keeps AppShell dumb.
+- An empty `actions` array hides the FAB (legacy guard: `{fabActions.length > 0 && <FloatingActionButton ... />}`). Same pattern in v2.2.
+
+**`useFABActions()` — the context-switching hook** (new, `src/components/fab/useFABActions.tsx`):
+
 ```ts
-export async function postMultipart<T>(endpoint: string, form: FormData): Promise<T> {
-  // same refresh logic, but no JSON Content-Type (browser sets boundary)
+// Ported from frontend/lib/hooks/use-fab-actions.tsx with path/router adjustments
+export function useFABActions(): FABAction[] {
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  return useMemo(() => {
+    const scan:     FABAction = { id: "scan",      label: t`Scan`,          onClick: () => navigate("/scan") };
+    const addItem:  FABAction = { id: "add-item",  label: t`Add item`,      onClick: () => navigate("/items?new=1") };
+    const quickCap: FABAction = { id: "capture",   label: t`Quick capture`, onClick: () => navigate("/items?capture=1") };
+    const newLoan:  FABAction = { id: "new-loan",  label: t`New loan`,      onClick: () => navigate("/loans?new=1") };
+
+    // Hide FAB on pages that own their own primary action or where it'd overlap UI
+    if (location.pathname === "/scan") return [];
+    if (location.pathname.startsWith("/settings")) return [];
+    if (location.pathname === "/auth" || location.pathname === "/setup") return [];
+
+    // Items routes: Quick Capture first, Add, Scan
+    if (location.pathname === "/items" || location.pathname.startsWith("/items/")) {
+      return [quickCap, addItem, scan];
+    }
+    // Loans routes: New loan first, Scan
+    if (location.pathname === "/loans" || location.pathname.startsWith("/loans/")) {
+      return [newLoan, scan];
+    }
+    // Default (Dashboard, Borrowers, Taxonomy): Scan, Add Item, New Loan
+    return [scan, addItem, newLoan];
+  }, [location.pathname, navigate]);
 }
 ```
 
-### Anti-Patterns to Avoid
+**Icon source:** FAB actions need icons. Options:
+- **Option A:** Add `lucide-react` dep (matches legacy, tree-shakes to ~5 KB for ~8 icons). Consistent icon set.
+- **Option B:** Render ASCII glyphs in retro font (`[◉]` scan, `[+]` add, `[>>]` loan). Matches retro aesthetic. Avoids dep.
+- **Recommendation:** Option B for v2.2. The retro design doesn't use line-icon sets elsewhere; introducing `lucide-react` only for the FAB creates a stylistic one-off. The `BarcodeScanner` overlay (torch, close) can use the same ASCII glyphs. Revisit if a second feature needs a broader icon set.
 
-- **Do not** re-introduce IndexedDB / SyncManager / offline queue (explicitly out of scope per PROJECT.md v2.1).
-- **Do not** mix `api.ts` calls with Next.js primitives (`next/dynamic`, `next/image`) when porting components from `/frontend`.
-- **Do not** place entity types in `lib/types.ts` — co-locate them in `lib/api/<entity>.ts` to keep `types.ts` for cross-cutting concerns.
-- **Do not** add react-query yet — the current dashboard/settings pattern is simpler and the online-only scope makes caching overhead unjustified. Revisit if hook boilerplate proliferates.
-- **Do not** gate the scanner route behind `<RequireAuth>` without ensuring the `<AppShell>` does not remount the scanner on every nav (iOS PWA camera permission resets — see Pitfall S-01).
+**Mobile-only visibility:** `className="fixed bottom-4 right-4 z-50 md:hidden"` — ported verbatim from legacy. FAB never appears on desktop (`md:` breakpoint). Desktop users have sidebar + top-bar actions.
 
-## Barcode Scanner Integration Assessment
+**Safe-area insets:** iOS home-bar gesture area. Add `bottom: max(1rem, env(safe-area-inset-bottom))` — legacy did not do this and users report the FAB clipping on iPhone 13+; fixable now as a small a11y win.
 
-### Can `@yudiel/react-qr-scanner` drop in as-is?
+### Q6 — Integration with existing pages
 
-**No — but the dependency itself is fine.** The library is listed as a v2.0 project decision, is active, ZXing-based, and React 19-compatible. It works in Vite with a standard dynamic `import()`.
+**Three integration points. All thin; no refactor of existing pages.**
 
-The existing `frontend/components/scanner/barcode-scanner.tsx` has **three frontend1-specific coupling points** that prevent straight copy-paste:
+**6.1 — Item detail page (`ItemDetailPage`):**
 
-1. `import dynamic from "next/dynamic"` — Next.js only. Replace with `React.lazy(() => import("@yudiel/react-qr-scanner").then(m => ({ default: m.Scanner })))` wrapped in `<Suspense>`.
-2. `import { Button } from "@/components/ui/button"` and `@/components/ui/alert` — shadcn. Replace with `RetroButton` and a hazard-striped `RetroPanel` for errors.
-3. `lucide-react` icons (`Flashlight`, `Camera`, etc.) — `/frontend2` does not currently declare lucide-react. Either add the dep (~40KB tree-shaken) or render text/ASCII glyphs consistent with the retro theme (`[◉]`, `[>>]`). **Recommendation:** add `lucide-react` — it's already in the v2.0 ecosystem and tree-shakes well.
+Not directly touched. The "scanned barcode → navigate to detail" flow is:
+1. `ScanPage` performs `useScanLookup(code)` → gets `Item` → shows action menu.
+2. User taps "View" in action menu → `navigate(`/items/${item.id}`)`.
+3. `ItemDetailPage` loads normally via `useItem(id)` — no awareness of scan origin needed.
 
-### Install additions required
+Optional: pass a `?from=scan` query param to show a "scanned from code XXX" breadcrumb / back-to-scan button. Low-value polish, defer to later.
 
-```bash
-cd frontend2
-npm install @yudiel/react-qr-scanner@^2.5.1 barcode-detector lucide-react
+**6.2 — Loan create form:**
+
+Currently, loan creation lives in `features/loans/` (exact form component inferred from v2.1 — not yet inspected, but the pattern is established). **Two integration modes:**
+
+**Mode A (scan-triggered from FAB on loans page):** user taps Scan from within a loan flow → `ScanPage` opens → on Item hit, action menu shows "Loan this item" → `navigate('/loans/new?itemId=' + item.id)` → `LoanCreateForm` reads the query param and prefills the item picker.
+
+**Mode B (scanner embedded in loan form):** loan form has an inline "Scan item" button that mounts the shared `<BarcodeScanner>` in a `RetroDialog` or in-panel section. On hit, calls `setItemId(item.id)` and dismisses. This is the more flexible pattern but requires dialog-shaped scanner UX.
+
+**Recommendation:** **Mode A for v2.2.** Simpler, reuses the single-page scan flow, and the iOS PWA camera constraint is easier to satisfy. Mode B can follow if usage data shows friction. Add `initialItemId` support to `LoanCreateForm` by reading `useSearchParams().get("itemId")` and passing into the form's default values.
+
+**6.3 — Quick Capture (SKU autofill):**
+
+Quick Capture in `/frontend2` is itself a v2.2 feature (listed under "Quick capture flow in `/frontend2`" in PROJECT.md v2.2 target features) — the legacy `/frontend` had it. Two paths:
+
+- If Quick Capture is built **before** the scanner integration phase: add a "Scan to prefill" button that opens `/scan` and returns to Quick Capture via navigation state (`navigate('/scan?return=/capture')`; `ScanPage` parses `return` param and navigates back with `?scannedBarcode=...` on success).
+- If Quick Capture is built **with** the scanner integration phase: embed `<BarcodeScanner>` directly (following Mode B above) — since Quick Capture is itself a camera-first page already; mounting one more camera-using component is architectural consistency.
+
+**Recommendation:** build Quick Capture to **embed** `BarcodeScanner` inline (Mode B), because Quick Capture's core UX is "camera open at all times" — the user shouldn't navigate away to scan. This is consistent with legacy.
+
+### Q7 — Error boundaries
+
+**No new `ScanErrorBoundary` React component needed.** The existing `ErrorBoundaryPage` (attached to the `AppShell` route at `routes/index.tsx:76`) catches any thrown error from anywhere in the authenticated tree. Scan-specific errors are **render-time conditional UI**, not boundary-level.
+
+**Error sources and handling:**
+
+| Error source | Detected by | Handler | UI |
+|---|---|---|---|
+| Camera permission denied | `onError` callback from `@yudiel/react-qr-scanner` Scanner, error.name === "NotAllowedError" | `BarcodeScanner` local state (`permissionDenied`) | Render `ScanErrorPanel` with retro hazard-striped panel; "Retry" button triggers `location.reload()` on iOS |
+| No camera available | `navigator.mediaDevices.getUserMedia` pre-check; fails with NotFoundError | `BarcodeScanner` init path | `ScanErrorPanel` with "No camera detected. Use manual entry:" and `<ManualBarcodeEntry>` below |
+| Barcode polyfill load failure | `initBarcodePolyfill()` throws | `BarcodeScanner` init path | `ScanErrorPanel` "Scanner unavailable" + manual entry |
+| Scanner lib load failure (dynamic import) | `React.lazy` throws in Suspense | Suspense boundary in `ScanPage` | Retro loading spinner for success; retro error panel for failure. Use error boundary **inline** to Suspense, not a new class. |
+| Network fail during `itemsApi.lookupByBarcode` | `useQuery` error state | Consumer (`ScanPage`) branches on `lookupQuery.isError` | Toast via `useToast()` ("Lookup failed, try again") + retain current UI |
+| 404 item not found | Query returns `null` (empty `items[]`) | Consumer branches on `data === null` | Show "not found" action menu with "Create item with barcode XXX" |
+| 401 auth expiry during lookup | `HttpError` bubbled by `api.ts` after refresh attempt fails | `AuthContext` clears token → `RequireAuth` redirects to `/auth` | Covered; no scan-specific handling. |
+
+**Pattern for the error UI:** a small `ScanErrorPanel.tsx` component takes `{ title, message, action? }` and renders inside a `RetroPanel` with `HazardStripe`. Re-used across the three scanner error states. This is a **standard retro pattern**, not a React error boundary.
+
+**Dynamic import Suspense boundary:** wrap the `Scanner` usage in `<Suspense fallback={<ScannerLoading />}>`. Error within Suspense's child propagates to the nearest error boundary; `ErrorBoundaryPage` at the shell level catches it. If UX demands a scan-specific error UI rather than the full-page boundary, add a **feature-scoped `ErrorBoundary`** (React 19 native component via `<ErrorBoundary>` or the existing `react-router` v7 `errorElement` at the `/scan` route). For v2.2, rely on the shell boundary — the scanner is rarely the cause of a crash that merits special UI.
+
+### Q8 — Build order recommendations
+
+**Dependency-first, outward from primitives.** Nine focused phases, none of which block the others for more than one step.
+
+1. **Foundation: polyfill + feedback + types port** — no UI. Port `lib/scanner/{init-polyfill,feedback,types,scan-history}.ts` from legacy. Remove `"use client"` directives. Add unit tests (feedback beep → mock AudioContext; scan-history → mock localStorage).
+   - **Delivers:** `src/lib/scanner/` ready for consumers.
+   - **No deps outside `frontend2/package.json` yet.**
+
+2. **API: scan client module + items.ts lookup helper** — no UI. Add `lib/api/scan.ts` (external lookup), add `lookupByBarcode` to `itemsApi`, add `scanKeys` factory. Unit tests with fetch mocks.
+   - **Delivers:** data layer for the scan flow. Gates **everything downstream**.
+
+3. **Install scanner dep** — `npm install @yudiel/react-qr-scanner@^2.5.1 barcode-detector`. Confirm React 19 peerDep resolves (verified from `frontend/bun.lock`: peerDeps are `react ^17 || ^18 || ^19` — compatible).
+   - **Acceptance:** `bun run build` passes; CI grep guard stays green.
+
+4. **Scanner primitive: `components/scan/BarcodeScanner.tsx`** — retro-themed Scanner wrapper. `React.lazy` around `@yudiel/react-qr-scanner`. Props mirror legacy (`onScan`, `onError`, `paused`, `formats`, `className`). Include torch toggle + Android flashlight detection + permission-denied handling. Pair with `ScanErrorPanel` and `ManualBarcodeEntry`.
+   - **Depends on:** Step 1 (polyfill).
+   - **Testable:** Vitest with mocked `@yudiel/react-qr-scanner` module (see Q9).
+
+5. **Hooks: `useScanHistory`, `useScanLookup`, `useScanFeedback`** — thin wrappers. `useScanHistory` syncs localStorage to React state with a `storage` event listener for cross-tab. `useScanLookup(code)` is `useQuery` over `itemsApi.lookupByBarcode` + `scanApi.lookupExternal` chained. `useScanFeedback` wraps `playSuccessBeep` + `triggerHaptic` + audio context init.
+   - **Depends on:** Steps 1 and 2.
+
+6. **Scan page: `features/scan/ScanPage.tsx` + `QuickActionMenu.tsx` + `ScanHistoryList.tsx`** — full scan flow wiring. Replace the stub.
+   - **Depends on:** Steps 4 and 5.
+   - **Acceptance:** `/scan` route scans a code, shows action menu, navigates on action select.
+
+7. **FAB component + hook: `components/fab/FloatingActionButton.tsx` + `useFABActions.tsx`** — retro-themed FAB (CSS transitions, no motion lib) + route-aware actions. Mount in `AppShell` behind `md:hidden` + `fabActions.length > 0` guard.
+   - **Depends on:** Step 6 (so the FAB's `scan` action goes somewhere real) — but can be built in parallel with Step 6 if the `/scan` stub remains; just wire the action.
+   - **Acceptance:** tap FAB on mobile viewport; radial menu opens; tap Scan; navigate to `/scan`.
+
+8. **Integrations: loan create prefill + quick capture embed** — add `initialItemId` support to `LoanCreateForm` (read `?itemId` param); add inline scanner or scan-then-return to Quick Capture (depending on Mode A/B decision).
+   - **Depends on:** Steps 4 (for embedded Mode B) or Step 6 (for navigate-based Mode A).
+
+9. **Stabilization slice (debt closure)** — in parallel throughout: VERIFICATION.md backfill, /demo sign-off, Nyquist validation, pendingchange handler.go unit tests, waitForTimeout cleanup. See Section "Debt Closure" below.
+
+**Dependency graph:**
+
+```
+[1 lib/scanner port] ──┐
+[2 lib/api/scan + items.lookupByBarcode] ──┐
+                                            ├──> [5 hooks] ──> [6 ScanPage] ──> [8 integrations]
+[3 install @yudiel] ──> [4 BarcodeScanner] ─┘                         │
+                                                                       └──> [7 FAB + useFABActions]
+[9 debt closure] — runs concurrently with all phases
 ```
 
-(`barcode-detector` is the polyfill imported by the existing `lib/scanner/` module in frontend1; port that module too.)
+**Critical path length:** Steps 1 → 2 → 4 → 5 → 6 → 8. Roughly 6 sequential plans. Steps 3, 7, 9 parallelize.
 
-### iOS PWA camera permission — critical constraint (carried from v1.3)
+### Q9 — Testing surface
 
-The camera permission resets on page navigation in iOS PWAs. The v1.3 pattern mandates a **single-page scan flow** where the `Scanner` component stays mounted across states and uses its `paused` prop. For frontend2:
+**Vitest is the existing runner** (`frontend2/package.json`). Three levels:
 
-- `/scan` route renders a long-lived `ScanPage` with the `Scanner` always mounted.
-- Post-scan "quick action menu" (View / Create / Loan / Move) must render **over** the scanner, not navigate away, until the user explicitly leaves.
-- When navigating away, warn the user once that returning will re-prompt permission (match v1.3 UX).
+**9.1 — Unit tests (Vitest + @testing-library/react):**
 
-### Related additions to port
+- `lib/scanner/scan-history.test.ts`: mock `localStorage` via `vi.spyOn(localStorage, "setItem")`; test dedup, overflow, formatScanTime. Port legacy tests verbatim.
+- `lib/scanner/feedback.test.ts`: mock `AudioContext` via `vi.stubGlobal("AudioContext", class { createOscillator()... })`; test playBeep, playSuccessBeep, triggerHaptic no-op on missing `navigator.vibrate`. Port legacy.
+- `lib/api/scan.test.ts`: mock `fetch` for `/api/barcode/{code}`; test success, 422 (out-of-range code length), 500. Same pattern as existing `lib/api/itemPhotos.test.ts`.
+- `features/scan/hooks/useScanLookup.test.ts`: TanStack Query test harness (wrap in `QueryClientProvider`); test hit → `Item`, miss → `null`, external fallback.
 
-- `frontend/lib/scanner/` — polyfill init, `SUPPORTED_FORMATS`, torch detection (small, pure TS — port verbatim minus Next imports).
-- Optional: audio beep (AudioContext) and `navigator.vibrate` haptics — trivial to re-implement without ios-haptics, which targets iOS 17.4+ only and is optional for v2.1 (online-only scope).
+**9.2 — Component tests (mocked camera):**
 
-## New Routes (add to `routes/index.tsx`)
+- **Mock `@yudiel/react-qr-scanner`** at module level: `vi.mock("@yudiel/react-qr-scanner", () => ({ Scanner: (props) => <div data-testid="mock-scanner" onClick={() => props.onScan([{ rawValue: "0123456789012", format: "ean_13" }])} /> }))`. The legacy `BarcodeScanner.test.tsx` (frontend1) already does this — 18 tests pass in v1.4. Port them.
+- **Mock `navigator.mediaDevices.getUserMedia`** for permission paths: `vi.spyOn(navigator.mediaDevices, "getUserMedia").mockRejectedValueOnce(new DOMException("Permission denied", "NotAllowedError"))`.
+- **ScanPage test**: render inside `QueryClientProvider` + `MemoryRouter`; simulate `onScan` from the mock; assert action menu appears with correct entity-type actions.
+- **FAB test**: render `<AppShell>`-like tree with a fake route; assert FAB button visible on mobile viewport (`window.matchMedia` stub), actions match current pathname.
 
-| Path | Component | Notes |
-|------|-----------|-------|
-| `/items` | `ItemsPage` | Exists as stub — fill in list view |
-| `/items/new` | `ItemEditPage` | mode="create" |
-| `/items/:id` | `ItemDetailPage` | Detail + photos + loan history |
-| `/items/:id/edit` | `ItemEditPage` | mode="edit" |
-| `/loans` | `LoansPage` | Exists as stub — tabs: Active / Overdue / History |
-| `/loans/new` | `LoanCreatePage` | Borrower + item picker |
-| `/loans/:id` | `LoanDetailPage` | Return / extend actions |
-| `/scan` | `ScanPage` | Exists as stub — single-page scan flow |
-| `/borrowers` | `BorrowersPage` | New feature folder |
-| `/borrowers/:id` | `BorrowerDetailPage` | Loan history |
-| `/categories` | `CategoriesPage` | Tree view w/ children/breadcrumb endpoints |
-| `/locations` | `LocationsPage` | Tree view w/ containers nested |
-| `/locations/:id/containers` | `ContainersPage` | Optional nested or tab-in-location |
+**9.3 — E2E (Playwright — optional for v2.2):**
 
-Register all under the authenticated `<AppShell>` block, after `settings/data`.
+**Camera in Playwright is limited.** Options:
+- **Mock-based**: launch browser with `--use-fake-device-for-media-stream --use-fake-ui-for-media-stream` flags (Chromium only). Plays a sine-wave/silent image. Usable for permission-granted path but doesn't feed an actual barcode to the detector.
+- **Fake barcode stream**: feed a pre-recorded `.y4m` video file via `--use-file-for-fake-video-capture=path/to/barcode.y4m`. Requires video with a visible barcode. Moderate setup cost; most reliable E2E of the full capture→decode→lookup flow.
+- **Manual entry path**: drive the `ManualBarcodeEntry` fallback. Much simpler; exercises lookup + action-menu logic without camera. **Recommended for v2.2 E2E.**
 
-## New vs Modified Files
+**Recommendation for v2.2 testing:** comprehensive Vitest unit + component coverage (18+ scanner tests, 28+ FAB tests — matches v1.4 legacy coverage numbers for parity). E2E via manual-entry path only for v2.2; defer fake-camera E2E to a later milestone given Playwright complexity and the minimal marginal assurance over component tests.
 
-### Modified
-- `src/routes/index.tsx` — add 12+ routes
-- `src/lib/api.ts` — add `postMultipart` helper; optionally split into `lib/api/client.ts` + `lib/api/<entity>.ts`
-- `src/lib/types.ts` — keep cross-cutting types only; remove anything entity-specific as modules are introduced
-- `src/components/retro/index.ts` — export new primitives
-- `src/components/layout/AppShell.tsx` — add sidebar links (Items, Loans, Scan, Borrowers, Categories, Locations)
-- `src/features/items/ItemsPage.tsx`, `loans/LoansPage.tsx`, `scan/ScanPage.tsx` — replace stubs
-- `frontend2/package.json` — add `@yudiel/react-qr-scanner`, `barcode-detector`, `lucide-react`
+**Test file locations:**
+```
+src/components/scan/__tests__/BarcodeScanner.test.tsx
+src/components/scan/__tests__/ManualBarcodeEntry.test.tsx
+src/components/scan/__tests__/ScanErrorPanel.test.tsx
+src/components/fab/__tests__/FloatingActionButton.test.tsx
+src/components/fab/__tests__/useFABActions.test.tsx
+src/features/scan/__tests__/ScanPage.test.tsx
+src/features/scan/__tests__/QuickActionMenu.test.tsx
+src/features/scan/hooks/__tests__/useScanLookup.test.ts
+src/features/scan/hooks/__tests__/useScanHistory.test.ts
+src/features/scan/hooks/__tests__/useScanFeedback.test.ts
+src/lib/scanner/__tests__/{scan-history,feedback,init-polyfill}.test.ts
+src/lib/api/__tests__/scan.test.ts
+src/lib/api/__tests__/items.lookupByBarcode.test.ts
+```
 
-### New
-- `src/lib/api/items.ts`, `loans.ts`, `borrowers.ts`, `categories.ts`, `locations.ts`, `containers.ts`, `itemPhotos.ts`
-- `src/lib/scanner/` — ported polyfill + format config
-- `src/components/retro/RetroSelect.tsx`, `RetroTextarea.tsx`, `RetroCheckbox.tsx`, `RetroFileInput.tsx`, `RetroEmptyState.tsx`, `RetroPagination.tsx`, `RetroConfirmDialog.tsx`
-- `src/components/BarcodeScanner/BarcodeScanner.tsx` — retro-themed port of frontend1 scanner
-- `src/features/items/` — `ItemsPage.tsx`, `ItemEditPage.tsx`, `ItemDetailPage.tsx`, `ItemCard.tsx`, `ItemForm.tsx`, `ItemPhotoGallery.tsx`, `hooks.ts`
-- `src/features/loans/` — `LoansPage.tsx`, `LoanCreatePage.tsx`, `LoanDetailPage.tsx`, `LoanForm.tsx`, `LoanStatusBadge.tsx`, `hooks.ts`
-- `src/features/borrowers/` — `BorrowersPage.tsx`, `BorrowerDetailPage.tsx`, `BorrowerForm.tsx`, `hooks.ts`
-- `src/features/categories/` — `CategoriesPage.tsx`, `CategoryTree.tsx`, `CategoryForm.tsx`, `hooks.ts`
-- `src/features/locations/` — `LocationsPage.tsx`, `LocationTree.tsx`, `LocationForm.tsx`, `ContainerForm.tsx`, `hooks.ts`
-- `src/features/scan/` — expanded `ScanPage.tsx`, `ScanActionMenu.tsx`, `hooks.ts`
+## Component Boundaries
 
-## Suggested Build Order (Dependency-Aware)
+| Layer | Responsibility | Location | Reuses |
+|---|---|---|---|
+| Route page | URL binding, scan flow orchestration | `features/scan/ScanPage.tsx` | `components/scan/*`, hooks |
+| Feature components | Scan-flow UI (action menu, history list) | `features/scan/*.tsx` | retro, scan primitives |
+| Feature hooks | TanStack Query wrappers, localStorage I/O, feedback | `features/scan/hooks/*.ts` | `lib/api/*`, `lib/scanner/*` |
+| Scan primitives | BarcodeScanner, ManualEntry, ScanErrorPanel | `components/scan/*.tsx` | retro atoms, `@yudiel/react-qr-scanner` |
+| FAB primitive | FloatingActionButton (generic) | `components/fab/*.tsx` | retro atoms |
+| Route-aware FAB config | `useFABActions()` | `components/fab/useFABActions.tsx` | `react-router` |
+| API module | Scan lookup clients + query keys | `lib/api/scan.ts` | `lib/api.ts` primitives |
+| Scanner support | polyfill, feedback, history, types | `lib/scanner/*.ts` | — (pure TS) |
+| Retro atoms | Generic UI (RetroButton, RetroPanel, etc.) | `components/retro/*` | — |
 
-1. **Foundation (Phase 1)** — API client split + entity type modules (no UI). Deliverables: `lib/api/*.ts` with full CRUD for items/loans/borrowers/categories/locations/containers, typed. Zero route changes. Unit tests for each module using fetch mocks.
+## Data Flow
 
-2. **Retro primitives extension (Phase 2)** — `RetroSelect`, `RetroTextarea`, `RetroCheckbox`, `RetroFileInput`, `RetroEmptyState`, `RetroPagination`, `RetroConfirmDialog`. Add demo page entries. No feature work yet; unblocks all forms.
+**Happy path — scan a barcode, view item:**
 
-3. **Categories & Locations (Phase 3)** — tree views + CRUD. These are **prerequisites for items** (items require category_id + location_id). Simpler domain (flat-ish CRUD), good shakedown for the patterns. Include containers as a sub-resource of locations.
+```
+User approaches viewfinder
+        |
+        v
+<BarcodeScanner paused={false}>         mounted once in ScanPage, never unmounted
+        |
+        v (onScan callback fires)
+ScanPage.handleScan(result)
+        |
+        v  -- setLastCode(code)          local useState
+        |  -- useScanFeedback().trigger()  beep + vibrate
+        |  -- useScanHistory().addScan()   localStorage rolling 10
+        |  -- setScannerPaused(true)       pauses camera, keeps component mounted
+        v
+useScanLookup(code)  -- TanStack Query
+        |
+        v  workspace lookup: GET /api/workspaces/{ws}/items?search={code}&limit=1
+        |
+        +-- hit (Item):        <QuickActionMenu match={{ type: "item", entity }}>
+        |
+        +-- miss (null):       external lookup: GET /api/barcode/{code} (if numeric)
+        |                           |
+        |                           +-- external hit: <QuickActionMenu match={{ type: "external", product }}>
+        |                           +-- external miss: <QuickActionMenu match={{ type: "not_found", code }}>
+        |
+        v (user picks "View")
+navigate(`/items/${item.id}`)
+        |
+        v
+ItemDetailPage loads normally (no scan awareness)
+```
 
-4. **Borrowers (Phase 4)** — simple CRUD. Prerequisite for loan creation. Small, low-risk. Can run in parallel with Phase 3 if staffing allows.
+**Pitfall-flagged path — "not found → create":**
 
-5. **Items CRUD (Phase 5)** — list (filters, pagination, search), detail, create/edit, archive/restore. Depends on categories + locations. Defer photos to Phase 6.
+```
+User picks "Create with barcode"
+        |
+        v
+navigate(`/items/new?barcode=${code}`) OR open ItemForm modal with prefilled defaults
+        |
+        v
+ItemForm reads ?barcode param → defaultValues.barcode = code
+                               → defaultValues.name = external.name (if external hit)
+        |
+        v
+useCreateItem() mutation → POST /api/workspaces/{ws}/items
+        |
+        v (onSuccess)
+qc.invalidateQueries(itemKeys.all) → items list refetches
+qc.invalidateQueries(scanKeys.lookup(code)) → next rescan sees the new item
+navigate(`/items/${created.id}`)
+```
 
-6. **Item photos (Phase 6)** — multipart upload via `postMultipart`, gallery, thumbnails, delete. Requires items pages to exist.
+## Patterns to Follow
 
-7. **Loans (Phase 7)** — active/overdue/history tabs, create flow (borrower picker + item picker), return, extend. Depends on items + borrowers.
+**Pattern 1 — Scanner stays mounted, camera pauses via prop**
+```tsx
+// ScanPage.tsx — MUST follow this pattern on iOS PWA
+<BarcodeScanner
+  onScan={handleScan}
+  onError={handleError}
+  paused={lookupActive || !!selectedResult}  // pause on hit, resume on dismiss
+/>
+```
 
-8. **Barcode scanner (Phase 8)** — install deps, port scanner component and polyfill, implement single-page `/scan` flow, post-scan action menu (View → item detail; Create → new item pre-filled with SKU; Loan → loan create with item pre-selected). Depends on items and loans.
+**Pattern 2 — TanStack Query for lookup, local state for transient UI**
+```tsx
+const [code, setCode] = useState<string>("");
+const lookupQuery = useQuery({
+  queryKey: scanKeys.lookup(code),
+  queryFn: () => itemsApi.lookupByBarcode(workspaceId!, code),
+  enabled: !!code && !!workspaceId,
+  staleTime: 30_000,  // within a scan session, a cache hit is fine
+});
+```
 
-9. **Polish & nav (Phase 9)** — sidebar links, empty states, error boundaries per route, i18n catalog extraction. Verification phase.
+**Pattern 3 — Retro-themed error panel, no new React class for errors**
+```tsx
+{permissionDenied && (
+  <RetroPanel showHazardStripe title={t`CAMERA ACCESS DENIED`}>
+    <p className="text-retro-ink">{t`Grant camera permission in browser settings.`}</p>
+    <RetroButton onClick={() => location.reload()}>{t`RETRY`}</RetroButton>
+  </RetroPanel>
+)}
+```
 
-**Rationale:** categories/locations before items because items require them as FKs; borrowers before loans; items before item-photos (server couples photos to item_id); items + loans before scanner (scanner's post-scan actions depend on both). Retro primitives early because every subsequent form uses them.
+**Pattern 4 — FAB hidden on pages that own the primary action**
+```ts
+// useFABActions — return [] to hide FAB entirely
+if (location.pathname === "/scan") return [];
+if (location.pathname.startsWith("/settings")) return [];
+```
+
+**Pattern 5 — localStorage key namespacing (user-facing keys get the `hws-` prefix)**
+```ts
+const SCAN_HISTORY_KEY = "hws-scan-history";  // legacy-consistent; do NOT use `offline-` / `sync-` prefixes (CI grep guard)
+```
+
+## Anti-Patterns to Avoid
+
+**AP-1 — Don't wrap `@yudiel/react-qr-scanner` in a React Context.** The library already owns the camera stream internally; providing `MediaStream` via Context is redundant and creates rerender cascades.
+
+**AP-2 — Don't navigate away from `/scan` for the action menu.** iOS PWA camera permission resets on navigation. The menu MUST overlay the paused `BarcodeScanner`, not replace it.
+
+**AP-3 — Don't invalidate `itemKeys` on scan.** The scan is a read; invalidation wastes a request.
+
+**AP-4 — Don't store scan results in IndexedDB or write a `ScanDatabase` class.** Scan history is 10 entries × small objects = localStorage territory. Any `idb` import trips the CI grep guard.
+
+**AP-5 — Don't re-invent the FAB radial math.** Port the polar-coordinate `getActionPosition(index, radius, startAngle, arcAngle)` from legacy. It is correct and has tests.
+
+**AP-6 — Don't make the FAB a `fixed` element inside each page.** Mount once in `AppShell`. Duplicate mounts create overlay z-index wars and double listeners.
+
+**AP-7 — Don't use `motion` just for the FAB stagger.** CSS `transition-delay` + transforms is sufficient. Adding `motion` (~60 KB gzipped) for three animations is disproportionate.
+
+**AP-8 — Don't name modules with `sync` or `offline` substrings anywhere under `src/`.** CI grep guard (`scripts/check-forbidden-imports.mjs`) blocks any specifier containing those (case-insensitive). This applies to **import specifiers**, so as long as your file is imported with a path like `@/lib/scanner/scan-history`, the filename `scan-history.ts` is fine. But `scan-sync-helper.ts` imported as `from "./scan-sync-helper"` **would fail the build**.
+
+**AP-9 — Don't forget safe-area-inset-bottom on the FAB.** iPhone 13+ home-bar gesture area will clip a bottom-right FAB positioned with plain `bottom-4`. Use `bottom: max(1rem, env(safe-area-inset-bottom))`.
+
+**AP-10 — Don't conflate "barcode on an item" with "short_code on an entity".** The legacy `lookupByShortCode` checks both item.short_code AND item.barcode AND container.short_code AND location.short_code. For v2.2 backend-search-based lookup, the FTS `search` param covers name/SKU/barcode on items only. Containers and locations are not reachable via this search. **Decision for v2.2: scope the `/scan` lookup to items only.** If a container/location short_code is scanned, the user sees "not found" and can create a new item with that code. Legacy's multi-entity lookup relied on IndexedDB full-entity fetch — online-only cannot replicate it without a new backend endpoint, which is out of v2.2 scope.
 
 ## Scalability Considerations
 
-| Concern | Approach |
-|---------|----------|
-| Items list at 10k+ rows | Server-side pagination (backend `/items` already supports it); client uses `RetroPagination`. Avoid virtualization in v2.1. |
-| Loan list growth | Filter by tab (active/overdue) — bounded by real-world loan counts (< few hundred). |
-| Photo upload size | Rely on backend image processor (v1.2 shipped async thumbnails); client just POSTs. |
-| Category tree depth | Use `/categories/{id}/children` lazy expansion rather than full tree fetch. |
+| Concern | v2.2 baseline | Growth plan |
+|---|---|---|
+| Scan latency on slow network | `useQuery` + `staleTime: 30s` caches within a session. First scan of unique code: ~200–500ms (local LAN backend). | If frequent scans against the same code dominate, bump `staleTime` further or add a `placeholderData` for optimistic UI. |
+| Scan history growth | Capped at 10 entries (~2 KB) | Legacy cap is correct; don't grow. |
+| External lookup reliability | OpenFoodFacts + OpenProductsDB can be slow (external). 10s timeout on backend side. | Acceptable — external prefill is a convenience, not required; UI shows "no product info" on timeout and proceeds to item-create form unpopulated. |
+| FAB on large actions list | `getActionPosition` supports N items across an arc. Beyond 5, visual crowding. | Cap at 4 per route in `useFABActions` (matches legacy). |
+| Camera memory on long `/scan` session | WebRTC `MediaStream` holds ~2–10 MB. Resumed stream doesn't leak. | Not observed in legacy; Chrome dev-tools memory tab is the debug path if reports emerge. |
 
-## Pitfalls Flagged
+## Pitfalls Flagged (new to v2.2 beyond v2.1 S-01..S-05)
 
-- **S-01 — iOS PWA camera remount**: scanner must stay mounted. Single-page scan flow is non-negotiable (validated in v1.3).
-- **S-02 — Multipart + JWT refresh**: the current `request<T>` sets `Content-Type: application/json` unconditionally. `postMultipart` must omit it so the browser can set the boundary. Also must replicate the 401 refresh path.
-- **S-03 — HttpError status handling**: feature hooks must branch on `err.status` (404 → not-found UI, 409 → concurrency conflict UI, 422 → validation). No generic "something went wrong" toasts.
-- **S-04 — Lucide bundle**: use named imports (`import { Camera } from "lucide-react"`) and rely on Vite tree-shaking; verify size in production build.
-- **S-05 — Nested route errorElement**: `ErrorBoundaryPage` is attached at the AppShell level; per-feature routes should throw typed errors or provide their own boundaries for better UX.
+**S2.2-01 — Backend `barcode` length constraint.** `GET /api/barcode/{barcode}` enforces `minLength:8 maxLength:14` via Huma validation. A QR code payload, alphanumeric short_code, or truncated scan fails with 422. The external-lookup hook **must** be gated by `/^\d{8,14}$/.test(code)` before calling, else we generate noise and confusing errors. Warehouse lookup via `?search=` has no length constraint and handles any scanned payload.
+
+**S2.2-02 — Scan history not workspace-scoped.** Intentional (legacy decision). If users switch workspaces, clicking a history entry whose `entityId` points to another workspace returns 404/empty. Display-only consequence: gracefully degrade to "not found" re-lookup; don't crash.
+
+**S2.2-03 — External barcode lookup is unauthenticated.** `GET /api/barcode/{barcode}` is registered as public (`router.go:319` — "Register barcode lookup (public, no auth required)"). Implication: no workspace awareness, no rate limit per user, shared across all tenants. Present concern is low (external cached by backend), but a malicious client could flood this endpoint. Flag for backend consideration — not v2.2 blocker.
+
+**S2.2-04 — `@yudiel/react-qr-scanner` dynamic import under Vite.** The legacy uses `next/dynamic` with `ssr: false`. Vite has no SSR concern, so `React.lazy(() => import("@yudiel/react-qr-scanner").then(m => ({ default: m.Scanner })))` works. One gotcha: the library's bundle may tree-shake poorly, meaning lazy-loading saves little. Verify with `bun run build --analyze` in Step 3; if the scanner adds < 30 KB gzipped, statically import it and skip Suspense.
+
+**S2.2-05 — Torch detection side-effect.** The legacy `checkTorchSupport()` starts a real `getUserMedia` stream to inspect `getCapabilities().torch`, then stops it. On iOS this can trigger a **second permission prompt** after the Scanner library already prompted. **Fix:** skip `checkTorchSupport` on iOS (legacy already does this: `if (isIOS) return false`). On Android, consider doing torch detection via the stream the Scanner component already owns (may require `Scanner` ref; library API not documented here, investigate in Step 4).
+
+**S2.2-06 — FAB z-index collision with mobile drawer.** `AppShell` mobile drawer uses `z-20` (backdrop) and `z-30` (panel). Legacy FAB uses `z-50`. FAB at `z-50` **stays on top of the open drawer** — unintuitive. Hide FAB when drawer is open: `className={... (drawerOpen ? "hidden" : "")}` or mount FAB outside the drawer's parent so it's behind by default.
+
+**S2.2-07 — React Router `errorElement` scope.** The `ErrorBoundaryPage` is attached at the `AppShell` route level. A throw in `ScanPage` loses the sidebar and shows a bare retro error page. If scan-specific recovery UI is desired (e.g., "scanner crashed; back to dashboard"), attach a per-route `errorElement` to `/scan`. Defer — current coarse boundary is acceptable.
+
+## New vs Modified Files (summary)
+
+### Modified
+- `src/routes/index.tsx` — no change required; `/scan` route already registered.
+- `src/components/layout/AppShell.tsx` — **one line**: mount `<FloatingActionButton />` inside the main column.
+- `src/lib/api/index.ts` — **one line**: add `export * from "./scan"`.
+- `src/lib/api/items.ts` — add `lookupByBarcode` helper (~10 LOC).
+- `frontend2/package.json` — add `@yudiel/react-qr-scanner@^2.5.1`, `barcode-detector`. **Do not** add `lucide-react` or `motion` (per Q5, Q7).
+
+### New (ordered by build step)
+- **Step 1:** `src/lib/scanner/{init-polyfill.ts, feedback.ts, scan-history.ts, scan-lookup.ts (optional, see AP-10), types.ts, index.ts}` + `__tests__/`
+- **Step 2:** `src/lib/api/scan.ts` + `src/lib/api/__tests__/scan.test.ts`
+- **Step 4:** `src/components/scan/{BarcodeScanner.tsx, ScanErrorPanel.tsx, ScanOverlay.tsx, ManualBarcodeEntry.tsx, index.ts}` + `__tests__/`
+- **Step 5:** `src/features/scan/hooks/{useScanLookup.ts, useScanFeedback.ts, useScanHistory.ts}` + `__tests__/`
+- **Step 6:** `src/features/scan/{ScanPage.tsx, QuickActionMenu.tsx, ScanHistoryList.tsx}` (replace stub) + `__tests__/`
+- **Step 7:** `src/components/fab/{FloatingActionButton.tsx, FABActionItem.tsx, useFABActions.tsx, index.ts}` + `__tests__/`
+
+**Total diff shape:** ~14 new files in `src/components/`, ~6 new files in `src/features/scan/`, ~6 new files in `src/lib/`, ~28 test files. No changes to `retro/` barrel. No changes to existing features beyond small hooks/routes wiring (Step 8).
+
+## Debt Closure — Stabilization Architecture Touches
+
+These items are hygiene/debt, not architectural — but each has a small architectural touch:
+
+| Item | Architectural implication |
+|---|---|
+| VERIFICATION.md backfill for v2.1 phases 58/59/60 | None — documentation only. |
+| Sign off 8 unsigned `/demo` checkpoints for Phase 57 retro primitives | Exercise `src/pages/DemoPage.tsx` harness; confirm retro components are wired to demo routes. No new code. |
+| Nyquist retroactive validation for v1.9 phases 43–47 | No architecture touch; runs `/gsd:validate-phase` tooling against already-shipped legacy code. |
+| **pendingchange handler.go unit tests (57.3% → ≥80%)** | **New test scaffolding in `backend/internal/domain/warehouse/pendingchange/`.** Requires extracting dependencies behind interfaces (same pattern as v1.4 `WorkspaceBackupQueries` and `ServiceInterface`) so handler functions can be unit-tested with mocked repo. Functional-options-pattern factories from v1.4 are available (`backend/internal/testutil/factory/`). No new external packages. |
+| **jobs ProcessTask unit tests (20.1% → actionable baseline)** | **Interface extraction** of task-processor dependencies (DB, Asynq client) to enable mocking. Architectural constraint flagged in v1.4: ProcessTask methods require database integration. A `ProcessorDeps` interface + constructor injection unblocks meaningful unit tests. |
+| Remove 56 `waitForTimeout` calls across 24 E2E files | Event-driven wait helpers (`waitForURL`, `waitForSelector` with network-idle alternative `domcontentloaded`). Codebase already has the pattern (v1.4); apply mechanically. |
+| Adopt orphaned Go test factories | Refactor Phase 23/24 integration tests to use `testutil/factory/` — same-package rename, no new code. |
+| Fix 4 pre-existing Vitest failures (`frontend/lib/api/__tests__/client.test.ts`, `use-offline-mutation.test.ts`) | Localized test fixes in **legacy `/frontend`** — explicitly out of `frontend2/` grep-guard scope. These tests exist to maintain the legacy code until deprecation; no `frontend2/` changes. |
+
+**Summary touch-points:** only the backend coverage items (pendingchange, jobs) require new Go production code (interface extraction for mock-ability). The rest are test-only or doc-only.
 
 ## Sources
 
-- `frontend2/src/lib/api.ts`, `routes/index.tsx`, `components/retro/index.ts`, `features/*/`, `lib/types.ts`, `package.json` (read 2026-04-14)
-- Backend handlers: `backend/internal/domain/warehouse/{item,loan,borrower,category,location,container,itemphoto}/handler.go` (Huma/Chi routes verified)
-- `frontend/components/scanner/barcode-scanner.tsx` and `frontend/package.json` (reference scanner, @yudiel/react-qr-scanner ^2.5.1)
-- `.planning/PROJECT.md` v2.1 scope and key decisions (HIGH confidence — project-owned doc)
+- **Backend (HIGH):**
+  - `backend/internal/domain/barcode/{handler,service}.go` — confirmed external-only lookup, no workspace search
+  - `backend/internal/domain/warehouse/item/{handler.go (lines 56, 583), repository.go (line 28)}` — confirmed `FindByBarcode` is repository-only; `/items` list endpoint does FTS over name/SKU/barcode
+  - `backend/internal/api/router.go:319` — confirmed `/api/barcode/{barcode}` is public
+- **Frontend2 current state (HIGH):**
+  - `frontend2/src/routes/index.tsx` — confirmed declarative `<Routes>`, `/scan` stub registered
+  - `frontend2/src/components/retro/index.ts` — 19 retro atoms already exported (no new ones needed)
+  - `frontend2/src/lib/api.ts` — `postMultipart` present; 401 refresh single-flight pattern
+  - `frontend2/src/lib/api/items.ts` — workspace-scoped `itemsApi`; `itemKeys` query-key factory
+  - `frontend2/src/features/items/hooks/useItemsList.ts` — canonical `useQuery` pattern with `useAuth().workspaceId`
+  - `frontend2/src/features/items/hooks/useItemMutations.ts` — canonical invalidation pattern
+  - `frontend2/src/components/layout/AppShell.tsx` — confirmed shell layout, mobile drawer z-index (20/30)
+  - `frontend2/src/features/auth/AuthContext.tsx` — HttpError 401/403 token-clear only
+  - `frontend2/package.json` — confirmed deps; `motion`, `lucide-react`, `@yudiel/react-qr-scanner` NOT installed
+  - `scripts/check-forbidden-imports.mjs` — CI grep guard rules (exact `idb`/`serwist`, substring `offline`/`sync`)
+- **Legacy `/frontend` reference patterns (HIGH):**
+  - `frontend/components/scanner/{barcode-scanner,quick-action-menu}.tsx` — legacy scanner component and action menu (to port + retheme)
+  - `frontend/lib/scanner/{init-polyfill,feedback,scan-history,scan-lookup,types}.ts` — port verbatim (minus `"use client"`, minus IndexedDB in `scan-lookup`)
+  - `frontend/components/fab/floating-action-button.tsx` — FAB polar-coordinate math
+  - `frontend/lib/hooks/use-fab-actions.tsx` — route-aware FAB actions pattern
+- **Project docs (HIGH):**
+  - `.planning/PROJECT.md` v2.2 scope, Decisions, Tech Debt
+  - `.planning/STATE.md` — confirms defining-requirements state and prep items
+  - `.planning/research/ARCHITECTURE_MOBILE_UX.md` v1.3 — ported patterns (iOS PWA camera, Fuse.js offline, progressive forms) — only the iOS PWA scanner constraint still applies for v2.2
+- **Dependency compatibility (MEDIUM):**
+  - `frontend/bun.lock:767` — `@yudiel/react-qr-scanner@2.5.1` declares `react ^17 || ^18 || ^19` peer; React 19.2.5 in `frontend2` satisfies.

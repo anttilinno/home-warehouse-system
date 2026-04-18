@@ -1,20 +1,23 @@
-# Technology Stack — v2.1 Feature Parity Additions
+# Technology Stack — v2.2 Scanning & Stabilization Additions
 
 **Project:** Home Warehouse System — `/frontend2` retro frontend
-**Researched:** 2026-04-14
+**Researched:** 2026-04-18
 **Mode:** Ecosystem (targeted additions)
 **Overall confidence:** HIGH
 
 ## Context Summary
 
-`/frontend2` is a Vite 8 + React 19 + React Router v7 + Tailwind CSS 4 SPA with a hand-rolled retro component library and Lingui i18n. Online-only, no PWA/offline/IndexedDB layer. v2.1 needs:
+`/frontend2` is already on its v2.1 baseline (Vite 8 + React 19.2.5 + React Router v7 library mode + Tailwind CSS 4, TanStack Query v5, react-hook-form + zod, Lingui v5, `@floating-ui/react` 0.27, hand-rolled retro component library, online-only). v2.2 adds:
 
-1. Items CRUD (list + detail + create/edit + photo upload)
-2. Loan management (loans + returns + history)
-3. Barcode scanning (camera-based, reuse frontend1 patterns)
-4. Categories / Locations / Containers management
+1. Barcode/QR scanner at `/scan` (QR + UPC/EAN + Code128) with torch, feedback, and scan history
+2. Manual barcode entry fallback
+3. Quick-action menu after a successful scan (View/Loan/Move/Repair)
+4. Mobile Floating Action Button with context-aware radial menu
+5. Scan integration inside loan creation + quick capture flows
 
-Backend API exists and is used by frontend1. Goal is the **minimum library surface** compatible with the retro aesthetic.
+This document covers **only the NEW libraries** required beyond the v2.1 baseline. All v2.1 decisions (React Query, RHF, zod, Lingui, `@floating-ui/react`, retro components) carry forward unchanged.
+
+---
 
 ## Recommended Stack Additions
 
@@ -22,132 +25,180 @@ Backend API exists and is used by frontend1. Goal is the **minimum library surfa
 
 | Library | Version | Purpose | Why |
 |---------|---------|---------|-----|
-| `@tanstack/react-query` | `^5.62.x` | Server state / caching for items, loans, categories, locations | Standard for React 19 SPAs; dedupes requests, background refetch, optimistic updates for CRUD. Frontend1 leans on Next server components/fetch — those don't translate, so an explicit client cache is essential here. |
-| `react-hook-form` | `^7.70.x` | Forms for items/loans/categories/locations | Matches frontend1. Works with plain inputs (no Radix required). Integrates with zod via `@hookform/resolvers`. |
-| `@hookform/resolvers` | `^5.2.x` | RHF ↔ zod bridge | One-liner schema validation. |
-| `zod` | `^4.3.x` | Schema validation (shared with backend error shapes) | Already used in frontend1; keep identical request/response types across frontends. |
-| `@yudiel/react-qr-scanner` | `2.5.1` (exact) | Camera barcode/QR scanning | **Reuse from frontend1.** Project-validated on iOS/Android (v1.3, v1.9), ZXing-based, handles QR/UPC/EAN/Code128. React 19 compatible. Headless enough to wrap in a retro dialog. |
-| `barcode-detector` | `3.0.0` (exact) | Polyfill for BarcodeDetector API | `@yudiel/react-qr-scanner` uses native `BarcodeDetector` when present; the polyfill is what frontend1 ships for iOS Safari / desktop Firefox. Keep parity. |
-| `date-fns` | `^4.1.x` | Loan due-date / return-date formatting, relative time for history | Small, tree-shakeable. Matches frontend1 tokens so existing `useDateFormat` hook keeps working. |
+| `@yudiel/react-qr-scanner` | `2.5.1` (exact) | Camera-based QR + 1D barcode scanning | React 19 peerDep-clean (`^17 \|\| ^18 \|\| ^19`), same version frontend1 ships in production through v1.9, built on the native `BarcodeDetector` API with a bundled `barcode-detector` polyfill. Exposes QR + UPC/EAN + Code128 + Code39 + DataMatrix + PDF417 + ITF out of the box. Built-in `torch` UI option (`components.torch: true`) handles flashlight plumbing. ~100 kB gzip incl. polyfill WASM loader. |
+| `ios-haptics` | `^0.1.4` | Haptic feedback on scan + FAB tap (iOS Safari) | `navigator.vibrate` is unreliable on iOS Safari (WebKit intentionally does not expose a public vibration API; status has shifted in 2025–2026 but cannot be relied on). `ios-haptics` uses a hidden `<input type="checkbox" switch>` label-click hack that iOS Safari treats as a system haptic, and falls back to `navigator.vibrate` on Android. 4.7 kB unpacked, zero runtime deps. Matches frontend1 decision. |
+| `uuid` | `^13.0.0` | Client-generated idempotency keys for scan-driven creates | Already mandated by v1.1 decision for all creates; scan "not-found → create" flow needs it. `@types/uuid` v11 for types. |
 
-### Likely Needed (recommended)
+### Deliberately NOT Added
 
-| Library | Version | Purpose | Why |
-|---------|---------|---------|-----|
-| `@tanstack/react-virtual` | `^3.13.x` | Virtualize items list | Items list can reach thousands of rows; virtualization keeps retro table scrolling at 60fps. Headless — no style injection. |
-| `uuid` | `^13.0.x` (UUIDv7) | Client-side idempotency keys for create mutations | Backend expects UUIDv7 idempotency keys per v1.1 decision. Even online-only, this avoids duplicate creates on double-tap. |
+| Library | Alternative Chosen | Reason |
+|---------|--------------------|--------|
+| `barcode-detector` (direct dep) | Bundled by `@yudiel/react-qr-scanner@2.5.1` as `barcode-detector@3.0.8` | Declaring it directly forces version drift risk. The scanner pins its own polyfill and re-exports are not needed. The v2.1 STACK.md entry for `barcode-detector@3.0.0` was speculative — frontend2 never installed it, and `@yudiel/react-qr-scanner@2.5.1` already pulls in `3.0.8` automatically. Drop the direct dep from the v2.1 plan. |
+| `html5-qrcode` | `@yudiel/react-qr-scanner` | No React bindings, DOM-mutation API, 2.5 MB unpacked, not React-19-aware. Would require a wrapper component and fights Tailwind/retro styling with injected chrome. |
+| `@zxing/browser` + `@zxing/library` | `@yudiel/react-qr-scanner` (which wraps the same engine family) | ~15 MB combined unpacked, no peerDep on React, no torch helper, would require ~200 LOC of glue to get to feature parity with `@yudiel`. |
+| `@ericblade/quagga2` | `@yudiel/react-qr-scanner` | QR detection is weak (Quagga2 is 1D-focused), 3.7 MB unpacked, depends on `gl-matrix`. Used by legacy /frontend v1.3, but the project already migrated off it when adopting `@yudiel` in v1.9. Regressing would be a step backward. |
+| `react-haptic-feedback` / generic haptic wrappers | `ios-haptics` | `ios-haptics` is the specific technique that works on iOS Safari 17.4+; generic wrappers only call `navigator.vibrate` and silently no-op on iOS. |
+| `@spaceymonk/react-radial-menu` | Hand-rolled FAB + radial menu on top of existing `@floating-ui/react` | Only 48 kB unpacked but imposes its own theming, animation model, and sub-menu assumptions. FAB radial with 3–5 static actions is ~150 LOC using existing `@floating-ui/react` primitives; we already own the animation tokens via Tailwind 4. Avoid a library that fights the retro aesthetic. |
+| `@radix-ui/react-popover` | `@floating-ui/react` (already installed) | `@floating-ui/react` is what Radix itself uses under the hood. We already have it for RetroCombobox. Adding Radix would reintroduce chrome/theme conflicts we avoided in v2.1. |
+| `react-easy-radial-menu` | Hand-rolled | Package does not exist on npm (confirmed 404 on registry lookup). Listed in the question as a candidate but it is not a real library. |
+| `idb` / IndexedDB wrapper | `localStorage` (scan history only) | Online-only stance per v2.1. Scan history is capped at last 10 entries (~1 kB JSON). `localStorage` is synchronous, survives reloads, and needs no library. |
 
-### Optional / Defer
+### Already in Place (NOT re-added)
 
-| Library | Why Possibly Needed | Recommendation |
-|---------|---------------------|----------------|
-| `fuse.js` | Client-side fuzzy search over items | **Defer.** Online-only — prefer backend search. Add only if backend lacks fuzzy search or UX demands instant filter without round-trip. |
-| `cmdk` | Command palette / searchable combobox for category/location pickers | **Defer unless needed.** Retro aesthetic likely wants a hand-built listbox; re-evaluate during design. |
-| `sonner` | Toast notifications | **Skip.** Retro toast component already exists. |
-| `lucide-react` | Icons | **Check first.** If the retro lib ships pixel/terminal glyphs, do not add. Otherwise add sparingly. |
-| `motion` (Framer) | Animations | **Skip for v2.1.** Retro aesthetic leans on CSS transitions; avoid ~50kB bundle bump. |
-| `@dnd-kit/*` | Drag-reorder for category tree | **Defer.** Up/down buttons suffice initially. |
-| `papaparse` | CSV import/export | **Defer — out of scope for v2.1.** |
-| `ios-haptics` | Scan haptic feedback parity | Optional (1kB). Add only if UX review asks for it. |
+| Existing | Use in v2.2 |
+|----------|-------------|
+| `@floating-ui/react@^0.27.19` | FAB radial menu positioning, quick-action menu after scan, scan-history popover. Use `useFloating` + `useTransitionStyles` + `FloatingPortal`. |
+| `@tanstack/react-query@^5` | Barcode lookup mutation (`POST /api/items/lookup`), item-not-found → create mutation, scan-driven loan creation. |
+| `react-hook-form@^7.72.1` + `@hookform/resolvers` + `zod@^4.3.6` | Manual barcode entry input (format validation), "item not found → create" form. |
+| `@lingui/core` + `@lingui/react` | All scanner strings + FAB action labels. Estonian catalog must gap-fill (carryover from v2.1). |
+| Retro components (`RetroButton`, `RetroPanel`, `RetroDialog`, `RetroInput`, `RetroToast`, `RetroFormField`) | Scanner shell, manual entry modal, not-found overlay, quick-action menu visuals. |
 
-### Explicitly NOT Adding (Anti-dependencies)
+---
 
-| Library | Why Not |
-|---------|---------|
-| `@radix-ui/*` | Duplicates retro component library; Radix default chrome fights terminal styling. Build dialog/popover/select on retro primitives. |
-| `next-intl` | Frontend2 uses Lingui — keep it. |
-| `next-themes` | No Next.js; existing frontend2 theme toggle already works without it. |
-| `serwist` / `@serwist/next` | v2.1 is **online-only**. No service worker, no PWA. |
-| `idb` | No IndexedDB — no offline queue, no form-draft persistence in v2.1. |
-| `recharts` | No charts in v2.1 feature set. |
-| `class-variance-authority`, `clsx`, `tailwind-merge` | Only if retro lib lacks a className helper. Check `frontend2/src` first — likely already solved. |
+## Integration Notes (Vite 8 + React 19 + Tailwind 4 specific)
 
-## Photo Upload Approach
+### `@yudiel/react-qr-scanner` with Vite 8
 
-**Recommendation: `multipart/form-data` direct to backend, via native `FormData` + `fetch` wrapped in a React Query mutation. No extra library.**
+- The library ships ESM + CJS; Vite 8 picks ESM automatically.
+- Depends on `webrtc-adapter@9.0.3` (runtime, not peer). This imports `sdp` and uses `globalThis` — both fine with Vite 8's default config.
+- The `barcode-detector` polyfill lazy-loads a WASM blob from `zxing-wasm`. In Vite, leave it dynamic — do not `optimizeDeps.include` it, or the WASM binary ends up in the main chunk.
+- Production build: add `zxing-wasm` to `build.rollupOptions.output.manualChunks` under a `"scanner"` chunk name so it splits off the main bundle (keeps first-paint budget intact for users who never hit `/scan`).
+- Dev HMR: scanner unmount leaks `MediaStreamTrack`s if the `<Scanner>` unmounts without `track.stop()`. The library handles this internally in 2.5.x but only if the component actually unmounts. Ensure the `/scan` route uses `React.lazy` and an `AbortController` pattern so HMR-triggered remounts don't accumulate camera handles.
 
-Rationale:
-- Backend's `itemphoto` endpoints (92.4% coverage per v1.4) already accept multipart from frontend1. Matching the wire format = zero backend changes.
-- Base64 in JSON bloats payloads 33% and blocks the main thread encoding large camera frames.
-- No offline queue in v2.1 → no need for IndexedDB blob storage (the v1.9 quickCapturePhotos pattern).
-- `<input type="file" accept="image/*" capture="environment">` gives native iOS/Android camera + gallery picker with zero JS. Wrap in retro-styled label.
-- Multi-photo upload: prefer **per-photo POST** calls via `Promise.allSettled` so one failure doesn't lose the whole set. Match whatever helper frontend1's `client.ts` exposes.
+### Tailwind 4 + retro overlay on the video element
 
-Client-side resize (optional, recommended):
-- Use `createImageBitmap` + `OffscreenCanvas` + `canvas.convertToBlob({ type: 'image/webp', quality: 0.85 })` to downsample >4000px phone captures to ~1920px before upload.
-- Zero-dep native API. 5–10× bandwidth savings on mobile.
-- Degrade gracefully: if `OffscreenCanvas` unavailable (older Safari), upload raw.
+- `<Scanner>` renders its own `<video>` element; Tailwind classes applied to the wrapping container work but cannot style the inner video. For the retro scanline + corner brackets, position an absolute-sibling `<RetroPanel>` overlay inside the same container — same pattern frontend1 used.
+- Tailwind 4's `@property` and container queries work normally; no special config for the scanner.
 
-Progress UI:
-- `fetch` doesn't expose upload progress. Use a small `XMLHttpRequest` wrapper (~30 lines) inside the React Query mutation when progress matters.
-- For v2.1 MVP, a simple "Uploading… / Done" indicator via mutation `isPending` is sufficient.
+### iOS Safari quirks (critical)
 
-## Barcode Scanner Reusability
+1. **Camera permission persistence**: iOS PWA loses camera permission on navigation away from a page with an active `getUserMedia` stream. The existing v2.1 decision — single-page scan flow at `/scan` — carries forward. Do NOT allow sub-routes inside `/scan`; use modal overlays and state for "not found → create", loan selection, etc.
+2. **Torch on iOS**: `MediaStreamTrack.applyConstraints({ advanced: [{ torch: true }] })` is **ignored on iOS Safari** (WebKit bug #243075, still open as of 2026-04). `@yudiel/react-qr-scanner`'s built-in torch button will render but silently no-op on iPhone. Plan the UX accordingly:
+   - Detect `track.getCapabilities().torch === true` before rendering the torch button — the library already does this, so the button auto-hides on iOS.
+   - Communicate "Flashlight unavailable on iOS" in a `RetroTooltip` attached to the camera icon area, not as a disabled button.
+   - Android Chrome/Firefox: torch works via the library's built-in control with no extra code.
+3. **Haptics**: Use `ios-haptics` `triggerHapticFeedback()` on every successful scan. Do not call `navigator.vibrate` directly — on iOS Safari it may or may not no-op depending on Safari version and the result is inconsistent (per MDN browser-compat issue #29166).
+4. **Audio feedback**: Use a single long-lived `AudioContext` created lazily on the first user tap (permission gesture) and reused for every scan beep. Do **not** `new Audio('/beep.mp3').play()` each time — mobile Safari stalls the third or fourth playback and `.play()` returns a rejected promise under silent-switch. Trade-off: Web Audio respects the iOS silent switch (emits nothing when muted); HTMLAudioElement does not. For a scan-feedback beep this is the correct behavior — users on silent expect silence.
+   - Pattern: `audioCtx = audioCtx ?? new (window.AudioContext || webkitAudioContext)()`, then `const osc = audioCtx.createOscillator(); osc.frequency.value = 880; osc.connect(audioCtx.destination); osc.start(); osc.stop(audioCtx.currentTime + 0.08);`
+   - Zero-dep; no MP3 asset to ship.
+   - Call `audioCtx.resume()` inside the same click handler that opens `/scan`.
+5. **Tab backgrounding**: `MediaStream` tracks pause on iOS when the tab is backgrounded. The scanner library handles visibility-change, but our wrapper must show a "Tap to resume" overlay when `document.visibilityState` returns to `visible`.
 
-**`@yudiel/react-qr-scanner` is fully reusable in frontend2.** Confidence: HIGH.
+### FAB + radial menu build pattern
 
-- Plain React component, no Next.js coupling.
-- Renders its own `<video>` + overlay; viewfinder frame is CSS-stylable via `constraints` and a custom child overlay.
-- React 19 compatible (frontend1 ships React 19.2.3 + this scanner in production).
-- Retro styling: mount `<Scanner>` inside the existing retro dialog/modal primitive; layer absolute-positioned retro SVG corner brackets + scanline over the video. The library doesn't force its own chrome.
-- Keep the `barcode-detector` polyfill dep — the scanner auto-detects and uses it on iOS Safari.
+Use what's already installed. No new dep.
 
-**Do NOT lift the entire frontend1 `BarcodeScanner` component verbatim** — it's tangled with offline scan history (IndexedDB), AudioContext beep, and ios-haptics. For v2.1, build a lean retro wrapper:
-- Camera permission prompt → retro dialog
-- Scan result → close dialog, route to item detail or "not found → create" flow
-- Flashlight toggle via `MediaStreamTrack.applyConstraints({ torch: true })` (same technique as frontend1)
-- Skip scan history persistence (online-only, no IndexedDB)
-- Audio/haptic feedback optional
+```tsx
+// Sketch — real implementation uses retro components + Lingui
+import { useFloating, FloatingPortal, useTransitionStyles } from '@floating-ui/react'
+import { useLongPress } from 'react' // or inline timer; no use-long-press dep needed
 
-## Integration with Existing Retro Library
+function FabRadialMenu({ actions }) {
+  const [open, setOpen] = useState(false)
+  const { refs, floatingStyles } = useFloating({ open, onOpenChange: setOpen, placement: 'top' })
+  // Radial layout: compute N anchor points on a 96px-radius arc from refs.floating.
+  // Animate with Tailwind 4 transition utilities + data-[state=open]:... variants.
+}
+```
 
-- **Forms:** RHF's `register()` returns `{ name, ref, onChange, onBlur }` — drop-in for retro `<RetroInput>` as long as it forwards refs. Verify `forwardRef` is set on existing input components; if not, one-line fix per component.
-- **Dialogs:** Use existing retro dialog for scanner, delete confirmation, photo viewer. No Radix.
-- **Select / combobox:** Category and location pickers need searchable trees. If retro lib has only a basic `<RetroSelect>`, build a retro combobox on top of a plain button + floating panel + keyboard nav (~100 lines). Avoid cmdk to preserve aesthetic.
-- **Tables:** Existing retro table + `@tanstack/react-virtual` for the items list body. Keep thead/tfoot normal, virtualize tbody rows.
-- **Toasts:** Existing retro toast; wire React Query's `onError`/`onSuccess` to it.
+- 3–5 actions laid out on a quarter-circle arc above the 56 px FAB.
+- Context-aware: `/items` → [Scan, New Item, Quick Capture]; `/loans` → [Scan, New Loan]; default → [Scan, New Item].
+- Backdrop-scrim modal-style dismiss on outside tap (floating-ui's `useDismiss` handles it).
+- Haptic on FAB press (`ios-haptics`), haptic on action selection.
+- Hidden on ≥md breakpoint via `md:hidden`.
+- Visible Viewport API integration (already used in v1.3) keeps the FAB above the on-screen keyboard.
+
+### Scan history persistence
+
+**Stance: localStorage, confirmed.** Online-only milestone, 10 entries max, synchronous API is fine for UI reads.
+
+```ts
+type ScanHistoryEntry = { code: string; format: string; timestamp: number; itemId?: string }
+const KEY = 'hw:scan-history:v1'
+// 10 entries × ~100 bytes = ~1 kB. localStorage quota (~5 MB) is unaffected.
+```
+
+- Version the storage key (`:v1`) so future schema changes don't crash existing sessions.
+- Wrap reads in a try/catch — private browsing on iOS Safari can throw on `setItem`.
+- Do NOT add `idb` / IndexedDB. Revisit in v2.3+ if offline scanning enters scope.
+
+---
 
 ## Installation
 
 ```bash
-# Core
-npm install @tanstack/react-query react-hook-form @hookform/resolvers zod \
-            @yudiel/react-qr-scanner@2.5.1 barcode-detector@3.0.0 \
-            date-fns uuid
-
-# Recommended
-npm install @tanstack/react-virtual
-
-# Dev
-npm install -D @types/uuid
+cd frontend2
+bun add @yudiel/react-qr-scanner@2.5.1 ios-haptics uuid
+bun add -d @types/uuid
 ```
 
-Lock `@yudiel/react-qr-scanner` and `barcode-detector` to the exact versions frontend1 uses (`2.5.1` / `3.0.0`) for behavioral parity while both frontends coexist.
+Lock `@yudiel/react-qr-scanner` to `2.5.1` exact (no caret) for parity with frontend1 and to avoid picking up unannounced 2.6.x breaking changes while both frontends coexist. `ios-haptics` and `uuid` can use caret ranges.
 
-## Version Compatibility Notes
+Resulting `dependencies` delta in `frontend2/package.json`:
 
-- All listed libraries support React 19. React Query v5 officially supports React 18+; no issue on 19.
-- `zod` v4 is current and matches frontend1. Do not mix v3/v4 — schema types differ.
-- `date-fns` v4 is ESM-first; native with Vite 8.
-- Vite 8 (in frontend2) handles all of the above without plugin changes. SWC plugin for Lingui keeps working.
+```json
+"@yudiel/react-qr-scanner": "2.5.1",
+"ios-haptics": "^0.1.4",
+"uuid": "^13.0.0"
+```
 
-## Alternatives Considered
+Dev delta:
 
-| Category | Recommended | Alternative | Why Not |
-|----------|-------------|-------------|---------|
-| Server state | React Query v5 | SWR | RQ has richer mutation/optimistic APIs. SWR lighter but weaker mutation story. |
-| Forms | react-hook-form | TanStack Form | RHF battle-tested, matches frontend1. TanStack Form adds learning curve for zero gain. |
-| Barcode | `@yudiel/react-qr-scanner` | `react-zxing`, `html5-qrcode` | Project already validated `@yudiel` across iOS PWA; re-testing alternatives is pure risk. |
-| Photo upload | native FormData + fetch/XHR | `react-dropzone`, `filepond`, `uppy` | All bring styling baggage that fights retro aesthetic. Native input + label handles drag-drop in ~10 lines. |
-| Image resize | native `createImageBitmap` + `OffscreenCanvas` | `browser-image-compression`, `pica` | Native is zero-dep and fast; libraries add 20–50kB for marginal quality gains. |
-| Virtualization | `@tanstack/react-virtual` | `react-window`, `react-virtuoso` | TanStack Virtual is headless — critical for retro look. |
-| Date | `date-fns` | `dayjs`, `luxon` | Frontend1 uses date-fns; keep identical formatting tokens. |
+```json
+"@types/uuid": "^11.0.0"
+```
+
+Total added transitive cost: `@yudiel/react-qr-scanner` pulls `barcode-detector@3.0.8` (which pulls `zxing-wasm@3.0.2`) and `webrtc-adapter@9.0.3`. Together ~700 kB unpacked, but the bulk is the `zxing-wasm` binary which must be chunked (see Vite integration note above).
+
+---
+
+## Version & Compatibility Matrix (verified 2026-04-18)
+
+| Library | Installed Version | React 19 peerDep | Bundle (gzip, approx) | Notes |
+|---------|-------------------|------------------|----------------------|-------|
+| `@yudiel/react-qr-scanner` | `2.5.1` | `^17 \|\| ^18 \|\| ^19` ✓ | ~25 kB (wrapper) + ~75 kB lazy (WASM polyfill) | Latest on npm; no 2.6.x exists. Confirmed via `npm view`. |
+| `barcode-detector` (transitive) | `3.0.8` | none (non-React) | ~70 kB gzip (WASM binary separate) | Pulled in by `@yudiel` 2.5.1; do not install directly. |
+| `webrtc-adapter` (transitive) | `9.0.3` | none | ~15 kB gzip | WebRTC shim; works on all modern mobile browsers. |
+| `ios-haptics` | `0.1.4` | none (`>=16.8` React implicit via peer) | <1 kB gzip | 4.7 kB unpacked, vanilla JS. Works without React. |
+| `uuid` | `13.x` | none | ~2 kB gzip (v7 subset) | Tree-shake to `import { v7 } from 'uuid'`. |
+
+Confidence on each row: HIGH (registry-verified).
+
+---
+
+## Alternatives Considered (summary)
+
+| Need | Recommended | Alternatives rejected | Reason |
+|------|-------------|----------------------|--------|
+| Barcode/QR scanning | `@yudiel/react-qr-scanner@2.5.1` | `html5-qrcode`, `@zxing/browser`, `@ericblade/quagga2` | Only `@yudiel` has React 19 peerDep, built-in torch API, and is already production-validated across iOS PWA in this project. |
+| Haptics | `ios-haptics` | `navigator.vibrate` direct, `react-haptic-feedback` | `ios-haptics` is the only approach known to work on iOS Safari using the checkbox-switch trick. Direct `navigator.vibrate` is unreliable on iOS. |
+| Audio | Native `AudioContext` (oscillator) | `new Audio('/beep.mp3')`, `howler.js`, `tone.js` | A 2-line oscillator has zero dep cost and respects silent mode. Ship no MP3 asset. |
+| Radial menu | Hand-rolled with `@floating-ui/react` | `@spaceymonk/react-radial-menu`, `@radix-ui/react-popover` | We already own `@floating-ui/react`. 3–5 static actions do not justify a dependency that brings its own theme and animations. |
+| Long-press | Inline `pointerdown` timer (~20 LOC) | `use-long-press@3.3.0` | Frontend1 used it; for frontend2 the primitive is small enough to inline and avoids another dep. Revisit if we need press-and-hold on >3 places. |
+| Scan history | `localStorage` with versioned key | `idb`, in-memory only | Online-only milestone; 10 entries × ~100 B; synchronous is fine. No IndexedDB layer exists in frontend2 and adding one would contradict v2.1. |
+
+---
+
+## Risk Flags for Requirements/Roadmap
+
+1. **iOS torch is a real gap, not a bug.** Any copy that says "tap the flashlight icon" will be wrong on half the user base. The requirements doc should state: "Flashlight toggle on Android browsers only; hidden automatically on iOS." The library handles the detection; ensure the UI copy doesn't promise it.
+2. **First-scan audio silence on iOS.** The `AudioContext` must be `resume()`-ed during the same user gesture that navigates to `/scan`. If we lazy-init on first scan, the first scan will be silent. Plan a prep step in the navigation handler.
+3. **Camera permission re-prompt on sub-navigation.** The single-route `/scan` page is load-bearing. Ensure the roadmap does not split scanning into nested routes (`/scan/result`, `/scan/manual`) — use overlays/state on the single route.
+4. **Scanner chunk size.** The ~70 kB WASM binary must be manual-chunked in `vite.config.ts` or it bloats the main-bundle gzip budget for users who never open `/scan`. Add this to the scanner phase's acceptance checklist.
+5. **Scan history schema**. Use a versioned `localStorage` key from day one — `hw:scan-history:v1`. If we later move to IndexedDB (v2.3+ offline milestone), we want a clean cutover, not a silent format collision.
+6. **`ios-haptics` maintenance.** Version is 0.1.4, stable but lightly maintained. If it breaks, the fallback is `navigator.vibrate` with a documented iOS gap. Acceptable risk for <1 kB of code.
+
+---
 
 ## Sources
 
-- `frontend/package.json` — proven-working deps in this project (HIGH)
-- `frontend2/package.json` — current baseline (HIGH)
-- `.planning/PROJECT.md` — v1.3 / v1.9 decisions confirming `@yudiel/react-qr-scanner` + `barcode-detector` reliability (HIGH)
-- React Query v5 docs — React 19 compatibility (HIGH, training data)
-- MDN BarcodeDetector API / OffscreenCanvas support matrix (HIGH, training data)
-- `@yudiel/react-qr-scanner` npm — verified via frontend1 usage through v1.9 (HIGH)
+- `frontend2/package.json` — existing baseline (HIGH)
+- `frontend/package.json` — legacy reference, validates `@yudiel/react-qr-scanner@2.5.1` + `ios-haptics@0.1.4` in production (HIGH)
+- `.planning/PROJECT.md` — v1.3 / v1.9 decisions confirming scanner + haptics + AudioContext choices (HIGH)
+- npm registry `npm view` — version, peerDep, and unpacked-size verification for every listed library as of 2026-04-18 (HIGH)
+- [WebKit bug #243075 "torch track constraint ignored on iOS"](https://bugs.webkit.org/show_bug.cgi?id=243075) — torch unsupported on iOS Safari (HIGH)
+- [MDN browser-compat-data issue #29166 "navigator.vibrate works on iOS Safari"](https://github.com/mdn/browser-compat-data/issues/29166) — iOS vibration API status is inconsistent (MEDIUM — community tracking, not spec)
+- [Matt Montag — "Unlock JavaScript Web Audio in Safari"](https://www.mattmontag.com/web/unlock-web-audio-in-safari-for-ios-and-macos) — `AudioContext.resume()` on user gesture (MEDIUM)
+- [tijnjh/ios-haptics GitHub](https://github.com/tijnjh/ios-haptics) — checkbox-switch haptic technique (HIGH — library source)
+- [@yudiel/react-qr-scanner npm](https://www.npmjs.com/package/@yudiel/react-qr-scanner) — torch component prop, camera API (HIGH)
+- [@yudiel/react-qr-scanner GitHub](https://github.com/yudielcurbelo/react-qr-scanner) — 2.5.1 release, peerDeps (HIGH)
