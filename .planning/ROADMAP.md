@@ -451,7 +451,7 @@ Plans:
 | 43-47 | v1.9 | 9 | Complete | 2026-03-14 |
 | 48-55 | v2.0 | 18 | Complete | 2026-04-14 |
 | 56-63 | v2.1 | 29 | Complete | 2026-04-17 |
-| 64 | v2.2 | 9/10 | In progress | - |
+| 64 | v2.2 | 10/10 | Complete | 2026-04-18 |
 | 65 | v2.2 | 0/? | Not started | - |
 | 66 | v2.2 | 0/? | Not started | - |
 | 67 | v2.2 | 0/? | Not started | - |
