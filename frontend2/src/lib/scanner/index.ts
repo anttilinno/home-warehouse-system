@@ -3,7 +3,7 @@
  *
  * Barcode and QR code scanning utilities for the Home Warehouse System.
  *
- * Phase 64 surface only — no `scan-lookup` export (deferred to Phase 65).
+ * Phase 64 surface only — entity-lookup exports deferred to Phase 65.
  *
  * @example
  * ```typescript
