@@ -97,14 +97,61 @@
 
 ## Traceability
 
-**Filled by roadmap creation** — each REQ-ID maps to exactly one phase.
+Every v2.2 REQ-ID maps to exactly one phase. Coverage: 32/32 (100%).
 
 | REQ-ID | Phase | Status |
 |--------|-------|--------|
-| TBD    | TBD   | TBD    |
+| SCAN-01 | Phase 64 | Pending |
+| SCAN-02 | Phase 64 | Pending |
+| SCAN-03 | Phase 64 | Pending |
+| SCAN-04 | Phase 64 | Pending |
+| SCAN-05 | Phase 64 | Pending |
+| SCAN-06 | Phase 64 | Pending |
+| SCAN-07 | Phase 64 | Pending |
+| LOOK-01 | Phase 65 | Pending |
+| LOOK-02 | Phase 65 | Pending |
+| LOOK-03 | Phase 65 | Pending |
+| QA-01 | Phase 66 | Pending |
+| QA-02 | Phase 66 | Pending |
+| QA-03 | Phase 66 | Pending |
+| FAB-01 | Phase 67 | Pending |
+| FAB-02 | Phase 67 | Pending |
+| FAB-03 | Phase 67 | Pending |
+| FAB-04 | Phase 67 | Pending |
+| INT-LOAN-01 | Phase 68 | Pending |
+| INT-QC-01 | Phase 69 | Pending |
+| INT-QC-02 | Phase 69 | Pending |
+| INT-QC-03 | Phase 69 | Pending |
+| INT-QC-04 | Phase 69 | Pending |
+| CASC-01 | Phase 70 | Pending |
+| STAB-DOCS-01 | Phase 71 | Pending |
+| STAB-DOCS-02 | Phase 71 | Pending |
+| STAB-DOCS-03 | Phase 71 | Pending |
+| STAB-DOCS-04 | Phase 71 | Pending |
+| STAB-DOCS-05 | Phase 71 | Pending |
+| STAB-CODE-01 | Phase 72 | Pending |
+| STAB-CODE-02 | Phase 72 | Pending |
+| STAB-CODE-03 | Phase 72 | Pending |
+| STAB-CODE-04 | Phase 72 | Pending |
+
+**Phase summary:**
+
+| Phase | Req Count | REQ-IDs |
+|-------|-----------|---------|
+| 64 — Scanner Foundation & Scan Page | 7 | SCAN-01..07 |
+| 65 — Item Lookup & Not-Found Flow | 3 | LOOK-01..03 |
+| 66 — Quick-Action Menu | 3 | QA-01..03 |
+| 67 — Mobile FAB with Radial Menu | 4 | FAB-01..04 |
+| 68 — Loan Scan Integration | 1 | INT-LOAN-01 |
+| 69 — Quick Capture Port + Scan Integration | 4 | INT-QC-01..04 |
+| 70 — Taxonomy Cascade Policy | 1 | CASC-01 |
+| 71 — Stabilization: Docs & Process | 5 | STAB-DOCS-01..05 |
+| 72 — Stabilization: Code & Tests | 4 | STAB-CODE-01..04 |
+| **Total** | **32** | — |
 
 ---
 
 *Requirements defined: 2026-04-18*
+*Roadmap + traceability filled: 2026-04-18*
 *Milestone: v2.2 Scanning & Stabilization*
 *Source: `.planning/research/SUMMARY.md` + 4 parallel research outputs + user scoping decisions*

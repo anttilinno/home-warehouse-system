@@ -2,12 +2,12 @@
 gsd_state_version: 1.0
 milestone: v2.2
 milestone_name: Scanning & Stabilization
-status: defining_requirements
-stopped_at: Milestone v2.2 started — defining requirements
+status: ready_to_plan
+stopped_at: Roadmap created — ready to plan Phase 64
 last_updated: "2026-04-18T00:00:00.000Z"
 last_activity: 2026-04-18
 progress:
-  total_phases: 0
+  total_phases: 9
   completed_phases: 0
   total_plans: 0
   completed_plans: 0
@@ -21,14 +21,15 @@ progress:
 See: `.planning/PROJECT.md` (updated 2026-04-18)
 
 **Core value:** Reliable inventory access anywhere -- online or offline -- with seamless sync
-**Current focus:** v2.2 Scanning & Stabilization — defining requirements
+**Current focus:** v2.2 Scanning & Stabilization — roadmap created, ready to plan Phase 64
 
 ## Current Position
 
-Phase: Not started (defining requirements)
+Phase: 64 (not started — planning pending)
 Plan: —
-Status: Defining requirements
-Last activity: 2026-04-18 — Milestone v2.2 started
+Status: Ready to plan
+Last activity: 2026-04-18 — Roadmap for v2.2 created (Phases 64-72)
+Next step: `/gsd-plan-phase 64` (Scanner Foundation & Scan Page)
 
 ## Performance Metrics
 
@@ -54,7 +55,23 @@ Last activity: 2026-04-18 — Milestone v2.2 started
 | v1.9 | 5 | 9 | Complete |
 | v2.0 | 8 | 18 | Complete |
 | v2.1 | 8 | 29 | Complete |
-| v2.2 | TBD | TBD | Defining requirements |
+| v2.2 | 9 | TBD | Roadmap created |
+
+## v2.2 Phase Overview
+
+| Phase | Name | Reqs | Deps | Status |
+|-------|------|------|------|--------|
+| 64 | Scanner Foundation & Scan Page | SCAN-01..07 (7) | 63 | Not started |
+| 65 | Item Lookup & Not-Found Flow | LOOK-01..03 (3) | 64 | Not started |
+| 66 | Quick-Action Menu | QA-01..03 (3) | 65 | Not started |
+| 67 | Mobile FAB with Radial Menu | FAB-01..04 (4) | 63 (parallelizable with 64-66) | Not started |
+| 68 | Loan Scan Integration | INT-LOAN-01 (1) | 66 | Not started |
+| 69 | Quick Capture Port + Scan Integration | INT-QC-01..04 (4) | 64 | Not started |
+| 70 | Taxonomy Cascade Policy | CASC-01 (1) | 58 (independent) | Not started |
+| 71 | Stabilization — Docs & Process | STAB-DOCS-01..05 (5) | — (parallel) | Not started |
+| 72 | Stabilization — Code & Tests | STAB-CODE-01..04 (4) | — (parallel) | Not started |
+
+**Coverage:** 32/32 v2.2 requirements mapped to exactly one phase (100%).
 
 ## Accumulated Context
 
@@ -73,22 +90,32 @@ Last activity: 2026-04-18 — Milestone v2.2 started
 - v2.1: Photos via native FormData + fetch multipart -- no extra upload library
 - v2.1: Barcode scanning deferred to v2.2 -- out of scope for this milestone
 - v2.1: CI grep guard in frontend2 -- fail on idb/serwist/offline/sync imports
+- v2.2: Single-route scan flow -- `/scan` uses overlays, never navigates away mid-scan (iOS PWA camera persistence)
+- v2.2: Backend lookup via existing list endpoint -- `GET /api/workspaces/{wsId}/items?search={code}&limit=1` with exact-match guard; no new HTTP route
+- v2.2: `@yudiel/react-qr-scanner@2.5.1` + `ios-haptics@^0.1.4` + `uuid@^13.0.0` -- pinned dep additions; scanner WASM manual-chunked in vite.config
+- v2.2: FAB uses CSS transitions, not `motion` -- saves ~60 kB gzip and matches retro aesthetic
+- v2.2: Scan history in `localStorage` key `hws-scan-history` -- not workspace-scoped; 10-entry cap
+- v2.2: LoanForm preselect via URL param `?itemId=` -- URL-driven, deep-linkable, matches legacy pattern
+- v2.2: Not-found → create navigates to `/items/new?barcode=<code>` -- not inline dialog (legacy parity; revisit if friction)
+- v2.2: External UPC enrichment gated by `/^\d{8,14}$/` -- displayed as opt-in suggestion banner, never auto-written
+- v2.2: Cascade policy for taxonomy delete -- "unassign and delete" (un-set FK), no silent cascade
+- v2.2: Quick Capture included in v2.2 scope -- INT-QC-01..04 in Phase 69
 
 ### Pending Todos
 
-- [ ] Confirm canonical barcode lookup path (v2.2 prep)
-- [ ] Confirm @yudiel/react-qr-scanner@2.5.1 React 19 peerDep (v2.2 prep)
-- [ ] Confirm cascade policy for category/location delete (block vs cascade vs un-set)
+- [ ] (During Phase 64 planning) Confirm `@yudiel/react-qr-scanner@2.5.1` dynamic-import tree-shaking under Vite 8 via `vite build --analyze`
+- [ ] (During Phase 64 planning) Decide FAB icons: ASCII glyphs (recommended) vs lucide-react
+- [ ] (During Phase 71) Pair-review every backfilled VERIFICATION.md evidence table before sign-off
 
 ### Blockers/Concerns
 
-- None for v2.2 start — prep items listed above resolve during early phases
+- None blocking — prep items resolve inside phase planning; research synthesis already answers the PROJECT.md prep questions (barcode lookup path, React 19 peerDep, cascade policy).
 
 ## Session Continuity
 
 Last session: 2026-04-18T00:00:00.000Z
-Stopped at: Milestone v2.2 started — defining requirements
-Next step: define REQUIREMENTS.md, then create ROADMAP.md
+Stopped at: Roadmap created — ready to plan Phase 64
+Next step: `/gsd-plan-phase 64` (Scanner Foundation & Scan Page)
 
 ---
-*Updated: 2026-04-18 — milestone v2.2 Scanning & Stabilization started*
+*Updated: 2026-04-18 — v2.2 Scanning & Stabilization roadmap created (Phases 64-72)*

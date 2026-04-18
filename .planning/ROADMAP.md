@@ -2,23 +2,24 @@
 
 ## Milestones
 
-- ✅ **v1 PWA Offline Completion** — Phases 1-5 (shipped 2026-01-24)
-- ✅ **v1.1 Offline Entity Extension** — Phases 6-11 (shipped 2026-01-25)
-- ✅ **v1.2 Phase 2 Completion** — Phases 12-17 (shipped 2026-01-25)
-- ✅ **v1.3 Mobile UX Overhaul** — Phases 18-21 (shipped 2026-01-31)
-- ✅ **v1.4 Test Overhaul** — Phases 22-26 (shipped 2026-01-31)
-- ✅ **v1.5 Settings Enhancement** — Phases 27-29 (shipped 2026-02-03)
-- ✅ **v1.6 Format Personalization** — Phases 30-34 (shipped 2026-02-08)
-- ✅ **v1.7 Modular Settings** — Phases 35-39 (shipped 2026-02-13)
-- ✅ **v1.8 Social Login** — Phases 40-42 (shipped 2026-02-22)
-- ✅ **v1.9 Quick Capture** — Phases 43-47 (shipped 2026-03-14)
-- ✅ **v2.0 Retro Frontend** — Phases 48-55 (shipped 2026-04-14)
-- ✅ **v2.1 Feature Parity — Items, Loans & Scanning** — Phases 56-63 (shipped 2026-04-17)
+- [x] **v1 PWA Offline Completion** — Phases 1-5 (shipped 2026-01-24)
+- [x] **v1.1 Offline Entity Extension** — Phases 6-11 (shipped 2026-01-25)
+- [x] **v1.2 Phase 2 Completion** — Phases 12-17 (shipped 2026-01-25)
+- [x] **v1.3 Mobile UX Overhaul** — Phases 18-21 (shipped 2026-01-31)
+- [x] **v1.4 Test Overhaul** — Phases 22-26 (shipped 2026-01-31)
+- [x] **v1.5 Settings Enhancement** — Phases 27-29 (shipped 2026-02-03)
+- [x] **v1.6 Format Personalization** — Phases 30-34 (shipped 2026-02-08)
+- [x] **v1.7 Modular Settings** — Phases 35-39 (shipped 2026-02-13)
+- [x] **v1.8 Social Login** — Phases 40-42 (shipped 2026-02-22)
+- [x] **v1.9 Quick Capture** — Phases 43-47 (shipped 2026-03-14)
+- [x] **v2.0 Retro Frontend** — Phases 48-55 (shipped 2026-04-14)
+- [x] **v2.1 Feature Parity — Items, Loans & Scanning** — Phases 56-63 (shipped 2026-04-17)
+- [ ] **v2.2 Scanning & Stabilization** — Phases 64-72 (active)
 
 ## Phases
 
 <details>
-<summary>✅ v1 PWA Offline Completion (Phases 1-5) — SHIPPED 2026-01-24</summary>
+<summary>[x] v1 PWA Offline Completion (Phases 1-5) — SHIPPED 2026-01-24</summary>
 
 See `.planning/MILESTONES.md` for full details.
 
@@ -33,7 +34,7 @@ See `.planning/MILESTONES.md` for full details.
 </details>
 
 <details>
-<summary>✅ v1.1 Offline Entity Extension (Phases 6-11) — SHIPPED 2026-01-25</summary>
+<summary>[x] v1.1 Offline Entity Extension (Phases 6-11) — SHIPPED 2026-01-25</summary>
 
 See `.planning/milestones/v1.1-ROADMAP.md` for full details.
 
@@ -49,7 +50,7 @@ See `.planning/milestones/v1.1-ROADMAP.md` for full details.
 </details>
 
 <details>
-<summary>✅ v1.2 Phase 2 Completion (Phases 12-17) — SHIPPED 2026-01-25</summary>
+<summary>[x] v1.2 Phase 2 Completion (Phases 12-17) — SHIPPED 2026-01-25</summary>
 
 See `.planning/milestones/v1.2-ROADMAP.md` for full details.
 
@@ -65,7 +66,7 @@ See `.planning/milestones/v1.2-ROADMAP.md` for full details.
 </details>
 
 <details>
-<summary>✅ v1.3 Mobile UX Overhaul (Phases 18-21) — SHIPPED 2026-01-31</summary>
+<summary>[x] v1.3 Mobile UX Overhaul (Phases 18-21) — SHIPPED 2026-01-31</summary>
 
 See `.planning/milestones/v1.3-ROADMAP.md` for full details.
 
@@ -79,7 +80,7 @@ See `.planning/milestones/v1.3-ROADMAP.md` for full details.
 </details>
 
 <details>
-<summary>✅ v1.4 Test Overhaul (Phases 22-26) — SHIPPED 2026-01-31</summary>
+<summary>[x] v1.4 Test Overhaul (Phases 22-26) — SHIPPED 2026-01-31</summary>
 
 See `.planning/milestones/v1.4-ROADMAP.md` for full details.
 
@@ -94,7 +95,7 @@ See `.planning/milestones/v1.4-ROADMAP.md` for full details.
 </details>
 
 <details>
-<summary>✅ v1.5 Settings Enhancement (Phases 27-29) — SHIPPED 2026-02-03</summary>
+<summary>[x] v1.5 Settings Enhancement (Phases 27-29) — SHIPPED 2026-02-03</summary>
 
 See `.planning/milestones/v1.5-ROADMAP.md` for full details.
 
@@ -107,7 +108,7 @@ See `.planning/milestones/v1.5-ROADMAP.md` for full details.
 </details>
 
 <details>
-<summary>✅ v1.6 Format Personalization (Phases 30-34) — SHIPPED 2026-02-08</summary>
+<summary>[x] v1.6 Format Personalization (Phases 30-34) — SHIPPED 2026-02-08</summary>
 
 **Delivered:** Complete format personalization system with user preferences for date format, time format, and number format. All display sites, CSV exports, and inputs respect user's chosen formats.
 
@@ -120,7 +121,7 @@ See `.planning/milestones/v1.5-ROADMAP.md` for full details.
 </details>
 
 <details>
-<summary>✅ v1.7 Modular Settings (Phases 35-39) — SHIPPED 2026-02-13</summary>
+<summary>[x] v1.7 Modular Settings (Phases 35-39) — SHIPPED 2026-02-13</summary>
 
 See `.planning/milestones/v1.7-ROADMAP.md` for full details.
 
@@ -135,7 +136,7 @@ See `.planning/milestones/v1.7-ROADMAP.md` for full details.
 </details>
 
 <details>
-<summary>✅ v1.8 Social Login (Phases 40-42) — SHIPPED 2026-02-22</summary>
+<summary>[x] v1.8 Social Login (Phases 40-42) — SHIPPED 2026-02-22</summary>
 
 See `.planning/milestones/v1.8-ROADMAP.md` for full details.
 
@@ -148,7 +149,7 @@ See `.planning/milestones/v1.8-ROADMAP.md` for full details.
 </details>
 
 <details>
-<summary>✅ v1.9 Quick Capture (Phases 43-47) — SHIPPED 2026-03-14</summary>
+<summary>[x] v1.9 Quick Capture (Phases 43-47) — SHIPPED 2026-03-14</summary>
 
 See `.planning/milestones/v1.9-ROADMAP.md` for full details.
 
@@ -163,7 +164,7 @@ See `.planning/milestones/v1.9-ROADMAP.md` for full details.
 </details>
 
 <details>
-<summary>✅ v2.0 Retro Frontend (Phases 48-55) — SHIPPED 2026-04-14</summary>
+<summary>[x] v2.0 Retro Frontend (Phases 48-55) — SHIPPED 2026-04-14</summary>
 
 **Delivered:** Standalone `/frontend2` (Vite + React 19 + Tailwind CSS 4 + React Router v7) with retro industrial aesthetic: auth, design system, layout, dashboard, settings hub. 33/33 requirements satisfied.
 
@@ -179,7 +180,7 @@ See `.planning/milestones/v1.9-ROADMAP.md` for full details.
 </details>
 
 <details>
-<summary>✅ v2.1 Feature Parity — Items, Loans & Scanning (Phases 56-63) — SHIPPED 2026-04-17</summary>
+<summary>[x] v2.1 Feature Parity — Items, Loans & Scanning (Phases 56-63) — SHIPPED 2026-04-17</summary>
 
 See `.planning/milestones/v2.1-ROADMAP.md` for full details.
 
@@ -195,6 +196,20 @@ See `.planning/milestones/v2.1-ROADMAP.md` for full details.
 - Phase 63: Navigation & Polish (1 plan)
 
 </details>
+
+### v2.2 Scanning & Stabilization (Phases 64-72) — ACTIVE
+
+Barcode scanning + mobile FAB brought to `/frontend2` at full v1.3 parity, wired into Loans and Quick Capture, with accumulated verification/coverage/hygiene debt from v1.9–v2.1 closed.
+
+- [ ] **Phase 64: Scanner Foundation & Scan Page** — Scanner primitives, hooks, API, and the live `/scan` route with camera preview, torch, manual fallback, and scan history
+- [ ] **Phase 65: Item Lookup & Not-Found Flow** — Barcode → workspace-item lookup, not-found → create-item handoff with barcode prefill, optional external UPC enrichment
+- [ ] **Phase 66: Quick-Action Menu** — Post-scan action overlay with default actions and state-adaptive behavior (archived / loaned / needs-review)
+- [ ] **Phase 67: Mobile FAB with Radial Menu** — Context-aware floating action button mounted in AppShell with safe-area handling
+- [ ] **Phase 68: Loan Scan Integration** — Loan action from scan menu preselects item on `/loans/new`
+- [ ] **Phase 69: Quick Capture Port + Scan Integration** — Quick Capture ported to `/frontend2` with scan-to-autofill, auto-SKU, sticky batch settings, and Needs Review wiring
+- [ ] **Phase 70: Taxonomy Cascade Policy** — Category / location delete warns with item count and requires explicit "Unassign and delete" confirmation
+- [ ] **Phase 71: Stabilization — Docs & Process (Gap Closure)** — VERIFICATION.md backfill for v2.1 phases 58/59/60, `/demo` sign-off for Phase 57, Nyquist retroactive validation for v1.9 phases 43–47
+- [ ] **Phase 72: Stabilization — Code & Tests (Gap Closure)** — pendingchange coverage ≥80%, jobs ProcessTask baseline, zero `waitForTimeout`, Vitest zero-failing
 
 ## Phase Details
 
@@ -304,6 +319,109 @@ Plans:
   4. Requirements file Dashboard section lists DASH-01 through DASH-03 (not COMP-01–04)
   5. All 33 v2.0 requirement checkboxes checked `[x]` (SCAF, AUTH, DS, LAY, DASH, SET)
   6. Traceability table includes all v2.0 REQ-IDs mapped to their phases with status Complete
+
+### Phase 64: Scanner Foundation & Scan Page
+**Goal**: A live `/scan` route where a user sees a rear-camera viewfinder, can scan supported barcode formats with audio/haptic/visual feedback, toggle the torch on Android, fall back to manual entry, and view recent scan history — with scanner primitives, hooks, and API client in place for downstream integrations
+**Depends on**: Phase 63 (v2.1 close — /scan stub route, retro primitives, TanStack Query)
+**Requirements**: SCAN-01, SCAN-02, SCAN-03, SCAN-04, SCAN-05, SCAN-06, SCAN-07
+**Success Criteria** (what must be TRUE):
+  1. User visits `/scan` and sees a live rear-camera preview with retro scan overlay; the scanner stays mounted across overlays (no navigation-induced permission re-prompt on iOS PWA)
+  2. User pointing the camera at a QR, UPC-A, EAN-13, or Code128 code decodes it within a second and hears an audio beep, feels a haptic pulse (iOS via `ios-haptics`, Android via `navigator.vibrate`), and sees a visual flash
+  3. User on an Android device sees a torch toggle that turns the flashlight on/off; the toggle is hidden on iOS and desktops without `MediaStreamTrack.getCapabilities().torch`
+  4. User can switch to a "Manual" tab and submit a typed barcode string when the camera is unavailable or permission is denied
+  5. User sees a History tab listing the last 10 scanned codes with timestamps, can tap any entry to re-lookup, and can clear the whole history after a confirm prompt
+**Plans**: TBD
+**UI hint**: yes
+
+### Phase 65: Item Lookup & Not-Found Flow
+**Goal**: Scanned codes resolve to workspace items via the existing list endpoint with an exact-match guard; when no match exists, the user is handed off to create a new item with the barcode (and optional UPC metadata) pre-filled
+**Depends on**: Phase 64
+**Requirements**: LOOK-01, LOOK-02, LOOK-03
+**Success Criteria** (what must be TRUE):
+  1. When the scanned code matches an item in the current workspace, the user sees the matched item's name and identifier (via `GET /api/workspaces/{wsId}/items?search={code}&limit=1` with an exact-barcode guard), and the frontend asserts the returned `workspace_id` matches the session before rendering
+  2. When no workspace item matches, the user sees a "Not found" result with a "Create item with this barcode" action that lands on `/items/new?barcode=<code>` with the barcode field pre-filled
+  3. For codes matching `/^\d{8,14}$/`, the item-create form shows an opt-in suggestion banner with name/brand/category from `GET /api/barcode/{code}`; the user must explicitly accept to prefill those fields (never auto-written)
+**Plans**: TBD
+**UI hint**: yes
+
+### Phase 66: Quick-Action Menu
+**Goal**: After a successful scan, the user sees a post-scan action overlay that stays on `/scan` (scanner paused but mounted) and adapts to the matched item's state so only relevant actions are shown
+**Depends on**: Phase 65
+**Requirements**: QA-01, QA-02, QA-03
+**Success Criteria** (what must be TRUE):
+  1. After a successful scan that resolves to a workspace item, the user sees a quick-action overlay sheet while the scanner remains paused-but-mounted (no navigation away from `/scan`)
+  2. The overlay shows "View Item", "Loan", and "Back to Scan" actions by default, each navigating/acting correctly
+  3. The overlay adapts to item state: "Loan" is hidden when the item is on an active loan; "Unarchive" replaces "Loan" for archived items; "Mark Reviewed" is shown when the item is flagged `needs_review`
+**Plans**: TBD
+**UI hint**: yes
+
+### Phase 67: Mobile FAB with Radial Menu
+**Goal**: A context-aware floating action button mounted once in `AppShell`, visible on mobile viewports across key routes, offering route-appropriate actions in a radial menu with proper safe-area handling
+**Depends on**: Phase 63 (AppShell) — can parallelize with Phases 64–66 once `/scan` stub already exists; live scan destination firms up when Phase 64 ships
+**Requirements**: FAB-01, FAB-02, FAB-03, FAB-04
+**Success Criteria** (what must be TRUE):
+  1. On mobile viewports, the user sees a floating action button in the bottom-right of Dashboard, Items, Loans, Borrowers, and Taxonomy routes, positioned above iOS `safe-area-inset-bottom`
+  2. Tapping the FAB opens a radial menu of context-aware actions per route (e.g. Items shows Scan / Add Item / Quick Capture; Loans shows New Loan / Scan)
+  3. The radial menu closes on outside-tap, ESC keypress, or action selection; all transitions use CSS only (no `motion` dependency)
+  4. The FAB is hidden on `/scan`, `/auth/*`, and whenever a modal or drawer is open
+**Plans**: TBD
+**UI hint**: yes
+
+### Phase 68: Loan Scan Integration
+**Goal**: From a scan quick-action menu, the user can start a loan with the scanned item already selected in the loan-create form
+**Depends on**: Phase 66 (quick-action menu "Loan" button) + existing `LoanForm` from v2.1
+**Requirements**: INT-LOAN-01
+**Success Criteria** (what must be TRUE):
+  1. User on `/scan` taps "Loan" on the quick-action menu for a matched item and lands on `/loans/new?itemId=<id>` with the item preselected in the loan-create form
+  2. The loan-create form reads `itemId` from URL search params and initializes the item picker with the correct item; submitting creates a valid loan without re-picking the item
+**Plans**: TBD
+**UI hint**: yes
+
+### Phase 69: Quick Capture Port + Scan Integration
+**Goal**: Quick Capture (camera-first rapid item entry, v1.9 parity) is available in `/frontend2`, with a scan button that autofills the barcode field and with captured items flagged `needs_review` and filterable in the items list
+**Depends on**: Phase 64 (scanner primitives for the inline scan button)
+**Requirements**: INT-QC-01, INT-QC-02, INT-QC-03, INT-QC-04
+**Success Criteria** (what must be TRUE):
+  1. User can navigate to a Quick Capture route in `/frontend2` and see a camera-first rapid-entry UI with photo capture + name entry + save-reset loop
+  2. Quick Capture auto-generates SKUs in the format `QC-{timestamp}-{random}` and persists sticky batch settings (category, location) within the session
+  3. Within Quick Capture, tapping a scan button opens an inline scanner that, on successful decode, autofills the item's barcode field without overwriting a user-typed SKU
+  4. Items created via Quick Capture are flagged `needs_review` in the backend and surface under a "Needs Review" filter chip on the items list (with a one-tap "Mark Reviewed" affordance on item detail)
+**Plans**: TBD
+**UI hint**: yes
+
+### Phase 70: Taxonomy Cascade Policy
+**Goal**: Deleting a category or location that still has items assigned is never a silent cascade — the user sees the impact and explicitly confirms the unassign-and-delete action
+**Depends on**: Phase 58 (v2.1 taxonomy) — independent of scanner track
+**Requirements**: CASC-01
+**Success Criteria** (what must be TRUE):
+  1. When deleting a category or location with assigned items, the user sees a warning showing the count of affected items and must choose between "Cancel" and "Unassign items and delete"
+  2. Choosing "Unassign items and delete" removes the category/location and un-sets the foreign key on affected items (no orphaned FKs, no silent cascade)
+  3. Choosing "Cancel" leaves the taxonomy entry and items untouched
+**Plans**: TBD
+**UI hint**: yes
+
+### Phase 71: Stabilization — Docs & Process (Gap Closure)
+**Goal**: Retroactive verification debt from v1.9 and v2.1 is closed with real evidence (test-run artifacts, live `/demo` visits, commit SHAs) — not memory reconstruction or plausible-sounding prose
+**Depends on**: Nothing (fully parallelizable with Phases 64–70)
+**Gap Closure**: Closes VERIFICATION.md gap for v2.1 phases 58/59/60, 8 unsigned `/demo` checkpoints for Phase 57, and Nyquist partial status for v1.9 phases 43–47
+**Requirements**: STAB-DOCS-01, STAB-DOCS-02, STAB-DOCS-03, STAB-DOCS-04, STAB-DOCS-05
+**Success Criteria** (what must be TRUE):
+  1. Phase 58 (Taxonomy), Phase 59 (Borrowers), and Phase 60 (Items) each have a VERIFICATION.md produced from an actual verification pass, with every REQ citing commit SHA + test path + live-check evidence
+  2. Phase 57's 8 `/demo` retro-primitive checkpoints each have a signed-off entry referencing an actual live `/demo` visit (screenshots or notes of rendered state — not speculative)
+  3. v1.9 Phases 43–47 have Nyquist validation completed via `/gsd:validate-phase 43-47` with recorded commit SHAs and confirmation that phase-era file paths still resolve
+  4. No backfilled VERIFICATION.md file contains empty evidence cells or references code paths that don't exist at the original phase's commit
+**Plans**: TBD
+
+### Phase 72: Stabilization — Code & Tests (Gap Closure)
+**Goal**: Backend coverage debt on pendingchange and jobs is closed with behavioral tests (not status-code-only), and the frontend test hygiene debt (waitForTimeout, pre-existing Vitest failures) is eliminated
+**Depends on**: Nothing (fully parallelizable with Phases 64–70)
+**Gap Closure**: Closes v1.4 tech debt on pendingchange (57.3% → ≥80%) and jobs (20.1% → actionable baseline); closes v1.4 hygiene debt on 56 `waitForTimeout` calls and 4 pre-existing Vitest failures
+**Requirements**: STAB-CODE-01, STAB-CODE-02, STAB-CODE-03, STAB-CODE-04
+**Success Criteria** (what must be TRUE):
+  1. Backend `internal/domain/syncpush/pendingchange/handler.go` has test coverage ≥80% with assertions on DB state changes, response body, and emitted events — not just `status == 200` (requires interface extraction for mockability)
+  2. Backend `internal/jobs/ProcessTask` has an actionable coverage baseline: dependencies extracted behind an interface, Asynq client mocked, and at least one behavioral test per task type
+  3. The Cypress/Playwright E2E suite contains zero `cy.wait(number)` or `waitForTimeout(ms)` calls (all replaced with event-driven waits like `cy.intercept().as()` or `page.waitForResponse`)
+  4. The Vitest suite runs with zero failing tests — the 4 currently failing in `frontend/lib/api/__tests__/client.test.ts` and `use-offline-mutation.test.ts` are either fixed or explicitly skipped with a `TODO(v2.3)` reason
 **Plans**: TBD
 
 ## Progress
@@ -322,9 +440,18 @@ Plans:
 | 43-47 | v1.9 | 9 | Complete | 2026-03-14 |
 | 48-55 | v2.0 | 18 | Complete | 2026-04-14 |
 | 56-63 | v2.1 | 29 | Complete | 2026-04-17 |
+| 64 | v2.2 | 0/? | Not started | - |
+| 65 | v2.2 | 0/? | Not started | - |
+| 66 | v2.2 | 0/? | Not started | - |
+| 67 | v2.2 | 0/? | Not started | - |
+| 68 | v2.2 | 0/? | Not started | - |
+| 69 | v2.2 | 0/? | Not started | - |
+| 70 | v2.2 | 0/? | Not started | - |
+| 71 | v2.2 | 0/? | Not started | - |
+| 72 | v2.2 | 0/? | Not started | - |
 
-**Total:** 63 phases complete (177 plans executed) across 12 milestones
+**Total:** 63 phases complete (177 plans executed) across 12 milestones; v2.2 (Phases 64-72) active
 
 ---
 *Roadmap created: 2026-01-24*
-*Last updated: 2026-04-17 after v2.1 milestone close*
+*Last updated: 2026-04-18 — v2.2 Scanning & Stabilization phases appended (Phases 64-72)*
