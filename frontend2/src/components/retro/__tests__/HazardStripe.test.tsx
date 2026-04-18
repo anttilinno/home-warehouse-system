@@ -33,4 +33,31 @@ describe("HazardStripe", () => {
     expect(el.className).toContain("mb-md");
     expect(el.className).toContain("bg-hazard-stripe");
   });
+
+  it("renders yellow stripe when variant='yellow' is explicit", () => {
+    const { container } = render(<HazardStripe variant="yellow" />);
+    const el = container.firstElementChild as HTMLElement;
+    expect(el).toBeInTheDocument();
+    expect(el.className).toContain("bg-hazard-stripe");
+    expect(el.getAttribute("data-variant")).toBe("yellow");
+  });
+
+  it("renders red stripe when variant='red'", () => {
+    const { container } = render(<HazardStripe variant="red" />);
+    const el = container.firstElementChild as HTMLElement;
+    expect(el).toBeInTheDocument();
+    expect(el.className).toContain("bg-retro-red");
+    expect(el.className).not.toContain("bg-hazard-stripe");
+    expect(el.getAttribute("data-variant")).toBe("red");
+  });
+
+  it("merges className prop with red variant classes without overriding", () => {
+    const { container } = render(
+      <HazardStripe variant="red" className="mb-md" />,
+    );
+    const el = container.firstElementChild as HTMLElement;
+    expect(el.className).toContain("mb-md");
+    expect(el.className).toContain("bg-retro-red");
+    expect(el.className).toContain("w-full");
+  });
 });
