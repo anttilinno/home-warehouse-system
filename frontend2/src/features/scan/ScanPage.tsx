@@ -39,7 +39,8 @@
 // in-scope. A full React.lazy chunk-load failure propagates above any
 // in-feature try/catch and is caught by the existing route-level
 // ErrorBoundaryPage by architectural design.
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router";
 import { useLingui } from "@lingui/react/macro";
 import { RetroTabs } from "@/components/retro";
 import {
@@ -74,13 +75,41 @@ export function ScanPage() {
 
   const history = useScanHistory();
   const feedback = useScanFeedback();
+  const navigate = useNavigate();
 
-  // D-01 MANDATORY callsite lock — Phase 65 swaps the stub for a real
-  // TanStack Query call. In Phase 64 the stub returns `{ status: "idle", … }`
-  // so this has zero runtime effect; the call itself is the contract and is
-  // covered by ScanPage.test.tsx Test 15.
+  // D-01 MANDATORY callsite lock (Phase 64 D-18 + Test 15): this call is
+  // a contract. Phase 64 wired it as a stub; Phase 65 Plan 65-04 swapped
+  // the body to a real TanStack Query call. The callsite itself —
+  // useScanLookup(banner?.code ?? null) — MUST NOT change.
   const lookup = useScanLookup(banner?.code ?? null);
-  void lookup; // intentionally unused in Phase 64 — consumed in Phase 65
+
+  // D-22 race-guard invariant (Phase 65): backfill history entityType +
+  // entityId ONLY when lookup resolves to a success+match. useScanHistory
+  // .update noops-if-missing, so a stale resolve arriving after the user
+  // scanned a different code (and the old entry was de-duped out) does
+  // nothing. On not-found (match === null) there is no entity to record.
+  // On error there is no match either. See 65-RESEARCH.md §Pitfall 3
+  // "Open question race" — documented invariant: update only fires on
+  // success+match; nav on not-found goes to /items/new (no update); nav
+  // on match goes to /items/{id} via VIEW ITEM (update has already fired).
+  //
+  // DEPS NOTE: the deps array lists `history.update` — NOT `history`.
+  // Plan 65-04 Task 3 wraps `update` in useCallback(..., []) for stable
+  // identity. Using the whole `history` object would re-fire this effect
+  // every render (React returns a new return-object each hook call) and
+  // defeat the match-gate.
+  useEffect(() => {
+    if (lookup.status === "success" && lookup.match) {
+      const effectiveCode = lookup.match.barcode ?? banner?.code ?? "";
+      if (effectiveCode) {
+        history.update(effectiveCode, {
+          entityType: "item",
+          entityId: lookup.match.id,
+          entityName: lookup.match.name,
+        });
+      }
+    }
+  }, [lookup.status, lookup.match, banner?.code, history.update]);
 
   // Single post-decode code path shared by live decode + manual submit +
   // history tap (D-15).
@@ -119,6 +148,30 @@ export function ScanPage() {
   const handleScanAgain = useCallback(() => {
     setBanner(null);
   }, []);
+
+  const handleViewItem = useCallback(
+    (itemId: string) => {
+      navigate(`/items/${itemId}`);
+    },
+    [navigate],
+  );
+
+  const handleCreateWithBarcode = useCallback(
+    (code: string) => {
+      navigate(`/items/new?barcode=${encodeURIComponent(code)}`);
+    },
+    [navigate],
+  );
+
+  // Phase 65 NEW — distinct from the existing `handleRetry` below (Phase 64
+  // scanner-polyfill retry). `handleLookupRetry` retries the useScanLookup
+  // TanStack Query via query.refetch() for the banner's ERROR state (D-21).
+  // Two retry callbacks co-exist by design — the banner's RETRY button
+  // targets the lookup query, ScannerErrorPanel's RETRY targets the
+  // scanner polyfill.
+  const handleLookupRetry = useCallback(() => {
+    lookup.refetch();
+  }, [lookup]);
 
   const handleScannerError = useCallback((kind: BarcodeScannerErrorKind) => {
     setErrorKind(kind);
@@ -175,18 +228,20 @@ export function ScanPage() {
       />
 
       {banner && (
-        // Phase 65 Plan 65-06: widened ScanResultBanner props. Plan 65-07
-        // replaces the placeholder lookupStatus/match with real values from
-        // useScanLookup(banner.code). Until then, LOADING-variant render
-        // keeps the pre-decode visual intact (no stripe, code + format pill
-        // + SCAN AGAIN). idle → loading fallback lives in deriveVariant().
+        // Phase 65 Plan 65-07: real useScanLookup state threaded through.
+        // LOADING / MATCH / NOT-FOUND / ERROR variants derive from
+        // lookupStatus + match in ScanResultBanner itself; idle falls
+        // through to LOADING visuals for the first render after decode.
         <ScanResultBanner
           code={banner.code}
           format={banner.format}
           timestamp={banner.timestamp}
-          lookupStatus="idle"
-          match={null}
+          lookupStatus={lookup.status}
+          match={lookup.match}
           onScanAgain={handleScanAgain}
+          onViewItem={handleViewItem}
+          onCreateWithBarcode={handleCreateWithBarcode}
+          onRetry={handleLookupRetry}
         />
       )}
 
