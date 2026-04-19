@@ -1,4 +1,4 @@
-import { get, post, patch, del } from "@/lib/api";
+import { get, post, patch, del, HttpError } from "@/lib/api";
 
 export interface Item {
   id: string;
@@ -94,27 +94,51 @@ export const itemsApi = {
   restore: (wsId: string, id: string) => post<void>(`${base(wsId)}/${id}/restore`),
   delete: (wsId: string, id: string) => del<void>(`${base(wsId)}/${id}`),
   /**
-   * D-06: Wraps itemsApi.list(wsId, { search: code, limit: 1 }) — no new HTTP endpoint.
-   * D-07: Case-sensitive exact-barcode guard. Empty list OR guard-fail returns null.
-   * D-08: Workspace defense-in-depth (Pitfall #5 — globally-unique UPCs guarantee
-   *       cross-tenant collisions). On workspace_id mismatch, logs structured
-   *       console.error and returns null.
+   * Phase 65 Plan 65-10 — gap closure G-65-01.
+   *
+   * Looks up a workspace item by its EXACT barcode via the dedicated
+   * backend endpoint `GET /api/workspaces/{wsId}/items/by-barcode/{code}`.
+   * This endpoint uses `FindByBarcode` (ix_items_barcode btree index) —
+   * bypasses the FTS `search_vector` generated column which only covers
+   * name/brand/model/description (see 65-VERIFICATION.md G-65-01 and
+   * 65-CONTEXT.md D-06 revised 2026-04-19 after Firefox MCP UAT).
+   *
+   * Contract (locked by Phase 64 D-18 useScanLookup shape):
+   *   - 200 with matching Item → returns the Item (after D-07/D-08 defense-in-depth guards)
+   *   - 404 → returns null
+   *   - Any other non-ok (500, network error, etc.) → throws HttpError
+   *     so useScanLookup's ERROR state (D-21) fires correctly
+   *
+   * D-07: Case-sensitive barcode defense-in-depth — backend is authoritative
+   *       via Postgres `WHERE barcode = $2` (byte-wise text equality), but
+   *       the guard catches cache-staleness / proxy anomalies cheaply.
+   * D-08: Workspace defense-in-depth — Pitfall #5 (globally-unique UPCs
+   *       cross-tenant collide). Backend's WHERE clause scopes by
+   *       workspace_id, but this guard emits a structured console.error
+   *       the moment any future regression would leak cross-tenant.
    */
   lookupByBarcode: async (wsId: string, code: string): Promise<Item | null> => {
-    const res = await itemsApi.list(wsId, { search: code, limit: 1 });
-    const candidate = res.items[0];
-    if (!candidate) return null;
-    if (candidate.barcode !== code) return null;
-    if (candidate.workspace_id !== wsId) {
-      console.error({
-        kind: "scan-workspace-mismatch",
-        code,
-        returnedWs: candidate.workspace_id,
-        sessionWs: wsId,
-      });
-      return null;
+    try {
+      const candidate = await get<Item>(
+        `${base(wsId)}/by-barcode/${encodeURIComponent(code)}`,
+      );
+      if (candidate.barcode !== code) return null;
+      if (candidate.workspace_id !== wsId) {
+        console.error({
+          kind: "scan-workspace-mismatch",
+          code,
+          returnedWs: candidate.workspace_id,
+          sessionWs: wsId,
+        });
+        return null;
+      }
+      return candidate;
+    } catch (err) {
+      if (err instanceof HttpError && err.status === 404) {
+        return null;
+      }
+      throw err;
     }
-    return candidate;
   },
 };
 
