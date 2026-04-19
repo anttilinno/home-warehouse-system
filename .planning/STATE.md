@@ -3,9 +3,9 @@ gsd_state_version: 1.0
 milestone: v2.2
 milestone_name: Scanning & Stabilization
 status: executing
-stopped_at: Phase 65 Plan 01 complete (Wave 0 scaffold + bundle baseline)
-last_updated: "2026-04-19T09:27:00.000Z"
-last_activity: 2026-04-19 -- Phase 65 Plan 01 complete (78 it.todo scaffolds + baseline 135754/58057)
+stopped_at: Phase 65 Plans 02 + 03 complete (LOOK-01 frontend guard + LOOK-03 enrichment data layer)
+last_updated: "2026-04-19T12:35:00.000Z"
+last_activity: 2026-04-19 -- Phase 65 Plan 02 complete (itemsApi.lookupByBarcode + D-23 brand + D-24 barcode regex; 10 Wave 0 todos green)
 progress:
   total_phases: 6
   completed_phases: 6
@@ -26,10 +26,10 @@ See: `.planning/PROJECT.md` (updated 2026-04-18)
 ## Current Position
 
 Phase: 65 (item-lookup-and-not-found-flow) — EXECUTING
-Plan: 2 of 8 (Plan 01 complete)
+Plan: 4 of 8 (Plans 01, 02, 03 complete; Plan 04 unblocked)
 Status: Executing Phase 65
-Last activity: 2026-04-19 -- Phase 65 Plan 01 complete (Wave 0 scaffold + bundle baseline captured)
-Next step: begin Plan 65-02 (itemsApi.lookupByBarcode + D-23/D-24 schema update — Wave 1)
+Last activity: 2026-04-19 -- Phase 65 Plan 02 complete (LOOK-01 frontend guard layer shipped; itemsApi.lookupByBarcode w/ D-06/D-07/D-08 guards + D-23 brand field + D-24 barcode regex loosening; 10 Wave 0 todos green)
+Next step: Plan 65-04 (useScanLookup body swap + updateScanHistory) — now unblocked since Plan 65-02 landed itemsApi.lookupByBarcode
 
 ## Performance Metrics
 
@@ -113,10 +113,11 @@ Next step: begin Plan 65-02 (itemsApi.lookupByBarcode + D-23/D-24 schema update 
 
 ## Session Continuity
 
-Last session: 2026-04-19T09:27:00.000Z
-Stopped at: Phase 65 Plan 01 complete (Wave 0 scaffold + bundle baseline captured)
-Next step: begin Plan 65-02 (itemsApi.lookupByBarcode + D-23/D-24 schema update — Wave 1)
+Last session: 2026-04-19T09:35:10.000Z
+Stopped at: Phase 65 Plan 03 complete (LOOK-03 enrichment data layer; Plan 02 ran in parallel)
+Next step: Plan 65-04 begins once Plan 65-02 SUMMARY lands; /scan lookup body-swap + updateScanHistory (Wave 2)
 
 ---
+*Updated: 2026-04-19 — Phase 65 Plan 03 complete (barcodeApi + barcodeKeys + useBarcodeEnrichment with /^d{8,14}$/ gate + silent-failure; 18 Wave 0 todos converted green; full suite 640 passed / 50 todos).*
 *Updated: 2026-04-19 — Phase 65 Plan 01 complete (7 Wave 0 scaffolds + 78 it.todo + shared QueryClient helper + bundle baseline main 135754 B / scanner 58057 B @ b04ae7c).*
 *Updated: 2026-04-18 — Phase 64 COMPLETE (10/10 plans; bundle gate PASS; EN+ET catalogs filled; all SCAN-0N requirements shippable)*
