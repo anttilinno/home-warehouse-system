@@ -30,6 +30,13 @@ vi.mock("@/lib/scanner", async () => {
     initBarcodePolyfill: vi.fn().mockResolvedValue(undefined),
     triggerScanFeedback: vi.fn(),
     resumeAudioContext: vi.fn(),
+    // D-22 spy — Tests 16/17/18 (Phase 65) assert that the ScanPage
+    // match-effect calls history.update ONLY on success+match. The hook
+    // routes through this module function, so spying here intercepts
+    // every effect-driven backfill. Existing Phase 64 tests leave
+    // lookup in "idle" via the useScanLookup mock below, so the effect
+    // never fires there and this spy records zero calls by default.
+    updateScanHistory: vi.fn(),
   };
 });
 
@@ -386,6 +393,111 @@ describe("ScanPage (Phase 64 orchestration)", () => {
       await waitFor(() =>
         expect(useScanLookupSpy).toHaveBeenCalledWith("ABC-123"),
       );
+    });
+  });
+
+  // D-22 race-guard invariant (Phase 65, Plan 65-07). The ScanPage
+  // match-effect calls history.update(code, { entityType, entityId,
+  // entityName }) ONLY when lookup.status === "success" && lookup.match.
+  // On not-found (success + match:null) OR error, update MUST NOT fire.
+  // Tests 16/17/18 spy on `updateScanHistory` at the @/lib/scanner module
+  // boundary — useScanHistory.update routes through this function so the
+  // spy records every effect-driven backfill attempt.
+  describe("ScanPage match-effect (D-22) — Phase 65", () => {
+    // --- Test 16: on match resolve, useScanHistory.update is called with entityType/entityId/entityName ---
+    it("Test 16: on match resolve, useScanHistory.update is called with entityType/entityId/entityName", async () => {
+      const { updateScanHistory } = await import("@/lib/scanner");
+      const updateSpy = vi.mocked(updateScanHistory);
+      updateSpy.mockClear();
+      // Configure useScanLookup to resolve with a match on the next call.
+      useScanLookupSpy.mockReturnValue({
+        status: "success",
+        match: {
+          id: "item-42",
+          workspace_id: "ws-1",
+          sku: "DR-1",
+          name: "Drill",
+          description: null,
+          category_id: null,
+          brand: null,
+          model: null,
+          image_url: null,
+          serial_number: null,
+          manufacturer: null,
+          barcode: "X",
+          is_insured: false,
+          is_archived: false,
+          lifetime_warranty: false,
+          needs_review: false,
+          warranty_details: null,
+          purchased_from: null,
+          min_stock_level: 0,
+          short_code: "D-1",
+          obsidian_vault_path: null,
+          obsidian_note_path: null,
+          obsidian_uri: null,
+          created_at: "",
+          updated_at: "",
+        },
+        error: null,
+        refetch: () => {},
+      });
+
+      renderWithProviders(<ScanPage />);
+      await screen.findByTestId("fake-scanner-decode-trigger");
+      triggerDecode("X", "qr_code");
+
+      await waitFor(() => {
+        expect(updateSpy).toHaveBeenCalledWith("X", {
+          entityType: "item",
+          entityId: "item-42",
+          entityName: "Drill",
+        });
+      });
+    });
+
+    // --- Test 17: on not-found resolve (success + match:null), update is NEVER called ---
+    it("Test 17: on not-found resolve (success + match:null), update is NEVER called", async () => {
+      const { updateScanHistory } = await import("@/lib/scanner");
+      const updateSpy = vi.mocked(updateScanHistory);
+      updateSpy.mockClear();
+      useScanLookupSpy.mockReturnValue({
+        status: "success",
+        match: null,
+        error: null,
+        refetch: () => {},
+      });
+
+      renderWithProviders(<ScanPage />);
+      await screen.findByTestId("fake-scanner-decode-trigger");
+      triggerDecode("X", "qr_code");
+
+      // Banner appears with NOT FOUND heading — wait until the match-effect
+      // has had a chance to run (and decline to fire, per D-22).
+      await screen.findByRole("heading", { name: /NOT FOUND/i });
+      await new Promise((r) => setTimeout(r, 0));
+      expect(updateSpy).not.toHaveBeenCalled();
+    });
+
+    // --- Test 18: on error resolve, update is NEVER called ---
+    it("Test 18: on error resolve, update is NEVER called", async () => {
+      const { updateScanHistory } = await import("@/lib/scanner");
+      const updateSpy = vi.mocked(updateScanHistory);
+      updateSpy.mockClear();
+      useScanLookupSpy.mockReturnValue({
+        status: "error",
+        match: null,
+        error: new Error("boom"),
+        refetch: () => {},
+      });
+
+      renderWithProviders(<ScanPage />);
+      await screen.findByTestId("fake-scanner-decode-trigger");
+      triggerDecode("X", "qr_code");
+
+      await screen.findByRole("heading", { name: /LOOKUP FAILED/i });
+      await new Promise((r) => setTimeout(r, 0));
+      expect(updateSpy).not.toHaveBeenCalled();
     });
   });
 });
