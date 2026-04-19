@@ -352,7 +352,16 @@ Plans:
   1. When the scanned code matches an item in the current workspace, the user sees the matched item's name and identifier (via `GET /api/workspaces/{wsId}/items?search={code}&limit=1` with an exact-barcode guard), and the frontend asserts the returned `workspace_id` matches the session before rendering
   2. When no workspace item matches, the user sees a "Not found" result with a "Create item with this barcode" action that lands on `/items/new?barcode=<code>` with the barcode field pre-filled
   3. For codes matching `/^\d{8,14}$/`, the item-create form shows an opt-in suggestion banner with name/brand/category from `GET /api/barcode/{code}`; the user must explicitly accept to prefill those fields (never auto-written)
-**Plans**: TBD
+**Plans**: 8 plans
+Plans:
+- [x] 65-01-PLAN.md — Wave 0 test scaffolds (7 files, 78 it.todo + 2 green) + shared QueryClient test helper + pre-phase bundle baseline (main gzip 135754 B / scanner gzip 58057 B @ b04ae7c)
+- [ ] 65-02-PLAN.md — Wave 1 itemsApi.lookupByBarcode (D-06/07/08 guards) + schema barcode regex loosened for hyphens
+- [ ] 65-03-PLAN.md — Wave 1 lib/api/barcode.ts + barrel export + useBarcodeEnrichment hook with /^\d{8,14}$/ gate + silent failure
+- [ ] 65-04-PLAN.md — Wave 2 useScanLookup body swap + updateScanHistory + useScanHistory.update (D-22 race guard)
+- [ ] 65-05-PLAN.md — Wave 2 ItemForm FormProvider wrap + UpcSuggestionBanner + ItemFormPage (dirty-guard + Pitfall #7 invalidation)
+- [ ] 65-06-PLAN.md — Wave 3 ScanResultBanner widened to 4 states (LOADING/MATCH/NOT-FOUND/ERROR) + retro-cursor-blink keyframe
+- [ ] 65-07-PLAN.md — Wave 4 /items/new route registration + ScanPage match-effect wiring + banner callsite widening + Test 16/17/18
+- [ ] 65-08-PLAN.md — Wave 5 Lingui EN extract + ET gap-fill + [BLOCKING] bundle gate vs Plan 65-01 baseline
 **UI hint**: yes
 
 ### Phase 66: Quick-Action Menu

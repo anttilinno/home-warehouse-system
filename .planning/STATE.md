@@ -2,10 +2,10 @@
 gsd_state_version: 1.0
 milestone: v2.2
 milestone_name: Scanning & Stabilization
-status: in_progress
-stopped_at: Phase 64 COMPLETE (plan 64-10 Wave 4 i18n extract + ET gap-fill + [BLOCKING] bundle gate — 36 new ET msgstrs, scanner chunk 58.1 kB gzip isolated, main chunk SHRANK 37.8 kB gzip vs pre-phase baseline; 609/609 green; full phase gate clean)
-last_updated: "2026-04-18T21:30:00Z"
-last_activity: 2026-04-18 — Phase 64 plan 64-10 executed (1 commit, 36 EN+ET translations, [BLOCKING] bundle gate verified with −37.8 kB gzip main-chunk delta)
+status: executing
+stopped_at: Phase 65 Plan 01 complete (Wave 0 scaffold + bundle baseline)
+last_updated: "2026-04-19T09:27:00.000Z"
+last_activity: 2026-04-19 -- Phase 65 Plan 01 complete (78 it.todo scaffolds + baseline 135754/58057)
 progress:
   total_phases: 6
   completed_phases: 6
@@ -21,15 +21,15 @@ progress:
 See: `.planning/PROJECT.md` (updated 2026-04-18)
 
 **Core value:** Reliable inventory access anywhere -- online or offline -- with seamless sync
-**Current focus:** v2.2 Scanning & Stabilization — Phase 64 COMPLETE; next phase 65 (Item Lookup & Not-Found Flow)
+**Current focus:** Phase 65 — item-lookup-and-not-found-flow
 
 ## Current Position
 
-Phase: 64 COMPLETE (10/10 plans shipped)
-Plan: —
-Status: Phase 64 done. All seven SCAN-0N requirements have rendered user paths + automated tests + ET translations. [BLOCKING] bundle gate verified.
-Last activity: 2026-04-18 — Plan 64-10 executed (1 commit, EN+ET catalogs filled with 36 new translations, i18n:compile clean, bundle gate PASS with −37.8 kB gzip main-chunk delta vs pre-phase baseline, 609/609 tests green)
-Next step: begin Phase 65 (Item Lookup & Not-Found Flow — LOOK-01..03)
+Phase: 65 (item-lookup-and-not-found-flow) — EXECUTING
+Plan: 2 of 8 (Plan 01 complete)
+Status: Executing Phase 65
+Last activity: 2026-04-19 -- Phase 65 Plan 01 complete (Wave 0 scaffold + bundle baseline captured)
+Next step: begin Plan 65-02 (itemsApi.lookupByBarcode + D-23/D-24 schema update — Wave 1)
 
 ## Performance Metrics
 
@@ -113,9 +113,10 @@ Next step: begin Phase 65 (Item Lookup & Not-Found Flow — LOOK-01..03)
 
 ## Session Continuity
 
-Last session: 2026-04-18T21:30:00Z
-Stopped at: Phase 64 COMPLETE — plan 64-10 Wave 4 i18n extract + ET gap-fill + [BLOCKING] bundle gate verified (36 new ET msgstrs; scanner chunk 58.1 kB gzip isolated; main chunk SHRANK 37.8 kB gzip vs pre-phase 13e3bb8 baseline; full phase gate green test/lint:imports/tsc/build/i18n:compile)
-Next step: begin Phase 65 (Item Lookup & Not-Found Flow — LOOK-01..03)
+Last session: 2026-04-19T09:27:00.000Z
+Stopped at: Phase 65 Plan 01 complete (Wave 0 scaffold + bundle baseline captured)
+Next step: begin Plan 65-02 (itemsApi.lookupByBarcode + D-23/D-24 schema update — Wave 1)
 
 ---
+*Updated: 2026-04-19 — Phase 65 Plan 01 complete (7 Wave 0 scaffolds + 78 it.todo + shared QueryClient helper + bundle baseline main 135754 B / scanner 58057 B @ b04ae7c).*
 *Updated: 2026-04-18 — Phase 64 COMPLETE (10/10 plans; bundle gate PASS; EN+ET catalogs filled; all SCAN-0N requirements shippable)*
