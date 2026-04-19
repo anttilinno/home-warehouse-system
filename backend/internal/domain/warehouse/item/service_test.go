@@ -1901,3 +1901,59 @@ func TestService_ListNeedingReview(t *testing.T) {
 	assert.True(t, *result[1].NeedsReview())
 	mockRepo.AssertExpectations(t)
 }
+
+// TestService_LookupByBarcode covers the Phase 65 Gap G-65-01 closure:
+// a dedicated service method that delegates to repo.FindByBarcode (btree
+// ix_items_barcode) and normalises shared.ErrNotFound → ErrItemNotFound so
+// the handler layer can map the sentinel to HTTP 404 the same way GetByID
+// does. The postgres repo returns shared.ErrNotFound on pgx.ErrNoRows
+// (item_repository.go:157-170) — Service.LookupByBarcode mirrors the
+// Service.Delete translation pattern (service.go:227-235).
+func TestService_LookupByBarcode(t *testing.T) {
+	ctx := context.Background()
+	workspaceID := uuid.New()
+
+	t.Run("returns item on barcode match", func(t *testing.T) {
+		mockRepo := new(MockRepository)
+		svc := NewService(mockRepo, nil)
+
+		code := "5449000000996"
+		existing, _ := NewItem(workspaceID, "Cola", "SKU-1", 0)
+		mockRepo.On("FindByBarcode", ctx, workspaceID, code).
+			Return(existing, nil).Once()
+
+		got, err := svc.LookupByBarcode(ctx, workspaceID, code)
+		assert.NoError(t, err)
+		assert.Equal(t, existing, got)
+		mockRepo.AssertExpectations(t)
+	})
+
+	t.Run("normalises shared.ErrNotFound to ErrItemNotFound", func(t *testing.T) {
+		mockRepo := new(MockRepository)
+		svc := NewService(mockRepo, nil)
+
+		code := "DOES-NOT-EXIST"
+		mockRepo.On("FindByBarcode", ctx, workspaceID, code).
+			Return(nil, shared.ErrNotFound).Once()
+
+		got, err := svc.LookupByBarcode(ctx, workspaceID, code)
+		assert.Nil(t, got)
+		assert.ErrorIs(t, err, ErrItemNotFound)
+		mockRepo.AssertExpectations(t)
+	})
+
+	t.Run("propagates non-not-found repo errors unchanged", func(t *testing.T) {
+		mockRepo := new(MockRepository)
+		svc := NewService(mockRepo, nil)
+
+		code := "OPAQUE"
+		sentinel := errors.New("db down")
+		mockRepo.On("FindByBarcode", ctx, workspaceID, code).
+			Return(nil, sentinel).Once()
+
+		got, err := svc.LookupByBarcode(ctx, workspaceID, code)
+		assert.Nil(t, got)
+		assert.ErrorIs(t, err, sentinel)
+		mockRepo.AssertExpectations(t)
+	})
+}
