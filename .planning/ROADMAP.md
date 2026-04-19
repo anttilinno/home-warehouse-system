@@ -202,7 +202,7 @@ See `.planning/milestones/v2.1-ROADMAP.md` for full details.
 Barcode scanning + mobile FAB brought to `/frontend2` at full v1.3 parity, wired into Loans and Quick Capture, with accumulated verification/coverage/hygiene debt from v1.9–v2.1 closed.
 
 - [x] **Phase 64: Scanner Foundation & Scan Page** — Scanner primitives, hooks, API, and the live `/scan` route with camera preview, torch, manual fallback, and scan history
-- [x] **Phase 65: Item Lookup & Not-Found Flow** — Barcode → workspace-item lookup, not-found → create-item handoff with barcode prefill, optional external UPC enrichment
+- [~] **Phase 65: Item Lookup & Not-Found Flow** — Barcode → workspace-item lookup, not-found → create-item handoff with barcode prefill, optional external UPC enrichment (plans 01-08 shipped; gap closure 09-11 addresses G-65-01 after 2026-04-19 Firefox MCP UAT found backend FTS missed barcode coverage)
 - [ ] **Phase 66: Quick-Action Menu** — Post-scan action overlay with default actions and state-adaptive behavior (archived / loaned / needs-review)
 - [ ] **Phase 67: Mobile FAB with Radial Menu** — Context-aware floating action button mounted in AppShell with safe-area handling
 - [ ] **Phase 68: Loan Scan Integration** — Loan action from scan menu preselects item on `/loans/new`
@@ -352,7 +352,7 @@ Plans:
   1. When the scanned code matches an item in the current workspace, the user sees the matched item's name and identifier (via `GET /api/workspaces/{wsId}/items?search={code}&limit=1` with an exact-barcode guard), and the frontend asserts the returned `workspace_id` matches the session before rendering
   2. When no workspace item matches, the user sees a "Not found" result with a "Create item with this barcode" action that lands on `/items/new?barcode=<code>` with the barcode field pre-filled
   3. For codes matching `/^\d{8,14}$/`, the item-create form shows an opt-in suggestion banner with name/brand/category from `GET /api/barcode/{code}`; the user must explicitly accept to prefill those fields (never auto-written)
-**Plans**: 8 plans
+**Plans**: 11 plans (01-08 shipped; 09-11 gap closure for G-65-01)
 Plans:
 - [x] 65-01-PLAN.md — Wave 0 test scaffolds (7 files, 78 it.todo + 2 green) + shared QueryClient test helper + pre-phase bundle baseline (main gzip 135754 B / scanner gzip 58057 B @ b04ae7c)
 - [x] 65-02-PLAN.md — Wave 1 itemsApi.lookupByBarcode (D-06/07/08 guards) + schemas.ts D-23 optional brand field + D-24 barcode regex loosened for hyphens/underscores; 10 Wave 0 todos converted green
@@ -362,6 +362,9 @@ Plans:
 - [x] 65-06-PLAN.md — Wave 3 ScanResultBanner widened to 4 states (LOADING/MATCH/NOT-FOUND/ERROR per D-17..D-21) + retro-cursor-blink keyframe with prefers-reduced-motion animation:none guard; 21 new real it() green (5 LOADING + 5 MATCH + 5 NOT-FOUND + 5 ERROR + 1 dual-state sweep T-65-06-03); 7 Phase 64 assertions migrated under MATCH describe; 2 Rule 3 auto-fixes (ScanPage interim callsite + ScanPage test regex migration); full vitest 707 passed / 0 todos
 - [x] 65-07-PLAN.md — Wave 4 /items/new route registration (literal-before-param) + ScanPage match-effect wiring (deps [lookup.status, lookup.match, banner?.code, history.update] — NOT [history]) + banner callsite widened (lookupStatus/match/onViewItem/onCreateWithBarcode/onRetry) + handleLookupRetry co-existing with Phase 64 handleRetry + Test 16/17/18 green for D-22 race guard; Test 15 preserved verbatim; full vitest 710 passed / 0 todos; 1 Rule 3 auto-fix (scan-fixture MemoryRouter wrapper)
 - [x] 65-08-PLAN.md — Wave 5 Lingui EN extract + ET gap-fill + [BLOCKING] bundle gate PASS (scanner byte-identical to baseline; main chunk SHRANK 21.3 kB gzip); 16 new msgids in EN+ET catalogs (plus 1 Rule 2 CANCEL auto-fix); full suite 710/710; typecheck + lint:imports + i18n:compile + build all clean
+- [ ] 65-09-PLAN.md — [GAP CLOSURE G-65-01] Wave 6 backend: add GET /api/workspaces/{wsId}/items/by-barcode/{code} Huma route + Service.LookupByBarcode wrapping existing FindByBarcode repo method (ix_items_barcode btree); handler + service tests
+- [ ] 65-10-PLAN.md — [GAP CLOSURE G-65-01] Wave 7 frontend: swap itemsApi.lookupByBarcode to call the dedicated by-barcode endpoint; migrate unit tests from mocking itemsApi.list to mocking global.fetch (catches the class of regression that caused G-65-01); revise D-06 in 65-CONTEXT.md
+- [ ] 65-11-PLAN.md — [GAP CLOSURE G-65-01] Wave 8 regression test: decision checkpoint (Option A Playwright E2E vs Option B Go integration test) + single new automated test that exercises the real backend/HTTP surface the Phase 65 unit tests mocked above
 **UI hint**: yes
 
 ### Phase 66: Quick-Action Menu
