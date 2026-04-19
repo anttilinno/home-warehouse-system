@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, type ReactNode } from "react";
 import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQuery } from "@tanstack/react-query";
@@ -19,6 +19,14 @@ export interface ItemFormProps {
   onSubmit: (values: ItemCreateValues) => void | Promise<void>;
   onDirtyChange?: (isDirty: boolean) => void;
   defaultValues?: Partial<ItemCreateValues>;
+  /**
+   * Optional slot rendered INSIDE the FormProvider context but OUTSIDE
+   * the <form> element — lets callers render sibling components (e.g. the
+   * Phase 65 UpcSuggestionBanner) that need to call useFormContext().setValue
+   * to write into the form without the banner being a descendant of the
+   * actual <form>. Preserves ItemPanel's existing usage (no beforeForm passed).
+   */
+  beforeForm?: ReactNode;
 }
 
 // Coerce empty strings -> undefined before zod parses, so the UUID / pattern
@@ -53,6 +61,7 @@ export function ItemForm({
   onSubmit,
   onDirtyChange,
   defaultValues,
+  beforeForm,
 }: ItemFormProps) {
   const { t } = useLingui();
   const { workspaceId } = useAuth();
@@ -111,6 +120,7 @@ export function ItemForm({
 
   return (
     <FormProvider {...methods}>
+      {beforeForm}
       <form id={formId} onSubmit={submit} className="flex flex-col gap-md">
         <RetroFormField name="name" control={control} label={t`NAME`}>
           <RetroInput

@@ -366,7 +366,13 @@ describe("Group D — ItemFormPage + UpcSuggestionBanner integration (D-13..D-16
         },
       },
     });
-    const nameRow = screen.getByText("NAME").closest("div");
+    // The banner's NAME label is a <span>, the form's NAME is a <label>.
+    // Pick the banner's span (font-mono class narrows the match).
+    const nameSpan = screen
+      .getAllByText("NAME")
+      .find((el) => el.tagName === "SPAN");
+    expect(nameSpan).toBeTruthy();
+    const nameRow = nameSpan!.closest("div");
     const useButton = nameRow!.querySelector(
       "button",
     ) as HTMLButtonElement;
