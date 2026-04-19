@@ -143,6 +143,54 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 		}, nil
 	})
 
+	// Lookup item by exact barcode (G-65-01 gap closure)
+	//
+	// Dedicated endpoint because the /items list FTS search_vector column
+	// covers name/brand/model/description ONLY — barcode + sku are NOT
+	// indexed by the generated tsvector (see
+	// backend/db/migrations/001_initial_schema.sql:495-500). This handler
+	// uses repo.FindByBarcode which hits the ix_items_barcode btree index.
+	//
+	// Case-sensitivity: Postgres text = operator is byte-wise, so upstream
+	// callers (frontend itemsApi.lookupByBarcode) inherit D-07 case-sensitive
+	// exact-match without any extra guard at this layer.
+	//
+	// Workspace scoping (D-08): FindByBarcode's WHERE clause includes
+	// workspace_id = $1 and the appMiddleware.GetWorkspaceID(ctx) value
+	// comes from the route-mounting workspace-context middleware — so a
+	// call for workspace A never leaks a match from workspace B.
+	huma.Get(api, "/items/by-barcode/{code}", func(ctx context.Context, input *LookupItemByBarcodeInput) (*LookupItemByBarcodeOutput, error) {
+		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
+		if !ok {
+			return nil, huma.Error401Unauthorized("workspace context required")
+		}
+
+		itm, err := svc.LookupByBarcode(ctx, workspaceID, input.Code)
+		if err != nil {
+			if errors.Is(err, ErrItemNotFound) {
+				return nil, huma.Error404NotFound("item not found")
+			}
+			return nil, huma.Error500InternalServerError("failed to lookup item by barcode")
+		}
+
+		// Decorate with primary photo (best-effort — mirrors the GetByID
+		// handler convention so the frontend MATCH banner can render a
+		// thumbnail if one exists).
+		var primary *itemphoto.ItemPhoto
+		if photos != nil {
+			p, perr := photos.GetPrimary(ctx, itm.ID(), workspaceID)
+			if perr != nil {
+				log.Printf("item lookup-by-barcode: primary photo lookup failed for item %s: %v", itm.ID(), perr)
+			} else {
+				primary = p
+			}
+		}
+
+		return &LookupItemByBarcodeOutput{
+			Body: toItemResponse(itm, primary, photoURLGen),
+		}, nil
+	})
+
 	// Get item by ID
 	huma.Get(api, "/items/{id}", func(ctx context.Context, input *GetItemInput) (*GetItemOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
@@ -613,6 +661,23 @@ type GetItemInput struct {
 }
 
 type GetItemOutput struct {
+	Body ItemResponse
+}
+
+// LookupItemByBarcodeInput carries the path param for the dedicated barcode
+// lookup endpoint. Per G-65-01 (Phase 65 gap closure): the FTS search_vector
+// column does NOT cover barcode, so this endpoint uses FindByBarcode
+// (ix_items_barcode btree index) directly.
+//
+// minLength:1 rejects empty codes; maxLength:64 matches the frontend
+// itemCreateSchema.barcode cap (D-24) and is well below the Postgres column
+// length — anything longer is guaranteed-miss and should 400/422 rather than
+// hit the DB.
+type LookupItemByBarcodeInput struct {
+	Code string `path:"code" minLength:"1" maxLength:"64" doc:"Exact barcode to look up (case-sensitive). Use /items/search for FTS-style partial search over name/brand/model/description."`
+}
+
+type LookupItemByBarcodeOutput struct {
 	Body ItemResponse
 }
 
