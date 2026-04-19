@@ -357,7 +357,7 @@ Plans:
 - [x] 65-01-PLAN.md — Wave 0 test scaffolds (7 files, 78 it.todo + 2 green) + shared QueryClient test helper + pre-phase bundle baseline (main gzip 135754 B / scanner gzip 58057 B @ b04ae7c)
 - [x] 65-02-PLAN.md — Wave 1 itemsApi.lookupByBarcode (D-06/07/08 guards) + schemas.ts D-23 optional brand field + D-24 barcode regex loosened for hyphens/underscores; 10 Wave 0 todos converted green
 - [x] 65-03-PLAN.md — Wave 1 lib/api/barcode.ts + barrel export + useBarcodeEnrichment hook with /^\d{8,14}$/ gate + silent failure
-- [ ] 65-04-PLAN.md — Wave 2 useScanLookup body swap + updateScanHistory + useScanHistory.update (D-22 race guard)
+- [x] 65-04-PLAN.md — Wave 2 useScanLookup body swap + updateScanHistory + useScanHistory.update (D-22 race guard); 16 new real it() cases (8 useScanLookup + 3 scan-history + 5 useScanHistory.update); ScanPage Test 15 callsite gate preserved
 - [ ] 65-05-PLAN.md — Wave 2 ItemForm FormProvider wrap + UpcSuggestionBanner + ItemFormPage (dirty-guard + Pitfall #7 invalidation)
 - [ ] 65-06-PLAN.md — Wave 3 ScanResultBanner widened to 4 states (LOADING/MATCH/NOT-FOUND/ERROR) + retro-cursor-blink keyframe
 - [ ] 65-07-PLAN.md — Wave 4 /items/new route registration + ScanPage match-effect wiring + banner callsite widening + Test 16/17/18

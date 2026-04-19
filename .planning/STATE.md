@@ -3,9 +3,9 @@ gsd_state_version: 1.0
 milestone: v2.2
 milestone_name: Scanning & Stabilization
 status: executing
-stopped_at: Phase 65 Plans 02 + 03 complete (LOOK-01 frontend guard + LOOK-03 enrichment data layer)
-last_updated: "2026-04-19T12:35:00.000Z"
-last_activity: 2026-04-19 -- Phase 65 Plan 02 complete (itemsApi.lookupByBarcode + D-23 brand + D-24 barcode regex; 10 Wave 0 todos green)
+stopped_at: Phase 65 Plan 04 complete (useScanLookup body swap + updateScanHistory D-22 race guard + useScanHistory.update useCallback-wrapped)
+last_updated: "2026-04-19T12:48:00.000Z"
+last_activity: 2026-04-19 -- Phase 65 Plan 04 complete (LOOK-01 lookup hook end-to-end; 3 tasks TDD RED+GREEN; 8 useScanLookup + 3 scan-history + 5 useScanHistory.update cases green; ScanPage Test 15 gate preserved)
 progress:
   total_phases: 6
   completed_phases: 6
@@ -26,10 +26,10 @@ See: `.planning/PROJECT.md` (updated 2026-04-18)
 ## Current Position
 
 Phase: 65 (item-lookup-and-not-found-flow) — EXECUTING
-Plan: 4 of 8 (Plans 01, 02, 03 complete; Plan 04 unblocked)
+Plan: 5 of 8 (Plans 01, 02, 03, 04 complete; Plan 05 running in parallel; Plans 06/07/08 next)
 Status: Executing Phase 65
-Last activity: 2026-04-19 -- Phase 65 Plan 02 complete (LOOK-01 frontend guard layer shipped; itemsApi.lookupByBarcode w/ D-06/D-07/D-08 guards + D-23 brand field + D-24 barcode regex loosening; 10 Wave 0 todos green)
-Next step: Plan 65-04 (useScanLookup body swap + updateScanHistory) — now unblocked since Plan 65-02 landed itemsApi.lookupByBarcode
+Last activity: 2026-04-19 -- Phase 65 Plan 04 complete (useScanLookup body swap to real TanStack Query against itemsApi.lookupByBarcode; updateScanHistory module fn + useScanHistory.update useCallback-wrapped for D-22 race guard; 8 + 3 + 5 = 16 new real it() cases; ScanPage Test 15 callsite gate preserved)
+Next step: Plans 65-05 (in parallel) / 65-06 (ScanResultBanner 4 states) / 65-07 (ScanPage wiring) / 65-08 (i18n + bundle gate)
 
 ## Performance Metrics
 
@@ -113,11 +113,12 @@ Next step: Plan 65-04 (useScanLookup body swap + updateScanHistory) — now unbl
 
 ## Session Continuity
 
-Last session: 2026-04-19T12:35:00.000Z
-Stopped at: Phase 65 Plan 02 complete (LOOK-01 frontend guard layer; Plans 01 + 02 + 03 all landed)
-Next step: Plan 65-04 — useScanLookup body swap + updateScanHistory (Wave 2, now unblocked)
+Last session: 2026-04-19T12:48:00.000Z
+Stopped at: Phase 65 Plan 04 complete (LOOK-01 lookup hook end-to-end; useScanLookup body swap + D-22 race guard surface)
+Next step: Plan 65-05 (running in parallel) / 65-06 (ScanResultBanner 4 states) / 65-07 (ScanPage wiring) / 65-08 (i18n + bundle gate)
 
 ---
+*Updated: 2026-04-19 — Phase 65 Plan 04 complete (useScanLookup body swap to real TanStack Query against itemsApi.lookupByBarcode; ScanLookupResult shape preserved per Phase 64 D-18; updateScanHistory module fn + useScanHistory.update useCallback-wrapped for D-22 race guard; 8 + 3 + 5 = 16 new real it() cases green; ScanPage Test 15 callsite gate preserved; 3 tasks TDD RED+GREEN atomic commits).*
 *Updated: 2026-04-19 — Phase 65 Plan 02 complete (itemsApi.lookupByBarcode w/ D-06/D-07/D-08 guards + D-23 optional brand field + D-24 barcode regex loosened for hyphens/underscores; 10 Wave 0 todos converted green; cumulative 28/78 todos real; full suite 640 passed / 50 todos).*
 *Updated: 2026-04-19 — Phase 65 Plan 03 complete (barcodeApi + barcodeKeys + useBarcodeEnrichment with /^d{8,14}$/ gate + silent-failure; 18 Wave 0 todos converted green; full suite 640 passed / 50 todos).*
 *Updated: 2026-04-19 — Phase 65 Plan 01 complete (7 Wave 0 scaffolds + 78 it.todo + shared QueryClient helper + bundle baseline main 135754 B / scanner 58057 B @ b04ae7c).*
