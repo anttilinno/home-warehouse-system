@@ -1,15 +1,28 @@
 ---
 phase: 65-item-lookup-and-not-found-flow
 verified: 2026-04-19T13:41:00Z
-status: human_needed
-score: 18/18 must-haves verified
+status: gaps_found
+score: 17/18 must-haves verified (was 18/18 — downgraded after Firefox MCP UAT found backend FTS contract mismatch invalidating Truth #1)
 overrides_applied: 0
 re_verification:
-  previous_status: null
-  previous_score: null
+  previous_status: human_needed
+  previous_score: 18/18
   gaps_closed: []
-  gaps_remaining: []
+  gaps_remaining: [G-65-01]
   regressions: []
+gaps:
+  - id: G-65-01
+    severity: blocking
+    requirement: LOOK-01
+    decision_violated: D-06
+    observed: "GET /items?search=<barcode>&limit=1 returns total:0 for items that exist with that barcode. Backend FTS search_vector generated column only covers (name, brand, model, description) per backend/db/migrations/001_initial_schema.sql:495-500 — excludes barcode and sku. MATCH state unreachable in production. Unit tests missed this because they mock itemsApi.list."
+    root_cause: "D-06 assumed the list endpoint's ?search param covers barcode. SQL schema disproves this — the aspirational repository.go:16 comment ('FTS search over name, SKU, barcode') does not match the STORED generated column."
+    fix: "Add dedicated GET /api/workspaces/{wsId}/items/by-barcode/{code} handler using existing item.Repository.FindByBarcode() (already implemented in backend/internal/infra/postgres/item_repository.go:157 — uses ix_items_barcode index). Update frontend itemsApi.lookupByBarcode to call the new endpoint. Revise D-06 in 65-CONTEXT.md."
+    evidence:
+      - "GET /api/workspaces/{wsId}/items/019da569-7a38-7255-80c3-811f0fb13488 → barcode:'5449000000996'"
+      - "GET /api/workspaces/{wsId}/items?search=5449000000996&limit=1 → total:0"
+      - "GET /api/workspaces/{wsId}/items?search=Original%20Taste&limit=1 → total:1 (name search works)"
+      - "Firefox MCP session 2026-04-19 14:05 UTC: /scan → KÄSITSI → 5449000000996 → EI LEITUD (NOT FOUND) despite item existing"
 human_verification:
   - test: "iOS PWA camera permission resume after /scan → /items/new → back"
     expected: "Scanner resumes without re-prompting the OS-level camera permission"
