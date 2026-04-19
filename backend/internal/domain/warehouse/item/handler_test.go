@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"strings"
 	"testing"
 	"time"
 
@@ -1068,4 +1069,109 @@ func TestItemHandler_Restore_PublishesEvent(t *testing.T) {
 	assert.Equal(t, setup.WorkspaceID, event.WorkspaceID)
 	assert.Equal(t, setup.UserID, event.UserID)
 	assert.Equal(t, itemID.String(), event.EntityID)
+}
+
+// TestItemHandler_LookupByBarcode covers the Phase 65 Gap G-65-01 closure
+// handler-level surface: GET /items/by-barcode/{code} exposed because the FTS
+// search_vector only covers (name, brand, model, description) — barcode scans
+// from the frontend were returning total:0 for real barcodes. The handler
+// delegates to svc.LookupByBarcode (btree ix_items_barcode) and maps
+// ErrItemNotFound → 404, invalid path params → 400/422.
+//
+// NOTE on test coverage scope: at the handler unit-test layer with a mocked
+// service, "item exists in another workspace" is indistinguishable from
+// "item never existed" — both surface as svc.LookupByBarcode returning
+// ErrItemNotFound. Cross-tenant scoping is enforced at the repo SQL layer
+// (items.sql: WHERE workspace_id = $1 AND barcode = $2) and is verified at
+// the integration-test layer (65-11 Option B if chosen). This test asserts
+// the handler contract: 404 when the service says not-found, regardless of
+// why.
+func TestItemHandler_LookupByBarcode(t *testing.T) {
+	setup := testutil.NewHandlerTestSetup()
+	mockSvc := new(MockService)
+	item.RegisterRoutes(setup.API, mockSvc, nil, nil, nil)
+
+	t.Run("returns 200 with item on exact-barcode match (G-65-01 happy path)", func(t *testing.T) {
+		// NewItem(workspaceID, name, sku, minStockLevel) — does NOT accept
+		// barcode (see entity.go). There is no public SetBarcode setter; the
+		// only in-place path is (*Item).Update(UpdateInput{...}), which is
+		// overkill for a handler test where the service is mocked. We assert
+		// on ID / Name / WorkspaceID / SKU only — the Barcode response-field
+		// shape is locked by the ItemResponse struct + toItemResponse mapping.
+		testItem, _ := item.NewItem(setup.WorkspaceID, "Coca-Cola Original Taste", "ITEM-1", 0)
+
+		mockSvc.On("LookupByBarcode", mock.Anything, setup.WorkspaceID, "5449000000996").
+			Return(testItem, nil).Once()
+
+		rec := setup.Get("/items/by-barcode/5449000000996")
+
+		testutil.AssertStatus(t, rec, http.StatusOK)
+		mockSvc.AssertExpectations(t)
+
+		var body item.ItemResponse
+		err := json.Unmarshal(rec.Body.Bytes(), &body)
+		assert.NoError(t, err)
+		assert.Equal(t, testItem.ID(), body.ID)
+		assert.Equal(t, setup.WorkspaceID, body.WorkspaceID)
+		assert.Equal(t, "Coca-Cola Original Taste", body.Name)
+		assert.Equal(t, "ITEM-1", body.SKU)
+	})
+
+	t.Run("returns 404 when no item matches (covers not-exists and cross-workspace cases at this layer)", func(t *testing.T) {
+		// Per D-08 + the repo-layer WHERE workspace_id = $1, a code that
+		// exists only in another workspace is equivalent to "not found" from
+		// THIS workspace's perspective — FindByBarcode's SQL clause guarantees
+		// this at the DB layer, and svc.LookupByBarcode surfaces ErrItemNotFound
+		// in both cases. The handler test asserts the same 404 surface holds.
+		mockSvc.On("LookupByBarcode", mock.Anything, setup.WorkspaceID, "UNKNOWN-CODE").
+			Return(nil, item.ErrItemNotFound).Once()
+
+		rec := setup.Get("/items/by-barcode/UNKNOWN-CODE")
+
+		testutil.AssertStatus(t, rec, http.StatusNotFound)
+		mockSvc.AssertExpectations(t)
+	})
+
+	t.Run("returns 500 on unexpected service error", func(t *testing.T) {
+		mockSvc.On("LookupByBarcode", mock.Anything, setup.WorkspaceID, "OPAQUE").
+			Return(nil, errors.New("db connection reset")).Once()
+
+		rec := setup.Get("/items/by-barcode/OPAQUE")
+
+		testutil.AssertStatus(t, rec, http.StatusInternalServerError)
+		mockSvc.AssertExpectations(t)
+	})
+
+	t.Run("returns 422/400 when code exceeds maxLength:64 (huma path validation)", func(t *testing.T) {
+		longCode := strings.Repeat("A", 65)
+		rec := setup.Get(fmt.Sprintf("/items/by-barcode/%s", longCode))
+
+		// Huma maps path minLength/maxLength violations to 422 by default but
+		// some middleware stacks surface 400 — accept either per the
+		// convention used elsewhere in the suite for validator rejections.
+		assert.Contains(t, []int{http.StatusBadRequest, http.StatusUnprocessableEntity}, rec.Code,
+			"expected 400 or 422 for oversize barcode, got %d; body=%s", rec.Code, rec.Body.String())
+
+		// Service must NOT be called when validation rejects the input
+		mockSvc.AssertNotCalled(t, "LookupByBarcode", mock.Anything, mock.Anything, longCode)
+	})
+
+	t.Run("case-sensitivity: uppercase and lowercase are distinct codes (D-07 at the HTTP boundary)", func(t *testing.T) {
+		// The service is asked with the EXACT path-param value — no
+		// normalisation at the handler layer. Upper-case code gets an
+		// upper-case call; lower-case gets lower-case. This is a behavioural
+		// guard that the handler does not lowercase the path param before
+		// passing to the service.
+		mockSvc.On("LookupByBarcode", mock.Anything, setup.WorkspaceID, "ABC-123").
+			Return(nil, item.ErrItemNotFound).Once()
+		mockSvc.On("LookupByBarcode", mock.Anything, setup.WorkspaceID, "abc-123").
+			Return(nil, item.ErrItemNotFound).Once()
+
+		rec1 := setup.Get("/items/by-barcode/ABC-123")
+		rec2 := setup.Get("/items/by-barcode/abc-123")
+
+		testutil.AssertStatus(t, rec1, http.StatusNotFound)
+		testutil.AssertStatus(t, rec2, http.StatusNotFound)
+		mockSvc.AssertExpectations(t)
+	})
 }
