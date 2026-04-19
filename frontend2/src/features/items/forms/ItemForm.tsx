@@ -1,5 +1,5 @@
 import { useEffect, useMemo } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQuery } from "@tanstack/react-query";
 import { useLingui } from "@lingui/react/macro";
@@ -30,6 +30,7 @@ const resolver: typeof baseResolver = (values, ctx, opts) => {
   const cleaned = {
     ...v,
     barcode: v.barcode === "" ? undefined : v.barcode,
+    brand: v.brand === "" ? undefined : v.brand,
     description: v.description === "" ? undefined : v.description,
     category_id: v.category_id === "" ? undefined : v.category_id,
   };
@@ -56,17 +57,19 @@ export function ItemForm({
   const { t } = useLingui();
   const { workspaceId } = useAuth();
 
-  const { control, handleSubmit, formState } = useForm<ItemCreateValues>({
+  const methods = useForm<ItemCreateValues>({
     resolver,
     defaultValues: {
       name: defaultValues?.name ?? "",
       sku: defaultValues?.sku ?? "",
       barcode: defaultValues?.barcode ?? "",
+      brand: defaultValues?.brand ?? "",
       description: defaultValues?.description ?? "",
       category_id: defaultValues?.category_id ?? "",
     } as ItemCreateValues,
     mode: "onSubmit",
   });
+  const { control, handleSubmit, formState } = methods;
 
   useEffect(() => {
     onDirtyChange?.(formState.isDirty);
@@ -97,6 +100,7 @@ export function ItemForm({
       name: values.name,
       sku: values.sku,
       barcode: values.barcode || undefined,
+      brand: values.brand || undefined,
       description: values.description || undefined,
       category_id: values.category_id || undefined,
     };
@@ -106,59 +110,70 @@ export function ItemForm({
   const isEditMode = !!defaultValues?.name;
 
   return (
-    <form id={formId} onSubmit={submit} className="flex flex-col gap-md">
-      <RetroFormField name="name" control={control} label={t`NAME`}>
-        <RetroInput
-          autoFocus={!isEditMode}
-          placeholder={t`e.g. Cordless Drill`}
-        />
-      </RetroFormField>
+    <FormProvider {...methods}>
+      <form id={formId} onSubmit={submit} className="flex flex-col gap-md">
+        <RetroFormField name="name" control={control} label={t`NAME`}>
+          <RetroInput
+            autoFocus={!isEditMode}
+            placeholder={t`e.g. Cordless Drill`}
+          />
+        </RetroFormField>
 
-      <RetroFormField
-        name="sku"
-        control={control}
-        label={t`SKU`}
-        helper={t`Auto-generated — editable`}
-      >
-        <RetroInput className="font-mono" />
-      </RetroFormField>
+        <RetroFormField
+          name="sku"
+          control={control}
+          label={t`SKU`}
+          helper={t`Auto-generated — editable`}
+        >
+          <RetroInput className="font-mono" />
+        </RetroFormField>
 
-      <RetroFormField
-        name="barcode"
-        control={control}
-        label={t`BARCODE`}
-        helper={t`Optional`}
-      >
-        <RetroInput
-          className="font-mono"
-          placeholder={t`0123456789012`}
-          inputMode="text"
-        />
-      </RetroFormField>
+        <RetroFormField
+          name="barcode"
+          control={control}
+          label={t`BARCODE`}
+          helper={t`Optional`}
+        >
+          <RetroInput
+            className="font-mono"
+            placeholder={t`0123456789012`}
+            inputMode="text"
+          />
+        </RetroFormField>
 
-      <RetroFormField
-        name="description"
-        control={control}
-        label={t`DESCRIPTION`}
-        helper={t`Optional — up to 2000 characters`}
-      >
-        <RetroTextarea
-          rows={4}
-          placeholder={t`What's in the box, condition, accessories, etc.`}
-        />
-      </RetroFormField>
+        <RetroFormField
+          name="brand"
+          control={control}
+          label={t`BRAND`}
+          helper={t`Optional`}
+        >
+          <RetroInput placeholder={t`e.g. DeWalt`} />
+        </RetroFormField>
 
-      <RetroFormField
-        name="category_id"
-        control={control}
-        label={t`CATEGORY`}
-        helper={t`Optional`}
-      >
-        <RetroCombobox
-          options={categoryOptions}
-          placeholder={t`Search categories…`}
-        />
-      </RetroFormField>
-    </form>
+        <RetroFormField
+          name="description"
+          control={control}
+          label={t`DESCRIPTION`}
+          helper={t`Optional — up to 2000 characters`}
+        >
+          <RetroTextarea
+            rows={4}
+            placeholder={t`What's in the box, condition, accessories, etc.`}
+          />
+        </RetroFormField>
+
+        <RetroFormField
+          name="category_id"
+          control={control}
+          label={t`CATEGORY`}
+          helper={t`Optional`}
+        >
+          <RetroCombobox
+            options={categoryOptions}
+            placeholder={t`Search categories…`}
+          />
+        </RetroFormField>
+      </form>
+    </FormProvider>
   );
 }

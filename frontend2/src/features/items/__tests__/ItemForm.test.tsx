@@ -168,6 +168,57 @@ describe("ItemForm — edit mode pre-population", () => {
   });
 });
 
+describe("ItemForm — D-23 BRAND field", () => {
+  it("renders a BRAND input labelled BRAND", () => {
+    renderWithProviders(<ItemForm formId="if-brand" onSubmit={vi.fn()} />);
+    const brandInput = screen.getByLabelText(/brand/i) as HTMLInputElement;
+    expect(brandInput).toBeInTheDocument();
+    expect(brandInput.tagName).toBe("INPUT");
+    expect(brandInput.value).toBe("");
+  });
+
+  it("pre-populates BRAND from defaultValues", () => {
+    renderWithProviders(
+      <ItemForm
+        formId="if-brand-2"
+        onSubmit={vi.fn()}
+        defaultValues={{
+          name: "Drill",
+          sku: "ITEM-TEST-0001",
+          brand: "DeWalt",
+        }}
+      />,
+    );
+    expect(
+      (screen.getByLabelText(/brand/i) as HTMLInputElement).value,
+    ).toBe("DeWalt");
+  });
+
+  it("coerces empty brand -> undefined in submit payload", async () => {
+    const onSubmit = vi.fn().mockResolvedValue(undefined);
+    renderWithProviders(
+      <>
+        <ItemForm formId="if-brand-3" onSubmit={onSubmit} />
+        <button type="submit" form="if-brand-3">
+          go
+        </button>
+      </>,
+    );
+    fireEvent.change(screen.getByLabelText(/name/i), {
+      target: { value: "Drill" },
+    });
+    fireEvent.change(screen.getByLabelText(/sku/i), {
+      target: { value: "ITEM-TEST-0001" },
+    });
+    await act(async () => {
+      fireEvent.click(screen.getByText("go"));
+    });
+    await waitFor(() => expect(onSubmit).toHaveBeenCalled());
+    const payload = onSubmit.mock.calls[0][0];
+    expect(payload.brand).toBeUndefined();
+  });
+});
+
 describe("ItemForm — submit payload coercion", () => {
   it("converts empty optional fields to undefined", async () => {
     const onSubmit = vi.fn().mockResolvedValue(undefined);
