@@ -53,6 +53,27 @@
   }
 }
 
+/* Phase 65 — LOADING state cursor blink for ScanResultBanner.
+   1 Hz step-end so it reads as a terminal cursor, not a smooth fade.
+   Respects prefers-reduced-motion: reduce — the @media block sets
+   animation: none so opted-in users see a static cursor glyph.
+   Manual verification: 65-VALIDATION.md §Manual-Only Verifications. */
+@keyframes retro-cursor-blink {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0; }
+}
+
+.retro-cursor-blink {
+  animation: retro-cursor-blink 1s step-end infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .retro-cursor-blink {
+    animation: none;
+    opacity: 1;
+  }
+}
+
 @layer utilities {
   .bg-hazard-stripe {
     background: repeating-linear-gradient(
