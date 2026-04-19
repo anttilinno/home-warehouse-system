@@ -93,6 +93,29 @@ export const itemsApi = {
   archive: (wsId: string, id: string) => post<void>(`${base(wsId)}/${id}/archive`),
   restore: (wsId: string, id: string) => post<void>(`${base(wsId)}/${id}/restore`),
   delete: (wsId: string, id: string) => del<void>(`${base(wsId)}/${id}`),
+  /**
+   * D-06: Wraps itemsApi.list(wsId, { search: code, limit: 1 }) — no new HTTP endpoint.
+   * D-07: Case-sensitive exact-barcode guard. Empty list OR guard-fail returns null.
+   * D-08: Workspace defense-in-depth (Pitfall #5 — globally-unique UPCs guarantee
+   *       cross-tenant collisions). On workspace_id mismatch, logs structured
+   *       console.error and returns null.
+   */
+  lookupByBarcode: async (wsId: string, code: string): Promise<Item | null> => {
+    const res = await itemsApi.list(wsId, { search: code, limit: 1 });
+    const candidate = res.items[0];
+    if (!candidate) return null;
+    if (candidate.barcode !== code) return null;
+    if (candidate.workspace_id !== wsId) {
+      console.error({
+        kind: "scan-workspace-mismatch",
+        code,
+        returnedWs: candidate.workspace_id,
+        sessionWs: wsId,
+      });
+      return null;
+    }
+    return candidate;
+  },
 };
 
 export const itemKeys = {

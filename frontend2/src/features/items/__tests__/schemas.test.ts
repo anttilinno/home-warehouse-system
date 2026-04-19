@@ -18,11 +18,14 @@ describe("itemCreateSchema", () => {
     expect(result.success).toBe(false);
   });
 
-  it("rejects barcode with punctuation", () => {
+  it("rejects barcode with forbidden punctuation (space/slash/dot)", () => {
+    // Phase 65 D-24 loosened the barcode regex to accept hyphens and
+    // underscores (e.g. real Code128 scans like "TEST-CODE-123"). The
+    // regex still rejects spaces, slashes, periods, and other punctuation.
     const result = itemCreateSchema.safeParse({
       name: "A",
       sku: "ITEM-AAA-0001",
-      barcode: "123-456",
+      barcode: "123/456",
     });
     expect(result.success).toBe(false);
   });
