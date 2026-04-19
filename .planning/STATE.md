@@ -3,9 +3,9 @@ gsd_state_version: 1.0
 milestone: v2.2
 milestone_name: Scanning & Stabilization
 status: executing
-stopped_at: Phase 65 Plan 04 complete (useScanLookup body swap + updateScanHistory D-22 race guard + useScanHistory.update useCallback-wrapped)
-last_updated: "2026-04-19T12:48:00.000Z"
-last_activity: 2026-04-19 -- Phase 65 Plan 04 complete (LOOK-01 lookup hook end-to-end; 3 tasks TDD RED+GREEN; 8 useScanLookup + 3 scan-history + 5 useScanHistory.update cases green; ScanPage Test 15 gate preserved)
+stopped_at: Phase 65 Plan 05 complete (LOOK-02 + LOOK-03 render surface — ItemForm FormProvider wrap + BRAND field + UpcSuggestionBanner + ItemFormPage with D-04 dual invalidation)
+last_updated: "2026-04-19T09:51:08.000Z"
+last_activity: 2026-04-19 -- Phase 65 Plan 05 complete (ItemForm FormProvider + BRAND field D-23; UpcSuggestionBanner with direct setValue("brand", ...) — no description workaround; ItemFormPage with scanKeys.lookup + itemKeys.all dual invalidation and dirty-guard dialog; 32 new real it() — 60/78 Wave-0 todos converted cumulative)
 progress:
   total_phases: 6
   completed_phases: 6
@@ -26,10 +26,10 @@ See: `.planning/PROJECT.md` (updated 2026-04-18)
 ## Current Position
 
 Phase: 65 (item-lookup-and-not-found-flow) — EXECUTING
-Plan: 5 of 8 (Plans 01, 02, 03, 04 complete; Plan 05 running in parallel; Plans 06/07/08 next)
+Plan: 6 of 8 (Plans 01, 02, 03, 04, 05 complete; Plans 06/07/08 next)
 Status: Executing Phase 65
-Last activity: 2026-04-19 -- Phase 65 Plan 04 complete (useScanLookup body swap to real TanStack Query against itemsApi.lookupByBarcode; updateScanHistory module fn + useScanHistory.update useCallback-wrapped for D-22 race guard; 8 + 3 + 5 = 16 new real it() cases; ScanPage Test 15 callsite gate preserved)
-Next step: Plans 65-05 (in parallel) / 65-06 (ScanResultBanner 4 states) / 65-07 (ScanPage wiring) / 65-08 (i18n + bundle gate)
+Last activity: 2026-04-19 -- Phase 65 Plan 05 complete (LOOK-02 + LOOK-03 render surface: ItemForm FormProvider wrap + BRAND RetroFormField D-23; UpcSuggestionBanner with direct setValue("brand", ...) — no description concatenation workaround; ItemFormPage /items/new page orchestrator with scanKeys.lookup(barcode) + itemKeys.all dual invalidation (D-04 Pitfall #7 closure) and dirty-guard RetroConfirmDialog; 32 new real it() green — 60/78 cumulative Wave-0 todos converted)
+Next step: Plan 65-06 (ScanResultBanner 4-state widen — Wave 3) / 65-07 (ScanPage match-effect + route registration) / 65-08 (i18n + bundle gate)
 
 ## Performance Metrics
 
@@ -113,11 +113,12 @@ Next step: Plans 65-05 (in parallel) / 65-06 (ScanResultBanner 4 states) / 65-07
 
 ## Session Continuity
 
-Last session: 2026-04-19T12:48:00.000Z
-Stopped at: Phase 65 Plan 04 complete (LOOK-01 lookup hook end-to-end; useScanLookup body swap + D-22 race guard surface)
-Next step: Plan 65-05 (running in parallel) / 65-06 (ScanResultBanner 4 states) / 65-07 (ScanPage wiring) / 65-08 (i18n + bundle gate)
+Last session: 2026-04-19T09:51:08.000Z
+Stopped at: Phase 65 Plan 05 complete (LOOK-02 + LOOK-03 render surface — page + banner + FormProvider wrap shipped)
+Next step: Plan 65-06 (ScanResultBanner 4 states) / 65-07 (ScanPage wiring + route registration) / 65-08 (i18n + bundle gate)
 
 ---
+*Updated: 2026-04-19 — Phase 65 Plan 05 complete (LOOK-02 + LOOK-03 render surface: ItemForm FormProvider wrap + BRAND RetroFormField D-23 + optional beforeForm slot for sibling banner access; UpcSuggestionBanner feature-local banner with per-field [USE] + USE ALL + DISMISS writing setValue("brand", ..., { shouldDirty: true }) directly — no description concatenation workaround; ItemFormPage /items/new page with ?barcode= URL prefill + generateSku once per mount + dirty-guard RetroConfirmDialog + scanKeys.lookup(barcode) + itemKeys.all dual invalidation on create success (D-04 Pitfall #7 closure); 32 new real it() — 60/78 cumulative Wave-0 todos converted; full suite 686 passed / 20 todos / 0 failed; typecheck + lint:imports clean; 1 Rule 3 auto-fix: added optional beforeForm?: ReactNode slot to ItemForm reconciling plan's Task 1 FormProvider-inside-ItemForm with Task 3's banner-as-sibling intent).*
 *Updated: 2026-04-19 — Phase 65 Plan 04 complete (useScanLookup body swap to real TanStack Query against itemsApi.lookupByBarcode; ScanLookupResult shape preserved per Phase 64 D-18; updateScanHistory module fn + useScanHistory.update useCallback-wrapped for D-22 race guard; 8 + 3 + 5 = 16 new real it() cases green; ScanPage Test 15 callsite gate preserved; 3 tasks TDD RED+GREEN atomic commits).*
 *Updated: 2026-04-19 — Phase 65 Plan 02 complete (itemsApi.lookupByBarcode w/ D-06/D-07/D-08 guards + D-23 optional brand field + D-24 barcode regex loosened for hyphens/underscores; 10 Wave 0 todos converted green; cumulative 28/78 todos real; full suite 640 passed / 50 todos).*
 *Updated: 2026-04-19 — Phase 65 Plan 03 complete (barcodeApi + barcodeKeys + useBarcodeEnrichment with /^d{8,14}$/ gate + silent-failure; 18 Wave 0 todos converted green; full suite 640 passed / 50 todos).*

@@ -358,7 +358,7 @@ Plans:
 - [x] 65-02-PLAN.md — Wave 1 itemsApi.lookupByBarcode (D-06/07/08 guards) + schemas.ts D-23 optional brand field + D-24 barcode regex loosened for hyphens/underscores; 10 Wave 0 todos converted green
 - [x] 65-03-PLAN.md — Wave 1 lib/api/barcode.ts + barrel export + useBarcodeEnrichment hook with /^\d{8,14}$/ gate + silent failure
 - [x] 65-04-PLAN.md — Wave 2 useScanLookup body swap + updateScanHistory + useScanHistory.update (D-22 race guard); 16 new real it() cases (8 useScanLookup + 3 scan-history + 5 useScanHistory.update); ScanPage Test 15 callsite gate preserved
-- [ ] 65-05-PLAN.md — Wave 2 ItemForm FormProvider wrap + UpcSuggestionBanner + ItemFormPage (dirty-guard + Pitfall #7 invalidation)
+- [x] 65-05-PLAN.md — Wave 2 ItemForm FormProvider wrap + BRAND field (D-23) + UpcSuggestionBanner + ItemFormPage (dirty-guard + D-04 scanKeys.lookup + itemKeys.all dual invalidation); 32 new real it() cases (3 ItemForm BRAND + 13 UpcSuggestionBanner + 19 ItemFormPage — +3 bonus)
 - [ ] 65-06-PLAN.md — Wave 3 ScanResultBanner widened to 4 states (LOADING/MATCH/NOT-FOUND/ERROR) + retro-cursor-blink keyframe
 - [ ] 65-07-PLAN.md — Wave 4 /items/new route registration + ScanPage match-effect wiring + banner callsite widening + Test 16/17/18
 - [ ] 65-08-PLAN.md — Wave 5 Lingui EN extract + ET gap-fill + [BLOCKING] bundle gate vs Plan 65-01 baseline
@@ -476,4 +476,5 @@ Plans:
 *Roadmap created: 2026-01-24*
 *Last updated: 2026-04-19 — Phase 65 Plan 02 complete (LOOK-01 frontend guard layer: itemsApi.lookupByBarcode w/ D-06/D-07/D-08 guards inlined + schemas D-23 optional brand field + D-24 barcode regex loosened for hyphens/underscores; 10 Wave 0 todos converted green; full suite 640 passed / 50 todos)*
 *Last updated: 2026-04-19 — Phase 65 Plan 03 complete (LOOK-03 data layer: lib/api/barcode.ts + useBarcodeEnrichment with /^\d{8,14}$/ gate + silent-fail structured log; 18 Wave 0 todos green; full suite 640 passed / 50 todos)*
+*Last updated: 2026-04-19 — Phase 65 Plan 05 complete (LOOK-02 + LOOK-03 render surface: ItemForm FormProvider wrap + BRAND field D-23 + UpcSuggestionBanner + ItemFormPage with D-04 scanKeys.lookup + itemKeys.all dual invalidation and dirty-guard dialog; +32 real it() green (3 ItemForm BRAND + 13 UpcSuggestionBanner + 19 ItemFormPage — +3 bonus); cumulative 60/78 Wave-0 todos converted; full suite 686 passed / 20 todos / 0 failed)*
 *Last updated: 2026-04-18 — Phase 64 COMPLETE (plan 64-10 i18n extract + ET gap-fill + [BLOCKING] bundle gate verified; 36 new msgids translated EN+ET; main chunk SHRANK 37.8 kB gzip vs pre-phase baseline; scanner chunk 58.1 kB gzip isolated; 609/609 green)*
