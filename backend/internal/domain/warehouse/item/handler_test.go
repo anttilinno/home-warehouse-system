@@ -88,6 +88,14 @@ func (m *MockService) ListByCategory(ctx context.Context, workspaceID, categoryI
 	return args.Get(0).([]*item.Item), args.Error(1)
 }
 
+func (m *MockService) LookupByBarcode(ctx context.Context, workspaceID uuid.UUID, code string) (*item.Item, error) {
+	args := m.Called(ctx, workspaceID, code)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*item.Item), args.Error(1)
+}
+
 func (m *MockService) AttachLabel(ctx context.Context, itemID, labelID, workspaceID uuid.UUID) error {
 	args := m.Called(ctx, itemID, labelID, workspaceID)
 	return args.Error(0)

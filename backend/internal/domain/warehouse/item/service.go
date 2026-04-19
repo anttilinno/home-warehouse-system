@@ -37,6 +37,7 @@ type ServiceInterface interface {
 	Delete(ctx context.Context, id, workspaceID uuid.UUID) error
 	Search(ctx context.Context, workspaceID uuid.UUID, query string, limit int) ([]*Item, error)
 	ListByCategory(ctx context.Context, workspaceID, categoryID uuid.UUID, pagination shared.Pagination) ([]*Item, error)
+	LookupByBarcode(ctx context.Context, workspaceID uuid.UUID, code string) (*Item, error)
 	AttachLabel(ctx context.Context, itemID, labelID, workspaceID uuid.UUID) error
 	DetachLabel(ctx context.Context, itemID, labelID, workspaceID uuid.UUID) error
 	GetItemLabels(ctx context.Context, itemID, workspaceID uuid.UUID) ([]uuid.UUID, error)
@@ -240,6 +241,26 @@ func (s *Service) ListNeedingReview(ctx context.Context, workspaceID uuid.UUID, 
 
 func (s *Service) ListByCategory(ctx context.Context, workspaceID, categoryID uuid.UUID, pagination shared.Pagination) ([]*Item, error) {
 	return s.repo.FindByCategory(ctx, workspaceID, categoryID, pagination)
+}
+
+// LookupByBarcode returns the workspace item whose barcode column equals
+// `code` exactly (case-sensitive via Postgres text equality; see G-65-01
+// root cause — the FTS search_vector column does NOT cover barcode, so
+// this path uses the dedicated FindByBarcode repo method which hits the
+// ix_items_barcode btree index).
+//
+// Returns ErrItemNotFound when no row matches — the handler layer maps
+// this sentinel to HTTP 404 (matches the GetByID convention). Normalises
+// shared.ErrNotFound from the repo the same way Service.Delete does.
+func (s *Service) LookupByBarcode(ctx context.Context, workspaceID uuid.UUID, code string) (*Item, error) {
+	item, err := s.repo.FindByBarcode(ctx, workspaceID, code)
+	if err != nil {
+		if errors.Is(err, shared.ErrNotFound) {
+			return nil, ErrItemNotFound
+		}
+		return nil, err
+	}
+	return item, nil
 }
 
 // AttachLabel attaches a label to an item.
