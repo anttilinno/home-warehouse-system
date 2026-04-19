@@ -48,3 +48,31 @@ Auth contract (useful for future specs):
   the page context AND `page.request` inherit that cookie, so additional API
   calls in the spec do not need manual token plumbing.
 - For API-only seeding use `page.request.post("/api/workspaces/{wsId}/...")`.
+
+## Backend Integration Tests (Go)
+
+The first backend integration test landed in Phase 65 Plan 65-11 (G-65-01
+gap closure, Branch B of Option C). It exercises the real
+`GET /api/workspaces/{wsId}/items/by-barcode/{code}` handler against a real
+Postgres via the `tests/testdb` harness. Any revert of Plan 65-09 breaks it;
+the cross-tenant 404 subtest also guards the
+`WHERE barcode = $2 AND workspace_id = $1` repo clause (Pitfall #5).
+
+### Run locally
+
+1. Start a Postgres instance with a `warehouse_test` database (override the
+   URL if yours differs):
+   `docker compose up -d postgres`
+2. Apply migrations against the test DB (the existing migrate command —
+   check `backend/cmd/` for the exact binary name).
+3. Run the tagged suite from the backend directory:
+   ```
+   cd backend
+   TEST_DATABASE_URL=postgresql://wh:wh@localhost:5432/warehouse_test \
+     go test -tags=integration -count=1 \
+     ./internal/domain/warehouse/item/... -v
+   ```
+
+Without the `-tags=integration` flag the test is invisible to `go test ./...`,
+so the default CI path stays fast. Frontend-side reverts of Plan 65-10 are
+NOT caught here — that layer is covered by the Playwright spec above.
