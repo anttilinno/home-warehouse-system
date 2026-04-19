@@ -91,7 +91,9 @@
 - **Container/location lookup by barcode** — only items have barcode fields in the schema. Containers/locations are looked up by other means.
 - **`motion` / framer-motion dependency for FAB** — CSS transitions are sufficient for the retro aesthetic and save ~60 KB. Out of scope.
 - **`lucide-react` icons in FAB/scan UI** — retro monospace ASCII glyphs match the design language. Out of scope.
-- **New backend barcode-lookup HTTP endpoint** — existing `/api/workspaces/{wsId}/items?search={code}` FTS already serves lookup. No new endpoint needed.
+- **New backend barcode-lookup HTTP endpoint**
+  - **ORIGINAL (2026-04-18):** "No new endpoint needed — existing list FTS handles barcode."
+  - **REVISED (2026-04-19, G-65-01):** Dedicated `GET /api/workspaces/{wsId}/items/by-barcode/{code}` endpoint added after Firefox MCP UAT found `search_vector` excludes `barcode` column (backend/db/migrations/001_initial_schema.sql:495-500). See 65-VERIFICATION.md `gaps:` G-65-01 + 65-CONTEXT.md D-06 revision.
 
 ---
 
