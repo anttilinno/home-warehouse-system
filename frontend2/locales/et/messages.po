@@ -24,7 +24,7 @@ msgstr "[◉] TULI SEES"
 #: src/features/items/UpcSuggestionBanner.tsx:78
 #: src/features/items/UpcSuggestionBanner.tsx:91
 msgid "[USE]"
-msgstr ""
+msgstr "[KASUTA]"
 
 #. placeholder {0}: file.name
 #: src/features/items/photos/ItemPhotoGallery.tsx:94
@@ -347,7 +347,7 @@ msgstr "LAENAJAD"
 #: src/features/items/forms/ItemForm.tsx:157
 #: src/features/items/UpcSuggestionBanner.tsx:85
 msgid "BRAND"
-msgstr ""
+msgstr "BRÄND"
 
 #: src/components/scan/ScanErrorPanel.tsx:69
 msgid "CAMERA ACCESS DENIED"
@@ -355,7 +355,7 @@ msgstr "KAAMERALE LIGIPÄÄS KEELATUD"
 
 #: src/features/items/ItemFormPage.tsx:127
 msgid "CANCEL"
-msgstr ""
+msgstr "TÜHISTA"
 
 #: src/features/borrowers/hooks/useBorrowerMutations.ts:98
 msgid "Cannot delete: this borrower has active loans."
@@ -392,7 +392,7 @@ msgstr "Kategooria kustutatud."
 #. placeholder {0}: data.category
 #: src/features/items/UpcSuggestionBanner.tsx:97
 msgid "Category hint: {0} — pick manually below."
-msgstr ""
+msgstr "Kategooria vihje: {0} — vali all käsitsi."
 
 #: src/features/taxonomy/hooks/useCategoryMutations.ts:76
 msgid "Category restored."
@@ -622,7 +622,7 @@ msgstr "API-ni ei saanud ühendust. Kontrolli võrku ja taustateenuse URL-i, see
 
 #: src/components/scan/ScanResultBanner.tsx:170
 msgid "Could not reach the server. Check your connection and retry, or create a new item with this barcode."
-msgstr ""
+msgstr "Serverit ei õnnestunud tabada. Kontrolli ühendust ja proovi uuesti, või loo selle vöötkoodiga uus ese."
 
 #: src/features/loans/hooks/useLoanMutations.ts:131
 msgid "Could not return loan. Try again."
@@ -678,7 +678,7 @@ msgstr "LOO ESE"
 
 #: src/components/scan/ScanResultBanner.tsx:194
 msgid "CREATE ITEM WITH THIS BARCODE"
-msgstr ""
+msgstr "LOO UUS ESE SELLE VÖÖTKOODIGA"
 
 #: src/features/loans/panel/LoanPanel.tsx:75
 msgid "CREATE LOAN"
@@ -834,7 +834,7 @@ msgstr "LOOBU MUUDATUSTEST?"
 
 #: src/features/items/UpcSuggestionBanner.tsx:103
 msgid "DISMISS"
-msgstr ""
+msgstr "SULGE"
 
 #: src/features/settings/DataPage.tsx:95
 msgid "Download all workspace data as a JSON file."
@@ -865,7 +865,7 @@ msgstr "nt Juhtmeta trell"
 
 #: src/features/items/forms/ItemForm.tsx:160
 msgid "e.g. DeWalt"
-msgstr ""
+msgstr "nt DeWalt"
 
 #: src/pages/DemoPage.tsx:144
 msgid "e.g. DeWalt drill"
@@ -1334,11 +1334,11 @@ msgstr "OTSI KOOD"
 
 #: src/components/scan/ScanResultBanner.tsx:90
 msgid "LOOKING UP…"
-msgstr ""
+msgstr "OTSIN…"
 
 #: src/components/scan/ScanResultBanner.tsx:95
 msgid "LOOKUP FAILED"
-msgstr ""
+msgstr "OTSING EBAÕNNESTUS"
 
 #: src/features/scan/ScanPage.tsx:223
 msgid "MANUAL"
@@ -1376,7 +1376,7 @@ msgstr "MÄRGI TAGASTATUKS"
 
 #: src/components/scan/ScanResultBanner.tsx:92
 msgid "MATCHED"
-msgstr ""
+msgstr "VASTE LEITUD"
 
 #: src/features/taxonomy/hooks/useCategoryMutations.ts:96
 msgid "Move or delete child nodes first."
@@ -1479,7 +1479,7 @@ msgstr "Andmeid ei tagastatud"
 
 #: src/components/scan/ScanResultBanner.tsx:164
 msgid "No item in this workspace matches this barcode."
-msgstr ""
+msgstr "Selle vöötkoodiga eset ei leitud selles tööruumis."
 
 #: src/features/items/ItemsListPage.tsx:260
 msgid "No items match your filters. Clear them to see all items."
@@ -1541,7 +1541,7 @@ msgstr "Laenutuseks pole piisavalt ühikuid saadaval."
 
 #: src/components/scan/ScanResultBanner.tsx:94
 msgid "NOT FOUND"
-msgstr ""
+msgstr "EI LEITUD"
 
 #: src/features/borrowers/BorrowerDetailPage.tsx:92
 #: src/features/borrowers/forms/BorrowerForm.tsx:80
@@ -2107,7 +2107,7 @@ msgstr "SORT: UUENDATUD (VANIMAD ESMALT)"
 
 #: src/features/items/UpcSuggestionBanner.tsx:66
 msgid "SUGGESTIONS AVAILABLE"
-msgstr ""
+msgstr "SOOVITUSED SAADAVAL"
 
 #: src/features/settings/AppearancePage.tsx:64
 #: src/features/settings/NotificationsPage.tsx:109
@@ -2271,7 +2271,7 @@ msgstr "Lae üles tööpinna JSON-fail, et andmeid importida."
 
 #: src/features/items/UpcSuggestionBanner.tsx:106
 msgid "USE ALL"
-msgstr ""
+msgstr "KASUTA KÕIK"
 
 #: src/components/scan/ScanErrorPanel.tsx:114
 msgid "USE MANUAL ENTRY"
@@ -2279,7 +2279,7 @@ msgstr "KASUTA KÄSITSI"
 
 #: src/components/scan/ScanResultBanner.tsx:184
 msgid "VIEW ITEM"
-msgstr ""
+msgstr "VAATA ESET"
 
 #: src/features/dashboard/QuickActionCards.tsx:18
 msgid "VIEW LOANS"
