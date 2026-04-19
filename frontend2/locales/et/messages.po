@@ -21,6 +21,11 @@ msgstr "[◉] TULI VÄLJAS"
 msgid "[◉] TORCH ON"
 msgstr "[◉] TULI SEES"
 
+#: src/features/items/UpcSuggestionBanner.tsx:78
+#: src/features/items/UpcSuggestionBanner.tsx:91
+msgid "[USE]"
+msgstr ""
+
 #. placeholder {0}: file.name
 #: src/features/items/photos/ItemPhotoGallery.tsx:94
 msgid "{0} is not a supported image format."
@@ -44,6 +49,7 @@ msgstr "{successCount} fotot üles laaditud."
 #: src/features/borrowers/actions/BorrowerArchiveDeleteFlow.tsx:93
 #: src/features/borrowers/panel/BorrowerPanel.tsx:95
 #: src/features/items/actions/ItemArchiveDeleteFlow.tsx:84
+#: src/features/items/ItemFormPage.tsx:143
 #: src/features/items/panel/ItemPanel.tsx:110
 #: src/features/loans/actions/LoanReturnFlow.tsx:83
 #: src/features/loans/panel/LoanPanel.tsx:107
@@ -102,7 +108,7 @@ msgstr "+372 555 0101"
 msgid "★ PRIMARY"
 msgstr "★ PEAMINE"
 
-#: src/features/items/forms/ItemForm.tsx:134
+#: src/features/items/forms/ItemForm.tsx:149
 msgid "0123456789012"
 msgstr "0123456789012"
 
@@ -258,7 +264,7 @@ msgstr "AUTENTIMINE EBAONNESTUS"
 msgid "Authentication failed. Try a different sign-in method."
 msgstr "Autentimine ebaonnestus. Proovi teist sisselogimisviisi."
 
-#: src/features/items/forms/ItemForm.tsx:121
+#: src/features/items/forms/ItemForm.tsx:136
 msgid "Auto-generated — editable"
 msgstr "Automaatselt loodud — muudetav"
 
@@ -289,7 +295,7 @@ msgstr "TAGASI LAENAJATE JUURDE"
 msgid "BACK TO ITEMS"
 msgstr "TAGASI KAUPADE JUURDE"
 
-#: src/features/items/forms/ItemForm.tsx:129
+#: src/features/items/forms/ItemForm.tsx:144
 #: src/features/items/ItemDetailPage.tsx:188
 msgid "BARCODE"
 msgstr "VÖÖTKOOD"
@@ -338,9 +344,18 @@ msgstr "Laenaja salvestatud."
 msgid "BORROWERS"
 msgstr "LAENAJAD"
 
+#: src/features/items/forms/ItemForm.tsx:157
+#: src/features/items/UpcSuggestionBanner.tsx:85
+msgid "BRAND"
+msgstr ""
+
 #: src/components/scan/ScanErrorPanel.tsx:69
 msgid "CAMERA ACCESS DENIED"
 msgstr "KAAMERALE LIGIPÄÄS KEELATUD"
+
+#: src/features/items/ItemFormPage.tsx:127
+msgid "CANCEL"
+msgstr ""
 
 #: src/features/borrowers/hooks/useBorrowerMutations.ts:98
 msgid "Cannot delete: this borrower has active loans."
@@ -355,7 +370,7 @@ msgstr "Viimast autentimismeetodit ei saa lahti ühendada"
 msgid "CATEGORIES"
 msgstr "KATEGOORIAD"
 
-#: src/features/items/forms/ItemForm.tsx:154
+#: src/features/items/forms/ItemForm.tsx:178
 #: src/features/items/ItemDetailPage.tsx:199
 #: src/features/items/ItemsListPage.tsx:123
 #: src/pages/DemoPage.tsx:155
@@ -373,6 +388,11 @@ msgstr "Kategooria loodud."
 #: src/features/taxonomy/hooks/useCategoryMutations.ts:92
 msgid "Category deleted."
 msgstr "Kategooria kustutatud."
+
+#. placeholder {0}: data.category
+#: src/features/items/UpcSuggestionBanner.tsx:97
+msgid "Category hint: {0} — pick manually below."
+msgstr ""
 
 #: src/features/taxonomy/hooks/useCategoryMutations.ts:76
 msgid "Category restored."
@@ -438,7 +458,8 @@ msgstr "Sulge navigatsioon"
 msgid "Close panel"
 msgstr "Sulge paneel"
 
-#: src/components/scan/ScanResultBanner.tsx:42
+#: src/components/scan/ScanResultBanner.tsx:122
+#: src/components/scan/ScanResultBanner.tsx:134
 msgid "CODE"
 msgstr "KOOD"
 
@@ -599,6 +620,10 @@ msgstr "FOTOSID EI ÕNNESTUNUD LAADIDA"
 msgid "Could not reach the API. Check your network and the backend URL, then retry."
 msgstr "API-ni ei saanud ühendust. Kontrolli võrku ja taustateenuse URL-i, seejärel proovi uuesti."
 
+#: src/components/scan/ScanResultBanner.tsx:170
+msgid "Could not reach the server. Check your connection and retry, or create a new item with this barcode."
+msgstr ""
+
 #: src/features/loans/hooks/useLoanMutations.ts:131
 msgid "Could not return loan. Try again."
 msgstr "Laenutuse tagastamine ebaõnnestus. Proovi uuesti."
@@ -646,9 +671,14 @@ msgstr "LOO KATEGOORIA"
 msgid "CREATE CONTAINER"
 msgstr "LOO KONTEINER"
 
+#: src/features/items/ItemFormPage.tsx:135
 #: src/features/items/panel/ItemPanel.tsx:66
 msgid "CREATE ITEM"
 msgstr "LOO ESE"
+
+#: src/components/scan/ScanResultBanner.tsx:194
+msgid "CREATE ITEM WITH THIS BARCODE"
+msgstr ""
 
 #: src/features/loans/panel/LoanPanel.tsx:75
 msgid "CREATE LOAN"
@@ -780,7 +810,7 @@ msgstr "Kustutatud."
 msgid "Delivery arrangement, condition on loan, etc."
 msgstr "Üleandmise kokkulepe, seisukord laenutusel jms."
 
-#: src/features/items/forms/ItemForm.tsx:142
+#: src/features/items/forms/ItemForm.tsx:166
 #: src/features/items/ItemDetailPage.tsx:210
 #: src/features/taxonomy/forms/CategoryForm.tsx:89
 #: src/features/taxonomy/forms/ContainerForm.tsx:123
@@ -792,13 +822,19 @@ msgstr "KIRJELDUS"
 msgid "DETAILS"
 msgstr "DETAILID"
 
+#: src/features/items/ItemFormPage.tsx:144
 #: src/features/taxonomy/panel/SlideOverPanel.tsx:131
 msgid "DISCARD"
 msgstr "LOOBU"
 
+#: src/features/items/ItemFormPage.tsx:141
 #: src/features/taxonomy/panel/SlideOverPanel.tsx:128
 msgid "DISCARD CHANGES?"
 msgstr "LOOBU MUUDATUSTEST?"
+
+#: src/features/items/UpcSuggestionBanner.tsx:103
+msgid "DISMISS"
+msgstr ""
 
 #: src/features/settings/DataPage.tsx:95
 msgid "Download all workspace data as a JSON file."
@@ -823,9 +859,13 @@ msgstr "Tähtaeg ei saa olla enne laenutuse kuupäeva."
 msgid "e.g. Alice Smith"
 msgstr "nt Alice Smith"
 
-#: src/features/items/forms/ItemForm.tsx:113
+#: src/features/items/forms/ItemForm.tsx:128
 msgid "e.g. Cordless Drill"
 msgstr "nt Juhtmeta trell"
+
+#: src/features/items/forms/ItemForm.tsx:160
+msgid "e.g. DeWalt"
+msgstr ""
 
 #: src/pages/DemoPage.tsx:144
 msgid "e.g. DeWalt drill"
@@ -995,7 +1035,7 @@ msgstr "Avatari üleslaadimine ebaõnnestus"
 msgid "Filter by location…"
 msgstr "Filtreeri asukoha järgi…"
 
-#: src/components/scan/ScanResultBanner.tsx:50
+#: src/components/scan/ScanResultBanner.tsx:151
 msgid "FORMAT"
 msgstr "FORMAAT"
 
@@ -1024,7 +1064,7 @@ msgid "HIDES FROM PICKERS"
 msgstr "PEIDAB VALIKUTEST"
 
 #: src/features/loans/LoansListPage.tsx:111
-#: src/features/scan/ScanPage.tsx:171
+#: src/features/scan/ScanPage.tsx:224
 msgid "HISTORY"
 msgstr "AJALUGU"
 
@@ -1169,7 +1209,7 @@ msgstr "Laadin andmeid API-st…"
 msgid "Loading page"
 msgstr "Lehe laadimine"
 
-#: src/routes/index.tsx:66
+#: src/routes/index.tsx:67
 msgid "LOADING SCANNER…"
 msgstr "SKÄNNERIT LAADITAKSE…"
 
@@ -1292,7 +1332,15 @@ msgstr "LOGI VALJA"
 msgid "LOOK UP CODE"
 msgstr "OTSI KOOD"
 
-#: src/features/scan/ScanPage.tsx:170
+#: src/components/scan/ScanResultBanner.tsx:90
+msgid "LOOKING UP…"
+msgstr ""
+
+#: src/components/scan/ScanResultBanner.tsx:95
+msgid "LOOKUP FAILED"
+msgstr ""
+
+#: src/features/scan/ScanPage.tsx:223
 msgid "MANUAL"
 msgstr "KÄSITSI"
 
@@ -1326,14 +1374,20 @@ msgstr "MÄRGI LAENUTUS TAGASTATUKS"
 msgid "MARK RETURNED"
 msgstr "MÄRGI TAGASTATUKS"
 
+#: src/components/scan/ScanResultBanner.tsx:92
+msgid "MATCHED"
+msgstr ""
+
 #: src/features/taxonomy/hooks/useCategoryMutations.ts:96
 msgid "Move or delete child nodes first."
 msgstr "Liiguta või kustuta esmalt alamsõlmed."
 
+#: src/components/scan/ScanResultBanner.tsx:114
 #: src/features/borrowers/BorrowersListPage.tsx:64
 #: src/features/borrowers/forms/BorrowerForm.tsx:71
-#: src/features/items/forms/ItemForm.tsx:110
+#: src/features/items/forms/ItemForm.tsx:125
 #: src/features/items/ItemsListPage.tsx:121
+#: src/features/items/UpcSuggestionBanner.tsx:72
 #: src/features/settings/ProfilePage.tsx:153
 #: src/features/taxonomy/forms/CategoryForm.tsx:73
 #: src/features/taxonomy/forms/ContainerForm.tsx:80
@@ -1353,6 +1407,7 @@ msgstr "UUS KATEGOORIA"
 msgid "NEW CONTAINER"
 msgstr "UUS KONTEINER"
 
+#: src/features/items/ItemFormPage.tsx:108
 #: src/features/items/panel/ItemPanel.tsx:62
 msgid "NEW ITEM"
 msgstr "UUS ESE"
@@ -1422,6 +1477,10 @@ msgstr "KONTEINEREID POLE VEEL"
 msgid "No data returned"
 msgstr "Andmeid ei tagastatud"
 
+#: src/components/scan/ScanResultBanner.tsx:164
+msgid "No item in this workspace matches this barcode."
+msgstr ""
+
 #: src/features/items/ItemsListPage.tsx:260
 msgid "No items match your filters. Clear them to see all items."
 msgstr "Ükski ese ei vasta filtritele. Tühjenda filtrid, et näha kõiki esemeid."
@@ -1479,6 +1538,10 @@ msgstr "Toopinda ei leitud. Alustamiseks loo toopind."
 #: src/features/loans/hooks/useLoanMutations.ts:68
 msgid "Not enough units available for loan."
 msgstr "Laenutuseks pole piisavalt ühikuid saadaval."
+
+#: src/components/scan/ScanResultBanner.tsx:94
+msgid "NOT FOUND"
+msgstr ""
 
 #: src/features/borrowers/BorrowerDetailPage.tsx:92
 #: src/features/borrowers/forms/BorrowerForm.tsx:80
@@ -1545,8 +1608,9 @@ msgstr "Ava foto {0}"
 msgid "Open your browser's site settings and allow Camera for this page."
 msgstr "Ava brauseri saidisätted ja luba sellele lehele kaamera kasutamine."
 
-#: src/features/items/forms/ItemForm.tsx:130
-#: src/features/items/forms/ItemForm.tsx:155
+#: src/features/items/forms/ItemForm.tsx:145
+#: src/features/items/forms/ItemForm.tsx:158
+#: src/features/items/forms/ItemForm.tsx:179
 msgid "Optional"
 msgstr "Valikuline"
 
@@ -1558,7 +1622,7 @@ msgstr "Valikuline — jäta tühjaks tähtajatu laenutuse puhul"
 msgid "Optional — up to 1000 characters"
 msgstr "Valikuline — kuni 1000 tähemärki"
 
-#: src/features/items/forms/ItemForm.tsx:143
+#: src/features/items/forms/ItemForm.tsx:167
 msgid "Optional — up to 2000 characters"
 msgstr "Valikuline — kuni 2000 tähemärki"
 
@@ -1684,7 +1748,7 @@ msgstr "Vali ese…"
 msgid "Pickup preferences, shared items, etc."
 msgstr "Järeletuleku eelistused, jagatud esemed jms."
 
-#: src/routes/index.tsx:69
+#: src/routes/index.tsx:70
 msgid "Please wait."
 msgstr "Palun oota."
 
@@ -1790,6 +1854,7 @@ msgid "Retry"
 msgstr "Proovi uuesti"
 
 #: src/components/scan/ScanErrorPanel.tsx:110
+#: src/components/scan/ScanResultBanner.tsx:189
 #: src/features/items/ItemsListPage.tsx:249
 #: src/features/loans/LoansListPage.tsx:140
 #: src/features/loans/panels/BorrowerActiveLoansPanel.tsx:56
@@ -1808,7 +1873,7 @@ msgid "RETURN LOAN"
 msgstr "TAGASTA LAENUTUS"
 
 #: src/components/layout/ErrorBoundaryPage.tsx:40
-#: src/routes/index.tsx:50
+#: src/routes/index.tsx:51
 msgid "RETURN TO BASE"
 msgstr "TAGASI BAASI"
 
@@ -1863,12 +1928,12 @@ msgstr "SALVESTA LAENUTUS"
 msgid "SAVE LOCATION"
 msgstr "SALVESTA ASUKOHT"
 
-#: src/features/scan/ScanPage.tsx:164
-#: src/features/scan/ScanPage.tsx:169
+#: src/features/scan/ScanPage.tsx:217
+#: src/features/scan/ScanPage.tsx:222
 msgid "SCAN"
 msgstr "SKANEERI"
 
-#: src/components/scan/ScanResultBanner.tsx:65
+#: src/components/scan/ScanResultBanner.tsx:198
 msgid "SCAN AGAIN"
 msgstr "SKANEERI UUESTI"
 
@@ -1881,8 +1946,8 @@ msgid "SCAN HISTORY"
 msgstr "SKANEERIMISE AJALUGU"
 
 #: src/components/scan/ScanResultBanner.tsx:37
-msgid "SCANNED"
-msgstr "SKANEERITUD"
+#~ msgid "SCANNED"
+#~ msgstr "SKANEERITUD"
 
 #: src/features/scan/ScanHistoryList.tsx:42
 msgid "Scanned codes appear here. Your last 10 scans are kept on this device."
@@ -1896,7 +1961,7 @@ msgstr "SKÄNNER EI LAADINUD"
 msgid "SCANNING UNSUPPORTED"
 msgstr "SKANEERIMINE POLE TOETATUD"
 
-#: src/features/items/forms/ItemForm.tsx:159
+#: src/features/items/forms/ItemForm.tsx:183
 #: src/features/taxonomy/forms/CategoryForm.tsx:83
 msgid "Search categories…"
 msgstr "Otsi kategooriaid…"
@@ -1914,7 +1979,7 @@ msgstr "Otsi asukohti…"
 msgid "Search name, SKU, or barcode…"
 msgstr "Otsi nime, SKU või vöötkoodi järgi…"
 
-#: src/routes/index.tsx:41
+#: src/routes/index.tsx:42
 msgid "SECTOR NOT FOUND"
 msgstr "SEKTOR EI LEITUD"
 
@@ -1993,7 +2058,7 @@ msgstr "LOGI SISSE GOOGLE'IGA"
 msgid "Skip to main content"
 msgstr "Liigu pohisisu juurde"
 
-#: src/features/items/forms/ItemForm.tsx:120
+#: src/features/items/forms/ItemForm.tsx:135
 #: src/features/items/ItemDetailPage.tsx:183
 #: src/features/items/ItemsListPage.tsx:122
 msgid "SKU"
@@ -2040,6 +2105,10 @@ msgstr "SORT: UUENDATUD (UUSIMAD ESMALT)"
 msgid "SORT: UPDATED (OLDEST FIRST)"
 msgstr "SORT: UUENDATUD (VANIMAD ESMALT)"
 
+#: src/features/items/UpcSuggestionBanner.tsx:66
+msgid "SUGGESTIONS AVAILABLE"
+msgstr ""
+
 #: src/features/settings/AppearancePage.tsx:64
 #: src/features/settings/NotificationsPage.tsx:109
 msgid "SYSTEM"
@@ -2071,7 +2140,7 @@ msgstr "Otspunkt vastas edukalt, kuid tagastas null kirjet. Loo taustateenuses k
 msgid "The item will move to loan history."
 msgstr "Ese liigub laenutuste ajalukku."
 
-#: src/routes/index.tsx:44
+#: src/routes/index.tsx:45
 msgid "The requested area does not exist. Return to base."
 msgstr "Soovitud ala ei eksisteeri. Naase baasi."
 
@@ -2200,9 +2269,17 @@ msgstr "LAE ÜLES"
 msgid "Upload a workspace JSON file to import data."
 msgstr "Lae üles tööpinna JSON-fail, et andmeid importida."
 
+#: src/features/items/UpcSuggestionBanner.tsx:106
+msgid "USE ALL"
+msgstr ""
+
 #: src/components/scan/ScanErrorPanel.tsx:114
 msgid "USE MANUAL ENTRY"
 msgstr "KASUTA KÄSITSI"
+
+#: src/components/scan/ScanResultBanner.tsx:184
+msgid "VIEW ITEM"
+msgstr ""
 
 #: src/features/dashboard/QuickActionCards.tsx:18
 msgid "VIEW LOANS"
@@ -2212,7 +2289,7 @@ msgstr "VAATA LAENUTUSI"
 #~ msgid "Welcome to Home Warehouse"
 #~ msgstr "Tere tulemast Home Warehouse'i"
 
-#: src/features/items/forms/ItemForm.tsx:147
+#: src/features/items/forms/ItemForm.tsx:171
 msgid "What's in the box, condition, accessories, etc."
 msgstr "Mis on karbis, seisukord, tarvikud jms."
 
@@ -2222,6 +2299,7 @@ msgstr "Ainult täisühikud"
 
 #: src/components/retro/RetroConfirmDialog.tsx:116
 #: src/features/borrowers/panel/BorrowerPanel.tsx:58
+#: src/features/items/ItemFormPage.tsx:135
 #: src/features/items/panel/ItemPanel.tsx:64
 #: src/features/items/photos/ItemPhotoGallery.tsx:157
 #: src/features/items/photos/ItemPhotoGallery.tsx:188
@@ -2244,6 +2322,7 @@ msgstr "TOOPINNA SEADISTAMINE"
 msgid "YES, CLEAR"
 msgstr "JAH, TÜHJENDA"
 
+#: src/features/items/ItemFormPage.tsx:142
 #: src/features/taxonomy/panel/SlideOverPanel.tsx:129
 msgid "Your edits will be lost."
 msgstr "Sinu muudatused lähevad kaotsi."

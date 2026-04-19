@@ -21,6 +21,11 @@ msgstr "[◉] TORCH OFF"
 msgid "[◉] TORCH ON"
 msgstr "[◉] TORCH ON"
 
+#: src/features/items/UpcSuggestionBanner.tsx:78
+#: src/features/items/UpcSuggestionBanner.tsx:91
+msgid "[USE]"
+msgstr "[USE]"
+
 #. placeholder {0}: file.name
 #: src/features/items/photos/ItemPhotoGallery.tsx:94
 msgid "{0} is not a supported image format."
@@ -44,6 +49,7 @@ msgstr "{successCount} photos uploaded."
 #: src/features/borrowers/actions/BorrowerArchiveDeleteFlow.tsx:93
 #: src/features/borrowers/panel/BorrowerPanel.tsx:95
 #: src/features/items/actions/ItemArchiveDeleteFlow.tsx:84
+#: src/features/items/ItemFormPage.tsx:143
 #: src/features/items/panel/ItemPanel.tsx:110
 #: src/features/loans/actions/LoanReturnFlow.tsx:83
 #: src/features/loans/panel/LoanPanel.tsx:107
@@ -102,7 +108,7 @@ msgstr "+372 555 0101"
 msgid "★ PRIMARY"
 msgstr "★ PRIMARY"
 
-#: src/features/items/forms/ItemForm.tsx:134
+#: src/features/items/forms/ItemForm.tsx:149
 msgid "0123456789012"
 msgstr "0123456789012"
 
@@ -258,7 +264,7 @@ msgstr "AUTHENTICATION FAILED"
 msgid "Authentication failed. Try a different sign-in method."
 msgstr "Authentication failed. Try a different sign-in method."
 
-#: src/features/items/forms/ItemForm.tsx:121
+#: src/features/items/forms/ItemForm.tsx:136
 msgid "Auto-generated — editable"
 msgstr "Auto-generated — editable"
 
@@ -289,7 +295,7 @@ msgstr "BACK TO BORROWERS"
 msgid "BACK TO ITEMS"
 msgstr "BACK TO ITEMS"
 
-#: src/features/items/forms/ItemForm.tsx:129
+#: src/features/items/forms/ItemForm.tsx:144
 #: src/features/items/ItemDetailPage.tsx:188
 msgid "BARCODE"
 msgstr "BARCODE"
@@ -338,9 +344,18 @@ msgstr "Borrower saved."
 msgid "BORROWERS"
 msgstr "BORROWERS"
 
+#: src/features/items/forms/ItemForm.tsx:157
+#: src/features/items/UpcSuggestionBanner.tsx:85
+msgid "BRAND"
+msgstr "BRAND"
+
 #: src/components/scan/ScanErrorPanel.tsx:69
 msgid "CAMERA ACCESS DENIED"
 msgstr "CAMERA ACCESS DENIED"
+
+#: src/features/items/ItemFormPage.tsx:127
+msgid "CANCEL"
+msgstr "CANCEL"
 
 #: src/features/borrowers/hooks/useBorrowerMutations.ts:98
 msgid "Cannot delete: this borrower has active loans."
@@ -355,7 +370,7 @@ msgstr "Cannot unlink last auth method"
 msgid "CATEGORIES"
 msgstr "CATEGORIES"
 
-#: src/features/items/forms/ItemForm.tsx:154
+#: src/features/items/forms/ItemForm.tsx:178
 #: src/features/items/ItemDetailPage.tsx:199
 #: src/features/items/ItemsListPage.tsx:123
 #: src/pages/DemoPage.tsx:155
@@ -373,6 +388,11 @@ msgstr "Category created."
 #: src/features/taxonomy/hooks/useCategoryMutations.ts:92
 msgid "Category deleted."
 msgstr "Category deleted."
+
+#. placeholder {0}: data.category
+#: src/features/items/UpcSuggestionBanner.tsx:97
+msgid "Category hint: {0} — pick manually below."
+msgstr "Category hint: {0} — pick manually below."
 
 #: src/features/taxonomy/hooks/useCategoryMutations.ts:76
 msgid "Category restored."
@@ -438,7 +458,8 @@ msgstr "Close navigation"
 msgid "Close panel"
 msgstr "Close panel"
 
-#: src/components/scan/ScanResultBanner.tsx:42
+#: src/components/scan/ScanResultBanner.tsx:122
+#: src/components/scan/ScanResultBanner.tsx:134
 msgid "CODE"
 msgstr "CODE"
 
@@ -599,6 +620,10 @@ msgstr "COULD NOT LOAD PHOTOS"
 msgid "Could not reach the API. Check your network and the backend URL, then retry."
 msgstr "Could not reach the API. Check your network and the backend URL, then retry."
 
+#: src/components/scan/ScanResultBanner.tsx:170
+msgid "Could not reach the server. Check your connection and retry, or create a new item with this barcode."
+msgstr "Could not reach the server. Check your connection and retry, or create a new item with this barcode."
+
 #: src/features/loans/hooks/useLoanMutations.ts:131
 msgid "Could not return loan. Try again."
 msgstr "Could not return loan. Try again."
@@ -646,9 +671,14 @@ msgstr "CREATE CATEGORY"
 msgid "CREATE CONTAINER"
 msgstr "CREATE CONTAINER"
 
+#: src/features/items/ItemFormPage.tsx:135
 #: src/features/items/panel/ItemPanel.tsx:66
 msgid "CREATE ITEM"
 msgstr "CREATE ITEM"
+
+#: src/components/scan/ScanResultBanner.tsx:194
+msgid "CREATE ITEM WITH THIS BARCODE"
+msgstr "CREATE ITEM WITH THIS BARCODE"
 
 #: src/features/loans/panel/LoanPanel.tsx:75
 msgid "CREATE LOAN"
@@ -780,7 +810,7 @@ msgstr "Deleted."
 msgid "Delivery arrangement, condition on loan, etc."
 msgstr "Delivery arrangement, condition on loan, etc."
 
-#: src/features/items/forms/ItemForm.tsx:142
+#: src/features/items/forms/ItemForm.tsx:166
 #: src/features/items/ItemDetailPage.tsx:210
 #: src/features/taxonomy/forms/CategoryForm.tsx:89
 #: src/features/taxonomy/forms/ContainerForm.tsx:123
@@ -792,13 +822,19 @@ msgstr "DESCRIPTION"
 msgid "DETAILS"
 msgstr "DETAILS"
 
+#: src/features/items/ItemFormPage.tsx:144
 #: src/features/taxonomy/panel/SlideOverPanel.tsx:131
 msgid "DISCARD"
 msgstr "DISCARD"
 
+#: src/features/items/ItemFormPage.tsx:141
 #: src/features/taxonomy/panel/SlideOverPanel.tsx:128
 msgid "DISCARD CHANGES?"
 msgstr "DISCARD CHANGES?"
+
+#: src/features/items/UpcSuggestionBanner.tsx:103
+msgid "DISMISS"
+msgstr "DISMISS"
 
 #: src/features/settings/DataPage.tsx:95
 msgid "Download all workspace data as a JSON file."
@@ -823,9 +859,13 @@ msgstr "Due date can't be before the loaned-on date."
 msgid "e.g. Alice Smith"
 msgstr "e.g. Alice Smith"
 
-#: src/features/items/forms/ItemForm.tsx:113
+#: src/features/items/forms/ItemForm.tsx:128
 msgid "e.g. Cordless Drill"
 msgstr "e.g. Cordless Drill"
+
+#: src/features/items/forms/ItemForm.tsx:160
+msgid "e.g. DeWalt"
+msgstr "e.g. DeWalt"
 
 #: src/pages/DemoPage.tsx:144
 msgid "e.g. DeWalt drill"
@@ -995,7 +1035,7 @@ msgstr "Failed to upload avatar"
 msgid "Filter by location…"
 msgstr "Filter by location…"
 
-#: src/components/scan/ScanResultBanner.tsx:50
+#: src/components/scan/ScanResultBanner.tsx:151
 msgid "FORMAT"
 msgstr "FORMAT"
 
@@ -1024,7 +1064,7 @@ msgid "HIDES FROM PICKERS"
 msgstr "HIDES FROM PICKERS"
 
 #: src/features/loans/LoansListPage.tsx:111
-#: src/features/scan/ScanPage.tsx:171
+#: src/features/scan/ScanPage.tsx:224
 msgid "HISTORY"
 msgstr "HISTORY"
 
@@ -1169,7 +1209,7 @@ msgstr "Loading data from API…"
 msgid "Loading page"
 msgstr "Loading page"
 
-#: src/routes/index.tsx:66
+#: src/routes/index.tsx:67
 msgid "LOADING SCANNER…"
 msgstr "LOADING SCANNER…"
 
@@ -1292,7 +1332,15 @@ msgstr "LOGOUT"
 msgid "LOOK UP CODE"
 msgstr "LOOK UP CODE"
 
-#: src/features/scan/ScanPage.tsx:170
+#: src/components/scan/ScanResultBanner.tsx:90
+msgid "LOOKING UP…"
+msgstr "LOOKING UP…"
+
+#: src/components/scan/ScanResultBanner.tsx:95
+msgid "LOOKUP FAILED"
+msgstr "LOOKUP FAILED"
+
+#: src/features/scan/ScanPage.tsx:223
 msgid "MANUAL"
 msgstr "MANUAL"
 
@@ -1326,14 +1374,20 @@ msgstr "MARK LOAN RETURNED"
 msgid "MARK RETURNED"
 msgstr "MARK RETURNED"
 
+#: src/components/scan/ScanResultBanner.tsx:92
+msgid "MATCHED"
+msgstr "MATCHED"
+
 #: src/features/taxonomy/hooks/useCategoryMutations.ts:96
 msgid "Move or delete child nodes first."
 msgstr "Move or delete child nodes first."
 
+#: src/components/scan/ScanResultBanner.tsx:114
 #: src/features/borrowers/BorrowersListPage.tsx:64
 #: src/features/borrowers/forms/BorrowerForm.tsx:71
-#: src/features/items/forms/ItemForm.tsx:110
+#: src/features/items/forms/ItemForm.tsx:125
 #: src/features/items/ItemsListPage.tsx:121
+#: src/features/items/UpcSuggestionBanner.tsx:72
 #: src/features/settings/ProfilePage.tsx:153
 #: src/features/taxonomy/forms/CategoryForm.tsx:73
 #: src/features/taxonomy/forms/ContainerForm.tsx:80
@@ -1353,6 +1407,7 @@ msgstr "NEW CATEGORY"
 msgid "NEW CONTAINER"
 msgstr "NEW CONTAINER"
 
+#: src/features/items/ItemFormPage.tsx:108
 #: src/features/items/panel/ItemPanel.tsx:62
 msgid "NEW ITEM"
 msgstr "NEW ITEM"
@@ -1422,6 +1477,10 @@ msgstr "NO CONTAINERS YET"
 msgid "No data returned"
 msgstr "No data returned"
 
+#: src/components/scan/ScanResultBanner.tsx:164
+msgid "No item in this workspace matches this barcode."
+msgstr "No item in this workspace matches this barcode."
+
 #: src/features/items/ItemsListPage.tsx:260
 msgid "No items match your filters. Clear them to see all items."
 msgstr "No items match your filters. Clear them to see all items."
@@ -1479,6 +1538,10 @@ msgstr "No workspace found. Please create a workspace to get started."
 #: src/features/loans/hooks/useLoanMutations.ts:68
 msgid "Not enough units available for loan."
 msgstr "Not enough units available for loan."
+
+#: src/components/scan/ScanResultBanner.tsx:94
+msgid "NOT FOUND"
+msgstr "NOT FOUND"
 
 #: src/features/borrowers/BorrowerDetailPage.tsx:92
 #: src/features/borrowers/forms/BorrowerForm.tsx:80
@@ -1545,8 +1608,9 @@ msgstr "Open photo {0}"
 msgid "Open your browser's site settings and allow Camera for this page."
 msgstr "Open your browser's site settings and allow Camera for this page."
 
-#: src/features/items/forms/ItemForm.tsx:130
-#: src/features/items/forms/ItemForm.tsx:155
+#: src/features/items/forms/ItemForm.tsx:145
+#: src/features/items/forms/ItemForm.tsx:158
+#: src/features/items/forms/ItemForm.tsx:179
 msgid "Optional"
 msgstr "Optional"
 
@@ -1558,7 +1622,7 @@ msgstr "Optional — leave blank for open-ended loans"
 msgid "Optional — up to 1000 characters"
 msgstr "Optional — up to 1000 characters"
 
-#: src/features/items/forms/ItemForm.tsx:143
+#: src/features/items/forms/ItemForm.tsx:167
 msgid "Optional — up to 2000 characters"
 msgstr "Optional — up to 2000 characters"
 
@@ -1684,7 +1748,7 @@ msgstr "Pick an item…"
 msgid "Pickup preferences, shared items, etc."
 msgstr "Pickup preferences, shared items, etc."
 
-#: src/routes/index.tsx:69
+#: src/routes/index.tsx:70
 msgid "Please wait."
 msgstr "Please wait."
 
@@ -1790,6 +1854,7 @@ msgid "Retry"
 msgstr "Retry"
 
 #: src/components/scan/ScanErrorPanel.tsx:110
+#: src/components/scan/ScanResultBanner.tsx:189
 #: src/features/items/ItemsListPage.tsx:249
 #: src/features/loans/LoansListPage.tsx:140
 #: src/features/loans/panels/BorrowerActiveLoansPanel.tsx:56
@@ -1808,7 +1873,7 @@ msgid "RETURN LOAN"
 msgstr "RETURN LOAN"
 
 #: src/components/layout/ErrorBoundaryPage.tsx:40
-#: src/routes/index.tsx:50
+#: src/routes/index.tsx:51
 msgid "RETURN TO BASE"
 msgstr "RETURN TO BASE"
 
@@ -1863,12 +1928,12 @@ msgstr "SAVE LOAN"
 msgid "SAVE LOCATION"
 msgstr "SAVE LOCATION"
 
-#: src/features/scan/ScanPage.tsx:164
-#: src/features/scan/ScanPage.tsx:169
+#: src/features/scan/ScanPage.tsx:217
+#: src/features/scan/ScanPage.tsx:222
 msgid "SCAN"
 msgstr "SCAN"
 
-#: src/components/scan/ScanResultBanner.tsx:65
+#: src/components/scan/ScanResultBanner.tsx:198
 msgid "SCAN AGAIN"
 msgstr "SCAN AGAIN"
 
@@ -1881,8 +1946,8 @@ msgid "SCAN HISTORY"
 msgstr "SCAN HISTORY"
 
 #: src/components/scan/ScanResultBanner.tsx:37
-msgid "SCANNED"
-msgstr "SCANNED"
+#~ msgid "SCANNED"
+#~ msgstr "SCANNED"
 
 #: src/features/scan/ScanHistoryList.tsx:42
 msgid "Scanned codes appear here. Your last 10 scans are kept on this device."
@@ -1896,7 +1961,7 @@ msgstr "SCANNER FAILED TO LOAD"
 msgid "SCANNING UNSUPPORTED"
 msgstr "SCANNING UNSUPPORTED"
 
-#: src/features/items/forms/ItemForm.tsx:159
+#: src/features/items/forms/ItemForm.tsx:183
 #: src/features/taxonomy/forms/CategoryForm.tsx:83
 msgid "Search categories…"
 msgstr "Search categories…"
@@ -1914,7 +1979,7 @@ msgstr "Search locations…"
 msgid "Search name, SKU, or barcode…"
 msgstr "Search name, SKU, or barcode…"
 
-#: src/routes/index.tsx:41
+#: src/routes/index.tsx:42
 msgid "SECTOR NOT FOUND"
 msgstr "SECTOR NOT FOUND"
 
@@ -1993,7 +2058,7 @@ msgstr "SIGN IN WITH GOOGLE"
 msgid "Skip to main content"
 msgstr "Skip to main content"
 
-#: src/features/items/forms/ItemForm.tsx:120
+#: src/features/items/forms/ItemForm.tsx:135
 #: src/features/items/ItemDetailPage.tsx:183
 #: src/features/items/ItemsListPage.tsx:122
 msgid "SKU"
@@ -2040,6 +2105,10 @@ msgstr "SORT: UPDATED (NEWEST FIRST)"
 msgid "SORT: UPDATED (OLDEST FIRST)"
 msgstr "SORT: UPDATED (OLDEST FIRST)"
 
+#: src/features/items/UpcSuggestionBanner.tsx:66
+msgid "SUGGESTIONS AVAILABLE"
+msgstr "SUGGESTIONS AVAILABLE"
+
 #: src/features/settings/AppearancePage.tsx:64
 #: src/features/settings/NotificationsPage.tsx:109
 msgid "SYSTEM"
@@ -2071,7 +2140,7 @@ msgstr "The endpoint responded successfully but returned zero records. Create a 
 msgid "The item will move to loan history."
 msgstr "The item will move to loan history."
 
-#: src/routes/index.tsx:44
+#: src/routes/index.tsx:45
 msgid "The requested area does not exist. Return to base."
 msgstr "The requested area does not exist. Return to base."
 
@@ -2200,9 +2269,17 @@ msgstr "UPLOAD"
 msgid "Upload a workspace JSON file to import data."
 msgstr "Upload a workspace JSON file to import data."
 
+#: src/features/items/UpcSuggestionBanner.tsx:106
+msgid "USE ALL"
+msgstr "USE ALL"
+
 #: src/components/scan/ScanErrorPanel.tsx:114
 msgid "USE MANUAL ENTRY"
 msgstr "USE MANUAL ENTRY"
+
+#: src/components/scan/ScanResultBanner.tsx:184
+msgid "VIEW ITEM"
+msgstr "VIEW ITEM"
 
 #: src/features/dashboard/QuickActionCards.tsx:18
 msgid "VIEW LOANS"
@@ -2212,7 +2289,7 @@ msgstr "VIEW LOANS"
 #~ msgid "Welcome to Home Warehouse"
 #~ msgstr "Welcome to Home Warehouse"
 
-#: src/features/items/forms/ItemForm.tsx:147
+#: src/features/items/forms/ItemForm.tsx:171
 msgid "What's in the box, condition, accessories, etc."
 msgstr "What's in the box, condition, accessories, etc."
 
@@ -2222,6 +2299,7 @@ msgstr "Whole units only"
 
 #: src/components/retro/RetroConfirmDialog.tsx:116
 #: src/features/borrowers/panel/BorrowerPanel.tsx:58
+#: src/features/items/ItemFormPage.tsx:135
 #: src/features/items/panel/ItemPanel.tsx:64
 #: src/features/items/photos/ItemPhotoGallery.tsx:157
 #: src/features/items/photos/ItemPhotoGallery.tsx:188
@@ -2244,6 +2322,7 @@ msgstr "WORKSPACE SETUP"
 msgid "YES, CLEAR"
 msgstr "YES, CLEAR"
 
+#: src/features/items/ItemFormPage.tsx:142
 #: src/features/taxonomy/panel/SlideOverPanel.tsx:129
 msgid "Your edits will be lost."
 msgstr "Your edits will be lost."
