@@ -355,7 +355,7 @@ Plans:
 **Plans**: 8 plans
 Plans:
 - [x] 65-01-PLAN.md — Wave 0 test scaffolds (7 files, 78 it.todo + 2 green) + shared QueryClient test helper + pre-phase bundle baseline (main gzip 135754 B / scanner gzip 58057 B @ b04ae7c)
-- [ ] 65-02-PLAN.md — Wave 1 itemsApi.lookupByBarcode (D-06/07/08 guards) + schema barcode regex loosened for hyphens
+- [x] 65-02-PLAN.md — Wave 1 itemsApi.lookupByBarcode (D-06/07/08 guards) + schemas.ts D-23 optional brand field + D-24 barcode regex loosened for hyphens/underscores; 10 Wave 0 todos converted green
 - [x] 65-03-PLAN.md — Wave 1 lib/api/barcode.ts + barrel export + useBarcodeEnrichment hook with /^\d{8,14}$/ gate + silent failure
 - [ ] 65-04-PLAN.md — Wave 2 useScanLookup body swap + updateScanHistory + useScanHistory.update (D-22 race guard)
 - [ ] 65-05-PLAN.md — Wave 2 ItemForm FormProvider wrap + UpcSuggestionBanner + ItemFormPage (dirty-guard + Pitfall #7 invalidation)
@@ -461,7 +461,7 @@ Plans:
 | 48-55 | v2.0 | 18 | Complete | 2026-04-14 |
 | 56-63 | v2.1 | 29 | Complete | 2026-04-17 |
 | 64 | v2.2 | 10/10 | Complete | 2026-04-18 |
-| 65 | v2.2 | 2/8 | In progress | - |
+| 65 | v2.2 | 3/8 | In progress | - |
 | 66 | v2.2 | 0/? | Not started | - |
 | 67 | v2.2 | 0/? | Not started | - |
 | 68 | v2.2 | 0/? | Not started | - |
@@ -474,5 +474,6 @@ Plans:
 
 ---
 *Roadmap created: 2026-01-24*
+*Last updated: 2026-04-19 — Phase 65 Plan 02 complete (LOOK-01 frontend guard layer: itemsApi.lookupByBarcode w/ D-06/D-07/D-08 guards inlined + schemas D-23 optional brand field + D-24 barcode regex loosened for hyphens/underscores; 10 Wave 0 todos converted green; full suite 640 passed / 50 todos)*
 *Last updated: 2026-04-19 — Phase 65 Plan 03 complete (LOOK-03 data layer: lib/api/barcode.ts + useBarcodeEnrichment with /^\d{8,14}$/ gate + silent-fail structured log; 18 Wave 0 todos green; full suite 640 passed / 50 todos)*
 *Last updated: 2026-04-18 — Phase 64 COMPLETE (plan 64-10 i18n extract + ET gap-fill + [BLOCKING] bundle gate verified; 36 new msgids translated EN+ET; main chunk SHRANK 37.8 kB gzip vs pre-phase baseline; scanner chunk 58.1 kB gzip isolated; 609/609 green)*

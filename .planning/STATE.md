@@ -113,11 +113,12 @@ Next step: Plan 65-04 (useScanLookup body swap + updateScanHistory) — now unbl
 
 ## Session Continuity
 
-Last session: 2026-04-19T09:35:10.000Z
-Stopped at: Phase 65 Plan 03 complete (LOOK-03 enrichment data layer; Plan 02 ran in parallel)
-Next step: Plan 65-04 begins once Plan 65-02 SUMMARY lands; /scan lookup body-swap + updateScanHistory (Wave 2)
+Last session: 2026-04-19T12:35:00.000Z
+Stopped at: Phase 65 Plan 02 complete (LOOK-01 frontend guard layer; Plans 01 + 02 + 03 all landed)
+Next step: Plan 65-04 — useScanLookup body swap + updateScanHistory (Wave 2, now unblocked)
 
 ---
+*Updated: 2026-04-19 — Phase 65 Plan 02 complete (itemsApi.lookupByBarcode w/ D-06/D-07/D-08 guards + D-23 optional brand field + D-24 barcode regex loosened for hyphens/underscores; 10 Wave 0 todos converted green; cumulative 28/78 todos real; full suite 640 passed / 50 todos).*
 *Updated: 2026-04-19 — Phase 65 Plan 03 complete (barcodeApi + barcodeKeys + useBarcodeEnrichment with /^d{8,14}$/ gate + silent-failure; 18 Wave 0 todos converted green; full suite 640 passed / 50 todos).*
 *Updated: 2026-04-19 — Phase 65 Plan 01 complete (7 Wave 0 scaffolds + 78 it.todo + shared QueryClient helper + bundle baseline main 135754 B / scanner 58057 B @ b04ae7c).*
 *Updated: 2026-04-18 — Phase 64 COMPLETE (10/10 plans; bundle gate PASS; EN+ET catalogs filled; all SCAN-0N requirements shippable)*
