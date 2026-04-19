@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v2.2
 milestone_name: Scanning & Stabilization
-status: executing
-stopped_at: Phase 65 COMPLETE — Plan 65-11 G-65-01 regression guard landed (Option C both branches: Playwright E2E at frontend2/e2e/scan-lookup.spec.ts + Go HTTP+Postgres integration at backend/internal/domain/warehouse/item/handler_integration_test.go under //go:build integration; CLAUDE.md runbook for both suites). All 11 plans shipped; all 3 LOOK-0N requirements shippable; G-65-01 closed with matched regression guards at both affected layers. Phase 66 Quick-Action Menu unblocked.
-last_updated: "2026-04-19T15:30:00.000Z"
-last_activity: 2026-04-19 -- Phase 65 COMPLETE (Plan 65-11 G-65-01 regression guard, Option C both branches). Branch A: first Playwright surface in the repo — frontend2/e2e/scan-lookup.spec.ts + playwright.config.ts (chromium + firefox projects, no webServer) + test:e2e + test:e2e:headed scripts + @playwright/test devDep + browser binaries + vitest.config.ts excludes **/e2e/** + .gitignore covers test-results/ + playwright-report/ + playwright/.cache/. Spec logs in via real /login, seeds item with unique per-run barcode via cookie-authenticated page.request, navigates /scan → MANUAL → types code → LOOK UP CODE → asserts MATCHED banner (locale-agnostic `/matched|vaste leitud/i` + seeded name); verified green on chromium + firefox. Commit 5e77f98 (feat Branch A). Branch B: first Go integration-test surface — backend/internal/domain/warehouse/item/handler_integration_test.go under //go:build integration using existing backend/tests/testdb harness (1 Rule 3 auto-fix vs plan's parallel internal/testutil/integration.go suggestion, avoids fragmenting integration plumbing). Real item.NewService + real postgres.NewItemRepository wired to chi+humachi test router that injects workspace/user context mirroring appMiddleware. 3 subtests — 200 happy path on seeded barcode, 404 for never-existed code, 404 for barcode seeded in another workspace (cross-tenant leak guard — the truth the handler unit test cannot assert because with a mocked service "other workspace" is indistinguishable from "never existed"; real SQL WHERE barcode=$2 AND workspace_id=$1 is the source of truth). Verified green: 3/3 subtests PASS in 0.21s against TEST_DATABASE_URL=postgresql://wh:wh@localhost:5432/warehouse_test. Commit 8d4191d (test Branch B). Coverage matrix: Branch A catches backend OR frontend reverts (banner renders NOT FOUND); Branch B catches backend reverts AND WHERE workspace_id = $1 clause specifically. CLAUDE.md (new project-root, auto-loaded by Claude Code) has §E2E Tests + §Backend Integration Tests with runbooks, auth contract notes, and how to add new specs. Two-commit split because artifacts have zero file overlap (bun/Playwright vs go/pgx) — future archaeology cleaner. Non-integration default test lanes still green: backend `go test ./...` zero-failures; frontend `bunx vitest run` with e2e/ excluded 712/712. Done criteria met: exactly one test artifact per branch, runnable via documented command, passes against current code, any revert of Plan 65-09 or 65-10 breaks at least one branch. Phase 65 SHIPPABLE — all LOOK-0N requirements have rendered user paths + unit tests + regression guards at the correct layers + EN+ET translations + zero bundle regression + G-65-01 closed end-to-end.
+status: completed
+stopped_at: Phase 66 context gathered
+last_updated: "2026-04-19T17:00:29.211Z"
+last_activity: "2026-04-19 -- Phase 65 Plan 11 complete (G-65-01 regression guard, Option C both branches). Branch A Playwright E2E at frontend2/e2e/scan-lookup.spec.ts — first Playwright surface in the repo, chromium + firefox projects, no webServer, verified green on both browsers. Branch B Go HTTP+Postgres integration at backend/internal/domain/warehouse/item/handler_integration_test.go under //go:build integration — reuses existing backend/tests/testdb harness, 3 subtests (200 happy path / 404 never-existed / 404 cross-tenant leak guard — the last is load-bearing because a mocked service makes "other workspace" indistinguishable from "never existed"), verified green 3/3 in 0.21s. CLAUDE.md (new project root) has §E2E Tests + §Backend Integration Tests runbooks. Commits 5e77f98 (feat Branch A) + 8d4191d (test Branch B) — split because artifacts have zero file overlap (bun/Playwright vs go/pgx). 1 Rule 3 auto-fix (reused tests/testdb vs plan's parallel internal/testutil/integration.go suggestion). Non-integration default lanes still green: backend go test ./... + frontend vitest 712/712 (e2e/ excluded)."
 progress:
   total_phases: 6
   completed_phases: 6
-  total_plans: 20
-  completed_plans: 20
+  total_plans: 16
+  completed_plans: 16
   percent: 100
 ---
 
@@ -113,8 +113,8 @@ Next step: Begin Phase 66 (Quick-Action Menu) — post-scan action overlay that 
 
 ## Session Continuity
 
-Last session: 2026-04-19T15:30:00.000Z
-Stopped at: Phase 65 COMPLETE — Plan 65-11 landed G-65-01 regression guards at both layers the bug lived at. Playwright E2E (frontend2/e2e/scan-lookup.spec.ts, commit 5e77f98) exercises /login → seed → /scan → MANUAL → MATCHED banner on real backend + Postgres; Go HTTP+Postgres integration (backend/internal/domain/warehouse/item/handler_integration_test.go, //go:build integration, commit 8d4191d) exercises real svc + real repo + real Postgres via backend/tests/testdb harness with 3 subtests including cross-tenant 404 leak guard. CLAUDE.md (new project-root) has §E2E Tests + §Backend Integration Tests runbooks. 1 Rule 3 auto-fix (reused tests/testdb vs plan's parallel internal/testutil/integration.go). Non-integration lanes still green.
+Last session: 2026-04-19T17:00:29.207Z
+Stopped at: Phase 66 context gathered
 Next step: Begin Phase 66 (Quick-Action Menu) — post-scan overlay on /scan with state-adaptive actions (View Item, Loan, Back to Scan; hide Loan when on active loan; Unarchive for archived; Mark Reviewed for needs_review). Requirements QA-01..03. Run /gsd-discuss-phase 66 or /gsd-plan-phase 66 to start.
 
 ---
