@@ -6,3 +6,4 @@ export * from "./categories";
 export * from "./locations";
 export * from "./containers";
 export * from "./scan";
+export * from "./barcode";
