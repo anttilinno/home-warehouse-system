@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v2.2
 milestone_name: Scanning & Stabilization
 status: executing
-stopped_at: Phase 65 Plan 05 complete (LOOK-02 + LOOK-03 render surface — ItemForm FormProvider wrap + BRAND field + UpcSuggestionBanner + ItemFormPage with D-04 dual invalidation)
-last_updated: "2026-04-19T09:51:08.000Z"
-last_activity: 2026-04-19 -- Phase 65 Plan 05 complete (ItemForm FormProvider + BRAND field D-23; UpcSuggestionBanner with direct setValue("brand", ...) — no description workaround; ItemFormPage with scanKeys.lookup + itemKeys.all dual invalidation and dirty-guard dialog; 32 new real it() — 60/78 Wave-0 todos converted cumulative)
+stopped_at: Phase 65 Plan 06 complete (ScanResultBanner 4-state widening — LOADING / MATCH / NOT-FOUND / ERROR with prop-surface growth + prefers-reduced-motion keyframe guard)
+last_updated: "2026-04-19T10:05:26.000Z"
+last_activity: 2026-04-19 -- Phase 65 Plan 06 complete (ScanResultBanner Phase 64 single-state → Phase 65 four-state in-place widening; prop surface gains lookupStatus+match+onViewItem+onCreateWithBarcode+onRetry; @keyframes retro-cursor-blink with @media prefers-reduced-motion: reduce { animation: none } guard; 21 new real it() green; 7 Phase 64 tests migrated under MATCH describe; full vitest 707 passed / 0 todos / 0 failed — 81/78 cumulative Wave-0 todos converted)
 progress:
   total_phases: 6
   completed_phases: 6
-  total_plans: 16
-  completed_plans: 16
+  total_plans: 17
+  completed_plans: 17
   percent: 100
 ---
 
@@ -26,10 +26,10 @@ See: `.planning/PROJECT.md` (updated 2026-04-18)
 ## Current Position
 
 Phase: 65 (item-lookup-and-not-found-flow) — EXECUTING
-Plan: 6 of 8 (Plans 01, 02, 03, 04, 05 complete; Plans 06/07/08 next)
+Plan: 7 of 8 (Plans 01, 02, 03, 04, 05, 06 complete; Plans 07/08 next)
 Status: Executing Phase 65
-Last activity: 2026-04-19 -- Phase 65 Plan 05 complete (LOOK-02 + LOOK-03 render surface: ItemForm FormProvider wrap + BRAND RetroFormField D-23; UpcSuggestionBanner with direct setValue("brand", ...) — no description concatenation workaround; ItemFormPage /items/new page orchestrator with scanKeys.lookup(barcode) + itemKeys.all dual invalidation (D-04 Pitfall #7 closure) and dirty-guard RetroConfirmDialog; 32 new real it() green — 60/78 cumulative Wave-0 todos converted)
-Next step: Plan 65-06 (ScanResultBanner 4-state widen — Wave 3) / 65-07 (ScanPage match-effect + route registration) / 65-08 (i18n + bundle gate)
+Last activity: 2026-04-19 -- Phase 65 Plan 06 complete (ScanResultBanner widened in place from Phase 64 single SCANNED state to Phase 65 four mutually-exclusive states LOADING / MATCH / NOT-FOUND / ERROR per D-17..D-21; prop surface gains lookupStatus: ScanLookupStatus + match: Item | null + onViewItem?(itemId) + onCreateWithBarcode?(code) + onRetry?; @keyframes retro-cursor-blink + .retro-cursor-blink class + @media (prefers-reduced-motion: reduce) { animation: none; opacity: 1; } guard in globals.css — automated grep gate + manual verification row already present in 65-VALIDATION.md; 21 new real it() green in ScanResultBanner.states.test.tsx; 7 Phase 64 assertions migrated under MATCH state describe; 2 Rule 3 auto-fixes: ScanPage callsite interim wire to lookupStatus='idle'+match=null and ScanPage test regex /SCANNED/ → /LOOKING UP/ — both unblock tsc + vitest gates until Plan 65-07 wires real useScanLookup; full vitest suite 707 passed / 0 todos / 0 failed — 81/78 cumulative Wave-0 todos converted)
+Next step: Plan 65-07 (ScanPage match-effect + route registration) / 65-08 (i18n + bundle gate)
 
 ## Performance Metrics
 
@@ -113,11 +113,13 @@ Next step: Plan 65-06 (ScanResultBanner 4-state widen — Wave 3) / 65-07 (ScanP
 
 ## Session Continuity
 
-Last session: 2026-04-19T09:51:08.000Z
-Stopped at: Phase 65 Plan 05 complete (LOOK-02 + LOOK-03 render surface — page + banner + FormProvider wrap shipped)
-Next step: Plan 65-06 (ScanResultBanner 4 states) / 65-07 (ScanPage wiring + route registration) / 65-08 (i18n + bundle gate)
+Last session: 2026-04-19T10:05:26.000Z
+Stopped at: Phase 65 Plan 06 complete (ScanResultBanner widened to 4 states + @keyframes retro-cursor-blink with reduced-motion guard)
+Next step: Plan 65-07 (ScanPage match-effect + route registration) / 65-08 (i18n + bundle gate)
 
 ---
+*Updated: 2026-04-19 — Phase 65 Plan 06 complete (ScanResultBanner widened in place from Phase 64 single SCANNED state to Phase 65 four mutually-exclusive states LOADING / MATCH / NOT-FOUND / ERROR — D-17..D-21; prop surface gains lookupStatus: ScanLookupStatus + match: Item | null + onViewItem?(itemId: string) + onCreateWithBarcode?(code: string) + onRetry?; LOADING renders a dimmed code echo plus ▍ blinking cursor with retro-cursor-blink className; MATCH renders NAME + match.short_code rows + VIEW ITEM button; NOT-FOUND renders yellow HazardStripe + helper line + CREATE ITEM WITH THIS BARCODE; ERROR renders red HazardStripe + remediation body + RETRY + CREATE ITEM fallback; SCAN AGAIN rendered and interactive in every state (T-65-06-04); single variant derivation ternary chain = structural dual-state-render guard (T-65-06-03); React JSX auto-escapes match.name / match.short_code / code for T-65-06-01 XSS mitigation. @keyframes retro-cursor-blink (1 Hz step-end) + .retro-cursor-blink class + @media (prefers-reduced-motion: reduce) { animation: none; opacity: 1; } guard appended to globals.css for T-65-06-02 motion-sickness mitigation; manual browser runtime verification row already present in 65-VALIDATION.md §Manual-Only Verifications. 21 new real it() green in ScanResultBanner.states.test.tsx (5 LOADING + 5 MATCH + 5 NOT-FOUND + 5 ERROR + 1 dual-state absence sweep T-65-06-03); 7 Phase 64 assertions re-homed under MATCH state describe in ScanResultBanner.test.tsx (SCANNED → MATCHED heading; CODE row now asserts match.short_code; Test 6 inverted to stripe-absence). 2 Rule 3 auto-fixes kept the plan's own typecheck + vitest gates green: (1) ScanPage.tsx callsite interim lookupStatus='idle' + match=null until Plan 65-07 wires real useScanLookup (falls through to LOADING variant in deriveVariant); (2) ScanPage.test.tsx /SCANNED/i → /LOOKING UP/i regex migration (11 replacements). Full vitest suite 707 passed / 0 todos / 0 failed (was 679 / 20 todos); typecheck + lint:imports + build clean. Cumulative 81/78 Wave-0 todos converted to date across Plans 65-02..06.*
+
 *Updated: 2026-04-19 — Phase 65 Plan 05 complete (LOOK-02 + LOOK-03 render surface: ItemForm FormProvider wrap + BRAND RetroFormField D-23 + optional beforeForm slot for sibling banner access; UpcSuggestionBanner feature-local banner with per-field [USE] + USE ALL + DISMISS writing setValue("brand", ..., { shouldDirty: true }) directly — no description concatenation workaround; ItemFormPage /items/new page with ?barcode= URL prefill + generateSku once per mount + dirty-guard RetroConfirmDialog + scanKeys.lookup(barcode) + itemKeys.all dual invalidation on create success (D-04 Pitfall #7 closure); 32 new real it() — 60/78 cumulative Wave-0 todos converted; full suite 686 passed / 20 todos / 0 failed; typecheck + lint:imports clean; 1 Rule 3 auto-fix: added optional beforeForm?: ReactNode slot to ItemForm reconciling plan's Task 1 FormProvider-inside-ItemForm with Task 3's banner-as-sibling intent).*
 *Updated: 2026-04-19 — Phase 65 Plan 04 complete (useScanLookup body swap to real TanStack Query against itemsApi.lookupByBarcode; ScanLookupResult shape preserved per Phase 64 D-18; updateScanHistory module fn + useScanHistory.update useCallback-wrapped for D-22 race guard; 8 + 3 + 5 = 16 new real it() cases green; ScanPage Test 15 callsite gate preserved; 3 tasks TDD RED+GREEN atomic commits).*
 *Updated: 2026-04-19 — Phase 65 Plan 02 complete (itemsApi.lookupByBarcode w/ D-06/D-07/D-08 guards + D-23 optional brand field + D-24 barcode regex loosened for hyphens/underscores; 10 Wave 0 todos converted green; cumulative 28/78 todos real; full suite 640 passed / 50 todos).*

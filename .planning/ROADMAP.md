@@ -359,7 +359,7 @@ Plans:
 - [x] 65-03-PLAN.md — Wave 1 lib/api/barcode.ts + barrel export + useBarcodeEnrichment hook with /^\d{8,14}$/ gate + silent failure
 - [x] 65-04-PLAN.md — Wave 2 useScanLookup body swap + updateScanHistory + useScanHistory.update (D-22 race guard); 16 new real it() cases (8 useScanLookup + 3 scan-history + 5 useScanHistory.update); ScanPage Test 15 callsite gate preserved
 - [x] 65-05-PLAN.md — Wave 2 ItemForm FormProvider wrap + BRAND field (D-23) + UpcSuggestionBanner + ItemFormPage (dirty-guard + D-04 scanKeys.lookup + itemKeys.all dual invalidation); 32 new real it() cases (3 ItemForm BRAND + 13 UpcSuggestionBanner + 19 ItemFormPage — +3 bonus)
-- [ ] 65-06-PLAN.md — Wave 3 ScanResultBanner widened to 4 states (LOADING/MATCH/NOT-FOUND/ERROR) + retro-cursor-blink keyframe
+- [x] 65-06-PLAN.md — Wave 3 ScanResultBanner widened to 4 states (LOADING/MATCH/NOT-FOUND/ERROR per D-17..D-21) + retro-cursor-blink keyframe with prefers-reduced-motion animation:none guard; 21 new real it() green (5 LOADING + 5 MATCH + 5 NOT-FOUND + 5 ERROR + 1 dual-state sweep T-65-06-03); 7 Phase 64 assertions migrated under MATCH describe; 2 Rule 3 auto-fixes (ScanPage interim callsite + ScanPage test regex migration); full vitest 707 passed / 0 todos
 - [ ] 65-07-PLAN.md — Wave 4 /items/new route registration + ScanPage match-effect wiring + banner callsite widening + Test 16/17/18
 - [ ] 65-08-PLAN.md — Wave 5 Lingui EN extract + ET gap-fill + [BLOCKING] bundle gate vs Plan 65-01 baseline
 **UI hint**: yes
@@ -461,7 +461,7 @@ Plans:
 | 48-55 | v2.0 | 18 | Complete | 2026-04-14 |
 | 56-63 | v2.1 | 29 | Complete | 2026-04-17 |
 | 64 | v2.2 | 10/10 | Complete | 2026-04-18 |
-| 65 | v2.2 | 3/8 | In progress | - |
+| 65 | v2.2 | 6/8 | In progress | - |
 | 66 | v2.2 | 0/? | Not started | - |
 | 67 | v2.2 | 0/? | Not started | - |
 | 68 | v2.2 | 0/? | Not started | - |
@@ -470,7 +470,7 @@ Plans:
 | 71 | v2.2 | 0/? | Not started | - |
 | 72 | v2.2 | 0/? | Not started | - |
 
-**Total:** 63 phases complete (177 plans executed) across 12 milestones; v2.2 (Phases 64-72) active
+**Total:** 63 phases complete (180 plans executed: +65-04 +65-05 +65-06) across 12 milestones; v2.2 (Phases 64-72) active
 
 ---
 *Roadmap created: 2026-01-24*
@@ -478,3 +478,4 @@ Plans:
 *Last updated: 2026-04-19 — Phase 65 Plan 03 complete (LOOK-03 data layer: lib/api/barcode.ts + useBarcodeEnrichment with /^\d{8,14}$/ gate + silent-fail structured log; 18 Wave 0 todos green; full suite 640 passed / 50 todos)*
 *Last updated: 2026-04-19 — Phase 65 Plan 05 complete (LOOK-02 + LOOK-03 render surface: ItemForm FormProvider wrap + BRAND field D-23 + UpcSuggestionBanner + ItemFormPage with D-04 scanKeys.lookup + itemKeys.all dual invalidation and dirty-guard dialog; +32 real it() green (3 ItemForm BRAND + 13 UpcSuggestionBanner + 19 ItemFormPage — +3 bonus); cumulative 60/78 Wave-0 todos converted; full suite 686 passed / 20 todos / 0 failed)*
 *Last updated: 2026-04-18 — Phase 64 COMPLETE (plan 64-10 i18n extract + ET gap-fill + [BLOCKING] bundle gate verified; 36 new msgids translated EN+ET; main chunk SHRANK 37.8 kB gzip vs pre-phase baseline; scanner chunk 58.1 kB gzip isolated; 609/609 green)*
+*Last updated: 2026-04-19 — Phase 65 Plan 06 complete (ScanResultBanner widened in place Phase 64 single SCANNED → Phase 65 four-state LOADING/MATCH/NOT-FOUND/ERROR per D-17..D-21; @keyframes retro-cursor-blink + prefers-reduced-motion:reduce { animation: none; opacity: 1; } guard in globals.css; 21 new real it() green; 7 Phase 64 assertions migrated under MATCH describe; 2 Rule 3 auto-fixes kept tsc+vitest gates green during interim ScanPage wiring; full vitest suite 707 passed / 0 todos / 0 failed)*
