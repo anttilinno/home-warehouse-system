@@ -6,6 +6,15 @@ import type { ScanHistoryEntry } from "@/lib/scanner";
 // unit test of the hook, not of the underlying module.
 const getScanHistoryMock = vi.fn<() => ScanHistoryEntry[]>();
 const addToScanHistoryMock = vi.fn<(e: Omit<ScanHistoryEntry, "timestamp">) => void>();
+const updateScanHistoryMock =
+  vi.fn<
+    (
+      code: string,
+      patch: Partial<
+        Pick<ScanHistoryEntry, "entityType" | "entityId" | "entityName">
+      >,
+    ) => void
+  >();
 const removeFromScanHistoryMock = vi.fn<(code: string) => void>();
 const clearScanHistoryMock = vi.fn<() => void>();
 
@@ -13,6 +22,12 @@ vi.mock("@/lib/scanner", () => ({
   getScanHistory: (...args: unknown[]) => getScanHistoryMock(...(args as [])),
   addToScanHistory: (e: Omit<ScanHistoryEntry, "timestamp">) =>
     addToScanHistoryMock(e),
+  updateScanHistory: (
+    code: string,
+    patch: Partial<
+      Pick<ScanHistoryEntry, "entityType" | "entityId" | "entityName">
+    >,
+  ) => updateScanHistoryMock(code, patch),
   removeFromScanHistory: (c: string) => removeFromScanHistoryMock(c),
   clearScanHistory: () => clearScanHistoryMock(),
 }));
@@ -32,6 +47,7 @@ describe("useScanHistory (D-04 single API surface)", () => {
   beforeEach(() => {
     getScanHistoryMock.mockReset();
     addToScanHistoryMock.mockReset();
+    updateScanHistoryMock.mockReset();
     removeFromScanHistoryMock.mockReset();
     clearScanHistoryMock.mockReset();
     getScanHistoryMock.mockReturnValue([]);
@@ -139,5 +155,100 @@ describe("useScanHistory (D-04 single API surface)", () => {
     );
     expect(removeStorageCalls).toHaveLength(1);
     expect(removeStorageCalls[0][1]).toBe(addedHandler);
+  });
+});
+
+describe("useScanHistory.update (D-22)", () => {
+  beforeEach(() => {
+    getScanHistoryMock.mockReset();
+    addToScanHistoryMock.mockReset();
+    updateScanHistoryMock.mockReset();
+    removeFromScanHistoryMock.mockReset();
+    clearScanHistoryMock.mockReset();
+    getScanHistoryMock.mockReturnValue([]);
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it("Test 1 (happy path): update() merges patch; entries reflect the merged entry", () => {
+    const initial = [makeEntry("X")];
+    getScanHistoryMock.mockReturnValueOnce(initial);
+    const { result } = renderHook(() => useScanHistory());
+    expect(result.current.entries).toEqual(initial);
+
+    const merged: ScanHistoryEntry = {
+      code: "X",
+      format: "qr_code",
+      entityType: "item",
+      entityId: "item-123",
+      entityName: "Drill",
+      timestamp: 1_700_000_000_000,
+    };
+    getScanHistoryMock.mockReturnValueOnce([merged]);
+
+    act(() => {
+      result.current.update("X", {
+        entityType: "item",
+        entityId: "item-123",
+        entityName: "Drill",
+      });
+    });
+
+    expect(updateScanHistoryMock).toHaveBeenCalledTimes(1);
+    expect(updateScanHistoryMock).toHaveBeenCalledWith("X", {
+      entityType: "item",
+      entityId: "item-123",
+      entityName: "Drill",
+    });
+    expect(result.current.entries).toEqual([merged]);
+  });
+
+  it("Test 2 (noop-if-missing): update() on unknown code leaves entries unchanged", () => {
+    const initial = [makeEntry("X")];
+    getScanHistoryMock.mockReturnValueOnce(initial);
+    const { result } = renderHook(() => useScanHistory());
+    expect(result.current.entries).toEqual(initial);
+
+    // Module-layer noop-if-missing is already covered; here we assert the hook
+    // propagates a getScanHistory() re-read that returns the unchanged array.
+    getScanHistoryMock.mockReturnValueOnce(initial);
+
+    act(() => {
+      result.current.update("nonexistent-code", { entityType: "item" });
+    });
+
+    expect(updateScanHistoryMock).toHaveBeenCalledWith("nonexistent-code", {
+      entityType: "item",
+    });
+    expect(result.current.entries).toEqual(initial);
+  });
+
+  it("Test 3 (no re-introduce): update() never calls addToScanHistory", () => {
+    getScanHistoryMock.mockReturnValue([makeEntry("X")]);
+    const { result } = renderHook(() => useScanHistory());
+
+    act(() => {
+      result.current.update("X", { entityType: "item" });
+    });
+    act(() => {
+      result.current.update("anything-else", { entityType: "item" });
+    });
+
+    expect(addToScanHistoryMock).not.toHaveBeenCalled();
+  });
+
+  it("Test 4 (typeof): returned object exposes update as a function", () => {
+    const { result } = renderHook(() => useScanHistory());
+    expect(typeof result.current.update).toBe("function");
+  });
+
+  it("Test 5 (referential stability): update keeps identity across renders (useCallback wrap)", () => {
+    const { result, rerender } = renderHook(() => useScanHistory());
+    const firstRef = result.current.update;
+    rerender();
+    const secondRef = result.current.update;
+    expect(secondRef).toBe(firstRef); // useCallback enforces stable identity
   });
 });
