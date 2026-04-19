@@ -12,6 +12,7 @@ vi.mock("@/lib/scanner", () => ({
 
 import { ScanResultBanner } from "../ScanResultBanner";
 import { formatScanTime } from "@/lib/scanner";
+import type { Item } from "@/lib/api/items";
 
 i18n.load("en", {});
 i18n.activate("en");
@@ -20,34 +21,57 @@ function renderWithI18n(ui: ReactElement) {
   return render(<I18nProvider i18n={i18n}>{ui}</I18nProvider>);
 }
 
-describe("ScanResultBanner (D-02 post-decode banner)", () => {
+// Phase 65 Plan 65-06: these 7 Phase 64 assertions are MIGRATED (not deleted)
+// under the MATCH-state render path. The banner was widened in-place from a
+// single "SCANNED" state to four states (LOADING/MATCH/NOT-FOUND/ERROR per
+// D-17..D-21). Every pre-existing assertion about code/format/timestamp/
+// SCAN AGAIN stays green under the MATCH render path; the "SCANNED" heading
+// becomes "MATCHED" to match the new vocabulary.
+describe("ScanResultBanner — MATCH state legacy-migrated assertions (Phase 64 parity)", () => {
   beforeEach(() => {
     vi.mocked(formatScanTime).mockClear();
   });
 
   afterEach(() => cleanup());
 
+  const matchItem: Item = {
+    id: "item-42",
+    workspace_id: "ws-1",
+    sku: "SKU-042",
+    name: "Coca-Cola 330ml",
+    short_code: "CC3-A1",
+    barcode: "ABC-123-XYZ",
+    min_stock_level: 0,
+    created_at: "2026-04-19T00:00:00Z",
+    updated_at: "2026-04-19T00:00:00Z",
+  };
+
   const defaultProps = {
     code: "ABC-123-XYZ",
     format: "qr_code",
     timestamp: 1700000000000,
+    lookupStatus: "success" as const,
+    match: matchItem,
     onScanAgain: vi.fn(),
+    onViewItem: vi.fn(),
+    onCreateWithBarcode: vi.fn(),
+    onRetry: vi.fn(),
   };
 
-  it("renders a SCANNED heading (Test 1)", () => {
+  it("renders a MATCHED heading (Test 1 — migrated from SCANNED → MATCHED)", () => {
     renderWithI18n(<ScanResultBanner {...defaultProps} onScanAgain={vi.fn()} />);
-    const heading = screen.getByRole("heading", { name: /SCANNED/i });
+    const heading = screen.getByRole("heading", { name: /MATCHED/i });
     expect(heading).toBeInTheDocument();
   });
 
-  it("renders CODE label and the code prop in a large monospace element (Test 2)", () => {
+  it("renders CODE label and match.short_code in a large monospace element (Test 2)", () => {
     renderWithI18n(
       <ScanResultBanner {...defaultProps} onScanAgain={vi.fn()} />,
     );
     expect(screen.getByText("CODE")).toBeInTheDocument();
-    const codeEl = screen.getByText("ABC-123-XYZ");
+    // MATCH state renders match.short_code in the CODE row (24px mono bold).
+    const codeEl = screen.getByText("CC3-A1");
     expect(codeEl).toBeInTheDocument();
-    // Typography contract: monospace + 24px display per UI-SPEC
     expect(codeEl.className).toContain("font-mono");
     expect(codeEl.className).toContain("text-[24px]");
   });
@@ -85,13 +109,16 @@ describe("ScanResultBanner (D-02 post-decode banner)", () => {
     expect(onScanAgain).toHaveBeenCalledTimes(1);
   });
 
-  it("renders inside a RetroPanel with a yellow HazardStripe header (Test 6)", () => {
+  it("renders inside a RetroPanel (MATCH state — no hazard stripe) (Test 6 — migrated)", () => {
+    // Migration note: Phase 64 banner had a yellow HazardStripe on every
+    // render. Phase 65 MATCH state intentionally has NO stripe (clean
+    // success UX). The original Test 6 asserted stripe presence; it now
+    // asserts stripe absence in MATCH + RetroPanel chrome still present.
     const { container } = renderWithI18n(
       <ScanResultBanner {...defaultProps} onScanAgain={vi.fn()} />,
     );
-    // HazardStripe sets data-variant attr
-    const stripe = container.querySelector('[data-variant="yellow"]');
-    expect(stripe).toBeInTheDocument();
+    const stripe = container.querySelector("[data-variant]");
+    expect(stripe).toBeNull();
     // RetroPanel uses thick ink border + cream background
     const panel = container.querySelector(".border-retro-thick.border-retro-ink");
     expect(panel).toBeInTheDocument();
@@ -103,7 +130,12 @@ describe("ScanResultBanner (D-02 post-decode banner)", () => {
         code="TYPED-001"
         format="MANUAL"
         timestamp={1700000000000}
+        lookupStatus="success"
+        match={{ ...matchItem, short_code: "TYPED-SC" }}
         onScanAgain={vi.fn()}
+        onViewItem={vi.fn()}
+        onCreateWithBarcode={vi.fn()}
+        onRetry={vi.fn()}
       />,
     );
     const pill = screen.getByTestId("scan-format-pill");
