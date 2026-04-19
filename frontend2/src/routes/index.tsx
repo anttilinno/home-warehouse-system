@@ -8,6 +8,7 @@ import { DemoPage } from "@/pages/DemoPage";
 import { ApiDemoPage } from "@/pages/ApiDemoPage";
 import { DashboardPage } from "@/features/dashboard/DashboardPage";
 import { ItemsListPage } from "@/features/items/ItemsListPage";
+import { ItemFormPage } from "@/features/items/ItemFormPage";
 import { ItemDetailPage } from "@/features/items/ItemDetailPage";
 import { LoansListPage } from "@/features/loans/LoansListPage";
 // /scan is route-lazy-split so the scanner chunk (manualChunks-grouped in
@@ -105,6 +106,7 @@ export function AppRoutes() {
         <Route path="borrowers" element={<BorrowersListPage />} />
         <Route path="borrowers/:id" element={<BorrowerDetailPage />} />
         <Route path="items" element={<ItemsListPage />} />
+        <Route path="items/new" element={<ItemFormPage />} />
         <Route path="items/:id" element={<ItemDetailPage />} />
         <Route path="taxonomy" element={<TaxonomyPage />} />
         <Route path="loans" element={<LoansListPage />} />
