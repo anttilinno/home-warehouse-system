@@ -222,4 +222,72 @@ describe("lib/scanner/scan-history", () => {
     // Should contain a numeric day (locale-dependent formatting; don't over-assert)
     expect(formatted.length).toBeGreaterThan(0);
   });
+
+  describe("updateScanHistory (D-22 race guard)", () => {
+    // Re-uses the top-level beforeEach's makeFakeStorage() + vi.stubGlobal +
+    // vi.resetModules() harness — each it() below inherits a fresh fakeStorage.
+
+    it("Test 1 (happy path): merges patch fields, preserves code/format/timestamp", async () => {
+      const mod = await import("../scan-history");
+      fakeStorage._store.set(
+        SCAN_HISTORY_KEY,
+        JSON.stringify([
+          { code: "X", format: "qr_code", entityType: "unknown", timestamp: 123 },
+        ]),
+      );
+
+      mod.updateScanHistory("X", {
+        entityType: "item",
+        entityId: "item-42",
+        entityName: "Drill",
+      });
+
+      const persisted = JSON.parse(fakeStorage._store.get(SCAN_HISTORY_KEY)!);
+      expect(persisted).toEqual([
+        {
+          code: "X",
+          format: "qr_code",
+          entityType: "item",
+          entityId: "item-42",
+          entityName: "Drill",
+          timestamp: 123,
+        },
+      ]);
+    });
+
+    it("Test 2 (noop-if-missing): code not in history → no setItem, history unchanged", async () => {
+      const mod = await import("../scan-history");
+      const seed = [
+        { code: "X", format: "qr_code", entityType: "unknown", timestamp: 123 },
+      ];
+      fakeStorage._store.set(SCAN_HISTORY_KEY, JSON.stringify(seed));
+      const setItemCallsBefore = fakeStorage.setItem.mock.calls.length;
+
+      mod.updateScanHistory("NOT-IN-HISTORY", { entityType: "item" });
+
+      const setItemCallsAfter = fakeStorage.setItem.mock.calls.length;
+      expect(setItemCallsAfter).toBe(setItemCallsBefore); // D-22: noop-if-missing
+      const persisted = JSON.parse(fakeStorage._store.get(SCAN_HISTORY_KEY)!);
+      expect(persisted).toEqual(seed);
+    });
+
+    it("Test 3 (isolation): leaves other entries byte-for-byte unchanged", async () => {
+      const mod = await import("../scan-history");
+      const entryA = { code: "A", format: "qr_code", entityType: "unknown", timestamp: 1 };
+      const entryB = { code: "B", format: "qr_code", entityType: "unknown", timestamp: 2 };
+      const entryC = { code: "C", format: "qr_code", entityType: "unknown", timestamp: 3 };
+      fakeStorage._store.set(
+        SCAN_HISTORY_KEY,
+        JSON.stringify([entryA, entryB, entryC]),
+      );
+
+      mod.updateScanHistory("B", { entityName: "Middle" });
+
+      const persisted = JSON.parse(fakeStorage._store.get(SCAN_HISTORY_KEY)!);
+      expect(persisted).toHaveLength(3);
+      expect(JSON.stringify(persisted[0])).toBe(JSON.stringify(entryA));
+      expect(JSON.stringify(persisted[2])).toBe(JSON.stringify(entryC));
+      expect(persisted[1]).toEqual({ ...entryB, entityName: "Middle" });
+    });
+  });
 });
