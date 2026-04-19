@@ -375,7 +375,11 @@ Plans:
   1. After a successful scan that resolves to a workspace item, the user sees a quick-action overlay sheet while the scanner remains paused-but-mounted (no navigation away from `/scan`)
   2. The overlay shows "View Item", "Loan", and "Back to Scan" actions by default, each navigating/acting correctly
   3. The overlay adapts to item state: "Loan" is hidden when the item is on an active loan; "Unarchive" replaces "Loan" for archived items; "Mark Reviewed" is shown when the item is flagged `needs_review`
-**Plans**: TBD
+**Plans:** 3 plans
+Plans:
+- [ ] 66-01-PLAN.md — Wave 1 pre-phase bundle baseline (66-BUNDLE-BASELINE.md) + useMarkReviewedItem mutation hook (D-18) + 5 new EN/ET msgids (LOAN, MARK REVIEWED, UNARCHIVE, BACK TO SCAN, Item marked reviewed.)
+- [ ] 66-02-PLAN.md — Wave 2 QuickActionMenu.tsx component (4-state variant + D-16 matrix + RetroDialog lifecycle + gated useLoansForItem probe + internal useMarkReviewedItem/useRestoreItem mutations + structured console.error) + QuickActionMenu.test.tsx (D-16 matrix 6 rows + LOADING/NOT-FOUND/ERROR + LOAN skeleton/hidden + dismiss parity + dual-state sweep, ≥20 tests via TDD RED→GREEN)
+- [ ] 66-03-PLAN.md — Wave 3 ScanPage swap (<ScanResultBanner> → <QuickActionMenu>; D-11 setBanner(null)-before-navigate applied to handleViewItem/handleCreateWithBarcode/handleLoan; handleLoan URL /loans/new?itemId=encodeURIComponent(id); handleMarkReviewed/handleUnarchive no-op) + delete ScanResultBanner.tsx + 2 banner test files + remove barrel export + re-run Lingui extract to re-anchor #: comments + [BLOCKING] bundle gate PASS (main ≤ +1024 gzip, scanner ≤ 0 gzip)
 **UI hint**: yes
 
 ### Phase 67: Mobile FAB with Radial Menu
