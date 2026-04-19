@@ -44,6 +44,7 @@ export {
 export {
   getScanHistory,
   addToScanHistory,
+  updateScanHistory,
   createHistoryEntry,
   removeFromScanHistory,
   clearScanHistory,

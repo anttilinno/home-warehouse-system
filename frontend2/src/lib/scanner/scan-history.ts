@@ -137,6 +137,42 @@ export function removeFromScanHistory(code: string): void {
 }
 
 /**
+ * Update a specific entry in history, keyed by code. Noop-if-missing —
+ * if no entry with this code exists, the function silently returns
+ * without writing. This is the D-22 race guard: a stale lookup resolving
+ * for a code that was since de-duped out of history (MAX_HISTORY_SIZE=10)
+ * must NOT re-introduce the entry or mutate the wrong slot.
+ *
+ * Only `entityType`, `entityId`, and `entityName` are mutable via this
+ * API. Code, format, timestamp are immutable (use addToScanHistory for
+ * a fresh entry or removeFromScanHistory to delete).
+ *
+ * @param code - The code of the entry to update (exact match required)
+ * @param patch - Partial entity-field patch to merge into the entry
+ */
+export function updateScanHistory(
+  code: string,
+  patch: Partial<Pick<ScanHistoryEntry, "entityType" | "entityId" | "entityName">>,
+): void {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  try {
+    const history = getScanHistory();
+    const idx = history.findIndex((h) => h.code === code);
+    if (idx === -1) {
+      return; // D-22 race guard: noop-if-missing
+    }
+    const updated = history.slice();
+    updated[idx] = { ...updated[idx], ...patch };
+    localStorage.setItem(SCAN_HISTORY_KEY, JSON.stringify(updated));
+  } catch (error) {
+    console.warn("[ScanHistory] Failed to update history:", error);
+  }
+}
+
+/**
  * Clear all scan history.
  */
 export function clearScanHistory(): void {
