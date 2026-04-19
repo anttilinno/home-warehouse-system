@@ -1,12 +1,17 @@
 import { z } from "zod";
 
 /**
- * Item form zod schemas for Phase 60 CRUD.
+ * Item form zod schemas for Phase 60 CRUD (extended in Phase 65).
  *
- * Field caps per 60-UI-SPEC:
+ * Field caps per 60-UI-SPEC + Phase 65 D-23/D-24:
  *  - name: required, max 200
  *  - sku: required, max 64, pattern [A-Za-z0-9_-]+
- *  - barcode: optional, max 64, pattern [A-Za-z0-9]+
+ *  - barcode: optional, max 64, pattern [A-Za-z0-9\-_]+ (D-24: loosened to
+ *    accept hyphens and underscores so real Code128 scans like
+ *    "TEST-CODE-123" can be saved via /items/new without zod rejection)
+ *  - brand: optional, max 120 (D-23: first-class field so
+ *    UpcSuggestionBanner BRAND [USE] can setValue("brand", ...) directly;
+ *    backend CreateItemInput already accepts `brand`)
  *  - description: optional, max 2000
  *  - category_id: optional, UUID
  *
@@ -31,7 +36,12 @@ export const itemCreateSchema = z.object({
   barcode: z
     .string()
     .max(64, "Must be 64 characters or fewer.")
-    .regex(/^[A-Za-z0-9]+$/, "Use letters and numbers only.")
+    .regex(/^[A-Za-z0-9\-_]+$/, "Use letters, numbers, hyphens, or underscores only.")
+    .optional()
+    .or(z.literal("")),
+  brand: z
+    .string()
+    .max(120, "Must be 120 characters or fewer.")
     .optional()
     .or(z.literal("")),
   description: z
