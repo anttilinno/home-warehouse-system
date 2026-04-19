@@ -202,7 +202,7 @@ See `.planning/milestones/v2.1-ROADMAP.md` for full details.
 Barcode scanning + mobile FAB brought to `/frontend2` at full v1.3 parity, wired into Loans and Quick Capture, with accumulated verification/coverage/hygiene debt from v1.9–v2.1 closed.
 
 - [x] **Phase 64: Scanner Foundation & Scan Page** — Scanner primitives, hooks, API, and the live `/scan` route with camera preview, torch, manual fallback, and scan history
-- [ ] **Phase 65: Item Lookup & Not-Found Flow** — Barcode → workspace-item lookup, not-found → create-item handoff with barcode prefill, optional external UPC enrichment
+- [x] **Phase 65: Item Lookup & Not-Found Flow** — Barcode → workspace-item lookup, not-found → create-item handoff with barcode prefill, optional external UPC enrichment
 - [ ] **Phase 66: Quick-Action Menu** — Post-scan action overlay with default actions and state-adaptive behavior (archived / loaned / needs-review)
 - [ ] **Phase 67: Mobile FAB with Radial Menu** — Context-aware floating action button mounted in AppShell with safe-area handling
 - [ ] **Phase 68: Loan Scan Integration** — Loan action from scan menu preselects item on `/loans/new`
@@ -361,7 +361,7 @@ Plans:
 - [x] 65-05-PLAN.md — Wave 2 ItemForm FormProvider wrap + BRAND field (D-23) + UpcSuggestionBanner + ItemFormPage (dirty-guard + D-04 scanKeys.lookup + itemKeys.all dual invalidation); 32 new real it() cases (3 ItemForm BRAND + 13 UpcSuggestionBanner + 19 ItemFormPage — +3 bonus)
 - [x] 65-06-PLAN.md — Wave 3 ScanResultBanner widened to 4 states (LOADING/MATCH/NOT-FOUND/ERROR per D-17..D-21) + retro-cursor-blink keyframe with prefers-reduced-motion animation:none guard; 21 new real it() green (5 LOADING + 5 MATCH + 5 NOT-FOUND + 5 ERROR + 1 dual-state sweep T-65-06-03); 7 Phase 64 assertions migrated under MATCH describe; 2 Rule 3 auto-fixes (ScanPage interim callsite + ScanPage test regex migration); full vitest 707 passed / 0 todos
 - [x] 65-07-PLAN.md — Wave 4 /items/new route registration (literal-before-param) + ScanPage match-effect wiring (deps [lookup.status, lookup.match, banner?.code, history.update] — NOT [history]) + banner callsite widened (lookupStatus/match/onViewItem/onCreateWithBarcode/onRetry) + handleLookupRetry co-existing with Phase 64 handleRetry + Test 16/17/18 green for D-22 race guard; Test 15 preserved verbatim; full vitest 710 passed / 0 todos; 1 Rule 3 auto-fix (scan-fixture MemoryRouter wrapper)
-- [ ] 65-08-PLAN.md — Wave 5 Lingui EN extract + ET gap-fill + [BLOCKING] bundle gate vs Plan 65-01 baseline
+- [x] 65-08-PLAN.md — Wave 5 Lingui EN extract + ET gap-fill + [BLOCKING] bundle gate PASS (scanner byte-identical to baseline; main chunk SHRANK 21.3 kB gzip); 16 new msgids in EN+ET catalogs (plus 1 Rule 2 CANCEL auto-fix); full suite 710/710; typecheck + lint:imports + i18n:compile + build all clean
 **UI hint**: yes
 
 ### Phase 66: Quick-Action Menu
@@ -461,7 +461,7 @@ Plans:
 | 48-55 | v2.0 | 18 | Complete | 2026-04-14 |
 | 56-63 | v2.1 | 29 | Complete | 2026-04-17 |
 | 64 | v2.2 | 10/10 | Complete | 2026-04-18 |
-| 65 | v2.2 | 6/8 | In progress | - |
+| 65 | v2.2 | 8/8 | Complete | 2026-04-19 |
 | 66 | v2.2 | 0/? | Not started | - |
 | 67 | v2.2 | 0/? | Not started | - |
 | 68 | v2.2 | 0/? | Not started | - |
@@ -470,7 +470,7 @@ Plans:
 | 71 | v2.2 | 0/? | Not started | - |
 | 72 | v2.2 | 0/? | Not started | - |
 
-**Total:** 63 phases complete (181 plans executed: +65-04 +65-05 +65-06 +65-07) across 12 milestones; v2.2 (Phases 64-72) active
+**Total:** 64 phases complete (182 plans executed: +65-08 closes Phase 65) across 12 milestones; v2.2 (Phases 64-72) active
 
 ---
 *Roadmap created: 2026-01-24*
@@ -480,3 +480,4 @@ Plans:
 *Last updated: 2026-04-18 — Phase 64 COMPLETE (plan 64-10 i18n extract + ET gap-fill + [BLOCKING] bundle gate verified; 36 new msgids translated EN+ET; main chunk SHRANK 37.8 kB gzip vs pre-phase baseline; scanner chunk 58.1 kB gzip isolated; 609/609 green)*
 *Last updated: 2026-04-19 — Phase 65 Plan 06 complete (ScanResultBanner widened in place Phase 64 single SCANNED → Phase 65 four-state LOADING/MATCH/NOT-FOUND/ERROR per D-17..D-21; @keyframes retro-cursor-blink + prefers-reduced-motion:reduce { animation: none; opacity: 1; } guard in globals.css; 21 new real it() green; 7 Phase 64 assertions migrated under MATCH describe; 2 Rule 3 auto-fixes kept tsc+vitest gates green during interim ScanPage wiring; full vitest suite 707 passed / 0 todos / 0 failed)*
 *Last updated: 2026-04-19 — Phase 65 Plan 07 complete (Phase 65 → ScanPage integration wiring: /items/new route registered between items and items/:id (literal-before-param idiom, eager import); ScanPage match-effect with D-22 race guard — useEffect calls history.update(code, { entityType, entityId, entityName }) ONLY on lookup.status === "success" && lookup.match; deps array [lookup.status, lookup.match, banner?.code, history.update] — NOT [history], which would re-fire every render and defeat the gate; `void lookup;` placeholder removed; ScanResultBanner callsite widened to thread lookup.status / lookup.match / handleViewItem / handleCreateWithBarcode / handleLookupRetry alongside existing code/format/timestamp/onScanAgain; handleLookupRetry name-distinct from Phase 64 handleRetry — both callbacks co-exist (lookup-query retry vs scanner-polyfill retry); useScanLookup(banner?.code ?? null) callsite preserved VERBATIM per Phase 64 D-18 + Test 15 gate; 3 new it() green (Test 16 match → history.update called with entityType:'item' + entityId + entityName; Test 17 not-found → NEVER called; Test 18 error → NEVER called); Test 15 preserved verbatim; 1 Rule 3 auto-fix — scan-feature fixtures.ts layered with MemoryRouter (via createElement so file stays .ts) so ScanPage's new useNavigate() has router context without modifying shared taxonomy fixture; full vitest suite 710 passed / 0 todos / 0 failed; typecheck + lint:imports + build clean)*
+*Last updated: 2026-04-19 — Phase 65 COMPLETE (plan 65-08 i18n EN extract + ET gap-fill + [BLOCKING] bundle gate PASS; 16 new msgids across ScanResultBanner 4-state surface + UpcSuggestionBanner + ItemFormPage + ItemForm BRAND placeholder; every ET msgstr hand-filled per plan's starting-point table (VASTE LEITUD, EI LEITUD, OTSIN…, OTSING EBAÕNNESTUS, SOOVITUSED SAADAVAL, BRÄND, [KASUTA], KASUTA KÕIK, SULGE, VAATA ESET, LOO UUS ESE SELLE VÖÖTKOODIGA, PROOVI UUESTI, nt DeWalt, Serverit ei õnnestunud tabada…, Selle vöötkoodiga eset ei leitud…, Kategooria vihje: {0} — vali all käsitsi.); 1 Rule 2 auto-fix — CANCEL msgid was absent from master HEAD b04ae7c catalog despite plan assuming Phase 60/57 reuse, added TÜHISTA; bundle gate result: scanner chunk byte-identical to baseline (58057 B gzip @ CLRWiLFx hash, zero content drift — confirms Pitfall #7 not triggered); main chunk SHRANK 21.3 kB gzip (135754 → 114418) because Plan 65-07's React.lazy split moved scan-feature application code into new on-demand scan-*.js (61.5 kB gzip) + ScanPage-*.js (5.6 kB gzip) chunks; delta is WELL within zero scanner + ≤5 kB main budgets; full phase gate green — vitest 710/710, lint:imports OK, tsc -b --noEmit clean, i18n:compile 0 warnings, build ✓ 319ms; LOOK-01/02/03 all shippable EN+ET)*

@@ -20,9 +20,9 @@
 
 ### Lookup & Not-Found Flow (LOOK)
 
-- [ ] **LOOK-01**: On scan, user sees the matched item via `GET /api/workspaces/{wsId}/items?search={code}&limit=1` (FTS over name, SKU, barcode)
-- [ ] **LOOK-02**: If no item matches, user sees a "not found → create item" action that navigates to the item-create form with the barcode pre-filled (`/items/new?barcode=<code>`)
-- [ ] **LOOK-03**: For codes matching `/^\d{8,14}$/`, the item-create form shows suggested name/brand from `GET /api/barcode/{code}` as opt-in prefill (suggestion banner, user accepts to apply)
+- [x] **LOOK-01**: On scan, user sees the matched item via `GET /api/workspaces/{wsId}/items?search={code}&limit=1` (FTS over name, SKU, barcode)
+- [x] **LOOK-02**: If no item matches, user sees a "not found → create item" action that navigates to the item-create form with the barcode pre-filled (`/items/new?barcode=<code>`)
+- [x] **LOOK-03**: For codes matching `/^\d{8,14}$/`, the item-create form shows suggested name/brand from `GET /api/barcode/{code}` as opt-in prefill (suggestion banner, user accepts to apply)
 
 ### Quick-Action Menu (QA)
 
@@ -108,9 +108,9 @@ Every v2.2 REQ-ID maps to exactly one phase. Coverage: 32/32 (100%).
 | SCAN-05 | Phase 64 | Complete (64-09 MANUAL tab wired; submit fires shared post-decode flow with format=MANUAL) |
 | SCAN-06 | Phase 64 | Complete (64-09 HISTORY tab wired; row tap re-fires post-scan flow on current tab per D-15 + D-20) |
 | SCAN-07 | Phase 64 | Complete (64-09 CLEAR HISTORY + RetroConfirmDialog tab-wired) |
-| LOOK-01 | Phase 65 | Pending |
-| LOOK-02 | Phase 65 | Pending |
-| LOOK-03 | Phase 65 | Pending |
+| LOOK-01 | Phase 65 | Complete (65-04 useScanLookup body swap + itemsApi.lookupByBarcode with D-06/07/08 guards; 65-06 ScanResultBanner MATCH state; 65-07 ScanPage match-effect with D-22 race guard; 65-08 EN+ET translations + bundle gate PASS) |
+| LOOK-02 | Phase 65 | Complete (65-05 ItemFormPage /items/new with ?barcode= URL prefill + dirty-guard + D-04 dual invalidation; 65-06 ScanResultBanner NOT-FOUND state with CREATE ITEM WITH THIS BARCODE action; 65-07 /items/new route registration + ScanPage onCreateWithBarcode navigation; 65-08 EN+ET) |
+| LOOK-03 | Phase 65 | Complete (65-03 barcodeApi + useBarcodeEnrichment with /^\d{8,14}$/ gate + silent-fail; 65-05 UpcSuggestionBanner with per-field [USE]/USE ALL/DISMISS writing setValue directly; 65-05 BRAND field on ItemForm per D-23; 65-08 EN+ET) |
 | QA-01 | Phase 66 | Pending |
 | QA-02 | Phase 66 | Pending |
 | QA-03 | Phase 66 | Pending |
