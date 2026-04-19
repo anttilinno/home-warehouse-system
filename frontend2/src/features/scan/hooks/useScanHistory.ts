@@ -12,6 +12,7 @@ import { useCallback, useEffect, useState } from "react";
 import {
   getScanHistory,
   addToScanHistory,
+  updateScanHistory,
   removeFromScanHistory,
   clearScanHistory,
   type ScanHistoryEntry,
@@ -33,6 +34,20 @@ export function useScanHistory() {
     setEntries(getScanHistory());
   }, []);
 
+  // D-22 post-lookup backfill. useCallback with empty deps guarantees stable
+  // identity across renders so Plan 65-07's ScanPage match-effect can depend
+  // on `history.update` without re-firing every render.
+  const update = useCallback(
+    (
+      code: string,
+      patch: Partial<Pick<ScanHistoryEntry, "entityType" | "entityId" | "entityName">>,
+    ) => {
+      updateScanHistory(code, patch);
+      setEntries(getScanHistory());
+    },
+    [],
+  );
+
   const remove = useCallback((code: string) => {
     removeFromScanHistory(code);
     setEntries(getScanHistory());
@@ -43,5 +58,5 @@ export function useScanHistory() {
     setEntries([]);
   }, []);
 
-  return { entries, add, clear, remove };
+  return { entries, add, update, remove, clear };
 }
