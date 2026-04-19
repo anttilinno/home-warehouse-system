@@ -151,7 +151,7 @@ describe("ScanPage (Phase 64 orchestration)", () => {
       await screen.findByTestId("fake-scanner-decode-trigger");
       triggerDecode("ABC-123", "qr_code");
       // Banner appears.
-      const heading = await screen.findByRole("heading", { name: /SCANNED/i });
+      const heading = await screen.findByRole("heading", { name: /LOOKING UP/i });
       expect(heading).toBeInTheDocument();
       expect(screen.getByText("ABC-123")).toBeInTheDocument();
       // Scanner `paused` prop reflects state.
@@ -170,13 +170,13 @@ describe("ScanPage (Phase 64 orchestration)", () => {
       renderWithProviders(<ScanPage />);
       await screen.findByTestId("fake-scanner-decode-trigger");
       triggerDecode("DUPE-42", "qr_code");
-      await screen.findByRole("heading", { name: /SCANNED/i });
+      await screen.findByRole("heading", { name: /LOOKING UP/i });
       // Dismiss banner, scanner unpauses, scan the same code again.
       const user = userEvent.setup();
       await user.click(screen.getByRole("button", { name: /SCAN AGAIN/i }));
       triggerDecode("DUPE-42", "qr_code");
       await waitFor(() =>
-        expect(screen.getByRole("heading", { name: /SCANNED/i })).toBeInTheDocument(),
+        expect(screen.getByRole("heading", { name: /LOOKING UP/i })).toBeInTheDocument(),
       );
       expect(getScanHistory()).toHaveLength(1);
     });
@@ -187,11 +187,11 @@ describe("ScanPage (Phase 64 orchestration)", () => {
       renderWithProviders(<ScanPage />);
       await screen.findByTestId("fake-scanner-decode-trigger");
       triggerDecode("SA-01", "qr_code");
-      await screen.findByRole("heading", { name: /SCANNED/i });
+      await screen.findByRole("heading", { name: /LOOKING UP/i });
       expect(lastScannerProps.current.paused).toBe(true);
       await user.click(screen.getByRole("button", { name: /SCAN AGAIN/i }));
       expect(
-        screen.queryByRole("heading", { name: /SCANNED/i }),
+        screen.queryByRole("heading", { name: /LOOKING UP/i }),
       ).not.toBeInTheDocument();
       await waitFor(() => expect(lastScannerProps.current.paused).toBe(false));
     });
@@ -208,7 +208,7 @@ describe("ScanPage (Phase 64 orchestration)", () => {
       await user.type(input, "MY-CODE-42");
       await user.click(screen.getByRole("button", { name: /LOOK UP CODE/i }));
       // Banner rendered with MANUAL format.
-      await screen.findByRole("heading", { name: /SCANNED/i });
+      await screen.findByRole("heading", { name: /LOOKING UP/i });
       expect(screen.getByText("MY-CODE-42")).toBeInTheDocument();
       const pill = screen.getByTestId("scan-format-pill");
       expect(pill.textContent).toBe("MANUAL");
@@ -232,7 +232,7 @@ describe("ScanPage (Phase 64 orchestration)", () => {
         "HIST-01",
       );
       await user.click(screen.getByRole("button", { name: /LOOK UP CODE/i }));
-      await screen.findByRole("heading", { name: /SCANNED/i });
+      await screen.findByRole("heading", { name: /LOOKING UP/i });
       // Dismiss banner
       await user.click(screen.getByRole("button", { name: /SCAN AGAIN/i }));
       // Go to HISTORY tab
@@ -242,7 +242,7 @@ describe("ScanPage (Phase 64 orchestration)", () => {
       await user.click(row);
       // Banner renders ON history tab (list still visible)
       expect(
-        await screen.findByRole("heading", { name: /SCANNED/i }),
+        await screen.findByRole("heading", { name: /LOOKING UP/i }),
       ).toBeInTheDocument();
       // We stay on HISTORY tab — the SCAN HISTORY heading/list is still visible
       expect(
@@ -265,7 +265,7 @@ describe("ScanPage (Phase 64 orchestration)", () => {
         "CLR-01",
       );
       await user.click(screen.getByRole("button", { name: /LOOK UP CODE/i }));
-      await screen.findByRole("heading", { name: /SCANNED/i });
+      await screen.findByRole("heading", { name: /LOOKING UP/i });
       // Clear it on HISTORY tab
       await user.click(screen.getByRole("button", { name: /SCAN AGAIN/i }));
       await user.click(screen.getByRole("button", { name: /^HISTORY$/i }));
@@ -361,7 +361,7 @@ describe("ScanPage (Phase 64 orchestration)", () => {
       triggerDecode("HX-99", "qr_code");
       // Banner appears, AND we're still on HISTORY tab (NO SCANS YET header
       // replaced by SCAN HISTORY once an entry exists).
-      await screen.findByRole("heading", { name: /SCANNED/i });
+      await screen.findByRole("heading", { name: /LOOKING UP/i });
       expect(
         screen.getByRole("heading", { name: /SCAN HISTORY/i }),
       ).toBeInTheDocument();
@@ -382,7 +382,7 @@ describe("ScanPage (Phase 64 orchestration)", () => {
       expect(useScanLookupSpy).toHaveBeenCalledWith(null);
       // Trigger a decode — banner.code becomes "ABC-123".
       triggerDecode("ABC-123", "qr_code");
-      await screen.findByRole("heading", { name: /SCANNED/i });
+      await screen.findByRole("heading", { name: /LOOKING UP/i });
       await waitFor(() =>
         expect(useScanLookupSpy).toHaveBeenCalledWith("ABC-123"),
       );

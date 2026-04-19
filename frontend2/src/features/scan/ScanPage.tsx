@@ -175,10 +175,17 @@ export function ScanPage() {
       />
 
       {banner && (
+        // Phase 65 Plan 65-06: widened ScanResultBanner props. Plan 65-07
+        // replaces the placeholder lookupStatus/match with real values from
+        // useScanLookup(banner.code). Until then, LOADING-variant render
+        // keeps the pre-decode visual intact (no stripe, code + format pill
+        // + SCAN AGAIN). idle → loading fallback lives in deriveVariant().
         <ScanResultBanner
           code={banner.code}
           format={banner.format}
           timestamp={banner.timestamp}
+          lookupStatus="idle"
+          match={null}
           onScanAgain={handleScanAgain}
         />
       )}
