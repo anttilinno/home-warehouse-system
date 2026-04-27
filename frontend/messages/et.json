@@ -107,7 +107,12 @@
       "myChanges": "Minu muudatused",
       "syncHistory": "Sünkroonimise ajalugu",
       "settings": "Seaded",
-      "collapse": "Ahenda"
+      "collapse": "Ahenda",
+      "groups": {
+        "overview": "Ülevaade",
+        "inventory": "Laoseis",
+        "system": "Süsteem"
+      }
     },
     "workspace": {
       "workspaces": "Tööruumid",

@@ -107,7 +107,12 @@
       "myChanges": "My Changes",
       "syncHistory": "Sync History",
       "settings": "Settings",
-      "collapse": "Collapse"
+      "collapse": "Collapse",
+      "groups": {
+        "overview": "Overview",
+        "inventory": "Inventory",
+        "system": "System"
+      }
     },
     "workspace": {
       "workspaces": "Workspaces",

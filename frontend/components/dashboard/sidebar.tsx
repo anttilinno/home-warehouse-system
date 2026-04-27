@@ -19,7 +19,6 @@ import {
   Clock,
   History,
   Trash2,
-  ClipboardList,
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
@@ -97,43 +96,39 @@ export function Sidebar({ collapsed, onToggle, onNavClick }: SidebarProps) {
     return () => clearInterval(interval);
   }, [workspaceId]);
 
-  const navItems = [
-    { icon: LayoutDashboard, label: t("dashboard"), href: "/dashboard" },
-    { icon: Package, label: t("items"), href: "/dashboard/items" },
-    { icon: ClipboardList, label: t("inventory"), href: "/dashboard/inventory" },
-    { icon: MapPin, label: t("locations"), href: "/dashboard/locations" },
-    { icon: Box, label: t("containers"), href: "/dashboard/containers" },
-    { icon: FolderTree, label: t("categories"), href: "/dashboard/categories" },
-    { icon: HandCoins, label: t("loans"), href: "/dashboard/loans" },
-    { icon: Users, label: t("borrowers"), href: "/dashboard/borrowers" },
-    { icon: BarChart3, label: t("analytics"), href: "/dashboard/analytics" },
-    { icon: Trash2, label: t("declutter"), href: "/dashboard/declutter" },
-    { icon: PackageX, label: t("outOfStock"), href: "/dashboard/out-of-stock" },
-    { icon: FileUp, label: t("imports"), href: "/dashboard/imports" },
+  const navGroups = [
+    {
+      label: t("groups.overview"),
+      items: [
+        { icon: LayoutDashboard, label: t("dashboard"), href: "/dashboard" },
+        { icon: BarChart3, label: t("analytics"), href: "/dashboard/analytics" },
+      ],
+    },
+    {
+      label: t("groups.inventory"),
+      items: [
+        { icon: Package, label: t("items"), href: "/dashboard/items" },
+        { icon: MapPin, label: t("locations"), href: "/dashboard/locations" },
+        { icon: Box, label: t("containers"), href: "/dashboard/containers" },
+        { icon: FolderTree, label: t("categories"), href: "/dashboard/categories" },
+        { icon: PackageX, label: t("outOfStock"), href: "/dashboard/out-of-stock" },
+        { icon: Trash2, label: t("declutter"), href: "/dashboard/declutter" },
+        { icon: HandCoins, label: t("loans"), href: "/dashboard/loans" },
+        { icon: Users, label: t("borrowers"), href: "/dashboard/borrowers" },
+      ],
+    },
+    {
+      label: t("groups.system"),
+      items: [
+        { icon: FileUp, label: t("imports"), href: "/dashboard/imports" },
+        ...(canViewApprovals
+          ? [{ icon: ShieldCheck, label: t("approvals"), href: "/dashboard/approvals" }]
+          : []),
+        { icon: Clock, label: t("myChanges"), href: "/dashboard/my-changes" },
+        { icon: History, label: t("syncHistory"), href: "/dashboard/sync-history" },
+      ],
+    },
   ];
-
-  // Add approvals link if user can view them
-  if (canViewApprovals) {
-    navItems.push({
-      icon: ShieldCheck,
-      label: t("approvals"),
-      href: "/dashboard/approvals",
-    });
-  }
-
-  // Add My Changes for all users
-  navItems.push({
-    icon: Clock,
-    label: t("myChanges"),
-    href: "/dashboard/my-changes",
-  });
-
-  // Add Sync History for all users
-  navItems.push({
-    icon: History,
-    label: t("syncHistory"),
-    href: "/dashboard/sync-history",
-  });
 
   const bottomItems: { icon: typeof LayoutDashboard; label: string; href: string }[] = [];
 
@@ -258,9 +253,18 @@ export function Sidebar({ collapsed, onToggle, onNavClick }: SidebarProps) {
         </div>
 
         {/* Navigation */}
-        <nav className="relative z-10 flex-1 space-y-1 overflow-y-auto p-3">
-          {navItems.map((item) => (
-            <NavLink key={item.href} item={item} />
+        <nav className="relative z-10 flex-1 overflow-y-auto p-3">
+          {navGroups.map((group, groupIdx) => (
+            <div key={group.label} className={cn("space-y-1", groupIdx > 0 && "mt-4")}>
+              {!collapsed && (
+                <h3 className="px-3 pb-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                  {group.label}
+                </h3>
+              )}
+              {group.items.map((item) => (
+                <NavLink key={item.href} item={item} />
+              ))}
+            </div>
           ))}
         </nav>
 
