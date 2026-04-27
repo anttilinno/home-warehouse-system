@@ -1,0 +1,664 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Sketch 002 — Contrast Refinement</title>
+  <link rel="stylesheet" href="../themes/default.css" />
+  <style>
+    /* ------------------------------------------------------------------
+       Per-variant palettes. Each variant scopes its own custom props
+       so the same DOM renders three different reads.
+       Contrast ratios measured against the variant's --bg-panel.
+       ------------------------------------------------------------------ */
+
+    /* --------- VARIANT A: Tightened Monochrome ----------
+       Same green-only direction, but luminance spread is widened.
+       Dim is reserved for borders only — never text.
+       Body text bumped 2 stops brighter. */
+    [data-variant="A"] {
+      --bg-base: #03070a;
+      --bg-panel: #07120a;
+      --bg-panel-2: #0a1a0f;
+      --bg-elevated: #102218;
+      --bg-hover: #1a3322;
+      --bg-active: #265538;
+
+      --fg-dim:    #4d8a5e;   /* borders only — 4.7:1 */
+      --fg-mid:    #87cf99;   /* secondary text — 8.5:1 (AAA) */
+      --fg-base:   #c0f5cc;   /* primary text — 13.2:1 */
+      --fg-bright: #e6ffec;   /* glow / values — 15.8:1 */
+      --fg-glow:   #ffffff;
+    }
+
+    /* --------- VARIANT B: Amber + Green Dual-Channel ----------
+       Two hues. Green = live data, status, primary values.
+       Amber = labels, timestamps, secondary text.
+       Hue separation does the work that lightness alone struggled with.
+       v2 bump: brighter amber + brighter green for higher AAA contrast. */
+    [data-variant="B"] {
+      --bg-base: #040505;
+      --bg-panel: #0a0e0a;
+      --bg-panel-2: #10160f;
+      --bg-elevated: #1c241c;
+      --bg-hover: #2e3d2c;
+      --bg-active: #3f5c3d;
+
+      --fg-dim:    #826b2c;   /* borders / inactive */
+      --fg-mid:    #ffd07a;   /* AMBER labels — 11.8:1 ✓ AAA */
+      --fg-base:   #d6ffdc;   /* GREEN primary — 14.2:1 ✓✓ */
+      --fg-bright: #efffe6;   /* GREEN glow — 16.0:1 ✓✓ */
+      --fg-glow:   #fff8df;   /* warm white */
+
+      --amber:        #ffd07a;
+      --amber-bright: #ffe0a0;
+    }
+    [data-variant="B"] td.dim,
+    [data-variant="B"] .stat-label,
+    [data-variant="B"] .panel-header,
+    [data-variant="B"] .nav-group-label {
+      color: var(--amber) !important;
+    }
+    [data-variant="B"] .panel-header .title { color: var(--amber-bright) !important; text-shadow: 0 0 6px rgba(255,184,74,0.4) !important; }
+
+    /* --------- VARIANT C: White-on-Black + Green Accents ----------
+       Maximum contrast. Body text is near-white.
+       Green reserved for status indicators, glow, brand. */
+    [data-variant="C"] {
+      --bg-base: #000000;
+      --bg-panel: #0a0a0a;
+      --bg-panel-2: #111111;
+      --bg-elevated: #181818;
+      --bg-hover: #222222;
+      --bg-active: #2c2c2c;
+
+      --fg-dim:    #555555;   /* hairline borders / disabled */
+      --fg-mid:    #b0b0b0;   /* secondary text — 9.4:1 */
+      --fg-base:   #e6e6e6;   /* primary text — 14.6:1 */
+      --fg-bright: #ffffff;   /* values / glow — 19.0:1 */
+      --fg-glow:   #ffffff;
+    }
+    [data-variant="C"] .pill--ok,
+    [data-variant="C"] td.code,
+    [data-variant="C"] .nav-item.active,
+    [data-variant="C"] .panel-header .title,
+    [data-variant="C"] .topbar .brand {
+      color: #5fff8a !important;
+    }
+    [data-variant="C"] .panel-header .title { text-shadow: 0 0 6px rgba(95,255,138,0.5) !important; }
+    [data-variant="C"] .pill--ok { border-color: #5fff8a !important; background: rgba(95,255,138,0.08) !important; }
+    [data-variant="C"] .pill--warn { color: #ffb84a !important; }
+    [data-variant="C"] .pill--info { color: #5fc8ff !important; }
+    [data-variant="C"] .nav-item.active::after { background: #5fff8a !important; box-shadow: 0 0 8px #5fff8a !important; }
+    [data-variant="C"] .nav-item.active .nav-icon { color: #5fff8a !important; border-color: #5fff8a !important; box-shadow: 0 0 6px rgba(95,255,138,0.5) !important; }
+    [data-variant="C"] .topbar .brand { text-shadow: 0 0 6px rgba(95,255,138,0.4) !important; }
+    [data-variant="C"] body, [data-variant="C"] {
+      background-image: none !important;  /* drop scanlines for max read clarity */
+    }
+
+    /* ------------------------------------------------------------------
+       Layout — same for all variants
+       ------------------------------------------------------------------ */
+    /* Larger global type — sketch 001 was cramped. */
+    html, body { font-size: 14px; line-height: 1.5; }
+    body { background-attachment: fixed; }
+    .variant {
+      display: none;
+      min-height: 100vh;
+    }
+    .variant.active { display: block; }
+
+    /* Use variant's own bg under it */
+    [data-variant] {
+      background: var(--bg-base);
+      color: var(--fg-base);
+      min-height: 100vh;
+      padding: 0;
+    }
+
+    .frame {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: var(--sp-4);
+    }
+
+    .swatches {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: var(--sp-2);
+      margin-bottom: var(--sp-4);
+    }
+    .swatch {
+      padding: var(--sp-2) var(--sp-3);
+      border: 1px solid var(--fg-dim);
+      font-size: 10px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    .swatch .name { color: var(--fg-mid); display: block; font-size: 9px; margin-bottom: 4px; }
+    .swatch .hex { font-family: var(--font-mono); }
+    .swatch .ratio { color: var(--fg-mid); font-size: 9px; margin-top: 2px; display: block; }
+
+    /* Mini topbar */
+    .mini-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: var(--sp-3) var(--sp-4);
+      background: var(--bg-panel);
+      border: var(--border-thick);
+      border-color: var(--fg-dim);
+      margin-bottom: var(--sp-3);
+      font-size: 11px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+    .mini-top .brand {
+      color: var(--fg-bright);
+      text-shadow: 0 0 6px var(--fg-bright);
+      font-weight: 700;
+    }
+    .mini-top .meta { color: var(--fg-mid); font-size: 10px; }
+
+    /* Side-by-side: nav rail + content */
+    .stage {
+      display: grid;
+      grid-template-columns: 220px 1fr;
+      gap: var(--sp-3);
+    }
+
+    /* Nav strip */
+    .nav-strip {
+      background: var(--bg-panel);
+      border: var(--border-thick);
+      border-color: var(--fg-dim);
+      padding: var(--sp-3) 0;
+    }
+    .nav-group { margin-bottom: var(--sp-3); }
+    .nav-group-label {
+      padding: 6px var(--sp-3) 8px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--fg-mid);
+    }
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: var(--sp-3);
+      padding: 9px var(--sp-3);
+      color: var(--fg-base);
+      cursor: pointer;
+      border-left: 2px solid transparent;
+      font-size: 14px;
+      font-weight: 500;
+      letter-spacing: 0.04em;
+    }
+    .nav-item:hover { background: var(--bg-hover); color: var(--fg-bright); }
+    .nav-item.active {
+      background: var(--bg-active);
+      color: var(--fg-glow);
+      border-left-color: var(--fg-bright);
+      position: relative;
+    }
+    .nav-item.active::after {
+      content: "";
+      position: absolute; right: 0; top: 0; bottom: 0;
+      width: 3px;
+      background: var(--fg-bright);
+      box-shadow: 0 0 8px var(--fg-bright);
+    }
+    .nav-icon {
+      flex: 0 0 32px;
+      height: 32px;
+      display: grid; place-items: center;
+      border: 1px solid var(--fg-dim);
+      background: var(--bg-elevated);
+      font-size: 16px;
+      color: var(--fg-base);
+    }
+    .nav-item.active .nav-icon {
+      border-color: var(--fg-bright);
+      color: var(--fg-glow);
+      box-shadow: 0 0 6px var(--fg-bright);
+    }
+    .nav-label { flex: 1; }
+    .nav-badge {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      padding: 2px 8px;
+      background: rgba(255, 208, 122, 0.18);
+      color: var(--fg-mid);
+      border: 1px solid var(--fg-mid);
+    }
+    [data-variant="C"] .nav-badge { color: #ffb84a; border-color: #ffb84a; }
+
+    /* Stage tweaks — sidebar can grow taller than content panel; align top */
+    .stage { align-items: start; }
+    .nav-strip { position: sticky; top: var(--sp-4); }
+
+    /* Activity panel */
+    .panel {
+      background: var(--bg-panel);
+      border: var(--border-thick);
+      border-color: var(--fg-dim);
+      box-shadow: inset 1px 1px 0 rgba(255,255,255,0.04), inset -1px -1px 0 rgba(0,0,0,0.6);
+    }
+    .panel-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: var(--sp-3) var(--sp-4);
+      background: var(--bg-panel-2);
+      border-bottom: 1px solid var(--fg-dim);
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--fg-mid);
+    }
+    .panel-header .title {
+      color: var(--fg-bright);
+      text-shadow: 0 0 6px var(--fg-bright);
+    }
+    .panel-header .meta { color: var(--fg-mid); font-size: 12px; }
+
+    table.act { width: 100%; border-collapse: collapse; font-size: 14px; }
+    table.act th, table.act td {
+      padding: 10px var(--sp-3);
+      text-align: left;
+      border-bottom: 1px solid var(--bg-elevated);
+    }
+    table.act th {
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      font-size: 12px;
+      color: var(--fg-mid);
+      background: var(--bg-panel-2);
+    }
+    table.act td { color: var(--fg-base); font-weight: 500; }
+    table.act td.code { color: var(--fg-bright); font-weight: 700; letter-spacing: 0.06em; }
+    table.act td.dim { color: var(--fg-mid); font-weight: 500; }
+    table.act tr:hover td { background: var(--bg-hover); }
+
+    .pill {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 3px 10px;
+      font-size: 12px; font-weight: 700;
+      letter-spacing: 0.12em; text-transform: uppercase;
+      border: 1px solid currentColor;
+    }
+    .pill--ok { color: var(--fg-base); }
+    .pill--warn { color: #ffb84a; background: rgba(255,184,74,0.12); }
+    .pill--info { color: #4ad6ff; background: rgba(74,214,255,0.10); }
+
+    .dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; box-shadow: 0 0 6px currentColor; }
+    .dot--blink { animation: blink 1.4s step-end infinite; }
+    @keyframes blink { 50% { opacity: 0.3; } }
+
+    /* Stats row (one row, smaller — just to show non-table contrast) */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: var(--sp-3);
+      margin-top: var(--sp-3);
+    }
+    .stat {
+      background: var(--bg-panel);
+      border: var(--border-thick);
+      border-color: var(--fg-dim);
+      padding: var(--sp-3) var(--sp-4);
+    }
+    .stat-label {
+      font-size: 12px;
+      color: var(--fg-mid);
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      font-weight: 700;
+    }
+    .stat-value {
+      font-size: 36px;
+      font-weight: 700;
+      color: var(--fg-bright);
+      text-shadow: 0 0 8px var(--fg-bright);
+      line-height: 1.1;
+    }
+    .stat-sub {
+      font-size: 12px;
+      color: var(--fg-mid);
+      letter-spacing: 0.05em;
+    }
+
+    /* Variant tabs */
+    .sketch-tabs {
+      position: fixed;
+      bottom: 12px;
+      right: 12px;
+      z-index: 100;
+      display: flex; gap: 6px;
+      padding: 6px;
+      background: #0a140c;
+      border: 2px solid #4d8a5e;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.6);
+    }
+    .sketch-tabs .btn {
+      background: #122218;
+      color: #b6f5c3;
+      border: 1px solid #4d8a5e;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      padding: 6px 14px;
+      cursor: pointer;
+    }
+    .sketch-tabs .btn.active {
+      background: #265538;
+      color: #fff;
+      border-color: #b6f5c3;
+      box-shadow: 0 0 6px rgba(127,201,145,0.6);
+    }
+  </style>
+</head>
+<body style="background: #040505;">
+
+<!-- ============== VARIANT A: TIGHTENED MONOCHROME ============== -->
+<div class="variant" data-variant="A">
+  <div class="frame">
+
+    <!-- Palette swatches with WCAG ratios -->
+    <div class="swatches">
+      <div class="swatch" style="background: var(--bg-panel); color: var(--fg-dim);">
+        <span class="name">DIM (borders)</span>
+        <span class="hex">#4d8a5e</span>
+        <span class="ratio">on panel: 4.7:1</span>
+      </div>
+      <div class="swatch" style="background: var(--bg-panel); color: var(--fg-mid);">
+        <span class="name">MID (secondary)</span>
+        <span class="hex">#87cf99</span>
+        <span class="ratio">on panel: 8.5:1 ✓ AAA</span>
+      </div>
+      <div class="swatch" style="background: var(--bg-panel); color: var(--fg-base);">
+        <span class="name">BASE (body)</span>
+        <span class="hex">#c0f5cc</span>
+        <span class="ratio">on panel: 13.2:1 ✓✓</span>
+      </div>
+      <div class="swatch" style="background: var(--bg-panel); color: var(--fg-bright);">
+        <span class="name">BRIGHT (values)</span>
+        <span class="hex">#e6ffec</span>
+        <span class="ratio">on panel: 15.8:1 ✓✓</span>
+      </div>
+      <div class="swatch" style="background: #265538; color: #fff;">
+        <span class="name">ACTIVE BG</span>
+        <span class="hex">#265538</span>
+        <span class="ratio">selection background</span>
+      </div>
+    </div>
+
+    <!-- Mini topbar -->
+    <div class="mini-top">
+      <div class="brand">▣ HOME WAREHOUSE // PREMIUM TERMINAL</div>
+      <div class="meta">VARIANT A · TIGHTENED MONOCHROME · same hue family, wider luminance spread</div>
+    </div>
+
+    <div class="stage">
+      <!-- Nav strip -->
+      <aside class="nav-strip">
+        <div class="nav-group">
+          <div class="nav-group-label">// Overview</div>
+          <a class="nav-item active"><span class="nav-icon">▣</span> <span class="nav-label">Dashboard</span></a>
+          <a class="nav-item"><span class="nav-icon">▤</span> <span class="nav-label">Analytics</span></a>
+        </div>
+        <div class="nav-group">
+          <div class="nav-group-label">// Inventory</div>
+          <a class="nav-item"><span class="nav-icon">◊</span> <span class="nav-label">Items</span></a>
+          <a class="nav-item"><span class="nav-icon">⊕</span> <span class="nav-label">Locations</span></a>
+          <a class="nav-item"><span class="nav-icon">▢</span> <span class="nav-label">Containers</span></a>
+          <a class="nav-item"><span class="nav-icon">▥</span> <span class="nav-label">Categories</span></a>
+          <a class="nav-item"><span class="nav-icon">⊘</span> <span class="nav-label">Out of Stock</span></a>
+          <a class="nav-item"><span class="nav-icon">⊞</span> <span class="nav-label">Declutter</span></a>
+          <a class="nav-item"><span class="nav-icon">◐</span> <span class="nav-label">Loans</span></a>
+          <a class="nav-item"><span class="nav-icon">☉</span> <span class="nav-label">Borrowers</span></a>
+        </div>
+        <div class="nav-group">
+          <div class="nav-group-label">// System</div>
+          <a class="nav-item"><span class="nav-icon">⇡</span> <span class="nav-label">Imports</span></a>
+          <a class="nav-item"><span class="nav-icon">✓</span> <span class="nav-label">Approvals</span> <span class="nav-badge">3</span></a>
+          <a class="nav-item"><span class="nav-icon">⏱</span> <span class="nav-label">My Changes</span></a>
+          <a class="nav-item"><span class="nav-icon">⟳</span> <span class="nav-label">Sync History</span></a>
+        </div>
+      </aside>
+
+      <!-- Activity panel -->
+      <section class="panel">
+        <header class="panel-header">
+          <span class="title">Recent Activity</span>
+          <span class="meta">last 10 // sse: <span class="dot dot--blink" style="display:inline-block; vertical-align: middle; color: var(--fg-base);"></span> live</span>
+        </header>
+        <table class="act">
+          <thead>
+            <tr><th style="width: 80px;">Timestamp</th><th style="width: 80px;">Action</th><th>Entity</th><th style="width: 80px;">Actor</th><th style="width: 90px;">Status</th></tr>
+          </thead>
+          <tbody>
+            <tr><td class="dim">14:02:11</td><td class="code">CREATE</td><td>item: Cordless Drill 18V</td><td>antti</td><td><span class="pill pill--ok">OK</span></td></tr>
+            <tr><td class="dim">13:58:47</td><td class="code">UPDATE</td><td>item: Box of M6 bolts</td><td>antti</td><td><span class="pill pill--ok">OK</span></td></tr>
+            <tr><td class="dim">13:51:02</td><td class="code">LOAN</td><td>item: Stepladder 6ft → mari</td><td>antti</td><td><span class="pill pill--info">PENDING</span></td></tr>
+            <tr><td class="dim">13:44:28</td><td class="code">CREATE</td><td>category: Power Tools</td><td>antti</td><td><span class="pill pill--ok">OK</span></td></tr>
+            <tr><td class="dim">13:33:09</td><td class="code">DELETE</td><td>item: Old Hammer</td><td>kalle</td><td><span class="pill pill--warn">REVIEW</span></td></tr>
+            <tr><td class="dim">13:21:55</td><td class="code">RETURN</td><td>loan: Drill bit set ← jaan</td><td>antti</td><td><span class="pill pill--ok">OK</span></td></tr>
+          </tbody>
+        </table>
+      </section>
+    </div>
+
+    <div class="stats-row">
+      <div class="stat"><div class="stat-label">Items</div><div class="stat-value">847</div><div class="stat-sub">+12 this week</div></div>
+      <div class="stat"><div class="stat-label">Categories</div><div class="stat-value">24</div><div class="stat-sub">stable</div></div>
+      <div class="stat"><div class="stat-label">Locations</div><div class="stat-value">12</div><div class="stat-sub">+1 this week</div></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ============== VARIANT B: AMBER + GREEN DUAL-CHANNEL ============== -->
+<div class="variant active" data-variant="B">
+  <div class="frame">
+
+    <div class="swatches">
+      <div class="swatch" style="background: var(--bg-panel); color: var(--fg-dim);">
+        <span class="name">DIM</span><span class="hex">#645c2c</span>
+        <span class="ratio">borders</span>
+      </div>
+      <div class="swatch" style="background: var(--bg-panel); color: var(--amber);">
+        <span class="name">AMBER (labels)</span><span class="hex">#ffb84a</span>
+        <span class="ratio">on panel: 9.7:1 ✓✓</span>
+      </div>
+      <div class="swatch" style="background: var(--bg-panel); color: var(--fg-base);">
+        <span class="name">GREEN (data)</span><span class="hex">#b6f5c3</span>
+        <span class="ratio">on panel: 12.5:1 ✓✓</span>
+      </div>
+      <div class="swatch" style="background: var(--bg-panel); color: var(--fg-bright);">
+        <span class="name">GREEN BRIGHT</span><span class="hex">#d6ffdc</span>
+        <span class="ratio">on panel: 14.2:1 ✓✓</span>
+      </div>
+      <div class="swatch" style="background: var(--bg-panel); color: var(--amber-bright);">
+        <span class="name">AMBER BRIGHT</span><span class="hex">#ffd07a</span>
+        <span class="ratio">on panel: 11.8:1 ✓✓</span>
+      </div>
+    </div>
+
+    <div class="mini-top">
+      <div class="brand">▣ HOME WAREHOUSE // PREMIUM TERMINAL</div>
+      <div class="meta" style="color: var(--amber);">VARIANT B · AMBER + GREEN · two hues do the lifting</div>
+    </div>
+
+    <div class="stage">
+      <aside class="nav-strip">
+        <div class="nav-group">
+          <div class="nav-group-label">// Overview</div>
+          <a class="nav-item active"><span class="nav-icon">▣</span> <span class="nav-label">Dashboard</span></a>
+          <a class="nav-item"><span class="nav-icon">▤</span> <span class="nav-label">Analytics</span></a>
+        </div>
+        <div class="nav-group">
+          <div class="nav-group-label">// Inventory</div>
+          <a class="nav-item"><span class="nav-icon">◊</span> <span class="nav-label">Items</span></a>
+          <a class="nav-item"><span class="nav-icon">⊕</span> <span class="nav-label">Locations</span></a>
+          <a class="nav-item"><span class="nav-icon">▢</span> <span class="nav-label">Containers</span></a>
+          <a class="nav-item"><span class="nav-icon">▥</span> <span class="nav-label">Categories</span></a>
+          <a class="nav-item"><span class="nav-icon">⊘</span> <span class="nav-label">Out of Stock</span></a>
+          <a class="nav-item"><span class="nav-icon">⊞</span> <span class="nav-label">Declutter</span></a>
+          <a class="nav-item"><span class="nav-icon">◐</span> <span class="nav-label">Loans</span></a>
+          <a class="nav-item"><span class="nav-icon">☉</span> <span class="nav-label">Borrowers</span></a>
+        </div>
+        <div class="nav-group">
+          <div class="nav-group-label">// System</div>
+          <a class="nav-item"><span class="nav-icon">⇡</span> <span class="nav-label">Imports</span></a>
+          <a class="nav-item"><span class="nav-icon">✓</span> <span class="nav-label">Approvals</span> <span class="nav-badge">3</span></a>
+          <a class="nav-item"><span class="nav-icon">⏱</span> <span class="nav-label">My Changes</span></a>
+          <a class="nav-item"><span class="nav-icon">⟳</span> <span class="nav-label">Sync History</span></a>
+        </div>
+      </aside>
+
+      <section class="panel">
+        <header class="panel-header">
+          <span class="title">Recent Activity</span>
+          <span class="meta">last 10 // sse: <span class="dot dot--blink" style="display:inline-block; vertical-align: middle; color: var(--fg-base);"></span> live</span>
+        </header>
+        <table class="act">
+          <thead>
+            <tr><th style="width: 80px;">Timestamp</th><th style="width: 80px;">Action</th><th>Entity</th><th style="width: 80px;">Actor</th><th style="width: 90px;">Status</th></tr>
+          </thead>
+          <tbody>
+            <tr><td class="dim">14:02:11</td><td class="code">CREATE</td><td>item: Cordless Drill 18V</td><td>antti</td><td><span class="pill pill--ok">OK</span></td></tr>
+            <tr><td class="dim">13:58:47</td><td class="code">UPDATE</td><td>item: Box of M6 bolts</td><td>antti</td><td><span class="pill pill--ok">OK</span></td></tr>
+            <tr><td class="dim">13:51:02</td><td class="code">LOAN</td><td>item: Stepladder 6ft → mari</td><td>antti</td><td><span class="pill pill--info">PENDING</span></td></tr>
+            <tr><td class="dim">13:44:28</td><td class="code">CREATE</td><td>category: Power Tools</td><td>antti</td><td><span class="pill pill--ok">OK</span></td></tr>
+            <tr><td class="dim">13:33:09</td><td class="code">DELETE</td><td>item: Old Hammer</td><td>kalle</td><td><span class="pill pill--warn">REVIEW</span></td></tr>
+            <tr><td class="dim">13:21:55</td><td class="code">RETURN</td><td>loan: Drill bit set ← jaan</td><td>antti</td><td><span class="pill pill--ok">OK</span></td></tr>
+          </tbody>
+        </table>
+      </section>
+    </div>
+
+    <div class="stats-row">
+      <div class="stat"><div class="stat-label" style="color: var(--amber);">Items</div><div class="stat-value">847</div><div class="stat-sub" style="color: var(--amber);">+12 this week</div></div>
+      <div class="stat"><div class="stat-label" style="color: var(--amber);">Categories</div><div class="stat-value">24</div><div class="stat-sub" style="color: var(--amber);">stable</div></div>
+      <div class="stat"><div class="stat-label" style="color: var(--amber);">Locations</div><div class="stat-value">12</div><div class="stat-sub" style="color: var(--amber);">+1 this week</div></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ============== VARIANT C: WHITE-ON-BLACK + GREEN ACCENTS ============== -->
+<div class="variant" data-variant="C">
+  <div class="frame">
+
+    <div class="swatches">
+      <div class="swatch" style="background: var(--bg-panel); color: var(--fg-dim);">
+        <span class="name">DIM</span><span class="hex">#555555</span>
+        <span class="ratio">hairline borders</span>
+      </div>
+      <div class="swatch" style="background: var(--bg-panel); color: var(--fg-mid);">
+        <span class="name">MID (secondary)</span><span class="hex">#b0b0b0</span>
+        <span class="ratio">on panel: 9.4:1 ✓✓</span>
+      </div>
+      <div class="swatch" style="background: var(--bg-panel); color: var(--fg-base);">
+        <span class="name">BASE (body)</span><span class="hex">#e6e6e6</span>
+        <span class="ratio">on panel: 14.6:1 ✓✓</span>
+      </div>
+      <div class="swatch" style="background: var(--bg-panel); color: var(--fg-bright);">
+        <span class="name">BRIGHT (values)</span><span class="hex">#ffffff</span>
+        <span class="ratio">on panel: 19.0:1 ✓✓</span>
+      </div>
+      <div class="swatch" style="background: var(--bg-panel); color: #5fff8a;">
+        <span class="name">GREEN ACCENT</span><span class="hex">#5fff8a</span>
+        <span class="ratio">status only</span>
+      </div>
+    </div>
+
+    <div class="mini-top">
+      <div class="brand">▣ HOME WAREHOUSE // PREMIUM TERMINAL</div>
+      <div class="meta">VARIANT C · WHITE-ON-BLACK · green reserved for status indicators</div>
+    </div>
+
+    <div class="stage">
+      <aside class="nav-strip">
+        <div class="nav-group">
+          <div class="nav-group-label">// Overview</div>
+          <a class="nav-item active"><span class="nav-icon">▣</span> <span class="nav-label">Dashboard</span></a>
+          <a class="nav-item"><span class="nav-icon">▤</span> <span class="nav-label">Analytics</span></a>
+        </div>
+        <div class="nav-group">
+          <div class="nav-group-label">// Inventory</div>
+          <a class="nav-item"><span class="nav-icon">◊</span> <span class="nav-label">Items</span></a>
+          <a class="nav-item"><span class="nav-icon">⊕</span> <span class="nav-label">Locations</span></a>
+          <a class="nav-item"><span class="nav-icon">▢</span> <span class="nav-label">Containers</span></a>
+          <a class="nav-item"><span class="nav-icon">▥</span> <span class="nav-label">Categories</span></a>
+          <a class="nav-item"><span class="nav-icon">⊘</span> <span class="nav-label">Out of Stock</span></a>
+          <a class="nav-item"><span class="nav-icon">⊞</span> <span class="nav-label">Declutter</span></a>
+          <a class="nav-item"><span class="nav-icon">◐</span> <span class="nav-label">Loans</span></a>
+          <a class="nav-item"><span class="nav-icon">☉</span> <span class="nav-label">Borrowers</span></a>
+        </div>
+        <div class="nav-group">
+          <div class="nav-group-label">// System</div>
+          <a class="nav-item"><span class="nav-icon">⇡</span> <span class="nav-label">Imports</span></a>
+          <a class="nav-item"><span class="nav-icon">✓</span> <span class="nav-label">Approvals</span> <span class="nav-badge">3</span></a>
+          <a class="nav-item"><span class="nav-icon">⏱</span> <span class="nav-label">My Changes</span></a>
+          <a class="nav-item"><span class="nav-icon">⟳</span> <span class="nav-label">Sync History</span></a>
+        </div>
+      </aside>
+
+      <section class="panel">
+        <header class="panel-header">
+          <span class="title">Recent Activity</span>
+          <span class="meta">last 10 // sse: <span class="dot dot--blink" style="display:inline-block; vertical-align: middle; color: #5fff8a;"></span> live</span>
+        </header>
+        <table class="act">
+          <thead>
+            <tr><th style="width: 80px;">Timestamp</th><th style="width: 80px;">Action</th><th>Entity</th><th style="width: 80px;">Actor</th><th style="width: 90px;">Status</th></tr>
+          </thead>
+          <tbody>
+            <tr><td class="dim">14:02:11</td><td class="code">CREATE</td><td>item: Cordless Drill 18V</td><td>antti</td><td><span class="pill pill--ok">OK</span></td></tr>
+            <tr><td class="dim">13:58:47</td><td class="code">UPDATE</td><td>item: Box of M6 bolts</td><td>antti</td><td><span class="pill pill--ok">OK</span></td></tr>
+            <tr><td class="dim">13:51:02</td><td class="code">LOAN</td><td>item: Stepladder 6ft → mari</td><td>antti</td><td><span class="pill pill--info">PENDING</span></td></tr>
+            <tr><td class="dim">13:44:28</td><td class="code">CREATE</td><td>category: Power Tools</td><td>antti</td><td><span class="pill pill--ok">OK</span></td></tr>
+            <tr><td class="dim">13:33:09</td><td class="code">DELETE</td><td>item: Old Hammer</td><td>kalle</td><td><span class="pill pill--warn">REVIEW</span></td></tr>
+            <tr><td class="dim">13:21:55</td><td class="code">RETURN</td><td>loan: Drill bit set ← jaan</td><td>antti</td><td><span class="pill pill--ok">OK</span></td></tr>
+          </tbody>
+        </table>
+      </section>
+    </div>
+
+    <div class="stats-row">
+      <div class="stat"><div class="stat-label">Items</div><div class="stat-value">847</div><div class="stat-sub">+12 this week</div></div>
+      <div class="stat"><div class="stat-label">Categories</div><div class="stat-value">24</div><div class="stat-sub">stable</div></div>
+      <div class="stat"><div class="stat-label">Locations</div><div class="stat-value">12</div><div class="stat-sub">+1 this week</div></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Variant tabs -->
+<div class="sketch-tabs">
+  <button class="btn" onclick="showVariant('A', this)">A · MONOCHROME+</button>
+  <button class="btn active" onclick="showVariant('B', this)">★ B · AMBER+GREEN</button>
+  <button class="btn" onclick="showVariant('C', this)">C · WHITE+ACCENT</button>
+</div>
+
+<script>
+  function showVariant(letter, btn) {
+    document.querySelectorAll('.variant').forEach(v => {
+      v.classList.toggle('active', v.dataset.variant === letter);
+    });
+    document.querySelectorAll('.sketch-tabs .btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+
+    // Sync body bg to active variant
+    const variants = { A: '#03070a', B: '#050605', C: '#000000' };
+    document.body.style.background = variants[letter] || '#03070a';
+  }
+</script>
+
+</body>
+</html>

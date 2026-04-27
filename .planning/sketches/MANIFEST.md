@@ -19,6 +19,15 @@
 | #   | Name                          | Design Question                                                            | Winner | Tags                                          |
 | --- | ----------------------------- | -------------------------------------------------------------------------- | ------ | --------------------------------------------- |
 | 001 | premium-terminal-dashboard    | How does premium-terminal CRT chrome land on real frontend2 data with the grouped collapsible sidebar? | **A — Mission Control** (dense HUD + quick-actions command bar) | layout, dashboard, theme, sidebar, frontend2  |
+| 002 | contrast-refinement           | How do we keep the aesthetic while making text actually readable? Sketch 001's palette failed WCAG (timestamps ~2.1:1). | **B — Amber + Green Dual-Channel** (with v2 contrast bump + 14px base font) | theme, contrast, palette, accessibility, frontend2 |
+| 003 | icon-style                    | Keep monospace glyphs (32px or 40px frame) or move to lucide-style SVG strokes? | **C — Lucide Strokes** (uniform stroke icons, matches legacy `frontend/`) | icons, sidebar, polish, frontend2 |
+
+## Locked Decisions (rolled up across 001-003)
+
+- **Layout:** Sketch 001 Variant A (Mission Control) — top bar, collapsible grouped sidebar, quick-actions command bar, full HUD (capacity gauge, sparkline, activity table, pending approvals, system alerts).
+- **Palette:** Sketch 002 Variant B v2 — amber + green dual-channel, AAA contrast everywhere, near-black bg with subtle scanline overlay. Amber `#ffd07a` for labels/headers/timestamps, green `#d6ffdc` for data/status, white-amber `#fff8df` for max-glow.
+- **Typography:** 14px body, monospace stack throughout. Larger nav (14px), larger table cells (14px), 36px stat values.
+- **Icons:** Sketch 003 Variant C — `lucide-react` SVG strokes, 1.75px stroke weight, ~22px glyph in 28px cell. Drop the monospace glyph approach. `lucide-react` is already a dep in legacy `frontend/`; add to `frontend2/` for parity.
 
 ## Key Decisions (Sketch 001)
 

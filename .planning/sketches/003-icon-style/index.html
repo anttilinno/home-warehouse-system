@@ -1,0 +1,425 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Sketch 003 — Icon Style Side-by-Side</title>
+  <style>
+    /* Locked palette: variant B from sketch 002 (winning direction). */
+    :root {
+      --bg-base: #040505;
+      --bg-panel: #0a0e0a;
+      --bg-panel-2: #10160f;
+      --bg-elevated: #1c241c;
+      --bg-hover: #2e3d2c;
+      --bg-active: #3f5c3d;
+
+      --fg-dim:    #826b2c;
+      --fg-mid:    #ffd07a;
+      --fg-base:   #d6ffdc;
+      --fg-bright: #efffe6;
+      --fg-glow:   #fff8df;
+
+      --amber:        #ffd07a;
+      --amber-bright: #ffe0a0;
+
+      --font-mono: ui-monospace, "JetBrains Mono", "Fira Code", "SF Mono",
+        Consolas, "Courier New", monospace;
+
+      --sp-1: 4px; --sp-2: 8px; --sp-3: 12px; --sp-4: 16px; --sp-5: 24px;
+    }
+
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      background: var(--bg-base);
+      color: var(--fg-base);
+      font-family: var(--font-mono);
+      font-size: 14px;
+      line-height: 1.5;
+      letter-spacing: 0.01em;
+    }
+    body {
+      background-image:
+        repeating-linear-gradient(0deg, rgba(127,201,145,0.025) 0, rgba(127,201,145,0.025) 1px, transparent 1px, transparent 3px),
+        radial-gradient(ellipse at center, #0a160c 0%, var(--bg-base) 80%);
+      background-attachment: fixed;
+      min-height: 100vh;
+      padding: var(--sp-4);
+    }
+
+    h1 {
+      font-size: 16px; font-weight: 700; letter-spacing: 0.18em;
+      text-transform: uppercase; color: var(--fg-bright);
+      text-shadow: 0 0 8px rgba(239,255,230,0.45);
+      margin: 0 0 var(--sp-2);
+    }
+    .subhead {
+      color: var(--fg-mid); font-size: 12px;
+      letter-spacing: 0.12em; text-transform: uppercase;
+      margin: 0 0 var(--sp-5);
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: var(--sp-5);
+      max-width: 1280px;
+    }
+
+    .col {
+      display: flex; flex-direction: column;
+    }
+
+    .col-head {
+      padding: var(--sp-3) var(--sp-4);
+      background: var(--bg-panel-2);
+      border: 2px solid var(--fg-dim);
+      border-bottom: none;
+    }
+    .col-head .label {
+      font-size: 13px; font-weight: 700;
+      letter-spacing: 0.16em; text-transform: uppercase;
+      color: var(--fg-bright);
+      text-shadow: 0 0 6px var(--fg-bright);
+    }
+    .col-head .desc {
+      font-size: 11px;
+      color: var(--fg-mid);
+      margin-top: 4px;
+      letter-spacing: 0.04em;
+      text-transform: none;
+      font-weight: 500;
+    }
+
+    /* Nav strip */
+    .nav-strip {
+      background: var(--bg-panel);
+      border: 2px solid var(--fg-dim);
+      padding: var(--sp-3) 0;
+      flex: 1;
+    }
+    .nav-group { margin-bottom: var(--sp-4); }
+    .nav-group-label {
+      padding: 6px var(--sp-3) 8px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--fg-mid);
+    }
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: var(--sp-3);
+      padding: 9px var(--sp-3);
+      color: var(--fg-base);
+      cursor: pointer;
+      border-left: 2px solid transparent;
+      font-size: 14px;
+      font-weight: 500;
+      letter-spacing: 0.04em;
+      position: relative;
+    }
+    .nav-item:hover { background: var(--bg-hover); color: var(--fg-bright); }
+    .nav-item.active {
+      background: var(--bg-active);
+      color: var(--fg-glow);
+      border-left-color: var(--fg-bright);
+    }
+    .nav-item.active::after {
+      content: "";
+      position: absolute; right: 0; top: 0; bottom: 0;
+      width: 3px;
+      background: var(--fg-bright);
+      box-shadow: 0 0 8px var(--fg-bright);
+    }
+
+    .nav-label { flex: 1; }
+
+    /* ---- Style A: Current (glyph 16px in 32px box) — baseline ---- */
+    .style-A .nav-icon {
+      flex: 0 0 32px; height: 32px;
+      display: grid; place-items: center;
+      border: 1px solid var(--fg-dim);
+      background: var(--bg-elevated);
+      font-size: 16px;
+      color: var(--fg-base);
+    }
+    .style-A .nav-item.active .nav-icon {
+      border-color: var(--fg-bright);
+      color: var(--fg-glow);
+      box-shadow: 0 0 6px var(--fg-bright);
+    }
+
+    /* ---- Style B: Padded control-surface (glyph 16px in 40px box) ---- */
+    .style-B .nav-item { padding: 8px var(--sp-3); gap: var(--sp-4); }
+    .style-B .nav-icon {
+      flex: 0 0 40px; height: 40px;
+      display: grid; place-items: center;
+      border: 1px solid var(--fg-dim);
+      background: var(--bg-elevated);
+      font-size: 18px;
+      color: var(--fg-base);
+      box-shadow: inset 1px 1px 0 rgba(255,255,255,0.05), inset -1px -1px 0 rgba(0,0,0,0.5);
+    }
+    .style-B .nav-item.active .nav-icon {
+      border-color: var(--fg-bright);
+      color: var(--fg-glow);
+      box-shadow:
+        inset 1px 1px 0 rgba(255,255,255,0.08),
+        inset -1px -1px 0 rgba(0,0,0,0.5),
+        0 0 8px var(--fg-bright);
+    }
+
+    /* ---- Style C: Lucide-style SVG strokes (no box, just glyph) ---- */
+    .style-C .nav-item { padding: 9px var(--sp-3); gap: var(--sp-3); }
+    .style-C .nav-icon {
+      flex: 0 0 28px; height: 28px;
+      display: grid; place-items: center;
+      color: var(--fg-base);
+    }
+    .style-C .nav-icon svg {
+      width: 22px; height: 22px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 1.75;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+    .style-C .nav-item.active .nav-icon {
+      color: var(--fg-glow);
+      filter: drop-shadow(0 0 6px var(--fg-bright));
+    }
+
+    .nav-badge {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      padding: 2px 8px;
+      background: rgba(255, 208, 122, 0.18);
+      color: var(--fg-mid);
+      border: 1px solid var(--fg-mid);
+    }
+
+    .footer {
+      max-width: 1280px;
+      margin-top: var(--sp-5);
+      padding: var(--sp-4);
+      border: 1px dashed var(--fg-dim);
+      background: var(--bg-panel-2);
+      color: var(--fg-mid);
+      font-size: 12px;
+      line-height: 1.6;
+    }
+    .footer b { color: var(--fg-bright); }
+    .footer .legend {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--sp-4);
+      margin-top: var(--sp-3);
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Sketch 003 // Icon Style Side-by-Side</h1>
+  <div class="subhead">Locked palette: B (Amber + Green). Only the icon column varies.</div>
+
+  <div class="grid">
+
+    <!-- ============== Style A: Baseline (current) ============== -->
+    <div class="col">
+      <div class="col-head">
+        <div class="label">A · Glyph 32px</div>
+        <div class="desc">Current sketch state — monospace glyph 16px in a 32px panel-frame.</div>
+      </div>
+      <aside class="nav-strip style-A">
+        <div class="nav-group">
+          <div class="nav-group-label">// Overview</div>
+          <a class="nav-item active"><span class="nav-icon">▣</span> <span class="nav-label">Dashboard</span></a>
+          <a class="nav-item"><span class="nav-icon">▤</span> <span class="nav-label">Analytics</span></a>
+        </div>
+        <div class="nav-group">
+          <div class="nav-group-label">// Inventory</div>
+          <a class="nav-item"><span class="nav-icon">◊</span> <span class="nav-label">Items</span></a>
+          <a class="nav-item"><span class="nav-icon">⊕</span> <span class="nav-label">Locations</span></a>
+          <a class="nav-item"><span class="nav-icon">▢</span> <span class="nav-label">Containers</span></a>
+          <a class="nav-item"><span class="nav-icon">▥</span> <span class="nav-label">Categories</span></a>
+          <a class="nav-item"><span class="nav-icon">⊘</span> <span class="nav-label">Out of Stock</span></a>
+          <a class="nav-item"><span class="nav-icon">⊞</span> <span class="nav-label">Declutter</span></a>
+          <a class="nav-item"><span class="nav-icon">◐</span> <span class="nav-label">Loans</span></a>
+          <a class="nav-item"><span class="nav-icon">☉</span> <span class="nav-label">Borrowers</span></a>
+        </div>
+        <div class="nav-group">
+          <div class="nav-group-label">// System</div>
+          <a class="nav-item"><span class="nav-icon">⇡</span> <span class="nav-label">Imports</span></a>
+          <a class="nav-item"><span class="nav-icon">✓</span> <span class="nav-label">Approvals</span> <span class="nav-badge">3</span></a>
+          <a class="nav-item"><span class="nav-icon">⏱</span> <span class="nav-label">My Changes</span></a>
+          <a class="nav-item"><span class="nav-icon">⟳</span> <span class="nav-label">Sync History</span></a>
+        </div>
+      </aside>
+    </div>
+
+    <!-- ============== Style B: Padded control-surface ============== -->
+    <div class="col">
+      <div class="col-head">
+        <div class="label">B · Padded 40px</div>
+        <div class="desc">Same glyphs, larger panel-frame (40px) with bevel — reads as physical control surface.</div>
+      </div>
+      <aside class="nav-strip style-B">
+        <div class="nav-group">
+          <div class="nav-group-label">// Overview</div>
+          <a class="nav-item active"><span class="nav-icon">▣</span> <span class="nav-label">Dashboard</span></a>
+          <a class="nav-item"><span class="nav-icon">▤</span> <span class="nav-label">Analytics</span></a>
+        </div>
+        <div class="nav-group">
+          <div class="nav-group-label">// Inventory</div>
+          <a class="nav-item"><span class="nav-icon">◊</span> <span class="nav-label">Items</span></a>
+          <a class="nav-item"><span class="nav-icon">⊕</span> <span class="nav-label">Locations</span></a>
+          <a class="nav-item"><span class="nav-icon">▢</span> <span class="nav-label">Containers</span></a>
+          <a class="nav-item"><span class="nav-icon">▥</span> <span class="nav-label">Categories</span></a>
+          <a class="nav-item"><span class="nav-icon">⊘</span> <span class="nav-label">Out of Stock</span></a>
+          <a class="nav-item"><span class="nav-icon">⊞</span> <span class="nav-label">Declutter</span></a>
+          <a class="nav-item"><span class="nav-icon">◐</span> <span class="nav-label">Loans</span></a>
+          <a class="nav-item"><span class="nav-icon">☉</span> <span class="nav-label">Borrowers</span></a>
+        </div>
+        <div class="nav-group">
+          <div class="nav-group-label">// System</div>
+          <a class="nav-item"><span class="nav-icon">⇡</span> <span class="nav-label">Imports</span></a>
+          <a class="nav-item"><span class="nav-icon">✓</span> <span class="nav-label">Approvals</span> <span class="nav-badge">3</span></a>
+          <a class="nav-item"><span class="nav-icon">⏱</span> <span class="nav-label">My Changes</span></a>
+          <a class="nav-item"><span class="nav-icon">⟳</span> <span class="nav-label">Sync History</span></a>
+        </div>
+      </aside>
+    </div>
+
+    <!-- ============== Style C: Lucide-style SVG strokes ============== -->
+    <div class="col">
+      <div class="col-head">
+        <div class="label">★ C · Lucide Strokes [WINNER]</div>
+        <div class="desc">Real stroke icons (lucide-react aesthetic). Production-ready, uniform at any size.</div>
+      </div>
+      <aside class="nav-strip style-C">
+        <div class="nav-group">
+          <div class="nav-group-label">// Overview</div>
+          <a class="nav-item active">
+            <span class="nav-icon">
+              <!-- layout-dashboard -->
+              <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>
+            </span>
+            <span class="nav-label">Dashboard</span>
+          </a>
+          <a class="nav-item">
+            <span class="nav-icon">
+              <!-- bar-chart-3 -->
+              <svg viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg>
+            </span>
+            <span class="nav-label">Analytics</span>
+          </a>
+        </div>
+        <div class="nav-group">
+          <div class="nav-group-label">// Inventory</div>
+          <a class="nav-item">
+            <span class="nav-icon">
+              <!-- package -->
+              <svg viewBox="0 0 24 24"><path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg>
+            </span>
+            <span class="nav-label">Items</span>
+          </a>
+          <a class="nav-item">
+            <span class="nav-icon">
+              <!-- map-pin -->
+              <svg viewBox="0 0 24 24"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+            </span>
+            <span class="nav-label">Locations</span>
+          </a>
+          <a class="nav-item">
+            <span class="nav-icon">
+              <!-- box -->
+              <svg viewBox="0 0 24 24"><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg>
+            </span>
+            <span class="nav-label">Containers</span>
+          </a>
+          <a class="nav-item">
+            <span class="nav-icon">
+              <!-- folder-tree -->
+              <svg viewBox="0 0 24 24"><path d="M20 10a1 1 0 0 0 1-1V6a1 1 0 0 0-1-1h-2.5a1 1 0 0 1-.8-.4l-.9-1.2A1 1 0 0 0 15 3h-2a1 1 0 0 0-1 1v5a1 1 0 0 0 1 1Z"/><path d="M20 21a1 1 0 0 0 1-1v-3a1 1 0 0 0-1-1h-2.9a1 1 0 0 1-.88-.55l-.42-.85a1 1 0 0 0-.92-.6H13a1 1 0 0 0-1 1v5a1 1 0 0 0 1 1Z"/><path d="M3 5a2 2 0 0 0 2 2h3"/><path d="M3 3v13a2 2 0 0 0 2 2h3"/></svg>
+            </span>
+            <span class="nav-label">Categories</span>
+          </a>
+          <a class="nav-item">
+            <span class="nav-icon">
+              <!-- package-x -->
+              <svg viewBox="0 0 24 24"><path d="M21 10V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0"/><path d="m7.5 4.27 9 5.15"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/><path d="m17 13 5 5"/><path d="m22 13-5 5"/></svg>
+            </span>
+            <span class="nav-label">Out of Stock</span>
+          </a>
+          <a class="nav-item">
+            <span class="nav-icon">
+              <!-- trash-2 -->
+              <svg viewBox="0 0 24 24"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>
+            </span>
+            <span class="nav-label">Declutter</span>
+          </a>
+          <a class="nav-item">
+            <span class="nav-icon">
+              <!-- hand-coins -->
+              <svg viewBox="0 0 24 24"><path d="M11 15h2a2 2 0 1 0 0-4h-3c-.6 0-1.1.2-1.4.6L3 17"/><path d="m7 21 1.6-1.4c.3-.4.8-.6 1.4-.6h4c1.1 0 2.1-.4 2.8-1.2l4.6-4.4a2 2 0 0 0-2.75-2.91l-4.2 3.9"/><path d="m2 16 6 6"/><circle cx="16" cy="9" r="2.9"/><circle cx="6" cy="5" r="3"/></svg>
+            </span>
+            <span class="nav-label">Loans</span>
+          </a>
+          <a class="nav-item">
+            <span class="nav-icon">
+              <!-- users -->
+              <svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            </span>
+            <span class="nav-label">Borrowers</span>
+          </a>
+        </div>
+        <div class="nav-group">
+          <div class="nav-group-label">// System</div>
+          <a class="nav-item">
+            <span class="nav-icon">
+              <!-- file-up -->
+              <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M12 12v6"/><path d="m9 15 3-3 3 3"/></svg>
+            </span>
+            <span class="nav-label">Imports</span>
+          </a>
+          <a class="nav-item">
+            <span class="nav-icon">
+              <!-- shield-check -->
+              <svg viewBox="0 0 24 24"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/></svg>
+            </span>
+            <span class="nav-label">Approvals</span>
+            <span class="nav-badge">3</span>
+          </a>
+          <a class="nav-item">
+            <span class="nav-icon">
+              <!-- clock -->
+              <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            </span>
+            <span class="nav-label">My Changes</span>
+          </a>
+          <a class="nav-item">
+            <span class="nav-icon">
+              <!-- history -->
+              <svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l4 2"/></svg>
+            </span>
+            <span class="nav-label">Sync History</span>
+          </a>
+        </div>
+      </aside>
+    </div>
+
+  </div>
+
+  <div class="footer">
+    <b>What you're comparing.</b> Same palette, same nav structure, same fonts. Only the icon treatment differs.
+    <div class="legend">
+      <div><b style="color: var(--amber-bright);">A — Glyph 32px:</b> faithful to the terminal aesthetic. Some glyphs (`▣` block vs `◐` outline) read as different weights — a known monospace quirk that gets worse the bigger you go.</div>
+      <div><b style="color: var(--amber-bright);">B — Padded 40px:</b> same glyphs, but the larger beveled frame turns each icon into a discrete control. Reads more "switch panel". Glyph-weight inconsistency mostly hides behind the frame.</div>
+      <div><b style="color: var(--amber-bright);">C — Lucide strokes:</b> matches what `frontend2/` would import for production (`lucide-react`). Uniform stroke weight. Loses CRT character but reads the cleanest, especially at smaller sizes / mobile.</div>
+    </div>
+  </div>
+
+</body>
+</html>
