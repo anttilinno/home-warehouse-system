@@ -1,0 +1,175 @@
+/* Premium Terminal — phosphor-green CRT industrial HUD */
+
+:root {
+  /* Palette */
+  --bg-base: #050a06;
+  --bg-panel: #0a140c;
+  --bg-panel-2: #0e1a10;
+  --bg-elevated: #122218;
+  --bg-hover: #1a2a1d;
+  --bg-active: #1f3325;
+
+  --fg-dim: #2a4d33;
+  --fg-mid: #4d8a5e;
+  --fg-base: #7fc991;
+  --fg-bright: #b6f5c3;
+  --fg-glow: #d6ffdc;
+
+  --accent-warn: #ffb84a;
+  --accent-warn-bg: rgba(255, 184, 74, 0.12);
+  --accent-danger: #ff4a4a;
+  --accent-danger-bg: rgba(255, 74, 74, 0.14);
+  --accent-info: #4ad6ff;
+
+  --border-thin: 1px solid var(--fg-dim);
+  --border-thick: 2px solid var(--fg-mid);
+  --border-glow: 1px solid rgba(127, 201, 145, 0.55);
+
+  /* Typography */
+  --font-mono: ui-monospace, "JetBrains Mono", "Fira Code", "SF Mono",
+    Consolas, "Courier New", monospace;
+  --font-display: var(--font-mono);
+
+  /* Spacing */
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 24px;
+  --sp-6: 32px;
+}
+
+/* Base reset */
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  background: var(--bg-base);
+  color: var(--fg-base);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 1.45;
+  letter-spacing: 0.01em;
+}
+
+body {
+  /* Faint scanline overlay for CRT feel */
+  background-image:
+    repeating-linear-gradient(
+      0deg,
+      rgba(127, 201, 145, 0.025) 0,
+      rgba(127, 201, 145, 0.025) 1px,
+      transparent 1px,
+      transparent 3px
+    ),
+    radial-gradient(ellipse at center, #0a160c 0%, var(--bg-base) 80%);
+  background-attachment: fixed;
+  min-height: 100vh;
+}
+
+/* Beveled panel — the workhorse container */
+.panel {
+  background: var(--bg-panel);
+  border: var(--border-thick);
+  position: relative;
+  box-shadow:
+    inset 1px 1px 0 rgba(127, 201, 145, 0.12),
+    inset -1px -1px 0 rgba(0, 0, 0, 0.6),
+    0 0 16px rgba(127, 201, 145, 0.06);
+}
+
+.panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--sp-2) var(--sp-3);
+  background: var(--bg-panel-2);
+  border-bottom: var(--border-thin);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--fg-mid);
+}
+
+.panel-header .title {
+  color: var(--fg-bright);
+  text-shadow: 0 0 6px rgba(182, 245, 195, 0.4);
+}
+
+.panel-header .meta {
+  color: var(--fg-dim);
+  font-size: 10px;
+}
+
+.panel-body {
+  padding: var(--sp-4);
+}
+
+/* Buttons */
+.btn {
+  background: var(--bg-elevated);
+  color: var(--fg-bright);
+  border: var(--border-thin);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 6px 12px;
+  cursor: pointer;
+  transition: background 80ms ease;
+}
+.btn:hover { background: var(--bg-hover); border-color: var(--fg-base); }
+.btn:active { background: var(--bg-active); }
+.btn--ghost { background: transparent; }
+
+/* Status pills */
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 8px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  border: 1px solid currentColor;
+  background: rgba(127, 201, 145, 0.08);
+}
+.pill--ok { color: var(--fg-base); }
+.pill--warn { color: var(--accent-warn); background: var(--accent-warn-bg); }
+.pill--danger { color: var(--accent-danger); background: var(--accent-danger-bg); }
+.pill--info { color: var(--accent-info); }
+
+.dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  box-shadow: 0 0 6px currentColor;
+}
+.dot--blink { animation: blink 1.4s step-end infinite; }
+
+@keyframes blink {
+  50% { opacity: 0.3; }
+}
+
+/* ASCII separator helper */
+.ascii-sep {
+  color: var(--fg-dim);
+  font-size: 11px;
+  letter-spacing: 0;
+  white-space: pre;
+}
+
+/* Glow text */
+.glow {
+  color: var(--fg-glow);
+  text-shadow: 0 0 8px rgba(214, 255, 220, 0.6);
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: var(--bg-panel); }
+::-webkit-scrollbar-thumb { background: var(--fg-dim); }
+::-webkit-scrollbar-thumb:hover { background: var(--fg-mid); }
