@@ -76,3 +76,7 @@ the cross-tenant 404 subtest also guards the
 Without the `-tags=integration` flag the test is invisible to `go test ./...`,
 so the default CI path stays fast. Frontend-side reverts of Plan 65-10 are
 NOT caught here — that layer is covered by the Playwright spec above.
+
+## Skills auto-loaded for this project
+
+- **Sketch findings** (design decisions, CSS tokens, component patterns, anti-patterns from sketches 001-004) → `Skill("sketch-findings-home-warehouse-system")`. Auto-load when implementing the frontend2 dashboard re-skin or any new screen in the premium-terminal aesthetic.
