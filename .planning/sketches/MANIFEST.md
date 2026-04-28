@@ -22,8 +22,30 @@
 | 002 | contrast-refinement           | How do we keep the aesthetic while making text actually readable? Sketch 001's palette failed WCAG (timestamps ~2.1:1). | **B — Amber + Green Dual-Channel** (with v2 contrast bump + 14px base font) | theme, contrast, palette, accessibility, frontend2 |
 | 003 | icon-style                    | Keep monospace glyphs (32px or 40px frame) or move to lucide-style SVG strokes? | **C — Lucide Strokes** | icons, sidebar, polish, frontend2 |
 | 004 | retro-icons                   | Does a retro pixel-art family fit better than Lucide? | **A — Lucide [confirmed]** (Pixelarticons + chunky bitmap evaluated and declined; Lucide reads cleaner against the rest of the chrome) | icons, retro, sidebar, frontend2 |
+| 005 | interactive-nav               | Does the locked aesthetic hold up across multiple destination pages, and does the sidebar feel right as actual navigation? | **A — Expanded sidebar** + **context-aware bottom function-key bar** (supersedes dashboard quick-actions tile) + **user menu in sidebar footer** (frontend1 pattern) | layout, sidebar, navigation, bottombar, user-menu, interactivity, frontend2 |
 
-## Locked Decisions (rolled up across 001-003)
+## Locked Decisions (rolled up across 001-005)
+
+### Added in Sketch 005
+
+- **Bottom function-key bar (context-aware).** Replaces the dashboard's
+  Quick Actions tile. Always visible under the main pane (does NOT span the
+  sidebar). Each route declares its own `shortcuts: [{key, label, action}]`
+  array; the same array drives both the bar render and the keyboard
+  dispatcher. Globals (`[F1] HELP`, `[ESC] LOGOUT`) append on every route.
+  Right side shows `UPTIME` + a live local clock. Amber `[KEY]` chips
+  (`#ffd07a` on near-black text) for the per-route keys; `[ESC]` flagged
+  red.
+- **User menu in sidebar footer (frontend1 pattern).** Avatar (initials
+  fallback) + name + email at the bottom of the sidebar, separated from
+  nav by a thin border. Click → dropdown opens *upward* with `Settings`
+  + `Log out` (destructive). In collapsed-rail mode (variant B), only the
+  avatar shows; dropdown opens to the right instead.
+- **Layout grid.** Sidebar runs full height (topbar to viewport bottom);
+  bottom bar only spans the main column.
+
+### Earlier (sketches 001-004)
+
 
 - **Layout:** Sketch 001 Variant A (Mission Control) — top bar, collapsible grouped sidebar, quick-actions command bar, full HUD (capacity gauge, sparkline, activity table, pending approvals, system alerts).
 - **Palette:** Sketch 002 Variant B v2 — amber + green dual-channel, AAA contrast everywhere, near-black bg with subtle scanline overlay. Amber `#ffd07a` for labels/headers/timestamps, green `#d6ffdc` for data/status, white-amber `#fff8df` for max-glow.

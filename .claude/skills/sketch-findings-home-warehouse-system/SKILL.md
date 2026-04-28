@@ -1,6 +1,6 @@
 ---
 name: sketch-findings-home-warehouse-system
-description: Validated design decisions, CSS tokens, and visual direction from sketch experiments 001–004. Auto-load when implementing the frontend2 dashboard re-skin or any new screen in the premium-terminal aesthetic.
+description: Validated design decisions, CSS tokens, and visual direction from sketch experiments 001–005. Auto-load when implementing the frontend2 dashboard re-skin or any new screen in the premium-terminal aesthetic.
 ---
 
 <context>
@@ -10,7 +10,7 @@ description: Validated design decisions, CSS tokens, and visual direction from s
 
 **Reference:** `~/Downloads/premium_terminal_retro_dashboard.png` (CRT-green warehouse terminal mockup) anchored to `frontend2/src/features/dashboard/DashboardPage.tsx` data shapes.
 
-**Sketch sessions wrapped:** 2026-04-27
+**Sketch sessions wrapped:** 2026-04-27, 2026-04-28 (sketch 005)
 </context>
 
 <design_direction>
@@ -28,11 +28,11 @@ Dark CRT-green industrial HUD with amber accents. The aesthetic comes from typog
 
 | Area | Reference | Key Decision |
 |------|-----------|--------------|
-| Layout & Navigation | `references/layout.md` | Top bar + collapsible grouped sidebar + quick-actions command bar + dense HUD |
+| Layout & Navigation | `references/layout.md` | Top bar + grouped sidebar (with user menu in footer) + main pane + context-aware bottom function-key bar |
 | Color Palette & Contrast | `references/palette.md` | Amber + green dual-channel, AAA contrast, scanline overlay |
 | Typography | `references/typography.md` | 14px monospace body, 11-16px labels at wide letter-spacing, 30-32px values |
 | Icons | `references/icons.md` | Lucide stroke icons, 1.75px round caps. Pixel-art declined |
-| Components | `references/components.md` | Panels, pills, buttons, status indicators, alert rows |
+| Components | `references/components.md` | Panels, pills, buttons, status indicators, alert rows, **bottom function-key bar**, **user menu** |
 
 ## Theme
 
@@ -65,4 +65,5 @@ Original sketch HTML files preserved in `sources/` for visual reference. Sketch 
 - 002-contrast-refinement (B v2 — amber + green dual-channel, AAA contrast)
 - 003-icon-style (C — Lucide strokes over monospace glyphs)
 - 004-retro-icons (A — Lucide confirmed; pixel-art alternatives declined)
+- 005-interactive-nav (A — expanded sidebar; locks in **context-aware bottom function-key bar** replacing the dashboard quick-actions tile, and **user menu in sidebar footer** following the frontend1 pattern)
 </metadata>

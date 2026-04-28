@@ -1,0 +1,1383 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Sketch 005 — Interactive Nav Playground</title>
+  <link rel="stylesheet" href="../themes/default.css" />
+  <style>
+    /* ======================================================================
+       Layout — same as canonical sketch 001, density driven by data-variant
+       ====================================================================== */
+    .app {
+      display: grid;
+      grid-template-columns: var(--sidebar-w, 248px) 1fr;
+      grid-template-rows: 48px 1fr 36px; /* topbar / main / bottombar */
+      grid-template-areas:
+        "topbar    topbar"
+        "sidebar   main"
+        "sidebar   bottombar"; /* sidebar runs full height; bottombar only under main */
+      min-height: calc(100vh - 44px); /* leave room for fixed variant tabs */
+      transition: grid-template-columns 200ms ease;
+    }
+    body[data-variant="b"] .app { --sidebar-w: 60px; }
+
+    body { padding-top: 44px; } /* fixed variant tab bar at top */
+
+    /* ---------- Topbar ---------- */
+    .topbar {
+      grid-area: topbar;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 var(--sp-4);
+      background: var(--bg-panel);
+      border-bottom: var(--border-thick);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+    .topbar .brand {
+      display: flex; align-items: center; gap: var(--sp-3);
+      color: var(--fg-glow);
+      text-shadow: 0 0 6px rgba(255, 248, 223, 0.5);
+    }
+    .topbar .brand-mark {
+      width: 30px; height: 30px;
+      border: var(--border-thick);
+      display: grid; place-items: center;
+      background: var(--bg-elevated);
+      color: var(--fg-bright);
+    }
+    .topbar .brand-mark svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round; }
+    .topbar .brand-text { display: flex; align-items: baseline; gap: var(--sp-2); font-size: 13px; }
+    .topbar .brand-sep { color: var(--fg-dim); }
+    .topbar .topbar-right { display: flex; align-items: center; gap: var(--sp-3); }
+    .topbar .field {
+      display: flex; align-items: center; gap: 6px;
+      padding: 5px 12px;
+      border: var(--border-thin);
+      background: var(--bg-panel-2);
+      color: var(--fg-mid);
+      font-size: 11px;
+    }
+    .topbar .field b { color: var(--fg-bright); font-weight: 700; }
+
+    /* ---------- Sidebar ---------- */
+    .sidebar {
+      grid-area: sidebar;
+      background: var(--bg-panel);
+      border-right: var(--border-thick);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+    .sidebar-toggle {
+      display: flex; align-items: center; justify-content: flex-end;
+      padding: var(--sp-2);
+      border-bottom: var(--border-thin);
+    }
+    .sidebar-toggle .btn { padding: 5px 9px; font-size: 11px; }
+    body[data-variant="b"] .sidebar-toggle { justify-content: center; }
+
+    .nav { flex: 1; overflow-y: auto; padding: var(--sp-2) 0; }
+    .nav-group { margin-bottom: var(--sp-4); }
+    .nav-group-label {
+      padding: 8px var(--sp-3) 6px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--fg-mid);
+    }
+    body[data-variant="b"] .nav-group-label { display: none; }
+    body[data-variant="b"] .nav-group { margin-bottom: var(--sp-2); }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: var(--sp-3);
+      padding: 9px var(--sp-3);
+      color: var(--fg-base);
+      cursor: pointer;
+      border-left: 2px solid transparent;
+      position: relative;
+      font-size: 14px;
+      font-weight: 500;
+      letter-spacing: 0.04em;
+      text-decoration: none;
+      transition: background 80ms ease, color 80ms ease;
+    }
+    .nav-item:hover { background: var(--bg-hover); color: var(--fg-bright); }
+    .nav-item.active {
+      background: var(--bg-active);
+      color: var(--fg-glow);
+      border-left-color: var(--fg-bright);
+    }
+    .nav-item.active::after {
+      content: "";
+      position: absolute; right: 0; top: 0; bottom: 0;
+      width: 3px;
+      background: var(--fg-bright);
+      box-shadow: 0 0 8px var(--fg-bright);
+    }
+    .nav-item.disabled { opacity: 0.55; cursor: not-allowed; }
+    .nav-item.disabled:hover { background: transparent; color: var(--fg-base); }
+
+    .nav-icon {
+      flex: 0 0 28px;
+      height: 28px;
+      display: grid; place-items: center;
+      color: var(--fg-base);
+    }
+    .nav-icon svg {
+      width: 22px; height: 22px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 1.75;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+    .nav-item.active .nav-icon {
+      color: var(--fg-glow);
+      filter: drop-shadow(0 0 6px var(--fg-bright));
+    }
+
+    .nav-item .label { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    body[data-variant="b"] .nav-item .label,
+    body[data-variant="b"] .nav-item .badge { display: none; }
+    body[data-variant="b"] .nav-item { justify-content: center; padding: 9px 0; gap: 0; }
+
+    .nav-item .badge {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      padding: 2px 8px;
+      background: rgba(255, 208, 122, 0.18);
+      color: var(--fg-mid);
+      border: 1px solid var(--fg-mid);
+    }
+
+    /* ---------- User menu (sidebar footer) ---------- */
+    .user-menu {
+      position: relative;
+      border-top: var(--border-thin);
+      padding: var(--sp-2);
+    }
+    .user-trigger {
+      display: flex;
+      align-items: center;
+      gap: var(--sp-3);
+      width: 100%;
+      padding: 8px;
+      background: transparent;
+      border: 1px solid transparent;
+      color: var(--fg-base);
+      font-family: var(--font-mono);
+      font-size: 13px;
+      cursor: pointer;
+      text-align: left;
+      transition: background 80ms ease, border-color 80ms ease;
+    }
+    .user-trigger:hover {
+      background: var(--bg-hover);
+      border-color: var(--fg-dim);
+    }
+    .user-trigger.open {
+      background: var(--bg-active);
+      border-color: var(--fg-mid);
+    }
+    .user-avatar {
+      flex: 0 0 32px;
+      width: 32px; height: 32px;
+      display: grid; place-items: center;
+      background: var(--bg-elevated);
+      border: 1px solid var(--fg-mid);
+      color: var(--fg-bright);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      box-shadow:
+        inset 1px 1px 0 rgba(255,255,255,0.05),
+        inset -1px -1px 0 rgba(0,0,0,0.6),
+        0 0 8px rgba(255, 208, 122, 0.18);
+    }
+    .user-text {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .user-name {
+      color: var(--fg-bright);
+      font-weight: 700;
+      font-size: 13px;
+      letter-spacing: 0.04em;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .user-email {
+      color: var(--fg-mid);
+      font-size: 11px;
+      letter-spacing: 0.06em;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .user-caret {
+      flex: 0 0 auto;
+      color: var(--fg-mid);
+      font-size: 10px;
+      transition: transform 120ms ease, color 80ms ease;
+    }
+    .user-trigger.open .user-caret {
+      transform: rotate(180deg);
+      color: var(--fg-bright);
+    }
+
+    body[data-variant="b"] .user-trigger { justify-content: center; padding: 6px; gap: 0; }
+    body[data-variant="b"] .user-text,
+    body[data-variant="b"] .user-caret { display: none; }
+
+    .user-dropdown {
+      position: absolute;
+      bottom: calc(100% - 1px);
+      left: var(--sp-2);
+      right: var(--sp-2);
+      background: var(--bg-panel);
+      border: var(--border-thick);
+      box-shadow:
+        inset 1px 1px 0 rgba(255,255,255,0.05),
+        inset -1px -1px 0 rgba(0,0,0,0.6),
+        0 -4px 16px rgba(0, 0, 0, 0.6),
+        0 0 12px rgba(255, 208, 122, 0.08);
+      display: none;
+      flex-direction: column;
+      z-index: 50;
+    }
+    body[data-variant="b"] .user-dropdown {
+      left: 100%;
+      right: auto;
+      bottom: var(--sp-2);
+      min-width: 200px;
+      margin-left: 4px;
+    }
+    .user-dropdown.open { display: flex; animation: dd-in 120ms ease-out; }
+    @keyframes dd-in {
+      from { opacity: 0; transform: translateY(4px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .user-dropdown-item {
+      display: flex;
+      align-items: center;
+      gap: var(--sp-3);
+      padding: 10px var(--sp-3);
+      background: transparent;
+      border: 0;
+      border-left: 2px solid transparent;
+      color: var(--fg-base);
+      font-family: var(--font-mono);
+      font-size: 13px;
+      letter-spacing: 0.04em;
+      cursor: pointer;
+      text-align: left;
+      transition: background 80ms ease, color 80ms ease, border-color 80ms ease;
+    }
+    .user-dropdown-item:hover {
+      background: var(--bg-hover);
+      color: var(--fg-bright);
+      border-left-color: var(--fg-bright);
+    }
+    .user-dropdown-item.danger { color: var(--accent-danger); }
+    .user-dropdown-item.danger:hover { background: var(--accent-danger-bg); border-left-color: var(--accent-danger); color: var(--accent-danger); }
+    .user-dropdown-item svg {
+      width: 16px; height: 16px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 1.75;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+    .user-dropdown-sep {
+      height: 1px;
+      background: var(--fg-dim);
+      margin: 0;
+    }
+
+    /* tooltip on collapsed rail hover */
+    body[data-variant="b"] .nav-item:hover::before {
+      content: attr(data-label);
+      position: absolute;
+      left: 60px; top: 50%; transform: translateY(-50%);
+      padding: 4px 10px;
+      background: var(--bg-elevated);
+      border: var(--border-thin);
+      border-left: 2px solid var(--fg-mid);
+      color: var(--fg-bright);
+      font-size: 12px;
+      letter-spacing: 0.08em;
+      white-space: nowrap;
+      z-index: 100;
+      box-shadow: 0 0 12px rgba(0, 0, 0, 0.6);
+      pointer-events: none;
+    }
+
+    /* ---------- Main ---------- */
+    .main {
+      grid-area: main;
+      padding: var(--sp-4);
+      overflow-y: auto;
+    }
+    .page-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: var(--sp-4);
+    }
+    .page-header h1 {
+      margin: 0;
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--fg-bright);
+      text-shadow: 0 0 8px rgba(239, 255, 230, 0.45);
+    }
+    .page-header .breadcrumb {
+      color: var(--fg-mid);
+      font-size: 12px;
+      letter-spacing: 0.08em;
+    }
+    .page-header .breadcrumb b { color: var(--fg-bright); }
+
+    /* page swap fade — reads as a CRT channel-change without being noisy */
+    .page { animation: page-in 140ms ease-out; }
+    @keyframes page-in {
+      from { opacity: 0; transform: translateY(2px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ---------- Quick actions ---------- */
+    .qa-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--sp-3); }
+    .qa {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      grid-template-rows: auto auto auto;
+      grid-template-areas:
+        "key icon"
+        "key label"
+        "key path";
+      column-gap: var(--sp-3);
+      align-items: center;
+      padding: var(--sp-3) var(--sp-4);
+      background: var(--bg-elevated);
+      border: var(--border-thin);
+      border-left: 3px solid var(--fg-mid);
+      color: var(--fg-base);
+      font-family: var(--font-mono);
+      cursor: pointer;
+      text-align: left;
+      transition: all 80ms ease;
+    }
+    .qa:hover {
+      background: var(--bg-hover);
+      border-left-color: var(--fg-bright);
+      color: var(--fg-glow);
+      box-shadow: 0 0 8px rgba(255, 208, 122, 0.25);
+    }
+    .qa:active { background: var(--bg-active); }
+    .qa-key {
+      grid-area: key;
+      font-size: 18px; font-weight: 700;
+      color: var(--fg-bright);
+      letter-spacing: 0.04em;
+      padding: 0 var(--sp-2);
+      border-right: 1px solid var(--bg-active);
+      align-self: stretch;
+      display: grid; place-items: center;
+    }
+    .qa-icon { grid-area: icon; display: flex; align-items: center; gap: 6px; color: var(--fg-glow); }
+    .qa-icon svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round; }
+    .qa-label { grid-area: label; font-size: 13px; font-weight: 700; letter-spacing: 0.06em; color: var(--fg-bright); }
+    .qa-path  { grid-area: path; font-size: 11px; color: var(--fg-mid); letter-spacing: 0.08em; }
+
+    /* ---------- Stat counts ---------- */
+    .row-stats { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: var(--sp-3); margin-top: var(--sp-4); margin-bottom: var(--sp-4); }
+    .stat-tile { padding: var(--sp-4); }
+    .stat-label { font-size: 11px; color: var(--fg-mid); letter-spacing: 0.18em; text-transform: uppercase; font-weight: 700; }
+    .stat-value { font-size: 32px; font-weight: 700; color: var(--fg-bright); text-shadow: 0 0 8px var(--fg-bright); line-height: 1.1; margin-top: 6px; }
+    .stat-meta { font-size: 11px; color: var(--fg-mid); letter-spacing: 0.08em; margin-top: 4px; }
+
+    /* ---------- Activity table ---------- */
+    table.act { width: 100%; border-collapse: collapse; font-size: 14px; }
+    table.act th, table.act td {
+      padding: 10px var(--sp-3);
+      text-align: left;
+      border-bottom: 1px solid var(--bg-elevated);
+    }
+    table.act th {
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      font-size: 12px;
+      color: var(--fg-mid);
+      background: var(--bg-panel-2);
+    }
+    table.act td { color: var(--fg-base); font-weight: 500; }
+    table.act td.code { color: var(--fg-bright); font-weight: 700; letter-spacing: 0.06em; }
+    table.act td.dim  { color: var(--fg-mid); font-weight: 500; }
+    table.act tr:hover td { background: var(--bg-hover); }
+
+    .row-grid { display: grid; grid-template-columns: 2fr 1fr; gap: var(--sp-3); }
+
+    /* ---------- Pending list / alerts ---------- */
+    .pending { display: flex; flex-direction: column; }
+    .pending-item {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: var(--sp-2);
+      padding: var(--sp-3) 0;
+      border-bottom: 1px solid var(--bg-elevated);
+      font-size: 13px;
+    }
+    .pending-item:last-child { border-bottom: 0; }
+    .pending-item .who { color: var(--fg-bright); font-weight: 700; }
+    .pending-item .when { color: var(--fg-mid); font-size: 11px; }
+
+    .alerts { display: flex; flex-direction: column; gap: var(--sp-2); }
+    .alert {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: var(--sp-3);
+      align-items: center;
+      padding: var(--sp-3);
+      background: var(--accent-warn-bg);
+      border-left: 3px solid var(--accent-warn);
+      font-size: 13px;
+    }
+    .alert.info   { background: var(--accent-info-bg);   border-left-color: var(--accent-info); }
+    .alert.danger { background: var(--accent-danger-bg); border-left-color: var(--accent-danger); }
+    .alert .tag { font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; font-size: 11px; }
+    .alert .tag.warn   { color: var(--accent-warn); }
+    .alert .tag.info   { color: var(--accent-info); }
+    .alert .tag.danger { color: var(--accent-danger); }
+    .alert .when { color: var(--fg-mid); font-size: 11px; }
+
+    /* ---------- Items list page ---------- */
+    .filter-bar {
+      display: flex; gap: var(--sp-2); align-items: center;
+      padding: var(--sp-3); background: var(--bg-panel-2);
+      border-bottom: var(--border-thin);
+      flex-wrap: wrap;
+    }
+    .filter-bar .search {
+      flex: 1; min-width: 240px;
+      background: var(--bg-base);
+      border: var(--border-thin);
+      color: var(--fg-base);
+      font-family: var(--font-mono);
+      font-size: 13px;
+      padding: 6px 10px;
+      letter-spacing: 0.04em;
+    }
+    .filter-bar .search:focus {
+      outline: none;
+      border-color: var(--fg-mid);
+      box-shadow: 0 0 8px rgba(255, 208, 122, 0.25);
+    }
+
+    table.items { width: 100%; border-collapse: collapse; font-size: 14px; }
+    table.items th, table.items td {
+      padding: 10px var(--sp-3);
+      text-align: left;
+      border-bottom: 1px solid var(--bg-elevated);
+    }
+    table.items th {
+      font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase;
+      font-size: 12px; color: var(--fg-mid);
+      background: var(--bg-panel-2);
+      cursor: pointer; user-select: none;
+    }
+    table.items th:hover { color: var(--fg-bright); }
+    table.items th.sorted::after { content: " ↓"; color: var(--fg-bright); }
+    table.items td { color: var(--fg-base); font-weight: 500; }
+    table.items td.qty { color: var(--fg-bright); font-weight: 700; text-align: right; font-variant-numeric: tabular-nums; }
+    table.items td.dim { color: var(--fg-mid); }
+    table.items tr:hover td { background: var(--bg-hover); cursor: pointer; }
+    table.items .thumb {
+      width: 28px; height: 28px;
+      background: var(--bg-elevated);
+      border: 1px solid var(--fg-dim);
+      display: inline-grid; place-items: center;
+      color: var(--fg-mid);
+      font-size: 14px;
+    }
+
+    /* ---------- Locations grid ---------- */
+    .loc-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: var(--sp-3); }
+    .loc-card {
+      padding: var(--sp-3) var(--sp-4);
+      background: var(--bg-elevated);
+      border: var(--border-thin);
+      border-left: 3px solid var(--fg-dim);
+      cursor: pointer;
+      transition: all 80ms ease;
+    }
+    .loc-card:hover {
+      border-left-color: var(--fg-mid);
+      background: var(--bg-hover);
+      box-shadow: 0 0 8px rgba(255, 208, 122, 0.18);
+    }
+    .loc-card .loc-code { font-size: 11px; color: var(--fg-mid); letter-spacing: 0.18em; font-weight: 700; }
+    .loc-card .loc-name { font-size: 16px; color: var(--fg-bright); font-weight: 700; margin-top: 4px; }
+    .loc-card .loc-stats { font-size: 12px; color: var(--fg-base); margin-top: var(--sp-2); }
+    .loc-card .loc-stats b { color: var(--fg-bright); }
+
+    /* ---------- Approvals queue ---------- */
+    .batch-bar {
+      display: flex; gap: var(--sp-2); align-items: center;
+      padding: var(--sp-3); background: var(--bg-panel-2);
+      border-bottom: var(--border-thin);
+    }
+    .batch-bar .count { color: var(--fg-mid); font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 700; }
+    .batch-bar .count b { color: var(--fg-bright); }
+
+    .approval {
+      display: grid;
+      grid-template-columns: auto 1fr auto auto;
+      gap: var(--sp-3);
+      align-items: center;
+      padding: var(--sp-3) var(--sp-4);
+      border-bottom: 1px solid var(--bg-elevated);
+      font-size: 13px;
+      cursor: pointer;
+      transition: background 80ms ease;
+    }
+    .approval:hover { background: var(--bg-hover); }
+    .approval input[type=checkbox] {
+      width: 14px; height: 14px;
+      accent-color: var(--fg-bright);
+    }
+    .approval .who { color: var(--fg-bright); font-weight: 700; }
+    .approval .what { color: var(--fg-base); }
+    .approval .when { color: var(--fg-mid); font-size: 11px; letter-spacing: 0.08em; }
+    .approval .priority { font-size: 11px; font-weight: 700; letter-spacing: 0.14em; }
+    .approval .priority.high { color: var(--accent-danger); }
+    .approval .priority.med  { color: var(--accent-warn); }
+    .approval .priority.low  { color: var(--fg-mid); }
+
+    /* ---------- Stub page ---------- */
+    .stub {
+      padding: var(--sp-6);
+      display: grid; place-items: center;
+      min-height: 320px;
+      text-align: center;
+    }
+    .stub-glyph { font-size: 48px; color: var(--fg-dim); margin-bottom: var(--sp-3); }
+    .stub-title { font-size: 14px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: var(--fg-mid); }
+    .stub-body  { font-size: 13px; color: var(--fg-base); margin-top: var(--sp-2); max-width: 380px; line-height: 1.6; }
+
+    /* ---------- Bottombar (function-key status bar) ----------
+       Classic TUI pattern (mc / nano / vim) — always-visible, context-aware. */
+    .bottombar {
+      grid-area: bottombar;
+      display: flex;
+      align-items: center;
+      gap: var(--sp-4);
+      padding: 0 var(--sp-4);
+      background: var(--bg-panel);
+      border-top: var(--border-thick);
+      font-family: var(--font-mono);
+      font-size: 12px;
+      letter-spacing: 0.08em;
+      overflow: hidden;
+    }
+    .bb-shortcuts { display: flex; align-items: center; gap: var(--sp-3); flex: 1; min-width: 0; flex-wrap: wrap; }
+    .bb-shortcut {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: transparent;
+      border: 0;
+      cursor: pointer;
+      padding: 4px 0;
+      color: var(--fg-base);
+      font-family: var(--font-mono);
+      font-size: 12px;
+      font-weight: 500;
+      letter-spacing: 0.06em;
+      transition: color 80ms ease;
+    }
+    .bb-shortcut:hover { color: var(--fg-bright); }
+    .bb-shortcut:hover .bb-key { background: var(--amber-bright); box-shadow: 0 0 8px rgba(255, 224, 160, 0.5); }
+    .bb-shortcut .bb-key {
+      background: var(--amber);
+      color: #1a0e00;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      padding: 2px 7px;
+      border-radius: 1px;
+      font-size: 11px;
+      transition: all 80ms ease;
+    }
+    .bb-shortcut .bb-label {
+      text-transform: uppercase;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+    }
+    .bb-shortcut.danger .bb-key { background: var(--accent-danger); color: #2a0000; }
+
+    .bb-status {
+      display: flex; align-items: center; gap: var(--sp-4);
+      color: var(--fg-mid);
+      font-size: 11px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      font-weight: 700;
+      flex: 0 0 auto;
+    }
+    .bb-status b { color: var(--fg-bright); font-weight: 700; }
+    .bb-status .sep { color: var(--fg-dim); }
+
+    /* ---------- Variant tab bar (top of page, fixed) ---------- */
+    #variant-nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 9998;
+      height: 44px;
+      background: rgba(4, 5, 5, 0.92);
+      backdrop-filter: blur(4px);
+      border-bottom: 2px solid var(--fg-dim);
+      display: flex; align-items: center; gap: var(--sp-2);
+      padding: 0 var(--sp-4);
+      font-family: var(--font-mono);
+    }
+    #variant-nav .vn-label {
+      color: var(--fg-mid); font-size: 11px;
+      letter-spacing: 0.18em; text-transform: uppercase; font-weight: 700;
+      margin-right: var(--sp-2);
+    }
+    .variant-tab {
+      background: var(--bg-elevated);
+      border: 1px solid var(--fg-dim);
+      color: var(--fg-base);
+      font-family: var(--font-mono);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      padding: 6px 12px;
+      cursor: pointer;
+      transition: all 80ms ease;
+    }
+    .variant-tab:hover { background: var(--bg-hover); color: var(--fg-bright); border-color: var(--fg-mid); }
+    .variant-tab.active {
+      background: var(--bg-active);
+      color: var(--fg-glow);
+      border-color: var(--fg-bright);
+      box-shadow: 0 0 8px rgba(239, 255, 230, 0.3);
+    }
+    #variant-nav .spacer { flex: 1; }
+    #variant-nav .hint { color: var(--fg-mid); font-size: 11px; letter-spacing: 0.1em; }
+    #variant-nav .hint kbd {
+      background: var(--bg-elevated);
+      border: 1px solid var(--fg-dim);
+      padding: 1px 6px;
+      color: var(--fg-bright);
+      font-family: var(--font-mono);
+      font-size: 11px;
+    }
+
+    /* ---------- Toast ---------- */
+    #toast-stack {
+      position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%);
+      z-index: 9990;
+      display: flex; flex-direction: column; gap: 8px; align-items: center;
+      pointer-events: none;
+    }
+    .toast {
+      background: var(--bg-panel);
+      border: var(--border-thick);
+      border-left: 3px solid var(--fg-bright);
+      color: var(--fg-bright);
+      font-family: var(--font-mono);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      padding: 8px 14px;
+      box-shadow: 0 0 16px rgba(239, 255, 230, 0.2);
+      animation: toast-in 140ms ease-out, toast-out 200ms ease-in 1.4s forwards;
+    }
+    @keyframes toast-in  { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes toast-out { to   { opacity: 0; transform: translateY(6px); } }
+
+    /* ---------- Sketch tools (bottom-right) ---------- */
+    #sketch-tools {
+      position: fixed; bottom: 12px; right: 12px; z-index: 9999;
+      font-family: system-ui;
+      font-size: 11px;
+      background: rgba(0,0,0,0.78);
+      color: white;
+      padding: 6px 10px;
+      border-radius: 6px;
+      opacity: 0.35;
+      transition: opacity 0.2s;
+      display: flex; gap: 8px; align-items: center;
+    }
+    #sketch-tools:hover { opacity: 1; }
+    #sketch-tools button {
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.2);
+      color: white;
+      font-family: system-ui;
+      font-size: 11px;
+      padding: 3px 7px;
+      cursor: pointer;
+      border-radius: 3px;
+    }
+    #sketch-tools button:hover { background: rgba(255,255,255,0.18); }
+  </style>
+</head>
+<body data-variant="a">
+
+<!-- ============= Variant tab bar (fixed) ============= -->
+<div id="variant-nav">
+  <span class="vn-label">// Sketch 005 — Sidebar Density</span>
+  <button class="variant-tab active" data-v="a" onclick="showVariant('a')">A — Expanded</button>
+  <button class="variant-tab" data-v="b" onclick="showVariant('b')">B — Collapsed Rail</button>
+  <span class="spacer"></span>
+  <span class="hint">Try: click nav · press shortcuts shown in <span style="color:var(--amber)">bottom bar</span> (context-aware) · <kbd>[</kbd>/<kbd>]</kbd> swap variant</span>
+</div>
+
+<!-- ============= App ============= -->
+<div class="app" id="app">
+
+  <!-- Topbar -->
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-mark">
+        <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>
+      </div>
+      <div class="brand-text">
+        <span>HOME WAREHOUSE</span>
+        <span class="brand-sep">//</span>
+        <span style="color: var(--fg-mid)">PREMIUM TERMINAL</span>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <span class="field">WS <b>HQ-01</b></span>
+      <span class="field">USER <b>ANTTI</b></span>
+      <span class="pill pill--ok"><span class="dot dot--blink"></span> ONLINE</span>
+    </div>
+  </header>
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-toggle">
+      <button class="btn btn--ghost" onclick="toggleVariant()" title="Toggle density">
+        <span id="toggle-glyph">«</span>
+      </button>
+    </div>
+    <nav class="nav" id="nav">
+
+      <div class="nav-group">
+        <div class="nav-group-label">// Overview</div>
+        <a class="nav-item active" data-page="dashboard" data-label="Dashboard" onclick="navTo('dashboard')">
+          <span class="nav-icon"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg></span>
+          <span class="label">Dashboard</span>
+        </a>
+        <a class="nav-item" data-page="analytics" data-label="Analytics" onclick="navTo('analytics')">
+          <span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg></span>
+          <span class="label">Analytics</span>
+        </a>
+      </div>
+
+      <div class="nav-group">
+        <div class="nav-group-label">// Inventory</div>
+        <a class="nav-item" data-page="items" data-label="Items" onclick="navTo('items')">
+          <span class="nav-icon"><svg viewBox="0 0 24 24"><path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg></span>
+          <span class="label">Items</span>
+        </a>
+        <a class="nav-item" data-page="locations" data-label="Locations" onclick="navTo('locations')">
+          <span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg></span>
+          <span class="label">Locations</span>
+        </a>
+        <a class="nav-item" data-page="containers" data-label="Containers" onclick="navTo('containers')">
+          <span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg></span>
+          <span class="label">Containers</span>
+        </a>
+        <a class="nav-item" data-page="categories" data-label="Categories" onclick="navTo('categories')">
+          <span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M20 10a1 1 0 0 0 1-1V6a1 1 0 0 0-1-1h-2.5a1 1 0 0 1-.8-.4l-.9-1.2A1 1 0 0 0 15 3h-2a1 1 0 0 0-1 1v5a1 1 0 0 0 1 1Z"/><path d="M20 21a1 1 0 0 0 1-1v-3a1 1 0 0 0-1-1h-2.9a1 1 0 0 1-.88-.55l-.42-.85a1 1 0 0 0-.92-.6H13a1 1 0 0 0-1 1v5a1 1 0 0 0 1 1Z"/><path d="M3 5a2 2 0 0 0 2 2h3"/><path d="M3 3v13a2 2 0 0 0 2 2h3"/></svg></span>
+          <span class="label">Categories</span>
+        </a>
+        <a class="nav-item" data-page="oos" data-label="Out of Stock" onclick="navTo('oos')">
+          <span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M21 10V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0"/><path d="m7.5 4.27 9 5.15"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/><path d="m17 13 5 5"/><path d="m22 13-5 5"/></svg></span>
+          <span class="label">Out of Stock</span>
+        </a>
+        <a class="nav-item" data-page="declutter" data-label="Declutter" onclick="navTo('declutter')">
+          <span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg></span>
+          <span class="label">Declutter</span>
+        </a>
+        <a class="nav-item" data-page="loans" data-label="Loans" onclick="navTo('loans')">
+          <span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M11 15h2a2 2 0 1 0 0-4h-3c-.6 0-1.1.2-1.4.6L3 17"/><path d="m7 21 1.6-1.4c.3-.4.8-.6 1.4-.6h4c1.1 0 2.1-.4 2.8-1.2l4.6-4.4a2 2 0 0 0-2.75-2.91l-4.2 3.9"/><path d="m2 16 6 6"/><circle cx="16" cy="9" r="2.9"/><circle cx="6" cy="5" r="3"/></svg></span>
+          <span class="label">Loans</span>
+        </a>
+        <a class="nav-item" data-page="borrowers" data-label="Borrowers" onclick="navTo('borrowers')">
+          <span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span>
+          <span class="label">Borrowers</span>
+        </a>
+      </div>
+
+      <div class="nav-group">
+        <div class="nav-group-label">// System</div>
+        <a class="nav-item" data-page="imports" data-label="Imports" onclick="navTo('imports')">
+          <span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M12 12v6"/><path d="m9 15 3-3 3 3"/></svg></span>
+          <span class="label">Imports</span>
+        </a>
+        <a class="nav-item" data-page="approvals" data-label="Approvals" onclick="navTo('approvals')">
+          <span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/></svg></span>
+          <span class="label">Approvals</span>
+          <span class="badge">3</span>
+        </a>
+        <a class="nav-item" data-page="my-changes" data-label="My Changes" onclick="navTo('my-changes')">
+          <span class="nav-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></span>
+          <span class="label">My Changes</span>
+        </a>
+        <a class="nav-item" data-page="sync" data-label="Sync History" onclick="navTo('sync')">
+          <span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l4 2"/></svg></span>
+          <span class="label">Sync History</span>
+        </a>
+      </div>
+    </nav>
+
+    <!-- User menu (sidebar footer) — frontend1 pattern -->
+    <div class="user-menu">
+      <button class="user-trigger" id="user-trigger" onclick="toggleUserMenu(event)" aria-haspopup="menu">
+        <span class="user-avatar">AL</span>
+        <span class="user-text">
+          <span class="user-name">Antti Linno</span>
+          <span class="user-email">antti@begin.ee</span>
+        </span>
+        <span class="user-caret">▾</span>
+      </button>
+      <div class="user-dropdown" id="user-dropdown" role="menu">
+        <button class="user-dropdown-item" onclick="userMenuPick('settings')">
+          <svg viewBox="0 0 24 24"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+          <span>Settings</span>
+        </button>
+        <div class="user-dropdown-sep"></div>
+        <button class="user-dropdown-item danger" onclick="userMenuPick('logout')">
+          <svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/></svg>
+          <span>Log out</span>
+        </button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <main class="main" id="main">
+    <!-- populated by renderPage() -->
+  </main>
+
+  <!-- Bottombar — function-key status bar, context-aware -->
+  <footer class="bottombar">
+    <div class="bb-shortcuts" id="bb-shortcuts">
+      <!-- populated by renderBottombar() -->
+    </div>
+    <div class="bb-status">
+      <span>UPTIME <b id="bb-uptime">442:12:05</b></span>
+      <span class="sep">|</span>
+      <span>LOCAL <b id="bb-clock">14:25:34</b></span>
+    </div>
+  </footer>
+</div>
+
+<!-- Toast stack -->
+<div id="toast-stack"></div>
+
+<!-- Sketch tools -->
+<div id="sketch-tools">
+  <span style="opacity:0.7">viewport</span>
+  <button onclick="setVw('full')">FULL</button>
+  <button onclick="setVw(1280)">1280</button>
+  <button onclick="setVw(1024)">1024</button>
+  <button onclick="setVw(768)">768</button>
+</div>
+
+<script>
+  // ---------- Page registry ----------
+  // shortcuts: per-page array of {key, label, action, danger?} — drives the
+  // bottombar render and the keyboard dispatcher. Global shortcuts (F1, ESC)
+  // append on every page.
+  const GLOBAL_SHORTCUTS = [
+    { key: 'F1',  label: 'Help',   action: () => toast('HELP · keyboard reference') },
+    { key: 'ESC', label: 'Logout', action: () => toast('LOGOUT · session ended'), danger: true },
+  ];
+  const PAGES = {
+    dashboard: {
+      group: 'Overview', render: renderDashboard,
+      shortcuts: [
+        { key: 'N', label: 'Add Item',      action: () => { toast('ADD ITEM · /items/new'); navTo('items'); } },
+        { key: 'S', label: 'Scan',          action: () => toast('SCAN · /scan') },
+        { key: 'L', label: 'Loans',         action: () => navTo('loans') },
+        { key: 'Q', label: 'Quick Capture', action: () => toast('QUICK CAPTURE · /quick') },
+      ],
+    },
+    analytics: { group: 'Overview', render: () => renderStub('Analytics', 'Trend & cohort views — wave-2 backend rollups required.', '◢'), shortcuts: [] },
+    items: {
+      group: 'Inventory', render: renderItems,
+      shortcuts: [
+        { key: 'N', label: 'New',    action: () => toast('NEW ITEM · /items/new') },
+        { key: 'F', label: 'Filter', action: () => toast('FILTER · open drawer') },
+        { key: 'E', label: 'Export', action: () => toast('EXPORT · csv') },
+        { key: 'S', label: 'Scan',   action: () => toast('SCAN · /scan') },
+      ],
+    },
+    locations: {
+      group: 'Inventory', render: renderLocations,
+      shortcuts: [
+        { key: 'N', label: 'New Location', action: () => toast('NEW LOCATION') },
+        { key: 'M', label: 'Map View',     action: () => toast('MAP VIEW · toggle') },
+      ],
+    },
+    containers:{ group: 'Inventory', render: () => renderStub('Containers',  'Box / bin / shelf hierarchy. Borrows the locations grid pattern.', '▣'), shortcuts: [] },
+    categories:{ group: 'Inventory', render: () => renderStub('Categories',  'Taxonomy tree. Already shipped to frontend2 — re-skin only.', '⊞'), shortcuts: [] },
+    oos:       { group: 'Inventory', render: () => renderStub('Out of Stock','Items with quantity zero or below threshold.', '⊘'), shortcuts: [] },
+    declutter: { group: 'Inventory', render: () => renderStub('Declutter',   'Items unused for 12+ months. Suggest borrow / sell / discard.', '◌'), shortcuts: [] },
+    loans:     { group: 'Inventory', render: () => renderStub('Loans',       'Active borrows. Already shipped to frontend2 — re-skin only.', '◇'), shortcuts: [] },
+    borrowers: { group: 'Inventory', render: () => renderStub('Borrowers',   'Contacts who currently hold or have held items.', '◯'), shortcuts: [] },
+    imports:   { group: 'System',    render: () => renderStub('Imports',     'CSV / barcode batch loader. Frontend2 phase TBD.', '↧'), shortcuts: [] },
+    approvals: {
+      group: 'System', render: renderApprovals,
+      shortcuts: [
+        { key: 'A', label: 'Approve', action: () => toast('APPROVE · selected') },
+        { key: 'R', label: 'Reject',  action: () => toast('REJECT · selected'), danger: true },
+        { key: 'D', label: 'Defer',   action: () => toast('DEFER · selected') },
+      ],
+    },
+    'my-changes': { group: 'System', render: () => renderStub('My Changes',   'Edits awaiting workspace-admin review.', '◷'), shortcuts: [] },
+    sync:         { group: 'System', render: () => renderStub('Sync History', 'Background job log. Frontend2 phase TBD.', '↻'), shortcuts: [] },
+  };
+
+  // ---------- State ----------
+  let activePage = 'dashboard';
+
+  // ---------- Variant ----------
+  function showVariant(v) {
+    document.body.dataset.variant = v;
+    document.querySelectorAll('.variant-tab').forEach(t => t.classList.toggle('active', t.dataset.v === v));
+    document.getElementById('toggle-glyph').textContent = v === 'a' ? '«' : '»';
+  }
+  function toggleVariant() {
+    showVariant(document.body.dataset.variant === 'a' ? 'b' : 'a');
+  }
+
+  // ---------- Nav ----------
+  function navTo(pageId) {
+    if (!PAGES[pageId]) return;
+    activePage = pageId;
+    document.querySelectorAll('.nav-item').forEach(el => {
+      el.classList.toggle('active', el.dataset.page === pageId);
+    });
+    renderPage();
+  }
+
+  function renderPage() {
+    const p = PAGES[activePage];
+    const main = document.getElementById('main');
+    const label = document.querySelector(`.nav-item[data-page="${activePage}"]`).dataset.label;
+    main.innerHTML = `
+      <div class="page">
+        <div class="page-header">
+          <h1>${label} <span style="color: var(--fg-dim); font-weight: 400;">// ${p.group}</span></h1>
+          <span class="breadcrumb">SESSION <b>0:42:18</b> &nbsp;//&nbsp; LAST SYNC <b>14:02:11</b></span>
+        </div>
+        <div id="page-body"></div>
+      </div>
+    `;
+    p.render(document.getElementById('page-body'));
+    renderBottombar();
+  }
+
+  // ---------- Bottombar: render context-aware shortcuts ----------
+  function activeShortcuts() {
+    return [...(PAGES[activePage].shortcuts || []), ...GLOBAL_SHORTCUTS];
+  }
+  function renderBottombar() {
+    const root = document.getElementById('bb-shortcuts');
+    root.innerHTML = activeShortcuts().map((s, i) => `
+      <button class="bb-shortcut${s.danger ? ' danger' : ''}" data-idx="${i}">
+        <span class="bb-key">${s.key}</span>
+        <span class="bb-label">${s.label}</span>
+      </button>`).join('');
+    root.querySelectorAll('.bb-shortcut').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const idx = +btn.dataset.idx;
+        activeShortcuts()[idx].action();
+      });
+    });
+  }
+
+  // ---------- Live clock ----------
+  function tickClock() {
+    const d = new Date();
+    const pad = n => n.toString().padStart(2, '0');
+    document.getElementById('bb-clock').textContent =
+      `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+  }
+  setInterval(tickClock, 1000);
+  tickClock();
+
+  // ---------- Dashboard page ----------
+  function renderDashboard(root) {
+    root.innerHTML = `
+      <div class="row-stats">
+        ${statTile('Items',      '847',  '+12 this week')}
+        ${statTile('Categories', '24',   'across 4 trees')}
+        ${statTile('Locations',  '12',   '3 containers, 9 shelves')}
+      </div>
+
+      <div class="row-grid">
+        <section class="panel">
+          <header class="panel-header">
+            <span class="title">Recent Activity</span>
+            <span class="meta">last 10 &nbsp;//&nbsp; sse: <span class="dot dot--blink" style="display:inline-block;color:var(--fg-bright)"></span> live</span>
+          </header>
+          <div class="panel-body" style="padding:0">
+            <table class="act">
+              <thead><tr><th>Timestamp</th><th>Action</th><th>Entity</th><th>Actor</th><th>Status</th></tr></thead>
+              <tbody>
+                ${actRow('14:02:11', 'CREATE', 'item: drill-bit-set-3mm', 'antti', 'ok')}
+                ${actRow('13:58:42', 'UPDATE', 'loc: garage/shelf-b/bin-04', 'antti', 'ok')}
+                ${actRow('13:51:09', 'BORROW', 'item: angle-grinder', 'maria', 'ok')}
+                ${actRow('13:42:33', 'IMPORT', 'csv: spring-cleaning.csv', 'antti', 'warn')}
+                ${actRow('13:21:18', 'DELETE', 'item: broken-mug', 'antti', 'ok')}
+                ${actRow('12:55:02', 'UPDATE', 'item: extension-cord-15m', 'antti', 'ok')}
+                ${actRow('12:33:51', 'CREATE', 'category: power-tools', 'antti', 'ok')}
+                ${actRow('11:48:27', 'BORROW', 'item: pressure-washer', 'jaan', 'ok')}
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <div style="display:flex; flex-direction:column; gap:var(--sp-3)">
+          <section class="panel">
+            <header class="panel-header">
+              <span class="title">Pending Approvals</span>
+              <span class="meta">3 open</span>
+            </header>
+            <div class="panel-body">
+              <div class="pending">
+                ${pendingRow('maria',  'add item: chainsaw',  '13:51', 'high')}
+                ${pendingRow('jaan',   'edit loc: shed-2',    '11:48', 'med')}
+                ${pendingRow('antti',  'merge cat: cleaning', '09:12', 'low')}
+              </div>
+            </div>
+          </section>
+
+          <section class="panel">
+            <header class="panel-header">
+              <span class="title">System Alerts</span>
+              <span class="meta">2 active</span>
+            </header>
+            <div class="panel-body">
+              <div class="alerts">
+                <div class="alert">
+                  <span class="tag warn">SYNC</span>
+                  <span>3 photos queued — slow upload to backup bucket</span>
+                  <span class="when">14:02</span>
+                </div>
+                <div class="alert info">
+                  <span class="tag info">JOB</span>
+                  <span>Photo OCR running — 14 of 22 done</span>
+                  <span class="when">13:58</span>
+                </div>
+              </div>
+            </div>
+          </section>
+        </div>
+      </div>
+    `;
+  }
+
+  function qaTile(key, label, path, svg) {
+    return `<button class="qa" onclick="toast('SHORTCUT [${key}] · ${label}')">
+      <span class="qa-key">[${key}]</span>
+      <span class="qa-icon">${svg}</span>
+      <span class="qa-label">${label}</span>
+      <span class="qa-path">${path}</span>
+    </button>`;
+  }
+  function statTile(label, value, meta) {
+    return `<section class="panel stat-tile">
+      <div class="stat-label">${label}</div>
+      <div class="stat-value">${value}</div>
+      <div class="stat-meta">${meta}</div>
+    </section>`;
+  }
+  function actRow(ts, action, entity, actor, status) {
+    const pill = status === 'ok'
+      ? '<span class="pill pill--ok">OK</span>'
+      : '<span class="pill pill--warn">WARN</span>';
+    return `<tr>
+      <td class="dim">${ts}</td>
+      <td class="code">${action}</td>
+      <td>${entity}</td>
+      <td>${actor}</td>
+      <td>${pill}</td>
+    </tr>`;
+  }
+  function pendingRow(who, what, when, prio) {
+    return `<div class="pending-item">
+      <div>
+        <div class="who">${who}</div>
+        <div style="color: var(--fg-base); font-size: 12px;">${what}</div>
+      </div>
+      <div style="text-align:right">
+        <span class="pill pill--${prio === 'high' ? 'danger' : prio === 'med' ? 'warn' : 'info'}">${prio.toUpperCase()}</span>
+        <div class="when">${when}</div>
+      </div>
+    </div>`;
+  }
+
+  // ---------- Items page ----------
+  const ITEMS = [
+    ['drill-bit-set-3mm',     'Power Tools',  'garage/shelf-b/bin-04',  6,  'IN STOCK'],
+    ['angle-grinder',         'Power Tools',  'garage/shelf-a',         1,  'BORROWED'],
+    ['extension-cord-15m',    'Electrical',   'garage/hook-3',          2,  'IN STOCK'],
+    ['pressure-washer',       'Outdoor',      'shed-2',                 1,  'BORROWED'],
+    ['paint-roller-9in',      'Decorating',   'basement/box-12',        4,  'IN STOCK'],
+    ['stepladder-6ft',        'Access',       'garage/wall-mount',      1,  'IN STOCK'],
+    ['chainsaw',              'Outdoor',      'shed-2',                 1,  'PENDING'],
+    ['hand-saw-22in',         'Hand Tools',   'garage/shelf-b',         2,  'IN STOCK'],
+    ['hammer-claw-16oz',      'Hand Tools',   'garage/shelf-b/bin-01',  3,  'IN STOCK'],
+    ['multimeter',            'Electrical',   'office/drawer-2',        1,  'IN STOCK'],
+    ['cordless-drill-18v',    'Power Tools',  'garage/shelf-a',         2,  'IN STOCK'],
+    ['shovel-flat',           'Outdoor',      'shed-1',                 1,  'OUT'],
+  ];
+
+  function renderItems(root) {
+    root.innerHTML = `
+      <section class="panel" style="margin-bottom:var(--sp-3)">
+        <div class="filter-bar">
+          <input class="search" placeholder="Search items..." oninput="filterItems(this.value)" />
+          <button class="btn">+ New</button>
+          <button class="btn btn--ghost">Filter</button>
+          <span style="flex:1"></span>
+          <span class="meta" style="color:var(--fg-mid); font-size: 12px; letter-spacing: 0.08em;"><b style="color:var(--fg-bright)" id="item-count">${ITEMS.length}</b> of 847 items</span>
+        </div>
+      </section>
+
+      <section class="panel">
+        <header class="panel-header">
+          <span class="title">Item Inventory</span>
+          <span class="meta">sorted by recent &nbsp;//&nbsp; click row to drill in</span>
+        </header>
+        <div class="panel-body" style="padding:0">
+          <table class="items">
+            <thead><tr>
+              <th></th>
+              <th class="sorted">Name</th>
+              <th>Category</th>
+              <th>Location</th>
+              <th style="text-align:right">Qty</th>
+              <th>Status</th>
+            </tr></thead>
+            <tbody id="items-tbody">${renderItemRows(ITEMS)}</tbody>
+          </table>
+        </div>
+      </section>
+    `;
+  }
+  function renderItemRows(rows) {
+    return rows.map(([name, cat, loc, qty, status]) => {
+      const klass = status === 'OUT' ? 'pill--danger' : status === 'BORROWED' ? 'pill--warn' : status === 'PENDING' ? 'pill--info' : 'pill--ok';
+      return `<tr onclick="toast('OPEN · ${name}')">
+        <td><span class="thumb">▣</span></td>
+        <td><b style="color:var(--fg-bright)">${name}</b></td>
+        <td class="dim">${cat}</td>
+        <td class="dim">${loc}</td>
+        <td class="qty">${qty}</td>
+        <td><span class="pill ${klass}">${status}</span></td>
+      </tr>`;
+    }).join('');
+  }
+  function filterItems(q) {
+    const lq = q.toLowerCase();
+    const filtered = ITEMS.filter(r =>
+      r[0].toLowerCase().includes(lq) ||
+      r[1].toLowerCase().includes(lq) ||
+      r[2].toLowerCase().includes(lq)
+    );
+    document.getElementById('items-tbody').innerHTML = renderItemRows(filtered);
+    document.getElementById('item-count').textContent = filtered.length;
+  }
+
+  // ---------- Locations page ----------
+  function renderLocations(root) {
+    const locs = [
+      ['HQ-G-A', 'Garage / Shelf A', 47, 'Power tools, primary'],
+      ['HQ-G-B', 'Garage / Shelf B', 38, 'Hand tools'],
+      ['HQ-G-W', 'Garage / Wall',     6, 'Bulky items, hooks'],
+      ['HQ-S-1', 'Shed-1',           18, 'Outdoor / yard'],
+      ['HQ-S-2', 'Shed-2',           12, 'Outdoor / power'],
+      ['HQ-B-1', 'Basement / Box-12', 9, 'Decorating supplies'],
+      ['HQ-O-1', 'Office / Drawers',  4, 'Electrical, small'],
+      ['HQ-K-1', 'Kitchen / Pantry', 22, 'Consumables'],
+    ];
+    root.innerHTML = `
+      <section class="panel" style="margin-bottom:var(--sp-3)">
+        <div class="filter-bar">
+          <input class="search" placeholder="Search locations..." />
+          <button class="btn">+ New Location</button>
+          <span style="flex:1"></span>
+          <span class="meta" style="color:var(--fg-mid); font-size: 12px;"><b style="color:var(--fg-bright)">${locs.length}</b> locations</span>
+        </div>
+      </section>
+      <section class="panel">
+        <header class="panel-header">
+          <span class="title">Location Inventory</span>
+          <span class="meta">12 total &nbsp;//&nbsp; click any to view contents</span>
+        </header>
+        <div class="panel-body">
+          <div class="loc-grid">
+            ${locs.map(([code, name, count, note]) => `
+              <div class="loc-card" onclick="toast('OPEN · ${code} ${name}')">
+                <div class="loc-code">${code}</div>
+                <div class="loc-name">${name}</div>
+                <div class="loc-stats"><b>${count}</b> items &nbsp;//&nbsp; <span style="color:var(--fg-mid)">${note}</span></div>
+              </div>`).join('')}
+          </div>
+        </div>
+      </section>
+    `;
+  }
+
+  // ---------- Approvals page ----------
+  function renderApprovals(root) {
+    const items = [
+      ['maria',  'add item: chainsaw',                   '13:51', 'high'],
+      ['jaan',   'edit loc: shed-2 → shed-2-rear',       '11:48', 'med'],
+      ['antti',  'merge cat: cleaning → housekeeping',   '09:12', 'low'],
+    ];
+    root.innerHTML = `
+      <section class="panel">
+        <header class="panel-header">
+          <span class="title">Pending Approvals</span>
+          <span class="meta">3 open &nbsp;//&nbsp; oldest 4d ago</span>
+        </header>
+        <div class="batch-bar">
+          <input type="checkbox" onclick="toggleAllApprovals(this)" />
+          <span class="count"><b id="appr-sel">0</b> selected</span>
+          <span style="flex:1"></span>
+          <button class="btn" onclick="toast('APPROVE · batch')">[A] Approve</button>
+          <button class="btn" onclick="toast('REJECT · batch')">[R] Reject</button>
+          <button class="btn btn--ghost" onclick="toast('DEFER · batch')">[D] Defer</button>
+        </div>
+        ${items.map(([who, what, when, prio]) => `
+          <div class="approval">
+            <input type="checkbox" class="appr-check" onchange="updateApprSel()" onclick="event.stopPropagation()" />
+            <div>
+              <div class="who">${who}</div>
+              <div class="what">${what}</div>
+            </div>
+            <span class="priority ${prio}">${prio.toUpperCase()}</span>
+            <span class="when">${when}</span>
+          </div>`).join('')}
+      </section>
+    `;
+  }
+  function toggleAllApprovals(box) {
+    document.querySelectorAll('.appr-check').forEach(c => c.checked = box.checked);
+    updateApprSel();
+  }
+  function updateApprSel() {
+    const n = document.querySelectorAll('.appr-check:checked').length;
+    const el = document.getElementById('appr-sel');
+    if (el) el.textContent = n;
+  }
+
+  // ---------- Stub page ----------
+  function renderStub(label, body, glyph) {
+    return (root) => {
+      root.innerHTML = `
+        <section class="panel">
+          <header class="panel-header">
+            <span class="title">${label}</span>
+            <span class="meta">stub &nbsp;//&nbsp; not yet built in frontend2</span>
+          </header>
+          <div class="panel-body">
+            <div class="stub">
+              <div class="stub-glyph">${glyph}</div>
+              <div class="stub-title">${label}</div>
+              <div class="stub-body">${body}</div>
+            </div>
+          </div>
+        </section>
+      `;
+    };
+  }
+
+  // ---------- Toast ----------
+  function toast(msg) {
+    const el = document.createElement('div');
+    el.className = 'toast';
+    el.textContent = msg;
+    document.getElementById('toast-stack').appendChild(el);
+    setTimeout(() => el.remove(), 1700);
+  }
+
+  // ---------- Keyboard shortcuts ----------
+  // Dispatch from the active page's shortcut list — single source of truth
+  // shared with the bottombar render. F1 / Escape match the bb-key labels.
+  document.addEventListener('keydown', (e) => {
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+    // Variant-tab keys live outside the bottombar
+    if (e.key === '[') { showVariant('a'); return; }
+    if (e.key === ']') { showVariant('b'); return; }
+
+    let pressed = e.key.toUpperCase();
+    if (e.key === 'Escape') pressed = 'ESC';
+    if (e.key === 'F1') { e.preventDefault(); pressed = 'F1'; }
+
+    const hit = activeShortcuts().find(s => s.key === pressed);
+    if (hit) { e.preventDefault(); hit.action(); }
+  });
+
+  // ---------- Sketch tools: viewport ----------
+  function setVw(w) {
+    const main = document.getElementById('app');
+    if (w === 'full') { main.style.maxWidth = ''; main.style.margin = ''; return; }
+    main.style.maxWidth = w + 'px';
+    main.style.margin = '0 auto';
+  }
+
+  // ---------- User menu ----------
+  function toggleUserMenu(e) {
+    if (e) e.stopPropagation();
+    const dd = document.getElementById('user-dropdown');
+    const trig = document.getElementById('user-trigger');
+    const open = dd.classList.toggle('open');
+    trig.classList.toggle('open', open);
+  }
+  function closeUserMenu() {
+    document.getElementById('user-dropdown').classList.remove('open');
+    document.getElementById('user-trigger').classList.remove('open');
+  }
+  function userMenuPick(action) {
+    closeUserMenu();
+    if (action === 'settings') toast('SETTINGS · /settings');
+    if (action === 'logout')   toast('LOGOUT · session ended');
+  }
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('.user-menu')) closeUserMenu();
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeUserMenu();
+  });
+
+  // ---------- Init ----------
+  renderPage();
+</script>
+
+</body>
+</html>

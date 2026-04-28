@@ -230,11 +230,124 @@ Fill arc length = function of percentage. To compute the arc end-point for a per
 
 14 hand-positioned `<rect>` bars. Today's bar uses `--fg-bright` for emphasis; rest use `--fg-base`. Hand-roll until backend rollup endpoint exists.
 
+## User Menu (sidebar footer)
+
+Frontend1 pattern, ported into the premium-terminal aesthetic. Lives at the
+bottom of the sidebar, separated from nav by a `border-top: var(--border-thin)`.
+Click → dropdown opens *upward* (so it doesn't get clipped by the bottombar).
+
+```html
+<div class="user-menu">
+  <button class="user-trigger">
+    <span class="user-avatar">AL</span>
+    <span class="user-text">
+      <span class="user-name">Antti Linno</span>
+      <span class="user-email">antti@begin.ee</span>
+    </span>
+    <span class="user-caret">▾</span>
+  </button>
+  <div class="user-dropdown">
+    <button class="user-dropdown-item">
+      <svg>...</svg> Settings
+    </button>
+    <div class="user-dropdown-sep"></div>
+    <button class="user-dropdown-item danger">
+      <svg>...</svg> Log out
+    </button>
+  </div>
+</div>
+```
+
+```css
+.user-avatar {
+  width: 32px; height: 32px;
+  display: grid; place-items: center;
+  background: var(--bg-elevated);
+  border: 1px solid var(--fg-mid);
+  color: var(--fg-bright);
+  font-size: 12px; font-weight: 700;
+  letter-spacing: 0.06em;
+  box-shadow:
+    inset  1px  1px 0 rgba(255,255,255,0.05),
+    inset -1px -1px 0 rgba(0,0,0,0.6),
+    0 0 8px rgba(255, 208, 122, 0.18);
+}
+
+.user-trigger:hover { background: var(--bg-hover); border-color: var(--fg-dim); }
+.user-trigger.open  { background: var(--bg-active); border-color: var(--fg-mid); }
+.user-trigger.open .user-caret { transform: rotate(180deg); color: var(--fg-bright); }
+
+.user-dropdown {
+  position: absolute;
+  bottom: calc(100% - 1px);
+  left: var(--sp-2); right: var(--sp-2);
+  background: var(--bg-panel);
+  border: var(--border-thick);
+  box-shadow:
+    inset  1px  1px 0 rgba(255,255,255,0.05),
+    inset -1px -1px 0 rgba(0,0,0,0.6),
+    0 -4px 16px rgba(0, 0, 0, 0.6),
+    0 0 12px rgba(255, 208, 122, 0.08);
+  display: none; flex-direction: column;
+}
+.user-dropdown.open { display: flex; animation: dd-in 120ms ease-out; }
+
+.user-dropdown-item {
+  display: flex; align-items: center; gap: var(--sp-3);
+  padding: 10px var(--sp-3);
+  border-left: 2px solid transparent;
+  color: var(--fg-base);
+  background: transparent;
+  border: 0;
+}
+.user-dropdown-item:hover {
+  background: var(--bg-hover);
+  color: var(--fg-bright);
+  border-left-color: var(--fg-bright);
+}
+.user-dropdown-item.danger        { color: var(--accent-danger); }
+.user-dropdown-item.danger:hover  {
+  background: var(--accent-danger-bg);
+  border-left-color: var(--accent-danger);
+  color: var(--accent-danger);
+}
+```
+
+### Collapsed-rail behavior (sidebar variant B / 60px width)
+
+- `.user-text` and `.user-caret` hide
+- `.user-trigger` centers the avatar
+- `.user-dropdown` opens to the **right** of the avatar (not above), with
+  `min-width: 200px`, so it isn't clipped by the 60px sidebar
+
+```css
+body[data-collapsed="true"] .user-trigger { justify-content: center; padding: 6px; gap: 0; }
+body[data-collapsed="true"] .user-text,
+body[data-collapsed="true"] .user-caret { display: none; }
+body[data-collapsed="true"] .user-dropdown {
+  left: 100%; right: auto; bottom: var(--sp-2);
+  min-width: 200px; margin-left: 4px;
+}
+```
+
+### Lucide icons
+
+`Settings` and `LogOut`, 16px in 1.75px stroke. Same family as nav.
+
+### Anti-patterns
+
+- ❌ **Don't open the dropdown downward** — would collide with the bottombar.
+- ❌ **Don't use a circular avatar** — the rest of the chrome is square; the
+  avatar should be a beveled square too. Initials fallback when no image.
+- ❌ **Don't drop the inset bevel on the avatar** — it loses cohesion with the
+  topbar `brand-mark`, which uses the same treatment.
+
 ## Anti-Patterns
 
 - ❌ **Don't add motion to the panel borders** — animating the inset shadow at hover looks fancy but reads as glitchy in this aesthetic. Hover state belongs on the *content* (color shift), not on the chrome.
 - ❌ **Don't use a charting library** for the gauge or sparkline at this size. Hand-rolled SVG is cheaper, on-aesthetic, and 0 KB.
 - ❌ **Don't drop the table-header background** (`--bg-panel-2`). Without it the headers float and lose row anchoring.
+- ❌ **Don't reach for the deprecated `.qa` Quick-Actions tile** on new pages — its role moved to the bottom function-key bar (see `layout.md`). Tile pattern remains in the theme for legacy reference only.
 
 ## Origin
 

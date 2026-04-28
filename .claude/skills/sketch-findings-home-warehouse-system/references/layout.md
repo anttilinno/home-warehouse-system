@@ -23,16 +23,18 @@
 └──────────┴─────────────────────────────────────────────────────┘
 ```
 
-CSS grid with named areas:
+CSS grid with named areas. Sidebar runs full height (top to bottom);
+the bottom function-key bar only spans the main column:
 
 ```css
 .app {
   display: grid;
   grid-template-columns: var(--sidebar-w, 248px) 1fr;
-  grid-template-rows: 48px 1fr;
+  grid-template-rows: 48px 1fr 36px; /* topbar / main / bottombar */
   grid-template-areas:
-    "topbar topbar"
-    "sidebar main";
+    "topbar    topbar"
+    "sidebar   main"
+    "sidebar   bottombar";
   min-height: 100vh;
   transition: grid-template-columns 200ms ease;
 }
@@ -96,24 +98,86 @@ When `data-collapsed="true"`:
 
 The icon-rail-only state is part of the design — at 60px wide, the icons + active glow alone read as functional navigation.
 
-## Quick-Actions Command Bar
+## Bottom Function-Key Bar (context-aware)
 
-Four tiles in a horizontal grid, placed directly below the page header. Each tile shows:
-- `[KEY]` keyboard shortcut (large, glowing)
-- icon (16px lucide stroke)
-- label (uppercase, 13px)
-- path (lowercase, 11px, dim)
+**Supersedes the dashboard Quick-Actions tile** as of sketch 005. Always-visible
+TUI-style status bar (mc / nano / vim) under the main pane. Each route declares
+its own shortcut set; globals (`[F1] HELP`, `[ESC] LOGOUT`) append on every
+route. Right side carries `UPTIME` + a live local clock.
 
 ```html
-<button class="qa">
-  <span class="qa-key">[N]</span>
-  <span class="qa-icon"><svg>...</svg></span>
-  <span class="qa-label">Add Item</span>
-  <span class="qa-path">/items/new</span>
-</button>
+<footer class="bottombar">
+  <div class="bb-shortcuts">
+    <button class="bb-shortcut">
+      <span class="bb-key">N</span>
+      <span class="bb-label">Add Item</span>
+    </button>
+    <!-- ... per-route shortcuts ... -->
+    <button class="bb-shortcut"><span class="bb-key">F1</span><span class="bb-label">Help</span></button>
+    <button class="bb-shortcut danger"><span class="bb-key">ESC</span><span class="bb-label">Logout</span></button>
+  </div>
+  <div class="bb-status">
+    <span>UPTIME <b>442:12:05</b></span>
+    <span class="sep">|</span>
+    <span>LOCAL <b>14:25:34</b></span>
+  </div>
+</footer>
 ```
 
-Reads as "operator's command surface" rather than "buttons". The `[KEY]` column has its own border-right separator inside the tile so it functions visually as a hardware key cap.
+Key visual: `[KEY]` chips are **amber-on-near-black** (`background: var(--amber)`,
+`color: #1a0e00`) so they read as physical key caps rather than green-on-green.
+`.danger` variant swaps amber for `--accent-danger`. Hover lifts the cap with a
+faint amber glow.
+
+```css
+.bb-shortcut .bb-key {
+  background: var(--amber);
+  color: #1a0e00;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  padding: 2px 7px;
+  font-size: 11px;
+  transition: all 80ms ease;
+}
+.bb-shortcut:hover .bb-key {
+  background: var(--amber-bright);
+  box-shadow: 0 0 8px rgba(255, 224, 160, 0.5);
+}
+.bb-shortcut.danger .bb-key { background: var(--accent-danger); color: #2a0000; }
+```
+
+### One source of truth for shortcuts
+
+Each route declares `shortcuts: [{key, label, action, danger?}]`. The same
+array drives the bar render AND the keyboard dispatcher — no duplication. In
+React this becomes `useShortcuts(page)` + `<Bottombar />`. Globals are spread
+in by the bar component itself.
+
+```js
+const PAGES = {
+  dashboard: { shortcuts: [
+    { key: 'N', label: 'Add Item',      action: () => navTo('/items/new') },
+    { key: 'S', label: 'Scan',          action: () => navTo('/scan') },
+    { key: 'L', label: 'Loans',         action: () => navTo('/loans') },
+    { key: 'Q', label: 'Quick Capture', action: () => openQuickCapture() },
+  ] },
+  approvals: { shortcuts: [
+    { key: 'A', label: 'Approve', action: approveSelected },
+    { key: 'R', label: 'Reject',  action: rejectSelected, danger: true },
+    { key: 'D', label: 'Defer',   action: deferSelected },
+  ] },
+};
+```
+
+### Why this won (over the dashboard tile)
+
+- **Always available** — every route gets shortcuts, not just the dashboard
+- **Less hero space wasted** — dashboard reclaims the 4-tile band for stats / activity
+- **Genre-correct** — TUI status bar fits the premium-terminal aesthetic better than a card grid
+- **Doesn't collapse** — sidebar can shrink to 60px without losing the shortcut surface
+
+The old Quick-Actions tile pattern (`.qa` / `qa-grid`) is **deprecated** but
+left intact in the theme for legacy reference. Don't reach for it on new pages.
 
 ## HUD Row (3 panels, 1.2 / 1.2 / 1 ratio)
 
@@ -134,5 +198,5 @@ Activity table is the dominant element — full-width rows, columns: Timestamp /
 
 ## Origin
 
-Sketches: 001 Variant A (Mission Control)
-Source: `sources/001-premium-terminal-dashboard/index.html`
+Sketches: 001 Variant A (Mission Control), 005 Variant A (interactive nav + bottombar + user menu)
+Sources: `sources/001-premium-terminal-dashboard/index.html`, `sources/005-interactive-nav/index.html`
