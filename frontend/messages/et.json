@@ -314,6 +314,7 @@
       "description": "Vali eelistatud visuaalne teema",
       "light": "Hele",
       "dark": "Tume",
+      "retro-terminal": "Retro-terminal",
       "system": "Süsteem",
       "saved": "Teema uuendatud",
       "saveError": "Teema uuendamine ebaõnnestus"

@@ -43,9 +43,10 @@ function ThemeSyncer({ children }: { children: React.ReactNode }) {
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   return (
     <NextThemesProvider
-      attribute="class"
+      attribute={["class", "data-theme"]}
       defaultTheme="light"
       enableSystem
+      themes={["light", "dark", "retro-terminal"]}
       disableTransitionOnChange
     >
       <ThemeSyncer>{children}</ThemeSyncer>

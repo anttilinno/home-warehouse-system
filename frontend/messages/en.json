@@ -670,6 +670,7 @@
       "description": "Choose your preferred visual theme",
       "light": "Light",
       "dark": "Dark",
+      "retro-terminal": "Retro Terminal",
       "system": "System",
       "saved": "Theme updated",
       "saveError": "Failed to update theme"

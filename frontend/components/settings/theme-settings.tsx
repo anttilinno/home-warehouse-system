@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useTheme } from "next-themes";
 import { useTranslations } from "next-intl";
-import { Sun, Moon, Monitor } from "lucide-react";
+import { Sun, Moon, Monitor, Terminal } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -19,6 +19,7 @@ import { toast } from "sonner";
 const THEME_OPTIONS = [
   { value: "light", icon: Sun },
   { value: "dark", icon: Moon },
+  { value: "retro-terminal", icon: Terminal },
   { value: "system", icon: Monitor },
 ] as const;
 
