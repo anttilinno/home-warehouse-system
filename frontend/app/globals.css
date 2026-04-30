@@ -156,6 +156,7 @@
   --bg-panel:    #0a0e0a;
   --bg-panel-2:  #10160f;
   --bg-elevated: #1c241c;
+  --bg-hover:    #2e3d2c;
   --bg-active:   #3f5c3d;
 
   --fg-dim:    #826b2c;   /* borders / inactive only — NEVER text */
@@ -165,10 +166,19 @@
   --fg-glow:   #fff8df;   /* warm white — top-emphasis */
 
   --amber:        #ffd07a;
+  --amber-bright: #ffe0a0;
 
-  --accent-warn:   #ffb84a;
-  --accent-danger: #ff6a6a;
-  --accent-info:   #4ad6ff;
+  --accent-warn:      #ffb84a;
+  --accent-warn-bg:   rgba(255, 184, 74, 0.14);
+  --accent-danger:    #ff6a6a;
+  --accent-danger-bg: rgba(255, 106, 106, 0.14);
+  --accent-info:      #4ad6ff;
+  --accent-info-bg:   rgba(74, 214, 255, 0.10);
+
+  /* Strokes (premium-only — for retro-themed components in Step 5). */
+  --border-thin:  1px solid var(--fg-dim);
+  --border-thick: 2px solid var(--fg-dim);
+  --border-glow:  1px solid rgba(255, 208, 122, 0.55);
 
   /* Shape & type overrides (sharp corners + monospace body while theme is on). */
   --radius: 0;
@@ -220,6 +230,39 @@
   --sidebar-accent-foreground: var(--fg-glow);
   --sidebar-border: var(--fg-dim);
   --sidebar-ring: var(--fg-mid);
+}
+
+/* Retro Terminal — body scanlines + vignette (Step 3 of RETRO-THEME-ROLLOUT.md).
+   Scoped to [data-theme="retro-terminal"] so light/dark themes are unaffected. */
+[data-theme="retro-terminal"] body {
+  background-image:
+    repeating-linear-gradient(
+      0deg,
+      rgba(214, 255, 220, 0.025) 0,
+      rgba(214, 255, 220, 0.025) 1px,
+      transparent 1px,
+      transparent 3px
+    ),
+    radial-gradient(ellipse at center, #0a140c 0%, var(--bg-base) 80%);
+  background-attachment: fixed;
+  min-height: 100vh;
+}
+
+/* Retro Terminal — explicit rounded-* zeroing.
+   The @theme inline block at the top of this file inlines
+   `border-radius: calc(var(--radius) ± Npx)` into Tailwind utilities, so
+   rounded-xl..4xl still render with positive corners when --radius is 0
+   (their calc adds 4..16px). Override at the utility-class level. rounded-full
+   intentionally untouched — circles (avatars, status dots) stay round. */
+[data-theme="retro-terminal"] .rounded,
+[data-theme="retro-terminal"] .rounded-sm,
+[data-theme="retro-terminal"] .rounded-md,
+[data-theme="retro-terminal"] .rounded-lg,
+[data-theme="retro-terminal"] .rounded-xl,
+[data-theme="retro-terminal"] .rounded-2xl,
+[data-theme="retro-terminal"] .rounded-3xl,
+[data-theme="retro-terminal"] .rounded-4xl {
+  border-radius: 0;
 }
 
 /* Animations */
