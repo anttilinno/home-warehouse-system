@@ -14,7 +14,8 @@
 - [x] **v1.9 Quick Capture** — Phases 43-47 (shipped 2026-03-14)
 - [x] **v2.0 Retro Frontend** — Phases 48-55 (shipped 2026-04-14)
 - [x] **v2.1 Feature Parity — Items, Loans & Scanning** — Phases 56-63 (shipped 2026-04-17)
-- [ ] **v2.2 Scanning & Stabilization** — Phases 64-72 (active)
+- [~] **v2.2 Scanning & Stabilization** — Phases 64-66 (abandoned 2026-04-30; frontend2 wiped before completion)
+- [ ] **v3.0 Premium-Terminal Frontend** — Phases TBD (planning, 2026-04-30)
 
 ## Phases
 

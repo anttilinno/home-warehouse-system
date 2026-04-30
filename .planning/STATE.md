@@ -1,17 +1,16 @@
 ---
 gsd_state_version: 1.0
-milestone: v2.2
-milestone_name: Scanning & Stabilization
-status: completed
-stopped_at: Phase 66 context gathered
-last_updated: "2026-04-19T17:00:29.211Z"
-last_activity: "2026-04-19 -- Phase 65 Plan 11 complete (G-65-01 regression guard, Option C both branches). Branch A Playwright E2E at frontend2/e2e/scan-lookup.spec.ts — first Playwright surface in the repo, chromium + firefox projects, no webServer, verified green on both browsers. Branch B Go HTTP+Postgres integration at backend/internal/domain/warehouse/item/handler_integration_test.go under //go:build integration — reuses existing backend/tests/testdb harness, 3 subtests (200 happy path / 404 never-existed / 404 cross-tenant leak guard — the last is load-bearing because a mocked service makes "other workspace" indistinguishable from "never existed"), verified green 3/3 in 0.21s. CLAUDE.md (new project root) has §E2E Tests + §Backend Integration Tests runbooks. Commits 5e77f98 (feat Branch A) + 8d4191d (test Branch B) — split because artifacts have zero file overlap (bun/Playwright vs go/pgx). 1 Rule 3 auto-fix (reused tests/testdb vs plan's parallel internal/testutil/integration.go suggestion). Non-integration default lanes still green: backend go test ./... + frontend vitest 712/712 (e2e/ excluded)."
+milestone: v3.0
+milestone_name: Premium-Terminal Frontend
+status: planning
+last_updated: "2026-04-30T20:07:55.345Z"
+last_activity: 2026-04-30
 progress:
-  total_phases: 6
-  completed_phases: 6
-  total_plans: 16
-  completed_plans: 16
-  percent: 100
+  total_phases: 0
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
+  percent: 0
 ---
 
 # Project State: Home Warehouse System
@@ -21,15 +20,14 @@ progress:
 See: `.planning/PROJECT.md` (updated 2026-04-18)
 
 **Core value:** Reliable inventory access anywhere -- online or offline -- with seamless sync
-**Current focus:** Phase 65 — item-lookup-and-not-found-flow
+**Current focus:** v3.0 Premium-Terminal Frontend — frontend2 redesign rebuild
 
 ## Current Position
 
-Phase: 65 (item-lookup-and-not-found-flow) — COMPLETE (11/11 plans, all LOOK-0N requirements shippable, G-65-01 closed with matched regression guards at backend + frontend layers)
-Plan: 11/11 (all plans shipped)
-Status: Phase 65 DONE; Phase 66 Quick-Action Menu unblocked
-Last activity: 2026-04-19 -- Phase 65 Plan 11 complete (G-65-01 regression guard, Option C both branches). Branch A Playwright E2E at frontend2/e2e/scan-lookup.spec.ts — first Playwright surface in the repo, chromium + firefox projects, no webServer, verified green on both browsers. Branch B Go HTTP+Postgres integration at backend/internal/domain/warehouse/item/handler_integration_test.go under //go:build integration — reuses existing backend/tests/testdb harness, 3 subtests (200 happy path / 404 never-existed / 404 cross-tenant leak guard — the last is load-bearing because a mocked service makes "other workspace" indistinguishable from "never existed"), verified green 3/3 in 0.21s. CLAUDE.md (new project root) has §E2E Tests + §Backend Integration Tests runbooks. Commits 5e77f98 (feat Branch A) + 8d4191d (test Branch B) — split because artifacts have zero file overlap (bun/Playwright vs go/pgx). 1 Rule 3 auto-fix (reused tests/testdb vs plan's parallel internal/testutil/integration.go suggestion). Non-integration default lanes still green: backend go test ./... + frontend vitest 712/712 (e2e/ excluded).
-Next step: Begin Phase 66 (Quick-Action Menu) — post-scan action overlay that stays on /scan with default actions (View Item, Loan, Back to Scan) and state-adaptive behavior for archived / loaned / needs-review items. Requirements QA-01..03. Depends on Phase 65 (now satisfied).
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-04-30 — Milestone v3.0 started
 
 ## Performance Metrics
 
@@ -55,9 +53,10 @@ Next step: Begin Phase 66 (Quick-Action Menu) — post-scan action overlay that 
 | v1.9 | 5 | 9 | Complete |
 | v2.0 | 8 | 18 | Complete |
 | v2.1 | 8 | 29 | Complete |
-| v2.2 | 9 | TBD | Roadmap created |
+| v2.2 | 9 | partial | Abandoned (frontend2 wiped before completion; phases 65–66 obsolete) |
+| v3.0 | TBD | TBD | Planning |
 
-## v2.2 Phase Overview
+## v2.2 Phase Overview (abandoned — kept for archaeology)
 
 | Phase | Name | Reqs | Deps | Status |
 |-------|------|------|------|--------|
@@ -113,9 +112,9 @@ Next step: Begin Phase 66 (Quick-Action Menu) — post-scan action overlay that 
 
 ## Session Continuity
 
-Last session: 2026-04-19T17:00:29.207Z
-Stopped at: Phase 66 context gathered
-Next step: Begin Phase 66 (Quick-Action Menu) — post-scan overlay on /scan with state-adaptive actions (View Item, Loan, Back to Scan; hide Loan when on active loan; Unarchive for archived; Mark Reviewed for needs_review). Requirements QA-01..03. Run /gsd-discuss-phase 66 or /gsd-plan-phase 66 to start.
+Last session: 2026-04-30
+Stopped at: v3.0 milestone initialized; planning research → requirements → roadmap
+Next step: Run domain/stack/architecture/pitfalls research, then define requirements and roadmap.
 
 ---
 *Updated: 2026-04-19 — Phase 65 COMPLETE (Plan 65-11: G-65-01 regression guard, Option C both branches). **Branch A — Playwright E2E (5e77f98):** first Playwright surface in the repo. frontend2/e2e/scan-lookup.spec.ts logs in via real /login (cookies set for both page + request contexts), seeds item with unique per-run barcode (`E2E-${Date.now()}`) via cookie-authenticated `page.request.post("/api/workspaces/{wsId}/items", ...)`, navigates /scan → MANUAL tab → types code → clicks LOOK UP CODE → asserts MATCHED banner (locale-agnostic `/matched|vaste leitud/i`) + seeded item name; finally cleanup best-effort. frontend2/playwright.config.ts: chromium + firefox projects, no webServer (expects dev stack running per CLAUDE.md runbook). frontend2/package.json: @playwright/test devDep + test:e2e + test:e2e:headed scripts. frontend2/vitest.config.ts excludes **/e2e/** (Playwright's test.describe API differs from Vitest's, would collide). frontend2/.gitignore: test-results/ + playwright-report/ + playwright/.cache/. Verified green on chromium and firefox against the running dev stack. **Branch B — Go HTTP+Postgres integration test (8d4191d):** first Go integration-test surface at backend/internal/domain/warehouse/item/handler_integration_test.go under //go:build integration. Real item.NewService + real postgres.NewItemRepository wired to a chi+humachi test router that injects workspace/user context exactly like appMiddleware.GetWorkspaceID/GetUser do in production. Uses the existing backend/tests/testdb harness (SetupTestDB with TEST_DATABASE_URL default `postgresql://wh:wh@localhost:5432/warehouse_test`, fixture user+workspace, CleanupTestDB via t.Cleanup) rather than creating the parallel backend/internal/testutil/integration.go that Plan 65-11's Task 1 step B.1 suggested — classified as 1 Rule 3 Blocking auto-fix because creating parallel plumbing would have fragmented integration-test conventions against an already-sufficient harness. Three subtests: (1) 200 happy path on seeded unique barcode returns the item with barcode + workspace_id + name matching; (2) 404 for a guaranteed-unique `NEVER-EXISTED-{uuid}` code; (3) **404 cross-tenant leak guard** — seeds a barcode in `otherWorkspaceID` and queries from OUR workspace's router, asserts NotFound because the real SQL `WHERE barcode = $2 AND workspace_id = $1` clause is the source of truth; the handler unit test in handler_test.go cannot assert this because with a mocked ServiceInterface "other workspace" and "never existed" are indistinguishable (both return ErrItemNotFound). Verified green: 3/3 subtests PASS in 0.21s with TEST_DATABASE_URL=postgresql://wh:wh@localhost:5432/warehouse_test. **Coverage matrix:** Branch A catches both backend reverts (Plan 65-09) AND frontend reverts (Plan 65-10) — banner renders NOT FOUND under either; Branch B catches backend reverts AND specifically the workspace_id WHERE clause (cross-tenant leak guard). Together they form a matched pair of regression guards — any single-layer regression of G-65-01's two-layer fix fails at least one test. **CLAUDE.md (new project-root, auto-loaded by Claude Code as project instructions):** §E2E Tests section documents the Playwright runbook (start Postgres / backend / frontend dev; seeder creds E2E_USER=seeder@test.local + E2E_PASS=password123 overridable via env; `cd frontend2 && bun run test:e2e` or test:e2e:headed), how to add a new spec, and the auth contract (the /login form has two buttons with "LOG IN" text — the submit-type button is distinguished by `^LOG IN$` exact match; after login access_token cookie is set and inherited by both page context and page.request). §Backend Integration Tests section documents `-tags=integration` + TEST_DATABASE_URL + Postgres prereq and notes frontend-side reverts are NOT caught at this layer. **Two-commit split (not squashed):** 5e77f98 (feat Branch A) + 8d4191d (test Branch B) because artifacts have zero file overlap (bun/Playwright vs go/pgx) — future git archaeology stays cleaner with the stacks separated. **Non-integration default lanes still green:** backend `go test ./...` (no integration tag) zero-failures; frontend `bunx vitest run` with e2e/ excluded 712/712. **Phase 65 SHIPPABLE:** all 11 plans (01-10 original scope + 09-11 gap closure) shipped; LOOK-01/02/03 all have rendered user paths + unit tests + regression guards at the correct layers + EN+ET translations + zero bundle regression (main gzip 114418 B, scanner gzip 58057 B at CLRWiLFx hash) + G-65-01 closed end-to-end. Phase 66 Quick-Action Menu now unblocked.)*

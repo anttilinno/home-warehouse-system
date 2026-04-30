@@ -186,33 +186,34 @@ Reliable inventory access anywhere — online or offline — with seamless sync.
 - Storing raw OAuth tokens — app never calls provider APIs after login
 - Popup/window-based OAuth flow — popup blockers, mobile issues, PWA incompatibility
 
-## Current Milestone: v2.2 Scanning & Stabilization
+## Current Milestone: v3.0 Premium-Terminal Frontend (frontend2)
 
-**Goal:** Bring barcode scanning + mobile FAB to `/frontend2` at full v1.3 parity, wire into loans and quick capture, and close accumulated verification/coverage/hygiene debt from v1.9–v2.1.
+**Goal:** Rebuild `/frontend2` from a clean slate with full sketch 005 premium-terminal fidelity — a redesigned UI track distinct from the frontend1 re-skin. Aggressive aesthetic, TUI-style chrome, function-key bottombar, slim brand topbar, sidebar `// GROUP` labels, scanlines, monospace, sharp corners.
 
-**Target features — Scanning (frontend2):**
-- Barcode/QR scanner with camera (QR, UPC/EAN, Code128)
-- Audio/haptic/visual feedback on scan
-- Flashlight/torch toggle
-- Scan history (last 10, localStorage)
-- Manual barcode entry fallback
-- Quick-action menu after scan (View/Loan/Move/Repair, context-aware)
-- "Item not found" → create item flow
-- Scan integration in Loan creation (item + borrower)
-- Scan integration in Quick Capture (barcode autofill)
-- Floating action button with context-aware radial menu (scan/add/loan)
+**Target features:**
+- App scaffold (Vite + React 19) with retro-terminal token system + scanlines + monospace globals
+- Topbar with slim brand mark, workspace pill, ONLINE indicator
+- Sidebar with `// OVERVIEW`, `// INVENTORY`, `// SYSTEM` group labels and collapse-to-rail
+- Function-key Bottombar (context-aware shortcuts, F1 help, SESSION/LOCAL clock)
+- Page-header pattern with `// ROUTE` breadcrumb + `SESSION ... // LAST SYNC ...` system meta
+- Auth (login, register, OAuth — match frontend1 capability)
+- Items + Item Photos (list, detail, CRUD, archive, photos)
+- Loans (active/overdue/history tabs, return flow)
+- Borrowers (CRUD + active/historical loan panels)
+- Taxonomy (hierarchical categories, locations, containers)
+- Scan (single-route, QR + UPC/EAN/Code128, manual fallback, post-scan menu)
+- Settings (modular subpages — profile, appearance, language, formats, security, data)
+- Dashboard (HUD row + activity TUI table + alerts/approvals rail)
+- i18n (en/et/ru — re-decide library: native Intl vs Lingui vs other)
 
-**Target features — Stabilization:**
-- VERIFICATION.md backfill for v2.1 phases 58/59/60
-- Sign off 8 unsigned `/demo` checkpoints for Phase 57 retro primitives
-- Nyquist retroactive validation for v1.9 phases 43–47
-- Backend coverage: pendingchange handler.go unit tests (57.3% → ≥80%), jobs ProcessTask mocking (20.1% → actionable baseline)
-- Test hygiene: remove 56 `waitForTimeout` calls across 24 E2E files, adopt orphaned Go test factories, fix 4 pre-existing Vitest failures
+**Constraint — re-skin vs redesign:**
+- frontend1: stays a re-skin (token map only, no structural changes per `feedback_reskin_not_redesign.md`)
+- frontend2: redesigned (this milestone) to sketch 005 fidelity — explicitly authorized exception
 
-**Prep items:**
-- Confirm canonical barcode-lookup endpoint (backend path + response shape)
-- Confirm `@yudiel/react-qr-scanner@2.5.1` React 19 peerDep (or alternative)
-- Confirm cascade policy for category/location delete (block vs cascade vs un-set)
+**Predecessor work abandoned:**
+- v2.0 Retro Frontend (phases 48-55, shipped) — frontend2 wiped, work lives in git history only
+- v2.1 Feature Parity (phases 56-63, shipped) — same; phases archived under `.planning/milestones/v2.1-phases/`
+- v2.2 Scanning & Stabilization (phases 64-72, never shipped) — abandoned with the wipe; phases 65/66 in-progress at the time
 
 ## Current State
 
@@ -337,4 +338,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-18 — milestone v2.2 Scanning & Stabilization started*
+*Last updated: 2026-04-30 — milestone v3.0 Premium-Terminal Frontend started; v2.2 abandoned with frontend2 wipe*
