@@ -3,10 +3,10 @@ gsd_state_version: 1.0
 milestone: v3.0
 milestone_name: Premium-Terminal Frontend
 status: planning
-last_updated: "2026-04-30T20:07:55.345Z"
+last_updated: "2026-04-30T21:00:00.000Z"
 last_activity: 2026-04-30
 progress:
-  total_phases: 0
+  total_phases: 17
   completed_phases: 0
   total_plans: 0
   completed_plans: 0
@@ -24,10 +24,10 @@ See: `.planning/PROJECT.md` (updated 2026-04-18)
 
 ## Current Position
 
-Phase: Not started (defining requirements)
+Phase: 1 ready (Foundation + Conflict Spikes)
 Plan: —
-Status: Defining requirements
-Last activity: 2026-04-30 — Milestone v3.0 started
+Status: Roadmap defined; Phase 1 unblocked
+Last activity: 2026-04-30 — Milestone v3.0 roadmap created (17 phases, 106 reqs mapped, phase numbering reset to 1 since v2.2 has no continuity with the rebuild)
 
 ## Performance Metrics
 
@@ -54,7 +54,7 @@ Last activity: 2026-04-30 — Milestone v3.0 started
 | v2.0 | 8 | 18 | Complete |
 | v2.1 | 8 | 29 | Complete |
 | v2.2 | 9 | partial | Abandoned (frontend2 wiped before completion; phases 65–66 obsolete) |
-| v3.0 | TBD | TBD | Planning |
+| v3.0 | 17 | TBD | Planning (roadmap defined 2026-04-30) |
 
 ## v2.2 Phase Overview (abandoned — kept for archaeology)
 
@@ -71,6 +71,32 @@ Last activity: 2026-04-30 — Milestone v3.0 started
 | 72 | Stabilization — Code & Tests | STAB-CODE-01..04 (4) | — (parallel) | Not started |
 
 **Coverage:** 32/32 v2.2 requirements mapped to exactly one phase (100%).
+
+## v3.0 Phase Overview
+
+| Phase | Name | Reqs | Deps | Status |
+|-------|------|------|------|--------|
+| 1 | Foundation + Conflict Spikes | FOUND-01..06 (6) | — | Not started |
+| 2 | Tokens + Type System | TOKEN-01..05 (5) | 1 | Not started |
+| 3 | Layout Primitives + Bottombar | SHELL-01..06, BAR-01..05, TUI-01 (12) | 2 | Not started |
+| 4 | Retro Atoms | TUI-02, TUI-03, TUI-04, TUI-06 (4) | 3 | Not started |
+| 5 | Auth | AUTH-01..10 (10) | 3 | Not started |
+| 6 | Providers | PROV-01..04 (4) | 5 | Not started |
+| 7 | Items + Photos | ITEM-01..10 (10) | 4, 6 | Not started |
+| 8 | Loans | LOAN-01..06 (6) | 7 | Not started |
+| 9 | Borrowers | BORR-01..05 (5) | 8 | Not started |
+| 10 | Taxonomy | TAX-01..06 (6) | 4, 6 | Not started |
+| 11 | Scan (single-route) | SCAN-01..11 (11) | 7 | Not started |
+| 12 | Settings hub | SETT-01..09 (9) | 5, 6 | Not started |
+| 13 | Dashboard | DASH-01..05 (5) | 6 | Not started |
+| 14 | System group | SYS-01..04 (4) | 7 | Not started |
+| 15 | i18n catalog gap-fill (et + ru) | I18N-01..03 (3) | 6, 12 | Not started |
+| 16 | Command Palette | TUI-05 (1) | 6 | Not started |
+| 17 | Polish & Quality | POL-01..05 (5) | 14 | Not started |
+
+**Coverage:** 106/106 v3.0 requirements mapped to exactly one phase (100%). Note: the REQUIREMENTS.md "Total: 91 requirements across 14 categories" line was incorrect — the actual list contains 106 requirements across 17 categories (FOUND/TOKEN/SHELL/BAR/PROV/AUTH/ITEM/LOAN/BORR/TAX/SCAN/SETT/DASH/I18N/SYS/TUI/POL). The total has been corrected in REQUIREMENTS.md.
+
+**Phase numbering reset:** v3.0 starts at Phase 1 — no continuity with v2.2's 64-72. The frontend2 rebuild is a clean-slate rewrite; predecessor phase numbering would imply continuity that does not exist.
 
 ## Accumulated Context
 

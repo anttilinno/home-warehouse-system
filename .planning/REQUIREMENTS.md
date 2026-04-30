@@ -206,117 +206,117 @@
 
 | REQ-ID | Phase | Status |
 |--------|-------|--------|
-| FOUND-01 | TBD | Pending |
-| FOUND-02 | TBD | Pending |
-| FOUND-03 | TBD | Pending |
-| FOUND-04 | TBD | Pending |
-| FOUND-05 | TBD | Pending |
-| FOUND-06 | TBD | Pending |
-| TOKEN-01 | TBD | Pending |
-| TOKEN-02 | TBD | Pending |
-| TOKEN-03 | TBD | Pending |
-| TOKEN-04 | TBD | Pending |
-| TOKEN-05 | TBD | Pending |
-| SHELL-01 | TBD | Pending |
-| SHELL-02 | TBD | Pending |
-| SHELL-03 | TBD | Pending |
-| SHELL-04 | TBD | Pending |
-| SHELL-05 | TBD | Pending |
-| SHELL-06 | TBD | Pending |
-| BAR-01 | TBD | Pending |
-| BAR-02 | TBD | Pending |
-| BAR-03 | TBD | Pending |
-| BAR-04 | TBD | Pending |
-| BAR-05 | TBD | Pending |
-| PROV-01 | TBD | Pending |
-| PROV-02 | TBD | Pending |
-| PROV-03 | TBD | Pending |
-| PROV-04 | TBD | Pending |
-| AUTH-01 | TBD | Pending |
-| AUTH-02 | TBD | Pending |
-| AUTH-03 | TBD | Pending |
-| AUTH-04 | TBD | Pending |
-| AUTH-05 | TBD | Pending |
-| AUTH-06 | TBD | Pending |
-| AUTH-07 | TBD | Pending |
-| AUTH-08 | TBD | Pending |
-| AUTH-09 | TBD | Pending |
-| AUTH-10 | TBD | Pending |
-| ITEM-01 | TBD | Pending |
-| ITEM-02 | TBD | Pending |
-| ITEM-03 | TBD | Pending |
-| ITEM-04 | TBD | Pending |
-| ITEM-05 | TBD | Pending |
-| ITEM-06 | TBD | Pending |
-| ITEM-07 | TBD | Pending |
-| ITEM-08 | TBD | Pending |
-| ITEM-09 | TBD | Pending |
-| ITEM-10 | TBD | Pending |
-| LOAN-01 | TBD | Pending |
-| LOAN-02 | TBD | Pending |
-| LOAN-03 | TBD | Pending |
-| LOAN-04 | TBD | Pending |
-| LOAN-05 | TBD | Pending |
-| LOAN-06 | TBD | Pending |
-| BORR-01 | TBD | Pending |
-| BORR-02 | TBD | Pending |
-| BORR-03 | TBD | Pending |
-| BORR-04 | TBD | Pending |
-| BORR-05 | TBD | Pending |
-| TAX-01 | TBD | Pending |
-| TAX-02 | TBD | Pending |
-| TAX-03 | TBD | Pending |
-| TAX-04 | TBD | Pending |
-| TAX-05 | TBD | Pending |
-| TAX-06 | TBD | Pending |
-| SCAN-01 | TBD | Pending |
-| SCAN-02 | TBD | Pending |
-| SCAN-03 | TBD | Pending |
-| SCAN-04 | TBD | Pending |
-| SCAN-05 | TBD | Pending |
-| SCAN-06 | TBD | Pending |
-| SCAN-07 | TBD | Pending |
-| SCAN-08 | TBD | Pending |
-| SCAN-09 | TBD | Pending |
-| SCAN-10 | TBD | Pending |
-| SCAN-11 | TBD | Pending |
-| SETT-01 | TBD | Pending |
-| SETT-02 | TBD | Pending |
-| SETT-03 | TBD | Pending |
-| SETT-04 | TBD | Pending |
-| SETT-05 | TBD | Pending |
-| SETT-06 | TBD | Pending |
-| SETT-07 | TBD | Pending |
-| SETT-08 | TBD | Pending |
-| SETT-09 | TBD | Pending |
-| DASH-01 | TBD | Pending |
-| DASH-02 | TBD | Pending |
-| DASH-03 | TBD | Pending |
-| DASH-04 | TBD | Pending |
-| DASH-05 | TBD | Pending |
-| I18N-01 | TBD | Pending |
-| I18N-02 | TBD | Pending |
-| I18N-03 | TBD | Pending |
-| SYS-01 | TBD | Pending |
-| SYS-02 | TBD | Pending |
-| SYS-03 | TBD | Pending |
-| SYS-04 | TBD | Pending |
-| TUI-01 | TBD | Pending |
-| TUI-02 | TBD | Pending |
-| TUI-03 | TBD | Pending |
-| TUI-04 | TBD | Pending |
-| TUI-05 | TBD | Pending |
-| TUI-06 | TBD | Pending |
-| POL-01 | TBD | Pending |
-| POL-02 | TBD | Pending |
-| POL-03 | TBD | Pending |
-| POL-04 | TBD | Pending |
-| POL-05 | TBD | Pending |
+| FOUND-01 | Phase 1 | Pending |
+| FOUND-02 | Phase 1 | Pending |
+| FOUND-03 | Phase 1 | Pending |
+| FOUND-04 | Phase 1 | Pending |
+| FOUND-05 | Phase 1 | Pending |
+| FOUND-06 | Phase 1 | Pending |
+| TOKEN-01 | Phase 2 | Pending |
+| TOKEN-02 | Phase 2 | Pending |
+| TOKEN-03 | Phase 2 | Pending |
+| TOKEN-04 | Phase 2 | Pending |
+| TOKEN-05 | Phase 2 | Pending |
+| SHELL-01 | Phase 3 | Pending |
+| SHELL-02 | Phase 3 | Pending |
+| SHELL-03 | Phase 3 | Pending |
+| SHELL-04 | Phase 3 | Pending |
+| SHELL-05 | Phase 3 | Pending |
+| SHELL-06 | Phase 3 | Pending |
+| BAR-01 | Phase 3 | Pending |
+| BAR-02 | Phase 3 | Pending |
+| BAR-03 | Phase 3 | Pending |
+| BAR-04 | Phase 3 | Pending |
+| BAR-05 | Phase 3 | Pending |
+| PROV-01 | Phase 6 | Pending |
+| PROV-02 | Phase 6 | Pending |
+| PROV-03 | Phase 6 | Pending |
+| PROV-04 | Phase 6 | Pending |
+| AUTH-01 | Phase 5 | Pending |
+| AUTH-02 | Phase 5 | Pending |
+| AUTH-03 | Phase 5 | Pending |
+| AUTH-04 | Phase 5 | Pending |
+| AUTH-05 | Phase 5 | Pending |
+| AUTH-06 | Phase 5 | Pending |
+| AUTH-07 | Phase 5 | Pending |
+| AUTH-08 | Phase 5 | Pending |
+| AUTH-09 | Phase 5 | Pending |
+| AUTH-10 | Phase 5 | Pending |
+| ITEM-01 | Phase 7 | Pending |
+| ITEM-02 | Phase 7 | Pending |
+| ITEM-03 | Phase 7 | Pending |
+| ITEM-04 | Phase 7 | Pending |
+| ITEM-05 | Phase 7 | Pending |
+| ITEM-06 | Phase 7 | Pending |
+| ITEM-07 | Phase 7 | Pending |
+| ITEM-08 | Phase 7 | Pending |
+| ITEM-09 | Phase 7 | Pending |
+| ITEM-10 | Phase 7 | Pending |
+| LOAN-01 | Phase 8 | Pending |
+| LOAN-02 | Phase 8 | Pending |
+| LOAN-03 | Phase 8 | Pending |
+| LOAN-04 | Phase 8 | Pending |
+| LOAN-05 | Phase 8 | Pending |
+| LOAN-06 | Phase 8 | Pending |
+| BORR-01 | Phase 9 | Pending |
+| BORR-02 | Phase 9 | Pending |
+| BORR-03 | Phase 9 | Pending |
+| BORR-04 | Phase 9 | Pending |
+| BORR-05 | Phase 9 | Pending |
+| TAX-01 | Phase 10 | Pending |
+| TAX-02 | Phase 10 | Pending |
+| TAX-03 | Phase 10 | Pending |
+| TAX-04 | Phase 10 | Pending |
+| TAX-05 | Phase 10 | Pending |
+| TAX-06 | Phase 10 | Pending |
+| SCAN-01 | Phase 11 | Pending |
+| SCAN-02 | Phase 11 | Pending |
+| SCAN-03 | Phase 11 | Pending |
+| SCAN-04 | Phase 11 | Pending |
+| SCAN-05 | Phase 11 | Pending |
+| SCAN-06 | Phase 11 | Pending |
+| SCAN-07 | Phase 11 | Pending |
+| SCAN-08 | Phase 11 | Pending |
+| SCAN-09 | Phase 11 | Pending |
+| SCAN-10 | Phase 11 | Pending |
+| SCAN-11 | Phase 11 | Pending |
+| SETT-01 | Phase 12 | Pending |
+| SETT-02 | Phase 12 | Pending |
+| SETT-03 | Phase 12 | Pending |
+| SETT-04 | Phase 12 | Pending |
+| SETT-05 | Phase 12 | Pending |
+| SETT-06 | Phase 12 | Pending |
+| SETT-07 | Phase 12 | Pending |
+| SETT-08 | Phase 12 | Pending |
+| SETT-09 | Phase 12 | Pending |
+| DASH-01 | Phase 13 | Pending |
+| DASH-02 | Phase 13 | Pending |
+| DASH-03 | Phase 13 | Pending |
+| DASH-04 | Phase 13 | Pending |
+| DASH-05 | Phase 13 | Pending |
+| I18N-01 | Phase 15 | Pending |
+| I18N-02 | Phase 15 | Pending |
+| I18N-03 | Phase 15 | Pending |
+| SYS-01 | Phase 14 | Pending |
+| SYS-02 | Phase 14 | Pending |
+| SYS-03 | Phase 14 | Pending |
+| SYS-04 | Phase 14 | Pending |
+| TUI-01 | Phase 3 | Pending |
+| TUI-02 | Phase 4 | Pending |
+| TUI-03 | Phase 4 | Pending |
+| TUI-04 | Phase 4 | Pending |
+| TUI-05 | Phase 16 | Pending |
+| TUI-06 | Phase 4 | Pending |
+| POL-01 | Phase 17 | Pending |
+| POL-02 | Phase 17 | Pending |
+| POL-03 | Phase 17 | Pending |
+| POL-04 | Phase 17 | Pending |
+| POL-05 | Phase 17 | Pending |
 
-**Total:** 91 requirements across 14 categories.
+**Total:** 106 requirements across 17 categories — note prior summary said 91/14 but the actual list above (and the body of the document) contains 106 requirements across 17 categories: FOUND (6), TOKEN (5), SHELL (6), BAR (5), PROV (4), AUTH (10), ITEM (10), LOAN (6), BORR (5), TAX (6), SCAN (11), SETT (9), DASH (5), I18N (3), SYS (4), TUI (6), POL (5). All 106 mapped to exactly one phase below.
 
 ---
 
 *Requirements defined: 2026-04-30*
-*Roadmap + traceability: pending roadmapper run*
+*Roadmap + traceability: 2026-04-30 — all 106 requirements mapped to phases 1-17 of the v3.0 roadmap by the roadmapper agent*
 *Milestone: v3.0 Premium-Terminal Frontend*

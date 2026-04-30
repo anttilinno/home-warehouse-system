@@ -15,7 +15,7 @@
 - [x] **v2.0 Retro Frontend** — Phases 48-55 (shipped 2026-04-14)
 - [x] **v2.1 Feature Parity — Items, Loans & Scanning** — Phases 56-63 (shipped 2026-04-17)
 - [~] **v2.2 Scanning & Stabilization** — Phases 64-66 (abandoned 2026-04-30; frontend2 wiped before completion)
-- [ ] **v3.0 Premium-Terminal Frontend** — Phases TBD (planning, 2026-04-30)
+- [ ] **v3.0 Premium-Terminal Frontend** — Phases 1-17 (planning, 2026-04-30; numbering reset since v2.2 wiped)
 
 ## Phases
 
@@ -198,9 +198,10 @@ See `.planning/milestones/v2.1-ROADMAP.md` for full details.
 
 </details>
 
-### v2.2 Scanning & Stabilization (Phases 64-72) — ACTIVE
+<details>
+<summary>[~] v2.2 Scanning & Stabilization (Phases 64-72) — ABANDONED 2026-04-30 (frontend2 wiped before completion; planning artifacts archived under `.planning/milestones/v2.2-phases-abandoned/`)</summary>
 
-Barcode scanning + mobile FAB brought to `/frontend2` at full v1.3 parity, wired into Loans and Quick Capture, with accumulated verification/coverage/hygiene debt from v1.9–v2.1 closed.
+Barcode scanning + mobile FAB brought to `/frontend2` at full v1.3 parity, wired into Loans and Quick Capture, with accumulated verification/coverage/hygiene debt from v1.9–v2.1 closed. Phase 64 + 65 shipped before the wipe; phases 66-72 never started. Phase Details below preserved for archaeology only — they no longer apply to v3.0.
 
 - [x] **Phase 64: Scanner Foundation & Scan Page** — Scanner primitives, hooks, API, and the live `/scan` route with camera preview, torch, manual fallback, and scan history
 - [x] **Phase 65: Item Lookup & Not-Found Flow** — Barcode → workspace-item lookup, not-found → create-item handoff with barcode prefill, optional external UPC enrichment (all 11 plans shipped; G-65-01 gap closure complete with Plan 65-11 landing Option C: Playwright E2E + Go HTTP+Postgres integration test — two matched regression guards, either fix reverted fails a test)
@@ -211,6 +212,30 @@ Barcode scanning + mobile FAB brought to `/frontend2` at full v1.3 parity, wired
 - [ ] **Phase 70: Taxonomy Cascade Policy** — Category / location delete warns with item count and requires explicit "Unassign and delete" confirmation
 - [ ] **Phase 71: Stabilization — Docs & Process (Gap Closure)** — VERIFICATION.md backfill for v2.1 phases 58/59/60, `/demo` sign-off for Phase 57, Nyquist retroactive validation for v1.9 phases 43–47
 - [ ] **Phase 72: Stabilization — Code & Tests (Gap Closure)** — pendingchange coverage ≥80%, jobs ProcessTask baseline, zero `waitForTimeout`, Vitest zero-failing
+
+</details>
+
+### v3.0 Premium-Terminal Frontend (Phases 1-17) — ACTIVE
+
+Clean-slate rebuild of `/frontend2` with sketch 005 premium-terminal fidelity AND feature parity with the legacy `/frontend`. Phase numbering RESETS to start at 1 — v3.0 has no continuity with v2.2 (predecessor wiped). Online-only (CI grep-guarded). All 106 v3.0 requirements (FOUND/TOKEN/SHELL/BAR/PROV/AUTH/ITEM/LOAN/BORR/TAX/SCAN/SETT/DASH/I18N/SYS/TUI/POL) map to exactly one phase. Layout primitives precede retro atoms — predecessor's reverse order forced atom rebuilds twice.
+
+- [ ] **Phase 1: Foundation + Conflict Spikes** — Vite + React 19 + TS + Tailwind 4 + RR7 scaffold, CI grep guard, carry-forward audit, three Phase 0 conflict resolutions (i18n library / mobile FAB scope / dashboard backend rollups)
+- [ ] **Phase 2: Tokens + Type System** — `styles/tokens.css` palette + Tailwind v4 `@theme` block + JetBrains Mono Variable + scanline body overlay + WCAG AAA contrast audit + Cyrillic glyph metrics check
+- [ ] **Phase 3: Layout Primitives + Bottombar** — AppShell 2×3 grid + TopBar + Sidebar (`// GROUP` labels + collapse-to-rail) + Bottombar with `useShortcuts` SSOT + `isEditableTarget` input-focus guard from first commit + PageHeader (`// ROUTE` + SESSION + LAST SYNC) + ShortcutChip + mobile breakpoint contract
+- [ ] **Phase 4: Retro Atoms** — RetroPanel/Button/Badge/Input/Select/Combobox/Textarea/Checkbox/FileInput/FormField/Table family/Tabs/Dialog/ConfirmDialog/Toast/EmptyState/Pagination/StatusDot/HUD primitives — informed by Phase 3 layout constraints; modal-stack ESC, status pills with tabular-nums, SSE state in panel headers, multi-select Shift+Click on tables
+- [ ] **Phase 5: Auth** — login + register + Google OAuth + GitHub OAuth + RequireAuth (with v2.0 spurious-logout-on-network-error bug fixed) + workspace switcher + sessions + password change + account deletion + connected accounts
+- [ ] **Phase 6: Providers** — IntlProvider + QueryClientProvider + AuthProvider + SSEProvider (with `useSSEStatus()` selector) + ToastProvider + ShortcutsProvider mounted in canonical order; chrome wires to real state once
+- [ ] **Phase 7: Items + Photos** — paginated list with search/filter/sort + detail with photo gallery + create/edit/archive/delete + multipart photo upload + `itemsApi.lookupByBarcode` (G-65-01 regression-guard pattern) + per-route `useShortcuts` registration
+- [ ] **Phase 8: Loans** — Active/Overdue/History tabbed list + create with item + borrower picker + mark returned + edit + per-item active+history panels + `?itemId=` deep-link param
+- [ ] **Phase 9: Borrowers** — flat paginated list + CRUD with active-loan delete guard + detail with active+history panels
+- [ ] **Phase 10: Taxonomy** — categories tree + locations tree + containers grouped by location + create/edit/archive with usage warnings + container delete with unassign-and-delete cascade policy
+- [ ] **Phase 11: Scan (single-route)** — `/scan` with `<BarcodeScanner>` mounted ONCE + QR/UPC/EAN/Code128 + pause-on-match (prop-driven) + Android torch + manual fallback + AudioContext + ios-haptics + scan history (last 10) + 4-state result banner + post-match quick-action overlay + UPC opt-in suggestion prefill
+- [ ] **Phase 12: Settings hub** — landing with 8 grouped rows + Profile + Security + Appearance + Language + Regional Formats + Notifications + Connected Accounts + Data Storage (online-only — clear cache + export + import only)
+- [ ] **Phase 13: Dashboard** — 4 stat tiles + activity table (TUI columns, relative <24h then absolute) + side rail (Pending Approvals + System Alerts) + HUD row (gauge + sparkline + counts) gated behind `VITE_FEATURE_HUD_ROLLUPS` flag (Conflict 3 resolution)
+- [ ] **Phase 14: System group** — Approvals + My Changes + Sync History + Imports/Exports — all activity-table style with bulk operations dispatched via Bottombar
+- [ ] **Phase 15: i18n catalog gap-fill (et + ru)** — extract en messages, translate to et + ru (lift from legacy `/frontend` next-intl + v2.1 Lingui archive), locale switcher, format hooks (`useDateFormat`/`useTimeFormat`/`useNumberFormat`) used everywhere
+- [ ] **Phase 16: Command Palette** — Cmd+K / F2 cmdk surface filtering across routes, recent actions, and workspaces; keyboard-first navigation
+- [ ] **Phase 17: Polish & Quality** — Playwright E2E + Go integration test for every cross-HTTP flow + axe-playwright a11y CI sweep + tab/keyboard navigation audit + bundle size CI guard + mobile breakpoint matrix re-test (320/360/768/1024/1440 px) + visual diff vs sketch 005
 
 ## Phase Details
 
@@ -452,7 +477,212 @@ Plans:
   4. The Vitest suite runs with zero failing tests — the 4 currently failing in `frontend/lib/api/__tests__/client.test.ts` and `use-offline-mutation.test.ts` are either fixed or explicitly skipped with a `TODO(v2.3)` reason
 **Plans**: TBD
 
+### Phase 1: Foundation + Conflict Spikes
+**Goal**: A working Vite + React 19 + TS + Tailwind 4 + RR7 + TanStack Query scaffold serves a placeholder shell at `localhost:5173`, CI blocks online-only violations, and the three open Phase 0 conflicts (i18n library / mobile FAB scope / dashboard backend rollups) have documented decisions
+**Depends on**: Nothing (first phase of v3.0)
+**Requirements**: FOUND-01, FOUND-02, FOUND-03, FOUND-04, FOUND-05, FOUND-06
+**Success Criteria** (what must be TRUE):
+  1. User running `bun run dev` in `/frontend2` from a freshly scaffolded checkout sees a working Vite + React 19 + TS + Tailwind 4 + RR7 + TanStack Query SPA serving a placeholder shell at `localhost:5173` with API requests proxied to `:8080`
+  2. CI fails any PR introducing an `idb`, `serwist`, `offline`, or `sync*` import via `scripts/check-forbidden-imports.mjs`
+  3. `.planning/research/CARRY-FORWARD.md` enumerates port-verbatim items (auth flow, OAuth callback, format hooks, Playwright auth helper, grep guard) versus rebuild items (chrome, atoms, layout, providers)
+  4. `.planning/research/I18N-DECISION.md` records the empirical Vite-8-+-SWC compat result for Lingui v6 vs react-intl with a locked decision
+  5. The mobile-FAB scope decision is recorded in v3.0 milestone scope (drop or keep with safe-area math); the dashboard-backend-rollups decision is recorded (ship feature-flagged or defer to v3.1) with backend coordination kicked off if shipping
+**Plans**: TBD
+
+### Phase 2: Tokens + Type System
+**Goal**: The premium-terminal palette, monospace typography, scanline overlay, and sharp-corner globals from sketch 005 are loaded into the app via Tailwind v4 `@theme`, with WCAG AAA contrast verified and Cyrillic glyph metrics confirmed
+**Depends on**: Phase 1
+**Requirements**: TOKEN-01, TOKEN-02, TOKEN-03, TOKEN-04, TOKEN-05
+**Success Criteria** (what must be TRUE):
+  1. User opening the placeholder shell sees the premium-terminal palette (amber + green dual-channel, near-black backgrounds, panel bevel + scanline overlay + radial vignette) applied globally
+  2. Tailwind utility classes like `bg-fg-mid`, `text-fg-bright`, `border-fg-dim` resolve to the locked CSS variables from `default.css`
+  3. JetBrains Mono Variable (latin + latin-ext subsets) is self-hosted and renders without flash of fallback font
+  4. A repo-resident contrast audit script confirms `--fg-mid`/`--fg-base`/`--fg-bright` against `--bg-panel` meet WCAG AAA, and a `prefers-contrast: more` fallback path is provided
+  5. Cyrillic + Estonian glyph metrics in JetBrains Mono produce no column drift in monospace tables (or fallback to IBM Plex Mono is recorded)
+**Plans**: TBD
+**UI hint**: yes
+
+### Phase 3: Layout Primitives + Bottombar
+**Goal**: A user logging in to a placeholder route lands inside the locked sketch 005 chrome — slim brand topbar with workspace pill + ONLINE dot, sidebar with `// GROUP` labels + collapse-to-rail + user menu footer, function-key Bottombar with `[KEY] LABEL` chips + SESSION/LOCAL clocks driven by `useShortcuts(id, [...])` SSOT, page-header with `// ROUTE` breadcrumb + SESSION + LAST SYNC meta — and single-letter shortcuts NEVER fire while the user is typing in an input
+**Depends on**: Phase 2
+**Requirements**: SHELL-01, SHELL-02, SHELL-03, SHELL-04, SHELL-05, SHELL-06, BAR-01, BAR-02, BAR-03, BAR-04, BAR-05, TUI-01
+**Success Criteria** (what must be TRUE):
+  1. User on any authenticated route sees the 2×3 CSS-Grid AppShell render TopBar (brand mark + workspace pill + ONLINE dot + user pill), Sidebar (with `// OVERVIEW` / `// INVENTORY` / `// SYSTEM` group labels + active-route bevel + glow), Bottombar (with route shortcuts + F1 HELP + SESSION/LOCAL clocks updating every second), and PageHeader (with `// {ROUTE}` + `SESSION ... // LAST SYNC ...` meta)
+  2. User clicking the sidebar collapse toggle sees the sidebar animate to 60px icon-rail mode via a single `data-collapsed` attribute toggle (no JavaScript layout / measure phase)
+  3. User typing the letter `n` (or any other single-letter shortcut) into a `<input>`, `<textarea>`, `<select>`, or contenteditable surface DOES NOT trigger any Bottombar shortcut action — the `isEditableTarget(e.target)` guard is in place from the first commit, regression-tested on every form
+  4. User pressing F1 (key OR Bottombar chip click) opens the keyboard-shortcuts help dialog; pressing ESC pops the topmost modal first and never logs out while any modal is open
+  5. User on a viewport `<768px` sees the sidebar become a drawer and the Bottombar paginate or move overflow to a sheet while keeping F1 + ESC right-anchored
+**Plans**: TBD
+**UI hint**: yes
+
+### Phase 4: Retro Atoms
+**Goal**: Every retro UI atom required by feature pages exists with sketch 005 chrome (panel bevel, sharp corners, monospace, optional `// HEADER` slot, hazard-stripe variants), with the cross-cutting TUI-genre patterns (modal-stack ESC, status pills, tabular-nums numeric columns, SSE live-dot in panel headers, multi-select Shift+Click on tables) applied across the library
+**Depends on**: Phase 3
+**Requirements**: TUI-02, TUI-03, TUI-04, TUI-06
+**Success Criteria** (what must be TRUE):
+  1. User can render every atom on a `/demo` page — RetroPanel (with `// HEADER` slot), RetroButton (default + danger + key-chip), RetroBadge (with dot-mode for collapsed sidebar), RetroInput / Select / Combobox / Textarea / Checkbox / FileInput, RetroFormField, RetroTable (with multi-select), RetroTabs, RetroDialog, RetroConfirmDialog, RetroToast (sonner-skinned), RetroEmptyState, RetroPagination, RetroStatusDot, RetroHUD primitives — all with the locked chrome
+  2. User pressing ESC inside a stack of overlays (dialog → drawer → menu) sees the topmost popped first; never logs out while any modal is open
+  3. User scanning a row of status pills sees OK / WARN / INFO / DANGER variants with locked color tokens, and numeric columns in RetroTable use `font-variant-numeric: tabular-nums`
+  4. User looking at any panel that subscribes to entity SSE events sees a `sse: ● live` text + step-end blinking dot in the panel header
+  5. User Shift+Clicking rows in a RetroTable sees range selection state + Bottombar surfaces bulk-action chips for the active selection set
+**Plans**: TBD
+**UI hint**: yes
+
+### Phase 5: Auth
+**Goal**: User can log in with email + password OR Google OAuth OR GitHub OAuth, register a new account, switch workspaces, manage sessions, change password, delete account, and link/unlink connected accounts — all with cookie-JWT (`credentials: "include"`) + single-flight 401 refresh and the v2.0 spurious-logout-on-network-error bug fixed
+**Depends on**: Phase 3
+**Requirements**: AUTH-01, AUTH-02, AUTH-03, AUTH-04, AUTH-05, AUTH-06, AUTH-07, AUTH-08, AUTH-09, AUTH-10
+**Success Criteria** (what must be TRUE):
+  1. User can log in via email + password, register a new account, and reach an authenticated placeholder route; cookie-JWT is set and 401 refresh is single-flighted in `lib/api.ts`
+  2. User can log in via Google OAuth (PKCE + Authorization Code + one-time Redis exchange) or GitHub OAuth (with `/user/emails` for private-email accounts); auto-link by verified email works and unverified emails are rejected
+  3. `RequireAuth` redirects unauthenticated users to `/login` BUT does NOT log out on transient network errors — only on HttpError 401/403
+  4. User can switch workspaces from the topbar pill; the selected `workspaceId` is the SSOT for all entity API calls
+  5. User can review active sessions + revoke individual / all-other sessions, change password (current-password verified, OAuth-only "set password" path), delete account with `DELETE` type-to-confirm + sole-owner workspace validation, and link/unlink Google + GitHub providers with last-method-removal lockout guard
+**Plans**: TBD
+**UI hint**: yes
+
+### Phase 6: Providers
+**Goal**: All four providers (Intl, SSE, Toast, Shortcuts) mount in canonical order alongside QueryClientProvider, AuthProvider, and BrowserRouter so chrome wires to real state once — TopBar ONLINE dot + PageHeader LAST SYNC bind to live SSE state, Bottombar reads from ShortcutsContext, sonner toasts mount with retro skin
+**Depends on**: Phase 5
+**Requirements**: PROV-01, PROV-02, PROV-03, PROV-04
+**Success Criteria** (what must be TRUE):
+  1. `App.tsx` mounts the provider stack in this exact order: `IntlProvider > QueryClientProvider > AuthProvider > SSEProvider > ToastProvider > ShortcutsProvider > BrowserRouter`
+  2. SSEProvider opens a single EventSource (JWT in URL query param), exposes `useSSEStatus()` returning `{ connected, lastEventAt }` consumed by the TopBar ONLINE dot + PageHeader LAST SYNC, and a `useSSE({ onEvent })` subscribe API for feature consumers
+  3. ShortcutsProvider is the register-by-id Context (ported verbatim from `frontend/components/layout/shortcuts-context.tsx`) with unregister-on-unmount cleanup; Bottombar render and keyboard dispatch both read from it
+  4. ToastProvider mounts sonner with retro-skinned styling (sharp corners, monospace, panel bevel) and `toast.promise` ergonomics work
+**Plans**: TBD
+
+### Phase 7: Items + Photos
+**Goal**: User can browse a paginated items list with search/filter/sort, view item detail with photo gallery + active-loan + history panels, create / edit / archive / delete items, upload + manage photos, and look up items by barcode via the dedicated workspace-scoped lookup endpoint (G-65-01 regression-guard pattern preserved)
+**Depends on**: Phase 4, Phase 6
+**Requirements**: ITEM-01, ITEM-02, ITEM-03, ITEM-04, ITEM-05, ITEM-06, ITEM-07, ITEM-08, ITEM-09, ITEM-10
+**Success Criteria** (what must be TRUE):
+  1. User can browse items in a paginated list (25/page) with search input, filter chips (category, location, archived), sort headers, URL-driven query params for deep-linking, and `useShortcuts("items", [...])` registration (`N` new / `/` focus-search / `F` toggle filters)
+  2. User can view an item detail page with all fields, photo gallery (lightbox + arrow-key + ESC navigation, primary thumbnail toggle, individual photo delete with confirm), active-loan panel (if any), and loan history panel
+  3. User can create a new item via `/items/new` (with optional `?barcode={code}` query-param prefill), edit via `/items/{id}/edit` with optimistic UI invalidation of `itemKeys.all` + relevant detail keys, archive / unarchive (archived hidden by default, visible via filter chip), and delete archived items with type-to-confirm dialog
+  4. User can upload up to N photos per item (JPEG/PNG/HEIC, client-resize, 10 MB cap) via native FormData multipart with no upload library
+  5. `itemsApi.lookupByBarcode(workspaceId, code)` calls `GET /api/workspaces/{wsId}/items/by-barcode/{code}` with workspace-scoped server-side authority + 404 → null mapping; cross-tenant isolation guarded by integration test
+**Plans**: TBD
+**UI hint**: yes
+
+### Phase 8: Loans
+**Goal**: User can browse loans in Active/Overdue/History tabs, create a new loan (with `?itemId=` deep-link from scan flow), mark returned, edit due date and notes, and see per-item + per-borrower active + history loan panels
+**Depends on**: Phase 7
+**Requirements**: LOAN-01, LOAN-02, LOAN-03, LOAN-04, LOAN-05, LOAN-06
+**Success Criteria** (what must be TRUE):
+  1. User can view loans in a tabbed Active/Overdue/History RetroTable view showing item / borrower / due-date / status pill
+  2. User can create a new loan via `/loans/new` with item picker + borrower picker; the `?itemId={id}` URL param preselects the item (deep-linkable from scan flow)
+  3. User can mark a loan as returned via confirm dialog and see it transition to History; can edit due date and notes after creation
+  4. Item detail page renders an "Active Loan" panel (if any) and "Loan History" panel; Borrower detail page renders "Active Loans" + "Loan History" panels
+**Plans**: TBD
+**UI hint**: yes
+
+### Phase 9: Borrowers
+**Goal**: User can browse borrowers in a flat paginated list with search, create / edit / delete borrowers (with active-loan deletion guard), and view a borrower detail page with active + historical loan panels
+**Depends on**: Phase 8
+**Requirements**: BORR-01, BORR-02, BORR-03, BORR-04, BORR-05
+**Success Criteria** (what must be TRUE):
+  1. User can browse borrowers in a flat paginated list (no nesting) with search input + RetroPagination
+  2. User can create a new borrower (name + optional contact info) and edit a borrower's profile
+  3. User can view a borrower's detail page with active + historical loan panels
+  4. User trying to delete a borrower with any active loan sees a red badge + "View active loans" link blocking deletion
+**Plans**: TBD
+**UI hint**: yes
+
+### Phase 10: Taxonomy
+**Goal**: User can manage hierarchical categories + locations + flat-but-grouped containers via a Taxonomy page with three tabs; create / edit / archive at any level with usage warnings, and delete containers with the unassign-and-delete cascade policy when items are assigned
+**Depends on**: Phase 4, Phase 6
+**Requirements**: TAX-01, TAX-02, TAX-03, TAX-04, TAX-05, TAX-06
+**Success Criteria** (what must be TRUE):
+  1. User can view categories as a hierarchical tree on the Taxonomy page (Categories tab) with expand/collapse persisted to sessionStorage; create / edit / archive at any level with usage warnings when archiving a category with assigned items
+  2. User can view locations as a hierarchical tree (Locations tab); create / edit / archive at any level
+  3. User can view containers grouped by location (Containers tab); create / edit / delete with unassign-and-delete cascade behavior when items are assigned (matches v2.2 cascade decision)
+**Plans**: TBD
+**UI hint**: yes
+
+### Phase 11: Scan (single-route)
+**Goal**: User can open `/scan`, see a live rear-camera preview, decode QR + UPC-A + EAN-13 + Code128 with audio + haptic + visual feedback, toggle Android torch, fall back to manual entry, view last-10 scan history, and after a successful scan see a 4-state result banner + state-adaptive quick-action overlay (View Item / Loan / Back to Scan / Unarchive / Mark Reviewed) — the BarcodeScanner mounts ONCE and stays mounted for iOS PWA camera-permission persistence
+**Depends on**: Phase 7
+**Requirements**: SCAN-01, SCAN-02, SCAN-03, SCAN-04, SCAN-05, SCAN-06, SCAN-07, SCAN-08, SCAN-09, SCAN-10, SCAN-11
+**Success Criteria** (what must be TRUE):
+  1. User on `/scan` sees a live rear-camera preview; the `<BarcodeScanner>` (`@yudiel/react-qr-scanner@2.5.1` exact pin) mounts ONCE and stays mounted while overlays render on top — never navigates mid-scan, pause is prop-driven (NOT unmount)
+  2. User pointing the camera at a QR / UPC-A / EAN-13 / Code128 code decodes within ~1 second, hears AudioContext oscillator beep, feels haptic (`ios-haptics` on iOS 17.4+ Safari, `navigator.vibrate` elsewhere), and sees a visual flash/checkmark
+  3. User on Android with `MediaStreamTrack.getCapabilities().torch` sees a torch toggle (auto-hidden on iOS); user can switch to a Manual tab and submit a typed code; user can view + clear (with confirm) the last-10-codes history (`hws-scan-history` localStorage)
+  4. After scan or manual entry, user sees a 4-state result banner — LOADING / MATCH / NOT-FOUND / ERROR — with a `prefers-reduced-motion`-aware blinking-cursor variant; NOT-FOUND offers "Create item with this barcode" → `/items/new?barcode=<code>`; codes matching `/^\d{8,14}$/` show an opt-in suggestion banner with USE / USE ALL / DISMISS for prefill from `GET /api/barcode/{code}`
+  5. After a MATCH, user sees a state-adaptive quick-action overlay (View Item / Loan / Back to Scan; Loan hidden if item on active loan, Unarchive if archived, Mark Reviewed if `needs_review`)
+**Plans**: TBD
+**UI hint**: yes
+
+### Phase 12: Settings hub
+**Goal**: User can manage profile / security / appearance / language / regional formats / notifications / connected accounts / data storage from a Settings landing page with iOS-style grouped rows linking to 8 dedicated subpages
+**Depends on**: Phase 5, Phase 6
+**Requirements**: SETT-01, SETT-02, SETT-03, SETT-04, SETT-05, SETT-06, SETT-07, SETT-08, SETT-09
+**Success Criteria** (what must be TRUE):
+  1. User on `/settings` sees iOS-style grouped rows linking to 8 subpages: Profile, Security, Appearance, Language, Regional Formats, Notifications, Connected Accounts, Data Storage
+  2. User can edit name + email + avatar (Profile); change password + view/revoke active sessions + delete account (Security); pick theme (Appearance — only premium-terminal under v3.0); pick en / et / ru (Language); set date / time / thousand / decimal formats (Regional Formats)
+  3. User can toggle in-app preferences for SSE event types (Notifications), link/unlink Google + GitHub OAuth providers (Connected Accounts), and clear cached query data + export workspace + import workspace (Data Storage — online-only, no offline-storage management surface)
+**Plans**: TBD
+**UI hint**: yes
+
+### Phase 13: Dashboard
+**Goal**: User landing on `/` sees four stat tiles (Total Items, Locations, Containers, Active Loans), a TUI-style activity table (Timestamp / Action / Entity / Actor / Status), a side rail (Pending Approvals + System Alerts), and — when `VITE_FEATURE_HUD_ROLLUPS=true` — a HUD row with hand-rolled SVG capacity gauge + 14-day activity sparkline + counts (Conflict 3 resolution)
+**Depends on**: Phase 6
+**Requirements**: DASH-01, DASH-02, DASH-03, DASH-04, DASH-05
+**Success Criteria** (what must be TRUE):
+  1. User sees four stat tiles (Total Items / Locations / Containers / Active Loans) with token-correct retro panel styling
+  2. User sees an activity table with TUI columns (Timestamp / Action / Entity / Actor / Status pill); timestamps are relative under 24h and absolute thereafter
+  3. User sees a side rail stacking Pending Approvals + System Alerts panels
+  4. With `VITE_FEATURE_HUD_ROLLUPS=true`, user sees a HUD row (hand-rolled SVG capacity gauge + 14-day activity sparkline + counts); flag default off ships dashboard immediately while backend coordinates rollups
+  5. Dashboard registers `useShortcuts("dashboard", [{ key: "N", action: navTo("/items/new") }, { key: "S", action: navTo("/scan") }, { key: "L", action: navTo("/loans") }])`
+**Plans**: TBD
+**UI hint**: yes
+
+### Phase 14: System group
+**Goal**: User can review approvals (with bulk-action support), my-changes, sync history, and imports/exports under the sidebar `// SYSTEM` group — all using the same activity-table pattern from earlier feature phases
+**Depends on**: Phase 7
+**Requirements**: SYS-01, SYS-02, SYS-03, SYS-04
+**Success Criteria** (what must be TRUE):
+  1. User on `/approvals` sees a paginated activity-table view of pending approval requests with multi-select via Shift+Click + Bottombar A/R/D shortcuts (Approve / Reject / Defer)
+  2. User on `/my-changes` sees a list of their recent mutations across entities
+  3. User on `/sync-history` sees past sync events with timestamps, status, and error details
+  4. User on `/imports` sees CSV import + workspace export + import-history surface using the activity-table pattern
+**Plans**: TBD
+**UI hint**: yes
+
+### Phase 15: i18n catalog gap-fill (et + ru)
+**Goal**: All user-facing strings ship in en / et / ru with no inline literals; CI extract→merge→diff manifest guard catches missing/orphaned msgids; locale switcher persists choice and applies instantly; format hooks are used everywhere date/time/number values render
+**Depends on**: Phase 6, Phase 12
+**Requirements**: I18N-01, I18N-02, I18N-03
+**Success Criteria** (what must be TRUE):
+  1. Every user-facing string ships in en + et + ru — no inline literals; CI extract→merge→diff manifest guard fails any PR with missing or orphaned msgids
+  2. User picking a locale on Settings → Language sees the choice persisted to `users/me/preferences` and applied instantly without page reload
+  3. Every component rendering a date / time / number uses `useDateFormat` / `useTimeFormat` / `useNumberFormat` — no raw `Date.toString()` or `Number.toLocaleString()` in feature code (CI grep guard)
+**Plans**: TBD
+
+### Phase 16: Command Palette
+**Goal**: User can open a Cmd+K / F2 command palette filtering across routes, recent actions, and workspaces, with keyboard-first navigation
+**Depends on**: Phase 6
+**Requirements**: TUI-05
+**Success Criteria** (what must be TRUE):
+  1. User pressing Cmd+K (or Ctrl+K) or F2 sees a `cmdk`-driven command palette open with full-screen retro-panel chrome
+  2. User typing a query sees fuzzy-filtered matches across routes, recent actions, and workspaces
+  3. User can navigate matches with arrow keys, select with Enter, dismiss with ESC; tinykeys handles the open chord, cmdk owns filtering inside
+**Plans**: TBD
+**UI hint**: yes
+
+### Phase 17: Polish & Quality
+**Goal**: Every cross-HTTP flow has at least one real-backend test (Playwright E2E + tagged Go integration test, Phase 65 Plan 65-11 pattern); axe-playwright a11y CI sweep passes; tab/keyboard navigation audit passes; bundle-size CI guard enforced; mobile breakpoint matrix re-tested at 320 / 360 / 768 / 1024 / 1440 px with visual diff vs sketch 005 PNG for the dashboard route
+**Depends on**: Phase 14
+**Requirements**: POL-01, POL-02, POL-03, POL-04, POL-05
+**Success Criteria** (what must be TRUE):
+  1. Every flow that crosses the HTTP boundary has at least one real-backend test — Playwright E2E for browser-driven flows + tagged Go integration test for server contract (the Phase 65 Plan 65-11 pattern, applied from Day 1)
+  2. CI runs `axe-playwright` across every route and fails on contrast / focus-visible / touch-target / aria-label violations; tab/keyboard navigation audit confirms every page is fully keyboard-navigable with visible focus indicator (focus-visible, not focus) and no keyboard traps
+  3. CI fails any PR that pushes `vite build` output above documented per-chunk budgets (main / scanner / vendor) with a clear delta report
+  4. Mobile breakpoint matrix re-tested at 320 / 360 / 768 / 1024 / 1440 px; dashboard route passes visual diff vs sketch 005 PNG
+**Plans**: TBD
+
 ## Progress
+
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
@@ -470,18 +700,36 @@ Plans:
 | 56-63 | v2.1 | 29 | Complete | 2026-04-17 |
 | 64 | v2.2 | 10/10 | Complete | 2026-04-18 |
 | 65 | v2.2 | 10/11 | Gap closure in progress | - |
-| 66 | v2.2 | 0/? | Not started | - |
-| 67 | v2.2 | 0/? | Not started | - |
-| 68 | v2.2 | 0/? | Not started | - |
-| 69 | v2.2 | 0/? | Not started | - |
-| 70 | v2.2 | 0/? | Not started | - |
-| 71 | v2.2 | 0/? | Not started | - |
-| 72 | v2.2 | 0/? | Not started | - |
+| 66 | v2.2 | 0/? | Abandoned | - |
+| 67 | v2.2 | 0/? | Abandoned | - |
+| 68 | v2.2 | 0/? | Abandoned | - |
+| 69 | v2.2 | 0/? | Abandoned | - |
+| 70 | v2.2 | 0/? | Abandoned | - |
+| 71 | v2.2 | 0/? | Abandoned | - |
+| 72 | v2.2 | 0/? | Abandoned | - |
+| 1 | v3.0 | 0/TBD | Not started | - |
+| 2 | v3.0 | 0/TBD | Not started | - |
+| 3 | v3.0 | 0/TBD | Not started | - |
+| 4 | v3.0 | 0/TBD | Not started | - |
+| 5 | v3.0 | 0/TBD | Not started | - |
+| 6 | v3.0 | 0/TBD | Not started | - |
+| 7 | v3.0 | 0/TBD | Not started | - |
+| 8 | v3.0 | 0/TBD | Not started | - |
+| 9 | v3.0 | 0/TBD | Not started | - |
+| 10 | v3.0 | 0/TBD | Not started | - |
+| 11 | v3.0 | 0/TBD | Not started | - |
+| 12 | v3.0 | 0/TBD | Not started | - |
+| 13 | v3.0 | 0/TBD | Not started | - |
+| 14 | v3.0 | 0/TBD | Not started | - |
+| 15 | v3.0 | 0/TBD | Not started | - |
+| 16 | v3.0 | 0/TBD | Not started | - |
+| 17 | v3.0 | 0/TBD | Not started | - |
 
 **Total:** 65 phases complete (185 plans executed: +65-11 gap-closure Wave 8 regression test for G-65-01, Phase 65 now 11/11 SHIPPABLE — Option C Playwright E2E + Go HTTP+Postgres integration test) across 12 milestones; v2.2 (Phases 64-72) active
 
 ---
 *Roadmap created: 2026-01-24*
+*Last updated: 2026-04-30 — v2.2 abandoned (frontend2 wiped); v3.0 Premium-Terminal Frontend roadmap added with 17 phases mapping all 106 requirements (FOUND/TOKEN/SHELL/BAR/PROV/AUTH/ITEM/LOAN/BORR/TAX/SCAN/SETT/DASH/I18N/SYS/TUI/POL); phase numbering RESET to 1 since v2.2 has no continuity with the rebuild.*
 *Last updated: 2026-04-19 — Phase 65 Plan 02 complete (LOOK-01 frontend guard layer: itemsApi.lookupByBarcode w/ D-06/D-07/D-08 guards inlined + schemas D-23 optional brand field + D-24 barcode regex loosened for hyphens/underscores; 10 Wave 0 todos converted green; full suite 640 passed / 50 todos)*
 *Last updated: 2026-04-19 — Phase 65 Plan 03 complete (LOOK-03 data layer: lib/api/barcode.ts + useBarcodeEnrichment with /^\d{8,14}$/ gate + silent-fail structured log; 18 Wave 0 todos green; full suite 640 passed / 50 todos)*
 *Last updated: 2026-04-19 — Phase 65 Plan 05 complete (LOOK-02 + LOOK-03 render surface: ItemForm FormProvider wrap + BRAND field D-23 + UpcSuggestionBanner + ItemFormPage with D-04 scanKeys.lookup + itemKeys.all dual invalidation and dirty-guard dialog; +32 real it() green (3 ItemForm BRAND + 13 UpcSuggestionBanner + 19 ItemFormPage — +3 bonus); cumulative 60/78 Wave-0 todos converted; full suite 686 passed / 20 todos / 0 failed)*
