@@ -144,6 +144,84 @@
   --sidebar-ring: oklch(0.75 0.18 350);
 }
 
+/* Retro Terminal theme — premium-terminal palette mapped onto shadcn tokens.
+   Source of truth: .claude/skills/sketch-findings-home-warehouse-system/
+   Activates when <html data-theme="retro-terminal">.
+   Step 1 of .planning/RETRO-THEME-ROLLOUT.md (token-only; no component edits). */
+[data-theme="retro-terminal"] {
+  /* Premium-terminal source variables (scoped to this theme only — keeping them
+     out of :root prevents leakage into light/dark themes). Hex per
+     sources/themes/default.css. */
+  --bg-base:     #040505;
+  --bg-panel:    #0a0e0a;
+  --bg-panel-2:  #10160f;
+  --bg-elevated: #1c241c;
+  --bg-active:   #3f5c3d;
+
+  --fg-dim:    #826b2c;   /* borders / inactive only — NEVER text */
+  --fg-mid:    #ffd07a;   /* AMBER — labels, headers */
+  --fg-base:   #d6ffdc;   /* GREEN — body text, data */
+  --fg-bright: #efffe6;   /* GREEN — values, glow */
+  --fg-glow:   #fff8df;   /* warm white — top-emphasis */
+
+  --amber:        #ffd07a;
+
+  --accent-warn:   #ffb84a;
+  --accent-danger: #ff6a6a;
+  --accent-info:   #4ad6ff;
+
+  /* Shape & type overrides (sharp corners + monospace body while theme is on). */
+  --radius: 0;
+  --font-sans: var(--font-mono);
+
+  /* shadcn token remap — consumed by the @theme inline block at the top of
+     this file. Each shadcn token is aliased to a premium-terminal source var. */
+  --background: var(--bg-base);
+  --foreground: var(--fg-base);
+
+  --card: var(--bg-panel);
+  --card-foreground: var(--fg-base);
+  --popover: var(--bg-panel);
+  --popover-foreground: var(--fg-base);
+
+  /* Primary — amber as the primary signal hue. Foreground is near-black for
+     AAA contrast on amber surfaces. */
+  --primary: var(--amber);
+  --primary-foreground: #1a0e00;
+
+  --secondary: var(--bg-elevated);
+  --secondary-foreground: var(--fg-base);
+
+  --muted: var(--bg-panel-2);
+  --muted-foreground: var(--fg-mid);
+
+  --accent: var(--bg-active);
+  --accent-foreground: var(--fg-glow);
+
+  --destructive: var(--accent-danger);
+
+  --border: var(--fg-dim);
+  --input: var(--bg-panel-2);
+  --ring: var(--fg-mid);
+
+  /* Charts — spread of premium-terminal accents. */
+  --chart-1: var(--amber);
+  --chart-2: var(--fg-bright);
+  --chart-3: var(--accent-info);
+  --chart-4: var(--accent-warn);
+  --chart-5: var(--accent-danger);
+
+  /* Sidebar. */
+  --sidebar: var(--bg-panel);
+  --sidebar-foreground: var(--fg-base);
+  --sidebar-primary: var(--fg-bright);
+  --sidebar-primary-foreground: var(--bg-base);
+  --sidebar-accent: var(--bg-active);
+  --sidebar-accent-foreground: var(--fg-glow);
+  --sidebar-border: var(--fg-dim);
+  --sidebar-ring: var(--fg-mid);
+}
+
 /* Animations */
 @keyframes wiggle {
   0%, 100% { transform: rotate(0deg); }
