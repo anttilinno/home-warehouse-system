@@ -50,6 +50,8 @@ export function StatsCard({
 }: StatsCardProps) {
   const MobileContent = (
     <div
+      data-stats-card=""
+      data-color={color}
       className={cn(
         "flex sm:hidden flex-col items-center gap-1 py-2",
         className
@@ -69,6 +71,8 @@ export function StatsCard({
 
   const DesktopContent = (
     <div
+      data-stats-card=""
+      data-color={color}
       className={cn(
         "hidden sm:block rounded-2xl p-5 transition-all hover:shadow-md",
         href && "cursor-pointer hover:shadow-lg",

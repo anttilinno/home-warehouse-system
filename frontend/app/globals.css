@@ -265,6 +265,69 @@
   border-radius: 0;
 }
 
+/* Retro Terminal — Step 5 component fidelity.
+   Bevel + glow treatment for shadcn Card / Popover / Dialog / DropdownMenu,
+   and neutralization of dashboard-page hardcoded pastel literals so they pick
+   up the retro palette instead of pink/green/lavender. */
+
+[data-theme="retro-terminal"] [data-slot="card"],
+[data-theme="retro-terminal"] [role="dialog"][data-state],
+[data-theme="retro-terminal"] [role="menu"][data-state] {
+  border: 2px solid var(--fg-dim);
+  box-shadow:
+    inset 1px 1px 0 rgba(255, 255, 255, 0.05),
+    inset -1px -1px 0 rgba(0, 0, 0, 0.6),
+    0 0 16px rgba(255, 208, 122, 0.04);
+}
+
+/* StatsCard — flatten the four pastel variants to identical panel surfaces. */
+[data-theme="retro-terminal"] [data-stats-card] {
+  background-color: var(--bg-panel) !important;
+  color: var(--fg-base) !important;
+  border: 2px solid var(--fg-dim);
+  box-shadow:
+    inset 1px 1px 0 rgba(255, 255, 255, 0.05),
+    inset -1px -1px 0 rgba(0, 0, 0, 0.6);
+}
+[data-theme="retro-terminal"] [data-stats-card] [class*="bg-pink-"],
+[data-theme="retro-terminal"] [data-stats-card] [class*="bg-emerald-"],
+[data-theme="retro-terminal"] [data-stats-card] [class*="bg-violet-"],
+[data-theme="retro-terminal"] [data-stats-card] [class*="bg-amber-"] {
+  background-color: var(--bg-elevated) !important;
+}
+[data-theme="retro-terminal"] [data-stats-card] [class*="text-pink-"],
+[data-theme="retro-terminal"] [data-stats-card] [class*="text-emerald-"],
+[data-theme="retro-terminal"] [data-stats-card] [class*="text-violet-"],
+[data-theme="retro-terminal"] [data-stats-card] [class*="text-amber-"] {
+  color: var(--fg-mid) !important;
+}
+
+/* Dashboard alerts — semantic accent backgrounds, not Tailwind pastels. */
+[data-theme="retro-terminal"] [data-dashboard-alert][data-severity="error"] {
+  background-color: var(--accent-danger-bg) !important;
+  border-color: var(--accent-danger) !important;
+  color: var(--fg-base) !important;
+}
+[data-theme="retro-terminal"] [data-dashboard-alert][data-severity="warning"] {
+  background-color: var(--accent-warn-bg) !important;
+  border-color: var(--accent-warn) !important;
+  color: var(--fg-base) !important;
+}
+
+/* Recent-activity icon chips — flatten the four type-color variants. */
+[data-theme="retro-terminal"] [data-activity-row] [class*="bg-emerald-"],
+[data-theme="retro-terminal"] [data-activity-row] [class*="bg-violet-"],
+[data-theme="retro-terminal"] [data-activity-row] [class*="bg-amber-"],
+[data-theme="retro-terminal"] [data-activity-row] [class*="bg-pink-"] {
+  background-color: var(--bg-elevated) !important;
+}
+[data-theme="retro-terminal"] [data-activity-row] [class*="text-emerald-"],
+[data-theme="retro-terminal"] [data-activity-row] [class*="text-violet-"],
+[data-theme="retro-terminal"] [data-activity-row] [class*="text-amber-"],
+[data-theme="retro-terminal"] [data-activity-row] [class*="text-pink-"] {
+  color: var(--fg-mid) !important;
+}
+
 /* Animations */
 @keyframes wiggle {
   0%, 100% { transform: rotate(0deg); }

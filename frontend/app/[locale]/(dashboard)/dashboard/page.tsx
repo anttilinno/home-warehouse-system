@@ -323,6 +323,8 @@ export default function DashboardPage() {
                 {alerts.map((alert) => (
                   <div
                     key={alert.id}
+                    data-dashboard-alert=""
+                    data-severity={alert.severity}
                     className={cn(
                       "flex items-center justify-between rounded-xl p-3",
                       alert.severity === "error"
@@ -361,7 +363,7 @@ export default function DashboardPage() {
             ) : (
               <div className="space-y-4">
                 {recentActivity.map((activity) => (
-                  <div key={activity.id} className="flex items-start gap-3">
+                  <div key={activity.id} className="flex items-start gap-3" data-activity-row="" data-type={activity.type}>
                     <div className="mt-0.5">
                       {activity.type === "add" && (
                         <div className="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-100 dark:bg-emerald-900/30">
