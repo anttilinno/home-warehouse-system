@@ -11,21 +11,26 @@ export function useKeyboardShortcutsDialog() {
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // ? key (Shift+/) to show keyboard shortcuts
-      if (e.key === "?" && !e.metaKey && !e.ctrlKey && !e.altKey) {
-        // Don't open if user is typing in an input field
-        const target = e.target as HTMLElement;
-        if (
-          target.tagName === "INPUT" ||
-          target.tagName === "TEXTAREA" ||
-          target.isContentEditable
-        ) {
-          return;
-        }
+      // ? (Shift+/) or F1 to toggle the keyboard shortcuts dialog.
+      const isHelpKey =
+        (e.key === "?" || e.key === "F1") &&
+        !e.metaKey &&
+        !e.ctrlKey &&
+        !e.altKey;
+      if (!isHelpKey) return;
 
-        e.preventDefault();
-        setOpen((prev) => !prev);
+      // Don't open if user is typing in an input field
+      const target = e.target as HTMLElement;
+      if (
+        target?.tagName === "INPUT" ||
+        target?.tagName === "TEXTAREA" ||
+        target?.isContentEditable
+      ) {
+        return;
       }
+
+      e.preventDefault();
+      setOpen((prev) => !prev);
     };
 
     document.addEventListener("keydown", handleKeyDown);

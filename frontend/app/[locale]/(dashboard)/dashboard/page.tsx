@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useTranslations } from "next-intl";
+import { useRouter } from "next/navigation";
 import {
   Package,
   MapPin,
@@ -28,6 +29,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ActivityFeed } from "@/components/dashboard/activity-feed";
 import { ActivityFeedMobile } from "@/components/dashboard/activity-feed-mobile";
 import { PawPrint } from "@/components/shared/paw-print";
+import { useShortcuts } from "@/lib/hooks/use-shortcuts";
 
 interface FrontendActivity {
   id: string;
@@ -139,9 +141,22 @@ function mapActivityToFrontend(activity: RecentActivity): FrontendActivity | nul
 
 export default function DashboardPage() {
   const t = useTranslations("dashboard");
+  const router = useRouter();
   const { workspaceId, isLoading: authLoading } = useAuth();
   const { formatDate } = useDateFormat();
   const { formatNumber } = useNumberFormat();
+
+  useShortcuts(
+    useMemo(
+      () => [
+        { key: "N", label: "Add Item", action: () => router.push("/dashboard/items/new") },
+        { key: "S", label: "Scan", action: () => router.push("/dashboard/scan") },
+        { key: "L", label: "Loans", action: () => router.push("/dashboard/loans") },
+        { key: "I", label: "Items", action: () => router.push("/dashboard/items") },
+      ],
+      [router]
+    )
+  );
 
   const [summary, setSummary] = useState<AnalyticsSummary | null>(null);
   const [unreadCount, setUnreadCount] = useState<number>(0);

@@ -21,6 +21,8 @@ import { useAuth } from "@/lib/contexts/auth-context";
 import { OfflineProvider } from "@/lib/contexts/offline-context";
 import { ConflictResolutionProvider } from "@/lib/sync/use-conflict-resolution";
 import { ConflictResolutionDialog } from "@/components/conflict-resolution-dialog";
+import { ShortcutsProvider } from "@/components/layout/shortcuts-context";
+import { Bottombar } from "@/components/layout/bottombar";
 
 interface DashboardShellProps {
   children: React.ReactNode;
@@ -56,6 +58,7 @@ export function DashboardShell({ children }: DashboardShellProps) {
   return (
     <OfflineProvider>
       <SSEProvider>
+        <ShortcutsProvider>
         <ConflictResolutionProvider
           onResolve={async (conflict, resolution, resolvedData) => {
             // Log conflict resolution for debugging
@@ -103,6 +106,7 @@ export function DashboardShell({ children }: DashboardShellProps) {
             >
               <DashboardHeader onMenuClick={() => setMobileMenuOpen(true)} />
               <main id="main-content" className="flex-1 p-4 pb-20 md:p-6 md:pb-6">{children}</main>
+              <Bottombar />
             </div>
 
             {/* Command Palette */}
@@ -124,6 +128,7 @@ export function DashboardShell({ children }: DashboardShellProps) {
             {fabActions.length > 0 && <FloatingActionButton actions={fabActions} />}
           </div>
         </ConflictResolutionProvider>
+        </ShortcutsProvider>
       </SSEProvider>
     </OfflineProvider>
   );
