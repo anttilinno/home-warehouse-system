@@ -1,0 +1,9 @@
+@import "tailwindcss";
+
+/* Body resets only — DO NOT add tokens or scanlines yet (Phase 2 territory). */
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}

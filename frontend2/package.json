@@ -1,0 +1,45 @@
+{
+  "name": "frontend2",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "prebuild": "bun run lint:imports",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:e2e": "playwright test",
+    "test:e2e:headed": "playwright test --headed",
+    "lint:imports": "node ../scripts/check-forbidden-imports.mjs src",
+    "lint:tsc": "tsc -b --noEmit"
+  },
+  "dependencies": {
+    "@hookform/resolvers": "^5.2.2",
+    "@tanstack/react-query": "^5.100.7",
+    "react": "^19.2.5",
+    "react-dom": "^19.2.5",
+    "react-hook-form": "^7.74.0",
+    "react-router": "^7.14.2",
+    "zod": "^4.4.1"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.59.1",
+    "@tailwindcss/vite": "^4.2.4",
+    "@tanstack/react-query-devtools": "^5.100.7",
+    "@testing-library/jest-dom": "latest",
+    "@testing-library/react": "^16.3.2",
+    "@testing-library/user-event": "latest",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "@vitejs/plugin-react-swc": "^4.3.0",
+    "jsdom": "latest",
+    "msw": "^2.14.2",
+    "rollup-plugin-visualizer": "latest",
+    "tailwindcss": "^4.2.4",
+    "typescript": "^5.9.5",
+    "vite": "^8.0.10",
+    "vitest": "^4.1.5"
+  }
+}
