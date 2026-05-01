@@ -494,8 +494,8 @@ Plans:
 - [x] 01-04-PLAN.md — CARRY-FORWARD.md audit + STATE.md decision lock for D-05..D-11 (FOUND-03, FOUND-05, FOUND-06)
 
 **Wave 2** *(blocked on Wave 1 completion)*
-- [ ] 01-02-PLAN.md — CI workflow wiring forbidden-imports grep guard + scaffold smoke verification script (FOUND-02)
-- [ ] 01-03-PLAN.md — i18n empirical spike (Lingui v6 vs react-intl) on throwaway branch + winner install in scaffold (FOUND-04)
+- [x] 01-02-PLAN.md — CI workflow wiring forbidden-imports grep guard + scaffold smoke verification script (FOUND-02)
+- [x] 01-03-PLAN.md — i18n empirical spike (Lingui v6 vs react-intl) on throwaway branch + winner install in scaffold (FOUND-04)
 
 ### Phase 2: Tokens + Type System
 **Goal**: The premium-terminal palette, monospace typography, scanline overlay, and sharp-corner globals from sketch 005 are loaded into the app via Tailwind v4 `@theme`, with WCAG AAA contrast verified and Cyrillic glyph metrics confirmed
