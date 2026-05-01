@@ -2,11 +2,11 @@ import { defineConfig } from "vitest/config";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
 
-// Phase 1 scaffold (v3.0). i18n SWC plugin (Lingui) lands in Plan 03 after the
-// empirical spike concludes — when it does, mirror the inner-plugins arg in
-// vite.config.ts so unit-test transforms match build.
+// Phase 1 scaffold (v3.0). Lingui v6 SWC plugin slot mirrors vite.config.ts so
+// unit-test transforms match the build (Pattern C). Pinned exact at 6.0.0 in
+// package.json per Pitfall 1.
 export default defineConfig({
-  plugins: [react()],
+  plugins: [react({ plugins: [["@lingui/swc-plugin", {}]] })],
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
