@@ -24,7 +24,13 @@ export default defineConfig({
     },
   },
   build: {
-    sourcemap: true,
+    // Sourcemaps are off in production builds (info disclosure: source
+    // would leak via .map files; also breaks the Phase 1 verify that the
+    // shipped bundle contains no `__react-query-devtools` string — the
+    // dynamic-import path lives in the sourcemap even when the function
+    // body is tree-shaken to a no-op). Re-enable per-environment if a
+    // future phase adds error-reporting integration that needs them.
+    sourcemap: false,
     // Forward-compat (Phase 11): scanner WASM manualChunks slot
     // rollupOptions: { output: { manualChunks: { /* scanner */ } } },
   },

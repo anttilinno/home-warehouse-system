@@ -38,7 +38,7 @@
     "msw": "^2.14.2",
     "rollup-plugin-visualizer": "latest",
     "tailwindcss": "^4.2.4",
-    "typescript": "^5.9.5",
+    "typescript": "^5.9.3",
     "vite": "^8.0.10",
     "vitest": "^4.1.5"
   }
