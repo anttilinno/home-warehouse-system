@@ -59,7 +59,7 @@ async function parseError(response: Response): Promise<HttpError> {
 async function parseResponse<T>(response: Response): Promise<T> {
   const contentType = response.headers.get("content-type");
   if (!contentType || !contentType.includes("application/json")) {
-    return undefined as T;
+    return undefined as unknown as T;
   }
   return response.json();
 }
@@ -132,7 +132,7 @@ export function get<T>(endpoint: string): Promise<T> {
 export function post<T>(endpoint: string, data?: unknown): Promise<T> {
   return request<T>(endpoint, {
     method: "POST",
-    body: data ? JSON.stringify(data) : undefined,
+    body: data !== undefined ? JSON.stringify(data) : undefined,
   });
 }
 

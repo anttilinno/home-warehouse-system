@@ -22,6 +22,10 @@ if grep -rq '__react-query-devtools' dist/; then
 fi
 
 echo "=== FOUND-01: dev server smoke (foreground 5s) ==="
+if ss -tlnp 2>/dev/null | grep -q ':5173 ' || lsof -i :5173 -t 2>/dev/null | grep -q .; then
+  echo "FAIL: port 5173 is already in use — stop the occupying process before running this script." >&2
+  exit 1
+fi
 # CSR-aware smoke: Vite serves the unmodified index.html — the placeholder text
 # is rendered by React at runtime, NOT by the dev server. So we (a) confirm the
 # dev server returns HTTP 200 with the index.html shell, and (b) confirm the
