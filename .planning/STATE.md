@@ -2,13 +2,14 @@
 gsd_state_version: 1.0
 milestone: v3.0
 milestone_name: Premium-Terminal Frontend
-status: planning
-last_updated: "2026-04-30T21:00:00.000Z"
-last_activity: 2026-04-30
+status: executing
+stopped_at: Wave 1 complete — executing Wave 2
+last_updated: "2026-05-01T17:30:00.000Z"
+last_activity: 2026-05-01 -- Phase 01 Wave 1 complete (plans 01-01 + 01-04); executing Wave 2
 progress:
-  total_phases: 17
+  total_phases: 34
   completed_phases: 0
-  total_plans: 0
+  total_plans: 4
   completed_plans: 0
   percent: 0
 ---
@@ -20,14 +21,14 @@ progress:
 See: `.planning/PROJECT.md` (updated 2026-04-18)
 
 **Core value:** Reliable inventory access anywhere -- online or offline -- with seamless sync
-**Current focus:** v3.0 Premium-Terminal Frontend — frontend2 redesign rebuild
+**Current focus:** Phase 01 — foundation-conflict-spikes
 
 ## Current Position
 
-Phase: 1 ready (Foundation + Conflict Spikes)
-Plan: —
-Status: Roadmap defined; Phase 1 unblocked
-Last activity: 2026-04-30 — Milestone v3.0 roadmap created (17 phases, 106 reqs mapped, phase numbering reset to 1 since v2.2 has no continuity with the rebuild)
+Phase: 01 (foundation-conflict-spikes) — EXECUTING
+Plan: 1 of 4
+Status: Executing Phase 01
+Last activity: 2026-05-01 -- Phase 01 execution started
 
 ## Performance Metrics
 
@@ -125,6 +126,13 @@ Last activity: 2026-04-30 — Milestone v3.0 roadmap created (17 phases, 106 req
 - v2.2: External UPC enrichment gated by `/^\d{8,14}$/` -- displayed as opt-in suggestion banner, never auto-written
 - v2.2: Cascade policy for taxonomy delete -- "unassign and delete" (un-set FK), no silent cascade
 - v2.2: Quick Capture included in v2.2 scope -- INT-QC-01..04 in Phase 69
+- v3.0: Mobile (<768px) renders FAB only, no Bottombar (D-05) -- locks Phase 3 BAR scope
+- v3.0: Desktop (>=768px) renders Bottombar only, no FAB (D-06) -- locks Phase 3 BAR scope
+- v3.0: FAB exposes context-aware radial menu -- actions adapt per route (D-07)
+- v3.0: Bottombar and FAB both consume useShortcuts context as single source of truth (D-08)
+- v3.0: Dashboard HUD row ships in Phase 13 WITHOUT feature flag -- no prod env to gate against (D-09)
+- v3.0: HUD backend endpoint specs documented in CARRY-FORWARD.md; endpoints built in Phase 13 (D-10)
+- v3.0: HUD endpoints -- GET /api/workspaces/{wsId}/stats/capacity + GET /api/workspaces/{wsId}/stats/activity?days=14 (D-11)
 
 ### Pending Todos
 
@@ -138,9 +146,9 @@ Last activity: 2026-04-30 — Milestone v3.0 roadmap created (17 phases, 106 req
 
 ## Session Continuity
 
-Last session: 2026-04-30
-Stopped at: v3.0 milestone initialized; planning research → requirements → roadmap
-Next step: Run domain/stack/architecture/pitfalls research, then define requirements and roadmap.
+Last session: 2026-05-01T17:30:00.000Z
+Stopped at: Wave 1 complete — executing Wave 2
+Next step: Execute Wave 2 (plans 01-02 + 01-03 in parallel), then verify Phase 1.
 
 ---
 *Updated: 2026-04-19 — Phase 65 COMPLETE (Plan 65-11: G-65-01 regression guard, Option C both branches). **Branch A — Playwright E2E (5e77f98):** first Playwright surface in the repo. frontend2/e2e/scan-lookup.spec.ts logs in via real /login (cookies set for both page + request contexts), seeds item with unique per-run barcode (`E2E-${Date.now()}`) via cookie-authenticated `page.request.post("/api/workspaces/{wsId}/items", ...)`, navigates /scan → MANUAL tab → types code → clicks LOOK UP CODE → asserts MATCHED banner (locale-agnostic `/matched|vaste leitud/i`) + seeded item name; finally cleanup best-effort. frontend2/playwright.config.ts: chromium + firefox projects, no webServer (expects dev stack running per CLAUDE.md runbook). frontend2/package.json: @playwright/test devDep + test:e2e + test:e2e:headed scripts. frontend2/vitest.config.ts excludes **/e2e/** (Playwright's test.describe API differs from Vitest's, would collide). frontend2/.gitignore: test-results/ + playwright-report/ + playwright/.cache/. Verified green on chromium and firefox against the running dev stack. **Branch B — Go HTTP+Postgres integration test (8d4191d):** first Go integration-test surface at backend/internal/domain/warehouse/item/handler_integration_test.go under //go:build integration. Real item.NewService + real postgres.NewItemRepository wired to a chi+humachi test router that injects workspace/user context exactly like appMiddleware.GetWorkspaceID/GetUser do in production. Uses the existing backend/tests/testdb harness (SetupTestDB with TEST_DATABASE_URL default `postgresql://wh:wh@localhost:5432/warehouse_test`, fixture user+workspace, CleanupTestDB via t.Cleanup) rather than creating the parallel backend/internal/testutil/integration.go that Plan 65-11's Task 1 step B.1 suggested — classified as 1 Rule 3 Blocking auto-fix because creating parallel plumbing would have fragmented integration-test conventions against an already-sufficient harness. Three subtests: (1) 200 happy path on seeded unique barcode returns the item with barcode + workspace_id + name matching; (2) 404 for a guaranteed-unique `NEVER-EXISTED-{uuid}` code; (3) **404 cross-tenant leak guard** — seeds a barcode in `otherWorkspaceID` and queries from OUR workspace's router, asserts NotFound because the real SQL `WHERE barcode = $2 AND workspace_id = $1` clause is the source of truth; the handler unit test in handler_test.go cannot assert this because with a mocked ServiceInterface "other workspace" and "never existed" are indistinguishable (both return ErrItemNotFound). Verified green: 3/3 subtests PASS in 0.21s with TEST_DATABASE_URL=postgresql://wh:wh@localhost:5432/warehouse_test. **Coverage matrix:** Branch A catches both backend reverts (Plan 65-09) AND frontend reverts (Plan 65-10) — banner renders NOT FOUND under either; Branch B catches backend reverts AND specifically the workspace_id WHERE clause (cross-tenant leak guard). Together they form a matched pair of regression guards — any single-layer regression of G-65-01's two-layer fix fails at least one test. **CLAUDE.md (new project-root, auto-loaded by Claude Code as project instructions):** §E2E Tests section documents the Playwright runbook (start Postgres / backend / frontend dev; seeder creds E2E_USER=seeder@test.local + E2E_PASS=password123 overridable via env; `cd frontend2 && bun run test:e2e` or test:e2e:headed), how to add a new spec, and the auth contract (the /login form has two buttons with "LOG IN" text — the submit-type button is distinguished by `^LOG IN$` exact match; after login access_token cookie is set and inherited by both page context and page.request). §Backend Integration Tests section documents `-tags=integration` + TEST_DATABASE_URL + Postgres prereq and notes frontend-side reverts are NOT caught at this layer. **Two-commit split (not squashed):** 5e77f98 (feat Branch A) + 8d4191d (test Branch B) because artifacts have zero file overlap (bun/Playwright vs go/pgx) — future git archaeology stays cleaner with the stacks separated. **Non-integration default lanes still green:** backend `go test ./...` (no integration tag) zero-failures; frontend `bunx vitest run` with e2e/ excluded 712/712. **Phase 65 SHIPPABLE:** all 11 plans (01-10 original scope + 09-11 gap closure) shipped; LOOK-01/02/03 all have rendered user paths + unit tests + regression guards at the correct layers + EN+ET translations + zero bundle regression (main gzip 114418 B, scanner gzip 58057 B at CLRWiLFx hash) + G-65-01 closed end-to-end. Phase 66 Quick-Action Menu now unblocked.)*
@@ -161,3 +169,4 @@ Next step: Run domain/stack/architecture/pitfalls research, then define requirem
 *Updated: 2026-04-19 — Phase 65 Plan 03 complete (barcodeApi + barcodeKeys + useBarcodeEnrichment with /^d{8,14}$/ gate + silent-failure; 18 Wave 0 todos converted green; full suite 640 passed / 50 todos).*
 *Updated: 2026-04-19 — Phase 65 Plan 01 complete (7 Wave 0 scaffolds + 78 it.todo + shared QueryClient helper + bundle baseline main 135754 B / scanner 58057 B @ b04ae7c).*
 *Updated: 2026-04-18 — Phase 64 COMPLETE (10/10 plans; bundle gate PASS; EN+ET catalogs filled; all SCAN-0N requirements shippable)*
+*Updated: 2026-05-01 -- Phase 1 Wave 1 complete. Plans 01-01 (Vite 8 + React 19 + TS + Tailwind 4 + RR7 + TanStack Query + RHF + zod SPA scaffold, bootable at localhost:5173) and 01-04 (CARRY-FORWARD.md: 5 SHA-cited port-verbatim items, 4 rebuild-from-scratch concepts, Phase 13 HUD endpoint specs) executed in parallel worktrees. D-05..D-11 locked into STATE.md decisions. Wave 2 executing (plans 01-02 + 01-03 in parallel: CI guard wiring + i18n spike).*

@@ -489,10 +489,13 @@ Plans:
   5. The mobile-FAB scope decision is recorded in v3.0 milestone scope (drop or keep with safe-area math); the dashboard-backend-rollups decision is recorded (ship feature-flagged or defer to v3.1) with backend coordination kicked off if shipping
 **Plans:** 4 plans
 Plans:
-- [ ] 01-01-PLAN.md — Vite + React 19 + TS 5.9.5 + Tailwind 4 + RR7 + TanStack Query scaffold + lib/api.ts port (FOUND-01)
+**Wave 1**
+- [x] 01-01-PLAN.md — Vite + React 19 + TS 5.9.5 + Tailwind 4 + RR7 + TanStack Query scaffold + lib/api.ts port (FOUND-01)
+- [x] 01-04-PLAN.md — CARRY-FORWARD.md audit + STATE.md decision lock for D-05..D-11 (FOUND-03, FOUND-05, FOUND-06)
+
+**Wave 2** *(blocked on Wave 1 completion)*
 - [ ] 01-02-PLAN.md — CI workflow wiring forbidden-imports grep guard + scaffold smoke verification script (FOUND-02)
 - [ ] 01-03-PLAN.md — i18n empirical spike (Lingui v6 vs react-intl) on throwaway branch + winner install in scaffold (FOUND-04)
-- [ ] 01-04-PLAN.md — CARRY-FORWARD.md audit + STATE.md decision lock for D-05..D-11 (FOUND-03, FOUND-05, FOUND-06)
 
 ### Phase 2: Tokens + Type System
 **Goal**: The premium-terminal palette, monospace typography, scanline overlay, and sharp-corner globals from sketch 005 are loaded into the app via Tailwind v4 `@theme`, with WCAG AAA contrast verified and Cyrillic glyph metrics confirmed
