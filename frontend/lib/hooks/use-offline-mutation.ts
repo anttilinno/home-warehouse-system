@@ -236,7 +236,7 @@ export async function getPendingMutationsForEntity(
  * Get all pending creates for an entity type.
  * Returns the payload with tempId for optimistic rendering.
  */
-export async function getPendingCreates<T extends Record<string, unknown>>(
+export async function getPendingCreates<T extends object>(
   entity: MutationEntityType
 ): Promise<Array<T & { id: string; _pending: true }>> {
   const pending = await getPendingMutationsForEntity(entity);
@@ -253,7 +253,7 @@ export async function getPendingCreates<T extends Record<string, unknown>>(
  * Get pending updates for an entity type.
  * Returns entity ID with pending payload.
  */
-export async function getPendingUpdates<T extends Record<string, unknown>>(
+export async function getPendingUpdates<T extends object>(
   entity: MutationEntityType
 ): Promise<Array<{ entityId: string; payload: T }>> {
   const pending = await getPendingMutationsForEntity(entity);
