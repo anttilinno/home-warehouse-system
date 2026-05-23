@@ -84,6 +84,7 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { BarcodeScanner } from "@/components/scanner";
+import { extractScanCode } from "@/lib/scanner";
 import { useWorkspace } from "@/lib/hooks/use-workspace";
 import { useTableSort } from "@/lib/hooks/use-table-sort";
 import { useInfiniteScroll } from "@/lib/hooks/use-infinite-scroll";
@@ -290,7 +291,7 @@ export default function ContainersPage() {
 
   const handleBarcodeScan = useCallback((results: { rawValue: string }[]) => {
     if (results.length > 0 && results[0].rawValue) {
-      setFormShortCode(results[0].rawValue.slice(0, 20));
+      setFormShortCode(extractScanCode(results[0].rawValue).slice(0, 20));
       setScannerOpen(false);
     }
   }, []);

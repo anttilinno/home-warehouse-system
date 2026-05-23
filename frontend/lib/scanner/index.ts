@@ -42,6 +42,7 @@ export {
 // Lookup
 export {
   lookupByShortCode,
+  extractScanCode,
   getEntityDisplayName,
   getEntityUrl,
 } from "./scan-lookup";

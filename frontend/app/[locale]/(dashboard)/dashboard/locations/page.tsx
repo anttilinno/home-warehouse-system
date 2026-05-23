@@ -15,6 +15,7 @@ import {
   Home,
   Upload,
   Cloud,
+  ScanBarcode,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -61,6 +62,14 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { SearchableSelect } from "@/components/ui/searchable-select";
 import { ImportDialog, type ImportResult } from "@/components/ui/import-dialog";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
+import { BarcodeScanner } from "@/components/scanner";
+import { extractScanCode } from "@/lib/scanner";
 import { useWorkspace } from "@/lib/hooks/use-workspace";
 import { useDebouncedValue } from "@/lib/hooks/use-debounced-value";
 import { useSSE, type SSEEvent } from "@/lib/hooks/use-sse";
@@ -333,6 +342,14 @@ export default function LocationsPage() {
   const [formParentId, setFormParentId] = useState<string>("");
   const [formShortCode, setFormShortCode] = useState("");
   const [isSaving, setIsSaving] = useState(false);
+  const [scannerOpen, setScannerOpen] = useState(false);
+
+  const handleBarcodeScan = useCallback((results: { rawValue: string }[]) => {
+    if (results.length > 0 && results[0].rawValue) {
+      setFormShortCode(extractScanCode(results[0].rawValue).slice(0, 8));
+      setScannerOpen(false);
+    }
+  }, []);
 
   // Optimistic locations for offline mutations
   const [optimisticLocations, setOptimisticLocations] = useState<(Location & { _pending?: boolean })[]>([]);
@@ -867,13 +884,25 @@ export default function LocationsPage() {
                   className="bg-muted font-mono"
                 />
               ) : (
-                <Input
-                  id="short_code"
-                  value={formShortCode}
-                  onChange={(e) => setFormShortCode(e.target.value)}
-                  placeholder="Leave empty to auto-generate"
-                  maxLength={8}
-                />
+                <div className="flex items-center gap-2">
+                  <Input
+                    id="short_code"
+                    value={formShortCode}
+                    onChange={(e) => setFormShortCode(e.target.value)}
+                    placeholder="Leave empty to auto-generate"
+                    maxLength={8}
+                    className="flex-1"
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    onClick={() => setScannerOpen(true)}
+                    aria-label="Scan QR code"
+                  >
+                    <ScanBarcode className="h-4 w-4" />
+                  </Button>
+                </div>
               )}
             </div>
 
@@ -899,6 +928,22 @@ export default function LocationsPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* QR Code Scanner Sheet */}
+      <Sheet open={scannerOpen} onOpenChange={setScannerOpen}>
+        <SheetContent side="bottom" className="h-[70vh] p-0">
+          <SheetHeader className="px-4 pt-4">
+            <SheetTitle>Scan QR Code</SheetTitle>
+          </SheetHeader>
+          <div className="flex-1 overflow-hidden">
+            <BarcodeScanner
+              onScan={handleBarcodeScan}
+              paused={!scannerOpen}
+              className="h-full"
+            />
+          </div>
+        </SheetContent>
+      </Sheet>
 
       {/* Delete Confirmation Dialog */}
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>

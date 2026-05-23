@@ -26,12 +26,34 @@ import type { EntityMatch } from "./types";
  * @param code - The scanned barcode/QR code value
  * @returns EntityMatch with found entity or not_found result
  */
+/**
+ * Normalize a scanned value into a lookup code.
+ *
+ * QR labels may encode a URL (e.g. "https://s.go/c7a4f9e1") where the slug
+ * is the last path segment. Plain barcodes/short codes are returned as-is.
+ *
+ * @param raw - The raw scanned value (URL or bare code)
+ * @returns The bare code/slug to match against short_code
+ */
+export function extractScanCode(raw: string): string {
+  const trimmed = raw.trim();
+  if (!trimmed) return "";
+  try {
+    const url = new URL(trimmed);
+    const segments = url.pathname.split("/").filter(Boolean);
+    if (segments.length > 0) return segments[segments.length - 1];
+  } catch {
+    // Not a URL — fall through and use the raw value.
+  }
+  return trimmed;
+}
+
 export async function lookupByShortCode(code: string): Promise<EntityMatch> {
   if (!code || code.trim().length === 0) {
     return { type: "not_found", code: "" };
   }
 
-  const trimmedCode = code.trim();
+  const trimmedCode = extractScanCode(code);
 
   try {
     // Parallel fetch all entities from IndexedDB
