@@ -1,5 +1,15 @@
 # Docspell Integration
 
+> **⚠️ SUPERSEDED (2026-05-25).** This integration is being replaced by **Paperless-ngx**,
+> the DMS actually running in the homelab. The Docspell integration never shipped a client —
+> only the data model exists (`warehouse.attachments.docspell_item_id` + `auth.workspace_docspell_settings`,
+> a generated model with no consuming service). No REST calls, fulltext search, or tag sync were built,
+> and the compose Docspell trio was never wired to the app.
+>
+> Retained for historical reference only. The architecture below describes the *planned* Docspell
+> design, not implemented behavior. For the replacement plan see
+> `docs/ROADMAP.md` § "DMS Migration: Docspell → Paperless-ngx".
+
 Docspell is a document management system for organizing receipts, manuals, warranties, and other documents. HWS integrates with Docspell to link documents to inventory items.
 
 ## Architecture

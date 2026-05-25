@@ -16,6 +16,7 @@
 - [x] **v2.1 Feature Parity — Items, Loans & Scanning** — Phases 56-63 (shipped 2026-04-17)
 - [~] **v2.2 Scanning & Stabilization** — Phases 64-66 (abandoned 2026-04-30; frontend2 wiped before completion)
 - [ ] **v3.0 Premium-Terminal Frontend** — Phases 1-17 (planning, 2026-04-30; numbering reset since v2.2 wiped)
+- [ ] **Backlog — DMS Migration: Docspell → Paperless-ngx** — unscheduled; repoint the stub Docspell integration (schema-only, no client) to Paperless-ngx, the DMS running in the homelab. Schema rename + settings reshape + fresh Paperless API client + drop the compose Docspell trio. Full task breakdown in `docs/ROADMAP.md` § "DMS Migration".
 
 ## Phases
 
