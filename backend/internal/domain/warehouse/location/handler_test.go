@@ -236,7 +236,7 @@ func TestLocationHandler_Archive(t *testing.T) {
 		mockSvc.AssertExpectations(t)
 	})
 
-	t.Run("returns 400 when location not found", func(t *testing.T) {
+	t.Run("returns 404 when location not found", func(t *testing.T) {
 		locID := uuid.New()
 
 		mockSvc.On("Archive", mock.Anything, locID, setup.WorkspaceID).
@@ -244,7 +244,7 @@ func TestLocationHandler_Archive(t *testing.T) {
 
 		rec := setup.Post(fmt.Sprintf("/locations/%s/archive", locID), "")
 
-		testutil.AssertStatus(t, rec, http.StatusBadRequest)
+		testutil.AssertStatus(t, rec, http.StatusNotFound)
 		mockSvc.AssertExpectations(t)
 	})
 }
@@ -266,7 +266,7 @@ func TestLocationHandler_Restore(t *testing.T) {
 		mockSvc.AssertExpectations(t)
 	})
 
-	t.Run("returns 400 when location not found", func(t *testing.T) {
+	t.Run("returns 404 when location not found", func(t *testing.T) {
 		locID := uuid.New()
 
 		mockSvc.On("Restore", mock.Anything, locID, setup.WorkspaceID).
@@ -274,7 +274,7 @@ func TestLocationHandler_Restore(t *testing.T) {
 
 		rec := setup.Post(fmt.Sprintf("/locations/%s/restore", locID), "")
 
-		testutil.AssertStatus(t, rec, http.StatusBadRequest)
+		testutil.AssertStatus(t, rec, http.StatusNotFound)
 		mockSvc.AssertExpectations(t)
 	})
 }
@@ -296,7 +296,7 @@ func TestLocationHandler_Delete(t *testing.T) {
 		mockSvc.AssertExpectations(t)
 	})
 
-	t.Run("returns 400 when location not found", func(t *testing.T) {
+	t.Run("returns 404 when location not found", func(t *testing.T) {
 		locID := uuid.New()
 
 		mockSvc.On("Delete", mock.Anything, locID, setup.WorkspaceID).
@@ -304,11 +304,11 @@ func TestLocationHandler_Delete(t *testing.T) {
 
 		rec := setup.Delete(fmt.Sprintf("/locations/%s", locID))
 
-		testutil.AssertStatus(t, rec, http.StatusBadRequest)
+		testutil.AssertStatus(t, rec, http.StatusNotFound)
 		mockSvc.AssertExpectations(t)
 	})
 
-	t.Run("returns 400 when location has containers", func(t *testing.T) {
+	t.Run("returns 409 when location has containers", func(t *testing.T) {
 		locID := uuid.New()
 
 		mockSvc.On("Delete", mock.Anything, locID, setup.WorkspaceID).
@@ -316,7 +316,7 @@ func TestLocationHandler_Delete(t *testing.T) {
 
 		rec := setup.Delete(fmt.Sprintf("/locations/%s", locID))
 
-		testutil.AssertStatus(t, rec, http.StatusBadRequest)
+		testutil.AssertStatus(t, rec, http.StatusConflict)
 		mockSvc.AssertExpectations(t)
 	})
 }

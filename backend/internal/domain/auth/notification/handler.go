@@ -111,7 +111,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface) {
 
 		err := svc.MarkAsRead(ctx, input.ID, authUser.ID)
 		if err != nil {
-			return nil, huma.Error400BadRequest(err.Error())
+			return nil, appMiddleware.MapDomainError(err)
 		}
 
 		return nil, nil

@@ -39,11 +39,12 @@ func (r *BorrowerRepository) Create(ctx context.Context, b *borrower.Borrower) e
 
 func (r *BorrowerRepository) Save(ctx context.Context, b *borrower.Borrower) error {
 	_, err := r.queries.UpdateBorrower(ctx, queries.UpdateBorrowerParams{
-		ID:    b.ID(),
-		Name:  b.Name(),
-		Email: b.Email(),
-		Phone: b.Phone(),
-		Notes: b.Notes(),
+		ID:          b.ID(),
+		WorkspaceID: b.WorkspaceID(),
+		Name:        b.Name(),
+		Email:       b.Email(),
+		Phone:       b.Phone(),
+		Notes:       b.Notes(),
 	})
 	return err
 }
@@ -87,18 +88,27 @@ func (r *BorrowerRepository) FindByWorkspace(ctx context.Context, workspaceID uu
 }
 
 // Archive soft-archives a borrower by setting is_archived=true.
-func (r *BorrowerRepository) Archive(ctx context.Context, id uuid.UUID) error {
-	return r.queries.ArchiveBorrower(ctx, id)
+func (r *BorrowerRepository) Archive(ctx context.Context, id, workspaceID uuid.UUID) error {
+	return r.queries.ArchiveBorrower(ctx, queries.ArchiveBorrowerParams{
+		ID:          id,
+		WorkspaceID: workspaceID,
+	})
 }
 
 // Restore flips is_archived back to false.
-func (r *BorrowerRepository) Restore(ctx context.Context, id uuid.UUID) error {
-	return r.queries.RestoreBorrower(ctx, id)
+func (r *BorrowerRepository) Restore(ctx context.Context, id, workspaceID uuid.UUID) error {
+	return r.queries.RestoreBorrower(ctx, queries.RestoreBorrowerParams{
+		ID:          id,
+		WorkspaceID: workspaceID,
+	})
 }
 
 // Delete hard-deletes a borrower by ID.
-func (r *BorrowerRepository) Delete(ctx context.Context, id uuid.UUID) error {
-	return r.queries.DeleteBorrower(ctx, id)
+func (r *BorrowerRepository) Delete(ctx context.Context, id, workspaceID uuid.UUID) error {
+	return r.queries.DeleteBorrower(ctx, queries.DeleteBorrowerParams{
+		ID:          id,
+		WorkspaceID: workspaceID,
+	})
 }
 
 func (r *BorrowerRepository) HasActiveLoans(ctx context.Context, id uuid.UUID) (bool, error) {

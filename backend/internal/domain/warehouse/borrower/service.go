@@ -82,7 +82,7 @@ func (s *Service) Archive(ctx context.Context, id, workspaceID uuid.UUID) error 
 		return err
 	}
 
-	return s.repo.Archive(ctx, id)
+	return s.repo.Archive(ctx, id, workspaceID)
 }
 
 func (s *Service) Restore(ctx context.Context, id, workspaceID uuid.UUID) error {
@@ -90,7 +90,7 @@ func (s *Service) Restore(ctx context.Context, id, workspaceID uuid.UUID) error 
 		return err
 	}
 
-	return s.repo.Restore(ctx, id)
+	return s.repo.Restore(ctx, id, workspaceID)
 }
 
 func (s *Service) Delete(ctx context.Context, id, workspaceID uuid.UUID) error {
@@ -109,7 +109,7 @@ func (s *Service) Delete(ctx context.Context, id, workspaceID uuid.UUID) error {
 		return ErrHasActiveLoans
 	}
 
-	return s.repo.Delete(ctx, id)
+	return s.repo.Delete(ctx, id, workspaceID)
 }
 
 func (s *Service) List(ctx context.Context, workspaceID uuid.UUID, pagination shared.Pagination, includeArchived bool) ([]*Borrower, int, error) {

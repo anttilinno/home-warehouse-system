@@ -15,11 +15,16 @@ import (
 const archiveLocation = `-- name: ArchiveLocation :exec
 UPDATE warehouse.locations
 SET is_archived = true, updated_at = now()
-WHERE id = $1
+WHERE id = $1 AND workspace_id = $2
 `
 
-func (q *Queries) ArchiveLocation(ctx context.Context, id uuid.UUID) error {
-	_, err := q.db.Exec(ctx, archiveLocation, id)
+type ArchiveLocationParams struct {
+	ID          uuid.UUID `json:"id"`
+	WorkspaceID uuid.UUID `json:"workspace_id"`
+}
+
+func (q *Queries) ArchiveLocation(ctx context.Context, arg ArchiveLocationParams) error {
+	_, err := q.db.Exec(ctx, archiveLocation, arg.ID, arg.WorkspaceID)
 	return err
 }
 
@@ -64,11 +69,16 @@ func (q *Queries) CreateLocation(ctx context.Context, arg CreateLocationParams) 
 }
 
 const deleteLocation = `-- name: DeleteLocation :exec
-DELETE FROM warehouse.locations WHERE id = $1
+DELETE FROM warehouse.locations WHERE id = $1 AND workspace_id = $2
 `
 
-func (q *Queries) DeleteLocation(ctx context.Context, id uuid.UUID) error {
-	_, err := q.db.Exec(ctx, deleteLocation, id)
+type DeleteLocationParams struct {
+	ID          uuid.UUID `json:"id"`
+	WorkspaceID uuid.UUID `json:"workspace_id"`
+}
+
+func (q *Queries) DeleteLocation(ctx context.Context, arg DeleteLocationParams) error {
+	_, err := q.db.Exec(ctx, deleteLocation, arg.ID, arg.WorkspaceID)
 	return err
 }
 
@@ -254,11 +264,16 @@ func (q *Queries) ListRootLocations(ctx context.Context, workspaceID uuid.UUID) 
 const restoreLocation = `-- name: RestoreLocation :exec
 UPDATE warehouse.locations
 SET is_archived = false, updated_at = now()
-WHERE id = $1
+WHERE id = $1 AND workspace_id = $2
 `
 
-func (q *Queries) RestoreLocation(ctx context.Context, id uuid.UUID) error {
-	_, err := q.db.Exec(ctx, restoreLocation, id)
+type RestoreLocationParams struct {
+	ID          uuid.UUID `json:"id"`
+	WorkspaceID uuid.UUID `json:"workspace_id"`
+}
+
+func (q *Queries) RestoreLocation(ctx context.Context, arg RestoreLocationParams) error {
+	_, err := q.db.Exec(ctx, restoreLocation, arg.ID, arg.WorkspaceID)
 	return err
 }
 
@@ -329,13 +344,14 @@ func (q *Queries) ShortCodeExists(ctx context.Context, arg ShortCodeExistsParams
 
 const updateLocation = `-- name: UpdateLocation :one
 UPDATE warehouse.locations
-SET name = $2, parent_location = $3, description = $4, updated_at = now()
-WHERE id = $1
+SET name = $3, parent_location = $4, description = $5, updated_at = now()
+WHERE id = $1 AND workspace_id = $2
 RETURNING id, workspace_id, name, parent_location, description, short_code, is_archived, search_vector, created_at, updated_at
 `
 
 type UpdateLocationParams struct {
 	ID             uuid.UUID   `json:"id"`
+	WorkspaceID    uuid.UUID   `json:"workspace_id"`
 	Name           string      `json:"name"`
 	ParentLocation pgtype.UUID `json:"parent_location"`
 	Description    *string     `json:"description"`
@@ -344,6 +360,7 @@ type UpdateLocationParams struct {
 func (q *Queries) UpdateLocation(ctx context.Context, arg UpdateLocationParams) (WarehouseLocation, error) {
 	row := q.db.QueryRow(ctx, updateLocation,
 		arg.ID,
+		arg.WorkspaceID,
 		arg.Name,
 		arg.ParentLocation,
 		arg.Description,

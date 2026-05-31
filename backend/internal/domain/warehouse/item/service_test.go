@@ -171,13 +171,13 @@ func (m *MockCategoryRepository) FindRootCategories(ctx context.Context, workspa
 	return args.Get(0).([]*category.Category), args.Error(1)
 }
 
-func (m *MockCategoryRepository) Delete(ctx context.Context, id uuid.UUID) error {
+func (m *MockCategoryRepository) Delete(ctx context.Context, id, workspaceID uuid.UUID) error {
 	args := m.Called(ctx, id)
 	return args.Error(0)
 }
 
-func (m *MockCategoryRepository) HasChildren(ctx context.Context, id uuid.UUID) (bool, error) {
-	args := m.Called(ctx, id)
+func (m *MockCategoryRepository) HasChildren(ctx context.Context, workspaceID, parentID uuid.UUID) (bool, error) {
+	args := m.Called(ctx, parentID)
 	return args.Bool(0), args.Error(1)
 }
 

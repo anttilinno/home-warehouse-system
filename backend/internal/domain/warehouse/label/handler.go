@@ -71,7 +71,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 			if err == ErrNameTaken {
 				return nil, huma.Error400BadRequest("label name already exists")
 			}
-			return nil, huma.Error400BadRequest(err.Error())
+			return nil, appMiddleware.MapDomainError(err)
 		}
 
 		// Publish event
@@ -124,7 +124,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 			if err == ErrNameTaken {
 				return nil, huma.Error400BadRequest("label name already exists")
 			}
-			return nil, huma.Error400BadRequest(err.Error())
+			return nil, appMiddleware.MapDomainError(err)
 		}
 
 		// Publish event
@@ -159,7 +159,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 
 		err := svc.Archive(ctx, input.ID, workspaceID)
 		if err != nil {
-			return nil, huma.Error400BadRequest(err.Error())
+			return nil, appMiddleware.MapDomainError(err)
 		}
 
 		// Publish event (treat archive as delete event)
@@ -190,7 +190,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 
 		err := svc.Restore(ctx, input.ID, workspaceID)
 		if err != nil {
-			return nil, huma.Error400BadRequest(err.Error())
+			return nil, appMiddleware.MapDomainError(err)
 		}
 
 		// Publish event (treat restore as create event)
@@ -221,7 +221,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 
 		err := svc.Delete(ctx, input.ID, workspaceID)
 		if err != nil {
-			return nil, huma.Error400BadRequest(err.Error())
+			return nil, appMiddleware.MapDomainError(err)
 		}
 
 		// Publish event

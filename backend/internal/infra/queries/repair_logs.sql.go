@@ -17,19 +17,20 @@ UPDATE warehouse.repair_logs
 SET
     status = 'COMPLETED',
     completed_at = now(),
-    new_condition = $2,
+    new_condition = $3,
     updated_at = now()
-WHERE id = $1
+WHERE id = $1 AND workspace_id = $2
 RETURNING id, workspace_id, inventory_id, status, description, repair_date, cost, currency_code, service_provider, completed_at, new_condition, notes, is_warranty_claim, reminder_date, reminder_sent, created_at, updated_at
 `
 
 type CompleteRepairLogParams struct {
 	ID           uuid.UUID                      `json:"id"`
+	WorkspaceID  uuid.UUID                      `json:"workspace_id"`
 	NewCondition NullWarehouseItemConditionEnum `json:"new_condition"`
 }
 
 func (q *Queries) CompleteRepairLog(ctx context.Context, arg CompleteRepairLogParams) (WarehouseRepairLog, error) {
-	row := q.db.QueryRow(ctx, completeRepairLog, arg.ID, arg.NewCondition)
+	row := q.db.QueryRow(ctx, completeRepairLog, arg.ID, arg.WorkspaceID, arg.NewCondition)
 	var i WarehouseRepairLog
 	err := row.Scan(
 		&i.ID,
@@ -193,11 +194,16 @@ func (q *Queries) CreateRepairLogWithWarranty(ctx context.Context, arg CreateRep
 
 const deleteRepairLog = `-- name: DeleteRepairLog :exec
 DELETE FROM warehouse.repair_logs
-WHERE id = $1
+WHERE id = $1 AND workspace_id = $2
 `
 
-func (q *Queries) DeleteRepairLog(ctx context.Context, id uuid.UUID) error {
-	_, err := q.db.Exec(ctx, deleteRepairLog, id)
+type DeleteRepairLogParams struct {
+	ID          uuid.UUID `json:"id"`
+	WorkspaceID uuid.UUID `json:"workspace_id"`
+}
+
+func (q *Queries) DeleteRepairLog(ctx context.Context, arg DeleteRepairLogParams) error {
+	_, err := q.db.Exec(ctx, deleteRepairLog, arg.ID, arg.WorkspaceID)
 	return err
 }
 
@@ -490,30 +496,36 @@ func (q *Queries) ListRepairsNeedingReminder(ctx context.Context, reminderDate p
 const markRepairReminderSent = `-- name: MarkRepairReminderSent :exec
 UPDATE warehouse.repair_logs
 SET reminder_sent = true, updated_at = now()
-WHERE id = $1
+WHERE id = $1 AND workspace_id = $2
 `
 
-func (q *Queries) MarkRepairReminderSent(ctx context.Context, id uuid.UUID) error {
-	_, err := q.db.Exec(ctx, markRepairReminderSent, id)
+type MarkRepairReminderSentParams struct {
+	ID          uuid.UUID `json:"id"`
+	WorkspaceID uuid.UUID `json:"workspace_id"`
+}
+
+func (q *Queries) MarkRepairReminderSent(ctx context.Context, arg MarkRepairReminderSentParams) error {
+	_, err := q.db.Exec(ctx, markRepairReminderSent, arg.ID, arg.WorkspaceID)
 	return err
 }
 
 const updateRepairLog = `-- name: UpdateRepairLog :one
 UPDATE warehouse.repair_logs
 SET
-    description = $2,
-    repair_date = $3,
-    cost = $4,
-    currency_code = $5,
-    service_provider = $6,
-    notes = $7,
+    description = $3,
+    repair_date = $4,
+    cost = $5,
+    currency_code = $6,
+    service_provider = $7,
+    notes = $8,
     updated_at = now()
-WHERE id = $1
+WHERE id = $1 AND workspace_id = $2
 RETURNING id, workspace_id, inventory_id, status, description, repair_date, cost, currency_code, service_provider, completed_at, new_condition, notes, is_warranty_claim, reminder_date, reminder_sent, created_at, updated_at
 `
 
 type UpdateRepairLogParams struct {
 	ID              uuid.UUID   `json:"id"`
+	WorkspaceID     uuid.UUID   `json:"workspace_id"`
 	Description     string      `json:"description"`
 	RepairDate      pgtype.Date `json:"repair_date"`
 	Cost            *int32      `json:"cost"`
@@ -525,6 +537,7 @@ type UpdateRepairLogParams struct {
 func (q *Queries) UpdateRepairLog(ctx context.Context, arg UpdateRepairLogParams) (WarehouseRepairLog, error) {
 	row := q.db.QueryRow(ctx, updateRepairLog,
 		arg.ID,
+		arg.WorkspaceID,
 		arg.Description,
 		arg.RepairDate,
 		arg.Cost,
@@ -595,18 +608,19 @@ func (q *Queries) UpdateRepairLogReminderDate(ctx context.Context, arg UpdateRep
 
 const updateRepairLogStatus = `-- name: UpdateRepairLogStatus :one
 UPDATE warehouse.repair_logs
-SET status = $2, updated_at = now()
-WHERE id = $1
+SET status = $3, updated_at = now()
+WHERE id = $1 AND workspace_id = $2
 RETURNING id, workspace_id, inventory_id, status, description, repair_date, cost, currency_code, service_provider, completed_at, new_condition, notes, is_warranty_claim, reminder_date, reminder_sent, created_at, updated_at
 `
 
 type UpdateRepairLogStatusParams struct {
-	ID     uuid.UUID                 `json:"id"`
-	Status WarehouseRepairStatusEnum `json:"status"`
+	ID          uuid.UUID                 `json:"id"`
+	WorkspaceID uuid.UUID                 `json:"workspace_id"`
+	Status      WarehouseRepairStatusEnum `json:"status"`
 }
 
 func (q *Queries) UpdateRepairLogStatus(ctx context.Context, arg UpdateRepairLogStatusParams) (WarehouseRepairLog, error) {
-	row := q.db.QueryRow(ctx, updateRepairLogStatus, arg.ID, arg.Status)
+	row := q.db.QueryRow(ctx, updateRepairLogStatus, arg.ID, arg.WorkspaceID, arg.Status)
 	var i WarehouseRepairLog
 	err := row.Scan(
 		&i.ID,

@@ -53,6 +53,7 @@ func (r *RepairLogRepository) Save(ctx context.Context, repair *repairlog.Repair
 			}
 			_, err = r.queries.CompleteRepairLog(ctx, queries.CompleteRepairLogParams{
 				ID:           repair.ID(),
+				WorkspaceID:  repair.WorkspaceID(),
 				NewCondition: newCondition,
 			})
 			return err
@@ -61,8 +62,9 @@ func (r *RepairLogRepository) Save(ctx context.Context, repair *repairlog.Repair
 		// If status changed otherwise, use UpdateRepairLogStatus
 		if string(repair.Status()) != string(existing.Status) {
 			_, err = r.queries.UpdateRepairLogStatus(ctx, queries.UpdateRepairLogStatusParams{
-				ID:     repair.ID(),
-				Status: queries.WarehouseRepairStatusEnum(repair.Status()),
+				ID:          repair.ID(),
+				WorkspaceID: repair.WorkspaceID(),
+				Status:      queries.WarehouseRepairStatusEnum(repair.Status()),
 			})
 			return err
 		}
@@ -81,6 +83,7 @@ func (r *RepairLogRepository) Save(ctx context.Context, repair *repairlog.Repair
 
 		_, err = r.queries.UpdateRepairLog(ctx, queries.UpdateRepairLogParams{
 			ID:              repair.ID(),
+			WorkspaceID:     repair.WorkspaceID(),
 			Description:     repair.Description(),
 			RepairDate:      repairDate,
 			Cost:            cost,
@@ -211,8 +214,11 @@ func (r *RepairLogRepository) CountByInventory(ctx context.Context, workspaceID,
 }
 
 // Delete removes a repair log by ID.
-func (r *RepairLogRepository) Delete(ctx context.Context, id uuid.UUID) error {
-	return r.queries.DeleteRepairLog(ctx, id)
+func (r *RepairLogRepository) Delete(ctx context.Context, id, workspaceID uuid.UUID) error {
+	return r.queries.DeleteRepairLog(ctx, queries.DeleteRepairLogParams{
+		ID:          id,
+		WorkspaceID: workspaceID,
+	})
 }
 
 // UpdateWarrantyClaim updates the warranty claim flag.
@@ -241,8 +247,11 @@ func (r *RepairLogRepository) UpdateReminderDate(ctx context.Context, id, worksp
 }
 
 // MarkReminderSent marks the reminder as sent.
-func (r *RepairLogRepository) MarkReminderSent(ctx context.Context, id uuid.UUID) error {
-	return r.queries.MarkRepairReminderSent(ctx, id)
+func (r *RepairLogRepository) MarkReminderSent(ctx context.Context, id, workspaceID uuid.UUID) error {
+	return r.queries.MarkRepairReminderSent(ctx, queries.MarkRepairReminderSentParams{
+		ID:          id,
+		WorkspaceID: workspaceID,
+	})
 }
 
 // GetTotalRepairCost returns the total repair cost summary for an inventory item.

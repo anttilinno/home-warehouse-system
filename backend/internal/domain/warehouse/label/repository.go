@@ -11,6 +11,6 @@ type Repository interface {
 	FindByID(ctx context.Context, id, workspaceID uuid.UUID) (*Label, error)
 	FindByName(ctx context.Context, workspaceID uuid.UUID, name string) (*Label, error)
 	FindByWorkspace(ctx context.Context, workspaceID uuid.UUID) ([]*Label, error)
-	Delete(ctx context.Context, id uuid.UUID) error
+	Delete(ctx context.Context, id, workspaceID uuid.UUID) error
 	NameExists(ctx context.Context, workspaceID uuid.UUID, name string) (bool, error)
 }

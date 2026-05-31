@@ -240,7 +240,7 @@ func (s *Service) Delete(ctx context.Context, id, workspaceID uuid.UUID) error {
 		return err
 	}
 
-	return s.repo.Delete(ctx, id)
+	return s.repo.Delete(ctx, id, workspaceID)
 }
 
 // ListByInventory returns all repair logs for an inventory item.

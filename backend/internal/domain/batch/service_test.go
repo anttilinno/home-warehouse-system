@@ -926,7 +926,7 @@ func (m *MockLocationRepository) FindByWorkspace(ctx context.Context, workspaceI
 	return args.Get(0).([]*location.Location), args.Int(1), args.Error(2)
 }
 
-func (m *MockLocationRepository) Delete(ctx context.Context, id uuid.UUID) error {
+func (m *MockLocationRepository) Delete(ctx context.Context, id, workspaceID uuid.UUID) error {
 	args := m.Called(ctx, id)
 	return args.Error(0)
 }
@@ -986,7 +986,7 @@ func (m *MockContainerRepository) FindByWorkspace(ctx context.Context, workspace
 	return args.Get(0).([]*container.Container), args.Int(1), args.Error(2)
 }
 
-func (m *MockContainerRepository) Delete(ctx context.Context, id uuid.UUID) error {
+func (m *MockContainerRepository) Delete(ctx context.Context, id, workspaceID uuid.UUID) error {
 	args := m.Called(ctx, id)
 	return args.Error(0)
 }
@@ -1062,13 +1062,13 @@ func (m *MockCategoryRepository) FindRootCategories(ctx context.Context, workspa
 	return args.Get(0).([]*category.Category), args.Error(1)
 }
 
-func (m *MockCategoryRepository) Delete(ctx context.Context, id uuid.UUID) error {
+func (m *MockCategoryRepository) Delete(ctx context.Context, id, workspaceID uuid.UUID) error {
 	args := m.Called(ctx, id)
 	return args.Error(0)
 }
 
-func (m *MockCategoryRepository) HasChildren(ctx context.Context, id uuid.UUID) (bool, error) {
-	args := m.Called(ctx, id)
+func (m *MockCategoryRepository) HasChildren(ctx context.Context, workspaceID, parentID uuid.UUID) (bool, error) {
+	args := m.Called(ctx, parentID)
 	return args.Bool(0), args.Error(1)
 }
 
@@ -1098,7 +1098,7 @@ func (m *MockLabelRepository) FindByWorkspace(ctx context.Context, workspaceID u
 	return args.Get(0).([]*label.Label), args.Error(1)
 }
 
-func (m *MockLabelRepository) Delete(ctx context.Context, id uuid.UUID) error {
+func (m *MockLabelRepository) Delete(ctx context.Context, id, workspaceID uuid.UUID) error {
 	args := m.Called(ctx, id)
 	return args.Error(0)
 }
@@ -1142,7 +1142,7 @@ func (m *MockCompanyRepository) FindByWorkspace(ctx context.Context, workspaceID
 	return args.Get(0).([]*company.Company), args.Int(1), args.Error(2)
 }
 
-func (m *MockCompanyRepository) Delete(ctx context.Context, id uuid.UUID) error {
+func (m *MockCompanyRepository) Delete(ctx context.Context, id, workspaceID uuid.UUID) error {
 	args := m.Called(ctx, id)
 	return args.Error(0)
 }

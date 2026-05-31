@@ -14,11 +14,16 @@ import (
 const archiveLabel = `-- name: ArchiveLabel :exec
 UPDATE warehouse.labels
 SET is_archived = true, updated_at = now()
-WHERE id = $1
+WHERE id = $1 AND workspace_id = $2
 `
 
-func (q *Queries) ArchiveLabel(ctx context.Context, id uuid.UUID) error {
-	_, err := q.db.Exec(ctx, archiveLabel, id)
+type ArchiveLabelParams struct {
+	ID          uuid.UUID `json:"id"`
+	WorkspaceID uuid.UUID `json:"workspace_id"`
+}
+
+func (q *Queries) ArchiveLabel(ctx context.Context, arg ArchiveLabelParams) error {
+	_, err := q.db.Exec(ctx, archiveLabel, arg.ID, arg.WorkspaceID)
 	return err
 }
 
@@ -59,11 +64,16 @@ func (q *Queries) CreateLabel(ctx context.Context, arg CreateLabelParams) (Wareh
 }
 
 const deleteLabel = `-- name: DeleteLabel :exec
-DELETE FROM warehouse.labels WHERE id = $1
+DELETE FROM warehouse.labels WHERE id = $1 AND workspace_id = $2
 `
 
-func (q *Queries) DeleteLabel(ctx context.Context, id uuid.UUID) error {
-	_, err := q.db.Exec(ctx, deleteLabel, id)
+type DeleteLabelParams struct {
+	ID          uuid.UUID `json:"id"`
+	WorkspaceID uuid.UUID `json:"workspace_id"`
+}
+
+func (q *Queries) DeleteLabel(ctx context.Context, arg DeleteLabelParams) error {
+	_, err := q.db.Exec(ctx, deleteLabel, arg.ID, arg.WorkspaceID)
 	return err
 }
 
@@ -176,23 +186,29 @@ func (q *Queries) ListLabels(ctx context.Context, workspaceID uuid.UUID) ([]Ware
 const restoreLabel = `-- name: RestoreLabel :exec
 UPDATE warehouse.labels
 SET is_archived = false, updated_at = now()
-WHERE id = $1
+WHERE id = $1 AND workspace_id = $2
 `
 
-func (q *Queries) RestoreLabel(ctx context.Context, id uuid.UUID) error {
-	_, err := q.db.Exec(ctx, restoreLabel, id)
+type RestoreLabelParams struct {
+	ID          uuid.UUID `json:"id"`
+	WorkspaceID uuid.UUID `json:"workspace_id"`
+}
+
+func (q *Queries) RestoreLabel(ctx context.Context, arg RestoreLabelParams) error {
+	_, err := q.db.Exec(ctx, restoreLabel, arg.ID, arg.WorkspaceID)
 	return err
 }
 
 const updateLabel = `-- name: UpdateLabel :one
 UPDATE warehouse.labels
-SET name = $2, color = $3, description = $4, updated_at = now()
-WHERE id = $1
+SET name = $3, color = $4, description = $5, updated_at = now()
+WHERE id = $1 AND workspace_id = $2
 RETURNING id, workspace_id, name, color, description, is_archived, created_at, updated_at
 `
 
 type UpdateLabelParams struct {
 	ID          uuid.UUID `json:"id"`
+	WorkspaceID uuid.UUID `json:"workspace_id"`
 	Name        string    `json:"name"`
 	Color       *string   `json:"color"`
 	Description *string   `json:"description"`
@@ -201,6 +217,7 @@ type UpdateLabelParams struct {
 func (q *Queries) UpdateLabel(ctx context.Context, arg UpdateLabelParams) (WarehouseLabel, error) {
 	row := q.db.QueryRow(ctx, updateLabel,
 		arg.ID,
+		arg.WorkspaceID,
 		arg.Name,
 		arg.Color,
 		arg.Description,

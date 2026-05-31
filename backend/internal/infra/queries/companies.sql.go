@@ -14,11 +14,16 @@ import (
 const archiveCompany = `-- name: ArchiveCompany :exec
 UPDATE warehouse.companies
 SET is_archived = true, updated_at = now()
-WHERE id = $1
+WHERE id = $1 AND workspace_id = $2
 `
 
-func (q *Queries) ArchiveCompany(ctx context.Context, id uuid.UUID) error {
-	_, err := q.db.Exec(ctx, archiveCompany, id)
+type ArchiveCompanyParams struct {
+	ID          uuid.UUID `json:"id"`
+	WorkspaceID uuid.UUID `json:"workspace_id"`
+}
+
+func (q *Queries) ArchiveCompany(ctx context.Context, arg ArchiveCompanyParams) error {
+	_, err := q.db.Exec(ctx, archiveCompany, arg.ID, arg.WorkspaceID)
 	return err
 }
 
@@ -78,11 +83,16 @@ func (q *Queries) CreateCompany(ctx context.Context, arg CreateCompanyParams) (W
 }
 
 const deleteCompany = `-- name: DeleteCompany :exec
-DELETE FROM warehouse.companies WHERE id = $1
+DELETE FROM warehouse.companies WHERE id = $1 AND workspace_id = $2
 `
 
-func (q *Queries) DeleteCompany(ctx context.Context, id uuid.UUID) error {
-	_, err := q.db.Exec(ctx, deleteCompany, id)
+type DeleteCompanyParams struct {
+	ID          uuid.UUID `json:"id"`
+	WorkspaceID uuid.UUID `json:"workspace_id"`
+}
+
+func (q *Queries) DeleteCompany(ctx context.Context, arg DeleteCompanyParams) error {
+	_, err := q.db.Exec(ctx, deleteCompany, arg.ID, arg.WorkspaceID)
 	return err
 }
 
@@ -183,31 +193,38 @@ func (q *Queries) ListCompanies(ctx context.Context, arg ListCompaniesParams) ([
 const restoreCompany = `-- name: RestoreCompany :exec
 UPDATE warehouse.companies
 SET is_archived = false, updated_at = now()
-WHERE id = $1
+WHERE id = $1 AND workspace_id = $2
 `
 
-func (q *Queries) RestoreCompany(ctx context.Context, id uuid.UUID) error {
-	_, err := q.db.Exec(ctx, restoreCompany, id)
+type RestoreCompanyParams struct {
+	ID          uuid.UUID `json:"id"`
+	WorkspaceID uuid.UUID `json:"workspace_id"`
+}
+
+func (q *Queries) RestoreCompany(ctx context.Context, arg RestoreCompanyParams) error {
+	_, err := q.db.Exec(ctx, restoreCompany, arg.ID, arg.WorkspaceID)
 	return err
 }
 
 const updateCompany = `-- name: UpdateCompany :one
 UPDATE warehouse.companies
-SET name = $2, website = $3, notes = $4, updated_at = now()
-WHERE id = $1
+SET name = $3, website = $4, notes = $5, updated_at = now()
+WHERE id = $1 AND workspace_id = $2
 RETURNING id, workspace_id, name, website, notes, is_archived, created_at, updated_at
 `
 
 type UpdateCompanyParams struct {
-	ID      uuid.UUID `json:"id"`
-	Name    string    `json:"name"`
-	Website *string   `json:"website"`
-	Notes   *string   `json:"notes"`
+	ID          uuid.UUID `json:"id"`
+	WorkspaceID uuid.UUID `json:"workspace_id"`
+	Name        string    `json:"name"`
+	Website     *string   `json:"website"`
+	Notes       *string   `json:"notes"`
 }
 
 func (q *Queries) UpdateCompany(ctx context.Context, arg UpdateCompanyParams) (WarehouseCompany, error) {
 	row := q.db.QueryRow(ctx, updateCompany,
 		arg.ID,
+		arg.WorkspaceID,
 		arg.Name,
 		arg.Website,
 		arg.Notes,

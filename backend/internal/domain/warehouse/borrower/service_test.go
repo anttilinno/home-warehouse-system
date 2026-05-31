@@ -44,17 +44,17 @@ func (m *MockRepository) FindByWorkspace(ctx context.Context, workspaceID uuid.U
 	return args.Get(0).([]*Borrower), args.Int(1), args.Error(2)
 }
 
-func (m *MockRepository) Archive(ctx context.Context, id uuid.UUID) error {
+func (m *MockRepository) Archive(ctx context.Context, id, workspaceID uuid.UUID) error {
 	args := m.Called(ctx, id)
 	return args.Error(0)
 }
 
-func (m *MockRepository) Restore(ctx context.Context, id uuid.UUID) error {
+func (m *MockRepository) Restore(ctx context.Context, id, workspaceID uuid.UUID) error {
 	args := m.Called(ctx, id)
 	return args.Error(0)
 }
 
-func (m *MockRepository) Delete(ctx context.Context, id uuid.UUID) error {
+func (m *MockRepository) Delete(ctx context.Context, id, workspaceID uuid.UUID) error {
 	args := m.Called(ctx, id)
 	return args.Error(0)
 }

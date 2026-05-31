@@ -101,7 +101,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 			if errors.Is(err, ErrInvalidDescription) {
 				return nil, huma.Error400BadRequest("description is required")
 			}
-			return nil, huma.Error400BadRequest(err.Error())
+			return nil, appMiddleware.MapDomainError(err)
 		}
 
 		// Publish SSE event
@@ -152,7 +152,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 			if errors.Is(err, ErrInvalidDescription) {
 				return nil, huma.Error400BadRequest("description is required")
 			}
-			return nil, huma.Error400BadRequest(err.Error())
+			return nil, appMiddleware.MapDomainError(err)
 		}
 
 		// Publish SSE event
@@ -192,7 +192,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 			if errors.Is(err, ErrInvalidStatusTransition) {
 				return nil, huma.Error400BadRequest("can only start repair from pending status")
 			}
-			return nil, huma.Error400BadRequest(err.Error())
+			return nil, appMiddleware.MapDomainError(err)
 		}
 
 		// Publish SSE event
@@ -235,7 +235,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 			if errors.Is(err, ErrRepairAlreadyCompleted) {
 				return nil, huma.Error400BadRequest("repair has already been completed")
 			}
-			return nil, huma.Error400BadRequest(err.Error())
+			return nil, appMiddleware.MapDomainError(err)
 		}
 
 		// Publish SSE event

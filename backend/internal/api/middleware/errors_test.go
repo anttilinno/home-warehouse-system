@@ -8,6 +8,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
+	"github.com/antti/home-warehouse/go-backend/internal/shared"
 	"github.com/antti/home-warehouse/go-backend/internal/shared/apierror"
 )
 
@@ -218,4 +219,59 @@ func TestErrorTransformer_ContextPassed(t *testing.T) {
 
 	assert.NotNil(t, humaErr)
 	assert.Equal(t, http.StatusNotFound, humaErr.GetStatus())
+}
+
+// =============================================================================
+// DomainError mapping (ErrorTransformer + MapDomainError)
+// =============================================================================
+
+func TestErrorTransformer_DomainError(t *testing.T) {
+	tests := []struct {
+		name           string
+		err            error
+		expectedStatus int
+	}{
+		{"not found", shared.NewDomainError(shared.ErrNotFound, "item not found"), http.StatusNotFound},
+		{"invalid input", shared.NewFieldError(shared.ErrInvalidInput, "name", "name is required"), http.StatusBadRequest},
+		{"already exists", shared.NewDomainError(shared.ErrAlreadyExists, "exists"), http.StatusConflict},
+		{"unauthorized", shared.NewDomainError(shared.ErrUnauthorized, "no"), http.StatusUnauthorized},
+		{"forbidden", shared.NewDomainError(shared.ErrForbidden, "no"), http.StatusForbidden},
+		{"conflict", shared.NewDomainError(shared.ErrConflict, "busy"), http.StatusConflict},
+		{"internal", shared.NewDomainError(shared.ErrInternal, "boom"), http.StatusInternalServerError},
+		{"unknown sentinel falls to 400", shared.NewDomainError(errors.New("weird"), "weird"), http.StatusBadRequest},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			humaErr := ErrorTransformer(context.Background(), tt.err)
+			assert.Equal(t, tt.expectedStatus, humaErr.GetStatus())
+		})
+	}
+}
+
+func TestErrorTransformer_DomainErrorSurfacesField(t *testing.T) {
+	err := shared.NewFieldError(shared.ErrInvalidInput, "email", "invalid email")
+	humaErr := ErrorTransformer(context.Background(), err)
+	assert.Equal(t, http.StatusBadRequest, humaErr.GetStatus())
+	assert.Contains(t, humaErr.Error(), "invalid email")
+}
+
+func TestMapDomainError(t *testing.T) {
+	assert.Nil(t, MapDomainError(nil))
+
+	tests := []struct {
+		name           string
+		err            error
+		expectedStatus int
+	}{
+		{"domain not found", shared.NewDomainError(shared.ErrNotFound, "x"), http.StatusNotFound},
+		{"domain conflict", shared.NewDomainError(shared.ErrConflict, "x"), http.StatusConflict},
+		{"bare sentinel not found", shared.ErrNotFound, http.StatusNotFound},
+		{"non-domain error defaults to 400", errors.New("raw parse failure"), http.StatusBadRequest},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			humaErr := MapDomainError(tt.err)
+			assert.Equal(t, tt.expectedStatus, humaErr.GetStatus())
+		})
+	}
 }

@@ -54,13 +54,13 @@ func (m *MockRepository) FindRootCategories(ctx context.Context, workspaceID uui
 	return args.Get(0).([]*Category), args.Error(1)
 }
 
-func (m *MockRepository) Delete(ctx context.Context, id uuid.UUID) error {
+func (m *MockRepository) Delete(ctx context.Context, id, workspaceID uuid.UUID) error {
 	args := m.Called(ctx, id)
 	return args.Error(0)
 }
 
-func (m *MockRepository) HasChildren(ctx context.Context, id uuid.UUID) (bool, error) {
-	args := m.Called(ctx, id)
+func (m *MockRepository) HasChildren(ctx context.Context, workspaceID, parentID uuid.UUID) (bool, error) {
+	args := m.Called(ctx, parentID)
 	return args.Bool(0), args.Error(1)
 }
 

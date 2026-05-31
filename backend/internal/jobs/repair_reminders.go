@@ -68,7 +68,10 @@ func (p *RepairReminderProcessor) ProcessTask(ctx context.Context, t *asynq.Task
 	}
 
 	// Mark reminder as sent
-	if err := q.MarkRepairReminderSent(ctx, payload.RepairLogID); err != nil {
+	if err := q.MarkRepairReminderSent(ctx, queries.MarkRepairReminderSentParams{
+		ID:          payload.RepairLogID,
+		WorkspaceID: payload.WorkspaceID,
+	}); err != nil {
 		return fmt.Errorf("failed to mark repair reminder as sent: %w", err)
 	}
 

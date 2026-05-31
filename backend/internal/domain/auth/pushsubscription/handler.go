@@ -27,7 +27,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface) {
 			UserAgent: input.Body.UserAgent,
 		})
 		if err != nil {
-			return nil, huma.Error400BadRequest(err.Error())
+			return nil, appMiddleware.MapDomainError(err)
 		}
 
 		return &SubscribeResponse{
@@ -50,7 +50,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface) {
 
 		err := svc.Unsubscribe(ctx, authUser.ID, input.Body.Endpoint)
 		if err != nil {
-			return nil, huma.Error400BadRequest(err.Error())
+			return nil, appMiddleware.MapDomainError(err)
 		}
 
 		return nil, nil

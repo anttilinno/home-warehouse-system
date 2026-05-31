@@ -98,3 +98,6 @@ chunks/
 
 # Backend uploads (generated files)
 backend/uploads/
+
+# graphify knowledge-graph output (generated, 32M)
+graphify-out/

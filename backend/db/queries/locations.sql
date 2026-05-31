@@ -13,19 +13,19 @@ RETURNING *;
 
 -- name: UpdateLocation :one
 UPDATE warehouse.locations
-SET name = $2, parent_location = $3, description = $4, updated_at = now()
-WHERE id = $1
+SET name = $3, parent_location = $4, description = $5, updated_at = now()
+WHERE id = $1 AND workspace_id = $2
 RETURNING *;
 
 -- name: ArchiveLocation :exec
 UPDATE warehouse.locations
 SET is_archived = true, updated_at = now()
-WHERE id = $1;
+WHERE id = $1 AND workspace_id = $2;
 
 -- name: RestoreLocation :exec
 UPDATE warehouse.locations
 SET is_archived = false, updated_at = now()
-WHERE id = $1;
+WHERE id = $1 AND workspace_id = $2;
 
 -- name: ListLocations :many
 SELECT * FROM warehouse.locations
@@ -58,4 +58,4 @@ SELECT EXISTS(
 );
 
 -- name: DeleteLocation :exec
-DELETE FROM warehouse.locations WHERE id = $1;
+DELETE FROM warehouse.locations WHERE id = $1 AND workspace_id = $2;

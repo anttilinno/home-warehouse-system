@@ -13,19 +13,19 @@ RETURNING *;
 
 -- name: UpdateCompany :one
 UPDATE warehouse.companies
-SET name = $2, website = $3, notes = $4, updated_at = now()
-WHERE id = $1
+SET name = $3, website = $4, notes = $5, updated_at = now()
+WHERE id = $1 AND workspace_id = $2
 RETURNING *;
 
 -- name: ArchiveCompany :exec
 UPDATE warehouse.companies
 SET is_archived = true, updated_at = now()
-WHERE id = $1;
+WHERE id = $1 AND workspace_id = $2;
 
 -- name: RestoreCompany :exec
 UPDATE warehouse.companies
 SET is_archived = false, updated_at = now()
-WHERE id = $1;
+WHERE id = $1 AND workspace_id = $2;
 
 -- name: ListCompanies :many
 SELECT * FROM warehouse.companies
@@ -40,4 +40,4 @@ SELECT EXISTS(
 );
 
 -- name: DeleteCompany :exec
-DELETE FROM warehouse.companies WHERE id = $1;
+DELETE FROM warehouse.companies WHERE id = $1 AND workspace_id = $2;

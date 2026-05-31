@@ -13,19 +13,19 @@ RETURNING *;
 
 -- name: UpdateLabel :one
 UPDATE warehouse.labels
-SET name = $2, color = $3, description = $4, updated_at = now()
-WHERE id = $1
+SET name = $3, color = $4, description = $5, updated_at = now()
+WHERE id = $1 AND workspace_id = $2
 RETURNING *;
 
 -- name: ArchiveLabel :exec
 UPDATE warehouse.labels
 SET is_archived = true, updated_at = now()
-WHERE id = $1;
+WHERE id = $1 AND workspace_id = $2;
 
 -- name: RestoreLabel :exec
 UPDATE warehouse.labels
 SET is_archived = false, updated_at = now()
-WHERE id = $1;
+WHERE id = $1 AND workspace_id = $2;
 
 -- name: ListLabels :many
 SELECT * FROM warehouse.labels
@@ -39,4 +39,4 @@ SELECT EXISTS(
 );
 
 -- name: DeleteLabel :exec
-DELETE FROM warehouse.labels WHERE id = $1;
+DELETE FROM warehouse.labels WHERE id = $1 AND workspace_id = $2;

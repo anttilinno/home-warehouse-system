@@ -103,8 +103,11 @@ func (r *ContainerRepository) FindByWorkspace(ctx context.Context, workspaceID u
 	return containers, len(containers), nil
 }
 
-func (r *ContainerRepository) Delete(ctx context.Context, id uuid.UUID) error {
-	return r.queries.DeleteContainer(ctx, id)
+func (r *ContainerRepository) Delete(ctx context.Context, id, workspaceID uuid.UUID) error {
+	return r.queries.DeleteContainer(ctx, queries.DeleteContainerParams{
+		ID:          id,
+		WorkspaceID: workspaceID,
+	})
 }
 
 func (r *ContainerRepository) ShortCodeExists(ctx context.Context, workspaceID uuid.UUID, shortCode string) (bool, error) {

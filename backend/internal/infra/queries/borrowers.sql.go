@@ -14,11 +14,16 @@ import (
 const archiveBorrower = `-- name: ArchiveBorrower :exec
 UPDATE warehouse.borrowers
 SET is_archived = true, updated_at = now()
-WHERE id = $1
+WHERE id = $1 AND workspace_id = $2
 `
 
-func (q *Queries) ArchiveBorrower(ctx context.Context, id uuid.UUID) error {
-	_, err := q.db.Exec(ctx, archiveBorrower, id)
+type ArchiveBorrowerParams struct {
+	ID          uuid.UUID `json:"id"`
+	WorkspaceID uuid.UUID `json:"workspace_id"`
+}
+
+func (q *Queries) ArchiveBorrower(ctx context.Context, arg ArchiveBorrowerParams) error {
+	_, err := q.db.Exec(ctx, archiveBorrower, arg.ID, arg.WorkspaceID)
 	return err
 }
 
@@ -63,11 +68,16 @@ func (q *Queries) CreateBorrower(ctx context.Context, arg CreateBorrowerParams) 
 }
 
 const deleteBorrower = `-- name: DeleteBorrower :exec
-DELETE FROM warehouse.borrowers WHERE id = $1
+DELETE FROM warehouse.borrowers WHERE id = $1 AND workspace_id = $2
 `
 
-func (q *Queries) DeleteBorrower(ctx context.Context, id uuid.UUID) error {
-	_, err := q.db.Exec(ctx, deleteBorrower, id)
+type DeleteBorrowerParams struct {
+	ID          uuid.UUID `json:"id"`
+	WorkspaceID uuid.UUID `json:"workspace_id"`
+}
+
+func (q *Queries) DeleteBorrower(ctx context.Context, arg DeleteBorrowerParams) error {
+	_, err := q.db.Exec(ctx, deleteBorrower, arg.ID, arg.WorkspaceID)
 	return err
 }
 
@@ -167,11 +177,16 @@ func (q *Queries) ListBorrowers(ctx context.Context, arg ListBorrowersParams) ([
 const restoreBorrower = `-- name: RestoreBorrower :exec
 UPDATE warehouse.borrowers
 SET is_archived = false, updated_at = now()
-WHERE id = $1
+WHERE id = $1 AND workspace_id = $2
 `
 
-func (q *Queries) RestoreBorrower(ctx context.Context, id uuid.UUID) error {
-	_, err := q.db.Exec(ctx, restoreBorrower, id)
+type RestoreBorrowerParams struct {
+	ID          uuid.UUID `json:"id"`
+	WorkspaceID uuid.UUID `json:"workspace_id"`
+}
+
+func (q *Queries) RestoreBorrower(ctx context.Context, arg RestoreBorrowerParams) error {
+	_, err := q.db.Exec(ctx, restoreBorrower, arg.ID, arg.WorkspaceID)
 	return err
 }
 
@@ -223,22 +238,24 @@ func (q *Queries) SearchBorrowers(ctx context.Context, arg SearchBorrowersParams
 
 const updateBorrower = `-- name: UpdateBorrower :one
 UPDATE warehouse.borrowers
-SET name = $2, email = $3, phone = $4, notes = $5, updated_at = now()
-WHERE id = $1
+SET name = $3, email = $4, phone = $5, notes = $6, updated_at = now()
+WHERE id = $1 AND workspace_id = $2
 RETURNING id, workspace_id, name, email, phone, notes, is_archived, search_vector, created_at, updated_at
 `
 
 type UpdateBorrowerParams struct {
-	ID    uuid.UUID `json:"id"`
-	Name  string    `json:"name"`
-	Email *string   `json:"email"`
-	Phone *string   `json:"phone"`
-	Notes *string   `json:"notes"`
+	ID          uuid.UUID `json:"id"`
+	WorkspaceID uuid.UUID `json:"workspace_id"`
+	Name        string    `json:"name"`
+	Email       *string   `json:"email"`
+	Phone       *string   `json:"phone"`
+	Notes       *string   `json:"notes"`
 }
 
 func (q *Queries) UpdateBorrower(ctx context.Context, arg UpdateBorrowerParams) (WarehouseBorrower, error) {
 	row := q.db.QueryRow(ctx, updateBorrower,
 		arg.ID,
+		arg.WorkspaceID,
 		arg.Name,
 		arg.Email,
 		arg.Phone,

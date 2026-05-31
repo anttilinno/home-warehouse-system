@@ -128,5 +128,5 @@ func (s *Service) Delete(ctx context.Context, id, workspaceID uuid.UUID) error {
 		return err
 	}
 
-	return s.repo.Delete(ctx, label.ID())
+	return s.repo.Delete(ctx, label.ID(), workspaceID)
 }

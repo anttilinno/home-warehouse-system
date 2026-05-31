@@ -1,46 +1,35 @@
 {
   "version": "1.0",
-  "timestamp": "2026-04-17T12:42:56.945Z",
-  "phase": "62",
-  "phase_name": "loans",
-  "phase_dir": ".planning/phases/62-loans",
-  "plan": 4,
-  "task": 4,
-  "total_tasks": 4,
+  "timestamp": "2026-05-31T20:08:53.709Z",
+  "phase": null,
+  "phase_name": "Backend hardening — 3 fixes from graphify trace",
+  "phase_dir": ".planning/debug",
+  "plan": null,
+  "task": null,
+  "total_tasks": 3,
   "status": "paused",
   "completed_tasks": [
-    {"id": 1, "name": "62-01: Backend loans domain + repository + API", "status": "done", "commit": "4c59679"},
-    {"id": 2, "name": "62-02: Frontend hooks (useLoansForItem, useLoanMutations, etc)", "status": "done", "commit": "f1c9e4a"},
-    {"id": 3, "name": "62-03: LoansListPage + LoanPanel + LoanForm (create/edit)", "status": "done", "commit": "fbf4b3d"},
-    {"id": 4, "name": "62-04: Item + Borrower detail panels, end-to-end wiring", "status": "done", "commit": "5ada056"},
-    {"id": 5, "name": "Code review fix (8 findings: CR-01 to WR-05)", "status": "done", "commit": "d20a75b"},
-    {"id": 6, "name": "Post-review: inventory resolution + date serialization fixes", "status": "in_progress", "progress": "LoanForm inventory resolver + useLoanMutations date T00:00:00Z patch done, uncommitted"}
+    {"id": 1, "name": "Tenant mutation workspace_id scoping (7 domains)", "status": "done", "commit": "uncommitted"},
+    {"id": 2, "name": "Error->HTTP DomainError mapping + 69-site sweep", "status": "done", "commit": "uncommitted"},
+    {"id": 3, "name": "Approval pipeline: tx + payload fidelity + entity-gating docs", "status": "done", "commit": "uncommitted"}
   ],
   "remaining_tasks": [
-    {"id": 7, "name": "Commit uncommitted post-review fixes (LoanForm.tsx, useLoanMutations.ts, inventory.ts, planning files)", "status": "not_started"},
-    {"id": 8, "name": "Human UAT: 29-step end-to-end loan flow verification (62-HUMAN-UAT.md)", "status": "not_started"},
-    {"id": 9, "name": "Mark phase 62 complete, advance to phase 63 (Navigation & Polish)", "status": "not_started"}
+    {"id": 4, "name": "Decide + commit the 3 fixes (currently uncommitted in working tree)", "status": "not_started"},
+    {"id": 5, "name": "Audit frontend callers for API contract change (some 400 -> 404/409)", "status": "not_started"},
+    {"id": 6, "name": "(optional) Fix 2 pre-existing test failures: loan.TestService_Return_InventoryDeleted, jobs.TestCleanupConfig_RetentionPeriodUsage", "status": "not_started"}
   ],
-  "blockers": [
-    {"description": "Human UAT required before phase 62 can be closed — 29-step test in 62-HUMAN-UAT.md needs real backend+frontend running", "type": "human_action", "workaround": "none — human gate"}
-  ],
+  "blockers": [],
   "human_actions_pending": [
-    {"action": "Run 29-step UAT in 62-HUMAN-UAT.md (backend on :8000, frontend on :5173)", "context": "Verification is 5/5 automated but plan 62-04 task 4 is a blocking human-verify checkpoint", "blocking": true}
+    {"action": "Decide whether to commit the 3 fixes and on which branch", "context": "~50 fix files uncommitted in working tree on branch docs/paperless-dms-switch; persist on disk but not version-controlled", "blocking": false}
   ],
   "decisions": [
-    {"decision": "LoanForm resolves item def ID → available inventory row UUID at pick time via inventoryApi.available", "rationale": "Backend expects inventory_id (row UUID), but UI pickers work with item definition IDs", "phase": "62"},
-    {"decision": "Dates serialized as T00:00:00Z suffix in useLoanMutations before sending to API", "rationale": "HTML date inputs return YYYY-MM-DD; backend expects RFC3339 datetime strings", "phase": "62"},
-    {"decision": "LoanRepository.Delete replaced with explicit error stub instead of silent no-op", "rationale": "CR-02 fix — prevents pendingchange workflow from silently believing deletion succeeded", "phase": "62"},
-    {"decision": "WR-01/WR-02 non-atomic save documented via TODO comments rather than full fix", "rationale": "Transaction wrapping requires TxManager wiring deferred to avoid scope creep", "phase": "62"}
+    {"decision": "Fix #1 scope = all 7 affected domains (SQL + sqlc regen + repo signatures + callers)", "rationale": "User chose full coverage over RLS-backstop or single-domain pilot", "phase": "tenant-mutation-scope"},
+    {"decision": "Fix #3(B) routes apply*Change through domain ServiceInterface, not repos", "rationale": "Item/inventory optional fields are unexported; only the domain Create path applies them faithfully", "phase": "approval-pipeline-fixes"},
+    {"decision": "Fix #3(C) keeps gate at 8 entity types, documents exclusions in docs/APPROVAL_PIPELINE.md", "rationale": "Conservative call; excluded types are sub-resources/audit/view-state applied atomically with a gated parent", "phase": "approval-pipeline-fixes"},
+    {"decision": "Fix #2 maps *shared.DomainError sentinels at the boundary + sweeps 69 hardcoded-400 sites", "rationale": "Restores correct status codes (404/409/...) and Field location; apierror machinery was dead", "phase": "error-status-mapping"},
+    {"decision": "Used GSD debug workflow for all 3 fixes", "rationale": "User chose GSD workflow over direct edits per repo CLAUDE.md enforcement", "phase": "all"}
   ],
-  "uncommitted_files": [
-    "frontend2/src/features/loans/forms/LoanForm.tsx",
-    "frontend2/src/features/loans/hooks/useLoanMutations.ts",
-    "frontend2/src/lib/api/inventory.ts",
-    ".planning/phases/62-loans/62-REVIEW-FIX.md",
-    ".planning/ROADMAP.md",
-    ".planning/STATE.md"
-  ],
-  "next_action": "Commit the uncommitted post-review files (see uncommitted_files list), then run human UAT per 62-HUMAN-UAT.md",
-  "context_notes": "Session ended at context exhaustion. Phase 62 is functionally complete — all 4 plans + 8-finding code review done. Two in-flight improvements (inventory resolution in LoanForm, date serialization in useLoanMutations) are coded but uncommitted. Human UAT is the last gate before closing phase 62 and starting phase 63."
+  "uncommitted_files": ["~50 backend fix files (see git status)", ".planning/debug/{tenant-mutation-scope,approval-pipeline-fixes,error-status-mapping}.md (resolved)", "graphify-out/ (knowledge graph + 6 query traces)"],
+  "next_action": "Decide whether to commit the 3 fixes; if yes, commit on a branch off docs/paperless-dms-switch. Then audit frontend for the 400->404/409 contract change.",
+  "context_notes": "Fixes originated from a graphify knowledge-graph trace of backend/ (graphify-out/, 8408 nodes). 6 query traces in graphify-out/memory/ document the diagnoses. All 3 fixes verified: go build/vet clean, relevant tests pass. The ONLY 2 failing tests (loan.TestService_Return_InventoryDeleted, jobs.TestCleanupConfig_RetentionPeriodUsage) were proven pre-existing via stash-test on a clean tree — NOT introduced by this work. Resolved debug sessions hold full root-cause + fix detail per fix. NOTE: this file previously held stale phase-62 (loans) state — overwritten 2026-05-31."
 }

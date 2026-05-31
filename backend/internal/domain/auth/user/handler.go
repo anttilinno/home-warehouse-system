@@ -169,7 +169,7 @@ func (h *Handler) register(ctx context.Context, input *RegisterInput) (*Register
 			return nil, huma.Error409Conflict("email is already taken")
 		}
 		if shared.IsInvalidInput(err) {
-			return nil, huma.Error400BadRequest(err.Error())
+			return nil, appMiddleware.MapDomainError(err)
 		}
 		return nil, huma.Error500InternalServerError("failed to create user")
 	}
@@ -403,7 +403,7 @@ func (h *Handler) updateMe(ctx context.Context, input *UpdateMeInput) (*UpdateMe
 			if shared.IsAlreadyExists(err) {
 				return nil, huma.Error409Conflict("email is already taken")
 			}
-			return nil, huma.Error400BadRequest(err.Error())
+			return nil, appMiddleware.MapDomainError(err)
 		}
 	}
 
@@ -413,7 +413,7 @@ func (h *Handler) updateMe(ctx context.Context, input *UpdateMeInput) (*UpdateMe
 			FullName: input.Body.FullName,
 		})
 		if err != nil {
-			return nil, huma.Error400BadRequest(err.Error())
+			return nil, appMiddleware.MapDomainError(err)
 		}
 	}
 
@@ -454,7 +454,7 @@ func (h *Handler) updatePassword(ctx context.Context, input *UpdatePasswordInput
 		if err == ErrInvalidPassword {
 			return nil, huma.Error400BadRequest("current password is incorrect")
 		}
-		return nil, huma.Error400BadRequest(err.Error())
+		return nil, appMiddleware.MapDomainError(err)
 	}
 
 	return nil, nil
@@ -476,7 +476,7 @@ func (h *Handler) updatePreferences(ctx context.Context, input *UpdatePrefsReque
 		NotificationPreferences: input.Body.NotificationPreferences,
 	})
 	if err != nil {
-		return nil, huma.Error400BadRequest(err.Error())
+		return nil, appMiddleware.MapDomainError(err)
 	}
 
 	return &UpdatePrefsResponse{
@@ -1203,7 +1203,7 @@ func RegisterPublicRoutes(api huma.API, svc ServiceInterface) {
 				return nil, huma.Error409Conflict("email is already taken")
 			}
 			if shared.IsInvalidInput(err) {
-				return nil, huma.Error400BadRequest(err.Error())
+				return nil, appMiddleware.MapDomainError(err)
 			}
 			return nil, huma.Error500InternalServerError("failed to create user")
 		}
@@ -1271,7 +1271,7 @@ func RegisterProtectedRoutes(api huma.API, svc ServiceInterface) {
 			FullName: input.Body.FullName,
 		})
 		if err != nil {
-			return nil, huma.Error400BadRequest(err.Error())
+			return nil, appMiddleware.MapDomainError(err)
 		}
 
 		return &UpdateMeOutput{
@@ -1302,7 +1302,7 @@ func RegisterProtectedRoutes(api huma.API, svc ServiceInterface) {
 			if err == ErrInvalidPassword {
 				return nil, huma.Error400BadRequest("current password is incorrect")
 			}
-			return nil, huma.Error400BadRequest(err.Error())
+			return nil, appMiddleware.MapDomainError(err)
 		}
 
 		return nil, nil
@@ -1324,7 +1324,7 @@ func RegisterProtectedRoutes(api huma.API, svc ServiceInterface) {
 			NotificationPreferences: input.Body.NotificationPreferences,
 		})
 		if err != nil {
-			return nil, huma.Error400BadRequest(err.Error())
+			return nil, appMiddleware.MapDomainError(err)
 		}
 
 		return &UpdatePrefsResponse{

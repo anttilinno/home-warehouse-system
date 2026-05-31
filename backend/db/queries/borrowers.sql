@@ -9,19 +9,19 @@ RETURNING *;
 
 -- name: UpdateBorrower :one
 UPDATE warehouse.borrowers
-SET name = $2, email = $3, phone = $4, notes = $5, updated_at = now()
-WHERE id = $1
+SET name = $3, email = $4, phone = $5, notes = $6, updated_at = now()
+WHERE id = $1 AND workspace_id = $2
 RETURNING *;
 
 -- name: ArchiveBorrower :exec
 UPDATE warehouse.borrowers
 SET is_archived = true, updated_at = now()
-WHERE id = $1;
+WHERE id = $1 AND workspace_id = $2;
 
 -- name: RestoreBorrower :exec
 UPDATE warehouse.borrowers
 SET is_archived = false, updated_at = now()
-WHERE id = $1;
+WHERE id = $1 AND workspace_id = $2;
 
 -- name: ListBorrowers :many
 SELECT * FROM warehouse.borrowers
@@ -45,4 +45,4 @@ ORDER BY ts_rank(search_vector, plainto_tsquery('english', $2)) DESC
 LIMIT $3;
 
 -- name: DeleteBorrower :exec
-DELETE FROM warehouse.borrowers WHERE id = $1;
+DELETE FROM warehouse.borrowers WHERE id = $1 AND workspace_id = $2;
