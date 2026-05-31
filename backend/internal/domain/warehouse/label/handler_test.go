@@ -264,7 +264,7 @@ func TestLabelHandler_Archive(t *testing.T) {
 		mockSvc.AssertExpectations(t)
 	})
 
-	t.Run("returns 400 when label not found", func(t *testing.T) {
+	t.Run("returns 404 when label not found", func(t *testing.T) {
 		labelID := uuid.New()
 
 		mockSvc.On("Archive", mock.Anything, labelID, setup.WorkspaceID).
@@ -272,7 +272,7 @@ func TestLabelHandler_Archive(t *testing.T) {
 
 		rec := setup.Post(fmt.Sprintf("/labels/%s/archive", labelID), "")
 
-		testutil.AssertStatus(t, rec, http.StatusBadRequest)
+		testutil.AssertStatus(t, rec, http.StatusNotFound)
 		mockSvc.AssertExpectations(t)
 	})
 }
@@ -294,7 +294,7 @@ func TestLabelHandler_Restore(t *testing.T) {
 		mockSvc.AssertExpectations(t)
 	})
 
-	t.Run("returns 400 when label not found", func(t *testing.T) {
+	t.Run("returns 404 when label not found", func(t *testing.T) {
 		labelID := uuid.New()
 
 		mockSvc.On("Restore", mock.Anything, labelID, setup.WorkspaceID).
@@ -302,7 +302,7 @@ func TestLabelHandler_Restore(t *testing.T) {
 
 		rec := setup.Post(fmt.Sprintf("/labels/%s/restore", labelID), "")
 
-		testutil.AssertStatus(t, rec, http.StatusBadRequest)
+		testutil.AssertStatus(t, rec, http.StatusNotFound)
 		mockSvc.AssertExpectations(t)
 	})
 }
@@ -324,7 +324,7 @@ func TestLabelHandler_Delete(t *testing.T) {
 		mockSvc.AssertExpectations(t)
 	})
 
-	t.Run("returns 400 when label not found", func(t *testing.T) {
+	t.Run("returns 404 when label not found", func(t *testing.T) {
 		labelID := uuid.New()
 
 		mockSvc.On("Delete", mock.Anything, labelID, setup.WorkspaceID).
@@ -332,7 +332,7 @@ func TestLabelHandler_Delete(t *testing.T) {
 
 		rec := setup.Delete(fmt.Sprintf("/labels/%s", labelID))
 
-		testutil.AssertStatus(t, rec, http.StatusBadRequest)
+		testutil.AssertStatus(t, rec, http.StatusNotFound)
 		mockSvc.AssertExpectations(t)
 	})
 }

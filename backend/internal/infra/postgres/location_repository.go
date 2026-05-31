@@ -105,8 +105,11 @@ func (r *LocationRepository) FindRootLocations(ctx context.Context, workspaceID 
 	return locations, nil
 }
 
-func (r *LocationRepository) Delete(ctx context.Context, id uuid.UUID) error {
-	return r.queries.DeleteLocation(ctx, id)
+func (r *LocationRepository) Delete(ctx context.Context, id, workspaceID uuid.UUID) error {
+	return r.queries.DeleteLocation(ctx, queries.DeleteLocationParams{
+		ID:          id,
+		WorkspaceID: workspaceID,
+	})
 }
 
 func (r *LocationRepository) ShortCodeExists(ctx context.Context, workspaceID uuid.UUID, shortCode string) (bool, error) {

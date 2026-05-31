@@ -15,11 +15,16 @@ import (
 const archiveCategory = `-- name: ArchiveCategory :exec
 UPDATE warehouse.categories
 SET is_archived = true, updated_at = now()
-WHERE id = $1
+WHERE id = $1 AND workspace_id = $2
 `
 
-func (q *Queries) ArchiveCategory(ctx context.Context, id uuid.UUID) error {
-	_, err := q.db.Exec(ctx, archiveCategory, id)
+type ArchiveCategoryParams struct {
+	ID          uuid.UUID `json:"id"`
+	WorkspaceID uuid.UUID `json:"workspace_id"`
+}
+
+func (q *Queries) ArchiveCategory(ctx context.Context, arg ArchiveCategoryParams) error {
+	_, err := q.db.Exec(ctx, archiveCategory, arg.ID, arg.WorkspaceID)
 	return err
 }
 
@@ -60,11 +65,16 @@ func (q *Queries) CreateCategory(ctx context.Context, arg CreateCategoryParams) 
 }
 
 const deleteCategory = `-- name: DeleteCategory :exec
-DELETE FROM warehouse.categories WHERE id = $1
+DELETE FROM warehouse.categories WHERE id = $1 AND workspace_id = $2
 `
 
-func (q *Queries) DeleteCategory(ctx context.Context, id uuid.UUID) error {
-	_, err := q.db.Exec(ctx, deleteCategory, id)
+type DeleteCategoryParams struct {
+	ID          uuid.UUID `json:"id"`
+	WorkspaceID uuid.UUID `json:"workspace_id"`
+}
+
+func (q *Queries) DeleteCategory(ctx context.Context, arg DeleteCategoryParams) error {
+	_, err := q.db.Exec(ctx, deleteCategory, arg.ID, arg.WorkspaceID)
 	return err
 }
 
@@ -97,12 +107,17 @@ func (q *Queries) GetCategory(ctx context.Context, arg GetCategoryParams) (Wareh
 const hasChildren = `-- name: HasChildren :one
 SELECT EXISTS(
     SELECT 1 FROM warehouse.categories
-    WHERE parent_category_id = $1 AND is_archived = false
+    WHERE workspace_id = $1 AND parent_category_id = $2 AND is_archived = false
 )
 `
 
-func (q *Queries) HasChildren(ctx context.Context, parentCategoryID pgtype.UUID) (bool, error) {
-	row := q.db.QueryRow(ctx, hasChildren, parentCategoryID)
+type HasChildrenParams struct {
+	WorkspaceID      uuid.UUID   `json:"workspace_id"`
+	ParentCategoryID pgtype.UUID `json:"parent_category_id"`
+}
+
+func (q *Queries) HasChildren(ctx context.Context, arg HasChildrenParams) (bool, error) {
+	row := q.db.QueryRow(ctx, hasChildren, arg.WorkspaceID, arg.ParentCategoryID)
 	var exists bool
 	err := row.Scan(&exists)
 	return exists, err
@@ -221,23 +236,29 @@ func (q *Queries) ListRootCategories(ctx context.Context, workspaceID uuid.UUID)
 const restoreCategory = `-- name: RestoreCategory :exec
 UPDATE warehouse.categories
 SET is_archived = false, updated_at = now()
-WHERE id = $1
+WHERE id = $1 AND workspace_id = $2
 `
 
-func (q *Queries) RestoreCategory(ctx context.Context, id uuid.UUID) error {
-	_, err := q.db.Exec(ctx, restoreCategory, id)
+type RestoreCategoryParams struct {
+	ID          uuid.UUID `json:"id"`
+	WorkspaceID uuid.UUID `json:"workspace_id"`
+}
+
+func (q *Queries) RestoreCategory(ctx context.Context, arg RestoreCategoryParams) error {
+	_, err := q.db.Exec(ctx, restoreCategory, arg.ID, arg.WorkspaceID)
 	return err
 }
 
 const updateCategory = `-- name: UpdateCategory :one
 UPDATE warehouse.categories
-SET name = $2, parent_category_id = $3, description = $4, updated_at = now()
-WHERE id = $1
+SET name = $3, parent_category_id = $4, description = $5, updated_at = now()
+WHERE id = $1 AND workspace_id = $2
 RETURNING id, workspace_id, name, parent_category_id, description, is_archived, created_at, updated_at
 `
 
 type UpdateCategoryParams struct {
 	ID               uuid.UUID   `json:"id"`
+	WorkspaceID      uuid.UUID   `json:"workspace_id"`
 	Name             string      `json:"name"`
 	ParentCategoryID pgtype.UUID `json:"parent_category_id"`
 	Description      *string     `json:"description"`
@@ -246,6 +267,7 @@ type UpdateCategoryParams struct {
 func (q *Queries) UpdateCategory(ctx context.Context, arg UpdateCategoryParams) (WarehouseCategory, error) {
 	row := q.db.QueryRow(ctx, updateCategory,
 		arg.ID,
+		arg.WorkspaceID,
 		arg.Name,
 		arg.ParentCategoryID,
 		arg.Description,

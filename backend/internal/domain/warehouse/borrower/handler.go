@@ -72,7 +72,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 			Notes:       input.Body.Notes,
 		})
 		if err != nil {
-			return nil, huma.Error400BadRequest(err.Error())
+			return nil, appMiddleware.MapDomainError(err)
 		}
 
 		// Publish event
@@ -116,7 +116,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 
 		borrower, err := svc.Update(ctx, input.ID, workspaceID, updateInput)
 		if err != nil {
-			return nil, huma.Error400BadRequest(err.Error())
+			return nil, appMiddleware.MapDomainError(err)
 		}
 
 		// Publish event
@@ -153,7 +153,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 			if errors.Is(err, ErrHasActiveLoans) {
 				return nil, huma.Error400BadRequest("cannot delete borrower with active loans")
 			}
-			return nil, huma.Error400BadRequest(err.Error())
+			return nil, appMiddleware.MapDomainError(err)
 		}
 
 		// Publish event
@@ -183,7 +183,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 		authUser, _ := appMiddleware.GetAuthUser(ctx)
 
 		if err := svc.Archive(ctx, input.ID, workspaceID); err != nil {
-			return nil, huma.Error400BadRequest(err.Error())
+			return nil, appMiddleware.MapDomainError(err)
 		}
 
 		if broadcaster != nil && authUser != nil {
@@ -212,7 +212,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 		authUser, _ := appMiddleware.GetAuthUser(ctx)
 
 		if err := svc.Restore(ctx, input.ID, workspaceID); err != nil {
-			return nil, huma.Error400BadRequest(err.Error())
+			return nil, appMiddleware.MapDomainError(err)
 		}
 
 		if broadcaster != nil && authUser != nil {

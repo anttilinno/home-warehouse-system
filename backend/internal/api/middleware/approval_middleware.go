@@ -45,7 +45,17 @@ type PendingChangeCreator interface {
 //  5. Creates a pending change instead of executing the operation
 //  6. Returns 202 Accepted with pending change details
 //
-// Supported entity types: item, category, location, container, inventory, borrower, loan, label
+// Gated entity types: item, category, location, container, inventory, borrower,
+// loan, label. These are the first-class, member-mutable resources routed through
+// approval.
+//
+// Some member-mutable endpoints are DELIBERATELY EXCLUDED from approval (photos,
+// attachments, repair logs/photos/attachments, movements, favorites, activity).
+// They are sub-resources or audit/view-state records applied atomically with — or
+// derived from — their parent entity, which is itself gated. See
+// docs/APPROVAL_PIPELINE.md ("Entity coverage and deliberate exclusions") for the
+// full rationale. The set below MUST stay in sync with
+// pendingchange.Service.isValidEntityType.
 //
 // See docs/APPROVAL_PIPELINE.md for complete documentation.
 func ApprovalMiddleware(pendingChangeCreator PendingChangeCreator) func(http.Handler) http.Handler {
@@ -153,7 +163,11 @@ func extractAction(method string) string {
 //   - /workspaces/{workspace_id}/loans[/{id}]
 //   - /workspaces/{workspace_id}/labels[/{id}]
 //
-// Returns the singular form (e.g., "item" for "/items") or empty string if unsupported.
+// Returns the singular form (e.g., "item" for "/items") or empty string if the
+// entity type is not gated. Returning "" for an un-gated type means the request
+// proceeds without going through approval — this is the mechanism by which the
+// deliberately-excluded sub-resources (photos, attachments, repairs, movements,
+// favorites, activity) bypass the pipeline. See docs/APPROVAL_PIPELINE.md.
 func extractEntityType(r *http.Request) string {
 	path := r.URL.Path
 

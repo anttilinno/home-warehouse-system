@@ -52,7 +52,7 @@ func (m *MockRepository) CountByInventory(ctx context.Context, workspaceID, inve
 	return args.Int(0), args.Error(1)
 }
 
-func (m *MockRepository) Delete(ctx context.Context, id uuid.UUID) error {
+func (m *MockRepository) Delete(ctx context.Context, id, workspaceID uuid.UUID) error {
 	args := m.Called(ctx, id)
 	return args.Error(0)
 }
@@ -67,7 +67,7 @@ func (m *MockRepository) UpdateReminderDate(ctx context.Context, id, workspaceID
 	return args.Error(0)
 }
 
-func (m *MockRepository) MarkReminderSent(ctx context.Context, id uuid.UUID) error {
+func (m *MockRepository) MarkReminderSent(ctx context.Context, id, workspaceID uuid.UUID) error {
 	args := m.Called(ctx, id)
 	return args.Error(0)
 }

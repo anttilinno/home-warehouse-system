@@ -189,7 +189,7 @@ func (s *Service) Delete(ctx context.Context, id, workspaceID uuid.UUID) error {
 	}
 
 	// Check if category has children
-	hasChildren, err := s.repo.HasChildren(ctx, category.ID())
+	hasChildren, err := s.repo.HasChildren(ctx, workspaceID, category.ID())
 	if err != nil {
 		return err
 	}
@@ -197,7 +197,7 @@ func (s *Service) Delete(ctx context.Context, id, workspaceID uuid.UUID) error {
 		return ErrHasChildren
 	}
 
-	return s.repo.Delete(ctx, id)
+	return s.repo.Delete(ctx, id, workspaceID)
 }
 
 // BreadcrumbItem represents a single item in a breadcrumb trail.

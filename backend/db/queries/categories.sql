@@ -9,19 +9,19 @@ RETURNING *;
 
 -- name: UpdateCategory :one
 UPDATE warehouse.categories
-SET name = $2, parent_category_id = $3, description = $4, updated_at = now()
-WHERE id = $1
+SET name = $3, parent_category_id = $4, description = $5, updated_at = now()
+WHERE id = $1 AND workspace_id = $2
 RETURNING *;
 
 -- name: ArchiveCategory :exec
 UPDATE warehouse.categories
 SET is_archived = true, updated_at = now()
-WHERE id = $1;
+WHERE id = $1 AND workspace_id = $2;
 
 -- name: RestoreCategory :exec
 UPDATE warehouse.categories
 SET is_archived = false, updated_at = now()
-WHERE id = $1;
+WHERE id = $1 AND workspace_id = $2;
 
 -- name: ListCategories :many
 SELECT * FROM warehouse.categories
@@ -41,8 +41,8 @@ ORDER BY name;
 -- name: HasChildren :one
 SELECT EXISTS(
     SELECT 1 FROM warehouse.categories
-    WHERE parent_category_id = $1 AND is_archived = false
+    WHERE workspace_id = $1 AND parent_category_id = $2 AND is_archived = false
 );
 
 -- name: DeleteCategory :exec
-DELETE FROM warehouse.categories WHERE id = $1;
+DELETE FROM warehouse.categories WHERE id = $1 AND workspace_id = $2;

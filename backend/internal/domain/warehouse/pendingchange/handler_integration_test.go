@@ -32,6 +32,7 @@ import (
 	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/label"
 	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/loan"
 	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/location"
+	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/movement"
 	"github.com/antti/home-warehouse/go-backend/internal/infra/postgres"
 )
 
@@ -140,17 +141,35 @@ func setupTestAPI(t *testing.T, pool *pgxpool.Pool) (huma.API, *Service, user.Re
 	pendingChangeRepo := postgres.NewPendingChangeRepository(pool)
 
 	// Create service
+	// Build the per-entity domain services the approval pipeline now applies through.
+	movementRepo := postgres.NewMovementRepository(pool)
+	movementSvc := movement.NewService(movementRepo)
+	itemSvc := item.NewService(itemRepo, categoryRepo)
+	categorySvc := category.NewService(categoryRepo)
+	locationSvc := location.NewService(locationRepo)
+	containerSvc := container.NewService(containerRepo, locationRepo)
+	inventorySvc := inventory.NewService(inventoryRepo, movementSvc, itemRepo, locationRepo, containerRepo)
+	borrowerSvc := borrower.NewService(borrowerRepo)
+	loanSvc := loan.NewService(loanRepo, inventoryRepo)
+	labelSvc := label.NewService(labelRepo)
+	txManager := postgres.NewTxManager(pool)
+
 	svc := NewService(
 		pendingChangeRepo,
 		memberRepo,
-		itemRepo,
-		categoryRepo,
-		locationRepo,
-		containerRepo,
+		userRepo,
+		itemSvc,
+		categorySvc,
+		locationSvc,
+		containerSvc,
+		inventorySvc,
 		inventoryRepo,
-		borrowerRepo,
+		borrowerSvc,
+		loanSvc,
 		loanRepo,
-		labelRepo,
+		labelSvc,
+		txManager,
+		nil, // broadcaster
 	)
 
 	// Create router and API

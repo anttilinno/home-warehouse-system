@@ -287,7 +287,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 			if err == ErrInventoryOnLoan {
 				return nil, huma.Error400BadRequest("inventory already has an active loan")
 			}
-			return nil, huma.Error400BadRequest(err.Error())
+			return nil, appMiddleware.MapDomainError(err)
 		}
 
 		// Publish SSE event
@@ -333,7 +333,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 			if err == ErrAlreadyReturned {
 				return nil, huma.Error400BadRequest("loan has already been returned")
 			}
-			return nil, huma.Error400BadRequest(err.Error())
+			return nil, appMiddleware.MapDomainError(err)
 		}
 
 		// Publish SSE event
@@ -380,7 +380,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 			if err == ErrInvalidDueDate {
 				return nil, huma.Error400BadRequest("new due date must be after loaned date")
 			}
-			return nil, huma.Error400BadRequest(err.Error())
+			return nil, appMiddleware.MapDomainError(err)
 		}
 
 		// Publish SSE event
@@ -429,7 +429,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 			if err == ErrInvalidDueDate {
 				return nil, huma.Error400BadRequest("due date must be after loaned date")
 			}
-			return nil, huma.Error400BadRequest(err.Error())
+			return nil, appMiddleware.MapDomainError(err)
 		}
 
 		// Publish SSE event

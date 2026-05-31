@@ -14,11 +14,16 @@ import (
 const archiveContainer = `-- name: ArchiveContainer :exec
 UPDATE warehouse.containers
 SET is_archived = true, updated_at = now()
-WHERE id = $1
+WHERE id = $1 AND workspace_id = $2
 `
 
-func (q *Queries) ArchiveContainer(ctx context.Context, id uuid.UUID) error {
-	_, err := q.db.Exec(ctx, archiveContainer, id)
+type ArchiveContainerParams struct {
+	ID          uuid.UUID `json:"id"`
+	WorkspaceID uuid.UUID `json:"workspace_id"`
+}
+
+func (q *Queries) ArchiveContainer(ctx context.Context, arg ArchiveContainerParams) error {
+	_, err := q.db.Exec(ctx, archiveContainer, arg.ID, arg.WorkspaceID)
 	return err
 }
 
@@ -85,11 +90,16 @@ func (q *Queries) CreateContainer(ctx context.Context, arg CreateContainerParams
 }
 
 const deleteContainer = `-- name: DeleteContainer :exec
-DELETE FROM warehouse.containers WHERE id = $1
+DELETE FROM warehouse.containers WHERE id = $1 AND workspace_id = $2
 `
 
-func (q *Queries) DeleteContainer(ctx context.Context, id uuid.UUID) error {
-	_, err := q.db.Exec(ctx, deleteContainer, id)
+type DeleteContainerParams struct {
+	ID          uuid.UUID `json:"id"`
+	WorkspaceID uuid.UUID `json:"workspace_id"`
+}
+
+func (q *Queries) DeleteContainer(ctx context.Context, arg DeleteContainerParams) error {
+	_, err := q.db.Exec(ctx, deleteContainer, arg.ID, arg.WorkspaceID)
 	return err
 }
 
@@ -242,11 +252,16 @@ func (q *Queries) ListContainersByWorkspace(ctx context.Context, arg ListContain
 const restoreContainer = `-- name: RestoreContainer :exec
 UPDATE warehouse.containers
 SET is_archived = false, updated_at = now()
-WHERE id = $1
+WHERE id = $1 AND workspace_id = $2
 `
 
-func (q *Queries) RestoreContainer(ctx context.Context, id uuid.UUID) error {
-	_, err := q.db.Exec(ctx, restoreContainer, id)
+type RestoreContainerParams struct {
+	ID          uuid.UUID `json:"id"`
+	WorkspaceID uuid.UUID `json:"workspace_id"`
+}
+
+func (q *Queries) RestoreContainer(ctx context.Context, arg RestoreContainerParams) error {
+	_, err := q.db.Exec(ctx, restoreContainer, arg.ID, arg.WorkspaceID)
 	return err
 }
 
@@ -299,13 +314,14 @@ func (q *Queries) SearchContainers(ctx context.Context, arg SearchContainersPara
 
 const updateContainer = `-- name: UpdateContainer :one
 UPDATE warehouse.containers
-SET name = $2, location_id = $3, description = $4, capacity = $5, updated_at = now()
-WHERE id = $1
+SET name = $3, location_id = $4, description = $5, capacity = $6, updated_at = now()
+WHERE id = $1 AND workspace_id = $2
 RETURNING id, workspace_id, name, location_id, description, capacity, short_code, is_archived, search_vector, created_at, updated_at
 `
 
 type UpdateContainerParams struct {
 	ID          uuid.UUID `json:"id"`
+	WorkspaceID uuid.UUID `json:"workspace_id"`
 	Name        string    `json:"name"`
 	LocationID  uuid.UUID `json:"location_id"`
 	Description *string   `json:"description"`
@@ -315,6 +331,7 @@ type UpdateContainerParams struct {
 func (q *Queries) UpdateContainer(ctx context.Context, arg UpdateContainerParams) (WarehouseContainer, error) {
 	row := q.db.QueryRow(ctx, updateContainer,
 		arg.ID,
+		arg.WorkspaceID,
 		arg.Name,
 		arg.LocationID,
 		arg.Description,

@@ -23,67 +23,102 @@ import (
 	"github.com/antti/home-warehouse/go-backend/internal/infra/webpush"
 )
 
-// EntityApplier defines the interface for applying approved changes to specific entity types.
-// Implementations are responsible for deserializing the JSON payload and creating, updating,
-// or deleting the appropriate entity.
-type EntityApplier interface {
-	// ApplyCreate creates a new entity from the JSON payload and returns its ID
-	ApplyCreate(ctx context.Context, workspaceID uuid.UUID, payload json.RawMessage) (uuid.UUID, error)
+// Transactor runs a function inside a single database transaction. It is a port
+// implemented by infra/postgres.TxManager. Defining it here (rather than importing
+// the infra package directly) keeps the domain free of infrastructure imports —
+// the same convention used throughout this codebase. The function receives a
+// context carrying the active transaction; repositories detect it via the
+// infra layer and route their writes through the transaction automatically.
+type Transactor interface {
+	WithTx(ctx context.Context, fn func(context.Context) error) error
+}
 
-	// ApplyUpdate updates an existing entity with data from the JSON payload
-	ApplyUpdate(ctx context.Context, entityID uuid.UUID, payload json.RawMessage) error
+// noopTransactor executes the function without a surrounding transaction. It is
+// used as a safe fallback when no Transactor is wired (e.g. in unit tests that
+// mock repositories), preserving the previous non-transactional behaviour.
+type noopTransactor struct{}
 
-	// ApplyDelete removes an entity by its ID
-	ApplyDelete(ctx context.Context, entityID uuid.UUID) error
+func (noopTransactor) WithTx(ctx context.Context, fn func(context.Context) error) error {
+	return fn(ctx)
 }
 
 // Service handles business logic for pending changes in the approval pipeline.
-// It coordinates between the pending change repository, entity repositories, and the
-// SSE broadcaster to manage the complete approval workflow.
+// It coordinates between the pending change repository, the per-entity domain
+// services, and the SSE broadcaster to manage the complete approval workflow.
+//
+// Approved create/update changes are applied through the same domain services
+// that handle direct (admin) writes. This guarantees full payload fidelity
+// (every field the member submitted is applied through the canonical
+// create/update path) and reuses each domain's validation, uniqueness checks,
+// and short-code generation.
+//
+// inventory and loan have no service-level Delete (the inventory/loan domains
+// expose archive/return semantics instead), so their delete path goes through the
+// repository directly. Delete carries no payload, so this does not affect payload
+// fidelity.
 type Service struct {
-	repo           Repository
-	memberRepo     member.Repository
-	userRepo       user.Repository
-	itemRepo       item.Repository
-	categoryRepo   category.Repository
-	locationRepo   location.Repository
-	containerRepo  container.Repository
-	inventoryRepo  inventory.Repository
-	borrowerRepo   borrower.Repository
-	loanRepo       loan.Repository
-	labelRepo      label.Repository
-	broadcaster    *events.Broadcaster
-	pushSender     *webpush.Sender
+	repo          Repository
+	memberRepo    member.Repository
+	userRepo      user.Repository
+	itemSvc       item.ServiceInterface
+	categorySvc   category.ServiceInterface
+	locationSvc   location.ServiceInterface
+	containerSvc  container.ServiceInterface
+	inventorySvc  inventory.ServiceInterface
+	inventoryRepo inventory.Repository
+	borrowerSvc   borrower.ServiceInterface
+	loanSvc       loan.ServiceInterface
+	loanRepo      loan.Repository
+	labelSvc      label.ServiceInterface
+	tx            Transactor
+	broadcaster   *events.Broadcaster
+	pushSender    *webpush.Sender
 }
 
 // NewService creates a new pending change service with all required dependencies.
-// The service requires repositories for all supported entity types to apply approved changes.
+// The service requires the domain services for every supported entity type so
+// approved changes are applied through the canonical create/update paths. The
+// inventory and loan repositories are required for their delete paths (those
+// domains expose no service-level Delete).
+//
+// tx is the transaction port (see Transactor). If nil, approvals fall back to the
+// previous non-transactional behaviour — callers that need atomic, idempotent
+// approval (the production wiring) must supply a real Transactor.
 func NewService(
 	repo Repository,
 	memberRepo member.Repository,
 	userRepo user.Repository,
-	itemRepo item.Repository,
-	categoryRepo category.Repository,
-	locationRepo location.Repository,
-	containerRepo container.Repository,
+	itemSvc item.ServiceInterface,
+	categorySvc category.ServiceInterface,
+	locationSvc location.ServiceInterface,
+	containerSvc container.ServiceInterface,
+	inventorySvc inventory.ServiceInterface,
 	inventoryRepo inventory.Repository,
-	borrowerRepo borrower.Repository,
+	borrowerSvc borrower.ServiceInterface,
+	loanSvc loan.ServiceInterface,
 	loanRepo loan.Repository,
-	labelRepo label.Repository,
+	labelSvc label.ServiceInterface,
+	tx Transactor,
 	broadcaster *events.Broadcaster,
 ) *Service {
+	if tx == nil {
+		tx = noopTransactor{}
+	}
 	return &Service{
 		repo:          repo,
 		memberRepo:    memberRepo,
 		userRepo:      userRepo,
-		itemRepo:      itemRepo,
-		categoryRepo:  categoryRepo,
-		locationRepo:  locationRepo,
-		containerRepo: containerRepo,
+		itemSvc:       itemSvc,
+		categorySvc:   categorySvc,
+		locationSvc:   locationSvc,
+		containerSvc:  containerSvc,
+		inventorySvc:  inventorySvc,
 		inventoryRepo: inventoryRepo,
-		borrowerRepo:  borrowerRepo,
+		borrowerSvc:   borrowerSvc,
+		loanSvc:       loanSvc,
 		loanRepo:      loanRepo,
-		labelRepo:     labelRepo,
+		labelSvc:      labelSvc,
+		tx:            tx,
 		broadcaster:   broadcaster,
 	}
 }
@@ -138,14 +173,14 @@ func (s *Service) CreatePendingChange(
 			EntityType: "pendingchange",
 			UserID:     requesterID,
 			Data: map[string]any{
-				"id":                 change.ID().String(),
-				"entity_type":        change.EntityType(),
-				"entity_id":          change.EntityID(),
-				"action":             string(change.Action()),
-				"requester_id":       requesterID.String(),
-				"requester_name":     requesterName,
-				"requester_email":    requesterEmail,
-				"status":             string(change.Status()),
+				"id":              change.ID().String(),
+				"entity_type":     change.EntityType(),
+				"entity_id":       change.EntityID(),
+				"action":          string(change.Action()),
+				"requester_id":    requesterID.String(),
+				"requester_name":  requesterName,
+				"requester_email": requesterEmail,
+				"status":          string(change.Status()),
 			},
 		})
 	}
@@ -156,14 +191,20 @@ func (s *Service) CreatePendingChange(
 // ApproveChange approves a pending change and applies it to the database.
 // This operation:
 //  1. Verifies the reviewer has admin/owner permissions
-//  2. Marks the change as approved
-//  3. Applies the change to the actual entity (creates, updates, or deletes)
-//  4. Publishes an SSE event to notify the requester and other workspace members
+//  2. Inside a single transaction: re-fetches the change, verifies it is still
+//     pending (idempotency guard), marks it approved, applies the entity mutation,
+//     and persists the approved change — all atomically (all-or-nothing).
+//  3. Publishes an SSE event to notify the requester and other workspace members
+//
+// Because the steps in (2) share one transaction, a failure to persist the
+// approved change rolls back the entity mutation, so a retried approval cannot
+// duplicate the apply. The in-transaction pending re-check makes a
+// duplicate/retried approval a no-op rather than a second apply.
 //
 // Returns an error if the reviewer lacks permissions, the change doesn't exist,
 // has already been reviewed, or the change cannot be applied.
 func (s *Service) ApproveChange(ctx context.Context, changeID uuid.UUID, reviewerID uuid.UUID) error {
-	// Fetch the pending change
+	// Fetch the pending change (outside the tx) for the permission check.
 	change, err := s.repo.FindByID(ctx, changeID)
 	if err != nil {
 		return fmt.Errorf("failed to fetch pending change: %w", err)
@@ -178,7 +219,56 @@ func (s *Service) ApproveChange(ctx context.Context, changeID uuid.UUID, reviewe
 		return ErrUnauthorized
 	}
 
-	// Get requester and reviewer info for SSE event
+	// alreadyReviewed is set when the in-tx re-check finds the change is no longer
+	// pending. In that case we short-circuit without re-applying (idempotency) and
+	// skip the SSE/push side effects, since they were already emitted by the
+	// approval that won the race.
+	alreadyReviewed := false
+
+	// Approve + apply + save atomically. Re-fetch inside the transaction so the
+	// pending re-check reads the persisted status, not the in-memory copy fetched
+	// above.
+	err = s.tx.WithTx(ctx, func(ctx context.Context) error {
+		current, err := s.repo.FindByID(ctx, changeID)
+		if err != nil {
+			return fmt.Errorf("failed to re-fetch pending change: %w", err)
+		}
+
+		// Idempotency guard: a non-pending change short-circuits without re-applying.
+		if current.Status() != StatusPending {
+			alreadyReviewed = true
+			return nil
+		}
+
+		// Approve the change (updates status to approved).
+		if err := current.Approve(reviewerID); err != nil {
+			return fmt.Errorf("failed to approve change: %w", err)
+		}
+
+		// Apply the change to the actual entity through the domain service.
+		if err := s.applyChange(ctx, current); err != nil {
+			return fmt.Errorf("failed to apply change: %w", err)
+		}
+
+		// Persist the approved change.
+		if err := s.repo.Save(ctx, current); err != nil {
+			return fmt.Errorf("failed to save approved change: %w", err)
+		}
+
+		// Keep the outer reference in sync for the SSE payload below.
+		change = current
+		return nil
+	})
+	if err != nil {
+		return err
+	}
+
+	// Duplicate/retried approval: nothing more to do.
+	if alreadyReviewed {
+		return nil
+	}
+
+	// Get requester and reviewer info for SSE event.
 	var requesterName, requesterEmail, reviewerName, reviewerEmail string
 	if requesterUser, err := s.userRepo.FindByID(ctx, change.RequesterID()); err == nil {
 		requesterName = requesterUser.FullName()
@@ -189,21 +279,6 @@ func (s *Service) ApproveChange(ctx context.Context, changeID uuid.UUID, reviewe
 		reviewerEmail = reviewerUser.Email()
 	}
 
-	// Approve the change (updates status)
-	if err := change.Approve(reviewerID); err != nil {
-		return fmt.Errorf("failed to approve change: %w", err)
-	}
-
-	// Apply the change to the actual entity
-	if err := s.applyChange(ctx, change); err != nil {
-		return fmt.Errorf("failed to apply change: %w", err)
-	}
-
-	// Save the approved change
-	if err := s.repo.Save(ctx, change); err != nil {
-		return fmt.Errorf("failed to save approved change: %w", err)
-	}
-
 	// Publish SSE event for approval
 	if s.broadcaster != nil {
 		s.broadcaster.Publish(change.WorkspaceID(), events.Event{
@@ -212,17 +287,17 @@ func (s *Service) ApproveChange(ctx context.Context, changeID uuid.UUID, reviewe
 			EntityType: "pendingchange",
 			UserID:     reviewerID,
 			Data: map[string]any{
-				"id":                 change.ID().String(),
-				"entity_type":        change.EntityType(),
-				"entity_id":          change.EntityID(),
-				"action":             string(change.Action()),
-				"requester_id":       change.RequesterID().String(),
-				"requester_name":     requesterName,
-				"requester_email":    requesterEmail,
-				"reviewer_id":        reviewerID.String(),
-				"reviewer_name":      reviewerName,
-				"reviewer_email":     reviewerEmail,
-				"status":             string(change.Status()),
+				"id":              change.ID().String(),
+				"entity_type":     change.EntityType(),
+				"entity_id":       change.EntityID(),
+				"action":          string(change.Action()),
+				"requester_id":    change.RequesterID().String(),
+				"requester_name":  requesterName,
+				"requester_email": requesterEmail,
+				"reviewer_id":     reviewerID.String(),
+				"reviewer_name":   reviewerName,
+				"reviewer_email":  reviewerEmail,
+				"status":          string(change.Status()),
 			},
 		})
 	}
@@ -305,18 +380,18 @@ func (s *Service) RejectChange(ctx context.Context, changeID uuid.UUID, reviewer
 			EntityType: "pendingchange",
 			UserID:     reviewerID,
 			Data: map[string]any{
-				"id":                 change.ID().String(),
-				"entity_type":        change.EntityType(),
-				"entity_id":          change.EntityID(),
-				"action":             string(change.Action()),
-				"requester_id":       change.RequesterID().String(),
-				"requester_name":     requesterName,
-				"requester_email":    requesterEmail,
-				"reviewer_id":        reviewerID.String(),
-				"reviewer_name":      reviewerName,
-				"reviewer_email":     reviewerEmail,
-				"rejection_reason":   reason,
-				"status":             string(change.Status()),
+				"id":               change.ID().String(),
+				"entity_type":      change.EntityType(),
+				"entity_id":        change.EntityID(),
+				"action":           string(change.Action()),
+				"requester_id":     change.RequesterID().String(),
+				"requester_name":   requesterName,
+				"requester_email":  requesterEmail,
+				"reviewer_id":      reviewerID.String(),
+				"reviewer_name":    reviewerName,
+				"reviewer_email":   reviewerEmail,
+				"rejection_reason": reason,
+				"status":           string(change.Status()),
 			},
 		})
 	}
@@ -369,7 +444,14 @@ func (s *Service) canReviewChanges(ctx context.Context, userID uuid.UUID, worksp
 	return m.CanManageMembers(), nil
 }
 
-// isValidEntityType checks if the entity type is supported
+// isValidEntityType checks if the entity type is supported.
+//
+// This set must stay in sync with the approval middleware's extractEntityType
+// (internal/api/middleware/approval_middleware.go). Entity types not listed here
+// are deliberately NOT routed through the approval pipeline — see
+// docs/APPROVAL_PIPELINE.md ("Entity coverage and deliberate exclusions") for the
+// rationale on which member-mutable resources are gated and which are applied
+// atomically with their parent and therefore intentionally excluded.
 func (s *Service) isValidEntityType(entityType string) bool {
 	validTypes := map[string]bool{
 		"item":      true,
@@ -384,7 +466,8 @@ func (s *Service) isValidEntityType(entityType string) bool {
 	return validTypes[entityType]
 }
 
-// applyChange applies the approved change to the actual entity
+// applyChange applies the approved change to the actual entity through the
+// canonical domain service for its type.
 func (s *Service) applyChange(ctx context.Context, change *PendingChange) error {
 	switch change.EntityType() {
 	case "item":
@@ -408,70 +491,77 @@ func (s *Service) applyChange(ctx context.Context, change *PendingChange) error 
 	}
 }
 
-// applyItemChange applies changes to items
+// applyItemChange applies changes to items through item.Service, applying the
+// full field set the member submitted.
 func (s *Service) applyItemChange(ctx context.Context, change *PendingChange) error {
 	switch change.Action() {
 	case ActionCreate:
-		var itemData struct {
-			Name          string  `json:"name"`
-			SKU           string  `json:"sku"`
-			MinStockLevel int     `json:"min_stock_level"`
+		var p struct {
+			SKU               string     `json:"sku"`
+			Name              string     `json:"name"`
+			Description       *string    `json:"description"`
+			CategoryID        *uuid.UUID `json:"category_id"`
+			Brand             *string    `json:"brand"`
+			Model             *string    `json:"model"`
+			ImageURL          *string    `json:"image_url"`
+			SerialNumber      *string    `json:"serial_number"`
+			Manufacturer      *string    `json:"manufacturer"`
+			Barcode           *string    `json:"barcode"`
+			IsInsured         *bool      `json:"is_insured"`
+			LifetimeWarranty  *bool      `json:"lifetime_warranty"`
+			WarrantyDetails   *string    `json:"warranty_details"`
+			PurchasedFrom     *uuid.UUID `json:"purchased_from"`
+			MinStockLevel     int        `json:"min_stock_level"`
+			ShortCode         string     `json:"short_code"`
+			ObsidianVaultPath *string    `json:"obsidian_vault_path"`
+			ObsidianNotePath  *string    `json:"obsidian_note_path"`
+			NeedsReview       *bool      `json:"needs_review"`
 		}
-		if err := json.Unmarshal(change.Payload(), &itemData); err != nil {
+		if err := json.Unmarshal(change.Payload(), &p); err != nil {
 			return fmt.Errorf("failed to unmarshal item payload: %w", err)
 		}
-
-		// Set defaults if not provided
-		if itemData.SKU == "" {
-			itemData.SKU = "AUTO"
-		}
-
-		newItem, err := item.NewItem(
-			change.WorkspaceID(),
-			itemData.Name,
-			itemData.SKU,
-			itemData.MinStockLevel,
-		)
-		if err != nil {
+		if _, err := s.itemSvc.Create(ctx, item.CreateInput{
+			WorkspaceID:       change.WorkspaceID(),
+			SKU:               p.SKU,
+			Name:              p.Name,
+			Description:       p.Description,
+			CategoryID:        p.CategoryID,
+			Brand:             p.Brand,
+			Model:             p.Model,
+			ImageURL:          p.ImageURL,
+			SerialNumber:      p.SerialNumber,
+			Manufacturer:      p.Manufacturer,
+			Barcode:           p.Barcode,
+			IsInsured:         p.IsInsured,
+			LifetimeWarranty:  p.LifetimeWarranty,
+			WarrantyDetails:   p.WarrantyDetails,
+			PurchasedFrom:     p.PurchasedFrom,
+			MinStockLevel:     p.MinStockLevel,
+			ShortCode:         p.ShortCode,
+			ObsidianVaultPath: p.ObsidianVaultPath,
+			ObsidianNotePath:  p.ObsidianNotePath,
+			NeedsReview:       p.NeedsReview,
+		}); err != nil {
 			return fmt.Errorf("failed to create item: %w", err)
-		}
-
-		if err := s.itemRepo.Save(ctx, newItem); err != nil {
-			return fmt.Errorf("failed to save item: %w", err)
 		}
 
 	case ActionUpdate:
 		if change.EntityID() == nil {
 			return fmt.Errorf("entity_id is required for update action")
 		}
-
-		existingItem, err := s.itemRepo.FindByID(ctx, *change.EntityID(), change.WorkspaceID())
-		if err != nil {
-			return fmt.Errorf("failed to find item: %w", err)
-		}
-
-		// Unmarshal into the UpdateInput struct that item.Update expects
-		var updateInput item.UpdateInput
-		if err := json.Unmarshal(change.Payload(), &updateInput); err != nil {
+		var input item.UpdateInput
+		if err := json.Unmarshal(change.Payload(), &input); err != nil {
 			return fmt.Errorf("failed to unmarshal update payload: %w", err)
 		}
-
-		// Apply updates using the entity's Update method
-		if err := existingItem.Update(updateInput); err != nil {
+		if _, err := s.itemSvc.Update(ctx, *change.EntityID(), change.WorkspaceID(), input); err != nil {
 			return fmt.Errorf("failed to update item: %w", err)
-		}
-
-		// Save the updated item
-		if err := s.itemRepo.Save(ctx, existingItem); err != nil {
-			return fmt.Errorf("failed to save updated item: %w", err)
 		}
 
 	case ActionDelete:
 		if change.EntityID() == nil {
 			return fmt.Errorf("entity_id is required for delete action")
 		}
-
-		if err := s.itemRepo.Delete(ctx, *change.EntityID()); err != nil {
+		if err := s.itemSvc.Delete(ctx, *change.EntityID(), change.WorkspaceID()); err != nil {
 			return fmt.Errorf("failed to delete item: %w", err)
 		}
 
@@ -482,66 +572,52 @@ func (s *Service) applyItemChange(ctx context.Context, change *PendingChange) er
 	return nil
 }
 
-// applyCategoryChange applies changes to categories
+// applyCategoryChange applies changes to categories through category.Service.
 func (s *Service) applyCategoryChange(ctx context.Context, change *PendingChange) error {
 	switch change.Action() {
 	case ActionCreate:
-		var categoryData struct {
+		var p struct {
 			Name             string     `json:"name"`
 			ParentCategoryID *uuid.UUID `json:"parent_category_id"`
 			Description      *string    `json:"description"`
 		}
-		if err := json.Unmarshal(change.Payload(), &categoryData); err != nil {
+		if err := json.Unmarshal(change.Payload(), &p); err != nil {
 			return fmt.Errorf("failed to unmarshal category payload: %w", err)
 		}
-
-		newCategory, err := category.NewCategory(
-			change.WorkspaceID(),
-			categoryData.Name,
-			categoryData.ParentCategoryID,
-			categoryData.Description,
-		)
-		if err != nil {
+		if _, err := s.categorySvc.Create(ctx, category.CreateInput{
+			WorkspaceID:      change.WorkspaceID(),
+			Name:             p.Name,
+			ParentCategoryID: p.ParentCategoryID,
+			Description:      p.Description,
+		}); err != nil {
 			return fmt.Errorf("failed to create category: %w", err)
-		}
-
-		if err := s.categoryRepo.Save(ctx, newCategory); err != nil {
-			return fmt.Errorf("failed to save category: %w", err)
 		}
 
 	case ActionUpdate:
 		if change.EntityID() == nil {
 			return fmt.Errorf("entity_id is required for update action")
 		}
-
-		existingCategory, err := s.categoryRepo.FindByID(ctx, *change.EntityID(), change.WorkspaceID())
-		if err != nil {
-			return fmt.Errorf("failed to find category: %w", err)
-		}
-
-		var updateData struct {
+		var p struct {
 			Name             string     `json:"name"`
 			ParentCategoryID *uuid.UUID `json:"parent_category_id"`
 			Description      *string    `json:"description"`
 		}
-		if err := json.Unmarshal(change.Payload(), &updateData); err != nil {
+		if err := json.Unmarshal(change.Payload(), &p); err != nil {
 			return fmt.Errorf("failed to unmarshal update payload: %w", err)
 		}
-
-		if err := existingCategory.Update(updateData.Name, updateData.ParentCategoryID, updateData.Description); err != nil {
+		if _, err := s.categorySvc.Update(ctx, *change.EntityID(), change.WorkspaceID(), category.UpdateInput{
+			Name:             p.Name,
+			ParentCategoryID: p.ParentCategoryID,
+			Description:      p.Description,
+		}); err != nil {
 			return fmt.Errorf("failed to update category: %w", err)
-		}
-
-		if err := s.categoryRepo.Save(ctx, existingCategory); err != nil {
-			return fmt.Errorf("failed to save updated category: %w", err)
 		}
 
 	case ActionDelete:
 		if change.EntityID() == nil {
 			return fmt.Errorf("entity_id is required for delete action")
 		}
-
-		if err := s.categoryRepo.Delete(ctx, *change.EntityID()); err != nil {
+		if err := s.categorySvc.Delete(ctx, *change.EntityID(), change.WorkspaceID()); err != nil {
 			return fmt.Errorf("failed to delete category: %w", err)
 		}
 
@@ -552,68 +628,54 @@ func (s *Service) applyCategoryChange(ctx context.Context, change *PendingChange
 	return nil
 }
 
-// applyLocationChange applies changes to locations
+// applyLocationChange applies changes to locations through location.Service.
 func (s *Service) applyLocationChange(ctx context.Context, change *PendingChange) error {
 	switch change.Action() {
 	case ActionCreate:
-		var locationData struct {
+		var p struct {
 			Name           string     `json:"name"`
 			ParentLocation *uuid.UUID `json:"parent_location"`
 			Description    *string    `json:"description"`
 			ShortCode      string     `json:"short_code"`
 		}
-		if err := json.Unmarshal(change.Payload(), &locationData); err != nil {
+		if err := json.Unmarshal(change.Payload(), &p); err != nil {
 			return fmt.Errorf("failed to unmarshal location payload: %w", err)
 		}
-
-		newLocation, err := location.NewLocation(
-			change.WorkspaceID(),
-			locationData.Name,
-			locationData.ParentLocation,
-			locationData.Description,
-			locationData.ShortCode,
-		)
-		if err != nil {
+		if _, err := s.locationSvc.Create(ctx, location.CreateInput{
+			WorkspaceID:    change.WorkspaceID(),
+			Name:           p.Name,
+			ParentLocation: p.ParentLocation,
+			Description:    p.Description,
+			ShortCode:      p.ShortCode,
+		}); err != nil {
 			return fmt.Errorf("failed to create location: %w", err)
-		}
-
-		if err := s.locationRepo.Save(ctx, newLocation); err != nil {
-			return fmt.Errorf("failed to save location: %w", err)
 		}
 
 	case ActionUpdate:
 		if change.EntityID() == nil {
 			return fmt.Errorf("entity_id is required for update action")
 		}
-
-		existingLocation, err := s.locationRepo.FindByID(ctx, *change.EntityID(), change.WorkspaceID())
-		if err != nil {
-			return fmt.Errorf("failed to find location: %w", err)
-		}
-
-		var updateData struct {
+		var p struct {
 			Name           string     `json:"name"`
 			ParentLocation *uuid.UUID `json:"parent_location"`
 			Description    *string    `json:"description"`
 		}
-		if err := json.Unmarshal(change.Payload(), &updateData); err != nil {
+		if err := json.Unmarshal(change.Payload(), &p); err != nil {
 			return fmt.Errorf("failed to unmarshal update payload: %w", err)
 		}
-
-		if err := existingLocation.Update(updateData.Name, updateData.ParentLocation, updateData.Description); err != nil {
+		if _, err := s.locationSvc.Update(ctx, *change.EntityID(), change.WorkspaceID(), location.UpdateInput{
+			Name:           p.Name,
+			ParentLocation: p.ParentLocation,
+			Description:    p.Description,
+		}); err != nil {
 			return fmt.Errorf("failed to update location: %w", err)
-		}
-
-		if err := s.locationRepo.Save(ctx, existingLocation); err != nil {
-			return fmt.Errorf("failed to save updated location: %w", err)
 		}
 
 	case ActionDelete:
 		if change.EntityID() == nil {
 			return fmt.Errorf("entity_id is required for delete action")
 		}
-
-		if err := s.locationRepo.Delete(ctx, *change.EntityID()); err != nil {
+		if err := s.locationSvc.Delete(ctx, *change.EntityID(), change.WorkspaceID()); err != nil {
 			return fmt.Errorf("failed to delete location: %w", err)
 		}
 
@@ -624,73 +686,58 @@ func (s *Service) applyLocationChange(ctx context.Context, change *PendingChange
 	return nil
 }
 
-// applyContainerChange applies changes to containers
+// applyContainerChange applies changes to containers through container.Service.
 func (s *Service) applyContainerChange(ctx context.Context, change *PendingChange) error {
 	switch change.Action() {
 	case ActionCreate:
-		var containerData struct {
+		var p struct {
 			LocationID  uuid.UUID `json:"location_id"`
 			Name        string    `json:"name"`
 			Description *string   `json:"description"`
 			Capacity    *string   `json:"capacity"`
 			ShortCode   string    `json:"short_code"`
 		}
-		if err := json.Unmarshal(change.Payload(), &containerData); err != nil {
+		if err := json.Unmarshal(change.Payload(), &p); err != nil {
 			return fmt.Errorf("failed to unmarshal container payload: %w", err)
 		}
-
-		// NewContainer signature: (workspaceID, locationID uuid.UUID, name string, description, capacity *string, shortCode string)
-		newContainer, err := container.NewContainer(
-			change.WorkspaceID(),
-			containerData.LocationID,
-			containerData.Name,
-			containerData.Description,
-			containerData.Capacity,
-			containerData.ShortCode,
-		)
-		if err != nil {
+		if _, err := s.containerSvc.Create(ctx, container.CreateInput{
+			WorkspaceID: change.WorkspaceID(),
+			LocationID:  p.LocationID,
+			Name:        p.Name,
+			Description: p.Description,
+			Capacity:    p.Capacity,
+			ShortCode:   p.ShortCode,
+		}); err != nil {
 			return fmt.Errorf("failed to create container: %w", err)
-		}
-
-		if err := s.containerRepo.Save(ctx, newContainer); err != nil {
-			return fmt.Errorf("failed to save container: %w", err)
 		}
 
 	case ActionUpdate:
 		if change.EntityID() == nil {
 			return fmt.Errorf("entity_id is required for update action")
 		}
-
-		existingContainer, err := s.containerRepo.FindByID(ctx, *change.EntityID(), change.WorkspaceID())
-		if err != nil {
-			return fmt.Errorf("failed to find container: %w", err)
-		}
-
-		var updateData struct {
+		var p struct {
 			Name        string    `json:"name"`
 			LocationID  uuid.UUID `json:"location_id"`
 			Description *string   `json:"description"`
 			Capacity    *string   `json:"capacity"`
 		}
-		if err := json.Unmarshal(change.Payload(), &updateData); err != nil {
+		if err := json.Unmarshal(change.Payload(), &p); err != nil {
 			return fmt.Errorf("failed to unmarshal update payload: %w", err)
 		}
-
-		// container.Update signature: (name string, locationID uuid.UUID, description, capacity *string)
-		if err := existingContainer.Update(updateData.Name, updateData.LocationID, updateData.Description, updateData.Capacity); err != nil {
+		if _, err := s.containerSvc.Update(ctx, *change.EntityID(), change.WorkspaceID(), container.UpdateInput{
+			Name:        p.Name,
+			LocationID:  p.LocationID,
+			Description: p.Description,
+			Capacity:    p.Capacity,
+		}); err != nil {
 			return fmt.Errorf("failed to update container: %w", err)
-		}
-
-		if err := s.containerRepo.Save(ctx, existingContainer); err != nil {
-			return fmt.Errorf("failed to save updated container: %w", err)
 		}
 
 	case ActionDelete:
 		if change.EntityID() == nil {
 			return fmt.Errorf("entity_id is required for delete action")
 		}
-
-		if err := s.containerRepo.Delete(ctx, *change.EntityID()); err != nil {
+		if err := s.containerSvc.Delete(ctx, *change.EntityID(), change.WorkspaceID()); err != nil {
 			return fmt.Errorf("failed to delete container: %w", err)
 		}
 
@@ -701,75 +748,85 @@ func (s *Service) applyContainerChange(ctx context.Context, change *PendingChang
 	return nil
 }
 
-// applyInventoryChange applies changes to inventory
+// applyInventoryChange applies changes to inventory through inventory.Service
+// (create/update). Delete goes through the repository because the inventory
+// domain exposes no service-level Delete.
 func (s *Service) applyInventoryChange(ctx context.Context, change *PendingChange) error {
 	switch change.Action() {
 	case ActionCreate:
-		var inventoryData struct {
-			ItemID       uuid.UUID  `json:"item_id"`
-			LocationID   uuid.UUID  `json:"location_id"`
-			ContainerID  *uuid.UUID `json:"container_id"`
-			Quantity     int        `json:"quantity"`
-			Condition    string     `json:"condition"`
-			Status       string     `json:"status"`
-			CurrencyCode *string    `json:"currency_code"`
+		var p struct {
+			ItemID          uuid.UUID  `json:"item_id"`
+			LocationID      uuid.UUID  `json:"location_id"`
+			ContainerID     *uuid.UUID `json:"container_id"`
+			Quantity        int        `json:"quantity"`
+			Condition       string     `json:"condition"`
+			Status          string     `json:"status"`
+			DateAcquired    *time.Time `json:"date_acquired"`
+			PurchasePrice   *int       `json:"purchase_price"`
+			CurrencyCode    *string    `json:"currency_code"`
+			WarrantyExpires *time.Time `json:"warranty_expires"`
+			ExpirationDate  *time.Time `json:"expiration_date"`
+			Notes           *string    `json:"notes"`
 		}
-		if err := json.Unmarshal(change.Payload(), &inventoryData); err != nil {
+		if err := json.Unmarshal(change.Payload(), &p); err != nil {
 			return fmt.Errorf("failed to unmarshal inventory payload: %w", err)
 		}
-
-		condition := inventory.Condition(inventoryData.Condition)
-		status := inventory.Status(inventoryData.Status)
-
-		// NewInventory signature: (workspaceID, itemID, locationID uuid.UUID, containerID *uuid.UUID, quantity int, condition Condition, status Status, currencyCode *string)
-		newInventory, err := inventory.NewInventory(
-			change.WorkspaceID(),
-			inventoryData.ItemID,
-			inventoryData.LocationID,
-			inventoryData.ContainerID,
-			inventoryData.Quantity,
-			condition,
-			status,
-			inventoryData.CurrencyCode,
-		)
-		if err != nil {
+		if _, err := s.inventorySvc.Create(ctx, inventory.CreateInput{
+			WorkspaceID:     change.WorkspaceID(),
+			ItemID:          p.ItemID,
+			LocationID:      p.LocationID,
+			ContainerID:     p.ContainerID,
+			Quantity:        p.Quantity,
+			Condition:       inventory.Condition(p.Condition),
+			Status:          inventory.Status(p.Status),
+			DateAcquired:    p.DateAcquired,
+			PurchasePrice:   p.PurchasePrice,
+			CurrencyCode:    p.CurrencyCode,
+			WarrantyExpires: p.WarrantyExpires,
+			ExpirationDate:  p.ExpirationDate,
+			Notes:           p.Notes,
+		}); err != nil {
 			return fmt.Errorf("failed to create inventory: %w", err)
-		}
-
-		if err := s.inventoryRepo.Save(ctx, newInventory); err != nil {
-			return fmt.Errorf("failed to save inventory: %w", err)
 		}
 
 	case ActionUpdate:
 		if change.EntityID() == nil {
 			return fmt.Errorf("entity_id is required for update action")
 		}
-
-		existingInventory, err := s.inventoryRepo.FindByID(ctx, *change.EntityID(), change.WorkspaceID())
-		if err != nil {
-			return fmt.Errorf("failed to find inventory: %w", err)
+		var p struct {
+			LocationID      uuid.UUID  `json:"location_id"`
+			ContainerID     *uuid.UUID `json:"container_id"`
+			Quantity        int        `json:"quantity"`
+			Condition       string     `json:"condition"`
+			DateAcquired    *time.Time `json:"date_acquired"`
+			PurchasePrice   *int       `json:"purchase_price"`
+			CurrencyCode    *string    `json:"currency_code"`
+			WarrantyExpires *time.Time `json:"warranty_expires"`
+			ExpirationDate  *time.Time `json:"expiration_date"`
+			Notes           *string    `json:"notes"`
 		}
-
-		var updateData map[string]interface{}
-		if err := json.Unmarshal(change.Payload(), &updateData); err != nil {
+		if err := json.Unmarshal(change.Payload(), &p); err != nil {
 			return fmt.Errorf("failed to unmarshal update payload: %w", err)
 		}
-
-		if quantity, ok := updateData["quantity"].(float64); ok {
-			if err := existingInventory.UpdateQuantity(int(quantity)); err != nil {
-				return fmt.Errorf("failed to update quantity: %w", err)
-			}
-		}
-
-		if err := s.inventoryRepo.Save(ctx, existingInventory); err != nil {
-			return fmt.Errorf("failed to save updated inventory: %w", err)
+		if _, err := s.inventorySvc.Update(ctx, *change.EntityID(), change.WorkspaceID(), inventory.UpdateInput{
+			LocationID:      p.LocationID,
+			ContainerID:     p.ContainerID,
+			Quantity:        p.Quantity,
+			Condition:       inventory.Condition(p.Condition),
+			DateAcquired:    p.DateAcquired,
+			PurchasePrice:   p.PurchasePrice,
+			CurrencyCode:    p.CurrencyCode,
+			WarrantyExpires: p.WarrantyExpires,
+			ExpirationDate:  p.ExpirationDate,
+			Notes:           p.Notes,
+		}); err != nil {
+			return fmt.Errorf("failed to update inventory: %w", err)
 		}
 
 	case ActionDelete:
 		if change.EntityID() == nil {
 			return fmt.Errorf("entity_id is required for delete action")
 		}
-
 		if err := s.inventoryRepo.Delete(ctx, *change.EntityID()); err != nil {
 			return fmt.Errorf("failed to delete inventory: %w", err)
 		}
@@ -781,65 +838,46 @@ func (s *Service) applyInventoryChange(ctx context.Context, change *PendingChang
 	return nil
 }
 
-// applyBorrowerChange applies changes to borrowers
+// applyBorrowerChange applies changes to borrowers through borrower.Service.
 func (s *Service) applyBorrowerChange(ctx context.Context, change *PendingChange) error {
 	switch change.Action() {
 	case ActionCreate:
-		var borrowerData struct {
+		var p struct {
 			Name  string  `json:"name"`
 			Email *string `json:"email"`
 			Phone *string `json:"phone"`
 			Notes *string `json:"notes"`
 		}
-		if err := json.Unmarshal(change.Payload(), &borrowerData); err != nil {
+		if err := json.Unmarshal(change.Payload(), &p); err != nil {
 			return fmt.Errorf("failed to unmarshal borrower payload: %w", err)
 		}
-
-		// NewBorrower signature: (workspaceID uuid.UUID, name string, email, phone, notes *string)
-		newBorrower, err := borrower.NewBorrower(
-			change.WorkspaceID(),
-			borrowerData.Name,
-			borrowerData.Email,
-			borrowerData.Phone,
-			borrowerData.Notes,
-		)
-		if err != nil {
+		if _, err := s.borrowerSvc.Create(ctx, borrower.CreateInput{
+			WorkspaceID: change.WorkspaceID(),
+			Name:        p.Name,
+			Email:       p.Email,
+			Phone:       p.Phone,
+			Notes:       p.Notes,
+		}); err != nil {
 			return fmt.Errorf("failed to create borrower: %w", err)
-		}
-
-		if err := s.borrowerRepo.Save(ctx, newBorrower); err != nil {
-			return fmt.Errorf("failed to save borrower: %w", err)
 		}
 
 	case ActionUpdate:
 		if change.EntityID() == nil {
 			return fmt.Errorf("entity_id is required for update action")
 		}
-
-		existingBorrower, err := s.borrowerRepo.FindByID(ctx, *change.EntityID(), change.WorkspaceID())
-		if err != nil {
-			return fmt.Errorf("failed to find borrower: %w", err)
-		}
-
-		var updateInput borrower.UpdateInput
-		if err := json.Unmarshal(change.Payload(), &updateInput); err != nil {
+		var input borrower.UpdateInput
+		if err := json.Unmarshal(change.Payload(), &input); err != nil {
 			return fmt.Errorf("failed to unmarshal update payload: %w", err)
 		}
-
-		if err := existingBorrower.Update(updateInput); err != nil {
+		if _, err := s.borrowerSvc.Update(ctx, *change.EntityID(), change.WorkspaceID(), input); err != nil {
 			return fmt.Errorf("failed to update borrower: %w", err)
-		}
-
-		if err := s.borrowerRepo.Save(ctx, existingBorrower); err != nil {
-			return fmt.Errorf("failed to save updated borrower: %w", err)
 		}
 
 	case ActionDelete:
 		if change.EntityID() == nil {
 			return fmt.Errorf("entity_id is required for delete action")
 		}
-
-		if err := s.borrowerRepo.Delete(ctx, *change.EntityID()); err != nil {
+		if err := s.borrowerSvc.Delete(ctx, *change.EntityID(), change.WorkspaceID()); err != nil {
 			return fmt.Errorf("failed to delete borrower: %w", err)
 		}
 
@@ -850,87 +888,79 @@ func (s *Service) applyBorrowerChange(ctx context.Context, change *PendingChange
 	return nil
 }
 
-// applyLoanChange applies changes to loans
+// applyLoanChange applies changes to loans through loan.Service (create/update).
+// Delete goes through the repository because the loan domain exposes return
+// semantics rather than a service-level Delete.
 func (s *Service) applyLoanChange(ctx context.Context, change *PendingChange) error {
 	switch change.Action() {
 	case ActionCreate:
-		var loanData struct {
-			InventoryID uuid.UUID   `json:"inventory_id"`
-			BorrowerID  uuid.UUID   `json:"borrower_id"`
-			Quantity    int         `json:"quantity"`
-			LoanedAt    string      `json:"loaned_at"`
-			DueDate     *string     `json:"due_date"`
-			Notes       *string     `json:"notes"`
+		var p struct {
+			InventoryID uuid.UUID `json:"inventory_id"`
+			BorrowerID  uuid.UUID `json:"borrower_id"`
+			Quantity    int       `json:"quantity"`
+			LoanedAt    string    `json:"loaned_at"`
+			DueDate     *string   `json:"due_date"`
+			Notes       *string   `json:"notes"`
 		}
-		if err := json.Unmarshal(change.Payload(), &loanData); err != nil {
+		if err := json.Unmarshal(change.Payload(), &p); err != nil {
 			return fmt.Errorf("failed to unmarshal loan payload: %w", err)
 		}
 
-		// Parse the loaned_at time
-		loanedAt, err := time.Parse(time.RFC3339, loanData.LoanedAt)
+		loanedAt, err := time.Parse(time.RFC3339, p.LoanedAt)
 		if err != nil {
 			return fmt.Errorf("failed to parse loaned_at: %w", err)
 		}
 
-		// Parse due_date if provided
 		var dueDate *time.Time
-		if loanData.DueDate != nil {
-			parsed, err := time.Parse(time.RFC3339, *loanData.DueDate)
+		if p.DueDate != nil {
+			parsed, err := time.Parse(time.RFC3339, *p.DueDate)
 			if err != nil {
 				return fmt.Errorf("failed to parse due_date: %w", err)
 			}
 			dueDate = &parsed
 		}
 
-		// NewLoan signature: (workspaceID, inventoryID, borrowerID uuid.UUID, quantity int, loanedAt time.Time, dueDate *time.Time, notes *string)
-		newLoan, err := loan.NewLoan(
-			change.WorkspaceID(),
-			loanData.InventoryID,
-			loanData.BorrowerID,
-			loanData.Quantity,
-			loanedAt,
-			dueDate,
-			loanData.Notes,
-		)
-		if err != nil {
+		if _, err := s.loanSvc.Create(ctx, loan.CreateInput{
+			WorkspaceID: change.WorkspaceID(),
+			InventoryID: p.InventoryID,
+			BorrowerID:  p.BorrowerID,
+			Quantity:    p.Quantity,
+			LoanedAt:    loanedAt,
+			DueDate:     dueDate,
+			Notes:       p.Notes,
+		}); err != nil {
 			return fmt.Errorf("failed to create loan: %w", err)
-		}
-
-		if err := s.loanRepo.Save(ctx, newLoan); err != nil {
-			return fmt.Errorf("failed to save loan: %w", err)
 		}
 
 	case ActionUpdate:
 		if change.EntityID() == nil {
 			return fmt.Errorf("entity_id is required for update action")
 		}
-
-		existingLoan, err := s.loanRepo.FindByID(ctx, *change.EntityID(), change.WorkspaceID())
-		if err != nil {
-			return fmt.Errorf("failed to find loan: %w", err)
+		var p struct {
+			DueDate *string `json:"due_date"`
+			Notes   *string `json:"notes"`
 		}
-
-		var updateData map[string]interface{}
-		if err := json.Unmarshal(change.Payload(), &updateData); err != nil {
+		if err := json.Unmarshal(change.Payload(), &p); err != nil {
 			return fmt.Errorf("failed to unmarshal update payload: %w", err)
 		}
 
-		// Apply updates based on the payload
-		if _, ok := updateData["return"]; ok {
-			if err := existingLoan.Return(); err != nil {
-				return fmt.Errorf("failed to return loan: %w", err)
+		var dueDate *time.Time
+		if p.DueDate != nil {
+			parsed, err := time.Parse(time.RFC3339, *p.DueDate)
+			if err != nil {
+				return fmt.Errorf("failed to parse due_date: %w", err)
 			}
+			dueDate = &parsed
 		}
 
-		if err := s.loanRepo.Save(ctx, existingLoan); err != nil {
-			return fmt.Errorf("failed to save updated loan: %w", err)
+		if _, err := s.loanSvc.Update(ctx, *change.EntityID(), change.WorkspaceID(), dueDate, p.Notes); err != nil {
+			return fmt.Errorf("failed to update loan: %w", err)
 		}
 
 	case ActionDelete:
 		if change.EntityID() == nil {
 			return fmt.Errorf("entity_id is required for delete action")
 		}
-
 		if err := s.loanRepo.Delete(ctx, *change.EntityID()); err != nil {
 			return fmt.Errorf("failed to delete loan: %w", err)
 		}
@@ -942,67 +972,52 @@ func (s *Service) applyLoanChange(ctx context.Context, change *PendingChange) er
 	return nil
 }
 
-// applyLabelChange applies changes to labels
+// applyLabelChange applies changes to labels through label.Service.
 func (s *Service) applyLabelChange(ctx context.Context, change *PendingChange) error {
 	switch change.Action() {
 	case ActionCreate:
-		var labelData struct {
+		var p struct {
 			Name        string  `json:"name"`
 			Color       *string `json:"color"`
 			Description *string `json:"description"`
 		}
-		if err := json.Unmarshal(change.Payload(), &labelData); err != nil {
+		if err := json.Unmarshal(change.Payload(), &p); err != nil {
 			return fmt.Errorf("failed to unmarshal label payload: %w", err)
 		}
-
-		// NewLabel signature: (workspaceID uuid.UUID, name string, color, description *string)
-		newLabel, err := label.NewLabel(
-			change.WorkspaceID(),
-			labelData.Name,
-			labelData.Color,
-			labelData.Description,
-		)
-		if err != nil {
+		if _, err := s.labelSvc.Create(ctx, label.CreateInput{
+			WorkspaceID: change.WorkspaceID(),
+			Name:        p.Name,
+			Color:       p.Color,
+			Description: p.Description,
+		}); err != nil {
 			return fmt.Errorf("failed to create label: %w", err)
-		}
-
-		if err := s.labelRepo.Save(ctx, newLabel); err != nil {
-			return fmt.Errorf("failed to save label: %w", err)
 		}
 
 	case ActionUpdate:
 		if change.EntityID() == nil {
 			return fmt.Errorf("entity_id is required for update action")
 		}
-
-		existingLabel, err := s.labelRepo.FindByID(ctx, *change.EntityID(), change.WorkspaceID())
-		if err != nil {
-			return fmt.Errorf("failed to find label: %w", err)
-		}
-
-		var updateData struct {
+		var p struct {
 			Name        string  `json:"name"`
 			Color       *string `json:"color"`
 			Description *string `json:"description"`
 		}
-		if err := json.Unmarshal(change.Payload(), &updateData); err != nil {
+		if err := json.Unmarshal(change.Payload(), &p); err != nil {
 			return fmt.Errorf("failed to unmarshal update payload: %w", err)
 		}
-
-		if err := existingLabel.Update(updateData.Name, updateData.Color, updateData.Description); err != nil {
+		if _, err := s.labelSvc.Update(ctx, *change.EntityID(), change.WorkspaceID(), label.UpdateInput{
+			Name:        p.Name,
+			Color:       p.Color,
+			Description: p.Description,
+		}); err != nil {
 			return fmt.Errorf("failed to update label: %w", err)
-		}
-
-		if err := s.labelRepo.Save(ctx, existingLabel); err != nil {
-			return fmt.Errorf("failed to save updated label: %w", err)
 		}
 
 	case ActionDelete:
 		if change.EntityID() == nil {
 			return fmt.Errorf("entity_id is required for delete action")
 		}
-
-		if err := s.labelRepo.Delete(ctx, *change.EntityID()); err != nil {
+		if err := s.labelSvc.Delete(ctx, *change.EntityID(), change.WorkspaceID()); err != nil {
 			return fmt.Errorf("failed to delete label: %w", err)
 		}
 

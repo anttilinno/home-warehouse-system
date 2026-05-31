@@ -13,19 +13,19 @@ RETURNING *;
 
 -- name: UpdateContainer :one
 UPDATE warehouse.containers
-SET name = $2, location_id = $3, description = $4, capacity = $5, updated_at = now()
-WHERE id = $1
+SET name = $3, location_id = $4, description = $5, capacity = $6, updated_at = now()
+WHERE id = $1 AND workspace_id = $2
 RETURNING *;
 
 -- name: ArchiveContainer :exec
 UPDATE warehouse.containers
 SET is_archived = true, updated_at = now()
-WHERE id = $1;
+WHERE id = $1 AND workspace_id = $2;
 
 -- name: RestoreContainer :exec
 UPDATE warehouse.containers
 SET is_archived = false, updated_at = now()
-WHERE id = $1;
+WHERE id = $1 AND workspace_id = $2;
 
 -- name: ListContainersByLocation :many
 SELECT * FROM warehouse.containers
@@ -53,4 +53,4 @@ SELECT EXISTS(
 );
 
 -- name: DeleteContainer :exec
-DELETE FROM warehouse.containers WHERE id = $1;
+DELETE FROM warehouse.containers WHERE id = $1 AND workspace_id = $2;

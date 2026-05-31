@@ -152,7 +152,7 @@ func (m *mockLocationRepo) FindByWorkspace(ctx context.Context, wsID uuid.UUID, 
 func (m *mockLocationRepo) FindRootLocations(ctx context.Context, wsID uuid.UUID) ([]*location.Location, error) {
 	return nil, nil
 }
-func (m *mockLocationRepo) Delete(ctx context.Context, id uuid.UUID) error { return nil }
+func (m *mockLocationRepo) Delete(ctx context.Context, id, workspaceID uuid.UUID) error { return nil }
 func (m *mockLocationRepo) ShortCodeExists(ctx context.Context, wsID uuid.UUID, sc string) (bool, error) {
 	return false, nil
 }
@@ -180,7 +180,7 @@ func (m *mockContainerRepo) FindByShortCode(ctx context.Context, wsID uuid.UUID,
 func (m *mockContainerRepo) FindByWorkspace(ctx context.Context, wsID uuid.UUID, p shared.Pagination) ([]*container.Container, int, error) {
 	return nil, 0, nil
 }
-func (m *mockContainerRepo) Delete(ctx context.Context, id uuid.UUID) error { return nil }
+func (m *mockContainerRepo) Delete(ctx context.Context, id, workspaceID uuid.UUID) error { return nil }
 func (m *mockContainerRepo) ShortCodeExists(ctx context.Context, wsID uuid.UUID, sc string) (bool, error) {
 	return false, nil
 }

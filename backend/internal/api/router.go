@@ -14,8 +14,8 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 
-	appMiddleware "github.com/antti/home-warehouse/go-backend/internal/api/middleware"
 	"github.com/antti/home-warehouse/go-backend/internal/api/health"
+	appMiddleware "github.com/antti/home-warehouse/go-backend/internal/api/middleware"
 	"github.com/antti/home-warehouse/go-backend/internal/config"
 	"github.com/antti/home-warehouse/go-backend/internal/domain/analytics"
 	"github.com/antti/home-warehouse/go-backend/internal/domain/auth/member"
@@ -39,24 +39,24 @@ import (
 	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/declutter"
 	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/deleted"
 	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/favorite"
+	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/importjob"
 	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/inventory"
 	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/item"
 	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/itemphoto"
 	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/label"
 	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/loan"
 	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/location"
+	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/movement"
+	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/pendingchange"
 	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/repairattachment"
 	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/repairlog"
 	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/repairphoto"
-	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/movement"
-	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/importjob"
-	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/pendingchange"
 	infraEvents "github.com/antti/home-warehouse/go-backend/internal/infra/events"
 	"github.com/antti/home-warehouse/go-backend/internal/infra/imageprocessor"
 	"github.com/antti/home-warehouse/go-backend/internal/infra/postgres"
-	"github.com/antti/home-warehouse/go-backend/internal/infra/storage"
 	"github.com/antti/home-warehouse/go-backend/internal/infra/queries"
 	"github.com/antti/home-warehouse/go-backend/internal/infra/queue"
+	"github.com/antti/home-warehouse/go-backend/internal/infra/storage"
 	"github.com/antti/home-warehouse/go-backend/internal/infra/webpush"
 	"github.com/antti/home-warehouse/go-backend/internal/shared/jwt"
 	"github.com/hibiken/asynq"
@@ -71,9 +71,9 @@ func NewRouter(pool *pgxpool.Pool, cfg *config.Config) chi.Router {
 	logger := appMiddleware.NewLogger(cfg.DebugMode)
 
 	// Global middleware
-	r.Use(middleware.RequestID)  // Must be first to generate request IDs
+	r.Use(middleware.RequestID) // Must be first to generate request IDs
 	r.Use(middleware.RealIP)
-	r.Use(appMiddleware.StructuredLogger(logger))  // Structured logging with user context
+	r.Use(appMiddleware.StructuredLogger(logger)) // Structured logging with user context
 	r.Use(middleware.Recoverer)
 	r.Use(appMiddleware.TimeoutWithSkip(60*time.Second, "/sse"))
 	r.Use(appMiddleware.CORS)
@@ -244,14 +244,17 @@ func NewRouter(pool *pgxpool.Pool, cfg *config.Config) chi.Router {
 		pendingChangeRepo,
 		memberRepo,
 		userRepo,
-		itemRepo,
-		categoryRepo,
-		locationRepo,
-		containerRepo,
+		itemSvc,
+		categorySvc,
+		locationSvc,
+		containerSvc,
+		inventorySvc,
 		inventoryRepo,
-		borrowerRepo,
+		borrowerSvc,
+		loanSvc,
 		loanRepo,
-		labelRepo,
+		labelSvc,
+		txManager,
 		broadcaster,
 	)
 	// Enable push notifications for approval workflow if configured
@@ -507,7 +510,6 @@ func getPhotoStorageDir() string {
 
 	return dir
 }
-
 
 // photoStorageGetter implements the StorageGetter interface
 type photoStorageGetter struct {

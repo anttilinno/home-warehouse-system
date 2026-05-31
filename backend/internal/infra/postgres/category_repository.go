@@ -49,6 +49,7 @@ func (r *CategoryRepository) Save(ctx context.Context, c *category.Category) err
 		// Update existing category
 		_, err = r.queries.UpdateCategory(ctx, queries.UpdateCategoryParams{
 			ID:               c.ID(),
+			WorkspaceID:      c.WorkspaceID(),
 			Name:             c.Name(),
 			ParentCategoryID: parentCategoryID,
 			Description:      c.Description(),
@@ -132,13 +133,19 @@ func (r *CategoryRepository) FindRootCategories(ctx context.Context, workspaceID
 }
 
 // Delete removes a category by ID.
-func (r *CategoryRepository) Delete(ctx context.Context, id uuid.UUID) error {
-	return r.queries.DeleteCategory(ctx, id)
+func (r *CategoryRepository) Delete(ctx context.Context, id, workspaceID uuid.UUID) error {
+	return r.queries.DeleteCategory(ctx, queries.DeleteCategoryParams{
+		ID:          id,
+		WorkspaceID: workspaceID,
+	})
 }
 
 // HasChildren checks if a category has children.
-func (r *CategoryRepository) HasChildren(ctx context.Context, id uuid.UUID) (bool, error) {
-	return r.queries.HasChildren(ctx, pgtype.UUID{Bytes: id, Valid: true})
+func (r *CategoryRepository) HasChildren(ctx context.Context, workspaceID, parentID uuid.UUID) (bool, error) {
+	return r.queries.HasChildren(ctx, queries.HasChildrenParams{
+		WorkspaceID:      workspaceID,
+		ParentCategoryID: pgtype.UUID{Bytes: parentID, Valid: true},
+	})
 }
 
 // rowToCategory converts a database row to a Category entity.

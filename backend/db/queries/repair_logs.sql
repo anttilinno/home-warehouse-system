@@ -13,20 +13,20 @@ RETURNING *;
 -- name: UpdateRepairLog :one
 UPDATE warehouse.repair_logs
 SET
-    description = $2,
-    repair_date = $3,
-    cost = $4,
-    currency_code = $5,
-    service_provider = $6,
-    notes = $7,
+    description = $3,
+    repair_date = $4,
+    cost = $5,
+    currency_code = $6,
+    service_provider = $7,
+    notes = $8,
     updated_at = now()
-WHERE id = $1
+WHERE id = $1 AND workspace_id = $2
 RETURNING *;
 
 -- name: UpdateRepairLogStatus :one
 UPDATE warehouse.repair_logs
-SET status = $2, updated_at = now()
-WHERE id = $1
+SET status = $3, updated_at = now()
+WHERE id = $1 AND workspace_id = $2
 RETURNING *;
 
 -- name: CompleteRepairLog :one
@@ -34,14 +34,14 @@ UPDATE warehouse.repair_logs
 SET
     status = 'COMPLETED',
     completed_at = now(),
-    new_condition = $2,
+    new_condition = $3,
     updated_at = now()
-WHERE id = $1
+WHERE id = $1 AND workspace_id = $2
 RETURNING *;
 
 -- name: DeleteRepairLog :exec
 DELETE FROM warehouse.repair_logs
-WHERE id = $1;
+WHERE id = $1 AND workspace_id = $2;
 
 -- name: ListRepairLogsByInventory :many
 SELECT * FROM warehouse.repair_logs
@@ -92,7 +92,7 @@ WHERE rl.reminder_date <= $1
 -- name: MarkRepairReminderSent :exec
 UPDATE warehouse.repair_logs
 SET reminder_sent = true, updated_at = now()
-WHERE id = $1;
+WHERE id = $1 AND workspace_id = $2;
 
 -- name: UpdateRepairLogWarrantyClaim :one
 UPDATE warehouse.repair_logs

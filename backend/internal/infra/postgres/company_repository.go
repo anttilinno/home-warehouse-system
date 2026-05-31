@@ -84,8 +84,11 @@ func (r *CompanyRepository) FindByWorkspace(ctx context.Context, workspaceID uui
 	return companies, len(companies), nil
 }
 
-func (r *CompanyRepository) Delete(ctx context.Context, id uuid.UUID) error {
-	return r.queries.DeleteCompany(ctx, id)
+func (r *CompanyRepository) Delete(ctx context.Context, id, workspaceID uuid.UUID) error {
+	return r.queries.DeleteCompany(ctx, queries.DeleteCompanyParams{
+		ID:          id,
+		WorkspaceID: workspaceID,
+	})
 }
 
 func (r *CompanyRepository) NameExists(ctx context.Context, workspaceID uuid.UUID, name string) (bool, error) {

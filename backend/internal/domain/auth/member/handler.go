@@ -73,7 +73,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface) {
 			if err == ErrAlreadyMember {
 				return nil, huma.Error400BadRequest("user is already a member of this workspace")
 			}
-			return nil, huma.Error400BadRequest(err.Error())
+			return nil, appMiddleware.MapDomainError(err)
 		}
 
 		return &AddMemberOutput{
@@ -106,7 +106,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface) {
 			if err == ErrMemberNotFound {
 				return nil, huma.Error404NotFound("member not found")
 			}
-			return nil, huma.Error400BadRequest(err.Error())
+			return nil, appMiddleware.MapDomainError(err)
 		}
 
 		return &UpdateMemberRoleOutput{
@@ -132,7 +132,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface) {
 			if err == ErrMemberNotFound {
 				return nil, huma.Error404NotFound("member not found")
 			}
-			return nil, huma.Error400BadRequest(err.Error())
+			return nil, appMiddleware.MapDomainError(err)
 		}
 
 		return nil, nil

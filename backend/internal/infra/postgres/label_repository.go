@@ -80,8 +80,11 @@ func (r *LabelRepository) FindByWorkspace(ctx context.Context, workspaceID uuid.
 	return labels, nil
 }
 
-func (r *LabelRepository) Delete(ctx context.Context, id uuid.UUID) error {
-	return r.queries.DeleteLabel(ctx, id)
+func (r *LabelRepository) Delete(ctx context.Context, id, workspaceID uuid.UUID) error {
+	return r.queries.DeleteLabel(ctx, queries.DeleteLabelParams{
+		ID:          id,
+		WorkspaceID: workspaceID,
+	})
 }
 
 func (r *LabelRepository) NameExists(ctx context.Context, workspaceID uuid.UUID, name string) (bool, error) {

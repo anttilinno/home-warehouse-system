@@ -286,7 +286,7 @@ func TestContainerHandler_Archive(t *testing.T) {
 		mockSvc.AssertExpectations(t)
 	})
 
-	t.Run("returns 400 when container not found", func(t *testing.T) {
+	t.Run("returns 404 when container not found", func(t *testing.T) {
 		containerID := uuid.New()
 
 		mockSvc.On("Archive", mock.Anything, containerID, setup.WorkspaceID).
@@ -294,7 +294,7 @@ func TestContainerHandler_Archive(t *testing.T) {
 
 		rec := setup.Post(fmt.Sprintf("/containers/%s/archive", containerID), "")
 
-		testutil.AssertStatus(t, rec, http.StatusBadRequest)
+		testutil.AssertStatus(t, rec, http.StatusNotFound)
 		mockSvc.AssertExpectations(t)
 	})
 }
@@ -316,7 +316,7 @@ func TestContainerHandler_Restore(t *testing.T) {
 		mockSvc.AssertExpectations(t)
 	})
 
-	t.Run("returns 400 when container not found", func(t *testing.T) {
+	t.Run("returns 404 when container not found", func(t *testing.T) {
 		containerID := uuid.New()
 
 		mockSvc.On("Restore", mock.Anything, containerID, setup.WorkspaceID).
@@ -324,7 +324,7 @@ func TestContainerHandler_Restore(t *testing.T) {
 
 		rec := setup.Post(fmt.Sprintf("/containers/%s/restore", containerID), "")
 
-		testutil.AssertStatus(t, rec, http.StatusBadRequest)
+		testutil.AssertStatus(t, rec, http.StatusNotFound)
 		mockSvc.AssertExpectations(t)
 	})
 }
@@ -346,7 +346,7 @@ func TestContainerHandler_Delete(t *testing.T) {
 		mockSvc.AssertExpectations(t)
 	})
 
-	t.Run("returns 400 when container not found", func(t *testing.T) {
+	t.Run("returns 404 when container not found", func(t *testing.T) {
 		containerID := uuid.New()
 
 		mockSvc.On("Delete", mock.Anything, containerID, setup.WorkspaceID).
@@ -354,11 +354,11 @@ func TestContainerHandler_Delete(t *testing.T) {
 
 		rec := setup.Delete(fmt.Sprintf("/containers/%s", containerID))
 
-		testutil.AssertStatus(t, rec, http.StatusBadRequest)
+		testutil.AssertStatus(t, rec, http.StatusNotFound)
 		mockSvc.AssertExpectations(t)
 	})
 
-	t.Run("returns 400 when container has inventory", func(t *testing.T) {
+	t.Run("returns 409 when container has inventory", func(t *testing.T) {
 		containerID := uuid.New()
 
 		mockSvc.On("Delete", mock.Anything, containerID, setup.WorkspaceID).
@@ -366,7 +366,7 @@ func TestContainerHandler_Delete(t *testing.T) {
 
 		rec := setup.Delete(fmt.Sprintf("/containers/%s", containerID))
 
-		testutil.AssertStatus(t, rec, http.StatusBadRequest)
+		testutil.AssertStatus(t, rec, http.StatusConflict)
 		mockSvc.AssertExpectations(t)
 	})
 }

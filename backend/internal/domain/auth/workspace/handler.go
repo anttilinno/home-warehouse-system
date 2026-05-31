@@ -69,7 +69,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface) {
 			if err == ErrSlugTaken {
 				return nil, huma.Error400BadRequest("workspace slug is already taken")
 			}
-			return nil, huma.Error400BadRequest(err.Error())
+			return nil, appMiddleware.MapDomainError(err)
 		}
 
 		return &CreateWorkspaceOutput{
@@ -117,7 +117,7 @@ func RegisterWorkspaceScopedRoutes(api huma.API, svc ServiceInterface) {
 			if err == ErrWorkspaceNotFound {
 				return nil, huma.Error404NotFound("workspace not found")
 			}
-			return nil, huma.Error400BadRequest(err.Error())
+			return nil, appMiddleware.MapDomainError(err)
 		}
 
 		return &UpdateWorkspaceOutput{
@@ -140,7 +140,7 @@ func RegisterWorkspaceScopedRoutes(api huma.API, svc ServiceInterface) {
 			if err == ErrCannotDeletePersonal {
 				return nil, huma.Error400BadRequest("cannot delete personal workspace")
 			}
-			return nil, huma.Error400BadRequest(err.Error())
+			return nil, appMiddleware.MapDomainError(err)
 		}
 
 		return nil, nil

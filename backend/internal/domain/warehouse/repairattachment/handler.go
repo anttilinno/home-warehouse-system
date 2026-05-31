@@ -63,7 +63,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 				return nil, huma.Error400BadRequest("file does not belong to this workspace")
 			}
 			if errors.Is(err, shared.ErrInvalidInput) {
-				return nil, huma.Error400BadRequest(err.Error())
+				return nil, appMiddleware.MapDomainError(err)
 			}
 			return nil, huma.Error500InternalServerError("failed to create attachment")
 		}

@@ -24,8 +24,8 @@ type Repository interface {
 	FindRootCategories(ctx context.Context, workspaceID uuid.UUID) ([]*Category, error)
 
 	// Delete removes a category by ID.
-	Delete(ctx context.Context, id uuid.UUID) error
+	Delete(ctx context.Context, id, workspaceID uuid.UUID) error
 
 	// HasChildren checks if a category has children.
-	HasChildren(ctx context.Context, id uuid.UUID) (bool, error)
+	HasChildren(ctx context.Context, workspaceID, parentID uuid.UUID) (bool, error)
 }

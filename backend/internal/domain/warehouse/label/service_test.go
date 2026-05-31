@@ -46,7 +46,7 @@ func (m *MockRepository) FindByWorkspace(ctx context.Context, workspaceID uuid.U
 	return args.Get(0).([]*Label), args.Error(1)
 }
 
-func (m *MockRepository) Delete(ctx context.Context, id uuid.UUID) error {
+func (m *MockRepository) Delete(ctx context.Context, id, workspaceID uuid.UUID) error {
 	args := m.Called(ctx, id)
 	return args.Error(0)
 }

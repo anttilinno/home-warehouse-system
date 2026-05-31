@@ -179,7 +179,7 @@ func (s *Service) Delete(ctx context.Context, id, workspaceID uuid.UUID) error {
 		return err
 	}
 
-	return s.repo.Delete(ctx, container.ID())
+	return s.repo.Delete(ctx, container.ID(), workspaceID)
 }
 
 // Search searches for containers by query string.

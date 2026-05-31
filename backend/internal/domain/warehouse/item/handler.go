@@ -296,7 +296,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 			if err == ErrInvalidMinStock {
 				return nil, huma.Error400BadRequest("minimum stock level must be non-negative")
 			}
-			return nil, huma.Error400BadRequest(err.Error())
+			return nil, appMiddleware.MapDomainError(err)
 		}
 
 		// Publish event
@@ -373,7 +373,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 			if err == ErrInvalidMinStock {
 				return nil, huma.Error400BadRequest("minimum stock level must be non-negative")
 			}
-			return nil, huma.Error400BadRequest(err.Error())
+			return nil, appMiddleware.MapDomainError(err)
 		}
 
 		// Publish event
@@ -423,7 +423,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 			if err == ErrItemNotFound {
 				return nil, huma.Error404NotFound("item not found")
 			}
-			return nil, huma.Error400BadRequest(err.Error())
+			return nil, appMiddleware.MapDomainError(err)
 		}
 
 		// Publish event (treat archive as delete event)
@@ -457,7 +457,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 			if err == ErrItemNotFound {
 				return nil, huma.Error404NotFound("item not found")
 			}
-			return nil, huma.Error400BadRequest(err.Error())
+			return nil, appMiddleware.MapDomainError(err)
 		}
 
 		// Publish event (treat restore as create event)
@@ -490,7 +490,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 			if errors.Is(err, ErrItemNotFound) {
 				return nil, huma.Error404NotFound("item not found")
 			}
-			return nil, huma.Error400BadRequest(err.Error())
+			return nil, appMiddleware.MapDomainError(err)
 		}
 
 		if broadcaster != nil && authUser != nil {
@@ -540,7 +540,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 			if err == ErrItemNotFound {
 				return nil, huma.Error404NotFound("item not found")
 			}
-			return nil, huma.Error400BadRequest(err.Error())
+			return nil, appMiddleware.MapDomainError(err)
 		}
 
 		return nil, nil
@@ -558,7 +558,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 			if err == ErrItemNotFound {
 				return nil, huma.Error404NotFound("item not found")
 			}
-			return nil, huma.Error400BadRequest(err.Error())
+			return nil, appMiddleware.MapDomainError(err)
 		}
 
 		return nil, nil
