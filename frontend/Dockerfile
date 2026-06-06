@@ -15,6 +15,11 @@ ENV NEXT_PUBLIC_API_URL=""
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV SERWIST_SUPPRESS_TURBOPACK_WARNING=1
 
+# Authelia SSO button. Build-time gate (Next inlines NEXT_PUBLIC_* at build):
+# defaults off; deployers pass --build-arg NEXT_PUBLIC_AUTHELIA_ENABLED=true.
+ARG NEXT_PUBLIC_AUTHELIA_ENABLED=false
+ENV NEXT_PUBLIC_AUTHELIA_ENABLED=${NEXT_PUBLIC_AUTHELIA_ENABLED}
+
 RUN bun run build
 
 # ---- Runner ----
