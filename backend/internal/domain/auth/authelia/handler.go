@@ -3,6 +3,7 @@ package authelia
 import (
 	"context"
 	"crypto/subtle"
+	"fmt"
 	"log/slog"
 	"net/http"
 	"strings"
@@ -10,6 +11,7 @@ import (
 	"github.com/danielgtaylor/huma/v2"
 
 	"github.com/antti/home-warehouse/go-backend/internal/config"
+	"github.com/antti/home-warehouse/go-backend/internal/domain/auth/oauth"
 	"github.com/antti/home-warehouse/go-backend/internal/domain/auth/session"
 	"github.com/antti/home-warehouse/go-backend/internal/shared/jwt"
 )
@@ -35,17 +37,22 @@ type Handler struct {
 	svc          *Service
 	jwt          *jwt.Service
 	sessionSvc   session.ServiceInterface
+	redis        oauth.RedisClient
 	sharedSecret string
+	appURL       string
 	isSecure     bool
 }
 
-// NewHandler creates a new Authelia auth handler.
-func NewHandler(svc *Service, jwtSvc *jwt.Service, sessionSvc session.ServiceInterface, cfg *config.Config) *Handler {
+// NewHandler creates a new Authelia auth handler. redis backs the one-time-code
+// hand-off used by the browser-facing LoginRedirect entry point.
+func NewHandler(svc *Service, jwtSvc *jwt.Service, sessionSvc session.ServiceInterface, redis oauth.RedisClient, cfg *config.Config) *Handler {
 	return &Handler{
 		svc:          svc,
 		jwt:          jwtSvc,
 		sessionSvc:   sessionSvc,
+		redis:        redis,
 		sharedSecret: cfg.AutheliaSharedSecret,
+		appURL:       cfg.AppURL,
 		isSecure:     strings.HasPrefix(cfg.AppURL, "https"),
 	}
 }
@@ -124,6 +131,78 @@ func (h *Handler) Login(ctx context.Context, input *LoginInput) (*LoginOutput, e
 	out.Body.Token = accessToken
 	out.Body.RefreshToken = refreshToken
 	return out, nil
+}
+
+// LoginRedirect is the browser-facing entry point behind the Authelia SSO
+// button (GET /auth/authelia/login). The ingress routes this path through
+// Authelia forward-auth, injecting the trusted Remote-* identity headers and the
+// shared secret. It resolves (or provisions) the user, then hands off to the
+// shared one-time-code -> /auth/callback -> exchange flow so the frontend sets
+// auth cookies on its own origin -- identical to the OAuth button. Raw Chi
+// handler (not Huma) because it issues redirects.
+func (h *Handler) LoginRedirect(w http.ResponseWriter, r *http.Request) {
+	// Trust gate: constant-time compare against the ingress-injected secret.
+	// Rejects both a wrong secret and a missing one (empty != configured secret).
+	if subtle.ConstantTimeCompare([]byte(r.Header.Get(sharedSecretHeader)), []byte(h.sharedSecret)) != 1 {
+		http.Error(w, "invalid or missing Authelia trust header", http.StatusUnauthorized)
+		return
+	}
+
+	email := strings.TrimSpace(r.Header.Get("Remote-Email"))
+	if email == "" {
+		http.Error(w, "Authelia did not supply an authenticated identity", http.StatusUnauthorized)
+		return
+	}
+
+	fullName := firstNonEmpty(
+		strings.TrimSpace(r.Header.Get("Remote-Name")),
+		strings.TrimSpace(r.Header.Get("Remote-User")),
+		localPart(email),
+	)
+
+	u, isNew, err := h.svc.ResolveUser(r.Context(), email, fullName)
+	if err != nil {
+		h.redirectError(w, r, "server_error")
+		return
+	}
+
+	accessToken, err := h.jwt.GenerateToken(u.ID(), u.Email(), u.FullName(), u.IsSuperuser())
+	if err != nil {
+		h.redirectError(w, r, "server_error")
+		return
+	}
+	refreshToken, err := h.jwt.GenerateRefreshToken(u.ID())
+	if err != nil {
+		h.redirectError(w, r, "server_error")
+		return
+	}
+
+	ip := clientIP(r.Header.Get("X-Forwarded-For"), r.Header.Get("X-Real-IP"))
+	if _, err := h.sessionSvc.Create(r.Context(), u.ID(), refreshToken, r.Header.Get("User-Agent"), ip); err != nil {
+		h.redirectError(w, r, "server_error")
+		return
+	}
+
+	code, err := oauth.StoreOneTimeCode(r.Context(), h.redis, accessToken, refreshToken)
+	if err != nil {
+		h.redirectError(w, r, "server_error")
+		return
+	}
+
+	slog.InfoContext(r.Context(), "authelia login (redirect)",
+		"user_id", u.ID(),
+		"email", email,
+		"groups", r.Header.Get("Remote-Groups"),
+		"new_user", isNew,
+	)
+
+	http.Redirect(w, r, fmt.Sprintf("%s/auth/callback?code=%s", h.appURL, code), http.StatusFound)
+}
+
+// redirectError sends the browser back to the login page with an error code the
+// frontend OAuthErrorHandler already recognizes (e.g. "server_error").
+func (h *Handler) redirectError(w http.ResponseWriter, r *http.Request, code string) {
+	http.Redirect(w, r, fmt.Sprintf("%s/login?oauth_error=%s", h.appURL, code), http.StatusFound)
 }
 
 // firstNonEmpty returns the first non-empty argument, or "" if all are empty.

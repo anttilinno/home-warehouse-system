@@ -3,7 +3,11 @@ package authelia
 import (
 	"context"
 	"errors"
+	"net/http"
+	"net/http/httptest"
+	"strings"
 	"testing"
+	"time"
 
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/google/uuid"
@@ -61,11 +65,39 @@ func (f *fakeSessionService) Create(_ context.Context, _ uuid.UUID, _, _, _ stri
 	return &session.Session{}, nil
 }
 
+// fakeRedis satisfies oauth.RedisClient for the one-time-code hand-off.
+type fakeRedis struct {
+	store map[string]string
+	err   error
+}
+
+func (f *fakeRedis) Set(_ context.Context, key, value string, _ time.Duration) error {
+	if f.err != nil {
+		return f.err
+	}
+	if f.store == nil {
+		f.store = map[string]string{}
+	}
+	f.store[key] = value
+	return nil
+}
+
+func (f *fakeRedis) GetDel(_ context.Context, key string) (string, error) {
+	v := f.store[key]
+	delete(f.store, key)
+	return v, nil
+}
+
 func newTestHandler(t *testing.T, us *fakeUserService, wc *fakeWorkspaceCreator, ss *fakeSessionService) *Handler {
+	t.Helper()
+	return newTestHandlerWithRedis(t, us, wc, ss, &fakeRedis{})
+}
+
+func newTestHandlerWithRedis(t *testing.T, us *fakeUserService, wc *fakeWorkspaceCreator, ss *fakeSessionService, rc *fakeRedis) *Handler {
 	t.Helper()
 	svc := NewService(us, wc)
 	cfg := &config.Config{AutheliaSharedSecret: "topsecret", AppURL: "http://localhost:3000"}
-	return NewHandler(svc, jwt.NewService("jwt-signing-secret", 24), ss, cfg)
+	return NewHandler(svc, jwt.NewService("jwt-signing-secret", 24), ss, rc, cfg)
 }
 
 func statusOf(t *testing.T, err error) int {
@@ -182,5 +214,88 @@ func TestLogin_FallsBackToEmailLocalPart(t *testing.T) {
 	}
 	if us.created[0].FullName != "bob" {
 		t.Fatalf("expected fallback display name 'bob', got %q", us.created[0].FullName)
+	}
+}
+
+// --- LoginRedirect (browser-facing SSO button) tests ---
+
+func newRedirectRequest(secret, email, name string) *http.Request {
+	req := httptest.NewRequest(http.MethodGet, "/auth/authelia/login", nil)
+	if secret != "" {
+		req.Header.Set("X-Authelia-Shared-Secret", secret)
+	}
+	if email != "" {
+		req.Header.Set("Remote-Email", email)
+	}
+	if name != "" {
+		req.Header.Set("Remote-Name", name)
+	}
+	return req
+}
+
+func TestLoginRedirect_StoresCodeAndRedirects(t *testing.T) {
+	us := &fakeUserService{byEmail: map[string]*user.User{}}
+	wc := &fakeWorkspaceCreator{}
+	ss := &fakeSessionService{}
+	rc := &fakeRedis{}
+	h := newTestHandlerWithRedis(t, us, wc, ss, rc)
+
+	rec := httptest.NewRecorder()
+	h.LoginRedirect(rec, newRedirectRequest("topsecret", "newbie@example.com", "New Bie"))
+
+	if rec.Code != http.StatusFound {
+		t.Fatalf("status = %d, want 302", rec.Code)
+	}
+	loc := rec.Header().Get("Location")
+	if !strings.HasPrefix(loc, "http://localhost:3000/auth/callback?code=") {
+		t.Fatalf("Location = %q, want /auth/callback?code=...", loc)
+	}
+	if len(rc.store) != 1 {
+		t.Fatalf("expected one one-time code stored, got %d", len(rc.store))
+	}
+	if len(us.created) != 1 || wc.calls != 1 || ss.calls != 1 {
+		t.Fatalf("expected new user + workspace + session, got created=%d ws=%d sess=%d", len(us.created), wc.calls, ss.calls)
+	}
+}
+
+func TestLoginRedirect_RejectsWrongSecret(t *testing.T) {
+	rc := &fakeRedis{}
+	h := newTestHandlerWithRedis(t, &fakeUserService{byEmail: map[string]*user.User{}}, &fakeWorkspaceCreator{}, &fakeSessionService{}, rc)
+
+	rec := httptest.NewRecorder()
+	h.LoginRedirect(rec, newRedirectRequest("wrong", "alice@example.com", ""))
+
+	if rec.Code != http.StatusUnauthorized {
+		t.Fatalf("status = %d, want 401", rec.Code)
+	}
+	if len(rc.store) != 0 {
+		t.Fatal("a rejected request must not store a one-time code")
+	}
+}
+
+func TestLoginRedirect_RejectsMissingSecret(t *testing.T) {
+	rc := &fakeRedis{}
+	h := newTestHandlerWithRedis(t, &fakeUserService{byEmail: map[string]*user.User{}}, &fakeWorkspaceCreator{}, &fakeSessionService{}, rc)
+
+	rec := httptest.NewRecorder()
+	h.LoginRedirect(rec, newRedirectRequest("", "alice@example.com", ""))
+
+	if rec.Code != http.StatusUnauthorized {
+		t.Fatalf("status = %d, want 401", rec.Code)
+	}
+}
+
+func TestLoginRedirect_RejectsMissingIdentity(t *testing.T) {
+	rc := &fakeRedis{}
+	h := newTestHandlerWithRedis(t, &fakeUserService{byEmail: map[string]*user.User{}}, &fakeWorkspaceCreator{}, &fakeSessionService{}, rc)
+
+	rec := httptest.NewRecorder()
+	h.LoginRedirect(rec, newRedirectRequest("topsecret", "   ", ""))
+
+	if rec.Code != http.StatusUnauthorized {
+		t.Fatalf("status = %d, want 401", rec.Code)
+	}
+	if len(rc.store) != 0 {
+		t.Fatal("a request without identity must not store a one-time code")
 	}
 }

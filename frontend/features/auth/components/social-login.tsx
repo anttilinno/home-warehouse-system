@@ -2,11 +2,16 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useTranslations } from "next-intl";
-import { WifiOff } from "lucide-react";
+import { WifiOff, KeyRound } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNetworkStatus } from "@/lib/hooks/use-network-status";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+
+// Authelia is a reverse-proxy SSO method; the button only works behind the
+// configured ingress, so it is hidden unless explicitly enabled (mirrors the
+// backend AUTHELIA_ENABLED gate).
+const AUTHELIA_ENABLED = process.env.NEXT_PUBLIC_AUTHELIA_ENABLED === "true";
 
 export function SocialLogin() {
   const t = useTranslations("auth");
@@ -33,6 +38,22 @@ export function SocialLogin() {
 
     // Full-page redirect to backend OAuth initiate endpoint
     window.location.href = `${API_URL}/auth/oauth/${provider}`;
+  }, []);
+
+  const handleAutheliaLogin = useCallback(() => {
+    // Preserve returnTo the same way the OAuth flow does (both land back on the
+    // shared /auth/callback exchange page).
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const returnTo = params.get("returnTo") || params.get("redirect");
+      if (returnTo) {
+        sessionStorage.setItem("oauth_return_to", returnTo);
+      }
+    }
+
+    // Full-page redirect to the ingress-gated Authelia entry point. The reverse
+    // proxy routes this through Authelia and injects the trusted headers.
+    window.location.href = `${API_URL}/auth/authelia/login`;
   }, []);
 
   return (
@@ -78,6 +99,18 @@ export function SocialLogin() {
           GitHub
         </Button>
       </div>
+      {AUTHELIA_ENABLED && (
+        <Button
+          variant="outline"
+          type="button"
+          className="w-full"
+          disabled={showOffline}
+          onClick={handleAutheliaLogin}
+        >
+          <KeyRound className="mr-2 h-4 w-4 shrink-0" />
+          Authelia SSO
+        </Button>
+      )}
       {showOffline && (
         <p className="text-center text-xs text-muted-foreground flex items-center justify-center gap-1">
           <WifiOff className="h-3 w-3" />

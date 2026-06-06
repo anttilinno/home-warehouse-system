@@ -324,9 +324,13 @@ func NewRouter(pool *pgxpool.Pool, cfg *config.Config) chi.Router {
 	// headers gated by an ingress-injected shared secret (see authelia.Handler).
 	if cfg.AutheliaEnabled {
 		autheliaSvc := authelia.NewService(userSvc, wsCreator)
-		autheliaHandler := authelia.NewHandler(autheliaSvc, jwtService, sessionSvc, cfg)
+		autheliaHandler := authelia.NewHandler(autheliaSvc, jwtService, sessionSvc, redisAdapter, cfg)
 		r.Group(func(r chi.Router) {
 			r.Use(appMiddleware.RateLimit(authRateLimiter))
+			// Browser-facing SSO button entry point: resolves the trusted
+			// headers and redirects through the one-time-code exchange.
+			r.Get("/auth/authelia/login", autheliaHandler.LoginRedirect)
+			// Trusted-header exchange for programmatic callers (JSON response).
 			autheliaConfig := huma.DefaultConfig("Home Warehouse API", "1.0.0")
 			autheliaConfig.DocsPath = ""
 			autheliaConfig.OpenAPIPath = ""

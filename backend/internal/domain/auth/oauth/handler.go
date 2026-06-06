@@ -237,19 +237,10 @@ func (h *Handler) Callback(w http.ResponseWriter, r *http.Request) {
 		_, _ = h.sessionSvc.Create(r.Context(), user.ID(), refreshToken, userAgent, ipAddress)
 	}
 
-	// Generate one-time code: 32 bytes, base64url encoded
-	codeBytes := make([]byte, 32)
-	if _, err := rand.Read(codeBytes); err != nil {
-		log.Printf("OAuth code generation error: %v", err)
-		redirectWithError(w, r, h.cfg.AppURL, "server_error")
-		return
-	}
-	oneTimeCode := base64.RawURLEncoding.EncodeToString(codeBytes)
-
-	// Store tokens in Redis with the one-time code as key
-	redisValue := accessToken + "|" + refreshToken
-	if err := h.redisClient.Set(r.Context(), oauthCodePrefix+oneTimeCode, redisValue, oauthCodeTTL); err != nil {
-		log.Printf("OAuth Redis set error: %v", err)
+	// Stash tokens behind a fresh one-time code (consumed by ExchangeCode).
+	oneTimeCode, err := StoreOneTimeCode(r.Context(), h.redisClient, accessToken, refreshToken)
+	if err != nil {
+		log.Printf("OAuth one-time code error: %v", err)
 		redirectWithError(w, r, h.cfg.AppURL, "server_error")
 		return
 	}
@@ -410,6 +401,22 @@ func (h *Handler) UnlinkAccount(ctx context.Context, input *UnlinkInput) (*struc
 	}
 
 	return nil, nil
+}
+
+// StoreOneTimeCode persists access/refresh tokens behind a fresh opaque one-time
+// code (consumed by ExchangeCode) and returns the code. Exposed so other auth
+// flows -- e.g. Authelia forward-auth -- can reuse the one-time-code ->
+// /auth/callback -> exchange path instead of setting auth cookies cross-origin.
+func StoreOneTimeCode(ctx context.Context, rc RedisClient, accessToken, refreshToken string) (string, error) {
+	codeBytes := make([]byte, 32)
+	if _, err := rand.Read(codeBytes); err != nil {
+		return "", err
+	}
+	code := base64.RawURLEncoding.EncodeToString(codeBytes)
+	if err := rc.Set(ctx, oauthCodePrefix+code, accessToken+"|"+refreshToken, oauthCodeTTL); err != nil {
+		return "", err
+	}
+	return code, nil
 }
 
 // redirectWithError redirects to the frontend callback with an error code.

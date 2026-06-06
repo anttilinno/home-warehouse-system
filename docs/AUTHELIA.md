@@ -55,8 +55,14 @@ and `AUTHELIA_SHARED_SECRET` is empty.
 
 | Env var                  | Default | Meaning                                                        |
 | ------------------------ | ------- | -------------------------------------------------------------- |
-| `AUTHELIA_ENABLED`       | `false` | Mounts `POST /auth/authelia/login` when true.                  |
+| `AUTHELIA_ENABLED`       | `false` | Mounts `GET`/`POST /auth/authelia/login` when true.           |
 | `AUTHELIA_SHARED_SECRET` | `""`    | Trust secret; required when enabled. Inject via the ingress.   |
+
+Frontend (`frontend/`, Next.js):
+
+| Env var                       | Default | Meaning                                                   |
+| ----------------------------- | ------- | --------------------------------------------------------- |
+| `NEXT_PUBLIC_AUTHELIA_ENABLED`| `false` | Shows the "Authelia SSO" button on the login screen when `true`. Keep in sync with the backend `AUTHELIA_ENABLED`. |
 
 Generate a strong secret, e.g. `openssl rand -hex 32`.
 
@@ -85,9 +91,23 @@ http:
 Order matters: strip client-supplied trust headers **before** Authelia's
 forwardAuth re-populates them, and add the secret on the proxy hop only.
 
-## Endpoint
+## Endpoints
 
-`POST /auth/authelia/login` (rate-limited, public mount):
+Both are rate-limited public mounts on the same path; the ingress trust rules
+(inject secret, strip client copies) **must apply to both methods**.
+
+`GET /auth/authelia/login` — the browser-facing entry point behind the login
+button:
+
+- Request: no body; identity comes from the proxy-injected headers above.
+- Success: stores a short-lived one-time code and `302`-redirects to
+  `${APP_URL}/auth/callback?code=...`. The frontend exchanges that code at
+  `POST /auth/oauth/exchange`, which sets the cookies on the app's own origin —
+  the same flow OAuth uses, so cookies work cross-origin.
+- Failure: `401` (bad/missing secret or no identity); other failures `302` to
+  `${APP_URL}/login?oauth_error=server_error`.
+
+`POST /auth/authelia/login` — programmatic/header-exchange callers:
 
 - Request: no body; identity comes from the proxy-injected headers above.
 - Success: `Set-Cookie: access_token`, `Set-Cookie: refresh_token`, and a JSON
@@ -100,7 +120,12 @@ group-to-role mapping is a deliberate follow-up, not part of this method.
 
 ## Frontend
 
-`frontend2` has no login page yet, so there is no "Sign in with Authelia"
-button. When a login screen is built, point it at `/api/auth/authelia/login`
-behind the Authelia-protected route; the browser request only needs to reach
-the endpoint — the ingress supplies the headers.
+The login screen lives in `frontend/` (Next.js). When
+`NEXT_PUBLIC_AUTHELIA_ENABLED=true`, an "Authelia SSO" button appears beside the
+Google/GitHub buttons and full-page-redirects to
+`${NEXT_PUBLIC_API_URL}/auth/authelia/login`. That path must be served behind
+the Authelia-protected ingress route so the headers are present; the button
+otherwise hits the `401` trust gate.
+
+`frontend2` is still a placeholder shell with no login page, so it carries no
+button yet.
