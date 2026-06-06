@@ -16,7 +16,7 @@ RUN --mount=type=cache,target=/go/pkg/mod \
     CGO_ENABLED=1 go build -ldflags="-s -w" -o /bin/scheduler ./cmd/scheduler
 
 # ---- Runtime ----
-FROM alpine:3.22
+FROM alpine:3.22 AS app
 
 RUN apk add --no-cache libwebp ca-certificates tzdata \
     && addgroup -S app && adduser -S app -G app
