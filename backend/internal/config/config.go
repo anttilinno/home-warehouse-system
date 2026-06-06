@@ -38,6 +38,15 @@ type Config struct {
 	GitHubClientID     string
 	GitHubClientSecret string
 
+	// Authelia (reverse-proxy forward-auth SSO)
+	// When enabled, the backend trusts Authelia's Remote-* identity headers on
+	// POST /auth/authelia/login -- but ONLY when the request also carries the
+	// shared secret header that the ingress injects (and strips from client
+	// input). The secret is the trust boundary: chi's RealIP middleware rewrites
+	// RemoteAddr from X-Forwarded-For, so source-IP gating would be spoofable.
+	AutheliaEnabled      bool
+	AutheliaSharedSecret string
+
 	// Web Push (VAPID)
 	VAPIDPublicKey  string
 	VAPIDPrivateKey string
@@ -83,6 +92,10 @@ func Load() *Config {
 		GitHubClientID:     getEnv("GITHUB_CLIENT_ID", ""),
 		GitHubClientSecret: getEnv("GITHUB_CLIENT_SECRET", ""),
 
+		// Authelia
+		AutheliaEnabled:      getEnvBool("AUTHELIA_ENABLED", false),
+		AutheliaSharedSecret: getEnv("AUTHELIA_SHARED_SECRET", ""),
+
 		// Web Push (VAPID)
 		VAPIDPublicKey:  getEnv("VAPID_PUBLIC_KEY", ""),
 		VAPIDPrivateKey: getEnv("VAPID_PRIVATE_KEY", ""),
@@ -107,6 +120,11 @@ func (c *Config) Validate() error {
 	}
 	if c.ServerPort < 1 || c.ServerPort > 65535 {
 		return errors.New("SERVER_PORT must be between 1 and 65535")
+	}
+	// Refuse to trust Authelia headers without a shared secret -- otherwise any
+	// client could forge Remote-Email and impersonate any user.
+	if c.AutheliaEnabled && c.AutheliaSharedSecret == "" {
+		return errors.New("AUTHELIA_SHARED_SECRET is required when AUTHELIA_ENABLED is true")
 	}
 	return nil
 }

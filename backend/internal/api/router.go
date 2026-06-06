@@ -18,6 +18,7 @@ import (
 	appMiddleware "github.com/antti/home-warehouse/go-backend/internal/api/middleware"
 	"github.com/antti/home-warehouse/go-backend/internal/config"
 	"github.com/antti/home-warehouse/go-backend/internal/domain/analytics"
+	"github.com/antti/home-warehouse/go-backend/internal/domain/auth/authelia"
 	"github.com/antti/home-warehouse/go-backend/internal/domain/auth/member"
 	"github.com/antti/home-warehouse/go-backend/internal/domain/auth/notification"
 	"github.com/antti/home-warehouse/go-backend/internal/domain/auth/oauth"
@@ -317,6 +318,22 @@ func NewRouter(pool *pgxpool.Pool, cfg *config.Config) chi.Router {
 		oauthExchangeAPI := humachi.New(r, oauthExchangeConfig)
 		huma.Post(oauthExchangeAPI, "/auth/oauth/exchange", oauthHandler.ExchangeCode)
 	})
+
+	// Authelia trusted-header auth (reverse-proxy forward-auth SSO).
+	// Only mounted when explicitly enabled; the route trusts Remote-* identity
+	// headers gated by an ingress-injected shared secret (see authelia.Handler).
+	if cfg.AutheliaEnabled {
+		autheliaSvc := authelia.NewService(userSvc, wsCreator)
+		autheliaHandler := authelia.NewHandler(autheliaSvc, jwtService, sessionSvc, cfg)
+		r.Group(func(r chi.Router) {
+			r.Use(appMiddleware.RateLimit(authRateLimiter))
+			autheliaConfig := huma.DefaultConfig("Home Warehouse API", "1.0.0")
+			autheliaConfig.DocsPath = ""
+			autheliaConfig.OpenAPIPath = ""
+			autheliaAPI := humachi.New(r, autheliaConfig)
+			huma.Post(autheliaAPI, "/auth/authelia/login", autheliaHandler.Login)
+		})
+	}
 
 	// Register barcode lookup (public, no auth required)
 	barcode.RegisterRoutes(api, barcodeSvc)
