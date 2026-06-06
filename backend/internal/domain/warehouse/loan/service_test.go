@@ -1422,16 +1422,20 @@ func TestService_Return_InventoryDeleted(t *testing.T) {
 	loan := Reconstruct(loanID, workspaceID, inventoryID, borrowerID, 1, now, nil, nil, nil, now, now)
 
 	mockLoanRepo.On("FindByID", ctx, loanID, workspaceID).Return(loan, nil)
-	// Inventory was deleted - now returns ErrNotFound
-	// The Return method propagates this error
+	// Inventory was deleted - FindByID returns ErrNotFound. The Return method
+	// swallows it and still persists the return; the loan record is
+	// authoritative (service.go:142). Inventory Save is skipped.
 	mockInvRepo.On("FindByID", ctx, inventoryID, workspaceID).Return(nil, shared.ErrNotFound)
+	mockLoanRepo.On("Save", ctx, mock.AnythingOfType("*loan.Loan")).Return(nil)
 
 	result, err := svc.Return(ctx, loanID, workspaceID)
 
-	// When inventory is not found, the Return method returns an error
-	assert.Error(t, err)
-	assert.Nil(t, result)
-	assert.ErrorIs(t, err, shared.ErrNotFound)
+	// Return succeeds despite the missing inventory; the loan is marked returned.
+	assert.NoError(t, err)
+	assert.NotNil(t, result)
+	assert.NotNil(t, result.ReturnedAt())
+	mockInvRepo.AssertNotCalled(t, "Save", mock.Anything, mock.Anything)
+	mockLoanRepo.AssertExpectations(t)
 }
 
 func TestService_Return_InventoryFindError(t *testing.T) {

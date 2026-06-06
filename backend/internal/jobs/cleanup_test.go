@@ -1,6 +1,7 @@
 package jobs
 
 import (
+	"math"
 	"testing"
 	"time"
 
@@ -211,8 +212,11 @@ func TestCleanupConfig_RetentionPeriodUsage(t *testing.T) {
 			// The cutoff should be in the past
 			assert.True(t, cutoffDate.Before(now))
 
-			// The difference in days should match (approximately)
-			daysDiff := int(now.Sub(cutoffDate).Hours() / 24)
+			// The difference in days should match. AddDate does calendar
+			// arithmetic while Sub measures wall-clock time, so a DST
+			// transition in the spanned window shifts the elapsed hours by
+			// ±1h. Round (not truncate) to stay correct across DST.
+			daysDiff := int(math.Round(now.Sub(cutoffDate).Hours() / 24))
 			assert.Equal(t, tt.days, daysDiff)
 		})
 	}
