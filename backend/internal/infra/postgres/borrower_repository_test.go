@@ -163,7 +163,7 @@ func TestBorrowerRepository_Delete(t *testing.T) {
 		err = repo.Save(ctx, b)
 		require.NoError(t, err)
 
-		err = repo.Delete(ctx, b.ID())
+		err = repo.Delete(ctx, b.ID(), testfixtures.TestWorkspaceID)
 		require.NoError(t, err)
 
 		// After hard-delete, the row is gone
@@ -210,7 +210,7 @@ func TestBorrowerRepository_Archive_SetsFlagButKeepsRow(t *testing.T) {
 	require.NoError(t, err)
 	require.NoError(t, repo.Save(ctx, b))
 
-	require.NoError(t, repo.Archive(ctx, b.ID()))
+	require.NoError(t, repo.Archive(ctx, b.ID(), testfixtures.TestWorkspaceID))
 
 	// Row still exists but is_archived=true
 	retrieved, err := repo.FindByID(ctx, b.ID(), testfixtures.TestWorkspaceID)
@@ -231,9 +231,9 @@ func TestBorrowerRepository_Restore_ClearsFlag(t *testing.T) {
 	b, err := borrower.NewBorrower(testfixtures.TestWorkspaceID, "To Restore", nil, nil, nil)
 	require.NoError(t, err)
 	require.NoError(t, repo.Save(ctx, b))
-	require.NoError(t, repo.Archive(ctx, b.ID()))
+	require.NoError(t, repo.Archive(ctx, b.ID(), testfixtures.TestWorkspaceID))
 
-	require.NoError(t, repo.Restore(ctx, b.ID()))
+	require.NoError(t, repo.Restore(ctx, b.ID(), testfixtures.TestWorkspaceID))
 
 	retrieved, err := repo.FindByID(ctx, b.ID(), testfixtures.TestWorkspaceID)
 	require.NoError(t, err)
@@ -254,7 +254,7 @@ func TestBorrowerRepository_Delete_RemovesRow(t *testing.T) {
 	require.NoError(t, err)
 	require.NoError(t, repo.Save(ctx, b))
 
-	require.NoError(t, repo.Delete(ctx, b.ID()))
+	require.NoError(t, repo.Delete(ctx, b.ID(), testfixtures.TestWorkspaceID))
 
 	// Row is gone — FindByID should return shared.ErrNotFound
 	found, err := repo.FindByID(ctx, b.ID(), testfixtures.TestWorkspaceID)
@@ -283,7 +283,7 @@ func TestBorrowerRepository_FindByWorkspace_ExcludesArchivedByDefault(t *testing
 	archived, err := borrower.NewBorrower(workspace, "Archived Borrower "+uuid.NewString()[:8], nil, nil, nil)
 	require.NoError(t, err)
 	require.NoError(t, repo.Save(ctx, archived))
-	require.NoError(t, repo.Archive(ctx, archived.ID()))
+	require.NoError(t, repo.Archive(ctx, archived.ID(), workspace))
 
 	pagination := shared.Pagination{Page: 1, PageSize: 50}
 

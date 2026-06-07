@@ -194,7 +194,7 @@ func TestCompanyRepository_Delete(t *testing.T) {
 		require.NoError(t, err)
 		require.NotNil(t, found)
 
-		err = repo.Delete(ctx, c.ID())
+		err = repo.Delete(ctx, c.ID(), testfixtures.TestWorkspaceID)
 		require.NoError(t, err)
 
 		found, err = repo.FindByID(ctx, c.ID(), testfixtures.TestWorkspaceID)

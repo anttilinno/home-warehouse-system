@@ -189,7 +189,7 @@ func TestLabelRepository_Delete(t *testing.T) {
 		require.NoError(t, err)
 		require.NotNil(t, found)
 
-		err = repo.Delete(ctx, l.ID())
+		err = repo.Delete(ctx, l.ID(), testfixtures.TestWorkspaceID)
 		require.NoError(t, err)
 
 		found, err = repo.FindByID(ctx, l.ID(), testfixtures.TestWorkspaceID)

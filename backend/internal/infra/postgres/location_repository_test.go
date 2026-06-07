@@ -254,7 +254,7 @@ func TestLocationRepository_Delete(t *testing.T) {
 		err = repo.Save(ctx, loc)
 		require.NoError(t, err)
 
-		err = repo.Delete(ctx, loc.ID())
+		err = repo.Delete(ctx, loc.ID(), testfixtures.TestWorkspaceID)
 		require.NoError(t, err)
 
 		found, err := repo.FindByID(ctx, loc.ID(), testfixtures.TestWorkspaceID)

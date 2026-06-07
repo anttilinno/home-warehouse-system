@@ -265,7 +265,7 @@ func TestContainerRepository_Delete(t *testing.T) {
 		require.NotNil(t, found)
 
 		// Delete
-		err = repo.Delete(ctx, c.ID())
+		err = repo.Delete(ctx, c.ID(), testfixtures.TestWorkspaceID)
 		require.NoError(t, err)
 
 		// Verify deleted

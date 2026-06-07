@@ -307,7 +307,7 @@ func TestCategoryRepository_Delete(t *testing.T) {
 		require.NoError(t, err)
 
 		// Delete
-		err = repo.Delete(ctx, cat.ID())
+		err = repo.Delete(ctx, cat.ID(), testfixtures.TestWorkspaceID)
 		require.NoError(t, err)
 
 		// Verify it's gone
@@ -318,7 +318,7 @@ func TestCategoryRepository_Delete(t *testing.T) {
 
 	t.Run("delete non-existent category does not error", func(t *testing.T) {
 		nonExistentID := uuid.New()
-		err := repo.Delete(ctx, nonExistentID)
+		err := repo.Delete(ctx, nonExistentID, testfixtures.TestWorkspaceID)
 		// Should not error on delete of non-existent
 		assert.NoError(t, err)
 	})
@@ -346,7 +346,7 @@ func TestCategoryRepository_HasChildren(t *testing.T) {
 		repo.Save(ctx, child)
 
 		// Check
-		hasChildren, err := repo.HasChildren(ctx, parent.ID())
+		hasChildren, err := repo.HasChildren(ctx, workspaceID, parent.ID())
 		require.NoError(t, err)
 		assert.True(t, hasChildren)
 	})
@@ -358,7 +358,7 @@ func TestCategoryRepository_HasChildren(t *testing.T) {
 		parent, _ := category.NewCategory(workspaceID, "Childless", nil, nil)
 		repo.Save(ctx, parent)
 
-		hasChildren, err := repo.HasChildren(ctx, parent.ID())
+		hasChildren, err := repo.HasChildren(ctx, workspaceID, parent.ID())
 		require.NoError(t, err)
 		assert.False(t, hasChildren)
 	})
