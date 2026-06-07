@@ -3,18 +3,18 @@ package location
 import (
 	"context"
 	"crypto/rand"
-	"encoding/base32"
+	"encoding/hex"
 
 	"github.com/google/uuid"
 
 	"github.com/antti/home-warehouse/go-backend/internal/shared"
 )
 
-// generateShortCode generates a random 8-character alphanumeric short code.
+// generateShortCode generates a random 8-character lowercase hex short code.
 func generateShortCode() string {
-	b := make([]byte, 5) // 5 bytes = 40 bits, base32 encodes to 8 chars
+	b := make([]byte, 4) // 4 bytes = 32 bits, hex encodes to 8 chars
 	rand.Read(b)
-	return base32.StdEncoding.WithPadding(base32.NoPadding).EncodeToString(b)
+	return hex.EncodeToString(b)
 }
 
 // ServiceInterface defines the location service operations.

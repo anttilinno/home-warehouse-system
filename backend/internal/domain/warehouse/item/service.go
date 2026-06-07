@@ -3,7 +3,7 @@ package item
 import (
 	"context"
 	"crypto/rand"
-	"encoding/base32"
+	"encoding/hex"
 	"errors"
 	"fmt"
 
@@ -13,15 +13,15 @@ import (
 	"github.com/antti/home-warehouse/go-backend/internal/shared"
 )
 
-// generateShortCode generates a random 8-character alphanumeric code
+// generateShortCode generates a random 8-character lowercase hex code.
 func generateShortCode() string {
-	b := make([]byte, 5) // 5 bytes = 40 bits, base32 encodes to 8 chars
+	b := make([]byte, 4) // 4 bytes = 32 bits, hex encodes to 8 chars
 	if _, err := rand.Read(b); err != nil {
 		// crypto/rand.Read only fails if the OS PRNG is unavailable, which is
 		// a catastrophic environment failure — panic is the correct response.
 		panic("crypto/rand unavailable: " + err.Error())
 	}
-	return base32.StdEncoding.WithPadding(base32.NoPadding).EncodeToString(b)
+	return hex.EncodeToString(b)
 }
 
 // ServiceInterface defines the item service operations.

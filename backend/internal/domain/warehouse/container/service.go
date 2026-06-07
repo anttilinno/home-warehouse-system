@@ -3,7 +3,7 @@ package container
 import (
 	"context"
 	"crypto/rand"
-	"encoding/base32"
+	"encoding/hex"
 	"fmt"
 
 	"github.com/google/uuid"
@@ -12,11 +12,11 @@ import (
 	"github.com/antti/home-warehouse/go-backend/internal/shared"
 )
 
-// generateShortCode generates a random 8-character alphanumeric code
+// generateShortCode generates a random 8-character lowercase hex code.
 func generateShortCode() string {
-	b := make([]byte, 5) // 5 bytes = 40 bits, base32 encodes to 8 chars
+	b := make([]byte, 4) // 4 bytes = 32 bits, hex encodes to 8 chars
 	rand.Read(b)
-	return base32.StdEncoding.WithPadding(base32.NoPadding).EncodeToString(b)
+	return hex.EncodeToString(b)
 }
 
 // ServiceInterface defines the container service operations.
@@ -41,12 +41,12 @@ func NewService(repo Repository, locationRepo location.Repository) *Service {
 }
 
 type CreateInput struct {
-	WorkspaceID         uuid.UUID
-	LocationID          uuid.UUID
-	Name                string
-	Description         *string
-	Capacity            *string
-	ShortCode           string // Optional - will be auto-generated if empty
+	WorkspaceID uuid.UUID
+	LocationID  uuid.UUID
+	Name        string
+	Description *string
+	Capacity    *string
+	ShortCode   string // Optional - will be auto-generated if empty
 }
 
 func (s *Service) Create(ctx context.Context, input CreateInput) (*Container, error) {

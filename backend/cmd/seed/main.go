@@ -72,11 +72,11 @@ var (
 
 	// Categories with subcategories
 	categoryTree = map[string][]string{
-		"Tools": {"Power Tools", "Hand Tools", "Measuring Tools", "Safety Equipment"},
-		"Outdoor": {"Garden", "Camping", "Sports", "Winter"},
-		"Home": {"Kitchen", "Bathroom", "Cleaning", "Storage"},
+		"Tools":       {"Power Tools", "Hand Tools", "Measuring Tools", "Safety Equipment"},
+		"Outdoor":     {"Garden", "Camping", "Sports", "Winter"},
+		"Home":        {"Kitchen", "Bathroom", "Cleaning", "Storage"},
 		"Electronics": {"Cables", "Batteries", "Lighting", "Audio"},
-		"Automotive": {"Maintenance", "Emergency", "Accessories"},
+		"Automotive":  {"Maintenance", "Emergency", "Accessories"},
 	}
 
 	// Companies/stores
@@ -781,9 +781,9 @@ func (s *Seeder) seedLowStock(ctx context.Context) error {
 
 	// Create items with various stock levels
 	stockLevels := []struct {
-		quantity     int
-		minStock     int
-		desc         string
+		quantity int
+		minStock int
+		desc     string
 	}{
 		{0, 5, "out of stock"},
 		{1, 10, "critically low"},
@@ -995,8 +995,8 @@ func (s *Seeder) createItemWithMinStock(ctx context.Context, name, sku string, m
 }
 
 func (s *Seeder) generateShortCode() string {
-	const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
-	code := make([]byte, 6)
+	const chars = "0123456789abcdef"
+	code := make([]byte, 8)
 	for i := range code {
 		code[i] = chars[s.rng.Intn(len(chars))]
 	}
