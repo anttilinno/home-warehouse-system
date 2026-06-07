@@ -144,6 +144,16 @@ Last activity: 2026-05-01 -- Phase 01 execution started
 
 - None blocking — prep items resolve inside phase planning; research synthesis already answers the PROJECT.md prep questions (barcode lookup path, React 19 peerDep, cascade policy).
 
+## Quick Tasks Completed
+
+| ID | Date | Task | Result |
+|----|------|------|--------|
+| 260607-uzt | 2026-06-07 | s.go/{hash} QR shortlink redirect — backend `GET /r/{code}` handler + UNION resolver (item→container→location, all-owned-workspaces), Angie `s.go` vhost, Next.js claim wizard page | Done. Commits 238b5f3, 0077d70, 5bf3fb5. `go test ./internal/domain/shortlink/...` 10/10, build/tsc/eslint clean. Wiring gaps noted: item/location/container create forms don't yet read `?short_code`/`?barcode` prefill. |
+| fast | 2026-06-07 | short_code generation → 8-char lowercase hex (match printed labels like c7a4f9e1) | Done. Commit f95a9fd. 3 live API generators (item/location/container) base32→hex 4 bytes; seeder→hex alphabet. warehouse tests pass, build clean. |
+| 260607-vdf | 2026-06-07 | Finish shortlink: claim-page prefill into create forms (B) + Postgres integration test for UNION resolver (C) | Done. Commits 1dee019 (integ test), c7a9874 (item ?short_code/?barcode prefill), 0f88236 (loc/container ?create=1&short_code= auto-open+prefill). tsc/eslint/touched-vitest green. ⚠️ BLOCKED live-run: `postgres` package integration lane (`-tags=integration`) won't compile — 17 pre-existing stale `repo.Delete(ctx,id)` calls across 12 *_repository_test.go files (signature is now `Delete(ctx,id,wsID/userID)`). New shortlink test is type-correct in isolation but the 6 subtests can't execute until that lane is fixed. Needs a stabilization task. |
+| 260607-vsu | 2026-06-07 | Fix postgres integration test lane (stale Delete/Archive/Restore/HasChildren signatures) | Done. Commit 97e0fa0 (14 call sites, 6 files). `go vet -tags=integration ./internal/infra/postgres/...` clean; default `go test ./...` green; **shortlink resolver integration test 6/6 PASS live** against warehouse_test. ⚠️ Separate pre-existing regression remains: commit 86b74bd split repo `Save`→`Create`(INSERT)+`Save`(UPDATE-only); ~19 test files still call `Save` for insert-intent → runtime "no rows" failures across the lane. Out of scope (behavioral, not signature). Needs follow-up Save→Create stabilization task. |
+| 260607-wd8 | 2026-06-07 | Stabilize postgres integration test lane to green | Done. Commit 830593f (14 test/fixture files, code only). Root causes were MIXED (not the hypothesized uniform Save→Create): (A) missing/over-long `short_code` in fixtures → NOT-NULL/unique/len violations, fixed with `uuid.NewString()[:8]`; (B) borrower `Save` is UPDATE-only → insert-intent calls switched to `Create` (borrower 12 + loan 4); (C) FindByID not-found contract — tests expected nil, repos return `shared.ErrNotFound`, aligned to `require.Error`+`IsNotFound`. Also fixed an inventory test nil-`*Location` panic that masked half the lane. **Result: integration lane 143/143 tests / 221/221 subtests green, shortlink 6/6; default `go test ./...` green; build clean.** No production bugs found — all test/fixture defects. Live DB: warehouse-postgres-dev / warehouse_test. |
+
 ## Session Continuity
 
 Last session: 2026-05-01T20:31:32.495Z
