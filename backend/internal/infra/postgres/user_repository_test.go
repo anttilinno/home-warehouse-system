@@ -215,7 +215,8 @@ func TestUserRepository_Delete(t *testing.T) {
 		require.NoError(t, err)
 
 		found, err := repo.FindByID(ctx, u.ID())
-		require.NoError(t, err)
+		require.Error(t, err)
+		assert.True(t, shared.IsNotFound(err))
 		assert.Nil(t, found)
 	})
 

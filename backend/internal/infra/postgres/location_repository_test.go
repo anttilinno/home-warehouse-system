@@ -67,7 +67,7 @@ func TestLocationRepository_Save(t *testing.T) {
 		require.NoError(t, err)
 
 		parentID := parent.ID()
-		child, err := location.NewLocation(testfixtures.TestWorkspaceID, "Room 101", &parentID, nil, "BLDA-R101")
+		child, err := location.NewLocation(testfixtures.TestWorkspaceID, "Room 101", &parentID, nil, "BLDA-R10")
 		require.NoError(t, err)
 
 		err = repo.Save(ctx, child)
@@ -123,7 +123,8 @@ func TestLocationRepository_FindByID(t *testing.T) {
 
 		// Should not find in different workspace
 		found, err := repo.FindByID(ctx, loc.ID(), workspace2)
-		require.NoError(t, err)
+		require.Error(t, err)
+		assert.True(t, shared.IsNotFound(err))
 		assert.Nil(t, found)
 
 		// Should find in correct workspace
@@ -226,7 +227,7 @@ func TestLocationRepository_FindRootLocations(t *testing.T) {
 
 		// Create child location
 		root1ID := root1.ID()
-		child, _ := location.NewLocation(workspaceID, "Child", &root1ID, nil, "CHILD-001")
+		child, _ := location.NewLocation(workspaceID, "Child", &root1ID, nil, "CHILD-01")
 		repo.Save(ctx, child)
 
 		roots, err := repo.FindRootLocations(ctx, workspaceID)
@@ -258,7 +259,8 @@ func TestLocationRepository_Delete(t *testing.T) {
 		require.NoError(t, err)
 
 		found, err := repo.FindByID(ctx, loc.ID(), testfixtures.TestWorkspaceID)
-		require.NoError(t, err)
+		require.Error(t, err)
+		assert.True(t, shared.IsNotFound(err))
 		assert.Nil(t, found)
 	})
 }

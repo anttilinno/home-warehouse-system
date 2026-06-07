@@ -221,7 +221,8 @@ func TestWorkspaceRepository_Delete(t *testing.T) {
 		require.NoError(t, err)
 
 		found, err := repo.FindByID(ctx, ws.ID())
-		require.NoError(t, err)
+		require.Error(t, err)
+		assert.True(t, shared.IsNotFound(err))
 		assert.Nil(t, found)
 	})
 

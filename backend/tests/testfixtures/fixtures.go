@@ -51,11 +51,12 @@ func CreateTestItem(t *testing.T, pool *pgxpool.Pool, workspaceID uuid.UUID) uui
 		t.Fatalf("failed to create test item: %v", err)
 	}
 
-	// Use raw SQL to insert the item
+	// Use raw SQL to insert the item. short_code is NOT NULL and unique per
+	// workspace, so generate a unique 8-char code (VARCHAR(8)) for each item.
 	_, err = pool.Exec(context.Background(), `
-		INSERT INTO warehouse.items (id, workspace_id, sku, name, description)
-		VALUES ($1, $2, $3, $4, $5)
-	`, itm.ID(), itm.WorkspaceID(), itm.SKU(), itm.Name(), itm.Description())
+		INSERT INTO warehouse.items (id, workspace_id, sku, name, description, short_code)
+		VALUES ($1, $2, $3, $4, $5, $6)
+	`, itm.ID(), itm.WorkspaceID(), itm.SKU(), itm.Name(), itm.Description(), uuid.NewString()[:8])
 	if err != nil {
 		t.Fatalf("failed to save test item: %v", err)
 	}

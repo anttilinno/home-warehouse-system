@@ -30,6 +30,7 @@ func TestFavoriteRepository_Save(t *testing.T) {
 
 	t.Run("saves favorite item successfully", func(t *testing.T) {
 		itm, err := item.NewItem(testfixtures.TestWorkspaceID, "Fav Item "+uuid.NewString()[:4], "SKU-"+uuid.NewString()[:8], 0)
+		itm.SetShortCode(uuid.NewString()[:8])
 		require.NoError(t, err)
 		err = itemRepo.Save(ctx, itm)
 		require.NoError(t, err)
@@ -57,7 +58,7 @@ func TestFavoriteRepository_Save(t *testing.T) {
 
 	t.Run("saves favorite location successfully", func(t *testing.T) {
 		locRepo := NewLocationRepository(pool)
-		loc, err := location.NewLocation(testfixtures.TestWorkspaceID, "Fav Loc "+uuid.NewString()[:4], nil, nil, "")
+		loc, err := location.NewLocation(testfixtures.TestWorkspaceID, "Fav Loc "+uuid.NewString()[:4], nil, nil, uuid.NewString()[:8])
 		require.NoError(t, err)
 		err = locRepo.Save(ctx, loc)
 		require.NoError(t, err)
@@ -96,6 +97,7 @@ func TestFavoriteRepository_FindByUser(t *testing.T) {
 		// Create multiple favorite items
 		for i := 0; i < 3; i++ {
 			itm, _ := item.NewItem(testfixtures.TestWorkspaceID, "Multi Fav Item "+uuid.NewString()[:4], "SKU-"+uuid.NewString()[:8], 0)
+			itm.SetShortCode(uuid.NewString()[:8])
 			require.NoError(t, itemRepo.Save(ctx, itm))
 
 			f, _ := favorite.NewFavorite(testfixtures.TestUserID, testfixtures.TestWorkspaceID, favorite.TypeItem, itm.ID())
@@ -120,6 +122,7 @@ func TestFavoriteRepository_IsFavorite(t *testing.T) {
 
 	t.Run("returns true for favorited item", func(t *testing.T) {
 		itm, _ := item.NewItem(testfixtures.TestWorkspaceID, "Is Fav Item "+uuid.NewString()[:4], "SKU-"+uuid.NewString()[:8], 0)
+		itm.SetShortCode(uuid.NewString()[:8])
 		require.NoError(t, itemRepo.Save(ctx, itm))
 
 		f, _ := favorite.NewFavorite(testfixtures.TestUserID, testfixtures.TestWorkspaceID, favorite.TypeItem, itm.ID())
@@ -132,6 +135,7 @@ func TestFavoriteRepository_IsFavorite(t *testing.T) {
 
 	t.Run("returns false for non-favorited item", func(t *testing.T) {
 		itm, _ := item.NewItem(testfixtures.TestWorkspaceID, "Not Fav Item "+uuid.NewString()[:4], "SKU-"+uuid.NewString()[:8], 0)
+		itm.SetShortCode(uuid.NewString()[:8])
 		require.NoError(t, itemRepo.Save(ctx, itm))
 
 		isFav, err := repo.IsFavorite(ctx, testfixtures.TestUserID, testfixtures.TestWorkspaceID, favorite.TypeItem, itm.ID())
@@ -152,6 +156,7 @@ func TestFavoriteRepository_Delete(t *testing.T) {
 
 	t.Run("deletes favorite", func(t *testing.T) {
 		itm, _ := item.NewItem(testfixtures.TestWorkspaceID, "Del Fav Item "+uuid.NewString()[:4], "SKU-"+uuid.NewString()[:8], 0)
+		itm.SetShortCode(uuid.NewString()[:8])
 		require.NoError(t, itemRepo.Save(ctx, itm))
 
 		f, _ := favorite.NewFavorite(testfixtures.TestUserID, testfixtures.TestWorkspaceID, favorite.TypeItem, itm.ID())
@@ -178,6 +183,7 @@ func TestFavoriteRepository_DeleteByTarget(t *testing.T) {
 
 	t.Run("deletes favorite by target", func(t *testing.T) {
 		itm, _ := item.NewItem(testfixtures.TestWorkspaceID, "Del Target Item "+uuid.NewString()[:4], "SKU-"+uuid.NewString()[:8], 0)
+		itm.SetShortCode(uuid.NewString()[:8])
 		require.NoError(t, itemRepo.Save(ctx, itm))
 
 		f, _ := favorite.NewFavorite(testfixtures.TestUserID, testfixtures.TestWorkspaceID, favorite.TypeItem, itm.ID())

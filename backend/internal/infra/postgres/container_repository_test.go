@@ -23,7 +23,7 @@ func strPtr(s string) *string { return &s }
 // createTestLocation creates a location for container tests
 func createTestLocation(t *testing.T, repo *LocationRepository, ctx context.Context, name string) *location.Location {
 	t.Helper()
-	loc, err := location.NewLocation(testfixtures.TestWorkspaceID, name, nil, nil, "")
+	loc, err := location.NewLocation(testfixtures.TestWorkspaceID, name, nil, nil, uuid.NewString()[:8])
 	require.NoError(t, err)
 	err = repo.Save(ctx, loc)
 	require.NoError(t, err)
@@ -43,7 +43,7 @@ func TestContainerRepository_Save(t *testing.T) {
 	t.Run("saves new container successfully", func(t *testing.T) {
 		loc := createTestLocation(t, locRepo, ctx, "Warehouse A")
 
-		c, err := container.NewContainer(testfixtures.TestWorkspaceID, loc.ID(), "Box 1", nil, nil, "")
+		c, err := container.NewContainer(testfixtures.TestWorkspaceID, loc.ID(), "Box 1", nil, nil, uuid.NewString()[:8])
 		require.NoError(t, err)
 
 		err = repo.Save(ctx, c)
@@ -92,7 +92,7 @@ func TestContainerRepository_FindByID(t *testing.T) {
 
 	t.Run("finds existing container", func(t *testing.T) {
 		loc := createTestLocation(t, locRepo, ctx, "Find Location")
-		c, err := container.NewContainer(testfixtures.TestWorkspaceID, loc.ID(), "Find Me", nil, nil, "")
+		c, err := container.NewContainer(testfixtures.TestWorkspaceID, loc.ID(), "Find Me", nil, nil, uuid.NewString()[:8])
 		require.NoError(t, err)
 		err = repo.Save(ctx, c)
 		require.NoError(t, err)
@@ -118,19 +118,20 @@ func TestContainerRepository_FindByID(t *testing.T) {
 		testdb.CreateTestWorkspace(t, pool, workspace2)
 
 		// Create location in workspace1
-		loc, err := location.NewLocation(workspace1, "WS1 Location", nil, nil, "")
+		loc, err := location.NewLocation(workspace1, "WS1 Location", nil, nil, uuid.NewString()[:8])
 		require.NoError(t, err)
 		err = locRepo.Save(ctx, loc)
 		require.NoError(t, err)
 
-		c, err := container.NewContainer(workspace1, loc.ID(), "WS1 Container", nil, nil, "")
+		c, err := container.NewContainer(workspace1, loc.ID(), "WS1 Container", nil, nil, uuid.NewString()[:8])
 		require.NoError(t, err)
 		err = repo.Save(ctx, c)
 		require.NoError(t, err)
 
 		// Should not find in different workspace
 		found, err := repo.FindByID(ctx, c.ID(), workspace2)
-		require.NoError(t, err)
+		require.Error(t, err)
+		assert.True(t, shared.IsNotFound(err))
 		assert.Nil(t, found)
 
 		// Should find in correct workspace
@@ -155,10 +156,10 @@ func TestContainerRepository_FindByLocation(t *testing.T) {
 		loc2 := createTestLocation(t, locRepo, ctx, "Location 2")
 
 		// Create containers in loc1
-		c1, _ := container.NewContainer(testfixtures.TestWorkspaceID, loc1.ID(), "Container A", nil, nil, "")
-		c2, _ := container.NewContainer(testfixtures.TestWorkspaceID, loc1.ID(), "Container B", nil, nil, "")
+		c1, _ := container.NewContainer(testfixtures.TestWorkspaceID, loc1.ID(), "Container A", nil, nil, uuid.NewString()[:8])
+		c2, _ := container.NewContainer(testfixtures.TestWorkspaceID, loc1.ID(), "Container B", nil, nil, uuid.NewString()[:8])
 		// Create container in loc2
-		c3, _ := container.NewContainer(testfixtures.TestWorkspaceID, loc2.ID(), "Container C", nil, nil, "")
+		c3, _ := container.NewContainer(testfixtures.TestWorkspaceID, loc2.ID(), "Container C", nil, nil, uuid.NewString()[:8])
 
 		require.NoError(t, repo.Save(ctx, c1))
 		require.NoError(t, repo.Save(ctx, c2))
@@ -230,7 +231,7 @@ func TestContainerRepository_FindByWorkspace(t *testing.T) {
 
 		// Create multiple containers
 		for i := 0; i < 5; i++ {
-			c, _ := container.NewContainer(testfixtures.TestWorkspaceID, loc.ID(), "Container", nil, nil, "")
+			c, _ := container.NewContainer(testfixtures.TestWorkspaceID, loc.ID(), "Container", nil, nil, uuid.NewString()[:8])
 			require.NoError(t, repo.Save(ctx, c))
 		}
 
@@ -254,7 +255,7 @@ func TestContainerRepository_Delete(t *testing.T) {
 
 	t.Run("deletes container", func(t *testing.T) {
 		loc := createTestLocation(t, locRepo, ctx, "Delete Location")
-		c, err := container.NewContainer(testfixtures.TestWorkspaceID, loc.ID(), "To Delete", nil, nil, "")
+		c, err := container.NewContainer(testfixtures.TestWorkspaceID, loc.ID(), "To Delete", nil, nil, uuid.NewString()[:8])
 		require.NoError(t, err)
 		err = repo.Save(ctx, c)
 		require.NoError(t, err)
@@ -270,7 +271,8 @@ func TestContainerRepository_Delete(t *testing.T) {
 
 		// Verify deleted
 		found, err = repo.FindByID(ctx, c.ID(), testfixtures.TestWorkspaceID)
-		require.NoError(t, err)
+		require.Error(t, err)
+		assert.True(t, shared.IsNotFound(err))
 		assert.Nil(t, found)
 	})
 }

@@ -27,7 +27,7 @@ func createTestBorrower(t *testing.T, repo *BorrowerRepository, ctx context.Cont
 	t.Helper()
 	b, err := borrower.NewBorrower(testfixtures.TestWorkspaceID, name, nil, nil, nil)
 	require.NoError(t, err)
-	err = repo.Save(ctx, b)
+	err = repo.Create(ctx, b)
 	require.NoError(t, err)
 	return b
 }
@@ -37,6 +37,7 @@ func createTestInventoryForLoan(t *testing.T, invRepo *InventoryRepository, item
 	t.Helper()
 	itm, err := item.NewItem(testfixtures.TestWorkspaceID, "Loan Item "+uuid.NewString()[:4], "SKU-"+uuid.NewString()[:8], 0)
 	require.NoError(t, err)
+	itm.SetShortCode(uuid.NewString()[:8])
 	err = itemRepo.Save(ctx, itm)
 	require.NoError(t, err)
 
@@ -166,9 +167,10 @@ func TestLoanRepository_FindByID(t *testing.T) {
 
 		// Create dependencies in workspace1
 		b, _ := borrower.NewBorrower(workspace1, "WS1 Borrower", nil, nil, nil)
-		require.NoError(t, borrowerRepo.Save(ctx, b))
+		require.NoError(t, borrowerRepo.Create(ctx, b))
 
 		itm, _ := item.NewItem(workspace1, "WS1 Item", "SKU-WS1-"+uuid.NewString()[:4], 0)
+		itm.SetShortCode(uuid.NewString()[:8])
 		require.NoError(t, itemRepo.Save(ctx, itm))
 
 		loc, _ := location.NewLocation(workspace1, "WS1 Loc", nil, nil, "WS1-LOC")
@@ -182,7 +184,8 @@ func TestLoanRepository_FindByID(t *testing.T) {
 
 		// Should not find in workspace2
 		found, err := loanRepo.FindByID(ctx, l.ID(), workspace2)
-		require.NoError(t, err)
+		require.Error(t, err)
+		assert.True(t, shared.IsNotFound(err))
 		assert.Nil(t, found)
 
 		// Should find in workspace1
@@ -210,10 +213,11 @@ func TestLoanRepository_FindByWorkspace(t *testing.T) {
 		testdb.CreateTestWorkspace(t, pool, workspace)
 
 		b, _ := borrower.NewBorrower(workspace, "WS Borrower", nil, nil, nil)
-		require.NoError(t, borrowerRepo.Save(ctx, b))
+		require.NoError(t, borrowerRepo.Create(ctx, b))
 
 		for i := 0; i < 5; i++ {
 			itm, _ := item.NewItem(workspace, "Item "+uuid.NewString()[:4], "SKU-"+uuid.NewString()[:8], 0)
+			itm.SetShortCode(uuid.NewString()[:8])
 			require.NoError(t, itemRepo.Save(ctx, itm))
 
 			loc, _ := location.NewLocation(workspace, "Loc "+uuid.NewString()[:4], nil, nil, uuid.NewString()[:8])
@@ -315,9 +319,10 @@ func TestLoanRepository_FindActiveLoans(t *testing.T) {
 		testdb.CreateTestWorkspace(t, pool, workspace)
 
 		b, _ := borrower.NewBorrower(workspace, "Active Borrower", nil, nil, nil)
-		require.NoError(t, borrowerRepo.Save(ctx, b))
+		require.NoError(t, borrowerRepo.Create(ctx, b))
 
 		itm, _ := item.NewItem(workspace, "Active Item", "SKU-ACT-"+uuid.NewString()[:4], 0)
+		itm.SetShortCode(uuid.NewString()[:8])
 		require.NoError(t, itemRepo.Save(ctx, itm))
 
 		loc, _ := location.NewLocation(workspace, "Active Loc", nil, nil, "ACT-LOC")

@@ -29,6 +29,7 @@ func TestItemRepository_Save(t *testing.T) {
 
 	t.Run("saves new item successfully", func(t *testing.T) {
 		itm, err := item.NewItem(testfixtures.TestWorkspaceID, "Test Item", "SKU-001", 0)
+		itm.SetShortCode(uuid.NewString()[:8])
 		require.NoError(t, err)
 
 		err = repo.Save(ctx, itm)
@@ -46,6 +47,7 @@ func TestItemRepository_Save(t *testing.T) {
 
 	t.Run("saves item with min stock level", func(t *testing.T) {
 		itm, err := item.NewItem(testfixtures.TestWorkspaceID, "Stocked Item", "SKU-002", 10)
+		itm.SetShortCode(uuid.NewString()[:8])
 		require.NoError(t, err)
 
 		err = repo.Save(ctx, itm)
@@ -69,6 +71,7 @@ func TestItemRepository_FindByID(t *testing.T) {
 
 	t.Run("finds existing item", func(t *testing.T) {
 		itm, err := item.NewItem(testfixtures.TestWorkspaceID, "Find Me", "SKU-FIND", 0)
+		itm.SetShortCode(uuid.NewString()[:8])
 		require.NoError(t, err)
 		err = repo.Save(ctx, itm)
 		require.NoError(t, err)
@@ -94,13 +97,15 @@ func TestItemRepository_FindByID(t *testing.T) {
 		testdb.CreateTestWorkspace(t, pool, workspace2)
 
 		itm, err := item.NewItem(workspace1, "WS1 Item", "SKU-WS1", 0)
+		itm.SetShortCode(uuid.NewString()[:8])
 		require.NoError(t, err)
 		err = repo.Save(ctx, itm)
 		require.NoError(t, err)
 
 		// Should not find in different workspace
 		found, err := repo.FindByID(ctx, itm.ID(), workspace2)
-		require.NoError(t, err)
+		require.Error(t, err)
+		assert.True(t, shared.IsNotFound(err))
 		assert.Nil(t, found)
 
 		// Should find in correct workspace
@@ -122,6 +127,7 @@ func TestItemRepository_FindBySKU(t *testing.T) {
 	t.Run("finds item by SKU", func(t *testing.T) {
 		sku := "UNIQUE-SKU-123"
 		itm, err := item.NewItem(testfixtures.TestWorkspaceID, "SKU Item", sku, 0)
+		itm.SetShortCode(uuid.NewString()[:8])
 		require.NoError(t, err)
 		err = repo.Save(ctx, itm)
 		require.NoError(t, err)
@@ -188,6 +194,7 @@ func TestItemRepository_FindByWorkspace(t *testing.T) {
 		// Create multiple items
 		for i := 0; i < 5; i++ {
 			itm, _ := item.NewItem(workspaceID, "Item", "SKU-"+uuid.New().String()[:8], 0)
+			itm.SetShortCode(uuid.NewString()[:8])
 			repo.Save(ctx, itm)
 		}
 
@@ -204,6 +211,7 @@ func TestItemRepository_FindByWorkspace(t *testing.T) {
 
 		for i := 0; i < 5; i++ {
 			itm, _ := item.NewItem(workspaceID, "Item", "SKU-LIM-"+uuid.New().String()[:8], 0)
+			itm.SetShortCode(uuid.NewString()[:8])
 			repo.Save(ctx, itm)
 		}
 
@@ -220,7 +228,9 @@ func TestItemRepository_FindByWorkspace(t *testing.T) {
 		testdb.CreateTestWorkspace(t, pool, workspace2)
 
 		itm1, _ := item.NewItem(workspace1, "WS1 Item", "SKU-ISO-1", 0)
+		itm1.SetShortCode(uuid.NewString()[:8])
 		itm2, _ := item.NewItem(workspace2, "WS2 Item", "SKU-ISO-2", 0)
+		itm2.SetShortCode(uuid.NewString()[:8])
 		repo.Save(ctx, itm1)
 		repo.Save(ctx, itm2)
 
@@ -277,6 +287,7 @@ func TestItemRepository_Delete_Hard(t *testing.T) {
 
 	t.Run("hard-deletes row", func(t *testing.T) {
 		itm, err := item.NewItem(testfixtures.TestWorkspaceID, "To Hard Delete", "SKU-HDEL-"+uuid.NewString()[:8], 0)
+		itm.SetShortCode(uuid.NewString()[:8])
 		require.NoError(t, err)
 		require.NoError(t, repo.Save(ctx, itm))
 
@@ -471,6 +482,7 @@ func TestItemRepository_SKUExists(t *testing.T) {
 	t.Run("returns true for existing SKU", func(t *testing.T) {
 		sku := "EXISTS-SKU"
 		itm, err := item.NewItem(testfixtures.TestWorkspaceID, "Item", sku, 0)
+		itm.SetShortCode(uuid.NewString()[:8])
 		require.NoError(t, err)
 		err = repo.Save(ctx, itm)
 		require.NoError(t, err)

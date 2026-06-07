@@ -141,7 +141,8 @@ func TestCategoryRepository_FindByID(t *testing.T) {
 
 		// Try to find in workspace 2
 		found, err := repo.FindByID(ctx, cat.ID(), workspace2)
-		require.NoError(t, err)
+		require.Error(t, err)
+		assert.True(t, shared.IsNotFound(err))
 		assert.Nil(t, found)
 
 		// Verify it exists in workspace 1
@@ -312,7 +313,8 @@ func TestCategoryRepository_Delete(t *testing.T) {
 
 		// Verify it's gone
 		found, err := repo.FindByID(ctx, cat.ID(), testfixtures.TestWorkspaceID)
-		require.NoError(t, err)
+		require.Error(t, err)
+		assert.True(t, shared.IsNotFound(err))
 		assert.Nil(t, found)
 	})
 

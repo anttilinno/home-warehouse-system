@@ -25,6 +25,7 @@ func createTestInventoryForMovement(t *testing.T, invRepo *InventoryRepository, 
 	t.Helper()
 	itm, err := item.NewItem(testfixtures.TestWorkspaceID, "Move Item "+uuid.NewString()[:4], "SKU-"+uuid.NewString()[:8], 0)
 	require.NoError(t, err)
+	itm.SetShortCode(uuid.NewString()[:8])
 	err = itemRepo.Save(ctx, itm)
 	require.NoError(t, err)
 
@@ -211,6 +212,7 @@ func TestMovementRepository_FindByWorkspace(t *testing.T) {
 
 		// Create item and locations in the workspace
 		itm, _ := item.NewItem(workspace, "WS Item", "SKU-WS-"+uuid.NewString()[:4], 0)
+		itm.SetShortCode(uuid.NewString()[:8])
 		require.NoError(t, itemRepo.Save(ctx, itm))
 
 		fromLoc, _ := location.NewLocation(workspace, "WS From Loc", nil, nil, "WS-FROM")

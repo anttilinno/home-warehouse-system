@@ -30,7 +30,7 @@ func TestBorrowerRepository_Save(t *testing.T) {
 		b, err := borrower.NewBorrower(testfixtures.TestWorkspaceID, "John Doe", nil, nil, nil)
 		require.NoError(t, err)
 
-		err = repo.Save(ctx, b)
+		err = repo.Create(ctx, b)
 		require.NoError(t, err)
 
 		retrieved, err := repo.FindByID(ctx, b.ID(), testfixtures.TestWorkspaceID)
@@ -48,7 +48,7 @@ func TestBorrowerRepository_Save(t *testing.T) {
 		b, err := borrower.NewBorrower(testfixtures.TestWorkspaceID, "Jane Doe", &email, &phone, &notes)
 		require.NoError(t, err)
 
-		err = repo.Save(ctx, b)
+		err = repo.Create(ctx, b)
 		require.NoError(t, err)
 
 		retrieved, err := repo.FindByID(ctx, b.ID(), testfixtures.TestWorkspaceID)
@@ -73,7 +73,7 @@ func TestBorrowerRepository_FindByID(t *testing.T) {
 	t.Run("finds existing borrower", func(t *testing.T) {
 		b, err := borrower.NewBorrower(testfixtures.TestWorkspaceID, "Find Me", nil, nil, nil)
 		require.NoError(t, err)
-		err = repo.Save(ctx, b)
+		err = repo.Create(ctx, b)
 		require.NoError(t, err)
 
 		found, err := repo.FindByID(ctx, b.ID(), testfixtures.TestWorkspaceID)
@@ -97,11 +97,12 @@ func TestBorrowerRepository_FindByID(t *testing.T) {
 
 		b, err := borrower.NewBorrower(workspace1, "WS1 Borrower", nil, nil, nil)
 		require.NoError(t, err)
-		err = repo.Save(ctx, b)
+		err = repo.Create(ctx, b)
 		require.NoError(t, err)
 
 		found, err := repo.FindByID(ctx, b.ID(), workspace2)
-		require.NoError(t, err)
+		require.Error(t, err)
+		assert.True(t, shared.IsNotFound(err))
 		assert.Nil(t, found)
 
 		found, err = repo.FindByID(ctx, b.ID(), workspace1)
@@ -126,7 +127,7 @@ func TestBorrowerRepository_FindByWorkspace(t *testing.T) {
 		for i := 0; i < 5; i++ {
 			name := "Borrower " + uuid.NewString()[:8]
 			b, _ := borrower.NewBorrower(workspace, name, nil, nil, nil)
-			require.NoError(t, repo.Save(ctx, b))
+			require.NoError(t, repo.Create(ctx, b))
 		}
 
 		pagination := shared.Pagination{Page: 1, PageSize: 3}
@@ -160,7 +161,7 @@ func TestBorrowerRepository_Delete(t *testing.T) {
 	t.Run("hard-deletes borrower", func(t *testing.T) {
 		b, err := borrower.NewBorrower(testfixtures.TestWorkspaceID, "To Delete", nil, nil, nil)
 		require.NoError(t, err)
-		err = repo.Save(ctx, b)
+		err = repo.Create(ctx, b)
 		require.NoError(t, err)
 
 		err = repo.Delete(ctx, b.ID(), testfixtures.TestWorkspaceID)
@@ -186,7 +187,7 @@ func TestBorrowerRepository_HasActiveLoans(t *testing.T) {
 	t.Run("returns false for borrower with no loans", func(t *testing.T) {
 		b, err := borrower.NewBorrower(testfixtures.TestWorkspaceID, "No Loans", nil, nil, nil)
 		require.NoError(t, err)
-		err = repo.Save(ctx, b)
+		err = repo.Create(ctx, b)
 		require.NoError(t, err)
 
 		hasLoans, err := repo.HasActiveLoans(ctx, b.ID())
@@ -208,7 +209,7 @@ func TestBorrowerRepository_Archive_SetsFlagButKeepsRow(t *testing.T) {
 
 	b, err := borrower.NewBorrower(testfixtures.TestWorkspaceID, "To Archive", nil, nil, nil)
 	require.NoError(t, err)
-	require.NoError(t, repo.Save(ctx, b))
+	require.NoError(t, repo.Create(ctx, b))
 
 	require.NoError(t, repo.Archive(ctx, b.ID(), testfixtures.TestWorkspaceID))
 
@@ -230,7 +231,7 @@ func TestBorrowerRepository_Restore_ClearsFlag(t *testing.T) {
 
 	b, err := borrower.NewBorrower(testfixtures.TestWorkspaceID, "To Restore", nil, nil, nil)
 	require.NoError(t, err)
-	require.NoError(t, repo.Save(ctx, b))
+	require.NoError(t, repo.Create(ctx, b))
 	require.NoError(t, repo.Archive(ctx, b.ID(), testfixtures.TestWorkspaceID))
 
 	require.NoError(t, repo.Restore(ctx, b.ID(), testfixtures.TestWorkspaceID))
@@ -252,7 +253,7 @@ func TestBorrowerRepository_Delete_RemovesRow(t *testing.T) {
 
 	b, err := borrower.NewBorrower(testfixtures.TestWorkspaceID, "To Hard Delete", nil, nil, nil)
 	require.NoError(t, err)
-	require.NoError(t, repo.Save(ctx, b))
+	require.NoError(t, repo.Create(ctx, b))
 
 	require.NoError(t, repo.Delete(ctx, b.ID(), testfixtures.TestWorkspaceID))
 
@@ -278,11 +279,11 @@ func TestBorrowerRepository_FindByWorkspace_ExcludesArchivedByDefault(t *testing
 	// Seed: 1 active + 1 archived borrower in the same workspace
 	active, err := borrower.NewBorrower(workspace, "Active Borrower "+uuid.NewString()[:8], nil, nil, nil)
 	require.NoError(t, err)
-	require.NoError(t, repo.Save(ctx, active))
+	require.NoError(t, repo.Create(ctx, active))
 
 	archived, err := borrower.NewBorrower(workspace, "Archived Borrower "+uuid.NewString()[:8], nil, nil, nil)
 	require.NoError(t, err)
-	require.NoError(t, repo.Save(ctx, archived))
+	require.NoError(t, repo.Create(ctx, archived))
 	require.NoError(t, repo.Archive(ctx, archived.ID(), workspace))
 
 	pagination := shared.Pagination{Page: 1, PageSize: 50}

@@ -99,7 +99,8 @@ func TestCompanyRepository_FindByID(t *testing.T) {
 		require.NoError(t, err)
 
 		found, err := repo.FindByID(ctx, c.ID(), workspace2)
-		require.NoError(t, err)
+		require.Error(t, err)
+		assert.True(t, shared.IsNotFound(err))
 		assert.Nil(t, found)
 
 		found, err = repo.FindByID(ctx, c.ID(), workspace1)
@@ -198,7 +199,8 @@ func TestCompanyRepository_Delete(t *testing.T) {
 		require.NoError(t, err)
 
 		found, err = repo.FindByID(ctx, c.ID(), testfixtures.TestWorkspaceID)
-		require.NoError(t, err)
+		require.Error(t, err)
+		assert.True(t, shared.IsNotFound(err))
 		assert.Nil(t, found)
 	})
 }
