@@ -72,15 +72,13 @@ export default function ClaimPage() {
     [searchParams]
   );
 
-  // Build-time-verified create targets:
-  // - Items: a real /dashboard/items/new route exists; pass short_code on the
-  //   URL. NOTE: CreateItemWizard does not yet read the short_code search param,
-  //   so the field is not auto-prefilled today (wiring gap — see SUMMARY).
-  // - Locations & Containers: there is NO /new route — creation is triggered by
-  //   a local dialog opened from the list page (verified in locations/page.tsx
-  //   and containers/page.tsx, neither of which reads a ?create / ?short_code
-  //   param). We navigate to the list page and carry the code on the URL; the
-  //   user pastes it into the dialog's Short Code field. The dashboard shell /
+  // Create targets — wiring is LIVE (quick task 260607-vdf):
+  // - Items: /dashboard/items/new reads ?short_code= (and ?barcode=) via
+  //   useSearchParams and prefills the CreateItemWizard's short_code field.
+  // - Locations & Containers: there is NO /new route — creation is a local
+  //   dialog on the list page. Those pages now read ?create=1&short_code= and
+  //   auto-open their create dialog with the short_code prefilled. We navigate
+  //   to the list page carrying the contract; the dialog opens prefilled. The
   //   next-intl middleware prefixes the active locale automatically.
   const encodedCode = encodeURIComponent(code);
   const createTargets: {

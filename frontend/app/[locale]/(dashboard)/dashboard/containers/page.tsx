@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
+import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useDateFormat } from "@/lib/hooks/use-date-format";
 import {
@@ -256,6 +257,10 @@ export default function ContainersPage() {
   const t = useTranslations("containers");
   const { workspaceId, isLoading: workspaceLoading } = useWorkspace();
   const { formatDate } = useDateFormat();
+  const searchParams = useSearchParams();
+  // One-shot guard so manually closing the dialog does not re-trigger the
+  // auto-open from stale ?create=1 params still in the URL.
+  const claimAutoOpenedRef = useRef(false);
 
   const [locations, setLocations] = useState<Location[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
@@ -606,15 +611,25 @@ export default function ContainersPage() {
     { key: "updated_at", label: "Updated Date", formatter: (value) => formatDate(value) },
   ], [locations, formatDate]);
 
-  const openCreateDialog = () => {
+  const openCreateDialog = (shortCode = "") => {
     setEditingContainer(null);
     setFormName("");
     setFormDescription("");
     setFormLocationId("");
     setFormCapacity("");
-    setFormShortCode("");
+    setFormShortCode(shortCode);
     setDialogOpen(true);
   };
+
+  // s.go claim flow: /dashboard/containers?create=1&short_code=<code> auto-opens
+  // the create dialog with the code prefilled. short_code is exact + case-
+  // sensitive (locked design) — passed through verbatim, NOT via extractScanCode.
+  useEffect(() => {
+    if (claimAutoOpenedRef.current) return;
+    if (searchParams.get("create") !== "1") return;
+    claimAutoOpenedRef.current = true;
+    openCreateDialog(searchParams.get("short_code") ?? "");
+  }, [searchParams]);
 
   const openEditDialog = (container: Container) => {
     setEditingContainer(container);
@@ -802,7 +817,7 @@ export default function ContainersPage() {
                 {searchQuery && " matching your search"}
               </CardDescription>
             </div>
-            <Button onClick={openCreateDialog}>
+            <Button onClick={() => openCreateDialog()}>
               <Plus className="mr-2 h-4 w-4" />
               Add Container
             </Button>
@@ -880,7 +895,7 @@ export default function ContainersPage() {
                 }
               >
                 {!searchQuery && activeFilterCount === 0 && !showArchived && (
-                  <Button onClick={openCreateDialog}>
+                  <Button onClick={() => openCreateDialog()}>
                     <Plus className="mr-2 h-4 w-4" />
                     Add Your First Container
                   </Button>
