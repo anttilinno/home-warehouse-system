@@ -30,6 +30,7 @@ import (
 	"github.com/antti/home-warehouse/go-backend/internal/domain/batch"
 	"github.com/antti/home-warehouse/go-backend/internal/domain/events"
 	"github.com/antti/home-warehouse/go-backend/internal/domain/importexport"
+	"github.com/antti/home-warehouse/go-backend/internal/domain/shortlink"
 	"github.com/antti/home-warehouse/go-backend/internal/domain/sync"
 	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/activity"
 	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/attachment"
@@ -341,6 +342,15 @@ func NewRouter(pool *pgxpool.Pool, cfg *config.Config) chi.Router {
 
 	// Register barcode lookup (public, no auth required)
 	barcode.RegisterRoutes(api, barcodeSvc)
+
+	// QR shortlink redirect (s.go/{code} -> Angie rewrites to /r/{code}).
+	// Registered at the TOP-LEVEL chi router, OFF the /api workspace tree and
+	// NOT behind appMiddleware.JWTAuth: the handler reads the access_token
+	// cookie inline and redirects browsers to login on auth failure (a JSON 401
+	// is wrong for a phone scan). Reuses jwtService + workspaceSvc + pool.
+	shortlinkRepo := postgres.NewShortlinkRepository(pool)
+	shortlinkHandler := shortlink.NewHandler(shortlinkRepo, jwtService, workspaceSvc)
+	r.Get("/r/{code}", shortlinkHandler.Redirect)
 
 	// Protected routes
 	r.Group(func(r chi.Router) {
