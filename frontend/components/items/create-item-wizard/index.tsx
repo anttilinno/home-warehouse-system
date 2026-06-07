@@ -18,7 +18,17 @@ import {
   type CreateItemFormData,
 } from "./schema";
 
-export function CreateItemWizard() {
+export interface CreateItemWizardProps {
+  /**
+   * Partial values merged over createItemDefaults to seed the form. Used by the
+   * claim/scan flow to prefill short_code / barcode from URL params. NOTE: the
+   * MultiStepForm reset on mount is reset({ ...defaultValues, ...draft }), so a
+   * saved draft still overrides these — acceptable for the fresh-create claim flow.
+   */
+  initialValues?: Partial<CreateItemFormData>;
+}
+
+export function CreateItemWizard({ initialValues }: CreateItemWizardProps = {}) {
   const t = useTranslations("items.create");
   const router = useRouter();
   const { workspaceId } = useWorkspace();
@@ -87,7 +97,7 @@ export function CreateItemWizard() {
   return (
     <MultiStepForm
       schema={createItemSchema}
-      defaultValues={createItemDefaults}
+      defaultValues={{ ...createItemDefaults, ...initialValues }}
       steps={steps}
       onSubmit={handleSubmit}
       onCancel={handleCancel}

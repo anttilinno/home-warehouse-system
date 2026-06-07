@@ -1,15 +1,28 @@
 "use client";
 
 import { ArrowLeft } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/button";
 import { CreateItemWizard } from "@/components/items/create-item-wizard";
+import type { CreateItemFormData } from "@/components/items/create-item-wizard/schema";
 
 export default function NewItemPage() {
   const router = useRouter();
   const t = useTranslations("items");
+  const searchParams = useSearchParams();
+
+  // Prefill from the s.go claim / scan flow contract:
+  //   /dashboard/items/new?short_code=<code>   (claim wizard)
+  //   /dashboard/items/new?barcode=<code>       (scan not-found → create)
+  // Short codes are case-sensitive (locked design) — pass through verbatim,
+  // only trimming surrounding whitespace.
+  const initialValues: Partial<CreateItemFormData> = {};
+  const shortCode = searchParams.get("short_code")?.trim();
+  if (shortCode) initialValues.short_code = shortCode;
+  const barcode = searchParams.get("barcode")?.trim();
+  if (barcode) initialValues.barcode = barcode;
 
   return (
     <div className="space-y-6 pb-20">
@@ -32,7 +45,7 @@ export default function NewItemPage() {
       </div>
 
       {/* Wizard */}
-      <CreateItemWizard />
+      <CreateItemWizard initialValues={initialValues} />
     </div>
   );
 }
