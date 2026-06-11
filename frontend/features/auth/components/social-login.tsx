@@ -56,7 +56,11 @@ export function SocialLogin() {
 
     // Full-page redirect to the ingress-gated Authelia entry point. The reverse
     // proxy routes this through Authelia and injects the trusted headers.
-    window.location.href = `${API_URL}/auth/authelia/login`;
+    // Must be the bare same-origin path, NOT the /api proxy (getApiBase()): the
+    // ingress only runs the Authelia forward-auth + shared-secret injection on
+    // /auth/authelia/login. Going through /api bypasses it and the backend
+    // rejects the request with "invalid or missing Authelia trust header".
+    window.location.href = "/auth/authelia/login";
   }, []);
 
   return (
