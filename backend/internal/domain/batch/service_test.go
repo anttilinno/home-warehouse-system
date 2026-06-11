@@ -244,6 +244,83 @@ func TestMarshalEntity_WithComplexStruct(t *testing.T) {
 	assert.Equal(t, entity.Nested.Inner, unmarshaled.Nested.Inner)
 }
 
+// TestMarshalEntity_DomainEntities verifies every entity type that can flow
+// through a conflict result marshals to a populated response DTO rather than
+// "{}" (domain entities have only unexported fields).
+func TestMarshalEntity_DomainEntities(t *testing.T) {
+	id := uuid.New()
+	workspaceID := uuid.New()
+	locationID := uuid.New()
+	now := time.Now()
+
+	tests := []struct {
+		name         string
+		entity       interface{}
+		expectedName string
+	}{
+		{
+			name: "item",
+			entity: item.Reconstruct(
+				id, workspaceID, "SKU-001", "Item Name",
+				nil, nil, nil, nil, nil, nil, nil, nil,
+				ptrBool(false), ptrBool(false), ptrBool(false), nil, nil,
+				5, "SHORT1", nil, nil, ptrBool(false), now, now,
+			),
+			expectedName: "Item Name",
+		},
+		{
+			name: "location",
+			entity: location.Reconstruct(
+				id, workspaceID, "Location Name", nil, nil, "LOC001", false, now, now,
+			),
+			expectedName: "Location Name",
+		},
+		{
+			name: "container",
+			entity: container.Reconstruct(
+				id, workspaceID, locationID, "Container Name", nil, nil, "CON001", false, now, now,
+			),
+			expectedName: "Container Name",
+		},
+		{
+			name: "category",
+			entity: category.Reconstruct(
+				id, workspaceID, "Category Name", nil, nil, false, now, now,
+			),
+			expectedName: "Category Name",
+		},
+		{
+			name: "label",
+			entity: label.Reconstruct(
+				id, workspaceID, "Label Name", nil, nil, false, now, now,
+			),
+			expectedName: "Label Name",
+		},
+		{
+			name: "company",
+			entity: company.Reconstruct(
+				id, workspaceID, "Company Name", nil, nil, false, now, now,
+			),
+			expectedName: "Company Name",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := marshalEntity(tt.entity)
+			assert.NotNil(t, result)
+
+			var serverData map[string]any
+			err := json.Unmarshal(*result, &serverData)
+			assert.NoError(t, err)
+			assert.NotEmpty(t, serverData, "domain entity must not serialize to {}")
+			assert.Equal(t, id.String(), serverData["id"])
+			assert.Equal(t, workspaceID.String(), serverData["workspace_id"])
+			assert.Equal(t, tt.expectedName, serverData["name"])
+		})
+	}
+}
+
 func TestStringPtr(t *testing.T) {
 	result := stringPtr("test")
 	assert.NotNil(t, result)
@@ -867,7 +944,7 @@ func (m *MockItemRepository) Search(ctx context.Context, workspaceID uuid.UUID, 
 	return args.Get(0).([]*item.Item), args.Error(1)
 }
 
-func (m *MockItemRepository) Delete(ctx context.Context, id uuid.UUID) error {
+func (m *MockItemRepository) Delete(ctx context.Context, id, workspaceID uuid.UUID) error {
 	args := m.Called(ctx, id)
 	return args.Error(0)
 }
@@ -1316,6 +1393,111 @@ func TestProcessBatch_ItemUpdate_Conflict(t *testing.T) {
 	assert.Equal(t, 1, resp.Conflicts)
 
 	mockItemRepo.AssertExpectations(t)
+}
+
+// Regression test: domain entities have only unexported fields, so marshaling
+// them directly produced server_data of "{}" and the PWA could not render the
+// server version of a conflicted record. ServerData must carry the real API
+// response DTO with populated fields.
+func TestProcessBatch_ItemUpdate_Conflict_ServerDataHasRealFields(t *testing.T) {
+	ctx := context.Background()
+	workspaceID := uuid.New()
+	itemID := uuid.New()
+	serverTime := time.Now()
+	clientTime := serverTime.Add(-time.Hour) // Client has older version
+
+	mockItemRepo := new(MockItemRepository)
+	itemSvc := createTestItemService(mockItemRepo)
+	svc := NewService(itemSvc, nil, nil, nil, nil, nil, nil)
+
+	existingItem := item.Reconstruct(
+		itemID, workspaceID, "SKU-001", "Server Name",
+		nil, nil, nil, nil, nil, nil, nil, nil,
+		ptrBool(false), ptrBool(false), ptrBool(false), nil, nil,
+		5, "SHORT1", nil, nil, ptrBool(false), serverTime, serverTime,
+	)
+
+	mockItemRepo.On("FindByID", ctx, itemID, workspaceID).Return(existingItem, nil)
+
+	updateData := json.RawMessage(`{"name":"Client Name"}`)
+	req := BatchRequest{
+		Operations: []Operation{
+			{
+				Operation:  OperationUpdate,
+				EntityType: EntityItem,
+				EntityID:   &itemID,
+				Data:       updateData,
+				UpdatedAt:  &clientTime,
+			},
+		},
+	}
+
+	resp, err := svc.ProcessBatch(ctx, workspaceID, req)
+	assert.NoError(t, err)
+	assert.Equal(t, StatusConflict, resp.Results[0].Status)
+	assert.NotNil(t, resp.Results[0].ServerData)
+
+	var serverData map[string]any
+	err = json.Unmarshal(*resp.Results[0].ServerData, &serverData)
+	assert.NoError(t, err)
+	assert.NotEmpty(t, serverData, "server_data must not serialize to {}")
+	assert.Equal(t, itemID.String(), serverData["id"])
+	assert.Equal(t, workspaceID.String(), serverData["workspace_id"])
+	assert.Equal(t, "SKU-001", serverData["sku"])
+	assert.Equal(t, "Server Name", serverData["name"])
+	assert.Equal(t, "SHORT1", serverData["short_code"])
+	assert.EqualValues(t, 5, serverData["min_stock_level"])
+	assert.NotEmpty(t, serverData["updated_at"])
+
+	mockItemRepo.AssertExpectations(t)
+}
+
+// Same regression guard for the location conflict path (the other DTO branch
+// most commonly hit by offline-sync batches).
+func TestProcessBatch_LocationUpdate_Conflict_ServerDataHasRealFields(t *testing.T) {
+	ctx := context.Background()
+	workspaceID := uuid.New()
+	locationID := uuid.New()
+	serverTime := time.Now()
+	clientTime := serverTime.Add(-time.Hour)
+
+	mockLocationRepo := new(MockLocationRepository)
+	locationSvc := createTestLocationService(mockLocationRepo)
+	svc := NewService(nil, locationSvc, nil, nil, nil, nil, nil)
+
+	existingLocation := location.Reconstruct(
+		locationID, workspaceID, "Server Room", nil, nil, "LOC001", false, serverTime, serverTime,
+	)
+
+	mockLocationRepo.On("FindByID", ctx, locationID, workspaceID).Return(existingLocation, nil)
+
+	updateData := json.RawMessage(`{"name":"Client Room"}`)
+	req := BatchRequest{
+		Operations: []Operation{
+			{
+				Operation:  OperationUpdate,
+				EntityType: EntityLocation,
+				EntityID:   &locationID,
+				Data:       updateData,
+				UpdatedAt:  &clientTime,
+			},
+		},
+	}
+
+	resp, err := svc.ProcessBatch(ctx, workspaceID, req)
+	assert.NoError(t, err)
+	assert.Equal(t, StatusConflict, resp.Results[0].Status)
+	assert.NotNil(t, resp.Results[0].ServerData)
+
+	var serverData map[string]any
+	err = json.Unmarshal(*resp.Results[0].ServerData, &serverData)
+	assert.NoError(t, err)
+	assert.NotEmpty(t, serverData, "server_data must not serialize to {}")
+	assert.Equal(t, locationID.String(), serverData["id"])
+	assert.Equal(t, "Server Room", serverData["name"])
+	assert.Equal(t, "LOC001", serverData["short_code"])
+
+	mockLocationRepo.AssertExpectations(t)
 }
 
 func TestProcessBatch_ItemUpdate_InvalidData(t *testing.T) {

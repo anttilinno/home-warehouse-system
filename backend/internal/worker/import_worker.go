@@ -31,7 +31,6 @@ type ImportWorker struct {
 	importRepo  importjob.Repository
 	broadcaster *events.Broadcaster
 	dbPool      *pgxpool.Pool
-	isRunning   bool
 }
 
 func NewImportWorker(
@@ -45,24 +44,38 @@ func NewImportWorker(
 		importRepo:  importRepo,
 		broadcaster: broadcaster,
 		dbPool:      dbPool,
-		isRunning:   false,
 	}
 }
 
+// Start runs the dequeue/process loop until ctx is cancelled. Cancellation is
+// a drain signal: the loop stops dequeuing new jobs, but an in-flight job is
+// finished with a context detached from the shutdown cancellation, so a
+// deploy mid-import does not abort the import half-written. Start returns
+// only after any in-flight job has completed — callers wanting a bounded
+// shutdown should wait on Start's return with their own timeout.
 func (w *ImportWorker) Start(ctx context.Context) error {
-	w.isRunning = true
+	// Re-enqueue any jobs a previous worker crash left on the in-flight list.
+	if recovered, err := w.queue.RecoverInFlight(ctx); err != nil {
+		log.Printf("Error recovering in-flight jobs: %v", err)
+	} else if recovered > 0 {
+		log.Printf("Recovered %d in-flight job(s) from previous run", recovered)
+	}
 
-	for w.isRunning {
+	for {
 		select {
 		case <-ctx.Done():
 			log.Println("Context cancelled, stopping worker...")
-			w.isRunning = false
 			return nil
 
 		default:
 			// Dequeue job with timeout
 			job, err := w.queue.Dequeue(ctx, 5*time.Second)
 			if err != nil {
+				if ctx.Err() != nil {
+					// Shutdown raced the blocking dequeue — not an error.
+					log.Println("Context cancelled, stopping worker...")
+					return nil
+				}
 				log.Printf("Error dequeuing job: %v", err)
 				time.Sleep(1 * time.Second)
 				continue
@@ -73,21 +86,54 @@ func (w *ImportWorker) Start(ctx context.Context) error {
 				continue
 			}
 
-			// Process job
-			if err := w.processJob(ctx, job); err != nil {
+			// Process with a context that survives shutdown cancellation so
+			// an in-flight import drains instead of being killed mid-write.
+			procCtx := context.WithoutCancel(ctx)
+
+			if err := w.processJob(procCtx, job); err != nil {
 				log.Printf("Error processing job %s: %v", job.ID, err)
-				if failErr := w.queue.Fail(ctx, job.ID, err.Error()); failErr != nil {
+				dead, failErr := w.queue.Fail(procCtx, job.ID, err.Error())
+				if failErr != nil {
 					log.Printf("Error marking job as failed: %v", failErr)
 				}
+				if dead {
+					// Retries exhausted: the queue job is dead-lettered; make
+					// sure the import job row reflects the terminal failure.
+					w.markImportJobFailed(procCtx, job, err.Error())
+				}
 			} else {
-				if err := w.queue.Complete(ctx, job.ID); err != nil {
+				if err := w.queue.Complete(procCtx, job.ID); err != nil {
 					log.Printf("Error completing job: %v", err)
 				}
 			}
 		}
 	}
+}
 
-	return nil
+// markImportJobFailed best-effort marks the import job referenced by a
+// dead-lettered queue job as failed, so the UI does not show it pending
+// forever after retries are exhausted.
+func (w *ImportWorker) markImportJobFailed(ctx context.Context, job *queue.Job, reason string) {
+	importJobIDStr, _ := job.Payload["import_job_id"].(string)
+	workspaceIDStr, _ := job.Payload["workspace_id"].(string)
+	importJobID, err1 := uuid.Parse(importJobIDStr)
+	workspaceID, err2 := uuid.Parse(workspaceIDStr)
+	if err1 != nil || err2 != nil {
+		log.Printf("Cannot mark import job failed for dead-lettered queue job %s: bad payload", job.ID)
+		return
+	}
+
+	importJob, err := w.importRepo.FindJobByID(ctx, importJobID, workspaceID)
+	if err != nil {
+		log.Printf("Cannot mark import job %s failed: %v", importJobID, err)
+		return
+	}
+	if importJob.Status() == importjob.StatusCompleted || importJob.Status() == importjob.StatusFailed {
+		return // already terminal
+	}
+	importJob.Fail(fmt.Sprintf("import abandoned after max retries: %s", reason))
+	w.saveJob(ctx, importJob)
+	w.publishProgress(importJob, 100)
 }
 
 func (w *ImportWorker) processJob(ctx context.Context, job *queue.Job) error {
@@ -147,7 +193,7 @@ func (w *ImportWorker) processItemImport(ctx context.Context, job *importjob.Imp
 	totalRows, err := parser.CountRows()
 	if err != nil {
 		job.Fail(fmt.Sprintf("Failed to count rows: %v", err))
-		w.importRepo.SaveJob(ctx, job)
+		w.saveJob(ctx, job)
 		return err
 	}
 
@@ -174,15 +220,7 @@ func (w *ImportWorker) processItemImport(ctx context.Context, job *importjob.Imp
 		// Map CSV fields to item
 		name := row["name"]
 		if name == "" {
-			// Save error
-			importError, _ := importjob.NewImportError(
-				job.ID(),
-				rowNum,
-				strPtr("name"),
-				"name is required",
-				stringMapToAnyMap(row),
-			)
-			w.importRepo.SaveError(ctx, importError)
+			w.saveRowError(ctx, job.ID(), rowNum, strPtr("name"), "name is required", row)
 			errorCount++
 		} else {
 			// Get or generate SKU
@@ -208,15 +246,7 @@ func (w *ImportWorker) processItemImport(ctx context.Context, job *importjob.Imp
 			})
 
 			if err != nil {
-				// Save error
-				importError, _ := importjob.NewImportError(
-					job.ID(),
-					rowNum,
-					nil,
-					err.Error(),
-					stringMapToAnyMap(row),
-				)
-				w.importRepo.SaveError(ctx, importError)
+				w.saveRowError(ctx, job.ID(), rowNum, nil, err.Error(), row)
 				errorCount++
 			} else {
 				successCount++
@@ -228,7 +258,7 @@ func (w *ImportWorker) processItemImport(ctx context.Context, job *importjob.Imp
 		// Update progress every 10 rows
 		if processedRows%10 == 0 {
 			job.UpdateProgress(processedRows, successCount, errorCount)
-			w.importRepo.SaveJob(ctx, job)
+			w.saveJob(ctx, job)
 			w.publishProgress(job, (processedRows*100)/totalRows)
 		}
 
@@ -259,7 +289,7 @@ func (w *ImportWorker) processLocationImport(ctx context.Context, job *importjob
 	totalRows, err := parser.CountRows()
 	if err != nil {
 		job.Fail(fmt.Sprintf("Failed to count rows: %v", err))
-		w.importRepo.SaveJob(ctx, job)
+		w.saveJob(ctx, job)
 		return err
 	}
 
@@ -273,7 +303,12 @@ func (w *ImportWorker) processLocationImport(ctx context.Context, job *importjob
 	locationService := location.NewService(locationRepo)
 
 	// Build a cache of existing locations for parent lookups
-	existingLocations, _, _ := locationRepo.FindByWorkspace(ctx, job.WorkspaceID(), shared.Pagination{Page: 1, PageSize: 10000})
+	existingLocations, err := findAllPages(ctx, func(ctx context.Context, p shared.Pagination) ([]*location.Location, int, error) {
+		return locationRepo.FindByWorkspace(ctx, job.WorkspaceID(), p)
+	})
+	if err != nil {
+		return w.failJob(ctx, job, fmt.Sprintf("failed to load existing locations: %v", err))
+	}
 	locationCache := make(map[string]*location.Location)
 	for _, loc := range existingLocations {
 		locationCache[strings.ToLower(loc.Name())] = loc
@@ -287,8 +322,7 @@ func (w *ImportWorker) processLocationImport(ctx context.Context, job *importjob
 	err = parser.ParseStream(func(rowNum int, row map[string]string) error {
 		name := row["name"]
 		if name == "" {
-			importError, _ := importjob.NewImportError(job.ID(), rowNum, strPtr("name"), "name is required", stringMapToAnyMap(row))
-			w.importRepo.SaveError(ctx, importError)
+			w.saveRowError(ctx, job.ID(), rowNum, strPtr("name"), "name is required", row)
 			errorCount++
 		} else {
 			var parentLocation *uuid.UUID
@@ -308,8 +342,7 @@ func (w *ImportWorker) processLocationImport(ctx context.Context, job *importjob
 			})
 
 			if err != nil {
-				importError, _ := importjob.NewImportError(job.ID(), rowNum, nil, err.Error(), stringMapToAnyMap(row))
-				w.importRepo.SaveError(ctx, importError)
+				w.saveRowError(ctx, job.ID(), rowNum, nil, err.Error(), row)
 				errorCount++
 			} else {
 				// Add to cache for potential parent references
@@ -322,7 +355,7 @@ func (w *ImportWorker) processLocationImport(ctx context.Context, job *importjob
 		processedRows++
 		if processedRows%10 == 0 {
 			job.UpdateProgress(processedRows, successCount, errorCount)
-			w.importRepo.SaveJob(ctx, job)
+			w.saveJob(ctx, job)
 			w.publishProgress(job, (processedRows*100)/totalRows)
 		}
 		return nil
@@ -335,7 +368,7 @@ func (w *ImportWorker) processLocationImport(ctx context.Context, job *importjob
 		job.Complete()
 	}
 
-	w.importRepo.SaveJob(ctx, job)
+	w.saveJob(ctx, job)
 	w.publishProgress(job, 100)
 	return nil
 }
@@ -346,7 +379,7 @@ func (w *ImportWorker) processContainerImport(ctx context.Context, job *importjo
 	totalRows, err := parser.CountRows()
 	if err != nil {
 		job.Fail(fmt.Sprintf("Failed to count rows: %v", err))
-		w.importRepo.SaveJob(ctx, job)
+		w.saveJob(ctx, job)
 		return err
 	}
 
@@ -361,7 +394,12 @@ func (w *ImportWorker) processContainerImport(ctx context.Context, job *importjo
 	containerService := container.NewService(containerRepo, locationRepo)
 
 	// Build location cache for lookups
-	existingLocations, _, _ := locationRepo.FindByWorkspace(ctx, job.WorkspaceID(), shared.Pagination{Page: 1, PageSize: 10000})
+	existingLocations, err := findAllPages(ctx, func(ctx context.Context, p shared.Pagination) ([]*location.Location, int, error) {
+		return locationRepo.FindByWorkspace(ctx, job.WorkspaceID(), p)
+	})
+	if err != nil {
+		return w.failJob(ctx, job, fmt.Sprintf("failed to load existing locations: %v", err))
+	}
 	locationCache := make(map[string]*location.Location)
 	for _, loc := range existingLocations {
 		locationCache[strings.ToLower(loc.Name())] = loc
@@ -377,18 +415,15 @@ func (w *ImportWorker) processContainerImport(ctx context.Context, job *importjo
 		locationRef := row["location"]
 
 		if name == "" {
-			importError, _ := importjob.NewImportError(job.ID(), rowNum, strPtr("name"), "name is required", stringMapToAnyMap(row))
-			w.importRepo.SaveError(ctx, importError)
+			w.saveRowError(ctx, job.ID(), rowNum, strPtr("name"), "name is required", row)
 			errorCount++
 		} else if locationRef == "" {
-			importError, _ := importjob.NewImportError(job.ID(), rowNum, strPtr("location"), "location is required", stringMapToAnyMap(row))
-			w.importRepo.SaveError(ctx, importError)
+			w.saveRowError(ctx, job.ID(), rowNum, strPtr("location"), "location is required", row)
 			errorCount++
 		} else {
 			loc, ok := locationCache[strings.ToLower(locationRef)]
 			if !ok {
-				importError, _ := importjob.NewImportError(job.ID(), rowNum, strPtr("location"), fmt.Sprintf("location '%s' not found", locationRef), stringMapToAnyMap(row))
-				w.importRepo.SaveError(ctx, importError)
+				w.saveRowError(ctx, job.ID(), rowNum, strPtr("location"), fmt.Sprintf("location '%s' not found", locationRef), row)
 				errorCount++
 			} else {
 				_, err := containerService.Create(ctx, container.CreateInput{
@@ -401,8 +436,7 @@ func (w *ImportWorker) processContainerImport(ctx context.Context, job *importjo
 				})
 
 				if err != nil {
-					importError, _ := importjob.NewImportError(job.ID(), rowNum, nil, err.Error(), stringMapToAnyMap(row))
-					w.importRepo.SaveError(ctx, importError)
+					w.saveRowError(ctx, job.ID(), rowNum, nil, err.Error(), row)
 					errorCount++
 				} else {
 					successCount++
@@ -413,7 +447,7 @@ func (w *ImportWorker) processContainerImport(ctx context.Context, job *importjo
 		processedRows++
 		if processedRows%10 == 0 {
 			job.UpdateProgress(processedRows, successCount, errorCount)
-			w.importRepo.SaveJob(ctx, job)
+			w.saveJob(ctx, job)
 			w.publishProgress(job, (processedRows*100)/totalRows)
 		}
 		return nil
@@ -426,7 +460,7 @@ func (w *ImportWorker) processContainerImport(ctx context.Context, job *importjo
 		job.Complete()
 	}
 
-	w.importRepo.SaveJob(ctx, job)
+	w.saveJob(ctx, job)
 	w.publishProgress(job, 100)
 	return nil
 }
@@ -437,7 +471,7 @@ func (w *ImportWorker) processCategoryImport(ctx context.Context, job *importjob
 	totalRows, err := parser.CountRows()
 	if err != nil {
 		job.Fail(fmt.Sprintf("Failed to count rows: %v", err))
-		w.importRepo.SaveJob(ctx, job)
+		w.saveJob(ctx, job)
 		return err
 	}
 
@@ -451,7 +485,10 @@ func (w *ImportWorker) processCategoryImport(ctx context.Context, job *importjob
 	categoryService := category.NewService(categoryRepo)
 
 	// Build category cache for parent lookups
-	existingCategories, _ := categoryRepo.FindByWorkspace(ctx, job.WorkspaceID())
+	existingCategories, err := categoryRepo.FindByWorkspace(ctx, job.WorkspaceID())
+	if err != nil {
+		return w.failJob(ctx, job, fmt.Sprintf("failed to load existing categories: %v", err))
+	}
 	categoryCache := make(map[string]*category.Category)
 	for _, cat := range existingCategories {
 		categoryCache[strings.ToLower(cat.Name())] = cat
@@ -464,8 +501,7 @@ func (w *ImportWorker) processCategoryImport(ctx context.Context, job *importjob
 	err = parser.ParseStream(func(rowNum int, row map[string]string) error {
 		name := row["name"]
 		if name == "" {
-			importError, _ := importjob.NewImportError(job.ID(), rowNum, strPtr("name"), "name is required", stringMapToAnyMap(row))
-			w.importRepo.SaveError(ctx, importError)
+			w.saveRowError(ctx, job.ID(), rowNum, strPtr("name"), "name is required", row)
 			errorCount++
 		} else {
 			var parentCategoryID *uuid.UUID
@@ -484,8 +520,7 @@ func (w *ImportWorker) processCategoryImport(ctx context.Context, job *importjob
 			})
 
 			if err != nil {
-				importError, _ := importjob.NewImportError(job.ID(), rowNum, nil, err.Error(), stringMapToAnyMap(row))
-				w.importRepo.SaveError(ctx, importError)
+				w.saveRowError(ctx, job.ID(), rowNum, nil, err.Error(), row)
 				errorCount++
 			} else {
 				// Add to cache for potential parent references
@@ -497,7 +532,7 @@ func (w *ImportWorker) processCategoryImport(ctx context.Context, job *importjob
 		processedRows++
 		if processedRows%10 == 0 {
 			job.UpdateProgress(processedRows, successCount, errorCount)
-			w.importRepo.SaveJob(ctx, job)
+			w.saveJob(ctx, job)
 			w.publishProgress(job, (processedRows*100)/totalRows)
 		}
 		return nil
@@ -510,7 +545,7 @@ func (w *ImportWorker) processCategoryImport(ctx context.Context, job *importjob
 		job.Complete()
 	}
 
-	w.importRepo.SaveJob(ctx, job)
+	w.saveJob(ctx, job)
 	w.publishProgress(job, 100)
 	return nil
 }
@@ -521,7 +556,7 @@ func (w *ImportWorker) processBorrowerImport(ctx context.Context, job *importjob
 	totalRows, err := parser.CountRows()
 	if err != nil {
 		job.Fail(fmt.Sprintf("Failed to count rows: %v", err))
-		w.importRepo.SaveJob(ctx, job)
+		w.saveJob(ctx, job)
 		return err
 	}
 
@@ -541,8 +576,7 @@ func (w *ImportWorker) processBorrowerImport(ctx context.Context, job *importjob
 	err = parser.ParseStream(func(rowNum int, row map[string]string) error {
 		name := row["name"]
 		if name == "" {
-			importError, _ := importjob.NewImportError(job.ID(), rowNum, strPtr("name"), "name is required", stringMapToAnyMap(row))
-			w.importRepo.SaveError(ctx, importError)
+			w.saveRowError(ctx, job.ID(), rowNum, strPtr("name"), "name is required", row)
 			errorCount++
 		} else {
 			_, err := borrowerService.Create(ctx, borrower.CreateInput{
@@ -554,8 +588,7 @@ func (w *ImportWorker) processBorrowerImport(ctx context.Context, job *importjob
 			})
 
 			if err != nil {
-				importError, _ := importjob.NewImportError(job.ID(), rowNum, nil, err.Error(), stringMapToAnyMap(row))
-				w.importRepo.SaveError(ctx, importError)
+				w.saveRowError(ctx, job.ID(), rowNum, nil, err.Error(), row)
 				errorCount++
 			} else {
 				successCount++
@@ -565,7 +598,7 @@ func (w *ImportWorker) processBorrowerImport(ctx context.Context, job *importjob
 		processedRows++
 		if processedRows%10 == 0 {
 			job.UpdateProgress(processedRows, successCount, errorCount)
-			w.importRepo.SaveJob(ctx, job)
+			w.saveJob(ctx, job)
 			w.publishProgress(job, (processedRows*100)/totalRows)
 		}
 		return nil
@@ -578,7 +611,7 @@ func (w *ImportWorker) processBorrowerImport(ctx context.Context, job *importjob
 		job.Complete()
 	}
 
-	w.importRepo.SaveJob(ctx, job)
+	w.saveJob(ctx, job)
 	w.publishProgress(job, 100)
 	return nil
 }
@@ -589,7 +622,7 @@ func (w *ImportWorker) processInventoryImport(ctx context.Context, job *importjo
 	totalRows, err := parser.CountRows()
 	if err != nil {
 		job.Fail(fmt.Sprintf("Failed to count rows: %v", err))
-		w.importRepo.SaveJob(ctx, job)
+		w.saveJob(ctx, job)
 		return err
 	}
 
@@ -608,7 +641,12 @@ func (w *ImportWorker) processInventoryImport(ctx context.Context, job *importjo
 	inventoryService := inventory.NewService(inventoryRepo, movementService, itemRepo, locationRepo, containerRepo)
 
 	// Build caches for lookups
-	existingItems, _, _ := itemRepo.FindByWorkspace(ctx, job.WorkspaceID(), shared.Pagination{Page: 1, PageSize: 10000})
+	existingItems, err := findAllPages(ctx, func(ctx context.Context, p shared.Pagination) ([]*item.Item, int, error) {
+		return itemRepo.FindByWorkspace(ctx, job.WorkspaceID(), p)
+	})
+	if err != nil {
+		return w.failJob(ctx, job, fmt.Sprintf("failed to load existing items: %v", err))
+	}
 	itemCache := make(map[string]*item.Item)
 	for _, itm := range existingItems {
 		itemCache[strings.ToLower(itm.Name())] = itm
@@ -618,14 +656,24 @@ func (w *ImportWorker) processInventoryImport(ctx context.Context, job *importjo
 		}
 	}
 
-	existingLocations, _, _ := locationRepo.FindByWorkspace(ctx, job.WorkspaceID(), shared.Pagination{Page: 1, PageSize: 10000})
+	existingLocations, err := findAllPages(ctx, func(ctx context.Context, p shared.Pagination) ([]*location.Location, int, error) {
+		return locationRepo.FindByWorkspace(ctx, job.WorkspaceID(), p)
+	})
+	if err != nil {
+		return w.failJob(ctx, job, fmt.Sprintf("failed to load existing locations: %v", err))
+	}
 	locationCache := make(map[string]*location.Location)
 	for _, loc := range existingLocations {
 		locationCache[strings.ToLower(loc.Name())] = loc
 		locationCache[strings.ToLower(loc.ShortCode())] = loc
 	}
 
-	existingContainers, _, _ := containerRepo.FindByWorkspace(ctx, job.WorkspaceID(), shared.Pagination{Page: 1, PageSize: 10000})
+	existingContainers, err := findAllPages(ctx, func(ctx context.Context, p shared.Pagination) ([]*container.Container, int, error) {
+		return containerRepo.FindByWorkspace(ctx, job.WorkspaceID(), p)
+	})
+	if err != nil {
+		return w.failJob(ctx, job, fmt.Sprintf("failed to load existing containers: %v", err))
+	}
 	containerCache := make(map[string]*container.Container)
 	for _, cont := range existingContainers {
 		containerCache[strings.ToLower(cont.Name())] = cont
@@ -642,24 +690,20 @@ func (w *ImportWorker) processInventoryImport(ctx context.Context, job *importjo
 		quantityStr := row["quantity"]
 
 		if itemRef == "" {
-			importError, _ := importjob.NewImportError(job.ID(), rowNum, strPtr("item"), "item is required", stringMapToAnyMap(row))
-			w.importRepo.SaveError(ctx, importError)
+			w.saveRowError(ctx, job.ID(), rowNum, strPtr("item"), "item is required", row)
 			errorCount++
 		} else if locationRef == "" {
-			importError, _ := importjob.NewImportError(job.ID(), rowNum, strPtr("location"), "location is required", stringMapToAnyMap(row))
-			w.importRepo.SaveError(ctx, importError)
+			w.saveRowError(ctx, job.ID(), rowNum, strPtr("location"), "location is required", row)
 			errorCount++
 		} else {
 			itm, itemOk := itemCache[strings.ToLower(itemRef)]
 			loc, locOk := locationCache[strings.ToLower(locationRef)]
 
 			if !itemOk {
-				importError, _ := importjob.NewImportError(job.ID(), rowNum, strPtr("item"), fmt.Sprintf("item '%s' not found", itemRef), stringMapToAnyMap(row))
-				w.importRepo.SaveError(ctx, importError)
+				w.saveRowError(ctx, job.ID(), rowNum, strPtr("item"), fmt.Sprintf("item '%s' not found", itemRef), row)
 				errorCount++
 			} else if !locOk {
-				importError, _ := importjob.NewImportError(job.ID(), rowNum, strPtr("location"), fmt.Sprintf("location '%s' not found", locationRef), stringMapToAnyMap(row))
-				w.importRepo.SaveError(ctx, importError)
+				w.saveRowError(ctx, job.ID(), rowNum, strPtr("location"), fmt.Sprintf("location '%s' not found", locationRef), row)
 				errorCount++
 			} else {
 				quantity := 1
@@ -722,8 +766,7 @@ func (w *ImportWorker) processInventoryImport(ctx context.Context, job *importjo
 				})
 
 				if err != nil {
-					importError, _ := importjob.NewImportError(job.ID(), rowNum, nil, err.Error(), stringMapToAnyMap(row))
-					w.importRepo.SaveError(ctx, importError)
+					w.saveRowError(ctx, job.ID(), rowNum, nil, err.Error(), row)
 					errorCount++
 				} else {
 					successCount++
@@ -734,7 +777,7 @@ func (w *ImportWorker) processInventoryImport(ctx context.Context, job *importjo
 		processedRows++
 		if processedRows%10 == 0 {
 			job.UpdateProgress(processedRows, successCount, errorCount)
-			w.importRepo.SaveJob(ctx, job)
+			w.saveJob(ctx, job)
 			w.publishProgress(job, (processedRows*100)/totalRows)
 		}
 		return nil
@@ -747,7 +790,7 @@ func (w *ImportWorker) processInventoryImport(ctx context.Context, job *importjo
 		job.Complete()
 	}
 
-	w.importRepo.SaveJob(ctx, job)
+	w.saveJob(ctx, job)
 	w.publishProgress(job, 100)
 	return nil
 }
@@ -769,6 +812,59 @@ func (w *ImportWorker) publishProgress(job *importjob.ImportJob, progressPercent
 				"total_rows":     job.TotalRows(),
 			},
 		})
+	}
+}
+
+// saveJob persists import-job state, logging persistence failures instead of
+// silently dropping them. Progress saves are best-effort by design (the next
+// save typically supersedes), but failures must be visible in the logs.
+func (w *ImportWorker) saveJob(ctx context.Context, job *importjob.ImportJob) {
+	if err := w.importRepo.SaveJob(ctx, job); err != nil {
+		log.Printf("Error saving import job %s: %v", job.ID(), err)
+	}
+}
+
+// saveRowError records a per-row import error, logging (rather than ignoring)
+// construction or persistence failures.
+func (w *ImportWorker) saveRowError(ctx context.Context, jobID uuid.UUID, rowNum int, field *string, msg string, row map[string]string) {
+	importError, err := importjob.NewImportError(jobID, rowNum, field, msg, stringMapToAnyMap(row))
+	if err != nil {
+		log.Printf("Error building import row error (job %s row %d): %v", jobID, rowNum, err)
+		return
+	}
+	if err := w.importRepo.SaveError(ctx, importError); err != nil {
+		log.Printf("Error saving import row error (job %s row %d): %v", jobID, rowNum, err)
+	}
+}
+
+// failJob marks the import job failed, persists it, notifies subscribers, and
+// returns the failure as an error for the queue-level retry path. Used when a
+// job-level precondition (e.g. a lookup-cache load) fails — proceeding with an
+// empty cache would mis-report every row as "not found".
+func (w *ImportWorker) failJob(ctx context.Context, job *importjob.ImportJob, msg string) error {
+	job.Fail(msg)
+	w.saveJob(ctx, job)
+	w.publishProgress(job, 100)
+	return fmt.Errorf("%s", msg)
+}
+
+// findAllPages exhaustively pages through a FindByWorkspace-style lookup using
+// the shared pagination clamp (MaxPageSize per round trip). The import worker
+// uses it to build lookup caches: a single capped page would silently truncate
+// caches in workspaces with more than shared.MaxPageSize rows (the bug behind
+// spurious "location not found" errors on large imports).
+func findAllPages[T any](ctx context.Context, find func(context.Context, shared.Pagination) ([]T, int, error)) ([]T, error) {
+	var all []T
+	for page := 1; ; page++ {
+		p := shared.Pagination{Page: page, PageSize: shared.MaxPageSize}
+		batch, _, err := find(ctx, p)
+		if err != nil {
+			return nil, err
+		}
+		all = append(all, batch...)
+		if len(batch) < p.Limit() {
+			return all, nil
+		}
 	}
 }
 

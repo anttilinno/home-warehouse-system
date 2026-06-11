@@ -259,7 +259,7 @@ func TestLoanReminderProcessor_WithMockEmailSender_Integration(t *testing.T) {
 		sentTo: &emailsSent,
 	}
 
-	processor := NewLoanReminderProcessor(pool, mockSender)
+	processor := NewLoanReminderProcessor(pool, mockSender, nil)
 
 	// Create a test payload
 	payload := LoanReminderPayload{

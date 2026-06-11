@@ -440,12 +440,111 @@ func conflictResult(index int, entityID *uuid.UUID, serverData *json.RawMessage)
 }
 
 func marshalEntity(entity interface{}) *json.RawMessage {
-	data, err := json.Marshal(entity)
+	data, err := json.Marshal(toResponseDTO(entity))
 	if err != nil {
 		return nil
 	}
 	raw := json.RawMessage(data)
 	return &raw
+}
+
+// toResponseDTO converts a domain entity into its API response DTO before
+// marshaling. Domain entities have only unexported fields, so marshaling them
+// directly produces "{}" — conflict results would ship an empty server_data
+// and the client could not render the server version. Each case mirrors the
+// corresponding domain handler's response builder (e.g. item.toItemResponse),
+// minus handler-only inputs like photo URL generators, which stay zero.
+func toResponseDTO(entity interface{}) interface{} {
+	switch e := entity.(type) {
+	case *item.Item:
+		return item.ItemResponse{
+			ID:                e.ID(),
+			WorkspaceID:       e.WorkspaceID(),
+			SKU:               e.SKU(),
+			Name:              e.Name(),
+			Description:       e.Description(),
+			CategoryID:        e.CategoryID(),
+			Brand:             e.Brand(),
+			Model:             e.Model(),
+			ImageURL:          e.ImageURL(),
+			SerialNumber:      e.SerialNumber(),
+			Manufacturer:      e.Manufacturer(),
+			Barcode:           e.Barcode(),
+			IsInsured:         e.IsInsured(),
+			IsArchived:        e.IsArchived(),
+			LifetimeWarranty:  e.LifetimeWarranty(),
+			NeedsReview:       e.NeedsReview(),
+			WarrantyDetails:   e.WarrantyDetails(),
+			PurchasedFrom:     e.PurchasedFrom(),
+			MinStockLevel:     e.MinStockLevel(),
+			ShortCode:         e.ShortCode(),
+			ObsidianVaultPath: e.ObsidianVaultPath(),
+			ObsidianNotePath:  e.ObsidianNotePath(),
+			ObsidianURI:       e.ObsidianURI(),
+			CreatedAt:         e.CreatedAt(),
+			UpdatedAt:         e.UpdatedAt(),
+		}
+	case *location.Location:
+		return location.LocationResponse{
+			ID:             e.ID(),
+			WorkspaceID:    e.WorkspaceID(),
+			Name:           e.Name(),
+			ParentLocation: e.ParentLocation(),
+			Description:    e.Description(),
+			ShortCode:      e.ShortCode(),
+			IsArchived:     e.IsArchived(),
+			CreatedAt:      e.CreatedAt(),
+			UpdatedAt:      e.UpdatedAt(),
+		}
+	case *container.Container:
+		return container.ContainerResponse{
+			ID:          e.ID(),
+			WorkspaceID: e.WorkspaceID(),
+			Name:        e.Name(),
+			LocationID:  e.LocationID(),
+			Description: e.Description(),
+			Capacity:    e.Capacity(),
+			ShortCode:   e.ShortCode(),
+			IsArchived:  e.IsArchived(),
+			CreatedAt:   e.CreatedAt(),
+			UpdatedAt:   e.UpdatedAt(),
+		}
+	case *category.Category:
+		return category.CategoryResponse{
+			ID:               e.ID(),
+			WorkspaceID:      e.WorkspaceID(),
+			Name:             e.Name(),
+			ParentCategoryID: e.ParentCategoryID(),
+			Description:      e.Description(),
+			IsArchived:       e.IsArchived(),
+			CreatedAt:        e.CreatedAt(),
+			UpdatedAt:        e.UpdatedAt(),
+		}
+	case *label.Label:
+		return label.LabelResponse{
+			ID:          e.ID(),
+			WorkspaceID: e.WorkspaceID(),
+			Name:        e.Name(),
+			Color:       e.Color(),
+			Description: e.Description(),
+			IsArchived:  e.IsArchived(),
+			CreatedAt:   e.CreatedAt(),
+			UpdatedAt:   e.UpdatedAt(),
+		}
+	case *company.Company:
+		return company.CompanyResponse{
+			ID:          e.ID(),
+			WorkspaceID: e.WorkspaceID(),
+			Name:        e.Name(),
+			Website:     e.Website(),
+			Notes:       e.Notes(),
+			IsArchived:  e.IsArchived(),
+			CreatedAt:   e.CreatedAt(),
+			UpdatedAt:   e.UpdatedAt(),
+		}
+	default:
+		return entity
+	}
 }
 
 func stringPtr(s string) *string {

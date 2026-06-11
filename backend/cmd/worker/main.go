@@ -14,32 +14,34 @@ import (
 	"github.com/joho/godotenv"
 	"github.com/redis/go-redis/v9"
 
+	"github.com/antti/home-warehouse/go-backend/internal/config"
 	"github.com/antti/home-warehouse/go-backend/internal/infra/events"
 	"github.com/antti/home-warehouse/go-backend/internal/infra/postgres"
 	"github.com/antti/home-warehouse/go-backend/internal/infra/queue"
 	"github.com/antti/home-warehouse/go-backend/internal/worker"
 )
 
+// drainTimeout bounds how long shutdown waits for an in-flight import to
+// finish. If exceeded, the process exits anyway; the queue's in-flight list
+// recovers the job on the next worker start.
+const drainTimeout = 60 * time.Second
+
 func main() {
 	// Load .env file if it exists (ignore error if not found)
 	_ = godotenv.Load()
 
+	// Load configuration (DATABASE_URL with GO_DATABASE_URL precedence,
+	// REDIS_URL — same single source of truth as cmd/server).
+	cfg := config.Load()
+	if err := cfg.Validate(); err != nil {
+		log.Fatalf("invalid configuration: %v", err)
+	}
+
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	// Load configuration from environment
-	dbURL := os.Getenv("GO_DATABASE_URL")
-	if dbURL == "" {
-		log.Fatal("GO_DATABASE_URL is required")
-	}
-
-	redisURL := os.Getenv("REDIS_URL")
-	if redisURL == "" {
-		redisURL = "redis://localhost:6379"
-	}
-
 	// Initialize database
-	dbPool, err := pgxpool.New(ctx, dbURL)
+	dbPool, err := pgxpool.New(ctx, cfg.DatabaseURL)
 	if err != nil {
 		log.Fatalf("Failed to connect to database: %v", err)
 	}
@@ -51,7 +53,7 @@ func main() {
 	}
 
 	// Initialize Redis
-	redisOpts, err := redis.ParseURL(redisURL)
+	redisOpts, err := redis.ParseURL(cfg.RedisURL)
 	if err != nil {
 		log.Fatalf("Failed to parse Redis URL: %v", err)
 	}
@@ -97,8 +99,12 @@ func main() {
 		}
 	}()
 
-	// Start worker in goroutine
+	// Start worker in goroutine; done closes when Start returns, i.e. after
+	// any in-flight import has drained (Start treats ctx cancel as a drain
+	// signal, not a kill switch).
+	done := make(chan struct{})
 	go func() {
+		defer close(done)
 		log.Println("Worker started, waiting for jobs...")
 		if err := w.Start(ctx); err != nil {
 			log.Printf("Worker error: %v", err)
@@ -107,9 +113,9 @@ func main() {
 
 	// Wait for shutdown signal
 	<-sigChan
-	log.Println("Shutdown signal received, stopping worker...")
+	log.Println("Shutdown signal received, draining worker...")
 
-	// Cancel context to stop worker
+	// Cancel context to stop dequeuing; in-flight job keeps running.
 	cancel()
 
 	// Shutdown health check server
@@ -119,8 +125,13 @@ func main() {
 		log.Printf("Health server shutdown error: %v", err)
 	}
 
-	// Give worker time to finish current job
-	time.Sleep(5 * time.Second)
+	// Wait for the worker loop to drain, bounded by drainTimeout.
+	select {
+	case <-done:
+		log.Println("Worker drained")
+	case <-time.After(drainTimeout):
+		log.Printf("Worker drain timed out after %s; exiting with a job in flight (it will be recovered from the in-flight list on next start)", drainTimeout)
+	}
 
 	log.Println("Worker stopped")
 }

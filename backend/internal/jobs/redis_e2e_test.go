@@ -285,7 +285,7 @@ func TestE2E_LoanReminderProcessing(t *testing.T) {
 	})
 
 	mux := asynq.NewServeMux()
-	processor := NewLoanReminderProcessor(pool, mockSender)
+	processor := NewLoanReminderProcessor(pool, mockSender, nil)
 	mux.HandleFunc(TypeLoanReminder, processor.ProcessTask)
 
 	// Start server in background
@@ -462,7 +462,7 @@ func TestE2E_MultipleTasksInQueue(t *testing.T) {
 	})
 
 	mux := asynq.NewServeMux()
-	processor := NewLoanReminderProcessor(pool, mockSender)
+	processor := NewLoanReminderProcessor(pool, mockSender, nil)
 	mux.HandleFunc(TypeLoanReminder, processor.ProcessTask)
 
 	go func() {

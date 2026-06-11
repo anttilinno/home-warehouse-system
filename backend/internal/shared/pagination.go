@@ -24,12 +24,15 @@ func DefaultPagination() Pagination {
 	}
 }
 
-// Offset calculates the offset for SQL queries.
+// Offset calculates the offset for SQL queries. It uses the same clamped
+// page size as Limit() so the read window [Offset, Offset+Limit) advances
+// consistently page over page — using the raw PageSize here while Limit()
+// clamps would silently skip rows whenever PageSize > MaxPageSize.
 func (p Pagination) Offset() int {
 	if p.Page < 1 {
 		p.Page = 1
 	}
-	return (p.Page - 1) * p.PageSize
+	return (p.Page - 1) * p.Limit()
 }
 
 // Limit returns the page size, ensuring it's within bounds.
