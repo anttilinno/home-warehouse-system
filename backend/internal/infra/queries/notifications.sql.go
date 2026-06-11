@@ -12,6 +12,27 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+const countNotificationsByDedupeKey = `-- name: CountNotificationsByDedupeKey :one
+SELECT COUNT(*) FROM auth.notifications
+WHERE user_id = $1 AND notification_type = $2 AND metadata->>'dedupe_key' = $3::text
+`
+
+type CountNotificationsByDedupeKeyParams struct {
+	UserID           uuid.UUID                `json:"user_id"`
+	NotificationType AuthNotificationTypeEnum `json:"notification_type"`
+	DedupeKey        string                   `json:"dedupe_key"`
+}
+
+// Dedupe check for reminder jobs: a notification with the same dedupe_key in
+// its metadata means this (user, entity, window) combination was already
+// notified and must not be notified again.
+func (q *Queries) CountNotificationsByDedupeKey(ctx context.Context, arg CountNotificationsByDedupeKeyParams) (int64, error) {
+	row := q.db.QueryRow(ctx, countNotificationsByDedupeKey, arg.UserID, arg.NotificationType, arg.DedupeKey)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
 const countNotificationsByUser = `-- name: CountNotificationsByUser :one
 SELECT COUNT(*) FROM auth.notifications
 WHERE user_id = $1

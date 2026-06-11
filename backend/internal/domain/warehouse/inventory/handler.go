@@ -135,6 +135,34 @@ func registerQueryRoutes(api huma.API, svc ServiceInterface) {
 
 		return &GetTotalQuantityOutput{Body: TotalQuantityResponse{ItemID: input.ItemID, TotalQuantity: total}}, nil
 	})
+
+	huma.Get(api, "/inventory/expiring", func(ctx context.Context, input *ListExpiringInput) (*ListExpiringOutput, error) {
+		workspaceID, err := appMiddleware.RequireWorkspaceID(ctx)
+		if err != nil {
+			return nil, huma.Error401Unauthorized(err.Error())
+		}
+
+		entries, err := svc.ListExpiring(ctx, workspaceID, input.Days)
+		if err != nil {
+			return nil, huma.Error500InternalServerError("failed to list expiring inventory")
+		}
+
+		responses := make([]ExpiringInventoryResponse, len(entries))
+		for i, e := range entries {
+			responses[i] = ExpiringInventoryResponse{
+				InventoryID: e.InventoryID,
+				ItemID:      e.ItemID,
+				ItemName:    e.ItemName,
+				Quantity:    e.Quantity,
+				Kind:        e.Kind,
+				Date:        e.Date.Format("2006-01-02"),
+			}
+		}
+
+		return &ListExpiringOutput{
+			Body: ExpiringInventoryListResponse{Items: responses, Total: len(responses)},
+		}, nil
+	})
 }
 
 // registerMutationRoutes registers create/update inventory routes.
@@ -560,4 +588,28 @@ type InventoryResponse struct {
 	IsArchived      bool       `json:"is_archived"`
 	CreatedAt       time.Time  `json:"created_at"`
 	UpdatedAt       time.Time  `json:"updated_at"`
+}
+
+// Types for the expiring inventory endpoint.
+
+type ListExpiringInput struct {
+	Days int `query:"days" default:"30" minimum:"1" maximum:"365" doc:"Window in days: include entries expiring between today and today+days"`
+}
+
+type ListExpiringOutput struct {
+	Body ExpiringInventoryListResponse
+}
+
+type ExpiringInventoryListResponse struct {
+	Items []ExpiringInventoryResponse `json:"items"`
+	Total int                         `json:"total"`
+}
+
+type ExpiringInventoryResponse struct {
+	InventoryID uuid.UUID `json:"inventory_id"`
+	ItemID      uuid.UUID `json:"item_id"`
+	ItemName    string    `json:"item_name"`
+	Quantity    int       `json:"quantity"`
+	Kind        string    `json:"kind" doc:"expiration | warranty"`
+	Date        string    `json:"date" doc:"Expiration or warranty end date (YYYY-MM-DD)"`
 }

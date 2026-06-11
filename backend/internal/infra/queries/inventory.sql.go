@@ -571,6 +571,63 @@ func (q *Queries) ListInventoryByLocation(ctx context.Context, arg ListInventory
 	return items, nil
 }
 
+const listInventoryExpiringSoon = `-- name: ListInventoryExpiringSoon :many
+SELECT inv.id, inv.workspace_id, inv.item_id, inv.quantity,
+       inv.expiration_date, it.name AS item_name
+FROM warehouse.inventory inv
+JOIN warehouse.items it ON inv.item_id = it.id AND it.workspace_id = inv.workspace_id
+WHERE inv.workspace_id = $1
+  AND inv.is_archived = false
+  AND inv.expiration_date IS NOT NULL
+  AND inv.expiration_date >= CURRENT_DATE
+  AND inv.expiration_date <= $2
+ORDER BY inv.expiration_date, inv.id
+`
+
+type ListInventoryExpiringSoonParams struct {
+	WorkspaceID    uuid.UUID   `json:"workspace_id"`
+	ExpirationDate pgtype.Date `json:"expiration_date"`
+}
+
+type ListInventoryExpiringSoonRow struct {
+	ID             uuid.UUID   `json:"id"`
+	WorkspaceID    uuid.UUID   `json:"workspace_id"`
+	ItemID         uuid.UUID   `json:"item_id"`
+	Quantity       int32       `json:"quantity"`
+	ExpirationDate pgtype.Date `json:"expiration_date"`
+	ItemName       string      `json:"item_name"`
+}
+
+// Inventory rows whose expiration_date falls between today and the cutoff
+// date (today + window). Used by the expiry reminder job and the
+// /inventory/expiring endpoint. Workspace-scoped; archived rows excluded.
+func (q *Queries) ListInventoryExpiringSoon(ctx context.Context, arg ListInventoryExpiringSoonParams) ([]ListInventoryExpiringSoonRow, error) {
+	rows, err := q.db.Query(ctx, listInventoryExpiringSoon, arg.WorkspaceID, arg.ExpirationDate)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []ListInventoryExpiringSoonRow{}
+	for rows.Next() {
+		var i ListInventoryExpiringSoonRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.WorkspaceID,
+			&i.ItemID,
+			&i.Quantity,
+			&i.ExpirationDate,
+			&i.ItemName,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listInventoryWithDetails = `-- name: ListInventoryWithDetails :many
 SELECT i.id, i.workspace_id, i.item_id, i.location_id, i.container_id, i.quantity, i.condition, i.status, i.date_acquired, i.purchase_price, i.currency_code, i.warranty_expires, i.expiration_date, i.notes, i.last_used_at, i.is_archived, i.created_at, i.updated_at, it.name as item_name, it.sku, l.name as location_name, c.name as container_name
 FROM warehouse.inventory i
@@ -645,6 +702,64 @@ func (q *Queries) ListInventoryWithDetails(ctx context.Context, arg ListInventor
 			&i.Sku,
 			&i.LocationName,
 			&i.ContainerName,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listWarrantiesExpiringSoon = `-- name: ListWarrantiesExpiringSoon :many
+SELECT inv.id, inv.workspace_id, inv.item_id, inv.quantity,
+       inv.warranty_expires, it.name AS item_name
+FROM warehouse.inventory inv
+JOIN warehouse.items it ON inv.item_id = it.id AND it.workspace_id = inv.workspace_id
+WHERE inv.workspace_id = $1
+  AND inv.is_archived = false
+  AND inv.warranty_expires IS NOT NULL
+  AND inv.warranty_expires >= CURRENT_DATE
+  AND inv.warranty_expires <= $2
+  AND COALESCE(it.lifetime_warranty, false) = false
+ORDER BY inv.warranty_expires, inv.id
+`
+
+type ListWarrantiesExpiringSoonParams struct {
+	WorkspaceID     uuid.UUID   `json:"workspace_id"`
+	WarrantyExpires pgtype.Date `json:"warranty_expires"`
+}
+
+type ListWarrantiesExpiringSoonRow struct {
+	ID              uuid.UUID   `json:"id"`
+	WorkspaceID     uuid.UUID   `json:"workspace_id"`
+	ItemID          uuid.UUID   `json:"item_id"`
+	Quantity        int32       `json:"quantity"`
+	WarrantyExpires pgtype.Date `json:"warranty_expires"`
+	ItemName        string      `json:"item_name"`
+}
+
+// Inventory rows whose warranty_expires falls between today and the cutoff
+// date (today + window). Items flagged lifetime_warranty never expire and are
+// skipped. Workspace-scoped; archived rows excluded.
+func (q *Queries) ListWarrantiesExpiringSoon(ctx context.Context, arg ListWarrantiesExpiringSoonParams) ([]ListWarrantiesExpiringSoonRow, error) {
+	rows, err := q.db.Query(ctx, listWarrantiesExpiringSoon, arg.WorkspaceID, arg.WarrantyExpires)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []ListWarrantiesExpiringSoonRow{}
+	for rows.Next() {
+		var i ListWarrantiesExpiringSoonRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.WorkspaceID,
+			&i.ItemID,
+			&i.Quantity,
+			&i.WarrantyExpires,
+			&i.ItemName,
 		); err != nil {
 			return nil, err
 		}

@@ -90,6 +90,15 @@ func (s *Scheduler) RegisterHandlers(emailSender EmailSender, pushSender *webpus
 	repairProcessor := NewRepairReminderProcessor(s.pool, pushSender)
 	mux.HandleFunc(TypeRepairReminder, repairProcessor.ProcessTask)
 
+	// Expiry reminder processor. The ":schedule" handler is registered
+	// explicitly (asynq's ServeMux is prefix-based, the longer pattern wins)
+	// so the periodic task fans out into per-row reminder tasks.
+	expiryProcessor := NewExpiryReminderProcessor(s.pool, pushSender)
+	mux.HandleFunc(TypeExpiryReminder, expiryProcessor.ProcessTask)
+	mux.HandleFunc(TypeExpiryReminder+":schedule", func(ctx context.Context, t *asynq.Task) error {
+		return NewExpiryReminderScheduler(s.pool, s.client).ScheduleReminders(ctx)
+	})
+
 	// Cleanup processor
 	cleanupProcessor := NewCleanupProcessor(s.pool, cleanupConfig)
 	mux.HandleFunc(TypeCleanupDeletedRecords, cleanupProcessor.ProcessDeletedRecordsCleanup)
@@ -130,6 +139,15 @@ func (s *Scheduler) RegisterScheduledTasks() error {
 		return err
 	}
 	log.Println("Registered scheduled task: repair reminders (daily at 9 AM)")
+
+	// Schedule expiry/warranty reminders check daily at 9 AM
+	_, err = s.scheduler.Register("0 9 * * *", NewScheduleExpiryRemindersTask(),
+		asynq.Queue(QueueDefault),
+	)
+	if err != nil {
+		return err
+	}
+	log.Println("Registered scheduled task: expiry reminders (daily at 9 AM)")
 
 	// Schedule deleted records cleanup weekly on Sunday at 3 AM
 	_, err = s.scheduler.Register("0 3 * * 0", NewCleanupDeletedRecordsTask(),
@@ -197,5 +215,12 @@ func (s *Scheduler) EnqueueLoanReminders() error {
 // This is useful for testing or manual triggering.
 func (s *Scheduler) EnqueueRepairReminders() error {
 	scheduler := NewRepairReminderScheduler(s.pool, s.client)
+	return scheduler.ScheduleReminders(context.Background())
+}
+
+// EnqueueExpiryReminders manually triggers expiry reminder scheduling.
+// This is useful for testing or manual triggering.
+func (s *Scheduler) EnqueueExpiryReminders() error {
+	scheduler := NewExpiryReminderScheduler(s.pool, s.client)
 	return scheduler.ScheduleReminders(context.Background())
 }

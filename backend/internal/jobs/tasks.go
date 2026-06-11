@@ -8,6 +8,10 @@ const (
 	// TypeRepairReminder is the task type for sending repair reminder notifications.
 	TypeRepairReminder = "repair:reminder"
 
+	// TypeExpiryReminder is the task type for sending inventory expiration and
+	// warranty expiry notifications.
+	TypeExpiryReminder = "expiry:reminder"
+
 	// TypeCleanupDeletedRecords is the task type for cleaning up old deleted records.
 	TypeCleanupDeletedRecords = "cleanup:deleted_records"
 

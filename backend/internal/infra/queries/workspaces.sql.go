@@ -94,6 +94,31 @@ func (q *Queries) GetWorkspaceBySlug(ctx context.Context, slug string) (AuthWork
 	return i, err
 }
 
+const listAllWorkspaceIDs = `-- name: ListAllWorkspaceIDs :many
+SELECT id FROM auth.workspaces ORDER BY id
+`
+
+// Used by background reminder jobs to iterate workspaces.
+func (q *Queries) ListAllWorkspaceIDs(ctx context.Context) ([]uuid.UUID, error) {
+	rows, err := q.db.Query(ctx, listAllWorkspaceIDs)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []uuid.UUID{}
+	for rows.Next() {
+		var id uuid.UUID
+		if err := rows.Scan(&id); err != nil {
+			return nil, err
+		}
+		items = append(items, id)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listWorkspacesByUser = `-- name: ListWorkspacesByUser :many
 SELECT w.id, w.name, w.slug, w.description, w.is_personal, w.created_at, w.updated_at, wm.role FROM auth.workspaces w
 JOIN auth.workspace_members wm ON w.id = wm.workspace_id

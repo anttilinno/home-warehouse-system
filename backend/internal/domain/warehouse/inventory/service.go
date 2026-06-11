@@ -31,6 +31,7 @@ type ServiceInterface interface {
 	ListByContainer(ctx context.Context, workspaceID, containerID uuid.UUID) ([]*Inventory, error)
 	GetAvailable(ctx context.Context, workspaceID, itemID uuid.UUID) ([]*Inventory, error)
 	GetTotalQuantity(ctx context.Context, workspaceID, itemID uuid.UUID) (int, error)
+	ListExpiring(ctx context.Context, workspaceID uuid.UUID, withinDays int) ([]ExpiringInventory, error)
 }
 
 type Service struct {
@@ -286,4 +287,11 @@ func (s *Service) GetAvailable(ctx context.Context, workspaceID, itemID uuid.UUI
 
 func (s *Service) GetTotalQuantity(ctx context.Context, workspaceID, itemID uuid.UUID) (int, error) {
 	return s.repo.GetTotalQuantity(ctx, workspaceID, itemID)
+}
+
+// ListExpiring returns inventory entries whose expiration date or warranty
+// end date falls within the next withinDays days (lifetime-warranty items
+// excluded from warranty entries).
+func (s *Service) ListExpiring(ctx context.Context, workspaceID uuid.UUID, withinDays int) ([]ExpiringInventory, error) {
+	return s.repo.FindExpiring(ctx, workspaceID, withinDays)
 }

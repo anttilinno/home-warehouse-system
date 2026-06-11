@@ -58,6 +58,14 @@ func (m *MockRepository) FindByContainer(ctx context.Context, workspaceID, conta
 	return args.Get(0).([]*Inventory), args.Error(1)
 }
 
+func (m *MockRepository) FindExpiring(ctx context.Context, workspaceID uuid.UUID, withinDays int) ([]ExpiringInventory, error) {
+	args := m.Called(ctx, workspaceID, withinDays)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).([]ExpiringInventory), args.Error(1)
+}
+
 func (m *MockRepository) FindAvailable(ctx context.Context, workspaceID, itemID uuid.UUID) ([]*Inventory, error) {
 	args := m.Called(ctx, workspaceID, itemID)
 	if args.Get(0) == nil {

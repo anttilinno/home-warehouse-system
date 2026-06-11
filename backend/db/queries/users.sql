@@ -62,3 +62,6 @@ UPDATE auth.users
 SET email = $2, updated_at = now()
 WHERE id = $1
 RETURNING id, email, full_name, password_hash, is_active, is_superuser, date_format, language, theme, avatar_path, created_at, updated_at;
+
+-- name: GetUserNotificationPreferences :one
+SELECT notification_preferences FROM auth.users WHERE id = $1;

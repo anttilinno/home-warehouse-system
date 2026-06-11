@@ -142,6 +142,14 @@
       "warning": "Hoiatus",
       "urgent": "Kiire"
     },
+    "expiringSoon": {
+      "title": "Peagi aegumas",
+      "description": "Aegumiskuupäevad ja garantiid, mis lõpevad {days} päeva jooksul",
+      "empty": "Midagi ei aegu peagi",
+      "expires": "Aegub",
+      "warranty": "Garantii",
+      "more": "+{count} veel"
+    },
     "activity": {
       "title": "Viimane tegevus",
       "description": "Viimased muudatused inventuuris"
@@ -811,6 +819,8 @@
         "loansDescription": "Laenutuse meeldetuletused, hilinenud teated ja tagastused",
         "inventory": "Inventar",
         "inventoryDescription": "Madala laoseisu hoiatused ja remondi meeldetuletused",
+        "expiry_alerts": "Aegumine ja garantii",
+        "expiry_alertsDescription": "Aegumiskuupäeva ja garantii lõppemise teavitused",
         "workspace": "Tooruum",
         "workspaceDescription": "Kutsed ja liikmete tegevus",
         "system": "Susteem",
@@ -1263,7 +1273,9 @@
       "importDialogDescription": "Laadi üles CSV-fail esemete importimiseks. Fail peaks sisaldama tootekoodi, nime ja muude andmete veerge."
     },
     "detail": {
-      "deletedNotice": "See ese on kustutatud"
+      "deletedNotice": "See ese on kustutatud",
+      "expiringSoon": "Peagi aegumas",
+      "warrantyExpiring": "Garantii lõppemas"
     }
   },
   "inventory": {

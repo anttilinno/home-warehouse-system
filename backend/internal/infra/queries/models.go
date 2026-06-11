@@ -25,6 +25,8 @@ const (
 	AuthNotificationTypeEnumWORKSPACEINVITE AuthNotificationTypeEnum = "WORKSPACE_INVITE"
 	AuthNotificationTypeEnumMEMBERJOINED    AuthNotificationTypeEnum = "MEMBER_JOINED"
 	AuthNotificationTypeEnumSYSTEM          AuthNotificationTypeEnum = "SYSTEM"
+	AuthNotificationTypeEnumEXPIRYALERT     AuthNotificationTypeEnum = "EXPIRY_ALERT"
+	AuthNotificationTypeEnumWARRANTYALERT   AuthNotificationTypeEnum = "WARRANTY_ALERT"
 )
 
 func (e *AuthNotificationTypeEnum) Scan(src interface{}) error {

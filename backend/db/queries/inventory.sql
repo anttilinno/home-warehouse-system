@@ -117,3 +117,34 @@ LEFT JOIN warehouse.categories c ON i.category_id = c.id
 WHERE i.workspace_id = $1 AND i.is_archived = false
 GROUP BY i.id, i.name, i.sku, i.min_stock_level, c.id, c.name
 HAVING COALESCE(SUM(inv.quantity), 0) = 0;
+
+-- name: ListInventoryExpiringSoon :many
+-- Inventory rows whose expiration_date falls between today and the cutoff
+-- date (today + window). Used by the expiry reminder job and the
+-- /inventory/expiring endpoint. Workspace-scoped; archived rows excluded.
+SELECT inv.id, inv.workspace_id, inv.item_id, inv.quantity,
+       inv.expiration_date, it.name AS item_name
+FROM warehouse.inventory inv
+JOIN warehouse.items it ON inv.item_id = it.id AND it.workspace_id = inv.workspace_id
+WHERE inv.workspace_id = $1
+  AND inv.is_archived = false
+  AND inv.expiration_date IS NOT NULL
+  AND inv.expiration_date >= CURRENT_DATE
+  AND inv.expiration_date <= $2
+ORDER BY inv.expiration_date, inv.id;
+
+-- name: ListWarrantiesExpiringSoon :many
+-- Inventory rows whose warranty_expires falls between today and the cutoff
+-- date (today + window). Items flagged lifetime_warranty never expire and are
+-- skipped. Workspace-scoped; archived rows excluded.
+SELECT inv.id, inv.workspace_id, inv.item_id, inv.quantity,
+       inv.warranty_expires, it.name AS item_name
+FROM warehouse.inventory inv
+JOIN warehouse.items it ON inv.item_id = it.id AND it.workspace_id = inv.workspace_id
+WHERE inv.workspace_id = $1
+  AND inv.is_archived = false
+  AND inv.warranty_expires IS NOT NULL
+  AND inv.warranty_expires >= CURRENT_DATE
+  AND inv.warranty_expires <= $2
+  AND COALESCE(it.lifetime_warranty, false) = false
+ORDER BY inv.warranty_expires, inv.id;

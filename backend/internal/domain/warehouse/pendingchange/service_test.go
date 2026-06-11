@@ -395,6 +395,9 @@ func (m *MockInventoryService) GetAvailable(ctx context.Context, workspaceID, it
 func (m *MockInventoryService) GetTotalQuantity(ctx context.Context, workspaceID, itemID uuid.UUID) (int, error) {
 	return 0, nil
 }
+func (m *MockInventoryService) ListExpiring(ctx context.Context, workspaceID uuid.UUID, withinDays int) ([]inventory.ExpiringInventory, error) {
+	return nil, nil
+}
 
 type MockBorrowerService struct{ mock.Mock }
 
@@ -530,6 +533,9 @@ func (m *MockInventoryRepository) FindByContainer(ctx context.Context, workspace
 	return nil, nil
 }
 func (m *MockInventoryRepository) FindAvailable(ctx context.Context, workspaceID, itemID uuid.UUID) ([]*inventory.Inventory, error) {
+	return nil, nil
+}
+func (m *MockInventoryRepository) FindExpiring(ctx context.Context, workspaceID uuid.UUID, withinDays int) ([]inventory.ExpiringInventory, error) {
 	return nil, nil
 }
 func (m *MockInventoryRepository) GetTotalQuantity(ctx context.Context, workspaceID, itemID uuid.UUID) (int, error) {

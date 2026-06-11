@@ -184,6 +184,17 @@ func (q *Queries) GetUserByID(ctx context.Context, id uuid.UUID) (GetUserByIDRow
 	return i, err
 }
 
+const getUserNotificationPreferences = `-- name: GetUserNotificationPreferences :one
+SELECT notification_preferences FROM auth.users WHERE id = $1
+`
+
+func (q *Queries) GetUserNotificationPreferences(ctx context.Context, id uuid.UUID) ([]byte, error) {
+	row := q.db.QueryRow(ctx, getUserNotificationPreferences, id)
+	var notification_preferences []byte
+	err := row.Scan(&notification_preferences)
+	return notification_preferences, err
+}
+
 const listUsers = `-- name: ListUsers :many
 SELECT id, email, full_name, password_hash, is_active, is_superuser, date_format, language, theme, avatar_path, created_at, updated_at
 FROM auth.users

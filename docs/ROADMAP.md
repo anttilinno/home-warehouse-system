@@ -262,17 +262,17 @@ only loans and repairs. Food/medicine/batteries expire and warranties lapse
 silently. Cheapest high-value win in the backlog: one more asynq job reusing the
 existing reminder + notification + web-push infrastructure.
 
-- [ ] **Queries** — `ListInventoryExpiringSoon` / `ListWarrantiesExpiringSoon`
+- [x] **Queries** — `ListInventoryExpiringSoon` / `ListWarrantiesExpiringSoon`
   (windows: 30/7/1 days; skip `lifetime_warranty = true`; workspace-scoped)
-- [ ] **Asynq job** — `expiry_reminders.go` following `internal/jobs/loan_reminders.go`
+- [x] **Asynq job** — `expiry_reminders.go` following `internal/jobs/loan_reminders.go`
   pattern (scheduler entry, MaxRetry/Timeout, per-workspace iteration)
-- [ ] **Dedupe** — one notification per inventory row per window (job-state row or
+- [x] **Dedupe** — one notification per inventory row per window (job-state row or
   notification-exists check), same approach loan reminders use
-- [ ] **Notifications** — in-app + web push via existing senders; add
+- [x] **Notifications** — in-app + web push via existing senders; add
   `expiry_alerts` toggle to `users.notification_preferences` jsonb + settings UI
-- [ ] **Frontend** — "Expiring soon" dashboard widget + inventory filter
+- [x] **Frontend** — "Expiring soon" dashboard widget + inventory filter
   (`expiring_within=30d`), badge on item detail; i18n keys (en/et/ru)
-- [ ] **Tests** — job unit tests with table-driven windows; integration test for the
+- [x] **Tests** — job unit tests with table-driven windows; integration test for the
   expiring-soon queries
 
 ## Recurring Maintenance Schedules

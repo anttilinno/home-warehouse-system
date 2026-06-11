@@ -88,3 +88,19 @@ export interface TotalQuantityResponse {
   item_id: string;
   total_quantity: number;
 }
+
+export type ExpiringKind = "expiration" | "warranty";
+
+export interface ExpiringInventory {
+  inventory_id: string;
+  item_id: string;
+  item_name: string;
+  quantity: number;
+  kind: ExpiringKind;
+  date: string; // YYYY-MM-DD
+}
+
+export interface ExpiringInventoryListResponse {
+  items: ExpiringInventory[];
+  total: number;
+}

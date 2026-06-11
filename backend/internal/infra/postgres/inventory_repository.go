@@ -3,6 +3,7 @@ package postgres
 import (
 	"context"
 	"errors"
+	"sort"
 	"time"
 
 	"github.com/google/uuid"
@@ -301,4 +302,62 @@ func (r *InventoryRepository) rowToInventory(row queries.WarehouseInventory) *in
 		row.CreatedAt.Time,
 		row.UpdatedAt.Time,
 	)
+}
+
+// FindExpiring returns inventory entries whose expiration_date and/or
+// warranty_expires falls between today and today+withinDays. Warranty entries
+// for items with lifetime_warranty are excluded by the query. Results are
+// merged across both kinds and sorted by date ascending.
+func (r *InventoryRepository) FindExpiring(ctx context.Context, workspaceID uuid.UUID, withinDays int) ([]inventory.ExpiringInventory, error) {
+	cutoff := pgtype.Date{Time: time.Now().AddDate(0, 0, withinDays), Valid: true}
+
+	expiring, err := r.q(ctx).ListInventoryExpiringSoon(ctx, queries.ListInventoryExpiringSoonParams{
+		WorkspaceID:    workspaceID,
+		ExpirationDate: cutoff,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	warranties, err := r.q(ctx).ListWarrantiesExpiringSoon(ctx, queries.ListWarrantiesExpiringSoonParams{
+		WorkspaceID:     workspaceID,
+		WarrantyExpires: cutoff,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	results := make([]inventory.ExpiringInventory, 0, len(expiring)+len(warranties))
+	for _, row := range expiring {
+		if !row.ExpirationDate.Valid {
+			continue
+		}
+		results = append(results, inventory.ExpiringInventory{
+			InventoryID: row.ID,
+			ItemID:      row.ItemID,
+			ItemName:    row.ItemName,
+			Quantity:    int(row.Quantity),
+			Kind:        inventory.ExpiringKindExpiration,
+			Date:        row.ExpirationDate.Time,
+		})
+	}
+	for _, row := range warranties {
+		if !row.WarrantyExpires.Valid {
+			continue
+		}
+		results = append(results, inventory.ExpiringInventory{
+			InventoryID: row.ID,
+			ItemID:      row.ItemID,
+			ItemName:    row.ItemName,
+			Quantity:    int(row.Quantity),
+			Kind:        inventory.ExpiringKindWarranty,
+			Date:        row.WarrantyExpires.Time,
+		})
+	}
+
+	sort.Slice(results, func(i, j int) bool {
+		return results[i].Date.Before(results[j].Date)
+	})
+
+	return results, nil
 }

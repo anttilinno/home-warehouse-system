@@ -104,6 +104,14 @@ func (m *MockService) GetTotalQuantity(ctx context.Context, workspaceID, itemID 
 	return args.Int(0), args.Error(1)
 }
 
+func (m *MockService) ListExpiring(ctx context.Context, workspaceID uuid.UUID, withinDays int) ([]inventory.ExpiringInventory, error) {
+	args := m.Called(ctx, workspaceID, withinDays)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).([]inventory.ExpiringInventory), args.Error(1)
+}
+
 func (m *MockService) List(ctx context.Context, workspaceID uuid.UUID, pagination shared.Pagination) ([]*inventory.Inventory, int, error) {
 	args := m.Called(ctx, workspaceID, pagination)
 	return args.Get(0).([]*inventory.Inventory), args.Int(1), args.Error(2)

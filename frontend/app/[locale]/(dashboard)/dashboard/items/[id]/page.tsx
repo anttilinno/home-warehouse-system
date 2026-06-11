@@ -18,8 +18,10 @@ import { useSSE, type SSEEvent } from "@/lib/hooks/use-sse";
 import { useItemPhotos } from "@/lib/hooks/use-item-photos";
 import { useDateFormat } from "@/lib/hooks/use-date-format";
 import { useNumberFormat } from "@/lib/hooks/use-number-format";
-import { itemsApi } from "@/lib/api";
+import { itemsApi, inventoryApi } from "@/lib/api";
 import type { Item } from "@/lib/types/items";
+import type { Inventory } from "@/lib/types/inventory";
+import { DEFAULT_EXPIRY_WINDOW_DAYS, isExpiringWithin } from "@/lib/expiry";
 import type { ItemPhoto } from "@/lib/types/item-photo";
 import { cn } from "@/lib/utils";
 
@@ -34,6 +36,7 @@ export default function ItemDetailPage() {
   const itemId = params.id as string;
 
   const [item, setItem] = useState<Item | null>(null);
+  const [inventoryEntries, setInventoryEntries] = useState<Inventory[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showUploadSection, setShowUploadSection] = useState(false);
   const [isMarkingReviewed, setIsMarkingReviewed] = useState(false);
@@ -68,6 +71,15 @@ export default function ItemDetailPage() {
 
   useEffect(() => {
     loadItem();
+  }, [itemId, workspaceId]);
+
+  // Load inventory entries (for expiry badges and maintenance schedules)
+  useEffect(() => {
+    if (!itemId || !workspaceId) return;
+    inventoryApi
+      .listByItem(workspaceId, itemId)
+      .then(setInventoryEntries)
+      .catch(() => setInventoryEntries([]));
   }, [itemId, workspaceId]);
 
   // Subscribe to SSE events for real-time updates
@@ -160,6 +172,13 @@ export default function ItemDetailPage() {
     return null;
   }
 
+  const hasExpiringStock = inventoryEntries.some((inv) =>
+    isExpiringWithin(inv.expiration_date, DEFAULT_EXPIRY_WINDOW_DAYS)
+  );
+  const hasExpiringWarranty =
+    !item.lifetime_warranty &&
+    inventoryEntries.some((inv) => isExpiringWithin(inv.warranty_expires, DEFAULT_EXPIRY_WINDOW_DAYS));
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -178,6 +197,16 @@ export default function ItemDetailPage() {
               <h1 className="text-2xl sm:text-3xl font-bold tracking-tight truncate">{item.name}</h1>
               {item.is_archived && (
                 <Badge variant="secondary" className="shrink-0">Archived</Badge>
+              )}
+              {hasExpiringStock && (
+                <Badge className="shrink-0 bg-amber-100 text-amber-900 dark:bg-amber-900/40 dark:text-amber-200 hover:bg-amber-100">
+                  {t("detail.expiringSoon")}
+                </Badge>
+              )}
+              {hasExpiringWarranty && (
+                <Badge className="shrink-0 bg-orange-100 text-orange-900 dark:bg-orange-900/40 dark:text-orange-200 hover:bg-orange-100">
+                  {t("detail.warrantyExpiring")}
+                </Badge>
               )}
             </div>
             <p className="text-muted-foreground text-sm truncate">

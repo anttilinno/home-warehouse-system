@@ -34,3 +34,10 @@ WHERE user_id = $1 AND is_read = false;
 -- name: CountNotificationsByUser :one
 SELECT COUNT(*) FROM auth.notifications
 WHERE user_id = $1;
+
+-- name: CountNotificationsByDedupeKey :one
+-- Dedupe check for reminder jobs: a notification with the same dedupe_key in
+-- its metadata means this (user, entity, window) combination was already
+-- notified and must not be notified again.
+SELECT COUNT(*) FROM auth.notifications
+WHERE user_id = $1 AND notification_type = $2 AND metadata->>'dedupe_key' = @dedupe_key::text;

@@ -8,6 +8,7 @@ import type {
   InventoryQuantityUpdate,
   InventoryMove,
   TotalQuantityResponse,
+  ExpiringInventoryListResponse,
 } from "../types/inventory";
 
 export const inventoryApi = {
@@ -67,6 +68,15 @@ export const inventoryApi = {
    */
   getTotalQuantity: async (workspaceId: string, itemId: string): Promise<TotalQuantityResponse> => {
     return apiClient.get<TotalQuantityResponse>(`/workspaces/${workspaceId}/inventory/total-quantity/${itemId}`);
+  },
+
+  /**
+   * List inventory expiring (expiration date or warranty end) within N days
+   */
+  listExpiring: async (workspaceId: string, days = 30): Promise<ExpiringInventoryListResponse> => {
+    return apiClient.get<ExpiringInventoryListResponse>(
+      `/workspaces/${workspaceId}/inventory/expiring?days=${days}`
+    );
   },
 
   /**

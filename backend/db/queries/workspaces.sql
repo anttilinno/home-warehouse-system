@@ -26,3 +26,7 @@ ORDER BY w.name;
 
 -- name: WorkspaceExistsBySlug :one
 SELECT EXISTS(SELECT 1 FROM auth.workspaces WHERE slug = $1);
+
+-- name: ListAllWorkspaceIDs :many
+-- Used by background reminder jobs to iterate workspaces.
+SELECT id FROM auth.workspaces ORDER BY id;

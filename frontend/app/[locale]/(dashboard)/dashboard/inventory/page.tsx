@@ -85,6 +85,7 @@ import { useTableSort, type SortDirection } from "@/lib/hooks/use-table-sort";
 import { useInfiniteScroll } from "@/lib/hooks/use-infinite-scroll";
 import { useBulkSelection } from "@/lib/hooks/use-bulk-selection";
 import { useFilters } from "@/lib/hooks/use-filters";
+import { DEFAULT_EXPIRY_WINDOW_DAYS, isExpiringWithin } from "@/lib/expiry";
 import { useKeyboardShortcuts } from "@/lib/hooks/use-keyboard-shortcuts";
 import { useDebouncedValue } from "@/lib/hooks/use-debounced-value";
 import { useSSE, type SSEEvent } from "@/lib/hooks/use-sse";
@@ -172,6 +173,18 @@ function InventoryFilterControls({
   const [selectedStatuses, setSelectedStatuses] = useState<InventoryStatus[]>([]);
   const [minQuantity, setMinQuantity] = useState<string>("");
   const [maxQuantity, setMaxQuantity] = useState<string>("");
+  const [expiringOnly, setExpiringOnly] = useState<boolean>(!!getFilter("expiring"));
+
+  // Toggle "expiring within 30 days" filter
+  const toggleExpiring = (checked: boolean) => {
+    setExpiringOnly(checked);
+    addFilter({
+      key: "expiring",
+      label: "Expiring soon",
+      value: checked ? ["30d"] : [],
+      type: "multi-select",
+    });
+  };
 
   // Toggle location selection
   const toggleLocation = (locationId: string) => {
@@ -410,6 +423,21 @@ function InventoryFilterControls({
             onBlur={updateQuantityRange}
             className="w-24"
           />
+        </div>
+      </div>
+
+      {/* Expiring soon (expiration date or warranty within 30 days) */}
+      <div className="space-y-2">
+        <Label className="text-sm font-medium">Expiry</Label>
+        <div className="flex items-center space-x-2">
+          <Checkbox
+            id="filter-expiring"
+            checked={expiringOnly}
+            onCheckedChange={(checked) => toggleExpiring(checked === true)}
+          />
+          <label htmlFor="filter-expiring" className="flex-1 cursor-pointer text-sm">
+            Expiring within 30 days
+          </label>
         </div>
       </div>
     </div>
@@ -822,6 +850,17 @@ export default function InventoryPage() {
       const statusesFilter = getFilter("statuses");
       if (statusesFilter && Array.isArray(statusesFilter.value)) {
         if (!statusesFilter.value.includes(inventory.status)) {
+          return false;
+        }
+      }
+
+      // Filter by "expiring soon" (expiration date or warranty end within 30 days)
+      const expiringFilter = getFilter("expiring");
+      if (expiringFilter && Array.isArray(expiringFilter.value) && expiringFilter.value.length > 0) {
+        if (
+          !isExpiringWithin(inventory.expiration_date, DEFAULT_EXPIRY_WINDOW_DAYS) &&
+          !isExpiringWithin(inventory.warranty_expires, DEFAULT_EXPIRY_WINDOW_DAYS)
+        ) {
           return false;
         }
       }

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
-import { Bell, Package, Users, Shield, Megaphone } from "lucide-react";
+import { Bell, Package, Users, Shield, Megaphone, CalendarClock } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import {
@@ -21,6 +21,7 @@ import { cn } from "@/lib/utils";
 const CATEGORIES = [
   { key: "loans", icon: Megaphone },
   { key: "inventory", icon: Package },
+  { key: "expiry_alerts", icon: CalendarClock },
   { key: "workspace", icon: Users },
   { key: "system", icon: Shield },
 ] as const;

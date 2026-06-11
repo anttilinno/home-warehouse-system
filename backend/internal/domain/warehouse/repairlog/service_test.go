@@ -120,6 +120,14 @@ func (m *MockInventoryRepository) FindAvailable(ctx context.Context, workspaceID
 	return args.Get(0).([]*inventory.Inventory), args.Error(1)
 }
 
+func (m *MockInventoryRepository) FindExpiring(ctx context.Context, workspaceID uuid.UUID, withinDays int) ([]inventory.ExpiringInventory, error) {
+	args := m.Called(ctx, workspaceID, withinDays)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).([]inventory.ExpiringInventory), args.Error(1)
+}
+
 func (m *MockInventoryRepository) GetTotalQuantity(ctx context.Context, workspaceID, itemID uuid.UUID) (int, error) {
 	args := m.Called(ctx, workspaceID, itemID)
 	return args.Int(0), args.Error(1)
