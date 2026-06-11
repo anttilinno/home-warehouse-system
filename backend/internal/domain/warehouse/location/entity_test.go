@@ -14,12 +14,12 @@ func TestNewLocation(t *testing.T) {
 	workspaceID := uuid.New()
 
 	tests := []struct {
-		name       string
-		wsID       uuid.UUID
-		locName    string
-		shortCode  string
-		wantErr    bool
-		errMsg     string
+		name      string
+		wsID      uuid.UUID
+		locName   string
+		shortCode string
+		wantErr   bool
+		errMsg    string
 	}{
 		{
 			name:      "valid location with minimal fields",

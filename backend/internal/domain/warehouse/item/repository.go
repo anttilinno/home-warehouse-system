@@ -33,7 +33,7 @@ type Repository interface {
 	FindNeedingReview(ctx context.Context, workspaceID uuid.UUID, pagination shared.Pagination) ([]*Item, int, error)
 	FindByCategory(ctx context.Context, workspaceID, categoryID uuid.UUID, pagination shared.Pagination) ([]*Item, error)
 	Search(ctx context.Context, workspaceID uuid.UUID, query string, limit int) ([]*Item, error)
-	Delete(ctx context.Context, id uuid.UUID) error
+	Delete(ctx context.Context, id, workspaceID uuid.UUID) error
 	SKUExists(ctx context.Context, workspaceID uuid.UUID, sku string) (bool, error)
 	ShortCodeExists(ctx context.Context, workspaceID uuid.UUID, shortCode string) (bool, error)
 

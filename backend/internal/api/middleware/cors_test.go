@@ -61,45 +61,15 @@ func TestCORS_AllowedOrigin_Localhost127(t *testing.T) {
 	assert.Equal(t, "http://127.0.0.1:3000", rec.Header().Get("Access-Control-Allow-Origin"))
 }
 
-func TestCORS_PrivateNetworkOrigin_192168(t *testing.T) {
-	handler := CORS(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusOK)
-	}))
-
-	req := httptest.NewRequest(http.MethodGet, "/test", nil)
-	req.Header.Set("Origin", "http://192.168.1.100:3000")
-	rec := httptest.NewRecorder()
-
-	handler.ServeHTTP(rec, req)
-
-	assert.Equal(t, http.StatusOK, rec.Code)
-	assert.Equal(t, "http://192.168.1.100:3000", rec.Header().Get("Access-Control-Allow-Origin"))
-	assert.Equal(t, "true", rec.Header().Get("Access-Control-Allow-Credentials"))
-}
-
-func TestCORS_PrivateNetworkOrigin_10(t *testing.T) {
-	handler := CORS(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusOK)
-	}))
-
-	req := httptest.NewRequest(http.MethodGet, "/test", nil)
-	req.Header.Set("Origin", "http://10.0.0.5:3000")
-	rec := httptest.NewRecorder()
-
-	handler.ServeHTTP(rec, req)
-
-	assert.Equal(t, http.StatusOK, rec.Code)
-	assert.Equal(t, "http://10.0.0.5:3000", rec.Header().Get("Access-Control-Allow-Origin"))
-}
-
-func TestCORS_PrivateNetworkOrigin_172Range(t *testing.T) {
+// Private-network origins are no longer auto-allowed: with credentials
+// enabled, reflecting arbitrary LAN origins is a credentialed-CSRF hole.
+// They must be explicitly allowlisted via CORS_ALLOWED_ORIGINS.
+func TestCORS_PrivateNetworkOrigin_NotAutoAllowed(t *testing.T) {
 	testCases := []string{
+		"http://192.168.1.100:3000",
+		"http://10.0.0.5:3000",
 		"http://172.16.0.1:3000",
-		"http://172.17.0.1:3000",
-		"http://172.18.0.1:3000",
-		"http://172.19.0.1:3000",
 		"http://172.20.0.1:3000",
-		"http://172.30.0.1:3000",
 		"http://172.31.0.1:3000",
 	}
 
@@ -116,9 +86,27 @@ func TestCORS_PrivateNetworkOrigin_172Range(t *testing.T) {
 			handler.ServeHTTP(rec, req)
 
 			assert.Equal(t, http.StatusOK, rec.Code)
-			assert.Equal(t, origin, rec.Header().Get("Access-Control-Allow-Origin"))
+			assert.Empty(t, rec.Header().Get("Access-Control-Allow-Origin"))
+			assert.Empty(t, rec.Header().Get("Access-Control-Allow-Credentials"))
 		})
 	}
+}
+
+func TestCORS_PrivateNetworkOrigin_AllowedWhenExplicitlyListed(t *testing.T) {
+	t.Setenv("CORS_ALLOWED_ORIGINS", "http://192.168.1.50:3000")
+
+	handler := CORS(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	}))
+
+	req := httptest.NewRequest(http.MethodGet, "/test", nil)
+	req.Header.Set("Origin", "http://192.168.1.50:3000")
+	rec := httptest.NewRecorder()
+
+	handler.ServeHTTP(rec, req)
+
+	assert.Equal(t, "http://192.168.1.50:3000", rec.Header().Get("Access-Control-Allow-Origin"))
+	assert.Equal(t, "true", rec.Header().Get("Access-Control-Allow-Credentials"))
 }
 
 func TestCORS_DisallowedOrigin_ExternalDomain(t *testing.T) {
@@ -324,7 +312,7 @@ func TestCORS_CredentialsHeader_WithAllowedOrigin(t *testing.T) {
 	assert.Equal(t, "true", rec.Header().Get("Access-Control-Allow-Credentials"))
 }
 
-func TestCORS_CredentialsHeader_WithPrivateNetworkOrigin(t *testing.T) {
+func TestCORS_CredentialsHeader_NotSetForPrivateNetworkOrigin(t *testing.T) {
 	handler := CORS(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 	}))
@@ -335,7 +323,7 @@ func TestCORS_CredentialsHeader_WithPrivateNetworkOrigin(t *testing.T) {
 
 	handler.ServeHTTP(rec, req)
 
-	assert.Equal(t, "true", rec.Header().Get("Access-Control-Allow-Credentials"))
+	assert.Empty(t, rec.Header().Get("Access-Control-Allow-Credentials"))
 }
 
 // =============================================================================

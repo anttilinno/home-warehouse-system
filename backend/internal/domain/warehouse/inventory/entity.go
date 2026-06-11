@@ -150,23 +150,23 @@ func Reconstruct(
 }
 
 // Getters
-func (inv *Inventory) ID() uuid.UUID             { return inv.id }
-func (inv *Inventory) WorkspaceID() uuid.UUID    { return inv.workspaceID }
-func (inv *Inventory) ItemID() uuid.UUID         { return inv.itemID }
-func (inv *Inventory) LocationID() uuid.UUID     { return inv.locationID }
-func (inv *Inventory) ContainerID() *uuid.UUID   { return inv.containerID }
-func (inv *Inventory) Quantity() int             { return inv.quantity }
-func (inv *Inventory) Condition() Condition      { return inv.condition }
-func (inv *Inventory) Status() Status            { return inv.status }
-func (inv *Inventory) DateAcquired() *time.Time  { return inv.dateAcquired }
-func (inv *Inventory) PurchasePrice() *int       { return inv.purchasePrice }
-func (inv *Inventory) CurrencyCode() *string     { return inv.currencyCode }
+func (inv *Inventory) ID() uuid.UUID               { return inv.id }
+func (inv *Inventory) WorkspaceID() uuid.UUID      { return inv.workspaceID }
+func (inv *Inventory) ItemID() uuid.UUID           { return inv.itemID }
+func (inv *Inventory) LocationID() uuid.UUID       { return inv.locationID }
+func (inv *Inventory) ContainerID() *uuid.UUID     { return inv.containerID }
+func (inv *Inventory) Quantity() int               { return inv.quantity }
+func (inv *Inventory) Condition() Condition        { return inv.condition }
+func (inv *Inventory) Status() Status              { return inv.status }
+func (inv *Inventory) DateAcquired() *time.Time    { return inv.dateAcquired }
+func (inv *Inventory) PurchasePrice() *int         { return inv.purchasePrice }
+func (inv *Inventory) CurrencyCode() *string       { return inv.currencyCode }
 func (inv *Inventory) WarrantyExpires() *time.Time { return inv.warrantyExpires }
 func (inv *Inventory) ExpirationDate() *time.Time  { return inv.expirationDate }
-func (inv *Inventory) Notes() *string            { return inv.notes }
-func (inv *Inventory) IsArchived() bool          { return inv.isArchived }
-func (inv *Inventory) CreatedAt() time.Time      { return inv.createdAt }
-func (inv *Inventory) UpdatedAt() time.Time      { return inv.updatedAt }
+func (inv *Inventory) Notes() *string              { return inv.notes }
+func (inv *Inventory) IsArchived() bool            { return inv.isArchived }
+func (inv *Inventory) CreatedAt() time.Time        { return inv.createdAt }
+func (inv *Inventory) UpdatedAt() time.Time        { return inv.updatedAt }
 
 type UpdateInput struct {
 	LocationID      uuid.UUID

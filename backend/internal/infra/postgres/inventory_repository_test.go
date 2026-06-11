@@ -15,9 +15,9 @@ import (
 	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/inventory"
 	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/item"
 	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/location"
+	"github.com/antti/home-warehouse/go-backend/internal/shared"
 	"github.com/antti/home-warehouse/go-backend/tests/testdb"
 	"github.com/antti/home-warehouse/go-backend/tests/testfixtures"
-	"github.com/antti/home-warehouse/go-backend/internal/shared"
 )
 
 // Helper to create test item for inventory tests
@@ -284,7 +284,7 @@ func TestInventoryRepository_Delete(t *testing.T) {
 		inv, _ := inventory.NewInventory(testfixtures.TestWorkspaceID, itm.ID(), loc.ID(), nil, 1, inventory.ConditionNew, inventory.StatusAvailable, nil)
 		require.NoError(t, invRepo.Save(ctx, inv))
 
-		err := invRepo.Delete(ctx, inv.ID())
+		err := invRepo.Delete(ctx, inv.ID(), testfixtures.TestWorkspaceID)
 		require.NoError(t, err)
 
 		// Note: Delete archives rather than hard deletes, so FindByID may still return
@@ -322,14 +322,14 @@ func TestInventoryRepository_List(t *testing.T) {
 		pagination := shared.Pagination{Page: 1, PageSize: 2}
 		inventories, total, err := invRepo.List(ctx, testfixtures.TestWorkspaceID, pagination)
 		require.NoError(t, err)
-		assert.Equal(t, 3, total) // Total should be 3
+		assert.Equal(t, 3, total)     // Total should be 3
 		assert.Len(t, inventories, 2) // Page 1 should have 2 items
 
 		// Test page 2 with limit 2
 		pagination = shared.Pagination{Page: 2, PageSize: 2}
 		inventories, total, err = invRepo.List(ctx, testfixtures.TestWorkspaceID, pagination)
 		require.NoError(t, err)
-		assert.Equal(t, 3, total) // Total should still be 3
+		assert.Equal(t, 3, total)     // Total should still be 3
 		assert.Len(t, inventories, 1) // Page 2 should have 1 item
 	})
 
@@ -344,7 +344,7 @@ func TestInventoryRepository_List(t *testing.T) {
 		pagination := shared.Pagination{Page: 1, PageSize: 50}
 		inventories, total, err := invRepo.List(ctx, testfixtures.TestWorkspaceID, pagination)
 		require.NoError(t, err)
-		assert.Greater(t, total, 0) // Should have at least the one we just created
+		assert.Greater(t, total, 0)                 // Should have at least the one we just created
 		assert.LessOrEqual(t, len(inventories), 50) // Should not exceed page size
 	})
 
@@ -353,7 +353,7 @@ func TestInventoryRepository_List(t *testing.T) {
 		inventories, total, err := invRepo.List(ctx, testfixtures.TestWorkspaceID, pagination)
 		require.NoError(t, err)
 		assert.GreaterOrEqual(t, total, 0) // Total is based on count, not affected by page
-		assert.Empty(t, inventories) // Should have no items on page 999
+		assert.Empty(t, inventories)       // Should have no items on page 999
 	})
 
 	t.Run("respects workspace isolation", func(t *testing.T) {
@@ -410,7 +410,7 @@ func TestInventoryRepository_List(t *testing.T) {
 		require.NoError(t, err)
 
 		// Archive the inventory
-		require.NoError(t, invRepo.Delete(ctx, inv.ID()))
+		require.NoError(t, invRepo.Delete(ctx, inv.ID(), testfixtures.TestWorkspaceID))
 
 		// Get count after archiving
 		_, totalAfter, err := invRepo.List(ctx, testfixtures.TestWorkspaceID, pagination)

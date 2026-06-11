@@ -4,9 +4,11 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"net"
 	"net/http"
 	"os"
 	"os/signal"
+	"strconv"
 	"syscall"
 	"time"
 
@@ -22,15 +24,13 @@ func main() {
 
 	// Load configuration
 	cfg := config.Load()
-
-	// Get database URL from environment (override config if GO_DATABASE_URL is set)
-	dbURL := os.Getenv("GO_DATABASE_URL")
-	if dbURL == "" {
-		dbURL = cfg.DatabaseURL
+	if err := cfg.Validate(); err != nil {
+		log.Fatalf("invalid configuration: %v", err)
 	}
 
-	// Connect to database
-	pool, err := postgres.NewPool(context.Background(), dbURL)
+	// Connect to database (config.Load already folds the GO_DATABASE_URL
+	// override into cfg.DatabaseURL).
+	pool, err := postgres.NewPool(context.Background(), cfg.DatabaseURL, cfg.DatabaseMaxConn, cfg.DatabaseMinConn)
 	if err != nil {
 		log.Fatalf("failed to connect to database: %v", err)
 	}
@@ -39,14 +39,17 @@ func main() {
 	// Create router
 	router := api.NewRouter(pool, cfg)
 
-	// Create server
-	port := os.Getenv("PORT")
-	if port == "" {
-		port = "8080"
+	// Create server. The listen address comes from config (SERVER_HOST /
+	// SERVER_PORT); the bare PORT env var is kept as an override for
+	// backward compatibility with existing deployments.
+	port := strconv.Itoa(cfg.ServerPort)
+	if p := os.Getenv("PORT"); p != "" {
+		port = p
 	}
+	addr := net.JoinHostPort(cfg.ServerHost, port)
 
 	srv := &http.Server{
-		Addr:         ":" + port,
+		Addr:         addr,
 		Handler:      router,
 		ReadTimeout:  15 * time.Second,
 		WriteTimeout: 0, // Disabled: SSE requires long-lived writes; per-route timeouts handled by middleware
@@ -55,7 +58,7 @@ func main() {
 
 	// Start server in goroutine
 	go func() {
-		fmt.Printf("Starting server on http://localhost:%s\n", port)
+		fmt.Printf("Starting server on http://%s\n", addr)
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			log.Fatalf("server error: %v", err)
 		}

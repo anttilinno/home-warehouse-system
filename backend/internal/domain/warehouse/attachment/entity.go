@@ -109,6 +109,7 @@ func (f *File) UpdatedAt() time.Time   { return f.updatedAt }
 
 type Attachment struct {
 	id             uuid.UUID
+	workspaceID    uuid.UUID
 	itemID         uuid.UUID
 	fileID         *uuid.UUID
 	attachmentType AttachmentType
@@ -120,13 +121,16 @@ type Attachment struct {
 }
 
 func NewAttachment(
-	itemID uuid.UUID,
+	workspaceID, itemID uuid.UUID,
 	fileID *uuid.UUID,
 	attachmentType AttachmentType,
 	title *string,
 	isPrimary bool,
 	docspellItemID *string,
 ) (*Attachment, error) {
+	if err := shared.ValidateUUID(workspaceID, "workspace_id"); err != nil {
+		return nil, err
+	}
 	if err := shared.ValidateUUID(itemID, "item_id"); err != nil {
 		return nil, err
 	}
@@ -137,6 +141,7 @@ func NewAttachment(
 	now := time.Now()
 	return &Attachment{
 		id:             shared.NewUUID(),
+		workspaceID:    workspaceID,
 		itemID:         itemID,
 		fileID:         fileID,
 		attachmentType: attachmentType,
@@ -149,7 +154,7 @@ func NewAttachment(
 }
 
 func ReconstructAttachment(
-	id, itemID uuid.UUID,
+	id, workspaceID, itemID uuid.UUID,
 	fileID *uuid.UUID,
 	attachmentType AttachmentType,
 	title *string,
@@ -159,6 +164,7 @@ func ReconstructAttachment(
 ) *Attachment {
 	return &Attachment{
 		id:             id,
+		workspaceID:    workspaceID,
 		itemID:         itemID,
 		fileID:         fileID,
 		attachmentType: attachmentType,
@@ -171,15 +177,16 @@ func ReconstructAttachment(
 }
 
 // Attachment Getters
-func (a *Attachment) ID() uuid.UUID                { return a.id }
-func (a *Attachment) ItemID() uuid.UUID            { return a.itemID }
-func (a *Attachment) FileID() *uuid.UUID           { return a.fileID }
+func (a *Attachment) ID() uuid.UUID                  { return a.id }
+func (a *Attachment) WorkspaceID() uuid.UUID         { return a.workspaceID }
+func (a *Attachment) ItemID() uuid.UUID              { return a.itemID }
+func (a *Attachment) FileID() *uuid.UUID             { return a.fileID }
 func (a *Attachment) AttachmentType() AttachmentType { return a.attachmentType }
-func (a *Attachment) Title() *string               { return a.title }
-func (a *Attachment) IsPrimary() bool              { return a.isPrimary }
-func (a *Attachment) DocspellItemID() *string      { return a.docspellItemID }
-func (a *Attachment) CreatedAt() time.Time         { return a.createdAt }
-func (a *Attachment) UpdatedAt() time.Time         { return a.updatedAt }
+func (a *Attachment) Title() *string                 { return a.title }
+func (a *Attachment) IsPrimary() bool                { return a.isPrimary }
+func (a *Attachment) DocspellItemID() *string        { return a.docspellItemID }
+func (a *Attachment) CreatedAt() time.Time           { return a.createdAt }
+func (a *Attachment) UpdatedAt() time.Time           { return a.updatedAt }
 
 func (a *Attachment) SetPrimary() {
 	a.isPrimary = true

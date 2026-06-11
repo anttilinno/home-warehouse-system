@@ -6,6 +6,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jackc/pgx/v5/pgxpool"
 
 	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/itemphoto"
@@ -45,7 +46,7 @@ func (r *ItemPhotoRepository) Create(ctx context.Context, photo *itemphoto.ItemP
 		DisplayOrder:  photo.DisplayOrder,
 		IsPrimary:     photo.IsPrimary,
 		Caption:       photo.Caption,
-		UploadedBy:    photo.UploadedBy,
+		UploadedBy:    pgtype.UUID{Bytes: photo.UploadedBy, Valid: photo.UploadedBy != uuid.Nil},
 	})
 	if err != nil {
 		return nil, err
@@ -67,6 +68,17 @@ func (r *ItemPhotoRepository) GetByID(ctx context.Context, id uuid.UUID) (*itemp
 	}
 
 	return r.rowToItemPhoto(row), nil
+}
+
+// CountByItem returns the number of photos for an item, workspace-scoped.
+func (r *ItemPhotoRepository) CountByItem(ctx context.Context, itemID, workspaceID uuid.UUID) (int64, error) {
+	db := GetDBTX(ctx, r.pool)
+	q := queries.New(db)
+
+	return q.CountItemPhotosByItem(ctx, queries.CountItemPhotosByItemParams{
+		ItemID:      itemID,
+		WorkspaceID: workspaceID,
+	})
 }
 
 func (r *ItemPhotoRepository) GetByItem(ctx context.Context, itemID, workspaceID uuid.UUID) ([]*itemphoto.ItemPhoto, error) {
@@ -228,7 +240,7 @@ func (r *ItemPhotoRepository) rowToItemPhoto(row queries.WarehouseItemPhoto) *it
 		DisplayOrder:        row.DisplayOrder,
 		IsPrimary:           row.IsPrimary,
 		Caption:             row.Caption,
-		UploadedBy:          row.UploadedBy,
+		UploadedBy:          uuid.UUID(row.UploadedBy.Bytes),
 		CreatedAt:           row.CreatedAt,
 		UpdatedAt:           row.UpdatedAt,
 		ThumbnailStatus:     itemphoto.ThumbnailStatus(row.ThumbnailStatus),

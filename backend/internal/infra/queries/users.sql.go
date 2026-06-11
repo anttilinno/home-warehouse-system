@@ -34,8 +34,8 @@ type CreateUserParams struct {
 	Email        string             `json:"email"`
 	FullName     string             `json:"full_name"`
 	PasswordHash *string            `json:"password_hash"`
-	IsActive     *bool              `json:"is_active"`
-	IsSuperuser  *bool              `json:"is_superuser"`
+	IsActive     bool               `json:"is_active"`
+	IsSuperuser  bool               `json:"is_superuser"`
 	DateFormat   *string            `json:"date_format"`
 	Language     string             `json:"language"`
 	Theme        string             `json:"theme"`
@@ -113,8 +113,8 @@ type GetUserByEmailRow struct {
 	Email        string             `json:"email"`
 	FullName     string             `json:"full_name"`
 	PasswordHash *string            `json:"password_hash"`
-	IsActive     *bool              `json:"is_active"`
-	IsSuperuser  *bool              `json:"is_superuser"`
+	IsActive     bool               `json:"is_active"`
+	IsSuperuser  bool               `json:"is_superuser"`
 	DateFormat   *string            `json:"date_format"`
 	Language     string             `json:"language"`
 	Theme        string             `json:"theme"`
@@ -154,8 +154,8 @@ type GetUserByIDRow struct {
 	Email        string             `json:"email"`
 	FullName     string             `json:"full_name"`
 	PasswordHash *string            `json:"password_hash"`
-	IsActive     *bool              `json:"is_active"`
-	IsSuperuser  *bool              `json:"is_superuser"`
+	IsActive     bool               `json:"is_active"`
+	IsSuperuser  bool               `json:"is_superuser"`
 	DateFormat   *string            `json:"date_format"`
 	Language     string             `json:"language"`
 	Theme        string             `json:"theme"`
@@ -202,8 +202,8 @@ type ListUsersRow struct {
 	Email        string             `json:"email"`
 	FullName     string             `json:"full_name"`
 	PasswordHash *string            `json:"password_hash"`
-	IsActive     *bool              `json:"is_active"`
-	IsSuperuser  *bool              `json:"is_superuser"`
+	IsActive     bool               `json:"is_active"`
+	IsSuperuser  bool               `json:"is_superuser"`
 	DateFormat   *string            `json:"date_format"`
 	Language     string             `json:"language"`
 	Theme        string             `json:"theme"`
@@ -262,8 +262,8 @@ type UpdateUserRow struct {
 	Email        string             `json:"email"`
 	FullName     string             `json:"full_name"`
 	PasswordHash *string            `json:"password_hash"`
-	IsActive     *bool              `json:"is_active"`
-	IsSuperuser  *bool              `json:"is_superuser"`
+	IsActive     bool               `json:"is_active"`
+	IsSuperuser  bool               `json:"is_superuser"`
 	DateFormat   *string            `json:"date_format"`
 	Language     string             `json:"language"`
 	Theme        string             `json:"theme"`
@@ -309,8 +309,8 @@ type UpdateUserAvatarRow struct {
 	Email        string             `json:"email"`
 	FullName     string             `json:"full_name"`
 	PasswordHash *string            `json:"password_hash"`
-	IsActive     *bool              `json:"is_active"`
-	IsSuperuser  *bool              `json:"is_superuser"`
+	IsActive     bool               `json:"is_active"`
+	IsSuperuser  bool               `json:"is_superuser"`
 	DateFormat   *string            `json:"date_format"`
 	Language     string             `json:"language"`
 	Theme        string             `json:"theme"`
@@ -356,8 +356,8 @@ type UpdateUserEmailRow struct {
 	Email        string             `json:"email"`
 	FullName     string             `json:"full_name"`
 	PasswordHash *string            `json:"password_hash"`
-	IsActive     *bool              `json:"is_active"`
-	IsSuperuser  *bool              `json:"is_superuser"`
+	IsActive     bool               `json:"is_active"`
+	IsSuperuser  bool               `json:"is_superuser"`
 	DateFormat   *string            `json:"date_format"`
 	Language     string             `json:"language"`
 	Theme        string             `json:"theme"`
@@ -421,8 +421,8 @@ type UpdateUserPreferencesRow struct {
 	Email        string             `json:"email"`
 	FullName     string             `json:"full_name"`
 	PasswordHash *string            `json:"password_hash"`
-	IsActive     *bool              `json:"is_active"`
-	IsSuperuser  *bool              `json:"is_superuser"`
+	IsActive     bool               `json:"is_active"`
+	IsSuperuser  bool               `json:"is_superuser"`
 	DateFormat   *string            `json:"date_format"`
 	Language     string             `json:"language"`
 	Theme        string             `json:"theme"`

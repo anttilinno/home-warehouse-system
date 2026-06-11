@@ -7,13 +7,16 @@ import (
 )
 
 // ServiceInterface defines the attachment service operations.
+// All lookups and mutations are workspace-scoped (security fix F1): the
+// workspace ID from the request context is threaded down to the SQL layer
+// so a leaked UUID can never reach another tenant's rows.
 type ServiceInterface interface {
 	UploadFile(ctx context.Context, input UploadFileInput) (*File, error)
 	CreateAttachment(ctx context.Context, input CreateAttachmentInput) (*Attachment, error)
-	GetAttachment(ctx context.Context, id uuid.UUID) (*Attachment, error)
-	ListByItem(ctx context.Context, itemID uuid.UUID) ([]*Attachment, error)
-	DeleteAttachment(ctx context.Context, id uuid.UUID) error
-	SetPrimary(ctx context.Context, itemID, attachmentID uuid.UUID) error
+	GetAttachment(ctx context.Context, id, workspaceID uuid.UUID) (*Attachment, error)
+	ListByItem(ctx context.Context, itemID, workspaceID uuid.UUID) ([]*Attachment, error)
+	DeleteAttachment(ctx context.Context, id, workspaceID uuid.UUID) error
+	SetPrimary(ctx context.Context, itemID, attachmentID, workspaceID uuid.UUID) error
 }
 
 type Service struct {
@@ -62,6 +65,7 @@ func (s *Service) UploadFile(ctx context.Context, input UploadFileInput) (*File,
 }
 
 type CreateAttachmentInput struct {
+	WorkspaceID    uuid.UUID
 	ItemID         uuid.UUID
 	FileID         *uuid.UUID
 	AttachmentType AttachmentType
@@ -72,6 +76,7 @@ type CreateAttachmentInput struct {
 
 func (s *Service) CreateAttachment(ctx context.Context, input CreateAttachmentInput) (*Attachment, error) {
 	attachment, err := NewAttachment(
+		input.WorkspaceID,
 		input.ItemID,
 		input.FileID,
 		input.AttachmentType,
@@ -89,7 +94,7 @@ func (s *Service) CreateAttachment(ctx context.Context, input CreateAttachmentIn
 
 	// If this is marked as primary, update other attachments for the item
 	if input.IsPrimary {
-		if err := s.attachmentRepo.SetPrimaryForItem(ctx, input.ItemID, attachment.ID()); err != nil {
+		if err := s.attachmentRepo.SetPrimaryForItem(ctx, input.ItemID, attachment.ID(), input.WorkspaceID); err != nil {
 			return nil, err
 		}
 	}
@@ -97,8 +102,8 @@ func (s *Service) CreateAttachment(ctx context.Context, input CreateAttachmentIn
 	return attachment, nil
 }
 
-func (s *Service) GetAttachment(ctx context.Context, id uuid.UUID) (*Attachment, error) {
-	attachment, err := s.attachmentRepo.FindByID(ctx, id)
+func (s *Service) GetAttachment(ctx context.Context, id, workspaceID uuid.UUID) (*Attachment, error) {
+	attachment, err := s.attachmentRepo.FindByID(ctx, id, workspaceID)
 	if err != nil {
 		return nil, err
 	}
@@ -108,32 +113,32 @@ func (s *Service) GetAttachment(ctx context.Context, id uuid.UUID) (*Attachment,
 	return attachment, nil
 }
 
-func (s *Service) ListByItem(ctx context.Context, itemID uuid.UUID) ([]*Attachment, error) {
-	return s.attachmentRepo.FindByItem(ctx, itemID)
+func (s *Service) ListByItem(ctx context.Context, itemID, workspaceID uuid.UUID) ([]*Attachment, error) {
+	return s.attachmentRepo.FindByItem(ctx, itemID, workspaceID)
 }
 
-func (s *Service) DeleteAttachment(ctx context.Context, id uuid.UUID) error {
-	attachment, err := s.GetAttachment(ctx, id)
+func (s *Service) DeleteAttachment(ctx context.Context, id, workspaceID uuid.UUID) error {
+	attachment, err := s.GetAttachment(ctx, id, workspaceID)
 	if err != nil {
 		return err
 	}
 
 	// Delete the attachment record
-	if err := s.attachmentRepo.Delete(ctx, id); err != nil {
+	if err := s.attachmentRepo.Delete(ctx, id, workspaceID); err != nil {
 		return err
 	}
 
 	// If there's an associated file, delete it too
 	if attachment.FileID() != nil {
-		_ = s.fileRepo.Delete(ctx, *attachment.FileID())
+		_ = s.fileRepo.Delete(ctx, *attachment.FileID(), workspaceID)
 	}
 
 	return nil
 }
 
-func (s *Service) SetPrimary(ctx context.Context, itemID, attachmentID uuid.UUID) error {
+func (s *Service) SetPrimary(ctx context.Context, itemID, attachmentID, workspaceID uuid.UUID) error {
 	// Verify attachment exists and belongs to the item
-	attachment, err := s.GetAttachment(ctx, attachmentID)
+	attachment, err := s.GetAttachment(ctx, attachmentID, workspaceID)
 	if err != nil {
 		return err
 	}
@@ -141,5 +146,5 @@ func (s *Service) SetPrimary(ctx context.Context, itemID, attachmentID uuid.UUID
 		return ErrAttachmentNotFound
 	}
 
-	return s.attachmentRepo.SetPrimaryForItem(ctx, itemID, attachmentID)
+	return s.attachmentRepo.SetPrimaryForItem(ctx, itemID, attachmentID, workspaceID)
 }

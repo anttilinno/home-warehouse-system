@@ -291,7 +291,7 @@ func TestItemRepository_Delete_Hard(t *testing.T) {
 		require.NoError(t, err)
 		require.NoError(t, repo.Save(ctx, itm))
 
-		require.NoError(t, repo.Delete(ctx, itm.ID()))
+		require.NoError(t, repo.Delete(ctx, itm.ID(), testfixtures.TestWorkspaceID))
 
 		// Row MUST be gone — FindByID returns shared.ErrNotFound (Pitfall 3 fix).
 		found, err := repo.FindByID(ctx, itm.ID(), testfixtures.TestWorkspaceID)
@@ -302,7 +302,7 @@ func TestItemRepository_Delete_Hard(t *testing.T) {
 
 	t.Run("delete of missing id is idempotent (no error)", func(t *testing.T) {
 		// DELETE on a missing row is a no-op in Postgres; sqlc's :exec ignores affected-count.
-		err := repo.Delete(ctx, uuid.New())
+		err := repo.Delete(ctx, uuid.New(), testfixtures.TestWorkspaceID)
 		require.NoError(t, err)
 	})
 }

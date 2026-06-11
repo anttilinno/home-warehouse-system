@@ -138,19 +138,19 @@ func Reconstruct(
 }
 
 // Getters
-func (p *PendingChange) ID() uuid.UUID                { return p.id }
-func (p *PendingChange) WorkspaceID() uuid.UUID       { return p.workspaceID }
-func (p *PendingChange) RequesterID() uuid.UUID       { return p.requesterID }
-func (p *PendingChange) EntityType() string           { return p.entityType }
-func (p *PendingChange) EntityID() *uuid.UUID         { return p.entityID }
-func (p *PendingChange) Action() Action               { return p.action }
-func (p *PendingChange) Payload() json.RawMessage     { return p.payload }
-func (p *PendingChange) Status() Status               { return p.status }
-func (p *PendingChange) ReviewedBy() *uuid.UUID       { return p.reviewedBy }
-func (p *PendingChange) ReviewedAt() *time.Time       { return p.reviewedAt }
-func (p *PendingChange) RejectionReason() *string     { return p.rejectionReason }
-func (p *PendingChange) CreatedAt() time.Time         { return p.createdAt }
-func (p *PendingChange) UpdatedAt() time.Time         { return p.updatedAt }
+func (p *PendingChange) ID() uuid.UUID            { return p.id }
+func (p *PendingChange) WorkspaceID() uuid.UUID   { return p.workspaceID }
+func (p *PendingChange) RequesterID() uuid.UUID   { return p.requesterID }
+func (p *PendingChange) EntityType() string       { return p.entityType }
+func (p *PendingChange) EntityID() *uuid.UUID     { return p.entityID }
+func (p *PendingChange) Action() Action           { return p.action }
+func (p *PendingChange) Payload() json.RawMessage { return p.payload }
+func (p *PendingChange) Status() Status           { return p.status }
+func (p *PendingChange) ReviewedBy() *uuid.UUID   { return p.reviewedBy }
+func (p *PendingChange) ReviewedAt() *time.Time   { return p.reviewedAt }
+func (p *PendingChange) RejectionReason() *string { return p.rejectionReason }
+func (p *PendingChange) CreatedAt() time.Time     { return p.createdAt }
+func (p *PendingChange) UpdatedAt() time.Time     { return p.updatedAt }
 
 // Approve marks the pending change as approved
 func (p *PendingChange) Approve(reviewerID uuid.UUID) error {

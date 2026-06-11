@@ -72,6 +72,7 @@ func (r *MovementRepository) FindByID(ctx context.Context, id, workspaceID uuid.
 func (r *MovementRepository) FindByInventory(ctx context.Context, inventoryID, workspaceID uuid.UUID, pagination shared.Pagination) ([]*movement.InventoryMovement, error) {
 	rows, err := r.queries.ListMovementsByInventory(ctx, queries.ListMovementsByInventoryParams{
 		InventoryID: inventoryID,
+		WorkspaceID: workspaceID,
 		Limit:       int32(pagination.Limit()),
 		Offset:      int32(pagination.Offset()),
 	})

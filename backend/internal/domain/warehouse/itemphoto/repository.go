@@ -17,6 +17,10 @@ type Repository interface {
 	// GetByItem retrieves all photos for an item, ordered by display_order
 	GetByItem(ctx context.Context, itemID, workspaceID uuid.UUID) ([]*ItemPhoto, error)
 
+	// CountByItem returns the number of photos for an item (cheaper than
+	// GetByItem when only the count is needed, e.g. next display order).
+	CountByItem(ctx context.Context, itemID, workspaceID uuid.UUID) (int64, error)
+
 	// GetPrimary retrieves the primary photo for an item
 	GetPrimary(ctx context.Context, itemID, workspaceID uuid.UUID) (*ItemPhoto, error)
 

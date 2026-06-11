@@ -78,7 +78,14 @@ func NewRouter(pool *pgxpool.Pool, cfg *config.Config) chi.Router {
 	r.Use(appMiddleware.StructuredLogger(logger)) // Structured logging with user context
 	r.Use(middleware.Recoverer)
 	r.Use(appMiddleware.TimeoutWithSkip(60*time.Second, "/sse"))
+	r.Use(appMiddleware.SecurityHeaders)
+	r.Use(appMiddleware.MaxBodySize(cfg.MaxBodyBytes))
 	r.Use(appMiddleware.CORS)
+	r.Use(appMiddleware.CSRFProtect)
+
+	// Configure the Secure flag on auth cookies from the single production
+	// signal in config (replaces the previous per-package env checks).
+	user.SetSecureCookies(cfg.SecureCookies())
 
 	// Create JWT service
 	jwtService := jwt.NewService(cfg.JWTSecret, cfg.JWTExpirationHours)
@@ -86,12 +93,9 @@ func NewRouter(pool *pgxpool.Pool, cfg *config.Config) chi.Router {
 	// Create event broadcaster for SSE
 	broadcaster := infraEvents.NewBroadcaster()
 
-	// Initialize Redis for background jobs
-	redisURL := os.Getenv("REDIS_URL")
-	if redisURL == "" {
-		redisURL = "redis://localhost:6379"
-	}
-	redisOpts, err := redis.ParseURL(redisURL)
+	// Initialize Redis for background jobs (single source of truth: config's
+	// RedisURL, which already defaults REDIS_URL to redis://localhost:6379/0).
+	redisOpts, err := redis.ParseURL(cfg.RedisURL)
 	if err != nil {
 		log.Fatalf("failed to parse Redis URL: %v", err)
 	}
@@ -220,7 +224,7 @@ func NewRouter(pool *pgxpool.Pool, cfg *config.Config) chi.Router {
 	inventorySvc := inventory.NewService(inventoryRepo, movementSvc, itemRepo, locationRepo, containerRepo)
 	// Phase 4 services
 	borrowerSvc := borrower.NewService(borrowerRepo)
-	loanSvc := loan.NewService(loanRepo, inventoryRepo)
+	loanSvc := loan.NewService(loanRepo, inventoryRepo, txManager)
 	repairLogSvc := repairlog.NewService(repairLogRepo, inventoryRepo)
 	repairPhotoSvc := repairphoto.NewService(repairPhotoRepo, photoStorage, imageProcessor, uploadDir)
 	repairAttachmentSvc := repairattachment.NewService(repairAttachmentRepo, fileRepo)

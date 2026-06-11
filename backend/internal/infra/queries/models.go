@@ -696,7 +696,7 @@ type AuthNotification struct {
 	NotificationType AuthNotificationTypeEnum `json:"notification_type"`
 	Title            string                   `json:"title"`
 	Message          string                   `json:"message"`
-	IsRead           *bool                    `json:"is_read"`
+	IsRead           bool                     `json:"is_read"`
 	ReadAt           pgtype.Timestamptz       `json:"read_at"`
 	// Additional data like entity IDs, links, etc. stored as JSON.
 	Metadata  []byte             `json:"metadata"`
@@ -735,8 +735,8 @@ type AuthUser struct {
 	FullName     string    `json:"full_name"`
 	PasswordHash *string   `json:"password_hash"`
 	HasPassword  bool      `json:"has_password"`
-	IsActive     *bool     `json:"is_active"`
-	IsSuperuser  *bool     `json:"is_superuser"`
+	IsActive     bool      `json:"is_active"`
+	IsSuperuser  bool      `json:"is_superuser"`
 	// User's preferred date format for display (e.g., DD.MM.YYYY, MM/DD/YYYY, YYYY-MM-DD)
 	DateFormat *string `json:"date_format"`
 	// User's preferred time format: 12h or 24h
@@ -872,6 +872,7 @@ type WarehouseAttachment struct {
 	DocspellItemID *string            `json:"docspell_item_id"`
 	CreatedAt      pgtype.Timestamptz `json:"created_at"`
 	UpdatedAt      pgtype.Timestamptz `json:"updated_at"`
+	WorkspaceID    uuid.UUID          `json:"workspace_id"`
 }
 
 type WarehouseBorrower struct {
@@ -931,6 +932,7 @@ type WarehouseContainerTag struct {
 	TagValue    string               `json:"tag_value"`
 	CreatedAt   pgtype.Timestamptz   `json:"created_at"`
 	UpdatedAt   pgtype.Timestamptz   `json:"updated_at"`
+	WorkspaceID uuid.UUID            `json:"workspace_id"`
 }
 
 // Tombstone table tracking hard-deleted records for PWA offline sync.
@@ -1050,8 +1052,8 @@ type WarehouseItem struct {
 	Manufacturer *string     `json:"manufacturer"`
 	// UPC/EAN/other product barcode for scanning.
 	Barcode          *string     `json:"barcode"`
-	IsInsured        *bool       `json:"is_insured"`
-	IsArchived       *bool       `json:"is_archived"`
+	IsInsured        bool        `json:"is_insured"`
+	IsArchived       bool        `json:"is_archived"`
 	NeedsReview      *bool       `json:"needs_review"`
 	LifetimeWarranty *bool       `json:"lifetime_warranty"`
 	WarrantyDetails  *string     `json:"warranty_details"`
@@ -1070,25 +1072,26 @@ type WarehouseItem struct {
 }
 
 type WarehouseItemLabel struct {
-	ItemID  uuid.UUID `json:"item_id"`
-	LabelID uuid.UUID `json:"label_id"`
+	ItemID      uuid.UUID `json:"item_id"`
+	LabelID     uuid.UUID `json:"label_id"`
+	WorkspaceID uuid.UUID `json:"workspace_id"`
 }
 
 type WarehouseItemPhoto struct {
-	ID            uuid.UUID `json:"id"`
-	ItemID        uuid.UUID `json:"item_id"`
-	WorkspaceID   uuid.UUID `json:"workspace_id"`
-	Filename      string    `json:"filename"`
-	StoragePath   string    `json:"storage_path"`
-	ThumbnailPath string    `json:"thumbnail_path"`
-	FileSize      int64     `json:"file_size"`
-	MimeType      string    `json:"mime_type"`
-	Width         int32     `json:"width"`
-	Height        int32     `json:"height"`
-	DisplayOrder  int32     `json:"display_order"`
-	IsPrimary     bool      `json:"is_primary"`
-	Caption       *string   `json:"caption"`
-	UploadedBy    uuid.UUID `json:"uploaded_by"`
+	ID            uuid.UUID   `json:"id"`
+	ItemID        uuid.UUID   `json:"item_id"`
+	WorkspaceID   uuid.UUID   `json:"workspace_id"`
+	Filename      string      `json:"filename"`
+	StoragePath   string      `json:"storage_path"`
+	ThumbnailPath string      `json:"thumbnail_path"`
+	FileSize      int64       `json:"file_size"`
+	MimeType      string      `json:"mime_type"`
+	Width         int32       `json:"width"`
+	Height        int32       `json:"height"`
+	DisplayOrder  int32       `json:"display_order"`
+	IsPrimary     bool        `json:"is_primary"`
+	Caption       *string     `json:"caption"`
+	UploadedBy    pgtype.UUID `json:"uploaded_by"`
 	// Thumbnail generation status: pending (not started), processing (in queue), complete (ready), failed (max retries exceeded)
 	ThumbnailStatus string `json:"thumbnail_status"`
 	// Path to 150px thumbnail (used for lists/grids)
@@ -1160,6 +1163,10 @@ type WarehousePendingChange struct {
 	RejectionReason *string                          `json:"rejection_reason"`
 	CreatedAt       time.Time                        `json:"created_at"`
 	UpdatedAt       time.Time                        `json:"updated_at"`
+	// Client-generated idempotency key (UUIDv7 from the Idempotency-Key header). Unique per workspace when present.
+	ClientChangeID pgtype.UUID `json:"client_change_id"`
+	// Optimistic concurrency token: the target entity's updated_at as observed by the client when the change was composed.
+	BaseUpdatedAt pgtype.Timestamptz `json:"base_updated_at"`
 }
 
 // Links repair logs to uploaded files (receipts, invoices, warranty documents).
@@ -1217,7 +1224,7 @@ type WarehouseRepairPhoto struct {
 	Height        int32                        `json:"height"`
 	DisplayOrder  int32                        `json:"display_order"`
 	Caption       *string                      `json:"caption"`
-	UploadedBy    uuid.UUID                    `json:"uploaded_by"`
+	UploadedBy    pgtype.UUID                  `json:"uploaded_by"`
 	CreatedAt     time.Time                    `json:"created_at"`
 	UpdatedAt     time.Time                    `json:"updated_at"`
 }

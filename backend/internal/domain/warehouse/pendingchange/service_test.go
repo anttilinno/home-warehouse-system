@@ -34,7 +34,7 @@ func (m *MockPendingChangeRepository) Save(ctx context.Context, change *PendingC
 	return m.Called(ctx, change).Error(0)
 }
 
-func (m *MockPendingChangeRepository) FindByID(ctx context.Context, id uuid.UUID) (*PendingChange, error) {
+func (m *MockPendingChangeRepository) FindByID(ctx context.Context, id, workspaceID uuid.UUID) (*PendingChange, error) {
 	args := m.Called(ctx, id)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
@@ -58,7 +58,7 @@ func (m *MockPendingChangeRepository) FindByRequester(ctx context.Context, reque
 	return args.Get(0).([]*PendingChange), args.Error(1)
 }
 
-func (m *MockPendingChangeRepository) FindByEntity(ctx context.Context, entityType string, entityID uuid.UUID) ([]*PendingChange, error) {
+func (m *MockPendingChangeRepository) FindByEntity(ctx context.Context, workspaceID uuid.UUID, entityType string, entityID uuid.UUID) ([]*PendingChange, error) {
 	args := m.Called(ctx, entityType, entityID)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
@@ -66,7 +66,7 @@ func (m *MockPendingChangeRepository) FindByEntity(ctx context.Context, entityTy
 	return args.Get(0).([]*PendingChange), args.Error(1)
 }
 
-func (m *MockPendingChangeRepository) Delete(ctx context.Context, id uuid.UUID) error {
+func (m *MockPendingChangeRepository) Delete(ctx context.Context, id, workspaceID uuid.UUID) error {
 	return m.Called(ctx, id).Error(0)
 }
 
@@ -535,7 +535,7 @@ func (m *MockInventoryRepository) FindAvailable(ctx context.Context, workspaceID
 func (m *MockInventoryRepository) GetTotalQuantity(ctx context.Context, workspaceID, itemID uuid.UUID) (int, error) {
 	return 0, nil
 }
-func (m *MockInventoryRepository) Delete(ctx context.Context, id uuid.UUID) error {
+func (m *MockInventoryRepository) Delete(ctx context.Context, id, workspaceID uuid.UUID) error {
 	return m.Called(ctx, id).Error(0)
 }
 
@@ -729,7 +729,7 @@ func TestApproveChange(t *testing.T) {
 			return in.Name == "Test Item" && in.SKU == "TEST-001" && in.MinStockLevel == 5 && in.WorkspaceID == workspaceID
 		})).Return(createdItem, nil)
 
-		err := tm.service().ApproveChange(ctx, changeID, reviewerID)
+		err := tm.service().ApproveChange(ctx, changeID, workspaceID, reviewerID)
 		assert.NoError(t, err)
 		tm.itemSvc.AssertExpectations(t)
 		tm.repo.AssertExpectations(t)
@@ -743,7 +743,7 @@ func TestApproveChange(t *testing.T) {
 		approveExpectSave(tm, pc)
 		tm.labelSvc.On("Create", ctx, mock.Anything).Return(&label.Label{}, nil)
 
-		err := tm.service().ApproveChange(ctx, changeID, reviewerID)
+		err := tm.service().ApproveChange(ctx, changeID, workspaceID, reviewerID)
 		assert.NoError(t, err)
 		tm.labelSvc.AssertExpectations(t)
 	})
@@ -754,7 +754,7 @@ func TestApproveChange(t *testing.T) {
 		tm.repo.On("FindByID", ctx, changeID).Return(pc, nil)
 		tm.memberRepo.On("FindByWorkspaceAndUser", ctx, workspaceID, reviewerID).Return(memberMember(workspaceID, reviewerID), nil)
 
-		err := tm.service().ApproveChange(ctx, changeID, reviewerID)
+		err := tm.service().ApproveChange(ctx, changeID, workspaceID, reviewerID)
 		assert.ErrorIs(t, err, ErrUnauthorized)
 		tm.itemSvc.AssertNotCalled(t, "Create", mock.Anything, mock.Anything)
 	})
@@ -762,7 +762,7 @@ func TestApproveChange(t *testing.T) {
 	t.Run("returns error when change not found", func(t *testing.T) {
 		tm := newMocks()
 		tm.repo.On("FindByID", ctx, changeID).Return(nil, errors.New("not found"))
-		err := tm.service().ApproveChange(ctx, changeID, reviewerID)
+		err := tm.service().ApproveChange(ctx, changeID, workspaceID, reviewerID)
 		assert.Error(t, err)
 	})
 
@@ -778,7 +778,7 @@ func TestApproveChange(t *testing.T) {
 		tm.memberRepo.On("FindByWorkspaceAndUser", ctx, workspaceID, reviewerID).Return(ownerMember(workspaceID, reviewerID), nil)
 		tm.repo.On("FindByID", ctx, changeID).Return(approvedPC, nil).Once()
 
-		err := tm.service().ApproveChange(ctx, changeID, reviewerID)
+		err := tm.service().ApproveChange(ctx, changeID, workspaceID, reviewerID)
 		assert.NoError(t, err)
 		// Idempotency: no apply, no Save, no SSE side effects.
 		tm.itemSvc.AssertNotCalled(t, "Create", mock.Anything, mock.Anything)
@@ -792,7 +792,7 @@ func TestApproveChange(t *testing.T) {
 		tm.memberRepo.On("FindByWorkspaceAndUser", ctx, workspaceID, reviewerID).Return(ownerMember(workspaceID, reviewerID), nil)
 		tm.itemSvc.On("Create", ctx, mock.Anything).Return(nil, errors.New("validation failed"))
 
-		err := tm.service().ApproveChange(ctx, changeID, reviewerID)
+		err := tm.service().ApproveChange(ctx, changeID, workspaceID, reviewerID)
 		assert.Error(t, err)
 		// Because apply failed inside the tx, the approved change is never persisted.
 		tm.repo.AssertNotCalled(t, "Save", mock.Anything, mock.Anything)
@@ -820,7 +820,7 @@ func TestRejectChange(t *testing.T) {
 			return c.Status() == StatusRejected
 		})).Return(nil)
 
-		err := tm.service().RejectChange(ctx, changeID, reviewerID, "duplicate")
+		err := tm.service().RejectChange(ctx, changeID, workspaceID, reviewerID, "duplicate")
 		assert.NoError(t, err)
 		tm.repo.AssertExpectations(t)
 	})
@@ -832,7 +832,7 @@ func TestRejectChange(t *testing.T) {
 		tm.memberRepo.On("FindByWorkspaceAndUser", ctx, workspaceID, reviewerID).Return(ownerMember(workspaceID, reviewerID), nil)
 		stubReviewerLookups(tm, ctx, requesterID, reviewerID)
 
-		err := tm.service().RejectChange(ctx, changeID, reviewerID, "")
+		err := tm.service().RejectChange(ctx, changeID, workspaceID, reviewerID, "")
 		assert.Error(t, err)
 	})
 
@@ -842,7 +842,7 @@ func TestRejectChange(t *testing.T) {
 		tm.repo.On("FindByID", ctx, changeID).Return(pc, nil)
 		tm.memberRepo.On("FindByWorkspaceAndUser", ctx, workspaceID, reviewerID).Return(memberMember(workspaceID, reviewerID), nil)
 
-		err := tm.service().RejectChange(ctx, changeID, reviewerID, "no")
+		err := tm.service().RejectChange(ctx, changeID, workspaceID, reviewerID, "no")
 		assert.ErrorIs(t, err, ErrUnauthorized)
 	})
 }
@@ -933,7 +933,7 @@ func runApply(t *testing.T, c applyCase) {
 
 	asserter := c.expect(tm, ctx, workspaceID, entityID)
 
-	err := tm.service().ApproveChange(ctx, changeID, reviewerID)
+	err := tm.service().ApproveChange(ctx, changeID, workspaceID, reviewerID)
 	assert.NoError(t, err)
 	asserter.AssertExpectations(t)
 }

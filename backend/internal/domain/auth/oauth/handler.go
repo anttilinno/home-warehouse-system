@@ -108,7 +108,7 @@ func (h *Handler) Initiate(w http.ResponseWriter, r *http.Request) {
 	state := base64.RawURLEncoding.EncodeToString(stateBytes)
 
 	// Store state and verifier in a single HttpOnly cookie
-	isSecure := strings.HasPrefix(h.cfg.AppURL, "https")
+	isSecure := h.cfg.SecureCookies()
 	http.SetCookie(w, &http.Cookie{
 		Name:     oauthStateCookie,
 		Value:    state + "|" + verifier,
@@ -288,7 +288,7 @@ func (h *Handler) ExchangeCode(ctx context.Context, input *ExchangeInput) (*Exch
 	accessToken := parts[0]
 	refreshToken := parts[1]
 
-	isSecure := strings.HasPrefix(h.cfg.AppURL, "https")
+	isSecure := h.cfg.SecureCookies()
 
 	return &ExchangeOutput{
 		SetCookie: []http.Cookie{

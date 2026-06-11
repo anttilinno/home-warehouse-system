@@ -4,6 +4,7 @@ import (
 	"archive/zip"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"mime"
@@ -63,7 +64,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 
 		photo, err := svc.GetPhoto(ctx, input.ID)
 		if err != nil {
-			if err == ErrPhotoNotFound {
+			if errors.Is(err, ErrPhotoNotFound) {
 				return nil, huma.Error404NotFound("photo not found")
 			}
 			return nil, huma.Error500InternalServerError("failed to get photo")
@@ -90,10 +91,10 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 
 		err := svc.SetPrimaryPhoto(ctx, input.ID, workspaceID)
 		if err != nil {
-			if err == ErrPhotoNotFound {
+			if errors.Is(err, ErrPhotoNotFound) {
 				return nil, huma.Error404NotFound("photo not found")
 			}
-			if err == ErrUnauthorized {
+			if errors.Is(err, ErrUnauthorized) {
 				return nil, huma.Error403Forbidden("photo does not belong to workspace")
 			}
 			return nil, huma.Error500InternalServerError("failed to set primary photo")
@@ -129,10 +130,10 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 
 		err := svc.UpdateCaption(ctx, input.ID, workspaceID, input.Body.Caption)
 		if err != nil {
-			if err == ErrPhotoNotFound {
+			if errors.Is(err, ErrPhotoNotFound) {
 				return nil, huma.Error404NotFound("photo not found")
 			}
-			if err == ErrUnauthorized {
+			if errors.Is(err, ErrUnauthorized) {
 				return nil, huma.Error403Forbidden("photo does not belong to workspace")
 			}
 			return nil, huma.Error500InternalServerError("failed to update caption")
@@ -176,7 +177,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 
 		err := svc.ReorderPhotos(ctx, input.ItemID, workspaceID, input.Body.PhotoIDs)
 		if err != nil {
-			if err == ErrInvalidDisplayOrder {
+			if errors.Is(err, ErrInvalidDisplayOrder) {
 				return nil, huma.Error400BadRequest("invalid photo order: all photos must be included")
 			}
 			return nil, huma.Error500InternalServerError("failed to reorder photos")
@@ -214,10 +215,10 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 
 		err := svc.DeletePhoto(ctx, input.ID, workspaceID)
 		if err != nil {
-			if err == ErrPhotoNotFound {
+			if errors.Is(err, ErrPhotoNotFound) {
 				return nil, huma.Error404NotFound("photo not found")
 			}
-			if err == ErrUnauthorized {
+			if errors.Is(err, ErrUnauthorized) {
 				return nil, huma.Error403Forbidden("photo does not belong to workspace")
 			}
 			return nil, huma.Error500InternalServerError("failed to delete photo")
@@ -484,8 +485,9 @@ func (h *BulkPhotoHandler) HandleDownload(w http.ResponseWriter, r *http.Request
 			continue
 		}
 
-		// Create unique filename (avoid conflicts)
-		filename := photo.Filename
+		// Sanitize the stored filename (zip-slip guard: a name like
+		// "../../evil" must never produce an escaping zip entry)
+		filename := sanitizeUploadFilename(photo.Filename)
 		if i > 0 {
 			// Check for duplicates and add index if needed
 			ext := filepath.Ext(filename)
@@ -762,7 +764,7 @@ func (h *ServePhotoHandler) servePhoto(w http.ResponseWriter, r *http.Request, t
 	// Get photo metadata
 	photo, err := h.svc.GetPhoto(ctx, photoID)
 	if err != nil {
-		if err == ErrPhotoNotFound {
+		if errors.Is(err, ErrPhotoNotFound) {
 			http.Error(w, "photo not found", http.StatusNotFound)
 			return
 		}
@@ -809,6 +811,10 @@ func (h *ServePhotoHandler) servePhoto(w http.ResponseWriter, r *http.Request, t
 
 	// Set cache headers (1 year)
 	w.Header().Set("Cache-Control", "public, max-age=31536000, immutable")
+
+	// Security headers for serving user-uploaded content
+	w.Header().Set("Content-Disposition", fmt.Sprintf("inline; filename=%q", sanitizeUploadFilename(photo.Filename)))
+	w.Header().Set("Content-Security-Policy", "default-src 'none'; img-src 'self'; style-src 'unsafe-inline'")
 
 	// Serve file
 	w.WriteHeader(http.StatusOK)

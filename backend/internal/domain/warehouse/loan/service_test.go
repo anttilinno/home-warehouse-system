@@ -161,7 +161,7 @@ func (m *MockInventoryRepository) GetTotalQuantity(ctx context.Context, workspac
 	return args.Int(0), args.Error(1)
 }
 
-func (m *MockInventoryRepository) Delete(ctx context.Context, id uuid.UUID) error {
+func (m *MockInventoryRepository) Delete(ctx context.Context, id, workspaceID uuid.UUID) error {
 	args := m.Called(ctx, id)
 	return args.Error(0)
 }
@@ -694,7 +694,7 @@ func TestService_Create(t *testing.T) {
 		t.Run(tt.testName, func(t *testing.T) {
 			mockLoanRepo := new(MockRepository)
 			mockInvRepo := new(MockInventoryRepository)
-			svc := NewService(mockLoanRepo, mockInvRepo)
+			svc := NewService(mockLoanRepo, mockInvRepo, nil)
 
 			tt.setupMock(mockLoanRepo, mockInvRepo)
 
@@ -770,7 +770,7 @@ func TestService_GetByID(t *testing.T) {
 		t.Run(tt.testName, func(t *testing.T) {
 			mockLoanRepo := new(MockRepository)
 			mockInvRepo := new(MockInventoryRepository)
-			svc := NewService(mockLoanRepo, mockInvRepo)
+			svc := NewService(mockLoanRepo, mockInvRepo, nil)
 
 			tt.setupMock(mockLoanRepo)
 
@@ -865,7 +865,7 @@ func TestService_Return(t *testing.T) {
 		t.Run(tt.testName, func(t *testing.T) {
 			mockLoanRepo := new(MockRepository)
 			mockInvRepo := new(MockInventoryRepository)
-			svc := NewService(mockLoanRepo, mockInvRepo)
+			svc := NewService(mockLoanRepo, mockInvRepo, nil)
 
 			tt.setupMock(mockLoanRepo, mockInvRepo)
 
@@ -942,7 +942,7 @@ func TestService_ExtendDueDate(t *testing.T) {
 		t.Run(tt.testName, func(t *testing.T) {
 			mockLoanRepo := new(MockRepository)
 			mockInvRepo := new(MockInventoryRepository)
-			svc := NewService(mockLoanRepo, mockInvRepo)
+			svc := NewService(mockLoanRepo, mockInvRepo, nil)
 
 			tt.setupMock(mockLoanRepo)
 
@@ -1015,7 +1015,7 @@ func TestService_List(t *testing.T) {
 		t.Run(tt.testName, func(t *testing.T) {
 			mockLoanRepo := new(MockRepository)
 			mockInvRepo := new(MockInventoryRepository)
-			svc := NewService(mockLoanRepo, mockInvRepo)
+			svc := NewService(mockLoanRepo, mockInvRepo, nil)
 
 			tt.setupMock(mockLoanRepo)
 
@@ -1071,7 +1071,7 @@ func TestService_ListByBorrower(t *testing.T) {
 		t.Run(tt.testName, func(t *testing.T) {
 			mockLoanRepo := new(MockRepository)
 			mockInvRepo := new(MockInventoryRepository)
-			svc := NewService(mockLoanRepo, mockInvRepo)
+			svc := NewService(mockLoanRepo, mockInvRepo, nil)
 
 			tt.setupMock(mockLoanRepo)
 
@@ -1125,7 +1125,7 @@ func TestService_ListByInventory(t *testing.T) {
 		t.Run(tt.testName, func(t *testing.T) {
 			mockLoanRepo := new(MockRepository)
 			mockInvRepo := new(MockInventoryRepository)
-			svc := NewService(mockLoanRepo, mockInvRepo)
+			svc := NewService(mockLoanRepo, mockInvRepo, nil)
 
 			tt.setupMock(mockLoanRepo)
 
@@ -1188,7 +1188,7 @@ func TestService_GetActiveLoans(t *testing.T) {
 		t.Run(tt.testName, func(t *testing.T) {
 			mockLoanRepo := new(MockRepository)
 			mockInvRepo := new(MockInventoryRepository)
-			svc := NewService(mockLoanRepo, mockInvRepo)
+			svc := NewService(mockLoanRepo, mockInvRepo, nil)
 
 			tt.setupMock(mockLoanRepo)
 
@@ -1249,7 +1249,7 @@ func TestService_GetOverdueLoans(t *testing.T) {
 		t.Run(tt.testName, func(t *testing.T) {
 			mockLoanRepo := new(MockRepository)
 			mockInvRepo := new(MockInventoryRepository)
-			svc := NewService(mockLoanRepo, mockInvRepo)
+			svc := NewService(mockLoanRepo, mockInvRepo, nil)
 
 			tt.setupMock(mockLoanRepo)
 
@@ -1285,7 +1285,7 @@ func TestService_Create_SaveErrors(t *testing.T) {
 	t.Run("inventory save error", func(t *testing.T) {
 		mockLoanRepo := new(MockRepository)
 		mockInvRepo := new(MockInventoryRepository)
-		svc := NewService(mockLoanRepo, mockInvRepo)
+		svc := NewService(mockLoanRepo, mockInvRepo, nil)
 
 		inv := createTestInventory(inventoryID, workspaceID, itemID, locationID, 5, inventory.StatusAvailable)
 		mockInvRepo.On("FindByID", ctx, inventoryID, workspaceID).Return(inv, nil)
@@ -1308,7 +1308,7 @@ func TestService_Create_SaveErrors(t *testing.T) {
 	t.Run("loan save error", func(t *testing.T) {
 		mockLoanRepo := new(MockRepository)
 		mockInvRepo := new(MockInventoryRepository)
-		svc := NewService(mockLoanRepo, mockInvRepo)
+		svc := NewService(mockLoanRepo, mockInvRepo, nil)
 
 		inv := createTestInventory(inventoryID, workspaceID, itemID, locationID, 5, inventory.StatusAvailable)
 		mockInvRepo.On("FindByID", ctx, inventoryID, workspaceID).Return(inv, nil)
@@ -1344,7 +1344,7 @@ func TestService_Return_SaveErrors(t *testing.T) {
 	t.Run("inventory save error", func(t *testing.T) {
 		mockLoanRepo := new(MockRepository)
 		mockInvRepo := new(MockInventoryRepository)
-		svc := NewService(mockLoanRepo, mockInvRepo)
+		svc := NewService(mockLoanRepo, mockInvRepo, nil)
 
 		loan := Reconstruct(loanID, workspaceID, inventoryID, borrowerID, 1, now, nil, nil, nil, now, now)
 		inv := createTestInventory(inventoryID, workspaceID, itemID, locationID, 1, inventory.StatusOnLoan)
@@ -1363,7 +1363,7 @@ func TestService_Return_SaveErrors(t *testing.T) {
 	t.Run("loan save error", func(t *testing.T) {
 		mockLoanRepo := new(MockRepository)
 		mockInvRepo := new(MockInventoryRepository)
-		svc := NewService(mockLoanRepo, mockInvRepo)
+		svc := NewService(mockLoanRepo, mockInvRepo, nil)
 
 		loan := Reconstruct(loanID, workspaceID, inventoryID, borrowerID, 1, now, nil, nil, nil, now, now)
 		inv := createTestInventory(inventoryID, workspaceID, itemID, locationID, 1, inventory.StatusOnLoan)
@@ -1393,7 +1393,7 @@ func TestService_ExtendDueDate_SaveError(t *testing.T) {
 
 	mockLoanRepo := new(MockRepository)
 	mockInvRepo := new(MockInventoryRepository)
-	svc := NewService(mockLoanRepo, mockInvRepo)
+	svc := NewService(mockLoanRepo, mockInvRepo, nil)
 
 	loan := Reconstruct(loanID, workspaceID, inventoryID, borrowerID, 1, now, ptrTime(now.Add(24*time.Hour)), nil, nil, now, now)
 
@@ -1417,7 +1417,7 @@ func TestService_Return_InventoryDeleted(t *testing.T) {
 
 	mockLoanRepo := new(MockRepository)
 	mockInvRepo := new(MockInventoryRepository)
-	svc := NewService(mockLoanRepo, mockInvRepo)
+	svc := NewService(mockLoanRepo, mockInvRepo, nil)
 
 	loan := Reconstruct(loanID, workspaceID, inventoryID, borrowerID, 1, now, nil, nil, nil, now, now)
 
@@ -1449,7 +1449,7 @@ func TestService_Return_InventoryFindError(t *testing.T) {
 
 	mockLoanRepo := new(MockRepository)
 	mockInvRepo := new(MockInventoryRepository)
-	svc := NewService(mockLoanRepo, mockInvRepo)
+	svc := NewService(mockLoanRepo, mockInvRepo, nil)
 
 	loan := Reconstruct(loanID, workspaceID, inventoryID, borrowerID, 1, now, nil, nil, nil, now, now)
 
@@ -1475,7 +1475,7 @@ func TestService_Create_FindActiveLoanError(t *testing.T) {
 
 	mockLoanRepo := new(MockRepository)
 	mockInvRepo := new(MockInventoryRepository)
-	svc := NewService(mockLoanRepo, mockInvRepo)
+	svc := NewService(mockLoanRepo, mockInvRepo, nil)
 
 	inv := createTestInventory(inventoryID, workspaceID, itemID, locationID, 5, inventory.StatusAvailable)
 	mockInvRepo.On("FindByID", ctx, inventoryID, workspaceID).Return(inv, nil)
@@ -1510,7 +1510,7 @@ func TestService_Update_Success(t *testing.T) {
 
 	mockLoanRepo := new(MockRepository)
 	mockInvRepo := new(MockInventoryRepository)
-	svc := NewService(mockLoanRepo, mockInvRepo)
+	svc := NewService(mockLoanRepo, mockInvRepo, nil)
 
 	existing := Reconstruct(loanID, workspaceID, inventoryID, borrowerID, 1, loanedAt, nil, nil, nil, loanedAt, loanedAt)
 	updatedPersisted := Reconstruct(loanID, workspaceID, inventoryID, borrowerID, 1, loanedAt, &newDueDate, nil, &newNotes, loanedAt, time.Now())
@@ -1541,7 +1541,7 @@ func TestService_Update_AlreadyReturned(t *testing.T) {
 
 	mockLoanRepo := new(MockRepository)
 	mockInvRepo := new(MockInventoryRepository)
-	svc := NewService(mockLoanRepo, mockInvRepo)
+	svc := NewService(mockLoanRepo, mockInvRepo, nil)
 
 	returnedLoan := Reconstruct(loanID, workspaceID, uuid.New(), uuid.New(), 1, loanedAt, nil, &returnedAt, nil, loanedAt, loanedAt)
 	mockLoanRepo.On("FindByID", ctx, loanID, workspaceID).Return(returnedLoan, nil)
@@ -1564,7 +1564,7 @@ func TestService_Update_InvalidDueDate(t *testing.T) {
 
 	mockLoanRepo := new(MockRepository)
 	mockInvRepo := new(MockInventoryRepository)
-	svc := NewService(mockLoanRepo, mockInvRepo)
+	svc := NewService(mockLoanRepo, mockInvRepo, nil)
 
 	existing := Reconstruct(loanID, workspaceID, uuid.New(), uuid.New(), 1, loanedAt, nil, nil, nil, loanedAt, loanedAt)
 	mockLoanRepo.On("FindByID", ctx, loanID, workspaceID).Return(existing, nil)
@@ -1585,7 +1585,7 @@ func TestService_Update_NotFound(t *testing.T) {
 
 	mockLoanRepo := new(MockRepository)
 	mockInvRepo := new(MockInventoryRepository)
-	svc := NewService(mockLoanRepo, mockInvRepo)
+	svc := NewService(mockLoanRepo, mockInvRepo, nil)
 
 	// shared.ErrNotFound from repo → service maps to ErrLoanNotFound so
 	// handler can emit a clean 404 (defence in depth).
@@ -1598,4 +1598,3 @@ func TestService_Update_NotFound(t *testing.T) {
 	assert.Equal(t, ErrLoanNotFound, err)
 	mockLoanRepo.AssertExpectations(t)
 }
-

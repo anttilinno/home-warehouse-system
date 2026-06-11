@@ -51,6 +51,8 @@ func NewUploadTestSetup() *UploadTestSetup {
 			ctx := req.Context()
 			ctx = context.WithValue(ctx, appMiddleware.WorkspaceContextKey, setup.WorkspaceID)
 			ctx = context.WithValue(ctx, appMiddleware.UserContextKey, setup.authUser)
+			ctx = context.WithValue(ctx, appMiddleware.RoleContextKey, "owner")
+			ctx = context.WithValue(ctx, appMiddleware.RoleContextKey, "owner")
 			next.ServeHTTP(w, req.WithContext(ctx))
 		})
 	})
@@ -134,6 +136,7 @@ func TestUploadHandler_InvalidEntityType(t *testing.T) {
 		// Inject context
 		ctx := context.WithValue(req.Context(), appMiddleware.WorkspaceContextKey, setup.WorkspaceID)
 		ctx = context.WithValue(ctx, appMiddleware.UserContextKey, setup.authUser)
+		ctx = context.WithValue(ctx, appMiddleware.RoleContextKey, "owner")
 		req = req.WithContext(ctx)
 
 		rec := httptest.NewRecorder()
@@ -150,6 +153,7 @@ func TestUploadHandler_InvalidEntityType(t *testing.T) {
 		// Inject context
 		ctx := context.WithValue(req.Context(), appMiddleware.WorkspaceContextKey, setup.WorkspaceID)
 		ctx = context.WithValue(ctx, appMiddleware.UserContextKey, setup.authUser)
+		ctx = context.WithValue(ctx, appMiddleware.RoleContextKey, "owner")
 		req = req.WithContext(ctx)
 
 		rec := httptest.NewRecorder()
@@ -165,6 +169,7 @@ func TestUploadHandler_InvalidEntityType(t *testing.T) {
 		// Inject context
 		ctx := context.WithValue(req.Context(), appMiddleware.WorkspaceContextKey, setup.WorkspaceID)
 		ctx = context.WithValue(ctx, appMiddleware.UserContextKey, setup.authUser)
+		ctx = context.WithValue(ctx, appMiddleware.RoleContextKey, "owner")
 		req = req.WithContext(ctx)
 
 		rec := httptest.NewRecorder()
@@ -190,6 +195,7 @@ func TestUploadHandler_MissingEntityType(t *testing.T) {
 		// Inject context
 		ctx := context.WithValue(req.Context(), appMiddleware.WorkspaceContextKey, setup.WorkspaceID)
 		ctx = context.WithValue(ctx, appMiddleware.UserContextKey, setup.authUser)
+		ctx = context.WithValue(ctx, appMiddleware.RoleContextKey, "owner")
 		req = req.WithContext(ctx)
 
 		rec := httptest.NewRecorder()
@@ -215,6 +221,7 @@ func TestUploadHandler_MissingFile(t *testing.T) {
 		// Inject context
 		ctx := context.WithValue(req.Context(), appMiddleware.WorkspaceContextKey, setup.WorkspaceID)
 		ctx = context.WithValue(ctx, appMiddleware.UserContextKey, setup.authUser)
+		ctx = context.WithValue(ctx, appMiddleware.RoleContextKey, "owner")
 		req = req.WithContext(ctx)
 
 		rec := httptest.NewRecorder()
@@ -255,6 +262,7 @@ func TestUploadHandler_InvalidFileExtension(t *testing.T) {
 			// Inject context
 			ctx := context.WithValue(req.Context(), appMiddleware.WorkspaceContextKey, setup.WorkspaceID)
 			ctx = context.WithValue(ctx, appMiddleware.UserContextKey, setup.authUser)
+			ctx = context.WithValue(ctx, appMiddleware.RoleContextKey, "owner")
 			req = req.WithContext(ctx)
 
 			rec := httptest.NewRecorder()
@@ -338,6 +346,7 @@ func TestUploadHandler_SaveJobError(t *testing.T) {
 		// Inject context
 		ctx := context.WithValue(req.Context(), appMiddleware.WorkspaceContextKey, setup.WorkspaceID)
 		ctx = context.WithValue(ctx, appMiddleware.UserContextKey, setup.authUser)
+		ctx = context.WithValue(ctx, appMiddleware.RoleContextKey, "owner")
 		req = req.WithContext(ctx)
 
 		rec := httptest.NewRecorder()
@@ -359,6 +368,7 @@ func TestUploadHandler_SaveJobError(t *testing.T) {
 		// Inject context
 		ctx := context.WithValue(req.Context(), appMiddleware.WorkspaceContextKey, setup.WorkspaceID)
 		ctx = context.WithValue(ctx, appMiddleware.UserContextKey, setup.authUser)
+		ctx = context.WithValue(ctx, appMiddleware.RoleContextKey, "owner")
 		req = req.WithContext(ctx)
 
 		rec := httptest.NewRecorder()
@@ -408,6 +418,7 @@ func TestUploadHandler_ValidEntityTypes(t *testing.T) {
 			// Inject context
 			ctx := context.WithValue(req.Context(), appMiddleware.WorkspaceContextKey, setup.WorkspaceID)
 			ctx = context.WithValue(ctx, appMiddleware.UserContextKey, setup.authUser)
+			ctx = context.WithValue(ctx, appMiddleware.RoleContextKey, "owner")
 			req = req.WithContext(ctx)
 
 			rec := httptest.NewRecorder()
@@ -439,6 +450,7 @@ func TestUploadHandler_FileMetadataValidation(t *testing.T) {
 		// Inject context
 		ctx := context.WithValue(req.Context(), appMiddleware.WorkspaceContextKey, setup.WorkspaceID)
 		ctx = context.WithValue(ctx, appMiddleware.UserContextKey, setup.authUser)
+		ctx = context.WithValue(ctx, appMiddleware.RoleContextKey, "owner")
 		req = req.WithContext(ctx)
 
 		rec := httptest.NewRecorder()
@@ -459,6 +471,7 @@ func TestUploadHandler_FileMetadataValidation(t *testing.T) {
 		// Inject context
 		ctx := context.WithValue(req.Context(), appMiddleware.WorkspaceContextKey, setup.WorkspaceID)
 		ctx = context.WithValue(ctx, appMiddleware.UserContextKey, setup.authUser)
+		ctx = context.WithValue(ctx, appMiddleware.RoleContextKey, "owner")
 		req = req.WithContext(ctx)
 
 		rec := httptest.NewRecorder()
@@ -478,6 +491,7 @@ func TestUploadHandler_FileMetadataValidation(t *testing.T) {
 		// Inject context
 		ctx := context.WithValue(req.Context(), appMiddleware.WorkspaceContextKey, setup.WorkspaceID)
 		ctx = context.WithValue(ctx, appMiddleware.UserContextKey, setup.authUser)
+		ctx = context.WithValue(ctx, appMiddleware.RoleContextKey, "owner")
 		req = req.WithContext(ctx)
 
 		rec := httptest.NewRecorder()
@@ -497,6 +511,7 @@ func TestUploadHandler_FileMetadataValidation(t *testing.T) {
 		// Inject context
 		ctx := context.WithValue(req.Context(), appMiddleware.WorkspaceContextKey, setup.WorkspaceID)
 		ctx = context.WithValue(ctx, appMiddleware.UserContextKey, setup.authUser)
+		ctx = context.WithValue(ctx, appMiddleware.RoleContextKey, "owner")
 		req = req.WithContext(ctx)
 
 		rec := httptest.NewRecorder()
@@ -529,6 +544,7 @@ func TestUploadHandler_FileExtensionCaseInsensitive(t *testing.T) {
 			// Inject context
 			ctx := context.WithValue(req.Context(), appMiddleware.WorkspaceContextKey, setup.WorkspaceID)
 			ctx = context.WithValue(ctx, appMiddleware.UserContextKey, setup.authUser)
+			ctx = context.WithValue(ctx, appMiddleware.RoleContextKey, "owner")
 			req = req.WithContext(ctx)
 
 			rec := httptest.NewRecorder()
@@ -560,6 +576,7 @@ func TestUploadHandler_InitialJobState(t *testing.T) {
 		// Inject context
 		ctx := context.WithValue(req.Context(), appMiddleware.WorkspaceContextKey, setup.WorkspaceID)
 		ctx = context.WithValue(ctx, appMiddleware.UserContextKey, setup.authUser)
+		ctx = context.WithValue(ctx, appMiddleware.RoleContextKey, "owner")
 		req = req.WithContext(ctx)
 
 		rec := httptest.NewRecorder()
@@ -579,6 +596,7 @@ func TestUploadHandler_InitialJobState(t *testing.T) {
 		// Inject context
 		ctx := context.WithValue(req.Context(), appMiddleware.WorkspaceContextKey, setup.WorkspaceID)
 		ctx = context.WithValue(ctx, appMiddleware.UserContextKey, setup.authUser)
+		ctx = context.WithValue(ctx, appMiddleware.RoleContextKey, "owner")
 		req = req.WithContext(ctx)
 
 		rec := httptest.NewRecorder()

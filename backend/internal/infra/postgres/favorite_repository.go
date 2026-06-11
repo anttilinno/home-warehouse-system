@@ -48,14 +48,6 @@ func (r *FavoriteRepository) Save(ctx context.Context, f *favorite.Favorite) err
 	return err
 }
 
-func (r *FavoriteRepository) FindByID(ctx context.Context, id uuid.UUID) (*favorite.Favorite, error) {
-	row, err := r.queries.GetFavorite(ctx, id)
-	if err != nil {
-		return nil, err
-	}
-	return r.rowToFavorite(row), nil
-}
-
 func (r *FavoriteRepository) FindByUser(ctx context.Context, userID, workspaceID uuid.UUID) ([]*favorite.Favorite, error) {
 	rows, err := r.queries.ListFavoritesByUser(ctx, queries.ListFavoritesByUserParams{
 		UserID:      userID,

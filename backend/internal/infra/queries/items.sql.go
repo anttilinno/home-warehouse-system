@@ -15,11 +15,16 @@ import (
 const archiveItem = `-- name: ArchiveItem :exec
 UPDATE warehouse.items
 SET is_archived = true, updated_at = now()
-WHERE id = $1
+WHERE id = $1 AND workspace_id = $2
 `
 
-func (q *Queries) ArchiveItem(ctx context.Context, id uuid.UUID) error {
-	_, err := q.db.Exec(ctx, archiveItem, id)
+type ArchiveItemParams struct {
+	ID          uuid.UUID `json:"id"`
+	WorkspaceID uuid.UUID `json:"workspace_id"`
+}
+
+func (q *Queries) ArchiveItem(ctx context.Context, arg ArchiveItemParams) error {
+	_, err := q.db.Exec(ctx, archiveItem, arg.ID, arg.WorkspaceID)
 	return err
 }
 
@@ -107,7 +112,7 @@ type CreateItemParams struct {
 	SerialNumber      *string     `json:"serial_number"`
 	Manufacturer      *string     `json:"manufacturer"`
 	Barcode           *string     `json:"barcode"`
-	IsInsured         *bool       `json:"is_insured"`
+	IsInsured         bool        `json:"is_insured"`
 	LifetimeWarranty  *bool       `json:"lifetime_warranty"`
 	WarrantyDetails   *string     `json:"warranty_details"`
 	PurchasedFrom     pgtype.UUID `json:"purchased_from"`
@@ -174,11 +179,16 @@ func (q *Queries) CreateItem(ctx context.Context, arg CreateItemParams) (Warehou
 }
 
 const deleteItem = `-- name: DeleteItem :exec
-DELETE FROM warehouse.items WHERE id = $1
+DELETE FROM warehouse.items WHERE id = $1 AND workspace_id = $2
 `
 
-func (q *Queries) DeleteItem(ctx context.Context, id uuid.UUID) error {
-	_, err := q.db.Exec(ctx, deleteItem, id)
+type DeleteItemParams struct {
+	ID          uuid.UUID `json:"id"`
+	WorkspaceID uuid.UUID `json:"workspace_id"`
+}
+
+func (q *Queries) DeleteItem(ctx context.Context, arg DeleteItemParams) error {
+	_, err := q.db.Exec(ctx, deleteItem, arg.ID, arg.WorkspaceID)
 	return err
 }
 
@@ -430,8 +440,8 @@ type GetItemWithDetailsRow struct {
 	SerialNumber      *string            `json:"serial_number"`
 	Manufacturer      *string            `json:"manufacturer"`
 	Barcode           *string            `json:"barcode"`
-	IsInsured         *bool              `json:"is_insured"`
-	IsArchived        *bool              `json:"is_archived"`
+	IsInsured         bool               `json:"is_insured"`
+	IsArchived        bool               `json:"is_archived"`
 	NeedsReview       *bool              `json:"needs_review"`
 	LifetimeWarranty  *bool              `json:"lifetime_warranty"`
 	WarrantyDetails   *string            `json:"warranty_details"`
@@ -795,11 +805,16 @@ func (q *Queries) ListItemsNeedingReview(ctx context.Context, arg ListItemsNeedi
 const restoreItem = `-- name: RestoreItem :exec
 UPDATE warehouse.items
 SET is_archived = false, updated_at = now()
-WHERE id = $1
+WHERE id = $1 AND workspace_id = $2
 `
 
-func (q *Queries) RestoreItem(ctx context.Context, id uuid.UUID) error {
-	_, err := q.db.Exec(ctx, restoreItem, id)
+type RestoreItemParams struct {
+	ID          uuid.UUID `json:"id"`
+	WorkspaceID uuid.UUID `json:"workspace_id"`
+}
+
+func (q *Queries) RestoreItem(ctx context.Context, arg RestoreItemParams) error {
+	_, err := q.db.Exec(ctx, restoreItem, arg.ID, arg.WorkspaceID)
 	return err
 }
 
@@ -871,7 +886,7 @@ SET name = $2, description = $3, category_id = $4, brand = $5, model = $6,
     is_insured = $11, lifetime_warranty = $12, warranty_details = $13,
     purchased_from = $14, min_stock_level = $15, obsidian_vault_path = $16,
     obsidian_note_path = $17, needs_review = $18, updated_at = now()
-WHERE id = $1
+WHERE id = $1 AND workspace_id = $19
 RETURNING id, workspace_id, sku, name, description, category_id, brand, model, image_url, serial_number, manufacturer, barcode, is_insured, is_archived, needs_review, lifetime_warranty, warranty_details, purchased_from, min_stock_level, short_code, obsidian_vault_path, obsidian_note_path, search_vector, created_at, updated_at
 `
 
@@ -886,7 +901,7 @@ type UpdateItemParams struct {
 	SerialNumber      *string     `json:"serial_number"`
 	Manufacturer      *string     `json:"manufacturer"`
 	Barcode           *string     `json:"barcode"`
-	IsInsured         *bool       `json:"is_insured"`
+	IsInsured         bool        `json:"is_insured"`
 	LifetimeWarranty  *bool       `json:"lifetime_warranty"`
 	WarrantyDetails   *string     `json:"warranty_details"`
 	PurchasedFrom     pgtype.UUID `json:"purchased_from"`
@@ -894,6 +909,7 @@ type UpdateItemParams struct {
 	ObsidianVaultPath *string     `json:"obsidian_vault_path"`
 	ObsidianNotePath  *string     `json:"obsidian_note_path"`
 	NeedsReview       *bool       `json:"needs_review"`
+	WorkspaceID       uuid.UUID   `json:"workspace_id"`
 }
 
 func (q *Queries) UpdateItem(ctx context.Context, arg UpdateItemParams) (WarehouseItem, error) {
@@ -916,6 +932,7 @@ func (q *Queries) UpdateItem(ctx context.Context, arg UpdateItemParams) (Warehou
 		arg.ObsidianVaultPath,
 		arg.ObsidianNotePath,
 		arg.NeedsReview,
+		arg.WorkspaceID,
 	)
 	var i WarehouseItem
 	err := row.Scan(

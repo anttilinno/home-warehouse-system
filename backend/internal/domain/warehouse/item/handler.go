@@ -43,6 +43,30 @@ func derefInt(p *int, fallback int) int {
 	return fallback
 }
 
+// patchString resolves a PATCH body value for a nullable string field:
+// nil means the field was omitted from the request — keep the current value;
+// "" is an explicit clear — store NULL; anything else overwrites.
+func patchString(patch, current *string) *string {
+	if patch == nil {
+		return current
+	}
+	if *patch == "" {
+		return nil
+	}
+	return patch
+}
+
+// patchOrCurrent keeps the current value when the PATCH body omitted the
+// field (nil pointer), otherwise returns the new value. Used for field types
+// without an ""-style clear sentinel (*bool, *uuid.UUID): PATCH cannot clear
+// these, only overwrite them.
+func patchOrCurrent[T any](patch, current *T) *T {
+	if patch != nil {
+		return patch
+	}
+	return current
+}
+
 // RegisterRoutes registers item routes.
 //
 // photos (PrimaryPhotoLookup) is optional — when non-nil, list/detail handlers
@@ -136,9 +160,15 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 			responses[i] = toItemResponse(item, nil, photoURLGen)
 		}
 
+		// svc.Search exposes no total-count query (limit-capped autocomplete
+		// endpoint), so Total reflects the returned page only and the
+		// envelope always reports a single page.
 		return &SearchItemsOutput{
 			Body: ItemListResponse{
-				Items: responses,
+				Items:      responses,
+				Total:      len(responses),
+				Page:       1,
+				TotalPages: 1,
 			},
 		}, nil
 	})
@@ -200,7 +230,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 
 		item, err := svc.GetByID(ctx, input.ID, workspaceID)
 		if err != nil {
-			if err == ErrItemNotFound {
+			if errors.Is(err, ErrItemNotFound) {
 				return nil, huma.Error404NotFound("item not found")
 			}
 			return nil, huma.Error500InternalServerError("failed to get item")
@@ -243,9 +273,15 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 			responses[i] = toItemResponse(item, primaryByItem[item.ID()], photoURLGen)
 		}
 
+		// svc.ListByCategory exposes no total-count query, so Total reflects
+		// the returned page only; Page echoes the request and TotalPages is
+		// reported as 1 (true total is unknown without extra SQL).
 		return &ListItemsOutput{
 			Body: ItemListResponse{
-				Items: responses,
+				Items:      responses,
+				Total:      len(responses),
+				Page:       input.Page,
+				TotalPages: 1,
 			},
 		}, nil
 	})
@@ -287,13 +323,13 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 			NeedsReview:       input.Body.NeedsReview,
 		})
 		if err != nil {
-			if err == ErrSKUTaken {
+			if errors.Is(err, ErrSKUTaken) {
 				return nil, huma.Error400BadRequest("SKU already exists in workspace")
 			}
-			if err == ErrShortCodeTaken {
+			if errors.Is(err, ErrShortCodeTaken) {
 				return nil, huma.Error400BadRequest("short code already exists in workspace")
 			}
-			if err == ErrInvalidMinStock {
+			if errors.Is(err, ErrInvalidMinStock) {
 				return nil, huma.Error400BadRequest("minimum stock level must be non-negative")
 			}
 			return nil, appMiddleware.MapDomainError(err)
@@ -323,6 +359,27 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 	})
 
 	// Update item
+	//
+	// PATCH merge semantics (svc.Update / entity Update() are full-state
+	// replacements, so the handler is responsible for merging the request
+	// body over the current item):
+	//
+	//   - Field absent from the body (nil pointer after decode) = UNCHANGED:
+	//     the current value is carried over. This protects partial updates
+	//     like {"needs_review": false} (item detail "mark as reviewed") from
+	//     nulling every omitted field.
+	//   - Explicit empty string ("") on a nullable *string field = CLEAR:
+	//     the field is stored as NULL.
+	//   - *bool, *uuid.UUID (category_id, purchased_from) and min_stock_level
+	//     have NO clear mechanism via PATCH: nil keeps the current value,
+	//     non-nil overwrites. Explicit JSON null also decodes to nil and
+	//     therefore means "unchanged", not "clear".
+	//
+	// Frontend note: the edit wizard (edit-item-wizard.tsx) sends cleared
+	// inputs as omitted (`value || undefined`), which under these semantics
+	// is a no-op — to clear a string field a client must send "" explicitly.
+	// That trade-off is deliberate: a partial PATCH must never silently
+	// destroy data it did not mention.
 	huma.Patch(api, "/items/{id}", func(ctx context.Context, input *UpdateItemInput) (*UpdateItemOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
@@ -334,43 +391,41 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 		// Get the current item to use defaults for fields not provided
 		currentItem, err := svc.GetByID(ctx, input.ID, workspaceID)
 		if err != nil {
-			if err == ErrItemNotFound {
+			if errors.Is(err, ErrItemNotFound) {
 				return nil, huma.Error404NotFound("item not found")
 			}
 			return nil, huma.Error500InternalServerError("failed to get item")
 		}
 
-		// Build update input with current values as defaults
+		// Build the full-state UpdateInput by merging the PATCH body over the
+		// current item (see merge semantics on the route comment above).
 		updateInput := UpdateInput{
 			Name:              currentItem.Name(),
-			Description:       input.Body.Description,
-			CategoryID:        input.Body.CategoryID,
-			Brand:             input.Body.Brand,
-			Model:             input.Body.Model,
-			ImageURL:          input.Body.ImageURL,
-			SerialNumber:      input.Body.SerialNumber,
-			Manufacturer:      input.Body.Manufacturer,
-			Barcode:           input.Body.Barcode,
-			IsInsured:         input.Body.IsInsured,
-			LifetimeWarranty:  input.Body.LifetimeWarranty,
-			WarrantyDetails:   input.Body.WarrantyDetails,
-			PurchasedFrom:     input.Body.PurchasedFrom,
-			MinStockLevel:     currentItem.MinStockLevel(),
-			ObsidianVaultPath: input.Body.ObsidianVaultPath,
-			ObsidianNotePath:  input.Body.ObsidianNotePath,
-			NeedsReview:       input.Body.NeedsReview,
+			Description:       patchString(input.Body.Description, currentItem.Description()),
+			CategoryID:        patchOrCurrent(input.Body.CategoryID, currentItem.CategoryID()),
+			Brand:             patchString(input.Body.Brand, currentItem.Brand()),
+			Model:             patchString(input.Body.Model, currentItem.Model()),
+			ImageURL:          patchString(input.Body.ImageURL, currentItem.ImageURL()),
+			SerialNumber:      patchString(input.Body.SerialNumber, currentItem.SerialNumber()),
+			Manufacturer:      patchString(input.Body.Manufacturer, currentItem.Manufacturer()),
+			Barcode:           patchString(input.Body.Barcode, currentItem.Barcode()),
+			IsInsured:         patchOrCurrent(input.Body.IsInsured, currentItem.IsInsured()),
+			LifetimeWarranty:  patchOrCurrent(input.Body.LifetimeWarranty, currentItem.LifetimeWarranty()),
+			WarrantyDetails:   patchString(input.Body.WarrantyDetails, currentItem.WarrantyDetails()),
+			PurchasedFrom:     patchOrCurrent(input.Body.PurchasedFrom, currentItem.PurchasedFrom()),
+			MinStockLevel:     derefInt(input.Body.MinStockLevel, currentItem.MinStockLevel()),
+			ObsidianVaultPath: patchString(input.Body.ObsidianVaultPath, currentItem.ObsidianVaultPath()),
+			ObsidianNotePath:  patchString(input.Body.ObsidianNotePath, currentItem.ObsidianNotePath()),
+			NeedsReview:       patchOrCurrent(input.Body.NeedsReview, currentItem.NeedsReview()),
 		}
 
 		if input.Body.Name != nil {
 			updateInput.Name = *input.Body.Name
 		}
-		if input.Body.MinStockLevel != nil {
-			updateInput.MinStockLevel = *input.Body.MinStockLevel
-		}
 
 		item, err := svc.Update(ctx, input.ID, workspaceID, updateInput)
 		if err != nil {
-			if err == ErrInvalidMinStock {
+			if errors.Is(err, ErrInvalidMinStock) {
 				return nil, huma.Error400BadRequest("minimum stock level must be non-negative")
 			}
 			return nil, appMiddleware.MapDomainError(err)
@@ -420,7 +475,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 
 		err := svc.Archive(ctx, input.ID, workspaceID)
 		if err != nil {
-			if err == ErrItemNotFound {
+			if errors.Is(err, ErrItemNotFound) {
 				return nil, huma.Error404NotFound("item not found")
 			}
 			return nil, appMiddleware.MapDomainError(err)
@@ -454,7 +509,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 
 		err := svc.Restore(ctx, input.ID, workspaceID)
 		if err != nil {
-			if err == ErrItemNotFound {
+			if errors.Is(err, ErrItemNotFound) {
 				return nil, huma.Error404NotFound("item not found")
 			}
 			return nil, appMiddleware.MapDomainError(err)
@@ -517,7 +572,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 
 		labelIDs, err := svc.GetItemLabels(ctx, input.ID, workspaceID)
 		if err != nil {
-			if err == ErrItemNotFound {
+			if errors.Is(err, ErrItemNotFound) {
 				return nil, huma.Error404NotFound("item not found")
 			}
 			return nil, huma.Error500InternalServerError("failed to get item labels")
@@ -537,7 +592,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 
 		err := svc.AttachLabel(ctx, input.ID, input.LabelID, workspaceID)
 		if err != nil {
-			if err == ErrItemNotFound {
+			if errors.Is(err, ErrItemNotFound) {
 				return nil, huma.Error404NotFound("item not found")
 			}
 			return nil, appMiddleware.MapDomainError(err)
@@ -555,7 +610,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 
 		err := svc.DetachLabel(ctx, input.ID, input.LabelID, workspaceID)
 		if err != nil {
-			if err == ErrItemNotFound {
+			if errors.Is(err, ErrItemNotFound) {
 				return nil, huma.Error404NotFound("item not found")
 			}
 			return nil, appMiddleware.MapDomainError(err)

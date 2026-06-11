@@ -15,12 +15,12 @@ func TestNewContainer(t *testing.T) {
 	locationID := uuid.New()
 
 	tests := []struct {
-		name        string
-		wsID        uuid.UUID
-		locID       uuid.UUID
-		contName    string
-		wantErr     bool
-		errMsg      string
+		name     string
+		wsID     uuid.UUID
+		locID    uuid.UUID
+		contName string
+		wantErr  bool
+		errMsg   string
 	}{
 		{
 			name:     "valid container",

@@ -53,7 +53,7 @@ func NewHandler(svc *Service, jwtSvc *jwt.Service, sessionSvc session.ServiceInt
 		redis:        redis,
 		sharedSecret: cfg.AutheliaSharedSecret,
 		appURL:       cfg.AppURL,
-		isSecure:     strings.HasPrefix(cfg.AppURL, "https"),
+		isSecure:     cfg.SecureCookies(),
 	}
 }
 

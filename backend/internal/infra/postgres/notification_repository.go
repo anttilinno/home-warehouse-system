@@ -162,11 +162,7 @@ func (r *NotificationRepository) rowToNotification(row queries.AuthNotification)
 		readAt = &t
 	}
 
-	// Convert is_read
-	isRead := false
-	if row.IsRead != nil {
-		isRead = *row.IsRead
-	}
+	isRead := row.IsRead
 
 	return notification.Reconstruct(
 		row.ID,

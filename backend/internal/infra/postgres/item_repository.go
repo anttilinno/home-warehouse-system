@@ -46,21 +46,28 @@ func (r *ItemRepository) Save(ctx context.Context, i *item.Item) error {
 
 	// If item exists, check what kind of update to make
 	if existing.ID != uuid.Nil {
-		existingArchived := existing.IsArchived != nil && *existing.IsArchived
+		existingArchived := existing.IsArchived
 		itemArchived := i.IsArchived() != nil && *i.IsArchived()
 
 		// If item is being archived (active → archived)
 		if itemArchived && !existingArchived {
-			return r.queries.ArchiveItem(ctx, i.ID())
+			return r.queries.ArchiveItem(ctx, queries.ArchiveItemParams{
+				ID:          i.ID(),
+				WorkspaceID: i.WorkspaceID(),
+			})
 		}
 		// If item is being restored (archived → active)
 		if !itemArchived && existingArchived {
-			return r.queries.RestoreItem(ctx, i.ID())
+			return r.queries.RestoreItem(ctx, queries.RestoreItemParams{
+				ID:          i.ID(),
+				WorkspaceID: i.WorkspaceID(),
+			})
 		}
 
 		// Otherwise, update the item
 		_, err = r.queries.UpdateItem(ctx, queries.UpdateItemParams{
 			ID:                i.ID(),
+			WorkspaceID:       i.WorkspaceID(),
 			Name:              i.Name(),
 			Description:       i.Description(),
 			CategoryID:        categoryID,
@@ -70,7 +77,7 @@ func (r *ItemRepository) Save(ctx context.Context, i *item.Item) error {
 			SerialNumber:      i.SerialNumber(),
 			Manufacturer:      i.Manufacturer(),
 			Barcode:           i.Barcode(),
-			IsInsured:         i.IsInsured(),
+			IsInsured:         boolValue(i.IsInsured()),
 			LifetimeWarranty:  i.LifetimeWarranty(),
 			WarrantyDetails:   i.WarrantyDetails(),
 			PurchasedFrom:     purchasedFrom,
@@ -96,7 +103,7 @@ func (r *ItemRepository) Save(ctx context.Context, i *item.Item) error {
 		SerialNumber:      i.SerialNumber(),
 		Manufacturer:      i.Manufacturer(),
 		Barcode:           i.Barcode(),
-		IsInsured:         i.IsInsured(),
+		IsInsured:         boolValue(i.IsInsured()),
 		LifetimeWarranty:  i.LifetimeWarranty(),
 		WarrantyDetails:   i.WarrantyDetails(),
 		PurchasedFrom:     purchasedFrom,
@@ -253,13 +260,16 @@ func (r *ItemRepository) Search(ctx context.Context, workspaceID uuid.UUID, quer
 	return items, nil
 }
 
-// Delete hard-deletes an item by ID.
+// Delete hard-deletes an item by ID, scoped to the workspace.
 // This is the authoritative hard-delete path. Soft-archive is a separate operation
 // that runs through Save when the entity's is_archived flag flips. Previous
 // implementation wrongly called ArchiveItem — fixed per Phase 60 Pitfall 3
 // (mirrors the Phase 59 borrower fix).
-func (r *ItemRepository) Delete(ctx context.Context, id uuid.UUID) error {
-	return r.queries.DeleteItem(ctx, id)
+func (r *ItemRepository) Delete(ctx context.Context, id, workspaceID uuid.UUID) error {
+	return r.queries.DeleteItem(ctx, queries.DeleteItemParams{
+		ID:          id,
+		WorkspaceID: workspaceID,
+	})
 }
 
 // FindByWorkspaceFiltered returns items matching the filter/sort/pagination params
@@ -387,6 +397,9 @@ func (r *ItemRepository) rowToItem(row queries.WarehouseItem) *item.Item {
 		purchasedFrom = &id
 	}
 
+	isInsured := row.IsInsured
+	isArchived := row.IsArchived
+
 	return item.Reconstruct(
 		row.ID,
 		row.WorkspaceID,
@@ -400,8 +413,8 @@ func (r *ItemRepository) rowToItem(row queries.WarehouseItem) *item.Item {
 		row.SerialNumber,
 		row.Manufacturer,
 		row.Barcode,
-		row.IsInsured,
-		row.IsArchived,
+		&isInsured,
+		&isArchived,
 		row.LifetimeWarranty,
 		row.WarrantyDetails,
 		purchasedFrom,

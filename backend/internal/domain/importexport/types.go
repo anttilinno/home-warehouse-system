@@ -240,12 +240,12 @@ type ExportMetadata struct {
 
 // WorkspaceBackupResult contains the result of a workspace backup export
 type WorkspaceBackupResult struct {
-	Data         []byte            `json:"-"`
-	Filename     string            `json:"filename"`
-	ContentType  string            `json:"content_type"`
-	RecordCounts map[string]int    `json:"record_counts"`
-	TotalRecords int               `json:"total_records"`
-	ExportID     uuid.UUID         `json:"export_id"`
+	Data         []byte         `json:"-"`
+	Filename     string         `json:"filename"`
+	ContentType  string         `json:"content_type"`
+	RecordCounts map[string]int `json:"record_counts"`
+	TotalRecords int            `json:"total_records"`
+	ExportID     uuid.UUID      `json:"export_id"`
 }
 
 // WorkspaceRestoreRequest contains data for restoring a workspace

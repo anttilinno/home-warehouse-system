@@ -36,6 +36,9 @@ type WorkspaceBackupQueries interface {
 	CreateBorrower(ctx context.Context, arg queries.CreateBorrowerParams) (queries.WarehouseBorrower, error)
 	CreateItem(ctx context.Context, arg queries.CreateItemParams) (queries.WarehouseItem, error)
 	CreateContainer(ctx context.Context, arg queries.CreateContainerParams) (queries.WarehouseContainer, error)
+	CreateInventory(ctx context.Context, arg queries.CreateInventoryParams) (queries.WarehouseInventory, error)
+	CreateLoan(ctx context.Context, arg queries.CreateLoanParams) (queries.WarehouseLoan, error)
+	CreateAttachment(ctx context.Context, arg queries.CreateAttachmentParams) (queries.WarehouseAttachment, error)
 }
 
 // WorkspaceBackupService handles full workspace backup and restore operations
@@ -50,15 +53,15 @@ func NewWorkspaceBackupService(q WorkspaceBackupQueries) *WorkspaceBackupService
 
 // WorkspaceData contains all exportable workspace data
 type WorkspaceData struct {
-	Categories  []queries.WarehouseCategory  `json:"categories"`
-	Labels      []queries.WarehouseLabel     `json:"labels"`
-	Companies   []queries.WarehouseCompany   `json:"companies"`
-	Locations   []queries.WarehouseLocation  `json:"locations"`
-	Borrowers   []queries.WarehouseBorrower  `json:"borrowers"`
-	Items       []queries.WarehouseItem      `json:"items"`
-	Containers  []queries.WarehouseContainer `json:"containers"`
-	Inventory   []queries.WarehouseInventory `json:"inventory"`
-	Loans       []queries.WarehouseLoan      `json:"loans"`
+	Categories  []queries.WarehouseCategory   `json:"categories"`
+	Labels      []queries.WarehouseLabel      `json:"labels"`
+	Companies   []queries.WarehouseCompany    `json:"companies"`
+	Locations   []queries.WarehouseLocation   `json:"locations"`
+	Borrowers   []queries.WarehouseBorrower   `json:"borrowers"`
+	Items       []queries.WarehouseItem       `json:"items"`
+	Containers  []queries.WarehouseContainer  `json:"containers"`
+	Inventory   []queries.WarehouseInventory  `json:"inventory"`
+	Loans       []queries.WarehouseLoan       `json:"loans"`
 	Attachments []queries.WarehouseAttachment `json:"attachments"`
 }
 
@@ -123,11 +126,11 @@ func (s *WorkspaceBackupService) ExportWorkspace(ctx context.Context, workspaceI
 
 	fileSizeBytes := int64(len(fileData))
 	err = s.queries.CreateWorkspaceExport(ctx, queries.CreateWorkspaceExportParams{
-		ID:           exportID,
-		WorkspaceID:  workspaceID,
-		ExportedBy:   pgtype.UUID{Bytes: exportedBy, Valid: true},
-		Format:       string(format),
-		RecordCounts: recordCountsJSON,
+		ID:            exportID,
+		WorkspaceID:   workspaceID,
+		ExportedBy:    pgtype.UUID{Bytes: exportedBy, Valid: true},
+		Format:        string(format),
+		RecordCounts:  recordCountsJSON,
 		FileSizeBytes: &fileSizeBytes,
 	})
 	if err != nil {
@@ -335,11 +338,11 @@ func (s *WorkspaceBackupService) createCategoriesSheet(f *excelize.File, categor
 	for i, cat := range categories {
 		row := i + 2
 		f.SetCellValue(sheetName, fmt.Sprintf("A%d", row), cat.ID.String())
-		f.SetCellValue(sheetName, fmt.Sprintf("B%d", row), cat.Name)
+		f.SetCellValue(sheetName, fmt.Sprintf("B%d", row), sanitizeCSVCell(cat.Name))
 		if cat.ParentCategoryID.Valid {
 			f.SetCellValue(sheetName, fmt.Sprintf("C%d", row), uuid.UUID(cat.ParentCategoryID.Bytes).String())
 		}
-		f.SetCellValue(sheetName, fmt.Sprintf("D%d", row), ptrToString(cat.Description))
+		f.SetCellValue(sheetName, fmt.Sprintf("D%d", row), sanitizeCSVCell(ptrToString(cat.Description)))
 		f.SetCellValue(sheetName, fmt.Sprintf("E%d", row), cat.IsArchived)
 		f.SetCellValue(sheetName, fmt.Sprintf("F%d", row), formatTimestamp(cat.CreatedAt))
 		f.SetCellValue(sheetName, fmt.Sprintf("G%d", row), formatTimestamp(cat.UpdatedAt))
@@ -375,9 +378,9 @@ func (s *WorkspaceBackupService) createLabelsSheet(f *excelize.File, labels []qu
 	for i, label := range labels {
 		row := i + 2
 		f.SetCellValue(sheetName, fmt.Sprintf("A%d", row), label.ID.String())
-		f.SetCellValue(sheetName, fmt.Sprintf("B%d", row), label.Name)
-		f.SetCellValue(sheetName, fmt.Sprintf("C%d", row), ptrToString(label.Color))
-		f.SetCellValue(sheetName, fmt.Sprintf("D%d", row), ptrToString(label.Description))
+		f.SetCellValue(sheetName, fmt.Sprintf("B%d", row), sanitizeCSVCell(label.Name))
+		f.SetCellValue(sheetName, fmt.Sprintf("C%d", row), sanitizeCSVCell(ptrToString(label.Color)))
+		f.SetCellValue(sheetName, fmt.Sprintf("D%d", row), sanitizeCSVCell(ptrToString(label.Description)))
 		f.SetCellValue(sheetName, fmt.Sprintf("E%d", row), label.IsArchived)
 		f.SetCellValue(sheetName, fmt.Sprintf("F%d", row), formatTimestamp(label.CreatedAt))
 		f.SetCellValue(sheetName, fmt.Sprintf("G%d", row), formatTimestamp(label.UpdatedAt))
@@ -412,9 +415,9 @@ func (s *WorkspaceBackupService) createCompaniesSheet(f *excelize.File, companie
 	for i, company := range companies {
 		row := i + 2
 		f.SetCellValue(sheetName, fmt.Sprintf("A%d", row), company.ID.String())
-		f.SetCellValue(sheetName, fmt.Sprintf("B%d", row), company.Name)
-		f.SetCellValue(sheetName, fmt.Sprintf("C%d", row), ptrToString(company.Website))
-		f.SetCellValue(sheetName, fmt.Sprintf("D%d", row), ptrToString(company.Notes))
+		f.SetCellValue(sheetName, fmt.Sprintf("B%d", row), sanitizeCSVCell(company.Name))
+		f.SetCellValue(sheetName, fmt.Sprintf("C%d", row), sanitizeCSVCell(ptrToString(company.Website)))
+		f.SetCellValue(sheetName, fmt.Sprintf("D%d", row), sanitizeCSVCell(ptrToString(company.Notes)))
 		f.SetCellValue(sheetName, fmt.Sprintf("E%d", row), company.IsArchived)
 		f.SetCellValue(sheetName, fmt.Sprintf("F%d", row), formatTimestamp(company.CreatedAt))
 		f.SetCellValue(sheetName, fmt.Sprintf("G%d", row), formatTimestamp(company.UpdatedAt))
@@ -449,12 +452,12 @@ func (s *WorkspaceBackupService) createLocationsSheet(f *excelize.File, location
 	for i, loc := range locations {
 		row := i + 2
 		f.SetCellValue(sheetName, fmt.Sprintf("A%d", row), loc.ID.String())
-		f.SetCellValue(sheetName, fmt.Sprintf("B%d", row), loc.Name)
+		f.SetCellValue(sheetName, fmt.Sprintf("B%d", row), sanitizeCSVCell(loc.Name))
 		if loc.ParentLocation.Valid {
 			f.SetCellValue(sheetName, fmt.Sprintf("C%d", row), uuid.UUID(loc.ParentLocation.Bytes).String())
 		}
-		f.SetCellValue(sheetName, fmt.Sprintf("D%d", row), ptrToString(loc.Description))
-		f.SetCellValue(sheetName, fmt.Sprintf("E%d", row), loc.ShortCode)
+		f.SetCellValue(sheetName, fmt.Sprintf("D%d", row), sanitizeCSVCell(ptrToString(loc.Description)))
+		f.SetCellValue(sheetName, fmt.Sprintf("E%d", row), sanitizeCSVCell(loc.ShortCode))
 		f.SetCellValue(sheetName, fmt.Sprintf("F%d", row), loc.IsArchived)
 		f.SetCellValue(sheetName, fmt.Sprintf("G%d", row), formatTimestamp(loc.CreatedAt))
 		f.SetCellValue(sheetName, fmt.Sprintf("H%d", row), formatTimestamp(loc.UpdatedAt))
@@ -489,10 +492,10 @@ func (s *WorkspaceBackupService) createBorrowersSheet(f *excelize.File, borrower
 	for i, borrower := range borrowers {
 		row := i + 2
 		f.SetCellValue(sheetName, fmt.Sprintf("A%d", row), borrower.ID.String())
-		f.SetCellValue(sheetName, fmt.Sprintf("B%d", row), borrower.Name)
-		f.SetCellValue(sheetName, fmt.Sprintf("C%d", row), ptrToString(borrower.Email))
-		f.SetCellValue(sheetName, fmt.Sprintf("D%d", row), ptrToString(borrower.Phone))
-		f.SetCellValue(sheetName, fmt.Sprintf("E%d", row), ptrToString(borrower.Notes))
+		f.SetCellValue(sheetName, fmt.Sprintf("B%d", row), sanitizeCSVCell(borrower.Name))
+		f.SetCellValue(sheetName, fmt.Sprintf("C%d", row), sanitizeCSVCell(ptrToString(borrower.Email)))
+		f.SetCellValue(sheetName, fmt.Sprintf("D%d", row), sanitizeCSVCell(ptrToString(borrower.Phone)))
+		f.SetCellValue(sheetName, fmt.Sprintf("E%d", row), sanitizeCSVCell(ptrToString(borrower.Notes)))
 		f.SetCellValue(sheetName, fmt.Sprintf("F%d", row), borrower.IsArchived)
 		f.SetCellValue(sheetName, fmt.Sprintf("G%d", row), formatTimestamp(borrower.CreatedAt))
 		f.SetCellValue(sheetName, fmt.Sprintf("H%d", row), formatTimestamp(borrower.UpdatedAt))
@@ -527,19 +530,19 @@ func (s *WorkspaceBackupService) createItemsSheet(f *excelize.File, items []quer
 	for i, item := range items {
 		row := i + 2
 		f.SetCellValue(sheetName, fmt.Sprintf("A%d", row), item.ID.String())
-		f.SetCellValue(sheetName, fmt.Sprintf("B%d", row), item.Sku)
-		f.SetCellValue(sheetName, fmt.Sprintf("C%d", row), item.Name)
-		f.SetCellValue(sheetName, fmt.Sprintf("D%d", row), ptrToString(item.Description))
+		f.SetCellValue(sheetName, fmt.Sprintf("B%d", row), sanitizeCSVCell(item.Sku))
+		f.SetCellValue(sheetName, fmt.Sprintf("C%d", row), sanitizeCSVCell(item.Name))
+		f.SetCellValue(sheetName, fmt.Sprintf("D%d", row), sanitizeCSVCell(ptrToString(item.Description)))
 		if item.CategoryID.Valid {
 			f.SetCellValue(sheetName, fmt.Sprintf("E%d", row), uuid.UUID(item.CategoryID.Bytes).String())
 		}
-		f.SetCellValue(sheetName, fmt.Sprintf("F%d", row), ptrToString(item.Brand))
-		f.SetCellValue(sheetName, fmt.Sprintf("G%d", row), ptrToString(item.Model))
-		f.SetCellValue(sheetName, fmt.Sprintf("H%d", row), ptrToString(item.Manufacturer))
-		f.SetCellValue(sheetName, fmt.Sprintf("I%d", row), ptrToString(item.Barcode))
-		f.SetCellValue(sheetName, fmt.Sprintf("J%d", row), item.ShortCode)
+		f.SetCellValue(sheetName, fmt.Sprintf("F%d", row), sanitizeCSVCell(ptrToString(item.Brand)))
+		f.SetCellValue(sheetName, fmt.Sprintf("G%d", row), sanitizeCSVCell(ptrToString(item.Model)))
+		f.SetCellValue(sheetName, fmt.Sprintf("H%d", row), sanitizeCSVCell(ptrToString(item.Manufacturer)))
+		f.SetCellValue(sheetName, fmt.Sprintf("I%d", row), sanitizeCSVCell(ptrToString(item.Barcode)))
+		f.SetCellValue(sheetName, fmt.Sprintf("J%d", row), sanitizeCSVCell(item.ShortCode))
 		f.SetCellValue(sheetName, fmt.Sprintf("K%d", row), item.MinStockLevel)
-		f.SetCellValue(sheetName, fmt.Sprintf("L%d", row), ptrToBool(item.IsArchived))
+		f.SetCellValue(sheetName, fmt.Sprintf("L%d", row), item.IsArchived)
 		f.SetCellValue(sheetName, fmt.Sprintf("M%d", row), formatTimestamp(item.CreatedAt))
 		f.SetCellValue(sheetName, fmt.Sprintf("N%d", row), formatTimestamp(item.UpdatedAt))
 	}
@@ -573,11 +576,11 @@ func (s *WorkspaceBackupService) createContainersSheet(f *excelize.File, contain
 	for i, container := range containers {
 		row := i + 2
 		f.SetCellValue(sheetName, fmt.Sprintf("A%d", row), container.ID.String())
-		f.SetCellValue(sheetName, fmt.Sprintf("B%d", row), container.Name)
+		f.SetCellValue(sheetName, fmt.Sprintf("B%d", row), sanitizeCSVCell(container.Name))
 		f.SetCellValue(sheetName, fmt.Sprintf("C%d", row), container.LocationID.String())
-		f.SetCellValue(sheetName, fmt.Sprintf("D%d", row), ptrToString(container.Description))
-		f.SetCellValue(sheetName, fmt.Sprintf("E%d", row), ptrToString(container.Capacity))
-		f.SetCellValue(sheetName, fmt.Sprintf("F%d", row), container.ShortCode)
+		f.SetCellValue(sheetName, fmt.Sprintf("D%d", row), sanitizeCSVCell(ptrToString(container.Description)))
+		f.SetCellValue(sheetName, fmt.Sprintf("E%d", row), sanitizeCSVCell(ptrToString(container.Capacity)))
+		f.SetCellValue(sheetName, fmt.Sprintf("F%d", row), sanitizeCSVCell(container.ShortCode))
 		f.SetCellValue(sheetName, fmt.Sprintf("G%d", row), container.IsArchived)
 		f.SetCellValue(sheetName, fmt.Sprintf("H%d", row), formatTimestamp(container.CreatedAt))
 		f.SetCellValue(sheetName, fmt.Sprintf("I%d", row), formatTimestamp(container.UpdatedAt))
@@ -624,7 +627,7 @@ func (s *WorkspaceBackupService) createInventorySheet(f *excelize.File, inventor
 		if inv.Status.Valid {
 			f.SetCellValue(sheetName, fmt.Sprintf("G%d", row), string(inv.Status.WarehouseItemStatusEnum))
 		}
-		f.SetCellValue(sheetName, fmt.Sprintf("H%d", row), ptrToString(inv.Notes))
+		f.SetCellValue(sheetName, fmt.Sprintf("H%d", row), sanitizeCSVCell(ptrToString(inv.Notes)))
 		f.SetCellValue(sheetName, fmt.Sprintf("I%d", row), formatTimestamp(inv.CreatedAt))
 		f.SetCellValue(sheetName, fmt.Sprintf("J%d", row), formatTimestamp(inv.UpdatedAt))
 	}
@@ -664,7 +667,7 @@ func (s *WorkspaceBackupService) createLoansSheet(f *excelize.File, loans []quer
 		f.SetCellValue(sheetName, fmt.Sprintf("E%d", row), formatTimestamp(loan.LoanedAt))
 		f.SetCellValue(sheetName, fmt.Sprintf("F%d", row), formatDate(loan.DueDate))
 		f.SetCellValue(sheetName, fmt.Sprintf("G%d", row), formatTimestamp(loan.ReturnedAt))
-		f.SetCellValue(sheetName, fmt.Sprintf("H%d", row), ptrToString(loan.Notes))
+		f.SetCellValue(sheetName, fmt.Sprintf("H%d", row), sanitizeCSVCell(ptrToString(loan.Notes)))
 		f.SetCellValue(sheetName, fmt.Sprintf("I%d", row), formatTimestamp(loan.CreatedAt))
 		f.SetCellValue(sheetName, fmt.Sprintf("J%d", row), formatTimestamp(loan.UpdatedAt))
 	}
@@ -703,9 +706,9 @@ func (s *WorkspaceBackupService) createAttachmentsSheet(f *excelize.File, attach
 			f.SetCellValue(sheetName, fmt.Sprintf("C%d", row), uuid.UUID(att.FileID.Bytes).String())
 		}
 		f.SetCellValue(sheetName, fmt.Sprintf("D%d", row), string(att.AttachmentType))
-		f.SetCellValue(sheetName, fmt.Sprintf("E%d", row), ptrToString(att.Title))
+		f.SetCellValue(sheetName, fmt.Sprintf("E%d", row), sanitizeCSVCell(ptrToString(att.Title)))
 		f.SetCellValue(sheetName, fmt.Sprintf("F%d", row), att.IsPrimary)
-		f.SetCellValue(sheetName, fmt.Sprintf("G%d", row), ptrToString(att.DocspellItemID))
+		f.SetCellValue(sheetName, fmt.Sprintf("G%d", row), sanitizeCSVCell(ptrToString(att.DocspellItemID)))
 		f.SetCellValue(sheetName, fmt.Sprintf("H%d", row), formatTimestamp(att.CreatedAt))
 		f.SetCellValue(sheetName, fmt.Sprintf("I%d", row), formatTimestamp(att.UpdatedAt))
 	}

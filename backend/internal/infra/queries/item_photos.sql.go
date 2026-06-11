@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const bulkDeleteItemPhotos = `-- name: BulkDeleteItemPhotos :exec
@@ -56,20 +57,20 @@ RETURNING id, item_id, workspace_id, filename, storage_path, thumbnail_path, fil
 `
 
 type CreateItemPhotoParams struct {
-	ID            uuid.UUID `json:"id"`
-	ItemID        uuid.UUID `json:"item_id"`
-	WorkspaceID   uuid.UUID `json:"workspace_id"`
-	Filename      string    `json:"filename"`
-	StoragePath   string    `json:"storage_path"`
-	ThumbnailPath string    `json:"thumbnail_path"`
-	FileSize      int64     `json:"file_size"`
-	MimeType      string    `json:"mime_type"`
-	Width         int32     `json:"width"`
-	Height        int32     `json:"height"`
-	DisplayOrder  int32     `json:"display_order"`
-	IsPrimary     bool      `json:"is_primary"`
-	Caption       *string   `json:"caption"`
-	UploadedBy    uuid.UUID `json:"uploaded_by"`
+	ID            uuid.UUID   `json:"id"`
+	ItemID        uuid.UUID   `json:"item_id"`
+	WorkspaceID   uuid.UUID   `json:"workspace_id"`
+	Filename      string      `json:"filename"`
+	StoragePath   string      `json:"storage_path"`
+	ThumbnailPath string      `json:"thumbnail_path"`
+	FileSize      int64       `json:"file_size"`
+	MimeType      string      `json:"mime_type"`
+	Width         int32       `json:"width"`
+	Height        int32       `json:"height"`
+	DisplayOrder  int32       `json:"display_order"`
+	IsPrimary     bool        `json:"is_primary"`
+	Caption       *string     `json:"caption"`
+	UploadedBy    pgtype.UUID `json:"uploaded_by"`
 }
 
 func (q *Queries) CreateItemPhoto(ctx context.Context, arg CreateItemPhotoParams) (WarehouseItemPhoto, error) {
@@ -233,30 +234,30 @@ WHERE ip.id = $1
 `
 
 type GetItemPhotoForProcessingRow struct {
-	ID                  uuid.UUID `json:"id"`
-	ItemID              uuid.UUID `json:"item_id"`
-	WorkspaceID         uuid.UUID `json:"workspace_id"`
-	Filename            string    `json:"filename"`
-	StoragePath         string    `json:"storage_path"`
-	ThumbnailPath       string    `json:"thumbnail_path"`
-	FileSize            int64     `json:"file_size"`
-	MimeType            string    `json:"mime_type"`
-	Width               int32     `json:"width"`
-	Height              int32     `json:"height"`
-	DisplayOrder        int32     `json:"display_order"`
-	IsPrimary           bool      `json:"is_primary"`
-	Caption             *string   `json:"caption"`
-	UploadedBy          uuid.UUID `json:"uploaded_by"`
-	ThumbnailStatus     string    `json:"thumbnail_status"`
-	ThumbnailSmallPath  *string   `json:"thumbnail_small_path"`
-	ThumbnailMediumPath *string   `json:"thumbnail_medium_path"`
-	ThumbnailLargePath  *string   `json:"thumbnail_large_path"`
-	ThumbnailAttempts   int32     `json:"thumbnail_attempts"`
-	ThumbnailError      *string   `json:"thumbnail_error"`
-	PerceptualHash      *int64    `json:"perceptual_hash"`
-	CreatedAt           time.Time `json:"created_at"`
-	UpdatedAt           time.Time `json:"updated_at"`
-	ItemWorkspaceID     uuid.UUID `json:"item_workspace_id"`
+	ID                  uuid.UUID   `json:"id"`
+	ItemID              uuid.UUID   `json:"item_id"`
+	WorkspaceID         uuid.UUID   `json:"workspace_id"`
+	Filename            string      `json:"filename"`
+	StoragePath         string      `json:"storage_path"`
+	ThumbnailPath       string      `json:"thumbnail_path"`
+	FileSize            int64       `json:"file_size"`
+	MimeType            string      `json:"mime_type"`
+	Width               int32       `json:"width"`
+	Height              int32       `json:"height"`
+	DisplayOrder        int32       `json:"display_order"`
+	IsPrimary           bool        `json:"is_primary"`
+	Caption             *string     `json:"caption"`
+	UploadedBy          pgtype.UUID `json:"uploaded_by"`
+	ThumbnailStatus     string      `json:"thumbnail_status"`
+	ThumbnailSmallPath  *string     `json:"thumbnail_small_path"`
+	ThumbnailMediumPath *string     `json:"thumbnail_medium_path"`
+	ThumbnailLargePath  *string     `json:"thumbnail_large_path"`
+	ThumbnailAttempts   int32       `json:"thumbnail_attempts"`
+	ThumbnailError      *string     `json:"thumbnail_error"`
+	PerceptualHash      *int64      `json:"perceptual_hash"`
+	CreatedAt           time.Time   `json:"created_at"`
+	UpdatedAt           time.Time   `json:"updated_at"`
+	ItemWorkspaceID     uuid.UUID   `json:"item_workspace_id"`
 }
 
 // Get photo with workspace for background job processing

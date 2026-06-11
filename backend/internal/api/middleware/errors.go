@@ -3,11 +3,13 @@ package middleware
 import (
 	"context"
 	"errors"
+	"log/slog"
 	"net/http"
 
 	"github.com/antti/home-warehouse/go-backend/internal/shared"
 	"github.com/antti/home-warehouse/go-backend/internal/shared/apierror"
 	"github.com/danielgtaylor/huma/v2"
+	chimiddleware "github.com/go-chi/chi/v5/middleware"
 )
 
 // ErrorTransformer converts domain errors to API errors for Huma.
@@ -35,7 +37,21 @@ func ErrorTransformer(ctx context.Context, err error) huma.StatusError {
 		})
 	}
 
-	// Fallback for unknown errors.
+	// Fallback for unknown errors. The response body is intentionally
+	// generic, so log the underlying cause here — this is the only place
+	// the real error is still visible.
+	attrs := []any{"error", err}
+	if reqID := chimiddleware.GetReqID(ctx); reqID != "" {
+		attrs = append(attrs, "request_id", reqID)
+	}
+	if user, ok := GetAuthUser(ctx); ok {
+		attrs = append(attrs, "user_id", user.ID.String())
+	}
+	if workspaceID, ok := GetWorkspaceID(ctx); ok {
+		attrs = append(attrs, "workspace_id", workspaceID.String())
+	}
+	slog.Error("unhandled internal error", attrs...)
+
 	return huma.NewError(500, "Internal server error", &huma.ErrorDetail{
 		Message: string(apierror.ErrCodeInternalError),
 	})

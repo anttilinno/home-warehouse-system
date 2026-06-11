@@ -94,14 +94,14 @@ func Reconstruct(
 }
 
 // Getters
-func (f *Favorite) ID() uuid.UUID             { return f.id }
-func (f *Favorite) UserID() uuid.UUID         { return f.userID }
-func (f *Favorite) WorkspaceID() uuid.UUID    { return f.workspaceID }
+func (f *Favorite) ID() uuid.UUID              { return f.id }
+func (f *Favorite) UserID() uuid.UUID          { return f.userID }
+func (f *Favorite) WorkspaceID() uuid.UUID     { return f.workspaceID }
 func (f *Favorite) FavoriteType() FavoriteType { return f.favoriteType }
-func (f *Favorite) ItemID() *uuid.UUID        { return f.itemID }
-func (f *Favorite) LocationID() *uuid.UUID    { return f.locationID }
-func (f *Favorite) ContainerID() *uuid.UUID   { return f.containerID }
-func (f *Favorite) CreatedAt() time.Time      { return f.createdAt }
+func (f *Favorite) ItemID() *uuid.UUID         { return f.itemID }
+func (f *Favorite) LocationID() *uuid.UUID     { return f.locationID }
+func (f *Favorite) ContainerID() *uuid.UUID    { return f.containerID }
+func (f *Favorite) CreatedAt() time.Time       { return f.createdAt }
 
 func (f *Favorite) TargetID() uuid.UUID {
 	switch f.favoriteType {

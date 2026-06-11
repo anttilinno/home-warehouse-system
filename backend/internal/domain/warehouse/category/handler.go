@@ -2,6 +2,7 @@ package category
 
 import (
 	"context"
+	"errors"
 	"time"
 
 	"github.com/danielgtaylor/huma/v2"
@@ -124,8 +125,8 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 				EntityType: "category",
 				UserID:     authUser.ID,
 				Data: map[string]any{
-					"id":   category.ID(),
-					"name": category.Name(),
+					"id":        category.ID(),
+					"name":      category.Name(),
 					"user_name": userName,
 				},
 			})
@@ -156,7 +157,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 
 		category, err := svc.Update(ctx, input.ID, workspaceID, updateInput)
 		if err != nil {
-			if err == ErrCyclicParent {
+			if errors.Is(err, ErrCyclicParent) {
 				return nil, huma.Error400BadRequest("cyclic parent reference not allowed")
 			}
 			return nil, appMiddleware.MapDomainError(err)
@@ -171,8 +172,8 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 				EntityType: "category",
 				UserID:     authUser.ID,
 				Data: map[string]any{
-					"id":   category.ID(),
-					"name": category.Name(),
+					"id":        category.ID(),
+					"name":      category.Name(),
 					"user_name": userName,
 				},
 			})
@@ -205,9 +206,9 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 				EntityID:   input.ID.String(),
 				EntityType: "category",
 				UserID:     authUser.ID,
-			Data: map[string]any{
-				"user_name": userName,
-			},
+				Data: map[string]any{
+					"user_name": userName,
+				},
 			})
 		}
 
@@ -256,7 +257,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 
 		err := svc.Delete(ctx, input.ID, workspaceID)
 		if err != nil {
-			if err == ErrHasChildren {
+			if errors.Is(err, ErrHasChildren) {
 				return nil, huma.Error409Conflict("cannot delete category with child categories")
 			}
 			return nil, appMiddleware.MapDomainError(err)
@@ -270,9 +271,9 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 				EntityID:   input.ID.String(),
 				EntityType: "category",
 				UserID:     authUser.ID,
-			Data: map[string]any{
-				"user_name": userName,
-			},
+				Data: map[string]any{
+					"user_name": userName,
+				},
 			})
 		}
 
@@ -337,7 +338,7 @@ type CreateCategoryInput struct {
 }
 
 type CreateCategoryOutput struct {
-	Status int              `json:"-"`
+	Status int `json:"-"`
 	Body   CategoryResponse
 }
 

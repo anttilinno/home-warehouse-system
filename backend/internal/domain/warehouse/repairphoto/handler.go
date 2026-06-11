@@ -3,6 +3,7 @@ package repairphoto
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"mime"
@@ -60,7 +61,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 
 		photo, err := svc.GetPhoto(ctx, input.ID, workspaceID)
 		if err != nil {
-			if err == ErrPhotoNotFound {
+			if errors.Is(err, ErrPhotoNotFound) {
 				return nil, huma.Error404NotFound("photo not found")
 			}
 			return nil, huma.Error500InternalServerError("failed to get photo")
@@ -88,7 +89,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 		// Verify photo exists and belongs to this repair log
 		existingPhoto, err := svc.GetPhoto(ctx, input.ID, workspaceID)
 		if err != nil {
-			if err == ErrPhotoNotFound {
+			if errors.Is(err, ErrPhotoNotFound) {
 				return nil, huma.Error404NotFound("photo not found")
 			}
 			return nil, huma.Error500InternalServerError("failed to get photo")
@@ -99,7 +100,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 
 		photo, err := svc.UpdateCaption(ctx, input.ID, workspaceID, input.Body.Caption)
 		if err != nil {
-			if err == ErrPhotoNotFound {
+			if errors.Is(err, ErrPhotoNotFound) {
 				return nil, huma.Error404NotFound("photo not found")
 			}
 			return nil, huma.Error500InternalServerError("failed to update caption")
@@ -139,7 +140,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 		// Verify photo exists and belongs to this repair log
 		existingPhoto, err := svc.GetPhoto(ctx, input.ID, workspaceID)
 		if err != nil {
-			if err == ErrPhotoNotFound {
+			if errors.Is(err, ErrPhotoNotFound) {
 				return nil, huma.Error404NotFound("photo not found")
 			}
 			return nil, huma.Error500InternalServerError("failed to get photo")
@@ -150,7 +151,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 
 		err = svc.DeletePhoto(ctx, input.ID, workspaceID)
 		if err != nil {
-			if err == ErrPhotoNotFound {
+			if errors.Is(err, ErrPhotoNotFound) {
 				return nil, huma.Error404NotFound("photo not found")
 			}
 			return nil, huma.Error500InternalServerError("failed to delete photo")
@@ -335,7 +336,7 @@ func (h *ServePhotoHandler) servePhoto(w http.ResponseWriter, r *http.Request, t
 	// Get photo metadata
 	photo, err := h.svc.GetPhoto(ctx, photoID, workspaceID)
 	if err != nil {
-		if err == ErrPhotoNotFound {
+		if errors.Is(err, ErrPhotoNotFound) {
 			http.Error(w, "photo not found", http.StatusNotFound)
 			return
 		}
@@ -372,6 +373,10 @@ func (h *ServePhotoHandler) servePhoto(w http.ResponseWriter, r *http.Request, t
 
 	// Set cache headers (1 year)
 	w.Header().Set("Cache-Control", "public, max-age=31536000, immutable")
+
+	// Security headers for serving user-uploaded content
+	w.Header().Set("Content-Disposition", fmt.Sprintf("inline; filename=%q", sanitizeUploadFilename(photo.Filename)))
+	w.Header().Set("Content-Security-Policy", "default-src 'none'; img-src 'self'; style-src 'unsafe-inline'")
 
 	// Serve file
 	w.WriteHeader(http.StatusOK)

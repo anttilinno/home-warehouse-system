@@ -143,7 +143,10 @@ func TestRateLimit_ResetsAfterWindow(t *testing.T) {
 	assert.Equal(t, 3, callCount)
 }
 
-func TestRateLimit_HandlesXForwardedFor(t *testing.T) {
+// The limiter keys on RemoteAddr only (rewritten by chi's RealIP middleware
+// earlier in the chain). A client rotating X-Forwarded-For values must NOT be
+// able to reset its budget.
+func TestRateLimit_IgnoresSpoofedXForwardedFor(t *testing.T) {
 	limiter := NewRateLimiter(2, time.Minute)
 
 	callCount := 0
@@ -152,33 +155,25 @@ func TestRateLimit_HandlesXForwardedFor(t *testing.T) {
 		w.WriteHeader(http.StatusOK)
 	}))
 
-	// Use X-Forwarded-For header (common with proxies/load balancers)
+	// Two requests from the same RemoteAddr with rotating XFF values
 	for i := 0; i < 2; i++ {
 		req := httptest.NewRequest(http.MethodPost, "/auth/login", nil)
-		req.RemoteAddr = "10.0.0.1:12345" // Proxy IP
+		req.RemoteAddr = "10.0.0.1:12345"
 		req.Header.Set("X-Forwarded-For", "203.0.113.195")
 		rec := httptest.NewRecorder()
 		handler.ServeHTTP(rec, req)
 		assert.Equal(t, http.StatusOK, rec.Code)
 	}
 
-	// 3rd request from same X-Forwarded-For should be blocked
+	// 3rd request: spoofing a fresh X-Forwarded-For must still be blocked
 	req := httptest.NewRequest(http.MethodPost, "/auth/login", nil)
 	req.RemoteAddr = "10.0.0.1:12345"
-	req.Header.Set("X-Forwarded-For", "203.0.113.195")
+	req.Header.Set("X-Forwarded-For", "203.0.113.196")
 	rec := httptest.NewRecorder()
 	handler.ServeHTTP(rec, req)
 	assert.Equal(t, http.StatusTooManyRequests, rec.Code)
 
-	// Different X-Forwarded-For should pass
-	req = httptest.NewRequest(http.MethodPost, "/auth/login", nil)
-	req.RemoteAddr = "10.0.0.1:12345"
-	req.Header.Set("X-Forwarded-For", "203.0.113.196")
-	rec = httptest.NewRecorder()
-	handler.ServeHTTP(rec, req)
-	assert.Equal(t, http.StatusOK, rec.Code)
-
-	assert.Equal(t, 3, callCount)
+	assert.Equal(t, 2, callCount)
 }
 
 func TestRateLimit_ReturnsRetryAfterHeader(t *testing.T) {

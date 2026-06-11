@@ -3,6 +3,7 @@ package postgres
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"time"
 
@@ -76,16 +77,16 @@ func (r *ImportJobRepository) FindJobByID(ctx context.Context, id, workspaceID u
 	`
 
 	var (
-		jobID, workspaceIDVal, userID uuid.UUID
-		entityType                    string
-		status                        string
-		fileName, filePath            string
-		fileSizeBytes                 int64
-		totalRows                     *int
+		jobID, workspaceIDVal, userID           uuid.UUID
+		entityType                              string
+		status                                  string
+		fileName, filePath                      string
+		fileSizeBytes                           int64
+		totalRows                               *int
 		processedRows, successCount, errorCount int
-		startedAt, completedAt        *time.Time
-		createdAt, updatedAt          time.Time
-		errorMessage                  *string
+		startedAt, completedAt                  *time.Time
+		createdAt, updatedAt                    time.Time
+		errorMessage                            *string
 	)
 
 	err := r.pool.QueryRow(ctx, query, id, workspaceID).Scan(
@@ -96,7 +97,7 @@ func (r *ImportJobRepository) FindJobByID(ctx context.Context, id, workspaceID u
 	)
 
 	if err != nil {
-		if err == pgx.ErrNoRows {
+		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, importjob.ErrImportJobNotFound
 		}
 		return nil, err
@@ -146,16 +147,16 @@ func (r *ImportJobRepository) FindJobsByWorkspace(ctx context.Context, workspace
 	var jobs []*importjob.ImportJob
 	for rows.Next() {
 		var (
-			jobID, workspaceIDVal, userID uuid.UUID
-			entityType                    string
-			status                        string
-			fileName, filePath            string
-			fileSizeBytes                 int64
-			totalRows                     *int
+			jobID, workspaceIDVal, userID           uuid.UUID
+			entityType                              string
+			status                                  string
+			fileName, filePath                      string
+			fileSizeBytes                           int64
+			totalRows                               *int
 			processedRows, successCount, errorCount int
-			startedAt, completedAt        *time.Time
-			createdAt, updatedAt          time.Time
-			errorMessage                  *string
+			startedAt, completedAt                  *time.Time
+			createdAt, updatedAt                    time.Time
+			errorMessage                            *string
 		)
 
 		if err := rows.Scan(
@@ -206,16 +207,16 @@ func (r *ImportJobRepository) FindJobsByStatus(ctx context.Context, status impor
 	var jobs []*importjob.ImportJob
 	for rows.Next() {
 		var (
-			jobID, workspaceIDVal, userID uuid.UUID
-			entityType                    string
-			statusStr                     string
-			fileName, filePath            string
-			fileSizeBytes                 int64
-			totalRows                     *int
+			jobID, workspaceIDVal, userID           uuid.UUID
+			entityType                              string
+			statusStr                               string
+			fileName, filePath                      string
+			fileSizeBytes                           int64
+			totalRows                               *int
 			processedRows, successCount, errorCount int
-			startedAt, completedAt        *time.Time
-			createdAt, updatedAt          time.Time
-			errorMessage                  *string
+			startedAt, completedAt                  *time.Time
+			createdAt, updatedAt                    time.Time
+			errorMessage                            *string
 		)
 
 		if err := rows.Scan(
@@ -293,12 +294,12 @@ func (r *ImportJobRepository) FindErrorsByJobID(ctx context.Context, jobID uuid.
 	var errors []*importjob.ImportError
 	for rows.Next() {
 		var (
-			id, importJobID  uuid.UUID
-			rowNumber        int
-			fieldName        *string
-			errorMsg         string
-			rowDataJSON      []byte
-			createdAt        time.Time
+			id, importJobID uuid.UUID
+			rowNumber       int
+			fieldName       *string
+			errorMsg        string
+			rowDataJSON     []byte
+			createdAt       time.Time
 		)
 
 		if err := rows.Scan(

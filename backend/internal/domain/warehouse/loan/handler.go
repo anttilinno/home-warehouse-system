@@ -2,6 +2,7 @@ package loan
 
 import (
 	"context"
+	"errors"
 	"log"
 	"time"
 
@@ -278,13 +279,13 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 			Notes:       input.Body.Notes,
 		})
 		if err != nil {
-			if err == ErrInventoryNotAvailable {
+			if errors.Is(err, ErrInventoryNotAvailable) {
 				return nil, huma.Error400BadRequest("inventory is not available for loan")
 			}
-			if err == ErrQuantityExceedsAvailable {
+			if errors.Is(err, ErrQuantityExceedsAvailable) {
 				return nil, huma.Error400BadRequest("requested quantity exceeds available quantity")
 			}
-			if err == ErrInventoryOnLoan {
+			if errors.Is(err, ErrInventoryOnLoan) {
 				return nil, huma.Error400BadRequest("inventory already has an active loan")
 			}
 			return nil, appMiddleware.MapDomainError(err)
@@ -327,10 +328,10 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 
 		loan, err := svc.Return(ctx, input.ID, workspaceID)
 		if err != nil {
-			if err == ErrLoanNotFound {
+			if errors.Is(err, ErrLoanNotFound) {
 				return nil, huma.Error404NotFound("loan not found")
 			}
-			if err == ErrAlreadyReturned {
+			if errors.Is(err, ErrAlreadyReturned) {
 				return nil, huma.Error400BadRequest("loan has already been returned")
 			}
 			return nil, appMiddleware.MapDomainError(err)
@@ -371,13 +372,13 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 
 		loan, err := svc.ExtendDueDate(ctx, input.ID, workspaceID, input.Body.NewDueDate)
 		if err != nil {
-			if err == ErrLoanNotFound {
+			if errors.Is(err, ErrLoanNotFound) {
 				return nil, huma.Error404NotFound("loan not found")
 			}
-			if err == ErrAlreadyReturned {
+			if errors.Is(err, ErrAlreadyReturned) {
 				return nil, huma.Error400BadRequest("cannot extend due date for returned loan")
 			}
-			if err == ErrInvalidDueDate {
+			if errors.Is(err, ErrInvalidDueDate) {
 				return nil, huma.Error400BadRequest("new due date must be after loaned date")
 			}
 			return nil, appMiddleware.MapDomainError(err)
@@ -420,13 +421,13 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 
 		loan, err := svc.Update(ctx, input.ID, workspaceID, input.Body.DueDate, input.Body.Notes)
 		if err != nil {
-			if err == ErrLoanNotFound {
+			if errors.Is(err, ErrLoanNotFound) {
 				return nil, huma.Error404NotFound("loan not found")
 			}
-			if err == ErrAlreadyReturned {
+			if errors.Is(err, ErrAlreadyReturned) {
 				return nil, huma.Error400BadRequest("cannot edit returned loan")
 			}
-			if err == ErrInvalidDueDate {
+			if errors.Is(err, ErrInvalidDueDate) {
 				return nil, huma.Error400BadRequest("due date must be after loaned date")
 			}
 			return nil, appMiddleware.MapDomainError(err)

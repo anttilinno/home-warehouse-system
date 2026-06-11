@@ -36,7 +36,7 @@ func (m *MockService) CreateAttachment(ctx context.Context, input attachment.Cre
 	return args.Get(0).(*attachment.Attachment), args.Error(1)
 }
 
-func (m *MockService) GetAttachment(ctx context.Context, id uuid.UUID) (*attachment.Attachment, error) {
+func (m *MockService) GetAttachment(ctx context.Context, id, workspaceID uuid.UUID) (*attachment.Attachment, error) {
 	args := m.Called(ctx, id)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
@@ -44,17 +44,17 @@ func (m *MockService) GetAttachment(ctx context.Context, id uuid.UUID) (*attachm
 	return args.Get(0).(*attachment.Attachment), args.Error(1)
 }
 
-func (m *MockService) ListByItem(ctx context.Context, itemID uuid.UUID) ([]*attachment.Attachment, error) {
+func (m *MockService) ListByItem(ctx context.Context, itemID, workspaceID uuid.UUID) ([]*attachment.Attachment, error) {
 	args := m.Called(ctx, itemID)
 	return args.Get(0).([]*attachment.Attachment), args.Error(1)
 }
 
-func (m *MockService) DeleteAttachment(ctx context.Context, id uuid.UUID) error {
+func (m *MockService) DeleteAttachment(ctx context.Context, id, workspaceID uuid.UUID) error {
 	args := m.Called(ctx, id)
 	return args.Error(0)
 }
 
-func (m *MockService) SetPrimary(ctx context.Context, itemID, attachmentID uuid.UUID) error {
+func (m *MockService) SetPrimary(ctx context.Context, itemID, attachmentID, workspaceID uuid.UUID) error {
 	args := m.Called(ctx, itemID, attachmentID)
 	return args.Error(0)
 }
@@ -69,8 +69,8 @@ func TestAttachmentHandler_ListByItem(t *testing.T) {
 	t.Run("lists attachments for item successfully", func(t *testing.T) {
 		itemID := uuid.New()
 		fileID := uuid.New()
-		att1, _ := attachment.NewAttachment(itemID, &fileID, attachment.TypePhoto, nil, false, nil)
-		att2, _ := attachment.NewAttachment(itemID, nil, attachment.TypeManual, nil, false, nil)
+		att1, _ := attachment.NewAttachment(uuid.New(), itemID, &fileID, attachment.TypePhoto, nil, false, nil)
+		att2, _ := attachment.NewAttachment(uuid.New(), itemID, nil, attachment.TypeManual, nil, false, nil)
 		attachments := []*attachment.Attachment{att1, att2}
 
 		mockSvc.On("ListByItem", mock.Anything, itemID).
@@ -103,7 +103,7 @@ func TestAttachmentHandler_Get(t *testing.T) {
 	t.Run("gets attachment by ID", func(t *testing.T) {
 		itemID := uuid.New()
 		fileID := uuid.New()
-		testAtt, _ := attachment.NewAttachment(itemID, &fileID, attachment.TypePhoto, nil, false, nil)
+		testAtt, _ := attachment.NewAttachment(uuid.New(), itemID, &fileID, attachment.TypePhoto, nil, false, nil)
 		attID := testAtt.ID()
 
 		mockSvc.On("GetAttachment", mock.Anything, attID).
@@ -148,7 +148,7 @@ func TestAttachmentHandler_UploadAttachment(t *testing.T) {
 			&setup.UserID,
 		)
 
-		testAtt, _ := attachment.NewAttachment(itemID, &fileID, attachment.TypePhoto, nil, false, nil)
+		testAtt, _ := attachment.NewAttachment(uuid.New(), itemID, &fileID, attachment.TypePhoto, nil, false, nil)
 
 		mockSvc.On("UploadFile", mock.Anything, mock.MatchedBy(func(input attachment.UploadFileInput) bool {
 			return input.OriginalName == "test.jpg" && input.MimeType == "image/jpeg"
@@ -191,7 +191,7 @@ func TestAttachmentHandler_CreateAttachment(t *testing.T) {
 
 	t.Run("creates attachment without file successfully", func(t *testing.T) {
 		itemID := uuid.New()
-		testAtt, _ := attachment.NewAttachment(itemID, nil, attachment.TypeManual, nil, false, nil)
+		testAtt, _ := attachment.NewAttachment(uuid.New(), itemID, nil, attachment.TypeManual, nil, false, nil)
 
 		mockSvc.On("CreateAttachment", mock.Anything, mock.MatchedBy(func(input attachment.CreateAttachmentInput) bool {
 			return input.ItemID == itemID && input.AttachmentType == attachment.TypeManual && input.FileID == nil
@@ -208,7 +208,7 @@ func TestAttachmentHandler_CreateAttachment(t *testing.T) {
 		itemID := uuid.New()
 		fileID := uuid.New()
 		title := "Receipt"
-		testAtt, _ := attachment.NewAttachment(itemID, &fileID, attachment.TypeReceipt, &title, false, nil)
+		testAtt, _ := attachment.NewAttachment(uuid.New(), itemID, &fileID, attachment.TypeReceipt, &title, false, nil)
 
 		mockSvc.On("CreateAttachment", mock.Anything, mock.MatchedBy(func(input attachment.CreateAttachmentInput) bool {
 			return input.ItemID == itemID && input.FileID != nil && *input.FileID == fileID
@@ -305,7 +305,7 @@ func TestAttachmentHandler_Create_PublishesEvent(t *testing.T) {
 	attachment.RegisterRoutes(setup.API, mockSvc, capture.GetBroadcaster())
 
 	itemID := uuid.New()
-	testAtt, _ := attachment.NewAttachment(itemID, nil, attachment.TypeManual, nil, false, nil)
+	testAtt, _ := attachment.NewAttachment(uuid.New(), itemID, nil, attachment.TypeManual, nil, false, nil)
 
 	mockSvc.On("CreateAttachment", mock.Anything, mock.MatchedBy(func(input attachment.CreateAttachmentInput) bool {
 		return input.ItemID == itemID && input.AttachmentType == attachment.TypeManual
@@ -356,7 +356,7 @@ func TestAttachmentHandler_Upload_PublishesEvent(t *testing.T) {
 		&setup.UserID,
 	)
 
-	testAtt, _ := attachment.NewAttachment(itemID, &fileID, attachment.TypePhoto, nil, false, nil)
+	testAtt, _ := attachment.NewAttachment(uuid.New(), itemID, &fileID, attachment.TypePhoto, nil, false, nil)
 
 	mockSvc.On("UploadFile", mock.Anything, mock.MatchedBy(func(input attachment.UploadFileInput) bool {
 		return input.OriginalName == "test.jpg" && input.MimeType == "image/jpeg"
@@ -458,7 +458,7 @@ func TestAttachmentHandler_Create_NilBroadcaster_NoError(t *testing.T) {
 	attachment.RegisterRoutes(setup.API, mockSvc, nil)
 
 	itemID := uuid.New()
-	testAtt, _ := attachment.NewAttachment(itemID, nil, attachment.TypeManual, nil, false, nil)
+	testAtt, _ := attachment.NewAttachment(uuid.New(), itemID, nil, attachment.TypeManual, nil, false, nil)
 
 	mockSvc.On("CreateAttachment", mock.Anything, mock.MatchedBy(func(input attachment.CreateAttachmentInput) bool {
 		return input.ItemID == itemID

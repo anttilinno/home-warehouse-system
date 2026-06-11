@@ -21,7 +21,7 @@ func (m *MockFileRepository) Save(ctx context.Context, file *File) error {
 	return args.Error(0)
 }
 
-func (m *MockFileRepository) FindByID(ctx context.Context, id uuid.UUID) (*File, error) {
+func (m *MockFileRepository) FindByID(ctx context.Context, id, workspaceID uuid.UUID) (*File, error) {
 	args := m.Called(ctx, id)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
@@ -29,7 +29,7 @@ func (m *MockFileRepository) FindByID(ctx context.Context, id uuid.UUID) (*File,
 	return args.Get(0).(*File), args.Error(1)
 }
 
-func (m *MockFileRepository) Delete(ctx context.Context, id uuid.UUID) error {
+func (m *MockFileRepository) Delete(ctx context.Context, id, workspaceID uuid.UUID) error {
 	args := m.Called(ctx, id)
 	return args.Error(0)
 }
@@ -44,7 +44,7 @@ func (m *MockAttachmentRepository) Save(ctx context.Context, attachment *Attachm
 	return args.Error(0)
 }
 
-func (m *MockAttachmentRepository) FindByID(ctx context.Context, id uuid.UUID) (*Attachment, error) {
+func (m *MockAttachmentRepository) FindByID(ctx context.Context, id, workspaceID uuid.UUID) (*Attachment, error) {
 	args := m.Called(ctx, id)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
@@ -52,7 +52,7 @@ func (m *MockAttachmentRepository) FindByID(ctx context.Context, id uuid.UUID) (
 	return args.Get(0).(*Attachment), args.Error(1)
 }
 
-func (m *MockAttachmentRepository) FindByItem(ctx context.Context, itemID uuid.UUID) ([]*Attachment, error) {
+func (m *MockAttachmentRepository) FindByItem(ctx context.Context, itemID, workspaceID uuid.UUID) ([]*Attachment, error) {
 	args := m.Called(ctx, itemID)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
@@ -60,12 +60,12 @@ func (m *MockAttachmentRepository) FindByItem(ctx context.Context, itemID uuid.U
 	return args.Get(0).([]*Attachment), args.Error(1)
 }
 
-func (m *MockAttachmentRepository) Delete(ctx context.Context, id uuid.UUID) error {
+func (m *MockAttachmentRepository) Delete(ctx context.Context, id, workspaceID uuid.UUID) error {
 	args := m.Called(ctx, id)
 	return args.Error(0)
 }
 
-func (m *MockAttachmentRepository) SetPrimaryForItem(ctx context.Context, itemID, attachmentID uuid.UUID) error {
+func (m *MockAttachmentRepository) SetPrimaryForItem(ctx context.Context, itemID, attachmentID, workspaceID uuid.UUID) error {
 	args := m.Called(ctx, itemID, attachmentID)
 	return args.Error(0)
 }
@@ -302,6 +302,7 @@ func TestReconstructFile_MinimalFields(t *testing.T) {
 // =============================================================================
 
 func TestNewAttachment(t *testing.T) {
+	workspaceID := uuid.New()
 	itemID := uuid.New()
 	fileID := uuid.New()
 
@@ -403,6 +404,7 @@ func TestNewAttachment(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.testName, func(t *testing.T) {
 			attachment, err := NewAttachment(
+				workspaceID,
 				tt.itemID,
 				tt.fileID,
 				tt.attachmentType,
@@ -436,12 +438,14 @@ func TestNewAttachment(t *testing.T) {
 
 func TestReconstructAttachment(t *testing.T) {
 	id := uuid.New()
+	workspaceID := uuid.New()
 	itemID := uuid.New()
 	fileID := uuid.New()
 	now := time.Now()
 
 	attachment := ReconstructAttachment(
 		id,
+		workspaceID,
 		itemID,
 		&fileID,
 		TypePhoto,
@@ -453,6 +457,7 @@ func TestReconstructAttachment(t *testing.T) {
 	)
 
 	assert.Equal(t, id, attachment.ID())
+	assert.Equal(t, workspaceID, attachment.WorkspaceID())
 	assert.Equal(t, itemID, attachment.ItemID())
 	assert.Equal(t, fileID, *attachment.FileID())
 	assert.Equal(t, TypePhoto, attachment.AttachmentType())
@@ -465,7 +470,7 @@ func TestReconstructAttachment(t *testing.T) {
 
 func TestAttachment_SetPrimary(t *testing.T) {
 	itemID := uuid.New()
-	attachment, _ := NewAttachment(itemID, nil, TypePhoto, nil, false, nil)
+	attachment, _ := NewAttachment(uuid.New(), itemID, nil, TypePhoto, nil, false, nil)
 	assert.False(t, attachment.IsPrimary())
 	originalUpdatedAt := attachment.UpdatedAt()
 	time.Sleep(time.Millisecond)
@@ -478,7 +483,7 @@ func TestAttachment_SetPrimary(t *testing.T) {
 
 func TestAttachment_UnsetPrimary(t *testing.T) {
 	itemID := uuid.New()
-	attachment, _ := NewAttachment(itemID, nil, TypePhoto, nil, true, nil)
+	attachment, _ := NewAttachment(uuid.New(), itemID, nil, TypePhoto, nil, true, nil)
 	assert.True(t, attachment.IsPrimary())
 	originalUpdatedAt := attachment.UpdatedAt()
 	time.Sleep(time.Millisecond)
@@ -616,6 +621,7 @@ func TestService_UploadFile(t *testing.T) {
 
 func TestService_CreateAttachment(t *testing.T) {
 	ctx := context.Background()
+	workspaceID := uuid.New()
 	itemID := uuid.New()
 	fileID := uuid.New()
 
@@ -629,6 +635,7 @@ func TestService_CreateAttachment(t *testing.T) {
 		{
 			testName: "successful creation",
 			input: CreateAttachmentInput{
+				WorkspaceID:    workspaceID,
 				ItemID:         itemID,
 				FileID:         &fileID,
 				AttachmentType: TypePhoto,
@@ -644,6 +651,7 @@ func TestService_CreateAttachment(t *testing.T) {
 		{
 			testName: "successful creation with primary",
 			input: CreateAttachmentInput{
+				WorkspaceID:    workspaceID,
 				ItemID:         itemID,
 				FileID:         &fileID,
 				AttachmentType: TypePhoto,
@@ -660,6 +668,7 @@ func TestService_CreateAttachment(t *testing.T) {
 		{
 			testName: "successful creation without file",
 			input: CreateAttachmentInput{
+				WorkspaceID:    workspaceID,
 				ItemID:         itemID,
 				FileID:         nil,
 				AttachmentType: TypeManual,
@@ -675,6 +684,7 @@ func TestService_CreateAttachment(t *testing.T) {
 		{
 			testName: "invalid item ID",
 			input: CreateAttachmentInput{
+				WorkspaceID:    workspaceID,
 				ItemID:         uuid.Nil,
 				FileID:         &fileID,
 				AttachmentType: TypePhoto,
@@ -687,6 +697,7 @@ func TestService_CreateAttachment(t *testing.T) {
 		{
 			testName: "invalid attachment type",
 			input: CreateAttachmentInput{
+				WorkspaceID:    workspaceID,
 				ItemID:         itemID,
 				FileID:         &fileID,
 				AttachmentType: AttachmentType("INVALID"),
@@ -700,6 +711,7 @@ func TestService_CreateAttachment(t *testing.T) {
 		{
 			testName: "save returns error",
 			input: CreateAttachmentInput{
+				WorkspaceID:    workspaceID,
 				ItemID:         itemID,
 				FileID:         &fileID,
 				AttachmentType: TypePhoto,
@@ -714,6 +726,7 @@ func TestService_CreateAttachment(t *testing.T) {
 		{
 			testName: "set primary returns error",
 			input: CreateAttachmentInput{
+				WorkspaceID:    workspaceID,
 				ItemID:         itemID,
 				FileID:         &fileID,
 				AttachmentType: TypePhoto,
@@ -760,6 +773,7 @@ func TestService_CreateAttachment(t *testing.T) {
 
 func TestService_GetAttachment(t *testing.T) {
 	ctx := context.Background()
+	workspaceID := uuid.New()
 	attachmentID := uuid.New()
 	itemID := uuid.New()
 
@@ -806,7 +820,7 @@ func TestService_GetAttachment(t *testing.T) {
 
 			tt.setupMock(mockAttachmentRepo)
 
-			attachment, err := svc.GetAttachment(ctx, tt.attachID)
+			attachment, err := svc.GetAttachment(ctx, tt.attachID, workspaceID)
 
 			if tt.expectError {
 				assert.Error(t, err)
@@ -827,6 +841,7 @@ func TestService_GetAttachment(t *testing.T) {
 
 func TestService_ListByItem(t *testing.T) {
 	ctx := context.Background()
+	workspaceID := uuid.New()
 	itemID := uuid.New()
 
 	tests := []struct {
@@ -878,7 +893,7 @@ func TestService_ListByItem(t *testing.T) {
 
 			tt.setupMock(mockAttachmentRepo)
 
-			attachments, err := svc.ListByItem(ctx, tt.itemID)
+			attachments, err := svc.ListByItem(ctx, tt.itemID, workspaceID)
 
 			if tt.expectError {
 				assert.Error(t, err)
@@ -895,6 +910,7 @@ func TestService_ListByItem(t *testing.T) {
 
 func TestService_DeleteAttachment(t *testing.T) {
 	ctx := context.Background()
+	workspaceID := uuid.New()
 	attachmentID := uuid.New()
 	itemID := uuid.New()
 	fileID := uuid.New()
@@ -967,7 +983,7 @@ func TestService_DeleteAttachment(t *testing.T) {
 
 			tt.setupMock(mockAttachmentRepo, mockFileRepo)
 
-			err := svc.DeleteAttachment(ctx, tt.attachID)
+			err := svc.DeleteAttachment(ctx, tt.attachID, workspaceID)
 
 			if tt.expectError {
 				assert.Error(t, err)
@@ -986,6 +1002,7 @@ func TestService_DeleteAttachment(t *testing.T) {
 
 func TestService_SetPrimary(t *testing.T) {
 	ctx := context.Background()
+	workspaceID := uuid.New()
 	itemID := uuid.New()
 	attachmentID := uuid.New()
 	differentItemID := uuid.New()
@@ -1051,7 +1068,7 @@ func TestService_SetPrimary(t *testing.T) {
 
 			tt.setupMock(mockAttachmentRepo)
 
-			err := svc.SetPrimary(ctx, tt.itemID, tt.attachmentID)
+			err := svc.SetPrimary(ctx, tt.itemID, tt.attachmentID, workspaceID)
 
 			if tt.expectError {
 				assert.Error(t, err)

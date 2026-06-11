@@ -104,7 +104,7 @@ func (q *Queries) GetLocationByName(ctx context.Context, arg GetLocationByNamePa
 }
 
 const listAllAttachments = `-- name: ListAllAttachments :many
-SELECT a.id, a.item_id, a.file_id, a.attachment_type, a.title, a.is_primary, a.docspell_item_id, a.created_at, a.updated_at FROM warehouse.attachments a
+SELECT a.id, a.item_id, a.file_id, a.attachment_type, a.title, a.is_primary, a.docspell_item_id, a.created_at, a.updated_at, a.workspace_id FROM warehouse.attachments a
 JOIN warehouse.items i ON a.item_id = i.id
 WHERE i.workspace_id = $1
 ORDER BY a.created_at
@@ -129,6 +129,7 @@ func (q *Queries) ListAllAttachments(ctx context.Context, workspaceID uuid.UUID)
 			&i.DocspellItemID,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.WorkspaceID,
 		); err != nil {
 			return nil, err
 		}

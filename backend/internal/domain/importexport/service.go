@@ -181,7 +181,7 @@ func (s *Service) exportItems(ctx context.Context, workspaceID uuid.UUID, includ
 			Barcode:       ptrToString(item.Barcode),
 			ShortCode:     item.ShortCode,
 			MinStockLevel: item.MinStockLevel,
-			IsArchived:    ptrToBool(item.IsArchived),
+			IsArchived:    item.IsArchived,
 			CreatedAt:     pgtimeToString(item.CreatedAt),
 			UpdatedAt:     pgtimeToString(item.UpdatedAt),
 		}
@@ -388,6 +388,28 @@ func (s *Service) parseJSON(data []byte) ([]map[string]string, error) {
 	return rows, nil
 }
 
+// sanitizeCSVCell neutralizes spreadsheet formula/DDE injection by prefixing
+// a single quote when a cell starts with a formula-trigger character
+// (= + - @ tab CR). Excel/LibreOffice then treat the cell as plain text.
+func sanitizeCSVCell(cell string) string {
+	if cell == "" {
+		return cell
+	}
+	switch cell[0] {
+	case '=', '+', '-', '@', '\t', '\r':
+		return "'" + cell
+	}
+	return cell
+}
+
+// sanitizeCSVRow applies sanitizeCSVCell to every cell of a row.
+func sanitizeCSVRow(row []string) []string {
+	for i, cell := range row {
+		row[i] = sanitizeCSVCell(cell)
+	}
+	return row
+}
+
 func (s *Service) toCSV(data interface{}, entityType EntityType) ([]byte, error) {
 	var buf bytes.Buffer
 	writer := csv.NewWriter(&buf)
@@ -400,12 +422,12 @@ func (s *Service) toCSV(data interface{}, entityType EntityType) ([]byte, error)
 			return nil, err
 		}
 		for _, item := range items {
-			if err := writer.Write([]string{
+			if err := writer.Write(sanitizeCSVRow([]string{
 				item.ID, item.SKU, item.Name, item.Description, item.CategoryName,
 				item.Brand, item.Model, item.Manufacturer, item.Barcode, item.ShortCode,
 				fmt.Sprintf("%d", item.MinStockLevel), fmt.Sprintf("%t", item.IsArchived),
 				item.CreatedAt, item.UpdatedAt,
-			}); err != nil {
+			})); err != nil {
 				return nil, err
 			}
 		}
@@ -416,11 +438,11 @@ func (s *Service) toCSV(data interface{}, entityType EntityType) ([]byte, error)
 			return nil, err
 		}
 		for _, loc := range locations {
-			if err := writer.Write([]string{
+			if err := writer.Write(sanitizeCSVRow([]string{
 				loc.ID, loc.Name, loc.ParentLocation,
 				loc.Description, loc.ShortCode, fmt.Sprintf("%t", loc.IsArchived),
 				loc.CreatedAt, loc.UpdatedAt,
-			}); err != nil {
+			})); err != nil {
 				return nil, err
 			}
 		}
@@ -431,10 +453,10 @@ func (s *Service) toCSV(data interface{}, entityType EntityType) ([]byte, error)
 			return nil, err
 		}
 		for _, cat := range categories {
-			if err := writer.Write([]string{
+			if err := writer.Write(sanitizeCSVRow([]string{
 				cat.ID, cat.Name, cat.ParentCategory, cat.Description,
 				fmt.Sprintf("%t", cat.IsArchived), cat.CreatedAt, cat.UpdatedAt,
-			}); err != nil {
+			})); err != nil {
 				return nil, err
 			}
 		}
@@ -445,10 +467,10 @@ func (s *Service) toCSV(data interface{}, entityType EntityType) ([]byte, error)
 			return nil, err
 		}
 		for _, c := range containers {
-			if err := writer.Write([]string{
+			if err := writer.Write(sanitizeCSVRow([]string{
 				c.ID, c.Name, c.LocationName, c.Description, c.Capacity, c.ShortCode,
 				fmt.Sprintf("%t", c.IsArchived), c.CreatedAt, c.UpdatedAt,
-			}); err != nil {
+			})); err != nil {
 				return nil, err
 			}
 		}
@@ -459,10 +481,10 @@ func (s *Service) toCSV(data interface{}, entityType EntityType) ([]byte, error)
 			return nil, err
 		}
 		for _, l := range labels {
-			if err := writer.Write([]string{
+			if err := writer.Write(sanitizeCSVRow([]string{
 				l.ID, l.Name, l.Color, l.Description,
 				fmt.Sprintf("%t", l.IsArchived), l.CreatedAt, l.UpdatedAt,
-			}); err != nil {
+			})); err != nil {
 				return nil, err
 			}
 		}
@@ -473,10 +495,10 @@ func (s *Service) toCSV(data interface{}, entityType EntityType) ([]byte, error)
 			return nil, err
 		}
 		for _, c := range companies {
-			if err := writer.Write([]string{
+			if err := writer.Write(sanitizeCSVRow([]string{
 				c.ID, c.Name, c.Website, c.Notes,
 				fmt.Sprintf("%t", c.IsArchived), c.CreatedAt, c.UpdatedAt,
-			}); err != nil {
+			})); err != nil {
 				return nil, err
 			}
 		}
@@ -487,10 +509,10 @@ func (s *Service) toCSV(data interface{}, entityType EntityType) ([]byte, error)
 			return nil, err
 		}
 		for _, b := range borrowers {
-			if err := writer.Write([]string{
+			if err := writer.Write(sanitizeCSVRow([]string{
 				b.ID, b.Name, b.Email, b.Phone, b.Notes,
 				fmt.Sprintf("%t", b.IsArchived), b.CreatedAt, b.UpdatedAt,
-			}); err != nil {
+			})); err != nil {
 				return nil, err
 			}
 		}

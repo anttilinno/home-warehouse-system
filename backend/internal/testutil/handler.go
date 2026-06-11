@@ -23,6 +23,7 @@ type HandlerTestSetup struct {
 	API         huma.API
 	WorkspaceID uuid.UUID
 	UserID      uuid.UUID
+	Role        string
 	authUser    *appMiddleware.AuthUser
 }
 
@@ -43,15 +44,17 @@ func NewHandlerTestSetup() *HandlerTestSetup {
 		API:         nil, // Will be set after middleware
 		WorkspaceID: workspaceID,
 		UserID:      userID,
+		Role:        "owner", // default role; override via SetRole for member/viewer cases
 		authUser:    authUser,
 	}
 
-	// Inject workspace and user context middleware for testing
+	// Inject workspace, user, and role context middleware for testing
 	r.Use(func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 			ctx := req.Context()
 			ctx = context.WithValue(ctx, appMiddleware.WorkspaceContextKey, setup.WorkspaceID)
 			ctx = context.WithValue(ctx, appMiddleware.UserContextKey, setup.authUser)
+			ctx = context.WithValue(ctx, appMiddleware.RoleContextKey, setup.Role)
 			next.ServeHTTP(w, req.WithContext(ctx))
 		})
 	})
@@ -66,6 +69,12 @@ func NewHandlerTestSetup() *HandlerTestSetup {
 // MakeSuperuser marks the test user as a superuser
 func (h *HandlerTestSetup) MakeSuperuser() {
 	h.authUser.IsSuperuser = true
+}
+
+// SetRole overrides the workspace role injected into the request context
+// (default "owner").
+func (h *HandlerTestSetup) SetRole(role string) {
+	h.Role = role
 }
 
 // Request makes an HTTP request with JSON body

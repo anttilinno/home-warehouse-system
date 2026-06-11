@@ -145,6 +145,21 @@ func (m *MockWorkspaceBackupQueries) CreateContainer(ctx context.Context, arg qu
 	return args.Get(0).(queries.WarehouseContainer), args.Error(1)
 }
 
+func (m *MockWorkspaceBackupQueries) CreateInventory(ctx context.Context, arg queries.CreateInventoryParams) (queries.WarehouseInventory, error) {
+	args := m.Called(ctx, arg)
+	return args.Get(0).(queries.WarehouseInventory), args.Error(1)
+}
+
+func (m *MockWorkspaceBackupQueries) CreateLoan(ctx context.Context, arg queries.CreateLoanParams) (queries.WarehouseLoan, error) {
+	args := m.Called(ctx, arg)
+	return args.Get(0).(queries.WarehouseLoan), args.Error(1)
+}
+
+func (m *MockWorkspaceBackupQueries) CreateAttachment(ctx context.Context, arg queries.CreateAttachmentParams) (queries.WarehouseAttachment, error) {
+	args := m.Called(ctx, arg)
+	return args.Get(0).(queries.WarehouseAttachment), args.Error(1)
+}
+
 // =============================================================================
 // Test Helper Functions
 // =============================================================================
@@ -246,19 +261,19 @@ func makeTestBorrower(workspaceID uuid.UUID, name string) queries.WarehouseBorro
 func makeTestItem(workspaceID uuid.UUID, name string, sku string) queries.WarehouseItem {
 	now := time.Now().UTC()
 	return queries.WarehouseItem{
-		ID:          uuid.New(),
-		WorkspaceID: workspaceID,
-		Sku:         sku,
-		Name:        name,
-		Description: strPtr("Test item description"),
-		Brand:       strPtr("TestBrand"),
-		Model:       strPtr("TestModel"),
+		ID:           uuid.New(),
+		WorkspaceID:  workspaceID,
+		Sku:          sku,
+		Name:         name,
+		Description:  strPtr("Test item description"),
+		Brand:        strPtr("TestBrand"),
+		Model:        strPtr("TestModel"),
 		Manufacturer: strPtr("TestManufacturer"),
-		Barcode:     strPtr("1234567890123"),
-		ShortCode:   "ITM-001",
-		IsArchived:  boolPtr(false),
-		CreatedAt:   makeTimestamp(now),
-		UpdatedAt:   makeTimestamp(now),
+		Barcode:      strPtr("1234567890123"),
+		ShortCode:    "ITM-001",
+		IsArchived:   false,
+		CreatedAt:    makeTimestamp(now),
+		UpdatedAt:    makeTimestamp(now),
 	}
 }
 
@@ -918,8 +933,8 @@ func TestExportWorkspace_ExcelContainsCorrectData(t *testing.T) {
 	assert.Len(t, catRows, 2) // Header + 1 data row
 
 	dataRow := catRows[1]
-	assert.Equal(t, category.ID.String(), dataRow[0])       // ID
-	assert.Equal(t, "Electronics", dataRow[1])              // Name
+	assert.Equal(t, category.ID.String(), dataRow[0]) // ID
+	assert.Equal(t, "Electronics", dataRow[1])        // Name
 	// Column 2 is parent category ID (empty for this test)
 	assert.Equal(t, "Test category description", dataRow[3]) // Description
 
@@ -1123,7 +1138,7 @@ func TestExportWorkspace_ExcelWithParentReferences(t *testing.T) {
 			Sku:         "SKU-001",
 			Name:        "Test Item",
 			CategoryID:  makeNullUUID(parentCatID),
-			IsArchived:  boolPtr(false),
+			IsArchived:  false,
 			CreatedAt:   makeTimestamp(time.Now()),
 			UpdatedAt:   makeTimestamp(time.Now()),
 		},
@@ -1233,7 +1248,7 @@ func TestExportWorkspace_ExcelWithParentReferences(t *testing.T) {
 	assert.Len(t, catRows, 3) // Header + 2 data rows
 
 	// Verify child category has parent ID
-	childRow := catRows[2] // Second data row (index 2)
+	childRow := catRows[2]                             // Second data row (index 2)
 	assert.Equal(t, parentCatID.String(), childRow[2]) // Parent Category ID column
 
 	// Check Locations sheet - verify parent location is included

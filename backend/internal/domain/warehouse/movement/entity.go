@@ -78,14 +78,14 @@ func Reconstruct(
 }
 
 // Getters
-func (m *InventoryMovement) ID() uuid.UUID              { return m.id }
-func (m *InventoryMovement) WorkspaceID() uuid.UUID     { return m.workspaceID }
-func (m *InventoryMovement) InventoryID() uuid.UUID     { return m.inventoryID }
-func (m *InventoryMovement) FromLocationID() *uuid.UUID { return m.fromLocationID }
+func (m *InventoryMovement) ID() uuid.UUID               { return m.id }
+func (m *InventoryMovement) WorkspaceID() uuid.UUID      { return m.workspaceID }
+func (m *InventoryMovement) InventoryID() uuid.UUID      { return m.inventoryID }
+func (m *InventoryMovement) FromLocationID() *uuid.UUID  { return m.fromLocationID }
 func (m *InventoryMovement) FromContainerID() *uuid.UUID { return m.fromContainerID }
-func (m *InventoryMovement) ToLocationID() *uuid.UUID   { return m.toLocationID }
-func (m *InventoryMovement) ToContainerID() *uuid.UUID  { return m.toContainerID }
-func (m *InventoryMovement) Quantity() int              { return m.quantity }
-func (m *InventoryMovement) MovedBy() *uuid.UUID        { return m.movedBy }
-func (m *InventoryMovement) Reason() *string            { return m.reason }
-func (m *InventoryMovement) CreatedAt() time.Time       { return m.createdAt }
+func (m *InventoryMovement) ToLocationID() *uuid.UUID    { return m.toLocationID }
+func (m *InventoryMovement) ToContainerID() *uuid.UUID   { return m.toContainerID }
+func (m *InventoryMovement) Quantity() int               { return m.quantity }
+func (m *InventoryMovement) MovedBy() *uuid.UUID         { return m.movedBy }
+func (m *InventoryMovement) Reason() *string             { return m.reason }
+func (m *InventoryMovement) CreatedAt() time.Time        { return m.createdAt }

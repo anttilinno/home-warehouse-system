@@ -73,14 +73,14 @@ func Reconstruct(
 }
 
 // Getters
-func (a *RepairAttachment) ID() uuid.UUID                        { return a.id }
-func (a *RepairAttachment) RepairLogID() uuid.UUID               { return a.repairLogID }
-func (a *RepairAttachment) WorkspaceID() uuid.UUID               { return a.workspaceID }
-func (a *RepairAttachment) FileID() uuid.UUID                    { return a.fileID }
+func (a *RepairAttachment) ID() uuid.UUID                             { return a.id }
+func (a *RepairAttachment) RepairLogID() uuid.UUID                    { return a.repairLogID }
+func (a *RepairAttachment) WorkspaceID() uuid.UUID                    { return a.workspaceID }
+func (a *RepairAttachment) FileID() uuid.UUID                         { return a.fileID }
 func (a *RepairAttachment) AttachmentType() attachment.AttachmentType { return a.attachmentType }
-func (a *RepairAttachment) Title() *string                       { return a.title }
-func (a *RepairAttachment) CreatedAt() time.Time                 { return a.createdAt }
-func (a *RepairAttachment) UpdatedAt() time.Time                 { return a.updatedAt }
+func (a *RepairAttachment) Title() *string                            { return a.title }
+func (a *RepairAttachment) CreatedAt() time.Time                      { return a.createdAt }
+func (a *RepairAttachment) UpdatedAt() time.Time                      { return a.updatedAt }
 
 // RepairAttachmentWithFile includes file metadata for joined queries.
 type RepairAttachmentWithFile struct {

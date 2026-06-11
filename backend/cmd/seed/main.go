@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"math/rand"
 	"os"
@@ -244,7 +245,7 @@ func ensureTestWorkspace(ctx context.Context, pool *pgxpool.Pool) (uuid.UUID, uu
 		SELECT id FROM auth.workspaces WHERE slug = 'seed-test'
 	`).Scan(&workspaceID)
 
-	if err == pgx.ErrNoRows {
+	if errors.Is(err, pgx.ErrNoRows) {
 		// Create test workspace
 		workspaceID = uuid.New()
 		_, err = pool.Exec(ctx, `
@@ -267,7 +268,7 @@ func ensureTestWorkspace(ctx context.Context, pool *pgxpool.Pool) (uuid.UUID, uu
 		SELECT id FROM auth.users WHERE email = 'seeder@test.local'
 	`).Scan(&userID)
 
-	if err == pgx.ErrNoRows {
+	if errors.Is(err, pgx.ErrNoRows) {
 		// Create test user
 		userID = uuid.New()
 		// Password: password123
@@ -344,7 +345,7 @@ func (s *Seeder) seedCategories(ctx context.Context) error {
 			SELECT id FROM warehouse.categories WHERE workspace_id = $1 AND name = $2 AND parent_category_id IS NULL
 		`, s.workspaceID, parentName).Scan(&parentID)
 
-		if err == pgx.ErrNoRows {
+		if errors.Is(err, pgx.ErrNoRows) {
 			parentID = uuid.New()
 			_, err = s.pool.Exec(ctx, `
 				INSERT INTO warehouse.categories (id, workspace_id, name, description)
@@ -367,7 +368,7 @@ func (s *Seeder) seedCategories(ctx context.Context) error {
 				SELECT id FROM warehouse.categories WHERE workspace_id = $1 AND name = $2 AND parent_category_id = $3
 			`, s.workspaceID, childName, parentID).Scan(&childID)
 
-			if err == pgx.ErrNoRows {
+			if errors.Is(err, pgx.ErrNoRows) {
 				childID = uuid.New()
 				_, err = s.pool.Exec(ctx, `
 					INSERT INTO warehouse.categories (id, workspace_id, name, parent_category_id, description)
@@ -647,7 +648,7 @@ func (s *Seeder) ensureMemberUser(ctx context.Context) (uuid.UUID, error) {
 		SELECT id FROM auth.users WHERE email = 'member@test.local'
 	`).Scan(&memberID)
 
-	if err == pgx.ErrNoRows {
+	if errors.Is(err, pgx.ErrNoRows) {
 		// Create member user
 		memberID = uuid.New()
 		// Password: password123
@@ -833,7 +834,7 @@ func (s *Seeder) seedOverdueLoans(ctx context.Context) error {
 			SELECT id FROM warehouse.borrowers WHERE workspace_id = $1 AND name = $2
 		`, s.workspaceID, name).Scan(&borrowerID)
 
-		if err == pgx.ErrNoRows {
+		if errors.Is(err, pgx.ErrNoRows) {
 			borrowerID = uuid.New()
 			_, err = s.pool.Exec(ctx, `
 				INSERT INTO warehouse.borrowers (id, workspace_id, name, email)
@@ -912,7 +913,7 @@ func (s *Seeder) getOrCreateLocation(ctx context.Context) (uuid.UUID, error) {
 		SELECT id FROM warehouse.locations WHERE workspace_id = $1 LIMIT 1
 	`, s.workspaceID).Scan(&locationID)
 
-	if err == pgx.ErrNoRows {
+	if errors.Is(err, pgx.ErrNoRows) {
 		// Create a default location
 		locationID = uuid.New()
 		shortCode := s.generateShortCode()

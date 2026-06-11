@@ -19,7 +19,7 @@ func TestLoad(t *testing.T) {
 		assert.Equal(t, 25, cfg.DatabaseMaxConn)
 		assert.Equal(t, 5, cfg.DatabaseMinConn)
 		assert.Equal(t, "redis://localhost:6379/0", cfg.RedisURL)
-		assert.Equal(t, "change-me-in-production", cfg.JWTSecret)
+		assert.Equal(t, "", cfg.JWTSecret)
 		assert.Equal(t, "HS256", cfg.JWTAlgorithm)
 		assert.Equal(t, 24, cfg.JWTExpirationHours)
 		assert.Equal(t, "0.0.0.0", cfg.ServerHost)
@@ -107,13 +107,15 @@ func TestLoad(t *testing.T) {
 	})
 }
 
+const testStrongSecret = "0123456789abcdef0123456789abcdef" // 32 chars
+
 func TestValidate(t *testing.T) {
 	t.Run("passes validation with valid config", func(t *testing.T) {
 		cfg := &Config{
-			DatabaseURL:  "postgresql://localhost/db",
-			JWTSecret:    "secure-secret",
-			ServerPort:   8080,
-			DebugMode:    false,
+			DatabaseURL: "postgresql://localhost/db",
+			JWTSecret:   testStrongSecret,
+			ServerPort:  8080,
+			DebugMode:   false,
 		}
 
 		err := cfg.Validate()
@@ -122,10 +124,10 @@ func TestValidate(t *testing.T) {
 
 	t.Run("fails validation with empty database URL", func(t *testing.T) {
 		cfg := &Config{
-			DatabaseURL:  "",
-			JWTSecret:    "secure-secret",
-			ServerPort:   8080,
-			DebugMode:    false,
+			DatabaseURL: "",
+			JWTSecret:   testStrongSecret,
+			ServerPort:  8080,
+			DebugMode:   false,
 		}
 
 		err := cfg.Validate()
@@ -135,10 +137,10 @@ func TestValidate(t *testing.T) {
 
 	t.Run("fails validation with default JWT secret in production", func(t *testing.T) {
 		cfg := &Config{
-			DatabaseURL:  "postgresql://localhost/db",
-			JWTSecret:    "change-me-in-production",
-			ServerPort:   8080,
-			DebugMode:    false,
+			DatabaseURL: "postgresql://localhost/db",
+			JWTSecret:   "change-me-in-production",
+			ServerPort:  8080,
+			DebugMode:   false,
 		}
 
 		err := cfg.Validate()
@@ -146,24 +148,51 @@ func TestValidate(t *testing.T) {
 		assert.Contains(t, err.Error(), "JWT_SECRET")
 	})
 
-	t.Run("allows default JWT secret in debug mode", func(t *testing.T) {
+	t.Run("fails validation with empty JWT secret in production", func(t *testing.T) {
 		cfg := &Config{
-			DatabaseURL:  "postgresql://localhost/db",
-			JWTSecret:    "change-me-in-production",
-			ServerPort:   8080,
-			DebugMode:    true,
+			DatabaseURL: "postgresql://localhost/db",
+			JWTSecret:   "",
+			ServerPort:  8080,
+			DebugMode:   false,
+		}
+
+		err := cfg.Validate()
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "JWT_SECRET")
+	})
+
+	t.Run("fails validation with short JWT secret in production", func(t *testing.T) {
+		cfg := &Config{
+			DatabaseURL: "postgresql://localhost/db",
+			JWTSecret:   "too-short",
+			ServerPort:  8080,
+			DebugMode:   false,
+		}
+
+		err := cfg.Validate()
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "JWT_SECRET")
+	})
+
+	t.Run("substitutes dev fallback for missing JWT secret in debug mode", func(t *testing.T) {
+		cfg := &Config{
+			DatabaseURL: "postgresql://localhost/db",
+			JWTSecret:   "",
+			ServerPort:  8080,
+			DebugMode:   true,
 		}
 
 		err := cfg.Validate()
 		assert.NoError(t, err)
+		assert.Equal(t, devFallbackJWTSecret, cfg.JWTSecret)
 	})
 
 	t.Run("fails validation with invalid server port", func(t *testing.T) {
 		cfg := &Config{
-			DatabaseURL:  "postgresql://localhost/db",
-			JWTSecret:    "secure-secret",
-			ServerPort:   0,
-			DebugMode:    false,
+			DatabaseURL: "postgresql://localhost/db",
+			JWTSecret:   testStrongSecret,
+			ServerPort:  0,
+			DebugMode:   false,
 		}
 
 		err := cfg.Validate()
@@ -173,14 +202,34 @@ func TestValidate(t *testing.T) {
 
 	t.Run("fails validation with port too high", func(t *testing.T) {
 		cfg := &Config{
-			DatabaseURL:  "postgresql://localhost/db",
-			JWTSecret:    "secure-secret",
-			ServerPort:   70000,
-			DebugMode:    false,
+			DatabaseURL: "postgresql://localhost/db",
+			JWTSecret:   testStrongSecret,
+			ServerPort:  70000,
+			DebugMode:   false,
 		}
 
 		err := cfg.Validate()
 		require.Error(t, err)
 		assert.Contains(t, err.Error(), "SERVER_PORT")
+	})
+}
+
+func TestIsProduction(t *testing.T) {
+	t.Run("production via APP_ENV", func(t *testing.T) {
+		cfg := &Config{AppEnv: "production", AppURL: "http://localhost:3000"}
+		assert.True(t, cfg.IsProduction())
+		assert.True(t, cfg.SecureCookies())
+	})
+
+	t.Run("production via https APP_URL", func(t *testing.T) {
+		cfg := &Config{AppEnv: "", AppURL: "https://warehouse.example.com"}
+		assert.True(t, cfg.IsProduction())
+		assert.True(t, cfg.SecureCookies())
+	})
+
+	t.Run("development", func(t *testing.T) {
+		cfg := &Config{AppEnv: "development", AppURL: "http://localhost:3000"}
+		assert.False(t, cfg.IsProduction())
+		assert.False(t, cfg.SecureCookies())
 	})
 }

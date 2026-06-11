@@ -44,7 +44,7 @@ func TestPendingChangeRepository_Save(t *testing.T) {
 		err = repo.Save(ctx, change)
 		require.NoError(t, err)
 
-		retrieved, err := repo.FindByID(ctx, change.ID())
+		retrieved, err := repo.FindByID(ctx, change.ID(), testfixtures.TestWorkspaceID)
 		require.NoError(t, err)
 		require.NotNil(t, retrieved)
 
@@ -72,7 +72,7 @@ func TestPendingChangeRepository_Save(t *testing.T) {
 		err = repo.Save(ctx, change)
 		require.NoError(t, err)
 
-		retrieved, err := repo.FindByID(ctx, change.ID())
+		retrieved, err := repo.FindByID(ctx, change.ID(), testfixtures.TestWorkspaceID)
 		require.NoError(t, err)
 		require.NotNil(t, retrieved)
 		assert.Nil(t, retrieved.EntityID())
@@ -102,14 +102,14 @@ func TestPendingChangeRepository_FindByID(t *testing.T) {
 		err = repo.Save(ctx, change)
 		require.NoError(t, err)
 
-		found, err := repo.FindByID(ctx, change.ID())
+		found, err := repo.FindByID(ctx, change.ID(), testfixtures.TestWorkspaceID)
 		require.NoError(t, err)
 		require.NotNil(t, found)
 		assert.Equal(t, change.ID(), found.ID())
 	})
 
 	t.Run("returns error for non-existent pending change", func(t *testing.T) {
-		found, err := repo.FindByID(ctx, uuid.New())
+		found, err := repo.FindByID(ctx, uuid.New(), testfixtures.TestWorkspaceID)
 		require.Error(t, err)
 		assert.True(t, shared.IsNotFound(err))
 		assert.Nil(t, found)
@@ -279,7 +279,7 @@ func TestPendingChangeRepository_FindByEntity(t *testing.T) {
 			require.NoError(t, repo.Save(ctx, change))
 		}
 
-		changes, err := repo.FindByEntity(ctx, "items", entityID)
+		changes, err := repo.FindByEntity(ctx, testfixtures.TestWorkspaceID, "items", entityID)
 		require.NoError(t, err)
 		assert.GreaterOrEqual(t, len(changes), 2)
 		for _, c := range changes {
@@ -290,7 +290,7 @@ func TestPendingChangeRepository_FindByEntity(t *testing.T) {
 	})
 
 	t.Run("returns empty for entity with no changes", func(t *testing.T) {
-		changes, err := repo.FindByEntity(ctx, "items", uuid.New())
+		changes, err := repo.FindByEntity(ctx, testfixtures.TestWorkspaceID, "items", uuid.New())
 		require.NoError(t, err)
 		assert.Empty(t, changes)
 	})
@@ -319,10 +319,10 @@ func TestPendingChangeRepository_Delete(t *testing.T) {
 		err = repo.Save(ctx, change)
 		require.NoError(t, err)
 
-		err = repo.Delete(ctx, change.ID())
+		err = repo.Delete(ctx, change.ID(), testfixtures.TestWorkspaceID)
 		require.NoError(t, err)
 
-		found, err := repo.FindByID(ctx, change.ID())
+		found, err := repo.FindByID(ctx, change.ID(), testfixtures.TestWorkspaceID)
 		require.Error(t, err)
 		assert.True(t, shared.IsNotFound(err))
 		assert.Nil(t, found)

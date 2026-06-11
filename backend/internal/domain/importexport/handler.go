@@ -11,6 +11,21 @@ import (
 	appMiddleware "github.com/antti/home-warehouse/go-backend/internal/api/middleware"
 )
 
+// maxImportPayloadBytes caps the size of the base64-encoded import payload
+// (per-handler limit, tighter than the global body cap).
+const maxImportPayloadBytes = 32 << 20 // 32MB of base64 text (~24MB decoded)
+
+// requireAdminRole ensures the caller is a workspace owner or admin. Import
+// and full-workspace export/restore perform bulk writes that bypass the
+// member approval pipeline, so members must not reach them.
+func requireAdminRole(ctx context.Context) error {
+	role, ok := appMiddleware.GetRole(ctx)
+	if !ok || (role != "owner" && role != "admin") {
+		return huma.Error403Forbidden("only workspace owners and admins can perform this operation")
+	}
+	return nil
+}
+
 // Handler handles import/export HTTP requests
 type Handler struct {
 	svc       ServiceInterface
@@ -150,6 +165,10 @@ func (h *Handler) Import(ctx context.Context, input *ImportRequest) (*ImportResp
 		return nil, huma.Error401Unauthorized("workspace context required")
 	}
 
+	if err := requireAdminRole(ctx); err != nil {
+		return nil, err
+	}
+
 	// Validate entity type
 	entityType := EntityType(input.EntityType)
 	if !entityType.IsValid() {
@@ -160,6 +179,11 @@ func (h *Handler) Import(ctx context.Context, input *ImportRequest) (*ImportResp
 	format := Format(input.Body.Format)
 	if !format.IsValid() {
 		return nil, huma.Error400BadRequest(fmt.Sprintf("invalid format: %s. Supported formats: csv, json", input.Body.Format))
+	}
+
+	// Cap payload size before decoding
+	if len(input.Body.Data) > maxImportPayloadBytes {
+		return nil, huma.NewError(http.StatusRequestEntityTooLarge, "import payload too large")
 	}
 
 	// Decode base64 data
@@ -200,6 +224,10 @@ func (h *Handler) ExportWorkspaceFull(ctx context.Context, input *WorkspaceExpor
 	}
 	userID := authUser.ID
 
+	if err := requireAdminRole(ctx); err != nil {
+		return nil, err
+	}
+
 	// Validate format
 	format := Format(input.Format)
 	if format != FormatExcel && format != FormatJSON {
@@ -234,10 +262,19 @@ func (h *Handler) ImportWorkspaceFull(ctx context.Context, input *WorkspaceImpor
 		return nil, huma.Error401Unauthorized("workspace context required")
 	}
 
+	if err := requireAdminRole(ctx); err != nil {
+		return nil, err
+	}
+
 	// Validate format
 	format := Format(input.Body.Format)
 	if format != FormatExcel && format != FormatJSON {
 		return nil, huma.Error400BadRequest(fmt.Sprintf("invalid format: %s. Supported formats: xlsx, json", input.Body.Format))
+	}
+
+	// Cap payload size before decoding
+	if len(input.Body.Data) > maxImportPayloadBytes {
+		return nil, huma.NewError(http.StatusRequestEntityTooLarge, "import payload too large")
 	}
 
 	// Decode base64 data

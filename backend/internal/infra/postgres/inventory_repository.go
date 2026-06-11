@@ -16,20 +16,24 @@ import (
 )
 
 type InventoryRepository struct {
-	pool    *pgxpool.Pool
-	queries *queries.Queries
+	pool *pgxpool.Pool
 }
 
 func NewInventoryRepository(pool *pgxpool.Pool) *InventoryRepository {
 	return &InventoryRepository{
-		pool:    pool,
-		queries: queries.New(pool),
+		pool: pool,
 	}
+}
+
+// q returns Queries bound to the active transaction in ctx (if any) or the
+// pool, so reads/writes participate in TxManager.WithTx transactions (WR-01).
+func (r *InventoryRepository) q(ctx context.Context) *queries.Queries {
+	return queries.New(GetDBTX(ctx, r.pool))
 }
 
 func (r *InventoryRepository) Save(ctx context.Context, inv *inventory.Inventory) error {
 	// Check if inventory already exists
-	existing, err := r.queries.GetInventory(ctx, queries.GetInventoryParams{
+	existing, err := r.q(ctx).GetInventory(ctx, queries.GetInventoryParams{
 		ID:          inv.ID(),
 		WorkspaceID: inv.WorkspaceID(),
 	})
@@ -71,8 +75,9 @@ func (r *InventoryRepository) Save(ctx context.Context, inv *inventory.Inventory
 	// If inventory exists, update it; otherwise create it
 	if existing.ID != uuid.Nil {
 		// Update existing inventory
-		_, err = r.queries.UpdateInventory(ctx, queries.UpdateInventoryParams{
+		_, err = r.q(ctx).UpdateInventory(ctx, queries.UpdateInventoryParams{
 			ID:              inv.ID(),
+			WorkspaceID:     inv.WorkspaceID(),
 			LocationID:      inv.LocationID(),
 			ContainerID:     containerID,
 			Quantity:        int32(inv.Quantity()),
@@ -88,15 +93,16 @@ func (r *InventoryRepository) Save(ctx context.Context, inv *inventory.Inventory
 			return err
 		}
 		// Separately update status since UpdateInventory doesn't include it
-		_, err = r.queries.UpdateInventoryStatus(ctx, queries.UpdateInventoryStatusParams{
-			ID:     inv.ID(),
-			Status: status,
+		_, err = r.q(ctx).UpdateInventoryStatus(ctx, queries.UpdateInventoryStatusParams{
+			ID:          inv.ID(),
+			WorkspaceID: inv.WorkspaceID(),
+			Status:      status,
 		})
 		return err
 	}
 
 	// Create new inventory
-	_, err = r.queries.CreateInventory(ctx, queries.CreateInventoryParams{
+	_, err = r.q(ctx).CreateInventory(ctx, queries.CreateInventoryParams{
 		ID:              inv.ID(),
 		WorkspaceID:     inv.WorkspaceID(),
 		ItemID:          inv.ItemID(),
@@ -116,7 +122,7 @@ func (r *InventoryRepository) Save(ctx context.Context, inv *inventory.Inventory
 }
 
 func (r *InventoryRepository) FindByID(ctx context.Context, id, workspaceID uuid.UUID) (*inventory.Inventory, error) {
-	row, err := r.queries.GetInventory(ctx, queries.GetInventoryParams{
+	row, err := r.q(ctx).GetInventory(ctx, queries.GetInventoryParams{
 		ID:          id,
 		WorkspaceID: workspaceID,
 	})
@@ -132,13 +138,13 @@ func (r *InventoryRepository) FindByID(ctx context.Context, id, workspaceID uuid
 
 func (r *InventoryRepository) List(ctx context.Context, workspaceID uuid.UUID, pagination shared.Pagination) ([]*inventory.Inventory, int, error) {
 	// Get total count
-	total, err := r.queries.CountInventory(ctx, workspaceID)
+	total, err := r.q(ctx).CountInventory(ctx, workspaceID)
 	if err != nil {
 		return nil, 0, err
 	}
 
 	// Get paginated list
-	rows, err := r.queries.ListInventory(ctx, queries.ListInventoryParams{
+	rows, err := r.q(ctx).ListInventory(ctx, queries.ListInventoryParams{
 		WorkspaceID: workspaceID,
 		Limit:       int32(pagination.Limit()),
 		Offset:      int32(pagination.Offset()),
@@ -156,7 +162,7 @@ func (r *InventoryRepository) List(ctx context.Context, workspaceID uuid.UUID, p
 }
 
 func (r *InventoryRepository) FindByItem(ctx context.Context, workspaceID, itemID uuid.UUID) ([]*inventory.Inventory, error) {
-	rows, err := r.queries.ListInventoryByItem(ctx, queries.ListInventoryByItemParams{
+	rows, err := r.q(ctx).ListInventoryByItem(ctx, queries.ListInventoryByItemParams{
 		WorkspaceID: workspaceID,
 		ItemID:      itemID,
 	})
@@ -173,7 +179,7 @@ func (r *InventoryRepository) FindByItem(ctx context.Context, workspaceID, itemI
 }
 
 func (r *InventoryRepository) FindByLocation(ctx context.Context, workspaceID, locationID uuid.UUID) ([]*inventory.Inventory, error) {
-	rows, err := r.queries.ListInventoryByLocation(ctx, queries.ListInventoryByLocationParams{
+	rows, err := r.q(ctx).ListInventoryByLocation(ctx, queries.ListInventoryByLocationParams{
 		WorkspaceID: workspaceID,
 		LocationID:  locationID,
 	})
@@ -190,7 +196,7 @@ func (r *InventoryRepository) FindByLocation(ctx context.Context, workspaceID, l
 }
 
 func (r *InventoryRepository) FindByContainer(ctx context.Context, workspaceID, containerID uuid.UUID) ([]*inventory.Inventory, error) {
-	rows, err := r.queries.ListInventoryByContainer(ctx, queries.ListInventoryByContainerParams{
+	rows, err := r.q(ctx).ListInventoryByContainer(ctx, queries.ListInventoryByContainerParams{
 		WorkspaceID: workspaceID,
 		ContainerID: pgtype.UUID{Bytes: containerID, Valid: true},
 	})
@@ -207,7 +213,7 @@ func (r *InventoryRepository) FindByContainer(ctx context.Context, workspaceID, 
 }
 
 func (r *InventoryRepository) FindAvailable(ctx context.Context, workspaceID, itemID uuid.UUID) ([]*inventory.Inventory, error) {
-	rows, err := r.queries.GetAvailableInventory(ctx, queries.GetAvailableInventoryParams{
+	rows, err := r.q(ctx).GetAvailableInventory(ctx, queries.GetAvailableInventoryParams{
 		WorkspaceID: workspaceID,
 		ItemID:      itemID,
 	})
@@ -224,7 +230,7 @@ func (r *InventoryRepository) FindAvailable(ctx context.Context, workspaceID, it
 }
 
 func (r *InventoryRepository) GetTotalQuantity(ctx context.Context, workspaceID, itemID uuid.UUID) (int, error) {
-	total, err := r.queries.GetTotalQuantityByItem(ctx, queries.GetTotalQuantityByItemParams{
+	total, err := r.q(ctx).GetTotalQuantityByItem(ctx, queries.GetTotalQuantityByItemParams{
 		WorkspaceID: workspaceID,
 		ItemID:      itemID,
 	})
@@ -234,8 +240,11 @@ func (r *InventoryRepository) GetTotalQuantity(ctx context.Context, workspaceID,
 	return int(total), nil
 }
 
-func (r *InventoryRepository) Delete(ctx context.Context, id uuid.UUID) error {
-	return r.queries.ArchiveInventory(ctx, id)
+func (r *InventoryRepository) Delete(ctx context.Context, id, workspaceID uuid.UUID) error {
+	return r.q(ctx).ArchiveInventory(ctx, queries.ArchiveInventoryParams{
+		ID:          id,
+		WorkspaceID: workspaceID,
+	})
 }
 
 func (r *InventoryRepository) rowToInventory(row queries.WarehouseInventory) *inventory.Inventory {

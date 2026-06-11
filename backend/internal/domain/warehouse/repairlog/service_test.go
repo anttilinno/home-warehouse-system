@@ -125,7 +125,7 @@ func (m *MockInventoryRepository) GetTotalQuantity(ctx context.Context, workspac
 	return args.Int(0), args.Error(1)
 }
 
-func (m *MockInventoryRepository) Delete(ctx context.Context, id uuid.UUID) error {
+func (m *MockInventoryRepository) Delete(ctx context.Context, id, workspaceID uuid.UUID) error {
 	args := m.Called(ctx, id)
 	return args.Error(0)
 }

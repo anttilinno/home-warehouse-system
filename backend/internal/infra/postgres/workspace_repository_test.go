@@ -13,9 +13,9 @@ import (
 
 	"github.com/antti/home-warehouse/go-backend/internal/domain/auth/member"
 	"github.com/antti/home-warehouse/go-backend/internal/domain/auth/workspace"
+	"github.com/antti/home-warehouse/go-backend/internal/shared"
 	"github.com/antti/home-warehouse/go-backend/tests/testdb"
 	"github.com/antti/home-warehouse/go-backend/tests/testfixtures"
-	"github.com/antti/home-warehouse/go-backend/internal/shared"
 )
 
 func TestWorkspaceRepository_Save(t *testing.T) {

@@ -1175,3 +1175,191 @@ func TestItemHandler_LookupByBarcode(t *testing.T) {
 		mockSvc.AssertExpectations(t)
 	})
 }
+
+// TestItemHandler_Update_PatchMergeSemantics guards the PATCH merge contract
+// (regression for the bug where every field omitted from a PATCH body was
+// wiped to NULL by the full-state entity Update):
+//
+//   - omitted field (nil pointer)  -> current value is preserved
+//   - explicit "" on a *string     -> field is cleared (NULL)
+//   - explicit non-zero value      -> field is overwritten
+//   - *bool / *uuid.UUID / int     -> nil keeps current, non-nil overwrites
+//     (no clear mechanism via PATCH)
+func TestItemHandler_Update_PatchMergeSemantics(t *testing.T) {
+	setup := testutil.NewHandlerTestSetup()
+	mockSvc := new(MockService)
+	item.RegisterRoutes(setup.API, mockSvc, nil, nil, nil)
+
+	strPtr := func(s string) *string { return &s }
+	boolPtr := func(b bool) *bool { return &b }
+
+	categoryID := uuid.New()
+	purchasedFromID := uuid.New()
+	newCategoryID := uuid.New()
+
+	// Fully-populated current item so any wiped field is visible.
+	newCurrentItem := func() *item.Item {
+		now := time.Now()
+		return item.Reconstruct(
+			uuid.New(), setup.WorkspaceID,
+			"LAP-001",
+			"Laptop",
+			strPtr("a sturdy laptop"),
+			&categoryID,
+			strPtr("Lenovo"),                // brand
+			strPtr("T480"),                  // model
+			strPtr("https://img.example/x"), // imageURL
+			strPtr("SN-123"),                // serialNumber
+			strPtr("Lenovo Group"),          // manufacturer
+			strPtr("4006381333931"),         // barcode
+			boolPtr(true),                   // isInsured
+			boolPtr(false),                  // isArchived
+			boolPtr(true),                   // lifetimeWarranty
+			strPtr("3yr on-site"),           // warrantyDetails
+			&purchasedFromID,                // purchasedFrom
+			7,                               // minStockLevel
+			"SC1",                           // shortCode
+			strPtr("MainVault"),             // obsidianVaultPath
+			strPtr("Items/laptop.md"),       // obsidianNotePath
+			boolPtr(true),                   // needsReview
+			now, now,
+		)
+	}
+
+	// assertUnchanged checks that every field NOT named in `except` was
+	// carried over from current into the captured UpdateInput.
+	assertUnchanged := func(t *testing.T, got item.UpdateInput, current *item.Item, except map[string]bool) {
+		t.Helper()
+		type fieldCheck struct {
+			name string
+			fn   func()
+		}
+		checks := []fieldCheck{
+			{"name", func() { assert.Equal(t, current.Name(), got.Name, "name") }},
+			{"description", func() { assert.Equal(t, current.Description(), got.Description, "description") }},
+			{"category_id", func() { assert.Equal(t, current.CategoryID(), got.CategoryID, "category_id") }},
+			{"brand", func() { assert.Equal(t, current.Brand(), got.Brand, "brand") }},
+			{"model", func() { assert.Equal(t, current.Model(), got.Model, "model") }},
+			{"image_url", func() { assert.Equal(t, current.ImageURL(), got.ImageURL, "image_url") }},
+			{"serial_number", func() { assert.Equal(t, current.SerialNumber(), got.SerialNumber, "serial_number") }},
+			{"manufacturer", func() { assert.Equal(t, current.Manufacturer(), got.Manufacturer, "manufacturer") }},
+			{"barcode", func() { assert.Equal(t, current.Barcode(), got.Barcode, "barcode") }},
+			{"is_insured", func() { assert.Equal(t, current.IsInsured(), got.IsInsured, "is_insured") }},
+			{"lifetime_warranty", func() { assert.Equal(t, current.LifetimeWarranty(), got.LifetimeWarranty, "lifetime_warranty") }},
+			{"warranty_details", func() { assert.Equal(t, current.WarrantyDetails(), got.WarrantyDetails, "warranty_details") }},
+			{"purchased_from", func() { assert.Equal(t, current.PurchasedFrom(), got.PurchasedFrom, "purchased_from") }},
+			{"min_stock_level", func() { assert.Equal(t, current.MinStockLevel(), got.MinStockLevel, "min_stock_level") }},
+			{"obsidian_vault_path", func() { assert.Equal(t, current.ObsidianVaultPath(), got.ObsidianVaultPath, "obsidian_vault_path") }},
+			{"obsidian_note_path", func() { assert.Equal(t, current.ObsidianNotePath(), got.ObsidianNotePath, "obsidian_note_path") }},
+			{"needs_review", func() { assert.Equal(t, current.NeedsReview(), got.NeedsReview, "needs_review") }},
+		}
+		for _, c := range checks {
+			if !except[c.name] {
+				c.fn()
+			}
+		}
+	}
+
+	tests := []struct {
+		name    string
+		body    string
+		changed map[string]bool // fields the body intends to change
+		check   func(t *testing.T, got item.UpdateInput)
+	}{
+		{
+			name:    "name-only PATCH preserves every omitted field",
+			body:    `{"name":"Renamed Laptop"}`,
+			changed: map[string]bool{"name": true},
+			check: func(t *testing.T, got item.UpdateInput) {
+				assert.Equal(t, "Renamed Laptop", got.Name)
+			},
+		},
+		{
+			name:    "needs_review-only PATCH (mark-as-reviewed flow) preserves metadata",
+			body:    `{"needs_review":false}`,
+			changed: map[string]bool{"needs_review": true},
+			check: func(t *testing.T, got item.UpdateInput) {
+				if assert.NotNil(t, got.NeedsReview) {
+					assert.False(t, *got.NeedsReview)
+				}
+			},
+		},
+		{
+			name:    "min_stock_level-only PATCH preserves omitted fields",
+			body:    `{"min_stock_level":42}`,
+			changed: map[string]bool{"min_stock_level": true},
+			check: func(t *testing.T, got item.UpdateInput) {
+				assert.Equal(t, 42, got.MinStockLevel)
+			},
+		},
+		{
+			name:    "explicit empty string clears nullable string fields to NULL",
+			body:    `{"description":"","barcode":"","serial_number":"","obsidian_note_path":""}`,
+			changed: map[string]bool{"description": true, "barcode": true, "serial_number": true, "obsidian_note_path": true},
+			check: func(t *testing.T, got item.UpdateInput) {
+				assert.Nil(t, got.Description, "\"\" must clear description")
+				assert.Nil(t, got.Barcode, "\"\" must clear barcode")
+				assert.Nil(t, got.SerialNumber, "\"\" must clear serial_number")
+				assert.Nil(t, got.ObsidianNotePath, "\"\" must clear obsidian_note_path")
+			},
+		},
+		{
+			name: "explicit new values overwrite",
+			body: fmt.Sprintf(
+				`{"name":"HP Laptop","description":"new desc","brand":"HP","is_insured":false,"lifetime_warranty":false,"min_stock_level":2,"category_id":"%s","warranty_details":"1yr mail-in"}`,
+				newCategoryID,
+			),
+			changed: map[string]bool{
+				"name": true, "description": true, "brand": true, "is_insured": true,
+				"lifetime_warranty": true, "min_stock_level": true, "category_id": true,
+				"warranty_details": true,
+			},
+			check: func(t *testing.T, got item.UpdateInput) {
+				assert.Equal(t, "HP Laptop", got.Name)
+				if assert.NotNil(t, got.Description) {
+					assert.Equal(t, "new desc", *got.Description)
+				}
+				if assert.NotNil(t, got.Brand) {
+					assert.Equal(t, "HP", *got.Brand)
+				}
+				if assert.NotNil(t, got.IsInsured) {
+					assert.False(t, *got.IsInsured)
+				}
+				if assert.NotNil(t, got.LifetimeWarranty) {
+					assert.False(t, *got.LifetimeWarranty)
+				}
+				assert.Equal(t, 2, got.MinStockLevel)
+				if assert.NotNil(t, got.CategoryID) {
+					assert.Equal(t, newCategoryID, *got.CategoryID)
+				}
+				if assert.NotNil(t, got.WarrantyDetails) {
+					assert.Equal(t, "1yr mail-in", *got.WarrantyDetails)
+				}
+			},
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			currentItem := newCurrentItem()
+			itemID := currentItem.ID()
+
+			mockSvc.On("GetByID", mock.Anything, itemID, setup.WorkspaceID).
+				Return(currentItem, nil).Once()
+
+			var captured item.UpdateInput
+			mockSvc.On("Update", mock.Anything, itemID, setup.WorkspaceID, mock.Anything).
+				Run(func(args mock.Arguments) {
+					captured = args.Get(3).(item.UpdateInput)
+				}).
+				Return(currentItem, nil).Once()
+
+			rec := setup.Patch(fmt.Sprintf("/items/%s", itemID), tc.body)
+			testutil.AssertStatus(t, rec, http.StatusOK)
+			mockSvc.AssertExpectations(t)
+
+			tc.check(t, captured)
+			assertUnchanged(t, captured, currentItem, tc.changed)
+		})
+	}
+}

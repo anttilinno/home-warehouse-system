@@ -52,6 +52,14 @@ func (h *UploadHandler) HandleUpload(w http.ResponseWriter, r *http.Request) {
 	}
 	userID := authUser.ID
 
+	// Bulk import bypasses the member approval pipeline, so only workspace
+	// owners and admins may use it.
+	role, ok := appMiddleware.GetRole(r.Context())
+	if !ok || (role != "owner" && role != "admin") {
+		http.Error(w, `{"error":"forbidden","message":"only workspace owners and admins can import data"}`, http.StatusForbidden)
+		return
+	}
+
 	// Parse multipart form (10MB limit)
 	if err := r.ParseMultipartForm(MaxFileSize); err != nil {
 		http.Error(w, "file too large", http.StatusBadRequest)

@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/sha256"
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"io"
 	"mime/multipart"
@@ -26,10 +27,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 			return nil, huma.Error401Unauthorized("workspace context required")
 		}
 
-		// Note: In production, verify item belongs to workspace
-		_ = workspaceID
-
-		attachments, err := svc.ListByItem(ctx, input.ItemID)
+		attachments, err := svc.ListByItem(ctx, input.ItemID, workspaceID)
 		if err != nil {
 			return nil, huma.Error500InternalServerError("failed to list attachments")
 		}
@@ -51,10 +49,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 			return nil, huma.Error401Unauthorized("workspace context required")
 		}
 
-		// Note: In production, verify attachment's item belongs to workspace
-		_ = workspaceID
-
-		attachment, err := svc.GetAttachment(ctx, input.ID)
+		attachment, err := svc.GetAttachment(ctx, input.ID, workspaceID)
 		if err != nil || attachment == nil {
 			return nil, huma.Error404NotFound("attachment not found")
 		}
@@ -108,6 +103,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 		// Create attachment record
 		fileID := file.ID()
 		attachment, err := svc.CreateAttachment(ctx, CreateAttachmentInput{
+			WorkspaceID:    workspaceID,
 			ItemID:         input.ItemID,
 			FileID:         &fileID,
 			AttachmentType: attachmentType,
@@ -131,7 +127,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 					"id":              attachment.ID(),
 					"item_id":         attachment.ItemID(),
 					"attachment_type": string(attachment.AttachmentType()),
-					"user_name": userName,
+					"user_name":       userName,
 				},
 			})
 		}
@@ -157,6 +153,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 		}
 
 		attachment, err := svc.CreateAttachment(ctx, CreateAttachmentInput{
+			WorkspaceID:    workspaceID,
 			ItemID:         input.ItemID,
 			FileID:         input.Body.FileID,
 			AttachmentType: attachmentType,
@@ -180,7 +177,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 					"id":              attachment.ID(),
 					"item_id":         attachment.ItemID(),
 					"attachment_type": string(attachment.AttachmentType()),
-					"user_name": userName,
+					"user_name":       userName,
 				},
 			})
 		}
@@ -199,9 +196,9 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 
 		authUser, _ := appMiddleware.GetAuthUser(ctx)
 
-		err := svc.SetPrimary(ctx, input.ItemID, input.ID)
+		err := svc.SetPrimary(ctx, input.ItemID, input.ID, workspaceID)
 		if err != nil {
-			if err == ErrAttachmentNotFound {
+			if errors.Is(err, ErrAttachmentNotFound) {
 				return nil, huma.Error404NotFound("attachment not found")
 			}
 			return nil, appMiddleware.MapDomainError(err)
@@ -219,7 +216,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 					"id":         input.ID,
 					"item_id":    input.ItemID,
 					"is_primary": true,
-					"user_name": userName,
+					"user_name":  userName,
 				},
 			})
 		}
@@ -236,9 +233,9 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 
 		authUser, _ := appMiddleware.GetAuthUser(ctx)
 
-		err := svc.DeleteAttachment(ctx, input.ID)
+		err := svc.DeleteAttachment(ctx, input.ID, workspaceID)
 		if err != nil {
-			if err == ErrAttachmentNotFound {
+			if errors.Is(err, ErrAttachmentNotFound) {
 				return nil, huma.Error404NotFound("attachment not found")
 			}
 			return nil, appMiddleware.MapDomainError(err)
@@ -252,9 +249,9 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 				EntityID:   input.ID.String(),
 				EntityType: "attachment",
 				UserID:     authUser.ID,
-			Data: map[string]any{
-				"user_name": userName,
-			},
+				Data: map[string]any{
+					"user_name": userName,
+				},
 			})
 		}
 

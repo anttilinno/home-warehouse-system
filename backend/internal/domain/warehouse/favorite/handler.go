@@ -78,7 +78,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 					"target_id":     input.Body.TargetID,
 					"favorite_type": input.Body.FavoriteType,
 					"added":         added,
-					"user_name": userName,
+					"user_name":     userName,
 				},
 			})
 		}

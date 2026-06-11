@@ -12,9 +12,9 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/label"
+	"github.com/antti/home-warehouse/go-backend/internal/shared"
 	"github.com/antti/home-warehouse/go-backend/tests/testdb"
 	"github.com/antti/home-warehouse/go-backend/tests/testfixtures"
-	"github.com/antti/home-warehouse/go-backend/internal/shared"
 )
 
 func TestLabelRepository_Save(t *testing.T) {

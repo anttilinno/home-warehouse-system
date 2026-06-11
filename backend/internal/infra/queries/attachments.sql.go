@@ -13,13 +13,14 @@ import (
 )
 
 const createAttachment = `-- name: CreateAttachment :one
-INSERT INTO warehouse.attachments (id, item_id, file_id, attachment_type, title, is_primary, docspell_item_id)
-VALUES ($1, $2, $3, $4, $5, $6, $7)
-RETURNING id, item_id, file_id, attachment_type, title, is_primary, docspell_item_id, created_at, updated_at
+INSERT INTO warehouse.attachments (id, workspace_id, item_id, file_id, attachment_type, title, is_primary, docspell_item_id)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+RETURNING id, item_id, file_id, attachment_type, title, is_primary, docspell_item_id, created_at, updated_at, workspace_id
 `
 
 type CreateAttachmentParams struct {
 	ID             uuid.UUID                   `json:"id"`
+	WorkspaceID    uuid.UUID                   `json:"workspace_id"`
 	ItemID         uuid.UUID                   `json:"item_id"`
 	FileID         pgtype.UUID                 `json:"file_id"`
 	AttachmentType WarehouseAttachmentTypeEnum `json:"attachment_type"`
@@ -31,6 +32,7 @@ type CreateAttachmentParams struct {
 func (q *Queries) CreateAttachment(ctx context.Context, arg CreateAttachmentParams) (WarehouseAttachment, error) {
 	row := q.db.QueryRow(ctx, createAttachment,
 		arg.ID,
+		arg.WorkspaceID,
 		arg.ItemID,
 		arg.FileID,
 		arg.AttachmentType,
@@ -49,6 +51,7 @@ func (q *Queries) CreateAttachment(ctx context.Context, arg CreateAttachmentPara
 		&i.DocspellItemID,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.WorkspaceID,
 	)
 	return i, err
 }
@@ -101,29 +104,44 @@ func (q *Queries) CreateFile(ctx context.Context, arg CreateFileParams) (Warehou
 }
 
 const deleteAttachment = `-- name: DeleteAttachment :exec
-DELETE FROM warehouse.attachments WHERE id = $1
+DELETE FROM warehouse.attachments WHERE id = $1 AND workspace_id = $2
 `
 
-func (q *Queries) DeleteAttachment(ctx context.Context, id uuid.UUID) error {
-	_, err := q.db.Exec(ctx, deleteAttachment, id)
+type DeleteAttachmentParams struct {
+	ID          uuid.UUID `json:"id"`
+	WorkspaceID uuid.UUID `json:"workspace_id"`
+}
+
+func (q *Queries) DeleteAttachment(ctx context.Context, arg DeleteAttachmentParams) error {
+	_, err := q.db.Exec(ctx, deleteAttachment, arg.ID, arg.WorkspaceID)
 	return err
 }
 
 const deleteFile = `-- name: DeleteFile :exec
-DELETE FROM warehouse.files WHERE id = $1
+DELETE FROM warehouse.files WHERE id = $1 AND workspace_id = $2
 `
 
-func (q *Queries) DeleteFile(ctx context.Context, id uuid.UUID) error {
-	_, err := q.db.Exec(ctx, deleteFile, id)
+type DeleteFileParams struct {
+	ID          uuid.UUID `json:"id"`
+	WorkspaceID uuid.UUID `json:"workspace_id"`
+}
+
+func (q *Queries) DeleteFile(ctx context.Context, arg DeleteFileParams) error {
+	_, err := q.db.Exec(ctx, deleteFile, arg.ID, arg.WorkspaceID)
 	return err
 }
 
 const getAttachment = `-- name: GetAttachment :one
-SELECT id, item_id, file_id, attachment_type, title, is_primary, docspell_item_id, created_at, updated_at FROM warehouse.attachments WHERE id = $1
+SELECT id, item_id, file_id, attachment_type, title, is_primary, docspell_item_id, created_at, updated_at, workspace_id FROM warehouse.attachments WHERE id = $1 AND workspace_id = $2
 `
 
-func (q *Queries) GetAttachment(ctx context.Context, id uuid.UUID) (WarehouseAttachment, error) {
-	row := q.db.QueryRow(ctx, getAttachment, id)
+type GetAttachmentParams struct {
+	ID          uuid.UUID `json:"id"`
+	WorkspaceID uuid.UUID `json:"workspace_id"`
+}
+
+func (q *Queries) GetAttachment(ctx context.Context, arg GetAttachmentParams) (WarehouseAttachment, error) {
+	row := q.db.QueryRow(ctx, getAttachment, arg.ID, arg.WorkspaceID)
 	var i WarehouseAttachment
 	err := row.Scan(
 		&i.ID,
@@ -135,16 +153,22 @@ func (q *Queries) GetAttachment(ctx context.Context, id uuid.UUID) (WarehouseAtt
 		&i.DocspellItemID,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.WorkspaceID,
 	)
 	return i, err
 }
 
 const getFile = `-- name: GetFile :one
-SELECT id, workspace_id, original_name, extension, mime_type, size_bytes, checksum, storage_key, uploaded_by, created_at, updated_at FROM warehouse.files WHERE id = $1
+SELECT id, workspace_id, original_name, extension, mime_type, size_bytes, checksum, storage_key, uploaded_by, created_at, updated_at FROM warehouse.files WHERE id = $1 AND workspace_id = $2
 `
 
-func (q *Queries) GetFile(ctx context.Context, id uuid.UUID) (WarehouseFile, error) {
-	row := q.db.QueryRow(ctx, getFile, id)
+type GetFileParams struct {
+	ID          uuid.UUID `json:"id"`
+	WorkspaceID uuid.UUID `json:"workspace_id"`
+}
+
+func (q *Queries) GetFile(ctx context.Context, arg GetFileParams) (WarehouseFile, error) {
+	row := q.db.QueryRow(ctx, getFile, arg.ID, arg.WorkspaceID)
 	var i WarehouseFile
 	err := row.Scan(
 		&i.ID,
@@ -163,12 +187,17 @@ func (q *Queries) GetFile(ctx context.Context, id uuid.UUID) (WarehouseFile, err
 }
 
 const listAttachmentsByItem = `-- name: ListAttachmentsByItem :many
-SELECT a.id, a.item_id, a.file_id, a.attachment_type, a.title, a.is_primary, a.docspell_item_id, a.created_at, a.updated_at, f.original_name, f.mime_type, f.size_bytes
+SELECT a.id, a.item_id, a.file_id, a.attachment_type, a.title, a.is_primary, a.docspell_item_id, a.created_at, a.updated_at, a.workspace_id, f.original_name, f.mime_type, f.size_bytes
 FROM warehouse.attachments a
 LEFT JOIN warehouse.files f ON a.file_id = f.id
-WHERE a.item_id = $1
+WHERE a.item_id = $1 AND a.workspace_id = $2
 ORDER BY a.is_primary DESC, a.created_at
 `
+
+type ListAttachmentsByItemParams struct {
+	ItemID      uuid.UUID `json:"item_id"`
+	WorkspaceID uuid.UUID `json:"workspace_id"`
+}
 
 type ListAttachmentsByItemRow struct {
 	ID             uuid.UUID                   `json:"id"`
@@ -180,13 +209,14 @@ type ListAttachmentsByItemRow struct {
 	DocspellItemID *string                     `json:"docspell_item_id"`
 	CreatedAt      pgtype.Timestamptz          `json:"created_at"`
 	UpdatedAt      pgtype.Timestamptz          `json:"updated_at"`
+	WorkspaceID    uuid.UUID                   `json:"workspace_id"`
 	OriginalName   *string                     `json:"original_name"`
 	MimeType       *string                     `json:"mime_type"`
 	SizeBytes      *int64                      `json:"size_bytes"`
 }
 
-func (q *Queries) ListAttachmentsByItem(ctx context.Context, itemID uuid.UUID) ([]ListAttachmentsByItemRow, error) {
-	rows, err := q.db.Query(ctx, listAttachmentsByItem, itemID)
+func (q *Queries) ListAttachmentsByItem(ctx context.Context, arg ListAttachmentsByItemParams) ([]ListAttachmentsByItemRow, error) {
+	rows, err := q.db.Query(ctx, listAttachmentsByItem, arg.ItemID, arg.WorkspaceID)
 	if err != nil {
 		return nil, err
 	}
@@ -204,6 +234,7 @@ func (q *Queries) ListAttachmentsByItem(ctx context.Context, itemID uuid.UUID) (
 			&i.DocspellItemID,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.WorkspaceID,
 			&i.OriginalName,
 			&i.MimeType,
 			&i.SizeBytes,
@@ -221,15 +252,16 @@ func (q *Queries) ListAttachmentsByItem(ctx context.Context, itemID uuid.UUID) (
 const setPrimaryAttachment = `-- name: SetPrimaryAttachment :exec
 UPDATE warehouse.attachments
 SET is_primary = (id = $2)
-WHERE item_id = $1
+WHERE item_id = $1 AND workspace_id = $3
 `
 
 type SetPrimaryAttachmentParams struct {
-	ItemID uuid.UUID `json:"item_id"`
-	ID     uuid.UUID `json:"id"`
+	ItemID      uuid.UUID `json:"item_id"`
+	ID          uuid.UUID `json:"id"`
+	WorkspaceID uuid.UUID `json:"workspace_id"`
 }
 
 func (q *Queries) SetPrimaryAttachment(ctx context.Context, arg SetPrimaryAttachmentParams) error {
-	_, err := q.db.Exec(ctx, setPrimaryAttachment, arg.ItemID, arg.ID)
+	_, err := q.db.Exec(ctx, setPrimaryAttachment, arg.ItemID, arg.ID, arg.WorkspaceID)
 	return err
 }

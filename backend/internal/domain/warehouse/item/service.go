@@ -232,7 +232,7 @@ func (s *Service) Delete(ctx context.Context, id, workspaceID uuid.UUID) error {
 		}
 		return err
 	}
-	return s.repo.Delete(ctx, id)
+	return s.repo.Delete(ctx, id, workspaceID)
 }
 
 func (s *Service) ListNeedingReview(ctx context.Context, workspaceID uuid.UUID, pagination shared.Pagination) ([]*Item, int, error) {

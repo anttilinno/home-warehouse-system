@@ -3,6 +3,7 @@ package inventory
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"time"
 
 	"github.com/google/uuid"
@@ -231,8 +232,12 @@ func (s *Service) Move(ctx context.Context, id, workspaceID, locationID uuid.UUI
 			Reason:          nil,
 		})
 		if err != nil {
-			// Log error but don't fail the move operation
-			// Movement tracking is supplementary
+			// Movement tracking is supplementary: log but don't fail the move.
+			// Service has no injected logger, so use the process default.
+			slog.Warn("recording inventory movement failed; move succeeded",
+				"inventory_id", id,
+				"workspace_id", workspaceID,
+				"error", err)
 		}
 	}
 

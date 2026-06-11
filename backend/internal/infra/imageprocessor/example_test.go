@@ -140,11 +140,11 @@ func ExampleProcessor_Optimize() {
 func ExampleConfig() {
 	// Create custom configuration
 	config := imageprocessor.Config{
-		SmallSize:   100,  // Smaller thumbnails
+		SmallSize:   100, // Smaller thumbnails
 		MediumSize:  300,
 		LargeSize:   600,
-		JPEGQuality: 90,   // Higher quality
-		MinWidth:    200,  // Stricter minimum
+		JPEGQuality: 90,  // Higher quality
+		MinWidth:    200, // Stricter minimum
 		MinHeight:   200,
 		MaxWidth:    4096, // Lower maximum
 		MaxHeight:   4096,

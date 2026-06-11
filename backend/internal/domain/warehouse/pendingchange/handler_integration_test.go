@@ -1,7 +1,7 @@
 //go:build integration
 // +build integration
 
-package pendingchange
+package pendingchange_test
 
 import (
 	"bytes"
@@ -11,7 +11,6 @@ import (
 	"net/http/httptest"
 	"os"
 	"testing"
-	"time"
 
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/danielgtaylor/huma/v2/adapters/humachi"
@@ -22,7 +21,6 @@ import (
 	"github.com/stretchr/testify/require"
 
 	appMiddleware "github.com/antti/home-warehouse/go-backend/internal/api/middleware"
-	"github.com/antti/home-warehouse/go-backend/internal/domain/auth/member"
 	"github.com/antti/home-warehouse/go-backend/internal/domain/auth/user"
 	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/borrower"
 	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/category"
@@ -33,6 +31,7 @@ import (
 	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/loan"
 	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/location"
 	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/movement"
+	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/pendingchange"
 	"github.com/antti/home-warehouse/go-backend/internal/infra/postgres"
 )
 
@@ -124,7 +123,7 @@ func setupTestWorkspace(t *testing.T, pool *pgxpool.Pool) (uuid.UUID, testUsers)
 	return workspaceID, users
 }
 
-func setupTestAPI(t *testing.T, pool *pgxpool.Pool) (huma.API, *Service, user.Repository) {
+func setupTestAPI(t *testing.T, pool *pgxpool.Pool) (huma.API, *pendingchange.Service, user.Repository) {
 	t.Helper()
 
 	// Initialize repositories
@@ -150,11 +149,11 @@ func setupTestAPI(t *testing.T, pool *pgxpool.Pool) (huma.API, *Service, user.Re
 	containerSvc := container.NewService(containerRepo, locationRepo)
 	inventorySvc := inventory.NewService(inventoryRepo, movementSvc, itemRepo, locationRepo, containerRepo)
 	borrowerSvc := borrower.NewService(borrowerRepo)
-	loanSvc := loan.NewService(loanRepo, inventoryRepo)
+	loanSvc := loan.NewService(loanRepo, inventoryRepo, nil)
 	labelSvc := label.NewService(labelRepo)
 	txManager := postgres.NewTxManager(pool)
 
-	svc := NewService(
+	svc := pendingchange.NewService(
 		pendingChangeRepo,
 		memberRepo,
 		userRepo,
@@ -202,15 +201,15 @@ func TestPendingChangeHandler_ListPendingChanges(t *testing.T) {
 
 	// Create some pending changes
 	payload1 := json.RawMessage(`{"name":"Test Item 1","sku":"TST-001","min_stock_level":0}`)
-	change1, err := svc.CreatePendingChange(ctx, workspaceID, users.memberID, "item", nil, ActionCreate, payload1)
+	change1, err := svc.CreatePendingChange(ctx, workspaceID, users.memberID, "item", nil, pendingchange.ActionCreate, payload1)
 	require.NoError(t, err)
 
 	payload2 := json.RawMessage(`{"name":"Test Category","description":"A test category"}`)
-	change2, err := svc.CreatePendingChange(ctx, workspaceID, users.memberID, "category", nil, ActionCreate, payload2)
+	change2, err := svc.CreatePendingChange(ctx, workspaceID, users.memberID, "category", nil, pendingchange.ActionCreate, payload2)
 	require.NoError(t, err)
 
 	// Register routes
-	RegisterRoutes(api, svc, userRepo)
+	pendingchange.RegisterRoutes(api, svc, userRepo)
 
 	t.Run("owner can list all pending changes", func(t *testing.T) {
 		req := httptest.NewRequest(http.MethodGet, "/pending-changes", nil)
@@ -221,7 +220,7 @@ func TestPendingChangeHandler_ListPendingChanges(t *testing.T) {
 
 		assert.Equal(t, http.StatusOK, resp.Code)
 
-		var result PendingChangeListResponse
+		var result pendingchange.PendingChangeListResponse
 		err := json.NewDecoder(resp.Body).Decode(&result)
 		require.NoError(t, err)
 		assert.GreaterOrEqual(t, len(result.Changes), 2)
@@ -265,7 +264,7 @@ func TestPendingChangeHandler_ListPendingChanges(t *testing.T) {
 
 		assert.Equal(t, http.StatusOK, resp.Code)
 
-		var result PendingChangeListResponse
+		var result pendingchange.PendingChangeListResponse
 		err := json.NewDecoder(resp.Body).Decode(&result)
 		require.NoError(t, err)
 
@@ -283,11 +282,11 @@ func TestPendingChangeHandler_GetPendingChange(t *testing.T) {
 
 	// Create a pending change
 	payload := json.RawMessage(`{"name":"Test Item","sku":"TST-001","min_stock_level":0}`)
-	change, err := svc.CreatePendingChange(ctx, workspaceID, users.memberID, "item", nil, ActionCreate, payload)
+	change, err := svc.CreatePendingChange(ctx, workspaceID, users.memberID, "item", nil, pendingchange.ActionCreate, payload)
 	require.NoError(t, err)
 
 	// Register routes
-	RegisterRoutes(api, svc, userRepo)
+	pendingchange.RegisterRoutes(api, svc, userRepo)
 
 	t.Run("owner can view pending change", func(t *testing.T) {
 		req := httptest.NewRequest(http.MethodGet, "/pending-changes/"+change.ID().String(), nil)
@@ -298,7 +297,7 @@ func TestPendingChangeHandler_GetPendingChange(t *testing.T) {
 
 		assert.Equal(t, http.StatusOK, resp.Code)
 
-		var result PendingChangeResponse
+		var result pendingchange.PendingChangeResponse
 		err := json.NewDecoder(resp.Body).Decode(&result)
 		require.NoError(t, err)
 		assert.Equal(t, change.ID(), result.ID)
@@ -347,19 +346,19 @@ func TestPendingChangeHandler_ListMyPendingChanges(t *testing.T) {
 
 	// Create pending changes for member
 	payload1 := json.RawMessage(`{"name":"My Item 1","sku":"MY-001","min_stock_level":0}`)
-	change1, err := svc.CreatePendingChange(ctx, workspaceID, users.memberID, "item", nil, ActionCreate, payload1)
+	change1, err := svc.CreatePendingChange(ctx, workspaceID, users.memberID, "item", nil, pendingchange.ActionCreate, payload1)
 	require.NoError(t, err)
 
 	payload2 := json.RawMessage(`{"name":"My Item 2","sku":"MY-002","min_stock_level":0}`)
-	_, err = svc.CreatePendingChange(ctx, workspaceID, users.memberID, "item", nil, ActionCreate, payload2)
+	_, err = svc.CreatePendingChange(ctx, workspaceID, users.memberID, "item", nil, pendingchange.ActionCreate, payload2)
 	require.NoError(t, err)
 
 	// Approve one of them
-	err = svc.ApproveChange(ctx, change1.ID(), users.ownerID)
+	err = svc.ApproveChange(ctx, change1.ID(), workspaceID, users.ownerID)
 	require.NoError(t, err)
 
 	// Register routes
-	RegisterRoutes(api, svc, userRepo)
+	pendingchange.RegisterRoutes(api, svc, userRepo)
 
 	t.Run("member can list their own pending changes", func(t *testing.T) {
 		req := httptest.NewRequest(http.MethodGet, "/my-pending-changes", nil)
@@ -370,7 +369,7 @@ func TestPendingChangeHandler_ListMyPendingChanges(t *testing.T) {
 
 		assert.Equal(t, http.StatusOK, resp.Code)
 
-		var result PendingChangeListResponse
+		var result pendingchange.PendingChangeListResponse
 		err := json.NewDecoder(resp.Body).Decode(&result)
 		require.NoError(t, err)
 		assert.GreaterOrEqual(t, len(result.Changes), 2)
@@ -385,7 +384,7 @@ func TestPendingChangeHandler_ListMyPendingChanges(t *testing.T) {
 
 		assert.Equal(t, http.StatusOK, resp.Code)
 
-		var result PendingChangeListResponse
+		var result pendingchange.PendingChangeListResponse
 		err := json.NewDecoder(resp.Body).Decode(&result)
 		require.NoError(t, err)
 
@@ -403,7 +402,7 @@ func TestPendingChangeHandler_ListMyPendingChanges(t *testing.T) {
 
 		assert.Equal(t, http.StatusOK, resp.Code)
 
-		var result PendingChangeListResponse
+		var result pendingchange.PendingChangeListResponse
 		err := json.NewDecoder(resp.Body).Decode(&result)
 		require.NoError(t, err)
 
@@ -421,11 +420,11 @@ func TestPendingChangeHandler_ApproveChange(t *testing.T) {
 
 	// Create a pending change
 	payload := json.RawMessage(`{"name":"Test Item","sku":"TST-001","min_stock_level":0}`)
-	change, err := svc.CreatePendingChange(ctx, workspaceID, users.memberID, "item", nil, ActionCreate, payload)
+	change, err := svc.CreatePendingChange(ctx, workspaceID, users.memberID, "item", nil, pendingchange.ActionCreate, payload)
 	require.NoError(t, err)
 
 	// Register routes
-	RegisterRoutes(api, svc, userRepo)
+	pendingchange.RegisterRoutes(api, svc, userRepo)
 
 	t.Run("owner can approve pending change", func(t *testing.T) {
 		req := httptest.NewRequest(http.MethodPost, "/pending-changes/"+change.ID().String()+"/approve", nil)
@@ -436,7 +435,7 @@ func TestPendingChangeHandler_ApproveChange(t *testing.T) {
 
 		assert.Equal(t, http.StatusOK, resp.Code)
 
-		var result PendingChangeResponse
+		var result pendingchange.PendingChangeResponse
 		err := json.NewDecoder(resp.Body).Decode(&result)
 		require.NoError(t, err)
 		assert.Equal(t, "approved", result.Status)
@@ -450,7 +449,7 @@ func TestPendingChangeHandler_ApproveChange(t *testing.T) {
 	t.Run("admin can approve pending change", func(t *testing.T) {
 		// Create another pending change
 		payload2 := json.RawMessage(`{"name":"Another Item","sku":"TST-002","min_stock_level":0}`)
-		change2, err := svc.CreatePendingChange(ctx, workspaceID, users.memberID, "item", nil, ActionCreate, payload2)
+		change2, err := svc.CreatePendingChange(ctx, workspaceID, users.memberID, "item", nil, pendingchange.ActionCreate, payload2)
 		require.NoError(t, err)
 
 		req := httptest.NewRequest(http.MethodPost, "/pending-changes/"+change2.ID().String()+"/approve", nil)
@@ -461,7 +460,7 @@ func TestPendingChangeHandler_ApproveChange(t *testing.T) {
 
 		assert.Equal(t, http.StatusOK, resp.Code)
 
-		var result PendingChangeResponse
+		var result pendingchange.PendingChangeResponse
 		err = json.NewDecoder(resp.Body).Decode(&result)
 		require.NoError(t, err)
 		assert.Equal(t, "approved", result.Status)
@@ -470,7 +469,7 @@ func TestPendingChangeHandler_ApproveChange(t *testing.T) {
 	t.Run("member cannot approve pending change", func(t *testing.T) {
 		// Create another pending change
 		payload3 := json.RawMessage(`{"name":"Third Item","sku":"TST-003","min_stock_level":0}`)
-		change3, err := svc.CreatePendingChange(ctx, workspaceID, users.memberID, "item", nil, ActionCreate, payload3)
+		change3, err := svc.CreatePendingChange(ctx, workspaceID, users.memberID, "item", nil, pendingchange.ActionCreate, payload3)
 		require.NoError(t, err)
 
 		req := httptest.NewRequest(http.MethodPost, "/pending-changes/"+change3.ID().String()+"/approve", nil)
@@ -501,11 +500,11 @@ func TestPendingChangeHandler_RejectChange(t *testing.T) {
 
 	// Create a pending change
 	payload := json.RawMessage(`{"name":"Test Item","sku":"TST-001","min_stock_level":0}`)
-	change, err := svc.CreatePendingChange(ctx, workspaceID, users.memberID, "item", nil, ActionCreate, payload)
+	change, err := svc.CreatePendingChange(ctx, workspaceID, users.memberID, "item", nil, pendingchange.ActionCreate, payload)
 	require.NoError(t, err)
 
 	// Register routes
-	RegisterRoutes(api, svc, userRepo)
+	pendingchange.RegisterRoutes(api, svc, userRepo)
 
 	t.Run("owner can reject pending change", func(t *testing.T) {
 		body := `{"reason":"Not needed right now"}`
@@ -518,7 +517,7 @@ func TestPendingChangeHandler_RejectChange(t *testing.T) {
 
 		assert.Equal(t, http.StatusOK, resp.Code)
 
-		var result PendingChangeResponse
+		var result pendingchange.PendingChangeResponse
 		err := json.NewDecoder(resp.Body).Decode(&result)
 		require.NoError(t, err)
 		assert.Equal(t, "rejected", result.Status)
@@ -531,7 +530,7 @@ func TestPendingChangeHandler_RejectChange(t *testing.T) {
 	t.Run("admin can reject pending change", func(t *testing.T) {
 		// Create another pending change
 		payload2 := json.RawMessage(`{"name":"Another Item","sku":"TST-002","min_stock_level":0}`)
-		change2, err := svc.CreatePendingChange(ctx, workspaceID, users.memberID, "item", nil, ActionCreate, payload2)
+		change2, err := svc.CreatePendingChange(ctx, workspaceID, users.memberID, "item", nil, pendingchange.ActionCreate, payload2)
 		require.NoError(t, err)
 
 		body := `{"reason":"Duplicate item"}`
@@ -548,7 +547,7 @@ func TestPendingChangeHandler_RejectChange(t *testing.T) {
 	t.Run("member cannot reject pending change", func(t *testing.T) {
 		// Create another pending change
 		payload3 := json.RawMessage(`{"name":"Third Item","sku":"TST-003","min_stock_level":0}`)
-		change3, err := svc.CreatePendingChange(ctx, workspaceID, users.memberID, "item", nil, ActionCreate, payload3)
+		change3, err := svc.CreatePendingChange(ctx, workspaceID, users.memberID, "item", nil, pendingchange.ActionCreate, payload3)
 		require.NoError(t, err)
 
 		body := `{"reason":"I changed my mind"}`
@@ -565,7 +564,7 @@ func TestPendingChangeHandler_RejectChange(t *testing.T) {
 	t.Run("rejection requires reason", func(t *testing.T) {
 		// Create another pending change
 		payload4 := json.RawMessage(`{"name":"Fourth Item","sku":"TST-004","min_stock_level":0}`)
-		change4, err := svc.CreatePendingChange(ctx, workspaceID, users.memberID, "item", nil, ActionCreate, payload4)
+		change4, err := svc.CreatePendingChange(ctx, workspaceID, users.memberID, "item", nil, pendingchange.ActionCreate, payload4)
 		require.NoError(t, err)
 
 		body := `{"reason":""}`

@@ -29,15 +29,41 @@ type ServiceInterface interface {
 	GetOverdueLoans(ctx context.Context, workspaceID uuid.UUID) ([]*Loan, error)
 }
 
+// Transactor runs a function inside a single database transaction. It is a
+// port implemented by infra/postgres.TxManager. Defining it here (rather than
+// importing the infra package directly) keeps the domain free of
+// infrastructure imports — the same convention used by pendingchange. The
+// function receives a context carrying the active transaction; repositories
+// detect it via the infra layer and route their writes through it.
+type Transactor interface {
+	WithTx(ctx context.Context, fn func(context.Context) error) error
+}
+
+// noopTransactor executes the function without a surrounding transaction. It
+// is the fallback when no Transactor is wired (e.g. unit tests with mocked
+// repositories), preserving non-transactional behaviour there.
+type noopTransactor struct{}
+
+func (noopTransactor) WithTx(ctx context.Context, fn func(context.Context) error) error {
+	return fn(ctx)
+}
+
 type Service struct {
 	repo          Repository
 	inventoryRepo inventory.Repository
+	tx            Transactor
 }
 
-func NewService(repo Repository, inventoryRepo inventory.Repository) *Service {
+// NewService creates a loan service. tx may be nil (falls back to a
+// non-transactional no-op — acceptable only for unit tests with mocks).
+func NewService(repo Repository, inventoryRepo inventory.Repository, tx Transactor) *Service {
+	if tx == nil {
+		tx = noopTransactor{}
+	}
 	return &Service{
 		repo:          repo,
 		inventoryRepo: inventoryRepo,
+		tx:            tx,
 	}
 }
 
@@ -93,18 +119,19 @@ func (s *Service) Create(ctx context.Context, input CreateInput) (*Loan, error) 
 	}
 
 	// Update inventory status to ON_LOAN
-	// TODO(WR-01): inventoryRepo.Save and repo.Save are not wrapped in a
-	// transaction. A crash between the two leaves inventory stuck ON_LOAN with
-	// no loan record. Wire TxManager (see router.go) to make this atomic.
 	if err := inv.UpdateStatus(inventory.StatusOnLoan); err != nil {
 		return nil, err
 	}
-	if err := s.inventoryRepo.Save(ctx, inv); err != nil {
-		return nil, err
-	}
 
-	// Save the loan
-	if err := s.repo.Save(ctx, loan); err != nil {
+	// WR-01: inventory status flip and loan insert are atomic — a failed loan
+	// save rolls back the ON_LOAN status instead of stranding the inventory.
+	err = s.tx.WithTx(ctx, func(ctx context.Context) error {
+		if err := s.inventoryRepo.Save(ctx, inv); err != nil {
+			return err
+		}
+		return s.repo.Save(ctx, loan)
+	})
+	if err != nil {
 		return nil, err
 	}
 
@@ -131,9 +158,6 @@ func (s *Service) Return(ctx context.Context, id, workspaceID uuid.UUID) (*Loan,
 	}
 
 	// Update inventory status back to AVAILABLE.
-	// TODO(WR-01): inventoryRepo.Save and repo.Save are not wrapped in a
-	// transaction. A crash between the two leaves inventory ON_LOAN while the
-	// loan record shows returned. Wire TxManager to make this atomic.
 	inv, err := s.inventoryRepo.FindByID(ctx, loan.InventoryID(), workspaceID)
 	if err != nil {
 		if !errors.Is(err, shared.ErrNotFound) {
@@ -141,16 +165,25 @@ func (s *Service) Return(ctx context.Context, id, workspaceID uuid.UUID) (*Loan,
 		}
 		// Inventory was deleted; still persist the return — the loan record
 		// is authoritative. Skip the inventory status update.
+		inv = nil
 	} else {
 		if err := inv.UpdateStatus(inventory.StatusAvailable); err != nil {
 			return nil, err
 		}
-		if err := s.inventoryRepo.Save(ctx, inv); err != nil {
-			return nil, err
-		}
 	}
 
-	if err := s.repo.Save(ctx, loan); err != nil {
+	// WR-01: the AVAILABLE flip and the returned-loan save are atomic — a
+	// failed loan save rolls back the inventory status instead of leaving the
+	// loan ON_LOAN with inventory already AVAILABLE (or vice versa).
+	err = s.tx.WithTx(ctx, func(ctx context.Context) error {
+		if inv != nil {
+			if err := s.inventoryRepo.Save(ctx, inv); err != nil {
+				return err
+			}
+		}
+		return s.repo.Save(ctx, loan)
+	})
+	if err != nil {
 		return nil, err
 	}
 

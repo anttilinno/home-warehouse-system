@@ -3,6 +3,7 @@ package pendingchange
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"time"
 
 	"github.com/danielgtaylor/huma/v2"
@@ -15,8 +16,8 @@ import (
 // ServiceInterface defines the interface for pending change operations
 type ServiceInterface interface {
 	ListPendingForWorkspace(ctx context.Context, workspaceID uuid.UUID) ([]*PendingChange, error)
-	ApproveChange(ctx context.Context, changeID uuid.UUID, reviewerID uuid.UUID) error
-	RejectChange(ctx context.Context, changeID uuid.UUID, reviewerID uuid.UUID, reason string) error
+	ApproveChange(ctx context.Context, changeID, workspaceID uuid.UUID, reviewerID uuid.UUID) error
+	RejectChange(ctx context.Context, changeID, workspaceID uuid.UUID, reviewerID uuid.UUID, reason string) error
 }
 
 // RegisterRoutes registers pending change management routes
@@ -58,10 +59,13 @@ func RegisterRoutes(api huma.API, svc *Service, userRepo user.Repository) {
 			return nil, huma.Error500InternalServerError("failed to list pending changes")
 		}
 
-		// Enrich with user details
+		// Enrich with user details. The memoized lookup collapses the
+		// per-change requester/reviewer fetches (2N+1 queries) into one
+		// query per distinct user in the page.
+		users := newUserLookup(userRepo)
 		responses := make([]PendingChangeResponse, len(changes))
 		for i, change := range changes {
-			resp, err := toPendingChangeResponse(ctx, change, userRepo)
+			resp, err := toPendingChangeResponse(ctx, change, users.find)
 			if err != nil {
 				return nil, huma.Error500InternalServerError("failed to fetch user details")
 			}
@@ -89,7 +93,7 @@ func RegisterRoutes(api huma.API, svc *Service, userRepo user.Repository) {
 		}
 
 		// Fetch the pending change
-		change, err := svc.repo.FindByID(ctx, input.ID)
+		change, err := svc.repo.FindByID(ctx, input.ID, workspaceID)
 		if err != nil {
 			return nil, huma.Error404NotFound("pending change not found")
 		}
@@ -111,7 +115,7 @@ func RegisterRoutes(api huma.API, svc *Service, userRepo user.Repository) {
 		}
 
 		// Enrich with user details
-		resp, err := toPendingChangeResponse(ctx, change, userRepo)
+		resp, err := toPendingChangeResponse(ctx, change, userRepo.FindByID)
 		if err != nil {
 			return nil, huma.Error500InternalServerError("failed to fetch user details")
 		}
@@ -157,10 +161,11 @@ func RegisterRoutes(api huma.API, svc *Service, userRepo user.Repository) {
 			}
 		}
 
-		// Enrich with user details
+		// Enrich with user details (memoized — see ListPendingChanges above).
+		users := newUserLookup(userRepo)
 		responses := make([]PendingChangeResponse, len(filteredChanges))
 		for i, change := range filteredChanges {
-			resp, err := toPendingChangeResponse(ctx, change, userRepo)
+			resp, err := toPendingChangeResponse(ctx, change, users.find)
 			if err != nil {
 				return nil, huma.Error500InternalServerError("failed to fetch user details")
 			}
@@ -197,7 +202,7 @@ func RegisterRoutes(api huma.API, svc *Service, userRepo user.Repository) {
 		}
 
 		// Verify the change belongs to this workspace
-		change, err := svc.repo.FindByID(ctx, input.ID)
+		change, err := svc.repo.FindByID(ctx, input.ID, workspaceID)
 		if err != nil {
 			return nil, huma.Error404NotFound("pending change not found")
 		}
@@ -206,24 +211,24 @@ func RegisterRoutes(api huma.API, svc *Service, userRepo user.Repository) {
 		}
 
 		// Approve the change
-		if err := svc.ApproveChange(ctx, input.ID, authUser.ID); err != nil {
-			if err == ErrChangeAlreadyReviewed {
+		if err := svc.ApproveChange(ctx, input.ID, workspaceID, authUser.ID); err != nil {
+			if errors.Is(err, ErrChangeAlreadyReviewed) {
 				return nil, huma.Error400BadRequest("change has already been reviewed")
 			}
-			if err == ErrUnauthorized {
+			if errors.Is(err, ErrUnauthorized) {
 				return nil, huma.Error403Forbidden("insufficient permissions")
 			}
 			return nil, huma.Error500InternalServerError("failed to approve change")
 		}
 
 		// Fetch the updated change with applied entity details
-		updatedChange, err := svc.repo.FindByID(ctx, input.ID)
+		updatedChange, err := svc.repo.FindByID(ctx, input.ID, workspaceID)
 		if err != nil {
 			return nil, huma.Error500InternalServerError("failed to fetch updated change")
 		}
 
 		// Enrich with user details
-		resp, err := toPendingChangeResponse(ctx, updatedChange, userRepo)
+		resp, err := toPendingChangeResponse(ctx, updatedChange, userRepo.FindByID)
 		if err != nil {
 			return nil, huma.Error500InternalServerError("failed to fetch user details")
 		}
@@ -255,7 +260,7 @@ func RegisterRoutes(api huma.API, svc *Service, userRepo user.Repository) {
 		}
 
 		// Verify the change belongs to this workspace
-		change, err := svc.repo.FindByID(ctx, input.ID)
+		change, err := svc.repo.FindByID(ctx, input.ID, workspaceID)
 		if err != nil {
 			return nil, huma.Error404NotFound("pending change not found")
 		}
@@ -264,24 +269,24 @@ func RegisterRoutes(api huma.API, svc *Service, userRepo user.Repository) {
 		}
 
 		// Reject the change
-		if err := svc.RejectChange(ctx, input.ID, authUser.ID, input.Body.Reason); err != nil {
-			if err == ErrChangeAlreadyReviewed {
+		if err := svc.RejectChange(ctx, input.ID, workspaceID, authUser.ID, input.Body.Reason); err != nil {
+			if errors.Is(err, ErrChangeAlreadyReviewed) {
 				return nil, huma.Error400BadRequest("change has already been reviewed")
 			}
-			if err == ErrUnauthorized {
+			if errors.Is(err, ErrUnauthorized) {
 				return nil, huma.Error403Forbidden("insufficient permissions")
 			}
 			return nil, huma.Error500InternalServerError("failed to reject change")
 		}
 
 		// Fetch the updated change
-		updatedChange, err := svc.repo.FindByID(ctx, input.ID)
+		updatedChange, err := svc.repo.FindByID(ctx, input.ID, workspaceID)
 		if err != nil {
 			return nil, huma.Error500InternalServerError("failed to fetch updated change")
 		}
 
 		// Enrich with user details
-		resp, err := toPendingChangeResponse(ctx, updatedChange, userRepo)
+		resp, err := toPendingChangeResponse(ctx, updatedChange, userRepo.FindByID)
 		if err != nil {
 			return nil, huma.Error500InternalServerError("failed to fetch user details")
 		}
@@ -292,10 +297,37 @@ func RegisterRoutes(api huma.API, svc *Service, userRepo user.Repository) {
 	})
 }
 
-// Helper function to convert PendingChange to response with user details
-func toPendingChangeResponse(ctx context.Context, change *PendingChange, userRepo user.Repository) (PendingChangeResponse, error) {
+// userLookup memoizes user fetches within a single request so list
+// endpoints don't re-query the same requester/reviewer for every change.
+// (A true single-round-trip batch would need a users-by-IDs sqlc query; at
+// the typical workspace member count the memoized form is equivalent.)
+type userLookup struct {
+	repo  user.Repository
+	cache map[uuid.UUID]*user.User
+}
+
+func newUserLookup(repo user.Repository) *userLookup {
+	return &userLookup{repo: repo, cache: make(map[uuid.UUID]*user.User)}
+}
+
+func (l *userLookup) find(ctx context.Context, id uuid.UUID) (*user.User, error) {
+	if u, ok := l.cache[id]; ok {
+		return u, nil
+	}
+	u, err := l.repo.FindByID(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	l.cache[id] = u
+	return u, nil
+}
+
+// Helper function to convert PendingChange to response with user details.
+// findUser is either userRepo.FindByID (single-change paths) or a memoized
+// userLookup.find (list paths).
+func toPendingChangeResponse(ctx context.Context, change *PendingChange, findUser func(context.Context, uuid.UUID) (*user.User, error)) (PendingChangeResponse, error) {
 	// Fetch requester details
-	requester, err := userRepo.FindByID(ctx, change.RequesterID())
+	requester, err := findUser(ctx, change.RequesterID())
 	if err != nil {
 		return PendingChangeResponse{}, err
 	}
@@ -304,7 +336,7 @@ func toPendingChangeResponse(ctx context.Context, change *PendingChange, userRep
 	var reviewerName *string
 	var reviewerEmail *string
 	if change.ReviewedBy() != nil {
-		reviewer, err := userRepo.FindByID(ctx, *change.ReviewedBy())
+		reviewer, err := findUser(ctx, *change.ReviewedBy())
 		if err == nil {
 			name := reviewer.FullName()
 			email := reviewer.Email()

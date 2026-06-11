@@ -94,9 +94,9 @@ func RegisterRoutes(api huma.API, svc ServiceInterface) {
 
 		return &PushStatusResponse{
 			Body: PushStatus{
-				Enabled:      len(subscriptions) > 0,
-				DeviceCount:  len(subscriptions),
-				Devices:      devices,
+				Enabled:     len(subscriptions) > 0,
+				DeviceCount: len(subscriptions),
+				Devices:     devices,
 			},
 		}, nil
 	})
@@ -109,9 +109,9 @@ type SubscribeRequest struct {
 }
 
 type SubscribeRequestBody struct {
-	Endpoint  string                `json:"endpoint" doc:"Push service endpoint URL" minLength:"1"`
-	Keys      PushSubscriptionKeys  `json:"keys" doc:"Encryption keys for the subscription"`
-	UserAgent *string               `json:"user_agent,omitempty" doc:"Device user agent string"`
+	Endpoint  string               `json:"endpoint" doc:"Push service endpoint URL" minLength:"1"`
+	Keys      PushSubscriptionKeys `json:"keys" doc:"Encryption keys for the subscription"`
+	UserAgent *string              `json:"user_agent,omitempty" doc:"Device user agent string"`
 }
 
 type PushSubscriptionKeys struct {

@@ -2,6 +2,7 @@ package workspace
 
 import (
 	"context"
+	"errors"
 	"time"
 
 	"github.com/danielgtaylor/huma/v2"
@@ -66,7 +67,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface) {
 			CreatedBy:   authUser.ID,
 		})
 		if err != nil {
-			if err == ErrSlugTaken {
+			if errors.Is(err, ErrSlugTaken) {
 				return nil, huma.Error400BadRequest("workspace slug is already taken")
 			}
 			return nil, appMiddleware.MapDomainError(err)
@@ -114,7 +115,7 @@ func RegisterWorkspaceScopedRoutes(api huma.API, svc ServiceInterface) {
 
 		workspace, err := svc.Update(ctx, workspaceID, updateInput)
 		if err != nil {
-			if err == ErrWorkspaceNotFound {
+			if errors.Is(err, ErrWorkspaceNotFound) {
 				return nil, huma.Error404NotFound("workspace not found")
 			}
 			return nil, appMiddleware.MapDomainError(err)
@@ -134,10 +135,10 @@ func RegisterWorkspaceScopedRoutes(api huma.API, svc ServiceInterface) {
 
 		err := svc.Delete(ctx, workspaceID)
 		if err != nil {
-			if err == ErrWorkspaceNotFound {
+			if errors.Is(err, ErrWorkspaceNotFound) {
 				return nil, huma.Error404NotFound("workspace not found")
 			}
-			if err == ErrCannotDeletePersonal {
+			if errors.Is(err, ErrCannotDeletePersonal) {
 				return nil, huma.Error400BadRequest("cannot delete personal workspace")
 			}
 			return nil, appMiddleware.MapDomainError(err)

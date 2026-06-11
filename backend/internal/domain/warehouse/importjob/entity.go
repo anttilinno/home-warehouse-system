@@ -136,23 +136,23 @@ func ReconstructImportJob(
 }
 
 // Getters
-func (j *ImportJob) ID() uuid.UUID            { return j.id }
-func (j *ImportJob) WorkspaceID() uuid.UUID   { return j.workspaceID }
-func (j *ImportJob) UserID() uuid.UUID        { return j.userID }
-func (j *ImportJob) EntityType() EntityType   { return j.entityType }
-func (j *ImportJob) Status() ImportStatus     { return j.status }
-func (j *ImportJob) FileName() string         { return j.fileName }
-func (j *ImportJob) FilePath() string         { return j.filePath }
-func (j *ImportJob) FileSizeBytes() int64     { return j.fileSizeBytes }
-func (j *ImportJob) TotalRows() *int          { return j.totalRows }
-func (j *ImportJob) ProcessedRows() int       { return j.processedRows }
-func (j *ImportJob) SuccessCount() int        { return j.successCount }
-func (j *ImportJob) ErrorCount() int          { return j.errorCount }
-func (j *ImportJob) StartedAt() *time.Time    { return j.startedAt }
-func (j *ImportJob) CompletedAt() *time.Time  { return j.completedAt }
-func (j *ImportJob) CreatedAt() time.Time     { return j.createdAt }
-func (j *ImportJob) UpdatedAt() time.Time     { return j.updatedAt }
-func (j *ImportJob) ErrorMessage() *string    { return j.errorMessage }
+func (j *ImportJob) ID() uuid.UUID           { return j.id }
+func (j *ImportJob) WorkspaceID() uuid.UUID  { return j.workspaceID }
+func (j *ImportJob) UserID() uuid.UUID       { return j.userID }
+func (j *ImportJob) EntityType() EntityType  { return j.entityType }
+func (j *ImportJob) Status() ImportStatus    { return j.status }
+func (j *ImportJob) FileName() string        { return j.fileName }
+func (j *ImportJob) FilePath() string        { return j.filePath }
+func (j *ImportJob) FileSizeBytes() int64    { return j.fileSizeBytes }
+func (j *ImportJob) TotalRows() *int         { return j.totalRows }
+func (j *ImportJob) ProcessedRows() int      { return j.processedRows }
+func (j *ImportJob) SuccessCount() int       { return j.successCount }
+func (j *ImportJob) ErrorCount() int         { return j.errorCount }
+func (j *ImportJob) StartedAt() *time.Time   { return j.startedAt }
+func (j *ImportJob) CompletedAt() *time.Time { return j.completedAt }
+func (j *ImportJob) CreatedAt() time.Time    { return j.createdAt }
+func (j *ImportJob) UpdatedAt() time.Time    { return j.updatedAt }
+func (j *ImportJob) ErrorMessage() *string   { return j.errorMessage }
 
 // Progress returns progress percentage (0-100)
 func (j *ImportJob) Progress() int {
@@ -260,10 +260,10 @@ func ReconstructImportError(
 }
 
 // Getters
-func (e *ImportError) ID() uuid.UUID                     { return e.id }
-func (e *ImportError) ImportJobID() uuid.UUID            { return e.importJobID }
-func (e *ImportError) RowNumber() int                    { return e.rowNumber }
-func (e *ImportError) FieldName() *string                { return e.fieldName }
-func (e *ImportError) ErrorMessage() string              { return e.errorMsg }
-func (e *ImportError) RowData() map[string]any   { return e.rowData }
-func (e *ImportError) CreatedAt() time.Time              { return e.createdAt }
+func (e *ImportError) ID() uuid.UUID           { return e.id }
+func (e *ImportError) ImportJobID() uuid.UUID  { return e.importJobID }
+func (e *ImportError) RowNumber() int          { return e.rowNumber }
+func (e *ImportError) FieldName() *string      { return e.fieldName }
+func (e *ImportError) ErrorMessage() string    { return e.errorMsg }
+func (e *ImportError) RowData() map[string]any { return e.rowData }
+func (e *ImportError) CreatedAt() time.Time    { return e.createdAt }

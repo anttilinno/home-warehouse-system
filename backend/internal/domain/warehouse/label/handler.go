@@ -2,6 +2,7 @@ package label
 
 import (
 	"context"
+	"errors"
 	"time"
 
 	"github.com/danielgtaylor/huma/v2"
@@ -68,7 +69,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 			Description: input.Body.Description,
 		})
 		if err != nil {
-			if err == ErrNameTaken {
+			if errors.Is(err, ErrNameTaken) {
 				return nil, huma.Error400BadRequest("label name already exists")
 			}
 			return nil, appMiddleware.MapDomainError(err)
@@ -83,8 +84,8 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 				EntityType: "label",
 				UserID:     authUser.ID,
 				Data: map[string]any{
-					"id":   label.ID(),
-					"name": label.Name(),
+					"id":        label.ID(),
+					"name":      label.Name(),
 					"user_name": userName,
 				},
 			})
@@ -121,7 +122,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 			Description: input.Body.Description,
 		})
 		if err != nil {
-			if err == ErrNameTaken {
+			if errors.Is(err, ErrNameTaken) {
 				return nil, huma.Error400BadRequest("label name already exists")
 			}
 			return nil, appMiddleware.MapDomainError(err)
@@ -136,8 +137,8 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 				EntityType: "label",
 				UserID:     authUser.ID,
 				Data: map[string]any{
-					"id":   label.ID(),
-					"name": label.Name(),
+					"id":        label.ID(),
+					"name":      label.Name(),
 					"user_name": userName,
 				},
 			})
@@ -170,9 +171,9 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 				EntityID:   input.ID.String(),
 				EntityType: "label",
 				UserID:     authUser.ID,
-			Data: map[string]any{
-				"user_name": userName,
-			},
+				Data: map[string]any{
+					"user_name": userName,
+				},
 			})
 		}
 
@@ -232,9 +233,9 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 				EntityID:   input.ID.String(),
 				EntityType: "label",
 				UserID:     authUser.ID,
-			Data: map[string]any{
-				"user_name": userName,
-			},
+				Data: map[string]any{
+					"user_name": userName,
+				},
 			})
 		}
 

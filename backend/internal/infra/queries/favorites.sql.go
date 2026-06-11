@@ -91,26 +91,6 @@ func (q *Queries) DeleteFavoriteByTarget(ctx context.Context, arg DeleteFavorite
 	return err
 }
 
-const getFavorite = `-- name: GetFavorite :one
-SELECT id, user_id, workspace_id, favorite_type, item_id, location_id, container_id, created_at FROM warehouse.favorites WHERE id = $1
-`
-
-func (q *Queries) GetFavorite(ctx context.Context, id uuid.UUID) (WarehouseFavorite, error) {
-	row := q.db.QueryRow(ctx, getFavorite, id)
-	var i WarehouseFavorite
-	err := row.Scan(
-		&i.ID,
-		&i.UserID,
-		&i.WorkspaceID,
-		&i.FavoriteType,
-		&i.ItemID,
-		&i.LocationID,
-		&i.ContainerID,
-		&i.CreatedAt,
-	)
-	return i, err
-}
-
 const getFavoriteItems = `-- name: GetFavoriteItems :many
 SELECT f.id as favorite_id, f.created_at as favorited_at, i.id, i.workspace_id, i.sku, i.name, i.description, i.category_id, i.brand, i.model, i.image_url, i.serial_number, i.manufacturer, i.barcode, i.is_insured, i.is_archived, i.needs_review, i.lifetime_warranty, i.warranty_details, i.purchased_from, i.min_stock_level, i.short_code, i.obsidian_vault_path, i.obsidian_note_path, i.search_vector, i.created_at, i.updated_at
 FROM warehouse.favorites f
@@ -139,8 +119,8 @@ type GetFavoriteItemsRow struct {
 	SerialNumber      *string            `json:"serial_number"`
 	Manufacturer      *string            `json:"manufacturer"`
 	Barcode           *string            `json:"barcode"`
-	IsInsured         *bool              `json:"is_insured"`
-	IsArchived        *bool              `json:"is_archived"`
+	IsInsured         bool               `json:"is_insured"`
+	IsArchived        bool               `json:"is_archived"`
 	NeedsReview       *bool              `json:"needs_review"`
 	LifetimeWarranty  *bool              `json:"lifetime_warranty"`
 	WarrantyDetails   *string            `json:"warranty_details"`

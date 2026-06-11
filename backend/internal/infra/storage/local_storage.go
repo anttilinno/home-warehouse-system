@@ -108,25 +108,42 @@ func (s *LocalStorage) Save(ctx context.Context, workspaceID, itemID, filename s
 	return relativePath, nil
 }
 
-// Get retrieves a file by its storage path.
-func (s *LocalStorage) Get(ctx context.Context, path string) (io.ReadCloser, error) {
+// resolveWithinBase resolves a storage path against the base directory and
+// verifies the result stays inside it. Unlike a strings.HasPrefix check, the
+// filepath.Rel comparison cannot be fooled by sibling directories sharing the
+// base path as a name prefix (e.g. /data/uploads-evil vs /data/uploads).
+func (s *LocalStorage) resolveWithinBase(path string) (string, error) {
 	if err := validateStoragePath(path); err != nil {
-		return nil, err
+		return "", err
 	}
 
 	fullPath := filepath.Join(s.baseDir, path)
 
-	// Verify path is within base directory (prevent path traversal)
 	cleanPath, err := filepath.Abs(fullPath)
 	if err != nil {
-		return nil, ErrInvalidPath
+		return "", ErrInvalidPath
 	}
 	cleanBase, err := filepath.Abs(s.baseDir)
 	if err != nil {
-		return nil, ErrInvalidPath
+		return "", ErrInvalidPath
 	}
-	if !strings.HasPrefix(cleanPath, cleanBase) {
-		return nil, ErrInvalidPath
+
+	rel, err := filepath.Rel(cleanBase, cleanPath)
+	if err != nil {
+		return "", ErrInvalidPath
+	}
+	if rel == ".." || strings.HasPrefix(rel, ".."+string(filepath.Separator)) {
+		return "", ErrInvalidPath
+	}
+
+	return fullPath, nil
+}
+
+// Get retrieves a file by its storage path.
+func (s *LocalStorage) Get(ctx context.Context, path string) (io.ReadCloser, error) {
+	fullPath, err := s.resolveWithinBase(path)
+	if err != nil {
+		return nil, err
 	}
 
 	f, err := os.Open(fullPath)
@@ -142,23 +159,9 @@ func (s *LocalStorage) Get(ctx context.Context, path string) (io.ReadCloser, err
 
 // Delete removes a file from storage.
 func (s *LocalStorage) Delete(ctx context.Context, path string) error {
-	if err := validateStoragePath(path); err != nil {
+	fullPath, err := s.resolveWithinBase(path)
+	if err != nil {
 		return err
-	}
-
-	fullPath := filepath.Join(s.baseDir, path)
-
-	// Verify path is within base directory
-	cleanPath, err := filepath.Abs(fullPath)
-	if err != nil {
-		return ErrInvalidPath
-	}
-	cleanBase, err := filepath.Abs(s.baseDir)
-	if err != nil {
-		return ErrInvalidPath
-	}
-	if !strings.HasPrefix(cleanPath, cleanBase) {
-		return ErrInvalidPath
 	}
 
 	if err := os.Remove(fullPath); err != nil {
@@ -202,23 +205,9 @@ func (s *LocalStorage) GetURL(ctx context.Context, path string) (string, error) 
 
 // Exists checks if a file exists at the given path.
 func (s *LocalStorage) Exists(ctx context.Context, path string) (bool, error) {
-	if err := validateStoragePath(path); err != nil {
+	fullPath, err := s.resolveWithinBase(path)
+	if err != nil {
 		return false, err
-	}
-
-	fullPath := filepath.Join(s.baseDir, path)
-
-	// Verify path is within base directory
-	cleanPath, err := filepath.Abs(fullPath)
-	if err != nil {
-		return false, ErrInvalidPath
-	}
-	cleanBase, err := filepath.Abs(s.baseDir)
-	if err != nil {
-		return false, ErrInvalidPath
-	}
-	if !strings.HasPrefix(cleanPath, cleanBase) {
-		return false, ErrInvalidPath
 	}
 
 	_, err = os.Stat(fullPath)

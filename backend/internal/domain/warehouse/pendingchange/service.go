@@ -203,9 +203,11 @@ func (s *Service) CreatePendingChange(
 //
 // Returns an error if the reviewer lacks permissions, the change doesn't exist,
 // has already been reviewed, or the change cannot be applied.
-func (s *Service) ApproveChange(ctx context.Context, changeID uuid.UUID, reviewerID uuid.UUID) error {
+func (s *Service) ApproveChange(ctx context.Context, changeID, workspaceID uuid.UUID, reviewerID uuid.UUID) error {
 	// Fetch the pending change (outside the tx) for the permission check.
-	change, err := s.repo.FindByID(ctx, changeID)
+	// Workspace-scoped lookup (audit A3): a change ID from another workspace
+	// resolves to not-found instead of being reviewable cross-tenant.
+	change, err := s.repo.FindByID(ctx, changeID, workspaceID)
 	if err != nil {
 		return fmt.Errorf("failed to fetch pending change: %w", err)
 	}
@@ -229,7 +231,7 @@ func (s *Service) ApproveChange(ctx context.Context, changeID uuid.UUID, reviewe
 	// pending re-check reads the persisted status, not the in-memory copy fetched
 	// above.
 	err = s.tx.WithTx(ctx, func(ctx context.Context) error {
-		current, err := s.repo.FindByID(ctx, changeID)
+		current, err := s.repo.FindByID(ctx, changeID, workspaceID)
 		if err != nil {
 			return fmt.Errorf("failed to re-fetch pending change: %w", err)
 		}
@@ -335,9 +337,9 @@ func (s *Service) ApproveChange(ctx context.Context, changeID uuid.UUID, reviewe
 // The rejection reason should be clear and actionable so the member understands why their change was declined.
 // Returns an error if the reviewer lacks permissions, the change doesn't exist, has already been reviewed,
 // or the reason is empty.
-func (s *Service) RejectChange(ctx context.Context, changeID uuid.UUID, reviewerID uuid.UUID, reason string) error {
-	// Fetch the pending change
-	change, err := s.repo.FindByID(ctx, changeID)
+func (s *Service) RejectChange(ctx context.Context, changeID, workspaceID uuid.UUID, reviewerID uuid.UUID, reason string) error {
+	// Fetch the pending change (workspace-scoped, audit A3)
+	change, err := s.repo.FindByID(ctx, changeID, workspaceID)
 	if err != nil {
 		return fmt.Errorf("failed to fetch pending change: %w", err)
 	}
@@ -827,7 +829,7 @@ func (s *Service) applyInventoryChange(ctx context.Context, change *PendingChang
 		if change.EntityID() == nil {
 			return fmt.Errorf("entity_id is required for delete action")
 		}
-		if err := s.inventoryRepo.Delete(ctx, *change.EntityID()); err != nil {
+		if err := s.inventoryRepo.Delete(ctx, *change.EntityID(), change.WorkspaceID()); err != nil {
 			return fmt.Errorf("failed to delete inventory: %w", err)
 		}
 

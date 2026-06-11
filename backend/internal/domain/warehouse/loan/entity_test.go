@@ -474,6 +474,6 @@ func TestLoan_Reconstruct(t *testing.T) {
 	assert.Equal(t, now, reconstructed.UpdatedAt())
 
 	// Test state methods with reconstructed loan
-	assert.False(t, reconstructed.IsActive())      // returned
-	assert.False(t, reconstructed.IsOverdue())     // returned loans are not overdue
+	assert.False(t, reconstructed.IsActive())  // returned
+	assert.False(t, reconstructed.IsOverdue()) // returned loans are not overdue
 }

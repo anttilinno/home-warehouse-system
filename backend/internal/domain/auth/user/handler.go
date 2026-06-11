@@ -3,6 +3,7 @@ package user
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -32,9 +33,21 @@ const (
 	refreshTokenMaxAge = 7 * 24 * 60 * 60 // 7 days
 )
 
+// secureCookies controls the Secure flag on auth cookies. It is configured at
+// startup via SetSecureCookies from config.SecureCookies() — the single source
+// of truth for production detection — and defaults to the APP_ENV check for
+// callers that never configure it (e.g. legacy tests).
+var secureCookies = os.Getenv("APP_ENV") == "production"
+
+// SetSecureCookies configures whether auth cookies carry the Secure flag.
+// Call once at startup with config.SecureCookies().
+func SetSecureCookies(secure bool) {
+	secureCookies = secure
+}
+
 // isSecureCookie returns true if cookies should be secure (HTTPS only)
 func isSecureCookie() bool {
-	return os.Getenv("APP_ENV") == "production"
+	return secureCookies
 }
 
 // createAuthCookie creates an HTTP cookie for authentication
@@ -97,9 +110,9 @@ type Handler struct {
 // NewHandler creates a new user handler.
 func NewHandler(svc ServiceInterface, jwtService jwt.ServiceInterface, workspaceSvc workspace.ServiceInterface) *Handler {
 	return &Handler{
-		svc:            svc,
-		jwtService:     jwtService,
-		workspaceSvc:   workspaceSvc,
+		svc:          svc,
+		jwtService:   jwtService,
+		workspaceSvc: workspaceSvc,
 	}
 }
 
@@ -261,21 +274,17 @@ func (h *Handler) refreshToken(ctx context.Context, input *RefreshTokenInput) (*
 		return nil, huma.Error401Unauthorized("invalid refresh token")
 	}
 
-	// Validate session exists (if session service is configured)
+	// Validate session exists (if session service is configured).
+	// A missing session means it was revoked (or never existed) — reject.
+	// There is deliberately NO "legacy token" fallback: re-creating a session
+	// here would let a revoked refresh JWT mint itself a fresh session and
+	// defeat Revoke/RevokeAll entirely.
 	var currentSession *session.Session
 	if h.sessionSvc != nil {
 		tokenHash := session.HashToken(input.Body.RefreshToken)
 		currentSession, err = h.sessionSvc.FindByTokenHash(ctx, tokenHash)
 		if err != nil {
-			// Session not found - could be a pre-session-tracking token or revoked session
-			// For backwards compatibility, check if it's just missing vs explicitly revoked
-			if err == session.ErrSessionNotFound {
-				// Token is valid but no session exists - this is a legacy token
-				// We'll create a session below when we update with new token
-				currentSession = nil
-			} else {
-				return nil, huma.Error401Unauthorized("session has been revoked")
-			}
+			return nil, huma.Error401Unauthorized("session has been revoked")
 		}
 	}
 
@@ -298,15 +307,9 @@ func (h *Handler) refreshToken(ctx context.Context, input *RefreshTokenInput) (*
 		return nil, huma.Error500InternalServerError("failed to generate refresh token")
 	}
 
-	// Update session with new token, or create one for legacy tokens
-	if h.sessionSvc != nil {
-		if currentSession != nil {
-			_ = h.sessionSvc.UpdateActivity(ctx, currentSession.ID(), refreshToken)
-		} else {
-			// Create session for legacy token (pre-session-tracking)
-			ipAddress := getClientIPFromHeaders(input.XForwardedFor, input.XRealIP)
-			_, _ = h.sessionSvc.Create(ctx, user.ID(), refreshToken, input.UserAgent, ipAddress)
-		}
+	// Rotate the session's token hash
+	if h.sessionSvc != nil && currentSession != nil {
+		_ = h.sessionSvc.UpdateActivity(ctx, currentSession.ID(), refreshToken)
 	}
 
 	return &RefreshTokenOutput{
@@ -321,7 +324,17 @@ func (h *Handler) refreshToken(ctx context.Context, input *RefreshTokenInput) (*
 	}, nil
 }
 
-func (h *Handler) logout(ctx context.Context, input *struct{}) (*LogoutOutput, error) {
+func (h *Handler) logout(ctx context.Context, input *LogoutInput) (*LogoutOutput, error) {
+	// Revoke the server-side session so the refresh token cannot be replayed
+	// after logout. Missing/invalid tokens are handled gracefully — the
+	// cookies are cleared either way.
+	if h.sessionSvc != nil && input.RefreshToken != "" {
+		tokenHash := session.HashToken(input.RefreshToken)
+		if sess, err := h.sessionSvc.FindByTokenHash(ctx, tokenHash); err == nil && sess != nil {
+			_ = h.sessionSvc.Revoke(ctx, sess.UserID(), sess.ID())
+		}
+	}
+
 	return &LogoutOutput{
 		SetCookie: []http.Cookie{
 			*clearAuthCookie(accessTokenCookie),
@@ -451,7 +464,7 @@ func (h *Handler) updatePassword(ctx context.Context, input *UpdatePasswordInput
 
 	err := h.svc.UpdatePassword(ctx, authUser.ID, input.Body.CurrentPassword, input.Body.NewPassword)
 	if err != nil {
-		if err == ErrInvalidPassword {
+		if errors.Is(err, ErrInvalidPassword) {
 			return nil, huma.Error400BadRequest("current password is incorrect")
 		}
 		return nil, appMiddleware.MapDomainError(err)
@@ -567,7 +580,7 @@ func (h *Handler) getUserByID(ctx context.Context, input *GetUserByIDInput) (*Ge
 
 	user, err := h.svc.GetByID(ctx, input.ID)
 	if err != nil {
-		if err == ErrUserNotFound {
+		if errors.Is(err, ErrUserNotFound) {
 			return nil, huma.Error404NotFound("user not found")
 		}
 		return nil, huma.Error500InternalServerError("failed to get user")
@@ -610,7 +623,7 @@ func (h *Handler) deactivateUser(ctx context.Context, input *DeactivateUserInput
 
 	err := h.svc.Deactivate(ctx, input.ID)
 	if err != nil {
-		if err == ErrUserNotFound {
+		if errors.Is(err, ErrUserNotFound) {
 			return nil, huma.Error404NotFound("user not found")
 		}
 		return nil, huma.Error500InternalServerError("failed to deactivate user")
@@ -630,7 +643,7 @@ func (h *Handler) activateUser(ctx context.Context, input *ActivateUserInput) (*
 
 	err := h.svc.Activate(ctx, input.ID)
 	if err != nil {
-		if err == ErrUserNotFound {
+		if errors.Is(err, ErrUserNotFound) {
 			return nil, huma.Error404NotFound("user not found")
 		}
 		return nil, huma.Error500InternalServerError("failed to activate user")
@@ -836,6 +849,8 @@ func (h *Handler) serveAvatar(w http.ResponseWriter, r *http.Request) {
 	// Set headers
 	w.Header().Set("Content-Type", contentType)
 	w.Header().Set("Cache-Control", "public, max-age=31536000, immutable")
+	w.Header().Set("Content-Disposition", fmt.Sprintf("inline; filename=%q", "avatar"+ext))
+	w.Header().Set("Content-Security-Policy", "default-src 'none'; img-src 'self'; style-src 'unsafe-inline'")
 
 	// Serve file
 	io.Copy(w, reader)
@@ -974,10 +989,10 @@ type RegisterOutput struct {
 }
 
 type LoginInput struct {
-	UserAgent      string `header:"User-Agent"`
-	XForwardedFor  string `header:"X-Forwarded-For"`
-	XRealIP        string `header:"X-Real-IP"`
-	Body struct {
+	UserAgent     string `header:"User-Agent"`
+	XForwardedFor string `header:"X-Forwarded-For"`
+	XRealIP       string `header:"X-Real-IP"`
+	Body          struct {
 		Email    string `json:"email" required:"true" format:"email"`
 		Password string `json:"password" required:"true"`
 	}
@@ -992,10 +1007,7 @@ type LoginOutput struct {
 }
 
 type RefreshTokenInput struct {
-	UserAgent     string `header:"User-Agent"`
-	XForwardedFor string `header:"X-Forwarded-For"`
-	XRealIP       string `header:"X-Real-IP"`
-	Body          struct {
+	Body struct {
 		RefreshToken string `json:"refresh_token,omitempty"`
 	}
 }
@@ -1008,6 +1020,12 @@ type RefreshTokenOutput struct {
 type RefreshTokenResponse struct {
 	Token        string `json:"token"`
 	RefreshToken string `json:"refresh_token"`
+}
+
+// LogoutInput reads the refresh token from the auth cookie so the server-side
+// session can be revoked. The cookie is optional — logout always succeeds.
+type LogoutInput struct {
+	RefreshToken string `cookie:"refresh_token" required:"false"`
 }
 
 type LogoutOutput struct {
@@ -1299,7 +1317,7 @@ func RegisterProtectedRoutes(api huma.API, svc ServiceInterface) {
 
 		err := svc.UpdatePassword(ctx, authUser.ID, input.Body.CurrentPassword, input.Body.NewPassword)
 		if err != nil {
-			if err == ErrInvalidPassword {
+			if errors.Is(err, ErrInvalidPassword) {
 				return nil, huma.Error400BadRequest("current password is incorrect")
 			}
 			return nil, appMiddleware.MapDomainError(err)

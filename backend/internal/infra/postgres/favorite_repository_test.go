@@ -18,6 +18,20 @@ import (
 	"github.com/antti/home-warehouse/go-backend/tests/testfixtures"
 )
 
+// findFavoriteByID retrieves a saved favorite through the user-scoped list
+// (the id-only GetFavorite query was removed as dead/unscoped in the A3 fix).
+func findFavoriteByID(t *testing.T, ctx context.Context, repo *FavoriteRepository, f *favorite.Favorite) *favorite.Favorite {
+	t.Helper()
+	favorites, err := repo.FindByUser(ctx, f.UserID(), f.WorkspaceID())
+	require.NoError(t, err)
+	for _, got := range favorites {
+		if got.ID() == f.ID() {
+			return got
+		}
+	}
+	return nil
+}
+
 func TestFavoriteRepository_Save(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping integration test")
@@ -46,8 +60,7 @@ func TestFavoriteRepository_Save(t *testing.T) {
 		err = repo.Save(ctx, f)
 		require.NoError(t, err)
 
-		retrieved, err := repo.FindByID(ctx, f.ID())
-		require.NoError(t, err)
+		retrieved := findFavoriteByID(t, ctx, repo, f)
 		require.NotNil(t, retrieved)
 
 		assert.Equal(t, f.ID(), retrieved.ID())
@@ -74,8 +87,7 @@ func TestFavoriteRepository_Save(t *testing.T) {
 		err = repo.Save(ctx, f)
 		require.NoError(t, err)
 
-		retrieved, err := repo.FindByID(ctx, f.ID())
-		require.NoError(t, err)
+		retrieved := findFavoriteByID(t, ctx, repo, f)
 		require.NotNil(t, retrieved)
 
 		assert.Equal(t, favorite.TypeLocation, retrieved.FavoriteType())

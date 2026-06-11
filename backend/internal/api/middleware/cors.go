@@ -2,12 +2,21 @@ package middleware
 
 import (
 	"net/http"
-	"net/url"
 	"os"
 	"strings"
 )
 
-// allowedOrigins returns the list of allowed origins for CORS.
+// allowedOrigins returns the explicit list of allowed origins for CORS.
+//
+// The list is built from:
+//   - a small set of local development defaults,
+//   - APP_URL (the deployed frontend origin),
+//   - CORS_ALLOWED_ORIGINS (comma-separated extra origins).
+//
+// There is deliberately NO private-network auto-allow: with
+// Access-Control-Allow-Credentials true, reflecting arbitrary LAN origins
+// would let any site on a private IP (or a DNS-rebinding attacker) make
+// credentialed requests and read the responses.
 func allowedOrigins() []string {
 	// Default allowed origins for development
 	origins := []string{
@@ -16,42 +25,31 @@ func allowedOrigins() []string {
 		"http://127.0.0.1:3000",
 	}
 
+	// Add the configured frontend origin
+	if appURL := strings.TrimRight(os.Getenv("APP_URL"), "/"); appURL != "" {
+		origins = append(origins, appURL)
+	}
+
 	// Add custom origins from environment variable (comma-separated)
 	if envOrigins := os.Getenv("CORS_ALLOWED_ORIGINS"); envOrigins != "" {
 		for _, origin := range strings.Split(envOrigins, ",") {
-			origins = append(origins, strings.TrimSpace(origin))
+			if trimmed := strings.TrimSpace(origin); trimmed != "" {
+				origins = append(origins, trimmed)
+			}
 		}
 	}
 
 	return origins
 }
 
-// isPrivateNetworkOrigin checks if the origin is from a private/LAN address.
-func isPrivateNetworkOrigin(origin string) bool {
-	u, err := url.Parse(origin)
-	if err != nil {
-		return false
-	}
-	host := u.Hostname()
-	return strings.HasPrefix(host, "192.168.") ||
-		strings.HasPrefix(host, "10.") ||
-		strings.HasPrefix(host, "172.16.") ||
-		strings.HasPrefix(host, "172.17.") ||
-		strings.HasPrefix(host, "172.18.") ||
-		strings.HasPrefix(host, "172.19.") ||
-		strings.HasPrefix(host, "172.2") ||
-		strings.HasPrefix(host, "172.30.") ||
-		strings.HasPrefix(host, "172.31.")
-}
-
-// isAllowedOrigin checks if the given origin is in the allowed list or is from a private network.
+// isAllowedOrigin checks if the given origin is in the allowed list.
 func isAllowedOrigin(origin string, allowed []string) bool {
 	for _, o := range allowed {
 		if o == origin {
 			return true
 		}
 	}
-	return isPrivateNetworkOrigin(origin)
+	return false
 }
 
 // CORS adds CORS headers to responses.

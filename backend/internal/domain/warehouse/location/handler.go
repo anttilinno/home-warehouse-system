@@ -2,6 +2,7 @@ package location
 
 import (
 	"context"
+	"errors"
 	"time"
 
 	"github.com/danielgtaylor/huma/v2"
@@ -81,7 +82,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 			ShortCode:      shortCode,
 		})
 		if err != nil {
-			if err == ErrShortCodeTaken {
+			if errors.Is(err, ErrShortCodeTaken) {
 				return nil, huma.Error400BadRequest("short code already exists")
 			}
 			return nil, appMiddleware.MapDomainError(err)
@@ -96,8 +97,8 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 				EntityType: "location",
 				UserID:     authUser.ID,
 				Data: map[string]any{
-					"id":   location.ID(),
-					"name": location.Name(),
+					"id":        location.ID(),
+					"name":      location.Name(),
 					"user_name": userName,
 				},
 			})
@@ -146,8 +147,8 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 				EntityType: "location",
 				UserID:     authUser.ID,
 				Data: map[string]any{
-					"id":   location.ID(),
-					"name": location.Name(),
+					"id":        location.ID(),
+					"name":      location.Name(),
 					"user_name": userName,
 				},
 			})
@@ -180,9 +181,9 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 				EntityID:   input.ID.String(),
 				EntityType: "location",
 				UserID:     authUser.ID,
-			Data: map[string]any{
-				"user_name": userName,
-			},
+				Data: map[string]any{
+					"user_name": userName,
+				},
 			})
 		}
 
@@ -242,9 +243,9 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 				EntityID:   input.ID.String(),
 				EntityType: "location",
 				UserID:     authUser.ID,
-			Data: map[string]any{
-				"user_name": userName,
-			},
+				Data: map[string]any{
+					"user_name": userName,
+				},
 			})
 		}
 

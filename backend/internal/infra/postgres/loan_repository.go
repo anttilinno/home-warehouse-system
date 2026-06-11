@@ -16,15 +16,19 @@ import (
 )
 
 type LoanRepository struct {
-	pool    *pgxpool.Pool
-	queries *queries.Queries
+	pool *pgxpool.Pool
 }
 
 func NewLoanRepository(pool *pgxpool.Pool) *LoanRepository {
 	return &LoanRepository{
-		pool:    pool,
-		queries: queries.New(pool),
+		pool: pool,
 	}
+}
+
+// q returns Queries bound to the active transaction in ctx (if any) or the
+// pool, so reads/writes participate in TxManager.WithTx transactions (WR-01).
+func (r *LoanRepository) q(ctx context.Context) *queries.Queries {
+	return queries.New(GetDBTX(ctx, r.pool))
 }
 
 // Save handles three mutation cases for existing loans: Create (new record),
@@ -33,7 +37,7 @@ func NewLoanRepository(pool *pgxpool.Pool) *LoanRepository {
 // through to "No changes needed" here and be silently discarded.
 func (r *LoanRepository) Save(ctx context.Context, l *loan.Loan) error {
 	// Check if loan already exists
-	existing, err := r.queries.GetLoan(ctx, queries.GetLoanParams{
+	existing, err := r.q(ctx).GetLoan(ctx, queries.GetLoanParams{
 		ID:          l.ID(),
 		WorkspaceID: l.WorkspaceID(),
 	})
@@ -45,7 +49,7 @@ func (r *LoanRepository) Save(ctx context.Context, l *loan.Loan) error {
 	if existing.ID != uuid.Nil {
 		// If returnedAt is set and was previously nil, this is a return
 		if l.ReturnedAt() != nil && !existing.ReturnedAt.Valid {
-			_, err = r.queries.ReturnLoan(ctx, queries.ReturnLoanParams{
+			_, err = r.q(ctx).ReturnLoan(ctx, queries.ReturnLoanParams{
 				ID:          l.ID(),
 				WorkspaceID: l.WorkspaceID(),
 			})
@@ -57,7 +61,7 @@ func (r *LoanRepository) Save(ctx context.Context, l *loan.Loan) error {
 		if loanDueDate != nil {
 			// Check if due date is different
 			if !existing.DueDate.Valid || !existing.DueDate.Time.Equal(*loanDueDate) {
-				_, err = r.queries.ExtendLoanDueDate(ctx, queries.ExtendLoanDueDateParams{
+				_, err = r.q(ctx).ExtendLoanDueDate(ctx, queries.ExtendLoanDueDateParams{
 					ID:      l.ID(),
 					DueDate: pgtype.Date{Time: *loanDueDate, Valid: true},
 				})
@@ -75,7 +79,7 @@ func (r *LoanRepository) Save(ctx context.Context, l *loan.Loan) error {
 		dueDate = pgtype.Date{Time: *l.DueDate(), Valid: true}
 	}
 
-	_, err = r.queries.CreateLoan(ctx, queries.CreateLoanParams{
+	_, err = r.q(ctx).CreateLoan(ctx, queries.CreateLoanParams{
 		ID:          l.ID(),
 		WorkspaceID: l.WorkspaceID(),
 		InventoryID: l.InventoryID(),
@@ -89,7 +93,7 @@ func (r *LoanRepository) Save(ctx context.Context, l *loan.Loan) error {
 }
 
 func (r *LoanRepository) FindByID(ctx context.Context, id, workspaceID uuid.UUID) (*loan.Loan, error) {
-	row, err := r.queries.GetLoan(ctx, queries.GetLoanParams{
+	row, err := r.q(ctx).GetLoan(ctx, queries.GetLoanParams{
 		ID:          id,
 		WorkspaceID: workspaceID,
 	})
@@ -104,7 +108,7 @@ func (r *LoanRepository) FindByID(ctx context.Context, id, workspaceID uuid.UUID
 }
 
 func (r *LoanRepository) FindByWorkspace(ctx context.Context, workspaceID uuid.UUID, pagination shared.Pagination) ([]*loan.Loan, int, error) {
-	rows, err := r.queries.ListLoansByWorkspace(ctx, queries.ListLoansByWorkspaceParams{
+	rows, err := r.q(ctx).ListLoansByWorkspace(ctx, queries.ListLoansByWorkspaceParams{
 		WorkspaceID: workspaceID,
 		Limit:       int32(pagination.Limit()),
 		Offset:      int32(pagination.Offset()),
@@ -122,7 +126,7 @@ func (r *LoanRepository) FindByWorkspace(ctx context.Context, workspaceID uuid.U
 }
 
 func (r *LoanRepository) FindByBorrower(ctx context.Context, workspaceID, borrowerID uuid.UUID, pagination shared.Pagination) ([]*loan.Loan, error) {
-	rows, err := r.queries.ListLoansByBorrower(ctx, queries.ListLoansByBorrowerParams{
+	rows, err := r.q(ctx).ListLoansByBorrower(ctx, queries.ListLoansByBorrowerParams{
 		WorkspaceID: workspaceID,
 		BorrowerID:  borrowerID,
 		Limit:       int32(pagination.Limit()),
@@ -141,7 +145,7 @@ func (r *LoanRepository) FindByBorrower(ctx context.Context, workspaceID, borrow
 }
 
 func (r *LoanRepository) FindByInventory(ctx context.Context, workspaceID, inventoryID uuid.UUID) ([]*loan.Loan, error) {
-	rows, err := r.queries.ListLoansByInventory(ctx, queries.ListLoansByInventoryParams{
+	rows, err := r.q(ctx).ListLoansByInventory(ctx, queries.ListLoansByInventoryParams{
 		WorkspaceID: workspaceID,
 		InventoryID: inventoryID,
 	})
@@ -158,7 +162,7 @@ func (r *LoanRepository) FindByInventory(ctx context.Context, workspaceID, inven
 }
 
 func (r *LoanRepository) FindByItem(ctx context.Context, workspaceID, itemID uuid.UUID) ([]*loan.Loan, error) {
-	rows, err := r.queries.ListLoansByItem(ctx, queries.ListLoansByItemParams{
+	rows, err := r.q(ctx).ListLoansByItem(ctx, queries.ListLoansByItemParams{
 		WorkspaceID: workspaceID,
 		ItemID:      itemID,
 	})
@@ -175,7 +179,7 @@ func (r *LoanRepository) FindByItem(ctx context.Context, workspaceID, itemID uui
 }
 
 func (r *LoanRepository) FindActiveLoans(ctx context.Context, workspaceID uuid.UUID) ([]*loan.Loan, error) {
-	rows, err := r.queries.ListActiveLoans(ctx, workspaceID)
+	rows, err := r.q(ctx).ListActiveLoans(ctx, workspaceID)
 	if err != nil {
 		return nil, err
 	}
@@ -189,7 +193,7 @@ func (r *LoanRepository) FindActiveLoans(ctx context.Context, workspaceID uuid.U
 }
 
 func (r *LoanRepository) FindOverdueLoans(ctx context.Context, workspaceID uuid.UUID) ([]*loan.Loan, error) {
-	rows, err := r.queries.ListOverdueLoans(ctx, workspaceID)
+	rows, err := r.q(ctx).ListOverdueLoans(ctx, workspaceID)
 	if err != nil {
 		return nil, err
 	}
@@ -203,7 +207,7 @@ func (r *LoanRepository) FindOverdueLoans(ctx context.Context, workspaceID uuid.
 }
 
 func (r *LoanRepository) FindActiveLoanForInventory(ctx context.Context, inventoryID uuid.UUID) (*loan.Loan, error) {
-	row, err := r.queries.GetActiveLoanForInventory(ctx, inventoryID)
+	row, err := r.q(ctx).GetActiveLoanForInventory(ctx, inventoryID)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			// No active loan found — this is the normal state for a loanable item.
@@ -216,7 +220,7 @@ func (r *LoanRepository) FindActiveLoanForInventory(ctx context.Context, invento
 }
 
 func (r *LoanRepository) GetTotalLoanedQuantity(ctx context.Context, inventoryID uuid.UUID) (int, error) {
-	total, err := r.queries.GetTotalLoanedQuantity(ctx, inventoryID)
+	total, err := r.q(ctx).GetTotalLoanedQuantity(ctx, inventoryID)
 	if err != nil {
 		return 0, err
 	}
@@ -251,7 +255,7 @@ func (r *LoanRepository) Update(
 		params.Notes = nil
 	}
 
-	row, err := r.queries.UpdateLoan(ctx, params)
+	row, err := r.q(ctx).UpdateLoan(ctx, params)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, loan.ErrLoanNotFound

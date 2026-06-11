@@ -2,8 +2,10 @@ package config
 
 import (
 	"errors"
+	"log/slog"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -26,6 +28,9 @@ type Config struct {
 	ServerHost    string
 	ServerPort    int
 	ServerTimeout time.Duration
+
+	// MaxBodyBytes is the global HTTP request body size cap (bytes).
+	MaxBodyBytes int64
 
 	// Email (Resend)
 	ResendAPIKey     string
@@ -56,15 +61,35 @@ type Config struct {
 	AppURL     string // Frontend URL
 	BackendURL string
 
+	// AppEnv is the deployment environment name (APP_ENV, e.g. "production").
+	AppEnv string
+
 	// Feature Flags
 	DebugMode bool
+}
+
+// IsProduction reports whether the app is running in a production deployment.
+// This is the single source of truth for "are we in prod" decisions (cookie
+// Secure flag, OAuth state cookies, secret validation). Production is signaled
+// either by APP_ENV=production or by an https APP_URL.
+func (c *Config) IsProduction() bool {
+	return c.AppEnv == "production" || strings.HasPrefix(c.AppURL, "https://")
+}
+
+// SecureCookies reports whether auth cookies must carry the Secure flag.
+func (c *Config) SecureCookies() bool {
+	return c.IsProduction()
 }
 
 // Load reads configuration from environment variables with sensible defaults.
 func Load() *Config {
 	return &Config{
-		// Database
-		DatabaseURL:     getEnv("DATABASE_URL", "postgresql://wh:wh@localhost:5432/warehouse_dev"),
+		// Database. GO_DATABASE_URL takes precedence over DATABASE_URL: some
+		// deployments share an env file with the legacy (non-Go) stack where
+		// DATABASE_URL points elsewhere, and historically cmd/server and
+		// cmd/worker read GO_DATABASE_URL directly. Folding the override here
+		// keeps a single source of truth for all binaries.
+		DatabaseURL:     getEnv("GO_DATABASE_URL", getEnv("DATABASE_URL", "postgresql://wh:wh@localhost:5432/warehouse_dev")),
 		DatabaseMaxConn: getEnvInt("DATABASE_MAX_CONN", 25),
 		DatabaseMinConn: getEnvInt("DATABASE_MIN_CONN", 5),
 
@@ -72,7 +97,9 @@ func Load() *Config {
 		RedisURL: getEnv("REDIS_URL", "redis://localhost:6379/0"),
 
 		// JWT
-		JWTSecret:          getEnv("JWT_SECRET", "change-me-in-production"),
+		// No usable default: Validate() rejects empty/weak secrets and only
+		// substitutes a clearly-logged dev fallback when DebugMode is on.
+		JWTSecret:          getEnv("JWT_SECRET", ""),
 		JWTAlgorithm:       getEnv("JWT_ALGORITHM", "HS256"),
 		JWTExpirationHours: getEnvInt("JWT_EXPIRATION_HOURS", 24),
 
@@ -80,6 +107,7 @@ func Load() *Config {
 		ServerHost:    getEnv("SERVER_HOST", "0.0.0.0"),
 		ServerPort:    getEnvInt("SERVER_PORT", 8080),
 		ServerTimeout: time.Duration(getEnvInt("SERVER_TIMEOUT_SECONDS", 60)) * time.Second,
+		MaxBodyBytes:  int64(getEnvInt("MAX_BODY_SIZE_MB", 64)) << 20,
 
 		// Email
 		ResendAPIKey:     getEnv("RESEND_API_KEY", ""),
@@ -104,19 +132,32 @@ func Load() *Config {
 		// URLs
 		AppURL:     getEnv("APP_URL", "http://localhost:3000"),
 		BackendURL: getEnv("BACKEND_URL", "http://localhost:8080"),
+		AppEnv:     getEnv("APP_ENV", ""),
 
 		// Feature Flags
 		DebugMode: getEnvBool("DEBUG", false),
 	}
 }
 
+// minJWTSecretLength is the minimum accepted JWT secret length in bytes.
+const minJWTSecretLength = 32
+
+// devFallbackJWTSecret is only ever used when DebugMode is on and no usable
+// JWT_SECRET is configured. It is intentionally obvious and logged loudly.
+const devFallbackJWTSecret = "dev-only-insecure-jwt-secret-do-not-use!"
+
 // Validate checks that required configuration values are present and valid.
 func (c *Config) Validate() error {
 	if c.DatabaseURL == "" {
 		return errors.New("DATABASE_URL is required")
 	}
-	if c.JWTSecret == "change-me-in-production" && !c.DebugMode {
-		return errors.New("JWT_SECRET must be changed in production")
+	if c.JWTSecret == "" || c.JWTSecret == "change-me-in-production" || len(c.JWTSecret) < minJWTSecretLength {
+		if !c.DebugMode {
+			return errors.New("JWT_SECRET must be set to a random value of at least 32 characters")
+		}
+		// Dev-only fallback, clearly logged so it can never sneak into prod.
+		slog.Warn("JWT_SECRET is missing or weak; using an INSECURE dev-only fallback because DEBUG=true. Never run production like this.")
+		c.JWTSecret = devFallbackJWTSecret
 	}
 	if c.ServerPort < 1 || c.ServerPort > 65535 {
 		return errors.New("SERVER_PORT must be between 1 and 65535")
@@ -140,18 +181,26 @@ func getEnv(key, defaultValue string) string {
 
 func getEnvInt(key string, defaultValue int) int {
 	if value := os.Getenv(key); value != "" {
-		if i, err := strconv.Atoi(value); err == nil {
-			return i
+		i, err := strconv.Atoi(value)
+		if err != nil {
+			slog.Warn("ignoring malformed integer environment variable; using default",
+				"key", key, "value", value, "default", defaultValue)
+			return defaultValue
 		}
+		return i
 	}
 	return defaultValue
 }
 
 func getEnvBool(key string, defaultValue bool) bool {
 	if value := os.Getenv(key); value != "" {
-		if b, err := strconv.ParseBool(value); err == nil {
-			return b
+		b, err := strconv.ParseBool(value)
+		if err != nil {
+			slog.Warn("ignoring malformed boolean environment variable; using default",
+				"key", key, "value", value, "default", defaultValue)
+			return defaultValue
 		}
+		return b
 	}
 	return defaultValue
 }

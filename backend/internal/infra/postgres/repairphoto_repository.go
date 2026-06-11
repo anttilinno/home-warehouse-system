@@ -6,6 +6,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jackc/pgx/v5/pgxpool"
 
 	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/repairphoto"
@@ -43,7 +44,7 @@ func (r *RepairPhotoRepository) Create(ctx context.Context, photo *repairphoto.R
 		Height:        photo.Height,
 		DisplayOrder:  photo.DisplayOrder,
 		Caption:       photo.Caption,
-		UploadedBy:    photo.UploadedBy,
+		UploadedBy:    pgtype.UUID{Bytes: photo.UploadedBy, Valid: photo.UploadedBy != uuid.Nil},
 	})
 	if err != nil {
 		return nil, err
@@ -160,7 +161,7 @@ func (r *RepairPhotoRepository) rowToRepairPhoto(row queries.WarehouseRepairPhot
 		row.Height,
 		row.DisplayOrder,
 		row.Caption,
-		row.UploadedBy,
+		uuid.UUID(row.UploadedBy.Bytes),
 		row.CreatedAt,
 		row.UpdatedAt,
 	)

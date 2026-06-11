@@ -103,13 +103,14 @@ LEFT JOIN warehouse.containers fc ON m.from_container_id = fc.id
 LEFT JOIN warehouse.locations tl ON m.to_location_id = tl.id
 LEFT JOIN warehouse.containers tc ON m.to_container_id = tc.id
 LEFT JOIN auth.users u ON m.moved_by = u.id
-WHERE m.inventory_id = $1
+WHERE m.inventory_id = $1 AND m.workspace_id = $2
 ORDER BY m.created_at DESC
-LIMIT $2 OFFSET $3
+LIMIT $3 OFFSET $4
 `
 
 type ListMovementsByInventoryParams struct {
 	InventoryID uuid.UUID `json:"inventory_id"`
+	WorkspaceID uuid.UUID `json:"workspace_id"`
 	Limit       int32     `json:"limit"`
 	Offset      int32     `json:"offset"`
 }
@@ -134,7 +135,12 @@ type ListMovementsByInventoryRow struct {
 }
 
 func (q *Queries) ListMovementsByInventory(ctx context.Context, arg ListMovementsByInventoryParams) ([]ListMovementsByInventoryRow, error) {
-	rows, err := q.db.Query(ctx, listMovementsByInventory, arg.InventoryID, arg.Limit, arg.Offset)
+	rows, err := q.db.Query(ctx, listMovementsByInventory,
+		arg.InventoryID,
+		arg.WorkspaceID,
+		arg.Limit,
+		arg.Offset,
+	)
 	if err != nil {
 		return nil, err
 	}

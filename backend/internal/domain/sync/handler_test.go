@@ -174,7 +174,7 @@ func TestSyncHandler_GetDelta(t *testing.T) {
 		handler.RegisterRoutes(setup.API)
 
 		result := &sync.SyncResult{
-			Items: make([]sync.ItemSyncData, 500),
+			Items:    make([]sync.ItemSyncData, 500),
 			Deleted:  []sync.DeletedRecord{},
 			SyncedAt: time.Now(),
 			HasMore:  true,

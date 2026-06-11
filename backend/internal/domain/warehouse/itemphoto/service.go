@@ -7,8 +7,10 @@ import (
 	"io"
 	"log"
 	"mime/multipart"
+	"net/http"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/google/uuid"
 	"github.com/hibiken/asynq"
@@ -17,17 +19,50 @@ import (
 	"github.com/antti/home-warehouse/go-backend/internal/shared"
 )
 
+// sanitizeUploadFilename strips any path components from a client-supplied
+// filename before it is persisted (zip-slip / path-traversal guard for the
+// bulk-download zip and any future consumers of the stored name).
+func sanitizeUploadFilename(filename string) string {
+	// Normalize Windows separators, then keep only the base name.
+	name := filepath.Base(strings.ReplaceAll(filename, "\\", "/"))
+	if name == "." || name == ".." || name == "/" {
+		return "photo"
+	}
+	return name
+}
+
+// detectImageMimeType sniffs the actual content type of the (already
+// image-validated) file so the serve handlers emit the detected format
+// rather than echoing the client-supplied Content-Type header.
+func detectImageMimeType(path string) string {
+	f, err := os.Open(path)
+	if err != nil {
+		return ""
+	}
+	defer f.Close()
+
+	buf := make([]byte, 512)
+	n, err := f.Read(buf)
+	if err != nil && n == 0 {
+		return ""
+	}
+	if ct := http.DetectContentType(buf[:n]); strings.HasPrefix(ct, "image/") {
+		return ct
+	}
+	return ""
+}
+
 const (
 	// MaxFileSize is the maximum allowed photo file size (10MB)
 	MaxFileSize = 10 * 1024 * 1024
 )
 
 var (
-	ErrPhotoNotFound      = errors.New("photo not found")
-	ErrInvalidFileType    = errors.New("invalid file type: only JPEG, PNG, and WebP are allowed")
-	ErrFileTooLarge       = errors.New("file too large: maximum size is 10MB")
-	ErrItemNotFound       = errors.New("item not found")
-	ErrUnauthorized       = errors.New("unauthorized")
+	ErrPhotoNotFound       = errors.New("photo not found")
+	ErrInvalidFileType     = errors.New("invalid file type: only JPEG, PNG, and WebP are allowed")
+	ErrFileTooLarge        = errors.New("file too large: maximum size is 10MB")
+	ErrItemNotFound        = errors.New("item not found")
+	ErrUnauthorized        = errors.New("unauthorized")
 	ErrInvalidDisplayOrder = errors.New("invalid display order")
 )
 
@@ -85,10 +120,10 @@ type CaptionUpdate struct {
 
 // DuplicateCandidate represents a potentially duplicate photo
 type DuplicateCandidate struct {
-	PhotoID     uuid.UUID
-	ItemID      uuid.UUID
-	Filename    string
-	Distance    int
+	PhotoID       uuid.UUID
+	ItemID        uuid.UUID
+	Filename      string
+	Distance      int
 	SimilarityPct float64
 }
 
@@ -157,6 +192,11 @@ func (s *Service) UploadPhoto(ctx context.Context, itemID, workspaceID, userID u
 		return nil, fmt.Errorf("invalid image: %w", err)
 	}
 
+	// Prefer the detected content type over the client-supplied header
+	if detected := detectImageMimeType(tempPath); detected != "" {
+		mimeType = detected
+	}
+
 	// Get image dimensions
 	width, height, err := s.processor.GetDimensions(ctx, tempPath)
 	if err != nil {
@@ -182,33 +222,34 @@ func (s *Service) UploadPhoto(ctx context.Context, itemID, workspaceID, userID u
 		return nil, fmt.Errorf("failed to get file info: %w", err)
 	}
 
-	// Get the next display order (append to end)
-	existingPhotos, err := s.repo.GetByItem(ctx, itemID, workspaceID)
+	// Get the next display order (append to end). COUNT instead of loading
+	// full photo rows — only the count is needed here.
+	existingCount, err := s.repo.CountByItem(ctx, itemID, workspaceID)
 	if err != nil {
 		s.storage.Delete(ctx, storagePath)
-		return nil, fmt.Errorf("failed to get existing photos: %w", err)
+		return nil, fmt.Errorf("failed to count existing photos: %w", err)
 	}
 
-	displayOrder := int32(len(existingPhotos))
-	isPrimary := len(existingPhotos) == 0 // First photo is primary by default
+	displayOrder := int32(existingCount)
+	isPrimary := existingCount == 0 // First photo is primary by default
 
 	// Create photo record with pending thumbnail status
 	// ThumbnailPath is empty - thumbnails will be generated asynchronously
 	photo := &ItemPhoto{
 		ID:              uuid.New(),
-		ItemID:         itemID,
-		WorkspaceID:   workspaceID,
-		Filename:      header.Filename,
-		StoragePath:   storagePath,
-		ThumbnailPath: "", // Legacy field - empty for async processing
-		FileSize:      fileInfo.Size(),
-		MimeType:      mimeType,
-		Width:         int32(width),
-		Height:        int32(height),
-		DisplayOrder:  displayOrder,
-		IsPrimary:     isPrimary,
-		Caption:       caption,
-		UploadedBy:    userID,
+		ItemID:          itemID,
+		WorkspaceID:     workspaceID,
+		Filename:        sanitizeUploadFilename(header.Filename),
+		StoragePath:     storagePath,
+		ThumbnailPath:   "", // Legacy field - empty for async processing
+		FileSize:        fileInfo.Size(),
+		MimeType:        mimeType,
+		Width:           int32(width),
+		Height:          int32(height),
+		DisplayOrder:    displayOrder,
+		IsPrimary:       isPrimary,
+		Caption:         caption,
+		UploadedBy:      userID,
 		ThumbnailStatus: ThumbnailStatusPending,
 	}
 

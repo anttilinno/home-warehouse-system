@@ -2,6 +2,7 @@ package member
 
 import (
 	"context"
+	"errors"
 	"time"
 
 	"github.com/danielgtaylor/huma/v2"
@@ -70,7 +71,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface) {
 			InvitedBy:   &authUser.ID,
 		})
 		if err != nil {
-			if err == ErrAlreadyMember {
+			if errors.Is(err, ErrAlreadyMember) {
 				return nil, huma.Error400BadRequest("user is already a member of this workspace")
 			}
 			return nil, appMiddleware.MapDomainError(err)
@@ -100,10 +101,10 @@ func RegisterRoutes(api huma.API, svc ServiceInterface) {
 			UpdaterID:   authUser.ID,
 		})
 		if err != nil {
-			if err == ErrCannotChangeOwnRole {
+			if errors.Is(err, ErrCannotChangeOwnRole) {
 				return nil, huma.Error400BadRequest("cannot change your own role")
 			}
-			if err == ErrMemberNotFound {
+			if errors.Is(err, ErrMemberNotFound) {
 				return nil, huma.Error404NotFound("member not found")
 			}
 			return nil, appMiddleware.MapDomainError(err)
@@ -126,10 +127,10 @@ func RegisterRoutes(api huma.API, svc ServiceInterface) {
 			UserID:      input.UserID,
 		})
 		if err != nil {
-			if err == ErrCannotRemoveOwner {
+			if errors.Is(err, ErrCannotRemoveOwner) {
 				return nil, huma.Error400BadRequest("cannot remove the last owner from workspace")
 			}
-			if err == ErrMemberNotFound {
+			if errors.Is(err, ErrMemberNotFound) {
 				return nil, huma.Error404NotFound("member not found")
 			}
 			return nil, appMiddleware.MapDomainError(err)

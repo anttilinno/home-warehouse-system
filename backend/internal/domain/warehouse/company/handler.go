@@ -2,6 +2,7 @@ package company
 
 import (
 	"context"
+	"errors"
 	"time"
 
 	"github.com/danielgtaylor/huma/v2"
@@ -51,7 +52,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 
 		company, err := svc.GetByID(ctx, input.ID, workspaceID)
 		if err != nil {
-			if err == ErrCompanyNotFound {
+			if errors.Is(err, ErrCompanyNotFound) {
 				return nil, huma.Error404NotFound("company not found")
 			}
 			return nil, huma.Error500InternalServerError("failed to get company")
@@ -78,7 +79,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 			Notes:       input.Body.Notes,
 		})
 		if err != nil {
-			if err == ErrNameTaken {
+			if errors.Is(err, ErrNameTaken) {
 				return nil, huma.Error400BadRequest("company name already exists")
 			}
 			return nil, appMiddleware.MapDomainError(err)
@@ -93,8 +94,8 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 				EntityType: "company",
 				UserID:     authUser.ID,
 				Data: map[string]any{
-					"id":   company.ID(),
-					"name": company.Name(),
+					"id":        company.ID(),
+					"name":      company.Name(),
 					"user_name": userName,
 				},
 			})
@@ -116,7 +117,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 
 		existing, err := svc.GetByID(ctx, input.ID, workspaceID)
 		if err != nil {
-			if err == ErrCompanyNotFound {
+			if errors.Is(err, ErrCompanyNotFound) {
 				return nil, huma.Error404NotFound("company not found")
 			}
 			return nil, huma.Error500InternalServerError("failed to get company")
@@ -145,8 +146,8 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 				EntityType: "company",
 				UserID:     authUser.ID,
 				Data: map[string]any{
-					"id":   company.ID(),
-					"name": company.Name(),
+					"id":        company.ID(),
+					"name":      company.Name(),
 					"user_name": userName,
 				},
 			})
@@ -168,7 +169,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 
 		err := svc.Archive(ctx, input.ID, workspaceID)
 		if err != nil {
-			if err == ErrCompanyNotFound {
+			if errors.Is(err, ErrCompanyNotFound) {
 				return nil, huma.Error404NotFound("company not found")
 			}
 			return nil, appMiddleware.MapDomainError(err)
@@ -182,9 +183,9 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 				EntityID:   input.ID.String(),
 				EntityType: "company",
 				UserID:     authUser.ID,
-			Data: map[string]any{
-				"user_name": userName,
-			},
+				Data: map[string]any{
+					"user_name": userName,
+				},
 			})
 		}
 
@@ -202,7 +203,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 
 		err := svc.Restore(ctx, input.ID, workspaceID)
 		if err != nil {
-			if err == ErrCompanyNotFound {
+			if errors.Is(err, ErrCompanyNotFound) {
 				return nil, huma.Error404NotFound("company not found")
 			}
 			return nil, appMiddleware.MapDomainError(err)
@@ -236,7 +237,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 
 		err := svc.Delete(ctx, input.ID, workspaceID)
 		if err != nil {
-			if err == ErrCompanyNotFound {
+			if errors.Is(err, ErrCompanyNotFound) {
 				return nil, huma.Error404NotFound("company not found")
 			}
 			return nil, appMiddleware.MapDomainError(err)
@@ -250,9 +251,9 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 				EntityID:   input.ID.String(),
 				EntityType: "company",
 				UserID:     authUser.ID,
-			Data: map[string]any{
-				"user_name": userName,
-			},
+				Data: map[string]any{
+					"user_name": userName,
+				},
 			})
 		}
 

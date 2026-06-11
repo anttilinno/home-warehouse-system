@@ -560,7 +560,6 @@ func createChiRequest(method, path string, body io.Reader, workspaceID, userID u
 	return req.WithContext(ctx)
 }
 
-
 func TestBulkPhotoHandler_HandleBulkDelete(t *testing.T) {
 	workspaceID := uuid.MustParse("00000000-0000-0000-0000-000000000001")
 	userID := uuid.MustParse("00000000-0000-0000-0000-000000000002")

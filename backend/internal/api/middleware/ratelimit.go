@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"net"
 	"net/http"
-	"strings"
 	"sync"
 	"time"
 )
@@ -108,23 +107,12 @@ func RateLimit(limiter *RateLimiter) func(http.Handler) http.Handler {
 }
 
 // getClientIP extracts the client IP from the request.
-// It checks X-Forwarded-For and X-Real-IP headers for proxied requests.
+//
+// It deliberately reads ONLY r.RemoteAddr: chi's middleware.RealIP runs
+// earlier in the chain and rewrites RemoteAddr from proxy headers when
+// present. Parsing X-Forwarded-For here ourselves would let any client
+// rotate the header and bypass the limiter entirely.
 func getClientIP(r *http.Request) string {
-	// Check X-Forwarded-For header (may contain multiple IPs)
-	if xff := r.Header.Get("X-Forwarded-For"); xff != "" {
-		// Take the first IP (original client)
-		if idx := strings.Index(xff, ","); idx != -1 {
-			return strings.TrimSpace(xff[:idx])
-		}
-		return strings.TrimSpace(xff)
-	}
-
-	// Check X-Real-IP header
-	if xri := r.Header.Get("X-Real-IP"); xri != "" {
-		return strings.TrimSpace(xri)
-	}
-
-	// Fall back to RemoteAddr
 	ip, _, err := net.SplitHostPort(r.RemoteAddr)
 	if err != nil {
 		return r.RemoteAddr

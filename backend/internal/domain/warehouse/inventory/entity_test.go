@@ -538,11 +538,11 @@ func TestInventory_Move(t *testing.T) {
 	containerID := uuid.New()
 
 	tests := []struct {
-		name        string
-		newLocation uuid.UUID
+		name         string
+		newLocation  uuid.UUID
 		newContainer *uuid.UUID
-		wantErr     bool
-		errMsg      string
+		wantErr      bool
+		errMsg       string
 	}{
 		{
 			name:         "move to new location without container",

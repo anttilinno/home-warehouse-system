@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log/slog"
 	"net/http"
 	"strings"
 
@@ -98,7 +99,8 @@ func ApprovalMiddleware(pendingChangeCreator PendingChangeCreator) func(http.Han
 			// Extract and buffer the request payload
 			payload, err := extractPayload(r)
 			if err != nil {
-				http.Error(w, fmt.Sprintf(`{"error":"bad_request","message":"failed to read request body: %v"}`, err), http.StatusBadRequest)
+				slog.Warn("approval middleware: failed to read request body", "error", err, "path", r.URL.Path)
+				http.Error(w, `{"error":"bad_request","message":"invalid request body"}`, http.StatusBadRequest)
 				return
 			}
 
@@ -117,7 +119,9 @@ func ApprovalMiddleware(pendingChangeCreator PendingChangeCreator) func(http.Han
 				payload,
 			)
 			if err != nil {
-				http.Error(w, fmt.Sprintf(`{"error":"internal_error","message":"failed to create pending change: %v"}`, err), http.StatusInternalServerError)
+				slog.Error("approval middleware: failed to create pending change",
+					"error", err, "entity_type", entityType, "action", action, "workspace_id", workspaceID)
+				http.Error(w, `{"error":"internal_error","message":"failed to create pending change"}`, http.StatusInternalServerError)
 				return
 			}
 

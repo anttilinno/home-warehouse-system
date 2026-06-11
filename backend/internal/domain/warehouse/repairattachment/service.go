@@ -21,7 +21,7 @@ var ErrFileBelongsToDifferentWorkspace = errors.New("file belongs to a different
 
 // FileVerifier is an interface for verifying file existence and workspace ownership.
 type FileVerifier interface {
-	GetFileByID(ctx context.Context, fileID uuid.UUID) (*attachment.File, error)
+	GetFileByID(ctx context.Context, fileID, workspaceID uuid.UUID) (*attachment.File, error)
 }
 
 // ServiceInterface defines the repair attachment service operations.
@@ -55,7 +55,7 @@ func (s *Service) Create(
 ) (*RepairAttachment, error) {
 	// Verify file exists and belongs to the workspace
 	if s.fileVerifier != nil {
-		file, err := s.fileVerifier.GetFileByID(ctx, fileID)
+		file, err := s.fileVerifier.GetFileByID(ctx, fileID, workspaceID)
 		if err != nil {
 			if errors.Is(err, shared.ErrNotFound) {
 				return nil, ErrFileNotFound

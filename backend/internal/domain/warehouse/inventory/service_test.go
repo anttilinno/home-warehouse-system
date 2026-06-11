@@ -71,7 +71,7 @@ func (m *MockRepository) GetTotalQuantity(ctx context.Context, workspaceID, item
 	return args.Int(0), args.Error(1)
 }
 
-func (m *MockRepository) Delete(ctx context.Context, id uuid.UUID) error {
+func (m *MockRepository) Delete(ctx context.Context, id, workspaceID uuid.UUID) error {
 	args := m.Called(ctx, id)
 	return args.Error(0)
 }
@@ -119,7 +119,7 @@ func (m *mockItemRepo) FindByCategory(ctx context.Context, wsID, catID uuid.UUID
 func (m *mockItemRepo) Search(ctx context.Context, wsID uuid.UUID, q string, l int) ([]*item.Item, error) {
 	return nil, nil
 }
-func (m *mockItemRepo) Delete(ctx context.Context, id uuid.UUID) error { return nil }
+func (m *mockItemRepo) Delete(ctx context.Context, id, workspaceID uuid.UUID) error { return nil }
 func (m *mockItemRepo) SKUExists(ctx context.Context, wsID uuid.UUID, sku string) (bool, error) {
 	return false, nil
 }

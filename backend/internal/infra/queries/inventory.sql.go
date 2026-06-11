@@ -15,11 +15,16 @@ import (
 const archiveInventory = `-- name: ArchiveInventory :exec
 UPDATE warehouse.inventory
 SET is_archived = true, updated_at = now()
-WHERE id = $1
+WHERE id = $1 AND workspace_id = $2
 `
 
-func (q *Queries) ArchiveInventory(ctx context.Context, id uuid.UUID) error {
-	_, err := q.db.Exec(ctx, archiveInventory, id)
+type ArchiveInventoryParams struct {
+	ID          uuid.UUID `json:"id"`
+	WorkspaceID uuid.UUID `json:"workspace_id"`
+}
+
+func (q *Queries) ArchiveInventory(ctx context.Context, arg ArchiveInventoryParams) error {
+	_, err := q.db.Exec(ctx, archiveInventory, arg.ID, arg.WorkspaceID)
 	return err
 }
 
@@ -654,7 +659,7 @@ func (q *Queries) ListInventoryWithDetails(ctx context.Context, arg ListInventor
 const moveInventory = `-- name: MoveInventory :one
 UPDATE warehouse.inventory
 SET location_id = $2, container_id = $3, updated_at = now()
-WHERE id = $1
+WHERE id = $1 AND workspace_id = $4
 RETURNING id, workspace_id, item_id, location_id, container_id, quantity, condition, status, date_acquired, purchase_price, currency_code, warranty_expires, expiration_date, notes, last_used_at, is_archived, created_at, updated_at
 `
 
@@ -662,10 +667,16 @@ type MoveInventoryParams struct {
 	ID          uuid.UUID   `json:"id"`
 	LocationID  uuid.UUID   `json:"location_id"`
 	ContainerID pgtype.UUID `json:"container_id"`
+	WorkspaceID uuid.UUID   `json:"workspace_id"`
 }
 
 func (q *Queries) MoveInventory(ctx context.Context, arg MoveInventoryParams) (WarehouseInventory, error) {
-	row := q.db.QueryRow(ctx, moveInventory, arg.ID, arg.LocationID, arg.ContainerID)
+	row := q.db.QueryRow(ctx, moveInventory,
+		arg.ID,
+		arg.LocationID,
+		arg.ContainerID,
+		arg.WorkspaceID,
+	)
 	var i WarehouseInventory
 	err := row.Scan(
 		&i.ID,
@@ -693,11 +704,16 @@ func (q *Queries) MoveInventory(ctx context.Context, arg MoveInventoryParams) (W
 const restoreInventory = `-- name: RestoreInventory :exec
 UPDATE warehouse.inventory
 SET is_archived = false, updated_at = now()
-WHERE id = $1
+WHERE id = $1 AND workspace_id = $2
 `
 
-func (q *Queries) RestoreInventory(ctx context.Context, id uuid.UUID) error {
-	_, err := q.db.Exec(ctx, restoreInventory, id)
+type RestoreInventoryParams struct {
+	ID          uuid.UUID `json:"id"`
+	WorkspaceID uuid.UUID `json:"workspace_id"`
+}
+
+func (q *Queries) RestoreInventory(ctx context.Context, arg RestoreInventoryParams) error {
+	_, err := q.db.Exec(ctx, restoreInventory, arg.ID, arg.WorkspaceID)
 	return err
 }
 
@@ -706,7 +722,7 @@ UPDATE warehouse.inventory
 SET location_id = $2, container_id = $3, quantity = $4, condition = $5,
     date_acquired = $6, purchase_price = $7, currency_code = $8,
     warranty_expires = $9, expiration_date = $10, notes = $11, updated_at = now()
-WHERE id = $1
+WHERE id = $1 AND workspace_id = $12
 RETURNING id, workspace_id, item_id, location_id, container_id, quantity, condition, status, date_acquired, purchase_price, currency_code, warranty_expires, expiration_date, notes, last_used_at, is_archived, created_at, updated_at
 `
 
@@ -722,6 +738,7 @@ type UpdateInventoryParams struct {
 	WarrantyExpires pgtype.Date                    `json:"warranty_expires"`
 	ExpirationDate  pgtype.Date                    `json:"expiration_date"`
 	Notes           *string                        `json:"notes"`
+	WorkspaceID     uuid.UUID                      `json:"workspace_id"`
 }
 
 func (q *Queries) UpdateInventory(ctx context.Context, arg UpdateInventoryParams) (WarehouseInventory, error) {
@@ -737,6 +754,7 @@ func (q *Queries) UpdateInventory(ctx context.Context, arg UpdateInventoryParams
 		arg.WarrantyExpires,
 		arg.ExpirationDate,
 		arg.Notes,
+		arg.WorkspaceID,
 	)
 	var i WarehouseInventory
 	err := row.Scan(
@@ -765,17 +783,18 @@ func (q *Queries) UpdateInventory(ctx context.Context, arg UpdateInventoryParams
 const updateInventoryQuantity = `-- name: UpdateInventoryQuantity :one
 UPDATE warehouse.inventory
 SET quantity = $2, updated_at = now()
-WHERE id = $1
+WHERE id = $1 AND workspace_id = $3
 RETURNING id, workspace_id, item_id, location_id, container_id, quantity, condition, status, date_acquired, purchase_price, currency_code, warranty_expires, expiration_date, notes, last_used_at, is_archived, created_at, updated_at
 `
 
 type UpdateInventoryQuantityParams struct {
-	ID       uuid.UUID `json:"id"`
-	Quantity int32     `json:"quantity"`
+	ID          uuid.UUID `json:"id"`
+	Quantity    int32     `json:"quantity"`
+	WorkspaceID uuid.UUID `json:"workspace_id"`
 }
 
 func (q *Queries) UpdateInventoryQuantity(ctx context.Context, arg UpdateInventoryQuantityParams) (WarehouseInventory, error) {
-	row := q.db.QueryRow(ctx, updateInventoryQuantity, arg.ID, arg.Quantity)
+	row := q.db.QueryRow(ctx, updateInventoryQuantity, arg.ID, arg.Quantity, arg.WorkspaceID)
 	var i WarehouseInventory
 	err := row.Scan(
 		&i.ID,
@@ -803,17 +822,18 @@ func (q *Queries) UpdateInventoryQuantity(ctx context.Context, arg UpdateInvento
 const updateInventoryStatus = `-- name: UpdateInventoryStatus :one
 UPDATE warehouse.inventory
 SET status = $2, updated_at = now()
-WHERE id = $1
+WHERE id = $1 AND workspace_id = $3
 RETURNING id, workspace_id, item_id, location_id, container_id, quantity, condition, status, date_acquired, purchase_price, currency_code, warranty_expires, expiration_date, notes, last_used_at, is_archived, created_at, updated_at
 `
 
 type UpdateInventoryStatusParams struct {
-	ID     uuid.UUID                   `json:"id"`
-	Status NullWarehouseItemStatusEnum `json:"status"`
+	ID          uuid.UUID                   `json:"id"`
+	Status      NullWarehouseItemStatusEnum `json:"status"`
+	WorkspaceID uuid.UUID                   `json:"workspace_id"`
 }
 
 func (q *Queries) UpdateInventoryStatus(ctx context.Context, arg UpdateInventoryStatusParams) (WarehouseInventory, error) {
-	row := q.db.QueryRow(ctx, updateInventoryStatus, arg.ID, arg.Status)
+	row := q.db.QueryRow(ctx, updateInventoryStatus, arg.ID, arg.Status, arg.WorkspaceID)
 	var i WarehouseInventory
 	err := row.Scan(
 		&i.ID,

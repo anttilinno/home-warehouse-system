@@ -6,11 +6,44 @@ import (
 	"fmt"
 	"io"
 	"mime/multipart"
+	"net/http"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/google/uuid"
 )
+
+// sanitizeUploadFilename strips any path components from a client-supplied
+// filename before it is persisted (path-traversal / zip-slip guard).
+func sanitizeUploadFilename(filename string) string {
+	name := filepath.Base(strings.ReplaceAll(filename, "\\", "/"))
+	if name == "." || name == ".." || name == "/" {
+		return "photo"
+	}
+	return name
+}
+
+// detectImageMimeType sniffs the actual content type of the (already
+// image-validated) file so the serve handlers emit the detected format
+// rather than echoing the client-supplied Content-Type header.
+func detectImageMimeType(path string) string {
+	f, err := os.Open(path)
+	if err != nil {
+		return ""
+	}
+	defer f.Close()
+
+	buf := make([]byte, 512)
+	n, err := f.Read(buf)
+	if err != nil && n == 0 {
+		return ""
+	}
+	if ct := http.DetectContentType(buf[:n]); strings.HasPrefix(ct, "image/") {
+		return ct
+	}
+	return ""
+}
 
 const (
 	// MaxFileSize is the maximum allowed photo file size (10MB)
@@ -105,6 +138,11 @@ func (s *Service) UploadPhoto(ctx context.Context, repairLogID, workspaceID, use
 		return nil, fmt.Errorf("invalid image: %w", err)
 	}
 
+	// Prefer the detected content type over the client-supplied header
+	if detected := detectImageMimeType(tempPath); detected != "" {
+		mimeType = detected
+	}
+
 	// Get image dimensions
 	width, height, err := s.processor.GetDimensions(ctx, tempPath)
 	if err != nil {
@@ -172,7 +210,7 @@ func (s *Service) UploadPhoto(ctx context.Context, repairLogID, workspaceID, use
 		workspaceID,
 		userID,
 		photoType,
-		header.Filename,
+		sanitizeUploadFilename(header.Filename),
 		storagePath,
 		thumbnailPath,
 		mimeType,

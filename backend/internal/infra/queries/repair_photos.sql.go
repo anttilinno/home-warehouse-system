@@ -9,6 +9,7 @@ import (
 	"context"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const countRepairPhotosByRepairLog = `-- name: CountRepairPhotosByRepairLog :one
@@ -119,7 +120,7 @@ type InsertRepairPhotoParams struct {
 	Height        int32                        `json:"height"`
 	DisplayOrder  int32                        `json:"display_order"`
 	Caption       *string                      `json:"caption"`
-	UploadedBy    uuid.UUID                    `json:"uploaded_by"`
+	UploadedBy    pgtype.UUID                  `json:"uploaded_by"`
 }
 
 func (q *Queries) InsertRepairPhoto(ctx context.Context, arg InsertRepairPhotoParams) (WarehouseRepairPhoto, error) {

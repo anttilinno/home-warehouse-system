@@ -52,8 +52,11 @@ func (r *FileRepository) Save(ctx context.Context, f *attachment.File) error {
 	return err
 }
 
-func (r *FileRepository) FindByID(ctx context.Context, id uuid.UUID) (*attachment.File, error) {
-	row, err := r.queries.GetFile(ctx, id)
+func (r *FileRepository) FindByID(ctx context.Context, id, workspaceID uuid.UUID) (*attachment.File, error) {
+	row, err := r.queries.GetFile(ctx, queries.GetFileParams{
+		ID:          id,
+		WorkspaceID: workspaceID,
+	})
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, shared.ErrNotFound
@@ -64,8 +67,11 @@ func (r *FileRepository) FindByID(ctx context.Context, id uuid.UUID) (*attachmen
 	return r.rowToFile(row), nil
 }
 
-func (r *FileRepository) Delete(ctx context.Context, id uuid.UUID) error {
-	return r.queries.DeleteFile(ctx, id)
+func (r *FileRepository) Delete(ctx context.Context, id, workspaceID uuid.UUID) error {
+	return r.queries.DeleteFile(ctx, queries.DeleteFileParams{
+		ID:          id,
+		WorkspaceID: workspaceID,
+	})
 }
 
 func (r *FileRepository) rowToFile(row queries.WarehouseFile) *attachment.File {
@@ -133,6 +139,7 @@ func (r *AttachmentRepository) Save(ctx context.Context, a *attachment.Attachmen
 
 	_, err := r.queries.CreateAttachment(ctx, queries.CreateAttachmentParams{
 		ID:             a.ID(),
+		WorkspaceID:    a.WorkspaceID(),
 		ItemID:         a.ItemID(),
 		FileID:         fileID,
 		AttachmentType: queries.WarehouseAttachmentTypeEnum(a.AttachmentType()),
@@ -143,8 +150,11 @@ func (r *AttachmentRepository) Save(ctx context.Context, a *attachment.Attachmen
 	return err
 }
 
-func (r *AttachmentRepository) FindByID(ctx context.Context, id uuid.UUID) (*attachment.Attachment, error) {
-	row, err := r.queries.GetAttachment(ctx, id)
+func (r *AttachmentRepository) FindByID(ctx context.Context, id, workspaceID uuid.UUID) (*attachment.Attachment, error) {
+	row, err := r.queries.GetAttachment(ctx, queries.GetAttachmentParams{
+		ID:          id,
+		WorkspaceID: workspaceID,
+	})
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, shared.ErrNotFound
@@ -155,8 +165,11 @@ func (r *AttachmentRepository) FindByID(ctx context.Context, id uuid.UUID) (*att
 	return r.rowToAttachment(row), nil
 }
 
-func (r *AttachmentRepository) FindByItem(ctx context.Context, itemID uuid.UUID) ([]*attachment.Attachment, error) {
-	rows, err := r.queries.ListAttachmentsByItem(ctx, itemID)
+func (r *AttachmentRepository) FindByItem(ctx context.Context, itemID, workspaceID uuid.UUID) ([]*attachment.Attachment, error) {
+	rows, err := r.queries.ListAttachmentsByItem(ctx, queries.ListAttachmentsByItemParams{
+		ItemID:      itemID,
+		WorkspaceID: workspaceID,
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -169,14 +182,18 @@ func (r *AttachmentRepository) FindByItem(ctx context.Context, itemID uuid.UUID)
 	return attachments, nil
 }
 
-func (r *AttachmentRepository) Delete(ctx context.Context, id uuid.UUID) error {
-	return r.queries.DeleteAttachment(ctx, id)
+func (r *AttachmentRepository) Delete(ctx context.Context, id, workspaceID uuid.UUID) error {
+	return r.queries.DeleteAttachment(ctx, queries.DeleteAttachmentParams{
+		ID:          id,
+		WorkspaceID: workspaceID,
+	})
 }
 
-func (r *AttachmentRepository) SetPrimaryForItem(ctx context.Context, itemID, attachmentID uuid.UUID) error {
+func (r *AttachmentRepository) SetPrimaryForItem(ctx context.Context, itemID, attachmentID, workspaceID uuid.UUID) error {
 	return r.queries.SetPrimaryAttachment(ctx, queries.SetPrimaryAttachmentParams{
-		ItemID: itemID,
-		ID:     attachmentID,
+		ItemID:      itemID,
+		ID:          attachmentID,
+		WorkspaceID: workspaceID,
 	})
 }
 
@@ -194,6 +211,7 @@ func (r *AttachmentRepository) rowToAttachment(row queries.WarehouseAttachment) 
 
 	return attachment.ReconstructAttachment(
 		row.ID,
+		row.WorkspaceID,
 		row.ItemID,
 		fileID,
 		attachment.AttachmentType(row.AttachmentType),
@@ -219,6 +237,7 @@ func (r *AttachmentRepository) rowToAttachmentFromList(row queries.ListAttachmen
 
 	return attachment.ReconstructAttachment(
 		row.ID,
+		row.WorkspaceID,
 		row.ItemID,
 		fileID,
 		attachment.AttachmentType(row.AttachmentType),
@@ -231,6 +250,6 @@ func (r *AttachmentRepository) rowToAttachmentFromList(row queries.ListAttachmen
 }
 
 // GetFileByID implements the repairattachment.FileVerifier interface.
-func (r *FileRepository) GetFileByID(ctx context.Context, fileID uuid.UUID) (*attachment.File, error) {
-	return r.FindByID(ctx, fileID)
+func (r *FileRepository) GetFileByID(ctx context.Context, fileID, workspaceID uuid.UUID) (*attachment.File, error) {
+	return r.FindByID(ctx, fileID, workspaceID)
 }

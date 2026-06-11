@@ -47,6 +47,14 @@ func (m *MockRepository) GetByItem(ctx context.Context, itemID, workspaceID uuid
 	return args.Get(0).([]*itemphoto.ItemPhoto), args.Error(1)
 }
 
+func (m *MockRepository) CountByItem(ctx context.Context, itemID, workspaceID uuid.UUID) (int64, error) {
+	args := m.Called(ctx, itemID, workspaceID)
+	if args.Get(0) == nil {
+		return 0, args.Error(1)
+	}
+	return args.Get(0).(int64), args.Error(1)
+}
+
 func (m *MockRepository) GetPrimary(ctx context.Context, itemID, workspaceID uuid.UUID) (*itemphoto.ItemPhoto, error) {
 	args := m.Called(ctx, itemID, workspaceID)
 	if args.Get(0) == nil {
@@ -1460,7 +1468,7 @@ func TestService_UploadPhoto_FullFlow(t *testing.T) {
 		processor.On("Validate", ctx, mock.AnythingOfType("string")).Return(nil)
 		processor.On("GetDimensions", ctx, mock.AnythingOfType("string")).Return(1920, 1080, nil)
 		storage.On("Save", ctx, workspaceID.String(), itemID.String(), "test-image.jpg", mock.Anything).Return("photos/original.jpg", nil)
-		repo.On("GetByItem", ctx, itemID, workspaceID).Return([]*itemphoto.ItemPhoto{}, nil)
+		repo.On("CountByItem", ctx, itemID, workspaceID).Return(int64(0), nil)
 		repo.On("Create", ctx, mock.MatchedBy(func(p *itemphoto.ItemPhoto) bool {
 			return p.ItemID == itemID &&
 				p.WorkspaceID == workspaceID &&
@@ -1517,13 +1525,12 @@ func TestService_UploadPhoto_FullFlow(t *testing.T) {
 		}
 		header.Header.Set("Content-Type", "image/jpeg")
 
-		existingPhoto := createServiceTestPhoto(t, itemID, workspaceID)
-
 		// Note: Thumbnails are now generated asynchronously, so no thumbnail mocks needed
 		processor.On("Validate", ctx, mock.AnythingOfType("string")).Return(nil)
 		processor.On("GetDimensions", ctx, mock.AnythingOfType("string")).Return(800, 600, nil)
 		storage.On("Save", ctx, workspaceID.String(), itemID.String(), "second-image.jpg", mock.Anything).Return("photos/second.jpg", nil)
-		repo.On("GetByItem", ctx, itemID, workspaceID).Return([]*itemphoto.ItemPhoto{existingPhoto}, nil)
+		// One existing photo -> next display order 1, not primary.
+		repo.On("CountByItem", ctx, itemID, workspaceID).Return(int64(1), nil)
 		repo.On("Create", ctx, mock.MatchedBy(func(p *itemphoto.ItemPhoto) bool {
 			return p.IsPrimary == false && // Second photo should NOT be primary
 				p.DisplayOrder == 1 && // Should be after first photo
@@ -1569,7 +1576,7 @@ func TestService_UploadPhoto_FullFlow(t *testing.T) {
 		processor.On("Validate", ctx, mock.AnythingOfType("string")).Return(nil)
 		processor.On("GetDimensions", ctx, mock.AnythingOfType("string")).Return(640, 480, nil)
 		storage.On("Save", ctx, workspaceID.String(), itemID.String(), "captioned.jpg", mock.Anything).Return("photos/captioned.jpg", nil)
-		repo.On("GetByItem", ctx, itemID, workspaceID).Return([]*itemphoto.ItemPhoto{}, nil)
+		repo.On("CountByItem", ctx, itemID, workspaceID).Return(int64(0), nil)
 		repo.On("Create", ctx, mock.MatchedBy(func(p *itemphoto.ItemPhoto) bool {
 			return p.Caption != nil && *p.Caption == caption &&
 				p.ThumbnailStatus == itemphoto.ThumbnailStatusPending
@@ -1674,7 +1681,7 @@ func TestService_UploadPhoto_FullFlow(t *testing.T) {
 	// Note: "cleans up original when thumbnail generation fails" and "cleans up files when thumbnail storage fails"
 	// test cases removed - thumbnails are now generated asynchronously, so these failures don't happen during upload
 
-	t.Run("cleans up files when GetByItem fails", func(t *testing.T) {
+	t.Run("cleans up files when CountByItem fails", func(t *testing.T) {
 		ctx := context.Background()
 		repo := new(MockRepository)
 		storage := new(MockStorage)
@@ -1696,14 +1703,14 @@ func TestService_UploadPhoto_FullFlow(t *testing.T) {
 		processor.On("Validate", ctx, mock.AnythingOfType("string")).Return(nil)
 		processor.On("GetDimensions", ctx, mock.AnythingOfType("string")).Return(800, 600, nil)
 		storage.On("Save", ctx, workspaceID.String(), itemID.String(), "test.jpg", mock.Anything).Return(originalPath, nil)
-		repo.On("GetByItem", ctx, itemID, workspaceID).Return(nil, errors.New("database error"))
+		repo.On("CountByItem", ctx, itemID, workspaceID).Return(nil, errors.New("database error"))
 		storage.On("Delete", ctx, originalPath).Return(nil)
 
 		service := itemphoto.NewService(repo, storage, processor, tmpDir)
 		result, err := service.UploadPhoto(ctx, itemID, workspaceID, userID, file, header, nil)
 
 		require.Error(t, err)
-		assert.Contains(t, err.Error(), "failed to get existing photos")
+		assert.Contains(t, err.Error(), "failed to count existing photos")
 		assert.Nil(t, result)
 	})
 
@@ -1729,7 +1736,7 @@ func TestService_UploadPhoto_FullFlow(t *testing.T) {
 		processor.On("Validate", ctx, mock.AnythingOfType("string")).Return(nil)
 		processor.On("GetDimensions", ctx, mock.AnythingOfType("string")).Return(800, 600, nil)
 		storage.On("Save", ctx, workspaceID.String(), itemID.String(), "test.jpg", mock.Anything).Return(originalPath, nil)
-		repo.On("GetByItem", ctx, itemID, workspaceID).Return([]*itemphoto.ItemPhoto{}, nil)
+		repo.On("CountByItem", ctx, itemID, workspaceID).Return(int64(0), nil)
 		repo.On("Create", ctx, mock.AnythingOfType("*itemphoto.ItemPhoto")).Return(nil, errors.New("database error"))
 		storage.On("Delete", ctx, originalPath).Return(nil)
 
@@ -1761,7 +1768,7 @@ func TestService_UploadPhoto_FullFlow(t *testing.T) {
 		processor.On("Validate", ctx, mock.AnythingOfType("string")).Return(nil)
 		processor.On("GetDimensions", ctx, mock.AnythingOfType("string")).Return(800, 600, nil)
 		storage.On("Save", ctx, workspaceID.String(), itemID.String(), "test.png", mock.Anything).Return("photos/test.png", nil)
-		repo.On("GetByItem", ctx, itemID, workspaceID).Return([]*itemphoto.ItemPhoto{}, nil)
+		repo.On("CountByItem", ctx, itemID, workspaceID).Return(int64(0), nil)
 		repo.On("Create", ctx, mock.MatchedBy(func(p *itemphoto.ItemPhoto) bool {
 			return p.MimeType == "image/png" &&
 				p.ThumbnailStatus == itemphoto.ThumbnailStatusPending
@@ -1799,7 +1806,7 @@ func TestService_UploadPhoto_FullFlow(t *testing.T) {
 		processor.On("Validate", ctx, mock.AnythingOfType("string")).Return(nil)
 		processor.On("GetDimensions", ctx, mock.AnythingOfType("string")).Return(800, 600, nil)
 		storage.On("Save", ctx, workspaceID.String(), itemID.String(), "test.webp", mock.Anything).Return("photos/test.webp", nil)
-		repo.On("GetByItem", ctx, itemID, workspaceID).Return([]*itemphoto.ItemPhoto{}, nil)
+		repo.On("CountByItem", ctx, itemID, workspaceID).Return(int64(0), nil)
 		repo.On("Create", ctx, mock.MatchedBy(func(p *itemphoto.ItemPhoto) bool {
 			return p.MimeType == "image/webp" &&
 				p.ThumbnailStatus == itemphoto.ThumbnailStatusPending

@@ -53,10 +53,13 @@ func (r *PendingChangeRepository) Save(ctx context.Context, change *pendingchang
 	return err
 }
 
-// FindByID retrieves a pending change by its unique identifier.
-// Returns shared.ErrNotFound if the change does not exist.
-func (r *PendingChangeRepository) FindByID(ctx context.Context, id uuid.UUID) (*pendingchange.PendingChange, error) {
-	row, err := r.queries.GetPendingChangeByID(ctx, id)
+// FindByID retrieves a pending change by its unique identifier, scoped to the workspace.
+// Returns shared.ErrNotFound if the change does not exist in that workspace.
+func (r *PendingChangeRepository) FindByID(ctx context.Context, id, workspaceID uuid.UUID) (*pendingchange.PendingChange, error) {
+	row, err := r.queries.GetPendingChangeByID(ctx, queries.GetPendingChangeByIDParams{
+		ID:          id,
+		WorkspaceID: workspaceID,
+	})
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, shared.ErrNotFound
@@ -125,10 +128,11 @@ func (r *PendingChangeRepository) FindByRequester(ctx context.Context, requester
 	return changes, nil
 }
 
-func (r *PendingChangeRepository) FindByEntity(ctx context.Context, entityType string, entityID uuid.UUID) ([]*pendingchange.PendingChange, error) {
+func (r *PendingChangeRepository) FindByEntity(ctx context.Context, workspaceID uuid.UUID, entityType string, entityID uuid.UUID) ([]*pendingchange.PendingChange, error) {
 	rows, err := r.queries.ListPendingChangesByEntity(ctx, queries.ListPendingChangesByEntityParams{
-		EntityType: entityType,
-		EntityID:   pgtype.UUID{Bytes: entityID, Valid: true},
+		WorkspaceID: workspaceID,
+		EntityType:  entityType,
+		EntityID:    pgtype.UUID{Bytes: entityID, Valid: true},
 	})
 	if err != nil {
 		return nil, err
@@ -142,8 +146,11 @@ func (r *PendingChangeRepository) FindByEntity(ctx context.Context, entityType s
 	return changes, nil
 }
 
-func (r *PendingChangeRepository) Delete(ctx context.Context, id uuid.UUID) error {
-	return r.queries.DeletePendingChange(ctx, id)
+func (r *PendingChangeRepository) Delete(ctx context.Context, id, workspaceID uuid.UUID) error {
+	return r.queries.DeletePendingChange(ctx, queries.DeletePendingChangeParams{
+		ID:          id,
+		WorkspaceID: workspaceID,
+	})
 }
 
 func (r *PendingChangeRepository) rowToPendingChange(row queries.WarehousePendingChange) *pendingchange.PendingChange {

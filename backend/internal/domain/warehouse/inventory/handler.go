@@ -3,17 +3,14 @@ package inventory
 import (
 	"context"
 	"errors"
-	"fmt"
 	"time"
 
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/google/uuid"
-	"github.com/jackc/pgx/v5/pgconn"
 
 	appMiddleware "github.com/antti/home-warehouse/go-backend/internal/api/middleware"
 	"github.com/antti/home-warehouse/go-backend/internal/infra/events"
 	"github.com/antti/home-warehouse/go-backend/internal/shared"
-	"github.com/antti/home-warehouse/go-backend/internal/shared/apierror"
 )
 
 // RegisterRoutes registers inventory routes.
@@ -60,7 +57,7 @@ func registerQueryRoutes(api huma.API, svc ServiceInterface) {
 
 		inv, err := svc.GetByID(ctx, input.ID, workspaceID)
 		if err != nil {
-			if err == ErrInventoryNotFound {
+			if errors.Is(err, ErrInventoryNotFound) {
 				return nil, huma.Error404NotFound("inventory not found")
 			}
 			return nil, huma.Error500InternalServerError("failed to get inventory")
@@ -164,7 +161,10 @@ func registerMutationRoutes(api huma.API, svc ServiceInterface, broadcaster *eve
 			Notes:           input.Body.Notes,
 		})
 		if err != nil {
-			return nil, mapInventoryError(err, "failed to create inventory")
+			if errors.Is(err, ErrInventoryNotFound) {
+				return nil, huma.Error404NotFound("inventory not found")
+			}
+			return nil, appMiddleware.MapDomainError(err)
 		}
 
 		// Publish SSE event
@@ -177,9 +177,9 @@ func registerMutationRoutes(api huma.API, svc ServiceInterface, broadcaster *eve
 				EntityType: "inventory",
 				UserID:     authUser.ID,
 				Data: map[string]any{
-					"id":      inv.ID(),
-					"item_id": inv.ItemID(),
-					"status":  inv.Status(),
+					"id":        inv.ID(),
+					"item_id":   inv.ItemID(),
+					"status":    inv.Status(),
 					"user_name": userName,
 				},
 			})
@@ -207,7 +207,10 @@ func registerMutationRoutes(api huma.API, svc ServiceInterface, broadcaster *eve
 			Notes:           input.Body.Notes,
 		})
 		if err != nil {
-			return nil, mapInventoryError(err, "failed to update inventory")
+			if errors.Is(err, ErrInventoryNotFound) {
+				return nil, huma.Error404NotFound("inventory not found")
+			}
+			return nil, appMiddleware.MapDomainError(err)
 		}
 
 		// Publish SSE event
@@ -220,8 +223,8 @@ func registerMutationRoutes(api huma.API, svc ServiceInterface, broadcaster *eve
 				EntityType: "inventory",
 				UserID:     authUser.ID,
 				Data: map[string]any{
-					"id":     inv.ID(),
-					"status": inv.Status(),
+					"id":        inv.ID(),
+					"status":    inv.Status(),
 					"user_name": userName,
 				},
 			})
@@ -238,7 +241,10 @@ func registerMutationRoutes(api huma.API, svc ServiceInterface, broadcaster *eve
 
 		inv, err := svc.UpdateStatus(ctx, input.ID, workspaceID, input.Body.Status)
 		if err != nil {
-			return nil, mapInventoryError(err, "failed to update status")
+			if errors.Is(err, ErrInventoryNotFound) {
+				return nil, huma.Error404NotFound("inventory not found")
+			}
+			return nil, appMiddleware.MapDomainError(err)
 		}
 
 		// Publish SSE event
@@ -251,8 +257,8 @@ func registerMutationRoutes(api huma.API, svc ServiceInterface, broadcaster *eve
 				EntityType: "inventory",
 				UserID:     authUser.ID,
 				Data: map[string]any{
-					"id":     inv.ID(),
-					"status": inv.Status(),
+					"id":        inv.ID(),
+					"status":    inv.Status(),
 					"user_name": userName,
 				},
 			})
@@ -269,7 +275,10 @@ func registerMutationRoutes(api huma.API, svc ServiceInterface, broadcaster *eve
 
 		inv, err := svc.UpdateQuantity(ctx, input.ID, workspaceID, input.Body.Quantity)
 		if err != nil {
-			return nil, mapInventoryError(err, "failed to update quantity")
+			if errors.Is(err, ErrInventoryNotFound) {
+				return nil, huma.Error404NotFound("inventory not found")
+			}
+			return nil, appMiddleware.MapDomainError(err)
 		}
 
 		// Publish SSE event
@@ -282,8 +291,8 @@ func registerMutationRoutes(api huma.API, svc ServiceInterface, broadcaster *eve
 				EntityType: "inventory",
 				UserID:     authUser.ID,
 				Data: map[string]any{
-					"id":       inv.ID(),
-					"quantity": inv.Quantity(),
+					"id":        inv.ID(),
+					"quantity":  inv.Quantity(),
 					"user_name": userName,
 				},
 			})
@@ -303,7 +312,10 @@ func registerActionRoutes(api huma.API, svc ServiceInterface, broadcaster *event
 
 		inv, err := svc.Move(ctx, input.ID, workspaceID, input.Body.LocationID, input.Body.ContainerID)
 		if err != nil {
-			return nil, mapInventoryError(err, "failed to move inventory")
+			if errors.Is(err, ErrInventoryNotFound) {
+				return nil, huma.Error404NotFound("inventory not found")
+			}
+			return nil, appMiddleware.MapDomainError(err)
 		}
 
 		// Publish SSE event
@@ -318,7 +330,7 @@ func registerActionRoutes(api huma.API, svc ServiceInterface, broadcaster *event
 				Data: map[string]any{
 					"id":          inv.ID(),
 					"location_id": inv.LocationID(),
-					"user_name": userName,
+					"user_name":   userName,
 				},
 			})
 		}
@@ -333,7 +345,10 @@ func registerActionRoutes(api huma.API, svc ServiceInterface, broadcaster *event
 		}
 
 		if err := svc.Archive(ctx, input.ID, workspaceID); err != nil {
-			return nil, mapInventoryError(err, "failed to archive inventory")
+			if errors.Is(err, ErrInventoryNotFound) {
+				return nil, huma.Error404NotFound("inventory not found")
+			}
+			return nil, appMiddleware.MapDomainError(err)
 		}
 
 		// Publish SSE event
@@ -345,9 +360,9 @@ func registerActionRoutes(api huma.API, svc ServiceInterface, broadcaster *event
 				EntityID:   input.ID.String(),
 				EntityType: "inventory",
 				UserID:     authUser.ID,
-			Data: map[string]any{
-				"user_name": userName,
-			},
+				Data: map[string]any{
+					"user_name": userName,
+				},
 			})
 		}
 
@@ -361,7 +376,10 @@ func registerActionRoutes(api huma.API, svc ServiceInterface, broadcaster *event
 		}
 
 		if err := svc.Restore(ctx, input.ID, workspaceID); err != nil {
-			return nil, mapInventoryError(err, "failed to restore inventory")
+			if errors.Is(err, ErrInventoryNotFound) {
+				return nil, huma.Error404NotFound("inventory not found")
+			}
+			return nil, appMiddleware.MapDomainError(err)
 		}
 
 		// Publish SSE event
@@ -373,42 +391,14 @@ func registerActionRoutes(api huma.API, svc ServiceInterface, broadcaster *event
 				EntityID:   input.ID.String(),
 				EntityType: "inventory",
 				UserID:     authUser.ID,
-			Data: map[string]any{
-				"user_name": userName,
-			},
+				Data: map[string]any{
+					"user_name": userName,
+				},
 			})
 		}
 
 		return nil, nil
 	})
-}
-
-// mapInventoryError converts service errors to appropriate HTTP errors.
-func mapInventoryError(err error, fallbackMsg string) error {
-	if err == nil {
-		return nil
-	}
-	if errors.Is(err, ErrInventoryNotFound) || errors.Is(err, shared.ErrNotFound) {
-		return huma.Error404NotFound("inventory not found")
-	}
-	if errors.Is(err, ErrInvalidCondition) || errors.Is(err, ErrInvalidStatus) || errors.Is(err, ErrInsufficientQuantity) {
-		return huma.Error400BadRequest(err.Error())
-	}
-	var pgErr *pgconn.PgError
-	if errors.As(err, &pgErr) {
-		switch pgErr.Code {
-		case "23503": // foreign_key_violation
-			return huma.Error400BadRequest(fmt.Sprintf("referenced record not found: %s", pgErr.ConstraintName))
-		case "23505": // unique_violation
-			return huma.Error409Conflict(fmt.Sprintf("duplicate entry: %s", pgErr.ConstraintName))
-		}
-	}
-	var apiErr *apierror.APIError
-	if errors.As(err, &apiErr) {
-		return huma.Error400BadRequest(apiErr.Error())
-	}
-	fmt.Printf("[inventory] %s: %v\n", fallbackMsg, err)
-	return huma.Error500InternalServerError(fmt.Sprintf("%s: %v", fallbackMsg, err))
 }
 
 // toInventoryResponses converts a slice of Inventory to InventoryResponse.

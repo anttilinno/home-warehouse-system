@@ -84,8 +84,8 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 				EntityType: "borrower",
 				UserID:     authUser.ID,
 				Data: map[string]any{
-					"id":   borrower.ID(),
-					"name": borrower.Name(),
+					"id":        borrower.ID(),
+					"name":      borrower.Name(),
 					"user_name": userName,
 				},
 			})
@@ -128,8 +128,8 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 				EntityType: "borrower",
 				UserID:     authUser.ID,
 				Data: map[string]any{
-					"id":   borrower.ID(),
-					"name": borrower.Name(),
+					"id":        borrower.ID(),
+					"name":      borrower.Name(),
 					"user_name": userName,
 				},
 			})
@@ -326,15 +326,15 @@ type DeleteBorrowerInput struct {
 }
 
 type BorrowerResponse struct {
-	ID          uuid.UUID  `json:"id"`
-	WorkspaceID uuid.UUID  `json:"workspace_id"`
-	Name        string     `json:"name"`
-	Email       *string    `json:"email,omitempty"`
-	Phone       *string    `json:"phone,omitempty"`
-	Notes       *string    `json:"notes,omitempty"`
-	IsArchived  bool       `json:"is_archived"`
-	CreatedAt   time.Time  `json:"created_at"`
-	UpdatedAt   time.Time  `json:"updated_at"`
+	ID          uuid.UUID `json:"id"`
+	WorkspaceID uuid.UUID `json:"workspace_id"`
+	Name        string    `json:"name"`
+	Email       *string   `json:"email,omitempty"`
+	Phone       *string   `json:"phone,omitempty"`
+	Notes       *string   `json:"notes,omitempty"`
+	IsArchived  bool      `json:"is_archived"`
+	CreatedAt   time.Time `json:"created_at"`
+	UpdatedAt   time.Time `json:"updated_at"`
 }
 
 type SearchBorrowersInput struct {

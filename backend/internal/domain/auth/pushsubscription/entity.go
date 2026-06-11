@@ -1,12 +1,42 @@
 package pushsubscription
 
 import (
+	"net"
+	"net/url"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
 
 	"github.com/antti/home-warehouse/go-backend/internal/shared"
 )
+
+// validateEndpoint rejects push endpoints that could be abused for SSRF:
+// the server POSTs to this URL whenever a notification fires, so it must be
+// an https URL pointing at a public host — never localhost, a private/link-
+// local IP literal, or a plain-http target.
+func validateEndpoint(endpoint string) error {
+	u, err := url.Parse(endpoint)
+	if err != nil {
+		return shared.NewFieldError(shared.ErrInvalidInput, "endpoint", "push subscription endpoint must be a valid URL")
+	}
+	if u.Scheme != "https" {
+		return shared.NewFieldError(shared.ErrInvalidInput, "endpoint", "push subscription endpoint must use https")
+	}
+	host := u.Hostname()
+	if host == "" {
+		return shared.NewFieldError(shared.ErrInvalidInput, "endpoint", "push subscription endpoint must have a host")
+	}
+	if strings.EqualFold(host, "localhost") || strings.HasSuffix(strings.ToLower(host), ".localhost") {
+		return shared.NewFieldError(shared.ErrInvalidInput, "endpoint", "push subscription endpoint must not target localhost")
+	}
+	if ip := net.ParseIP(host); ip != nil {
+		if ip.IsLoopback() || ip.IsPrivate() || ip.IsLinkLocalUnicast() || ip.IsLinkLocalMulticast() || ip.IsUnspecified() {
+			return shared.NewFieldError(shared.ErrInvalidInput, "endpoint", "push subscription endpoint must not target a private or local address")
+		}
+	}
+	return nil
+}
 
 // PushSubscription represents a web push subscription for a user device.
 type PushSubscription struct {
@@ -31,6 +61,9 @@ func NewPushSubscription(
 	}
 	if endpoint == "" {
 		return nil, shared.NewFieldError(shared.ErrInvalidInput, "endpoint", "push subscription endpoint is required")
+	}
+	if err := validateEndpoint(endpoint); err != nil {
+		return nil, err
 	}
 	if p256dh == "" {
 		return nil, shared.NewFieldError(shared.ErrInvalidInput, "p256dh", "push subscription p256dh key is required")

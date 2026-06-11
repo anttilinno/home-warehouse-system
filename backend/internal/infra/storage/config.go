@@ -9,9 +9,9 @@ import (
 
 const (
 	// Default configuration values
-	DefaultStoragePath      = "./uploads/photos"
-	DefaultMaxFileSizeMB    = 10
-	DefaultAllowedTypesStr  = "image/jpeg,image/png,image/webp"
+	DefaultStoragePath     = "./uploads/photos"
+	DefaultMaxFileSizeMB   = 10
+	DefaultAllowedTypesStr = "image/jpeg,image/png,image/webp"
 )
 
 // Config holds storage configuration.

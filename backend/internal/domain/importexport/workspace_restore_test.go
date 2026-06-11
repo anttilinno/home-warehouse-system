@@ -5,8 +5,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/xuri/excelize/v2"
@@ -64,14 +66,14 @@ func TestImportWorkspace_Success_JSON(t *testing.T) {
 				Name: "Electronics",
 			},
 		},
-		Labels:     []queries.WarehouseLabel{},
-		Companies:  []queries.WarehouseCompany{},
-		Locations:  []queries.WarehouseLocation{},
-		Borrowers:  []queries.WarehouseBorrower{},
-		Items:      []queries.WarehouseItem{},
-		Containers: []queries.WarehouseContainer{},
-		Inventory:  []queries.WarehouseInventory{},
-		Loans:      []queries.WarehouseLoan{},
+		Labels:      []queries.WarehouseLabel{},
+		Companies:   []queries.WarehouseCompany{},
+		Locations:   []queries.WarehouseLocation{},
+		Borrowers:   []queries.WarehouseBorrower{},
+		Items:       []queries.WarehouseItem{},
+		Containers:  []queries.WarehouseContainer{},
+		Inventory:   []queries.WarehouseInventory{},
+		Loans:       []queries.WarehouseLoan{},
 		Attachments: []queries.WarehouseAttachment{},
 	}
 
@@ -506,15 +508,33 @@ func TestImportWorkspace_Containers(t *testing.T) {
 
 	mockQueries := new(MockWorkspaceBackupQueries)
 
+	// The container's location must be part of the same backup: its ID is
+	// resolved through the location import mapping, never inserted verbatim.
 	excelData := createTestExcelFile(t, map[string][][]string{
+		"Locations": {
+			{"ID", "Name", "Parent Location ID", "Description", "Short Code", "Archived", "Created At", "Updated At"},
+			{locationID.String(), "Garage", "", "Main garage", "GAR-001", "false", "", ""},
+		},
 		"Containers": {
 			{"ID", "Name", "Location ID", "Description", "Capacity", "Short Code", "Archived", "Created At", "Updated At"},
 			{containerID.String(), "Box A1", locationID.String(), "Storage box", "100 items", "BOX-A1", "false", "", ""},
 		},
 	})
 
+	var newLocationID uuid.UUID
+	mockQueries.On("CreateLocation", ctx, mock.MatchedBy(func(arg queries.CreateLocationParams) bool {
+		if arg.WorkspaceID == workspaceID && arg.Name == "Garage" {
+			newLocationID = arg.ID
+			return true
+		}
+		return false
+	})).Return(queries.WarehouseLocation{ID: uuid.New()}, nil)
+
 	mockQueries.On("CreateContainer", ctx, mock.MatchedBy(func(arg queries.CreateContainerParams) bool {
-		return arg.WorkspaceID == workspaceID && arg.Name == "Box A1"
+		// LocationID must be the NEW id created during this import,
+		// not the original file-supplied id.
+		return arg.WorkspaceID == workspaceID && arg.Name == "Box A1" &&
+			arg.LocationID == newLocationID && arg.LocationID != locationID
 	})).Return(queries.WarehouseContainer{ID: uuid.New()}, nil)
 
 	svc := &WorkspaceBackupService{queries: mockQueries}
@@ -522,9 +542,44 @@ func TestImportWorkspace_Containers(t *testing.T) {
 	result, err := svc.ImportWorkspace(ctx, workspaceID, FormatExcel, excelData)
 
 	assert.NoError(t, err)
-	assert.Equal(t, 1, result.Succeeded)
+	assert.Equal(t, 2, result.Succeeded)
 
 	mockQueries.AssertExpectations(t)
+}
+
+// TestImportWorkspace_Containers_RejectsForeignLocation verifies the
+// cross-tenant FK injection fix: a backup whose container references a
+// location NOT included in the backup (e.g. another tenant's location ID)
+// must be skipped with a clean ImportError instead of inserting the
+// file-supplied ID verbatim.
+func TestImportWorkspace_Containers_RejectsForeignLocation(t *testing.T) {
+	ctx := context.Background()
+	workspaceID := uuid.New()
+	containerID := uuid.New()
+	foreignLocationID := uuid.New() // not part of the backup
+
+	mockQueries := new(MockWorkspaceBackupQueries)
+
+	excelData := createTestExcelFile(t, map[string][][]string{
+		"Containers": {
+			{"ID", "Name", "Location ID", "Description", "Capacity", "Short Code", "Archived", "Created At", "Updated At"},
+			{containerID.String(), "Box A1", foreignLocationID.String(), "Storage box", "100 items", "BOX-A1", "false", "", ""},
+		},
+	})
+
+	svc := &WorkspaceBackupService{queries: mockQueries}
+
+	result, err := svc.ImportWorkspace(ctx, workspaceID, FormatExcel, excelData)
+
+	assert.NoError(t, err)
+	assert.Equal(t, 0, result.Succeeded)
+	assert.Equal(t, 1, result.Failed)
+	if assert.Len(t, result.Errors, 1) {
+		assert.Equal(t, "LOCATION_NOT_FOUND", result.Errors[0].Code)
+	}
+
+	// CreateContainer must never have been called
+	mockQueries.AssertNotCalled(t, "CreateContainer", mock.Anything, mock.Anything)
 }
 
 // =============================================================================
@@ -631,9 +686,9 @@ func TestParseLocationsFromRows(t *testing.T) {
 	parentID := uuid.New()
 
 	tests := []struct {
-		name     string
-		rows     [][]string
-		expected int
+		name      string
+		rows      [][]string
+		expected  int
 		hasParent bool
 	}{
 		{
@@ -641,7 +696,7 @@ func TestParseLocationsFromRows(t *testing.T) {
 			rows: [][]string{
 				{locID.String(), "Warehouse A", "", "Main warehouse", "WH-A", "false"},
 			},
-			expected: 1,
+			expected:  1,
 			hasParent: false,
 		},
 		{
@@ -649,7 +704,7 @@ func TestParseLocationsFromRows(t *testing.T) {
 			rows: [][]string{
 				{locID.String(), "Room 101", parentID.String(), "A room", "R101", "false"},
 			},
-			expected: 1,
+			expected:  1,
 			hasParent: true,
 		},
 	}
@@ -781,6 +836,29 @@ func TestParseInventoryFromRows(t *testing.T) {
 			}
 		})
 	}
+
+	t.Run("quantity, condition and status parsed", func(t *testing.T) {
+		result := svc.parseInventoryFromRows([][]string{
+			{invID.String(), itemID.String(), locationID.String(), "", "10", "GOOD", "AVAILABLE", "Notes"},
+		})
+		if assert.Len(t, result, 1) {
+			assert.Equal(t, int32(10), result[0].Quantity)
+			assert.True(t, result[0].Condition.Valid)
+			assert.Equal(t, queries.WarehouseItemConditionEnumGOOD, result[0].Condition.WarehouseItemConditionEnum)
+			assert.True(t, result[0].Status.Valid)
+			assert.Equal(t, queries.WarehouseItemStatusEnumAVAILABLE, result[0].Status.WarehouseItemStatusEnum)
+		}
+	})
+
+	t.Run("empty condition and status stay NULL", func(t *testing.T) {
+		result := svc.parseInventoryFromRows([][]string{
+			{invID.String(), itemID.String(), locationID.String(), "", "1", "", "", ""},
+		})
+		if assert.Len(t, result, 1) {
+			assert.False(t, result[0].Condition.Valid)
+			assert.False(t, result[0].Status.Valid)
+		}
+	})
 }
 
 func TestParseLoansFromRows(t *testing.T) {
@@ -790,12 +868,18 @@ func TestParseLoansFromRows(t *testing.T) {
 	inventoryID := uuid.New()
 
 	rows := [][]string{
-		{loanID.String(), borrowerID.String(), inventoryID.String(), "1", "", "", "", "Notes"},
+		{loanID.String(), borrowerID.String(), inventoryID.String(), "2", "2026-01-02T15:04:05Z", "2026-02-01", "", "Notes"},
 	}
 
 	result := svc.parseLoansFromRows(rows)
 	assert.Len(t, result, 1)
 	assert.Equal(t, borrowerID, result[0].BorrowerID)
+	assert.Equal(t, int32(2), result[0].Quantity)
+	assert.True(t, result[0].LoanedAt.Valid)
+	assert.Equal(t, time.Date(2026, 1, 2, 15, 4, 5, 0, time.UTC), result[0].LoanedAt.Time.UTC())
+	assert.True(t, result[0].DueDate.Valid)
+	assert.Equal(t, time.Date(2026, 2, 1, 0, 0, 0, 0, time.UTC), result[0].DueDate.Time)
+	assert.False(t, result[0].ReturnedAt.Valid) // empty cell stays NULL
 }
 
 func TestParseAttachmentsFromRows(t *testing.T) {
@@ -837,6 +921,15 @@ func TestParseAttachmentsFromRows(t *testing.T) {
 			}
 		})
 	}
+
+	t.Run("attachment type parsed", func(t *testing.T) {
+		result := svc.parseAttachmentsFromRows([][]string{
+			{attID.String(), itemID.String(), "", "MANUAL", "Manual", "false", ""},
+		})
+		if assert.Len(t, result, 1) {
+			assert.Equal(t, queries.WarehouseAttachmentTypeEnumMANUAL, result[0].AttachmentType)
+		}
+	})
 }
 
 // =============================================================================
@@ -1092,8 +1185,8 @@ func TestParseExcel_MissingSheets(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, result)
 	assert.Len(t, result.Categories, 1)
-	assert.Len(t, result.Labels, 0)     // Missing sheet results in empty slice
-	assert.Len(t, result.Companies, 0)  // Missing sheet results in empty slice
+	assert.Len(t, result.Labels, 0)    // Missing sheet results in empty slice
+	assert.Len(t, result.Companies, 0) // Missing sheet results in empty slice
 }
 
 func TestParseExcel_HeaderOnlySheets(t *testing.T) {
@@ -1112,6 +1205,387 @@ func TestParseExcel_HeaderOnlySheets(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, result)
 	assert.Len(t, result.Categories, 0) // Header only, no data
+}
+
+// =============================================================================
+// Import Inventory / Loans / Attachments Tests
+// =============================================================================
+
+// TestImportWorkspace_Inventory_RemapsReferences verifies that restored
+// inventory rows reference the NEW item/location/container IDs created during
+// this import — never the original file-supplied IDs (tenant-safety: a
+// crafted backup must not be able to point at another tenant's rows).
+func TestImportWorkspace_Inventory_RemapsReferences(t *testing.T) {
+	ctx := context.Background()
+	workspaceID := uuid.New()
+	origLocationID := uuid.New()
+	origItemID := uuid.New()
+	origContainerID := uuid.New()
+
+	mockQueries := new(MockWorkspaceBackupQueries)
+
+	testData := WorkspaceData{
+		Locations: []queries.WarehouseLocation{
+			{ID: origLocationID, Name: "Garage", ShortCode: "GAR"},
+		},
+		Items: []queries.WarehouseItem{
+			{ID: origItemID, Sku: "SKU-001", Name: "Hammer", ShortCode: "HAM"},
+		},
+		Containers: []queries.WarehouseContainer{
+			{ID: origContainerID, Name: "Box A1", LocationID: origLocationID, ShortCode: "BOX"},
+		},
+		Inventory: []queries.WarehouseInventory{
+			{
+				ID:          uuid.New(),
+				ItemID:      origItemID,
+				LocationID:  origLocationID,
+				ContainerID: pgtype.UUID{Bytes: origContainerID, Valid: true},
+				Quantity:    5,
+				Status: queries.NullWarehouseItemStatusEnum{
+					WarehouseItemStatusEnum: queries.WarehouseItemStatusEnumAVAILABLE,
+					Valid:                   true,
+				},
+				Notes: strPtr("shelf 3"),
+			},
+		},
+	}
+	jsonData, err := json.Marshal(testData)
+	assert.NoError(t, err)
+
+	var newLocationID, newItemID, newContainerID uuid.UUID
+	mockQueries.On("CreateLocation", ctx, mock.MatchedBy(func(arg queries.CreateLocationParams) bool {
+		newLocationID = arg.ID
+		return arg.WorkspaceID == workspaceID && arg.Name == "Garage"
+	})).Return(queries.WarehouseLocation{ID: uuid.New()}, nil)
+
+	mockQueries.On("CreateItem", ctx, mock.MatchedBy(func(arg queries.CreateItemParams) bool {
+		newItemID = arg.ID
+		return arg.WorkspaceID == workspaceID && arg.Name == "Hammer"
+	})).Return(queries.WarehouseItem{ID: uuid.New()}, nil)
+
+	mockQueries.On("CreateContainer", ctx, mock.MatchedBy(func(arg queries.CreateContainerParams) bool {
+		newContainerID = arg.ID
+		return arg.WorkspaceID == workspaceID && arg.Name == "Box A1"
+	})).Return(queries.WarehouseContainer{ID: uuid.New()}, nil)
+
+	mockQueries.On("CreateInventory", ctx, mock.MatchedBy(func(arg queries.CreateInventoryParams) bool {
+		// All references must be the NEW ids created during this import,
+		// never the original file-supplied ids.
+		return arg.WorkspaceID == workspaceID &&
+			arg.ItemID == newItemID && arg.ItemID != origItemID &&
+			arg.LocationID == newLocationID && arg.LocationID != origLocationID &&
+			arg.ContainerID.Valid &&
+			uuid.UUID(arg.ContainerID.Bytes) == newContainerID &&
+			uuid.UUID(arg.ContainerID.Bytes) != origContainerID &&
+			arg.Quantity == 5 &&
+			arg.Status.Valid &&
+			arg.Status.WarehouseItemStatusEnum == queries.WarehouseItemStatusEnumAVAILABLE &&
+			arg.Notes != nil && *arg.Notes == "shelf 3"
+	})).Return(queries.WarehouseInventory{ID: uuid.New()}, nil)
+
+	svc := &WorkspaceBackupService{queries: mockQueries}
+
+	result, err := svc.ImportWorkspace(ctx, workspaceID, FormatJSON, jsonData)
+
+	assert.NoError(t, err)
+	assert.Equal(t, 4, result.TotalRows)
+	assert.Equal(t, 4, result.Succeeded)
+	assert.Equal(t, 0, result.Failed)
+
+	mockQueries.AssertExpectations(t)
+}
+
+// TestImportWorkspace_Inventory_RejectsForeignRefs verifies that inventory
+// rows referencing an item, location, or container that is NOT part of the
+// backup are skipped with a clean ImportError — never inserted verbatim.
+func TestImportWorkspace_Inventory_RejectsForeignRefs(t *testing.T) {
+	ctx := context.Background()
+	workspaceID := uuid.New()
+	origLocationID := uuid.New()
+	origItemID := uuid.New()
+	foreignItemID := uuid.New()      // not part of the backup
+	foreignLocationID := uuid.New()  // not part of the backup
+	foreignContainerID := uuid.New() // not part of the backup
+
+	mockQueries := new(MockWorkspaceBackupQueries)
+
+	testData := WorkspaceData{
+		Locations: []queries.WarehouseLocation{
+			{ID: origLocationID, Name: "Garage", ShortCode: "GAR"},
+		},
+		Items: []queries.WarehouseItem{
+			{ID: origItemID, Sku: "SKU-001", Name: "Hammer", ShortCode: "HAM"},
+		},
+		Inventory: []queries.WarehouseInventory{
+			{ID: uuid.New(), ItemID: foreignItemID, LocationID: origLocationID, Quantity: 1},
+			{ID: uuid.New(), ItemID: origItemID, LocationID: foreignLocationID, Quantity: 1},
+			{ID: uuid.New(), ItemID: origItemID, LocationID: origLocationID, ContainerID: pgtype.UUID{Bytes: foreignContainerID, Valid: true}, Quantity: 1},
+		},
+	}
+	jsonData, err := json.Marshal(testData)
+	assert.NoError(t, err)
+
+	mockQueries.On("CreateLocation", ctx, mock.Anything).
+		Return(queries.WarehouseLocation{ID: uuid.New()}, nil)
+	mockQueries.On("CreateItem", ctx, mock.Anything).
+		Return(queries.WarehouseItem{ID: uuid.New()}, nil)
+
+	svc := &WorkspaceBackupService{queries: mockQueries}
+
+	result, err := svc.ImportWorkspace(ctx, workspaceID, FormatJSON, jsonData)
+
+	assert.NoError(t, err)
+	assert.Equal(t, 5, result.TotalRows)
+	assert.Equal(t, 2, result.Succeeded) // location + item
+	assert.Equal(t, 3, result.Failed)
+	if assert.Len(t, result.Errors, 3) {
+		codes := make([]string, 0, len(result.Errors))
+		for _, e := range result.Errors {
+			codes = append(codes, e.Code)
+		}
+		assert.Contains(t, codes, "ITEM_NOT_FOUND")
+		assert.Contains(t, codes, "LOCATION_NOT_FOUND")
+		assert.Contains(t, codes, "CONTAINER_NOT_FOUND")
+	}
+
+	// CreateInventory must never have been called
+	mockQueries.AssertNotCalled(t, "CreateInventory", mock.Anything, mock.Anything)
+}
+
+// TestImportWorkspace_Loans_RemapsReferences verifies that restored loans
+// reference the NEW inventory/borrower IDs created during this import.
+func TestImportWorkspace_Loans_RemapsReferences(t *testing.T) {
+	ctx := context.Background()
+	workspaceID := uuid.New()
+	origLocationID := uuid.New()
+	origItemID := uuid.New()
+	origBorrowerID := uuid.New()
+	origInventoryID := uuid.New()
+
+	mockQueries := new(MockWorkspaceBackupQueries)
+
+	loanedAt := time.Date(2026, 1, 2, 15, 4, 5, 0, time.UTC)
+	dueDate := time.Date(2026, 2, 1, 0, 0, 0, 0, time.UTC)
+
+	testData := WorkspaceData{
+		Locations: []queries.WarehouseLocation{
+			{ID: origLocationID, Name: "Garage", ShortCode: "GAR"},
+		},
+		Borrowers: []queries.WarehouseBorrower{
+			{ID: origBorrowerID, Name: "John Doe"},
+		},
+		Items: []queries.WarehouseItem{
+			{ID: origItemID, Sku: "SKU-001", Name: "Hammer", ShortCode: "HAM"},
+		},
+		Inventory: []queries.WarehouseInventory{
+			{ID: origInventoryID, ItemID: origItemID, LocationID: origLocationID, Quantity: 3},
+		},
+		Loans: []queries.WarehouseLoan{
+			{
+				ID:          uuid.New(),
+				InventoryID: origInventoryID,
+				BorrowerID:  origBorrowerID,
+				Quantity:    2,
+				LoanedAt:    pgtype.Timestamptz{Time: loanedAt, Valid: true},
+				DueDate:     pgtype.Date{Time: dueDate, Valid: true},
+				Notes:       strPtr("weekend project"),
+			},
+		},
+	}
+	jsonData, err := json.Marshal(testData)
+	assert.NoError(t, err)
+
+	var newBorrowerID, newInventoryID uuid.UUID
+	mockQueries.On("CreateLocation", ctx, mock.Anything).
+		Return(queries.WarehouseLocation{ID: uuid.New()}, nil)
+	mockQueries.On("CreateItem", ctx, mock.Anything).
+		Return(queries.WarehouseItem{ID: uuid.New()}, nil)
+	mockQueries.On("CreateBorrower", ctx, mock.MatchedBy(func(arg queries.CreateBorrowerParams) bool {
+		newBorrowerID = arg.ID
+		return arg.WorkspaceID == workspaceID && arg.Name == "John Doe"
+	})).Return(queries.WarehouseBorrower{ID: uuid.New()}, nil)
+	mockQueries.On("CreateInventory", ctx, mock.MatchedBy(func(arg queries.CreateInventoryParams) bool {
+		newInventoryID = arg.ID
+		return arg.WorkspaceID == workspaceID
+	})).Return(queries.WarehouseInventory{ID: uuid.New()}, nil)
+
+	mockQueries.On("CreateLoan", ctx, mock.MatchedBy(func(arg queries.CreateLoanParams) bool {
+		// References must be the NEW ids created during this import,
+		// never the original file-supplied ids.
+		return arg.WorkspaceID == workspaceID &&
+			arg.InventoryID == newInventoryID && arg.InventoryID != origInventoryID &&
+			arg.BorrowerID == newBorrowerID && arg.BorrowerID != origBorrowerID &&
+			arg.Quantity == 2 &&
+			arg.LoanedAt.Valid && arg.LoanedAt.Time.Equal(loanedAt) &&
+			arg.DueDate.Valid && arg.DueDate.Time.Equal(dueDate) &&
+			arg.Notes != nil && *arg.Notes == "weekend project"
+	})).Return(queries.WarehouseLoan{ID: uuid.New()}, nil)
+
+	svc := &WorkspaceBackupService{queries: mockQueries}
+
+	result, err := svc.ImportWorkspace(ctx, workspaceID, FormatJSON, jsonData)
+
+	assert.NoError(t, err)
+	assert.Equal(t, 5, result.TotalRows)
+	assert.Equal(t, 5, result.Succeeded)
+	assert.Equal(t, 0, result.Failed)
+
+	mockQueries.AssertExpectations(t)
+}
+
+// TestImportWorkspace_Loans_RejectsForeignRefs verifies that loans
+// referencing an inventory row or borrower that is NOT part of the backup
+// are skipped with a clean ImportError instead of silently dropped or
+// inserted verbatim.
+func TestImportWorkspace_Loans_RejectsForeignRefs(t *testing.T) {
+	ctx := context.Background()
+	workspaceID := uuid.New()
+	origLocationID := uuid.New()
+	origItemID := uuid.New()
+	origInventoryID := uuid.New()
+	foreignInventoryID := uuid.New() // not part of the backup
+	foreignBorrowerID := uuid.New()  // not part of the backup
+
+	mockQueries := new(MockWorkspaceBackupQueries)
+
+	testData := WorkspaceData{
+		Locations: []queries.WarehouseLocation{
+			{ID: origLocationID, Name: "Garage", ShortCode: "GAR"},
+		},
+		Items: []queries.WarehouseItem{
+			{ID: origItemID, Sku: "SKU-001", Name: "Hammer", ShortCode: "HAM"},
+		},
+		Inventory: []queries.WarehouseInventory{
+			{ID: origInventoryID, ItemID: origItemID, LocationID: origLocationID, Quantity: 1},
+		},
+		Loans: []queries.WarehouseLoan{
+			{ID: uuid.New(), InventoryID: foreignInventoryID, BorrowerID: foreignBorrowerID, Quantity: 1},
+			{ID: uuid.New(), InventoryID: origInventoryID, BorrowerID: foreignBorrowerID, Quantity: 1},
+		},
+	}
+	jsonData, err := json.Marshal(testData)
+	assert.NoError(t, err)
+
+	mockQueries.On("CreateLocation", ctx, mock.Anything).
+		Return(queries.WarehouseLocation{ID: uuid.New()}, nil)
+	mockQueries.On("CreateItem", ctx, mock.Anything).
+		Return(queries.WarehouseItem{ID: uuid.New()}, nil)
+	mockQueries.On("CreateInventory", ctx, mock.Anything).
+		Return(queries.WarehouseInventory{ID: uuid.New()}, nil)
+
+	svc := &WorkspaceBackupService{queries: mockQueries}
+
+	result, err := svc.ImportWorkspace(ctx, workspaceID, FormatJSON, jsonData)
+
+	assert.NoError(t, err)
+	assert.Equal(t, 5, result.TotalRows)
+	assert.Equal(t, 3, result.Succeeded) // location + item + inventory
+	assert.Equal(t, 2, result.Failed)
+	if assert.Len(t, result.Errors, 2) {
+		codes := []string{result.Errors[0].Code, result.Errors[1].Code}
+		assert.Contains(t, codes, "INVENTORY_NOT_FOUND")
+		assert.Contains(t, codes, "BORROWER_NOT_FOUND")
+	}
+
+	// CreateLoan must never have been called
+	mockQueries.AssertNotCalled(t, "CreateLoan", mock.Anything, mock.Anything)
+}
+
+// TestImportWorkspace_Attachments_RemapsItemAndNullsFileID verifies that
+// restored attachments reference the NEW item ID created during this import
+// and that file_id is always restored as NULL (warehouse.files rows are not
+// part of the backup, so the file-supplied file_id must never be inserted
+// verbatim — it could attach another tenant's file).
+func TestImportWorkspace_Attachments_RemapsItemAndNullsFileID(t *testing.T) {
+	ctx := context.Background()
+	workspaceID := uuid.New()
+	origItemID := uuid.New()
+	origFileID := uuid.New() // files are NOT part of the backup
+
+	mockQueries := new(MockWorkspaceBackupQueries)
+
+	isPrimary := true
+	testData := WorkspaceData{
+		Items: []queries.WarehouseItem{
+			{ID: origItemID, Sku: "SKU-001", Name: "Hammer", ShortCode: "HAM"},
+		},
+		Attachments: []queries.WarehouseAttachment{
+			{
+				ID:             uuid.New(),
+				ItemID:         origItemID,
+				FileID:         pgtype.UUID{Bytes: origFileID, Valid: true},
+				AttachmentType: queries.WarehouseAttachmentTypeEnumPHOTO,
+				Title:          strPtr("Front view"),
+				IsPrimary:      &isPrimary,
+			},
+		},
+	}
+	jsonData, err := json.Marshal(testData)
+	assert.NoError(t, err)
+
+	var newItemID uuid.UUID
+	mockQueries.On("CreateItem", ctx, mock.MatchedBy(func(arg queries.CreateItemParams) bool {
+		newItemID = arg.ID
+		return arg.WorkspaceID == workspaceID && arg.Name == "Hammer"
+	})).Return(queries.WarehouseItem{ID: uuid.New()}, nil)
+
+	mockQueries.On("CreateAttachment", ctx, mock.MatchedBy(func(arg queries.CreateAttachmentParams) bool {
+		return arg.WorkspaceID == workspaceID &&
+			arg.ItemID == newItemID && arg.ItemID != origItemID &&
+			!arg.FileID.Valid && // file_id must be NULLed, never restored verbatim
+			arg.AttachmentType == queries.WarehouseAttachmentTypeEnumPHOTO &&
+			arg.Title != nil && *arg.Title == "Front view" &&
+			arg.IsPrimary != nil && *arg.IsPrimary
+	})).Return(queries.WarehouseAttachment{ID: uuid.New()}, nil)
+
+	svc := &WorkspaceBackupService{queries: mockQueries}
+
+	result, err := svc.ImportWorkspace(ctx, workspaceID, FormatJSON, jsonData)
+
+	assert.NoError(t, err)
+	assert.Equal(t, 2, result.TotalRows)
+	assert.Equal(t, 2, result.Succeeded)
+	assert.Equal(t, 0, result.Failed)
+
+	mockQueries.AssertExpectations(t)
+}
+
+// TestImportWorkspace_Attachments_RejectsForeignItem verifies that
+// attachments referencing an item NOT part of the backup are skipped with a
+// clean ImportError instead of silently dropped or inserted verbatim.
+func TestImportWorkspace_Attachments_RejectsForeignItem(t *testing.T) {
+	ctx := context.Background()
+	workspaceID := uuid.New()
+	foreignItemID := uuid.New() // not part of the backup
+
+	mockQueries := new(MockWorkspaceBackupQueries)
+
+	testData := WorkspaceData{
+		Attachments: []queries.WarehouseAttachment{
+			{
+				ID:             uuid.New(),
+				ItemID:         foreignItemID,
+				AttachmentType: queries.WarehouseAttachmentTypeEnumPHOTO,
+			},
+		},
+	}
+	jsonData, err := json.Marshal(testData)
+	assert.NoError(t, err)
+
+	svc := &WorkspaceBackupService{queries: mockQueries}
+
+	result, err := svc.ImportWorkspace(ctx, workspaceID, FormatJSON, jsonData)
+
+	assert.NoError(t, err)
+	assert.Equal(t, 1, result.TotalRows)
+	assert.Equal(t, 0, result.Succeeded)
+	assert.Equal(t, 1, result.Failed)
+	if assert.Len(t, result.Errors, 1) {
+		assert.Equal(t, "ITEM_NOT_FOUND", result.Errors[0].Code)
+	}
+
+	// CreateAttachment must never have been called
+	mockQueries.AssertNotCalled(t, "CreateAttachment", mock.Anything, mock.Anything)
 }
 
 // =============================================================================

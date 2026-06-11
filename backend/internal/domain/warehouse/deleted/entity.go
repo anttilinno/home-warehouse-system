@@ -62,9 +62,9 @@ func Reconstruct(
 }
 
 // Getters
-func (d *DeletedRecord) ID() uuid.UUID                 { return d.id }
-func (d *DeletedRecord) WorkspaceID() uuid.UUID        { return d.workspaceID }
+func (d *DeletedRecord) ID() uuid.UUID                   { return d.id }
+func (d *DeletedRecord) WorkspaceID() uuid.UUID          { return d.workspaceID }
 func (d *DeletedRecord) EntityType() activity.EntityType { return d.entityType }
-func (d *DeletedRecord) EntityID() uuid.UUID           { return d.entityID }
-func (d *DeletedRecord) DeletedAt() time.Time          { return d.deletedAt }
-func (d *DeletedRecord) DeletedBy() *uuid.UUID         { return d.deletedBy }
+func (d *DeletedRecord) EntityID() uuid.UUID             { return d.entityID }
+func (d *DeletedRecord) DeletedAt() time.Time            { return d.deletedAt }
+func (d *DeletedRecord) DeletedBy() *uuid.UUID           { return d.deletedBy }

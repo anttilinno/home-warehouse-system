@@ -2,6 +2,7 @@ package importjob
 
 import (
 	"context"
+	"errors"
 	"log"
 	"os"
 	"time"
@@ -77,23 +78,23 @@ type DeleteImportJobOutput struct {
 // Response types
 
 type ImportJobResponse struct {
-	ID            uuid.UUID     `json:"id"`
-	WorkspaceID   uuid.UUID     `json:"workspace_id"`
-	UserID        uuid.UUID     `json:"user_id"`
-	EntityType    EntityType    `json:"entity_type"`
-	Status        ImportStatus  `json:"status"`
-	FileName      string        `json:"file_name"`
-	FileSizeBytes int64         `json:"file_size_bytes"`
-	TotalRows     *int          `json:"total_rows"`
-	ProcessedRows int           `json:"processed_rows"`
-	SuccessCount  int           `json:"success_count"`
-	ErrorCount    int           `json:"error_count"`
-	Progress      int           `json:"progress"`
-	StartedAt     *time.Time    `json:"started_at"`
-	CompletedAt   *time.Time    `json:"completed_at"`
-	CreatedAt     time.Time     `json:"created_at"`
-	UpdatedAt     time.Time     `json:"updated_at"`
-	ErrorMessage  *string       `json:"error_message"`
+	ID            uuid.UUID    `json:"id"`
+	WorkspaceID   uuid.UUID    `json:"workspace_id"`
+	UserID        uuid.UUID    `json:"user_id"`
+	EntityType    EntityType   `json:"entity_type"`
+	Status        ImportStatus `json:"status"`
+	FileName      string       `json:"file_name"`
+	FileSizeBytes int64        `json:"file_size_bytes"`
+	TotalRows     *int         `json:"total_rows"`
+	ProcessedRows int          `json:"processed_rows"`
+	SuccessCount  int          `json:"success_count"`
+	ErrorCount    int          `json:"error_count"`
+	Progress      int          `json:"progress"`
+	StartedAt     *time.Time   `json:"started_at"`
+	CompletedAt   *time.Time   `json:"completed_at"`
+	CreatedAt     time.Time    `json:"created_at"`
+	UpdatedAt     time.Time    `json:"updated_at"`
+	ErrorMessage  *string      `json:"error_message"`
 }
 
 type ImportJobListResponse struct {
@@ -157,7 +158,7 @@ func RegisterRoutes(api huma.API, repo Repository, importQueue *queue.Queue, bro
 
 		job, err := repo.FindJobByID(ctx, input.ID, workspaceID)
 		if err != nil {
-			if err == ErrImportJobNotFound {
+			if errors.Is(err, ErrImportJobNotFound) {
 				return nil, huma.Error404NotFound("import job not found")
 			}
 			return nil, huma.Error500InternalServerError("failed to get import job")
@@ -178,7 +179,7 @@ func RegisterRoutes(api huma.API, repo Repository, importQueue *queue.Queue, bro
 		// Verify job exists and belongs to workspace
 		_, err := repo.FindJobByID(ctx, input.ID, workspaceID)
 		if err != nil {
-			if err == ErrImportJobNotFound {
+			if errors.Is(err, ErrImportJobNotFound) {
 				return nil, huma.Error404NotFound("import job not found")
 			}
 			return nil, huma.Error500InternalServerError("failed to get import job")
@@ -212,7 +213,7 @@ func RegisterRoutes(api huma.API, repo Repository, importQueue *queue.Queue, bro
 		// Verify job exists and belongs to workspace
 		job, err := repo.FindJobByID(ctx, input.ID, workspaceID)
 		if err != nil {
-			if err == ErrImportJobNotFound {
+			if errors.Is(err, ErrImportJobNotFound) {
 				return nil, huma.Error404NotFound("import job not found")
 			}
 			return nil, huma.Error500InternalServerError("failed to get import job")

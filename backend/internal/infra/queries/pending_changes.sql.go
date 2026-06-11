@@ -36,7 +36,7 @@ INSERT INTO warehouse.pending_changes (
     status
 )
 VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-RETURNING id, workspace_id, requester_id, entity_type, entity_id, action, payload, status, reviewed_by, reviewed_at, rejection_reason, created_at, updated_at
+RETURNING id, workspace_id, requester_id, entity_type, entity_id, action, payload, status, reviewed_by, reviewed_at, rejection_reason, created_at, updated_at, client_change_id, base_updated_at
 `
 
 type CreatePendingChangeParams struct {
@@ -76,27 +76,39 @@ func (q *Queries) CreatePendingChange(ctx context.Context, arg CreatePendingChan
 		&i.RejectionReason,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.ClientChangeID,
+		&i.BaseUpdatedAt,
 	)
 	return i, err
 }
 
 const deletePendingChange = `-- name: DeletePendingChange :exec
 DELETE FROM warehouse.pending_changes
-WHERE id = $1
+WHERE id = $1 AND workspace_id = $2
 `
 
-func (q *Queries) DeletePendingChange(ctx context.Context, id uuid.UUID) error {
-	_, err := q.db.Exec(ctx, deletePendingChange, id)
+type DeletePendingChangeParams struct {
+	ID          uuid.UUID `json:"id"`
+	WorkspaceID uuid.UUID `json:"workspace_id"`
+}
+
+func (q *Queries) DeletePendingChange(ctx context.Context, arg DeletePendingChangeParams) error {
+	_, err := q.db.Exec(ctx, deletePendingChange, arg.ID, arg.WorkspaceID)
 	return err
 }
 
 const getPendingChangeByID = `-- name: GetPendingChangeByID :one
-SELECT id, workspace_id, requester_id, entity_type, entity_id, action, payload, status, reviewed_by, reviewed_at, rejection_reason, created_at, updated_at FROM warehouse.pending_changes
-WHERE id = $1
+SELECT id, workspace_id, requester_id, entity_type, entity_id, action, payload, status, reviewed_by, reviewed_at, rejection_reason, created_at, updated_at, client_change_id, base_updated_at FROM warehouse.pending_changes
+WHERE id = $1 AND workspace_id = $2
 `
 
-func (q *Queries) GetPendingChangeByID(ctx context.Context, id uuid.UUID) (WarehousePendingChange, error) {
-	row := q.db.QueryRow(ctx, getPendingChangeByID, id)
+type GetPendingChangeByIDParams struct {
+	ID          uuid.UUID `json:"id"`
+	WorkspaceID uuid.UUID `json:"workspace_id"`
+}
+
+func (q *Queries) GetPendingChangeByID(ctx context.Context, arg GetPendingChangeByIDParams) (WarehousePendingChange, error) {
+	row := q.db.QueryRow(ctx, getPendingChangeByID, arg.ID, arg.WorkspaceID)
 	var i WarehousePendingChange
 	err := row.Scan(
 		&i.ID,
@@ -112,23 +124,26 @@ func (q *Queries) GetPendingChangeByID(ctx context.Context, id uuid.UUID) (Wareh
 		&i.RejectionReason,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.ClientChangeID,
+		&i.BaseUpdatedAt,
 	)
 	return i, err
 }
 
 const listPendingChangesByEntity = `-- name: ListPendingChangesByEntity :many
-SELECT id, workspace_id, requester_id, entity_type, entity_id, action, payload, status, reviewed_by, reviewed_at, rejection_reason, created_at, updated_at FROM warehouse.pending_changes
-WHERE entity_type = $1 AND entity_id = $2
+SELECT id, workspace_id, requester_id, entity_type, entity_id, action, payload, status, reviewed_by, reviewed_at, rejection_reason, created_at, updated_at, client_change_id, base_updated_at FROM warehouse.pending_changes
+WHERE workspace_id = $1 AND entity_type = $2 AND entity_id = $3
 ORDER BY created_at DESC
 `
 
 type ListPendingChangesByEntityParams struct {
-	EntityType string      `json:"entity_type"`
-	EntityID   pgtype.UUID `json:"entity_id"`
+	WorkspaceID uuid.UUID   `json:"workspace_id"`
+	EntityType  string      `json:"entity_type"`
+	EntityID    pgtype.UUID `json:"entity_id"`
 }
 
 func (q *Queries) ListPendingChangesByEntity(ctx context.Context, arg ListPendingChangesByEntityParams) ([]WarehousePendingChange, error) {
-	rows, err := q.db.Query(ctx, listPendingChangesByEntity, arg.EntityType, arg.EntityID)
+	rows, err := q.db.Query(ctx, listPendingChangesByEntity, arg.WorkspaceID, arg.EntityType, arg.EntityID)
 	if err != nil {
 		return nil, err
 	}
@@ -150,6 +165,8 @@ func (q *Queries) ListPendingChangesByEntity(ctx context.Context, arg ListPendin
 			&i.RejectionReason,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.ClientChangeID,
+			&i.BaseUpdatedAt,
 		); err != nil {
 			return nil, err
 		}
@@ -162,7 +179,7 @@ func (q *Queries) ListPendingChangesByEntity(ctx context.Context, arg ListPendin
 }
 
 const listPendingChangesByRequester = `-- name: ListPendingChangesByRequester :many
-SELECT id, workspace_id, requester_id, entity_type, entity_id, action, payload, status, reviewed_by, reviewed_at, rejection_reason, created_at, updated_at FROM warehouse.pending_changes
+SELECT id, workspace_id, requester_id, entity_type, entity_id, action, payload, status, reviewed_by, reviewed_at, rejection_reason, created_at, updated_at, client_change_id, base_updated_at FROM warehouse.pending_changes
 WHERE requester_id = $1
   AND ($2::warehouse.pending_change_status_enum IS NULL OR status = $2)
 ORDER BY created_at DESC
@@ -196,6 +213,8 @@ func (q *Queries) ListPendingChangesByRequester(ctx context.Context, arg ListPen
 			&i.RejectionReason,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.ClientChangeID,
+			&i.BaseUpdatedAt,
 		); err != nil {
 			return nil, err
 		}
@@ -208,7 +227,7 @@ func (q *Queries) ListPendingChangesByRequester(ctx context.Context, arg ListPen
 }
 
 const listPendingChangesByWorkspace = `-- name: ListPendingChangesByWorkspace :many
-SELECT id, workspace_id, requester_id, entity_type, entity_id, action, payload, status, reviewed_by, reviewed_at, rejection_reason, created_at, updated_at FROM warehouse.pending_changes
+SELECT id, workspace_id, requester_id, entity_type, entity_id, action, payload, status, reviewed_by, reviewed_at, rejection_reason, created_at, updated_at, client_change_id, base_updated_at FROM warehouse.pending_changes
 WHERE workspace_id = $1
   AND ($2::warehouse.pending_change_status_enum IS NULL OR status = $2)
 ORDER BY created_at DESC
@@ -242,6 +261,8 @@ func (q *Queries) ListPendingChangesByWorkspace(ctx context.Context, arg ListPen
 			&i.RejectionReason,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.ClientChangeID,
+			&i.BaseUpdatedAt,
 		); err != nil {
 			return nil, err
 		}
@@ -261,8 +282,8 @@ SET
     reviewed_at = $4,
     rejection_reason = $5,
     updated_at = now()
-WHERE id = $1
-RETURNING id, workspace_id, requester_id, entity_type, entity_id, action, payload, status, reviewed_by, reviewed_at, rejection_reason, created_at, updated_at
+WHERE id = $1 AND workspace_id = $6
+RETURNING id, workspace_id, requester_id, entity_type, entity_id, action, payload, status, reviewed_by, reviewed_at, rejection_reason, created_at, updated_at, client_change_id, base_updated_at
 `
 
 type UpdatePendingChangeStatusParams struct {
@@ -271,6 +292,7 @@ type UpdatePendingChangeStatusParams struct {
 	ReviewedBy      pgtype.UUID                      `json:"reviewed_by"`
 	ReviewedAt      pgtype.Timestamptz               `json:"reviewed_at"`
 	RejectionReason *string                          `json:"rejection_reason"`
+	WorkspaceID     uuid.UUID                        `json:"workspace_id"`
 }
 
 func (q *Queries) UpdatePendingChangeStatus(ctx context.Context, arg UpdatePendingChangeStatusParams) (WarehousePendingChange, error) {
@@ -280,6 +302,7 @@ func (q *Queries) UpdatePendingChangeStatus(ctx context.Context, arg UpdatePendi
 		arg.ReviewedBy,
 		arg.ReviewedAt,
 		arg.RejectionReason,
+		arg.WorkspaceID,
 	)
 	var i WarehousePendingChange
 	err := row.Scan(
@@ -296,6 +319,8 @@ func (q *Queries) UpdatePendingChangeStatus(ctx context.Context, arg UpdatePendi
 		&i.RejectionReason,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.ClientChangeID,
+		&i.BaseUpdatedAt,
 	)
 	return i, err
 }

@@ -51,16 +51,16 @@ func (e EntityType) IsValid() bool {
 }
 
 type ActivityLog struct {
-	id         uuid.UUID
+	id          uuid.UUID
 	workspaceID uuid.UUID
-	userID     *uuid.UUID
-	action     Action
-	entityType EntityType
-	entityID   uuid.UUID
-	entityName string
-	changes    map[string]interface{}
-	metadata   map[string]interface{}
-	createdAt  time.Time
+	userID      *uuid.UUID
+	action      Action
+	entityType  EntityType
+	entityID    uuid.UUID
+	entityName  string
+	changes     map[string]interface{}
+	metadata    map[string]interface{}
+	createdAt   time.Time
 }
 
 func NewActivityLog(
@@ -86,16 +86,16 @@ func NewActivityLog(
 	}
 
 	return &ActivityLog{
-		id:         shared.NewUUID(),
+		id:          shared.NewUUID(),
 		workspaceID: workspaceID,
-		userID:     userID,
-		action:     action,
-		entityType: entityType,
-		entityID:   entityID,
-		entityName: entityName,
-		changes:    changes,
-		metadata:   metadata,
-		createdAt:  time.Now(),
+		userID:      userID,
+		action:      action,
+		entityType:  entityType,
+		entityID:    entityID,
+		entityName:  entityName,
+		changes:     changes,
+		metadata:    metadata,
+		createdAt:   time.Now(),
 	}, nil
 }
 
@@ -110,27 +110,27 @@ func Reconstruct(
 	createdAt time.Time,
 ) *ActivityLog {
 	return &ActivityLog{
-		id:         id,
+		id:          id,
 		workspaceID: workspaceID,
-		userID:     userID,
-		action:     action,
-		entityType: entityType,
-		entityID:   entityID,
-		entityName: entityName,
-		changes:    changes,
-		metadata:   metadata,
-		createdAt:  createdAt,
+		userID:      userID,
+		action:      action,
+		entityType:  entityType,
+		entityID:    entityID,
+		entityName:  entityName,
+		changes:     changes,
+		metadata:    metadata,
+		createdAt:   createdAt,
 	}
 }
 
 // Getters
-func (a *ActivityLog) ID() uuid.UUID                      { return a.id }
-func (a *ActivityLog) WorkspaceID() uuid.UUID             { return a.workspaceID }
-func (a *ActivityLog) UserID() *uuid.UUID                 { return a.userID }
-func (a *ActivityLog) Action() Action                     { return a.action }
-func (a *ActivityLog) EntityType() EntityType             { return a.entityType }
-func (a *ActivityLog) EntityID() uuid.UUID                { return a.entityID }
-func (a *ActivityLog) EntityName() string                 { return a.entityName }
-func (a *ActivityLog) Changes() map[string]interface{}    { return a.changes }
-func (a *ActivityLog) Metadata() map[string]interface{}   { return a.metadata }
-func (a *ActivityLog) CreatedAt() time.Time               { return a.createdAt }
+func (a *ActivityLog) ID() uuid.UUID                    { return a.id }
+func (a *ActivityLog) WorkspaceID() uuid.UUID           { return a.workspaceID }
+func (a *ActivityLog) UserID() *uuid.UUID               { return a.userID }
+func (a *ActivityLog) Action() Action                   { return a.action }
+func (a *ActivityLog) EntityType() EntityType           { return a.entityType }
+func (a *ActivityLog) EntityID() uuid.UUID              { return a.entityID }
+func (a *ActivityLog) EntityName() string               { return a.entityName }
+func (a *ActivityLog) Changes() map[string]interface{}  { return a.changes }
+func (a *ActivityLog) Metadata() map[string]interface{} { return a.metadata }
+func (a *ActivityLog) CreatedAt() time.Time             { return a.createdAt }
