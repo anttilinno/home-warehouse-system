@@ -40,13 +40,13 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 			return nil, huma.Error500InternalServerError("failed to list wishlist items")
 		}
 
-		responses := make([]ItemResponse, len(items))
+		responses := make([]WishlistItemResponse, len(items))
 		for i, item := range items {
 			responses[i] = toItemResponse(item)
 		}
 
 		return &ListWishlistOutput{
-			Body: ItemListResponse{Items: responses, Total: total},
+			Body: WishlistListResponse{Items: responses, Total: total},
 		}, nil
 	})
 
@@ -218,8 +218,8 @@ func publishEvent(ctx context.Context, broadcaster *events.Broadcaster, workspac
 	})
 }
 
-func toItemResponse(i *Item) ItemResponse {
-	return ItemResponse{
+func toItemResponse(i *Item) WishlistItemResponse {
+	return WishlistItemResponse{
 		ID:                i.ID(),
 		WorkspaceID:       i.WorkspaceID(),
 		Name:              i.Name(),
@@ -246,11 +246,11 @@ type ListWishlistInput struct {
 }
 
 type ListWishlistOutput struct {
-	Body ItemListResponse
+	Body WishlistListResponse
 }
 
-type ItemListResponse struct {
-	Items []ItemResponse `json:"items"`
+type WishlistListResponse struct {
+	Items []WishlistItemResponse `json:"items"`
 	Total int            `json:"total"`
 }
 
@@ -259,7 +259,7 @@ type GetWishlistItemInput struct {
 }
 
 type GetWishlistItemOutput struct {
-	Body ItemResponse
+	Body WishlistItemResponse
 }
 
 type CreateWishlistItemInput struct {
@@ -275,7 +275,7 @@ type CreateWishlistItemInput struct {
 }
 
 type CreateWishlistItemOutput struct {
-	Body ItemResponse
+	Body WishlistItemResponse
 }
 
 type UpdateWishlistItemInput struct {
@@ -294,10 +294,10 @@ type UpdateWishlistItemInput struct {
 }
 
 type UpdateWishlistItemOutput struct {
-	Body ItemResponse
+	Body WishlistItemResponse
 }
 
-type ItemResponse struct {
+type WishlistItemResponse struct {
 	ID                uuid.UUID  `json:"id"`
 	WorkspaceID       uuid.UUID  `json:"workspace_id"`
 	Name              string     `json:"name"`
