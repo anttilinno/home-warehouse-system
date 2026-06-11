@@ -59,7 +59,7 @@ export default function ItemDetailPage() {
       setItem(data);
     } catch (error) {
       console.error("Failed to load item:", error);
-      toast.error("Failed to load item details");
+      toast.error(t("edit.errors.loadFailed"));
       router.push("/dashboard/items");
     } finally {
       setIsLoading(false);
@@ -80,7 +80,7 @@ export default function ItemDetailPage() {
             loadItem();
             break;
           case "item.deleted":
-            toast.info("This item has been deleted");
+            toast.info(t("detail.deletedNotice"));
             router.push("/dashboard/items");
             break;
         }
@@ -112,14 +112,14 @@ export default function ItemDetailPage() {
     try {
       if (item.is_archived) {
         await itemsApi.restore(workspaceId, item.id);
-        toast.success("Item restored successfully");
+        toast.success(t("list.toasts.restored"));
       } else {
         await itemsApi.archive(workspaceId, item.id);
-        toast.success("Item archived successfully");
+        toast.success(t("list.toasts.archived"));
       }
       loadItem();
     } catch (error) {
-      toast.error("Failed to archive item");
+      toast.error(t("list.toasts.archiveFailed"));
     }
   };
 

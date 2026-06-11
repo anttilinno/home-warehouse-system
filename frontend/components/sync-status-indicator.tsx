@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { useOffline } from "@/lib/contexts/offline-context";
 import { Badge } from "@/components/ui/badge";
 import { Cloud, CloudOff, RefreshCw, Check, Clock, AlertCircle } from "lucide-react";
@@ -10,7 +11,10 @@ import { PendingChangesDrawer } from "./pending-changes-drawer";
  * Formats a timestamp into a human-readable relative time string.
  * Examples: "just now", "2m ago", "1h ago", "3d ago"
  */
-function formatRelativeTime(timestamp: number): string {
+function formatRelativeTime(
+  timestamp: number,
+  t: ReturnType<typeof useTranslations<"syncStatus">>
+): string {
   const now = Date.now();
   const diff = now - timestamp;
 
@@ -19,10 +23,10 @@ function formatRelativeTime(timestamp: number): string {
   const hours = Math.floor(minutes / 60);
   const days = Math.floor(hours / 24);
 
-  if (seconds < 60) return "just now";
-  if (minutes < 60) return `${minutes}m ago`;
-  if (hours < 24) return `${hours}h ago`;
-  return `${days}d ago`;
+  if (seconds < 60) return t("justNow");
+  if (minutes < 60) return t("minutesAgo", { count: minutes });
+  if (hours < 24) return t("hoursAgo", { count: hours });
+  return t("daysAgo", { count: days });
 }
 
 /**
@@ -37,6 +41,7 @@ function formatRelativeTime(timestamp: number): string {
  * - Not synced: Shows "Not synced" with cloud icon
  */
 export function SyncStatusIndicator() {
+  const t = useTranslations("syncStatus");
   const {
     isOnline,
     isSyncing,
@@ -58,10 +63,10 @@ export function SyncStatusIndicator() {
           variant="secondary"
           className="gap-1.5 text-xs cursor-pointer hover:bg-accent"
           onClick={() => totalQueueCount > 0 && setDrawerOpen(true)}
-          title={totalQueueCount > 0 ? "Click to view pending changes" : undefined}
+          title={totalQueueCount > 0 ? t("viewPendingTitle") : undefined}
         >
           <CloudOff className="h-3 w-3" />
-          Offline
+          {t("offline")}
           {totalQueueCount > 0 && (
             <span className="ml-1 rounded-full bg-yellow-500 px-1.5 text-[10px] text-white">
               {totalQueueCount}
@@ -81,10 +86,10 @@ export function SyncStatusIndicator() {
           variant="secondary"
           className="gap-1.5 text-xs cursor-pointer hover:bg-accent"
           onClick={() => totalQueueCount > 0 && setDrawerOpen(true)}
-          title={totalQueueCount > 0 ? "Click to view pending changes" : undefined}
+          title={totalQueueCount > 0 ? t("viewPendingTitle") : undefined}
         >
           <RefreshCw className="h-3 w-3 animate-spin" />
-          Syncing...
+          {t("syncing")}
           {totalQueueCount > 0 && (
             <span className="ml-1 rounded-full bg-blue-500 px-1.5 text-[10px] text-white">
               {totalQueueCount}
@@ -107,10 +112,10 @@ export function SyncStatusIndicator() {
           tabIndex={0}
           onClick={() => setDrawerOpen(true)}
           onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") setDrawerOpen(true); }}
-          title="Click to view failed changes"
+          title={t("viewFailedTitle")}
         >
           <AlertCircle className="h-3 w-3" />
-          {failedMutationCount} failed
+          {t("failedCount", { count: failedMutationCount })}
           {pendingMutationCount > 0 && (
             <span className="ml-1 rounded-full bg-yellow-500 px-1.5 text-[10px] text-white">
               +{pendingMutationCount}
@@ -130,10 +135,10 @@ export function SyncStatusIndicator() {
           variant="secondary"
           className="gap-1.5 text-xs cursor-pointer hover:bg-accent"
           onClick={() => setDrawerOpen(true)}
-          title="Click to view pending changes"
+          title={t("viewPendingTitle")}
         >
           <Clock className="h-3 w-3 text-yellow-500" />
-          {pendingMutationCount} pending
+          {t("pendingCount", { count: pendingMutationCount })}
         </Badge>
         <PendingChangesDrawer open={drawerOpen} onOpenChange={setDrawerOpen} />
       </>
@@ -147,10 +152,10 @@ export function SyncStatusIndicator() {
         variant="outline"
         className="gap-1.5 text-xs cursor-pointer hover:bg-accent"
         onClick={triggerSync}
-        title="Click to sync now"
+        title={t("syncNowTitle")}
       >
         <Check className="h-3 w-3 text-green-500" />
-        {formatRelativeTime(lastSyncTimestamp)}
+        {formatRelativeTime(lastSyncTimestamp, t)}
       </Badge>
     );
   }
@@ -159,7 +164,7 @@ export function SyncStatusIndicator() {
   return (
     <Badge variant="outline" className="gap-1.5 text-xs">
       <Cloud className="h-3 w-3" />
-      Not synced
+      {t("notSynced")}
     </Badge>
   );
 }

@@ -114,6 +114,7 @@ function ContainersFilterControls({
   addFilter,
   getFilter,
 }: ContainersFilterControlsProps) {
+  const t = useTranslations("containers");
   const [selectedLocations, setSelectedLocations] = useState<string[]>([]);
   const [minCapacity, setMinCapacity] = useState<string>("");
   const [maxCapacity, setMaxCapacity] = useState<string>("");
@@ -197,7 +198,7 @@ function ContainersFilterControls({
         <div className="flex items-center gap-2">
           <Input
             type="number"
-            placeholder="Min"
+            placeholder={t("placeholders.min")}
             value={minCapacity}
             onChange={(e) => setMinCapacity(e.target.value)}
             onBlur={updateCapacityRange}
@@ -206,7 +207,7 @@ function ContainersFilterControls({
           <span className="text-sm text-muted-foreground">to</span>
           <Input
             type="number"
-            placeholder="Max"
+            placeholder={t("placeholders.max")}
             value={maxCapacity}
             onChange={(e) => setMaxCapacity(e.target.value)}
             onBlur={updateCapacityRange}
@@ -428,8 +429,8 @@ export default function ContainersPage() {
         setOptimisticLocations(prev => prev.filter(l => l.id !== syncedKey && l.id !== entityId));
       }
       if (event.type === 'MUTATION_FAILED' && event.payload?.mutation?.entity === 'containers') {
-        toast.error('Failed to sync container', {
-          description: event.payload.mutation.lastError || 'Please try again',
+        toast.error(t("toasts.syncFailed"), {
+          description: event.payload.mutation.lastError || t("toasts.tryAgain"),
         });
       }
     };
@@ -470,15 +471,15 @@ export default function ContainersPage() {
         switch (event.type) {
           case 'container.created':
             refetch();
-            toast.info(`New container added: ${event.data?.name || 'Unknown'}`);
+            toast.info(t("toasts.sseCreated", { name: (event.data?.name as string) || t("toasts.unknownName") }));
             break;
           case 'container.updated':
             refetch();
-            toast.info(`Container updated: ${event.data?.name || 'Unknown'}`);
+            toast.info(t("toasts.sseUpdated", { name: (event.data?.name as string) || t("toasts.unknownName") }));
             break;
           case 'container.deleted':
             refetch();
-            toast.info('Container deleted');
+            toast.info(t("toasts.sseDeleted"));
             break;
         }
       }
@@ -645,8 +646,8 @@ export default function ContainersPage() {
     if (!workspaceId) return;
 
     if (!formName.trim() || !formLocationId) {
-      toast.error("Please fill in required fields", {
-        description: "Name and Location are required",
+      toast.error(t("toasts.requiredFields"), {
+        description: t("toasts.requiredFieldsDescription"),
       });
       return;
     }
@@ -664,7 +665,7 @@ export default function ContainersPage() {
           _entityId: editingContainer.id,
         };
         await updateContainerOffline(updatePayload, editingContainer.id);
-        toast.success(navigator.onLine ? "Container updated" : "Container update queued");
+        toast.success(navigator.onLine ? t("toasts.updated") : t("toasts.updateQueued"));
       } else {
         // Create new container - use offline mutation
         // Check if location is a pending optimistic location
@@ -681,14 +682,14 @@ export default function ContainersPage() {
           short_code: formShortCode || undefined,
         };
         await createContainerOffline(createPayload, undefined, dependsOn);
-        toast.success(navigator.onLine ? "Container created" : "Container queued for sync");
+        toast.success(navigator.onLine ? t("toasts.created") : t("toasts.createQueued"));
       }
 
       setDialogOpen(false);
       // Sync events will trigger refetch - no need to call refetch() directly
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "Failed to save container";
-      toast.error("Failed to save container", {
+      const errorMessage = error instanceof Error ? error.message : t("toasts.saveFailed");
+      toast.error(t("toasts.saveFailed"), {
         description: errorMessage,
       });
     } finally {
@@ -701,15 +702,15 @@ export default function ContainersPage() {
     try {
       if (container.is_archived) {
         await containersApi.restore(workspaceId, container.id);
-        toast.success("Container restored successfully");
+        toast.success(t("toasts.restored"));
       } else {
         await containersApi.archive(workspaceId, container.id);
-        toast.success("Container archived successfully");
+        toast.success(t("toasts.archived"));
       }
       refetch();
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "Failed to archive container";
-      toast.error("Failed to archive container", {
+      const errorMessage = error instanceof Error ? error.message : t("toasts.archiveFailed");
+      toast.error(t("toasts.archiveFailed"), {
         description: errorMessage,
       });
     }
@@ -719,7 +720,7 @@ export default function ContainersPage() {
   const handleBulkExport = () => {
     const selectedContainers = sortedContainers.filter((c) => selectedIds.has(c.id));
     exportToCSV(selectedContainers, exportColumns, generateFilename("containers-bulk"));
-    toast.success(`Exported ${selectedCount} ${selectedCount === 1 ? "container" : "containers"}`);
+    toast.success(t("toasts.exported", { count: selectedCount }));
     clearSelection();
   };
 
@@ -735,7 +736,7 @@ export default function ContainersPage() {
         errors: result.errors.map((e) => ({ row: e.row_number, message: e.error })),
       };
     } catch (error) {
-      throw new Error(error instanceof Error ? error.message : "Import failed");
+      throw new Error(error instanceof Error ? error.message : t("toasts.importFailed"));
     }
   };
 
@@ -757,13 +758,15 @@ export default function ContainersPage() {
       );
 
       toast.success(
-        `${isRestoring ? "Restored" : "Archived"} ${selectedCount} ${selectedCount === 1 ? "container" : "containers"}`
+        isRestoring
+          ? t("toasts.bulkRestored", { count: selectedCount })
+          : t("toasts.bulkArchived", { count: selectedCount })
       );
       clearSelection();
       refetch();
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "Failed to archive containers";
-      toast.error("Failed to archive containers", {
+      const errorMessage = error instanceof Error ? error.message : t("toasts.bulkArchiveFailed");
+      toast.error(t("toasts.bulkArchiveFailed"), {
         description: errorMessage,
       });
     }
@@ -774,13 +777,13 @@ export default function ContainersPage() {
 
     try {
       await containersApi.delete(workspaceId, deletingContainer.id);
-      toast.success("Container deleted successfully");
+      toast.success(t("toasts.deleted"));
       setDeleteDialogOpen(false);
       setDeletingContainer(null);
       refetch();
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "Failed to delete container";
-      toast.error("Failed to delete container", {
+      const errorMessage = error instanceof Error ? error.message : t("toasts.deleteFailed");
+      toast.error(t("toasts.deleteFailed"), {
         description: errorMessage,
       });
     }
@@ -828,7 +831,7 @@ export default function ContainersPage() {
             {/* Search and filters */}
             <div className="flex items-center gap-2 relative">
               <CollapsibleSearch
-                placeholder="Search by name, location, or short code..."
+                placeholder={t("searchPlaceholder")}
                 value={searchQuery}
                 onChange={setSearchQuery}
               />
@@ -903,7 +906,7 @@ export default function ContainersPage() {
               </EmptyState>
             ) : (
               <div className="rounded-lg border">
-                <Table aria-label="Storage containers">
+                <Table aria-label={t("tableAria")}>
                   <caption className="sr-only">
                     List of storage containers with location, capacity, and short code information.
                     Currently showing {sortedContainers.length} {sortedContainers.length === 1 ? "container" : "containers"}.
@@ -920,7 +923,7 @@ export default function ContainersPage() {
                               clearSelection();
                             }
                           }}
-                          aria-label="Select all containers"
+                          aria-label={t("selectAllAria")}
                         />
                       </TableHead>
                       <SortableTableHead
@@ -960,7 +963,7 @@ export default function ContainersPage() {
                             checked={isSelected(container.id)}
                             onCheckedChange={() => toggleSelection(container.id)}
                             disabled={container._pending}
-                            aria-label={`Select ${container.name}`}
+                            aria-label={t("selectRowAria", { name: container.name })}
                           />
                         </TableCell>
                         <TableCell>
@@ -1009,7 +1012,7 @@ export default function ContainersPage() {
                           {!container._pending && (
                             <DropdownMenu>
                               <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="icon" aria-label={`Actions for ${container.name}`}>
+                                <Button variant="ghost" size="icon" aria-label={t("rowActionsAria", { name: container.name })}>
                                   <MoreHorizontal className="h-4 w-4" />
                                 </Button>
                               </DropdownMenuTrigger>
@@ -1088,7 +1091,7 @@ export default function ContainersPage() {
                 id="name"
                 value={formName}
                 onChange={(e) => setFormName(e.target.value)}
-                placeholder="e.g., Plastic Bin A, Metal Box 1"
+                placeholder={t("placeholders.name")}
               />
             </div>
 
@@ -1097,7 +1100,7 @@ export default function ContainersPage() {
                 Location <span className="text-destructive">*</span>
               </Label>
               <SearchableSelect
-                placeholder="Select a location"
+                placeholder={t("placeholders.location")}
                 emptyText="No locations found."
                 value={formLocationId}
                 onValueChange={setFormLocationId}
@@ -1114,7 +1117,7 @@ export default function ContainersPage() {
                 id="capacity"
                 value={formCapacity}
                 onChange={(e) => setFormCapacity(e.target.value)}
-                placeholder="e.g., 50L, 20 items, Small"
+                placeholder={t("placeholders.capacity")}
               />
             </div>
 
@@ -1126,7 +1129,7 @@ export default function ContainersPage() {
                     id="short_code"
                     value={formShortCode}
                     onChange={(e) => setFormShortCode(e.target.value)}
-                    placeholder="e.g., CON-001"
+                    placeholder={t("placeholders.shortCode")}
                     maxLength={20}
                     className="flex-1"
                   />
@@ -1135,7 +1138,7 @@ export default function ContainersPage() {
                     variant="outline"
                     size="icon"
                     onClick={() => setScannerOpen(true)}
-                    aria-label="Scan QR code"
+                    aria-label={t("scanQrAria")}
                   >
                     <ScanBarcode className="h-4 w-4" />
                   </Button>
@@ -1149,7 +1152,7 @@ export default function ContainersPage() {
                 id="description"
                 value={formDescription}
                 onChange={(e) => setFormDescription(e.target.value)}
-                placeholder="Describe this container..."
+                placeholder={t("placeholders.description")}
                 rows={3}
               />
             </div>
@@ -1221,8 +1224,8 @@ export default function ContainersPage() {
         allData={containers}
         columns={exportColumns}
         filePrefix="containers"
-        title="Export Containers to CSV"
-        description="Select columns and data to export"
+        title={t("exportDialogTitle")}
+        description={t("exportDialogDescription")}
       />
 
       {/* Import Dialog */}
@@ -1231,8 +1234,8 @@ export default function ContainersPage() {
         onOpenChange={setImportDialogOpen}
         entityType="container"
         onImport={handleImport}
-        title="Import Containers from CSV"
-        description="Upload a CSV file to import containers. The file should include columns for name, location, capacity, and other details."
+        title={t("importDialogTitle")}
+        description={t("importDialogDescription")}
       />
     </div>
   );

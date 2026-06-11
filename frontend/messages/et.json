@@ -145,6 +145,13 @@
     "activity": {
       "title": "Viimane tegevus",
       "description": "Viimased muudatused inventuuris"
+    },
+    "header": {
+      "openMenuAria": "Ava navigatsioonimenüü",
+      "globalSearchAria": "Üldotsing",
+      "clearSearchAria": "Tühjenda otsing",
+      "openSearchAria": "Ava otsing",
+      "closeSearchAria": "Sulge otsing"
     }
   },
   "categories": {
@@ -178,7 +185,7 @@
     "search": "Otsi esemeid...",
     "noResults": "Ühtegi eset ei leitud",
     "count": "{count} eset on otsas",
-    "sku": "SKU",
+    "sku": "Tootekood",
     "name": "Nimi",
     "category": "Kategooria",
     "minStock": "Min. varu",
@@ -275,169 +282,6 @@
       "terms": "Tingimused"
     }
   },
-  "notifications": {
-    "title": "Teavitused",
-    "empty": "Uusi teavitusi pole",
-    "markAllRead": "Märgi kõik loetuks",
-    "markRead": "Märgi loetuks",
-    "ariaLabel": "Teavitused ({count} lugemata)"
-  },
-  "settings": {
-    "title": "Seaded",
-    "description": "Halda oma tööruumi ja konto seadeid",
-    "comingSoon": "Tulekul",
-    "nav": {
-      "overview": "Ülevaade",
-      "profile": "Profiil",
-      "appearance": "Välimus",
-      "language": "Keel",
-      "regionalFormats": "Piirkondlikud vormingud",
-      "security": "Turvalisus",
-      "notifications": "Teavitused",
-      "dataStorage": "Andmed ja salvestus"
-    },
-    "hub": {
-      "preferences": "Eelistused",
-      "systemSecurity": "Süsteem ja turvalisus",
-      "appearanceDesc": "Teema ja kuva seaded",
-      "languageDesc": "Rakenduse keele eelistus",
-      "regionalFormatsDesc": "Kuupäeva, kellaaja ja numbri vormingud",
-      "securityDesc": "Parool, seansid ja konto",
-      "notificationsDesc": "Teavituste eelistused",
-      "dataStorageDesc": "Offline-andmed ja salvestushaldus",
-      "light": "Hele",
-      "dark": "Tume",
-      "system": "Süsteem"
-    },
-    "appearance": {
-      "title": "Välimus",
-      "description": "Vali eelistatud visuaalne teema",
-      "light": "Hele",
-      "dark": "Tume",
-      "retro-terminal": "Retro-terminal",
-      "system": "Süsteem",
-      "saved": "Teema uuendatud",
-      "saveError": "Teema uuendamine ebaõnnestus"
-    },
-    "language": {
-      "title": "Keel",
-      "description": "Vali eelistatud rakenduse keel",
-      "saveError": "Keele uuendamine ebaõnnestus"
-    },
-    "dataStorage": {
-      "description": "Halda võrguühenduseta andmeid, salvestusruumi ja varukoopiaid",
-      "storageUsage": {
-        "title": "Salvestusruumi kasutus",
-        "description": "Kettaruumi, mida kasutavad võrguühenduseta andmed ja vahemälu",
-        "used": "{usage} / {quota} kasutatud ({percent}%)",
-        "unsupported": "Salvestusruumi info pole selles brauseris saadaval",
-        "approximate": "Salvestusruumi väärtused on ligikaudsed",
-        "refresh": "Värskenda"
-      },
-      "cacheManagement": {
-        "title": "Vahemälu haldus",
-        "description": "Halda võrguühenduseta vahemälu ja salvestusruumi püsivust",
-        "clearCache": "Tühjenda võrguühenduseta vahemälu",
-        "clearCacheConfirmTitle": "Tühjendada võrguühenduseta vahemälu?",
-        "clearCacheConfirmDesc": "See kustutab kõik võrguühenduseta andmed ja vahemälu failid. Leht laadib automaatselt uuesti. Teie veebiandmed ei ole mõjutatud.",
-        "clearCacheCancel": "Tühista",
-        "clearCacheConfirm": "Tühjenda vahemälu",
-        "clearCacheSuccess": "Vahemälu tühjendatud. Laadimine...",
-        "persistentStorage": "Püsiv salvestusruum",
-        "persistentStorageDesc": "Takistab brauserit automaatselt kustutamast võrguühenduseta andmeid, kui salvestusruum on väike",
-        "persistentGranted": "Lubatud",
-        "persistentNotGranted": "Lubamata",
-        "requestPersistent": "Taotle püsivat salvestusruumi",
-        "persistentSuccess": "Püsiv salvestusruum lubatud",
-        "persistentDenied": "Brauser ei lubanud püsivat salvestusruumi. See otsustatakse automaatselt teie kasutusharjumuste põhjal."
-      },
-      "sync": {
-        "title": "Sünkroonimine",
-        "description": "Halda andmete sünkroonimist serveriga",
-        "syncNow": "Süngi kohe",
-        "syncing": "Sünkroonimine...",
-        "lastSync": "Viimati süngitud",
-        "neverSynced": "Pole süngitud",
-        "online": "Veebis",
-        "offline": "Võrguühenduseta",
-        "pendingMutations": "{count} ootel muudatust",
-        "syncError": "Viimane sünkroonimine ebaõnnestus"
-      },
-      "backupRestore": {
-        "title": "Varukoopia ja taastamine",
-        "description": "Ekspordi tööruumi andmed varundamiseks või impordi eelmisest varukoopiast",
-        "openDialog": "Ava varukoopia ja taastamine"
-      }
-    },
-    "dataManagement": {
-      "title": "Andmehaldus",
-      "description": "Varunda ja taasta oma tööruumi andmeid",
-      "backupRestore": "Varundamine ja taastamine",
-      "backupRestoreDescription": "Ekspordi või impordi oma tööruumi andmeid"
-    },
-    "account": {
-      "title": "Konto",
-      "description": "Halda oma profiili ja eelistusi"
-    },
-    "notifications": {
-      "title": "Teavitused",
-      "description": "Seadista teavituste eelistusi"
-    },
-    "notificationPreferences": {
-      "title": "Teavituste kategooriad",
-      "description": "Vali, milliseid teavitusi soovid saada",
-      "masterToggle": "Luba teavitused",
-      "masterDescription": "Saa rakendusesiseseid teavitusi",
-      "categories": {
-        "loans": "Laenutused",
-        "loansDescription": "Laenutuse meeldetuletused, hilinenud teated ja tagastused",
-        "inventory": "Inventar",
-        "inventoryDescription": "Madala laoseisu hoiatused ja remondi meeldetuletused",
-        "workspace": "Tooruum",
-        "workspaceDescription": "Kutsed ja liikmete tegevus",
-        "system": "Susteem",
-        "systemDescription": "Susteemiteated ja uuendused"
-      },
-      "saved": "Teavituste eelistused salvestatud",
-      "saveError": "Teavituste eelistuste salvestamine ebaonnestus"
-    },
-    "security": {
-      "title": "Turvalisus",
-      "description": "Parool ja turvaseaded",
-      "password": {
-        "noPasswordSet": "Logisid sisse sotsiaalse kontoga. Seadista parool, et logida ka e-postiga.",
-        "setButton": "Seadista parool",
-        "setSuccessMessage": "Parool seadistatud"
-      },
-      "connectedAccounts": {
-        "title": "Seotud kontod",
-        "connected": "Seotud",
-        "connect": "Seosta",
-        "disconnect": "Katkesta",
-        "linkSuccess": "{provider} konto seostatud",
-        "unlinkSuccess": "{provider} konto katkestatud",
-        "unlinkError": "Konto katkestamine ebaonnestus",
-        "setPasswordFirst": "Seadista esmalt parool, et katkestada",
-        "setPasswordWarning": "Seadista parool, et lubada viimase seotud konto katkestamist."
-      }
-    },
-    "dangerZone": {
-      "title": "Ohutsoon",
-      "description": "Poordumatud toimingud, mis mojutavad teie kontot jaavaldt.",
-      "deleteButton": "Kustuta konto",
-      "deleteTitle": "Kustuta oma konto",
-      "deleteWarning": "Seda toimingut ei saa tagasi votta. See kustutab jaavaldt teie konto ja koik teie andmed.",
-      "typeConfirm": "Sisestage {word} kinnitamiseks",
-      "confirmPlaceholder": "DELETE",
-      "confirmDelete": "Kustuta minu konto",
-      "deleting": "Kustutamine...",
-      "deleted": "Teie konto on kustutatud",
-      "deleteError": "Konto kustutamine ebaonnestus. Proovige uuesti.",
-      "cannotDelete": "Kontot ei saa kustutada",
-      "cannotDeleteDescription": "Enne konto kustutamist peate ule andma jargmiste tooruumide omandioiguse:",
-      "cancel": "Tuhista"
-    }
-  },
   "approvals": {
     "title": "Kinnitused",
     "subtitle": "Vaata üle ja kinnita ootel muudatused",
@@ -498,7 +342,7 @@
       "approved": "Kinnitatud",
       "rejected": "Tagasi lükatud"
     },
-    "detailTitle": "{action} {type}",
+    "detailTitle": "{action}: {type}",
     "requestInfo": {
       "title": "Taotluse info",
       "description": "Üksikasjad selle muudatuse taotleja kohta",
@@ -614,6 +458,58 @@
     "categoryHasItems": "Kategooria sisaldab esemeid",
     "insufficientJustification": "Ebapiisav põhjendus"
   },
+  "pendingChange": {
+    "toast": {
+      "pendingTitle": "Muudatus ootab kinnitust",
+      "pendingDescription": "Teie muudatus on esitatud ja ootab administraatori kinnitust.",
+      "approvedTitle": "Muudatus kinnitatud",
+      "approvedDescription": "Teie muudatustaotlus on kinnitatud ja rakendatud.",
+      "rejectedTitle": "Muudatus tagasi lükatud",
+      "rejectedDescription": "Teie muudatustaotlus lükati tagasi: {reason}",
+      "submittedTitle": "Esitatud kinnitamiseks",
+      "submittedDescription": "Teie taotlus ({action}: {entityType}) ootab administraatori kinnitust."
+    },
+    "banner": {
+      "title": "Ootab kinnitust",
+      "description": "See muudatus ootab tööruumi administraatori kinnitust.",
+      "viewChanges": "Vaata minu muudatusi"
+    },
+    "drawer": {
+      "title": "Ootel muudatused",
+      "allSynced": "Kõik muudatused on sünkroonitud.",
+      "summary": "{pending} ootel, {failed} ebaõnnestunud",
+      "allSyncedDescription": "Kõik muudatused on serveriga sünkroonitud.",
+      "syncNow": "Süngi kohe",
+      "clearAll": "Tühjenda kõik",
+      "clearAllConfirmTitle": "Tühjendada kõik ootel muudatused?",
+      "clearAllConfirmDescription": "See eemaldab jäädavalt {count, plural, =1 {1 ootel muudatuse} other {# ootel muudatust}}. Seda toimingut ei saa tagasi võtta.",
+      "cancel": "Tühista",
+      "retryTitle": "Proovi uuesti",
+      "retryAria": "Proovi ootel muudatust uuesti",
+      "cancelAria": "Tühista ootel muudatus",
+      "retries": "{count, plural, =1 {1 korduskatse} other {# korduskatset}}",
+      "operations": {
+        "create": "Loomine",
+        "update": "Uuendamine",
+        "delete": "Kustutamine"
+      },
+      "entities": {
+        "items": "ese",
+        "inventory": "inventar",
+        "locations": "asukoht",
+        "containers": "konteiner",
+        "categories": "kategooria",
+        "borrowers": "laenaja",
+        "loans": "laen"
+      },
+      "status": {
+        "pending": "ootel",
+        "syncing": "sünkroonimine",
+        "failed": "ebaõnnestus",
+        "needsReview": "vajab ülevaatust"
+      }
+    }
+  },
   "imports": {
     "title": "Imporditööd",
     "subtitle": "Halda ja jälgi hulgiimpordi toiminguid",
@@ -646,6 +542,397 @@
       "success": "Õnnestunud",
       "errors": "Vead",
       "total": "Kokku"
+    }
+  },
+  "photos": {
+    "upload": {
+      "title": "Laadi fotod ules",
+      "instructions": "Lohistage pildid siia voi klopsake sirvimiseks. Saate ules laadida mitu fotot korraga.",
+      "dropFiles": "Lohistage failid siia",
+      "dropZoneLabel": "Foto uleslaadimise ala. Klopsake voi vajutage Enter failide sirvimiseks.",
+      "browse": "Sirvi faile",
+      "takePhoto": "Pildista",
+      "fileInput": "Valige pildifailid uleslaadimiseks",
+      "acceptedFormats": "Aktsepteeritud vormingud: JPEG, PNG, GIF, WebP (max 10MB)",
+      "selectedFiles": "{count, plural, =1 {1 fail valitud} other {# faili valitud}}",
+      "uploadedCount": "{count, plural, =1 {1 ules laaditud} other {# ules laaditud}}",
+      "failedCount": "{count, plural, =1 {1 ebaonnestus} other {# ebaonnestus}}",
+      "uploadAll": "Laadi koik",
+      "uploading": "Laadimine...",
+      "uploaded": "Laaditud",
+      "uploadingProgress": "{progress}% laaditud",
+      "uploadSuccess": "{count, plural, =1 {Foto laaditud edukalt} other {# fotot laaditud edukalt}}",
+      "uploadError": "Uleslaadimine ebaonnestus",
+      "uploadFailed": "Foto uleslaadimine ebaonnestus",
+      "someUploadsFailed": "{count, plural, =1 {1 uleslaadimine ebaonnestus} other {# uleslaadimist ebaonnestus}}",
+      "tooManyFiles": "Liiga palju faile. Maksimaalselt {max} faili lubatud.",
+      "invalidFile": "Vigane fail",
+      "duplicateFile": "Fail juba valitud",
+      "removeFile": "Eemalda fail",
+      "fileCard": "Foto: {name}",
+      "caption": "Pealkiri (valikuline)",
+      "captionPlaceholder": "Lisa pealkiri...",
+      "retry": "Proovi uuesti",
+      "compressing": "Tihendamine {name}...",
+      "compressingLabel": "Tihendamine...",
+      "compressingFiles": "Tihendamine...",
+      "uploadingFile": "Laadimine {name}...",
+      "fileUploaded": "{name} laaditud edukalt",
+      "fileUploadFailed": "Ei saanud laadida {name}",
+      "startingUpload": "Alustatakse {count, plural, =1 {1 faili} other {# faili}} uleslaadimist",
+      "allUploadsComplete": "{count, plural, =1 {1 foto laaditud} other {# fotot laaditud}} edukalt",
+      "overallProgress": "Uldine edenemine"
+    },
+    "gallery": {
+      "empty": "Fotosid pole veel",
+      "emptyDescription": "Laadige fotosid alustamiseks. Saate lisada mitu fotot ja maarata pealkirju.",
+      "uploadPhotos": "Laadi fotod",
+      "primary": "Peamine",
+      "actions": "Foto toimingud",
+      "view": "Vaata",
+      "setPrimary": "Maarake peamiseks",
+      "editCaption": "Muuda pealkirja",
+      "download": "Laadi alla",
+      "delete": "Kustuta",
+      "deleteTitle": "Kustuta foto",
+      "deleteDescription": "Kas olete kindel, et soovite selle foto kustutada? Seda toimingut ei saa tagasi votta.",
+      "cancel": "Tuhista",
+      "deleting": "Kustutamine...",
+      "reorderSuccess": "Fotod jarjestatud edukalt",
+      "reorderError": "Fotode jarjestamine ebaonnestus",
+      "setPrimarySuccess": "Peamine foto uuendatud",
+      "setPrimaryError": "Peamise foto maaramine ebaonnestus",
+      "deleteSuccess": "Foto kustutatud edukalt",
+      "deleteError": "Foto kustutamine ebaonnestus",
+      "selectPhoto": "Vali foto",
+      "selectAll": "Vali kõik",
+      "deletePhotoAria": "Kustuta foto: {caption}"
+    },
+    "viewer": {
+      "previous": "Eelmine foto",
+      "next": "Jargmine foto",
+      "zoomIn": "Suumi sisse",
+      "zoomOut": "Suumi valja",
+      "download": "Laadi foto alla",
+      "close": "Sulge vaataja",
+      "navigate": "Navigeeri",
+      "zoom": "Suum"
+    },
+    "captionEditor": {
+      "title": "Muuda pealkirja",
+      "description": "Lisage voi uuendage selle foto pealkirja.",
+      "caption": "Pealkiri",
+      "placeholder": "Sisestage selle foto pealkiri...",
+      "hint": "Vajutage Enter salvestamiseks, Esc tühistamiseks",
+      "charactersRemaining": "tähemärki jäänud",
+      "save": "Salvesta",
+      "saving": "Salvestamine...",
+      "cancel": "Tuhista",
+      "saveSuccess": "Pealkiri uuendatud edukalt",
+      "saveError": "Pealkirja uuendamine ebaonnestus"
+    },
+    "thumbnail": {
+      "processing": "Tootlemine",
+      "generatingThumbnails": "Pisipiltide loomine...",
+      "failed": "Ebaonnestus",
+      "defaultError": "Pisipildi loomine ebaonnestus",
+      "thumbnailFailed": "Pisipildi loomine ebaonnestus"
+    },
+    "bulk": {
+      "select": "Vali",
+      "cancel": "Tuhista",
+      "selectAll": "Vali koik",
+      "download": "Laadi alla",
+      "editCaptions": "Muuda pealkirju",
+      "delete": "Kustuta",
+      "deleteTitle": "Kustuta fotod",
+      "deleteDescription": "Kas olete kindel, et soovite kustutada {count, plural, =1 {1 foto} other {# fotot}}? Seda toimingut ei saa tagasi votta.",
+      "deleting": "Kustutamine...",
+      "confirmDelete": "Kustuta fotod",
+      "captionTitle": "Muuda pealkirju",
+      "captionDescription": "Maarake sama pealkiri {count, plural, =1 {1 valitud fotole} other {# valitud fotole}}.",
+      "captionLabel": "Pealkiri",
+      "captionPlaceholder": "Sisestage pealkiri koigile valitud fotodele...",
+      "updating": "Uuendamine...",
+      "applyCaption": "Rakenda pealkiri",
+      "deleteSuccess": "{count, plural, =1 {Foto kustutatud} other {# fotot kustutatud}} edukalt",
+      "deleteError": "Fotode kustutamine ebaonnestus",
+      "captionSuccess": "{count, plural, =1 {Pealkiri uuendatud 1 fotol} other {Pealkirjad uuendatud # fotol}}",
+      "captionError": "Pealkirjade uuendamine ebaonnestus",
+      "downloadSuccess": "Allalaadimine alustatud",
+      "downloadError": "Fotode allalaadimine ebaonnestus"
+    },
+    "duplicates": {
+      "exactTitle": "Duplikaat foto tuvastatud",
+      "similarTitle": "Sarnased fotod leitud",
+      "exactDescription": "See foto tundub juba selles esemetes olemas olevat.",
+      "similarDescription": "Leidsime fotod, mis sarnanevad uleslaetavale.",
+      "foundCount": "{count, plural, =1 {1 sarnane foto leitud} other {# sarnast fotot leitud}}:",
+      "existingPhoto": "Olemasolev foto",
+      "cancel": "Tuhista",
+      "uploadAnyway": "Laadi siiski",
+      "uploading": "Laadimine..."
+    }
+  },
+  "notifications": {
+    "title": "Teavitused",
+    "empty": "Uusi teavitusi pole",
+    "markAllRead": "Märgi kõik loetuks",
+    "markRead": "Märgi loetuks",
+    "ariaLabel": "Teavitused ({count} lugemata)"
+  },
+  "settings": {
+    "title": "Seaded",
+    "description": "Halda oma tööruumi ja konto seadeid",
+    "comingSoon": "Tulekul",
+    "nav": {
+      "overview": "Ülevaade",
+      "profile": "Profiil",
+      "appearance": "Välimus",
+      "language": "Keel",
+      "regionalFormats": "Piirkondlikud vormingud",
+      "security": "Turvalisus",
+      "notifications": "Teavitused",
+      "dataStorage": "Andmed ja salvestus"
+    },
+    "hub": {
+      "preferences": "Eelistused",
+      "systemSecurity": "Süsteem ja turvalisus",
+      "appearanceDesc": "Teema ja kuva seaded",
+      "languageDesc": "Rakenduse keele eelistus",
+      "regionalFormatsDesc": "Kuupäeva, kellaaja ja numbri vormingud",
+      "securityDesc": "Parool, seansid ja konto",
+      "notificationsDesc": "Teavituste eelistused",
+      "dataStorageDesc": "Offline-andmed ja salvestushaldus",
+      "light": "Hele",
+      "dark": "Tume",
+      "system": "Süsteem"
+    },
+    "appearance": {
+      "title": "Välimus",
+      "description": "Vali eelistatud visuaalne teema",
+      "light": "Hele",
+      "dark": "Tume",
+      "retro-terminal": "Retro-terminal",
+      "system": "Süsteem",
+      "saved": "Teema uuendatud",
+      "saveError": "Teema uuendamine ebaõnnestus"
+    },
+    "language": {
+      "title": "Keel",
+      "description": "Vali eelistatud rakenduse keel",
+      "saveError": "Keele uuendamine ebaõnnestus"
+    },
+    "dataStorage": {
+      "description": "Halda võrguühenduseta andmeid, salvestusruumi ja varukoopiaid",
+      "storageUsage": {
+        "title": "Salvestusruumi kasutus",
+        "description": "Kettaruumi, mida kasutavad võrguühenduseta andmed ja vahemälu",
+        "used": "{usage} / {quota} kasutatud ({percent}%)",
+        "unsupported": "Salvestusruumi info pole selles brauseris saadaval",
+        "approximate": "Salvestusruumi väärtused on ligikaudsed",
+        "refresh": "Värskenda"
+      },
+      "cacheManagement": {
+        "title": "Vahemälu haldus",
+        "description": "Halda võrguühenduseta vahemälu ja salvestusruumi püsivust",
+        "clearCache": "Tühjenda võrguühenduseta vahemälu",
+        "clearCacheConfirmTitle": "Tühjendada võrguühenduseta vahemälu?",
+        "clearCacheConfirmDesc": "See kustutab kõik võrguühenduseta andmed ja vahemälu failid. Leht laadib automaatselt uuesti. Teie veebiandmed ei ole mõjutatud.",
+        "clearCacheCancel": "Tühista",
+        "clearCacheConfirm": "Tühjenda vahemälu",
+        "clearCacheSuccess": "Vahemälu tühjendatud. Laadimine...",
+        "persistentStorage": "Püsiv salvestusruum",
+        "persistentStorageDesc": "Takistab brauserit automaatselt kustutamast võrguühenduseta andmeid, kui salvestusruum on väike",
+        "persistentGranted": "Lubatud",
+        "persistentNotGranted": "Lubamata",
+        "requestPersistent": "Taotle püsivat salvestusruumi",
+        "persistentSuccess": "Püsiv salvestusruum lubatud",
+        "persistentDenied": "Brauser ei lubanud püsivat salvestusruumi. See otsustatakse automaatselt teie kasutusharjumuste põhjal."
+      },
+      "sync": {
+        "title": "Sünkroonimine",
+        "description": "Halda andmete sünkroonimist serveriga",
+        "syncNow": "Süngi kohe",
+        "syncing": "Sünkroonimine...",
+        "lastSync": "Viimati süngitud",
+        "neverSynced": "Pole süngitud",
+        "online": "Veebis",
+        "offline": "Võrguühenduseta",
+        "pendingMutations": "{count} ootel muudatust",
+        "syncError": "Viimane sünkroonimine ebaõnnestus"
+      },
+      "backupRestore": {
+        "title": "Varukoopia ja taastamine",
+        "description": "Ekspordi tööruumi andmed varundamiseks või impordi eelmisest varukoopiast",
+        "openDialog": "Ava varukoopia ja taastamine"
+      }
+    },
+    "dataManagement": {
+      "title": "Andmehaldus",
+      "description": "Varunda ja taasta oma tööruumi andmeid",
+      "backupRestore": "Varundamine ja taastamine",
+      "backupRestoreDescription": "Ekspordi või impordi oma tööruumi andmeid"
+    },
+    "account": {
+      "title": "Konto",
+      "description": "Halda oma profiili ja eelistusi",
+      "fullName": "Täisnimi",
+      "email": "E-posti aadress",
+      "save": "Salvesta muudatused",
+      "saving": "Salvestamine...",
+      "saved": "Profiil edukalt uuendatud",
+      "saveError": "Profiili uuendamine ebaõnnestus",
+      "avatar": {
+        "title": "Profiilipilt",
+        "upload": "Laadi foto üles",
+        "change": "Muuda fotot",
+        "remove": "Eemalda",
+        "dropHere": "Lohista pilt siia või klõpsa üleslaadimiseks",
+        "invalidType": "Palun laadi üles JPEG-, PNG- või WebP-pilt",
+        "tooLarge": "Pilt peab olema väiksem kui 2MB",
+        "uploadSuccess": "Profiilipilt uuendatud",
+        "uploadError": "Profiilipildi üleslaadimine ebaõnnestus",
+        "deleteSuccess": "Profiilipilt eemaldatud",
+        "deleteError": "Profiilipildi eemaldamine ebaõnnestus"
+      }
+    },
+    "notifications": {
+      "title": "Teavitused",
+      "description": "Seadista teavituste eelistusi"
+    },
+    "notificationPreferences": {
+      "title": "Teavituste kategooriad",
+      "description": "Vali, milliseid teavitusi soovid saada",
+      "masterToggle": "Luba teavitused",
+      "masterDescription": "Saa rakendusesiseseid teavitusi",
+      "categories": {
+        "loans": "Laenutused",
+        "loansDescription": "Laenutuse meeldetuletused, hilinenud teated ja tagastused",
+        "inventory": "Inventar",
+        "inventoryDescription": "Madala laoseisu hoiatused ja remondi meeldetuletused",
+        "workspace": "Tooruum",
+        "workspaceDescription": "Kutsed ja liikmete tegevus",
+        "system": "Susteem",
+        "systemDescription": "Susteemiteated ja uuendused"
+      },
+      "saved": "Teavituste eelistused salvestatud",
+      "saveError": "Teavituste eelistuste salvestamine ebaonnestus"
+    },
+    "dateFormat": {
+      "title": "Kuupäeva vorming",
+      "description": "Vali, kuidas kuupäevi rakenduses kuvatakse",
+      "saved": "Kuupäeva vorming uuendatud",
+      "saveError": "Kuupäeva vormingu uuendamine ebaõnnestus"
+    },
+    "timeFormat": {
+      "title": "Kellaaja vorming",
+      "description": "Vali, kuidas kellaaegu rakenduses kuvatakse",
+      "24h": "24-tunnine (14:30)",
+      "12h": "12-tunnine (2:30 PM)",
+      "saved": "Kellaaja vorming uuendatud",
+      "saveError": "Kellaaja vormingu uuendamine ebaõnnestus"
+    },
+    "numberFormat": {
+      "title": "Numbrivorming",
+      "description": "Seadista, kuidas numbreid rakenduses kuvatakse",
+      "thousandSeparator": "Tuhandete eraldaja",
+      "decimalSeparator": "Kümnendkoha eraldaja",
+      "comma": "Koma (1,000)",
+      "period": "Punkt (1.000)",
+      "space": "Tühik (1 000)",
+      "decimalPeriod": "Punkt (0.99)",
+      "decimalComma": "Koma (0,99)",
+      "saved": "Numbrivorming uuendatud",
+      "saveError": "Numbrivormingu uuendamine ebaõnnestus",
+      "conflictError": "Tuhandete ja kümnendkoha eraldajad peavad olema erinevad",
+      "preview": "Eelvaade"
+    },
+    "security": {
+      "title": "Turvalisus",
+      "description": "Parool ja turvaseaded",
+      "password": {
+        "title": "Parool",
+        "currentPassword": "Praegune parool",
+        "newPassword": "Uus parool",
+        "confirmPassword": "Kinnita uus parool",
+        "changeButton": "Muuda parooli",
+        "successMessage": "Parool edukalt muudetud",
+        "errorIncorrect": "Praegune parool on vale",
+        "errorFailed": "Parooli muutmine ebaõnnestus",
+        "validationMinLength": "Parool peab olema vähemalt 8 tähemärki",
+        "validationMismatch": "Paroolid ei kattu",
+        "noPasswordSet": "Logisid sisse sotsiaalse kontoga. Seadista parool, et logida ka e-postiga.",
+        "setButton": "Seadista parool",
+        "setSuccessMessage": "Parool seadistatud"
+      },
+      "connectedAccounts": {
+        "title": "Seotud kontod",
+        "connected": "Seotud",
+        "connect": "Seosta",
+        "disconnect": "Katkesta",
+        "linkSuccess": "{provider} konto seostatud",
+        "unlinkSuccess": "{provider} konto katkestatud",
+        "unlinkError": "Konto katkestamine ebaonnestus",
+        "setPasswordFirst": "Seadista esmalt parool, et katkestada",
+        "setPasswordWarning": "Seadista parool, et lubada viimase seotud konto katkestamist."
+      },
+      "sessions": {
+        "title": "Aktiivsed seansid",
+        "unknownDevice": "Tundmatu seade",
+        "currentSession": "Praegune",
+        "lastActive": "Aktiivne {time}",
+        "revokeButton": "Logi see seade välja",
+        "revokeAllButton": "Logi välja kõik teised seansid",
+        "revokeSuccess": "Seanss välja logitud",
+        "revokeError": "Seansi väljalogimine ebaõnnestus",
+        "revokeAllSuccess": "Kõik teised seansid välja logitud",
+        "revokeAllError": "Seansside väljalogimine ebaõnnestus",
+        "loadError": "Seansside laadimine ebaõnnestus",
+        "onlyCurrentSession": "See on teie ainus aktiivne seanss"
+      }
+    },
+    "dangerZone": {
+      "title": "Ohutsoon",
+      "description": "Poordumatud toimingud, mis mojutavad teie kontot jaavaldt.",
+      "deleteButton": "Kustuta konto",
+      "deleteTitle": "Kustuta oma konto",
+      "deleteWarning": "Seda toimingut ei saa tagasi votta. See kustutab jaavaldt teie konto ja koik teie andmed.",
+      "typeConfirm": "Sisestage {word} kinnitamiseks",
+      "confirmPlaceholder": "DELETE",
+      "confirmDelete": "Kustuta minu konto",
+      "deleting": "Kustutamine...",
+      "deleted": "Teie konto on kustutatud",
+      "deleteError": "Konto kustutamine ebaonnestus. Proovige uuesti.",
+      "cannotDelete": "Kontot ei saa kustutada",
+      "cannotDeleteDescription": "Enne konto kustutamist peate ule andma jargmiste tooruumide omandioiguse:",
+      "cancel": "Tuhista"
+    },
+    "pushNotifications": {
+      "title": "Tõuketeavitused",
+      "description": "Saa teateid, kui sa rakendust ei kasuta",
+      "notSupported": {
+        "title": "Pole toetatud",
+        "description": "Tõuketeavitused pole selles brauseris toetatud. Proovi Chrome'i, Firefoxi või Edge'i."
+      },
+      "denied": {
+        "title": "Luba keelatud",
+        "description": "Oled selle saidi teavitused blokeerinud. Lubamiseks muuda brauseri seadeid."
+      },
+      "status": {
+        "enabled": "Tõuketeavitused on selles seadmes lubatud",
+        "disabled": "Tõuketeavitused on keelatud"
+      },
+      "badge": {
+        "active": "Aktiivne",
+        "inactive": "Mitteaktiivne"
+      },
+      "button": {
+        "enable": "Luba tõuketeavitused",
+        "disable": "Keela tõuketeavitused",
+        "loading": "Töötlemine..."
+      },
+      "info": "Saad teavitusi laenu meeldetuletuste, kinnitusotsuste ja muude oluliste uuenduste kohta."
     }
   },
   "syncHistory": {
@@ -716,134 +1003,6 @@
     "noPhotos": "Fotod puuduvad",
     "noAttachments": "Manused puuduvad"
   },
-  "photos": {
-    "upload": {
-      "title": "Laadi fotod ules",
-      "instructions": "Lohistage pildid siia voi klopsake sirvimiseks. Saate ules laadida mitu fotot korraga.",
-      "dropFiles": "Lohistage failid siia",
-      "dropZoneLabel": "Foto uleslaadimise ala. Klopsake voi vajutage Enter failide sirvimiseks.",
-      "browse": "Sirvi faile",
-      "takePhoto": "Pildista",
-      "fileInput": "Valige pildifailid uleslaadimiseks",
-      "acceptedFormats": "Aktsepteeritud vormingud: JPEG, PNG, GIF, WebP (max 10MB)",
-      "selectedFiles": "{count, plural, =1 {1 fail valitud} other {# faili valitud}}",
-      "uploadedCount": "{count, plural, =1 {1 ules laaditud} other {# ules laaditud}}",
-      "failedCount": "{count, plural, =1 {1 ebaonnestus} other {# ebaonnestus}}",
-      "uploadAll": "Laadi koik",
-      "uploading": "Laadimine...",
-      "uploaded": "Laaditud",
-      "uploadingProgress": "{progress}% laaditud",
-      "uploadSuccess": "{count, plural, =1 {Foto laaditud edukalt} other {# fotot laaditud edukalt}}",
-      "uploadError": "Uleslaadimine ebaonnestus",
-      "uploadFailed": "Foto uleslaadimine ebaonnestus",
-      "someUploadsFailed": "{count, plural, =1 {1 uleslaadimine ebaonnestus} other {# uleslaadimist ebaonnestus}}",
-      "tooManyFiles": "Liiga palju faile. Maksimaalselt {max} faili lubatud.",
-      "invalidFile": "Vigane fail",
-      "duplicateFile": "Fail juba valitud",
-      "removeFile": "Eemalda fail",
-      "fileCard": "Foto: {name}",
-      "caption": "Pealkiri (valikuline)",
-      "captionPlaceholder": "Lisa pealkiri...",
-      "retry": "Proovi uuesti",
-      "compressing": "Tihendamine {name}...",
-      "compressingLabel": "Tihendamine...",
-      "compressingFiles": "Tihendamine...",
-      "uploadingFile": "Laadimine {name}...",
-      "fileUploaded": "{name} laaditud edukalt",
-      "fileUploadFailed": "Ei saanud laadida {name}",
-      "startingUpload": "Alustatakse {count, plural, =1 {1 faili} other {# faili}} uleslaadimist",
-      "allUploadsComplete": "{count, plural, =1 {1 foto laaditud} other {# fotot laaditud}} edukalt",
-      "overallProgress": "Uldine edenemine"
-    },
-    "gallery": {
-      "empty": "Fotosid pole veel",
-      "emptyDescription": "Laadige fotosid alustamiseks. Saate lisada mitu fotot ja maarata pealkirju.",
-      "uploadPhotos": "Laadi fotod",
-      "primary": "Peamine",
-      "actions": "Foto toimingud",
-      "setPrimary": "Maarake peamiseks",
-      "editCaption": "Muuda pealkirja",
-      "download": "Laadi alla",
-      "delete": "Kustuta",
-      "deleteTitle": "Kustuta foto",
-      "deleteDescription": "Kas olete kindel, et soovite selle foto kustutada? Seda toimingut ei saa tagasi votta.",
-      "cancel": "Tuhista",
-      "deleting": "Kustutamine...",
-      "reorderSuccess": "Fotod jarjestatud edukalt",
-      "reorderError": "Fotode jarjestamine ebaonnestus",
-      "setPrimarySuccess": "Peamine foto uuendatud",
-      "setPrimaryError": "Peamise foto maaramine ebaonnestus",
-      "deleteSuccess": "Foto kustutatud edukalt",
-      "deleteError": "Foto kustutamine ebaonnestus",
-      "selectPhoto": "Vali foto",
-      "selectAll": "Vali kõik"
-    },
-    "viewer": {
-      "previous": "Eelmine foto",
-      "next": "Jargmine foto",
-      "zoomIn": "Suumi sisse",
-      "zoomOut": "Suumi valja",
-      "download": "Laadi foto alla",
-      "close": "Sulge vaataja",
-      "navigate": "Navigeeri",
-      "zoom": "Suum"
-    },
-    "captionEditor": {
-      "title": "Muuda pealkirja",
-      "description": "Lisage voi uuendage selle foto pealkirja.",
-      "caption": "Pealkiri",
-      "placeholder": "Sisestage selle foto pealkiri...",
-      "hint": "Vajutage Enter salvestamiseks, Esc tühistamiseks",
-      "charactersRemaining": "tähemärki jäänud",
-      "save": "Salvesta",
-      "saving": "Salvestamine...",
-      "cancel": "Tuhista",
-      "saveSuccess": "Pealkiri uuendatud edukalt",
-      "saveError": "Pealkirja uuendamine ebaonnestus"
-    },
-    "thumbnail": {
-      "processing": "Tootlemine",
-      "generatingThumbnails": "Pisipiltide loomine...",
-      "failed": "Ebaonnestus",
-      "defaultError": "Pisipildi loomine ebaonnestus",
-      "thumbnailFailed": "Pisipildi loomine ebaonnestus"
-    },
-    "bulk": {
-      "select": "Vali",
-      "cancel": "Tuhista",
-      "selectAll": "Vali koik",
-      "download": "Laadi alla",
-      "editCaptions": "Muuda pealkirju",
-      "delete": "Kustuta",
-      "deleteTitle": "Kustuta fotod",
-      "deleteDescription": "Kas olete kindel, et soovite kustutada {count, plural, =1 {1 foto} other {# fotot}}? Seda toimingut ei saa tagasi votta.",
-      "deleting": "Kustutamine...",
-      "confirmDelete": "Kustuta fotod",
-      "captionTitle": "Muuda pealkirju",
-      "captionDescription": "Maarake sama pealkiri {count, plural, =1 {1 valitud fotole} other {# valitud fotole}}.",
-      "captionLabel": "Pealkiri",
-      "captionPlaceholder": "Sisestage pealkiri koigile valitud fotodele...",
-      "updating": "Uuendamine...",
-      "applyCaption": "Rakenda pealkiri",
-      "deleteSuccess": "{count, plural, =1 {Foto kustutatud} other {# fotot kustutatud}} edukalt",
-      "deleteError": "Fotode kustutamine ebaonnestus",
-      "captionSuccess": "{count, plural, =1 {Pealkiri uuendatud 1 fotol} other {Pealkirjad uuendatud # fotol}}",
-      "captionError": "Pealkirjade uuendamine ebaonnestus",
-      "downloadSuccess": "Allalaadimine alustatud",
-      "downloadError": "Fotode allalaadimine ebaonnestus"
-    },
-    "duplicates": {
-      "exactTitle": "Duplikaat foto tuvastatud",
-      "similarTitle": "Sarnased fotod leitud",
-      "exactDescription": "See foto tundub juba selles esemetes olemas olevat.",
-      "similarDescription": "Leidsime fotod, mis sarnanevad uleslaetavale.",
-      "foundCount": "{count, plural, =1 {1 sarnane foto leitud} other {# sarnast fotot leitud}}:",
-      "existingPhoto": "Olemasolev foto",
-      "cancel": "Tuhista",
-      "uploadAnyway": "Laadi siiski",
-      "uploading": "Laadimine..."
-    }
-  },
   "declutter": {
     "title": "Korrastusabi",
     "description": "Tuvasta kasutamata esemed lao korrastamiseks",
@@ -887,6 +1046,49 @@
     "toast": {
       "markedUsed": "Ese margitud kasutatuks",
       "exportSuccess": "Korrastuse nimekiri eksporditud"
+    }
+  },
+  "scanner": {
+    "title": "Skaneeri",
+    "description": "Skaneeri vöötkoode ja QR-koode esemete leidmiseks",
+    "tabs": {
+      "scan": "Skaneeri",
+      "manual": "Käsitsi",
+      "history": "Ajalugu"
+    },
+    "notFound": {
+      "title": "Ei leitud",
+      "description": "Koodile {code} ei leitud ühtegi eset"
+    },
+    "actions": {
+      "view": "Vaata",
+      "loan": "Laenuta",
+      "move": "Liiguta",
+      "repair": "Remont",
+      "createItem": "Loo ese",
+      "scanAgain": "Skaneeri uuesti",
+      "moveComingSoon": "Liigutamise funktsioon on peagi tulekul"
+    },
+    "close": "Sulge",
+    "manualEntry": {
+      "label": "Sisesta vöötkood käsitsi",
+      "placeholder": "Trüki või kleebi vöötkood...",
+      "submit": "Otsi",
+      "clear": "Tühjenda",
+      "hint": "Sisesta vöötkood, QR-kood või lühikood"
+    },
+    "history": {
+      "title": "Viimased skaneeringud",
+      "empty": "Viimaseid skaneeringuid pole",
+      "clearAll": "Tühjenda"
+    },
+    "feedback": {
+      "scanning": "Skaneerimine...",
+      "found": "Leitud: {name}",
+      "notFound": "Koodi ei leitud",
+      "lookupFailed": "Koodi otsimine ebaõnnestus",
+      "scannerError": "Skanneri viga",
+      "unknownError": "Tundmatu viga"
     }
   },
   "pwa": {
@@ -950,6 +1152,7 @@
     }
   },
   "items": {
+    "needsReview": "Vajab ülevaatust",
     "create": {
       "title": "Loo uus ese",
       "subtitle": "Lisa uus ese oma inventari",
@@ -972,6 +1175,7 @@
       "fields": {
         "sku": "Tootekood",
         "name": "Nimi",
+        "category": "Kategooria",
         "description": "Kirjeldus",
         "brand": "Bränd",
         "model": "Mudel",
@@ -992,6 +1196,7 @@
       "placeholders": {
         "sku": "nt ITEM-001",
         "name": "Sisesta eseme nimi",
+        "category": "Vali kategooria...",
         "description": "Valikuline kirjeldus",
         "brand": "nt Apple",
         "model": "nt iPhone 15 Pro",
@@ -1024,11 +1229,42 @@
         "updateFailed": "Eseme uuendamine ebaõnnestus"
       }
     },
-    "needsReview": "Vajab ülevaatust",
     "markAsReviewed": "Märgi ülevaadatuks",
     "marking": "Märkimine...",
     "markedAsReviewed": "Märgitud ülevaadatuks",
-    "markReviewedFailed": "Ülevaadatuks märkimine ebaõnnestus"
+    "markReviewedFailed": "Ülevaadatuks märkimine ebaõnnestus",
+    "list": {
+      "toasts": {
+        "newItemAdded": "Uus ese lisatud: {name}",
+        "requiredFields": "Palun täida kohustuslikud väljad",
+        "requiredFieldsDescription": "Tootekood ja nimi on kohustuslikud",
+        "updated": "Ese uuendatud",
+        "updateQueued": "Eseme uuendus pandi sünkroonimise järjekorda",
+        "created": "Ese loodud",
+        "createQueued": "Ese pandi sünkroonimise järjekorda",
+        "saveFailed": "Eseme salvestamine ebaõnnestus",
+        "restored": "Ese edukalt taastatud",
+        "archived": "Ese edukalt arhiveeritud",
+        "archiveFailed": "Eseme arhiveerimine ebaõnnestus",
+        "pendingSync": "Ese ootab sünkroonimist",
+        "pendingSyncDescription": "See ese on saadaval pärast sünkroonimist",
+        "exported": "{count, plural, =1 {Eksporditud 1 ese} other {Eksporditud # eset}}",
+        "bulkRestored": "{count, plural, =1 {Taastatud 1 ese} other {Taastatud # eset}}",
+        "bulkArchived": "{count, plural, =1 {Arhiveeritud 1 ese} other {Arhiveeritud # eset}}",
+        "bulkArchiveFailed": "Esemete arhiveerimine ebaõnnestus"
+      },
+      "unknownName": "Teadmata",
+      "searchPlaceholder": "Otsi tootekoodi, nime, brändi või mudeli järgi...",
+      "selectAllAria": "Vali kõik esemed",
+      "shortCodePlaceholder": "QR-koodi silt",
+      "exportDialogTitle": "Ekspordi esemed CSV-sse",
+      "exportDialogDescription": "Vali eksporditavad veerud ja andmed",
+      "importDialogTitle": "Impordi esemed CSV-st",
+      "importDialogDescription": "Laadi üles CSV-fail esemete importimiseks. Fail peaks sisaldama tootekoodi, nime ja muude andmete veerge."
+    },
+    "detail": {
+      "deletedNotice": "See ese on kustutatud"
+    }
   },
   "inventory": {
     "purchasePrice": "Ostuhind",
@@ -1056,5 +1292,209 @@
     "sessionSummaryDescription": "{count} {count, plural, one {ese} other {eset}} jäädvustatud",
     "sessionSummaryContinue": "Mine esemete juurde",
     "sessionSummaryCapture": "Jäädvusta veel"
+  },
+  "claim": {
+    "title": "VÕTA SEE KOOD KASUTUSELE",
+    "codeLabel": "LÜHIKOOD",
+    "noMatch": "See kood pole veel üheski sinu tööruumis millegagi seotud. Loo uus olem, kus see on eeltäidetud:",
+    "createItem": "Loo ese",
+    "createLocation": "Loo asukoht",
+    "createContainer": "Loo konteiner",
+    "createHint": "Vihje: asukohtade ja konteinerite loomise dialoog avaneb nimekirja lehelt — kleebi kood väljale „Lühikood“.",
+    "multiTitle": "MITU VASTET",
+    "multiSubtitle": "See kood vastas mitmele olemile sinu tööruumides. Vali üks:",
+    "typeItem": "Ese",
+    "typeContainer": "Konteiner",
+    "typeLocation": "Asukoht",
+    "open": "Ava"
+  },
+  "loans": {
+    "toasts": {
+      "sseCreated": "Uus laen loodud",
+      "sseUpdated": "Laen uuendatud",
+      "sseReturned": "Laen tagastatud",
+      "returnSuccess": "Laen edukalt tagastatud",
+      "returnFailed": "Laenu tagastamine ebaõnnestus",
+      "exported": "{count, plural, =1 {Eksporditud 1 laen} other {Eksporditud # laenu}}",
+      "bulkReturned": "{count, plural, =1 {Tagastatud 1 laen} other {Tagastatud # laenu}}",
+      "bulkReturnFailed": "Laenude tagastamine ebaõnnestus",
+      "extendSuccess": "Tähtaeg edukalt pikendatud",
+      "extendFailed": "Tähtaja pikendamine ebaõnnestus",
+      "requiredFields": "Palun täida kõik kohustuslikud väljad",
+      "created": "Laen edukalt loodud",
+      "createFailed": "Laenu loomine ebaõnnestus"
+    },
+    "searchPlaceholder": "Otsi laenaja või inventari järgi...",
+    "selectAllAria": "Vali kõik laenud",
+    "selectLoanAria": "Vali laen: {name}",
+    "loanActionsAria": "Toimingud laenule: {name}",
+    "placeholders": {
+      "from": "Alates",
+      "to": "Kuni",
+      "selectItem": "Vali ese",
+      "selectInventory": "Vali inventar",
+      "noAvailableInventory": "Vaba inventari pole",
+      "selectBorrower": "Vali laenaja",
+      "notes": "Lisa märkmeid selle laenu kohta..."
+    },
+    "exportDialogTitle": "Ekspordi laenud CSV-sse",
+    "exportDialogDescription": "Vali eksporditavad veerud ja andmed"
+  },
+  "locations": {
+    "toasts": {
+      "loadFailed": "Asukohtade laadimine ebaõnnestus",
+      "syncFailed": "Asukoha sünkroonimine ebaõnnestus",
+      "tryAgain": "Palun proovi uuesti",
+      "sseCreated": "Uus asukoht lisatud: {name}",
+      "sseUpdated": "Asukoht uuendatud: {name}",
+      "sseDeleted": "Asukoht kustutatud",
+      "unknown": "Teadmata",
+      "requiredFields": "Palun täida kohustuslikud väljad",
+      "nameRequired": "Nimi on kohustuslik",
+      "updated": "Asukoht uuendatud",
+      "updateQueued": "Asukoha uuendus pandi järjekorda",
+      "created": "Asukoht loodud",
+      "createQueued": "Asukoht pandi sünkroonimise järjekorda",
+      "saveFailed": "Asukoha salvestamine ebaõnnestus",
+      "restored": "Asukoht edukalt taastatud",
+      "archived": "Asukoht edukalt arhiveeritud",
+      "archiveFailed": "Asukoha arhiveerimine ebaõnnestus",
+      "deleted": "Asukoht edukalt kustutatud",
+      "deleteFailed": "Asukoha kustutamine ebaõnnestus"
+    },
+    "searchPlaceholder": "Otsi asukohti...",
+    "hierarchyAria": "Asukohtade hierarhia",
+    "expandAria": "Laienda {name}",
+    "collapseAria": "Ahenda {name}",
+    "actionsAria": "Toimingud: {name}",
+    "scanQrAria": "Skaneeri QR-kood",
+    "placeholders": {
+      "name": "nt Ladu A, Tuba 101",
+      "parent": "Puudub (juurasukoht)",
+      "shortCode": "Jäta tühjaks automaatseks genereerimiseks",
+      "description": "Kirjelda seda asukohta..."
+    },
+    "importDialogTitle": "Impordi asukohad CSV-st",
+    "importDialogDescription": "Laadi üles CSV-fail asukohtade importimiseks. Fail peaks sisaldama nime, kirjelduse ja ülemasukoha veerge."
+  },
+  "containers": {
+    "toasts": {
+      "syncFailed": "Konteineri sünkroonimine ebaõnnestus",
+      "tryAgain": "Palun proovi uuesti",
+      "sseCreated": "Uus konteiner lisatud: {name}",
+      "sseUpdated": "Konteiner uuendatud: {name}",
+      "sseDeleted": "Konteiner kustutatud",
+      "unknownName": "Teadmata",
+      "requiredFields": "Palun täida kohustuslikud väljad",
+      "requiredFieldsDescription": "Nimi ja asukoht on kohustuslikud",
+      "updated": "Konteiner uuendatud",
+      "updateQueued": "Konteineri uuendus pandi järjekorda",
+      "created": "Konteiner loodud",
+      "createQueued": "Konteiner pandi sünkroonimise järjekorda",
+      "saveFailed": "Konteineri salvestamine ebaõnnestus",
+      "restored": "Konteiner edukalt taastatud",
+      "archived": "Konteiner edukalt arhiveeritud",
+      "archiveFailed": "Konteineri arhiveerimine ebaõnnestus",
+      "exported": "{count, plural, =1 {Eksporditud 1 konteiner} other {Eksporditud # konteinerit}}",
+      "importFailed": "Import ebaõnnestus",
+      "bulkRestored": "{count, plural, =1 {Taastatud 1 konteiner} other {Taastatud # konteinerit}}",
+      "bulkArchived": "{count, plural, =1 {Arhiveeritud 1 konteiner} other {Arhiveeritud # konteinerit}}",
+      "bulkArchiveFailed": "Konteinerite arhiveerimine ebaõnnestus",
+      "deleted": "Konteiner edukalt kustutatud",
+      "deleteFailed": "Konteineri kustutamine ebaõnnestus"
+    },
+    "searchPlaceholder": "Otsi nime, asukoha või lühikoodi järgi...",
+    "tableAria": "Hoiukonteinerid",
+    "selectAllAria": "Vali kõik konteinerid",
+    "selectRowAria": "Vali {name}",
+    "rowActionsAria": "Toimingud: {name}",
+    "scanQrAria": "Skaneeri QR-kood",
+    "placeholders": {
+      "min": "Min",
+      "max": "Maks",
+      "name": "nt Plastkast A, Metallkast 1",
+      "location": "Vali asukoht",
+      "capacity": "nt 50L, 20 eset, väike",
+      "shortCode": "nt CON-001",
+      "description": "Kirjelda seda konteinerit..."
+    },
+    "exportDialogTitle": "Ekspordi konteinerid CSV-sse",
+    "exportDialogDescription": "Vali eksporditavad veerud ja andmed",
+    "importDialogTitle": "Impordi konteinerid CSV-st",
+    "importDialogDescription": "Laadi üles CSV-fail konteinerite importimiseks. Fail peaks sisaldama nime, asukoha, mahutavuse ja muude andmete veerge."
+  },
+  "borrowers": {
+    "toasts": {
+      "newBorrowerAdded": "Uus laenaja lisatud: {name}",
+      "unknownName": "Teadmata",
+      "borrowerWasDeleted": "Laenaja kustutati",
+      "syncFailed": "Laenaja sünkroonimine ebaõnnestus",
+      "tryAgain": "Palun proovi uuesti",
+      "requiredFields": "Palun täida kohustuslikud väljad",
+      "nameRequired": "Nimi on kohustuslik",
+      "invalidEmail": "Vigane e-posti aadress",
+      "invalidEmailDescription": "Palun sisesta kehtiv e-posti aadress",
+      "updated": "Laenaja uuendatud",
+      "updateQueued": "Laenaja uuendus pandi järjekorda",
+      "created": "Laenaja loodud",
+      "createQueued": "Laenaja pandi sünkroonimise järjekorda",
+      "saveFailed": "Laenaja salvestamine ebaõnnestus",
+      "deleted": "Laenaja edukalt kustutatud",
+      "deleteFailed": "Laenaja kustutamine ebaõnnestus",
+      "fieldUpdated": "Edukalt uuendatud",
+      "fieldUpdateQueued": "Uuendus pandi järjekorda",
+      "updateFailed": "Uuendamine ebaõnnestus",
+      "updateFailedFallback": "Uuendamine ebaõnnestus",
+      "exported": "{count, plural, =1 {Eksporditud 1 laenaja} other {Eksporditud # laenajat}}",
+      "archived": "{count, plural, =1 {Arhiveeritud 1 laenaja} other {Arhiveeritud # laenajat}}",
+      "archiveFailed": "Laenajate arhiveerimine ebaõnnestus"
+    },
+    "searchPlaceholder": "Otsi nime, e-posti või telefoni järgi...",
+    "tableAria": "Laenajad",
+    "selectAllAria": "Vali kõik laenajad",
+    "selectRowAria": "Vali {name}",
+    "rowActionsAria": "Toimingud: {name}",
+    "placeholders": {
+      "borrowerName": "Laenaja nimi",
+      "emailAddress": "E-posti aadress",
+      "phoneNumber": "Telefoninumber",
+      "name": "Mari Maasikas",
+      "email": "mari@näide.ee",
+      "phone": "+372 5555 5555",
+      "notes": "Lisainfo selle laenaja kohta..."
+    },
+    "exportDialogTitle": "Ekspordi laenajad CSV-sse",
+    "exportDialogDescription": "Vali eksporditavad veerud ja andmed",
+    "importDialogTitle": "Impordi laenajad CSV-st",
+    "importDialogDescription": "Laadi üles CSV-fail laenajate importimiseks. Fail peaks sisaldama nime, e-posti, telefoni ja muude andmete veerge."
+  },
+  "analytics": {
+    "toasts": {
+      "loadFailed": "Analüütika laadimine ebaõnnestus"
+    },
+    "stats": {
+      "totalItems": "Esemeid kokku",
+      "totalInventory": "Laoseis kokku",
+      "activeLoans": "Aktiivsed laenud",
+      "overdueLoans": "Hilinenud laenud",
+      "locations": "Asukohad",
+      "containers": "Konteinerid",
+      "borrowers": "Laenajad",
+      "lowStockItems": "Madala varuga esemed"
+    }
+  },
+  "syncStatus": {
+    "offline": "Võrguühenduseta",
+    "syncing": "Sünkroonimine...",
+    "failedCount": "{count} ebaõnnestunud",
+    "pendingCount": "{count} ootel",
+    "notSynced": "Sünkroonimata",
+    "viewPendingTitle": "Klõpsa ootel muudatuste vaatamiseks",
+    "viewFailedTitle": "Klõpsa ebaõnnestunud muudatuste vaatamiseks",
+    "syncNowTitle": "Klõpsa kohe sünkroonimiseks",
+    "justNow": "just nüüd",
+    "minutesAgo": "{count} min tagasi",
+    "hoursAgo": "{count} h tagasi",
+    "daysAgo": "{count} p tagasi"
   }
 }

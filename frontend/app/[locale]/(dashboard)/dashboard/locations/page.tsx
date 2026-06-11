@@ -135,6 +135,7 @@ function LocationRow({
   onAddSublocation: (loc: Location) => void;
   allLocations: (Location & { _pending?: boolean })[];
 }) {
+  const t = useTranslations("locations");
   const hasChildren = location.children.length > 0;
 
   // Helper to get parent name for pending badge
@@ -185,7 +186,9 @@ function LocationRow({
           )}
           aria-label={
             hasChildren
-              ? `${location.expanded ? "Collapse" : "Expand"} ${location.name}`
+              ? location.expanded
+                ? t("collapseAria", { name: location.name })
+                : t("expandAria", { name: location.name })
               : undefined
           }
           tabIndex={hasChildren ? 0 : -1}
@@ -244,7 +247,7 @@ function LocationRow({
                 variant="ghost"
                 size="icon"
                 className="h-8 w-8 opacity-0 group-hover:opacity-100"
-                aria-label={`Actions for ${location.name}`}
+                aria-label={t("actionsAria", { name: location.name })}
               >
                 <MoreHorizontal className="h-4 w-4" />
               </Button>
@@ -445,8 +448,8 @@ export default function LocationsPage() {
       // Initialize all locations as expanded by default
       setExpandedIds(new Set(response.items.map((loc) => loc.id)));
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "Failed to load locations";
-      toast.error("Failed to load locations", {
+      const errorMessage = error instanceof Error ? error.message : t("toasts.loadFailed");
+      toast.error(t("toasts.loadFailed"), {
         description: errorMessage,
       });
     } finally {
@@ -472,8 +475,8 @@ export default function LocationsPage() {
         loadLocations();
       }
       if (event.type === 'MUTATION_FAILED' && event.payload?.mutation?.entity === 'locations') {
-        toast.error('Failed to sync location', {
-          description: event.payload.mutation.lastError || 'Please try again',
+        toast.error(t("toasts.syncFailed"), {
+          description: event.payload.mutation.lastError || t("toasts.tryAgain"),
         });
       }
     };
@@ -488,15 +491,15 @@ export default function LocationsPage() {
         switch (event.type) {
           case 'location.created':
             loadLocations();
-            toast.info(`New location added: ${event.data?.name || 'Unknown'}`);
+            toast.info(t("toasts.sseCreated", { name: String(event.data?.name || t("toasts.unknown")) }));
             break;
           case 'location.updated':
             loadLocations();
-            toast.info(`Location updated: ${event.data?.name || 'Unknown'}`);
+            toast.info(t("toasts.sseUpdated", { name: String(event.data?.name || t("toasts.unknown")) }));
             break;
           case 'location.deleted':
             loadLocations();
-            toast.info('Location deleted');
+            toast.info(t("toasts.sseDeleted"));
             break;
         }
       }
@@ -557,8 +560,8 @@ export default function LocationsPage() {
     if (!workspaceId) return;
 
     if (!formName.trim()) {
-      toast.error("Please fill in required fields", {
-        description: "Name is required",
+      toast.error(t("toasts.requiredFields"), {
+        description: t("toasts.nameRequired"),
       });
       return;
     }
@@ -575,7 +578,7 @@ export default function LocationsPage() {
           _entityId: editingLocation.id,
         };
         await updateLocationOffline(updatePayload, editingLocation.id);
-        toast.success(navigator.onLine ? "Location updated" : "Location update queued");
+        toast.success(navigator.onLine ? t("toasts.updated") : t("toasts.updateQueued"));
       } else {
         // Create new location - use offline mutation
         // Check if parent is a pending optimistic location
@@ -591,14 +594,14 @@ export default function LocationsPage() {
           short_code: formShortCode || undefined,
         };
         await createLocationOffline(createPayload, undefined, dependsOn);
-        toast.success(navigator.onLine ? "Location created" : "Location queued for sync");
+        toast.success(navigator.onLine ? t("toasts.created") : t("toasts.createQueued"));
       }
 
       setDialogOpen(false);
       // Sync events will trigger reload - no need to call loadLocations()
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "Failed to save location";
-      toast.error("Failed to save location", {
+      const errorMessage = error instanceof Error ? error.message : t("toasts.saveFailed");
+      toast.error(t("toasts.saveFailed"), {
         description: errorMessage,
       });
     } finally {
@@ -612,15 +615,15 @@ export default function LocationsPage() {
     try {
       if (location.is_archived) {
         await locationsApi.restore(workspaceId, location.id);
-        toast.success("Location restored successfully");
+        toast.success(t("toasts.restored"));
       } else {
         await locationsApi.archive(workspaceId, location.id);
-        toast.success("Location archived successfully");
+        toast.success(t("toasts.archived"));
       }
       loadLocations();
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "Failed to archive location";
-      toast.error("Failed to archive location", {
+      const errorMessage = error instanceof Error ? error.message : t("toasts.archiveFailed");
+      toast.error(t("toasts.archiveFailed"), {
         description: errorMessage,
       });
     }
@@ -631,13 +634,13 @@ export default function LocationsPage() {
 
     try {
       await locationsApi.delete(workspaceId, deletingLocation.id);
-      toast.success("Location deleted successfully");
+      toast.success(t("toasts.deleted"));
       setDeleteDialogOpen(false);
       setDeletingLocation(null);
       loadLocations();
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "Failed to delete location";
-      toast.error("Failed to delete location", {
+      const errorMessage = error instanceof Error ? error.message : t("toasts.deleteFailed");
+      toast.error(t("toasts.deleteFailed"), {
         description: errorMessage,
       });
     }
@@ -782,7 +785,7 @@ export default function LocationsPage() {
             {/* Search and filters */}
             <div className="flex items-center gap-2 relative">
               <CollapsibleSearch
-                placeholder="Search locations..."
+                placeholder={t("searchPlaceholder")}
                 value={searchQuery}
                 onChange={setSearchQuery}
               />
@@ -823,7 +826,7 @@ export default function LocationsPage() {
                 )}
               </EmptyState>
             ) : (
-              <div className="space-y-1 [--location-indent:12px] sm:[--location-indent:24px]" role="tree" aria-label="Location hierarchy">
+              <div className="space-y-1 [--location-indent:12px] sm:[--location-indent:24px]" role="tree" aria-label={t("hierarchyAria")}>
                 {filteredTree.map((location) => (
                   <LocationRow
                     key={location.id}
@@ -869,14 +872,14 @@ export default function LocationsPage() {
                 id="name"
                 value={formName}
                 onChange={(e) => setFormName(e.target.value)}
-                placeholder="e.g., Warehouse A, Room 101"
+                placeholder={t("placeholders.name")}
               />
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="parent">Parent Location</Label>
               <SearchableSelect
-                placeholder="None (root location)"
+                placeholder={t("placeholders.parent")}
                 emptyText="No locations found."
                 value={formParentId || "none"}
                 onValueChange={(value) => setFormParentId(value === "none" ? "" : value)}
@@ -905,7 +908,7 @@ export default function LocationsPage() {
                     id="short_code"
                     value={formShortCode}
                     onChange={(e) => setFormShortCode(e.target.value)}
-                    placeholder="Leave empty to auto-generate"
+                    placeholder={t("placeholders.shortCode")}
                     maxLength={8}
                     className="flex-1"
                   />
@@ -914,7 +917,7 @@ export default function LocationsPage() {
                     variant="outline"
                     size="icon"
                     onClick={() => setScannerOpen(true)}
-                    aria-label="Scan QR code"
+                    aria-label={t("scanQrAria")}
                   >
                     <ScanBarcode className="h-4 w-4" />
                   </Button>
@@ -928,7 +931,7 @@ export default function LocationsPage() {
                 id="description"
                 value={formDescription}
                 onChange={(e) => setFormDescription(e.target.value)}
-                placeholder="Describe this location..."
+                placeholder={t("placeholders.description")}
                 rows={3}
               />
             </div>
@@ -986,8 +989,8 @@ export default function LocationsPage() {
         onOpenChange={setImportDialogOpen}
         entityType="location"
         onImport={handleImport}
-        title="Import Locations from CSV"
-        description="Upload a CSV file to import locations. The file should include columns for name, description, and parent location."
+        title={t("importDialogTitle")}
+        description={t("importDialogDescription")}
       />
     </div>
   );

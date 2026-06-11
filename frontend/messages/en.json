@@ -145,6 +145,13 @@
     "activity": {
       "title": "Recent Activity",
       "description": "Latest changes in your inventory"
+    },
+    "header": {
+      "openMenuAria": "Open navigation menu",
+      "globalSearchAria": "Global search",
+      "clearSearchAria": "Clear search",
+      "openSearchAria": "Open search",
+      "closeSearchAria": "Close search"
     }
   },
   "categories": {
@@ -466,6 +473,41 @@
       "title": "Pending Approval",
       "description": "This change is awaiting approval from a workspace admin.",
       "viewChanges": "View My Changes"
+    },
+    "drawer": {
+      "title": "Pending Changes",
+      "allSynced": "All changes have been synced.",
+      "summary": "{pending} pending, {failed} failed",
+      "allSyncedDescription": "All changes have been synced to the server.",
+      "syncNow": "Sync Now",
+      "clearAll": "Clear All",
+      "clearAllConfirmTitle": "Clear all pending changes?",
+      "clearAllConfirmDescription": "This will permanently remove {count, plural, =1 {1 pending change} other {# pending changes}}. This action cannot be undone.",
+      "cancel": "Cancel",
+      "retryTitle": "Retry",
+      "retryAria": "Retry pending change",
+      "cancelAria": "Cancel pending change",
+      "retries": "{count, plural, =1 {1 retry} other {# retries}}",
+      "operations": {
+        "create": "Create",
+        "update": "Update",
+        "delete": "Delete"
+      },
+      "entities": {
+        "items": "item",
+        "inventory": "inventory",
+        "locations": "location",
+        "containers": "container",
+        "categories": "category",
+        "borrowers": "borrower",
+        "loans": "loan"
+      },
+      "status": {
+        "pending": "pending",
+        "syncing": "syncing",
+        "failed": "failed",
+        "needsReview": "needs review"
+      }
     }
   },
   "imports": {
@@ -563,7 +605,8 @@
       "deleteSuccess": "Photo deleted successfully",
       "deleteError": "Failed to delete photo",
       "selectPhoto": "Select photo",
-      "selectAll": "Select all"
+      "selectAll": "Select all",
+      "deletePhotoAria": "Delete photo: {caption}"
     },
     "viewer": {
       "previous": "Previous photo",
@@ -1023,7 +1066,8 @@
       "move": "Move",
       "repair": "Repair",
       "createItem": "Create Item",
-      "scanAgain": "Scan Again"
+      "scanAgain": "Scan Again",
+      "moveComingSoon": "Move feature coming soon"
     },
     "close": "Close",
     "manualEntry": {
@@ -1041,7 +1085,10 @@
     "feedback": {
       "scanning": "Scanning...",
       "found": "Found: {name}",
-      "notFound": "Code not found"
+      "notFound": "Code not found",
+      "lookupFailed": "Failed to look up code",
+      "scannerError": "Scanner error",
+      "unknownError": "Unknown error"
     }
   },
   "pwa": {
@@ -1185,7 +1232,39 @@
     "markAsReviewed": "Mark as Reviewed",
     "marking": "Marking...",
     "markedAsReviewed": "Marked as reviewed",
-    "markReviewedFailed": "Failed to mark as reviewed"
+    "markReviewedFailed": "Failed to mark as reviewed",
+    "list": {
+      "toasts": {
+        "newItemAdded": "New item added: {name}",
+        "requiredFields": "Please fill in required fields",
+        "requiredFieldsDescription": "SKU and Name are required",
+        "updated": "Item updated",
+        "updateQueued": "Item update queued for sync",
+        "created": "Item created",
+        "createQueued": "Item queued for sync",
+        "saveFailed": "Failed to save item",
+        "restored": "Item restored successfully",
+        "archived": "Item archived successfully",
+        "archiveFailed": "Failed to archive item",
+        "pendingSync": "Item pending sync",
+        "pendingSyncDescription": "This item will be available after syncing",
+        "exported": "{count, plural, =1 {Exported 1 item} other {Exported # items}}",
+        "bulkRestored": "{count, plural, =1 {Restored 1 item} other {Restored # items}}",
+        "bulkArchived": "{count, plural, =1 {Archived 1 item} other {Archived # items}}",
+        "bulkArchiveFailed": "Failed to archive items"
+      },
+      "unknownName": "Unknown",
+      "searchPlaceholder": "Search by SKU, name, brand, or model...",
+      "selectAllAria": "Select all items",
+      "shortCodePlaceholder": "QR code label",
+      "exportDialogTitle": "Export Items to CSV",
+      "exportDialogDescription": "Select columns and data to export",
+      "importDialogTitle": "Import Items from CSV",
+      "importDialogDescription": "Upload a CSV file to import items. The file should include columns for SKU, name, and other item details."
+    },
+    "detail": {
+      "deletedNotice": "This item has been deleted"
+    }
   },
   "inventory": {
     "purchasePrice": "Purchase Price",
@@ -1228,5 +1307,194 @@
     "typeContainer": "Container",
     "typeLocation": "Location",
     "open": "Open"
+  },
+  "loans": {
+    "toasts": {
+      "sseCreated": "New loan created",
+      "sseUpdated": "Loan updated",
+      "sseReturned": "Loan returned",
+      "returnSuccess": "Loan returned successfully",
+      "returnFailed": "Failed to return loan",
+      "exported": "{count, plural, =1 {Exported 1 loan} other {Exported # loans}}",
+      "bulkReturned": "{count, plural, =1 {Returned 1 loan} other {Returned # loans}}",
+      "bulkReturnFailed": "Failed to return loans",
+      "extendSuccess": "Due date extended successfully",
+      "extendFailed": "Failed to extend due date",
+      "requiredFields": "Please fill in all required fields",
+      "created": "Loan created successfully",
+      "createFailed": "Failed to create loan"
+    },
+    "searchPlaceholder": "Search by borrower or inventory...",
+    "selectAllAria": "Select all loans",
+    "selectLoanAria": "Select loan for {name}",
+    "loanActionsAria": "Actions for loan to {name}",
+    "placeholders": {
+      "from": "From",
+      "to": "To",
+      "selectItem": "Select an item",
+      "selectInventory": "Select inventory",
+      "noAvailableInventory": "No available inventory",
+      "selectBorrower": "Select a borrower",
+      "notes": "Add any notes about this loan..."
+    },
+    "exportDialogTitle": "Export Loans to CSV",
+    "exportDialogDescription": "Select columns and data to export"
+  },
+  "locations": {
+    "toasts": {
+      "loadFailed": "Failed to load locations",
+      "syncFailed": "Failed to sync location",
+      "tryAgain": "Please try again",
+      "sseCreated": "New location added: {name}",
+      "sseUpdated": "Location updated: {name}",
+      "sseDeleted": "Location deleted",
+      "unknown": "Unknown",
+      "requiredFields": "Please fill in required fields",
+      "nameRequired": "Name is required",
+      "updated": "Location updated",
+      "updateQueued": "Location update queued",
+      "created": "Location created",
+      "createQueued": "Location queued for sync",
+      "saveFailed": "Failed to save location",
+      "restored": "Location restored successfully",
+      "archived": "Location archived successfully",
+      "archiveFailed": "Failed to archive location",
+      "deleted": "Location deleted successfully",
+      "deleteFailed": "Failed to delete location"
+    },
+    "searchPlaceholder": "Search locations...",
+    "hierarchyAria": "Location hierarchy",
+    "expandAria": "Expand {name}",
+    "collapseAria": "Collapse {name}",
+    "actionsAria": "Actions for {name}",
+    "scanQrAria": "Scan QR code",
+    "placeholders": {
+      "name": "e.g., Warehouse A, Room 101",
+      "parent": "None (root location)",
+      "shortCode": "Leave empty to auto-generate",
+      "description": "Describe this location..."
+    },
+    "importDialogTitle": "Import Locations from CSV",
+    "importDialogDescription": "Upload a CSV file to import locations. The file should include columns for name, description, and parent location."
+  },
+  "containers": {
+    "toasts": {
+      "syncFailed": "Failed to sync container",
+      "tryAgain": "Please try again",
+      "sseCreated": "New container added: {name}",
+      "sseUpdated": "Container updated: {name}",
+      "sseDeleted": "Container deleted",
+      "unknownName": "Unknown",
+      "requiredFields": "Please fill in required fields",
+      "requiredFieldsDescription": "Name and Location are required",
+      "updated": "Container updated",
+      "updateQueued": "Container update queued",
+      "created": "Container created",
+      "createQueued": "Container queued for sync",
+      "saveFailed": "Failed to save container",
+      "restored": "Container restored successfully",
+      "archived": "Container archived successfully",
+      "archiveFailed": "Failed to archive container",
+      "exported": "{count, plural, =1 {Exported 1 container} other {Exported # containers}}",
+      "importFailed": "Import failed",
+      "bulkRestored": "{count, plural, =1 {Restored 1 container} other {Restored # containers}}",
+      "bulkArchived": "{count, plural, =1 {Archived 1 container} other {Archived # containers}}",
+      "bulkArchiveFailed": "Failed to archive containers",
+      "deleted": "Container deleted successfully",
+      "deleteFailed": "Failed to delete container"
+    },
+    "searchPlaceholder": "Search by name, location, or short code...",
+    "tableAria": "Storage containers",
+    "selectAllAria": "Select all containers",
+    "selectRowAria": "Select {name}",
+    "rowActionsAria": "Actions for {name}",
+    "scanQrAria": "Scan QR code",
+    "placeholders": {
+      "min": "Min",
+      "max": "Max",
+      "name": "e.g., Plastic Bin A, Metal Box 1",
+      "location": "Select a location",
+      "capacity": "e.g., 50L, 20 items, Small",
+      "shortCode": "e.g., CON-001",
+      "description": "Describe this container..."
+    },
+    "exportDialogTitle": "Export Containers to CSV",
+    "exportDialogDescription": "Select columns and data to export",
+    "importDialogTitle": "Import Containers from CSV",
+    "importDialogDescription": "Upload a CSV file to import containers. The file should include columns for name, location, capacity, and other details."
+  },
+  "borrowers": {
+    "toasts": {
+      "newBorrowerAdded": "New borrower added: {name}",
+      "unknownName": "Unknown",
+      "borrowerWasDeleted": "A borrower was deleted",
+      "syncFailed": "Failed to sync borrower",
+      "tryAgain": "Please try again",
+      "requiredFields": "Please fill in required fields",
+      "nameRequired": "Name is required",
+      "invalidEmail": "Invalid email address",
+      "invalidEmailDescription": "Please enter a valid email address",
+      "updated": "Borrower updated",
+      "updateQueued": "Borrower update queued",
+      "created": "Borrower created",
+      "createQueued": "Borrower queued for sync",
+      "saveFailed": "Failed to save borrower",
+      "deleted": "Borrower deleted successfully",
+      "deleteFailed": "Failed to delete borrower",
+      "fieldUpdated": "Updated successfully",
+      "fieldUpdateQueued": "Update queued",
+      "updateFailed": "Update failed",
+      "updateFailedFallback": "Failed to update",
+      "exported": "{count, plural, =1 {Exported 1 borrower} other {Exported # borrowers}}",
+      "archived": "{count, plural, =1 {Archived 1 borrower} other {Archived # borrowers}}",
+      "archiveFailed": "Failed to archive borrowers"
+    },
+    "searchPlaceholder": "Search by name, email, or phone...",
+    "tableAria": "Borrowers",
+    "selectAllAria": "Select all borrowers",
+    "selectRowAria": "Select {name}",
+    "rowActionsAria": "Actions for {name}",
+    "placeholders": {
+      "borrowerName": "Borrower name",
+      "emailAddress": "Email address",
+      "phoneNumber": "Phone number",
+      "name": "John Doe",
+      "email": "john@example.com",
+      "phone": "+1 234 567 8900",
+      "notes": "Additional information about this borrower..."
+    },
+    "exportDialogTitle": "Export Borrowers to CSV",
+    "exportDialogDescription": "Select columns and data to export",
+    "importDialogTitle": "Import Borrowers from CSV",
+    "importDialogDescription": "Upload a CSV file to import borrowers. The file should include columns for name, email, phone, and other details."
+  },
+  "analytics": {
+    "toasts": {
+      "loadFailed": "Failed to load analytics"
+    },
+    "stats": {
+      "totalItems": "Total Items",
+      "totalInventory": "Total Inventory",
+      "activeLoans": "Active Loans",
+      "overdueLoans": "Overdue Loans",
+      "locations": "Locations",
+      "containers": "Containers",
+      "borrowers": "Borrowers",
+      "lowStockItems": "Low Stock Items"
+    }
+  },
+  "syncStatus": {
+    "offline": "Offline",
+    "syncing": "Syncing...",
+    "failedCount": "{count} failed",
+    "pendingCount": "{count} pending",
+    "notSynced": "Not synced",
+    "viewPendingTitle": "Click to view pending changes",
+    "viewFailedTitle": "Click to view failed changes",
+    "syncNowTitle": "Click to sync now",
+    "justNow": "just now",
+    "minutesAgo": "{count}m ago",
+    "hoursAgo": "{count}h ago",
+    "daysAgo": "{count}d ago"
   }
 }

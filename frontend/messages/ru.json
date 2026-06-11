@@ -107,7 +107,12 @@
       "myChanges": "Мои изменения",
       "syncHistory": "История синхронизации",
       "settings": "Настройки",
-      "collapse": "Свернуть"
+      "collapse": "Свернуть",
+      "groups": {
+        "overview": "Обзор",
+        "inventory": "Инвентарь",
+        "system": "Система"
+      }
     },
     "workspace": {
       "workspaces": "Рабочие пространства",
@@ -140,6 +145,13 @@
     "activity": {
       "title": "Последняя активность",
       "description": "Последние изменения в инвентаре"
+    },
+    "header": {
+      "openMenuAria": "Открыть меню навигации",
+      "globalSearchAria": "Глобальный поиск",
+      "clearSearchAria": "Очистить поиск",
+      "openSearchAria": "Открыть поиск",
+      "closeSearchAria": "Закрыть поиск"
     }
   },
   "categories": {
@@ -270,169 +282,6 @@
       "terms": "Условия"
     }
   },
-  "notifications": {
-    "title": "Уведомления",
-    "empty": "Нет новых уведомлений",
-    "markAllRead": "Отметить все как прочитанные",
-    "markRead": "Отметить как прочитанное",
-    "ariaLabel": "Уведомления ({count} непрочитанных)"
-  },
-  "settings": {
-    "title": "Настройки",
-    "description": "Управление настройками рабочего пространства и аккаунта",
-    "comingSoon": "Скоро",
-    "nav": {
-      "overview": "Обзор",
-      "profile": "Профиль",
-      "appearance": "Оформление",
-      "language": "Язык",
-      "regionalFormats": "Региональные форматы",
-      "security": "Безопасность",
-      "notifications": "Уведомления",
-      "dataStorage": "Данные и хранилище"
-    },
-    "hub": {
-      "preferences": "Настройки",
-      "systemSecurity": "Система и безопасность",
-      "appearanceDesc": "Тема и настройки отображения",
-      "languageDesc": "Язык приложения",
-      "regionalFormatsDesc": "Форматы даты, времени и чисел",
-      "securityDesc": "Пароль, сессии и аккаунт",
-      "notificationsDesc": "Настройки уведомлений",
-      "dataStorageDesc": "Офлайн-данные и управление хранилищем",
-      "light": "Светлая",
-      "dark": "Тёмная",
-      "system": "Системная"
-    },
-    "appearance": {
-      "title": "Внешний вид",
-      "description": "Выберите предпочтительную тему оформления",
-      "light": "Светлая",
-      "dark": "Тёмная",
-      "retro-terminal": "Ретро-терминал",
-      "system": "Системная",
-      "saved": "Тема обновлена",
-      "saveError": "Не удалось обновить тему"
-    },
-    "language": {
-      "title": "Язык",
-      "description": "Выберите предпочтительный язык приложения",
-      "saveError": "Не удалось обновить язык"
-    },
-    "dataStorage": {
-      "description": "Управление офлайн-данными, хранилищем и резервными копиями",
-      "storageUsage": {
-        "title": "Использование хранилища",
-        "description": "Дисковое пространство, используемое офлайн-данными и кешем",
-        "used": "{usage} из {quota} использовано ({percent}%)",
-        "unsupported": "Информация о хранилище недоступна в этом браузере",
-        "approximate": "Значения хранилища являются приблизительными",
-        "refresh": "Обновить"
-      },
-      "cacheManagement": {
-        "title": "Управление кешем",
-        "description": "Управление офлайн-кешем и постоянным хранилищем",
-        "clearCache": "Очистить офлайн-кеш",
-        "clearCacheConfirmTitle": "Очистить офлайн-кеш?",
-        "clearCacheConfirmDesc": "Это удалит все офлайн-данные и кешированные файлы. Страница перезагрузится автоматически. Ваши онлайн-данные не будут затронуты.",
-        "clearCacheCancel": "Отмена",
-        "clearCacheConfirm": "Очистить кеш",
-        "clearCacheSuccess": "Кеш очищен. Перезагрузка...",
-        "persistentStorage": "Постоянное хранилище",
-        "persistentStorageDesc": "Предотвращает автоматическое удаление офлайн-данных браузером при нехватке места",
-        "persistentGranted": "Предоставлено",
-        "persistentNotGranted": "Не предоставлено",
-        "requestPersistent": "Запросить постоянное хранилище",
-        "persistentSuccess": "Постоянное хранилище предоставлено",
-        "persistentDenied": "Браузер не предоставил постоянное хранилище. Это решается автоматически на основе ваших шаблонов использования."
-      },
-      "sync": {
-        "title": "Синхронизация",
-        "description": "Управление синхронизацией данных с сервером",
-        "syncNow": "Синхронизировать",
-        "syncing": "Синхронизация...",
-        "lastSync": "Последняя синхронизация",
-        "neverSynced": "Не синхронизировалось",
-        "online": "В сети",
-        "offline": "Автономно",
-        "pendingMutations": "{count} ожидающих изменений",
-        "syncError": "Последняя синхронизация не удалась"
-      },
-      "backupRestore": {
-        "title": "Резервное копирование и восстановление",
-        "description": "Экспорт данных рабочего пространства для резервного копирования или импорт из предыдущей копии",
-        "openDialog": "Открыть резервное копирование"
-      }
-    },
-    "dataManagement": {
-      "title": "Управление данными",
-      "description": "Резервное копирование и восстановление данных",
-      "backupRestore": "Резервное копирование",
-      "backupRestoreDescription": "Экспорт или импорт данных рабочего пространства"
-    },
-    "account": {
-      "title": "Аккаунт",
-      "description": "Управление профилем и предпочтениями"
-    },
-    "notifications": {
-      "title": "Уведомления",
-      "description": "Настройка параметров уведомлений"
-    },
-    "notificationPreferences": {
-      "title": "Категории уведомлений",
-      "description": "Выберите, какие уведомления вы хотите получать",
-      "masterToggle": "Включить уведомления",
-      "masterDescription": "Получать уведомления в приложении",
-      "categories": {
-        "loans": "Займы",
-        "loansDescription": "Напоминания о займах, просрочках и возвратах",
-        "inventory": "Инвентарь",
-        "inventoryDescription": "Предупреждения о низком запасе и напоминания о ремонте",
-        "workspace": "Рабочее пространство",
-        "workspaceDescription": "Приглашения и активность участников",
-        "system": "Система",
-        "systemDescription": "Системные объявления и обновления"
-      },
-      "saved": "Настройки уведомлений сохранены",
-      "saveError": "Не удалось сохранить настройки уведомлений"
-    },
-    "security": {
-      "title": "Безопасность",
-      "description": "Пароль и настройки безопасности",
-      "password": {
-        "noPasswordSet": "Вы вошли через социальный аккаунт. Установите пароль для входа по электронной почте.",
-        "setButton": "Установить пароль",
-        "setSuccessMessage": "Пароль успешно установлен"
-      },
-      "connectedAccounts": {
-        "title": "Привязанные аккаунты",
-        "connected": "Привязан",
-        "connect": "Привязать",
-        "disconnect": "Отвязать",
-        "linkSuccess": "Аккаунт {provider} успешно привязан",
-        "unlinkSuccess": "Аккаунт {provider} отвязан",
-        "unlinkError": "Не удалось отвязать аккаунт",
-        "setPasswordFirst": "Сначала установите пароль для отвязки",
-        "setPasswordWarning": "Установите пароль, чтобы можно было отвязать последний привязанный аккаунт."
-      }
-    },
-    "dangerZone": {
-      "title": "Опасная зона",
-      "description": "Необратимые действия, которые навсегда повлияют на ваш аккаунт.",
-      "deleteButton": "Удалить аккаунт",
-      "deleteTitle": "Удалить ваш аккаунт",
-      "deleteWarning": "Это действие нельзя отменить. Ваш аккаунт и все данные будут удалены безвозвратно.",
-      "typeConfirm": "Введите {word} для подтверждения",
-      "confirmPlaceholder": "DELETE",
-      "confirmDelete": "Удалить мой аккаунт",
-      "deleting": "Удаление...",
-      "deleted": "Ваш аккаунт был удален",
-      "deleteError": "Не удалось удалить аккаунт. Попробуйте еще раз.",
-      "cannotDelete": "Невозможно удалить аккаунт",
-      "cannotDeleteDescription": "Перед удалением аккаунта вы должны передать права владения следующими рабочими пространствами:",
-      "cancel": "Отмена"
-    }
-  },
   "approvals": {
     "title": "Утверждения",
     "subtitle": "Просмотр и утверждение ожидающих изменений",
@@ -493,7 +342,7 @@
       "approved": "Утверждено",
       "rejected": "Отклонено"
     },
-    "detailTitle": "{action} {type}",
+    "detailTitle": "{action}: {type}",
     "requestInfo": {
       "title": "Информация о запросе",
       "description": "Подробности о том, кто запросил изменение",
@@ -609,6 +458,58 @@
     "categoryHasItems": "Категория содержит предметы",
     "insufficientJustification": "Недостаточное обоснование"
   },
+  "pendingChange": {
+    "toast": {
+      "pendingTitle": "Изменение ожидает утверждения",
+      "pendingDescription": "Ваше изменение отправлено и ожидает утверждения администратором.",
+      "approvedTitle": "Изменение утверждено",
+      "approvedDescription": "Ваш запрос на изменение был утверждён и применён.",
+      "rejectedTitle": "Изменение отклонено",
+      "rejectedDescription": "Ваш запрос на изменение был отклонён: {reason}",
+      "submittedTitle": "Отправлено на утверждение",
+      "submittedDescription": "Ваш запрос ({action}: {entityType}) ожидает утверждения администратором."
+    },
+    "banner": {
+      "title": "Ожидает утверждения",
+      "description": "Это изменение ожидает утверждения администратором рабочего пространства.",
+      "viewChanges": "Посмотреть мои изменения"
+    },
+    "drawer": {
+      "title": "Ожидающие изменения",
+      "allSynced": "Все изменения синхронизированы.",
+      "summary": "{pending} в ожидании, {failed} с ошибкой",
+      "allSyncedDescription": "Все изменения синхронизированы с сервером.",
+      "syncNow": "Синхронизировать",
+      "clearAll": "Очистить все",
+      "clearAllConfirmTitle": "Очистить все ожидающие изменения?",
+      "clearAllConfirmDescription": "Это навсегда удалит {count, plural, one {# ожидающее изменение} few {# ожидающих изменения} other {# ожидающих изменений}}. Это действие нельзя отменить.",
+      "cancel": "Отмена",
+      "retryTitle": "Повторить",
+      "retryAria": "Повторить ожидающее изменение",
+      "cancelAria": "Отменить ожидающее изменение",
+      "retries": "{count, plural, one {# повтор} few {# повтора} other {# повторов}}",
+      "operations": {
+        "create": "Создание",
+        "update": "Обновление",
+        "delete": "Удаление"
+      },
+      "entities": {
+        "items": "предмет",
+        "inventory": "инвентарь",
+        "locations": "местоположение",
+        "containers": "контейнер",
+        "categories": "категория",
+        "borrowers": "заёмщик",
+        "loans": "заём"
+      },
+      "status": {
+        "pending": "ожидает",
+        "syncing": "синхронизация",
+        "failed": "ошибка",
+        "needsReview": "требует проверки"
+      }
+    }
+  },
   "imports": {
     "title": "Задания импорта",
     "subtitle": "Управление и мониторинг массового импорта",
@@ -641,6 +542,397 @@
       "success": "Успешно",
       "errors": "Ошибки",
       "total": "Всего"
+    }
+  },
+  "photos": {
+    "upload": {
+      "title": "Загрузить фото",
+      "instructions": "Перетащите изображения сюда или нажмите для выбора. Можно загрузить несколько фото одновременно.",
+      "dropFiles": "Перетащите файлы сюда",
+      "dropZoneLabel": "Зона загрузки фото. Нажмите или Enter для выбора файлов.",
+      "browse": "Выбрать файлы",
+      "takePhoto": "Сфотографировать",
+      "fileInput": "Выберите файлы изображений для загрузки",
+      "acceptedFormats": "Допустимые форматы: JPEG, PNG, GIF, WebP (макс. 10МБ)",
+      "selectedFiles": "{count, plural, =1 {1 файл выбран} other {# файлов выбрано}}",
+      "uploadedCount": "{count, plural, =1 {1 загружен} other {# загружено}}",
+      "failedCount": "{count, plural, =1 {1 ошибка} other {# ошибок}}",
+      "uploadAll": "Загрузить все",
+      "uploading": "Загрузка...",
+      "uploaded": "Загружено",
+      "uploadingProgress": "{progress}% загружено",
+      "uploadSuccess": "{count, plural, =1 {Фото загружено} other {# фото загружено}}",
+      "uploadError": "Ошибка загрузки",
+      "uploadFailed": "Не удалось загрузить фото",
+      "someUploadsFailed": "{count, plural, =1 {1 загрузка не удалась} other {# загрузок не удалось}}",
+      "tooManyFiles": "Слишком много файлов. Максимум {max} файлов.",
+      "invalidFile": "Недопустимый файл",
+      "duplicateFile": "Файл уже выбран",
+      "removeFile": "Удалить файл",
+      "fileCard": "Фото: {name}",
+      "caption": "Подпись (необязательно)",
+      "captionPlaceholder": "Добавить подпись...",
+      "retry": "Повторить",
+      "compressing": "Сжатие {name}...",
+      "compressingLabel": "Сжатие...",
+      "compressingFiles": "Сжатие...",
+      "uploadingFile": "Загрузка {name}...",
+      "fileUploaded": "{name} загружен",
+      "fileUploadFailed": "Не удалось загрузить {name}",
+      "startingUpload": "Начало загрузки {count, plural, =1 {1 файла} other {# файлов}}",
+      "allUploadsComplete": "{count, plural, =1 {1 фото загружено} other {# фото загружено}}",
+      "overallProgress": "Общий прогресс"
+    },
+    "gallery": {
+      "empty": "Фото ещё нет",
+      "emptyDescription": "Загрузите фото для начала. Можно добавить несколько фото и подписи.",
+      "uploadPhotos": "Загрузить фото",
+      "primary": "Основное",
+      "actions": "Действия с фото",
+      "view": "Просмотр",
+      "setPrimary": "Сделать основным",
+      "editCaption": "Изменить подпись",
+      "download": "Скачать",
+      "delete": "Удалить",
+      "deleteTitle": "Удалить фото",
+      "deleteDescription": "Вы уверены, что хотите удалить это фото? Это действие нельзя отменить.",
+      "cancel": "Отмена",
+      "deleting": "Удаление...",
+      "reorderSuccess": "Фото переупорядочены",
+      "reorderError": "Не удалось переупорядочить фото",
+      "setPrimarySuccess": "Основное фото обновлено",
+      "setPrimaryError": "Не удалось установить основное фото",
+      "deleteSuccess": "Фото удалено",
+      "deleteError": "Не удалось удалить фото",
+      "selectPhoto": "Выбрать фото",
+      "selectAll": "Выбрать все",
+      "deletePhotoAria": "Удалить фото: {caption}"
+    },
+    "viewer": {
+      "previous": "Предыдущее фото",
+      "next": "Следующее фото",
+      "zoomIn": "Увеличить",
+      "zoomOut": "Уменьшить",
+      "download": "Скачать фото",
+      "close": "Закрыть просмотр",
+      "navigate": "Навигация",
+      "zoom": "Масштаб"
+    },
+    "captionEditor": {
+      "title": "Изменить подпись",
+      "description": "Добавьте или измените подпись к этому фото.",
+      "caption": "Подпись",
+      "placeholder": "Введите подпись к фото...",
+      "hint": "Enter для сохранения, Esc для отмены",
+      "charactersRemaining": "символов осталось",
+      "save": "Сохранить",
+      "saving": "Сохранение...",
+      "cancel": "Отмена",
+      "saveSuccess": "Подпись обновлена",
+      "saveError": "Не удалось обновить подпись"
+    },
+    "thumbnail": {
+      "processing": "Обработка",
+      "generatingThumbnails": "Создание миниатюр...",
+      "failed": "Ошибка",
+      "defaultError": "Не удалось создать миниатюру",
+      "thumbnailFailed": "Ошибка создания миниатюры"
+    },
+    "bulk": {
+      "select": "Выбрать",
+      "cancel": "Отмена",
+      "selectAll": "Выбрать все",
+      "download": "Скачать",
+      "editCaptions": "Изменить подписи",
+      "delete": "Удалить",
+      "deleteTitle": "Удалить фото",
+      "deleteDescription": "Вы уверены, что хотите удалить {count, plural, =1 {1 фото} other {# фото}}? Это действие нельзя отменить.",
+      "deleting": "Удаление...",
+      "confirmDelete": "Удалить фото",
+      "captionTitle": "Изменить подписи",
+      "captionDescription": "Установить одинаковую подпись для {count, plural, =1 {1 выбранного фото} other {# выбранных фото}}.",
+      "captionLabel": "Подпись",
+      "captionPlaceholder": "Введите подпись для всех выбранных фото...",
+      "updating": "Обновление...",
+      "applyCaption": "Применить подпись",
+      "deleteSuccess": "{count, plural, =1 {Фото удалено} other {# фото удалено}}",
+      "deleteError": "Не удалось удалить фото",
+      "captionSuccess": "{count, plural, =1 {Подпись обновлена для 1 фото} other {Подписи обновлены для # фото}}",
+      "captionError": "Не удалось обновить подписи",
+      "downloadSuccess": "Загрузка началась",
+      "downloadError": "Не удалось скачать фото"
+    },
+    "duplicates": {
+      "exactTitle": "Обнаружен дубликат",
+      "similarTitle": "Найдены похожие фото",
+      "exactDescription": "Это фото уже существует в этом предмете.",
+      "similarDescription": "Мы нашли фото, похожие на загружаемое.",
+      "foundCount": "{count, plural, =1 {Найдено 1 похожее фото} other {Найдено # похожих фото}}:",
+      "existingPhoto": "Существующее фото",
+      "cancel": "Отмена",
+      "uploadAnyway": "Загрузить всё равно",
+      "uploading": "Загрузка..."
+    }
+  },
+  "notifications": {
+    "title": "Уведомления",
+    "empty": "Нет новых уведомлений",
+    "markAllRead": "Отметить все как прочитанные",
+    "markRead": "Отметить как прочитанное",
+    "ariaLabel": "Уведомления ({count} непрочитанных)"
+  },
+  "settings": {
+    "title": "Настройки",
+    "description": "Управление настройками рабочего пространства и аккаунта",
+    "comingSoon": "Скоро",
+    "nav": {
+      "overview": "Обзор",
+      "profile": "Профиль",
+      "appearance": "Оформление",
+      "language": "Язык",
+      "regionalFormats": "Региональные форматы",
+      "security": "Безопасность",
+      "notifications": "Уведомления",
+      "dataStorage": "Данные и хранилище"
+    },
+    "hub": {
+      "preferences": "Настройки",
+      "systemSecurity": "Система и безопасность",
+      "appearanceDesc": "Тема и настройки отображения",
+      "languageDesc": "Язык приложения",
+      "regionalFormatsDesc": "Форматы даты, времени и чисел",
+      "securityDesc": "Пароль, сессии и аккаунт",
+      "notificationsDesc": "Настройки уведомлений",
+      "dataStorageDesc": "Офлайн-данные и управление хранилищем",
+      "light": "Светлая",
+      "dark": "Тёмная",
+      "system": "Системная"
+    },
+    "appearance": {
+      "title": "Внешний вид",
+      "description": "Выберите предпочтительную тему оформления",
+      "light": "Светлая",
+      "dark": "Тёмная",
+      "retro-terminal": "Ретро-терминал",
+      "system": "Системная",
+      "saved": "Тема обновлена",
+      "saveError": "Не удалось обновить тему"
+    },
+    "language": {
+      "title": "Язык",
+      "description": "Выберите предпочтительный язык приложения",
+      "saveError": "Не удалось обновить язык"
+    },
+    "dataStorage": {
+      "description": "Управление офлайн-данными, хранилищем и резервными копиями",
+      "storageUsage": {
+        "title": "Использование хранилища",
+        "description": "Дисковое пространство, используемое офлайн-данными и кешем",
+        "used": "{usage} из {quota} использовано ({percent}%)",
+        "unsupported": "Информация о хранилище недоступна в этом браузере",
+        "approximate": "Значения хранилища являются приблизительными",
+        "refresh": "Обновить"
+      },
+      "cacheManagement": {
+        "title": "Управление кешем",
+        "description": "Управление офлайн-кешем и постоянным хранилищем",
+        "clearCache": "Очистить офлайн-кеш",
+        "clearCacheConfirmTitle": "Очистить офлайн-кеш?",
+        "clearCacheConfirmDesc": "Это удалит все офлайн-данные и кешированные файлы. Страница перезагрузится автоматически. Ваши онлайн-данные не будут затронуты.",
+        "clearCacheCancel": "Отмена",
+        "clearCacheConfirm": "Очистить кеш",
+        "clearCacheSuccess": "Кеш очищен. Перезагрузка...",
+        "persistentStorage": "Постоянное хранилище",
+        "persistentStorageDesc": "Предотвращает автоматическое удаление офлайн-данных браузером при нехватке места",
+        "persistentGranted": "Предоставлено",
+        "persistentNotGranted": "Не предоставлено",
+        "requestPersistent": "Запросить постоянное хранилище",
+        "persistentSuccess": "Постоянное хранилище предоставлено",
+        "persistentDenied": "Браузер не предоставил постоянное хранилище. Это решается автоматически на основе ваших шаблонов использования."
+      },
+      "sync": {
+        "title": "Синхронизация",
+        "description": "Управление синхронизацией данных с сервером",
+        "syncNow": "Синхронизировать",
+        "syncing": "Синхронизация...",
+        "lastSync": "Последняя синхронизация",
+        "neverSynced": "Не синхронизировалось",
+        "online": "В сети",
+        "offline": "Автономно",
+        "pendingMutations": "{count} ожидающих изменений",
+        "syncError": "Последняя синхронизация не удалась"
+      },
+      "backupRestore": {
+        "title": "Резервное копирование и восстановление",
+        "description": "Экспорт данных рабочего пространства для резервного копирования или импорт из предыдущей копии",
+        "openDialog": "Открыть резервное копирование"
+      }
+    },
+    "dataManagement": {
+      "title": "Управление данными",
+      "description": "Резервное копирование и восстановление данных",
+      "backupRestore": "Резервное копирование",
+      "backupRestoreDescription": "Экспорт или импорт данных рабочего пространства"
+    },
+    "account": {
+      "title": "Аккаунт",
+      "description": "Управление профилем и предпочтениями",
+      "fullName": "Полное имя",
+      "email": "Адрес электронной почты",
+      "save": "Сохранить изменения",
+      "saving": "Сохранение...",
+      "saved": "Профиль успешно обновлён",
+      "saveError": "Не удалось обновить профиль",
+      "avatar": {
+        "title": "Фото профиля",
+        "upload": "Загрузить фото",
+        "change": "Изменить фото",
+        "remove": "Удалить",
+        "dropHere": "Перетащите изображение сюда или нажмите для загрузки",
+        "invalidType": "Пожалуйста, загрузите изображение JPEG, PNG или WebP",
+        "tooLarge": "Изображение должно быть меньше 2МБ",
+        "uploadSuccess": "Фото профиля обновлено",
+        "uploadError": "Не удалось загрузить фото профиля",
+        "deleteSuccess": "Фото профиля удалено",
+        "deleteError": "Не удалось удалить фото профиля"
+      }
+    },
+    "notifications": {
+      "title": "Уведомления",
+      "description": "Настройка параметров уведомлений"
+    },
+    "notificationPreferences": {
+      "title": "Категории уведомлений",
+      "description": "Выберите, какие уведомления вы хотите получать",
+      "masterToggle": "Включить уведомления",
+      "masterDescription": "Получать уведомления в приложении",
+      "categories": {
+        "loans": "Займы",
+        "loansDescription": "Напоминания о займах, просрочках и возвратах",
+        "inventory": "Инвентарь",
+        "inventoryDescription": "Предупреждения о низком запасе и напоминания о ремонте",
+        "workspace": "Рабочее пространство",
+        "workspaceDescription": "Приглашения и активность участников",
+        "system": "Система",
+        "systemDescription": "Системные объявления и обновления"
+      },
+      "saved": "Настройки уведомлений сохранены",
+      "saveError": "Не удалось сохранить настройки уведомлений"
+    },
+    "dateFormat": {
+      "title": "Формат даты",
+      "description": "Выберите, как даты отображаются в приложении",
+      "saved": "Формат даты обновлён",
+      "saveError": "Не удалось обновить формат даты"
+    },
+    "timeFormat": {
+      "title": "Формат времени",
+      "description": "Выберите, как время отображается в приложении",
+      "24h": "24-часовой (14:30)",
+      "12h": "12-часовой (2:30 PM)",
+      "saved": "Формат времени обновлён",
+      "saveError": "Не удалось обновить формат времени"
+    },
+    "numberFormat": {
+      "title": "Формат чисел",
+      "description": "Настройте, как числа отображаются в приложении",
+      "thousandSeparator": "Разделитель тысяч",
+      "decimalSeparator": "Десятичный разделитель",
+      "comma": "Запятая (1,000)",
+      "period": "Точка (1.000)",
+      "space": "Пробел (1 000)",
+      "decimalPeriod": "Точка (0.99)",
+      "decimalComma": "Запятая (0,99)",
+      "saved": "Формат чисел обновлён",
+      "saveError": "Не удалось обновить формат чисел",
+      "conflictError": "Разделители тысяч и десятичных должны различаться",
+      "preview": "Предпросмотр"
+    },
+    "security": {
+      "title": "Безопасность",
+      "description": "Пароль и настройки безопасности",
+      "password": {
+        "title": "Пароль",
+        "currentPassword": "Текущий пароль",
+        "newPassword": "Новый пароль",
+        "confirmPassword": "Подтвердите новый пароль",
+        "changeButton": "Изменить пароль",
+        "successMessage": "Пароль успешно изменён",
+        "errorIncorrect": "Текущий пароль неверен",
+        "errorFailed": "Не удалось изменить пароль",
+        "validationMinLength": "Пароль должен содержать минимум 8 символов",
+        "validationMismatch": "Пароли не совпадают",
+        "noPasswordSet": "Вы вошли через социальный аккаунт. Установите пароль для входа по электронной почте.",
+        "setButton": "Установить пароль",
+        "setSuccessMessage": "Пароль успешно установлен"
+      },
+      "connectedAccounts": {
+        "title": "Привязанные аккаунты",
+        "connected": "Привязан",
+        "connect": "Привязать",
+        "disconnect": "Отвязать",
+        "linkSuccess": "Аккаунт {provider} успешно привязан",
+        "unlinkSuccess": "Аккаунт {provider} отвязан",
+        "unlinkError": "Не удалось отвязать аккаунт",
+        "setPasswordFirst": "Сначала установите пароль для отвязки",
+        "setPasswordWarning": "Установите пароль, чтобы можно было отвязать последний привязанный аккаунт."
+      },
+      "sessions": {
+        "title": "Активные сессии",
+        "unknownDevice": "Неизвестное устройство",
+        "currentSession": "Текущая",
+        "lastActive": "Активна {time}",
+        "revokeButton": "Выйти на этом устройстве",
+        "revokeAllButton": "Завершить все остальные сессии",
+        "revokeSuccess": "Сессия завершена",
+        "revokeError": "Не удалось завершить сессию",
+        "revokeAllSuccess": "Все остальные сессии завершены",
+        "revokeAllError": "Не удалось завершить сессии",
+        "loadError": "Не удалось загрузить сессии",
+        "onlyCurrentSession": "Это ваша единственная активная сессия"
+      }
+    },
+    "dangerZone": {
+      "title": "Опасная зона",
+      "description": "Необратимые действия, которые навсегда повлияют на ваш аккаунт.",
+      "deleteButton": "Удалить аккаунт",
+      "deleteTitle": "Удалить ваш аккаунт",
+      "deleteWarning": "Это действие нельзя отменить. Ваш аккаунт и все данные будут удалены безвозвратно.",
+      "typeConfirm": "Введите {word} для подтверждения",
+      "confirmPlaceholder": "DELETE",
+      "confirmDelete": "Удалить мой аккаунт",
+      "deleting": "Удаление...",
+      "deleted": "Ваш аккаунт был удален",
+      "deleteError": "Не удалось удалить аккаунт. Попробуйте еще раз.",
+      "cannotDelete": "Невозможно удалить аккаунт",
+      "cannotDeleteDescription": "Перед удалением аккаунта вы должны передать права владения следующими рабочими пространствами:",
+      "cancel": "Отмена"
+    },
+    "pushNotifications": {
+      "title": "Push-уведомления",
+      "description": "Получайте уведомления, когда вы не используете приложение",
+      "notSupported": {
+        "title": "Не поддерживается",
+        "description": "Push-уведомления не поддерживаются в этом браузере. Попробуйте Chrome, Firefox или Edge."
+      },
+      "denied": {
+        "title": "Разрешение отклонено",
+        "description": "Вы заблокировали уведомления для этого сайта. Чтобы включить, измените настройки браузера."
+      },
+      "status": {
+        "enabled": "Push-уведомления включены на этом устройстве",
+        "disabled": "Push-уведомления отключены"
+      },
+      "badge": {
+        "active": "Активно",
+        "inactive": "Неактивно"
+      },
+      "button": {
+        "enable": "Включить push-уведомления",
+        "disable": "Отключить push-уведомления",
+        "loading": "Обработка..."
+      },
+      "info": "Вы будете получать уведомления о напоминаниях по займам, решениях по утверждениям и других важных обновлениях."
     }
   },
   "syncHistory": {
@@ -711,135 +1003,6 @@
     "noPhotos": "Фотографии отсутствуют",
     "noAttachments": "Вложения отсутствуют"
   },
-  "photos": {
-    "upload": {
-      "title": "Загрузить фото",
-      "instructions": "Перетащите изображения сюда или нажмите для выбора. Можно загрузить несколько фото одновременно.",
-      "dropFiles": "Перетащите файлы сюда",
-      "dropZoneLabel": "Зона загрузки фото. Нажмите или Enter для выбора файлов.",
-      "browse": "Выбрать файлы",
-      "takePhoto": "Сфотографировать",
-      "fileInput": "Выберите файлы изображений для загрузки",
-      "acceptedFormats": "Допустимые форматы: JPEG, PNG, GIF, WebP (макс. 10МБ)",
-      "selectedFiles": "{count, plural, =1 {1 файл выбран} other {# файлов выбрано}}",
-      "uploadedCount": "{count, plural, =1 {1 загружен} other {# загружено}}",
-      "failedCount": "{count, plural, =1 {1 ошибка} other {# ошибок}}",
-      "uploadAll": "Загрузить все",
-      "uploading": "Загрузка...",
-      "uploaded": "Загружено",
-      "uploadingProgress": "{progress}% загружено",
-      "uploadSuccess": "{count, plural, =1 {Фото загружено} other {# фото загружено}}",
-      "uploadError": "Ошибка загрузки",
-      "uploadFailed": "Не удалось загрузить фото",
-      "someUploadsFailed": "{count, plural, =1 {1 загрузка не удалась} other {# загрузок не удалось}}",
-      "tooManyFiles": "Слишком много файлов. Максимум {max} файлов.",
-      "invalidFile": "Недопустимый файл",
-      "duplicateFile": "Файл уже выбран",
-      "removeFile": "Удалить файл",
-      "fileCard": "Фото: {name}",
-      "caption": "Подпись (необязательно)",
-      "captionPlaceholder": "Добавить подпись...",
-      "retry": "Повторить",
-      "compressing": "Сжатие {name}...",
-      "compressingLabel": "Сжатие...",
-      "compressingFiles": "Сжатие...",
-      "uploadingFile": "Загрузка {name}...",
-      "fileUploaded": "{name} загружен",
-      "fileUploadFailed": "Не удалось загрузить {name}",
-      "startingUpload": "Начало загрузки {count, plural, =1 {1 файла} other {# файлов}}",
-      "allUploadsComplete": "{count, plural, =1 {1 фото загружено} other {# фото загружено}}",
-      "overallProgress": "Общий прогресс"
-    },
-    "gallery": {
-      "empty": "Фото ещё нет",
-      "emptyDescription": "Загрузите фото для начала. Можно добавить несколько фото и подписи.",
-      "uploadPhotos": "Загрузить фото",
-      "primary": "Основное",
-      "actions": "Действия с фото",
-      "view": "Просмотр",
-      "setPrimary": "Сделать основным",
-      "editCaption": "Изменить подпись",
-      "download": "Скачать",
-      "delete": "Удалить",
-      "deleteTitle": "Удалить фото",
-      "deleteDescription": "Вы уверены, что хотите удалить это фото? Это действие нельзя отменить.",
-      "cancel": "Отмена",
-      "deleting": "Удаление...",
-      "reorderSuccess": "Фото переупорядочены",
-      "reorderError": "Не удалось переупорядочить фото",
-      "setPrimarySuccess": "Основное фото обновлено",
-      "setPrimaryError": "Не удалось установить основное фото",
-      "deleteSuccess": "Фото удалено",
-      "deleteError": "Не удалось удалить фото",
-      "selectPhoto": "Выбрать фото",
-      "selectAll": "Выбрать все"
-    },
-    "viewer": {
-      "previous": "Предыдущее фото",
-      "next": "Следующее фото",
-      "zoomIn": "Увеличить",
-      "zoomOut": "Уменьшить",
-      "download": "Скачать фото",
-      "close": "Закрыть просмотр",
-      "navigate": "Навигация",
-      "zoom": "Масштаб"
-    },
-    "captionEditor": {
-      "title": "Изменить подпись",
-      "description": "Добавьте или измените подпись к этому фото.",
-      "caption": "Подпись",
-      "placeholder": "Введите подпись к фото...",
-      "hint": "Enter для сохранения, Esc для отмены",
-      "charactersRemaining": "символов осталось",
-      "save": "Сохранить",
-      "saving": "Сохранение...",
-      "cancel": "Отмена",
-      "saveSuccess": "Подпись обновлена",
-      "saveError": "Не удалось обновить подпись"
-    },
-    "thumbnail": {
-      "processing": "Обработка",
-      "generatingThumbnails": "Создание миниатюр...",
-      "failed": "Ошибка",
-      "defaultError": "Не удалось создать миниатюру",
-      "thumbnailFailed": "Ошибка создания миниатюры"
-    },
-    "bulk": {
-      "select": "Выбрать",
-      "cancel": "Отмена",
-      "selectAll": "Выбрать все",
-      "download": "Скачать",
-      "editCaptions": "Изменить подписи",
-      "delete": "Удалить",
-      "deleteTitle": "Удалить фото",
-      "deleteDescription": "Вы уверены, что хотите удалить {count, plural, =1 {1 фото} other {# фото}}? Это действие нельзя отменить.",
-      "deleting": "Удаление...",
-      "confirmDelete": "Удалить фото",
-      "captionTitle": "Изменить подписи",
-      "captionDescription": "Установить одинаковую подпись для {count, plural, =1 {1 выбранного фото} other {# выбранных фото}}.",
-      "captionLabel": "Подпись",
-      "captionPlaceholder": "Введите подпись для всех выбранных фото...",
-      "updating": "Обновление...",
-      "applyCaption": "Применить подпись",
-      "deleteSuccess": "{count, plural, =1 {Фото удалено} other {# фото удалено}}",
-      "deleteError": "Не удалось удалить фото",
-      "captionSuccess": "{count, plural, =1 {Подпись обновлена для 1 фото} other {Подписи обновлены для # фото}}",
-      "captionError": "Не удалось обновить подписи",
-      "downloadSuccess": "Загрузка началась",
-      "downloadError": "Не удалось скачать фото"
-    },
-    "duplicates": {
-      "exactTitle": "Обнаружен дубликат",
-      "similarTitle": "Найдены похожие фото",
-      "exactDescription": "Это фото уже существует в этом предмете.",
-      "similarDescription": "Мы нашли фото, похожие на загружаемое.",
-      "foundCount": "{count, plural, =1 {Найдено 1 похожее фото} other {Найдено # похожих фото}}:",
-      "existingPhoto": "Существующее фото",
-      "cancel": "Отмена",
-      "uploadAnyway": "Загрузить всё равно",
-      "uploading": "Загрузка..."
-    }
-  },
   "declutter": {
     "title": "Помощник по расхламлению",
     "description": "Выявление неиспользуемых предметов для очистки инвентаря",
@@ -883,6 +1046,49 @@
     "toast": {
       "markedUsed": "Предмет отмечен как использованный",
       "exportSuccess": "Список расхламления экспортирован"
+    }
+  },
+  "scanner": {
+    "title": "Сканировать",
+    "description": "Сканируйте штрихкоды и QR-коды для поиска предметов",
+    "tabs": {
+      "scan": "Сканер",
+      "manual": "Вручную",
+      "history": "История"
+    },
+    "notFound": {
+      "title": "Не найдено",
+      "description": "Предмет с кодом {code} не найден"
+    },
+    "actions": {
+      "view": "Просмотр",
+      "loan": "Заём",
+      "move": "Переместить",
+      "repair": "Ремонт",
+      "createItem": "Создать предмет",
+      "scanAgain": "Сканировать снова",
+      "moveComingSoon": "Функция перемещения скоро появится"
+    },
+    "close": "Закрыть",
+    "manualEntry": {
+      "label": "Введите штрихкод вручную",
+      "placeholder": "Введите или вставьте штрихкод...",
+      "submit": "Найти",
+      "clear": "Очистить",
+      "hint": "Введите штрихкод, QR-код или короткий код"
+    },
+    "history": {
+      "title": "Недавние сканирования",
+      "empty": "Нет недавних сканирований",
+      "clearAll": "Очистить"
+    },
+    "feedback": {
+      "scanning": "Сканирование...",
+      "found": "Найдено: {name}",
+      "notFound": "Код не найден",
+      "lookupFailed": "Не удалось найти код",
+      "scannerError": "Ошибка сканера",
+      "unknownError": "Неизвестная ошибка"
     }
   },
   "pwa": {
@@ -969,6 +1175,7 @@
       "fields": {
         "sku": "Артикул",
         "name": "Название",
+        "category": "Категория",
         "description": "Описание",
         "brand": "Бренд",
         "model": "Модель",
@@ -989,6 +1196,7 @@
       "placeholders": {
         "sku": "напр., ITEM-001",
         "name": "Введите название предмета",
+        "category": "Выберите категорию...",
         "description": "Необязательное описание",
         "brand": "напр., Apple",
         "model": "напр., iPhone 15 Pro",
@@ -1024,7 +1232,39 @@
     "markAsReviewed": "Отметить как проверенное",
     "marking": "Отмечаем...",
     "markedAsReviewed": "Отмечено как проверенное",
-    "markReviewedFailed": "Не удалось отметить как проверенное"
+    "markReviewedFailed": "Не удалось отметить как проверенное",
+    "list": {
+      "toasts": {
+        "newItemAdded": "Добавлен новый предмет: {name}",
+        "requiredFields": "Пожалуйста, заполните обязательные поля",
+        "requiredFieldsDescription": "Артикул и название обязательны",
+        "updated": "Предмет обновлён",
+        "updateQueued": "Обновление предмета поставлено в очередь синхронизации",
+        "created": "Предмет создан",
+        "createQueued": "Предмет поставлен в очередь синхронизации",
+        "saveFailed": "Не удалось сохранить предмет",
+        "restored": "Предмет успешно восстановлен",
+        "archived": "Предмет успешно архивирован",
+        "archiveFailed": "Не удалось архивировать предмет",
+        "pendingSync": "Предмет ожидает синхронизации",
+        "pendingSyncDescription": "Этот предмет будет доступен после синхронизации",
+        "exported": "{count, plural, one {Экспортирован # предмет} few {Экспортировано # предмета} other {Экспортировано # предметов}}",
+        "bulkRestored": "{count, plural, one {Восстановлен # предмет} few {Восстановлено # предмета} other {Восстановлено # предметов}}",
+        "bulkArchived": "{count, plural, one {Архивирован # предмет} few {Архивировано # предмета} other {Архивировано # предметов}}",
+        "bulkArchiveFailed": "Не удалось архивировать предметы"
+      },
+      "unknownName": "Неизвестно",
+      "searchPlaceholder": "Поиск по артикулу, названию, бренду или модели...",
+      "selectAllAria": "Выбрать все предметы",
+      "shortCodePlaceholder": "Метка QR-кода",
+      "exportDialogTitle": "Экспорт предметов в CSV",
+      "exportDialogDescription": "Выберите столбцы и данные для экспорта",
+      "importDialogTitle": "Импорт предметов из CSV",
+      "importDialogDescription": "Загрузите CSV-файл для импорта предметов. Файл должен содержать столбцы с артикулом, названием и другими данными."
+    },
+    "detail": {
+      "deletedNotice": "Этот предмет был удалён"
+    }
   },
   "inventory": {
     "purchasePrice": "Цена покупки",
@@ -1052,5 +1292,209 @@
     "sessionSummaryDescription": "{count} {count, plural, one {предмет} few {предмета} other {предметов}} захвачено",
     "sessionSummaryContinue": "К предметам",
     "sessionSummaryCapture": "Ещё захват"
+  },
+  "claim": {
+    "title": "ПРИВЯЗАТЬ ЭТОТ КОД",
+    "codeLabel": "КОРОТКИЙ КОД",
+    "noMatch": "Этот код ещё не привязан ни к чему в ваших рабочих пространствах. Создайте новый объект с предзаполненным кодом:",
+    "createItem": "Создать предмет",
+    "createLocation": "Создать местоположение",
+    "createContainer": "Создать контейнер",
+    "createHint": "Подсказка: диалог создания местоположений и контейнеров открывается со страницы списка — вставьте код в поле «Короткий код».",
+    "multiTitle": "НЕСКОЛЬКО СОВПАДЕНИЙ",
+    "multiSubtitle": "Этот код соответствует нескольким объектам в ваших рабочих пространствах. Выберите один:",
+    "typeItem": "Предмет",
+    "typeContainer": "Контейнер",
+    "typeLocation": "Местоположение",
+    "open": "Открыть"
+  },
+  "loans": {
+    "toasts": {
+      "sseCreated": "Создан новый заём",
+      "sseUpdated": "Заём обновлён",
+      "sseReturned": "Заём возвращён",
+      "returnSuccess": "Заём успешно возвращён",
+      "returnFailed": "Не удалось вернуть заём",
+      "exported": "{count, plural, one {Экспортирован # заём} few {Экспортировано # займа} other {Экспортировано # займов}}",
+      "bulkReturned": "{count, plural, one {Возвращён # заём} few {Возвращено # займа} other {Возвращено # займов}}",
+      "bulkReturnFailed": "Не удалось вернуть займы",
+      "extendSuccess": "Срок возврата успешно продлён",
+      "extendFailed": "Не удалось продлить срок возврата",
+      "requiredFields": "Пожалуйста, заполните все обязательные поля",
+      "created": "Заём успешно создан",
+      "createFailed": "Не удалось создать заём"
+    },
+    "searchPlaceholder": "Поиск по заёмщику или инвентарю...",
+    "selectAllAria": "Выбрать все займы",
+    "selectLoanAria": "Выбрать заём для {name}",
+    "loanActionsAria": "Действия для займа: {name}",
+    "placeholders": {
+      "from": "От",
+      "to": "До",
+      "selectItem": "Выберите предмет",
+      "selectInventory": "Выберите инвентарь",
+      "noAvailableInventory": "Нет доступного инвентаря",
+      "selectBorrower": "Выберите заёмщика",
+      "notes": "Добавьте заметки об этом займе..."
+    },
+    "exportDialogTitle": "Экспорт займов в CSV",
+    "exportDialogDescription": "Выберите столбцы и данные для экспорта"
+  },
+  "locations": {
+    "toasts": {
+      "loadFailed": "Не удалось загрузить местоположения",
+      "syncFailed": "Не удалось синхронизировать местоположение",
+      "tryAgain": "Пожалуйста, попробуйте снова",
+      "sseCreated": "Добавлено новое местоположение: {name}",
+      "sseUpdated": "Местоположение обновлено: {name}",
+      "sseDeleted": "Местоположение удалено",
+      "unknown": "Неизвестно",
+      "requiredFields": "Пожалуйста, заполните обязательные поля",
+      "nameRequired": "Название обязательно",
+      "updated": "Местоположение обновлено",
+      "updateQueued": "Обновление местоположения поставлено в очередь",
+      "created": "Местоположение создано",
+      "createQueued": "Местоположение поставлено в очередь синхронизации",
+      "saveFailed": "Не удалось сохранить местоположение",
+      "restored": "Местоположение успешно восстановлено",
+      "archived": "Местоположение успешно архивировано",
+      "archiveFailed": "Не удалось архивировать местоположение",
+      "deleted": "Местоположение успешно удалено",
+      "deleteFailed": "Не удалось удалить местоположение"
+    },
+    "searchPlaceholder": "Поиск местоположений...",
+    "hierarchyAria": "Иерархия местоположений",
+    "expandAria": "Развернуть {name}",
+    "collapseAria": "Свернуть {name}",
+    "actionsAria": "Действия для {name}",
+    "scanQrAria": "Сканировать QR-код",
+    "placeholders": {
+      "name": "напр., Склад А, Комната 101",
+      "parent": "Нет (корневое местоположение)",
+      "shortCode": "Оставьте пустым для автогенерации",
+      "description": "Опишите это местоположение..."
+    },
+    "importDialogTitle": "Импорт местоположений из CSV",
+    "importDialogDescription": "Загрузите CSV-файл для импорта местоположений. Файл должен содержать столбцы с названием, описанием и родительским местоположением."
+  },
+  "containers": {
+    "toasts": {
+      "syncFailed": "Не удалось синхронизировать контейнер",
+      "tryAgain": "Пожалуйста, попробуйте снова",
+      "sseCreated": "Добавлен новый контейнер: {name}",
+      "sseUpdated": "Контейнер обновлён: {name}",
+      "sseDeleted": "Контейнер удалён",
+      "unknownName": "Неизвестно",
+      "requiredFields": "Пожалуйста, заполните обязательные поля",
+      "requiredFieldsDescription": "Название и местоположение обязательны",
+      "updated": "Контейнер обновлён",
+      "updateQueued": "Обновление контейнера поставлено в очередь",
+      "created": "Контейнер создан",
+      "createQueued": "Контейнер поставлен в очередь синхронизации",
+      "saveFailed": "Не удалось сохранить контейнер",
+      "restored": "Контейнер успешно восстановлен",
+      "archived": "Контейнер успешно архивирован",
+      "archiveFailed": "Не удалось архивировать контейнер",
+      "exported": "{count, plural, one {Экспортирован # контейнер} few {Экспортировано # контейнера} other {Экспортировано # контейнеров}}",
+      "importFailed": "Импорт не удался",
+      "bulkRestored": "{count, plural, one {Восстановлен # контейнер} few {Восстановлено # контейнера} other {Восстановлено # контейнеров}}",
+      "bulkArchived": "{count, plural, one {Архивирован # контейнер} few {Архивировано # контейнера} other {Архивировано # контейнеров}}",
+      "bulkArchiveFailed": "Не удалось архивировать контейнеры",
+      "deleted": "Контейнер успешно удалён",
+      "deleteFailed": "Не удалось удалить контейнер"
+    },
+    "searchPlaceholder": "Поиск по названию, местоположению или короткому коду...",
+    "tableAria": "Контейнеры для хранения",
+    "selectAllAria": "Выбрать все контейнеры",
+    "selectRowAria": "Выбрать {name}",
+    "rowActionsAria": "Действия для {name}",
+    "scanQrAria": "Сканировать QR-код",
+    "placeholders": {
+      "min": "Мин",
+      "max": "Макс",
+      "name": "напр., Пластиковый ящик А, Металлическая коробка 1",
+      "location": "Выберите местоположение",
+      "capacity": "напр., 50 л, 20 предметов, малый",
+      "shortCode": "напр., CON-001",
+      "description": "Опишите этот контейнер..."
+    },
+    "exportDialogTitle": "Экспорт контейнеров в CSV",
+    "exportDialogDescription": "Выберите столбцы и данные для экспорта",
+    "importDialogTitle": "Импорт контейнеров из CSV",
+    "importDialogDescription": "Загрузите CSV-файл для импорта контейнеров. Файл должен содержать столбцы с названием, местоположением, вместимостью и другими данными."
+  },
+  "borrowers": {
+    "toasts": {
+      "newBorrowerAdded": "Добавлен новый заёмщик: {name}",
+      "unknownName": "Неизвестно",
+      "borrowerWasDeleted": "Заёмщик был удалён",
+      "syncFailed": "Не удалось синхронизировать заёмщика",
+      "tryAgain": "Пожалуйста, попробуйте снова",
+      "requiredFields": "Пожалуйста, заполните обязательные поля",
+      "nameRequired": "Имя обязательно",
+      "invalidEmail": "Неверный адрес электронной почты",
+      "invalidEmailDescription": "Пожалуйста, введите корректный адрес электронной почты",
+      "updated": "Заёмщик обновлён",
+      "updateQueued": "Обновление заёмщика поставлено в очередь",
+      "created": "Заёмщик создан",
+      "createQueued": "Заёмщик поставлен в очередь синхронизации",
+      "saveFailed": "Не удалось сохранить заёмщика",
+      "deleted": "Заёмщик успешно удалён",
+      "deleteFailed": "Не удалось удалить заёмщика",
+      "fieldUpdated": "Успешно обновлено",
+      "fieldUpdateQueued": "Обновление поставлено в очередь",
+      "updateFailed": "Не удалось обновить",
+      "updateFailedFallback": "Не удалось обновить",
+      "exported": "{count, plural, one {Экспортирован # заёмщик} few {Экспортировано # заёмщика} other {Экспортировано # заёмщиков}}",
+      "archived": "{count, plural, one {Архивирован # заёмщик} few {Архивировано # заёмщика} other {Архивировано # заёмщиков}}",
+      "archiveFailed": "Не удалось архивировать заёмщиков"
+    },
+    "searchPlaceholder": "Поиск по имени, email или телефону...",
+    "tableAria": "Заёмщики",
+    "selectAllAria": "Выбрать всех заёмщиков",
+    "selectRowAria": "Выбрать {name}",
+    "rowActionsAria": "Действия для {name}",
+    "placeholders": {
+      "borrowerName": "Имя заёмщика",
+      "emailAddress": "Адрес электронной почты",
+      "phoneNumber": "Номер телефона",
+      "name": "Иван Иванов",
+      "email": "ivan@example.com",
+      "phone": "+7 900 123-45-67",
+      "notes": "Дополнительная информация об этом заёмщике..."
+    },
+    "exportDialogTitle": "Экспорт заёмщиков в CSV",
+    "exportDialogDescription": "Выберите столбцы и данные для экспорта",
+    "importDialogTitle": "Импорт заёмщиков из CSV",
+    "importDialogDescription": "Загрузите CSV-файл для импорта заёмщиков. Файл должен содержать столбцы с именем, email, телефоном и другими данными."
+  },
+  "analytics": {
+    "toasts": {
+      "loadFailed": "Не удалось загрузить аналитику"
+    },
+    "stats": {
+      "totalItems": "Всего предметов",
+      "totalInventory": "Всего инвентаря",
+      "activeLoans": "Активные займы",
+      "overdueLoans": "Просроченные займы",
+      "locations": "Места",
+      "containers": "Контейнеры",
+      "borrowers": "Заёмщики",
+      "lowStockItems": "Предметы с низким запасом"
+    }
+  },
+  "syncStatus": {
+    "offline": "Офлайн",
+    "syncing": "Синхронизация...",
+    "failedCount": "{count} с ошибкой",
+    "pendingCount": "{count} в ожидании",
+    "notSynced": "Не синхронизировано",
+    "viewPendingTitle": "Нажмите, чтобы просмотреть ожидающие изменения",
+    "viewFailedTitle": "Нажмите, чтобы просмотреть неудавшиеся изменения",
+    "syncNowTitle": "Нажмите для синхронизации",
+    "justNow": "только что",
+    "minutesAgo": "{count} мин назад",
+    "hoursAgo": "{count} ч назад",
+    "daysAgo": "{count} дн назад"
   }
 }

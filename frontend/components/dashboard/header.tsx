@@ -122,10 +122,10 @@ export function DashboardHeader({ onMenuClick }: HeaderProps) {
         size="icon"
         className="md:hidden shrink-0"
         onClick={onMenuClick}
-        aria-label="Open navigation menu"
+        aria-label={t("header.openMenuAria")}
       >
         <Menu className="h-5 w-5" />
-        <span className="sr-only">Toggle menu</span>
+        <span className="sr-only">{t("header.openMenuAria")}</span>
       </Button>
 
       {/* Workspace switcher */}
@@ -143,7 +143,7 @@ export function DashboardHeader({ onMenuClick }: HeaderProps) {
             onFocus={() => setSearchOpen(true)}
             onKeyDown={handleKeyDown}
             className="w-full pl-8 pr-8"
-            aria-label="Global search"
+            aria-label={t("header.globalSearchAria")}
             aria-expanded={searchOpen}
             aria-controls="global-search-results"
           />
@@ -151,7 +151,7 @@ export function DashboardHeader({ onMenuClick }: HeaderProps) {
             <button
               onClick={() => clearSearch()}
               className="absolute right-2.5 top-2.5 text-muted-foreground hover:text-foreground"
-              aria-label="Clear search"
+              aria-label={t("header.clearSearchAria")}
             >
               <X className="h-4 w-4" />
             </button>
@@ -189,7 +189,7 @@ export function DashboardHeader({ onMenuClick }: HeaderProps) {
         size="icon"
         className="sm:hidden shrink-0"
         onClick={() => setMobileSearchOpen(true)}
-        aria-label="Open search"
+        aria-label={t("header.openSearchAria")}
       >
         <Search className="h-5 w-5" />
       </Button>
@@ -212,7 +212,7 @@ export function DashboardHeader({ onMenuClick }: HeaderProps) {
                 }
               }}
               className="flex-1 border-0 shadow-none focus-visible:ring-0 px-0"
-              aria-label="Global search"
+              aria-label={t("header.globalSearchAria")}
               autoFocus
             />
             <Button
@@ -222,7 +222,7 @@ export function DashboardHeader({ onMenuClick }: HeaderProps) {
                 setMobileSearchOpen(false);
                 clearSearch();
               }}
-              aria-label="Close search"
+              aria-label={t("header.closeSearchAria")}
             >
               <X className="h-5 w-5" />
             </Button>

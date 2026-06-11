@@ -106,6 +106,7 @@ function LoansFilterControls({
   getFilter,
   datePlaceholder,
 }: LoansFilterControlsProps) {
+  const t = useTranslations("loans");
   const [selectedBorrowers, setSelectedBorrowers] = useState<string[]>([]);
   const [selectedStatuses, setSelectedStatuses] = useState<string[]>([]);
   const [overdueOnly, setOverdueOnly] = useState(false);
@@ -300,13 +301,13 @@ function LoansFilterControls({
             type="date"
             value={loanedFrom ? format(loanedFrom, "yyyy-MM-dd") : ""}
             onChange={(e) => updateLoanedDateRange(e.target.value, loanedTo ? format(loanedTo, "yyyy-MM-dd") : "")}
-            placeholder="From"
+            placeholder={t("placeholders.from")}
           />
           <Input
             type="date"
             value={loanedTo ? format(loanedTo, "yyyy-MM-dd") : ""}
             onChange={(e) => updateLoanedDateRange(loanedFrom ? format(loanedFrom, "yyyy-MM-dd") : "", e.target.value)}
-            placeholder="To"
+            placeholder={t("placeholders.to")}
           />
         </div>
       </div>
@@ -319,13 +320,13 @@ function LoansFilterControls({
             type="date"
             value={dueFrom ? format(dueFrom, "yyyy-MM-dd") : ""}
             onChange={(e) => updateDueDateRange(e.target.value, dueTo ? format(dueTo, "yyyy-MM-dd") : "")}
-            placeholder="From"
+            placeholder={t("placeholders.from")}
           />
           <Input
             type="date"
             value={dueTo ? format(dueTo, "yyyy-MM-dd") : ""}
             onChange={(e) => updateDueDateRange(dueFrom ? format(dueFrom, "yyyy-MM-dd") : "", e.target.value)}
-            placeholder="To"
+            placeholder={t("placeholders.to")}
           />
         </div>
       </div>
@@ -529,15 +530,15 @@ export default function LoansPage() {
         switch (event.type) {
           case 'loan.created':
             refetch();
-            toast.info('New loan created');
+            toast.info(t("toasts.sseCreated"));
             break;
           case 'loan.updated':
             refetch();
-            toast.info('Loan updated');
+            toast.info(t("toasts.sseUpdated"));
             break;
           case 'loan.returned':
             refetch();
-            toast.success('Loan returned');
+            toast.success(t("toasts.sseReturned"));
             break;
         }
       }
@@ -706,13 +707,13 @@ export default function LoansPage() {
     try {
       setIsProcessing(true);
       await loansApi.return(workspaceId!, returningLoan.id);
-      toast.success("Loan returned successfully");
+      toast.success(t("toasts.returnSuccess"));
       setReturnDialogOpen(false);
       setReturningLoan(null);
       refetch();
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "Failed to return loan";
-      toast.error("Failed to return loan", {
+      const errorMessage = error instanceof Error ? error.message : t("toasts.returnFailed");
+      toast.error(t("toasts.returnFailed"), {
         description: errorMessage,
       });
     } finally {
@@ -724,7 +725,7 @@ export default function LoansPage() {
   const handleBulkExport = () => {
     const selectedLoans = sortedLoans.filter((loan) => selectedIds.has(loan.id));
     exportToCSV(selectedLoans, exportColumns, generateFilename("loans-bulk"));
-    toast.success(`Exported ${selectedCount} ${selectedCount === 1 ? "loan" : "loans"}`);
+    toast.success(t("toasts.exported", { count: selectedCount }));
     clearSelection();
   };
 
@@ -739,13 +740,13 @@ export default function LoansPage() {
       );
 
       toast.success(
-        `Returned ${selectedCount} ${selectedCount === 1 ? "loan" : "loans"}`
+        t("toasts.bulkReturned", { count: selectedCount })
       );
       clearSelection();
       refetch();
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "Failed to return loans";
-      toast.error("Failed to return loans", {
+      const errorMessage = error instanceof Error ? error.message : t("toasts.bulkReturnFailed");
+      toast.error(t("toasts.bulkReturnFailed"), {
         description: errorMessage,
       });
     }
@@ -757,14 +758,14 @@ export default function LoansPage() {
     try {
       setIsProcessing(true);
       await loansApi.extend(workspaceId!, extendingLoan.id, { new_due_date: newDueDate });
-      toast.success("Due date extended successfully");
+      toast.success(t("toasts.extendSuccess"));
       setExtendDialogOpen(false);
       setExtendingLoan(null);
       setNewDueDate("");
       refetch();
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "Failed to extend due date";
-      toast.error("Failed to extend due date", {
+      const errorMessage = error instanceof Error ? error.message : t("toasts.extendFailed");
+      toast.error(t("toasts.extendFailed"), {
         description: errorMessage,
       });
     } finally {
@@ -784,7 +785,7 @@ export default function LoansPage() {
 
   const handleCreateLoan = async () => {
     if (!formInventoryId || !formBorrowerId) {
-      toast.error("Please fill in all required fields");
+      toast.error(t("toasts.requiredFields"));
       return;
     }
 
@@ -798,13 +799,13 @@ export default function LoansPage() {
         due_date: formDueDate ? new Date(formDueDate).toISOString() : undefined,
         notes: formNotes || undefined,
       });
-      toast.success("Loan created successfully");
+      toast.success(t("toasts.created"));
       setCreateDialogOpen(false);
       resetCreateForm();
       refetch();
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "Failed to create loan";
-      toast.error("Failed to create loan", {
+      const errorMessage = error instanceof Error ? error.message : t("toasts.createFailed");
+      toast.error(t("toasts.createFailed"), {
         description: errorMessage,
       });
     } finally {
@@ -899,7 +900,7 @@ export default function LoansPage() {
             {/* Search and filters */}
             <div className="flex items-center gap-2 relative">
               <CollapsibleSearch
-                placeholder="Search by borrower or inventory..."
+                placeholder={t("searchPlaceholder")}
                 value={searchQuery}
                 onChange={setSearchQuery}
               />
@@ -969,7 +970,7 @@ export default function LoansPage() {
                                 clearSelection();
                               }
                             }}
-                            aria-label="Select all loans"
+                            aria-label={t("selectAllAria")}
                           />
                         </TableHead>
                         <SortableTableHead
@@ -1055,7 +1056,7 @@ export default function LoansPage() {
                                 <Checkbox
                                   checked={isSelected(loan.id)}
                                   onCheckedChange={() => toggleSelection(loan.id)}
-                                  aria-label={`Select loan for ${getBorrowerName(loan.borrower_id)}`}
+                                  aria-label={t("selectLoanAria", { name: getBorrowerName(loan.borrower_id) })}
                                 />
                               </TableCell>
                               <TableCell className="w-[80px] sm:w-[100px] flex-none">
@@ -1097,7 +1098,7 @@ export default function LoansPage() {
                               <TableCell className="w-[50px] flex-none">
                                 <DropdownMenu>
                                   <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" size="icon" disabled={!loan.is_active} aria-label={`Actions for loan to ${getBorrowerName(loan.borrower_id)}`}>
+                                    <Button variant="ghost" size="icon" disabled={!loan.is_active} aria-label={t("loanActionsAria", { name: getBorrowerName(loan.borrower_id) })}>
                                       <MoreHorizontal className="h-4 w-4" />
                                     </Button>
                                   </DropdownMenuTrigger>
@@ -1222,7 +1223,7 @@ export default function LoansPage() {
               <Label htmlFor="item">Item *</Label>
               <SearchableSelect
                 id="item"
-                placeholder="Select an item"
+                placeholder={t("placeholders.selectItem")}
                 emptyText="No items found."
                 value={formItemId}
                 onValueChange={setFormItemId}
@@ -1241,8 +1242,8 @@ export default function LoansPage() {
                   <SelectTrigger id="inventory">
                     <SelectValue placeholder={
                       availableInventory.length === 0
-                        ? "No available inventory"
-                        : "Select inventory"
+                        ? t("placeholders.noAvailableInventory")
+                        : t("placeholders.selectInventory")
                     } />
                   </SelectTrigger>
                   <SelectContent>
@@ -1267,7 +1268,7 @@ export default function LoansPage() {
               <Label htmlFor="borrower">Borrower *</Label>
               <SearchableSelect
                 id="borrower"
-                placeholder="Select a borrower"
+                placeholder={t("placeholders.selectBorrower")}
                 emptyText="No borrowers found."
                 value={formBorrowerId}
                 onValueChange={setFormBorrowerId}
@@ -1332,7 +1333,7 @@ export default function LoansPage() {
                 id="notes"
                 value={formNotes}
                 onChange={(e) => setFormNotes(e.target.value)}
-                placeholder="Add any notes about this loan..."
+                placeholder={t("placeholders.notes")}
                 rows={3}
               />
             </div>
@@ -1372,8 +1373,8 @@ export default function LoansPage() {
         allData={loans}
         columns={exportColumns}
         filePrefix="loans"
-        title="Export Loans to CSV"
-        description="Select columns and data to export"
+        title={t("exportDialogTitle")}
+        description={t("exportDialogDescription")}
       />
     </div>
   );

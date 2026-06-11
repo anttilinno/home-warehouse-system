@@ -107,7 +107,7 @@ export default function ScanPage() {
         }
       } catch (error) {
         console.error("[ScanPage] Lookup failed:", error);
-        toast.error("Failed to look up code");
+        toast.error(t("feedback.lookupFailed"));
         setIsPaused(false);
       }
     },
@@ -117,9 +117,9 @@ export default function ScanPage() {
   // Handle scanner error
   const handleScanError = useCallback((error: unknown) => {
     console.error("[ScanPage] Scanner error:", error);
-    const message = error instanceof Error ? error.message : "Unknown error";
-    toast.error("Scanner error", { description: message });
-  }, []);
+    const message = error instanceof Error ? error.message : t("feedback.unknownError");
+    toast.error(t("feedback.scannerError"), { description: message });
+  }, [t]);
 
   // Handle closing action menu (resume scanning)
   const handleCloseActionMenu = useCallback(() => {
@@ -155,7 +155,7 @@ export default function ScanPage() {
 
         case "move":
           // Navigate to move flow (TODO: implement move dialog)
-          toast.info("Move feature coming soon");
+          toast.info(t("actions.moveComingSoon"));
           handleCloseActionMenu();
           break;
 
@@ -170,7 +170,7 @@ export default function ScanPage() {
           handleCloseActionMenu();
       }
     },
-    [currentMatch, router, handleCloseActionMenu]
+    [currentMatch, router, handleCloseActionMenu, t]
   );
 
   // Handle manual entry submission
@@ -195,7 +195,7 @@ export default function ScanPage() {
         }
       } catch (error) {
         console.error("[ScanPage] Manual lookup failed:", error);
-        toast.error("Failed to look up code");
+        toast.error(t("feedback.lookupFailed"));
       }
     },
     [t]
@@ -211,9 +211,9 @@ export default function ScanPage() {
       setIsPaused(true);
     } catch (error) {
       console.error("[ScanPage] History lookup failed:", error);
-      toast.error("Failed to look up code");
+      toast.error(t("feedback.lookupFailed"));
     }
-  }, []);
+  }, [t]);
 
   // Handle tab change
   const handleTabChange = useCallback(

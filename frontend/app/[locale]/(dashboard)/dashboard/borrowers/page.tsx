@@ -233,7 +233,7 @@ export default function BorrowersPage() {
           case "borrower.created":
             // Refetch borrowers list to show new borrower
             refetch();
-            toast.info(`New borrower added: ${event.data?.name || "Unknown"}`);
+            toast.info(t("toasts.newBorrowerAdded", { name: (event.data?.name as string) || t("toasts.unknownName") }));
             break;
 
           case "borrower.updated":
@@ -244,7 +244,7 @@ export default function BorrowersPage() {
           case "borrower.deleted":
             // Refetch to remove deleted borrower
             refetch();
-            toast.warning("A borrower was deleted");
+            toast.warning(t("toasts.borrowerWasDeleted"));
             break;
         }
       }
@@ -276,8 +276,8 @@ export default function BorrowersPage() {
       }
 
       if (event.type === 'MUTATION_FAILED' && event.payload?.mutation?.entity === 'borrowers') {
-        toast.error('Failed to sync borrower', {
-          description: event.payload.mutation.lastError || 'Please try again',
+        toast.error(t("toasts.syncFailed"), {
+          description: event.payload.mutation.lastError || t("toasts.tryAgain"),
         });
       }
     };
@@ -372,16 +372,16 @@ export default function BorrowersPage() {
     if (!workspaceId) return;
 
     if (!formName.trim()) {
-      toast.error("Please fill in required fields", {
-        description: "Name is required",
+      toast.error(t("toasts.requiredFields"), {
+        description: t("toasts.nameRequired"),
       });
       return;
     }
 
     // Basic email validation
     if (formEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formEmail)) {
-      toast.error("Invalid email address", {
-        description: "Please enter a valid email address",
+      toast.error(t("toasts.invalidEmail"), {
+        description: t("toasts.invalidEmailDescription"),
       });
       return;
     }
@@ -400,7 +400,7 @@ export default function BorrowersPage() {
         };
 
         await updateBorrowerOffline(updatePayload, editingBorrower.id);
-        toast.success(navigator.onLine ? "Borrower updated" : "Borrower update queued");
+        toast.success(navigator.onLine ? t("toasts.updated") : t("toasts.updateQueued"));
       } else {
         // Create new borrower - use offline mutation
         const createPayload: Record<string, unknown> = {
@@ -411,13 +411,13 @@ export default function BorrowersPage() {
         };
 
         await createBorrowerOffline(createPayload);
-        toast.success(navigator.onLine ? "Borrower created" : "Borrower queued for sync");
+        toast.success(navigator.onLine ? t("toasts.created") : t("toasts.createQueued"));
       }
 
       setDialogOpen(false);
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "Failed to save borrower";
-      toast.error("Failed to save borrower", {
+      const errorMessage = error instanceof Error ? error.message : t("toasts.saveFailed");
+      toast.error(t("toasts.saveFailed"), {
         description: errorMessage,
       });
     } finally {
@@ -430,13 +430,13 @@ export default function BorrowersPage() {
 
     try {
       await borrowersApi.delete(workspaceId!, deletingBorrower.id);
-      toast.success("Borrower deleted successfully");
+      toast.success(t("toasts.deleted"));
       setDeleteDialogOpen(false);
       setDeletingBorrower(null);
       refetch();
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "Failed to delete borrower";
-      toast.error("Failed to delete borrower", {
+      const errorMessage = error instanceof Error ? error.message : t("toasts.deleteFailed");
+      toast.error(t("toasts.deleteFailed"), {
         description: errorMessage,
       });
     }
@@ -454,10 +454,10 @@ export default function BorrowersPage() {
         _entityId: borrowerId,
       };
       await updateBorrowerOffline(updatePayload, borrowerId);
-      toast.success(navigator.onLine ? "Updated successfully" : "Update queued");
+      toast.success(navigator.onLine ? t("toasts.fieldUpdated") : t("toasts.fieldUpdateQueued"));
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "Failed to update";
-      toast.error("Update failed", { description: errorMessage });
+      const errorMessage = error instanceof Error ? error.message : t("toasts.updateFailedFallback");
+      toast.error(t("toasts.updateFailed"), { description: errorMessage });
       throw error; // Re-throw to keep inline edit in error state
     }
   };
@@ -466,7 +466,7 @@ export default function BorrowersPage() {
   const handleBulkExport = () => {
     const selectedBorrowers = sortedBorrowers.filter((b) => selectedIds.has(b.id));
     exportToCSV(selectedBorrowers, exportColumns, generateFilename("borrowers-bulk"));
-    toast.success(`Exported ${selectedCount} ${selectedCount === 1 ? "borrower" : "borrowers"}`);
+    toast.success(t("toasts.exported", { count: selectedCount }));
     clearSelection();
   };
 
@@ -507,14 +507,12 @@ export default function BorrowersPage() {
         selectedIdsArray.map((id) => borrowersApi.delete(workspaceId!, id))
       );
 
-      toast.success(
-        `Archived ${selectedCount} ${selectedCount === 1 ? "borrower" : "borrowers"}`
-      );
+      toast.success(t("toasts.archived", { count: selectedCount }));
       clearSelection();
       refetch();
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "Failed to archive borrowers";
-      toast.error("Failed to archive borrowers", {
+      const errorMessage = error instanceof Error ? error.message : t("toasts.archiveFailed");
+      toast.error(t("toasts.archiveFailed"), {
         description: errorMessage,
       });
     }
@@ -614,7 +612,7 @@ export default function BorrowersPage() {
             {/* Search */}
             <div className="flex items-center gap-2 relative">
               <CollapsibleSearch
-                placeholder="Search by name, email, or phone..."
+                placeholder={t("searchPlaceholder")}
                 value={searchQuery}
                 onChange={setSearchQuery}
               />
@@ -657,7 +655,7 @@ export default function BorrowersPage() {
               </EmptyState>
             ) : (
               <div className="rounded-lg border">
-                <Table aria-label="Borrowers">
+                <Table aria-label={t("tableAria")}>
                   <caption className="sr-only">
                     List of borrowers with name, email, and phone contact information.
                     Currently showing {sortedBorrowers.length} {sortedBorrowers.length === 1 ? "borrower" : "borrowers"}.
@@ -674,7 +672,7 @@ export default function BorrowersPage() {
                               clearSelection();
                             }
                           }}
-                          aria-label="Select all borrowers"
+                          aria-label={t("selectAllAria")}
                         />
                       </TableHead>
                       <SortableTableHead
@@ -714,7 +712,7 @@ export default function BorrowersPage() {
                           <Checkbox
                             checked={isSelected(borrower.id)}
                             onCheckedChange={() => toggleSelection(borrower.id)}
-                            aria-label={`Select ${borrower.name}`}
+                            aria-label={t("selectRowAria", { name: borrower.name })}
                           />
                         </TableCell>
                         <TableCell>
@@ -732,7 +730,7 @@ export default function BorrowersPage() {
                                     handleUpdateField(borrower.id, "name", newValue)
                                   }
                                   className="font-medium"
-                                  placeholder="Borrower name"
+                                  placeholder={t("placeholders.borrowerName")}
                                 />
                                 {isPending && (
                                   <Badge variant="outline" className="text-xs text-amber-600 border-amber-300 shrink-0">
@@ -758,7 +756,7 @@ export default function BorrowersPage() {
                                 handleUpdateField(borrower.id, "email", newValue)
                               }
                               type="email"
-                              placeholder="Email address"
+                              placeholder={t("placeholders.emailAddress")}
                               className="text-sm"
                             />
                           </div>
@@ -772,7 +770,7 @@ export default function BorrowersPage() {
                                 handleUpdateField(borrower.id, "phone", newValue)
                               }
                               type="tel"
-                              placeholder="Phone number"
+                              placeholder={t("placeholders.phoneNumber")}
                               className="text-sm"
                             />
                           </div>
@@ -780,7 +778,7 @@ export default function BorrowersPage() {
                         <TableCell>
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="icon" aria-label={`Actions for ${borrower.name}`}>
+                              <Button variant="ghost" size="icon" aria-label={t("rowActionsAria", { name: borrower.name })}>
                                 <MoreHorizontal className="h-4 w-4" />
                               </Button>
                             </DropdownMenuTrigger>
@@ -866,7 +864,7 @@ export default function BorrowersPage() {
                 id="name"
                 value={formName}
                 onChange={(e) => setFormName(e.target.value)}
-                placeholder="John Doe"
+                placeholder={t("placeholders.name")}
               />
             </div>
 
@@ -877,7 +875,7 @@ export default function BorrowersPage() {
                 type="email"
                 value={formEmail}
                 onChange={(e) => setFormEmail(e.target.value)}
-                placeholder="john@example.com"
+                placeholder={t("placeholders.email")}
               />
             </div>
 
@@ -888,7 +886,7 @@ export default function BorrowersPage() {
                 type="tel"
                 value={formPhone}
                 onChange={(e) => setFormPhone(e.target.value)}
-                placeholder="+1 234 567 8900"
+                placeholder={t("placeholders.phone")}
               />
             </div>
 
@@ -898,7 +896,7 @@ export default function BorrowersPage() {
                 id="notes"
                 value={formNotes}
                 onChange={(e) => setFormNotes(e.target.value)}
-                placeholder="Additional information about this borrower..."
+                placeholder={t("placeholders.notes")}
                 rows={3}
               />
             </div>
@@ -954,8 +952,8 @@ export default function BorrowersPage() {
         allData={borrowers}
         columns={exportColumns}
         filePrefix="borrowers"
-        title="Export Borrowers to CSV"
-        description="Select columns and data to export"
+        title={t("exportDialogTitle")}
+        description={t("exportDialogDescription")}
       />
 
       {/* Import Dialog */}
@@ -964,8 +962,8 @@ export default function BorrowersPage() {
         onOpenChange={setImportDialogOpen}
         entityType="borrower"
         onImport={handleImport}
-        title="Import Borrowers from CSV"
-        description="Upload a CSV file to import borrowers. The file should include columns for name, email, phone, and other details."
+        title={t("importDialogTitle")}
+        description={t("importDialogDescription")}
       />
     </div>
   );
