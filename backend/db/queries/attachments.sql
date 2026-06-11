@@ -10,8 +10,8 @@ SELECT * FROM warehouse.files WHERE id = $1 AND workspace_id = $2;
 DELETE FROM warehouse.files WHERE id = $1 AND workspace_id = $2;
 
 -- name: CreateAttachment :one
-INSERT INTO warehouse.attachments (id, workspace_id, item_id, file_id, attachment_type, title, is_primary, docspell_item_id)
-VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+INSERT INTO warehouse.attachments (id, workspace_id, item_id, file_id, attachment_type, title, is_primary, external_doc_id, dms_type)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
 RETURNING *;
 
 -- name: GetAttachment :one

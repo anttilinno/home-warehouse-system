@@ -86,7 +86,7 @@ run = "rm -rf .data/postgres-dev && mkdir -p .data/postgres-dev && chmod 700 .da
 
 [tasks.env-reset]
 description = "Reset entire environment: wipe all data (postgres, redis, etc), restart containers, run migrations"
-run = "docker compose --profile prod down && rm -rf .data && mkdir -p .data/postgres-dev .data/postgres-prod .data/redis .data/docspell .data/docspell-postgres && chmod 700 .data/postgres-dev .data/postgres-prod .data/docspell-postgres && chmod 755 .data/redis .data/docspell && docker compose up -d --wait && DATABASE_URL=$DBMATE_DATABASE_URL dbmate -d backend/db/migrations up"
+run = "docker compose --profile prod down && rm -rf .data && mkdir -p .data/postgres-dev .data/postgres-prod .data/redis && chmod 700 .data/postgres-dev .data/postgres-prod && chmod 755 .data/redis && docker compose up -d --wait && DATABASE_URL=$DBMATE_DATABASE_URL dbmate -d backend/db/migrations up"
 
 [tasks.migrate]
 description = "Run database migrations"

@@ -57,6 +57,10 @@ type Config struct {
 	VAPIDPrivateKey string
 	VAPIDSubscriber string // Usually mailto:email or URL
 
+	// Paperless-ngx DMS integration. Key material for encrypting per-workspace
+	// API tokens at rest (AES-256-GCM). Empty disables token storage.
+	PaperlessTokenKey string
+
 	// URLs
 	AppURL     string // Frontend URL
 	BackendURL string
@@ -128,6 +132,9 @@ func Load() *Config {
 		VAPIDPublicKey:  getEnv("VAPID_PUBLIC_KEY", ""),
 		VAPIDPrivateKey: getEnv("VAPID_PRIVATE_KEY", ""),
 		VAPIDSubscriber: getEnv("VAPID_SUBSCRIBER", ""),
+
+		// Paperless-ngx DMS integration
+		PaperlessTokenKey: getEnv("PAPERLESS_TOKEN_KEY", ""),
 
 		// URLs
 		AppURL:     getEnv("APP_URL", "http://localhost:3000"),

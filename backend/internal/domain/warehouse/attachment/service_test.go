@@ -313,7 +313,7 @@ func TestNewAttachment(t *testing.T) {
 		attachmentType AttachmentType
 		title          *string
 		isPrimary      bool
-		docspellItemID *string
+		externalDocID *string
 		expectError    bool
 		errorType      error
 	}{
@@ -324,7 +324,7 @@ func TestNewAttachment(t *testing.T) {
 			attachmentType: TypePhoto,
 			title:          ptrString("Product Photo"),
 			isPrimary:      true,
-			docspellItemID: ptrString("docspell-123"),
+			externalDocID: ptrString("paperless-123"),
 			expectError:    false,
 		},
 		{
@@ -334,7 +334,7 @@ func TestNewAttachment(t *testing.T) {
 			attachmentType: TypeManual,
 			title:          ptrString("User Manual"),
 			isPrimary:      false,
-			docspellItemID: nil,
+			externalDocID: nil,
 			expectError:    false,
 		},
 		{
@@ -344,7 +344,7 @@ func TestNewAttachment(t *testing.T) {
 			attachmentType: TypeOther,
 			title:          nil,
 			isPrimary:      false,
-			docspellItemID: nil,
+			externalDocID: nil,
 			expectError:    false,
 		},
 		{
@@ -354,7 +354,7 @@ func TestNewAttachment(t *testing.T) {
 			attachmentType: TypeReceipt,
 			title:          ptrString("Purchase Receipt"),
 			isPrimary:      false,
-			docspellItemID: nil,
+			externalDocID: nil,
 			expectError:    false,
 		},
 		{
@@ -364,7 +364,7 @@ func TestNewAttachment(t *testing.T) {
 			attachmentType: TypeWarranty,
 			title:          ptrString("Warranty Certificate"),
 			isPrimary:      false,
-			docspellItemID: nil,
+			externalDocID: nil,
 			expectError:    false,
 		},
 		{
@@ -374,7 +374,7 @@ func TestNewAttachment(t *testing.T) {
 			attachmentType: TypePhoto,
 			title:          nil,
 			isPrimary:      false,
-			docspellItemID: nil,
+			externalDocID: nil,
 			expectError:    true,
 		},
 		{
@@ -384,7 +384,7 @@ func TestNewAttachment(t *testing.T) {
 			attachmentType: AttachmentType("INVALID"),
 			title:          nil,
 			isPrimary:      false,
-			docspellItemID: nil,
+			externalDocID: nil,
 			expectError:    true,
 			errorType:      ErrInvalidAttachmentType,
 		},
@@ -395,7 +395,7 @@ func TestNewAttachment(t *testing.T) {
 			attachmentType: AttachmentType(""),
 			title:          nil,
 			isPrimary:      false,
-			docspellItemID: nil,
+			externalDocID: nil,
 			expectError:    true,
 			errorType:      ErrInvalidAttachmentType,
 		},
@@ -410,7 +410,7 @@ func TestNewAttachment(t *testing.T) {
 				tt.attachmentType,
 				tt.title,
 				tt.isPrimary,
-				tt.docspellItemID,
+				tt.externalDocID,
 			)
 
 			if tt.expectError {
@@ -428,7 +428,7 @@ func TestNewAttachment(t *testing.T) {
 				assert.Equal(t, tt.attachmentType, attachment.AttachmentType())
 				assert.Equal(t, tt.title, attachment.Title())
 				assert.Equal(t, tt.isPrimary, attachment.IsPrimary())
-				assert.Equal(t, tt.docspellItemID, attachment.DocspellItemID())
+				assert.Equal(t, tt.externalDocID, attachment.ExternalDocID())
 				assert.False(t, attachment.CreatedAt().IsZero())
 				assert.False(t, attachment.UpdatedAt().IsZero())
 			}
@@ -451,7 +451,8 @@ func TestReconstructAttachment(t *testing.T) {
 		TypePhoto,
 		ptrString("Main Photo"),
 		true,
-		ptrString("docspell-abc"),
+		ptrString("paperless-abc"),
+		ptrString("paperless"),
 		now,
 		now,
 	)
@@ -463,7 +464,7 @@ func TestReconstructAttachment(t *testing.T) {
 	assert.Equal(t, TypePhoto, attachment.AttachmentType())
 	assert.Equal(t, "Main Photo", *attachment.Title())
 	assert.True(t, attachment.IsPrimary())
-	assert.Equal(t, "docspell-abc", *attachment.DocspellItemID())
+	assert.Equal(t, "paperless-abc", *attachment.ExternalDocID())
 	assert.Equal(t, now, attachment.CreatedAt())
 	assert.Equal(t, now, attachment.UpdatedAt())
 }
@@ -641,7 +642,7 @@ func TestService_CreateAttachment(t *testing.T) {
 				AttachmentType: TypePhoto,
 				Title:          ptrString("Product Photo"),
 				IsPrimary:      false,
-				DocspellItemID: nil,
+				ExternalDocID: nil,
 			},
 			setupMock: func(m *MockAttachmentRepository) {
 				m.On("Save", ctx, mock.AnythingOfType("*attachment.Attachment")).Return(nil)
@@ -657,7 +658,7 @@ func TestService_CreateAttachment(t *testing.T) {
 				AttachmentType: TypePhoto,
 				Title:          ptrString("Main Photo"),
 				IsPrimary:      true,
-				DocspellItemID: nil,
+				ExternalDocID: nil,
 			},
 			setupMock: func(m *MockAttachmentRepository) {
 				m.On("Save", ctx, mock.AnythingOfType("*attachment.Attachment")).Return(nil)
@@ -674,7 +675,7 @@ func TestService_CreateAttachment(t *testing.T) {
 				AttachmentType: TypeManual,
 				Title:          ptrString("External Manual Link"),
 				IsPrimary:      false,
-				DocspellItemID: ptrString("docspell-123"),
+				ExternalDocID: ptrString("paperless-123"),
 			},
 			setupMock: func(m *MockAttachmentRepository) {
 				m.On("Save", ctx, mock.AnythingOfType("*attachment.Attachment")).Return(nil)

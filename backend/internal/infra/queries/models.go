@@ -807,23 +807,6 @@ type AuthWorkspace struct {
 	UpdatedAt  pgtype.Timestamptz `json:"updated_at"`
 }
 
-// Per-workspace Docspell integration configuration. Each workspace can connect to a different Docspell instance.
-type AuthWorkspaceDocspellSetting struct {
-	ID          uuid.UUID `json:"id"`
-	WorkspaceID uuid.UUID `json:"workspace_id"`
-	BaseUrl     string    `json:"base_url"`
-	// Docspell collective name - equivalent to a tenant/organization in Docspell.
-	CollectiveName string `json:"collective_name"`
-	Username       string `json:"username"`
-	// Encrypted password for Docspell authentication. Encrypted at application layer using Fernet.
-	PasswordEncrypted string             `json:"password_encrypted"`
-	SyncTagsEnabled   *bool              `json:"sync_tags_enabled"`
-	IsEnabled         *bool              `json:"is_enabled"`
-	LastSyncAt        pgtype.Timestamptz `json:"last_sync_at"`
-	CreatedAt         pgtype.Timestamptz `json:"created_at"`
-	UpdatedAt         pgtype.Timestamptz `json:"updated_at"`
-}
-
 // Audit log of workspace data exports for backup or migration.
 type AuthWorkspaceExport struct {
 	ID            uuid.UUID   `json:"id"`
@@ -845,6 +828,20 @@ type AuthWorkspaceMember struct {
 	InvitedBy   pgtype.UUID           `json:"invited_by"`
 	CreatedAt   pgtype.Timestamptz    `json:"created_at"`
 	UpdatedAt   pgtype.Timestamptz    `json:"updated_at"`
+}
+
+// Per-workspace Paperless-ngx integration configuration. Each workspace can connect to a different Paperless instance.
+type AuthWorkspacePaperlessSetting struct {
+	ID          uuid.UUID `json:"id"`
+	WorkspaceID uuid.UUID `json:"workspace_id"`
+	BaseUrl     string    `json:"base_url"`
+	// Paperless-ngx API token, encrypted at the application layer (AES-256-GCM keyed from PAPERLESS_TOKEN_KEY).
+	ApiTokenEncrypted string             `json:"api_token_encrypted"`
+	SyncTagsEnabled   *bool              `json:"sync_tags_enabled"`
+	IsEnabled         *bool              `json:"is_enabled"`
+	LastSyncAt        pgtype.Timestamptz `json:"last_sync_at"`
+	CreatedAt         pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt         pgtype.Timestamptz `json:"updated_at"`
 }
 
 // Audit trail of all changes to warehouse data.
@@ -871,11 +868,13 @@ type WarehouseAttachment struct {
 	// Optional short description. Falls back to file.original_name if not provided.
 	Title     *string `json:"title"`
 	IsPrimary *bool   `json:"is_primary"`
-	// Reference to Docspell item ID. When set, document is managed by Docspell and file_id may be NULL.
-	DocspellItemID *string            `json:"docspell_item_id"`
-	CreatedAt      pgtype.Timestamptz `json:"created_at"`
-	UpdatedAt      pgtype.Timestamptz `json:"updated_at"`
-	WorkspaceID    uuid.UUID          `json:"workspace_id"`
+	// Reference to a document in an external DMS (see dms_type). When set, the document is managed externally and file_id may be NULL.
+	ExternalDocID *string            `json:"external_doc_id"`
+	CreatedAt     pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt     pgtype.Timestamptz `json:"updated_at"`
+	WorkspaceID   uuid.UUID          `json:"workspace_id"`
+	// External DMS holding external_doc_id. Currently only 'paperless' (Paperless-ngx). NULL when the attachment has no external document.
+	DmsType *string `json:"dms_type"`
 }
 
 type WarehouseBorrower struct {

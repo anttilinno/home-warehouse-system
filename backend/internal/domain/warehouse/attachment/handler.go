@@ -109,7 +109,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 			AttachmentType: attachmentType,
 			Title:          input.Body.Title,
 			IsPrimary:      input.Body.IsPrimary,
-			DocspellItemID: nil,
+			ExternalDocID:  nil,
 		})
 		if err != nil {
 			return nil, appMiddleware.MapDomainError(err)
@@ -159,7 +159,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 			AttachmentType: attachmentType,
 			Title:          input.Body.Title,
 			IsPrimary:      input.Body.IsPrimary,
-			DocspellItemID: input.Body.DocspellItemID,
+			ExternalDocID:  input.Body.ExternalDocID,
 		})
 		if err != nil {
 			return nil, appMiddleware.MapDomainError(err)
@@ -267,7 +267,8 @@ func toAttachmentResponse(a *Attachment) AttachmentResponse {
 		AttachmentType: string(a.AttachmentType()),
 		Title:          a.Title(),
 		IsPrimary:      a.IsPrimary(),
-		DocspellItemID: a.DocspellItemID(),
+		ExternalDocID:  a.ExternalDocID(),
+		DMSType:        a.DMSType(),
 		CreatedAt:      a.CreatedAt(),
 		UpdatedAt:      a.UpdatedAt(),
 	}
@@ -328,7 +329,7 @@ type CreateAttachmentRequest struct {
 		AttachmentType string     `json:"attachment_type" enum:"PHOTO,MANUAL,RECEIPT,WARRANTY,OTHER" doc:"Type of attachment"`
 		Title          *string    `json:"title,omitempty" doc:"Attachment title"`
 		IsPrimary      bool       `json:"is_primary" doc:"Whether this is the primary attachment"`
-		DocspellItemID *string    `json:"docspell_item_id,omitempty" doc:"Docspell item ID for external DMS integration"`
+		ExternalDocID  *string    `json:"external_doc_id,omitempty" doc:"External DMS document ID (Paperless-ngx) to link"`
 	}
 }
 
@@ -348,7 +349,8 @@ type AttachmentResponse struct {
 	AttachmentType string     `json:"attachment_type" enum:"PHOTO,MANUAL,RECEIPT,WARRANTY,OTHER"`
 	Title          *string    `json:"title,omitempty"`
 	IsPrimary      bool       `json:"is_primary"`
-	DocspellItemID *string    `json:"docspell_item_id,omitempty"`
+	ExternalDocID  *string    `json:"external_doc_id,omitempty"`
+	DMSType        *string    `json:"dms_type,omitempty" enum:"paperless" doc:"External DMS holding external_doc_id"`
 	CreatedAt      time.Time  `json:"created_at"`
 	UpdatedAt      time.Time  `json:"updated_at"`
 }

@@ -691,7 +691,7 @@ func (s *WorkspaceBackupService) createAttachmentsSheet(f *excelize.File, attach
 		return err
 	}
 
-	headers := []string{"ID", "Item ID", "File ID", "Type", "Title", "Is Primary", "Docspell Item ID", "Created At", "Updated At"}
+	headers := []string{"ID", "Item ID", "File ID", "Type", "Title", "Is Primary", "External Doc ID", "Created At", "Updated At"}
 	for i, header := range headers {
 		cell, _ := excelize.CoordinatesToCellName(i+1, 1)
 		f.SetCellValue(sheetName, cell, header)
@@ -708,7 +708,7 @@ func (s *WorkspaceBackupService) createAttachmentsSheet(f *excelize.File, attach
 		f.SetCellValue(sheetName, fmt.Sprintf("D%d", row), string(att.AttachmentType))
 		f.SetCellValue(sheetName, fmt.Sprintf("E%d", row), sanitizeCSVCell(ptrToString(att.Title)))
 		f.SetCellValue(sheetName, fmt.Sprintf("F%d", row), att.IsPrimary)
-		f.SetCellValue(sheetName, fmt.Sprintf("G%d", row), sanitizeCSVCell(ptrToString(att.DocspellItemID)))
+		f.SetCellValue(sheetName, fmt.Sprintf("G%d", row), sanitizeCSVCell(ptrToString(att.ExternalDocID)))
 		f.SetCellValue(sheetName, fmt.Sprintf("H%d", row), formatTimestamp(att.CreatedAt))
 		f.SetCellValue(sheetName, fmt.Sprintf("I%d", row), formatTimestamp(att.UpdatedAt))
 	}

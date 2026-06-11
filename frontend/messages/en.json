@@ -752,7 +752,8 @@
       "regionalFormats": "Regional Formats",
       "security": "Security",
       "notifications": "Notifications",
-      "dataStorage": "Data & Storage"
+      "dataStorage": "Data & Storage",
+      "integrations": "Integrations"
     },
     "hub": {
       "preferences": "Preferences",
@@ -996,6 +997,33 @@
         "loading": "Processing..."
       },
       "info": "You'll receive notifications for loan reminders, approval decisions, and other important updates."
+    },
+    "integrations": {
+      "description": "Connect external services to your workspace."
+    },
+    "paperless": {
+      "title": "Paperless-ngx",
+      "description": "Connect this workspace to a Paperless-ngx document server to link scanned receipts, manuals, and warranties to items.",
+      "loading": "Loading settings...",
+      "loadError": "Failed to load Paperless settings",
+      "baseUrl": "Server URL",
+      "apiToken": "API token",
+      "tokenPlaceholder": "Paste your Paperless API token",
+      "tokenStored": "A token is stored",
+      "tokenHint": "Create a token in Paperless under Settings, then paste it here. It is encrypted before storage.",
+      "tokenKeepHint": "Leave blank to keep the stored token, or enter a new one to replace it.",
+      "baseUrlRequired": "Server URL is required",
+      "tokenRequired": "An API token is required",
+      "enabled": "Enable integration",
+      "enabledHint": "Allow linking and searching Paperless documents from this workspace.",
+      "syncTags": "Sync tags",
+      "syncTagsHint": "Keep warehouse labels in sync with Paperless tags (coming soon).",
+      "save": "Save",
+      "saved": "Paperless settings saved",
+      "saveError": "Failed to save Paperless settings",
+      "disconnect": "Disconnect",
+      "disconnected": "Paperless disconnected",
+      "disconnectError": "Failed to disconnect Paperless"
     }
   },
   "syncHistory": {

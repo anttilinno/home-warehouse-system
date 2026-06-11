@@ -12,10 +12,10 @@
   - JSON for migration/re-import
   - Endpoint: `GET /exports/workspace?format=xlsx|json`
   - Tracks exports in `auth.workspace_exports` for audit
-- [~] Integration with Docspell (document management) — **SUPERSEDED by Paperless-ngx, see "DMS Migration" below**
-  - Only the data model shipped: `warehouse.attachments.docspell_item_id` column + `auth.workspace_docspell_settings` table (generated model, no consuming service)
-  - No client built: no REST calls, no fulltext search, no tag sync, no UI — the compose Docspell trio was never wired to the app
-  - Homelab now runs Paperless-ngx (k3s), not Docspell → switching the integration target
+- [x] Document management — **migrated to Paperless-ngx** (see "DMS Migration" below)
+  - Docspell was schema-only (column + settings table, no consuming service); replaced wholesale rather than removed
+  - Now wired: read-only Paperless client (resolve + search proxy), encrypted per-workspace token, manual document linking, Settings → Integrations UI
+  - Homelab runs Paperless-ngx (k3s); the Docspell compose trio was removed
 - [x] Quick access features
   - Favorites: pin frequently accessed items/locations
   - Recently modified: quick view of recent changes
@@ -235,23 +235,20 @@ wired to the app — only schema shipped — so this is a clean repoint, not a r
 of working code. Rationale: avoid running two DMSes; Paperless is lighter, actively
 maintained, and has a simpler REST API (token auth, `/api/documents/`).
 
-- [ ] **Schema migration** — rename the external-doc link
-  - `warehouse.attachments.docspell_item_id` → `paperless_document_id` (or generic `external_doc_id` + `dms_type` if multi-DMS wanted later)
-  - Update partial index `ix_attachments_docspell` accordingly
-  - Keep the "either `file_id` or external doc id" constraint
-- [ ] **Settings table reshape** — `auth.workspace_docspell_settings` → `auth.workspace_paperless_settings`
-  - Paperless uses `base_url` + **API token** (no `collective_name` concept) — drop collective, store encrypted token (Fernet, same as before)
-  - Keep `sync_tags_enabled`, `is_enabled`, per-workspace scoping
-- [ ] **Paperless API client** (build fresh — none existed for Docspell either)
-  - Read-only first: attach-by-id (resolve `paperless_document_id` → title/preview/download URL)
-  - Then: fulltext search proxy from warehouse UI (`GET /api/documents/?query=`)
-  - Then: tag sync (warehouse labels ↔ Paperless tags)
-- [ ] **Decide ingest direction before building write path**
-  - Paperless ingests via `consume/` folder + OCR; warehouse holds receipts/manuals
-  - Option A: warehouse pushes receipt → Paperless, stores returned `document_id`
-  - Option B: manual — paste an existing Paperless doc id into an attachment
-- [ ] **Remove Docspell trio from `docker-compose.yml`** (restserver, joex, docspell-postgres) once the client lands
-- [ ] **UI**: rename "Docspell" settings/labels → "Paperless"; point deep links at `paperless.k3s.lan`
+- [x] **Schema migration** (006) — generic external-doc link
+  - `warehouse.attachments.docspell_item_id` → `external_doc_id` + `dms_type` (multi-DMS ready; NULL-paired CHECK)
+  - Renamed partial index `ix_attachments_docspell` → `ix_attachments_external_doc`
+  - "either `file_id` or external doc id" constraint preserved
+- [x] **Settings table reshape** — `auth.workspace_docspell_settings` → `auth.workspace_paperless_settings`
+  - `base_url` + encrypted `api_token` (AES-256-GCM keyed from `PAPERLESS_TOKEN_KEY`); dropped `collective_name` + `username`
+  - `sync_tags_enabled`, `is_enabled`, per-workspace scoping kept
+- [x] **Paperless API client** (`internal/infra/paperless`, read-only)
+  - Resolve doc by id → title/created/download+preview+web URLs (`GET /paperless/documents/{id}`)
+  - Fulltext search proxy (`GET /paperless/search?query=`)
+  - [ ] Tag sync (warehouse labels ↔ Paperless tags) — deferred, TODO in service
+- [ ] **Ingest direction / write path** — DEFERRED. Manual attach (Option B) shipped: link an existing Paperless doc id onto an attachment via `external_doc_id`. Push-on-upload (Option A) not built.
+- [x] **Remove Docspell trio from `docker-compose.yml`** (restserver, joex, docspell-postgres) + `.mise.toml` data dirs — done; Paperless runs externally in the homelab, not orchestrated here
+- [x] **UI** — Settings → Integrations → Paperless (server URL + token + enable/sync toggles); attachment create accepts `external_doc_id`. Deep links use the configured server URL. i18n en/et/ru.
 
 ## Expiry & Warranty Alerting
 

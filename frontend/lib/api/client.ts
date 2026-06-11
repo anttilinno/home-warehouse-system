@@ -202,6 +202,13 @@ class ApiClient {
     }, workspaceId) as Promise<T>;
   }
 
+  async put<T>(endpoint: string, data: unknown, workspaceId?: string): Promise<T> {
+    return this.request<T>(endpoint, {
+      method: "PUT",
+      body: JSON.stringify(data),
+    }, workspaceId) as Promise<T>;
+  }
+
   async delete(endpoint: string, workspaceId?: string): Promise<void> {
     await this.request(endpoint, { method: "DELETE" }, workspaceId);
   }

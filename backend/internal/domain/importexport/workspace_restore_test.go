@@ -1147,7 +1147,7 @@ func TestParseExcel_AllSheets(t *testing.T) {
 			{uuid.New().String(), uuid.New().String(), uuid.New().String(), "1", "", "", "", "Notes", "", ""},
 		},
 		"Attachments": {
-			{"ID", "Item ID", "File ID", "Type", "Title", "Is Primary", "Docspell Item ID", "Created At", "Updated At"},
+			{"ID", "Item ID", "File ID", "Type", "Title", "Is Primary", "External Doc ID", "Created At", "Updated At"},
 			{uuid.New().String(), uuid.New().String(), "", "PHOTO", "Photo", "true", "", "", ""},
 		},
 	})

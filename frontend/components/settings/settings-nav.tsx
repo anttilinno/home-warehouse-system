@@ -19,6 +19,7 @@ const navItems = [
     labelKey: "nav.notifications",
   },
   { href: "/dashboard/settings/data-storage", labelKey: "nav.dataStorage" },
+  { href: "/dashboard/settings/integrations", labelKey: "nav.integrations" },
 ] as const;
 
 export function SettingsNav() {

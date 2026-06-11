@@ -145,7 +145,8 @@ func (r *AttachmentRepository) Save(ctx context.Context, a *attachment.Attachmen
 		AttachmentType: queries.WarehouseAttachmentTypeEnum(a.AttachmentType()),
 		Title:          a.Title(),
 		IsPrimary:      &isPrimary,
-		DocspellItemID: a.DocspellItemID(),
+		ExternalDocID:  a.ExternalDocID(),
+		DmsType:        a.DMSType(),
 	})
 	return err
 }
@@ -217,7 +218,8 @@ func (r *AttachmentRepository) rowToAttachment(row queries.WarehouseAttachment) 
 		attachment.AttachmentType(row.AttachmentType),
 		row.Title,
 		isPrimary,
-		row.DocspellItemID,
+		row.ExternalDocID,
+		row.DmsType,
 		row.CreatedAt.Time,
 		row.UpdatedAt.Time,
 	)
@@ -243,7 +245,8 @@ func (r *AttachmentRepository) rowToAttachmentFromList(row queries.ListAttachmen
 		attachment.AttachmentType(row.AttachmentType),
 		row.Title,
 		isPrimary,
-		row.DocspellItemID,
+		row.ExternalDocID,
+		row.DmsType,
 		row.CreatedAt.Time,
 		row.UpdatedAt.Time,
 	)

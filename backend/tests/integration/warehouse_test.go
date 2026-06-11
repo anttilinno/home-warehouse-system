@@ -1076,10 +1076,10 @@ func TestAttachmentEndpoints(t *testing.T) {
 
 	// Create attachment without file (external link)
 	resp = ts.Post(fmt.Sprintf("%s/items/%s/attachments", workspacePath, itemResult.ID), map[string]interface{}{
-		"attachment_type":  "OTHER",
-		"title":            "External Link",
-		"is_primary":       false,
-		"docspell_item_id": "ext-12345",
+		"attachment_type": "OTHER",
+		"title":           "External Link",
+		"is_primary":      false,
+		"external_doc_id": "ext-12345",
 	})
 	RequireStatus(t, resp, http.StatusOK)
 

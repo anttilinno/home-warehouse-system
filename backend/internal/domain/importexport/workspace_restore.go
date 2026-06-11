@@ -480,7 +480,7 @@ func (s *WorkspaceBackupService) parseAttachmentsFromRows(rows [][]string) []que
 		att.Title = stringToPtr(getCellValue(row, 4))
 		isPrimary := getCellValue(row, 5) == "true"
 		att.IsPrimary = &isPrimary
-		att.DocspellItemID = stringToPtr(getCellValue(row, 6))
+		att.ExternalDocID = stringToPtr(getCellValue(row, 6))
 		attachments = append(attachments, att)
 	}
 	return attachments
@@ -1026,6 +1026,13 @@ func (s *WorkspaceBackupService) importAttachments(ctx context.Context, workspac
 		}
 
 		newID := uuid.New()
+		// external_doc_id and dms_type are NULL-paired in the schema; restored
+		// external references are Paperless documents (the only supported DMS).
+		var dmsType *string
+		if att.ExternalDocID != nil {
+			t := "paperless"
+			dmsType = &t
+		}
 		_, err := s.queries.CreateAttachment(ctx, queries.CreateAttachmentParams{
 			ID:             newID,
 			WorkspaceID:    workspaceID,
@@ -1034,7 +1041,8 @@ func (s *WorkspaceBackupService) importAttachments(ctx context.Context, workspac
 			AttachmentType: attachmentType,
 			Title:          att.Title,
 			IsPrimary:      att.IsPrimary,
-			DocspellItemID: att.DocspellItemID,
+			ExternalDocID:  att.ExternalDocID,
+			DmsType:        dmsType,
 		})
 
 		if err != nil {

@@ -71,7 +71,9 @@ type CreateAttachmentInput struct {
 	AttachmentType AttachmentType
 	Title          *string
 	IsPrimary      bool
-	DocspellItemID *string
+	// ExternalDocID links the attachment to a document in an external DMS
+	// (Paperless-ngx). dms_type is derived from it in NewAttachment.
+	ExternalDocID *string
 }
 
 func (s *Service) CreateAttachment(ctx context.Context, input CreateAttachmentInput) (*Attachment, error) {
@@ -82,7 +84,7 @@ func (s *Service) CreateAttachment(ctx context.Context, input CreateAttachmentIn
 		input.AttachmentType,
 		input.Title,
 		input.IsPrimary,
-		input.DocspellItemID,
+		input.ExternalDocID,
 	)
 	if err != nil {
 		return nil, err

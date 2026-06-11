@@ -752,7 +752,8 @@
       "regionalFormats": "Piirkondlikud vormingud",
       "security": "Turvalisus",
       "notifications": "Teavitused",
-      "dataStorage": "Andmed ja salvestus"
+      "dataStorage": "Andmed ja salvestus",
+      "integrations": "Integratsioonid"
     },
     "hub": {
       "preferences": "Eelistused",
@@ -996,6 +997,33 @@
         "loading": "Töötlemine..."
       },
       "info": "Saad teavitusi laenu meeldetuletuste, kinnitusotsuste ja muude oluliste uuenduste kohta."
+    },
+    "integrations": {
+      "description": "Ühenda väliseid teenuseid oma tööruumiga."
+    },
+    "paperless": {
+      "title": "Paperless-ngx",
+      "description": "Ühenda see tööruum Paperless-ngx dokumendiserveriga, et siduda skannitud kviitungid, juhendid ja garantiid esemetega.",
+      "loading": "Seadete laadimine...",
+      "loadError": "Paperlessi seadete laadimine ebaõnnestus",
+      "baseUrl": "Serveri URL",
+      "apiToken": "API-võti",
+      "tokenPlaceholder": "Kleebi oma Paperlessi API-võti",
+      "tokenStored": "Võti on salvestatud",
+      "tokenHint": "Loo Paperlessis seadete alt võti ja kleebi see siia. See krüpteeritakse enne salvestamist.",
+      "tokenKeepHint": "Jäta tühjaks, et säilitada salvestatud võti, või sisesta uus selle asendamiseks.",
+      "baseUrlRequired": "Serveri URL on kohustuslik",
+      "tokenRequired": "API-võti on kohustuslik",
+      "enabled": "Luba integratsioon",
+      "enabledHint": "Luba Paperlessi dokumentide sidumine ja otsimine sellest tööruumist.",
+      "syncTags": "Sünkrooni sildid",
+      "syncTagsHint": "Hoia lao sildid Paperlessi siltidega sünkroonis (tulekul).",
+      "save": "Salvesta",
+      "saved": "Paperlessi seaded salvestatud",
+      "saveError": "Paperlessi seadete salvestamine ebaõnnestus",
+      "disconnect": "Katkesta ühendus",
+      "disconnected": "Paperlessi ühendus katkestatud",
+      "disconnectError": "Paperlessi ühenduse katkestamine ebaõnnestus"
     }
   },
   "syncHistory": {

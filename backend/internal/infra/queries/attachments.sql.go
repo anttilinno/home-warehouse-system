@@ -13,9 +13,9 @@ import (
 )
 
 const createAttachment = `-- name: CreateAttachment :one
-INSERT INTO warehouse.attachments (id, workspace_id, item_id, file_id, attachment_type, title, is_primary, docspell_item_id)
-VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-RETURNING id, item_id, file_id, attachment_type, title, is_primary, docspell_item_id, created_at, updated_at, workspace_id
+INSERT INTO warehouse.attachments (id, workspace_id, item_id, file_id, attachment_type, title, is_primary, external_doc_id, dms_type)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+RETURNING id, item_id, file_id, attachment_type, title, is_primary, external_doc_id, created_at, updated_at, workspace_id, dms_type
 `
 
 type CreateAttachmentParams struct {
@@ -26,7 +26,8 @@ type CreateAttachmentParams struct {
 	AttachmentType WarehouseAttachmentTypeEnum `json:"attachment_type"`
 	Title          *string                     `json:"title"`
 	IsPrimary      *bool                       `json:"is_primary"`
-	DocspellItemID *string                     `json:"docspell_item_id"`
+	ExternalDocID  *string                     `json:"external_doc_id"`
+	DmsType        *string                     `json:"dms_type"`
 }
 
 func (q *Queries) CreateAttachment(ctx context.Context, arg CreateAttachmentParams) (WarehouseAttachment, error) {
@@ -38,7 +39,8 @@ func (q *Queries) CreateAttachment(ctx context.Context, arg CreateAttachmentPara
 		arg.AttachmentType,
 		arg.Title,
 		arg.IsPrimary,
-		arg.DocspellItemID,
+		arg.ExternalDocID,
+		arg.DmsType,
 	)
 	var i WarehouseAttachment
 	err := row.Scan(
@@ -48,10 +50,11 @@ func (q *Queries) CreateAttachment(ctx context.Context, arg CreateAttachmentPara
 		&i.AttachmentType,
 		&i.Title,
 		&i.IsPrimary,
-		&i.DocspellItemID,
+		&i.ExternalDocID,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.WorkspaceID,
+		&i.DmsType,
 	)
 	return i, err
 }
@@ -132,7 +135,7 @@ func (q *Queries) DeleteFile(ctx context.Context, arg DeleteFileParams) error {
 }
 
 const getAttachment = `-- name: GetAttachment :one
-SELECT id, item_id, file_id, attachment_type, title, is_primary, docspell_item_id, created_at, updated_at, workspace_id FROM warehouse.attachments WHERE id = $1 AND workspace_id = $2
+SELECT id, item_id, file_id, attachment_type, title, is_primary, external_doc_id, created_at, updated_at, workspace_id, dms_type FROM warehouse.attachments WHERE id = $1 AND workspace_id = $2
 `
 
 type GetAttachmentParams struct {
@@ -150,10 +153,11 @@ func (q *Queries) GetAttachment(ctx context.Context, arg GetAttachmentParams) (W
 		&i.AttachmentType,
 		&i.Title,
 		&i.IsPrimary,
-		&i.DocspellItemID,
+		&i.ExternalDocID,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.WorkspaceID,
+		&i.DmsType,
 	)
 	return i, err
 }
@@ -187,7 +191,7 @@ func (q *Queries) GetFile(ctx context.Context, arg GetFileParams) (WarehouseFile
 }
 
 const listAttachmentsByItem = `-- name: ListAttachmentsByItem :many
-SELECT a.id, a.item_id, a.file_id, a.attachment_type, a.title, a.is_primary, a.docspell_item_id, a.created_at, a.updated_at, a.workspace_id, f.original_name, f.mime_type, f.size_bytes
+SELECT a.id, a.item_id, a.file_id, a.attachment_type, a.title, a.is_primary, a.external_doc_id, a.created_at, a.updated_at, a.workspace_id, a.dms_type, f.original_name, f.mime_type, f.size_bytes
 FROM warehouse.attachments a
 LEFT JOIN warehouse.files f ON a.file_id = f.id
 WHERE a.item_id = $1 AND a.workspace_id = $2
@@ -206,10 +210,11 @@ type ListAttachmentsByItemRow struct {
 	AttachmentType WarehouseAttachmentTypeEnum `json:"attachment_type"`
 	Title          *string                     `json:"title"`
 	IsPrimary      *bool                       `json:"is_primary"`
-	DocspellItemID *string                     `json:"docspell_item_id"`
+	ExternalDocID  *string                     `json:"external_doc_id"`
 	CreatedAt      pgtype.Timestamptz          `json:"created_at"`
 	UpdatedAt      pgtype.Timestamptz          `json:"updated_at"`
 	WorkspaceID    uuid.UUID                   `json:"workspace_id"`
+	DmsType        *string                     `json:"dms_type"`
 	OriginalName   *string                     `json:"original_name"`
 	MimeType       *string                     `json:"mime_type"`
 	SizeBytes      *int64                      `json:"size_bytes"`
@@ -231,10 +236,11 @@ func (q *Queries) ListAttachmentsByItem(ctx context.Context, arg ListAttachments
 			&i.AttachmentType,
 			&i.Title,
 			&i.IsPrimary,
-			&i.DocspellItemID,
+			&i.ExternalDocID,
 			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.WorkspaceID,
+			&i.DmsType,
 			&i.OriginalName,
 			&i.MimeType,
 			&i.SizeBytes,

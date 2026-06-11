@@ -107,6 +107,10 @@ func (f *File) UploadedBy() *uuid.UUID { return f.uploadedBy }
 func (f *File) CreatedAt() time.Time   { return f.createdAt }
 func (f *File) UpdatedAt() time.Time   { return f.updatedAt }
 
+// DMSTypePaperless is the only external DMS currently supported for
+// attachment external-document links (warehouse.attachments.dms_type).
+const DMSTypePaperless = "paperless"
+
 type Attachment struct {
 	id             uuid.UUID
 	workspaceID    uuid.UUID
@@ -115,7 +119,8 @@ type Attachment struct {
 	attachmentType AttachmentType
 	title          *string
 	isPrimary      bool
-	docspellItemID *string
+	externalDocID  *string
+	dmsType        *string
 	createdAt      time.Time
 	updatedAt      time.Time
 }
@@ -126,7 +131,7 @@ func NewAttachment(
 	attachmentType AttachmentType,
 	title *string,
 	isPrimary bool,
-	docspellItemID *string,
+	externalDocID *string,
 ) (*Attachment, error) {
 	if err := shared.ValidateUUID(workspaceID, "workspace_id"); err != nil {
 		return nil, err
@@ -138,6 +143,14 @@ func NewAttachment(
 		return nil, ErrInvalidAttachmentType
 	}
 
+	// external_doc_id and dms_type are NULL-paired in the schema; Paperless is
+	// the only DMS today, so derive the discriminator from the doc id.
+	var dmsType *string
+	if externalDocID != nil {
+		t := DMSTypePaperless
+		dmsType = &t
+	}
+
 	now := time.Now()
 	return &Attachment{
 		id:             shared.NewUUID(),
@@ -147,7 +160,8 @@ func NewAttachment(
 		attachmentType: attachmentType,
 		title:          title,
 		isPrimary:      isPrimary,
-		docspellItemID: docspellItemID,
+		externalDocID:  externalDocID,
+		dmsType:        dmsType,
 		createdAt:      now,
 		updatedAt:      now,
 	}, nil
@@ -159,7 +173,8 @@ func ReconstructAttachment(
 	attachmentType AttachmentType,
 	title *string,
 	isPrimary bool,
-	docspellItemID *string,
+	externalDocID *string,
+	dmsType *string,
 	createdAt, updatedAt time.Time,
 ) *Attachment {
 	return &Attachment{
@@ -170,7 +185,8 @@ func ReconstructAttachment(
 		attachmentType: attachmentType,
 		title:          title,
 		isPrimary:      isPrimary,
-		docspellItemID: docspellItemID,
+		externalDocID:  externalDocID,
+		dmsType:        dmsType,
 		createdAt:      createdAt,
 		updatedAt:      updatedAt,
 	}
@@ -184,7 +200,8 @@ func (a *Attachment) FileID() *uuid.UUID             { return a.fileID }
 func (a *Attachment) AttachmentType() AttachmentType { return a.attachmentType }
 func (a *Attachment) Title() *string                 { return a.title }
 func (a *Attachment) IsPrimary() bool                { return a.isPrimary }
-func (a *Attachment) DocspellItemID() *string        { return a.docspellItemID }
+func (a *Attachment) ExternalDocID() *string         { return a.externalDocID }
+func (a *Attachment) DMSType() *string               { return a.dmsType }
 func (a *Attachment) CreatedAt() time.Time           { return a.createdAt }
 func (a *Attachment) UpdatedAt() time.Time           { return a.updatedAt }
 

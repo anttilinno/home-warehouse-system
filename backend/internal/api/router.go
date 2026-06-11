@@ -30,6 +30,7 @@ import (
 	"github.com/antti/home-warehouse/go-backend/internal/domain/batch"
 	"github.com/antti/home-warehouse/go-backend/internal/domain/events"
 	"github.com/antti/home-warehouse/go-backend/internal/domain/importexport"
+	"github.com/antti/home-warehouse/go-backend/internal/domain/paperless"
 	"github.com/antti/home-warehouse/go-backend/internal/domain/shortlink"
 	"github.com/antti/home-warehouse/go-backend/internal/domain/sync"
 	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/activity"
@@ -57,11 +58,13 @@ import (
 	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/wishlist"
 	infraEvents "github.com/antti/home-warehouse/go-backend/internal/infra/events"
 	"github.com/antti/home-warehouse/go-backend/internal/infra/imageprocessor"
+	infrapaperless "github.com/antti/home-warehouse/go-backend/internal/infra/paperless"
 	"github.com/antti/home-warehouse/go-backend/internal/infra/postgres"
 	"github.com/antti/home-warehouse/go-backend/internal/infra/queries"
 	"github.com/antti/home-warehouse/go-backend/internal/infra/queue"
 	"github.com/antti/home-warehouse/go-backend/internal/infra/storage"
 	"github.com/antti/home-warehouse/go-backend/internal/infra/webpush"
+	"github.com/antti/home-warehouse/go-backend/internal/shared/crypto"
 	"github.com/antti/home-warehouse/go-backend/internal/shared/jwt"
 	"github.com/hibiken/asynq"
 	"github.com/redis/go-redis/v9"
@@ -232,6 +235,20 @@ func NewRouter(pool *pgxpool.Pool, cfg *config.Config) chi.Router {
 	repairLogSvc := repairlog.NewService(repairLogRepo, inventoryRepo)
 	maintenanceSvc := maintenance.NewService(maintenanceRepo, inventoryRepo, txManager)
 	wishlistSvc := wishlist.NewService(wishlistRepo, categoryRepo, itemRepo)
+	// Paperless-ngx DMS integration (read-only client + per-workspace settings).
+	// Encryptor is nil when PAPERLESS_TOKEN_KEY is unset; token writes then fail
+	// rather than storing plaintext.
+	paperlessRepo := postgres.NewPaperlessSettingsRepository(pool)
+	var paperlessEncryptor *crypto.Encryptor
+	if cfg.PaperlessTokenKey != "" {
+		enc, err := crypto.NewEncryptor(cfg.PaperlessTokenKey)
+		if err != nil {
+			logger.Error("paperless token encryptor init failed; token storage disabled", "error", err)
+		} else {
+			paperlessEncryptor = enc
+		}
+	}
+	paperlessSvc := paperless.NewService(paperlessRepo, infrapaperless.NewClient(), paperlessEncryptor)
 	repairPhotoSvc := repairphoto.NewService(repairPhotoRepo, photoStorage, imageProcessor, uploadDir)
 	repairAttachmentSvc := repairattachment.NewService(repairAttachmentRepo, fileRepo)
 	// Declutter service
@@ -473,6 +490,7 @@ func NewRouter(pool *pgxpool.Pool, cfg *config.Config) chi.Router {
 			repairlog.RegisterRoutes(wsAPI, repairLogSvc, broadcaster)
 			maintenance.RegisterRoutes(wsAPI, maintenanceSvc, broadcaster)
 			wishlist.RegisterRoutes(wsAPI, wishlistSvc, broadcaster)
+			paperless.RegisterRoutes(wsAPI, paperlessSvc)
 
 			// Register repair photo routes
 			repairPhotoURLGenerator := func(workspaceID, repairLogID, photoID uuid.UUID, isThumbnail bool) string {
