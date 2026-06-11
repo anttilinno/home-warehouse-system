@@ -16,3 +16,8 @@ sql:
             go_type: "github.com/google/uuid.UUID"
           - db_type: "timestamptz"
             go_type: "time.Time"
+          # pg_dump spells the type out as "timestamp with time zone", which
+          # sqlc canonicalizes to pg_catalog.timestamptz — must be overridden
+          # separately from the bare "timestamptz" alias above.
+          - db_type: "pg_catalog.timestamptz"
+            go_type: "time.Time"
