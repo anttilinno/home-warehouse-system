@@ -215,7 +215,7 @@ func TestMovementRepository_FindByWorkspace(t *testing.T) {
 		itm.SetShortCode(uuid.NewString()[:8])
 		require.NoError(t, itemRepo.Save(ctx, itm))
 
-		fromLoc, _ := location.NewLocation(workspace, "WS From Loc", nil, nil, "WS-FROM")
+		fromLoc, _ := location.NewLocation(workspace, "WS From Loc", nil, nil, "WSFROM")
 		require.NoError(t, locRepo.Save(ctx, fromLoc))
 
 		inv, _ := inventory.NewInventory(workspace, itm.ID(), fromLoc.ID(), nil, 10, inventory.ConditionNew, inventory.StatusAvailable, nil)

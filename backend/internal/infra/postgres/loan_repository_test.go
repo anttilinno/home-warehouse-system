@@ -173,7 +173,7 @@ func TestLoanRepository_FindByID(t *testing.T) {
 		itm.SetShortCode(uuid.NewString()[:8])
 		require.NoError(t, itemRepo.Save(ctx, itm))
 
-		loc, _ := location.NewLocation(workspace1, "WS1 Loc", nil, nil, "WS1-LOC")
+		loc, _ := location.NewLocation(workspace1, "WS1 Loc", nil, nil, "WS1LOC")
 		require.NoError(t, locRepo.Save(ctx, loc))
 
 		inv, _ := inventory.NewInventory(workspace1, itm.ID(), loc.ID(), nil, 5, inventory.ConditionNew, inventory.StatusAvailable, nil)
@@ -325,7 +325,7 @@ func TestLoanRepository_FindActiveLoans(t *testing.T) {
 		itm.SetShortCode(uuid.NewString()[:8])
 		require.NoError(t, itemRepo.Save(ctx, itm))
 
-		loc, _ := location.NewLocation(workspace, "Active Loc", nil, nil, "ACT-LOC")
+		loc, _ := location.NewLocation(workspace, "Active Loc", nil, nil, "ACTLOC")
 		require.NoError(t, locRepo.Save(ctx, loc))
 
 		inv, _ := inventory.NewInventory(workspace, itm.ID(), loc.ID(), nil, 5, inventory.ConditionNew, inventory.StatusAvailable, nil)

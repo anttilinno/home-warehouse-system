@@ -19,7 +19,7 @@ func (f *Factory) Container(locationID uuid.UUID, opts ...ContainerOpt) *contain
 		"Shelf Unit", "Toolbox", "Storage Tote", "Filing Cabinet",
 		"Rack", "Crate", "Basket", "Container",
 	}) + " " + gofakeit.DigitN(2)
-	shortCode := "C-" + gofakeit.LetterN(2) + gofakeit.DigitN(3)
+	shortCode := "C" + gofakeit.LetterN(3) + gofakeit.DigitN(4) // conforms to ^[A-Za-z0-9]{4,12}$ (short_codes registry)
 	description := gofakeit.Sentence(5)
 	capacity := gofakeit.RandomString([]string{"Small", "Medium", "Large", "XL"})
 

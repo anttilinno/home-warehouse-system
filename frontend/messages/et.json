@@ -1442,13 +1442,7 @@
     "createItem": "Loo ese",
     "createLocation": "Loo asukoht",
     "createContainer": "Loo konteiner",
-    "createHint": "Vihje: asukohtade ja konteinerite loomise dialoog avaneb nimekirja lehelt — kleebi kood väljale „Lühikood“.",
-    "multiTitle": "MITU VASTET",
-    "multiSubtitle": "See kood vastas mitmele olemile sinu tööruumides. Vali üks:",
-    "typeItem": "Ese",
-    "typeContainer": "Konteiner",
-    "typeLocation": "Asukoht",
-    "open": "Ava"
+    "createHint": "Vihje: asukohtade ja konteinerite loomise dialoog avaneb nimekirja lehelt — kleebi kood väljale „Lühikood“."
   },
   "loans": {
     "toasts": {

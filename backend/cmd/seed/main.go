@@ -440,7 +440,7 @@ func (s *Seeder) seedLocations(ctx context.Context) error {
 		_, err := s.pool.Exec(ctx, `
 			INSERT INTO warehouse.locations (id, workspace_id, name, short_code, description)
 			VALUES ($1, $2, $3, $4, $5)
-			ON CONFLICT (workspace_id, short_code) DO NOTHING
+			ON CONFLICT (id) DO NOTHING
 		`, locID, s.workspaceID, loc, shortCode, fmt.Sprintf("Main %s area", loc))
 		if err != nil {
 			return fmt.Errorf("creating location %s: %w", loc, err)
@@ -455,7 +455,7 @@ func (s *Seeder) seedLocations(ctx context.Context) error {
 			_, err := s.pool.Exec(ctx, `
 				INSERT INTO warehouse.locations (id, workspace_id, name, parent_location, short_code, description)
 				VALUES ($1, $2, $3, $4, $5, $6)
-				ON CONFLICT (workspace_id, short_code) DO NOTHING
+				ON CONFLICT (id) DO NOTHING
 			`, subLocID, s.workspaceID, subLoc, locID, subShortCode, fmt.Sprintf("%s in %s", subLoc, loc))
 			if err != nil {
 				// Ignore duplicates
@@ -472,7 +472,7 @@ func (s *Seeder) seedLocations(ctx context.Context) error {
 				_, err := s.pool.Exec(ctx, `
 					INSERT INTO warehouse.containers (id, workspace_id, name, location_id, short_code, description)
 					VALUES ($1, $2, $3, $4, $5, $6)
-					ON CONFLICT (workspace_id, short_code) DO NOTHING
+					ON CONFLICT (id) DO NOTHING
 				`, containerID, s.workspaceID, containerName, subLocID, containerShortCode, fmt.Sprintf("Storage container in %s", subLoc))
 				if err != nil {
 					continue

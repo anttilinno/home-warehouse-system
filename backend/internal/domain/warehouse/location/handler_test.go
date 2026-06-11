@@ -92,7 +92,7 @@ func TestLocationHandler_Create(t *testing.T) {
 	location.RegisterRoutes(setup.API, mockSvc, nil)
 
 	t.Run("creates location successfully", func(t *testing.T) {
-		testLoc, _ := location.NewLocation(setup.WorkspaceID, "Warehouse A", nil, nil, "WH-A")
+		testLoc, _ := location.NewLocation(setup.WorkspaceID, "Warehouse A", nil, nil, "WHA1")
 
 		mockSvc.On("Create", mock.Anything, mock.MatchedBy(func(input location.CreateInput) bool {
 			return input.Name == "Warehouse A"
@@ -109,7 +109,7 @@ func TestLocationHandler_Create(t *testing.T) {
 		mockSvc.On("Create", mock.Anything, mock.Anything).
 			Return(nil, location.ErrShortCodeTaken).Once()
 
-		body := `{"name":"Warehouse A","short_code":"WH-A"}`
+		body := `{"name":"Warehouse A","short_code":"WHA1"}`
 		rec := setup.Post("/locations", body)
 
 		testutil.AssertStatus(t, rec, http.StatusBadRequest)
@@ -157,7 +157,7 @@ func TestLocationHandler_Get(t *testing.T) {
 	location.RegisterRoutes(setup.API, mockSvc, nil)
 
 	t.Run("gets location by ID", func(t *testing.T) {
-		testLoc, _ := location.NewLocation(setup.WorkspaceID, "Warehouse A", nil, nil, "WH-A")
+		testLoc, _ := location.NewLocation(setup.WorkspaceID, "Warehouse A", nil, nil, "WHA1")
 		locID := testLoc.ID()
 
 		mockSvc.On("GetByID", mock.Anything, locID, setup.WorkspaceID).
@@ -191,7 +191,7 @@ func TestLocationHandler_Update(t *testing.T) {
 		testLoc, _ := location.NewLocation(setup.WorkspaceID, "Updated Warehouse", nil, nil, "UPD-WH")
 		locID := testLoc.ID()
 
-		existingLoc, _ := location.NewLocation(setup.WorkspaceID, "Warehouse A", nil, nil, "WH-A")
+		existingLoc, _ := location.NewLocation(setup.WorkspaceID, "Warehouse A", nil, nil, "WHA1")
 		mockSvc.On("GetByID", mock.Anything, locID, setup.WorkspaceID).
 			Return(existingLoc, nil).Once()
 
@@ -367,13 +367,13 @@ func TestLocationHandler_Create_PublishesEvent(t *testing.T) {
 
 	location.RegisterRoutes(setup.API, mockSvc, capture.GetBroadcaster())
 
-	testLoc, _ := location.NewLocation(setup.WorkspaceID, "Warehouse", nil, nil, "WH-A")
+	testLoc, _ := location.NewLocation(setup.WorkspaceID, "Warehouse", nil, nil, "WHA1")
 
 	mockSvc.On("Create", mock.Anything, mock.MatchedBy(func(input location.CreateInput) bool {
 		return input.Name == "Warehouse"
 	})).Return(testLoc, nil).Once()
 
-	body := `{"name":"Warehouse","short_code":"WH-A"}`
+	body := `{"name":"Warehouse","short_code":"WHA1"}`
 	rec := setup.Post("/locations", body)
 
 	testutil.AssertStatus(t, rec, http.StatusOK)
@@ -407,7 +407,7 @@ func TestLocationHandler_Update_PublishesEvent(t *testing.T) {
 	locID := testLoc.ID()
 
 	// Mock GetByID first (handler calls it to get current location)
-	existingLoc, _ := location.NewLocation(setup.WorkspaceID, "Warehouse", nil, nil, "WH-A")
+	existingLoc, _ := location.NewLocation(setup.WorkspaceID, "Warehouse", nil, nil, "WHA1")
 	mockSvc.On("GetByID", mock.Anything, locID, setup.WorkspaceID).
 		Return(existingLoc, nil).Once()
 
@@ -531,13 +531,13 @@ func TestLocationHandler_Create_NilBroadcaster_NoError(t *testing.T) {
 	// Register with nil broadcaster
 	location.RegisterRoutes(setup.API, mockSvc, nil)
 
-	testLoc, _ := location.NewLocation(setup.WorkspaceID, "Warehouse", nil, nil, "WH-A")
+	testLoc, _ := location.NewLocation(setup.WorkspaceID, "Warehouse", nil, nil, "WHA1")
 
 	mockSvc.On("Create", mock.Anything, mock.MatchedBy(func(input location.CreateInput) bool {
 		return input.Name == "Warehouse"
 	})).Return(testLoc, nil).Once()
 
-	body := `{"name":"Warehouse","short_code":"WH-A"}`
+	body := `{"name":"Warehouse","short_code":"WHA1"}`
 	rec := setup.Post("/locations", body)
 
 	// Should not panic and should succeed

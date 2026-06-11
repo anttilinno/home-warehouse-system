@@ -1250,6 +1250,16 @@ type WarehouseRepairPhoto struct {
 	UpdatedAt     time.Time                    `json:"updated_at"`
 }
 
+// Global registry of QR shortlink codes (s.go/<code>). One row per item/location/container; code is globally unique. Maintained by warehouse.short_codes_sync() row triggers; the entity short_code columns are denormalized display copies.
+type WarehouseShortCode struct {
+	Code        string    `json:"code"`
+	WorkspaceID uuid.UUID `json:"workspace_id"`
+	// Owning entity table: ITEM, LOCATION, or CONTAINER (reuses favorite_type_enum).
+	EntityType WarehouseFavoriteTypeEnum `json:"entity_type"`
+	EntityID   uuid.UUID                 `json:"entity_id"`
+	CreatedAt  time.Time                 `json:"created_at"`
+}
+
 // All soft-deleted records across entity types for restoration UI.
 type WarehouseVArchivedRecord struct {
 	EntityType  string             `json:"entity_type"`

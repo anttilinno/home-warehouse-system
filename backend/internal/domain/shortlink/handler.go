@@ -1,12 +1,12 @@
 // Package shortlink implements the public s.go/<code> QR shortlink redirect.
 //
-// Printed QR labels encode s.go/<short_code> where short_code is an entity's
-// per-workspace VARCHAR(8) code (items, containers, locations). Angie rewrites
-// s.go/{code} -> /r/{code} and proxies to this handler, which authenticates via
-// the access_token cookie, scopes the lookup to all of the authed user's
-// workspaces, resolves the code across the three entity tables (item-first),
-// and 302-redirects to the matching dashboard page (or a claim wizard when
-// there is no match / more than one match).
+// Printed QR labels encode s.go/<short_code>. Angie rewrites s.go/{code} ->
+// /r/{code} and proxies to this handler, which authenticates via the
+// access_token cookie, resolves the code with ONE lookup against the global
+// warehouse.short_codes registry (migration 005) scoped to the authed user's
+// workspaces, and 302-redirects to the matching dashboard page (or a claim
+// wizard when there is no match). Codes are globally unique, so the resolver
+// returns at most one match — the old multi-match disambiguation path is gone.
 package shortlink
 
 import (
@@ -22,9 +22,8 @@ import (
 	"github.com/antti/home-warehouse/go-backend/internal/shared/jwt"
 )
 
-// Entity type tags used both by the repository result rows and by the encoded
-// multi-match list emitted to the claim page. Kept in sync with the Next.js
-// claim page decoder.
+// Entity type tags emitted by the repository result rows (lowercased
+// warehouse.short_codes.entity_type values).
 const (
 	TypeItem      = "item"
 	TypeContainer = "container"
@@ -40,14 +39,15 @@ type Match struct {
 	WorkspaceID uuid.UUID // owning workspace
 }
 
-// Resolver resolves a short_code across the authed user's workspaces.
-// The handler depends on this interface (not the concrete postgres repo) so the
-// handler branches can be unit-tested with a fake.
+// Resolver resolves a short_code against the global registry, scoped to the
+// authed user's workspaces. The handler depends on this interface (not the
+// concrete postgres repo) so the handler branches can be unit-tested with a
+// fake.
 type Resolver interface {
-	// Resolve returns every match for code within the given workspaces, ordered
-	// item-first so the caller can pick the highest-priority single match. A
-	// code with no match returns an empty slice and a nil error.
-	Resolve(ctx context.Context, code string, workspaceIDs []uuid.UUID) ([]Match, error)
+	// Resolve returns the registry match for code within the given workspaces.
+	// A code that is unknown — or registered to a workspace the user is not a
+	// member of — returns (nil, nil).
+	Resolve(ctx context.Context, code string, workspaceIDs []uuid.UUID) (*Match, error)
 }
 
 // JWTValidator is the subset of jwt.Service the handler needs.
@@ -115,23 +115,18 @@ func (h *Handler) Redirect(w http.ResponseWriter, r *http.Request) {
 		workspaceIDs = append(workspaceIDs, ws.ID())
 	}
 
-	matches, err := h.resolver.Resolve(r.Context(), code, workspaceIDs)
+	match, err := h.resolver.Resolve(r.Context(), code, workspaceIDs)
 	if err != nil {
 		http.Redirect(w, r, claimPath(locale, code), http.StatusFound)
 		return
 	}
-
-	switch len(matches) {
-	case 0:
-		// No match -> claim wizard with the short_code prefilled.
+	if match == nil {
+		// No match (unknown code or foreign workspace) -> claim wizard with
+		// the short_code prefilled.
 		http.Redirect(w, r, claimPath(locale, code), http.StatusFound)
-	case 1:
-		http.Redirect(w, r, entityPath(locale, matches[0]), http.StatusFound)
-	default:
-		// >1 match across the user's workspaces -> disambiguation picker.
-		dest := claimPath(locale, code) + "?matches=" + url.QueryEscape(encodeMatches(matches))
-		http.Redirect(w, r, dest, http.StatusFound)
+		return
 	}
+	http.Redirect(w, r, entityPath(locale, *match), http.StatusFound)
 }
 
 // redirectToLogin sends the browser to the locale-scoped login page with a next
@@ -144,7 +139,7 @@ func (h *Handler) redirectToLogin(w http.ResponseWriter, r *http.Request, locale
 	http.Redirect(w, r, dest, http.StatusFound)
 }
 
-// claimPath builds the claim-wizard path for an unresolved / multi-match code.
+// claimPath builds the claim-wizard path for an unresolved code.
 func claimPath(locale, code string) string {
 	return "/" + locale + "/dashboard/claim/" + code
 }
@@ -165,17 +160,6 @@ func entityPath(locale string, m Match) string {
 		// fall back to the claim wizard rather than a broken link.
 		return "/" + locale + "/dashboard/claim/"
 	}
-}
-
-// encodeMatches serialises the multi-match list as a comma-joined list of
-// "type:id" triples. URL-safe, human-debuggable, and decoded identically by the
-// Next.js claim page. The whole blob is url.QueryEscaped by the caller.
-func encodeMatches(matches []Match) string {
-	parts := make([]string, 0, len(matches))
-	for _, m := range matches {
-		parts = append(parts, m.Type+":"+m.ID.String())
-	}
-	return strings.Join(parts, ",")
 }
 
 // resolveLocale picks the redirect locale: NEXT_LOCALE cookie -> first

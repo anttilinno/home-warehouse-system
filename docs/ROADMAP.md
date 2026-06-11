@@ -309,21 +309,21 @@ exist in several workspaces (that's why the multi-match path exists at all).
 A global registry makes resolve one PK lookup and collisions impossible
 (audit `docs/audit/DATABASE-SCHEMA.md` § B5).
 
-- [ ] **Migration** — `warehouse.short_codes` registry:
+- [x] **Migration** — `warehouse.short_codes` registry:
   `code text PK CHECK (code ~ '^[A-Za-z0-9]{4,12}$')`, `workspace_id`,
   `entity_type`, `entity_id`, `UNIQUE (workspace_id, entity_type, entity_id)`;
   backfill from items/locations/containers `short_code` columns — **collision
   policy**: on duplicate code across workspaces, oldest row keeps it, newer rows
   get regenerated codes (log + `needs_review` flag where applicable)
-- [ ] **Write path** — entity create/update maintains the registry row (same tx);
+- [x] **Write path** — entity create/update maintains the registry row (same tx);
   code generation checks the registry, not the per-table index
-- [ ] **Resolver** — point `shortlink.Resolver` at the registry (one lookup +
+- [x] **Resolver** — point `shortlink.Resolver` at the registry (one lookup +
   membership check); multi-match branch becomes dead → remove after backfill
   verified
-- [ ] **Deprecate per-table columns** — keep `short_code` columns as denormalized
+- [x] **Deprecate per-table columns** — keep `short_code` columns as denormalized
   display values initially; drop the 3 per-table unique constraints + global
   `ix_*_short_code` indexes once the registry is authoritative
-- [ ] **Tests** — backfill collision test, registry uniqueness, resolver redirect
+- [x] **Tests** — backfill collision test, registry uniqueness, resolver redirect
   matrix (hit / miss→claim / foreign-workspace→claim)
 
 ## Wishlist / Purchase Planning

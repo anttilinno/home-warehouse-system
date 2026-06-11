@@ -63,7 +63,7 @@ func TestContainerRepository_Save(t *testing.T) {
 		loc := createTestLocation(t, locRepo, ctx, "Warehouse B")
 		desc := "Large storage box"
 		capacity := "50"
-		shortCode := "BOX-001"
+		shortCode := "BOX0001"
 
 		c, err := container.NewContainer(testfixtures.TestWorkspaceID, loc.ID(), "Big Box", &desc, &capacity, shortCode)
 		require.NoError(t, err)
@@ -196,13 +196,13 @@ func TestContainerRepository_FindByShortCode(t *testing.T) {
 
 	t.Run("finds container by short code", func(t *testing.T) {
 		loc := createTestLocation(t, locRepo, ctx, "ShortCode Location")
-		shortCode := "UNQ-001"
+		shortCode := "UNQ0001"
 		c, err := container.NewContainer(testfixtures.TestWorkspaceID, loc.ID(), "Coded Box", nil, nil, shortCode)
 		require.NoError(t, err)
 		err = repo.Save(ctx, c)
 		require.NoError(t, err)
 
-		found, err := repo.FindByShortCode(ctx, testfixtures.TestWorkspaceID, "UNQ-001")
+		found, err := repo.FindByShortCode(ctx, testfixtures.TestWorkspaceID, "UNQ0001")
 		require.NoError(t, err)
 		require.NotNil(t, found)
 		assert.Equal(t, c.ID(), found.ID())
@@ -289,19 +289,19 @@ func TestContainerRepository_ShortCodeExists(t *testing.T) {
 
 	t.Run("returns true for existing short code", func(t *testing.T) {
 		loc := createTestLocation(t, locRepo, ctx, "Exists Location")
-		shortCode := "EXT-001"
+		shortCode := "EXT001"
 		c, err := container.NewContainer(testfixtures.TestWorkspaceID, loc.ID(), "Existing", nil, nil, shortCode)
 		require.NoError(t, err)
 		err = repo.Save(ctx, c)
 		require.NoError(t, err)
 
-		exists, err := repo.ShortCodeExists(ctx, testfixtures.TestWorkspaceID, "EXT-001")
+		exists, err := repo.ShortCodeExists(ctx, "EXT001")
 		require.NoError(t, err)
 		assert.True(t, exists)
 	})
 
 	t.Run("returns false for non-existent short code", func(t *testing.T) {
-		exists, err := repo.ShortCodeExists(ctx, testfixtures.TestWorkspaceID, "NO-EXST")
+		exists, err := repo.ShortCodeExists(ctx, "NOEXST")
 		require.NoError(t, err)
 		assert.False(t, exists)
 	})

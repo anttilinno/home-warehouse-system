@@ -1442,13 +1442,7 @@
     "createItem": "Create Item",
     "createLocation": "Create Location",
     "createContainer": "Create Container",
-    "createHint": "Tip: the create screen for locations and containers opens its dialog from the list page — paste the code into the Short Code field.",
-    "multiTitle": "MULTIPLE MATCHES",
-    "multiSubtitle": "This code matched more than one entity across your workspaces. Pick one:",
-    "typeItem": "Item",
-    "typeContainer": "Container",
-    "typeLocation": "Location",
-    "open": "Open"
+    "createHint": "Tip: the create screen for locations and containers opens its dialog from the list page — paste the code into the Short Code field."
   },
   "loans": {
     "toasts": {

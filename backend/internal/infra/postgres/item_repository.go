@@ -352,11 +352,10 @@ func (r *ItemRepository) SKUExists(ctx context.Context, workspaceID uuid.UUID, s
 	})
 }
 
-func (r *ItemRepository) ShortCodeExists(ctx context.Context, workspaceID uuid.UUID, shortCode string) (bool, error) {
-	return r.queries.ItemShortCodeExists(ctx, queries.ItemShortCodeExistsParams{
-		WorkspaceID: workspaceID,
-		ShortCode:   shortCode,
-	})
+// ShortCodeExists checks the global warehouse.short_codes registry
+// (migration 005): short codes are globally unique, not per-workspace.
+func (r *ItemRepository) ShortCodeExists(ctx context.Context, shortCode string) (bool, error) {
+	return r.queries.ShortCodeExists(ctx, shortCode)
 }
 
 func (r *ItemRepository) AttachLabel(ctx context.Context, itemID, labelID uuid.UUID) error {

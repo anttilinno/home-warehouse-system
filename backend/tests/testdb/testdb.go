@@ -97,6 +97,10 @@ func CleanupTestDB(t *testing.T, pool *pgxpool.Pool) {
 	// Truncate all tables in reverse dependency order
 	tables := []string{
 		// Warehouse schema - reverse dependency order
+		// short_codes first: TRUNCATE does not fire the per-row
+		// short_codes_sync triggers, so registry rows must be cleared
+		// explicitly or stale codes would collide across test runs.
+		"warehouse.short_codes",
 		"warehouse.activity_log",
 		"warehouse.deleted_records",
 		"warehouse.favorites",

@@ -1269,7 +1269,7 @@ func TestLocationSearch(t *testing.T) {
 			"name":        "Warehouse Main Floor",
 			"description": "Primary storage area",
 			"zone":        "A",
-			"short_code":  "WH-MAIN",
+			"short_code":  "WHMAIN",
 		},
 		{
 			"name":        "Warehouse Basement",
@@ -1279,7 +1279,7 @@ func TestLocationSearch(t *testing.T) {
 		{
 			"name":        "Office Storage",
 			"description": "Documents and supplies",
-			"short_code":  "OFF-STR",
+			"short_code":  "OFFSTR",
 		},
 		{
 			"name":        "Garage",
@@ -1325,7 +1325,7 @@ func TestLocationSearch(t *testing.T) {
 	assert.GreaterOrEqual(t, len(searchResult.Items), 1, "Should find at least 1 location with zone A")
 
 	// Test search by short code
-	resp = ts.Get(workspacePath + "/locations/search?q=WH-MAIN&limit=10")
+	resp = ts.Get(workspacePath + "/locations/search?q=WHMAIN&limit=10")
 	RequireStatus(t, resp, http.StatusOK)
 
 	searchResult = ParseResponse[struct {
@@ -1395,19 +1395,19 @@ func TestContainerSearch(t *testing.T) {
 			"name":        "Blue Plastic Bin",
 			"location_id": locResult.ID,
 			"description": "Large plastic container for electronics",
-			"short_code":  "BLU-01",
+			"short_code":  "BLU01",
 		},
 		{
 			"name":        "Red Plastic Bin",
 			"location_id": locResult.ID,
 			"description": "Storage for tools and hardware",
-			"short_code":  "RED-01",
+			"short_code":  "RED01",
 		},
 		{
 			"name":        "Metal Cabinet",
 			"location_id": locResult.ID,
 			"description": "Heavy duty metal storage",
-			"short_code":  "MET-CAB",
+			"short_code":  "METCAB",
 		},
 		{
 			"name":        "Wooden Crate",
@@ -1441,7 +1441,7 @@ func TestContainerSearch(t *testing.T) {
 	assert.Equal(t, 2, len(searchResult.Items), "Should find 2 plastic containers")
 
 	// Test search by short code
-	resp = ts.Get(workspacePath + "/containers/search?q=BLU-01&limit=10")
+	resp = ts.Get(workspacePath + "/containers/search?q=BLU01&limit=10")
 	RequireStatus(t, resp, http.StatusOK)
 
 	searchResult = ParseResponse[struct {

@@ -27,7 +27,7 @@ func TestLocationRepository_Save(t *testing.T) {
 	ctx := context.Background()
 
 	t.Run("saves new location successfully", func(t *testing.T) {
-		loc, err := location.NewLocation(testfixtures.TestWorkspaceID, "Garage", nil, nil, "GAR-001")
+		loc, err := location.NewLocation(testfixtures.TestWorkspaceID, "Garage", nil, nil, "GAR001")
 		require.NoError(t, err)
 
 		err = repo.Save(ctx, loc)
@@ -44,7 +44,7 @@ func TestLocationRepository_Save(t *testing.T) {
 
 	t.Run("saves location with all optional fields", func(t *testing.T) {
 		desc := "Main storage area"
-		shortCode := "GAR-A1-3"
+		shortCode := "GARA13"
 
 		loc, err := location.NewLocation(testfixtures.TestWorkspaceID, "Garage Shelf", nil, &desc, shortCode)
 		require.NoError(t, err)
@@ -61,13 +61,13 @@ func TestLocationRepository_Save(t *testing.T) {
 	})
 
 	t.Run("saves location with parent", func(t *testing.T) {
-		parent, err := location.NewLocation(testfixtures.TestWorkspaceID, "Building A", nil, nil, "BLDA-001")
+		parent, err := location.NewLocation(testfixtures.TestWorkspaceID, "Building A", nil, nil, "BLDA001")
 		require.NoError(t, err)
 		err = repo.Save(ctx, parent)
 		require.NoError(t, err)
 
 		parentID := parent.ID()
-		child, err := location.NewLocation(testfixtures.TestWorkspaceID, "Room 101", &parentID, nil, "BLDA-R10")
+		child, err := location.NewLocation(testfixtures.TestWorkspaceID, "Room 101", &parentID, nil, "BLDAR10")
 		require.NoError(t, err)
 
 		err = repo.Save(ctx, child)
@@ -91,7 +91,7 @@ func TestLocationRepository_FindByID(t *testing.T) {
 	ctx := context.Background()
 
 	t.Run("finds existing location", func(t *testing.T) {
-		loc, err := location.NewLocation(testfixtures.TestWorkspaceID, "Test Location", nil, nil, "FIND-001")
+		loc, err := location.NewLocation(testfixtures.TestWorkspaceID, "Test Location", nil, nil, "FIND001")
 		require.NoError(t, err)
 		err = repo.Save(ctx, loc)
 		require.NoError(t, err)
@@ -116,7 +116,7 @@ func TestLocationRepository_FindByID(t *testing.T) {
 		testdb.CreateTestWorkspace(t, pool, workspace1)
 		testdb.CreateTestWorkspace(t, pool, workspace2)
 
-		loc, err := location.NewLocation(workspace1, "WS1 Location", nil, nil, "WS1-001")
+		loc, err := location.NewLocation(workspace1, "WS1 Location", nil, nil, "WS1001")
 		require.NoError(t, err)
 		err = repo.Save(ctx, loc)
 		require.NoError(t, err)
@@ -144,7 +144,7 @@ func TestLocationRepository_FindByShortCode(t *testing.T) {
 	ctx := context.Background()
 
 	t.Run("finds location by short code", func(t *testing.T) {
-		shortCode := "UC-123"
+		shortCode := "UC123A"
 		loc, err := location.NewLocation(testfixtures.TestWorkspaceID, "Coded Location", nil, nil, shortCode)
 		require.NoError(t, err)
 		err = repo.Save(ctx, loc)
@@ -220,14 +220,14 @@ func TestLocationRepository_FindRootLocations(t *testing.T) {
 		testdb.CreateTestWorkspace(t, pool, workspaceID)
 
 		// Create root locations
-		root1, _ := location.NewLocation(workspaceID, "Root 1", nil, nil, "ROOT-001")
-		root2, _ := location.NewLocation(workspaceID, "Root 2", nil, nil, "ROOT-002")
+		root1, _ := location.NewLocation(workspaceID, "Root 1", nil, nil, "ROOT001")
+		root2, _ := location.NewLocation(workspaceID, "Root 2", nil, nil, "ROOT002")
 		repo.Save(ctx, root1)
 		repo.Save(ctx, root2)
 
 		// Create child location
 		root1ID := root1.ID()
-		child, _ := location.NewLocation(workspaceID, "Child", &root1ID, nil, "CHILD-01")
+		child, _ := location.NewLocation(workspaceID, "Child", &root1ID, nil, "CHILD01")
 		repo.Save(ctx, child)
 
 		roots, err := repo.FindRootLocations(ctx, workspaceID)
@@ -250,7 +250,7 @@ func TestLocationRepository_Delete(t *testing.T) {
 	ctx := context.Background()
 
 	t.Run("deletes location successfully", func(t *testing.T) {
-		loc, err := location.NewLocation(testfixtures.TestWorkspaceID, "To Delete", nil, nil, "DEL-001")
+		loc, err := location.NewLocation(testfixtures.TestWorkspaceID, "To Delete", nil, nil, "DEL001")
 		require.NoError(t, err)
 		err = repo.Save(ctx, loc)
 		require.NoError(t, err)
@@ -275,19 +275,19 @@ func TestLocationRepository_ShortCodeExists(t *testing.T) {
 	ctx := context.Background()
 
 	t.Run("returns true for existing short code", func(t *testing.T) {
-		shortCode := "SC-EX01"
+		shortCode := "SCEX01"
 		loc, err := location.NewLocation(testfixtures.TestWorkspaceID, "Location", nil, nil, shortCode)
 		require.NoError(t, err)
 		err = repo.Save(ctx, loc)
 		require.NoError(t, err)
 
-		exists, err := repo.ShortCodeExists(ctx, testfixtures.TestWorkspaceID, shortCode)
+		exists, err := repo.ShortCodeExists(ctx, shortCode)
 		require.NoError(t, err)
 		assert.True(t, exists)
 	})
 
 	t.Run("returns false for non-existent short code", func(t *testing.T) {
-		exists, err := repo.ShortCodeExists(ctx, testfixtures.TestWorkspaceID, "NOT-EXISTS")
+		exists, err := repo.ShortCodeExists(ctx, "NOTEXISTS1")
 		require.NoError(t, err)
 		assert.False(t, exists)
 	})

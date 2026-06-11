@@ -954,8 +954,8 @@ func (m *MockItemRepository) SKUExists(ctx context.Context, workspaceID uuid.UUI
 	return args.Bool(0), args.Error(1)
 }
 
-func (m *MockItemRepository) ShortCodeExists(ctx context.Context, workspaceID uuid.UUID, shortCode string) (bool, error) {
-	args := m.Called(ctx, workspaceID, shortCode)
+func (m *MockItemRepository) ShortCodeExists(ctx context.Context, shortCode string) (bool, error) {
+	args := m.Called(ctx, shortCode)
 	return args.Bool(0), args.Error(1)
 }
 
@@ -1008,8 +1008,8 @@ func (m *MockLocationRepository) Delete(ctx context.Context, id, workspaceID uui
 	return args.Error(0)
 }
 
-func (m *MockLocationRepository) ShortCodeExists(ctx context.Context, workspaceID uuid.UUID, shortCode string) (bool, error) {
-	args := m.Called(ctx, workspaceID, shortCode)
+func (m *MockLocationRepository) ShortCodeExists(ctx context.Context, shortCode string) (bool, error) {
+	args := m.Called(ctx, shortCode)
 	return args.Bool(0), args.Error(1)
 }
 
@@ -1068,8 +1068,8 @@ func (m *MockContainerRepository) Delete(ctx context.Context, id, workspaceID uu
 	return args.Error(0)
 }
 
-func (m *MockContainerRepository) ShortCodeExists(ctx context.Context, workspaceID uuid.UUID, shortCode string) (bool, error) {
-	args := m.Called(ctx, workspaceID, shortCode)
+func (m *MockContainerRepository) ShortCodeExists(ctx context.Context, shortCode string) (bool, error) {
+	args := m.Called(ctx, shortCode)
 	return args.Bool(0), args.Error(1)
 }
 

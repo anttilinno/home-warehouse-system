@@ -110,11 +110,10 @@ func (r *ContainerRepository) Delete(ctx context.Context, id, workspaceID uuid.U
 	})
 }
 
-func (r *ContainerRepository) ShortCodeExists(ctx context.Context, workspaceID uuid.UUID, shortCode string) (bool, error) {
-	return r.queries.ContainerShortCodeExists(ctx, queries.ContainerShortCodeExistsParams{
-		WorkspaceID: workspaceID,
-		ShortCode:   shortCode,
-	})
+// ShortCodeExists checks the global warehouse.short_codes registry
+// (migration 005): short codes are globally unique, not per-workspace.
+func (r *ContainerRepository) ShortCodeExists(ctx context.Context, shortCode string) (bool, error) {
+	return r.queries.ShortCodeExists(ctx, shortCode)
 }
 
 func (r *ContainerRepository) Search(ctx context.Context, workspaceID uuid.UUID, query string, limit int) ([]*container.Container, error) {

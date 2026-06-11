@@ -46,11 +46,5 @@ WHERE workspace_id = $1
 ORDER BY ts_rank(search_vector, plainto_tsquery('english', $2)) DESC
 LIMIT $3;
 
--- name: ContainerShortCodeExists :one
-SELECT EXISTS(
-    SELECT 1 FROM warehouse.containers
-    WHERE workspace_id = $1 AND short_code = $2
-);
-
 -- name: DeleteContainer :exec
 DELETE FROM warehouse.containers WHERE id = $1 AND workspace_id = $2;

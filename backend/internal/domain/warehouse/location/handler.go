@@ -350,7 +350,7 @@ type CreateLocationInput struct {
 		Name           string     `json:"name" minLength:"1" maxLength:"255" doc:"Location name"`
 		ParentLocation *uuid.UUID `json:"parent_location,omitempty" doc:"Parent location ID for hierarchical locations"`
 		Description    *string    `json:"description,omitempty" doc:"Location description"`
-		ShortCode      *string    `json:"short_code,omitempty" maxLength:"8" doc:"Short code for QR labels (auto-generated if empty)"`
+		ShortCode      *string    `json:"short_code,omitempty" minLength:"4" maxLength:"8" pattern:"^[A-Za-z0-9]+$" doc:"Short code for QR labels (alphanumeric; globally unique; auto-generated if empty)"`
 	}
 }
 

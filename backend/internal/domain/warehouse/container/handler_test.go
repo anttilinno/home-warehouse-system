@@ -120,7 +120,7 @@ func TestContainerHandler_Create(t *testing.T) {
 		mockSvc.On("Create", mock.Anything, mock.Anything).
 			Return(nil, container.ErrShortCodeTaken).Once()
 
-		body := fmt.Sprintf(`{"location_id":"%s","name":"Box","short_code":"DUP"}`, locationID)
+		body := fmt.Sprintf(`{"location_id":"%s","name":"Box","short_code":"DUP1"}`, locationID)
 		rec := setup.Post("/containers", body)
 
 		testutil.AssertStatus(t, rec, http.StatusBadRequest)
@@ -383,13 +383,13 @@ func TestContainerHandler_Create_PublishesEvent(t *testing.T) {
 	container.RegisterRoutes(setup.API, mockSvc, capture.GetBroadcaster())
 
 	locationID := uuid.New()
-	testContainer, _ := container.NewContainer(setup.WorkspaceID, locationID, "Box A", nil, nil, "BOX-A")
+	testContainer, _ := container.NewContainer(setup.WorkspaceID, locationID, "Box A", nil, nil, "BOXA")
 
 	mockSvc.On("Create", mock.Anything, mock.MatchedBy(func(input container.CreateInput) bool {
 		return input.Name == "Box A" && input.LocationID == locationID
 	})).Return(testContainer, nil).Once()
 
-	body := fmt.Sprintf(`{"location_id":"%s","name":"Box A","short_code":"BOX-A"}`, locationID)
+	body := fmt.Sprintf(`{"location_id":"%s","name":"Box A","short_code":"BOXA"}`, locationID)
 	rec := setup.Post("/containers", body)
 
 	testutil.AssertStatus(t, rec, http.StatusOK)
@@ -424,7 +424,7 @@ func TestContainerHandler_Update_PublishesEvent(t *testing.T) {
 	containerID := testContainer.ID()
 
 	// Mock GetByID first (handler calls it to get current container)
-	existingContainer, _ := container.NewContainer(setup.WorkspaceID, locationID, "Box A", nil, nil, "BOX-A")
+	existingContainer, _ := container.NewContainer(setup.WorkspaceID, locationID, "Box A", nil, nil, "BOXA")
 	mockSvc.On("GetByID", mock.Anything, containerID, setup.WorkspaceID).
 		Return(existingContainer, nil).Once()
 
@@ -549,13 +549,13 @@ func TestContainerHandler_Create_NilBroadcaster_NoError(t *testing.T) {
 	container.RegisterRoutes(setup.API, mockSvc, nil)
 
 	locationID := uuid.New()
-	testContainer, _ := container.NewContainer(setup.WorkspaceID, locationID, "Box A", nil, nil, "BOX-A")
+	testContainer, _ := container.NewContainer(setup.WorkspaceID, locationID, "Box A", nil, nil, "BOXA")
 
 	mockSvc.On("Create", mock.Anything, mock.MatchedBy(func(input container.CreateInput) bool {
 		return input.Name == "Box A"
 	})).Return(testContainer, nil).Once()
 
-	body := fmt.Sprintf(`{"location_id":"%s","name":"Box A","short_code":"BOX-A"}`, locationID)
+	body := fmt.Sprintf(`{"location_id":"%s","name":"Box A","short_code":"BOXA"}`, locationID)
 	rec := setup.Post("/containers", body)
 
 	// Should not panic and should succeed

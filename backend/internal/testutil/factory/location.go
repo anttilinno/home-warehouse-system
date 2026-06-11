@@ -18,7 +18,7 @@ func (f *Factory) Location(opts ...LocationOpt) *location.Location {
 		"Bedroom", "Office", "Storage Room", "Closet", "Shed",
 		"Workshop", "Utility Room", "Pantry", "Laundry Room",
 	})
-	shortCode := "L-" + gofakeit.LetterN(2) + gofakeit.DigitN(3)
+	shortCode := "L" + gofakeit.LetterN(3) + gofakeit.DigitN(4) // conforms to ^[A-Za-z0-9]{4,12}$ (short_codes registry)
 	description := gofakeit.Sentence(6)
 
 	l, err := location.NewLocation(f.workspaceID, name, nil, &description, shortCode)

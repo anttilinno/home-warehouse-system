@@ -2,16 +2,18 @@ package postgres
 
 import (
 	"context"
+	"errors"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 
 	"github.com/antti/home-warehouse/go-backend/internal/domain/shortlink"
 )
 
-// ShortlinkRepository resolves a short_code across items, containers, and
-// locations, scoped to a set of workspace IDs. It implements
-// shortlink.Resolver.
+// ShortlinkRepository resolves a short_code against the global
+// warehouse.short_codes registry (migration 005), scoped to a set of
+// workspace IDs. It implements shortlink.Resolver.
 type ShortlinkRepository struct {
 	pool *pgxpool.Pool
 }
@@ -21,57 +23,33 @@ func NewShortlinkRepository(pool *pgxpool.Pool) *ShortlinkRepository {
 	return &ShortlinkRepository{pool: pool}
 }
 
-// resolveShortCodeSQL is a single UNION ALL across the three short_code-bearing
-// tables. A literal sort key (0 for items) keeps item rows first so the handler
-// can pick the highest-priority single match. short_code is parameterized ($1)
-// and the workspace scope is bound as a uuid[] via $2 — no string concat
-// (mitigates T-uzt-02 cross-tenant leak and T-uzt-03 injection).
+// resolveShortCodeSQL is a single PK lookup against the registry. Codes are
+// globally unique (short_codes_pkey), so at most one row exists; the
+// workspace scope is bound as a uuid[] via $2 and acts as the membership
+// check — a code registered to a foreign workspace resolves to no rows
+// (mitigates T-uzt-02 cross-tenant leak and T-uzt-03 injection: no string
+// concat). entity_type is the uppercase favorite_type_enum; lower() maps it
+// onto the shortlink.Type* tags.
 const resolveShortCodeSQL = `
-SELECT 'item' AS entity_type, id, workspace_id, 0 AS sort_key
-  FROM warehouse.items
- WHERE short_code = $1 AND workspace_id = ANY($2)
-UNION ALL
-SELECT 'container' AS entity_type, id, workspace_id, 1 AS sort_key
-  FROM warehouse.containers
- WHERE short_code = $1 AND workspace_id = ANY($2)
-UNION ALL
-SELECT 'location' AS entity_type, id, workspace_id, 2 AS sort_key
-  FROM warehouse.locations
- WHERE short_code = $1 AND workspace_id = ANY($2)
-ORDER BY sort_key`
+SELECT lower(entity_type::text), entity_id, workspace_id
+  FROM warehouse.short_codes
+ WHERE code = $1 AND workspace_id = ANY($2)`
 
-// Resolve returns every match for code within workspaceIDs, item rows first.
-// A code with no match returns an empty slice and a nil error.
-func (r *ShortlinkRepository) Resolve(ctx context.Context, code string, workspaceIDs []uuid.UUID) ([]shortlink.Match, error) {
+// Resolve returns the registry match for code within workspaceIDs, or
+// (nil, nil) when the code is unknown or owned by a foreign workspace.
+func (r *ShortlinkRepository) Resolve(ctx context.Context, code string, workspaceIDs []uuid.UUID) (*shortlink.Match, error) {
 	if len(workspaceIDs) == 0 {
 		return nil, nil
 	}
 
-	rows, err := r.pool.Query(ctx, resolveShortCodeSQL, code, workspaceIDs)
+	var m shortlink.Match
+	err := r.pool.QueryRow(ctx, resolveShortCodeSQL, code, workspaceIDs).
+		Scan(&m.Type, &m.ID, &m.WorkspaceID)
+	if errors.Is(err, pgx.ErrNoRows) {
+		return nil, nil
+	}
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
-
-	var matches []shortlink.Match
-	for rows.Next() {
-		var (
-			entityType  string
-			id          uuid.UUID
-			workspaceID uuid.UUID
-			sortKey     int
-		)
-		if err := rows.Scan(&entityType, &id, &workspaceID, &sortKey); err != nil {
-			return nil, err
-		}
-		matches = append(matches, shortlink.Match{
-			Type:        entityType,
-			ID:          id,
-			WorkspaceID: workspaceID,
-		})
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return matches, nil
+	return &m, nil
 }

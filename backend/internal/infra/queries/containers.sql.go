@@ -27,25 +27,6 @@ func (q *Queries) ArchiveContainer(ctx context.Context, arg ArchiveContainerPara
 	return err
 }
 
-const containerShortCodeExists = `-- name: ContainerShortCodeExists :one
-SELECT EXISTS(
-    SELECT 1 FROM warehouse.containers
-    WHERE workspace_id = $1 AND short_code = $2
-)
-`
-
-type ContainerShortCodeExistsParams struct {
-	WorkspaceID uuid.UUID `json:"workspace_id"`
-	ShortCode   string    `json:"short_code"`
-}
-
-func (q *Queries) ContainerShortCodeExists(ctx context.Context, arg ContainerShortCodeExistsParams) (bool, error) {
-	row := q.db.QueryRow(ctx, containerShortCodeExists, arg.WorkspaceID, arg.ShortCode)
-	var exists bool
-	err := row.Scan(&exists)
-	return exists, err
-}
-
 const createContainer = `-- name: CreateContainer :one
 INSERT INTO warehouse.containers (id, workspace_id, name, location_id, description, capacity, short_code)
 VALUES ($1, $2, $3, $4, $5, $6, $7)

@@ -330,7 +330,7 @@ type CreateContainerInput struct {
 		LocationID  uuid.UUID `json:"location_id" doc:"Location ID where the container is stored"`
 		Description *string   `json:"description,omitempty" doc:"Container description"`
 		Capacity    *string   `json:"capacity,omitempty" doc:"Container capacity or size information"`
-		ShortCode   *string   `json:"short_code,omitempty" maxLength:"20" doc:"Short code for QR labels"`
+		ShortCode   *string   `json:"short_code,omitempty" minLength:"4" maxLength:"8" pattern:"^[A-Za-z0-9]+$" doc:"Short code for QR labels (alphanumeric; globally unique; auto-generated if empty)"`
 	}
 }
 

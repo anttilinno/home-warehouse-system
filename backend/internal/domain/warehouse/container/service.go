@@ -54,7 +54,7 @@ func (s *Service) Create(ctx context.Context, input CreateInput) (*Container, er
 
 	// If short code provided, check uniqueness
 	if shortCode != "" {
-		exists, err := s.repo.ShortCodeExists(ctx, input.WorkspaceID, shortCode)
+		exists, err := s.repo.ShortCodeExists(ctx, shortCode)
 		if err != nil {
 			return nil, err
 		}
@@ -66,7 +66,7 @@ func (s *Service) Create(ctx context.Context, input CreateInput) (*Container, er
 		const maxRetries = 5
 		for i := 0; i < maxRetries; i++ {
 			code := generateShortCode()
-			exists, err := s.repo.ShortCodeExists(ctx, input.WorkspaceID, code)
+			exists, err := s.repo.ShortCodeExists(ctx, code)
 			if err != nil {
 				return nil, err
 			}

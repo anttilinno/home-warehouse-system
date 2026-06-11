@@ -236,14 +236,14 @@ func TestFactory_LocationWithOptions(t *testing.T) {
 		factory.WithLocationName("Main Storage"),
 		factory.WithLocationParent(parentID),
 		factory.WithLocationDescription("Primary storage area"),
-		factory.WithLocationShortCode("L-MS001"),
+		factory.WithLocationShortCode("LMS001"),
 	)
 
 	assert.Equal(t, "Main Storage", l.Name())
 	assert.Equal(t, &parentID, l.ParentLocation())
 	require.NotNil(t, l.Description())
 	assert.Equal(t, "Primary storage area", *l.Description())
-	assert.Equal(t, "L-MS001", l.ShortCode())
+	assert.Equal(t, "LMS001", l.ShortCode())
 }
 
 func TestFactory_LocationInheritsWorkspace(t *testing.T) {
@@ -277,7 +277,7 @@ func TestFactory_ContainerWithOptions(t *testing.T) {
 		factory.WithContainerLocation(loc2.ID()),
 		factory.WithContainerDescription("Red toolbox"),
 		factory.WithContainerCapacity("Large"),
-		factory.WithContainerShortCode("C-TB001"),
+		factory.WithContainerShortCode("CTB001"),
 	)
 
 	assert.Equal(t, "Tool Box A", c.Name())
@@ -286,7 +286,7 @@ func TestFactory_ContainerWithOptions(t *testing.T) {
 	assert.Equal(t, "Red toolbox", *c.Description())
 	require.NotNil(t, c.Capacity())
 	assert.Equal(t, "Large", *c.Capacity())
-	assert.Equal(t, "C-TB001", c.ShortCode())
+	assert.Equal(t, "CTB001", c.ShortCode())
 }
 
 func TestFactory_ContainerInheritsWorkspace(t *testing.T) {

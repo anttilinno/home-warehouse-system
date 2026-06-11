@@ -35,7 +35,10 @@ type Repository interface {
 	Search(ctx context.Context, workspaceID uuid.UUID, query string, limit int) ([]*Item, error)
 	Delete(ctx context.Context, id, workspaceID uuid.UUID) error
 	SKUExists(ctx context.Context, workspaceID uuid.UUID, sku string) (bool, error)
-	ShortCodeExists(ctx context.Context, workspaceID uuid.UUID, shortCode string) (bool, error)
+	// ShortCodeExists reports whether shortCode is taken anywhere in the
+	// global warehouse.short_codes registry (codes are globally unique
+	// since migration 005, not per-workspace).
+	ShortCodeExists(ctx context.Context, shortCode string) (bool, error)
 
 	// Label associations
 	AttachLabel(ctx context.Context, itemID, labelID uuid.UUID) error

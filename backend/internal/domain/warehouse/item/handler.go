@@ -759,7 +759,7 @@ type CreateItemInput struct {
 		WarrantyDetails   *string    `json:"warranty_details,omitempty" doc:"Warranty details"`
 		PurchasedFrom     *uuid.UUID `json:"purchased_from,omitempty" doc:"Company ID where purchased from"`
 		MinStockLevel     *int       `json:"min_stock_level,omitempty" default:"0" minimum:"0" doc:"Minimum stock level"`
-		ShortCode         *string    `json:"short_code,omitempty" maxLength:"20" doc:"Short code for QR labels"`
+		ShortCode         *string    `json:"short_code,omitempty" minLength:"4" maxLength:"8" pattern:"^[A-Za-z0-9]+$" doc:"Short code for QR labels (alphanumeric; globally unique; auto-generated if empty)"`
 		ObsidianVaultPath *string    `json:"obsidian_vault_path,omitempty" doc:"Obsidian vault path"`
 		ObsidianNotePath  *string    `json:"obsidian_note_path,omitempty" doc:"Obsidian note path"`
 		NeedsReview       *bool      `json:"needs_review,omitempty" doc:"Whether the item needs review"`

@@ -131,7 +131,7 @@ func (m *mockItemRepo) Delete(ctx context.Context, id, workspaceID uuid.UUID) er
 func (m *mockItemRepo) SKUExists(ctx context.Context, wsID uuid.UUID, sku string) (bool, error) {
 	return false, nil
 }
-func (m *mockItemRepo) ShortCodeExists(ctx context.Context, wsID uuid.UUID, sc string) (bool, error) {
+func (m *mockItemRepo) ShortCodeExists(ctx context.Context, sc string) (bool, error) {
 	return false, nil
 }
 func (m *mockItemRepo) AttachLabel(ctx context.Context, itemID, labelID uuid.UUID) error { return nil }
@@ -161,7 +161,7 @@ func (m *mockLocationRepo) FindRootLocations(ctx context.Context, wsID uuid.UUID
 	return nil, nil
 }
 func (m *mockLocationRepo) Delete(ctx context.Context, id, workspaceID uuid.UUID) error { return nil }
-func (m *mockLocationRepo) ShortCodeExists(ctx context.Context, wsID uuid.UUID, sc string) (bool, error) {
+func (m *mockLocationRepo) ShortCodeExists(ctx context.Context, sc string) (bool, error) {
 	return false, nil
 }
 func (m *mockLocationRepo) Search(ctx context.Context, wsID uuid.UUID, q string, l int) ([]*location.Location, error) {
@@ -189,7 +189,7 @@ func (m *mockContainerRepo) FindByWorkspace(ctx context.Context, wsID uuid.UUID,
 	return nil, 0, nil
 }
 func (m *mockContainerRepo) Delete(ctx context.Context, id, workspaceID uuid.UUID) error { return nil }
-func (m *mockContainerRepo) ShortCodeExists(ctx context.Context, wsID uuid.UUID, sc string) (bool, error) {
+func (m *mockContainerRepo) ShortCodeExists(ctx context.Context, sc string) (bool, error) {
 	return false, nil
 }
 func (m *mockContainerRepo) Search(ctx context.Context, wsID uuid.UUID, q string, l int) ([]*container.Container, error) {

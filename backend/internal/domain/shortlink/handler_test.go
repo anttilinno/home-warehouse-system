@@ -20,20 +20,20 @@ import (
 // --- fakes ---
 
 type fakeResolver struct {
-	matches []Match
-	err     error
+	match *Match
+	err   error
 	// captured args
 	gotCode      string
 	gotWorkspace []uuid.UUID
 }
 
-func (f *fakeResolver) Resolve(_ context.Context, code string, workspaceIDs []uuid.UUID) ([]Match, error) {
+func (f *fakeResolver) Resolve(_ context.Context, code string, workspaceIDs []uuid.UUID) (*Match, error) {
 	f.gotCode = code
 	f.gotWorkspace = workspaceIDs
 	if f.err != nil {
 		return nil, f.err
 	}
-	return f.matches, nil
+	return f.match, nil
 }
 
 type fakeWorkspaceLister struct {
@@ -121,7 +121,7 @@ func TestRedirect_SingleItemMatch(t *testing.T) {
 	svc := newTestJWT()
 	itemID := uuid.New()
 	wsID := uuid.New()
-	res := &fakeResolver{matches: []Match{{Type: TypeItem, ID: itemID, WorkspaceID: wsID}}}
+	res := &fakeResolver{match: &Match{Type: TypeItem, ID: itemID, WorkspaceID: wsID}}
 	h := NewHandler(res, svc, &fakeWorkspaceLister{workspaceIDs: []uuid.UUID{wsID}})
 
 	rec := doRequest(t, h, "ITEMXX", validTokenFor(t, svc))
@@ -145,7 +145,7 @@ func TestRedirect_SingleItemMatch(t *testing.T) {
 func TestRedirect_SingleContainerMatch(t *testing.T) {
 	svc := newTestJWT()
 	id := uuid.New()
-	res := &fakeResolver{matches: []Match{{Type: TypeContainer, ID: id, WorkspaceID: uuid.New()}}}
+	res := &fakeResolver{match: &Match{Type: TypeContainer, ID: id, WorkspaceID: uuid.New()}}
 	h := NewHandler(res, svc, &fakeWorkspaceLister{workspaceIDs: []uuid.UUID{uuid.New()}})
 
 	rec := doRequest(t, h, "CONTNR", validTokenFor(t, svc))
@@ -159,7 +159,7 @@ func TestRedirect_SingleContainerMatch(t *testing.T) {
 func TestRedirect_SingleLocationMatch(t *testing.T) {
 	svc := newTestJWT()
 	id := uuid.New()
-	res := &fakeResolver{matches: []Match{{Type: TypeLocation, ID: id, WorkspaceID: uuid.New()}}}
+	res := &fakeResolver{match: &Match{Type: TypeLocation, ID: id, WorkspaceID: uuid.New()}}
 	h := NewHandler(res, svc, &fakeWorkspaceLister{workspaceIDs: []uuid.UUID{uuid.New()}})
 
 	rec := doRequest(t, h, "LOCXYZ", validTokenFor(t, svc))
@@ -172,7 +172,7 @@ func TestRedirect_SingleLocationMatch(t *testing.T) {
 
 func TestRedirect_NotFound_RedirectsToClaim(t *testing.T) {
 	svc := newTestJWT()
-	res := &fakeResolver{matches: nil}
+	res := &fakeResolver{match: nil}
 	h := NewHandler(res, svc, &fakeWorkspaceLister{workspaceIDs: []uuid.UUID{uuid.New()}})
 
 	rec := doRequest(t, h, "NOPE12", validTokenFor(t, svc))
@@ -186,40 +186,33 @@ func TestRedirect_NotFound_RedirectsToClaim(t *testing.T) {
 	}
 }
 
-func TestRedirect_MultiMatch_RedirectsToClaimPicker(t *testing.T) {
+// TestRedirect_ForeignWorkspace_RedirectsToClaim covers the membership-check
+// branch: the registry resolver returns nil for a code owned by a workspace
+// the user is not a member of, so the handler falls back to the claim wizard
+// (the same observable behaviour as a genuinely unknown code).
+func TestRedirect_ForeignWorkspace_RedirectsToClaim(t *testing.T) {
 	svc := newTestJWT()
-	contID := uuid.New()
-	locID := uuid.New()
-	res := &fakeResolver{matches: []Match{
-		{Type: TypeContainer, ID: contID, WorkspaceID: uuid.New()},
-		{Type: TypeLocation, ID: locID, WorkspaceID: uuid.New()},
-	}}
-	h := NewHandler(res, svc, &fakeWorkspaceLister{workspaceIDs: []uuid.UUID{uuid.New(), uuid.New()}})
+	res := &fakeResolver{match: nil} // registry scoped the lookup -> no row
+	userWs := uuid.New()
+	h := NewHandler(res, svc, &fakeWorkspaceLister{workspaceIDs: []uuid.UUID{userWs}})
 
-	rec := doRequest(t, h, "DUPLIC", validTokenFor(t, svc))
+	rec := doRequest(t, h, "FOREIGN1", validTokenFor(t, svc))
 
 	if rec.Code != http.StatusFound {
 		t.Fatalf("status = %d, want 302", rec.Code)
 	}
-	loc := rec.Header().Get("Location")
-	if !strings.HasPrefix(loc, "/en/dashboard/claim/DUPLIC?matches=") {
-		t.Fatalf("Location = %q, want claim picker with ?matches", loc)
+	if got := rec.Header().Get("Location"); got != "/en/dashboard/claim/FOREIGN1" {
+		t.Fatalf("Location = %q, want claim fallback", got)
 	}
-	// Decode the matches param and verify both triples round-trip.
-	u, err := url.Parse(loc)
-	if err != nil {
-		t.Fatalf("parse location: %v", err)
-	}
-	decoded := u.Query().Get("matches")
-	wantBlob := "container:" + contID.String() + ",location:" + locID.String()
-	if decoded != wantBlob {
-		t.Fatalf("matches = %q, want %q", decoded, wantBlob)
+	// The resolver must have been scoped to exactly the user's workspaces.
+	if len(res.gotWorkspace) != 1 || res.gotWorkspace[0] != userWs {
+		t.Fatalf("resolver workspaces = %v, want [%s]", res.gotWorkspace, userWs)
 	}
 }
 
 func TestRedirect_LocaleFromCookie(t *testing.T) {
 	svc := newTestJWT()
-	res := &fakeResolver{matches: nil}
+	res := &fakeResolver{match: nil}
 	h := NewHandler(res, svc, &fakeWorkspaceLister{workspaceIDs: []uuid.UUID{uuid.New()}})
 
 	rec := doRequest(t, h, "NOPE12", validTokenFor(t, svc),
@@ -232,7 +225,7 @@ func TestRedirect_LocaleFromCookie(t *testing.T) {
 
 func TestRedirect_LocaleFromAcceptLanguage(t *testing.T) {
 	svc := newTestJWT()
-	res := &fakeResolver{matches: nil}
+	res := &fakeResolver{match: nil}
 	h := NewHandler(res, svc, &fakeWorkspaceLister{workspaceIDs: []uuid.UUID{uuid.New()}})
 
 	router := chi.NewRouter()

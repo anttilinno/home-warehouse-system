@@ -159,7 +159,7 @@ func TestItemRepository_FindByShortCode(t *testing.T) {
 	t.Run("finds item by short code", func(t *testing.T) {
 		itm, err := item.NewItem(testfixtures.TestWorkspaceID, "Short Code Item", "SKU-SC1", 0)
 		require.NoError(t, err)
-		shortCode := "SC-123"
+		shortCode := "SC123A"
 		itm.SetShortCode(shortCode)
 		err = repo.Save(ctx, itm)
 		require.NoError(t, err)
@@ -509,20 +509,20 @@ func TestItemRepository_ShortCodeExists(t *testing.T) {
 	ctx := context.Background()
 
 	t.Run("returns true for existing short code", func(t *testing.T) {
-		shortCode := "ISC-001"
+		shortCode := "ISC001"
 		itm, err := item.NewItem(testfixtures.TestWorkspaceID, "Item", "SKU-SC-EXISTS", 0)
 		require.NoError(t, err)
 		itm.SetShortCode(shortCode)
 		err = repo.Save(ctx, itm)
 		require.NoError(t, err)
 
-		exists, err := repo.ShortCodeExists(ctx, testfixtures.TestWorkspaceID, shortCode)
+		exists, err := repo.ShortCodeExists(ctx, shortCode)
 		require.NoError(t, err)
 		assert.True(t, exists)
 	})
 
 	t.Run("returns false for non-existent short code", func(t *testing.T) {
-		exists, err := repo.ShortCodeExists(ctx, testfixtures.TestWorkspaceID, "NOT-EXISTS-SC")
+		exists, err := repo.ShortCodeExists(ctx, "NOTEXISTSSC")
 		require.NoError(t, err)
 		assert.False(t, exists)
 	})

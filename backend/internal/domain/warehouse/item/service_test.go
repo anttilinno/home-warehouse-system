@@ -106,8 +106,8 @@ func (m *MockRepository) SKUExists(ctx context.Context, workspaceID uuid.UUID, s
 	return args.Bool(0), args.Error(1)
 }
 
-func (m *MockRepository) ShortCodeExists(ctx context.Context, workspaceID uuid.UUID, shortCode string) (bool, error) {
-	args := m.Called(ctx, workspaceID, shortCode)
+func (m *MockRepository) ShortCodeExists(ctx context.Context, shortCode string) (bool, error) {
+	args := m.Called(ctx, shortCode)
 	return args.Bool(0), args.Error(1)
 }
 
@@ -581,7 +581,7 @@ func TestService_Create(t *testing.T) {
 			},
 			setupMock: func(m *MockRepository) {
 				m.On("SKUExists", ctx, workspaceID, "SKU-001").Return(false, nil)
-				m.On("ShortCodeExists", ctx, workspaceID, mock.AnythingOfType("string")).Return(false, nil)
+				m.On("ShortCodeExists", ctx, mock.AnythingOfType("string")).Return(false, nil)
 				m.On("Save", ctx, mock.AnythingOfType("*item.Item")).Return(nil)
 			},
 			expectError: false,
@@ -610,7 +610,7 @@ func TestService_Create(t *testing.T) {
 			},
 			setupMock: func(m *MockRepository) {
 				m.On("SKUExists", ctx, workspaceID, "SKU-002").Return(false, nil)
-				m.On("ShortCodeExists", ctx, workspaceID, "SHORT1").Return(false, nil)
+				m.On("ShortCodeExists", ctx, "SHORT1").Return(false, nil)
 				m.On("Save", ctx, mock.AnythingOfType("*item.Item")).Return(nil)
 			},
 			expectError: false,
@@ -625,7 +625,7 @@ func TestService_Create(t *testing.T) {
 			},
 			setupMock: func(m *MockRepository) {
 				m.On("SKUExists", ctx, workspaceID, "SKU-003").Return(false, nil)
-				m.On("ShortCodeExists", ctx, workspaceID, mock.AnythingOfType("string")).Return(false, nil)
+				m.On("ShortCodeExists", ctx, mock.AnythingOfType("string")).Return(false, nil)
 				m.On("Save", ctx, mock.AnythingOfType("*item.Item")).Return(nil)
 			},
 			expectError: false,
@@ -655,7 +655,7 @@ func TestService_Create(t *testing.T) {
 			},
 			setupMock: func(m *MockRepository) {
 				m.On("SKUExists", ctx, workspaceID, "SKU-004").Return(false, nil)
-				m.On("ShortCodeExists", ctx, workspaceID, "TAKEN").Return(true, nil)
+				m.On("ShortCodeExists", ctx, "TAKEN").Return(true, nil)
 			},
 			expectError: true,
 			errorType:   ErrShortCodeTaken,
@@ -670,7 +670,7 @@ func TestService_Create(t *testing.T) {
 			},
 			setupMock: func(m *MockRepository) {
 				m.On("SKUExists", ctx, uuid.Nil, "SKU-005").Return(false, nil)
-				m.On("ShortCodeExists", ctx, uuid.Nil, mock.AnythingOfType("string")).Return(false, nil)
+				m.On("ShortCodeExists", ctx, mock.AnythingOfType("string")).Return(false, nil)
 			},
 			expectError: true,
 		},
@@ -684,7 +684,7 @@ func TestService_Create(t *testing.T) {
 			},
 			setupMock: func(m *MockRepository) {
 				m.On("SKUExists", ctx, workspaceID, "SKU-006").Return(false, nil)
-				m.On("ShortCodeExists", ctx, workspaceID, mock.AnythingOfType("string")).Return(false, nil)
+				m.On("ShortCodeExists", ctx, mock.AnythingOfType("string")).Return(false, nil)
 			},
 			expectError: true,
 		},
@@ -698,7 +698,7 @@ func TestService_Create(t *testing.T) {
 			},
 			setupMock: func(m *MockRepository) {
 				m.On("SKUExists", ctx, workspaceID, "").Return(false, nil)
-				m.On("ShortCodeExists", ctx, workspaceID, mock.AnythingOfType("string")).Return(false, nil)
+				m.On("ShortCodeExists", ctx, mock.AnythingOfType("string")).Return(false, nil)
 			},
 			expectError: true,
 		},
@@ -712,7 +712,7 @@ func TestService_Create(t *testing.T) {
 			},
 			setupMock: func(m *MockRepository) {
 				m.On("SKUExists", ctx, workspaceID, "SKU-007").Return(false, nil)
-				m.On("ShortCodeExists", ctx, workspaceID, mock.AnythingOfType("string")).Return(false, nil)
+				m.On("ShortCodeExists", ctx, mock.AnythingOfType("string")).Return(false, nil)
 			},
 			expectError: true,
 			errorType:   ErrInvalidMinStock,
@@ -741,7 +741,7 @@ func TestService_Create(t *testing.T) {
 			},
 			setupMock: func(m *MockRepository) {
 				m.On("SKUExists", ctx, workspaceID, "SKU-009").Return(false, nil)
-				m.On("ShortCodeExists", ctx, workspaceID, "CODE1").Return(false, errors.New("database error"))
+				m.On("ShortCodeExists", ctx, "CODE1").Return(false, errors.New("database error"))
 			},
 			expectError: true,
 		},
@@ -755,7 +755,7 @@ func TestService_Create(t *testing.T) {
 			},
 			setupMock: func(m *MockRepository) {
 				m.On("SKUExists", ctx, workspaceID, "SKU-010").Return(false, nil)
-				m.On("ShortCodeExists", ctx, workspaceID, mock.AnythingOfType("string")).Return(false, nil)
+				m.On("ShortCodeExists", ctx, mock.AnythingOfType("string")).Return(false, nil)
 				m.On("Save", ctx, mock.AnythingOfType("*item.Item")).Return(errors.New("save error"))
 			},
 			expectError: true,
@@ -771,7 +771,7 @@ func TestService_Create(t *testing.T) {
 			},
 			setupMock: func(m *MockRepository) {
 				m.On("SKUExists", ctx, workspaceID, "SKU-011").Return(false, nil)
-				m.On("ShortCodeExists", ctx, workspaceID, mock.AnythingOfType("string")).Return(false, nil)
+				m.On("ShortCodeExists", ctx, mock.AnythingOfType("string")).Return(false, nil)
 				m.On("Save", ctx, mock.AnythingOfType("*item.Item")).Return(nil)
 			},
 			expectError: false,
@@ -1751,7 +1751,7 @@ func TestService_Create_WithNeedsReview(t *testing.T) {
 	svc := NewService(mockRepo, mockCatRepo)
 
 	mockRepo.On("SKUExists", ctx, workspaceID, "NR-001").Return(false, nil)
-	mockRepo.On("ShortCodeExists", ctx, workspaceID, mock.AnythingOfType("string")).Return(false, nil)
+	mockRepo.On("ShortCodeExists", ctx, mock.AnythingOfType("string")).Return(false, nil)
 	mockRepo.On("Save", ctx, mock.MatchedBy(func(item *Item) bool {
 		return item.NeedsReview() != nil && *item.NeedsReview() == true
 	})).Return(nil)

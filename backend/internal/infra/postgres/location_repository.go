@@ -112,11 +112,10 @@ func (r *LocationRepository) Delete(ctx context.Context, id, workspaceID uuid.UU
 	})
 }
 
-func (r *LocationRepository) ShortCodeExists(ctx context.Context, workspaceID uuid.UUID, shortCode string) (bool, error) {
-	return r.queries.ShortCodeExists(ctx, queries.ShortCodeExistsParams{
-		WorkspaceID: workspaceID,
-		ShortCode:   shortCode,
-	})
+// ShortCodeExists checks the global warehouse.short_codes registry
+// (migration 005): short codes are globally unique, not per-workspace.
+func (r *LocationRepository) ShortCodeExists(ctx context.Context, shortCode string) (bool, error) {
+	return r.queries.ShortCodeExists(ctx, shortCode)
 }
 
 func (r *LocationRepository) Search(ctx context.Context, workspaceID uuid.UUID, query string, limit int) ([]*location.Location, error) {

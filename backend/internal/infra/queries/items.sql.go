@@ -511,25 +511,6 @@ func (q *Queries) ItemSKUExists(ctx context.Context, arg ItemSKUExistsParams) (b
 	return exists, err
 }
 
-const itemShortCodeExists = `-- name: ItemShortCodeExists :one
-SELECT EXISTS(
-    SELECT 1 FROM warehouse.items
-    WHERE workspace_id = $1 AND short_code = $2
-)
-`
-
-type ItemShortCodeExistsParams struct {
-	WorkspaceID uuid.UUID `json:"workspace_id"`
-	ShortCode   string    `json:"short_code"`
-}
-
-func (q *Queries) ItemShortCodeExists(ctx context.Context, arg ItemShortCodeExistsParams) (bool, error) {
-	row := q.db.QueryRow(ctx, itemShortCodeExists, arg.WorkspaceID, arg.ShortCode)
-	var exists bool
-	err := row.Scan(&exists)
-	return exists, err
-}
-
 const listItems = `-- name: ListItems :many
 SELECT id, workspace_id, sku, name, description, category_id, brand, model, image_url, serial_number, manufacturer, barcode, is_insured, is_archived, needs_review, lifetime_warranty, warranty_details, purchased_from, min_stock_level, short_code, obsidian_vault_path, obsidian_note_path, search_vector, created_at, updated_at FROM warehouse.items
 WHERE workspace_id = $1 AND is_archived = false

@@ -323,25 +323,6 @@ func (q *Queries) SearchLocations(ctx context.Context, arg SearchLocationsParams
 	return items, nil
 }
 
-const shortCodeExists = `-- name: ShortCodeExists :one
-SELECT EXISTS(
-    SELECT 1 FROM warehouse.locations
-    WHERE workspace_id = $1 AND short_code = $2
-)
-`
-
-type ShortCodeExistsParams struct {
-	WorkspaceID uuid.UUID `json:"workspace_id"`
-	ShortCode   string    `json:"short_code"`
-}
-
-func (q *Queries) ShortCodeExists(ctx context.Context, arg ShortCodeExistsParams) (bool, error) {
-	row := q.db.QueryRow(ctx, shortCodeExists, arg.WorkspaceID, arg.ShortCode)
-	var exists bool
-	err := row.Scan(&exists)
-	return exists, err
-}
-
 const updateLocation = `-- name: UpdateLocation :one
 UPDATE warehouse.locations
 SET name = $3, parent_location = $4, description = $5, updated_at = now()

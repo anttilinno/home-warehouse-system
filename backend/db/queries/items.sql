@@ -78,12 +78,6 @@ SELECT l.* FROM warehouse.labels l
 JOIN warehouse.item_labels il ON l.id = il.label_id
 WHERE il.item_id = $1;
 
--- name: ItemShortCodeExists :one
-SELECT EXISTS(
-    SELECT 1 FROM warehouse.items
-    WHERE workspace_id = $1 AND short_code = $2
-);
-
 -- name: ItemSKUExists :one
 SELECT EXISTS(
     SELECT 1 FROM warehouse.items

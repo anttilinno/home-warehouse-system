@@ -59,8 +59,8 @@ func (m *MockRepository) Delete(ctx context.Context, id, workspaceID uuid.UUID) 
 	return args.Error(0)
 }
 
-func (m *MockRepository) ShortCodeExists(ctx context.Context, workspaceID uuid.UUID, shortCode string) (bool, error) {
-	args := m.Called(ctx, workspaceID, shortCode)
+func (m *MockRepository) ShortCodeExists(ctx context.Context, shortCode string) (bool, error) {
+	args := m.Called(ctx, shortCode)
 	return args.Bool(0), args.Error(1)
 }
 
@@ -265,7 +265,7 @@ func TestService_Create(t *testing.T) {
 				ShortCode:   "WHA",
 			},
 			setupMock: func(m *MockRepository) {
-				m.On("ShortCodeExists", ctx, workspaceID, "WHA").Return(false, nil)
+				m.On("ShortCodeExists", ctx, "WHA").Return(false, nil)
 				m.On("Save", ctx, mock.AnythingOfType("*location.Location")).Return(nil)
 			},
 			expectError: false,
@@ -279,7 +279,7 @@ func TestService_Create(t *testing.T) {
 				ShortCode:   "", // Empty triggers auto-generation
 			},
 			setupMock: func(m *MockRepository) {
-				m.On("ShortCodeExists", ctx, workspaceID, mock.AnythingOfType("string")).Return(false, nil)
+				m.On("ShortCodeExists", ctx, mock.AnythingOfType("string")).Return(false, nil)
 				m.On("Save", ctx, mock.AnythingOfType("*location.Location")).Return(nil)
 			},
 			expectError: false,
@@ -292,7 +292,7 @@ func TestService_Create(t *testing.T) {
 				ShortCode:   "TAKEN",
 			},
 			setupMock: func(m *MockRepository) {
-				m.On("ShortCodeExists", ctx, workspaceID, "TAKEN").Return(true, nil)
+				m.On("ShortCodeExists", ctx, "TAKEN").Return(true, nil)
 			},
 			expectError: true,
 			errorType:   ErrShortCodeTaken,
@@ -306,7 +306,7 @@ func TestService_Create(t *testing.T) {
 			},
 			setupMock: func(m *MockRepository) {
 				// Auto-generate short code first
-				m.On("ShortCodeExists", ctx, uuid.Nil, mock.AnythingOfType("string")).Return(false, nil)
+				m.On("ShortCodeExists", ctx, mock.AnythingOfType("string")).Return(false, nil)
 			},
 			expectError: true,
 		},
@@ -823,7 +823,7 @@ func TestService_Create_ErrorPaths(t *testing.T) {
 		mockRepo := new(MockRepository)
 		svc := NewService(mockRepo)
 
-		mockRepo.On("ShortCodeExists", ctx, workspaceID, "CODE").Return(false, repoErr)
+		mockRepo.On("ShortCodeExists", ctx, "CODE").Return(false, repoErr)
 
 		location, err := svc.Create(ctx, CreateInput{
 			WorkspaceID: workspaceID,
@@ -841,7 +841,7 @@ func TestService_Create_ErrorPaths(t *testing.T) {
 		mockRepo := new(MockRepository)
 		svc := NewService(mockRepo)
 
-		mockRepo.On("ShortCodeExists", ctx, workspaceID, mock.AnythingOfType("string")).Return(false, nil)
+		mockRepo.On("ShortCodeExists", ctx, mock.AnythingOfType("string")).Return(false, nil)
 		mockRepo.On("Save", ctx, mock.AnythingOfType("*location.Location")).Return(repoErr)
 
 		location, err := svc.Create(ctx, CreateInput{
