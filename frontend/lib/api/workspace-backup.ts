@@ -1,4 +1,4 @@
-import { apiClient } from './client';
+import { getApiBase } from './base';
 
 export interface WorkspaceExportMetadata {
   export_id: string;
@@ -35,21 +35,16 @@ export async function exportWorkspace(
     include_archived: includeArchived.toString(),
   });
 
-  const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000';
-  const token = apiClient.getToken();
   const headers: HeadersInit = {
     'X-Workspace-ID': workspaceId,
   };
 
-  if (token) {
-    (headers as Record<string, string>)['Authorization'] = `Bearer ${token}`;
-  }
-
   const response = await fetch(
-    `${API_URL}/export/workspace?${params}`,
+    `${getApiBase()}/export/workspace?${params}`,
     {
       method: 'GET',
       headers,
+      credentials: 'include',
     }
   );
 
@@ -71,20 +66,15 @@ export async function importWorkspace(
   // Convert file to base64
   const base64Data = await fileToBase64(file);
 
-  const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000';
-  const token = apiClient.getToken();
   const headers: HeadersInit = {
     'Content-Type': 'application/json',
     'X-Workspace-ID': workspaceId,
   };
 
-  if (token) {
-    (headers as Record<string, string>)['Authorization'] = `Bearer ${token}`;
-  }
-
-  const response = await fetch(`${API_URL}/import/workspace`, {
+  const response = await fetch(`${getApiBase()}/import/workspace`, {
     method: 'POST',
     headers,
+    credentials: 'include',
     body: JSON.stringify({
       format,
       data: base64Data,

@@ -11,17 +11,14 @@ import { useNumberFormat } from "@/lib/hooks/use-number-format";
 import {
   Plus,
   MoreHorizontal,
-  Pencil,
   Trash2,
   Archive,
-  ArchiveRestore,
   Package,
   Filter,
   X,
   Download,
   Upload,
   Archive as ArchiveIcon,
-  Cloud,
   ScanBarcode,
   ClipboardList,
 } from "lucide-react";
@@ -100,8 +97,9 @@ import { useSavedFilters } from "@/lib/hooks/use-saved-filters";
 import { useKeyboardShortcuts } from "@/lib/hooks/use-keyboard-shortcuts";
 import { useSSE, type SSEEvent } from "@/lib/hooks/use-sse";
 import { itemsApi, categoriesApi, importExportApi, type Category } from "@/lib/api";
+import { getApiBase } from "@/lib/api/base";
 import type { Item, ItemCreate, ItemUpdate } from "@/lib/types/items";
-import { PhotoPlaceholder } from "@/components/items/photo-placeholder";
+import { ItemRow } from "@/components/items/item-row";
 const PhotoUpload = dynamic(
   () => import("@/components/items/photo-upload").then((mod) => mod.PhotoUpload),
   { ssr: false }
@@ -110,7 +108,6 @@ const CompactPhotoGrid = dynamic(
   () => import("@/components/items/compact-photo-grid").then((mod) => mod.CompactPhotoGrid),
   { ssr: false }
 );
-import { cn } from "@/lib/utils";
 import { useOfflineMutation, getPendingCreates } from "@/lib/hooks/use-offline-mutation";
 import { syncManager } from "@/lib/sync/sync-manager";
 import type { SyncEvent } from "@/lib/sync/sync-manager";
@@ -146,10 +143,23 @@ function ItemsFilterControls({
   addFilter,
   getFilter,
 }: ItemsFilterControlsProps) {
-  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
-  const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
-  const [hasWarranty, setHasWarranty] = useState<boolean | null>(null);
-  const [isInsured, setIsInsured] = useState<boolean | null>(null);
+  // Single source of truth: selections are derived from useFilters state
+  // (no local copies), so clearing chips via FilterBar keeps the popover
+  // checkboxes in sync.
+  const categoriesFilter = getFilter("categories");
+  const selectedCategories: string[] = Array.isArray(categoriesFilter?.value)
+    ? categoriesFilter.value
+    : [];
+  const brandsFilter = getFilter("brands");
+  const selectedBrands: string[] = Array.isArray(brandsFilter?.value)
+    ? brandsFilter.value
+    : [];
+  const warrantyFilter = getFilter("warranty");
+  const hasWarranty: boolean | null =
+    typeof warrantyFilter?.value === "boolean" ? warrantyFilter.value : null;
+  const insuranceFilter = getFilter("insurance");
+  const isInsured: boolean | null =
+    typeof insuranceFilter?.value === "boolean" ? insuranceFilter.value : null;
 
   // Toggle category selection
   const toggleCategory = (categoryId: string) => {
@@ -157,23 +167,13 @@ function ItemsFilterControls({
       ? selectedCategories.filter((id) => id !== categoryId)
       : [...selectedCategories, categoryId];
 
-    setSelectedCategories(newSelection);
-
-    if (newSelection.length > 0) {
-      addFilter({
-        key: "categories",
-        label: "Category",
-        value: newSelection,
-        type: "multi-select",
-      });
-    } else {
-      addFilter({
-        key: "categories",
-        label: "Category",
-        value: [],
-        type: "multi-select",
-      });
-    }
+    // An empty multi-select value removes the filter (see useFilters.addFilter)
+    addFilter({
+      key: "categories",
+      label: "Category",
+      value: newSelection,
+      type: "multi-select",
+    });
   };
 
   // Toggle brand selection
@@ -182,63 +182,33 @@ function ItemsFilterControls({
       ? selectedBrands.filter((b) => b !== brand)
       : [...selectedBrands, brand];
 
-    setSelectedBrands(newSelection);
-
-    if (newSelection.length > 0) {
-      addFilter({
-        key: "brands",
-        label: "Brand",
-        value: newSelection,
-        type: "multi-select",
-      });
-    } else {
-      addFilter({
-        key: "brands",
-        label: "Brand",
-        value: [],
-        type: "multi-select",
-      });
-    }
+    addFilter({
+      key: "brands",
+      label: "Brand",
+      value: newSelection,
+      type: "multi-select",
+    });
   };
 
   // Update warranty filter
   const updateWarrantyFilter = (value: boolean | null) => {
-    setHasWarranty(value);
-    if (value !== null) {
-      addFilter({
-        key: "warranty",
-        label: "Warranty",
-        value: value,
-        type: "boolean",
-      });
-    } else {
-      addFilter({
-        key: "warranty",
-        label: "Warranty",
-        value: [],
-        type: "multi-select",
-      });
-    }
+    addFilter({
+      key: "warranty",
+      label: "Warranty",
+      // null clears the filter (non-boolean values are invalid → removed)
+      value: value === null ? [] : value,
+      type: value === null ? "multi-select" : "boolean",
+    });
   };
 
   // Update insurance filter
   const updateInsuranceFilter = (value: boolean | null) => {
-    setIsInsured(value);
-    if (value !== null) {
-      addFilter({
-        key: "insurance",
-        label: "Insurance",
-        value: value,
-        type: "boolean",
-      });
-    } else {
-      addFilter({
-        key: "insurance",
-        label: "Insurance",
-        value: [],
-        type: "multi-select",
-      });
-    }
+    addFilter({
+      key: "insurance",
+      label: "Insurance",
+      value: value === null ? [] : value,
+      type: value === null ? "multi-select" : "boolean",
+    });
   };
 
   return (
@@ -527,18 +497,39 @@ export default function ItemsPage() {
     }
   }, [workspaceId, loadCategories]);
 
-  // Load primary photos for visible items
-  const loadItemPhotos = useCallback(async (itemIds: string[]) => {
+  // Keep a live view of which photos are already cached so loadItemPhotos
+  // can skip them without being recreated on every photo state change.
+  const itemPhotosRef = useRef(itemPhotos);
+  itemPhotosRef.current = itemPhotos;
+
+  // Abort in-flight photo fetches when a new batch starts (sort/search churn)
+  const photoAbortRef = useRef<AbortController | null>(null);
+
+  // Load primary photos for visible items.
+  // TODO(backend): replace this per-item N+1 with a bulk endpoint —
+  // `ListPrimaryByItemIDs` already exists server-side.
+  const loadItemPhotos = useCallback(async (itemIds: string[], force = false) => {
     if (!workspaceId || itemIds.length === 0) return;
+
+    // Skip IDs whose photos are already cached (force=true for SSE refresh)
+    const idsToFetch = force
+      ? itemIds
+      : itemIds.filter((id) => !(id in itemPhotosRef.current));
+    if (idsToFetch.length === 0) return;
+
+    photoAbortRef.current?.abort();
+    const controller = new AbortController();
+    photoAbortRef.current = controller;
 
     try {
       // Fetch primary photos for each item
-      const photoPromises = itemIds.map(async (itemId) => {
+      const photoPromises = idsToFetch.map(async (itemId) => {
         try {
           const response = await fetch(
-            `${process.env.NEXT_PUBLIC_API_URL}/workspaces/${workspaceId}/items/${itemId}/photos/list`,
+            `${getApiBase()}/workspaces/${workspaceId}/items/${itemId}/photos/list`,
             {
               credentials: "include",
+              signal: controller.signal,
             }
           );
           if (response.ok) {
@@ -559,12 +550,17 @@ export default function ItemsPage() {
             return { itemId, photo, count: photos.length };
           }
           return { itemId, photo: null, count: 0 };
-        } catch {
+        } catch (err) {
+          if (err instanceof DOMException && err.name === "AbortError") {
+            throw err;
+          }
           return { itemId, photo: null, count: 0 };
         }
       });
 
       const results = await Promise.all(photoPromises);
+      if (controller.signal.aborted) return;
+
       const photosMap: Record<string, any> = {};
       const countMap: Record<string, number> = {};
       results.forEach(({ itemId, photo, count }) => {
@@ -574,6 +570,7 @@ export default function ItemsPage() {
       setItemPhotos((prev) => ({ ...prev, ...photosMap }));
       setPhotoCount((prev) => ({ ...prev, ...countMap }));
     } catch (error) {
+      if (error instanceof DOMException && error.name === "AbortError") return;
       console.error("Failed to load item photos:", error);
     }
   }, [workspaceId]);
@@ -603,6 +600,23 @@ export default function ItemsPage() {
     autoFetch: !!workspaceId,
   });
 
+  // Debounce SSE-triggered refetches (300ms trailing): bulk imports emit an
+  // item.created per row, and each refetch re-downloads every loaded page.
+  const refetchDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const debouncedRefetch = useCallback(() => {
+    if (refetchDebounceRef.current) clearTimeout(refetchDebounceRef.current);
+    refetchDebounceRef.current = setTimeout(() => {
+      refetchDebounceRef.current = null;
+      refetch();
+    }, 300);
+  }, [refetch]);
+
+  useEffect(() => {
+    return () => {
+      if (refetchDebounceRef.current) clearTimeout(refetchDebounceRef.current);
+    };
+  }, []);
+
   // Subscribe to SSE events for real-time updates
   useSSE({
     onEvent: (event: SSEEvent) => {
@@ -611,18 +625,18 @@ export default function ItemsPage() {
         switch (event.type) {
           case "item.created":
             // Refetch items list to show new item
-            refetch();
-            toast.info(`New item added: ${event.data?.name || "Unknown"}`);
+            debouncedRefetch();
+            toast.info(t("list.toasts.newItemAdded", { name: String(event.data?.name || t("list.unknownName")) }));
             break;
 
           case "item.updated":
             // Refetch to update the item in the list
-            refetch();
+            debouncedRefetch();
             break;
 
           case "item.deleted":
             // Refetch to remove archived/deleted item
-            refetch();
+            debouncedRefetch();
             break;
         }
       }
@@ -631,8 +645,8 @@ export default function ItemsPage() {
       if (event.entity_type === "itemphoto") {
         const itemId = event.data?.item_id;
         if (typeof itemId === "string") {
-          // Reload photos for the affected item
-          loadItemPhotos([itemId]);
+          // Reload photos for the affected item (force past the cache)
+          loadItemPhotos([itemId], true);
         }
       }
     },
@@ -866,7 +880,7 @@ export default function ItemsPage() {
     setDialogOpen(true);
   };
 
-  const openEditDialog = (item: Item) => {
+  const openEditDialog = useCallback((item: Item) => {
     setEditingItem(item);
     setFormData({
       sku: item.sku,
@@ -885,14 +899,14 @@ export default function ItemsPage() {
       short_code: item.short_code || "",
     });
     setDialogOpen(true);
-  };
+  }, []);
 
   const handleSave = async () => {
     if (!workspaceId) return;
 
     if (!formData.sku.trim() || !formData.name.trim()) {
-      toast.error("Please fill in required fields", {
-        description: "SKU and Name are required",
+      toast.error(t("list.toasts.requiredFields"), {
+        description: t("list.toasts.requiredFieldsDescription"),
       });
       return;
     }
@@ -917,9 +931,16 @@ export default function ItemsPage() {
           min_stock_level: formData.min_stock_level,
         };
 
-        // Use offline mutation - works both online and offline
-        await updateItemOffline(updateData as unknown as Record<string, unknown>, editingItem.id);
-        toast.success(navigator.onLine ? "Item updated" : "Item update queued for sync");
+        // Use offline mutation - works both online and offline.
+        // Pass the item's updated_at as seen by the client so the server
+        // can detect concurrent edits (409 conflict detection).
+        await updateItemOffline(
+          updateData as unknown as Record<string, unknown>,
+          editingItem.id,
+          undefined,
+          editingItem.updated_at
+        );
+        toast.success(navigator.onLine ? t("list.toasts.updated") : t("list.toasts.updateQueued"));
       } else {
         // Create new item
         const createData: ItemCreate = {
@@ -941,7 +962,7 @@ export default function ItemsPage() {
 
         // Use offline mutation - works both online and offline
         await createItemOffline(createData as unknown as Record<string, unknown>);
-        toast.success(navigator.onLine ? "Item created" : "Item queued for sync");
+        toast.success(navigator.onLine ? t("list.toasts.created") : t("list.toasts.createQueued"));
       }
 
       setDialogOpen(false);
@@ -951,8 +972,8 @@ export default function ItemsPage() {
         refetch();
       }
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "Failed to save item";
-      toast.error("Failed to save item", {
+      const errorMessage = error instanceof Error ? error.message : t("list.toasts.saveFailed");
+      toast.error(t("list.toasts.saveFailed"), {
         description: errorMessage,
       });
     } finally {
@@ -960,29 +981,39 @@ export default function ItemsPage() {
     }
   };
 
-  const handleArchive = async (item: Item) => {
+  const handleArchive = useCallback(async (item: Item) => {
     try {
       if (item.is_archived) {
         await itemsApi.restore(workspaceId!, item.id);
-        toast.success("Item restored successfully");
+        toast.success(t("list.toasts.restored"));
       } else {
         await itemsApi.archive(workspaceId!, item.id);
-        toast.success("Item archived successfully");
+        toast.success(t("list.toasts.archived"));
       }
       refetch();
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "Failed to archive item";
-      toast.error("Failed to archive item", {
+      const errorMessage = error instanceof Error ? error.message : t("list.toasts.archiveFailed");
+      toast.error(t("list.toasts.archiveFailed"), {
         description: errorMessage,
       });
     }
-  };
+  }, [workspaceId, refetch, t]);
+
+  const handleRowClick = useCallback((item: Item & { _pending?: boolean }) => {
+    if (item._pending) {
+      toast.info(t("list.toasts.pendingSync"), {
+        description: t("list.toasts.pendingSyncDescription"),
+      });
+      return;
+    }
+    router.push(`/dashboard/items/${item.id}`);
+  }, [router, t]);
 
   // Bulk export selected items to CSV
   const handleBulkExport = () => {
     const selectedItems = sortedItems.filter((item) => selectedIds.has(item.id));
     exportToCSV(selectedItems, exportColumns, generateFilename("items-bulk"));
-    toast.success(`Exported ${selectedCount} ${selectedCount === 1 ? "item" : "items"}`);
+    toast.success(t("list.toasts.exported", { count: selectedCount }));
     clearSelection();
   };
 
@@ -1031,13 +1062,15 @@ export default function ItemsPage() {
       );
 
       toast.success(
-        `${isRestoring ? "Restored" : "Archived"} ${selectedCount} ${selectedCount === 1 ? "item" : "items"}`
+        isRestoring
+          ? t("list.toasts.bulkRestored", { count: selectedCount })
+          : t("list.toasts.bulkArchived", { count: selectedCount })
       );
       clearSelection();
       refetch();
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "Failed to archive items";
-      toast.error("Failed to archive items", {
+      const errorMessage = error instanceof Error ? error.message : t("list.toasts.bulkArchiveFailed");
+      toast.error(t("list.toasts.bulkArchiveFailed"), {
         description: errorMessage,
       });
     }
@@ -1141,7 +1174,7 @@ export default function ItemsPage() {
                 <TooltipTrigger asChild>
                   <span>
                     <CollapsibleSearch
-                      placeholder="Search by SKU, name, brand, or model..."
+                      placeholder={t("list.searchPlaceholder")}
                       value={searchQuery}
                       onChange={setSearchQuery}
                     />
@@ -1314,7 +1347,7 @@ export default function ItemsPage() {
                                 clearSelection();
                               }
                             }}
-                            aria-label="Select all items"
+                            aria-label={t("list.selectAllAria")}
                           />
                         </TableHead>
                         <TableHead className="w-[60px] flex-none">Photo</TableHead>
@@ -1384,131 +1417,22 @@ export default function ItemsPage() {
                       <tbody className="[&_tr:last-child]:border-0">
                         {virtualizer.getVirtualItems().map((virtualItem) => {
                           const item = sortedItems[virtualItem.index];
-                          const isPending = '_pending' in item && item._pending;
                           return (
-                            <TableRow
+                            <ItemRow
                               key={item.id}
-                              className={cn(
-                                "cursor-pointer hover:bg-muted/50 flex items-center",
-                                isPending && "bg-amber-50/50 dark:bg-amber-900/10"
-                              )}
-                              onClick={() => {
-                                if (isPending) {
-                                  toast.info("Item pending sync", {
-                                    description: "This item will be available after syncing"
-                                  });
-                                  return;
-                                }
-                                router.push(`/dashboard/items/${item.id}`);
-                              }}
-                              style={{
-                                position: 'absolute',
-                                top: 0,
-                                left: 0,
-                                width: '100%',
-                                height: `${virtualItem.size}px`,
-                                transform: `translateY(${virtualItem.start}px)`,
-                              }}
-                            >
-                              <TableCell className="w-[50px] flex-none" onClick={(e) => e.stopPropagation()}>
-                                <Checkbox
-                                  checked={isSelected(item.id)}
-                                  onCheckedChange={() => toggleSelection(item.id)}
-                                  aria-label={`Select ${item.name}`}
-                                />
-                              </TableCell>
-                              <TableCell className="w-[60px] flex-none">
-                                <div className="relative">
-                                  {(() => {
-                                    const photo = itemPhotos[item.id];
-                                    if (photo?.urls) {
-                                      return (
-                                        <div className="h-12 w-12 overflow-hidden rounded-md border">
-                                          <img
-                                            src={photo.urls.small}
-                                            alt={item.name}
-                                            className="h-full w-full object-cover"
-                                            loading="lazy"
-                                          />
-                                        </div>
-                                      );
-                                    } else if (photo === null) {
-                                      return <PhotoPlaceholder size="sm" ariaLabel={`No photo for ${item.name}`} />;
-                                    } else {
-                                      return <div className="h-12 w-12 animate-pulse rounded-md bg-muted" />;
-                                    }
-                                  })()}
-                                  {photoCount[item.id] > 1 && (
-                                    <Badge
-                                      variant="secondary"
-                                      className="absolute -bottom-1 -right-1 h-5 min-w-5 px-1 text-xs"
-                                    >
-                                      {photoCount[item.id]}
-                                    </Badge>
-                                  )}
-                                </div>
-                              </TableCell>
-                              <TableCell className="flex-1 min-w-0 sm:w-[140px] sm:flex-none font-mono text-sm">
-                                {item.sku}
-                                {item.short_code && (
-                                  <Badge variant="outline" className="ml-2 text-xs">
-                                    {item.short_code}
-                                  </Badge>
-                                )}
-                              </TableCell>
-                              <TableCell className="flex-1 min-w-0 hidden sm:flex">
-                                <div className="truncate">
-                                  <div className="flex items-center gap-2">
-                                    <span className="font-medium truncate">{item.name}</span>
-                                    {isPending && (
-                                      <Badge variant="outline" className="text-xs text-amber-600 border-amber-300 shrink-0">
-                                        <Cloud className="w-3 h-3 mr-1 animate-pulse" />
-                                        Pending
-                                      </Badge>
-                                    )}
-                                  </div>
-                                  {item.description && (
-                                    <div className="text-sm text-muted-foreground truncate">
-                                      {item.description}
-                                    </div>
-                                  )}
-                                </div>
-                              </TableCell>
-                              <TableCell className="w-[120px] flex-none hidden sm:flex">{getCategoryName(item.category_id)}</TableCell>
-                              <TableCell className="w-[100px] flex-none hidden sm:flex">{item.brand || "-"}</TableCell>
-                              <TableCell className="w-[100px] flex-none hidden sm:flex">{item.model || "-"}</TableCell>
-                              <TableCell className="w-[90px] flex-none hidden sm:flex">{formatNumber(item.min_stock_level)}</TableCell>
-                              <TableCell className="w-[50px] flex-none" onClick={(e) => e.stopPropagation()}>
-                                {!isPending && (
-                                  <DropdownMenu>
-                                    <DropdownMenuTrigger asChild>
-                                      <Button variant="ghost" size="icon" aria-label={`Actions for ${item.name}`}>
-                                        <MoreHorizontal className="h-4 w-4" />
-                                      </Button>
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent align="end">
-                                      <DropdownMenuItem onClick={() => openEditDialog(item)}>
-                                        <Pencil className="mr-2 h-4 w-4" />
-                                        Edit
-                                      </DropdownMenuItem>
-                                      <DropdownMenuItem onClick={() => handleArchive(item)}>
-                                        {item.is_archived ? (
-                                          <>
-                                            <ArchiveRestore className="mr-2 h-4 w-4" />
-                                            Restore
-                                          </>
-                                        ) : (
-                                          <>
-                                            <Archive className="mr-2 h-4 w-4" />
-                                            Archive
-                                          </>
-                                        )}
-                                      </DropdownMenuItem>
-                                    </DropdownMenuContent>
-                                  </DropdownMenu>
-                                )}
-                              </TableCell>
-                            </TableRow>
+                              item={item}
+                              photo={itemPhotos[item.id]}
+                              photoCount={photoCount[item.id] ?? 0}
+                              isSelected={isSelected(item.id)}
+                              categoryName={getCategoryName(item.category_id)}
+                              minStockDisplay={formatNumber(item.min_stock_level)}
+                              size={virtualItem.size}
+                              start={virtualItem.start}
+                              onRowClick={handleRowClick}
+                              onToggleSelection={toggleSelection}
+                              onEdit={openEditDialog}
+                              onArchive={handleArchive}
+                            />
                           );
                         })}
                       </tbody>
@@ -1555,7 +1479,7 @@ export default function ItemsPage() {
                     id="sku"
                     value={formData.sku}
                     onChange={(e) => setFormData({ ...formData, sku: e.target.value })}
-                    placeholder="ITEM-001"
+                    placeholder={t("create.placeholders.sku")}
                   />
                 </div>
                 <div className="space-y-2">
@@ -1564,7 +1488,7 @@ export default function ItemsPage() {
                     id="short_code"
                     value={formData.short_code}
                     onChange={(e) => setFormData({ ...formData, short_code: e.target.value })}
-                    placeholder="QR code label"
+                    placeholder={t("list.shortCodePlaceholder")}
                     maxLength={20}
                   />
                 </div>
@@ -1578,7 +1502,7 @@ export default function ItemsPage() {
                   id="name"
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  placeholder="Item name"
+                  placeholder={t("create.placeholders.name")}
                 />
               </div>
 
@@ -1588,7 +1512,7 @@ export default function ItemsPage() {
                   id="description"
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  placeholder="Describe this item..."
+                  placeholder={t("create.placeholders.description")}
                   rows={3}
                 />
               </div>
@@ -1602,7 +1526,7 @@ export default function ItemsPage() {
                   }
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Select a category" />
+                    <SelectValue placeholder={t("create.placeholders.category")} />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="none">None</SelectItem>
@@ -1626,7 +1550,7 @@ export default function ItemsPage() {
                     id="brand"
                     value={formData.brand}
                     onChange={(e) => setFormData({ ...formData, brand: e.target.value })}
-                    placeholder="Brand name"
+                    placeholder={t("create.placeholders.brand")}
                   />
                 </div>
                 <div className="space-y-2">
@@ -1635,7 +1559,7 @@ export default function ItemsPage() {
                     id="model"
                     value={formData.model}
                     onChange={(e) => setFormData({ ...formData, model: e.target.value })}
-                    placeholder="Model number"
+                    placeholder={t("create.placeholders.model")}
                   />
                 </div>
                 <div className="space-y-2">
@@ -1646,7 +1570,7 @@ export default function ItemsPage() {
                     onChange={(e) =>
                       setFormData({ ...formData, manufacturer: e.target.value })
                     }
-                    placeholder="Manufacturer name"
+                    placeholder={t("create.placeholders.manufacturer")}
                   />
                 </div>
                 <div className="space-y-2">
@@ -1657,7 +1581,7 @@ export default function ItemsPage() {
                     onChange={(e) =>
                       setFormData({ ...formData, serial_number: e.target.value })
                     }
-                    placeholder="Serial number"
+                    placeholder={t("create.placeholders.serialNumber")}
                   />
                 </div>
                 <div className="space-y-2">
@@ -1667,7 +1591,7 @@ export default function ItemsPage() {
                       id="barcode"
                       value={formData.barcode}
                       onChange={(e) => setFormData({ ...formData, barcode: e.target.value })}
-                      placeholder="Barcode or UPC"
+                      placeholder={t("create.placeholders.barcode")}
                       className="flex-1"
                     />
                     <Button
@@ -1676,7 +1600,7 @@ export default function ItemsPage() {
                       size="icon"
                       className="min-h-[44px] min-w-[44px] shrink-0"
                       onClick={() => setBarcodeScannerOpen(true)}
-                      aria-label="Scan barcode"
+                      aria-label={t("create.scanBarcode")}
                     >
                       <ScanBarcode className="h-5 w-5" />
                     </Button>
@@ -1733,7 +1657,7 @@ export default function ItemsPage() {
                     onChange={(e) =>
                       setFormData({ ...formData, warranty_details: e.target.value })
                     }
-                    placeholder="Warranty information..."
+                    placeholder={t("create.placeholders.warrantyDetails")}
                     rows={2}
                   />
                 </div>
@@ -1810,8 +1734,8 @@ export default function ItemsPage() {
         allData={items}
         columns={exportColumns}
         filePrefix="items"
-        title="Export Items to CSV"
-        description="Select columns and data to export"
+        title={t("list.exportDialogTitle")}
+        description={t("list.exportDialogDescription")}
       />
 
       {/* Import Dialog */}
@@ -1820,8 +1744,8 @@ export default function ItemsPage() {
         onOpenChange={setImportDialogOpen}
         entityType="item"
         onImport={handleImport}
-        title="Import Items from CSV"
-        description="Upload a CSV file to import items. The file should include columns for SKU, name, and other item details."
+        title={t("list.importDialogTitle")}
+        description={t("list.importDialogDescription")}
       />
     </div>
   );

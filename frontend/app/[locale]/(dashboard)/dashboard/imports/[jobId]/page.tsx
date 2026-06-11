@@ -16,7 +16,7 @@ import { useWorkspace } from "@/lib/hooks/use-workspace";
 import { useDateFormat } from "@/lib/hooks/use-date-format";
 import { useNumberFormat } from "@/lib/hooks/use-number-format";
 import { toast } from "sonner";
-import { apiClient } from "@/lib/api/client";
+import { getApiBase } from "@/lib/api/base";
 
 interface ImportJob {
   id: string;
@@ -65,7 +65,7 @@ export default function ImportJobDetailPage() {
 
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/workspaces/${workspaceId}/imports/jobs/${jobId}`,
+        `${getApiBase()}/workspaces/${workspaceId}/imports/jobs/${jobId}`,
         { credentials: "include" }
       );
       if (!response.ok) throw new Error("Failed to fetch job");
@@ -88,7 +88,7 @@ export default function ImportJobDetailPage() {
 
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/workspaces/${workspaceId}/imports/jobs/${jobId}/errors`,
+        `${getApiBase()}/workspaces/${workspaceId}/imports/jobs/${jobId}/errors`,
         { credentials: "include" }
       );
       if (!response.ok) return;
@@ -123,12 +123,9 @@ export default function ImportJobDetailPage() {
     }
 
     setIsLive(true);
-    // Include token as query param since EventSource can't send Authorization header
-    let sseUrl = `${process.env.NEXT_PUBLIC_API_URL}/workspaces/${workspaceId}/sse`;
-    const token = apiClient.getToken();
-    if (token) {
-      sseUrl += `?token=${encodeURIComponent(token)}`;
-    }
+    // Same-origin SSE via the /api proxy: the HttpOnly access_token cookie
+    // authenticates the EventSource (no token in the URL).
+    const sseUrl = `${getApiBase()}/workspaces/${workspaceId}/sse`;
     const eventSource = new EventSource(sseUrl, { withCredentials: true });
 
     eventSource.addEventListener("message", (event) => {

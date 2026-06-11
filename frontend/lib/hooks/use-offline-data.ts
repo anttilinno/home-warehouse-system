@@ -8,8 +8,8 @@
  * and falls back to cached data when offline.
  */
 
-import { useState, useEffect, useCallback } from "react";
-import { getAll, putAll, clearStore } from "@/lib/db/offline-db";
+import { useState, useEffect, useCallback, useRef } from "react";
+import { getAll, getDB } from "@/lib/db/offline-db";
 
 /**
  * Entity stores that support offline data (excludes syncMeta)
@@ -29,7 +29,15 @@ type EntityStore =
 interface UseOfflineDataOptions<T> {
   /** IndexedDB store to read from/write to */
   store: EntityStore;
-  /** Function to fetch fresh data from the API */
+  /**
+   * Function to fetch fresh data from the API.
+   *
+   * CONTRACT: must be referentially stable (wrap in useCallback keyed on the
+   * data inputs, e.g. workspaceId). The hook keeps the latest fetchFn in a
+   * ref, so an inline closure won't re-trigger the load effect — but it also
+   * won't trigger a refetch when its captured values change; change `enabled`
+   * or call `refetch()` for that.
+   */
   fetchFn: () => Promise<T[]>;
   /** Whether to enable fetching (e.g., wait for workspaceId) */
   enabled?: boolean;
@@ -78,6 +86,13 @@ export function useOfflineData<T extends { id: string }>({
   const [isStale, setIsStale] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
+  // Latest fetchFn in a ref: inline closures don't re-run the load effect
+  // (see fetchFn contract above).
+  const fetchFnRef = useRef(fetchFn);
+  useEffect(() => {
+    fetchFnRef.current = fetchFn;
+  });
+
   const loadCachedData = useCallback(async () => {
     try {
       const cached = await getAll<T>(store);
@@ -90,22 +105,46 @@ export function useOfflineData<T extends { id: string }>({
     }
   }, [store]);
 
-  const fetchFreshData = useCallback(async () => {
-    try {
-      const fresh = await fetchFn();
-      await clearStore(store);
-      await putAll(store, fresh);
-      setData(fresh);
-      setIsStale(false);
-      setError(null);
-    } catch (err) {
-      // Keep showing cached data on error
-      const error = err instanceof Error ? err : new Error("Fetch failed");
-      setError(error);
-      console.warn(`[useOfflineData] Failed to fetch fresh ${store}, using cached data:`, error.message);
-      // Don't clear stale flag - we're still showing cached data
-    }
-  }, [store, fetchFn]);
+  /**
+   * Fetch fresh data and swap it into the cache.
+   * @param isCancelled - checked after the network round-trip so an
+   *   unmounted/superseded effect neither writes state nor overwrites the
+   *   cache with another workspace's data.
+   */
+  const fetchFreshData = useCallback(
+    async (isCancelled: () => boolean = () => false) => {
+      try {
+        const fresh = await fetchFnRef.current();
+
+        if (isCancelled()) return;
+
+        // clear + put in ONE transaction so a crash between the two can't
+        // leave the store empty (write-then-swap semantics).
+        const db = await getDB();
+        const tx = db.transaction(store, "readwrite");
+        const objectStore = tx.objectStore(store);
+        objectStore.clear();
+        for (const item of fresh) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          objectStore.put(item as any);
+        }
+        await tx.done;
+
+        if (isCancelled()) return;
+        setData(fresh);
+        setIsStale(false);
+        setError(null);
+      } catch (err) {
+        if (isCancelled()) return;
+        // Keep showing cached data on error
+        const error = err instanceof Error ? err : new Error("Fetch failed");
+        setError(error);
+        console.warn(`[useOfflineData] Failed to fetch fresh ${store}, using cached data:`, error.message);
+        // Don't clear stale flag - we're still showing cached data
+      }
+    },
+    [store]
+  );
 
   const refetch = useCallback(async () => {
     setIsLoading(true);
@@ -120,6 +159,7 @@ export function useOfflineData<T extends { id: string }>({
     }
 
     let cancelled = false;
+    const isCancelled = () => cancelled;
 
     const load = async () => {
       // 1. Load cached data immediately
@@ -129,7 +169,7 @@ export function useOfflineData<T extends { id: string }>({
 
       // 2. Fetch fresh data in background (only if online)
       if (typeof navigator !== "undefined" && navigator.onLine) {
-        await fetchFreshData();
+        await fetchFreshData(isCancelled);
       }
 
       if (cancelled) return;

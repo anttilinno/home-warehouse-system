@@ -1,7 +1,7 @@
 /// <reference lib="webworker" />
 import { defaultCache } from "@serwist/next/worker";
 import type { PrecacheEntry, RuntimeCaching, SerwistGlobalConfig } from "serwist";
-import { Serwist, NetworkFirst, CacheFirst } from "serwist";
+import { Serwist, NetworkFirst, CacheFirst, ExpirationPlugin } from "serwist";
 
 // This declares the value of `injectionPoint` to TypeScript.
 // `injectionPoint` is the string that will be replaced by the
@@ -15,6 +15,12 @@ declare global {
 
 declare const self: ServiceWorkerGlobalScope;
 
+// Runtime caches are scoped to our own origin: all API traffic goes through
+// the same-origin /api proxy, so caching cross-origin "api" URLs would only
+// open a cache-poisoning channel. Opaque responses (status 0) are never
+// cached for the same reason.
+const isSameOrigin = (url: URL) => url.origin === self.location.origin;
+
 const serwist = new Serwist({
   precacheEntries: self.__SW_MANIFEST,
   skipWaiting: true,
@@ -24,7 +30,7 @@ const serwist = new Serwist({
     ...defaultCache,
     // Cache API responses
     {
-      matcher: /^https?:\/\/.*\/api\/.*/i,
+      matcher: ({ url }) => isSameOrigin(url) && /^\/api\//i.test(url.pathname),
       handler: new NetworkFirst({
         cacheName: "api-cache",
         plugins: [
@@ -33,34 +39,50 @@ const serwist = new Serwist({
               return response?.status === 200 ? response : null;
             },
           },
+          new ExpirationPlugin({
+            maxEntries: 200,
+            maxAgeSeconds: 24 * 60 * 60, // 1 day
+          }),
         ],
       }),
     },
     // Cache item photos with offline-first strategy
     {
-      matcher: /^https?:\/\/.*\/api\/workspaces\/.*\/items\/.*\/photos\/.*/i,
+      matcher: ({ url }) =>
+        isSameOrigin(url) &&
+        /^\/api\/(photos\/)?workspaces\/.*\/items\/.*\/photos\//i.test(url.pathname),
       handler: new CacheFirst({
         cacheName: "item-photos-cache",
         plugins: [
           {
             cacheWillUpdate: async ({ response }) => {
-              return response?.status === 200 || response?.status === 0 ? response : null;
+              return response?.status === 200 ? response : null;
             },
           },
+          new ExpirationPlugin({
+            maxEntries: 300,
+            maxAgeSeconds: 30 * 24 * 60 * 60, // 30 days
+          }),
         ],
       }),
     },
     // Cache thumbnail images (small images, longer cache)
     {
-      matcher: /^https?:\/\/.*\/api\/workspaces\/.*\/items\/.*\/photos\/.*\/(thumb|small)\/.*/i,
+      matcher: ({ url }) =>
+        isSameOrigin(url) &&
+        /^\/api\/(photos\/)?workspaces\/.*\/items\/.*\/photos\/.*\/(thumb|small)\//i.test(url.pathname),
       handler: new CacheFirst({
         cacheName: "photo-thumbnails-cache",
         plugins: [
           {
             cacheWillUpdate: async ({ response }) => {
-              return response?.status === 200 || response?.status === 0 ? response : null;
+              return response?.status === 200 ? response : null;
             },
           },
+          new ExpirationPlugin({
+            maxEntries: 500,
+            maxAgeSeconds: 60 * 24 * 60 * 60, // 60 days
+          }),
         ],
       }),
     },
@@ -306,6 +328,8 @@ async function syncQueuedUploads() {
       const response = await fetch(upload.url, {
         method: "POST",
         body: formData,
+        // Include auth cookies — without this, replayed uploads 401 forever.
+        credentials: "include",
       });
 
       if (response.ok) {

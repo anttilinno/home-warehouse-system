@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { useAuth } from "@/lib/contexts/auth-context";
+import { authApi } from "@/lib/api/auth";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
@@ -37,23 +38,7 @@ export function NotificationPreferenceSettings() {
     const newPrefs = { ...prefs, [key]: checked };
 
     try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/users/me/preferences`,
-        {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("auth_token")}`,
-          },
-          credentials: "include",
-          body: JSON.stringify({ notification_preferences: newPrefs }),
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error("Failed to save preferences");
-      }
-
+      await authApi.updatePreferences({ notification_preferences: newPrefs });
       await refreshUser();
       toast.success(t("saved"));
     } catch {

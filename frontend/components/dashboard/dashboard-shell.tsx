@@ -20,6 +20,7 @@ import { SSEProvider } from "@/lib/contexts/sse-context";
 import { useAuth } from "@/lib/contexts/auth-context";
 import { OfflineProvider } from "@/lib/contexts/offline-context";
 import { ConflictResolutionProvider } from "@/lib/sync/use-conflict-resolution";
+import { syncManager } from "@/lib/sync/sync-manager";
 import { ConflictResolutionDialog } from "@/components/conflict-resolution-dialog";
 import { ShortcutsProvider } from "@/components/layout/shortcuts-context";
 import { Bottombar } from "@/components/layout/bottombar";
@@ -61,13 +62,21 @@ export function DashboardShell({ children }: DashboardShellProps) {
         <ShortcutsProvider>
         <ConflictResolutionProvider
           onResolve={async (conflict, resolution, resolvedData) => {
-            // Log conflict resolution for debugging
             console.log(
               "[DashboardShell] Conflict resolved:",
               conflict.entityId,
               resolution,
               resolvedData
             );
+            // Apply the decision to the parked "needs-review" mutation:
+            // requeue it (local/merged) or drop it (server wins).
+            if (conflict.idempotencyKey && syncManager) {
+              await syncManager.resolveNeedsReview(
+                conflict.idempotencyKey,
+                resolution,
+                resolvedData
+              );
+            }
           }}
         >
           <div className="min-h-screen overflow-x-hidden bg-gradient-to-br from-pink-50/30 via-muted/30 to-violet-50/30 dark:from-pink-950/10 dark:via-background dark:to-violet-950/10">

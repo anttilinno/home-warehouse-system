@@ -9,6 +9,7 @@
 import {
   getPendingMutations,
   updateMutationStatus,
+  updateMutationPayload,
   removeMutation,
   calculateRetryDelay,
   shouldRetry,
@@ -23,6 +24,8 @@ import {
   resolveWithLastWriteWins,
   logConflict,
 } from "./conflict-resolver";
+import { getApiBase } from "@/lib/api/base";
+import { getSyncMeta, setSyncMeta } from "@/lib/db/offline-db";
 import type { MutationQueueEntry, MutationEntityType } from "@/lib/db/types";
 
 // ============================================================================
@@ -80,6 +83,8 @@ export interface ConflictEventPayload {
   serverData: Record<string, unknown>;
   conflictFields: string[];
   isCritical: boolean;
+  /** Idempotency key of the queued mutation (for resolveNeedsReview) */
+  idempotencyKey?: string;
 }
 
 /**
@@ -351,8 +356,11 @@ export class SyncManager {
     const syncedKeys = new Set<string>();
     // Track failed idempotency keys for cascade failure
     const failedKeys = new Set<string>();
-    // Map idempotency keys to real server IDs for dependent mutations
-    const resolvedIds = new Map<string, string>();
+    // Map idempotency keys to real server IDs for dependent mutations.
+    // Persisted across runs in syncMeta: a parent create synced in run 1
+    // must still resolve for a child queued/synced in run 2.
+    const resolvedIds = await this.loadResolvedIds();
+    const resolvedIdsSizeBefore = resolvedIds.size;
 
     try {
       const pending = await getPendingMutations();
@@ -433,7 +441,36 @@ export class SyncManager {
         payload: { error: String(error) },
       });
     } finally {
+      // Persist any new temp-ID resolutions for future runs
+      if (resolvedIds.size !== resolvedIdsSizeBefore) {
+        await this.saveResolvedIds(resolvedIds);
+      }
       this.isProcessing = false;
+    }
+  }
+
+  /** Load the persisted temp-ID → server-ID map from syncMeta. */
+  private async loadResolvedIds(): Promise<Map<string, string>> {
+    try {
+      const meta = await getSyncMeta("resolvedTempIds");
+      if (meta && typeof meta.value === "string") {
+        return new Map(Object.entries(JSON.parse(meta.value)));
+      }
+    } catch (error) {
+      console.warn("[SyncManager] Failed to load resolved IDs:", error);
+    }
+    return new Map();
+  }
+
+  /** Persist the temp-ID → server-ID map to syncMeta. */
+  private async saveResolvedIds(resolvedIds: Map<string, string>): Promise<void> {
+    try {
+      await setSyncMeta(
+        "resolvedTempIds",
+        JSON.stringify(Object.fromEntries(resolvedIds))
+      );
+    } catch (error) {
+      console.warn("[SyncManager] Failed to persist resolved IDs:", error);
     }
   }
 
@@ -624,9 +661,11 @@ export class SyncManager {
       return true;
     }
 
-    // Critical conflict - needs user review
-    // Reset to pending (not failed) so it can be retried after resolution
-    await updateMutationStatus(mutation.id, { status: "pending" });
+    // Critical conflict - needs user review.
+    // "needs-review" is excluded from getPendingMutations, so the mutation
+    // is not re-sent (and the conflict not re-logged) on every queue pass.
+    // It re-enters the queue via resolveNeedsReview() once the user decides.
+    await updateMutationStatus(mutation.id, { status: "needs-review" });
 
     // Log the conflict to IndexedDB (without resolution yet)
     await logConflict({
@@ -651,12 +690,43 @@ export class SyncManager {
           serverData,
           conflictFields,
           isCritical: true,
+          idempotencyKey: mutation.idempotencyKey,
         },
       },
     });
 
     console.log(`[SyncManager] Critical conflict needs review for ${mutation.entity}/${mutation.entityId}`);
     return false;
+  }
+
+  /**
+   * Apply the user's decision for a mutation parked in "needs-review".
+   * - "local"/"merged": requeue as pending (optionally with merged payload)
+   *   and reprocess so the local version is pushed.
+   * - "server": drop the local mutation — the server version wins.
+   */
+  async resolveNeedsReview(
+    idempotencyKey: string,
+    resolution: "local" | "server" | "merged",
+    mergedPayload?: Record<string, unknown>
+  ): Promise<void> {
+    const mutation = await getMutationByIdempotencyKey(idempotencyKey);
+    if (!mutation) return;
+
+    if (resolution === "server") {
+      await removeMutation(mutation.id);
+      this.broadcast({ type: "QUEUE_UPDATED" });
+      return;
+    }
+
+    if (resolution === "merged" && mergedPayload) {
+      mutation.payload = mergedPayload;
+      await updateMutationPayload(mutation.id, mergedPayload);
+    }
+
+    await updateMutationStatus(mutation.id, { status: "pending", retries: 0 });
+    this.broadcast({ type: "QUEUE_UPDATED" });
+    await this.processQueue();
   }
 
   /**
@@ -750,8 +820,9 @@ export class SyncManager {
       throw new Error("No workspace ID available");
     }
 
-    const baseUrl = process.env.NEXT_PUBLIC_API_URL || "";
-    const entityPath = `${baseUrl}/workspaces/${workspaceId}/${mutation.entity}`;
+    // Same-origin /api proxy in the browser: cookie auth, and the next-intl
+    // middleware matcher excludes /api so the request is never rewritten.
+    const entityPath = `${getApiBase()}/workspaces/${workspaceId}/${mutation.entity}`;
 
     if (mutation.operation === "update" && mutation.entityId) {
       return `${entityPath}/${mutation.entityId}`;

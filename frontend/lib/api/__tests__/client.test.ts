@@ -34,7 +34,7 @@ describe("ApiClient", () => {
 
       await apiClient.get("/test");
 
-      expect(mockFetch).toHaveBeenCalledWith("http://localhost:8000/test", {
+      expect(mockFetch).toHaveBeenCalledWith("/api/test", {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -48,7 +48,7 @@ describe("ApiClient", () => {
 
       await apiClient.post("/test", { a: 1 });
 
-      expect(mockFetch).toHaveBeenCalledWith("http://localhost:8000/test", {
+      expect(mockFetch).toHaveBeenCalledWith("/api/test", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -63,7 +63,7 @@ describe("ApiClient", () => {
 
       await apiClient.patch("/test", { a: 1 });
 
-      expect(mockFetch).toHaveBeenCalledWith("http://localhost:8000/test", {
+      expect(mockFetch).toHaveBeenCalledWith("/api/test", {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
@@ -78,7 +78,7 @@ describe("ApiClient", () => {
 
       await apiClient.delete("/test");
 
-      expect(mockFetch).toHaveBeenCalledWith("http://localhost:8000/test", {
+      expect(mockFetch).toHaveBeenCalledWith("/api/test", {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
@@ -231,11 +231,12 @@ describe("ApiClient", () => {
   });
 
   describe("token persistence", () => {
-    it("persists token to localStorage via setToken and retrieves via getToken", () => {
+    it("keeps token in memory only - never persisted to localStorage", () => {
       apiClient.setToken("my-token");
 
       expect(apiClient.getToken()).toBe("my-token");
-      expect(localStorage.getItem("auth_token")).toBe("my-token");
+      // Security: token must NOT be written to localStorage (XSS-exfiltratable)
+      expect(localStorage.getItem("auth_token")).toBeNull();
 
       apiClient.setToken(null);
 

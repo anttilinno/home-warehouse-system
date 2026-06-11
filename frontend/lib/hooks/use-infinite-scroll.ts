@@ -98,6 +98,14 @@ export function useInfiniteScroll<T>({
   // Use ref to track mounted state to prevent state updates after unmount
   const isMountedRef = useRef(true);
 
+  // Epoch counter: every reset/refetch bumps it; responses belonging to an
+  // older epoch are ignored so a stale fetch can't write into a fresh list.
+  const epochRef = useRef(0);
+
+  // Serializes refetch calls: a refetch arriving while one is in flight
+  // queues behind it instead of silently no-oping after clearing the list.
+  const refetchChainRef = useRef<Promise<void>>(Promise.resolve());
+
   useEffect(() => {
     isMountedRef.current = true;
     return () => {
@@ -109,12 +117,14 @@ export function useInfiniteScroll<T>({
    * Fetch a specific page
    */
   const fetchPage = useCallback(
-    async (page: number, append: boolean = true) => {
-      // Prevent duplicate fetches
-      if (isFetchingRef.current) {
+    async (page: number, append: boolean = true, force: boolean = false) => {
+      // Prevent duplicate fetches (refetch passes force=true since it
+      // serializes itself via refetchChainRef)
+      if (isFetchingRef.current && !force) {
         return;
       }
 
+      const epoch = epochRef.current;
       isFetchingRef.current = true;
 
       if (page === 1) {
@@ -128,8 +138,8 @@ export function useInfiniteScroll<T>({
       try {
         const response = await fetchFunction(page);
 
-        // Only update state if still mounted
-        if (!isMountedRef.current) {
+        // Only update state if still mounted and the response is current
+        if (!isMountedRef.current || epoch !== epochRef.current) {
           return;
         }
 
@@ -146,7 +156,7 @@ export function useInfiniteScroll<T>({
         const hasMorePages = page < response.total_pages;
         setHasMore(hasMorePages);
       } catch (err) {
-        if (isMountedRef.current) {
+        if (isMountedRef.current && epoch === epochRef.current) {
           const errorMessage = err instanceof Error ? err.message : "Failed to load data";
           setError(errorMessage);
           console.error("Failed to fetch page:", err);
@@ -177,6 +187,7 @@ export function useInfiniteScroll<T>({
    * Reset to first page
    */
   const reset = useCallback(() => {
+    epochRef.current += 1; // invalidate in-flight responses
     setItems([]);
     setCurrentPage(1);
     setTotalItems(0);
@@ -185,27 +196,36 @@ export function useInfiniteScroll<T>({
 
     // Fetch first page
     if (autoFetch) {
-      fetchPage(1, false);
+      fetchPage(1, false, true);
     }
   }, [autoFetch, fetchPage]);
 
   /**
-   * Refetch all currently loaded pages
+   * Refetch all currently loaded pages.
+   * Serialized: concurrent calls run one after another, and each run bumps
+   * the epoch so any older in-flight responses are discarded.
    */
   const refetch = useCallback(async () => {
-    const pagesToFetch = currentPage;
-    setItems([]);
+    const run = async () => {
+      epochRef.current += 1;
+      const pagesToFetch = currentPage;
+      setItems([]);
 
-    // Fetch all pages sequentially
-    for (let page = 1; page <= pagesToFetch; page++) {
-      await fetchPage(page, true);
-    }
+      // Fetch all pages sequentially
+      for (let page = 1; page <= pagesToFetch; page++) {
+        await fetchPage(page, true, true);
+      }
+    };
+
+    const chained = refetchChainRef.current.then(run, run);
+    refetchChainRef.current = chained;
+    await chained;
   }, [currentPage, fetchPage]);
 
   // Auto-fetch first page on mount
   useEffect(() => {
     if (autoFetch) {
-      fetchPage(1, false);
+      fetchPage(1, false, true);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [autoFetch]);

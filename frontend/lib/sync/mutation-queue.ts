@@ -245,6 +245,31 @@ export async function updateMutationStatus(
 }
 
 /**
+ * Replace a mutation's payload (used when a user resolves a conflict with
+ * a merged version).
+ *
+ * @param id - The mutation ID
+ * @param payload - The new payload
+ */
+export async function updateMutationPayload(
+  id: number,
+  payload: Record<string, unknown>
+): Promise<void> {
+  const db = await getDB();
+  const tx = db.transaction("mutationQueue", "readwrite");
+  const store = tx.objectStore("mutationQueue");
+
+  const mutation = await store.get(id);
+  if (!mutation) {
+    await tx.done;
+    throw new Error(`Mutation with id ${id} not found`);
+  }
+
+  await store.put({ ...mutation, payload });
+  await tx.done;
+}
+
+/**
  * Remove a mutation from the queue.
  * Call after successful sync or when user cancels.
  *

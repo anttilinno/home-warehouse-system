@@ -152,6 +152,8 @@ describe("useOfflineMutation", () => {
         entity: "locations",
         entityId: "location-123",
         payload: { name: "Updated Location" },
+        workspaceId: "",
+        cachedUpdatedAt: undefined,
         dependsOn: undefined,
       });
     });
@@ -177,6 +179,8 @@ describe("useOfflineMutation", () => {
         entity: "containers",
         entityId: undefined,
         payload: { name: "New Container", location_id: "temp-loc-1" },
+        workspaceId: "",
+        cachedUpdatedAt: undefined,
         dependsOn: ["temp-loc-1"],
       });
     });

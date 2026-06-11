@@ -54,6 +54,8 @@ export interface PendingConflict {
   conflictFields: string[];
   /** When the conflict was detected */
   timestamp: number;
+  /** Idempotency key of the queued mutation (for requeue/drop on resolve) */
+  idempotencyKey?: string;
 }
 
 /**
@@ -243,6 +245,7 @@ export function ConflictResolutionProvider({
           localData: conflict.localData,
           serverData: conflict.serverData,
           conflictFields: conflict.conflictFields,
+          idempotencyKey: conflict.idempotencyKey,
         });
 
         // Show notification toast

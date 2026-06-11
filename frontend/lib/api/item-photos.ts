@@ -1,4 +1,5 @@
 import { apiClient } from "./client";
+import { getApiBase } from "./base";
 import type {
   ItemPhoto,
   PhotoListResponse,
@@ -9,8 +10,6 @@ import type {
   CaptionUpdate,
   DuplicateCheckResponse,
 } from "../types/item-photo";
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
 /**
  * Rewrite a backend photo URL to go through our same-origin proxy
@@ -112,16 +111,9 @@ export const itemPhotosApi = {
         reject(new Error("Upload cancelled"));
       });
 
-      // Get auth token and build headers
-      const token = apiClient.getToken();
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
-
-      xhr.open("POST", `${apiUrl}/workspaces/${workspaceId}/items/${itemId}/photos`);
+      // Same-origin /api proxy: cookie auth via withCredentials
+      xhr.open("POST", `${getApiBase()}/workspaces/${workspaceId}/items/${itemId}/photos`);
       xhr.withCredentials = true;
-
-      if (token) {
-        xhr.setRequestHeader("Authorization", `Bearer ${token}`);
-      }
       xhr.setRequestHeader("X-Workspace-ID", workspaceId);
 
       xhr.send(formData);
@@ -132,9 +124,12 @@ export const itemPhotosApi = {
    * Get all photos for an item
    */
   getItemPhotos: async (workspaceId: string, itemId: string): Promise<ItemPhoto[]> => {
+    // background: photo list fetches happen as polling/refresh side effects;
+    // a 401 here must not yank the user to the login page mid-form.
     const response = await apiClient.get<{ items: unknown[] }>(
       `/workspaces/${workspaceId}/items/${itemId}/photos/list`,
-      workspaceId
+      workspaceId,
+      { background: true }
     );
     return (response.items || []).map(mapPhoto);
   },
@@ -246,9 +241,7 @@ export const itemPhotosApi = {
     itemId: string,
     photoIds?: string[]
   ): Promise<void> => {
-    const token = apiClient.getToken();
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
-    let url = `${apiUrl}/workspaces/${workspaceId}/items/${itemId}/photos/download`;
+    let url = `${getApiBase()}/workspaces/${workspaceId}/items/${itemId}/photos/download`;
     if (photoIds && photoIds.length > 0) {
       url += `?ids=${photoIds.join(",")}`;
     }
@@ -256,7 +249,6 @@ export const itemPhotosApi = {
     const response = await fetch(url, {
       method: "GET",
       headers: {
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
         "X-Workspace-ID": workspaceId,
       },
       credentials: "include",
@@ -289,15 +281,11 @@ export const itemPhotosApi = {
     const formData = new FormData();
     formData.append("photo", file);
 
-    const token = apiClient.getToken();
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
-
     const response = await fetch(
-      `${apiUrl}/workspaces/${workspaceId}/items/${itemId}/photos/check-duplicate`,
+      `${getApiBase()}/workspaces/${workspaceId}/items/${itemId}/photos/check-duplicate`,
       {
         method: "POST",
         headers: {
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
           "X-Workspace-ID": workspaceId,
         },
         credentials: "include",

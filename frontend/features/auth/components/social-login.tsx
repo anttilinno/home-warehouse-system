@@ -5,8 +5,11 @@ import { useTranslations } from "next-intl";
 import { WifiOff, KeyRound } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNetworkStatus } from "@/lib/hooks/use-network-status";
+import { getApiBase } from "@/lib/api/base";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+// OAuth initiation is a full-page navigation through the same-origin /api
+// proxy; the proxy passes the backend's 302 (to the provider) through.
+const API_URL = getApiBase();
 
 // Authelia is a reverse-proxy SSO method; the button only works behind the
 // configured ingress, so it is hidden unless explicitly enabled (mirrors the

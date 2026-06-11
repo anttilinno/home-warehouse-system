@@ -1,9 +1,9 @@
 "use client";
 
-import React, { createContext, useContext, useEffect, useRef, useState, useCallback, type ReactNode } from "react";
+import React, { createContext, useContext, useEffect, useRef, useState, useCallback, useMemo, type ReactNode } from "react";
 import { useAuth } from "@/lib/contexts/auth-context";
 import { authApi } from "@/lib/api/auth";
-import { apiClient } from "@/lib/api/client";
+import { getApiBase } from "@/lib/api/base";
 
 export interface SSEEvent {
   type: string;
@@ -108,14 +108,11 @@ export function SSEProvider({
         eventSourceRef.current = null;
       }
 
-      // Create SSE connection with credentials (cookies)
-      // Also include token as query param since EventSource can't send Authorization header
-      // and cookies may be expired while localStorage token is still valid
-      let url = `${process.env.NEXT_PUBLIC_API_URL}/workspaces/${currentWorkspace.id}/sse`;
-      const token = apiClient.getToken();
-      if (token) {
-        url += `?token=${encodeURIComponent(token)}`;
-      }
+      // Create SSE connection through the same-origin /api proxy. The
+      // backend auth middleware accepts the HttpOnly access_token cookie
+      // (internal/api/middleware/auth.go), so no token query param is needed
+      // — putting the token in the URL leaked it into access logs.
+      const url = `${getApiBase()}/workspaces/${currentWorkspace.id}/sse`;
       const eventSource = new EventSource(url, {
         withCredentials: true,
       });
@@ -241,9 +238,10 @@ export function SSEProvider({
           30000
         );
 
-        // Before reconnecting, verify auth is still valid
+        // Before reconnecting, verify auth is still valid (background:
+        // failure is handled below with an explicit logout)
         try {
-          await authApi.getMe();
+          await authApi.getMe({ background: true });
         } catch {
           // Auth failed - likely 401, trigger logout
           console.warn("[SSE] Auth check failed during reconnect, logging out");
@@ -312,12 +310,15 @@ export function SSEProvider({
     };
   }, [isConnected, isAuthenticated, currentWorkspace, reconnect]);
 
-  const value: SSEContextValue = {
-    isConnected,
-    error,
-    subscribe,
-    reconnect,
-  };
+  const value: SSEContextValue = useMemo(
+    () => ({
+      isConnected,
+      error,
+      subscribe,
+      reconnect,
+    }),
+    [isConnected, error, subscribe, reconnect]
+  );
 
   return <SSEContext.Provider value={value}>{children}</SSEContext.Provider>;
 }

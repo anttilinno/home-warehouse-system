@@ -15,6 +15,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useAuth } from "@/lib/contexts/auth-context";
+import { authApi } from "@/lib/api/auth";
 import { toast } from "sonner";
 
 export function LanguageSettings() {
@@ -32,18 +33,7 @@ export function LanguageSettings() {
     setIsUpdating(true);
     try {
       // 1. Persist to backend
-      await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/users/me/preferences`,
-        {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("auth_token")}`,
-          },
-          credentials: "include",
-          body: JSON.stringify({ language: value }),
-        }
-      );
+      await authApi.updatePreferences({ language: value });
       await refreshUser();
       // 2. Switch locale route (causes navigation/re-render)
       router.replace(pathname, { locale: value as Locale });

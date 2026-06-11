@@ -11,6 +11,7 @@ import { Upload, FileText, AlertCircle, ArrowLeft } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
 import { useWorkspace } from "@/lib/hooks/use-workspace";
+import { getApiBase } from "@/lib/api/base";
 import { Skeleton } from "@/components/ui/skeleton";
 
 const ENTITY_TYPES = [
@@ -135,7 +136,7 @@ export default function NewImportPage() {
       formData.append("entity_type", entityType);
 
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/workspaces/${workspaceId}/imports/upload`,
+        `${getApiBase()}/workspaces/${workspaceId}/imports/upload`,
         {
           method: "POST",
           credentials: "include",

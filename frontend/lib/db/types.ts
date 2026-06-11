@@ -43,9 +43,11 @@ export interface SyncMeta {
 export type MutationOperation = "create" | "update";
 
 /**
- * Status of a queued mutation
+ * Status of a queued mutation.
+ * - "needs-review": a critical conflict awaiting user resolution; excluded
+ *   from getPendingMutations so it is not hot-looped on every queue pass.
  */
-export type MutationStatus = "pending" | "syncing" | "failed";
+export type MutationStatus = "pending" | "syncing" | "failed" | "needs-review";
 
 /**
  * Conflict resolution strategy applied

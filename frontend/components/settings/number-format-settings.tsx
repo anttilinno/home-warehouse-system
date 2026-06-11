@@ -19,6 +19,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useAuth } from "@/lib/contexts/auth-context";
+import { authApi } from "@/lib/api/auth";
 import { toast } from "sonner";
 import type {
   ThousandSeparator,
@@ -73,18 +74,7 @@ export function NumberFormatSettings() {
     setConflictError("");
     setIsUpdating(true);
     try {
-      await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/users/me/preferences`,
-        {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("auth_token")}`,
-          },
-          credentials: "include",
-          body: JSON.stringify({ thousand_separator: value }),
-        }
-      );
+      await authApi.updatePreferences({ thousand_separator: value });
       await refreshUser();
       toast.success(t("saved"));
     } catch {
@@ -103,18 +93,7 @@ export function NumberFormatSettings() {
     setConflictError("");
     setIsUpdating(true);
     try {
-      await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/users/me/preferences`,
-        {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("auth_token")}`,
-          },
-          credentials: "include",
-          body: JSON.stringify({ decimal_separator: value }),
-        }
-      );
+      await authApi.updatePreferences({ decimal_separator: value });
       await refreshUser();
       toast.success(t("saved"));
     } catch {

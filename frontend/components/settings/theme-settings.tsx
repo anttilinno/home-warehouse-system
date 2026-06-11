@@ -14,6 +14,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useAuth } from "@/lib/contexts/auth-context";
+import { authApi } from "@/lib/api/auth";
 import { toast } from "sonner";
 
 const THEME_OPTIONS = [
@@ -46,18 +47,7 @@ export function ThemeSettings() {
     // 2. Persist to backend
     setIsUpdating(true);
     try {
-      await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/users/me/preferences`,
-        {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("auth_token")}`,
-          },
-          credentials: "include",
-          body: JSON.stringify({ theme: value }),
-        }
-      );
+      await authApi.updatePreferences({ theme: value });
       await refreshUser();
       toast.success(t("saved"));
     } catch {

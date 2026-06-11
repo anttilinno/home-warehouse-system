@@ -14,6 +14,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useAuth } from "@/lib/contexts/auth-context";
+import { authApi } from "@/lib/api/auth";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import type { DateFormatOption, PresetDateFormat } from "@/lib/hooks/use-date-format";
@@ -66,18 +67,7 @@ export function DateFormatSettings() {
     setIsUpdating(true);
     try {
       // Use existing preferences endpoint
-      await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/users/me/preferences`,
-        {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("auth_token")}`,
-          },
-          credentials: "include",
-          body: JSON.stringify({ date_format: value }),
-        }
-      );
+      await authApi.updatePreferences({ date_format: value });
       await refreshUser();
       toast.success(t("saved"));
     } catch {
@@ -106,18 +96,7 @@ export function DateFormatSettings() {
 
     setIsUpdating(true);
     try {
-      await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/users/me/preferences`,
-        {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("auth_token")}`,
-          },
-          credentials: "include",
-          body: JSON.stringify({ date_format: customFormat }),
-        }
-      );
+      await authApi.updatePreferences({ date_format: customFormat });
       await refreshUser();
       toast.success(t("saved"));
     } catch {

@@ -15,9 +15,6 @@ const DISMISS_KEY = "pwa-install-dismissed";
  * - Shows iOS-specific instructions for Safari users
  * - Dismissible with "Don't show again" option (stored in localStorage)
  * - Fixed position at bottom of viewport
- *
- * Note: The app also has InstallBanner in @/components/pwa which serves a similar
- * purpose with a different design (top banner style). Use whichever fits your needs.
  */
 export function PwaInstallPrompt() {
   const { isInstallable, isInstalled, isIOS, promptInstall } = usePwaInstall();

@@ -13,6 +13,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useAuth } from "@/lib/contexts/auth-context";
+import { authApi } from "@/lib/api/auth";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import type { TimeFormatOption } from "@/lib/hooks/use-time-format";
@@ -38,18 +39,7 @@ export function TimeFormatSettings() {
 
     setIsUpdating(true);
     try {
-      await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/users/me/preferences`,
-        {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("auth_token")}`,
-          },
-          credentials: "include",
-          body: JSON.stringify({ time_format: value }),
-        }
-      );
+      await authApi.updatePreferences({ time_format: value });
       await refreshUser();
       toast.success(t("saved"));
     } catch {

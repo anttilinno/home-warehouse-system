@@ -466,10 +466,11 @@ describe("SyncManager", () => {
       // Should NOT remove mutation (needs user review)
       expect(mutationQueue.removeMutation).not.toHaveBeenCalled();
 
-      // Should reset status to pending (not failed)
+      // Should park the mutation as needs-review (excluded from pending
+      // queries, so it isn't re-sent / re-logged on every queue pass)
       expect(mutationQueue.updateMutationStatus).toHaveBeenCalledWith(
         mutation.id,
-        expect.objectContaining({ status: "pending" })
+        expect.objectContaining({ status: "needs-review" })
       );
     });
 

@@ -1,4 +1,5 @@
 import { apiClient } from "./client";
+import { getApiBase } from "./base";
 
 export type EntityType =
   | "item"
@@ -77,24 +78,18 @@ class ImportExportAPI {
   ): Promise<Blob> {
     const { format = "csv", includeArchived = false } = options;
 
-    const token = apiClient.getToken();
     const headers: HeadersInit = {
       "X-Workspace-ID": workspaceId,
     };
-
-    if (token) {
-      (headers as Record<string, string>)["Authorization"] = `Bearer ${token}`;
-    }
 
     const params = new URLSearchParams({
       format,
       include_archived: includeArchived.toString(),
     });
 
-    const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
     const response = await fetch(
-      `${API_URL}/export/${entityType}?${params}`,
-      { headers }
+      `${getApiBase()}/export/${entityType}?${params}`,
+      { headers, credentials: "include" }
     );
 
     if (!response.ok) {
@@ -119,24 +114,18 @@ class ImportExportAPI {
     format: "xlsx" | "json" = "xlsx",
     includeArchived: boolean = false
   ): Promise<{ blob: Blob; filename: string }> {
-    const token = apiClient.getToken();
     const headers: HeadersInit = {
       "X-Workspace-ID": workspaceId,
     };
-
-    if (token) {
-      (headers as Record<string, string>)["Authorization"] = `Bearer ${token}`;
-    }
 
     const params = new URLSearchParams({
       format,
       include_archived: includeArchived.toString(),
     });
 
-    const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
     const response = await fetch(
-      `${API_URL}/export/workspace?${params}`,
-      { headers }
+      `${getApiBase()}/export/workspace?${params}`,
+      { headers, credentials: "include" }
     );
 
     if (!response.ok) {
@@ -176,20 +165,15 @@ class ImportExportAPI {
     // Convert file to base64
     const base64Data = await this.fileToBase64(file);
 
-    const token = apiClient.getToken();
     const headers: HeadersInit = {
       "Content-Type": "application/json",
       "X-Workspace-ID": workspaceId,
     };
 
-    if (token) {
-      (headers as Record<string, string>)["Authorization"] = `Bearer ${token}`;
-    }
-
-    const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
-    const response = await fetch(`${API_URL}/import/workspace`, {
+    const response = await fetch(`${getApiBase()}/import/workspace`, {
       method: "POST",
       headers,
+      credentials: "include",
       body: JSON.stringify({
         format,
         data: base64Data,

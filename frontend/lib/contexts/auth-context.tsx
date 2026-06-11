@@ -1,8 +1,9 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from "react";
+import React, { createContext, useContext, useState, useEffect, useCallback, useMemo, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { authApi, type User, type Workspace, type RegisterData } from "@/lib/api/auth";
+import { ensureOfflineDBOwner } from "@/lib/db/offline-db";
 
 interface AuthContextValue {
   user: User | null;
@@ -29,25 +30,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const router = useRouter();
 
   const loadUserData = useCallback(async () => {
-    // Check if we have a token
-    const hasToken = typeof window !== "undefined" && localStorage.getItem("auth_token");
-
-    if (!hasToken) {
-      setIsLoading(false);
-      return;
-    }
-
     try {
-      // Fetch user data and workspaces in parallel
+      // Probe /users/me to discover whether a session cookie exists.
+      // (Token no longer lives in localStorage, so this is the auth check.)
+      // Fetch user data and workspaces in parallel. `background` keeps the
+      // apiClient from hard-redirecting on 401 — the catch below decides.
       const [userData, workspacesData] = await Promise.all([
-        authApi.getMe(),
-        authApi.getWorkspaces(),
+        authApi.getMe({ background: true }),
+        authApi.getWorkspaces({ background: true }),
       ]);
 
       setUser(userData);
       setWorkspaces(workspacesData);
 
       // Load workspace_id from localStorage
+      let selectedWorkspaceId: string | null = null;
       if (typeof window !== "undefined") {
         const storedWorkspaceId = localStorage.getItem("workspace_id");
 
@@ -60,14 +57,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           const firstWorkspaceId = workspacesData[0].id;
           localStorage.setItem("workspace_id", firstWorkspaceId);
           setWorkspaceId(firstWorkspaceId);
+          selectedWorkspaceId = firstWorkspaceId;
         } else if (storedWorkspaceValid) {
           setWorkspaceId(storedWorkspaceId);
+          selectedWorkspaceId = storedWorkspaceId;
         }
       }
+
+      // Scope the offline IndexedDB to this user: wipes the DB if a
+      // different user was logged in on this browser before.
+      await ensureOfflineDBOwner(userData.id, selectedWorkspaceId);
     } catch (error) {
       // If we get 401 or any auth error, clear state and redirect to login
       console.error("Failed to load user data:", error);
-      localStorage.removeItem("auth_token");
       localStorage.removeItem("workspace_id");
       setUser(null);
       setWorkspaces([]);
@@ -144,20 +146,36 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const currentWorkspace = workspaces.find((ws) => ws.id === workspaceId) || null;
   const isAuthenticated = !!user && !!workspaceId;
 
-  const value: AuthContextValue = {
-    user,
-    workspaces,
-    currentWorkspace,
-    workspaceId,
-    isLoading,
-    isAuthenticated,
-    login,
-    register,
-    logout,
-    switchWorkspace,
-    refreshUser,
-    loadUserData,
-  };
+  const value: AuthContextValue = useMemo(
+    () => ({
+      user,
+      workspaces,
+      currentWorkspace,
+      workspaceId,
+      isLoading,
+      isAuthenticated,
+      login,
+      register,
+      logout,
+      switchWorkspace,
+      refreshUser,
+      loadUserData,
+    }),
+    [
+      user,
+      workspaces,
+      currentWorkspace,
+      workspaceId,
+      isLoading,
+      isAuthenticated,
+      login,
+      register,
+      logout,
+      switchWorkspace,
+      refreshUser,
+      loadUserData,
+    ]
+  );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

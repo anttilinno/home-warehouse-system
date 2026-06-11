@@ -290,6 +290,39 @@ export async function closeDB(): Promise<void> {
 }
 
 /**
+ * Ensure the offline database belongs to the given user/workspace.
+ * The entity stores are not user-scoped (keyPath is just `id`), so when a
+ * different user logs in on the same browser the previous user's cached
+ * inventory and queued mutations MUST be wiped before use — otherwise user
+ * A's data is rendered to user B and user A's queued mutations would be
+ * replayed under user B's cookies.
+ *
+ * Call after a successful login / user load, before reading offline data.
+ */
+export async function ensureOfflineDBOwner(
+  userId: string,
+  workspaceId?: string | null
+): Promise<void> {
+  if (typeof indexedDB === "undefined") return;
+
+  try {
+    const owner = await getSyncMeta("ownerUserId");
+    if (owner && owner.value !== userId) {
+      console.warn(
+        "[OfflineDB] Owner mismatch - wiping offline database before use"
+      );
+      await deleteDB();
+    }
+    await setSyncMeta("ownerUserId", userId);
+    if (workspaceId) {
+      await setSyncMeta("ownerWorkspaceId", workspaceId);
+    }
+  } catch (error) {
+    console.error("[OfflineDB] Failed to verify database owner:", error);
+  }
+}
+
+/**
  * Delete the entire database.
  * Use with caution - all offline data will be lost.
  */

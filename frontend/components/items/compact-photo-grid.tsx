@@ -84,6 +84,7 @@ export function CompactPhotoGrid({
             className="absolute top-1 right-1 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
             onClick={() => handleDelete(photo.id)}
             disabled={deletingId === photo.id}
+            aria-label={photo.caption ? t("gallery.deletePhotoAria", { caption: photo.caption }) : t("gallery.deleteTitle")}
           >
             {deletingId === photo.id ? (
               <Loader2 className="h-3 w-3 animate-spin" />
@@ -93,7 +94,7 @@ export function CompactPhotoGrid({
           </Button>
           {photo.is_primary && (
             <span className="absolute bottom-1 left-1 text-[10px] font-medium bg-black/60 text-white px-1.5 py-0.5 rounded">
-              Primary
+              {t("gallery.primary")}
             </span>
           )}
         </div>

@@ -11,6 +11,7 @@ import { formatDistanceToNow } from "date-fns";
 import { FileText, Clock, CheckCircle2, XCircle, Loader2, Upload, AlertTriangle, ShieldAlert } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import { useWorkspace } from "@/lib/hooks/use-workspace";
+import { getApiBase } from "@/lib/api/base";
 import { toast } from "sonner";
 
 interface FetchError extends Error {
@@ -50,7 +51,7 @@ export default function ImportsPage() {
 
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/workspaces/${workspaceId}/imports/jobs`,
+        `${getApiBase()}/workspaces/${workspaceId}/imports/jobs`,
         {
           credentials: "include",
         }

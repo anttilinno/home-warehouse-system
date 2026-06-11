@@ -1,4 +1,42 @@
 import { apiClient } from "./client";
+import { deleteDB } from "@/lib/db/offline-db";
+
+/**
+ * Purge all locally persisted user data. Called on logout (and account
+ * deletion) so the next browser user cannot read the previous user's
+ * inventory from Cache Storage or IndexedDB.
+ */
+async function purgeLocalData(): Promise<void> {
+  if (typeof window === "undefined") return;
+
+  // 1. Service worker runtime caches (api-cache + photo caches + any future
+  //    runtime cache; enumerate instead of hardcoding names).
+  if ("caches" in window) {
+    try {
+      const names = await caches.keys();
+      await Promise.all(names.map((name) => caches.delete(name)));
+    } catch (error) {
+      console.warn("[Auth] Failed to purge SW caches:", error);
+    }
+  }
+
+  // 2. Offline IndexedDB (items, inventory, mutationQueue, photo blobs, ...)
+  try {
+    await deleteDB();
+  } catch (error) {
+    console.warn("[Auth] Failed to delete offline database:", error);
+  }
+
+  // 3. The service worker's private photo upload queue DB
+  if (typeof indexedDB !== "undefined") {
+    await new Promise<void>((resolve) => {
+      const request = indexedDB.deleteDatabase("PhotoUploadQueue");
+      request.onsuccess = () => resolve();
+      request.onerror = () => resolve();
+      request.onblocked = () => resolve();
+    });
+  }
+}
 
 export interface Session {
   id: string;
@@ -102,19 +140,34 @@ export const authApi = {
     apiClient.setToken(null);
     if (typeof window !== "undefined") {
       localStorage.removeItem("workspace_id");
+      localStorage.removeItem("auth_token"); // legacy key from older versions
     }
+    // Purge SW caches + offline IndexedDB so the next user on this browser
+    // cannot read this user's data.
+    await purgeLocalData();
   },
 
-  getMe: async (): Promise<User> => {
-    return apiClient.get<User>("/users/me");
+  getMe: async (options?: { background?: boolean }): Promise<User> => {
+    return apiClient.get<User>("/users/me", undefined, options);
   },
 
-  getWorkspaces: async (): Promise<Workspace[]> => {
-    return apiClient.get<Workspace[]>("/users/me/workspaces");
+  getWorkspaces: async (options?: { background?: boolean }): Promise<Workspace[]> => {
+    return apiClient.get<Workspace[]>("/users/me/workspaces", undefined, options);
   },
 
   updateProfile: async (data: UpdateProfileData): Promise<User> => {
     return apiClient.patch<User>("/users/me", data);
+  },
+
+  /**
+   * Shared helper for PATCH /users/me/preferences — used by the settings
+   * components and theme provider instead of each re-implementing fetch +
+   * auth headers. Cookie auth via the /api proxy.
+   */
+  updatePreferences: async (
+    preferences: Record<string, unknown>
+  ): Promise<void> => {
+    await apiClient.patch("/users/me/preferences", preferences);
   },
 
   uploadAvatar: async (file: File): Promise<User> => {
@@ -160,7 +213,9 @@ export const authApi = {
     apiClient.setToken(null);
     if (typeof window !== "undefined") {
       localStorage.removeItem("workspace_id");
+      localStorage.removeItem("auth_token");
     }
+    await purgeLocalData();
   },
 
   exchangeOAuthCode: async (code: string): Promise<AuthTokenResponse> => {

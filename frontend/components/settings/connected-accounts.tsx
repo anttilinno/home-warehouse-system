@@ -11,9 +11,11 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { authApi, type OAuthAccount } from "@/lib/api/auth";
 import { useAuth } from "@/lib/contexts/auth-context";
+import { getApiBase } from "@/lib/api/base";
 import { toast } from "sonner";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+// OAuth link flow navigates through the same-origin /api proxy (302 passthrough)
+const API_URL = getApiBase();
 
 function GoogleIcon({ className }: { className?: string }) {
   return (

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { useTranslations } from "next-intl";
 import {
   getMutationQueue,
   removeMutation,
@@ -63,6 +64,7 @@ const statusColors: Record<string, string> = {
   pending: "bg-yellow-500",
   syncing: "bg-blue-500",
   failed: "bg-red-500",
+  "needs-review": "bg-orange-500",
 };
 
 function formatPayloadPreview(payload: Record<string, unknown>): string {
@@ -75,6 +77,7 @@ function formatPayloadPreview(payload: Record<string, unknown>): string {
 }
 
 export function PendingChangesDrawer({ open, onOpenChange }: PendingChangesDrawerProps) {
+  const t = useTranslations("pendingChange.drawer");
   const { formatDateTime } = useDateFormat();
   const [mutations, setMutations] = useState<MutationQueueEntry[]>([]);
   const [loading, setLoading] = useState(true);
@@ -155,12 +158,12 @@ export function PendingChangesDrawer({ open, onOpenChange }: PendingChangesDrawe
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Clock className="h-5 w-5" />
-            Pending Changes
+            {t("title")}
           </DialogTitle>
           <DialogDescription>
             {mutations.length === 0
-              ? "All changes have been synced."
-              : `${pendingCount} pending, ${failedCount} failed`}
+              ? t("allSynced")
+              : t("summary", { pending: pendingCount, failed: failedCount })}
           </DialogDescription>
         </DialogHeader>
 
@@ -172,7 +175,7 @@ export function PendingChangesDrawer({ open, onOpenChange }: PendingChangesDrawe
           <div className="flex flex-col items-center justify-center py-8 text-center">
             <CheckCircle2 className="h-12 w-12 text-green-500 mb-3" />
             <p className="text-sm text-muted-foreground">
-              All changes have been synced to the server.
+              {t("allSyncedDescription")}
             </p>
           </div>
         ) : (
@@ -185,28 +188,26 @@ export function PendingChangesDrawer({ open, onOpenChange }: PendingChangesDrawe
                 disabled={!navigator.onLine || pendingCount === 0}
               >
                 <RefreshCw className="h-4 w-4 mr-1" />
-                Sync Now
+                {t("syncNow")}
               </Button>
               <AlertDialog>
                 <AlertDialogTrigger asChild>
                   <Button variant="destructive" size="sm">
                     <Trash2 className="h-4 w-4 mr-1" />
-                    Clear All
+                    {t("clearAll")}
                   </Button>
                 </AlertDialogTrigger>
                 <AlertDialogContent>
                   <AlertDialogHeader>
-                    <AlertDialogTitle>Clear all pending changes?</AlertDialogTitle>
+                    <AlertDialogTitle>{t("clearAllConfirmTitle")}</AlertDialogTitle>
                     <AlertDialogDescription>
-                      This will permanently remove {mutations.length} pending{" "}
-                      {mutations.length === 1 ? "change" : "changes"}. This action cannot
-                      be undone.
+                      {t("clearAllConfirmDescription", { count: mutations.length })}
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogCancel>{t("cancel")}</AlertDialogCancel>
                     <AlertDialogAction onClick={handleClearAll}>
-                      Clear All
+                      {t("clearAll")}
                     </AlertDialogAction>
                   </AlertDialogFooter>
                 </AlertDialogContent>
@@ -231,13 +232,13 @@ export function PendingChangesDrawer({ open, onOpenChange }: PendingChangesDrawe
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1">
                           <span className="text-sm font-medium capitalize">
-                            {mutation.operation} {mutation.entity.slice(0, -1)}
+                            {t(`operations.${mutation.operation}`)} {t(`entities.${mutation.entity}`)}
                           </span>
                           <Badge
                             variant="secondary"
                             className={`text-[10px] text-white ${statusColors[mutation.status]}`}
                           >
-                            {mutation.status}
+                            {t(`status.${mutation.status === "needs-review" ? "needsReview" : mutation.status}`)}
                           </Badge>
                         </div>
 
@@ -247,7 +248,7 @@ export function PendingChangesDrawer({ open, onOpenChange }: PendingChangesDrawe
 
                         <p className="text-xs text-muted-foreground mt-1">
                           {formatDateTime(new Date(mutation.timestamp))}
-                          {mutation.retries > 0 && ` · ${mutation.retries} retries`}
+                          {mutation.retries > 0 && ` · ${t("retries", { count: mutation.retries })}`}
                         </p>
 
                         {mutation.lastError && (
@@ -266,7 +267,8 @@ export function PendingChangesDrawer({ open, onOpenChange }: PendingChangesDrawe
                             className="h-8 w-8"
                             onClick={() => handleRetry(mutation.id)}
                             disabled={isProcessing}
-                            title="Retry"
+                            title={t("retryTitle")}
+                            aria-label={t("retryAria")}
                           >
                             {isProcessing ? (
                               <Loader2 className="h-4 w-4 animate-spin" />
@@ -281,7 +283,8 @@ export function PendingChangesDrawer({ open, onOpenChange }: PendingChangesDrawe
                           className="h-8 w-8 text-destructive hover:text-destructive"
                           onClick={() => handleCancel(mutation.id)}
                           disabled={isProcessing}
-                          title="Cancel"
+                          title={t("cancel")}
+                          aria-label={t("cancelAria")}
                         >
                           {isProcessing ? (
                             <Loader2 className="h-4 w-4 animate-spin" />

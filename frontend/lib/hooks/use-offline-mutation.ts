@@ -60,9 +60,17 @@ export interface UseOfflineMutationResult<TPayload> {
    * @param payload - The mutation payload
    * @param entityId - Optional entity ID for updates
    * @param dependsOn - Optional array of idempotency keys this mutation depends on (for hierarchical entities)
+   * @param cachedUpdatedAt - The entity's updated_at as seen by the client at
+   *   queue time (updates only). Sent as `updated_at` so the server can
+   *   detect write-write conflicts (409).
    * @returns The idempotency key (tempId) for tracking the mutation
    */
-  mutate: (payload: TPayload, entityId?: string, dependsOn?: string[]) => Promise<string>;
+  mutate: (
+    payload: TPayload,
+    entityId?: string,
+    dependsOn?: string[],
+    cachedUpdatedAt?: string
+  ) => Promise<string>;
   /** Whether a mutation is currently in progress */
   isPending: boolean;
 }
@@ -104,7 +112,12 @@ export function useOfflineMutation<TPayload extends Record<string, unknown>>({
   const [isPending, startTransition] = useTransition();
 
   const mutate = useCallback(
-    async (payload: TPayload, entityId?: string, dependsOn?: string[]): Promise<string> => {
+    async (
+      payload: TPayload,
+      entityId?: string,
+      dependsOn?: string[],
+      cachedUpdatedAt?: string
+    ): Promise<string> => {
       // 1. Queue mutation to IndexedDB FIRST (persist before optimistic update)
       // Capture workspace_id NOW (at mutation time), not at sync time
       const workspaceId = typeof localStorage !== "undefined"
@@ -117,6 +130,7 @@ export function useOfflineMutation<TPayload extends Record<string, unknown>>({
         entityId,
         payload: payload as Record<string, unknown>,
         workspaceId,
+        cachedUpdatedAt,
         dependsOn,
       });
 

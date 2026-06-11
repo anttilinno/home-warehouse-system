@@ -1,4 +1,5 @@
 import { apiClient } from "./client";
+import { getApiBase } from "./base";
 import type {
   RepairLog,
   RepairLogListResponse,
@@ -152,15 +153,9 @@ export const repairLogsApi = {
         reject(new Error("Upload cancelled"));
       });
 
-      const token = apiClient.getToken();
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
-
-      xhr.open("POST", `${apiUrl}/workspaces/${workspaceId}/repairs/${repairLogId}/photos`);
+      // Same-origin /api proxy: cookie auth via withCredentials
+      xhr.open("POST", `${getApiBase()}/workspaces/${workspaceId}/repairs/${repairLogId}/photos`);
       xhr.withCredentials = true;
-
-      if (token) {
-        xhr.setRequestHeader("Authorization", `Bearer ${token}`);
-      }
       xhr.setRequestHeader("X-Workspace-ID", workspaceId);
 
       xhr.send(formData);

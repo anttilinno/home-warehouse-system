@@ -3,23 +3,13 @@
 import { useEffect } from "react";
 import { ThemeProvider as NextThemesProvider, useTheme } from "next-themes";
 import { useAuth } from "@/lib/contexts/auth-context";
+import { authApi } from "@/lib/api/auth";
 
 const THEME_STORAGE_KEY = "theme";
 
-/** Fire-and-forget save of theme preference to the backend. */
+/** Fire-and-forget save of theme preference to the backend (cookie auth). */
 export function persistThemeToBackend(value: string) {
-  const token =
-    typeof window !== "undefined" ? localStorage.getItem("auth_token") : null;
-  if (!token) return;
-  fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/me/preferences`, {
-    method: "PATCH",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
-    credentials: "include",
-    body: JSON.stringify({ theme: value }),
-  }).catch(() => {});
+  authApi.updatePreferences({ theme: value }).catch(() => {});
 }
 
 function ThemeSyncer({ children }: { children: React.ReactNode }) {
