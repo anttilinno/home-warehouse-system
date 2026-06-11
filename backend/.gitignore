@@ -28,3 +28,13 @@ Thumbs.db
 # Environment
 .env
 .env.local
+
+# Compiled binaries (built at repo root of backend/)
+/main
+/photo-admin
+/server
+
+# Coverage and test artifacts
+coverage*.out
+*_coverage.out
+internal/jobs/test_output.txt
