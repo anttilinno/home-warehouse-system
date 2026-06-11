@@ -48,6 +48,7 @@ import (
 	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/label"
 	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/loan"
 	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/location"
+	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/maintenance"
 	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/movement"
 	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/pendingchange"
 	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/repairattachment"
@@ -156,6 +157,7 @@ func NewRouter(pool *pgxpool.Pool, cfg *config.Config) chi.Router {
 	borrowerRepo := postgres.NewBorrowerRepository(pool)
 	loanRepo := postgres.NewLoanRepository(pool)
 	repairLogRepo := postgres.NewRepairLogRepository(pool)
+	maintenanceRepo := postgres.NewMaintenanceRepository(pool)
 	// Phase 5 repositories
 	fileRepo := postgres.NewFileRepository(pool)
 	attachmentRepo := postgres.NewAttachmentRepository(pool)
@@ -226,6 +228,7 @@ func NewRouter(pool *pgxpool.Pool, cfg *config.Config) chi.Router {
 	borrowerSvc := borrower.NewService(borrowerRepo)
 	loanSvc := loan.NewService(loanRepo, inventoryRepo, txManager)
 	repairLogSvc := repairlog.NewService(repairLogRepo, inventoryRepo)
+	maintenanceSvc := maintenance.NewService(maintenanceRepo, inventoryRepo, txManager)
 	repairPhotoSvc := repairphoto.NewService(repairPhotoRepo, photoStorage, imageProcessor, uploadDir)
 	repairAttachmentSvc := repairattachment.NewService(repairAttachmentRepo, fileRepo)
 	// Declutter service
@@ -260,6 +263,7 @@ func NewRouter(pool *pgxpool.Pool, cfg *config.Config) chi.Router {
 		loanSvc,
 		loanRepo,
 		labelSvc,
+		maintenanceSvc,
 		txManager,
 		broadcaster,
 	)
@@ -463,6 +467,7 @@ func NewRouter(pool *pgxpool.Pool, cfg *config.Config) chi.Router {
 
 			// Register repair log routes
 			repairlog.RegisterRoutes(wsAPI, repairLogSvc, broadcaster)
+			maintenance.RegisterRoutes(wsAPI, maintenanceSvc, broadcaster)
 
 			// Register repair photo routes
 			repairPhotoURLGenerator := func(workspaceID, repairLogID, photoID uuid.UUID, isThumbnail bool) string {

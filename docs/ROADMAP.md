@@ -83,11 +83,11 @@
   - Terminal-based interface for quick inventory operations
   - Browse locations, containers, items
   - Add/move inventory without browser
-- [ ] Repair log
+- [x] Repair log
   - Track repair history per item
   - Log repair date, cost, description, who performed it
   - Total cost of ownership view
-- [ ] Declutter assistant
+- [x] Declutter assistant
   - Surface items not accessed/moved in 12+ months
   - Suggest donate, sell, or dispose
   - Track declutter decisions and outcomes
@@ -281,21 +281,21 @@ Repair logs are reactive only — nothing models "HVAC filter every 3 months,
 smoke-detector batteries yearly". Add schedules that feed the existing reminder
 pipeline and write back into repair logs when completed.
 
-- [ ] **Schema** (new migration) — `warehouse.maintenance_schedules`:
+- [x] **Schema** (new migration) — `warehouse.maintenance_schedules`:
   `id uuidv7 PK`, `workspace_id`, `inventory_id` (composite FK per the 005 tenancy
   pattern), `title`, `notes`, `interval_days int CHECK (> 0)`, `next_due date`,
   `last_completed_at`, `is_active bool`; index `(workspace_id, next_due)`
-- [ ] **Domain** — `internal/domain/warehouse/maintenance` (entity/service/handler/repo,
+- [x] **Domain** — `internal/domain/warehouse/maintenance` (entity/service/handler/repo,
   standard layout); CRUD endpoints on the workspace tree; approval-pipeline entity
   registration if mutating via members
-- [ ] **Complete action** — `POST .../maintenance/{id}/complete`: creates a
+- [x] **Complete action** — `POST .../maintenance/{id}/complete`: creates a
   `repair_logs` row (type maintenance), sets `last_completed_at`, advances
   `next_due += interval_days` — in one transaction (TxManager pattern from loans)
-- [ ] **Asynq job** — due/overdue reminders; share the dedupe + notification approach
+- [x] **Asynq job** — due/overdue reminders; share the dedupe + notification approach
   with expiry alerting above
-- [ ] **Frontend** — schedule list on item detail, "Due maintenance" dashboard
+- [x] **Frontend** — schedule list on item detail, "Due maintenance" dashboard
   widget, complete-with-note dialog; i18n keys
-- [ ] **Tests** — next_due advancement (incl. overdue catch-up semantics — decide:
+- [x] **Tests** — next_due advancement (incl. overdue catch-up semantics — decide:
   from due date or from completion date), tx rollback test
 
 ## Shortlink Registry (s.go hardening)

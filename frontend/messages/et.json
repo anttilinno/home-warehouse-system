@@ -150,6 +150,14 @@
       "warranty": "Garantii",
       "more": "+{count} veel"
     },
+    "dueMaintenance": {
+      "title": "Eesseisev hooldus",
+      "description": "Hooldused, mis on tähtajas {days} päeva jooksul või üle tähtaja",
+      "empty": "Hooldusi pole tähtajas",
+      "due": "Tähtajas",
+      "overdue": "Üle tähtaja",
+      "more": "+{count} veel"
+    },
     "activity": {
       "title": "Viimane tegevus",
       "description": "Viimased muudatused inventuuris"
@@ -689,6 +697,48 @@
     "markRead": "Märgi loetuks",
     "ariaLabel": "Teavitused ({count} lugemata)"
   },
+  "maintenance": {
+    "title": "Hooldusgraafikud",
+    "description": "Selle eseme korduvad hooldused",
+    "add": "Lisa graafik",
+    "empty": "Hooldusgraafikuid pole veel",
+    "noInventory": "Hoolduse plaanimiseks lisa esmalt laokirje",
+    "nextDue": "Järgmine tähtaeg {date}",
+    "everyDays": "iga {days} päeva järel",
+    "lastDone": "viimati tehtud {date}",
+    "dueSoon": "Peagi tähtajas",
+    "overdue": "Üle tähtaja",
+    "inactive": "Mitteaktiivne",
+    "complete": "Tehtud",
+    "delete": "Kustuta graafik",
+    "cancel": "Tühista",
+    "createDialog": {
+      "title": "Uus hooldusgraafik",
+      "description": "Seadista sellele esemele korduv hooldustöö",
+      "titleLabel": "Pealkiri",
+      "titlePlaceholder": "nt Vaheta ventilatsioonifilter",
+      "intervalLabel": "Korda iga (päeva)",
+      "nextDueLabel": "Esimene tähtaeg",
+      "notesLabel": "Märkmed (valikuline)",
+      "submit": "Loo graafik"
+    },
+    "completeDialog": {
+      "title": "Märgi hooldus tehtuks",
+      "description": "Märgi „{title}“ tehtuks. Luuakse remondilogi kirje ja järgmine tähtaeg nihkub edasi.",
+      "noteLabel": "Märkus (valikuline)",
+      "notePlaceholder": "Mida tehti?",
+      "submit": "Märgi tehtuks"
+    },
+    "toasts": {
+      "created": "Hooldusgraafik loodud",
+      "createFailed": "Hooldusgraafiku loomine ebaõnnestus",
+      "completed": "Hooldus tehtud",
+      "completeFailed": "Hoolduse lõpetamine ebaõnnestus",
+      "deleted": "Hooldusgraafik kustutatud",
+      "deleteFailed": "Hooldusgraafiku kustutamine ebaõnnestus",
+      "invalidInterval": "Intervall peab olema positiivne arv päevi"
+    }
+  },
   "settings": {
     "title": "Seaded",
     "description": "Halda oma tööruumi ja konto seadeid",
@@ -821,6 +871,8 @@
         "inventoryDescription": "Madala laoseisu hoiatused ja remondi meeldetuletused",
         "expiry_alerts": "Aegumine ja garantii",
         "expiry_alertsDescription": "Aegumiskuupäeva ja garantii lõppemise teavitused",
+        "maintenance_alerts": "Hooldus",
+        "maintenance_alertsDescription": "Tähtajas ja üle tähtaja hoolduste meeldetuletused",
         "workspace": "Tooruum",
         "workspaceDescription": "Kutsed ja liikmete tegevus",
         "system": "Susteem",

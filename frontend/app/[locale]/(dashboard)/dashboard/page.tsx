@@ -29,6 +29,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ActivityFeed } from "@/components/dashboard/activity-feed";
 import { ActivityFeedMobile } from "@/components/dashboard/activity-feed-mobile";
 import { ExpiringSoonCard } from "@/components/dashboard/expiring-soon-card";
+import { DueMaintenanceCard } from "@/components/dashboard/due-maintenance-card";
 import { PawPrint } from "@/components/shared/paw-print";
 import { useShortcuts } from "@/lib/hooks/use-shortcuts";
 
@@ -407,6 +408,7 @@ export default function DashboardPage() {
         {/* Expiry & maintenance widgets */}
         <div className="grid gap-6 lg:grid-cols-2">
           {workspaceId && <ExpiringSoonCard workspaceId={workspaceId} />}
+          {workspaceId && <DueMaintenanceCard workspaceId={workspaceId} />}
         </div>
       </div>
 

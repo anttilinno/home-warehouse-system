@@ -22,6 +22,7 @@ import { itemsApi, inventoryApi } from "@/lib/api";
 import type { Item } from "@/lib/types/items";
 import type { Inventory } from "@/lib/types/inventory";
 import { DEFAULT_EXPIRY_WINDOW_DAYS, isExpiringWithin } from "@/lib/expiry";
+import { MaintenanceSchedulesCard } from "@/components/maintenance/maintenance-schedules-card";
 import type { ItemPhoto } from "@/lib/types/item-photo";
 import { cn } from "@/lib/utils";
 
@@ -462,6 +463,15 @@ export default function ItemDetailPage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Maintenance Schedules */}
+      {workspaceId && (
+        <MaintenanceSchedulesCard
+          workspaceId={workspaceId}
+          inventoryEntries={inventoryEntries}
+          canEdit={canEdit}
+        />
+      )}
     </div>
   );
 }

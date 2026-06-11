@@ -12,6 +12,10 @@ const (
 	// warranty expiry notifications.
 	TypeExpiryReminder = "expiry:reminder"
 
+	// TypeMaintenanceReminder is the task type for sending maintenance
+	// due/overdue notifications.
+	TypeMaintenanceReminder = "maintenance:reminder"
+
 	// TypeCleanupDeletedRecords is the task type for cleaning up old deleted records.
 	TypeCleanupDeletedRecords = "cleanup:deleted_records"
 

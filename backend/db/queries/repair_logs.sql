@@ -114,3 +114,13 @@ INSERT INTO warehouse.repair_logs (
 )
 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
 RETURNING *;
+
+-- name: CreateMaintenanceRepairLog :one
+-- Writes the completion record for a maintenance schedule: a repair log that
+-- is COMPLETED on creation (maintenance is logged when it is done, there is
+-- no pending/in-progress phase).
+INSERT INTO warehouse.repair_logs (
+    id, workspace_id, inventory_id, status, description, repair_date, notes, completed_at
+)
+VALUES ($1, $2, $3, 'COMPLETED', $4, $5, $6, now())
+RETURNING *;

@@ -27,6 +27,7 @@ const (
 	AuthNotificationTypeEnumSYSTEM          AuthNotificationTypeEnum = "SYSTEM"
 	AuthNotificationTypeEnumEXPIRYALERT     AuthNotificationTypeEnum = "EXPIRY_ALERT"
 	AuthNotificationTypeEnumWARRANTYALERT   AuthNotificationTypeEnum = "WARRANTY_ALERT"
+	AuthNotificationTypeEnumMAINTENANCEDUE  AuthNotificationTypeEnum = "MAINTENANCE_DUE"
 )
 
 func (e *AuthNotificationTypeEnum) Scan(src interface{}) error {
@@ -1149,6 +1150,24 @@ type WarehouseLocation struct {
 	SearchVector interface{}        `json:"search_vector"`
 	CreatedAt    pgtype.Timestamptz `json:"created_at"`
 	UpdatedAt    pgtype.Timestamptz `json:"updated_at"`
+}
+
+// Recurring maintenance cadences per inventory entry. Completion writes a repair_logs row and advances next_due.
+type WarehouseMaintenanceSchedule struct {
+	ID          uuid.UUID `json:"id"`
+	WorkspaceID uuid.UUID `json:"workspace_id"`
+	InventoryID uuid.UUID `json:"inventory_id"`
+	Title       string    `json:"title"`
+	Notes       *string   `json:"notes"`
+	// Cadence in days between maintenance occurrences. Must be positive.
+	IntervalDays int32 `json:"interval_days"`
+	// Date the next maintenance is due. Advanced on completion: max(today, next_due + interval_days).
+	NextDue pgtype.Date `json:"next_due"`
+	// Timestamp of the most recent completion. NULL until first completed.
+	LastCompletedAt pgtype.Timestamptz `json:"last_completed_at"`
+	IsActive        bool               `json:"is_active"`
+	CreatedAt       time.Time          `json:"created_at"`
+	UpdatedAt       time.Time          `json:"updated_at"`
 }
 
 type WarehousePendingChange struct {

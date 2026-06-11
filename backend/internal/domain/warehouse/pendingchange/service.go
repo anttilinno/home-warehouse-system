@@ -19,6 +19,7 @@ import (
 	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/label"
 	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/loan"
 	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/location"
+	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/maintenance"
 	"github.com/antti/home-warehouse/go-backend/internal/infra/events"
 	"github.com/antti/home-warehouse/go-backend/internal/infra/webpush"
 )
@@ -57,22 +58,23 @@ func (noopTransactor) WithTx(ctx context.Context, fn func(context.Context) error
 // repository directly. Delete carries no payload, so this does not affect payload
 // fidelity.
 type Service struct {
-	repo          Repository
-	memberRepo    member.Repository
-	userRepo      user.Repository
-	itemSvc       item.ServiceInterface
-	categorySvc   category.ServiceInterface
-	locationSvc   location.ServiceInterface
-	containerSvc  container.ServiceInterface
-	inventorySvc  inventory.ServiceInterface
-	inventoryRepo inventory.Repository
-	borrowerSvc   borrower.ServiceInterface
-	loanSvc       loan.ServiceInterface
-	loanRepo      loan.Repository
-	labelSvc      label.ServiceInterface
-	tx            Transactor
-	broadcaster   *events.Broadcaster
-	pushSender    *webpush.Sender
+	repo           Repository
+	memberRepo     member.Repository
+	userRepo       user.Repository
+	itemSvc        item.ServiceInterface
+	categorySvc    category.ServiceInterface
+	locationSvc    location.ServiceInterface
+	containerSvc   container.ServiceInterface
+	inventorySvc   inventory.ServiceInterface
+	inventoryRepo  inventory.Repository
+	borrowerSvc    borrower.ServiceInterface
+	loanSvc        loan.ServiceInterface
+	loanRepo       loan.Repository
+	labelSvc       label.ServiceInterface
+	maintenanceSvc maintenance.ServiceInterface
+	tx             Transactor
+	broadcaster    *events.Broadcaster
+	pushSender     *webpush.Sender
 }
 
 // NewService creates a new pending change service with all required dependencies.
@@ -98,6 +100,7 @@ func NewService(
 	loanSvc loan.ServiceInterface,
 	loanRepo loan.Repository,
 	labelSvc label.ServiceInterface,
+	maintenanceSvc maintenance.ServiceInterface,
 	tx Transactor,
 	broadcaster *events.Broadcaster,
 ) *Service {
@@ -105,21 +108,22 @@ func NewService(
 		tx = noopTransactor{}
 	}
 	return &Service{
-		repo:          repo,
-		memberRepo:    memberRepo,
-		userRepo:      userRepo,
-		itemSvc:       itemSvc,
-		categorySvc:   categorySvc,
-		locationSvc:   locationSvc,
-		containerSvc:  containerSvc,
-		inventorySvc:  inventorySvc,
-		inventoryRepo: inventoryRepo,
-		borrowerSvc:   borrowerSvc,
-		loanSvc:       loanSvc,
-		loanRepo:      loanRepo,
-		labelSvc:      labelSvc,
-		tx:            tx,
-		broadcaster:   broadcaster,
+		repo:           repo,
+		memberRepo:     memberRepo,
+		userRepo:       userRepo,
+		itemSvc:        itemSvc,
+		categorySvc:    categorySvc,
+		locationSvc:    locationSvc,
+		containerSvc:   containerSvc,
+		inventorySvc:   inventorySvc,
+		inventoryRepo:  inventoryRepo,
+		borrowerSvc:    borrowerSvc,
+		loanSvc:        loanSvc,
+		loanRepo:       loanRepo,
+		labelSvc:       labelSvc,
+		maintenanceSvc: maintenanceSvc,
+		tx:             tx,
+		broadcaster:    broadcaster,
 	}
 }
 
@@ -456,14 +460,15 @@ func (s *Service) canReviewChanges(ctx context.Context, userID uuid.UUID, worksp
 // atomically with their parent and therefore intentionally excluded.
 func (s *Service) isValidEntityType(entityType string) bool {
 	validTypes := map[string]bool{
-		"item":      true,
-		"category":  true,
-		"location":  true,
-		"container": true,
-		"inventory": true,
-		"borrower":  true,
-		"loan":      true,
-		"label":     true,
+		"item":        true,
+		"category":    true,
+		"location":    true,
+		"container":   true,
+		"inventory":   true,
+		"borrower":    true,
+		"loan":        true,
+		"label":       true,
+		"maintenance": true,
 	}
 	return validTypes[entityType]
 }
@@ -488,6 +493,8 @@ func (s *Service) applyChange(ctx context.Context, change *PendingChange) error 
 		return s.applyLoanChange(ctx, change)
 	case "label":
 		return s.applyLabelChange(ctx, change)
+	case "maintenance":
+		return s.applyMaintenanceChange(ctx, change)
 	default:
 		return ErrInvalidEntityType
 	}
@@ -1021,6 +1028,73 @@ func (s *Service) applyLabelChange(ctx context.Context, change *PendingChange) e
 		}
 		if err := s.labelSvc.Delete(ctx, *change.EntityID(), change.WorkspaceID()); err != nil {
 			return fmt.Errorf("failed to delete label: %w", err)
+		}
+
+	default:
+		return fmt.Errorf("unsupported action: %s", change.Action())
+	}
+
+	return nil
+}
+
+// applyMaintenanceChange applies changes to maintenance schedules through
+// maintenance.Service (create/update/delete), mirroring the other entity
+// appliers: the canonical service path validates the inventory reference and
+// the schedule invariants (positive interval, non-empty title).
+func (s *Service) applyMaintenanceChange(ctx context.Context, change *PendingChange) error {
+	switch change.Action() {
+	case ActionCreate:
+		var p struct {
+			InventoryID  uuid.UUID `json:"inventory_id"`
+			Title        string    `json:"title"`
+			Notes        *string   `json:"notes"`
+			IntervalDays int       `json:"interval_days"`
+			NextDue      time.Time `json:"next_due"`
+		}
+		if err := json.Unmarshal(change.Payload(), &p); err != nil {
+			return fmt.Errorf("failed to unmarshal maintenance payload: %w", err)
+		}
+		if _, err := s.maintenanceSvc.Create(ctx, maintenance.CreateInput{
+			WorkspaceID:  change.WorkspaceID(),
+			InventoryID:  p.InventoryID,
+			Title:        p.Title,
+			Notes:        p.Notes,
+			IntervalDays: p.IntervalDays,
+			NextDue:      p.NextDue,
+		}); err != nil {
+			return fmt.Errorf("failed to create maintenance schedule: %w", err)
+		}
+
+	case ActionUpdate:
+		if change.EntityID() == nil {
+			return fmt.Errorf("entity_id is required for update action")
+		}
+		var p struct {
+			Title        *string    `json:"title"`
+			Notes        *string    `json:"notes"`
+			IntervalDays *int       `json:"interval_days"`
+			NextDue      *time.Time `json:"next_due"`
+			IsActive     *bool      `json:"is_active"`
+		}
+		if err := json.Unmarshal(change.Payload(), &p); err != nil {
+			return fmt.Errorf("failed to unmarshal maintenance update payload: %w", err)
+		}
+		if _, err := s.maintenanceSvc.Update(ctx, *change.EntityID(), change.WorkspaceID(), maintenance.UpdateInput{
+			Title:        p.Title,
+			Notes:        p.Notes,
+			IntervalDays: p.IntervalDays,
+			NextDue:      p.NextDue,
+			IsActive:     p.IsActive,
+		}); err != nil {
+			return fmt.Errorf("failed to update maintenance schedule: %w", err)
+		}
+
+	case ActionDelete:
+		if change.EntityID() == nil {
+			return fmt.Errorf("entity_id is required for delete action")
+		}
+		if err := s.maintenanceSvc.Delete(ctx, *change.EntityID(), change.WorkspaceID()); err != nil {
+			return fmt.Errorf("failed to delete maintenance schedule: %w", err)
 		}
 
 	default:

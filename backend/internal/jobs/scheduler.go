@@ -99,6 +99,13 @@ func (s *Scheduler) RegisterHandlers(emailSender EmailSender, pushSender *webpus
 		return NewExpiryReminderScheduler(s.pool, s.client).ScheduleReminders(ctx)
 	})
 
+	// Maintenance reminder processor (same explicit ":schedule" pattern).
+	maintenanceProcessor := NewMaintenanceReminderProcessor(s.pool, pushSender)
+	mux.HandleFunc(TypeMaintenanceReminder, maintenanceProcessor.ProcessTask)
+	mux.HandleFunc(TypeMaintenanceReminder+":schedule", func(ctx context.Context, t *asynq.Task) error {
+		return NewMaintenanceReminderScheduler(s.pool, s.client).ScheduleReminders(ctx)
+	})
+
 	// Cleanup processor
 	cleanupProcessor := NewCleanupProcessor(s.pool, cleanupConfig)
 	mux.HandleFunc(TypeCleanupDeletedRecords, cleanupProcessor.ProcessDeletedRecordsCleanup)
@@ -148,6 +155,15 @@ func (s *Scheduler) RegisterScheduledTasks() error {
 		return err
 	}
 	log.Println("Registered scheduled task: expiry reminders (daily at 9 AM)")
+
+	// Schedule maintenance due/overdue reminders check daily at 9 AM
+	_, err = s.scheduler.Register("0 9 * * *", NewScheduleMaintenanceRemindersTask(),
+		asynq.Queue(QueueDefault),
+	)
+	if err != nil {
+		return err
+	}
+	log.Println("Registered scheduled task: maintenance reminders (daily at 9 AM)")
 
 	// Schedule deleted records cleanup weekly on Sunday at 3 AM
 	_, err = s.scheduler.Register("0 3 * * 0", NewCleanupDeletedRecordsTask(),
@@ -222,5 +238,12 @@ func (s *Scheduler) EnqueueRepairReminders() error {
 // This is useful for testing or manual triggering.
 func (s *Scheduler) EnqueueExpiryReminders() error {
 	scheduler := NewExpiryReminderScheduler(s.pool, s.client)
+	return scheduler.ScheduleReminders(context.Background())
+}
+
+// EnqueueMaintenanceReminders manually triggers maintenance reminder scheduling.
+// This is useful for testing or manual triggering.
+func (s *Scheduler) EnqueueMaintenanceReminders() error {
+	scheduler := NewMaintenanceReminderScheduler(s.pool, s.client)
 	return scheduler.ScheduleReminders(context.Background())
 }

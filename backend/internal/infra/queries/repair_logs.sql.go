@@ -71,6 +71,58 @@ func (q *Queries) CountRepairLogsByInventory(ctx context.Context, arg CountRepai
 	return column_1, err
 }
 
+const createMaintenanceRepairLog = `-- name: CreateMaintenanceRepairLog :one
+INSERT INTO warehouse.repair_logs (
+    id, workspace_id, inventory_id, status, description, repair_date, notes, completed_at
+)
+VALUES ($1, $2, $3, 'COMPLETED', $4, $5, $6, now())
+RETURNING id, workspace_id, inventory_id, status, description, repair_date, cost, currency_code, service_provider, completed_at, new_condition, notes, is_warranty_claim, reminder_date, reminder_sent, created_at, updated_at
+`
+
+type CreateMaintenanceRepairLogParams struct {
+	ID          uuid.UUID   `json:"id"`
+	WorkspaceID uuid.UUID   `json:"workspace_id"`
+	InventoryID uuid.UUID   `json:"inventory_id"`
+	Description string      `json:"description"`
+	RepairDate  pgtype.Date `json:"repair_date"`
+	Notes       *string     `json:"notes"`
+}
+
+// Writes the completion record for a maintenance schedule: a repair log that
+// is COMPLETED on creation (maintenance is logged when it is done, there is
+// no pending/in-progress phase).
+func (q *Queries) CreateMaintenanceRepairLog(ctx context.Context, arg CreateMaintenanceRepairLogParams) (WarehouseRepairLog, error) {
+	row := q.db.QueryRow(ctx, createMaintenanceRepairLog,
+		arg.ID,
+		arg.WorkspaceID,
+		arg.InventoryID,
+		arg.Description,
+		arg.RepairDate,
+		arg.Notes,
+	)
+	var i WarehouseRepairLog
+	err := row.Scan(
+		&i.ID,
+		&i.WorkspaceID,
+		&i.InventoryID,
+		&i.Status,
+		&i.Description,
+		&i.RepairDate,
+		&i.Cost,
+		&i.CurrencyCode,
+		&i.ServiceProvider,
+		&i.CompletedAt,
+		&i.NewCondition,
+		&i.Notes,
+		&i.IsWarrantyClaim,
+		&i.ReminderDate,
+		&i.ReminderSent,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
 const createRepairLog = `-- name: CreateRepairLog :one
 INSERT INTO warehouse.repair_logs (
     id, workspace_id, inventory_id, status, description,

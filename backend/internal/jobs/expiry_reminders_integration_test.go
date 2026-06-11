@@ -113,10 +113,10 @@ func TestListInventoryExpiringSoon_Integration(t *testing.T) {
 	now := time.Now()
 	inWindow := f.addInventory(t, "Milk", false, datePtr(now.AddDate(0, 0, 5)), nil, false)
 	atCutoff := f.addInventory(t, "Pills", false, datePtr(now.AddDate(0, 0, 30)), nil, false)
-	f.addInventory(t, "Canned Beans", false, datePtr(now.AddDate(0, 0, 60)), nil, false)  // outside window
-	f.addInventory(t, "Old Yogurt", false, datePtr(now.AddDate(0, 0, -2)), nil, false)    // already expired
-	f.addInventory(t, "No Expiry", false, nil, nil, false)                                // no date
-	f.addInventory(t, "Archived Milk", false, datePtr(now.AddDate(0, 0, 5)), nil, true)   // archived
+	f.addInventory(t, "Canned Beans", false, datePtr(now.AddDate(0, 0, 60)), nil, false)     // outside window
+	f.addInventory(t, "Old Yogurt", false, datePtr(now.AddDate(0, 0, -2)), nil, false)       // already expired
+	f.addInventory(t, "No Expiry", false, nil, nil, false)                                   // no date
+	f.addInventory(t, "Archived Milk", false, datePtr(now.AddDate(0, 0, 5)), nil, true)      // archived
 	other.addInventory(t, "Other WS Milk", false, datePtr(now.AddDate(0, 0, 5)), nil, false) // other workspace
 
 	cutoff := pgtype.Date{Time: now.AddDate(0, 0, 30), Valid: true}

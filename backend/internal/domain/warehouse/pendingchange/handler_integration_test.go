@@ -30,6 +30,7 @@ import (
 	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/label"
 	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/loan"
 	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/location"
+	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/maintenance"
 	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/movement"
 	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/pendingchange"
 	"github.com/antti/home-warehouse/go-backend/internal/infra/postgres"
@@ -152,6 +153,8 @@ func setupTestAPI(t *testing.T, pool *pgxpool.Pool) (huma.API, *pendingchange.Se
 	loanSvc := loan.NewService(loanRepo, inventoryRepo, nil)
 	labelSvc := label.NewService(labelRepo)
 	txManager := postgres.NewTxManager(pool)
+	maintenanceRepo := postgres.NewMaintenanceRepository(pool)
+	maintenanceSvc := maintenance.NewService(maintenanceRepo, inventoryRepo, txManager)
 
 	svc := pendingchange.NewService(
 		pendingChangeRepo,
@@ -167,6 +170,7 @@ func setupTestAPI(t *testing.T, pool *pgxpool.Pool) (huma.API, *pendingchange.Se
 		loanSvc,
 		loanRepo,
 		labelSvc,
+		maintenanceSvc,
 		txManager,
 		nil, // broadcaster
 	)

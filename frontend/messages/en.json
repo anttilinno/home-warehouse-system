@@ -150,6 +150,14 @@
       "warranty": "Warranty",
       "more": "+{count} more"
     },
+    "dueMaintenance": {
+      "title": "Due maintenance",
+      "description": "Maintenance due within {days} days or overdue",
+      "empty": "No maintenance due",
+      "due": "Due",
+      "overdue": "Overdue",
+      "more": "+{count} more"
+    },
     "activity": {
       "title": "Recent Activity",
       "description": "Latest changes in your inventory"
@@ -689,6 +697,48 @@
     "markRead": "Mark as read",
     "ariaLabel": "Notifications ({count} unread)"
   },
+  "maintenance": {
+    "title": "Maintenance Schedules",
+    "description": "Recurring maintenance for this item",
+    "add": "Add schedule",
+    "empty": "No maintenance schedules yet",
+    "noInventory": "Add an inventory entry first to schedule maintenance",
+    "nextDue": "Next due {date}",
+    "everyDays": "every {days} days",
+    "lastDone": "last done {date}",
+    "dueSoon": "Due soon",
+    "overdue": "Overdue",
+    "inactive": "Inactive",
+    "complete": "Complete",
+    "delete": "Delete schedule",
+    "cancel": "Cancel",
+    "createDialog": {
+      "title": "New maintenance schedule",
+      "description": "Set up a recurring maintenance task for this item",
+      "titleLabel": "Title",
+      "titlePlaceholder": "e.g. Replace HVAC filter",
+      "intervalLabel": "Repeat every (days)",
+      "nextDueLabel": "First due date",
+      "notesLabel": "Notes (optional)",
+      "submit": "Create schedule"
+    },
+    "completeDialog": {
+      "title": "Complete maintenance",
+      "description": "Mark “{title}” as done. A repair log entry is created and the next due date advances.",
+      "noteLabel": "Completion note (optional)",
+      "notePlaceholder": "What was done?",
+      "submit": "Mark as done"
+    },
+    "toasts": {
+      "created": "Maintenance schedule created",
+      "createFailed": "Failed to create maintenance schedule",
+      "completed": "Maintenance completed",
+      "completeFailed": "Failed to complete maintenance",
+      "deleted": "Maintenance schedule deleted",
+      "deleteFailed": "Failed to delete maintenance schedule",
+      "invalidInterval": "Interval must be a positive number of days"
+    }
+  },
   "settings": {
     "title": "Settings",
     "description": "Manage your workspace and account settings",
@@ -821,6 +871,8 @@
         "inventoryDescription": "Low stock alerts and repair reminders",
         "expiry_alerts": "Expiry & warranty",
         "expiry_alertsDescription": "Expiration date and warranty expiry alerts",
+        "maintenance_alerts": "Maintenance",
+        "maintenance_alertsDescription": "Due and overdue maintenance reminders",
         "workspace": "Workspace",
         "workspaceDescription": "Invitations and member activity",
         "system": "System",

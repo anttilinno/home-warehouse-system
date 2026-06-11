@@ -18,6 +18,7 @@ const (
 	TypeRepairReminder  NotificationType = "REPAIR_REMINDER"
 	TypeExpiryAlert     NotificationType = "EXPIRY_ALERT"
 	TypeWarrantyAlert   NotificationType = "WARRANTY_ALERT"
+	TypeMaintenanceDue  NotificationType = "MAINTENANCE_DUE"
 	TypeLowStock        NotificationType = "LOW_STOCK"
 	TypeWorkspaceInvite NotificationType = "WORKSPACE_INVITE"
 	TypeMemberJoined    NotificationType = "MEMBER_JOINED"

@@ -47,8 +47,8 @@ type PendingChangeCreator interface {
 //  6. Returns 202 Accepted with pending change details
 //
 // Gated entity types: item, category, location, container, inventory, borrower,
-// loan, label. These are the first-class, member-mutable resources routed through
-// approval.
+// loan, label, maintenance. These are the first-class, member-mutable resources
+// routed through approval.
 //
 // Some member-mutable endpoints are DELIBERATELY EXCLUDED from approval (photos,
 // attachments, repair logs/photos/attachments, movements, favorites, activity).
@@ -166,6 +166,7 @@ func extractAction(method string) string {
 //   - /workspaces/{workspace_id}/borrowers[/{id}]
 //   - /workspaces/{workspace_id}/loans[/{id}]
 //   - /workspaces/{workspace_id}/labels[/{id}]
+//   - /workspaces/{workspace_id}/maintenance[/{id}]
 //
 // Returns the singular form (e.g., "item" for "/items") or empty string if the
 // entity type is not gated. Returning "" for an un-gated type means the request
@@ -205,6 +206,8 @@ func extractEntityType(r *http.Request) string {
 		return "loan"
 	case "labels":
 		return "label"
+	case "maintenance":
+		return "maintenance"
 	default:
 		return "" // Unsupported entity type
 	}
