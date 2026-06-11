@@ -17,6 +17,10 @@
 - [~] **v2.2 Scanning & Stabilization** — Phases 64-66 (abandoned 2026-04-30; frontend2 wiped before completion)
 - [ ] **v3.0 Premium-Terminal Frontend** — Phases 1-17 (planning, 2026-04-30; numbering reset since v2.2 wiped)
 - [ ] **Backlog — DMS Migration: Docspell → Paperless-ngx** — unscheduled; repoint the stub Docspell integration (schema-only, no client) to Paperless-ngx, the DMS running in the homelab. Schema rename + settings reshape + fresh Paperless API client + drop the compose Docspell trio. Full task breakdown in `docs/ROADMAP.md` § "DMS Migration".
+- [ ] **Backlog — Expiry & Warranty Alerting** — unscheduled; `inventory.warranty_expires`/`expiration_date` are captured but no job consumes them — new asynq reminder job (loan_reminders pattern) + notifications + "expiring soon" widget/filter. Cheapest high-value win. Breakdown in `docs/ROADMAP.md` § "Expiry & Warranty Alerting".
+- [ ] **Backlog — Recurring Maintenance Schedules** — unscheduled; proactive counterpart to repair logs: `maintenance_schedules` table (interval + next_due), due-reminder job, complete-action writes a repair_log and advances next_due in one tx. Breakdown in `docs/ROADMAP.md` § "Recurring Maintenance Schedules".
+- [ ] **Backlog — Shortlink Registry (s.go hardening)** — unscheduled; resolver + claim wizard already shipped — replace the 3-table per-workspace `short_code` scan with a global `warehouse.short_codes` registry (one PK lookup, collisions impossible; audit B5). Backfill with collision policy, then drop per-table indexes. Breakdown in `docs/ROADMAP.md` § "Shortlink Registry".
+- [ ] **Backlog — Wishlist / Purchase Planning** — unscheduled; new `wishlist_items` entity (wanted/ordered/acquired) with acquire-flow handoff into the prefilled item create wizard. Breakdown in `docs/ROADMAP.md` § "Wishlist / Purchase Planning".
 
 ## Phases
 

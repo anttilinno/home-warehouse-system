@@ -253,6 +253,101 @@ maintained, and has a simpler REST API (token auth, `/api/documents/`).
 - [ ] **Remove Docspell trio from `docker-compose.yml`** (restserver, joex, docspell-postgres) once the client lands
 - [ ] **UI**: rename "Docspell" settings/labels → "Paperless"; point deep links at `paperless.k3s.lan`
 
+## Expiry & Warranty Alerting
+
+The data is already captured but nothing consumes it: `inventory.warranty_expires`
+and `inventory.expiration_date` (DATE) are read/written by the inventory CRUD,
+items carry `lifetime_warranty`/`warranty_details` — yet the reminder jobs cover
+only loans and repairs. Food/medicine/batteries expire and warranties lapse
+silently. Cheapest high-value win in the backlog: one more asynq job reusing the
+existing reminder + notification + web-push infrastructure.
+
+- [ ] **Queries** — `ListInventoryExpiringSoon` / `ListWarrantiesExpiringSoon`
+  (windows: 30/7/1 days; skip `lifetime_warranty = true`; workspace-scoped)
+- [ ] **Asynq job** — `expiry_reminders.go` following `internal/jobs/loan_reminders.go`
+  pattern (scheduler entry, MaxRetry/Timeout, per-workspace iteration)
+- [ ] **Dedupe** — one notification per inventory row per window (job-state row or
+  notification-exists check), same approach loan reminders use
+- [ ] **Notifications** — in-app + web push via existing senders; add
+  `expiry_alerts` toggle to `users.notification_preferences` jsonb + settings UI
+- [ ] **Frontend** — "Expiring soon" dashboard widget + inventory filter
+  (`expiring_within=30d`), badge on item detail; i18n keys (en/et/ru)
+- [ ] **Tests** — job unit tests with table-driven windows; integration test for the
+  expiring-soon queries
+
+## Recurring Maintenance Schedules
+
+Repair logs are reactive only — nothing models "HVAC filter every 3 months,
+smoke-detector batteries yearly". Add schedules that feed the existing reminder
+pipeline and write back into repair logs when completed.
+
+- [ ] **Schema** (new migration) — `warehouse.maintenance_schedules`:
+  `id uuidv7 PK`, `workspace_id`, `inventory_id` (composite FK per the 005 tenancy
+  pattern), `title`, `notes`, `interval_days int CHECK (> 0)`, `next_due date`,
+  `last_completed_at`, `is_active bool`; index `(workspace_id, next_due)`
+- [ ] **Domain** — `internal/domain/warehouse/maintenance` (entity/service/handler/repo,
+  standard layout); CRUD endpoints on the workspace tree; approval-pipeline entity
+  registration if mutating via members
+- [ ] **Complete action** — `POST .../maintenance/{id}/complete`: creates a
+  `repair_logs` row (type maintenance), sets `last_completed_at`, advances
+  `next_due += interval_days` — in one transaction (TxManager pattern from loans)
+- [ ] **Asynq job** — due/overdue reminders; share the dedupe + notification approach
+  with expiry alerting above
+- [ ] **Frontend** — schedule list on item detail, "Due maintenance" dashboard
+  widget, complete-with-note dialog; i18n keys
+- [ ] **Tests** — next_due advancement (incl. overdue catch-up semantics — decide:
+  from due date or from completion date), tx rollback test
+
+## Shortlink Registry (s.go hardening)
+
+The resolver itself already shipped: `GET /r/{code}` (router.go:350) validates the
+cookie, scans the user's workspaces, 302s to the entity page, falls back to the
+claim wizard (`/dashboard/claim/{code}`) on miss/multi-match. Remaining work is the
+storage model: codes live as `short_code` columns on three tables with per-workspace
+uniqueness only, so resolution scans 3 tables × N workspaces and the same code can
+exist in several workspaces (that's why the multi-match path exists at all).
+A global registry makes resolve one PK lookup and collisions impossible
+(audit `docs/audit/DATABASE-SCHEMA.md` § B5).
+
+- [ ] **Migration** — `warehouse.short_codes` registry:
+  `code text PK CHECK (code ~ '^[A-Za-z0-9]{4,12}$')`, `workspace_id`,
+  `entity_type`, `entity_id`, `UNIQUE (workspace_id, entity_type, entity_id)`;
+  backfill from items/locations/containers `short_code` columns — **collision
+  policy**: on duplicate code across workspaces, oldest row keeps it, newer rows
+  get regenerated codes (log + `needs_review` flag where applicable)
+- [ ] **Write path** — entity create/update maintains the registry row (same tx);
+  code generation checks the registry, not the per-table index
+- [ ] **Resolver** — point `shortlink.Resolver` at the registry (one lookup +
+  membership check); multi-match branch becomes dead → remove after backfill
+  verified
+- [ ] **Deprecate per-table columns** — keep `short_code` columns as denormalized
+  display values initially; drop the 3 per-table unique constraints + global
+  `ix_*_short_code` indexes once the registry is authoritative
+- [ ] **Tests** — backfill collision test, registry uniqueness, resolver redirect
+  matrix (hit / miss→claim / foreign-workspace→claim)
+
+## Wishlist / Purchase Planning
+
+Favorites cover items you own; nothing models items you intend to acquire.
+Lightweight new entity that converts into a real item on purchase (the item create
+wizard already supports prefill via query params — quick task 260607-vdf).
+
+- [ ] **Schema** (new migration) — `warehouse.wishlist_items`:
+  `id uuidv7 PK`, `workspace_id`, `name`, `notes`, `url`, `price_estimate int`
+  (cents, `CHECK >= 0`), `currency_code CHECK ('^[A-Z]{3}$')`, `priority smallint`,
+  `desired_category_id` (composite FK, SET NULL), `status CHECK (IN
+  ('wanted','ordered','acquired'))`, `created_by → users SET NULL`, timestamps;
+  index `(workspace_id, status, priority)`
+- [ ] **Domain** — `internal/domain/warehouse/wishlist` (standard layout), CRUD +
+  status transitions; approval-pipeline registration
+- [ ] **Acquire flow** — "Mark acquired" → redirect to item create wizard prefilled
+  (name, category, price as purchase_price, url into notes); on item creation link
+  back (optional `acquired_item_id` column) and close the wishlist row
+- [ ] **Frontend** — wishlist page (list + status filter + priority sort), nav entry,
+  add-to-wishlist quick action; i18n keys (en/et/ru)
+- [ ] **Out of scope for v1** — price tracking/scraping, shared gift lists, per-user
+  (vs per-workspace) wishlists
+
 ## Phase 4: AI & Advanced Features
 
 - [ ] MCP server for AI integration
