@@ -642,6 +642,7 @@ func (tm *testMocks) service() *Service {
 		tm.loanRepo,
 		tm.labelSvc,
 		nil, // maintenance service: not exercised by these unit tests
+		nil, // wishlist service: not exercised by these unit tests
 		nil, // Transactor: nil -> noopTransactor (synchronous, no real tx in unit tests)
 		nil, // broadcaster
 	)

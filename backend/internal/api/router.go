@@ -54,6 +54,7 @@ import (
 	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/repairattachment"
 	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/repairlog"
 	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/repairphoto"
+	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/wishlist"
 	infraEvents "github.com/antti/home-warehouse/go-backend/internal/infra/events"
 	"github.com/antti/home-warehouse/go-backend/internal/infra/imageprocessor"
 	"github.com/antti/home-warehouse/go-backend/internal/infra/postgres"
@@ -158,6 +159,7 @@ func NewRouter(pool *pgxpool.Pool, cfg *config.Config) chi.Router {
 	loanRepo := postgres.NewLoanRepository(pool)
 	repairLogRepo := postgres.NewRepairLogRepository(pool)
 	maintenanceRepo := postgres.NewMaintenanceRepository(pool)
+	wishlistRepo := postgres.NewWishlistRepository(pool)
 	// Phase 5 repositories
 	fileRepo := postgres.NewFileRepository(pool)
 	attachmentRepo := postgres.NewAttachmentRepository(pool)
@@ -229,6 +231,7 @@ func NewRouter(pool *pgxpool.Pool, cfg *config.Config) chi.Router {
 	loanSvc := loan.NewService(loanRepo, inventoryRepo, txManager)
 	repairLogSvc := repairlog.NewService(repairLogRepo, inventoryRepo)
 	maintenanceSvc := maintenance.NewService(maintenanceRepo, inventoryRepo, txManager)
+	wishlistSvc := wishlist.NewService(wishlistRepo, categoryRepo, itemRepo)
 	repairPhotoSvc := repairphoto.NewService(repairPhotoRepo, photoStorage, imageProcessor, uploadDir)
 	repairAttachmentSvc := repairattachment.NewService(repairAttachmentRepo, fileRepo)
 	// Declutter service
@@ -264,6 +267,7 @@ func NewRouter(pool *pgxpool.Pool, cfg *config.Config) chi.Router {
 		loanRepo,
 		labelSvc,
 		maintenanceSvc,
+		wishlistSvc,
 		txManager,
 		broadcaster,
 	)
@@ -468,6 +472,7 @@ func NewRouter(pool *pgxpool.Pool, cfg *config.Config) chi.Router {
 			// Register repair log routes
 			repairlog.RegisterRoutes(wsAPI, repairLogSvc, broadcaster)
 			maintenance.RegisterRoutes(wsAPI, maintenanceSvc, broadcaster)
+			wishlist.RegisterRoutes(wsAPI, wishlistSvc, broadcaster)
 
 			// Register repair photo routes
 			repairPhotoURLGenerator := func(workspaceID, repairLogID, photoID uuid.UUID, isThumbnail bool) string {

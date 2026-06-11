@@ -33,6 +33,7 @@ import (
 	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/maintenance"
 	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/movement"
 	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/pendingchange"
+	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/wishlist"
 	"github.com/antti/home-warehouse/go-backend/internal/infra/postgres"
 )
 
@@ -155,6 +156,8 @@ func setupTestAPI(t *testing.T, pool *pgxpool.Pool) (huma.API, *pendingchange.Se
 	txManager := postgres.NewTxManager(pool)
 	maintenanceRepo := postgres.NewMaintenanceRepository(pool)
 	maintenanceSvc := maintenance.NewService(maintenanceRepo, inventoryRepo, txManager)
+	wishlistRepo := postgres.NewWishlistRepository(pool)
+	wishlistSvc := wishlist.NewService(wishlistRepo, categoryRepo, itemRepo)
 
 	svc := pendingchange.NewService(
 		pendingChangeRepo,
@@ -171,6 +174,7 @@ func setupTestAPI(t *testing.T, pool *pgxpool.Pool) (huma.API, *pendingchange.Se
 		loanRepo,
 		labelSvc,
 		maintenanceSvc,
+		wishlistSvc,
 		txManager,
 		nil, // broadcaster
 	)

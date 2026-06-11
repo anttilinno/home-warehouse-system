@@ -1258,3 +1258,25 @@ type WarehouseVArchivedRecord struct {
 	Name        string             `json:"name"`
 	ArchivedAt  pgtype.Timestamptz `json:"archived_at"`
 }
+
+// Purchase-planning entries: items the workspace intends to acquire. Converted into a real item on purchase (acquired_item_id links back).
+type WarehouseWishlistItem struct {
+	ID          uuid.UUID `json:"id"`
+	WorkspaceID uuid.UUID `json:"workspace_id"`
+	Name        string    `json:"name"`
+	Notes       *string   `json:"notes"`
+	Url         *string   `json:"url"`
+	// Estimated price in cents. NULL = unknown.
+	PriceEstimate *int32  `json:"price_estimate"`
+	CurrencyCode  *string `json:"currency_code"`
+	// Purchase priority 1 (highest) to 5 (lowest).
+	Priority          int16       `json:"priority"`
+	DesiredCategoryID pgtype.UUID `json:"desired_category_id"`
+	// Lifecycle: wanted -> ordered -> acquired (wanted <-> ordered may go backward; acquired is terminal).
+	Status string `json:"status"`
+	// The warehouse.items row created when this wish was acquired. Set by the acquire flow.
+	AcquiredItemID pgtype.UUID `json:"acquired_item_id"`
+	CreatedBy      pgtype.UUID `json:"created_by"`
+	CreatedAt      time.Time   `json:"created_at"`
+	UpdatedAt      time.Time   `json:"updated_at"`
+}

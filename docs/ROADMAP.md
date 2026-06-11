@@ -332,20 +332,20 @@ Favorites cover items you own; nothing models items you intend to acquire.
 Lightweight new entity that converts into a real item on purchase (the item create
 wizard already supports prefill via query params — quick task 260607-vdf).
 
-- [ ] **Schema** (new migration) — `warehouse.wishlist_items`:
+- [x] **Schema** (new migration) — `warehouse.wishlist_items`:
   `id uuidv7 PK`, `workspace_id`, `name`, `notes`, `url`, `price_estimate int`
   (cents, `CHECK >= 0`), `currency_code CHECK ('^[A-Z]{3}$')`, `priority smallint`,
   `desired_category_id` (composite FK, SET NULL), `status CHECK (IN
   ('wanted','ordered','acquired'))`, `created_by → users SET NULL`, timestamps;
-  index `(workspace_id, status, priority)`
-- [ ] **Domain** — `internal/domain/warehouse/wishlist` (standard layout), CRUD +
+  index `(workspace_id, status, priority)` (migration 004)
+- [x] **Domain** — `internal/domain/warehouse/wishlist` (standard layout), CRUD +
   status transitions; approval-pipeline registration
-- [ ] **Acquire flow** — "Mark acquired" → redirect to item create wizard prefilled
-  (name, category, price as purchase_price, url into notes); on item creation link
-  back (optional `acquired_item_id` column) and close the wishlist row
-- [ ] **Frontend** — wishlist page (list + status filter + priority sort), nav entry,
+- [x] **Acquire flow** — "Mark acquired" → redirect to item create wizard prefilled
+  (name, category, notes + url + price estimate into description); on item creation
+  link back (`acquired_item_id` column) and close the wishlist row
+- [x] **Frontend** — wishlist page (list + status filter + priority sort), nav entry,
   add-to-wishlist quick action; i18n keys (en/et/ru)
-- [ ] **Out of scope for v1** — price tracking/scraping, shared gift lists, per-user
+- [x] **Out of scope for v1** — price tracking/scraping, shared gift lists, per-user
   (vs per-workspace) wishlists
 
 ## Phase 4: AI & Advanced Features

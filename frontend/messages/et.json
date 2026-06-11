@@ -100,6 +100,7 @@
       "borrowers": "Laenajad",
       "analytics": "Analüütika",
       "declutter": "Korrastus",
+      "wishlist": "Soovinimekiri",
       "outOfStock": "Otsas",
       "inventory": "Inventar",
       "imports": "Import",
@@ -1110,6 +1111,82 @@
       "exportSuccess": "Korrastuse nimekiri eksporditud"
     }
   },
+  "wishlist": {
+    "title": "Soovinimekiri",
+    "description": "Asjad, mida plaanid soetada — ostes muutuvad päris esemeteks",
+    "filter": {
+      "all": "Kõik"
+    },
+    "status": {
+      "wanted": "Soovitud",
+      "ordered": "Tellitud",
+      "acquired": "Soetatud"
+    },
+    "table": {
+      "name": "Nimi",
+      "priority": "Prioriteet",
+      "price": "Hinnang",
+      "status": "Staatus",
+      "actions": "Tegevused",
+      "openUrl": "Ava tootelink"
+    },
+    "actions": {
+      "add": "Lisa soovinimekirja",
+      "markAcquired": "Märgi soetatuks",
+      "markOrdered": "Märgi tellituks",
+      "backToWanted": "Tagasi soovituks",
+      "edit": "Muuda",
+      "delete": "Kustuta"
+    },
+    "emptyState": {
+      "title": "Soovinimekiri on tühi",
+      "description": "Lisa asju, mida plaanid osta — soetatuks märkimine loob soovist eeltäidetud päris eseme"
+    },
+    "acquire": {
+      "estimatedPrice": "Hinnanguline hind"
+    },
+    "loadMore": "Lae rohkem ({shown}/{total})",
+    "loadingMore": "Laadimine...",
+    "toasts": {
+      "loadFailed": "Soovinimekirja laadimine ebaõnnestus",
+      "wanted": "Tagasi soovituks märgitud",
+      "ordered": "Tellituks märgitud",
+      "acquired": "Soetatuks märgitud",
+      "updateFailed": "Soovi uuendamine ebaõnnestus",
+      "deleted": "Soov kustutatud",
+      "deleteFailed": "Soovi kustutamine ebaõnnestus"
+    },
+    "dialog": {
+      "createTitle": "Lisa soovinimekirja",
+      "editTitle": "Muuda soovi",
+      "description": "Jälgi midagi, mida plaanid soetada",
+      "nameLabel": "Nimi",
+      "namePlaceholder": "nt akutrell",
+      "urlLabel": "Tootelink (valikuline)",
+      "priceLabel": "Hinnanguline hind (valikuline)",
+      "currencyLabel": "Valuuta",
+      "priorityLabel": "Prioriteet",
+      "categoryLabel": "Kategooria (valikuline)",
+      "noCategory": "Kategooria puudub",
+      "notesLabel": "Märkmed (valikuline)",
+      "notesPlaceholder": "Mudel, suurus, kust osta...",
+      "priorities": {
+        "p1": "1 — Hädavajalik",
+        "p2": "2 — Kõrge",
+        "p3": "3 — Keskmine",
+        "p4": "4 — Madal",
+        "p5": "5 — Kunagi"
+      },
+      "cancel": "Tühista",
+      "create": "Lisa",
+      "save": "Salvesta",
+      "toasts": {
+        "created": "Soovinimekirja lisatud",
+        "updated": "Soov uuendatud",
+        "saveFailed": "Soovi salvestamine ebaõnnestus"
+      }
+    }
+  },
   "scanner": {
     "title": "Skaneeri",
     "description": "Skaneeri vöötkoode ja QR-koode esemete leidmiseks",
@@ -1277,7 +1354,8 @@
       "success": "Ese edukalt loodud",
       "errors": {
         "noWorkspace": "Tööruum pole valitud",
-        "createFailed": "Eseme loomine ebaõnnestus"
+        "createFailed": "Eseme loomine ebaõnnestus",
+        "wishlistLinkFailed": "Ese loodi, kuid soovinimekirjaga sidumine ebaõnnestus"
       }
     },
     "edit": {

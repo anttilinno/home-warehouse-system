@@ -20,6 +20,7 @@ import (
 	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/loan"
 	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/location"
 	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/maintenance"
+	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/wishlist"
 	"github.com/antti/home-warehouse/go-backend/internal/infra/events"
 	"github.com/antti/home-warehouse/go-backend/internal/infra/webpush"
 )
@@ -72,6 +73,7 @@ type Service struct {
 	loanRepo       loan.Repository
 	labelSvc       label.ServiceInterface
 	maintenanceSvc maintenance.ServiceInterface
+	wishlistSvc    wishlist.ServiceInterface
 	tx             Transactor
 	broadcaster    *events.Broadcaster
 	pushSender     *webpush.Sender
@@ -101,6 +103,7 @@ func NewService(
 	loanRepo loan.Repository,
 	labelSvc label.ServiceInterface,
 	maintenanceSvc maintenance.ServiceInterface,
+	wishlistSvc wishlist.ServiceInterface,
 	tx Transactor,
 	broadcaster *events.Broadcaster,
 ) *Service {
@@ -122,6 +125,7 @@ func NewService(
 		loanRepo:       loanRepo,
 		labelSvc:       labelSvc,
 		maintenanceSvc: maintenanceSvc,
+		wishlistSvc:    wishlistSvc,
 		tx:             tx,
 		broadcaster:    broadcaster,
 	}
@@ -469,6 +473,7 @@ func (s *Service) isValidEntityType(entityType string) bool {
 		"loan":        true,
 		"label":       true,
 		"maintenance": true,
+		"wishlist":    true,
 	}
 	return validTypes[entityType]
 }
@@ -495,6 +500,8 @@ func (s *Service) applyChange(ctx context.Context, change *PendingChange) error 
 		return s.applyLabelChange(ctx, change)
 	case "maintenance":
 		return s.applyMaintenanceChange(ctx, change)
+	case "wishlist":
+		return s.applyWishlistChange(ctx, change)
 	default:
 		return ErrInvalidEntityType
 	}
@@ -1095,6 +1102,97 @@ func (s *Service) applyMaintenanceChange(ctx context.Context, change *PendingCha
 		}
 		if err := s.maintenanceSvc.Delete(ctx, *change.EntityID(), change.WorkspaceID()); err != nil {
 			return fmt.Errorf("failed to delete maintenance schedule: %w", err)
+		}
+
+	default:
+		return fmt.Errorf("unsupported action: %s", change.Action())
+	}
+
+	return nil
+}
+
+// applyWishlistChange applies changes to wishlist items through
+// wishlist.Service (create/update/delete), mirroring the other entity
+// appliers: the canonical service path validates the category/item references
+// and the wishlist invariants (non-empty name, priority bounds, status
+// transitions — including the acquired close-out carried by an update).
+func (s *Service) applyWishlistChange(ctx context.Context, change *PendingChange) error {
+	switch change.Action() {
+	case ActionCreate:
+		var p struct {
+			Name              string     `json:"name"`
+			Notes             *string    `json:"notes"`
+			URL               *string    `json:"url"`
+			PriceEstimate     *int       `json:"price_estimate"`
+			CurrencyCode      *string    `json:"currency_code"`
+			Priority          *int       `json:"priority"`
+			DesiredCategoryID *uuid.UUID `json:"desired_category_id"`
+		}
+		if err := json.Unmarshal(change.Payload(), &p); err != nil {
+			return fmt.Errorf("failed to unmarshal wishlist payload: %w", err)
+		}
+		priority := wishlist.PriorityDefault
+		if p.Priority != nil {
+			priority = *p.Priority
+		}
+		requesterID := change.RequesterID()
+		if _, err := s.wishlistSvc.Create(ctx, wishlist.CreateInput{
+			WorkspaceID:       change.WorkspaceID(),
+			Name:              p.Name,
+			Notes:             p.Notes,
+			URL:               p.URL,
+			PriceEstimate:     p.PriceEstimate,
+			CurrencyCode:      p.CurrencyCode,
+			Priority:          priority,
+			DesiredCategoryID: p.DesiredCategoryID,
+			CreatedBy:         &requesterID,
+		}); err != nil {
+			return fmt.Errorf("failed to create wishlist item: %w", err)
+		}
+
+	case ActionUpdate:
+		if change.EntityID() == nil {
+			return fmt.Errorf("entity_id is required for update action")
+		}
+		var p struct {
+			Name              *string    `json:"name"`
+			Notes             *string    `json:"notes"`
+			URL               *string    `json:"url"`
+			PriceEstimate     *int       `json:"price_estimate"`
+			CurrencyCode      *string    `json:"currency_code"`
+			Priority          *int       `json:"priority"`
+			DesiredCategoryID *uuid.UUID `json:"desired_category_id"`
+			Status            *string    `json:"status"`
+			AcquiredItemID    *uuid.UUID `json:"acquired_item_id"`
+		}
+		if err := json.Unmarshal(change.Payload(), &p); err != nil {
+			return fmt.Errorf("failed to unmarshal wishlist update payload: %w", err)
+		}
+		var status *wishlist.Status
+		if p.Status != nil {
+			st := wishlist.Status(*p.Status)
+			status = &st
+		}
+		if _, err := s.wishlistSvc.Update(ctx, *change.EntityID(), change.WorkspaceID(), wishlist.UpdateInput{
+			Name:              p.Name,
+			Notes:             p.Notes,
+			URL:               p.URL,
+			PriceEstimate:     p.PriceEstimate,
+			CurrencyCode:      p.CurrencyCode,
+			Priority:          p.Priority,
+			DesiredCategoryID: p.DesiredCategoryID,
+			Status:            status,
+			AcquiredItemID:    p.AcquiredItemID,
+		}); err != nil {
+			return fmt.Errorf("failed to update wishlist item: %w", err)
+		}
+
+	case ActionDelete:
+		if change.EntityID() == nil {
+			return fmt.Errorf("entity_id is required for delete action")
+		}
+		if err := s.wishlistSvc.Delete(ctx, *change.EntityID(), change.WorkspaceID()); err != nil {
+			return fmt.Errorf("failed to delete wishlist item: %w", err)
 		}
 
 	default:

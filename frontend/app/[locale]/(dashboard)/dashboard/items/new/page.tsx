@@ -24,6 +24,18 @@ export default function NewItemPage() {
   const barcode = searchParams.get("barcode")?.trim();
   if (barcode) initialValues.barcode = barcode;
 
+  // Prefill from the wishlist acquire flow:
+  //   /dashboard/items/new?name=...&category_id=...&description=...&wishlist_id=...
+  // After the item is created the wizard PATCHes the wishlist row with
+  // acquired_item_id (status -> acquired), closing it.
+  const name = searchParams.get("name")?.trim();
+  if (name) initialValues.name = name;
+  const categoryId = searchParams.get("category_id")?.trim();
+  if (categoryId) initialValues.category_id = categoryId;
+  const description = searchParams.get("description")?.trim();
+  if (description) initialValues.description = description;
+  const wishlistId = searchParams.get("wishlist_id")?.trim();
+
   return (
     <div className="space-y-6 pb-20">
       {/* Header */}
@@ -45,7 +57,7 @@ export default function NewItemPage() {
       </div>
 
       {/* Wizard */}
-      <CreateItemWizard initialValues={initialValues} />
+      <CreateItemWizard initialValues={initialValues} wishlistId={wishlistId || undefined} />
     </div>
   );
 }

@@ -100,6 +100,7 @@
       "borrowers": "Borrowers",
       "analytics": "Analytics",
       "declutter": "Declutter",
+      "wishlist": "Wishlist",
       "outOfStock": "Out of Stock",
       "inventory": "Inventory",
       "imports": "Imports",
@@ -1110,6 +1111,82 @@
       "exportSuccess": "Declutter list exported"
     }
   },
+  "wishlist": {
+    "title": "Wishlist",
+    "description": "Things you plan to acquire — turned into real items on purchase",
+    "filter": {
+      "all": "All"
+    },
+    "status": {
+      "wanted": "Wanted",
+      "ordered": "Ordered",
+      "acquired": "Acquired"
+    },
+    "table": {
+      "name": "Name",
+      "priority": "Priority",
+      "price": "Est. price",
+      "status": "Status",
+      "actions": "Actions",
+      "openUrl": "Open product link"
+    },
+    "actions": {
+      "add": "Add to wishlist",
+      "markAcquired": "Mark acquired",
+      "markOrdered": "Mark ordered",
+      "backToWanted": "Back to wanted",
+      "edit": "Edit",
+      "delete": "Delete"
+    },
+    "emptyState": {
+      "title": "Your wishlist is empty",
+      "description": "Add things you plan to buy — marking them acquired creates a real item prefilled from the wish"
+    },
+    "acquire": {
+      "estimatedPrice": "Estimated price"
+    },
+    "loadMore": "Load more ({shown}/{total})",
+    "loadingMore": "Loading...",
+    "toasts": {
+      "loadFailed": "Failed to load wishlist",
+      "wanted": "Moved back to wanted",
+      "ordered": "Marked as ordered",
+      "acquired": "Marked as acquired",
+      "updateFailed": "Failed to update wishlist item",
+      "deleted": "Wishlist item deleted",
+      "deleteFailed": "Failed to delete wishlist item"
+    },
+    "dialog": {
+      "createTitle": "Add to wishlist",
+      "editTitle": "Edit wishlist item",
+      "description": "Track something you plan to acquire",
+      "nameLabel": "Name",
+      "namePlaceholder": "e.g. Cordless drill",
+      "urlLabel": "Product link (optional)",
+      "priceLabel": "Estimated price (optional)",
+      "currencyLabel": "Currency",
+      "priorityLabel": "Priority",
+      "categoryLabel": "Category (optional)",
+      "noCategory": "No category",
+      "notesLabel": "Notes (optional)",
+      "notesPlaceholder": "Model, size, where to buy...",
+      "priorities": {
+        "p1": "1 — Must have",
+        "p2": "2 — High",
+        "p3": "3 — Medium",
+        "p4": "4 — Low",
+        "p5": "5 — Someday"
+      },
+      "cancel": "Cancel",
+      "create": "Add",
+      "save": "Save",
+      "toasts": {
+        "created": "Added to wishlist",
+        "updated": "Wishlist item updated",
+        "saveFailed": "Failed to save wishlist item"
+      }
+    }
+  },
   "scanner": {
     "title": "Scan",
     "description": "Scan barcodes and QR codes to find items",
@@ -1277,7 +1354,8 @@
       "success": "Item created successfully",
       "errors": {
         "noWorkspace": "No workspace selected",
-        "createFailed": "Failed to create item"
+        "createFailed": "Failed to create item",
+        "wishlistLinkFailed": "Item created, but linking it back to the wishlist failed"
       }
     },
     "edit": {

@@ -26,9 +26,15 @@ export interface CreateItemWizardProps {
    * saved draft still overrides these — acceptable for the fresh-create claim flow.
    */
   initialValues?: Partial<CreateItemFormData>;
+  /**
+   * Wishlist row this item is being created from (acquire flow). After the
+   * item is created the row is PATCHed with acquired_item_id — transitioning
+   * it to acquired and closing it.
+   */
+  wishlistId?: string;
 }
 
-export function CreateItemWizard({ initialValues }: CreateItemWizardProps = {}) {
+export function CreateItemWizard({ initialValues, wishlistId }: CreateItemWizardProps = {}) {
   const t = useTranslations("items.create");
   const router = useRouter();
   const { workspaceId } = useWorkspace();
@@ -80,6 +86,22 @@ export function CreateItemWizard({ initialValues }: CreateItemWizardProps = {}) 
           }
         }
 
+        // Acquire flow: link the created item back to the wishlist row and
+        // close it (status -> acquired). Best-effort — the item itself was
+        // created either way.
+        if (wishlistId) {
+          try {
+            const { wishlistApi } = await import("@/lib/api/wishlist");
+            await wishlistApi.update(workspaceId, wishlistId, {
+              status: "acquired",
+              acquired_item_id: item.id,
+            });
+          } catch (err) {
+            console.error("Failed to close wishlist item:", err);
+            toast.error(t("errors.wishlistLinkFailed"));
+          }
+        }
+
         toast.success(t("success"));
         router.push(`/dashboard/items/${item.id}`);
       } catch (error) {
@@ -87,7 +109,7 @@ export function CreateItemWizard({ initialValues }: CreateItemWizardProps = {}) 
         toast.error(t("errors.createFailed"));
       }
     },
-    [workspaceId, capturedPhotos, t, router]
+    [workspaceId, capturedPhotos, wishlistId, t, router]
   );
 
   const handleCancel = useCallback(() => {
