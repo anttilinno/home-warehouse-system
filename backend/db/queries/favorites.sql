@@ -1,6 +1,3 @@
--- name: GetFavorite :one
-SELECT * FROM warehouse.favorites WHERE id = $1;
-
 -- name: CreateFavorite :one
 INSERT INTO warehouse.favorites (id, user_id, workspace_id, favorite_type, item_id, location_id, container_id)
 VALUES ($1, $2, $3, $4, $5, $6, $7)

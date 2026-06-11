@@ -16,36 +16,36 @@ UPDATE warehouse.inventory
 SET location_id = $2, container_id = $3, quantity = $4, condition = $5,
     date_acquired = $6, purchase_price = $7, currency_code = $8,
     warranty_expires = $9, expiration_date = $10, notes = $11, updated_at = now()
-WHERE id = $1
+WHERE id = $1 AND workspace_id = $12
 RETURNING *;
 
 -- name: UpdateInventoryStatus :one
 UPDATE warehouse.inventory
 SET status = $2, updated_at = now()
-WHERE id = $1
+WHERE id = $1 AND workspace_id = $3
 RETURNING *;
 
 -- name: UpdateInventoryQuantity :one
 UPDATE warehouse.inventory
 SET quantity = $2, updated_at = now()
-WHERE id = $1
+WHERE id = $1 AND workspace_id = $3
 RETURNING *;
 
 -- name: MoveInventory :one
 UPDATE warehouse.inventory
 SET location_id = $2, container_id = $3, updated_at = now()
-WHERE id = $1
+WHERE id = $1 AND workspace_id = $4
 RETURNING *;
 
 -- name: ArchiveInventory :exec
 UPDATE warehouse.inventory
 SET is_archived = true, updated_at = now()
-WHERE id = $1;
+WHERE id = $1 AND workspace_id = $2;
 
 -- name: RestoreInventory :exec
 UPDATE warehouse.inventory
 SET is_archived = false, updated_at = now()
-WHERE id = $1;
+WHERE id = $1 AND workspace_id = $2;
 
 -- name: ListInventory :many
 SELECT * FROM warehouse.inventory

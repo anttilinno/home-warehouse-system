@@ -14,7 +14,7 @@ RETURNING *;
 
 -- name: GetPendingChangeByID :one
 SELECT * FROM warehouse.pending_changes
-WHERE id = $1;
+WHERE id = $1 AND workspace_id = $2;
 
 -- name: ListPendingChangesByWorkspace :many
 SELECT * FROM warehouse.pending_changes
@@ -30,7 +30,7 @@ ORDER BY created_at DESC;
 
 -- name: ListPendingChangesByEntity :many
 SELECT * FROM warehouse.pending_changes
-WHERE entity_type = $1 AND entity_id = $2
+WHERE workspace_id = $1 AND entity_type = $2 AND entity_id = $3
 ORDER BY created_at DESC;
 
 -- name: UpdatePendingChangeStatus :one
@@ -41,12 +41,12 @@ SET
     reviewed_at = $4,
     rejection_reason = $5,
     updated_at = now()
-WHERE id = $1
+WHERE id = $1 AND workspace_id = $6
 RETURNING *;
 
 -- name: DeletePendingChange :exec
 DELETE FROM warehouse.pending_changes
-WHERE id = $1;
+WHERE id = $1 AND workspace_id = $2;
 
 -- name: CountPendingChangesByWorkspace :one
 SELECT COUNT(*) FROM warehouse.pending_changes

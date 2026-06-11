@@ -20,9 +20,9 @@ LEFT JOIN warehouse.containers fc ON m.from_container_id = fc.id
 LEFT JOIN warehouse.locations tl ON m.to_location_id = tl.id
 LEFT JOIN warehouse.containers tc ON m.to_container_id = tc.id
 LEFT JOIN auth.users u ON m.moved_by = u.id
-WHERE m.inventory_id = $1
+WHERE m.inventory_id = $1 AND m.workspace_id = $2
 ORDER BY m.created_at DESC
-LIMIT $2 OFFSET $3;
+LIMIT $3 OFFSET $4;
 
 -- name: ListMovementsByWorkspace :many
 SELECT m.*, it.name as item_name

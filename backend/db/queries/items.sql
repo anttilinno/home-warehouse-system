@@ -31,18 +31,18 @@ SET name = $2, description = $3, category_id = $4, brand = $5, model = $6,
     is_insured = $11, lifetime_warranty = $12, warranty_details = $13,
     purchased_from = $14, min_stock_level = $15, obsidian_vault_path = $16,
     obsidian_note_path = $17, needs_review = $18, updated_at = now()
-WHERE id = $1
+WHERE id = $1 AND workspace_id = $19
 RETURNING *;
 
 -- name: ArchiveItem :exec
 UPDATE warehouse.items
 SET is_archived = true, updated_at = now()
-WHERE id = $1;
+WHERE id = $1 AND workspace_id = $2;
 
 -- name: RestoreItem :exec
 UPDATE warehouse.items
 SET is_archived = false, updated_at = now()
-WHERE id = $1;
+WHERE id = $1 AND workspace_id = $2;
 
 -- name: ListItems :many
 SELECT * FROM warehouse.items
@@ -142,4 +142,4 @@ WHERE workspace_id = $1
        OR category_id = sqlc.narg('category_id')::uuid);
 
 -- name: DeleteItem :exec
-DELETE FROM warehouse.items WHERE id = $1;
+DELETE FROM warehouse.items WHERE id = $1 AND workspace_id = $2;
