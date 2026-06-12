@@ -230,7 +230,7 @@ Clean-slate rebuild of `/frontend2` with sketch 006-008 retro-os pastel fidelity
 
 - [ ] **Phase 1: Foundation + Conflict Spikes** — Vite + React 19 + TS + Tailwind 4 + RR7 scaffold, CI grep guard, carry-forward audit, three Phase 0 conflict resolutions (i18n library / mobile FAB scope / dashboard backend rollups)
 - [x] **Phase 2: Tokens + Type System** — `styles/tokens.css` retro-os pastel palette + Tailwind v4 `@theme` block + Silkscreen / IBM Plex Sans / IBM Plex Mono fonts + cream dot-dither body background + WCAG AA contrast audit + Cyrillic glyph metrics check (completed 2026-06-12)
-- [ ] **Phase 3: Layout Primitives + Bottombar** — AppShell 2×3 grid + TopBar + Sidebar (`// GROUP` labels + collapse-to-rail) + Bottombar with `useShortcuts` SSOT + `isEditableTarget` input-focus guard from first commit + PageHeader (`// ROUTE` + SESSION + LAST SYNC) + ShortcutChip + mobile breakpoint contract
+- [x] **Phase 3: Layout Primitives + Bottombar** — AppShell 2×3 grid + TopBar + Sidebar (`// GROUP` labels + collapse-to-rail) + Bottombar with `useShortcuts` SSOT + `isEditableTarget` input-focus guard from first commit + PageHeader (`// ROUTE` + SESSION + LAST SYNC) + ShortcutChip + mobile breakpoint contract (completed 2026-06-12)
 - [ ] **Phase 4: Retro Atoms** — RetroPanel/Button/Badge/Input/Select/Combobox/Textarea/Checkbox/FileInput/FormField/Table family/Tabs/Dialog/ConfirmDialog/Toast/EmptyState/Pagination/StatusDot/HUD primitives — informed by Phase 3 layout constraints; modal-stack ESC, status pills with tabular-nums, SSE state in panel headers, multi-select Shift+Click on tables
 - [ ] **Phase 5: Auth** — login + register + Google OAuth + GitHub OAuth + RequireAuth (with v2.0 spurious-logout-on-network-error bug fixed) + workspace switcher + sessions + password change + account deletion + connected accounts
 - [ ] **Phase 6: Providers** — IntlProvider + QueryClientProvider + AuthProvider + SSEProvider (with `useSSEStatus()` selector) + ToastProvider + ShortcutsProvider mounted in canonical order; chrome wires to real state once
@@ -539,12 +539,12 @@ Plans:
 **Parity additions (2026-06-12)** (`docs/FRONTEND2_FEATURE_PARITY_PLAN.md` §4): TopBar must reserve slots for the workspace switcher (Phase 5), notifications bell (Gap G-5, Phase 13), SSE status indicator (Phase 6), and user menu — even before those features land, so the chrome wires once.
 **Plans**: 6 plans
 Plans:
-- [ ] 03-01-PLAN.md — useShortcuts SSOT + isEditableTarget guard (Wave 0 keydown spine)
-- [ ] 03-02-PLAN.md — ModalStack provider + ESC-pops-top ordering (logout never on bare ESC)
-- [ ] 03-03-PLAN.md — ShortcutChip key-cap + isolated SESSION/LOCAL Clock leaf
-- [ ] 03-04-PLAN.md — Sidebar (NavLink active + rail) + TopBar (slots + logout confirm) + PageHeader
-- [ ] 03-05-PLAN.md — Bottombar + F1 help dialog + mobile FAB (all read the one SSOT)
-- [ ] 03-06-PLAN.md — AppShell 2×3 grid + data-collapsed + MobileDrawer + provider/route wiring + E2E smoke
+- [x] 03-01-PLAN.md — useShortcuts SSOT + isEditableTarget guard (Wave 0 keydown spine)
+- [x] 03-02-PLAN.md — ModalStack provider + ESC-pops-top ordering (logout never on bare ESC)
+- [x] 03-03-PLAN.md — ShortcutChip key-cap + isolated SESSION/LOCAL Clock leaf
+- [x] 03-04-PLAN.md — Sidebar (NavLink active + rail) + TopBar (slots + logout confirm) + PageHeader
+- [x] 03-05-PLAN.md — Bottombar + F1 help dialog + mobile FAB (all read the one SSOT)
+- [x] 03-06-PLAN.md — AppShell 2×3 grid + data-collapsed + MobileDrawer + provider/route wiring + E2E smoke
 **UI hint**: yes
 
 ### Phase 4: Retro Atoms
@@ -804,7 +804,7 @@ Plans:
 | 72 | v2.2 | 0/? | Abandoned | - |
 | 1 | v3.0 | 0/TBD | Not started | - |
 | 2 | v3.0 | 2/2 | Complete   | 2026-06-12 |
-| 3 | v3.0 | 0/TBD | Not started | - |
+| 3 | v3.0 | 6/6 | Complete   | 2026-06-12 |
 | 4 | v3.0 | 0/TBD | Not started | - |
 | 5 | v3.0 | 0/TBD | Not started | - |
 | 6 | v3.0 | 0/TBD | Not started | - |

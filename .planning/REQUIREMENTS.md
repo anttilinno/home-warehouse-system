@@ -42,20 +42,20 @@
 
 ### App Shell & Layout Primitives (SHELL)
 
-- [ ] **SHELL-01**: 2×3 CSS-Grid `AppShell` (sketch 005 `grid-template-areas: "topbar topbar" / "sidebar main" / "sidebar bottombar"`) renders authenticated content; sidebar runs full-height; bottombar spans only the main column.
-- [ ] **SHELL-02**: Sidebar collapse is a single `data-collapsed` attribute toggle on the grid root — no JavaScript layout work, no measure phase.
-- [ ] **SHELL-03**: TopBar shows slim brand mark (30×30 beveled square + "HOME WAREHOUSE"), workspace pill, ONLINE indicator dot bound to live SSE state, and user pill with menu dropdown.
-- [ ] **SHELL-04**: Sidebar groups nav into `// OVERVIEW`, `// INVENTORY`, and `// SYSTEM` sections with monospace amber labels; per-route active indicator (left-border bevel + glow); collapses to icon-rail with badge dot mode.
-- [ ] **SHELL-05**: PageHeader renders `// {ROUTE}` breadcrumb plus `SESSION {hh:mm:ss} // LAST SYNC {hh:mm:ss}` system-status meta on every authenticated route.
-- [ ] **SHELL-06**: AppShell is mobile-responsive — sidebar becomes a drawer at `<768px`; bottombar overflow plan keeps F1 and ESC right-anchored, the rest paged or in an overflow sheet.
+- [x] **SHELL-01**: 2×3 CSS-Grid `AppShell` (sketch 005 `grid-template-areas: "topbar topbar" / "sidebar main" / "sidebar bottombar"`) renders authenticated content; sidebar runs full-height; bottombar spans only the main column.
+- [x] **SHELL-02**: Sidebar collapse is a single `data-collapsed` attribute toggle on the grid root — no JavaScript layout work, no measure phase.
+- [x] **SHELL-03**: TopBar shows slim brand mark (30×30 beveled square + "HOME WAREHOUSE"), workspace pill, ONLINE indicator dot bound to live SSE state, and user pill with menu dropdown.
+- [x] **SHELL-04**: Sidebar groups nav into `// OVERVIEW`, `// INVENTORY`, and `// SYSTEM` sections with monospace amber labels; per-route active indicator (left-border bevel + glow); collapses to icon-rail with badge dot mode.
+- [x] **SHELL-05**: PageHeader renders `// {ROUTE}` breadcrumb plus `SESSION {hh:mm:ss} // LAST SYNC {hh:mm:ss}` system-status meta on every authenticated route.
+- [x] **SHELL-06**: AppShell is mobile-responsive — sidebar becomes a drawer at `<768px`; bottombar overflow plan keeps F1 and ESC right-anchored, the rest paged or in an overflow sheet.
 
 ### Function-Key Bottombar (BAR)
 
-- [ ] **BAR-01**: Bottombar mounts on every authenticated route, renders `[KEY] LABEL` chips for the current route plus globals (F1 HELP), and a right-side `SESSION + LOCAL` clock pair updated every second.
-- [ ] **BAR-02**: `useShortcuts(id, [{ key, label, action, danger? }])` hook is the single source of truth — registers shortcuts into a context indexed by `useId()`, the bar reads from context for both rendering AND the keydown listener.
-- [ ] **BAR-03**: Keydown dispatcher honors an `isEditableTarget(e.target)` guard so single-letter shortcuts NEVER trigger when the user is typing in an input, textarea, select, or contenteditable surface (regression test on every form).
-- [ ] **BAR-04**: Bottombar `[KEY]` chips use `bg-primary text-primary-foreground` so they read amber-on-near-black under retro and adopt the theme `primary` token under any other theme.
-- [ ] **BAR-05**: F1 chip click and F1 keydown both open the keyboard-shortcuts help dialog (existing `useKeyboardShortcutsDialog` pattern from `/frontend`); ESC keydown is NOT bound to logout — confirm-before-logout pattern only via menu.
+- [x] **BAR-01**: Bottombar mounts on every authenticated route, renders `[KEY] LABEL` chips for the current route plus globals (F1 HELP), and a right-side `SESSION + LOCAL` clock pair updated every second.
+- [x] **BAR-02**: `useShortcuts(id, [{ key, label, action, danger? }])` hook is the single source of truth — registers shortcuts into a context indexed by `useId()`, the bar reads from context for both rendering AND the keydown listener.
+- [x] **BAR-03**: Keydown dispatcher honors an `isEditableTarget(e.target)` guard so single-letter shortcuts NEVER trigger when the user is typing in an input, textarea, select, or contenteditable surface (regression test on every form).
+- [x] **BAR-04**: Bottombar `[KEY]` chips use `bg-primary text-primary-foreground` so they read amber-on-near-black under retro and adopt the theme `primary` token under any other theme.
+- [x] **BAR-05**: F1 chip click and F1 keydown both open the keyboard-shortcuts help dialog (existing `useKeyboardShortcutsDialog` pattern from `/frontend`); ESC keydown is NOT bound to logout — confirm-before-logout pattern only via menu.
 
 ### Providers (PROV)
 
@@ -165,7 +165,7 @@
 
 ### TUI Differentiators (TUI)
 
-- [ ] **TUI-01**: Per-route shortcut sets registered via `useShortcuts(routeName, [...])`; Bottombar reflects the active route's set without flicker on route change.
+- [x] **TUI-01**: Per-route shortcut sets registered via `useShortcuts(routeName, [...])`; Bottombar reflects the active route's set without flicker on route change.
 - [ ] **TUI-02**: Modal-stack ESC pops the topmost overlay first (dialog → drawer → menu), never logging out while any modal is open.
 - [ ] **TUI-03**: SSE state in panel headers — live dot + `sse: ● live` text on panels that subscribe to entity events.
 - [ ] **TUI-04**: Status pills on row entities — OK / WARN / INFO / DANGER variants with color tokens; numeric columns use `tabular-nums`.
@@ -322,17 +322,17 @@
 | TOKEN-03 | Phase 2 | Complete |
 | TOKEN-04 | Phase 2 | Complete |
 | TOKEN-05 | Phase 2 | Complete |
-| SHELL-01 | Phase 3 | Pending |
-| SHELL-02 | Phase 3 | Pending |
-| SHELL-03 | Phase 3 | Pending |
-| SHELL-04 | Phase 3 | Pending |
-| SHELL-05 | Phase 3 | Pending |
-| SHELL-06 | Phase 3 | Pending |
-| BAR-01 | Phase 3 | Pending |
-| BAR-02 | Phase 3 | Pending |
-| BAR-03 | Phase 3 | Pending |
-| BAR-04 | Phase 3 | Pending |
-| BAR-05 | Phase 3 | Pending |
+| SHELL-01 | Phase 3 | Complete |
+| SHELL-02 | Phase 3 | Complete |
+| SHELL-03 | Phase 3 | Complete |
+| SHELL-04 | Phase 3 | Complete |
+| SHELL-05 | Phase 3 | Complete |
+| SHELL-06 | Phase 3 | Complete |
+| BAR-01 | Phase 3 | Complete |
+| BAR-02 | Phase 3 | Complete |
+| BAR-03 | Phase 3 | Complete |
+| BAR-04 | Phase 3 | Complete |
+| BAR-05 | Phase 3 | Complete |
 | PROV-01 | Phase 6 | Pending |
 | PROV-02 | Phase 6 | Pending |
 | PROV-03 | Phase 6 | Pending |
@@ -406,7 +406,7 @@
 | SYS-02 | Phase 14 | Pending |
 | SYS-03 | Phase 14 | Pending |
 | SYS-04 | Phase 14 | Pending |
-| TUI-01 | Phase 3 | Pending |
+| TUI-01 | Phase 3 | Complete |
 | TUI-02 | Phase 4 | Pending |
 | TUI-03 | Phase 4 | Pending |
 | TUI-04 | Phase 4 | Pending |
