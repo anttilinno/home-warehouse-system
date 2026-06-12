@@ -63,7 +63,8 @@ describe("RetroFileInput", () => {
     const removeButtons = screen.getAllByRole("button", { name: /remove/i });
     await user.click(removeButtons[0]);
     // last onChange call has only b.txt
-    const lastArg = onChange.mock.calls.at(-1)![0];
+    const calls = onChange.mock.calls;
+    const lastArg = calls[calls.length - 1][0];
     expect(lastArg.map((f: File) => f.name)).toEqual(["b.txt"]);
   });
 
