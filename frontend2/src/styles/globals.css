@@ -245,6 +245,35 @@ body {
   }
 }
 
+/* ---------- OAuth callback stepped-progress (CallbackPage, AUTH-03/04) -------
+   The retro "spinner": a stepped-opacity block march — NO eased spin (System 7
+   has no material motion). Reuses the status-dot steps() convention so there is
+   one motion language. Holds solid for prefers-reduced-motion users. --------- */
+@layer components {
+  @keyframes retro-progress {
+    0% {
+      opacity: 1;
+    }
+    33% {
+      opacity: 0.4;
+    }
+    66% {
+      opacity: 0.7;
+    }
+    100% {
+      opacity: 1;
+    }
+  }
+  .retro-progress {
+    animation: retro-progress 0.9s steps(3, end) infinite;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .retro-progress {
+      animation: none;
+    }
+  }
+}
+
 /* ---------- RetroToast (sonner skin, TUI-04) ----------
    sonner is mounted `unstyled`, so its default chrome (rounded corners, soft
    shadow, system font, fixed 16px icon box) does NOT apply — the panel chrome
