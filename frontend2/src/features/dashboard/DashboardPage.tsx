@@ -2,7 +2,8 @@ import { useQuery } from "@tanstack/react-query";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { get } from "@/lib/api";
 import { i18n } from "@/lib/i18n";
-import type { DashboardStats, RecentActivity, Workspace } from "@/lib/types";
+import { useWorkspace } from "@/features/workspace/useWorkspace";
+import type { DashboardStats, RecentActivity } from "@/lib/types";
 import {
   RetroBadge,
   RetroTable,
@@ -42,12 +43,10 @@ function formatActivityTime(iso: string): string {
 export function DashboardPage() {
   const { t } = useLingui();
 
-  const workspaces = useQuery({
-    queryKey: ["workspaces"],
-    queryFn: () => get<Workspace[]>("/users/me/workspaces"),
-    retry: false,
-  });
-  const wsId = workspaces.data?.[0]?.id;
+  // wsId is the D-12 SSOT — sourced from the WorkspaceProvider context, NOT a
+  // first-workspace hardcode (AUTH-06). The provider already owns the shared
+  // ["workspaces"] query; the dashboard reads its list for the empty-state.
+  const { currentWorkspaceId: wsId, workspaces } = useWorkspace();
 
   const stats = useQuery({
     queryKey: ["dashboard", wsId],
@@ -63,7 +62,7 @@ export function DashboardPage() {
     retry: false,
   });
 
-  if (workspaces.data && workspaces.data.length === 0) {
+  if (workspaces && workspaces.length === 0) {
     return (
       <main className="grid min-h-screen place-items-center p-sp-4">
         <Window title={<Trans>No workspace</Trans>} titlebarVariant="butter">

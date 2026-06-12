@@ -4,8 +4,42 @@ import userEvent from "@testing-library/user-event";
 import { I18nProvider } from "@lingui/react";
 import { i18n } from "@/lib/i18n";
 import { ModalStackProvider } from "@/components/modal";
+import type { User, Workspace } from "@/lib/types";
+import type { WorkspaceContextValue } from "@/features/workspace/WorkspaceProvider";
+
+// The TopBar now renders the live WorkspaceSwitcher (AUTH-06), which reads the
+// D-12 useWorkspace() context. Mock it so TopBar's own chrome tests stay focused
+// on the banner/user-menu/logout contract — the switcher behavior is covered in
+// WorkspaceSwitcher.test.tsx. A two-workspace context = an interactive pill.
+const WS: Workspace[] = [
+  {
+    id: "ws-A",
+    name: "Alpha",
+    slug: "alpha",
+    description: null,
+    role: "owner",
+    is_personal: true,
+  },
+  {
+    id: "ws-B",
+    name: "Beta",
+    slug: "beta",
+    description: null,
+    role: "member",
+    is_personal: false,
+  },
+];
+const wsContext: WorkspaceContextValue = {
+  currentWorkspaceId: "ws-A",
+  setWorkspace: vi.fn(),
+  workspaces: WS,
+  isLoading: false,
+};
+vi.mock("@/features/workspace/useWorkspace", () => ({
+  useWorkspace: () => wsContext,
+}));
+
 import { TopBar } from "./TopBar";
-import type { User } from "@/lib/types";
 
 const user: User = {
   id: "u1",
@@ -36,11 +70,14 @@ describe("TopBar", () => {
     expect(within(banner).getByText(/WAREHOUSE/)).toBeInTheDocument();
   });
 
-  it("renders the workspace pill as a disabled placeholder (Phase 5)", () => {
+  it("renders the workspace pill as the live AUTH-06 switcher (no longer disabled)", () => {
     renderTopBar(<TopBar user={user} onLogout={vi.fn()} />);
     const pill = screen.getByTestId("workspace-pill");
-    expect(pill).toHaveAttribute("aria-disabled", "true");
-    expect(pill).toHaveAttribute("title", "Switch workspace (Phase 5)");
+    // The Phase 3 static disabled placeholder is gone — a 2-workspace context
+    // renders an interactive listbox trigger showing the current workspace.
+    expect(pill).not.toHaveAttribute("aria-disabled");
+    expect(pill).toHaveAttribute("aria-haspopup", "listbox");
+    expect(pill).toHaveTextContent("Alpha");
   });
 
   it("shows ONLINE by default and OFFLINE when online={false}", () => {

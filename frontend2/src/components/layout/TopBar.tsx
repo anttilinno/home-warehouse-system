@@ -4,10 +4,12 @@ import type { User } from "@/lib/types";
 import { BrandMark } from "@/components/BrandMark";
 import { BevelButton } from "@/components/retro";
 import { useModalStack } from "@/components/modal";
+import { WorkspaceSwitcher } from "./WorkspaceSwitcher";
 
 // TopBar (SHELL-03): the slim 40px banner every authenticated route renders.
-// Brand + a disabled workspace pill (switcher = Phase 5) + ONLINE dot (binds to
-// SSE in Phase 6) + reserved disabled bell/SSE slots (Phases 13/6) + a user pill
+// Brand + the live WorkspaceSwitcher pill (AUTH-06; reads the D-12 SSOT) +
+// ONLINE dot (binds to SSE in Phase 6) + reserved disabled bell/SSE slots
+// (Phases 13/6) + a user pill
 // whose menu's only enabled item is a confirm-before Log out (BAR-05 — logout is
 // NEVER reachable via bare ESC; the confirm pushes onto the modal stack so ESC
 // closes the dialog instead of logging out).
@@ -77,16 +79,8 @@ export function TopBar({
         <BrandMark className="text-[16px]" />
       </span>
 
-      {/* Workspace pill — disabled placeholder (switcher = Phase 5). */}
-      <span
-        data-testid="workspace-pill"
-        aria-disabled="true"
-        title="Switch workspace (Phase 5)"
-        className="hidden cursor-default select-none items-center gap-sp-1 border-2 border-border-ink bg-bg-panel-2 px-sp-2 py-[2px] text-[13px] font-semibold opacity-50 sm:inline-flex"
-      >
-        <Trans>Workspace</Trans>
-        <span aria-hidden="true">▾</span>
-      </span>
+      {/* Workspace pill — the live AUTH-06 switcher (D-12 SSOT). */}
+      <WorkspaceSwitcher />
 
       {/* ONLINE indicator (binds to live SSE in Phase 6). */}
       <span className="flex flex-none items-center gap-sp-1">
@@ -155,9 +149,6 @@ export function TopBar({
             </MenuPlaceholder>
             <MenuPlaceholder>
               <Trans>Settings</Trans>
-            </MenuPlaceholder>
-            <MenuPlaceholder>
-              <Trans>Switch workspace</Trans>
             </MenuPlaceholder>
             <button
               type="button"
