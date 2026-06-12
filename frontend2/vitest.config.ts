@@ -14,7 +14,7 @@ export default defineConfig({
   },
   test: {
     environment: "jsdom",
-    setupFiles: ["./src/test-utils.tsx"],
+    setupFiles: ["./src/test-utils.tsx", "./src/test/setup.ts"],
     globals: true,
     // Exclude Playwright E2E specs — `test.describe` from @playwright/test is
     // not compatible with vitest's runner. The specs are invoked by
