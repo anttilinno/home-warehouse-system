@@ -1,0 +1,260 @@
+/* Retro OS Pastel — shared sketch theme (sketches 006+).
+   System 7 / Win95 window chrome rebuilt in pastel: cream desktop, white
+   window panels, pinstriped pastel title bars, 2px ink bevels, hard offset
+   shadows. Supersedes themes/default.css (Premium Terminal, scrapped
+   2026-06-11 before any code shipped).
+
+   Contrast bar: WCAG AA (>= 4.5:1) for all text pairs.
+   - ink on panel  15.7:1   - ink on desktop 14.4:1   - muted on panel 6.6:1
+   - ink on titlebar-blue 11.2:1 / -pink 9.9:1 / -mint 11.6:1
+   - blue-deep on panel 8.6:1 / pink-deep 7.0:1 / mint-deep 6.9:1
+   Pastel fills NEVER carry colored text — ink only. Colored text on white
+   uses the *-deep companions. */
+
+:root {
+  /* ---------- Surfaces ---------- */
+  --bg-desktop:  #fdf6ec;   /* cream desktop */
+  --bg-panel:    #ffffff;   /* window bodies */
+  --bg-panel-2:  #f7f0e2;   /* table headers, insets, row stripes */
+  --bg-pressed:  #efe6d3;   /* pressed button fill */
+
+  /* ---------- Ink ---------- */
+  --fg-ink:    #26262e;     /* body text */
+  --fg-muted:  #5b5b66;     /* secondary text */
+  --fg-faint:  #8e8e99;     /* disabled / decorative only, never body text */
+
+  /* ---------- Pastel chrome fills (ink text only) ---------- */
+  --titlebar-blue: #b8d8e8;
+  --titlebar-pink: #f4b8c4;
+  --titlebar-mint: #b8e0c8;
+  --titlebar-butter: #f6e3a8;
+
+  /* ---------- Deep companions (colored text on white/cream) ---------- */
+  --accent-blue-deep: #19526f;
+  --accent-pink-deep: #a8334f;
+  --accent-mint-deep: #1e6b43;
+  --warn-deep:        #7a5a12;
+
+  /* ---------- Status ---------- */
+  --danger:    #b73348;
+  --danger-bg: #fbe3e8;
+  --warn-bg:   #f9eccb;
+  --ok-bg:     #ddf0e4;
+  --info-bg:   #ddeaf3;
+
+  /* ---------- Bevel system ---------- */
+  --border-ink:  #26262e;
+  --bevel-light: #ffffff;
+  --bevel-shade: #c9bda8;
+  --shadow-hard:     3px 3px 0 0 #d9cdb6;   /* windows / panels */
+  --shadow-hard-ink: 2px 2px 0 0 #26262e;   /* buttons / small chrome */
+
+  /* ---------- Type ---------- */
+  --font-display: "Silkscreen", monospace;            /* >=16px, uppercase only */
+  --font-body: "IBM Plex Sans", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+
+  /* ---------- Spacing ---------- */
+  --sp-1: 4px; --sp-2: 8px; --sp-3: 12px;
+  --sp-4: 16px; --sp-5: 24px; --sp-6: 32px;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  background: var(--bg-desktop);
+  color: var(--fg-ink);
+  font-family: var(--font-body);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* Classic desktop dot-dither, barely there */
+body {
+  background-image: radial-gradient(rgba(38, 38, 46, 0.055) 1px, transparent 1px);
+  background-size: 6px 6px;
+  min-height: 100vh;
+}
+
+/* ---------- Window ---------- */
+.window {
+  background: var(--bg-panel);
+  border: 2px solid var(--border-ink);
+  box-shadow:
+    inset 1px 1px 0 var(--bevel-light),
+    inset -2px -2px 0 var(--bevel-shade),
+    var(--shadow-hard);
+}
+
+.titlebar {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: 6px var(--sp-3);
+  border-bottom: 2px solid var(--border-ink);
+  background: var(--titlebar-blue);
+  /* System 7 pinstripes */
+  background-image: repeating-linear-gradient(
+    0deg,
+    rgba(255, 255, 255, 0.45) 0, rgba(255, 255, 255, 0.45) 1px,
+    transparent 1px, transparent 4px
+  );
+  user-select: none;
+}
+.titlebar--pink   { background-color: var(--titlebar-pink); }
+.titlebar--mint   { background-color: var(--titlebar-mint); }
+.titlebar--butter { background-color: var(--titlebar-butter); }
+.titlebar--plain  { background-color: var(--bg-panel-2); }
+
+.titlebar .title {
+  flex: 1;
+  font-family: var(--font-display);
+  font-size: 16px;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: center;
+}
+
+/* decorative close / zoom boxes (non-functional in sketches) */
+.wbox {
+  width: 14px; height: 14px;
+  flex: none;
+  border: 2px solid var(--border-ink);
+  background: var(--bg-panel);
+  box-shadow: inset 1px 1px 0 var(--bevel-light), inset -1px -1px 0 var(--bevel-shade);
+}
+
+.window-body { padding: var(--sp-4); }
+
+/* ---------- Beveled button ---------- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--fg-ink);
+  background: var(--bg-panel);
+  border: 2px solid var(--border-ink);
+  padding: 6px 14px;
+  cursor: pointer;
+  box-shadow:
+    inset 1px 1px 0 var(--bevel-light),
+    inset -2px -2px 0 var(--bevel-shade),
+    var(--shadow-hard-ink);
+}
+.btn--primary { background: var(--titlebar-blue); }
+.btn--mint    { background: var(--titlebar-mint); }
+.btn--pink    { background: var(--titlebar-pink); }
+.btn--danger  { background: var(--danger-bg); color: var(--danger); }
+.btn:hover { filter: brightness(1.03); }
+.btn:active {
+  background: var(--bg-pressed);
+  transform: translate(1px, 1px);
+  box-shadow:
+    inset 2px 2px 0 var(--bevel-shade),
+    inset -1px -1px 0 var(--bevel-light),
+    1px 1px 0 0 var(--border-ink);
+}
+
+/* ---------- Sunken input ---------- */
+.input {
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: var(--fg-ink);
+  background: var(--bg-panel);
+  border: 2px solid var(--border-ink);
+  padding: 7px 10px;
+  width: 100%;
+  box-shadow: inset 2px 2px 0 var(--bevel-shade), inset -1px -1px 0 var(--bevel-light);
+}
+.input:focus {
+  outline: 3px solid var(--titlebar-blue);
+  outline-offset: 1px;
+}
+.input--mono { font-family: var(--font-mono); }
+.input--error { border-color: var(--danger); background: var(--danger-bg); }
+
+.field-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--fg-muted);
+  margin-bottom: var(--sp-1);
+}
+
+/* ---------- Badge ---------- */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--fg-ink);
+  border: 1px solid var(--border-ink);
+  border-radius: 2px;
+  padding: 1px 8px;
+  background: var(--bg-panel-2);
+}
+.badge--ok     { background: var(--ok-bg); }
+.badge--warn   { background: var(--warn-bg); }
+.badge--danger { background: var(--danger-bg); }
+.badge--info   { background: var(--info-bg); }
+
+/* ---------- Table ---------- */
+.rtable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.rtable th {
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  text-align: left;
+  color: var(--fg-muted);
+  background: var(--bg-panel-2);
+  border-bottom: 2px solid var(--border-ink);
+  padding: 7px 10px;
+}
+.rtable td {
+  padding: 6px 10px;
+  border-bottom: 1px solid #e7ddca;
+  vertical-align: middle;
+}
+.rtable tbody tr:nth-child(even) td { background: #fcf8f0; }
+.rtable tbody tr:hover td { background: var(--info-bg); }
+.rtable tbody tr.is-selected td {
+  background: var(--titlebar-blue);
+  border-bottom-color: var(--border-ink);
+}
+.rtable .mono { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+
+/* ---------- Display headings ---------- */
+.display {
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+/* ---------- Scrollbar ---------- */
+::-webkit-scrollbar       { width: 12px; height: 12px; }
+::-webkit-scrollbar-track { background: var(--bg-panel-2); border-left: 2px solid var(--border-ink); }
+::-webkit-scrollbar-thumb {
+  background: var(--titlebar-blue);
+  border: 2px solid var(--border-ink);
+  box-shadow: inset 1px 1px 0 var(--bevel-light);
+}

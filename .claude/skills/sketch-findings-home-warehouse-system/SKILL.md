@@ -1,26 +1,44 @@
 ---
 name: sketch-findings-home-warehouse-system
-description: Validated design decisions, CSS tokens, and visual direction from sketch experiments 001–005. Auto-load when implementing the frontend2 dashboard re-skin or any new screen in the premium-terminal aesthetic.
+description: Validated design decisions, CSS tokens, and visual direction for the frontend2 Retro OS Pastel aesthetic (sketches 006-008). Auto-load when implementing any frontend2 screen or component.
 ---
 
 <context>
 ## Project: home-warehouse-system
 
-**Premium Terminal** for `frontend2/` — a phosphor-green CRT industrial HUD applied to existing `DashboardStats` + `RecentActivity` data. Dual-hue: amber (`#ffd07a`) for labels and headers, green (`#d6ffdc`) for data and status. Monospace throughout. Subtle CRT scanline overlay. AAA contrast. Sidebar borrows the grouped Overview / Inventory / System structure already shipped to legacy `frontend/`.
+**Retro OS Pastel** for `frontend2/` — System 7 / Win95 window chrome
+rebuilt in pastel. Cream desktop with dot dither, white window panels with
+2px ink bevels and hard offset shadows, pinstriped pastel title bars,
+beveled press-state buttons, sunken inputs. Silkscreen pixel display type
++ IBM Plex Sans body + IBM Plex Mono data. WCAG AA contrast bar.
 
-**Reference:** `~/Downloads/premium_terminal_retro_dashboard.png` (CRT-green warehouse terminal mockup) anchored to `frontend2/src/features/dashboard/DashboardPage.tsx` data shapes.
+Adopted 2026-06-11, replacing the Premium Terminal CRT direction
+(sketches 001-005, scrapped before any code shipped). Historical sketches
+live in `.planning/sketches/`; do not apply their palette.
 
-**Sketch sessions wrapped:** 2026-04-27, 2026-04-28 (sketch 005)
+**Canonical sources:** `.planning/sketches/MANIFEST.md` (locked decisions)
+and `.planning/sketches/themes/retro-os.css` (token values + chrome CSS,
+mirrored in this skill at `sources/themes/retro-os.css`).
+
+**Sketch session wrapped:** 2026-06-11 (sketches 006-008).
 </context>
 
 <design_direction>
 ## Overall Direction
 
-Dark CRT-green industrial HUD with amber accents. The aesthetic comes from typography (monospace), composition (beveled panels, ASCII `//` separators, subtle scanlines), and color (near-black backgrounds, green primaries, amber labels) — not from icon style. Lucide stroke icons stay clean against the rest of the chrome; pixel-art icons over-indexed on retro and were declined.
+A warm, friendly retro operating system: every surface is a "window" with
+a pinstriped pastel title bar, every button is a bevel you can feel press.
+The aesthetic comes from chrome (bevels, hard shadows, pinstripes), color
+(cream + white + four pastels with ink everywhere), and type (pixel
+display face over a clean humanist body) — NOT from skeuomorphic clutter.
 
-**Vibe:** Bloomberg / mainframe TUI / 90s industrial control software, not vintage gaming UI.
+**Vibe:** Macintosh System 7 meets a tidy Scandinavian pantry. Playful
+chrome, serious data.
 
-**What this is NOT:** A reskin where everything goes green-on-black. The dual-hue is load-bearing — amber labels separate hierarchy from data without relying on lightness alone, and provide a hue cue that pure monochrome failed to deliver (sketch 002).
+**What this is NOT:** a dark theme, a terminal, or a pixel-art game UI.
+The pixel font is seasoning (display only, ≥16px, uppercase); body copy
+and data stay in Plex Sans/Mono for full legibility. Pastels are chrome,
+never text — colored text always uses the `*-deep` companions.
 </design_direction>
 
 <findings_index>
@@ -28,42 +46,60 @@ Dark CRT-green industrial HUD with amber accents. The aesthetic comes from typog
 
 | Area | Reference | Key Decision |
 |------|-----------|--------------|
-| Layout & Navigation | `references/layout.md` | Top bar + grouped sidebar (with user menu in footer) + main pane + context-aware bottom function-key bar |
-| Color Palette & Contrast | `references/palette.md` | Amber + green dual-channel, AAA contrast, scanline overlay |
-| Typography | `references/typography.md` | 14px monospace body, 11-16px labels at wide letter-spacing, 30-32px values |
-| Icons | `references/icons.md` | Lucide stroke icons, 1.75px round caps. Pixel-art declined |
-| Components | `references/components.md` | Panels, pills, buttons, status indicators, alert rows, **bottom function-key bar**, **user menu** |
+| Color Palette & Contrast | `references/palette.md` | Cream/white + 4 pastel chrome fills, ink text, deep companions for colored text, AA bar |
+| Typography | `references/typography.md` | Silkscreen display (≥16px, uppercase only) / IBM Plex Sans body / IBM Plex Mono data |
+| Components | `references/components.md` | Window + titlebar, bevel buttons, sunken inputs, badges, tables, stat cards |
+| Layout & Navigation | `references/layout.md` | Menu bar + Navigator sidebar window (grouped Overview / Inventory / System) + tiled main panes |
+| Icons | `references/icons.md` | OPEN — sketches used unicode glyph placeholders; needs its own sketch before hardening |
 
 ## Theme
 
-The locked theme is at `sources/themes/default.css`. It defines:
-- Background scale (`--bg-base` through `--bg-active`)
-- Text scale (`--fg-dim` through `--fg-glow`) — all text passes WCAG AAA against `--bg-panel`
-- Amber accent (`--amber`, `--amber-bright`)
-- Status colors (`--accent-warn`, `--accent-danger`, `--accent-info`)
-- Spacing scale (`--sp-1` through `--sp-6`)
+Locked theme at `sources/themes/retro-os.css`. Defines surfaces
+(`--bg-desktop/panel/panel-2/pressed`), ink scale (`--fg-ink/muted/faint`),
+pastel fills (`--titlebar-blue/pink/mint/butter`), deep text companions
+(`--accent-*-deep`, `--warn-deep`), status colors, the bevel system
+(`--bevel-light/shade`, `--shadow-hard`, `--shadow-hard-ink`), fonts, and
+the 4px spacing scale (`--sp-1..6`).
 
-When porting to Tailwind v4: emit these as CSS custom properties in `frontend2/src/styles/globals.css` and reference via `bg-[var(--bg-panel)]` or define utility classes (`bg-retro-panel`, `text-retro-amber`, etc.) following the existing `bg-retro-cream` convention.
+When porting to Tailwind v4: emit tokens as CSS custom properties in
+`frontend2/src/styles/tokens.css` (`:root`) and map them in an
+`@theme inline` block (`--color-*`, `--font-*`, `--shadow-*`,
+`--spacing-sp-*`) so utilities like `bg-bg-panel` / `text-fg-ink` /
+`shadow-hard` resolve.
 
-## Source Files
+## Hard Rules (break = regression)
 
-Original sketch HTML files preserved in `sources/` for visual reference. Sketch 001 is the canonical "this is the target" mockup; 002-004 document the decision path for palette / icons.
+1. Pixel font (Silkscreen): never below 16px, never mixed case, never
+   body copy.
+2. Pastel fills carry ink text only. Colored text on white/cream uses
+   `--accent-blue-deep / -pink-deep / -mint-deep / --warn-deep`.
+3. `--fg-faint` is decorative/disabled only — never running text.
+4. Radii: 0 everywhere except badges (2px).
+5. Every text pair ≥ 4.5:1 (AA) — enforced by
+   `frontend2/src/styles/tokens.test.ts`.
 
-## Anti-Patterns (What Was Tried and Declined)
+## Anti-Patterns (tried/considered and declined)
 
-- **Sketch 001 original palette** — single-hue green at narrow luminance spread. Timestamps at 2.1:1 contrast. Failed WCAG AA.
-- **Pure monochrome wider spread (sketch 002 A)** — readable but flatter than dual-hue.
-- **Monospace glyph icons (sketches 001-003 A/B)** — `▣ ◊ ⊕ ▢ ▥ ⊘ ⊞ ◐ ☉` weighted inconsistently; outline glyphs read thinner than block glyphs at the same size. Decline.
-- **Pixel-art icons (sketch 004 B/C)** — Pixelarticons and chunky 12×12 alternatives. Read busy against scanlines + monospace; over-indexed on retro. Decline.
-- **HUD widgets without supporting data** — capacity gauge and activity sparkline imply `capacity_target` and per-day rollup data that doesn't exist yet. Either add backend endpoints or feature-flag the widgets.
+- **Premium Terminal CRT** (dark green/amber, scanlines, all-monospace) —
+  full direction scrapped 2026-06-11; see MANIFEST history section.
+- **Colored text on pastel fills** — fails AA; ink only.
+- **Pixel font for values below display size** — legibility dies; stat
+  values are the floor (30px).
+- **Heavy inline per-row beveled buttons** at table density are borderline;
+  fallback is borderless icon buttons gaining bevel on hover.
 </findings_index>
 
 <metadata>
 ## Processed Sketches
 
-- 001-premium-terminal-dashboard (refreshed as canonical reference after 002-004 decisions)
-- 002-contrast-refinement (B v2 — amber + green dual-channel, AAA contrast)
-- 003-icon-style (C — Lucide strokes over monospace glyphs)
-- 004-retro-icons (A — Lucide confirmed; pixel-art alternatives declined)
-- 005-interactive-nav (A — expanded sidebar; locks in **context-aware bottom function-key bar** replacing the dashboard quick-actions tile, and **user menu in sidebar footer** following the frontend1 pattern)
+- 006-retro-os-dashboard — chrome at dashboard density; semantic titlebar
+  color (pink = attention, butter = warn) ★ validated
+- 007-retro-os-login — sunken inputs, error treatment, press states
+  ★ validated
+- 008-retro-os-table-density — 34-row table scannability, badges at
+  volume, selected-row treatment ★ validated
+
+Carried over from the scrapped direction (direction-agnostic): grouped
+sidebar (Overview / Inventory / System) and user identity in the sidebar
+footer.
 </metadata>

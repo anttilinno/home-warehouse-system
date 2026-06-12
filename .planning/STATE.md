@@ -1,7 +1,7 @@
 ---
 gsd_state_version: 1.0
 milestone: v3.0
-milestone_name: Premium-Terminal Frontend
+milestone_name: Retro-OS Pastel Frontend
 status: executing
 stopped_at: Phase 2 context gathered
 last_updated: "2026-05-01T20:31:32.502Z"
@@ -133,6 +133,7 @@ Last activity: 2026-05-01 -- Phase 01 execution started
 - v3.0: Dashboard HUD row ships in Phase 13 WITHOUT feature flag -- no prod env to gate against (D-09)
 - v3.0: HUD backend endpoint specs documented in CARRY-FORWARD.md; endpoints built in Phase 13 (D-10)
 - v3.0: HUD endpoints -- GET /api/workspaces/{wsId}/stats/capacity + GET /api/workspaces/{wsId}/stats/activity?days=14 (D-11)
+- v3.0: Premium Terminal design direction SCRAPPED 2026-06-11 (before any styled code shipped); replaced by **Retro OS Pastel** — System 7/Win95 chrome in pastel, sketches 006-008 canonical (`.planning/sketches/MANIFEST.md` + `themes/retro-os.css`). Contrast bar AAA→AA. Fonts: Silkscreen + IBM Plex Sans + IBM Plex Mono (replaces JetBrains Mono). Roadmap chrome wording referencing sketches 001-005 should be read through the retro-os equivalents; grouped sidebar + user-menu-footer decisions survive.
 
 ### Pending Todos
 

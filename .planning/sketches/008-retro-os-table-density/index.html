@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Sketch 008 — Retro OS Table Density</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Silkscreen:wght@400;700&family=IBM+Plex+Sans:wght@400;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="../themes/retro-os.css" />
+<style>
+  .frame { max-width: 1100px; margin: 0 auto; padding: var(--sp-5); }
+  .items .window-body { padding: 0; }
+
+  .toolbar {
+    display: flex;
+    gap: var(--sp-3);
+    align-items: center;
+    padding: var(--sp-3);
+    border-bottom: 2px solid var(--border-ink);
+    background: var(--bg-panel-2);
+    flex-wrap: wrap;
+  }
+  .toolbar .input { width: 260px; }
+  .toolbar .spacer { flex: 1; }
+  .toolbar .meta { font-family: var(--font-mono); font-size: 12px; color: var(--fg-muted); }
+
+  .rtable td.name { font-weight: 600; }
+  .rtable td.actions { text-align: right; white-space: nowrap; }
+  .rtable .btn { padding: 2px 8px; font-size: 11px; box-shadow: var(--shadow-hard-ink); }
+  .thumb {
+    display: inline-grid;
+    place-items: center;
+    width: 26px; height: 26px;
+    border: 1px solid var(--border-ink);
+    background: var(--bg-panel-2);
+    font-size: 13px;
+    margin-right: var(--sp-2);
+    vertical-align: middle;
+  }
+
+  .pager {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-2);
+    padding: var(--sp-3);
+    border-top: 2px solid var(--border-ink);
+    background: var(--bg-panel-2);
+  }
+  .pager .pages { display: flex; gap: 4px; }
+  .pager .pg {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    border: 1px solid var(--border-ink);
+    background: var(--bg-panel);
+    padding: 2px 9px;
+    cursor: pointer;
+  }
+  .pager .pg.is-current {
+    background: var(--titlebar-blue);
+    font-weight: 700;
+    box-shadow: var(--shadow-hard-ink);
+  }
+  .pager .meta { margin-left: auto; font-family: var(--font-mono); font-size: 12px; color: var(--fg-muted); }
+</style>
+</head>
+<body>
+
+<div class="frame">
+  <div class="window items">
+    <div class="titlebar titlebar--mint">
+      <div class="wbox"></div>
+      <span class="title">Items — Garage workspace</span>
+      <div class="wbox"></div>
+    </div>
+
+    <div class="window-body">
+      <div class="toolbar">
+        <input class="input" id="q" type="search" placeholder="Filter items…" />
+        <button class="btn">Category ▾</button>
+        <button class="btn">Location ▾</button>
+        <span class="spacer"></span>
+        <span class="meta" id="count">34 items</span>
+        <button class="btn btn--mint">+ Add item</button>
+      </div>
+
+      <table class="rtable">
+        <thead>
+          <tr>
+            <th></th><th>Name</th><th>Barcode</th><th>Location</th>
+            <th>Qty</th><th>Status</th><th></th>
+          </tr>
+        </thead>
+        <tbody id="rows"></tbody>
+      </table>
+
+      <div class="pager">
+        <button class="btn">◂ Prev</button>
+        <div class="pages">
+          <span class="pg is-current">1</span><span class="pg">2</span>
+          <span class="pg">3</span><span class="pg">4</span>
+        </div>
+        <button class="btn">Next ▸</button>
+        <span class="meta">page 1 of 4 · 50 / page</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const STATUS = {
+    ok:      '<span class="badge badge--ok">in stock</span>',
+    low:     '<span class="badge badge--warn">low stock</span>',
+    out:     '<span class="badge badge--danger">out</span>',
+    loaned:  '<span class="badge badge--info">on loan</span>',
+  };
+  const GLYPHS = ["🔧","🪛","🔨","🪚","📦","🔌","💡","🧰","🪜","🧯","📐","🪫"];
+  const NAMES = [
+    ["Bosch GSR 12V drill","Garage / A2", "ok"], ["Ladder 3m aluminium","Garage / wall", "loaned"],
+    ["HDMI cable 2m","Office / BOX-A14", "low"], ["Pressure washer","Garage / floor", "ok"],
+    ["Camping stove","Attic / north", "ok"], ["Multimeter UNI-T","Garage / A1", "ok"],
+    ["Soldering iron 60W","Office / drawer 2", "ok"], ["Extension cord 10m","Garage / hook 4", "loaned"],
+    ["Paint roller set","Basement / shelf C", "low"], ["Cordless screwdriver","Garage / A2", "ok"],
+    ["Projector Epson","Office / cabinet", "loaned"], ["Tent 4-person","Attic / east", "ok"],
+    ["Angle grinder","Garage / A3", "ok"], ["Garden hose 25m","Shed / reel", "ok"],
+    ["Socket set 1/2\"","Garage / A1", "ok"], ["Heat gun","Garage / A3", "low"],
+    ["Sleeping bag −5°C","Attic / east", "ok"], ["Jigsaw Makita","Garage / A2", "ok"],
+    ["Air mattress","Attic / east", "out"], ["Bike pump","Shed / wall", "ok"],
+    ["Christmas lights 20m","Attic / west", "ok"], ["Power strip 6-way","Office / BOX-A14", "low"],
+    ["Circular saw","Garage / A3", "ok"], ["Wheelbarrow","Shed / floor", "ok"],
+    ["Chainsaw Stihl","Shed / cabinet", "ok"], ["Snow shovel","Shed / wall", "ok"],
+    ["Label printer","Office / desk", "ok"], ["Ethernet switch 8p","Office / rack", "ok"],
+    ["Car jack 2t","Garage / floor", "ok"], ["Tool belt","Garage / hook 1", "out"],
+    ["Stud finder","Garage / A1", "ok"], ["Laser level","Garage / A1", "loaned"],
+    ["Shop vacuum","Garage / floor", "ok"], ["Workbench clamp x4","Garage / A4", "low"],
+  ];
+
+  const rows = document.getElementById("rows");
+  const count = document.getElementById("count");
+
+  function render(filter = "") {
+    const f = filter.trim().toLowerCase();
+    let n = 0;
+    rows.innerHTML = NAMES
+      .filter(([name]) => !f || name.toLowerCase().includes(f))
+      .map(([name, loc, st], i) => {
+        n++;
+        const qty = st === "out" ? 0 : ((i * 7) % 9) + 1;
+        const code = "479" + String(1000000000 + i * 73561).slice(0, 10);
+        return `<tr${i === 4 && !f ? ' class="is-selected"' : ""}>
+          <td><span class="thumb">${GLYPHS[i % GLYPHS.length]}</span></td>
+          <td class="name">${name}</td>
+          <td class="mono">${code}</td>
+          <td>${loc}</td>
+          <td class="mono">${qty}</td>
+          <td>${STATUS[st]}</td>
+          <td class="actions"><button class="btn">Edit</button> <button class="btn">↧</button></td>
+        </tr>`;
+      })
+      .join("");
+    count.textContent = `${n} items`;
+  }
+
+  document.getElementById("q").addEventListener("input", (e) => render(e.target.value));
+  render();
+</script>
+</body>
+</html>

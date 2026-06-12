@@ -5,11 +5,13 @@ planning, architecture, and requirements see `.planning/`.
 
 ## E2E Tests (Playwright)
 
-The first browser-level regression test landed in Phase 65 Plan 65-11 (gap
-closure for G-65-01). It exercises `/scan → manual entry → MATCHED banner`
-against the real backend + real Postgres. Any revert of Plan 65-09 (the
-`GET /items/by-barcode/{code}` route) or Plan 65-10 (the
-`itemsApi.lookupByBarcode` swap) will fail this test.
+The Phase 65 scan-lookup spec was wiped with the v2.2 frontend2 rebuild.
+The current v3.0 spec is `frontend2/e2e/login-dashboard.spec.ts`
+(2026-06-11, retro-os sample screens): real `/login → / dashboard` flow
+against the real backend + Postgres. It guards the cookie-JWT login
+contract, the Vite `/api` → root proxy **rewrite** (backend routes live at
+root, e.g. `/auth/login` — the rewrite in `vite.config.ts` is load-bearing),
+and the dashboard's binding to `/analytics/dashboard` + `/analytics/activity`.
 
 ### Run locally
 
@@ -41,9 +43,10 @@ has two projects (`chromium` + `firefox`) — specs run in both by default.
 
 Auth contract (useful for future specs):
 
-- `/login` → fill `email` + `password` labels → click the submit-type button
-  matching `^LOG IN$` (exact match — the page also has an OAuth "Sign in with
-  Google" button and a page-toggle "LOGIN" button).
+- `/login` → fill `Email` + `Password` labels → click the submit button
+  matching `/^log in$/i` (DOM text is "Log in"; uppercase comes from CSS).
+  The v3.0 page has a single submit button — OAuth buttons return in
+  Phase 5; when they land, switch back to exact-match discipline.
 - After login the browser holds the `access_token` as an HTTP cookie. Both
   the page context AND `page.request` inherit that cookie, so additional API
   calls in the spec do not need manual token plumbing.
@@ -74,9 +77,11 @@ the cross-tenant 404 subtest also guards the
    ```
 
 Without the `-tags=integration` flag the test is invisible to `go test ./...`,
-so the default CI path stays fast. Frontend-side reverts of Plan 65-10 are
-NOT caught here — that layer is covered by the Playwright spec above.
+so the default CI path stays fast. Frontend-side barcode-lookup coverage is
+currently NOWHERE — the Phase 65 scan-lookup Playwright spec was wiped with
+the v2.2 frontend2; when the scan feature is rebuilt (v3.0 Phase 11), a
+browser-level spec for the by-barcode flow must be re-added.
 
 ## Skills auto-loaded for this project
 
-- **Sketch findings** (design decisions, CSS tokens, component patterns, anti-patterns from sketches 001-004) → `Skill("sketch-findings-home-warehouse-system")`. Auto-load when implementing the frontend2 dashboard re-skin or any new screen in the premium-terminal aesthetic.
+- **Sketch findings** → `Skill("sketch-findings-home-warehouse-system")`. Direction under revision (2026-06-11): Premium Terminal scrapped, replaced by Retro OS pastel — see `.planning/sketches/MANIFEST.md` for the current canonical direction.

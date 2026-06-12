@@ -15,7 +15,7 @@
 - [x] **v2.0 Retro Frontend** — Phases 48-55 (shipped 2026-04-14)
 - [x] **v2.1 Feature Parity — Items, Loans & Scanning** — Phases 56-63 (shipped 2026-04-17)
 - [~] **v2.2 Scanning & Stabilization** — Phases 64-66 (abandoned 2026-04-30; frontend2 wiped before completion)
-- [ ] **v3.0 Premium-Terminal Frontend** — Phases 1-17 (planning, 2026-04-30; numbering reset since v2.2 wiped)
+- [ ] **v3.0 Retro-OS Pastel Frontend** — Phases 1-17 (planning, 2026-04-30; numbering reset since v2.2 wiped; design direction swapped Premium Terminal → Retro OS Pastel 2026-06-11)
 - [ ] **Backlog — DMS Migration: Docspell → Paperless-ngx** — unscheduled; repoint the stub Docspell integration (schema-only, no client) to Paperless-ngx, the DMS running in the homelab. Schema rename + settings reshape + fresh Paperless API client + drop the compose Docspell trio. Full task breakdown in `docs/ROADMAP.md` § "DMS Migration".
 - [ ] **Backlog — Expiry & Warranty Alerting** — unscheduled; `inventory.warranty_expires`/`expiration_date` are captured but no job consumes them — new asynq reminder job (loan_reminders pattern) + notifications + "expiring soon" widget/filter. Cheapest high-value win. Breakdown in `docs/ROADMAP.md` § "Expiry & Warranty Alerting".
 - [ ] **Backlog — Recurring Maintenance Schedules** — unscheduled; proactive counterpart to repair logs: `maintenance_schedules` table (interval + next_due), due-reminder job, complete-action writes a repair_log and advances next_due in one tx. Breakdown in `docs/ROADMAP.md` § "Recurring Maintenance Schedules".
@@ -220,12 +220,14 @@ Barcode scanning + mobile FAB brought to `/frontend2` at full v1.3 parity, wired
 
 </details>
 
-### v3.0 Premium-Terminal Frontend (Phases 1-17) — ACTIVE
+### v3.0 Retro-OS Pastel Frontend (Phases 1-17) — ACTIVE
 
-Clean-slate rebuild of `/frontend2` with sketch 005 premium-terminal fidelity AND feature parity with the legacy `/frontend`. Phase numbering RESETS to start at 1 — v3.0 has no continuity with v2.2 (predecessor wiped). Online-only (CI grep-guarded). All 106 v3.0 requirements (FOUND/TOKEN/SHELL/BAR/PROV/AUTH/ITEM/LOAN/BORR/TAX/SCAN/SETT/DASH/I18N/SYS/TUI/POL) map to exactly one phase. Layout primitives precede retro atoms — predecessor's reverse order forced atom rebuilds twice.
+> **Design direction swap (2026-06-11):** Premium Terminal (sketches 001-005) scrapped before any styled code shipped; replaced by **Retro OS Pastel** (sketches 006-008, `.planning/sketches/MANIFEST.md` canonical). Phase structure and requirements are unchanged. Where phase text below references sketch-005 chrome (scanlines, `// GROUP` labels, amber/green, hazard stripes, JetBrains Mono, AAA), read the retro-os equivalent (pastel window chrome, pinstriped title bars, Silkscreen + IBM Plex, AA) — grouped sidebar + user-menu-footer + all interaction contracts survive verbatim.
+
+Clean-slate rebuild of `/frontend2` with sketch 006-008 retro-os pastel fidelity AND feature parity with the legacy `/frontend`. Phase numbering RESETS to start at 1 — v3.0 has no continuity with v2.2 (predecessor wiped). Online-only (CI grep-guarded). All 106 v3.0 requirements (FOUND/TOKEN/SHELL/BAR/PROV/AUTH/ITEM/LOAN/BORR/TAX/SCAN/SETT/DASH/I18N/SYS/TUI/POL) map to exactly one phase. Layout primitives precede retro atoms — predecessor's reverse order forced atom rebuilds twice.
 
 - [ ] **Phase 1: Foundation + Conflict Spikes** — Vite + React 19 + TS + Tailwind 4 + RR7 scaffold, CI grep guard, carry-forward audit, three Phase 0 conflict resolutions (i18n library / mobile FAB scope / dashboard backend rollups)
-- [ ] **Phase 2: Tokens + Type System** — `styles/tokens.css` palette + Tailwind v4 `@theme` block + JetBrains Mono Variable + scanline body overlay + WCAG AAA contrast audit + Cyrillic glyph metrics check
+- [ ] **Phase 2: Tokens + Type System** — `styles/tokens.css` retro-os pastel palette + Tailwind v4 `@theme` block + Silkscreen / IBM Plex Sans / IBM Plex Mono fonts + cream dot-dither body background + WCAG AA contrast audit + Cyrillic glyph metrics check
 - [ ] **Phase 3: Layout Primitives + Bottombar** — AppShell 2×3 grid + TopBar + Sidebar (`// GROUP` labels + collapse-to-rail) + Bottombar with `useShortcuts` SSOT + `isEditableTarget` input-focus guard from first commit + PageHeader (`// ROUTE` + SESSION + LAST SYNC) + ShortcutChip + mobile breakpoint contract
 - [ ] **Phase 4: Retro Atoms** — RetroPanel/Button/Badge/Input/Select/Combobox/Textarea/Checkbox/FileInput/FormField/Table family/Tabs/Dialog/ConfirmDialog/Toast/EmptyState/Pagination/StatusDot/HUD primitives — informed by Phase 3 layout constraints; modal-stack ESC, status pills with tabular-nums, SSE state in panel headers, multi-select Shift+Click on tables
 - [ ] **Phase 5: Auth** — login + register + Google OAuth + GitHub OAuth + RequireAuth (with v2.0 spurious-logout-on-network-error bug fixed) + workspace switcher + sessions + password change + account deletion + connected accounts
@@ -240,7 +242,7 @@ Clean-slate rebuild of `/frontend2` with sketch 005 premium-terminal fidelity AN
 - [ ] **Phase 14: System group** — Approvals + My Changes + Sync History + Imports/Exports — all activity-table style with bulk operations dispatched via Bottombar
 - [ ] **Phase 15: i18n catalog gap-fill (et + ru)** — extract en messages, translate to et + ru (lift from legacy `/frontend` next-intl + v2.1 Lingui archive), locale switcher, format hooks (`useDateFormat`/`useTimeFormat`/`useNumberFormat`) used everywhere
 - [ ] **Phase 16: Command Palette** — Cmd+K / F2 cmdk surface filtering across routes, recent actions, and workspaces; keyboard-first navigation
-- [ ] **Phase 17: Polish & Quality** — Playwright E2E + Go integration test for every cross-HTTP flow + axe-playwright a11y CI sweep + tab/keyboard navigation audit + bundle size CI guard + mobile breakpoint matrix re-test (320/360/768/1024/1440 px) + visual diff vs sketch 005
+- [ ] **Phase 17: Polish & Quality** — Playwright E2E + Go integration test for every cross-HTTP flow + axe-playwright a11y CI sweep + tab/keyboard navigation audit + bundle size CI guard + mobile breakpoint matrix re-test (320/360/768/1024/1440 px) + visual diff vs sketch 006
 
 ## Phase Details
 
@@ -503,15 +505,15 @@ Plans:
 - [x] 01-03-PLAN.md — i18n empirical spike (Lingui v6 vs react-intl) on throwaway branch + winner install in scaffold (FOUND-04)
 
 ### Phase 2: Tokens + Type System
-**Goal**: The premium-terminal palette, monospace typography, scanline overlay, and sharp-corner globals from sketch 005 are loaded into the app via Tailwind v4 `@theme`, with WCAG AAA contrast verified and Cyrillic glyph metrics confirmed
+**Goal** *(revised 2026-06-11, retro-os pastel)*: The retro-os pastel palette, Silkscreen/Plex type stack, cream dot-dither background, and radius globals from sketches 006-008 are loaded into the app via Tailwind v4 `@theme`, with WCAG AA contrast verified and Cyrillic glyph metrics confirmed
 **Depends on**: Phase 1
 **Requirements**: TOKEN-01, TOKEN-02, TOKEN-03, TOKEN-04, TOKEN-05
 **Success Criteria** (what must be TRUE):
-  1. User opening the placeholder shell sees the premium-terminal palette (amber + green dual-channel, near-black backgrounds, panel bevel + scanline overlay + radial vignette) applied globally
-  2. Tailwind utility classes like `bg-fg-mid`, `text-fg-bright`, `border-fg-dim` resolve to the locked CSS variables from `default.css`
-  3. JetBrains Mono Variable (latin + latin-ext subsets) is self-hosted and renders without flash of fallback font
-  4. A repo-resident contrast audit script confirms `--fg-mid`/`--fg-base`/`--fg-bright` against `--bg-panel` meet WCAG AAA, and a `prefers-contrast: more` fallback path is provided
-  5. Cyrillic + Estonian glyph metrics in JetBrains Mono produce no column drift in monospace tables (or fallback to IBM Plex Mono is recorded)
+  1. User opening the placeholder shell sees the retro-os pastel palette (cream dot-dithered desktop, white panels, ink text) applied globally
+  2. Tailwind utility classes like `bg-bg-panel`, `text-fg-ink`, `bg-titlebar-mint` resolve to the locked CSS variables from `themes/retro-os.css`
+  3. Silkscreen + IBM Plex Sans + IBM Plex Mono (latin + latin-ext subsets) are self-hosted and render without flash of fallback font
+  4. A repo-resident contrast audit script confirms the AA pair list (ink/panel, ink/desktop, muted/panel, ink/titlebars, deep-accents/panel, danger/danger-bg) meets WCAG AA ≥4.5:1, and a `prefers-contrast: more` fallback path is provided
+  5. Cyrillic + Estonian glyph metrics in IBM Plex Mono produce no column drift in mono data columns
 **Plans**: TBD
 **UI hint**: yes
 
@@ -684,14 +686,14 @@ Plans:
 **UI hint**: yes
 
 ### Phase 17: Polish & Quality
-**Goal**: Every cross-HTTP flow has at least one real-backend test (Playwright E2E + tagged Go integration test, Phase 65 Plan 65-11 pattern); axe-playwright a11y CI sweep passes; tab/keyboard navigation audit passes; bundle-size CI guard enforced; mobile breakpoint matrix re-tested at 320 / 360 / 768 / 1024 / 1440 px with visual diff vs sketch 005 PNG for the dashboard route
+**Goal**: Every cross-HTTP flow has at least one real-backend test (Playwright E2E + tagged Go integration test, Phase 65 Plan 65-11 pattern); axe-playwright a11y CI sweep passes; tab/keyboard navigation audit passes; bundle-size CI guard enforced; mobile breakpoint matrix re-tested at 320 / 360 / 768 / 1024 / 1440 px with visual diff vs sketch 006 PNG for the dashboard route
 **Depends on**: Phase 14
 **Requirements**: POL-01, POL-02, POL-03, POL-04, POL-05
 **Success Criteria** (what must be TRUE):
   1. Every flow that crosses the HTTP boundary has at least one real-backend test — Playwright E2E for browser-driven flows + tagged Go integration test for server contract (the Phase 65 Plan 65-11 pattern, applied from Day 1)
   2. CI runs `axe-playwright` across every route and fails on contrast / focus-visible / touch-target / aria-label violations; tab/keyboard navigation audit confirms every page is fully keyboard-navigable with visible focus indicator (focus-visible, not focus) and no keyboard traps
   3. CI fails any PR that pushes `vite build` output above documented per-chunk budgets (main / scanner / vendor) with a clear delta report
-  4. Mobile breakpoint matrix re-tested at 320 / 360 / 768 / 1024 / 1440 px; dashboard route passes visual diff vs sketch 005 PNG
+  4. Mobile breakpoint matrix re-tested at 320 / 360 / 768 / 1024 / 1440 px; dashboard route passes visual diff vs sketch 006 PNG
 **Plans**: TBD
 
 ## Progress
