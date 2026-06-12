@@ -229,7 +229,7 @@ Barcode scanning + mobile FAB brought to `/frontend2` at full v1.3 parity, wired
 Clean-slate rebuild of `/frontend2` with sketch 006-008 retro-os pastel fidelity AND feature parity with the legacy `/frontend`. Phase numbering RESETS to start at 1 — v3.0 has no continuity with v2.2 (predecessor wiped). Online-only (CI grep-guarded). All 106 v3.0 requirements (FOUND/TOKEN/SHELL/BAR/PROV/AUTH/ITEM/LOAN/BORR/TAX/SCAN/SETT/DASH/I18N/SYS/TUI/POL) map to exactly one phase. Layout primitives precede retro atoms — predecessor's reverse order forced atom rebuilds twice.
 
 - [ ] **Phase 1: Foundation + Conflict Spikes** — Vite + React 19 + TS + Tailwind 4 + RR7 scaffold, CI grep guard, carry-forward audit, three Phase 0 conflict resolutions (i18n library / mobile FAB scope / dashboard backend rollups)
-- [ ] **Phase 2: Tokens + Type System** — `styles/tokens.css` retro-os pastel palette + Tailwind v4 `@theme` block + Silkscreen / IBM Plex Sans / IBM Plex Mono fonts + cream dot-dither body background + WCAG AA contrast audit + Cyrillic glyph metrics check
+- [x] **Phase 2: Tokens + Type System** — `styles/tokens.css` retro-os pastel palette + Tailwind v4 `@theme` block + Silkscreen / IBM Plex Sans / IBM Plex Mono fonts + cream dot-dither body background + WCAG AA contrast audit + Cyrillic glyph metrics check (completed 2026-06-12)
 - [ ] **Phase 3: Layout Primitives + Bottombar** — AppShell 2×3 grid + TopBar + Sidebar (`// GROUP` labels + collapse-to-rail) + Bottombar with `useShortcuts` SSOT + `isEditableTarget` input-focus guard from first commit + PageHeader (`// ROUTE` + SESSION + LAST SYNC) + ShortcutChip + mobile breakpoint contract
 - [ ] **Phase 4: Retro Atoms** — RetroPanel/Button/Badge/Input/Select/Combobox/Textarea/Checkbox/FileInput/FormField/Table family/Tabs/Dialog/ConfirmDialog/Toast/EmptyState/Pagination/StatusDot/HUD primitives — informed by Phase 3 layout constraints; modal-stack ESC, status pills with tabular-nums, SSE state in panel headers, multi-select Shift+Click on tables
 - [ ] **Phase 5: Auth** — login + register + Google OAuth + GitHub OAuth + RequireAuth (with v2.0 spurious-logout-on-network-error bug fixed) + workspace switcher + sessions + password change + account deletion + connected accounts
@@ -520,10 +520,10 @@ Plans:
   3. Silkscreen + IBM Plex Sans + IBM Plex Mono (latin + latin-ext subsets) are self-hosted and render without flash of fallback font
   4. A repo-resident contrast audit script confirms the AA pair list (ink/panel, ink/desktop, muted/panel, ink/titlebars, deep-accents/panel, danger/danger-bg) meets WCAG AA ≥4.5:1, and a `prefers-contrast: more` fallback path is provided
   5. Cyrillic + Estonian glyph metrics in IBM Plex Mono produce no column drift in mono data columns
-**Plans:** 2 plans (verification + gap-closure — Phase 2 impl landed in commit 19f038e)
+**Plans:** 2/2 plans complete
 Plans:
-- [ ] 02-01-PLAN.md — Verify TOKEN-01/02/04 against committed code + close radius-0 reset gap (TOKEN-03) + name font-display/FOUT decision
-- [ ] 02-02-PLAN.md — TOKEN-05 glyph-coverage check (IBM Plex Mono cyrillic+latin-ext) + rewrite stale REQUIREMENTS.md TOKEN prose to retro-os
+- [x] 02-01-PLAN.md — Verify TOKEN-01/02/04 against committed code + close radius-0 reset gap (TOKEN-03) + name font-display/FOUT decision
+- [x] 02-02-PLAN.md — TOKEN-05 glyph-coverage check (IBM Plex Mono cyrillic+latin-ext) + rewrite stale REQUIREMENTS.md TOKEN prose to retro-os
 **UI hint**: yes
 
 ### Phase 3: Layout Primitives + Bottombar
@@ -796,7 +796,7 @@ Plans:
 | 71 | v2.2 | 0/? | Abandoned | - |
 | 72 | v2.2 | 0/? | Abandoned | - |
 | 1 | v3.0 | 0/TBD | Not started | - |
-| 2 | v3.0 | 0/TBD | Not started | - |
+| 2 | v3.0 | 2/2 | Complete   | 2026-06-12 |
 | 3 | v3.0 | 0/TBD | Not started | - |
 | 4 | v3.0 | 0/TBD | Not started | - |
 | 5 | v3.0 | 0/TBD | Not started | - |
