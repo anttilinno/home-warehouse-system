@@ -2,12 +2,13 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { useNavigate } from "react-router";
+import { Link, useNavigate } from "react-router";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { post, setRefreshToken } from "@/lib/api";
 import type { AuthTokenResponse } from "@/lib/types";
 import { BrandMark } from "@/components/BrandMark";
 import { BevelButton, RetroInput, Window } from "@/components/retro";
+import { SocialLoginButtons } from "./SocialLoginButtons";
 
 const loginSchema = z.object({
   email: z.email(),
@@ -90,6 +91,28 @@ export function LoginPage() {
             <Trans>Log in</Trans>
           </BevelButton>
         </form>
+
+        {/* OR divider — sketch 007 .divider (dotted rules either side of OR). */}
+        <div
+          aria-hidden="true"
+          className="flex items-center gap-sp-2 text-[11px] font-bold uppercase tracking-[0.14em] text-fg-muted"
+        >
+          <span className="h-px flex-1 border-t border-dotted border-fg-faint" />
+          <Trans>OR</Trans>
+          <span className="h-px flex-1 border-t border-dotted border-fg-faint" />
+        </div>
+
+        <SocialLoginButtons mode="login" />
+
+        <p className="text-center text-[13px] text-fg-muted">
+          <Trans>New here?</Trans>{" "}
+          <Link
+            to="/register"
+            className="font-semibold text-accent-blue-deep underline-offset-2 hover:underline"
+          >
+            <Trans>Create an account</Trans>
+          </Link>
+        </p>
       </Window>
     </main>
   );
