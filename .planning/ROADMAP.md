@@ -514,7 +514,10 @@ Plans:
   3. Silkscreen + IBM Plex Sans + IBM Plex Mono (latin + latin-ext subsets) are self-hosted and render without flash of fallback font
   4. A repo-resident contrast audit script confirms the AA pair list (ink/panel, ink/desktop, muted/panel, ink/titlebars, deep-accents/panel, danger/danger-bg) meets WCAG AA ≥4.5:1, and a `prefers-contrast: more` fallback path is provided
   5. Cyrillic + Estonian glyph metrics in IBM Plex Mono produce no column drift in mono data columns
-**Plans**: TBD
+**Plans:** 2 plans (verification + gap-closure — Phase 2 impl landed in commit 19f038e)
+Plans:
+- [ ] 02-01-PLAN.md — Verify TOKEN-01/02/04 against committed code + close radius-0 reset gap (TOKEN-03) + name font-display/FOUT decision
+- [ ] 02-02-PLAN.md — TOKEN-05 glyph-coverage check (IBM Plex Mono cyrillic+latin-ext) + rewrite stale REQUIREMENTS.md TOKEN prose to retro-os
 **UI hint**: yes
 
 ### Phase 3: Layout Primitives + Bottombar
