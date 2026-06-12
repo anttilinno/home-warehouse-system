@@ -2,14 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { get } from "@/lib/api";
 import { i18n } from "@/lib/i18n";
-import type {
-  DashboardStats,
-  RecentActivity,
-  User,
-  Workspace,
-} from "@/lib/types";
-import { BrandMark } from "@/components/BrandMark";
-import { Sidebar } from "@/components/layout/Sidebar";
+import type { DashboardStats, RecentActivity, Workspace } from "@/lib/types";
 import {
   RetroBadge,
   RetroTable,
@@ -41,10 +34,11 @@ function formatActivityTime(iso: string): string {
   });
 }
 
-// Retro-os sample dashboard (sketch 006): stat windows over real
-// DashboardStats + RecentActivity. Workspace switcher, sidebar, and full
-// chrome are Phase 3/5 scope — this binds the aesthetic to real backend
-// data with the first workspace. Auth guard lives in RequireAuth (route).
+// Retro-os dashboard (sketch 006): the stat windows + recent-activity table
+// over real DashboardStats + RecentActivity. As of Phase 3 the page lives
+// INSIDE AppShell — the shell owns the chrome (TopBar, Navigator, Bottombar,
+// PageHeader), so this component renders only the route body. Auth guard lives
+// in RequireAuth (the AppShell layout route).
 export function DashboardPage() {
   const { t } = useLingui();
 
@@ -68,11 +62,6 @@ export function DashboardPage() {
     enabled: !!wsId,
     retry: false,
   });
-  const me = useQuery({
-    queryKey: ["me"],
-    queryFn: () => get<User>("/users/me"),
-    retry: false,
-  });
 
   if (workspaces.data && workspaces.data.length === 0) {
     return (
@@ -89,21 +78,7 @@ export function DashboardPage() {
   const s = stats.data;
 
   return (
-    <div className="mx-auto grid max-w-[1280px] grid-cols-1 items-start gap-sp-5 p-sp-5 md:grid-cols-[232px_1fr]">
-      <aside className="md:sticky md:top-sp-5">
-        <Sidebar stats={s} user={me.data} />
-      </aside>
-
-      <main className="min-w-0">
-      <header className="mb-sp-5 flex items-baseline gap-sp-3">
-        <h1>
-          <BrandMark />
-        </h1>
-        <span className="font-mono text-[12px] text-fg-muted">
-          {workspaces.data?.[0]?.name}
-        </span>
-      </header>
-
+    <div className="mx-auto min-w-0 max-w-[1280px]">
       <section className="mb-sp-5 grid grid-cols-2 gap-sp-4 lg:grid-cols-4 [&>*]:min-w-0">
         <StatCard
           label={<Trans>Items</Trans>}
@@ -212,7 +187,6 @@ export function DashboardPage() {
           </RetroTable>
         )}
       </Window>
-      </main>
     </div>
   );
 }

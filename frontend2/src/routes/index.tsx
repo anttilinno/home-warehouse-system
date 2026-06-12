@@ -1,12 +1,14 @@
 import { Routes, Route } from "react-router";
 import { LoginPage } from "@/features/auth/LoginPage";
 import { RequireAuth } from "@/features/auth/RequireAuth";
+import { AppShell } from "@/components/layout/AppShell";
 import { DashboardPage } from "@/features/dashboard/DashboardPage";
 
 // Library-mode RR7 (NOT framework mode — AP-1). Literal routes before the
-// wildcard. /login + / are the retro-os sample screens (2026-06-11); later
-// phases (3 chrome, 4 atoms, 5+ features) add real routes against this
-// baseline.
+// wildcard. /login stays public; the authenticated branch is now an AppShell
+// LAYOUT route — RequireAuth gates the shell, which renders each child route
+// through its <Outlet/> (Phase 3 chrome). Feature phases (4 atoms, 5+ features)
+// add child routes under the same shell.
 
 function PlaceholderShell() {
   return (
@@ -25,13 +27,14 @@ export function AppRoutes() {
     <Routes>
       <Route path="/login" element={<LoginPage />} />
       <Route
-        path="/"
         element={
           <RequireAuth>
-            <DashboardPage />
+            <AppShell />
           </RequireAuth>
         }
-      />
+      >
+        <Route index element={<DashboardPage />} />
+      </Route>
       <Route path="*" element={<PlaceholderShell />} />
     </Routes>
   );
