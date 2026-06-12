@@ -64,11 +64,22 @@ async function parseResponse<T>(response: Response): Promise<T> {
   return response.json();
 }
 
+// Signal that the session is gone so a single listener (RequireAuth) can
+// redirect to /login. Dispatched only from doRefresh's failure paths, which are
+// single-flighted via refreshPromise — so concurrent 401 callers awaiting the
+// same promise observe exactly one event (Phase 05 Plan 02, AUTH-01).
+function emitAuthExpired(): void {
+  if (typeof window !== "undefined") {
+    window.dispatchEvent(new CustomEvent("auth-expired"));
+  }
+}
+
 async function doRefresh(): Promise<void> {
   // Throw HttpError(401) — callers (auth guards) distinguish "session is
   // gone" from network failures via instanceof HttpError, and a plain Error
   // here made that check silently miss the most common no-session path.
   if (!storedRefreshToken) {
+    emitAuthExpired();
     throw new HttpError(401, "Session expired");
   }
   const res = await fetch(`${BASE_URL}/auth/refresh`, {
@@ -79,6 +90,7 @@ async function doRefresh(): Promise<void> {
   });
   if (!res.ok) {
     storedRefreshToken = null;
+    emitAuthExpired();
     throw new HttpError(401, "Session expired");
   }
   const data = await res.json();
