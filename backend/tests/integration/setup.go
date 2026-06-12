@@ -35,6 +35,11 @@ func NewTestServer(t *testing.T) *TestServer {
 		JWTSecret:          "test-secret-key-for-integration-tests",
 		JWTExpirationHours: 24,
 		DebugMode:          true,
+		// NewRouter calls redis.ParseURL(cfg.RedisURL); an empty string fails
+		// to parse and log.Fatalf-kills the whole test binary. The production
+		// default (set via getEnv in config.Load) is the same value — the
+		// struct-literal harness bypasses that default, so set it explicitly.
+		RedisURL: "redis://localhost:6379/0",
 	}
 
 	router := api.NewRouter(pool, cfg)
@@ -111,6 +116,49 @@ func (ts *TestServer) Patch(path string, body interface{}) *http.Response {
 // Delete makes a DELETE request.
 func (ts *TestServer) Delete(path string) *http.Response {
 	return ts.Request(http.MethodDelete, path, nil)
+}
+
+// RequestWithCookies makes an HTTP request carrying the given cookies. The
+// stock Request helper sets ONLY Authorization: Bearer, but logout/refresh and
+// the CurrentSession middleware read the refresh_token (and access_token)
+// COOKIE — there is no cookie jar otherwise. Use this to exercise the real
+// cookie-bound auth paths. The configured Bearer token (if any) is still sent.
+func (ts *TestServer) RequestWithCookies(method, path string, body interface{}, cookies map[string]string) *http.Response {
+	ts.t.Helper()
+
+	var reqBody io.Reader
+	if body != nil {
+		jsonBody, err := json.Marshal(body)
+		if err != nil {
+			ts.t.Fatalf("failed to marshal request body: %v", err)
+		}
+		reqBody = bytes.NewReader(jsonBody)
+	}
+
+	req, err := http.NewRequest(method, ts.Server.URL+path, reqBody)
+	if err != nil {
+		ts.t.Fatalf("failed to create request: %v", err)
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+	if ts.Token != "" {
+		req.Header.Set("Authorization", "Bearer "+ts.Token)
+	}
+	for name, value := range cookies {
+		req.AddCookie(&http.Cookie{Name: name, Value: value})
+	}
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		ts.t.Fatalf("failed to make request: %v", err)
+	}
+
+	return resp
+}
+
+// PostWithCookie is a convenience POST that carries a single cookie.
+func (ts *TestServer) PostWithCookie(path string, body interface{}, cookieName, cookieValue string) *http.Response {
+	return ts.RequestWithCookies(http.MethodPost, path, body, map[string]string{cookieName: cookieValue})
 }
 
 // PostRaw makes a POST request with raw body and custom content type.
