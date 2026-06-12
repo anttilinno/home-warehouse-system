@@ -166,11 +166,11 @@
 ### TUI Differentiators (TUI)
 
 - [x] **TUI-01**: Per-route shortcut sets registered via `useShortcuts(routeName, [...])`; Bottombar reflects the active route's set without flicker on route change.
-- [ ] **TUI-02**: Modal-stack ESC pops the topmost overlay first (dialog → drawer → menu), never logging out while any modal is open.
-- [ ] **TUI-03**: SSE state in panel headers — live dot + `sse: ● live` text on panels that subscribe to entity events.
-- [ ] **TUI-04**: Status pills on row entities — OK / WARN / INFO / DANGER variants with color tokens; numeric columns use `tabular-nums`.
+- [x] **TUI-02**: Modal-stack ESC pops the topmost overlay first (dialog → drawer → menu), never logging out while any modal is open.
+- [x] **TUI-03**: SSE state in panel headers — live dot + `sse: ● live` text on panels that subscribe to entity events.
+- [x] **TUI-04**: Status pills on row entities — OK / WARN / INFO / DANGER variants with color tokens; numeric columns use `tabular-nums`.
 - [ ] **TUI-05**: Command palette (Cmd+K / F2) via `cmdk` — filters across routes, recent actions, and workspaces; keyboard-first navigation.
-- [ ] **TUI-06**: Multi-select via Shift+Click on RetroTable rows; Bottombar surfaces bulk actions for the active selection set.
+- [x] **TUI-06**: Multi-select via Shift+Click on RetroTable rows; Bottombar surfaces bulk actions for the active selection set.
 
 ### Polish & Quality (POL)
 
@@ -247,10 +247,10 @@
 
 ### Filter Atoms (ATOM-FB) — Phase 4 (§4)
 
-- [ ] **ATOM-FB-01**: FilterBar retro atom exists and is consumed by Phases 7/8/14 list pages.
-- [ ] **ATOM-FB-02**: FilterPopover retro atom exists.
-- [ ] **ATOM-FB-03**: BulkActionBar retro atom exists, surfaced for multi-select bulk actions.
-- [ ] **ATOM-FB-04**: SavedFilters retro atom exists for saved filter presets.
+- [x] **ATOM-FB-01**: FilterBar retro atom exists and is consumed by Phases 7/8/14 list pages.
+- [x] **ATOM-FB-02**: FilterPopover retro atom exists.
+- [x] **ATOM-FB-03**: BulkActionBar retro atom exists, surfaced for multi-select bulk actions.
+- [x] **ATOM-FB-04**: SavedFilters retro atom exists for saved filter presets.
 
 ### Auth parity additions (AUTH) — Phase 5 (§4, §8 risks 5-6)
 
@@ -407,11 +407,11 @@
 | SYS-03 | Phase 14 | Pending |
 | SYS-04 | Phase 14 | Pending |
 | TUI-01 | Phase 3 | Complete |
-| TUI-02 | Phase 4 | Pending |
-| TUI-03 | Phase 4 | Pending |
-| TUI-04 | Phase 4 | Pending |
+| TUI-02 | Phase 4 | Complete |
+| TUI-03 | Phase 4 | Complete |
+| TUI-04 | Phase 4 | Complete |
 | TUI-05 | Phase 16 | Pending |
-| TUI-06 | Phase 4 | Pending |
+| TUI-06 | Phase 4 | Complete |
 | POL-01 | Phase 17 | Pending |
 | POL-02 | Phase 17 | Pending |
 | POL-03 | Phase 17 | Pending |
@@ -450,10 +450,10 @@
 | NOTIF-01 | Phase 13 | Pending |
 | NOTIF-02 | Phase 13 | Pending |
 | NOTIF-03 | Phase 13 | Pending |
-| ATOM-FB-01 | Phase 4 | Pending |
-| ATOM-FB-02 | Phase 4 | Pending |
-| ATOM-FB-03 | Phase 4 | Pending |
-| ATOM-FB-04 | Phase 4 | Pending |
+| ATOM-FB-01 | Phase 4 | Complete |
+| ATOM-FB-02 | Phase 4 | Complete |
+| ATOM-FB-03 | Phase 4 | Complete |
+| ATOM-FB-04 | Phase 4 | Complete |
 | AUTH-11 | Phase 5 | Pending |
 | AUTH-12 | Phase 5 | Pending |
 | TAX-07 | Phase 10 | Pending |

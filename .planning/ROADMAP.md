@@ -231,7 +231,7 @@ Clean-slate rebuild of `/frontend2` with sketch 006-008 retro-os pastel fidelity
 - [ ] **Phase 1: Foundation + Conflict Spikes** — Vite + React 19 + TS + Tailwind 4 + RR7 scaffold, CI grep guard, carry-forward audit, three Phase 0 conflict resolutions (i18n library / mobile FAB scope / dashboard backend rollups)
 - [x] **Phase 2: Tokens + Type System** — `styles/tokens.css` retro-os pastel palette + Tailwind v4 `@theme` block + Silkscreen / IBM Plex Sans / IBM Plex Mono fonts + cream dot-dither body background + WCAG AA contrast audit + Cyrillic glyph metrics check (completed 2026-06-12)
 - [x] **Phase 3: Layout Primitives + Bottombar** — AppShell 2×3 grid + TopBar + Sidebar (`// GROUP` labels + collapse-to-rail) + Bottombar with `useShortcuts` SSOT + `isEditableTarget` input-focus guard from first commit + PageHeader (`// ROUTE` + SESSION + LAST SYNC) + ShortcutChip + mobile breakpoint contract (completed 2026-06-12)
-- [ ] **Phase 4: Retro Atoms** — RetroPanel/Button/Badge/Input/Select/Combobox/Textarea/Checkbox/FileInput/FormField/Table family/Tabs/Dialog/ConfirmDialog/Toast/EmptyState/Pagination/StatusDot/HUD primitives — informed by Phase 3 layout constraints; modal-stack ESC, status pills with tabular-nums, SSE state in panel headers, multi-select Shift+Click on tables
+- [x] **Phase 4: Retro Atoms** — RetroPanel/Button/Badge/Input/Select/Combobox/Textarea/Checkbox/FileInput/FormField/Table family/Tabs/Dialog/ConfirmDialog/Toast/EmptyState/Pagination/StatusDot/HUD primitives — informed by Phase 3 layout constraints; modal-stack ESC, status pills with tabular-nums, SSE state in panel headers, multi-select Shift+Click on tables (completed 2026-06-12)
 - [ ] **Phase 5: Auth** — login + register + Google OAuth + GitHub OAuth + RequireAuth (with v2.0 spurious-logout-on-network-error bug fixed) + workspace switcher + sessions + password change + account deletion + connected accounts
 - [ ] **Phase 6: Providers** — IntlProvider + QueryClientProvider + AuthProvider + SSEProvider (with `useSSEStatus()` selector) + ToastProvider + ShortcutsProvider mounted in canonical order; chrome wires to real state once
 - [ ] **Phase 7: Items + Photos** — paginated list with search/filter/sort + detail with photo gallery + create/edit/archive/delete + multipart photo upload + `itemsApi.lookupByBarcode` (G-65-01 regression-guard pattern) + per-route `useShortcuts` registration
@@ -558,15 +558,15 @@ Plans:
   4. User looking at any panel that subscribes to entity SSE events sees a `sse: ● live` text + step-end blinking dot in the panel header
   5. User Shift+Clicking rows in a RetroTable sees range selection state + Bottombar surfaces bulk-action chips for the active selection set
 **Parity additions (2026-06-12)** (§4): add FilterBar, FilterPopover, BulkActionBar, and SavedFilters as retro atoms here — Phases 7/8/14 all consume them; building once avoids three ad-hoc copies. New requirement IDs: ATOM-FB-01..04.
-**Plans:** 7 plans (4 waves)
+**Plans:** 7/7 plans complete
 Plans:
-- [ ] 04-01-PLAN.md — Overlay foundation: sonner@2.0.7 legitimacy-gated install + RetroDialog extraction + Popover + RetroConfirmDialog + F1HelpDialog refactor
-- [ ] 04-02-PLAN.md — Data family: useTableSelection (id-keyed TUI-06) + RetroPagination + RetroTabs
-- [ ] 04-03-PLAN.md — Feedback visuals: RetroStatusDot (TUI-03) + StatusPill (TUI-04) + RetroEmptyState + status-blink keyframe
-- [ ] 04-04-PLAN.md — Form family: FormField + Select(native) + Textarea + Checkbox + FileInput + Combobox(activedescendant)
-- [ ] 04-05-PLAN.md — RetroToast: sonner skin (retro mini-Window, never-auto-dismiss-danger) + retroToast re-export
-- [ ] 04-06-PLAN.md — Filter atoms: FilterBar/FilterPopover/BulkActionBar/SavedFilters (ATOM-FB-01..04) + useSavedFilters localStorage
-- [ ] 04-07-PLAN.md — /demo review surface (every atom) + escStack TUI-02 composition test + bulk-chip proof
+- [x] 04-01-PLAN.md — Overlay foundation: sonner@2.0.7 legitimacy-gated install + RetroDialog extraction + Popover + RetroConfirmDialog + F1HelpDialog refactor
+- [x] 04-02-PLAN.md — Data family: useTableSelection (id-keyed TUI-06) + RetroPagination + RetroTabs
+- [x] 04-03-PLAN.md — Feedback visuals: RetroStatusDot (TUI-03) + StatusPill (TUI-04) + RetroEmptyState + status-blink keyframe
+- [x] 04-04-PLAN.md — Form family: FormField + Select(native) + Textarea + Checkbox + FileInput + Combobox(activedescendant)
+- [x] 04-05-PLAN.md — RetroToast: sonner skin (retro mini-Window, never-auto-dismiss-danger) + retroToast re-export
+- [x] 04-06-PLAN.md — Filter atoms: FilterBar/FilterPopover/BulkActionBar/SavedFilters (ATOM-FB-01..04) + useSavedFilters localStorage
+- [x] 04-07-PLAN.md — /demo review surface (every atom) + escStack TUI-02 composition test + bulk-chip proof
 **UI hint**: yes
 
 ### Phase 5: Auth
@@ -813,7 +813,7 @@ Plans:
 | 1 | v3.0 | 0/TBD | Not started | - |
 | 2 | v3.0 | 2/2 | Complete   | 2026-06-12 |
 | 3 | v3.0 | 6/6 | Complete   | 2026-06-12 |
-| 4 | v3.0 | 0/TBD | Not started | - |
+| 4 | v3.0 | 7/7 | Complete   | 2026-06-12 |
 | 5 | v3.0 | 0/TBD | Not started | - |
 | 6 | v3.0 | 0/TBD | Not started | - |
 | 7 | v3.0 | 0/TBD | Not started | - |
