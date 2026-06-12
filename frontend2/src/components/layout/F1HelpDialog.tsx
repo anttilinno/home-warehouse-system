@@ -1,8 +1,7 @@
-import { useEffect, useId, useRef } from "react";
+import { useEffect } from "react";
 import { Trans } from "@lingui/react/macro";
 import { useShortcutsContext, type Shortcut } from "@/components/shortcuts";
-import { useModalStack } from "@/components/modal";
-import { Window } from "@/components/retro";
+import { RetroDialog } from "@/components/retro";
 import { ShortcutChip } from "./ShortcutChip";
 
 export interface F1HelpDialogProps {
@@ -26,22 +25,18 @@ const GLOBAL_SYNTHETIC: { shortcutKey: string; description: string }[] = [
  * Owns the SINGLE F1 (and "?") keydown listener that toggles the dialog
  * (mirrors the legacy `use-keyboard-shortcuts-dialog`; exactly one owner,
  * cleaned up on unmount — Pitfall 2). When open it renders a blue-titlebar
- * {@link Window} ("KEYBOARD SHORTCUTS") over a scrim, lists the merged
- * {@link useShortcutsContext} shortcuts grouped by scope (Global, then route),
- * traps focus, restores focus to the invoker on close, and pushes onto the
- * modal stack so ESC pops it — never logout (TUI-02).
+ * {@link RetroDialog} ("KEYBOARD SHORTCUTS"), lists the merged
+ * {@link useShortcutsContext} shortcuts grouped by scope (Global, then route).
+ * RetroDialog supplies the scrim, focus-trap, invoker focus-restore, and the
+ * modal-stack ESC pop (never logout — TUI-02); this component only owns the F1
+ * toggle listener (the F1 owner, NOT an ESC listener).
  */
 export function F1HelpDialog({ open, onClose, onToggle }: F1HelpDialogProps) {
   const { shortcuts } = useShortcutsContext();
-  const titleId = useId();
-  const dialogRef = useRef<HTMLDivElement>(null);
-  const invokerRef = useRef<HTMLElement | null>(null);
-
-  // ESC pops this overlay via the shared modal stack (never logout).
-  useModalStack(open, onClose);
 
   // The SINGLE F1/"?" toggle owner. Bails on modifier combos and editable
-  // surfaces so it never fires while typing.
+  // surfaces so it never fires while typing. (NOT an ESC listener — ESC is
+  // owned by RetroDialog's useModalStack.)
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if (e.metaKey || e.ctrlKey || e.altKey) return;
@@ -63,112 +58,58 @@ export function F1HelpDialog({ open, onClose, onToggle }: F1HelpDialogProps) {
     return () => document.removeEventListener("keydown", handler);
   }, [onToggle]);
 
-  // Focus management: trap inside the dialog on open, restore on close.
-  useEffect(() => {
-    if (!open) return;
-    invokerRef.current = document.activeElement as HTMLElement | null;
-    // Move focus into the dialog.
-    dialogRef.current?.focus();
-    const node = dialogRef.current;
-    const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key !== "Tab" || !node) return;
-      const focusables = node.querySelectorAll<HTMLElement>(
-        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
-      );
-      if (focusables.length === 0) {
-        e.preventDefault();
-        return;
-      }
-      const first = focusables[0];
-      const last = focusables[focusables.length - 1];
-      if (e.shiftKey && document.activeElement === first) {
-        e.preventDefault();
-        last.focus();
-      } else if (!e.shiftKey && document.activeElement === last) {
-        e.preventDefault();
-        first.focus();
-      }
-    };
-    node?.addEventListener("keydown", onKeyDown);
-    return () => {
-      node?.removeEventListener("keydown", onKeyDown);
-      invokerRef.current?.focus?.();
-    };
-  }, [open]);
-
-  if (!open) return null;
-
   // Route shortcuts = the merged SSOT (F1/ESC live in the synthetic Global group).
   const routeShortcuts: Shortcut[] = shortcuts;
 
   return (
-    <div
-      className="fixed inset-0 z-40 flex items-center justify-center bg-fg-ink/40 p-sp-4"
-      onClick={onClose}
+    <RetroDialog
+      open={open}
+      onClose={onClose}
+      title={<Trans>KEYBOARD SHORTCUTS</Trans>}
+      titlebarVariant="blue"
     >
-      <div
-        ref={dialogRef}
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby={titleId}
-        tabIndex={-1}
-        className="w-[min(520px,92vw)] outline-none"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <Window
-          title={
-            <span id={titleId}>
-              <Trans>KEYBOARD SHORTCUTS</Trans>
-            </span>
-          }
-          titlebarVariant="blue"
-        >
-          <div className="flex max-h-[70vh] flex-col gap-sp-4 overflow-y-auto">
-            <Group label={<Trans>GLOBAL</Trans>}>
-              {GLOBAL_SYNTHETIC.map((row) => (
-                <Row
-                  key={row.shortcutKey}
-                  shortcutKey={row.shortcutKey}
-                  label={row.shortcutKey}
-                  onActivate={() => {}}
-                  description={row.description}
-                />
-              ))}
-            </Group>
+      <Group label={<Trans>GLOBAL</Trans>}>
+        {GLOBAL_SYNTHETIC.map((row) => (
+          <Row
+            key={row.shortcutKey}
+            shortcutKey={row.shortcutKey}
+            label={row.shortcutKey}
+            onActivate={() => {}}
+            description={row.description}
+          />
+        ))}
+      </Group>
 
-            <Group label={<Trans>ROUTE</Trans>}>
-              {routeShortcuts.length === 0 ? (
-                <div className="flex flex-col gap-sp-1">
-                  <p className="font-body text-[13px] font-semibold uppercase tracking-[0.1em] text-fg-ink">
-                    <Trans>NO SHORTCUTS HERE</Trans>
-                  </p>
-                  <p className="font-body text-[14px] text-fg-muted">
-                    <Trans>
-                      This route has no quick actions yet. Press F1 anytime for
-                      the full list.
-                    </Trans>
-                  </p>
-                </div>
-              ) : (
-                routeShortcuts.map((s, i) => (
-                  <Row
-                    key={`${s.key}-${i}`}
-                    shortcutKey={s.key}
-                    label={s.label}
-                    danger={s.danger}
-                    onActivate={() => {
-                      s.action();
-                      onClose();
-                    }}
-                    description={s.label}
-                  />
-                ))
-              )}
-            </Group>
+      <Group label={<Trans>ROUTE</Trans>}>
+        {routeShortcuts.length === 0 ? (
+          <div className="flex flex-col gap-sp-1">
+            <p className="font-body text-[13px] font-semibold uppercase tracking-[0.1em] text-fg-ink">
+              <Trans>NO SHORTCUTS HERE</Trans>
+            </p>
+            <p className="font-body text-[14px] text-fg-muted">
+              <Trans>
+                This route has no quick actions yet. Press F1 anytime for the
+                full list.
+              </Trans>
+            </p>
           </div>
-        </Window>
-      </div>
-    </div>
+        ) : (
+          routeShortcuts.map((s, i) => (
+            <Row
+              key={`${s.key}-${i}`}
+              shortcutKey={s.key}
+              label={s.label}
+              danger={s.danger}
+              onActivate={() => {
+                s.action();
+                onClose();
+              }}
+              description={s.label}
+            />
+          ))
+        )}
+      </Group>
+    </RetroDialog>
   );
 }
 
