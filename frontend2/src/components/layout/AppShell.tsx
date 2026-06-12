@@ -8,6 +8,7 @@ import { Bottombar } from "./Bottombar";
 import { Fab } from "./Fab";
 import { MobileDrawer } from "./MobileDrawer";
 import { F1HelpDialog } from "./F1HelpDialog";
+import { WorkspaceProvider } from "@/features/workspace/WorkspaceProvider";
 
 // AppShell (SHELL-01/02/06): the 2x3 CSS-Grid shell every authenticated route
 // renders inside. It owns a SINGLE `collapsed` boolean (the only collapse state
@@ -55,8 +56,12 @@ export function AppShell() {
   const handleLogout = () => navigate("/login");
 
   return (
-    <div className="app-shell" data-collapsed={collapsed}>
-      {/* Skip link — first focusable element, jumps focus to #main. */}
+    // WorkspaceProvider (D-12 SSOT) wraps the authenticated shell so TopBar's
+    // switcher AND every Outlet page read currentWorkspaceId from context. Scoped
+    // here (not at the router root) to keep it authenticated-only.
+    <WorkspaceProvider>
+      <div className="app-shell" data-collapsed={collapsed}>
+        {/* Skip link — first focusable element, jumps focus to #main. */}
       <a
         href="#main"
         className="sr-only absolute left-sp-2 top-sp-2 z-50 border-2 border-border-ink bg-bg-panel px-sp-3 py-sp-1 text-[13px] font-semibold focus:not-sr-only focus-visible:outline focus-visible:outline-2 focus-visible:outline-border-ink focus-visible:outline-offset-2"
@@ -95,12 +100,13 @@ export function AppShell() {
       <MobileDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} />
       <Fab />
 
-      {/* The F1 help dialog (its single F1/"?" keydown owner toggles it). */}
-      <F1HelpDialog
-        open={helpOpen}
-        onClose={() => setHelpOpen(false)}
-        onToggle={() => setHelpOpen((v) => !v)}
-      />
-    </div>
+        {/* The F1 help dialog (its single F1/"?" keydown owner toggles it). */}
+        <F1HelpDialog
+          open={helpOpen}
+          onClose={() => setHelpOpen(false)}
+          onToggle={() => setHelpOpen((v) => !v)}
+        />
+      </div>
+    </WorkspaceProvider>
   );
 }

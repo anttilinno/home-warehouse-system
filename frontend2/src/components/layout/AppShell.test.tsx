@@ -4,27 +4,38 @@ import userEvent from "@testing-library/user-event";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { MemoryRouter, Routes, Route } from "react-router";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { I18nProvider } from "@lingui/react";
 import { i18n } from "@/lib/i18n";
 import { ShortcutsProvider } from "@/components/shortcuts";
 import { ModalStackProvider } from "@/components/modal";
 import { AppShell } from "./AppShell";
 
+// AppShell now mounts the D-12 WorkspaceProvider (which probes ["workspaces"]
+// via useQuery), so the shell render needs a QueryClientProvider. The MSW shared
+// server (src/test/setup.ts) answers /api/users/me/workspaces with one
+// workspace, so the switcher renders its single-workspace pill — enough for the
+// chrome/Outlet assertions here (switcher behavior lives in its own spec).
 function renderShell(initialPath = "/") {
+  const client = new QueryClient({
+    defaultOptions: { queries: { retry: false } },
+  });
   return render(
     <I18nProvider i18n={i18n}>
-      <MemoryRouter initialEntries={[initialPath]}>
-        <ShortcutsProvider>
-          <ModalStackProvider>
-            <Routes>
-              <Route element={<AppShell />}>
-                <Route path="/" element={<p>Route content here</p>} />
-                <Route path="/items" element={<p>Items content</p>} />
-              </Route>
-            </Routes>
-          </ModalStackProvider>
-        </ShortcutsProvider>
-      </MemoryRouter>
+      <QueryClientProvider client={client}>
+        <MemoryRouter initialEntries={[initialPath]}>
+          <ShortcutsProvider>
+            <ModalStackProvider>
+              <Routes>
+                <Route element={<AppShell />}>
+                  <Route path="/" element={<p>Route content here</p>} />
+                  <Route path="/items" element={<p>Items content</p>} />
+                </Route>
+              </Routes>
+            </ModalStackProvider>
+          </ShortcutsProvider>
+        </MemoryRouter>
+      </QueryClientProvider>
     </I18nProvider>,
   );
 }
