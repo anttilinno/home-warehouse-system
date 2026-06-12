@@ -244,3 +244,46 @@ body {
     }
   }
 }
+
+/* ---------- RetroToast (sonner skin, TUI-04) ----------
+   sonner is mounted `unstyled`, so its default chrome (rounded corners, soft
+   shadow, system font, fixed 16px icon box) does NOT apply — the panel chrome
+   lives in the `classNames` template strings (RetroToast.tsx). These rules only
+   reposition the two sonner-owned slots that classNames can't fully express:
+   the [data-icon] titlebar bar and the absolutely-positioned close box. radius 0
+   everywhere (System-7 hard rule). ---------- */
+@layer components {
+  /* Position context for the close box; sonner sets position:relative only
+     under [data-styled], which we've disabled. */
+  .retro-toast {
+    position: relative;
+  }
+  /* The icon slot carries our full-width TitlebarLabel — strip sonner's icon
+     margins/sizing so it spans edge-to-edge as the titlebar bar. */
+  .retro-toast [data-icon] {
+    margin: 0;
+    width: 100%;
+    height: auto;
+  }
+  /* Close box: dock into the titlebar's top-right, ≥24px hit target, radius 0. */
+  .retro-toast [data-close-button] {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    height: 22px;
+    width: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 1;
+  }
+  /* sonner's stylesheet already disables all toast transitions/animations under
+     prefers-reduced-motion; we add no motion lib, so nothing further is needed.
+     This block is intentionally a no-op marker for the audit trail. */
+  @media (prefers-reduced-motion: reduce) {
+    .retro-toast {
+      transition: none;
+    }
+  }
+}

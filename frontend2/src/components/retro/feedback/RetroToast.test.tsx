@@ -9,7 +9,7 @@ import {
   it,
   vi,
 } from "vitest";
-import { act, render, screen, waitFor } from "@testing-library/react";
+import { act, render, screen } from "@testing-library/react";
 import { I18nProvider } from "@lingui/react";
 import { i18n } from "@/lib/i18n";
 import { RetroToaster } from "./RetroToast";
@@ -119,9 +119,7 @@ describe("RetroToaster", () => {
       await act(async () => {
         await vi.advanceTimersByTimeAsync(15000);
       });
-      await waitFor(() => {
-        expect(screen.queryByText("Ephemeral")).not.toBeInTheDocument();
-      });
+      expect(screen.queryByText("Ephemeral")).not.toBeInTheDocument();
     });
 
     it("each toast exposes a close box labelled Dismiss", async () => {
