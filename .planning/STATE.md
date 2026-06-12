@@ -4,10 +4,10 @@ milestone: v3.0
 milestone_name: Retro-OS Pastel Frontend
 status: executing
 stopped_at: Phase 2 context gathered
-last_updated: "2026-05-01T20:31:32.502Z"
+last_updated: "2026-06-12T00:00:00.000Z"
 last_activity: 2026-05-01 -- Phase 01 execution started
 progress:
-  total_phases: 34
+  total_phases: 38
   completed_phases: 1
   total_plans: 4
   completed_plans: 4
@@ -55,7 +55,7 @@ Last activity: 2026-05-01 -- Phase 01 execution started
 | v2.0 | 8 | 18 | Complete |
 | v2.1 | 8 | 29 | Complete |
 | v2.2 | 9 | partial | Abandoned (frontend2 wiped before completion; phases 65–66 obsolete) |
-| v3.0 | 17 | TBD | Planning (roadmap defined 2026-04-30) |
+| v3.0 | 21 | TBD | Planning (roadmap defined 2026-04-30; amended +4 lettered phases 2026-06-12) |
 
 ## v2.2 Phase Overview (abandoned — kept for archaeology)
 
@@ -80,22 +80,26 @@ Last activity: 2026-05-01 -- Phase 01 execution started
 | 1 | Foundation + Conflict Spikes | FOUND-01..06 (6) | — | Not started |
 | 2 | Tokens + Type System | TOKEN-01..05 (5) | 1 | Not started |
 | 3 | Layout Primitives + Bottombar | SHELL-01..06, BAR-01..05, TUI-01 (12) | 2 | Not started |
-| 4 | Retro Atoms | TUI-02, TUI-03, TUI-04, TUI-06 (4) | 3 | Not started |
-| 5 | Auth | AUTH-01..10 (10) | 3 | Not started |
+| 4 | Retro Atoms | TUI-02/03/04/06, ATOM-FB-01..04 (8) | 3 | Not started |
+| 5 | Auth | AUTH-01..10, AUTH-11/12 (12) | 3 | Not started |
 | 6 | Providers | PROV-01..04 (4) | 5 | Not started |
 | 7 | Items + Photos | ITEM-01..10 (10) | 4, 6 | Not started |
-| 8 | Loans | LOAN-01..06 (6) | 7 | Not started |
+| 7b | Inventory (Gap G-1) | INV-01..08 (8) | 7 | Not started |
+| 8 | Loans | LOAN-01..06 (6) | 7b | Not started |
 | 9 | Borrowers | BORR-01..05 (5) | 8 | Not started |
-| 10 | Taxonomy | TAX-01..06 (6) | 4, 6 | Not started |
-| 11 | Scan (single-route) | SCAN-01..11 (11) | 7 | Not started |
-| 12 | Settings hub | SETT-01..09 (9) | 5, 6 | Not started |
-| 13 | Dashboard | DASH-01..05 (5) | 6 | Not started |
-| 14 | System group | SYS-01..04 (4) | 7 | Not started |
+| 10 | Taxonomy | TAX-01..06, TAX-07 (7) | 4, 6 | Not started |
+| 10b | Repairs + Maintenance (Gap G-2) | RPR-01..04, MNT-01..03 (7) | 7b | Not started |
+| 11 | Scan (single-route) | SCAN-01..11, SCAN-12 (12) | 7 | Not started |
+| 12 | Settings hub | SETT-01..09, SETT-10/11 (11) | 5, 6 | Not started |
+| 13 | Dashboard | DASH-01..05, NOTIF-01..03 (8) | 6, 7b, 10b | Not started |
+| 13b | Analytics + Out-of-stock (Gap G-6) | ANL-01..04 (4) | 13 | Not started |
+| 14 | System group | SYS-01..04, WISH-01..02, DECL-01..02 (8) | 7 | Not started |
+| 14b | Attachments + Paperless (Gap G-7) | ATT-01..03, PPL-01..03 (6) | 7, 12 | Not started |
 | 15 | i18n catalog gap-fill (et + ru) | I18N-01..03 (3) | 6, 12 | Not started |
 | 16 | Command Palette | TUI-05 (1) | 6 | Not started |
-| 17 | Polish & Quality | POL-01..05 (5) | 14 | Not started |
+| 17 | Polish & Quality | POL-01..05, POL-06 (6) | 14 | Not started |
 
-**Coverage:** 106/106 v3.0 requirements mapped to exactly one phase (100%). Note: the REQUIREMENTS.md "Total: 91 requirements across 14 categories" line was incorrect — the actual list contains 106 requirements across 17 categories (FOUND/TOKEN/SHELL/BAR/PROV/AUTH/ITEM/LOAN/BORR/TAX/SCAN/SETT/DASH/I18N/SYS/TUI/POL). The total has been corrected in REQUIREMENTS.md.
+**Coverage:** 149/149 v3.0 requirements mapped to exactly one phase (100%) — 106 base + 43 parity-amendment IDs (2026-06-12, `docs/FRONTEND2_FEATURE_PARITY_PLAN.md`). Note: the REQUIREMENTS.md "Total: 91 requirements across 14 categories" line was incorrect — the actual list contains 106 requirements across 17 categories (FOUND/TOKEN/SHELL/BAR/PROV/AUTH/ITEM/LOAN/BORR/TAX/SCAN/SETT/DASH/I18N/SYS/TUI/POL). The total has been corrected in REQUIREMENTS.md.
 
 **Phase numbering reset:** v3.0 starts at Phase 1 — no continuity with v2.2's 64-72. The frontend2 rebuild is a clean-slate rewrite; predecessor phase numbering would imply continuity that does not exist.
 
@@ -134,6 +138,12 @@ Last activity: 2026-05-01 -- Phase 01 execution started
 - v3.0: HUD backend endpoint specs documented in CARRY-FORWARD.md; endpoints built in Phase 13 (D-10)
 - v3.0: HUD endpoints -- GET /api/workspaces/{wsId}/stats/capacity + GET /api/workspaces/{wsId}/stats/activity?days=14 (D-11)
 - v3.0: Premium Terminal design direction SCRAPPED 2026-06-11 (before any styled code shipped); replaced by **Retro OS Pastel** — System 7/Win95 chrome in pastel, sketches 006-008 canonical (`.planning/sketches/MANIFEST.md` + `themes/retro-os.css`). Contrast bar AAA→AA. Fonts: Silkscreen + IBM Plex Sans + IBM Plex Mono (replaces JetBrains Mono). Roadmap chrome wording referencing sketches 001-005 should be read through the retro-os equivalents; grouped sidebar + user-menu-footer decisions survive.
+- v3.0 parity (2026-06-12): roadmap amended per `docs/FRONTEND2_FEATURE_PARITY_PLAN.md` — +4 lettered phases (7b/10b/13b/14b), gap items folded into phases 3-17.
+- D-12 (PLACEHOLDER): workspace-state model (context vs router param) — to be decided during Phase 5 planning and recorded here; every workspace-scoped query key derives from it (§8 risk 5).
+- v3.0 parity: web push DROPPED for v3.0 — no service worker (online-only CI grep guard forbids it); notification prefs stay in-app only, grep guard intact (G-5 stretch).
+- v3.0 parity: theme is LIGHT-ONLY for v3.0; dark theme → backlog (needs token set v2) (§8 risk 2).
+- v3.0 parity: Members page (list/role-change/remove/invite) — minimal workspace member management INCLUDED in Phase 12 (G-9 scope decision).
+- v3.0 parity: Quick capture (G-11) and companies/favorites UI (G-10 remainder) DEFERRED to backlog.
 
 ### Pending Todos
 
@@ -181,3 +191,5 @@ Next step: Execute Wave 2 (plans 01-02 + 01-03 in parallel), then verify Phase 1
 *Updated: 2026-04-19 — Phase 65 Plan 01 complete (7 Wave 0 scaffolds + 78 it.todo + shared QueryClient helper + bundle baseline main 135754 B / scanner 58057 B @ b04ae7c).*
 *Updated: 2026-04-18 — Phase 64 COMPLETE (10/10 plans; bundle gate PASS; EN+ET catalogs filled; all SCAN-0N requirements shippable)*
 *Updated: 2026-05-01 -- Phase 1 Wave 1 complete. Plans 01-01 (Vite 8 + React 19 + TS + Tailwind 4 + RR7 + TanStack Query + RHF + zod SPA scaffold, bootable at localhost:5173) and 01-04 (CARRY-FORWARD.md: 5 SHA-cited port-verbatim items, 4 rebuild-from-scratch concepts, Phase 13 HUD endpoint specs) executed in parallel worktrees. D-05..D-11 locked into STATE.md decisions. Wave 2 executing (plans 01-02 + 01-03 in parallel: CI guard wiring + i18n spike).*
+
+*Updated: 2026-06-12 — roadmap amended per `docs/FRONTEND2_FEATURE_PARITY_PLAN.md`: +7b/10b/13b/14b, gap items folded into phases 3-17, push/dark-theme/quick-capture deferred. Added 43 parity requirement IDs (INV/RPR/MNT/ANL/ATT/PPL/WISH/DECL/NOTIF/ATOM-FB + AUTH-11/12, TAX-07, SCAN-12, SETT-10/11, POL-06); v3.0 coverage 149/149. Dependency edges updated: Phase 8 → 7b, Phase 13 → 6+7b+10b. D-12 (workspace-state model) placeholder recorded — to be decided in Phase 5 planning.*

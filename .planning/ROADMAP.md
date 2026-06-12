@@ -224,6 +224,8 @@ Barcode scanning + mobile FAB brought to `/frontend2` at full v1.3 parity, wired
 
 > **Design direction swap (2026-06-11):** Premium Terminal (sketches 001-005) scrapped before any styled code shipped; replaced by **Retro OS Pastel** (sketches 006-008, `.planning/sketches/MANIFEST.md` canonical). Phase structure and requirements are unchanged. Where phase text below references sketch-005 chrome (scanlines, `// GROUP` labels, amber/green, hazard stripes, JetBrains Mono, AAA), read the retro-os equivalent (pastel window chrome, pinstriped title bars, Silkscreen + IBM Plex, AA) — grouped sidebar + user-menu-footer + all interaction contracts survive verbatim.
 
+> **Parity amendment (2026-06-12):** Roadmap amended per `docs/FRONTEND2_FEATURE_PARITY_PLAN.md` (§§4-6). Four lettered phases added — **7b Inventory**, **10b Repairs + Maintenance**, **13b Analytics + Out-of-stock**, **14b Attachments + Paperless** — slotted at the §6 insertion points so existing integer phases 1-17 and all 106 existing requirement IDs keep their numbers. Gap items folded into existing phases 3-17 (see each phase's "Parity additions (2026-06-12)" note). Deferred to backlog: quick capture (G-11), web push (G-5b — no service worker), companies/favorites UI (G-10 remainder), dark theme (v3.0 ships light-only).
+
 Clean-slate rebuild of `/frontend2` with sketch 006-008 retro-os pastel fidelity AND feature parity with the legacy `/frontend`. Phase numbering RESETS to start at 1 — v3.0 has no continuity with v2.2 (predecessor wiped). Online-only (CI grep-guarded). All 106 v3.0 requirements (FOUND/TOKEN/SHELL/BAR/PROV/AUTH/ITEM/LOAN/BORR/TAX/SCAN/SETT/DASH/I18N/SYS/TUI/POL) map to exactly one phase. Layout primitives precede retro atoms — predecessor's reverse order forced atom rebuilds twice.
 
 - [ ] **Phase 1: Foundation + Conflict Spikes** — Vite + React 19 + TS + Tailwind 4 + RR7 scaffold, CI grep guard, carry-forward audit, three Phase 0 conflict resolutions (i18n library / mobile FAB scope / dashboard backend rollups)
@@ -233,13 +235,17 @@ Clean-slate rebuild of `/frontend2` with sketch 006-008 retro-os pastel fidelity
 - [ ] **Phase 5: Auth** — login + register + Google OAuth + GitHub OAuth + RequireAuth (with v2.0 spurious-logout-on-network-error bug fixed) + workspace switcher + sessions + password change + account deletion + connected accounts
 - [ ] **Phase 6: Providers** — IntlProvider + QueryClientProvider + AuthProvider + SSEProvider (with `useSSEStatus()` selector) + ToastProvider + ShortcutsProvider mounted in canonical order; chrome wires to real state once
 - [ ] **Phase 7: Items + Photos** — paginated list with search/filter/sort + detail with photo gallery + create/edit/archive/delete + multipart photo upload + `itemsApi.lookupByBarcode` (G-65-01 regression-guard pattern) + per-route `useShortcuts` registration
+- [ ] **Phase 7b: Inventory** — inventory entries list + filters (virtualized when large) + create with item/location/container pickers + move dialog + quantity/status/condition inline edits + expiry/warranty fields + expiring view + movements history panel + per-item inventory panel (closes Phase 7 stub) [Gap G-1, critical]
 - [ ] **Phase 8: Loans** — Active/Overdue/History tabbed list + create with item + borrower picker + mark returned + edit + per-item active+history panels + `?itemId=` deep-link param
 - [ ] **Phase 9: Borrowers** — flat paginated list + CRUD with active-loan delete guard + detail with active+history panels
 - [ ] **Phase 10: Taxonomy** — categories tree + locations tree + containers grouped by location + create/edit/archive with usage warnings + container delete with unassign-and-delete cascade policy
+- [ ] **Phase 10b: Repairs + Maintenance** — repair log drawer/panel on inventory detail (CRUD + start/complete + cost rollup) + repair photos + repair attachments + maintenance schedule CRUD + due list + complete action + dashboard due-maintenance feed (consumed by Phase 13) [Gap G-2]
 - [ ] **Phase 11: Scan (single-route)** — `/scan` with `<BarcodeScanner>` mounted ONCE + QR/UPC/EAN/Code128 + pause-on-match (prop-driven) + Android torch + manual fallback + AudioContext + ios-haptics + scan history (last 10) + 4-state result banner + post-match quick-action overlay + UPC opt-in suggestion prefill
 - [ ] **Phase 12: Settings hub** — landing with 8 grouped rows + Profile + Security + Appearance + Language + Regional Formats + Notifications + Connected Accounts + Data Storage (online-only — clear cache + export + import only)
 - [ ] **Phase 13: Dashboard** — 4 stat tiles + activity table (TUI columns, relative <24h then absolute) + side rail (Pending Approvals + System Alerts) + HUD row (gauge + sparkline + counts) gated behind `VITE_FEATURE_HUD_ROLLUPS` flag (Conflict 3 resolution)
+- [ ] **Phase 13b: Analytics + Out-of-stock** — charts page (category breakdown, location values, condition/status distribution, top borrowers, monthly loan activity; lazy-loaded chart lib to protect POL-04 bundle budget) + out-of-stock table with item links. NOTE: charts aesthetic needs a Retro OS sketch (extend set 006-008) before planning [Gap G-6]
 - [ ] **Phase 14: System group** — Approvals + My Changes + Sync History + Imports/Exports — all activity-table style with bulk operations dispatched via Bottombar
+- [ ] **Phase 14b: Attachments + Paperless** — item attachments panel on item detail (upload/list/set-primary/delete; FileInput atom from Phase 4) + Paperless-ngx settings page (slots into Settings hub) + Paperless doc search + link-to-item. NOTE: cross-tenant attachment IDOR audit finding must be fixed with this phase [Gap G-7]
 - [ ] **Phase 15: i18n catalog gap-fill (et + ru)** — extract en messages, translate to et + ru (lift from legacy `/frontend` next-intl + v2.1 Lingui archive), locale switcher, format hooks (`useDateFormat`/`useTimeFormat`/`useNumberFormat`) used everywhere
 - [ ] **Phase 16: Command Palette** — Cmd+K / F2 cmdk surface filtering across routes, recent actions, and workspaces; keyboard-first navigation
 - [ ] **Phase 17: Polish & Quality** — Playwright E2E + Go integration test for every cross-HTTP flow + axe-playwright a11y CI sweep + tab/keyboard navigation audit + bundle size CI guard + mobile breakpoint matrix re-test (320/360/768/1024/1440 px) + visual diff vs sketch 006
@@ -530,32 +536,35 @@ Plans:
   3. User typing the letter `n` (or any other single-letter shortcut) into a `<input>`, `<textarea>`, `<select>`, or contenteditable surface DOES NOT trigger any Bottombar shortcut action — the `isEditableTarget(e.target)` guard is in place from the first commit, regression-tested on every form
   4. User pressing F1 (key OR Bottombar chip click) opens the keyboard-shortcuts help dialog; pressing ESC pops the topmost modal first and never logs out while any modal is open
   5. User on a viewport `<768px` sees the sidebar become a drawer and the Bottombar paginate or move overflow to a sheet while keeping F1 + ESC right-anchored
+**Parity additions (2026-06-12)** (`docs/FRONTEND2_FEATURE_PARITY_PLAN.md` §4): TopBar must reserve slots for the workspace switcher (Phase 5), notifications bell (Gap G-5, Phase 13), SSE status indicator (Phase 6), and user menu — even before those features land, so the chrome wires once.
 **Plans**: TBD
 **UI hint**: yes
 
 ### Phase 4: Retro Atoms
 **Goal**: Every retro UI atom required by feature pages exists with sketch 005 chrome (panel bevel, sharp corners, monospace, optional `// HEADER` slot, hazard-stripe variants), with the cross-cutting TUI-genre patterns (modal-stack ESC, status pills, tabular-nums numeric columns, SSE live-dot in panel headers, multi-select Shift+Click on tables) applied across the library
 **Depends on**: Phase 3
-**Requirements**: TUI-02, TUI-03, TUI-04, TUI-06
+**Requirements**: TUI-02, TUI-03, TUI-04, TUI-06, ATOM-FB-01, ATOM-FB-02, ATOM-FB-03, ATOM-FB-04
 **Success Criteria** (what must be TRUE):
   1. User can render every atom on a `/demo` page — RetroPanel (with `// HEADER` slot), RetroButton (default + danger + key-chip), RetroBadge (with dot-mode for collapsed sidebar), RetroInput / Select / Combobox / Textarea / Checkbox / FileInput, RetroFormField, RetroTable (with multi-select), RetroTabs, RetroDialog, RetroConfirmDialog, RetroToast (sonner-skinned), RetroEmptyState, RetroPagination, RetroStatusDot, RetroHUD primitives — all with the locked chrome
   2. User pressing ESC inside a stack of overlays (dialog → drawer → menu) sees the topmost popped first; never logs out while any modal is open
   3. User scanning a row of status pills sees OK / WARN / INFO / DANGER variants with locked color tokens, and numeric columns in RetroTable use `font-variant-numeric: tabular-nums`
   4. User looking at any panel that subscribes to entity SSE events sees a `sse: ● live` text + step-end blinking dot in the panel header
   5. User Shift+Clicking rows in a RetroTable sees range selection state + Bottombar surfaces bulk-action chips for the active selection set
+**Parity additions (2026-06-12)** (§4): add FilterBar, FilterPopover, BulkActionBar, and SavedFilters as retro atoms here — Phases 7/8/14 all consume them; building once avoids three ad-hoc copies. New requirement IDs: ATOM-FB-01..04.
 **Plans**: TBD
 **UI hint**: yes
 
 ### Phase 5: Auth
 **Goal**: User can log in with email + password OR Google OAuth OR GitHub OAuth, register a new account, switch workspaces, manage sessions, change password, delete account, and link/unlink connected accounts — all with cookie-JWT (`credentials: "include"`) + single-flight 401 refresh and the v2.0 spurious-logout-on-network-error bug fixed
 **Depends on**: Phase 3
-**Requirements**: AUTH-01, AUTH-02, AUTH-03, AUTH-04, AUTH-05, AUTH-06, AUTH-07, AUTH-08, AUTH-09, AUTH-10
+**Requirements**: AUTH-01, AUTH-02, AUTH-03, AUTH-04, AUTH-05, AUTH-06, AUTH-07, AUTH-08, AUTH-09, AUTH-10, AUTH-11, AUTH-12
 **Success Criteria** (what must be TRUE):
   1. User can log in via email + password, register a new account, and reach an authenticated placeholder route; cookie-JWT is set and 401 refresh is single-flighted in `lib/api.ts`
   2. User can log in via Google OAuth (PKCE + Authorization Code + one-time Redis exchange) or GitHub OAuth (with `/user/emails` for private-email accounts); auto-link by verified email works and unverified emails are rejected
   3. `RequireAuth` redirects unauthenticated users to `/login` BUT does NOT log out on transient network errors — only on HttpError 401/403
   4. User can switch workspaces from the topbar pill; the selected `workspaceId` is the SSOT for all entity API calls
   5. User can review active sessions + revoke individual / all-other sessions, change password (current-password verified, OAuth-only "set password" path), delete account with `DELETE` type-to-confirm + sole-owner workspace validation, and link/unlink Google + GitHub providers with last-method-removal lockout guard
+**Parity additions (2026-06-12)** (§4, §8 risks 5+6): Authelia SSO button (env-gated — backend route `/auth/authelia/login` exists, AUTH-11); fix logout revocation so `POST /auth/logout` actually revokes server-side + clears refresh-token state client-side (audit finding, AUTH-12); the workspace switcher must replace DashboardPage's first-workspace hardcode — current-workspace becomes app-level state (context or router param), **decided once in Phase 5 planning and recorded as D-12 in STATE.md** since every workspace-scoped query key derives from it. New requirement IDs: AUTH-11, AUTH-12.
 **Plans**: TBD
 **UI hint**: yes
 
@@ -568,6 +577,7 @@ Plans:
   2. SSEProvider opens a single EventSource (JWT in URL query param), exposes `useSSEStatus()` returning `{ connected, lastEventAt }` consumed by the TopBar ONLINE dot + PageHeader LAST SYNC, and a `useSSE({ onEvent })` subscribe API for feature consumers
   3. ShortcutsProvider is the register-by-id Context (ported verbatim from `frontend/components/layout/shortcuts-context.tsx`) with unregister-on-unmount cleanup; Bottombar render and keyboard dispatch both read from it
   4. ToastProvider mounts sonner with retro-skinned styling (sharp corners, monospace, panel bevel) and `toast.promise` ergonomics work
+**Parity additions (2026-06-12)** (§4, §8 risk 8): the SSE event→query-invalidation contract (event entity type → TanStack Query key prefixes) is written as a deliverable doc here so Phases 7-10 only register keys, not plumbing; ship the SSE status-indicator atom (legacy `sse-status-indicator.tsx`) consumed by the TopBar slot.
 **Plans**: TBD
 
 ### Phase 7: Items + Photos
@@ -580,18 +590,33 @@ Plans:
   3. User can create a new item via `/items/new` (with optional `?barcode={code}` query-param prefill), edit via `/items/{id}/edit` with optimistic UI invalidation of `itemKeys.all` + relevant detail keys, archive / unarchive (archived hidden by default, visible via filter chip), and delete archived items with type-to-confirm dialog
   4. User can upload up to N photos per item (JPEG/PNG/HEIC, client-resize, 10 MB cap) via native FormData multipart with no upload library
   5. `itemsApi.lookupByBarcode(workspaceId, code)` calls `GET /api/workspaces/{wsId}/items/by-barcode/{code}` with workspace-scoped server-side authority + 404 → null mapping; cross-tenant isolation guarded by integration test
+**Parity additions (2026-06-12)** (§4): confirm in-scope during planning — bulk selection + bulk archive/delete; saved filter presets; per-list CSV export hook-in point; photo extras (captions, reorder, set-primary, bulk-delete, bulk-caption, zip download, duplicate-check warning dialog, client-side compression + EXIF rotation before upload); labels attach/detach UI (read-only label list until the Phase 10 label manager lands); item-detail inventory panel ships as a **stub until Phase 7b**.
+**Plans**: TBD
+**UI hint**: yes
+
+### Phase 7b: Inventory
+**Goal**: User can manage inventory entries (item ⨯ location ⨯ quantity ⨯ condition ⨯ status ⨯ expiry ⨯ warranty) — list with filters, create entries with item/location/container pickers, move stock between locations, edit quantity/status/condition inline, track expiry + warranty, view an expiring report and a movements history panel, and see a per-item inventory panel on item detail (closing the Phase 7 stub)
+**Depends on**: Phase 7
+**Requirements**: INV-01, INV-02, INV-03, INV-04, INV-05, INV-06, INV-07, INV-08
+**Success Criteria** (what must be TRUE):
+  1. User can browse inventory entries in a filterable list (virtualized via `@tanstack/react-virtual` when the entry count warrants) showing item / location / container / quantity / status / condition
+  2. User can create an inventory entry with item / location / container pickers (simple selects until the Phase 10 type-ahead pickers land) and expiry + warranty fields
+  3. User can move an entry between locations via a move dialog and edit quantity / status / condition inline on a row
+  4. User can open an expiring view (`/inventory/expiring`) listing entries past or near expiry/warranty, and a movements history panel backed by the `/movements` endpoints (global + per-location + per-inventory)
+  5. Item detail renders a per-item inventory panel (the Phase 7 stub now real) linking each entry to its location/container
 **Plans**: TBD
 **UI hint**: yes
 
 ### Phase 8: Loans
 **Goal**: User can browse loans in Active/Overdue/History tabs, create a new loan (with `?itemId=` deep-link from scan flow), mark returned, edit due date and notes, and see per-item + per-borrower active + history loan panels
-**Depends on**: Phase 7
+**Depends on**: Phase 7b
 **Requirements**: LOAN-01, LOAN-02, LOAN-03, LOAN-04, LOAN-05, LOAN-06
 **Success Criteria** (what must be TRUE):
   1. User can view loans in a tabbed Active/Overdue/History RetroTable view showing item / borrower / due-date / status pill
   2. User can create a new loan via `/loans/new` with item picker + borrower picker; the `?itemId={id}` URL param preselects the item (deep-linkable from scan flow)
   3. User can mark a loan as returned via confirm dialog and see it transition to History; can edit due date and notes after creation
   4. Item detail page renders an "Active Loan" panel (if any) and "Loan History" panel; Borrower detail page renders "Active Loans" + "Loan History" panels
+**Parity additions (2026-06-12)** (§4, §6): the `extend` action (`PATCH /loans/{id}/extend`), overdue-row highlighting, CSV export of the loan list, and the `?itemId=` deep link are all in scope. Depends-on updated to **Phase 7b** (loans reference inventory entries) per the §6 ordering table.
 **Plans**: TBD
 **UI hint**: yes
 
@@ -610,60 +635,102 @@ Plans:
 ### Phase 10: Taxonomy
 **Goal**: User can manage hierarchical categories + locations + flat-but-grouped containers via a Taxonomy page with three tabs; create / edit / archive at any level with usage warnings, and delete containers with the unassign-and-delete cascade policy when items are assigned
 **Depends on**: Phase 4, Phase 6
-**Requirements**: TAX-01, TAX-02, TAX-03, TAX-04, TAX-05, TAX-06
+**Requirements**: TAX-01, TAX-02, TAX-03, TAX-04, TAX-05, TAX-06, TAX-07
 **Success Criteria** (what must be TRUE):
   1. User can view categories as a hierarchical tree on the Taxonomy page (Categories tab) with expand/collapse persisted to sessionStorage; create / edit / archive at any level with usage warnings when archiving a category with assigned items
   2. User can view locations as a hierarchical tree (Locations tab); create / edit / archive at any level
   3. User can view containers grouped by location (Containers tab); create / edit / delete with unassign-and-delete cascade behavior when items are assigned (matches v2.2 cascade decision)
+**Parity additions (2026-06-12)** (§4, Gap G-10 partial): add a label manager (simple CRUD list + color) so item label-attach in Phase 7 has labels to attach — new requirement ID TAX-07. Wire the location/container search type-ahead pickers here; Phases 7/8 and the Phase 7b inventory forms reuse them.
+**Plans**: TBD
+**UI hint**: yes
+
+### Phase 10b: Repairs + Maintenance
+**Goal**: User can log and track repairs on inventory entries (CRUD, start/complete, cost rollup, repair photos + attachments) and manage recurring maintenance schedules (CRUD, due list, complete action) — with a due-maintenance feed surfaced for the Phase 13 dashboard side rail
+**Depends on**: Phase 7b
+**Requirements**: RPR-01, RPR-02, RPR-03, RPR-04, MNT-01, MNT-02, MNT-03
+**Success Criteria** (what must be TRUE):
+  1. User can open a repair log drawer/panel on an inventory entry's detail and create / edit repairs, start and complete them, and see a cost rollup across the entry's repair history
+  2. User can attach repair photos (reusing the Phase 7 photo atoms) and non-photo repair attachments to a repair record
+  3. User can create / edit / delete maintenance schedules on an inventory entry and see a due list (`/maintenance/due`); completing a schedule advances its next-due
+  4. The dashboard due-maintenance feed is produced here and consumed by the Phase 13 side rail (due-maintenance card)
 **Plans**: TBD
 **UI hint**: yes
 
 ### Phase 11: Scan (single-route)
 **Goal**: User can open `/scan`, see a live rear-camera preview, decode QR + UPC-A + EAN-13 + Code128 with audio + haptic + visual feedback, toggle Android torch, fall back to manual entry, view last-10 scan history, and after a successful scan see a 4-state result banner + state-adaptive quick-action overlay (View Item / Loan / Back to Scan / Unarchive / Mark Reviewed) — the BarcodeScanner mounts ONCE and stays mounted for iOS PWA camera-permission persistence
 **Depends on**: Phase 7
-**Requirements**: SCAN-01, SCAN-02, SCAN-03, SCAN-04, SCAN-05, SCAN-06, SCAN-07, SCAN-08, SCAN-09, SCAN-10, SCAN-11
+**Requirements**: SCAN-01, SCAN-02, SCAN-03, SCAN-04, SCAN-05, SCAN-06, SCAN-07, SCAN-08, SCAN-09, SCAN-10, SCAN-11, SCAN-12
 **Success Criteria** (what must be TRUE):
   1. User on `/scan` sees a live rear-camera preview; the `<BarcodeScanner>` (`@yudiel/react-qr-scanner@2.5.1` exact pin) mounts ONCE and stays mounted while overlays render on top — never navigates mid-scan, pause is prop-driven (NOT unmount)
   2. User pointing the camera at a QR / UPC-A / EAN-13 / Code128 code decodes within ~1 second, hears AudioContext oscillator beep, feels haptic (`ios-haptics` on iOS 17.4+ Safari, `navigator.vibrate` elsewhere), and sees a visual flash/checkmark
   3. User on Android with `MediaStreamTrack.getCapabilities().torch` sees a torch toggle (auto-hidden on iOS); user can switch to a Manual tab and submit a typed code; user can view + clear (with confirm) the last-10-codes history (`hws-scan-history` localStorage)
   4. After scan or manual entry, user sees a 4-state result banner — LOADING / MATCH / NOT-FOUND / ERROR — with a `prefers-reduced-motion`-aware blinking-cursor variant; NOT-FOUND offers "Create item with this barcode" → `/items/new?barcode=<code>`; codes matching `/^\d{8,14}$/` show an opt-in suggestion banner with USE / USE ALL / DISMISS for prefill from `GET /api/barcode/{code}`
   5. After a MATCH, user sees a state-adaptive quick-action overlay (View Item / Loan / Back to Scan; Loan hidden if item on active loan, Unarchive if archived, Mark Reviewed if `needs_review`)
+**Parity additions (2026-06-12)** (§4, Gap G-8): add the claim flow `/claim/:code` (resolve shortlink/barcode → claim-as-loan form, login required) as new requirement SCAN-12; persist scan history to localStorage; re-add the by-barcode Playwright spec (standing G-65-01 guard, wiped with the v2.2 frontend2).
 **Plans**: TBD
 **UI hint**: yes
 
 ### Phase 12: Settings hub
 **Goal**: User can manage profile / security / appearance / language / regional formats / notifications / connected accounts / data storage from a Settings landing page with iOS-style grouped rows linking to 8 dedicated subpages
 **Depends on**: Phase 5, Phase 6
-**Requirements**: SETT-01, SETT-02, SETT-03, SETT-04, SETT-05, SETT-06, SETT-07, SETT-08, SETT-09
+**Requirements**: SETT-01, SETT-02, SETT-03, SETT-04, SETT-05, SETT-06, SETT-07, SETT-08, SETT-09, SETT-10, SETT-11
 **Success Criteria** (what must be TRUE):
   1. User on `/settings` sees iOS-style grouped rows linking to 8 subpages: Profile, Security, Appearance, Language, Regional Formats, Notifications, Connected Accounts, Data Storage
   2. User can edit name + email + avatar (Profile); change password + view/revoke active sessions + delete account (Security); pick theme (Appearance — only premium-terminal under v3.0); pick en / et / ru (Language); set date / time / thousand / decimal formats (Regional Formats)
   3. User can toggle in-app preferences for SSE event types (Notifications), link/unlink Google + GitHub OAuth providers (Connected Accounts), and clear cached query data + export workspace + import workspace (Data Storage — online-only, no offline-storage management surface)
+**Parity additions (2026-06-12)** (§4, §8 risk 2, Gaps G-7/G-9): Paperless settings slot lives here as a pointer to Phase 14b (G-7). DECISION (G-9): include a minimal **Members page** (list, role change, remove, invite/add member) since the approval workflow implies multi-user workspaces — new requirement SETT-10. DECISION (theme): v3.0 ships **light-only**; dark theme → backlog — the Appearance subpage ships with an explicit "light only" note (SETT-11).
 **Plans**: TBD
 **UI hint**: yes
 
 ### Phase 13: Dashboard
 **Goal**: User landing on `/` sees four stat tiles (Total Items, Locations, Containers, Active Loans), a TUI-style activity table (Timestamp / Action / Entity / Actor / Status), a side rail (Pending Approvals + System Alerts), and — when `VITE_FEATURE_HUD_ROLLUPS=true` — a HUD row with hand-rolled SVG capacity gauge + 14-day activity sparkline + counts (Conflict 3 resolution)
-**Depends on**: Phase 6
-**Requirements**: DASH-01, DASH-02, DASH-03, DASH-04, DASH-05
+**Depends on**: Phase 6, Phase 7b, Phase 10b
+**Requirements**: DASH-01, DASH-02, DASH-03, DASH-04, DASH-05, NOTIF-01, NOTIF-02, NOTIF-03
 **Success Criteria** (what must be TRUE):
   1. User sees four stat tiles (Total Items / Locations / Containers / Active Loans) with token-correct retro panel styling
   2. User sees an activity table with TUI columns (Timestamp / Action / Entity / Actor / Status pill); timestamps are relative under 24h and absolute thereafter
   3. User sees a side rail stacking Pending Approvals + System Alerts panels
   4. With `VITE_FEATURE_HUD_ROLLUPS=true`, user sees a HUD row (hand-rolled SVG capacity gauge + 14-day activity sparkline + counts); flag default off ships dashboard immediately while backend coordinates rollups
   5. Dashboard registers `useShortcuts("dashboard", [{ key: "N", action: navTo("/items/new") }, { key: "S", action: navTo("/scan") }, { key: "L", action: navTo("/loans") }])`
+**Parity additions (2026-06-12)** (§4, Gap G-5 in-app part): the side rail includes a pending-approvals count + System Alerts incl. the expiring-items feed (needs Phase 7b) + a due-maintenance card (needs Phase 10b) + notifications bell/dropdown/unread-badge/mark-read in the TopBar slot. New requirement IDs: NOTIF-01 (bell), NOTIF-02 (dropdown + mark-read), NOTIF-03 (unread badge). Depends-on extended to **7b + 10b**.
 **Plans**: TBD
 **UI hint**: yes
+
+### Phase 13b: Analytics + Out-of-stock
+**Goal**: User can view an analytics charts page (category breakdown, location values, condition/status distribution, top borrowers, monthly loan activity) and a dedicated out-of-stock table with links back to items — chart library lazy-loaded to protect the POL-04 bundle budget
+**Depends on**: Phase 13
+**Requirements**: ANL-01, ANL-02, ANL-03, ANL-04
+**Success Criteria** (what must be TRUE):
+  1. User on the Analytics page sees category-breakdown, location-value, and condition/status-distribution charts driven by the backend analytics endpoints
+  2. User sees top-borrowers and monthly-loan-activity charts on the same page
+  3. The chart library is lazy-loaded (dynamic import) so non-analytics routes carry zero charting weight and the POL-04 per-chunk budget holds
+  4. User sees an out-of-stock table (`/analytics/out-of-stock`) with each row linking to its item
+**Plans**: TBD
+**UI hint**: yes
+**Note**: charts aesthetic has no Retro OS sketch yet — a sketch (extend set 006-008, update `.planning/sketches/MANIFEST.md`) is a prerequisite before planning this phase (§8 risk 4).
 
 ### Phase 14: System group
 **Goal**: User can review approvals (with bulk-action support), my-changes, sync history, and imports/exports under the sidebar `// SYSTEM` group — all using the same activity-table pattern from earlier feature phases
 **Depends on**: Phase 7
-**Requirements**: SYS-01, SYS-02, SYS-03, SYS-04
+**Requirements**: SYS-01, SYS-02, SYS-03, SYS-04, WISH-01, WISH-02, DECL-01, DECL-02
 **Success Criteria** (what must be TRUE):
   1. User on `/approvals` sees a paginated activity-table view of pending approval requests with multi-select via Shift+Click + Bottombar A/R/D shortcuts (Approve / Reject / Defer)
   2. User on `/my-changes` sees a list of their recent mutations across entities
   3. User on `/sync-history` sees past sync events with timestamps, status, and error details
   4. User on `/imports` sees CSV import + workspace export + import-history surface using the activity-table pattern
+**Parity additions (2026-06-12)** (§4, §8 risk 7, Gaps G-3/G-4): add a wishlist page (wanted/ordered/acquired tabs, CRUD, status transitions — WISH-01/02) and a declutter page (unused analysis, score badge, grouping, CSV export, mark-used — DECL-01/02); add per-entity export buttons on list pages (items/loans/inventory), not only a central screen; verify the backend import surface (`/imports/upload` + jobs vs legacy `POST /import/{entity}`) during planning. New requirement IDs: WISH-01, WISH-02, DECL-01, DECL-02.
+**Plans**: TBD
+**UI hint**: yes
+
+### Phase 14b: Attachments + Paperless
+**Goal**: User can attach non-photo files to items (upload, list, set-primary, delete) and integrate Paperless-ngx — a workspace settings page, document search, and link-to-item — with the cross-tenant attachment IDOR audit finding fixed as part of the work
+**Depends on**: Phase 7, Phase 12
+**Requirements**: ATT-01, ATT-02, ATT-03, PPL-01, PPL-02, PPL-03
+**Success Criteria** (what must be TRUE):
+  1. User can upload, list, set-primary, and delete non-photo attachments on an item detail page using the Phase 4 FileInput atom
+  2. User can configure Paperless-ngx connection settings from a page that slots into the Settings hub (get/put/delete)
+  3. User can search Paperless documents and link a document to an item
+  4. The cross-tenant attachment IDOR audit finding (`docs/audit/`) is fixed and guarded with a test as part of this phase (§8 risk 6)
 **Plans**: TBD
 **UI hint**: yes
 
@@ -675,6 +742,7 @@ Plans:
   1. Every user-facing string ships in en + et + ru — no inline literals; CI extract→merge→diff manifest guard fails any PR with missing or orphaned msgids
   2. User picking a locale on Settings → Language sees the choice persisted to `users/me/preferences` and applied instantly without page reload
   3. Every component rendering a date / time / number uses `useDateFormat` / `useTimeFormat` / `useNumberFormat` — no raw `Date.toString()` or `Number.toLocaleString()` in feature code (CI grep guard)
+**Parity additions (2026-06-12)** (§4, §6): moves later in the calendar, scope unchanged — re-extract catalogs after all new feature pages (7b/10b/13b/14b + folded gap items) land so et + ru reach 100% for every parity page.
 **Plans**: TBD
 
 ### Phase 16: Command Palette
@@ -685,18 +753,20 @@ Plans:
   1. User pressing Cmd+K (or Ctrl+K) or F2 sees a `cmdk`-driven command palette open with full-screen retro-panel chrome
   2. User typing a query sees fuzzy-filtered matches across routes, recent actions, and workspaces
   3. User can navigate matches with arrow keys, select with Enter, dismiss with ESC; tinykeys handles the open chord, cmdk owns filtering inside
+**Parity additions (2026-06-12)** (§4): merge the legacy global entity-search dropdown into the command palette — a single surface handles both nav and per-entity search (backend search endpoints per entity exist).
 **Plans**: TBD
 **UI hint**: yes
 
 ### Phase 17: Polish & Quality
 **Goal**: Every cross-HTTP flow has at least one real-backend test (Playwright E2E + tagged Go integration test, Phase 65 Plan 65-11 pattern); axe-playwright a11y CI sweep passes; tab/keyboard navigation audit passes; bundle-size CI guard enforced; mobile breakpoint matrix re-tested at 320 / 360 / 768 / 1024 / 1440 px with visual diff vs sketch 006 PNG for the dashboard route
 **Depends on**: Phase 14
-**Requirements**: POL-01, POL-02, POL-03, POL-04, POL-05
+**Requirements**: POL-01, POL-02, POL-03, POL-04, POL-05, POL-06
 **Success Criteria** (what must be TRUE):
   1. Every flow that crosses the HTTP boundary has at least one real-backend test — Playwright E2E for browser-driven flows + tagged Go integration test for server contract (the Phase 65 Plan 65-11 pattern, applied from Day 1)
   2. CI runs `axe-playwright` across every route and fails on contrast / focus-visible / touch-target / aria-label violations; tab/keyboard navigation audit confirms every page is fully keyboard-navigable with visible focus indicator (focus-visible, not focus) and no keyboard traps
   3. CI fails any PR that pushes `vite build` output above documented per-chunk budgets (main / scanner / vendor) with a clear delta report
   4. Mobile breakpoint matrix re-tested at 320 / 360 / 768 / 1024 / 1440 px; dashboard route passes visual diff vs sketch 006 PNG
+**Parity additions (2026-06-12)** (§4, §7): adds the parity-verification gate — route checklist, endpoint coverage diff (legacy `frontend/lib/api/*` minus `frontend2/src`, excluding `/sync/*` + `/push/*`), the full E2E flow list, i18n completeness, a11y + bundle budgets across all new pages incl. the lazy chart lib, and one full week of dogfooding before legacy `frontend/` retirement. New requirement ID: POL-06 (parity verification gate).
 **Plans**: TBD
 
 ## Progress
@@ -732,21 +802,35 @@ Plans:
 | 5 | v3.0 | 0/TBD | Not started | - |
 | 6 | v3.0 | 0/TBD | Not started | - |
 | 7 | v3.0 | 0/TBD | Not started | - |
+| 7b | v3.0 | 0/TBD | Not started | - |
 | 8 | v3.0 | 0/TBD | Not started | - |
 | 9 | v3.0 | 0/TBD | Not started | - |
 | 10 | v3.0 | 0/TBD | Not started | - |
+| 10b | v3.0 | 0/TBD | Not started | - |
 | 11 | v3.0 | 0/TBD | Not started | - |
 | 12 | v3.0 | 0/TBD | Not started | - |
 | 13 | v3.0 | 0/TBD | Not started | - |
+| 13b | v3.0 | 0/TBD | Not started | - |
 | 14 | v3.0 | 0/TBD | Not started | - |
+| 14b | v3.0 | 0/TBD | Not started | - |
 | 15 | v3.0 | 0/TBD | Not started | - |
 | 16 | v3.0 | 0/TBD | Not started | - |
 | 17 | v3.0 | 0/TBD | Not started | - |
 
 **Total:** 65 phases complete (185 plans executed: +65-11 gap-closure Wave 8 regression test for G-65-01, Phase 65 now 11/11 SHIPPABLE — Option C Playwright E2E + Go HTTP+Postgres integration test) across 12 milestones; v2.2 (Phases 64-72) active
 
+## Backlog — deferred from v3.0 parity (2026-06-12)
+
+Cut from v3.0 per `docs/FRONTEND2_FEATURE_PARITY_PLAN.md` §5/§8 with explicit decisions; revisit post-parity:
+
+- **Quick capture (G-11)** — camera-first rapid item entry with batch settings + auto-SKU; Phase 7 create form + Phase 11 scan cover the core capture loop.
+- **Web push (G-5 stretch)** — DECISION: dropped for v3.0; requires a service worker, which the online-only CI grep guard forbids. Notification prefs UI stays wired to in-app only; the grep guard stays intact.
+- **Companies + favorites UI (G-10 remainder)** — backend has full CRUD + favorites toggle; no current UI use-case. Deferred deliberately.
+- **Dark theme** — Retro OS tokens are light-only; v3.0 Appearance ships "light only". Dark variant needs a token set v2 (design work).
+
 ---
 *Roadmap created: 2026-01-24*
+*Last updated: 2026-06-12 — v3.0 roadmap amended per `docs/FRONTEND2_FEATURE_PARITY_PLAN.md`: added lettered phases 7b (Inventory/G-1), 10b (Repairs+Maintenance/G-2), 13b (Analytics+Out-of-stock/G-6), 14b (Attachments+Paperless/G-7); folded gap items into existing phases 3-17 (each carries a "Parity additions (2026-06-12)" note); added requirement IDs INV/RPR/MNT/ANL/ATT/PPL/WISH/DECL/NOTIF/ATOM-FB + AUTH-11/12, TAX-07, SCAN-12, SETT-10/11, POL-06; updated dependency edges (8→7b, 13→+7b+10b); deferred quick-capture/web-push/companies-favorites/dark-theme to backlog. Existing integer phase numbers and all 106 prior requirement IDs untouched.*
 *Last updated: 2026-04-30 — v2.2 abandoned (frontend2 wiped); v3.0 Premium-Terminal Frontend roadmap added with 17 phases mapping all 106 requirements (FOUND/TOKEN/SHELL/BAR/PROV/AUTH/ITEM/LOAN/BORR/TAX/SCAN/SETT/DASH/I18N/SYS/TUI/POL); phase numbering RESET to 1 since v2.2 has no continuity with the rebuild.*
 *Last updated: 2026-04-19 — Phase 65 Plan 02 complete (LOOK-01 frontend guard layer: itemsApi.lookupByBarcode w/ D-06/D-07/D-08 guards inlined + schemas D-23 optional brand field + D-24 barcode regex loosened for hyphens/underscores; 10 Wave 0 todos converted green; full suite 640 passed / 50 todos)*
 *Last updated: 2026-04-19 — Phase 65 Plan 03 complete (LOOK-03 data layer: lib/api/barcode.ts + useBarcodeEnrichment with /^\d{8,14}$/ gate + silent-fail structured log; 18 Wave 0 todos green; full suite 640 passed / 50 todos)*

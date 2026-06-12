@@ -172,6 +172,101 @@
 
 ---
 
+## v3.0 Parity Amendment Requirements (2026-06-12)
+
+> Added by the roadmap amendment per `docs/FRONTEND2_FEATURE_PARITY_PLAN.md` (§§4-6). These close the gaps the original 106-requirement inventory missed. Existing IDs above are untouched. Each new ID maps to exactly one phase in the traceability table below.
+
+### Inventory (INV) — Phase 7b (Gap G-1)
+
+- [ ] **INV-01**: User can browse inventory entries in a filterable list (item / location / container / quantity / status / condition), virtualized via `@tanstack/react-virtual` when the entry count warrants.
+- [ ] **INV-02**: User can create an inventory entry with item / location / container pickers (simple selects until Phase 10 type-ahead pickers land).
+- [ ] **INV-03**: User can record expiry + warranty fields on an inventory entry.
+- [ ] **INV-04**: User can move an entry between locations via a move dialog.
+- [ ] **INV-05**: User can edit quantity / status / condition inline on an inventory row.
+- [ ] **INV-06**: User can open an expiring view (`/inventory/expiring`) listing entries past or near expiry/warranty.
+- [ ] **INV-07**: User can view a movements history panel backed by the `/movements` endpoints (global + per-location + per-inventory).
+- [ ] **INV-08**: Item detail renders a per-item inventory panel (closing the Phase 7 stub) linking each entry to its location/container.
+
+### Repairs (RPR) — Phase 10b (Gap G-2)
+
+- [ ] **RPR-01**: User can create / edit repairs on an inventory entry via a repair log drawer/panel, and start/complete them.
+- [ ] **RPR-02**: User sees a cost rollup across an inventory entry's repair history.
+- [ ] **RPR-03**: User can attach repair photos to a repair record (reusing the Phase 7 photo atoms).
+- [ ] **RPR-04**: User can attach non-photo repair attachments to a repair record.
+
+### Maintenance (MNT) — Phase 10b (Gap G-2)
+
+- [ ] **MNT-01**: User can create / edit / delete recurring maintenance schedules on an inventory entry.
+- [ ] **MNT-02**: User can view a due-maintenance list (`/maintenance/due`) and complete a schedule (completion advances next-due).
+- [ ] **MNT-03**: A due-maintenance feed is produced for the Phase 13 dashboard side-rail card.
+
+### Analytics (ANL) — Phase 13b (Gap G-6)
+
+- [ ] **ANL-01**: User sees category-breakdown, location-value, and condition/status-distribution charts on an Analytics page.
+- [ ] **ANL-02**: User sees top-borrowers and monthly-loan-activity charts on the Analytics page.
+- [ ] **ANL-03**: The chart library is lazy-loaded (dynamic import) so non-analytics routes carry zero charting weight and POL-04 budgets hold.
+- [ ] **ANL-04**: User sees an out-of-stock table (`/analytics/out-of-stock`) with each row linking to its item.
+
+### Attachments (ATT) — Phase 14b (Gap G-7)
+
+- [ ] **ATT-01**: User can upload + list non-photo attachments on an item detail page using the Phase 4 FileInput atom.
+- [ ] **ATT-02**: User can set a primary attachment and delete attachments.
+- [ ] **ATT-03**: The cross-tenant attachment IDOR audit finding (`docs/audit/`) is fixed and guarded with a test.
+
+### Paperless (PPL) — Phase 14b (Gap G-7)
+
+- [ ] **PPL-01**: User can configure Paperless-ngx connection settings (get/put/delete) from a page that slots into the Settings hub.
+- [ ] **PPL-02**: User can search Paperless documents from within the app.
+- [ ] **PPL-03**: User can link a Paperless document to an item.
+
+### Wishlist (WISH) — Phase 14 (Gap G-3)
+
+- [ ] **WISH-01**: User can view a wishlist page with wanted / ordered / acquired status tabs.
+- [ ] **WISH-02**: User can add / edit / delete wishlist items and transition their status.
+
+### Declutter (DECL) — Phase 14 (Gap G-4)
+
+- [ ] **DECL-01**: User can view a declutter page with unused-items analysis, a score badge, and grouping.
+- [ ] **DECL-02**: User can export the declutter list to CSV and mark an item as used.
+
+### Notifications UI (NOTIF) — Phase 13 (Gap G-5, in-app part)
+
+- [ ] **NOTIF-01**: User sees a notifications bell in the TopBar.
+- [ ] **NOTIF-02**: User can open a notifications dropdown and mark notifications read / all-read.
+- [ ] **NOTIF-03**: User sees an unread-count badge on the bell.
+
+### Filter Atoms (ATOM-FB) — Phase 4 (§4)
+
+- [ ] **ATOM-FB-01**: FilterBar retro atom exists and is consumed by Phases 7/8/14 list pages.
+- [ ] **ATOM-FB-02**: FilterPopover retro atom exists.
+- [ ] **ATOM-FB-03**: BulkActionBar retro atom exists, surfaced for multi-select bulk actions.
+- [ ] **ATOM-FB-04**: SavedFilters retro atom exists for saved filter presets.
+
+### Auth parity additions (AUTH) — Phase 5 (§4, §8 risks 5-6)
+
+- [ ] **AUTH-11**: Env-gated "Log in with SSO" (Authelia) button wired to backend `/auth/authelia/login`; hidden when not configured.
+- [ ] **AUTH-12**: `POST /auth/logout` actually revokes the session server-side and clears refresh-token state client-side (closes the broken-logout-revocation audit finding).
+
+### Taxonomy parity addition (TAX) — Phase 10 (Gap G-10 partial)
+
+- [ ] **TAX-07**: Label manager — simple CRUD list + color picker so item label-attach (Phase 7) has labels to attach.
+
+### Scan parity addition (SCAN) — Phase 11 (Gap G-8)
+
+- [ ] **SCAN-12**: Claim flow `/claim/:code` — resolve shortlink/barcode and present a claim-as-loan form (login required).
+
+### Settings parity additions (SETT) — Phase 12 (Gaps G-9, theme decision)
+
+- [ ] **SETT-10**: Members page — list workspace members, change roles, remove members, invite/add a member by email.
+- [ ] **SETT-11**: Appearance subpage ships **light-only** under v3.0 with an explicit note; dark theme is deferred to backlog.
+
+### Polish parity addition (POL) — Phase 17 (§7)
+
+- [ ] **POL-06**: Parity verification gate — route checklist, endpoint coverage diff (legacy `frontend/lib/api/*` minus `frontend2/src`, excluding `/sync/*` + `/push/*`), full E2E flow list, i18n completeness, a11y + bundle budgets across new pages, and one week of dogfooding before legacy `frontend/` retirement.
+
+
+---
+
 ## Future Requirements (deferred to v3.1+)
 
 - **HUD rollup data** — backend `capacity_target` per workspace + `/api/workspaces/{ws}/activity?days=14` aggregate (UI ships flag-gated in v3.0 per DASH-04; data shipping later)
@@ -312,11 +407,57 @@
 | POL-03 | Phase 17 | Pending |
 | POL-04 | Phase 17 | Pending |
 | POL-05 | Phase 17 | Pending |
+| --- v3.0 parity amendment (2026-06-12) --- | | |
+| INV-01 | Phase 7b | Pending |
+| INV-02 | Phase 7b | Pending |
+| INV-03 | Phase 7b | Pending |
+| INV-04 | Phase 7b | Pending |
+| INV-05 | Phase 7b | Pending |
+| INV-06 | Phase 7b | Pending |
+| INV-07 | Phase 7b | Pending |
+| INV-08 | Phase 7b | Pending |
+| RPR-01 | Phase 10b | Pending |
+| RPR-02 | Phase 10b | Pending |
+| RPR-03 | Phase 10b | Pending |
+| RPR-04 | Phase 10b | Pending |
+| MNT-01 | Phase 10b | Pending |
+| MNT-02 | Phase 10b | Pending |
+| MNT-03 | Phase 10b | Pending |
+| ANL-01 | Phase 13b | Pending |
+| ANL-02 | Phase 13b | Pending |
+| ANL-03 | Phase 13b | Pending |
+| ANL-04 | Phase 13b | Pending |
+| ATT-01 | Phase 14b | Pending |
+| ATT-02 | Phase 14b | Pending |
+| ATT-03 | Phase 14b | Pending |
+| PPL-01 | Phase 14b | Pending |
+| PPL-02 | Phase 14b | Pending |
+| PPL-03 | Phase 14b | Pending |
+| WISH-01 | Phase 14 | Pending |
+| WISH-02 | Phase 14 | Pending |
+| DECL-01 | Phase 14 | Pending |
+| DECL-02 | Phase 14 | Pending |
+| NOTIF-01 | Phase 13 | Pending |
+| NOTIF-02 | Phase 13 | Pending |
+| NOTIF-03 | Phase 13 | Pending |
+| ATOM-FB-01 | Phase 4 | Pending |
+| ATOM-FB-02 | Phase 4 | Pending |
+| ATOM-FB-03 | Phase 4 | Pending |
+| ATOM-FB-04 | Phase 4 | Pending |
+| AUTH-11 | Phase 5 | Pending |
+| AUTH-12 | Phase 5 | Pending |
+| TAX-07 | Phase 10 | Pending |
+| SCAN-12 | Phase 11 | Pending |
+| SETT-10 | Phase 12 | Pending |
+| SETT-11 | Phase 12 | Pending |
+| POL-06 | Phase 17 | Pending |
 
-**Total:** 106 requirements across 17 categories — note prior summary said 91/14 but the actual list above (and the body of the document) contains 106 requirements across 17 categories: FOUND (6), TOKEN (5), SHELL (6), BAR (5), PROV (4), AUTH (10), ITEM (10), LOAN (6), BORR (5), TAX (6), SCAN (11), SETT (9), DASH (5), I18N (3), SYS (4), TUI (6), POL (5). All 106 mapped to exactly one phase below.
+**Total:** 106 base requirements across 17 categories + 43 parity-amendment requirements (2026-06-12) across 14 new/extended categories (INV 8, RPR 4, MNT 3, ANL 4, ATT 3, PPL 3, WISH 2, DECL 2, NOTIF 3, ATOM-FB 4, AUTH +2, TAX +1, SCAN +1, SETT +2, POL +1) = **149 total** — note prior summary said 91/14 but the actual list above (and the body of the document) contains 106 requirements across 17 categories: FOUND (6), TOKEN (5), SHELL (6), BAR (5), PROV (4), AUTH (10), ITEM (10), LOAN (6), BORR (5), TAX (6), SCAN (11), SETT (9), DASH (5), I18N (3), SYS (4), TUI (6), POL (5). All 106 mapped to exactly one phase below.
 
 ---
 
 *Requirements defined: 2026-04-30*
 *Roadmap + traceability: 2026-04-30 — all 106 requirements mapped to phases 1-17 of the v3.0 roadmap by the roadmapper agent*
 *Milestone: v3.0 Premium-Terminal Frontend*
+
+*Amended: 2026-06-12 — added 43 parity requirements per `docs/FRONTEND2_FEATURE_PARITY_PLAN.md` §§4-6 (INV/RPR/MNT/ANL/ATT/PPL/WISH/DECL/NOTIF/ATOM-FB + AUTH-11/12, TAX-07, SCAN-12, SETT-10/11, POL-06) mapped to phases 4-17 incl. new lettered phases 7b/10b/13b/14b. Existing 106 IDs untouched.*
