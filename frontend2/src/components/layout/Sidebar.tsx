@@ -146,6 +146,11 @@ export function Sidebar({
         <NavGroup title={<Trans>System</Trans>}>
           <NavItem glyph="⌗" label={<Trans>Scan</Trans>} />
           <NavItem glyph="⚙" label={<Trans>Settings</Trans>} />
+          {/* DEV-only atom review surface (Phase 4). Gated so it never appears
+              as a user nav entry; the matching /demo route is DEV-gated too. */}
+          {import.meta.env.DEV && (
+            <NavItem glyph="◈" label={<Trans>Demo</Trans>} to="/demo" />
+          )}
         </NavGroup>
       </nav>
       {user && (
