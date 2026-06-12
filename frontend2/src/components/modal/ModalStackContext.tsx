@@ -58,6 +58,14 @@ export function ModalStackProvider({ children }: { children: ReactNode }) {
   // Single owner of the ESC listener (mirrors the single-listener + cleanup
   // discipline from the shortcuts provider). Installed once for the provider's
   // lifetime; reads the live stack through the ref.
+  //
+  // Registered in the CAPTURE phase so the arbiter runs before any route-level
+  // bubble-phase ESC handler regardless of mount/effect order — child effects
+  // fire before parent effects, so a naive route handler nested inside the
+  // provider would otherwise win the race and (e.g.) log out before this
+  // listener could preventDefault. Capture phase + preventDefault guarantees the
+  // TUI-02 invariant deterministically: while an overlay is open, ESC pops the
+  // top overlay and never reaches logout.
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key !== "Escape") return;
@@ -66,8 +74,8 @@ export function ModalStackProvider({ children }: { children: ReactNode }) {
       event.preventDefault();
       stack[stack.length - 1].close(); // pop the TOP overlay only
     };
-    document.addEventListener("keydown", onKeyDown);
-    return () => document.removeEventListener("keydown", onKeyDown);
+    document.addEventListener("keydown", onKeyDown, true);
+    return () => document.removeEventListener("keydown", onKeyDown, true);
   }, []);
 
   const value = useMemo<ModalStackValue>(() => ({ push, pop }), [push, pop]);
