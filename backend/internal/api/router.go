@@ -70,6 +70,28 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
+// sessionResolverAdapter adapts *session.Service to the
+// appMiddleware.SessionResolver interface. The middleware package cannot
+// import the session package (session/handler.go already imports middleware),
+// so it declares a minimal interface returning appMiddleware.IdentifiedSession;
+// this adapter bridges *session.Session (which satisfies that interface via
+// its ID() method) to it.
+type sessionResolverAdapter struct {
+	svc *session.Service
+}
+
+func (a sessionResolverAdapter) FindByTokenHash(ctx context.Context, tokenHash string) (appMiddleware.IdentifiedSession, error) {
+	sess, err := a.svc.FindByTokenHash(ctx, tokenHash)
+	if err != nil {
+		return nil, err
+	}
+	if sess == nil {
+		// Avoid handing back a typed-nil that reads as non-nil through the interface.
+		return nil, nil
+	}
+	return sess, nil
+}
+
 // NewRouter creates and configures the main router.
 func NewRouter(pool *pgxpool.Pool, cfg *config.Config) chi.Router {
 	r := chi.NewRouter()
@@ -384,6 +406,10 @@ func NewRouter(pool *pgxpool.Pool, cfg *config.Config) chi.Router {
 	// Protected routes
 	r.Group(func(r chi.Router) {
 		r.Use(appMiddleware.JWTAuth(jwtService))
+		// Resolve the current server-side session from the refresh_token cookie
+		// so is_current and revoke-all-others work (AUTH-07). Best-effort:
+		// cookieless callers (SSE, Bearer-only) still authenticate via JWTAuth.
+		r.Use(appMiddleware.CurrentSession(sessionResolverAdapter{sessionSvc}))
 
 		// Create protected API config without docs (docs are already registered publicly)
 		protectedConfig := huma.DefaultConfig("Home Warehouse API", "1.0.0")

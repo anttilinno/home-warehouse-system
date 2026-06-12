@@ -2,6 +2,8 @@ package middleware
 
 import (
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
 	"net/http"
 	"strings"
 
@@ -83,6 +85,64 @@ func JWTAuth(jwtService *jwt.Service) func(http.Handler) http.Handler {
 
 			ctx := context.WithValue(r.Context(), UserContextKey, user)
 			next.ServeHTTP(w, r.WithContext(ctx))
+		})
+	}
+}
+
+// SessionResolver is the minimal session-lookup surface CurrentSession needs.
+// It is defined here (rather than importing the session package) to avoid an
+// import cycle: session/handler.go already imports this middleware package for
+// GetCurrentSessionID/GetAuthUser. *session.Service satisfies this interface
+// structurally via FindByTokenHash; the returned value exposes its id via the
+// IdentifiedSession interface.
+type SessionResolver interface {
+	FindByTokenHash(ctx context.Context, tokenHash string) (IdentifiedSession, error)
+}
+
+// IdentifiedSession is the minimal session view CurrentSession reads: just its id.
+type IdentifiedSession interface {
+	ID() uuid.UUID
+}
+
+// hashRefreshToken mirrors session.HashToken (SHA-256, hex) without importing
+// the session package, keeping middleware free of the import cycle. The hash
+// scheme is a stable primitive shared by both call sites.
+func hashRefreshToken(token string) string {
+	hash := sha256.Sum256([]byte(token))
+	return hex.EncodeToString(hash[:])
+}
+
+// CurrentSession resolves the server-side session row for the request and
+// populates the context with its id via WithCurrentSessionID. It MUST run
+// AFTER JWTAuth (it does not authenticate — JWTAuth already did).
+//
+// The access JWT is stateless and carries no session/jti, so the only
+// request-bound handle to the session row is the refresh_token cookie. This
+// middleware hashes that cookie and looks the row up via the resolver.
+//
+// Resolution is best-effort and NEVER a hard auth gate: a missing cookie, a
+// lookup miss, or a revoked session all pass the request through unchanged.
+// SSE query-param auth and programmatic Bearer callers carry no refresh
+// cookie and MUST still reach their handlers. The resolved id is display/UX
+// only (is_current badge, revoke-all-others target) — revoke authorization
+// is still enforced by ownership checks in the session service, so a missing
+// or mis-resolved id can never grant privilege. Lookup errors are swallowed
+// by design (not wrapped/surfaced) for exactly this reason.
+func CurrentSession(resolver SessionResolver) func(http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if resolver != nil {
+				if cookie, err := r.Cookie("refresh_token"); err == nil && cookie.Value != "" {
+					tokenHash := hashRefreshToken(cookie.Value)
+					if sess, err := resolver.FindByTokenHash(r.Context(), tokenHash); err == nil && sess != nil {
+						ctx := WithCurrentSessionID(r.Context(), sess.ID())
+						next.ServeHTTP(w, r.WithContext(ctx))
+						return
+					}
+				}
+			}
+			// No cookie / lookup miss / revoked: pass through unchanged.
+			next.ServeHTTP(w, r)
 		})
 	}
 }
