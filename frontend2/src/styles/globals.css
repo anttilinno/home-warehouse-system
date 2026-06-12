@@ -30,6 +30,20 @@ body {
   line-height: 1.5;
 }
 
+/* Square-corners reset (design hard rule 4: "Radii 0 everywhere except
+   badges 2px"). tokens.css zeroes Tailwind's default --radius-* scale so the
+   rounded-* utilities collapse to 0; this catches raw border-radius set
+   outside a Tailwind utility. The .badge contract is the lone 2px exception
+   (matches retro-os.css .badge + the Phase 4 badge atom). */
+*,
+::before,
+::after {
+  border-radius: 0;
+}
+.badge {
+  border-radius: var(--radius-chip);
+}
+
 /* --fg-faint is decorative-only; bump it for users requesting contrast. */
 @media (prefers-contrast: more) {
   :root {
