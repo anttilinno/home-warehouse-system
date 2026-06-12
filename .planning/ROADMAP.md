@@ -558,7 +558,15 @@ Plans:
   4. User looking at any panel that subscribes to entity SSE events sees a `sse: ● live` text + step-end blinking dot in the panel header
   5. User Shift+Clicking rows in a RetroTable sees range selection state + Bottombar surfaces bulk-action chips for the active selection set
 **Parity additions (2026-06-12)** (§4): add FilterBar, FilterPopover, BulkActionBar, and SavedFilters as retro atoms here — Phases 7/8/14 all consume them; building once avoids three ad-hoc copies. New requirement IDs: ATOM-FB-01..04.
-**Plans**: TBD
+**Plans:** 7 plans (4 waves)
+Plans:
+- [ ] 04-01-PLAN.md — Overlay foundation: sonner@2.0.7 legitimacy-gated install + RetroDialog extraction + Popover + RetroConfirmDialog + F1HelpDialog refactor
+- [ ] 04-02-PLAN.md — Data family: useTableSelection (id-keyed TUI-06) + RetroPagination + RetroTabs
+- [ ] 04-03-PLAN.md — Feedback visuals: RetroStatusDot (TUI-03) + StatusPill (TUI-04) + RetroEmptyState + status-blink keyframe
+- [ ] 04-04-PLAN.md — Form family: FormField + Select(native) + Textarea + Checkbox + FileInput + Combobox(activedescendant)
+- [ ] 04-05-PLAN.md — RetroToast: sonner skin (retro mini-Window, never-auto-dismiss-danger) + retroToast re-export
+- [ ] 04-06-PLAN.md — Filter atoms: FilterBar/FilterPopover/BulkActionBar/SavedFilters (ATOM-FB-01..04) + useSavedFilters localStorage
+- [ ] 04-07-PLAN.md — /demo review surface (every atom) + escStack TUI-02 composition test + bulk-chip proof
 **UI hint**: yes
 
 ### Phase 5: Auth
