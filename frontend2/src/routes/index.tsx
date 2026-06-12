@@ -3,6 +3,7 @@ import { LoginPage } from "@/features/auth/LoginPage";
 import { RequireAuth } from "@/features/auth/RequireAuth";
 import { AppShell } from "@/components/layout/AppShell";
 import { DashboardPage } from "@/features/dashboard/DashboardPage";
+import { DemoPage } from "@/routes/demo/DemoPage";
 
 // Library-mode RR7 (NOT framework mode — AP-1). Literal routes before the
 // wildcard. /login stays public; the authenticated branch is now an AppShell
@@ -34,6 +35,11 @@ export function AppRoutes() {
         }
       >
         <Route index element={<DashboardPage />} />
+        {/* /demo: the Phase 4 atom review surface. DEV-gated — it renders
+            inside AppShell for review but never ships as a user route. */}
+        {import.meta.env.DEV && (
+          <Route path="demo" element={<DemoPage />} />
+        )}
       </Route>
       <Route path="*" element={<PlaceholderShell />} />
     </Routes>
