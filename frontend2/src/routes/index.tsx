@@ -7,6 +7,7 @@ import { AppShell } from "@/components/layout/AppShell";
 import { DashboardPage } from "@/features/dashboard/DashboardPage";
 import { SettingsLayout } from "@/features/settings/SettingsLayout";
 import { SecurityPage } from "@/features/settings/SecurityPage";
+import { AccountsPage } from "@/features/settings/AccountsPage";
 import { DemoPage } from "@/routes/demo/DemoPage";
 
 // Library-mode RR7 (NOT framework mode — AP-1). Literal routes before the
@@ -49,6 +50,7 @@ export function AppRoutes() {
         <Route path="settings" element={<SettingsLayout />}>
           <Route index element={<Navigate to="security" replace />} />
           <Route path="security" element={<SecurityPage />} />
+          <Route path="accounts" element={<AccountsPage />} />
         </Route>
         {/* /demo: the Phase 4 atom review surface. DEV-gated — it renders
             inside AppShell for review but never ships as a user route. */}
