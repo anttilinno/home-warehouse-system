@@ -4,6 +4,7 @@
 package integration
 
 import (
+	"io"
 	"net/http"
 	"testing"
 
@@ -239,6 +240,176 @@ func TestRefreshToken_InvalidToken(t *testing.T) {
 	})
 	RequireStatus(t, resp, http.StatusUnauthorized)
 	resp.Body.Close()
+}
+
+// =============================================================================
+// Session Revocation Tests (AUTH-12 / F2 / F3) + is_current (AUTH-07)
+// =============================================================================
+
+// authTokens holds the JSON-body tokens returned by login plus the email used,
+// so the same user can be logged in again later (F3 re-inspection).
+type authTokens struct {
+	Email        string `json:"-"`
+	Token        string `json:"token"`
+	RefreshToken string `json:"refresh_token"`
+}
+
+// loginExisting logs in an already-registered user by email and returns tokens.
+func loginExisting(t *testing.T, ts *TestServer, email string) authTokens {
+	t.Helper()
+	resp := ts.Post("/auth/login", map[string]string{
+		"email":    email,
+		"password": "password123",
+	})
+	RequireStatus(t, resp, http.StatusOK)
+	tokens := ParseResponse[authTokens](t, resp)
+	tokens.Email = email
+	require.NotEmpty(t, tokens.Token, "login must return an access token")
+	require.NotEmpty(t, tokens.RefreshToken, "login must return a refresh token")
+	return tokens
+}
+
+// registerAndLogin registers a fresh unique user and logs in, returning the
+// access + refresh tokens (and the email) captured from the login JSON body.
+func registerAndLogin(t *testing.T, ts *TestServer) authTokens {
+	t.Helper()
+	email := "session_" + uuid.New().String()[:8] + "@example.com"
+
+	resp := ts.Post("/auth/register", map[string]string{
+		"email":     email,
+		"full_name": "Session User",
+		"password":  "password123",
+	})
+	RequireStatus(t, resp, http.StatusOK)
+	resp.Body.Close()
+
+	return loginExisting(t, ts, email)
+}
+
+// TestLogout_RevokesSession proves AUTH-12 / F2: after logout, replaying the
+// old refresh token is rejected 401 because the server-side session row was
+// revoked (revocation is server-authoritative, keyed by HashToken). A revert
+// of the logout-revocation fix (f49e4b48) fails the final assertion here.
+func TestLogout_RevokesSession(t *testing.T) {
+	ts := NewTestServer(t)
+
+	tokens := registerAndLogin(t, ts)
+
+	// Logout carries the refresh_token COOKIE (the handler reads the cookie,
+	// not a body field). Stock Post() sends no cookies, so this must be a
+	// cookie-bearing request.
+	resp := ts.PostWithCookie("/auth/logout", nil, "refresh_token", tokens.RefreshToken)
+	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusNoContent {
+		body, _ := io.ReadAll(resp.Body)
+		t.Fatalf("logout: expected 200/204, got %d. Body: %s", resp.StatusCode, string(body))
+	}
+	resp.Body.Close()
+
+	// Replaying the now-revoked refresh token must be rejected.
+	resp = ts.Post("/auth/refresh", map[string]string{
+		"refresh_token": tokens.RefreshToken,
+	})
+	RequireStatus(t, resp, http.StatusUnauthorized)
+	errResp := ParseErrorResponse(t, resp)
+	assert.Contains(t, errResp.Detail, "revoked",
+		"refresh after logout must report the session was revoked")
+}
+
+// TestRefresh_RevokedSession_NoNewSession guards F3: a revoked refresh token
+// must NOT be able to mint a brand-new session (no legacy-token resurrection
+// fallback). After logout, a second refresh attempt still 401s, and the user's
+// session list does not regrow — proving no new row was created.
+func TestRefresh_RevokedSession_NoNewSession(t *testing.T) {
+	ts := NewTestServer(t)
+
+	tokens := registerAndLogin(t, ts)
+
+	// Revoke via logout.
+	resp := ts.PostWithCookie("/auth/logout", nil, "refresh_token", tokens.RefreshToken)
+	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusNoContent {
+		body, _ := io.ReadAll(resp.Body)
+		t.Fatalf("logout: expected 200/204, got %d. Body: %s", resp.StatusCode, string(body))
+	}
+	resp.Body.Close()
+
+	// First replay -> 401.
+	resp = ts.Post("/auth/refresh", map[string]string{"refresh_token": tokens.RefreshToken})
+	RequireStatus(t, resp, http.StatusUnauthorized)
+	resp.Body.Close()
+
+	// Second replay -> still 401, NOT 200. A resurrection bug would 200 here.
+	resp = ts.Post("/auth/refresh", map[string]string{"refresh_token": tokens.RefreshToken})
+	RequireStatus(t, resp, http.StatusUnauthorized)
+	resp.Body.Close()
+
+	// Re-login the SAME user to inspect the session list. After logout the user
+	// had zero sessions; this fresh login creates exactly one. If the revoked-
+	// token replays had resurrected sessions, the same user would now have more
+	// than one. The fresh refresh token differs from the revoked one, so the
+	// revoked session id (if any) would still be listed separately.
+	fresh := loginExisting(t, ts, tokens.Email)
+	ts.SetToken(fresh.Token)
+	resp = ts.RequestWithCookies(http.MethodGet, "/users/me/sessions", nil, map[string]string{
+		"access_token":  fresh.Token,
+		"refresh_token": fresh.RefreshToken,
+	})
+	RequireStatus(t, resp, http.StatusOK)
+	var sessions []sessionView
+	sessions = ParseResponse[[]sessionView](t, resp)
+
+	// Exactly one session: the fresh login. No resurrected sessions from the
+	// revoked-token replays.
+	assert.Len(t, sessions, 1,
+		"revoked-token refresh replays must not create new sessions (F3)")
+}
+
+// TestSessions_CurrentSessionMarked guards AUTH-07: with the refresh cookie
+// present, CurrentSession resolves the active session so exactly one listed
+// session is is_current=true, and revoke-all-others succeeds (NOT 400
+// "current session not found").
+func TestSessions_CurrentSessionMarked(t *testing.T) {
+	ts := NewTestServer(t)
+
+	tokens := registerAndLogin(t, ts)
+	ts.SetToken(tokens.Token)
+
+	// Sessions GET must carry BOTH cookies: access_token authenticates and
+	// refresh_token lets CurrentSession resolve is_current.
+	resp := ts.RequestWithCookies(http.MethodGet, "/users/me/sessions", nil, map[string]string{
+		"access_token":  tokens.Token,
+		"refresh_token": tokens.RefreshToken,
+	})
+	RequireStatus(t, resp, http.StatusOK)
+	var sessions []sessionView
+	sessions = ParseResponse[[]sessionView](t, resp)
+	require.NotEmpty(t, sessions, "user should have at least one session")
+
+	currentCount := 0
+	for _, s := range sessions {
+		if s.IsCurrent {
+			currentCount++
+		}
+	}
+	assert.Equal(t, 1, currentCount,
+		"exactly one session must be marked is_current when the refresh cookie is present")
+
+	// revoke-all-others must succeed (context carries the current session id).
+	resp = ts.RequestWithCookies(http.MethodDelete, "/users/me/sessions", nil, map[string]string{
+		"access_token":  tokens.Token,
+		"refresh_token": tokens.RefreshToken,
+	})
+	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusNoContent {
+		body, _ := io.ReadAll(resp.Body)
+		t.Fatalf("revoke-all-others: expected 200/204 (NOT 400), got %d. Body: %s",
+			resp.StatusCode, string(body))
+	}
+	resp.Body.Close()
+}
+
+// sessionView mirrors the session.SessionResponse JSON shape for assertions.
+type sessionView struct {
+	ID        uuid.UUID `json:"id"`
+	IsCurrent bool      `json:"is_current"`
 }
 
 // =============================================================================
