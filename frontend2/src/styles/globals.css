@@ -1,9 +1,115 @@
+/* Retro OS Pastel body globals (Phase 2). Token values live in tokens.css
+   (data); this file owns body-level behavior (D-03). */
+@import "./tokens.css";
 @import "tailwindcss";
 
-/* Body resets only — DO NOT add tokens or scanlines yet (Phase 2 territory). */
+/* Self-hosted fonts. latin + latin-ext + cyrillic where available. */
+@import "@fontsource/silkscreen/400.css";
+@import "@fontsource/silkscreen/700.css";
+@import "@fontsource/ibm-plex-sans/400.css";
+@import "@fontsource/ibm-plex-sans/600.css";
+@import "@fontsource/ibm-plex-sans/700.css";
+@import "@fontsource/ibm-plex-mono/400.css";
+@import "@fontsource/ibm-plex-mono/600.css";
+
 html,
 body,
 #root {
   height: 100%;
   margin: 0;
+}
+
+body {
+  background-color: var(--bg-desktop);
+  /* Classic desktop dot-dither, barely there */
+  background-image: radial-gradient(rgba(38, 38, 46, 0.055) 1px, transparent 1px);
+  background-size: 6px 6px;
+  color: var(--fg-ink);
+  font-family: var(--font-body);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* --fg-faint is decorative-only; bump it for users requesting contrast. */
+@media (prefers-contrast: more) {
+  :root {
+    --fg-faint: var(--fg-muted);
+  }
+}
+
+/* ---------- Bevel utilities (composite shadows don't compose from
+   single-shadow Tailwind utilities, so they're named here) ---------- */
+@utility bevel-raised {
+  box-shadow:
+    inset 1px 1px 0 var(--bevel-light),
+    inset -2px -2px 0 var(--bevel-shade),
+    var(--shadow-hard);
+}
+@utility bevel-raised-ink {
+  box-shadow:
+    inset 1px 1px 0 var(--bevel-light),
+    inset -2px -2px 0 var(--bevel-shade),
+    var(--shadow-hard-ink);
+}
+@utility bevel-pressed {
+  box-shadow:
+    inset 2px 2px 0 var(--bevel-shade),
+    inset -1px -1px 0 var(--bevel-light),
+    1px 1px 0 0 var(--border-ink);
+}
+@utility bevel-sunken {
+  box-shadow:
+    inset 2px 2px 0 var(--bevel-shade),
+    inset -1px -1px 0 var(--bevel-light);
+}
+/* System 7 titlebar pinstripes — layered over a pastel background-color */
+@utility pinstripes {
+  background-image: repeating-linear-gradient(
+    0deg,
+    rgba(255, 255, 255, 0.45) 0,
+    rgba(255, 255, 255, 0.45) 1px,
+    transparent 1px,
+    transparent 4px
+  );
+}
+
+/* ---------- Table chrome (nth-child striping + hover + selection are
+   descendant rules — cleaner as a component class than per-cell utilities;
+   consumed by components/retro/RetroTable.tsx) ---------- */
+@layer components {
+  .rtable {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+  .rtable th {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    text-align: left;
+    color: var(--fg-muted);
+    background: var(--bg-panel-2);
+    border-bottom: 2px solid var(--border-ink);
+    padding: 7px 10px;
+  }
+  .rtable td {
+    padding: 6px 10px;
+    border-bottom: 1px solid var(--table-rule);
+    vertical-align: middle;
+  }
+  .rtable tbody tr:nth-child(even) td {
+    background: var(--table-stripe);
+  }
+  .rtable tbody tr:hover td {
+    background: var(--info-bg);
+  }
+  .rtable tbody tr[aria-selected="true"] td {
+    background: var(--titlebar-blue);
+    border-bottom-color: var(--border-ink);
+  }
+  .rtable .mono {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+  }
 }

@@ -1,0 +1,126 @@
+/* Retro OS Pastel — design tokens (Phase 2, revised direction 2026-06-11).
+   Ported verbatim from .planning/sketches/themes/retro-os.css (canonical).
+   Contrast bar: WCAG AA (>= 4.5:1) for every text pair — enforced by
+   src/styles/tokens.test.ts. Pastel fills carry ink text ONLY; colored
+   text on white/cream uses the *-deep companions.
+
+   Glyph coverage note (TOKEN-05): IBM Plex Sans/Mono ship full latin-ext +
+   cyrillic subsets — Estonian (õäöüšž) and Russian render natively. Plex
+   Mono is the data face; tabular-nums verified, no column drift expected.
+   Silkscreen is latin-only and display-only (>=16px, uppercase), so the
+   et/ru catalogs never route through it for body copy. */
+
+:root {
+  /* ---------- Surfaces ---------- */
+  --bg-desktop:  #fdf6ec;
+  --bg-panel:    #ffffff;
+  --bg-panel-2:  #f7f0e2;
+  --bg-pressed:  #efe6d3;
+
+  /* ---------- Ink ---------- */
+  --fg-ink:    #26262e;
+  --fg-muted:  #5b5b66;
+  --fg-faint:  #8e8e99; /* decorative/disabled only — never running text */
+
+  /* ---------- Pastel chrome fills (ink text only) ---------- */
+  --titlebar-blue:   #b8d8e8;
+  --titlebar-pink:   #f4b8c4;
+  --titlebar-mint:   #b8e0c8;
+  --titlebar-butter: #f6e3a8;
+
+  /* ---------- Deep companions (colored text on white/cream) ---------- */
+  --accent-blue-deep: #19526f;
+  --accent-pink-deep: #a8334f;
+  --accent-mint-deep: #1e6b43;
+  --warn-deep:        #7a5a12;
+
+  /* ---------- Status ---------- */
+  --danger:    #b73348;
+  --danger-bg: #fbe3e8;
+  --warn-bg:   #f9eccb;
+  --ok-bg:     #ddf0e4;
+  --info-bg:   #ddeaf3;
+
+  /* ---------- Bevel system ---------- */
+  --border-ink:  #26262e;
+  --bevel-light: #ffffff;
+  --bevel-shade: #c9bda8;
+  --shadow-hard:     3px 3px 0 0 #d9cdb6;
+  --shadow-hard-ink: 2px 2px 0 0 #26262e;
+  --table-rule:   #e7ddca;
+  --table-stripe: #fcf8f0;
+
+  /* ---------- Type ---------- */
+  --font-display: "Silkscreen", monospace; /* >=16px, uppercase only */
+  --font-body: "IBM Plex Sans", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+
+  /* ---------- Spacing (4px grid) ---------- */
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 24px;
+  --sp-6: 32px;
+
+  /* ---------- Radii (badges are the only rounded element) ---------- */
+  --radius-chip: 2px;
+}
+
+/* Tailwind v4 mapping. `inline` is required: these reference :root vars,
+   and plain @theme would emit unresolvable var() indirection in utilities.
+   Class names mirror token names (D-04): bg-bg-panel, text-fg-ink,
+   bg-titlebar-mint, shadow-hard, p-sp-3, rounded-chip. */
+@theme inline {
+  --color-bg-desktop: var(--bg-desktop);
+  --color-bg-panel: var(--bg-panel);
+  --color-bg-panel-2: var(--bg-panel-2);
+  --color-bg-pressed: var(--bg-pressed);
+
+  --color-fg-ink: var(--fg-ink);
+  --color-fg-muted: var(--fg-muted);
+  --color-fg-faint: var(--fg-faint);
+
+  --color-titlebar-blue: var(--titlebar-blue);
+  --color-titlebar-pink: var(--titlebar-pink);
+  --color-titlebar-mint: var(--titlebar-mint);
+  --color-titlebar-butter: var(--titlebar-butter);
+
+  --color-accent-blue-deep: var(--accent-blue-deep);
+  --color-accent-pink-deep: var(--accent-pink-deep);
+  --color-accent-mint-deep: var(--accent-mint-deep);
+  --color-warn-deep: var(--warn-deep);
+
+  --color-danger: var(--danger);
+  --color-danger-bg: var(--danger-bg);
+  --color-warn-bg: var(--warn-bg);
+  --color-ok-bg: var(--ok-bg);
+  --color-info-bg: var(--info-bg);
+
+  --color-border-ink: var(--border-ink);
+  --color-bevel-light: var(--bevel-light);
+  --color-bevel-shade: var(--bevel-shade);
+  --color-table-rule: var(--table-rule);
+  --color-table-stripe: var(--table-stripe);
+
+  /* DELIBERATE literals, not var() refs: these share names with the :root
+     tokens, and a same-name `var(--font-display)` inside @theme inline is
+     resolved against the theme itself (circular → utility silently drops).
+     Keep both copies in sync when editing fonts or shadows. */
+  --font-display: "Silkscreen", monospace;
+  --font-body: "IBM Plex Sans", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+
+  --shadow-hard: 3px 3px 0 0 #d9cdb6;
+  --shadow-hard-ink: 2px 2px 0 0 #26262e;
+
+  --spacing-sp-1: 4px;
+  --spacing-sp-2: 8px;
+  --spacing-sp-3: 12px;
+  --spacing-sp-4: 16px;
+  --spacing-sp-5: 24px;
+  --spacing-sp-6: 32px;
+
+  --radius-none: 0;
+  --radius-chip: 2px;
+}

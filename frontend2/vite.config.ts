@@ -29,6 +29,10 @@ export default defineConfig({
         target: "http://localhost:8080",
         changeOrigin: true,
         secure: false,
+        // Backend routes live at root (/auth/login, /workspaces/…) — the
+        // /api prefix is frontend-only. Rewrite restored from the pre-wipe
+        // v2.2 config (the Phase 1 scaffold dropped it by accident).
+        rewrite: (path: string) => path.replace(/^\/api/, ""),
       },
     },
   },

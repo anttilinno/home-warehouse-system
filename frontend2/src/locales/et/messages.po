@@ -6,3 +6,165 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: @lingui/cli\n"
 "Language: et\n"
+"Project-Id-Version: \n"
+"Report-Msgid-Bugs-To: \n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Plural-Forms: \n"
+
+#. placeholder {0}: s.total_inventory
+#: src/features/dashboard/DashboardPage.tsx
+msgid "{0} units total"
+msgstr ""
+
+#: src/features/dashboard/DashboardPage.tsx
+msgid "Action"
+msgstr ""
+
+#: src/features/dashboard/DashboardPage.tsx
+msgid "action needed"
+msgstr ""
+
+#: src/features/dashboard/DashboardPage.tsx
+msgid "active"
+msgstr ""
+
+#: src/components/layout/Sidebar.tsx
+msgid "Analytics"
+msgstr ""
+
+#: src/features/dashboard/DashboardPage.tsx
+msgid "below threshold"
+msgstr ""
+
+#: src/components/layout/Sidebar.tsx
+#: src/features/dashboard/DashboardPage.tsx
+msgid "Borrowers"
+msgstr ""
+
+#: src/components/layout/Sidebar.tsx
+#: src/features/dashboard/DashboardPage.tsx
+msgid "Categories"
+msgstr ""
+
+#: src/components/layout/Sidebar.tsx
+#: src/features/dashboard/DashboardPage.tsx
+msgid "Containers"
+msgstr ""
+
+#: src/features/dashboard/DashboardPage.tsx
+msgid "Could not load activity."
+msgstr ""
+
+#: src/components/layout/Sidebar.tsx
+msgid "Dashboard"
+msgstr ""
+
+#: src/features/auth/LoginPage.tsx
+msgid "Email"
+msgstr ""
+
+#: src/features/auth/LoginPage.tsx
+msgid "Enter a valid email address."
+msgstr ""
+
+#: src/features/dashboard/DashboardPage.tsx
+msgid "Entity"
+msgstr ""
+
+#: src/features/auth/LoginPage.tsx
+msgid "home inventory terminal · v3.0"
+msgstr ""
+
+#: src/components/layout/Sidebar.tsx
+msgid "Inventory"
+msgstr ""
+
+#: src/components/layout/Sidebar.tsx
+#: src/features/dashboard/DashboardPage.tsx
+msgid "Items"
+msgstr ""
+
+#: src/features/auth/RequireAuth.tsx
+#: src/features/dashboard/DashboardPage.tsx
+msgid "Loading…"
+msgstr ""
+
+#: src/components/layout/Sidebar.tsx
+#: src/features/dashboard/DashboardPage.tsx
+msgid "Loans"
+msgstr ""
+
+#: src/components/layout/Sidebar.tsx
+#: src/features/dashboard/DashboardPage.tsx
+msgid "Locations"
+msgstr ""
+
+#: src/features/auth/LoginPage.tsx
+msgid "Log in"
+msgstr ""
+
+#: src/features/dashboard/DashboardPage.tsx
+msgid "Low stock"
+msgstr ""
+
+#: src/features/dashboard/DashboardPage.tsx
+msgid "Name"
+msgstr ""
+
+#: src/components/layout/Sidebar.tsx
+msgid "Navigator"
+msgstr ""
+
+#: src/features/dashboard/DashboardPage.tsx
+msgid "No activity yet."
+msgstr ""
+
+#: src/features/dashboard/DashboardPage.tsx
+msgid "No workspace"
+msgstr ""
+
+#: src/features/dashboard/DashboardPage.tsx
+msgid "Overdue"
+msgstr ""
+
+#: src/components/layout/Sidebar.tsx
+msgid "Overview"
+msgstr ""
+
+#: src/features/auth/LoginPage.tsx
+msgid "Password"
+msgstr ""
+
+#: src/features/auth/LoginPage.tsx
+msgid "Password is required."
+msgstr ""
+
+#: src/features/dashboard/DashboardPage.tsx
+msgid "Recent activity"
+msgstr ""
+
+#: src/components/layout/Sidebar.tsx
+msgid "Scan"
+msgstr ""
+
+#: src/components/layout/Sidebar.tsx
+msgid "Settings"
+msgstr ""
+
+#: src/components/layout/Sidebar.tsx
+msgid "System"
+msgstr ""
+
+#: src/features/dashboard/DashboardPage.tsx
+msgid "Time"
+msgstr ""
+
+#: src/features/auth/LoginPage.tsx
+msgid "Wrong email or password. Try again."
+msgstr ""
+
+#: src/features/dashboard/DashboardPage.tsx
+msgid "Your account has no workspaces yet."
+msgstr ""

@@ -65,8 +65,11 @@ async function parseResponse<T>(response: Response): Promise<T> {
 }
 
 async function doRefresh(): Promise<void> {
+  // Throw HttpError(401) — callers (auth guards) distinguish "session is
+  // gone" from network failures via instanceof HttpError, and a plain Error
+  // here made that check silently miss the most common no-session path.
   if (!storedRefreshToken) {
-    throw new Error("Session expired");
+    throw new HttpError(401, "Session expired");
   }
   const res = await fetch(`${BASE_URL}/auth/refresh`, {
     method: "POST",
@@ -76,7 +79,7 @@ async function doRefresh(): Promise<void> {
   });
   if (!res.ok) {
     storedRefreshToken = null;
-    throw new Error("Session expired");
+    throw new HttpError(401, "Session expired");
   }
   const data = await res.json();
   if (data.refresh_token) {

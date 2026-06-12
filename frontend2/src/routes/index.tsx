@@ -1,8 +1,12 @@
 import { Routes, Route } from "react-router";
+import { LoginPage } from "@/features/auth/LoginPage";
+import { RequireAuth } from "@/features/auth/RequireAuth";
+import { DashboardPage } from "@/features/dashboard/DashboardPage";
 
-// Library-mode RR7 (NOT framework mode — AP-1). The placeholder shell is the
-// single Phase 1 page; later phases (2 tokens, 3 chrome, 4 atoms, 5+ features)
-// add real routes against this baseline.
+// Library-mode RR7 (NOT framework mode — AP-1). Literal routes before the
+// wildcard. /login + / are the retro-os sample screens (2026-06-11); later
+// phases (3 chrome, 4 atoms, 5+ features) add real routes against this
+// baseline.
 
 function PlaceholderShell() {
   return (
@@ -19,7 +23,15 @@ function PlaceholderShell() {
 export function AppRoutes() {
   return (
     <Routes>
-      <Route path="/" element={<PlaceholderShell />} />
+      <Route path="/login" element={<LoginPage />} />
+      <Route
+        path="/"
+        element={
+          <RequireAuth>
+            <DashboardPage />
+          </RequireAuth>
+        }
+      />
       <Route path="*" element={<PlaceholderShell />} />
     </Routes>
   );

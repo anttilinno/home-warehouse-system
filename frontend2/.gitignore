@@ -31,3 +31,7 @@ playwright/.cache/
 
 # Env files (security: never commit)
 .env*
+
+# Lingui compiled catalogs (runtime imports the .po via @lingui/vite-plugin;
+# i18n:compile output is redundant build artifact)
+src/locales/*/messages.js
