@@ -21,7 +21,8 @@ export * from "./overlay";
 export * from "./form";
 export * from "./feedback";
 export * from "./data";
-// The feedback/data/filters subdir re-exports are added by their owning plans
+export * from "./filters";
+// The remaining subdir re-exports are added by their owning plans
 // as they land (Waves 2-3). They are intentionally NOT declared here yet: those
 // directories may not exist on this branch, so a re-export now would break
 // `tsc -b` / the build for this plan AND for the parallel plans that import this
