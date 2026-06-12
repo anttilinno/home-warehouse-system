@@ -1,8 +1,20 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { act, render, screen } from "@testing-library/react";
+import { I18nProvider } from "@lingui/react";
+import { i18n } from "@/lib/i18n";
 import { Clock } from "./Clock";
 
+// Render under the i18n singleton so <Trans> resolves to its source message.
+function renderClock(ui: React.ReactElement) {
+  return render(<I18nProvider i18n={i18n}>{ui}</I18nProvider>);
+}
+
 describe("Clock", () => {
+  beforeAll(() => {
+    i18n.load("en", {});
+    i18n.activate("en");
+  });
+
   beforeEach(() => {
     vi.useFakeTimers();
     // Pin wall clock so LOCAL is deterministic.
@@ -14,7 +26,7 @@ describe("Clock", () => {
   });
 
   it("renders a SESSION key + hh:mm:ss value and a LOCAL key + hh:mm:ss value", () => {
-    render(<Clock />);
+    renderClock(<Clock />);
     expect(screen.getByText("SESSION")).toBeInTheDocument();
     expect(screen.getByText("LOCAL")).toBeInTheDocument();
     // SESSION starts at 00:00:00.
@@ -22,7 +34,7 @@ describe("Clock", () => {
   });
 
   it("advances the SESSION value each second under fake timers", () => {
-    render(<Clock />);
+    renderClock(<Clock />);
     expect(screen.getByTestId("clock-session")).toHaveTextContent("00:00:00");
     act(() => {
       vi.advanceTimersByTime(1000);
@@ -44,7 +56,7 @@ describe("Clock", () => {
         </div>
       );
     }
-    render(<Parent />);
+    renderClock(<Parent />);
     expect(parentRenders).toHaveBeenCalledTimes(1);
     act(() => {
       vi.advanceTimersByTime(1000);
@@ -56,13 +68,13 @@ describe("Clock", () => {
 
   it("clears its interval on unmount (no leaked timer)", () => {
     const clearSpy = vi.spyOn(globalThis, "clearInterval");
-    const { unmount } = render(<Clock />);
+    const { unmount } = renderClock(<Clock />);
     unmount();
     expect(clearSpy).toHaveBeenCalled();
   });
 
   it("renders only the SESSION readout when local={false}", () => {
-    render(<Clock local={false} />);
+    renderClock(<Clock local={false} />);
     expect(screen.getByText("SESSION")).toBeInTheDocument();
     expect(screen.queryByText("LOCAL")).not.toBeInTheDocument();
   });
