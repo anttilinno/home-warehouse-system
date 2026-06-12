@@ -537,7 +537,14 @@ Plans:
   4. User pressing F1 (key OR Bottombar chip click) opens the keyboard-shortcuts help dialog; pressing ESC pops the topmost modal first and never logs out while any modal is open
   5. User on a viewport `<768px` sees the sidebar become a drawer and the Bottombar paginate or move overflow to a sheet while keeping F1 + ESC right-anchored
 **Parity additions (2026-06-12)** (`docs/FRONTEND2_FEATURE_PARITY_PLAN.md` §4): TopBar must reserve slots for the workspace switcher (Phase 5), notifications bell (Gap G-5, Phase 13), SSE status indicator (Phase 6), and user menu — even before those features land, so the chrome wires once.
-**Plans**: TBD
+**Plans**: 6 plans
+Plans:
+- [ ] 03-01-PLAN.md — useShortcuts SSOT + isEditableTarget guard (Wave 0 keydown spine)
+- [ ] 03-02-PLAN.md — ModalStack provider + ESC-pops-top ordering (logout never on bare ESC)
+- [ ] 03-03-PLAN.md — ShortcutChip key-cap + isolated SESSION/LOCAL Clock leaf
+- [ ] 03-04-PLAN.md — Sidebar (NavLink active + rail) + TopBar (slots + logout confirm) + PageHeader
+- [ ] 03-05-PLAN.md — Bottombar + F1 help dialog + mobile FAB (all read the one SSOT)
+- [ ] 03-06-PLAN.md — AppShell 2×3 grid + data-collapsed + MobileDrawer + provider/route wiring + E2E smoke
 **UI hint**: yes
 
 ### Phase 4: Retro Atoms
