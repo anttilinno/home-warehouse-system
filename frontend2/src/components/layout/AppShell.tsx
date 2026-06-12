@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Outlet, useLocation, useNavigate } from "react-router";
+import { Outlet, useLocation } from "react-router";
 import { Trans } from "@lingui/react/macro";
 import { TopBar } from "./TopBar";
 import { Sidebar } from "./Sidebar";
@@ -9,6 +9,7 @@ import { Fab } from "./Fab";
 import { MobileDrawer } from "./MobileDrawer";
 import { F1HelpDialog } from "./F1HelpDialog";
 import { WorkspaceProvider } from "@/features/workspace/WorkspaceProvider";
+import { useLogout } from "@/features/auth/useLogout";
 
 // AppShell (SHELL-01/02/06): the 2x3 CSS-Grid shell every authenticated route
 // renders inside. It owns a SINGLE `collapsed` boolean (the only collapse state
@@ -40,7 +41,6 @@ function segmentsForPath(pathname: string): string[] {
 
 export function AppShell() {
   const location = useLocation();
-  const navigate = useNavigate();
 
   // The ONLY collapse state — a single boolean, no measurement (SHELL-02).
   const [collapsed, setCollapsed] = useState(false);
@@ -52,8 +52,11 @@ export function AppShell() {
     [location.pathname],
   );
 
-  // Auth lands in Phase 5; until then "log out" returns to /login.
-  const handleLogout = () => navigate("/login");
+  // Real logout (AUTH-12 frontend half): POST /auth/logout (server-side revoke)
+  // then clear refresh token + workspace + query cache and navigate to /login.
+  // TopBar's confirm dialog still gates it (BAR-05) — onLogout fires only after
+  // the user confirms.
+  const logout = useLogout();
 
   return (
     // WorkspaceProvider (D-12 SSOT) wraps the authenticated shell so TopBar's
@@ -72,7 +75,7 @@ export function AppShell() {
       <div className="app-topbar">
         <TopBar
           onToggleDrawer={() => setDrawerOpen((v) => !v)}
-          onLogout={handleLogout}
+          onLogout={logout}
         />
       </div>
 
