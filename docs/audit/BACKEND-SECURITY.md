@@ -7,8 +7,8 @@ Date: 2026-06-11. Scope: `backend/` multi-tenant warehouse API (Go, chi + Huma, 
 | # | Severity | Title | Location |
 |---|----------|-------|----------|
 | F1 | CRITICAL | Cross-tenant IDOR on `attachment`/`file` (read + destructive delete) | `domain/warehouse/attachment/handler.go`, `attachments.sql.go` |
-| F2 | HIGH | Logout does not revoke session / refresh token | `domain/auth/user/handler.go:324` |
-| F3 | HIGH | Session revocation bypass via "legacy token" re-creation on refresh | `domain/auth/user/handler.go:264-310` |
+| F2 | HIGH | ✅ RESOLVED (`f49e4b48`) — Logout does not revoke session / refresh token | `domain/auth/user/handler.go:324` |
+| F3 | HIGH | ✅ RESOLVED (`f49e4b48`) — Session revocation bypass via "legacy token" re-creation on refresh | `domain/auth/user/handler.go:264-310` |
 | F4 | HIGH | CSV formula/DDE injection on export | `domain/importexport/service.go:391-508` |
 | F5 | HIGH | Import/restore not admin-gated; bypasses approval pipeline | `api/router.go:494`, `approval_middleware.go:171-207` |
 | F6 | HIGH | Cross-tenant FK injection in workspace restore | `domain/importexport/workspace_restore.go:719-734` |
@@ -80,6 +80,15 @@ It only clears browser cookies — it never calls `sessionSvc.Revoke`/`RevokeAll
 
 Fix: look up the session by `HashToken(refreshToken)` and delete it on logout; also clear the server session.
 
+> **RESOLVED** (commit `f49e4b48` — "tenant isolation threading + security hardening (F1-F20)").
+> `logout` now reads the `refresh_token` cookie, computes `session.HashToken(refresh)`,
+> looks up the row via `FindByTokenHash`, and calls `sessionSvc.Revoke(userID, sessionID)`
+> before clearing both cookies (`domain/auth/user/handler.go` `logout`). The server is now
+> the sole revocation authority — a replayed post-logout refresh token is rejected.
+> **Regression guard:** `TestLogout_RevokesSession` in `backend/tests/integration/auth_test.go`
+> (Phase 05 Plan 05-01) drives register → login → cookie-bearing logout → refresh-replay and
+> asserts `401` with detail "revoked". Closes **AUTH-12**.
+
 ### F3 — Session revocation bypass on refresh ("legacy token" re-creation)
 
 `domain/auth/user/handler.go:264-310`: when `FindByTokenHash` returns `ErrSessionNotFound` (which is exactly what happens after a session is revoked/deleted), the code treats it as a pre-session-tracking "legacy token," continues, and **creates a brand-new session**:
@@ -97,6 +106,18 @@ if err == session.ErrSessionNotFound {
 Because the JWT itself stays cryptographically valid for 7 days, `Revoke`/`RevokeAll`/`RevokeAllExcept` (`session/service.go:74-86`) are defeated: the holder of the refresh JWT simply refreshes and a new session is minted.
 
 Fix: on `ErrSessionNotFound`, reject with 401 (drop the legacy-token fallback, or gate it behind a token `iat` cutoff). Add a `jti`/version to refresh tokens and validate against the session store.
+
+> **RESOLVED** (commit `f49e4b48` — "tenant isolation threading + security hardening (F1-F20)").
+> The legacy-token resurrection fallback is removed: `refreshToken` now treats any
+> `FindByTokenHash` error (including `ErrSessionNotFound` from a revoked/deleted row) as a
+> hard `401 "session has been revoked"` and **never** re-`Create`s a session
+> (`domain/auth/user/handler.go` `refreshToken` — see the explicit "deliberately NO legacy
+> token fallback" comment). `Revoke`/`RevokeAll`/`RevokeAllExcept` are now effective: a holder
+> of a revoked refresh JWT cannot mint a fresh session.
+> **Regression guard:** `TestRefresh_RevokedSession_NoNewSession` in
+> `backend/tests/integration/auth_test.go` (Phase 05 Plan 05-01) asserts that replaying a
+> revoked refresh token stays `401` (never `200`) and that the user's session list does not
+> regrow (no resurrected row). Closes **AUTH-12**.
 
 ### F4 — CSV formula/DDE injection on export
 
