@@ -276,7 +276,14 @@ Plans:
   3. User can register a new account and be logged in automatically
   4. User can log out from the app and is returned to the login page
   5. API client automatically refreshes expired JWT tokens via HttpOnly cookie without user action
-**Plans**: TBD
+**Plans**: 6 plans
+Plans:
+- [ ] 05-01-PLAN.md — Backend: logout-revocation integration test (AUTH-12) + WithCurrentSessionID wiring (AUTH-07 gap) + audit-doc fix [Wave 1]
+- [ ] 05-02-PLAN.md — Frontend: MSW substrate + api.ts auth-expired event (AUTH-01) + RequireAuth network/5xx retry (AUTH-05) [Wave 1]
+- [ ] 05-03-PLAN.md — Frontend: WorkspaceProvider (D-12 SSOT) + TopBar switcher + DashboardPage de-hardcode (AUTH-06) [Wave 2]
+- [ ] 05-04-PLAN.md — Frontend: Register + Google/GitHub OAuth + /auth/callback + env-gated Authelia (AUTH-02/03/04/11) [Wave 3]
+- [ ] 05-05-PLAN.md — Frontend: useLogout + Settings Security (sessions/password/delete) + Connected Accounts (AUTH-07/08/09/10/12) [Wave 4]
+- [ ] 05-06-PLAN.md — Frontend: E2E register + logout-revocation + switcher; OAuth skip-with-reason (AUTH-02/06/12) [Wave 5]
 **UI hint**: yes
 
 ### Phase 50: Design System
