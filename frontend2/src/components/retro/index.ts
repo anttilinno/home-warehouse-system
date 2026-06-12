@@ -19,6 +19,8 @@ export { RetroTable, type RetroTableProps } from "./RetroTable";
 // barrel — locked v2.0 convention). `overlay` ships in this plan (04-01).
 export * from "./overlay";
 export * from "./form";
+export * from "./feedback";
+export * from "./data";
 // The feedback/data/filters subdir re-exports are added by their owning plans
 // as they land (Waves 2-3). They are intentionally NOT declared here yet: those
 // directories may not exist on this branch, so a re-export now would break
