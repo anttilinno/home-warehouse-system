@@ -12,6 +12,33 @@
 @import "@fontsource/ibm-plex-mono/400.css";
 @import "@fontsource/ibm-plex-mono/600.css";
 
+/* ---------- font-display / FOUT decision (TOKEN-03 polish) ----------
+   @fontsource ships every face with `font-display: swap` — fallback text
+   paints immediately, then swaps to the web font (FOUT). CONTEXT asks to
+   "avoid flash-of-fallback"; the decision below NAMES the outcome rather
+   than leaving it silent:
+
+   - ACCEPTED `swap` for IBM Plex Sans (body) + IBM Plex Mono (data). Their
+     metrics sit close to the system-ui / ui-monospace fallbacks declared in
+     --font-body / --font-mono, so the swap is visually minor and `swap`
+     correctly avoids invisible text on a slow network. FOUT on body copy is
+     the acceptable, intentional trade.
+
+   - Silkscreen (the pixel display face, hard rule 1: >=16px uppercase only)
+     is where `swap` is most jarring — no system fallback resembles it. An
+     override to `font-display: optional` was EVALUATED but NOT applied: this
+     fontsource version ships no display-variant CSS, and a hand-rolled
+     @font-face re-declaration would have to re-point `src` at the package's
+     ./files/*.woff2 across 4 subset blocks (latin + latin-ext x 400/700),
+     whose URLs Vite content-hashes at build time — brittle and easy to
+     desync from the package. Per the plan's documented fallback, we keep
+     `swap` for Silkscreen too and accept it as the reviewed, named outcome.
+     Silkscreen is chrome seasoning (titlebars/headings), not running text,
+     so a first-paint fallback flash on those few strings is tolerable.
+
+   Revisit if/when @fontsource exposes a `font-display` override entry or a
+   Phase 17 visual sweep flags the Silkscreen flash as a real regression. */
+
 html,
 body,
 #root {
