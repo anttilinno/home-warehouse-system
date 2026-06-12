@@ -176,7 +176,14 @@ describe("ModalStackProvider — listener lifecycle", () => {
 
     unmount();
 
-    expect(removeSpy).toHaveBeenCalledWith("keydown", expect.any(Function));
+    // The arbiter listens in the CAPTURE phase (third arg `true`) so it beats
+    // any route-level bubble-phase ESC handler regardless of effect order; the
+    // cleanup must remove it with the matching capture flag.
+    expect(removeSpy).toHaveBeenCalledWith(
+      "keydown",
+      expect.any(Function),
+      true,
+    );
     removeSpy.mockRestore();
   });
 
