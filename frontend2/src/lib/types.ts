@@ -10,11 +10,16 @@ export interface ApiError {
 
 // Subset of the backend user shape — only what the sample screens render.
 // Phase 5 (Auth) re-introduces the full v3.0 User.
+//
+// `has_password` (added Phase 5 Plan 05) drives the Security password card
+// (change-vs-set branch) AND the Connected Accounts unlink lockout guard. It is
+// returned by GET /users/me (see 05-RESEARCH Interfaces / 05-UI-SPEC Identity).
 export interface User {
   id: string;
   email: string;
   full_name: string;
   avatar_url: string | null;
+  has_password: boolean;
 }
 
 export interface AuthTokenResponse {
@@ -29,6 +34,44 @@ export interface Workspace {
   description: string | null;
   role: string;
   is_personal: boolean;
+}
+
+// --- Auth account-management surfaces (Phase 5 Plan 05) ---
+
+// GET /users/me/sessions → SessionResponse[]. device_info is a PARSED UA label
+// (ParseDeviceInfo, e.g. "Chrome on Linux"); is_current is wired via Plan 01's
+// CurrentSession middleware.
+export interface SessionResponse {
+  id: string;
+  device_info: string;
+  ip_address?: string;
+  last_active_at: string;
+  created_at: string;
+  is_current: boolean;
+}
+
+// GET /users/me/can-delete → blocking_workspaces lists the workspaces where the
+// user is the sole owner (the server-authoritative delete block).
+export interface BlockingWorkspace {
+  id: string;
+  name: string;
+  slug: string;
+}
+
+export interface CanDeleteResponse {
+  can_delete: boolean;
+  blocking_workspaces: BlockingWorkspace[];
+}
+
+// GET /auth/oauth/accounts → { accounts: OAuthAccount[] }.
+export interface OAuthAccount {
+  provider: string;
+  display_name?: string;
+  email?: string;
+}
+
+export interface OAuthAccountsResponse {
+  accounts: OAuthAccount[];
 }
 
 export interface DashboardStats {

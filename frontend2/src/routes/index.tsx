@@ -1,10 +1,12 @@
-import { Routes, Route } from "react-router";
+import { Routes, Route, Navigate } from "react-router";
 import { LoginPage } from "@/features/auth/LoginPage";
 import { RegisterPage } from "@/features/auth/RegisterPage";
 import { CallbackPage } from "@/features/auth/CallbackPage";
 import { RequireAuth } from "@/features/auth/RequireAuth";
 import { AppShell } from "@/components/layout/AppShell";
 import { DashboardPage } from "@/features/dashboard/DashboardPage";
+import { SettingsLayout } from "@/features/settings/SettingsLayout";
+import { SecurityPage } from "@/features/settings/SecurityPage";
 import { DemoPage } from "@/routes/demo/DemoPage";
 
 // Library-mode RR7 (NOT framework mode — AP-1). Literal routes before the
@@ -41,6 +43,13 @@ export function AppRoutes() {
         }
       >
         <Route index element={<DashboardPage />} />
+        {/* Settings hub (05-UI-SPEC §5): SettingsLayout sub-layout under the
+            AUTHENTICATED AppShell. /settings → /settings/security; the two built
+            pages (security + accounts) render through the layout's tab Outlet. */}
+        <Route path="settings" element={<SettingsLayout />}>
+          <Route index element={<Navigate to="security" replace />} />
+          <Route path="security" element={<SecurityPage />} />
+        </Route>
         {/* /demo: the Phase 4 atom review surface. DEV-gated — it renders
             inside AppShell for review but never ships as a user route. */}
         {import.meta.env.DEV && (
