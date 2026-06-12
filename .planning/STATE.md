@@ -4,14 +4,14 @@ milestone: v3.0
 milestone_name: Retro-OS Pastel Frontend
 status: executing
 stopped_at: Phase 2 context gathered
-last_updated: "2026-06-12T21:50:42.746Z"
-last_activity: 2026-06-12 -- Phase 04 execution started
+last_updated: "2026-06-12T23:38:57.411Z"
+last_activity: 2026-06-12 -- Phase 05 execution started
 progress:
   total_phases: 38
-  completed_phases: 3
-  total_plans: 19
-  completed_plans: 12
-  percent: 8
+  completed_phases: 4
+  total_plans: 25
+  completed_plans: 19
+  percent: 11
 ---
 
 # Project State: Home Warehouse System
@@ -21,14 +21,14 @@ progress:
 See: `.planning/PROJECT.md` (updated 2026-04-18)
 
 **Core value:** Reliable inventory access anywhere -- online or offline -- with seamless sync
-**Current focus:** Phase 04 — retro-atoms
+**Current focus:** Phase 05 — auth
 
 ## Current Position
 
-Phase: 04 (retro-atoms) — EXECUTING
-Plan: 1 of 7
-Status: Executing Phase 04
-Last activity: 2026-06-12 -- Phase 04 execution started
+Phase: 05 (auth) — EXECUTING
+Plan: 1 of 6
+Status: Executing Phase 05
+Last activity: 2026-06-12 -- Phase 05 execution started
 
 ## Performance Metrics
 
@@ -134,6 +134,7 @@ Last activity: 2026-06-12 -- Phase 04 execution started
 - v3.0: Desktop (>=768px) renders Bottombar only, no FAB (D-06) -- locks Phase 3 BAR scope
 - v3.0: FAB exposes context-aware radial menu -- actions adapt per route (D-07)
 - v3.0: Bottombar and FAB both consume useShortcuts context as single source of truth (D-08)
+- v3.0: D-12 (2026-06-13, Phase 5) — workspace state = React context (WorkspaceProvider) + localStorage["workspace_id"], initialized from the shared ["workspaces"] query with first-workspace fallback; NOT a route param. All entity query keys derive wsId from useWorkspace(). setWorkspace invalidates queries, never reloads.
 - v3.0: Dashboard HUD row ships in Phase 13 WITHOUT feature flag -- no prod env to gate against (D-09)
 - v3.0: HUD backend endpoint specs documented in CARRY-FORWARD.md; endpoints built in Phase 13 (D-10)
 - v3.0: HUD endpoints -- GET /api/workspaces/{wsId}/stats/capacity + GET /api/workspaces/{wsId}/stats/activity?days=14 (D-11)

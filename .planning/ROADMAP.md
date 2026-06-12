@@ -232,7 +232,7 @@ Clean-slate rebuild of `/frontend2` with sketch 006-008 retro-os pastel fidelity
 - [x] **Phase 2: Tokens + Type System** — `styles/tokens.css` retro-os pastel palette + Tailwind v4 `@theme` block + Silkscreen / IBM Plex Sans / IBM Plex Mono fonts + cream dot-dither body background + WCAG AA contrast audit + Cyrillic glyph metrics check (completed 2026-06-12)
 - [x] **Phase 3: Layout Primitives + Bottombar** — AppShell 2×3 grid + TopBar + Sidebar (`// GROUP` labels + collapse-to-rail) + Bottombar with `useShortcuts` SSOT + `isEditableTarget` input-focus guard from first commit + PageHeader (`// ROUTE` + SESSION + LAST SYNC) + ShortcutChip + mobile breakpoint contract (completed 2026-06-12)
 - [x] **Phase 4: Retro Atoms** — RetroPanel/Button/Badge/Input/Select/Combobox/Textarea/Checkbox/FileInput/FormField/Table family/Tabs/Dialog/ConfirmDialog/Toast/EmptyState/Pagination/StatusDot/HUD primitives — informed by Phase 3 layout constraints; modal-stack ESC, status pills with tabular-nums, SSE state in panel headers, multi-select Shift+Click on tables (completed 2026-06-12)
-- [ ] **Phase 5: Auth** — login + register + Google OAuth + GitHub OAuth + RequireAuth (with v2.0 spurious-logout-on-network-error bug fixed) + workspace switcher + sessions + password change + account deletion + connected accounts
+- [x] **Phase 5: Auth** — login + register + Google OAuth + GitHub OAuth + RequireAuth (with v2.0 spurious-logout-on-network-error bug fixed) + workspace switcher + sessions + password change + account deletion + connected accounts (completed 2026-06-12)
 - [ ] **Phase 6: Providers** — IntlProvider + QueryClientProvider + AuthProvider + SSEProvider (with `useSSEStatus()` selector) + ToastProvider + ShortcutsProvider mounted in canonical order; chrome wires to real state once
 - [ ] **Phase 7: Items + Photos** — paginated list with search/filter/sort + detail with photo gallery + create/edit/archive/delete + multipart photo upload + `itemsApi.lookupByBarcode` (G-65-01 regression-guard pattern) + per-route `useShortcuts` registration
 - [ ] **Phase 7b: Inventory** — inventory entries list + filters (virtualized when large) + create with item/location/container pickers + move dialog + quantity/status/condition inline edits + expiry/warranty fields + expiring view + movements history panel + per-item inventory panel (closes Phase 7 stub) [Gap G-1, critical]
@@ -278,12 +278,12 @@ Plans:
   5. API client automatically refreshes expired JWT tokens via HttpOnly cookie without user action
 **Plans**: 6 plans
 Plans:
-- [ ] 05-01-PLAN.md — Backend: logout-revocation integration test (AUTH-12) + WithCurrentSessionID wiring (AUTH-07 gap) + audit-doc fix [Wave 1]
-- [ ] 05-02-PLAN.md — Frontend: MSW substrate + api.ts auth-expired event (AUTH-01) + RequireAuth network/5xx retry (AUTH-05) [Wave 1]
-- [ ] 05-03-PLAN.md — Frontend: WorkspaceProvider (D-12 SSOT) + TopBar switcher + DashboardPage de-hardcode (AUTH-06) [Wave 2]
-- [ ] 05-04-PLAN.md — Frontend: Register + Google/GitHub OAuth + /auth/callback + env-gated Authelia (AUTH-02/03/04/11) [Wave 3]
-- [ ] 05-05-PLAN.md — Frontend: useLogout + Settings Security (sessions/password/delete) + Connected Accounts (AUTH-07/08/09/10/12) [Wave 4]
-- [ ] 05-06-PLAN.md — Frontend: E2E register + logout-revocation + switcher; OAuth skip-with-reason (AUTH-02/06/12) [Wave 5]
+- [x] 05-01-PLAN.md — Backend: logout-revocation integration test (AUTH-12) + WithCurrentSessionID wiring (AUTH-07 gap) + audit-doc fix [Wave 1]
+- [x] 05-02-PLAN.md — Frontend: MSW substrate + api.ts auth-expired event (AUTH-01) + RequireAuth network/5xx retry (AUTH-05) [Wave 1]
+- [x] 05-03-PLAN.md — Frontend: WorkspaceProvider (D-12 SSOT) + TopBar switcher + DashboardPage de-hardcode (AUTH-06) [Wave 2]
+- [x] 05-04-PLAN.md — Frontend: Register + Google/GitHub OAuth + /auth/callback + env-gated Authelia (AUTH-02/03/04/11) [Wave 3]
+- [x] 05-05-PLAN.md — Frontend: useLogout + Settings Security (sessions/password/delete) + Connected Accounts (AUTH-07/08/09/10/12) [Wave 4]
+- [x] 05-06-PLAN.md — Frontend: E2E register + logout-revocation + switcher; OAuth skip-with-reason (AUTH-02/06/12) [Wave 5]
 **UI hint**: yes
 
 ### Phase 50: Design System
@@ -821,7 +821,7 @@ Plans:
 | 2 | v3.0 | 2/2 | Complete   | 2026-06-12 |
 | 3 | v3.0 | 6/6 | Complete   | 2026-06-12 |
 | 4 | v3.0 | 7/7 | Complete   | 2026-06-12 |
-| 5 | v3.0 | 0/TBD | Not started | - |
+| 5 | v3.0 | 6/6 | Complete   | 2026-06-12 |
 | 6 | v3.0 | 0/TBD | Not started | - |
 | 7 | v3.0 | 0/TBD | Not started | - |
 | 7b | v3.0 | 0/TBD | Not started | - |

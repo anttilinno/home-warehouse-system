@@ -66,16 +66,16 @@
 
 ### Auth (AUTH)
 
-- [ ] **AUTH-01**: User can log in with email + password via `POST /api/auth/login`; cookie-JWT (`credentials: "include"`); 401 refresh single-flighted in `lib/api.ts`.
-- [ ] **AUTH-02**: User can register a new account via `POST /api/auth/register`.
-- [ ] **AUTH-03**: User can log in via Google OAuth (PKCE + Authorization Code flow + one-time Redis code exchange); auto-link by verified email.
-- [ ] **AUTH-04**: User can log in via GitHub OAuth (same flow with `/user/emails` for private-email accounts); auto-link by verified email.
-- [ ] **AUTH-05**: `RequireAuth` route wrapper redirects unauthenticated users to `/login` AND DOES NOT log out on transient network errors (HttpError-status-aware, fixes v2.0 spurious-logout bug).
-- [ ] **AUTH-06**: Workspace switcher in topbar lists user's workspaces and allows switching; selected workspaceId is the SSOT for all entity API calls.
-- [ ] **AUTH-07**: Active sessions list in Settings → Security; user can revoke individual sessions or all-other-sessions; current-session badge.
-- [ ] **AUTH-08**: User can change password (current-password verification + 8+ char zod validation); OAuth-only accounts get a "set password" path.
-- [ ] **AUTH-09**: User can delete account with type-to-confirm (`DELETE`) + sole-owner workspace validation.
-- [ ] **AUTH-10**: Connected Accounts subpage in Settings — link/unlink Google + GitHub providers with last-method-removal lockout guard.
+- [x] **AUTH-01**: User can log in with email + password via `POST /api/auth/login`; cookie-JWT (`credentials: "include"`); 401 refresh single-flighted in `lib/api.ts`.
+- [x] **AUTH-02**: User can register a new account via `POST /api/auth/register`.
+- [x] **AUTH-03**: User can log in via Google OAuth (PKCE + Authorization Code flow + one-time Redis code exchange); auto-link by verified email.
+- [x] **AUTH-04**: User can log in via GitHub OAuth (same flow with `/user/emails` for private-email accounts); auto-link by verified email.
+- [x] **AUTH-05**: `RequireAuth` route wrapper redirects unauthenticated users to `/login` AND DOES NOT log out on transient network errors (HttpError-status-aware, fixes v2.0 spurious-logout bug).
+- [x] **AUTH-06**: Workspace switcher in topbar lists user's workspaces and allows switching; selected workspaceId is the SSOT for all entity API calls.
+- [x] **AUTH-07**: Active sessions list in Settings → Security; user can revoke individual sessions or all-other-sessions; current-session badge.
+- [x] **AUTH-08**: User can change password (current-password verification + 8+ char zod validation); OAuth-only accounts get a "set password" path.
+- [x] **AUTH-09**: User can delete account with type-to-confirm (`DELETE`) + sole-owner workspace validation.
+- [x] **AUTH-10**: Connected Accounts subpage in Settings — link/unlink Google + GitHub providers with last-method-removal lockout guard.
 
 ### Items (ITEM)
 
@@ -254,8 +254,8 @@
 
 ### Auth parity additions (AUTH) — Phase 5 (§4, §8 risks 5-6)
 
-- [ ] **AUTH-11**: Env-gated "Log in with SSO" (Authelia) button wired to backend `/auth/authelia/login`; hidden when not configured.
-- [ ] **AUTH-12**: `POST /auth/logout` actually revokes the session server-side and clears refresh-token state client-side (closes the broken-logout-revocation audit finding).
+- [x] **AUTH-11**: Env-gated "Log in with SSO" (Authelia) button wired to backend `/auth/authelia/login`; hidden when not configured.
+- [x] **AUTH-12**: `POST /auth/logout` actually revokes the session server-side and clears refresh-token state client-side (closes the broken-logout-revocation audit finding).
 
 ### Taxonomy parity addition (TAX) — Phase 10 (Gap G-10 partial)
 
@@ -337,16 +337,16 @@
 | PROV-02 | Phase 6 | Pending |
 | PROV-03 | Phase 6 | Pending |
 | PROV-04 | Phase 6 | Pending |
-| AUTH-01 | Phase 5 | Pending |
-| AUTH-02 | Phase 5 | Pending |
-| AUTH-03 | Phase 5 | Pending |
-| AUTH-04 | Phase 5 | Pending |
-| AUTH-05 | Phase 5 | Pending |
-| AUTH-06 | Phase 5 | Pending |
-| AUTH-07 | Phase 5 | Pending |
-| AUTH-08 | Phase 5 | Pending |
-| AUTH-09 | Phase 5 | Pending |
-| AUTH-10 | Phase 5 | Pending |
+| AUTH-01 | Phase 5 | Complete |
+| AUTH-02 | Phase 5 | Complete |
+| AUTH-03 | Phase 5 | Complete |
+| AUTH-04 | Phase 5 | Complete |
+| AUTH-05 | Phase 5 | Complete |
+| AUTH-06 | Phase 5 | Complete |
+| AUTH-07 | Phase 5 | Complete |
+| AUTH-08 | Phase 5 | Complete |
+| AUTH-09 | Phase 5 | Complete |
+| AUTH-10 | Phase 5 | Complete |
 | ITEM-01 | Phase 7 | Pending |
 | ITEM-02 | Phase 7 | Pending |
 | ITEM-03 | Phase 7 | Pending |
@@ -454,8 +454,8 @@
 | ATOM-FB-02 | Phase 4 | Complete |
 | ATOM-FB-03 | Phase 4 | Complete |
 | ATOM-FB-04 | Phase 4 | Complete |
-| AUTH-11 | Phase 5 | Pending |
-| AUTH-12 | Phase 5 | Pending |
+| AUTH-11 | Phase 5 | Complete |
+| AUTH-12 | Phase 5 | Complete |
 | TAX-07 | Phase 10 | Pending |
 | SCAN-12 | Phase 11 | Pending |
 | SETT-10 | Phase 12 | Pending |
