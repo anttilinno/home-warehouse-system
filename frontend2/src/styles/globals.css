@@ -225,3 +225,22 @@ body {
     font-variant-numeric: tabular-nums;
   }
 }
+
+/* ---------- Status-dot live blink (RetroStatusDot, TUI-03) ----------
+   A hard step-end blink — System-7 status LEDs snap on/off, no easing. The
+   dot stays solid mint for prefers-reduced-motion users. ---------- */
+@layer components {
+  @keyframes status-blink {
+    50% {
+      opacity: 0;
+    }
+  }
+  .status-dot--live {
+    animation: status-blink 1.4s steps(1, end) infinite;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .status-dot--live {
+      animation: none;
+    }
+  }
+}
