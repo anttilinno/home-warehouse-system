@@ -1,13 +1,23 @@
 import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { useNavigate } from "react-router";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { del, get } from "@/lib/api";
-import type { SessionResponse } from "@/lib/types";
+import { del, get, patch, HttpError, setRefreshToken } from "@/lib/api";
+import type {
+  CanDeleteResponse,
+  SessionResponse,
+  User,
+} from "@/lib/types";
 import {
   BevelButton,
   RetroBadge,
   RetroConfirmDialog,
   RetroEmptyState,
+  RetroFormField,
+  RetroInput,
   RetroTable,
   Window,
   retroToast,
@@ -31,9 +41,18 @@ function relativeTime(iso: string): string {
 }
 
 export function SecurityPage() {
+  // has_password (from GET /users/me) drives the password card's change-vs-set
+  // branch. Fetched once here and shared with the card.
+  const me = useQuery({
+    queryKey: ["me"],
+    queryFn: () => get<User>("/users/me"),
+  });
+
   return (
     <div className="grid gap-sp-5">
       <SessionsCard />
+      <PasswordCard hasPassword={me.data?.has_password ?? true} />
+      <DangerZoneCard />
     </div>
   );
 }
@@ -175,6 +194,233 @@ function SessionsCard() {
         <Trans>
           Sign out everywhere else? Other devices will need to log in again.
         </Trans>
+      </RetroConfirmDialog>
+    </Window>
+  );
+}
+
+// --- Card B: Password (change vs set, driven by has_password) ---
+const passwordSchema = z
+  .object({
+    current_password: z.string().optional(),
+    new_password: z.string().min(8),
+    confirm_password: z.string(),
+  })
+  .refine((v) => v.new_password === v.confirm_password, {
+    path: ["confirm_password"],
+    message: "mismatch",
+  });
+
+type PasswordForm = z.infer<typeof passwordSchema>;
+
+function PasswordCard({ hasPassword }: { hasPassword: boolean }) {
+  const { t } = useLingui();
+  // Inline band shown when the backend rejects the current password (400).
+  const [wrongCurrent, setWrongCurrent] = useState(false);
+
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors, isSubmitting },
+  } = useForm<PasswordForm>({ resolver: zodResolver(passwordSchema) });
+
+  const submit = handleSubmit(async (values) => {
+    setWrongCurrent(false);
+    // Set-password path (OAuth-only, has_password=false) omits current_password
+    // entirely — the backend UpdatePassword accepts that (05-RESEARCH Q1).
+    const body = hasPassword
+      ? {
+          current_password: values.current_password,
+          new_password: values.new_password,
+        }
+      : { new_password: values.new_password };
+    try {
+      await patch("/users/me/password", body);
+      retroToast.success(t`Password updated.`);
+      reset();
+    } catch (err) {
+      if (err instanceof HttpError && err.status === 400) {
+        setWrongCurrent(true);
+        return;
+      }
+      throw err;
+    }
+  });
+
+  return (
+    <Window title={<Trans>Password</Trans>} bodyClassName="grid gap-sp-4 p-sp-4">
+      {!hasPassword && (
+        <p
+          role="note"
+          className="border-2 border-border-ink bg-titlebar-butter px-sp-3 py-sp-2 text-[13px] text-fg-ink"
+        >
+          <Trans>
+            You signed in with a provider and haven't set a password yet. Add one
+            to enable email + password login.
+          </Trans>
+        </p>
+      )}
+
+      {wrongCurrent && (
+        <p
+          role="alert"
+          className="border-2 border-danger bg-danger-bg px-sp-3 py-sp-2 text-[13px] font-semibold text-danger"
+        >
+          <Trans>Current password is incorrect.</Trans>
+        </p>
+      )}
+
+      <form onSubmit={submit} className="grid gap-sp-4" noValidate>
+        {hasPassword && (
+          <RetroInput
+            label={<Trans>Current password</Trans>}
+            type="password"
+            mono
+            {...register("current_password")}
+          />
+        )}
+        <RetroFormField
+          label={<Trans>New password</Trans>}
+          hint={<Trans>At least 8 characters.</Trans>}
+          error={
+            errors.new_password && <Trans>Use at least 8 characters.</Trans>
+          }
+        >
+          {(id, describedBy) => (
+            <input
+              id={id}
+              type="password"
+              aria-invalid={errors.new_password ? true : undefined}
+              aria-describedby={describedBy}
+              className="w-full border-2 border-border-ink bg-bg-panel px-[10px] py-[7px] font-mono text-[14px] text-fg-ink bevel-sunken focus:outline-3 focus:outline-offset-1 focus:outline-titlebar-blue"
+              {...register("new_password")}
+            />
+          )}
+        </RetroFormField>
+        <RetroFormField
+          label={<Trans>Confirm new password</Trans>}
+          error={
+            errors.confirm_password && <Trans>Passwords don't match.</Trans>
+          }
+        >
+          {(id, describedBy) => (
+            <input
+              id={id}
+              type="password"
+              aria-invalid={errors.confirm_password ? true : undefined}
+              aria-describedby={describedBy}
+              className="w-full border-2 border-border-ink bg-bg-panel px-[10px] py-[7px] font-mono text-[14px] text-fg-ink bevel-sunken focus:outline-3 focus:outline-offset-1 focus:outline-titlebar-blue"
+              {...register("confirm_password")}
+            />
+          )}
+        </RetroFormField>
+        <div className="flex justify-end">
+          <BevelButton type="submit" variant="primary" disabled={isSubmitting}>
+            {hasPassword ? (
+              <Trans>Change password</Trans>
+            ) : (
+              <Trans>Set password</Trans>
+            )}
+          </BevelButton>
+        </div>
+      </form>
+    </Window>
+  );
+}
+
+// --- Card C: Danger Zone (account deletion behind a type-DELETE gate) ---
+function DangerZoneCard() {
+  const { t } = useLingui();
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [typed, setTyped] = useState("");
+
+  const canDelete = useQuery({
+    queryKey: ["can-delete"],
+    queryFn: () => get<CanDeleteResponse>("/users/me/can-delete"),
+  });
+
+  const deleteAccount = useMutation({
+    mutationFn: () => del("/users/me"),
+    onSuccess: () => {
+      // Mirror useLogout's client cleanup: the account is gone, so drop all
+      // client auth state and bounce to /login.
+      setRefreshToken(null);
+      localStorage.removeItem("workspace_id");
+      queryClient.clear();
+      navigate("/login", { replace: true });
+    },
+  });
+
+  const blocked = canDelete.data?.can_delete === false;
+  const blockingNames = (canDelete.data?.blocking_workspaces ?? [])
+    .map((w) => w.name)
+    .join(", ");
+  // Type-DELETE gate (UX friction only — backend is authoritative; T-05-20).
+  const confirmEnabled = typed.trim().toUpperCase() === "DELETE";
+
+  return (
+    <Window title={<Trans>Danger Zone</Trans>} titlebarVariant="pink">
+      <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-warn-deep">
+        <Trans>Delete account</Trans>
+      </p>
+      <p className="mt-sp-2 text-[14px] text-fg-ink">
+        <Trans>Deleting your account is permanent and cannot be undone.</Trans>
+      </p>
+
+      {blocked && (
+        <p
+          role="alert"
+          className="mt-sp-3 border-2 border-danger bg-danger-bg px-sp-3 py-sp-2 text-[13px] font-semibold text-danger"
+        >
+          <Trans>
+            You're the sole owner of: {blockingNames}. Transfer ownership or
+            delete these workspaces before deleting your account.
+          </Trans>
+        </p>
+      )}
+
+      <div className="mt-sp-4 flex justify-end">
+        <BevelButton
+          variant="danger"
+          disabled={blocked || canDelete.isPending}
+          onClick={() => {
+            setTyped("");
+            setDialogOpen(true);
+          }}
+        >
+          <Trans>Delete my account</Trans>
+        </BevelButton>
+      </div>
+
+      <RetroConfirmDialog
+        open={dialogOpen}
+        title={<Trans>Delete account</Trans>}
+        confirmLabel={<Trans>Delete account</Trans>}
+        // Type-DELETE gate: the confirm stays disabled until the input matches.
+        confirmDisabled={!confirmEnabled}
+        onCancel={() => setDialogOpen(false)}
+        onClose={() => setDialogOpen(false)}
+        onConfirm={() => {
+          if (!confirmEnabled) return;
+          setDialogOpen(false);
+          deleteAccount.mutate();
+        }}
+      >
+        <span className="grid gap-sp-3">
+          <Trans>
+            Type DELETE to confirm. This permanently removes your account and
+            cannot be undone.
+          </Trans>
+          <input
+            aria-label={t`Type DELETE to confirm`}
+            value={typed}
+            onChange={(e) => setTyped(e.target.value)}
+            className="w-full border-2 border-border-ink bg-bg-panel px-[10px] py-[7px] font-mono text-[14px] text-fg-ink bevel-sunken focus:outline-3 focus:outline-offset-1 focus:outline-titlebar-blue"
+          />
+        </span>
       </RetroConfirmDialog>
     </Window>
   );

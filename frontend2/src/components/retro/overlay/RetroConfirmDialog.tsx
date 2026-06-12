@@ -25,7 +25,13 @@ export interface RetroConfirmDialogProps {
   titlebarVariant?: TitlebarVariant;
   /** Confirm BevelButton variant. Default "danger". Use "neutral"/"primary"/"mint" for non-destructive. */
   confirmVariant?: BevelButtonVariant;
-  /** Body copy (the confirm sentence; pass an extra text-danger consequence line as children). */
+  /**
+   * Disables the confirm button (e.g. a type-DELETE gate that stays disabled
+   * until the user types the confirmation phrase). The cancel/safe default stays
+   * focusable so the dialog is always dismissible. Default false.
+   */
+  confirmDisabled?: boolean;
+  /** Body copy (the confirm sentence; pass extra controls/consequence lines as children). */
   children: ReactNode;
 }
 
@@ -46,6 +52,7 @@ export function RetroConfirmDialog({
   onClose,
   titlebarVariant = "pink",
   confirmVariant = "danger",
+  confirmDisabled = false,
   children,
 }: RetroConfirmDialogProps) {
   const cancelRef = useRef<HTMLButtonElement>(null);
@@ -69,13 +76,18 @@ export function RetroConfirmDialog({
           <BevelButton ref={cancelRef} variant="neutral" onClick={onCancel}>
             {cancelLabel ?? <Trans>Cancel</Trans>}
           </BevelButton>
-          <BevelButton variant={confirmVariant} onClick={onConfirm}>
+          <BevelButton
+            variant={confirmVariant}
+            disabled={confirmDisabled}
+            aria-disabled={confirmDisabled || undefined}
+            onClick={onConfirm}
+          >
             {confirmLabel}
           </BevelButton>
         </>
       }
     >
-      <p className="font-body text-[14px] text-fg-ink">{children}</p>
+      <div className="font-body text-[14px] text-fg-ink">{children}</div>
     </RetroDialog>
   );
 }
