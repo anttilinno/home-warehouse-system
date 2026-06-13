@@ -1,0 +1,126 @@
+# ============================================================================
+# BEST-EFFORT — needs first-real-PR validation; not yet proven green in CI.
+# ----------------------------------------------------------------------------
+# Browser-level E2E (axe a11y sweep + keyboard-nav) for frontend2, run against a
+# REAL stack: postgres service + go backend + vite preview. This is NEW CI
+# capability (17-CONTEXT OQ-1) — the orchestrator CANNOT execute GitHub Actions,
+# so per the "verification is REAL" rule this workflow is NOT claimed green. The
+# HARD, verified gate for POL-02/03 is LOCAL spec execution against :5173/:8080
+# (see CLAUDE.md §E2E Tests). Treat this file as scaffolding to be hardened on the
+# first real PR run; the a11y/keyboard step is `continue-on-error: true` so a
+# first-run failure surfaces logs without blocking the merge queue.
+#
+# Does NOT touch lint-frontend2.yml (17-01 owns it). Responsive (17-03) lands a
+# `e2e/responsive.spec.ts` later — add it to the spec step below once it exists.
+# ============================================================================
+name: e2e-frontend2
+
+on:
+  pull_request:
+    paths:
+      - "frontend2/**"
+      - ".github/workflows/e2e-frontend2.yml"
+  push:
+    branches: [master]
+    paths:
+      - "frontend2/**"
+      - ".github/workflows/e2e-frontend2.yml"
+
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+
+    # Real Postgres for the backend to talk to. Credentials + DB name mirror the
+    # CLAUDE.md runbook (wh/wh). dbmate applies migrations into warehouse_dev,
+    # which the backend reads via GO_DATABASE_URL.
+    services:
+      postgres:
+        image: postgres:18
+        env:
+          POSTGRES_USER: wh
+          POSTGRES_PASSWORD: wh
+          POSTGRES_DB: warehouse_dev
+        ports:
+          - "5432:5432"
+        options: >-
+          --health-cmd "pg_isready -U wh -d warehouse_dev"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      GO_DATABASE_URL: postgresql://wh:wh@localhost:5432/warehouse_dev?sslmode=disable
+      DATABASE_URL: postgresql://wh:wh@localhost:5432/warehouse_dev?sslmode=disable
+      DBMATE_DATABASE_URL: postgresql://wh:wh@localhost:5432/warehouse_dev?sslmode=disable
+      E2E_USER: seeder@test.local
+      E2E_PASS: password123
+      # vite preview default port; specs read E2E_BASE_URL (playwright.config).
+      E2E_BASE_URL: http://localhost:4173
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.25"
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.13
+
+      # --- migrations: dbmate up against the postgres service ------------------
+      - name: Install dbmate
+        run: |
+          curl -fsSL -o /usr/local/bin/dbmate \
+            https://github.com/amacneil/dbmate/releases/latest/download/dbmate-linux-amd64
+          chmod +x /usr/local/bin/dbmate
+      - name: Apply migrations
+        run: DATABASE_URL="$DBMATE_DATABASE_URL" dbmate -d backend/db/migrations up
+
+      # --- seed: creates seeder@test.local + a workspace with items -----------
+      - name: Seed dev database
+        run: cd backend && go run ./cmd/seed/main.go all
+
+      # --- backend: build + run on :8080 --------------------------------------
+      - name: Start Go backend (:8080)
+        run: |
+          cd backend
+          go build -o /tmp/wh-server ./cmd/server
+          PORT=8080 /tmp/wh-server &
+          for i in $(seq 1 30); do
+            curl -sf http://localhost:8080/health && break
+            sleep 1
+          done
+
+      # --- frontend: build + vite preview on :4173 ----------------------------
+      - name: Install frontend deps
+        run: cd frontend2 && bun install --frozen-lockfile
+      - name: Build frontend2
+        run: cd frontend2 && bun run build
+      - name: Start vite preview (:4173)
+        run: |
+          cd frontend2
+          bun run preview --port 4173 &
+          for i in $(seq 1 30); do
+            curl -sf http://localhost:4173/ && break
+            sleep 1
+          done
+
+      # --- playwright: install chromium, run a11y + keyboard specs -------------
+      - name: Install Playwright chromium
+        run: cd frontend2 && bunx playwright install --with-deps chromium
+      - name: Run a11y + keyboard E2E (best-effort)
+        continue-on-error: true # BEST-EFFORT — local run is the hard gate (OQ-1)
+        # Responsive (17-03) adds e2e/responsive.spec.ts — append it here once it lands.
+        run: |
+          cd frontend2
+          bun run test:e2e --project=chromium \
+            e2e/a11y-sweep.spec.ts e2e/keyboard-nav.spec.ts
+
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report-frontend2
+          path: frontend2/playwright-report/
+          if-no-files-found: ignore
