@@ -147,7 +147,16 @@ export function Sidebar({
         </NavGroup>
         <NavGroup title={<Trans>System</Trans>}>
           <NavItem glyph="⌗" label={<Trans>Scan</Trans>} to="/scan" />
-          <NavItem glyph="⚙" label={<Trans>Settings</Trans>} />
+          {/* Phase 14 System pages (14-08 wiring). Distinct retro glyphs;
+              all labels via <Trans>. Wiring stays side-effect-free — no new
+              query is added here just for a count badge. */}
+          <NavItem glyph="✓" label={<Trans>Approvals</Trans>} to="/approvals" />
+          <NavItem glyph="≣" label={<Trans>My Changes</Trans>} to="/my-changes" />
+          <NavItem glyph="♡" label={<Trans>Wishlist</Trans>} to="/wishlist" />
+          <NavItem glyph="⊘" label={<Trans>Declutter</Trans>} to="/declutter" />
+          <NavItem glyph="↥" label={<Trans>Imports</Trans>} to="/imports" />
+          <NavItem glyph="⇄" label={<Trans>Sync History</Trans>} to="/sync-history" />
+          <NavItem glyph="⚙" label={<Trans>Settings</Trans>} to="/settings" />
           {/* DEV-only atom review surface (Phase 4). Gated so it never appears
               as a user nav entry; the matching /demo route is DEV-gated too. */}
           {import.meta.env.DEV && (
