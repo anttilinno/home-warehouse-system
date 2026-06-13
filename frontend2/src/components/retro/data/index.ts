@@ -10,3 +10,8 @@ export {
   type RetroPaginationProps,
 } from "./RetroPagination";
 export { RetroTabs, type RetroTabsProps, type RetroTab } from "./RetroTabs";
+export {
+  RetroTree,
+  type RetroTreeProps,
+  type RetroTreeNode,
+} from "./RetroTree";

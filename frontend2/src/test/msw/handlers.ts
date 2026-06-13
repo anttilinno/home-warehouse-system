@@ -87,7 +87,93 @@ const LABEL = {
   workspace_id: "ws-1",
   name: "Power Tools",
   color: "#b73348",
+  is_archived: false,
+  created_at: "2026-06-13T00:00:00Z",
+  updated_at: "2026-06-13T00:00:00Z",
 };
+
+// --- Taxonomy fixtures (Phase 10 Plan 01, TAX-01..07) ---
+// Envelope discipline (Pitfall 2): categories + labels + ALL /search return a
+// BARE { items }; locations + containers LIST return a PAGINATED
+// { items, total, page, total_pages }. Categories nest via parent_category_id;
+// locations via parent_location (NOT _id — Pitfall 6); containers are flat with
+// location_id. Two-level trees so buildTree/RetroTree consumer tests exercise
+// nesting + orphan paths. Per-case overrides via server.use().
+
+const CATEGORIES = [
+  {
+    id: "cat-electronics",
+    workspace_id: "ws-1",
+    name: "Electronics",
+    description: "Gadgets and devices",
+    is_archived: false,
+    created_at: "2026-06-13T00:00:00Z",
+    updated_at: "2026-06-13T00:00:00Z",
+  },
+  {
+    id: "cat-phones",
+    workspace_id: "ws-1",
+    name: "Phones",
+    parent_category_id: "cat-electronics",
+    is_archived: false,
+    created_at: "2026-06-13T00:00:00Z",
+    updated_at: "2026-06-13T00:00:00Z",
+  },
+  {
+    id: "cat-tools",
+    workspace_id: "ws-1",
+    name: "Tools",
+    is_archived: false,
+    created_at: "2026-06-13T00:00:00Z",
+    updated_at: "2026-06-13T00:00:00Z",
+  },
+];
+
+const LOCATIONS = [
+  {
+    id: "loc-1",
+    workspace_id: "ws-1",
+    name: "Garage",
+    short_code: "GAR1",
+    is_archived: false,
+    created_at: "2026-06-13T00:00:00Z",
+    updated_at: "2026-06-13T00:00:00Z",
+  },
+  {
+    id: "loc-2",
+    workspace_id: "ws-1",
+    name: "Shelf A",
+    parent_location: "loc-1", // ⚠ parent_location, NOT parent_location_id
+    short_code: "SHLF",
+    is_archived: false,
+    created_at: "2026-06-13T00:00:00Z",
+    updated_at: "2026-06-13T00:00:00Z",
+  },
+];
+
+const CONTAINERS = [
+  {
+    id: "cont-1",
+    workspace_id: "ws-1",
+    name: "Toolbox A",
+    location_id: "loc-1", // flat — TAX-05 group-by is client-side
+    capacity: 12,
+    short_code: "TBXA",
+    is_archived: false,
+    created_at: "2026-06-13T00:00:00Z",
+    updated_at: "2026-06-13T00:00:00Z",
+  },
+  {
+    id: "cont-2",
+    workspace_id: "ws-1",
+    name: "Bin 3",
+    location_id: "loc-2",
+    short_code: "BIN3",
+    is_archived: false,
+    created_at: "2026-06-13T00:00:00Z",
+    updated_at: "2026-06-13T00:00:00Z",
+  },
+];
 
 const ACTIVE_LOAN = {
   id: "loan-1",
@@ -222,9 +308,17 @@ export const handlers = [
   http.get("/api/workspaces/:wsId/items/by-barcode/:code", ({ params }) =>
     HttpResponse.json({ ...ITEM, barcode: String(params.code) }),
   ),
-  http.get("/api/workspaces/:wsId/items", () =>
-    HttpResponse.json({ items: [ITEM], total: 1, page: 1, total_pages: 1 }),
-  ),
+  // Items list (PAGINATED). When filtered by ?category_id= (TAX-02 usage-count
+  // read, GET /items?category_id=&limit=1) the default fixture reports zero
+  // assigned items so the archive-warning path defaults to "no items"; tests
+  // override per-case via server.use() to surface a non-zero total.
+  http.get("/api/workspaces/:wsId/items", ({ request }) => {
+    const url = new URL(request.url);
+    if (url.searchParams.has("category_id")) {
+      return HttpResponse.json({ items: [], total: 0, page: 1, total_pages: 0 });
+    }
+    return HttpResponse.json({ items: [ITEM], total: 1, page: 1, total_pages: 1 });
+  }),
   http.post("/api/workspaces/:wsId/items", () => HttpResponse.json(ITEM)),
 
   // Item labels (specific) BEFORE item :id.
@@ -253,10 +347,90 @@ export const handlers = [
   http.patch("/api/workspaces/:wsId/items/:id", () => HttpResponse.json(ITEM)),
   http.delete("/api/workspaces/:wsId/items/:id", () => new HttpResponse(null, { status: 204 })),
 
-  // Workspace labels.
+  // Workspace labels — BARE { items } list (Pitfall 2) + TAX-07 manager CRUD.
   http.get("/api/workspaces/:wsId/labels", () =>
     HttpResponse.json({ items: [LABEL] }),
   ),
+  http.post("/api/workspaces/:wsId/labels", () => HttpResponse.json(LABEL)),
+  http.get("/api/workspaces/:wsId/labels/:id", ({ params }) =>
+    HttpResponse.json({ ...LABEL, id: String(params.id) }),
+  ),
+  http.patch("/api/workspaces/:wsId/labels/:id", ({ params }) =>
+    HttpResponse.json({ ...LABEL, id: String(params.id) }),
+  ),
+  http.post("/api/workspaces/:wsId/labels/:id/archive", () => new HttpResponse(null, { status: 204 })),
+  http.post("/api/workspaces/:wsId/labels/:id/restore", () => new HttpResponse(null, { status: 204 })),
+  http.delete("/api/workspaces/:wsId/labels/:id", () => new HttpResponse(null, { status: 204 })),
+
+  // --- Taxonomy: categories (BARE { items } list — Pitfall 2) ---
+  // create returns 201 (categories); other domains return 200.
+  http.get("/api/workspaces/:wsId/categories", () =>
+    HttpResponse.json({ items: CATEGORIES }),
+  ),
+  http.post("/api/workspaces/:wsId/categories", () =>
+    HttpResponse.json(CATEGORIES[0], { status: 201 }),
+  ),
+  http.get("/api/workspaces/:wsId/categories/:id", ({ params }) =>
+    HttpResponse.json({ ...CATEGORIES[0], id: String(params.id) }),
+  ),
+  http.patch("/api/workspaces/:wsId/categories/:id", ({ params }) =>
+    HttpResponse.json({ ...CATEGORIES[0], id: String(params.id) }),
+  ),
+  http.post("/api/workspaces/:wsId/categories/:id/archive", () => new HttpResponse(null, { status: 204 })),
+  http.post("/api/workspaces/:wsId/categories/:id/restore", () => new HttpResponse(null, { status: 204 })),
+  http.delete("/api/workspaces/:wsId/categories/:id", () => new HttpResponse(null, { status: 204 })),
+
+  // --- Taxonomy: locations (PAGINATED list; BARE /search — Pitfall 2) ---
+  // /locations/search (literal) registered BEFORE /locations/:id (param).
+  http.get("/api/workspaces/:wsId/locations/search", () =>
+    HttpResponse.json({ items: LOCATIONS }),
+  ),
+  http.get("/api/workspaces/:wsId/locations", () =>
+    HttpResponse.json({
+      items: LOCATIONS,
+      total: LOCATIONS.length,
+      page: 1,
+      total_pages: 1,
+    }),
+  ),
+  http.post("/api/workspaces/:wsId/locations", () =>
+    HttpResponse.json(LOCATIONS[0]),
+  ),
+  http.get("/api/workspaces/:wsId/locations/:id", ({ params }) =>
+    HttpResponse.json({ ...LOCATIONS[0], id: String(params.id) }),
+  ),
+  http.patch("/api/workspaces/:wsId/locations/:id", ({ params }) =>
+    HttpResponse.json({ ...LOCATIONS[0], id: String(params.id) }),
+  ),
+  http.post("/api/workspaces/:wsId/locations/:id/archive", () => new HttpResponse(null, { status: 204 })),
+  http.post("/api/workspaces/:wsId/locations/:id/restore", () => new HttpResponse(null, { status: 204 })),
+  http.delete("/api/workspaces/:wsId/locations/:id", () => new HttpResponse(null, { status: 204 })),
+
+  // --- Taxonomy: containers (PAGINATED list; BARE /search — Pitfall 2) ---
+  // /containers/search (literal) registered BEFORE /containers/:id (param).
+  http.get("/api/workspaces/:wsId/containers/search", () =>
+    HttpResponse.json({ items: CONTAINERS }),
+  ),
+  http.get("/api/workspaces/:wsId/containers", () =>
+    HttpResponse.json({
+      items: CONTAINERS,
+      total: CONTAINERS.length,
+      page: 1,
+      total_pages: 1,
+    }),
+  ),
+  http.post("/api/workspaces/:wsId/containers", () =>
+    HttpResponse.json(CONTAINERS[0]),
+  ),
+  http.get("/api/workspaces/:wsId/containers/:id", ({ params }) =>
+    HttpResponse.json({ ...CONTAINERS[0], id: String(params.id) }),
+  ),
+  http.patch("/api/workspaces/:wsId/containers/:id", ({ params }) =>
+    HttpResponse.json({ ...CONTAINERS[0], id: String(params.id) }),
+  ),
+  http.post("/api/workspaces/:wsId/containers/:id/archive", () => new HttpResponse(null, { status: 204 })),
+  http.post("/api/workspaces/:wsId/containers/:id/restore", () => new HttpResponse(null, { status: 204 })),
+  http.delete("/api/workspaces/:wsId/containers/:id", () => new HttpResponse(null, { status: 204 })),
 
   // Photo JSON ops.
   http.put("/api/workspaces/:wsId/photos/:id/primary", () => new HttpResponse(null, { status: 204 })),
@@ -309,15 +483,22 @@ export const handlers = [
     HttpResponse.json({ ...INVENTORY[0], id: String(params.id) }),
   ),
 
-  // Inventory list (full envelope) + create.
-  http.get("/api/workspaces/:wsId/inventory", () =>
-    HttpResponse.json({
+  // Inventory list (full envelope) + create. When filtered by ?container_id=
+  // (TAX-06 container-delete usage read, GET /inventory?container_id=&limit=1)
+  // the default fixture reports zero so the delete-warning path defaults to
+  // "nothing assigned"; tests override per-case to surface a non-zero total.
+  http.get("/api/workspaces/:wsId/inventory", ({ request }) => {
+    const url = new URL(request.url);
+    if (url.searchParams.has("container_id")) {
+      return HttpResponse.json({ items: [], total: 0, page: 1, total_pages: 0 });
+    }
+    return HttpResponse.json({
       items: INVENTORY,
       total: INVENTORY.length,
       page: 1,
       total_pages: 1,
-    }),
-  ),
+    });
+  }),
   http.post("/api/workspaces/:wsId/inventory", () =>
     HttpResponse.json(INVENTORY[0]),
   ),
