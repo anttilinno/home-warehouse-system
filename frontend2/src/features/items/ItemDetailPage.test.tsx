@@ -121,6 +121,7 @@ interface Fixtures {
   loans?: Loan[];
   inventory?: Inventory[];
   movementsByInv?: Record<string, Movement[]>;
+  attachments?: unknown[];
   onArchive?: () => void;
 }
 
@@ -146,6 +147,9 @@ function installHandlers(f: Fixtures) {
     ),
     http.get("/api/workspaces/:wsId/inventory/by-item/:itemId", () =>
       HttpResponse.json({ items: f.inventory ?? [] }),
+    ),
+    http.get("/api/workspaces/:wsId/items/:id/attachments", () =>
+      HttpResponse.json({ items: f.attachments ?? [] }),
     ),
     http.get(
       "/api/workspaces/:wsId/inventory/:invId/movements",
@@ -208,7 +212,7 @@ describe("ItemDetailPage", () => {
     i18n.activate("en");
   });
 
-  it("renders the item fields, the three tabs, and the live side-rail inventory panel", async () => {
+  it("renders the item fields, the four tabs, and the live side-rail inventory panel", async () => {
     installHandlers({
       item: makeItem(),
       inventory: [makeInventory({ quantity: 3 }), makeInventory({ id: "inv-2", quantity: 5 })],
@@ -221,6 +225,7 @@ describe("ItemDetailPage", () => {
     expect(screen.getByRole("tab", { name: /details/i })).toBeInTheDocument();
     expect(screen.getByRole("tab", { name: /photos/i })).toBeInTheDocument();
     expect(screen.getByRole("tab", { name: /history/i })).toBeInTheDocument();
+    expect(screen.getByRole("tab", { name: /files/i })).toBeInTheDocument();
     // Side-rail inventory panel is a real named region with the live IN STOCK total.
     const rail = await screen.findByRole("region", { name: /inventory/i });
     expect(within(rail).getByText("8")).toBeInTheDocument();
@@ -275,6 +280,34 @@ describe("ItemDetailPage", () => {
     });
     renderDetail();
     expect(await screen.findByText(/on loan to alice/i)).toBeInTheDocument();
+  });
+
+  it("FILES tab mounts the item attachment panel", async () => {
+    const user = userEvent.setup();
+    installHandlers({ item: makeItem(), attachments: [] });
+    renderDetail();
+    await user.click(await screen.findByRole("tab", { name: /files/i }));
+    // The panel renders its own NO FILES empty state + the ADD FILE CTA.
+    expect(await screen.findByText(/no files/i)).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /add file/i }),
+    ).toBeInTheDocument();
+  });
+
+  it("overflow menu exposes a Link Paperless document action that opens the dialog", async () => {
+    const user = userEvent.setup();
+    installHandlers({ item: makeItem() });
+    renderDetail();
+    await screen.findByRole("tab", { name: /details/i });
+
+    await user.click(screen.getByRole("button", { name: /more actions/i }));
+    await user.click(
+      await screen.findByRole("button", { name: /link paperless document/i }),
+    );
+    // The PaperlessLinkDialog opens (its own dialog overlay).
+    expect(
+      await screen.findByRole("dialog", { name: /paperless/i }),
+    ).toBeInTheDocument();
   });
 
   it("archive action from the overflow menu calls itemsApi.archive", async () => {
