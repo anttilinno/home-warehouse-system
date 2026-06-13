@@ -111,6 +111,78 @@ const RETURNED_LOAN = {
   is_active: false,
 };
 
+// --- Inventory + Movements fixtures (Phase 7b Plan 01) ---
+// Contract-shaped happy-path data for downstream INV-01..08 component tests.
+// item_id matches the items fixture (`it-1`) so client-side name joins resolve.
+// The `$schema` key is omitted (Pitfall 7). Per-case overrides via server.use().
+
+// Three entries with distinct status/condition values so list/pill rendering is
+// exercisable. inv-1 is the canonical entry (it-1).
+const INVENTORY = [
+  {
+    id: "inv-1",
+    workspace_id: "ws-1",
+    item_id: "it-1",
+    location_id: "loc-1",
+    container_id: "cont-1",
+    quantity: 3,
+    condition: "GOOD",
+    status: "AVAILABLE",
+    date_acquired: "2026-01-15T00:00:00Z",
+    is_archived: false,
+    created_at: "2026-06-13T00:00:00Z",
+    updated_at: "2026-06-13T00:00:00Z",
+  },
+  {
+    id: "inv-2",
+    workspace_id: "ws-1",
+    item_id: "it-1",
+    location_id: "loc-2",
+    quantity: 1,
+    condition: "FAIR",
+    status: "ON_LOAN",
+    is_archived: false,
+    created_at: "2026-06-13T00:00:00Z",
+    updated_at: "2026-06-13T00:00:00Z",
+  },
+  {
+    id: "inv-3",
+    workspace_id: "ws-1",
+    item_id: "it-1",
+    location_id: "loc-1",
+    quantity: 0,
+    condition: "DAMAGED",
+    status: "MISSING",
+    is_archived: false,
+    created_at: "2026-06-13T00:00:00Z",
+    updated_at: "2026-06-13T00:00:00Z",
+  },
+];
+
+// Expiring projection: one near-future (expiration) + one PAST (warranty) so the
+// near/past split is exercisable. `date` is YYYY-MM-DD (NOT RFC3339 — Pitfall 4).
+const EXPIRING = {
+  items: [
+    {
+      inventory_id: "inv-1",
+      item_id: "it-1",
+      item_name: "Cordless Drill",
+      quantity: 3,
+      kind: "expiration",
+      date: "2099-12-31",
+    },
+    {
+      inventory_id: "inv-2",
+      item_id: "it-1",
+      item_name: "Cordless Drill",
+      quantity: 1,
+      kind: "warranty",
+      date: "2020-01-01",
+    },
+  ],
+  total: 2,
+};
+
 export const handlers = [
   // --- Auth ---
   http.post("/api/auth/login", () => HttpResponse.json(PLACEHOLDER_TOKENS)),
@@ -199,4 +271,71 @@ export const handlers = [
   http.post("/api/workspaces/:wsId/items/:id/photos/bulk-delete", () => new HttpResponse(null, { status: 204 })),
   http.post("/api/workspaces/:wsId/items/:id/photos/bulk-caption", () => new HttpResponse(null, { status: 204 })),
   http.post("/api/workspaces/:wsId/items/:id/photos", () => HttpResponse.json(PHOTO)),
+
+  // --- Inventory + Movements (Phase 7b Plan 01) ---
+  // Specific routes registered BEFORE the /inventory/:id catch-all so by-item /
+  // expiring / sub-resources are not shadowed.
+
+  // Per-inventory movements (specific) BEFORE /inventory/:id. Empty by default
+  // (movements only appear after a move — Pitfall 3); tests override per-case.
+  http.get("/api/workspaces/:wsId/inventory/:id/movements", () =>
+    HttpResponse.json({ items: [] }),
+  ),
+
+  // Scoped reads — BARE { items } (no pagination envelope — Pitfall 1).
+  http.get("/api/workspaces/:wsId/inventory/by-item/:itemId", () =>
+    HttpResponse.json({ items: INVENTORY }),
+  ),
+  http.get("/api/workspaces/:wsId/inventory/by-location/:locationId", () =>
+    HttpResponse.json({ items: INVENTORY }),
+  ),
+  http.get("/api/workspaces/:wsId/inventory/by-container/:containerId", () =>
+    HttpResponse.json({ items: INVENTORY }),
+  ),
+  http.get("/api/workspaces/:wsId/inventory/expiring", () =>
+    HttpResponse.json(EXPIRING),
+  ),
+
+  // Inventory lifecycle (specific) BEFORE /inventory/:id.
+  http.post("/api/workspaces/:wsId/inventory/:id/archive", () => new HttpResponse(null, { status: 204 })),
+  http.post("/api/workspaces/:wsId/inventory/:id/restore", () => new HttpResponse(null, { status: 204 })),
+  http.post("/api/workspaces/:wsId/inventory/:id/move", ({ params }) =>
+    HttpResponse.json({ ...INVENTORY[0], id: String(params.id) }),
+  ),
+  http.patch("/api/workspaces/:wsId/inventory/:id/quantity", ({ params }) =>
+    HttpResponse.json({ ...INVENTORY[0], id: String(params.id) }),
+  ),
+  http.patch("/api/workspaces/:wsId/inventory/:id/status", ({ params }) =>
+    HttpResponse.json({ ...INVENTORY[0], id: String(params.id) }),
+  ),
+
+  // Inventory list (full envelope) + create.
+  http.get("/api/workspaces/:wsId/inventory", () =>
+    HttpResponse.json({
+      items: INVENTORY,
+      total: INVENTORY.length,
+      page: 1,
+      total_pages: 1,
+    }),
+  ),
+  http.post("/api/workspaces/:wsId/inventory", () =>
+    HttpResponse.json(INVENTORY[0]),
+  ),
+
+  // Inventory by id (catch-all for the :id segment — registered last of the
+  // inventory GETs) + full PATCH (condition rides here; NO status — Pitfall 6).
+  http.get("/api/workspaces/:wsId/inventory/:id", ({ params }) =>
+    HttpResponse.json({ ...INVENTORY[0], id: String(params.id) }),
+  ),
+  http.patch("/api/workspaces/:wsId/inventory/:id", ({ params }) =>
+    HttpResponse.json({ ...INVENTORY[0], id: String(params.id) }),
+  ),
+
+  // Movement reads — BARE { items }, empty by default (empty-state — Pitfall 3).
+  http.get("/api/workspaces/:wsId/movements", () =>
+    HttpResponse.json({ items: [] }),
+  ),
+  http.get("/api/workspaces/:wsId/locations/:id/movements", () =>
+    HttpResponse.json({ items: [] }),
+  ),
 ];
