@@ -34,6 +34,16 @@ const ScanPage = lazy(() =>
   import("@/features/scan/ScanPage").then((m) => ({ default: m.ScanPage })),
 );
 
+// /analytics is React.lazy so recharts (transitively imported by AnalyticsPage)
+// lands in its own `charts` manualChunk (13b-05) and only downloads when the
+// user actually visits /analytics — ANL-03 / the POL-04 bundle budget (the
+// charting bytes never load on non-analytics routes). Mirrors the /scan idiom.
+const AnalyticsPage = lazy(() =>
+  import("@/features/analytics/AnalyticsPage").then((m) => ({
+    default: m.AnalyticsPage,
+  })),
+);
+
 // Settings subpages (12-02, single-writer route table). Lazy-imported so this
 // plan owns the wiring and the Wave-2/3 plans only OVERWRITE the component
 // bodies in-place (same path + same export name → no route re-edit). React.lazy
@@ -165,6 +175,19 @@ export function AppRoutes() {
           element={
             <Suspense fallback={null}>
               <ScanPage />
+            </Suspense>
+          }
+        />
+        {/* Analytics (13b-05, ANL-03): the recharts dashboard. React.lazy +
+            Suspense so the `charts` manualChunk (vite.config.ts) loads only on
+            visit — non-analytics routes carry zero charting bytes. Gated by the
+            RequireAuth/AppShell layout like every sibling; literal `analytics`
+            segment precedes the `*` wildcard. */}
+        <Route
+          path="analytics"
+          element={
+            <Suspense fallback={null}>
+              <AnalyticsPage />
             </Suspense>
           }
         />

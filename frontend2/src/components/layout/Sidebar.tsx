@@ -133,7 +133,7 @@ export function Sidebar({
       <nav aria-label="Primary">
         <NavGroup title={<Trans>Overview</Trans>}>
           <NavItem glyph="▦" label={<Trans>Dashboard</Trans>} to="/" />
-          <NavItem glyph="▤" label={<Trans>Analytics</Trans>} />
+          <NavItem glyph="▤" label={<Trans>Analytics</Trans>} to="/analytics" />
         </NavGroup>
         <NavGroup title={<Trans>Inventory</Trans>}>
           <NavItem glyph="▣" label={<Trans>Items</Trans>} count={stats?.total_items} to="/items" />
