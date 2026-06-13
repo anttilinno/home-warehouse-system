@@ -70,13 +70,13 @@ const DUE_ONE_OVERDUE = {
   ],
 };
 
-function expiringHandler(body: unknown) {
+function expiringHandler(body: object) {
   return http.get("/api/workspaces/:wsId/inventory/expiring", () =>
     HttpResponse.json(body),
   );
 }
 
-function dueHandler(body: unknown) {
+function dueHandler(body: object) {
   return http.get("/api/workspaces/:wsId/maintenance/due", () =>
     HttpResponse.json(body),
   );
