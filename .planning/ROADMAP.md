@@ -234,7 +234,7 @@ Clean-slate rebuild of `/frontend2` with sketch 006-008 retro-os pastel fidelity
 - [x] **Phase 4: Retro Atoms** — RetroPanel/Button/Badge/Input/Select/Combobox/Textarea/Checkbox/FileInput/FormField/Table family/Tabs/Dialog/ConfirmDialog/Toast/EmptyState/Pagination/StatusDot/HUD primitives — informed by Phase 3 layout constraints; modal-stack ESC, status pills with tabular-nums, SSE state in panel headers, multi-select Shift+Click on tables (completed 2026-06-12)
 - [x] **Phase 5: Auth** — login + register + Google OAuth + GitHub OAuth + RequireAuth (with v2.0 spurious-logout-on-network-error bug fixed) + workspace switcher + sessions + password change + account deletion + connected accounts (completed 2026-06-12)
 - [x] **Phase 6: Providers** — single cookie-authed SSEProvider (split `useSSEStatus()` selector + `useSSE` subscribe + generic invalidation dispatcher/contract doc) + RetroToaster/SSEProvider mounted in the verified canonical order; chrome (TopBar ONLINE dot + sse-slot RetroStatusDot + PageHeader LAST SYNC) wires to live state once; ShortcutsProvider/RetroToaster verified, not rebuilt (completed 2026-06-13)
-- [ ] **Phase 7: Items + Photos** — paginated list with search/filter/sort + detail with photo gallery + create/edit/archive/delete + multipart photo upload + `itemsApi.lookupByBarcode` (G-65-01 regression-guard pattern) + per-route `useShortcuts` registration
+- [x] **Phase 7: Items + Photos** — paginated list with search/filter/sort + detail with photo gallery + create/edit/archive/delete + multipart photo upload + `itemsApi.lookupByBarcode` (G-65-01 regression-guard pattern) + per-route `useShortcuts` registration (completed 2026-06-13)
 - [ ] **Phase 7b: Inventory** — inventory entries list + filters (virtualized when large) + create with item/location/container pickers + move dialog + quantity/status/condition inline edits + expiry/warranty fields + expiring view + movements history panel + per-item inventory panel (closes Phase 7 stub) [Gap G-1, critical]
 - [ ] **Phase 8: Loans** — Active/Overdue/History tabbed list + create with item + borrower picker + mark returned + edit + per-item active+history panels + `?itemId=` deep-link param
 - [ ] **Phase 9: Borrowers** — flat paginated list + CRUD with active-loan delete guard + detail with active+history panels
@@ -610,21 +610,21 @@ Plans:
 **Depends on**: Phase 4, Phase 6
 **Requirements**: ITEM-01, ITEM-02, ITEM-03, ITEM-04, ITEM-05, ITEM-06, ITEM-07, ITEM-08, ITEM-09, ITEM-10
 **Success Criteria** (what must be TRUE):
-  1. User can browse items in a paginated list (25/page) with search input, filter chips (category, location, archived), sort headers, URL-driven query params for deep-linking, and `useShortcuts("items", [...])` registration (`N` new / `/` focus-search / `F` toggle filters)
+  1. User can browse items in a paginated list (25/page) with search input, filter chips (category, archived; location is a display column — backend has no location list-filter param, corrected 2026-06-13), sort headers, URL-driven query params for deep-linking, and `useShortcuts("items", [...])` registration (`N` new / `/` focus-search / `F` toggle filters)
   2. User can view an item detail page with all fields, photo gallery (lightbox + arrow-key + ESC navigation, primary thumbnail toggle, individual photo delete with confirm), active-loan panel (if any), and loan history panel
   3. User can create a new item via `/items/new` (with optional `?barcode={code}` query-param prefill), edit via `/items/{id}/edit` with optimistic UI invalidation of `itemKeys.all` + relevant detail keys, archive / unarchive (archived hidden by default, visible via filter chip), and delete archived items with type-to-confirm dialog
-  4. User can upload up to N photos per item (JPEG/PNG/HEIC, client-resize, 10 MB cap) via native FormData multipart with no upload library
+  4. User can upload up to N photos per item (JPEG/PNG/WebP (HEIC not server-accepted; corrected 2026-06-13), client-resize, 10 MB cap) via native FormData multipart with no upload library
   5. `itemsApi.lookupByBarcode(workspaceId, code)` calls `GET /api/workspaces/{wsId}/items/by-barcode/{code}` with workspace-scoped server-side authority + 404 → null mapping; cross-tenant isolation guarded by integration test
 **Parity additions (2026-06-12)** (§4): confirm in-scope during planning — bulk selection + bulk archive/delete; saved filter presets; per-list CSV export hook-in point; photo extras (captions, reorder, set-primary, bulk-delete, bulk-caption, zip download, duplicate-check warning dialog, client-side compression + EXIF rotation before upload); labels attach/detach UI (read-only label list until the Phase 10 label manager lands); item-detail inventory panel ships as a **stub until Phase 7b**.
 **Plans**: 7 plans
 Plans:
-- [ ] 07-01-PLAN.md — API + types: api.ts put/blob helpers, URL rewrite, itemsApi/photosApi/loansApi/labelsApi, lookupByBarcode (ITEM-09) [Wave 1]
-- [ ] 07-02-PLAN.md — Image pipeline: EXIF-aware compressImage + upload accept-list/size validation (ITEM-07) [Wave 1]
-- [ ] 07-03-PLAN.md — Items list page: filter/sort/paginate, archived, bulk, CSV, shortcuts + Sidebar enable (ITEM-01/05/06/10) [Wave 2]
-- [ ] 07-04-PLAN.md — Photo pipeline UI: upload+dup-check, gallery, lightbox, caption, reorder, bulk, zip (ITEM-07/08) [Wave 2]
-- [ ] 07-05-PLAN.md — Create/edit form: RHF+zod, ?barcode prefill, PATCH clear-semantics, discard guard (ITEM-03/04) [Wave 3]
-- [ ] 07-06-PLAN.md — Item detail: tabs, gallery, loan panels, labels, 7b stub, archive/delete + routes (ITEM-02) [Wave 4]
-- [ ] 07-07-PLAN.md — Live E2E lifecycle + doc corrections (HEIC + location-chip ORIGINAL/REVISED) [Wave 4]
+- [x] 07-01-PLAN.md — API + types: api.ts put/blob helpers, URL rewrite, itemsApi/photosApi/loansApi/labelsApi, lookupByBarcode (ITEM-09) [Wave 1]
+- [x] 07-02-PLAN.md — Image pipeline: EXIF-aware compressImage + upload accept-list/size validation (ITEM-07) [Wave 1]
+- [x] 07-03-PLAN.md — Items list page: filter/sort/paginate, archived, bulk, CSV, shortcuts + Sidebar enable (ITEM-01/05/06/10) [Wave 2]
+- [x] 07-04-PLAN.md — Photo pipeline UI: upload+dup-check, gallery, lightbox, caption, reorder, bulk, zip (ITEM-07/08) [Wave 2]
+- [x] 07-05-PLAN.md — Create/edit form: RHF+zod, ?barcode prefill, PATCH clear-semantics, discard guard (ITEM-03/04) [Wave 3]
+- [x] 07-06-PLAN.md — Item detail: tabs, gallery, loan panels, labels, 7b stub, archive/delete + routes (ITEM-02) [Wave 4]
+- [x] 07-07-PLAN.md — Live E2E lifecycle + doc corrections (HEIC + location-chip ORIGINAL/REVISED) [Wave 4]
 **UI hint**: yes
 
 ### Phase 7b: Inventory
@@ -834,7 +834,7 @@ Plans:
 | 4 | v3.0 | 7/7 | Complete   | 2026-06-12 |
 | 5 | v3.0 | 6/6 | Complete   | 2026-06-12 |
 | 6 | v3.0 | 2/2 | Complete   | 2026-06-13 |
-| 7 | v3.0 | 0/TBD | Not started | - |
+| 7 | v3.0 | 7/7 | Complete   | 2026-06-13 |
 | 7b | v3.0 | 0/TBD | Not started | - |
 | 8 | v3.0 | 0/TBD | Not started | - |
 | 9 | v3.0 | 0/TBD | Not started | - |
