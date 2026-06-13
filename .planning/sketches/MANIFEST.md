@@ -37,6 +37,7 @@ token source for `frontend2/src/styles/tokens.css`.
 | 006 | retro-os-dashboard       | Does pastel window chrome carry a data-dense dashboard — bevels, pinstriped title bars, Silkscreen + Plex pairing? | **★ validated** — chrome holds at density; semantic title-bar color (pink = attention) reads instantly | layout, dashboard, theme, retro-os, pastel, frontend2 |
 | 007 | retro-os-login           | Do sunken inputs, press-state bevels, and in-window error treatment work for forms? | **★ validated** — form chrome clean; primary vs OAuth hierarchy clear | login, forms, theme, retro-os, pastel, frontend2 |
 | 008 | retro-os-table-density   | Make-or-break: does pastel chrome stay scannable on a 30+ row inventory table? | **★ validated** — stripes + sand rules keep place; badges stay signal at volume | table, density, items, theme, retro-os, pastel, frontend2 |
+| 009 | retro-os-charts          | What do recharts marks get skinned to so charts read as retro UI, not default gradients? | **★ validated** — extends locked 006-008 chrome; charts reuse window panels + pastel-fill/ink-stroke marks | charts, analytics, theme, retro-os, pastel, frontend2 |
 
 ## Locked Decisions (rolled up across 006-008)
 
@@ -73,6 +74,35 @@ token source for `frontend2/src/styles/tokens.css`.
 - **Sidebar**: grouped Overview / Inventory / System inside a "Navigator"
   window; active item gets pastel-blue fill + ink border + hard shadow;
   user identity in window footer (carried over from frontend1 pattern).
+
+### Sketch 009 — chart marks
+
+- **Ordered categorical series palette** (use in this exact order; each is a
+  locked pastel fill paired with its deep companion for any colored value
+  text on white):
+  1. `--series-1` = `--titlebar-blue` `#b8d8e8` (deep `--accent-blue-deep #19526f`)
+  2. `--series-2` = `--titlebar-pink` `#f4b8c4` (deep `--accent-pink-deep #a8334f`)
+  3. `--series-3` = `--titlebar-mint` `#b8e0c8` (deep `--accent-mint-deep #1e6b43`)
+  4. `--series-4` = `--titlebar-butter` `#f6e3a8` (deep `--warn-deep #7a5a12`)
+  5. `--series-5` = recessed sand `#e7ddca` (deep `--fg-muted #5b5b66`) —
+     overflow only, for a 6th+ category; not a primary series.
+- **Mark rule**: every chart mark (bar, area, donut slice, line marker) is a
+  flat **pastel fill + 2px ink stroke** (`--border-ink`), **no shadows on the
+  marks themselves**, square caps, no rounded bar caps, no gradients. Lines
+  get a thick pastel stroke + a thin ink overstroke; data points are square
+  ink-stroked markers. This is the System 7 bevel vocabulary applied to data.
+- **Axes / labels**: gridlines are the 1px sand table rule (`#e7ddca`); the
+  zero/baseline axis is a 2px ink rule. Value labels and axis ticks are
+  **IBM Plex Mono with `tabular-nums`**, ink (`--fg-ink`) for values, muted
+  for ticks. Category labels are Plex Sans 12px. **Silkscreen is panel titles
+  only (≥16px) — never axis labels, ticks, or in-chart text.** Value labels
+  live in a fixed right-hand gutter, clear of the bars (never overlaid).
+- **Single-series charts** take the title-bar's semantic accent (location
+  value = mint, top borrowers = butter/loan). Multi-category and donut charts
+  walk the ordered palette above with a swatch legend.
+- **Implementation lib**: **recharts** (`<Bar>`/`<Line>`/`<Pie>` + a custom
+  theme reproduces these marks 1:1) — **lazy-loaded** to stay within the
+  POL-04 bundle budget; charts render only on the Analytics route.
 
 ## Anti-Patterns / Open Questions (carry into build phase)
 
