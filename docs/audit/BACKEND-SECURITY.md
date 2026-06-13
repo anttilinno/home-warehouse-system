@@ -6,7 +6,7 @@ Date: 2026-06-11. Scope: `backend/` multi-tenant warehouse API (Go, chi + Huma, 
 
 | # | Severity | Title | Location |
 |---|----------|-------|----------|
-| F1 | CRITICAL | Cross-tenant IDOR on `attachment`/`file` (read + destructive delete) | `domain/warehouse/attachment/handler.go`, `attachments.sql.go` |
+| F1 | CRITICAL | ✅ RESOLVED (`f49e4b48`) — Cross-tenant IDOR on `attachment`/`file` (read + destructive delete) | `domain/warehouse/attachment/handler.go`, `attachments.sql.go` |
 | F2 | HIGH | ✅ RESOLVED (`f49e4b48`) — Logout does not revoke session / refresh token | `domain/auth/user/handler.go:324` |
 | F3 | HIGH | ✅ RESOLVED (`f49e4b48`) — Session revocation bypass via "legacy token" re-creation on refresh | `domain/auth/user/handler.go:264-310` |
 | F4 | HIGH | CSV formula/DDE injection on export | `domain/importexport/service.go:391-508` |
@@ -56,6 +56,8 @@ Impact: an authenticated member of workspace A calls `GET`/`DELETE /workspaces/{
 Fix: add a `workspace_id` column + `WHERE id=$1 AND workspace_id=$2` scoping and thread `workspaceID` through service/handler — mirror the correct sibling `repairattachment` (`repair_attachments.sql.go:17,32`), which is already properly scoped.
 
 > The rest of the warehouse domain (item, inventory, loan, itemphoto, container, location, category, borrower, label, repairlog, movement, company, declutter, repairattachment, repairphoto) was verified **CLEAN** — either DB-level `WHERE id=$1 AND workspace_id=$2` or service-level `GetByID(id, workspaceID)` gate / explicit `WorkspaceID != workspaceID` compare-after-fetch. 15+ queries sampled across entities.
+
+> **RESOLVED** (commit `f49e4b48` — "tenant isolation threading + security hardening (F1-F20)"). The `attachments`/`files` tables now carry a `workspace_id` column; the service signatures take `workspaceID uuid.UUID`; every handler reads `GetWorkspaceID(ctx)` and threads it; SQL scopes `WHERE id=$1 AND workspace_id=$2` (FindByID:138, Delete:110, ListByItem:197, SetPrimary:261). Regression-guarded by `attachment/handler_integration_test.go` (cross-tenant GET/DELETE → 404, `-tags=integration`).
 
 ---
 
