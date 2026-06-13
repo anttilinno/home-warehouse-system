@@ -171,6 +171,7 @@ export default function CommandPalette({ open, onClose }: CommandPaletteProps) {
         >
           <div className="border-b-2 border-border-ink bg-bg-panel-2 px-sp-3 py-sp-2">
             <CommandInput
+              autoFocus
               value={query}
               onValueChange={setQuery}
               placeholder={t`Search routes, workspaces, items…`}

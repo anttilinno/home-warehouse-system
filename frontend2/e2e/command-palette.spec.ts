@@ -38,9 +38,10 @@ test.describe("command palette", () => {
     await login(page);
     const overlay = page.locator(PALETTE);
 
-    // Chord 1 — Meta+k (Playwright maps Meta to the platform ⌘/Ctrl owner the
-    // tinykeys $mod chord listens for).
-    await page.keyboard.press("Meta+k");
+    // Chord 1 — ControlOrMeta+k: Playwright's ControlOrMeta resolves to Meta on
+    // macOS / Control elsewhere, matching tinykeys `$mod` (⌘ on Apple, Ctrl on
+    // Linux/Windows). On the Linux CI box this presses Ctrl+K.
+    await page.keyboard.press("ControlOrMeta+k");
     await expect(overlay).toBeVisible();
 
     // ESC pops it via the shared modal stack — and must NOT log out (TUI-02).
@@ -61,7 +62,7 @@ test.describe("command palette", () => {
     await login(page);
     const overlay = page.locator(PALETTE);
 
-    await page.keyboard.press("Meta+k");
+    await page.keyboard.press("ControlOrMeta+k");
     await expect(overlay).toBeVisible();
 
     // SC2 — type a static Routes label; the matching row substring-filters in.
@@ -78,7 +79,7 @@ test.describe("command palette", () => {
     await expect(overlay).toBeHidden();
 
     // ESC modal-stack pop — reopen, ESC, assert overlay gone + route intact.
-    await page.keyboard.press("Meta+k");
+    await page.keyboard.press("ControlOrMeta+k");
     await expect(overlay).toBeVisible();
     await page.keyboard.press("Escape");
     await expect(overlay).toBeHidden();
@@ -105,14 +106,14 @@ test.describe("command palette", () => {
     const unique = `Palette E2E Widget ${Date.now()}`;
     const createRes = await page.request.post(
       `/api/workspaces/${wsId}/items`,
-      { data: { name: unique, quantity: 1 } },
+      { data: { name: unique, sku: `PAL-E2E-${Date.now()}` } },
     );
     expect(createRes.ok()).toBeTruthy();
     const created = (await createRes.json()) as { id: string };
     expect(created.id).toBeTruthy();
 
     const overlay = page.locator(PALETTE);
-    await page.keyboard.press("Meta+k");
+    await page.keyboard.press("ControlOrMeta+k");
     await expect(overlay).toBeVisible();
 
     // Type the unique token; the debounced (250ms) entity search resolves an
