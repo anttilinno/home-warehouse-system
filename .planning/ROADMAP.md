@@ -710,7 +710,7 @@ Plans:
   3. User can create / edit / delete maintenance schedules on an inventory entry and see a due list (`/maintenance/due`); completing a schedule advances its next-due
   4. The dashboard due-maintenance feed is produced here and consumed by the Phase 13 side rail (due-maintenance card)
 **Plans**: 5 plans
-- [ ] 10b-01-PLAN.md — Wave 0 foundation: api modules (repairs/maintenance/repairPhotos/repairAttachments) + money.ts + types + repairStatus + RHF/zod schemas + MSW handlers
+- [x] 10b-01-PLAN.md — Wave 0 foundation: api modules (repairs/maintenance/repairPhotos/repairAttachments) + money.ts + types + repairStatus + RHF/zod schemas + MSW handlers
 - [ ] 10b-02-PLAN.md — Repairs drawer (RPR-01/02): query+mutation hooks, RepairsDrawer + RepairForm + CompleteRepairDialog, cost rollup, InventoryListPage REPAIRS trigger (single-writer)
 - [ ] 10b-03-PLAN.md — Repair photos + attachments (RPR-03/04): RepairRecordDialog tabs, RepairPhotoPanel (parametrized PhotoUpload/PhotoGallery), RepairAttachmentPanel + AddAttachmentDialog (link-only; byte-storage residue)
 - [ ] 10b-04-PLAN.md — Maintenance (MNT-01/02/03): MaintenanceDrawer + forms, /maintenance/due page, useMaintenanceDueQuery feed hook, routes/Sidebar + InventoryListPage MAINTENANCE trigger (single-writers)
@@ -867,7 +867,7 @@ Plans:
 | 8 | v3.0 | 6/6 | Complete   | 2026-06-13 |
 | 9 | v3.0 | 3/3 | Complete   | 2026-06-13 |
 | 10 | v3.0 | 5/5 | Complete   | 2026-06-13 |
-| 10b | v3.0 | 0/TBD | Not started | - |
+| 10b | v3.0 | 1/5 | In Progress|  |
 | 11 | v3.0 | 0/TBD | Not started | - |
 | 12 | v3.0 | 0/TBD | Not started | - |
 | 13 | v3.0 | 0/TBD | Not started | - |
