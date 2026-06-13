@@ -214,3 +214,92 @@ export interface Loan {
     name: string;
   };
 }
+
+// --- Inventory + Movements (Phase 7b Plan 01) ---
+//
+// Source: backend/internal/domain/warehouse/inventory/entity.go +
+// movement/entity.go (07b-RESEARCH "Inventory enum unions", VERIFIED from source
+// AND live curl). Huma injects a `$schema` key into envelopes — deliberately NOT
+// modelled (Pitfall 7). Inventory/movement responses carry NO absolute URLs, so
+// there is no toProxyUrl mapper at the API boundary (unlike items/photos).
+
+// Condition enum (7, fixed). Order matches entity.go for form select options.
+export type Condition =
+  | "NEW"
+  | "EXCELLENT"
+  | "GOOD"
+  | "FAIR"
+  | "POOR"
+  | "DAMAGED"
+  | "FOR_REPAIR";
+
+// Status enum (7, fixed). Order matches entity.go for form select options.
+export type InventoryStatus =
+  | "AVAILABLE"
+  | "IN_USE"
+  | "RESERVED"
+  | "ON_LOAN"
+  | "IN_TRANSIT"
+  | "DISPOSED"
+  | "MISSING";
+
+// InventoryResponse. date_acquired/warranty_expires/expiration_date are full
+// RFC3339 timestamps, omitted when nil (Pitfall 4 — distinct from the expiring
+// projection's YYYY-MM-DD `date`). purchase_price is in cents.
+export interface Inventory {
+  id: string;
+  workspace_id: string;
+  item_id: string;
+  location_id: string;
+  container_id?: string;
+  quantity: number;
+  condition: Condition;
+  status: InventoryStatus;
+  date_acquired?: string; // RFC3339
+  purchase_price?: number; // cents
+  currency_code?: string; // ISO, <=3 chars
+  warranty_expires?: string; // RFC3339
+  expiration_date?: string; // RFC3339
+  notes?: string;
+  is_archived: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+// ONLY the top-level GET /inventory carries the full envelope. The scoped reads
+// (by-item/by-location/by-container) and ALL movement reads return a BARE
+// { items } with NO total/page/total_pages (Pitfall 1).
+export interface InventoryListResponse {
+  items: Inventory[];
+  total: number;
+  page: number;
+  total_pages: number;
+}
+
+// GET /inventory/expiring projection. `date` is a plain YYYY-MM-DD string (NOT
+// RFC3339 — Pitfall 4); `kind` discriminates expiration vs warranty.
+export interface ExpiringEntry {
+  inventory_id: string;
+  item_id: string;
+  item_name: string;
+  quantity: number;
+  kind: "expiration" | "warranty";
+  date: string; // YYYY-MM-DD
+}
+
+// GET /movements (3 scopes). moved_by is always null currently (no user
+// attribution wired backend-side). Movement rows are created ONLY by a move
+// action (Pitfall 3).
+export interface Movement {
+  id: string;
+  workspace_id: string;
+  inventory_id: string;
+  from_location_id?: string;
+  from_container_id?: string;
+  to_location_id?: string;
+  to_container_id?: string;
+  quantity: number;
+  moved_by?: string;
+  reason?: string;
+  created_at: string;
+}
