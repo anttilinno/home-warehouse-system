@@ -8,6 +8,8 @@ import { MemoryRouter } from "react-router";
 import { i18n } from "@/lib/i18n";
 import { server } from "@/test/msw/server";
 import { RetroToaster } from "@/components/retro";
+import { ShortcutsProvider } from "@/components/shortcuts";
+import { ModalStackProvider } from "@/components/modal";
 import { BorrowerLoanPanels } from "./BorrowerLoanPanels";
 
 // Phase 8 Plan 05 — BorrowerLoanPanels is COMPONENT-ONLY (LOAN-06): no borrower
@@ -79,10 +81,14 @@ function renderPanels(borrowerId = "bor-1") {
   return render(
     <I18nProvider i18n={i18n}>
       <QueryClientProvider client={client}>
-        <RetroToaster />
-        <MemoryRouter>
-          <BorrowerLoanPanels wsId="ws-1" borrowerId={borrowerId} />
-        </MemoryRouter>
+        <ShortcutsProvider>
+          <ModalStackProvider>
+            <RetroToaster />
+            <MemoryRouter>
+              <BorrowerLoanPanels wsId="ws-1" borrowerId={borrowerId} />
+            </MemoryRouter>
+          </ModalStackProvider>
+        </ShortcutsProvider>
       </QueryClientProvider>
     </I18nProvider>,
   );
@@ -161,9 +167,9 @@ describe("BorrowerLoanPanels", () => {
     const user = userEvent.setup();
     await screen.findByRole("link", { name: /Cordless Drill/i });
     await user.click(screen.getByRole("button", { name: /^RETURN$/i }));
-    // Confirm the dialog.
-    const confirm = await screen.findByRole("button", { name: /^Return$/i });
-    await user.click(confirm);
+    // Confirm inside the dialog (scoped — the row's RETURN button also matches).
+    const dialog = await screen.findByRole("dialog");
+    await user.click(within(dialog).getByRole("button", { name: /^Return$/i }));
 
     await waitFor(() => expect(returnHit).toBe(true));
   });
@@ -171,11 +177,10 @@ describe("BorrowerLoanPanels", () => {
 
 describe("BorrowerLoanPanels route guard", () => {
   it("registers NO borrower route in routes/index.tsx this phase", async () => {
-    const src = await import("fs").then((fs) =>
-      fs.readFileSync(
-        new URL("../../../routes/index.tsx", import.meta.url),
-        "utf8",
-      ),
+    const [fs, path] = await Promise.all([import("fs"), import("path")]);
+    const src = fs.readFileSync(
+      path.resolve(process.cwd(), "src/routes/index.tsx"),
+      "utf8",
     );
     expect(src.includes('path="borrowers')).toBe(false);
   });
