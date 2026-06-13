@@ -658,7 +658,7 @@ Plans:
 **Parity additions (2026-06-12)** (§4, §6): the `extend` action (`PATCH /loans/{id}/extend`), overdue-row highlighting, CSV export of the loan list, and the `?itemId=` deep link are all in scope. Depends-on updated to **Phase 7b** (loans reference inventory entries) per the §6 ordering table.
 **Plans**: 6 plans
 Plans:
-- [ ] 08-01-PLAN.md — loansApi extension (inventory_id create, active/overdue endpoints) + server-flag status + client-CSV util + MSW handlers [Wave 1]
+- [x] 08-01-PLAN.md — loansApi extension (inventory_id create, active/overdue endpoints) + server-flag status + client-CSV util + MSW handlers [Wave 1]
 - [ ] 08-02-PLAN.md — /loans tabbed list (Active/Overdue/History, ?tab=, overdue highlight, per-tab CSV) + Sidebar/route wiring (LOAN-01) [Wave 2]
 - [ ] 08-03-PLAN.md — /loans/new create form (inventory-entry + borrower pickers, ?itemId filter, limit≤100) (LOAN-02) [Wave 2]
 - [ ] 08-04-PLAN.md — optimistic return/extend/edit mutations + dialogs + make item-detail LoanPanels real (LOAN-03/04/05) [Wave 3]
@@ -849,7 +849,7 @@ Plans:
 | 6 | v3.0 | 2/2 | Complete   | 2026-06-13 |
 | 7 | v3.0 | 7/7 | Complete   | 2026-06-13 |
 | 7b | v3.0 | 6/6 | Complete   | 2026-06-13 |
-| 8 | v3.0 | 0/TBD | Not started | - |
+| 8 | v3.0 | 1/6 | In Progress|  |
 | 9 | v3.0 | 0/TBD | Not started | - |
 | 10 | v3.0 | 0/TBD | Not started | - |
 | 10b | v3.0 | 0/TBD | Not started | - |
