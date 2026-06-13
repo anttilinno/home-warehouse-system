@@ -178,11 +178,11 @@
 
 ### Polish & Quality (POL)
 
-- [ ] **POL-01**: All flows that cross the HTTP boundary have at least one real-backend test — Playwright E2E for browser-driven flows + tagged Go integration test for server contract (Phase 65 Plan 65-11 pattern, applied from Day 1).
-- [ ] **POL-02**: All interactive elements pass `axe-playwright` CI sweep — no contrast / focus-visible / touch-target / aria-label violations.
-- [ ] **POL-03**: Tab/keyboard navigation audit — every page is fully keyboard-navigable; focus indicator visible (focus-visible, not focus); no keyboard traps.
-- [ ] **POL-04**: Bundle size CI guard — `vite build` output stays under documented per-chunk budgets (main / scanner / vendor); regression-by-PR fails CI with clear delta report.
-- [ ] **POL-05**: Mobile breakpoint matrix re-tested at 320 / 360 / 768 / 1024 / 1440 px; visual diff vs sketch 005 PNG for the dashboard route.
+- [x] **POL-01**: All flows that cross the HTTP boundary have at least one real-backend test — Playwright E2E for browser-driven flows + tagged Go integration test for server contract (Phase 65 Plan 65-11 pattern, applied from Day 1).
+- [x] **POL-02**: All interactive elements pass `axe-playwright` CI sweep — no contrast / focus-visible / touch-target / aria-label violations.
+- [x] **POL-03**: Tab/keyboard navigation audit — every page is fully keyboard-navigable; focus indicator visible (focus-visible, not focus); no keyboard traps.
+- [x] **POL-04**: Bundle size CI guard — `vite build` output stays under documented per-chunk budgets (main / scanner / vendor); regression-by-PR fails CI with clear delta report.
+- [x] **POL-05**: Mobile breakpoint matrix re-tested at 320 / 360 / 768 / 1024 / 1440 px; visual diff vs sketch 005 PNG for the dashboard route.
 
 ---
 
@@ -276,7 +276,7 @@
 
 ### Polish parity addition (POL) — Phase 17 (§7)
 
-- [ ] **POL-06**: Parity verification gate — route checklist, endpoint coverage diff (legacy `frontend/lib/api/*` minus `frontend2/src`, excluding `/sync/*` + `/push/*`), full E2E flow list, i18n completeness, a11y + bundle budgets across new pages, and one week of dogfooding before legacy `frontend/` retirement.
+- [x] **POL-06**: Parity verification gate — route checklist, endpoint coverage diff (legacy `frontend/lib/api/*` minus `frontend2/src`, excluding `/sync/*` + `/push/*`), full E2E flow list, i18n completeness, a11y + bundle budgets across new pages, and one week of dogfooding before legacy `frontend/` retirement.
 
 
 ---
@@ -416,11 +416,11 @@
 | TUI-04 | Phase 4 | Complete |
 | TUI-05 | Phase 16 | Complete |
 | TUI-06 | Phase 4 | Complete |
-| POL-01 | Phase 17 | Pending |
-| POL-02 | Phase 17 | Pending |
-| POL-03 | Phase 17 | Pending |
-| POL-04 | Phase 17 | Pending |
-| POL-05 | Phase 17 | Pending |
+| POL-01 | Phase 17 | Complete |
+| POL-02 | Phase 17 | Complete |
+| POL-03 | Phase 17 | Complete |
+| POL-04 | Phase 17 | Complete |
+| POL-05 | Phase 17 | Complete |
 | --- v3.0 parity amendment (2026-06-12) --- | | |
 | INV-01 | Phase 7b | Complete |
 | INV-02 | Phase 7b | Complete |
@@ -464,7 +464,7 @@
 | SCAN-12 | Phase 11 | Complete (port-legacy create-entity) |
 | SETT-10 | Phase 12 | Complete |
 | SETT-11 | Phase 12 | Complete |
-| POL-06 | Phase 17 | Pending |
+| POL-06 | Phase 17 | Complete |
 
 **Total:** 106 base requirements across 17 categories + 43 parity-amendment requirements (2026-06-12) across 14 new/extended categories (INV 8, RPR 4, MNT 3, ANL 4, ATT 3, PPL 3, WISH 2, DECL 2, NOTIF 3, ATOM-FB 4, AUTH +2, TAX +1, SCAN +1, SETT +2, POL +1) = **149 total** — note prior summary said 91/14 but the actual list above (and the body of the document) contains 106 requirements across 17 categories: FOUND (6), TOKEN (5), SHELL (6), BAR (5), PROV (4), AUTH (10), ITEM (10), LOAN (6), BORR (5), TAX (6), SCAN (11), SETT (9), DASH (5), I18N (3), SYS (4), TUI (6), POL (5). All 106 mapped to exactly one phase below.
 

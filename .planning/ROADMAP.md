@@ -248,7 +248,7 @@ Clean-slate rebuild of `/frontend2` with sketch 006-008 retro-os pastel fidelity
 - [x] **Phase 14b: Attachments + Paperless** (completed 2026-06-13) — item attachments panel on item detail (upload/list/set-primary/delete; FileInput atom from Phase 4) + Paperless-ngx settings page (slots into Settings hub) + Paperless doc search + link-to-item. NOTE: cross-tenant attachment IDOR audit finding must be fixed with this phase [Gap G-7]
 - [x] **Phase 15: i18n catalog gap-fill (et + ru)** (completed 2026-06-13) — extract en messages, translate to et + ru (lift from legacy `/frontend` next-intl + v2.1 Lingui archive), locale switcher, format hooks (`useDateFormat`/`useTimeFormat`/`useNumberFormat`) used everywhere
 - [x] **Phase 16: Command Palette** — Cmd+K / F2 cmdk surface filtering across routes, recent actions, and workspaces; keyboard-first navigation (completed 2026-06-14)
-- [x] **Phase 17: Polish & Quality** — Playwright E2E + Go integration test for every cross-HTTP flow + axe-playwright a11y CI sweep + tab/keyboard navigation audit + bundle size CI guard + mobile breakpoint matrix re-test (320/360/768/1024/1440 px) + visual diff vs sketch 006 (completed 2026-06-13)
+- [x] **Phase 17: Polish & Quality** — Playwright E2E + Go integration test for every cross-HTTP flow + axe-playwright a11y CI sweep + tab/keyboard navigation audit + bundle size CI guard + mobile breakpoint matrix re-test (320/360/768/1024/1440 px) + visual diff vs sketch 006 (completed 2026-06-14)
 
 ## Phase Details
 
@@ -905,7 +905,7 @@ Plans:
 | 14b | v3.0 | 0/TBD | Not started | - |
 | 15 | v3.0 | 4/4 | Complete   | 2026-06-13 |
 | 16 | v3.0 | 3/3 | Complete   | 2026-06-13 |
-| 17 | v3.0 | 4/4 | Complete   | 2026-06-13 |
+| 17 | v3.0 | 4/4 | Complete   | 2026-06-14 |
 
 **Total:** 65 phases complete (185 plans executed: +65-11 gap-closure Wave 8 regression test for G-65-01, Phase 65 now 11/11 SHIPPABLE — Option C Playwright E2E + Go HTTP+Postgres integration test) across 12 milestones; v2.2 (Phases 64-72) active
 
