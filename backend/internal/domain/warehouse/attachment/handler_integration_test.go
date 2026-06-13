@@ -43,6 +43,7 @@ import (
 	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/attachment"
 	"github.com/antti/home-warehouse/go-backend/internal/domain/warehouse/item"
 	"github.com/antti/home-warehouse/go-backend/internal/infra/postgres"
+	"github.com/antti/home-warehouse/go-backend/internal/infra/storage"
 	"github.com/antti/home-warehouse/go-backend/tests/testdb"
 )
 
@@ -65,7 +66,9 @@ func TestAttachmentHandler_CrossTenant_Integration(t *testing.T) {
 	// Build real repos + service (no mocks).
 	fileRepo := postgres.NewFileRepository(pool)
 	attachmentRepo := postgres.NewAttachmentRepository(pool)
-	svc := attachment.NewService(fileRepo, attachmentRepo)
+	store, err := storage.NewLocalStorage(t.TempDir())
+	require.NoError(t, err)
+	svc := attachment.NewService(fileRepo, attachmentRepo, store)
 
 	// An item is needed so the attachment's item_id FK holds. Seed it via the
 	// real item service in workspace A.
