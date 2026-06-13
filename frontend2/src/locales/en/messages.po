@@ -13,10 +13,301 @@ msgstr ""
 "Language-Team: \n"
 "Plural-Forms: \n"
 
+#: src/features/repairs/components/CompleteRepairDialog.tsx
+msgid "— Keep current condition"
+msgstr "— Keep current condition"
+
+#: src/features/inventory/components/MoveDialog.tsx
+#: src/features/inventory/InventoryFormPage.tsx
+msgid "— No container"
+msgstr "— No container"
+
+#: src/features/loans/LoanFormPage.tsx
+msgid "— Select a borrower"
+msgstr "— Select a borrower"
+
+#: src/features/inventory/components/MoveDialog.tsx
+#: src/features/inventory/InventoryFormPage.tsx
+msgid "— Select a location"
+msgstr "— Select a location"
+
+#: src/features/loans/LoanFormPage.tsx
+msgid "— Select an inventory entry"
+msgstr "— Select an inventory entry"
+
+#: src/features/inventory/InventoryFormPage.tsx
+msgid "— Select an item"
+msgstr "— Select an item"
+
+#: src/features/items/components/LoanPanels.tsx
+#: src/features/loans/components/BorrowerLoanPanels.tsx
+msgid "— still out"
+msgstr "— still out"
+
+#. placeholder {0}: archiveTarget?.name ?? ""
+#. placeholder {1}: n === 1 ? "" : "s"
+#: src/features/taxonomy/components/CategoriesTab.tsx
+msgid "\"{0}\" has {n} item{1} assigned to it. Archiving keeps those items but hides this category from pickers until you restore it."
+msgstr "\"{0}\" has {n} item{1} assigned to it. Archiving keeps those items but hides this category from pickers until you restore it."
+
+#. placeholder {0}: deleteTarget?.name ?? ""
+#. placeholder {1}: n === 1 ? "" : "s"
+#: src/features/taxonomy/components/ContainersTab.tsx
+msgid "\"{0}\" holds {n} item{1}. Deleting it will move those items out of any container (they stay in their location) and then delete the container. This can't be undone."
+msgstr "\"{0}\" holds {n} item{1}. Deleting it will move those items out of any container (they stay in their location) and then delete the container. This can't be undone."
+
+#: src/features/taxonomy/components/ContainersTab.tsx
+msgid "(No location)"
+msgstr "(No location)"
+
+#: src/features/taxonomy/components/CategoryFormDialog.tsx
+#: src/features/taxonomy/components/LocationFormDialog.tsx
+msgid "(Root — no parent)"
+msgstr "(Root — no parent)"
+
+#. placeholder {0}: loan.item.name
+#: src/features/loans/components/ExtendLoanDialog.tsx
+msgid "{0} — currently due {currentDue}."
+msgstr "{0} — currently due {currentDue}."
+
+#. placeholder {0}: loan.item.name
+#. placeholder {1}: loan.borrower.name
+#: src/features/loans/components/EditLoanDialog.tsx
+msgid "{0} — loaned to {1}."
+msgstr "{0} — loaned to {1}."
+
+#. placeholder {0}: a.name
+#: src/features/taxonomy/hooks/useCategoryMutations.ts
+#: src/features/taxonomy/hooks/useLabelMutations.ts
+#: src/features/taxonomy/hooks/useLocationMutations.ts
+msgid "{0} archived."
+msgstr "{0} archived."
+
+#. placeholder {0}: c.name
+#. placeholder {0}: cat.name
+#. placeholder {0}: label.name
+#: src/features/taxonomy/hooks/useCategoryMutations.ts
+#: src/features/taxonomy/hooks/useContainerMutations.ts
+#: src/features/taxonomy/hooks/useLabelMutations.ts
+#: src/features/taxonomy/hooks/useLocationMutations.ts
+msgid "{0} created."
+msgstr "{0} created."
+
+#. placeholder {0}: a.name
+#: src/features/taxonomy/hooks/useContainerMutations.ts
+#: src/features/taxonomy/hooks/useLabelMutations.ts
+msgid "{0} deleted."
+msgstr "{0} deleted."
+
+#. placeholder {0}: selectedIds.length
+#: src/features/items/components/PhotoGallery.tsx
+msgid "{0} photo(s) will be permanently removed."
+msgstr "{0} photo(s) will be permanently removed."
+
+#. placeholder {0}: a.name
+#: src/features/taxonomy/hooks/useCategoryMutations.ts
+#: src/features/taxonomy/hooks/useLabelMutations.ts
+#: src/features/taxonomy/hooks/useLocationMutations.ts
+msgid "{0} restored."
+msgstr "{0} restored."
+
+#. placeholder {0}: selectedIds.length
+#: src/features/items/components/PhotoGallery.tsx
+msgid "{0} SELECTED"
+msgstr "{0} SELECTED"
+
 #. placeholder {0}: s.total_inventory
 #: src/features/dashboard/DashboardPage.tsx
 msgid "{0} units total"
 msgstr "{0} units total"
+
+#: src/features/inventory/ExpiringPage.tsx
+msgid "{count} expiring"
+msgstr "{count} expiring"
+
+#: src/features/inventory/ExpiringPage.tsx
+msgid "{d} days"
+msgstr "{d} days"
+
+#. placeholder {0}: queue.length
+#: src/features/items/components/PhotoUpload.tsx
+msgid "{done}/{0} uploaded"
+msgstr "{done}/{0} uploaded"
+
+#: src/features/settings/AccountsPage.tsx
+msgid "{label} unlinked."
+msgstr "{label} unlinked."
+
+#: src/features/borrowers/BorrowerDetailPage.tsx
+msgid "← BACK TO BORROWERS"
+msgstr "← BACK TO BORROWERS"
+
+#: src/features/inventory/ExpiringPage.tsx
+msgid "← BACK TO INVENTORY"
+msgstr "← BACK TO INVENTORY"
+
+#: src/features/items/ItemDetailPage.tsx
+msgid "← BACK TO ITEMS"
+msgstr "← BACK TO ITEMS"
+
+#: src/features/inventory/InventoryListPage.tsx
+msgid "↧"
+msgstr "↧"
+
+#: src/features/loans/components/LoanRowActions.tsx
+msgid "↧ EDIT"
+msgstr "↧ EDIT"
+
+#: src/routes/demo/DemoPage.tsx
+msgid "+ Add item"
+msgstr "+ Add item"
+
+#: src/features/loans/LoansListPage.tsx
+msgid "−{overdueBy}d"
+msgstr "−{overdueBy}d"
+
+#: src/features/items/components/InventoryPanel.tsx
+msgid "⊕ ADD"
+msgstr "⊕ ADD"
+
+#: src/features/borrowers/BorrowersListPage.tsx
+msgid "⊕ ADD BORROWER"
+msgstr "⊕ ADD BORROWER"
+
+#: src/features/taxonomy/components/ContainersTab.tsx
+msgid "⊕ ADD CONTAINER"
+msgstr "⊕ ADD CONTAINER"
+
+#: src/features/inventory/InventoryListPage.tsx
+#: src/features/items/components/InventoryPanel.tsx
+msgid "⊕ ADD ENTRY"
+msgstr "⊕ ADD ENTRY"
+
+#: src/features/repairs/components/RepairAttachmentPanel.tsx
+msgid "⊕ ADD FILE"
+msgstr "⊕ ADD FILE"
+
+#: src/features/items/ItemsListPage.tsx
+msgid "⊕ ADD ITEM"
+msgstr "⊕ ADD ITEM"
+
+#: src/features/items/components/ItemLabels.tsx
+#: src/features/taxonomy/components/LabelsTab.tsx
+msgid "⊕ ADD LABEL"
+msgstr "⊕ ADD LABEL"
+
+#: src/features/items/ItemDetailPage.tsx
+#: src/features/repairs/components/RepairPhotoPanel.tsx
+msgid "⊕ ADD PHOTOS"
+msgstr "⊕ ADD PHOTOS"
+
+#: src/features/repairs/components/RepairsDrawer.tsx
+msgid "⊕ ADD REPAIR"
+msgstr "⊕ ADD REPAIR"
+
+#: src/features/taxonomy/components/CategoriesTab.tsx
+msgid "⊕ ADD ROOT CATEGORY"
+msgstr "⊕ ADD ROOT CATEGORY"
+
+#: src/features/taxonomy/components/LocationsTab.tsx
+msgid "⊕ ADD ROOT LOCATION"
+msgstr "⊕ ADD ROOT LOCATION"
+
+#: src/features/maintenance/components/MaintenanceDrawer.tsx
+msgid "⊕ ADD SCHEDULE"
+msgstr "⊕ ADD SCHEDULE"
+
+#: src/features/items/components/LoanPanels.tsx
+msgid "⊕ LOAN THIS ITEM"
+msgstr "⊕ LOAN THIS ITEM"
+
+#: src/features/borrowers/BorrowersListPage.tsx
+msgid "⊕ NEW BORROWER"
+msgstr "⊕ NEW BORROWER"
+
+#: src/features/loans/LoansListPage.tsx
+msgid "⊕ NEW LOAN"
+msgstr "⊕ NEW LOAN"
+
+#: src/components/retro/filters/SavedFilters.tsx
+msgid "▾ PRESETS"
+msgstr "▾ PRESETS"
+
+#: src/features/items/components/PhotoGallery.tsx
+msgid "★ PRIMARY"
+msgstr "★ PRIMARY"
+
+#: src/features/items/components/PhotoGallery.tsx
+msgid "★ SET PRIMARY"
+msgstr "★ SET PRIMARY"
+
+#: src/features/repairs/components/RepairRecordDialog.tsx
+#: src/features/repairs/components/RepairsDrawer.tsx
+msgid "⚖ WARRANTY"
+msgstr "⚖ WARRANTY"
+
+#. placeholder {0}: Math.abs(days)
+#: src/features/loans/components/BorrowerLoanPanels.tsx
+msgid "⚠ −{0}d"
+msgstr "⚠ −{0}d"
+
+#: src/features/borrowers/BorrowerDetailPage.tsx
+msgid "⚠ Active loans"
+msgstr "⚠ Active loans"
+
+#: src/features/items/components/LoanPanels.tsx
+msgid "⚠ Overdue"
+msgstr "⚠ Overdue"
+
+#: src/components/retro/filters/BulkActionBar.tsx
+#: src/features/items/components/PhotoGallery.tsx
+msgid "✕ CLEAR"
+msgstr "✕ CLEAR"
+
+#: src/features/items/components/PhotoLightbox.tsx
+msgid "✕ CLOSE"
+msgstr "✕ CLOSE"
+
+#: src/features/inventory/InventoryListPage.tsx
+msgid "⟳"
+msgstr "⟳"
+
+#. placeholder {0}: selectedIds.length
+#: src/features/items/components/PhotoGallery.tsx
+msgid "⤓ DOWNLOAD {0}"
+msgstr "⤓ DOWNLOAD {0}"
+
+#: src/features/items/components/PhotoGallery.tsx
+msgid "⤓ DOWNLOAD ALL"
+msgstr "⤓ DOWNLOAD ALL"
+
+#: src/features/items/ItemsListPage.tsx
+msgid "⤓ EXPORT"
+msgstr "⤓ EXPORT"
+
+#: src/features/loans/LoansListPage.tsx
+msgid "⤓ EXPORT CSV"
+msgstr "⤓ EXPORT CSV"
+
+#: src/features/inventory/InventoryListPage.tsx
+msgid "🔧"
+msgstr "🔧"
+
+#: src/routes/demo/DemoPage.tsx
+msgid "A centered-modal retro-os Window. ESC pops it via the modal stack."
+msgstr "A centered-modal retro-os Window. ESC pops it via the modal stack."
+
+#: src/routes/demo/DemoPage.tsx
+msgid "A helpful hint."
+msgstr "A helpful hint."
+
+#: src/features/auth/RegisterPage.tsx
+msgid "Account created — welcome."
+msgstr "Account created — welcome."
+
+#: src/features/inventory/InventoryFormPage.tsx
+msgid "Acquired"
+msgstr "Acquired"
 
 #: src/features/dashboard/DashboardPage.tsx
 msgid "Action"
@@ -26,90 +317,1711 @@ msgstr "Action"
 msgid "action needed"
 msgstr "action needed"
 
+#: src/features/settings/SecurityPage.tsx
+msgid "Actions"
+msgstr "Actions"
+
+#: src/components/scan/ScanResultBanner.tsx
+msgid "ACTIONS"
+msgstr "ACTIONS"
+
 #: src/features/dashboard/DashboardPage.tsx
 msgid "active"
 msgstr "active"
+
+#: src/features/loans/LoansListPage.tsx
+msgid "Active"
+msgstr "Active"
+
+#: src/features/loans/LoansListPage.tsx
+msgid "ACTIVE"
+msgstr "ACTIVE"
+
+#: src/features/loans/components/BorrowerLoanPanels.tsx
+msgid "ACTIVE LOANS"
+msgstr "ACTIVE LOANS"
+
+#: src/features/settings/SecurityPage.tsx
+msgid "active now"
+msgstr "active now"
+
+#: src/features/inventory/InventoryFormPage.tsx
+msgid "ADD ENTRY"
+msgstr "ADD ENTRY"
+
+#: src/features/repairs/components/AddAttachmentDialog.tsx
+msgid "ADD FILE"
+msgstr "ADD FILE"
+
+#: src/features/items/ItemFormPage.tsx
+msgid "ADD ITEM"
+msgstr "ADD ITEM"
+
+#: src/features/items/components/PhotoUpload.tsx
+msgid "ADD PHOTOS"
+msgstr "ADD PHOTOS"
+
+#: src/features/repairs/components/RepairForm.tsx
+msgid "ADD REPAIR"
+msgstr "ADD REPAIR"
+
+#: src/features/maintenance/components/MaintenanceForm.tsx
+msgid "ADD SCHEDULE"
+msgstr "ADD SCHEDULE"
+
+#: src/features/taxonomy/components/LocationsTab.tsx
+msgid "Add your first location — a room, shelf, or area. Nest sub-locations to mirror your space."
+msgstr "Add your first location — a room, shelf, or area. Nest sub-locations to mirror your space."
+
+#: src/features/settings/SecurityPage.tsx
+msgid "All other sessions revoked."
+msgstr "All other sessions revoked."
+
+#: src/features/auth/RegisterPage.tsx
+msgid "Already have an account?"
+msgstr "Already have an account?"
+
+#: src/features/repairs/components/RepairForm.tsx
+msgid "Amount in your workspace currency."
+msgstr "Amount in your workspace currency."
 
 #: src/components/layout/Sidebar.tsx
 msgid "Analytics"
 msgstr "Analytics"
 
+#: src/features/taxonomy/components/CategoriesTab.tsx
+#: src/features/taxonomy/components/LocationsTab.tsx
+msgid "Archive"
+msgstr "Archive"
+
+#: src/features/inventory/InventoryListPage.tsx
+#: src/features/items/ItemDetailPage.tsx
+#: src/features/items/ItemsListPage.tsx
+msgid "ARCHIVE"
+msgstr "ARCHIVE"
+
+#. placeholder {0}: archiveTarget?.name ?? ""
+#: src/features/taxonomy/components/CategoriesTab.tsx
+#: src/features/taxonomy/components/LocationsTab.tsx
+msgid "Archive \"{0}\"? You can restore it later."
+msgstr "Archive \"{0}\"? You can restore it later."
+
+#. placeholder {0}: label.name
+#: src/features/taxonomy/components/LabelsTab.tsx
+msgid "Archive {0}"
+msgstr "Archive {0}"
+
+#: src/features/taxonomy/components/CategoriesTab.tsx
+msgid "Archive anyway"
+msgstr "Archive anyway"
+
+#: src/features/taxonomy/components/CategoriesTab.tsx
+msgid "ARCHIVE CATEGORY?"
+msgstr "ARCHIVE CATEGORY?"
+
+#: src/features/taxonomy/components/LocationsTab.tsx
+msgid "ARCHIVE LOCATION?"
+msgstr "ARCHIVE LOCATION?"
+
+#: src/features/taxonomy/components/ContainersTab.tsx
+msgid "archived"
+msgstr "archived"
+
+#: src/features/inventory/InventoryListPage.tsx
+#: src/features/items/ItemsListPage.tsx
+msgid "Archived"
+msgstr "Archived"
+
+#: src/features/inventory/InventoryListPage.tsx
+#: src/features/items/ItemsListPage.tsx
+#: src/features/taxonomy/components/LabelsTab.tsx
+msgid "ARCHIVED"
+msgstr "ARCHIVED"
+
+#: src/features/auth/RegisterPage.tsx
+#: src/features/settings/SecurityPage.tsx
+msgid "At least 8 characters."
+msgstr "At least 8 characters."
+
+#: src/routes/demo/DemoPage.tsx
+msgid "Atom Demo"
+msgstr "Atom Demo"
+
+#: src/routes/demo/DemoPage.tsx
+msgid "Attachments"
+msgstr "Attachments"
+
+#: src/features/items/components/LoanPanels.tsx
+msgid "Available"
+msgstr "Available"
+
+#: src/features/auth/CallbackPage.tsx
+msgid "Back to login"
+msgstr "Back to login"
+
+#: src/features/scan/ClaimPage.tsx
+msgid "Back to scan"
+msgstr "Back to scan"
+
+#: src/components/scan/QuickActionMenu.tsx
+msgid "BACK TO SCAN"
+msgstr "BACK TO SCAN"
+
+#: src/features/items/ItemDetailPage.tsx
+#: src/features/items/ItemFormPage.tsx
+msgid "Barcode"
+msgstr "Barcode"
+
 #: src/features/dashboard/DashboardPage.tsx
 msgid "below threshold"
 msgstr "below threshold"
 
+#: src/features/loans/LoanFormPage.tsx
+#: src/features/loans/LoansListPage.tsx
+msgid "Borrower"
+msgstr "Borrower"
+
+#: src/features/borrowers/BorrowerDetailPage.tsx
+msgid "BORROWER"
+msgstr "BORROWER"
+
+#: src/features/borrowers/hooks/useBorrowerMutations.ts
+msgid "Borrower created."
+msgstr "Borrower created."
+
+#: src/features/borrowers/hooks/useBorrowerMutations.ts
+msgid "Borrower deleted."
+msgstr "Borrower deleted."
+
+#: src/features/borrowers/BorrowerDetailPage.tsx
+msgid "BORROWER NOT FOUND"
+msgstr "BORROWER NOT FOUND"
+
+#: src/features/borrowers/hooks/useBorrowerMutations.ts
+msgid "Borrower updated."
+msgstr "Borrower updated."
+
 #: src/components/layout/Sidebar.tsx
+#: src/features/borrowers/BorrowerDetailPage.tsx
+#: src/features/borrowers/BorrowersListPage.tsx
 #: src/features/dashboard/DashboardPage.tsx
 msgid "Borrowers"
 msgstr "Borrowers"
+
+#: src/features/borrowers/BorrowersListPage.tsx
+msgid "BORROWERS — {workspaceName}"
+msgstr "BORROWERS — {workspaceName}"
+
+#: src/components/retro/form/RetroFileInput.tsx
+msgid "BROWSE…"
+msgstr "BROWSE…"
+
+#: src/components/retro/filters/BulkActionBar.tsx
+msgid "Bulk actions"
+msgstr "Bulk actions"
+
+#: src/routes/demo/DemoPage.tsx
+msgid "BulkActionBar — inline mobile selection surface (destructive routes through a confirm dialog)."
+msgstr "BulkActionBar — inline mobile selection surface (destructive routes through a confirm dialog)."
+
+#: src/features/scan/ScanPage.tsx
+msgid "CAMERA BLOCKED"
+msgstr "CAMERA BLOCKED"
+
+#: src/features/settings/AccountsPage.tsx
+msgid "Can't unlink — it's your only sign-in method. Set a password first."
+msgstr "Can't unlink — it's your only sign-in method. Set a password first."
+
+#: src/components/retro/overlay/RetroConfirmDialog.tsx
+#: src/features/borrowers/BorrowerDetailPage.tsx
+#: src/features/borrowers/BorrowerFormPage.tsx
+#: src/features/inventory/components/MoveDialog.tsx
+#: src/features/inventory/InventoryFormPage.tsx
+#: src/features/items/ItemFormPage.tsx
+#: src/features/loans/components/EditLoanDialog.tsx
+#: src/features/loans/components/ExtendLoanDialog.tsx
+#: src/features/loans/LoanFormPage.tsx
+#: src/features/taxonomy/components/CategoriesTab.tsx
+#: src/features/taxonomy/components/CategoryFormDialog.tsx
+#: src/features/taxonomy/components/ContainerFormDialog.tsx
+#: src/features/taxonomy/components/ContainersTab.tsx
+#: src/features/taxonomy/components/LabelFormDialog.tsx
+#: src/features/taxonomy/components/LabelsTab.tsx
+#: src/features/taxonomy/components/LocationFormDialog.tsx
+#: src/features/taxonomy/components/LocationsTab.tsx
+msgid "Cancel"
+msgstr "Cancel"
+
+#: src/components/retro/filters/SavedFilters.tsx
+#: src/features/items/components/CaptionDialog.tsx
+#: src/features/items/components/DuplicateWarningDialog.tsx
+#: src/features/maintenance/components/CompleteMaintenanceDialog.tsx
+#: src/features/maintenance/components/MaintenanceForm.tsx
+#: src/features/repairs/components/AddAttachmentDialog.tsx
+#: src/features/repairs/components/CompleteRepairDialog.tsx
+#: src/features/repairs/components/RepairForm.tsx
+msgid "CANCEL"
+msgstr "CANCEL"
+
+#: src/features/items/components/CaptionDialog.tsx
+msgid "Caption"
+msgstr "Caption"
+
+#: src/routes/demo/DemoPage.tsx
+msgid "Careful."
+msgstr "Careful."
 
 #: src/components/layout/Sidebar.tsx
 #: src/features/dashboard/DashboardPage.tsx
 msgid "Categories"
 msgstr "Categories"
 
+#: src/features/taxonomy/TaxonomyPage.tsx
+msgid "CATEGORIES"
+msgstr "CATEGORIES"
+
+#: src/features/items/ItemDetailPage.tsx
+#: src/features/items/ItemFormPage.tsx
+#: src/features/items/ItemsListPage.tsx
+#: src/routes/demo/DemoPage.tsx
+msgid "Category"
+msgstr "Category"
+
+#: src/features/items/ItemsListPage.tsx
+msgid "CATEGORY"
+msgstr "CATEGORY"
+
+#: src/features/settings/SecurityPage.tsx
+msgid "Change password"
+msgstr "Change password"
+
+#: src/features/taxonomy/hooks/useCategoryMutations.ts
+#: src/features/taxonomy/hooks/useContainerMutations.ts
+#: src/features/taxonomy/hooks/useLabelMutations.ts
+#: src/features/taxonomy/hooks/useLocationMutations.ts
+msgid "Changes saved."
+msgstr "Changes saved."
+
+#: src/routes/demo/DemoPage.tsx
+msgid "Checked / unchecked"
+msgstr "Checked / unchecked"
+
+#: src/features/scan/ClaimPage.tsx
+msgid "Claim code"
+msgstr "Claim code"
+
+#: src/components/retro/filters/FilterBar.tsx
+#: src/features/borrowers/BorrowersListPage.tsx
+#: src/features/inventory/InventoryListPage.tsx
+#: src/features/items/ItemsListPage.tsx
+msgid "CLEAR ALL"
+msgstr "CLEAR ALL"
+
+#: src/components/scan/ScanHistoryList.tsx
+msgid "CLEAR HISTORY"
+msgstr "CLEAR HISTORY"
+
+#: src/components/scan/ScanHistoryList.tsx
+msgid "CLEAR HISTORY?"
+msgstr "CLEAR HISTORY?"
+
+#: src/features/loans/LoansListPage.tsx
+msgid "CLEAR SEARCH"
+msgstr "CLEAR SEARCH"
+
+#: src/components/retro/overlay/RetroDialog.tsx
+#: src/routes/demo/DemoPage.tsx
+msgid "Close"
+msgstr "Close"
+
+#: src/features/items/components/PhotoUpload.tsx
+msgid "CLOSE"
+msgstr "CLOSE"
+
+#: src/features/scan/ClaimPage.tsx
+msgid "Code not found"
+msgstr "Code not found"
+
+#: src/features/taxonomy/components/ColorSwatchPicker.tsx
+#: src/features/taxonomy/components/LabelFormDialog.tsx
+msgid "Color"
+msgstr "Color"
+
+#: src/features/maintenance/components/CompleteMaintenanceDialog.tsx
+#: src/features/maintenance/components/MaintenanceDrawer.tsx
+#: src/features/maintenance/MaintenanceDuePage.tsx
+#: src/features/repairs/components/CompleteRepairDialog.tsx
+#: src/features/repairs/components/RepairsDrawer.tsx
+msgid "COMPLETE"
+msgstr "COMPLETE"
+
+#: src/features/maintenance/components/CompleteMaintenanceDialog.tsx
+msgid "COMPLETE MAINTENANCE?"
+msgstr "COMPLETE MAINTENANCE?"
+
+#: src/features/repairs/components/CompleteRepairDialog.tsx
+msgid "COMPLETE REPAIR"
+msgstr "COMPLETE REPAIR"
+
+#: src/features/repairs/components/RepairsDrawer.tsx
+msgid "completed"
+msgstr "completed"
+
+#: src/features/repairs/components/RepairRecordDialog.tsx
+msgid "Completed"
+msgstr "Completed"
+
+#: src/features/auth/CallbackPage.tsx
+msgid "Completing sign-in…"
+msgstr "Completing sign-in…"
+
+#: src/features/inventory/InventoryFormPage.tsx
+#: src/features/inventory/InventoryListPage.tsx
+msgid "Condition"
+msgstr "Condition"
+
+#: src/features/inventory/InventoryListPage.tsx
+msgid "CONDITION"
+msgstr "CONDITION"
+
+#: src/routes/demo/DemoPage.tsx
+msgid "Confirm dialog"
+msgstr "Confirm dialog"
+
+#: src/features/items/ItemDetailPage.tsx
+#: src/features/items/ItemsListPage.tsx
+msgid "Confirm item name"
+msgstr "Confirm item name"
+
+#: src/features/settings/SecurityPage.tsx
+msgid "Confirm new password"
+msgstr "Confirm new password"
+
+#: src/features/auth/RegisterPage.tsx
+msgid "Confirm password"
+msgstr "Confirm password"
+
+#: src/features/settings/AccountsPage.tsx
+#: src/features/settings/SettingsLayout.tsx
+msgid "Connected Accounts"
+msgstr "Connected Accounts"
+
+#: src/features/borrowers/BorrowersListPage.tsx
+msgid "Contact"
+msgstr "Contact"
+
+#: src/features/inventory/InventoryFormPage.tsx
+msgid "Container"
+msgstr "Container"
+
 #: src/components/layout/Sidebar.tsx
 #: src/features/dashboard/DashboardPage.tsx
 msgid "Containers"
 msgstr "Containers"
 
+#: src/features/taxonomy/TaxonomyPage.tsx
+msgid "CONTAINERS"
+msgstr "CONTAINERS"
+
+#: src/features/taxonomy/components/ContainersTab.tsx
+msgid "Containers live inside a location. Add one to start grouping items by box, bin, or drawer."
+msgstr "Containers live inside a location. Add one to start grouping items by box, bin, or drawer."
+
+#: src/features/items/ItemDetailPage.tsx
+msgid "COPY"
+msgstr "COPY"
+
+#: src/features/repairs/components/RepairForm.tsx
+#: src/features/repairs/components/RepairRecordDialog.tsx
+msgid "Cost"
+msgstr "Cost"
+
 #: src/features/dashboard/DashboardPage.tsx
 msgid "Could not load activity."
 msgstr "Could not load activity."
+
+#: src/features/items/hooks/usePhotoMutations.ts
+msgid "Couldn't apply the caption."
+msgstr "Couldn't apply the caption."
+
+#: src/features/inventory/hooks/useInventoryMutations.ts
+msgid "Couldn't archive that entry."
+msgstr "Couldn't archive that entry."
+
+#: src/features/items/hooks/useItemMutations.ts
+msgid "Couldn't archive that item."
+msgstr "Couldn't archive that item."
+
+#: src/features/taxonomy/hooks/useCategoryMutations.ts
+msgid "Couldn't archive this category."
+msgstr "Couldn't archive this category."
+
+#: src/features/taxonomy/hooks/useLabelMutations.ts
+msgid "Couldn't archive this label."
+msgstr "Couldn't archive this label."
+
+#: src/features/taxonomy/hooks/useLocationMutations.ts
+msgid "Couldn't archive this location."
+msgstr "Couldn't archive this location."
+
+#: src/features/repairs/hooks/useRepairAttachments.ts
+msgid "Couldn't attach this file."
+msgstr "Couldn't attach this file."
+
+#: src/features/repairs/components/AddAttachmentDialog.tsx
+msgid "Couldn't attach this file. {reason}"
+msgstr "Couldn't attach this file. {reason}"
+
+#: src/features/repairs/hooks/useRepairMutations.ts
+msgid "Couldn't complete this repair."
+msgstr "Couldn't complete this repair."
+
+#: src/features/maintenance/hooks/useMaintenanceMutations.ts
+msgid "Couldn't complete this schedule."
+msgstr "Couldn't complete this schedule."
+
+#: src/features/loans/LoanFormPage.tsx
+msgid "Couldn't create this loan."
+msgstr "Couldn't create this loan."
+
+#: src/features/borrowers/hooks/useBorrowerMutations.ts
+msgid "Couldn't delete — this borrower has active loans."
+msgstr "Couldn't delete — this borrower has active loans."
+
+#: src/features/items/hooks/useItemMutations.ts
+msgid "Couldn't delete that item."
+msgstr "Couldn't delete that item."
+
+#: src/features/items/hooks/usePhotoMutations.ts
+#: src/features/repairs/hooks/useRepairPhotoMutations.ts
+msgid "Couldn't delete the photo."
+msgstr "Couldn't delete the photo."
+
+#: src/features/items/hooks/usePhotoMutations.ts
+msgid "Couldn't delete the photos."
+msgstr "Couldn't delete the photos."
+
+#: src/features/borrowers/hooks/useBorrowerMutations.ts
+msgid "Couldn't delete this borrower."
+msgstr "Couldn't delete this borrower."
+
+#: src/features/taxonomy/hooks/useContainerMutations.ts
+msgid "Couldn't delete this container."
+msgstr "Couldn't delete this container."
+
+#: src/features/repairs/hooks/useRepairAttachments.ts
+msgid "Couldn't delete this file."
+msgstr "Couldn't delete this file."
+
+#: src/features/taxonomy/hooks/useLabelMutations.ts
+msgid "Couldn't delete this label."
+msgstr "Couldn't delete this label."
+
+#: src/features/repairs/hooks/useRepairMutations.ts
+msgid "Couldn't delete this repair."
+msgstr "Couldn't delete this repair."
+
+#: src/features/maintenance/hooks/useMaintenanceMutations.ts
+msgid "Couldn't delete this schedule."
+msgstr "Couldn't delete this schedule."
+
+#: src/features/items/ItemsListPage.tsx
+msgid "Couldn't export the item list."
+msgstr "Couldn't export the item list."
+
+#: src/features/loans/hooks/useLoanMutations.ts
+msgid "Couldn't extend this loan."
+msgstr "Couldn't extend this loan."
+
+#: src/features/borrowers/BorrowerDetailPage.tsx
+msgid "COULDN'T LOAD BORROWER"
+msgstr "COULDN'T LOAD BORROWER"
+
+#: src/features/borrowers/BorrowersListPage.tsx
+msgid "Couldn't load borrowers. Try again."
+msgstr "Couldn't load borrowers. Try again."
+
+#: src/features/taxonomy/components/CategoriesTab.tsx
+msgid "COULDN'T LOAD CATEGORIES"
+msgstr "COULDN'T LOAD CATEGORIES"
+
+#: src/features/taxonomy/components/ContainersTab.tsx
+msgid "COULDN'T LOAD CONTAINERS"
+msgstr "COULDN'T LOAD CONTAINERS"
+
+#: src/features/inventory/ExpiringPage.tsx
+msgid "Couldn't load expiring entries. Try again."
+msgstr "Couldn't load expiring entries. Try again."
+
+#: src/features/repairs/components/RepairAttachmentPanel.tsx
+msgid "Couldn't load files. Try again."
+msgstr "Couldn't load files. Try again."
+
+#: src/features/inventory/InventoryListPage.tsx
+msgid "Couldn't load inventory. Try again."
+msgstr "Couldn't load inventory. Try again."
+
+#: src/features/items/ItemDetailPage.tsx
+msgid "COULDN'T LOAD ITEM"
+msgstr "COULDN'T LOAD ITEM"
+
+#: src/features/items/ItemsListPage.tsx
+msgid "Couldn't load items. Try again."
+msgstr "Couldn't load items. Try again."
+
+#: src/features/taxonomy/components/LabelsTab.tsx
+msgid "COULDN'T LOAD LABELS"
+msgstr "COULDN'T LOAD LABELS"
+
+#: src/features/loans/LoansListPage.tsx
+msgid "Couldn't load loans. Try again."
+msgstr "Couldn't load loans. Try again."
+
+#: src/features/taxonomy/components/LocationsTab.tsx
+msgid "COULDN'T LOAD LOCATIONS"
+msgstr "COULDN'T LOAD LOCATIONS"
+
+#: src/features/maintenance/components/MaintenanceDrawer.tsx
+#: src/features/maintenance/MaintenanceDuePage.tsx
+msgid "Couldn't load maintenance. Try again."
+msgstr "Couldn't load maintenance. Try again."
+
+#: src/features/repairs/components/RepairPhotoPanel.tsx
+msgid "Couldn't load photos. Try again."
+msgstr "Couldn't load photos. Try again."
+
+#: src/features/repairs/components/RepairsDrawer.tsx
+msgid "Couldn't load repairs. Try again."
+msgstr "Couldn't load repairs. Try again."
+
+#: src/components/scan/ScanResultBanner.tsx
+msgid "Couldn't look up that code."
+msgstr "Couldn't look up that code."
+
+#: src/features/items/hooks/useMarkReviewedItem.ts
+msgid "Couldn't mark this item reviewed."
+msgstr "Couldn't mark this item reviewed."
+
+#: src/features/inventory/components/MoveDialog.tsx
+msgid "Couldn't move this entry."
+msgstr "Couldn't move this entry."
+
+#: src/features/auth/RequireAuth.tsx
+msgid "Couldn't reach the server. Check your connection and retry."
+msgstr "Couldn't reach the server. Check your connection and retry."
+
+#: src/features/items/hooks/usePhotoMutations.ts
+msgid "Couldn't reorder the photos."
+msgstr "Couldn't reorder the photos."
+
+#: src/features/scan/ClaimPage.tsx
+msgid "Couldn't resolve this code. Check your connection and try again."
+msgstr "Couldn't resolve this code. Check your connection and try again."
+
+#: src/features/scan/ClaimPage.tsx
+msgid "Couldn't resolve this code. Try scanning again."
+msgstr "Couldn't resolve this code. Try scanning again."
+
+#: src/features/inventory/hooks/useInventoryMutations.ts
+msgid "Couldn't restore that entry."
+msgstr "Couldn't restore that entry."
+
+#: src/features/items/hooks/useItemMutations.ts
+msgid "Couldn't restore that item."
+msgstr "Couldn't restore that item."
+
+#: src/features/taxonomy/hooks/useCategoryMutations.ts
+msgid "Couldn't restore this category."
+msgstr "Couldn't restore this category."
+
+#: src/features/taxonomy/hooks/useLabelMutations.ts
+msgid "Couldn't restore this label."
+msgstr "Couldn't restore this label."
+
+#: src/features/taxonomy/hooks/useLocationMutations.ts
+msgid "Couldn't restore this location."
+msgstr "Couldn't restore this location."
+
+#: src/features/loans/hooks/useLoanMutations.ts
+msgid "Couldn't return this loan."
+msgstr "Couldn't return this loan."
+
+#: src/features/items/hooks/usePhotoMutations.ts
+#: src/features/repairs/hooks/useRepairPhotoMutations.ts
+msgid "Couldn't save the caption."
+msgstr "Couldn't save the caption."
+
+#: src/features/borrowers/BorrowerFormPage.tsx
+#: src/features/borrowers/hooks/useBorrowerMutations.ts
+msgid "Couldn't save this borrower."
+msgstr "Couldn't save this borrower."
+
+#: src/features/taxonomy/components/CategoryFormDialog.tsx
+#: src/features/taxonomy/hooks/useCategoryMutations.ts
+msgid "Couldn't save this category."
+msgstr "Couldn't save this category."
+
+#: src/features/taxonomy/components/ContainerFormDialog.tsx
+#: src/features/taxonomy/hooks/useContainerMutations.ts
+msgid "Couldn't save this container."
+msgstr "Couldn't save this container."
+
+#: src/features/inventory/hooks/useInventoryFormMutations.ts
+#: src/features/inventory/InventoryFormPage.tsx
+msgid "Couldn't save this entry."
+msgstr "Couldn't save this entry."
+
+#: src/features/items/hooks/useItemFormMutations.ts
+#: src/features/items/ItemFormPage.tsx
+msgid "Couldn't save this item."
+msgstr "Couldn't save this item."
+
+#: src/features/taxonomy/hooks/useLabelMutations.ts
+msgid "Couldn't save this label."
+msgstr "Couldn't save this label."
+
+#: src/features/loans/hooks/useLoanMutations.ts
+msgid "Couldn't save this loan."
+msgstr "Couldn't save this loan."
+
+#: src/features/taxonomy/components/LocationFormDialog.tsx
+#: src/features/taxonomy/hooks/useLocationMutations.ts
+msgid "Couldn't save this location."
+msgstr "Couldn't save this location."
+
+#: src/features/repairs/components/RepairForm.tsx
+#: src/features/repairs/hooks/useRepairMutations.ts
+msgid "Couldn't save this repair."
+msgstr "Couldn't save this repair."
+
+#: src/features/maintenance/components/MaintenanceForm.tsx
+#: src/features/maintenance/hooks/useMaintenanceMutations.ts
+msgid "Couldn't save this schedule."
+msgstr "Couldn't save this schedule."
+
+#: src/features/items/hooks/usePhotoMutations.ts
+msgid "Couldn't set the primary photo."
+msgstr "Couldn't set the primary photo."
+
+#: src/features/repairs/hooks/useRepairMutations.ts
+msgid "Couldn't start this repair."
+msgstr "Couldn't start this repair."
+
+#: src/components/scan/QuickActionMenu.tsx
+msgid "Couldn't unarchive this item."
+msgstr "Couldn't unarchive this item."
+
+#: src/features/settings/AccountsPage.tsx
+msgid "Couldn't unlink. Try again."
+msgstr "Couldn't unlink. Try again."
+
+#: src/features/inventory/hooks/useInventoryMutations.ts
+msgid "Couldn't update condition."
+msgstr "Couldn't update condition."
+
+#: src/features/inventory/hooks/useInventoryMutations.ts
+msgid "Couldn't update quantity."
+msgstr "Couldn't update quantity."
+
+#: src/features/inventory/hooks/useInventoryMutations.ts
+msgid "Couldn't update status."
+msgstr "Couldn't update status."
+
+#: src/features/repairs/components/RepairForm.tsx
+msgid "Covered under warranty"
+msgstr "Covered under warranty"
+
+#: src/features/taxonomy/components/LabelsTab.tsx
+msgid "Create a label to tag items across categories — like “Fragile” or “Loaned out”."
+msgstr "Create a label to tag items across categories — like “Fragile” or “Loaned out”."
+
+#: src/features/auth/RegisterPage.tsx
+msgid "Create account"
+msgstr "Create account"
+
+#: src/features/auth/LoginPage.tsx
+msgid "Create an account"
+msgstr "Create an account"
+
+#: src/features/scan/ClaimPage.tsx
+msgid "Create item with this code"
+msgstr "Create item with this code"
+
+#: src/features/loans/LoanFormPage.tsx
+msgid "Create loan"
+msgstr "Create loan"
+
+#: src/components/scan/ScanResultBanner.tsx
+msgid "CREATE WITH CODE"
+msgstr "CREATE WITH CODE"
+
+#: src/features/borrowers/BorrowerDetailPage.tsx
+#: src/features/items/ItemDetailPage.tsx
+msgid "Created"
+msgstr "Created"
+
+#: src/features/settings/SecurityPage.tsx
+msgid "Current password"
+msgstr "Current password"
+
+#: src/features/settings/SecurityPage.tsx
+msgid "Current password is incorrect."
+msgstr "Current password is incorrect."
+
+#: src/features/inventory/components/MoveDialog.tsx
+msgid "Currently in {currentPath}."
+msgstr "Currently in {currentPath}."
+
+#: src/features/settings/SecurityPage.tsx
+msgid "Danger Zone"
+msgstr "Danger Zone"
 
 #: src/components/layout/Sidebar.tsx
 msgid "Dashboard"
 msgstr "Dashboard"
 
+#: src/routes/demo/DemoPage.tsx
+msgid "Data Atoms"
+msgstr "Data Atoms"
+
+#: src/features/inventory/ExpiringPage.tsx
+msgid "Date"
+msgstr "Date"
+
+#: src/features/repairs/components/RepairAttachmentPanel.tsx
+#: src/features/repairs/components/RepairsDrawer.tsx
+#: src/routes/demo/DemoPage.tsx
+msgid "Delete"
+msgstr "Delete"
+
+#: src/components/retro/filters/SavedFilters.tsx
+#: src/features/borrowers/BorrowerDetailPage.tsx
+#: src/features/items/components/PhotoGallery.tsx
+#: src/features/items/ItemDetailPage.tsx
+#: src/features/items/ItemsListPage.tsx
+#: src/features/maintenance/components/MaintenanceDrawer.tsx
+#: src/features/repairs/components/RepairAttachmentPanel.tsx
+#: src/features/repairs/components/RepairsDrawer.tsx
+#: src/features/taxonomy/components/ContainersTab.tsx
+#: src/features/taxonomy/components/LabelsTab.tsx
+msgid "DELETE"
+msgstr "DELETE"
+
+#. placeholder {0}: deleteTarget?.name ?? ""
+#: src/features/taxonomy/components/ContainersTab.tsx
+#: src/features/taxonomy/components/LabelsTab.tsx
+msgid "Delete \"{0}\"? This can't be undone."
+msgstr "Delete \"{0}\"? This can't be undone."
+
+#. placeholder {0}: c.name
+#. placeholder {0}: label.name
+#. placeholder {0}: photo.filename
+#: src/features/items/components/PhotoGallery.tsx
+#: src/features/taxonomy/components/ContainersTab.tsx
+#: src/features/taxonomy/components/LabelsTab.tsx
+msgid "Delete {0}"
+msgstr "Delete {0}"
+
+#. placeholder {0}: borrower.name
+#: src/features/borrowers/BorrowerDetailPage.tsx
+msgid "Delete {0}? This can't be undone."
+msgstr "Delete {0}? This can't be undone."
+
+#: src/features/settings/SecurityPage.tsx
+msgid "Delete account"
+msgstr "Delete account"
+
+#: src/features/borrowers/BorrowerDetailPage.tsx
+msgid "DELETE BORROWER?"
+msgstr "DELETE BORROWER?"
+
+#: src/features/taxonomy/components/ContainersTab.tsx
+msgid "DELETE CONTAINER?"
+msgstr "DELETE CONTAINER?"
+
+#: src/features/repairs/components/RepairAttachmentPanel.tsx
+msgid "DELETE FILE?"
+msgstr "DELETE FILE?"
+
+#: src/routes/demo/DemoPage.tsx
+msgid "Delete item?"
+msgstr "Delete item?"
+
+#: src/features/items/ItemDetailPage.tsx
+#: src/features/items/ItemsListPage.tsx
+msgid "DELETE ITEM?"
+msgstr "DELETE ITEM?"
+
+#: src/features/items/ItemsListPage.tsx
+msgid "DELETE ITEMS?"
+msgstr "DELETE ITEMS?"
+
+#: src/features/taxonomy/components/LabelsTab.tsx
+msgid "DELETE LABEL?"
+msgstr "DELETE LABEL?"
+
+#: src/features/settings/SecurityPage.tsx
+msgid "Delete my account"
+msgstr "Delete my account"
+
+#: src/features/items/components/PhotoGallery.tsx
+msgid "DELETE PHOTO?"
+msgstr "DELETE PHOTO?"
+
+#: src/features/items/components/PhotoGallery.tsx
+msgid "DELETE PHOTOS?"
+msgstr "DELETE PHOTOS?"
+
+#: src/components/retro/filters/SavedFilters.tsx
+msgid "DELETE PRESET"
+msgstr "DELETE PRESET"
+
+#. placeholder {0}: preset.name
+#: src/components/retro/filters/SavedFilters.tsx
+msgid "Delete preset {0}"
+msgstr "Delete preset {0}"
+
+#: src/features/repairs/components/RepairsDrawer.tsx
+msgid "DELETE REPAIR?"
+msgstr "DELETE REPAIR?"
+
+#: src/features/maintenance/components/MaintenanceDrawer.tsx
+msgid "DELETE SCHEDULE?"
+msgstr "DELETE SCHEDULE?"
+
+#: src/routes/demo/DemoPage.tsx
+msgid "Delete selected?"
+msgstr "Delete selected?"
+
+#. placeholder {0}: pendingDelete?.name
+#: src/components/retro/filters/SavedFilters.tsx
+msgid "Delete the “{0}” preset? This can't be undone."
+msgstr "Delete the “{0}” preset? This can't be undone."
+
+#: src/features/borrowers/BorrowerDetailPage.tsx
+#: src/features/items/ItemDetailPage.tsx
+#: src/features/items/ItemsListPage.tsx
+msgid "DELETE…"
+msgstr "DELETE…"
+
+#: src/features/settings/SecurityPage.tsx
+msgid "Deleting your account is permanent and cannot be undone."
+msgstr "Deleting your account is permanent and cannot be undone."
+
+#: src/components/layout/Sidebar.tsx
+msgid "Demo"
+msgstr "Demo"
+
+#: src/features/items/ItemDetailPage.tsx
+#: src/features/items/ItemFormPage.tsx
+#: src/features/repairs/components/RepairForm.tsx
+#: src/features/taxonomy/components/CategoryFormDialog.tsx
+#: src/features/taxonomy/components/ContainerFormDialog.tsx
+#: src/features/taxonomy/components/LabelFormDialog.tsx
+#: src/features/taxonomy/components/LocationFormDialog.tsx
+msgid "Description"
+msgstr "Description"
+
+#. placeholder {0}: label?.name ?? id
+#: src/features/items/components/ItemLabels.tsx
+msgid "Detach {0}"
+msgstr "Detach {0}"
+
+#: src/features/items/ItemDetailPage.tsx
+msgid "DETAILS"
+msgstr "DETAILS"
+
+#: src/features/settings/SecurityPage.tsx
+msgid "Device"
+msgstr "Device"
+
+#: src/routes/demo/DemoPage.tsx
+msgid "Dialog (info)"
+msgstr "Dialog (info)"
+
+#: src/routes/demo/DemoPage.tsx
+msgid "Dialog (success)"
+msgstr "Dialog (success)"
+
+#: src/routes/demo/DemoPage.tsx
+msgid "Dialog (warning)"
+msgstr "Dialog (warning)"
+
+#: src/routes/demo/DemoPage.tsx
+msgid "Disabled"
+msgstr "Disabled"
+
+#: src/features/borrowers/BorrowerFormPage.tsx
+#: src/features/inventory/InventoryFormPage.tsx
+#: src/features/items/ItemFormPage.tsx
+#: src/features/loans/LoanFormPage.tsx
+#: src/features/repairs/components/RepairForm.tsx
+#: src/features/taxonomy/components/CategoryFormDialog.tsx
+#: src/features/taxonomy/components/ContainerFormDialog.tsx
+#: src/features/taxonomy/components/LabelFormDialog.tsx
+#: src/features/taxonomy/components/LocationFormDialog.tsx
+msgid "Discard"
+msgstr "Discard"
+
+#: src/features/maintenance/components/MaintenanceForm.tsx
+msgid "DISCARD"
+msgstr "DISCARD"
+
+#: src/features/borrowers/BorrowerFormPage.tsx
+#: src/features/inventory/InventoryFormPage.tsx
+#: src/features/items/ItemFormPage.tsx
+#: src/features/loans/LoanFormPage.tsx
+#: src/features/maintenance/components/MaintenanceForm.tsx
+#: src/features/repairs/components/RepairForm.tsx
+#: src/features/taxonomy/components/CategoryFormDialog.tsx
+#: src/features/taxonomy/components/ContainerFormDialog.tsx
+#: src/features/taxonomy/components/LabelFormDialog.tsx
+#: src/features/taxonomy/components/LocationFormDialog.tsx
+msgid "DISCARD CHANGES?"
+msgstr "DISCARD CHANGES?"
+
+#: src/components/scan/UpcSuggestionBanner.tsx
+msgid "DISMISS"
+msgstr "DISMISS"
+
+#: src/features/items/components/PhotoUpload.tsx
+#: src/features/repairs/components/AddAttachmentDialog.tsx
+msgid "DONE"
+msgstr "DONE"
+
+#: src/features/repairs/components/AddAttachmentDialog.tsx
+msgid "DONE · File attached."
+msgstr "DONE · File attached."
+
+#: src/features/repairs/components/RepairAttachmentPanel.tsx
+msgid "DONE · File removed."
+msgstr "DONE · File removed."
+
+#: src/features/maintenance/components/CompleteMaintenanceDialog.tsx
+msgid "DONE · Marked done — next due {nextDue}."
+msgstr "DONE · Marked done — next due {nextDue}."
+
+#: src/features/repairs/components/RepairsDrawer.tsx
+msgid "DONE · Repair deleted."
+msgstr "DONE · Repair deleted."
+
+#: src/features/repairs/components/RepairsDrawer.tsx
+msgid "DONE · Repair started."
+msgstr "DONE · Repair started."
+
+#: src/features/maintenance/components/MaintenanceDrawer.tsx
+msgid "DONE · Schedule deleted."
+msgstr "DONE · Schedule deleted."
+
+#: src/features/maintenance/components/MaintenanceForm.tsx
+msgid "DONE · Schedule saved."
+msgstr "DONE · Schedule saved."
+
+#: src/features/maintenance/components/MaintenanceForm.tsx
+msgid "DONE · Schedule updated."
+msgstr "DONE · Schedule updated."
+
+#: src/features/items/components/PhotoLightbox.tsx
+msgid "Download original"
+msgstr "Download original"
+
+#: src/components/retro/form/RetroFileInput.tsx
+msgid "Drop files here, or"
+msgstr "Drop files here, or"
+
+#: src/features/loans/LoansListPage.tsx
+#: src/features/maintenance/MaintenanceDuePage.tsx
+msgid "Due"
+msgstr "Due"
+
+#. placeholder {0}: isoDate(loan.due_date)
+#: src/features/loans/LoansListPage.tsx
+msgid "due {0}"
+msgstr "due {0}"
+
+#. placeholder {0}: formatDate(loan.due_date)
+#: src/features/items/components/LoanPanels.tsx
+msgid "Due {0}"
+msgstr "Due {0}"
+
+#: src/features/loans/components/EditLoanDialog.tsx
+#: src/features/loans/LoanFormPage.tsx
+msgid "Due date"
+msgstr "Due date"
+
+#: src/features/loans/components/ExtendLoanDialog.tsx
+msgid "Due date extended."
+msgstr "Due date extended."
+
+#. placeholder {0}: Math.max(days, 0)
+#: src/features/loans/components/BorrowerLoanPanels.tsx
+msgid "due in {0}d"
+msgstr "due in {0}d"
+
+#: src/features/loans/LoansListPage.tsx
+msgid "due in {inDays}d"
+msgstr "due in {inDays}d"
+
+#: src/features/maintenance/MaintenanceDuePage.tsx
+msgid "DUE MAINTENANCE — {workspaceName}"
+msgstr "DUE MAINTENANCE — {workspaceName}"
+
+#: src/routes/demo/DemoPage.tsx
+msgid "Edit"
+msgstr "Edit"
+
+#: src/features/borrowers/BorrowerDetailPage.tsx
+#: src/features/borrowers/BorrowersListPage.tsx
+#: src/features/inventory/InventoryListPage.tsx
+#: src/features/items/components/InventoryPanel.tsx
+#: src/features/items/ItemDetailPage.tsx
+#: src/features/items/ItemsListPage.tsx
+#: src/features/maintenance/components/MaintenanceDrawer.tsx
+#: src/features/repairs/components/RepairsDrawer.tsx
+#: src/features/taxonomy/components/LabelsTab.tsx
+msgid "EDIT"
+msgstr "EDIT"
+
+#. placeholder {0}: label.name
+#: src/features/taxonomy/components/LabelsTab.tsx
+msgid "Edit {0}"
+msgstr "Edit {0}"
+
+#: src/features/borrowers/BorrowerFormPage.tsx
+msgid "EDIT BORROWER"
+msgstr "EDIT BORROWER"
+
+#: src/features/items/components/CaptionDialog.tsx
+#: src/features/items/components/PhotoGallery.tsx
+msgid "EDIT CAPTION"
+msgstr "EDIT CAPTION"
+
+#. placeholder {0}: photo.filename
+#: src/features/items/components/PhotoGallery.tsx
+msgid "Edit caption for {0}"
+msgstr "Edit caption for {0}"
+
+#: src/features/taxonomy/components/CategoryFormDialog.tsx
+msgid "EDIT CATEGORY"
+msgstr "EDIT CATEGORY"
+
+#: src/features/inventory/components/InlineEditCell.tsx
+msgid "Edit condition for {itemName}"
+msgstr "Edit condition for {itemName}"
+
+#: src/features/taxonomy/components/ContainerFormDialog.tsx
+msgid "EDIT CONTAINER"
+msgstr "EDIT CONTAINER"
+
+#: src/features/inventory/InventoryFormPage.tsx
+msgid "EDIT ENTRY"
+msgstr "EDIT ENTRY"
+
+#: src/features/items/ItemFormPage.tsx
+msgid "EDIT ITEM"
+msgstr "EDIT ITEM"
+
+#: src/features/taxonomy/components/LabelFormDialog.tsx
+msgid "EDIT LABEL"
+msgstr "EDIT LABEL"
+
+#: src/features/loans/components/EditLoanDialog.tsx
+msgid "EDIT LOAN"
+msgstr "EDIT LOAN"
+
+#: src/features/taxonomy/components/LocationFormDialog.tsx
+msgid "EDIT LOCATION"
+msgstr "EDIT LOCATION"
+
+#: src/features/inventory/components/InlineEditCell.tsx
+msgid "Edit quantity for {itemName}"
+msgstr "Edit quantity for {itemName}"
+
+#: src/features/repairs/components/RepairForm.tsx
+msgid "EDIT REPAIR"
+msgstr "EDIT REPAIR"
+
+#: src/features/maintenance/components/MaintenanceForm.tsx
+msgid "EDIT SCHEDULE"
+msgstr "EDIT SCHEDULE"
+
+#: src/features/inventory/components/InlineEditCell.tsx
+msgid "Edit status for {itemName}"
+msgstr "Edit status for {itemName}"
+
 #: src/features/auth/LoginPage.tsx
+#: src/features/auth/RegisterPage.tsx
+#: src/features/borrowers/BorrowerDetailPage.tsx
+#: src/features/borrowers/BorrowerFormPage.tsx
 msgid "Email"
 msgstr "Email"
 
+#: src/components/layout/TopBar.tsx
+msgid "End this session? You will need to sign in again."
+msgstr "End this session? You will need to sign in again."
+
 #: src/features/auth/LoginPage.tsx
+#: src/features/auth/RegisterPage.tsx
 msgid "Enter a valid email address."
 msgstr "Enter a valid email address."
+
+#: src/components/scan/ManualBarcodeEntry.tsx
+msgid "ENTER CODE"
+msgstr "ENTER CODE"
+
+#: src/features/auth/RegisterPage.tsx
+msgid "Enter your name."
+msgstr "Enter your name."
 
 #: src/features/dashboard/DashboardPage.tsx
 msgid "Entity"
 msgstr "Entity"
 
+#: src/features/inventory/hooks/useInventoryFormMutations.ts
+msgid "Entry saved."
+msgstr "Entry saved."
+
+#: src/components/retro/feedback/RetroStatusDot.tsx
+msgid "error"
+msgstr "error"
+
+#: src/components/scan/ScanResultBanner.tsx
+msgid "ERROR"
+msgstr "ERROR"
+
+#. placeholder {0}: schedule.interval_days
+#: src/features/maintenance/components/MaintenanceDrawer.tsx
+msgid "every {0}d"
+msgstr "every {0}d"
+
+#: src/routes/demo/DemoPage.tsx
+msgid "Every Phase 4 retro-os atom family, for visual review against sketches 006-008."
+msgstr "Every Phase 4 retro-os atom family, for visual review against sketches 006-008."
+
+#: src/routes/demo/DemoPage.tsx
+msgid "Example Dialog"
+msgstr "Example Dialog"
+
+#: src/features/auth/CallbackPage.tsx
+msgid "exchanging credentials"
+msgstr "exchanging credentials"
+
+#: src/features/inventory/ExpiringPage.tsx
+msgid "EXPIRING SOON"
+msgstr "EXPIRING SOON"
+
+#: src/features/inventory/InventoryListPage.tsx
+msgid "Expiry"
+msgstr "Expiry"
+
+#: src/features/inventory/ExpiringPage.tsx
+msgid "EXPIRY"
+msgstr "EXPIRY"
+
+#: src/features/inventory/InventoryFormPage.tsx
+msgid "Expiry date"
+msgstr "Expiry date"
+
+#: src/features/loans/components/ExtendLoanDialog.tsx
+msgid "Extend"
+msgstr "Extend"
+
+#: src/features/items/components/LoanPanels.tsx
+#: src/features/loans/components/BorrowerLoanPanels.tsx
+#: src/features/loans/components/LoanRowActions.tsx
+msgid "EXTEND"
+msgstr "EXTEND"
+
+#: src/features/loans/components/ExtendLoanDialog.tsx
+msgid "EXTEND LOAN"
+msgstr "EXTEND LOAN"
+
+#: src/features/items/components/PhotoUpload.tsx
+#: src/features/repairs/components/AddAttachmentDialog.tsx
+msgid "FAILED"
+msgstr "FAILED"
+
+#: src/routes/demo/DemoPage.tsx
+msgid "Feedback Atoms"
+msgstr "Feedback Atoms"
+
+#: src/features/repairs/components/AddAttachmentDialog.tsx
+msgid "File *"
+msgstr "File *"
+
+#. placeholder {0}: formatSize(maxSize)
+#: src/components/retro/form/RetroFileInput.tsx
+msgid "File is too large (max {0})."
+msgstr "File is too large (max {0})."
+
+#: src/features/repairs/components/RepairAttachmentPanel.tsx
+msgid "Files"
+msgstr "Files"
+
+#: src/features/repairs/components/RepairRecordDialog.tsx
+#: src/features/repairs/components/RepairsDrawer.tsx
+msgid "FILES"
+msgstr "FILES"
+
+#: src/routes/demo/DemoPage.tsx
+msgid "Filter Atoms"
+msgstr "Filter Atoms"
+
+#: src/features/borrowers/BorrowersListPage.tsx
+msgid "Filter borrowers…"
+msgstr "Filter borrowers…"
+
+#: src/features/inventory/InventoryListPage.tsx
+msgid "Filter inventory…"
+msgstr "Filter inventory…"
+
+#: src/components/retro/filters/FilterBar.tsx
+msgid "Filter items"
+msgstr "Filter items"
+
+#: src/components/retro/filters/FilterBar.tsx
+#: src/features/items/ItemsListPage.tsx
+msgid "Filter items…"
+msgstr "Filter items…"
+
+#: src/features/loans/LoansListPage.tsx
+msgid "Filter loans…"
+msgstr "Filter loans…"
+
+#: src/routes/demo/DemoPage.tsx
+msgid "FilterBar + FilterPopover — search, facets, chips, count, CTA."
+msgstr "FilterBar + FilterPopover — search, facets, chips, count, CTA."
+
+#: src/routes/demo/DemoPage.tsx
+msgid "Filtered"
+msgstr "Filtered"
+
+#: src/routes/demo/DemoPage.tsx
+msgid "Form Atoms"
+msgstr "Form Atoms"
+
+#. placeholder {0}: duplicates.length
+#: src/features/items/components/DuplicateWarningDialog.tsx
+msgid "Found {0} similar photo(s) already on this item."
+msgstr "Found {0} similar photo(s) already on this item."
+
+#: src/features/loans/LoanFormPage.tsx
+msgid "From item"
+msgstr "From item"
+
+#: src/features/items/ItemFormPage.tsx
+msgid "FROM SCAN"
+msgstr "FROM SCAN"
+
+#: src/features/auth/RegisterPage.tsx
+msgid "Full name"
+msgstr "Full name"
+
+#: src/components/layout/F1HelpDialog.tsx
+msgid "GLOBAL"
+msgstr "GLOBAL"
+
+#: src/features/taxonomy/components/CategoriesTab.tsx
+msgid "Group your inventory by creating a top-level category. You can nest sub-categories underneath it."
+msgstr "Group your inventory by creating a top-level category. You can nest sub-categories underneath it."
+
+#: src/routes/demo/DemoPage.tsx
+msgid "Heads up."
+msgstr "Heads up."
+
+#: src/features/items/ItemDetailPage.tsx
+#: src/features/loans/LoansListPage.tsx
+#: src/features/scan/ScanPage.tsx
+msgid "HISTORY"
+msgstr "HISTORY"
+
+#: src/routes/demo/DemoPage.tsx
+msgid "History tab panel."
+msgstr "History tab panel."
+
 #: src/features/auth/LoginPage.tsx
+#: src/features/auth/RegisterPage.tsx
 msgid "home inventory terminal · v3.0"
 msgstr "home inventory terminal · v3.0"
 
+#: src/features/maintenance/components/MaintenanceForm.tsx
+msgid "How often this repeats, in days."
+msgstr "How often this repeats, in days."
+
+#: src/features/items/components/InventoryPanel.tsx
+#: src/features/items/ItemsListPage.tsx
+msgid "IN STOCK"
+msgstr "IN STOCK"
+
+#: src/routes/demo/DemoPage.tsx
+msgid "Indeterminate (partial)"
+msgstr "Indeterminate (partial)"
+
+#: src/features/maintenance/components/MaintenanceForm.tsx
+msgid "Interval (days)"
+msgstr "Interval (days)"
+
 #: src/components/layout/Sidebar.tsx
+#: src/features/inventory/ExpiringPage.tsx
+#: src/features/inventory/InventoryListPage.tsx
+#: src/features/items/ItemDetailPage.tsx
+#: src/features/items/ItemsListPage.tsx
 msgid "Inventory"
 msgstr "Inventory"
+
+#: src/features/items/components/InventoryPanel.tsx
+#: src/features/items/components/InventoryPanelStub.tsx
+msgid "INVENTORY"
+msgstr "INVENTORY"
+
+#: src/features/inventory/InventoryListPage.tsx
+msgid "INVENTORY — {workspaceName}"
+msgstr "INVENTORY — {workspaceName}"
+
+#: src/features/loans/LoanFormPage.tsx
+msgid "Inventory entry"
+msgstr "Inventory entry"
+
+#: src/features/settings/SecurityPage.tsx
+msgid "IP"
+msgstr "IP"
+
+#: src/features/inventory/ExpiringPage.tsx
+#: src/features/inventory/InventoryFormPage.tsx
+#: src/features/inventory/InventoryListPage.tsx
+#: src/features/loans/LoansListPage.tsx
+#: src/features/maintenance/MaintenanceDuePage.tsx
+#: src/routes/demo/DemoPage.tsx
+msgid "Item"
+msgstr "Item"
+
+#: src/features/items/ItemDetailPage.tsx
+msgid "ITEM"
+msgstr "ITEM"
+
+#: src/features/items/hooks/useMarkReviewedItem.ts
+msgid "Item marked reviewed."
+msgstr "Item marked reviewed."
+
+#: src/features/items/ItemDetailPage.tsx
+msgid "ITEM NOT FOUND"
+msgstr "ITEM NOT FOUND"
+
+#: src/features/items/hooks/useItemFormMutations.ts
+#: src/features/items/ItemFormPage.tsx
+msgid "Item saved."
+msgstr "Item saved."
+
+#: src/components/scan/QuickActionMenu.tsx
+msgid "Item unarchived."
+msgstr "Item unarchived."
+
+#: src/components/retro/filters/FilterBar.tsx
+msgid "items"
+msgstr "items"
 
 #: src/components/layout/Sidebar.tsx
 #: src/features/dashboard/DashboardPage.tsx
 msgid "Items"
 msgstr "Items"
 
+#: src/features/items/ItemsListPage.tsx
+msgid "ITEMS — {workspaceName}"
+msgstr "ITEMS — {workspaceName}"
+
+#: src/features/borrowers/BorrowerFormPage.tsx
+#: src/features/inventory/InventoryFormPage.tsx
+#: src/features/items/ItemFormPage.tsx
+#: src/features/loans/LoanFormPage.tsx
+#: src/features/repairs/components/RepairForm.tsx
+#: src/features/taxonomy/components/CategoryFormDialog.tsx
+#: src/features/taxonomy/components/ContainerFormDialog.tsx
+#: src/features/taxonomy/components/LabelFormDialog.tsx
+#: src/features/taxonomy/components/LocationFormDialog.tsx
+msgid "Keep editing"
+msgstr "Keep editing"
+
+#: src/features/maintenance/components/MaintenanceForm.tsx
+msgid "KEEP EDITING"
+msgstr "KEEP EDITING"
+
+#: src/components/layout/F1HelpDialog.tsx
+msgid "KEYBOARD SHORTCUTS"
+msgstr "KEYBOARD SHORTCUTS"
+
+#: src/features/inventory/ExpiringPage.tsx
+msgid "Kind"
+msgstr "Kind"
+
+#: src/features/items/ItemDetailPage.tsx
+msgid "Labels"
+msgstr "Labels"
+
+#: src/features/taxonomy/TaxonomyPage.tsx
+msgid "LABELS"
+msgstr "LABELS"
+
+#: src/features/settings/SecurityPage.tsx
+msgid "Last active"
+msgstr "Last active"
+
+#: src/features/maintenance/components/MaintenanceDrawer.tsx
+msgid "Last done"
+msgstr "Last done"
+
+#: src/components/layout/PageHeader.tsx
+msgid "LAST SYNC"
+msgstr "LAST SYNC"
+
+#: src/features/taxonomy/components/CategoryFormDialog.tsx
+msgid "Leave empty to create a top-level category."
+msgstr "Leave empty to create a top-level category."
+
+#: src/features/taxonomy/components/LocationFormDialog.tsx
+msgid "Leave empty to create a top-level location."
+msgstr "Leave empty to create a top-level location."
+
+#: src/features/settings/AccountsPage.tsx
+msgid "Link"
+msgstr "Link"
+
+#: src/features/settings/AccountsPage.tsx
+msgid "LINKED"
+msgstr "LINKED"
+
+#: src/components/retro/feedback/RetroStatusDot.tsx
+msgid "live"
+msgstr "live"
+
+#: src/components/scan/ScanResultBanner.tsx
+msgid "LOADING"
+msgstr "LOADING"
+
+#: src/features/settings/AccountsPage.tsx
+msgid "Loading accounts…"
+msgstr "Loading accounts…"
+
+#: src/features/settings/SecurityPage.tsx
+msgid "Loading sessions…"
+msgstr "Loading sessions…"
+
+#: src/components/layout/WorkspaceSwitcher.tsx
+msgid "Loading workspaces…"
+msgstr "Loading workspaces…"
+
 #: src/features/auth/RequireAuth.tsx
+#: src/features/borrowers/BorrowerDetailPage.tsx
+#: src/features/borrowers/BorrowersListPage.tsx
 #: src/features/dashboard/DashboardPage.tsx
+#: src/features/inventory/components/MovementsPanel.tsx
+#: src/features/inventory/ExpiringPage.tsx
+#: src/features/inventory/InventoryListPage.tsx
+#: src/features/items/components/InventoryPanel.tsx
+#: src/features/items/ItemDetailPage.tsx
+#: src/features/items/ItemsListPage.tsx
+#: src/features/loans/LoansListPage.tsx
+#: src/features/maintenance/components/MaintenanceDrawer.tsx
+#: src/features/maintenance/MaintenanceDuePage.tsx
+#: src/features/repairs/components/RepairAttachmentPanel.tsx
+#: src/features/repairs/components/RepairsDrawer.tsx
+#: src/features/taxonomy/components/CategoriesTab.tsx
+#: src/features/taxonomy/components/ContainersTab.tsx
+#: src/features/taxonomy/components/LabelsTab.tsx
+#: src/features/taxonomy/components/LocationsTab.tsx
 msgid "Loading…"
 msgstr "Loading…"
 
+#: src/components/scan/QuickActionMenu.tsx
+#: src/features/items/components/LoanPanels.tsx
+msgid "LOAN"
+msgstr "LOAN"
+
+#: src/features/loans/LoanFormPage.tsx
+msgid "Loan created."
+msgstr "Loan created."
+
+#: src/features/loans/components/BorrowerLoanPanels.tsx
+msgid "LOAN HISTORY"
+msgstr "LOAN HISTORY"
+
+#: src/features/loans/components/EditLoanDialog.tsx
+msgid "Loan saved."
+msgstr "Loan saved."
+
+#: src/features/loans/LoansListPage.tsx
+msgid "Loaned"
+msgstr "Loaned"
+
+#: src/features/loans/LoanFormPage.tsx
+msgid "Loaning this item — pick a borrower."
+msgstr "Loaning this item — pick a borrower."
+
 #: src/components/layout/Sidebar.tsx
+#: src/features/borrowers/BorrowersListPage.tsx
 #: src/features/dashboard/DashboardPage.tsx
+#: src/features/items/components/LoanPanels.tsx
+#: src/features/loans/components/BorrowerLoanPanels.tsx
+#: src/features/loans/LoansListPage.tsx
 msgid "Loans"
 msgstr "Loans"
+
+#: src/features/loans/LoansListPage.tsx
+msgid "LOANS — {workspaceName}"
+msgstr "LOANS — {workspaceName}"
+
+#: src/components/layout/Clock.tsx
+msgid "LOCAL"
+msgstr "LOCAL"
+
+#: src/features/inventory/InventoryFormPage.tsx
+#: src/features/inventory/InventoryListPage.tsx
+#: src/features/items/ItemFormPage.tsx
+#: src/features/items/ItemsListPage.tsx
+#: src/features/taxonomy/components/ContainerFormDialog.tsx
+#: src/routes/demo/DemoPage.tsx
+msgid "Location"
+msgstr "Location"
 
 #: src/components/layout/Sidebar.tsx
 #: src/features/dashboard/DashboardPage.tsx
 msgid "Locations"
 msgstr "Locations"
 
+#: src/features/taxonomy/TaxonomyPage.tsx
+msgid "LOCATIONS"
+msgstr "LOCATIONS"
+
 #: src/features/auth/LoginPage.tsx
+#: src/features/auth/RegisterPage.tsx
 msgid "Log in"
 msgstr "Log in"
+
+#: src/components/layout/TopBar.tsx
+msgid "Log out"
+msgstr "Log out"
+
+#: src/components/scan/ManualBarcodeEntry.tsx
+msgid "LOOK UP CODE"
+msgstr "LOOK UP CODE"
 
 #: src/features/dashboard/DashboardPage.tsx
 msgid "Low stock"
 msgstr "Low stock"
 
+#: src/components/layout/Sidebar.tsx
+#: src/features/inventory/InventoryListPage.tsx
+#: src/features/maintenance/components/MaintenanceDrawer.tsx
+#: src/features/maintenance/MaintenanceDuePage.tsx
+msgid "Maintenance"
+msgstr "Maintenance"
+
+#: src/features/maintenance/components/MaintenanceDrawer.tsx
+msgid "MAINTENANCE"
+msgstr "MAINTENANCE"
+
+#: src/features/maintenance/components/MaintenanceDrawer.tsx
+msgid "MAINTENANCE — {itemName}"
+msgstr "MAINTENANCE — {itemName}"
+
+#: src/features/scan/ScanPage.tsx
+msgid "MANUAL"
+msgstr "MANUAL"
+
+#. placeholder {0}: repair.description
+#: src/features/repairs/components/CompleteRepairDialog.tsx
+msgid "Mark \"{0}\" completed?"
+msgstr "Mark \"{0}\" completed?"
+
+#. placeholder {0}: schedule.title
+#. placeholder {1}: schedule.interval_days
+#: src/features/maintenance/components/CompleteMaintenanceDialog.tsx
+msgid "Mark \"{0}\" done? This advances the next due date by {1} days."
+msgstr "Mark \"{0}\" done? This advances the next due date by {1} days."
+
+#. placeholder {0}: loan.item.name
+#. placeholder {1}: loan.borrower.name
+#: src/features/loans/components/ReturnLoanDialog.tsx
+msgid "Mark \"{0}\" returned by {1}?"
+msgstr "Mark \"{0}\" returned by {1}?"
+
+#: src/components/scan/QuickActionMenu.tsx
+msgid "MARK REVIEWED"
+msgstr "MARK REVIEWED"
+
+#: src/components/scan/ScanResultBanner.tsx
+msgid "MATCH"
+msgstr "MATCH"
+
+#: src/components/scan/QuickActionMenu.tsx
+msgid "MATCHED ITEM"
+msgstr "MATCHED ITEM"
+
+#: src/routes/demo/DemoPage.tsx
+msgid "Menu ▾"
+msgstr "Menu ▾"
+
+#: src/features/items/ItemDetailPage.tsx
+msgid "More actions"
+msgstr "More actions"
+
+#: src/components/layout/Bottombar.tsx
+msgid "MORE SHORTCUTS"
+msgstr "MORE SHORTCUTS"
+
+#: src/features/inventory/components/MoveDialog.tsx
+#: src/routes/demo/DemoPage.tsx
+msgid "Move"
+msgstr "Move"
+
+#: src/features/inventory/InventoryListPage.tsx
+#: src/features/items/components/InventoryPanel.tsx
+msgid "MOVE"
+msgstr "MOVE"
+
+#. placeholder {0}: photo.caption ?? photo.filename
+#: src/features/items/components/PhotoGallery.tsx
+msgid "Move {0} earlier"
+msgstr "Move {0} earlier"
+
+#. placeholder {0}: photo.caption ?? photo.filename
+#: src/features/items/components/PhotoGallery.tsx
+msgid "Move {0} later"
+msgstr "Move {0} later"
+
+#: src/features/inventory/components/MoveDialog.tsx
+msgid "MOVE ENTRY"
+msgstr "MOVE ENTRY"
+
+#: src/features/inventory/components/MoveDialog.tsx
+msgid "Moved to {dest}."
+msgstr "Moved to {dest}."
+
+#: src/features/inventory/InventoryListPage.tsx
+msgid "Movement history"
+msgstr "Movement history"
+
+#: src/features/inventory/components/MovementsPanel.tsx
+msgid "Movements"
+msgstr "Movements"
+
+#: src/features/inventory/components/MovementsDrawer.tsx
+msgid "MOVEMENTS"
+msgstr "MOVEMENTS"
+
+#: src/features/inventory/components/MovementsDrawer.tsx
+msgid "MOVEMENTS — {itemName}"
+msgstr "MOVEMENTS — {itemName}"
+
+#: src/features/borrowers/BorrowerDetailPage.tsx
+#: src/features/borrowers/BorrowerFormPage.tsx
+#: src/features/borrowers/BorrowersListPage.tsx
 #: src/features/dashboard/DashboardPage.tsx
+#: src/features/items/ItemDetailPage.tsx
+#: src/features/items/ItemFormPage.tsx
+#: src/features/taxonomy/components/CategoryFormDialog.tsx
+#: src/features/taxonomy/components/ContainerFormDialog.tsx
+#: src/features/taxonomy/components/LabelFormDialog.tsx
+#: src/features/taxonomy/components/LocationFormDialog.tsx
 msgid "Name"
 msgstr "Name"
 
@@ -117,23 +2029,415 @@ msgstr "Name"
 msgid "Navigator"
 msgstr "Navigator"
 
+#: src/features/maintenance/components/MaintenanceDrawer.tsx
+msgid "never"
+msgstr "never"
+
+#: src/features/borrowers/BorrowerFormPage.tsx
+msgid "NEW BORROWER"
+msgstr "NEW BORROWER"
+
+#: src/features/taxonomy/components/CategoryFormDialog.tsx
+msgid "NEW CATEGORY"
+msgstr "NEW CATEGORY"
+
+#: src/features/repairs/components/CompleteRepairDialog.tsx
+msgid "New condition"
+msgstr "New condition"
+
+#: src/features/taxonomy/components/ContainerFormDialog.tsx
+msgid "NEW CONTAINER"
+msgstr "NEW CONTAINER"
+
+#: src/features/loans/components/ExtendLoanDialog.tsx
+msgid "New due date"
+msgstr "New due date"
+
+#: src/features/auth/LoginPage.tsx
+msgid "New here?"
+msgstr "New here?"
+
+#: src/features/taxonomy/components/LabelFormDialog.tsx
+msgid "NEW LABEL"
+msgstr "NEW LABEL"
+
+#: src/features/loans/LoanFormPage.tsx
+msgid "NEW LOAN"
+msgstr "NEW LOAN"
+
+#: src/features/taxonomy/components/LocationFormDialog.tsx
+msgid "NEW LOCATION"
+msgstr "NEW LOCATION"
+
+#: src/features/settings/SecurityPage.tsx
+msgid "New password"
+msgstr "New password"
+
+#: src/components/retro/data/RetroPagination.tsx
+msgid "NEXT"
+msgstr "NEXT"
+
+#: src/features/maintenance/components/MaintenanceDrawer.tsx
+#: src/features/maintenance/components/MaintenanceForm.tsx
+#: src/features/maintenance/MaintenanceDuePage.tsx
+msgid "Next due"
+msgstr "Next due"
+
+#: src/components/retro/data/RetroPagination.tsx
+msgid "Next page"
+msgstr "Next page"
+
+#: src/features/items/components/PhotoLightbox.tsx
+msgid "Next photo"
+msgstr "Next photo"
+
+#: src/features/loans/LoansListPage.tsx
+msgid "NO ACTIVE LOANS"
+msgstr "NO ACTIVE LOANS"
+
+#: src/features/loans/LoansListPage.tsx
+msgid "No active loans are past their due date."
+msgstr "No active loans are past their due date."
+
 #: src/features/dashboard/DashboardPage.tsx
 msgid "No activity yet."
 msgstr "No activity yet."
+
+#: src/features/borrowers/BorrowersListPage.tsx
+msgid "NO BORROWERS"
+msgstr "NO BORROWERS"
+
+#: src/features/borrowers/BorrowersListPage.tsx
+msgid "No borrowers match this search."
+msgstr "No borrowers match this search."
+
+#: src/features/loans/LoanFormPage.tsx
+msgid "No borrowers yet — add one first."
+msgstr "No borrowers yet — add one first."
+
+#: src/features/borrowers/BorrowersListPage.tsx
+msgid "No borrowers yet. Add a borrower to start tracking who has your items."
+msgstr "No borrowers yet. Add a borrower to start tracking who has your items."
+
+#: src/features/taxonomy/components/CategoriesTab.tsx
+msgid "NO CATEGORIES YET"
+msgstr "NO CATEGORIES YET"
+
+#: src/features/taxonomy/components/ColorSwatchPicker.tsx
+msgid "No color"
+msgstr "No color"
+
+#: src/features/repairs/components/RepairsDrawer.tsx
+msgid "No completed repairs yet."
+msgstr "No completed repairs yet."
+
+#: src/features/taxonomy/components/ContainersTab.tsx
+msgid "NO CONTAINERS YET"
+msgstr "NO CONTAINERS YET"
+
+#: src/features/loans/components/ExtendLoanDialog.tsx
+msgid "no due date"
+msgstr "no due date"
+
+#: src/features/inventory/InventoryListPage.tsx
+msgid "No entries match these filters. Clear a filter or adjust your search."
+msgstr "No entries match these filters. Clear a filter or adjust your search."
+
+#: src/features/repairs/components/RepairAttachmentPanel.tsx
+msgid "NO FILES"
+msgstr "NO FILES"
+
+#: src/features/loans/LoanFormPage.tsx
+msgid "No inventory entries yet — add one first."
+msgstr "No inventory entries yet — add one first."
+
+#: src/features/scan/ClaimPage.tsx
+msgid "No item matches this code yet. Create one with the code attached."
+msgstr "No item matches this code yet. Create one with the code attached."
+
+#: src/features/inventory/ExpiringPage.tsx
+msgid "No items are expiring or out of warranty in the next {days} days."
+msgstr "No items are expiring or out of warranty in the next {days} days."
+
+#: src/features/items/ItemsListPage.tsx
+#: src/routes/demo/DemoPage.tsx
+msgid "No items match these filters. Clear a filter or adjust your search."
+msgstr "No items match these filters. Clear a filter or adjust your search."
+
+#: src/features/items/ItemsListPage.tsx
+msgid "NO ITEMS YET"
+msgstr "NO ITEMS YET"
+
+#: src/features/inventory/InventoryFormPage.tsx
+msgid "No items yet — add one first."
+msgstr "No items yet — add one first."
+
+#: src/features/taxonomy/components/LabelsTab.tsx
+msgid "NO LABELS YET"
+msgstr "NO LABELS YET"
+
+#: src/features/items/components/ItemLabels.tsx
+msgid "No labels yet — manage labels in Phase 10."
+msgstr "No labels yet — manage labels in Phase 10."
+
+#: src/features/items/components/LoanPanels.tsx
+#: src/features/loans/components/BorrowerLoanPanels.tsx
+#: src/features/loans/LoansListPage.tsx
+msgid "NO LOAN HISTORY"
+msgstr "NO LOAN HISTORY"
+
+#: src/features/loans/LoansListPage.tsx
+msgid "No loans have been returned yet."
+msgstr "No loans have been returned yet."
+
+#: src/features/loans/LoansListPage.tsx
+msgid "No loans match this search."
+msgstr "No loans match this search."
+
+#: src/features/taxonomy/components/LocationsTab.tsx
+msgid "NO LOCATIONS YET"
+msgstr "NO LOCATIONS YET"
+
+#: src/features/inventory/InventoryFormPage.tsx
+#: src/features/taxonomy/components/ContainerFormDialog.tsx
+msgid "No locations yet — add one first."
+msgstr "No locations yet — add one first."
+
+#: src/features/maintenance/MaintenanceDuePage.tsx
+msgid "No maintenance is due right now. You're all caught up."
+msgstr "No maintenance is due right now. You're all caught up."
+
+#: src/features/repairs/components/RepairAttachmentPanel.tsx
+msgid "No manuals, receipts, or warranties attached yet."
+msgstr "No manuals, receipts, or warranties attached yet."
+
+#: src/routes/demo/DemoPage.tsx
+msgid "No matches"
+msgstr "No matches"
+
+#: src/features/borrowers/BorrowersListPage.tsx
+#: src/features/inventory/InventoryListPage.tsx
+#: src/features/items/ItemsListPage.tsx
+#: src/features/loans/LoansListPage.tsx
+msgid "NO MATCHES"
+msgstr "NO MATCHES"
+
+#: src/components/retro/form/RetroCombobox.tsx
+msgid "No matches."
+msgstr "No matches."
+
+#: src/features/inventory/components/MovementsPanel.tsx
+msgid "NO MOVEMENTS"
+msgstr "NO MOVEMENTS"
+
+#: src/features/settings/SecurityPage.tsx
+msgid "No other sessions."
+msgstr "No other sessions."
+
+#: src/features/items/components/PhotoGallery.tsx
+msgid "No photos yet."
+msgstr "No photos yet."
+
+#: src/features/maintenance/components/MaintenanceDrawer.tsx
+msgid "No recurring maintenance set up for this entry yet. Add a schedule to get reminders."
+msgstr "No recurring maintenance set up for this entry yet. Add a schedule to get reminders."
+
+#: src/features/repairs/components/RepairsDrawer.tsx
+msgid "NO REPAIRS"
+msgstr "NO REPAIRS"
+
+#: src/features/repairs/components/RepairsDrawer.tsx
+msgid "No repairs logged for this entry yet. Add one to track work, cost, and warranty."
+msgstr "No repairs logged for this entry yet. Add one to track work, cost, and warranty."
+
+#: src/components/retro/filters/SavedFilters.tsx
+msgid "No saved filters yet."
+msgstr "No saved filters yet."
+
+#: src/components/scan/ScanHistoryList.tsx
+msgid "NO SCANS YET"
+msgstr "NO SCANS YET"
+
+#: src/features/maintenance/components/MaintenanceDrawer.tsx
+msgid "NO SCHEDULES"
+msgstr "NO SCHEDULES"
+
+#: src/features/settings/SecurityPage.tsx
+msgid "No sessions"
+msgstr "No sessions"
+
+#: src/components/layout/F1HelpDialog.tsx
+msgid "NO SHORTCUTS HERE"
+msgstr "NO SHORTCUTS HERE"
+
+#: src/features/inventory/InventoryListPage.tsx
+msgid "NO STOCK ENTRIES"
+msgstr "NO STOCK ENTRIES"
+
+#: src/features/items/components/InventoryPanel.tsx
+msgid "No stock entries yet."
+msgstr "No stock entries yet."
 
 #: src/features/dashboard/DashboardPage.tsx
 msgid "No workspace"
 msgstr "No workspace"
 
+#: src/components/layout/WorkspaceSwitcher.tsx
+msgid "No workspaces. Contact an owner."
+msgstr "No workspaces. Contact an owner."
+
+#: src/components/scan/ScanResultBanner.tsx
+msgid "NOT FOUND"
+msgstr "NOT FOUND"
+
+#: src/features/settings/AccountsPage.tsx
+msgid "NOT LINKED"
+msgstr "NOT LINKED"
+
+#: src/features/borrowers/BorrowerDetailPage.tsx
+#: src/features/borrowers/BorrowerFormPage.tsx
+#: src/features/inventory/InventoryFormPage.tsx
+#: src/features/loans/components/EditLoanDialog.tsx
+#: src/features/loans/LoanFormPage.tsx
+#: src/features/maintenance/components/MaintenanceForm.tsx
+#: src/features/repairs/components/RepairRecordDialog.tsx
+#: src/routes/demo/DemoPage.tsx
+msgid "Notes"
+msgstr "Notes"
+
+#: src/features/maintenance/MaintenanceDuePage.tsx
+msgid "NOTHING DUE"
+msgstr "NOTHING DUE"
+
+#: src/features/inventory/ExpiringPage.tsx
+msgid "NOTHING EXPIRING"
+msgstr "NOTHING EXPIRING"
+
+#: src/routes/demo/DemoPage.tsx
+msgid "Nothing here yet"
+msgstr "Nothing here yet"
+
+#: src/features/loans/LoansListPage.tsx
+msgid "Nothing is out on loan right now. Loan an item to start tracking it."
+msgstr "Nothing is out on loan right now. Loan an item to start tracking it."
+
+#: src/features/inventory/InventoryListPage.tsx
+msgid "Nothing is stocked yet. Add your first inventory entry to start tracking quantity, location, and condition."
+msgstr "Nothing is stocked yet. Add your first inventory entry to start tracking quantity, location, and condition."
+
+#: src/features/loans/components/BorrowerLoanPanels.tsx
+msgid "Nothing out"
+msgstr "Nothing out"
+
+#: src/features/loans/LoansListPage.tsx
+msgid "NOTHING OVERDUE"
+msgstr "NOTHING OVERDUE"
+
+#: src/components/retro/feedback/RetroStatusDot.tsx
+msgid "offline"
+msgstr "offline"
+
+#: src/components/layout/TopBar.tsx
+msgid "OFFLINE"
+msgstr "OFFLINE"
+
+#. placeholder {0}: loan.borrower.name
+#: src/features/items/components/LoanPanels.tsx
+msgid "On loan to {0}"
+msgstr "On loan to {0}"
+
+#: src/components/layout/TopBar.tsx
+msgid "ONLINE"
+msgstr "ONLINE"
+
+#: src/features/items/hooks/useItemMutations.ts
+msgid "Only archived items can be deleted."
+msgstr "Only archived items can be deleted."
+
+#. placeholder {0}: photo.caption ?? photo.filename
+#: src/features/items/components/PhotoGallery.tsx
+msgid "Open {0}"
+msgstr "Open {0}"
+
+#: src/features/repairs/components/RepairForm.tsx
+msgid "Optional — a follow-up maintenance reminder."
+msgstr "Optional — a follow-up maintenance reminder."
+
+#: src/features/taxonomy/components/ContainerFormDialog.tsx
+#: src/features/taxonomy/components/LocationFormDialog.tsx
+msgid "Optional — auto-generated if left blank."
+msgstr "Optional — auto-generated if left blank."
+
+#: src/features/loans/LoanFormPage.tsx
+msgid "Optional — leave blank for no due date."
+msgstr "Optional — leave blank for no due date."
+
+#: src/features/taxonomy/components/LabelFormDialog.tsx
+msgid "Optional — pick an on-palette color, or none."
+msgstr "Optional — pick an on-palette color, or none."
+
+#: src/features/borrowers/BorrowerFormPage.tsx
+msgid "Optional — used to identify the borrower."
+msgstr "Optional — used to identify the borrower."
+
+#: src/features/borrowers/BorrowerFormPage.tsx
+#: src/features/taxonomy/components/CategoryFormDialog.tsx
+#: src/features/taxonomy/components/ContainerFormDialog.tsx
+#: src/features/taxonomy/components/LabelFormDialog.tsx
+#: src/features/taxonomy/components/LocationFormDialog.tsx
+msgid "Optional."
+msgstr "Optional."
+
+#: src/features/repairs/components/CompleteRepairDialog.tsx
+msgid "Optionally update the item's condition now that it's fixed."
+msgstr "Optionally update the item's condition now that it's fixed."
+
+#: src/features/auth/LoginPage.tsx
+#: src/features/auth/RegisterPage.tsx
+msgid "OR"
+msgstr "OR"
+
 #: src/features/dashboard/DashboardPage.tsx
+#: src/features/loans/LoansListPage.tsx
+#: src/features/maintenance/MaintenanceDuePage.tsx
 msgid "Overdue"
 msgstr "Overdue"
+
+#: src/features/loans/LoansListPage.tsx
+msgid "OVERDUE"
+msgstr "OVERDUE"
+
+#: src/routes/demo/DemoPage.tsx
+msgid "Overlay Atoms"
+msgstr "Overlay Atoms"
 
 #: src/components/layout/Sidebar.tsx
 msgid "Overview"
 msgstr "Overview"
 
+#: src/routes/demo/DemoPage.tsx
+msgid "Overview tab panel."
+msgstr "Overview tab panel."
+
+#: src/components/retro/data/RetroPagination.tsx
+msgid "page {page} of {pageCount} · {perPage} / page"
+msgstr "page {page} of {pageCount} · {perPage} / page"
+
+#: src/components/retro/data/RetroPagination.tsx
+msgid "Pagination"
+msgstr "Pagination"
+
+#: src/features/taxonomy/components/CategoryFormDialog.tsx
+msgid "Parent category"
+msgstr "Parent category"
+
+#: src/features/taxonomy/components/LocationFormDialog.tsx
+msgid "Parent location"
+msgstr "Parent location"
+
 #: src/features/auth/LoginPage.tsx
+#: src/features/auth/RegisterPage.tsx
+#: src/features/settings/SecurityPage.tsx
 msgid "Password"
 msgstr "Password"
 
@@ -141,30 +2445,906 @@ msgstr "Password"
 msgid "Password is required."
 msgstr "Password is required."
 
+#: src/features/settings/SecurityPage.tsx
+msgid "Password updated."
+msgstr "Password updated."
+
+#: src/features/auth/RegisterPage.tsx
+#: src/features/settings/SecurityPage.tsx
+msgid "Passwords don't match."
+msgstr "Passwords don't match."
+
+#: src/features/items/components/PhotoUpload.tsx
+msgid "pending"
+msgstr "pending"
+
+#: src/features/borrowers/BorrowerDetailPage.tsx
+#: src/features/borrowers/BorrowerFormPage.tsx
+msgid "Phone"
+msgstr "Phone"
+
+#. placeholder {0}: current + 1
+#: src/features/items/components/PhotoLightbox.tsx
+msgid "Photo {0} of {count}"
+msgstr "Photo {0} of {count}"
+
+#: src/features/repairs/components/RepairPhotoPanel.tsx
+msgid "Photo stage"
+msgstr "Photo stage"
+
+#: src/features/items/components/PhotoUpload.tsx
+msgid "Photos"
+msgstr "Photos"
+
+#: src/features/items/ItemDetailPage.tsx
+#: src/features/repairs/components/RepairRecordDialog.tsx
+#: src/features/repairs/components/RepairsDrawer.tsx
+msgid "PHOTOS"
+msgstr "PHOTOS"
+
+#: src/features/inventory/components/MoveDialog.tsx
+msgid "Pick a different location or container."
+msgstr "Pick a different location or container."
+
+#: src/components/scan/ScanViewfinderOverlay.tsx
+msgid "Point the camera at a barcode or QR code."
+msgstr "Point the camera at a barcode or QR code."
+
+#: src/features/items/components/DuplicateWarningDialog.tsx
+msgid "POSSIBLE DUPLICATE"
+msgstr "POSSIBLE DUPLICATE"
+
+#: src/features/items/ItemFormPage.tsx
+msgid "Prefilled from scan — edit if needed."
+msgstr "Prefilled from scan — edit if needed."
+
+#: src/components/retro/filters/SavedFilters.tsx
+msgid "Preset name"
+msgstr "Preset name"
+
+#: src/components/retro/data/RetroPagination.tsx
+msgid "PREV"
+msgstr "PREV"
+
+#: src/components/retro/data/RetroPagination.tsx
+msgid "Previous page"
+msgstr "Previous page"
+
+#: src/features/items/components/PhotoLightbox.tsx
+msgid "Previous photo"
+msgstr "Previous photo"
+
+#: src/components/scan/UpcSuggestionBanner.tsx
+msgid "PRODUCT FOUND"
+msgstr "PRODUCT FOUND"
+
+#: src/components/layout/TopBar.tsx
+msgid "Profile"
+msgstr "Profile"
+
+#: src/features/inventory/ExpiringPage.tsx
+#: src/features/inventory/InventoryListPage.tsx
+#: src/features/items/ItemsListPage.tsx
+#: src/routes/demo/DemoPage.tsx
+msgid "Qty"
+msgstr "Qty"
+
+#: src/features/inventory/InventoryFormPage.tsx
+#: src/features/items/ItemDetailPage.tsx
+#: src/features/items/ItemFormPage.tsx
+msgid "Quantity"
+msgstr "Quantity"
+
 #: src/features/dashboard/DashboardPage.tsx
 msgid "Recent activity"
 msgstr "Recent activity"
+
+#: src/components/scan/ScanHistoryList.tsx
+msgid "RECENT SCANS"
+msgstr "RECENT SCANS"
+
+#: src/features/repairs/components/RepairRecordDialog.tsx
+msgid "RECORD"
+msgstr "RECORD"
+
+#: src/components/retro/form/RetroFileInput.tsx
+msgid "Release to add"
+msgstr "Release to add"
+
+#: src/features/repairs/components/RepairForm.tsx
+msgid "Reminder date"
+msgstr "Reminder date"
+
+#. placeholder {0}: f.name
+#: src/components/retro/form/RetroFileInput.tsx
+msgid "Remove {0}"
+msgstr "Remove {0}"
+
+#. placeholder {0}: String(chip.label)
+#: src/components/retro/filters/FilterBar.tsx
+msgid "Remove {0} filter"
+msgstr "Remove {0} filter"
+
+#. placeholder {0}: repair.description
+#: src/features/repairs/components/RepairRecordDialog.tsx
+msgid "REPAIR — {0}"
+msgstr "REPAIR — {0}"
+
+#: src/features/repairs/components/RepairsDrawer.tsx
+msgid "Repair cost"
+msgstr "Repair cost"
+
+#: src/features/repairs/components/RepairForm.tsx
+#: src/features/repairs/components/RepairRecordDialog.tsx
+msgid "Repair date"
+msgstr "Repair date"
+
+#: src/features/inventory/InventoryListPage.tsx
+#: src/features/repairs/components/RepairsDrawer.tsx
+msgid "Repairs"
+msgstr "Repairs"
+
+#: src/features/repairs/components/RepairsDrawer.tsx
+msgid "REPAIRS"
+msgstr "REPAIRS"
+
+#: src/features/repairs/components/RepairsDrawer.tsx
+msgid "REPAIRS — {itemName}"
+msgstr "REPAIRS — {itemName}"
+
+#: src/features/taxonomy/components/ContainerFormDialog.tsx
+msgid "Required — every container lives in a location."
+msgstr "Required — every container lives in a location."
+
+#: src/features/scan/ClaimPage.tsx
+msgid "Resolving code…"
+msgstr "Resolving code…"
+
+#: src/features/inventory/InventoryListPage.tsx
+#: src/features/items/ItemDetailPage.tsx
+#: src/features/items/ItemsListPage.tsx
+#: src/features/taxonomy/components/LabelsTab.tsx
+msgid "RESTORE"
+msgstr "RESTORE"
+
+#: src/routes/demo/DemoPage.tsx
+msgid "RetroCheckbox — all three states."
+msgstr "RetroCheckbox — all three states."
+
+#: src/routes/demo/DemoPage.tsx
+msgid "RetroCombobox — editable, keyboard-driven listbox."
+msgstr "RetroCombobox — editable, keyboard-driven listbox."
+
+#: src/routes/demo/DemoPage.tsx
+msgid "RetroDialog (each titlebar variant), RetroConfirmDialog, Menu/Popover."
+msgstr "RetroDialog (each titlebar variant), RetroConfirmDialog, Menu/Popover."
+
+#: src/routes/demo/DemoPage.tsx
+msgid "RetroEmptyState — no-data and filtered variants."
+msgstr "RetroEmptyState — no-data and filtered variants."
+
+#: src/routes/demo/DemoPage.tsx
+msgid "RetroFileInput — click + drag-drop drop zone."
+msgstr "RetroFileInput — click + drag-drop drop zone."
+
+#: src/routes/demo/DemoPage.tsx
+msgid "RetroFormField — default / hint / error."
+msgstr "RetroFormField — default / hint / error."
+
+#: src/routes/demo/DemoPage.tsx
+msgid "RetroPagination — beveled pager with current-page accent."
+msgstr "RetroPagination — beveled pager with current-page accent."
+
+#: src/routes/demo/DemoPage.tsx
+msgid "RetroSelect — skinned native select."
+msgstr "RetroSelect — skinned native select."
+
+#: src/routes/demo/DemoPage.tsx
+msgid "RetroStatusDot — live (blinks) / idle / error."
+msgstr "RetroStatusDot — live (blinks) / idle / error."
+
+#: src/routes/demo/DemoPage.tsx
+msgid "RetroTable + useTableSelection — click, Shift+Click range, header select-all (indeterminate dash on partial). Select rows to surface bulk-action chips in the Bottombar."
+msgstr "RetroTable + useTableSelection — click, Shift+Click range, header select-all (indeterminate dash on partial). Select rows to surface bulk-action chips in the Bottombar."
+
+#: src/routes/demo/DemoPage.tsx
+msgid "RetroTabs — folder-tab control with roving tabindex."
+msgstr "RetroTabs — folder-tab control with roving tabindex."
+
+#: src/routes/demo/DemoPage.tsx
+msgid "RetroTextarea — sunken multi-line field."
+msgstr "RetroTextarea — sunken multi-line field."
+
+#: src/routes/demo/DemoPage.tsx
+msgid "retroToast — all four types (error never auto-dismisses)."
+msgstr "retroToast — all four types (error never auto-dismisses)."
+
+#: src/features/auth/RequireAuth.tsx
+msgid "Retry"
+msgstr "Retry"
+
+#: src/features/borrowers/BorrowerDetailPage.tsx
+#: src/features/items/components/PhotoUpload.tsx
+#: src/features/items/ItemDetailPage.tsx
+#: src/features/repairs/components/AddAttachmentDialog.tsx
+#: src/features/taxonomy/components/CategoriesTab.tsx
+#: src/features/taxonomy/components/ContainersTab.tsx
+#: src/features/taxonomy/components/LabelsTab.tsx
+#: src/features/taxonomy/components/LocationsTab.tsx
+msgid "RETRY"
+msgstr "RETRY"
+
+#: src/features/loans/components/ReturnLoanDialog.tsx
+msgid "Return"
+msgstr "Return"
+
+#: src/features/items/components/LoanPanels.tsx
+#: src/features/loans/components/BorrowerLoanPanels.tsx
+#: src/features/loans/components/LoanRowActions.tsx
+msgid "RETURN"
+msgstr "RETURN"
+
+#: src/features/loans/components/ReturnLoanDialog.tsx
+msgid "RETURN LOAN?"
+msgstr "RETURN LOAN?"
+
+#: src/features/borrowers/BorrowerDetailPage.tsx
+msgid "Return the active loans before deleting this borrower."
+msgstr "Return the active loans before deleting this borrower."
+
+#: src/features/loans/LoansListPage.tsx
+msgid "Returned"
+msgstr "Returned"
+
+#: src/features/loans/components/ReturnLoanDialog.tsx
+msgid "Returned — moved to History."
+msgstr "Returned — moved to History."
+
+#. placeholder {0}: isoDate(loan.returned_at)
+#: src/features/loans/LoansListPage.tsx
+msgid "returned {0}"
+msgstr "returned {0}"
+
+#: src/features/settings/SecurityPage.tsx
+msgid "Revoke"
+msgstr "Revoke"
+
+#: src/features/settings/SecurityPage.tsx
+msgid "Revoke all"
+msgstr "Revoke all"
+
+#: src/features/settings/SecurityPage.tsx
+msgid "Revoke all other sessions"
+msgstr "Revoke all other sessions"
+
+#. placeholder {0}: s.device_info
+#: src/features/settings/SecurityPage.tsx
+msgid "Revoke session on {0}"
+msgstr "Revoke session on {0}"
+
+#: src/components/layout/F1HelpDialog.tsx
+msgid "ROUTE"
+msgstr "ROUTE"
+
+#: src/features/loans/components/EditLoanDialog.tsx
+msgid "Save"
+msgstr "Save"
+
+#: src/components/retro/filters/SavedFilters.tsx
+#: src/features/items/components/CaptionDialog.tsx
+msgid "SAVE"
+msgstr "SAVE"
+
+#: src/features/borrowers/BorrowerFormPage.tsx
+msgid "Save borrower"
+msgstr "Save borrower"
+
+#: src/features/taxonomy/components/CategoryFormDialog.tsx
+msgid "Save category"
+msgstr "Save category"
+
+#: src/features/borrowers/BorrowerFormPage.tsx
+#: src/features/inventory/InventoryFormPage.tsx
+#: src/features/items/ItemFormPage.tsx
+#: src/features/taxonomy/components/CategoryFormDialog.tsx
+#: src/features/taxonomy/components/ContainerFormDialog.tsx
+#: src/features/taxonomy/components/LabelFormDialog.tsx
+#: src/features/taxonomy/components/LocationFormDialog.tsx
+msgid "Save changes"
+msgstr "Save changes"
+
+#: src/features/maintenance/components/MaintenanceForm.tsx
+#: src/features/repairs/components/RepairForm.tsx
+msgid "SAVE CHANGES"
+msgstr "SAVE CHANGES"
+
+#: src/features/taxonomy/components/ContainerFormDialog.tsx
+msgid "Save container"
+msgstr "Save container"
+
+#: src/components/retro/filters/SavedFilters.tsx
+msgid "SAVE CURRENT…"
+msgstr "SAVE CURRENT…"
+
+#: src/features/inventory/InventoryFormPage.tsx
+msgid "Save entry"
+msgstr "Save entry"
+
+#: src/components/retro/filters/SavedFilters.tsx
+msgid "SAVE FILTER"
+msgstr "SAVE FILTER"
+
+#: src/features/items/ItemFormPage.tsx
+msgid "Save item"
+msgstr "Save item"
+
+#: src/features/taxonomy/components/LabelFormDialog.tsx
+msgid "Save label"
+msgstr "Save label"
+
+#: src/features/taxonomy/components/LocationFormDialog.tsx
+msgid "Save location"
+msgstr "Save location"
+
+#: src/features/repairs/components/RepairForm.tsx
+msgid "SAVE REPAIR"
+msgstr "SAVE REPAIR"
+
+#: src/features/maintenance/components/MaintenanceForm.tsx
+msgid "SAVE SCHEDULE"
+msgstr "SAVE SCHEDULE"
+
+#: src/routes/demo/DemoPage.tsx
+msgid "Saved."
+msgstr "Saved."
+
+#: src/routes/demo/DemoPage.tsx
+msgid "SavedFilters — preset chips + ▾ PRESETS menu."
+msgstr "SavedFilters — preset chips + ▾ PRESETS menu."
 
 #: src/components/layout/Sidebar.tsx
 msgid "Scan"
 msgstr "Scan"
 
+#: src/features/scan/ScanPage.tsx
+msgid "SCAN"
+msgstr "SCAN"
+
+#: src/components/scan/ScanHistoryList.tsx
+msgid "Scanned and looked-up codes show up here for quick re-lookup."
+msgstr "Scanned and looked-up codes show up here for quick re-lookup."
+
+#: src/features/maintenance/MaintenanceDuePage.tsx
+msgid "Schedule"
+msgstr "Schedule"
+
+#: src/features/taxonomy/components/ContainerFormDialog.tsx
+msgid "Search locations…"
+msgstr "Search locations…"
+
+#: src/features/settings/SettingsLayout.tsx
+msgid "Security"
+msgstr "Security"
+
+#: src/features/items/components/PhotoGallery.tsx
+msgid "SELECT"
+msgstr "SELECT"
+
+#: src/features/items/ItemsListPage.tsx
+#: src/routes/demo/DemoPage.tsx
+msgid "Select all rows"
+msgstr "Select all rows"
+
+#: src/routes/demo/DemoPage.tsx
+msgid "Select…"
+msgstr "Select…"
+
+#: src/components/retro/filters/BulkActionBar.tsx
+msgid "SELECTED"
+msgstr "SELECTED"
+
+#: src/features/repairs/components/RepairForm.tsx
+#: src/features/repairs/components/RepairRecordDialog.tsx
+msgid "Service provider"
+msgstr "Service provider"
+
+#: src/components/layout/Clock.tsx
+msgid "SESSION"
+msgstr "SESSION"
+
+#: src/features/settings/SecurityPage.tsx
+msgid "Session revoked."
+msgstr "Session revoked."
+
+#: src/features/settings/SecurityPage.tsx
+msgid "Sessions"
+msgstr "Sessions"
+
+#: src/features/settings/SecurityPage.tsx
+msgid "Set password"
+msgstr "Set password"
+
 #: src/components/layout/Sidebar.tsx
+#: src/components/layout/TopBar.tsx
 msgid "Settings"
 msgstr "Settings"
+
+#: src/features/taxonomy/components/ContainerFormDialog.tsx
+#: src/features/taxonomy/components/LocationFormDialog.tsx
+msgid "Short code"
+msgstr "Short code"
+
+#: src/features/inventory/InventoryListPage.tsx
+#: src/features/items/ItemsListPage.tsx
+msgid "Show archived"
+msgstr "Show archived"
+
+#: src/features/inventory/InventoryListPage.tsx
+#: src/features/items/ItemsListPage.tsx
+msgid "shown"
+msgstr "shown"
+
+#: src/features/auth/SocialLoginButtons.tsx
+msgid "Sign in with GitHub"
+msgstr "Sign in with GitHub"
+
+#: src/features/auth/SocialLoginButtons.tsx
+msgid "Sign in with Google"
+msgstr "Sign in with Google"
+
+#: src/features/auth/SocialLoginButtons.tsx
+msgid "Sign in with SSO"
+msgstr "Sign in with SSO"
+
+#: src/features/settings/SecurityPage.tsx
+msgid "Sign out everywhere else? Other devices will need to log in again."
+msgstr "Sign out everywhere else? Other devices will need to log in again."
+
+#: src/features/auth/SocialLoginButtons.tsx
+msgid "Sign up with GitHub"
+msgstr "Sign up with GitHub"
+
+#: src/features/auth/SocialLoginButtons.tsx
+msgid "Sign up with Google"
+msgstr "Sign up with Google"
+
+#: src/features/auth/CallbackPage.tsx
+msgid "Sign-in failed"
+msgstr "Sign-in failed"
+
+#: src/features/auth/CallbackPage.tsx
+msgid "Signing in"
+msgstr "Signing in"
+
+#: src/components/layout/AppShell.tsx
+msgid "Skip to content"
+msgstr "Skip to content"
+
+#: src/features/items/components/PhotoUpload.tsx
+msgid "Skipped (possible duplicate)."
+msgstr "Skipped (possible duplicate)."
+
+#: src/features/items/ItemFormPage.tsx
+msgid "SKU"
+msgstr "SKU"
+
+#: src/features/items/ItemFormPage.tsx
+msgid "SKU can't be changed after an item is created."
+msgstr "SKU can't be changed after an item is created."
+
+#: src/routes/demo/DemoPage.tsx
+msgid "Something failed."
+msgstr "Something failed."
+
+#: src/features/borrowers/BorrowerDetailPage.tsx
+#: src/features/items/ItemDetailPage.tsx
+#: src/features/taxonomy/components/CategoriesTab.tsx
+#: src/features/taxonomy/components/ContainersTab.tsx
+#: src/features/taxonomy/components/LabelsTab.tsx
+#: src/features/taxonomy/components/LocationsTab.tsx
+msgid "Something went wrong. Try again."
+msgstr "Something went wrong. Try again."
+
+#. placeholder {0}: col.label
+#: src/features/items/ItemsListPage.tsx
+msgid "Sort by {0}"
+msgstr "Sort by {0}"
+
+#: src/features/inventory/InventoryListPage.tsx
+msgid "Sort by condition"
+msgstr "Sort by condition"
+
+#: src/features/inventory/InventoryListPage.tsx
+msgid "Sort by quantity"
+msgstr "Sort by quantity"
+
+#: src/features/inventory/InventoryListPage.tsx
+msgid "Sort by status"
+msgstr "Sort by status"
+
+#: src/features/repairs/components/RepairPhotoPanel.tsx
+msgid "Stage"
+msgstr "Stage"
+
+#: src/features/repairs/components/RepairsDrawer.tsx
+msgid "START"
+msgstr "START"
+
+#: src/features/inventory/InventoryFormPage.tsx
+#: src/features/inventory/InventoryListPage.tsx
+#: src/features/items/ItemsListPage.tsx
+#: src/features/loans/LoansListPage.tsx
+#: src/features/maintenance/MaintenanceDuePage.tsx
+msgid "Status"
+msgstr "Status"
+
+#: src/features/inventory/InventoryListPage.tsx
+msgid "STATUS"
+msgstr "STATUS"
+
+#: src/routes/demo/DemoPage.tsx
+msgid "StatusPill — OK / WARN / INFO / DANGER."
+msgstr "StatusPill — OK / WARN / INFO / DANGER."
+
+#: src/components/layout/TopBar.tsx
+msgid "Stay"
+msgstr "Stay"
+
+#: src/features/items/components/InventoryPanelStub.tsx
+msgid "Stock entries arrive in 7b."
+msgstr "Stock entries arrive in 7b."
+
+#: src/features/scan/ScanPage.tsx
+msgid "SWITCH TO MANUAL"
+msgstr "SWITCH TO MANUAL"
+
+#: src/components/layout/WorkspaceSwitcher.tsx
+msgid "Switched to {name}."
+msgstr "Switched to {name}."
 
 #: src/components/layout/Sidebar.tsx
 msgid "System"
 msgstr "System"
 
+#: src/features/taxonomy/components/CategoriesTab.tsx
+#: src/features/taxonomy/components/ContainersTab.tsx
+#: src/features/taxonomy/components/LabelsTab.tsx
+#: src/features/taxonomy/components/LocationsTab.tsx
+msgid "Taxonomy"
+msgstr "Taxonomy"
+
+#: src/features/taxonomy/TaxonomyPage.tsx
+msgid "TAXONOMY — {workspaceName}"
+msgstr "TAXONOMY — {workspaceName}"
+
+#: src/features/scan/ClaimPage.tsx
+msgid "That code isn't linked to anything in this workspace."
+msgstr "That code isn't linked to anything in this workspace."
+
+#: src/features/auth/RegisterPage.tsx
+msgid "That email is already registered."
+msgstr "That email is already registered."
+
+#: src/features/repairs/components/AddAttachmentDialog.tsx
+msgid "That file no longer exists."
+msgstr "That file no longer exists."
+
+#: src/features/repairs/components/AddAttachmentDialog.tsx
+msgid "The file belongs to a different workspace."
+msgstr "The file belongs to a different workspace."
+
+#: src/features/items/ItemsListPage.tsx
+msgid "The selected archived items will be permanently removed."
+msgstr "The selected archived items will be permanently removed."
+
+#: src/features/loans/components/BorrowerLoanPanels.tsx
+msgid "This borrower hasn't returned anything yet."
+msgstr "This borrower hasn't returned anything yet."
+
+#: src/features/borrowers/BorrowerDetailPage.tsx
+msgid "This borrower may have been deleted. Return to the borrowers list."
+msgstr "This borrower may have been deleted. Return to the borrowers list."
+
+#: src/routes/demo/DemoPage.tsx
+msgid "This can’t be undone."
+msgstr "This can’t be undone."
+
+#: src/features/taxonomy/hooks/useContainerMutations.ts
+msgid "This container is still in use and can't be deleted."
+msgstr "This container is still in use and can't be deleted."
+
+#: src/features/settings/SecurityPage.tsx
+msgid "THIS DEVICE"
+msgstr "THIS DEVICE"
+
+#: src/features/inventory/InventoryListPage.tsx
+msgid "this entry"
+msgstr "this entry"
+
+#: src/routes/demo/DemoPage.tsx
+msgid "This field is required."
+msgstr "This field is required."
+
+#: src/features/repairs/components/RepairAttachmentPanel.tsx
+msgid "This file link will be permanently removed."
+msgstr "This file link will be permanently removed."
+
+#: src/features/settings/AccountsPage.tsx
+msgid "This is your only way to sign in. Set a password first to unlink."
+msgstr "This is your only way to sign in. Set a password first to unlink."
+
+#: src/features/items/components/LoanPanels.tsx
+msgid "This item has never been loaned out."
+msgstr "This item has never been loaned out."
+
+#: src/features/inventory/components/MovementsPanel.tsx
+msgid "This item hasn't been moved yet."
+msgstr "This item hasn't been moved yet."
+
+#: src/features/items/ItemDetailPage.tsx
+msgid "This item may have been deleted. Return to the items list."
+msgstr "This item may have been deleted. Return to the items list."
+
+#: src/routes/demo/DemoPage.tsx
+msgid "This list is empty. Add your first item to get started."
+msgstr "This list is empty. Add your first item to get started."
+
+#: src/features/items/components/LoanPanels.tsx
+msgid "This loan is overdue."
+msgstr "This loan is overdue."
+
+#: src/features/maintenance/components/MaintenanceDrawer.tsx
+msgid "This maintenance schedule will be permanently removed."
+msgstr "This maintenance schedule will be permanently removed."
+
+#: src/features/items/components/PhotoGallery.tsx
+msgid "This photo will be permanently removed."
+msgstr "This photo will be permanently removed."
+
+#: src/components/scan/ScanHistoryList.tsx
+msgid "This removes every code from your scan history. It can't be undone."
+msgstr "This removes every code from your scan history. It can't be undone."
+
+#: src/features/repairs/components/RepairsDrawer.tsx
+msgid "This repair and its photos and files will be permanently removed."
+msgstr "This repair and its photos and files will be permanently removed."
+
+#: src/components/layout/F1HelpDialog.tsx
+msgid "This route has no quick actions yet. Press F1 anytime for the full list."
+msgstr "This route has no quick actions yet. Press F1 anytime for the full list."
+
 #: src/features/dashboard/DashboardPage.tsx
 msgid "Time"
 msgstr "Time"
+
+#: src/features/maintenance/components/MaintenanceForm.tsx
+#: src/features/repairs/components/AddAttachmentDialog.tsx
+msgid "Title"
+msgstr "Title"
+
+#: src/features/inventory/components/MoveDialog.tsx
+msgid "To container"
+msgstr "To container"
+
+#: src/features/inventory/components/MoveDialog.tsx
+msgid "To location"
+msgstr "To location"
+
+#: src/routes/demo/DemoPage.tsx
+msgid "Toast: error"
+msgstr "Toast: error"
+
+#: src/routes/demo/DemoPage.tsx
+msgid "Toast: info"
+msgstr "Toast: info"
+
+#: src/routes/demo/DemoPage.tsx
+msgid "Toast: success"
+msgstr "Toast: success"
+
+#: src/routes/demo/DemoPage.tsx
+msgid "Toast: warning"
+msgstr "Toast: warning"
+
+#. placeholder {0}: photo.caption ?? photo.filename
+#: src/features/items/components/PhotoGallery.tsx
+msgid "Toggle {0}"
+msgstr "Toggle {0}"
+
+#: src/components/scan/ScanTorchToggle.tsx
+msgid "TORCH"
+msgstr "TORCH"
+
+#: src/components/scan/ScanTorchToggle.tsx
+msgid "TORCH ON"
+msgstr "TORCH ON"
+
+#: src/features/auth/CallbackPage.tsx
+msgid "Try again"
+msgstr "Try again"
+
+#: src/components/scan/ScanResultBanner.tsx
+msgid "TRY AGAIN"
+msgstr "TRY AGAIN"
+
+#: src/features/repairs/components/AddAttachmentDialog.tsx
+msgid "Try again."
+msgstr "Try again."
+
+#: src/features/repairs/components/AddAttachmentDialog.tsx
+msgid "Type *"
+msgstr "Type *"
+
+#: src/features/items/ItemFormPage.tsx
+msgid "Type a category…"
+msgstr "Type a category…"
+
+#: src/features/items/ItemFormPage.tsx
+msgid "Type a location…"
+msgstr "Type a location…"
+
+#: src/features/settings/SecurityPage.tsx
+msgid "Type DELETE to confirm"
+msgstr "Type DELETE to confirm"
+
+#: src/features/settings/SecurityPage.tsx
+msgid "Type DELETE to confirm. This permanently removes your account and cannot be undone."
+msgstr "Type DELETE to confirm. This permanently removes your account and cannot be undone."
+
+#: src/features/items/ItemDetailPage.tsx
+#: src/features/items/ItemsListPage.tsx
+msgid "Type the item name to confirm. This can't be undone."
+msgstr "Type the item name to confirm. This can't be undone."
+
+#: src/components/scan/QuickActionMenu.tsx
+msgid "UNARCHIVE"
+msgstr "UNARCHIVE"
+
+#: src/features/inventory/components/MovementsPanel.tsx
+msgid "Unknown"
+msgstr "Unknown"
+
+#: src/features/settings/AccountsPage.tsx
+msgid "Unlink"
+msgstr "Unlink"
+
+#. placeholder {0}: unlinkTarget?.label
+#: src/features/settings/AccountsPage.tsx
+msgid "Unlink {0}"
+msgstr "Unlink {0}"
+
+#. placeholder {0}: unlinkTarget?.label
+#: src/features/settings/AccountsPage.tsx
+msgid "Unlink {0}? You'll no longer be able to sign in with it."
+msgstr "Unlink {0}? You'll no longer be able to sign in with it."
+
+#: src/features/repairs/components/RepairAttachmentPanel.tsx
+msgid "Untitled"
+msgstr "Untitled"
+
+#: src/features/items/ItemDetailPage.tsx
+msgid "Updated"
+msgstr "Updated"
+
+#: src/features/items/components/DuplicateWarningDialog.tsx
+msgid "UPLOAD ANYWAY"
+msgstr "UPLOAD ANYWAY"
+
+#: src/features/items/components/PhotoUpload.tsx
+msgid "Upload failed."
+msgstr "Upload failed."
+
+#: src/features/repairs/components/AddAttachmentDialog.tsx
+msgid "uploading…"
+msgstr "uploading…"
+
+#: src/components/scan/UpcSuggestionBanner.tsx
+msgid "USE ALL"
+msgstr "USE ALL"
+
+#: src/features/auth/RegisterPage.tsx
+#: src/features/settings/SecurityPage.tsx
+msgid "Use at least 8 characters."
+msgstr "Use at least 8 characters."
+
+#: src/components/scan/UpcSuggestionBanner.tsx
+msgid "USE NAME"
+msgstr "USE NAME"
+
+#: src/features/borrowers/BorrowerDetailPage.tsx
+msgid "View active loans"
+msgstr "View active loans"
+
+#: src/components/scan/QuickActionMenu.tsx
+msgid "VIEW ITEM"
+msgstr "VIEW ITEM"
+
+#: src/features/inventory/ExpiringPage.tsx
+msgid "WARRANTY"
+msgstr "WARRANTY"
+
+#: src/features/repairs/components/RepairRecordDialog.tsx
+msgid "Warranty claim"
+msgstr "Warranty claim"
+
+#: src/features/inventory/InventoryFormPage.tsx
+msgid "Warranty expires"
+msgstr "Warranty expires"
+
+#: src/features/scan/ScanPage.tsx
+msgid "We couldn't access the camera. Enter the code by hand instead."
+msgstr "We couldn't access the camera. Enter the code by hand instead."
+
+#: src/features/inventory/ExpiringPage.tsx
+msgid "When"
+msgstr "When"
+
+#: src/features/inventory/ExpiringPage.tsx
+msgid "Window"
+msgstr "Window"
+
+#: src/routes/demo/DemoPage.tsx
+msgid "With error"
+msgstr "With error"
+
+#: src/routes/demo/DemoPage.tsx
+msgid "With hint"
+msgstr "With hint"
+
+#: src/components/layout/WorkspaceSwitcher.tsx
+#: src/features/borrowers/BorrowersListPage.tsx
+#: src/features/inventory/InventoryListPage.tsx
+#: src/features/items/ItemsListPage.tsx
+#: src/features/loans/LoansListPage.tsx
+#: src/features/maintenance/MaintenanceDuePage.tsx
+#: src/features/taxonomy/TaxonomyPage.tsx
+msgid "Workspace"
+msgstr "Workspace"
+
+#: src/components/layout/WorkspaceSwitcher.tsx
+msgid "Workspaces"
+msgstr "Workspaces"
 
 #: src/features/auth/LoginPage.tsx
 msgid "Wrong email or password. Try again."
 msgstr "Wrong email or password. Try again."
 
+#: src/features/settings/SecurityPage.tsx
+msgid "You signed in with a provider and haven't set a password yet. Add one to enable email + password login."
+msgstr "You signed in with a provider and haven't set a password yet. Add one to enable email + password login."
+
+#: src/features/settings/SecurityPage.tsx
+msgid "You're the sole owner of: {blockingNames}. Transfer ownership or delete these workspaces before deleting your account."
+msgstr "You're the sole owner of: {blockingNames}. Transfer ownership or delete these workspaces before deleting your account."
+
 #: src/features/dashboard/DashboardPage.tsx
 msgid "Your account has no workspaces yet."
 msgstr "Your account has no workspaces yet."
+
+#: src/features/borrowers/BorrowerFormPage.tsx
+#: src/features/loans/LoanFormPage.tsx
+msgid "Your changes will be lost."
+msgstr "Your changes will be lost."
+
+#: src/features/inventory/InventoryFormPage.tsx
+#: src/features/items/ItemFormPage.tsx
+#: src/features/maintenance/components/MaintenanceForm.tsx
+#: src/features/repairs/components/RepairForm.tsx
+#: src/features/taxonomy/components/CategoryFormDialog.tsx
+#: src/features/taxonomy/components/ContainerFormDialog.tsx
+#: src/features/taxonomy/components/LabelFormDialog.tsx
+#: src/features/taxonomy/components/LocationFormDialog.tsx
+msgid "Your edits will be lost."
+msgstr "Your edits will be lost."
+
+#: src/features/items/ItemsListPage.tsx
+msgid "Your warehouse is empty. Add your first item to start tracking it."
+msgstr "Your warehouse is empty. Add your first item to start tracking it."
+
+#: src/features/items/components/PhotoLightbox.tsx
+msgid "Zoom in"
+msgstr "Zoom in"
+
+#: src/features/items/components/PhotoLightbox.tsx
+msgid "Zoom out"
+msgstr "Zoom out"
