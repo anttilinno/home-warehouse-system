@@ -97,3 +97,120 @@ export interface RecentActivity {
   metadata?: Record<string, unknown>;
   created_at: string;
 }
+
+// --- Items + Photos (Phase 7 Plan 01) ---
+//
+// Typed only for the fields this phase reads. Huma injects a `$schema` key into
+// every list envelope (07-RESEARCH Pitfall 7) — we deliberately do NOT model it
+// and do NOT assert exact key sets. Absolute backend URLs (primary_photo_*_url,
+// Photo.url/thumbnail_url) are rewritten to `/api`-relative at the API mapper
+// boundary (07-RESEARCH Pattern 2 / Pitfall 1) before any <img> consumer sees
+// them — so by the time these reach a component the *_url fields are relative.
+
+// GET /items, GET /items/{id} (ItemResponse). Optional fields mirror the
+// backend `omitempty`/pointer fields; min_stock_level + short_code are always
+// present.
+export interface Item {
+  id: string;
+  workspace_id: string;
+  sku: string;
+  name: string;
+  description?: string;
+  category_id?: string;
+  brand?: string;
+  model?: string;
+  serial_number?: string;
+  manufacturer?: string;
+  barcode?: string;
+  is_insured?: boolean;
+  is_archived?: boolean;
+  min_stock_level: number;
+  short_code: string;
+  // ABSOLUTE on the wire; rewritten to /api-relative by itemsApi mappers.
+  primary_photo_thumbnail_url?: string;
+  primary_photo_url?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+// GET /items list envelope (Huma also injects `$schema` — ignored).
+export interface ItemListResponse {
+  items: Item[];
+  total: number;
+  page: number;
+  total_pages: number;
+}
+
+// PhotoResponse. url + thumbnail_url are ABSOLUTE on the wire and rewritten to
+// /api-relative by photosApi mappers.
+export interface Photo {
+  id: string;
+  item_id: string;
+  workspace_id: string;
+  filename: string;
+  file_size: number;
+  mime_type: string;
+  width: number;
+  height: number;
+  display_order: number;
+  is_primary: boolean;
+  caption?: string;
+  url: string;
+  thumbnail_url: string;
+  thumbnail_status: string;
+  created_at: string;
+  updated_at: string;
+}
+
+// POST /items/{id}/photos/check-duplicate result entry. thumbnail_url is
+// ABSOLUTE on the wire and rewritten by photosApi.checkDuplicate.
+export interface DuplicateInfo {
+  photo_id: string;
+  item_id: string;
+  filename: string;
+  similarity_pct: number;
+  thumbnail_url?: string;
+}
+
+export interface DuplicateCheckResult {
+  has_duplicates: boolean;
+  duplicates: DuplicateInfo[];
+}
+
+// LabelResponse (GET /labels items, GET /items/{id}/labels label_ids reference
+// these).
+export interface Label {
+  id: string;
+  workspace_id: string;
+  name: string;
+  color?: string;
+  description?: string;
+}
+
+// LoanResponse (GET /items/{item_id}/loans → { items: Loan[] }). Partitioned
+// client-side on is_active (07-RESEARCH Open Question 2). Field names verified
+// from loan/handler.go LoanResponse.
+export interface Loan {
+  id: string;
+  workspace_id: string;
+  inventory_id: string;
+  borrower_id: string;
+  quantity: number;
+  loaned_at: string;
+  due_date?: string;
+  returned_at?: string;
+  notes?: string;
+  is_active: boolean;
+  is_overdue: boolean;
+  created_at: string;
+  updated_at: string;
+  item: {
+    id: string;
+    name: string;
+    primary_photo_thumbnail_url?: string;
+  };
+  borrower: {
+    id: string;
+    name: string;
+  };
+}

@@ -165,3 +165,42 @@ export function patch<T>(endpoint: string, data: unknown): Promise<T> {
 export function del<T = void>(endpoint: string): Promise<T> {
   return request<T>(endpoint, { method: "DELETE" });
 }
+
+// --- Phase 7 Plan 01 additive helpers (do NOT regress the locked invariants
+// above — these append only and reuse request()/credentials:"include"). ---
+
+// PUT mirrors patch: JSON-only body, goes through request() so it inherits the
+// credentials:"include" + 401 single-flight refresh + retry path. Used by the
+// photo set-primary / caption / reorder routes (07-RESEARCH Pitfall 6). JSON
+// only — never a FormData body.
+export function put<T>(endpoint: string, data: unknown): Promise<T> {
+  return request<T>(endpoint, {
+    method: "PUT",
+    body: data !== undefined ? JSON.stringify(data) : undefined,
+  });
+}
+
+// Blob download for zip + CSV (07-RESEARCH Pattern 4). Fetches `/api{endpoint}`
+// with credentials:"include" (cookie-JWT — never a token in a URL); on non-ok
+// throws HttpError(status); else streams the blob to an object-URL anchor click
+// and revokes the URL. Does NOT share request()'s refresh path (a blob response
+// is not JSON) — kept intentionally simple; downloads are user-initiated and a
+// 401 here surfaces as an HttpError the caller can route.
+export async function downloadBlob(
+  endpoint: string,
+  filename: string,
+): Promise<void> {
+  const res = await fetch(`${BASE_URL}${endpoint}`, {
+    credentials: "include",
+  });
+  if (!res.ok) {
+    throw new HttpError(res.status, `download failed: HTTP ${res.status}`);
+  }
+  const blob = await res.blob();
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+}

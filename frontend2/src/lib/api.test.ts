@@ -1,5 +1,15 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { get, post, postMultipart, setRefreshToken } from "./api";
+import {
+  del,
+  downloadBlob,
+  get,
+  HttpError,
+  patch,
+  post,
+  postMultipart,
+  put,
+  setRefreshToken,
+} from "./api";
 
 // Phase 05 Plan 02 — proves the api.ts auth-expired contract and the four
 // locked invariants. We stub `fetch` directly (not MSW) so we can assert the
@@ -133,5 +143,108 @@ describe("api.ts locked invariants", () => {
     const [, init] = fetchMock.mock.calls[0];
     const headers = init.headers as Record<string, string>;
     expect(headers["Content-Type"]).toBe("application/json");
+  });
+
+  // Phase 7 Plan 01 — invariant preservation: the existing helpers must keep
+  // their signatures/behavior after put + downloadBlob are appended. These
+  // re-assert get/patch/del still go through request() with the locked init,
+  // and that HttpError(status) is still thrown on non-ok.
+  it("get/patch/del still carry credentials:'include' and the /api prefix", async () => {
+    fetchMock
+      .mockResolvedValueOnce(jsonResponse({ ok: true }))
+      .mockResolvedValueOnce(jsonResponse({ ok: true }))
+      .mockResolvedValueOnce(emptyResponse(204));
+
+    await get("/items");
+    await patch("/items/1", { name: "x" });
+    await del("/items/1");
+
+    for (const [url, init] of fetchMock.mock.calls) {
+      expect((url as string).startsWith("/api/")).toBe(true);
+      expect(init).toMatchObject({ credentials: "include" });
+    }
+    expect((fetchMock.mock.calls[0][1] as RequestInit).method).toBe("GET");
+    expect((fetchMock.mock.calls[1][1] as RequestInit).method).toBe("PATCH");
+    expect((fetchMock.mock.calls[2][1] as RequestInit).method).toBe("DELETE");
+  });
+
+  it("still throws HttpError with the status on a non-ok response", async () => {
+    fetchMock.mockResolvedValueOnce(
+      jsonResponse({ detail: "boom" }, 500),
+    );
+    await expect(get("/items")).rejects.toBeInstanceOf(HttpError);
+  });
+});
+
+describe("api.ts put (additive)", () => {
+  it("sends method PUT with a JSON body, Content-Type json, credentials include", async () => {
+    fetchMock.mockResolvedValueOnce(jsonResponse({ id: "p-1" }));
+
+    const data = await put<{ id: string }>("/photos/p-1/caption", {
+      caption: "hello",
+    });
+
+    const [url, init] = fetchMock.mock.calls[0];
+    expect(url).toBe("/api/photos/p-1/caption");
+    expect(init).toMatchObject({ method: "PUT", credentials: "include" });
+    expect((init.headers as Record<string, string>)["Content-Type"]).toBe(
+      "application/json",
+    );
+    expect(init.body).toBe(JSON.stringify({ caption: "hello" }));
+    expect(data).toEqual({ id: "p-1" });
+  });
+
+  it("goes through the same 401 single-flight refresh + retry path as request()", async () => {
+    setRefreshToken("good-refresh");
+    fetchMock
+      .mockResolvedValueOnce(emptyResponse(401)) // initial PUT 401
+      .mockResolvedValueOnce(jsonResponse({ refresh_token: "rotated" })) // refresh ok
+      .mockResolvedValueOnce(emptyResponse(204)); // retry ok
+
+    await expect(put("/photos/p-1/primary", undefined)).resolves.toBeUndefined();
+    // initial + refresh + retry = 3 fetches
+    expect(fetchMock).toHaveBeenCalledTimes(3);
+  });
+});
+
+describe("api.ts downloadBlob (additive)", () => {
+  it("fetches /api{endpoint} with credentials and triggers an anchor download", async () => {
+    const blob = new Blob(["zipbytes"], { type: "application/zip" });
+    fetchMock.mockResolvedValueOnce(
+      new Response(blob, { status: 200 }),
+    );
+    const createObjectURL = vi
+      .fn()
+      .mockReturnValue("blob:mock");
+    const revokeObjectURL = vi.fn();
+    vi.stubGlobal("URL", {
+      ...URL,
+      createObjectURL,
+      revokeObjectURL,
+    });
+    const click = vi.fn();
+    const anchor = { href: "", download: "", click } as unknown as HTMLAnchorElement;
+    const createElement = vi
+      .spyOn(document, "createElement")
+      .mockReturnValue(anchor);
+
+    await downloadBlob("/workspaces/ws-1/items/it-1/photos/download", "photos.zip");
+
+    const [url, init] = fetchMock.mock.calls[0];
+    expect(url).toBe("/api/workspaces/ws-1/items/it-1/photos/download");
+    expect(init).toMatchObject({ credentials: "include" });
+    expect(anchor.download).toBe("photos.zip");
+    expect(anchor.href).toBe("blob:mock");
+    expect(click).toHaveBeenCalledOnce();
+    expect(revokeObjectURL).toHaveBeenCalledWith("blob:mock");
+
+    createElement.mockRestore();
+  });
+
+  it("throws HttpError(status) on a non-ok download", async () => {
+    fetchMock.mockResolvedValueOnce(emptyResponse(403));
+    await expect(
+      downloadBlob("/workspaces/ws-1/export/item?format=csv", "x.csv"),
+    ).rejects.toMatchObject({ status: 403 });
   });
 });
