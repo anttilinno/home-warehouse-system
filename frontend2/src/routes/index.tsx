@@ -26,6 +26,18 @@ import { BorrowerDetailPage } from "@/features/borrowers/BorrowerDetailPage";
 import { TaxonomyPage } from "@/features/taxonomy/TaxonomyPage";
 import { CategoryFormDialog } from "@/features/taxonomy/components/CategoryFormDialog";
 import { ClaimPage } from "@/features/scan/ClaimPage";
+// Phase 14 System group (14-01..14-06). Imported EAGERLY (tables + forms, no
+// heavy chart/scanner chunk) so a wrong path/name fails at tsc/build time, not
+// at runtime (T-14-22). SyncHistoryPage lives at features/system-history/Page —
+// NOT features/sync-history — because the FOUND-02 lint:imports guard substring-
+// matches `sync` in any import specifier (14-06-SUMMARY); the route URL string
+// `/sync-history` is fine (it is a Route path, not an import specifier).
+import { ApprovalsPage } from "@/features/approvals/ApprovalsPage";
+import { MyChangesPage } from "@/features/my-changes/MyChangesPage";
+import { WishlistPage } from "@/features/wishlist/WishlistPage";
+import { DeclutterPage } from "@/features/declutter/DeclutterPage";
+import { ImportsPage } from "@/features/imports/ImportsPage";
+import { SyncHistoryPage } from "@/features/system-history/Page";
 
 // /scan is React.lazy so the camera scanner library lands in its own manualChunk
 // (11-01) and only downloads when the user actually visits /scan (T-11-16 DoS —
@@ -192,6 +204,16 @@ export function AppRoutes() {
           }
         />
         <Route path="claim/:code" element={<ClaimPage />} />
+        {/* Phase 14 System group (14-08 wiring, single-writer). All six are
+            literal segments (no params → no ordering hazard) inside this
+            authenticated AppShell branch, so they inherit RequireAuth and
+            precede the `*` wildcard (T-14-21). Eagerly imported (T-14-22). */}
+        <Route path="approvals" element={<ApprovalsPage />} />
+        <Route path="my-changes" element={<MyChangesPage />} />
+        <Route path="sync-history" element={<SyncHistoryPage />} />
+        <Route path="imports" element={<ImportsPage />} />
+        <Route path="wishlist" element={<WishlistPage />} />
+        <Route path="declutter" element={<DeclutterPage />} />
         {/* Settings hub (12-UI-SPEC): SettingsLayout is a thin Outlet wrapper
             under the AUTHENTICATED AppShell. /settings (index) renders the
             iOS/System-7 grouped-row landing (no more Navigate-to-security). The
