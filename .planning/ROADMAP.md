@@ -771,7 +771,7 @@ Plans:
   4. With `VITE_FEATURE_HUD_ROLLUPS=true`, user sees a HUD row (hand-rolled SVG capacity gauge + 14-day activity sparkline + counts); flag default off ships dashboard immediately while backend coordinates rollups
   5. Dashboard registers `useShortcuts("dashboard", [{ key: "N", action: navTo("/items/new") }, { key: "S", action: navTo("/scan") }, { key: "L", action: navTo("/loans") }])`
 **Parity additions (2026-06-12)** (§4, Gap G-5 in-app part): the side rail includes a pending-approvals count + System Alerts incl. the expiring-items feed (needs Phase 7b) + a due-maintenance card (needs Phase 10b) + notifications bell/dropdown/unread-badge/mark-read in the TopBar slot. New requirement IDs: NOTIF-01 (bell), NOTIF-02 (dropdown + mark-read), NOTIF-03 (unread badge). Depends-on extended to **7b + 10b**.
-**Plans**: TBD
+**Plans**: 5 plans, all complete — 13-01 notifications+TopBar bell, 13-02 pending-approvals panel, 13-03 system-alerts+side-rail, 13-04 HUD (flag-gated SVG), 13-05 DashboardPage extend (relativeTime+Actor/Status cols+shortcuts).
 **UI hint**: yes
 
 ### Phase 13b: Analytics + Out-of-stock
@@ -783,7 +783,7 @@ Plans:
   2. User sees top-borrowers and monthly-loan-activity charts on the same page
   3. The chart library is lazy-loaded (dynamic import) so non-analytics routes carry zero charting weight and the POL-04 per-chunk budget holds
   4. User sees an out-of-stock table (`/analytics/out-of-stock`) with each row linking to its item
-**Plans**: TBD
+**Plans**: 5 plans, all complete — 13b-01 analytics api+hooks (monthly via separate endpoint), 13b-02 recharts@3.8.1+retro theme+6 charts, 13b-03 OutOfStockTable, 13b-04 AnalyticsPage, 13b-05 lazy-route+charts-chunk wiring.
 **UI hint**: yes
 **Note**: charts aesthetic has no Retro OS sketch yet — a sketch (extend set 006-008, update `.planning/sketches/MANIFEST.md`) is a prerequisite before planning this phase (§8 risk 4).
 
@@ -797,7 +797,7 @@ Plans:
   3. User on `/sync-history` sees past sync events with timestamps, status, and error details
   4. User on `/imports` sees CSV import + workspace export + import-history surface using the activity-table pattern
 **Parity additions (2026-06-12)** (§4, §8 risk 7, Gaps G-3/G-4): add a wishlist page (wanted/ordered/acquired tabs, CRUD, status transitions — WISH-01/02) and a declutter page (unused analysis, score badge, grouping, CSV export, mark-used — DECL-01/02); add per-entity export buttons on list pages (items/loans/inventory), not only a central screen; verify the backend import surface (`/imports/upload` + jobs vs legacy `POST /import/{entity}`) during planning. New requirement IDs: WISH-01, WISH-02, DECL-01, DECL-02.
-**Plans**: TBD
+**Plans**: 8 plans, all complete — 14-01 approvals, 14-02 my-changes, 14-03 wishlist, 14-04 declutter, 14-05 imports (async multipart upload), 14-06 sync-history (online-only), 14-07 inventory CSV export, 14-08 routes+Sidebar wiring.
 **UI hint**: yes
 
 ### Phase 14b: Attachments + Paperless
