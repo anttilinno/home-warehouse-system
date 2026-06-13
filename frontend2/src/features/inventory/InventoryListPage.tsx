@@ -10,6 +10,7 @@ import {
   RetroPagination,
   FilterBar,
   FilterPopover,
+  retroToast,
 } from "@/components/retro";
 import { useShortcuts } from "@/components/shortcuts";
 import { useQuery } from "@tanstack/react-query";
@@ -22,6 +23,7 @@ import {
   STATUSES,
   STATUS_LABEL,
 } from "./inventoryEnums";
+import { inventoryToCsvBlob, triggerCsvDownload } from "./inventoryCsv";
 import { useInventoryQuery, INVENTORY_LIMIT } from "./hooks/useInventoryQuery";
 import { useInventoryMutations } from "./hooks/useInventoryMutations";
 import { usePickerOptions } from "./hooks/usePickerOptions";
@@ -180,6 +182,17 @@ export function InventoryListPage() {
   );
   useShortcuts("inventory", routeShortcuts);
 
+  // ── Client CSV export (parity §4 — built in-memory from the current filtered
+  // rows; no /export/inventory endpoint exists, so this is client-side like
+  // loans). Deps = the visible-rows variable only (tRef is a stable ref).
+  const exportCsv = useCallback(() => {
+    if (visible.length === 0) {
+      retroToast.error(tRef.current`Nothing to export.`);
+      return;
+    }
+    triggerCsvDownload(inventoryToCsvBlob(visible), "inventory.csv");
+  }, [visible]);
+
   function onSort(key: SortKey) {
     if (sortKey === key) {
       setSortDir((d) => (d === "asc" ? "desc" : "asc"));
@@ -329,9 +342,18 @@ export function InventoryListPage() {
           onRemoveFilter={removeFilter}
           onClearAll={clearAllFilters}
           primaryAction={
-            <BevelButton variant="mint" onClick={goNew}>
-              <Trans>⊕ ADD ENTRY</Trans>
-            </BevelButton>
+            <span className="flex items-center gap-sp-2">
+              <BevelButton
+                onClick={exportCsv}
+                disabled={visible.length === 0}
+                aria-disabled={visible.length === 0 || undefined}
+              >
+                <Trans>⤓ EXPORT CSV</Trans>
+              </BevelButton>
+              <BevelButton variant="mint" onClick={goNew}>
+                <Trans>⊕ ADD ENTRY</Trans>
+              </BevelButton>
+            </span>
           }
         />
 
