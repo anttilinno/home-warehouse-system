@@ -2,23 +2,33 @@ import { useEffect, useRef, useState } from "react";
 import { Trans } from "@lingui/react/macro";
 import type { User } from "@/lib/types";
 import { BrandMark } from "@/components/BrandMark";
-import { BevelButton } from "@/components/retro";
+import { BevelButton, RetroStatusDot } from "@/components/retro";
 import { useModalStack } from "@/components/modal";
+import { useSSEStatus } from "@/features/sse";
 import { WorkspaceSwitcher } from "./WorkspaceSwitcher";
 
 // TopBar (SHELL-03): the slim 40px banner every authenticated route renders.
 // Brand + the live WorkspaceSwitcher pill (AUTH-06; reads the D-12 SSOT) +
-// ONLINE dot (binds to SSE in Phase 6) + reserved disabled bell/SSE slots
-// (Phases 13/6) + a user pill
-// whose menu's only enabled item is a confirm-before Log out (BAR-05 — logout is
-// NEVER reachable via bare ESC; the confirm pushes onto the modal stack so ESC
-// closes the dialog instead of logging out).
+// ONLINE dot + sse-slot RetroStatusDot (both bound to live SSE — Phase 6) +
+// reserved disabled bell slot (Phase 13) + a user pill whose menu's only
+// enabled item is a confirm-before Log out (BAR-05 — logout is NEVER reachable
+// via bare ESC; the confirm pushes onto the modal stack so ESC closes the dialog
+// instead of logging out).
+//
+// SSE binding (PROV-01, design choice): TopBar reads `useSSEStatus()` directly
+// and feeds the DUMB RetroStatusDot atom its `state` (Pitfall 6 — the atom never
+// imports SSE; we feed it). The `online?: boolean` prop is KEPT for test
+// injectability and is threaded by AppShell, but DEFAULTS to the live
+// `connected` when omitted, so a TopBar mounted under SSEProvider needs no prop.
 
 const FOCUS_RING =
   "focus-visible:outline focus-visible:outline-2 focus-visible:outline-border-ink focus-visible:outline-offset-2";
 
 export interface TopBarProps {
-  /** Live connectivity. Defaults true (placeholder until SSE binds in Phase 6). */
+  /**
+   * Live connectivity for the ONLINE dot. Optional: defaults to
+   * `useSSEStatus().connected` when omitted (AppShell passes it explicitly).
+   */
   online?: boolean;
   user?: User;
   /** Mobile hamburger toggle for the Navigator drawer (wired in Plan 06). */
@@ -28,11 +38,15 @@ export interface TopBarProps {
 }
 
 export function TopBar({
-  online = true,
+  online,
   user,
   onToggleDrawer,
   onLogout,
 }: TopBarProps) {
+  // Live SSE connection status — drives BOTH the ONLINE dot (when no explicit
+  // `online` prop) AND the sse-slot RetroStatusDot.
+  const { connected } = useSSEStatus();
+  const isOnline = online ?? connected;
   const [menuOpen, setMenuOpen] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -82,16 +96,16 @@ export function TopBar({
       {/* Workspace pill — the live AUTH-06 switcher (D-12 SSOT). */}
       <WorkspaceSwitcher />
 
-      {/* ONLINE indicator (binds to live SSE in Phase 6). */}
+      {/* ONLINE indicator — bound to live SSE connection status (Phase 6). */}
       <span className="flex flex-none items-center gap-sp-1">
         <span
           aria-hidden="true"
           className={`h-[8px] w-[8px] border border-border-ink ${
-            online ? "bg-titlebar-mint" : "bg-fg-faint"
+            isOnline ? "bg-titlebar-mint" : "bg-fg-faint"
           }`}
         />
         <span className="text-[11px] font-bold uppercase tracking-[0.1em] text-fg-ink">
-          {online ? <Trans>ONLINE</Trans> : <Trans>OFFLINE</Trans>}
+          {isOnline ? <Trans>ONLINE</Trans> : <Trans>OFFLINE</Trans>}
         </span>
       </span>
 
@@ -107,15 +121,13 @@ export function TopBar({
         <span aria-hidden="true">▦</span>
       </span>
 
-      {/* Reserved SSE status slot — static placeholder (Phase 6). */}
+      {/* SSE status slot — the live RetroStatusDot fed by useSSEStatus (Phase 6).
+          Atom stays dumb: TopBar maps connected→"live"/"idle" (Pitfall 6). */}
       <span
         data-testid="sse-slot"
-        className="hidden flex-none items-center gap-sp-1 font-mono text-[11px] text-fg-muted md:inline-flex"
+        className="hidden flex-none items-center md:inline-flex"
       >
-        sse:
-        <span aria-hidden="true" className="text-fg-ink">
-          ● live
-        </span>
+        <RetroStatusDot state={connected ? "live" : "idle"} />
       </span>
 
       {/* User pill → menu (this phase: a single confirm-before Log out). */}
