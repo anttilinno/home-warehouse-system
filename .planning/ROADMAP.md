@@ -887,7 +887,7 @@ Plans:
 | 10b | v3.0 | 5/5 | Complete   | 2026-06-13 |
 | 11 | v3.0 | 8/8 | Complete   | 2026-06-13 |
 | 12 | v3.0 | 7/7 | Complete   | 2026-06-13 |
-| 13 | v3.0 | 0/TBD | Not started | - |
+| 13 | v3.0 | 4/5 | In Progress|  |
 | 13b | v3.0 | 0/TBD | Not started | - |
 | 14 | v3.0 | 0/TBD | Not started | - |
 | 14b | v3.0 | 0/TBD | Not started | - |
