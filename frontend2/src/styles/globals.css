@@ -243,6 +243,20 @@ body {
       animation: none;
     }
   }
+
+  /* ---------- Scan-banner terminal cursor (SCAN-08) ----------------------------
+     The LOADING line ends in a mono block cursor that blinks. Reuses the exact
+     status-blink steps(1,end) convention so there is one motion language; under
+     prefers-reduced-motion the cursor holds SOLID (the word LOADING + the ◌ glyph
+     carry the state). ---------- */
+  .scan-cursor--blink {
+    animation: status-blink 1s steps(1, end) infinite;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .scan-cursor--blink {
+      animation: none;
+    }
+  }
 }
 
 /* ---------- OAuth callback stepped-progress (CallbackPage, AUTH-03/04) -------
