@@ -1,4 +1,4 @@
-import { get } from "@/lib/api";
+import { get, post } from "@/lib/api";
 
 // Phase 13 Plan 02 — workspace-scoped pending-changes api (DASH-03 side rail).
 // `GET /api/workspaces/{ws}/pending-changes` is owner/admin-only (the handler
@@ -33,4 +33,22 @@ export const pendingChangesApi = {
       `/workspaces/${ws}/pending-changes${qs}`,
     );
   },
+
+  // SYS-01 (Phase 14 Plan 01) — owner/admin-only review writes. There is NO
+  // bulk endpoint: the /approvals page iterates the selected ids client-side
+  // and fires these per id (Promise.allSettled → partial-failure tolerant).
+  // The server re-checks canReviewChanges on every call (403 else; 400 if the
+  // change was already reviewed) — the UI guard is cosmetic, the server is
+  // authoritative. There is deliberately NO defer call (no backend endpoint).
+
+  // approve(ws, id) applies the change and returns the updated row.
+  approve: (ws: string, id: string) =>
+    post<PendingChangeDTO>(`/workspaces/${ws}/pending-changes/${id}/approve`),
+
+  // reject(ws, id, reason) rejects the change; `reason` is required server-side
+  // (minLength 1) and rides the body.
+  reject: (ws: string, id: string, reason: string) =>
+    post<PendingChangeDTO>(`/workspaces/${ws}/pending-changes/${id}/reject`, {
+      reason,
+    }),
 };
