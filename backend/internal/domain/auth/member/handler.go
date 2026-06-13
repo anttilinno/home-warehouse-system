@@ -66,11 +66,15 @@ func RegisterRoutes(api huma.API, svc ServiceInterface) {
 
 		member, err := svc.AddMember(ctx, AddMemberInput{
 			WorkspaceID: workspaceID,
+			Email:       input.Body.Email,
 			UserID:      input.Body.UserID,
 			Role:        input.Body.Role,
 			InvitedBy:   &authUser.ID,
 		})
 		if err != nil {
+			if errors.Is(err, ErrUserNotRegistered) {
+				return nil, huma.Error404NotFound("no registered user with that email")
+			}
 			if errors.Is(err, ErrAlreadyMember) {
 				return nil, huma.Error400BadRequest("user is already a member of this workspace")
 			}
@@ -147,6 +151,8 @@ func toMemberResponse(m *Member) MemberResponse {
 		UserID:      m.UserID(),
 		Role:        string(m.Role()),
 		InvitedBy:   m.InvitedBy(),
+		Email:       m.Email(),
+		FullName:    m.FullName(),
 		CreatedAt:   m.CreatedAt(),
 		UpdatedAt:   m.UpdatedAt(),
 	}
@@ -172,7 +178,12 @@ type GetMemberOutput struct {
 
 type AddMemberRequest struct {
 	Body struct {
-		UserID uuid.UUID `json:"user_id" doc:"ID of user to add as member"`
+		// Email is the primary parity add path: the email of an existing
+		// registered user to add. UserID remains accepted as an optional
+		// direct path (legacy/internal callers); when both are present Email
+		// wins. Exactly one must be supplied.
+		Email  string    `json:"email,omitempty" format:"email" doc:"Email of an existing registered user to add as member"`
+		UserID uuid.UUID `json:"user_id,omitempty" doc:"ID of an existing user to add (alternative to email)"`
 		Role   Role      `json:"role" enum:"owner,admin,member,viewer" doc:"Role to assign to the member"`
 	}
 }
@@ -198,6 +209,8 @@ type MemberResponse struct {
 	UserID      uuid.UUID  `json:"user_id"`
 	Role        string     `json:"role" enum:"owner,admin,member,viewer"`
 	InvitedBy   *uuid.UUID `json:"invited_by,omitempty"`
+	Email       string     `json:"email,omitempty" doc:"Email of the member (list path only)"`
+	FullName    string     `json:"full_name,omitempty" doc:"Full name of the member (list path only)"`
 	CreatedAt   time.Time  `json:"created_at"`
 	UpdatedAt   time.Time  `json:"updated_at"`
 }

@@ -2,11 +2,14 @@ package member_test
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"testing"
+	"time"
 
 	"github.com/google/uuid"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 
 	"github.com/antti/home-warehouse/go-backend/internal/domain/auth/member"
@@ -90,6 +93,28 @@ func TestMemberHandler_List(t *testing.T) {
 		testutil.AssertStatus(t, rec, http.StatusOK)
 		mockSvc.AssertExpectations(t)
 	})
+
+	t.Run("response carries email and full_name identity fields", func(t *testing.T) {
+		now := time.Now()
+		identified := member.ReconstructWithIdentity(
+			uuid.New(), setup.WorkspaceID, uuid.New(),
+			member.RoleMember, nil, now, now,
+			"alice@example.com", "Alice Example",
+		)
+		mockSvc.On("ListWorkspaceMembers", mock.Anything, setup.WorkspaceID).
+			Return([]*member.Member{identified}, nil).Once()
+
+		rec := setup.Get("/members")
+		testutil.AssertStatus(t, rec, http.StatusOK)
+
+		var body member.MemberListResponse
+		err := json.Unmarshal(rec.Body.Bytes(), &body)
+		assert.NoError(t, err)
+		assert.Len(t, body.Items, 1)
+		assert.Equal(t, "alice@example.com", body.Items[0].Email)
+		assert.Equal(t, "Alice Example", body.Items[0].FullName)
+		mockSvc.AssertExpectations(t)
+	})
 }
 
 func TestMemberHandler_Get(t *testing.T) {
@@ -128,32 +153,41 @@ func TestMemberHandler_AddMember(t *testing.T) {
 	mockSvc := new(MockService)
 	member.RegisterRoutes(setup.API, mockSvc)
 
-	t.Run("adds member successfully", func(t *testing.T) {
+	t.Run("adds member by email successfully", func(t *testing.T) {
 		userID := uuid.New()
 		testMember, _ := member.NewMember(setup.WorkspaceID, userID, member.RoleMember, &setup.UserID)
 
 		mockSvc.On("AddMember", mock.Anything, mock.MatchedBy(func(input member.AddMemberInput) bool {
 			return input.WorkspaceID == setup.WorkspaceID &&
-				input.UserID == userID &&
+				input.Email == "alice@example.com" &&
 				input.Role == member.RoleMember &&
 				input.InvitedBy != nil &&
 				*input.InvitedBy == setup.UserID
 		})).Return(testMember, nil).Once()
 
-		body := fmt.Sprintf(`{"user_id":"%s","role":"member"}`, userID)
+		body := `{"email":"alice@example.com","role":"member"}`
 		rec := setup.Post("/members", body)
 
 		testutil.AssertStatus(t, rec, http.StatusOK)
 		mockSvc.AssertExpectations(t)
 	})
 
-	t.Run("returns 400 when user is already a member", func(t *testing.T) {
-		userID := uuid.New()
+	t.Run("returns 404 when email is not a registered user", func(t *testing.T) {
+		mockSvc.On("AddMember", mock.Anything, mock.Anything).
+			Return(nil, member.ErrUserNotRegistered).Once()
 
+		body := `{"email":"ghost@example.com","role":"member"}`
+		rec := setup.Post("/members", body)
+
+		testutil.AssertStatus(t, rec, http.StatusNotFound)
+		mockSvc.AssertExpectations(t)
+	})
+
+	t.Run("returns 400 when user is already a member", func(t *testing.T) {
 		mockSvc.On("AddMember", mock.Anything, mock.Anything).
 			Return(nil, member.ErrAlreadyMember).Once()
 
-		body := fmt.Sprintf(`{"user_id":"%s","role":"member"}`, userID)
+		body := `{"email":"alice@example.com","role":"member"}`
 		rec := setup.Post("/members", body)
 
 		testutil.AssertStatus(t, rec, http.StatusBadRequest)
@@ -168,7 +202,7 @@ func TestMemberHandler_AddMember(t *testing.T) {
 			return input.Role == member.RoleOwner
 		})).Return(testMember, nil).Once()
 
-		body := fmt.Sprintf(`{"user_id":"%s","role":"owner"}`, userID)
+		body := `{"email":"alice@example.com","role":"owner"}`
 		rec := setup.Post("/members", body)
 
 		testutil.AssertStatus(t, rec, http.StatusOK)
@@ -183,7 +217,7 @@ func TestMemberHandler_AddMember(t *testing.T) {
 			return input.Role == member.RoleAdmin
 		})).Return(testMember, nil).Once()
 
-		body := fmt.Sprintf(`{"user_id":"%s","role":"admin"}`, userID)
+		body := `{"email":"alice@example.com","role":"admin"}`
 		rec := setup.Post("/members", body)
 
 		testutil.AssertStatus(t, rec, http.StatusOK)
@@ -198,7 +232,7 @@ func TestMemberHandler_AddMember(t *testing.T) {
 			return input.Role == member.RoleViewer
 		})).Return(testMember, nil).Once()
 
-		body := fmt.Sprintf(`{"user_id":"%s","role":"viewer"}`, userID)
+		body := `{"email":"alice@example.com","role":"viewer"}`
 		rec := setup.Post("/members", body)
 
 		testutil.AssertStatus(t, rec, http.StatusOK)

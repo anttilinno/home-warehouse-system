@@ -27,6 +27,12 @@ type Member struct {
 	invitedBy   *uuid.UUID
 	createdAt   time.Time
 	updatedAt   time.Time
+
+	// Optional read-only identity, populated only on the list path where the
+	// SQL join against auth.users supplies the email/full_name columns. Empty
+	// on the add/get paths (which have no join) — serialized via omitempty.
+	email    string
+	fullName string
 }
 
 // NewMember creates a new member.
@@ -71,8 +77,32 @@ func Reconstruct(
 	}
 }
 
+// ReconstructWithIdentity recreates a member from stored data, additionally
+// carrying the joined user identity (email + full_name) for the list path.
+// Kept separate from Reconstruct so existing callers and tests stay intact.
+func ReconstructWithIdentity(
+	id, workspaceID, userID uuid.UUID,
+	role Role,
+	invitedBy *uuid.UUID,
+	createdAt, updatedAt time.Time,
+	email, fullName string,
+) *Member {
+	m := Reconstruct(id, workspaceID, userID, role, invitedBy, createdAt, updatedAt)
+	m.email = email
+	m.fullName = fullName
+	return m
+}
+
 // ID returns the member's ID.
 func (m *Member) ID() uuid.UUID { return m.id }
+
+// Email returns the member's email when populated via the identity-carrying
+// list path; empty otherwise.
+func (m *Member) Email() string { return m.email }
+
+// FullName returns the member's full name when populated via the identity-carrying
+// list path; empty otherwise.
+func (m *Member) FullName() string { return m.fullName }
 
 // WorkspaceID returns the workspace ID.
 func (m *Member) WorkspaceID() uuid.UUID { return m.workspaceID }
