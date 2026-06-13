@@ -21,48 +21,22 @@ import { test, expect, type Page } from "@playwright/test";
 // specs.
 //
 // ─────────────────────────────────────────────────────────────────────────────
-// LIVE DEFECT SURFACED (RPR-02, BLOCKING the UI repair-COMPLETE path) — D-10b-05-01
+// DEFECTS D-10b-05-01 + D-10b-05-02 — FIXED (orchestrator gate, 2026-06-13)
 // ─────────────────────────────────────────────────────────────────────────────
-// The RepairForm (src/features/repairs/components/RepairForm.tsx) renders NO
-// currency-code input, so every repair created through the drawer UI is sent with
-// currency_code = undefined. The backend's repair-cost rollup
-// (GET /inventory/{id}/repair-cost) then returns a summary row with
-// `currency_code: null` for that completed repair (verified by direct API probe —
-// true for BOTH cost-bearing and zero-cost completed repairs). RepairsDrawer.tsx
-// renders the rollup via `formatCents(s.total_cost_cents, s.currency_code)`, and
-// formatCents (src/lib/utils/money.ts) only defaults the currency when the arg is
-// `undefined` — a `null` flows straight into `Intl.NumberFormat({ currency: null })`
-// which throws `RangeError: Invalid currency code : null`. With no error boundary
-// the throw blanks the whole app.
-//
-// CONSEQUENCE: completing ANY repair through the drawer UI crashes the drawer the
-// instant the rollup re-renders. The fix lives in src/ (forbidden file for this
-// plan — e2e-only scope), so it is NOT patched here; it is documented in the
-// SUMMARY for the verifier. To keep this gate GREEN and still cover RPR-02 in a
-// real browser, the COMPLETED + cost-bearing repair is SEEDED via the API WITH an
-// explicit currency_code (the path the UI cannot take), and the drawer is asserted
-// to render its rollup correctly. The UI lifecycle is exercised create → START
-// (Pending → In progress); the UI COMPLETE transition is intentionally NOT driven
-// because the defect crashes the drawer on it. See the SUMMARY "Live defects".
-//
-// ─────────────────────────────────────────────────────────────────────────────
-// LIVE DEFECT SURFACED (MNT-01, BLOCKING the UI schedule-CREATE path) — D-10b-05-02
-// ─────────────────────────────────────────────────────────────────────────────
-// MaintenanceForm (src/features/maintenance/components/MaintenanceForm.tsx) posts
-// next_due as the raw <input type="date"> value `YYYY-MM-DD`, but the backend
-// create endpoint (POST /maintenance) validates next_due as an RFC 3339
-// date-time and 422s on a date-only string ("expected string to be RFC 3339
-// date-time" — verified by direct API probe). So creating a schedule through the
-// drawer UI ALWAYS fails with a 422 and the form stays open. (The READ side
-// serializes next_due back as date-only, so the wire contract is asymmetric.) The
-// fix lives in src/ (forbidden file), so it is NOT patched here. To keep this gate
-// GREEN and still cover MNT-01/MNT-02 in a real browser, the schedule is SEEDED
-// via the API with an RFC3339 next_due of TODAY (the path the UI cannot take); the
-// UI then verifies the drawer lists it (MNT-01), it appears on /maintenance/due,
-// and the UI COMPLETE removes it from the due list (MNT-02). A 30-day interval is
-// used so the post-complete next_due (today+30) lands OUTSIDE the default 7-day
-// due window — otherwise a short interval keeps the row inside the window and it
-// would not leave the due list.
+// This spec originally surfaced two BLOCKING happy-path defects and seeded around
+// them; both are now fixed and this spec drives the real UI for both:
+//  • D-10b-05-01 (RPR-02): RepairsDrawer rendered the cost rollup via
+//    formatCents(total, currency_code) where a zero-/no-cost repair's summary
+//    carries currency_code:null; formatCents only defaulted `undefined`, so `null`
+//    hit Intl.NumberFormat({currency:null}) → RangeError → white-screen on COMPLETE.
+//    FIX: src/lib/utils/money.ts coalesces nullish/empty currency to EUR. This spec
+//    now COMPLETES a no-cost repair through the drawer UI and asserts no crash.
+//  • D-10b-05-02 (MNT-01): MaintenanceForm posted next_due as date-only `YYYY-MM-DD`
+//    but POST /maintenance requires RFC 3339 date-time → 422. FIX: MaintenanceForm
+//    (and RepairForm's repair_date/reminder_date) serialize the day to midnight UTC
+//    before sending. This spec now CREATES the schedule through the drawer UI.
+// A 30-day interval is used so the post-complete next_due (today+30) lands OUTSIDE
+// the default 7-day due window and the row leaves /maintenance/due.
 
 const E2E_USER = process.env.E2E_USER ?? "seeder@test.local";
 const E2E_PASS = process.env.E2E_PASS ?? "password123";
@@ -159,30 +133,9 @@ async function seedCompletedRepair(
   expect(completeRes.status()).toBe(200);
 }
 
-// Seed a maintenance schedule due TODAY via the API — WITH an RFC3339 next_due
-// (the UI form sends date-only and 422s; see D-10b-05-02). A 30-day interval
-// ensures the post-complete next_due (today+30) leaves the default 7-day due
-// window. Returns the schedule id.
-async function seedSchedule(
-  page: Page,
-  wsId: string,
-  entryId: string,
-  title: string,
-): Promise<string> {
-  const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD (UTC)
-  const res = await page.request.post(`/api/workspaces/${wsId}/maintenance`, {
-    data: {
-      inventory_id: entryId,
-      title,
-      interval_days: 30,
-      next_due: `${today}T00:00:00Z`, // RFC3339 — the backend rejects date-only
-    },
-  });
-  expect(res.status()).toBe(200);
-  const id = ((await res.json()) as { id: string }).id;
-  expect(id).toBeTruthy();
-  return id;
-}
+// (Maintenance schedules are now created through the drawer UI in the test body —
+// the D-10b-05-02 RFC3339 fix means the form's next_due is accepted. The former
+// API-seed helper was removed.)
 
 // RPR-01/RPR-02 + MNT-01/MNT-02 — both happy paths in ONE test (one login, the
 // 20/min limiter). Unique per-run names keep the shared dev DB idempotent;
@@ -269,25 +222,27 @@ test("repairs + maintenance: repair rollup + lifecycle start, schedule due → c
     await expect(pendingRow).toContainText(/pending/i);
 
     // START → pill flips to "In progress" (PENDING → IN_PROGRESS) — the lifecycle
-    // transition verified in a real browser. (The UI COMPLETE transition is NOT
-    // driven: the null-currency rollup crash D-10b-05-01 would blank the drawer.)
+    // transition verified in a real browser.
     await pendingRow.getByRole("button", { name: /^start$/i }).click();
     await expect(pendingRow).toContainText(/in progress/i);
 
-    // Clean up the UI-created repair so the spec is re-runnable (DELETE → pink
-    // confirm). The seeded completed repair is removed when the entry is archived.
-    await pendingRow.getByRole("button", { name: /^delete$/i }).click();
-    const deleteRepairDialog = page.getByRole("dialog", {
-      name: /DELETE REPAIR/i,
+    // COMPLETE through the drawer UI (RPR-01 full lifecycle). This repair carries
+    // NO cost → its rollup summary returns currency_code: null; formatCents now
+    // coalesces nullish currency to EUR (the D-10b-05-01 fix), so the drawer must
+    // NOT crash — it stays mounted and the cost-rollup header is still rendered.
+    await pendingRow.getByRole("button", { name: /^complete$/i }).click();
+    const completeRepairDialog = page.getByRole("dialog", {
+      name: /COMPLETE REPAIR/i,
     });
-    await expect(deleteRepairDialog).toBeVisible();
-    await deleteRepairDialog
-      .getByRole("button", { name: /^delete$/i })
+    await expect(completeRepairDialog).toBeVisible();
+    await completeRepairDialog
+      .getByRole("button", { name: /^complete$/i })
       .click();
-    await expect(deleteRepairDialog).toBeHidden();
-    await expect(
-      repairsDrawer.locator("li", { hasText: pendingDesc }),
-    ).toHaveCount(0);
+    await expect(completeRepairDialog).toBeHidden();
+    // The drawer survived the null-currency rollup (no white-screen) and the row
+    // is now Completed.
+    await expect(repairsDrawer.getByText(/repair cost/i)).toBeVisible();
+    await expect(pendingRow).toContainText(/completed/i);
 
     // Close the repairs drawer before the maintenance flow.
     await repairsDrawer.getByRole("button", { name: /^close$/i }).click();
@@ -297,21 +252,30 @@ test("repairs + maintenance: repair rollup + lifecycle start, schedule due → c
     // FLOW B — MAINTENANCE: schedule due today → /maintenance/due → complete
     // ════════════════════════════════════════════════════════════════════════
 
-    // Seed the schedule (due TODAY) via the API — the UI create path 422s on its
-    // date-only next_due (D-10b-05-02). The UI then verifies the drawer LIST
-    // (MNT-01), the due page (MNT-02), and the UI COMPLETE removing it.
-    await seedSchedule(page, wsId, entryId, scheduleTitle);
-
-    // Re-resolve the first row (the list re-rendered) and open the per-row
-    // MAINTENANCE drawer (⟳ action; aria-label "Maintenance").
+    // Open the per-row MAINTENANCE drawer (⟳ action; aria-label "Maintenance").
     const maintRow = page.locator("table tbody tr").first();
     await expect(maintRow).toBeVisible();
     await maintRow.getByRole("button", { name: /^maintenance$/i }).click();
     const maintDrawer = page.getByRole("dialog", { name: /^MAINTENANCE/i });
     await expect(maintDrawer).toBeVisible();
 
-    // ── MNT-01: the seeded schedule is listed in the drawer (unique title),
-    // rendered with its NEUTRAL next_due (no overdue cue in the drawer).
+    // ── MNT-01: CREATE the schedule (due TODAY) through the drawer UI. The form
+    // sends next_due as RFC3339 now (the D-10b-05-02 fix); a date-only value
+    // would 422. The default 30-day interval is kept.
+    const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD (UTC)
+    await maintDrawer
+      .getByRole("button", { name: /add schedule/i })
+      .first()
+      .click();
+    const schedForm = page.getByRole("dialog", { name: /ADD SCHEDULE/i });
+    await expect(schedForm).toBeVisible();
+    await schedForm.getByLabel(/title/i).fill(scheduleTitle);
+    await schedForm.getByLabel(/next due/i).fill(today);
+    await schedForm.getByRole("button", { name: /save/i }).click();
+    await expect(schedForm).toBeHidden();
+
+    // The new schedule is listed in the drawer (unique title) — proves the UI
+    // create path no longer 422s.
     await expect(
       maintDrawer.locator("li", { hasText: scheduleTitle }),
     ).toBeVisible();

@@ -39,6 +39,13 @@ function toDateInput(value?: string): string {
   return value ? value.slice(0, 10) : "";
 }
 
+// The <input type="date"> yields YYYY-MM-DD, but POST/PATCH /maintenance
+// require an RFC 3339 date-time (the read side returns date-only — asymmetric
+// contract). Serialize the day to midnight UTC before sending.
+function toRfc3339Date(value: string): string {
+  return /^\d{4}-\d{2}-\d{2}$/.test(value) ? `${value}T00:00:00Z` : value;
+}
+
 function scheduleToDefaults(
   schedule?: MaintenanceSchedule | null,
 ): MaintenanceFormInput {
@@ -78,7 +85,8 @@ export function MaintenanceForm({
         const body: Record<string, unknown> = {};
         if (dirtyFields.title) body.title = values.title;
         if (dirtyFields.interval_days) body.interval_days = values.interval_days;
-        if (dirtyFields.next_due) body.next_due = values.next_due;
+        if (dirtyFields.next_due)
+          body.next_due = toRfc3339Date(values.next_due);
         if (dirtyFields.notes) body.notes = values.notes || undefined;
         await updateSchedule.mutateAsync({ id: schedule.id, body });
         retroToast.success(t`DONE · Schedule updated.`);
@@ -87,7 +95,7 @@ export function MaintenanceForm({
           inventory_id: invId,
           title: values.title,
           interval_days: values.interval_days,
-          next_due: values.next_due,
+          next_due: toRfc3339Date(values.next_due),
           notes: values.notes || undefined,
         });
         retroToast.success(t`DONE · Schedule saved.`);

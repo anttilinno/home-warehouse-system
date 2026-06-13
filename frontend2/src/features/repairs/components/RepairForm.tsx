@@ -41,6 +41,15 @@ function toDateInput(rfc?: string): string {
   return rfc ? rfc.slice(0, 10) : "";
 }
 
+// The <input type="date"> yields YYYY-MM-DD, but the repair endpoints expect an
+// RFC 3339 date-time (the read side returns date-only — asymmetric contract, same
+// as maintenance). Serialize a bare day to midnight UTC before sending; pass
+// through anything already containing a time component or empty.
+function toRfc3339Date(value?: string): string | undefined {
+  if (!value) return undefined;
+  return /^\d{4}-\d{2}-\d{2}$/.test(value) ? `${value}T00:00:00Z` : value;
+}
+
 // Cents → major-unit string for the edit-mode cost field reset.
 function centsToMajor(cents?: number): string {
   return typeof cents === "number" ? String(cents / 100) : "";
@@ -81,7 +90,7 @@ export function RepairForm({ open, onClose, invId, repair }: RepairFormProps) {
         const body: Record<string, unknown> = {};
         if (dirtyFields.description) body.description = values.description;
         if (dirtyFields.repair_date)
-          body.repair_date = values.repair_date || undefined;
+          body.repair_date = toRfc3339Date(values.repair_date);
         if (dirtyFields.cost) body.cost = values.cost;
         if (dirtyFields.currency_code)
           body.currency_code = values.currency_code || undefined;
@@ -92,12 +101,12 @@ export function RepairForm({ open, onClose, invId, repair }: RepairFormProps) {
         await createRepair.mutateAsync({
           inventory_id: invId,
           description: values.description,
-          repair_date: values.repair_date || undefined,
+          repair_date: toRfc3339Date(values.repair_date),
           cost: values.cost,
           currency_code: values.currency_code || undefined,
           service_provider: values.service_provider || undefined,
           is_warranty_claim: values.is_warranty_claim,
-          reminder_date: values.reminder_date || undefined,
+          reminder_date: toRfc3339Date(values.reminder_date),
         });
       }
       onClose();
