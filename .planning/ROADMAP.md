@@ -637,7 +637,13 @@ Plans:
   3. User can move an entry between locations via a move dialog and edit quantity / status / condition inline on a row
   4. User can open an expiring view (`/inventory/expiring`) listing entries past or near expiry/warranty, and a movements history panel backed by the `/movements` endpoints (global + per-location + per-inventory)
   5. Item detail renders a per-item inventory panel (the Phase 7 stub now real) linking each entry to its location/container
-**Plans**: TBD
+**Plans**: 6 plans (4 waves)
+- [ ] 07b-01-PLAN.md — API layer: inventory.ts + movements.ts (bare-{items} vs envelope) + types + 7+7 enum→StatusPill maps + MSW fixtures (INV-01..08 foundation) [Wave 1]
+- [ ] 07b-02-PLAN.md — List page: client filters/sort/pagination + inline-edit cells (optimistic+revert) + movements drawer + Sidebar entry + /inventory route (INV-01/05/07) [Wave 2]
+- [ ] 07b-03-PLAN.md — Create/edit form (status create-only, RFC3339 dates, expiry≥acquired) + whole-entry MoveDialog (INV-02/03/04) [Wave 2]
+- [ ] 07b-04-PLAN.md — Expiring view (near/past chips, days selector) + route wiring (new/edit/expiring) + MoveDialog wired into list (INV-06) [Wave 3]
+- [ ] 07b-05-PLAN.md — INV-08 panel replaces InventoryPanelStub at the 07-06 slot + per-item movements in HISTORY (INV-08/07) [Wave 3]
+- [ ] 07b-06-PLAN.md — Live E2E: create → list → move → movements lifecycle (INV-01/04/07) [Wave 4]
 **UI hint**: yes
 
 ### Phase 8: Loans
