@@ -113,12 +113,12 @@
 
 ### Taxonomy (TAX)
 
-- [ ] **TAX-01**: User can view categories as a hierarchical tree on the Taxonomy page (Categories tab); expand/collapse persisted to sessionStorage.
-- [ ] **TAX-02**: User can create / edit / archive categories at any level; usage warnings when archiving a category with assigned items.
-- [ ] **TAX-03**: User can view locations as a hierarchical tree on the Taxonomy page (Locations tab).
-- [ ] **TAX-04**: User can create / edit / archive locations at any level.
-- [ ] **TAX-05**: User can view containers grouped by location on the Taxonomy page (Containers tab).
-- [ ] **TAX-06**: User can create / edit / delete containers; container deletion is allowed when not assigned to items, otherwise unassign-and-delete behavior (matches v2.2 cascade decision).
+- [x] **TAX-01**: User can view categories as a hierarchical tree on the Taxonomy page (Categories tab); expand/collapse persisted to sessionStorage.
+- [x] **TAX-02**: User can create / edit / archive categories at any level; usage warnings when archiving a category with assigned items.
+- [x] **TAX-03**: User can view locations as a hierarchical tree on the Taxonomy page (Locations tab).
+- [x] **TAX-04**: User can create / edit / archive locations at any level.
+- [x] **TAX-05**: User can view containers grouped by location on the Taxonomy page (Containers tab).
+- [x] **TAX-06**: User can create / edit / delete containers; container deletion is allowed when not assigned to items, otherwise unassign-and-delete behavior (matches v2.2 cascade decision).
 
 ### Scan (SCAN)
 
@@ -263,7 +263,7 @@
 
 ### Taxonomy parity addition (TAX) — Phase 10 (Gap G-10 partial)
 
-- [ ] **TAX-07**: Label manager — simple CRUD list + color picker so item label-attach (Phase 7) has labels to attach.
+- [x] **TAX-07**: Label manager — simple CRUD list + color picker so item label-attach (Phase 7) has labels to attach.
 
 ### Scan parity addition (SCAN) — Phase 11 (Gap G-8)
 
@@ -372,12 +372,12 @@
 | BORR-03 | Phase 9 | Complete |
 | BORR-04 | Phase 9 | Complete |
 | BORR-05 | Phase 9 | Complete |
-| TAX-01 | Phase 10 | Pending |
-| TAX-02 | Phase 10 | Pending |
-| TAX-03 | Phase 10 | Pending |
-| TAX-04 | Phase 10 | Pending |
-| TAX-05 | Phase 10 | Pending |
-| TAX-06 | Phase 10 | Pending |
+| TAX-01 | Phase 10 | Complete |
+| TAX-02 | Phase 10 | Complete |
+| TAX-03 | Phase 10 | Complete |
+| TAX-04 | Phase 10 | Complete |
+| TAX-05 | Phase 10 | Complete |
+| TAX-06 | Phase 10 | Complete |
 | SCAN-01 | Phase 11 | Pending |
 | SCAN-02 | Phase 11 | Pending |
 | SCAN-03 | Phase 11 | Pending |
@@ -460,7 +460,7 @@
 | ATOM-FB-04 | Phase 4 | Complete |
 | AUTH-11 | Phase 5 | Complete |
 | AUTH-12 | Phase 5 | Complete |
-| TAX-07 | Phase 10 | Pending |
+| TAX-07 | Phase 10 | Complete |
 | SCAN-12 | Phase 11 | Pending |
 | SETT-10 | Phase 12 | Pending |
 | SETT-11 | Phase 12 | Pending |
