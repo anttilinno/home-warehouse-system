@@ -809,7 +809,12 @@ Plans:
   2. User can configure Paperless-ngx connection settings from a page that slots into the Settings hub (get/put/delete)
   3. User can search Paperless documents and link a document to an item
   4. The cross-tenant attachment IDOR audit finding (`docs/audit/`) is fixed and guarded with a test as part of this phase (§8 risk 6)
-**Plans**: TBD
+**Plans**: 5 plans
+  - [ ] 14b-01-att-security-test-PLAN.md — ATT-03: verify attachment workspace scoping + cross-tenant 404 integration guard
+  - [ ] 14b-02-byte-storage-PLAN.md — ATT-01 backend: inject Storage, multipart upload + serve/download route, byte round-trip test
+  - [ ] 14b-03-item-attachment-ui-PLAN.md — ATT-01/02: item FILES panel (upload/list/set-primary/delete) + api + hook
+  - [ ] 14b-04-paperless-ui-PLAN.md — PPL-01/02/03: Paperless settings page + document search + link-to-item dialog
+  - [ ] 14b-05-wiring-PLAN.md — mount FILES tab + Paperless route/landing row + item-page link action (single-writer)
 **UI hint**: yes
 
 ### Phase 15: i18n catalog gap-fill (et + ru)
