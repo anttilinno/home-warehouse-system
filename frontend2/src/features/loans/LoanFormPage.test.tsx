@@ -184,7 +184,9 @@ describe("LoanFormPage", () => {
 
     const invSelect = screen.getByLabelText(/inventory entry/i);
     await waitFor(() =>
-      expect(within(invSelect).getByText(/cordless drill/i)).toBeInTheDocument(),
+      expect(
+        within(invSelect).getAllByText(/cordless drill/i).length,
+      ).toBeGreaterThan(0),
     );
     const borSelect = screen.getByLabelText(/borrower/i);
     expect(within(borSelect).getByText(/alex/i)).toBeInTheDocument();
@@ -203,10 +205,10 @@ describe("LoanFormPage", () => {
     renderForm(["/loans/new"]);
     await waitFor(() =>
       expect(
-        within(screen.getByLabelText(/inventory entry/i)).getByText(
+        within(screen.getByLabelText(/inventory entry/i)).getAllByText(
           /cordless drill/i,
-        ),
-      ).toBeInTheDocument(),
+        ).length,
+      ).toBeGreaterThan(0),
     );
 
     await user.selectOptions(screen.getByLabelText(/inventory entry/i), "inv-1");
@@ -241,7 +243,9 @@ describe("LoanFormPage", () => {
       /inventory entry/i,
     ) as HTMLSelectElement;
     // Only the it-2 entry (Ladder) is an option; it-1 entries are filtered out.
-    expect(within(invSelect).getByText(/ladder/i)).toBeInTheDocument();
+    await waitFor(() =>
+      expect(within(invSelect).getByText(/ladder/i)).toBeInTheDocument(),
+    );
     expect(within(invSelect).queryByText(/cordless drill/i)).toBeNull();
     // Exactly one match → auto-selected.
     await waitFor(() => expect(invSelect.value).toBe("inv-3"));
@@ -260,10 +264,10 @@ describe("LoanFormPage", () => {
     renderForm(["/loans/new"]);
     await waitFor(() =>
       expect(
-        within(screen.getByLabelText(/inventory entry/i)).getByText(
+        within(screen.getByLabelText(/inventory entry/i)).getAllByText(
           /cordless drill/i,
-        ),
-      ).toBeInTheDocument(),
+        ).length,
+      ).toBeGreaterThan(0),
     );
 
     await user.selectOptions(screen.getByLabelText(/inventory entry/i), "inv-1");
