@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { lazy, Suspense, useMemo, useState } from "react";
 import { Outlet, useLocation } from "react-router";
 import { Trans } from "@lingui/react/macro";
 import { TopBar } from "./TopBar";
@@ -11,6 +11,15 @@ import { F1HelpDialog } from "./F1HelpDialog";
 import { WorkspaceProvider } from "@/features/workspace/WorkspaceProvider";
 import { useLogout } from "@/features/auth/useLogout";
 import { SSEProvider, useSSEStatus } from "@/features/sse";
+import { usePaletteChord } from "@/features/command-palette";
+
+// Command Palette (TUI-05 / POL-04): the palette BODY is React.lazy so cmdk +
+// @radix-ui/react-dialog land in the `palette` chunk (16-01) and download only
+// on first open — the entry bundle carries ZERO palette bytes. Mirrors the
+// /scan + /analytics lazy idiom in routes/index.tsx. The tiny tinykeys chord
+// owner (usePaletteChord) stays in the main bundle; it is called below to flip
+// the open state.
+const CommandPalette = lazy(() => import("@/features/command-palette"));
 
 // AppShell (SHELL-01/02/06): the 2x3 CSS-Grid shell every authenticated route
 // renders inside. It owns a SINGLE `collapsed` boolean (the only collapse state
@@ -84,6 +93,12 @@ function ShellChrome() {
   const [collapsed, setCollapsed] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [helpOpen, setHelpOpen] = useState(false);
+  const [paletteOpen, setPaletteOpen] = useState(false);
+
+  // Mount-once ⌘K/Ctrl+K + F2 chord owner (tinykeys, 16-02). Pass the STABLE
+  // setPaletteOpen setter via a plain inline arrow — usePaletteChord already
+  // mounts its keydown listener once internally (no memo / dep-array here).
+  usePaletteChord(() => setPaletteOpen(true));
 
   const segments = useMemo(
     () => segmentsForPath(location.pathname),
@@ -151,6 +166,17 @@ function ShellChrome() {
         onClose={() => setHelpOpen(false)}
         onToggle={() => setHelpOpen((v) => !v)}
       />
+
+      {/* Command Palette (TUI-05): React.lazy body, gated on first open so the
+          cmdk + radix-dialog bytes load only when summoned (POL-04). */}
+      {paletteOpen && (
+        <Suspense fallback={null}>
+          <CommandPalette
+            open={paletteOpen}
+            onClose={() => setPaletteOpen(false)}
+          />
+        </Suspense>
+      )}
     </div>
   );
 }
