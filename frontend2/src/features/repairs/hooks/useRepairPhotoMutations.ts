@@ -18,10 +18,21 @@ import type { RepairPhotoType } from "@/lib/types";
 // backend lacks those routes, F2). The injected-mutations seam is therefore a
 // REDUCED set; the gallery degrades gracefully (those affordances are gated off).
 
+// photoType is typed `string` (not the narrow union) so this hook satisfies the
+// shared PhotoUpload `mutations` seam contract (whose upload accepts a plain
+// string); it is validated/narrowed to a RepairPhotoType inside the mutationFn.
 export interface RepairPhotoUploadVars {
   file: File;
   caption?: string;
-  photoType?: RepairPhotoType;
+  photoType?: string;
+}
+
+const PHOTO_TYPES: readonly RepairPhotoType[] = ["BEFORE", "DURING", "AFTER"];
+
+function asPhotoType(v: string | undefined): RepairPhotoType {
+  return PHOTO_TYPES.includes(v as RepairPhotoType)
+    ? (v as RepairPhotoType)
+    : "BEFORE";
 }
 
 /**
@@ -40,13 +51,13 @@ export function useRepairPhotoMutations(wsId: string, repairId: string) {
 
   const upload = useMutation({
     mutationFn: ({ file, caption, photoType }: RepairPhotoUploadVars) =>
-      // photo_type is REQUIRED by the backend (Pitfall 1); default to BEFORE so a
-      // caller that forgot to thread it through still produces a valid request.
+      // photo_type is REQUIRED by the backend (Pitfall 1); narrow/default to a
+      // valid RepairPhotoType so an unset/invalid value still 200s as BEFORE.
       repairPhotosApi.upload(
         wsId,
         repairId,
         file,
-        photoType ?? "BEFORE",
+        asPhotoType(photoType),
         caption,
       ),
     onSuccess: invalidate,

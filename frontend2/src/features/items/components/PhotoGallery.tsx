@@ -6,7 +6,6 @@ import {
   RetroConfirmDialog,
   useTableSelection,
 } from "@/components/retro";
-import type { Photo } from "@/lib/types";
 import { photosApi } from "@/lib/api/photos";
 import { usePhotoMutations } from "../hooks/usePhotoMutations";
 import { CaptionDialog } from "./CaptionDialog";
@@ -109,8 +108,8 @@ export function PhotoGallery({
   const [selecting, setSelecting] = useState(false);
   const selection = useTableSelection(order);
 
-  const [deleteTarget, setDeleteTarget] = useState<Photo | null>(null);
-  const [captionTarget, setCaptionTarget] = useState<Photo | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<GalleryPhoto | null>(null);
+  const [captionTarget, setCaptionTarget] = useState<GalleryPhoto | null>(null);
   const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false);
   const [bulkCaptionOpen, setBulkCaptionOpen] = useState(false);
 
