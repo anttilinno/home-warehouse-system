@@ -1,6 +1,7 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { Trans } from "@lingui/react/macro";
 import { useQuery } from "@tanstack/react-query";
+import { useNavigate } from "react-router";
 import {
   Window,
   BevelButton,
@@ -9,11 +10,17 @@ import {
 } from "@/components/retro";
 import type { Loan } from "@/lib/types";
 import { loansApi, type PartitionedLoans } from "@/lib/api/loans";
+import { loanStatus } from "@/features/loans/loanStatus";
+import { ReturnLoanDialog } from "@/features/loans/components/ReturnLoanDialog";
+import { ExtendLoanDialog } from "@/features/loans/components/ExtendLoanDialog";
 
-// Phase 7 Plan 06 — read-only per-item loan surfaces (UI-SPEC §2 side rail +
-// HISTORY tab). The shared query (key ["loans", wsId, "by-item", itemId]) returns
-// ALL loans partitioned client-side on is_active (07-RESEARCH OQ2). Loan CRUD is
-// Phase 8 — the RETURN affordance is rendered disabled with the Phase-8 hint.
+// Phase 8 Plan 04 — the item-detail loan surfaces, made REAL (LOAN-05). The
+// shared query (key ["loans", wsId, "by-item", itemId]) returns ALL loans
+// partitioned client-side on is_active (07-RESEARCH OQ2). The active panel now
+// drives the live lifecycle: ⊕ LOAN THIS ITEM when available, RETURN + EXTEND
+// (Plan-04 dialogs) when on loan, and a server-authoritative overdue chip
+// (loan.is_overdue — override 2, NEVER client date math). History pills use the
+// three-way loanStatus (Active / Overdue / Returned).
 
 /** The shared per-item loans query (consumed by both the active panel + history). */
 export function useItemLoans(
@@ -30,23 +37,36 @@ export function useItemLoans(
 export interface ActiveLoanPanelProps {
   /** The active (is_active===true) loans for this item; first one drives the panel. */
   active: Loan[];
+  /** The item these loans target — powers the ⊕ CTA + dialogs. */
+  itemId: string;
 }
 
 /**
- * The side-rail active-loan panel (UI-SPEC §2). Pink titlebar when on loan
- * (attention) with `● On loan to {borrower}` in text-accent-pink-deep + the due
- * date + a disabled RETURN (Phase-8 hint); mint `● Available` when no active loan.
+ * The side-rail active-loan panel (UI-SPEC §2). Mint `● Available` + a ⊕ LOAN
+ * THIS ITEM CTA when free; pink `● On loan to {borrower}` + due date + live
+ * RETURN/EXTEND when on loan; a danger overdue chip + line (server is_overdue)
+ * when overdue.
  */
-export function ActiveLoanPanel({ active }: ActiveLoanPanelProps) {
+export function ActiveLoanPanel({ active, itemId }: ActiveLoanPanelProps) {
+  const navigate = useNavigate();
+  const [openDialog, setOpenDialog] = useState<"return" | "extend" | null>(null);
   const loan = active[0];
 
   if (!loan) {
     return (
       <Window title={<Trans>LOAN</Trans>} titlebarVariant="mint">
-        <p className="text-[14px] font-semibold text-accent-mint-deep">
-          <span aria-hidden="true">● </span>
-          <Trans>Available</Trans>
-        </p>
+        <div className="flex flex-col gap-sp-3">
+          <p className="text-[14px] font-semibold text-accent-mint-deep">
+            <span aria-hidden="true">● </span>
+            <Trans>Available</Trans>
+          </p>
+          <BevelButton
+            type="button"
+            onClick={() => navigate(`/loans/new?itemId=${itemId}`)}
+          >
+            <Trans>⊕ LOAN THIS ITEM</Trans>
+          </BevelButton>
+        </div>
       </Window>
     );
   }
@@ -63,15 +83,37 @@ export function ActiveLoanPanel({ active }: ActiveLoanPanelProps) {
             <Trans>Due {formatDate(loan.due_date)}</Trans>
           </p>
         )}
+        {/* Overdue is SERVER-authoritative (loan.is_overdue) — never client date math. */}
+        {loan.is_overdue && (
+          <div className="flex flex-col gap-sp-1">
+            <StatusPill variant="danger">
+              <Trans>⚠ Overdue</Trans>
+            </StatusPill>
+            <p className="text-[12px] text-danger">
+              <Trans>This loan is overdue.</Trans>
+            </p>
+          </div>
+        )}
         <div className="flex flex-col gap-sp-1">
-          <BevelButton disabled aria-disabled="true">
+          <BevelButton type="button" onClick={() => setOpenDialog("return")}>
             <Trans>RETURN</Trans>
           </BevelButton>
-          <p className="text-[12px] text-fg-muted">
-            <Trans>Loan actions arrive in Phase 8.</Trans>
-          </p>
+          <BevelButton type="button" onClick={() => setOpenDialog("extend")}>
+            <Trans>EXTEND</Trans>
+          </BevelButton>
         </div>
       </div>
+
+      <ReturnLoanDialog
+        open={openDialog === "return"}
+        onClose={() => setOpenDialog(null)}
+        loan={loan}
+      />
+      <ExtendLoanDialog
+        open={openDialog === "extend"}
+        onClose={() => setOpenDialog(null)}
+        loan={loan}
+      />
     </Window>
   );
 }
@@ -99,29 +141,31 @@ export function LoanHistoryList({ history }: LoanHistoryListProps) {
 
   return (
     <ul className="flex flex-col gap-sp-2">
-      {history.map((loan) => (
-        <li
-          key={loan.id}
-          className="flex flex-wrap items-center gap-sp-2 border-2 border-border-ink bg-bg-panel-2 px-sp-3 py-sp-2"
-        >
-          <span className="text-[14px] font-semibold text-fg-ink">
-            {loan.borrower.name}
-          </span>
-          <span className="flex-1" />
-          <span className="font-mono text-[12px] tabular-nums text-fg-muted">
-            {formatDate(loan.loaned_at)}
-            {" → "}
-            {loan.returned_at ? (
-              formatDate(loan.returned_at)
-            ) : (
-              <Trans>— still out</Trans>
-            )}
-          </span>
-          <StatusPill variant={loan.is_active ? "info" : "ok"}>
-            {loan.is_active ? <Trans>OUT</Trans> : <Trans>RETURNED</Trans>}
-          </StatusPill>
-        </li>
-      ))}
+      {history.map((loan) => {
+        // Three-way status (Active / Overdue / Returned) — Plan 01 loanStatus.
+        const status = loanStatus(loan);
+        return (
+          <li
+            key={loan.id}
+            className="flex flex-wrap items-center gap-sp-2 border-2 border-border-ink bg-bg-panel-2 px-sp-3 py-sp-2"
+          >
+            <span className="text-[14px] font-semibold text-fg-ink">
+              {loan.borrower.name}
+            </span>
+            <span className="flex-1" />
+            <span className="font-mono text-[12px] tabular-nums text-fg-muted">
+              {formatDate(loan.loaned_at)}
+              {" → "}
+              {loan.returned_at ? (
+                formatDate(loan.returned_at)
+              ) : (
+                <Trans>— still out</Trans>
+              )}
+            </span>
+            <StatusPill variant={status.variant}>{status.label}</StatusPill>
+          </li>
+        );
+      })}
     </ul>
   );
 }
@@ -139,7 +183,7 @@ export interface LoanPanelsProps {
 export function LoanPanels({ wsId, itemId }: LoanPanelsProps) {
   const { data } = useItemLoans(wsId, itemId);
   const active = useMemo(() => data?.active ?? [], [data]);
-  return <ActiveLoanPanel active={active} />;
+  return <ActiveLoanPanel active={active} itemId={itemId} />;
 }
 
 // Locale-stable short date (the test asserts on the borrower/markers, not the
