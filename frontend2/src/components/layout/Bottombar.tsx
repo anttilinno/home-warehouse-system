@@ -51,7 +51,7 @@ export function Bottombar({ onOpenHelp, onBack }: BottombarProps) {
   return (
     <footer
       aria-label="Shortcuts"
-      className="hidden md:flex h-9 items-center gap-sp-2 border-t-2 border-border-ink bg-bg-panel-2 px-sp-3"
+      className="hidden md:flex h-9 min-w-0 items-center gap-sp-2 overflow-hidden border-t-2 border-border-ink bg-bg-panel-2 px-sp-3"
     >
       {inlineShortcuts.map((s, i) => (
         <ShortcutChip
@@ -74,14 +74,18 @@ export function Bottombar({ onOpenHelp, onBack }: BottombarProps) {
       {/* Spacer pushes the right cluster to the far edge; it never overflows. */}
       <span className="flex-1" />
 
-      <div className="flex items-center gap-sp-2">
+      <div className="flex flex-none items-center gap-sp-2">
         <ShortcutChip shortcutKey="F1" label="Help" onActivate={onOpenHelp} />
         <ShortcutChip
           shortcutKey="ESC"
           label="Back"
           onActivate={() => onBack?.()}
         />
-        <Clock />
+        {/* SESSION/LOCAL clock is decorative chrome (~225px) — hidden below lg
+            so the bottombar never overflows the content column at md (POL-05). */}
+        <span className="hidden lg:inline-flex">
+          <Clock />
+        </span>
       </div>
 
       {sheetOpen && (

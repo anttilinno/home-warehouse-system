@@ -392,7 +392,7 @@ export function DemoPage() {
 
       {/* ===================== DATA ATOMS ===================== */}
       <Section title={<Trans>Data Atoms</Trans>} titlebarVariant="mint">
-        <RetroTable aria-multiselectable="true">
+        <RetroTable>
           <thead>
             <tr>
               <th>

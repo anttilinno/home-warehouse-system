@@ -92,10 +92,20 @@ async function seriousViolations(page: Page): Promise<AxeViolation[]> {
   );
 }
 
-/** Goto a route and wait for the SPA to settle on a stable shell selector. */
+/** Goto a route and wait for the SPA to settle on a stable shell selector.
+ *  NOTE: must NOT use waitForLoadState("networkidle") — the app holds an open
+ *  SSE EventSource (SSEProvider), so the network never goes idle and the wait
+ *  would always time out. Wait for the DOM + a stable landmark instead. */
 async function gotoAndSettle(page: Page, route: string): Promise<void> {
-  await page.goto(route);
-  await page.waitForLoadState("networkidle");
+  await page.goto(route, { waitUntil: "domcontentloaded" });
+  // App routes render into #main; public (login/register) routes render a form.
+  await page
+    .locator("#main, form, [role='main']")
+    .first()
+    .waitFor({ state: "visible", timeout: 8000 })
+    .catch(() => {});
+  // Brief settle for async data so axe scans the rendered tree, not a spinner.
+  await page.waitForTimeout(350);
 }
 
 /** Format a per-route failure report so the assertion message is actionable. */
@@ -134,6 +144,9 @@ test.describe("a11y sweep (POL-02)", () => {
   test("app routes + one seeded detail route have zero serious/critical axe violations", async ({
     page,
   }) => {
+    // ~33 routes × (settle + axe analyze) blows past the 30s default; this is an
+    // inherently long single-login sweep. Give it a generous ceiling.
+    test.setTimeout(240_000);
     // ONE login covers the whole authenticated sweep (20/min auth limiter).
     await login(page);
 

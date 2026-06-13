@@ -391,7 +391,7 @@ export function ItemsListPage() {
 
         {!isLoading && !isError && items.length > 0 && (
           <>
-            <RetroTable aria-multiselectable="true">
+            <RetroTable>
               <thead>
                 <tr>
                   <th>

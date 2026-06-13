@@ -48,7 +48,10 @@ export function PageHeader({
         ))}
       </nav>
 
-      <div className="flex items-center gap-sp-3 font-mono text-[12px] tabular-nums text-fg-muted">
+      {/* SESSION · LAST SYNC is decorative chrome; hidden below lg so the
+          breadcrumb + content column never overflow on narrow viewports
+          (POL-05 — the meta cluster is ~410px and won't shrink). */}
+      <div className="hidden items-center gap-sp-3 font-mono text-[12px] tabular-nums text-fg-muted lg:flex">
         {/* SESSION readout reuses the isolated Clock leaf (no second timer). */}
         <Clock local={false} />
         <span className="inline-flex items-center gap-sp-1">

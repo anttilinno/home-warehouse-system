@@ -19,7 +19,9 @@
 
   /* ---------- Ink ---------- */
   --fg-ink:    #26262e;
-  --fg-muted:  #5b5b66;
+  --fg-muted:  #56565f; /* nudged darker: clears WCAG AA (4.5:1) even on the
+                           titlebar-blue selected-row fill, not just on white
+                           (POL-02 — caught on /settings/members) */
   --fg-faint:  #8e8e99; /* decorative/disabled only — never running text */
 
   /* ---------- Pastel chrome fills (ink text only) ---------- */
@@ -31,7 +33,9 @@
   /* ---------- Deep companions (colored text on white/cream) ---------- */
   --accent-blue-deep: #19526f;
   --accent-pink-deep: #a8334f;
-  --accent-mint-deep: #1e6b43;
+  --accent-mint-deep: #1a5e3a; /* nudged darker: clears AA (4.5:1) on the
+                                  titlebar-blue selected-row fill too (POL-02 —
+                                  caught on /settings/security "active now") */
   --warn-deep:        #7a5a12;
 
   /* ---------- Status ---------- */

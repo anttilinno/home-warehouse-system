@@ -1,4 +1,4 @@
-import { useRef, useState, type ReactNode } from "react";
+import { useId, useRef, useState, type ReactNode } from "react";
 import { useLingui } from "@lingui/react/macro";
 import { Trans } from "@lingui/react/macro";
 import { BevelButton } from "../BevelButton";
@@ -38,6 +38,7 @@ export function RetroFileInput({
   disabled = false,
 }: RetroFileInputProps) {
   const { t } = useLingui();
+  const inputId = useId();
   const inputRef = useRef<HTMLInputElement>(null);
   const [files, setFiles] = useState<File[]>([]);
   const [dragging, setDragging] = useState(false);
@@ -69,9 +70,12 @@ export function RetroFileInput({
 
   return (
     <div className="flex flex-col gap-sp-1">
-      <span className="text-[12px] font-bold uppercase tracking-[0.08em] text-fg-muted">
+      <label
+        htmlFor={inputId}
+        className="text-[12px] font-bold uppercase tracking-[0.08em] text-fg-muted"
+      >
         {label}
-      </span>
+      </label>
       <div
         data-testid="file-drop-zone"
         className={`flex flex-col items-center gap-sp-2 border-2 border-dashed p-sp-4 text-center bevel-sunken ${
@@ -109,6 +113,7 @@ export function RetroFileInput({
         </BevelButton>
         <input
           ref={inputRef}
+          id={inputId}
           type="file"
           accept={accept}
           multiple={multiple}

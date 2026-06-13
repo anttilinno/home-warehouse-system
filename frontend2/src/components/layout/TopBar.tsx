@@ -71,7 +71,7 @@ export function TopBar({
   return (
     <header
       role="banner"
-      className="sticky top-0 z-10 flex h-[40px] items-center gap-sp-4 border-b-2 border-border-ink bg-bg-panel px-sp-4 py-sp-1 shadow-[inset_0_-2px_0_var(--bevel-shade)]"
+      className="sticky top-0 z-10 flex h-[40px] items-center gap-sp-2 border-b-2 border-border-ink bg-bg-panel px-sp-3 py-sp-1 shadow-[inset_0_-2px_0_var(--bevel-shade)] md:gap-sp-4 md:px-sp-4"
     >
       {/* Mobile hamburger — hidden on desktop where the sidebar is persistent. */}
       <button
@@ -91,7 +91,7 @@ export function TopBar({
         >
           ▦
         </span>
-        <BrandMark className="text-[16px]" />
+        <BrandMark className="hidden text-[16px] sm:inline-block" />
       </span>
 
       {/* Workspace pill — the live AUTH-06 switcher (D-12 SSOT). */}
@@ -105,7 +105,7 @@ export function TopBar({
             isOnline ? "bg-titlebar-mint" : "bg-fg-faint"
           }`}
         />
-        <span className="text-[11px] font-bold uppercase tracking-[0.1em] text-fg-ink">
+        <span className="hidden text-[11px] font-bold uppercase tracking-[0.1em] text-fg-ink sm:inline">
           {isOnline ? <Trans>ONLINE</Trans> : <Trans>OFFLINE</Trans>}
         </span>
       </span>
@@ -129,6 +129,7 @@ export function TopBar({
         <button
           type="button"
           data-testid="user-pill"
+          aria-label={user?.full_name || user?.email || "Account menu"}
           aria-haspopup="menu"
           aria-expanded={menuOpen}
           onClick={() => setMenuOpen((v) => !v)}
