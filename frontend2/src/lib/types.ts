@@ -309,3 +309,99 @@ export interface Movement {
   reason?: string;
   created_at: string;
 }
+
+// --- Repairs + Maintenance (Phase 10b Plan 01) ---
+//
+// Source: backend repairlog/handler.go + maintenance/handler.go (10b-RESEARCH
+// §interfaces, VERIFIED from source + live curl 2026-06-13). `status` is
+// SERVER-authoritative — repairStatus() reads it directly, never date math
+// (override / OQ6). `cost` / total_cost_cents are CENTS ints (T-10b-01); the UI
+// renders them via formatCents and NEVER round-trips floats to the API.
+
+// RepairResponse status union (3, fixed). PENDING → IN_PROGRESS (start) →
+// COMPLETED (complete). The repair lifecycle is driven by start/complete POSTs,
+// never by a PATCH of `status`.
+export type RepairStatus = "PENDING" | "IN_PROGRESS" | "COMPLETED";
+
+// RepairResponse (repairlog/handler.go). cost is CENTS (int), omitted when nil.
+export interface Repair {
+  id: string;
+  workspace_id: string;
+  inventory_id: string;
+  status: RepairStatus;
+  description: string;
+  repair_date?: string; // RFC3339
+  cost?: number; // cents
+  currency_code?: string;
+  service_provider?: string;
+  completed_at?: string; // RFC3339
+  new_condition?: Condition;
+  notes?: string;
+  is_warranty_claim: boolean;
+  reminder_date?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+// GET /inventory/{id}/repair-cost → { items: RepairCostSummary[] }. ONE row per
+// currency — NEVER cross-currency summed (grouped server-side). total_cost_cents
+// is CENTS; render with formatCents(total_cost_cents, currency_code).
+export interface RepairCostSummary {
+  currency_code?: string;
+  total_cost_cents: number;
+  repair_count: number;
+}
+
+// Repair photo type (3, fixed) — the multipart `photo_type` field (Pitfall 1).
+export type RepairPhotoType = "BEFORE" | "DURING" | "AFTER";
+
+// Repair photo. url + thumbnail_url are ABSOLUTE on the wire and rewritten via
+// toProxyUrl at the repairPhotosApi mapper boundary (mirrors Photo).
+export interface RepairPhoto {
+  id: string;
+  repair_log_id: string;
+  photo_type: RepairPhotoType;
+  caption?: string;
+  url: string;
+  thumbnail_url: string;
+  created_at: string;
+}
+
+// Repair attachment kind (5, fixed) — the `attachment_type` link field.
+export type AttachmentType =
+  | "PHOTO"
+  | "MANUAL"
+  | "RECEIPT"
+  | "WARRANTY"
+  | "OTHER";
+
+// RepairAttachment (LINK-ONLY — registers an existing file_id; no byte storage
+// path, OQ3). List rows carry the resolved file metadata.
+export interface RepairAttachment {
+  id: string;
+  repair_log_id: string;
+  file_id: string;
+  attachment_type: AttachmentType;
+  title?: string;
+  file_name?: string;
+  file_mime_type?: string;
+  file_size_bytes?: number;
+}
+
+// MaintenanceSchedule (maintenance/handler.go). next_due is YYYY-MM-DD.
+export interface MaintenanceSchedule {
+  id: string;
+  title: string;
+  notes?: string;
+  interval_days: number;
+  next_due: string; // YYYY-MM-DD
+  last_completed_at?: string;
+}
+
+// GET /maintenance/due → { items: DueSchedule[] }. is_overdue is a SERVER flag
+// (never computed client-side); each row carries the resolved item identity.
+export interface DueSchedule extends MaintenanceSchedule {
+  item_id: string;
+  item_name: string;
+  is_overdue: boolean;
+}
