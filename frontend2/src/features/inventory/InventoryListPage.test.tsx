@@ -144,6 +144,34 @@ describe("InventoryListPage", () => {
     i18n.activate("en");
   });
 
+  it("the item-name join requests limit ≤ 100 (the backend item-list cap)", async () => {
+    // D-07b-A: requesting limit=200 against the backend's `maximum:"100"` cap
+    // 422s, the join never resolves, and the Item column renders "—" for every
+    // row. Guard the clamp so it can never regress past the cap.
+    let joinLimit: number | null = null;
+    server.use(
+      http.get("/api/workspaces/:wsId/items", ({ request }) => {
+        const url = new URL(request.url);
+        const raw = url.searchParams.get("limit");
+        joinLimit = raw === null ? null : Number(raw);
+        return HttpResponse.json({
+          items: [makeItem("it-1", "Cordless Drill")],
+          total: 1,
+          page: 1,
+          total_pages: 1,
+        });
+      }),
+      http.get("/api/workspaces/:wsId/inventory", () =>
+        HttpResponse.json(listOf([makeEntry("inv-1")])),
+      ),
+    );
+    renderPage();
+    // The name resolving in the cell proves the join request succeeded.
+    expect(await screen.findByText("Cordless Drill")).toBeInTheDocument();
+    expect(joinLimit).not.toBeNull();
+    expect(joinLimit as unknown as number).toBeLessThanOrEqual(100);
+  });
+
   it("renders entries with joined item names and status/condition pills", async () => {
     seedItems();
     server.use(

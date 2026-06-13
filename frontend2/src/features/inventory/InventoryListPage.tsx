@@ -68,12 +68,20 @@ export function InventoryListPage() {
   const archiveEntry = archive.mutate;
   const restoreEntry = restore.mutate;
 
-  // ── Item name join: a lightweight items query (large page) keyed under the
-  // ["items", wsId] prefix so it shares the Phase 6 SSE invalidation. Location
-  // labels have no list endpoint this phase → unresolved renders muted "—" (R7).
+  // ── Item name join: a lightweight items query keyed under the ["items", wsId]
+  // prefix so it shares the Phase 6 SSE invalidation. Location labels have no
+  // list endpoint this phase → unresolved renders muted "—" (R7).
+  //
+  // limit=100 is the backend item-list cap (handler.go `maximum:"100"`); request
+  // 200 and the endpoint 422s, the join never resolves, and EVERY row's Item
+  // column renders "—" (D-07b-A). The join therefore only resolves names for the
+  // first 100 items; workspaces with >100 items show "—" for entries whose item
+  // falls beyond that page. Proper fix is deferred (see deferred-items.md):
+  // batch per-id name resolution or a backend items-by-ids endpoint. For v3.0
+  // parity (seeded ~45 items) limit=100 resolves every name.
   const itemsQuery = useQuery({
-    queryKey: ["items", wsId, { limit: 200, page: 1 }],
-    queryFn: () => itemsApi.list(wsId as string, { limit: 200, page: 1 }),
+    queryKey: ["items", wsId, { limit: 100, page: 1 }],
+    queryFn: () => itemsApi.list(wsId as string, { limit: 100, page: 1 }),
     enabled: !!wsId,
     retry: false,
   });
