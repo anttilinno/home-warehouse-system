@@ -1,8 +1,10 @@
 ---
 phase: 11-scan
 verified: 2026-06-13T13:33:31Z
-status: gaps_found
-score: 11/12 must-haves verified
+status: resolved
+resolved_at: 2026-06-14T00:00:00Z
+resolution_note: "SCAN-10 gap closed by commit 43feceed (fix(11): wire SCAN-10 UpcSuggestionBanner into ItemFormPage). The banner is now imported (ItemFormPage.tsx:19) and mounted under `showFromScan && !upcDismissed` (ItemFormPage.tsx:353), with onUse populating name + scanBrand and onDismiss gating dismissal. 12/12 must-haves now verified. Remaining items are device-only human_verification (camera/torch/iOS) — never automatable in CI."
+score: 12/12 must-haves verified (post-fix)
 overrides_applied: 1
 overrides:
   - must_have: "SCAN-12 claim flow /claim/:code resolves shortlink/barcode and presents a claim-as-loan form (login required)"
@@ -11,7 +13,8 @@ overrides:
     accepted_at: "2026-06-13T00:00:00Z"
 gaps:
   - truth: "SCAN-10: item-create form shows suggested name/brand from GET /api/barcode/{code} as opt-in prefill (suggestion banner with USE / USE ALL / DISMISS)"
-    status: failed
+    status: resolved
+    resolved_by: "commit 43feceed — UpcSuggestionBanner imported (ItemFormPage.tsx:19) and mounted (ItemFormPage.tsx:353); onUse wires name + scanBrand, onDismiss gates the banner. The earlier 'failed' finding below predates the fix."
     reason: "UpcSuggestionBanner component is built (src/components/scan/UpcSuggestionBanner.tsx) and calls barcodeApi.lookup, but is NOT imported or mounted in ItemFormPage.tsx. The component is orphaned. Additionally, no surface in the app generates /items/new?name=...&brand=... URLs, making the ?name=/?brand= URL-reading code in ItemFormPage dead. The barcodeApi is never called from the item-create form for any prefilled barcode."
     artifacts:
       - path: "frontend2/src/components/scan/UpcSuggestionBanner.tsx"
