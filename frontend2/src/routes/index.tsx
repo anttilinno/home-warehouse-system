@@ -1,3 +1,4 @@
+import { lazy, Suspense } from "react";
 import { Routes, Route, Navigate } from "react-router";
 import { LoginPage } from "@/features/auth/LoginPage";
 import { RegisterPage } from "@/features/auth/RegisterPage";
@@ -23,6 +24,14 @@ import { BorrowerFormPage } from "@/features/borrowers/BorrowerFormPage";
 import { BorrowerDetailPage } from "@/features/borrowers/BorrowerDetailPage";
 import { TaxonomyPage } from "@/features/taxonomy/TaxonomyPage";
 import { CategoryFormDialog } from "@/features/taxonomy/components/CategoryFormDialog";
+import { ClaimPage } from "@/features/scan/ClaimPage";
+
+// /scan is React.lazy so the camera scanner library lands in its own manualChunk
+// (11-01) and only downloads when the user actually visits /scan (T-11-16 DoS —
+// the scanner bytes never load on every page). The App.tsx lazy+Suspense idiom.
+const ScanPage = lazy(() =>
+  import("@/features/scan/ScanPage").then((m) => ({ default: m.ScanPage })),
+);
 
 // Library-mode RR7 (NOT framework mode — AP-1). Literal routes before the
 // wildcard. /login stays public; the authenticated branch is now an AppShell
@@ -103,6 +112,21 @@ export function AppRoutes() {
           path="taxonomy/categories/:id/edit"
           element={<CategoryFormDialog mode="edit" />}
         />
+        {/* Scan (11-06): the camera/manual/history scan surface + the deep-link
+            claim flow. BOTH are login-gated (SCAN-12 — they live inside the
+            RequireAuth+AppShell branch; unauth → /login?next= via RequireAuth).
+            /scan is lazy (Suspense) so the scanner chunk loads only on visit
+            (T-11-16); /claim/:code is static (11-07, no scanner bytes). Literal
+            `scan` + param `claim/:code` both precede the `*` wildcard (Pitfall 7). */}
+        <Route
+          path="scan"
+          element={
+            <Suspense fallback={null}>
+              <ScanPage />
+            </Suspense>
+          }
+        />
+        <Route path="claim/:code" element={<ClaimPage />} />
         {/* Settings hub (05-UI-SPEC §5): SettingsLayout sub-layout under the
             AUTHENTICATED AppShell. /settings → /settings/security; the two built
             pages (security + accounts) render through the layout's tab Outlet. */}
