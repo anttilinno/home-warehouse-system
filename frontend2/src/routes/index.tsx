@@ -9,6 +9,7 @@ import { SettingsLayout } from "@/features/settings/SettingsLayout";
 import { SecurityPage } from "@/features/settings/SecurityPage";
 import { AccountsPage } from "@/features/settings/AccountsPage";
 import { DemoPage } from "@/routes/demo/DemoPage";
+import { ItemsListPage } from "@/features/items/ItemsListPage";
 
 // Library-mode RR7 (NOT framework mode — AP-1). Literal routes before the
 // wildcard. /login stays public; the authenticated branch is now an AppShell
@@ -44,6 +45,11 @@ export function AppRoutes() {
         }
       >
         <Route index element={<DashboardPage />} />
+        {/* Items list (07-03). Literal route before the wildcard (AP-1). The
+            detail/create/edit routes (/items/new, /items/:id, /items/:id/edit)
+            land with Plans 05/06 in Wave 3 — this plan registers ONLY the list
+            to avoid a route-file conflict with the parallel plans. */}
+        <Route path="items" element={<ItemsListPage />} />
         {/* Settings hub (05-UI-SPEC §5): SettingsLayout sub-layout under the
             AUTHENTICATED AppShell. /settings → /settings/security; the two built
             pages (security + accounts) render through the layout's tab Outlet. */}

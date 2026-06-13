@@ -136,7 +136,7 @@ export function Sidebar({
           <NavItem glyph="▤" label={<Trans>Analytics</Trans>} />
         </NavGroup>
         <NavGroup title={<Trans>Inventory</Trans>}>
-          <NavItem glyph="▣" label={<Trans>Items</Trans>} count={stats?.total_items} />
+          <NavItem glyph="▣" label={<Trans>Items</Trans>} count={stats?.total_items} to="/items" />
           <NavItem glyph="▢" label={<Trans>Locations</Trans>} count={stats?.total_locations} />
           <NavItem glyph="▥" label={<Trans>Containers</Trans>} count={stats?.total_containers} />
           <NavItem glyph="◇" label={<Trans>Categories</Trans>} count={stats?.total_categories} />
