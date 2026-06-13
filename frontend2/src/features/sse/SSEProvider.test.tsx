@@ -175,11 +175,20 @@ it("does not re-render status consumers on an event burst", () => {
     </SSEProvider>,
   );
 
-  // Establish the connected baseline (this legitimately re-renders the status).
+  // Connect, then prime the coarse `lastEventAt` tick with a single event — both
+  // legitimately re-render the status. After this the throttle window is open.
   act(() => MockEventSource.last!.emit("connected", CONNECTED));
+  act(() =>
+    MockEventSource.last!.emit(
+      "category.created",
+      event({ entity_type: "category" }),
+    ),
+  );
   const baseline = renderCount.n;
 
-  // Burst of domain events: status value never changes → no status re-renders.
+  // Burst of domain events within the same coarsening window: the subscriber
+  // fan-out runs (Sub keeps consuming) but neither `connected` nor the throttled
+  // `lastEventAt` changes → ZERO additional status re-renders (Pitfall 5).
   act(() => {
     for (let i = 0; i < 20; i++) {
       MockEventSource.last!.emit(
