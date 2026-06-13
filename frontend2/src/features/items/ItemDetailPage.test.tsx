@@ -9,7 +9,7 @@ import { i18n } from "@/lib/i18n";
 import { server } from "@/test/msw/server";
 import { ModalStackProvider } from "@/components/modal";
 import { RetroToaster } from "@/components/retro";
-import type { Item, Loan, Photo } from "@/lib/types";
+import type { Inventory, Item, Loan, Movement, Photo } from "@/lib/types";
 import { ItemDetailPage } from "./ItemDetailPage";
 
 const WS = "ws-A";
@@ -86,11 +86,41 @@ function makeLoan(overrides: Partial<Loan> = {}): Loan {
   };
 }
 
+function makeInventory(overrides: Partial<Inventory> = {}): Inventory {
+  return {
+    id: "inv-1",
+    workspace_id: WS,
+    item_id: ID,
+    location_id: "loc-1",
+    quantity: 3,
+    condition: "GOOD",
+    status: "AVAILABLE",
+    is_archived: false,
+    created_at: "2026-06-01T00:00:00Z",
+    updated_at: "2026-06-01T00:00:00Z",
+    ...overrides,
+  };
+}
+
+function makeMovement(overrides: Partial<Movement> = {}): Movement {
+  return {
+    id: "mv-1",
+    workspace_id: WS,
+    inventory_id: "inv-1",
+    to_location_id: "loc-2",
+    quantity: 1,
+    created_at: "2026-06-05T00:00:00Z",
+    ...overrides,
+  };
+}
+
 interface Fixtures {
   item?: Item | null;
   itemStatus?: number;
   photos?: Photo[];
   loans?: Loan[];
+  inventory?: Inventory[];
+  movementsByInv?: Record<string, Movement[]>;
   onArchive?: () => void;
 }
 
@@ -112,6 +142,25 @@ function installHandlers(f: Fixtures) {
       HttpResponse.json({ label_ids: [] }),
     ),
     http.get("/api/workspaces/:wsId/labels", () =>
+      HttpResponse.json({ items: [] }),
+    ),
+    http.get("/api/workspaces/:wsId/inventory/by-item/:itemId", () =>
+      HttpResponse.json({ items: f.inventory ?? [] }),
+    ),
+    http.get(
+      "/api/workspaces/:wsId/inventory/:invId/movements",
+      ({ params }) =>
+        HttpResponse.json({
+          items: f.movementsByInv?.[params.invId as string] ?? [],
+        }),
+    ),
+    http.get("/api/workspaces/:wsId/locations", () =>
+      HttpResponse.json({ items: [{ id: "loc-1", name: "Garage" }] }),
+    ),
+    http.get("/api/workspaces/:wsId/containers", () =>
+      HttpResponse.json({ items: [] }),
+    ),
+    http.get("/api/workspaces/:wsId/items", () =>
       HttpResponse.json({ items: [] }),
     ),
     http.post("/api/workspaces/:wsId/items/:id/archive", () => {
@@ -159,8 +208,11 @@ describe("ItemDetailPage", () => {
     i18n.activate("en");
   });
 
-  it("renders the item fields, the three tabs, and the side-rail inventory stub", async () => {
-    installHandlers({ item: makeItem() });
+  it("renders the item fields, the three tabs, and the live side-rail inventory panel", async () => {
+    installHandlers({
+      item: makeItem(),
+      inventory: [makeInventory({ quantity: 3 }), makeInventory({ id: "inv-2", quantity: 5 })],
+    });
     renderDetail();
     // Titlebar + fields.
     expect(await screen.findAllByText(/cordless drill/i)).not.toHaveLength(0);
@@ -169,11 +221,34 @@ describe("ItemDetailPage", () => {
     expect(screen.getByRole("tab", { name: /details/i })).toBeInTheDocument();
     expect(screen.getByRole("tab", { name: /photos/i })).toBeInTheDocument();
     expect(screen.getByRole("tab", { name: /history/i })).toBeInTheDocument();
-    // Side-rail stub is a real named region.
-    expect(
-      screen.getByRole("region", { name: /inventory/i }),
-    ).toBeInTheDocument();
-    expect(screen.getByText("Stock entries arrive in 7b.")).toBeInTheDocument();
+    // Side-rail inventory panel is a real named region with the live IN STOCK total.
+    const rail = await screen.findByRole("region", { name: /inventory/i });
+    expect(within(rail).getByText("8")).toBeInTheDocument();
+  });
+
+  it("HISTORY tab shows per-item movements aggregated across the item's entries", async () => {
+    const user = userEvent.setup();
+    installHandlers({
+      item: makeItem(),
+      inventory: [makeInventory({ id: "inv-1" }), makeInventory({ id: "inv-2" })],
+      movementsByInv: {
+        "inv-1": [makeMovement({ id: "mv-a", inventory_id: "inv-1", created_at: "2026-06-01T00:00:00Z" })],
+        "inv-2": [makeMovement({ id: "mv-b", inventory_id: "inv-2", created_at: "2026-06-09T00:00:00Z" })],
+      },
+    });
+    renderDetail();
+    await user.click(await screen.findByRole("tab", { name: /history/i }));
+    // The movements section renders both entries' movements.
+    const rows = await screen.findAllByText("×1");
+    expect(rows.length).toBeGreaterThanOrEqual(2);
+  });
+
+  it("HISTORY tab shows the NO MOVEMENTS empty state when the item has none", async () => {
+    const user = userEvent.setup();
+    installHandlers({ item: makeItem(), inventory: [] });
+    renderDetail();
+    await user.click(await screen.findByRole("tab", { name: /history/i }));
+    expect(await screen.findByText(/no movements/i)).toBeInTheDocument();
   });
 
   it("PHOTOS tab shows the gallery and opens the lightbox on thumbnail click", async () => {

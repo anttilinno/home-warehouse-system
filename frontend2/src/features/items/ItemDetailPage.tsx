@@ -27,13 +27,15 @@ import {
   useItemLoans,
 } from "./components/LoanPanels";
 import { ItemLabels } from "./components/ItemLabels";
-import { InventoryPanelStub } from "./components/InventoryPanelStub";
+import { InventoryPanel } from "./components/InventoryPanel";
+import { useItemMovements } from "./hooks/useItemMovements";
+import { MovementsPanel } from "@/features/inventory/components/MovementsPanel";
 
 // Phase 7 Plan 06 — item detail page (`/items/:id`, ITEM-02).
 //
 // A mint Window titled with the item name (UPPERCASED via the titlebar rule).
 // Two-column at lg: left = DETAILS/PHOTOS/HISTORY tabs, right = a persistent side
-// rail (active-loan panel + InventoryPanelStub). Titlebar carries EDIT + an ↧
+// rail (active-loan panel + the live InventoryPanel, INV-08). Titlebar carries EDIT + an ↧
 // overflow menu (ARCHIVE/RESTORE, DELETE…). Delete is archived-only with a
 // type-to-confirm gate (pink). Loan partition + photo gallery/lightbox/upload are
 // composed from Plans 01/04/06.
@@ -57,6 +59,10 @@ export function ItemDetailPage() {
   });
 
   const loansQuery = useItemLoans(wsId as string, id as string);
+
+  // Per-item movements (INV-07 item scope) — aggregated across the item's
+  // inventory entries; feeds the HISTORY tab's MOVEMENTS section.
+  const itemMovements = useItemMovements(wsId as string, id as string);
 
   const { archive, restore, del } = useItemMutations();
   // RQ v5 returns a fresh mutation object per render but the .mutate identity is
@@ -199,7 +205,17 @@ export function ItemDetailPage() {
     {
       id: "history",
       label: <Trans>HISTORY</Trans>,
-      content: <LoanHistoryList history={historyLoans} />,
+      content: (
+        <div className="flex flex-col gap-sp-4">
+          <LoanHistoryList history={historyLoans} />
+          <div className="flex flex-col gap-sp-2 border-t-2 border-border-ink pt-sp-3">
+            <MovementsPanel
+              movements={itemMovements.movements}
+              isLoading={itemMovements.isLoading}
+            />
+          </div>
+        </div>
+      ),
     },
   ];
 
@@ -281,7 +297,7 @@ export function ItemDetailPage() {
           {/* Right column — persistent side rail */}
           <aside className="flex flex-col gap-sp-5">
             <ActiveLoanPanel active={activeLoans} />
-            <InventoryPanelStub />
+            <InventoryPanel wsId={wsId as string} itemId={item.id} />
           </aside>
         </div>
       </Window>
