@@ -89,6 +89,21 @@ export default defineConfig({
           if (chartModules.some((mod) => id.includes(mod))) {
             return "charts";
           }
+          // Phase 16 (Command Palette): isolate cmdk (~5KB gz) + the
+          // @radix-ui/react-dialog tree (~10-15KB gz) into a lazy `palette`
+          // chunk so the entry bundle carries ZERO palette bytes (TUI-05 /
+          // POL-04 budget). Pairs with the React.lazy palette body shipped in
+          // a downstream plan — the palette bytes load ONLY when the palette is
+          // first opened. OVERRIDE B: cmdk hard-imports @radix-ui/react-dialog
+          // at module top level (non-tree-shakable), so radix-dialog MUST be
+          // co-located in this chunk or it leaks into the always-loaded entry.
+          // The chunk stays empty until the first app-side import lands
+          // (rolldown no-ops an unreachable rule). Mirrors the scanner/charts
+          // isolates above — membership is a greppable data structure.
+          const paletteModules = ["cmdk", "@radix-ui/react-dialog"];
+          if (paletteModules.some((mod) => id.includes(mod))) {
+            return "palette";
+          }
           return undefined;
         },
       },
