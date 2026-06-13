@@ -133,11 +133,16 @@ test("inventory lifecycle: create entry → list → move → movements recorded
     await expect(page).toHaveURL(/\/inventory$/);
     const row = page.locator("table tbody tr").first();
     await expect(row).toBeVisible();
+    // NOTE: InlineEditCell aria-label is `edit {field} for {itemName}`, falling
+    // back to "this entry" only when the item-name join is unresolved. Since the
+    // join now resolves names (limit clamped to the backend cap of 100, and the
+    // dev workspace has <100 items), the label carries the real item name —
+    // match on the field+verb prefix, not the volatile name suffix.
     await expect(
-      row.getByRole("button", { name: /edit status for this entry/i }),
+      row.getByRole("button", { name: /edit status for /i }),
     ).toContainText(/available/i);
     await expect(
-      row.getByRole("button", { name: /edit condition for this entry/i }),
+      row.getByRole("button", { name: /edit condition for /i }),
     ).toContainText(/good/i);
 
     // ── MOVE: the row MOVE action opens the MoveDialog; select the SECOND
