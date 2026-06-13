@@ -753,9 +753,9 @@ Plans:
 Plans:
 - [x] 12-01-PLAN.md — Backend: enrich MemberResponse (email/full_name) + POST /members accepts email (Go, Wave 1)
 - [x] 12-02-PLAN.md — Foundation: SettingsLayout rewrite + grouped-row landing + all subpage routes + settingsApi + types + MSW (single-writer, Wave 1)
-- [ ] 12-03-PLAN.md — Profile (name/email + AvatarUploader) + Appearance (light-only) (Wave 2)
-- [ ] 12-04-PLAN.md — Language + Regional Formats + Notifications (preferences PATCH) (Wave 2)
-- [ ] 12-05-PLAN.md — Data & Storage (clear-cache + export download + import pointer) (Wave 2)
+- [x] 12-03-PLAN.md — Profile (name/email + AvatarUploader) + Appearance (light-only) (Wave 2)
+- [x] 12-04-PLAN.md — Language + Regional Formats + Notifications (preferences PATCH) (Wave 2)
+- [x] 12-05-PLAN.md — Data & Storage (clear-cache + export download + import pointer) (Wave 2)
 - [ ] 12-06-PLAN.md — Members page (list/role-change/remove/add-by-email) (Wave 3)
 - [ ] 12-07-PLAN.md — Live Playwright settings E2E (landing → profile save; language; members) (Wave 3)
 **UI hint**: yes
@@ -886,7 +886,7 @@ Plans:
 | 10 | v3.0 | 5/5 | Complete   | 2026-06-13 |
 | 10b | v3.0 | 5/5 | Complete   | 2026-06-13 |
 | 11 | v3.0 | 8/8 | Complete   | 2026-06-13 |
-| 12 | v3.0 | 2/7 | In Progress|  |
+| 12 | v3.0 | 5/7 | In Progress|  |
 | 13 | v3.0 | 0/TBD | Not started | - |
 | 13b | v3.0 | 0/TBD | Not started | - |
 | 14 | v3.0 | 0/TBD | Not started | - |
