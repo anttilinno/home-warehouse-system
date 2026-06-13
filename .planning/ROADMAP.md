@@ -691,7 +691,13 @@ Plans:
   2. User can view locations as a hierarchical tree (Locations tab); create / edit / archive at any level
   3. User can view containers grouped by location (Containers tab); create / edit / delete with unassign-and-delete cascade behavior when items are assigned (matches v2.2 cascade decision)
 **Parity additions (2026-06-12)** (§4, Gap G-10 partial): add a label manager (simple CRUD list + color) so item label-attach in Phase 7 has labels to attach — new requirement ID TAX-07. Wire the location/container search type-ahead pickers here; Phases 7/8 and the Phase 7b inventory forms reuse them.
-**Plans**: TBD
+**Plans**: 5 plans across 4 waves
+Plans:
+- [ ] 10-01-PLAN.md — Foundation: api modules (category/location/container + labels extend) + buildTree util + net-new RetroTree atom + zod schemas + MSW handlers
+- [ ] 10-02-PLAN.md — Page shell (/taxonomy ?tab= RetroTabs) + Categories tab (tree CRUD + TAX-02 client usage-warning archive) + route + Sidebar + W3 tab stubs
+- [ ] 10-03-PLAN.md — Locations tab (tree, archive-only) + Containers tab (grouped-by-location, bare-DELETE unassign) + SearchPicker + useTaxonomySearch
+- [ ] 10-04-PLAN.md — Labels tab (TAX-07 CRUD list + 8-swatch on-palette color picker)
+- [ ] 10-05-PLAN.md — Live Playwright E2E (category create→tree→archive-warning; container create→grouped→delete; label CRUD; single login)
 **UI hint**: yes
 
 ### Phase 10b: Repairs + Maintenance
