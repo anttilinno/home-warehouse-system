@@ -241,7 +241,7 @@ Clean-slate rebuild of `/frontend2` with sketch 006-008 retro-os pastel fidelity
 - [x] **Phase 10: Taxonomy** — categories tree + locations tree + containers grouped by location + create/edit/archive with usage warnings + container delete with unassign-and-delete cascade policy (completed 2026-06-13)
 - [x] **Phase 10b: Repairs + Maintenance** — repair log drawer/panel on inventory detail (CRUD + start/complete + cost rollup) + repair photos + repair attachments + maintenance schedule CRUD + due list + complete action + dashboard due-maintenance feed (consumed by Phase 13) [Gap G-2] (completed 2026-06-13)
 - [x] **Phase 11: Scan (single-route)** — `/scan` with `<BarcodeScanner>` mounted ONCE + QR/UPC/EAN/Code128 + pause-on-match (prop-driven) + Android torch + manual fallback + AudioContext + ios-haptics + scan history (last 10) + 4-state result banner + post-match quick-action overlay + UPC opt-in suggestion prefill (completed 2026-06-13)
-- [ ] **Phase 12: Settings hub** — landing with 8 grouped rows + Profile + Security + Appearance + Language + Regional Formats + Notifications + Connected Accounts + Data Storage (online-only — clear cache + export + import only)
+- [x] **Phase 12: Settings hub** — landing with 8 grouped rows + Profile + Security + Appearance + Language + Regional Formats + Notifications + Connected Accounts + Data Storage (online-only — clear cache + export + import only) (completed 2026-06-13)
 - [ ] **Phase 13: Dashboard** — 4 stat tiles + activity table (TUI columns, relative <24h then absolute) + side rail (Pending Approvals + System Alerts) + HUD row (gauge + sparkline + counts) gated behind `VITE_FEATURE_HUD_ROLLUPS` flag (Conflict 3 resolution)
 - [ ] **Phase 13b: Analytics + Out-of-stock** — charts page (category breakdown, location values, condition/status distribution, top borrowers, monthly loan activity; lazy-loaded chart lib to protect POL-04 bundle budget) + out-of-stock table with item links. NOTE: charts aesthetic needs a Retro OS sketch (extend set 006-008) before planning [Gap G-6]
 - [ ] **Phase 14: System group** — Approvals + My Changes + Sync History + Imports/Exports — all activity-table style with bulk operations dispatched via Bottombar
@@ -756,8 +756,8 @@ Plans:
 - [x] 12-03-PLAN.md — Profile (name/email + AvatarUploader) + Appearance (light-only) (Wave 2)
 - [x] 12-04-PLAN.md — Language + Regional Formats + Notifications (preferences PATCH) (Wave 2)
 - [x] 12-05-PLAN.md — Data & Storage (clear-cache + export download + import pointer) (Wave 2)
-- [ ] 12-06-PLAN.md — Members page (list/role-change/remove/add-by-email) (Wave 3)
-- [ ] 12-07-PLAN.md — Live Playwright settings E2E (landing → profile save; language; members) (Wave 3)
+- [x] 12-06-PLAN.md — Members page (list/role-change/remove/add-by-email) (Wave 3)
+- [x] 12-07-PLAN.md — Live Playwright settings E2E (landing → profile save; language; members) (Wave 3)
 **UI hint**: yes
 
 ### Phase 13: Dashboard
@@ -886,7 +886,7 @@ Plans:
 | 10 | v3.0 | 5/5 | Complete   | 2026-06-13 |
 | 10b | v3.0 | 5/5 | Complete   | 2026-06-13 |
 | 11 | v3.0 | 8/8 | Complete   | 2026-06-13 |
-| 12 | v3.0 | 5/7 | In Progress|  |
+| 12 | v3.0 | 7/7 | Complete   | 2026-06-13 |
 | 13 | v3.0 | 0/TBD | Not started | - |
 | 13b | v3.0 | 0/TBD | Not started | - |
 | 14 | v3.0 | 0/TBD | Not started | - |

@@ -136,15 +136,15 @@
 
 ### Settings (SETT)
 
-- [ ] **SETT-01**: Settings landing page has iOS-style grouped rows linking to subpages — Profile, Security, Appearance, Language, Regional Formats, Notifications, Connected Accounts, Data Storage.
-- [ ] **SETT-02**: Profile subpage — edit name, email, avatar (upload + 150×150 thumbnail).
-- [ ] **SETT-03**: Security subpage — password change, active sessions list + revoke, account deletion.
-- [ ] **SETT-04**: Appearance subpage — theme picker; under v3.0 the only theme is premium-terminal (the design IS the product per anti-feature lock).
-- [ ] **SETT-05**: Language subpage — pick from English / Estonian / Russian.
-- [ ] **SETT-06**: Regional Formats subpage — date format, time format, thousand separator, decimal separator.
-- [ ] **SETT-07**: Notifications subpage — in-app preference toggles for SSE event types.
-- [ ] **SETT-08**: Connected Accounts subpage — link/unlink OAuth providers.
-- [ ] **SETT-09**: Data Storage subpage — clear cached query data, export workspace, import workspace (online-only — no offline-storage management surface).
+- [x] **SETT-01**: Settings landing page has iOS-style grouped rows linking to subpages — Profile, Security, Appearance, Language, Regional Formats, Notifications, Connected Accounts, Data Storage.
+- [x] **SETT-02**: Profile subpage — edit name, email, avatar (upload + 150×150 thumbnail).
+- [x] **SETT-03**: Security subpage — password change, active sessions list + revoke, account deletion.
+- [x] **SETT-04**: Appearance subpage — theme picker; under v3.0 the only theme is premium-terminal (the design IS the product per anti-feature lock).
+- [x] **SETT-05**: Language subpage — pick from English / Estonian / Russian.
+- [x] **SETT-06**: Regional Formats subpage — date format, time format, thousand separator, decimal separator.
+- [x] **SETT-07**: Notifications subpage — in-app preference toggles for SSE event types.
+- [x] **SETT-08**: Connected Accounts subpage — link/unlink OAuth providers.
+- [x] **SETT-09**: Data Storage subpage — clear cached query data, export workspace, import workspace (online-only — no offline-storage management surface).
 
 ### Dashboard (DASH)
 
@@ -271,8 +271,8 @@
 
 ### Settings parity additions (SETT) — Phase 12 (Gaps G-9, theme decision)
 
-- [ ] **SETT-10**: Members page — list workspace members, change roles, remove members, invite/add a member by email.
-- [ ] **SETT-11**: Appearance subpage ships **light-only** under v3.0 with an explicit note; dark theme is deferred to backlog.
+- [x] **SETT-10**: Members page — list workspace members, change roles, remove members, invite/add a member by email.
+- [x] **SETT-11**: Appearance subpage ships **light-only** under v3.0 with an explicit note; dark theme is deferred to backlog.
 
 ### Polish parity addition (POL) — Phase 17 (§7)
 
@@ -389,15 +389,15 @@
 | SCAN-09 | Phase 11 | Complete |
 | SCAN-10 | Phase 11 | Complete |
 | SCAN-11 | Phase 11 | Complete |
-| SETT-01 | Phase 12 | Pending |
-| SETT-02 | Phase 12 | Pending |
-| SETT-03 | Phase 12 | Pending |
-| SETT-04 | Phase 12 | Pending |
-| SETT-05 | Phase 12 | Pending |
-| SETT-06 | Phase 12 | Pending |
-| SETT-07 | Phase 12 | Pending |
-| SETT-08 | Phase 12 | Pending |
-| SETT-09 | Phase 12 | Pending |
+| SETT-01 | Phase 12 | Complete |
+| SETT-02 | Phase 12 | Complete |
+| SETT-03 | Phase 12 | Complete |
+| SETT-04 | Phase 12 | Complete |
+| SETT-05 | Phase 12 | Complete |
+| SETT-06 | Phase 12 | Complete |
+| SETT-07 | Phase 12 | Complete |
+| SETT-08 | Phase 12 | Complete |
+| SETT-09 | Phase 12 | Complete |
 | DASH-01 | Phase 13 | Pending |
 | DASH-02 | Phase 13 | Pending |
 | DASH-03 | Phase 13 | Pending |
@@ -462,8 +462,8 @@
 | AUTH-12 | Phase 5 | Complete |
 | TAX-07 | Phase 10 | Complete |
 | SCAN-12 | Phase 11 | Complete (port-legacy create-entity) |
-| SETT-10 | Phase 12 | Pending |
-| SETT-11 | Phase 12 | Pending |
+| SETT-10 | Phase 12 | Complete |
+| SETT-11 | Phase 12 | Complete |
 | POL-06 | Phase 17 | Pending |
 
 **Total:** 106 base requirements across 17 categories + 43 parity-amendment requirements (2026-06-12) across 14 new/extended categories (INV 8, RPR 4, MNT 3, ANL 4, ATT 3, PPL 3, WISH 2, DECL 2, NOTIF 3, ATOM-FB 4, AUTH +2, TAX +1, SCAN +1, SETT +2, POL +1) = **149 total** — note prior summary said 91/14 but the actual list above (and the body of the document) contains 106 requirements across 17 categories: FOUND (6), TOKEN (5), SHELL (6), BAR (5), PROV (4), AUTH (10), ITEM (10), LOAN (6), BORR (5), TAX (6), SCAN (11), SETT (9), DASH (5), I18N (3), SYS (4), TUI (6), POL (5). All 106 mapped to exactly one phase below.
