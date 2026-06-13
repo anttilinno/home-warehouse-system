@@ -15,6 +15,7 @@ import { ItemDetailPage } from "@/features/items/ItemDetailPage";
 import { InventoryListPage } from "@/features/inventory/InventoryListPage";
 import { InventoryFormPage } from "@/features/inventory/InventoryFormPage";
 import { ExpiringPage } from "@/features/inventory/ExpiringPage";
+import { LoansListPage } from "@/features/loans/LoansListPage";
 
 // Library-mode RR7 (NOT framework mode — AP-1). Literal routes before the
 // wildcard. /login stays public; the authenticated branch is now an AppShell
@@ -64,6 +65,10 @@ export function AppRoutes() {
         <Route path="inventory/expiring" element={<ExpiringPage />} />
         <Route path="inventory/:id/edit" element={<InventoryFormPage />} />
         <Route path="items/:id/edit" element={<ItemFormPage />} />
+        {/* Loans list (08-02). Plan 03 registers the sibling `loans/new` route
+            in a LATER wave (depends_on 08-02) — the two route edits merge
+            sequentially, so this literal `loans` route stands alone here. */}
+        <Route path="loans" element={<LoansListPage />} />
         {/* Settings hub (05-UI-SPEC §5): SettingsLayout sub-layout under the
             AUTHENTICATED AppShell. /settings → /settings/security; the two built
             pages (security + accounts) render through the layout's tab Outlet. */}

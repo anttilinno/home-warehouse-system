@@ -141,7 +141,7 @@ export function Sidebar({
           <NavItem glyph="▢" label={<Trans>Locations</Trans>} count={stats?.total_locations} />
           <NavItem glyph="▥" label={<Trans>Containers</Trans>} count={stats?.total_containers} />
           <NavItem glyph="◇" label={<Trans>Categories</Trans>} count={stats?.total_categories} />
-          <NavItem glyph="↧" label={<Trans>Loans</Trans>} count={stats?.active_loans} />
+          <NavItem glyph="↧" label={<Trans>Loans</Trans>} count={stats?.active_loans} to="/loans" />
           <NavItem glyph="☺" label={<Trans>Borrowers</Trans>} count={stats?.total_borrowers} />
         </NavGroup>
         <NavGroup title={<Trans>System</Trans>}>
