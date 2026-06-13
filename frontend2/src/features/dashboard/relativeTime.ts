@@ -1,4 +1,8 @@
-import { i18n } from "@/lib/i18n";
+import {
+  DEFAULT_FORMAT_TOKENS,
+  formatDateToken,
+  formatTimeToken,
+} from "@/lib/format";
 
 // DASH-02 part a: a pure, locale-aware relative-time formatter for the recent
 // activity table. Under 24h the cell reads "Nm ago" / "Nh ago" (or "<1m" for
@@ -32,12 +36,12 @@ export function formatRelativeTime(iso: string, now: Date = new Date()): string 
     return `${h}h ago`;
   }
 
-  // At/after 24h → absolute date + time (same shape the old same-day helper
-  // used for non-today rows, now always with the date component).
-  return date.toLocaleString(i18n.locale, {
-    day: "numeric",
-    month: "short",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
+  // At/after 24h → absolute date + time. `formatRelativeTime` is a PURE function
+  // (not a component) so it cannot call useDateFormat/useTimeFormat — it routes
+  // through the pure token helpers with the DEFAULT tokens instead (I18N-03). This
+  // keeps the fn guard-clean (no toLocale*) and deterministic across timezones.
+  return `${formatDateToken(iso, DEFAULT_FORMAT_TOKENS.date_format)} ${formatTimeToken(
+    iso,
+    DEFAULT_FORMAT_TOKENS.time_format,
+  )}`;
 }

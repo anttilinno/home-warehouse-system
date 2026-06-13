@@ -26,7 +26,8 @@ function formatElapsed(ms: number): string {
  * Mono keep the digits from reflowing.
  *
  * SESSION = elapsed since mount (the real login-time source lands in Phase 5).
- * LOCAL = wall clock via `toLocaleTimeString("et-EE")` (sketch-006 locale).
+ * LOCAL = a locale-fixed et-EE wall clock (sketch-006 locale); decorative chrome,
+ * not user data — see the i18n-format-ignore note on the call below.
  */
 export function Clock({ local = true }: ClockProps) {
   // Mount timestamp is stable across renders; only `now` ticks.
@@ -39,7 +40,10 @@ export function Clock({ local = true }: ClockProps) {
   }, []);
 
   const session = formatElapsed(now - startRef.current);
-  const localTime = new Date(now).toLocaleTimeString("et-EE");
+  // Decorative wall-clock chrome (sketch-006), intentionally locale-fixed to
+  // et-EE; NOT user data, so it is not forced through the user's time_format
+  // preference (see 15-CONTEXT).
+  const localTime = new Date(now).toLocaleTimeString("et-EE"); // i18n-format-ignore
 
   return (
     <div className="inline-flex items-center gap-sp-2">

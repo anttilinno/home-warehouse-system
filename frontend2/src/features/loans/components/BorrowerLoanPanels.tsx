@@ -8,6 +8,7 @@ import {
   RetroEmptyState,
 } from "@/components/retro";
 import type { Loan } from "@/lib/types";
+import { useDateFormat } from "@/lib/format";
 import { useBorrowerLoans } from "@/features/loans/hooks/useBorrowerLoans";
 import { loanStatus } from "@/features/loans/loanStatus";
 import { ReturnLoanDialog } from "@/features/loans/components/ReturnLoanDialog";
@@ -140,6 +141,8 @@ interface BorrowerLoanHistoryProps {
 }
 
 function BorrowerLoanHistory({ history }: BorrowerLoanHistoryProps) {
+  // I18N-03: history dates honor the user's date_format preference.
+  const formatDate = useDateFormat();
   if (history.length === 0) {
     return (
       <Window title={<Trans>LOAN HISTORY</Trans>} titlebarVariant="plain">
@@ -185,14 +188,6 @@ function BorrowerLoanHistory({ history }: BorrowerLoanHistoryProps) {
       </ul>
     </Window>
   );
-}
-
-// Locale-stable short date for the history range (test asserts on names/markers,
-// not the exact format).
-function formatDate(iso: string): string {
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return iso;
-  return d.toISOString().slice(0, 10);
 }
 
 // Display-only day delta for the due chip MAGNITUDE. The overdue DECISION is

@@ -1,5 +1,6 @@
 import { Trans } from "@lingui/react/macro";
 import { RetroEmptyState } from "@/components/retro";
+import { useDateFormat, useTimeFormat } from "@/lib/format";
 import type { Movement } from "@/lib/types";
 
 // Phase 7b Plan 02 — the per-entry movement history list (UI-SPEC §6). A
@@ -18,22 +19,18 @@ export interface MovementsPanelProps {
   isLoading?: boolean;
 }
 
-/** Format an RFC3339 timestamp to `YYYY-MM-DD HH:mm` (mono). */
-function formatTimestamp(iso: string): string {
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return iso;
-  const pad = (n: number) => String(n).padStart(2, "0");
-  return `${d.getUTCFullYear()}-${pad(d.getUTCMonth() + 1)}-${pad(
-    d.getUTCDate(),
-  )} ${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())}`;
-}
-
 export function MovementsPanel({
   movements,
   resolveMember,
   resolveLocation,
   isLoading,
 }: MovementsPanelProps) {
+  // I18N-03: the movement timestamp (was a hand-rolled UTC `YYYY-MM-DD HH:mm`)
+  // now honors the user's date_format + time_format preference. The format hooks
+  // still decompose in UTC under the hood (tokens.ts), preserving this panel's
+  // original convention.
+  const formatDate = useDateFormat();
+  const formatTime = useTimeFormat();
   if (isLoading) {
     return (
       <p className="bg-bg-panel-2 p-sp-4 font-mono text-[12px] text-fg-muted">
@@ -76,7 +73,7 @@ export function MovementsPanel({
               className="flex flex-wrap items-baseline gap-sp-2 border-b border-table-rule px-sp-3 py-sp-2 font-mono text-[12px] tabular-nums"
             >
               <span className="text-fg-muted">
-                {formatTimestamp(m.created_at)}
+                {formatDate(m.created_at)} {formatTime(m.created_at)}
               </span>
               <span className="text-fg-ink">
                 {from ?? "—"} <span aria-hidden="true">→</span> {to}

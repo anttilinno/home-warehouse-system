@@ -7,6 +7,7 @@ import {
   CartesianGrid,
 } from "recharts";
 import { Trans } from "@lingui/react/macro";
+import { formatMonthYearToken } from "@/lib/format";
 import type { MonthlyLoanActivity } from "@/features/analytics/types";
 import { Window, RetroEmptyState } from "@/components/retro";
 import {
@@ -18,11 +19,12 @@ import {
   GRID_PROPS,
 } from "../charts/retroChartTheme";
 
-// Format an ISO-ish month string to a short "Mon YY" tick (mono, tabular).
+// Format an ISO-ish month string to a "YYYY-MM" tick (mono, tabular). I18N-03:
+// `monthTick` is passed as Recharts' <XAxis tickFormatter> — Recharts invokes it
+// OUTSIDE React's hook call stack, so it CANNOT call useDateFormat() (Rules of
+// Hooks). It uses the PURE formatMonthYearToken helper instead of a raw locale call.
 function monthTick(value: string): string {
-  const d = new Date(value);
-  if (Number.isNaN(d.getTime())) return value;
-  return d.toLocaleDateString(undefined, { month: "short", year: "2-digit" });
+  return formatMonthYearToken(value);
 }
 
 // Square ink-stroked marker for the returns line (sketch-009 data points).
