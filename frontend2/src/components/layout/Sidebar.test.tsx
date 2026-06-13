@@ -71,11 +71,11 @@ describe("Sidebar", () => {
 
   it("renders a not-built nav item as aria-disabled with the 'Not built yet' title", () => {
     renderSidebar(<Sidebar stats={stats} user={user} />);
-    // Analytics has no `to` this phase.
-    const analytics = screen.getByText("Analytics").closest("[aria-disabled]");
-    expect(analytics).not.toBeNull();
-    expect(analytics).toHaveAttribute("aria-disabled", "true");
-    expect(analytics).toHaveAttribute("title", "Not built yet");
+    // Settings has no `to` yet (Analytics was wired in Phase 13b).
+    const settings = screen.getByText("Settings").closest("[aria-disabled]");
+    expect(settings).not.toBeNull();
+    expect(settings).toHaveAttribute("aria-disabled", "true");
+    expect(settings).toHaveAttribute("title", "Not built yet");
   });
 
   it("carries .nav-label / .nav-count rail-mode hook classes", () => {
