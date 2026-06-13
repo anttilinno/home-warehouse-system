@@ -42,6 +42,7 @@
     "zod": "^4.4.1"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4",
     "@lingui/cli": "^6.0.1",
     "@lingui/format-po": "^6.0.1",
     "@lingui/swc-plugin": "6.0.0",
