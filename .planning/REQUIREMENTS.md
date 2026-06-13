@@ -156,9 +156,9 @@
 
 ### i18n (I18N)
 
-- [ ] **I18N-01**: All user-facing strings ship in en, et, and ru — no inline literals; CI extract→merge→diff manifest guard catches missing/orphaned msgids.
-- [ ] **I18N-02**: Locale switcher in Settings → Language persists choice to `users/me/preferences` and applies instantly without reload.
-- [ ] **I18N-03**: Format hooks (`useDateFormat`, `useTimeFormat`, `useNumberFormat`) are used everywhere date/time/number values render — no raw `Date.toString()` or `Number.toLocaleString()` in feature code.
+- [x] **I18N-01**: All user-facing strings ship in en, et, and ru — no inline literals; CI extract→merge→diff manifest guard catches missing/orphaned msgids.
+- [x] **I18N-02**: Locale switcher in Settings → Language persists choice to `users/me/preferences` and applies instantly without reload.
+- [x] **I18N-03**: Format hooks (`useDateFormat`, `useTimeFormat`, `useNumberFormat`) are used everywhere date/time/number values render — no raw `Date.toString()` or `Number.toLocaleString()` in feature code.
 
 ### System Group (SYS)
 
@@ -403,9 +403,9 @@
 | DASH-03 | Phase 13 | Complete |
 | DASH-04 | Phase 13 | Complete |
 | DASH-05 | Phase 13 | Complete |
-| I18N-01 | Phase 15 | Pending |
-| I18N-02 | Phase 15 | Pending |
-| I18N-03 | Phase 15 | Pending |
+| I18N-01 | Phase 15 | Complete |
+| I18N-02 | Phase 15 | Complete |
+| I18N-03 | Phase 15 | Complete |
 | SYS-01 | Phase 14 | Complete |
 | SYS-02 | Phase 14 | Complete |
 | SYS-03 | Phase 14 | Complete |

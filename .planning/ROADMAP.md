@@ -246,7 +246,7 @@ Clean-slate rebuild of `/frontend2` with sketch 006-008 retro-os pastel fidelity
 - [x] **Phase 13b: Analytics + Out-of-stock** — charts page (category breakdown, location values, condition/status distribution, top borrowers, monthly loan activity; lazy-loaded chart lib to protect POL-04 bundle budget) + out-of-stock table with item links. NOTE: charts aesthetic needs a Retro OS sketch (extend set 006-008) before planning [Gap G-6] (completed 2026-06-13)
 - [x] **Phase 14: System group** — Approvals + My Changes + Sync History + Imports/Exports — all activity-table style with bulk operations dispatched via Bottombar (completed 2026-06-13)
 - [x] **Phase 14b: Attachments + Paperless** (completed 2026-06-13) — item attachments panel on item detail (upload/list/set-primary/delete; FileInput atom from Phase 4) + Paperless-ngx settings page (slots into Settings hub) + Paperless doc search + link-to-item. NOTE: cross-tenant attachment IDOR audit finding must be fixed with this phase [Gap G-7]
-- [ ] **Phase 15: i18n catalog gap-fill (et + ru)** — extract en messages, translate to et + ru (lift from legacy `/frontend` next-intl + v2.1 Lingui archive), locale switcher, format hooks (`useDateFormat`/`useTimeFormat`/`useNumberFormat`) used everywhere
+- [x] **Phase 15: i18n catalog gap-fill (et + ru)** (completed 2026-06-13) — extract en messages, translate to et + ru (lift from legacy `/frontend` next-intl + v2.1 Lingui archive), locale switcher, format hooks (`useDateFormat`/`useTimeFormat`/`useNumberFormat`) used everywhere
 - [ ] **Phase 16: Command Palette** — Cmd+K / F2 cmdk surface filtering across routes, recent actions, and workspaces; keyboard-first navigation
 - [ ] **Phase 17: Polish & Quality** — Playwright E2E + Go integration test for every cross-HTTP flow + axe-playwright a11y CI sweep + tab/keyboard navigation audit + bundle size CI guard + mobile breakpoint matrix re-test (320/360/768/1024/1440 px) + visual diff vs sketch 006
 
@@ -900,7 +900,7 @@ Plans:
 | 13b | v3.0 | 5/5 | Complete   | 2026-06-13 |
 | 14 | v3.0 | 8/8 | Complete   | 2026-06-13 |
 | 14b | v3.0 | 0/TBD | Not started | - |
-| 15 | v3.0 | 2/4 | In Progress|  |
+| 15 | v3.0 | 4/4 | Complete   | 2026-06-13 |
 | 16 | v3.0 | 0/TBD | Not started | - |
 | 17 | v3.0 | 0/TBD | Not started | - |
 
