@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Trans, useLingui } from "@lingui/react/macro";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   RetroDialog,
   RetroConfirmDialog,
@@ -10,6 +11,7 @@ import {
   retroToast,
 } from "@/components/retro";
 import { formatCents } from "@/lib/utils/money";
+import { useWorkspace } from "@/features/workspace/useWorkspace";
 import { repairStatus } from "../repairStatus";
 import {
   useRepairsByInventoryQuery,
@@ -18,7 +20,11 @@ import {
 import { useRepairMutations } from "../hooks/useRepairMutations";
 import { RepairForm } from "./RepairForm";
 import { CompleteRepairDialog } from "./CompleteRepairDialog";
-import type { Repair } from "@/lib/types";
+import {
+  RepairRecordDialog,
+  type RepairRecordTab,
+} from "./RepairRecordDialog";
+import type { Inventory, Repair } from "@/lib/types";
 
 // Phase 10b Plan 02 — the per-inventory-row Repairs drawer (RPR-01 + RPR-02). A
 // BLUE RetroDialog titled `REPAIRS — {item}`, a sibling of MovementsDrawer:
@@ -38,10 +44,17 @@ export interface RepairsDrawerProps {
   invId: string | null;
   /** Display name shown in the title context (the owning item). */
   itemName?: string;
+  /**
+   * The owning item id — needed to mint a file_id for repair attachments. When
+   * omitted the drawer resolves it from the inventory cache (the drawer is always
+   * opened from InventoryListPage, which has loaded that cache).
+   */
+  itemId?: string;
   onClose: () => void;
   /**
-   * SEAM for Plan 10b-03 — opens the repair record sub-view (RECORD/PHOTOS/FILES
-   * tabs). Until 10b-03 wires it, the PHOTOS/FILES buttons no-op.
+   * Optional notify hook (kept for compat) fired when the record sub-view opens.
+   * Plan 10b-03 wires the sub-view INTERNALLY (RepairRecordDialog); this prop is
+   * an additional notification only.
    */
   onOpenRecord?: (repair: Repair, tab: "photos" | "files") => void;
 }
@@ -53,13 +66,32 @@ function formatDate(rfc?: string): string {
 export function RepairsDrawer({
   invId,
   itemName,
+  itemId,
   onClose,
   onOpenRecord,
 }: RepairsDrawerProps) {
   const { t } = useLingui();
+  const { currentWorkspaceId: wsId } = useWorkspace();
+  const queryClient = useQueryClient();
   const { items, isLoading, isError } = useRepairsByInventoryQuery(invId);
   const { summaries } = useRepairCostQuery(invId);
   const { startRepair, deleteRepair } = useRepairMutations();
+
+  // Resolve the owning item id: explicit prop wins; otherwise scan the inventory
+  // caches for the entry whose id matches invId (the drawer is always opened from
+  // InventoryListPage, which has populated ["inventory", wsId] caches).
+  function resolveItemId(): string | undefined {
+    if (itemId) return itemId;
+    if (!invId) return undefined;
+    const caches = queryClient.getQueriesData<{ items?: Inventory[] }>({
+      queryKey: ["inventory", wsId],
+    });
+    for (const [, data] of caches) {
+      const entry = data?.items?.find((e) => e.id === invId);
+      if (entry) return entry.item_id;
+    }
+    return undefined;
+  }
 
   // Nested dialog state (form create/edit, complete, delete confirm).
   const [formRepair, setFormRepair] = useState<Repair | null | undefined>(
@@ -68,6 +100,16 @@ export function RepairsDrawer({
   const [formOpen, setFormOpen] = useState(false);
   const [completeRepair, setCompleteRepair] = useState<Repair | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Repair | null>(null);
+
+  // Record sub-view (RECORD/PHOTOS/FILES tabs) — opened from a row's PHOTOS/FILES.
+  const [recordRepair, setRecordRepair] = useState<Repair | null>(null);
+  const [recordTab, setRecordTab] = useState<RepairRecordTab>("photos");
+
+  function openRecord(repair: Repair, tab: "photos" | "files") {
+    setRecordRepair(repair);
+    setRecordTab(tab);
+    onOpenRecord?.(repair, tab);
+  }
 
   function openCreate() {
     setFormRepair(null);
@@ -239,16 +281,19 @@ export function RepairsDrawer({
                     >
                       <Trans>DELETE</Trans>
                     </BevelButton>
-                    {/* PHOTOS/FILES seam — Plan 10b-03 wires onOpenRecord. */}
+                    {/* PHOTOS/FILES — open the record sub-view on the matching
+                        tab. Counts are not carried on the repair list response,
+                        so the labels show no (n) and the list never blocks on a
+                        per-record fetch. */}
                     <BevelButton
                       className="!px-[8px] !py-[2px] !text-[11px]"
-                      onClick={() => onOpenRecord?.(repair, "photos")}
+                      onClick={() => openRecord(repair, "photos")}
                     >
                       <Trans>PHOTOS</Trans>
                     </BevelButton>
                     <BevelButton
                       className="!px-[8px] !py-[2px] !text-[11px]"
-                      onClick={() => onOpenRecord?.(repair, "files")}
+                      onClick={() => openRecord(repair, "files")}
                     >
                       <Trans>FILES</Trans>
                     </BevelButton>
@@ -268,6 +313,20 @@ export function RepairsDrawer({
           invId={invId}
           repair={formRepair}
           onClose={() => setFormOpen(false)}
+        />
+      )}
+
+      {/* Record sub-view (RECORD/PHOTOS/FILES). Nests over the drawer via the
+          modal stack; opens on the tab matching the clicked row action. */}
+      {recordRepair && (
+        <RepairRecordDialog
+          key={recordRepair.id}
+          open
+          wsId={wsId as string}
+          repair={recordRepair}
+          itemId={resolveItemId() ?? ""}
+          initialTab={recordTab}
+          onClose={() => setRecordRepair(null)}
         />
       )}
 

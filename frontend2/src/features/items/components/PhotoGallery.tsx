@@ -6,18 +6,75 @@ import {
   RetroConfirmDialog,
   useTableSelection,
 } from "@/components/retro";
-import type { Photo } from "@/lib/types";
 import { photosApi } from "@/lib/api/photos";
 import { usePhotoMutations } from "../hooks/usePhotoMutations";
 import { CaptionDialog } from "./CaptionDialog";
 
+// Phase 10b Plan 03 — DATA SEAM (single-writer). PhotoGallery is shared between
+// item photos and repair photos. The grid + caption/delete affordances are
+// IDENTICAL; the heavy item-only affordances (set-primary, reorder, bulk,
+// zip-download) are CAPABILITY-GATED so the repair scope (whose backend lacks
+// those routes, F2) renders a clean caption+delete grid. When no seam props are
+// supplied the component behaves EXACTLY as the shipped item gallery — the visual
+// contract and every item affordance are unchanged (guarded by item tests).
+
+/**
+ * The structural shape the gallery renders. `Photo` satisfies it; `RepairPhoto`
+ * maps onto it (filename ← caption fallback, is_primary omitted, display_order
+ * irrelevant). Repair scope adapts its photos into this shape upstream.
+ */
+export interface GalleryPhoto {
+  id: string;
+  thumbnail_url: string;
+  caption?: string;
+  filename?: string;
+  is_primary?: boolean;
+}
+
+/** The mutation surface the gallery may call (item provides the full set). */
+export interface PhotoGalleryMutations {
+  setPrimary?: { mutate: (photoId: string) => void };
+  updateCaption: {
+    mutate: (vars: { photoId: string; caption: string }) => void;
+  };
+  del: { mutate: (photoId: string) => void };
+  bulkDelete?: {
+    mutate: (
+      photoIds: string[],
+      opts?: { onSuccess?: () => void },
+    ) => void;
+  };
+  bulkCaption?: {
+    mutate: (
+      updates: { photo_id: string; caption: string }[],
+      opts?: { onSuccess?: () => void },
+    ) => void;
+  };
+  reorder?: {
+    mutate: (photoIds: string[], opts?: { onError?: () => void }) => void;
+  };
+}
+
 export interface PhotoGalleryProps {
   wsId: string;
   itemId: string;
-  /** The item's photos (already /api-relative thumbnail_url / url from Plan 01). */
-  photos: Photo[];
+  /** The photos (already /api-relative thumbnail_url / url from Plan 01). */
+  photos: GalleryPhoto[];
   /** Open the lightbox at the clicked photo index. */
   onOpenLightbox: (index: number) => void;
+  /**
+   * SEAM: injected mutations. Defaults to usePhotoMutations(wsId, itemId).
+   * Repair scope passes a REDUCED set (updateCaption + del only).
+   */
+  mutations?: PhotoGalleryMutations;
+  /** SEAM: render the set-primary affordance (default true / items). */
+  canSetPrimary?: boolean;
+  /** SEAM: render ◂/▸ reorder (default true / items). */
+  canReorder?: boolean;
+  /** SEAM: render the SELECT/bulk toolbar (default true / items). */
+  canBulk?: boolean;
+  /** SEAM: render the ⤓ DOWNLOAD toolbar (default true / items). */
+  canDownloadZip?: boolean;
 }
 
 /**
@@ -32,20 +89,27 @@ export function PhotoGallery({
   itemId,
   photos,
   onOpenLightbox,
+  mutations,
+  canSetPrimary = true,
+  canReorder = true,
+  canBulk = true,
+  canDownloadZip = true,
 }: PhotoGalleryProps) {
   const { t } = useLingui();
+  const itemMutations = usePhotoMutations(wsId, itemId);
+  // SEAM: injected mutations win; default to the item photo hook.
   const { setPrimary, updateCaption, del, bulkDelete, bulkCaption, reorder } =
-    usePhotoMutations(wsId, itemId);
+    mutations ?? itemMutations;
 
   // Local ordered copy so reorder is optimistic; revert on server rejection.
-  const [order, setOrder] = useState<Photo[]>(photos);
+  const [order, setOrder] = useState<GalleryPhoto[]>(photos);
   useEffect(() => setOrder(photos), [photos]);
 
   const [selecting, setSelecting] = useState(false);
   const selection = useTableSelection(order);
 
-  const [deleteTarget, setDeleteTarget] = useState<Photo | null>(null);
-  const [captionTarget, setCaptionTarget] = useState<Photo | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<GalleryPhoto | null>(null);
+  const [captionTarget, setCaptionTarget] = useState<GalleryPhoto | null>(null);
   const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false);
   const [bulkCaptionOpen, setBulkCaptionOpen] = useState(false);
 
@@ -55,6 +119,7 @@ export function PhotoGallery({
   );
 
   const move = (index: number, dir: -1 | 1) => {
+    if (!reorder) return;
     const target = index + dir;
     if (target < 0 || target >= order.length) return;
     const prev = order;
@@ -77,37 +142,43 @@ export function PhotoGallery({
 
   return (
     <div className="flex flex-col gap-sp-2">
-      {/* Toolbar */}
-      <div className="flex items-center gap-sp-2 bg-bg-panel-2 p-sp-2">
-        <BevelButton
-          aria-pressed={selecting}
-          onClick={() => {
-            setSelecting((s) => !s);
-            selection.clear();
-          }}
-        >
-          <Trans>SELECT</Trans>
-        </BevelButton>
-        <span className="flex-1" />
-        <BevelButton
-          onClick={() =>
-            photosApi.downloadZip(
-              wsId,
-              itemId,
-              selectedIds.length ? selectedIds : undefined,
-            )
-          }
-        >
-          {selectedIds.length ? (
-            <Trans>⤓ DOWNLOAD {selectedIds.length}</Trans>
-          ) : (
-            <Trans>⤓ DOWNLOAD ALL</Trans>
+      {/* Toolbar — SELECT (bulk) + DOWNLOAD (zip); both capability-gated. */}
+      {(canBulk || canDownloadZip) && (
+        <div className="flex items-center gap-sp-2 bg-bg-panel-2 p-sp-2">
+          {canBulk && (
+            <BevelButton
+              aria-pressed={selecting}
+              onClick={() => {
+                setSelecting((s) => !s);
+                selection.clear();
+              }}
+            >
+              <Trans>SELECT</Trans>
+            </BevelButton>
           )}
-        </BevelButton>
-      </div>
+          <span className="flex-1" />
+          {canDownloadZip && (
+            <BevelButton
+              onClick={() =>
+                photosApi.downloadZip(
+                  wsId,
+                  itemId,
+                  selectedIds.length ? selectedIds : undefined,
+                )
+              }
+            >
+              {selectedIds.length ? (
+                <Trans>⤓ DOWNLOAD {selectedIds.length}</Trans>
+              ) : (
+                <Trans>⤓ DOWNLOAD ALL</Trans>
+              )}
+            </BevelButton>
+          )}
+        </div>
+      )}
 
       {/* Bulk action bar */}
-      {selecting && selectedIds.length > 0 && (
+      {canBulk && selecting && selectedIds.length > 0 && (
         <div
           data-testid="bulk-action-bar"
           className="flex items-center gap-sp-2 bg-bg-panel-2 p-sp-2"
@@ -176,7 +247,7 @@ export function PhotoGallery({
                 />
               </button>
 
-              {/* Primary badge / set-primary */}
+              {/* Primary badge / set-primary (capability-gated) */}
               {photo.is_primary ? (
                 <span className="absolute left-[2px] top-[2px]">
                   <RetroBadge variant="info">
@@ -184,6 +255,8 @@ export function PhotoGallery({
                   </RetroBadge>
                 </span>
               ) : (
+                canSetPrimary &&
+                setPrimary &&
                 !selecting && (
                   <BevelButton
                     className="absolute left-[2px] top-[2px] !px-[6px] !py-[1px] !text-[10px] opacity-0 focus-visible:opacity-100 group-hover:opacity-100"
@@ -198,22 +271,26 @@ export function PhotoGallery({
               {!selecting && (
                 <div className="absolute inset-x-[2px] bottom-[2px] flex items-center justify-between opacity-0 focus-within:opacity-100 group-hover:opacity-100">
                   <span className="flex gap-[2px]">
-                    <BevelButton
-                      className="!px-[5px] !py-px !text-[10px]"
-                      aria-label={t`Move ${photo.caption ?? photo.filename} earlier`}
-                      disabled={index === 0}
-                      onClick={() => move(index, -1)}
-                    >
-                      ◂
-                    </BevelButton>
-                    <BevelButton
-                      className="!px-[5px] !py-px !text-[10px]"
-                      aria-label={t`Move ${photo.caption ?? photo.filename} later`}
-                      disabled={index === order.length - 1}
-                      onClick={() => move(index, 1)}
-                    >
-                      ▸
-                    </BevelButton>
+                    {canReorder && reorder && (
+                      <>
+                        <BevelButton
+                          className="!px-[5px] !py-px !text-[10px]"
+                          aria-label={t`Move ${photo.caption ?? photo.filename} earlier`}
+                          disabled={index === 0}
+                          onClick={() => move(index, -1)}
+                        >
+                          ◂
+                        </BevelButton>
+                        <BevelButton
+                          className="!px-[5px] !py-px !text-[10px]"
+                          aria-label={t`Move ${photo.caption ?? photo.filename} later`}
+                          disabled={index === order.length - 1}
+                          onClick={() => move(index, 1)}
+                        >
+                          ▸
+                        </BevelButton>
+                      </>
+                    )}
                   </span>
                   <span className="flex gap-[2px]">
                     <BevelButton
@@ -264,7 +341,9 @@ export function PhotoGallery({
         onClose={() => setBulkDeleteOpen(false)}
         onConfirm={() => {
           setBulkDeleteOpen(false);
-          bulkDelete.mutate(selectedIds, { onSuccess: () => selection.clear() });
+          bulkDelete?.mutate(selectedIds, {
+            onSuccess: () => selection.clear(),
+          });
         }}
       >
         <Trans>
@@ -292,7 +371,7 @@ export function PhotoGallery({
         onClose={() => setBulkCaptionOpen(false)}
         onSave={(caption) => {
           setBulkCaptionOpen(false);
-          bulkCaption.mutate(
+          bulkCaption?.mutate(
             selectedIds.map((photo_id) => ({ photo_id, caption })),
             { onSuccess: () => selection.clear() },
           );
