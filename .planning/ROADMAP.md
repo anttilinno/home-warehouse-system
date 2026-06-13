@@ -233,7 +233,7 @@ Clean-slate rebuild of `/frontend2` with sketch 006-008 retro-os pastel fidelity
 - [x] **Phase 3: Layout Primitives + Bottombar** — AppShell 2×3 grid + TopBar + Sidebar (`// GROUP` labels + collapse-to-rail) + Bottombar with `useShortcuts` SSOT + `isEditableTarget` input-focus guard from first commit + PageHeader (`// ROUTE` + SESSION + LAST SYNC) + ShortcutChip + mobile breakpoint contract (completed 2026-06-12)
 - [x] **Phase 4: Retro Atoms** — RetroPanel/Button/Badge/Input/Select/Combobox/Textarea/Checkbox/FileInput/FormField/Table family/Tabs/Dialog/ConfirmDialog/Toast/EmptyState/Pagination/StatusDot/HUD primitives — informed by Phase 3 layout constraints; modal-stack ESC, status pills with tabular-nums, SSE state in panel headers, multi-select Shift+Click on tables (completed 2026-06-12)
 - [x] **Phase 5: Auth** — login + register + Google OAuth + GitHub OAuth + RequireAuth (with v2.0 spurious-logout-on-network-error bug fixed) + workspace switcher + sessions + password change + account deletion + connected accounts (completed 2026-06-12)
-- [ ] **Phase 6: Providers** — single cookie-authed SSEProvider (split `useSSEStatus()` selector + `useSSE` subscribe + generic invalidation dispatcher/contract doc) + RetroToaster/SSEProvider mounted in the verified canonical order; chrome (TopBar ONLINE dot + sse-slot RetroStatusDot + PageHeader LAST SYNC) wires to live state once; ShortcutsProvider/RetroToaster verified, not rebuilt
+- [x] **Phase 6: Providers** — single cookie-authed SSEProvider (split `useSSEStatus()` selector + `useSSE` subscribe + generic invalidation dispatcher/contract doc) + RetroToaster/SSEProvider mounted in the verified canonical order; chrome (TopBar ONLINE dot + sse-slot RetroStatusDot + PageHeader LAST SYNC) wires to live state once; ShortcutsProvider/RetroToaster verified, not rebuilt (completed 2026-06-13)
 - [ ] **Phase 7: Items + Photos** — paginated list with search/filter/sort + detail with photo gallery + create/edit/archive/delete + multipart photo upload + `itemsApi.lookupByBarcode` (G-65-01 regression-guard pattern) + per-route `useShortcuts` registration
 - [ ] **Phase 7b: Inventory** — inventory entries list + filters (virtualized when large) + create with item/location/container pickers + move dialog + quantity/status/condition inline edits + expiry/warranty fields + expiring view + movements history panel + per-item inventory panel (closes Phase 7 stub) [Gap G-1, critical]
 - [ ] **Phase 8: Loans** — Active/Overdue/History tabbed list + create with item + borrower picker + mark returned + edit + per-item active+history panels + `?itemId=` deep-link param
@@ -600,10 +600,10 @@ Plans:
   3. A documented `entity_type → query-key-prefix` invalidation contract (`frontend2/docs/sse-invalidation-contract.md`) + static map drive `invalidateQueries({ queryKey: [entityPlural, wsId] })`; Phases 7-10 only append rows
   4. ShortcutsProvider position verified in the stack (not moved/rebuilt — Phase 3 artifact); RetroToaster mounted app-wide with `retroToast.promise` ergonomics proven; TopBar/PageHeader chrome bound to live `useSSEStatus`
 **Parity additions (2026-06-12)** (§4, §8 risk 8): the SSE event→query-invalidation contract (event entity type → TanStack Query key prefixes) is written as a deliverable doc here so Phases 7-10 only register keys, not plumbing; the SSE status indicator is the shipped Phase 4 `RetroStatusDot` atom consumed by the TopBar sse-slot.
-**Plans:** 2 plans
+**Plans:** 2/2 plans complete
 Plans:
-- [ ] 06-01-PLAN.md — SSE feature module: SSEProvider (split status/subscribe contexts) + generic invalidation dispatcher + invalidationMap + useSSE/useSSEStatus + EventSource test stub + invalidation contract doc (PROV-02) [Wave 1]
-- [ ] 06-02-PLAN.md — Mount RetroToaster (App root) + SSEProvider (AppShell) + wire TopBar ONLINE dot/sse-slot + PageHeader LAST SYNC + verify ShortcutsProvider/retroToast.promise + SSE ONLINE e2e smoke (PROV-01/03/04) [Wave 2]
+- [x] 06-01-PLAN.md — SSE feature module: SSEProvider (split status/subscribe contexts) + generic invalidation dispatcher + invalidationMap + useSSE/useSSEStatus + EventSource test stub + invalidation contract doc (PROV-02) [Wave 1]
+- [x] 06-02-PLAN.md — Mount RetroToaster (App root) + SSEProvider (AppShell) + wire TopBar ONLINE dot/sse-slot + PageHeader LAST SYNC + verify ShortcutsProvider/retroToast.promise + SSE ONLINE e2e smoke (PROV-01/03/04) [Wave 2]
 
 ### Phase 7: Items + Photos
 **Goal**: User can browse a paginated items list with search/filter/sort, view item detail with photo gallery + active-loan + history panels, create / edit / archive / delete items, upload + manage photos, and look up items by barcode via the dedicated workspace-scoped lookup endpoint (G-65-01 regression-guard pattern preserved)
@@ -825,7 +825,7 @@ Plans:
 | 3 | v3.0 | 6/6 | Complete   | 2026-06-12 |
 | 4 | v3.0 | 7/7 | Complete   | 2026-06-12 |
 | 5 | v3.0 | 6/6 | Complete   | 2026-06-12 |
-| 6 | v3.0 | 0/TBD | Not started | - |
+| 6 | v3.0 | 2/2 | Complete   | 2026-06-13 |
 | 7 | v3.0 | 0/TBD | Not started | - |
 | 7b | v3.0 | 0/TBD | Not started | - |
 | 8 | v3.0 | 0/TBD | Not started | - |

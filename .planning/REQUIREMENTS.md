@@ -59,10 +59,10 @@
 
 ### Providers (PROV)
 
-- [ ] **PROV-01**: Provider stack mounts in this exact order: `IntlProvider > QueryClientProvider > AuthProvider > SSEProvider > ToastProvider > ShortcutsProvider > BrowserRouter`.
-- [ ] **PROV-02**: SSEProvider opens a single EventSource (JWT in URL query param), exposes `useSSEStatus()` selector returning `{ connected: boolean, lastEventAt: Date | null }` for chrome consumers (TopBar ONLINE dot, PageHeader LAST SYNC), and a `useSSE({ onEvent })` subscribe API for feature consumers.
-- [ ] **PROV-03**: ShortcutsProvider ports verbatim from `frontend/components/layout/shortcuts-context.tsx`; register-by-id Context pattern; supports unregister-on-unmount cleanup.
-- [ ] **PROV-04**: ToastProvider mounts sonner with retro-skinned styling (sharp corners, monospace, panel bevel).
+- [x] **PROV-01**: Provider stack mounts in this exact order: `IntlProvider > QueryClientProvider > AuthProvider > SSEProvider > ToastProvider > ShortcutsProvider > BrowserRouter`.
+- [x] **PROV-02**: SSEProvider opens a single EventSource (JWT in URL query param), exposes `useSSEStatus()` selector returning `{ connected: boolean, lastEventAt: Date | null }` for chrome consumers (TopBar ONLINE dot, PageHeader LAST SYNC), and a `useSSE({ onEvent })` subscribe API for feature consumers.
+- [x] **PROV-03**: ShortcutsProvider ports verbatim from `frontend/components/layout/shortcuts-context.tsx`; register-by-id Context pattern; supports unregister-on-unmount cleanup.
+- [x] **PROV-04**: ToastProvider mounts sonner with retro-skinned styling (sharp corners, monospace, panel bevel).
 
 ### Auth (AUTH)
 
@@ -333,10 +333,10 @@
 | BAR-03 | Phase 3 | Complete |
 | BAR-04 | Phase 3 | Complete |
 | BAR-05 | Phase 3 | Complete |
-| PROV-01 | Phase 6 | Pending |
-| PROV-02 | Phase 6 | Pending |
-| PROV-03 | Phase 6 | Pending |
-| PROV-04 | Phase 6 | Pending |
+| PROV-01 | Phase 6 | Complete |
+| PROV-02 | Phase 6 | Complete |
+| PROV-03 | Phase 6 | Complete |
+| PROV-04 | Phase 6 | Complete |
 | AUTH-01 | Phase 5 | Complete |
 | AUTH-02 | Phase 5 | Complete |
 | AUTH-03 | Phase 5 | Complete |
