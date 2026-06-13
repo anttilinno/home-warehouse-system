@@ -82,6 +82,32 @@ function seedItems(items = [makeItem("it-1", "Cordless Drill")]) {
   );
 }
 
+// usePickerOptions (wired into the MOVE dialog this plan) fetches locations +
+// containers — seed them so the dialog's selects populate.
+function seedPickers() {
+  server.use(
+    http.get("/api/workspaces/:wsId/locations", () =>
+      HttpResponse.json({
+        items: [
+          { id: "loc-1", name: "Garage" },
+          { id: "loc-2", name: "Attic" },
+        ],
+        total: 2,
+        page: 1,
+        total_pages: 1,
+      }),
+    ),
+    http.get("/api/workspaces/:wsId/containers", () =>
+      HttpResponse.json({
+        items: [{ id: "cont-1", name: "Bin A" }],
+        total: 1,
+        page: 1,
+        total_pages: 1,
+      }),
+    ),
+  );
+}
+
 function renderPage(initialEntries: string[] = ["/inventory"]) {
   setWsId("ws-A");
   const client = new QueryClient({
@@ -220,6 +246,34 @@ describe("InventoryListPage", () => {
     // The blue MOVEMENTS dialog opens with the NO MOVEMENTS empty state.
     expect(await screen.findByRole("dialog")).toBeInTheDocument();
     expect(await screen.findByText(/no movements/i)).toBeInTheDocument();
+  });
+
+  it("the MOVE row action opens the MoveDialog for that entry", async () => {
+    const user = userEvent.setup();
+    seedItems();
+    seedPickers();
+    server.use(
+      http.get("/api/workspaces/:wsId/inventory", () =>
+        HttpResponse.json(listOf([makeEntry("inv-1", { location_id: "loc-1" })])),
+      ),
+    );
+    renderPage();
+    await screen.findByText("Cordless Drill");
+
+    const row = screen.getByText("Cordless Drill").closest("tr")!;
+    await user.click(within(row).getByRole("button", { name: /^move$/i }));
+
+    // The blue MOVE ENTRY dialog opens, seeded from the entry's placement.
+    const dialog = await screen.findByRole("dialog");
+    expect(within(dialog).getByText(/move entry/i)).toBeInTheDocument();
+    // The location picker is populated from usePickerOptions.
+    await waitFor(() =>
+      expect(
+        within(within(dialog).getByLabelText(/to location/i)).getByText(
+          /attic/i,
+        ),
+      ).toBeInTheDocument(),
+    );
   });
 
   it("shows the NO STOCK ENTRIES empty state when the workspace has none", async () => {

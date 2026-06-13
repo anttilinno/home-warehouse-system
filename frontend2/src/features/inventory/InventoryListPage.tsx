@@ -24,8 +24,10 @@ import {
 } from "./inventoryEnums";
 import { useInventoryQuery, INVENTORY_LIMIT } from "./hooks/useInventoryQuery";
 import { useInventoryMutations } from "./hooks/useInventoryMutations";
+import { usePickerOptions } from "./hooks/usePickerOptions";
 import { InlineEditCell } from "./components/InlineEditCell";
 import { MovementsDrawer } from "./components/MovementsDrawer";
+import { MoveDialog } from "./components/MoveDialog";
 
 // Phase 7b Plan 02 — the /inventory list surface (INV-01 + INV-05 + INV-07).
 // Mirrors ItemsListPage density + the URL-driven pager, with inventory's twist:
@@ -33,8 +35,8 @@ import { MovementsDrawer } from "./components/MovementsDrawer";
 // condition + location facets are CLIENT-side React state applied to the loaded
 // page; only `?page` round-trips to the URL. Qty/Status/Condition cells are
 // InlineEditCell instances wired to the optimistic mutation `.mutate` fns.
-// A per-row `↧` opens the MovementsDrawer; MOVE is left as an `onMove` state
-// seam that Plan 04 connects to MoveDialog (kept out to stay plan-independent).
+// A per-row `↧` opens the MovementsDrawer; the MOVE action opens the MoveDialog
+// for that entry (Plan 04 connected the `onMove` seam Plan 02 left).
 
 // Client-side sortable columns (the loaded page only — the endpoint can't sort).
 type SortKey = "qty" | "status" | "condition";
@@ -95,13 +97,16 @@ export function InventoryListPage() {
   const [sortKey, setSortKey] = useState<SortKey | null>(null);
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
 
-  // ── Movements drawer + the MOVE seam (Plan 04 wires MoveDialog to onMove).
+  // ── Movements drawer + the MOVE target (Plan 04 wires MoveDialog here).
   const [movementsId, setMovementsId] = useState<string | null>(null);
-  const [, setMoveTargetId] = useState<string | null>(null);
+  const [moveTarget, setMoveTarget] = useState<Inventory | null>(null);
   const onMove = useCallback((entry: Inventory) => {
-    // Seam: Plan 04 connects this state to MoveDialog; here it's a no-op store.
-    setMoveTargetId(entry.id);
+    setMoveTarget(entry);
   }, []);
+  // Location/container options for the MoveDialog selects (shared with the form
+  // pickers — same workspace-scoped reads, cached under their own prefixes).
+  const { locations: locationOptions, containers: containerOptions } =
+    usePickerOptions();
 
   // ── Apply client filters + sort to the loaded page.
   const visible = useMemo(() => {
@@ -512,6 +517,19 @@ export function InventoryListPage() {
         }
         onClose={() => setMovementsId(null)}
       />
+
+      {/* MoveDialog seeds its target state from the entry on mount, so mount it
+          per-target (keyed) only while a move is active. */}
+      {moveTarget && (
+        <MoveDialog
+          key={moveTarget.id}
+          open
+          entry={moveTarget}
+          locationOptions={locationOptions}
+          containerOptions={containerOptions}
+          onClose={() => setMoveTarget(null)}
+        />
+      )}
     </div>
   );
 }

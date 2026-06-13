@@ -13,6 +13,8 @@ import { ItemsListPage } from "@/features/items/ItemsListPage";
 import { ItemFormPage } from "@/features/items/ItemFormPage";
 import { ItemDetailPage } from "@/features/items/ItemDetailPage";
 import { InventoryListPage } from "@/features/inventory/InventoryListPage";
+import { InventoryFormPage } from "@/features/inventory/InventoryFormPage";
+import { ExpiringPage } from "@/features/inventory/ExpiringPage";
 
 // Library-mode RR7 (NOT framework mode — AP-1). Literal routes before the
 // wildcard. /login stays public; the authenticated branch is now an AppShell
@@ -54,9 +56,13 @@ export function AppRoutes() {
         <Route path="items" element={<ItemsListPage />} />
         <Route path="items/new" element={<ItemFormPage />} />
         <Route path="items/:id" element={<ItemDetailPage />} />
-        {/* Inventory list (07b-02). The /inventory/new + /inventory/:id/edit
-            form routes land in 07b-04 (later wave) — literal `inventory` here. */}
+        {/* Inventory list (07b-02) + form/expiring routes (07b-04). Literal
+            routes BEFORE the param route (AP-1 library mode) — `inventory/new`
+            and `inventory/expiring` must win over `inventory/:id`. */}
         <Route path="inventory" element={<InventoryListPage />} />
+        <Route path="inventory/new" element={<InventoryFormPage />} />
+        <Route path="inventory/expiring" element={<ExpiringPage />} />
+        <Route path="inventory/:id/edit" element={<InventoryFormPage />} />
         <Route path="items/:id/edit" element={<ItemFormPage />} />
         {/* Settings hub (05-UI-SPEC §5): SettingsLayout sub-layout under the
             AUTHENTICATED AppShell. /settings → /settings/security; the two built
