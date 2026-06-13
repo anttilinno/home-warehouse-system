@@ -1,0 +1,20 @@
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=utf-8\n"
+"Language: et\n"
+
+#: src/features/inventory/InventoryFormPage.tsx
+msgid "— No container"
+msgstr "— Mahuti puudub"
+
+#: src/features/loans/LoanFormPage.tsx
+msgid "Borrow {count} items"
+msgstr ""
+
+#: src/features/dashboard/Dashboard.tsx
+msgid ""
+"A long message that folds across "
+"multiple continuation lines"
+msgstr ""
+"Pikk sõnum mis murdub üle "
+"mitme jätkurea"

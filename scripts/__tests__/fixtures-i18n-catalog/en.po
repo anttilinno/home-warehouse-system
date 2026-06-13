@@ -1,0 +1,22 @@
+msgid ""
+msgstr ""
+"POT-Creation-Date: 2026-05-01 19:07+0000\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Language: en\n"
+
+#: src/features/inventory/InventoryFormPage.tsx
+msgid "— No container"
+msgstr "— No container"
+
+#: src/features/loans/LoanFormPage.tsx
+msgid "Borrow {count} items"
+msgstr "Borrow {count} items"
+
+#: src/features/dashboard/Dashboard.tsx
+msgid ""
+"A long message that folds across "
+"multiple continuation lines"
+msgstr ""
+"A long message that folds across "
+"multiple continuation lines"

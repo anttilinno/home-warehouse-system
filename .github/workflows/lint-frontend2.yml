@@ -6,6 +6,10 @@ on:
       - "frontend2/**"
       - "scripts/check-forbidden-imports.mjs"
       - "scripts/__tests__/check-forbidden-imports.test.mjs"
+      - "scripts/check-i18n-format.mjs"
+      - "scripts/check-i18n-catalog.mjs"
+      - "scripts/__tests__/check-i18n-format.test.mjs"
+      - "scripts/__tests__/check-i18n-catalog.test.mjs"
       - ".github/workflows/lint-frontend2.yml"
   push:
     branches: [master]
@@ -13,6 +17,10 @@ on:
       - "frontend2/**"
       - "scripts/check-forbidden-imports.mjs"
       - "scripts/__tests__/check-forbidden-imports.test.mjs"
+      - "scripts/check-i18n-format.mjs"
+      - "scripts/check-i18n-catalog.mjs"
+      - "scripts/__tests__/check-i18n-format.test.mjs"
+      - "scripts/__tests__/check-i18n-catalog.test.mjs"
       - ".github/workflows/lint-frontend2.yml"
 
 jobs:
@@ -27,6 +35,34 @@ jobs:
         run: node scripts/check-forbidden-imports.mjs
       - name: Run grep-guard self-tests
         run: node --test scripts/__tests__/check-forbidden-imports.test.mjs
+
+  i18n-format-guard:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.13
+      # Self-test always runs in isolation. The real-tree run passes once Phase 15
+      # plan 15-01 has routed all date/time render sites through src/lib/format/.
+      - name: Run i18n-format grep guard
+        run: node scripts/check-i18n-format.mjs
+      - name: Run i18n-format self-tests
+        run: node --test scripts/__tests__/check-i18n-format.test.mjs
+
+  i18n-catalog-guard:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.13
+      # Self-test always runs in isolation. The real-tree run passes once Wave 2
+      # (plans 15-03 / 15-04) has filled the et + ru translations to parity.
+      - name: Run i18n-catalog self-tests
+        run: node --test scripts/__tests__/check-i18n-catalog.test.mjs
+      - name: Run i18n-catalog parity guard
+        run: node scripts/check-i18n-catalog.mjs
 
   typecheck-frontend2:
     runs-on: ubuntu-latest
