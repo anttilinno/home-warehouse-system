@@ -124,6 +124,10 @@ export interface Item {
   barcode?: string;
   is_insured?: boolean;
   is_archived?: boolean;
+  // Backend serializes NeedsReview via the by-barcode ItemResponse (handler.go:659);
+  // the v3.0 type was trimmed and lacked it (Pitfall 3). Optional: absent on older
+  // payloads → undefined. Drives SCAN-11 quick-action review gating.
+  needs_review?: boolean;
   min_stock_level: number;
   short_code: string;
   // ABSOLUTE on the wire; rewritten to /api-relative by itemsApi mappers.

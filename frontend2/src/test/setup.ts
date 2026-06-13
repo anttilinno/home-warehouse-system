@@ -108,3 +108,95 @@ export class MockEventSource {
   MockEventSource as unknown as typeof EventSource;
 
 afterEach(() => MockEventSource.reset());
+
+// ── Camera (getUserMedia) test stub ──────────────────────────────────────────
+// Phase 11 (Scan). jsdom ships NO `navigator.mediaDevices`, so any feature code
+// that probes torch support or that mounts a scanner without the scanner-mock
+// (e.g. the useTorch capability hook) would throw `Cannot read properties of
+// undefined (reading 'getUserMedia')`. This stub (mirroring MockEventSource: a
+// static registry installed on the global, reset each afterEach) resolves
+// getUserMedia to a fake MediaStream whose single video track exposes
+// `getCapabilities()` (torch overridable, default false), `applyConstraints()`
+// (records the last constraints), and a no-op `stop()`. Per-test override of the
+// torch capability via `MockMediaDevices.torchSupported = true` BEFORE the call.
+
+class FakeMediaStreamTrack {
+  readonly kind = "video";
+  stopped = false;
+  appliedConstraints: MediaTrackConstraintSet[] = [];
+
+  getCapabilities(): MediaTrackCapabilities & { torch?: boolean } {
+    return { torch: MockMediaDevices.torchSupported };
+  }
+
+  applyConstraints(constraints?: MediaTrackConstraints): Promise<void> {
+    const advanced = (constraints?.advanced ?? []) as MediaTrackConstraintSet[];
+    this.appliedConstraints.push(...advanced);
+    return Promise.resolve();
+  }
+
+  stop(): void {
+    this.stopped = true;
+  }
+}
+
+class FakeMediaStream {
+  readonly track = new FakeMediaStreamTrack();
+  getVideoTracks(): FakeMediaStreamTrack[] {
+    return [this.track];
+  }
+  getTracks(): FakeMediaStreamTrack[] {
+    return [this.track];
+  }
+}
+
+class MockMediaDevices {
+  /** Whether the fake video track reports torch support. Reset each afterEach. */
+  static torchSupported = false;
+
+  /** Every stream handed out during the current test (reset each afterEach). */
+  static streams: FakeMediaStream[] = [];
+
+  static reset(): void {
+    MockMediaDevices.torchSupported = false;
+    MockMediaDevices.streams = [];
+  }
+
+  getUserMedia(_constraints?: MediaStreamConstraints): Promise<FakeMediaStream> {
+    const stream = new FakeMediaStream();
+    MockMediaDevices.streams.push(stream);
+    return Promise.resolve(stream);
+  }
+}
+
+// Install a fake `navigator.mediaDevices` carrying the mock getUserMedia. jsdom's
+// `navigator` exists but lacks `mediaDevices`; define it as configurable so the
+// reset is idempotent across the whole suite.
+Object.defineProperty(navigator, "mediaDevices", {
+  configurable: true,
+  value: new MockMediaDevices() as unknown as MediaDevices,
+});
+
+export { MockMediaDevices, FakeMediaStream, FakeMediaStreamTrack };
+
+// ── BarcodeDetector test stub ────────────────────────────────────────────────
+// Phase 11 (Scan). jsdom ships NO global `BarcodeDetector`. The scanner stack
+// (barcode-detector/polyfill) and any feature-detection probe (`'BarcodeDetector'
+// in globalThis`) must not throw. This minimal stub class defines the global so
+// probes succeed; its async `detect()` returns no codes by default (component
+// tests drive decodes through the scanner-mock's onScan, not through this).
+
+class MockBarcodeDetector {
+  static getSupportedFormats(): Promise<string[]> {
+    return Promise.resolve(["qr_code", "upc_a", "ean_13", "code_128"]);
+  }
+  constructor(_opts?: { formats?: string[] }) {}
+  detect(_source?: unknown): Promise<unknown[]> {
+    return Promise.resolve([]);
+  }
+}
+
+(globalThis as { BarcodeDetector?: unknown }).BarcodeDetector =
+  MockBarcodeDetector as unknown;
+
+afterEach(() => MockMediaDevices.reset());
