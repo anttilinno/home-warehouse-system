@@ -616,7 +616,15 @@ Plans:
   4. User can upload up to N photos per item (JPEG/PNG/HEIC, client-resize, 10 MB cap) via native FormData multipart with no upload library
   5. `itemsApi.lookupByBarcode(workspaceId, code)` calls `GET /api/workspaces/{wsId}/items/by-barcode/{code}` with workspace-scoped server-side authority + 404 → null mapping; cross-tenant isolation guarded by integration test
 **Parity additions (2026-06-12)** (§4): confirm in-scope during planning — bulk selection + bulk archive/delete; saved filter presets; per-list CSV export hook-in point; photo extras (captions, reorder, set-primary, bulk-delete, bulk-caption, zip download, duplicate-check warning dialog, client-side compression + EXIF rotation before upload); labels attach/detach UI (read-only label list until the Phase 10 label manager lands); item-detail inventory panel ships as a **stub until Phase 7b**.
-**Plans**: TBD
+**Plans**: 7 plans
+Plans:
+- [ ] 07-01-PLAN.md — API + types: api.ts put/blob helpers, URL rewrite, itemsApi/photosApi/loansApi/labelsApi, lookupByBarcode (ITEM-09) [Wave 1]
+- [ ] 07-02-PLAN.md — Image pipeline: EXIF-aware compressImage + upload accept-list/size validation (ITEM-07) [Wave 1]
+- [ ] 07-03-PLAN.md — Items list page: filter/sort/paginate, archived, bulk, CSV, shortcuts + Sidebar enable (ITEM-01/05/06/10) [Wave 2]
+- [ ] 07-04-PLAN.md — Photo pipeline UI: upload+dup-check, gallery, lightbox, caption, reorder, bulk, zip (ITEM-07/08) [Wave 2]
+- [ ] 07-05-PLAN.md — Create/edit form: RHF+zod, ?barcode prefill, PATCH clear-semantics, discard guard (ITEM-03/04) [Wave 3]
+- [ ] 07-06-PLAN.md — Item detail: tabs, gallery, loan panels, labels, 7b stub, archive/delete + routes (ITEM-02) [Wave 4]
+- [ ] 07-07-PLAN.md — Live E2E lifecycle + doc corrections (HEIC + location-chip ORIGINAL/REVISED) [Wave 4]
 **UI hint**: yes
 
 ### Phase 7b: Inventory
