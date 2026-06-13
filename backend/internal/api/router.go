@@ -299,7 +299,10 @@ func NewRouter(pool *pgxpool.Pool, cfg *config.Config) chi.Router {
 	// Declutter service
 	declutterSvc := declutter.NewService(declutterRepo)
 	// Phase 5 services (continued)
-	attachmentSvc := attachment.NewService(fileRepo, attachmentRepo)
+	// Attachment service is storage-backed (14b-02): real bytes are persisted
+	// on multipart upload. Reuse the existing photoStorage instance (same
+	// upload dir, no new env var — CONTEXT OQ5).
+	attachmentSvc := attachment.NewService(fileRepo, attachmentRepo, photoStorage)
 	activitySvc := activity.NewService(activityRepo)
 	deletedSvc := deleted.NewService(deletedRepo)
 	favoriteSvc := favorite.NewService(favoriteRepo)
@@ -524,6 +527,12 @@ func NewRouter(pool *pgxpool.Pool, cfg *config.Config) chi.Router {
 			itemphoto.RegisterUploadHandler(r, itemPhotoSvc, broadcaster, photoURLGenerator)
 			itemphoto.RegisterServeHandler(r, itemPhotoSvc, storageGetter)
 			itemphoto.RegisterBulkHandler(r, itemPhotoSvc, storageGetter, imageHasher, broadcaster, photoURLGenerator)
+
+			// Attachment byte upload + serve (14b-02) — Chi multipart, alongside
+			// the huma JSON metadata routes registered below. Distinct /file
+			// suffixes avoid a huma route collision at boot.
+			attachment.RegisterUploadHandler(r, attachmentSvc, broadcaster)
+			attachment.RegisterServeHandler(r, attachmentSvc, photoStorage)
 
 			// Register Phase 4 domain routes (loans & borrowers)
 			borrower.RegisterRoutes(wsAPI, borrowerSvc, broadcaster)
