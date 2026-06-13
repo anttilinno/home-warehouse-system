@@ -243,7 +243,7 @@ Clean-slate rebuild of `/frontend2` with sketch 006-008 retro-os pastel fidelity
 - [x] **Phase 11: Scan (single-route)** — `/scan` with `<BarcodeScanner>` mounted ONCE + QR/UPC/EAN/Code128 + pause-on-match (prop-driven) + Android torch + manual fallback + AudioContext + ios-haptics + scan history (last 10) + 4-state result banner + post-match quick-action overlay + UPC opt-in suggestion prefill (completed 2026-06-13)
 - [x] **Phase 12: Settings hub** — landing with 8 grouped rows + Profile + Security + Appearance + Language + Regional Formats + Notifications + Connected Accounts + Data Storage (online-only — clear cache + export + import only) (completed 2026-06-13)
 - [x] **Phase 13: Dashboard** — 4 stat tiles + activity table (TUI columns, relative <24h then absolute) + side rail (Pending Approvals + System Alerts) + HUD row (gauge + sparkline + counts) gated behind `VITE_FEATURE_HUD_ROLLUPS` flag (Conflict 3 resolution) (completed 2026-06-13)
-- [ ] **Phase 13b: Analytics + Out-of-stock** — charts page (category breakdown, location values, condition/status distribution, top borrowers, monthly loan activity; lazy-loaded chart lib to protect POL-04 bundle budget) + out-of-stock table with item links. NOTE: charts aesthetic needs a Retro OS sketch (extend set 006-008) before planning [Gap G-6]
+- [x] **Phase 13b: Analytics + Out-of-stock** — charts page (category breakdown, location values, condition/status distribution, top borrowers, monthly loan activity; lazy-loaded chart lib to protect POL-04 bundle budget) + out-of-stock table with item links. NOTE: charts aesthetic needs a Retro OS sketch (extend set 006-008) before planning [Gap G-6] (completed 2026-06-13)
 - [ ] **Phase 14: System group** — Approvals + My Changes + Sync History + Imports/Exports — all activity-table style with bulk operations dispatched via Bottombar
 - [ ] **Phase 14b: Attachments + Paperless** — item attachments panel on item detail (upload/list/set-primary/delete; FileInput atom from Phase 4) + Paperless-ngx settings page (slots into Settings hub) + Paperless doc search + link-to-item. NOTE: cross-tenant attachment IDOR audit finding must be fixed with this phase [Gap G-7]
 - [ ] **Phase 15: i18n catalog gap-fill (et + ru)** — extract en messages, translate to et + ru (lift from legacy `/frontend` next-intl + v2.1 Lingui archive), locale switcher, format hooks (`useDateFormat`/`useTimeFormat`/`useNumberFormat`) used everywhere
@@ -888,7 +888,7 @@ Plans:
 | 11 | v3.0 | 8/8 | Complete   | 2026-06-13 |
 | 12 | v3.0 | 7/7 | Complete   | 2026-06-13 |
 | 13 | v3.0 | 5/5 | Complete   | 2026-06-13 |
-| 13b | v3.0 | 4/5 | In Progress|  |
+| 13b | v3.0 | 5/5 | Complete   | 2026-06-13 |
 | 14 | v3.0 | 0/TBD | Not started | - |
 | 14b | v3.0 | 0/TBD | Not started | - |
 | 15 | v3.0 | 0/TBD | Not started | - |

@@ -216,10 +216,10 @@
 
 ### Analytics (ANL) — Phase 13b (Gap G-6)
 
-- [ ] **ANL-01**: User sees category-breakdown, location-value, and condition/status-distribution charts on an Analytics page.
-- [ ] **ANL-02**: User sees top-borrowers and monthly-loan-activity charts on the Analytics page.
-- [ ] **ANL-03**: The chart library is lazy-loaded (dynamic import) so non-analytics routes carry zero charting weight and POL-04 budgets hold.
-- [ ] **ANL-04**: User sees an out-of-stock table (`/analytics/out-of-stock`) with each row linking to its item.
+- [x] **ANL-01**: User sees category-breakdown, location-value, and condition/status-distribution charts on an Analytics page.
+- [x] **ANL-02**: User sees top-borrowers and monthly-loan-activity charts on the Analytics page.
+- [x] **ANL-03**: The chart library is lazy-loaded (dynamic import) so non-analytics routes carry zero charting weight and POL-04 budgets hold.
+- [x] **ANL-04**: User sees an out-of-stock table (`/analytics/out-of-stock`) with each row linking to its item.
 
 ### Attachments (ATT) — Phase 14b (Gap G-7)
 
@@ -437,10 +437,10 @@
 | MNT-01 | Phase 10b | Complete |
 | MNT-02 | Phase 10b | Complete |
 | MNT-03 | Phase 10b | Complete (feed hook; card Phase 13) |
-| ANL-01 | Phase 13b | Pending |
-| ANL-02 | Phase 13b | Pending |
-| ANL-03 | Phase 13b | Pending |
-| ANL-04 | Phase 13b | Pending |
+| ANL-01 | Phase 13b | Complete |
+| ANL-02 | Phase 13b | Complete |
+| ANL-03 | Phase 13b | Complete |
+| ANL-04 | Phase 13b | Complete |
 | ATT-01 | Phase 14b | Pending |
 | ATT-02 | Phase 14b | Pending |
 | ATT-03 | Phase 14b | Pending |
