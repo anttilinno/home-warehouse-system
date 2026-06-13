@@ -656,7 +656,14 @@ Plans:
   3. User can mark a loan as returned via confirm dialog and see it transition to History; can edit due date and notes after creation
   4. Item detail page renders an "Active Loan" panel (if any) and "Loan History" panel; Borrower detail page renders "Active Loans" + "Loan History" panels
 **Parity additions (2026-06-12)** (§4, §6): the `extend` action (`PATCH /loans/{id}/extend`), overdue-row highlighting, CSV export of the loan list, and the `?itemId=` deep link are all in scope. Depends-on updated to **Phase 7b** (loans reference inventory entries) per the §6 ordering table.
-**Plans**: TBD
+**Plans**: 6 plans
+Plans:
+- [ ] 08-01-PLAN.md — loansApi extension (inventory_id create, active/overdue endpoints) + server-flag status + client-CSV util + MSW handlers [Wave 1]
+- [ ] 08-02-PLAN.md — /loans tabbed list (Active/Overdue/History, ?tab=, overdue highlight, per-tab CSV) + Sidebar/route wiring (LOAN-01) [Wave 2]
+- [ ] 08-03-PLAN.md — /loans/new create form (inventory-entry + borrower pickers, ?itemId filter, limit≤100) (LOAN-02) [Wave 2]
+- [ ] 08-04-PLAN.md — optimistic return/extend/edit mutations + dialogs + make item-detail LoanPanels real (LOAN-03/04/05) [Wave 3]
+- [ ] 08-05-PLAN.md — BorrowerLoanPanels reusable component (Active + History, component-only) (LOAN-06) [Wave 3]
+- [ ] 08-06-PLAN.md — batched live Playwright loan-lifecycle E2E (create→active→return→history) [Wave 4]
 **UI hint**: yes
 
 ### Phase 9: Borrowers
