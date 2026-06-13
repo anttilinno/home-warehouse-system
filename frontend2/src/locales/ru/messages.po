@@ -15,89 +15,89 @@ msgstr ""
 
 #: src/features/repairs/components/CompleteRepairDialog.tsx
 msgid "— Keep current condition"
-msgstr ""
+msgstr "— Оставить текущее состояние"
 
 #: src/features/inventory/components/MoveDialog.tsx
 #: src/features/inventory/InventoryFormPage.tsx
 msgid "— No container"
-msgstr ""
+msgstr "— Без контейнера"
 
 #: src/features/loans/LoanFormPage.tsx
 msgid "— Select a borrower"
-msgstr ""
+msgstr "— Выберите получателя"
 
 #: src/features/inventory/components/MoveDialog.tsx
 #: src/features/inventory/InventoryFormPage.tsx
 msgid "— Select a location"
-msgstr ""
+msgstr "— Выберите местоположение"
 
 #: src/features/loans/LoanFormPage.tsx
 msgid "— Select an inventory entry"
-msgstr ""
+msgstr "— Выберите складскую запись"
 
 #: src/features/inventory/InventoryFormPage.tsx
 msgid "— Select an item"
-msgstr ""
+msgstr "— Выберите предмет"
 
 #: src/features/items/components/LoanPanels.tsx
 #: src/features/loans/components/BorrowerLoanPanels.tsx
 msgid "— still out"
-msgstr ""
+msgstr "— ещё не возвращено"
 
 #. placeholder {0}: archiveTarget?.name ?? ""
 #. placeholder {1}: n === 1 ? "" : "s"
 #: src/features/taxonomy/components/CategoriesTab.tsx
 msgid "\"{0}\" has {n} item{1} assigned to it. Archiving keeps those items but hides this category from pickers until you restore it."
-msgstr ""
+msgstr "К «{0}» привязано предметов: {n} ({1}). Архивирование сохранит эти предметы, но скроет категорию из списков выбора, пока вы её не восстановите."
 
 #. placeholder {0}: deleteTarget?.name ?? ""
 #. placeholder {1}: n === 1 ? "" : "s"
 #: src/features/taxonomy/components/ContainersTab.tsx
 msgid "\"{0}\" holds {n} item{1}. Deleting it will move those items out of any container (they stay in their location) and then delete the container. This can't be undone."
-msgstr ""
+msgstr "В «{0}» хранится предметов: {n} ({1}). Удаление переместит эти предметы из контейнера (они останутся в своём местоположении), а затем удалит контейнер. Это действие нельзя отменить."
 
 #: src/features/settings/NotificationsPage.tsx
 msgid "(due soon, overdue)"
-msgstr ""
+msgstr "(скоро срок, просрочено)"
 
 #: src/features/settings/NotificationsPage.tsx
 msgid "(invites, joins)"
-msgstr ""
+msgstr "(приглашения, присоединения)"
 
 #: src/features/settings/NotificationsPage.tsx
 msgid "(items expiring)"
-msgstr ""
+msgstr "(истекает срок предметов)"
 
 #: src/features/taxonomy/components/ContainersTab.tsx
 msgid "(No location)"
-msgstr ""
+msgstr "(Без местоположения)"
 
 #: src/features/taxonomy/components/CategoryFormDialog.tsx
 #: src/features/taxonomy/components/LocationFormDialog.tsx
 msgid "(Root — no parent)"
-msgstr ""
+msgstr "(Корень — без родителя)"
 
 #: src/features/settings/NotificationsPage.tsx
 msgid "(service due)"
-msgstr ""
+msgstr "(требуется обслуживание)"
 
 #. placeholder {0}: loan.item.name
 #: src/features/loans/components/ExtendLoanDialog.tsx
 msgid "{0} — currently due {currentDue}."
-msgstr ""
+msgstr "{0} — текущий срок {currentDue}."
 
 #. placeholder {0}: loan.item.name
 #. placeholder {1}: loan.borrower.name
 #: src/features/loans/components/EditLoanDialog.tsx
 msgid "{0} — loaned to {1}."
-msgstr ""
+msgstr "{0} — выдано получателю {1}."
 
 #. placeholder {0}: a.name
 #: src/features/taxonomy/hooks/useCategoryMutations.ts
 #: src/features/taxonomy/hooks/useLabelMutations.ts
 #: src/features/taxonomy/hooks/useLocationMutations.ts
 msgid "{0} archived."
-msgstr ""
+msgstr "{0} — в архиве."
 
 #. placeholder {0}: c.name
 #. placeholder {0}: cat.name
@@ -107,575 +107,575 @@ msgstr ""
 #: src/features/taxonomy/hooks/useLabelMutations.ts
 #: src/features/taxonomy/hooks/useLocationMutations.ts
 msgid "{0} created."
-msgstr ""
+msgstr "{0} создан."
 
 #. placeholder {0}: a.name
 #: src/features/taxonomy/hooks/useContainerMutations.ts
 #: src/features/taxonomy/hooks/useLabelMutations.ts
 msgid "{0} deleted."
-msgstr ""
+msgstr "{0} удалён."
 
 #. placeholder {0}: selectedIds.length
 #: src/features/items/components/PhotoGallery.tsx
 msgid "{0} photo(s) will be permanently removed."
-msgstr ""
+msgstr "Фото будет безвозвратно удалено: {0}."
 
 #. placeholder {0}: a.name
 #: src/features/taxonomy/hooks/useCategoryMutations.ts
 #: src/features/taxonomy/hooks/useLabelMutations.ts
 #: src/features/taxonomy/hooks/useLocationMutations.ts
 msgid "{0} restored."
-msgstr ""
+msgstr "{0} восстановлен."
 
 #. placeholder {0}: selectedIds.length
 #: src/features/items/components/PhotoGallery.tsx
 msgid "{0} SELECTED"
-msgstr ""
+msgstr "ВЫБРАНО: {0}"
 
 #. placeholder {0}: s.total_inventory
 #: src/features/dashboard/DashboardPage.tsx
 msgid "{0} units total"
-msgstr ""
+msgstr "всего единиц: {0}"
 
 #: src/features/inventory/ExpiringPage.tsx
 msgid "{count} expiring"
-msgstr ""
+msgstr "истекает: {count}"
 
 #: src/features/inventory/ExpiringPage.tsx
 msgid "{d} days"
-msgstr ""
+msgstr "{d} дн."
 
 #. placeholder {0}: queue.length
 #: src/features/items/components/PhotoUpload.tsx
 msgid "{done}/{0} uploaded"
-msgstr ""
+msgstr "загружено {done}/{0}"
 
 #: src/features/settings/AccountsPage.tsx
 msgid "{label} unlinked."
-msgstr ""
+msgstr "Метка {label} отвязана."
 
 #: src/features/dashboard/components/SystemAlertsPanel.tsx
 msgid "{overdueCount} overdue"
-msgstr ""
+msgstr "просрочено: {overdueCount}"
 
 #: src/features/approvals/ApprovalsPage.tsx
 msgid "{total} pending"
-msgstr ""
+msgstr "на рассмотрении: {total}"
 
 #: src/features/settings/PaperlessPage.tsx
 msgid "••••••• (stored — leave blank to keep)"
-msgstr ""
+msgstr "••••••• (сохранено — оставьте пустым, чтобы не менять)"
 
 #: src/features/borrowers/BorrowerDetailPage.tsx
 msgid "← BACK TO BORROWERS"
-msgstr ""
+msgstr "← НАЗАД К ПОЛУЧАТЕЛЯМ"
 
 #: src/features/inventory/ExpiringPage.tsx
 msgid "← BACK TO INVENTORY"
-msgstr ""
+msgstr "← НАЗАД К СКЛАДУ"
 
 #: src/features/items/ItemDetailPage.tsx
 msgid "← BACK TO ITEMS"
-msgstr ""
+msgstr "← НАЗАД К ПРЕДМЕТАМ"
 
 #: src/features/inventory/InventoryListPage.tsx
 msgid "↧"
-msgstr ""
+msgstr "↧"
 
 #: src/features/loans/components/LoanRowActions.tsx
 msgid "↧ EDIT"
-msgstr ""
+msgstr "↧ ИЗМЕНИТЬ"
 
 #: src/routes/demo/DemoPage.tsx
 msgid "+ Add item"
-msgstr ""
+msgstr "+ Добавить предмет"
 
 #: src/features/loans/LoansListPage.tsx
 msgid "−{overdueBy}d"
-msgstr ""
+msgstr "−{overdueBy}д"
 
 #: src/features/items/components/InventoryPanel.tsx
 #: src/features/wishlist/WishlistPage.tsx
 msgid "⊕ ADD"
-msgstr ""
+msgstr "⊕ ДОБАВИТЬ"
 
 #: src/features/borrowers/BorrowersListPage.tsx
 msgid "⊕ ADD BORROWER"
-msgstr ""
+msgstr "⊕ ДОБАВИТЬ ПОЛУЧАТЕЛЯ"
 
 #: src/features/taxonomy/components/ContainersTab.tsx
 msgid "⊕ ADD CONTAINER"
-msgstr ""
+msgstr "⊕ ДОБАВИТЬ КОНТЕЙНЕР"
 
 #: src/features/inventory/InventoryListPage.tsx
 #: src/features/items/components/InventoryPanel.tsx
 msgid "⊕ ADD ENTRY"
-msgstr ""
+msgstr "⊕ ДОБАВИТЬ ЗАПИСЬ"
 
 #: src/features/items/components/ItemAttachmentPanel.tsx
 #: src/features/repairs/components/RepairAttachmentPanel.tsx
 msgid "⊕ ADD FILE"
-msgstr ""
+msgstr "⊕ ДОБАВИТЬ ФАЙЛ"
 
 #: src/features/items/ItemsListPage.tsx
 #: src/features/wishlist/WishlistPage.tsx
 msgid "⊕ ADD ITEM"
-msgstr ""
+msgstr "⊕ ДОБАВИТЬ ПРЕДМЕТ"
 
 #: src/features/items/components/ItemLabels.tsx
 #: src/features/taxonomy/components/LabelsTab.tsx
 msgid "⊕ ADD LABEL"
-msgstr ""
+msgstr "⊕ ДОБАВИТЬ МЕТКУ"
 
 #: src/features/items/ItemDetailPage.tsx
 #: src/features/repairs/components/RepairPhotoPanel.tsx
 msgid "⊕ ADD PHOTOS"
-msgstr ""
+msgstr "⊕ ДОБАВИТЬ ФОТО"
 
 #: src/features/repairs/components/RepairsDrawer.tsx
 msgid "⊕ ADD REPAIR"
-msgstr ""
+msgstr "⊕ ДОБАВИТЬ РЕМОНТ"
 
 #: src/features/taxonomy/components/CategoriesTab.tsx
 msgid "⊕ ADD ROOT CATEGORY"
-msgstr ""
+msgstr "⊕ ДОБАВИТЬ КОРНЕВУЮ КАТЕГОРИЮ"
 
 #: src/features/taxonomy/components/LocationsTab.tsx
 msgid "⊕ ADD ROOT LOCATION"
-msgstr ""
+msgstr "⊕ ДОБАВИТЬ КОРНЕВОЕ МЕСТОПОЛОЖЕНИЕ"
 
 #: src/features/maintenance/components/MaintenanceDrawer.tsx
 msgid "⊕ ADD SCHEDULE"
-msgstr ""
+msgstr "⊕ ДОБАВИТЬ ГРАФИК"
 
 #: src/features/items/components/LoanPanels.tsx
 msgid "⊕ LOAN THIS ITEM"
-msgstr ""
+msgstr "⊕ ВЫДАТЬ ЭТОТ ПРЕДМЕТ"
 
 #: src/features/borrowers/BorrowersListPage.tsx
 msgid "⊕ NEW BORROWER"
-msgstr ""
+msgstr "⊕ НОВЫЙ ПОЛУЧАТЕЛЬ"
 
 #: src/features/loans/LoansListPage.tsx
 msgid "⊕ NEW LOAN"
-msgstr ""
+msgstr "⊕ НОВАЯ ВЫДАЧА"
 
 #: src/components/retro/filters/SavedFilters.tsx
 msgid "▾ PRESETS"
-msgstr ""
+msgstr "▾ ПРЕСЕТЫ"
 
 #: src/features/items/components/PhotoGallery.tsx
 msgid "★ PRIMARY"
-msgstr ""
+msgstr "★ ОСНОВНОЕ"
 
 #: src/features/items/components/PhotoGallery.tsx
 msgid "★ SET PRIMARY"
-msgstr ""
+msgstr "★ СДЕЛАТЬ ОСНОВНЫМ"
 
 #: src/features/repairs/components/RepairRecordDialog.tsx
 #: src/features/repairs/components/RepairsDrawer.tsx
 msgid "⚖ WARRANTY"
-msgstr ""
+msgstr "⚖ ГАРАНТИЯ"
 
 #. placeholder {0}: Math.abs(days)
 #: src/features/loans/components/BorrowerLoanPanels.tsx
 msgid "⚠ −{0}d"
-msgstr ""
+msgstr "⚠ −{0}д"
 
 #: src/features/borrowers/BorrowerDetailPage.tsx
 msgid "⚠ Active loans"
-msgstr ""
+msgstr "⚠ Активные выдачи"
 
 #: src/features/items/components/LoanPanels.tsx
 msgid "⚠ Overdue"
-msgstr ""
+msgstr "⚠ Просрочено"
 
 #: src/features/approvals/ApprovalsPage.tsx
 msgid "✓ APPROVE"
-msgstr ""
+msgstr "✓ ОДОБРИТЬ"
 
 #: src/components/retro/filters/BulkActionBar.tsx
 #: src/features/items/components/PhotoGallery.tsx
 msgid "✕ CLEAR"
-msgstr ""
+msgstr "✕ ОЧИСТИТЬ"
 
 #: src/features/items/components/PhotoLightbox.tsx
 msgid "✕ CLOSE"
-msgstr ""
+msgstr "✕ ЗАКРЫТЬ"
 
 #: src/features/approvals/ApprovalsPage.tsx
 msgid "✕ REJECT"
-msgstr ""
+msgstr "✕ ОТКЛОНИТЬ"
 
 #: src/features/inventory/InventoryListPage.tsx
 msgid "⟳"
-msgstr ""
+msgstr "⟳"
 
 #. placeholder {0}: selectedIds.length
 #: src/features/items/components/PhotoGallery.tsx
 msgid "⤓ DOWNLOAD {0}"
-msgstr ""
+msgstr "⤓ СКАЧАТЬ {0}"
 
 #: src/features/items/components/PhotoGallery.tsx
 msgid "⤓ DOWNLOAD ALL"
-msgstr ""
+msgstr "⤓ СКАЧАТЬ ВСЁ"
 
 #: src/features/items/ItemsListPage.tsx
 msgid "⤓ EXPORT"
-msgstr ""
+msgstr "⤓ ЭКСПОРТ"
 
 #: src/features/declutter/DeclutterPage.tsx
 #: src/features/inventory/InventoryListPage.tsx
 #: src/features/loans/LoansListPage.tsx
 msgid "⤓ EXPORT CSV"
-msgstr ""
+msgstr "⤓ ЭКСПОРТ CSV"
 
 #: src/features/inventory/InventoryListPage.tsx
 msgid "🔧"
-msgstr ""
+msgstr "🔧"
 
 #: src/features/dashboard/components/HudRow.tsx
 msgid "14-day activity"
-msgstr ""
+msgstr "Активность за 14 дней"
 
 #: src/routes/demo/DemoPage.tsx
 msgid "A centered-modal retro-os Window. ESC pops it via the modal stack."
-msgstr ""
+msgstr "Центрированное модальное окно retro-os. ESC закрывает его через стек модальных окон."
 
 #: src/routes/demo/DemoPage.tsx
 msgid "A helpful hint."
-msgstr ""
+msgstr "Полезная подсказка."
 
 #: src/features/approvals/ApprovalsPage.tsx
 msgid "A reason is required to reject."
-msgstr ""
+msgstr "Для отклонения требуется указать причину."
 
 #: src/features/settings/SettingsLandingPage.tsx
 msgid "ACCOUNT"
-msgstr ""
+msgstr "АККАУНТ"
 
 #: src/features/auth/RegisterPage.tsx
 msgid "Account created — welcome."
-msgstr ""
+msgstr "Аккаунт создан — добро пожаловать."
 
 #: src/features/inventory/InventoryFormPage.tsx
 #: src/features/wishlist/components/WishlistFormDialog.tsx
 #: src/features/wishlist/WishlistPage.tsx
 msgid "Acquired"
-msgstr ""
+msgstr "Приобретено"
 
 #: src/features/wishlist/WishlistPage.tsx
 msgid "ACQUIRED"
-msgstr ""
+msgstr "ПРИОБРЕТЕНО"
 
 #: src/features/approvals/ApprovalsPage.tsx
 #: src/features/dashboard/DashboardPage.tsx
 #: src/features/my-changes/MyChangesPage.tsx
 msgid "Action"
-msgstr ""
+msgstr "Действие"
 
 #: src/features/dashboard/DashboardPage.tsx
 msgid "action needed"
-msgstr ""
+msgstr "требуется действие"
 
 #: src/features/settings/MembersPage.tsx
 #: src/features/settings/SecurityPage.tsx
 msgid "Actions"
-msgstr ""
+msgstr "Действия"
 
 #: src/components/scan/ScanResultBanner.tsx
 msgid "ACTIONS"
-msgstr ""
+msgstr "ДЕЙСТВИЯ"
 
 #: src/features/dashboard/DashboardPage.tsx
 msgid "active"
-msgstr ""
+msgstr "активно"
 
 #: src/features/loans/LoansListPage.tsx
 msgid "Active"
-msgstr ""
+msgstr "Активно"
 
 #: src/features/loans/LoansListPage.tsx
 msgid "ACTIVE"
-msgstr ""
+msgstr "АКТИВНО"
 
 #: src/features/dashboard/components/HudRow.tsx
 msgid "Active loans"
-msgstr ""
+msgstr "Активные выдачи"
 
 #: src/features/loans/components/BorrowerLoanPanels.tsx
 msgid "ACTIVE LOANS"
-msgstr ""
+msgstr "АКТИВНЫЕ ВЫДАЧИ"
 
 #: src/features/settings/SecurityPage.tsx
 msgid "active now"
-msgstr ""
+msgstr "активно сейчас"
 
 #: src/features/dashboard/DashboardPage.tsx
 msgid "Actor"
-msgstr ""
+msgstr "Инициатор"
 
 #: src/features/settings/MembersPage.tsx
 msgid "Add"
-msgstr ""
+msgstr "Добавить"
 
 #: src/features/inventory/InventoryFormPage.tsx
 msgid "ADD ENTRY"
-msgstr ""
+msgstr "ДОБАВИТЬ ЗАПИСЬ"
 
 #: src/features/items/components/AddAttachmentDialog.tsx
 #: src/features/repairs/components/AddAttachmentDialog.tsx
 msgid "ADD FILE"
-msgstr ""
+msgstr "ДОБАВИТЬ ФАЙЛ"
 
 #: src/features/wishlist/components/WishlistFormDialog.tsx
 msgid "Add item"
-msgstr ""
+msgstr "Добавить предмет"
 
 #: src/features/items/ItemFormPage.tsx
 msgid "ADD ITEM"
-msgstr ""
+msgstr "ДОБАВИТЬ ПРЕДМЕТ"
 
 #: src/features/items/components/PhotoUpload.tsx
 msgid "ADD PHOTOS"
-msgstr ""
+msgstr "ДОБАВИТЬ ФОТО"
 
 #: src/features/repairs/components/RepairForm.tsx
 msgid "ADD REPAIR"
-msgstr ""
+msgstr "ДОБАВИТЬ РЕМОНТ"
 
 #: src/features/maintenance/components/MaintenanceForm.tsx
 msgid "ADD SCHEDULE"
-msgstr ""
+msgstr "ДОБАВИТЬ ГРАФИК"
 
 #: src/features/wishlist/components/WishlistFormDialog.tsx
 msgid "ADD TO WISHLIST"
-msgstr ""
+msgstr "ДОБАВИТЬ В СПИСОК ЖЕЛАЕМОГО"
 
 #: src/features/taxonomy/components/LocationsTab.tsx
 msgid "Add your first location — a room, shelf, or area. Nest sub-locations to mirror your space."
-msgstr ""
+msgstr "Добавьте первое местоположение — комнату, полку или зону. Вкладывайте под-местоположения, чтобы отразить ваше пространство."
 
 #: src/features/wishlist/components/WishlistFormDialog.tsx
 msgid "Added to wishlist."
-msgstr ""
+msgstr "Добавлено в список желаемого."
 
 #: src/features/analytics/components/OutOfStockTable.tsx
 msgid "All items are in stock. Anything that drops below its minimum will surface here."
-msgstr ""
+msgstr "Все предметы в наличии. Всё, что опустится ниже минимума, появится здесь."
 
 #: src/features/settings/SecurityPage.tsx
 msgid "All other sessions revoked."
-msgstr ""
+msgstr "Все остальные сеансы завершены."
 
 #: src/features/auth/RegisterPage.tsx
 msgid "Already have an account?"
-msgstr ""
+msgstr "Уже есть аккаунт?"
 
 #: src/features/repairs/components/RepairForm.tsx
 msgid "Amount in your workspace currency."
-msgstr ""
+msgstr "Сумма в валюте вашего рабочего пространства."
 
 #: src/components/layout/Sidebar.tsx
 msgid "Analytics"
-msgstr ""
+msgstr "Аналитика"
 
 #: src/features/settings/PaperlessPage.tsx
 msgid "API token"
-msgstr ""
+msgstr "API-токен"
 
 #: src/features/settings/AppearancePage.tsx
 #: src/features/settings/SettingsLandingPage.tsx
 msgid "Appearance"
-msgstr ""
+msgstr "Оформление"
 
 #: src/components/layout/Sidebar.tsx
 #: src/features/approvals/ApprovalsPage.tsx
 msgid "Approvals"
-msgstr ""
+msgstr "Утверждения"
 
 #: src/features/approvals/ApprovalsPage.tsx
 msgid "APPROVALS — {workspaceName}"
-msgstr ""
+msgstr "СОГЛАСОВАНИЯ — {workspaceName}"
 
 #: src/features/approvals/ApprovalsPage.tsx
 msgid "Approve selected"
-msgstr ""
+msgstr "Одобрить выбранное"
 
 #: src/features/approvals/ApprovalsPage.tsx
 msgid "Approved {ok}, {fail} failed."
-msgstr ""
+msgstr "Одобрено: {ok}, не удалось: {fail}."
 
 #: src/features/approvals/ApprovalsPage.tsx
 msgid "Approved {ok}."
-msgstr ""
+msgstr "Одобрено: {ok}."
 
 #: src/features/taxonomy/components/CategoriesTab.tsx
 #: src/features/taxonomy/components/LocationsTab.tsx
 msgid "Archive"
-msgstr ""
+msgstr "В архив"
 
 #: src/features/inventory/InventoryListPage.tsx
 #: src/features/items/ItemDetailPage.tsx
 #: src/features/items/ItemsListPage.tsx
 msgid "ARCHIVE"
-msgstr ""
+msgstr "В АРХИВ"
 
 #. placeholder {0}: archiveTarget?.name ?? ""
 #: src/features/taxonomy/components/CategoriesTab.tsx
 #: src/features/taxonomy/components/LocationsTab.tsx
 msgid "Archive \"{0}\"? You can restore it later."
-msgstr ""
+msgstr "Архивировать «{0}»? Вы сможете восстановить позже."
 
 #. placeholder {0}: label.name
 #: src/features/taxonomy/components/LabelsTab.tsx
 msgid "Archive {0}"
-msgstr ""
+msgstr "Архивировать {0}"
 
 #: src/features/taxonomy/components/CategoriesTab.tsx
 msgid "Archive anyway"
-msgstr ""
+msgstr "Всё равно архивировать"
 
 #: src/features/taxonomy/components/CategoriesTab.tsx
 msgid "ARCHIVE CATEGORY?"
-msgstr ""
+msgstr "АРХИВИРОВАТЬ КАТЕГОРИЮ?"
 
 #: src/features/taxonomy/components/LocationsTab.tsx
 msgid "ARCHIVE LOCATION?"
-msgstr ""
+msgstr "АРХИВИРОВАТЬ МЕСТОПОЛОЖЕНИЕ?"
 
 #: src/features/taxonomy/components/ContainersTab.tsx
 msgid "archived"
-msgstr ""
+msgstr "в архиве"
 
 #: src/features/inventory/InventoryListPage.tsx
 #: src/features/items/ItemsListPage.tsx
 msgid "Archived"
-msgstr ""
+msgstr "В архиве"
 
 #: src/features/inventory/InventoryListPage.tsx
 #: src/features/items/ItemsListPage.tsx
 #: src/features/taxonomy/components/LabelsTab.tsx
 msgid "ARCHIVED"
-msgstr ""
+msgstr "В АРХИВЕ"
 
 #: src/features/auth/RegisterPage.tsx
 #: src/features/settings/SecurityPage.tsx
 msgid "At least 8 characters."
-msgstr ""
+msgstr "Не менее 8 символов."
 
 #: src/routes/demo/DemoPage.tsx
 msgid "Atom Demo"
-msgstr ""
+msgstr "Демо атомов"
 
 #: src/routes/demo/DemoPage.tsx
 msgid "Attachments"
-msgstr ""
+msgstr "Вложения"
 
 #: src/features/items/components/LoanPanels.tsx
 msgid "Available"
-msgstr ""
+msgstr "Доступно"
 
 #: src/features/auth/CallbackPage.tsx
 msgid "Back to login"
-msgstr ""
+msgstr "Назад ко входу"
 
 #: src/features/scan/ClaimPage.tsx
 msgid "Back to scan"
-msgstr ""
+msgstr "Назад к сканированию"
 
 #: src/components/scan/QuickActionMenu.tsx
 msgid "BACK TO SCAN"
-msgstr ""
+msgstr "НАЗАД К СКАНИРОВАНИЮ"
 
 #: src/features/items/ItemDetailPage.tsx
 #: src/features/items/ItemFormPage.tsx
 msgid "Barcode"
-msgstr ""
+msgstr "Штрихкод"
 
 #: src/features/dashboard/DashboardPage.tsx
 msgid "below threshold"
-msgstr ""
+msgstr "ниже порога"
 
 #: src/features/loans/LoanFormPage.tsx
 #: src/features/loans/LoansListPage.tsx
 msgid "Borrower"
-msgstr ""
+msgstr "Заёмщик"
 
 #: src/features/borrowers/BorrowerDetailPage.tsx
 msgid "BORROWER"
-msgstr ""
+msgstr "ПОЛУЧАТЕЛЬ"
 
 #: src/features/borrowers/hooks/useBorrowerMutations.ts
 msgid "Borrower created."
-msgstr ""
+msgstr "Получатель создан."
 
 #: src/features/borrowers/hooks/useBorrowerMutations.ts
 msgid "Borrower deleted."
-msgstr ""
+msgstr "Получатель удалён."
 
 #: src/features/borrowers/BorrowerDetailPage.tsx
 msgid "BORROWER NOT FOUND"
-msgstr ""
+msgstr "ПОЛУЧАТЕЛЬ НЕ НАЙДЕН"
 
 #: src/features/borrowers/hooks/useBorrowerMutations.ts
 msgid "Borrower updated."
-msgstr ""
+msgstr "Получатель обновлён."
 
 #: src/components/layout/Sidebar.tsx
 #: src/features/borrowers/BorrowerDetailPage.tsx
 #: src/features/borrowers/BorrowersListPage.tsx
 #: src/features/dashboard/DashboardPage.tsx
 msgid "Borrowers"
-msgstr ""
+msgstr "Заёмщики"
 
 #: src/features/borrowers/BorrowersListPage.tsx
 msgid "BORROWERS — {workspaceName}"
-msgstr ""
+msgstr "ПОЛУЧАТЕЛИ — {workspaceName}"
 
 #: src/features/settings/DataStoragePage.tsx
 msgid "Bring data in from a file."
-msgstr ""
+msgstr "Импортируйте данные из файла."
 
 #: src/components/retro/form/RetroFileInput.tsx
 msgid "BROWSE…"
-msgstr ""
+msgstr "ОБЗОР…"
 
 #: src/components/retro/filters/BulkActionBar.tsx
 msgid "Bulk actions"
-msgstr ""
+msgstr "Массовые действия"
 
 #: src/routes/demo/DemoPage.tsx
 msgid "BulkActionBar — inline mobile selection surface (destructive routes through a confirm dialog)."
-msgstr ""
+msgstr "BulkActionBar — встроенная панель выбора для мобильных (опасные действия проходят через диалог подтверждения)."
 
 #: src/features/declutter/DeclutterPage.tsx
 msgid "By category"
-msgstr ""
+msgstr "По категории"
 
 #: src/features/declutter/DeclutterPage.tsx
 msgid "By location"
-msgstr ""
+msgstr "По местоположению"
 
 #: src/features/settings/DataStoragePage.tsx
 msgid "Cached data"
-msgstr ""
+msgstr "Кэшированные данные"
 
 #: src/features/settings/DataStoragePage.tsx
 msgid "Cached data cleared."
-msgstr ""
+msgstr "Кэшированные данные очищены."
 
 #: src/features/scan/ScanPage.tsx
 msgid "CAMERA BLOCKED"
-msgstr ""
+msgstr "КАМЕРА ЗАБЛОКИРОВАНА"
 
 #: src/features/settings/MembersPage.tsx
 msgid "Can't remove the last owner."
-msgstr ""
+msgstr "Нельзя удалить последнего владельца."
 
 #: src/features/settings/AccountsPage.tsx
 msgid "Can't unlink — it's your only sign-in method. Set a password first."
-msgstr ""
+msgstr "Нельзя отвязать — это ваш единственный способ входа. Сначала задайте пароль."
 
 #: src/components/retro/overlay/RetroConfirmDialog.tsx
 #: src/features/borrowers/BorrowerDetailPage.tsx
@@ -697,7 +697,7 @@ msgstr ""
 #: src/features/wishlist/components/WishlistFormDialog.tsx
 #: src/features/wishlist/WishlistPage.tsx
 msgid "Cancel"
-msgstr ""
+msgstr "Отмена"
 
 #: src/components/retro/filters/SavedFilters.tsx
 #: src/features/items/components/AddAttachmentDialog.tsx
@@ -710,36 +710,36 @@ msgstr ""
 #: src/features/repairs/components/CompleteRepairDialog.tsx
 #: src/features/repairs/components/RepairForm.tsx
 msgid "CANCEL"
-msgstr ""
+msgstr "ОТМЕНА"
 
 #: src/features/imports/ImportsPage.tsx
 msgid "Cancelled"
-msgstr ""
+msgstr "Отменено"
 
 #: src/features/dashboard/components/HudRow.tsx
 msgid "Capacity"
-msgstr ""
+msgstr "Вместимость"
 
 #: src/features/dashboard/components/HudRow.tsx
 msgid "Capacity gauge"
-msgstr ""
+msgstr "Индикатор вместимости"
 
 #: src/features/items/components/CaptionDialog.tsx
 msgid "Caption"
-msgstr ""
+msgstr "Подпись"
 
 #: src/routes/demo/DemoPage.tsx
 msgid "Careful."
-msgstr ""
+msgstr "Осторожно."
 
 #: src/components/layout/Sidebar.tsx
 #: src/features/dashboard/DashboardPage.tsx
 msgid "Categories"
-msgstr ""
+msgstr "Категории"
 
 #: src/features/taxonomy/TaxonomyPage.tsx
 msgid "CATEGORIES"
-msgstr ""
+msgstr "КАТЕГОРИИ"
 
 #: src/features/analytics/components/OutOfStockTable.tsx
 #: src/features/declutter/DeclutterPage.tsx
@@ -748,27 +748,27 @@ msgstr ""
 #: src/features/items/ItemsListPage.tsx
 #: src/routes/demo/DemoPage.tsx
 msgid "Category"
-msgstr ""
+msgstr "Категория"
 
 #: src/features/items/ItemsListPage.tsx
 msgid "CATEGORY"
-msgstr ""
+msgstr "КАТЕГОРИЯ"
 
 #: src/features/analytics/components/CategoryValueChart.tsx
 msgid "Category breakdown"
-msgstr ""
+msgstr "Распределение по категориям"
 
 #: src/features/settings/SecurityPage.tsx
 msgid "Change password"
-msgstr ""
+msgstr "Изменить пароль"
 
 #: src/features/settings/AvatarUploader.tsx
 msgid "Change photo…"
-msgstr ""
+msgstr "Изменить фото…"
 
 #: src/features/settings/LanguagePage.tsx
 msgid "Changes apply immediately."
-msgstr ""
+msgstr "Изменения применяются сразу."
 
 #: src/features/settings/RegionalFormatsPage.tsx
 #: src/features/taxonomy/hooks/useCategoryMutations.ts
@@ -776,72 +776,72 @@ msgstr ""
 #: src/features/taxonomy/hooks/useLabelMutations.ts
 #: src/features/taxonomy/hooks/useLocationMutations.ts
 msgid "Changes saved."
-msgstr ""
+msgstr "Изменения сохранены."
 
 #: src/routes/demo/DemoPage.tsx
 msgid "Checked / unchecked"
-msgstr ""
+msgstr "Отмечено / снято"
 
 #: src/features/imports/ImportsPage.tsx
 msgid "Choose a CSV file first."
-msgstr ""
+msgstr "Сначала выберите CSV-файл."
 
 #: src/features/scan/ClaimPage.tsx
 msgid "Claim code"
-msgstr ""
+msgstr "Код привязки"
 
 #: src/components/retro/filters/FilterBar.tsx
 #: src/features/borrowers/BorrowersListPage.tsx
 #: src/features/inventory/InventoryListPage.tsx
 #: src/features/items/ItemsListPage.tsx
 msgid "CLEAR ALL"
-msgstr ""
+msgstr "ОЧИСТИТЬ ВСЁ"
 
 #: src/features/settings/DataStoragePage.tsx
 msgid "Clear cached data"
-msgstr ""
+msgstr "Очистить кэшированные данные"
 
 #: src/features/settings/DataStoragePage.tsx
 msgid "Clear cached data? Your inventory data stays safe — this only clears locally cached lists."
-msgstr ""
+msgstr "Очистить кэшированные данные? Ваши складские данные останутся в безопасности — это очистит только локально кэшированные списки."
 
 #: src/components/scan/ScanHistoryList.tsx
 msgid "CLEAR HISTORY"
-msgstr ""
+msgstr "ОЧИСТИТЬ ИСТОРИЮ"
 
 #: src/components/scan/ScanHistoryList.tsx
 msgid "CLEAR HISTORY?"
-msgstr ""
+msgstr "ОЧИСТИТЬ ИСТОРИЮ?"
 
 #: src/features/loans/LoansListPage.tsx
 msgid "CLEAR SEARCH"
-msgstr ""
+msgstr "ОЧИСТИТЬ ПОИСК"
 
 #: src/features/settings/DataStoragePage.tsx
 msgid "Clears locally cached lists. Your inventory data stays safe."
-msgstr ""
+msgstr "Очищает локально кэшированные списки. Ваши складские данные останутся в безопасности."
 
 #: src/components/retro/overlay/RetroDialog.tsx
 #: src/routes/demo/DemoPage.tsx
 msgid "Close"
-msgstr ""
+msgstr "Закрыть"
 
 #: src/features/items/components/PhotoUpload.tsx
 msgid "CLOSE"
-msgstr ""
+msgstr "ЗАКРЫТЬ"
 
 #: src/features/scan/ClaimPage.tsx
 msgid "Code not found"
-msgstr ""
+msgstr "Код не найден"
 
 #: src/features/taxonomy/components/ColorSwatchPicker.tsx
 #: src/features/taxonomy/components/LabelFormDialog.tsx
 msgid "Color"
-msgstr ""
+msgstr "Цвет"
 
 #: src/features/settings/DataStoragePage.tsx
 msgid "Coming soon"
-msgstr ""
+msgstr "Скоро"
 
 #: src/features/maintenance/components/CompleteMaintenanceDialog.tsx
 #: src/features/maintenance/components/MaintenanceDrawer.tsx
@@ -849,597 +849,597 @@ msgstr ""
 #: src/features/repairs/components/CompleteRepairDialog.tsx
 #: src/features/repairs/components/RepairsDrawer.tsx
 msgid "COMPLETE"
-msgstr ""
+msgstr "ЗАВЕРШИТЬ"
 
 #: src/features/maintenance/components/CompleteMaintenanceDialog.tsx
 msgid "COMPLETE MAINTENANCE?"
-msgstr ""
+msgstr "ЗАВЕРШИТЬ ОБСЛУЖИВАНИЕ?"
 
 #: src/features/repairs/components/CompleteRepairDialog.tsx
 msgid "COMPLETE REPAIR"
-msgstr ""
+msgstr "ЗАВЕРШИТЬ РЕМОНТ"
 
 #: src/features/repairs/components/RepairsDrawer.tsx
 msgid "completed"
-msgstr ""
+msgstr "завершено"
 
 #: src/features/imports/ImportsPage.tsx
 #: src/features/repairs/components/RepairRecordDialog.tsx
 msgid "Completed"
-msgstr ""
+msgstr "Завершено"
 
 #: src/features/auth/CallbackPage.tsx
 msgid "Completing sign-in…"
-msgstr ""
+msgstr "Завершение входа…"
 
 #: src/features/inventory/InventoryFormPage.tsx
 #: src/features/inventory/InventoryListPage.tsx
 msgid "Condition"
-msgstr ""
+msgstr "Состояние"
 
 #: src/features/inventory/InventoryListPage.tsx
 msgid "CONDITION"
-msgstr ""
+msgstr "СОСТОЯНИЕ"
 
 #: src/features/analytics/components/ConditionDonutChart.tsx
 msgid "Condition + Status"
-msgstr ""
+msgstr "Состояние + статус"
 
 #: src/features/items/components/PaperlessLinkDialog.tsx
 #: src/features/settings/PaperlessPage.tsx
 msgid "Configure and enable Paperless first."
-msgstr ""
+msgstr "Сначала настройте и включите Paperless."
 
 #: src/routes/demo/DemoPage.tsx
 msgid "Confirm dialog"
-msgstr ""
+msgstr "Диалог подтверждения"
 
 #: src/features/items/ItemDetailPage.tsx
 #: src/features/items/ItemsListPage.tsx
 msgid "Confirm item name"
-msgstr ""
+msgstr "Подтвердите название предмета"
 
 #: src/features/settings/SecurityPage.tsx
 msgid "Confirm new password"
-msgstr ""
+msgstr "Подтвердите новый пароль"
 
 #: src/features/auth/RegisterPage.tsx
 msgid "Confirm password"
-msgstr ""
+msgstr "Подтвердите пароль"
 
 #: src/features/settings/AccountsPage.tsx
 #: src/features/settings/SettingsLandingPage.tsx
 msgid "Connected Accounts"
-msgstr ""
+msgstr "Привязанные аккаунты"
 
 #: src/features/borrowers/BorrowersListPage.tsx
 msgid "Contact"
-msgstr ""
+msgstr "Контакты"
 
 #: src/features/inventory/InventoryFormPage.tsx
 msgid "Container"
-msgstr ""
+msgstr "Контейнер"
 
 #: src/components/layout/Sidebar.tsx
 #: src/features/dashboard/DashboardPage.tsx
 msgid "Containers"
-msgstr ""
+msgstr "Контейнеры"
 
 #: src/features/taxonomy/TaxonomyPage.tsx
 msgid "CONTAINERS"
-msgstr ""
+msgstr "КОНТЕЙНЕРЫ"
 
 #: src/features/taxonomy/components/ContainersTab.tsx
 msgid "Containers live inside a location. Add one to start grouping items by box, bin, or drawer."
-msgstr ""
+msgstr "Контейнеры находятся внутри местоположения. Добавьте контейнер, чтобы группировать предметы по коробкам, ящикам или полкам."
 
 #: src/features/items/ItemDetailPage.tsx
 msgid "COPY"
-msgstr ""
+msgstr "КОПИРОВАТЬ"
 
 #: src/features/repairs/components/RepairForm.tsx
 #: src/features/repairs/components/RepairRecordDialog.tsx
 msgid "Cost"
-msgstr ""
+msgstr "Стоимость"
 
 #: src/features/dashboard/DashboardPage.tsx
 msgid "Could not load activity."
-msgstr ""
+msgstr "Не удалось загрузить активность."
 
 #: src/features/settings/MembersPage.tsx
 msgid "Couldn't add member. Try again."
-msgstr ""
+msgstr "Не удалось добавить участника. Попробуйте снова."
 
 #: src/features/items/hooks/usePhotoMutations.ts
 msgid "Couldn't apply the caption."
-msgstr ""
+msgstr "Не удалось применить подпись."
 
 #: src/features/inventory/hooks/useInventoryMutations.ts
 msgid "Couldn't archive that entry."
-msgstr ""
+msgstr "Не удалось архивировать эту запись."
 
 #: src/features/items/hooks/useItemMutations.ts
 msgid "Couldn't archive that item."
-msgstr ""
+msgstr "Не удалось архивировать этот предмет."
 
 #: src/features/taxonomy/hooks/useCategoryMutations.ts
 msgid "Couldn't archive this category."
-msgstr ""
+msgstr "Не удалось архивировать эту категорию."
 
 #: src/features/taxonomy/hooks/useLabelMutations.ts
 msgid "Couldn't archive this label."
-msgstr ""
+msgstr "Не удалось архивировать эту метку."
 
 #: src/features/taxonomy/hooks/useLocationMutations.ts
 msgid "Couldn't archive this location."
-msgstr ""
+msgstr "Не удалось архивировать это местоположение."
 
 #: src/features/repairs/hooks/useRepairAttachments.ts
 msgid "Couldn't attach this file."
-msgstr ""
+msgstr "Не удалось прикрепить этот файл."
 
 #: src/features/repairs/components/AddAttachmentDialog.tsx
 msgid "Couldn't attach this file. {reason}"
-msgstr ""
+msgstr "Не удалось прикрепить этот файл. {reason}"
 
 #: src/features/settings/MembersPage.tsx
 msgid "Couldn't change role."
-msgstr ""
+msgstr "Не удалось изменить роль."
 
 #: src/features/settings/MembersPage.tsx
 msgid "Couldn't change role. Try again."
-msgstr ""
+msgstr "Не удалось изменить роль. Попробуйте снова."
 
 #: src/features/repairs/hooks/useRepairMutations.ts
 msgid "Couldn't complete this repair."
-msgstr ""
+msgstr "Не удалось завершить этот ремонт."
 
 #: src/features/maintenance/hooks/useMaintenanceMutations.ts
 msgid "Couldn't complete this schedule."
-msgstr ""
+msgstr "Не удалось завершить этот график."
 
 #: src/features/loans/LoanFormPage.tsx
 msgid "Couldn't create this loan."
-msgstr ""
+msgstr "Не удалось создать эту выдачу."
 
 #: src/features/borrowers/hooks/useBorrowerMutations.ts
 msgid "Couldn't delete — this borrower has active loans."
-msgstr ""
+msgstr "Не удалось удалить — у этого получателя есть активные выдачи."
 
 #: src/features/items/hooks/useItemMutations.ts
 msgid "Couldn't delete that item."
-msgstr ""
+msgstr "Не удалось удалить этот предмет."
 
 #: src/features/items/hooks/usePhotoMutations.ts
 #: src/features/repairs/hooks/useRepairPhotoMutations.ts
 msgid "Couldn't delete the photo."
-msgstr ""
+msgstr "Не удалось удалить фото."
 
 #: src/features/items/hooks/usePhotoMutations.ts
 msgid "Couldn't delete the photos."
-msgstr ""
+msgstr "Не удалось удалить фото."
 
 #: src/features/borrowers/hooks/useBorrowerMutations.ts
 msgid "Couldn't delete this borrower."
-msgstr ""
+msgstr "Не удалось удалить этого получателя."
 
 #: src/features/taxonomy/hooks/useContainerMutations.ts
 msgid "Couldn't delete this container."
-msgstr ""
+msgstr "Не удалось удалить этот контейнер."
 
 #: src/features/items/hooks/useItemAttachments.ts
 #: src/features/repairs/hooks/useRepairAttachments.ts
 msgid "Couldn't delete this file."
-msgstr ""
+msgstr "Не удалось удалить этот файл."
 
 #: src/features/taxonomy/hooks/useLabelMutations.ts
 msgid "Couldn't delete this label."
-msgstr ""
+msgstr "Не удалось удалить эту метку."
 
 #: src/features/repairs/hooks/useRepairMutations.ts
 msgid "Couldn't delete this repair."
-msgstr ""
+msgstr "Не удалось удалить этот ремонт."
 
 #: src/features/maintenance/hooks/useMaintenanceMutations.ts
 msgid "Couldn't delete this schedule."
-msgstr ""
+msgstr "Не удалось удалить этот график."
 
 #: src/features/settings/hooks/usePaperlessSettings.ts
 msgid "Couldn't disconnect Paperless."
-msgstr ""
+msgstr "Не удалось отключить Paperless."
 
 #: src/features/items/ItemsListPage.tsx
 msgid "Couldn't export the item list."
-msgstr ""
+msgstr "Не удалось экспортировать список предметов."
 
 #: src/features/imports/ImportsPage.tsx
 #: src/features/settings/DataStoragePage.tsx
 msgid "Couldn't export. Try again."
-msgstr ""
+msgstr "Не удалось экспортировать. Попробуйте снова."
 
 #: src/features/loans/hooks/useLoanMutations.ts
 msgid "Couldn't extend this loan."
-msgstr ""
+msgstr "Не удалось продлить эту выдачу."
 
 #: src/features/items/components/PaperlessLinkDialog.tsx
 msgid "Couldn't link this document. {reason}"
-msgstr ""
+msgstr "Не удалось привязать этот документ. {reason}"
 
 #: src/features/borrowers/BorrowerDetailPage.tsx
 msgid "COULDN'T LOAD BORROWER"
-msgstr ""
+msgstr "НЕ УДАЛОСЬ ЗАГРУЗИТЬ ПОЛУЧАТЕЛЯ"
 
 #: src/features/borrowers/BorrowersListPage.tsx
 msgid "Couldn't load borrowers. Try again."
-msgstr ""
+msgstr "Не удалось загрузить получателей. Попробуйте снова."
 
 #: src/features/taxonomy/components/CategoriesTab.tsx
 msgid "COULDN'T LOAD CATEGORIES"
-msgstr ""
+msgstr "НЕ УДАЛОСЬ ЗАГРУЗИТЬ КАТЕГОРИИ"
 
 #: src/features/taxonomy/components/ContainersTab.tsx
 msgid "COULDN'T LOAD CONTAINERS"
-msgstr ""
+msgstr "НЕ УДАЛОСЬ ЗАГРУЗИТЬ КОНТЕЙНЕРЫ"
 
 #: src/features/inventory/ExpiringPage.tsx
 msgid "Couldn't load expiring entries. Try again."
-msgstr ""
+msgstr "Не удалось загрузить записи с истекающим сроком. Попробуйте снова."
 
 #: src/features/items/components/ItemAttachmentPanel.tsx
 #: src/features/repairs/components/RepairAttachmentPanel.tsx
 msgid "Couldn't load files. Try again."
-msgstr ""
+msgstr "Не удалось загрузить файлы. Попробуйте снова."
 
 #: src/features/imports/ImportsPage.tsx
 msgid "Couldn't load import history. Try again."
-msgstr ""
+msgstr "Не удалось загрузить историю импорта. Попробуйте снова."
 
 #: src/features/inventory/InventoryListPage.tsx
 msgid "Couldn't load inventory. Try again."
-msgstr ""
+msgstr "Не удалось загрузить склад. Попробуйте снова."
 
 #: src/features/items/ItemDetailPage.tsx
 msgid "COULDN'T LOAD ITEM"
-msgstr ""
+msgstr "НЕ УДАЛОСЬ ЗАГРУЗИТЬ ПРЕДМЕТ"
 
 #: src/features/items/ItemsListPage.tsx
 msgid "Couldn't load items. Try again."
-msgstr ""
+msgstr "Не удалось загрузить предметы. Попробуйте снова."
 
 #: src/features/taxonomy/components/LabelsTab.tsx
 msgid "COULDN'T LOAD LABELS"
-msgstr ""
+msgstr "НЕ УДАЛОСЬ ЗАГРУЗИТЬ МЕТКИ"
 
 #: src/features/loans/LoansListPage.tsx
 msgid "Couldn't load loans. Try again."
-msgstr ""
+msgstr "Не удалось загрузить выдачи. Попробуйте снова."
 
 #: src/features/taxonomy/components/LocationsTab.tsx
 msgid "COULDN'T LOAD LOCATIONS"
-msgstr ""
+msgstr "НЕ УДАЛОСЬ ЗАГРУЗИТЬ МЕСТОПОЛОЖЕНИЯ"
 
 #: src/features/maintenance/components/MaintenanceDrawer.tsx
 #: src/features/maintenance/MaintenanceDuePage.tsx
 msgid "Couldn't load maintenance. Try again."
-msgstr ""
+msgstr "Не удалось загрузить обслуживание. Попробуйте снова."
 
 #: src/features/notifications/components/NotificationsDropdown.tsx
 msgid "Couldn't load notifications."
-msgstr ""
+msgstr "Не удалось загрузить уведомления."
 
 #: src/features/approvals/ApprovalsPage.tsx
 msgid "Couldn't load pending changes. Try again."
-msgstr ""
+msgstr "Не удалось загрузить изменения на рассмотрении. Попробуйте снова."
 
 #: src/features/repairs/components/RepairPhotoPanel.tsx
 msgid "Couldn't load photos. Try again."
-msgstr ""
+msgstr "Не удалось загрузить фото. Попробуйте снова."
 
 #: src/features/repairs/components/RepairsDrawer.tsx
 msgid "Couldn't load repairs. Try again."
-msgstr ""
+msgstr "Не удалось загрузить ремонты. Попробуйте снова."
 
 #: src/features/declutter/DeclutterPage.tsx
 msgid "Couldn't load the declutter analysis. Try again."
-msgstr ""
+msgstr "Не удалось загрузить анализ разгрузки. Попробуйте снова."
 
 #: src/features/wishlist/WishlistPage.tsx
 msgid "Couldn't load the wishlist. Try again."
-msgstr ""
+msgstr "Не удалось загрузить список желаемого. Попробуйте снова."
 
 #: src/features/my-changes/MyChangesPage.tsx
 msgid "Couldn't load your changes. Try again."
-msgstr ""
+msgstr "Не удалось загрузить ваши изменения. Попробуйте снова."
 
 #: src/components/scan/ScanResultBanner.tsx
 msgid "Couldn't look up that code."
-msgstr ""
+msgstr "Не удалось найти этот код."
 
 #: src/features/notifications/hooks/useNotificationMutations.ts
 msgid "Couldn't mark all notifications read."
-msgstr ""
+msgstr "Не удалось отметить все уведомления прочитанными."
 
 #: src/features/items/hooks/useMarkReviewedItem.ts
 msgid "Couldn't mark this item reviewed."
-msgstr ""
+msgstr "Не удалось отметить этот предмет просмотренным."
 
 #: src/features/notifications/hooks/useNotificationMutations.ts
 msgid "Couldn't mark this notification read."
-msgstr ""
+msgstr "Не удалось отметить это уведомление прочитанным."
 
 #: src/features/inventory/components/MoveDialog.tsx
 msgid "Couldn't move this entry."
-msgstr ""
+msgstr "Не удалось переместить эту запись."
 
 #: src/features/auth/RequireAuth.tsx
 msgid "Couldn't reach the server. Check your connection and retry."
-msgstr ""
+msgstr "Не удалось связаться с сервером. Проверьте подключение и повторите."
 
 #: src/features/settings/MembersPage.tsx
 msgid "Couldn't remove member. Try again."
-msgstr ""
+msgstr "Не удалось удалить участника. Попробуйте снова."
 
 #: src/features/settings/AvatarUploader.tsx
 msgid "Couldn't remove the photo. Try again."
-msgstr ""
+msgstr "Не удалось удалить фото. Попробуйте снова."
 
 #: src/features/items/hooks/usePhotoMutations.ts
 msgid "Couldn't reorder the photos."
-msgstr ""
+msgstr "Не удалось изменить порядок фото."
 
 #: src/features/scan/ClaimPage.tsx
 msgid "Couldn't resolve this code. Check your connection and try again."
-msgstr ""
+msgstr "Не удалось распознать этот код. Проверьте подключение и попробуйте снова."
 
 #: src/features/scan/ClaimPage.tsx
 msgid "Couldn't resolve this code. Try scanning again."
-msgstr ""
+msgstr "Не удалось распознать этот код. Попробуйте отсканировать снова."
 
 #: src/features/inventory/hooks/useInventoryMutations.ts
 msgid "Couldn't restore that entry."
-msgstr ""
+msgstr "Не удалось восстановить эту запись."
 
 #: src/features/items/hooks/useItemMutations.ts
 msgid "Couldn't restore that item."
-msgstr ""
+msgstr "Не удалось восстановить этот предмет."
 
 #: src/features/taxonomy/hooks/useCategoryMutations.ts
 msgid "Couldn't restore this category."
-msgstr ""
+msgstr "Не удалось восстановить эту категорию."
 
 #: src/features/taxonomy/hooks/useLabelMutations.ts
 msgid "Couldn't restore this label."
-msgstr ""
+msgstr "Не удалось восстановить эту метку."
 
 #: src/features/taxonomy/hooks/useLocationMutations.ts
 msgid "Couldn't restore this location."
-msgstr ""
+msgstr "Не удалось восстановить это местоположение."
 
 #: src/features/loans/hooks/useLoanMutations.ts
 msgid "Couldn't return this loan."
-msgstr ""
+msgstr "Не удалось вернуть эту выдачу."
 
 #: src/features/settings/hooks/usePaperlessSettings.ts
 msgid "Couldn't save Paperless settings."
-msgstr ""
+msgstr "Не удалось сохранить настройки Paperless."
 
 #: src/features/items/hooks/usePhotoMutations.ts
 #: src/features/repairs/hooks/useRepairPhotoMutations.ts
 msgid "Couldn't save the caption."
-msgstr ""
+msgstr "Не удалось сохранить подпись."
 
 #: src/features/borrowers/BorrowerFormPage.tsx
 #: src/features/borrowers/hooks/useBorrowerMutations.ts
 msgid "Couldn't save this borrower."
-msgstr ""
+msgstr "Не удалось сохранить этого получателя."
 
 #: src/features/taxonomy/components/CategoryFormDialog.tsx
 #: src/features/taxonomy/hooks/useCategoryMutations.ts
 msgid "Couldn't save this category."
-msgstr ""
+msgstr "Не удалось сохранить эту категорию."
 
 #: src/features/taxonomy/components/ContainerFormDialog.tsx
 #: src/features/taxonomy/hooks/useContainerMutations.ts
 msgid "Couldn't save this container."
-msgstr ""
+msgstr "Не удалось сохранить этот контейнер."
 
 #: src/features/inventory/hooks/useInventoryFormMutations.ts
 #: src/features/inventory/InventoryFormPage.tsx
 msgid "Couldn't save this entry."
-msgstr ""
+msgstr "Не удалось сохранить эту запись."
 
 #: src/features/items/hooks/useItemFormMutations.ts
 #: src/features/items/ItemFormPage.tsx
 msgid "Couldn't save this item."
-msgstr ""
+msgstr "Не удалось сохранить этот предмет."
 
 #: src/features/taxonomy/hooks/useLabelMutations.ts
 msgid "Couldn't save this label."
-msgstr ""
+msgstr "Не удалось сохранить эту метку."
 
 #: src/features/loans/hooks/useLoanMutations.ts
 msgid "Couldn't save this loan."
-msgstr ""
+msgstr "Не удалось сохранить эту выдачу."
 
 #: src/features/taxonomy/components/LocationFormDialog.tsx
 #: src/features/taxonomy/hooks/useLocationMutations.ts
 msgid "Couldn't save this location."
-msgstr ""
+msgstr "Не удалось сохранить это местоположение."
 
 #: src/features/repairs/components/RepairForm.tsx
 #: src/features/repairs/hooks/useRepairMutations.ts
 msgid "Couldn't save this repair."
-msgstr ""
+msgstr "Не удалось сохранить этот ремонт."
 
 #: src/features/maintenance/components/MaintenanceForm.tsx
 #: src/features/maintenance/hooks/useMaintenanceMutations.ts
 msgid "Couldn't save this schedule."
-msgstr ""
+msgstr "Не удалось сохранить этот график."
 
 #: src/features/wishlist/components/WishlistFormDialog.tsx
 msgid "Couldn't save this wishlist item."
-msgstr ""
+msgstr "Не удалось сохранить этот предмет из списка желаемого."
 
 #: src/features/settings/ProfilePage.tsx
 msgid "Couldn't save. Try again."
-msgstr ""
+msgstr "Не удалось сохранить. Попробуйте снова."
 
 #: src/features/items/hooks/usePhotoMutations.ts
 msgid "Couldn't set the primary photo."
-msgstr ""
+msgstr "Не удалось задать основное фото."
 
 #: src/features/items/hooks/useItemAttachments.ts
 msgid "Couldn't set this file as primary."
-msgstr ""
+msgstr "Не удалось сделать этот файл основным."
 
 #: src/features/imports/ImportsPage.tsx
 msgid "Couldn't start the import. Try again."
-msgstr ""
+msgstr "Не удалось начать импорт. Попробуйте снова."
 
 #: src/features/repairs/hooks/useRepairMutations.ts
 msgid "Couldn't start this repair."
-msgstr ""
+msgstr "Не удалось начать этот ремонт."
 
 #: src/components/scan/QuickActionMenu.tsx
 msgid "Couldn't unarchive this item."
-msgstr ""
+msgstr "Не удалось извлечь этот предмет из архива."
 
 #: src/features/settings/AccountsPage.tsx
 msgid "Couldn't unlink. Try again."
-msgstr ""
+msgstr "Не удалось отвязать. Попробуйте снова."
 
 #: src/features/inventory/hooks/useInventoryMutations.ts
 msgid "Couldn't update condition."
-msgstr ""
+msgstr "Не удалось обновить состояние."
 
 #: src/features/inventory/hooks/useInventoryMutations.ts
 msgid "Couldn't update quantity."
-msgstr ""
+msgstr "Не удалось обновить количество."
 
 #: src/features/inventory/hooks/useInventoryMutations.ts
 msgid "Couldn't update status."
-msgstr ""
+msgstr "Не удалось обновить статус."
 
 #: src/features/settings/AvatarUploader.tsx
 msgid "Couldn't upload the photo. Try again."
-msgstr ""
+msgstr "Не удалось загрузить фото. Попробуйте снова."
 
 #: src/features/items/hooks/useItemAttachments.ts
 msgid "Couldn't upload this file."
-msgstr ""
+msgstr "Не удалось загрузить этот файл."
 
 #: src/features/items/components/AddAttachmentDialog.tsx
 msgid "Couldn't upload this file. {reason}"
-msgstr ""
+msgstr "Не удалось загрузить этот файл. {reason}"
 
 #: src/features/repairs/components/RepairForm.tsx
 msgid "Covered under warranty"
-msgstr ""
+msgstr "Покрывается гарантией"
 
 #: src/features/taxonomy/components/LabelsTab.tsx
 msgid "Create a label to tag items across categories — like “Fragile” or “Loaned out”."
-msgstr ""
+msgstr "Создайте метку, чтобы помечать предметы из разных категорий — например «Хрупкое» или «Выдано»."
 
 #: src/features/auth/RegisterPage.tsx
 msgid "Create account"
-msgstr ""
+msgstr "Создать аккаунт"
 
 #: src/features/auth/LoginPage.tsx
 msgid "Create an account"
-msgstr ""
+msgstr "Создать аккаунт"
 
 #: src/features/scan/ClaimPage.tsx
 msgid "Create item with this code"
-msgstr ""
+msgstr "Создать предмет с этим кодом"
 
 #: src/features/loans/LoanFormPage.tsx
 msgid "Create loan"
-msgstr ""
+msgstr "Создать выдачу"
 
 #: src/components/scan/ScanResultBanner.tsx
 msgid "CREATE WITH CODE"
-msgstr ""
+msgstr "СОЗДАТЬ С КОДОМ"
 
 #: src/features/borrowers/BorrowerDetailPage.tsx
 #: src/features/imports/ImportsPage.tsx
 #: src/features/items/ItemDetailPage.tsx
 msgid "Created"
-msgstr ""
+msgstr "Создано"
 
 #: src/features/imports/ImportsPage.tsx
 msgid "CSV file"
-msgstr ""
+msgstr "CSV-файл"
 
 #: src/features/wishlist/components/WishlistFormDialog.tsx
 msgid "Currency"
-msgstr ""
+msgstr "Валюта"
 
 #: src/features/settings/AppearancePage.tsx
 msgid "CURRENT"
-msgstr ""
+msgstr "ТЕКУЩИЙ"
 
 #: src/features/settings/SecurityPage.tsx
 msgid "Current password"
-msgstr ""
+msgstr "Текущий пароль"
 
 #: src/features/settings/SecurityPage.tsx
 msgid "Current password is incorrect."
-msgstr ""
+msgstr "Текущий пароль неверен."
 
 #: src/features/inventory/components/MoveDialog.tsx
 msgid "Currently in {currentPath}."
-msgstr ""
+msgstr "Сейчас в {currentPath}."
 
 #: src/features/settings/SecurityPage.tsx
 msgid "Danger Zone"
-msgstr ""
+msgstr "Опасная зона"
 
 #: src/components/layout/Sidebar.tsx
 msgid "Dashboard"
-msgstr ""
+msgstr "Панель управления"
 
 #: src/features/settings/DataStoragePage.tsx
 #: src/features/settings/SettingsLandingPage.tsx
 msgid "Data & Storage"
-msgstr ""
+msgstr "Данные и хранилище"
 
 #: src/routes/demo/DemoPage.tsx
 msgid "Data Atoms"
-msgstr ""
+msgstr "Атомы данных"
 
 #: src/features/dashboard/components/HudRow.tsx
 msgid "data pending"
-msgstr ""
+msgstr "данные ожидаются"
 
 #: src/features/imports/ImportsPage.tsx
 msgid "Data type"
-msgstr ""
+msgstr "Тип данных"
 
 #: src/features/inventory/ExpiringPage.tsx
 #: src/features/settings/RegionalFormatsPage.tsx
 msgid "Date"
-msgstr ""
+msgstr "Дата"
 
 #: src/features/settings/RegionalFormatsPage.tsx
 msgid "Date format"
-msgstr ""
+msgstr "Формат даты"
 
 #: src/features/declutter/DeclutterPage.tsx
 msgid "Days unused"
-msgstr ""
+msgstr "Дней без использования"
 
 #: src/features/settings/RegionalFormatsPage.tsx
 msgid "Decimal separator"
-msgstr ""
+msgstr "Десятичный разделитель"
 
 #: src/components/layout/Sidebar.tsx
 #: src/features/declutter/DeclutterPage.tsx
 msgid "Declutter"
-msgstr ""
+msgstr "Расхламление"
 
 #: src/features/declutter/DeclutterPage.tsx
 msgid "DECLUTTER — {workspaceName}"
-msgstr ""
+msgstr "РАЗГРУЗКА — {workspaceName}"
 
 #: src/features/items/components/ItemAttachmentPanel.tsx
 #: src/features/repairs/components/RepairAttachmentPanel.tsx
@@ -1447,7 +1447,7 @@ msgstr ""
 #: src/features/wishlist/WishlistPage.tsx
 #: src/routes/demo/DemoPage.tsx
 msgid "Delete"
-msgstr ""
+msgstr "Удаление"
 
 #: src/components/retro/filters/SavedFilters.tsx
 #: src/features/borrowers/BorrowerDetailPage.tsx
@@ -1461,13 +1461,13 @@ msgstr ""
 #: src/features/taxonomy/components/ContainersTab.tsx
 #: src/features/taxonomy/components/LabelsTab.tsx
 msgid "DELETE"
-msgstr ""
+msgstr "DELETE"
 
 #. placeholder {0}: deleteTarget?.name ?? ""
 #: src/features/taxonomy/components/ContainersTab.tsx
 #: src/features/taxonomy/components/LabelsTab.tsx
 msgid "Delete \"{0}\"? This can't be undone."
-msgstr ""
+msgstr "Удалить «{0}»? Это действие нельзя отменить."
 
 #. placeholder {0}: c.name
 #. placeholder {0}: label.name
@@ -1476,102 +1476,102 @@ msgstr ""
 #: src/features/taxonomy/components/ContainersTab.tsx
 #: src/features/taxonomy/components/LabelsTab.tsx
 msgid "Delete {0}"
-msgstr ""
+msgstr "Удалить {0}"
 
 #. placeholder {0}: borrower.name
 #: src/features/borrowers/BorrowerDetailPage.tsx
 msgid "Delete {0}? This can't be undone."
-msgstr ""
+msgstr "Удалить {0}? Это действие нельзя отменить."
 
 #: src/features/settings/SecurityPage.tsx
 msgid "Delete account"
-msgstr ""
+msgstr "Удалить аккаунт"
 
 #: src/features/borrowers/BorrowerDetailPage.tsx
 msgid "DELETE BORROWER?"
-msgstr ""
+msgstr "УДАЛИТЬ ПОЛУЧАТЕЛЯ?"
 
 #: src/features/taxonomy/components/ContainersTab.tsx
 msgid "DELETE CONTAINER?"
-msgstr ""
+msgstr "УДАЛИТЬ КОНТЕЙНЕР?"
 
 #: src/features/items/components/ItemAttachmentPanel.tsx
 #: src/features/repairs/components/RepairAttachmentPanel.tsx
 msgid "DELETE FILE?"
-msgstr ""
+msgstr "УДАЛИТЬ ФАЙЛ?"
 
 #: src/routes/demo/DemoPage.tsx
 msgid "Delete item?"
-msgstr ""
+msgstr "Удалить предмет?"
 
 #: src/features/items/ItemDetailPage.tsx
 #: src/features/items/ItemsListPage.tsx
 msgid "DELETE ITEM?"
-msgstr ""
+msgstr "УДАЛИТЬ ПРЕДМЕТ?"
 
 #: src/features/items/ItemsListPage.tsx
 msgid "DELETE ITEMS?"
-msgstr ""
+msgstr "УДАЛИТЬ ПРЕДМЕТЫ?"
 
 #: src/features/taxonomy/components/LabelsTab.tsx
 msgid "DELETE LABEL?"
-msgstr ""
+msgstr "УДАЛИТЬ МЕТКУ?"
 
 #: src/features/settings/SecurityPage.tsx
 msgid "Delete my account"
-msgstr ""
+msgstr "Удалить мой аккаунт"
 
 #: src/features/items/components/PhotoGallery.tsx
 msgid "DELETE PHOTO?"
-msgstr ""
+msgstr "УДАЛИТЬ ФОТО?"
 
 #: src/features/items/components/PhotoGallery.tsx
 msgid "DELETE PHOTOS?"
-msgstr ""
+msgstr "УДАЛИТЬ ФОТО?"
 
 #: src/components/retro/filters/SavedFilters.tsx
 msgid "DELETE PRESET"
-msgstr ""
+msgstr "УДАЛИТЬ ПРЕСЕТ"
 
 #. placeholder {0}: preset.name
 #: src/components/retro/filters/SavedFilters.tsx
 msgid "Delete preset {0}"
-msgstr ""
+msgstr "Удалить пресет {0}"
 
 #: src/features/repairs/components/RepairsDrawer.tsx
 msgid "DELETE REPAIR?"
-msgstr ""
+msgstr "УДАЛИТЬ РЕМОНТ?"
 
 #: src/features/maintenance/components/MaintenanceDrawer.tsx
 msgid "DELETE SCHEDULE?"
-msgstr ""
+msgstr "УДАЛИТЬ ГРАФИК?"
 
 #: src/routes/demo/DemoPage.tsx
 msgid "Delete selected?"
-msgstr ""
+msgstr "Удалить выбранное?"
 
 #. placeholder {0}: pendingDelete?.name
 #: src/components/retro/filters/SavedFilters.tsx
 msgid "Delete the “{0}” preset? This can't be undone."
-msgstr ""
+msgstr "Удалить пресет «{0}»? Это действие нельзя отменить."
 
 #: src/features/wishlist/WishlistPage.tsx
 msgid "DELETE WISHLIST ITEM?"
-msgstr ""
+msgstr "УДАЛИТЬ ПРЕДМЕТ ИЗ СПИСКА ЖЕЛАЕМОГО?"
 
 #: src/features/borrowers/BorrowerDetailPage.tsx
 #: src/features/items/ItemDetailPage.tsx
 #: src/features/items/ItemsListPage.tsx
 msgid "DELETE…"
-msgstr ""
+msgstr "УДАЛИТЬ…"
 
 #: src/features/settings/SecurityPage.tsx
 msgid "Deleting your account is permanent and cannot be undone."
-msgstr ""
+msgstr "Удаление аккаунта необратимо и не может быть отменено."
 
 #: src/components/layout/Sidebar.tsx
 msgid "Demo"
-msgstr ""
+msgstr "Демо"
 
 #: src/features/items/ItemDetailPage.tsx
 #: src/features/items/ItemFormPage.tsx
@@ -1581,36 +1581,36 @@ msgstr ""
 #: src/features/taxonomy/components/LabelFormDialog.tsx
 #: src/features/taxonomy/components/LocationFormDialog.tsx
 msgid "Description"
-msgstr ""
+msgstr "Описание"
 
 #. placeholder {0}: label?.name ?? id
 #: src/features/items/components/ItemLabels.tsx
 msgid "Detach {0}"
-msgstr ""
+msgstr "Открепить {0}"
 
 #: src/features/items/ItemDetailPage.tsx
 msgid "DETAILS"
-msgstr ""
+msgstr "ПОДРОБНОСТИ"
 
 #: src/features/settings/SecurityPage.tsx
 msgid "Device"
-msgstr ""
+msgstr "Устройство"
 
 #: src/routes/demo/DemoPage.tsx
 msgid "Dialog (info)"
-msgstr ""
+msgstr "Диалог (информация)"
 
 #: src/routes/demo/DemoPage.tsx
 msgid "Dialog (success)"
-msgstr ""
+msgstr "Диалог (успех)"
 
 #: src/routes/demo/DemoPage.tsx
 msgid "Dialog (warning)"
-msgstr ""
+msgstr "Диалог (предупреждение)"
 
 #: src/routes/demo/DemoPage.tsx
 msgid "Disabled"
-msgstr ""
+msgstr "Отключено"
 
 #: src/features/borrowers/BorrowerFormPage.tsx
 #: src/features/inventory/InventoryFormPage.tsx
@@ -1622,11 +1622,11 @@ msgstr ""
 #: src/features/taxonomy/components/LabelFormDialog.tsx
 #: src/features/taxonomy/components/LocationFormDialog.tsx
 msgid "Discard"
-msgstr ""
+msgstr "Отменить"
 
 #: src/features/maintenance/components/MaintenanceForm.tsx
 msgid "DISCARD"
-msgstr ""
+msgstr "ОТМЕНИТЬ"
 
 #: src/features/borrowers/BorrowerFormPage.tsx
 #: src/features/inventory/InventoryFormPage.tsx
@@ -1639,124 +1639,124 @@ msgstr ""
 #: src/features/taxonomy/components/LabelFormDialog.tsx
 #: src/features/taxonomy/components/LocationFormDialog.tsx
 msgid "DISCARD CHANGES?"
-msgstr ""
+msgstr "ОТМЕНИТЬ ИЗМЕНЕНИЯ?"
 
 #: src/features/settings/PaperlessPage.tsx
 msgid "Disconnect"
-msgstr ""
+msgstr "Отвязать"
 
 #: src/components/scan/UpcSuggestionBanner.tsx
 msgid "DISMISS"
-msgstr ""
+msgstr "СКРЫТЬ"
 
 #: src/features/items/components/PaperlessLinkDialog.tsx
 msgid "Document linked."
-msgstr ""
+msgstr "Документ привязан."
 
 #: src/features/items/components/PhotoUpload.tsx
 #: src/features/repairs/components/AddAttachmentDialog.tsx
 msgid "DONE"
-msgstr ""
+msgstr "ГОТОВО"
 
 #: src/features/repairs/components/AddAttachmentDialog.tsx
 msgid "DONE · File attached."
-msgstr ""
+msgstr "ГОТОВО · Файл прикреплён."
 
 #: src/features/items/components/ItemAttachmentPanel.tsx
 #: src/features/repairs/components/RepairAttachmentPanel.tsx
 msgid "DONE · File removed."
-msgstr ""
+msgstr "ГОТОВО · Файл удалён."
 
 #: src/features/items/components/AddAttachmentDialog.tsx
 msgid "DONE · File uploaded."
-msgstr ""
+msgstr "ГОТОВО · Файл загружен."
 
 #: src/features/maintenance/components/CompleteMaintenanceDialog.tsx
 msgid "DONE · Marked done — next due {nextDue}."
-msgstr ""
+msgstr "ГОТОВО · Отмечено выполненным — следующий срок {nextDue}."
 
 #: src/features/items/components/ItemAttachmentPanel.tsx
 msgid "DONE · Primary file set."
-msgstr ""
+msgstr "ГОТОВО · Основной файл задан."
 
 #: src/features/repairs/components/RepairsDrawer.tsx
 msgid "DONE · Repair deleted."
-msgstr ""
+msgstr "ГОТОВО · Ремонт удалён."
 
 #: src/features/repairs/components/RepairsDrawer.tsx
 msgid "DONE · Repair started."
-msgstr ""
+msgstr "ГОТОВО · Ремонт начат."
 
 #: src/features/maintenance/components/MaintenanceDrawer.tsx
 msgid "DONE · Schedule deleted."
-msgstr ""
+msgstr "ГОТОВО · График удалён."
 
 #: src/features/maintenance/components/MaintenanceForm.tsx
 msgid "DONE · Schedule saved."
-msgstr ""
+msgstr "ГОТОВО · График сохранён."
 
 #: src/features/maintenance/components/MaintenanceForm.tsx
 msgid "DONE · Schedule updated."
-msgstr ""
+msgstr "ГОТОВО · График обновлён."
 
 #: src/features/imports/ImportsPage.tsx
 #: src/features/settings/DataStoragePage.tsx
 msgid "Download a backup copy of this workspace."
-msgstr ""
+msgstr "Скачайте резервную копию этого рабочего пространства."
 
 #: src/features/items/components/PhotoLightbox.tsx
 msgid "Download original"
-msgstr ""
+msgstr "Скачать оригинал"
 
 #: src/components/retro/form/RetroFileInput.tsx
 msgid "Drop files here, or"
-msgstr ""
+msgstr "Перетащите файлы сюда или"
 
 #: src/features/loans/LoansListPage.tsx
 #: src/features/maintenance/MaintenanceDuePage.tsx
 msgid "Due"
-msgstr ""
+msgstr "Скоро"
 
 #. placeholder {0}: isoDate(loan.due_date)
 #: src/features/loans/LoansListPage.tsx
 msgid "due {0}"
-msgstr ""
+msgstr "срок {0}"
 
 #. placeholder {0}: formatDate(loan.due_date)
 #: src/features/items/components/LoanPanels.tsx
 msgid "Due {0}"
-msgstr ""
+msgstr "Срок {0}"
 
 #: src/features/loans/components/EditLoanDialog.tsx
 #: src/features/loans/LoanFormPage.tsx
 msgid "Due date"
-msgstr ""
+msgstr "Срок"
 
 #: src/features/loans/components/ExtendLoanDialog.tsx
 msgid "Due date extended."
-msgstr ""
+msgstr "Срок продлён."
 
 #. placeholder {0}: Math.max(days, 0)
 #: src/features/loans/components/BorrowerLoanPanels.tsx
 msgid "due in {0}d"
-msgstr ""
+msgstr "срок через {0}д"
 
 #: src/features/loans/LoansListPage.tsx
 msgid "due in {inDays}d"
-msgstr ""
+msgstr "срок через {inDays}д"
 
 #: src/features/maintenance/MaintenanceDuePage.tsx
 msgid "DUE MAINTENANCE — {workspaceName}"
-msgstr ""
+msgstr "ТРЕБУЕТСЯ ОБСЛУЖИВАНИЕ — {workspaceName}"
 
 #: src/features/approvals/ApprovalsPage.tsx
 msgid "e.g. duplicate request"
-msgstr ""
+msgstr "напр. дублирующий запрос"
 
 #: src/features/wishlist/WishlistPage.tsx
 #: src/routes/demo/DemoPage.tsx
 msgid "Edit"
-msgstr ""
+msgstr "Изменить"
 
 #: src/features/borrowers/BorrowerDetailPage.tsx
 #: src/features/borrowers/BorrowersListPage.tsx
@@ -1768,78 +1768,78 @@ msgstr ""
 #: src/features/repairs/components/RepairsDrawer.tsx
 #: src/features/taxonomy/components/LabelsTab.tsx
 msgid "EDIT"
-msgstr ""
+msgstr "ИЗМЕНИТЬ"
 
 #. placeholder {0}: label.name
 #: src/features/taxonomy/components/LabelsTab.tsx
 msgid "Edit {0}"
-msgstr ""
+msgstr "Изменить {0}"
 
 #: src/features/borrowers/BorrowerFormPage.tsx
 msgid "EDIT BORROWER"
-msgstr ""
+msgstr "ИЗМЕНИТЬ ПОЛУЧАТЕЛЯ"
 
 #: src/features/items/components/CaptionDialog.tsx
 #: src/features/items/components/PhotoGallery.tsx
 msgid "EDIT CAPTION"
-msgstr ""
+msgstr "ИЗМЕНИТЬ ПОДПИСЬ"
 
 #. placeholder {0}: photo.filename
 #: src/features/items/components/PhotoGallery.tsx
 msgid "Edit caption for {0}"
-msgstr ""
+msgstr "Изменить подпись для {0}"
 
 #: src/features/taxonomy/components/CategoryFormDialog.tsx
 msgid "EDIT CATEGORY"
-msgstr ""
+msgstr "ИЗМЕНИТЬ КАТЕГОРИЮ"
 
 #: src/features/inventory/components/InlineEditCell.tsx
 msgid "Edit condition for {itemName}"
-msgstr ""
+msgstr "Изменить состояние для {itemName}"
 
 #: src/features/taxonomy/components/ContainerFormDialog.tsx
 msgid "EDIT CONTAINER"
-msgstr ""
+msgstr "ИЗМЕНИТЬ КОНТЕЙНЕР"
 
 #: src/features/inventory/InventoryFormPage.tsx
 msgid "EDIT ENTRY"
-msgstr ""
+msgstr "ИЗМЕНИТЬ ЗАПИСЬ"
 
 #: src/features/items/ItemFormPage.tsx
 msgid "EDIT ITEM"
-msgstr ""
+msgstr "ИЗМЕНИТЬ ПРЕДМЕТ"
 
 #: src/features/taxonomy/components/LabelFormDialog.tsx
 msgid "EDIT LABEL"
-msgstr ""
+msgstr "ИЗМЕНИТЬ МЕТКУ"
 
 #: src/features/loans/components/EditLoanDialog.tsx
 msgid "EDIT LOAN"
-msgstr ""
+msgstr "ИЗМЕНИТЬ ВЫДАЧУ"
 
 #: src/features/taxonomy/components/LocationFormDialog.tsx
 msgid "EDIT LOCATION"
-msgstr ""
+msgstr "ИЗМЕНИТЬ МЕСТОПОЛОЖЕНИЕ"
 
 #: src/features/inventory/components/InlineEditCell.tsx
 msgid "Edit quantity for {itemName}"
-msgstr ""
+msgstr "Изменить количество для {itemName}"
 
 #: src/features/repairs/components/RepairForm.tsx
 msgid "EDIT REPAIR"
-msgstr ""
+msgstr "ИЗМЕНИТЬ РЕМОНТ"
 
 #: src/features/maintenance/components/MaintenanceForm.tsx
 msgid "EDIT SCHEDULE"
-msgstr ""
+msgstr "ИЗМЕНИТЬ ГРАФИК"
 
 #: src/features/inventory/components/InlineEditCell.tsx
 msgid "Edit status for {itemName}"
-msgstr ""
+msgstr "Изменить статус для {itemName}"
 
 #: src/features/wishlist/components/WishlistFormDialog.tsx
 msgid "EDIT WISHLIST ITEM"
-msgstr ""
+msgstr "ИЗМЕНИТЬ ПРЕДМЕТ В СПИСКЕ ЖЕЛАЕМОГО"
 
 #: src/features/auth/LoginPage.tsx
 #: src/features/auth/RegisterPage.tsx
@@ -1848,325 +1848,325 @@ msgstr ""
 #: src/features/settings/MembersPage.tsx
 #: src/features/settings/ProfilePage.tsx
 msgid "Email"
-msgstr ""
+msgstr "Электронная почта"
 
 #: src/features/settings/NotificationsPage.tsx
 msgid "Email & in-app alerts for:"
-msgstr ""
+msgstr "Email и оповещения в приложении для:"
 
 #: src/features/settings/PaperlessPage.tsx
 msgid "Enable Paperless above to search documents."
-msgstr ""
+msgstr "Включите Paperless выше, чтобы искать документы."
 
 #: src/features/settings/PaperlessPage.tsx
 msgid "Enable Paperless integration"
-msgstr ""
+msgstr "Включить интеграцию с Paperless"
 
 #: src/components/layout/TopBar.tsx
 msgid "End this session? You will need to sign in again."
-msgstr ""
+msgstr "Завершить этот сеанс? Вам потребуется войти снова."
 
 #: src/features/auth/LoginPage.tsx
 #: src/features/auth/RegisterPage.tsx
 msgid "Enter a valid email address."
-msgstr ""
+msgstr "Введите корректный адрес email."
 
 #: src/features/settings/MembersPage.tsx
 #: src/features/settings/ProfilePage.tsx
 msgid "Enter a valid email."
-msgstr ""
+msgstr "Введите корректный email."
 
 #: src/components/scan/ManualBarcodeEntry.tsx
 msgid "ENTER CODE"
-msgstr ""
+msgstr "ВВЕСТИ КОД"
 
 #: src/features/auth/RegisterPage.tsx
 #: src/features/settings/ProfilePage.tsx
 msgid "Enter your name."
-msgstr ""
+msgstr "Введите ваше имя."
 
 #: src/features/approvals/ApprovalsPage.tsx
 #: src/features/dashboard/DashboardPage.tsx
 #: src/features/my-changes/MyChangesPage.tsx
 msgid "Entity"
-msgstr ""
+msgstr "Объект"
 
 #: src/features/inventory/hooks/useInventoryFormMutations.ts
 msgid "Entry saved."
-msgstr ""
+msgstr "Запись сохранена."
 
 #: src/components/retro/feedback/RetroStatusDot.tsx
 msgid "error"
-msgstr ""
+msgstr "ошибка"
 
 #: src/components/scan/ScanResultBanner.tsx
 msgid "ERROR"
-msgstr ""
+msgstr "ОШИБКА"
 
 #. placeholder {0}: schedule.interval_days
 #: src/features/maintenance/components/MaintenanceDrawer.tsx
 msgid "every {0}d"
-msgstr ""
+msgstr "каждые {0}д"
 
 #: src/routes/demo/DemoPage.tsx
 msgid "Every Phase 4 retro-os atom family, for visual review against sketches 006-008."
-msgstr ""
+msgstr "Все семейства атомов retro-os из этапа 4 для визуальной сверки со скетчами 006-008."
 
 #: src/features/declutter/DeclutterPage.tsx
 msgid "Every tracked item has been used recently. Items that sit unused will surface here with a declutter score."
-msgstr ""
+msgstr "Все отслеживаемые предметы недавно использовались. Предметы, лежащие без дела, появятся здесь с оценкой разгрузки."
 
 #: src/routes/demo/DemoPage.tsx
 msgid "Example Dialog"
-msgstr ""
+msgstr "Пример диалога"
 
 #: src/features/auth/CallbackPage.tsx
 msgid "exchanging credentials"
-msgstr ""
+msgstr "обмен учётными данными"
 
 #: src/features/dashboard/components/SystemAlertsPanel.tsx
 msgid "Expiring soon"
-msgstr ""
+msgstr "Скоро истекает срок"
 
 #: src/features/inventory/ExpiringPage.tsx
 msgid "EXPIRING SOON"
-msgstr ""
+msgstr "СКОРО ИСТЕКАЕТ"
 
 #: src/features/inventory/InventoryListPage.tsx
 msgid "Expiry"
-msgstr ""
+msgstr "Срок годности"
 
 #: src/features/inventory/ExpiringPage.tsx
 msgid "EXPIRY"
-msgstr ""
+msgstr "СРОК ГОДНОСТИ"
 
 #: src/features/settings/NotificationsPage.tsx
 msgid "Expiry alerts"
-msgstr ""
+msgstr "Оповещения об истечении срока"
 
 #: src/features/inventory/InventoryFormPage.tsx
 msgid "Expiry date"
-msgstr ""
+msgstr "Дата истечения срока"
 
 #: src/features/imports/ImportsPage.tsx
 #: src/features/settings/DataStoragePage.tsx
 msgid "Export"
-msgstr ""
+msgstr "Экспорт"
 
 #: src/features/imports/ImportsPage.tsx
 #: src/features/settings/DataStoragePage.tsx
 msgid "Export…"
-msgstr ""
+msgstr "Экспорт…"
 
 #: src/features/imports/ImportsPage.tsx
 #: src/features/settings/DataStoragePage.tsx
 msgid "Exporting a workspace backup requires admin rights."
-msgstr ""
+msgstr "Для экспорта резервной копии рабочего пространства нужны права администратора."
 
 #: src/features/imports/ImportsPage.tsx
 #: src/features/settings/DataStoragePage.tsx
 msgid "Exporting…"
-msgstr ""
+msgstr "Экспорт…"
 
 #: src/features/loans/components/ExtendLoanDialog.tsx
 msgid "Extend"
-msgstr ""
+msgstr "Продлить"
 
 #: src/features/items/components/LoanPanels.tsx
 #: src/features/loans/components/BorrowerLoanPanels.tsx
 #: src/features/loans/components/LoanRowActions.tsx
 msgid "EXTEND"
-msgstr ""
+msgstr "ПРОДЛИТЬ"
 
 #: src/features/loans/components/ExtendLoanDialog.tsx
 msgid "EXTEND LOAN"
-msgstr ""
+msgstr "ПРОДЛИТЬ ВЫДАЧУ"
 
 #: src/features/imports/ImportsPage.tsx
 msgid "Failed"
-msgstr ""
+msgstr "Ошибка"
 
 #: src/features/items/components/PhotoUpload.tsx
 #: src/features/repairs/components/AddAttachmentDialog.tsx
 msgid "FAILED"
-msgstr ""
+msgstr "НЕ УДАЛОСЬ"
 
 #: src/routes/demo/DemoPage.tsx
 msgid "Feedback Atoms"
-msgstr ""
+msgstr "Атомы обратной связи"
 
 #: src/features/imports/ImportsPage.tsx
 msgid "File"
-msgstr ""
+msgstr "Файл"
 
 #: src/features/items/components/AddAttachmentDialog.tsx
 #: src/features/repairs/components/AddAttachmentDialog.tsx
 msgid "File *"
-msgstr ""
+msgstr "Файл *"
 
 #. placeholder {0}: formatSize(maxSize)
 #: src/components/retro/form/RetroFileInput.tsx
 msgid "File is too large (max {0})."
-msgstr ""
+msgstr "Файл слишком большой (максимум {0})."
 
 #: src/features/items/components/ItemAttachmentPanel.tsx
 #: src/features/repairs/components/RepairAttachmentPanel.tsx
 msgid "Files"
-msgstr ""
+msgstr "Файлы"
 
 #: src/features/items/ItemDetailPage.tsx
 #: src/features/repairs/components/RepairRecordDialog.tsx
 #: src/features/repairs/components/RepairsDrawer.tsx
 msgid "FILES"
-msgstr ""
+msgstr "ФАЙЛЫ"
 
 #: src/routes/demo/DemoPage.tsx
 msgid "Filter Atoms"
-msgstr ""
+msgstr "Атомы фильтров"
 
 #: src/features/borrowers/BorrowersListPage.tsx
 msgid "Filter borrowers…"
-msgstr ""
+msgstr "Фильтровать получателей…"
 
 #: src/features/inventory/InventoryListPage.tsx
 msgid "Filter inventory…"
-msgstr ""
+msgstr "Фильтровать склад…"
 
 #: src/components/retro/filters/FilterBar.tsx
 msgid "Filter items"
-msgstr ""
+msgstr "Фильтровать предметы"
 
 #: src/components/retro/filters/FilterBar.tsx
 #: src/features/items/ItemsListPage.tsx
 msgid "Filter items…"
-msgstr ""
+msgstr "Фильтровать предметы…"
 
 #: src/features/loans/LoansListPage.tsx
 msgid "Filter loans…"
-msgstr ""
+msgstr "Фильтровать выдачи…"
 
 #: src/routes/demo/DemoPage.tsx
 msgid "FilterBar + FilterPopover — search, facets, chips, count, CTA."
-msgstr ""
+msgstr "FilterBar + FilterPopover — поиск, фасеты, чипы, счётчик, призыв к действию."
 
 #: src/routes/demo/DemoPage.tsx
 msgid "Filtered"
-msgstr ""
+msgstr "Отфильтровано"
 
 #: src/routes/demo/DemoPage.tsx
 msgid "Form Atoms"
-msgstr ""
+msgstr "Атомы форм"
 
 #. placeholder {0}: duplicates.length
 #: src/features/items/components/DuplicateWarningDialog.tsx
 msgid "Found {0} similar photo(s) already on this item."
-msgstr ""
+msgstr "Найдено похожих фото на этом предмете: {0}."
 
 #: src/features/loans/LoanFormPage.tsx
 msgid "From item"
-msgstr ""
+msgstr "Из предмета"
 
 #: src/features/items/ItemFormPage.tsx
 msgid "FROM SCAN"
-msgstr ""
+msgstr "ИЗ СКАНИРОВАНИЯ"
 
 #: src/features/auth/RegisterPage.tsx
 #: src/features/settings/ProfilePage.tsx
 msgid "Full name"
-msgstr ""
+msgstr "Полное имя"
 
 #: src/components/layout/F1HelpDialog.tsx
 msgid "GLOBAL"
-msgstr ""
+msgstr "ГЛОБАЛЬНО"
 
 #: src/features/declutter/DeclutterPage.tsx
 msgid "Group by"
-msgstr ""
+msgstr "Группировать по"
 
 #: src/features/taxonomy/components/CategoriesTab.tsx
 msgid "Group your inventory by creating a top-level category. You can nest sub-categories underneath it."
-msgstr ""
+msgstr "Сгруппируйте склад, создав категорию верхнего уровня. Внутри неё можно вкладывать подкатегории."
 
 #: src/routes/demo/DemoPage.tsx
 msgid "Heads up."
-msgstr ""
+msgstr "Внимание."
 
 #: src/features/items/ItemDetailPage.tsx
 #: src/features/loans/LoansListPage.tsx
 #: src/features/scan/ScanPage.tsx
 msgid "HISTORY"
-msgstr ""
+msgstr "ИСТОРИЯ"
 
 #: src/routes/demo/DemoPage.tsx
 msgid "History tab panel."
-msgstr ""
+msgstr "Панель вкладки истории."
 
 #: src/features/auth/LoginPage.tsx
 #: src/features/auth/RegisterPage.tsx
 msgid "home inventory terminal · v3.0"
-msgstr ""
+msgstr "терминал домашнего склада · v3.0"
 
 #: src/features/maintenance/components/MaintenanceForm.tsx
 msgid "How often this repeats, in days."
-msgstr ""
+msgstr "Как часто это повторяется, в днях."
 
 #: src/features/settings/DataStoragePage.tsx
 msgid "Import"
-msgstr ""
+msgstr "Импорт"
 
 #: src/features/imports/ImportsPage.tsx
 msgid "Import from CSV"
-msgstr ""
+msgstr "Импорт из CSV"
 
 #: src/features/imports/ImportsPage.tsx
 msgid "Import history"
-msgstr ""
+msgstr "История импорта"
 
 #: src/features/imports/ImportsPage.tsx
 msgid "Import started. Watch its progress below."
-msgstr ""
+msgstr "Импорт начат. Следите за прогрессом ниже."
 
 #: src/features/imports/ImportsPage.tsx
 msgid "Import…"
-msgstr ""
+msgstr "Импорт…"
 
 #: src/features/imports/ImportsPage.tsx
 msgid "Imported files show up here with their progress and results."
-msgstr ""
+msgstr "Импортированные файлы появляются здесь с прогрессом и результатами."
 
 #: src/features/imports/ImportsPage.tsx
 msgid "Importing data requires admin rights."
-msgstr ""
+msgstr "Для импорта данных нужны права администратора."
 
 #: src/features/imports/ImportsPage.tsx
 msgid "Importing…"
-msgstr ""
+msgstr "Импорт…"
 
 #: src/components/layout/Sidebar.tsx
 #: src/features/imports/ImportsPage.tsx
 msgid "Imports"
-msgstr ""
+msgstr "Импорт"
 
 #: src/features/imports/ImportsPage.tsx
 msgid "IMPORTS — {workspaceName}"
-msgstr ""
+msgstr "ИМПОРТ — {workspaceName}"
 
 #: src/features/items/components/InventoryPanel.tsx
 #: src/features/items/ItemsListPage.tsx
 msgid "IN STOCK"
-msgstr ""
+msgstr "В НАЛИЧИИ"
 
 #: src/routes/demo/DemoPage.tsx
 msgid "Indeterminate (partial)"
-msgstr ""
+msgstr "Неопределённо (частично)"
 
 #: src/features/settings/LanguagePage.tsx
 msgid "Interface language"
-msgstr ""
+msgstr "Язык интерфейса"
 
 #: src/features/maintenance/components/MaintenanceForm.tsx
 msgid "Interval (days)"
-msgstr ""
+msgstr "Интервал (дни)"
 
 #: src/components/layout/Sidebar.tsx
 #: src/features/analytics/components/OutOfStockTable.tsx
@@ -2175,28 +2175,28 @@ msgstr ""
 #: src/features/items/ItemDetailPage.tsx
 #: src/features/items/ItemsListPage.tsx
 msgid "Inventory"
-msgstr ""
+msgstr "Инвентарь"
 
 #: src/features/items/components/InventoryPanel.tsx
 #: src/features/items/components/InventoryPanelStub.tsx
 msgid "INVENTORY"
-msgstr ""
+msgstr "СКЛАД"
 
 #: src/features/inventory/InventoryListPage.tsx
 msgid "INVENTORY — {workspaceName}"
-msgstr ""
+msgstr "СКЛАД — {workspaceName}"
 
 #: src/features/loans/LoanFormPage.tsx
 msgid "Inventory entry"
-msgstr ""
+msgstr "Складская запись"
 
 #: src/features/settings/MembersPage.tsx
 msgid "Invite someone to share this workspace."
-msgstr ""
+msgstr "Пригласите кого-нибудь для совместной работы в этом рабочем пространстве."
 
 #: src/features/settings/SecurityPage.tsx
 msgid "IP"
-msgstr ""
+msgstr "IP"
 
 #: src/features/analytics/components/OutOfStockTable.tsx
 #: src/features/declutter/DeclutterPage.tsx
@@ -2207,42 +2207,42 @@ msgstr ""
 #: src/features/maintenance/MaintenanceDuePage.tsx
 #: src/routes/demo/DemoPage.tsx
 msgid "Item"
-msgstr ""
+msgstr "Предмет"
 
 #: src/features/items/ItemDetailPage.tsx
 msgid "ITEM"
-msgstr ""
+msgstr "ПРЕДМЕТ"
 
 #: src/features/items/hooks/useMarkReviewedItem.ts
 msgid "Item marked reviewed."
-msgstr ""
+msgstr "Предмет отмечен просмотренным."
 
 #: src/features/items/ItemDetailPage.tsx
 msgid "ITEM NOT FOUND"
-msgstr ""
+msgstr "ПРЕДМЕТ НЕ НАЙДЕН"
 
 #: src/features/items/hooks/useItemFormMutations.ts
 #: src/features/items/ItemFormPage.tsx
 msgid "Item saved."
-msgstr ""
+msgstr "Предмет сохранён."
 
 #: src/components/scan/QuickActionMenu.tsx
 msgid "Item unarchived."
-msgstr ""
+msgstr "Предмет извлечён из архива."
 
 #: src/components/retro/filters/FilterBar.tsx
 msgid "items"
-msgstr ""
+msgstr "предметов"
 
 #: src/components/layout/Sidebar.tsx
 #: src/features/dashboard/components/HudRow.tsx
 #: src/features/dashboard/DashboardPage.tsx
 msgid "Items"
-msgstr ""
+msgstr "Предметы"
 
 #: src/features/items/ItemsListPage.tsx
 msgid "ITEMS — {workspaceName}"
-msgstr ""
+msgstr "ПРЕДМЕТЫ — {workspaceName}"
 
 #: src/features/borrowers/BorrowerFormPage.tsx
 #: src/features/inventory/InventoryFormPage.tsx
@@ -2254,109 +2254,109 @@ msgstr ""
 #: src/features/taxonomy/components/LabelFormDialog.tsx
 #: src/features/taxonomy/components/LocationFormDialog.tsx
 msgid "Keep editing"
-msgstr ""
+msgstr "Продолжить редактирование"
 
 #: src/features/maintenance/components/MaintenanceForm.tsx
 msgid "KEEP EDITING"
-msgstr ""
+msgstr "ПРОДОЛЖИТЬ РЕДАКТИРОВАНИЕ"
 
 #: src/components/layout/F1HelpDialog.tsx
 msgid "KEYBOARD SHORTCUTS"
-msgstr ""
+msgstr "ГОРЯЧИЕ КЛАВИШИ"
 
 #: src/features/inventory/ExpiringPage.tsx
 msgid "Kind"
-msgstr ""
+msgstr "Вид"
 
 #: src/features/items/ItemDetailPage.tsx
 msgid "Labels"
-msgstr ""
+msgstr "Метки"
 
 #: src/features/taxonomy/TaxonomyPage.tsx
 msgid "LABELS"
-msgstr ""
+msgstr "МЕТКИ"
 
 #: src/features/settings/LanguagePage.tsx
 #: src/features/settings/SettingsLandingPage.tsx
 msgid "Language"
-msgstr ""
+msgstr "Язык"
 
 #: src/features/settings/LanguagePage.tsx
 msgid "Language updated."
-msgstr ""
+msgstr "Язык обновлён."
 
 #: src/features/settings/SecurityPage.tsx
 msgid "Last active"
-msgstr ""
+msgstr "Последняя активность"
 
 #: src/features/maintenance/components/MaintenanceDrawer.tsx
 msgid "Last done"
-msgstr ""
+msgstr "Последнее выполнение"
 
 #: src/components/layout/PageHeader.tsx
 msgid "LAST SYNC"
-msgstr ""
+msgstr "ПОСЛЕДНЯЯ СИНХРОНИЗАЦИЯ"
 
 #: src/features/taxonomy/components/CategoryFormDialog.tsx
 msgid "Leave empty to create a top-level category."
-msgstr ""
+msgstr "Оставьте пустым, чтобы создать категорию верхнего уровня."
 
 #: src/features/taxonomy/components/LocationFormDialog.tsx
 msgid "Leave empty to create a top-level location."
-msgstr ""
+msgstr "Оставьте пустым, чтобы создать местоположение верхнего уровня."
 
 #: src/features/settings/AppearancePage.tsx
 msgid "Light"
-msgstr ""
+msgstr "Светлая"
 
 #: src/features/settings/AppearancePage.tsx
 msgid "Light only — a dark theme is on the backlog."
-msgstr ""
+msgstr "Только светлая — тёмная тема в планах."
 
 #: src/features/settings/AccountsPage.tsx
 msgid "Link"
-msgstr ""
+msgstr "Привязать"
 
 #: src/features/items/components/PaperlessLinkDialog.tsx
 msgid "LINK"
-msgstr ""
+msgstr "ПРИВЯЗАТЬ"
 
 #: src/features/items/ItemDetailPage.tsx
 msgid "Link Paperless document"
-msgstr ""
+msgstr "Привязать документ Paperless"
 
 #: src/features/items/components/PaperlessLinkDialog.tsx
 msgid "LINK PAPERLESS DOCUMENT"
-msgstr ""
+msgstr "ПРИВЯЗАТЬ ДОКУМЕНТ PAPERLESS"
 
 #: src/features/settings/AccountsPage.tsx
 #: src/features/settings/SettingsLandingPage.tsx
 msgid "LINKED"
-msgstr ""
+msgstr "ПРИВЯЗАНО"
 
 #: src/components/retro/feedback/RetroStatusDot.tsx
 msgid "live"
-msgstr ""
+msgstr "в эфире"
 
 #: src/components/scan/ScanResultBanner.tsx
 msgid "LOADING"
-msgstr ""
+msgstr "ЗАГРУЗКА"
 
 #: src/features/settings/AccountsPage.tsx
 msgid "Loading accounts…"
-msgstr ""
+msgstr "Загрузка аккаунтов…"
 
 #: src/features/settings/MembersPage.tsx
 msgid "Loading members…"
-msgstr ""
+msgstr "Загрузка участников…"
 
 #: src/features/settings/SecurityPage.tsx
 msgid "Loading sessions…"
-msgstr ""
+msgstr "Загрузка сеансов…"
 
 #: src/components/layout/WorkspaceSwitcher.tsx
 msgid "Loading workspaces…"
-msgstr ""
+msgstr "Загрузка рабочих пространств…"
 
 #: src/features/analytics/components/OutOfStockTable.tsx
 #: src/features/approvals/ApprovalsPage.tsx
@@ -2389,36 +2389,36 @@ msgstr ""
 #: src/features/taxonomy/components/LocationsTab.tsx
 #: src/features/wishlist/WishlistPage.tsx
 msgid "Loading…"
-msgstr ""
+msgstr "Загрузка…"
 
 #: src/components/scan/QuickActionMenu.tsx
 #: src/features/items/components/LoanPanels.tsx
 msgid "LOAN"
-msgstr ""
+msgstr "ВЫДАЧА"
 
 #: src/features/loans/LoanFormPage.tsx
 msgid "Loan created."
-msgstr ""
+msgstr "Выдача создана."
 
 #: src/features/loans/components/BorrowerLoanPanels.tsx
 msgid "LOAN HISTORY"
-msgstr ""
+msgstr "ИСТОРИЯ ВЫДАЧ"
 
 #: src/features/settings/NotificationsPage.tsx
 msgid "Loan reminders"
-msgstr ""
+msgstr "Напоминания о выдачах"
 
 #: src/features/loans/components/EditLoanDialog.tsx
 msgid "Loan saved."
-msgstr ""
+msgstr "Выдача сохранена."
 
 #: src/features/loans/LoansListPage.tsx
 msgid "Loaned"
-msgstr ""
+msgstr "Выдано"
 
 #: src/features/loans/LoanFormPage.tsx
 msgid "Loaning this item — pick a borrower."
-msgstr ""
+msgstr "Выдача этого предмета — выберите получателя."
 
 #: src/components/layout/Sidebar.tsx
 #: src/features/borrowers/BorrowersListPage.tsx
@@ -2427,19 +2427,19 @@ msgstr ""
 #: src/features/loans/components/BorrowerLoanPanels.tsx
 #: src/features/loans/LoansListPage.tsx
 msgid "Loans"
-msgstr ""
+msgstr "Займы"
 
 #: src/features/loans/LoansListPage.tsx
 msgid "LOANS — {workspaceName}"
-msgstr ""
+msgstr "ВЫДАЧИ — {workspaceName}"
 
 #: src/features/analytics/components/MonthlyLoanActivityChart.tsx
 msgid "Loans out"
-msgstr ""
+msgstr "Выдано"
 
 #: src/components/layout/Clock.tsx
 msgid "LOCAL"
-msgstr ""
+msgstr "ЛОКАЛЬНО"
 
 #: src/features/declutter/DeclutterPage.tsx
 #: src/features/inventory/InventoryFormPage.tsx
@@ -2449,213 +2449,213 @@ msgstr ""
 #: src/features/taxonomy/components/ContainerFormDialog.tsx
 #: src/routes/demo/DemoPage.tsx
 msgid "Location"
-msgstr ""
+msgstr "Местоположение"
 
 #: src/features/analytics/components/LocationValueChart.tsx
 msgid "Location value"
-msgstr ""
+msgstr "Значение местоположения"
 
 #: src/components/layout/Sidebar.tsx
 #: src/features/dashboard/DashboardPage.tsx
 msgid "Locations"
-msgstr ""
+msgstr "Места"
 
 #: src/features/taxonomy/TaxonomyPage.tsx
 msgid "LOCATIONS"
-msgstr ""
+msgstr "МЕСТОПОЛОЖЕНИЯ"
 
 #: src/features/auth/LoginPage.tsx
 #: src/features/auth/RegisterPage.tsx
 msgid "Log in"
-msgstr ""
+msgstr "Войти"
 
 #: src/components/layout/TopBar.tsx
 msgid "Log out"
-msgstr ""
+msgstr "Выйти"
 
 #: src/components/scan/ManualBarcodeEntry.tsx
 msgid "LOOK UP CODE"
-msgstr ""
+msgstr "НАЙТИ КОД"
 
 #: src/features/dashboard/components/HudRow.tsx
 #: src/features/dashboard/DashboardPage.tsx
 #: src/features/settings/NotificationsPage.tsx
 msgid "Low stock"
-msgstr ""
+msgstr "Мало на складе"
 
 #: src/components/layout/Sidebar.tsx
 #: src/features/inventory/InventoryListPage.tsx
 #: src/features/maintenance/components/MaintenanceDrawer.tsx
 #: src/features/maintenance/MaintenanceDuePage.tsx
 msgid "Maintenance"
-msgstr ""
+msgstr "Обслуживание"
 
 #: src/features/maintenance/components/MaintenanceDrawer.tsx
 msgid "MAINTENANCE"
-msgstr ""
+msgstr "ОБСЛУЖИВАНИЕ"
 
 #: src/features/maintenance/components/MaintenanceDrawer.tsx
 msgid "MAINTENANCE — {itemName}"
-msgstr ""
+msgstr "ОБСЛУЖИВАНИЕ — {itemName}"
 
 #: src/features/settings/NotificationsPage.tsx
 msgid "Maintenance alerts"
-msgstr ""
+msgstr "Оповещения об обслуживании"
 
 #: src/features/dashboard/components/SystemAlertsPanel.tsx
 msgid "Maintenance due"
-msgstr ""
+msgstr "Требуется обслуживание"
 
 #: src/features/scan/ScanPage.tsx
 msgid "MANUAL"
-msgstr ""
+msgstr "ВРУЧНУЮ"
 
 #. placeholder {0}: repair.description
 #: src/features/repairs/components/CompleteRepairDialog.tsx
 msgid "Mark \"{0}\" completed?"
-msgstr ""
+msgstr "Отметить «{0}» завершённым?"
 
 #. placeholder {0}: schedule.title
 #. placeholder {1}: schedule.interval_days
 #: src/features/maintenance/components/CompleteMaintenanceDialog.tsx
 msgid "Mark \"{0}\" done? This advances the next due date by {1} days."
-msgstr ""
+msgstr "Отметить «{0}» выполненным? Это сдвинет следующий срок на {1} дн."
 
 #. placeholder {0}: loan.item.name
 #. placeholder {1}: loan.borrower.name
 #: src/features/loans/components/ReturnLoanDialog.tsx
 msgid "Mark \"{0}\" returned by {1}?"
-msgstr ""
+msgstr "Отметить «{0}» возвращённым получателем {1}?"
 
 #. placeholder {0}: pendingUse?.item_name ?? t`this item`
 #: src/features/declutter/DeclutterPage.tsx
 msgid "Mark {0} as used now? It will drop off the declutter list."
-msgstr ""
+msgstr "Отметить {0} как использованное сейчас? Оно исчезнет из списка разгрузки."
 
 #: src/features/notifications/components/NotificationsDropdown.tsx
 msgid "Mark all read"
-msgstr ""
+msgstr "Отметить все как прочитанные"
 
 #: src/features/notifications/components/NotificationsDropdown.tsx
 msgid "Mark read"
-msgstr ""
+msgstr "Отметить прочитанным"
 
 #: src/components/scan/QuickActionMenu.tsx
 msgid "MARK REVIEWED"
-msgstr ""
+msgstr "ОТМЕТИТЬ ПРОСМОТРЕННЫМ"
 
 #: src/features/declutter/DeclutterPage.tsx
 msgid "Mark used"
-msgstr ""
+msgstr "Отметить использованным"
 
 #: src/features/declutter/DeclutterPage.tsx
 msgid "MARK USED?"
-msgstr ""
+msgstr "ОТМЕТИТЬ ИСПОЛЬЗОВАННЫМ?"
 
 #: src/components/scan/ScanResultBanner.tsx
 msgid "MATCH"
-msgstr ""
+msgstr "СОВПАДЕНИЕ"
 
 #: src/components/scan/QuickActionMenu.tsx
 msgid "MATCHED ITEM"
-msgstr ""
+msgstr "НАЙДЕННЫЙ ПРЕДМЕТ"
 
 #: src/features/settings/MembersPage.tsx
 msgid "Member added."
-msgstr ""
+msgstr "Участник добавлен."
 
 #: src/features/settings/MembersPage.tsx
 msgid "Member removed."
-msgstr ""
+msgstr "Участник удалён."
 
 #: src/features/settings/SettingsLandingPage.tsx
 msgid "members"
-msgstr ""
+msgstr "участники"
 
 #: src/features/settings/MembersPage.tsx
 #: src/features/settings/SettingsLandingPage.tsx
 msgid "Members"
-msgstr ""
+msgstr "Участники"
 
 #: src/routes/demo/DemoPage.tsx
 msgid "Menu ▾"
-msgstr ""
+msgstr "Меню ▾"
 
 #: src/features/analytics/components/OutOfStockTable.tsx
 msgid "Min stock"
-msgstr ""
+msgstr "Мин. запас"
 
 #: src/features/settings/PaperlessPage.tsx
 msgid "Mirror Paperless tags"
-msgstr ""
+msgstr "Зеркалить теги Paperless"
 
 #: src/features/analytics/components/MonthlyLoanActivityChart.tsx
 msgid "Monthly loan activity"
-msgstr ""
+msgstr "Активность выдач по месяцам"
 
 #: src/features/items/ItemDetailPage.tsx
 msgid "More actions"
-msgstr ""
+msgstr "Ещё действия"
 
 #: src/components/layout/Bottombar.tsx
 msgid "MORE SHORTCUTS"
-msgstr ""
+msgstr "ЕЩЁ ГОРЯЧИЕ КЛАВИШИ"
 
 #: src/features/inventory/components/MoveDialog.tsx
 #: src/routes/demo/DemoPage.tsx
 msgid "Move"
-msgstr ""
+msgstr "Переместить"
 
 #: src/features/inventory/InventoryListPage.tsx
 #: src/features/items/components/InventoryPanel.tsx
 msgid "MOVE"
-msgstr ""
+msgstr "ПЕРЕМЕСТИТЬ"
 
 #. placeholder {0}: photo.caption ?? photo.filename
 #: src/features/items/components/PhotoGallery.tsx
 msgid "Move {0} earlier"
-msgstr ""
+msgstr "Переместить {0} выше"
 
 #. placeholder {0}: photo.caption ?? photo.filename
 #: src/features/items/components/PhotoGallery.tsx
 msgid "Move {0} later"
-msgstr ""
+msgstr "Переместить {0} ниже"
 
 #: src/features/inventory/components/MoveDialog.tsx
 msgid "MOVE ENTRY"
-msgstr ""
+msgstr "ПЕРЕМЕСТИТЬ ЗАПИСЬ"
 
 #: src/features/inventory/components/MoveDialog.tsx
 msgid "Moved to {dest}."
-msgstr ""
+msgstr "Перемещено в {dest}."
 
 #: src/features/inventory/InventoryListPage.tsx
 msgid "Movement history"
-msgstr ""
+msgstr "История перемещений"
 
 #: src/features/inventory/components/MovementsPanel.tsx
 msgid "Movements"
-msgstr ""
+msgstr "Перемещения"
 
 #: src/features/inventory/components/MovementsDrawer.tsx
 msgid "MOVEMENTS"
-msgstr ""
+msgstr "ПЕРЕМЕЩЕНИЯ"
 
 #: src/features/inventory/components/MovementsDrawer.tsx
 msgid "MOVEMENTS — {itemName}"
-msgstr ""
+msgstr "ПЕРЕМЕЩЕНИЯ — {itemName}"
 
 #: src/features/my-changes/MyChangesPage.tsx
 msgid "My changes"
-msgstr ""
+msgstr "Мои изменения"
 
 #: src/components/layout/Sidebar.tsx
 msgid "My Changes"
-msgstr ""
+msgstr "Мои изменения"
 
 #: src/features/my-changes/MyChangesPage.tsx
 msgid "MY CHANGES — {workspaceName}"
-msgstr ""
+msgstr "МОИ ИЗМЕНЕНИЯ — {workspaceName}"
 
 #: src/features/borrowers/BorrowerDetailPage.tsx
 #: src/features/borrowers/BorrowerFormPage.tsx
@@ -2670,347 +2670,347 @@ msgstr ""
 #: src/features/wishlist/components/WishlistFormDialog.tsx
 #: src/features/wishlist/WishlistPage.tsx
 msgid "Name"
-msgstr ""
+msgstr "Название"
 
 #: src/components/layout/Sidebar.tsx
 msgid "Navigator"
-msgstr ""
+msgstr "Навигатор"
 
 #: src/features/maintenance/components/MaintenanceDrawer.tsx
 msgid "never"
-msgstr ""
+msgstr "никогда"
 
 #: src/features/borrowers/BorrowerFormPage.tsx
 msgid "NEW BORROWER"
-msgstr ""
+msgstr "НОВЫЙ ПОЛУЧАТЕЛЬ"
 
 #: src/features/taxonomy/components/CategoryFormDialog.tsx
 msgid "NEW CATEGORY"
-msgstr ""
+msgstr "НОВАЯ КАТЕГОРИЯ"
 
 #: src/features/repairs/components/CompleteRepairDialog.tsx
 msgid "New condition"
-msgstr ""
+msgstr "Новое состояние"
 
 #: src/features/taxonomy/components/ContainerFormDialog.tsx
 msgid "NEW CONTAINER"
-msgstr ""
+msgstr "НОВЫЙ КОНТЕЙНЕР"
 
 #: src/features/loans/components/ExtendLoanDialog.tsx
 msgid "New due date"
-msgstr ""
+msgstr "Новый срок"
 
 #: src/features/auth/LoginPage.tsx
 msgid "New here?"
-msgstr ""
+msgstr "Впервые здесь?"
 
 #: src/features/taxonomy/components/LabelFormDialog.tsx
 msgid "NEW LABEL"
-msgstr ""
+msgstr "НОВАЯ МЕТКА"
 
 #: src/features/loans/LoanFormPage.tsx
 msgid "NEW LOAN"
-msgstr ""
+msgstr "НОВАЯ ВЫДАЧА"
 
 #: src/features/taxonomy/components/LocationFormDialog.tsx
 msgid "NEW LOCATION"
-msgstr ""
+msgstr "НОВОЕ МЕСТОПОЛОЖЕНИЕ"
 
 #: src/features/settings/SecurityPage.tsx
 msgid "New password"
-msgstr ""
+msgstr "Новый пароль"
 
 #: src/components/retro/data/RetroPagination.tsx
 msgid "NEXT"
-msgstr ""
+msgstr "ДАЛЕЕ"
 
 #: src/features/maintenance/components/MaintenanceDrawer.tsx
 #: src/features/maintenance/components/MaintenanceForm.tsx
 #: src/features/maintenance/MaintenanceDuePage.tsx
 msgid "Next due"
-msgstr ""
+msgstr "Следующий срок"
 
 #: src/components/retro/data/RetroPagination.tsx
 msgid "Next page"
-msgstr ""
+msgstr "Следующая страница"
 
 #: src/features/items/components/PhotoLightbox.tsx
 msgid "Next photo"
-msgstr ""
+msgstr "Следующее фото"
 
 #: src/features/loans/LoansListPage.tsx
 msgid "NO ACTIVE LOANS"
-msgstr ""
+msgstr "НЕТ АКТИВНЫХ ВЫДАЧ"
 
 #: src/features/loans/LoansListPage.tsx
 msgid "No active loans are past their due date."
-msgstr ""
+msgstr "Нет активных выдач с истёкшим сроком."
 
 #: src/features/dashboard/DashboardPage.tsx
 msgid "No activity yet."
-msgstr ""
+msgstr "Активности пока нет."
 
 #: src/features/analytics/components/TopBorrowersChart.tsx
 msgid "No borrower activity for this range yet."
-msgstr ""
+msgstr "За этот период активности получателей пока нет."
 
 #: src/features/borrowers/BorrowersListPage.tsx
 msgid "NO BORROWERS"
-msgstr ""
+msgstr "НЕТ ПОЛУЧАТЕЛЕЙ"
 
 #: src/features/borrowers/BorrowersListPage.tsx
 msgid "No borrowers match this search."
-msgstr ""
+msgstr "Нет получателей, соответствующих поиску."
 
 #: src/features/loans/LoanFormPage.tsx
 msgid "No borrowers yet — add one first."
-msgstr ""
+msgstr "Получателей пока нет — сначала добавьте одного."
 
 #: src/features/borrowers/BorrowersListPage.tsx
 msgid "No borrowers yet. Add a borrower to start tracking who has your items."
-msgstr ""
+msgstr "Получателей пока нет. Добавьте получателя, чтобы отслеживать, у кого ваши предметы."
 
 #: src/features/taxonomy/components/CategoriesTab.tsx
 msgid "NO CATEGORIES YET"
-msgstr ""
+msgstr "КАТЕГОРИЙ ПОКА НЕТ"
 
 #: src/features/analytics/components/CategoryValueChart.tsx
 msgid "No category values for this range yet."
-msgstr ""
+msgstr "За этот период данных по категориям пока нет."
 
 #: src/features/approvals/ApprovalsPage.tsx
 msgid "No changes are waiting for review. New requests appear here."
-msgstr ""
+msgstr "Нет изменений, ожидающих рассмотрения. Новые запросы появятся здесь."
 
 #: src/features/my-changes/MyChangesPage.tsx
 msgid "No changes yet"
-msgstr ""
+msgstr "Изменений пока нет"
 
 #: src/features/taxonomy/components/ColorSwatchPicker.tsx
 msgid "No color"
-msgstr ""
+msgstr "Без цвета"
 
 #: src/features/repairs/components/RepairsDrawer.tsx
 msgid "No completed repairs yet."
-msgstr ""
+msgstr "Завершённых ремонтов пока нет."
 
 #: src/features/analytics/components/ConditionDonutChart.tsx
 msgid "No condition data for this range yet."
-msgstr ""
+msgstr "За этот период данных по состоянию пока нет."
 
 #: src/features/taxonomy/components/ContainersTab.tsx
 msgid "NO CONTAINERS YET"
-msgstr ""
+msgstr "КОНТЕЙНЕРОВ ПОКА НЕТ"
 
 #: src/features/analytics/charts/RetroChartFrame.tsx
 #: src/features/analytics/components/ConditionDonutChart.tsx
 #: src/features/analytics/components/MonthlyLoanActivityChart.tsx
 #: src/features/analytics/components/StatusStackChart.tsx
 msgid "No data"
-msgstr ""
+msgstr "Нет данных"
 
 #: src/features/items/components/PaperlessLinkDialog.tsx
 #: src/features/settings/PaperlessPage.tsx
 msgid "No documents matched."
-msgstr ""
+msgstr "Подходящих документов не найдено."
 
 #: src/features/loans/components/ExtendLoanDialog.tsx
 msgid "no due date"
-msgstr ""
+msgstr "без срока"
 
 #: src/features/inventory/InventoryListPage.tsx
 msgid "No entries match these filters. Clear a filter or adjust your search."
-msgstr ""
+msgstr "Нет записей, соответствующих фильтрам. Сбросьте фильтр или измените запрос."
 
 #: src/features/items/components/ItemAttachmentPanel.tsx
 #: src/features/repairs/components/RepairAttachmentPanel.tsx
 msgid "NO FILES"
-msgstr ""
+msgstr "НЕТ ФАЙЛОВ"
 
 #: src/features/declutter/DeclutterPage.tsx
 msgid "No grouping"
-msgstr ""
+msgstr "Без группировки"
 
 #: src/features/imports/ImportsPage.tsx
 msgid "NO IMPORTS YET"
-msgstr ""
+msgstr "ИМПОРТОВ ПОКА НЕТ"
 
 #: src/features/loans/LoanFormPage.tsx
 msgid "No inventory entries yet — add one first."
-msgstr ""
+msgstr "Складских записей пока нет — сначала добавьте одну."
 
 #: src/features/scan/ClaimPage.tsx
 msgid "No item matches this code yet. Create one with the code attached."
-msgstr ""
+msgstr "Этому коду пока не соответствует ни один предмет. Создайте его с привязанным кодом."
 
 #: src/features/inventory/ExpiringPage.tsx
 msgid "No items are expiring or out of warranty in the next {days} days."
-msgstr ""
+msgstr "Нет предметов с истекающим сроком или гарантией в ближайшие {days} дн."
 
 #: src/features/wishlist/WishlistPage.tsx
 msgid "No items in this list. Add something you're after."
-msgstr ""
+msgstr "В этом списке нет предметов. Добавьте то, что хотите."
 
 #: src/features/items/ItemsListPage.tsx
 #: src/routes/demo/DemoPage.tsx
 msgid "No items match these filters. Clear a filter or adjust your search."
-msgstr ""
+msgstr "Нет предметов, соответствующих фильтрам. Сбросьте фильтр или измените запрос."
 
 #: src/features/items/ItemsListPage.tsx
 msgid "NO ITEMS YET"
-msgstr ""
+msgstr "ПРЕДМЕТОВ ПОКА НЕТ"
 
 #: src/features/inventory/InventoryFormPage.tsx
 msgid "No items yet — add one first."
-msgstr ""
+msgstr "Предметов пока нет — сначала добавьте один."
 
 #: src/features/taxonomy/components/LabelsTab.tsx
 msgid "NO LABELS YET"
-msgstr ""
+msgstr "МЕТОК ПОКА НЕТ"
 
 #: src/features/items/components/ItemLabels.tsx
 msgid "No labels yet — manage labels in Phase 10."
-msgstr ""
+msgstr "Меток пока нет — управление метками появится на этапе 10."
 
 #: src/features/analytics/components/MonthlyLoanActivityChart.tsx
 msgid "No loan activity for this range yet."
-msgstr ""
+msgstr "За этот период активности выдач пока нет."
 
 #: src/features/items/components/LoanPanels.tsx
 #: src/features/loans/components/BorrowerLoanPanels.tsx
 #: src/features/loans/LoansListPage.tsx
 msgid "NO LOAN HISTORY"
-msgstr ""
+msgstr "НЕТ ИСТОРИИ ВЫДАЧ"
 
 #: src/features/loans/LoansListPage.tsx
 msgid "No loans have been returned yet."
-msgstr ""
+msgstr "Ни одна выдача пока не возвращена."
 
 #: src/features/loans/LoansListPage.tsx
 msgid "No loans match this search."
-msgstr ""
+msgstr "Нет выдач, соответствующих поиску."
 
 #: src/features/analytics/components/LocationValueChart.tsx
 msgid "No location values for this range yet."
-msgstr ""
+msgstr "За этот период данных по местоположениям пока нет."
 
 #: src/features/taxonomy/components/LocationsTab.tsx
 msgid "NO LOCATIONS YET"
-msgstr ""
+msgstr "МЕСТОПОЛОЖЕНИЙ ПОКА НЕТ"
 
 #: src/features/inventory/InventoryFormPage.tsx
 #: src/features/taxonomy/components/ContainerFormDialog.tsx
 msgid "No locations yet — add one first."
-msgstr ""
+msgstr "Местоположений пока нет — сначала добавьте одно."
 
 #: src/features/maintenance/MaintenanceDuePage.tsx
 msgid "No maintenance is due right now. You're all caught up."
-msgstr ""
+msgstr "Сейчас обслуживание не требуется. Всё в порядке."
 
 #: src/features/items/components/ItemAttachmentPanel.tsx
 #: src/features/repairs/components/RepairAttachmentPanel.tsx
 msgid "No manuals, receipts, or warranties attached yet."
-msgstr ""
+msgstr "Инструкции, чеки и гарантии пока не прикреплены."
 
 #: src/routes/demo/DemoPage.tsx
 msgid "No matches"
-msgstr ""
+msgstr "Нет совпадений"
 
 #: src/features/borrowers/BorrowersListPage.tsx
 #: src/features/inventory/InventoryListPage.tsx
 #: src/features/items/ItemsListPage.tsx
 #: src/features/loans/LoansListPage.tsx
 msgid "NO MATCHES"
-msgstr ""
+msgstr "НЕТ СОВПАДЕНИЙ"
 
 #: src/components/retro/form/RetroCombobox.tsx
 msgid "No matches."
-msgstr ""
+msgstr "Нет совпадений."
 
 #: src/features/settings/MembersPage.tsx
 msgid "No members yet"
-msgstr ""
+msgstr "Участников пока нет"
 
 #: src/features/inventory/components/MovementsPanel.tsx
 msgid "NO MOVEMENTS"
-msgstr ""
+msgstr "НЕТ ПЕРЕМЕЩЕНИЙ"
 
 #: src/features/notifications/components/NotificationsDropdown.tsx
 msgid "No notifications"
-msgstr ""
+msgstr "Нет уведомлений"
 
 #: src/features/settings/SecurityPage.tsx
 msgid "No other sessions."
-msgstr ""
+msgstr "Других сеансов нет."
 
 #: src/features/items/components/PhotoGallery.tsx
 msgid "No photos yet."
-msgstr ""
+msgstr "Фото пока нет."
 
 #: src/features/maintenance/components/MaintenanceDrawer.tsx
 msgid "No recurring maintenance set up for this entry yet. Add a schedule to get reminders."
-msgstr ""
+msgstr "Для этой записи пока не настроено регулярное обслуживание. Добавьте график, чтобы получать напоминания."
 
 #: src/features/settings/MembersPage.tsx
 msgid "No registered user with that email."
-msgstr ""
+msgstr "Нет зарегистрированного пользователя с таким email."
 
 #: src/features/repairs/components/RepairsDrawer.tsx
 msgid "NO REPAIRS"
-msgstr ""
+msgstr "НЕТ РЕМОНТОВ"
 
 #: src/features/repairs/components/RepairsDrawer.tsx
 msgid "No repairs logged for this entry yet. Add one to track work, cost, and warranty."
-msgstr ""
+msgstr "Для этой записи пока не зафиксированы ремонты. Добавьте ремонт, чтобы отслеживать работу, стоимость и гарантию."
 
 #: src/components/retro/filters/SavedFilters.tsx
 msgid "No saved filters yet."
-msgstr ""
+msgstr "Сохранённых фильтров пока нет."
 
 #: src/components/scan/ScanHistoryList.tsx
 msgid "NO SCANS YET"
-msgstr ""
+msgstr "СКАНИРОВАНИЙ ПОКА НЕТ"
 
 #: src/features/maintenance/components/MaintenanceDrawer.tsx
 msgid "NO SCHEDULES"
-msgstr ""
+msgstr "НЕТ ГРАФИКОВ"
 
 #: src/features/settings/SecurityPage.tsx
 msgid "No sessions"
-msgstr ""
+msgstr "Нет сеансов"
 
 #: src/components/layout/F1HelpDialog.tsx
 msgid "NO SHORTCUTS HERE"
-msgstr ""
+msgstr "ЗДЕСЬ НЕТ ГОРЯЧИХ КЛАВИШ"
 
 #: src/features/analytics/components/StatusStackChart.tsx
 msgid "No status data for this range yet."
-msgstr ""
+msgstr "За этот период данных по статусу пока нет."
 
 #: src/features/inventory/InventoryListPage.tsx
 msgid "NO STOCK ENTRIES"
-msgstr ""
+msgstr "НЕТ СКЛАДСКИХ ЗАПИСЕЙ"
 
 #: src/features/items/components/InventoryPanel.tsx
 msgid "No stock entries yet."
-msgstr ""
+msgstr "Складских записей пока нет."
 
 #: src/features/analytics/AnalyticsPage.tsx
 #: src/features/dashboard/DashboardPage.tsx
 msgid "No workspace"
-msgstr ""
+msgstr "Нет рабочего пространства"
 
 #: src/components/layout/WorkspaceSwitcher.tsx
 msgid "No workspaces. Contact an owner."
-msgstr ""
+msgstr "Нет рабочих пространств. Обратитесь к владельцу."
 
 #: src/components/scan/ScanResultBanner.tsx
 msgid "NOT FOUND"
-msgstr ""
+msgstr "НЕ НАЙДЕНО"
 
 #: src/features/settings/AccountsPage.tsx
 msgid "NOT LINKED"
-msgstr ""
+msgstr "НЕ ПРИВЯЗАНО"
 
 #: src/features/borrowers/BorrowerDetailPage.tsx
 #: src/features/borrowers/BorrowerFormPage.tsx
@@ -3022,141 +3022,141 @@ msgstr ""
 #: src/features/wishlist/components/WishlistFormDialog.tsx
 #: src/routes/demo/DemoPage.tsx
 msgid "Notes"
-msgstr ""
+msgstr "Заметки"
 
 #: src/features/dashboard/components/SystemAlertsPanel.tsx
 msgid "Nothing due"
-msgstr ""
+msgstr "Ничего не требуется"
 
 #: src/features/maintenance/MaintenanceDuePage.tsx
 msgid "NOTHING DUE"
-msgstr ""
+msgstr "НИЧЕГО НЕ ТРЕБУЕТСЯ"
 
 #: src/features/dashboard/components/SystemAlertsPanel.tsx
 msgid "Nothing expiring"
-msgstr ""
+msgstr "Срок ничего не истекает"
 
 #: src/features/inventory/ExpiringPage.tsx
 msgid "NOTHING EXPIRING"
-msgstr ""
+msgstr "СРОК НИЧЕГО НЕ ИСТЕКАЕТ"
 
 #: src/routes/demo/DemoPage.tsx
 msgid "Nothing here yet"
-msgstr ""
+msgstr "Здесь пока ничего нет"
 
 #: src/features/wishlist/WishlistPage.tsx
 msgid "NOTHING HERE YET"
-msgstr ""
+msgstr "ЗДЕСЬ ПОКА НИЧЕГО НЕТ"
 
 #: src/features/loans/LoansListPage.tsx
 msgid "Nothing is out on loan right now. Loan an item to start tracking it."
-msgstr ""
+msgstr "Сейчас ничего не выдано. Выдайте предмет, чтобы начать отслеживание."
 
 #: src/features/inventory/InventoryListPage.tsx
 msgid "Nothing is stocked yet. Add your first inventory entry to start tracking quantity, location, and condition."
-msgstr ""
+msgstr "На складе пока ничего нет. Добавьте первую складскую запись, чтобы отслеживать количество, местоположение и состояние."
 
 #: src/features/loans/components/BorrowerLoanPanels.tsx
 msgid "Nothing out"
-msgstr ""
+msgstr "Ничего не выдано"
 
 #: src/features/analytics/components/OutOfStockTable.tsx
 msgid "NOTHING OUT OF STOCK"
-msgstr ""
+msgstr "НЕТ ЗАКОНЧИВШИХСЯ ПОЗИЦИЙ"
 
 #: src/features/loans/LoansListPage.tsx
 msgid "NOTHING OVERDUE"
-msgstr ""
+msgstr "НЕТ ПРОСРОЧЕННЫХ"
 
 #: src/features/approvals/components/PendingApprovalsPanel.tsx
 msgid "Nothing pending"
-msgstr ""
+msgstr "Ничего на рассмотрении"
 
 #: src/features/approvals/ApprovalsPage.tsx
 msgid "NOTHING PENDING"
-msgstr ""
+msgstr "НИЧЕГО НА РАССМОТРЕНИИ"
 
 #: src/features/analytics/charts/RetroChartFrame.tsx
 msgid "Nothing to chart for this range yet."
-msgstr ""
+msgstr "За этот период пока нечего отобразить на графике."
 
 #: src/features/declutter/DeclutterPage.tsx
 msgid "NOTHING TO DECLUTTER"
-msgstr ""
+msgstr "НЕЧЕГО РАЗГРУЖАТЬ"
 
 #: src/features/declutter/DeclutterPage.tsx
 msgid "Nothing to export."
-msgstr ""
+msgstr "Нечего экспортировать."
 
 #: src/features/settings/NotificationsPage.tsx
 msgid "Notification settings saved."
-msgstr ""
+msgstr "Настройки уведомлений сохранены."
 
 #: src/features/notifications/components/NotificationsBell.tsx
 #: src/features/notifications/components/NotificationsDropdown.tsx
 #: src/features/settings/NotificationsPage.tsx
 #: src/features/settings/SettingsLandingPage.tsx
 msgid "Notifications"
-msgstr ""
+msgstr "Уведомления"
 
 #: src/features/settings/RegionalFormatsPage.tsx
 msgid "Number"
-msgstr ""
+msgstr "Число"
 
 #: src/components/retro/feedback/RetroStatusDot.tsx
 msgid "offline"
-msgstr ""
+msgstr "офлайн"
 
 #: src/components/layout/TopBar.tsx
 msgid "OFFLINE"
-msgstr ""
+msgstr "ОФЛАЙН"
 
 #. placeholder {0}: loan.borrower.name
 #: src/features/items/components/LoanPanels.tsx
 msgid "On loan to {0}"
-msgstr ""
+msgstr "Выдано получателю {0}"
 
 #: src/components/layout/TopBar.tsx
 msgid "ONLINE"
-msgstr ""
+msgstr "ОНЛАЙН"
 
 #: src/features/system-history/Page.tsx
 msgid "ONLINE ONLY"
-msgstr ""
+msgstr "ТОЛЬКО ОНЛАЙН"
 
 #: src/features/items/hooks/useItemMutations.ts
 msgid "Only archived items can be deleted."
-msgstr ""
+msgstr "Удалять можно только архивированные предметы."
 
 #: src/features/approvals/ApprovalsPage.tsx
 msgid "Only workspace owners and admins can review approvals."
-msgstr ""
+msgstr "Рассматривать согласования могут только владельцы и администраторы рабочего пространства."
 
 #. placeholder {0}: photo.caption ?? photo.filename
 #: src/features/items/components/PhotoGallery.tsx
 msgid "Open {0}"
-msgstr ""
+msgstr "Открыть {0}"
 
 #: src/features/repairs/components/RepairForm.tsx
 msgid "Optional — a follow-up maintenance reminder."
-msgstr ""
+msgstr "Необязательно — напоминание о последующем обслуживании."
 
 #: src/features/taxonomy/components/ContainerFormDialog.tsx
 #: src/features/taxonomy/components/LocationFormDialog.tsx
 msgid "Optional — auto-generated if left blank."
-msgstr ""
+msgstr "Необязательно — генерируется автоматически, если оставить пустым."
 
 #: src/features/loans/LoanFormPage.tsx
 msgid "Optional — leave blank for no due date."
-msgstr ""
+msgstr "Необязательно — оставьте пустым, чтобы без срока."
 
 #: src/features/taxonomy/components/LabelFormDialog.tsx
 msgid "Optional — pick an on-palette color, or none."
-msgstr ""
+msgstr "Необязательно — выберите цвет из палитры или не выбирайте."
 
 #: src/features/borrowers/BorrowerFormPage.tsx
 msgid "Optional — used to identify the borrower."
-msgstr ""
+msgstr "Необязательно — используется для идентификации получателя."
 
 #: src/features/borrowers/BorrowerFormPage.tsx
 #: src/features/taxonomy/components/CategoryFormDialog.tsx
@@ -3164,467 +3164,467 @@ msgstr ""
 #: src/features/taxonomy/components/LabelFormDialog.tsx
 #: src/features/taxonomy/components/LocationFormDialog.tsx
 msgid "Optional."
-msgstr ""
+msgstr "Необязательно."
 
 #: src/features/repairs/components/CompleteRepairDialog.tsx
 msgid "Optionally update the item's condition now that it's fixed."
-msgstr ""
+msgstr "При желании обновите состояние предмета теперь, когда он починен."
 
 #: src/features/auth/LoginPage.tsx
 #: src/features/auth/RegisterPage.tsx
 msgid "OR"
-msgstr ""
+msgstr "ИЛИ"
 
 #: src/features/wishlist/components/WishlistFormDialog.tsx
 #: src/features/wishlist/WishlistPage.tsx
 msgid "Ordered"
-msgstr ""
+msgstr "Заказано"
 
 #: src/features/wishlist/WishlistPage.tsx
 msgid "ORDERED"
-msgstr ""
+msgstr "ЗАКАЗАНО"
 
 #: src/features/analytics/components/OutOfStockTable.tsx
 msgid "OUT"
-msgstr ""
+msgstr "ВЫДАНО"
 
 #: src/features/analytics/components/OutOfStockTable.tsx
 msgid "Out of stock"
-msgstr ""
+msgstr "Нет в наличии"
 
 #: src/features/dashboard/DashboardPage.tsx
 #: src/features/loans/LoansListPage.tsx
 #: src/features/maintenance/MaintenanceDuePage.tsx
 msgid "Overdue"
-msgstr ""
+msgstr "Просрочено"
 
 #: src/features/loans/LoansListPage.tsx
 msgid "OVERDUE"
-msgstr ""
+msgstr "ПРОСРОЧЕНО"
 
 #: src/routes/demo/DemoPage.tsx
 msgid "Overlay Atoms"
-msgstr ""
+msgstr "Атомы оверлеев"
 
 #: src/components/layout/Sidebar.tsx
 msgid "Overview"
-msgstr ""
+msgstr "Обзор"
 
 #: src/routes/demo/DemoPage.tsx
 msgid "Overview tab panel."
-msgstr ""
+msgstr "Панель вкладки обзора."
 
 #: src/components/retro/data/RetroPagination.tsx
 msgid "page {page} of {pageCount} · {perPage} / page"
-msgstr ""
+msgstr "страница {page} из {pageCount} · {perPage} / стр."
 
 #: src/components/retro/data/RetroPagination.tsx
 msgid "Pagination"
-msgstr ""
+msgstr "Постраничная навигация"
 
 #: src/features/settings/SettingsLandingPage.tsx
 msgid "Paperless"
-msgstr ""
+msgstr "Paperless"
 
 #: src/features/settings/PaperlessPage.tsx
 msgid "Paperless connection"
-msgstr ""
+msgstr "Подключение Paperless"
 
 #: src/features/settings/hooks/usePaperlessSettings.ts
 msgid "Paperless disconnected."
-msgstr ""
+msgstr "Paperless отключён."
 
 #: src/features/items/components/PaperlessLinkDialog.tsx
 #: src/features/settings/PaperlessPage.tsx
 msgid "Paperless is unreachable — check the URL and token."
-msgstr ""
+msgstr "Paperless недоступен — проверьте URL и токен."
 
 #: src/features/items/components/PaperlessLinkDialog.tsx
 msgid "Paperless is unreachable."
-msgstr ""
+msgstr "Paperless недоступен."
 
 #: src/features/settings/hooks/usePaperlessSettings.ts
 msgid "Paperless settings saved."
-msgstr ""
+msgstr "Настройки Paperless сохранены."
 
 #: src/features/settings/PaperlessPage.tsx
 msgid "Paperless URL"
-msgstr ""
+msgstr "URL Paperless"
 
 #: src/features/taxonomy/components/CategoryFormDialog.tsx
 msgid "Parent category"
-msgstr ""
+msgstr "Родительская категория"
 
 #: src/features/taxonomy/components/LocationFormDialog.tsx
 msgid "Parent location"
-msgstr ""
+msgstr "Родительское местоположение"
 
 #: src/features/auth/LoginPage.tsx
 #: src/features/auth/RegisterPage.tsx
 #: src/features/settings/SecurityPage.tsx
 msgid "Password"
-msgstr ""
+msgstr "Пароль"
 
 #: src/features/auth/LoginPage.tsx
 msgid "Password is required."
-msgstr ""
+msgstr "Требуется пароль."
 
 #: src/features/settings/SecurityPage.tsx
 msgid "Password updated."
-msgstr ""
+msgstr "Пароль обновлён."
 
 #: src/features/auth/RegisterPage.tsx
 #: src/features/settings/SecurityPage.tsx
 msgid "Passwords don't match."
-msgstr ""
+msgstr "Пароли не совпадают."
 
 #: src/features/settings/PaperlessPage.tsx
 msgid "Paste your Paperless API token"
-msgstr ""
+msgstr "Вставьте свой API-токен Paperless"
 
 #: src/features/approvals/components/PendingApprovalsPanel.tsx
 #: src/features/items/components/PhotoUpload.tsx
 msgid "pending"
-msgstr ""
+msgstr "ожидает"
 
 #: src/features/imports/ImportsPage.tsx
 msgid "Pending"
-msgstr ""
+msgstr "Ожидает"
 
 #: src/features/approvals/components/PendingApprovalsPanel.tsx
 msgid "Pending approvals"
-msgstr ""
+msgstr "Согласования на рассмотрении"
 
 #: src/features/borrowers/BorrowerDetailPage.tsx
 #: src/features/borrowers/BorrowerFormPage.tsx
 msgid "Phone"
-msgstr ""
+msgstr "Телефон"
 
 #. placeholder {0}: current + 1
 #: src/features/items/components/PhotoLightbox.tsx
 msgid "Photo {0} of {count}"
-msgstr ""
+msgstr "Фото {0} из {count}"
 
 #: src/features/settings/AvatarUploader.tsx
 msgid "Photo removed."
-msgstr ""
+msgstr "Фото удалено."
 
 #: src/features/repairs/components/RepairPhotoPanel.tsx
 msgid "Photo stage"
-msgstr ""
+msgstr "Этап фото"
 
 #: src/features/settings/AvatarUploader.tsx
 msgid "Photo updated."
-msgstr ""
+msgstr "Фото обновлено."
 
 #: src/features/items/components/PhotoUpload.tsx
 msgid "Photos"
-msgstr ""
+msgstr "Фотографии"
 
 #: src/features/items/ItemDetailPage.tsx
 #: src/features/repairs/components/RepairRecordDialog.tsx
 #: src/features/repairs/components/RepairsDrawer.tsx
 msgid "PHOTOS"
-msgstr ""
+msgstr "ФОТО"
 
 #: src/features/inventory/components/MoveDialog.tsx
 msgid "Pick a different location or container."
-msgstr ""
+msgstr "Выберите другое местоположение или контейнер."
 
 #: src/features/settings/AvatarUploader.tsx
 msgid "PNG/JPG · max 5 MB"
-msgstr ""
+msgstr "PNG/JPG · макс. 5 МБ"
 
 #: src/components/scan/ScanViewfinderOverlay.tsx
 msgid "Point the camera at a barcode or QR code."
-msgstr ""
+msgstr "Наведите камеру на штрихкод или QR-код."
 
 #: src/features/items/components/DuplicateWarningDialog.tsx
 msgid "POSSIBLE DUPLICATE"
-msgstr ""
+msgstr "ВОЗМОЖНЫЙ ДУБЛИКАТ"
 
 #: src/features/settings/SettingsLandingPage.tsx
 msgid "PREFERENCES"
-msgstr ""
+msgstr "НАСТРОЙКИ"
 
 #: src/features/items/ItemFormPage.tsx
 msgid "Prefilled from scan — edit if needed."
-msgstr ""
+msgstr "Заполнено из сканирования — измените при необходимости."
 
 #: src/components/retro/filters/SavedFilters.tsx
 msgid "Preset name"
-msgstr ""
+msgstr "Название пресета"
 
 #: src/components/retro/data/RetroPagination.tsx
 msgid "PREV"
-msgstr ""
+msgstr "НАЗАД"
 
 #: src/components/retro/data/RetroPagination.tsx
 msgid "Previous page"
-msgstr ""
+msgstr "Предыдущая страница"
 
 #: src/features/items/components/PhotoLightbox.tsx
 msgid "Previous photo"
-msgstr ""
+msgstr "Предыдущее фото"
 
 #: src/features/declutter/DeclutterPage.tsx
 #: src/features/wishlist/WishlistPage.tsx
 msgid "Price"
-msgstr ""
+msgstr "Цена"
 
 #: src/features/wishlist/components/WishlistFormDialog.tsx
 msgid "Price estimate"
-msgstr ""
+msgstr "Оценка цены"
 
 #: src/features/items/components/ItemAttachmentPanel.tsx
 msgid "PRIMARY"
-msgstr ""
+msgstr "ОСНОВНОЕ"
 
 #: src/features/wishlist/components/WishlistFormDialog.tsx
 #: src/features/wishlist/WishlistPage.tsx
 msgid "Priority"
-msgstr ""
+msgstr "Приоритет"
 
 #: src/features/imports/ImportsPage.tsx
 msgid "Processing"
-msgstr ""
+msgstr "Обработка"
 
 #: src/components/scan/UpcSuggestionBanner.tsx
 msgid "PRODUCT FOUND"
-msgstr ""
+msgstr "ТОВАР НАЙДЕН"
 
 #: src/components/layout/TopBar.tsx
 #: src/features/settings/ProfilePage.tsx
 #: src/features/settings/SettingsLandingPage.tsx
 msgid "Profile"
-msgstr ""
+msgstr "Профиль"
 
 #: src/features/settings/AvatarUploader.tsx
 msgid "Profile photo"
-msgstr ""
+msgstr "Фото профиля"
 
 #: src/features/imports/ImportsPage.tsx
 msgid "Progress"
-msgstr ""
+msgstr "Прогресс"
 
 #: src/features/inventory/ExpiringPage.tsx
 #: src/features/inventory/InventoryListPage.tsx
 #: src/features/items/ItemsListPage.tsx
 #: src/routes/demo/DemoPage.tsx
 msgid "Qty"
-msgstr ""
+msgstr "Кол-во"
 
 #: src/features/inventory/InventoryFormPage.tsx
 #: src/features/items/ItemDetailPage.tsx
 #: src/features/items/ItemFormPage.tsx
 msgid "Quantity"
-msgstr ""
+msgstr "Количество"
 
 #: src/features/items/components/AddAttachmentDialog.tsx
 msgid "READY"
-msgstr ""
+msgstr "ГОТОВО"
 
 #: src/features/approvals/ApprovalsPage.tsx
 msgid "Reason"
-msgstr ""
+msgstr "Причина"
 
 #: src/features/dashboard/DashboardPage.tsx
 msgid "Recent activity"
-msgstr ""
+msgstr "Недавняя активность"
 
 #: src/components/scan/ScanHistoryList.tsx
 msgid "RECENT SCANS"
-msgstr ""
+msgstr "НЕДАВНИЕ СКАНИРОВАНИЯ"
 
 #: src/features/repairs/components/RepairRecordDialog.tsx
 msgid "RECORD"
-msgstr ""
+msgstr "ЗАПИСАТЬ"
 
 #: src/features/settings/RegionalFormatsPage.tsx
 #: src/features/settings/SettingsLandingPage.tsx
 msgid "Regional Formats"
-msgstr ""
+msgstr "Региональные форматы"
 
 #: src/features/approvals/ApprovalsPage.tsx
 msgid "REJECT"
-msgstr ""
+msgstr "ОТКЛОНИТЬ"
 
 #: src/features/approvals/ApprovalsPage.tsx
 msgid "Reject selected"
-msgstr ""
+msgstr "Отклонить выбранное"
 
 #: src/features/approvals/ApprovalsPage.tsx
 msgid "Reject selected changes"
-msgstr ""
+msgstr "Отклонить выбранные изменения"
 
 #: src/features/approvals/ApprovalsPage.tsx
 msgid "Rejected {ok}, {fail} failed."
-msgstr ""
+msgstr "Отклонено: {ok}, не удалось: {fail}."
 
 #: src/features/approvals/ApprovalsPage.tsx
 msgid "Rejected {ok}."
-msgstr ""
+msgstr "Отклонено: {ok}."
 
 #: src/features/approvals/ApprovalsPage.tsx
 msgid "Rejecting requires a reason — it is recorded with the decision."
-msgstr ""
+msgstr "Для отклонения нужна причина — она записывается вместе с решением."
 
 #: src/components/retro/form/RetroFileInput.tsx
 msgid "Release to add"
-msgstr ""
+msgstr "Отпустите, чтобы добавить"
 
 #: src/features/repairs/components/RepairForm.tsx
 msgid "Reminder date"
-msgstr ""
+msgstr "Дата напоминания"
 
 #: src/features/settings/AvatarUploader.tsx
 #: src/features/settings/MembersPage.tsx
 msgid "Remove"
-msgstr ""
+msgstr "Удалить"
 
 #. placeholder {0}: f.name
 #. placeholder {0}: removeTarget ? memberName(removeTarget) : ""
 #: src/components/retro/form/RetroFileInput.tsx
 #: src/features/settings/MembersPage.tsx
 msgid "Remove {0}"
-msgstr ""
+msgstr "Удалить {0}"
 
 #. placeholder {0}: String(chip.label)
 #: src/components/retro/filters/FilterBar.tsx
 msgid "Remove {0} filter"
-msgstr ""
+msgstr "Убрать фильтр {0}"
 
 #. placeholder {0}: removeTarget ? memberName(removeTarget) : ""
 #: src/features/settings/MembersPage.tsx
 msgid "Remove {0} from this workspace? They'll lose access immediately."
-msgstr ""
+msgstr "Удалить {0} из этого рабочего пространства? Доступ будет потерян немедленно."
 
 #: src/features/settings/MembersPage.tsx
 msgid "Remove {name}"
-msgstr ""
+msgstr "Удалить {name}"
 
 #: src/features/settings/AvatarUploader.tsx
 msgid "Remove photo"
-msgstr ""
+msgstr "Удалить фото"
 
 #: src/features/settings/AvatarUploader.tsx
 msgid "Remove photo? Your profile will show your initials instead."
-msgstr ""
+msgstr "Удалить фото? В профиле вместо него будут показаны ваши инициалы."
 
 #. placeholder {0}: repair.description
 #: src/features/repairs/components/RepairRecordDialog.tsx
 msgid "REPAIR — {0}"
-msgstr ""
+msgstr "РЕМОНТ — {0}"
 
 #: src/features/repairs/components/RepairsDrawer.tsx
 msgid "Repair cost"
-msgstr ""
+msgstr "Стоимость ремонта"
 
 #: src/features/repairs/components/RepairForm.tsx
 #: src/features/repairs/components/RepairRecordDialog.tsx
 msgid "Repair date"
-msgstr ""
+msgstr "Дата ремонта"
 
 #: src/features/inventory/InventoryListPage.tsx
 #: src/features/repairs/components/RepairsDrawer.tsx
 msgid "Repairs"
-msgstr ""
+msgstr "Ремонты"
 
 #: src/features/repairs/components/RepairsDrawer.tsx
 msgid "REPAIRS"
-msgstr ""
+msgstr "РЕМОНТЫ"
 
 #: src/features/repairs/components/RepairsDrawer.tsx
 msgid "REPAIRS — {itemName}"
-msgstr ""
+msgstr "РЕМОНТЫ — {itemName}"
 
 #: src/features/approvals/ApprovalsPage.tsx
 #: src/features/my-changes/MyChangesPage.tsx
 msgid "Requested"
-msgstr ""
+msgstr "Запрошено"
 
 #: src/features/approvals/ApprovalsPage.tsx
 msgid "Requester"
-msgstr ""
+msgstr "Запросивший"
 
 #: src/features/taxonomy/components/ContainerFormDialog.tsx
 msgid "Required — every container lives in a location."
-msgstr ""
+msgstr "Обязательно — каждый контейнер находится в местоположении."
 
 #: src/features/scan/ClaimPage.tsx
 msgid "Resolving code…"
-msgstr ""
+msgstr "Распознавание кода…"
 
 #: src/features/inventory/InventoryListPage.tsx
 #: src/features/items/ItemDetailPage.tsx
 #: src/features/items/ItemsListPage.tsx
 #: src/features/taxonomy/components/LabelsTab.tsx
 msgid "RESTORE"
-msgstr ""
+msgstr "ВОССТАНОВИТЬ"
 
 #: src/features/approvals/ApprovalsPage.tsx
 msgid "RESTRICTED"
-msgstr ""
+msgstr "ОГРАНИЧЕНО"
 
 #: src/features/settings/AppearancePage.tsx
 msgid "Retro OS Pastel — the only theme."
-msgstr ""
+msgstr "Retro OS Pastel — единственная тема."
 
 #: src/routes/demo/DemoPage.tsx
 msgid "RetroCheckbox — all three states."
-msgstr ""
+msgstr "RetroCheckbox — все три состояния."
 
 #: src/routes/demo/DemoPage.tsx
 msgid "RetroCombobox — editable, keyboard-driven listbox."
-msgstr ""
+msgstr "RetroCombobox — редактируемый список с управлением с клавиатуры."
 
 #: src/routes/demo/DemoPage.tsx
 msgid "RetroDialog (each titlebar variant), RetroConfirmDialog, Menu/Popover."
-msgstr ""
+msgstr "RetroDialog (каждый вариант заголовка), RetroConfirmDialog, Menu/Popover."
 
 #: src/routes/demo/DemoPage.tsx
 msgid "RetroEmptyState — no-data and filtered variants."
-msgstr ""
+msgstr "RetroEmptyState — варианты «нет данных» и «отфильтровано»."
 
 #: src/routes/demo/DemoPage.tsx
 msgid "RetroFileInput — click + drag-drop drop zone."
-msgstr ""
+msgstr "RetroFileInput — зона загрузки по клику и перетаскиванием."
 
 #: src/routes/demo/DemoPage.tsx
 msgid "RetroFormField — default / hint / error."
-msgstr ""
+msgstr "RetroFormField — обычное / подсказка / ошибка."
 
 #: src/routes/demo/DemoPage.tsx
 msgid "RetroPagination — beveled pager with current-page accent."
-msgstr ""
+msgstr "RetroPagination — пейджер с фаской и акцентом на текущей странице."
 
 #: src/routes/demo/DemoPage.tsx
 msgid "RetroSelect — skinned native select."
-msgstr ""
+msgstr "RetroSelect — стилизованный нативный select."
 
 #: src/routes/demo/DemoPage.tsx
 msgid "RetroStatusDot — live (blinks) / idle / error."
-msgstr ""
+msgstr "RetroStatusDot — в эфире (мигает) / простой / ошибка."
 
 #: src/routes/demo/DemoPage.tsx
 msgid "RetroTable + useTableSelection — click, Shift+Click range, header select-all (indeterminate dash on partial). Select rows to surface bulk-action chips in the Bottombar."
-msgstr ""
+msgstr "RetroTable + useTableSelection — клик, Shift+клик для диапазона, выбор всех в заголовке (тире при частичном выборе). Выберите строки, чтобы показать чипы массовых действий в нижней панели."
 
 #: src/routes/demo/DemoPage.tsx
 msgid "RetroTabs — folder-tab control with roving tabindex."
-msgstr ""
+msgstr "RetroTabs — вкладки-папки с перемещающимся tabindex."
 
 #: src/routes/demo/DemoPage.tsx
 msgid "RetroTextarea — sunken multi-line field."
-msgstr ""
+msgstr "RetroTextarea — утопленное многострочное поле."
 
 #: src/routes/demo/DemoPage.tsx
 msgid "retroToast — all four types (error never auto-dismisses)."
-msgstr ""
+msgstr "retroToast — все четыре типа (ошибка никогда не исчезает сама)."
 
 #: src/features/auth/RequireAuth.tsx
 msgid "Retry"
-msgstr ""
+msgstr "Повторить"
 
 #: src/features/borrowers/BorrowerDetailPage.tsx
 #: src/features/items/components/PhotoUpload.tsx
@@ -3635,105 +3635,105 @@ msgstr ""
 #: src/features/taxonomy/components/LabelsTab.tsx
 #: src/features/taxonomy/components/LocationsTab.tsx
 msgid "RETRY"
-msgstr ""
+msgstr "ПОВТОРИТЬ"
 
 #: src/features/loans/components/ReturnLoanDialog.tsx
 msgid "Return"
-msgstr ""
+msgstr "Вернуть"
 
 #: src/features/items/components/LoanPanels.tsx
 #: src/features/loans/components/BorrowerLoanPanels.tsx
 #: src/features/loans/components/LoanRowActions.tsx
 msgid "RETURN"
-msgstr ""
+msgstr "ВЕРНУТЬ"
 
 #: src/features/loans/components/ReturnLoanDialog.tsx
 msgid "RETURN LOAN?"
-msgstr ""
+msgstr "ВЕРНУТЬ ВЫДАЧУ?"
 
 #: src/features/borrowers/BorrowerDetailPage.tsx
 msgid "Return the active loans before deleting this borrower."
-msgstr ""
+msgstr "Верните активные выдачи перед удалением этого получателя."
 
 #: src/features/loans/LoansListPage.tsx
 msgid "Returned"
-msgstr ""
+msgstr "Возвращено"
 
 #: src/features/loans/components/ReturnLoanDialog.tsx
 msgid "Returned — moved to History."
-msgstr ""
+msgstr "Возвращено — перемещено в историю."
 
 #. placeholder {0}: isoDate(loan.returned_at)
 #: src/features/loans/LoansListPage.tsx
 msgid "returned {0}"
-msgstr ""
+msgstr "возвращено {0}"
 
 #: src/features/analytics/components/MonthlyLoanActivityChart.tsx
 msgid "Returns"
-msgstr ""
+msgstr "Возвраты"
 
 #: src/features/approvals/components/PendingApprovalsPanel.tsx
 msgid "Review"
-msgstr ""
+msgstr "Рассмотреть"
 
 #: src/features/settings/SecurityPage.tsx
 msgid "Revoke"
-msgstr ""
+msgstr "Завершить"
 
 #: src/features/settings/SecurityPage.tsx
 msgid "Revoke all"
-msgstr ""
+msgstr "Завершить все"
 
 #: src/features/settings/SecurityPage.tsx
 msgid "Revoke all other sessions"
-msgstr ""
+msgstr "Завершить все остальные сеансы"
 
 #. placeholder {0}: s.device_info
 #: src/features/settings/SecurityPage.tsx
 msgid "Revoke session on {0}"
-msgstr ""
+msgstr "Завершить сеанс на {0}"
 
 #: src/features/settings/MembersPage.tsx
 msgid "Role"
-msgstr ""
+msgstr "Роль"
 
 #: src/features/settings/MembersPage.tsx
 msgid "Role for {name}"
-msgstr ""
+msgstr "Роль для {name}"
 
 #: src/features/settings/MembersPage.tsx
 msgid "Role for new member"
-msgstr ""
+msgstr "Роль нового участника"
 
 #: src/features/settings/MembersPage.tsx
 msgid "Role updated."
-msgstr ""
+msgstr "Роль обновлена."
 
 #: src/components/layout/F1HelpDialog.tsx
 msgid "ROUTE"
-msgstr ""
+msgstr "МАРШРУТ"
 
 #: src/features/imports/ImportsPage.tsx
 msgid "Rows"
-msgstr ""
+msgstr "Строки"
 
 #: src/features/loans/components/EditLoanDialog.tsx
 #: src/features/settings/PaperlessPage.tsx
 msgid "Save"
-msgstr ""
+msgstr "Сохранить"
 
 #: src/components/retro/filters/SavedFilters.tsx
 #: src/features/items/components/CaptionDialog.tsx
 msgid "SAVE"
-msgstr ""
+msgstr "СОХРАНИТЬ"
 
 #: src/features/borrowers/BorrowerFormPage.tsx
 msgid "Save borrower"
-msgstr ""
+msgstr "Сохранить получателя"
 
 #: src/features/taxonomy/components/CategoryFormDialog.tsx
 msgid "Save category"
-msgstr ""
+msgstr "Сохранить категорию"
 
 #: src/features/borrowers/BorrowerFormPage.tsx
 #: src/features/inventory/InventoryFormPage.tsx
@@ -3747,228 +3747,228 @@ msgstr ""
 #: src/features/taxonomy/components/LocationFormDialog.tsx
 #: src/features/wishlist/components/WishlistFormDialog.tsx
 msgid "Save changes"
-msgstr ""
+msgstr "Сохранить изменения"
 
 #: src/features/maintenance/components/MaintenanceForm.tsx
 #: src/features/repairs/components/RepairForm.tsx
 msgid "SAVE CHANGES"
-msgstr ""
+msgstr "СОХРАНИТЬ ИЗМЕНЕНИЯ"
 
 #: src/features/taxonomy/components/ContainerFormDialog.tsx
 msgid "Save container"
-msgstr ""
+msgstr "Сохранить контейнер"
 
 #: src/components/retro/filters/SavedFilters.tsx
 msgid "SAVE CURRENT…"
-msgstr ""
+msgstr "СОХРАНИТЬ ТЕКУЩЕЕ…"
 
 #: src/features/inventory/InventoryFormPage.tsx
 msgid "Save entry"
-msgstr ""
+msgstr "Сохранить запись"
 
 #: src/components/retro/filters/SavedFilters.tsx
 msgid "SAVE FILTER"
-msgstr ""
+msgstr "СОХРАНИТЬ ФИЛЬТР"
 
 #: src/features/items/ItemFormPage.tsx
 msgid "Save item"
-msgstr ""
+msgstr "Сохранить предмет"
 
 #: src/features/taxonomy/components/LabelFormDialog.tsx
 msgid "Save label"
-msgstr ""
+msgstr "Сохранить метку"
 
 #: src/features/taxonomy/components/LocationFormDialog.tsx
 msgid "Save location"
-msgstr ""
+msgstr "Сохранить местоположение"
 
 #: src/features/repairs/components/RepairForm.tsx
 msgid "SAVE REPAIR"
-msgstr ""
+msgstr "СОХРАНИТЬ РЕМОНТ"
 
 #: src/features/maintenance/components/MaintenanceForm.tsx
 msgid "SAVE SCHEDULE"
-msgstr ""
+msgstr "СОХРАНИТЬ ГРАФИК"
 
 #: src/features/settings/ProfilePage.tsx
 #: src/routes/demo/DemoPage.tsx
 msgid "Saved."
-msgstr ""
+msgstr "Сохранено."
 
 #: src/routes/demo/DemoPage.tsx
 msgid "SavedFilters — preset chips + ▾ PRESETS menu."
-msgstr ""
+msgstr "SavedFilters — чипы пресетов + меню ▾ ПРЕСЕТЫ."
 
 #: src/components/layout/Sidebar.tsx
 msgid "Scan"
-msgstr ""
+msgstr "Сканировать"
 
 #: src/features/scan/ScanPage.tsx
 msgid "SCAN"
-msgstr ""
+msgstr "СКАНИРОВАТЬ"
 
 #: src/components/scan/ScanHistoryList.tsx
 msgid "Scanned and looked-up codes show up here for quick re-lookup."
-msgstr ""
+msgstr "Отсканированные и найденные коды появляются здесь для быстрого повторного поиска."
 
 #: src/features/maintenance/MaintenanceDuePage.tsx
 msgid "Schedule"
-msgstr ""
+msgstr "График"
 
 #: src/features/declutter/DeclutterPage.tsx
 msgid "Score"
-msgstr ""
+msgstr "Баллы"
 
 #: src/features/items/components/PaperlessLinkDialog.tsx
 #: src/features/settings/PaperlessPage.tsx
 msgid "Search"
-msgstr ""
+msgstr "Поиск"
 
 #: src/features/settings/PaperlessPage.tsx
 msgid "Search documents"
-msgstr ""
+msgstr "Поиск документов"
 
 #: src/features/items/components/PaperlessLinkDialog.tsx
 #: src/features/settings/PaperlessPage.tsx
 msgid "Search failed. Try again."
-msgstr ""
+msgstr "Поиск не удался. Попробуйте снова."
 
 #: src/features/taxonomy/components/ContainerFormDialog.tsx
 msgid "Search locations…"
-msgstr ""
+msgstr "Поиск местоположений…"
 
 #: src/features/items/components/PaperlessLinkDialog.tsx
 #: src/features/settings/PaperlessPage.tsx
 msgid "Search Paperless"
-msgstr ""
+msgstr "Поиск в Paperless"
 
 #: src/features/items/components/PaperlessLinkDialog.tsx
 #: src/features/settings/PaperlessPage.tsx
 msgid "Searching…"
-msgstr ""
+msgstr "Поиск…"
 
 #: src/features/settings/SettingsLandingPage.tsx
 msgid "Security"
-msgstr ""
+msgstr "Безопасность"
 
 #: src/features/items/components/PhotoGallery.tsx
 msgid "SELECT"
-msgstr ""
+msgstr "ВЫБРАТЬ"
 
 #: src/features/settings/MembersPage.tsx
 msgid "Select a workspace to manage its members."
-msgstr ""
+msgstr "Выберите рабочее пространство, чтобы управлять его участниками."
 
 #: src/features/items/ItemsListPage.tsx
 #: src/routes/demo/DemoPage.tsx
 msgid "Select all rows"
-msgstr ""
+msgstr "Выбрать все строки"
 
 #: src/routes/demo/DemoPage.tsx
 msgid "Select…"
-msgstr ""
+msgstr "Выбрать…"
 
 #: src/components/retro/filters/BulkActionBar.tsx
 msgid "SELECTED"
-msgstr ""
+msgstr "ВЫБРАНО"
 
 #: src/features/repairs/components/RepairForm.tsx
 #: src/features/repairs/components/RepairRecordDialog.tsx
 msgid "Service provider"
-msgstr ""
+msgstr "Поставщик услуг"
 
 #: src/components/layout/Clock.tsx
 msgid "SESSION"
-msgstr ""
+msgstr "СЕАНС"
 
 #: src/features/settings/SecurityPage.tsx
 msgid "Session revoked."
-msgstr ""
+msgstr "Сеанс завершён."
 
 #: src/features/settings/SecurityPage.tsx
 msgid "Sessions"
-msgstr ""
+msgstr "Сеансы"
 
 #: src/features/settings/SecurityPage.tsx
 msgid "Set password"
-msgstr ""
+msgstr "Задать пароль"
 
 #: src/features/items/components/ItemAttachmentPanel.tsx
 msgid "SET PRIMARY"
-msgstr ""
+msgstr "СДЕЛАТЬ ОСНОВНЫМ"
 
 #: src/components/layout/Sidebar.tsx
 #: src/components/layout/TopBar.tsx
 msgid "Settings"
-msgstr ""
+msgstr "Настройки"
 
 #: src/features/taxonomy/components/ContainerFormDialog.tsx
 #: src/features/taxonomy/components/LocationFormDialog.tsx
 msgid "Short code"
-msgstr ""
+msgstr "Короткий код"
 
 #: src/features/inventory/InventoryListPage.tsx
 #: src/features/items/ItemsListPage.tsx
 msgid "Show archived"
-msgstr ""
+msgstr "Показать архивные"
 
 #: src/features/inventory/InventoryListPage.tsx
 #: src/features/items/ItemsListPage.tsx
 msgid "shown"
-msgstr ""
+msgstr "показано"
 
 #: src/features/auth/SocialLoginButtons.tsx
 msgid "Sign in with GitHub"
-msgstr ""
+msgstr "Войти через GitHub"
 
 #: src/features/auth/SocialLoginButtons.tsx
 msgid "Sign in with Google"
-msgstr ""
+msgstr "Войти через Google"
 
 #: src/features/auth/SocialLoginButtons.tsx
 msgid "Sign in with SSO"
-msgstr ""
+msgstr "Войти через SSO"
 
 #: src/features/settings/SecurityPage.tsx
 msgid "Sign out everywhere else? Other devices will need to log in again."
-msgstr ""
+msgstr "Выйти на всех остальных устройствах? Им потребуется войти снова."
 
 #: src/features/auth/SocialLoginButtons.tsx
 msgid "Sign up with GitHub"
-msgstr ""
+msgstr "Зарегистрироваться через GitHub"
 
 #: src/features/auth/SocialLoginButtons.tsx
 msgid "Sign up with Google"
-msgstr ""
+msgstr "Зарегистрироваться через Google"
 
 #: src/features/auth/CallbackPage.tsx
 msgid "Sign-in failed"
-msgstr ""
+msgstr "Вход не удался"
 
 #: src/features/auth/CallbackPage.tsx
 msgid "Signing in"
-msgstr ""
+msgstr "Вход"
 
 #: src/components/layout/AppShell.tsx
 msgid "Skip to content"
-msgstr ""
+msgstr "Перейти к содержимому"
 
 #: src/features/items/components/PhotoUpload.tsx
 msgid "Skipped (possible duplicate)."
-msgstr ""
+msgstr "Пропущено (возможный дубликат)."
 
 #: src/features/analytics/components/OutOfStockTable.tsx
 #: src/features/items/ItemFormPage.tsx
 msgid "SKU"
-msgstr ""
+msgstr "Артикул"
 
 #: src/features/items/ItemFormPage.tsx
 msgid "SKU can't be changed after an item is created."
-msgstr ""
+msgstr "Артикул нельзя изменить после создания предмета."
 
 #: src/routes/demo/DemoPage.tsx
 msgid "Something failed."
-msgstr ""
+msgstr "Что-то не удалось."
 
 #: src/features/borrowers/BorrowerDetailPage.tsx
 #: src/features/items/ItemDetailPage.tsx
@@ -3977,32 +3977,32 @@ msgstr ""
 #: src/features/taxonomy/components/LabelsTab.tsx
 #: src/features/taxonomy/components/LocationsTab.tsx
 msgid "Something went wrong. Try again."
-msgstr ""
+msgstr "Что-то пошло не так. Попробуйте снова."
 
 #. placeholder {0}: col.label
 #: src/features/items/ItemsListPage.tsx
 msgid "Sort by {0}"
-msgstr ""
+msgstr "Сортировать по {0}"
 
 #: src/features/inventory/InventoryListPage.tsx
 msgid "Sort by condition"
-msgstr ""
+msgstr "Сортировать по состоянию"
 
 #: src/features/inventory/InventoryListPage.tsx
 msgid "Sort by quantity"
-msgstr ""
+msgstr "Сортировать по количеству"
 
 #: src/features/inventory/InventoryListPage.tsx
 msgid "Sort by status"
-msgstr ""
+msgstr "Сортировать по статусу"
 
 #: src/features/repairs/components/RepairPhotoPanel.tsx
 msgid "Stage"
-msgstr ""
+msgstr "Этап"
 
 #: src/features/repairs/components/RepairsDrawer.tsx
 msgid "START"
-msgstr ""
+msgstr "НАЧАТЬ"
 
 #: src/features/dashboard/DashboardPage.tsx
 #: src/features/imports/ImportsPage.tsx
@@ -4015,452 +4015,452 @@ msgstr ""
 #: src/features/wishlist/components/WishlistFormDialog.tsx
 #: src/features/wishlist/WishlistPage.tsx
 msgid "Status"
-msgstr ""
+msgstr "Статус"
 
 #: src/features/inventory/InventoryListPage.tsx
 msgid "STATUS"
-msgstr ""
+msgstr "СТАТУС"
 
 #: src/features/analytics/components/StatusStackChart.tsx
 msgid "Status mix"
-msgstr ""
+msgstr "Распределение статусов"
 
 #: src/routes/demo/DemoPage.tsx
 msgid "StatusPill — OK / WARN / INFO / DANGER."
-msgstr ""
+msgstr "StatusPill — OK / WARN / INFO / DANGER."
 
 #: src/components/layout/TopBar.tsx
 msgid "Stay"
-msgstr ""
+msgstr "Остаться"
 
 #: src/features/analytics/components/OutOfStockTable.tsx
 msgid "Stock"
-msgstr ""
+msgstr "Запас"
 
 #: src/features/items/components/InventoryPanelStub.tsx
 msgid "Stock entries arrive in 7b."
-msgstr ""
+msgstr "Складские записи появятся на этапе 7b."
 
 #: src/features/scan/ScanPage.tsx
 msgid "SWITCH TO MANUAL"
-msgstr ""
+msgstr "ПЕРЕКЛЮЧИТЬ НА РУЧНОЙ ВВОД"
 
 #: src/components/layout/WorkspaceSwitcher.tsx
 msgid "Switched to {name}."
-msgstr ""
+msgstr "Переключено на {name}."
 
 #: src/features/system-history/Page.tsx
 msgid "Sync"
-msgstr ""
+msgstr "Синхронизация"
 
 #: src/components/layout/Sidebar.tsx
 msgid "Sync History"
-msgstr ""
+msgstr "История синхронизации"
 
 #: src/features/system-history/Page.tsx
 msgid "SYNC HISTORY"
-msgstr ""
+msgstr "ИСТОРИЯ СИНХРОНИЗАЦИИ"
 
 #: src/components/layout/Sidebar.tsx
 msgid "System"
-msgstr ""
+msgstr "Система"
 
 #: src/features/dashboard/components/SystemAlertsPanel.tsx
 msgid "System alerts"
-msgstr ""
+msgstr "Системные оповещения"
 
 #: src/features/dashboard/components/HudRow.tsx
 msgid "System rollups"
-msgstr ""
+msgstr "Системные сводки"
 
 #: src/features/dashboard/components/HudRow.tsx
 msgid "target {CAPACITY_TARGET_PLACEHOLDER} · data pending"
-msgstr ""
+msgstr "цель {CAPACITY_TARGET_PLACEHOLDER} · данные ожидаются"
 
 #: src/features/taxonomy/components/CategoriesTab.tsx
 #: src/features/taxonomy/components/ContainersTab.tsx
 #: src/features/taxonomy/components/LabelsTab.tsx
 #: src/features/taxonomy/components/LocationsTab.tsx
 msgid "Taxonomy"
-msgstr ""
+msgstr "Таксономия"
 
 #: src/features/taxonomy/TaxonomyPage.tsx
 msgid "TAXONOMY — {workspaceName}"
-msgstr ""
+msgstr "ТАКСОНОМИЯ — {workspaceName}"
 
 #: src/features/scan/ClaimPage.tsx
 msgid "That code isn't linked to anything in this workspace."
-msgstr ""
+msgstr "Этот код ни с чем не связан в этом рабочем пространстве."
 
 #: src/features/settings/ProfilePage.tsx
 msgid "That email is already in use."
-msgstr ""
+msgstr "Этот email уже используется."
 
 #: src/features/auth/RegisterPage.tsx
 msgid "That email is already registered."
-msgstr ""
+msgstr "Этот email уже зарегистрирован."
 
 #: src/features/repairs/components/AddAttachmentDialog.tsx
 msgid "That file no longer exists."
-msgstr ""
+msgstr "Этого файла больше не существует."
 
 #: src/features/items/components/AddAttachmentDialog.tsx
 msgid "That file was rejected — check its type and size."
-msgstr ""
+msgstr "Файл отклонён — проверьте его тип и размер."
 
 #: src/features/items/components/AddAttachmentDialog.tsx
 msgid "That item no longer exists."
-msgstr ""
+msgstr "Этого предмета больше не существует."
 
 #: src/features/wishlist/components/WishlistFormDialog.tsx
 msgid "That status change isn't allowed."
-msgstr ""
+msgstr "Такое изменение статуса не допускается."
 
 #: src/features/settings/MembersPage.tsx
 msgid "That user is already a member."
-msgstr ""
+msgstr "Этот пользователь уже является участником."
 
 #: src/features/repairs/components/AddAttachmentDialog.tsx
 msgid "The file belongs to a different workspace."
-msgstr ""
+msgstr "Файл принадлежит другому рабочему пространству."
 
 #: src/features/items/ItemsListPage.tsx
 msgid "The selected archived items will be permanently removed."
-msgstr ""
+msgstr "Выбранные архивированные предметы будут безвозвратно удалены."
 
 #: src/features/settings/AppearancePage.tsx
 msgid "Theme"
-msgstr ""
+msgstr "Тема"
 
 #: src/features/loans/components/BorrowerLoanPanels.tsx
 msgid "This borrower hasn't returned anything yet."
-msgstr ""
+msgstr "Этот получатель пока ничего не вернул."
 
 #: src/features/borrowers/BorrowerDetailPage.tsx
 msgid "This borrower may have been deleted. Return to the borrowers list."
-msgstr ""
+msgstr "Возможно, этот получатель был удалён. Вернитесь к списку получателей."
 
 #: src/routes/demo/DemoPage.tsx
 msgid "This can’t be undone."
-msgstr ""
+msgstr "Это действие нельзя отменить."
 
 #: src/features/taxonomy/hooks/useContainerMutations.ts
 msgid "This container is still in use and can't be deleted."
-msgstr ""
+msgstr "Этот контейнер ещё используется и не может быть удалён."
 
 #: src/features/settings/SecurityPage.tsx
 msgid "THIS DEVICE"
-msgstr ""
+msgstr "ЭТО УСТРОЙСТВО"
 
 #: src/features/inventory/InventoryListPage.tsx
 msgid "this entry"
-msgstr ""
+msgstr "эту запись"
 
 #: src/routes/demo/DemoPage.tsx
 msgid "This field is required."
-msgstr ""
+msgstr "Это поле обязательно."
 
 #: src/features/repairs/components/RepairAttachmentPanel.tsx
 msgid "This file link will be permanently removed."
-msgstr ""
+msgstr "Привязка этого файла будет безвозвратно удалена."
 
 #: src/features/items/components/ItemAttachmentPanel.tsx
 msgid "This file will be permanently removed."
-msgstr ""
+msgstr "Этот файл будет безвозвратно удалён."
 
 #: src/features/settings/AccountsPage.tsx
 msgid "This is your only way to sign in. Set a password first to unlink."
-msgstr ""
+msgstr "Это ваш единственный способ входа. Сначала задайте пароль, чтобы отвязать."
 
 #: src/features/declutter/DeclutterPage.tsx
 msgid "this item"
-msgstr ""
+msgstr "этот предмет"
 
 #: src/features/items/components/LoanPanels.tsx
 msgid "This item has never been loaned out."
-msgstr ""
+msgstr "Этот предмет никогда не выдавался."
 
 #: src/features/inventory/components/MovementsPanel.tsx
 msgid "This item hasn't been moved yet."
-msgstr ""
+msgstr "Этот предмет ещё не перемещался."
 
 #: src/features/items/ItemDetailPage.tsx
 msgid "This item may have been deleted. Return to the items list."
-msgstr ""
+msgstr "Возможно, этот предмет был удалён. Вернитесь к списку предметов."
 
 #: src/routes/demo/DemoPage.tsx
 msgid "This list is empty. Add your first item to get started."
-msgstr ""
+msgstr "Этот список пуст. Добавьте первый предмет, чтобы начать."
 
 #: src/features/items/components/LoanPanels.tsx
 msgid "This loan is overdue."
-msgstr ""
+msgstr "Эта выдача просрочена."
 
 #: src/features/maintenance/components/MaintenanceDrawer.tsx
 msgid "This maintenance schedule will be permanently removed."
-msgstr ""
+msgstr "Этот график обслуживания будет безвозвратно удалён."
 
 #: src/features/items/components/PhotoGallery.tsx
 msgid "This photo will be permanently removed."
-msgstr ""
+msgstr "Это фото будет безвозвратно удалено."
 
 #: src/components/scan/ScanHistoryList.tsx
 msgid "This removes every code from your scan history. It can't be undone."
-msgstr ""
+msgstr "Это удалит все коды из вашей истории сканирований. Это действие нельзя отменить."
 
 #: src/features/wishlist/WishlistPage.tsx
 msgid "This removes it from your wishlist. This can't be undone."
-msgstr ""
+msgstr "Это удалит его из вашего списка желаемого. Это действие нельзя отменить."
 
 #: src/features/repairs/components/RepairsDrawer.tsx
 msgid "This repair and its photos and files will be permanently removed."
-msgstr ""
+msgstr "Этот ремонт вместе с его фото и файлами будет безвозвратно удалён."
 
 #: src/components/layout/F1HelpDialog.tsx
 msgid "This route has no quick actions yet. Press F1 anytime for the full list."
-msgstr ""
+msgstr "На этом экране пока нет быстрых действий. Нажмите F1 в любой момент для полного списка."
 
 #: src/features/system-history/Page.tsx
 msgid "This workspace runs online-only — changes save directly to the server, so there are no background sync events to show."
-msgstr ""
+msgstr "Это рабочее пространство работает только онлайн — изменения сохраняются прямо на сервер, поэтому фоновых событий синхронизации нет."
 
 #: src/features/settings/RegionalFormatsPage.tsx
 msgid "Thousand and decimal separators must be different."
-msgstr ""
+msgstr "Разделители тысяч и дробной части должны различаться."
 
 #: src/features/settings/RegionalFormatsPage.tsx
 msgid "Thousand separator"
-msgstr ""
+msgstr "Разделитель тысяч"
 
 #: src/features/dashboard/DashboardPage.tsx
 #: src/features/settings/RegionalFormatsPage.tsx
 msgid "Time"
-msgstr ""
+msgstr "Время"
 
 #: src/features/settings/RegionalFormatsPage.tsx
 msgid "Time format"
-msgstr ""
+msgstr "Формат времени"
 
 #: src/features/items/components/AddAttachmentDialog.tsx
 #: src/features/maintenance/components/MaintenanceForm.tsx
 #: src/features/repairs/components/AddAttachmentDialog.tsx
 msgid "Title"
-msgstr ""
+msgstr "Название"
 
 #: src/features/inventory/components/MoveDialog.tsx
 msgid "To container"
-msgstr ""
+msgstr "В контейнер"
 
 #: src/features/inventory/components/MoveDialog.tsx
 msgid "To location"
-msgstr ""
+msgstr "В местоположение"
 
 #: src/routes/demo/DemoPage.tsx
 msgid "Toast: error"
-msgstr ""
+msgstr "Тост: ошибка"
 
 #: src/routes/demo/DemoPage.tsx
 msgid "Toast: info"
-msgstr ""
+msgstr "Тост: информация"
 
 #: src/routes/demo/DemoPage.tsx
 msgid "Toast: success"
-msgstr ""
+msgstr "Тост: успех"
 
 #: src/routes/demo/DemoPage.tsx
 msgid "Toast: warning"
-msgstr ""
+msgstr "Тост: предупреждение"
 
 #. placeholder {0}: photo.caption ?? photo.filename
 #: src/features/items/components/PhotoGallery.tsx
 msgid "Toggle {0}"
-msgstr ""
+msgstr "Переключить {0}"
 
 #: src/features/analytics/components/TopBorrowersChart.tsx
 msgid "Top borrowers"
-msgstr ""
+msgstr "Топ получателей"
 
 #: src/components/scan/ScanTorchToggle.tsx
 msgid "TORCH"
-msgstr ""
+msgstr "ФОНАРИК"
 
 #: src/components/scan/ScanTorchToggle.tsx
 msgid "TORCH ON"
-msgstr ""
+msgstr "ФОНАРИК ВКЛ"
 
 #: src/features/analytics/components/ConditionDonutChart.tsx
 msgid "Total"
-msgstr ""
+msgstr "Всего"
 
 #: src/features/auth/CallbackPage.tsx
 msgid "Try again"
-msgstr ""
+msgstr "Попробовать снова"
 
 #: src/components/scan/ScanResultBanner.tsx
 msgid "TRY AGAIN"
-msgstr ""
+msgstr "ПОПРОБОВАТЬ СНОВА"
 
 #: src/features/items/components/AddAttachmentDialog.tsx
 #: src/features/items/components/PaperlessLinkDialog.tsx
 #: src/features/repairs/components/AddAttachmentDialog.tsx
 msgid "Try again."
-msgstr ""
+msgstr "Попробуйте снова."
 
 #: src/features/imports/ImportsPage.tsx
 msgid "Type"
-msgstr ""
+msgstr "Тип"
 
 #: src/features/items/components/AddAttachmentDialog.tsx
 #: src/features/repairs/components/AddAttachmentDialog.tsx
 msgid "Type *"
-msgstr ""
+msgstr "Тип *"
 
 #: src/features/items/ItemFormPage.tsx
 msgid "Type a category…"
-msgstr ""
+msgstr "Введите категорию…"
 
 #: src/features/items/ItemFormPage.tsx
 msgid "Type a location…"
-msgstr ""
+msgstr "Введите местоположение…"
 
 #: src/features/settings/SecurityPage.tsx
 msgid "Type DELETE to confirm"
-msgstr ""
+msgstr "Введите DELETE для подтверждения"
 
 #: src/features/settings/SecurityPage.tsx
 msgid "Type DELETE to confirm. This permanently removes your account and cannot be undone."
-msgstr ""
+msgstr "Введите DELETE для подтверждения. Это безвозвратно удалит ваш аккаунт и не может быть отменено."
 
 #: src/features/items/ItemDetailPage.tsx
 #: src/features/items/ItemsListPage.tsx
 msgid "Type the item name to confirm. This can't be undone."
-msgstr ""
+msgstr "Введите название предмета для подтверждения. Это действие нельзя отменить."
 
 #: src/components/scan/QuickActionMenu.tsx
 msgid "UNARCHIVE"
-msgstr ""
+msgstr "ИЗВЛЕЧЬ ИЗ АРХИВА"
 
 #: src/features/inventory/components/MovementsPanel.tsx
 msgid "Unknown"
-msgstr ""
+msgstr "Неизвестно"
 
 #: src/features/settings/AccountsPage.tsx
 msgid "Unlink"
-msgstr ""
+msgstr "Отвязать"
 
 #. placeholder {0}: unlinkTarget?.label
 #: src/features/settings/AccountsPage.tsx
 msgid "Unlink {0}"
-msgstr ""
+msgstr "Отвязать {0}"
 
 #. placeholder {0}: unlinkTarget?.label
 #: src/features/settings/AccountsPage.tsx
 msgid "Unlink {0}? You'll no longer be able to sign in with it."
-msgstr ""
+msgstr "Отвязать {0}? Вы больше не сможете входить с его помощью."
 
 #: src/features/items/components/ItemAttachmentPanel.tsx
 #: src/features/repairs/components/RepairAttachmentPanel.tsx
 msgid "Untitled"
-msgstr ""
+msgstr "Без названия"
 
 #: src/features/items/ItemDetailPage.tsx
 msgid "Updated"
-msgstr ""
+msgstr "Обновлено"
 
 #: src/features/items/components/DuplicateWarningDialog.tsx
 msgid "UPLOAD ANYWAY"
-msgstr ""
+msgstr "ВСЁ РАВНО ЗАГРУЗИТЬ"
 
 #: src/features/items/components/PhotoUpload.tsx
 msgid "Upload failed."
-msgstr ""
+msgstr "Загрузка не удалась."
 
 #: src/features/repairs/components/AddAttachmentDialog.tsx
 msgid "uploading…"
-msgstr ""
+msgstr "загрузка…"
 
 #: src/features/wishlist/components/WishlistFormDialog.tsx
 msgid "URL"
-msgstr ""
+msgstr "URL"
 
 #: src/components/scan/UpcSuggestionBanner.tsx
 msgid "USE ALL"
-msgstr ""
+msgstr "ИСПОЛЬЗОВАТЬ ВСЕ"
 
 #: src/features/auth/RegisterPage.tsx
 #: src/features/settings/SecurityPage.tsx
 msgid "Use at least 8 characters."
-msgstr ""
+msgstr "Используйте не менее 8 символов."
 
 #: src/components/scan/UpcSuggestionBanner.tsx
 msgid "USE NAME"
-msgstr ""
+msgstr "ИСПОЛЬЗОВАТЬ ИМЯ"
 
 #: src/features/settings/MembersPage.tsx
 msgid "user@email…"
-msgstr ""
+msgstr "user@email…"
 
 #: src/features/borrowers/BorrowerDetailPage.tsx
 msgid "View active loans"
-msgstr ""
+msgstr "Просмотреть активные выдачи"
 
 #: src/components/scan/QuickActionMenu.tsx
 msgid "VIEW ITEM"
-msgstr ""
+msgstr "ОТКРЫТЬ ПРЕДМЕТ"
 
 #: src/features/wishlist/components/WishlistFormDialog.tsx
 #: src/features/wishlist/WishlistPage.tsx
 msgid "Wanted"
-msgstr ""
+msgstr "Хочу"
 
 #: src/features/wishlist/WishlistPage.tsx
 msgid "WANTED"
-msgstr ""
+msgstr "ЖЕЛАЕМОЕ"
 
 #: src/features/inventory/ExpiringPage.tsx
 msgid "WARRANTY"
-msgstr ""
+msgstr "ГАРАНТИЯ"
 
 #: src/features/repairs/components/RepairRecordDialog.tsx
 msgid "Warranty claim"
-msgstr ""
+msgstr "Гарантийная заявка"
 
 #: src/features/inventory/InventoryFormPage.tsx
 msgid "Warranty expires"
-msgstr ""
+msgstr "Гарантия истекает"
 
 #: src/features/scan/ScanPage.tsx
 msgid "We couldn't access the camera. Enter the code by hand instead."
-msgstr ""
+msgstr "Не удалось получить доступ к камере. Введите код вручную."
 
 #: src/features/inventory/ExpiringPage.tsx
 msgid "When"
-msgstr ""
+msgstr "Когда"
 
 #: src/features/inventory/ExpiringPage.tsx
 msgid "Window"
-msgstr ""
+msgstr "Окно"
 
 #: src/components/layout/Sidebar.tsx
 #: src/features/wishlist/WishlistPage.tsx
 msgid "Wishlist"
-msgstr ""
+msgstr "Список желаний"
 
 #: src/features/wishlist/WishlistPage.tsx
 msgid "WISHLIST — {workspaceName}"
-msgstr ""
+msgstr "СПИСОК ЖЕЛАЕМОГО — {workspaceName}"
 
 #: src/features/wishlist/components/WishlistFormDialog.tsx
 msgid "Wishlist item saved."
-msgstr ""
+msgstr "Предмет из списка желаемого сохранён."
 
 #: src/routes/demo/DemoPage.tsx
 msgid "With error"
-msgstr ""
+msgstr "С ошибкой"
 
 #: src/routes/demo/DemoPage.tsx
 msgid "With hint"
-msgstr ""
+msgstr "С подсказкой"
 
 #: src/components/layout/WorkspaceSwitcher.tsx
 #: src/features/approvals/ApprovalsPage.tsx
@@ -4475,53 +4475,53 @@ msgstr ""
 #: src/features/taxonomy/TaxonomyPage.tsx
 #: src/features/wishlist/WishlistPage.tsx
 msgid "Workspace"
-msgstr ""
+msgstr "Рабочее пространство"
 
 #: src/features/settings/SettingsLandingPage.tsx
 msgid "WORKSPACE"
-msgstr ""
+msgstr "РАБОЧЕЕ ПРОСТРАНСТВО"
 
 #: src/features/settings/NotificationsPage.tsx
 msgid "Workspace activity"
-msgstr ""
+msgstr "Активность рабочего пространства"
 
 #: src/components/layout/WorkspaceSwitcher.tsx
 msgid "Workspaces"
-msgstr ""
+msgstr "Рабочие пространства"
 
 #: src/features/auth/LoginPage.tsx
 msgid "Wrong email or password. Try again."
-msgstr ""
+msgstr "Неверный email или пароль. Попробуйте снова."
 
 #: src/features/settings/MembersPage.tsx
 msgid "YOU"
-msgstr ""
+msgstr "ВЫ"
 
 #: src/features/my-changes/MyChangesPage.tsx
 msgid "You haven't requested any changes in this workspace."
-msgstr ""
+msgstr "Вы не запрашивали изменений в этом рабочем пространстве."
 
 #: src/features/settings/SecurityPage.tsx
 msgid "You signed in with a provider and haven't set a password yet. Add one to enable email + password login."
-msgstr ""
+msgstr "Вы вошли через провайдера и ещё не задали пароль. Задайте его, чтобы включить вход по email и паролю."
 
 #: src/features/notifications/components/NotificationsDropdown.tsx
 msgid "You're all caught up."
-msgstr ""
+msgstr "Всё в порядке, вы всё просмотрели."
 
 #: src/features/settings/SecurityPage.tsx
 msgid "You're the sole owner of: {blockingNames}. Transfer ownership or delete these workspaces before deleting your account."
-msgstr ""
+msgstr "Вы единственный владелец: {blockingNames}. Передайте права владельца или удалите эти рабочие пространства перед удалением аккаунта."
 
 #: src/features/analytics/AnalyticsPage.tsx
 #: src/features/dashboard/DashboardPage.tsx
 msgid "Your account has no workspaces yet."
-msgstr ""
+msgstr "В вашем аккаунте пока нет рабочих пространств."
 
 #: src/features/borrowers/BorrowerFormPage.tsx
 #: src/features/loans/LoanFormPage.tsx
 msgid "Your changes will be lost."
-msgstr ""
+msgstr "Ваши изменения будут потеряны."
 
 #: src/features/inventory/InventoryFormPage.tsx
 #: src/features/items/ItemFormPage.tsx
@@ -4532,16 +4532,16 @@ msgstr ""
 #: src/features/taxonomy/components/LabelFormDialog.tsx
 #: src/features/taxonomy/components/LocationFormDialog.tsx
 msgid "Your edits will be lost."
-msgstr ""
+msgstr "Ваши правки будут потеряны."
 
 #: src/features/items/ItemsListPage.tsx
 msgid "Your warehouse is empty. Add your first item to start tracking it."
-msgstr ""
+msgstr "Ваш склад пуст. Добавьте первый предмет, чтобы начать отслеживание."
 
 #: src/features/items/components/PhotoLightbox.tsx
 msgid "Zoom in"
-msgstr ""
+msgstr "Увеличить"
 
 #: src/features/items/components/PhotoLightbox.tsx
 msgid "Zoom out"
-msgstr ""
+msgstr "Уменьшить"
