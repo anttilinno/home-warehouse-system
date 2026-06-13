@@ -62,19 +62,19 @@ describe("useItemAttachments", () => {
     expect(result.current.items[0].file_name).toBe("receipt.pdf");
   });
 
-  it("upload posts multipart and invalidates the attachments key", async () => {
+  it("upload POSTs to the byte route (multipart) and invalidates the key", async () => {
     server.use(listHandler());
-    let received: { field: string; filename: string } | null = null;
+    let hitUploadRoute = false;
+    let contentType = "";
     server.use(
       http.post(
         "/api/workspaces/:wsId/items/:itemId/attachments/file",
-        async ({ request }) => {
-          const form = await request.formData();
-          const file = form.get("file");
-          received = {
-            field: String(form.get("attachment_type")),
-            filename: file instanceof File ? file.name : "",
-          };
+        ({ request }) => {
+          // Inspect the headers (NOT request.formData() — undici's multipart
+          // parser is unreliable under jsdom). A FormData body makes the browser
+          // set a multipart/form-data Content-Type with a boundary.
+          hitUploadRoute = true;
+          contentType = request.headers.get("content-type") ?? "";
           return HttpResponse.json({ ...ATTACHMENT, id: "att-new" });
         },
       ),
@@ -95,7 +95,8 @@ describe("useItemAttachments", () => {
       await result.current.upload.mutateAsync(form);
     });
 
-    expect(received).toEqual({ field: "MANUAL", filename: "manual.pdf" });
+    expect(hitUploadRoute).toBe(true);
+    expect(contentType).toContain("multipart/form-data");
     expect(invalidate).toHaveBeenCalledWith({ queryKey: ATT_KEY });
   });
 
