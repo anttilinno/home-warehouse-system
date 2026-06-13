@@ -728,7 +728,16 @@ Plans:
   4. After scan or manual entry, user sees a 4-state result banner — LOADING / MATCH / NOT-FOUND / ERROR — with a `prefers-reduced-motion`-aware blinking-cursor variant; NOT-FOUND offers "Create item with this barcode" → `/items/new?barcode=<code>`; codes matching `/^\d{8,14}$/` show an opt-in suggestion banner with USE / USE ALL / DISMISS for prefill from `GET /api/barcode/{code}`
   5. After a MATCH, user sees a state-adaptive quick-action overlay (View Item / Loan / Back to Scan; Loan hidden if item on active loan, Unarchive if archived, Mark Reviewed if `needs_review`)
 **Parity additions (2026-06-12)** (§4, Gap G-8): add the claim flow `/claim/:code` (resolve shortlink/barcode → claim-as-loan form, login required) as new requirement SCAN-12; persist scan history to localStorage; re-add the by-barcode Playwright spec (standing G-65-01 guard, wiped with the v2.2 frontend2).
-**Plans**: TBD
+**Plans**: 8 plans
+Plans:
+- [ ] 11-01-PLAN.md — FOUNDATION (non-frozen): add scanner deps (@yudiel/react-qr-scanner@2.5.1 + barcode-detector@3.0.8 + ios-haptics@0.1.4) + lockfile; vite manualChunks; camera/BarcodeDetector/Scanner test mocks + barcode MSW; Item.needs_review
+- [ ] 11-02-PLAN.md — lib/scanner port (feedback, scan-history, init-polyfill, types) + barcodeApi
+- [ ] 11-03-PLAN.md — hooks: useScanResolve (single funnel + 4-state banner), useScanFeedback, useTorch, useScanHistory
+- [ ] 11-04-PLAN.md — camera components: BarcodeScanner (prop-driven pause), ScanViewfinderOverlay, ScanTorchToggle
+- [ ] 11-05-PLAN.md — result/manual/history components: ScanResultBanner, QuickActionMenu, ManualBarcodeEntry, ScanHistoryList, UpcSuggestionBanner + useMarkReviewedItem
+- [ ] 11-06-PLAN.md — ScanPage (persistent single-mount) + routes/index.tsx (+/scan lazy, +/claim/:code) + Sidebar Scan nav + ItemFormPage ?name=/?brand= (single-writers)
+- [ ] 11-07-PLAN.md — ClaimPage /claim/:code (PORT LEGACY create-entity, no new backend)
+- [ ] 11-08-PLAN.md — Lingui extract (en/et/ru) + re-add by-barcode Playwright spec (G-65-01, manual path)
 **UI hint**: yes
 
 ### Phase 12: Settings hub
