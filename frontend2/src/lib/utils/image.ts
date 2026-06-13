@@ -39,3 +39,46 @@ export function validateUploadFile(file: File): UploadValidation {
   }
   return { ok: true };
 }
+
+/**
+ * Downscale + re-encode an image File on a canvas, baking in EXIF orientation.
+ *
+ * Ports the legacy `frontend/lib/utils/image.ts` compress STRUCTURE (scale by a
+ * single ratio, drawImage onto a sized canvas, toBlob, wrap in File) and ADDS
+ * the EXIF fix the legacy port lacked: `createImageBitmap(file,
+ * { imageOrientation: "from-image" })` bakes the photo's orientation into the
+ * bitmap so portrait phone photos are not stored sideways (07-RESEARCH Pitfall 3).
+ *
+ * The scale is clamped to 1 so under-sized images are never upscaled. Output is
+ * image/png for PNG sources and image/jpeg for everything else.
+ *
+ * @param maxDim   Longest-edge ceiling in px (default 1600).
+ * @param quality  toBlob quality 0..1 for lossy encodes (default 0.85).
+ * @throws Error("no canvas ctx") if the 2d context is unavailable.
+ * @throws Error("toBlob failed") if encoding yields no Blob.
+ */
+export async function compressImage(
+  file: File,
+  maxDim = 1600,
+  quality = 0.85,
+): Promise<File> {
+  // createImageBitmap bakes EXIF orientation into the bitmap (native, zero-dep).
+  const bitmap = await createImageBitmap(file, { imageOrientation: "from-image" });
+  const scale = Math.min(1, maxDim / Math.max(bitmap.width, bitmap.height));
+  const w = Math.round(bitmap.width * scale);
+  const h = Math.round(bitmap.height * scale);
+
+  const canvas = document.createElement("canvas");
+  canvas.width = w;
+  canvas.height = h;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) throw new Error("no canvas ctx");
+  ctx.drawImage(bitmap, 0, 0, w, h);
+  bitmap.close?.();
+
+  const type = file.type === "image/png" ? "image/png" : "image/jpeg";
+  const blob: Blob = await new Promise((res, rej) =>
+    canvas.toBlob((b) => (b ? res(b) : rej(new Error("toBlob failed"))), type, quality),
+  );
+  return new File([blob], file.name, { type, lastModified: Date.now() });
+}
