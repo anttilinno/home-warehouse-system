@@ -2,7 +2,7 @@
 
 ## What This Is
 
-A multi-tenant home inventory management system with complete offline capabilities, mobile-first UX, and social login support. Users can access and modify their inventory while offline (e.g., walking around a warehouse without network), with changes syncing automatically when connectivity returns. Mobile users can scan barcodes, use floating action buttons for quick access, and complete forms efficiently with progressive disclosure. Authentication supports both email/password and Google/GitHub OAuth with auto-linking by verified email.
+A multi-tenant home inventory management system with social login, barcode scanning, and a full inventory/loans/repairs/maintenance/taxonomy domain. It ships two frontends: a legacy offline-first Next.js PWA (`frontend`) and, as of v3.0, an online-only Vite + React 19 SPA (`frontend2`) styled to a Retro-OS Pastel aesthetic and brought to full feature parity. Authentication supports email/password, Google/GitHub OAuth (auto-linking by verified email), and env-gated Authelia SSO.
 
 ## Core Value
 
@@ -165,14 +165,19 @@ Reliable inventory access anywhere — online or offline — with seamless sync.
 - ✓ Loans — tabbed Active/Overdue/History, create/edit/return, per-item and per-borrower loan panels
 - ✓ Navigation & polish — sidebar parity, dashboard wiring, full Estonian catalog gap-fill
 
+**v3.0 Retro-OS Pastel Frontend (shipped 2026-06-14):**
+
+- ✓ Clean-slate `frontend2` rebuilt to sketch 006-008 Retro-OS Pastel fidelity — online-only, CI grep-guarded against offline/sync imports
+- ✓ Retro-OS design system — windows/bevels, StatusPills, RetroTable/Tree/Tabs/Combobox, six RHF form atoms, four filter atoms, RetroToaster, ModalStack ESC arbiter
+- ✓ Full legacy parity — Items (+photos/labels/lifecycle), Inventory (+movements/expiring), Repairs + Maintenance, Loans, Borrowers, Taxonomy, Scan (UPC lookup + suggestion banner), Dashboard + Analytics + out-of-stock, Settings, System group (approvals/wishlist/declutter/imports/my-changes/notifications)
+- ✓ Auth — register + Google/GitHub OAuth + `/auth/callback` code exchange + env-gated Authelia SSO; WorkspaceProvider single-source workspace switching; live SSE status
+- ✓ Command palette — ⌘K / F2 (cmdk + tinykeys), lazy-chunked, over routes / workspaces / recent / live entity search
+- ✓ i18n EN/ET/RU via Lingui v6; format hooks everywhere
+- ✓ Standing quality infra — bundle budget, axe a11y sweep, keyboard-nav, 5-breakpoint responsive, flow→test coverage matrix + live Playwright specs across the cookie-JWT + proxy boundary
+
 ### Active
 
-**v2.2 (planned):**
-
-- Barcode scanning — single-route `/scan`, QR + UPC/EAN/Code128 lookup, "not found → create" overlay, flashlight, manual fallback
-- Quick capture flow in `/frontend2`
-- Bulk item operations (bulk delete, bulk archive, bulk export)
-- CSV import/export in `/frontend2`
+(None — v3.0 shipped 2026-06-14. Planning next milestone; see Backlog in `.planning/ROADMAP.md`.)
 
 ### Out of Scope
 
@@ -185,57 +190,35 @@ Reliable inventory access anywhere — online or offline — with seamless sync.
 - Auto-link by unverified email — pre-authentication account takeover risk
 - Storing raw OAuth tokens — app never calls provider APIs after login
 - Popup/window-based OAuth flow — popup blockers, mobile issues, PWA incompatibility
-
-## Current Milestone: v3.0 Premium-Terminal Frontend (frontend2)
-
-**Goal:** Rebuild `/frontend2` from a clean slate with full sketch 005 premium-terminal fidelity — a redesigned UI track distinct from the frontend1 re-skin. Aggressive aesthetic, TUI-style chrome, function-key bottombar, slim brand topbar, sidebar `// GROUP` labels, scanlines, monospace, sharp corners.
-
-**Target features:**
-- App scaffold (Vite + React 19) with retro-terminal token system + scanlines + monospace globals
-- Topbar with slim brand mark, workspace pill, ONLINE indicator
-- Sidebar with `// OVERVIEW`, `// INVENTORY`, `// SYSTEM` group labels and collapse-to-rail
-- Function-key Bottombar (context-aware shortcuts, F1 help, SESSION/LOCAL clock)
-- Page-header pattern with `// ROUTE` breadcrumb + `SESSION ... // LAST SYNC ...` system meta
-- Auth (login, register, OAuth — match frontend1 capability)
-- Items + Item Photos (list, detail, CRUD, archive, photos)
-- Loans (active/overdue/history tabs, return flow)
-- Borrowers (CRUD + active/historical loan panels)
-- Taxonomy (hierarchical categories, locations, containers)
-- Scan (single-route, QR + UPC/EAN/Code128, manual fallback, post-scan menu)
-- Settings (modular subpages — profile, appearance, language, formats, security, data)
-- Dashboard (HUD row + activity TUI table + alerts/approvals rail)
-- i18n (en/et/ru — re-decide library: native Intl vs Lingui vs other)
-
-**Constraint — re-skin vs redesign:**
-- frontend1: stays a re-skin (token map only, no structural changes per `feedback_reskin_not_redesign.md`)
-- frontend2: redesigned (this milestone) to sketch 005 fidelity — explicitly authorized exception
-
-**Predecessor work abandoned:**
-- v2.0 Retro Frontend (phases 48-55, shipped) — frontend2 wiped, work lives in git history only
-- v2.1 Feature Parity (phases 56-63, shipped) — same; phases archived under `.planning/milestones/v2.1-phases/`
-- v2.2 Scanning & Stabilization (phases 64-72, never shipped) — abandoned with the wipe; phases 65/66 in-progress at the time
+- Offline/sync in `frontend2` — v3.0 is online-only by design; CI grep guard forbids service-worker/IndexedDB imports (offline-first lives in the legacy `frontend` PWA)
+- Dark theme in `frontend2` — Retro-OS tokens are light-only; dark variant needs a token-set v2 (deferred to backlog)
+- Web push in `frontend2` — requires a service worker, forbidden by the online-only guard (deferred to backlog)
+- Quick capture + companies/favorites UI in `frontend2` — deferred to backlog (core capture covered by item-create + scan)
 
 ## Current State
 
-**Shipped:** v2.1 Feature Parity — Items, Loans & Scanning (2026-04-17) — `/frontend2` now at parity with the legacy app for everything except barcode scanning
-**Active:** v2.2 Scanning & Stabilization — barcode scanning + FAB + debt closure
+**Shipped:** v3.0 Retro-OS Pastel Frontend (2026-06-14) — `/frontend2` rebuilt clean-slate to sketch 006-008 Retro-OS Pastel fidelity AND brought to full feature parity with the legacy `frontend`. Online-only, CI grep-guarded. 149/149 v3.0 requirements satisfied.
+**Active:** None — planning next milestone. Backlog candidates in `.planning/ROADMAP.md` (DMS Paperless migration, expiry/warranty alerting, recurring maintenance, shortlink registry, wishlist; plus deferred frontend2 items: quick capture, web push, companies/favorites UI, dark theme).
+
+**Two frontends, by design:**
+- `frontend` (legacy) — Next.js PWA, offline-first, the original mobile/quick-capture track.
+- `frontend2` (current) — Vite + React 19 + RR7 SPA, Retro-OS Pastel, **online-only** (offline/sync forbidden by CI grep guard). This is the active UI track as of v3.0.
+
+**Design direction (2026-06-11):** Premium Terminal (sketches 001-005) scrapped before any styled code shipped; replaced by **Retro-OS Pastel** (sketches 006-008, `.planning/sketches/MANIFEST.md` canonical).
 
 **Tech stack:**
 - Backend: Go 1.25, Chi, sqlc, PostgreSQL, golang.org/x/oauth2
-- Frontend 1: Next.js 16, React 19, shadcn/ui, Tailwind CSS 4
-- Frontend 2: Vite, React 19, Tailwind CSS 4, React Router v7 (retro UI)
-- PWA: Serwist service worker, IndexedDB (idb v8, v5 schema), UUIDv7
-- Mobile UX: Fuse.js 7.1.0, @yudiel/react-qr-scanner, ios-haptics, motion v12.27, AudioContext
+- Frontend 2 (current): Vite 8, React 19, TS 5.9, Tailwind 4, React Router 7 (library mode), TanStack Query 5, RHF 7, zod 4, Lingui v6, cmdk + tinykeys, recharts (lazy-chunked)
+- Frontend 1 (legacy PWA): Next.js 16, React 19, shadcn/ui, Tailwind 4, Serwist SW, IndexedDB
+- Realtime: cookie-authed SSE (single provider, status selector + invalidation dispatcher)
 
 **Codebase:**
-- 63 phases across 12 milestones (177 plans executed)
-- Offline: IndexedDB v5 with 11 stores (incl. quickCapturePhotos), SyncManager, conflict resolver, Fuse.js search
-- Capture: QuickCapturePage, CapturePhotoStrip, BatchCaptureProvider, photo sync pipeline with retry
-- Mobile: BarcodeScanner, FloatingActionButton, MultiStepForm wizard
-- Settings: Modular iOS-style hub with 8 subpages
-- Auth: Email/password + Google/GitHub OAuth with auto-linking, connected accounts management
-- i18n: 3 languages (English, Estonian, Russian)
-- Formats: User-configurable date, time, number formats
+- v3.0 shipped 21 phases (1-17 incl. lettered 7b/10b/13b/14b), 108 plans, on branch `v3.0-frontend2-parity`
+- Standing quality infra in `frontend2/`: bundle-budget gate, axe a11y sweep, keyboard-nav spec, 5-breakpoint responsive spec, flow→test coverage matrix, live Playwright specs (chromium + firefox)
+- Auth: email/password + Google/GitHub OAuth + env-gated Authelia SSO; WorkspaceProvider single-source switching
+- i18n: EN/ET/RU via Lingui; format hooks everywhere
+
+**Post-close residue (human review):** see STATE.md Deferred Items + `.planning/v3.0-FINAL-REVIEW-CHECKLIST.md` — dogfooding week + manual/visual/device UAT. No code work outstanding.
 
 ## Key Decisions
 
@@ -273,6 +256,13 @@ Reliable inventory access anywhere — online or offline — with seamless sync.
 | Pre-write `resolvedItemId` pattern | Ensures photo retry is always stateless if process interrupted | ✓ Good — robust failure recovery |
 | Zero new npm dependencies for v1.9 | All features built on existing stack (IndexedDB, AudioContext, ios-haptics) | ✓ Good — no bundle growth |
 | Location pill cosmetic during capture | Location belongs to inventory, not items; add at completion step | — Design decision (documented) |
+| Retro-OS Pastel over Premium Terminal (v3.0) | Premium Terminal scrapped before styled code shipped; pastel System-7 direction chosen (sketches 006-008) | ✓ Good — shipped at fidelity |
+| frontend2 online-only, CI grep-guarded (v3.0) | Offline-first stays in legacy PWA; new SPA avoids sync complexity | ✓ Good — guard enforced at PR-time |
+| Layout primitives before retro atoms (v3.0) | Predecessor's reverse order forced atom rebuilds twice | ✓ Good — atoms built once |
+| Four lettered phases (7b/10b/13b/14b) over renumber | Preserve existing 106 requirement IDs + integer phase numbers when folding in parity gaps | ✓ Good — no ID churn |
+| WorkspaceProvider as single workspace source (D-12) | Context + localStorage with first-workspace heal + invalidate-on-switch | ✓ Good — killed hardcoded ws id |
+| Lazy-chunk heavy deps (recharts, cmdk, scanner) | Protect POL-04 bundle budget; load on-demand | ✓ Good — budget gate green |
+| Standing quality gates as CI infra (v3.0 POL) | bundle/a11y/keyboard/responsive run on every frontend change | ✓ Good — reusable for future FE work |
 
 ## Constraints
 
@@ -338,4 +328,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-30 — milestone v3.0 Premium-Terminal Frontend started; v2.2 abandoned with frontend2 wipe*
+*Last updated: 2026-06-14 — after v3.0 Retro-OS Pastel Frontend milestone (shipped, archived, tagged)*

@@ -2,10 +2,10 @@
 gsd_state_version: 1.0
 milestone: v3.0
 milestone_name: Retro-OS Pastel Frontend
-status: completed
-stopped_at: Phase 2 context gathered
-last_updated: "2026-06-13T22:11:12.925Z"
-last_activity: 2026-06-14 -- Phase 17 (Polish & Quality) complete; v3.0 milestone feature+quality complete
+status: Awaiting next milestone
+stopped_at: Milestone v3.0 complete
+last_updated: "2026-06-14T00:00:00.000Z"
+last_activity: 2026-06-14 — Milestone v3.0 completed, archived, and tagged
 progress:
   total_phases: 38
   completed_phases: 21
@@ -25,10 +25,31 @@ See: `.planning/PROJECT.md` (updated 2026-04-18)
 
 ## Current Position
 
-Phase: 17 — COMPLETE
-Plan: 1 of 4
-Status: Phase 17 complete
-Last activity: 2026-06-14 -- Phase 17 (Polish & Quality) complete; v3.0 milestone feature+quality complete
+Phase: Milestone v3.0 complete
+Plan: —
+Status: Awaiting next milestone
+Last activity: 2026-06-14 — Milestone v3.0 completed, archived, and tagged
+
+## Deferred Items
+
+Items acknowledged and deferred at v3.0 milestone close on 2026-06-14. None
+block code-completeness; all are human-only review residues tracked in
+`.planning/v3.0-FINAL-REVIEW-CHECKLIST.md`. The pre-close audit also reported
+16 tooling false-positives (5 quick-tasks flagged by an outdated `gsd-sdk`
+SUMMARY-filename matcher — work is done; 11 CONTEXT "open questions" that are
+resolved-decision bullets) — NOT real open work, not listed below.
+
+| Category | Item | Status | Why deferred |
+|----------|------|--------|--------------|
+| uat | Phase 01 — 01-HUMAN-UAT.md (2 scenarios) | partial | Manual UAT, human-run |
+| verification | Phase 01 — 01-VERIFICATION.md | human_needed | Visual/manual verification |
+| verification | Phase 08 — 08-VERIFICATION.md | human_needed | Visual/manual verification |
+| verification | Phase 13 — 13-VERIFICATION.md | human_needed | Visual/manual verification |
+| verification | Phase 13b — 13b-VERIFICATION.md | human_needed | Visual/manual verification |
+| verification | Phase 14 — 14-VERIFICATION.md | human_needed | Visual/manual verification |
+| verification | Phase 15 — 15-VERIFICATION.md | human_needed | Translation-quality review |
+| verification | Phase 11 — device-only (camera/torch/iOS haptics) | human_needed | Never CI-automatable; real-device only |
+| review | POL-06 — one-week dogfooding run | pending | Requires real usage over time |
 
 ## Performance Metrics
 
@@ -196,3 +217,7 @@ Next step: Execute Wave 2 (plans 01-02 + 01-03 in parallel), then verify Phase 1
 *Updated: 2026-05-01 -- Phase 1 Wave 1 complete. Plans 01-01 (Vite 8 + React 19 + TS + Tailwind 4 + RR7 + TanStack Query + RHF + zod SPA scaffold, bootable at localhost:5173) and 01-04 (CARRY-FORWARD.md: 5 SHA-cited port-verbatim items, 4 rebuild-from-scratch concepts, Phase 13 HUD endpoint specs) executed in parallel worktrees. D-05..D-11 locked into STATE.md decisions. Wave 2 executing (plans 01-02 + 01-03 in parallel: CI guard wiring + i18n spike).*
 
 *Updated: 2026-06-12 — roadmap amended per `docs/FRONTEND2_FEATURE_PARITY_PLAN.md`: +7b/10b/13b/14b, gap items folded into phases 3-17, push/dark-theme/quick-capture deferred. Added 43 parity requirement IDs (INV/RPR/MNT/ANL/ATT/PPL/WISH/DECL/NOTIF/ATOM-FB + AUTH-11/12, TAX-07, SCAN-12, SETT-10/11, POL-06); v3.0 coverage 149/149. Dependency edges updated: Phase 8 → 7b, Phase 13 → 6+7b+10b. D-12 (workspace-state model) placeholder recorded — to be decided in Phase 5 planning.*
+
+## Operator Next Steps
+
+- Start the next milestone with /gsd-new-milestone

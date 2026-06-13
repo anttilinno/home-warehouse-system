@@ -1,5 +1,24 @@
 # Project Milestones: Home Warehouse System
 
+## v3.0 Retro-OS Pastel Frontend (Shipped: 2026-06-14)
+
+**Phases completed:** 21 phases (1-17 incl. lettered 7b/10b/13b/14b), 108 plans, 136 tasks
+**Git range:** 346e9f13 → 912f8d50 (539 commits on `v3.0-frontend2-parity`, 2026-06-12 → 2026-06-14)
+**Known deferred items at close:** 7 human-review items (see STATE.md Deferred Items) — all tracked in `.planning/v3.0-FINAL-REVIEW-CHECKLIST.md`
+
+**Delivered:** A clean-slate `frontend2` rebuilt to sketch 006-008 Retro-OS Pastel fidelity AND brought to full feature parity with the legacy `frontend`, online-only and CI-guarded.
+
+**Key accomplishments:**
+
+- **SPA foundation** — Vite 8 + React 19 + TS 5.9.3 + Tailwind 4 + React Router 7 (library mode) + TanStack Query 5 + RHF 7 + zod 4, cookie-JWT `api.ts` ported verbatim, `/api`→`:8080` proxy rewrite, online-only constraint enforced by a `check-forbidden-imports` grep guard wired into a PR merge gate.
+- **Retro-OS Pastel design system** — the full atom library on sketch 006-008 tokens: windows/bevels, StatusPills, id-keyed RetroTable + RetroTree + RetroTabs + RetroCombobox, six RHF form atoms, four filter atoms (FilterBar/Popover/BulkActionBar/SavedFilters), RetroToaster, and the ModalStack ESC arbiter.
+- **Full feature parity** — Items (photos/labels/lifecycle), Inventory (movements/expiring), Repairs + Maintenance, Loans, Borrowers, Taxonomy (categories/locations/containers/labels), Scanning (UPC lookup + suggestion banner), Dashboard + Analytics + out-of-stock, Settings, and the System group (pending approvals, wishlist, declutter, imports, my-changes, notifications).
+- **Auth & realtime** — register + Google/GitHub OAuth full-page-redirect + `/auth/callback` code exchange + env-gated Authelia SSO; the D-12 WorkspaceProvider as single source of the active workspace; live SSE connection status bound to the TopBar/PageHeader.
+- **Command palette** — ⌘K / F2 (cmdk + tinykeys) over Routes / Workspaces / Recent / live debounced entity search, lazy-chunked so it loads only on first open.
+- **Standing quality infra** — bundle budget gate, axe a11y route sweep, keyboard-nav spec, 5-breakpoint responsive spec, a flow→test coverage matrix with live Playwright specs crossing the real cookie-JWT + proxy boundary, and i18n EN/ET/RU via Lingui v6.
+
+---
+
 ## v2.1 Feature Parity — Items, Loans & Scanning (Shipped: 2026-04-17)
 
 **Phases completed:** 8 phases (56-63), 29 plans, ~344 files changed (+69,438 / -596 LOC)
