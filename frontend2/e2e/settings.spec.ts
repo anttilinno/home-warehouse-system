@@ -161,31 +161,44 @@ test.describe.serial("Settings hub (one login)", () => {
     await expect(page.getByLabel(/full name/i)).toHaveValue(originalFullName);
   });
 
-  // (3) LANGUAGE — SETT-05. Switch the native RetroSelect English → Eesti, assert
-  // the "Language updated." toast, RELOAD, assert it persisted (GetMe.language =
+  // (3) LANGUAGE — SETT-05 + I18N-01/02. Switch the native RetroSelect English →
+  // Eesti, assert the success toast, RELOAD, assert it persisted (GetMe.language =
   // et). Switch back to English to leave the seed user known.
+  //
+  // Phase-15 note: et is now a FULLY translated catalog, so loadCatalog(et) fires
+  // BEFORE the toast and re-localizes the UI live — the toast reads "Keel
+  // uuendatud." (not English) and the select's own label becomes "Liidese keel".
+  // The locale-bound `getByLabel(/interface language/i)` therefore can't be used
+  // once Estonian is active; target the page's single combobox by role instead,
+  // and match the toast in either language. This is the live proof of I18N-02
+  // (instant activation, no reload) AND I18N-01 (et strings render).
   test("language: switch en → et persists across reload, then revert", async () => {
     await page.goto("/settings/language");
 
-    const select = page.getByLabel(/interface language/i);
-    // Drive the NATIVE select by option LABEL string (selector lesson: not a
-    // RegExp). "Eesti" is the et endonym.
+    // Locale-stable handle: /settings/language renders exactly one <select>.
+    const select = page.getByRole("combobox");
+    // Drive the NATIVE select by option LABEL — endonyms ("English"/"Eesti") are
+    // literal in LanguagePage, NOT translated, so they stay stable across locales.
     await select.selectOption({ label: "Eesti" });
 
-    // Success toast (LanguagePage onSuccess: retroToast.success("Language updated.")).
-    await expect(page.getByText(/language updated\.?/i).first()).toBeVisible();
+    // onSuccess: loadCatalog(et) activates → t`Language updated.` resolves to the
+    // Estonian catalog string. Accept either language so the test is locale-robust.
+    await expect(
+      page.getByText(/language updated\.?|keel uuendatud\.?/i).first(),
+    ).toBeVisible();
 
     // Persisted via PATCH /users/me/preferences → reload reads it back from GetMe.
     await page.reload();
-    await expect(page.getByLabel(/interface language/i)).toHaveValue("et");
+    await expect(page.getByRole("combobox")).toHaveValue("et");
 
-    // Revert to English (leave the seed user in a known state).
-    await page
-      .getByLabel(/interface language/i)
-      .selectOption({ label: "English" });
-    await expect(page.getByText(/language updated\.?/i).first()).toBeVisible();
+    // Revert to English (leave the seed user in a known state); en activation
+    // re-localizes back, so the toast reads English again.
+    await page.getByRole("combobox").selectOption({ label: "English" });
+    await expect(
+      page.getByText(/language updated\.?|keel uuendatud\.?/i).first(),
+    ).toBeVisible();
     await page.reload();
-    await expect(page.getByLabel(/interface language/i)).toHaveValue("en");
+    await expect(page.getByRole("combobox")).toHaveValue("en");
   });
 
   // (4) MEMBERS — SETT-10. The list renders the seeder with email + role and a
