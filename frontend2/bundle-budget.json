@@ -1,0 +1,8 @@
+{
+  "_comment": "POL-04 per-chunk bundle budgets in GZIP bytes (baseline + ~10-15% headroom, 2026-06-14). 'messages' is per-locale: the largest single locale catalog must fit, NOT the sum (the en/et/ru catalogs are alternates, only one loads at a time). All others sum same-prefix files. A budgeted chunk with no matching dist file counts as 0 bytes (lazy chunks can legitimately be absent).",
+  "main": 215000,
+  "charts": 120000,
+  "scanner": 65000,
+  "palette": 20000,
+  "messages": 22000
+}
