@@ -138,9 +138,9 @@ export function Sidebar({
         <NavGroup title={<Trans>Inventory</Trans>}>
           <NavItem glyph="▣" label={<Trans>Items</Trans>} count={stats?.total_items} to="/items" />
           <NavItem glyph="⬚" label={<Trans>Inventory</Trans>} to="/inventory" />
-          <NavItem glyph="▢" label={<Trans>Locations</Trans>} count={stats?.total_locations} />
-          <NavItem glyph="▥" label={<Trans>Containers</Trans>} count={stats?.total_containers} />
-          <NavItem glyph="◇" label={<Trans>Categories</Trans>} count={stats?.total_categories} />
+          <NavItem glyph="▢" label={<Trans>Locations</Trans>} count={stats?.total_locations} to="/taxonomy?tab=locations" />
+          <NavItem glyph="▥" label={<Trans>Containers</Trans>} count={stats?.total_containers} to="/taxonomy?tab=containers" />
+          <NavItem glyph="◇" label={<Trans>Categories</Trans>} count={stats?.total_categories} to="/taxonomy?tab=categories" />
           <NavItem glyph="↧" label={<Trans>Loans</Trans>} count={stats?.active_loans} to="/loans" />
           <NavItem glyph="☺" label={<Trans>Borrowers</Trans>} count={stats?.total_borrowers} to="/borrowers" />
         </NavGroup>

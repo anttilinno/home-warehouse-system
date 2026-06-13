@@ -20,6 +20,8 @@ import { LoanFormPage } from "@/features/loans/LoanFormPage";
 import { BorrowersListPage } from "@/features/borrowers/BorrowersListPage";
 import { BorrowerFormPage } from "@/features/borrowers/BorrowerFormPage";
 import { BorrowerDetailPage } from "@/features/borrowers/BorrowerDetailPage";
+import { TaxonomyPage } from "@/features/taxonomy/TaxonomyPage";
+import { CategoryFormDialog } from "@/features/taxonomy/components/CategoryFormDialog";
 
 // Library-mode RR7 (NOT framework mode — AP-1). Literal routes before the
 // wildcard. /login stays public; the authenticated branch is now an AppShell
@@ -82,6 +84,20 @@ export function AppRoutes() {
         <Route path="borrowers" element={<BorrowersListPage />} />
         <Route path="borrowers/:id/edit" element={<BorrowerFormPage />} />
         <Route path="borrowers/:id" element={<BorrowerDetailPage />} />
+        {/* Taxonomy (10-02): one /taxonomy page (?tab= RetroTabs) + the category
+            create/edit forms. Literal `categories/new` BEFORE the `:id/edit`
+            param route (AP-1 library mode) — "new" must not be parsed as an id.
+            Location/container/label forms are INLINE dialogs (no route), so this
+            is the ONLY taxonomy route edit. */}
+        <Route path="taxonomy" element={<TaxonomyPage />} />
+        <Route
+          path="taxonomy/categories/new"
+          element={<CategoryFormDialog mode="create" />}
+        />
+        <Route
+          path="taxonomy/categories/:id/edit"
+          element={<CategoryFormDialog mode="edit" />}
+        />
         {/* Settings hub (05-UI-SPEC §5): SettingsLayout sub-layout under the
             AUTHENTICATED AppShell. /settings → /settings/security; the two built
             pages (security + accounts) render through the layout's tab Outlet. */}
