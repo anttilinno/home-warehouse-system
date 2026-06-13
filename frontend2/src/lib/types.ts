@@ -185,6 +185,12 @@ export interface Label {
   name: string;
   color?: string;
   description?: string;
+  // Phase 10 Plan 01 (TAX-07) — manager fields. Older Phase-7 read paths
+  // (getItemLabelIds/attach/detach) ignore these; the label manager surfaces
+  // archived state and timestamps.
+  is_archived: boolean;
+  created_at: string;
+  updated_at: string;
 }
 
 // LoanResponse (GET /items/{item_id}/loans → { items: Loan[] }). Partitioned

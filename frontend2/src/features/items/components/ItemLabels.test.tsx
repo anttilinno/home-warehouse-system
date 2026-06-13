@@ -15,7 +15,17 @@ const WS = "ws-1";
 const IT = "it-1";
 
 function label(id: string, name: string): Label {
-  return { id, workspace_id: WS, name };
+  // Phase 10 Plan 01 added is_archived/created_at/updated_at to Label (TAX-07
+  // manager fields). The attach/detach popover ignores them; fixed values keep
+  // this fixture compiling.
+  return {
+    id,
+    workspace_id: WS,
+    name,
+    is_archived: false,
+    created_at: "2026-01-01T00:00:00Z",
+    updated_at: "2026-01-01T00:00:00Z",
+  };
 }
 
 function renderLabels() {
