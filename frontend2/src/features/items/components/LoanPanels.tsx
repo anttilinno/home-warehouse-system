@@ -9,6 +9,7 @@ import {
   RetroEmptyState,
 } from "@/components/retro";
 import type { Loan } from "@/lib/types";
+import { useDateFormat } from "@/lib/format";
 import { loansApi, type PartitionedLoans } from "@/lib/api/loans";
 import { loanStatus } from "@/features/loans/loanStatus";
 import { ReturnLoanDialog } from "@/features/loans/components/ReturnLoanDialog";
@@ -50,6 +51,8 @@ export interface ActiveLoanPanelProps {
 export function ActiveLoanPanel({ active, itemId }: ActiveLoanPanelProps) {
   const navigate = useNavigate();
   const [openDialog, setOpenDialog] = useState<"return" | "extend" | null>(null);
+  // I18N-03: due date honors the user's date_format preference.
+  const formatDate = useDateFormat();
   const loan = active[0];
 
   if (!loan) {
@@ -129,6 +132,8 @@ export interface LoanHistoryListProps {
  * NO LOAN HISTORY empty state.
  */
 export function LoanHistoryList({ history }: LoanHistoryListProps) {
+  // I18N-03: history dates honor the user's date_format preference.
+  const formatDate = useDateFormat();
   if (history.length === 0) {
     return (
       <RetroEmptyState
@@ -184,12 +189,4 @@ export function LoanPanels({ wsId, itemId }: LoanPanelsProps) {
   const { data } = useItemLoans(wsId, itemId);
   const active = useMemo(() => data?.active ?? [], [data]);
   return <ActiveLoanPanel active={active} itemId={itemId} />;
-}
-
-// Locale-stable short date (the test asserts on the borrower/markers, not the
-// exact format; this keeps output deterministic across environments).
-function formatDate(iso: string): string {
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return iso;
-  return d.toISOString().slice(0, 10);
 }

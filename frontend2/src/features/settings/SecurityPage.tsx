@@ -6,6 +6,7 @@ import { useNavigate } from "react-router";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { del, get, patch, HttpError, setRefreshToken } from "@/lib/api";
+import { useDateFormat, useTimeFormat } from "@/lib/format";
 import type {
   CanDeleteResponse,
   SessionResponse,
@@ -62,6 +63,10 @@ function SessionsCard() {
   const { t } = useLingui();
   const queryClient = useQueryClient();
   const [confirmAllOpen, setConfirmAllOpen] = useState(false);
+  // I18N-03: the last-active hover title honors the user's regional-format
+  // preference (was `new Date(...).toISOString()`).
+  const formatDate = useDateFormat();
+  const formatTime = useTimeFormat();
 
   const sessions = useQuery({
     queryKey: ["sessions"],
@@ -142,7 +147,9 @@ function SessionsCard() {
                 </td>
                 <td
                   className="mono py-sp-3 text-[12px]"
-                  title={new Date(s.last_active_at).toISOString()}
+                  title={`${formatDate(s.last_active_at)} ${formatTime(
+                    s.last_active_at,
+                  )}`}
                 >
                   {s.is_current ? (
                     <span className="text-accent-mint-deep">

@@ -1,10 +1,11 @@
-import { beforeAll, describe, expect, it } from "vitest";
-import { i18n } from "@/lib/i18n";
+import { describe, expect, it } from "vitest";
 import { formatRelativeTime } from "./relativeTime";
 
 // DASH-02 part a: the activity-table time formatter. `now` is injected so the
 // boundaries are deterministic. Under 24h → relative ("Nm ago" / "Nh ago");
-// at/after 24h → an absolute date+time string (asserted NOT to contain "ago").
+// at/after 24h → an absolute "YYYY-MM-DD HH:mm" string (I18N-03: the pure default
+// token shape; formatRelativeTime is a pure fn so it cannot read the user's
+// preference hook — it uses DEFAULT_FORMAT_TOKENS).
 const NOW = new Date("2026-06-13T12:00:00Z");
 
 function ago(ms: number): string {
@@ -16,11 +17,6 @@ const MIN = 60 * SEC;
 const HOUR = 60 * MIN;
 
 describe("formatRelativeTime", () => {
-  beforeAll(() => {
-    i18n.load("en", {});
-    i18n.activate("en");
-  });
-
   it("under 60s → '<1m'", () => {
     expect(formatRelativeTime(ago(30 * SEC), NOW)).toBe("<1m");
   });
@@ -41,12 +37,12 @@ describe("formatRelativeTime", () => {
     expect(formatRelativeTime(ago(23 * HOUR), NOW)).toBe("23h ago");
   });
 
-  it("24 hours ago → an ABSOLUTE date+time string (NOT 'ago')", () => {
+  it("24 hours ago → an ABSOLUTE 'YYYY-MM-DD HH:mm' string (NOT 'ago')", () => {
     const out = formatRelativeTime(ago(24 * HOUR), NOW);
     expect(out).not.toMatch(/ago/);
     expect(out).not.toBe("<1m");
-    // It carries a clock component (HH:MM) — i.e. an absolute timestamp.
-    expect(out).toMatch(/\d{1,2}[:.]\d{2}/);
+    // Default token shape: 24h before 2026-06-13T12:00Z is 2026-06-12 12:00.
+    expect(out).toBe("2026-06-12 12:00");
   });
 
   it("much older (3 days) → absolute, NOT 'ago'", () => {

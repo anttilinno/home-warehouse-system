@@ -1,12 +1,25 @@
 import { beforeAll, describe, expect, it } from "vitest";
 import { render, screen } from "@testing-library/react";
 import { I18nProvider } from "@lingui/react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { i18n } from "@/lib/i18n";
 import type { Movement } from "@/lib/types";
 import { MovementsPanel } from "./MovementsPanel";
 
+// I18N-03: the panel's timestamp now reads the user's regional-format preference
+// via the ["me"] query (useDateFormat/useTimeFormat), so the component needs a
+// QueryClientProvider. The query never resolves in this test → the hooks fall back
+// to DEFAULT_FORMAT_TOKENS (YYYY-MM-DD + HH:mm), which is exactly the shape these
+// assertions already expect.
 function wrap(ui: React.ReactNode) {
-  return render(<I18nProvider i18n={i18n}>{ui}</I18nProvider>);
+  const client = new QueryClient({
+    defaultOptions: { queries: { retry: false } },
+  });
+  return render(
+    <I18nProvider i18n={i18n}>
+      <QueryClientProvider client={client}>{ui}</QueryClientProvider>
+    </I18nProvider>,
+  );
 }
 
 function makeMovement(over: Partial<Movement> = {}): Movement {

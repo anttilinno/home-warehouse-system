@@ -2,6 +2,7 @@ import { useRef } from "react";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { BevelButton, RetroEmptyState } from "@/components/retro";
 import { useModalStack } from "@/components/modal";
+import { useDateFormat, useTimeFormat } from "@/lib/format";
 import { useNotificationsQuery } from "../hooks/useNotifications";
 import { useNotificationMutations } from "../hooks/useNotificationMutations";
 
@@ -26,6 +27,10 @@ export function NotificationsDropdown({
   onClose,
 }: NotificationsDropdownProps) {
   const { t } = useLingui();
+  // I18N-03: route the notification timestamp through the user's regional-format
+  // preference (replaced a raw locale-string render).
+  const formatDate = useDateFormat();
+  const formatTime = useTimeFormat();
   // Stable onClose for the modal stack (read through the hook's internal ref).
   const onCloseRef = useRef(onClose);
   onCloseRef.current = onClose;
@@ -96,7 +101,7 @@ export function NotificationsDropdown({
                   </p>
                   <p className="text-[12px] text-fg-muted">{n.message}</p>
                   <p className="mt-px font-mono text-[10px] uppercase tracking-[0.08em] text-fg-faint">
-                    {new Date(n.created_at).toLocaleString()}
+                    {formatDate(n.created_at)} {formatTime(n.created_at)}
                   </p>
                 </div>
                 {!n.is_read && (

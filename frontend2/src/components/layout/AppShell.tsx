@@ -45,7 +45,10 @@ function segmentsForPath(pathname: string): string[] {
 // its "—" placeholder (D-#2). Kept tiny + pure so the chrome stays dumb.
 function formatLastSync(at: Date | null): string | undefined {
   if (!at) return undefined;
-  return at.toLocaleTimeString(undefined, { hour12: false });
+  // Decorative LAST SYNC chrome clock, intentionally locale-fixed (24h wall-clock);
+  // NOT user data, so it is not routed through the user's time_format preference
+  // (see 15-CONTEXT).
+  return at.toLocaleTimeString(undefined, { hour12: false }); // i18n-format-ignore
 }
 
 // AppShell composes the authenticated provider stack (PROV-01): WorkspaceProvider
