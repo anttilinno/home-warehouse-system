@@ -236,7 +236,7 @@ Clean-slate rebuild of `/frontend2` with sketch 006-008 retro-os pastel fidelity
 - [x] **Phase 6: Providers** — single cookie-authed SSEProvider (split `useSSEStatus()` selector + `useSSE` subscribe + generic invalidation dispatcher/contract doc) + RetroToaster/SSEProvider mounted in the verified canonical order; chrome (TopBar ONLINE dot + sse-slot RetroStatusDot + PageHeader LAST SYNC) wires to live state once; ShortcutsProvider/RetroToaster verified, not rebuilt (completed 2026-06-13)
 - [x] **Phase 7: Items + Photos** — paginated list with search/filter/sort + detail with photo gallery + create/edit/archive/delete + multipart photo upload + `itemsApi.lookupByBarcode` (G-65-01 regression-guard pattern) + per-route `useShortcuts` registration (completed 2026-06-13)
 - [x] **Phase 7b: Inventory** — inventory entries list + filters (virtualized when large) + create with item/location/container pickers + move dialog + quantity/status/condition inline edits + expiry/warranty fields + expiring view + movements history panel + per-item inventory panel (closes Phase 7 stub) [Gap G-1, critical] (completed 2026-06-13)
-- [ ] **Phase 8: Loans** — Active/Overdue/History tabbed list + create with item + borrower picker + mark returned + edit + per-item active+history panels + `?itemId=` deep-link param
+- [x] **Phase 8: Loans** — Active/Overdue/History tabbed list + create with item + borrower picker + mark returned + edit + per-item active+history panels + `?itemId=` deep-link param (completed 2026-06-13)
 - [ ] **Phase 9: Borrowers** — flat paginated list + CRUD with active-loan delete guard + detail with active+history panels
 - [ ] **Phase 10: Taxonomy** — categories tree + locations tree + containers grouped by location + create/edit/archive with usage warnings + container delete with unassign-and-delete cascade policy
 - [ ] **Phase 10b: Repairs + Maintenance** — repair log drawer/panel on inventory detail (CRUD + start/complete + cost rollup) + repair photos + repair attachments + maintenance schedule CRUD + due list + complete action + dashboard due-maintenance feed (consumed by Phase 13) [Gap G-2]
@@ -662,8 +662,8 @@ Plans:
 - [x] 08-02-PLAN.md — /loans tabbed list (Active/Overdue/History, ?tab=, overdue highlight, per-tab CSV) + Sidebar/route wiring (LOAN-01) [Wave 2]
 - [x] 08-03-PLAN.md — /loans/new create form (inventory-entry + borrower pickers, ?itemId filter, limit≤100) (LOAN-02) [Wave 2]
 - [x] 08-04-PLAN.md — optimistic return/extend/edit mutations + dialogs + make item-detail LoanPanels real (LOAN-03/04/05) [Wave 3]
-- [ ] 08-05-PLAN.md — BorrowerLoanPanels reusable component (Active + History, component-only) (LOAN-06) [Wave 3]
-- [ ] 08-06-PLAN.md — batched live Playwright loan-lifecycle E2E (create→active→return→history) [Wave 4]
+- [x] 08-05-PLAN.md — BorrowerLoanPanels reusable component (Active + History, component-only) (LOAN-06) [Wave 3]
+- [x] 08-06-PLAN.md — batched live Playwright loan-lifecycle E2E (create→active→return→history) [Wave 4]
 **UI hint**: yes
 
 ### Phase 9: Borrowers
@@ -849,7 +849,7 @@ Plans:
 | 6 | v3.0 | 2/2 | Complete   | 2026-06-13 |
 | 7 | v3.0 | 7/7 | Complete   | 2026-06-13 |
 | 7b | v3.0 | 6/6 | Complete   | 2026-06-13 |
-| 8 | v3.0 | 4/6 | In Progress|  |
+| 8 | v3.0 | 6/6 | Complete   | 2026-06-13 |
 | 9 | v3.0 | 0/TBD | Not started | - |
 | 10 | v3.0 | 0/TBD | Not started | - |
 | 10b | v3.0 | 0/TBD | Not started | - |

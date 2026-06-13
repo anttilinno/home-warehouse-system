@@ -96,12 +96,12 @@
 
 ### Loans (LOAN)
 
-- [ ] **LOAN-01**: User can view loans in a tabbed view — Active / Overdue / History — with RetroTable rows showing item / borrower / due date / status pill.
-- [ ] **LOAN-02**: User can create a new loan via `/loans/new` with item picker + borrower picker; supports `?itemId={id}` URL param to preselect (deep-linkable from scan flow).
-- [ ] **LOAN-03**: User can mark a loan as returned via a confirm dialog; status transitions to History tab.
-- [ ] **LOAN-04**: User can edit a loan's due date and notes after creation.
-- [ ] **LOAN-05**: Item detail page renders an "Active Loan" panel (if any) and "Loan History" panel listing all past loans for the item.
-- [ ] **LOAN-06**: Borrower detail page renders an "Active Loans" panel and "Loan History" panel listing all loans for the borrower.
+- [x] **LOAN-01**: User can view loans in a tabbed view — Active / Overdue / History — with RetroTable rows showing item / borrower / due date / status pill.
+- [x] **LOAN-02**: User can create a new loan via `/loans/new` with item picker + borrower picker; supports `?itemId={id}` URL param to preselect (deep-linkable from scan flow).
+- [x] **LOAN-03**: User can mark a loan as returned via a confirm dialog; status transitions to History tab.
+- [x] **LOAN-04**: User can edit a loan's due date and notes after creation.
+- [x] **LOAN-05**: Item detail page renders an "Active Loan" panel (if any) and "Loan History" panel listing all past loans for the item.
+- [x] **LOAN-06**: Borrower detail page renders an "Active Loans" panel and "Loan History" panel listing all loans for the borrower. _(Phase 8: `BorrowerLoanPanels` component + `useBorrowerLoans` shipped & unit-tested; the borrower detail page that mounts it lands in Phase 9 / BORR-03.)_
 
 ### Borrowers (BORR)
 
@@ -361,12 +361,12 @@
 | ITEM-08 | Phase 7 | Complete |
 | ITEM-09 | Phase 7 | Complete |
 | ITEM-10 | Phase 7 | Complete |
-| LOAN-01 | Phase 8 | Pending |
-| LOAN-02 | Phase 8 | Pending |
-| LOAN-03 | Phase 8 | Pending |
-| LOAN-04 | Phase 8 | Pending |
-| LOAN-05 | Phase 8 | Pending |
-| LOAN-06 | Phase 8 | Pending |
+| LOAN-01 | Phase 8 | Complete |
+| LOAN-02 | Phase 8 | Complete |
+| LOAN-03 | Phase 8 | Complete |
+| LOAN-04 | Phase 8 | Complete |
+| LOAN-05 | Phase 8 | Complete |
+| LOAN-06 | Phase 8 | Complete (panels component; borrower-page mount Phase 9/BORR-03) |
 | BORR-01 | Phase 9 | Pending |
 | BORR-02 | Phase 9 | Pending |
 | BORR-03 | Phase 9 | Pending |
