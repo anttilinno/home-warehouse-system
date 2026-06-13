@@ -1,8 +1,10 @@
+import { useCallback, useMemo, useRef } from "react";
+import { useNavigate } from "react-router";
 import { useQuery } from "@tanstack/react-query";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { get } from "@/lib/api";
-import { i18n } from "@/lib/i18n";
 import { useWorkspace } from "@/features/workspace/useWorkspace";
+import { useShortcuts } from "@/components/shortcuts";
 import type { DashboardStats, RecentActivity } from "@/lib/types";
 import {
   RetroBadge,
@@ -11,6 +13,9 @@ import {
   Window,
   type RetroBadgeVariant,
 } from "@/components/retro";
+import { DashboardSideRail } from "./components/DashboardSideRail";
+import { HudRow } from "./components/HudRow";
+import { formatRelativeTime } from "./relativeTime";
 
 // Keys match warehouse.activity_action_enum verbatim (CREATE/UPDATE/DELETE/
 // MOVE/LOAN/RETURN — db/schema.sql); the backend returns action unmapped.
@@ -23,17 +28,10 @@ const ACTION_BADGES: Record<string, RetroBadgeVariant> = {
   RETURN: "info",
 };
 
-// Activity rows can be days old — show the date once the event isn't from
-// today, or HH:MM alone reads as "today" and misleads.
-function formatActivityTime(iso: string): string {
-  const date = new Date(iso);
-  const sameDay = date.toDateString() === new Date().toDateString();
-  return date.toLocaleString(i18n.locale, {
-    ...(sameDay ? {} : { day: "numeric", month: "short" }),
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-}
+// Activity rows can be days old. DASH-02: under 24h reads as a relative
+// interval ("Nm ago" / "Nh ago"), at/after 24h falls back to an absolute
+// date+time so older rows never read as "today". The formatter is the standalone
+// ./relativeTime util (unit-tested at the boundaries).
 
 // Retro-os dashboard (sketch 006): the stat windows + recent-activity table
 // over real DashboardStats + RecentActivity. As of Phase 3 the page lives
@@ -42,6 +40,14 @@ function formatActivityTime(iso: string): string {
 // in RequireAuth (the AppShell layout route).
 export function DashboardPage() {
   const { t } = useLingui();
+  // useLingui()'s `t` is NOT referentially stable. Read it through a live ref
+  // inside the shortcut-binding closures so the bindings memo depends on STABLE
+  // values only — otherwise every render rebuilds the bindings, re-registers
+  // them into the shortcuts SSOT and spins an infinite re-render loop (Pitfall
+  // 6 / the render-loop landmine this project has hit 4×). Mirrors ItemsListPage.
+  const tRef = useRef(t);
+  tRef.current = t;
+  const navigate = useNavigate();
 
   // wsId is the D-12 SSOT — sourced from the WorkspaceProvider context, NOT a
   // first-workspace hardcode (AUTH-06). The provider already owns the shared
@@ -62,6 +68,23 @@ export function DashboardPage() {
     retry: false,
   });
 
+  // ── Route shortcuts (DASH-05): N → new item, S → scan, L → loans. Each action
+  // is a stable useCallback over the stable `navigate`; the bindings array is
+  // useMemo'd over those stable callbacks only (labels read from tRef, NEVER
+  // `t`/`navigate`/a fresh object in deps) so the register effect never loops.
+  const goNew = useCallback(() => navigate("/items/new"), [navigate]);
+  const goScan = useCallback(() => navigate("/scan"), [navigate]);
+  const goLoans = useCallback(() => navigate("/loans"), [navigate]);
+  const routeShortcuts = useMemo(
+    () => [
+      { key: "N", label: tRef.current`New item`, action: goNew },
+      { key: "S", label: tRef.current`Scan`, action: goScan },
+      { key: "L", label: tRef.current`Loans`, action: goLoans },
+    ],
+    [goNew, goScan, goLoans],
+  );
+  useShortcuts("dashboard", routeShortcuts);
+
   if (workspaces && workspaces.length === 0) {
     return (
       <main className="grid min-h-screen place-items-center p-sp-4">
@@ -77,7 +100,11 @@ export function DashboardPage() {
   const s = stats.data;
 
   return (
-    <div className="mx-auto min-w-0 max-w-[1280px]">
+    <div className="mx-auto grid min-w-0 max-w-[1280px] grid-cols-1 gap-sp-5 lg:grid-cols-[1fr_320px]">
+      {/* Main column: tiles → HUD → activity. The side rail (DASH-03) is the
+          right column on wide layouts and drops below the main column on narrow
+          (lg:grid-cols-[1fr_320px] collapses to a single column). */}
+      <div className="min-w-0">
       <section className="mb-sp-5 grid grid-cols-2 gap-sp-4 lg:grid-cols-4 [&>*]:min-w-0">
         <StatCard
           label={<Trans>Items</Trans>}
@@ -125,6 +152,12 @@ export function DashboardPage() {
         ))}
       </section>
 
+      {/* DASH-04: the flag-gated HUD row (self-gates on VITE_FEATURE_HUD_ROLLUPS;
+          renders null by default → the dashboard is identical to today). */}
+      <div className="mb-sp-5">
+        <HudRow stats={s} />
+      </div>
+
       <Window
         title={<Trans>Recent activity</Trans>}
         actions={<span className="font-mono text-[11px]">limit=10</span>}
@@ -154,14 +187,38 @@ export function DashboardPage() {
                   <Trans>Entity</Trans>
                 </th>
                 <th>
-                  <Trans>Name</Trans>
+                  <Trans>Actor</Trans>
+                </th>
+                <th>
+                  <Trans>Status</Trans>
                 </th>
               </tr>
             </thead>
             <tbody>
               {activity.data.map((row) => (
                 <tr key={row.id}>
-                  <td className="mono">{formatActivityTime(row.created_at)}</td>
+                  {/* DASH-02: relative under 24h, absolute after (./relativeTime). */}
+                  <td className="mono">{formatRelativeTime(row.created_at)}</td>
+                  <td>{row.action}</td>
+                  {/* Entity type with the entity_name folded in as a secondary
+                      line so no data is lost when the Name column is dropped. */}
+                  <td>
+                    <span className="block">{row.entity_type}</span>
+                    {row.entity_name && (
+                      <span className="block text-[12px] text-fg-muted">
+                        {row.entity_name}
+                      </span>
+                    )}
+                  </td>
+                  {/* Actor: the raw user_id slug (no actor name on the wire —
+                      RecentActivity carries user_id? only). "—" when absent. */}
+                  <td className="mono">
+                    {row.user_id ? row.user_id.slice(0, 8) : "—"}
+                  </td>
+                  {/* Status: a pill DERIVED from `action` via ACTION_BADGES —
+                      RecentActivity has NO status field; this is honestly an
+                      action-derived badge (T-13-10), never a fabricated server
+                      status. */}
                   <td>
                     <RetroBadge
                       variant={
@@ -171,13 +228,11 @@ export function DashboardPage() {
                       {row.action}
                     </RetroBadge>
                   </td>
-                  <td>{row.entity_type}</td>
-                  <td>{row.entity_name}</td>
                 </tr>
               ))}
               {activity.data.length === 0 && (
                 <tr>
-                  <td colSpan={4} className="text-fg-muted">
+                  <td colSpan={5} className="text-fg-muted">
                     <Trans>No activity yet.</Trans>
                   </td>
                 </tr>
@@ -186,6 +241,12 @@ export function DashboardPage() {
           </RetroTable>
         )}
       </Window>
+      </div>
+
+      {/* DASH-03: the right side rail (Pending Approvals above System Alerts).
+          Self-fetches; drops below the main column on narrow (the grid above
+          collapses to a single column). */}
+      <DashboardSideRail />
     </div>
   );
 }
