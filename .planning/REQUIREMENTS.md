@@ -148,11 +148,11 @@
 
 ### Dashboard (DASH)
 
-- [ ] **DASH-01**: Dashboard renders four stat tiles (Total Items, Locations, Containers, Active Loans) with token-correct retro panel styling.
-- [ ] **DASH-02**: Activity table renders the last N events with TUI-style columns: Timestamp / Action / Entity / Actor / Status pill; relative timestamps under 24h, absolute thereafter.
-- [ ] **DASH-03**: Side rail stacks Pending Approvals + System Alerts panels.
-- [ ] **DASH-04**: HUD row (capacity gauge + 14d activity sparkline + counts) renders behind `VITE_FEATURE_HUD_ROLLUPS` flag, default off; hand-rolled SVG (no charting library).
-- [ ] **DASH-05**: Dashboard registers `useShortcuts("dashboard", [{ key: "N", action: navTo("/items/new") }, { key: "S", action: navTo("/scan") }, { key: "L", action: navTo("/loans") }])`.
+- [x] **DASH-01**: Dashboard renders four stat tiles (Total Items, Locations, Containers, Active Loans) with token-correct retro panel styling.
+- [x] **DASH-02**: Activity table renders the last N events with TUI-style columns: Timestamp / Action / Entity / Actor / Status pill; relative timestamps under 24h, absolute thereafter.
+- [x] **DASH-03**: Side rail stacks Pending Approvals + System Alerts panels.
+- [x] **DASH-04**: HUD row (capacity gauge + 14d activity sparkline + counts) renders behind `VITE_FEATURE_HUD_ROLLUPS` flag, default off; hand-rolled SVG (no charting library).
+- [x] **DASH-05**: Dashboard registers `useShortcuts("dashboard", [{ key: "N", action: navTo("/items/new") }, { key: "S", action: navTo("/scan") }, { key: "L", action: navTo("/loans") }])`.
 
 ### i18n (I18N)
 
@@ -245,9 +245,9 @@
 
 ### Notifications UI (NOTIF) — Phase 13 (Gap G-5, in-app part)
 
-- [ ] **NOTIF-01**: User sees a notifications bell in the TopBar.
-- [ ] **NOTIF-02**: User can open a notifications dropdown and mark notifications read / all-read.
-- [ ] **NOTIF-03**: User sees an unread-count badge on the bell.
+- [x] **NOTIF-01**: User sees a notifications bell in the TopBar.
+- [x] **NOTIF-02**: User can open a notifications dropdown and mark notifications read / all-read.
+- [x] **NOTIF-03**: User sees an unread-count badge on the bell.
 
 ### Filter Atoms (ATOM-FB) — Phase 4 (§4)
 
@@ -398,11 +398,11 @@
 | SETT-07 | Phase 12 | Complete |
 | SETT-08 | Phase 12 | Complete |
 | SETT-09 | Phase 12 | Complete |
-| DASH-01 | Phase 13 | Pending |
-| DASH-02 | Phase 13 | Pending |
-| DASH-03 | Phase 13 | Pending |
-| DASH-04 | Phase 13 | Pending |
-| DASH-05 | Phase 13 | Pending |
+| DASH-01 | Phase 13 | Complete |
+| DASH-02 | Phase 13 | Complete |
+| DASH-03 | Phase 13 | Complete |
+| DASH-04 | Phase 13 | Complete |
+| DASH-05 | Phase 13 | Complete |
 | I18N-01 | Phase 15 | Pending |
 | I18N-02 | Phase 15 | Pending |
 | I18N-03 | Phase 15 | Pending |
@@ -451,9 +451,9 @@
 | WISH-02 | Phase 14 | Pending |
 | DECL-01 | Phase 14 | Pending |
 | DECL-02 | Phase 14 | Pending |
-| NOTIF-01 | Phase 13 | Pending |
-| NOTIF-02 | Phase 13 | Pending |
-| NOTIF-03 | Phase 13 | Pending |
+| NOTIF-01 | Phase 13 | Complete |
+| NOTIF-02 | Phase 13 | Complete |
+| NOTIF-03 | Phase 13 | Complete |
 | ATOM-FB-01 | Phase 4 | Complete |
 | ATOM-FB-02 | Phase 4 | Complete |
 | ATOM-FB-03 | Phase 4 | Complete |
