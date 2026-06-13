@@ -116,11 +116,52 @@ describe("ItemFormPage — create", () => {
       }),
     );
     renderForm(["/items/new"]);
+    await user.type(screen.getByLabelText(/^sku/i), "SKU-NEW");
     await user.type(screen.getByLabelText(/name/i), "Cordless Drill");
     await user.click(screen.getByRole("button", { name: /save item/i }));
 
     await waitFor(() => expect(posted).toBe(true));
     await waitFor(() => expect(lastPath).toBe("/items/new-1"));
+  });
+
+  it("includes the typed sku in the create POST body", async () => {
+    const user = userEvent.setup();
+    let sentBody: Record<string, unknown> | undefined;
+    server.use(
+      http.post("/api/workspaces/:wsId/items", async ({ request }) => {
+        sentBody = (await request.json()) as Record<string, unknown>;
+        return HttpResponse.json(NEW_ITEM);
+      }),
+    );
+    renderForm(["/items/new"]);
+    await user.type(screen.getByLabelText(/^sku/i), "SKU-XYZ");
+    await user.type(screen.getByLabelText(/name/i), "Cordless Drill");
+    await user.click(screen.getByRole("button", { name: /save item/i }));
+
+    await waitFor(() => expect(sentBody).toBeDefined());
+    expect(sentBody).toMatchObject({ sku: "SKU-XYZ", name: "Cordless Drill" });
+  });
+
+  it("blocks submit with a zod error when sku is empty (no 422 round-trip)", async () => {
+    const user = userEvent.setup();
+    let posted = false;
+    server.use(
+      http.post("/api/workspaces/:wsId/items", () => {
+        posted = true;
+        return HttpResponse.json(NEW_ITEM);
+      }),
+    );
+    renderForm(["/items/new"]);
+    // Name filled, SKU left empty — submit must be blocked client-side.
+    await user.type(screen.getByLabelText(/name/i), "Cordless Drill");
+    await user.click(screen.getByRole("button", { name: /save item/i }));
+
+    expect(await screen.findByText(/sku is required/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/^sku/i)).toHaveAttribute(
+      "aria-invalid",
+      "true",
+    );
+    expect(posted).toBe(false);
   });
 
   it("blocks submit with an in-window error when name is empty", async () => {
@@ -178,6 +219,40 @@ describe("ItemFormPage — edit", () => {
     expect((screen.getByLabelText(/barcode/i) as HTMLInputElement).value).toBe(
       "BC-9",
     );
+    // SKU is prefilled but read-only (immutable after create).
+    const sku = screen.getByLabelText(/^sku/i) as HTMLInputElement;
+    expect(sku.value).toBe("SKU-NEW");
+    expect(sku).toBeDisabled();
+    expect(
+      screen.getByText(/sku can't be changed after an item is created/i),
+    ).toBeInTheDocument();
+  });
+
+  it("omits sku from the PATCH body even when other fields change", async () => {
+    const user = userEvent.setup();
+    let sentBody: Record<string, unknown> | undefined;
+    server.use(
+      http.get("/api/workspaces/:wsId/items/:id", () =>
+        HttpResponse.json(EDIT_ITEM),
+      ),
+      http.patch("/api/workspaces/:wsId/items/:id", async ({ request }) => {
+        sentBody = (await request.json()) as Record<string, unknown>;
+        return HttpResponse.json(EDIT_ITEM);
+      }),
+    );
+    renderForm(["/items/it-9/edit"]);
+    await waitFor(() =>
+      expect((screen.getByLabelText(/name/i) as HTMLInputElement).value).toBe(
+        "Existing Drill",
+      ),
+    );
+    await user.clear(screen.getByLabelText(/name/i));
+    await user.type(screen.getByLabelText(/name/i), "Renamed Drill");
+    await user.click(screen.getByRole("button", { name: /save changes/i }));
+
+    await waitFor(() => expect(sentBody).toBeDefined());
+    expect(sentBody).toEqual({ name: "Renamed Drill" });
+    expect("sku" in (sentBody as object)).toBe(false);
   });
 
   it("sends '' for a cleared description on PATCH (Pitfall 4)", async () => {

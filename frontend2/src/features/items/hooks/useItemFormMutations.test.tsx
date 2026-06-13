@@ -41,8 +41,10 @@ function makeHarness() {
 
 // Resolve raw form input through the schema so values match the shape the hook
 // receives at submit time (minStock coerced from string → number|undefined).
+// `sku` is now required by the schema (D-07-07-A); inject a default so callers
+// that only care about other fields stay terse, while still allowing override.
 function resolve(raw: Record<string, unknown>): ItemFormValues {
-  return itemFormSchema.parse(raw);
+  return itemFormSchema.parse({ sku: "SKU-1", ...raw });
 }
 
 afterEach(() => {
@@ -57,12 +59,26 @@ beforeAll(() => {
 
 describe("itemFormSchema", () => {
   it("rejects an empty name", () => {
-    const result = itemFormSchema.safeParse({ name: "   " });
+    const result = itemFormSchema.safeParse({ sku: "S1", name: "   " });
     expect(result.success).toBe(false);
+  });
+
+  it("rejects a missing or empty sku (D-07-07-A)", () => {
+    // No sku at all.
+    expect(itemFormSchema.safeParse({ name: "Drill" }).success).toBe(false);
+    // Trimmed-empty sku.
+    const result = itemFormSchema.safeParse({ sku: "   ", name: "Drill" });
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.error.issues.some((i) => /sku is required/i.test(i.message))).toBe(
+        true,
+      );
+    }
   });
 
   it("accepts a minimal item and defaults optional strings to ''", () => {
     const values = resolve({ name: "Drill" });
+    expect(values.sku).toBe("SKU-1");
     expect(values.name).toBe("Drill");
     expect(values.description).toBe("");
     expect(values.barcode).toBe("");
@@ -94,6 +110,15 @@ describe("buildPatchBody (Pitfall 4 — omit=unchanged, ''=clear, uuid never cle
     expect("min_stock_level" in patch).toBe(false);
   });
 
+  it("never emits sku — SKU is immutable after create (D-07-07-A)", () => {
+    const values = resolve({ sku: "SKU-1", name: "Renamed" });
+    // Even if RHF marked sku dirty, the PATCH builder must drop it.
+    const dirty: DirtyMap = { sku: true, name: true };
+    const patch = buildPatchBody(values, dirty);
+    expect("sku" in patch).toBe(false);
+    expect(patch).toEqual({ name: "Renamed" });
+  });
+
   it("never emits category/location (display-only stub, uuid never cleared)", () => {
     const values = resolve({ name: "Drill", category: "Tools", location: "Garage" });
     const dirty: DirtyMap = { category: true, location: true, name: true };
@@ -106,6 +131,34 @@ describe("buildPatchBody (Pitfall 4 — omit=unchanged, ''=clear, uuid never cle
 });
 
 describe("useItemFormMutations", () => {
+  it("create POSTs a body that includes the sku (D-07-07-A)", async () => {
+    setWsId("ws-A");
+    const { wrapper } = makeHarness();
+    let sentBody: unknown;
+    server.use(
+      http.post("/api/workspaces/:wsId/items", async ({ request }) => {
+        sentBody = await request.json();
+        return HttpResponse.json({
+          id: "it-1",
+          workspace_id: "ws-A",
+          sku: "SKU-9",
+          name: "Drill",
+          min_stock_level: 0,
+          short_code: "abc",
+          created_at: "2026-06-13T00:00:00Z",
+          updated_at: "2026-06-13T00:00:00Z",
+        });
+      }),
+    );
+    const { result } = renderHook(() => useItemFormMutations(), { wrapper });
+    await act(async () => {
+      await result.current.create.mutateAsync(
+        resolve({ sku: "SKU-9", name: "Drill" }),
+      );
+    });
+    expect(sentBody).toMatchObject({ sku: "SKU-9", name: "Drill" });
+  });
+
   it("create invalidates the ['items', wsId] prefix", async () => {
     setWsId("ws-A");
     const { client, wrapper } = makeHarness();

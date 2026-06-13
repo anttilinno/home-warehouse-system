@@ -19,3 +19,11 @@ Out-of-scope discoveries logged during execution (not fixed in the discovering p
   cf. the Quick Capture `QC-{timestamp}-{random}` SKU convention in ROADMAP) or
   send a generated SKU on create. Confirm against `item/handler.go` createInput.
 - **Evidence:** live probe `POST .../items {name}` → 422; `{name, sku}` → 200.
+- **RESOLVED (2026-06-13, Plan 07-08):** Added a required, validated `sku` field
+  to `schema.ts` (`.trim().min(1).max(255)`), rendered it in `ItemFormPage`
+  (editable+required in CREATE, read-only/disabled with an "immutable" hint in
+  EDIT, prefilled from the loaded item), and included `sku` in
+  `buildCreateBody`. The PATCH builder deliberately omits `sku` (immutable —
+  backend `UpdateItemInput` has no `sku`). Tests cover create-body-includes-sku,
+  missing-sku zod error (no 422 round-trip), and PATCH-omits-sku. Full items
+  suite (84 tests) + tsc + build green. See `07-08-SUMMARY.md`.
