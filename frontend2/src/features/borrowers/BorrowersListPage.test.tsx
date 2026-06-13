@@ -36,11 +36,18 @@ function setWsId(currentWorkspaceId: string | null) {
   });
 }
 
-function renderPage(initialEntries: string[] = ["/borrowers"]) {
+function renderPage(
+  initialEntries: string[] = ["/borrowers"],
+  // Per-test overrides registered AFTER the base handlers so they win (MSW uses
+  // the most-recently-registered matching handler first).
+  overrides: Parameters<typeof server.use> = [],
+) {
   setWsId("ws-1");
   // Register the Plan-01 borrower handlers PER-RENDER (BARE { items } envelope,
-  // three fixtures: Alex Carter / Sam Diaz / Jordan Lee).
+  // three fixtures: Alex Carter / Sam Diaz / Jordan Lee). Overrides go in a
+  // SEPARATE later use() call so MSW prepends them and they win the match.
   server.use(...borrowerHandlers);
+  if (overrides.length) server.use(...overrides);
   const client = new QueryClient({
     defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
   });
@@ -135,9 +142,8 @@ describe("BorrowersListPage", () => {
   });
 
   it("paginates the client-computed pageCount (PER_PAGE=25) and page 2 shows the next slice", async () => {
-    server.use(makeManyHandler(30));
     const user = userEvent.setup();
-    renderPage();
+    renderPage(["/borrowers"], [makeManyHandler(30)]);
     // Page 1 holds borrowers 01..25.
     expect(await screen.findByText("Borrower 01")).toBeInTheDocument();
     expect(screen.queryByText("Borrower 26")).not.toBeInTheDocument();
@@ -180,15 +186,17 @@ describe("BorrowersListPage", () => {
   });
 
   it("empty data renders the NO BORROWERS empty state with an ADD BORROWER action", async () => {
-    server.use(
-      http.get("/api/workspaces/:wsId/borrowers", () =>
-        HttpResponse.json({ items: [] }),
-      ),
-    );
     const user = userEvent.setup();
-    renderPage();
+    renderPage(
+      ["/borrowers"],
+      [
+        http.get("/api/workspaces/:wsId/borrowers", () =>
+          HttpResponse.json({ items: [] }),
+        ),
+      ],
+    );
 
-    expect(await screen.findByText(/no borrowers/i)).toBeInTheDocument();
+    expect(await screen.findByText(/^no borrowers$/i)).toBeInTheDocument();
     await user.click(screen.getByRole("button", { name: /add borrower/i }));
     expect(await screen.findByText("NEW BORROWER PAGE")).toBeInTheDocument();
   });
