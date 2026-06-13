@@ -709,7 +709,12 @@ Plans:
   2. User can attach repair photos (reusing the Phase 7 photo atoms) and non-photo repair attachments to a repair record
   3. User can create / edit / delete maintenance schedules on an inventory entry and see a due list (`/maintenance/due`); completing a schedule advances its next-due
   4. The dashboard due-maintenance feed is produced here and consumed by the Phase 13 side rail (due-maintenance card)
-**Plans**: TBD
+**Plans**: 5 plans
+- [ ] 10b-01-PLAN.md — Wave 0 foundation: api modules (repairs/maintenance/repairPhotos/repairAttachments) + money.ts + types + repairStatus + RHF/zod schemas + MSW handlers
+- [ ] 10b-02-PLAN.md — Repairs drawer (RPR-01/02): query+mutation hooks, RepairsDrawer + RepairForm + CompleteRepairDialog, cost rollup, InventoryListPage REPAIRS trigger (single-writer)
+- [ ] 10b-03-PLAN.md — Repair photos + attachments (RPR-03/04): RepairRecordDialog tabs, RepairPhotoPanel (parametrized PhotoUpload/PhotoGallery), RepairAttachmentPanel + AddAttachmentDialog (link-only; byte-storage residue)
+- [ ] 10b-04-PLAN.md — Maintenance (MNT-01/02/03): MaintenanceDrawer + forms, /maintenance/due page, useMaintenanceDueQuery feed hook, routes/Sidebar + InventoryListPage MAINTENANCE trigger (single-writers)
+- [ ] 10b-05-PLAN.md — Live Playwright E2E: repair create→start→complete→cost; schedule create→/maintenance/due→complete (single login)
 **UI hint**: yes
 
 ### Phase 11: Scan (single-route)
