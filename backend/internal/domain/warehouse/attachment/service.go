@@ -2,8 +2,15 @@ package attachment
 
 import (
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
+	"io"
+	"mime/multipart"
+	"path/filepath"
 
 	"github.com/google/uuid"
+
+	"github.com/antti/home-warehouse/go-backend/internal/infra/storage"
 )
 
 // ServiceInterface defines the attachment service operations.
@@ -12,6 +19,13 @@ import (
 // so a leaked UUID can never reach another tenant's rows.
 type ServiceInterface interface {
 	UploadFile(ctx context.Context, input UploadFileInput) (*File, error)
+	// UploadFileBytes persists the REAL uploaded bytes to storage (not just a
+	// metadata row) and records a File whose StorageKey is the real returned
+	// path. Used by the Chi multipart upload route (ATT-01).
+	UploadFileBytes(ctx context.Context, workspaceID, itemID uuid.UUID, header *multipart.FileHeader, reader io.Reader, uploadedBy *uuid.UUID) (*File, error)
+	// GetFile returns a File row by ID, workspace-scoped. Used by the serve
+	// route to resolve the storage_key + mime_type for streaming.
+	GetFile(ctx context.Context, id, workspaceID uuid.UUID) (*File, error)
 	CreateAttachment(ctx context.Context, input CreateAttachmentInput) (*Attachment, error)
 	GetAttachment(ctx context.Context, id, workspaceID uuid.UUID) (*Attachment, error)
 	ListByItem(ctx context.Context, itemID, workspaceID uuid.UUID) ([]*Attachment, error)
@@ -22,12 +36,14 @@ type ServiceInterface interface {
 type Service struct {
 	fileRepo       FileRepository
 	attachmentRepo AttachmentRepository
+	storage        storage.Storage
 }
 
-func NewService(fileRepo FileRepository, attachmentRepo AttachmentRepository) *Service {
+func NewService(fileRepo FileRepository, attachmentRepo AttachmentRepository, store storage.Storage) *Service {
 	return &Service{
 		fileRepo:       fileRepo,
 		attachmentRepo: attachmentRepo,
+		storage:        store,
 	}
 }
 
@@ -61,6 +77,73 @@ func (s *Service) UploadFile(ctx context.Context, input UploadFileInput) (*File,
 		return nil, err
 	}
 
+	return file, nil
+}
+
+// UploadFileBytes streams the uploaded bytes to storage, computes their
+// SHA-256 checksum, and persists a File row whose StorageKey is the REAL path
+// returned by storage.Save. If the Save fails, no File row is created (no
+// orphan metadata). The filename is sanitised inside storage.Save
+// (SanitizeFilename + filepath.Base — zip-slip / F14, path-containment / F20).
+func (s *Service) UploadFileBytes(
+	ctx context.Context,
+	workspaceID, itemID uuid.UUID,
+	header *multipart.FileHeader,
+	reader io.Reader,
+	uploadedBy *uuid.UUID,
+) (*File, error) {
+	// Tee the reader so we hash the exact bytes we write, in one pass.
+	hash := sha256.New()
+	tee := io.TeeReader(reader, hash)
+
+	storageKey, err := s.storage.Save(ctx, workspaceID.String(), itemID.String(), header.Filename, tee)
+	if err != nil {
+		// Bytes failed to persist — do NOT create a File row.
+		return nil, err
+	}
+
+	checksum := hex.EncodeToString(hash.Sum(nil))
+
+	mimeType := header.Header.Get("Content-Type")
+	if mimeType == "" {
+		mimeType = "application/octet-stream"
+	}
+
+	file, err := NewFile(
+		workspaceID,
+		header.Filename,
+		filepath.Ext(header.Filename),
+		mimeType,
+		checksum,
+		storageKey,
+		header.Size,
+		uploadedBy,
+	)
+	if err != nil {
+		// Roll back the now-orphaned blob (best effort).
+		_ = s.storage.Delete(ctx, storageKey)
+		return nil, err
+	}
+
+	if err := s.fileRepo.Save(ctx, file); err != nil {
+		_ = s.storage.Delete(ctx, storageKey)
+		return nil, err
+	}
+
+	return file, nil
+}
+
+// GetFile returns a File row by ID, workspace-scoped (WHERE id=$1 AND
+// workspace_id=$2 in the repo). Used by the serve route to resolve the
+// storage_key + mime_type.
+func (s *Service) GetFile(ctx context.Context, id, workspaceID uuid.UUID) (*File, error) {
+	file, err := s.fileRepo.FindByID(ctx, id, workspaceID)
+	if err != nil {
+		return nil, err
+	}
+	if file == nil {
+		return nil, ErrAttachmentNotFound
+	}
 	return file, nil
 }
 

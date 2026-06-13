@@ -3,6 +3,8 @@ package attachment_test
 import (
 	"context"
 	"fmt"
+	"io"
+	"mime/multipart"
 	"net/http"
 	"testing"
 	"time"
@@ -22,6 +24,22 @@ type MockService struct {
 
 func (m *MockService) UploadFile(ctx context.Context, input attachment.UploadFileInput) (*attachment.File, error) {
 	args := m.Called(ctx, input)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*attachment.File), args.Error(1)
+}
+
+func (m *MockService) UploadFileBytes(ctx context.Context, workspaceID, itemID uuid.UUID, header *multipart.FileHeader, reader io.Reader, uploadedBy *uuid.UUID) (*attachment.File, error) {
+	args := m.Called(ctx, workspaceID, itemID, header, reader, uploadedBy)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*attachment.File), args.Error(1)
+}
+
+func (m *MockService) GetFile(ctx context.Context, id, workspaceID uuid.UUID) (*attachment.File, error) {
+	args := m.Called(ctx, id, workspaceID)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}
