@@ -11,14 +11,18 @@ import { F1HelpDialog } from "./F1HelpDialog";
 import { WorkspaceProvider } from "@/features/workspace/WorkspaceProvider";
 import { useLogout } from "@/features/auth/useLogout";
 import { SSEProvider, useSSEStatus } from "@/features/sse";
-import { usePaletteChord } from "@/features/command-palette";
+// Import the chord hook from its OWN module (not the feature barrel): the
+// barrel re-exports the default CommandPalette body, so a static barrel import
+// here would drag the whole palette source graph (recentActions/useEntitySearch
+// /paletteRoutes) into the entry chunk and defeat the lazy split
+// (INEFFECTIVE_DYNAMIC_IMPORT). The direct module path keeps only the tiny
+// tinykeys chord owner in the main bundle.
+import { usePaletteChord } from "@/features/command-palette/usePaletteChord";
 
 // Command Palette (TUI-05 / POL-04): the palette BODY is React.lazy so cmdk +
 // @radix-ui/react-dialog land in the `palette` chunk (16-01) and download only
 // on first open — the entry bundle carries ZERO palette bytes. Mirrors the
-// /scan + /analytics lazy idiom in routes/index.tsx. The tiny tinykeys chord
-// owner (usePaletteChord) stays in the main bundle; it is called below to flip
-// the open state.
+// /scan + /analytics lazy idiom in routes/index.tsx.
 const CommandPalette = lazy(() => import("@/features/command-palette"));
 
 // AppShell (SHELL-01/02/06): the 2x3 CSS-Grid shell every authenticated route
