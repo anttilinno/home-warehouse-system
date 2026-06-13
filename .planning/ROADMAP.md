@@ -239,7 +239,7 @@ Clean-slate rebuild of `/frontend2` with sketch 006-008 retro-os pastel fidelity
 - [x] **Phase 8: Loans** — Active/Overdue/History tabbed list + create with item + borrower picker + mark returned + edit + per-item active+history panels + `?itemId=` deep-link param (completed 2026-06-13)
 - [x] **Phase 9: Borrowers** — flat paginated list + CRUD with active-loan delete guard + detail with active+history panels (3 plans) (completed 2026-06-13)
 - [x] **Phase 10: Taxonomy** — categories tree + locations tree + containers grouped by location + create/edit/archive with usage warnings + container delete with unassign-and-delete cascade policy (completed 2026-06-13)
-- [ ] **Phase 10b: Repairs + Maintenance** — repair log drawer/panel on inventory detail (CRUD + start/complete + cost rollup) + repair photos + repair attachments + maintenance schedule CRUD + due list + complete action + dashboard due-maintenance feed (consumed by Phase 13) [Gap G-2]
+- [x] **Phase 10b: Repairs + Maintenance** — repair log drawer/panel on inventory detail (CRUD + start/complete + cost rollup) + repair photos + repair attachments + maintenance schedule CRUD + due list + complete action + dashboard due-maintenance feed (consumed by Phase 13) [Gap G-2] (completed 2026-06-13)
 - [ ] **Phase 11: Scan (single-route)** — `/scan` with `<BarcodeScanner>` mounted ONCE + QR/UPC/EAN/Code128 + pause-on-match (prop-driven) + Android torch + manual fallback + AudioContext + ios-haptics + scan history (last 10) + 4-state result banner + post-match quick-action overlay + UPC opt-in suggestion prefill
 - [ ] **Phase 12: Settings hub** — landing with 8 grouped rows + Profile + Security + Appearance + Language + Regional Formats + Notifications + Connected Accounts + Data Storage (online-only — clear cache + export + import only)
 - [ ] **Phase 13: Dashboard** — 4 stat tiles + activity table (TUI columns, relative <24h then absolute) + side rail (Pending Approvals + System Alerts) + HUD row (gauge + sparkline + counts) gated behind `VITE_FEATURE_HUD_ROLLUPS` flag (Conflict 3 resolution)
@@ -714,7 +714,7 @@ Plans:
 - [x] 10b-02-PLAN.md — Repairs drawer (RPR-01/02): query+mutation hooks, RepairsDrawer + RepairForm + CompleteRepairDialog, cost rollup, InventoryListPage REPAIRS trigger (single-writer)
 - [x] 10b-03-PLAN.md — Repair photos + attachments (RPR-03/04): RepairRecordDialog tabs, RepairPhotoPanel (parametrized PhotoUpload/PhotoGallery), RepairAttachmentPanel + AddAttachmentDialog (link-only; byte-storage residue)
 - [x] 10b-04-PLAN.md — Maintenance (MNT-01/02/03): MaintenanceDrawer + forms, /maintenance/due page, useMaintenanceDueQuery feed hook, routes/Sidebar + InventoryListPage MAINTENANCE trigger (single-writers)
-- [ ] 10b-05-PLAN.md — Live Playwright E2E: repair create→start→complete→cost; schedule create→/maintenance/due→complete (single login)
+- [x] 10b-05-PLAN.md — Live Playwright E2E: repair create→start→complete→cost; schedule create→/maintenance/due→complete (single login)
 **UI hint**: yes
 
 ### Phase 11: Scan (single-route)
@@ -867,7 +867,7 @@ Plans:
 | 8 | v3.0 | 6/6 | Complete   | 2026-06-13 |
 | 9 | v3.0 | 3/3 | Complete   | 2026-06-13 |
 | 10 | v3.0 | 5/5 | Complete   | 2026-06-13 |
-| 10b | v3.0 | 4/5 | In Progress|  |
+| 10b | v3.0 | 5/5 | Complete   | 2026-06-13 |
 | 11 | v3.0 | 0/TBD | Not started | - |
 | 12 | v3.0 | 0/TBD | Not started | - |
 | 13 | v3.0 | 0/TBD | Not started | - |

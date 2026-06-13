@@ -203,16 +203,16 @@
 
 ### Repairs (RPR) — Phase 10b (Gap G-2)
 
-- [ ] **RPR-01**: User can create / edit repairs on an inventory entry via a repair log drawer/panel, and start/complete them.
-- [ ] **RPR-02**: User sees a cost rollup across an inventory entry's repair history.
-- [ ] **RPR-03**: User can attach repair photos to a repair record (reusing the Phase 7 photo atoms).
-- [ ] **RPR-04**: User can attach non-photo repair attachments to a repair record.
+- [x] **RPR-01**: User can create / edit repairs on an inventory entry via a repair log drawer/panel, and start/complete them.
+- [x] **RPR-02**: User sees a cost rollup across an inventory entry's repair history.
+- [x] **RPR-03**: User can attach repair photos to a repair record (reusing the Phase 7 photo atoms).
+- [x] **RPR-04**: User can attach non-photo repair attachments to a repair record. _(Frontend link/list/delete shipped; backend byte-storage is a pre-existing project-wide stub — file upload/serve deferred to Phase 14b attachment work.)_
 
 ### Maintenance (MNT) — Phase 10b (Gap G-2)
 
-- [ ] **MNT-01**: User can create / edit / delete recurring maintenance schedules on an inventory entry.
-- [ ] **MNT-02**: User can view a due-maintenance list (`/maintenance/due`) and complete a schedule (completion advances next-due).
-- [ ] **MNT-03**: A due-maintenance feed is produced for the Phase 13 dashboard side-rail card.
+- [x] **MNT-01**: User can create / edit / delete recurring maintenance schedules on an inventory entry.
+- [x] **MNT-02**: User can view a due-maintenance list (`/maintenance/due`) and complete a schedule (completion advances next-due).
+- [x] **MNT-03**: A due-maintenance feed is produced for the Phase 13 dashboard side-rail card. _(`useMaintenanceDueQuery` shipped; Phase 13 mounts the dashboard card.)_
 
 ### Analytics (ANL) — Phase 13b (Gap G-6)
 
@@ -430,13 +430,13 @@
 | INV-06 | Phase 7b | Complete |
 | INV-07 | Phase 7b | Complete |
 | INV-08 | Phase 7b | Complete |
-| RPR-01 | Phase 10b | Pending |
-| RPR-02 | Phase 10b | Pending |
-| RPR-03 | Phase 10b | Pending |
-| RPR-04 | Phase 10b | Pending |
-| MNT-01 | Phase 10b | Pending |
-| MNT-02 | Phase 10b | Pending |
-| MNT-03 | Phase 10b | Pending |
+| RPR-01 | Phase 10b | Complete |
+| RPR-02 | Phase 10b | Complete |
+| RPR-03 | Phase 10b | Complete |
+| RPR-04 | Phase 10b | Complete (link-only; byte-storage Phase 14b) |
+| MNT-01 | Phase 10b | Complete |
+| MNT-02 | Phase 10b | Complete |
+| MNT-03 | Phase 10b | Complete (feed hook; card Phase 13) |
 | ANL-01 | Phase 13b | Pending |
 | ANL-02 | Phase 13b | Pending |
 | ANL-03 | Phase 13b | Pending |
