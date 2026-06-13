@@ -1,0 +1,16 @@
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=utf-8\n"
+"Language: ru\n"
+
+#: src/features/inventory/InventoryFormPage.tsx
+msgid "— No container"
+msgstr "— Без контейнера"
+
+#: src/features/dashboard/Dashboard.tsx
+msgid ""
+"A long message that folds across "
+"multiple continuation lines"
+msgstr ""
+"Длинное сообщение которое переносится на "
+"несколько строк продолжения"
