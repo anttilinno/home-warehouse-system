@@ -13,6 +13,8 @@
     "test:e2e": "playwright test",
     "test:e2e:headed": "playwright test --headed",
     "lint:imports": "node ../scripts/check-forbidden-imports.mjs src",
+    "lint:i18n:format": "node ../scripts/check-i18n-format.mjs",
+    "lint:i18n": "node ../scripts/check-i18n-catalog.mjs",
     "lint:tsc": "tsc -b --noEmit",
     "i18n:extract": "lingui extract",
     "i18n:compile": "lingui compile"
