@@ -27,6 +27,7 @@ import { useInventoryMutations } from "./hooks/useInventoryMutations";
 import { usePickerOptions } from "./hooks/usePickerOptions";
 import { InlineEditCell } from "./components/InlineEditCell";
 import { MovementsDrawer } from "./components/MovementsDrawer";
+import { RepairsDrawer } from "@/features/repairs/components/RepairsDrawer";
 import { MoveDialog } from "./components/MoveDialog";
 
 // Phase 7b Plan 02 — the /inventory list surface (INV-01 + INV-05 + INV-07).
@@ -107,6 +108,9 @@ export function InventoryListPage() {
 
   // ── Movements drawer + the MOVE target (Plan 04 wires MoveDialog here).
   const [movementsId, setMovementsId] = useState<string | null>(null);
+  // Repairs drawer (Plan 10b-02). The MAINTENANCE trigger is Plan 10b-04's
+  // serial single-writer edit of this file — do NOT add it here.
+  const [repairsId, setRepairsId] = useState<string | null>(null);
   const [moveTarget, setMoveTarget] = useState<Inventory | null>(null);
   const onMove = useCallback((entry: Inventory) => {
     setMoveTarget(entry);
@@ -490,6 +494,14 @@ export function InventoryListPage() {
                           >
                             <Trans>↧</Trans>
                           </BevelButton>
+                          {!archived && (
+                            <BevelButton
+                              aria-label={t`Repairs`}
+                              onClick={() => setRepairsId(entry.id)}
+                            >
+                              <Trans>🔧</Trans>
+                            </BevelButton>
+                          )}
                         </span>
                       </td>
                     </tr>
@@ -524,6 +536,18 @@ export function InventoryListPage() {
             : undefined
         }
         onClose={() => setMovementsId(null)}
+      />
+
+      <RepairsDrawer
+        invId={repairsId}
+        itemName={
+          repairsId
+            ? itemName(
+                entries.find((e) => e.id === repairsId)?.item_id ?? "",
+              )
+            : undefined
+        }
+        onClose={() => setRepairsId(null)}
       />
 
       {/* MoveDialog seeds its target state from the entry on mount, so mount it
