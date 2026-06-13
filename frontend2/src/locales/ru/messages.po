@@ -477,6 +477,7 @@ msgid "Amount in your workspace currency."
 msgstr "Сумма в валюте вашего рабочего пространства."
 
 #: src/components/layout/Sidebar.tsx
+#: src/features/command-palette/paletteRoutes.ts
 msgid "Analytics"
 msgstr "Аналитика"
 
@@ -491,6 +492,7 @@ msgstr "Оформление"
 
 #: src/components/layout/Sidebar.tsx
 #: src/features/approvals/ApprovalsPage.tsx
+#: src/features/command-palette/paletteRoutes.ts
 msgid "Approvals"
 msgstr "Утверждения"
 
@@ -625,6 +627,8 @@ msgstr "Получатель обновлён."
 #: src/components/layout/Sidebar.tsx
 #: src/features/borrowers/BorrowerDetailPage.tsx
 #: src/features/borrowers/BorrowersListPage.tsx
+#: src/features/command-palette/CommandPalette.tsx
+#: src/features/command-palette/paletteRoutes.ts
 #: src/features/dashboard/DashboardPage.tsx
 msgid "Borrowers"
 msgstr "Заёмщики"
@@ -733,6 +737,7 @@ msgid "Careful."
 msgstr "Осторожно."
 
 #: src/components/layout/Sidebar.tsx
+#: src/features/command-palette/paletteRoutes.ts
 #: src/features/dashboard/DashboardPage.tsx
 msgid "Categories"
 msgstr "Категории"
@@ -822,6 +827,7 @@ msgid "Clears locally cached lists. Your inventory data stays safe."
 msgstr "Очищает локально кэшированные списки. Ваши складские данные останутся в безопасности."
 
 #: src/components/retro/overlay/RetroDialog.tsx
+#: src/features/command-palette/CommandPalette.tsx
 #: src/routes/demo/DemoPage.tsx
 msgid "Close"
 msgstr "Закрыть"
@@ -842,6 +848,14 @@ msgstr "Цвет"
 #: src/features/settings/DataStoragePage.tsx
 msgid "Coming soon"
 msgstr "Скоро"
+
+#: src/features/command-palette/CommandPalette.tsx
+msgid "Command palette"
+msgstr "Командная палитра"
+
+#: src/features/command-palette/CommandPalette.tsx
+msgid "Command Palette"
+msgstr "Командная палитра"
 
 #: src/features/maintenance/components/CompleteMaintenanceDialog.tsx
 #: src/features/maintenance/components/MaintenanceDrawer.tsx
@@ -921,6 +935,8 @@ msgid "Container"
 msgstr "Контейнер"
 
 #: src/components/layout/Sidebar.tsx
+#: src/features/command-palette/CommandPalette.tsx
+#: src/features/command-palette/paletteRoutes.ts
 #: src/features/dashboard/DashboardPage.tsx
 msgid "Containers"
 msgstr "Контейнеры"
@@ -1395,6 +1411,7 @@ msgid "Danger Zone"
 msgstr "Опасная зона"
 
 #: src/components/layout/Sidebar.tsx
+#: src/features/command-palette/paletteRoutes.ts
 msgid "Dashboard"
 msgstr "Панель управления"
 
@@ -1433,6 +1450,7 @@ msgid "Decimal separator"
 msgstr "Десятичный разделитель"
 
 #: src/components/layout/Sidebar.tsx
+#: src/features/command-palette/paletteRoutes.ts
 #: src/features/declutter/DeclutterPage.tsx
 msgid "Declutter"
 msgstr "Расхламление"
@@ -2143,6 +2161,7 @@ msgid "Importing…"
 msgstr "Импорт…"
 
 #: src/components/layout/Sidebar.tsx
+#: src/features/command-palette/paletteRoutes.ts
 #: src/features/imports/ImportsPage.tsx
 msgid "Imports"
 msgstr "Импорт"
@@ -2170,6 +2189,7 @@ msgstr "Интервал (дни)"
 
 #: src/components/layout/Sidebar.tsx
 #: src/features/analytics/components/OutOfStockTable.tsx
+#: src/features/command-palette/paletteRoutes.ts
 #: src/features/inventory/ExpiringPage.tsx
 #: src/features/inventory/InventoryListPage.tsx
 #: src/features/items/ItemDetailPage.tsx
@@ -2235,6 +2255,8 @@ msgid "items"
 msgstr "предметов"
 
 #: src/components/layout/Sidebar.tsx
+#: src/features/command-palette/CommandPalette.tsx
+#: src/features/command-palette/paletteRoutes.ts
 #: src/features/dashboard/components/HudRow.tsx
 #: src/features/dashboard/DashboardPage.tsx
 msgid "Items"
@@ -2422,6 +2444,7 @@ msgstr "Выдача этого предмета — выберите получ
 
 #: src/components/layout/Sidebar.tsx
 #: src/features/borrowers/BorrowersListPage.tsx
+#: src/features/command-palette/paletteRoutes.ts
 #: src/features/dashboard/DashboardPage.tsx
 #: src/features/items/components/LoanPanels.tsx
 #: src/features/loans/components/BorrowerLoanPanels.tsx
@@ -2456,6 +2479,8 @@ msgid "Location value"
 msgstr "Значение местоположения"
 
 #: src/components/layout/Sidebar.tsx
+#: src/features/command-palette/CommandPalette.tsx
+#: src/features/command-palette/paletteRoutes.ts
 #: src/features/dashboard/DashboardPage.tsx
 msgid "Locations"
 msgstr "Места"
@@ -2484,6 +2509,7 @@ msgid "Low stock"
 msgstr "Мало на складе"
 
 #: src/components/layout/Sidebar.tsx
+#: src/features/command-palette/paletteRoutes.ts
 #: src/features/inventory/InventoryListPage.tsx
 #: src/features/maintenance/components/MaintenanceDrawer.tsx
 #: src/features/maintenance/MaintenanceDuePage.tsx
@@ -2650,6 +2676,7 @@ msgid "My changes"
 msgstr "Мои изменения"
 
 #: src/components/layout/Sidebar.tsx
+#: src/features/command-palette/paletteRoutes.ts
 msgid "My Changes"
 msgstr "Мои изменения"
 
@@ -2962,6 +2989,10 @@ msgstr "НЕТ РЕМОНТОВ"
 #: src/features/repairs/components/RepairsDrawer.tsx
 msgid "No repairs logged for this entry yet. Add one to track work, cost, and warranty."
 msgstr "Для этой записи пока не зафиксированы ремонты. Добавьте ремонт, чтобы отслеживать работу, стоимость и гарантию."
+
+#: src/features/command-palette/CommandPalette.tsx
+msgid "No results."
+msgstr "Нет результатов."
 
 #: src/components/retro/filters/SavedFilters.tsx
 msgid "No saved filters yet."
@@ -3428,6 +3459,10 @@ msgstr "ГОТОВО"
 msgid "Reason"
 msgstr "Причина"
 
+#: src/features/command-palette/CommandPalette.tsx
+msgid "Recent"
+msgstr "Недавние"
+
 #: src/features/dashboard/DashboardPage.tsx
 msgid "Recent activity"
 msgstr "Недавняя активность"
@@ -3713,6 +3748,10 @@ msgstr "Роль обновлена."
 msgid "ROUTE"
 msgstr "МАРШРУТ"
 
+#: src/features/command-palette/CommandPalette.tsx
+msgid "Routes"
+msgstr "Маршруты"
+
 #: src/features/imports/ImportsPage.tsx
 msgid "Rows"
 msgstr "Строки"
@@ -3800,6 +3839,7 @@ msgid "SavedFilters — preset chips + ▾ PRESETS menu."
 msgstr "SavedFilters — чипы пресетов + меню ▾ ПРЕСЕТЫ."
 
 #: src/components/layout/Sidebar.tsx
+#: src/features/command-palette/paletteRoutes.ts
 msgid "Scan"
 msgstr "Сканировать"
 
@@ -3842,6 +3882,11 @@ msgstr "Поиск местоположений…"
 msgid "Search Paperless"
 msgstr "Поиск в Paperless"
 
+#: src/features/command-palette/CommandPalette.tsx
+msgid "Search routes, workspaces, items…"
+msgstr "Поиск маршрутов, рабочих пространств, предметов…"
+
+#: src/features/command-palette/CommandPalette.tsx
 #: src/features/items/components/PaperlessLinkDialog.tsx
 #: src/features/settings/PaperlessPage.tsx
 msgid "Searching…"
@@ -3899,6 +3944,7 @@ msgstr "СДЕЛАТЬ ОСНОВНЫМ"
 
 #: src/components/layout/Sidebar.tsx
 #: src/components/layout/TopBar.tsx
+#: src/features/command-palette/paletteRoutes.ts
 msgid "Settings"
 msgstr "Настройки"
 
@@ -4054,6 +4100,7 @@ msgid "Sync"
 msgstr "Синхронизация"
 
 #: src/components/layout/Sidebar.tsx
+#: src/features/command-palette/paletteRoutes.ts
 msgid "Sync History"
 msgstr "История синхронизации"
 
@@ -4442,6 +4489,7 @@ msgid "Window"
 msgstr "Окно"
 
 #: src/components/layout/Sidebar.tsx
+#: src/features/command-palette/paletteRoutes.ts
 #: src/features/wishlist/WishlistPage.tsx
 msgid "Wishlist"
 msgstr "Список желаний"
@@ -4486,6 +4534,7 @@ msgid "Workspace activity"
 msgstr "Активность рабочего пространства"
 
 #: src/components/layout/WorkspaceSwitcher.tsx
+#: src/features/command-palette/CommandPalette.tsx
 msgid "Workspaces"
 msgstr "Рабочие пространства"
 
