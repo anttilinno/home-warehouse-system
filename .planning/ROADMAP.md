@@ -826,7 +826,11 @@ Plans:
   2. User picking a locale on Settings → Language sees the choice persisted to `users/me/preferences` and applied instantly without page reload
   3. Every component rendering a date / time / number uses `useDateFormat` / `useTimeFormat` / `useNumberFormat` — no raw `Date.toString()` or `Number.toLocaleString()` in feature code (CI grep guard)
 **Parity additions (2026-06-12)** (§4, §6): moves later in the calendar, scope unchanged — re-extract catalogs after all new feature pages (7b/10b/13b/14b + folded gap items) land so et + ru reach 100% for every parity page.
-**Plans**: TBD
+**Plans**: 4 plans (2 waves; I18N-02 is verify-only at the phase gate)
+- [ ] 15-01-PLAN.md — format hooks (useDateFormat/useTimeFormat/useNumberFormat) + route every render site (I18N-03)
+- [ ] 15-02-PLAN.md — CI guards (check-i18n-format + check-i18n-catalog) + scripts + workflow wiring (I18N-01/03)
+- [ ] 15-03-PLAN.md — fill Estonian catalog ~1010 msgstr (I18N-01)
+- [ ] 15-04-PLAN.md — fill Russian catalog ~1010 msgstr (I18N-01)
 
 ### Phase 16: Command Palette
 **Goal**: User can open a Cmd+K / F2 command palette filtering across routes, recent actions, and workspaces, with keyboard-first navigation
