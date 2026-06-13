@@ -9,6 +9,7 @@ import { I18nProvider } from "@lingui/react";
 import { i18n } from "@/lib/i18n";
 import { ShortcutsProvider } from "@/components/shortcuts";
 import { ModalStackProvider } from "@/components/modal";
+import { MockEventSource } from "@/test/setup";
 import { AppShell } from "./AppShell";
 
 // AppShell now mounts the D-12 WorkspaceProvider (which probes ["workspaces"]
@@ -64,6 +65,21 @@ describe("AppShell", () => {
     ).toBeInTheDocument(); // Sidebar
     expect(screen.getByRole("contentinfo")).toBeInTheDocument(); // Bottombar
     expect(screen.getByText("Route content here")).toBeInTheDocument(); // Outlet
+  });
+
+  it("mounts SSEProvider under WorkspaceProvider — exactly one EventSource opens (PROV-01)", async () => {
+    // AppShell now owns WorkspaceProvider > SSEProvider > ShellChrome. Once the
+    // MSW-backed workspace probe resolves a wsId, SSEProvider constructs ONE
+    // EventSource (the global MockEventSource stub). The shell must render its
+    // chrome without throwing under the provider stack.
+    renderShell("/");
+    expect(screen.getByTestId("user-pill")).toBeInTheDocument();
+    await vi.waitFor(() => {
+      expect(MockEventSource.openCount).toBe(1);
+    });
+    // The single connection points at the workspace SSE endpoint with cookie auth.
+    expect(MockEventSource.last?.url).toMatch(/\/workspaces\/.+\/sse$/);
+    expect(MockEventSource.last?.withCredentials).toBe(true);
   });
 
   it("carries data-collapsed on the grid root and toggles it via the collapse control", async () => {
