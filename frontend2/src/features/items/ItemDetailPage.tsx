@@ -296,7 +296,7 @@ export function ItemDetailPage() {
 
           {/* Right column — persistent side rail */}
           <aside className="flex flex-col gap-sp-5">
-            <ActiveLoanPanel active={activeLoans} />
+            <ActiveLoanPanel active={activeLoans} itemId={item.id} />
             <InventoryPanel wsId={wsId as string} itemId={item.id} />
           </aside>
         </div>

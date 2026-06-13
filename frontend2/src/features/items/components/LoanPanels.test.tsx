@@ -1,9 +1,12 @@
 import type { ReactNode } from "react";
-import { afterEach, beforeAll, describe, expect, it } from "vitest";
+import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { http, HttpResponse } from "msw";
 import { I18nProvider } from "@lingui/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { MemoryRouter } from "react-router";
+import { ModalStackProvider } from "@/components/modal";
 import { i18n } from "@/lib/i18n";
 import { server } from "@/test/msw/server";
 import type { Loan } from "@/lib/types";
@@ -12,6 +15,17 @@ import { InventoryPanelStub } from "./InventoryPanelStub";
 
 const WS = "ws-1";
 const IT = "it-1";
+
+// The dialogs (RETURN/EXTEND) call useLoanMutations → useWorkspace; mock it so
+// the panel's lifecycle wiring renders without a WorkspaceProvider.
+vi.mock("@/features/workspace/useWorkspace", () => ({
+  useWorkspace: () => ({
+    currentWorkspaceId: WS,
+    setWorkspace: vi.fn(),
+    workspaces: [],
+    isLoading: false,
+  }),
+}));
 
 function loan(id: string, overrides: Partial<Loan> = {}): Loan {
   return {
@@ -37,7 +51,11 @@ function renderWithProviders(ui: ReactNode) {
   });
   return render(
     <I18nProvider i18n={i18n}>
-      <QueryClientProvider client={client}>{ui}</QueryClientProvider>
+      <QueryClientProvider client={client}>
+        <ModalStackProvider>
+          <MemoryRouter>{ui}</MemoryRouter>
+        </ModalStackProvider>
+      </QueryClientProvider>
     </I18nProvider>,
   );
 }
@@ -50,9 +68,10 @@ describe("LoanPanels", () => {
     i18n.activate("en");
   });
 
-  it("ActiveLoanPanel shows the pink on-loan state with the borrower", () => {
+  it("ActiveLoanPanel shows the pink on-loan state with live RETURN + EXTEND", () => {
     renderWithProviders(
       <ActiveLoanPanel
+        itemId={IT}
         active={[
           loan("l-1", {
             is_active: true,
@@ -63,18 +82,61 @@ describe("LoanPanels", () => {
       />,
     );
     expect(screen.getByText(/on loan to alice/i)).toBeInTheDocument();
-    expect(screen.getByText(/loan actions arrive in phase 8/i)).toBeInTheDocument();
+    // The Phase-8 stub hint is gone; RETURN is now an enabled live button.
     expect(
-      screen.getByRole("button", { name: /return/i }),
-    ).toBeDisabled();
+      screen.queryByText(/loan actions arrive in phase 8/i),
+    ).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /return/i })).toBeEnabled();
+    expect(screen.getByRole("button", { name: /extend/i })).toBeEnabled();
   });
 
-  it("ActiveLoanPanel shows the mint available state when no active loan", () => {
-    renderWithProviders(<ActiveLoanPanel active={[]} />);
+  it("ActiveLoanPanel RETURN opens the return dialog and fires the mutation", async () => {
+    let returned = false;
+    server.use(
+      http.post("/api/workspaces/:wsId/loans/:id/return", () => {
+        returned = true;
+        return HttpResponse.json(loan("l-1", { is_active: false }));
+      }),
+    );
+    renderWithProviders(
+      <ActiveLoanPanel
+        itemId={IT}
+        active={[loan("l-1", { is_active: true })]}
+      />,
+    );
+    const user = userEvent.setup();
+    // Panel RETURN button opens the dialog.
+    await user.click(screen.getByRole("button", { name: /^return$/i }));
+    expect(
+      await screen.findByText(/mark "drill" returned by alice/i),
+    ).toBeInTheDocument();
+    // Now two RETURN buttons exist (panel + dialog confirm); the dialog confirm
+    // is the last one — click it to fire the mutation.
+    const returnButtons = screen.getAllByRole("button", { name: /^return$/i });
+    await user.click(returnButtons[returnButtons.length - 1]);
+    await vi.waitFor(() => expect(returned).toBe(true));
+  });
+
+  it("ActiveLoanPanel overdue shows a danger chip + line from is_overdue", () => {
+    renderWithProviders(
+      <ActiveLoanPanel
+        itemId={IT}
+        active={[loan("l-1", { is_active: true, is_overdue: true })]}
+      />,
+    );
+    expect(screen.getByText(/⚠ overdue/i)).toBeInTheDocument();
+    expect(screen.getByText(/this loan is overdue/i)).toBeInTheDocument();
+  });
+
+  it("ActiveLoanPanel available state shows the ⊕ LOAN THIS ITEM CTA", () => {
+    renderWithProviders(<ActiveLoanPanel itemId={IT} active={[]} />);
     expect(screen.getByText(/available/i)).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /loan this item/i }),
+    ).toBeInTheDocument();
   });
 
-  it("LoanHistoryList lists returned loans", () => {
+  it("LoanHistoryList lists returned loans with the three-way pill", () => {
     renderWithProviders(
       <LoanHistoryList
         history={[
@@ -87,6 +149,21 @@ describe("LoanPanels", () => {
     );
     expect(screen.getByText("Bob")).toBeInTheDocument();
     expect(screen.getByText(/returned/i)).toBeInTheDocument();
+  });
+
+  it("LoanHistoryList renders the OVERDUE pill for a still-out overdue loan", () => {
+    renderWithProviders(
+      <LoanHistoryList
+        history={[
+          loan("l-3", {
+            is_active: true,
+            is_overdue: true,
+            borrower: { id: "b-3", name: "Cara" },
+          }),
+        ]}
+      />,
+    );
+    expect(screen.getByText(/overdue/i)).toBeInTheDocument();
   });
 
   it("LoanHistoryList shows NO LOAN HISTORY when empty", () => {
