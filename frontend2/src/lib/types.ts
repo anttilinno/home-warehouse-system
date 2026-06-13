@@ -20,6 +20,49 @@ export interface User {
   full_name: string;
   avatar_url: string | null;
   has_password: boolean;
+  // Phase 12 (Settings) — GetMe ALSO returns the seven preference fields
+  // (verified handler.go:1035-1048, all omitempty). Optional so older payloads
+  // and the trimmed sample-screen User stay compatible. The preferences
+  // subpages READ current values from here (the shared ["me"] query) and WRITE
+  // via PATCH /users/me/preferences.
+  date_format?: string;
+  time_format?: string;
+  thousand_separator?: string;
+  decimal_separator?: string;
+  language?: string;
+  theme?: string;
+  notification_preferences?: Record<string, boolean>;
+}
+
+// Phase 12 (Settings) — the preference payload shape for PATCH
+// /users/me/preferences. All six string fields + the free-form notification
+// map. Subpages send a Partial<Preferences> (only changed fields), EXCEPT
+// notification_preferences which the backend replaces wholesale (send the full
+// map for that field).
+export interface Preferences {
+  date_format: string;
+  time_format: string;
+  thousand_separator: string;
+  decimal_separator: string;
+  language: string;
+  theme: string;
+  notification_preferences: Record<string, boolean>;
+}
+
+// Phase 12 (Settings) — GET /workspaces/{wsId}/members → { items: Member[] }.
+// email/full_name are optional: they arrive enriched per Plan 12-01's
+// MemberResponse change; the type tolerates absence so MSW fixtures and the
+// real API agree before/after that backend enrichment lands.
+export interface Member {
+  id: string;
+  workspace_id: string;
+  user_id: string;
+  role: string;
+  email?: string;
+  full_name?: string;
+  invited_by?: string;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface AuthTokenResponse {
