@@ -4,19 +4,28 @@ import (
 	"context"
 	"crypto/sha256"
 	"encoding/hex"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
+	"mime"
 	"mime/multipart"
+	"net/http"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/danielgtaylor/huma/v2"
+	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 
 	appMiddleware "github.com/antti/home-warehouse/go-backend/internal/api/middleware"
 	"github.com/antti/home-warehouse/go-backend/internal/infra/events"
+	"github.com/antti/home-warehouse/go-backend/internal/infra/storage"
 )
+
+// MaxFileSize is the multipart upload ceiling for item attachments (25 MiB).
+const MaxFileSize = 25 << 20
 
 // RegisterRoutes registers attachment routes.
 func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broadcaster) {
@@ -257,6 +266,199 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 
 		return nil, nil
 	})
+}
+
+// RegisterUploadHandler registers the Chi multipart upload route that persists
+// REAL bytes (distinct from the huma JSON metadata route at
+// POST /items/{item_id}/attachments/upload, which Phase-10b repair-attachment
+// minting depends on and must stay untouched).
+//
+//	POST /items/{item_id}/attachments/file  (multipart, field "file")
+func RegisterUploadHandler(r chi.Router, svc ServiceInterface, broadcaster *events.Broadcaster) {
+	h := &UploadHandler{svc: svc, broadcaster: broadcaster}
+	r.Post("/items/{item_id}/attachments/file", h.HandleUpload)
+}
+
+// RegisterServeHandler registers the Chi serve/download route that streams the
+// stored bytes back. The path is /attachments/{id}/file — deliberately NOT
+// /attachments/{id} (that GET belongs to the huma router; a bare Chi mirror
+// would collide at boot).
+//
+//	GET /attachments/{id}/file
+func RegisterServeHandler(r chi.Router, svc ServiceInterface, store storage.Storage) {
+	h := &ServeAttachmentHandler{svc: svc, storage: store}
+	r.Get("/attachments/{id}/file", h.HandleServe)
+}
+
+// UploadHandler handles multipart attachment uploads (real bytes).
+type UploadHandler struct {
+	svc         ServiceInterface
+	broadcaster *events.Broadcaster
+}
+
+// HandleUpload parses a multipart form, persists the bytes via the storage-
+// backed service, creates the attachment row, and returns 201 with the
+// AttachmentResponse.
+func (h *UploadHandler) HandleUpload(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
+	if !ok {
+		http.Error(w, "workspace context required", http.StatusUnauthorized)
+		return
+	}
+
+	authUser, ok := appMiddleware.GetAuthUser(ctx)
+	if !ok {
+		http.Error(w, "authentication required", http.StatusUnauthorized)
+		return
+	}
+
+	itemID, err := uuid.Parse(chi.URLParam(r, "item_id"))
+	if err != nil {
+		http.Error(w, "invalid item_id", http.StatusBadRequest)
+		return
+	}
+
+	if err := r.ParseMultipartForm(MaxFileSize); err != nil {
+		http.Error(w, "file too large or invalid form data", http.StatusBadRequest)
+		return
+	}
+
+	file, header, err := r.FormFile("file")
+	if err != nil {
+		http.Error(w, "file is required (multipart field \"file\")", http.StatusBadRequest)
+		return
+	}
+	defer file.Close()
+
+	// Resolve attachment_type (default OTHER) and validate.
+	attachmentType := TypeOther
+	if at := r.FormValue("attachment_type"); at != "" {
+		attachmentType = AttachmentType(at)
+		if !attachmentType.IsValid() {
+			http.Error(w, "invalid attachment type", http.StatusBadRequest)
+			return
+		}
+	}
+
+	var title *string
+	if t := r.FormValue("title"); t != "" {
+		title = &t
+	}
+
+	isPrimary := r.FormValue("is_primary") == "true"
+
+	// Persist the real bytes; File.StorageKey is the real path Save returns.
+	storedFile, err := h.svc.UploadFileBytes(ctx, workspaceID, itemID, header, file, &authUser.ID)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("failed to store file: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	fileID := storedFile.ID()
+	attachment, err := h.svc.CreateAttachment(ctx, CreateAttachmentInput{
+		WorkspaceID:    workspaceID,
+		ItemID:         itemID,
+		FileID:         &fileID,
+		AttachmentType: attachmentType,
+		Title:          title,
+		IsPrimary:      isPrimary,
+		ExternalDocID:  nil,
+	})
+	if err != nil {
+		http.Error(w, fmt.Sprintf("failed to create attachment: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	// Publish the same event shape as the huma upload route.
+	if h.broadcaster != nil {
+		userName := appMiddleware.GetUserDisplayName(ctx)
+		h.broadcaster.Publish(workspaceID, events.Event{
+			Type:       "attachment.created",
+			EntityID:   attachment.ID().String(),
+			EntityType: "attachment",
+			UserID:     authUser.ID,
+			Data: map[string]any{
+				"id":              attachment.ID(),
+				"item_id":         attachment.ItemID(),
+				"attachment_type": string(attachment.AttachmentType()),
+				"user_name":       userName,
+			},
+		})
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusCreated)
+	_ = json.NewEncoder(w).Encode(toAttachmentResponse(attachment))
+}
+
+// ServeAttachmentHandler streams stored attachment bytes back to the client.
+type ServeAttachmentHandler struct {
+	svc     ServiceInterface
+	storage storage.Storage
+}
+
+// HandleServe streams the stored bytes for an attachment id. Workspace-scoped:
+// svc.GetAttachment (WHERE id=$1 AND workspace_id=$2) 404s on cross-tenant ids
+// (T-14b-04). Sets nosniff + Content-Disposition: attachment (F15/T-14b-06).
+func (h *ServeAttachmentHandler) HandleServe(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
+	if !ok {
+		http.Error(w, "workspace context required", http.StatusUnauthorized)
+		return
+	}
+
+	id, err := uuid.Parse(chi.URLParam(r, "id"))
+	if err != nil {
+		http.Error(w, "invalid attachment id", http.StatusBadRequest)
+		return
+	}
+
+	// Workspace-scoped lookup — cross-tenant id resolves to 404.
+	attachment, err := h.svc.GetAttachment(ctx, id, workspaceID)
+	if err != nil || attachment == nil {
+		http.Error(w, "attachment not found", http.StatusNotFound)
+		return
+	}
+
+	if attachment.FileID() == nil {
+		// Link-only attachment (e.g. Paperless) — no bytes to serve.
+		http.Error(w, "attachment has no stored file", http.StatusNotFound)
+		return
+	}
+
+	file, err := h.svc.GetFile(ctx, *attachment.FileID(), workspaceID)
+	if err != nil || file == nil {
+		http.Error(w, "attachment not found", http.StatusNotFound)
+		return
+	}
+
+	reader, err := h.storage.Get(ctx, file.StorageKey())
+	if err != nil {
+		http.Error(w, "attachment file not found", http.StatusNotFound)
+		return
+	}
+	defer reader.Close()
+
+	// Content-Type from the STORED mime, fallback to extension sniff.
+	mimeType := file.MimeType()
+	if mimeType == "" {
+		mimeType = mime.TypeByExtension(strings.ToLower(filepath.Ext(file.OriginalName())))
+		if mimeType == "" {
+			mimeType = "application/octet-stream"
+		}
+	}
+	w.Header().Set("Content-Type", mimeType)
+
+	// Security headers for serving user-uploaded content (audit F15).
+	w.Header().Set("X-Content-Type-Options", "nosniff")
+	w.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=%q", storage.SanitizeFilename(file.OriginalName())))
+
+	w.WriteHeader(http.StatusOK)
+	_, _ = io.Copy(w, reader)
 }
 
 func toAttachmentResponse(a *Attachment) AttachmentResponse {
