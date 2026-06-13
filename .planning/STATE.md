@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v3.0
 milestone_name: Retro-OS Pastel Frontend
-status: executing
+status: completed
 stopped_at: Phase 2 context gathered
-last_updated: "2026-06-13T18:42:24.810Z"
-last_activity: 2026-06-13 -- Phase 14b execution started
+last_updated: "2026-06-13T19:10:10.049Z"
+last_activity: 2026-06-13 -- Phase 14b marked complete
 progress:
   total_phases: 38
-  completed_phases: 17
+  completed_phases: 18
   total_plans: 97
-  completed_plans: 95
-  percent: 45
+  completed_plans: 100
+  percent: 47
 ---
 
 # Project State: Home Warehouse System
@@ -21,14 +21,14 @@ progress:
 See: `.planning/PROJECT.md` (updated 2026-04-18)
 
 **Core value:** Reliable inventory access anywhere -- online or offline -- with seamless sync
-**Current focus:** Phase 14b — attachments
+**Current focus:** Phase 15 — i18n catalog gap-fill (et + ru)
 
 ## Current Position
 
-Phase: 14b (attachments) — EXECUTING
+Phase: 14b — COMPLETE
 Plan: 1 of 5
-Status: Executing Phase 14b
-Last activity: 2026-06-13 -- Phase 14b execution started
+Status: Phase 14b complete
+Last activity: 2026-06-13 -- Phase 14b marked complete
 
 ## Performance Metrics
 
@@ -94,7 +94,7 @@ Last activity: 2026-06-13 -- Phase 14b execution started
 | 13 | Dashboard | DASH-01..05, NOTIF-01..03 (8) | 6, 7b, 10b | Complete |
 | 13b | Analytics + Out-of-stock (Gap G-6) | ANL-01..04 (4) | 13 | Complete |
 | 14 | System group | SYS-01..04, WISH-01..02, DECL-01..02 (8) | 7 | Complete |
-| 14b | Attachments + Paperless (Gap G-7) | ATT-01..03, PPL-01..03 (6) | 7, 12 | Not started |
+| 14b | Attachments + Paperless (Gap G-7) | ATT-01..03, PPL-01..03 (6) | 7, 12 | Complete |
 | 15 | i18n catalog gap-fill (et + ru) | I18N-01..03 (3) | 6, 12 | Not started |
 | 16 | Command Palette | TUI-05 (1) | 6 | Not started |
 | 17 | Polish & Quality | POL-01..05, POL-06 (6) | 14 | Not started |

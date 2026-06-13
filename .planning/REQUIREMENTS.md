@@ -223,15 +223,15 @@
 
 ### Attachments (ATT) — Phase 14b (Gap G-7)
 
-- [ ] **ATT-01**: User can upload + list non-photo attachments on an item detail page using the Phase 4 FileInput atom.
-- [ ] **ATT-02**: User can set a primary attachment and delete attachments.
-- [ ] **ATT-03**: The cross-tenant attachment IDOR audit finding (`docs/audit/`) is fixed and guarded with a test.
+- [x] **ATT-01**: User can upload + list non-photo attachments on an item detail page using the Phase 4 FileInput atom.
+- [x] **ATT-02**: User can set a primary attachment and delete attachments.
+- [x] **ATT-03**: The cross-tenant attachment IDOR audit finding (`docs/audit/`) is fixed and guarded with a test.
 
 ### Paperless (PPL) — Phase 14b (Gap G-7)
 
-- [ ] **PPL-01**: User can configure Paperless-ngx connection settings (get/put/delete) from a page that slots into the Settings hub.
-- [ ] **PPL-02**: User can search Paperless documents from within the app.
-- [ ] **PPL-03**: User can link a Paperless document to an item.
+- [x] **PPL-01**: User can configure Paperless-ngx connection settings (get/put/delete) from a page that slots into the Settings hub.
+- [x] **PPL-02**: User can search Paperless documents from within the app.
+- [x] **PPL-03**: User can link a Paperless document to an item.
 
 ### Wishlist (WISH) — Phase 14 (Gap G-3)
 
@@ -441,12 +441,12 @@
 | ANL-02 | Phase 13b | Complete |
 | ANL-03 | Phase 13b | Complete |
 | ANL-04 | Phase 13b | Complete |
-| ATT-01 | Phase 14b | Pending |
-| ATT-02 | Phase 14b | Pending |
-| ATT-03 | Phase 14b | Pending |
-| PPL-01 | Phase 14b | Pending |
-| PPL-02 | Phase 14b | Pending |
-| PPL-03 | Phase 14b | Pending |
+| ATT-01 | Phase 14b | Complete |
+| ATT-02 | Phase 14b | Complete |
+| ATT-03 | Phase 14b | Complete |
+| PPL-01 | Phase 14b | Complete |
+| PPL-02 | Phase 14b | Complete |
+| PPL-03 | Phase 14b | Complete |
 | WISH-01 | Phase 14 | Complete |
 | WISH-02 | Phase 14 | Complete |
 | DECL-01 | Phase 14 | Complete |
