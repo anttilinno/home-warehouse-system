@@ -44,7 +44,28 @@ export default defineConfig({
     // body is tree-shaken to a no-op). Re-enable per-environment if a
     // future phase adds error-reporting integration that needs them.
     sourcemap: false,
-    // Forward-compat (Phase 11): scanner WASM manualChunks slot
-    // rollupOptions: { output: { manualChunks: { /* scanner */ } } },
+    // Phase 11 (Scan): isolate the scanner stack into its own lazy chunk so the
+    // ~500-700 kB raw (zxing-wasm via barcode-detector + @yudiel/react-qr-scanner)
+    // never inflates the main bundle. Pairs with 11-06's React.lazy of ScanPage
+    // (Pattern 5) — the scanner bytes load only when /scan is visited. The chunk
+    // stays empty until the first app-side import lands (rolldown no-ops an
+    // unreachable rule). Vite 8 ships rolldown: manualChunks MUST be a function
+    // (id) => string | undefined, NOT a record (archived 64-02 lesson). Declared
+    // as a data structure so membership is readable + greppable.
+    rollupOptions: {
+      output: {
+        manualChunks: (id: string): string | undefined => {
+          const scannerModules = [
+            "@yudiel/react-qr-scanner",
+            "barcode-detector",
+            "zxing-wasm",
+          ];
+          if (scannerModules.some((mod) => id.includes(mod))) {
+            return "scanner";
+          }
+          return undefined;
+        },
+      },
+    },
   },
 });

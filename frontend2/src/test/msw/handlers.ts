@@ -269,7 +269,39 @@ const EXPIRING = {
   total: 2,
 };
 
+// --- Barcode product lookup (Phase 11 Plan 01, SCAN-10) ---
+// GET /api/barcode/:barcode — UPC product-prefill lookup (NOT the item by-barcode
+// route, which is /workspaces/:wsId/items/by-barcode/:code). Verified response
+// shape (11-RESEARCH Pattern 6 / OQ5): { barcode, name, brand?, category?,
+// image_url?, found }. `name` is "" when not found. The handler returns a FOUND
+// fixture for the canonical found code and a NOT-FOUND payload for the canonical
+// not-found code; any other code defaults to found so happy-path tests stay
+// terse. Per-case overrides via server.use(). The canonical FOUND code is
+// "0123456789012" (any non-not-found code resolves to the found product);
+// the canonical NOT-FOUND code is BARCODE_NOT_FOUND_CODE below.
+const BARCODE_NOT_FOUND_CODE = "9999999999999";
+
+const BARCODE_PRODUCT_FOUND = {
+  name: "Cordless Drill",
+  brand: "Acme",
+  category: "Power Tools",
+  image_url: "https://example.com/drill.jpg",
+};
+
 export const handlers = [
+  // --- Barcode product lookup (SCAN-10) ---
+  http.get("/api/barcode/:barcode", ({ params }) => {
+    const barcode = String(params.barcode);
+    if (barcode === BARCODE_NOT_FOUND_CODE) {
+      return HttpResponse.json({ barcode, name: "", found: false });
+    }
+    return HttpResponse.json({
+      barcode,
+      ...BARCODE_PRODUCT_FOUND,
+      found: true,
+    });
+  }),
+
   // --- Auth ---
   http.post("/api/auth/login", () => HttpResponse.json(PLACEHOLDER_TOKENS)),
   http.post("/api/auth/register", () => HttpResponse.json(PLACEHOLDER_TOKENS)),
