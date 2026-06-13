@@ -60,6 +60,20 @@ test.describe.serial("Settings hub (one login)", () => {
   // restore the seed user's original name at the end (seed hygiene / T-12-16).
   let originalFullName = "";
 
+  // This whole suite mutates the SHARED singleton seeder user (profile name,
+  // language) and restores it in afterAll. The two Playwright projects
+  // (chromium+firefox) run concurrently against the same dev user, so running
+  // the suite in both races on the shared mutations/restore. Pin to chromium —
+  // one browser is sufficient for a settings-form contract guard. (beforeEach
+  // skip is the reliable per-test form; a describe-level conditional skip is
+  // not honored consistently under describe.serial.)
+  test.beforeEach(({ browserName }) => {
+    test.skip(
+      browserName !== "chromium",
+      "mutates the shared singleton seeder user — chromium-only (parallel-project race)",
+    );
+  });
+
   test.beforeAll(async ({ browser }) => {
     page = await browser.newPage();
     await loginAsSeeder(page);
