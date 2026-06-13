@@ -888,7 +888,7 @@ Plans:
 | 11 | v3.0 | 8/8 | Complete   | 2026-06-13 |
 | 12 | v3.0 | 7/7 | Complete   | 2026-06-13 |
 | 13 | v3.0 | 5/5 | Complete   | 2026-06-13 |
-| 13b | v3.0 | 0/TBD | Not started | - |
+| 13b | v3.0 | 3/5 | In Progress|  |
 | 14 | v3.0 | 0/TBD | Not started | - |
 | 14b | v3.0 | 0/TBD | Not started | - |
 | 15 | v3.0 | 0/TBD | Not started | - |
