@@ -16,6 +16,7 @@
     "lint:i18n:format": "node ../scripts/check-i18n-format.mjs",
     "lint:i18n": "node ../scripts/check-i18n-catalog.mjs",
     "lint:tsc": "tsc -b --noEmit",
+    "lint:bundle": "vite build && node ../scripts/check-bundle-budget.mjs",
     "i18n:extract": "lingui extract",
     "i18n:compile": "lingui compile"
   },
