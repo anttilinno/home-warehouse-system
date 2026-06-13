@@ -5,12 +5,13 @@ import { BrandMark } from "@/components/BrandMark";
 import { BevelButton, RetroStatusDot } from "@/components/retro";
 import { useModalStack } from "@/components/modal";
 import { useSSEStatus } from "@/features/sse";
+import { NotificationsBell } from "@/features/notifications/components/NotificationsBell";
 import { WorkspaceSwitcher } from "./WorkspaceSwitcher";
 
 // TopBar (SHELL-03): the slim 40px banner every authenticated route renders.
 // Brand + the live WorkspaceSwitcher pill (AUTH-06; reads the D-12 SSOT) +
 // ONLINE dot + sse-slot RetroStatusDot (both bound to live SSE — Phase 6) +
-// reserved disabled bell slot (Phase 13) + a user pill whose menu's only
+// live notifications bell (Phase 13) + a user pill whose menu's only
 // enabled item is a confirm-before Log out (BAR-05 — logout is NEVER reachable
 // via bare ESC; the confirm pushes onto the modal stack so ESC closes the dialog
 // instead of logging out).
@@ -111,15 +112,8 @@ export function TopBar({
 
       <span className="flex-1" />
 
-      {/* Reserved notifications bell — disabled (Phase 13). */}
-      <span
-        data-testid="bell-slot"
-        aria-disabled="true"
-        title="Coming soon"
-        className="grid h-[28px] w-[28px] flex-none cursor-default place-items-center border-2 border-border-ink bg-bg-panel font-mono text-[14px] leading-none opacity-50"
-      >
-        <span aria-hidden="true">▦</span>
-      </span>
+      {/* Live notifications bell — bell button + unread badge + dropdown (Phase 13). */}
+      <NotificationsBell />
 
       {/* SSE status slot — the live RetroStatusDot fed by useSSEStatus (Phase 6).
           Atom stays dumb: TopBar maps connected→"live"/"idle" (Pitfall 6). */}

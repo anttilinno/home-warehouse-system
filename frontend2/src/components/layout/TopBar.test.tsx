@@ -2,7 +2,10 @@ import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { I18nProvider } from "@lingui/react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { i18n } from "@/lib/i18n";
+import { server } from "@/test/msw/server";
+import { notificationHandlers } from "@/test/msw/notificationHandlers";
 import { ModalStackProvider } from "@/components/modal";
 import type { User, Workspace } from "@/lib/types";
 import type { WorkspaceContextValue } from "@/features/workspace/WorkspaceProvider";
@@ -56,11 +59,18 @@ const user: User = {
 } as User;
 
 // TopBar's logout confirm pushes onto the modal stack; wrap every render in the
-// provider + i18n singleton so <Trans> and ESC ordering resolve.
+// provider + i18n singleton so <Trans> and ESC ordering resolve. Phase 13: the
+// live NotificationsBell calls useQuery (unread-count poll), so a
+// QueryClientProvider is also required.
 function renderTopBar(ui: React.ReactElement) {
+  const client = new QueryClient({
+    defaultOptions: { queries: { retry: false } },
+  });
   return render(
     <I18nProvider i18n={i18n}>
-      <ModalStackProvider>{ui}</ModalStackProvider>
+      <QueryClientProvider client={client}>
+        <ModalStackProvider>{ui}</ModalStackProvider>
+      </QueryClientProvider>
     </I18nProvider>,
   );
 }
@@ -74,6 +84,9 @@ describe("TopBar", () => {
   beforeEach(() => {
     // Default each test to a connected stream; SSE-slot tests flip this.
     sseStatus = { connected: true, lastEventAt: null };
+    // The live NotificationsBell polls /api/notifications/unread/count on mount;
+    // register the user-scoped handlers so onUnhandledRequest:"error" stays quiet.
+    server.use(...notificationHandlers);
   });
 
   it("renders a banner landmark with the brand mark", () => {
@@ -98,9 +111,11 @@ describe("TopBar", () => {
     expect(screen.getByText("ONLINE")).toBeInTheDocument();
     rerender(
       <I18nProvider i18n={i18n}>
-        <ModalStackProvider>
-          <TopBar user={user} online={false} onLogout={vi.fn()} />
-        </ModalStackProvider>
+        <QueryClientProvider client={new QueryClient()}>
+          <ModalStackProvider>
+            <TopBar user={user} online={false} onLogout={vi.fn()} />
+          </ModalStackProvider>
+        </QueryClientProvider>
       </I18nProvider>,
     );
     expect(screen.getByText("OFFLINE")).toBeInTheDocument();
@@ -113,11 +128,15 @@ describe("TopBar", () => {
     expect(screen.getByText("OFFLINE")).toBeInTheDocument();
   });
 
-  it("renders the reserved bell slot disabled", () => {
+  it("renders the live notifications bell at the stable bell-slot testid (Phase 13)", () => {
     renderTopBar(<TopBar user={user} onLogout={vi.fn()} />);
     const bell = screen.getByTestId("bell-slot");
-    expect(bell).toHaveAttribute("aria-disabled", "true");
-    expect(bell).toHaveAttribute("title", "Coming soon");
+    // The reserved disabled placeholder is gone — bell-slot is now an
+    // interactive button (NotificationsBell) opening the notifications dropdown.
+    expect(bell.tagName).toBe("BUTTON");
+    expect(bell).not.toHaveAttribute("aria-disabled");
+    expect(bell).toHaveAttribute("aria-haspopup", "menu");
+    expect(bell).toHaveAttribute("aria-label", "Notifications");
   });
 
   it("binds the sse-slot RetroStatusDot to live state — 'live' when connected", () => {
