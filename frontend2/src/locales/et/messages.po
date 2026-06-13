@@ -15,89 +15,89 @@ msgstr ""
 
 #: src/features/repairs/components/CompleteRepairDialog.tsx
 msgid "— Keep current condition"
-msgstr ""
+msgstr "— Säilita praegune seisukord"
 
 #: src/features/inventory/components/MoveDialog.tsx
 #: src/features/inventory/InventoryFormPage.tsx
 msgid "— No container"
-msgstr ""
+msgstr "— Konteinerita"
 
 #: src/features/loans/LoanFormPage.tsx
 msgid "— Select a borrower"
-msgstr ""
+msgstr "— Vali laenaja"
 
 #: src/features/inventory/components/MoveDialog.tsx
 #: src/features/inventory/InventoryFormPage.tsx
 msgid "— Select a location"
-msgstr ""
+msgstr "— Vali asukoht"
 
 #: src/features/loans/LoanFormPage.tsx
 msgid "— Select an inventory entry"
-msgstr ""
+msgstr "— Vali laokirje"
 
 #: src/features/inventory/InventoryFormPage.tsx
 msgid "— Select an item"
-msgstr ""
+msgstr "— Vali ese"
 
 #: src/features/items/components/LoanPanels.tsx
 #: src/features/loans/components/BorrowerLoanPanels.tsx
 msgid "— still out"
-msgstr ""
+msgstr "— endiselt väljas"
 
 #. placeholder {0}: archiveTarget?.name ?? ""
 #. placeholder {1}: n === 1 ? "" : "s"
 #: src/features/taxonomy/components/CategoriesTab.tsx
 msgid "\"{0}\" has {n} item{1} assigned to it. Archiving keeps those items but hides this category from pickers until you restore it."
-msgstr ""
+msgstr "„{0}“ on määratud {n} ese{1}. Arhiveerimine säilitab need esemed, kuid peidab selle kategooria valikutest, kuni selle taastad."
 
 #. placeholder {0}: deleteTarget?.name ?? ""
 #. placeholder {1}: n === 1 ? "" : "s"
 #: src/features/taxonomy/components/ContainersTab.tsx
 msgid "\"{0}\" holds {n} item{1}. Deleting it will move those items out of any container (they stay in their location) and then delete the container. This can't be undone."
-msgstr ""
+msgstr "„{0}“ sisaldab {n} ese{1}. Kustutamine viib need esemed konteinerist välja (need jäävad oma asukohta) ja seejärel kustutab konteineri. Seda ei saa tagasi võtta."
 
 #: src/features/settings/NotificationsPage.tsx
 msgid "(due soon, overdue)"
-msgstr ""
+msgstr "(varsti tähtajas, üle tähtaja)"
 
 #: src/features/settings/NotificationsPage.tsx
 msgid "(invites, joins)"
-msgstr ""
+msgstr "(kutsed, liitumised)"
 
 #: src/features/settings/NotificationsPage.tsx
 msgid "(items expiring)"
-msgstr ""
+msgstr "(aeguvad esemed)"
 
 #: src/features/taxonomy/components/ContainersTab.tsx
 msgid "(No location)"
-msgstr ""
+msgstr "(Asukohata)"
 
 #: src/features/taxonomy/components/CategoryFormDialog.tsx
 #: src/features/taxonomy/components/LocationFormDialog.tsx
 msgid "(Root — no parent)"
-msgstr ""
+msgstr "(Juur — ülemkirjeta)"
 
 #: src/features/settings/NotificationsPage.tsx
 msgid "(service due)"
-msgstr ""
+msgstr "(hooldus tähtajas)"
 
 #. placeholder {0}: loan.item.name
 #: src/features/loans/components/ExtendLoanDialog.tsx
 msgid "{0} — currently due {currentDue}."
-msgstr ""
+msgstr "{0} — praegune tähtaeg {currentDue}."
 
 #. placeholder {0}: loan.item.name
 #. placeholder {1}: loan.borrower.name
 #: src/features/loans/components/EditLoanDialog.tsx
 msgid "{0} — loaned to {1}."
-msgstr ""
+msgstr "{0} — laenatud: {1}."
 
 #. placeholder {0}: a.name
 #: src/features/taxonomy/hooks/useCategoryMutations.ts
 #: src/features/taxonomy/hooks/useLabelMutations.ts
 #: src/features/taxonomy/hooks/useLocationMutations.ts
 msgid "{0} archived."
-msgstr ""
+msgstr "{0} arhiveeritud."
 
 #. placeholder {0}: c.name
 #. placeholder {0}: cat.name
@@ -107,575 +107,575 @@ msgstr ""
 #: src/features/taxonomy/hooks/useLabelMutations.ts
 #: src/features/taxonomy/hooks/useLocationMutations.ts
 msgid "{0} created."
-msgstr ""
+msgstr "{0} loodud."
 
 #. placeholder {0}: a.name
 #: src/features/taxonomy/hooks/useContainerMutations.ts
 #: src/features/taxonomy/hooks/useLabelMutations.ts
 msgid "{0} deleted."
-msgstr ""
+msgstr "{0} kustutatud."
 
 #. placeholder {0}: selectedIds.length
 #: src/features/items/components/PhotoGallery.tsx
 msgid "{0} photo(s) will be permanently removed."
-msgstr ""
+msgstr "{0} foto(t) eemaldatakse jäädavalt."
 
 #. placeholder {0}: a.name
 #: src/features/taxonomy/hooks/useCategoryMutations.ts
 #: src/features/taxonomy/hooks/useLabelMutations.ts
 #: src/features/taxonomy/hooks/useLocationMutations.ts
 msgid "{0} restored."
-msgstr ""
+msgstr "{0} taastatud."
 
 #. placeholder {0}: selectedIds.length
 #: src/features/items/components/PhotoGallery.tsx
 msgid "{0} SELECTED"
-msgstr ""
+msgstr "{0} VALITUD"
 
 #. placeholder {0}: s.total_inventory
 #: src/features/dashboard/DashboardPage.tsx
 msgid "{0} units total"
-msgstr ""
+msgstr "{0} ühikut kokku"
 
 #: src/features/inventory/ExpiringPage.tsx
 msgid "{count} expiring"
-msgstr ""
+msgstr "{count} aeguvat"
 
 #: src/features/inventory/ExpiringPage.tsx
 msgid "{d} days"
-msgstr ""
+msgstr "{d} päeva"
 
 #. placeholder {0}: queue.length
 #: src/features/items/components/PhotoUpload.tsx
 msgid "{done}/{0} uploaded"
-msgstr ""
+msgstr "{done}/{0} üles laaditud"
 
 #: src/features/settings/AccountsPage.tsx
 msgid "{label} unlinked."
-msgstr ""
+msgstr "{label} lahti ühendatud."
 
 #: src/features/dashboard/components/SystemAlertsPanel.tsx
 msgid "{overdueCount} overdue"
-msgstr ""
+msgstr "{overdueCount} üle tähtaja"
 
 #: src/features/approvals/ApprovalsPage.tsx
 msgid "{total} pending"
-msgstr ""
+msgstr "{total} ootel"
 
 #: src/features/settings/PaperlessPage.tsx
 msgid "••••••• (stored — leave blank to keep)"
-msgstr ""
+msgstr "••••••• (salvestatud — säilitamiseks jäta tühjaks)"
 
 #: src/features/borrowers/BorrowerDetailPage.tsx
 msgid "← BACK TO BORROWERS"
-msgstr ""
+msgstr "← TAGASI LAENAJATE JUURDE"
 
 #: src/features/inventory/ExpiringPage.tsx
 msgid "← BACK TO INVENTORY"
-msgstr ""
+msgstr "← TAGASI LAOSEISU JUURDE"
 
 #: src/features/items/ItemDetailPage.tsx
 msgid "← BACK TO ITEMS"
-msgstr ""
+msgstr "← TAGASI ESEMETE JUURDE"
 
 #: src/features/inventory/InventoryListPage.tsx
 msgid "↧"
-msgstr ""
+msgstr "↧"
 
 #: src/features/loans/components/LoanRowActions.tsx
 msgid "↧ EDIT"
-msgstr ""
+msgstr "↧ MUUDA"
 
 #: src/routes/demo/DemoPage.tsx
 msgid "+ Add item"
-msgstr ""
+msgstr "+ Lisa ese"
 
 #: src/features/loans/LoansListPage.tsx
 msgid "−{overdueBy}d"
-msgstr ""
+msgstr "−{overdueBy}p"
 
 #: src/features/items/components/InventoryPanel.tsx
 #: src/features/wishlist/WishlistPage.tsx
 msgid "⊕ ADD"
-msgstr ""
+msgstr "⊕ LISA"
 
 #: src/features/borrowers/BorrowersListPage.tsx
 msgid "⊕ ADD BORROWER"
-msgstr ""
+msgstr "⊕ LISA LAENAJA"
 
 #: src/features/taxonomy/components/ContainersTab.tsx
 msgid "⊕ ADD CONTAINER"
-msgstr ""
+msgstr "⊕ LISA KONTEINER"
 
 #: src/features/inventory/InventoryListPage.tsx
 #: src/features/items/components/InventoryPanel.tsx
 msgid "⊕ ADD ENTRY"
-msgstr ""
+msgstr "⊕ LISA KIRJE"
 
 #: src/features/items/components/ItemAttachmentPanel.tsx
 #: src/features/repairs/components/RepairAttachmentPanel.tsx
 msgid "⊕ ADD FILE"
-msgstr ""
+msgstr "⊕ LISA FAIL"
 
 #: src/features/items/ItemsListPage.tsx
 #: src/features/wishlist/WishlistPage.tsx
 msgid "⊕ ADD ITEM"
-msgstr ""
+msgstr "⊕ LISA ESE"
 
 #: src/features/items/components/ItemLabels.tsx
 #: src/features/taxonomy/components/LabelsTab.tsx
 msgid "⊕ ADD LABEL"
-msgstr ""
+msgstr "⊕ LISA SILT"
 
 #: src/features/items/ItemDetailPage.tsx
 #: src/features/repairs/components/RepairPhotoPanel.tsx
 msgid "⊕ ADD PHOTOS"
-msgstr ""
+msgstr "⊕ LISA FOTOSID"
 
 #: src/features/repairs/components/RepairsDrawer.tsx
 msgid "⊕ ADD REPAIR"
-msgstr ""
+msgstr "⊕ LISA REMONT"
 
 #: src/features/taxonomy/components/CategoriesTab.tsx
 msgid "⊕ ADD ROOT CATEGORY"
-msgstr ""
+msgstr "⊕ LISA JUURKATEGOORIA"
 
 #: src/features/taxonomy/components/LocationsTab.tsx
 msgid "⊕ ADD ROOT LOCATION"
-msgstr ""
+msgstr "⊕ LISA JUURASUKOHT"
 
 #: src/features/maintenance/components/MaintenanceDrawer.tsx
 msgid "⊕ ADD SCHEDULE"
-msgstr ""
+msgstr "⊕ LISA AJAKAVA"
 
 #: src/features/items/components/LoanPanels.tsx
 msgid "⊕ LOAN THIS ITEM"
-msgstr ""
+msgstr "⊕ LAENUTA SEE ESE"
 
 #: src/features/borrowers/BorrowersListPage.tsx
 msgid "⊕ NEW BORROWER"
-msgstr ""
+msgstr "⊕ UUS LAENAJA"
 
 #: src/features/loans/LoansListPage.tsx
 msgid "⊕ NEW LOAN"
-msgstr ""
+msgstr "⊕ UUS LAENUTUS"
 
 #: src/components/retro/filters/SavedFilters.tsx
 msgid "▾ PRESETS"
-msgstr ""
+msgstr "▾ EELSEADED"
 
 #: src/features/items/components/PhotoGallery.tsx
 msgid "★ PRIMARY"
-msgstr ""
+msgstr "★ PEAMINE"
 
 #: src/features/items/components/PhotoGallery.tsx
 msgid "★ SET PRIMARY"
-msgstr ""
+msgstr "★ MÄÄRA PEAMISEKS"
 
 #: src/features/repairs/components/RepairRecordDialog.tsx
 #: src/features/repairs/components/RepairsDrawer.tsx
 msgid "⚖ WARRANTY"
-msgstr ""
+msgstr "⚖ GARANTII"
 
 #. placeholder {0}: Math.abs(days)
 #: src/features/loans/components/BorrowerLoanPanels.tsx
 msgid "⚠ −{0}d"
-msgstr ""
+msgstr "⚠ −{0}p"
 
 #: src/features/borrowers/BorrowerDetailPage.tsx
 msgid "⚠ Active loans"
-msgstr ""
+msgstr "⚠ Aktiivsed laenutused"
 
 #: src/features/items/components/LoanPanels.tsx
 msgid "⚠ Overdue"
-msgstr ""
+msgstr "⚠ Üle tähtaja"
 
 #: src/features/approvals/ApprovalsPage.tsx
 msgid "✓ APPROVE"
-msgstr ""
+msgstr "✓ KINNITA"
 
 #: src/components/retro/filters/BulkActionBar.tsx
 #: src/features/items/components/PhotoGallery.tsx
 msgid "✕ CLEAR"
-msgstr ""
+msgstr "✕ TÜHJENDA"
 
 #: src/features/items/components/PhotoLightbox.tsx
 msgid "✕ CLOSE"
-msgstr ""
+msgstr "✕ SULGE"
 
 #: src/features/approvals/ApprovalsPage.tsx
 msgid "✕ REJECT"
-msgstr ""
+msgstr "✕ LÜKKA TAGASI"
 
 #: src/features/inventory/InventoryListPage.tsx
 msgid "⟳"
-msgstr ""
+msgstr "⟳"
 
 #. placeholder {0}: selectedIds.length
 #: src/features/items/components/PhotoGallery.tsx
 msgid "⤓ DOWNLOAD {0}"
-msgstr ""
+msgstr "⤓ LAE ALLA {0}"
 
 #: src/features/items/components/PhotoGallery.tsx
 msgid "⤓ DOWNLOAD ALL"
-msgstr ""
+msgstr "⤓ LAE KÕIK ALLA"
 
 #: src/features/items/ItemsListPage.tsx
 msgid "⤓ EXPORT"
-msgstr ""
+msgstr "⤓ EKSPORDI"
 
 #: src/features/declutter/DeclutterPage.tsx
 #: src/features/inventory/InventoryListPage.tsx
 #: src/features/loans/LoansListPage.tsx
 msgid "⤓ EXPORT CSV"
-msgstr ""
+msgstr "⤓ EKSPORDI CSV"
 
 #: src/features/inventory/InventoryListPage.tsx
 msgid "🔧"
-msgstr ""
+msgstr "🔧"
 
 #: src/features/dashboard/components/HudRow.tsx
 msgid "14-day activity"
-msgstr ""
+msgstr "14 päeva tegevus"
 
 #: src/routes/demo/DemoPage.tsx
 msgid "A centered-modal retro-os Window. ESC pops it via the modal stack."
-msgstr ""
+msgstr "Keskele paigutatud modaalne retro-os aken. ESC sulgeb selle modaalipinu kaudu."
 
 #: src/routes/demo/DemoPage.tsx
 msgid "A helpful hint."
-msgstr ""
+msgstr "Kasulik vihje."
 
 #: src/features/approvals/ApprovalsPage.tsx
 msgid "A reason is required to reject."
-msgstr ""
+msgstr "Tagasilükkamiseks on vaja põhjust."
 
 #: src/features/settings/SettingsLandingPage.tsx
 msgid "ACCOUNT"
-msgstr ""
+msgstr "KONTO"
 
 #: src/features/auth/RegisterPage.tsx
 msgid "Account created — welcome."
-msgstr ""
+msgstr "Konto loodud — tere tulemast."
 
 #: src/features/inventory/InventoryFormPage.tsx
 #: src/features/wishlist/components/WishlistFormDialog.tsx
 #: src/features/wishlist/WishlistPage.tsx
 msgid "Acquired"
-msgstr ""
+msgstr "Soetatud"
 
 #: src/features/wishlist/WishlistPage.tsx
 msgid "ACQUIRED"
-msgstr ""
+msgstr "SOETATUD"
 
 #: src/features/approvals/ApprovalsPage.tsx
 #: src/features/dashboard/DashboardPage.tsx
 #: src/features/my-changes/MyChangesPage.tsx
 msgid "Action"
-msgstr ""
+msgstr "Toiming"
 
 #: src/features/dashboard/DashboardPage.tsx
 msgid "action needed"
-msgstr ""
+msgstr "vajab tegutsemist"
 
 #: src/features/settings/MembersPage.tsx
 #: src/features/settings/SecurityPage.tsx
 msgid "Actions"
-msgstr ""
+msgstr "Toimingud"
 
 #: src/components/scan/ScanResultBanner.tsx
 msgid "ACTIONS"
-msgstr ""
+msgstr "TOIMINGUD"
 
 #: src/features/dashboard/DashboardPage.tsx
 msgid "active"
-msgstr ""
+msgstr "aktiivne"
 
 #: src/features/loans/LoansListPage.tsx
 msgid "Active"
-msgstr ""
+msgstr "Aktiivne"
 
 #: src/features/loans/LoansListPage.tsx
 msgid "ACTIVE"
-msgstr ""
+msgstr "AKTIIVNE"
 
 #: src/features/dashboard/components/HudRow.tsx
 msgid "Active loans"
-msgstr ""
+msgstr "Aktiivsed laenutused"
 
 #: src/features/loans/components/BorrowerLoanPanels.tsx
 msgid "ACTIVE LOANS"
-msgstr ""
+msgstr "AKTIIVSED LAENUTUSED"
 
 #: src/features/settings/SecurityPage.tsx
 msgid "active now"
-msgstr ""
+msgstr "praegu aktiivne"
 
 #: src/features/dashboard/DashboardPage.tsx
 msgid "Actor"
-msgstr ""
+msgstr "Tegija"
 
 #: src/features/settings/MembersPage.tsx
 msgid "Add"
-msgstr ""
+msgstr "Lisa"
 
 #: src/features/inventory/InventoryFormPage.tsx
 msgid "ADD ENTRY"
-msgstr ""
+msgstr "LISA KIRJE"
 
 #: src/features/items/components/AddAttachmentDialog.tsx
 #: src/features/repairs/components/AddAttachmentDialog.tsx
 msgid "ADD FILE"
-msgstr ""
+msgstr "LISA FAIL"
 
 #: src/features/wishlist/components/WishlistFormDialog.tsx
 msgid "Add item"
-msgstr ""
+msgstr "Lisa ese"
 
 #: src/features/items/ItemFormPage.tsx
 msgid "ADD ITEM"
-msgstr ""
+msgstr "LISA ESE"
 
 #: src/features/items/components/PhotoUpload.tsx
 msgid "ADD PHOTOS"
-msgstr ""
+msgstr "LISA FOTOSID"
 
 #: src/features/repairs/components/RepairForm.tsx
 msgid "ADD REPAIR"
-msgstr ""
+msgstr "LISA REMONT"
 
 #: src/features/maintenance/components/MaintenanceForm.tsx
 msgid "ADD SCHEDULE"
-msgstr ""
+msgstr "LISA AJAKAVA"
 
 #: src/features/wishlist/components/WishlistFormDialog.tsx
 msgid "ADD TO WISHLIST"
-msgstr ""
+msgstr "LISA SOOVINIMEKIRJA"
 
 #: src/features/taxonomy/components/LocationsTab.tsx
 msgid "Add your first location — a room, shelf, or area. Nest sub-locations to mirror your space."
-msgstr ""
+msgstr "Lisa oma esimene asukoht — tuba, riiul või ala. Loo alamasukohti, et peegeldada oma ruumi."
 
 #: src/features/wishlist/components/WishlistFormDialog.tsx
 msgid "Added to wishlist."
-msgstr ""
+msgstr "Lisatud soovinimekirja."
 
 #: src/features/analytics/components/OutOfStockTable.tsx
 msgid "All items are in stock. Anything that drops below its minimum will surface here."
-msgstr ""
+msgstr "Kõik esemed on laos. Kõik, mis langeb alla miinimumi, ilmub siia."
 
 #: src/features/settings/SecurityPage.tsx
 msgid "All other sessions revoked."
-msgstr ""
+msgstr "Kõik teised seansid tühistatud."
 
 #: src/features/auth/RegisterPage.tsx
 msgid "Already have an account?"
-msgstr ""
+msgstr "On juba konto?"
 
 #: src/features/repairs/components/RepairForm.tsx
 msgid "Amount in your workspace currency."
-msgstr ""
+msgstr "Summa sinu tööruumi valuutas."
 
 #: src/components/layout/Sidebar.tsx
 msgid "Analytics"
-msgstr ""
+msgstr "Analüütika"
 
 #: src/features/settings/PaperlessPage.tsx
 msgid "API token"
-msgstr ""
+msgstr "API-võti"
 
 #: src/features/settings/AppearancePage.tsx
 #: src/features/settings/SettingsLandingPage.tsx
 msgid "Appearance"
-msgstr ""
+msgstr "Välimus"
 
 #: src/components/layout/Sidebar.tsx
 #: src/features/approvals/ApprovalsPage.tsx
 msgid "Approvals"
-msgstr ""
+msgstr "Kinnitused"
 
 #: src/features/approvals/ApprovalsPage.tsx
 msgid "APPROVALS — {workspaceName}"
-msgstr ""
+msgstr "KINNITUSED — {workspaceName}"
 
 #: src/features/approvals/ApprovalsPage.tsx
 msgid "Approve selected"
-msgstr ""
+msgstr "Kinnita valitud"
 
 #: src/features/approvals/ApprovalsPage.tsx
 msgid "Approved {ok}, {fail} failed."
-msgstr ""
+msgstr "Kinnitatud {ok}, {fail} ebaõnnestus."
 
 #: src/features/approvals/ApprovalsPage.tsx
 msgid "Approved {ok}."
-msgstr ""
+msgstr "Kinnitatud {ok}."
 
 #: src/features/taxonomy/components/CategoriesTab.tsx
 #: src/features/taxonomy/components/LocationsTab.tsx
 msgid "Archive"
-msgstr ""
+msgstr "Arhiveeri"
 
 #: src/features/inventory/InventoryListPage.tsx
 #: src/features/items/ItemDetailPage.tsx
 #: src/features/items/ItemsListPage.tsx
 msgid "ARCHIVE"
-msgstr ""
+msgstr "ARHIVEERI"
 
 #. placeholder {0}: archiveTarget?.name ?? ""
 #: src/features/taxonomy/components/CategoriesTab.tsx
 #: src/features/taxonomy/components/LocationsTab.tsx
 msgid "Archive \"{0}\"? You can restore it later."
-msgstr ""
+msgstr "Kas arhiveerida „{0}“? Saad selle hiljem taastada."
 
 #. placeholder {0}: label.name
 #: src/features/taxonomy/components/LabelsTab.tsx
 msgid "Archive {0}"
-msgstr ""
+msgstr "Arhiveeri {0}"
 
 #: src/features/taxonomy/components/CategoriesTab.tsx
 msgid "Archive anyway"
-msgstr ""
+msgstr "Arhiveeri ikkagi"
 
 #: src/features/taxonomy/components/CategoriesTab.tsx
 msgid "ARCHIVE CATEGORY?"
-msgstr ""
+msgstr "ARHIVEERIDA KATEGOORIA?"
 
 #: src/features/taxonomy/components/LocationsTab.tsx
 msgid "ARCHIVE LOCATION?"
-msgstr ""
+msgstr "ARHIVEERIDA ASUKOHT?"
 
 #: src/features/taxonomy/components/ContainersTab.tsx
 msgid "archived"
-msgstr ""
+msgstr "arhiveeritud"
 
 #: src/features/inventory/InventoryListPage.tsx
 #: src/features/items/ItemsListPage.tsx
 msgid "Archived"
-msgstr ""
+msgstr "Arhiveeritud"
 
 #: src/features/inventory/InventoryListPage.tsx
 #: src/features/items/ItemsListPage.tsx
 #: src/features/taxonomy/components/LabelsTab.tsx
 msgid "ARCHIVED"
-msgstr ""
+msgstr "ARHIVEERITUD"
 
 #: src/features/auth/RegisterPage.tsx
 #: src/features/settings/SecurityPage.tsx
 msgid "At least 8 characters."
-msgstr ""
+msgstr "Vähemalt 8 tähemärki."
 
 #: src/routes/demo/DemoPage.tsx
 msgid "Atom Demo"
-msgstr ""
+msgstr "Aatomi demo"
 
 #: src/routes/demo/DemoPage.tsx
 msgid "Attachments"
-msgstr ""
+msgstr "Manused"
 
 #: src/features/items/components/LoanPanels.tsx
 msgid "Available"
-msgstr ""
+msgstr "Saadaval"
 
 #: src/features/auth/CallbackPage.tsx
 msgid "Back to login"
-msgstr ""
+msgstr "Tagasi sisselogimisse"
 
 #: src/features/scan/ClaimPage.tsx
 msgid "Back to scan"
-msgstr ""
+msgstr "Tagasi skannimisse"
 
 #: src/components/scan/QuickActionMenu.tsx
 msgid "BACK TO SCAN"
-msgstr ""
+msgstr "TAGASI SKANNIMISSE"
 
 #: src/features/items/ItemDetailPage.tsx
 #: src/features/items/ItemFormPage.tsx
 msgid "Barcode"
-msgstr ""
+msgstr "Vöötkood"
 
 #: src/features/dashboard/DashboardPage.tsx
 msgid "below threshold"
-msgstr ""
+msgstr "alla läve"
 
 #: src/features/loans/LoanFormPage.tsx
 #: src/features/loans/LoansListPage.tsx
 msgid "Borrower"
-msgstr ""
+msgstr "Laenaja"
 
 #: src/features/borrowers/BorrowerDetailPage.tsx
 msgid "BORROWER"
-msgstr ""
+msgstr "LAENAJA"
 
 #: src/features/borrowers/hooks/useBorrowerMutations.ts
 msgid "Borrower created."
-msgstr ""
+msgstr "Laenaja loodud."
 
 #: src/features/borrowers/hooks/useBorrowerMutations.ts
 msgid "Borrower deleted."
-msgstr ""
+msgstr "Laenaja kustutatud."
 
 #: src/features/borrowers/BorrowerDetailPage.tsx
 msgid "BORROWER NOT FOUND"
-msgstr ""
+msgstr "LAENAJAT EI LEITUD"
 
 #: src/features/borrowers/hooks/useBorrowerMutations.ts
 msgid "Borrower updated."
-msgstr ""
+msgstr "Laenaja uuendatud."
 
 #: src/components/layout/Sidebar.tsx
 #: src/features/borrowers/BorrowerDetailPage.tsx
 #: src/features/borrowers/BorrowersListPage.tsx
 #: src/features/dashboard/DashboardPage.tsx
 msgid "Borrowers"
-msgstr ""
+msgstr "Laenajad"
 
 #: src/features/borrowers/BorrowersListPage.tsx
 msgid "BORROWERS — {workspaceName}"
-msgstr ""
+msgstr "LAENAJAD — {workspaceName}"
 
 #: src/features/settings/DataStoragePage.tsx
 msgid "Bring data in from a file."
-msgstr ""
+msgstr "Too andmed failist sisse."
 
 #: src/components/retro/form/RetroFileInput.tsx
 msgid "BROWSE…"
-msgstr ""
+msgstr "SIRVI…"
 
 #: src/components/retro/filters/BulkActionBar.tsx
 msgid "Bulk actions"
-msgstr ""
+msgstr "Hulgitoimingud"
 
 #: src/routes/demo/DemoPage.tsx
 msgid "BulkActionBar — inline mobile selection surface (destructive routes through a confirm dialog)."
-msgstr ""
+msgstr "BulkActionBar — mobiilne sisene valikuriba (hävitavad toimingud kulgevad kinnitusdialoogi kaudu)."
 
 #: src/features/declutter/DeclutterPage.tsx
 msgid "By category"
-msgstr ""
+msgstr "Kategooria järgi"
 
 #: src/features/declutter/DeclutterPage.tsx
 msgid "By location"
-msgstr ""
+msgstr "Asukoha järgi"
 
 #: src/features/settings/DataStoragePage.tsx
 msgid "Cached data"
-msgstr ""
+msgstr "Vahemällu salvestatud andmed"
 
 #: src/features/settings/DataStoragePage.tsx
 msgid "Cached data cleared."
-msgstr ""
+msgstr "Vahemälu andmed tühjendatud."
 
 #: src/features/scan/ScanPage.tsx
 msgid "CAMERA BLOCKED"
-msgstr ""
+msgstr "KAAMERA BLOKEERITUD"
 
 #: src/features/settings/MembersPage.tsx
 msgid "Can't remove the last owner."
-msgstr ""
+msgstr "Viimast omanikku ei saa eemaldada."
 
 #: src/features/settings/AccountsPage.tsx
 msgid "Can't unlink — it's your only sign-in method. Set a password first."
-msgstr ""
+msgstr "Ei saa lahti ühendada — see on sinu ainus sisselogimisviis. Määra esmalt parool."
 
 #: src/components/retro/overlay/RetroConfirmDialog.tsx
 #: src/features/borrowers/BorrowerDetailPage.tsx
@@ -697,7 +697,7 @@ msgstr ""
 #: src/features/wishlist/components/WishlistFormDialog.tsx
 #: src/features/wishlist/WishlistPage.tsx
 msgid "Cancel"
-msgstr ""
+msgstr "Tühista"
 
 #: src/components/retro/filters/SavedFilters.tsx
 #: src/features/items/components/AddAttachmentDialog.tsx
@@ -710,36 +710,36 @@ msgstr ""
 #: src/features/repairs/components/CompleteRepairDialog.tsx
 #: src/features/repairs/components/RepairForm.tsx
 msgid "CANCEL"
-msgstr ""
+msgstr "TÜHISTA"
 
 #: src/features/imports/ImportsPage.tsx
 msgid "Cancelled"
-msgstr ""
+msgstr "Tühistatud"
 
 #: src/features/dashboard/components/HudRow.tsx
 msgid "Capacity"
-msgstr ""
+msgstr "Mahutavus"
 
 #: src/features/dashboard/components/HudRow.tsx
 msgid "Capacity gauge"
-msgstr ""
+msgstr "Mahutavuse näidik"
 
 #: src/features/items/components/CaptionDialog.tsx
 msgid "Caption"
-msgstr ""
+msgstr "Pealkiri"
 
 #: src/routes/demo/DemoPage.tsx
 msgid "Careful."
-msgstr ""
+msgstr "Ettevaatust."
 
 #: src/components/layout/Sidebar.tsx
 #: src/features/dashboard/DashboardPage.tsx
 msgid "Categories"
-msgstr ""
+msgstr "Kategooriad"
 
 #: src/features/taxonomy/TaxonomyPage.tsx
 msgid "CATEGORIES"
-msgstr ""
+msgstr "KATEGOORIAD"
 
 #: src/features/analytics/components/OutOfStockTable.tsx
 #: src/features/declutter/DeclutterPage.tsx
@@ -748,27 +748,27 @@ msgstr ""
 #: src/features/items/ItemsListPage.tsx
 #: src/routes/demo/DemoPage.tsx
 msgid "Category"
-msgstr ""
+msgstr "Kategooria"
 
 #: src/features/items/ItemsListPage.tsx
 msgid "CATEGORY"
-msgstr ""
+msgstr "KATEGOORIA"
 
 #: src/features/analytics/components/CategoryValueChart.tsx
 msgid "Category breakdown"
-msgstr ""
+msgstr "Kategooriate jaotus"
 
 #: src/features/settings/SecurityPage.tsx
 msgid "Change password"
-msgstr ""
+msgstr "Muuda parooli"
 
 #: src/features/settings/AvatarUploader.tsx
 msgid "Change photo…"
-msgstr ""
+msgstr "Muuda fotot…"
 
 #: src/features/settings/LanguagePage.tsx
 msgid "Changes apply immediately."
-msgstr ""
+msgstr "Muudatused rakenduvad kohe."
 
 #: src/features/settings/RegionalFormatsPage.tsx
 #: src/features/taxonomy/hooks/useCategoryMutations.ts
@@ -776,72 +776,72 @@ msgstr ""
 #: src/features/taxonomy/hooks/useLabelMutations.ts
 #: src/features/taxonomy/hooks/useLocationMutations.ts
 msgid "Changes saved."
-msgstr ""
+msgstr "Muudatused salvestatud."
 
 #: src/routes/demo/DemoPage.tsx
 msgid "Checked / unchecked"
-msgstr ""
+msgstr "Märgitud / märkimata"
 
 #: src/features/imports/ImportsPage.tsx
 msgid "Choose a CSV file first."
-msgstr ""
+msgstr "Vali esmalt CSV-fail."
 
 #: src/features/scan/ClaimPage.tsx
 msgid "Claim code"
-msgstr ""
+msgstr "Lunastuskood"
 
 #: src/components/retro/filters/FilterBar.tsx
 #: src/features/borrowers/BorrowersListPage.tsx
 #: src/features/inventory/InventoryListPage.tsx
 #: src/features/items/ItemsListPage.tsx
 msgid "CLEAR ALL"
-msgstr ""
+msgstr "TÜHJENDA KÕIK"
 
 #: src/features/settings/DataStoragePage.tsx
 msgid "Clear cached data"
-msgstr ""
+msgstr "Tühjenda vahemälu"
 
 #: src/features/settings/DataStoragePage.tsx
 msgid "Clear cached data? Your inventory data stays safe — this only clears locally cached lists."
-msgstr ""
+msgstr "Kas tühjendada vahemälu? Sinu inventari andmed jäävad turvaliseks — see tühjendab vaid lokaalselt vahemällu salvestatud loendid."
 
 #: src/components/scan/ScanHistoryList.tsx
 msgid "CLEAR HISTORY"
-msgstr ""
+msgstr "TÜHJENDA AJALUGU"
 
 #: src/components/scan/ScanHistoryList.tsx
 msgid "CLEAR HISTORY?"
-msgstr ""
+msgstr "TÜHJENDADA AJALUGU?"
 
 #: src/features/loans/LoansListPage.tsx
 msgid "CLEAR SEARCH"
-msgstr ""
+msgstr "TÜHJENDA OTSING"
 
 #: src/features/settings/DataStoragePage.tsx
 msgid "Clears locally cached lists. Your inventory data stays safe."
-msgstr ""
+msgstr "Tühjendab lokaalselt vahemällu salvestatud loendid. Sinu inventari andmed jäävad turvaliseks."
 
 #: src/components/retro/overlay/RetroDialog.tsx
 #: src/routes/demo/DemoPage.tsx
 msgid "Close"
-msgstr ""
+msgstr "Sulge"
 
 #: src/features/items/components/PhotoUpload.tsx
 msgid "CLOSE"
-msgstr ""
+msgstr "SULGE"
 
 #: src/features/scan/ClaimPage.tsx
 msgid "Code not found"
-msgstr ""
+msgstr "Koodi ei leitud"
 
 #: src/features/taxonomy/components/ColorSwatchPicker.tsx
 #: src/features/taxonomy/components/LabelFormDialog.tsx
 msgid "Color"
-msgstr ""
+msgstr "Värv"
 
 #: src/features/settings/DataStoragePage.tsx
 msgid "Coming soon"
-msgstr ""
+msgstr "Tulekul"
 
 #: src/features/maintenance/components/CompleteMaintenanceDialog.tsx
 #: src/features/maintenance/components/MaintenanceDrawer.tsx
@@ -849,597 +849,597 @@ msgstr ""
 #: src/features/repairs/components/CompleteRepairDialog.tsx
 #: src/features/repairs/components/RepairsDrawer.tsx
 msgid "COMPLETE"
-msgstr ""
+msgstr "LÕPETA"
 
 #: src/features/maintenance/components/CompleteMaintenanceDialog.tsx
 msgid "COMPLETE MAINTENANCE?"
-msgstr ""
+msgstr "LÕPETADA HOOLDUS?"
 
 #: src/features/repairs/components/CompleteRepairDialog.tsx
 msgid "COMPLETE REPAIR"
-msgstr ""
+msgstr "LÕPETA REMONT"
 
 #: src/features/repairs/components/RepairsDrawer.tsx
 msgid "completed"
-msgstr ""
+msgstr "lõpetatud"
 
 #: src/features/imports/ImportsPage.tsx
 #: src/features/repairs/components/RepairRecordDialog.tsx
 msgid "Completed"
-msgstr ""
+msgstr "Lõpetatud"
 
 #: src/features/auth/CallbackPage.tsx
 msgid "Completing sign-in…"
-msgstr ""
+msgstr "Sisselogimise lõpetamine…"
 
 #: src/features/inventory/InventoryFormPage.tsx
 #: src/features/inventory/InventoryListPage.tsx
 msgid "Condition"
-msgstr ""
+msgstr "Seisukord"
 
 #: src/features/inventory/InventoryListPage.tsx
 msgid "CONDITION"
-msgstr ""
+msgstr "SEISUKORD"
 
 #: src/features/analytics/components/ConditionDonutChart.tsx
 msgid "Condition + Status"
-msgstr ""
+msgstr "Seisukord + olek"
 
 #: src/features/items/components/PaperlessLinkDialog.tsx
 #: src/features/settings/PaperlessPage.tsx
 msgid "Configure and enable Paperless first."
-msgstr ""
+msgstr "Seadista ja luba esmalt Paperless."
 
 #: src/routes/demo/DemoPage.tsx
 msgid "Confirm dialog"
-msgstr ""
+msgstr "Kinnitusdialoog"
 
 #: src/features/items/ItemDetailPage.tsx
 #: src/features/items/ItemsListPage.tsx
 msgid "Confirm item name"
-msgstr ""
+msgstr "Kinnita eseme nimi"
 
 #: src/features/settings/SecurityPage.tsx
 msgid "Confirm new password"
-msgstr ""
+msgstr "Kinnita uus parool"
 
 #: src/features/auth/RegisterPage.tsx
 msgid "Confirm password"
-msgstr ""
+msgstr "Kinnita parool"
 
 #: src/features/settings/AccountsPage.tsx
 #: src/features/settings/SettingsLandingPage.tsx
 msgid "Connected Accounts"
-msgstr ""
+msgstr "Ühendatud kontod"
 
 #: src/features/borrowers/BorrowersListPage.tsx
 msgid "Contact"
-msgstr ""
+msgstr "Kontakt"
 
 #: src/features/inventory/InventoryFormPage.tsx
 msgid "Container"
-msgstr ""
+msgstr "Konteiner"
 
 #: src/components/layout/Sidebar.tsx
 #: src/features/dashboard/DashboardPage.tsx
 msgid "Containers"
-msgstr ""
+msgstr "Konteinerid"
 
 #: src/features/taxonomy/TaxonomyPage.tsx
 msgid "CONTAINERS"
-msgstr ""
+msgstr "KONTEINERID"
 
 #: src/features/taxonomy/components/ContainersTab.tsx
 msgid "Containers live inside a location. Add one to start grouping items by box, bin, or drawer."
-msgstr ""
+msgstr "Konteinerid asuvad asukoha sees. Lisa üks, et hakata esemeid kasti, korvi või sahtli järgi rühmitama."
 
 #: src/features/items/ItemDetailPage.tsx
 msgid "COPY"
-msgstr ""
+msgstr "KOPEERI"
 
 #: src/features/repairs/components/RepairForm.tsx
 #: src/features/repairs/components/RepairRecordDialog.tsx
 msgid "Cost"
-msgstr ""
+msgstr "Maksumus"
 
 #: src/features/dashboard/DashboardPage.tsx
 msgid "Could not load activity."
-msgstr ""
+msgstr "Tegevust ei õnnestunud laadida."
 
 #: src/features/settings/MembersPage.tsx
 msgid "Couldn't add member. Try again."
-msgstr ""
+msgstr "Liiget ei õnnestunud lisada. Proovi uuesti."
 
 #: src/features/items/hooks/usePhotoMutations.ts
 msgid "Couldn't apply the caption."
-msgstr ""
+msgstr "Pealkirja ei õnnestunud rakendada."
 
 #: src/features/inventory/hooks/useInventoryMutations.ts
 msgid "Couldn't archive that entry."
-msgstr ""
+msgstr "Seda kirjet ei õnnestunud arhiveerida."
 
 #: src/features/items/hooks/useItemMutations.ts
 msgid "Couldn't archive that item."
-msgstr ""
+msgstr "Seda eset ei õnnestunud arhiveerida."
 
 #: src/features/taxonomy/hooks/useCategoryMutations.ts
 msgid "Couldn't archive this category."
-msgstr ""
+msgstr "Seda kategooriat ei õnnestunud arhiveerida."
 
 #: src/features/taxonomy/hooks/useLabelMutations.ts
 msgid "Couldn't archive this label."
-msgstr ""
+msgstr "Seda silti ei õnnestunud arhiveerida."
 
 #: src/features/taxonomy/hooks/useLocationMutations.ts
 msgid "Couldn't archive this location."
-msgstr ""
+msgstr "Seda asukohta ei õnnestunud arhiveerida."
 
 #: src/features/repairs/hooks/useRepairAttachments.ts
 msgid "Couldn't attach this file."
-msgstr ""
+msgstr "Seda faili ei õnnestunud lisada."
 
 #: src/features/repairs/components/AddAttachmentDialog.tsx
 msgid "Couldn't attach this file. {reason}"
-msgstr ""
+msgstr "Seda faili ei õnnestunud lisada. {reason}"
 
 #: src/features/settings/MembersPage.tsx
 msgid "Couldn't change role."
-msgstr ""
+msgstr "Rolli ei õnnestunud muuta."
 
 #: src/features/settings/MembersPage.tsx
 msgid "Couldn't change role. Try again."
-msgstr ""
+msgstr "Rolli ei õnnestunud muuta. Proovi uuesti."
 
 #: src/features/repairs/hooks/useRepairMutations.ts
 msgid "Couldn't complete this repair."
-msgstr ""
+msgstr "Seda remonti ei õnnestunud lõpetada."
 
 #: src/features/maintenance/hooks/useMaintenanceMutations.ts
 msgid "Couldn't complete this schedule."
-msgstr ""
+msgstr "Seda ajakava ei õnnestunud lõpetada."
 
 #: src/features/loans/LoanFormPage.tsx
 msgid "Couldn't create this loan."
-msgstr ""
+msgstr "Seda laenutust ei õnnestunud luua."
 
 #: src/features/borrowers/hooks/useBorrowerMutations.ts
 msgid "Couldn't delete — this borrower has active loans."
-msgstr ""
+msgstr "Ei saa kustutada — sellel laenajal on aktiivseid laenutusi."
 
 #: src/features/items/hooks/useItemMutations.ts
 msgid "Couldn't delete that item."
-msgstr ""
+msgstr "Seda eset ei õnnestunud kustutada."
 
 #: src/features/items/hooks/usePhotoMutations.ts
 #: src/features/repairs/hooks/useRepairPhotoMutations.ts
 msgid "Couldn't delete the photo."
-msgstr ""
+msgstr "Fotot ei õnnestunud kustutada."
 
 #: src/features/items/hooks/usePhotoMutations.ts
 msgid "Couldn't delete the photos."
-msgstr ""
+msgstr "Fotosid ei õnnestunud kustutada."
 
 #: src/features/borrowers/hooks/useBorrowerMutations.ts
 msgid "Couldn't delete this borrower."
-msgstr ""
+msgstr "Seda laenajat ei õnnestunud kustutada."
 
 #: src/features/taxonomy/hooks/useContainerMutations.ts
 msgid "Couldn't delete this container."
-msgstr ""
+msgstr "Seda konteinerit ei õnnestunud kustutada."
 
 #: src/features/items/hooks/useItemAttachments.ts
 #: src/features/repairs/hooks/useRepairAttachments.ts
 msgid "Couldn't delete this file."
-msgstr ""
+msgstr "Seda faili ei õnnestunud kustutada."
 
 #: src/features/taxonomy/hooks/useLabelMutations.ts
 msgid "Couldn't delete this label."
-msgstr ""
+msgstr "Seda silti ei õnnestunud kustutada."
 
 #: src/features/repairs/hooks/useRepairMutations.ts
 msgid "Couldn't delete this repair."
-msgstr ""
+msgstr "Seda remonti ei õnnestunud kustutada."
 
 #: src/features/maintenance/hooks/useMaintenanceMutations.ts
 msgid "Couldn't delete this schedule."
-msgstr ""
+msgstr "Seda ajakava ei õnnestunud kustutada."
 
 #: src/features/settings/hooks/usePaperlessSettings.ts
 msgid "Couldn't disconnect Paperless."
-msgstr ""
+msgstr "Paperlessi ei õnnestunud lahti ühendada."
 
 #: src/features/items/ItemsListPage.tsx
 msgid "Couldn't export the item list."
-msgstr ""
+msgstr "Esemete loendit ei õnnestunud eksportida."
 
 #: src/features/imports/ImportsPage.tsx
 #: src/features/settings/DataStoragePage.tsx
 msgid "Couldn't export. Try again."
-msgstr ""
+msgstr "Eksportimine ebaõnnestus. Proovi uuesti."
 
 #: src/features/loans/hooks/useLoanMutations.ts
 msgid "Couldn't extend this loan."
-msgstr ""
+msgstr "Seda laenutust ei õnnestunud pikendada."
 
 #: src/features/items/components/PaperlessLinkDialog.tsx
 msgid "Couldn't link this document. {reason}"
-msgstr ""
+msgstr "Seda dokumenti ei õnnestunud linkida. {reason}"
 
 #: src/features/borrowers/BorrowerDetailPage.tsx
 msgid "COULDN'T LOAD BORROWER"
-msgstr ""
+msgstr "LAENAJAT EI ÕNNESTUNUD LAADIDA"
 
 #: src/features/borrowers/BorrowersListPage.tsx
 msgid "Couldn't load borrowers. Try again."
-msgstr ""
+msgstr "Laenajaid ei õnnestunud laadida. Proovi uuesti."
 
 #: src/features/taxonomy/components/CategoriesTab.tsx
 msgid "COULDN'T LOAD CATEGORIES"
-msgstr ""
+msgstr "KATEGOORIAID EI ÕNNESTUNUD LAADIDA"
 
 #: src/features/taxonomy/components/ContainersTab.tsx
 msgid "COULDN'T LOAD CONTAINERS"
-msgstr ""
+msgstr "KONTEINEREID EI ÕNNESTUNUD LAADIDA"
 
 #: src/features/inventory/ExpiringPage.tsx
 msgid "Couldn't load expiring entries. Try again."
-msgstr ""
+msgstr "Aeguvaid kirjeid ei õnnestunud laadida. Proovi uuesti."
 
 #: src/features/items/components/ItemAttachmentPanel.tsx
 #: src/features/repairs/components/RepairAttachmentPanel.tsx
 msgid "Couldn't load files. Try again."
-msgstr ""
+msgstr "Faile ei õnnestunud laadida. Proovi uuesti."
 
 #: src/features/imports/ImportsPage.tsx
 msgid "Couldn't load import history. Try again."
-msgstr ""
+msgstr "Impordi ajalugu ei õnnestunud laadida. Proovi uuesti."
 
 #: src/features/inventory/InventoryListPage.tsx
 msgid "Couldn't load inventory. Try again."
-msgstr ""
+msgstr "Laoseisu ei õnnestunud laadida. Proovi uuesti."
 
 #: src/features/items/ItemDetailPage.tsx
 msgid "COULDN'T LOAD ITEM"
-msgstr ""
+msgstr "ESET EI ÕNNESTUNUD LAADIDA"
 
 #: src/features/items/ItemsListPage.tsx
 msgid "Couldn't load items. Try again."
-msgstr ""
+msgstr "Esemeid ei õnnestunud laadida. Proovi uuesti."
 
 #: src/features/taxonomy/components/LabelsTab.tsx
 msgid "COULDN'T LOAD LABELS"
-msgstr ""
+msgstr "SILTE EI ÕNNESTUNUD LAADIDA"
 
 #: src/features/loans/LoansListPage.tsx
 msgid "Couldn't load loans. Try again."
-msgstr ""
+msgstr "Laenutusi ei õnnestunud laadida. Proovi uuesti."
 
 #: src/features/taxonomy/components/LocationsTab.tsx
 msgid "COULDN'T LOAD LOCATIONS"
-msgstr ""
+msgstr "ASUKOHTI EI ÕNNESTUNUD LAADIDA"
 
 #: src/features/maintenance/components/MaintenanceDrawer.tsx
 #: src/features/maintenance/MaintenanceDuePage.tsx
 msgid "Couldn't load maintenance. Try again."
-msgstr ""
+msgstr "Hooldusi ei õnnestunud laadida. Proovi uuesti."
 
 #: src/features/notifications/components/NotificationsDropdown.tsx
 msgid "Couldn't load notifications."
-msgstr ""
+msgstr "Teavitusi ei õnnestunud laadida."
 
 #: src/features/approvals/ApprovalsPage.tsx
 msgid "Couldn't load pending changes. Try again."
-msgstr ""
+msgstr "Ootel muudatusi ei õnnestunud laadida. Proovi uuesti."
 
 #: src/features/repairs/components/RepairPhotoPanel.tsx
 msgid "Couldn't load photos. Try again."
-msgstr ""
+msgstr "Fotosid ei õnnestunud laadida. Proovi uuesti."
 
 #: src/features/repairs/components/RepairsDrawer.tsx
 msgid "Couldn't load repairs. Try again."
-msgstr ""
+msgstr "Remonte ei õnnestunud laadida. Proovi uuesti."
 
 #: src/features/declutter/DeclutterPage.tsx
 msgid "Couldn't load the declutter analysis. Try again."
-msgstr ""
+msgstr "Koristusanalüüsi ei õnnestunud laadida. Proovi uuesti."
 
 #: src/features/wishlist/WishlistPage.tsx
 msgid "Couldn't load the wishlist. Try again."
-msgstr ""
+msgstr "Soovinimekirja ei õnnestunud laadida. Proovi uuesti."
 
 #: src/features/my-changes/MyChangesPage.tsx
 msgid "Couldn't load your changes. Try again."
-msgstr ""
+msgstr "Sinu muudatusi ei õnnestunud laadida. Proovi uuesti."
 
 #: src/components/scan/ScanResultBanner.tsx
 msgid "Couldn't look up that code."
-msgstr ""
+msgstr "Seda koodi ei õnnestunud otsida."
 
 #: src/features/notifications/hooks/useNotificationMutations.ts
 msgid "Couldn't mark all notifications read."
-msgstr ""
+msgstr "Kõiki teavitusi ei õnnestunud loetuks märkida."
 
 #: src/features/items/hooks/useMarkReviewedItem.ts
 msgid "Couldn't mark this item reviewed."
-msgstr ""
+msgstr "Seda eset ei õnnestunud üle vaadatuks märkida."
 
 #: src/features/notifications/hooks/useNotificationMutations.ts
 msgid "Couldn't mark this notification read."
-msgstr ""
+msgstr "Seda teavitust ei õnnestunud loetuks märkida."
 
 #: src/features/inventory/components/MoveDialog.tsx
 msgid "Couldn't move this entry."
-msgstr ""
+msgstr "Seda kirjet ei õnnestunud teisaldada."
 
 #: src/features/auth/RequireAuth.tsx
 msgid "Couldn't reach the server. Check your connection and retry."
-msgstr ""
+msgstr "Serverit ei õnnestunud kätte saada. Kontrolli ühendust ja proovi uuesti."
 
 #: src/features/settings/MembersPage.tsx
 msgid "Couldn't remove member. Try again."
-msgstr ""
+msgstr "Liiget ei õnnestunud eemaldada. Proovi uuesti."
 
 #: src/features/settings/AvatarUploader.tsx
 msgid "Couldn't remove the photo. Try again."
-msgstr ""
+msgstr "Fotot ei õnnestunud eemaldada. Proovi uuesti."
 
 #: src/features/items/hooks/usePhotoMutations.ts
 msgid "Couldn't reorder the photos."
-msgstr ""
+msgstr "Fotosid ei õnnestunud ümber järjestada."
 
 #: src/features/scan/ClaimPage.tsx
 msgid "Couldn't resolve this code. Check your connection and try again."
-msgstr ""
+msgstr "Seda koodi ei õnnestunud lahendada. Kontrolli ühendust ja proovi uuesti."
 
 #: src/features/scan/ClaimPage.tsx
 msgid "Couldn't resolve this code. Try scanning again."
-msgstr ""
+msgstr "Seda koodi ei õnnestunud lahendada. Proovi uuesti skannida."
 
 #: src/features/inventory/hooks/useInventoryMutations.ts
 msgid "Couldn't restore that entry."
-msgstr ""
+msgstr "Seda kirjet ei õnnestunud taastada."
 
 #: src/features/items/hooks/useItemMutations.ts
 msgid "Couldn't restore that item."
-msgstr ""
+msgstr "Seda eset ei õnnestunud taastada."
 
 #: src/features/taxonomy/hooks/useCategoryMutations.ts
 msgid "Couldn't restore this category."
-msgstr ""
+msgstr "Seda kategooriat ei õnnestunud taastada."
 
 #: src/features/taxonomy/hooks/useLabelMutations.ts
 msgid "Couldn't restore this label."
-msgstr ""
+msgstr "Seda silti ei õnnestunud taastada."
 
 #: src/features/taxonomy/hooks/useLocationMutations.ts
 msgid "Couldn't restore this location."
-msgstr ""
+msgstr "Seda asukohta ei õnnestunud taastada."
 
 #: src/features/loans/hooks/useLoanMutations.ts
 msgid "Couldn't return this loan."
-msgstr ""
+msgstr "Seda laenutust ei õnnestunud tagastada."
 
 #: src/features/settings/hooks/usePaperlessSettings.ts
 msgid "Couldn't save Paperless settings."
-msgstr ""
+msgstr "Paperlessi seadeid ei õnnestunud salvestada."
 
 #: src/features/items/hooks/usePhotoMutations.ts
 #: src/features/repairs/hooks/useRepairPhotoMutations.ts
 msgid "Couldn't save the caption."
-msgstr ""
+msgstr "Pealkirja ei õnnestunud salvestada."
 
 #: src/features/borrowers/BorrowerFormPage.tsx
 #: src/features/borrowers/hooks/useBorrowerMutations.ts
 msgid "Couldn't save this borrower."
-msgstr ""
+msgstr "Seda laenajat ei õnnestunud salvestada."
 
 #: src/features/taxonomy/components/CategoryFormDialog.tsx
 #: src/features/taxonomy/hooks/useCategoryMutations.ts
 msgid "Couldn't save this category."
-msgstr ""
+msgstr "Seda kategooriat ei õnnestunud salvestada."
 
 #: src/features/taxonomy/components/ContainerFormDialog.tsx
 #: src/features/taxonomy/hooks/useContainerMutations.ts
 msgid "Couldn't save this container."
-msgstr ""
+msgstr "Seda konteinerit ei õnnestunud salvestada."
 
 #: src/features/inventory/hooks/useInventoryFormMutations.ts
 #: src/features/inventory/InventoryFormPage.tsx
 msgid "Couldn't save this entry."
-msgstr ""
+msgstr "Seda kirjet ei õnnestunud salvestada."
 
 #: src/features/items/hooks/useItemFormMutations.ts
 #: src/features/items/ItemFormPage.tsx
 msgid "Couldn't save this item."
-msgstr ""
+msgstr "Seda eset ei õnnestunud salvestada."
 
 #: src/features/taxonomy/hooks/useLabelMutations.ts
 msgid "Couldn't save this label."
-msgstr ""
+msgstr "Seda silti ei õnnestunud salvestada."
 
 #: src/features/loans/hooks/useLoanMutations.ts
 msgid "Couldn't save this loan."
-msgstr ""
+msgstr "Seda laenutust ei õnnestunud salvestada."
 
 #: src/features/taxonomy/components/LocationFormDialog.tsx
 #: src/features/taxonomy/hooks/useLocationMutations.ts
 msgid "Couldn't save this location."
-msgstr ""
+msgstr "Seda asukohta ei õnnestunud salvestada."
 
 #: src/features/repairs/components/RepairForm.tsx
 #: src/features/repairs/hooks/useRepairMutations.ts
 msgid "Couldn't save this repair."
-msgstr ""
+msgstr "Seda remonti ei õnnestunud salvestada."
 
 #: src/features/maintenance/components/MaintenanceForm.tsx
 #: src/features/maintenance/hooks/useMaintenanceMutations.ts
 msgid "Couldn't save this schedule."
-msgstr ""
+msgstr "Seda ajakava ei õnnestunud salvestada."
 
 #: src/features/wishlist/components/WishlistFormDialog.tsx
 msgid "Couldn't save this wishlist item."
-msgstr ""
+msgstr "Seda soovinimekirja eset ei õnnestunud salvestada."
 
 #: src/features/settings/ProfilePage.tsx
 msgid "Couldn't save. Try again."
-msgstr ""
+msgstr "Salvestamine ebaõnnestus. Proovi uuesti."
 
 #: src/features/items/hooks/usePhotoMutations.ts
 msgid "Couldn't set the primary photo."
-msgstr ""
+msgstr "Peamist fotot ei õnnestunud määrata."
 
 #: src/features/items/hooks/useItemAttachments.ts
 msgid "Couldn't set this file as primary."
-msgstr ""
+msgstr "Seda faili ei õnnestunud peamiseks määrata."
 
 #: src/features/imports/ImportsPage.tsx
 msgid "Couldn't start the import. Try again."
-msgstr ""
+msgstr "Importi ei õnnestunud käivitada. Proovi uuesti."
 
 #: src/features/repairs/hooks/useRepairMutations.ts
 msgid "Couldn't start this repair."
-msgstr ""
+msgstr "Seda remonti ei õnnestunud alustada."
 
 #: src/components/scan/QuickActionMenu.tsx
 msgid "Couldn't unarchive this item."
-msgstr ""
+msgstr "Seda eset ei õnnestunud arhiivist taastada."
 
 #: src/features/settings/AccountsPage.tsx
 msgid "Couldn't unlink. Try again."
-msgstr ""
+msgstr "Lahti ühendamine ebaõnnestus. Proovi uuesti."
 
 #: src/features/inventory/hooks/useInventoryMutations.ts
 msgid "Couldn't update condition."
-msgstr ""
+msgstr "Seisukorda ei õnnestunud uuendada."
 
 #: src/features/inventory/hooks/useInventoryMutations.ts
 msgid "Couldn't update quantity."
-msgstr ""
+msgstr "Kogust ei õnnestunud uuendada."
 
 #: src/features/inventory/hooks/useInventoryMutations.ts
 msgid "Couldn't update status."
-msgstr ""
+msgstr "Olekut ei õnnestunud uuendada."
 
 #: src/features/settings/AvatarUploader.tsx
 msgid "Couldn't upload the photo. Try again."
-msgstr ""
+msgstr "Fotot ei õnnestunud üles laadida. Proovi uuesti."
 
 #: src/features/items/hooks/useItemAttachments.ts
 msgid "Couldn't upload this file."
-msgstr ""
+msgstr "Seda faili ei õnnestunud üles laadida."
 
 #: src/features/items/components/AddAttachmentDialog.tsx
 msgid "Couldn't upload this file. {reason}"
-msgstr ""
+msgstr "Seda faili ei õnnestunud üles laadida. {reason}"
 
 #: src/features/repairs/components/RepairForm.tsx
 msgid "Covered under warranty"
-msgstr ""
+msgstr "Garantii alla kuuluv"
 
 #: src/features/taxonomy/components/LabelsTab.tsx
 msgid "Create a label to tag items across categories — like “Fragile” or “Loaned out”."
-msgstr ""
+msgstr "Loo silt, et märgistada esemeid üle kategooriate — näiteks „Õrn“ või „Välja laenatud“."
 
 #: src/features/auth/RegisterPage.tsx
 msgid "Create account"
-msgstr ""
+msgstr "Loo konto"
 
 #: src/features/auth/LoginPage.tsx
 msgid "Create an account"
-msgstr ""
+msgstr "Loo konto"
 
 #: src/features/scan/ClaimPage.tsx
 msgid "Create item with this code"
-msgstr ""
+msgstr "Loo selle koodiga ese"
 
 #: src/features/loans/LoanFormPage.tsx
 msgid "Create loan"
-msgstr ""
+msgstr "Loo laenutus"
 
 #: src/components/scan/ScanResultBanner.tsx
 msgid "CREATE WITH CODE"
-msgstr ""
+msgstr "LOO KOODIGA"
 
 #: src/features/borrowers/BorrowerDetailPage.tsx
 #: src/features/imports/ImportsPage.tsx
 #: src/features/items/ItemDetailPage.tsx
 msgid "Created"
-msgstr ""
+msgstr "Loodud"
 
 #: src/features/imports/ImportsPage.tsx
 msgid "CSV file"
-msgstr ""
+msgstr "CSV-fail"
 
 #: src/features/wishlist/components/WishlistFormDialog.tsx
 msgid "Currency"
-msgstr ""
+msgstr "Valuuta"
 
 #: src/features/settings/AppearancePage.tsx
 msgid "CURRENT"
-msgstr ""
+msgstr "PRAEGUNE"
 
 #: src/features/settings/SecurityPage.tsx
 msgid "Current password"
-msgstr ""
+msgstr "Praegune parool"
 
 #: src/features/settings/SecurityPage.tsx
 msgid "Current password is incorrect."
-msgstr ""
+msgstr "Praegune parool on vale."
 
 #: src/features/inventory/components/MoveDialog.tsx
 msgid "Currently in {currentPath}."
-msgstr ""
+msgstr "Praegu asukohas {currentPath}."
 
 #: src/features/settings/SecurityPage.tsx
 msgid "Danger Zone"
-msgstr ""
+msgstr "Ohutsoon"
 
 #: src/components/layout/Sidebar.tsx
 msgid "Dashboard"
-msgstr ""
+msgstr "Töölaud"
 
 #: src/features/settings/DataStoragePage.tsx
 #: src/features/settings/SettingsLandingPage.tsx
 msgid "Data & Storage"
-msgstr ""
+msgstr "Andmed ja salvestus"
 
 #: src/routes/demo/DemoPage.tsx
 msgid "Data Atoms"
-msgstr ""
+msgstr "Andmeaatomid"
 
 #: src/features/dashboard/components/HudRow.tsx
 msgid "data pending"
-msgstr ""
+msgstr "andmed ootel"
 
 #: src/features/imports/ImportsPage.tsx
 msgid "Data type"
-msgstr ""
+msgstr "Andmetüüp"
 
 #: src/features/inventory/ExpiringPage.tsx
 #: src/features/settings/RegionalFormatsPage.tsx
 msgid "Date"
-msgstr ""
+msgstr "Kuupäev"
 
 #: src/features/settings/RegionalFormatsPage.tsx
 msgid "Date format"
-msgstr ""
+msgstr "Kuupäeva vorming"
 
 #: src/features/declutter/DeclutterPage.tsx
 msgid "Days unused"
-msgstr ""
+msgstr "Kasutamata päevi"
 
 #: src/features/settings/RegionalFormatsPage.tsx
 msgid "Decimal separator"
-msgstr ""
+msgstr "Kümnendkoha eraldaja"
 
 #: src/components/layout/Sidebar.tsx
 #: src/features/declutter/DeclutterPage.tsx
 msgid "Declutter"
-msgstr ""
+msgstr "Korrastus"
 
 #: src/features/declutter/DeclutterPage.tsx
 msgid "DECLUTTER — {workspaceName}"
-msgstr ""
+msgstr "KORISTUS — {workspaceName}"
 
 #: src/features/items/components/ItemAttachmentPanel.tsx
 #: src/features/repairs/components/RepairAttachmentPanel.tsx
@@ -1447,7 +1447,7 @@ msgstr ""
 #: src/features/wishlist/WishlistPage.tsx
 #: src/routes/demo/DemoPage.tsx
 msgid "Delete"
-msgstr ""
+msgstr "Kustutamine"
 
 #: src/components/retro/filters/SavedFilters.tsx
 #: src/features/borrowers/BorrowerDetailPage.tsx
@@ -1461,13 +1461,13 @@ msgstr ""
 #: src/features/taxonomy/components/ContainersTab.tsx
 #: src/features/taxonomy/components/LabelsTab.tsx
 msgid "DELETE"
-msgstr ""
+msgstr "DELETE"
 
 #. placeholder {0}: deleteTarget?.name ?? ""
 #: src/features/taxonomy/components/ContainersTab.tsx
 #: src/features/taxonomy/components/LabelsTab.tsx
 msgid "Delete \"{0}\"? This can't be undone."
-msgstr ""
+msgstr "Kas kustutada „{0}“? Seda ei saa tagasi võtta."
 
 #. placeholder {0}: c.name
 #. placeholder {0}: label.name
@@ -1476,102 +1476,102 @@ msgstr ""
 #: src/features/taxonomy/components/ContainersTab.tsx
 #: src/features/taxonomy/components/LabelsTab.tsx
 msgid "Delete {0}"
-msgstr ""
+msgstr "Kustuta {0}"
 
 #. placeholder {0}: borrower.name
 #: src/features/borrowers/BorrowerDetailPage.tsx
 msgid "Delete {0}? This can't be undone."
-msgstr ""
+msgstr "Kas kustutada {0}? Seda ei saa tagasi võtta."
 
 #: src/features/settings/SecurityPage.tsx
 msgid "Delete account"
-msgstr ""
+msgstr "Kustuta konto"
 
 #: src/features/borrowers/BorrowerDetailPage.tsx
 msgid "DELETE BORROWER?"
-msgstr ""
+msgstr "KUSTUTADA LAENAJA?"
 
 #: src/features/taxonomy/components/ContainersTab.tsx
 msgid "DELETE CONTAINER?"
-msgstr ""
+msgstr "KUSTUTADA KONTEINER?"
 
 #: src/features/items/components/ItemAttachmentPanel.tsx
 #: src/features/repairs/components/RepairAttachmentPanel.tsx
 msgid "DELETE FILE?"
-msgstr ""
+msgstr "KUSTUTADA FAIL?"
 
 #: src/routes/demo/DemoPage.tsx
 msgid "Delete item?"
-msgstr ""
+msgstr "Kustutada ese?"
 
 #: src/features/items/ItemDetailPage.tsx
 #: src/features/items/ItemsListPage.tsx
 msgid "DELETE ITEM?"
-msgstr ""
+msgstr "KUSTUTADA ESE?"
 
 #: src/features/items/ItemsListPage.tsx
 msgid "DELETE ITEMS?"
-msgstr ""
+msgstr "KUSTUTADA ESEMED?"
 
 #: src/features/taxonomy/components/LabelsTab.tsx
 msgid "DELETE LABEL?"
-msgstr ""
+msgstr "KUSTUTADA SILT?"
 
 #: src/features/settings/SecurityPage.tsx
 msgid "Delete my account"
-msgstr ""
+msgstr "Kustuta minu konto"
 
 #: src/features/items/components/PhotoGallery.tsx
 msgid "DELETE PHOTO?"
-msgstr ""
+msgstr "KUSTUTADA FOTO?"
 
 #: src/features/items/components/PhotoGallery.tsx
 msgid "DELETE PHOTOS?"
-msgstr ""
+msgstr "KUSTUTADA FOTOD?"
 
 #: src/components/retro/filters/SavedFilters.tsx
 msgid "DELETE PRESET"
-msgstr ""
+msgstr "KUSTUTA EELSEADE"
 
 #. placeholder {0}: preset.name
 #: src/components/retro/filters/SavedFilters.tsx
 msgid "Delete preset {0}"
-msgstr ""
+msgstr "Kustuta eelseade {0}"
 
 #: src/features/repairs/components/RepairsDrawer.tsx
 msgid "DELETE REPAIR?"
-msgstr ""
+msgstr "KUSTUTADA REMONT?"
 
 #: src/features/maintenance/components/MaintenanceDrawer.tsx
 msgid "DELETE SCHEDULE?"
-msgstr ""
+msgstr "KUSTUTADA AJAKAVA?"
 
 #: src/routes/demo/DemoPage.tsx
 msgid "Delete selected?"
-msgstr ""
+msgstr "Kustutada valitud?"
 
 #. placeholder {0}: pendingDelete?.name
 #: src/components/retro/filters/SavedFilters.tsx
 msgid "Delete the “{0}” preset? This can't be undone."
-msgstr ""
+msgstr "Kas kustutada eelseade „{0}“? Seda ei saa tagasi võtta."
 
 #: src/features/wishlist/WishlistPage.tsx
 msgid "DELETE WISHLIST ITEM?"
-msgstr ""
+msgstr "KUSTUTADA SOOVINIMEKIRJA ESE?"
 
 #: src/features/borrowers/BorrowerDetailPage.tsx
 #: src/features/items/ItemDetailPage.tsx
 #: src/features/items/ItemsListPage.tsx
 msgid "DELETE…"
-msgstr ""
+msgstr "KUSTUTA…"
 
 #: src/features/settings/SecurityPage.tsx
 msgid "Deleting your account is permanent and cannot be undone."
-msgstr ""
+msgstr "Konto kustutamine on lõplik ja seda ei saa tagasi võtta."
 
 #: src/components/layout/Sidebar.tsx
 msgid "Demo"
-msgstr ""
+msgstr "Demo"
 
 #: src/features/items/ItemDetailPage.tsx
 #: src/features/items/ItemFormPage.tsx
@@ -1581,36 +1581,36 @@ msgstr ""
 #: src/features/taxonomy/components/LabelFormDialog.tsx
 #: src/features/taxonomy/components/LocationFormDialog.tsx
 msgid "Description"
-msgstr ""
+msgstr "Kirjeldus"
 
 #. placeholder {0}: label?.name ?? id
 #: src/features/items/components/ItemLabels.tsx
 msgid "Detach {0}"
-msgstr ""
+msgstr "Eemalda {0}"
 
 #: src/features/items/ItemDetailPage.tsx
 msgid "DETAILS"
-msgstr ""
+msgstr "ÜKSIKASJAD"
 
 #: src/features/settings/SecurityPage.tsx
 msgid "Device"
-msgstr ""
+msgstr "Seade"
 
 #: src/routes/demo/DemoPage.tsx
 msgid "Dialog (info)"
-msgstr ""
+msgstr "Dialoog (info)"
 
 #: src/routes/demo/DemoPage.tsx
 msgid "Dialog (success)"
-msgstr ""
+msgstr "Dialoog (õnnestus)"
 
 #: src/routes/demo/DemoPage.tsx
 msgid "Dialog (warning)"
-msgstr ""
+msgstr "Dialoog (hoiatus)"
 
 #: src/routes/demo/DemoPage.tsx
 msgid "Disabled"
-msgstr ""
+msgstr "Keelatud"
 
 #: src/features/borrowers/BorrowerFormPage.tsx
 #: src/features/inventory/InventoryFormPage.tsx
@@ -1622,11 +1622,11 @@ msgstr ""
 #: src/features/taxonomy/components/LabelFormDialog.tsx
 #: src/features/taxonomy/components/LocationFormDialog.tsx
 msgid "Discard"
-msgstr ""
+msgstr "Loobu"
 
 #: src/features/maintenance/components/MaintenanceForm.tsx
 msgid "DISCARD"
-msgstr ""
+msgstr "LOOBU"
 
 #: src/features/borrowers/BorrowerFormPage.tsx
 #: src/features/inventory/InventoryFormPage.tsx
@@ -1639,124 +1639,124 @@ msgstr ""
 #: src/features/taxonomy/components/LabelFormDialog.tsx
 #: src/features/taxonomy/components/LocationFormDialog.tsx
 msgid "DISCARD CHANGES?"
-msgstr ""
+msgstr "LOOBUDA MUUDATUSTEST?"
 
 #: src/features/settings/PaperlessPage.tsx
 msgid "Disconnect"
-msgstr ""
+msgstr "Katkesta"
 
 #: src/components/scan/UpcSuggestionBanner.tsx
 msgid "DISMISS"
-msgstr ""
+msgstr "SULGE"
 
 #: src/features/items/components/PaperlessLinkDialog.tsx
 msgid "Document linked."
-msgstr ""
+msgstr "Dokument lingitud."
 
 #: src/features/items/components/PhotoUpload.tsx
 #: src/features/repairs/components/AddAttachmentDialog.tsx
 msgid "DONE"
-msgstr ""
+msgstr "VALMIS"
 
 #: src/features/repairs/components/AddAttachmentDialog.tsx
 msgid "DONE · File attached."
-msgstr ""
+msgstr "VALMIS · Fail lisatud."
 
 #: src/features/items/components/ItemAttachmentPanel.tsx
 #: src/features/repairs/components/RepairAttachmentPanel.tsx
 msgid "DONE · File removed."
-msgstr ""
+msgstr "VALMIS · Fail eemaldatud."
 
 #: src/features/items/components/AddAttachmentDialog.tsx
 msgid "DONE · File uploaded."
-msgstr ""
+msgstr "VALMIS · Fail üles laaditud."
 
 #: src/features/maintenance/components/CompleteMaintenanceDialog.tsx
 msgid "DONE · Marked done — next due {nextDue}."
-msgstr ""
+msgstr "VALMIS · Märgitud tehtuks — järgmine tähtaeg {nextDue}."
 
 #: src/features/items/components/ItemAttachmentPanel.tsx
 msgid "DONE · Primary file set."
-msgstr ""
+msgstr "VALMIS · Peamine fail määratud."
 
 #: src/features/repairs/components/RepairsDrawer.tsx
 msgid "DONE · Repair deleted."
-msgstr ""
+msgstr "VALMIS · Remont kustutatud."
 
 #: src/features/repairs/components/RepairsDrawer.tsx
 msgid "DONE · Repair started."
-msgstr ""
+msgstr "VALMIS · Remont alustatud."
 
 #: src/features/maintenance/components/MaintenanceDrawer.tsx
 msgid "DONE · Schedule deleted."
-msgstr ""
+msgstr "VALMIS · Ajakava kustutatud."
 
 #: src/features/maintenance/components/MaintenanceForm.tsx
 msgid "DONE · Schedule saved."
-msgstr ""
+msgstr "VALMIS · Ajakava salvestatud."
 
 #: src/features/maintenance/components/MaintenanceForm.tsx
 msgid "DONE · Schedule updated."
-msgstr ""
+msgstr "VALMIS · Ajakava uuendatud."
 
 #: src/features/imports/ImportsPage.tsx
 #: src/features/settings/DataStoragePage.tsx
 msgid "Download a backup copy of this workspace."
-msgstr ""
+msgstr "Lae alla selle tööruumi varukoopia."
 
 #: src/features/items/components/PhotoLightbox.tsx
 msgid "Download original"
-msgstr ""
+msgstr "Lae alla originaal"
 
 #: src/components/retro/form/RetroFileInput.tsx
 msgid "Drop files here, or"
-msgstr ""
+msgstr "Lohista failid siia või"
 
 #: src/features/loans/LoansListPage.tsx
 #: src/features/maintenance/MaintenanceDuePage.tsx
 msgid "Due"
-msgstr ""
+msgstr "Tähtajas"
 
 #. placeholder {0}: isoDate(loan.due_date)
 #: src/features/loans/LoansListPage.tsx
 msgid "due {0}"
-msgstr ""
+msgstr "tähtaeg {0}"
 
 #. placeholder {0}: formatDate(loan.due_date)
 #: src/features/items/components/LoanPanels.tsx
 msgid "Due {0}"
-msgstr ""
+msgstr "Tähtaeg {0}"
 
 #: src/features/loans/components/EditLoanDialog.tsx
 #: src/features/loans/LoanFormPage.tsx
 msgid "Due date"
-msgstr ""
+msgstr "Tähtaeg"
 
 #: src/features/loans/components/ExtendLoanDialog.tsx
 msgid "Due date extended."
-msgstr ""
+msgstr "Tähtaeg pikendatud."
 
 #. placeholder {0}: Math.max(days, 0)
 #: src/features/loans/components/BorrowerLoanPanels.tsx
 msgid "due in {0}d"
-msgstr ""
+msgstr "tähtajani {0}p"
 
 #: src/features/loans/LoansListPage.tsx
 msgid "due in {inDays}d"
-msgstr ""
+msgstr "tähtajani {inDays}p"
 
 #: src/features/maintenance/MaintenanceDuePage.tsx
 msgid "DUE MAINTENANCE — {workspaceName}"
-msgstr ""
+msgstr "EESSEISEV HOOLDUS — {workspaceName}"
 
 #: src/features/approvals/ApprovalsPage.tsx
 msgid "e.g. duplicate request"
-msgstr ""
+msgstr "nt korduv taotlus"
 
 #: src/features/wishlist/WishlistPage.tsx
 #: src/routes/demo/DemoPage.tsx
 msgid "Edit"
-msgstr ""
+msgstr "Muuda"
 
 #: src/features/borrowers/BorrowerDetailPage.tsx
 #: src/features/borrowers/BorrowersListPage.tsx
@@ -1768,78 +1768,78 @@ msgstr ""
 #: src/features/repairs/components/RepairsDrawer.tsx
 #: src/features/taxonomy/components/LabelsTab.tsx
 msgid "EDIT"
-msgstr ""
+msgstr "MUUDA"
 
 #. placeholder {0}: label.name
 #: src/features/taxonomy/components/LabelsTab.tsx
 msgid "Edit {0}"
-msgstr ""
+msgstr "Muuda {0}"
 
 #: src/features/borrowers/BorrowerFormPage.tsx
 msgid "EDIT BORROWER"
-msgstr ""
+msgstr "MUUDA LAENAJAT"
 
 #: src/features/items/components/CaptionDialog.tsx
 #: src/features/items/components/PhotoGallery.tsx
 msgid "EDIT CAPTION"
-msgstr ""
+msgstr "MUUDA PEALKIRJA"
 
 #. placeholder {0}: photo.filename
 #: src/features/items/components/PhotoGallery.tsx
 msgid "Edit caption for {0}"
-msgstr ""
+msgstr "Muuda pealkirja: {0}"
 
 #: src/features/taxonomy/components/CategoryFormDialog.tsx
 msgid "EDIT CATEGORY"
-msgstr ""
+msgstr "MUUDA KATEGOORIAT"
 
 #: src/features/inventory/components/InlineEditCell.tsx
 msgid "Edit condition for {itemName}"
-msgstr ""
+msgstr "Muuda seisukorda: {itemName}"
 
 #: src/features/taxonomy/components/ContainerFormDialog.tsx
 msgid "EDIT CONTAINER"
-msgstr ""
+msgstr "MUUDA KONTEINERIT"
 
 #: src/features/inventory/InventoryFormPage.tsx
 msgid "EDIT ENTRY"
-msgstr ""
+msgstr "MUUDA KIRJET"
 
 #: src/features/items/ItemFormPage.tsx
 msgid "EDIT ITEM"
-msgstr ""
+msgstr "MUUDA ESET"
 
 #: src/features/taxonomy/components/LabelFormDialog.tsx
 msgid "EDIT LABEL"
-msgstr ""
+msgstr "MUUDA SILTI"
 
 #: src/features/loans/components/EditLoanDialog.tsx
 msgid "EDIT LOAN"
-msgstr ""
+msgstr "MUUDA LAENUTUST"
 
 #: src/features/taxonomy/components/LocationFormDialog.tsx
 msgid "EDIT LOCATION"
-msgstr ""
+msgstr "MUUDA ASUKOHTA"
 
 #: src/features/inventory/components/InlineEditCell.tsx
 msgid "Edit quantity for {itemName}"
-msgstr ""
+msgstr "Muuda kogust: {itemName}"
 
 #: src/features/repairs/components/RepairForm.tsx
 msgid "EDIT REPAIR"
-msgstr ""
+msgstr "MUUDA REMONTI"
 
 #: src/features/maintenance/components/MaintenanceForm.tsx
 msgid "EDIT SCHEDULE"
-msgstr ""
+msgstr "MUUDA AJAKAVA"
 
 #: src/features/inventory/components/InlineEditCell.tsx
 msgid "Edit status for {itemName}"
-msgstr ""
+msgstr "Muuda olekut: {itemName}"
 
 #: src/features/wishlist/components/WishlistFormDialog.tsx
 msgid "EDIT WISHLIST ITEM"
-msgstr ""
+msgstr "MUUDA SOOVINIMEKIRJA ESET"
 
 #: src/features/auth/LoginPage.tsx
 #: src/features/auth/RegisterPage.tsx
@@ -1848,325 +1848,325 @@ msgstr ""
 #: src/features/settings/MembersPage.tsx
 #: src/features/settings/ProfilePage.tsx
 msgid "Email"
-msgstr ""
+msgstr "E-post"
 
 #: src/features/settings/NotificationsPage.tsx
 msgid "Email & in-app alerts for:"
-msgstr ""
+msgstr "E-posti ja rakendusesisesed teavitused:"
 
 #: src/features/settings/PaperlessPage.tsx
 msgid "Enable Paperless above to search documents."
-msgstr ""
+msgstr "Dokumentide otsimiseks luba ülal Paperless."
 
 #: src/features/settings/PaperlessPage.tsx
 msgid "Enable Paperless integration"
-msgstr ""
+msgstr "Luba Paperlessi integratsioon"
 
 #: src/components/layout/TopBar.tsx
 msgid "End this session? You will need to sign in again."
-msgstr ""
+msgstr "Kas lõpetada see seanss? Pead uuesti sisse logima."
 
 #: src/features/auth/LoginPage.tsx
 #: src/features/auth/RegisterPage.tsx
 msgid "Enter a valid email address."
-msgstr ""
+msgstr "Sisesta kehtiv e-posti aadress."
 
 #: src/features/settings/MembersPage.tsx
 #: src/features/settings/ProfilePage.tsx
 msgid "Enter a valid email."
-msgstr ""
+msgstr "Sisesta kehtiv e-post."
 
 #: src/components/scan/ManualBarcodeEntry.tsx
 msgid "ENTER CODE"
-msgstr ""
+msgstr "SISESTA KOOD"
 
 #: src/features/auth/RegisterPage.tsx
 #: src/features/settings/ProfilePage.tsx
 msgid "Enter your name."
-msgstr ""
+msgstr "Sisesta oma nimi."
 
 #: src/features/approvals/ApprovalsPage.tsx
 #: src/features/dashboard/DashboardPage.tsx
 #: src/features/my-changes/MyChangesPage.tsx
 msgid "Entity"
-msgstr ""
+msgstr "Olem"
 
 #: src/features/inventory/hooks/useInventoryFormMutations.ts
 msgid "Entry saved."
-msgstr ""
+msgstr "Kirje salvestatud."
 
 #: src/components/retro/feedback/RetroStatusDot.tsx
 msgid "error"
-msgstr ""
+msgstr "viga"
 
 #: src/components/scan/ScanResultBanner.tsx
 msgid "ERROR"
-msgstr ""
+msgstr "VIGA"
 
 #. placeholder {0}: schedule.interval_days
 #: src/features/maintenance/components/MaintenanceDrawer.tsx
 msgid "every {0}d"
-msgstr ""
+msgstr "iga {0}p tagant"
 
 #: src/routes/demo/DemoPage.tsx
 msgid "Every Phase 4 retro-os atom family, for visual review against sketches 006-008."
-msgstr ""
+msgstr "Kõik Faasi 4 retro-os aatomipered visuaalseks ülevaatuseks visandite 006-008 vastu."
 
 #: src/features/declutter/DeclutterPage.tsx
 msgid "Every tracked item has been used recently. Items that sit unused will surface here with a declutter score."
-msgstr ""
+msgstr "Kõiki jälgitavaid esemeid on hiljuti kasutatud. Kasutamata seisvad esemed ilmuvad siia koos koristusskooriga."
 
 #: src/routes/demo/DemoPage.tsx
 msgid "Example Dialog"
-msgstr ""
+msgstr "Näidisdialoog"
 
 #: src/features/auth/CallbackPage.tsx
 msgid "exchanging credentials"
-msgstr ""
+msgstr "mandaatide vahetamine"
 
 #: src/features/dashboard/components/SystemAlertsPanel.tsx
 msgid "Expiring soon"
-msgstr ""
+msgstr "Peagi aegumas"
 
 #: src/features/inventory/ExpiringPage.tsx
 msgid "EXPIRING SOON"
-msgstr ""
+msgstr "AEGUB VARSTI"
 
 #: src/features/inventory/InventoryListPage.tsx
 msgid "Expiry"
-msgstr ""
+msgstr "Aegumine"
 
 #: src/features/inventory/ExpiringPage.tsx
 msgid "EXPIRY"
-msgstr ""
+msgstr "AEGUMINE"
 
 #: src/features/settings/NotificationsPage.tsx
 msgid "Expiry alerts"
-msgstr ""
+msgstr "Aegumise teavitused"
 
 #: src/features/inventory/InventoryFormPage.tsx
 msgid "Expiry date"
-msgstr ""
+msgstr "Aegumiskuupäev"
 
 #: src/features/imports/ImportsPage.tsx
 #: src/features/settings/DataStoragePage.tsx
 msgid "Export"
-msgstr ""
+msgstr "Ekspordi"
 
 #: src/features/imports/ImportsPage.tsx
 #: src/features/settings/DataStoragePage.tsx
 msgid "Export…"
-msgstr ""
+msgstr "Ekspordi…"
 
 #: src/features/imports/ImportsPage.tsx
 #: src/features/settings/DataStoragePage.tsx
 msgid "Exporting a workspace backup requires admin rights."
-msgstr ""
+msgstr "Tööruumi varukoopia eksportimiseks on vaja administraatori õigusi."
 
 #: src/features/imports/ImportsPage.tsx
 #: src/features/settings/DataStoragePage.tsx
 msgid "Exporting…"
-msgstr ""
+msgstr "Eksportimine…"
 
 #: src/features/loans/components/ExtendLoanDialog.tsx
 msgid "Extend"
-msgstr ""
+msgstr "Pikenda"
 
 #: src/features/items/components/LoanPanels.tsx
 #: src/features/loans/components/BorrowerLoanPanels.tsx
 #: src/features/loans/components/LoanRowActions.tsx
 msgid "EXTEND"
-msgstr ""
+msgstr "PIKENDA"
 
 #: src/features/loans/components/ExtendLoanDialog.tsx
 msgid "EXTEND LOAN"
-msgstr ""
+msgstr "PIKENDA LAENUTUST"
 
 #: src/features/imports/ImportsPage.tsx
 msgid "Failed"
-msgstr ""
+msgstr "Ebaõnnestunud"
 
 #: src/features/items/components/PhotoUpload.tsx
 #: src/features/repairs/components/AddAttachmentDialog.tsx
 msgid "FAILED"
-msgstr ""
+msgstr "EBAÕNNESTUS"
 
 #: src/routes/demo/DemoPage.tsx
 msgid "Feedback Atoms"
-msgstr ""
+msgstr "Tagasisideaatomid"
 
 #: src/features/imports/ImportsPage.tsx
 msgid "File"
-msgstr ""
+msgstr "Fail"
 
 #: src/features/items/components/AddAttachmentDialog.tsx
 #: src/features/repairs/components/AddAttachmentDialog.tsx
 msgid "File *"
-msgstr ""
+msgstr "Fail *"
 
 #. placeholder {0}: formatSize(maxSize)
 #: src/components/retro/form/RetroFileInput.tsx
 msgid "File is too large (max {0})."
-msgstr ""
+msgstr "Fail on liiga suur (max {0})."
 
 #: src/features/items/components/ItemAttachmentPanel.tsx
 #: src/features/repairs/components/RepairAttachmentPanel.tsx
 msgid "Files"
-msgstr ""
+msgstr "Failid"
 
 #: src/features/items/ItemDetailPage.tsx
 #: src/features/repairs/components/RepairRecordDialog.tsx
 #: src/features/repairs/components/RepairsDrawer.tsx
 msgid "FILES"
-msgstr ""
+msgstr "FAILID"
 
 #: src/routes/demo/DemoPage.tsx
 msgid "Filter Atoms"
-msgstr ""
+msgstr "Filtriaatomid"
 
 #: src/features/borrowers/BorrowersListPage.tsx
 msgid "Filter borrowers…"
-msgstr ""
+msgstr "Filtreeri laenajaid…"
 
 #: src/features/inventory/InventoryListPage.tsx
 msgid "Filter inventory…"
-msgstr ""
+msgstr "Filtreeri laoseisu…"
 
 #: src/components/retro/filters/FilterBar.tsx
 msgid "Filter items"
-msgstr ""
+msgstr "Filtreeri esemeid"
 
 #: src/components/retro/filters/FilterBar.tsx
 #: src/features/items/ItemsListPage.tsx
 msgid "Filter items…"
-msgstr ""
+msgstr "Filtreeri esemeid…"
 
 #: src/features/loans/LoansListPage.tsx
 msgid "Filter loans…"
-msgstr ""
+msgstr "Filtreeri laenutusi…"
 
 #: src/routes/demo/DemoPage.tsx
 msgid "FilterBar + FilterPopover — search, facets, chips, count, CTA."
-msgstr ""
+msgstr "FilterBar + FilterPopover — otsing, tahud, sildid, loend, CTA."
 
 #: src/routes/demo/DemoPage.tsx
 msgid "Filtered"
-msgstr ""
+msgstr "Filtreeritud"
 
 #: src/routes/demo/DemoPage.tsx
 msgid "Form Atoms"
-msgstr ""
+msgstr "Vormiaatomid"
 
 #. placeholder {0}: duplicates.length
 #: src/features/items/components/DuplicateWarningDialog.tsx
 msgid "Found {0} similar photo(s) already on this item."
-msgstr ""
+msgstr "Leiti {0} sarnast fotot(t), mis on juba sellel esemel."
 
 #: src/features/loans/LoanFormPage.tsx
 msgid "From item"
-msgstr ""
+msgstr "Esemest"
 
 #: src/features/items/ItemFormPage.tsx
 msgid "FROM SCAN"
-msgstr ""
+msgstr "SKANNIST"
 
 #: src/features/auth/RegisterPage.tsx
 #: src/features/settings/ProfilePage.tsx
 msgid "Full name"
-msgstr ""
+msgstr "Täisnimi"
 
 #: src/components/layout/F1HelpDialog.tsx
 msgid "GLOBAL"
-msgstr ""
+msgstr "GLOBAALNE"
 
 #: src/features/declutter/DeclutterPage.tsx
 msgid "Group by"
-msgstr ""
+msgstr "Grupeeri"
 
 #: src/features/taxonomy/components/CategoriesTab.tsx
 msgid "Group your inventory by creating a top-level category. You can nest sub-categories underneath it."
-msgstr ""
+msgstr "Rühmita oma inventar, luues ülemtaseme kategooria. Selle alla saad luua alamkategooriaid."
 
 #: src/routes/demo/DemoPage.tsx
 msgid "Heads up."
-msgstr ""
+msgstr "Tähelepanu."
 
 #: src/features/items/ItemDetailPage.tsx
 #: src/features/loans/LoansListPage.tsx
 #: src/features/scan/ScanPage.tsx
 msgid "HISTORY"
-msgstr ""
+msgstr "AJALUGU"
 
 #: src/routes/demo/DemoPage.tsx
 msgid "History tab panel."
-msgstr ""
+msgstr "Ajaloo vahekaardi paneel."
 
 #: src/features/auth/LoginPage.tsx
 #: src/features/auth/RegisterPage.tsx
 msgid "home inventory terminal · v3.0"
-msgstr ""
+msgstr "kodu inventari terminal · v3.0"
 
 #: src/features/maintenance/components/MaintenanceForm.tsx
 msgid "How often this repeats, in days."
-msgstr ""
+msgstr "Kui sageli see kordub, päevades."
 
 #: src/features/settings/DataStoragePage.tsx
 msgid "Import"
-msgstr ""
+msgstr "Impordi"
 
 #: src/features/imports/ImportsPage.tsx
 msgid "Import from CSV"
-msgstr ""
+msgstr "Impordi CSV-st"
 
 #: src/features/imports/ImportsPage.tsx
 msgid "Import history"
-msgstr ""
+msgstr "Impordi ajalugu"
 
 #: src/features/imports/ImportsPage.tsx
 msgid "Import started. Watch its progress below."
-msgstr ""
+msgstr "Import alustatud. Jälgi selle edenemist allpool."
 
 #: src/features/imports/ImportsPage.tsx
 msgid "Import…"
-msgstr ""
+msgstr "Impordi…"
 
 #: src/features/imports/ImportsPage.tsx
 msgid "Imported files show up here with their progress and results."
-msgstr ""
+msgstr "Imporditud failid ilmuvad siia koos edenemise ja tulemustega."
 
 #: src/features/imports/ImportsPage.tsx
 msgid "Importing data requires admin rights."
-msgstr ""
+msgstr "Andmete importimiseks on vaja administraatori õigusi."
 
 #: src/features/imports/ImportsPage.tsx
 msgid "Importing…"
-msgstr ""
+msgstr "Importimine…"
 
 #: src/components/layout/Sidebar.tsx
 #: src/features/imports/ImportsPage.tsx
 msgid "Imports"
-msgstr ""
+msgstr "Import"
 
 #: src/features/imports/ImportsPage.tsx
 msgid "IMPORTS — {workspaceName}"
-msgstr ""
+msgstr "IMPORDID — {workspaceName}"
 
 #: src/features/items/components/InventoryPanel.tsx
 #: src/features/items/ItemsListPage.tsx
 msgid "IN STOCK"
-msgstr ""
+msgstr "LAOS"
 
 #: src/routes/demo/DemoPage.tsx
 msgid "Indeterminate (partial)"
-msgstr ""
+msgstr "Määramata (osaline)"
 
 #: src/features/settings/LanguagePage.tsx
 msgid "Interface language"
-msgstr ""
+msgstr "Liidese keel"
 
 #: src/features/maintenance/components/MaintenanceForm.tsx
 msgid "Interval (days)"
-msgstr ""
+msgstr "Intervall (päevades)"
 
 #: src/components/layout/Sidebar.tsx
 #: src/features/analytics/components/OutOfStockTable.tsx
@@ -2175,28 +2175,28 @@ msgstr ""
 #: src/features/items/ItemDetailPage.tsx
 #: src/features/items/ItemsListPage.tsx
 msgid "Inventory"
-msgstr ""
+msgstr "Inventar"
 
 #: src/features/items/components/InventoryPanel.tsx
 #: src/features/items/components/InventoryPanelStub.tsx
 msgid "INVENTORY"
-msgstr ""
+msgstr "LAOSEIS"
 
 #: src/features/inventory/InventoryListPage.tsx
 msgid "INVENTORY — {workspaceName}"
-msgstr ""
+msgstr "LAOSEIS — {workspaceName}"
 
 #: src/features/loans/LoanFormPage.tsx
 msgid "Inventory entry"
-msgstr ""
+msgstr "Laokirje"
 
 #: src/features/settings/MembersPage.tsx
 msgid "Invite someone to share this workspace."
-msgstr ""
+msgstr "Kutsu keegi seda tööruumi jagama."
 
 #: src/features/settings/SecurityPage.tsx
 msgid "IP"
-msgstr ""
+msgstr "IP"
 
 #: src/features/analytics/components/OutOfStockTable.tsx
 #: src/features/declutter/DeclutterPage.tsx
@@ -2207,42 +2207,42 @@ msgstr ""
 #: src/features/maintenance/MaintenanceDuePage.tsx
 #: src/routes/demo/DemoPage.tsx
 msgid "Item"
-msgstr ""
+msgstr "Ese"
 
 #: src/features/items/ItemDetailPage.tsx
 msgid "ITEM"
-msgstr ""
+msgstr "ESE"
 
 #: src/features/items/hooks/useMarkReviewedItem.ts
 msgid "Item marked reviewed."
-msgstr ""
+msgstr "Ese märgitud üle vaadatuks."
 
 #: src/features/items/ItemDetailPage.tsx
 msgid "ITEM NOT FOUND"
-msgstr ""
+msgstr "ESET EI LEITUD"
 
 #: src/features/items/hooks/useItemFormMutations.ts
 #: src/features/items/ItemFormPage.tsx
 msgid "Item saved."
-msgstr ""
+msgstr "Ese salvestatud."
 
 #: src/components/scan/QuickActionMenu.tsx
 msgid "Item unarchived."
-msgstr ""
+msgstr "Ese arhiivist taastatud."
 
 #: src/components/retro/filters/FilterBar.tsx
 msgid "items"
-msgstr ""
+msgstr "eset"
 
 #: src/components/layout/Sidebar.tsx
 #: src/features/dashboard/components/HudRow.tsx
 #: src/features/dashboard/DashboardPage.tsx
 msgid "Items"
-msgstr ""
+msgstr "Esemed"
 
 #: src/features/items/ItemsListPage.tsx
 msgid "ITEMS — {workspaceName}"
-msgstr ""
+msgstr "ESEMED — {workspaceName}"
 
 #: src/features/borrowers/BorrowerFormPage.tsx
 #: src/features/inventory/InventoryFormPage.tsx
@@ -2254,109 +2254,109 @@ msgstr ""
 #: src/features/taxonomy/components/LabelFormDialog.tsx
 #: src/features/taxonomy/components/LocationFormDialog.tsx
 msgid "Keep editing"
-msgstr ""
+msgstr "Jätka muutmist"
 
 #: src/features/maintenance/components/MaintenanceForm.tsx
 msgid "KEEP EDITING"
-msgstr ""
+msgstr "JÄTKA MUUTMIST"
 
 #: src/components/layout/F1HelpDialog.tsx
 msgid "KEYBOARD SHORTCUTS"
-msgstr ""
+msgstr "KLAVIATUURI KIIRKLAHVID"
 
 #: src/features/inventory/ExpiringPage.tsx
 msgid "Kind"
-msgstr ""
+msgstr "Liik"
 
 #: src/features/items/ItemDetailPage.tsx
 msgid "Labels"
-msgstr ""
+msgstr "Sildid"
 
 #: src/features/taxonomy/TaxonomyPage.tsx
 msgid "LABELS"
-msgstr ""
+msgstr "SILDID"
 
 #: src/features/settings/LanguagePage.tsx
 #: src/features/settings/SettingsLandingPage.tsx
 msgid "Language"
-msgstr ""
+msgstr "Keel"
 
 #: src/features/settings/LanguagePage.tsx
 msgid "Language updated."
-msgstr ""
+msgstr "Keel uuendatud."
 
 #: src/features/settings/SecurityPage.tsx
 msgid "Last active"
-msgstr ""
+msgstr "Viimati aktiivne"
 
 #: src/features/maintenance/components/MaintenanceDrawer.tsx
 msgid "Last done"
-msgstr ""
+msgstr "Viimati tehtud"
 
 #: src/components/layout/PageHeader.tsx
 msgid "LAST SYNC"
-msgstr ""
+msgstr "VIIMANE SÜNK"
 
 #: src/features/taxonomy/components/CategoryFormDialog.tsx
 msgid "Leave empty to create a top-level category."
-msgstr ""
+msgstr "Ülemtaseme kategooria loomiseks jäta tühjaks."
 
 #: src/features/taxonomy/components/LocationFormDialog.tsx
 msgid "Leave empty to create a top-level location."
-msgstr ""
+msgstr "Ülemtaseme asukoha loomiseks jäta tühjaks."
 
 #: src/features/settings/AppearancePage.tsx
 msgid "Light"
-msgstr ""
+msgstr "Hele"
 
 #: src/features/settings/AppearancePage.tsx
 msgid "Light only — a dark theme is on the backlog."
-msgstr ""
+msgstr "Ainult hele — tume teema on tegemata tööde nimekirjas."
 
 #: src/features/settings/AccountsPage.tsx
 msgid "Link"
-msgstr ""
+msgstr "Lingi"
 
 #: src/features/items/components/PaperlessLinkDialog.tsx
 msgid "LINK"
-msgstr ""
+msgstr "LINGI"
 
 #: src/features/items/ItemDetailPage.tsx
 msgid "Link Paperless document"
-msgstr ""
+msgstr "Lingi Paperlessi dokument"
 
 #: src/features/items/components/PaperlessLinkDialog.tsx
 msgid "LINK PAPERLESS DOCUMENT"
-msgstr ""
+msgstr "LINGI PAPERLESSI DOKUMENT"
 
 #: src/features/settings/AccountsPage.tsx
 #: src/features/settings/SettingsLandingPage.tsx
 msgid "LINKED"
-msgstr ""
+msgstr "LINGITUD"
 
 #: src/components/retro/feedback/RetroStatusDot.tsx
 msgid "live"
-msgstr ""
+msgstr "reaalajas"
 
 #: src/components/scan/ScanResultBanner.tsx
 msgid "LOADING"
-msgstr ""
+msgstr "LAADIMINE"
 
 #: src/features/settings/AccountsPage.tsx
 msgid "Loading accounts…"
-msgstr ""
+msgstr "Kontode laadimine…"
 
 #: src/features/settings/MembersPage.tsx
 msgid "Loading members…"
-msgstr ""
+msgstr "Liikmete laadimine…"
 
 #: src/features/settings/SecurityPage.tsx
 msgid "Loading sessions…"
-msgstr ""
+msgstr "Seansside laadimine…"
 
 #: src/components/layout/WorkspaceSwitcher.tsx
 msgid "Loading workspaces…"
-msgstr ""
+msgstr "Tööruumide laadimine…"
 
 #: src/features/analytics/components/OutOfStockTable.tsx
 #: src/features/approvals/ApprovalsPage.tsx
@@ -2389,36 +2389,36 @@ msgstr ""
 #: src/features/taxonomy/components/LocationsTab.tsx
 #: src/features/wishlist/WishlistPage.tsx
 msgid "Loading…"
-msgstr ""
+msgstr "Laadimine…"
 
 #: src/components/scan/QuickActionMenu.tsx
 #: src/features/items/components/LoanPanels.tsx
 msgid "LOAN"
-msgstr ""
+msgstr "LAENUTUS"
 
 #: src/features/loans/LoanFormPage.tsx
 msgid "Loan created."
-msgstr ""
+msgstr "Laenutus loodud."
 
 #: src/features/loans/components/BorrowerLoanPanels.tsx
 msgid "LOAN HISTORY"
-msgstr ""
+msgstr "LAENUTUSTE AJALUGU"
 
 #: src/features/settings/NotificationsPage.tsx
 msgid "Loan reminders"
-msgstr ""
+msgstr "Laenutuste meeldetuletused"
 
 #: src/features/loans/components/EditLoanDialog.tsx
 msgid "Loan saved."
-msgstr ""
+msgstr "Laenutus salvestatud."
 
 #: src/features/loans/LoansListPage.tsx
 msgid "Loaned"
-msgstr ""
+msgstr "Laenatud"
 
 #: src/features/loans/LoanFormPage.tsx
 msgid "Loaning this item — pick a borrower."
-msgstr ""
+msgstr "Selle eseme laenutamine — vali laenaja."
 
 #: src/components/layout/Sidebar.tsx
 #: src/features/borrowers/BorrowersListPage.tsx
@@ -2427,19 +2427,19 @@ msgstr ""
 #: src/features/loans/components/BorrowerLoanPanels.tsx
 #: src/features/loans/LoansListPage.tsx
 msgid "Loans"
-msgstr ""
+msgstr "Laenud"
 
 #: src/features/loans/LoansListPage.tsx
 msgid "LOANS — {workspaceName}"
-msgstr ""
+msgstr "LAENUTUSED — {workspaceName}"
 
 #: src/features/analytics/components/MonthlyLoanActivityChart.tsx
 msgid "Loans out"
-msgstr ""
+msgstr "Välja laenatud"
 
 #: src/components/layout/Clock.tsx
 msgid "LOCAL"
-msgstr ""
+msgstr "LOKAALNE"
 
 #: src/features/declutter/DeclutterPage.tsx
 #: src/features/inventory/InventoryFormPage.tsx
@@ -2449,213 +2449,213 @@ msgstr ""
 #: src/features/taxonomy/components/ContainerFormDialog.tsx
 #: src/routes/demo/DemoPage.tsx
 msgid "Location"
-msgstr ""
+msgstr "Asukoht"
 
 #: src/features/analytics/components/LocationValueChart.tsx
 msgid "Location value"
-msgstr ""
+msgstr "Asukoha väärtus"
 
 #: src/components/layout/Sidebar.tsx
 #: src/features/dashboard/DashboardPage.tsx
 msgid "Locations"
-msgstr ""
+msgstr "Asukohad"
 
 #: src/features/taxonomy/TaxonomyPage.tsx
 msgid "LOCATIONS"
-msgstr ""
+msgstr "ASUKOHAD"
 
 #: src/features/auth/LoginPage.tsx
 #: src/features/auth/RegisterPage.tsx
 msgid "Log in"
-msgstr ""
+msgstr "Logi sisse"
 
 #: src/components/layout/TopBar.tsx
 msgid "Log out"
-msgstr ""
+msgstr "Logi välja"
 
 #: src/components/scan/ManualBarcodeEntry.tsx
 msgid "LOOK UP CODE"
-msgstr ""
+msgstr "OTSI KOODI"
 
 #: src/features/dashboard/components/HudRow.tsx
 #: src/features/dashboard/DashboardPage.tsx
 #: src/features/settings/NotificationsPage.tsx
 msgid "Low stock"
-msgstr ""
+msgstr "Madal laoseis"
 
 #: src/components/layout/Sidebar.tsx
 #: src/features/inventory/InventoryListPage.tsx
 #: src/features/maintenance/components/MaintenanceDrawer.tsx
 #: src/features/maintenance/MaintenanceDuePage.tsx
 msgid "Maintenance"
-msgstr ""
+msgstr "Hooldus"
 
 #: src/features/maintenance/components/MaintenanceDrawer.tsx
 msgid "MAINTENANCE"
-msgstr ""
+msgstr "HOOLDUS"
 
 #: src/features/maintenance/components/MaintenanceDrawer.tsx
 msgid "MAINTENANCE — {itemName}"
-msgstr ""
+msgstr "HOOLDUS — {itemName}"
 
 #: src/features/settings/NotificationsPage.tsx
 msgid "Maintenance alerts"
-msgstr ""
+msgstr "Hoolduse teavitused"
 
 #: src/features/dashboard/components/SystemAlertsPanel.tsx
 msgid "Maintenance due"
-msgstr ""
+msgstr "Eesseisev hooldus"
 
 #: src/features/scan/ScanPage.tsx
 msgid "MANUAL"
-msgstr ""
+msgstr "KÄSITSI"
 
 #. placeholder {0}: repair.description
 #: src/features/repairs/components/CompleteRepairDialog.tsx
 msgid "Mark \"{0}\" completed?"
-msgstr ""
+msgstr "Märkida „{0}“ lõpetatuks?"
 
 #. placeholder {0}: schedule.title
 #. placeholder {1}: schedule.interval_days
 #: src/features/maintenance/components/CompleteMaintenanceDialog.tsx
 msgid "Mark \"{0}\" done? This advances the next due date by {1} days."
-msgstr ""
+msgstr "Märkida „{0}“ tehtuks? See nihutab järgmist tähtaega {1} päeva võrra edasi."
 
 #. placeholder {0}: loan.item.name
 #. placeholder {1}: loan.borrower.name
 #: src/features/loans/components/ReturnLoanDialog.tsx
 msgid "Mark \"{0}\" returned by {1}?"
-msgstr ""
+msgstr "Märkida „{0}“ tagastatuks: {1}?"
 
 #. placeholder {0}: pendingUse?.item_name ?? t`this item`
 #: src/features/declutter/DeclutterPage.tsx
 msgid "Mark {0} as used now? It will drop off the declutter list."
-msgstr ""
+msgstr "Märkida {0} nüüd kasutatuks? See kaob koristusloendist."
 
 #: src/features/notifications/components/NotificationsDropdown.tsx
 msgid "Mark all read"
-msgstr ""
+msgstr "Märgi kõik loetuks"
 
 #: src/features/notifications/components/NotificationsDropdown.tsx
 msgid "Mark read"
-msgstr ""
+msgstr "Märgi loetuks"
 
 #: src/components/scan/QuickActionMenu.tsx
 msgid "MARK REVIEWED"
-msgstr ""
+msgstr "MÄRGI ÜLE VAADATUKS"
 
 #: src/features/declutter/DeclutterPage.tsx
 msgid "Mark used"
-msgstr ""
+msgstr "Märgi kasutatuks"
 
 #: src/features/declutter/DeclutterPage.tsx
 msgid "MARK USED?"
-msgstr ""
+msgstr "MÄRKIDA KASUTATUKS?"
 
 #: src/components/scan/ScanResultBanner.tsx
 msgid "MATCH"
-msgstr ""
+msgstr "VASTE"
 
 #: src/components/scan/QuickActionMenu.tsx
 msgid "MATCHED ITEM"
-msgstr ""
+msgstr "VASTAV ESE"
 
 #: src/features/settings/MembersPage.tsx
 msgid "Member added."
-msgstr ""
+msgstr "Liige lisatud."
 
 #: src/features/settings/MembersPage.tsx
 msgid "Member removed."
-msgstr ""
+msgstr "Liige eemaldatud."
 
 #: src/features/settings/SettingsLandingPage.tsx
 msgid "members"
-msgstr ""
+msgstr "liikmed"
 
 #: src/features/settings/MembersPage.tsx
 #: src/features/settings/SettingsLandingPage.tsx
 msgid "Members"
-msgstr ""
+msgstr "Liikmed"
 
 #: src/routes/demo/DemoPage.tsx
 msgid "Menu ▾"
-msgstr ""
+msgstr "Menüü ▾"
 
 #: src/features/analytics/components/OutOfStockTable.tsx
 msgid "Min stock"
-msgstr ""
+msgstr "Min laoseis"
 
 #: src/features/settings/PaperlessPage.tsx
 msgid "Mirror Paperless tags"
-msgstr ""
+msgstr "Peegelda Paperlessi silte"
 
 #: src/features/analytics/components/MonthlyLoanActivityChart.tsx
 msgid "Monthly loan activity"
-msgstr ""
+msgstr "Kuine laenutuste tegevus"
 
 #: src/features/items/ItemDetailPage.tsx
 msgid "More actions"
-msgstr ""
+msgstr "Veel toiminguid"
 
 #: src/components/layout/Bottombar.tsx
 msgid "MORE SHORTCUTS"
-msgstr ""
+msgstr "VEEL KIIRKLAHVE"
 
 #: src/features/inventory/components/MoveDialog.tsx
 #: src/routes/demo/DemoPage.tsx
 msgid "Move"
-msgstr ""
+msgstr "Liiguta"
 
 #: src/features/inventory/InventoryListPage.tsx
 #: src/features/items/components/InventoryPanel.tsx
 msgid "MOVE"
-msgstr ""
+msgstr "TEISALDA"
 
 #. placeholder {0}: photo.caption ?? photo.filename
 #: src/features/items/components/PhotoGallery.tsx
 msgid "Move {0} earlier"
-msgstr ""
+msgstr "Teisalda {0} ettepoole"
 
 #. placeholder {0}: photo.caption ?? photo.filename
 #: src/features/items/components/PhotoGallery.tsx
 msgid "Move {0} later"
-msgstr ""
+msgstr "Teisalda {0} tahapoole"
 
 #: src/features/inventory/components/MoveDialog.tsx
 msgid "MOVE ENTRY"
-msgstr ""
+msgstr "TEISALDA KIRJE"
 
 #: src/features/inventory/components/MoveDialog.tsx
 msgid "Moved to {dest}."
-msgstr ""
+msgstr "Teisaldatud asukohta {dest}."
 
 #: src/features/inventory/InventoryListPage.tsx
 msgid "Movement history"
-msgstr ""
+msgstr "Liikumiste ajalugu"
 
 #: src/features/inventory/components/MovementsPanel.tsx
 msgid "Movements"
-msgstr ""
+msgstr "Liikumised"
 
 #: src/features/inventory/components/MovementsDrawer.tsx
 msgid "MOVEMENTS"
-msgstr ""
+msgstr "LIIKUMISED"
 
 #: src/features/inventory/components/MovementsDrawer.tsx
 msgid "MOVEMENTS — {itemName}"
-msgstr ""
+msgstr "LIIKUMISED — {itemName}"
 
 #: src/features/my-changes/MyChangesPage.tsx
 msgid "My changes"
-msgstr ""
+msgstr "Minu muudatused"
 
 #: src/components/layout/Sidebar.tsx
 msgid "My Changes"
-msgstr ""
+msgstr "Minu muudatused"
 
 #: src/features/my-changes/MyChangesPage.tsx
 msgid "MY CHANGES — {workspaceName}"
-msgstr ""
+msgstr "MINU MUUDATUSED — {workspaceName}"
 
 #: src/features/borrowers/BorrowerDetailPage.tsx
 #: src/features/borrowers/BorrowerFormPage.tsx
@@ -2670,347 +2670,347 @@ msgstr ""
 #: src/features/wishlist/components/WishlistFormDialog.tsx
 #: src/features/wishlist/WishlistPage.tsx
 msgid "Name"
-msgstr ""
+msgstr "Nimi"
 
 #: src/components/layout/Sidebar.tsx
 msgid "Navigator"
-msgstr ""
+msgstr "Navigaator"
 
 #: src/features/maintenance/components/MaintenanceDrawer.tsx
 msgid "never"
-msgstr ""
+msgstr "mitte kunagi"
 
 #: src/features/borrowers/BorrowerFormPage.tsx
 msgid "NEW BORROWER"
-msgstr ""
+msgstr "UUS LAENAJA"
 
 #: src/features/taxonomy/components/CategoryFormDialog.tsx
 msgid "NEW CATEGORY"
-msgstr ""
+msgstr "UUS KATEGOORIA"
 
 #: src/features/repairs/components/CompleteRepairDialog.tsx
 msgid "New condition"
-msgstr ""
+msgstr "Uus seisukord"
 
 #: src/features/taxonomy/components/ContainerFormDialog.tsx
 msgid "NEW CONTAINER"
-msgstr ""
+msgstr "UUS KONTEINER"
 
 #: src/features/loans/components/ExtendLoanDialog.tsx
 msgid "New due date"
-msgstr ""
+msgstr "Uus tähtaeg"
 
 #: src/features/auth/LoginPage.tsx
 msgid "New here?"
-msgstr ""
+msgstr "Uus siin?"
 
 #: src/features/taxonomy/components/LabelFormDialog.tsx
 msgid "NEW LABEL"
-msgstr ""
+msgstr "UUS SILT"
 
 #: src/features/loans/LoanFormPage.tsx
 msgid "NEW LOAN"
-msgstr ""
+msgstr "UUS LAENUTUS"
 
 #: src/features/taxonomy/components/LocationFormDialog.tsx
 msgid "NEW LOCATION"
-msgstr ""
+msgstr "UUS ASUKOHT"
 
 #: src/features/settings/SecurityPage.tsx
 msgid "New password"
-msgstr ""
+msgstr "Uus parool"
 
 #: src/components/retro/data/RetroPagination.tsx
 msgid "NEXT"
-msgstr ""
+msgstr "JÄRGMINE"
 
 #: src/features/maintenance/components/MaintenanceDrawer.tsx
 #: src/features/maintenance/components/MaintenanceForm.tsx
 #: src/features/maintenance/MaintenanceDuePage.tsx
 msgid "Next due"
-msgstr ""
+msgstr "Järgmine tähtaeg"
 
 #: src/components/retro/data/RetroPagination.tsx
 msgid "Next page"
-msgstr ""
+msgstr "Järgmine leht"
 
 #: src/features/items/components/PhotoLightbox.tsx
 msgid "Next photo"
-msgstr ""
+msgstr "Jargmine foto"
 
 #: src/features/loans/LoansListPage.tsx
 msgid "NO ACTIVE LOANS"
-msgstr ""
+msgstr "AKTIIVSEID LAENUTUSI POLE"
 
 #: src/features/loans/LoansListPage.tsx
 msgid "No active loans are past their due date."
-msgstr ""
+msgstr "Ükski aktiivne laenutus pole tähtaega ületanud."
 
 #: src/features/dashboard/DashboardPage.tsx
 msgid "No activity yet."
-msgstr ""
+msgstr "Tegevust veel pole."
 
 #: src/features/analytics/components/TopBorrowersChart.tsx
 msgid "No borrower activity for this range yet."
-msgstr ""
+msgstr "Selle vahemiku kohta laenajate tegevust veel pole."
 
 #: src/features/borrowers/BorrowersListPage.tsx
 msgid "NO BORROWERS"
-msgstr ""
+msgstr "LAENAJAID POLE"
 
 #: src/features/borrowers/BorrowersListPage.tsx
 msgid "No borrowers match this search."
-msgstr ""
+msgstr "Ükski laenaja ei vasta sellele otsingule."
 
 #: src/features/loans/LoanFormPage.tsx
 msgid "No borrowers yet — add one first."
-msgstr ""
+msgstr "Laenajaid veel pole — lisa esmalt üks."
 
 #: src/features/borrowers/BorrowersListPage.tsx
 msgid "No borrowers yet. Add a borrower to start tracking who has your items."
-msgstr ""
+msgstr "Laenajaid veel pole. Lisa laenaja, et hakata jälgima, kellel sinu esemed on."
 
 #: src/features/taxonomy/components/CategoriesTab.tsx
 msgid "NO CATEGORIES YET"
-msgstr ""
+msgstr "KATEGOORIAID VEEL POLE"
 
 #: src/features/analytics/components/CategoryValueChart.tsx
 msgid "No category values for this range yet."
-msgstr ""
+msgstr "Selle vahemiku kohta kategooriate väärtusi veel pole."
 
 #: src/features/approvals/ApprovalsPage.tsx
 msgid "No changes are waiting for review. New requests appear here."
-msgstr ""
+msgstr "Ülevaatust ootavaid muudatusi pole. Uued taotlused ilmuvad siia."
 
 #: src/features/my-changes/MyChangesPage.tsx
 msgid "No changes yet"
-msgstr ""
+msgstr "Muudatusi veel pole"
 
 #: src/features/taxonomy/components/ColorSwatchPicker.tsx
 msgid "No color"
-msgstr ""
+msgstr "Värvita"
 
 #: src/features/repairs/components/RepairsDrawer.tsx
 msgid "No completed repairs yet."
-msgstr ""
+msgstr "Lõpetatud remonte veel pole."
 
 #: src/features/analytics/components/ConditionDonutChart.tsx
 msgid "No condition data for this range yet."
-msgstr ""
+msgstr "Selle vahemiku kohta seisukorra andmeid veel pole."
 
 #: src/features/taxonomy/components/ContainersTab.tsx
 msgid "NO CONTAINERS YET"
-msgstr ""
+msgstr "KONTEINEREID VEEL POLE"
 
 #: src/features/analytics/charts/RetroChartFrame.tsx
 #: src/features/analytics/components/ConditionDonutChart.tsx
 #: src/features/analytics/components/MonthlyLoanActivityChart.tsx
 #: src/features/analytics/components/StatusStackChart.tsx
 msgid "No data"
-msgstr ""
+msgstr "Andmeid pole"
 
 #: src/features/items/components/PaperlessLinkDialog.tsx
 #: src/features/settings/PaperlessPage.tsx
 msgid "No documents matched."
-msgstr ""
+msgstr "Ükski dokument ei sobinud."
 
 #: src/features/loans/components/ExtendLoanDialog.tsx
 msgid "no due date"
-msgstr ""
+msgstr "tähtaega pole"
 
 #: src/features/inventory/InventoryListPage.tsx
 msgid "No entries match these filters. Clear a filter or adjust your search."
-msgstr ""
+msgstr "Ükski kirje ei vasta nendele filtritele. Tühjenda filter või kohanda oma otsingut."
 
 #: src/features/items/components/ItemAttachmentPanel.tsx
 #: src/features/repairs/components/RepairAttachmentPanel.tsx
 msgid "NO FILES"
-msgstr ""
+msgstr "FAILE POLE"
 
 #: src/features/declutter/DeclutterPage.tsx
 msgid "No grouping"
-msgstr ""
+msgstr "Rühmitamata"
 
 #: src/features/imports/ImportsPage.tsx
 msgid "NO IMPORTS YET"
-msgstr ""
+msgstr "IMPORTE VEEL POLE"
 
 #: src/features/loans/LoanFormPage.tsx
 msgid "No inventory entries yet — add one first."
-msgstr ""
+msgstr "Laokirjeid veel pole — lisa esmalt üks."
 
 #: src/features/scan/ClaimPage.tsx
 msgid "No item matches this code yet. Create one with the code attached."
-msgstr ""
+msgstr "Ükski ese ei vasta veel sellele koodile. Loo üks, mille külge kood on lisatud."
 
 #: src/features/inventory/ExpiringPage.tsx
 msgid "No items are expiring or out of warranty in the next {days} days."
-msgstr ""
+msgstr "Järgmise {days} päeva jooksul ei aegu ega lõpe garantii ühelgi esemel."
 
 #: src/features/wishlist/WishlistPage.tsx
 msgid "No items in this list. Add something you're after."
-msgstr ""
+msgstr "Selles loendis pole esemeid. Lisa midagi, mida soovid."
 
 #: src/features/items/ItemsListPage.tsx
 #: src/routes/demo/DemoPage.tsx
 msgid "No items match these filters. Clear a filter or adjust your search."
-msgstr ""
+msgstr "Ükski ese ei vasta nendele filtritele. Tühjenda filter või kohanda oma otsingut."
 
 #: src/features/items/ItemsListPage.tsx
 msgid "NO ITEMS YET"
-msgstr ""
+msgstr "ESEMEID VEEL POLE"
 
 #: src/features/inventory/InventoryFormPage.tsx
 msgid "No items yet — add one first."
-msgstr ""
+msgstr "Esemeid veel pole — lisa esmalt üks."
 
 #: src/features/taxonomy/components/LabelsTab.tsx
 msgid "NO LABELS YET"
-msgstr ""
+msgstr "SILTE VEEL POLE"
 
 #: src/features/items/components/ItemLabels.tsx
 msgid "No labels yet — manage labels in Phase 10."
-msgstr ""
+msgstr "Silte veel pole — halda silte Faasis 10."
 
 #: src/features/analytics/components/MonthlyLoanActivityChart.tsx
 msgid "No loan activity for this range yet."
-msgstr ""
+msgstr "Selle vahemiku kohta laenutuste tegevust veel pole."
 
 #: src/features/items/components/LoanPanels.tsx
 #: src/features/loans/components/BorrowerLoanPanels.tsx
 #: src/features/loans/LoansListPage.tsx
 msgid "NO LOAN HISTORY"
-msgstr ""
+msgstr "LAENUTUSTE AJALUGU PUUDUB"
 
 #: src/features/loans/LoansListPage.tsx
 msgid "No loans have been returned yet."
-msgstr ""
+msgstr "Ühtegi laenutust pole veel tagastatud."
 
 #: src/features/loans/LoansListPage.tsx
 msgid "No loans match this search."
-msgstr ""
+msgstr "Ükski laenutus ei vasta sellele otsingule."
 
 #: src/features/analytics/components/LocationValueChart.tsx
 msgid "No location values for this range yet."
-msgstr ""
+msgstr "Selle vahemiku kohta asukohtade väärtusi veel pole."
 
 #: src/features/taxonomy/components/LocationsTab.tsx
 msgid "NO LOCATIONS YET"
-msgstr ""
+msgstr "ASUKOHTI VEEL POLE"
 
 #: src/features/inventory/InventoryFormPage.tsx
 #: src/features/taxonomy/components/ContainerFormDialog.tsx
 msgid "No locations yet — add one first."
-msgstr ""
+msgstr "Asukohti veel pole — lisa esmalt üks."
 
 #: src/features/maintenance/MaintenanceDuePage.tsx
 msgid "No maintenance is due right now. You're all caught up."
-msgstr ""
+msgstr "Praegu pole ühtegi hooldust tähtajas. Kõik on korras."
 
 #: src/features/items/components/ItemAttachmentPanel.tsx
 #: src/features/repairs/components/RepairAttachmentPanel.tsx
 msgid "No manuals, receipts, or warranties attached yet."
-msgstr ""
+msgstr "Juhendeid, tšekke ega garantiisid pole veel lisatud."
 
 #: src/routes/demo/DemoPage.tsx
 msgid "No matches"
-msgstr ""
+msgstr "Vasteid pole"
 
 #: src/features/borrowers/BorrowersListPage.tsx
 #: src/features/inventory/InventoryListPage.tsx
 #: src/features/items/ItemsListPage.tsx
 #: src/features/loans/LoansListPage.tsx
 msgid "NO MATCHES"
-msgstr ""
+msgstr "VASTEID POLE"
 
 #: src/components/retro/form/RetroCombobox.tsx
 msgid "No matches."
-msgstr ""
+msgstr "Vasteid pole."
 
 #: src/features/settings/MembersPage.tsx
 msgid "No members yet"
-msgstr ""
+msgstr "Liikmeid veel pole"
 
 #: src/features/inventory/components/MovementsPanel.tsx
 msgid "NO MOVEMENTS"
-msgstr ""
+msgstr "LIIKUMISI POLE"
 
 #: src/features/notifications/components/NotificationsDropdown.tsx
 msgid "No notifications"
-msgstr ""
+msgstr "Teavitusi pole"
 
 #: src/features/settings/SecurityPage.tsx
 msgid "No other sessions."
-msgstr ""
+msgstr "Teisi seansse pole."
 
 #: src/features/items/components/PhotoGallery.tsx
 msgid "No photos yet."
-msgstr ""
+msgstr "Fotosid veel pole."
 
 #: src/features/maintenance/components/MaintenanceDrawer.tsx
 msgid "No recurring maintenance set up for this entry yet. Add a schedule to get reminders."
-msgstr ""
+msgstr "Selle kirje jaoks pole korduvat hooldust veel seadistatud. Meeldetuletuste saamiseks lisa ajakava."
 
 #: src/features/settings/MembersPage.tsx
 msgid "No registered user with that email."
-msgstr ""
+msgstr "Selle e-postiga registreeritud kasutajat pole."
 
 #: src/features/repairs/components/RepairsDrawer.tsx
 msgid "NO REPAIRS"
-msgstr ""
+msgstr "REMONTE POLE"
 
 #: src/features/repairs/components/RepairsDrawer.tsx
 msgid "No repairs logged for this entry yet. Add one to track work, cost, and warranty."
-msgstr ""
+msgstr "Selle kirje jaoks pole remonte veel registreeritud. Lisa üks, et jälgida tööd, kulu ja garantiid."
 
 #: src/components/retro/filters/SavedFilters.tsx
 msgid "No saved filters yet."
-msgstr ""
+msgstr "Salvestatud filtreid veel pole."
 
 #: src/components/scan/ScanHistoryList.tsx
 msgid "NO SCANS YET"
-msgstr ""
+msgstr "SKANNE VEEL POLE"
 
 #: src/features/maintenance/components/MaintenanceDrawer.tsx
 msgid "NO SCHEDULES"
-msgstr ""
+msgstr "AJAKAVASID POLE"
 
 #: src/features/settings/SecurityPage.tsx
 msgid "No sessions"
-msgstr ""
+msgstr "Seansse pole"
 
 #: src/components/layout/F1HelpDialog.tsx
 msgid "NO SHORTCUTS HERE"
-msgstr ""
+msgstr "SIIN KIIRKLAHVE POLE"
 
 #: src/features/analytics/components/StatusStackChart.tsx
 msgid "No status data for this range yet."
-msgstr ""
+msgstr "Selle vahemiku kohta oleku andmeid veel pole."
 
 #: src/features/inventory/InventoryListPage.tsx
 msgid "NO STOCK ENTRIES"
-msgstr ""
+msgstr "LAOKIRJEID POLE"
 
 #: src/features/items/components/InventoryPanel.tsx
 msgid "No stock entries yet."
-msgstr ""
+msgstr "Laokirjeid veel pole."
 
 #: src/features/analytics/AnalyticsPage.tsx
 #: src/features/dashboard/DashboardPage.tsx
 msgid "No workspace"
-msgstr ""
+msgstr "Tööruumi pole"
 
 #: src/components/layout/WorkspaceSwitcher.tsx
 msgid "No workspaces. Contact an owner."
-msgstr ""
+msgstr "Tööruume pole. Võta ühendust omanikuga."
 
 #: src/components/scan/ScanResultBanner.tsx
 msgid "NOT FOUND"
-msgstr ""
+msgstr "EI LEITUD"
 
 #: src/features/settings/AccountsPage.tsx
 msgid "NOT LINKED"
-msgstr ""
+msgstr "LINKIMATA"
 
 #: src/features/borrowers/BorrowerDetailPage.tsx
 #: src/features/borrowers/BorrowerFormPage.tsx
@@ -3022,141 +3022,141 @@ msgstr ""
 #: src/features/wishlist/components/WishlistFormDialog.tsx
 #: src/routes/demo/DemoPage.tsx
 msgid "Notes"
-msgstr ""
+msgstr "Märkmed"
 
 #: src/features/dashboard/components/SystemAlertsPanel.tsx
 msgid "Nothing due"
-msgstr ""
+msgstr "Midagi pole tähtajas"
 
 #: src/features/maintenance/MaintenanceDuePage.tsx
 msgid "NOTHING DUE"
-msgstr ""
+msgstr "MIDAGI POLE TÄHTAJAS"
 
 #: src/features/dashboard/components/SystemAlertsPanel.tsx
 msgid "Nothing expiring"
-msgstr ""
+msgstr "Midagi ei aegu"
 
 #: src/features/inventory/ExpiringPage.tsx
 msgid "NOTHING EXPIRING"
-msgstr ""
+msgstr "MIDAGI EI AEGU"
 
 #: src/routes/demo/DemoPage.tsx
 msgid "Nothing here yet"
-msgstr ""
+msgstr "Siin pole veel midagi"
 
 #: src/features/wishlist/WishlistPage.tsx
 msgid "NOTHING HERE YET"
-msgstr ""
+msgstr "SIIN POLE VEEL MIDAGI"
 
 #: src/features/loans/LoansListPage.tsx
 msgid "Nothing is out on loan right now. Loan an item to start tracking it."
-msgstr ""
+msgstr "Praegu pole midagi välja laenatud. Laenuta ese, et hakata seda jälgima."
 
 #: src/features/inventory/InventoryListPage.tsx
 msgid "Nothing is stocked yet. Add your first inventory entry to start tracking quantity, location, and condition."
-msgstr ""
+msgstr "Midagi pole veel laos. Lisa oma esimene laokirje, et hakata jälgima kogust, asukohta ja seisukorda."
 
 #: src/features/loans/components/BorrowerLoanPanels.tsx
 msgid "Nothing out"
-msgstr ""
+msgstr "Midagi pole väljas"
 
 #: src/features/analytics/components/OutOfStockTable.tsx
 msgid "NOTHING OUT OF STOCK"
-msgstr ""
+msgstr "MIDAGI POLE LAOST OTSAS"
 
 #: src/features/loans/LoansListPage.tsx
 msgid "NOTHING OVERDUE"
-msgstr ""
+msgstr "MIDAGI POLE ÜLE TÄHTAJA"
 
 #: src/features/approvals/components/PendingApprovalsPanel.tsx
 msgid "Nothing pending"
-msgstr ""
+msgstr "Midagi pole ootel"
 
 #: src/features/approvals/ApprovalsPage.tsx
 msgid "NOTHING PENDING"
-msgstr ""
+msgstr "MIDAGI POLE OOTEL"
 
 #: src/features/analytics/charts/RetroChartFrame.tsx
 msgid "Nothing to chart for this range yet."
-msgstr ""
+msgstr "Selle vahemiku kohta pole veel midagi graafikule panna."
 
 #: src/features/declutter/DeclutterPage.tsx
 msgid "NOTHING TO DECLUTTER"
-msgstr ""
+msgstr "POLE MIDAGI KORISTADA"
 
 #: src/features/declutter/DeclutterPage.tsx
 msgid "Nothing to export."
-msgstr ""
+msgstr "Pole midagi eksportida."
 
 #: src/features/settings/NotificationsPage.tsx
 msgid "Notification settings saved."
-msgstr ""
+msgstr "Teavituste seaded salvestatud."
 
 #: src/features/notifications/components/NotificationsBell.tsx
 #: src/features/notifications/components/NotificationsDropdown.tsx
 #: src/features/settings/NotificationsPage.tsx
 #: src/features/settings/SettingsLandingPage.tsx
 msgid "Notifications"
-msgstr ""
+msgstr "Teavitused"
 
 #: src/features/settings/RegionalFormatsPage.tsx
 msgid "Number"
-msgstr ""
+msgstr "Arv"
 
 #: src/components/retro/feedback/RetroStatusDot.tsx
 msgid "offline"
-msgstr ""
+msgstr "võrguühenduseta"
 
 #: src/components/layout/TopBar.tsx
 msgid "OFFLINE"
-msgstr ""
+msgstr "VÕRGUÜHENDUSETA"
 
 #. placeholder {0}: loan.borrower.name
 #: src/features/items/components/LoanPanels.tsx
 msgid "On loan to {0}"
-msgstr ""
+msgstr "Laenatud: {0}"
 
 #: src/components/layout/TopBar.tsx
 msgid "ONLINE"
-msgstr ""
+msgstr "VÕRGUS"
 
 #: src/features/system-history/Page.tsx
 msgid "ONLINE ONLY"
-msgstr ""
+msgstr "AINULT VÕRGUS"
 
 #: src/features/items/hooks/useItemMutations.ts
 msgid "Only archived items can be deleted."
-msgstr ""
+msgstr "Kustutada saab ainult arhiveeritud esemeid."
 
 #: src/features/approvals/ApprovalsPage.tsx
 msgid "Only workspace owners and admins can review approvals."
-msgstr ""
+msgstr "Kinnitusi saavad üle vaadata ainult tööruumi omanikud ja administraatorid."
 
 #. placeholder {0}: photo.caption ?? photo.filename
 #: src/features/items/components/PhotoGallery.tsx
 msgid "Open {0}"
-msgstr ""
+msgstr "Ava {0}"
 
 #: src/features/repairs/components/RepairForm.tsx
 msgid "Optional — a follow-up maintenance reminder."
-msgstr ""
+msgstr "Valikuline — järelhoolduse meeldetuletus."
 
 #: src/features/taxonomy/components/ContainerFormDialog.tsx
 #: src/features/taxonomy/components/LocationFormDialog.tsx
 msgid "Optional — auto-generated if left blank."
-msgstr ""
+msgstr "Valikuline — tühjaks jätmisel genereeritakse automaatselt."
 
 #: src/features/loans/LoanFormPage.tsx
 msgid "Optional — leave blank for no due date."
-msgstr ""
+msgstr "Valikuline — tähtaja puudumiseks jäta tühjaks."
 
 #: src/features/taxonomy/components/LabelFormDialog.tsx
 msgid "Optional — pick an on-palette color, or none."
-msgstr ""
+msgstr "Valikuline — vali paletile sobiv värv või jäta värvita."
 
 #: src/features/borrowers/BorrowerFormPage.tsx
 msgid "Optional — used to identify the borrower."
-msgstr ""
+msgstr "Valikuline — kasutatakse laenaja tuvastamiseks."
 
 #: src/features/borrowers/BorrowerFormPage.tsx
 #: src/features/taxonomy/components/CategoryFormDialog.tsx
@@ -3164,467 +3164,467 @@ msgstr ""
 #: src/features/taxonomy/components/LabelFormDialog.tsx
 #: src/features/taxonomy/components/LocationFormDialog.tsx
 msgid "Optional."
-msgstr ""
+msgstr "Valikuline."
 
 #: src/features/repairs/components/CompleteRepairDialog.tsx
 msgid "Optionally update the item's condition now that it's fixed."
-msgstr ""
+msgstr "Soovi korral uuenda eseme seisukorda nüüd, kui see on parandatud."
 
 #: src/features/auth/LoginPage.tsx
 #: src/features/auth/RegisterPage.tsx
 msgid "OR"
-msgstr ""
+msgstr "VÕI"
 
 #: src/features/wishlist/components/WishlistFormDialog.tsx
 #: src/features/wishlist/WishlistPage.tsx
 msgid "Ordered"
-msgstr ""
+msgstr "Tellitud"
 
 #: src/features/wishlist/WishlistPage.tsx
 msgid "ORDERED"
-msgstr ""
+msgstr "TELLITUD"
 
 #: src/features/analytics/components/OutOfStockTable.tsx
 msgid "OUT"
-msgstr ""
+msgstr "VÄLJAS"
 
 #: src/features/analytics/components/OutOfStockTable.tsx
 msgid "Out of stock"
-msgstr ""
+msgstr "Laost otsas"
 
 #: src/features/dashboard/DashboardPage.tsx
 #: src/features/loans/LoansListPage.tsx
 #: src/features/maintenance/MaintenanceDuePage.tsx
 msgid "Overdue"
-msgstr ""
+msgstr "Üle tähtaja"
 
 #: src/features/loans/LoansListPage.tsx
 msgid "OVERDUE"
-msgstr ""
+msgstr "ÜLE TÄHTAJA"
 
 #: src/routes/demo/DemoPage.tsx
 msgid "Overlay Atoms"
-msgstr ""
+msgstr "Ülekatteaatomid"
 
 #: src/components/layout/Sidebar.tsx
 msgid "Overview"
-msgstr ""
+msgstr "Ülevaade"
 
 #: src/routes/demo/DemoPage.tsx
 msgid "Overview tab panel."
-msgstr ""
+msgstr "Ülevaate vahekaardi paneel."
 
 #: src/components/retro/data/RetroPagination.tsx
 msgid "page {page} of {pageCount} · {perPage} / page"
-msgstr ""
+msgstr "leht {page} / {pageCount} · {perPage} / leht"
 
 #: src/components/retro/data/RetroPagination.tsx
 msgid "Pagination"
-msgstr ""
+msgstr "Lehekülgede jaotus"
 
 #: src/features/settings/SettingsLandingPage.tsx
 msgid "Paperless"
-msgstr ""
+msgstr "Paperless"
 
 #: src/features/settings/PaperlessPage.tsx
 msgid "Paperless connection"
-msgstr ""
+msgstr "Paperlessi ühendus"
 
 #: src/features/settings/hooks/usePaperlessSettings.ts
 msgid "Paperless disconnected."
-msgstr ""
+msgstr "Paperless lahti ühendatud."
 
 #: src/features/items/components/PaperlessLinkDialog.tsx
 #: src/features/settings/PaperlessPage.tsx
 msgid "Paperless is unreachable — check the URL and token."
-msgstr ""
+msgstr "Paperless pole kättesaadav — kontrolli URL-i ja tokenit."
 
 #: src/features/items/components/PaperlessLinkDialog.tsx
 msgid "Paperless is unreachable."
-msgstr ""
+msgstr "Paperless pole kättesaadav."
 
 #: src/features/settings/hooks/usePaperlessSettings.ts
 msgid "Paperless settings saved."
-msgstr ""
+msgstr "Paperlessi seaded salvestatud."
 
 #: src/features/settings/PaperlessPage.tsx
 msgid "Paperless URL"
-msgstr ""
+msgstr "Paperlessi URL"
 
 #: src/features/taxonomy/components/CategoryFormDialog.tsx
 msgid "Parent category"
-msgstr ""
+msgstr "Ülemkategooria"
 
 #: src/features/taxonomy/components/LocationFormDialog.tsx
 msgid "Parent location"
-msgstr ""
+msgstr "Ülemasukoht"
 
 #: src/features/auth/LoginPage.tsx
 #: src/features/auth/RegisterPage.tsx
 #: src/features/settings/SecurityPage.tsx
 msgid "Password"
-msgstr ""
+msgstr "Parool"
 
 #: src/features/auth/LoginPage.tsx
 msgid "Password is required."
-msgstr ""
+msgstr "Parool on kohustuslik."
 
 #: src/features/settings/SecurityPage.tsx
 msgid "Password updated."
-msgstr ""
+msgstr "Parool uuendatud."
 
 #: src/features/auth/RegisterPage.tsx
 #: src/features/settings/SecurityPage.tsx
 msgid "Passwords don't match."
-msgstr ""
+msgstr "Paroolid ei kattu."
 
 #: src/features/settings/PaperlessPage.tsx
 msgid "Paste your Paperless API token"
-msgstr ""
+msgstr "Kleebi oma Paperlessi API-võti"
 
 #: src/features/approvals/components/PendingApprovalsPanel.tsx
 #: src/features/items/components/PhotoUpload.tsx
 msgid "pending"
-msgstr ""
+msgstr "ootel"
 
 #: src/features/imports/ImportsPage.tsx
 msgid "Pending"
-msgstr ""
+msgstr "Ootel"
 
 #: src/features/approvals/components/PendingApprovalsPanel.tsx
 msgid "Pending approvals"
-msgstr ""
+msgstr "Ootel kinnitused"
 
 #: src/features/borrowers/BorrowerDetailPage.tsx
 #: src/features/borrowers/BorrowerFormPage.tsx
 msgid "Phone"
-msgstr ""
+msgstr "Telefon"
 
 #. placeholder {0}: current + 1
 #: src/features/items/components/PhotoLightbox.tsx
 msgid "Photo {0} of {count}"
-msgstr ""
+msgstr "Foto {0} / {count}"
 
 #: src/features/settings/AvatarUploader.tsx
 msgid "Photo removed."
-msgstr ""
+msgstr "Foto eemaldatud."
 
 #: src/features/repairs/components/RepairPhotoPanel.tsx
 msgid "Photo stage"
-msgstr ""
+msgstr "Foto etapp"
 
 #: src/features/settings/AvatarUploader.tsx
 msgid "Photo updated."
-msgstr ""
+msgstr "Foto uuendatud."
 
 #: src/features/items/components/PhotoUpload.tsx
 msgid "Photos"
-msgstr ""
+msgstr "Fotod"
 
 #: src/features/items/ItemDetailPage.tsx
 #: src/features/repairs/components/RepairRecordDialog.tsx
 #: src/features/repairs/components/RepairsDrawer.tsx
 msgid "PHOTOS"
-msgstr ""
+msgstr "FOTOD"
 
 #: src/features/inventory/components/MoveDialog.tsx
 msgid "Pick a different location or container."
-msgstr ""
+msgstr "Vali teine asukoht või konteiner."
 
 #: src/features/settings/AvatarUploader.tsx
 msgid "PNG/JPG · max 5 MB"
-msgstr ""
+msgstr "PNG/JPG · max 5 MB"
 
 #: src/components/scan/ScanViewfinderOverlay.tsx
 msgid "Point the camera at a barcode or QR code."
-msgstr ""
+msgstr "Suuna kaamera triipkoodile või QR-koodile."
 
 #: src/features/items/components/DuplicateWarningDialog.tsx
 msgid "POSSIBLE DUPLICATE"
-msgstr ""
+msgstr "VÕIMALIK DUBLIKAAT"
 
 #: src/features/settings/SettingsLandingPage.tsx
 msgid "PREFERENCES"
-msgstr ""
+msgstr "EELISTUSED"
 
 #: src/features/items/ItemFormPage.tsx
 msgid "Prefilled from scan — edit if needed."
-msgstr ""
+msgstr "Eeltäidetud skannist — muuda vajadusel."
 
 #: src/components/retro/filters/SavedFilters.tsx
 msgid "Preset name"
-msgstr ""
+msgstr "Eelseade nimi"
 
 #: src/components/retro/data/RetroPagination.tsx
 msgid "PREV"
-msgstr ""
+msgstr "EELMINE"
 
 #: src/components/retro/data/RetroPagination.tsx
 msgid "Previous page"
-msgstr ""
+msgstr "Eelmine leht"
 
 #: src/features/items/components/PhotoLightbox.tsx
 msgid "Previous photo"
-msgstr ""
+msgstr "Eelmine foto"
 
 #: src/features/declutter/DeclutterPage.tsx
 #: src/features/wishlist/WishlistPage.tsx
 msgid "Price"
-msgstr ""
+msgstr "Hind"
 
 #: src/features/wishlist/components/WishlistFormDialog.tsx
 msgid "Price estimate"
-msgstr ""
+msgstr "Hinnaprognoos"
 
 #: src/features/items/components/ItemAttachmentPanel.tsx
 msgid "PRIMARY"
-msgstr ""
+msgstr "PEAMINE"
 
 #: src/features/wishlist/components/WishlistFormDialog.tsx
 #: src/features/wishlist/WishlistPage.tsx
 msgid "Priority"
-msgstr ""
+msgstr "Prioriteet"
 
 #: src/features/imports/ImportsPage.tsx
 msgid "Processing"
-msgstr ""
+msgstr "Töötlemisel"
 
 #: src/components/scan/UpcSuggestionBanner.tsx
 msgid "PRODUCT FOUND"
-msgstr ""
+msgstr "TOODE LEITUD"
 
 #: src/components/layout/TopBar.tsx
 #: src/features/settings/ProfilePage.tsx
 #: src/features/settings/SettingsLandingPage.tsx
 msgid "Profile"
-msgstr ""
+msgstr "Profiil"
 
 #: src/features/settings/AvatarUploader.tsx
 msgid "Profile photo"
-msgstr ""
+msgstr "Profiilifoto"
 
 #: src/features/imports/ImportsPage.tsx
 msgid "Progress"
-msgstr ""
+msgstr "Edenemine"
 
 #: src/features/inventory/ExpiringPage.tsx
 #: src/features/inventory/InventoryListPage.tsx
 #: src/features/items/ItemsListPage.tsx
 #: src/routes/demo/DemoPage.tsx
 msgid "Qty"
-msgstr ""
+msgstr "Kogus"
 
 #: src/features/inventory/InventoryFormPage.tsx
 #: src/features/items/ItemDetailPage.tsx
 #: src/features/items/ItemFormPage.tsx
 msgid "Quantity"
-msgstr ""
+msgstr "Kogus"
 
 #: src/features/items/components/AddAttachmentDialog.tsx
 msgid "READY"
-msgstr ""
+msgstr "VALMIS"
 
 #: src/features/approvals/ApprovalsPage.tsx
 msgid "Reason"
-msgstr ""
+msgstr "Põhjus"
 
 #: src/features/dashboard/DashboardPage.tsx
 msgid "Recent activity"
-msgstr ""
+msgstr "Hiljutine tegevus"
 
 #: src/components/scan/ScanHistoryList.tsx
 msgid "RECENT SCANS"
-msgstr ""
+msgstr "HILJUTISED SKANNID"
 
 #: src/features/repairs/components/RepairRecordDialog.tsx
 msgid "RECORD"
-msgstr ""
+msgstr "SALVESTA"
 
 #: src/features/settings/RegionalFormatsPage.tsx
 #: src/features/settings/SettingsLandingPage.tsx
 msgid "Regional Formats"
-msgstr ""
+msgstr "Piirkondlikud vormingud"
 
 #: src/features/approvals/ApprovalsPage.tsx
 msgid "REJECT"
-msgstr ""
+msgstr "LÜKKA TAGASI"
 
 #: src/features/approvals/ApprovalsPage.tsx
 msgid "Reject selected"
-msgstr ""
+msgstr "Lükka valitud tagasi"
 
 #: src/features/approvals/ApprovalsPage.tsx
 msgid "Reject selected changes"
-msgstr ""
+msgstr "Lükka valitud muudatused tagasi"
 
 #: src/features/approvals/ApprovalsPage.tsx
 msgid "Rejected {ok}, {fail} failed."
-msgstr ""
+msgstr "Tagasi lükatud {ok}, {fail} ebaõnnestus."
 
 #: src/features/approvals/ApprovalsPage.tsx
 msgid "Rejected {ok}."
-msgstr ""
+msgstr "Tagasi lükatud {ok}."
 
 #: src/features/approvals/ApprovalsPage.tsx
 msgid "Rejecting requires a reason — it is recorded with the decision."
-msgstr ""
+msgstr "Tagasilükkamine nõuab põhjust — see salvestatakse koos otsusega."
 
 #: src/components/retro/form/RetroFileInput.tsx
 msgid "Release to add"
-msgstr ""
+msgstr "Lisamiseks vabasta"
 
 #: src/features/repairs/components/RepairForm.tsx
 msgid "Reminder date"
-msgstr ""
+msgstr "Meeldetuletuse kuupäev"
 
 #: src/features/settings/AvatarUploader.tsx
 #: src/features/settings/MembersPage.tsx
 msgid "Remove"
-msgstr ""
+msgstr "Eemalda"
 
 #. placeholder {0}: f.name
 #. placeholder {0}: removeTarget ? memberName(removeTarget) : ""
 #: src/components/retro/form/RetroFileInput.tsx
 #: src/features/settings/MembersPage.tsx
 msgid "Remove {0}"
-msgstr ""
+msgstr "Eemalda {0}"
 
 #. placeholder {0}: String(chip.label)
 #: src/components/retro/filters/FilterBar.tsx
 msgid "Remove {0} filter"
-msgstr ""
+msgstr "Eemalda filter {0}"
 
 #. placeholder {0}: removeTarget ? memberName(removeTarget) : ""
 #: src/features/settings/MembersPage.tsx
 msgid "Remove {0} from this workspace? They'll lose access immediately."
-msgstr ""
+msgstr "Kas eemaldada {0} sellest tööruumist? Ta kaotab kohe juurdepääsu."
 
 #: src/features/settings/MembersPage.tsx
 msgid "Remove {name}"
-msgstr ""
+msgstr "Eemalda {name}"
 
 #: src/features/settings/AvatarUploader.tsx
 msgid "Remove photo"
-msgstr ""
+msgstr "Eemalda foto"
 
 #: src/features/settings/AvatarUploader.tsx
 msgid "Remove photo? Your profile will show your initials instead."
-msgstr ""
+msgstr "Kas eemaldada foto? Sinu profiil näitab selle asemel su initsiaale."
 
 #. placeholder {0}: repair.description
 #: src/features/repairs/components/RepairRecordDialog.tsx
 msgid "REPAIR — {0}"
-msgstr ""
+msgstr "REMONT — {0}"
 
 #: src/features/repairs/components/RepairsDrawer.tsx
 msgid "Repair cost"
-msgstr ""
+msgstr "Remondi kulu"
 
 #: src/features/repairs/components/RepairForm.tsx
 #: src/features/repairs/components/RepairRecordDialog.tsx
 msgid "Repair date"
-msgstr ""
+msgstr "Remondi kuupäev"
 
 #: src/features/inventory/InventoryListPage.tsx
 #: src/features/repairs/components/RepairsDrawer.tsx
 msgid "Repairs"
-msgstr ""
+msgstr "Remondid"
 
 #: src/features/repairs/components/RepairsDrawer.tsx
 msgid "REPAIRS"
-msgstr ""
+msgstr "REMONDID"
 
 #: src/features/repairs/components/RepairsDrawer.tsx
 msgid "REPAIRS — {itemName}"
-msgstr ""
+msgstr "REMONDID — {itemName}"
 
 #: src/features/approvals/ApprovalsPage.tsx
 #: src/features/my-changes/MyChangesPage.tsx
 msgid "Requested"
-msgstr ""
+msgstr "Taotletud"
 
 #: src/features/approvals/ApprovalsPage.tsx
 msgid "Requester"
-msgstr ""
+msgstr "Taotleja"
 
 #: src/features/taxonomy/components/ContainerFormDialog.tsx
 msgid "Required — every container lives in a location."
-msgstr ""
+msgstr "Kohustuslik — iga konteiner asub mõnes asukohas."
 
 #: src/features/scan/ClaimPage.tsx
 msgid "Resolving code…"
-msgstr ""
+msgstr "Koodi lahendamine…"
 
 #: src/features/inventory/InventoryListPage.tsx
 #: src/features/items/ItemDetailPage.tsx
 #: src/features/items/ItemsListPage.tsx
 #: src/features/taxonomy/components/LabelsTab.tsx
 msgid "RESTORE"
-msgstr ""
+msgstr "TAASTA"
 
 #: src/features/approvals/ApprovalsPage.tsx
 msgid "RESTRICTED"
-msgstr ""
+msgstr "PIIRATUD"
 
 #: src/features/settings/AppearancePage.tsx
 msgid "Retro OS Pastel — the only theme."
-msgstr ""
+msgstr "Retro OS Pastel — ainus teema."
 
 #: src/routes/demo/DemoPage.tsx
 msgid "RetroCheckbox — all three states."
-msgstr ""
+msgstr "RetroCheckbox — kõik kolm olekut."
 
 #: src/routes/demo/DemoPage.tsx
 msgid "RetroCombobox — editable, keyboard-driven listbox."
-msgstr ""
+msgstr "RetroCombobox — muudetav, klaviatuuriga juhitav loendikast."
 
 #: src/routes/demo/DemoPage.tsx
 msgid "RetroDialog (each titlebar variant), RetroConfirmDialog, Menu/Popover."
-msgstr ""
+msgstr "RetroDialog (iga tiitliriba variant), RetroConfirmDialog, Menu/Popover."
 
 #: src/routes/demo/DemoPage.tsx
 msgid "RetroEmptyState — no-data and filtered variants."
-msgstr ""
+msgstr "RetroEmptyState — andmeteta ja filtreeritud variandid."
 
 #: src/routes/demo/DemoPage.tsx
 msgid "RetroFileInput — click + drag-drop drop zone."
-msgstr ""
+msgstr "RetroFileInput — klõpsuga ja lohistamisega lisamisala."
 
 #: src/routes/demo/DemoPage.tsx
 msgid "RetroFormField — default / hint / error."
-msgstr ""
+msgstr "RetroFormField — vaikimisi / vihje / viga."
 
 #: src/routes/demo/DemoPage.tsx
 msgid "RetroPagination — beveled pager with current-page accent."
-msgstr ""
+msgstr "RetroPagination — kaldservadega lehekülgede vahetaja praeguse lehe rõhutusega."
 
 #: src/routes/demo/DemoPage.tsx
 msgid "RetroSelect — skinned native select."
-msgstr ""
+msgstr "RetroSelect — kohandatud välimusega natiivvalik."
 
 #: src/routes/demo/DemoPage.tsx
 msgid "RetroStatusDot — live (blinks) / idle / error."
-msgstr ""
+msgstr "RetroStatusDot — reaalajas (vilgub) / jõude / viga."
 
 #: src/routes/demo/DemoPage.tsx
 msgid "RetroTable + useTableSelection — click, Shift+Click range, header select-all (indeterminate dash on partial). Select rows to surface bulk-action chips in the Bottombar."
-msgstr ""
+msgstr "RetroTable + useTableSelection — klõps, Shift+Klõps vahemik, päises kõigi valimine (osalisel valikul määramatu kriips). Vali ridu, et tuua Bottombarisse hulgitoimingute sildid."
 
 #: src/routes/demo/DemoPage.tsx
 msgid "RetroTabs — folder-tab control with roving tabindex."
-msgstr ""
+msgstr "RetroTabs — kaustakaardi juhtelement liikuva tabindex'iga."
 
 #: src/routes/demo/DemoPage.tsx
 msgid "RetroTextarea — sunken multi-line field."
-msgstr ""
+msgstr "RetroTextarea — süvistatud mitmerealine väli."
 
 #: src/routes/demo/DemoPage.tsx
 msgid "retroToast — all four types (error never auto-dismisses)."
-msgstr ""
+msgstr "retroToast — kõik neli tüüpi (viga ei kao kunagi automaatselt)."
 
 #: src/features/auth/RequireAuth.tsx
 msgid "Retry"
-msgstr ""
+msgstr "Proovi uuesti"
 
 #: src/features/borrowers/BorrowerDetailPage.tsx
 #: src/features/items/components/PhotoUpload.tsx
@@ -3635,105 +3635,105 @@ msgstr ""
 #: src/features/taxonomy/components/LabelsTab.tsx
 #: src/features/taxonomy/components/LocationsTab.tsx
 msgid "RETRY"
-msgstr ""
+msgstr "PROOVI UUESTI"
 
 #: src/features/loans/components/ReturnLoanDialog.tsx
 msgid "Return"
-msgstr ""
+msgstr "Tagasta"
 
 #: src/features/items/components/LoanPanels.tsx
 #: src/features/loans/components/BorrowerLoanPanels.tsx
 #: src/features/loans/components/LoanRowActions.tsx
 msgid "RETURN"
-msgstr ""
+msgstr "TAGASTA"
 
 #: src/features/loans/components/ReturnLoanDialog.tsx
 msgid "RETURN LOAN?"
-msgstr ""
+msgstr "TAGASTADA LAENUTUS?"
 
 #: src/features/borrowers/BorrowerDetailPage.tsx
 msgid "Return the active loans before deleting this borrower."
-msgstr ""
+msgstr "Tagasta aktiivsed laenutused enne selle laenaja kustutamist."
 
 #: src/features/loans/LoansListPage.tsx
 msgid "Returned"
-msgstr ""
+msgstr "Tagastatud"
 
 #: src/features/loans/components/ReturnLoanDialog.tsx
 msgid "Returned — moved to History."
-msgstr ""
+msgstr "Tagastatud — teisaldatud ajalukku."
 
 #. placeholder {0}: isoDate(loan.returned_at)
 #: src/features/loans/LoansListPage.tsx
 msgid "returned {0}"
-msgstr ""
+msgstr "tagastatud {0}"
 
 #: src/features/analytics/components/MonthlyLoanActivityChart.tsx
 msgid "Returns"
-msgstr ""
+msgstr "Tagastused"
 
 #: src/features/approvals/components/PendingApprovalsPanel.tsx
 msgid "Review"
-msgstr ""
+msgstr "Vaata üle"
 
 #: src/features/settings/SecurityPage.tsx
 msgid "Revoke"
-msgstr ""
+msgstr "Tühista"
 
 #: src/features/settings/SecurityPage.tsx
 msgid "Revoke all"
-msgstr ""
+msgstr "Tühista kõik"
 
 #: src/features/settings/SecurityPage.tsx
 msgid "Revoke all other sessions"
-msgstr ""
+msgstr "Tühista kõik teised seansid"
 
 #. placeholder {0}: s.device_info
 #: src/features/settings/SecurityPage.tsx
 msgid "Revoke session on {0}"
-msgstr ""
+msgstr "Tühista seanss seadmel {0}"
 
 #: src/features/settings/MembersPage.tsx
 msgid "Role"
-msgstr ""
+msgstr "Roll"
 
 #: src/features/settings/MembersPage.tsx
 msgid "Role for {name}"
-msgstr ""
+msgstr "{name} roll"
 
 #: src/features/settings/MembersPage.tsx
 msgid "Role for new member"
-msgstr ""
+msgstr "Uue liikme roll"
 
 #: src/features/settings/MembersPage.tsx
 msgid "Role updated."
-msgstr ""
+msgstr "Roll uuendatud."
 
 #: src/components/layout/F1HelpDialog.tsx
 msgid "ROUTE"
-msgstr ""
+msgstr "MARSRUUT"
 
 #: src/features/imports/ImportsPage.tsx
 msgid "Rows"
-msgstr ""
+msgstr "Read"
 
 #: src/features/loans/components/EditLoanDialog.tsx
 #: src/features/settings/PaperlessPage.tsx
 msgid "Save"
-msgstr ""
+msgstr "Salvesta"
 
 #: src/components/retro/filters/SavedFilters.tsx
 #: src/features/items/components/CaptionDialog.tsx
 msgid "SAVE"
-msgstr ""
+msgstr "SALVESTA"
 
 #: src/features/borrowers/BorrowerFormPage.tsx
 msgid "Save borrower"
-msgstr ""
+msgstr "Salvesta laenaja"
 
 #: src/features/taxonomy/components/CategoryFormDialog.tsx
 msgid "Save category"
-msgstr ""
+msgstr "Salvesta kategooria"
 
 #: src/features/borrowers/BorrowerFormPage.tsx
 #: src/features/inventory/InventoryFormPage.tsx
@@ -3747,228 +3747,228 @@ msgstr ""
 #: src/features/taxonomy/components/LocationFormDialog.tsx
 #: src/features/wishlist/components/WishlistFormDialog.tsx
 msgid "Save changes"
-msgstr ""
+msgstr "Salvesta muudatused"
 
 #: src/features/maintenance/components/MaintenanceForm.tsx
 #: src/features/repairs/components/RepairForm.tsx
 msgid "SAVE CHANGES"
-msgstr ""
+msgstr "SALVESTA MUUDATUSED"
 
 #: src/features/taxonomy/components/ContainerFormDialog.tsx
 msgid "Save container"
-msgstr ""
+msgstr "Salvesta konteiner"
 
 #: src/components/retro/filters/SavedFilters.tsx
 msgid "SAVE CURRENT…"
-msgstr ""
+msgstr "SALVESTA PRAEGUNE…"
 
 #: src/features/inventory/InventoryFormPage.tsx
 msgid "Save entry"
-msgstr ""
+msgstr "Salvesta kirje"
 
 #: src/components/retro/filters/SavedFilters.tsx
 msgid "SAVE FILTER"
-msgstr ""
+msgstr "SALVESTA FILTER"
 
 #: src/features/items/ItemFormPage.tsx
 msgid "Save item"
-msgstr ""
+msgstr "Salvesta ese"
 
 #: src/features/taxonomy/components/LabelFormDialog.tsx
 msgid "Save label"
-msgstr ""
+msgstr "Salvesta silt"
 
 #: src/features/taxonomy/components/LocationFormDialog.tsx
 msgid "Save location"
-msgstr ""
+msgstr "Salvesta asukoht"
 
 #: src/features/repairs/components/RepairForm.tsx
 msgid "SAVE REPAIR"
-msgstr ""
+msgstr "SALVESTA REMONT"
 
 #: src/features/maintenance/components/MaintenanceForm.tsx
 msgid "SAVE SCHEDULE"
-msgstr ""
+msgstr "SALVESTA AJAKAVA"
 
 #: src/features/settings/ProfilePage.tsx
 #: src/routes/demo/DemoPage.tsx
 msgid "Saved."
-msgstr ""
+msgstr "Salvestatud."
 
 #: src/routes/demo/DemoPage.tsx
 msgid "SavedFilters — preset chips + ▾ PRESETS menu."
-msgstr ""
+msgstr "SavedFilters — eelseadete sildid + ▾ EELSEADED menüü."
 
 #: src/components/layout/Sidebar.tsx
 msgid "Scan"
-msgstr ""
+msgstr "Skaneeri"
 
 #: src/features/scan/ScanPage.tsx
 msgid "SCAN"
-msgstr ""
+msgstr "SKANNI"
 
 #: src/components/scan/ScanHistoryList.tsx
 msgid "Scanned and looked-up codes show up here for quick re-lookup."
-msgstr ""
+msgstr "Skannitud ja otsitud koodid ilmuvad siia kiireks taasotsimiseks."
 
 #: src/features/maintenance/MaintenanceDuePage.tsx
 msgid "Schedule"
-msgstr ""
+msgstr "Ajakava"
 
 #: src/features/declutter/DeclutterPage.tsx
 msgid "Score"
-msgstr ""
+msgstr "Punktid"
 
 #: src/features/items/components/PaperlessLinkDialog.tsx
 #: src/features/settings/PaperlessPage.tsx
 msgid "Search"
-msgstr ""
+msgstr "Otsi"
 
 #: src/features/settings/PaperlessPage.tsx
 msgid "Search documents"
-msgstr ""
+msgstr "Otsi dokumente"
 
 #: src/features/items/components/PaperlessLinkDialog.tsx
 #: src/features/settings/PaperlessPage.tsx
 msgid "Search failed. Try again."
-msgstr ""
+msgstr "Otsing ebaõnnestus. Proovi uuesti."
 
 #: src/features/taxonomy/components/ContainerFormDialog.tsx
 msgid "Search locations…"
-msgstr ""
+msgstr "Otsi asukohti…"
 
 #: src/features/items/components/PaperlessLinkDialog.tsx
 #: src/features/settings/PaperlessPage.tsx
 msgid "Search Paperless"
-msgstr ""
+msgstr "Otsi Paperlessist"
 
 #: src/features/items/components/PaperlessLinkDialog.tsx
 #: src/features/settings/PaperlessPage.tsx
 msgid "Searching…"
-msgstr ""
+msgstr "Otsimine…"
 
 #: src/features/settings/SettingsLandingPage.tsx
 msgid "Security"
-msgstr ""
+msgstr "Turvalisus"
 
 #: src/features/items/components/PhotoGallery.tsx
 msgid "SELECT"
-msgstr ""
+msgstr "VALI"
 
 #: src/features/settings/MembersPage.tsx
 msgid "Select a workspace to manage its members."
-msgstr ""
+msgstr "Vali tööruum, et hallata selle liikmeid."
 
 #: src/features/items/ItemsListPage.tsx
 #: src/routes/demo/DemoPage.tsx
 msgid "Select all rows"
-msgstr ""
+msgstr "Vali kõik read"
 
 #: src/routes/demo/DemoPage.tsx
 msgid "Select…"
-msgstr ""
+msgstr "Vali…"
 
 #: src/components/retro/filters/BulkActionBar.tsx
 msgid "SELECTED"
-msgstr ""
+msgstr "VALITUD"
 
 #: src/features/repairs/components/RepairForm.tsx
 #: src/features/repairs/components/RepairRecordDialog.tsx
 msgid "Service provider"
-msgstr ""
+msgstr "Teenusepakkuja"
 
 #: src/components/layout/Clock.tsx
 msgid "SESSION"
-msgstr ""
+msgstr "SEANSS"
 
 #: src/features/settings/SecurityPage.tsx
 msgid "Session revoked."
-msgstr ""
+msgstr "Seanss tühistatud."
 
 #: src/features/settings/SecurityPage.tsx
 msgid "Sessions"
-msgstr ""
+msgstr "Seansid"
 
 #: src/features/settings/SecurityPage.tsx
 msgid "Set password"
-msgstr ""
+msgstr "Määra parool"
 
 #: src/features/items/components/ItemAttachmentPanel.tsx
 msgid "SET PRIMARY"
-msgstr ""
+msgstr "MÄÄRA PEAMISEKS"
 
 #: src/components/layout/Sidebar.tsx
 #: src/components/layout/TopBar.tsx
 msgid "Settings"
-msgstr ""
+msgstr "Seaded"
 
 #: src/features/taxonomy/components/ContainerFormDialog.tsx
 #: src/features/taxonomy/components/LocationFormDialog.tsx
 msgid "Short code"
-msgstr ""
+msgstr "Lühikood"
 
 #: src/features/inventory/InventoryListPage.tsx
 #: src/features/items/ItemsListPage.tsx
 msgid "Show archived"
-msgstr ""
+msgstr "Näita arhiveeritud"
 
 #: src/features/inventory/InventoryListPage.tsx
 #: src/features/items/ItemsListPage.tsx
 msgid "shown"
-msgstr ""
+msgstr "kuvatud"
 
 #: src/features/auth/SocialLoginButtons.tsx
 msgid "Sign in with GitHub"
-msgstr ""
+msgstr "Logi sisse GitHubiga"
 
 #: src/features/auth/SocialLoginButtons.tsx
 msgid "Sign in with Google"
-msgstr ""
+msgstr "Logi sisse Google'iga"
 
 #: src/features/auth/SocialLoginButtons.tsx
 msgid "Sign in with SSO"
-msgstr ""
+msgstr "Logi sisse SSO-ga"
 
 #: src/features/settings/SecurityPage.tsx
 msgid "Sign out everywhere else? Other devices will need to log in again."
-msgstr ""
+msgstr "Kas logida kõikjalt mujalt välja? Teised seadmed peavad uuesti sisse logima."
 
 #: src/features/auth/SocialLoginButtons.tsx
 msgid "Sign up with GitHub"
-msgstr ""
+msgstr "Registreeru GitHubiga"
 
 #: src/features/auth/SocialLoginButtons.tsx
 msgid "Sign up with Google"
-msgstr ""
+msgstr "Registreeru Google'iga"
 
 #: src/features/auth/CallbackPage.tsx
 msgid "Sign-in failed"
-msgstr ""
+msgstr "Sisselogimine ebaõnnestus"
 
 #: src/features/auth/CallbackPage.tsx
 msgid "Signing in"
-msgstr ""
+msgstr "Sisselogimine"
 
 #: src/components/layout/AppShell.tsx
 msgid "Skip to content"
-msgstr ""
+msgstr "Liigu sisule"
 
 #: src/features/items/components/PhotoUpload.tsx
 msgid "Skipped (possible duplicate)."
-msgstr ""
+msgstr "Vahele jäetud (võimalik dublikaat)."
 
 #: src/features/analytics/components/OutOfStockTable.tsx
 #: src/features/items/ItemFormPage.tsx
 msgid "SKU"
-msgstr ""
+msgstr "Tootekood"
 
 #: src/features/items/ItemFormPage.tsx
 msgid "SKU can't be changed after an item is created."
-msgstr ""
+msgstr "SKU-d ei saa pärast eseme loomist muuta."
 
 #: src/routes/demo/DemoPage.tsx
 msgid "Something failed."
-msgstr ""
+msgstr "Midagi ebaõnnestus."
 
 #: src/features/borrowers/BorrowerDetailPage.tsx
 #: src/features/items/ItemDetailPage.tsx
@@ -3977,32 +3977,32 @@ msgstr ""
 #: src/features/taxonomy/components/LabelsTab.tsx
 #: src/features/taxonomy/components/LocationsTab.tsx
 msgid "Something went wrong. Try again."
-msgstr ""
+msgstr "Midagi läks valesti. Proovi uuesti."
 
 #. placeholder {0}: col.label
 #: src/features/items/ItemsListPage.tsx
 msgid "Sort by {0}"
-msgstr ""
+msgstr "Sorteeri: {0}"
 
 #: src/features/inventory/InventoryListPage.tsx
 msgid "Sort by condition"
-msgstr ""
+msgstr "Sorteeri seisukorra järgi"
 
 #: src/features/inventory/InventoryListPage.tsx
 msgid "Sort by quantity"
-msgstr ""
+msgstr "Sorteeri koguse järgi"
 
 #: src/features/inventory/InventoryListPage.tsx
 msgid "Sort by status"
-msgstr ""
+msgstr "Sorteeri oleku järgi"
 
 #: src/features/repairs/components/RepairPhotoPanel.tsx
 msgid "Stage"
-msgstr ""
+msgstr "Etapp"
 
 #: src/features/repairs/components/RepairsDrawer.tsx
 msgid "START"
-msgstr ""
+msgstr "ALUSTA"
 
 #: src/features/dashboard/DashboardPage.tsx
 #: src/features/imports/ImportsPage.tsx
@@ -4015,452 +4015,452 @@ msgstr ""
 #: src/features/wishlist/components/WishlistFormDialog.tsx
 #: src/features/wishlist/WishlistPage.tsx
 msgid "Status"
-msgstr ""
+msgstr "Olek"
 
 #: src/features/inventory/InventoryListPage.tsx
 msgid "STATUS"
-msgstr ""
+msgstr "OLEK"
 
 #: src/features/analytics/components/StatusStackChart.tsx
 msgid "Status mix"
-msgstr ""
+msgstr "Olekute jaotus"
 
 #: src/routes/demo/DemoPage.tsx
 msgid "StatusPill — OK / WARN / INFO / DANGER."
-msgstr ""
+msgstr "StatusPill — OK / WARN / INFO / DANGER."
 
 #: src/components/layout/TopBar.tsx
 msgid "Stay"
-msgstr ""
+msgstr "Jää"
 
 #: src/features/analytics/components/OutOfStockTable.tsx
 msgid "Stock"
-msgstr ""
+msgstr "Laoseis"
 
 #: src/features/items/components/InventoryPanelStub.tsx
 msgid "Stock entries arrive in 7b."
-msgstr ""
+msgstr "Laokirjed saabuvad 7b-s."
 
 #: src/features/scan/ScanPage.tsx
 msgid "SWITCH TO MANUAL"
-msgstr ""
+msgstr "LÜLITU KÄSITSI REŽIIMILE"
 
 #: src/components/layout/WorkspaceSwitcher.tsx
 msgid "Switched to {name}."
-msgstr ""
+msgstr "Vahetatud: {name}."
 
 #: src/features/system-history/Page.tsx
 msgid "Sync"
-msgstr ""
+msgstr "Sünkroonimine"
 
 #: src/components/layout/Sidebar.tsx
 msgid "Sync History"
-msgstr ""
+msgstr "Sünkroonimise ajalugu"
 
 #: src/features/system-history/Page.tsx
 msgid "SYNC HISTORY"
-msgstr ""
+msgstr "SÜNKROONIMISE AJALUGU"
 
 #: src/components/layout/Sidebar.tsx
 msgid "System"
-msgstr ""
+msgstr "Süsteem"
 
 #: src/features/dashboard/components/SystemAlertsPanel.tsx
 msgid "System alerts"
-msgstr ""
+msgstr "Süsteemi teavitused"
 
 #: src/features/dashboard/components/HudRow.tsx
 msgid "System rollups"
-msgstr ""
+msgstr "Süsteemi koondid"
 
 #: src/features/dashboard/components/HudRow.tsx
 msgid "target {CAPACITY_TARGET_PLACEHOLDER} · data pending"
-msgstr ""
+msgstr "siht {CAPACITY_TARGET_PLACEHOLDER} · andmed ootel"
 
 #: src/features/taxonomy/components/CategoriesTab.tsx
 #: src/features/taxonomy/components/ContainersTab.tsx
 #: src/features/taxonomy/components/LabelsTab.tsx
 #: src/features/taxonomy/components/LocationsTab.tsx
 msgid "Taxonomy"
-msgstr ""
+msgstr "Taksonoomia"
 
 #: src/features/taxonomy/TaxonomyPage.tsx
 msgid "TAXONOMY — {workspaceName}"
-msgstr ""
+msgstr "TAKSONOOMIA — {workspaceName}"
 
 #: src/features/scan/ClaimPage.tsx
 msgid "That code isn't linked to anything in this workspace."
-msgstr ""
+msgstr "See kood pole selles tööruumis millegagi seotud."
 
 #: src/features/settings/ProfilePage.tsx
 msgid "That email is already in use."
-msgstr ""
+msgstr "See e-post on juba kasutuses."
 
 #: src/features/auth/RegisterPage.tsx
 msgid "That email is already registered."
-msgstr ""
+msgstr "See e-post on juba registreeritud."
 
 #: src/features/repairs/components/AddAttachmentDialog.tsx
 msgid "That file no longer exists."
-msgstr ""
+msgstr "Seda faili enam ei eksisteeri."
 
 #: src/features/items/components/AddAttachmentDialog.tsx
 msgid "That file was rejected — check its type and size."
-msgstr ""
+msgstr "See fail lükati tagasi — kontrolli selle tüüpi ja suurust."
 
 #: src/features/items/components/AddAttachmentDialog.tsx
 msgid "That item no longer exists."
-msgstr ""
+msgstr "Seda eset enam ei eksisteeri."
 
 #: src/features/wishlist/components/WishlistFormDialog.tsx
 msgid "That status change isn't allowed."
-msgstr ""
+msgstr "See olekumuutus pole lubatud."
 
 #: src/features/settings/MembersPage.tsx
 msgid "That user is already a member."
-msgstr ""
+msgstr "See kasutaja on juba liige."
 
 #: src/features/repairs/components/AddAttachmentDialog.tsx
 msgid "The file belongs to a different workspace."
-msgstr ""
+msgstr "Fail kuulub teise tööruumi."
 
 #: src/features/items/ItemsListPage.tsx
 msgid "The selected archived items will be permanently removed."
-msgstr ""
+msgstr "Valitud arhiveeritud esemed eemaldatakse jäädavalt."
 
 #: src/features/settings/AppearancePage.tsx
 msgid "Theme"
-msgstr ""
+msgstr "Teema"
 
 #: src/features/loans/components/BorrowerLoanPanels.tsx
 msgid "This borrower hasn't returned anything yet."
-msgstr ""
+msgstr "See laenaja pole veel midagi tagastanud."
 
 #: src/features/borrowers/BorrowerDetailPage.tsx
 msgid "This borrower may have been deleted. Return to the borrowers list."
-msgstr ""
+msgstr "See laenaja võis olla kustutatud. Mine tagasi laenajate loendisse."
 
 #: src/routes/demo/DemoPage.tsx
 msgid "This can’t be undone."
-msgstr ""
+msgstr "Seda ei saa tagasi võtta."
 
 #: src/features/taxonomy/hooks/useContainerMutations.ts
 msgid "This container is still in use and can't be deleted."
-msgstr ""
+msgstr "See konteiner on veel kasutuses ja seda ei saa kustutada."
 
 #: src/features/settings/SecurityPage.tsx
 msgid "THIS DEVICE"
-msgstr ""
+msgstr "SEE SEADE"
 
 #: src/features/inventory/InventoryListPage.tsx
 msgid "this entry"
-msgstr ""
+msgstr "see kirje"
 
 #: src/routes/demo/DemoPage.tsx
 msgid "This field is required."
-msgstr ""
+msgstr "See väli on kohustuslik."
 
 #: src/features/repairs/components/RepairAttachmentPanel.tsx
 msgid "This file link will be permanently removed."
-msgstr ""
+msgstr "See faililink eemaldatakse jäädavalt."
 
 #: src/features/items/components/ItemAttachmentPanel.tsx
 msgid "This file will be permanently removed."
-msgstr ""
+msgstr "See fail eemaldatakse jäädavalt."
 
 #: src/features/settings/AccountsPage.tsx
 msgid "This is your only way to sign in. Set a password first to unlink."
-msgstr ""
+msgstr "See on sinu ainus sisselogimisviis. Lahti ühendamiseks määra esmalt parool."
 
 #: src/features/declutter/DeclutterPage.tsx
 msgid "this item"
-msgstr ""
+msgstr "see ese"
 
 #: src/features/items/components/LoanPanels.tsx
 msgid "This item has never been loaned out."
-msgstr ""
+msgstr "Seda eset pole kunagi välja laenatud."
 
 #: src/features/inventory/components/MovementsPanel.tsx
 msgid "This item hasn't been moved yet."
-msgstr ""
+msgstr "Seda eset pole veel teisaldatud."
 
 #: src/features/items/ItemDetailPage.tsx
 msgid "This item may have been deleted. Return to the items list."
-msgstr ""
+msgstr "See ese võis olla kustutatud. Mine tagasi esemete loendisse."
 
 #: src/routes/demo/DemoPage.tsx
 msgid "This list is empty. Add your first item to get started."
-msgstr ""
+msgstr "See loend on tühi. Alustamiseks lisa oma esimene ese."
 
 #: src/features/items/components/LoanPanels.tsx
 msgid "This loan is overdue."
-msgstr ""
+msgstr "See laenutus on üle tähtaja."
 
 #: src/features/maintenance/components/MaintenanceDrawer.tsx
 msgid "This maintenance schedule will be permanently removed."
-msgstr ""
+msgstr "See hooldusajakava eemaldatakse jäädavalt."
 
 #: src/features/items/components/PhotoGallery.tsx
 msgid "This photo will be permanently removed."
-msgstr ""
+msgstr "See foto eemaldatakse jäädavalt."
 
 #: src/components/scan/ScanHistoryList.tsx
 msgid "This removes every code from your scan history. It can't be undone."
-msgstr ""
+msgstr "See eemaldab kõik koodid sinu skannimise ajaloost. Seda ei saa tagasi võtta."
 
 #: src/features/wishlist/WishlistPage.tsx
 msgid "This removes it from your wishlist. This can't be undone."
-msgstr ""
+msgstr "See eemaldab selle sinu soovinimekirjast. Seda ei saa tagasi võtta."
 
 #: src/features/repairs/components/RepairsDrawer.tsx
 msgid "This repair and its photos and files will be permanently removed."
-msgstr ""
+msgstr "See remont ning selle fotod ja failid eemaldatakse jäädavalt."
 
 #: src/components/layout/F1HelpDialog.tsx
 msgid "This route has no quick actions yet. Press F1 anytime for the full list."
-msgstr ""
+msgstr "Sellel marsruudil pole veel kiirtoiminguid. Vajuta täisloendi nägemiseks igal ajal F1."
 
 #: src/features/system-history/Page.tsx
 msgid "This workspace runs online-only — changes save directly to the server, so there are no background sync events to show."
-msgstr ""
+msgstr "See tööruum töötab ainult võrgus — muudatused salvestatakse otse serverisse, mistõttu pole taustasünkroonimise sündmusi kuvada."
 
 #: src/features/settings/RegionalFormatsPage.tsx
 msgid "Thousand and decimal separators must be different."
-msgstr ""
+msgstr "Tuhandete ja kümnendkoha eraldajad peavad olema erinevad."
 
 #: src/features/settings/RegionalFormatsPage.tsx
 msgid "Thousand separator"
-msgstr ""
+msgstr "Tuhandete eraldaja"
 
 #: src/features/dashboard/DashboardPage.tsx
 #: src/features/settings/RegionalFormatsPage.tsx
 msgid "Time"
-msgstr ""
+msgstr "Aeg"
 
 #: src/features/settings/RegionalFormatsPage.tsx
 msgid "Time format"
-msgstr ""
+msgstr "Ajavorming"
 
 #: src/features/items/components/AddAttachmentDialog.tsx
 #: src/features/maintenance/components/MaintenanceForm.tsx
 #: src/features/repairs/components/AddAttachmentDialog.tsx
 msgid "Title"
-msgstr ""
+msgstr "Pealkiri"
 
 #: src/features/inventory/components/MoveDialog.tsx
 msgid "To container"
-msgstr ""
+msgstr "Konteinerisse"
 
 #: src/features/inventory/components/MoveDialog.tsx
 msgid "To location"
-msgstr ""
+msgstr "Asukohta"
 
 #: src/routes/demo/DemoPage.tsx
 msgid "Toast: error"
-msgstr ""
+msgstr "Toast: viga"
 
 #: src/routes/demo/DemoPage.tsx
 msgid "Toast: info"
-msgstr ""
+msgstr "Toast: info"
 
 #: src/routes/demo/DemoPage.tsx
 msgid "Toast: success"
-msgstr ""
+msgstr "Toast: õnnestus"
 
 #: src/routes/demo/DemoPage.tsx
 msgid "Toast: warning"
-msgstr ""
+msgstr "Toast: hoiatus"
 
 #. placeholder {0}: photo.caption ?? photo.filename
 #: src/features/items/components/PhotoGallery.tsx
 msgid "Toggle {0}"
-msgstr ""
+msgstr "Lülita {0}"
 
 #: src/features/analytics/components/TopBorrowersChart.tsx
 msgid "Top borrowers"
-msgstr ""
+msgstr "Aktiivseimad laenajad"
 
 #: src/components/scan/ScanTorchToggle.tsx
 msgid "TORCH"
-msgstr ""
+msgstr "TASKULAMP"
 
 #: src/components/scan/ScanTorchToggle.tsx
 msgid "TORCH ON"
-msgstr ""
+msgstr "TASKULAMP SEES"
 
 #: src/features/analytics/components/ConditionDonutChart.tsx
 msgid "Total"
-msgstr ""
+msgstr "Kokku"
 
 #: src/features/auth/CallbackPage.tsx
 msgid "Try again"
-msgstr ""
+msgstr "Proovi uuesti"
 
 #: src/components/scan/ScanResultBanner.tsx
 msgid "TRY AGAIN"
-msgstr ""
+msgstr "PROOVI UUESTI"
 
 #: src/features/items/components/AddAttachmentDialog.tsx
 #: src/features/items/components/PaperlessLinkDialog.tsx
 #: src/features/repairs/components/AddAttachmentDialog.tsx
 msgid "Try again."
-msgstr ""
+msgstr "Proovi uuesti."
 
 #: src/features/imports/ImportsPage.tsx
 msgid "Type"
-msgstr ""
+msgstr "Tüüp"
 
 #: src/features/items/components/AddAttachmentDialog.tsx
 #: src/features/repairs/components/AddAttachmentDialog.tsx
 msgid "Type *"
-msgstr ""
+msgstr "Tüüp *"
 
 #: src/features/items/ItemFormPage.tsx
 msgid "Type a category…"
-msgstr ""
+msgstr "Sisesta kategooria…"
 
 #: src/features/items/ItemFormPage.tsx
 msgid "Type a location…"
-msgstr ""
+msgstr "Sisesta asukoht…"
 
 #: src/features/settings/SecurityPage.tsx
 msgid "Type DELETE to confirm"
-msgstr ""
+msgstr "Kinnitamiseks sisesta DELETE"
 
 #: src/features/settings/SecurityPage.tsx
 msgid "Type DELETE to confirm. This permanently removes your account and cannot be undone."
-msgstr ""
+msgstr "Kinnitamiseks sisesta DELETE. See eemaldab sinu konto jäädavalt ja seda ei saa tagasi võtta."
 
 #: src/features/items/ItemDetailPage.tsx
 #: src/features/items/ItemsListPage.tsx
 msgid "Type the item name to confirm. This can't be undone."
-msgstr ""
+msgstr "Kinnitamiseks sisesta eseme nimi. Seda ei saa tagasi võtta."
 
 #: src/components/scan/QuickActionMenu.tsx
 msgid "UNARCHIVE"
-msgstr ""
+msgstr "TAASTA ARHIIVIST"
 
 #: src/features/inventory/components/MovementsPanel.tsx
 msgid "Unknown"
-msgstr ""
+msgstr "Teadmata"
 
 #: src/features/settings/AccountsPage.tsx
 msgid "Unlink"
-msgstr ""
+msgstr "Eemalda ühendus"
 
 #. placeholder {0}: unlinkTarget?.label
 #: src/features/settings/AccountsPage.tsx
 msgid "Unlink {0}"
-msgstr ""
+msgstr "Ühenda {0} lahti"
 
 #. placeholder {0}: unlinkTarget?.label
 #: src/features/settings/AccountsPage.tsx
 msgid "Unlink {0}? You'll no longer be able to sign in with it."
-msgstr ""
+msgstr "Kas ühendada {0} lahti? Sa ei saa enam sellega sisse logida."
 
 #: src/features/items/components/ItemAttachmentPanel.tsx
 #: src/features/repairs/components/RepairAttachmentPanel.tsx
 msgid "Untitled"
-msgstr ""
+msgstr "Pealkirjata"
 
 #: src/features/items/ItemDetailPage.tsx
 msgid "Updated"
-msgstr ""
+msgstr "Uuendatud"
 
 #: src/features/items/components/DuplicateWarningDialog.tsx
 msgid "UPLOAD ANYWAY"
-msgstr ""
+msgstr "LAE IKKAGI ÜLES"
 
 #: src/features/items/components/PhotoUpload.tsx
 msgid "Upload failed."
-msgstr ""
+msgstr "Üleslaadimine ebaõnnestus."
 
 #: src/features/repairs/components/AddAttachmentDialog.tsx
 msgid "uploading…"
-msgstr ""
+msgstr "üleslaadimine…"
 
 #: src/features/wishlist/components/WishlistFormDialog.tsx
 msgid "URL"
-msgstr ""
+msgstr "URL"
 
 #: src/components/scan/UpcSuggestionBanner.tsx
 msgid "USE ALL"
-msgstr ""
+msgstr "KASUTA KÕIKI"
 
 #: src/features/auth/RegisterPage.tsx
 #: src/features/settings/SecurityPage.tsx
 msgid "Use at least 8 characters."
-msgstr ""
+msgstr "Kasuta vähemalt 8 tähemärki."
 
 #: src/components/scan/UpcSuggestionBanner.tsx
 msgid "USE NAME"
-msgstr ""
+msgstr "KASUTA NIME"
 
 #: src/features/settings/MembersPage.tsx
 msgid "user@email…"
-msgstr ""
+msgstr "kasutaja@epost…"
 
 #: src/features/borrowers/BorrowerDetailPage.tsx
 msgid "View active loans"
-msgstr ""
+msgstr "Vaata aktiivseid laenutusi"
 
 #: src/components/scan/QuickActionMenu.tsx
 msgid "VIEW ITEM"
-msgstr ""
+msgstr "VAATA ESET"
 
 #: src/features/wishlist/components/WishlistFormDialog.tsx
 #: src/features/wishlist/WishlistPage.tsx
 msgid "Wanted"
-msgstr ""
+msgstr "Soovitud"
 
 #: src/features/wishlist/WishlistPage.tsx
 msgid "WANTED"
-msgstr ""
+msgstr "SOOVITUD"
 
 #: src/features/inventory/ExpiringPage.tsx
 msgid "WARRANTY"
-msgstr ""
+msgstr "GARANTII"
 
 #: src/features/repairs/components/RepairRecordDialog.tsx
 msgid "Warranty claim"
-msgstr ""
+msgstr "Garantiinõue"
 
 #: src/features/inventory/InventoryFormPage.tsx
 msgid "Warranty expires"
-msgstr ""
+msgstr "Garantii aegub"
 
 #: src/features/scan/ScanPage.tsx
 msgid "We couldn't access the camera. Enter the code by hand instead."
-msgstr ""
+msgstr "Kaamerale ei õnnestunud ligi pääseda. Sisesta kood käsitsi."
 
 #: src/features/inventory/ExpiringPage.tsx
 msgid "When"
-msgstr ""
+msgstr "Millal"
 
 #: src/features/inventory/ExpiringPage.tsx
 msgid "Window"
-msgstr ""
+msgstr "Aken"
 
 #: src/components/layout/Sidebar.tsx
 #: src/features/wishlist/WishlistPage.tsx
 msgid "Wishlist"
-msgstr ""
+msgstr "Soovinimekiri"
 
 #: src/features/wishlist/WishlistPage.tsx
 msgid "WISHLIST — {workspaceName}"
-msgstr ""
+msgstr "SOOVINIMEKIRI — {workspaceName}"
 
 #: src/features/wishlist/components/WishlistFormDialog.tsx
 msgid "Wishlist item saved."
-msgstr ""
+msgstr "Soovinimekirja ese salvestatud."
 
 #: src/routes/demo/DemoPage.tsx
 msgid "With error"
-msgstr ""
+msgstr "Veaga"
 
 #: src/routes/demo/DemoPage.tsx
 msgid "With hint"
-msgstr ""
+msgstr "Vihjega"
 
 #: src/components/layout/WorkspaceSwitcher.tsx
 #: src/features/approvals/ApprovalsPage.tsx
@@ -4475,53 +4475,53 @@ msgstr ""
 #: src/features/taxonomy/TaxonomyPage.tsx
 #: src/features/wishlist/WishlistPage.tsx
 msgid "Workspace"
-msgstr ""
+msgstr "Tooruum"
 
 #: src/features/settings/SettingsLandingPage.tsx
 msgid "WORKSPACE"
-msgstr ""
+msgstr "TÖÖRUUM"
 
 #: src/features/settings/NotificationsPage.tsx
 msgid "Workspace activity"
-msgstr ""
+msgstr "Tööruumi tegevus"
 
 #: src/components/layout/WorkspaceSwitcher.tsx
 msgid "Workspaces"
-msgstr ""
+msgstr "Tööruumid"
 
 #: src/features/auth/LoginPage.tsx
 msgid "Wrong email or password. Try again."
-msgstr ""
+msgstr "Vale e-post või parool. Proovi uuesti."
 
 #: src/features/settings/MembersPage.tsx
 msgid "YOU"
-msgstr ""
+msgstr "SINA"
 
 #: src/features/my-changes/MyChangesPage.tsx
 msgid "You haven't requested any changes in this workspace."
-msgstr ""
+msgstr "Sa pole selles tööruumis ühtegi muudatust taotlenud."
 
 #: src/features/settings/SecurityPage.tsx
 msgid "You signed in with a provider and haven't set a password yet. Add one to enable email + password login."
-msgstr ""
+msgstr "Logisid sisse teenusepakkuja kaudu ega ole veel parooli määranud. Lisa parool, et lubada e-posti ja parooliga sisselogimine."
 
 #: src/features/notifications/components/NotificationsDropdown.tsx
 msgid "You're all caught up."
-msgstr ""
+msgstr "Kõik on korras."
 
 #: src/features/settings/SecurityPage.tsx
 msgid "You're the sole owner of: {blockingNames}. Transfer ownership or delete these workspaces before deleting your account."
-msgstr ""
+msgstr "Oled ainus omanik järgmistel: {blockingNames}. Enne konto kustutamist anna omandiõigus üle või kustuta need tööruumid."
 
 #: src/features/analytics/AnalyticsPage.tsx
 #: src/features/dashboard/DashboardPage.tsx
 msgid "Your account has no workspaces yet."
-msgstr ""
+msgstr "Sinu kontol pole veel tööruume."
 
 #: src/features/borrowers/BorrowerFormPage.tsx
 #: src/features/loans/LoanFormPage.tsx
 msgid "Your changes will be lost."
-msgstr ""
+msgstr "Sinu muudatused lähevad kaduma."
 
 #: src/features/inventory/InventoryFormPage.tsx
 #: src/features/items/ItemFormPage.tsx
@@ -4532,16 +4532,16 @@ msgstr ""
 #: src/features/taxonomy/components/LabelFormDialog.tsx
 #: src/features/taxonomy/components/LocationFormDialog.tsx
 msgid "Your edits will be lost."
-msgstr ""
+msgstr "Sinu muudatused lähevad kaduma."
 
 #: src/features/items/ItemsListPage.tsx
 msgid "Your warehouse is empty. Add your first item to start tracking it."
-msgstr ""
+msgstr "Sinu ladu on tühi. Lisa oma esimene ese, et hakata seda jälgima."
 
 #: src/features/items/components/PhotoLightbox.tsx
 msgid "Zoom in"
-msgstr ""
+msgstr "Suumi sisse"
 
 #: src/features/items/components/PhotoLightbox.tsx
 msgid "Zoom out"
-msgstr ""
+msgstr "Suumi valja"
