@@ -89,12 +89,15 @@ describe("TaxonomyPage", () => {
     ).toBeInTheDocument();
   });
 
-  it("loading /taxonomy?tab=locations selects the locations stub panel", async () => {
+  it("loading /taxonomy?tab=locations selects the live LocationsTab panel", async () => {
     renderPage(["/taxonomy?tab=locations"]);
     expect(
       screen.getByRole("tab", { name: /locations/i }),
     ).toHaveAttribute("aria-selected", "true");
-    expect(screen.getByTestId("tab-locations-pending")).toBeInTheDocument();
+    // 10-03 filled the stub in-place; the live LocationsTab toolbar proves it.
+    expect(
+      await screen.findByRole("button", { name: /add root location/i }),
+    ).toBeInTheDocument();
   });
 
   it("clicking the Locations tab round-trips ?tab=locations into the URL", async () => {
@@ -107,7 +110,10 @@ describe("TaxonomyPage", () => {
     await waitFor(() =>
       expect(screen.getByTestId("tab-probe")).toHaveTextContent("locations"),
     );
-    expect(screen.getByTestId("tab-locations-pending")).toBeInTheDocument();
+    // 10-03 filled the stub in-place; the live LocationsTab toolbar proves it.
+    expect(
+      await screen.findByRole("button", { name: /add root location/i }),
+    ).toBeInTheDocument();
   });
 
   it("an unknown ?tab= falls back to categories", async () => {
