@@ -105,11 +105,11 @@
 
 ### Borrowers (BORR)
 
-- [ ] **BORR-01**: User can browse borrowers in a flat paginated list (no nesting), with search input + RetroPagination.
-- [ ] **BORR-02**: User can create a new borrower (name + optional contact info).
-- [ ] **BORR-03**: User can view a borrower's detail page (active + historical loan panels, see LOAN-06).
-- [ ] **BORR-04**: User can edit a borrower's profile.
-- [ ] **BORR-05**: User can delete a borrower; deletion is blocked while any loan is active (red badge + "View active loans" link).
+- [x] **BORR-01**: User can browse borrowers in a flat paginated list (no nesting), with search input + RetroPagination.
+- [x] **BORR-02**: User can create a new borrower (name + optional contact info).
+- [x] **BORR-03**: User can view a borrower's detail page (active + historical loan panels, see LOAN-06).
+- [x] **BORR-04**: User can edit a borrower's profile.
+- [x] **BORR-05**: User can delete a borrower; deletion is blocked while any loan is active (red badge + "View active loans" link).
 
 ### Taxonomy (TAX)
 
@@ -367,11 +367,11 @@
 | LOAN-04 | Phase 8 | Complete |
 | LOAN-05 | Phase 8 | Complete |
 | LOAN-06 | Phase 8 | Complete (panels component; borrower-page mount Phase 9/BORR-03) |
-| BORR-01 | Phase 9 | Pending |
-| BORR-02 | Phase 9 | Pending |
-| BORR-03 | Phase 9 | Pending |
-| BORR-04 | Phase 9 | Pending |
-| BORR-05 | Phase 9 | Pending |
+| BORR-01 | Phase 9 | Complete |
+| BORR-02 | Phase 9 | Complete |
+| BORR-03 | Phase 9 | Complete |
+| BORR-04 | Phase 9 | Complete |
+| BORR-05 | Phase 9 | Complete |
 | TAX-01 | Phase 10 | Pending |
 | TAX-02 | Phase 10 | Pending |
 | TAX-03 | Phase 10 | Pending |

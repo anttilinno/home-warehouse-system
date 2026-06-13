@@ -237,7 +237,7 @@ Clean-slate rebuild of `/frontend2` with sketch 006-008 retro-os pastel fidelity
 - [x] **Phase 7: Items + Photos** — paginated list with search/filter/sort + detail with photo gallery + create/edit/archive/delete + multipart photo upload + `itemsApi.lookupByBarcode` (G-65-01 regression-guard pattern) + per-route `useShortcuts` registration (completed 2026-06-13)
 - [x] **Phase 7b: Inventory** — inventory entries list + filters (virtualized when large) + create with item/location/container pickers + move dialog + quantity/status/condition inline edits + expiry/warranty fields + expiring view + movements history panel + per-item inventory panel (closes Phase 7 stub) [Gap G-1, critical] (completed 2026-06-13)
 - [x] **Phase 8: Loans** — Active/Overdue/History tabbed list + create with item + borrower picker + mark returned + edit + per-item active+history panels + `?itemId=` deep-link param (completed 2026-06-13)
-- [ ] **Phase 9: Borrowers** — flat paginated list + CRUD with active-loan delete guard + detail with active+history panels (3 plans)
+- [x] **Phase 9: Borrowers** — flat paginated list + CRUD with active-loan delete guard + detail with active+history panels (3 plans) (completed 2026-06-13)
 - [ ] **Phase 10: Taxonomy** — categories tree + locations tree + containers grouped by location + create/edit/archive with usage warnings + container delete with unassign-and-delete cascade policy
 - [ ] **Phase 10b: Repairs + Maintenance** — repair log drawer/panel on inventory detail (CRUD + start/complete + cost rollup) + repair photos + repair attachments + maintenance schedule CRUD + due list + complete action + dashboard due-maintenance feed (consumed by Phase 13) [Gap G-2]
 - [ ] **Phase 11: Scan (single-route)** — `/scan` with `<BarcodeScanner>` mounted ONCE + QR/UPC/EAN/Code128 + pause-on-match (prop-driven) + Android torch + manual fallback + AudioContext + ios-haptics + scan history (last 10) + 4-state result banner + post-match quick-action overlay + UPC opt-in suggestion prefill
@@ -675,11 +675,11 @@ Plans:
   2. User can create a new borrower (name + optional contact info) and edit a borrower's profile
   3. User can view a borrower's detail page with active + historical loan panels
   4. User trying to delete a borrower with any active loan sees a red badge + "View active loans" link blocking deletion
-**Plans:** 2/3 plans executed
+**Plans:** 3/3 plans complete
 Plans:
 - [x] 09-01-PLAN.md — Foundation: borrowersApi + zod schema + useBorrowersQuery/useBorrowerMutations + MSW handlers (BORR-01/02/04/05) [Wave 1]
 - [x] 09-02-PLAN.md — BorrowersListPage (search + table + pager + CTA) + Sidebar nav + /borrowers route (BORR-01) [Wave 2]
-- [ ] 09-03-PLAN.md — BorrowerFormPage (create/edit) + BorrowerDetailPage (panels + delete guard) + form/detail routes + live E2E (BORR-02/03/04/05) [Wave 3]
+- [x] 09-03-PLAN.md — BorrowerFormPage (create/edit) + BorrowerDetailPage (panels + delete guard) + form/detail routes + live E2E (BORR-02/03/04/05) [Wave 3]
 **UI hint**: yes
 
 ### Phase 10: Taxonomy
@@ -854,7 +854,7 @@ Plans:
 | 7 | v3.0 | 7/7 | Complete   | 2026-06-13 |
 | 7b | v3.0 | 6/6 | Complete   | 2026-06-13 |
 | 8 | v3.0 | 6/6 | Complete   | 2026-06-13 |
-| 9 | v3.0 | 2/3 | In Progress|  |
+| 9 | v3.0 | 3/3 | Complete   | 2026-06-13 |
 | 10 | v3.0 | 0/TBD | Not started | - |
 | 10b | v3.0 | 0/TBD | Not started | - |
 | 11 | v3.0 | 0/TBD | Not started | - |
