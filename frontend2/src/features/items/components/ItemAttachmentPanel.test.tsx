@@ -117,15 +117,15 @@ describe("ItemAttachmentPanel", () => {
     await waitFor(() =>
       expect(screen.getByText("User manual")).toBeInTheDocument(),
     );
-    // Clicking the row DELETE opens a confirm — the network call has NOT fired yet.
-    await userEvent.click(screen.getByRole("button", { name: /^delete$/i }));
+    // Clicking the row DELETE (DOM text "DELETE") opens a confirm — no call yet.
+    await userEvent.click(
+      screen.getByRole("button", { name: "DELETE" }),
+    );
     expect(screen.getByText(/delete file\?/i)).toBeInTheDocument();
     expect(deleteCalled).toBe(false);
-    // Confirming actually deletes.
-    const confirm = screen
-      .getAllByRole("button", { name: /delete/i })
-      .find((b) => b.textContent?.trim().toLowerCase() === "delete")!;
-    await userEvent.click(confirm);
+    // The confirm-dialog button (DOM text "Delete", distinct from the row's
+    // "DELETE") actually fires the network delete.
+    await userEvent.click(screen.getByRole("button", { name: "Delete" }));
     await waitFor(() => expect(deleteCalled).toBe(true));
   });
 
