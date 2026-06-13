@@ -17,6 +17,18 @@ import { z } from "zod";
 // ""=clear). minStock is a coerced optional number ≥ 0.
 
 export const itemFormSchema = z.object({
+  // Required — backend createItemInput SKU minLength:1 maxLength:255
+  // (handler.go:747). Validation is ALWAYS on (one schema): in CREATE it's an
+  // editable required field; in EDIT the SKU is immutable (no `sku` on the
+  // backend PATCH input), so the field is shown read-only and never enters the
+  // PATCH builder — but the resolver still keeps it valid because edit-mode
+  // reset prefills `sku` from the loaded item. D-07-07-A: omitting this caused
+  // form-driven create to 422.
+  sku: z
+    .string()
+    .trim()
+    .min(1, { message: "SKU is required." })
+    .max(255, { message: "SKU is too long (max 255)." }),
   // Required — backend minLength:1. Trimmed-empty is rejected with a friendly
   // message; the form surfaces it via the RetroFormField error treatment.
   name: z

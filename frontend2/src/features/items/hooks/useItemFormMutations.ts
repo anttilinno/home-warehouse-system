@@ -28,12 +28,17 @@ import type { ItemFormValues } from "../schema";
 export type DirtyMap = Partial<Record<keyof ItemFormValues, boolean>>;
 
 // Map the form's resolved values to the backend create body. Only fields the
-// backend item entity actually owns are sent: name, description, barcode,
-// min_stock_level. category/location are display-only (no uuid resolution yet —
-// documented stub) and are NOT submitted. Empty optional strings are omitted on
-// CREATE (a brand-new item has no field to "clear").
+// backend item entity actually owns are sent: sku, name, description, barcode,
+// min_stock_level. `sku` is REQUIRED by the backend createItemInput
+// (minLength:1) — omitting it returned 422 (D-07-07-A); zod guarantees a
+// non-empty trimmed string here. category/location are display-only (no uuid
+// resolution yet — documented stub) and are NOT submitted. Empty optional
+// strings are omitted on CREATE (a brand-new item has no field to "clear").
 function buildCreateBody(values: ItemFormValues): Record<string, unknown> {
-  const body: Record<string, unknown> = { name: values.name };
+  const body: Record<string, unknown> = {
+    sku: values.sku,
+    name: values.name,
+  };
   if (values.description) body.description = values.description;
   if (values.barcode) body.barcode = values.barcode;
   if (values.minStock !== undefined) body.min_stock_level = values.minStock;
@@ -45,6 +50,9 @@ function buildCreateBody(values: ItemFormValues): Record<string, unknown> {
 // - minStock (min_stock_level, *int): dirty → send the number; cleared (undefined)
 //   is NOT sent (an int has no "" clear path — omit = unchanged).
 // - name: dirty → send (always a non-empty string; zod guarantees min 1).
+// - sku: NEVER sent — SKU is immutable after create (the backend
+//   UpdateItemInput has no `sku` field), so it is read-only in edit mode and
+//   omitted here regardless of dirty state.
 // - category/location: never sent (display-only stub; category_id is a uuid).
 export function buildPatchBody(
   values: ItemFormValues,

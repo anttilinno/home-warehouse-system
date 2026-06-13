@@ -40,6 +40,7 @@ import {
 // RHF default values. Strings default to "" so dirtyFields tracking is
 // meaningful (Pitfall 4). minStock is held as a string (the number input value).
 const EMPTY_DEFAULTS: ItemFormInput = {
+  sku: "",
   name: "",
   description: "",
   barcode: "",
@@ -51,6 +52,9 @@ const EMPTY_DEFAULTS: ItemFormInput = {
 // Map a loaded Item to the form's INPUT shape (edit mode reset).
 function itemToDefaults(item: Item): ItemFormInput {
   return {
+    // SKU is immutable but prefilled so the always-on resolver stays valid and
+    // the read-only field shows the real value (display only — never PATCHed).
+    sku: item.sku,
     name: item.name,
     description: item.description ?? "",
     barcode: item.barcode ?? "",
@@ -190,6 +194,38 @@ export function ItemFormPage() {
         >
           {/* Group 1 — Identity */}
           <div className="flex flex-col gap-sp-3">
+            {/* SKU — required + editable on create; immutable (read-only) on
+                edit (the backend PATCH input has no `sku`). RetroFormField so the
+                edit-mode hint can sit below the disabled control. */}
+            <RetroFormField
+              label={<Trans>SKU</Trans>}
+              required={!isEdit}
+              hint={
+                isEdit ? (
+                  <Trans>SKU can't be changed after an item is created.</Trans>
+                ) : undefined
+              }
+              error={errors.sku?.message}
+            >
+              {(fieldId, describedBy) => (
+                <input
+                  id={fieldId}
+                  type="text"
+                  required={!isEdit}
+                  aria-required={!isEdit ? "true" : undefined}
+                  disabled={isEdit}
+                  readOnly={isEdit}
+                  aria-invalid={errors.sku ? true : undefined}
+                  aria-describedby={describedBy}
+                  className={`w-full border-2 px-[10px] py-[7px] font-mono text-[14px] text-fg-ink bevel-sunken focus:outline-3 focus:outline-offset-1 focus:outline-titlebar-blue disabled:cursor-not-allowed disabled:text-fg-muted ${
+                    errors.sku
+                      ? "border-danger bg-danger-bg"
+                      : "border-border-ink bg-bg-panel"
+                  }`}
+                  {...register("sku")}
+                />
+              )}
+            </RetroFormField>
             <RetroInput
               label={<Trans>Name</Trans>}
               required
