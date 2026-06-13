@@ -162,10 +162,10 @@
 
 ### System Group (SYS)
 
-- [ ] **SYS-01**: Approvals page renders a paginated activity-table view of pending approval requests with bulk-action support (multi-select via Shift+Click + Bottombar A/R/D shortcuts).
-- [ ] **SYS-02**: My Changes page lists the authenticated user's recent mutations across entities.
-- [ ] **SYS-03**: Sync History page lists past sync events with timestamps, status, error details.
-- [ ] **SYS-04**: Imports/Exports page surfaces CSV import + workspace export + import-history; uses the activity-table pattern from Phase 6.
+- [x] **SYS-01**: Approvals page renders a paginated activity-table view of pending approval requests with bulk-action support (multi-select via Shift+Click + Bottombar A/R/D shortcuts).
+- [x] **SYS-02**: My Changes page lists the authenticated user's recent mutations across entities.
+- [x] **SYS-03**: Sync History page lists past sync events with timestamps, status, error details.
+- [x] **SYS-04**: Imports/Exports page surfaces CSV import + workspace export + import-history; uses the activity-table pattern from Phase 6.
 
 ### TUI Differentiators (TUI)
 
@@ -235,13 +235,13 @@
 
 ### Wishlist (WISH) — Phase 14 (Gap G-3)
 
-- [ ] **WISH-01**: User can view a wishlist page with wanted / ordered / acquired status tabs.
-- [ ] **WISH-02**: User can add / edit / delete wishlist items and transition their status.
+- [x] **WISH-01**: User can view a wishlist page with wanted / ordered / acquired status tabs.
+- [x] **WISH-02**: User can add / edit / delete wishlist items and transition their status.
 
 ### Declutter (DECL) — Phase 14 (Gap G-4)
 
-- [ ] **DECL-01**: User can view a declutter page with unused-items analysis, a score badge, and grouping.
-- [ ] **DECL-02**: User can export the declutter list to CSV and mark an item as used.
+- [x] **DECL-01**: User can view a declutter page with unused-items analysis, a score badge, and grouping.
+- [x] **DECL-02**: User can export the declutter list to CSV and mark an item as used.
 
 ### Notifications UI (NOTIF) — Phase 13 (Gap G-5, in-app part)
 
@@ -406,10 +406,10 @@
 | I18N-01 | Phase 15 | Pending |
 | I18N-02 | Phase 15 | Pending |
 | I18N-03 | Phase 15 | Pending |
-| SYS-01 | Phase 14 | Pending |
-| SYS-02 | Phase 14 | Pending |
-| SYS-03 | Phase 14 | Pending |
-| SYS-04 | Phase 14 | Pending |
+| SYS-01 | Phase 14 | Complete |
+| SYS-02 | Phase 14 | Complete |
+| SYS-03 | Phase 14 | Complete |
+| SYS-04 | Phase 14 | Complete |
 | TUI-01 | Phase 3 | Complete |
 | TUI-02 | Phase 4 | Complete |
 | TUI-03 | Phase 4 | Complete |
@@ -447,10 +447,10 @@
 | PPL-01 | Phase 14b | Pending |
 | PPL-02 | Phase 14b | Pending |
 | PPL-03 | Phase 14b | Pending |
-| WISH-01 | Phase 14 | Pending |
-| WISH-02 | Phase 14 | Pending |
-| DECL-01 | Phase 14 | Pending |
-| DECL-02 | Phase 14 | Pending |
+| WISH-01 | Phase 14 | Complete |
+| WISH-02 | Phase 14 | Complete |
+| DECL-01 | Phase 14 | Complete |
+| DECL-02 | Phase 14 | Complete |
 | NOTIF-01 | Phase 13 | Complete |
 | NOTIF-02 | Phase 13 | Complete |
 | NOTIF-03 | Phase 13 | Complete |
