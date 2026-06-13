@@ -63,6 +63,32 @@ export default defineConfig({
           if (scannerModules.some((mod) => id.includes(mod))) {
             return "scanner";
           }
+          // Phase 13b (Analytics): isolate recharts + its resolved d3 sub-deps
+          // (recharts 3.x ships them as separate d3-* packages via the
+          // victory-vendor shim) into a lazy `charts` chunk. Pairs with 13b-05's
+          // React.lazy of AnalyticsPage — the charting bytes load ONLY when
+          // /analytics is visited (ANL-03 hard gate + the POL-04 budget: the
+          // main/vendor chunk must carry ZERO charting bytes). Mirrors the
+          // scanner precedent above. Membership is the resolved d3 tree under
+          // node_modules — the build gate greps dist to prove no leak.
+          const chartModules = [
+            "recharts",
+            "victory-vendor",
+            "d3-shape",
+            "d3-scale",
+            "d3-array",
+            "d3-time",
+            "d3-format",
+            "d3-interpolate",
+            "d3-color",
+            "d3-path",
+            "d3-time-format",
+            "d3-ease",
+            "d3-timer",
+          ];
+          if (chartModules.some((mod) => id.includes(mod))) {
+            return "charts";
+          }
           return undefined;
         },
       },
