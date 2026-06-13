@@ -1,5 +1,5 @@
 import { lazy, Suspense } from "react";
-import { Routes, Route, Navigate } from "react-router";
+import { Routes, Route } from "react-router";
 import { LoginPage } from "@/features/auth/LoginPage";
 import { RegisterPage } from "@/features/auth/RegisterPage";
 import { CallbackPage } from "@/features/auth/CallbackPage";
@@ -7,6 +7,7 @@ import { RequireAuth } from "@/features/auth/RequireAuth";
 import { AppShell } from "@/components/layout/AppShell";
 import { DashboardPage } from "@/features/dashboard/DashboardPage";
 import { SettingsLayout } from "@/features/settings/SettingsLayout";
+import { SettingsLandingPage } from "@/features/settings/SettingsLandingPage";
 import { SecurityPage } from "@/features/settings/SecurityPage";
 import { AccountsPage } from "@/features/settings/AccountsPage";
 import { DemoPage } from "@/routes/demo/DemoPage";
@@ -31,6 +32,47 @@ import { ClaimPage } from "@/features/scan/ClaimPage";
 // the scanner bytes never load on every page). The App.tsx lazy+Suspense idiom.
 const ScanPage = lazy(() =>
   import("@/features/scan/ScanPage").then((m) => ({ default: m.ScanPage })),
+);
+
+// Settings subpages (12-02, single-writer route table). Lazy-imported so this
+// plan owns the wiring and the Wave-2/3 plans only OVERWRITE the component
+// bodies in-place (same path + same export name → no route re-edit). React.lazy
+// is tsc-checked, so each module must already exist — Plan 12-02 ships them as
+// 1-line stubs that downstream plans fill in.
+const ProfilePage = lazy(() =>
+  import("@/features/settings/ProfilePage").then((m) => ({
+    default: m.ProfilePage,
+  })),
+);
+const AppearancePage = lazy(() =>
+  import("@/features/settings/AppearancePage").then((m) => ({
+    default: m.AppearancePage,
+  })),
+);
+const LanguagePage = lazy(() =>
+  import("@/features/settings/LanguagePage").then((m) => ({
+    default: m.LanguagePage,
+  })),
+);
+const RegionalFormatsPage = lazy(() =>
+  import("@/features/settings/RegionalFormatsPage").then((m) => ({
+    default: m.RegionalFormatsPage,
+  })),
+);
+const NotificationsPage = lazy(() =>
+  import("@/features/settings/NotificationsPage").then((m) => ({
+    default: m.NotificationsPage,
+  })),
+);
+const DataStoragePage = lazy(() =>
+  import("@/features/settings/DataStoragePage").then((m) => ({
+    default: m.DataStoragePage,
+  })),
+);
+const MembersPage = lazy(() =>
+  import("@/features/settings/MembersPage").then((m) => ({
+    default: m.MembersPage,
+  })),
 );
 
 // Library-mode RR7 (NOT framework mode — AP-1). Literal routes before the
@@ -127,13 +169,74 @@ export function AppRoutes() {
           }
         />
         <Route path="claim/:code" element={<ClaimPage />} />
-        {/* Settings hub (05-UI-SPEC §5): SettingsLayout sub-layout under the
-            AUTHENTICATED AppShell. /settings → /settings/security; the two built
-            pages (security + accounts) render through the layout's tab Outlet. */}
+        {/* Settings hub (12-UI-SPEC): SettingsLayout is a thin Outlet wrapper
+            under the AUTHENTICATED AppShell. /settings (index) renders the
+            iOS/System-7 grouped-row landing (no more Navigate-to-security). The
+            two shipped pages (security + accounts) stay mounted; the seven new
+            subpages are lazy (their bodies are filled by Wave-2/3 plans, the
+            route table is owned here — single-writer). This is the ONLY plan
+            that edits this settings block. Subpages render in a Suspense
+            boundary because they are lazy. */}
         <Route path="settings" element={<SettingsLayout />}>
-          <Route index element={<Navigate to="security" replace />} />
+          <Route index element={<SettingsLandingPage />} />
           <Route path="security" element={<SecurityPage />} />
           <Route path="accounts" element={<AccountsPage />} />
+          <Route
+            path="profile"
+            element={
+              <Suspense fallback={null}>
+                <ProfilePage />
+              </Suspense>
+            }
+          />
+          <Route
+            path="appearance"
+            element={
+              <Suspense fallback={null}>
+                <AppearancePage />
+              </Suspense>
+            }
+          />
+          <Route
+            path="language"
+            element={
+              <Suspense fallback={null}>
+                <LanguagePage />
+              </Suspense>
+            }
+          />
+          <Route
+            path="formats"
+            element={
+              <Suspense fallback={null}>
+                <RegionalFormatsPage />
+              </Suspense>
+            }
+          />
+          <Route
+            path="notifications"
+            element={
+              <Suspense fallback={null}>
+                <NotificationsPage />
+              </Suspense>
+            }
+          />
+          <Route
+            path="data"
+            element={
+              <Suspense fallback={null}>
+                <DataStoragePage />
+              </Suspense>
+            }
+          />
+          <Route
+            path="members"
+            element={
+              <Suspense fallback={null}>
+                <MembersPage />
+              </Suspense>
+            }
+          />
         </Route>
         {/* /demo: the Phase 4 atom review surface. DEV-gated — it renders
             inside AppShell for review but never ships as a user route. */}
