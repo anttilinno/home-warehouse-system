@@ -594,7 +594,7 @@ func TestService_UploadFile(t *testing.T) {
 		t.Run(tt.testName, func(t *testing.T) {
 			mockFileRepo := new(MockFileRepository)
 			mockAttachmentRepo := new(MockAttachmentRepository)
-			svc := NewService(mockFileRepo, mockAttachmentRepo)
+			svc := NewService(mockFileRepo, mockAttachmentRepo, nil)
 
 			tt.setupMock(mockFileRepo)
 
@@ -746,7 +746,7 @@ func TestService_CreateAttachment(t *testing.T) {
 		t.Run(tt.testName, func(t *testing.T) {
 			mockFileRepo := new(MockFileRepository)
 			mockAttachmentRepo := new(MockAttachmentRepository)
-			svc := NewService(mockFileRepo, mockAttachmentRepo)
+			svc := NewService(mockFileRepo, mockAttachmentRepo, nil)
 
 			tt.setupMock(mockAttachmentRepo)
 
@@ -817,7 +817,7 @@ func TestService_GetAttachment(t *testing.T) {
 		t.Run(tt.testName, func(t *testing.T) {
 			mockFileRepo := new(MockFileRepository)
 			mockAttachmentRepo := new(MockAttachmentRepository)
-			svc := NewService(mockFileRepo, mockAttachmentRepo)
+			svc := NewService(mockFileRepo, mockAttachmentRepo, nil)
 
 			tt.setupMock(mockAttachmentRepo)
 
@@ -890,7 +890,7 @@ func TestService_ListByItem(t *testing.T) {
 		t.Run(tt.testName, func(t *testing.T) {
 			mockFileRepo := new(MockFileRepository)
 			mockAttachmentRepo := new(MockAttachmentRepository)
-			svc := NewService(mockFileRepo, mockAttachmentRepo)
+			svc := NewService(mockFileRepo, mockAttachmentRepo, nil)
 
 			tt.setupMock(mockAttachmentRepo)
 
@@ -980,7 +980,7 @@ func TestService_DeleteAttachment(t *testing.T) {
 		t.Run(tt.testName, func(t *testing.T) {
 			mockFileRepo := new(MockFileRepository)
 			mockAttachmentRepo := new(MockAttachmentRepository)
-			svc := NewService(mockFileRepo, mockAttachmentRepo)
+			svc := NewService(mockFileRepo, mockAttachmentRepo, nil)
 
 			tt.setupMock(mockAttachmentRepo, mockFileRepo)
 
@@ -1065,7 +1065,7 @@ func TestService_SetPrimary(t *testing.T) {
 		t.Run(tt.testName, func(t *testing.T) {
 			mockFileRepo := new(MockFileRepository)
 			mockAttachmentRepo := new(MockAttachmentRepository)
-			svc := NewService(mockFileRepo, mockAttachmentRepo)
+			svc := NewService(mockFileRepo, mockAttachmentRepo, nil)
 
 			tt.setupMock(mockAttachmentRepo)
 
