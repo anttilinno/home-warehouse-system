@@ -675,10 +675,10 @@ Plans:
   2. User can create a new borrower (name + optional contact info) and edit a borrower's profile
   3. User can view a borrower's detail page with active + historical loan panels
   4. User trying to delete a borrower with any active loan sees a red badge + "View active loans" link blocking deletion
-**Plans:** 1/3 plans executed
+**Plans:** 2/3 plans executed
 Plans:
 - [x] 09-01-PLAN.md — Foundation: borrowersApi + zod schema + useBorrowersQuery/useBorrowerMutations + MSW handlers (BORR-01/02/04/05) [Wave 1]
-- [ ] 09-02-PLAN.md — BorrowersListPage (search + table + pager + CTA) + Sidebar nav + /borrowers route (BORR-01) [Wave 2]
+- [x] 09-02-PLAN.md — BorrowersListPage (search + table + pager + CTA) + Sidebar nav + /borrowers route (BORR-01) [Wave 2]
 - [ ] 09-03-PLAN.md — BorrowerFormPage (create/edit) + BorrowerDetailPage (panels + delete guard) + form/detail routes + live E2E (BORR-02/03/04/05) [Wave 3]
 **UI hint**: yes
 
@@ -854,7 +854,7 @@ Plans:
 | 7 | v3.0 | 7/7 | Complete   | 2026-06-13 |
 | 7b | v3.0 | 6/6 | Complete   | 2026-06-13 |
 | 8 | v3.0 | 6/6 | Complete   | 2026-06-13 |
-| 9 | v3.0 | 1/3 | In Progress|  |
+| 9 | v3.0 | 2/3 | In Progress|  |
 | 10 | v3.0 | 0/TBD | Not started | - |
 | 10b | v3.0 | 0/TBD | Not started | - |
 | 11 | v3.0 | 0/TBD | Not started | - |
