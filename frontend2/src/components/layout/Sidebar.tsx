@@ -146,7 +146,7 @@ export function Sidebar({
           <NavItem glyph="☺" label={<Trans>Borrowers</Trans>} count={stats?.total_borrowers} to="/borrowers" />
         </NavGroup>
         <NavGroup title={<Trans>System</Trans>}>
-          <NavItem glyph="⌗" label={<Trans>Scan</Trans>} />
+          <NavItem glyph="⌗" label={<Trans>Scan</Trans>} to="/scan" />
           <NavItem glyph="⚙" label={<Trans>Settings</Trans>} />
           {/* DEV-only atom review surface (Phase 4). Gated so it never appears
               as a user nav entry; the matching /demo route is DEV-gated too. */}

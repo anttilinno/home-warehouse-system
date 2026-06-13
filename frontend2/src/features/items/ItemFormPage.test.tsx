@@ -106,6 +106,74 @@ describe("ItemFormPage — create", () => {
     ).toBeInTheDocument();
   });
 
+  it("?name= prefills the Name field alongside ?barcode= (SCAN-10 USE ALL)", () => {
+    renderForm(["/items/new?barcode=ABC123&name=Cordless%20Drill"]);
+    const name = screen.getByLabelText(/name/i) as HTMLInputElement;
+    expect(name.value).toBe("Cordless Drill");
+    // barcode + FROM SCAN affordance stay intact.
+    const barcode = screen.getByLabelText(/barcode/i) as HTMLInputElement;
+    expect(barcode.value).toBe("ABC123");
+    expect(screen.getByText(/^from scan$/i)).toBeInTheDocument();
+  });
+
+  it("threads ?brand= into the create POST body (SCAN-10 USE ALL)", async () => {
+    const user = userEvent.setup();
+    let sentBody: Record<string, unknown> | undefined;
+    server.use(
+      http.post("/api/workspaces/:wsId/items", async ({ request }) => {
+        sentBody = (await request.json()) as Record<string, unknown>;
+        return HttpResponse.json(NEW_ITEM);
+      }),
+    );
+    renderForm([
+      "/items/new?barcode=ABC123&name=Cordless%20Drill&brand=Makita",
+    ]);
+    await user.type(screen.getByLabelText(/^sku/i), "SKU-NEW");
+    await user.click(screen.getByRole("button", { name: /save item/i }));
+
+    await waitFor(() => expect(sentBody).toBeDefined());
+    // Name is the guaranteed USE-ALL contract; brand rides along in the create
+    // body (the backend item entity owns `brand` — types.ts:120).
+    expect(sentBody).toMatchObject({ name: "Cordless Drill", brand: "Makita" });
+  });
+
+  it("ignores a stray ?brand= without ?name= (no spurious payload)", async () => {
+    const user = userEvent.setup();
+    let sentBody: Record<string, unknown> | undefined;
+    server.use(
+      http.post("/api/workspaces/:wsId/items", async ({ request }) => {
+        sentBody = (await request.json()) as Record<string, unknown>;
+        return HttpResponse.json(NEW_ITEM);
+      }),
+    );
+    renderForm(["/items/new"]);
+    await user.type(screen.getByLabelText(/^sku/i), "SKU-NEW");
+    await user.type(screen.getByLabelText(/name/i), "Hand Typed");
+    await user.click(screen.getByRole("button", { name: /save item/i }));
+
+    await waitFor(() => expect(sentBody).toBeDefined());
+    // No ?brand= in the URL → no brand key in the create body.
+    expect("brand" in (sentBody as object)).toBe(false);
+  });
+
+  it("ignores ?name= / ?brand= in edit mode (prefill is create-only)", async () => {
+    server.use(
+      http.get("/api/workspaces/:wsId/items/:id", () =>
+        HttpResponse.json(EDIT_ITEM),
+      ),
+    );
+    renderForm(["/items/it-9/edit?name=Should%20Ignore&brand=Nope"]);
+    await waitFor(() =>
+      expect((screen.getByLabelText(/name/i) as HTMLInputElement).value).toBe(
+        "Existing Drill",
+      ),
+    );
+    // The ?name= param did NOT override the loaded item's name.
+    expect((screen.getByLabelText(/name/i) as HTMLInputElement).value).not.toBe(
+      "Should Ignore",
+    );
+  });
+
   it("submits create and navigates to the new detail route", async () => {
     const user = userEvent.setup();
     let posted = false;

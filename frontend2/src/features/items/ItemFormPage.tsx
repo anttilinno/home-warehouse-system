@@ -3,7 +3,7 @@ import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useNavigate, useParams, useSearchParams } from "react-router";
 import { Trans, useLingui } from "@lingui/react/macro";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   Window,
   BevelButton,
@@ -13,6 +13,7 @@ import {
   RetroCombobox,
   RetroTextarea,
   RetroConfirmDialog,
+  retroToast,
 } from "@/components/retro";
 import { useWorkspace } from "@/features/workspace/useWorkspace";
 import { itemsApi } from "@/lib/api/items";
@@ -75,9 +76,16 @@ export function ItemFormPage() {
   const [searchParams] = useSearchParams();
   const isEdit = Boolean(id);
 
-  // ?barcode= prefill (create only). The value is bound into a controlled RHF
-  // input (React-escaped — XSS-safe per threat T-07-14); zod bounds the length.
+  // Scan prefill (create only). The values are bound into controlled RHF inputs
+  // (React-escaped — XSS-safe per threat T-07-14 / T-11-13); zod bounds length
+  // on submit. The UPC USE-ALL flow (SCAN-10) deep-links
+  // /items/new?barcode=&name=&brand= — barcode + name prefill their fields, and
+  // brand rides along in the create POST body (the backend item entity owns
+  // `brand`; the form has no brand field by design — binding override 5, so it is
+  // threaded straight to the payload rather than rendered as an input).
   const prefillBarcode = searchParams.get("barcode") ?? "";
+  const prefillName = searchParams.get("name") ?? "";
+  const prefillBrand = searchParams.get("brand") ?? "";
   const showFromScan = !isEdit && prefillBarcode.length > 0;
 
   // Edit mode: load the item. enabled only when editing + wsId present.
@@ -87,6 +95,7 @@ export function ItemFormPage() {
     enabled: isEdit && Boolean(wsId) && Boolean(id),
   });
 
+  const queryClient = useQueryClient();
   const { create, update } = useItemFormMutations();
   // RQ v5 returns a fresh mutation object per render; the .mutateAsync identity
   // is stable. Destructure the stable fns (DemoPage/ItemsListPage pattern).
@@ -97,8 +106,8 @@ export function ItemFormPage() {
     () =>
       isEdit
         ? EMPTY_DEFAULTS
-        : { ...EMPTY_DEFAULTS, barcode: prefillBarcode },
-    [isEdit, prefillBarcode],
+        : { ...EMPTY_DEFAULTS, barcode: prefillBarcode, name: prefillName },
+    [isEdit, prefillBarcode, prefillName],
   );
 
   const {
@@ -164,6 +173,26 @@ export function ItemFormPage() {
         const dirty = dirtyFields as DirtyMap;
         await updateItem({ id, values, dirty });
         navigate(`/items/${id}`);
+      } else if (prefillBrand) {
+        // SCAN-10 USE-ALL brand passthrough. The form has no brand input
+        // (binding override 5 — do NOT invent one), and the shared create
+        // mutation's body builder owns a fixed key set, so a brand-bearing
+        // create is issued directly here with the brand merged into the POST
+        // body. Toast + cache-invalidation mirror the mutation's onSuccess so
+        // behaviour is identical to the field-only create path.
+        const created = await itemsApi.create(wsId as string, {
+          sku: values.sku,
+          name: values.name,
+          brand: prefillBrand,
+          ...(values.description ? { description: values.description } : {}),
+          ...(values.barcode ? { barcode: values.barcode } : {}),
+          ...(values.minStock !== undefined
+            ? { min_stock_level: values.minStock }
+            : {}),
+        });
+        queryClient.invalidateQueries({ queryKey: ["items", wsId as string] });
+        retroToast.success(t`Item saved.`);
+        navigate(`/items/${created.id}`);
       } else {
         const created = await createItem(values);
         navigate(`/items/${created.id}`);
