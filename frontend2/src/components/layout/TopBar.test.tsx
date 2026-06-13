@@ -1,4 +1,4 @@
-import { beforeAll, describe, expect, it, vi } from "vitest";
+import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { I18nProvider } from "@lingui/react";
@@ -39,6 +39,14 @@ vi.mock("@/features/workspace/useWorkspace", () => ({
   useWorkspace: () => wsContext,
 }));
 
+// TopBar reads useSSEStatus() for the sse-slot RetroStatusDot (and as the
+// default for its `online` dot). Mock the feature so the banner renders without
+// a live SSEProvider; `sseStatus` is mutable per-test to flip connected.
+let sseStatus = { connected: true, lastEventAt: null as Date | null };
+vi.mock("@/features/sse", () => ({
+  useSSEStatus: () => sseStatus,
+}));
+
 import { TopBar } from "./TopBar";
 
 const user: User = {
@@ -61,6 +69,11 @@ describe("TopBar", () => {
   beforeAll(() => {
     i18n.load("en", {});
     i18n.activate("en");
+  });
+
+  beforeEach(() => {
+    // Default each test to a connected stream; SSE-slot tests flip this.
+    sseStatus = { connected: true, lastEventAt: null };
   });
 
   it("renders a banner landmark with the brand mark", () => {
@@ -93,12 +106,37 @@ describe("TopBar", () => {
     expect(screen.getByText("OFFLINE")).toBeInTheDocument();
   });
 
-  it("renders disabled reserved bell + SSE slots", () => {
+  it("defaults the ONLINE dot from useSSEStatus().connected when no online prop", () => {
+    sseStatus = { connected: false, lastEventAt: null };
+    renderTopBar(<TopBar user={user} onLogout={vi.fn()} />);
+    // No explicit online prop → falls back to the live SSE status (disconnected).
+    expect(screen.getByText("OFFLINE")).toBeInTheDocument();
+  });
+
+  it("renders the reserved bell slot disabled", () => {
     renderTopBar(<TopBar user={user} onLogout={vi.fn()} />);
     const bell = screen.getByTestId("bell-slot");
     expect(bell).toHaveAttribute("aria-disabled", "true");
     expect(bell).toHaveAttribute("title", "Coming soon");
-    expect(screen.getByTestId("sse-slot")).toBeInTheDocument();
+  });
+
+  it("binds the sse-slot RetroStatusDot to live state — 'live' when connected", () => {
+    sseStatus = { connected: true, lastEventAt: null };
+    renderTopBar(<TopBar user={user} onLogout={vi.fn()} />);
+    const slot = screen.getByTestId("sse-slot");
+    // The static '● live' placeholder is gone — the live RetroStatusDot renders
+    // its `live` word + mint dot when the stream is connected (no more raw text).
+    expect(within(slot).getByText("live")).toBeInTheDocument();
+    expect(within(slot).getByTestId("status-dot")).toHaveClass("bg-titlebar-mint");
+    expect(within(slot).queryByText("● live")).not.toBeInTheDocument();
+  });
+
+  it("renders the sse-slot RetroStatusDot in 'idle' state when disconnected", () => {
+    sseStatus = { connected: false, lastEventAt: null };
+    renderTopBar(<TopBar user={user} onLogout={vi.fn()} />);
+    const slot = screen.getByTestId("sse-slot");
+    expect(within(slot).getByText("offline")).toBeInTheDocument();
+    expect(within(slot).getByTestId("status-dot")).toHaveClass("bg-fg-faint");
   });
 
   it("opens the user menu with aria-haspopup/expanded and a Log out item", async () => {
