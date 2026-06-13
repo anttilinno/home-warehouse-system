@@ -694,7 +694,7 @@ Plans:
 **Plans**: 5 plans across 4 waves
 Plans:
 - [x] 10-01-PLAN.md — Foundation: api modules (category/location/container + labels extend) + buildTree util + net-new RetroTree atom + zod schemas + MSW handlers
-- [ ] 10-02-PLAN.md — Page shell (/taxonomy ?tab= RetroTabs) + Categories tab (tree CRUD + TAX-02 client usage-warning archive) + route + Sidebar + W3 tab stubs
+- [x] 10-02-PLAN.md — Page shell (/taxonomy ?tab= RetroTabs) + Categories tab (tree CRUD + TAX-02 client usage-warning archive) + route + Sidebar + W3 tab stubs
 - [ ] 10-03-PLAN.md — Locations tab (tree, archive-only) + Containers tab (grouped-by-location, bare-DELETE unassign) + SearchPicker + useTaxonomySearch
 - [ ] 10-04-PLAN.md — Labels tab (TAX-07 CRUD list + 8-swatch on-palette color picker)
 - [ ] 10-05-PLAN.md — Live Playwright E2E (category create→tree→archive-warning; container create→grouped→delete; label CRUD; single login)
@@ -861,7 +861,7 @@ Plans:
 | 7b | v3.0 | 6/6 | Complete   | 2026-06-13 |
 | 8 | v3.0 | 6/6 | Complete   | 2026-06-13 |
 | 9 | v3.0 | 3/3 | Complete   | 2026-06-13 |
-| 10 | v3.0 | 1/5 | In Progress|  |
+| 10 | v3.0 | 2/5 | In Progress|  |
 | 10b | v3.0 | 0/TBD | Not started | - |
 | 11 | v3.0 | 0/TBD | Not started | - |
 | 12 | v3.0 | 0/TBD | Not started | - |
