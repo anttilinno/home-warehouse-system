@@ -81,8 +81,10 @@ describe("CategoryValueChart", () => {
   it("renders its Window title and a labelled bar per category", () => {
     const { container } = renderChart(<CategoryValueChart data={categories} />);
     expect(screen.getByRole("heading", { name: /category/i })).toBeInTheDocument();
-    expect(screen.getByText("Power tools")).toBeInTheDocument();
-    expect(screen.getByText("Cables / AV")).toBeInTheDocument();
+    // recharts v3 renders each axis tick label twice (visible + a11y layer), so
+    // assert on getAllByText.
+    expect(screen.getAllByText("Power tools").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Cables / AV").length).toBeGreaterThan(0);
     expect(container.querySelector("svg")).toBeTruthy();
   });
 
@@ -96,7 +98,7 @@ describe("LocationValueChart", () => {
   it("renders bars and formats CENTS as currency (not the raw integer)", () => {
     renderChart(<LocationValueChart data={locations} />);
     expect(screen.getByRole("heading", { name: /location/i })).toBeInTheDocument();
-    expect(screen.getByText("Garage")).toBeInTheDocument();
+    expect(screen.getAllByText("Garage").length).toBeGreaterThan(0);
     // 1421000 cents → €14,210.00 style currency string; the raw integer must
     // never leak to the axis/label.
     const raw = screen.queryByText((t) => t.includes("1421000"));
@@ -147,8 +149,8 @@ describe("TopBorrowersChart", () => {
   it("renders a bar per borrower", () => {
     const { container } = renderChart(<TopBorrowersChart data={borrowers} />);
     expect(screen.getByRole("heading", { name: /borrower/i })).toBeInTheDocument();
-    expect(screen.getByText("Mart")).toBeInTheDocument();
-    expect(screen.getByText("Kati")).toBeInTheDocument();
+    expect(screen.getAllByText("Mart").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Kati").length).toBeGreaterThan(0);
     expect(container.querySelector("svg")).toBeTruthy();
   });
 
