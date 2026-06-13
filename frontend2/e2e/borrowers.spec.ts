@@ -72,7 +72,8 @@ test("borrower lifecycle: create via UI → list → detail → edit → clean d
   // ── DETAIL (BORR-03): lands on /borrowers/:id; the profile shows the name +
   // the mounted BorrowerLoanPanels Active/History panels are present.
   await expect(page).toHaveURL(/\/borrowers\/[0-9a-f-]+$/i);
-  await expect(page.getByText(borrowerName)).toBeVisible();
+  // name shows in BOTH the Window titlebar and the profile <dl> → match first
+  await expect(page.getByText(borrowerName).first()).toBeVisible();
   await expect(page.getByText(/active loans/i).first()).toBeVisible();
   await expect(page.getByText(/loan history/i).first()).toBeVisible();
 
@@ -93,7 +94,7 @@ test("borrower lifecycle: create via UI → list → detail → edit → clean d
   const nameField = page.getByLabel(/name/i);
   await nameField.fill(editedName);
   await page.getByRole("button", { name: /save changes/i }).click();
-  await expect(page.getByText(editedName)).toBeVisible();
+  await expect(page.getByText(editedName).first()).toBeVisible();
 
   // ── CLEAN DELETE (BORR-05): with NO active loans, DELETE… is enabled →
   // confirm → navigate to /borrowers, and the row is gone.
