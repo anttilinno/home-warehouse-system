@@ -11,8 +11,8 @@ import type { Member, OAuthAccountsResponse } from "@/lib/types";
 // trailing › chevron, mirroring the AccountsPage row idiom (border-b table-rule,
 // last:border-b-0). NO leading icons (MANIFEST: icon style unresolved). Optional
 // trailing counts come from EXISTING query keys and render ONLY when already
-// cached (no spinner, no layout shift). The Paperless row is a disabled COMING
-// SOON pointer to Phase 14b — it does NOT build the DMS.
+// cached (no spinner, no layout shift). The Paperless row links to the live
+// /settings/paperless DMS page (wired 14b-05; was a COMING SOON pointer pre-14b).
 
 interface LinkRowProps {
   to: string;
@@ -37,32 +37,6 @@ function LinkRow({ to, label, trailing }: LinkRowProps) {
           </span>
         </span>
       </Link>
-    </li>
-  );
-}
-
-// The Paperless pointer row — a NON-link (aria-disabled) with a butter COMING
-// SOON badge + "Set up in DMS" trailing copy. CONTEXT decision: pointer to
-// Phase 14b, do NOT build DMS here.
-function PaperlessRow() {
-  return (
-    <li className="border-b border-table-rule last:border-b-0">
-      <div
-        aria-disabled="true"
-        className="flex min-h-[44px] cursor-not-allowed items-center justify-between gap-sp-3 px-sp-4 py-sp-3 text-[14px] text-fg-muted"
-      >
-        <span>
-          <Trans>Paperless</Trans>
-        </span>
-        <span className="flex items-center gap-sp-2 text-fg-muted">
-          <RetroBadge variant="warn">
-            <Trans>COMING SOON</Trans>
-          </RetroBadge>
-          <span className="text-[12px]">
-            <Trans>Set up in DMS</Trans>
-          </span>
-        </span>
-      </div>
     </li>
   );
 }
@@ -130,7 +104,7 @@ export function SettingsLandingPage() {
             }
           />
           <LinkRow to="data" label={<Trans>Data &amp; Storage</Trans>} />
-          <PaperlessRow />
+          <LinkRow to="paperless" label={<Trans>Paperless</Trans>} />
         </ul>
       </Window>
     </div>

@@ -28,6 +28,8 @@ import {
 } from "./components/LoanPanels";
 import { ItemLabels } from "./components/ItemLabels";
 import { InventoryPanel } from "./components/InventoryPanel";
+import { ItemAttachmentPanel } from "./components/ItemAttachmentPanel";
+import { PaperlessLinkDialog } from "./components/PaperlessLinkDialog";
 import { useItemMovements } from "./hooks/useItemMovements";
 import { MovementsPanel } from "@/features/inventory/components/MovementsPanel";
 
@@ -104,6 +106,7 @@ export function ItemDetailPage() {
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const [uploadOpen, setUploadOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [paperlessLinkOpen, setPaperlessLinkOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [confirmName, setConfirmName] = useState("");
   const menuRef = useRef<HTMLButtonElement>(null);
@@ -217,6 +220,11 @@ export function ItemDetailPage() {
         </div>
       ),
     },
+    {
+      id: "files",
+      label: <Trans>FILES</Trans>,
+      content: <ItemAttachmentPanel wsId={wsId as string} itemId={item.id} />,
+    },
   ];
 
   return (
@@ -271,6 +279,14 @@ export function ItemDetailPage() {
                   </BevelButton>
                 )}
                 <BevelButton
+                  onClick={() => {
+                    setMenuOpen(false);
+                    setPaperlessLinkOpen(true);
+                  }}
+                >
+                  <Trans>Link Paperless document</Trans>
+                </BevelButton>
+                <BevelButton
                   variant="danger"
                   disabled={!archived}
                   aria-disabled={!archived || undefined}
@@ -315,6 +331,16 @@ export function ItemDetailPage() {
         itemId={item.id}
         open={uploadOpen}
         onClose={() => setUploadOpen(false)}
+      />
+
+      {/* Paperless link dialog (PPL-03) — opened from the overflow menu; links a
+          found Paperless document to this item (creates an attachment), surfacing
+          it in the FILES tab. */}
+      <PaperlessLinkDialog
+        wsId={wsId as string}
+        itemId={item.id}
+        open={paperlessLinkOpen}
+        onClose={() => setPaperlessLinkOpen(false)}
       />
 
       {/* Type-to-confirm delete (archived-only, ITEM-06). */}
