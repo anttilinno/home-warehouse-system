@@ -477,6 +477,7 @@ msgid "Amount in your workspace currency."
 msgstr "Amount in your workspace currency."
 
 #: src/components/layout/Sidebar.tsx
+#: src/features/command-palette/paletteRoutes.ts
 msgid "Analytics"
 msgstr "Analytics"
 
@@ -491,6 +492,7 @@ msgstr "Appearance"
 
 #: src/components/layout/Sidebar.tsx
 #: src/features/approvals/ApprovalsPage.tsx
+#: src/features/command-palette/paletteRoutes.ts
 msgid "Approvals"
 msgstr "Approvals"
 
@@ -625,6 +627,8 @@ msgstr "Borrower updated."
 #: src/components/layout/Sidebar.tsx
 #: src/features/borrowers/BorrowerDetailPage.tsx
 #: src/features/borrowers/BorrowersListPage.tsx
+#: src/features/command-palette/CommandPalette.tsx
+#: src/features/command-palette/paletteRoutes.ts
 #: src/features/dashboard/DashboardPage.tsx
 msgid "Borrowers"
 msgstr "Borrowers"
@@ -733,6 +737,7 @@ msgid "Careful."
 msgstr "Careful."
 
 #: src/components/layout/Sidebar.tsx
+#: src/features/command-palette/paletteRoutes.ts
 #: src/features/dashboard/DashboardPage.tsx
 msgid "Categories"
 msgstr "Categories"
@@ -822,6 +827,7 @@ msgid "Clears locally cached lists. Your inventory data stays safe."
 msgstr "Clears locally cached lists. Your inventory data stays safe."
 
 #: src/components/retro/overlay/RetroDialog.tsx
+#: src/features/command-palette/CommandPalette.tsx
 #: src/routes/demo/DemoPage.tsx
 msgid "Close"
 msgstr "Close"
@@ -842,6 +848,14 @@ msgstr "Color"
 #: src/features/settings/DataStoragePage.tsx
 msgid "Coming soon"
 msgstr "Coming soon"
+
+#: src/features/command-palette/CommandPalette.tsx
+msgid "Command palette"
+msgstr "Command palette"
+
+#: src/features/command-palette/CommandPalette.tsx
+msgid "Command Palette"
+msgstr "Command Palette"
 
 #: src/features/maintenance/components/CompleteMaintenanceDialog.tsx
 #: src/features/maintenance/components/MaintenanceDrawer.tsx
@@ -921,6 +935,8 @@ msgid "Container"
 msgstr "Container"
 
 #: src/components/layout/Sidebar.tsx
+#: src/features/command-palette/CommandPalette.tsx
+#: src/features/command-palette/paletteRoutes.ts
 #: src/features/dashboard/DashboardPage.tsx
 msgid "Containers"
 msgstr "Containers"
@@ -1395,6 +1411,7 @@ msgid "Danger Zone"
 msgstr "Danger Zone"
 
 #: src/components/layout/Sidebar.tsx
+#: src/features/command-palette/paletteRoutes.ts
 msgid "Dashboard"
 msgstr "Dashboard"
 
@@ -1433,6 +1450,7 @@ msgid "Decimal separator"
 msgstr "Decimal separator"
 
 #: src/components/layout/Sidebar.tsx
+#: src/features/command-palette/paletteRoutes.ts
 #: src/features/declutter/DeclutterPage.tsx
 msgid "Declutter"
 msgstr "Declutter"
@@ -2143,6 +2161,7 @@ msgid "Importing…"
 msgstr "Importing…"
 
 #: src/components/layout/Sidebar.tsx
+#: src/features/command-palette/paletteRoutes.ts
 #: src/features/imports/ImportsPage.tsx
 msgid "Imports"
 msgstr "Imports"
@@ -2170,6 +2189,7 @@ msgstr "Interval (days)"
 
 #: src/components/layout/Sidebar.tsx
 #: src/features/analytics/components/OutOfStockTable.tsx
+#: src/features/command-palette/paletteRoutes.ts
 #: src/features/inventory/ExpiringPage.tsx
 #: src/features/inventory/InventoryListPage.tsx
 #: src/features/items/ItemDetailPage.tsx
@@ -2235,6 +2255,8 @@ msgid "items"
 msgstr "items"
 
 #: src/components/layout/Sidebar.tsx
+#: src/features/command-palette/CommandPalette.tsx
+#: src/features/command-palette/paletteRoutes.ts
 #: src/features/dashboard/components/HudRow.tsx
 #: src/features/dashboard/DashboardPage.tsx
 msgid "Items"
@@ -2422,6 +2444,7 @@ msgstr "Loaning this item — pick a borrower."
 
 #: src/components/layout/Sidebar.tsx
 #: src/features/borrowers/BorrowersListPage.tsx
+#: src/features/command-palette/paletteRoutes.ts
 #: src/features/dashboard/DashboardPage.tsx
 #: src/features/items/components/LoanPanels.tsx
 #: src/features/loans/components/BorrowerLoanPanels.tsx
@@ -2456,6 +2479,8 @@ msgid "Location value"
 msgstr "Location value"
 
 #: src/components/layout/Sidebar.tsx
+#: src/features/command-palette/CommandPalette.tsx
+#: src/features/command-palette/paletteRoutes.ts
 #: src/features/dashboard/DashboardPage.tsx
 msgid "Locations"
 msgstr "Locations"
@@ -2484,6 +2509,7 @@ msgid "Low stock"
 msgstr "Low stock"
 
 #: src/components/layout/Sidebar.tsx
+#: src/features/command-palette/paletteRoutes.ts
 #: src/features/inventory/InventoryListPage.tsx
 #: src/features/maintenance/components/MaintenanceDrawer.tsx
 #: src/features/maintenance/MaintenanceDuePage.tsx
@@ -2650,6 +2676,7 @@ msgid "My changes"
 msgstr "My changes"
 
 #: src/components/layout/Sidebar.tsx
+#: src/features/command-palette/paletteRoutes.ts
 msgid "My Changes"
 msgstr "My Changes"
 
@@ -2962,6 +2989,10 @@ msgstr "NO REPAIRS"
 #: src/features/repairs/components/RepairsDrawer.tsx
 msgid "No repairs logged for this entry yet. Add one to track work, cost, and warranty."
 msgstr "No repairs logged for this entry yet. Add one to track work, cost, and warranty."
+
+#: src/features/command-palette/CommandPalette.tsx
+msgid "No results."
+msgstr "No results."
 
 #: src/components/retro/filters/SavedFilters.tsx
 msgid "No saved filters yet."
@@ -3428,6 +3459,10 @@ msgstr "READY"
 msgid "Reason"
 msgstr "Reason"
 
+#: src/features/command-palette/CommandPalette.tsx
+msgid "Recent"
+msgstr "Recent"
+
 #: src/features/dashboard/DashboardPage.tsx
 msgid "Recent activity"
 msgstr "Recent activity"
@@ -3713,6 +3748,10 @@ msgstr "Role updated."
 msgid "ROUTE"
 msgstr "ROUTE"
 
+#: src/features/command-palette/CommandPalette.tsx
+msgid "Routes"
+msgstr "Routes"
+
 #: src/features/imports/ImportsPage.tsx
 msgid "Rows"
 msgstr "Rows"
@@ -3800,6 +3839,7 @@ msgid "SavedFilters — preset chips + ▾ PRESETS menu."
 msgstr "SavedFilters — preset chips + ▾ PRESETS menu."
 
 #: src/components/layout/Sidebar.tsx
+#: src/features/command-palette/paletteRoutes.ts
 msgid "Scan"
 msgstr "Scan"
 
@@ -3842,6 +3882,11 @@ msgstr "Search locations…"
 msgid "Search Paperless"
 msgstr "Search Paperless"
 
+#: src/features/command-palette/CommandPalette.tsx
+msgid "Search routes, workspaces, items…"
+msgstr "Search routes, workspaces, items…"
+
+#: src/features/command-palette/CommandPalette.tsx
 #: src/features/items/components/PaperlessLinkDialog.tsx
 #: src/features/settings/PaperlessPage.tsx
 msgid "Searching…"
@@ -3899,6 +3944,7 @@ msgstr "SET PRIMARY"
 
 #: src/components/layout/Sidebar.tsx
 #: src/components/layout/TopBar.tsx
+#: src/features/command-palette/paletteRoutes.ts
 msgid "Settings"
 msgstr "Settings"
 
@@ -4054,6 +4100,7 @@ msgid "Sync"
 msgstr "Sync"
 
 #: src/components/layout/Sidebar.tsx
+#: src/features/command-palette/paletteRoutes.ts
 msgid "Sync History"
 msgstr "Sync History"
 
@@ -4442,6 +4489,7 @@ msgid "Window"
 msgstr "Window"
 
 #: src/components/layout/Sidebar.tsx
+#: src/features/command-palette/paletteRoutes.ts
 #: src/features/wishlist/WishlistPage.tsx
 msgid "Wishlist"
 msgstr "Wishlist"
@@ -4486,6 +4534,7 @@ msgid "Workspace activity"
 msgstr "Workspace activity"
 
 #: src/components/layout/WorkspaceSwitcher.tsx
+#: src/features/command-palette/CommandPalette.tsx
 msgid "Workspaces"
 msgstr "Workspaces"
 
