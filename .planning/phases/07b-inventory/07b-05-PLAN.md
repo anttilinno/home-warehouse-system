@@ -3,7 +3,7 @@ phase: 07b-inventory
 plan: 05
 type: execute
 wave: 3
-depends_on: ["07b-01", "07b-03"]
+depends_on: ["07b-01", "07b-02", "07b-03"]
 files_modified:
   - frontend2/src/features/items/components/InventoryPanel.tsx
   - frontend2/src/features/items/components/InventoryPanel.test.tsx
