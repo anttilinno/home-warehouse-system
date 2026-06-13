@@ -139,19 +139,33 @@ SQL scoping already in place (internal/infra/queries/attachments.sql.go):
 </task>
 
 <task type="auto">
-  <name>Task 3: Confirm audit F1 row reflects the test guard</name>
+  <name>Task 3: Flip audit F1 to RESOLVED (it is currently still marked OPEN)</name>
   <files>docs/audit/BACKEND-SECURITY.md</files>
   <action>
-    The F1 detail block already says RESOLVED (commit f49e4b48). Append a short
-    note to the F1 detail section that the fix is now regression-guarded by
-    `attachment/handler_integration_test.go` (cross-tenant 404, -tags=integration).
-    Do NOT invent a new commit SHA — reference the test file by path. Keep the
-    existing RESOLVED line intact.
+    GROUND TRUTH: F1 is NOT yet flipped. The summary-table row (line 9) still
+    reads `| F1 | CRITICAL | Cross-tenant IDOR ... |` with NO RESOLVED marker,
+    and the F1 detail block (lines ~34-58) still describes the OLD vulnerable
+    code ("no workspace_id column", `_ = workspaceID`, id-only queries). The
+    `> RESOLVED (commit f49e4b48)` near line 83 belongs to F2 (logout), NOT F1.
+    The code is ALREADY remediated in current source (handlers thread
+    workspaceID; SQL scopes `WHERE id=$1 AND workspace_id=$2` — FindByID:138,
+    Delete:110, ListByItem:197), shipped under the same f49e4b48 "tenant
+    isolation threading (F1-F20)" commit. The audit row just was never updated.
+
+    Make TWO edits:
+    1. Summary-table row (line 9): change to
+       `| F1 | CRITICAL | ✅ RESOLVED (\`f49e4b48\`) — Cross-tenant IDOR on \`attachment\`/\`file\` (read + destructive delete) | \`domain/warehouse/attachment/handler.go\`, \`attachments.sql.go\` |`
+       (mirror the F2/F3 row format exactly).
+    2. Append a RESOLVED block at the END of the F1 detail section (after the
+       "Fix:" paragraph, before the `---` divider), mirroring the F2 RESOLVED
+       blockquote style:
+       `> **RESOLVED** (commit \`f49e4b48\` — "tenant isolation threading + security hardening (F1-F20)"). The \`attachments\`/\`files\` tables now carry a \`workspace_id\` column; the service signatures take \`workspaceID uuid.UUID\`; every handler reads \`GetWorkspaceID(ctx)\` and threads it; SQL scopes \`WHERE id=$1 AND workspace_id=$2\` (FindByID:138, Delete:110, ListByItem:197, SetPrimary:261). Regression-guarded by \`attachment/handler_integration_test.go\` (cross-tenant GET/DELETE → 404, \`-tags=integration\`).`
   </action>
   <verify>
     <automated>grep -c "handler_integration_test" docs/audit/BACKEND-SECURITY.md</automated>
+    <automated>grep -n "F1 | CRITICAL | ✅ RESOLVED" docs/audit/BACKEND-SECURITY.md</automated>
   </verify>
-  <done>Audit F1 section references the new integration guard by path; existing RESOLVED status preserved.</done>
+  <done>F1 summary-table row (line 9) AND the F1 detail block both flipped to ✅ RESOLVED citing f49e4b48 + the new integration guard. No F2 line disturbed.</done>
 </task>
 
 </tasks>
