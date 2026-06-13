@@ -749,7 +749,15 @@ Plans:
   2. User can edit name + email + avatar (Profile); change password + view/revoke active sessions + delete account (Security); pick theme (Appearance — only premium-terminal under v3.0); pick en / et / ru (Language); set date / time / thousand / decimal formats (Regional Formats)
   3. User can toggle in-app preferences for SSE event types (Notifications), link/unlink Google + GitHub OAuth providers (Connected Accounts), and clear cached query data + export workspace + import workspace (Data Storage — online-only, no offline-storage management surface)
 **Parity additions (2026-06-12)** (§4, §8 risk 2, Gaps G-7/G-9): Paperless settings slot lives here as a pointer to Phase 14b (G-7). DECISION (G-9): include a minimal **Members page** (list, role change, remove, invite/add member) since the approval workflow implies multi-user workspaces — new requirement SETT-10. DECISION (theme): v3.0 ships **light-only**; dark theme → backlog — the Appearance subpage ships with an explicit "light only" note (SETT-11).
-**Plans**: TBD
+**Plans**: 7 plans
+Plans:
+- [ ] 12-01-PLAN.md — Backend: enrich MemberResponse (email/full_name) + POST /members accepts email (Go, Wave 1)
+- [ ] 12-02-PLAN.md — Foundation: SettingsLayout rewrite + grouped-row landing + all subpage routes + settingsApi + types + MSW (single-writer, Wave 1)
+- [ ] 12-03-PLAN.md — Profile (name/email + AvatarUploader) + Appearance (light-only) (Wave 2)
+- [ ] 12-04-PLAN.md — Language + Regional Formats + Notifications (preferences PATCH) (Wave 2)
+- [ ] 12-05-PLAN.md — Data & Storage (clear-cache + export download + import pointer) (Wave 2)
+- [ ] 12-06-PLAN.md — Members page (list/role-change/remove/add-by-email) (Wave 3)
+- [ ] 12-07-PLAN.md — Live Playwright settings E2E (landing → profile save; language; members) (Wave 3)
 **UI hint**: yes
 
 ### Phase 13: Dashboard
