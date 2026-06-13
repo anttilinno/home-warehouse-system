@@ -330,3 +330,15 @@ body {
     }
   }
 }
+
+/* ---------- POL-03 / OQ-4 global focus-visible fallback ----------
+   Safety net only: any keyboard-focused element MISSING an explicit
+   per-component ring still gets a visible 2px --border-ink outline. The 12
+   per-component `focus-visible:outline-2 outline-border-ink outline-offset-2`
+   tokens (atoms/layout) are retained and win by specificity — this universal
+   rule never overrides them. color-mix degrades to a solid --border-ink on
+   engines without support, so the ring is always visible. */
+*:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--border-ink) 100%, transparent);
+  outline-offset: 2px;
+}
