@@ -751,8 +751,8 @@ Plans:
 **Parity additions (2026-06-12)** (§4, §8 risk 2, Gaps G-7/G-9): Paperless settings slot lives here as a pointer to Phase 14b (G-7). DECISION (G-9): include a minimal **Members page** (list, role change, remove, invite/add member) since the approval workflow implies multi-user workspaces — new requirement SETT-10. DECISION (theme): v3.0 ships **light-only**; dark theme → backlog — the Appearance subpage ships with an explicit "light only" note (SETT-11).
 **Plans**: 7 plans
 Plans:
-- [ ] 12-01-PLAN.md — Backend: enrich MemberResponse (email/full_name) + POST /members accepts email (Go, Wave 1)
-- [ ] 12-02-PLAN.md — Foundation: SettingsLayout rewrite + grouped-row landing + all subpage routes + settingsApi + types + MSW (single-writer, Wave 1)
+- [x] 12-01-PLAN.md — Backend: enrich MemberResponse (email/full_name) + POST /members accepts email (Go, Wave 1)
+- [x] 12-02-PLAN.md — Foundation: SettingsLayout rewrite + grouped-row landing + all subpage routes + settingsApi + types + MSW (single-writer, Wave 1)
 - [ ] 12-03-PLAN.md — Profile (name/email + AvatarUploader) + Appearance (light-only) (Wave 2)
 - [ ] 12-04-PLAN.md — Language + Regional Formats + Notifications (preferences PATCH) (Wave 2)
 - [ ] 12-05-PLAN.md — Data & Storage (clear-cache + export download + import pointer) (Wave 2)
@@ -886,7 +886,7 @@ Plans:
 | 10 | v3.0 | 5/5 | Complete   | 2026-06-13 |
 | 10b | v3.0 | 5/5 | Complete   | 2026-06-13 |
 | 11 | v3.0 | 8/8 | Complete   | 2026-06-13 |
-| 12 | v3.0 | 0/TBD | Not started | - |
+| 12 | v3.0 | 2/7 | In Progress|  |
 | 13 | v3.0 | 0/TBD | Not started | - |
 | 13b | v3.0 | 0/TBD | Not started | - |
 | 14 | v3.0 | 0/TBD | Not started | - |
