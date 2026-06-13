@@ -69,13 +69,35 @@ describe("Sidebar", () => {
     expect(dashboard.className).not.toContain("bg-titlebar-blue");
   });
 
-  it("renders a not-built nav item as aria-disabled with the 'Not built yet' title", () => {
+  it("wires the Settings nav item to /settings (Phase 14 — no longer disabled)", () => {
+    // Settings was disabled until Phase 14; 14-08 folds the still-unwired
+    // Settings nav into the System group and points it at /settings.
     renderSidebar(<Sidebar stats={stats} user={user} />);
-    // Settings has no `to` yet (Analytics was wired in Phase 13b).
-    const settings = screen.getByText("Settings").closest("[aria-disabled]");
-    expect(settings).not.toBeNull();
-    expect(settings).toHaveAttribute("aria-disabled", "true");
-    expect(settings).toHaveAttribute("title", "Not built yet");
+    const settings = screen.getByRole("link", { name: /settings/i });
+    expect(settings).toHaveAttribute("href", "/settings");
+    expect(settings).not.toHaveAttribute("aria-disabled");
+  });
+
+  it("wires the six Phase-14 System nav items to their routes", () => {
+    renderSidebar(<Sidebar stats={stats} user={user} />);
+    expect(
+      screen.getByRole("link", { name: /approvals/i }),
+    ).toHaveAttribute("href", "/approvals");
+    expect(
+      screen.getByRole("link", { name: /my changes/i }),
+    ).toHaveAttribute("href", "/my-changes");
+    expect(
+      screen.getByRole("link", { name: /wishlist/i }),
+    ).toHaveAttribute("href", "/wishlist");
+    expect(
+      screen.getByRole("link", { name: /declutter/i }),
+    ).toHaveAttribute("href", "/declutter");
+    expect(
+      screen.getByRole("link", { name: /imports/i }),
+    ).toHaveAttribute("href", "/imports");
+    expect(
+      screen.getByRole("link", { name: /sync history/i }),
+    ).toHaveAttribute("href", "/sync-history");
   });
 
   it("carries .nav-label / .nav-count rail-mode hook classes", () => {
