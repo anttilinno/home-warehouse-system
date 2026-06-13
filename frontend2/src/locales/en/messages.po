@@ -56,6 +56,18 @@ msgstr "\"{0}\" has {n} item{1} assigned to it. Archiving keeps those items but 
 msgid "\"{0}\" holds {n} item{1}. Deleting it will move those items out of any container (they stay in their location) and then delete the container. This can't be undone."
 msgstr "\"{0}\" holds {n} item{1}. Deleting it will move those items out of any container (they stay in their location) and then delete the container. This can't be undone."
 
+#: src/features/settings/NotificationsPage.tsx
+msgid "(due soon, overdue)"
+msgstr "(due soon, overdue)"
+
+#: src/features/settings/NotificationsPage.tsx
+msgid "(invites, joins)"
+msgstr "(invites, joins)"
+
+#: src/features/settings/NotificationsPage.tsx
+msgid "(items expiring)"
+msgstr "(items expiring)"
+
 #: src/features/taxonomy/components/ContainersTab.tsx
 msgid "(No location)"
 msgstr "(No location)"
@@ -64,6 +76,10 @@ msgstr "(No location)"
 #: src/features/taxonomy/components/LocationFormDialog.tsx
 msgid "(Root — no parent)"
 msgstr "(Root — no parent)"
+
+#: src/features/settings/NotificationsPage.tsx
+msgid "(service due)"
+msgstr "(service due)"
 
 #. placeholder {0}: loan.item.name
 #: src/features/loans/components/ExtendLoanDialog.tsx
@@ -138,6 +154,18 @@ msgstr "{done}/{0} uploaded"
 msgid "{label} unlinked."
 msgstr "{label} unlinked."
 
+#: src/features/dashboard/components/SystemAlertsPanel.tsx
+msgid "{overdueCount} overdue"
+msgstr "{overdueCount} overdue"
+
+#: src/features/approvals/ApprovalsPage.tsx
+msgid "{total} pending"
+msgstr "{total} pending"
+
+#: src/features/settings/PaperlessPage.tsx
+msgid "••••••• (stored — leave blank to keep)"
+msgstr "••••••• (stored — leave blank to keep)"
+
 #: src/features/borrowers/BorrowerDetailPage.tsx
 msgid "← BACK TO BORROWERS"
 msgstr "← BACK TO BORROWERS"
@@ -167,6 +195,7 @@ msgid "−{overdueBy}d"
 msgstr "−{overdueBy}d"
 
 #: src/features/items/components/InventoryPanel.tsx
+#: src/features/wishlist/WishlistPage.tsx
 msgid "⊕ ADD"
 msgstr "⊕ ADD"
 
@@ -183,11 +212,13 @@ msgstr "⊕ ADD CONTAINER"
 msgid "⊕ ADD ENTRY"
 msgstr "⊕ ADD ENTRY"
 
+#: src/features/items/components/ItemAttachmentPanel.tsx
 #: src/features/repairs/components/RepairAttachmentPanel.tsx
 msgid "⊕ ADD FILE"
 msgstr "⊕ ADD FILE"
 
 #: src/features/items/ItemsListPage.tsx
+#: src/features/wishlist/WishlistPage.tsx
 msgid "⊕ ADD ITEM"
 msgstr "⊕ ADD ITEM"
 
@@ -259,6 +290,10 @@ msgstr "⚠ Active loans"
 msgid "⚠ Overdue"
 msgstr "⚠ Overdue"
 
+#: src/features/approvals/ApprovalsPage.tsx
+msgid "✓ APPROVE"
+msgstr "✓ APPROVE"
+
 #: src/components/retro/filters/BulkActionBar.tsx
 #: src/features/items/components/PhotoGallery.tsx
 msgid "✕ CLEAR"
@@ -267,6 +302,10 @@ msgstr "✕ CLEAR"
 #: src/features/items/components/PhotoLightbox.tsx
 msgid "✕ CLOSE"
 msgstr "✕ CLOSE"
+
+#: src/features/approvals/ApprovalsPage.tsx
+msgid "✕ REJECT"
+msgstr "✕ REJECT"
 
 #: src/features/inventory/InventoryListPage.tsx
 msgid "⟳"
@@ -285,6 +324,8 @@ msgstr "⤓ DOWNLOAD ALL"
 msgid "⤓ EXPORT"
 msgstr "⤓ EXPORT"
 
+#: src/features/declutter/DeclutterPage.tsx
+#: src/features/inventory/InventoryListPage.tsx
 #: src/features/loans/LoansListPage.tsx
 msgid "⤓ EXPORT CSV"
 msgstr "⤓ EXPORT CSV"
@@ -292,6 +333,10 @@ msgstr "⤓ EXPORT CSV"
 #: src/features/inventory/InventoryListPage.tsx
 msgid "🔧"
 msgstr "🔧"
+
+#: src/features/dashboard/components/HudRow.tsx
+msgid "14-day activity"
+msgstr "14-day activity"
 
 #: src/routes/demo/DemoPage.tsx
 msgid "A centered-modal retro-os Window. ESC pops it via the modal stack."
@@ -301,15 +346,31 @@ msgstr "A centered-modal retro-os Window. ESC pops it via the modal stack."
 msgid "A helpful hint."
 msgstr "A helpful hint."
 
+#: src/features/approvals/ApprovalsPage.tsx
+msgid "A reason is required to reject."
+msgstr "A reason is required to reject."
+
+#: src/features/settings/SettingsLandingPage.tsx
+msgid "ACCOUNT"
+msgstr "ACCOUNT"
+
 #: src/features/auth/RegisterPage.tsx
 msgid "Account created — welcome."
 msgstr "Account created — welcome."
 
 #: src/features/inventory/InventoryFormPage.tsx
+#: src/features/wishlist/components/WishlistFormDialog.tsx
+#: src/features/wishlist/WishlistPage.tsx
 msgid "Acquired"
 msgstr "Acquired"
 
+#: src/features/wishlist/WishlistPage.tsx
+msgid "ACQUIRED"
+msgstr "ACQUIRED"
+
+#: src/features/approvals/ApprovalsPage.tsx
 #: src/features/dashboard/DashboardPage.tsx
+#: src/features/my-changes/MyChangesPage.tsx
 msgid "Action"
 msgstr "Action"
 
@@ -317,6 +378,7 @@ msgstr "Action"
 msgid "action needed"
 msgstr "action needed"
 
+#: src/features/settings/MembersPage.tsx
 #: src/features/settings/SecurityPage.tsx
 msgid "Actions"
 msgstr "Actions"
@@ -337,6 +399,10 @@ msgstr "Active"
 msgid "ACTIVE"
 msgstr "ACTIVE"
 
+#: src/features/dashboard/components/HudRow.tsx
+msgid "Active loans"
+msgstr "Active loans"
+
 #: src/features/loans/components/BorrowerLoanPanels.tsx
 msgid "ACTIVE LOANS"
 msgstr "ACTIVE LOANS"
@@ -345,13 +411,26 @@ msgstr "ACTIVE LOANS"
 msgid "active now"
 msgstr "active now"
 
+#: src/features/dashboard/DashboardPage.tsx
+msgid "Actor"
+msgstr "Actor"
+
+#: src/features/settings/MembersPage.tsx
+msgid "Add"
+msgstr "Add"
+
 #: src/features/inventory/InventoryFormPage.tsx
 msgid "ADD ENTRY"
 msgstr "ADD ENTRY"
 
+#: src/features/items/components/AddAttachmentDialog.tsx
 #: src/features/repairs/components/AddAttachmentDialog.tsx
 msgid "ADD FILE"
 msgstr "ADD FILE"
+
+#: src/features/wishlist/components/WishlistFormDialog.tsx
+msgid "Add item"
+msgstr "Add item"
 
 #: src/features/items/ItemFormPage.tsx
 msgid "ADD ITEM"
@@ -369,9 +448,21 @@ msgstr "ADD REPAIR"
 msgid "ADD SCHEDULE"
 msgstr "ADD SCHEDULE"
 
+#: src/features/wishlist/components/WishlistFormDialog.tsx
+msgid "ADD TO WISHLIST"
+msgstr "ADD TO WISHLIST"
+
 #: src/features/taxonomy/components/LocationsTab.tsx
 msgid "Add your first location — a room, shelf, or area. Nest sub-locations to mirror your space."
 msgstr "Add your first location — a room, shelf, or area. Nest sub-locations to mirror your space."
+
+#: src/features/wishlist/components/WishlistFormDialog.tsx
+msgid "Added to wishlist."
+msgstr "Added to wishlist."
+
+#: src/features/analytics/components/OutOfStockTable.tsx
+msgid "All items are in stock. Anything that drops below its minimum will surface here."
+msgstr "All items are in stock. Anything that drops below its minimum will surface here."
 
 #: src/features/settings/SecurityPage.tsx
 msgid "All other sessions revoked."
@@ -388,6 +479,36 @@ msgstr "Amount in your workspace currency."
 #: src/components/layout/Sidebar.tsx
 msgid "Analytics"
 msgstr "Analytics"
+
+#: src/features/settings/PaperlessPage.tsx
+msgid "API token"
+msgstr "API token"
+
+#: src/features/settings/AppearancePage.tsx
+#: src/features/settings/SettingsLandingPage.tsx
+msgid "Appearance"
+msgstr "Appearance"
+
+#: src/components/layout/Sidebar.tsx
+#: src/features/approvals/ApprovalsPage.tsx
+msgid "Approvals"
+msgstr "Approvals"
+
+#: src/features/approvals/ApprovalsPage.tsx
+msgid "APPROVALS — {workspaceName}"
+msgstr "APPROVALS — {workspaceName}"
+
+#: src/features/approvals/ApprovalsPage.tsx
+msgid "Approve selected"
+msgstr "Approve selected"
+
+#: src/features/approvals/ApprovalsPage.tsx
+msgid "Approved {ok}, {fail} failed."
+msgstr "Approved {ok}, {fail} failed."
+
+#: src/features/approvals/ApprovalsPage.tsx
+msgid "Approved {ok}."
+msgstr "Approved {ok}."
 
 #: src/features/taxonomy/components/CategoriesTab.tsx
 #: src/features/taxonomy/components/LocationsTab.tsx
@@ -512,6 +633,10 @@ msgstr "Borrowers"
 msgid "BORROWERS — {workspaceName}"
 msgstr "BORROWERS — {workspaceName}"
 
+#: src/features/settings/DataStoragePage.tsx
+msgid "Bring data in from a file."
+msgstr "Bring data in from a file."
+
 #: src/components/retro/form/RetroFileInput.tsx
 msgid "BROWSE…"
 msgstr "BROWSE…"
@@ -524,9 +649,29 @@ msgstr "Bulk actions"
 msgid "BulkActionBar — inline mobile selection surface (destructive routes through a confirm dialog)."
 msgstr "BulkActionBar — inline mobile selection surface (destructive routes through a confirm dialog)."
 
+#: src/features/declutter/DeclutterPage.tsx
+msgid "By category"
+msgstr "By category"
+
+#: src/features/declutter/DeclutterPage.tsx
+msgid "By location"
+msgstr "By location"
+
+#: src/features/settings/DataStoragePage.tsx
+msgid "Cached data"
+msgstr "Cached data"
+
+#: src/features/settings/DataStoragePage.tsx
+msgid "Cached data cleared."
+msgstr "Cached data cleared."
+
 #: src/features/scan/ScanPage.tsx
 msgid "CAMERA BLOCKED"
 msgstr "CAMERA BLOCKED"
+
+#: src/features/settings/MembersPage.tsx
+msgid "Can't remove the last owner."
+msgstr "Can't remove the last owner."
 
 #: src/features/settings/AccountsPage.tsx
 msgid "Can't unlink — it's your only sign-in method. Set a password first."
@@ -549,12 +694,16 @@ msgstr "Can't unlink — it's your only sign-in method. Set a password first."
 #: src/features/taxonomy/components/LabelsTab.tsx
 #: src/features/taxonomy/components/LocationFormDialog.tsx
 #: src/features/taxonomy/components/LocationsTab.tsx
+#: src/features/wishlist/components/WishlistFormDialog.tsx
+#: src/features/wishlist/WishlistPage.tsx
 msgid "Cancel"
 msgstr "Cancel"
 
 #: src/components/retro/filters/SavedFilters.tsx
+#: src/features/items/components/AddAttachmentDialog.tsx
 #: src/features/items/components/CaptionDialog.tsx
 #: src/features/items/components/DuplicateWarningDialog.tsx
+#: src/features/items/components/PaperlessLinkDialog.tsx
 #: src/features/maintenance/components/CompleteMaintenanceDialog.tsx
 #: src/features/maintenance/components/MaintenanceForm.tsx
 #: src/features/repairs/components/AddAttachmentDialog.tsx
@@ -562,6 +711,18 @@ msgstr "Cancel"
 #: src/features/repairs/components/RepairForm.tsx
 msgid "CANCEL"
 msgstr "CANCEL"
+
+#: src/features/imports/ImportsPage.tsx
+msgid "Cancelled"
+msgstr "Cancelled"
+
+#: src/features/dashboard/components/HudRow.tsx
+msgid "Capacity"
+msgstr "Capacity"
+
+#: src/features/dashboard/components/HudRow.tsx
+msgid "Capacity gauge"
+msgstr "Capacity gauge"
 
 #: src/features/items/components/CaptionDialog.tsx
 msgid "Caption"
@@ -580,6 +741,8 @@ msgstr "Categories"
 msgid "CATEGORIES"
 msgstr "CATEGORIES"
 
+#: src/features/analytics/components/OutOfStockTable.tsx
+#: src/features/declutter/DeclutterPage.tsx
 #: src/features/items/ItemDetailPage.tsx
 #: src/features/items/ItemFormPage.tsx
 #: src/features/items/ItemsListPage.tsx
@@ -591,10 +754,23 @@ msgstr "Category"
 msgid "CATEGORY"
 msgstr "CATEGORY"
 
+#: src/features/analytics/components/CategoryValueChart.tsx
+msgid "Category breakdown"
+msgstr "Category breakdown"
+
 #: src/features/settings/SecurityPage.tsx
 msgid "Change password"
 msgstr "Change password"
 
+#: src/features/settings/AvatarUploader.tsx
+msgid "Change photo…"
+msgstr "Change photo…"
+
+#: src/features/settings/LanguagePage.tsx
+msgid "Changes apply immediately."
+msgstr "Changes apply immediately."
+
+#: src/features/settings/RegionalFormatsPage.tsx
 #: src/features/taxonomy/hooks/useCategoryMutations.ts
 #: src/features/taxonomy/hooks/useContainerMutations.ts
 #: src/features/taxonomy/hooks/useLabelMutations.ts
@@ -605,6 +781,10 @@ msgstr "Changes saved."
 #: src/routes/demo/DemoPage.tsx
 msgid "Checked / unchecked"
 msgstr "Checked / unchecked"
+
+#: src/features/imports/ImportsPage.tsx
+msgid "Choose a CSV file first."
+msgstr "Choose a CSV file first."
 
 #: src/features/scan/ClaimPage.tsx
 msgid "Claim code"
@@ -617,6 +797,14 @@ msgstr "Claim code"
 msgid "CLEAR ALL"
 msgstr "CLEAR ALL"
 
+#: src/features/settings/DataStoragePage.tsx
+msgid "Clear cached data"
+msgstr "Clear cached data"
+
+#: src/features/settings/DataStoragePage.tsx
+msgid "Clear cached data? Your inventory data stays safe — this only clears locally cached lists."
+msgstr "Clear cached data? Your inventory data stays safe — this only clears locally cached lists."
+
 #: src/components/scan/ScanHistoryList.tsx
 msgid "CLEAR HISTORY"
 msgstr "CLEAR HISTORY"
@@ -628,6 +816,10 @@ msgstr "CLEAR HISTORY?"
 #: src/features/loans/LoansListPage.tsx
 msgid "CLEAR SEARCH"
 msgstr "CLEAR SEARCH"
+
+#: src/features/settings/DataStoragePage.tsx
+msgid "Clears locally cached lists. Your inventory data stays safe."
+msgstr "Clears locally cached lists. Your inventory data stays safe."
 
 #: src/components/retro/overlay/RetroDialog.tsx
 #: src/routes/demo/DemoPage.tsx
@@ -646,6 +838,10 @@ msgstr "Code not found"
 #: src/features/taxonomy/components/LabelFormDialog.tsx
 msgid "Color"
 msgstr "Color"
+
+#: src/features/settings/DataStoragePage.tsx
+msgid "Coming soon"
+msgstr "Coming soon"
 
 #: src/features/maintenance/components/CompleteMaintenanceDialog.tsx
 #: src/features/maintenance/components/MaintenanceDrawer.tsx
@@ -667,6 +863,7 @@ msgstr "COMPLETE REPAIR"
 msgid "completed"
 msgstr "completed"
 
+#: src/features/imports/ImportsPage.tsx
 #: src/features/repairs/components/RepairRecordDialog.tsx
 msgid "Completed"
 msgstr "Completed"
@@ -683,6 +880,15 @@ msgstr "Condition"
 #: src/features/inventory/InventoryListPage.tsx
 msgid "CONDITION"
 msgstr "CONDITION"
+
+#: src/features/analytics/components/ConditionDonutChart.tsx
+msgid "Condition + Status"
+msgstr "Condition + Status"
+
+#: src/features/items/components/PaperlessLinkDialog.tsx
+#: src/features/settings/PaperlessPage.tsx
+msgid "Configure and enable Paperless first."
+msgstr "Configure and enable Paperless first."
 
 #: src/routes/demo/DemoPage.tsx
 msgid "Confirm dialog"
@@ -702,7 +908,7 @@ msgid "Confirm password"
 msgstr "Confirm password"
 
 #: src/features/settings/AccountsPage.tsx
-#: src/features/settings/SettingsLayout.tsx
+#: src/features/settings/SettingsLandingPage.tsx
 msgid "Connected Accounts"
 msgstr "Connected Accounts"
 
@@ -740,6 +946,10 @@ msgstr "Cost"
 msgid "Could not load activity."
 msgstr "Could not load activity."
 
+#: src/features/settings/MembersPage.tsx
+msgid "Couldn't add member. Try again."
+msgstr "Couldn't add member. Try again."
+
 #: src/features/items/hooks/usePhotoMutations.ts
 msgid "Couldn't apply the caption."
 msgstr "Couldn't apply the caption."
@@ -771,6 +981,14 @@ msgstr "Couldn't attach this file."
 #: src/features/repairs/components/AddAttachmentDialog.tsx
 msgid "Couldn't attach this file. {reason}"
 msgstr "Couldn't attach this file. {reason}"
+
+#: src/features/settings/MembersPage.tsx
+msgid "Couldn't change role."
+msgstr "Couldn't change role."
+
+#: src/features/settings/MembersPage.tsx
+msgid "Couldn't change role. Try again."
+msgstr "Couldn't change role. Try again."
 
 #: src/features/repairs/hooks/useRepairMutations.ts
 msgid "Couldn't complete this repair."
@@ -809,6 +1027,7 @@ msgstr "Couldn't delete this borrower."
 msgid "Couldn't delete this container."
 msgstr "Couldn't delete this container."
 
+#: src/features/items/hooks/useItemAttachments.ts
 #: src/features/repairs/hooks/useRepairAttachments.ts
 msgid "Couldn't delete this file."
 msgstr "Couldn't delete this file."
@@ -825,13 +1044,26 @@ msgstr "Couldn't delete this repair."
 msgid "Couldn't delete this schedule."
 msgstr "Couldn't delete this schedule."
 
+#: src/features/settings/hooks/usePaperlessSettings.ts
+msgid "Couldn't disconnect Paperless."
+msgstr "Couldn't disconnect Paperless."
+
 #: src/features/items/ItemsListPage.tsx
 msgid "Couldn't export the item list."
 msgstr "Couldn't export the item list."
 
+#: src/features/imports/ImportsPage.tsx
+#: src/features/settings/DataStoragePage.tsx
+msgid "Couldn't export. Try again."
+msgstr "Couldn't export. Try again."
+
 #: src/features/loans/hooks/useLoanMutations.ts
 msgid "Couldn't extend this loan."
 msgstr "Couldn't extend this loan."
+
+#: src/features/items/components/PaperlessLinkDialog.tsx
+msgid "Couldn't link this document. {reason}"
+msgstr "Couldn't link this document. {reason}"
 
 #: src/features/borrowers/BorrowerDetailPage.tsx
 msgid "COULDN'T LOAD BORROWER"
@@ -853,9 +1085,14 @@ msgstr "COULDN'T LOAD CONTAINERS"
 msgid "Couldn't load expiring entries. Try again."
 msgstr "Couldn't load expiring entries. Try again."
 
+#: src/features/items/components/ItemAttachmentPanel.tsx
 #: src/features/repairs/components/RepairAttachmentPanel.tsx
 msgid "Couldn't load files. Try again."
 msgstr "Couldn't load files. Try again."
+
+#: src/features/imports/ImportsPage.tsx
+msgid "Couldn't load import history. Try again."
+msgstr "Couldn't load import history. Try again."
 
 #: src/features/inventory/InventoryListPage.tsx
 msgid "Couldn't load inventory. Try again."
@@ -886,6 +1123,14 @@ msgstr "COULDN'T LOAD LOCATIONS"
 msgid "Couldn't load maintenance. Try again."
 msgstr "Couldn't load maintenance. Try again."
 
+#: src/features/notifications/components/NotificationsDropdown.tsx
+msgid "Couldn't load notifications."
+msgstr "Couldn't load notifications."
+
+#: src/features/approvals/ApprovalsPage.tsx
+msgid "Couldn't load pending changes. Try again."
+msgstr "Couldn't load pending changes. Try again."
+
 #: src/features/repairs/components/RepairPhotoPanel.tsx
 msgid "Couldn't load photos. Try again."
 msgstr "Couldn't load photos. Try again."
@@ -894,13 +1139,33 @@ msgstr "Couldn't load photos. Try again."
 msgid "Couldn't load repairs. Try again."
 msgstr "Couldn't load repairs. Try again."
 
+#: src/features/declutter/DeclutterPage.tsx
+msgid "Couldn't load the declutter analysis. Try again."
+msgstr "Couldn't load the declutter analysis. Try again."
+
+#: src/features/wishlist/WishlistPage.tsx
+msgid "Couldn't load the wishlist. Try again."
+msgstr "Couldn't load the wishlist. Try again."
+
+#: src/features/my-changes/MyChangesPage.tsx
+msgid "Couldn't load your changes. Try again."
+msgstr "Couldn't load your changes. Try again."
+
 #: src/components/scan/ScanResultBanner.tsx
 msgid "Couldn't look up that code."
 msgstr "Couldn't look up that code."
 
+#: src/features/notifications/hooks/useNotificationMutations.ts
+msgid "Couldn't mark all notifications read."
+msgstr "Couldn't mark all notifications read."
+
 #: src/features/items/hooks/useMarkReviewedItem.ts
 msgid "Couldn't mark this item reviewed."
 msgstr "Couldn't mark this item reviewed."
+
+#: src/features/notifications/hooks/useNotificationMutations.ts
+msgid "Couldn't mark this notification read."
+msgstr "Couldn't mark this notification read."
 
 #: src/features/inventory/components/MoveDialog.tsx
 msgid "Couldn't move this entry."
@@ -909,6 +1174,14 @@ msgstr "Couldn't move this entry."
 #: src/features/auth/RequireAuth.tsx
 msgid "Couldn't reach the server. Check your connection and retry."
 msgstr "Couldn't reach the server. Check your connection and retry."
+
+#: src/features/settings/MembersPage.tsx
+msgid "Couldn't remove member. Try again."
+msgstr "Couldn't remove member. Try again."
+
+#: src/features/settings/AvatarUploader.tsx
+msgid "Couldn't remove the photo. Try again."
+msgstr "Couldn't remove the photo. Try again."
 
 #: src/features/items/hooks/usePhotoMutations.ts
 msgid "Couldn't reorder the photos."
@@ -945,6 +1218,10 @@ msgstr "Couldn't restore this location."
 #: src/features/loans/hooks/useLoanMutations.ts
 msgid "Couldn't return this loan."
 msgstr "Couldn't return this loan."
+
+#: src/features/settings/hooks/usePaperlessSettings.ts
+msgid "Couldn't save Paperless settings."
+msgstr "Couldn't save Paperless settings."
 
 #: src/features/items/hooks/usePhotoMutations.ts
 #: src/features/repairs/hooks/useRepairPhotoMutations.ts
@@ -999,9 +1276,25 @@ msgstr "Couldn't save this repair."
 msgid "Couldn't save this schedule."
 msgstr "Couldn't save this schedule."
 
+#: src/features/wishlist/components/WishlistFormDialog.tsx
+msgid "Couldn't save this wishlist item."
+msgstr "Couldn't save this wishlist item."
+
+#: src/features/settings/ProfilePage.tsx
+msgid "Couldn't save. Try again."
+msgstr "Couldn't save. Try again."
+
 #: src/features/items/hooks/usePhotoMutations.ts
 msgid "Couldn't set the primary photo."
 msgstr "Couldn't set the primary photo."
+
+#: src/features/items/hooks/useItemAttachments.ts
+msgid "Couldn't set this file as primary."
+msgstr "Couldn't set this file as primary."
+
+#: src/features/imports/ImportsPage.tsx
+msgid "Couldn't start the import. Try again."
+msgstr "Couldn't start the import. Try again."
 
 #: src/features/repairs/hooks/useRepairMutations.ts
 msgid "Couldn't start this repair."
@@ -1026,6 +1319,18 @@ msgstr "Couldn't update quantity."
 #: src/features/inventory/hooks/useInventoryMutations.ts
 msgid "Couldn't update status."
 msgstr "Couldn't update status."
+
+#: src/features/settings/AvatarUploader.tsx
+msgid "Couldn't upload the photo. Try again."
+msgstr "Couldn't upload the photo. Try again."
+
+#: src/features/items/hooks/useItemAttachments.ts
+msgid "Couldn't upload this file."
+msgstr "Couldn't upload this file."
+
+#: src/features/items/components/AddAttachmentDialog.tsx
+msgid "Couldn't upload this file. {reason}"
+msgstr "Couldn't upload this file. {reason}"
 
 #: src/features/repairs/components/RepairForm.tsx
 msgid "Covered under warranty"
@@ -1056,9 +1361,22 @@ msgid "CREATE WITH CODE"
 msgstr "CREATE WITH CODE"
 
 #: src/features/borrowers/BorrowerDetailPage.tsx
+#: src/features/imports/ImportsPage.tsx
 #: src/features/items/ItemDetailPage.tsx
 msgid "Created"
 msgstr "Created"
+
+#: src/features/imports/ImportsPage.tsx
+msgid "CSV file"
+msgstr "CSV file"
+
+#: src/features/wishlist/components/WishlistFormDialog.tsx
+msgid "Currency"
+msgstr "Currency"
+
+#: src/features/settings/AppearancePage.tsx
+msgid "CURRENT"
+msgstr "CURRENT"
 
 #: src/features/settings/SecurityPage.tsx
 msgid "Current password"
@@ -1080,22 +1398,60 @@ msgstr "Danger Zone"
 msgid "Dashboard"
 msgstr "Dashboard"
 
+#: src/features/settings/DataStoragePage.tsx
+#: src/features/settings/SettingsLandingPage.tsx
+msgid "Data & Storage"
+msgstr "Data & Storage"
+
 #: src/routes/demo/DemoPage.tsx
 msgid "Data Atoms"
 msgstr "Data Atoms"
 
+#: src/features/dashboard/components/HudRow.tsx
+msgid "data pending"
+msgstr "data pending"
+
+#: src/features/imports/ImportsPage.tsx
+msgid "Data type"
+msgstr "Data type"
+
 #: src/features/inventory/ExpiringPage.tsx
+#: src/features/settings/RegionalFormatsPage.tsx
 msgid "Date"
 msgstr "Date"
 
+#: src/features/settings/RegionalFormatsPage.tsx
+msgid "Date format"
+msgstr "Date format"
+
+#: src/features/declutter/DeclutterPage.tsx
+msgid "Days unused"
+msgstr "Days unused"
+
+#: src/features/settings/RegionalFormatsPage.tsx
+msgid "Decimal separator"
+msgstr "Decimal separator"
+
+#: src/components/layout/Sidebar.tsx
+#: src/features/declutter/DeclutterPage.tsx
+msgid "Declutter"
+msgstr "Declutter"
+
+#: src/features/declutter/DeclutterPage.tsx
+msgid "DECLUTTER — {workspaceName}"
+msgstr "DECLUTTER — {workspaceName}"
+
+#: src/features/items/components/ItemAttachmentPanel.tsx
 #: src/features/repairs/components/RepairAttachmentPanel.tsx
 #: src/features/repairs/components/RepairsDrawer.tsx
+#: src/features/wishlist/WishlistPage.tsx
 #: src/routes/demo/DemoPage.tsx
 msgid "Delete"
 msgstr "Delete"
 
 #: src/components/retro/filters/SavedFilters.tsx
 #: src/features/borrowers/BorrowerDetailPage.tsx
+#: src/features/items/components/ItemAttachmentPanel.tsx
 #: src/features/items/components/PhotoGallery.tsx
 #: src/features/items/ItemDetailPage.tsx
 #: src/features/items/ItemsListPage.tsx
@@ -1139,6 +1495,7 @@ msgstr "DELETE BORROWER?"
 msgid "DELETE CONTAINER?"
 msgstr "DELETE CONTAINER?"
 
+#: src/features/items/components/ItemAttachmentPanel.tsx
 #: src/features/repairs/components/RepairAttachmentPanel.tsx
 msgid "DELETE FILE?"
 msgstr "DELETE FILE?"
@@ -1197,6 +1554,10 @@ msgstr "Delete selected?"
 #: src/components/retro/filters/SavedFilters.tsx
 msgid "Delete the “{0}” preset? This can't be undone."
 msgstr "Delete the “{0}” preset? This can't be undone."
+
+#: src/features/wishlist/WishlistPage.tsx
+msgid "DELETE WISHLIST ITEM?"
+msgstr "DELETE WISHLIST ITEM?"
 
 #: src/features/borrowers/BorrowerDetailPage.tsx
 #: src/features/items/ItemDetailPage.tsx
@@ -1280,9 +1641,17 @@ msgstr "DISCARD"
 msgid "DISCARD CHANGES?"
 msgstr "DISCARD CHANGES?"
 
+#: src/features/settings/PaperlessPage.tsx
+msgid "Disconnect"
+msgstr "Disconnect"
+
 #: src/components/scan/UpcSuggestionBanner.tsx
 msgid "DISMISS"
 msgstr "DISMISS"
+
+#: src/features/items/components/PaperlessLinkDialog.tsx
+msgid "Document linked."
+msgstr "Document linked."
 
 #: src/features/items/components/PhotoUpload.tsx
 #: src/features/repairs/components/AddAttachmentDialog.tsx
@@ -1293,13 +1662,22 @@ msgstr "DONE"
 msgid "DONE · File attached."
 msgstr "DONE · File attached."
 
+#: src/features/items/components/ItemAttachmentPanel.tsx
 #: src/features/repairs/components/RepairAttachmentPanel.tsx
 msgid "DONE · File removed."
 msgstr "DONE · File removed."
 
+#: src/features/items/components/AddAttachmentDialog.tsx
+msgid "DONE · File uploaded."
+msgstr "DONE · File uploaded."
+
 #: src/features/maintenance/components/CompleteMaintenanceDialog.tsx
 msgid "DONE · Marked done — next due {nextDue}."
 msgstr "DONE · Marked done — next due {nextDue}."
+
+#: src/features/items/components/ItemAttachmentPanel.tsx
+msgid "DONE · Primary file set."
+msgstr "DONE · Primary file set."
 
 #: src/features/repairs/components/RepairsDrawer.tsx
 msgid "DONE · Repair deleted."
@@ -1320,6 +1698,11 @@ msgstr "DONE · Schedule saved."
 #: src/features/maintenance/components/MaintenanceForm.tsx
 msgid "DONE · Schedule updated."
 msgstr "DONE · Schedule updated."
+
+#: src/features/imports/ImportsPage.tsx
+#: src/features/settings/DataStoragePage.tsx
+msgid "Download a backup copy of this workspace."
+msgstr "Download a backup copy of this workspace."
 
 #: src/features/items/components/PhotoLightbox.tsx
 msgid "Download original"
@@ -1366,6 +1749,11 @@ msgstr "due in {inDays}d"
 msgid "DUE MAINTENANCE — {workspaceName}"
 msgstr "DUE MAINTENANCE — {workspaceName}"
 
+#: src/features/approvals/ApprovalsPage.tsx
+msgid "e.g. duplicate request"
+msgstr "e.g. duplicate request"
+
+#: src/features/wishlist/WishlistPage.tsx
 #: src/routes/demo/DemoPage.tsx
 msgid "Edit"
 msgstr "Edit"
@@ -1449,12 +1837,30 @@ msgstr "EDIT SCHEDULE"
 msgid "Edit status for {itemName}"
 msgstr "Edit status for {itemName}"
 
+#: src/features/wishlist/components/WishlistFormDialog.tsx
+msgid "EDIT WISHLIST ITEM"
+msgstr "EDIT WISHLIST ITEM"
+
 #: src/features/auth/LoginPage.tsx
 #: src/features/auth/RegisterPage.tsx
 #: src/features/borrowers/BorrowerDetailPage.tsx
 #: src/features/borrowers/BorrowerFormPage.tsx
+#: src/features/settings/MembersPage.tsx
+#: src/features/settings/ProfilePage.tsx
 msgid "Email"
 msgstr "Email"
+
+#: src/features/settings/NotificationsPage.tsx
+msgid "Email & in-app alerts for:"
+msgstr "Email & in-app alerts for:"
+
+#: src/features/settings/PaperlessPage.tsx
+msgid "Enable Paperless above to search documents."
+msgstr "Enable Paperless above to search documents."
+
+#: src/features/settings/PaperlessPage.tsx
+msgid "Enable Paperless integration"
+msgstr "Enable Paperless integration"
 
 #: src/components/layout/TopBar.tsx
 msgid "End this session? You will need to sign in again."
@@ -1465,15 +1871,23 @@ msgstr "End this session? You will need to sign in again."
 msgid "Enter a valid email address."
 msgstr "Enter a valid email address."
 
+#: src/features/settings/MembersPage.tsx
+#: src/features/settings/ProfilePage.tsx
+msgid "Enter a valid email."
+msgstr "Enter a valid email."
+
 #: src/components/scan/ManualBarcodeEntry.tsx
 msgid "ENTER CODE"
 msgstr "ENTER CODE"
 
 #: src/features/auth/RegisterPage.tsx
+#: src/features/settings/ProfilePage.tsx
 msgid "Enter your name."
 msgstr "Enter your name."
 
+#: src/features/approvals/ApprovalsPage.tsx
 #: src/features/dashboard/DashboardPage.tsx
+#: src/features/my-changes/MyChangesPage.tsx
 msgid "Entity"
 msgstr "Entity"
 
@@ -1498,6 +1912,10 @@ msgstr "every {0}d"
 msgid "Every Phase 4 retro-os atom family, for visual review against sketches 006-008."
 msgstr "Every Phase 4 retro-os atom family, for visual review against sketches 006-008."
 
+#: src/features/declutter/DeclutterPage.tsx
+msgid "Every tracked item has been used recently. Items that sit unused will surface here with a declutter score."
+msgstr "Every tracked item has been used recently. Items that sit unused will surface here with a declutter score."
+
 #: src/routes/demo/DemoPage.tsx
 msgid "Example Dialog"
 msgstr "Example Dialog"
@@ -1505,6 +1923,10 @@ msgstr "Example Dialog"
 #: src/features/auth/CallbackPage.tsx
 msgid "exchanging credentials"
 msgstr "exchanging credentials"
+
+#: src/features/dashboard/components/SystemAlertsPanel.tsx
+msgid "Expiring soon"
+msgstr "Expiring soon"
 
 #: src/features/inventory/ExpiringPage.tsx
 msgid "EXPIRING SOON"
@@ -1518,9 +1940,33 @@ msgstr "Expiry"
 msgid "EXPIRY"
 msgstr "EXPIRY"
 
+#: src/features/settings/NotificationsPage.tsx
+msgid "Expiry alerts"
+msgstr "Expiry alerts"
+
 #: src/features/inventory/InventoryFormPage.tsx
 msgid "Expiry date"
 msgstr "Expiry date"
+
+#: src/features/imports/ImportsPage.tsx
+#: src/features/settings/DataStoragePage.tsx
+msgid "Export"
+msgstr "Export"
+
+#: src/features/imports/ImportsPage.tsx
+#: src/features/settings/DataStoragePage.tsx
+msgid "Export…"
+msgstr "Export…"
+
+#: src/features/imports/ImportsPage.tsx
+#: src/features/settings/DataStoragePage.tsx
+msgid "Exporting a workspace backup requires admin rights."
+msgstr "Exporting a workspace backup requires admin rights."
+
+#: src/features/imports/ImportsPage.tsx
+#: src/features/settings/DataStoragePage.tsx
+msgid "Exporting…"
+msgstr "Exporting…"
 
 #: src/features/loans/components/ExtendLoanDialog.tsx
 msgid "Extend"
@@ -1536,6 +1982,10 @@ msgstr "EXTEND"
 msgid "EXTEND LOAN"
 msgstr "EXTEND LOAN"
 
+#: src/features/imports/ImportsPage.tsx
+msgid "Failed"
+msgstr "Failed"
+
 #: src/features/items/components/PhotoUpload.tsx
 #: src/features/repairs/components/AddAttachmentDialog.tsx
 msgid "FAILED"
@@ -1545,6 +1995,11 @@ msgstr "FAILED"
 msgid "Feedback Atoms"
 msgstr "Feedback Atoms"
 
+#: src/features/imports/ImportsPage.tsx
+msgid "File"
+msgstr "File"
+
+#: src/features/items/components/AddAttachmentDialog.tsx
 #: src/features/repairs/components/AddAttachmentDialog.tsx
 msgid "File *"
 msgstr "File *"
@@ -1554,10 +2009,12 @@ msgstr "File *"
 msgid "File is too large (max {0})."
 msgstr "File is too large (max {0})."
 
+#: src/features/items/components/ItemAttachmentPanel.tsx
 #: src/features/repairs/components/RepairAttachmentPanel.tsx
 msgid "Files"
 msgstr "Files"
 
+#: src/features/items/ItemDetailPage.tsx
 #: src/features/repairs/components/RepairRecordDialog.tsx
 #: src/features/repairs/components/RepairsDrawer.tsx
 msgid "FILES"
@@ -1614,12 +2071,17 @@ msgid "FROM SCAN"
 msgstr "FROM SCAN"
 
 #: src/features/auth/RegisterPage.tsx
+#: src/features/settings/ProfilePage.tsx
 msgid "Full name"
 msgstr "Full name"
 
 #: src/components/layout/F1HelpDialog.tsx
 msgid "GLOBAL"
 msgstr "GLOBAL"
+
+#: src/features/declutter/DeclutterPage.tsx
+msgid "Group by"
+msgstr "Group by"
 
 #: src/features/taxonomy/components/CategoriesTab.tsx
 msgid "Group your inventory by creating a top-level category. You can nest sub-categories underneath it."
@@ -1648,6 +2110,47 @@ msgstr "home inventory terminal · v3.0"
 msgid "How often this repeats, in days."
 msgstr "How often this repeats, in days."
 
+#: src/features/settings/DataStoragePage.tsx
+msgid "Import"
+msgstr "Import"
+
+#: src/features/imports/ImportsPage.tsx
+msgid "Import from CSV"
+msgstr "Import from CSV"
+
+#: src/features/imports/ImportsPage.tsx
+msgid "Import history"
+msgstr "Import history"
+
+#: src/features/imports/ImportsPage.tsx
+msgid "Import started. Watch its progress below."
+msgstr "Import started. Watch its progress below."
+
+#: src/features/imports/ImportsPage.tsx
+msgid "Import…"
+msgstr "Import…"
+
+#: src/features/imports/ImportsPage.tsx
+msgid "Imported files show up here with their progress and results."
+msgstr "Imported files show up here with their progress and results."
+
+#: src/features/imports/ImportsPage.tsx
+msgid "Importing data requires admin rights."
+msgstr "Importing data requires admin rights."
+
+#: src/features/imports/ImportsPage.tsx
+msgid "Importing…"
+msgstr "Importing…"
+
+#: src/components/layout/Sidebar.tsx
+#: src/features/imports/ImportsPage.tsx
+msgid "Imports"
+msgstr "Imports"
+
+#: src/features/imports/ImportsPage.tsx
+msgid "IMPORTS — {workspaceName}"
+msgstr "IMPORTS — {workspaceName}"
+
 #: src/features/items/components/InventoryPanel.tsx
 #: src/features/items/ItemsListPage.tsx
 msgid "IN STOCK"
@@ -1657,11 +2160,16 @@ msgstr "IN STOCK"
 msgid "Indeterminate (partial)"
 msgstr "Indeterminate (partial)"
 
+#: src/features/settings/LanguagePage.tsx
+msgid "Interface language"
+msgstr "Interface language"
+
 #: src/features/maintenance/components/MaintenanceForm.tsx
 msgid "Interval (days)"
 msgstr "Interval (days)"
 
 #: src/components/layout/Sidebar.tsx
+#: src/features/analytics/components/OutOfStockTable.tsx
 #: src/features/inventory/ExpiringPage.tsx
 #: src/features/inventory/InventoryListPage.tsx
 #: src/features/items/ItemDetailPage.tsx
@@ -1682,10 +2190,16 @@ msgstr "INVENTORY — {workspaceName}"
 msgid "Inventory entry"
 msgstr "Inventory entry"
 
+#: src/features/settings/MembersPage.tsx
+msgid "Invite someone to share this workspace."
+msgstr "Invite someone to share this workspace."
+
 #: src/features/settings/SecurityPage.tsx
 msgid "IP"
 msgstr "IP"
 
+#: src/features/analytics/components/OutOfStockTable.tsx
+#: src/features/declutter/DeclutterPage.tsx
 #: src/features/inventory/ExpiringPage.tsx
 #: src/features/inventory/InventoryFormPage.tsx
 #: src/features/inventory/InventoryListPage.tsx
@@ -1721,6 +2235,7 @@ msgid "items"
 msgstr "items"
 
 #: src/components/layout/Sidebar.tsx
+#: src/features/dashboard/components/HudRow.tsx
 #: src/features/dashboard/DashboardPage.tsx
 msgid "Items"
 msgstr "Items"
@@ -1761,6 +2276,15 @@ msgstr "Labels"
 msgid "LABELS"
 msgstr "LABELS"
 
+#: src/features/settings/LanguagePage.tsx
+#: src/features/settings/SettingsLandingPage.tsx
+msgid "Language"
+msgstr "Language"
+
+#: src/features/settings/LanguagePage.tsx
+msgid "Language updated."
+msgstr "Language updated."
+
 #: src/features/settings/SecurityPage.tsx
 msgid "Last active"
 msgstr "Last active"
@@ -1781,11 +2305,32 @@ msgstr "Leave empty to create a top-level category."
 msgid "Leave empty to create a top-level location."
 msgstr "Leave empty to create a top-level location."
 
+#: src/features/settings/AppearancePage.tsx
+msgid "Light"
+msgstr "Light"
+
+#: src/features/settings/AppearancePage.tsx
+msgid "Light only — a dark theme is on the backlog."
+msgstr "Light only — a dark theme is on the backlog."
+
 #: src/features/settings/AccountsPage.tsx
 msgid "Link"
 msgstr "Link"
 
+#: src/features/items/components/PaperlessLinkDialog.tsx
+msgid "LINK"
+msgstr "LINK"
+
+#: src/features/items/ItemDetailPage.tsx
+msgid "Link Paperless document"
+msgstr "Link Paperless document"
+
+#: src/features/items/components/PaperlessLinkDialog.tsx
+msgid "LINK PAPERLESS DOCUMENT"
+msgstr "LINK PAPERLESS DOCUMENT"
+
 #: src/features/settings/AccountsPage.tsx
+#: src/features/settings/SettingsLandingPage.tsx
 msgid "LINKED"
 msgstr "LINKED"
 
@@ -1801,6 +2346,10 @@ msgstr "LOADING"
 msgid "Loading accounts…"
 msgstr "Loading accounts…"
 
+#: src/features/settings/MembersPage.tsx
+msgid "Loading members…"
+msgstr "Loading members…"
+
 #: src/features/settings/SecurityPage.tsx
 msgid "Loading sessions…"
 msgstr "Loading sessions…"
@@ -1809,25 +2358,36 @@ msgstr "Loading sessions…"
 msgid "Loading workspaces…"
 msgstr "Loading workspaces…"
 
+#: src/features/analytics/components/OutOfStockTable.tsx
+#: src/features/approvals/ApprovalsPage.tsx
+#: src/features/approvals/components/PendingApprovalsPanel.tsx
 #: src/features/auth/RequireAuth.tsx
 #: src/features/borrowers/BorrowerDetailPage.tsx
 #: src/features/borrowers/BorrowersListPage.tsx
+#: src/features/dashboard/components/SystemAlertsPanel.tsx
 #: src/features/dashboard/DashboardPage.tsx
+#: src/features/declutter/DeclutterPage.tsx
+#: src/features/imports/ImportsPage.tsx
 #: src/features/inventory/components/MovementsPanel.tsx
 #: src/features/inventory/ExpiringPage.tsx
 #: src/features/inventory/InventoryListPage.tsx
 #: src/features/items/components/InventoryPanel.tsx
+#: src/features/items/components/ItemAttachmentPanel.tsx
 #: src/features/items/ItemDetailPage.tsx
 #: src/features/items/ItemsListPage.tsx
 #: src/features/loans/LoansListPage.tsx
 #: src/features/maintenance/components/MaintenanceDrawer.tsx
 #: src/features/maintenance/MaintenanceDuePage.tsx
+#: src/features/my-changes/MyChangesPage.tsx
+#: src/features/notifications/components/NotificationsDropdown.tsx
 #: src/features/repairs/components/RepairAttachmentPanel.tsx
 #: src/features/repairs/components/RepairsDrawer.tsx
+#: src/features/settings/PaperlessPage.tsx
 #: src/features/taxonomy/components/CategoriesTab.tsx
 #: src/features/taxonomy/components/ContainersTab.tsx
 #: src/features/taxonomy/components/LabelsTab.tsx
 #: src/features/taxonomy/components/LocationsTab.tsx
+#: src/features/wishlist/WishlistPage.tsx
 msgid "Loading…"
 msgstr "Loading…"
 
@@ -1843,6 +2403,10 @@ msgstr "Loan created."
 #: src/features/loans/components/BorrowerLoanPanels.tsx
 msgid "LOAN HISTORY"
 msgstr "LOAN HISTORY"
+
+#: src/features/settings/NotificationsPage.tsx
+msgid "Loan reminders"
+msgstr "Loan reminders"
 
 #: src/features/loans/components/EditLoanDialog.tsx
 msgid "Loan saved."
@@ -1869,10 +2433,15 @@ msgstr "Loans"
 msgid "LOANS — {workspaceName}"
 msgstr "LOANS — {workspaceName}"
 
+#: src/features/analytics/components/MonthlyLoanActivityChart.tsx
+msgid "Loans out"
+msgstr "Loans out"
+
 #: src/components/layout/Clock.tsx
 msgid "LOCAL"
 msgstr "LOCAL"
 
+#: src/features/declutter/DeclutterPage.tsx
 #: src/features/inventory/InventoryFormPage.tsx
 #: src/features/inventory/InventoryListPage.tsx
 #: src/features/items/ItemFormPage.tsx
@@ -1881,6 +2450,10 @@ msgstr "LOCAL"
 #: src/routes/demo/DemoPage.tsx
 msgid "Location"
 msgstr "Location"
+
+#: src/features/analytics/components/LocationValueChart.tsx
+msgid "Location value"
+msgstr "Location value"
 
 #: src/components/layout/Sidebar.tsx
 #: src/features/dashboard/DashboardPage.tsx
@@ -1904,7 +2477,9 @@ msgstr "Log out"
 msgid "LOOK UP CODE"
 msgstr "LOOK UP CODE"
 
+#: src/features/dashboard/components/HudRow.tsx
 #: src/features/dashboard/DashboardPage.tsx
+#: src/features/settings/NotificationsPage.tsx
 msgid "Low stock"
 msgstr "Low stock"
 
@@ -1922,6 +2497,14 @@ msgstr "MAINTENANCE"
 #: src/features/maintenance/components/MaintenanceDrawer.tsx
 msgid "MAINTENANCE — {itemName}"
 msgstr "MAINTENANCE — {itemName}"
+
+#: src/features/settings/NotificationsPage.tsx
+msgid "Maintenance alerts"
+msgstr "Maintenance alerts"
+
+#: src/features/dashboard/components/SystemAlertsPanel.tsx
+msgid "Maintenance due"
+msgstr "Maintenance due"
 
 #: src/features/scan/ScanPage.tsx
 msgid "MANUAL"
@@ -1944,9 +2527,30 @@ msgstr "Mark \"{0}\" done? This advances the next due date by {1} days."
 msgid "Mark \"{0}\" returned by {1}?"
 msgstr "Mark \"{0}\" returned by {1}?"
 
+#. placeholder {0}: pendingUse?.item_name ?? t`this item`
+#: src/features/declutter/DeclutterPage.tsx
+msgid "Mark {0} as used now? It will drop off the declutter list."
+msgstr "Mark {0} as used now? It will drop off the declutter list."
+
+#: src/features/notifications/components/NotificationsDropdown.tsx
+msgid "Mark all read"
+msgstr "Mark all read"
+
+#: src/features/notifications/components/NotificationsDropdown.tsx
+msgid "Mark read"
+msgstr "Mark read"
+
 #: src/components/scan/QuickActionMenu.tsx
 msgid "MARK REVIEWED"
 msgstr "MARK REVIEWED"
+
+#: src/features/declutter/DeclutterPage.tsx
+msgid "Mark used"
+msgstr "Mark used"
+
+#: src/features/declutter/DeclutterPage.tsx
+msgid "MARK USED?"
+msgstr "MARK USED?"
 
 #: src/components/scan/ScanResultBanner.tsx
 msgid "MATCH"
@@ -1956,9 +2560,38 @@ msgstr "MATCH"
 msgid "MATCHED ITEM"
 msgstr "MATCHED ITEM"
 
+#: src/features/settings/MembersPage.tsx
+msgid "Member added."
+msgstr "Member added."
+
+#: src/features/settings/MembersPage.tsx
+msgid "Member removed."
+msgstr "Member removed."
+
+#: src/features/settings/SettingsLandingPage.tsx
+msgid "members"
+msgstr "members"
+
+#: src/features/settings/MembersPage.tsx
+#: src/features/settings/SettingsLandingPage.tsx
+msgid "Members"
+msgstr "Members"
+
 #: src/routes/demo/DemoPage.tsx
 msgid "Menu ▾"
 msgstr "Menu ▾"
+
+#: src/features/analytics/components/OutOfStockTable.tsx
+msgid "Min stock"
+msgstr "Min stock"
+
+#: src/features/settings/PaperlessPage.tsx
+msgid "Mirror Paperless tags"
+msgstr "Mirror Paperless tags"
+
+#: src/features/analytics/components/MonthlyLoanActivityChart.tsx
+msgid "Monthly loan activity"
+msgstr "Monthly loan activity"
 
 #: src/features/items/ItemDetailPage.tsx
 msgid "More actions"
@@ -2012,16 +2645,30 @@ msgstr "MOVEMENTS"
 msgid "MOVEMENTS — {itemName}"
 msgstr "MOVEMENTS — {itemName}"
 
+#: src/features/my-changes/MyChangesPage.tsx
+msgid "My changes"
+msgstr "My changes"
+
+#: src/components/layout/Sidebar.tsx
+msgid "My Changes"
+msgstr "My Changes"
+
+#: src/features/my-changes/MyChangesPage.tsx
+msgid "MY CHANGES — {workspaceName}"
+msgstr "MY CHANGES — {workspaceName}"
+
 #: src/features/borrowers/BorrowerDetailPage.tsx
 #: src/features/borrowers/BorrowerFormPage.tsx
 #: src/features/borrowers/BorrowersListPage.tsx
-#: src/features/dashboard/DashboardPage.tsx
 #: src/features/items/ItemDetailPage.tsx
 #: src/features/items/ItemFormPage.tsx
+#: src/features/settings/MembersPage.tsx
 #: src/features/taxonomy/components/CategoryFormDialog.tsx
 #: src/features/taxonomy/components/ContainerFormDialog.tsx
 #: src/features/taxonomy/components/LabelFormDialog.tsx
 #: src/features/taxonomy/components/LocationFormDialog.tsx
+#: src/features/wishlist/components/WishlistFormDialog.tsx
+#: src/features/wishlist/WishlistPage.tsx
 msgid "Name"
 msgstr "Name"
 
@@ -2103,6 +2750,10 @@ msgstr "No active loans are past their due date."
 msgid "No activity yet."
 msgstr "No activity yet."
 
+#: src/features/analytics/components/TopBorrowersChart.tsx
+msgid "No borrower activity for this range yet."
+msgstr "No borrower activity for this range yet."
+
 #: src/features/borrowers/BorrowersListPage.tsx
 msgid "NO BORROWERS"
 msgstr "NO BORROWERS"
@@ -2123,6 +2774,18 @@ msgstr "No borrowers yet. Add a borrower to start tracking who has your items."
 msgid "NO CATEGORIES YET"
 msgstr "NO CATEGORIES YET"
 
+#: src/features/analytics/components/CategoryValueChart.tsx
+msgid "No category values for this range yet."
+msgstr "No category values for this range yet."
+
+#: src/features/approvals/ApprovalsPage.tsx
+msgid "No changes are waiting for review. New requests appear here."
+msgstr "No changes are waiting for review. New requests appear here."
+
+#: src/features/my-changes/MyChangesPage.tsx
+msgid "No changes yet"
+msgstr "No changes yet"
+
 #: src/features/taxonomy/components/ColorSwatchPicker.tsx
 msgid "No color"
 msgstr "No color"
@@ -2131,9 +2794,25 @@ msgstr "No color"
 msgid "No completed repairs yet."
 msgstr "No completed repairs yet."
 
+#: src/features/analytics/components/ConditionDonutChart.tsx
+msgid "No condition data for this range yet."
+msgstr "No condition data for this range yet."
+
 #: src/features/taxonomy/components/ContainersTab.tsx
 msgid "NO CONTAINERS YET"
 msgstr "NO CONTAINERS YET"
+
+#: src/features/analytics/charts/RetroChartFrame.tsx
+#: src/features/analytics/components/ConditionDonutChart.tsx
+#: src/features/analytics/components/MonthlyLoanActivityChart.tsx
+#: src/features/analytics/components/StatusStackChart.tsx
+msgid "No data"
+msgstr "No data"
+
+#: src/features/items/components/PaperlessLinkDialog.tsx
+#: src/features/settings/PaperlessPage.tsx
+msgid "No documents matched."
+msgstr "No documents matched."
 
 #: src/features/loans/components/ExtendLoanDialog.tsx
 msgid "no due date"
@@ -2143,9 +2822,18 @@ msgstr "no due date"
 msgid "No entries match these filters. Clear a filter or adjust your search."
 msgstr "No entries match these filters. Clear a filter or adjust your search."
 
+#: src/features/items/components/ItemAttachmentPanel.tsx
 #: src/features/repairs/components/RepairAttachmentPanel.tsx
 msgid "NO FILES"
 msgstr "NO FILES"
+
+#: src/features/declutter/DeclutterPage.tsx
+msgid "No grouping"
+msgstr "No grouping"
+
+#: src/features/imports/ImportsPage.tsx
+msgid "NO IMPORTS YET"
+msgstr "NO IMPORTS YET"
 
 #: src/features/loans/LoanFormPage.tsx
 msgid "No inventory entries yet — add one first."
@@ -2158,6 +2846,10 @@ msgstr "No item matches this code yet. Create one with the code attached."
 #: src/features/inventory/ExpiringPage.tsx
 msgid "No items are expiring or out of warranty in the next {days} days."
 msgstr "No items are expiring or out of warranty in the next {days} days."
+
+#: src/features/wishlist/WishlistPage.tsx
+msgid "No items in this list. Add something you're after."
+msgstr "No items in this list. Add something you're after."
 
 #: src/features/items/ItemsListPage.tsx
 #: src/routes/demo/DemoPage.tsx
@@ -2180,6 +2872,10 @@ msgstr "NO LABELS YET"
 msgid "No labels yet — manage labels in Phase 10."
 msgstr "No labels yet — manage labels in Phase 10."
 
+#: src/features/analytics/components/MonthlyLoanActivityChart.tsx
+msgid "No loan activity for this range yet."
+msgstr "No loan activity for this range yet."
+
 #: src/features/items/components/LoanPanels.tsx
 #: src/features/loans/components/BorrowerLoanPanels.tsx
 #: src/features/loans/LoansListPage.tsx
@@ -2194,6 +2890,10 @@ msgstr "No loans have been returned yet."
 msgid "No loans match this search."
 msgstr "No loans match this search."
 
+#: src/features/analytics/components/LocationValueChart.tsx
+msgid "No location values for this range yet."
+msgstr "No location values for this range yet."
+
 #: src/features/taxonomy/components/LocationsTab.tsx
 msgid "NO LOCATIONS YET"
 msgstr "NO LOCATIONS YET"
@@ -2207,6 +2907,7 @@ msgstr "No locations yet — add one first."
 msgid "No maintenance is due right now. You're all caught up."
 msgstr "No maintenance is due right now. You're all caught up."
 
+#: src/features/items/components/ItemAttachmentPanel.tsx
 #: src/features/repairs/components/RepairAttachmentPanel.tsx
 msgid "No manuals, receipts, or warranties attached yet."
 msgstr "No manuals, receipts, or warranties attached yet."
@@ -2226,9 +2927,17 @@ msgstr "NO MATCHES"
 msgid "No matches."
 msgstr "No matches."
 
+#: src/features/settings/MembersPage.tsx
+msgid "No members yet"
+msgstr "No members yet"
+
 #: src/features/inventory/components/MovementsPanel.tsx
 msgid "NO MOVEMENTS"
 msgstr "NO MOVEMENTS"
+
+#: src/features/notifications/components/NotificationsDropdown.tsx
+msgid "No notifications"
+msgstr "No notifications"
 
 #: src/features/settings/SecurityPage.tsx
 msgid "No other sessions."
@@ -2241,6 +2950,10 @@ msgstr "No photos yet."
 #: src/features/maintenance/components/MaintenanceDrawer.tsx
 msgid "No recurring maintenance set up for this entry yet. Add a schedule to get reminders."
 msgstr "No recurring maintenance set up for this entry yet. Add a schedule to get reminders."
+
+#: src/features/settings/MembersPage.tsx
+msgid "No registered user with that email."
+msgstr "No registered user with that email."
 
 #: src/features/repairs/components/RepairsDrawer.tsx
 msgid "NO REPAIRS"
@@ -2270,6 +2983,10 @@ msgstr "No sessions"
 msgid "NO SHORTCUTS HERE"
 msgstr "NO SHORTCUTS HERE"
 
+#: src/features/analytics/components/StatusStackChart.tsx
+msgid "No status data for this range yet."
+msgstr "No status data for this range yet."
+
 #: src/features/inventory/InventoryListPage.tsx
 msgid "NO STOCK ENTRIES"
 msgstr "NO STOCK ENTRIES"
@@ -2278,6 +2995,7 @@ msgstr "NO STOCK ENTRIES"
 msgid "No stock entries yet."
 msgstr "No stock entries yet."
 
+#: src/features/analytics/AnalyticsPage.tsx
 #: src/features/dashboard/DashboardPage.tsx
 msgid "No workspace"
 msgstr "No workspace"
@@ -2301,13 +3019,22 @@ msgstr "NOT LINKED"
 #: src/features/loans/LoanFormPage.tsx
 #: src/features/maintenance/components/MaintenanceForm.tsx
 #: src/features/repairs/components/RepairRecordDialog.tsx
+#: src/features/wishlist/components/WishlistFormDialog.tsx
 #: src/routes/demo/DemoPage.tsx
 msgid "Notes"
 msgstr "Notes"
 
+#: src/features/dashboard/components/SystemAlertsPanel.tsx
+msgid "Nothing due"
+msgstr "Nothing due"
+
 #: src/features/maintenance/MaintenanceDuePage.tsx
 msgid "NOTHING DUE"
 msgstr "NOTHING DUE"
+
+#: src/features/dashboard/components/SystemAlertsPanel.tsx
+msgid "Nothing expiring"
+msgstr "Nothing expiring"
 
 #: src/features/inventory/ExpiringPage.tsx
 msgid "NOTHING EXPIRING"
@@ -2316,6 +3043,10 @@ msgstr "NOTHING EXPIRING"
 #: src/routes/demo/DemoPage.tsx
 msgid "Nothing here yet"
 msgstr "Nothing here yet"
+
+#: src/features/wishlist/WishlistPage.tsx
+msgid "NOTHING HERE YET"
+msgstr "NOTHING HERE YET"
 
 #: src/features/loans/LoansListPage.tsx
 msgid "Nothing is out on loan right now. Loan an item to start tracking it."
@@ -2329,9 +3060,48 @@ msgstr "Nothing is stocked yet. Add your first inventory entry to start tracking
 msgid "Nothing out"
 msgstr "Nothing out"
 
+#: src/features/analytics/components/OutOfStockTable.tsx
+msgid "NOTHING OUT OF STOCK"
+msgstr "NOTHING OUT OF STOCK"
+
 #: src/features/loans/LoansListPage.tsx
 msgid "NOTHING OVERDUE"
 msgstr "NOTHING OVERDUE"
+
+#: src/features/approvals/components/PendingApprovalsPanel.tsx
+msgid "Nothing pending"
+msgstr "Nothing pending"
+
+#: src/features/approvals/ApprovalsPage.tsx
+msgid "NOTHING PENDING"
+msgstr "NOTHING PENDING"
+
+#: src/features/analytics/charts/RetroChartFrame.tsx
+msgid "Nothing to chart for this range yet."
+msgstr "Nothing to chart for this range yet."
+
+#: src/features/declutter/DeclutterPage.tsx
+msgid "NOTHING TO DECLUTTER"
+msgstr "NOTHING TO DECLUTTER"
+
+#: src/features/declutter/DeclutterPage.tsx
+msgid "Nothing to export."
+msgstr "Nothing to export."
+
+#: src/features/settings/NotificationsPage.tsx
+msgid "Notification settings saved."
+msgstr "Notification settings saved."
+
+#: src/features/notifications/components/NotificationsBell.tsx
+#: src/features/notifications/components/NotificationsDropdown.tsx
+#: src/features/settings/NotificationsPage.tsx
+#: src/features/settings/SettingsLandingPage.tsx
+msgid "Notifications"
+msgstr "Notifications"
+
+#: src/features/settings/RegionalFormatsPage.tsx
+msgid "Number"
+msgstr "Number"
 
 #: src/components/retro/feedback/RetroStatusDot.tsx
 msgid "offline"
@@ -2350,9 +3120,17 @@ msgstr "On loan to {0}"
 msgid "ONLINE"
 msgstr "ONLINE"
 
+#: src/features/system-history/Page.tsx
+msgid "ONLINE ONLY"
+msgstr "ONLINE ONLY"
+
 #: src/features/items/hooks/useItemMutations.ts
 msgid "Only archived items can be deleted."
 msgstr "Only archived items can be deleted."
+
+#: src/features/approvals/ApprovalsPage.tsx
+msgid "Only workspace owners and admins can review approvals."
+msgstr "Only workspace owners and admins can review approvals."
 
 #. placeholder {0}: photo.caption ?? photo.filename
 #: src/features/items/components/PhotoGallery.tsx
@@ -2397,6 +3175,23 @@ msgstr "Optionally update the item's condition now that it's fixed."
 msgid "OR"
 msgstr "OR"
 
+#: src/features/wishlist/components/WishlistFormDialog.tsx
+#: src/features/wishlist/WishlistPage.tsx
+msgid "Ordered"
+msgstr "Ordered"
+
+#: src/features/wishlist/WishlistPage.tsx
+msgid "ORDERED"
+msgstr "ORDERED"
+
+#: src/features/analytics/components/OutOfStockTable.tsx
+msgid "OUT"
+msgstr "OUT"
+
+#: src/features/analytics/components/OutOfStockTable.tsx
+msgid "Out of stock"
+msgstr "Out of stock"
+
 #: src/features/dashboard/DashboardPage.tsx
 #: src/features/loans/LoansListPage.tsx
 #: src/features/maintenance/MaintenanceDuePage.tsx
@@ -2427,6 +3222,35 @@ msgstr "page {page} of {pageCount} · {perPage} / page"
 msgid "Pagination"
 msgstr "Pagination"
 
+#: src/features/settings/SettingsLandingPage.tsx
+msgid "Paperless"
+msgstr "Paperless"
+
+#: src/features/settings/PaperlessPage.tsx
+msgid "Paperless connection"
+msgstr "Paperless connection"
+
+#: src/features/settings/hooks/usePaperlessSettings.ts
+msgid "Paperless disconnected."
+msgstr "Paperless disconnected."
+
+#: src/features/items/components/PaperlessLinkDialog.tsx
+#: src/features/settings/PaperlessPage.tsx
+msgid "Paperless is unreachable — check the URL and token."
+msgstr "Paperless is unreachable — check the URL and token."
+
+#: src/features/items/components/PaperlessLinkDialog.tsx
+msgid "Paperless is unreachable."
+msgstr "Paperless is unreachable."
+
+#: src/features/settings/hooks/usePaperlessSettings.ts
+msgid "Paperless settings saved."
+msgstr "Paperless settings saved."
+
+#: src/features/settings/PaperlessPage.tsx
+msgid "Paperless URL"
+msgstr "Paperless URL"
+
 #: src/features/taxonomy/components/CategoryFormDialog.tsx
 msgid "Parent category"
 msgstr "Parent category"
@@ -2454,9 +3278,22 @@ msgstr "Password updated."
 msgid "Passwords don't match."
 msgstr "Passwords don't match."
 
+#: src/features/settings/PaperlessPage.tsx
+msgid "Paste your Paperless API token"
+msgstr "Paste your Paperless API token"
+
+#: src/features/approvals/components/PendingApprovalsPanel.tsx
 #: src/features/items/components/PhotoUpload.tsx
 msgid "pending"
 msgstr "pending"
+
+#: src/features/imports/ImportsPage.tsx
+msgid "Pending"
+msgstr "Pending"
+
+#: src/features/approvals/components/PendingApprovalsPanel.tsx
+msgid "Pending approvals"
+msgstr "Pending approvals"
 
 #: src/features/borrowers/BorrowerDetailPage.tsx
 #: src/features/borrowers/BorrowerFormPage.tsx
@@ -2468,9 +3305,17 @@ msgstr "Phone"
 msgid "Photo {0} of {count}"
 msgstr "Photo {0} of {count}"
 
+#: src/features/settings/AvatarUploader.tsx
+msgid "Photo removed."
+msgstr "Photo removed."
+
 #: src/features/repairs/components/RepairPhotoPanel.tsx
 msgid "Photo stage"
 msgstr "Photo stage"
+
+#: src/features/settings/AvatarUploader.tsx
+msgid "Photo updated."
+msgstr "Photo updated."
 
 #: src/features/items/components/PhotoUpload.tsx
 msgid "Photos"
@@ -2486,6 +3331,10 @@ msgstr "PHOTOS"
 msgid "Pick a different location or container."
 msgstr "Pick a different location or container."
 
+#: src/features/settings/AvatarUploader.tsx
+msgid "PNG/JPG · max 5 MB"
+msgstr "PNG/JPG · max 5 MB"
+
 #: src/components/scan/ScanViewfinderOverlay.tsx
 msgid "Point the camera at a barcode or QR code."
 msgstr "Point the camera at a barcode or QR code."
@@ -2493,6 +3342,10 @@ msgstr "Point the camera at a barcode or QR code."
 #: src/features/items/components/DuplicateWarningDialog.tsx
 msgid "POSSIBLE DUPLICATE"
 msgstr "POSSIBLE DUPLICATE"
+
+#: src/features/settings/SettingsLandingPage.tsx
+msgid "PREFERENCES"
+msgstr "PREFERENCES"
 
 #: src/features/items/ItemFormPage.tsx
 msgid "Prefilled from scan — edit if needed."
@@ -2514,13 +3367,45 @@ msgstr "Previous page"
 msgid "Previous photo"
 msgstr "Previous photo"
 
+#: src/features/declutter/DeclutterPage.tsx
+#: src/features/wishlist/WishlistPage.tsx
+msgid "Price"
+msgstr "Price"
+
+#: src/features/wishlist/components/WishlistFormDialog.tsx
+msgid "Price estimate"
+msgstr "Price estimate"
+
+#: src/features/items/components/ItemAttachmentPanel.tsx
+msgid "PRIMARY"
+msgstr "PRIMARY"
+
+#: src/features/wishlist/components/WishlistFormDialog.tsx
+#: src/features/wishlist/WishlistPage.tsx
+msgid "Priority"
+msgstr "Priority"
+
+#: src/features/imports/ImportsPage.tsx
+msgid "Processing"
+msgstr "Processing"
+
 #: src/components/scan/UpcSuggestionBanner.tsx
 msgid "PRODUCT FOUND"
 msgstr "PRODUCT FOUND"
 
 #: src/components/layout/TopBar.tsx
+#: src/features/settings/ProfilePage.tsx
+#: src/features/settings/SettingsLandingPage.tsx
 msgid "Profile"
 msgstr "Profile"
+
+#: src/features/settings/AvatarUploader.tsx
+msgid "Profile photo"
+msgstr "Profile photo"
+
+#: src/features/imports/ImportsPage.tsx
+msgid "Progress"
+msgstr "Progress"
 
 #: src/features/inventory/ExpiringPage.tsx
 #: src/features/inventory/InventoryListPage.tsx
@@ -2535,6 +3420,14 @@ msgstr "Qty"
 msgid "Quantity"
 msgstr "Quantity"
 
+#: src/features/items/components/AddAttachmentDialog.tsx
+msgid "READY"
+msgstr "READY"
+
+#: src/features/approvals/ApprovalsPage.tsx
+msgid "Reason"
+msgstr "Reason"
+
 #: src/features/dashboard/DashboardPage.tsx
 msgid "Recent activity"
 msgstr "Recent activity"
@@ -2547,6 +3440,35 @@ msgstr "RECENT SCANS"
 msgid "RECORD"
 msgstr "RECORD"
 
+#: src/features/settings/RegionalFormatsPage.tsx
+#: src/features/settings/SettingsLandingPage.tsx
+msgid "Regional Formats"
+msgstr "Regional Formats"
+
+#: src/features/approvals/ApprovalsPage.tsx
+msgid "REJECT"
+msgstr "REJECT"
+
+#: src/features/approvals/ApprovalsPage.tsx
+msgid "Reject selected"
+msgstr "Reject selected"
+
+#: src/features/approvals/ApprovalsPage.tsx
+msgid "Reject selected changes"
+msgstr "Reject selected changes"
+
+#: src/features/approvals/ApprovalsPage.tsx
+msgid "Rejected {ok}, {fail} failed."
+msgstr "Rejected {ok}, {fail} failed."
+
+#: src/features/approvals/ApprovalsPage.tsx
+msgid "Rejected {ok}."
+msgstr "Rejected {ok}."
+
+#: src/features/approvals/ApprovalsPage.tsx
+msgid "Rejecting requires a reason — it is recorded with the decision."
+msgstr "Rejecting requires a reason — it is recorded with the decision."
+
 #: src/components/retro/form/RetroFileInput.tsx
 msgid "Release to add"
 msgstr "Release to add"
@@ -2555,8 +3477,15 @@ msgstr "Release to add"
 msgid "Reminder date"
 msgstr "Reminder date"
 
+#: src/features/settings/AvatarUploader.tsx
+#: src/features/settings/MembersPage.tsx
+msgid "Remove"
+msgstr "Remove"
+
 #. placeholder {0}: f.name
+#. placeholder {0}: removeTarget ? memberName(removeTarget) : ""
 #: src/components/retro/form/RetroFileInput.tsx
+#: src/features/settings/MembersPage.tsx
 msgid "Remove {0}"
 msgstr "Remove {0}"
 
@@ -2564,6 +3493,23 @@ msgstr "Remove {0}"
 #: src/components/retro/filters/FilterBar.tsx
 msgid "Remove {0} filter"
 msgstr "Remove {0} filter"
+
+#. placeholder {0}: removeTarget ? memberName(removeTarget) : ""
+#: src/features/settings/MembersPage.tsx
+msgid "Remove {0} from this workspace? They'll lose access immediately."
+msgstr "Remove {0} from this workspace? They'll lose access immediately."
+
+#: src/features/settings/MembersPage.tsx
+msgid "Remove {name}"
+msgstr "Remove {name}"
+
+#: src/features/settings/AvatarUploader.tsx
+msgid "Remove photo"
+msgstr "Remove photo"
+
+#: src/features/settings/AvatarUploader.tsx
+msgid "Remove photo? Your profile will show your initials instead."
+msgstr "Remove photo? Your profile will show your initials instead."
 
 #. placeholder {0}: repair.description
 #: src/features/repairs/components/RepairRecordDialog.tsx
@@ -2592,6 +3538,15 @@ msgstr "REPAIRS"
 msgid "REPAIRS — {itemName}"
 msgstr "REPAIRS — {itemName}"
 
+#: src/features/approvals/ApprovalsPage.tsx
+#: src/features/my-changes/MyChangesPage.tsx
+msgid "Requested"
+msgstr "Requested"
+
+#: src/features/approvals/ApprovalsPage.tsx
+msgid "Requester"
+msgstr "Requester"
+
 #: src/features/taxonomy/components/ContainerFormDialog.tsx
 msgid "Required — every container lives in a location."
 msgstr "Required — every container lives in a location."
@@ -2606,6 +3561,14 @@ msgstr "Resolving code…"
 #: src/features/taxonomy/components/LabelsTab.tsx
 msgid "RESTORE"
 msgstr "RESTORE"
+
+#: src/features/approvals/ApprovalsPage.tsx
+msgid "RESTRICTED"
+msgstr "RESTRICTED"
+
+#: src/features/settings/AppearancePage.tsx
+msgid "Retro OS Pastel — the only theme."
+msgstr "Retro OS Pastel — the only theme."
 
 #: src/routes/demo/DemoPage.tsx
 msgid "RetroCheckbox — all three states."
@@ -2705,6 +3668,14 @@ msgstr "Returned — moved to History."
 msgid "returned {0}"
 msgstr "returned {0}"
 
+#: src/features/analytics/components/MonthlyLoanActivityChart.tsx
+msgid "Returns"
+msgstr "Returns"
+
+#: src/features/approvals/components/PendingApprovalsPanel.tsx
+msgid "Review"
+msgstr "Review"
+
 #: src/features/settings/SecurityPage.tsx
 msgid "Revoke"
 msgstr "Revoke"
@@ -2722,11 +3693,32 @@ msgstr "Revoke all other sessions"
 msgid "Revoke session on {0}"
 msgstr "Revoke session on {0}"
 
+#: src/features/settings/MembersPage.tsx
+msgid "Role"
+msgstr "Role"
+
+#: src/features/settings/MembersPage.tsx
+msgid "Role for {name}"
+msgstr "Role for {name}"
+
+#: src/features/settings/MembersPage.tsx
+msgid "Role for new member"
+msgstr "Role for new member"
+
+#: src/features/settings/MembersPage.tsx
+msgid "Role updated."
+msgstr "Role updated."
+
 #: src/components/layout/F1HelpDialog.tsx
 msgid "ROUTE"
 msgstr "ROUTE"
 
+#: src/features/imports/ImportsPage.tsx
+msgid "Rows"
+msgstr "Rows"
+
 #: src/features/loans/components/EditLoanDialog.tsx
+#: src/features/settings/PaperlessPage.tsx
 msgid "Save"
 msgstr "Save"
 
@@ -2746,10 +3738,14 @@ msgstr "Save category"
 #: src/features/borrowers/BorrowerFormPage.tsx
 #: src/features/inventory/InventoryFormPage.tsx
 #: src/features/items/ItemFormPage.tsx
+#: src/features/settings/NotificationsPage.tsx
+#: src/features/settings/ProfilePage.tsx
+#: src/features/settings/RegionalFormatsPage.tsx
 #: src/features/taxonomy/components/CategoryFormDialog.tsx
 #: src/features/taxonomy/components/ContainerFormDialog.tsx
 #: src/features/taxonomy/components/LabelFormDialog.tsx
 #: src/features/taxonomy/components/LocationFormDialog.tsx
+#: src/features/wishlist/components/WishlistFormDialog.tsx
 msgid "Save changes"
 msgstr "Save changes"
 
@@ -2794,6 +3790,7 @@ msgstr "SAVE REPAIR"
 msgid "SAVE SCHEDULE"
 msgstr "SAVE SCHEDULE"
 
+#: src/features/settings/ProfilePage.tsx
 #: src/routes/demo/DemoPage.tsx
 msgid "Saved."
 msgstr "Saved."
@@ -2818,17 +3815,49 @@ msgstr "Scanned and looked-up codes show up here for quick re-lookup."
 msgid "Schedule"
 msgstr "Schedule"
 
+#: src/features/declutter/DeclutterPage.tsx
+msgid "Score"
+msgstr "Score"
+
+#: src/features/items/components/PaperlessLinkDialog.tsx
+#: src/features/settings/PaperlessPage.tsx
+msgid "Search"
+msgstr "Search"
+
+#: src/features/settings/PaperlessPage.tsx
+msgid "Search documents"
+msgstr "Search documents"
+
+#: src/features/items/components/PaperlessLinkDialog.tsx
+#: src/features/settings/PaperlessPage.tsx
+msgid "Search failed. Try again."
+msgstr "Search failed. Try again."
+
 #: src/features/taxonomy/components/ContainerFormDialog.tsx
 msgid "Search locations…"
 msgstr "Search locations…"
 
-#: src/features/settings/SettingsLayout.tsx
+#: src/features/items/components/PaperlessLinkDialog.tsx
+#: src/features/settings/PaperlessPage.tsx
+msgid "Search Paperless"
+msgstr "Search Paperless"
+
+#: src/features/items/components/PaperlessLinkDialog.tsx
+#: src/features/settings/PaperlessPage.tsx
+msgid "Searching…"
+msgstr "Searching…"
+
+#: src/features/settings/SettingsLandingPage.tsx
 msgid "Security"
 msgstr "Security"
 
 #: src/features/items/components/PhotoGallery.tsx
 msgid "SELECT"
 msgstr "SELECT"
+
+#: src/features/settings/MembersPage.tsx
+msgid "Select a workspace to manage its members."
+msgstr "Select a workspace to manage its members."
 
 #: src/features/items/ItemsListPage.tsx
 #: src/routes/demo/DemoPage.tsx
@@ -2863,6 +3892,10 @@ msgstr "Sessions"
 #: src/features/settings/SecurityPage.tsx
 msgid "Set password"
 msgstr "Set password"
+
+#: src/features/items/components/ItemAttachmentPanel.tsx
+msgid "SET PRIMARY"
+msgstr "SET PRIMARY"
 
 #: src/components/layout/Sidebar.tsx
 #: src/components/layout/TopBar.tsx
@@ -2924,6 +3957,7 @@ msgstr "Skip to content"
 msgid "Skipped (possible duplicate)."
 msgstr "Skipped (possible duplicate)."
 
+#: src/features/analytics/components/OutOfStockTable.tsx
 #: src/features/items/ItemFormPage.tsx
 msgid "SKU"
 msgstr "SKU"
@@ -2970,17 +4004,26 @@ msgstr "Stage"
 msgid "START"
 msgstr "START"
 
+#: src/features/dashboard/DashboardPage.tsx
+#: src/features/imports/ImportsPage.tsx
 #: src/features/inventory/InventoryFormPage.tsx
 #: src/features/inventory/InventoryListPage.tsx
 #: src/features/items/ItemsListPage.tsx
 #: src/features/loans/LoansListPage.tsx
 #: src/features/maintenance/MaintenanceDuePage.tsx
+#: src/features/my-changes/MyChangesPage.tsx
+#: src/features/wishlist/components/WishlistFormDialog.tsx
+#: src/features/wishlist/WishlistPage.tsx
 msgid "Status"
 msgstr "Status"
 
 #: src/features/inventory/InventoryListPage.tsx
 msgid "STATUS"
 msgstr "STATUS"
+
+#: src/features/analytics/components/StatusStackChart.tsx
+msgid "Status mix"
+msgstr "Status mix"
 
 #: src/routes/demo/DemoPage.tsx
 msgid "StatusPill — OK / WARN / INFO / DANGER."
@@ -2989,6 +4032,10 @@ msgstr "StatusPill — OK / WARN / INFO / DANGER."
 #: src/components/layout/TopBar.tsx
 msgid "Stay"
 msgstr "Stay"
+
+#: src/features/analytics/components/OutOfStockTable.tsx
+msgid "Stock"
+msgstr "Stock"
 
 #: src/features/items/components/InventoryPanelStub.tsx
 msgid "Stock entries arrive in 7b."
@@ -3002,9 +4049,33 @@ msgstr "SWITCH TO MANUAL"
 msgid "Switched to {name}."
 msgstr "Switched to {name}."
 
+#: src/features/system-history/Page.tsx
+msgid "Sync"
+msgstr "Sync"
+
+#: src/components/layout/Sidebar.tsx
+msgid "Sync History"
+msgstr "Sync History"
+
+#: src/features/system-history/Page.tsx
+msgid "SYNC HISTORY"
+msgstr "SYNC HISTORY"
+
 #: src/components/layout/Sidebar.tsx
 msgid "System"
 msgstr "System"
+
+#: src/features/dashboard/components/SystemAlertsPanel.tsx
+msgid "System alerts"
+msgstr "System alerts"
+
+#: src/features/dashboard/components/HudRow.tsx
+msgid "System rollups"
+msgstr "System rollups"
+
+#: src/features/dashboard/components/HudRow.tsx
+msgid "target {CAPACITY_TARGET_PLACEHOLDER} · data pending"
+msgstr "target {CAPACITY_TARGET_PLACEHOLDER} · data pending"
 
 #: src/features/taxonomy/components/CategoriesTab.tsx
 #: src/features/taxonomy/components/ContainersTab.tsx
@@ -3021,6 +4092,10 @@ msgstr "TAXONOMY — {workspaceName}"
 msgid "That code isn't linked to anything in this workspace."
 msgstr "That code isn't linked to anything in this workspace."
 
+#: src/features/settings/ProfilePage.tsx
+msgid "That email is already in use."
+msgstr "That email is already in use."
+
 #: src/features/auth/RegisterPage.tsx
 msgid "That email is already registered."
 msgstr "That email is already registered."
@@ -3029,6 +4104,22 @@ msgstr "That email is already registered."
 msgid "That file no longer exists."
 msgstr "That file no longer exists."
 
+#: src/features/items/components/AddAttachmentDialog.tsx
+msgid "That file was rejected — check its type and size."
+msgstr "That file was rejected — check its type and size."
+
+#: src/features/items/components/AddAttachmentDialog.tsx
+msgid "That item no longer exists."
+msgstr "That item no longer exists."
+
+#: src/features/wishlist/components/WishlistFormDialog.tsx
+msgid "That status change isn't allowed."
+msgstr "That status change isn't allowed."
+
+#: src/features/settings/MembersPage.tsx
+msgid "That user is already a member."
+msgstr "That user is already a member."
+
 #: src/features/repairs/components/AddAttachmentDialog.tsx
 msgid "The file belongs to a different workspace."
 msgstr "The file belongs to a different workspace."
@@ -3036,6 +4127,10 @@ msgstr "The file belongs to a different workspace."
 #: src/features/items/ItemsListPage.tsx
 msgid "The selected archived items will be permanently removed."
 msgstr "The selected archived items will be permanently removed."
+
+#: src/features/settings/AppearancePage.tsx
+msgid "Theme"
+msgstr "Theme"
 
 #: src/features/loans/components/BorrowerLoanPanels.tsx
 msgid "This borrower hasn't returned anything yet."
@@ -3069,9 +4164,17 @@ msgstr "This field is required."
 msgid "This file link will be permanently removed."
 msgstr "This file link will be permanently removed."
 
+#: src/features/items/components/ItemAttachmentPanel.tsx
+msgid "This file will be permanently removed."
+msgstr "This file will be permanently removed."
+
 #: src/features/settings/AccountsPage.tsx
 msgid "This is your only way to sign in. Set a password first to unlink."
 msgstr "This is your only way to sign in. Set a password first to unlink."
+
+#: src/features/declutter/DeclutterPage.tsx
+msgid "this item"
+msgstr "this item"
 
 #: src/features/items/components/LoanPanels.tsx
 msgid "This item has never been loaned out."
@@ -3105,6 +4208,10 @@ msgstr "This photo will be permanently removed."
 msgid "This removes every code from your scan history. It can't be undone."
 msgstr "This removes every code from your scan history. It can't be undone."
 
+#: src/features/wishlist/WishlistPage.tsx
+msgid "This removes it from your wishlist. This can't be undone."
+msgstr "This removes it from your wishlist. This can't be undone."
+
 #: src/features/repairs/components/RepairsDrawer.tsx
 msgid "This repair and its photos and files will be permanently removed."
 msgstr "This repair and its photos and files will be permanently removed."
@@ -3113,10 +4220,28 @@ msgstr "This repair and its photos and files will be permanently removed."
 msgid "This route has no quick actions yet. Press F1 anytime for the full list."
 msgstr "This route has no quick actions yet. Press F1 anytime for the full list."
 
+#: src/features/system-history/Page.tsx
+msgid "This workspace runs online-only — changes save directly to the server, so there are no background sync events to show."
+msgstr "This workspace runs online-only — changes save directly to the server, so there are no background sync events to show."
+
+#: src/features/settings/RegionalFormatsPage.tsx
+msgid "Thousand and decimal separators must be different."
+msgstr "Thousand and decimal separators must be different."
+
+#: src/features/settings/RegionalFormatsPage.tsx
+msgid "Thousand separator"
+msgstr "Thousand separator"
+
 #: src/features/dashboard/DashboardPage.tsx
+#: src/features/settings/RegionalFormatsPage.tsx
 msgid "Time"
 msgstr "Time"
 
+#: src/features/settings/RegionalFormatsPage.tsx
+msgid "Time format"
+msgstr "Time format"
+
+#: src/features/items/components/AddAttachmentDialog.tsx
 #: src/features/maintenance/components/MaintenanceForm.tsx
 #: src/features/repairs/components/AddAttachmentDialog.tsx
 msgid "Title"
@@ -3151,6 +4276,10 @@ msgstr "Toast: warning"
 msgid "Toggle {0}"
 msgstr "Toggle {0}"
 
+#: src/features/analytics/components/TopBorrowersChart.tsx
+msgid "Top borrowers"
+msgstr "Top borrowers"
+
 #: src/components/scan/ScanTorchToggle.tsx
 msgid "TORCH"
 msgstr "TORCH"
@@ -3158,6 +4287,10 @@ msgstr "TORCH"
 #: src/components/scan/ScanTorchToggle.tsx
 msgid "TORCH ON"
 msgstr "TORCH ON"
+
+#: src/features/analytics/components/ConditionDonutChart.tsx
+msgid "Total"
+msgstr "Total"
 
 #: src/features/auth/CallbackPage.tsx
 msgid "Try again"
@@ -3167,10 +4300,17 @@ msgstr "Try again"
 msgid "TRY AGAIN"
 msgstr "TRY AGAIN"
 
+#: src/features/items/components/AddAttachmentDialog.tsx
+#: src/features/items/components/PaperlessLinkDialog.tsx
 #: src/features/repairs/components/AddAttachmentDialog.tsx
 msgid "Try again."
 msgstr "Try again."
 
+#: src/features/imports/ImportsPage.tsx
+msgid "Type"
+msgstr "Type"
+
+#: src/features/items/components/AddAttachmentDialog.tsx
 #: src/features/repairs/components/AddAttachmentDialog.tsx
 msgid "Type *"
 msgstr "Type *"
@@ -3218,6 +4358,7 @@ msgstr "Unlink {0}"
 msgid "Unlink {0}? You'll no longer be able to sign in with it."
 msgstr "Unlink {0}? You'll no longer be able to sign in with it."
 
+#: src/features/items/components/ItemAttachmentPanel.tsx
 #: src/features/repairs/components/RepairAttachmentPanel.tsx
 msgid "Untitled"
 msgstr "Untitled"
@@ -3238,6 +4379,10 @@ msgstr "Upload failed."
 msgid "uploading…"
 msgstr "uploading…"
 
+#: src/features/wishlist/components/WishlistFormDialog.tsx
+msgid "URL"
+msgstr "URL"
+
 #: src/components/scan/UpcSuggestionBanner.tsx
 msgid "USE ALL"
 msgstr "USE ALL"
@@ -3251,6 +4396,10 @@ msgstr "Use at least 8 characters."
 msgid "USE NAME"
 msgstr "USE NAME"
 
+#: src/features/settings/MembersPage.tsx
+msgid "user@email…"
+msgstr "user@email…"
+
 #: src/features/borrowers/BorrowerDetailPage.tsx
 msgid "View active loans"
 msgstr "View active loans"
@@ -3258,6 +4407,15 @@ msgstr "View active loans"
 #: src/components/scan/QuickActionMenu.tsx
 msgid "VIEW ITEM"
 msgstr "VIEW ITEM"
+
+#: src/features/wishlist/components/WishlistFormDialog.tsx
+#: src/features/wishlist/WishlistPage.tsx
+msgid "Wanted"
+msgstr "Wanted"
+
+#: src/features/wishlist/WishlistPage.tsx
+msgid "WANTED"
+msgstr "WANTED"
 
 #: src/features/inventory/ExpiringPage.tsx
 msgid "WARRANTY"
@@ -3283,6 +4441,19 @@ msgstr "When"
 msgid "Window"
 msgstr "Window"
 
+#: src/components/layout/Sidebar.tsx
+#: src/features/wishlist/WishlistPage.tsx
+msgid "Wishlist"
+msgstr "Wishlist"
+
+#: src/features/wishlist/WishlistPage.tsx
+msgid "WISHLIST — {workspaceName}"
+msgstr "WISHLIST — {workspaceName}"
+
+#: src/features/wishlist/components/WishlistFormDialog.tsx
+msgid "Wishlist item saved."
+msgstr "Wishlist item saved."
+
 #: src/routes/demo/DemoPage.tsx
 msgid "With error"
 msgstr "With error"
@@ -3292,14 +4463,27 @@ msgid "With hint"
 msgstr "With hint"
 
 #: src/components/layout/WorkspaceSwitcher.tsx
+#: src/features/approvals/ApprovalsPage.tsx
 #: src/features/borrowers/BorrowersListPage.tsx
+#: src/features/declutter/DeclutterPage.tsx
+#: src/features/imports/ImportsPage.tsx
 #: src/features/inventory/InventoryListPage.tsx
 #: src/features/items/ItemsListPage.tsx
 #: src/features/loans/LoansListPage.tsx
 #: src/features/maintenance/MaintenanceDuePage.tsx
+#: src/features/my-changes/MyChangesPage.tsx
 #: src/features/taxonomy/TaxonomyPage.tsx
+#: src/features/wishlist/WishlistPage.tsx
 msgid "Workspace"
 msgstr "Workspace"
+
+#: src/features/settings/SettingsLandingPage.tsx
+msgid "WORKSPACE"
+msgstr "WORKSPACE"
+
+#: src/features/settings/NotificationsPage.tsx
+msgid "Workspace activity"
+msgstr "Workspace activity"
 
 #: src/components/layout/WorkspaceSwitcher.tsx
 msgid "Workspaces"
@@ -3309,14 +4493,27 @@ msgstr "Workspaces"
 msgid "Wrong email or password. Try again."
 msgstr "Wrong email or password. Try again."
 
+#: src/features/settings/MembersPage.tsx
+msgid "YOU"
+msgstr "YOU"
+
+#: src/features/my-changes/MyChangesPage.tsx
+msgid "You haven't requested any changes in this workspace."
+msgstr "You haven't requested any changes in this workspace."
+
 #: src/features/settings/SecurityPage.tsx
 msgid "You signed in with a provider and haven't set a password yet. Add one to enable email + password login."
 msgstr "You signed in with a provider and haven't set a password yet. Add one to enable email + password login."
+
+#: src/features/notifications/components/NotificationsDropdown.tsx
+msgid "You're all caught up."
+msgstr "You're all caught up."
 
 #: src/features/settings/SecurityPage.tsx
 msgid "You're the sole owner of: {blockingNames}. Transfer ownership or delete these workspaces before deleting your account."
 msgstr "You're the sole owner of: {blockingNames}. Transfer ownership or delete these workspaces before deleting your account."
 
+#: src/features/analytics/AnalyticsPage.tsx
 #: src/features/dashboard/DashboardPage.tsx
 msgid "Your account has no workspaces yet."
 msgstr "Your account has no workspaces yet."
