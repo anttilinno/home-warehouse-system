@@ -26,6 +26,34 @@ test("login lands on the dashboard with real workspace stats", async ({
   ).toBeVisible();
 });
 
+test("dashboard shows the notifications bell and the side-rail System Alerts", async ({
+  page,
+}) => {
+  // Phase 13 chrome: NOTIF-01 bell (the formerly-disabled bell-slot is now a
+  // live button) + DASH-03 side rail (System Alerts always renders; Pending
+  // Approvals silently degrades on 403 so it is NOT asserted here).
+  await page.goto("/login");
+  await page.getByLabel("Email").fill(E2E_USER);
+  await page.getByLabel("Password").fill(E2E_PASS);
+  await page.getByRole("button", { name: /^log in$/i }).click();
+  await expect(page).toHaveURL("/");
+
+  const bell = page.getByTestId("bell-slot");
+  await expect(bell).toBeEnabled();
+  await expect(
+    page.getByRole("heading", { name: /system alerts/i }),
+  ).toBeVisible();
+
+  // Opening the bell reveals the notifications dropdown; ESC closes it without
+  // logging out (modal-stack contract, BAR-05).
+  await bell.click();
+  await expect(
+    page.getByRole("heading", { name: "Notifications", exact: true }),
+  ).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(page).toHaveURL("/");
+});
+
 test("visiting / without a session redirects to /login", async ({ page }) => {
   // Fresh Playwright context = no access_token cookie. Guards the
   // RequireAuth wrapper AND api.ts throwing HttpError(401) from the
