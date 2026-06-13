@@ -1,4 +1,10 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
 import { Trans, useLingui } from "@lingui/react/macro";
 import {
   BevelButton,
@@ -6,11 +12,34 @@ import {
   RetroDialog,
   RetroFileInput,
 } from "@/components/retro";
-import type { DuplicateInfo } from "@/lib/types";
+import type { DuplicateCheckResult, DuplicateInfo } from "@/lib/types";
 import { photosApi } from "@/lib/api/photos";
 import { compressImage, validateUploadFile } from "@/lib/utils/image";
 import { usePhotoMutations } from "../hooks/usePhotoMutations";
 import { DuplicateWarningDialog } from "./DuplicateWarningDialog";
+
+// Phase 10b Plan 03 — DATA SEAM (single-writer). PhotoUpload is shared between
+// item photos and repair photos. The visual contract (dialog, per-file progress
+// rows, footer) is IDENTICAL for both; only the data dependency is injectable:
+//   - `mutations.upload`  — the upload mutation (defaults to usePhotoMutations).
+//   - `checkDuplicate`    — the dup-check step (defaults to photosApi for items;
+//                           repairs omit it → the gate is skipped entirely).
+//   - `uploadVars`        — extra upload payload (repairs thread `photoType`).
+//   - `title` / `extraFields` — repair scope renders a BEFORE/DURING/AFTER select
+//                           above the file input; items pass neither (unchanged).
+// When NONE of the seam props are supplied the component behaves EXACTLY as the
+// shipped item uploader (no behavior/JSX change — guarded by the item tests).
+
+/** The minimal upload-mutation surface the dialog calls. */
+export interface PhotoUploadMutations {
+  upload: {
+    mutateAsync: (vars: {
+      file: File;
+      caption?: string;
+      photoType?: string;
+    }) => Promise<unknown>;
+  };
+}
 
 export interface PhotoUploadProps {
   wsId: string;
@@ -19,6 +48,27 @@ export interface PhotoUploadProps {
   open: boolean;
   /** Close the dialog (ESC/scrim/close box/DONE). */
   onClose: () => void;
+  /**
+   * SEAM: injected upload mutations. Defaults to the item photo hook
+   * (usePhotoMutations(wsId, itemId)). Repair scope passes the repair hook.
+   */
+  mutations?: PhotoUploadMutations;
+  /**
+   * SEAM: duplicate-check step. Defaults to photosApi.checkDuplicate (items).
+   * When undefined-by-override (repair scope passes `null`) the dup gate is
+   * skipped — the repair backend has no check-duplicate route.
+   */
+  checkDuplicate?:
+    | ((file: File) => Promise<DuplicateCheckResult>)
+    | null;
+  /** SEAM: extra upload payload merged into every upload (e.g. `{ photoType }`). */
+  uploadVars?: { caption?: string; photoType?: string };
+  /** SEAM: dialog title override (defaults to ADD PHOTOS). */
+  title?: ReactNode;
+  /** SEAM: extra fields rendered above the file input (e.g. a photo_type select). */
+  extraFields?: ReactNode;
+  /** SEAM: whether the upload is gated until extra fields are valid (repair scope). */
+  uploadDisabled?: boolean;
 }
 
 type QueueStatus =
@@ -49,9 +99,28 @@ const nextId = () => `q-${seq++}`;
  * RETRY) so a single failure is isolated and retryable; the footer reads
  * `{done}/{total} uploaded`. HEIC is rejected client-side (Pitfall 2).
  */
-export function PhotoUpload({ wsId, itemId, open, onClose }: PhotoUploadProps) {
+export function PhotoUpload({
+  wsId,
+  itemId,
+  open,
+  onClose,
+  mutations,
+  checkDuplicate,
+  uploadVars,
+  title,
+  extraFields,
+  uploadDisabled = false,
+}: PhotoUploadProps) {
   const { t } = useLingui();
-  const { upload } = usePhotoMutations(wsId, itemId);
+  const itemMutations = usePhotoMutations(wsId, itemId);
+  // SEAM: injected mutations win; default to the item photo hook.
+  const upload = (mutations ?? itemMutations).upload;
+  // SEAM: `checkDuplicate === null` ⇒ skip the gate (repair scope); `undefined`
+  // ⇒ fall back to the items api; a function ⇒ use it directly.
+  const runCheckDuplicate: ((file: File) => Promise<DuplicateCheckResult>) | null =
+    checkDuplicate === undefined
+      ? (file: File) => photosApi.checkDuplicate(wsId, itemId, file)
+      : checkDuplicate;
   const [queue, setQueue] = useState<QueueItem[]>([]);
 
   const patch = useCallback(
@@ -75,17 +144,20 @@ export function PhotoUpload({ wsId, itemId, open, onClose }: PhotoUploadProps) {
       try {
         patch(item.id, { status: "compressing", pct: 0 });
         const compressed = await compressImage(item.file);
-        patch(item.id, { status: "checking" });
-        const dup = await photosApi.checkDuplicate(wsId, itemId, compressed);
-        if (dup.has_duplicates) {
-          patch(item.id, { status: "duplicate", duplicates: dup.duplicates });
-          // Stash the compressed file for the proceed path.
-          setQueue((q) =>
-            q.map((it) =>
-              it.id === item.id ? { ...it, file: compressed } : it,
-            ),
-          );
-          return;
+        // SEAM: skip the dup-check entirely when no checker is wired (repairs).
+        if (runCheckDuplicate) {
+          patch(item.id, { status: "checking" });
+          const dup = await runCheckDuplicate(compressed);
+          if (dup.has_duplicates) {
+            patch(item.id, { status: "duplicate", duplicates: dup.duplicates });
+            // Stash the compressed file for the proceed path.
+            setQueue((q) =>
+              q.map((it) =>
+                it.id === item.id ? { ...it, file: compressed } : it,
+              ),
+            );
+            return;
+          }
         }
         await commitUpload(item.id, compressed);
       } catch {
@@ -93,21 +165,22 @@ export function PhotoUpload({ wsId, itemId, open, onClose }: PhotoUploadProps) {
       }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [wsId, itemId, patch],
+    [wsId, itemId, patch, runCheckDuplicate],
   );
 
   const commitUpload = useCallback(
     async (id: string, file: File) => {
       patch(id, { status: "uploading", pct: 50 });
       try {
-        await upload.mutateAsync({ file });
+        // SEAM: merge injected upload vars (repairs thread `photoType`/caption).
+        await upload.mutateAsync({ file, ...uploadVars });
         patch(id, { status: "done", pct: 100 });
       } catch {
         patch(id, { status: "failed", error: t`Upload failed.` });
       }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [patch, upload],
+    [patch, upload, uploadVars],
   );
 
   const onFilesChosen = useCallback((files: File[]) => {
@@ -125,15 +198,19 @@ export function PhotoUpload({ wsId, itemId, open, onClose }: PhotoUploadProps) {
   }, []);
 
   // Launch the pipeline for any freshly-enqueued "pending" file exactly once.
+  // SEAM: when `uploadDisabled` (repair scope, no photo_type chosen yet) the
+  // launch is held — files sit in "pending" until the gate clears, at which point
+  // this effect re-runs and launches them.
   const launchedRef = useRef<Set<string>>(new Set());
   useEffect(() => {
+    if (uploadDisabled) return;
     for (const item of queue) {
       if (item.status === "pending" && !launchedRef.current.has(item.id)) {
         launchedRef.current.add(item.id);
         void runFile(item);
       }
     }
-  }, [queue, runFile]);
+  }, [queue, runFile, uploadDisabled]);
 
   const retry = useCallback(
     (item: QueueItem) => {
@@ -169,7 +246,7 @@ export function PhotoUpload({ wsId, itemId, open, onClose }: PhotoUploadProps) {
     <RetroDialog
       open={open}
       onClose={onClose}
-      title={<Trans>ADD PHOTOS</Trans>}
+      title={title ?? <Trans>ADD PHOTOS</Trans>}
       titlebarVariant="blue"
       width="min(560px,92vw)"
       footer={
@@ -185,6 +262,9 @@ export function PhotoUpload({ wsId, itemId, open, onClose }: PhotoUploadProps) {
         </>
       }
     >
+      {/* SEAM: repair scope renders a BEFORE/DURING/AFTER select here. */}
+      {extraFields}
+
       <RetroFileInput
         label={<Trans>Photos</Trans>}
         accept="image/jpeg,image/png,image/webp"
