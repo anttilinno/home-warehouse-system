@@ -235,7 +235,7 @@ Clean-slate rebuild of `/frontend2` with sketch 006-008 retro-os pastel fidelity
 - [x] **Phase 5: Auth** — login + register + Google OAuth + GitHub OAuth + RequireAuth (with v2.0 spurious-logout-on-network-error bug fixed) + workspace switcher + sessions + password change + account deletion + connected accounts (completed 2026-06-12)
 - [x] **Phase 6: Providers** — single cookie-authed SSEProvider (split `useSSEStatus()` selector + `useSSE` subscribe + generic invalidation dispatcher/contract doc) + RetroToaster/SSEProvider mounted in the verified canonical order; chrome (TopBar ONLINE dot + sse-slot RetroStatusDot + PageHeader LAST SYNC) wires to live state once; ShortcutsProvider/RetroToaster verified, not rebuilt (completed 2026-06-13)
 - [x] **Phase 7: Items + Photos** — paginated list with search/filter/sort + detail with photo gallery + create/edit/archive/delete + multipart photo upload + `itemsApi.lookupByBarcode` (G-65-01 regression-guard pattern) + per-route `useShortcuts` registration (completed 2026-06-13)
-- [ ] **Phase 7b: Inventory** — inventory entries list + filters (virtualized when large) + create with item/location/container pickers + move dialog + quantity/status/condition inline edits + expiry/warranty fields + expiring view + movements history panel + per-item inventory panel (closes Phase 7 stub) [Gap G-1, critical]
+- [x] **Phase 7b: Inventory** — inventory entries list + filters (virtualized when large) + create with item/location/container pickers + move dialog + quantity/status/condition inline edits + expiry/warranty fields + expiring view + movements history panel + per-item inventory panel (closes Phase 7 stub) [Gap G-1, critical] (completed 2026-06-13)
 - [ ] **Phase 8: Loans** — Active/Overdue/History tabbed list + create with item + borrower picker + mark returned + edit + per-item active+history panels + `?itemId=` deep-link param
 - [ ] **Phase 9: Borrowers** — flat paginated list + CRUD with active-loan delete guard + detail with active+history panels
 - [ ] **Phase 10: Taxonomy** — categories tree + locations tree + containers grouped by location + create/edit/archive with usage warnings + container delete with unassign-and-delete cascade policy
@@ -638,12 +638,12 @@ Plans:
   4. User can open an expiring view (`/inventory/expiring`) listing entries past or near expiry/warranty, and a movements history panel backed by the `/movements` endpoints (global + per-location + per-inventory)
   5. Item detail renders a per-item inventory panel (the Phase 7 stub now real) linking each entry to its location/container
 **Plans**: 6 plans (4 waves)
-- [ ] 07b-01-PLAN.md — API layer: inventory.ts + movements.ts (bare-{items} vs envelope) + types + 7+7 enum→StatusPill maps + MSW fixtures (INV-01..08 foundation) [Wave 1]
-- [ ] 07b-02-PLAN.md — List page: client filters/sort/pagination + inline-edit cells (optimistic+revert) + movements drawer + Sidebar entry + /inventory route (INV-01/05/07) [Wave 2]
-- [ ] 07b-03-PLAN.md — Create/edit form (status create-only, RFC3339 dates, expiry≥acquired) + whole-entry MoveDialog (INV-02/03/04) [Wave 2]
-- [ ] 07b-04-PLAN.md — Expiring view (near/past chips, days selector) + route wiring (new/edit/expiring) + MoveDialog wired into list (INV-06) [Wave 3]
-- [ ] 07b-05-PLAN.md — INV-08 panel replaces InventoryPanelStub at the 07-06 slot + per-item movements in HISTORY (INV-08/07) [Wave 3]
-- [ ] 07b-06-PLAN.md — Live E2E: create → list → move → movements lifecycle (INV-01/04/07) [Wave 4]
+- [x] 07b-01-PLAN.md — API layer: inventory.ts + movements.ts (bare-{items} vs envelope) + types + 7+7 enum→StatusPill maps + MSW fixtures (INV-01..08 foundation) [Wave 1]
+- [x] 07b-02-PLAN.md — List page: client filters/sort/pagination + inline-edit cells (optimistic+revert) + movements drawer + Sidebar entry + /inventory route (INV-01/05/07) [Wave 2]
+- [x] 07b-03-PLAN.md — Create/edit form (status create-only, RFC3339 dates, expiry≥acquired) + whole-entry MoveDialog (INV-02/03/04) [Wave 2]
+- [x] 07b-04-PLAN.md — Expiring view (near/past chips, days selector) + route wiring (new/edit/expiring) + MoveDialog wired into list (INV-06) [Wave 3]
+- [x] 07b-05-PLAN.md — INV-08 panel replaces InventoryPanelStub at the 07-06 slot + per-item movements in HISTORY (INV-08/07) [Wave 3]
+- [x] 07b-06-PLAN.md — Live E2E: create → list → move → movements lifecycle (INV-01/04/07) [Wave 4]
 **UI hint**: yes
 
 ### Phase 8: Loans
@@ -841,7 +841,7 @@ Plans:
 | 5 | v3.0 | 6/6 | Complete   | 2026-06-12 |
 | 6 | v3.0 | 2/2 | Complete   | 2026-06-13 |
 | 7 | v3.0 | 7/7 | Complete   | 2026-06-13 |
-| 7b | v3.0 | 0/TBD | Not started | - |
+| 7b | v3.0 | 6/6 | Complete   | 2026-06-13 |
 | 8 | v3.0 | 0/TBD | Not started | - |
 | 9 | v3.0 | 0/TBD | Not started | - |
 | 10 | v3.0 | 0/TBD | Not started | - |

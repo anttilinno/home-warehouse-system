@@ -192,14 +192,14 @@
 
 ### Inventory (INV) — Phase 7b (Gap G-1)
 
-- [ ] **INV-01**: User can browse inventory entries in a filterable list (item / location / container / quantity / status / condition), virtualized via `@tanstack/react-virtual` when the entry count warrants.
-- [ ] **INV-02**: User can create an inventory entry with item / location / container pickers (simple selects until Phase 10 type-ahead pickers land).
-- [ ] **INV-03**: User can record expiry + warranty fields on an inventory entry.
-- [ ] **INV-04**: User can move an entry between locations via a move dialog.
-- [ ] **INV-05**: User can edit quantity / status / condition inline on an inventory row.
-- [ ] **INV-06**: User can open an expiring view (`/inventory/expiring`) listing entries past or near expiry/warranty.
-- [ ] **INV-07**: User can view a movements history panel backed by the `/movements` endpoints (global + per-location + per-inventory).
-- [ ] **INV-08**: Item detail renders a per-item inventory panel (closing the Phase 7 stub) linking each entry to its location/container.
+- [x] **INV-01**: User can browse inventory entries in a filterable list (item / location / container / quantity / status / condition), virtualized via `@tanstack/react-virtual` when the entry count warrants.
+- [x] **INV-02**: User can create an inventory entry with item / location / container pickers (simple selects until Phase 10 type-ahead pickers land).
+- [x] **INV-03**: User can record expiry + warranty fields on an inventory entry.
+- [x] **INV-04**: User can move an entry between locations via a move dialog.
+- [x] **INV-05**: User can edit quantity / status / condition inline on an inventory row.
+- [x] **INV-06**: User can open an expiring view (`/inventory/expiring`) listing entries past or near expiry/warranty.
+- [x] **INV-07**: User can view a movements history panel backed by the `/movements` endpoints (global + per-location + per-inventory).
+- [x] **INV-08**: Item detail renders a per-item inventory panel (closing the Phase 7 stub) linking each entry to its location/container.
 
 ### Repairs (RPR) — Phase 10b (Gap G-2)
 
@@ -422,14 +422,14 @@
 | POL-04 | Phase 17 | Pending |
 | POL-05 | Phase 17 | Pending |
 | --- v3.0 parity amendment (2026-06-12) --- | | |
-| INV-01 | Phase 7b | Pending |
-| INV-02 | Phase 7b | Pending |
-| INV-03 | Phase 7b | Pending |
-| INV-04 | Phase 7b | Pending |
-| INV-05 | Phase 7b | Pending |
-| INV-06 | Phase 7b | Pending |
-| INV-07 | Phase 7b | Pending |
-| INV-08 | Phase 7b | Pending |
+| INV-01 | Phase 7b | Complete |
+| INV-02 | Phase 7b | Complete |
+| INV-03 | Phase 7b | Complete |
+| INV-04 | Phase 7b | Complete |
+| INV-05 | Phase 7b | Complete |
+| INV-06 | Phase 7b | Complete |
+| INV-07 | Phase 7b | Complete |
+| INV-08 | Phase 7b | Complete |
 | RPR-01 | Phase 10b | Pending |
 | RPR-02 | Phase 10b | Pending |
 | RPR-03 | Phase 10b | Pending |
