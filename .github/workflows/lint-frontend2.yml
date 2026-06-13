@@ -10,6 +10,9 @@ on:
       - "scripts/check-i18n-catalog.mjs"
       - "scripts/__tests__/check-i18n-format.test.mjs"
       - "scripts/__tests__/check-i18n-catalog.test.mjs"
+      - "scripts/check-bundle-budget.mjs"
+      - "scripts/__tests__/check-bundle-budget.test.mjs"
+      - "frontend2/bundle-budget.json"
       - ".github/workflows/lint-frontend2.yml"
   push:
     branches: [master]
@@ -21,6 +24,9 @@ on:
       - "scripts/check-i18n-catalog.mjs"
       - "scripts/__tests__/check-i18n-format.test.mjs"
       - "scripts/__tests__/check-i18n-catalog.test.mjs"
+      - "scripts/check-bundle-budget.mjs"
+      - "scripts/__tests__/check-bundle-budget.test.mjs"
+      - "frontend2/bundle-budget.json"
       - ".github/workflows/lint-frontend2.yml"
 
 jobs:
@@ -83,3 +89,21 @@ jobs:
           bun-version: 1.3.13
       - run: cd frontend2 && bun install --frozen-lockfile
       - run: cd frontend2 && bun run test --passWithNoTests
+
+  bundle-budget:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.13
+      - run: cd frontend2 && bun install --frozen-lockfile
+      # Self-tests prove the guard's own correctness (under/over/per-locale/missing).
+      - name: Run bundle-budget self-tests
+        run: node --test scripts/__tests__/check-bundle-budget.test.mjs
+      # Build the real bundle (bare vite build — no backend, CI-cheap) and enforce
+      # the per-chunk POL-04 budgets against frontend2/dist/assets.
+      - name: Build frontend2 bundle
+        run: cd frontend2 && bunx vite build
+      - name: Run bundle-budget guard
+        run: node scripts/check-bundle-budget.mjs
