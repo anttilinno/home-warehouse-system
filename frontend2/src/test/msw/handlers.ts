@@ -41,6 +41,28 @@ const ME = {
   full_name: "Seed Er",
   has_password: true,
   avatar_url: null,
+  // Phase 12 (Settings) — GetMe carries the seven preference fields. Downstream
+  // preferences subpages READ these from the shared ["me"] query.
+  date_format: "YYYY-MM-DD",
+  time_format: "24h",
+  thousand_separator: " ",
+  decimal_separator: ",",
+  language: "en",
+  theme: "light",
+  notification_preferences: {} as Record<string, boolean>,
+};
+
+// Phase 12 (Settings) — a single member fixture for the workspace-members
+// handlers. email/full_name reflect the enriched MemberResponse (Plan 12-01).
+const MEMBER_FIXTURE = {
+  id: "mem-1",
+  workspace_id: "ws-1",
+  user_id: "user-1",
+  role: "member",
+  email: "member@test.local",
+  full_name: "Mem Ber",
+  created_at: "2026-06-13T00:00:00Z",
+  updated_at: "2026-06-13T00:00:00Z",
 };
 
 // --- Items + Photos fixtures (Phase 7 Plan 01) ---
@@ -328,6 +350,35 @@ export const handlers = [
   // --- Connected OAuth accounts ---
   http.get("/api/auth/oauth/accounts", () => HttpResponse.json({ accounts: [] })),
   http.delete("/api/auth/oauth/accounts/:provider", () => new HttpResponse(null, { status: 204 })),
+
+  // --- Profile + preferences + avatar (Phase 12 Plan 02) ---
+  http.patch("/api/users/me", () => HttpResponse.json(ME)),
+  http.patch("/api/users/me/preferences", () => HttpResponse.json(ME)),
+  http.post("/api/users/me/avatar", () =>
+    HttpResponse.json({ ...ME, avatar_url: "/api/users/me/avatar" }),
+  ),
+  http.delete("/api/users/me/avatar", () =>
+    HttpResponse.json({ ...ME, avatar_url: null }),
+  ),
+
+  // --- Workspace members (Phase 12 Plan 02) ---
+  http.get("/api/workspaces/:wsId/members", () =>
+    HttpResponse.json({ items: [] }),
+  ),
+  http.post("/api/workspaces/:wsId/members", () =>
+    HttpResponse.json(MEMBER_FIXTURE),
+  ),
+  http.patch("/api/workspaces/:wsId/members/:userId", () =>
+    HttpResponse.json(MEMBER_FIXTURE),
+  ),
+  http.delete("/api/workspaces/:wsId/members/:userId", () => new HttpResponse(null, { status: 204 })),
+
+  // --- Workspace full export (Phase 12 Plan 02) ---
+  http.get("/api/workspaces/:wsId/export/workspace", () =>
+    HttpResponse.text("BLOB", {
+      headers: { "content-type": "application/octet-stream" },
+    }),
+  ),
 
   // --- Items + Photos (Phase 7 Plan 01) ---
   // Contract-shaped happy-path fixtures for downstream feature unit tests.
