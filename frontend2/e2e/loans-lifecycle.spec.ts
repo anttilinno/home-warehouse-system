@@ -131,12 +131,11 @@ test("loan lifecycle: create via UI → Active → return → History", async ({
     await page.goto("/loans/new");
     await expect(page.getByRole("heading", { name: /new loan/i })).toBeVisible();
 
-    await page
-      .getByLabel(/inventory entry/i)
-      .selectOption({ label: new RegExp(itemName) });
-    await page
-      .getByLabel(/^borrower$/i)
-      .selectOption({ label: borrowerName });
+    // Select by option VALUE (entry id / borrower id) — Playwright's
+    // selectOption `label` expects an exact string, not a RegExp; the wire
+    // value is the stable id captured at seed time.
+    await page.getByLabel(/inventory entry/i).selectOption(entryId!);
+    await page.getByLabel(/^borrower$/i).selectOption(borrowerId);
 
     await page.getByRole("button", { name: /create loan/i }).click();
 
