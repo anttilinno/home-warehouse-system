@@ -101,3 +101,8 @@ None — plan executed as written.
 ## Known Stubs
 
 None.
+
+## Self-Check: PASSED
+
+All created files present on disk; all three per-task commits present in git log
+(ca375133, 3d2e4408, 6ae066c6) on branch `exec/09-03`.
