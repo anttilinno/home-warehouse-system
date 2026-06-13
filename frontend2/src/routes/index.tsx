@@ -15,6 +15,7 @@ import { ItemDetailPage } from "@/features/items/ItemDetailPage";
 import { InventoryListPage } from "@/features/inventory/InventoryListPage";
 import { InventoryFormPage } from "@/features/inventory/InventoryFormPage";
 import { ExpiringPage } from "@/features/inventory/ExpiringPage";
+import { MaintenanceDuePage } from "@/features/maintenance/MaintenanceDuePage";
 import { LoansListPage } from "@/features/loans/LoansListPage";
 import { LoanFormPage } from "@/features/loans/LoanFormPage";
 import { BorrowersListPage } from "@/features/borrowers/BorrowersListPage";
@@ -69,6 +70,10 @@ export function AppRoutes() {
         <Route path="inventory" element={<InventoryListPage />} />
         <Route path="inventory/new" element={<InventoryFormPage />} />
         <Route path="inventory/expiring" element={<ExpiringPage />} />
+        {/* /maintenance/due (10b-04, MNT-02): the standalone due-maintenance
+            attention surface. ONE literal route — no /maintenance index page
+            this phase (the per-row drawer + this due feed cover it, OQ8). */}
+        <Route path="maintenance/due" element={<MaintenanceDuePage />} />
         <Route path="inventory/:id/edit" element={<InventoryFormPage />} />
         <Route path="items/:id/edit" element={<ItemFormPage />} />
         {/* Loans list (08-02) + create form (08-03). Literal routes BEFORE any
