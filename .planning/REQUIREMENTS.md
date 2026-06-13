@@ -79,13 +79,17 @@
 
 ### Items (ITEM)
 
-- [ ] **ITEM-01**: User can browse items in a paginated list (25/page, RetroTable), with search input, filter chips (category, location, archived), sort headers, and URL-driven query params for deep-linking.
+- [ ] **ITEM-01**: User can browse items in a paginated list (25/page, RetroTable), with search input, filter chips (category, archived), sort headers, and URL-driven query params for deep-linking.
+  - **ORIGINAL (2026-04-30):** "...with search input, filter chips (category, location, archived), sort headers..."
+  - **REVISED (2026-06-13, 07-07):** The **location filter chip is DROPPED** (deliberate scope deviation). The backend `GET /items` exposes only `search`, `category_id`, `archived`, `sort`, `sort_dir`, `page`, `limit` — there is **no `location_id` list param** (verified `backend/internal/domain/warehouse/item/handler.go:683-692`), so the list ships **category + archived** filter chips only. Location remains a **display column** in the table (not a filter). Reason: 07-RESEARCH Open Question 1 (RESOLVED 2026-06-13) — client-side-only location filtering would break server pagination, so the chip is deferred pending a backend `location_id` param (revisit post-parity). NOTE: the ROADMAP Phase 7 Success Criterion mirror of this deviation is owned by the phase orchestrator (this plan does not edit ROADMAP.md).
 - [ ] **ITEM-02**: User can view an item detail page showing all fields, photo gallery (if any), active-loan panel (if any), and loan history panel.
 - [ ] **ITEM-03**: User can create a new item via `/items/new`, with optional `?barcode={code}` query param prefilling the barcode field (forward-compat with scan flow).
 - [ ] **ITEM-04**: User can edit an item via `/items/{id}/edit` and save with optimistic UI invalidation of `itemKeys.all` + relevant detail keys.
 - [ ] **ITEM-05**: User can archive / unarchive an item; archived items are filtered out by default but visible via the "Show archived" filter chip.
 - [ ] **ITEM-06**: User can delete an item with type-to-confirm dialog (only available for archived items per legacy convention).
-- [ ] **ITEM-07**: User can upload up to N photos per item (JPEG/PNG/HEIC, client-resize, 10 MB cap per file); native FormData multipart, no upload library.
+- [ ] **ITEM-07**: User can upload up to N photos per item, client-resize, 10 MB cap per file; native FormData multipart, no upload library.
+  - **ORIGINAL (2026-04-30):** "User can upload up to N photos per item (JPEG/PNG/HEIC, client-resize, 10 MB cap per file); native FormData multipart, no upload library."
+  - **REVISED (2026-06-13, 07-07):** JPEG/PNG/WebP only — HEIC is rejected server-side. The backend `AllowedMimeTypes` is `{image/jpeg, image/png, image/webp}` (a HEIC upload returns 400 "invalid file type: only JPEG, PNG, and WebP"), so the client `<FileInput accept>` excludes it and the visible accept-list copy drops "HEIC". Reason: 07-RESEARCH Pitfall 2 (verified `backend/internal/domain/warehouse/itemphoto/entity.go:42-45`, `handler.go:699`). HEIC client-side conversion is impractical under the no-deps lock and is noted as deferred; the backend never accepted HEIC, so the original prose was aspirational.
 - [ ] **ITEM-08**: User can view item photos in a gallery + lightbox (keyboard nav: arrow keys + ESC); set primary thumbnail; delete individual photos with confirm.
 - [ ] **ITEM-09**: `itemsApi.lookupByBarcode(workspaceId, code)` helper exists and calls `GET /api/workspaces/{wsId}/items/by-barcode/{code}` with workspace-scoped server-side authority + 404 → null mapping (G-65-01 regression guard pattern).
 - [ ] **ITEM-10**: Items list page registers `useShortcuts("items", [{ key: "N", action: navTo("/items/new") }, { key: "/", action: focusSearch }, { key: "F", action: toggleFilters }])`.
