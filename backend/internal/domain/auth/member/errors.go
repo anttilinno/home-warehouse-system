@@ -11,4 +11,5 @@ var (
 	ErrCannotRemoveOwner   = shared.NewDomainError(shared.ErrForbidden, "cannot remove the last owner")
 	ErrInsufficientRole    = shared.NewDomainError(shared.ErrForbidden, "insufficient role to perform this action")
 	ErrCannotChangeOwnRole = shared.NewDomainError(shared.ErrForbidden, "cannot change your own role")
+	ErrUserNotRegistered   = shared.NewDomainError(shared.ErrNotFound, "no registered user with that email")
 )

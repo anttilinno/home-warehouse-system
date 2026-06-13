@@ -54,6 +54,16 @@ func (m *MockRepository) Exists(ctx context.Context, workspaceID, userID uuid.UU
 	return args.Bool(0), args.Error(1)
 }
 
+// MockUserFinder is a mock implementation of the UserFinder interface.
+type MockUserFinder struct {
+	mock.Mock
+}
+
+func (m *MockUserFinder) FindUserIDByEmail(ctx context.Context, email string) (uuid.UUID, error) {
+	args := m.Called(ctx, email)
+	return args.Get(0).(uuid.UUID), args.Error(1)
+}
+
 // =============================================================================
 // Entity Tests
 // =============================================================================
@@ -350,7 +360,7 @@ func TestService_AddMember(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			mockRepo := new(MockRepository)
-			svc := NewService(mockRepo)
+			svc := NewService(mockRepo, new(MockUserFinder))
 
 			tt.setupMock(mockRepo)
 
@@ -374,6 +384,80 @@ func TestService_AddMember(t *testing.T) {
 			mockRepo.AssertExpectations(t)
 		})
 	}
+}
+
+func TestService_AddMemberByEmail(t *testing.T) {
+	ctx := context.Background()
+	workspaceID := uuid.New()
+	userID := uuid.New()
+	invitedBy := uuid.New()
+
+	t.Run("registered email resolves to user id and adds member", func(t *testing.T) {
+		mockRepo := new(MockRepository)
+		mockFinder := new(MockUserFinder)
+		svc := NewService(mockRepo, mockFinder)
+
+		mockFinder.On("FindUserIDByEmail", ctx, "alice@example.com").Return(userID, nil)
+		mockRepo.On("Exists", ctx, workspaceID, userID).Return(false, nil)
+		mockRepo.On("Save", ctx, mock.MatchedBy(func(m *Member) bool {
+			return m.UserID() == userID && m.WorkspaceID() == workspaceID && m.Role() == RoleMember
+		})).Return(nil)
+
+		m, err := svc.AddMember(ctx, AddMemberInput{
+			WorkspaceID: workspaceID,
+			Email:       "alice@example.com",
+			Role:        RoleMember,
+			InvitedBy:   &invitedBy,
+		})
+
+		assert.NoError(t, err)
+		assert.NotNil(t, m)
+		assert.Equal(t, userID, m.UserID())
+		mockFinder.AssertExpectations(t)
+		mockRepo.AssertExpectations(t)
+	})
+
+	t.Run("unregistered email returns ErrUserNotRegistered", func(t *testing.T) {
+		mockRepo := new(MockRepository)
+		mockFinder := new(MockUserFinder)
+		svc := NewService(mockRepo, mockFinder)
+
+		mockFinder.On("FindUserIDByEmail", ctx, "ghost@example.com").
+			Return(uuid.Nil, ErrUserNotRegistered)
+
+		m, err := svc.AddMember(ctx, AddMemberInput{
+			WorkspaceID: workspaceID,
+			Email:       "ghost@example.com",
+			Role:        RoleMember,
+		})
+
+		assert.Nil(t, m)
+		assert.ErrorIs(t, err, ErrUserNotRegistered)
+		mockFinder.AssertExpectations(t)
+		// Exists/Save must never be reached for an unregistered email.
+		mockRepo.AssertNotCalled(t, "Exists")
+		mockRepo.AssertNotCalled(t, "Save")
+	})
+
+	t.Run("registered email but already a member returns ErrAlreadyMember", func(t *testing.T) {
+		mockRepo := new(MockRepository)
+		mockFinder := new(MockUserFinder)
+		svc := NewService(mockRepo, mockFinder)
+
+		mockFinder.On("FindUserIDByEmail", ctx, "alice@example.com").Return(userID, nil)
+		mockRepo.On("Exists", ctx, workspaceID, userID).Return(true, nil)
+
+		m, err := svc.AddMember(ctx, AddMemberInput{
+			WorkspaceID: workspaceID,
+			Email:       "alice@example.com",
+			Role:        RoleMember,
+		})
+
+		assert.Nil(t, m)
+		assert.ErrorIs(t, err, ErrAlreadyMember)
+		mockFinder.AssertExpectations(t)
+		mockRepo.AssertExpectations(t)
+	})
 }
 
 func TestService_GetMember(t *testing.T) {
@@ -419,7 +503,7 @@ func TestService_GetMember(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			mockRepo := new(MockRepository)
-			svc := NewService(mockRepo)
+			svc := NewService(mockRepo, new(MockUserFinder))
 
 			tt.setupMock(mockRepo)
 
@@ -451,7 +535,7 @@ func TestService_ListWorkspaceMembers(t *testing.T) {
 	}
 
 	mockRepo := new(MockRepository)
-	svc := NewService(mockRepo)
+	svc := NewService(mockRepo, new(MockUserFinder))
 
 	mockRepo.On("ListByWorkspace", ctx, workspaceID).Return(members, nil)
 
@@ -527,7 +611,7 @@ func TestService_UpdateRole(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			mockRepo := new(MockRepository)
-			svc := NewService(mockRepo)
+			svc := NewService(mockRepo, new(MockUserFinder))
 
 			tt.setupMock(mockRepo)
 
@@ -604,7 +688,7 @@ func TestService_RemoveMember(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			mockRepo := new(MockRepository)
-			svc := NewService(mockRepo)
+			svc := NewService(mockRepo, new(MockUserFinder))
 
 			tt.setupMock(mockRepo)
 
@@ -630,7 +714,7 @@ func TestService_GetUserRole(t *testing.T) {
 	member, _ := NewMember(workspaceID, userID, RoleAdmin, nil)
 
 	mockRepo := new(MockRepository)
-	svc := NewService(mockRepo)
+	svc := NewService(mockRepo, new(MockUserFinder))
 
 	mockRepo.On("FindByWorkspaceAndUser", ctx, workspaceID, userID).Return(member, nil)
 

@@ -2,9 +2,19 @@ package member
 
 import (
 	"context"
+	"errors"
 
 	"github.com/google/uuid"
 )
+
+// UserFinder resolves an email to an existing registered user's id. It is a
+// narrow port over the user domain, injected to avoid coupling the member
+// package to the full user service/entity. Implementations MUST return
+// ErrUserNotRegistered (or an error that wraps a not-found condition) when no
+// user matches the email.
+type UserFinder interface {
+	FindUserIDByEmail(ctx context.Context, email string) (uuid.UUID, error)
+}
 
 // ServiceInterface defines the member service operations.
 type ServiceInterface interface {
@@ -18,26 +28,52 @@ type ServiceInterface interface {
 
 // Service handles member business logic.
 type Service struct {
-	repo Repository
+	repo  Repository
+	users UserFinder
 }
 
-// NewService creates a new member service.
-func NewService(repo Repository) *Service {
-	return &Service{repo: repo}
+// NewService creates a new member service. The UserFinder is used by the
+// add-by-email path to resolve an email to an existing user id.
+func NewService(repo Repository, users UserFinder) *Service {
+	return &Service{repo: repo, users: users}
 }
 
-// AddMemberInput holds the input for adding a member.
+// AddMemberInput holds the input for adding a member. Exactly one of Email or
+// UserID identifies the user to add: when Email is non-empty it is resolved to
+// an existing registered user's id (the parity add-by-email path); otherwise
+// UserID is used directly (legacy/internal callers).
 type AddMemberInput struct {
 	WorkspaceID uuid.UUID
 	UserID      uuid.UUID
+	Email       string
 	Role        Role
 	InvitedBy   *uuid.UUID
 }
 
-// AddMember adds a new member to a workspace.
+// AddMember adds a new member to a workspace. If an email is supplied it is
+// resolved to an existing registered user's id (404 ErrUserNotRegistered when
+// absent); no pending-invite row is created and no email is sent.
 func (s *Service) AddMember(ctx context.Context, input AddMemberInput) (*Member, error) {
+	userID := input.UserID
+
+	// Resolve add-by-email to an existing registered user's id.
+	if input.Email != "" {
+		resolved, err := s.users.FindUserIDByEmail(ctx, input.Email)
+		if err != nil {
+			// A not-found from the finder means the email is not registered.
+			if errors.Is(err, ErrUserNotRegistered) {
+				return nil, ErrUserNotRegistered
+			}
+			return nil, err
+		}
+		if resolved == uuid.Nil {
+			return nil, ErrUserNotRegistered
+		}
+		userID = resolved
+	}
+
 	// Check if user is already a member
-	exists, err := s.repo.Exists(ctx, input.WorkspaceID, input.UserID)
+	exists, err := s.repo.Exists(ctx, input.WorkspaceID, userID)
 	if err != nil {
 		return nil, err
 	}
@@ -46,7 +82,7 @@ func (s *Service) AddMember(ctx context.Context, input AddMemberInput) (*Member,
 	}
 
 	// Create member entity
-	member, err := NewMember(input.WorkspaceID, input.UserID, input.Role, input.InvitedBy)
+	member, err := NewMember(input.WorkspaceID, userID, input.Role, input.InvitedBy)
 	if err != nil {
 		return nil, err
 	}

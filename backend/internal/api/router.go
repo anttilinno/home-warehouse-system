@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -64,6 +65,7 @@ import (
 	"github.com/antti/home-warehouse/go-backend/internal/infra/queue"
 	"github.com/antti/home-warehouse/go-backend/internal/infra/storage"
 	"github.com/antti/home-warehouse/go-backend/internal/infra/webpush"
+	"github.com/antti/home-warehouse/go-backend/internal/shared"
 	"github.com/antti/home-warehouse/go-backend/internal/shared/crypto"
 	"github.com/antti/home-warehouse/go-backend/internal/shared/jwt"
 	"github.com/hibiken/asynq"
@@ -90,6 +92,27 @@ func (a sessionResolverAdapter) FindByTokenHash(ctx context.Context, tokenHash s
 		return nil, nil
 	}
 	return sess, nil
+}
+
+// memberUserFinder adapts the user service to the member.UserFinder port,
+// resolving an email to an existing user id and mapping a not-found user to
+// member.ErrUserNotRegistered (which the member handler maps to a 404).
+type memberUserFinder struct {
+	users *user.Service
+}
+
+func (f memberUserFinder) FindUserIDByEmail(ctx context.Context, email string) (uuid.UUID, error) {
+	u, err := f.users.GetByEmail(ctx, email)
+	if err != nil {
+		if errors.Is(err, user.ErrUserNotFound) || errors.Is(err, shared.ErrNotFound) {
+			return uuid.Nil, member.ErrUserNotRegistered
+		}
+		return uuid.Nil, err
+	}
+	if u == nil {
+		return uuid.Nil, member.ErrUserNotRegistered
+	}
+	return u.ID(), nil
 }
 
 // NewRouter creates and configures the main router.
@@ -223,7 +246,7 @@ func NewRouter(pool *pgxpool.Pool, cfg *config.Config) chi.Router {
 	userSvc := user.NewService(userRepo)
 	sessionSvc := session.NewService(sessionRepo)
 	workspaceSvc := workspace.NewService(workspaceRepo, memberRepo)
-	memberSvc := member.NewService(memberRepo)
+	memberSvc := member.NewService(memberRepo, memberUserFinder{users: userSvc})
 	notificationSvc := notification.NewService(notificationRepo)
 	pushSubscriptionSvc := pushsubscription.NewService(pushSubscriptionRepo)
 	// Phase 1 services

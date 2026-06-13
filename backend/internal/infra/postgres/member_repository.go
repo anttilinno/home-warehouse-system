@@ -93,7 +93,7 @@ func (r *MemberRepository) ListByWorkspace(ctx context.Context, workspaceID uuid
 			invitedBy = &id
 		}
 
-		members = append(members, member.Reconstruct(
+		members = append(members, member.ReconstructWithIdentity(
 			row.ID,
 			row.WorkspaceID,
 			row.UserID,
@@ -101,6 +101,8 @@ func (r *MemberRepository) ListByWorkspace(ctx context.Context, workspaceID uuid
 			invitedBy,
 			row.CreatedAt.Time,
 			row.UpdatedAt.Time,
+			row.Email,
+			row.FullName,
 		))
 	}
 
