@@ -56,6 +56,61 @@ func TestLabelRepository_Save(t *testing.T) {
 
 		assert.Equal(t, desc, *retrieved.Description())
 	})
+
+	t.Run("updates existing label without duplicate-key error", func(t *testing.T) {
+		// Regression: Save previously always called CreateLabel, so a second
+		// Save (e.g. PATCH /labels/{id}) failed with a duplicate-key 400.
+		l, err := label.NewLabel(testfixtures.TestWorkspaceID, "Original Label", testfixtures.StringPtr("#111111"), nil)
+		require.NoError(t, err)
+		err = repo.Save(ctx, l)
+		require.NoError(t, err)
+
+		newDesc := "Updated label description"
+		err = l.Update("Renamed Label", testfixtures.StringPtr("#222222"), &newDesc)
+		require.NoError(t, err)
+
+		// Second Save must update, not INSERT.
+		err = repo.Save(ctx, l)
+		require.NoError(t, err)
+
+		retrieved, err := repo.FindByID(ctx, l.ID(), testfixtures.TestWorkspaceID)
+		require.NoError(t, err)
+		require.NotNil(t, retrieved)
+		assert.Equal(t, "Renamed Label", retrieved.Name())
+		require.NotNil(t, retrieved.Color())
+		assert.Equal(t, "#222222", *retrieved.Color())
+		require.NotNil(t, retrieved.Description())
+		assert.Equal(t, newDesc, *retrieved.Description())
+	})
+
+	t.Run("archives and restores existing label", func(t *testing.T) {
+		l, err := label.NewLabel(testfixtures.TestWorkspaceID, "Archivable Label", testfixtures.StringPtr("#333333"), nil)
+		require.NoError(t, err)
+		err = repo.Save(ctx, l)
+		require.NoError(t, err)
+
+		fresh, err := repo.FindByID(ctx, l.ID(), testfixtures.TestWorkspaceID)
+		require.NoError(t, err)
+		assert.False(t, fresh.IsArchived())
+
+		// Archive (active → archived).
+		l.Archive()
+		err = repo.Save(ctx, l)
+		require.NoError(t, err)
+
+		archived, err := repo.FindByID(ctx, l.ID(), testfixtures.TestWorkspaceID)
+		require.NoError(t, err)
+		assert.True(t, archived.IsArchived(), "label should be archived after Save")
+
+		// Restore round-trip.
+		l.Restore()
+		err = repo.Save(ctx, l)
+		require.NoError(t, err)
+
+		restored, err := repo.FindByID(ctx, l.ID(), testfixtures.TestWorkspaceID)
+		require.NoError(t, err)
+		assert.False(t, restored.IsArchived(), "label should be active after restore")
+	})
 }
 
 func TestLabelRepository_FindByID(t *testing.T) {

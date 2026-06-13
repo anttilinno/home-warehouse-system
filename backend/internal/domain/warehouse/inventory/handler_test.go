@@ -622,6 +622,33 @@ func TestInventoryHandler_List(t *testing.T) {
 		testutil.AssertStatus(t, rec, http.StatusInternalServerError)
 		mockSvc.AssertExpectations(t)
 	})
+
+	t.Run("container_id filter delegates to ListByContainer", func(t *testing.T) {
+		// Regression: ?container_id= was previously ignored because the param
+		// was not declared on ListInventoryInput, so the handler always paged
+		// the full workspace via List.
+		//
+		// Use a dedicated setup/mock so AssertNotCalled("List") reflects only
+		// this request, not the List calls made by sibling subtests above.
+		localSetup := testutil.NewHandlerTestSetup()
+		localMock := new(MockService)
+		inventory.RegisterRoutes(localSetup.API, localMock, nil)
+
+		containerID := uuid.New()
+		itemID := uuid.New()
+		locationID := uuid.New()
+		inv1, _ := inventory.NewInventory(localSetup.WorkspaceID, itemID, locationID, &containerID, 4, inventory.ConditionGood, inventory.StatusAvailable, nil)
+
+		localMock.On("ListByContainer", mock.Anything, localSetup.WorkspaceID, containerID).
+			Return([]*inventory.Inventory{inv1}, nil).Once()
+
+		rec := localSetup.Get(fmt.Sprintf("/inventory?container_id=%s", containerID))
+
+		testutil.AssertStatus(t, rec, http.StatusOK)
+		// The container path must NOT invoke the unfiltered List path.
+		localMock.AssertExpectations(t)
+		localMock.AssertNotCalled(t, "List", mock.Anything, mock.Anything, mock.Anything)
+	})
 }
 
 // Event Publishing Tests

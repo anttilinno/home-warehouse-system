@@ -238,7 +238,7 @@ Clean-slate rebuild of `/frontend2` with sketch 006-008 retro-os pastel fidelity
 - [x] **Phase 7b: Inventory** — inventory entries list + filters (virtualized when large) + create with item/location/container pickers + move dialog + quantity/status/condition inline edits + expiry/warranty fields + expiring view + movements history panel + per-item inventory panel (closes Phase 7 stub) [Gap G-1, critical] (completed 2026-06-13)
 - [x] **Phase 8: Loans** — Active/Overdue/History tabbed list + create with item + borrower picker + mark returned + edit + per-item active+history panels + `?itemId=` deep-link param (completed 2026-06-13)
 - [x] **Phase 9: Borrowers** — flat paginated list + CRUD with active-loan delete guard + detail with active+history panels (3 plans) (completed 2026-06-13)
-- [ ] **Phase 10: Taxonomy** — categories tree + locations tree + containers grouped by location + create/edit/archive with usage warnings + container delete with unassign-and-delete cascade policy
+- [x] **Phase 10: Taxonomy** — categories tree + locations tree + containers grouped by location + create/edit/archive with usage warnings + container delete with unassign-and-delete cascade policy (completed 2026-06-13)
 - [ ] **Phase 10b: Repairs + Maintenance** — repair log drawer/panel on inventory detail (CRUD + start/complete + cost rollup) + repair photos + repair attachments + maintenance schedule CRUD + due list + complete action + dashboard due-maintenance feed (consumed by Phase 13) [Gap G-2]
 - [ ] **Phase 11: Scan (single-route)** — `/scan` with `<BarcodeScanner>` mounted ONCE + QR/UPC/EAN/Code128 + pause-on-match (prop-driven) + Android torch + manual fallback + AudioContext + ios-haptics + scan history (last 10) + 4-state result banner + post-match quick-action overlay + UPC opt-in suggestion prefill
 - [ ] **Phase 12: Settings hub** — landing with 8 grouped rows + Profile + Security + Appearance + Language + Regional Formats + Notifications + Connected Accounts + Data Storage (online-only — clear cache + export + import only)
@@ -697,7 +697,7 @@ Plans:
 - [x] 10-02-PLAN.md — Page shell (/taxonomy ?tab= RetroTabs) + Categories tab (tree CRUD + TAX-02 client usage-warning archive) + route + Sidebar + W3 tab stubs
 - [x] 10-03-PLAN.md — Locations tab (tree, archive-only) + Containers tab (grouped-by-location, bare-DELETE unassign) + SearchPicker + useTaxonomySearch
 - [x] 10-04-PLAN.md — Labels tab (TAX-07 CRUD list + 8-swatch on-palette color picker)
-- [ ] 10-05-PLAN.md — Live Playwright E2E (category create→tree→archive-warning; container create→grouped→delete; label CRUD; single login)
+- [x] 10-05-PLAN.md — Live Playwright E2E (category create→tree→archive-warning; container create→grouped→delete; label CRUD; single login)
 **UI hint**: yes
 
 ### Phase 10b: Repairs + Maintenance
@@ -861,7 +861,7 @@ Plans:
 | 7b | v3.0 | 6/6 | Complete   | 2026-06-13 |
 | 8 | v3.0 | 6/6 | Complete   | 2026-06-13 |
 | 9 | v3.0 | 3/3 | Complete   | 2026-06-13 |
-| 10 | v3.0 | 4/5 | In Progress|  |
+| 10 | v3.0 | 5/5 | Complete   | 2026-06-13 |
 | 10b | v3.0 | 0/TBD | Not started | - |
 | 11 | v3.0 | 0/TBD | Not started | - |
 | 12 | v3.0 | 0/TBD | Not started | - |

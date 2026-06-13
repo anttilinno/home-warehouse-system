@@ -28,6 +28,28 @@ func registerQueryRoutes(api huma.API, svc ServiceInterface) {
 			return nil, huma.Error401Unauthorized(err.Error())
 		}
 
+		// If a valid container filter is supplied, delegate to the container-scoped
+		// path. A malformed UUID is silently treated as no filter (mirrors the
+		// item handler's category_id parsing).
+		if input.ContainerID != "" {
+			if containerID, perr := uuid.Parse(input.ContainerID); perr == nil {
+				items, err := svc.ListByContainer(ctx, workspaceID, containerID)
+				if err != nil {
+					return nil, huma.Error500InternalServerError("failed to list inventory")
+				}
+
+				responses := toInventoryResponses(items)
+				return &ListInventoryOutput{
+					Body: InventoryListResponse{
+						Items:      responses,
+						Total:      len(responses),
+						Page:       input.Page,
+						TotalPages: 1,
+					},
+				}, nil
+			}
+		}
+
 		pagination := shared.Pagination{Page: input.Page, PageSize: input.Limit}
 		inventories, total, err := svc.List(ctx, workspaceID, pagination)
 		if err != nil {
@@ -463,8 +485,9 @@ func toInventoryResponse(inv *Inventory) InventoryResponse {
 // Request/Response types
 
 type ListInventoryInput struct {
-	Page  int `query:"page" default:"1" minimum:"1"`
-	Limit int `query:"limit" default:"50" minimum:"1" maximum:"100"`
+	Page        int    `query:"page" default:"1" minimum:"1"`
+	Limit       int    `query:"limit" default:"50" minimum:"1" maximum:"100"`
+	ContainerID string `query:"container_id,omitempty" doc:"Optional: narrow results to inventory in a specific container (UUID)"`
 }
 
 type GetInventoryInput struct {
