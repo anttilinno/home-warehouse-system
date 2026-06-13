@@ -122,17 +122,17 @@
 
 ### Scan (SCAN)
 
-- [ ] **SCAN-01**: User can open `/scan` and see a live rear-camera preview with scanner controls; `<BarcodeScanner>` mounts ONCE and stays mounted while overlays render on top — never navigates away mid-scan (iOS PWA camera-permission persistence).
-- [ ] **SCAN-02**: Scanner decodes QR, UPC-A, EAN-13, and Code128 formats via `@yudiel/react-qr-scanner@2.5.1` (exact pin); pause-on-match is prop-driven, NOT unmount.
-- [ ] **SCAN-03**: On successful scan, user hears AudioContext oscillator beep, feels haptic (ios-haptics on iOS 17.4+ Safari, navigator.vibrate elsewhere), and sees a visual flash/checkmark.
-- [ ] **SCAN-04**: User can toggle torch on Android devices that expose `MediaStreamTrack.getCapabilities().torch` (button auto-hidden on iOS).
-- [ ] **SCAN-05**: User can manually enter a barcode via a fallback Manual tab (RetroInput + LOOK UP CODE button) when camera scan fails or permission is denied.
-- [ ] **SCAN-06**: User sees the last 10 scanned codes in a History tab (localStorage key `hws-scan-history`), each row tap re-fires the post-scan flow.
-- [ ] **SCAN-07**: User can clear scan history with a confirm dialog.
-- [ ] **SCAN-08**: On scan/manual-entry, `itemsApi.lookupByBarcode` resolves to a 4-state banner — LOADING / MATCH / NOT-FOUND / ERROR — with a `prefers-reduced-motion`-aware blinking-cursor variant.
-- [ ] **SCAN-09**: NOT-FOUND state shows a "create item with this barcode" action navigating to `/items/new?barcode=<code>`.
-- [ ] **SCAN-10**: For codes matching `/^\d{8,14}$/`, the item-create form shows suggested name/brand from `GET /api/barcode/{code}` as opt-in prefill (suggestion banner with USE / USE ALL / DISMISS).
-- [ ] **SCAN-11**: After a MATCH, a quick-action overlay shows View Item / Loan / Back to Scan; menu is state-adaptive (Loan hidden if item on active loan, Unarchive if archived, Mark Reviewed if `needs_review`).
+- [x] **SCAN-01**: User can open `/scan` and see a live rear-camera preview with scanner controls; `<BarcodeScanner>` mounts ONCE and stays mounted while overlays render on top — never navigates away mid-scan (iOS PWA camera-permission persistence).
+- [x] **SCAN-02**: Scanner decodes QR, UPC-A, EAN-13, and Code128 formats via `@yudiel/react-qr-scanner@2.5.1` (exact pin); pause-on-match is prop-driven, NOT unmount.
+- [x] **SCAN-03**: On successful scan, user hears AudioContext oscillator beep, feels haptic (ios-haptics on iOS 17.4+ Safari, navigator.vibrate elsewhere), and sees a visual flash/checkmark.
+- [x] **SCAN-04**: User can toggle torch on Android devices that expose `MediaStreamTrack.getCapabilities().torch` (button auto-hidden on iOS).
+- [x] **SCAN-05**: User can manually enter a barcode via a fallback Manual tab (RetroInput + LOOK UP CODE button) when camera scan fails or permission is denied.
+- [x] **SCAN-06**: User sees the last 10 scanned codes in a History tab (localStorage key `hws-scan-history`), each row tap re-fires the post-scan flow.
+- [x] **SCAN-07**: User can clear scan history with a confirm dialog.
+- [x] **SCAN-08**: On scan/manual-entry, `itemsApi.lookupByBarcode` resolves to a 4-state banner — LOADING / MATCH / NOT-FOUND / ERROR — with a `prefers-reduced-motion`-aware blinking-cursor variant.
+- [x] **SCAN-09**: NOT-FOUND state shows a "create item with this barcode" action navigating to `/items/new?barcode=<code>`.
+- [x] **SCAN-10**: For codes matching `/^\d{8,14}$/`, the item-create form shows suggested name/brand from `GET /api/barcode/{code}` as opt-in prefill (suggestion banner with USE / USE ALL / DISMISS).
+- [x] **SCAN-11**: After a MATCH, a quick-action overlay shows View Item / Loan / Back to Scan; menu is state-adaptive (Loan hidden if item on active loan, Unarchive if archived, Mark Reviewed if `needs_review`).
 
 ### Settings (SETT)
 
@@ -267,7 +267,7 @@
 
 ### Scan parity addition (SCAN) — Phase 11 (Gap G-8)
 
-- [ ] **SCAN-12**: Claim flow `/claim/:code` — resolve shortlink/barcode and present a claim-as-loan form (login required).
+- [x] **SCAN-12**: Claim flow `/claim/:code` (login required) — resolve barcode → MATCH navigates to the item, NOT-FOUND opens create-item-with-barcode. _(Scoped to PORT LEGACY create-entity per user decision 2026-06-13; original "claim-as-loan" text superseded — shipped legacy was create-entity + no resolve endpoint.)_
 
 ### Settings parity additions (SETT) — Phase 12 (Gaps G-9, theme decision)
 
@@ -378,17 +378,17 @@
 | TAX-04 | Phase 10 | Complete |
 | TAX-05 | Phase 10 | Complete |
 | TAX-06 | Phase 10 | Complete |
-| SCAN-01 | Phase 11 | Pending |
-| SCAN-02 | Phase 11 | Pending |
-| SCAN-03 | Phase 11 | Pending |
-| SCAN-04 | Phase 11 | Pending |
-| SCAN-05 | Phase 11 | Pending |
-| SCAN-06 | Phase 11 | Pending |
-| SCAN-07 | Phase 11 | Pending |
-| SCAN-08 | Phase 11 | Pending |
-| SCAN-09 | Phase 11 | Pending |
-| SCAN-10 | Phase 11 | Pending |
-| SCAN-11 | Phase 11 | Pending |
+| SCAN-01 | Phase 11 | Complete |
+| SCAN-02 | Phase 11 | Complete |
+| SCAN-03 | Phase 11 | Complete |
+| SCAN-04 | Phase 11 | Complete |
+| SCAN-05 | Phase 11 | Complete |
+| SCAN-06 | Phase 11 | Complete |
+| SCAN-07 | Phase 11 | Complete |
+| SCAN-08 | Phase 11 | Complete |
+| SCAN-09 | Phase 11 | Complete |
+| SCAN-10 | Phase 11 | Complete |
+| SCAN-11 | Phase 11 | Complete |
 | SETT-01 | Phase 12 | Pending |
 | SETT-02 | Phase 12 | Pending |
 | SETT-03 | Phase 12 | Pending |
@@ -461,7 +461,7 @@
 | AUTH-11 | Phase 5 | Complete |
 | AUTH-12 | Phase 5 | Complete |
 | TAX-07 | Phase 10 | Complete |
-| SCAN-12 | Phase 11 | Pending |
+| SCAN-12 | Phase 11 | Complete (port-legacy create-entity) |
 | SETT-10 | Phase 12 | Pending |
 | SETT-11 | Phase 12 | Pending |
 | POL-06 | Phase 17 | Pending |

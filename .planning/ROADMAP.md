@@ -240,7 +240,7 @@ Clean-slate rebuild of `/frontend2` with sketch 006-008 retro-os pastel fidelity
 - [x] **Phase 9: Borrowers** — flat paginated list + CRUD with active-loan delete guard + detail with active+history panels (3 plans) (completed 2026-06-13)
 - [x] **Phase 10: Taxonomy** — categories tree + locations tree + containers grouped by location + create/edit/archive with usage warnings + container delete with unassign-and-delete cascade policy (completed 2026-06-13)
 - [x] **Phase 10b: Repairs + Maintenance** — repair log drawer/panel on inventory detail (CRUD + start/complete + cost rollup) + repair photos + repair attachments + maintenance schedule CRUD + due list + complete action + dashboard due-maintenance feed (consumed by Phase 13) [Gap G-2] (completed 2026-06-13)
-- [ ] **Phase 11: Scan (single-route)** — `/scan` with `<BarcodeScanner>` mounted ONCE + QR/UPC/EAN/Code128 + pause-on-match (prop-driven) + Android torch + manual fallback + AudioContext + ios-haptics + scan history (last 10) + 4-state result banner + post-match quick-action overlay + UPC opt-in suggestion prefill
+- [x] **Phase 11: Scan (single-route)** — `/scan` with `<BarcodeScanner>` mounted ONCE + QR/UPC/EAN/Code128 + pause-on-match (prop-driven) + Android torch + manual fallback + AudioContext + ios-haptics + scan history (last 10) + 4-state result banner + post-match quick-action overlay + UPC opt-in suggestion prefill (completed 2026-06-13)
 - [ ] **Phase 12: Settings hub** — landing with 8 grouped rows + Profile + Security + Appearance + Language + Regional Formats + Notifications + Connected Accounts + Data Storage (online-only — clear cache + export + import only)
 - [ ] **Phase 13: Dashboard** — 4 stat tiles + activity table (TUI columns, relative <24h then absolute) + side rail (Pending Approvals + System Alerts) + HUD row (gauge + sparkline + counts) gated behind `VITE_FEATURE_HUD_ROLLUPS` flag (Conflict 3 resolution)
 - [ ] **Phase 13b: Analytics + Out-of-stock** — charts page (category breakdown, location values, condition/status distribution, top borrowers, monthly loan activity; lazy-loaded chart lib to protect POL-04 bundle budget) + out-of-stock table with item links. NOTE: charts aesthetic needs a Retro OS sketch (extend set 006-008) before planning [Gap G-6]
@@ -737,7 +737,7 @@ Plans:
 - [x] 11-05-PLAN.md — result/manual/history components: ScanResultBanner, QuickActionMenu, ManualBarcodeEntry, ScanHistoryList, UpcSuggestionBanner + useMarkReviewedItem
 - [x] 11-06-PLAN.md — ScanPage (persistent single-mount) + routes/index.tsx (+/scan lazy, +/claim/:code) + Sidebar Scan nav + ItemFormPage ?name=/?brand= (single-writers)
 - [x] 11-07-PLAN.md — ClaimPage /claim/:code (PORT LEGACY create-entity, no new backend)
-- [ ] 11-08-PLAN.md — Lingui extract (en/et/ru) + re-add by-barcode Playwright spec (G-65-01, manual path)
+- [x] 11-08-PLAN.md — Lingui extract (en/et/ru) + re-add by-barcode Playwright spec (G-65-01, manual path)
 **UI hint**: yes
 
 ### Phase 12: Settings hub
@@ -877,7 +877,7 @@ Plans:
 | 9 | v3.0 | 3/3 | Complete   | 2026-06-13 |
 | 10 | v3.0 | 5/5 | Complete   | 2026-06-13 |
 | 10b | v3.0 | 5/5 | Complete   | 2026-06-13 |
-| 11 | v3.0 | 7/8 | In Progress|  |
+| 11 | v3.0 | 8/8 | Complete   | 2026-06-13 |
 | 12 | v3.0 | 0/TBD | Not started | - |
 | 13 | v3.0 | 0/TBD | Not started | - |
 | 13b | v3.0 | 0/TBD | Not started | - |
