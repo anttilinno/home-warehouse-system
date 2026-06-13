@@ -42,9 +42,15 @@ describe("Sidebar", () => {
 
   it("renders the OVERVIEW / INVENTORY / SYSTEM group labels", () => {
     renderSidebar(<Sidebar stats={stats} user={user} />);
-    expect(screen.getByText("Overview")).toBeInTheDocument();
-    expect(screen.getByText("Inventory")).toBeInTheDocument();
-    expect(screen.getByText("System")).toBeInTheDocument();
+    // Target the group HEADINGS specifically — "Inventory" also appears as a
+    // NavItem label in the INVENTORY group, so a bare getByText is ambiguous.
+    expect(
+      screen.getByRole("heading", { name: "Overview" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: "Inventory" }),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "System" })).toBeInTheDocument();
   });
 
   it("marks the Dashboard nav item active (aria-current + active bevel) at '/'", () => {

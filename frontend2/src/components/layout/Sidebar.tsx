@@ -137,6 +137,7 @@ export function Sidebar({
         </NavGroup>
         <NavGroup title={<Trans>Inventory</Trans>}>
           <NavItem glyph="▣" label={<Trans>Items</Trans>} count={stats?.total_items} to="/items" />
+          <NavItem glyph="⬚" label={<Trans>Inventory</Trans>} to="/inventory" />
           <NavItem glyph="▢" label={<Trans>Locations</Trans>} count={stats?.total_locations} />
           <NavItem glyph="▥" label={<Trans>Containers</Trans>} count={stats?.total_containers} />
           <NavItem glyph="◇" label={<Trans>Categories</Trans>} count={stats?.total_categories} />

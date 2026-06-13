@@ -12,6 +12,7 @@ import { DemoPage } from "@/routes/demo/DemoPage";
 import { ItemsListPage } from "@/features/items/ItemsListPage";
 import { ItemFormPage } from "@/features/items/ItemFormPage";
 import { ItemDetailPage } from "@/features/items/ItemDetailPage";
+import { InventoryListPage } from "@/features/inventory/InventoryListPage";
 
 // Library-mode RR7 (NOT framework mode — AP-1). Literal routes before the
 // wildcard. /login stays public; the authenticated branch is now an AppShell
@@ -53,6 +54,9 @@ export function AppRoutes() {
         <Route path="items" element={<ItemsListPage />} />
         <Route path="items/new" element={<ItemFormPage />} />
         <Route path="items/:id" element={<ItemDetailPage />} />
+        {/* Inventory list (07b-02). The /inventory/new + /inventory/:id/edit
+            form routes land in 07b-04 (later wave) — literal `inventory` here. */}
+        <Route path="inventory" element={<InventoryListPage />} />
         <Route path="items/:id/edit" element={<ItemFormPage />} />
         {/* Settings hub (05-UI-SPEC §5): SettingsLayout sub-layout under the
             AUTHENTICATED AppShell. /settings → /settings/security; the two built
