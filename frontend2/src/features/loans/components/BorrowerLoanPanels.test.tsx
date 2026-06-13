@@ -12,10 +12,10 @@ import { ShortcutsProvider } from "@/components/shortcuts";
 import { ModalStackProvider } from "@/components/modal";
 import { BorrowerLoanPanels } from "./BorrowerLoanPanels";
 
-// Phase 8 Plan 05 — BorrowerLoanPanels is COMPONENT-ONLY (LOAN-06): no borrower
-// route exists in frontend2 until Phase 9 (BORR-03 mounts it). These tests mount
-// the component DIRECTLY in a MemoryRouter wrapper (NO <Routes>/<Route>), and a
-// guard asserts routes/index.tsx registers no borrower route this phase.
+// Phase 8 Plan 05 — BorrowerLoanPanels is a reusable component (LOAN-06). These
+// tests mount it DIRECTLY in a MemoryRouter wrapper (NO <Routes>/<Route>). The
+// Phase-8 "no borrower route yet" guard was removed in Phase 9 (BORR-03), which
+// intentionally registers the borrower routes that mount this component.
 
 const useWorkspaceMock = vi.fn();
 vi.mock("@/features/workspace/useWorkspace", () => ({
@@ -172,16 +172,5 @@ describe("BorrowerLoanPanels", () => {
     await user.click(within(dialog).getByRole("button", { name: /^Return$/i }));
 
     await waitFor(() => expect(returnHit).toBe(true));
-  });
-});
-
-describe("BorrowerLoanPanels route guard", () => {
-  it("registers NO borrower route in routes/index.tsx this phase", async () => {
-    const [fs, path] = await Promise.all([import("fs"), import("path")]);
-    const src = fs.readFileSync(
-      path.resolve(process.cwd(), "src/routes/index.tsx"),
-      "utf8",
-    );
-    expect(src.includes('path="borrowers')).toBe(false);
   });
 });
