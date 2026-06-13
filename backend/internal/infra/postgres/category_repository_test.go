@@ -94,6 +94,37 @@ func TestCategoryRepository_Save(t *testing.T) {
 		assert.NotNil(t, retrieved.Description())
 		assert.Equal(t, newDesc, *retrieved.Description())
 	})
+
+	t.Run("archives and restores existing category", func(t *testing.T) {
+		cat, err := category.NewCategory(testfixtures.TestWorkspaceID, "Archivable Category", nil, nil)
+		require.NoError(t, err)
+		err = repo.Save(ctx, cat)
+		require.NoError(t, err)
+
+		// Sanity: freshly created category is active.
+		fresh, err := repo.FindByID(ctx, cat.ID(), testfixtures.TestWorkspaceID)
+		require.NoError(t, err)
+		assert.False(t, fresh.IsArchived())
+
+		// Archive (active → archived). This is the regression: Save previously
+		// routed through UpdateCategory, which never sets is_archived.
+		cat.Archive()
+		err = repo.Save(ctx, cat)
+		require.NoError(t, err)
+
+		archived, err := repo.FindByID(ctx, cat.ID(), testfixtures.TestWorkspaceID)
+		require.NoError(t, err)
+		assert.True(t, archived.IsArchived(), "category should be archived after Save")
+
+		// Restore (archived → active) round-trip.
+		cat.Restore()
+		err = repo.Save(ctx, cat)
+		require.NoError(t, err)
+
+		restored, err := repo.FindByID(ctx, cat.ID(), testfixtures.TestWorkspaceID)
+		require.NoError(t, err)
+		assert.False(t, restored.IsArchived(), "category should be active after restore")
+	})
 }
 
 func TestCategoryRepository_FindByID(t *testing.T) {

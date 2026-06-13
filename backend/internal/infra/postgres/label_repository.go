@@ -26,7 +26,43 @@ func NewLabelRepository(pool *pgxpool.Pool) *LabelRepository {
 }
 
 func (r *LabelRepository) Save(ctx context.Context, l *label.Label) error {
-	_, err := r.queries.CreateLabel(ctx, queries.CreateLabelParams{
+	// Check if label already exists (mirror ItemRepository.Save / CategoryRepository.Save).
+	existing, err := r.queries.GetLabel(ctx, queries.GetLabelParams{
+		ID:          l.ID(),
+		WorkspaceID: l.WorkspaceID(),
+	})
+	if err != nil && !errors.Is(err, pgx.ErrNoRows) {
+		return err
+	}
+
+	if existing.ID != uuid.Nil {
+		// Handle archive/restore state transitions.
+		if l.IsArchived() && !existing.IsArchived {
+			return r.queries.ArchiveLabel(ctx, queries.ArchiveLabelParams{
+				ID:          l.ID(),
+				WorkspaceID: l.WorkspaceID(),
+			})
+		}
+		if !l.IsArchived() && existing.IsArchived {
+			return r.queries.RestoreLabel(ctx, queries.RestoreLabelParams{
+				ID:          l.ID(),
+				WorkspaceID: l.WorkspaceID(),
+			})
+		}
+
+		// Update existing label.
+		_, err = r.queries.UpdateLabel(ctx, queries.UpdateLabelParams{
+			ID:          l.ID(),
+			WorkspaceID: l.WorkspaceID(),
+			Name:        l.Name(),
+			Color:       l.Color(),
+			Description: l.Description(),
+		})
+		return err
+	}
+
+	// Create new label.
+	_, err = r.queries.CreateLabel(ctx, queries.CreateLabelParams{
 		ID:          l.ID(),
 		WorkspaceID: l.WorkspaceID(),
 		Name:        l.Name(),

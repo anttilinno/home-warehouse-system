@@ -46,6 +46,20 @@ func (r *CategoryRepository) Save(ctx context.Context, c *category.Category) err
 	}
 
 	if existing.ID != uuid.Nil {
+		// Handle archive/restore state transitions (mirror ItemRepository.Save).
+		if c.IsArchived() && !existing.IsArchived {
+			return r.queries.ArchiveCategory(ctx, queries.ArchiveCategoryParams{
+				ID:          c.ID(),
+				WorkspaceID: c.WorkspaceID(),
+			})
+		}
+		if !c.IsArchived() && existing.IsArchived {
+			return r.queries.RestoreCategory(ctx, queries.RestoreCategoryParams{
+				ID:          c.ID(),
+				WorkspaceID: c.WorkspaceID(),
+			})
+		}
+
 		// Update existing category
 		_, err = r.queries.UpdateCategory(ctx, queries.UpdateCategoryParams{
 			ID:               c.ID(),
