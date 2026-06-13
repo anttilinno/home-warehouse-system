@@ -11,8 +11,9 @@ import { SettingsLandingPage } from "./SettingsLandingPage";
 
 // Phase 12 Plan 02 — SETT-01. The grouped-row landing: three group Windows,
 // each row a <Link> to its subroute (relative to /settings). The Paperless row
-// is a disabled pointer (aria-disabled), NOT a link. Optional counts render
-// only when their query cache is already populated (no fetch on the landing).
+// is now a real link to /settings/paperless (wired 14b-05; it was a disabled
+// COMING SOON pointer pre-14b). Optional counts render only when their query
+// cache is already populated (no fetch on the landing).
 
 function freshClient() {
   return new QueryClient({ defaultOptions: { queries: { retry: false } } });
@@ -61,6 +62,7 @@ describe("SettingsLandingPage — grouped rows (SETT-01)", () => {
       [/^Notifications$/, "/settings/notifications"],
       [/^Members$/, "/settings/members"],
       [/^Data & Storage$/, "/settings/data"],
+      [/^Paperless$/, "/settings/paperless"],
     ];
     for (const [label, href] of cases) {
       const link = screen.getByRole("link", { name: label });
@@ -68,17 +70,14 @@ describe("SettingsLandingPage — grouped rows (SETT-01)", () => {
     }
   });
 
-  it("renders Paperless as an aria-disabled pointer, NOT a link", () => {
+  it("renders Paperless as a real link row to /settings/paperless (no COMING SOON)", () => {
     renderPage();
-    // No link role for Paperless.
-    expect(
-      screen.queryByRole("link", { name: /Paperless/ }),
-    ).not.toBeInTheDocument();
-    const paperless = screen.getByText("Paperless").closest("li")!;
-    expect(within(paperless).getByText("Paperless")).toBeInTheDocument();
-    expect(paperless.querySelector('[aria-disabled="true"]')).not.toBeNull();
-    expect(within(paperless).getByText("COMING SOON")).toBeInTheDocument();
-    expect(within(paperless).getByText("Set up in DMS")).toBeInTheDocument();
+    // It is now a live link (was an aria-disabled COMING SOON pointer pre-14b).
+    const link = screen.getByRole("link", { name: /^Paperless$/ });
+    expect(link).toHaveAttribute("href", "/settings/paperless");
+    expect(link.querySelector('[aria-disabled="true"]')).toBeNull();
+    expect(screen.queryByText("COMING SOON")).not.toBeInTheDocument();
+    expect(screen.queryByText("Set up in DMS")).not.toBeInTheDocument();
   });
 
   it("renders no leading icons (text label + trailing chevron only)", () => {

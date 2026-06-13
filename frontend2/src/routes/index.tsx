@@ -96,6 +96,15 @@ const MembersPage = lazy(() =>
     default: m.MembersPage,
   })),
 );
+// Paperless settings page (14b-04 → 14b-05 wiring). Lazy like the other Wave-2/3
+// settings subpages; named export → mapped to default. PaperlessPage reads wsId
+// from useWorkspace(), so it takes no props. This is the single-writer route edit
+// for the Phase-14b Paperless settings surface (PPL-01/02).
+const PaperlessPage = lazy(() =>
+  import("@/features/settings/PaperlessPage").then((m) => ({
+    default: m.PaperlessPage,
+  })),
+);
 
 // Library-mode RR7 (NOT framework mode — AP-1). Literal routes before the
 // wildcard. /login stays public; the authenticated branch is now an AppShell
@@ -279,6 +288,17 @@ export function AppRoutes() {
             element={
               <Suspense fallback={null}>
                 <MembersPage />
+              </Suspense>
+            }
+          />
+          {/* Paperless DMS settings (14b-05, PPL-01/02): connection settings +
+              document search. Lazy/Suspense like its siblings; the Settings
+              landing's WORKSPACE group links here. */}
+          <Route
+            path="paperless"
+            element={
+              <Suspense fallback={null}>
+                <PaperlessPage />
               </Suspense>
             }
           />
