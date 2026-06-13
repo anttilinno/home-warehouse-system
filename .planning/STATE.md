@@ -4,14 +4,14 @@ milestone: v3.0
 milestone_name: Retro-OS Pastel Frontend
 status: completed
 stopped_at: Phase 2 context gathered
-last_updated: "2026-06-13T20:06:00.235Z"
-last_activity: 2026-06-13 -- Phase 15 marked complete
+last_updated: "2026-06-13T21:03:00.602Z"
+last_activity: 2026-06-13 -- Phase 16 marked complete
 progress:
   total_phases: 38
-  completed_phases: 19
-  total_plans: 101
-  completed_plans: 104
-  percent: 50
+  completed_phases: 20
+  total_plans: 104
+  completed_plans: 107
+  percent: 53
 ---
 
 # Project State: Home Warehouse System
@@ -21,14 +21,14 @@ progress:
 See: `.planning/PROJECT.md` (updated 2026-04-18)
 
 **Core value:** Reliable inventory access anywhere -- online or offline -- with seamless sync
-**Current focus:** Phase 15 — i18n-catalog
+**Current focus:** Phase 16 — command-palette
 
 ## Current Position
 
-Phase: 15 — COMPLETE
-Plan: 1 of 4
-Status: Phase 15 complete
-Last activity: 2026-06-13 -- Phase 15 marked complete
+Phase: 16 — COMPLETE
+Plan: 1 of 3
+Status: Phase 16 complete
+Last activity: 2026-06-13 -- Phase 16 marked complete
 
 ## Performance Metrics
 
@@ -96,7 +96,7 @@ Last activity: 2026-06-13 -- Phase 15 marked complete
 | 14 | System group | SYS-01..04, WISH-01..02, DECL-01..02 (8) | 7 | Complete |
 | 14b | Attachments + Paperless (Gap G-7) | ATT-01..03, PPL-01..03 (6) | 7, 12 | Complete |
 | 15 | i18n catalog gap-fill (et + ru) | I18N-01..03 (3) | 6, 12 | Complete |
-| 16 | Command Palette | TUI-05 (1) | 6 | Not started |
+| 16 | Command Palette | TUI-05 (1) | 6 | Complete |
 | 17 | Polish & Quality | POL-01..05, POL-06 (6) | 14 | Not started |
 
 **Coverage:** 149/149 v3.0 requirements mapped to exactly one phase (100%) — 106 base + 43 parity-amendment IDs (2026-06-12, `docs/FRONTEND2_FEATURE_PARITY_PLAN.md`). Note: the REQUIREMENTS.md "Total: 91 requirements across 14 categories" line was incorrect — the actual list contains 106 requirements across 17 categories (FOUND/TOKEN/SHELL/BAR/PROV/AUTH/ITEM/LOAN/BORR/TAX/SCAN/SETT/DASH/I18N/SYS/TUI/POL). The total has been corrected in REQUIREMENTS.md.

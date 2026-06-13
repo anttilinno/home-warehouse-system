@@ -247,7 +247,7 @@ Clean-slate rebuild of `/frontend2` with sketch 006-008 retro-os pastel fidelity
 - [x] **Phase 14: System group** — Approvals + My Changes + Sync History + Imports/Exports — all activity-table style with bulk operations dispatched via Bottombar (completed 2026-06-13)
 - [x] **Phase 14b: Attachments + Paperless** (completed 2026-06-13) — item attachments panel on item detail (upload/list/set-primary/delete; FileInput atom from Phase 4) + Paperless-ngx settings page (slots into Settings hub) + Paperless doc search + link-to-item. NOTE: cross-tenant attachment IDOR audit finding must be fixed with this phase [Gap G-7]
 - [x] **Phase 15: i18n catalog gap-fill (et + ru)** (completed 2026-06-13) — extract en messages, translate to et + ru (lift from legacy `/frontend` next-intl + v2.1 Lingui archive), locale switcher, format hooks (`useDateFormat`/`useTimeFormat`/`useNumberFormat`) used everywhere
-- [ ] **Phase 16: Command Palette** — Cmd+K / F2 cmdk surface filtering across routes, recent actions, and workspaces; keyboard-first navigation
+- [x] **Phase 16: Command Palette** — Cmd+K / F2 cmdk surface filtering across routes, recent actions, and workspaces; keyboard-first navigation (completed 2026-06-14)
 - [ ] **Phase 17: Polish & Quality** — Playwright E2E + Go integration test for every cross-HTTP flow + axe-playwright a11y CI sweep + tab/keyboard navigation audit + bundle size CI guard + mobile breakpoint matrix re-test (320/360/768/1024/1440 px) + visual diff vs sketch 006
 
 ## Phase Details
@@ -841,7 +841,10 @@ Plans:
   2. User typing a query sees fuzzy-filtered matches across routes, recent actions, and workspaces
   3. User can navigate matches with arrow keys, select with Enter, dismiss with ESC; tinykeys handles the open chord, cmdk owns filtering inside
 **Parity additions (2026-06-12)** (§4): merge the legacy global entity-search dropdown into the command palette — a single surface handles both nav and per-entity search (backend search endpoints per entity exist).
-**Plans**: TBD
+**Plans**: 3 plans
+- [x] 16-01-PLAN.md — deps (cmdk@1.1.1 + tinykeys@4.0.0) + `palette` manualChunk (cmdk + @radix-ui/react-dialog)
+- [x] 16-02-PLAN.md — command-palette feature module (chord owner, cmdk body, MRU, entity search) + tests + et/ru catalogs
+- [x] 16-03-PLAN.md — mount in ShellChrome (lazy + Suspense), POL-04 bundle gate, chromium E2E spec
 **UI hint**: yes
 
 ### Phase 17: Polish & Quality
@@ -901,7 +904,7 @@ Plans:
 | 14 | v3.0 | 8/8 | Complete   | 2026-06-13 |
 | 14b | v3.0 | 0/TBD | Not started | - |
 | 15 | v3.0 | 4/4 | Complete   | 2026-06-13 |
-| 16 | v3.0 | 0/TBD | Not started | - |
+| 16 | v3.0 | 3/3 | Complete   | 2026-06-13 |
 | 17 | v3.0 | 0/TBD | Not started | - |
 
 **Total:** 65 phases complete (185 plans executed: +65-11 gap-closure Wave 8 regression test for G-65-01, Phase 65 now 11/11 SHIPPABLE — Option C Playwright E2E + Go HTTP+Postgres integration test) across 12 milestones; v2.2 (Phases 64-72) active

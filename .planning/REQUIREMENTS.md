@@ -173,7 +173,7 @@
 - [x] **TUI-02**: Modal-stack ESC pops the topmost overlay first (dialog → drawer → menu), never logging out while any modal is open.
 - [x] **TUI-03**: SSE state in panel headers — live dot + `sse: ● live` text on panels that subscribe to entity events.
 - [x] **TUI-04**: Status pills on row entities — OK / WARN / INFO / DANGER variants with color tokens; numeric columns use `tabular-nums`.
-- [ ] **TUI-05**: Command palette (Cmd+K / F2) via `cmdk` — filters across routes, recent actions, and workspaces; keyboard-first navigation.
+- [x] **TUI-05**: Command palette (Cmd+K / F2) via `cmdk` — filters across routes, recent actions, and workspaces; keyboard-first navigation.
 - [x] **TUI-06**: Multi-select via Shift+Click on RetroTable rows; Bottombar surfaces bulk actions for the active selection set.
 
 ### Polish & Quality (POL)
@@ -414,7 +414,7 @@
 | TUI-02 | Phase 4 | Complete |
 | TUI-03 | Phase 4 | Complete |
 | TUI-04 | Phase 4 | Complete |
-| TUI-05 | Phase 16 | Pending |
+| TUI-05 | Phase 16 | Complete |
 | TUI-06 | Phase 4 | Complete |
 | POL-01 | Phase 17 | Pending |
 | POL-02 | Phase 17 | Pending |
