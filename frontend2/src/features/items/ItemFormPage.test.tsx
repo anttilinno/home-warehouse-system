@@ -137,6 +137,39 @@ describe("ItemFormPage — create", () => {
     expect(sentBody).toMatchObject({ name: "Cordless Drill", brand: "Makita" });
   });
 
+  it("SCAN-10: numeric ?barcode= mounts the UPC suggestion banner; USE ALL prefills name + threads brand into the create POST", async () => {
+    const user = userEvent.setup();
+    let sentBody: Record<string, unknown> | undefined;
+    server.use(
+      http.get("*/barcode/:code", () =>
+        HttpResponse.json({
+          barcode: "0123456789012",
+          name: "Bosch Cordless Drill",
+          brand: "Bosch",
+          found: true,
+        }),
+      ),
+      http.post("/api/workspaces/:wsId/items", async ({ request }) => {
+        sentBody = (await request.json()) as Record<string, unknown>;
+        return HttpResponse.json(NEW_ITEM);
+      }),
+    );
+    renderForm(["/items/new?barcode=0123456789012"]);
+    // Banner self-fetches GET /barcode/{code} and renders USE ALL.
+    const useAll = await screen.findByRole("button", { name: /USE ALL/i });
+    await user.click(useAll);
+    // Name field is prefilled by the banner.
+    const name = screen.getByLabelText(/name/i) as HTMLInputElement;
+    await waitFor(() => expect(name.value).toBe("Bosch Cordless Drill"));
+    await user.type(screen.getByLabelText(/^sku/i), "SKU-UPC");
+    await user.click(screen.getByRole("button", { name: /save item/i }));
+    await waitFor(() => expect(sentBody).toBeDefined());
+    expect(sentBody).toMatchObject({
+      name: "Bosch Cordless Drill",
+      brand: "Bosch",
+    });
+  });
+
   it("ignores a stray ?brand= without ?name= (no spurious payload)", async () => {
     const user = userEvent.setup();
     let sentBody: Record<string, unknown> | undefined;

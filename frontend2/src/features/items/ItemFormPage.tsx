@@ -15,6 +15,10 @@ import {
   RetroConfirmDialog,
   retroToast,
 } from "@/components/retro";
+import {
+  UpcSuggestionBanner,
+  type UpcSuggestion,
+} from "@/components/scan";
 import { useWorkspace } from "@/features/workspace/useWorkspace";
 import { itemsApi } from "@/lib/api/items";
 import type { Item } from "@/lib/types";
@@ -88,6 +92,14 @@ export function ItemFormPage() {
   const prefillBrand = searchParams.get("brand") ?? "";
   const showFromScan = !isEdit && prefillBarcode.length > 0;
 
+  // SCAN-10: the UPC suggestion banner self-fetches GET /barcode/{code} for a
+  // numeric prefilled barcode and offers USE (name) / USE ALL (name+brand) /
+  // DISMISS. USE writes the name field; the brand (no form field — override 5)
+  // is held here and merged into the create POST. Seed scanBrand from any
+  // ?brand= URL param (legacy path) so both routes feed the same submit logic.
+  const [scanBrand, setScanBrand] = useState(prefillBrand);
+  const [upcDismissed, setUpcDismissed] = useState(false);
+
   // Edit mode: load the item. enabled only when editing + wsId present.
   const itemQuery = useQuery({
     queryKey: ["items", wsId as string, "detail", id],
@@ -115,6 +127,7 @@ export function ItemFormPage() {
     handleSubmit,
     control,
     reset,
+    setValue,
     setError,
     formState: { errors, dirtyFields, isDirty, isSubmitting, isSubmitSuccessful },
   } = useForm<ItemFormInput>({
@@ -173,17 +186,18 @@ export function ItemFormPage() {
         const dirty = dirtyFields as DirtyMap;
         await updateItem({ id, values, dirty });
         navigate(`/items/${id}`);
-      } else if (prefillBrand) {
+      } else if (scanBrand) {
         // SCAN-10 USE-ALL brand passthrough. The form has no brand input
         // (binding override 5 — do NOT invent one), and the shared create
         // mutation's body builder owns a fixed key set, so a brand-bearing
         // create is issued directly here with the brand merged into the POST
-        // body. Toast + cache-invalidation mirror the mutation's onSuccess so
-        // behaviour is identical to the field-only create path.
+        // body (scanBrand comes from the UpcSuggestionBanner USE ALL action or
+        // a legacy ?brand= param). Toast + cache-invalidation mirror the
+        // mutation's onSuccess so behaviour matches the field-only create path.
         const created = await itemsApi.create(wsId as string, {
           sku: values.sku,
           name: values.name,
-          brand: prefillBrand,
+          brand: scanBrand,
           ...(values.description ? { description: values.description } : {}),
           ...(values.barcode ? { barcode: values.barcode } : {}),
           ...(values.minStock !== undefined
@@ -335,6 +349,19 @@ export function ItemFormPage() {
                 />
               )}
             </RetroFormField>
+            {showFromScan && !upcDismissed && (
+              <UpcSuggestionBanner
+                code={prefillBarcode}
+                onUse={(s: UpcSuggestion) => {
+                  setValue("name", s.name, {
+                    shouldDirty: true,
+                    shouldValidate: true,
+                  });
+                  if (s.brand !== undefined) setScanBrand(s.brand);
+                }}
+                onDismiss={() => setUpcDismissed(true)}
+              />
+            )}
           </div>
 
           {/* Group 3 — Notes */}
