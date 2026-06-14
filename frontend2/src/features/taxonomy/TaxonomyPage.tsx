@@ -1,4 +1,4 @@
-import { useCallback, useRef, type ReactNode } from "react";
+import { useCallback, type ReactNode } from "react";
 import { useSearchParams } from "react-router";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { Window, RetroTabs } from "@/components/retro";
@@ -17,7 +17,6 @@ import { LabelsTab } from "./components/LabelsTab";
 // same-wave plan re-edits this file).
 //
 // RetroTabs owns its panel padding (p-sp-4) — do NOT double-pad inside panels.
-// Render-loop guard: the tRef pattern keeps the setTab callback deps stable.
 
 const TAB_IDS = ["categories", "locations", "containers", "labels"] as const;
 type TaxTab = (typeof TAB_IDS)[number];
@@ -35,10 +34,6 @@ function isTaxTab(value: string | null): value is TaxTab {
 
 export function TaxonomyPage() {
   const { t } = useLingui();
-  // useLingui()'s `t` is not referentially stable — read it via a live ref so the
-  // setTab callback memo depends on stable values only (render-loop guard).
-  const tRef = useRef(t);
-  tRef.current = t;
   const [params, setSearchParams] = useSearchParams();
   const { currentWorkspaceId: wsId, workspaces } = useWorkspace();
 

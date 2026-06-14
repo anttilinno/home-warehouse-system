@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from "react";
+import { useMemo, useState } from "react";
 import { useNavigate } from "react-router";
 import { Trans, useLingui } from "@lingui/react/macro";
 import {
@@ -26,8 +26,7 @@ import { useUsageCount } from "../hooks/useUsageCount";
 // confirm. The archive call is UNCONDITIONAL after confirm (advisory warning —
 // NO ?force=). Restore fires the restore mutation directly.
 //
-// Render-loop guard: destructure the stable .mutate handlers; tRef for stable
-// closures where the lingui `t` would otherwise churn deps.
+// Render-loop guard: destructure the stable .mutate handlers.
 
 // Map a buildTree TreeNode<Category> into the RetroTreeNode shape. itemCount is
 // left 0 in the tree (the count is fetched only on archive — no per-row fan-out).
@@ -49,8 +48,6 @@ interface ArchiveTarget {
 
 export function CategoriesTab() {
   const { t } = useLingui();
-  const tRef = useRef(t);
-  tRef.current = t;
   const navigate = useNavigate();
 
   const { tree, isLoading, isError, refetch } = useCategoriesQuery();

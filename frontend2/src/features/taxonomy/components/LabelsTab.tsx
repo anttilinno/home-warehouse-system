@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { Trans, useLingui } from "@lingui/react/macro";
 import {
   BevelButton,
@@ -23,7 +23,7 @@ import { LabelFormDialog } from "./LabelFormDialog";
 // the soft default; delete = plain pink RetroConfirmDialog (no-count copy — labels
 // have no client attached-count fetch this phase).
 //
-// Render-loop guard: destructure the stable .mutate handlers; tRef pins `t`.
+// Render-loop guard: destructure the stable .mutate handlers.
 
 interface FormState {
   open: boolean;
@@ -32,8 +32,6 @@ interface FormState {
 
 export function LabelsTab() {
   const { t } = useLingui();
-  const tRef = useRef(t);
-  tRef.current = t;
 
   const { rows, isLoading, isError, refetch } = useLabelsQuery();
   const { archive, restore, del } = useLabelMutations();

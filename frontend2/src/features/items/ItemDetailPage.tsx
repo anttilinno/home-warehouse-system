@@ -93,14 +93,15 @@ export function ItemDetailPage() {
     itemQuery.error.status === 404;
   const loadError = itemQuery.isError && !notFound;
 
-  // Read t through a ref so the error-toast effect deps stay stable.
-  const tRef = useRef(t);
-  tRef.current = t;
+  // Resolve the message with the `t` macro directly (a ref-indirected
+  // `tRef.current`…`` is not a valid macro call → empty string). The string is
+  // stable within a locale, so the effect deps stay stable too.
+  const loadErrorMsg = t`Couldn't load this item.`;
   useEffect(() => {
     if (loadError) {
-      retroToast.error(tRef.current`Couldn't load this item.`);
+      retroToast.error(loadErrorMsg);
     }
-  }, [loadError]);
+  }, [loadError, loadErrorMsg]);
 
   const [tab, setTab] = useState("details");
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
@@ -170,8 +171,8 @@ export function ItemDetailPage() {
     if (!item?.barcode) return;
     navigator.clipboard
       ?.writeText(item.barcode)
-      .then(() => retroToast.success(tRef.current`Barcode copied.`))
-      .catch(() => retroToast.error(tRef.current`Couldn't copy the barcode.`));
+      .then(() => retroToast.success(t`Barcode copied.`))
+      .catch(() => retroToast.error(t`Couldn't copy the barcode.`));
   }
 
   const tabs: RetroTab[] = [

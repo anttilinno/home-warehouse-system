@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Trans, useLingui } from "@lingui/react/macro";
@@ -55,8 +55,6 @@ function labelToDefaults(l: Label): LabelFormInput {
 
 export function LabelFormDialog({ open, label, onClose }: LabelFormDialogProps) {
   const { t } = useLingui();
-  const tRef = useRef(t);
-  tRef.current = t;
   const isEdit = Boolean(label);
 
   const { create, update } = useLabelMutations();
@@ -104,7 +102,7 @@ export function LabelFormDialog({ open, label, onClose }: LabelFormDialogProps) 
       }
       onClose();
     } catch {
-      setError("root", { message: tRef.current`Couldn't save this label.` });
+      setError("root", { message: t`Couldn't save this label.` });
     }
   }
 

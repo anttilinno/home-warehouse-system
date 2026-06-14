@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from "react";
+import { useMemo, useState } from "react";
 import { Trans, useLingui } from "@lingui/react/macro";
 import {
   BevelButton,
@@ -23,7 +23,7 @@ import { LocationFormDialog } from "./LocationFormDialog";
 // (no client usage-count requirement). The tree nests via parent_location
 // (NOT _id — Pitfall 6). Forms are INLINE RetroDialogs (no route).
 //
-// Render-loop guard: destructure the stable .mutate handlers; tRef for stable t.
+// Render-loop guard: destructure the stable .mutate handlers.
 
 // Map a buildTree TreeNode<Location> into the RetroTreeNode shape. itemCount is
 // left 0 (no per-row fan-out — locations have no usage badge requirement).
@@ -50,8 +50,6 @@ interface FormState {
 
 export function LocationsTab() {
   const { t } = useLingui();
-  const tRef = useRef(t);
-  tRef.current = t;
 
   const { rows, tree, isLoading, isError, refetch } = useLocationsQuery();
   const { archive, restore } = useLocationMutations();

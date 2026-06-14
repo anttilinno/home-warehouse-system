@@ -23,12 +23,6 @@ export interface ItemLabelsProps {
 
 export function ItemLabels({ wsId, itemId }: ItemLabelsProps) {
   const { t } = useLingui();
-  // useLingui()'s `t` is NOT referentially stable — read it through a live ref
-  // in the mutation onError closures so nothing churns identity (render-loop
-  // guard, matching the ItemsListPage pattern).
-  const tRef = useRef(t);
-  tRef.current = t;
-
   const queryClient = useQueryClient();
   const triggerRef = useRef<HTMLButtonElement>(null);
   const [open, setOpen] = useState(false);
@@ -69,12 +63,12 @@ export function ItemLabels({ wsId, itemId }: ItemLabelsProps) {
   const attach = useMutation({
     mutationFn: (labelId: string) => labelsApi.attach(wsId, itemId, labelId),
     onSuccess: invalidateAttached,
-    onError: () => retroToast.error(tRef.current`Couldn't attach that label.`),
+    onError: () => retroToast.error(t`Couldn't attach that label.`),
   });
   const detach = useMutation({
     mutationFn: (labelId: string) => labelsApi.detach(wsId, itemId, labelId),
     onSuccess: invalidateAttached,
-    onError: () => retroToast.error(tRef.current`Couldn't detach that label.`),
+    onError: () => retroToast.error(t`Couldn't detach that label.`),
   });
   const attachLabel = attach.mutate;
   const detachLabel = detach.mutate;

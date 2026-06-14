@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { Link, useNavigate, useParams } from "react-router";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { useQuery } from "@tanstack/react-query";
@@ -71,14 +71,15 @@ export function BorrowerDetailPage() {
     borrowerQuery.error.status === 404;
   const loadError = borrowerQuery.isError && !notFound;
 
-  // Read t through a ref so the error-toast effect deps stay stable.
-  const tRef = useRef(t);
-  tRef.current = t;
+  // Resolve via the `t` macro directly (ref-indirected `tRef.current`…`` isn't a
+  // valid macro call → empty string). Stable within a locale → effect deps stay
+  // stable.
+  const loadErrorMsg = t`Couldn't load this borrower.`;
   useEffect(() => {
     if (loadError) {
-      retroToast.error(tRef.current`Couldn't load this borrower.`);
+      retroToast.error(loadErrorMsg);
     }
-  }, [loadError]);
+  }, [loadError, loadErrorMsg]);
 
   const [deleteOpen, setDeleteOpen] = useState(false);
 
