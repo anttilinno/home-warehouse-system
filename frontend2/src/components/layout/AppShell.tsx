@@ -1,5 +1,6 @@
 import { lazy, Suspense, useMemo, useState } from "react";
 import { Outlet, useLocation } from "react-router";
+import { useQuery } from "@tanstack/react-query";
 import { Trans } from "@lingui/react/macro";
 import { TopBar } from "./TopBar";
 import { Sidebar } from "./Sidebar";
@@ -10,6 +11,7 @@ import { MobileDrawer } from "./MobileDrawer";
 import { F1HelpDialog } from "./F1HelpDialog";
 import { WorkspaceProvider } from "@/features/workspace/WorkspaceProvider";
 import { useLogout } from "@/features/auth/useLogout";
+import { settingsApi } from "@/lib/api/settings";
 import { SSEProvider, useSSEStatus } from "@/features/sse";
 // Import the chord hook from its OWN module (not the feature barrel): the
 // barrel re-exports the default CommandPalette body, so a static barrel import
@@ -122,6 +124,10 @@ function ShellChrome() {
   // the user confirms.
   const logout = useLogout();
 
+  // Current user for the Sidebar bottom user menu (shared ["me"] cache — already
+  // fetched by the settings/format/locale hooks; no new fetch path).
+  const me = useQuery({ queryKey: ["me"], queryFn: () => settingsApi.getMe() });
+
   return (
     <div className="app-shell" data-collapsed={collapsed}>
       {/* Skip link — first focusable element, jumps focus to #main. */}
@@ -146,6 +152,8 @@ function ShellChrome() {
         <Sidebar
           collapsed={collapsed}
           onToggleCollapse={() => setCollapsed((v) => !v)}
+          user={me.data}
+          onLogout={logout}
         />
       </div>
 

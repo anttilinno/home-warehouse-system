@@ -3,6 +3,7 @@ import { NavLink } from "react-router";
 import { Trans } from "@lingui/react/macro";
 import type { DashboardStats, User } from "@/lib/types";
 import { Window } from "@/components/retro";
+import { SidebarUserMenu } from "./SidebarUserMenu";
 
 // Navigator sidebar (sketch 006): grouped Overview / Inventory / System nav
 // inside a plain-titlebar Window, user identity in the footer (frontend1
@@ -98,6 +99,8 @@ export interface SidebarProps {
   collapsed?: boolean;
   /** Toggle handler for the titlebar chevron; AppShell flips `collapsed`. */
   onToggleCollapse?: () => void;
+  /** Logout handler for the bottom user menu (confirm-gated). */
+  onLogout?: () => void;
 }
 
 export function Sidebar({
@@ -105,10 +108,8 @@ export function Sidebar({
   user,
   collapsed = false,
   onToggleCollapse,
+  onLogout,
 }: SidebarProps) {
-  const initial = (user?.full_name || user?.email || "?")
-    .charAt(0)
-    .toUpperCase();
 
   const collapseToggle = (
     <button
@@ -127,7 +128,8 @@ export function Sidebar({
     <Window
       title={<Trans>Navigator</Trans>}
       titlebarVariant="plain"
-      bodyClassName="p-sp-2"
+      className="flex flex-col"
+      bodyClassName="flex flex-1 flex-col p-sp-2"
       actions={collapseToggle}
     >
       <nav aria-label="Primary">
@@ -164,24 +166,7 @@ export function Sidebar({
           )}
         </NavGroup>
       </nav>
-      {user && (
-        <footer className="mt-sp-3 flex items-center gap-sp-2 border-t-2 border-border-ink p-sp-2">
-          <span
-            aria-hidden="true"
-            className="grid h-[28px] w-[28px] flex-none place-items-center border-2 border-border-ink bg-titlebar-pink font-display text-[16px]"
-          >
-            {initial}
-          </span>
-          <span className="nav-label min-w-0">
-            <span className="block truncate text-[13px] font-semibold">
-              {user.full_name}
-            </span>
-            <span className="block truncate text-[11px] text-fg-muted">
-              {user.email}
-            </span>
-          </span>
-        </footer>
-      )}
+      {user && onLogout && <SidebarUserMenu user={user} onLogout={onLogout} />}
     </Window>
   );
 }

@@ -2,11 +2,11 @@ import { useEffect, useRef, useState } from "react";
 import { Trans } from "@lingui/react/macro";
 import type { User } from "@/lib/types";
 import { BrandMark } from "@/components/BrandMark";
-import { BevelButton, RetroStatusDot } from "@/components/retro";
-import { useModalStack } from "@/components/modal";
+import { RetroStatusDot } from "@/components/retro";
 import { useSSEStatus } from "@/features/sse";
 import { NotificationsBell } from "@/features/notifications/components/NotificationsBell";
 import { WorkspaceSwitcher } from "./WorkspaceSwitcher";
+import { LogoutConfirm } from "./LogoutConfirm";
 
 // TopBar (SHELL-03): the slim 40px banner every authenticated route renders.
 // Brand + the live WorkspaceSwitcher pill (AUTH-06; reads the D-12 SSOT) +
@@ -193,55 +193,5 @@ function MenuPlaceholder({ children }: { children: React.ReactNode }) {
     >
       {children}
     </span>
-  );
-}
-
-interface LogoutConfirmProps {
-  open: boolean;
-  onCancel: () => void;
-  onConfirm: () => void;
-}
-
-// Confirm-before-logout dialog. It pushes onto the modal stack so ESC closes
-// THIS dialog (never logs out — BAR-05). Confirm = LOG OUT; cancel = STAY.
-function LogoutConfirm({ open, onCancel, onConfirm }: LogoutConfirmProps) {
-  useModalStack(open, onCancel);
-  if (!open) return null;
-
-  return (
-    <div
-      className="fixed inset-0 z-40 grid place-items-center bg-fg-ink/40"
-      onClick={onCancel}
-    >
-      <div
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="logout-confirm-title"
-        onClick={(e) => e.stopPropagation()}
-        className="w-[min(420px,92vw)] border-2 border-border-ink bg-bg-panel bevel-raised"
-      >
-        <header className="border-b-2 border-border-ink bg-titlebar-pink px-sp-3 py-[6px] pinstripes">
-          <h2
-            id="logout-confirm-title"
-            className="text-center font-display text-[16px] uppercase tracking-[0.02em]"
-          >
-            <Trans>Log out</Trans>
-          </h2>
-        </header>
-        <div className="p-sp-4">
-          <p className="text-[14px] text-fg-ink">
-            <Trans>End this session? You will need to sign in again.</Trans>
-          </p>
-          <div className="mt-sp-4 flex justify-end gap-sp-2">
-            <BevelButton onClick={onCancel}>
-              <Trans>Stay</Trans>
-            </BevelButton>
-            <BevelButton variant="danger" onClick={onConfirm}>
-              <Trans>Log out</Trans>
-            </BevelButton>
-          </div>
-        </div>
-      </div>
-    </div>
   );
 }
