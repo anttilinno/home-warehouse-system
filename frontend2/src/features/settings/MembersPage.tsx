@@ -191,6 +191,7 @@ export function MembersPage() {
                     {!isSelf && (
                       <BevelButton
                         aria-label={t`Remove ${name}`}
+                        title={t`Remove ${name}`}
                         disabled={removeMember.isPending}
                         onClick={() => setRemoveTarget(m)}
                       >

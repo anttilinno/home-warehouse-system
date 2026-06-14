@@ -219,6 +219,7 @@ export function ContainersTab() {
                             type="button"
                             variant="danger"
                             aria-label={t`Delete ${c.name}`}
+                            title={t`Delete ${c.name}`}
                             className="!px-[8px] !py-[2px] !text-[11px]"
                             onClick={() => openDelete(c)}
                           >

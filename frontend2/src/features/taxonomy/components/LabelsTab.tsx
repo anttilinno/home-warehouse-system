@@ -146,6 +146,7 @@ export function LabelsTab() {
                     <BevelButton
                       variant="neutral"
                       aria-label={t`Edit ${label.name}`}
+                      title={t`Edit ${label.name}`}
                       onClick={() => openEdit(label)}
                     >
                       <Trans>EDIT</Trans>
@@ -153,6 +154,7 @@ export function LabelsTab() {
                     <BevelButton
                       variant="neutral"
                       aria-label={t`Archive ${label.name}`}
+                      title={t`Archive ${label.name}`}
                       onClick={() =>
                         archiveLabel({ id: label.id, name: label.name })
                       }
@@ -164,6 +166,7 @@ export function LabelsTab() {
                 <BevelButton
                   variant="danger"
                   aria-label={t`Delete ${label.name}`}
+                  title={t`Delete ${label.name}`}
                   onClick={() => setDeleteTarget(label)}
                 >
                   <span aria-hidden="true">⌫</span>

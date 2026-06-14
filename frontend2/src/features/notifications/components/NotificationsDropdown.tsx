@@ -108,6 +108,7 @@ export function NotificationsDropdown({
                   <button
                     type="button"
                     aria-label={t`Mark read`}
+                    title={t`Mark read`}
                     disabled={markRead.isPending}
                     onClick={() => markRead.mutate(n.id)}
                     className="flex-none border-2 border-border-ink bg-bg-panel px-sp-1 py-px font-mono text-[11px] leading-none bevel-raised-ink active:translate-x-px active:translate-y-px active:bg-bg-pressed active:bevel-pressed disabled:opacity-50"

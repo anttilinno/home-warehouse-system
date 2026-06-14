@@ -99,6 +99,7 @@ export function FilterBar({
               <button
                 type="button"
                 aria-label={t`Remove ${String(chip.label)} filter`}
+                title={t`Remove ${String(chip.label)} filter`}
                 onClick={() => onRemoveFilter(chip.key)}
                 className="cursor-pointer text-fg-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-border-ink"
               >

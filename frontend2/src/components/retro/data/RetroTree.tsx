@@ -199,6 +199,7 @@ export function RetroTree({
                 type="button"
                 aria-expanded={isOpen}
                 aria-label={isOpen ? "Collapse" : "Expand"}
+                title={isOpen ? "Collapse" : "Expand"}
                 tabIndex={-1}
                 onClick={(e) => {
                   e.stopPropagation();
@@ -268,6 +269,7 @@ export function RetroTree({
                     type="button"
                     tabIndex={-1}
                     aria-label="Add child"
+                    title="Add child"
                     className="!px-[8px] !py-[2px] !text-[11px]"
                     onClick={() => onAddChild(node)}
                   >
@@ -277,6 +279,7 @@ export function RetroTree({
                     type="button"
                     tabIndex={-1}
                     aria-label="Archive"
+                    title="Archive"
                     className="!px-[8px] !py-[2px] !text-[11px]"
                     onClick={() => onArchive(node)}
                   >

@@ -128,6 +128,7 @@ export function PhotoLightbox({ photos, index, onClose }: PhotoLightboxProps) {
           <span className="flex-1" />
           <BevelButton
             aria-label={t`Zoom out`}
+            title={t`Zoom out`}
             disabled={zoom <= ZOOM_MIN}
             onClick={() => zoomBy(-ZOOM_STEP)}
           >
@@ -138,6 +139,7 @@ export function PhotoLightbox({ photos, index, onClose }: PhotoLightboxProps) {
           </span>
           <BevelButton
             aria-label={t`Zoom in`}
+            title={t`Zoom in`}
             disabled={zoom >= ZOOM_MAX}
             onClick={() => zoomBy(ZOOM_STEP)}
           >
@@ -145,6 +147,7 @@ export function PhotoLightbox({ photos, index, onClose }: PhotoLightboxProps) {
           </BevelButton>
           <BevelButton
             aria-label={t`Download original`}
+            title={t`Download original`}
             onClick={() => downloadBlob(photo.url, photo.filename)}
           >
             ⤓
@@ -158,6 +161,7 @@ export function PhotoLightbox({ photos, index, onClose }: PhotoLightboxProps) {
         <div className="relative flex flex-1 items-center justify-center overflow-hidden p-sp-4">
           <BevelButton
             aria-label={t`Previous photo`}
+            title={t`Previous photo`}
             disabled={current === 0}
             onClick={() => go(-1)}
             className="absolute left-sp-3 z-10 !h-[44px] !w-[44px] !p-0"
@@ -172,6 +176,7 @@ export function PhotoLightbox({ photos, index, onClose }: PhotoLightboxProps) {
           />
           <BevelButton
             aria-label={t`Next photo`}
+            title={t`Next photo`}
             disabled={current === count - 1}
             onClick={() => go(1)}
             className="absolute right-sp-3 z-10 !h-[44px] !w-[44px] !p-0"

@@ -276,6 +276,7 @@ export function PhotoGallery({
                         <BevelButton
                           className="!px-[5px] !py-px !text-[10px]"
                           aria-label={t`Move ${photo.caption ?? photo.filename} earlier`}
+                          title={t`Move ${photo.caption ?? photo.filename} earlier`}
                           disabled={index === 0}
                           onClick={() => move(index, -1)}
                         >
@@ -284,6 +285,7 @@ export function PhotoGallery({
                         <BevelButton
                           className="!px-[5px] !py-px !text-[10px]"
                           aria-label={t`Move ${photo.caption ?? photo.filename} later`}
+                          title={t`Move ${photo.caption ?? photo.filename} later`}
                           disabled={index === order.length - 1}
                           onClick={() => move(index, 1)}
                         >
@@ -296,6 +298,7 @@ export function PhotoGallery({
                     <BevelButton
                       className="!px-[5px] !py-px !text-[10px]"
                       aria-label={t`Edit caption for ${photo.filename}`}
+                      title={t`Edit caption for ${photo.filename}`}
                       onClick={() => setCaptionTarget(photo)}
                     >
                       ✎
@@ -304,6 +307,7 @@ export function PhotoGallery({
                       variant="danger"
                       className="!px-[5px] !py-px !text-[10px]"
                       aria-label={t`Delete ${photo.filename}`}
+                      title={t`Delete ${photo.filename}`}
                       onClick={() => setDeleteTarget(photo)}
                     >
                       ✕

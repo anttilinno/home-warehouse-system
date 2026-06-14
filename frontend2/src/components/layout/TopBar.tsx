@@ -47,6 +47,7 @@ export function TopBar({ online, onToggleDrawer }: TopBarProps) {
         type="button"
         onClick={onToggleDrawer}
         aria-label="Open navigation"
+        title="Open navigation"
         className={`grid h-[28px] w-[28px] flex-none place-items-center border-2 border-border-ink bg-bg-panel font-mono text-[14px] leading-none bevel-raised-ink active:translate-x-px active:translate-y-px active:bg-bg-pressed active:bevel-pressed md:hidden ${FOCUS_RING}`}
       >
         <span aria-hidden="true">☰</span>

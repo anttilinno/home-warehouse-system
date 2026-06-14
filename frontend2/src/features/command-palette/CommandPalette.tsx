@@ -155,6 +155,7 @@ export default function CommandPalette({ open, onClose }: CommandPaletteProps) {
           <button
             type="button"
             aria-label={t`Close`}
+            title={t`Close`}
             onClick={onClose}
             className="flex h-[14px] w-[14px] flex-none cursor-pointer items-center justify-center border-2 border-border-ink bg-bg-panel text-[10px] leading-none"
           >

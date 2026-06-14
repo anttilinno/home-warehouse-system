@@ -513,6 +513,7 @@ export function InventoryListPage() {
                           )}
                           <BevelButton
                             aria-label={t`Movement history`}
+                            title={t`Movement history`}
                             onClick={() => setMovementsId(entry.id)}
                           >
                             <Trans>↧</Trans>
@@ -520,6 +521,7 @@ export function InventoryListPage() {
                           {!archived && (
                             <BevelButton
                               aria-label={t`Repairs`}
+                              title={t`Repairs`}
                               onClick={() => setRepairsId(entry.id)}
                             >
                               <Trans>🔧</Trans>
@@ -528,6 +530,7 @@ export function InventoryListPage() {
                           {!archived && (
                             <BevelButton
                               aria-label={t`Maintenance`}
+                              title={t`Maintenance`}
                               onClick={() => setMaintenanceId(entry.id)}
                             >
                               <Trans>⟳</Trans>

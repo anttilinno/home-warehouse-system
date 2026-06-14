@@ -114,6 +114,7 @@ export function SavedFilters({
               <button
                 type="button"
                 aria-label={t`Delete preset ${preset.name}`}
+                title={t`Delete preset ${preset.name}`}
                 onClick={() => {
                   setPendingDelete(preset);
                   setMenuOpen(false);

@@ -148,6 +148,7 @@ export function RetroFileInput({
               <BevelButton
                 type="button"
                 aria-label={t`Remove ${f.name}`}
+                title={t`Remove ${f.name}`}
                 className="!px-[8px] !py-[2px] !text-[11px]"
                 onClick={() => removeAt(i)}
               >

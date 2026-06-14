@@ -41,6 +41,7 @@ export function RetroPagination({
     >
       <BevelButton
         aria-label={t`Previous page`}
+        title={t`Previous page`}
         disabled={page <= 1}
         onClick={() => onPageChange(page - 1)}
       >
@@ -66,6 +67,7 @@ export function RetroPagination({
 
       <BevelButton
         aria-label={t`Next page`}
+        title={t`Next page`}
         disabled={page >= pageCount}
         onClick={() => onPageChange(page + 1)}
       >
