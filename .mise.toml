@@ -23,7 +23,7 @@ echo "==> Downloading Go module dependencies..."
 cd backend && go mod download && cd ..
 
 echo "==> Installing frontend dependencies..."
-cd frontend2 && bun install && cd ..
+cd frontend && bun install && cd ..
 
 echo "==> Starting containers (PostgreSQL, Redis)..."
 docker compose up -d --wait
@@ -44,7 +44,7 @@ if [ -z "$IP" ]; then
 fi
 echo "Detected IP: $IP"
 
-# frontend2 (Vite) talks to the backend through the /api proxy — no NEXT_PUBLIC
+# frontend (Vite) talks to the backend through the /api proxy — no NEXT_PUBLIC
 # env to rewrite. LAN access goes through Angie in prod.
 
 # Update backend/.env (preserve other settings if they exist)
@@ -174,19 +174,19 @@ run = "cd backend && go mod download"
 # Frontend Tasks
 [tasks.fe-dev]
 description = "Run frontend dev server"
-run = "cd frontend2 && bun run dev"
+run = "cd frontend && bun run dev"
 
 [tasks.fe-build]
 description = "Build frontend"
-run = "cd frontend2 && bun run build"
+run = "cd frontend && bun run build"
 
 [tasks.fe-install]
 description = "Install frontend dependencies"
-run = "cd frontend2 && bun install"
+run = "cd frontend && bun install"
 
 [tasks.fe-lint]
 description = "Run frontend linter"
-run = "cd frontend2 && bun run lint:imports && bun run lint:tsc"
+run = "cd frontend && bun run lint:imports && bun run lint:tsc"
 
 # Database Seeder
 [tasks.seed]
@@ -238,8 +238,8 @@ run = "docker compose --profile prod up --build"
 # Frontend Testing
 [tasks.fe-test]
 description = "Run frontend unit tests (vitest)"
-run = "cd frontend2 && bun run test"
+run = "cd frontend && bun run test"
 
 [tasks.fe-test-e2e]
 description = "Run frontend Playwright E2E tests (needs the dev stack up)"
-run = "cd frontend2 && bun run test:e2e"
+run = "cd frontend && bun run test:e2e"

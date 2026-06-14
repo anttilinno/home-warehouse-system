@@ -1,7 +1,7 @@
 # ============================================================================
 # BEST-EFFORT — needs first-real-PR validation; not yet proven green in CI.
 # ----------------------------------------------------------------------------
-# Browser-level E2E (axe a11y sweep + keyboard-nav) for frontend2, run against a
+# Browser-level E2E (axe a11y sweep + keyboard-nav) for frontend, run against a
 # REAL stack: postgres service + go backend + vite preview. This is NEW CI
 # capability (17-CONTEXT OQ-1) — the orchestrator CANNOT execute GitHub Actions,
 # so per the "verification is REAL" rule this workflow is NOT claimed green. The
@@ -10,21 +10,21 @@
 # first real PR run; the a11y/keyboard step is `continue-on-error: true` so a
 # first-run failure surfaces logs without blocking the merge queue.
 #
-# Does NOT touch lint-frontend2.yml (17-01 owns it). Responsive (17-03) lands a
+# Does NOT touch lint-frontend.yml (17-01 owns it). Responsive (17-03) lands a
 # `e2e/responsive.spec.ts` later — add it to the spec step below once it exists.
 # ============================================================================
-name: e2e-frontend2
+name: e2e-frontend
 
 on:
   pull_request:
     paths:
-      - "frontend2/**"
-      - ".github/workflows/e2e-frontend2.yml"
+      - "frontend/**"
+      - ".github/workflows/e2e-frontend.yml"
   push:
     branches: [master]
     paths:
-      - "frontend2/**"
-      - ".github/workflows/e2e-frontend2.yml"
+      - "frontend/**"
+      - ".github/workflows/e2e-frontend.yml"
 
 jobs:
   e2e:
@@ -94,12 +94,12 @@ jobs:
 
       # --- frontend: build + vite preview on :4173 ----------------------------
       - name: Install frontend deps
-        run: cd frontend2 && bun install --frozen-lockfile
-      - name: Build frontend2
-        run: cd frontend2 && bun run build
+        run: cd frontend && bun install --frozen-lockfile
+      - name: Build frontend
+        run: cd frontend && bun run build
       - name: Start vite preview (:4173)
         run: |
-          cd frontend2
+          cd frontend
           bun run preview --port 4173 &
           for i in $(seq 1 30); do
             curl -sf http://localhost:4173/ && break
@@ -108,12 +108,12 @@ jobs:
 
       # --- playwright: install chromium, run a11y + keyboard specs -------------
       - name: Install Playwright chromium
-        run: cd frontend2 && bunx playwright install --with-deps chromium
+        run: cd frontend && bunx playwright install --with-deps chromium
       - name: Run a11y + keyboard E2E (best-effort)
         continue-on-error: true # BEST-EFFORT — local run is the hard gate (OQ-1)
         # Responsive (17-03) adds e2e/responsive.spec.ts — append it here once it lands.
         run: |
-          cd frontend2
+          cd frontend
           bun run test:e2e --project=chromium \
             e2e/a11y-sweep.spec.ts e2e/keyboard-nav.spec.ts
 
@@ -121,6 +121,6 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: playwright-report-frontend2
-          path: frontend2/playwright-report/
+          name: playwright-report-frontend
+          path: frontend/playwright-report/
           if-no-files-found: ignore

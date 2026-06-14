@@ -5,8 +5,8 @@ planning, architecture, and requirements see `.planning/`.
 
 ## E2E Tests (Playwright)
 
-The Phase 65 scan-lookup spec was wiped with the v2.2 frontend2 rebuild.
-The current v3.0 spec is `frontend2/e2e/login-dashboard.spec.ts`
+The Phase 65 scan-lookup spec was wiped with the v2.2 frontend rebuild.
+The current v3.0 spec is `frontend/e2e/login-dashboard.spec.ts`
 (2026-06-11, retro-os sample screens): real `/login → / dashboard` flow
 against the real backend + Postgres. It guards the cookie-JWT login
 contract, the Vite `/api` → root proxy **rewrite** (backend routes live at
@@ -23,20 +23,20 @@ and the dashboard's binding to `/analytics/dashboard` + `/analytics/activity`.
    `cd backend && go run ./cmd/server/main.go` (or whichever command your
    local workflow uses — the API listens on port **8080**).
 3. Start the frontend dev server:
-   `cd frontend2 && bun run dev` (Vite serves on **5173** and proxies `/api`
+   `cd frontend && bun run dev` (Vite serves on **5173** and proxies `/api`
    to `:8080`).
 4. Ensure a seeder user exists in the dev DB. Defaults:
    `E2E_USER=seeder@test.local`, `E2E_PASS=password123` (override either via
    env var).
 5. Run the suite:
-   `cd frontend2 && E2E_USER=seeder@test.local E2E_PASS=password123 bun run test:e2e`
+   `cd frontend && E2E_USER=seeder@test.local E2E_PASS=password123 bun run test:e2e`
 
 For debugging with a visible browser window:
 `bun run test:e2e:headed`.
 
 ### Add a new spec
 
-Drop new files in `frontend2/e2e/*.spec.ts`. The config (`playwright.config.ts`)
+Drop new files in `frontend/e2e/*.spec.ts`. The config (`playwright.config.ts`)
 has two projects (`chromium` + `firefox`) — specs run in both by default.
 `baseURL` defaults to `http://localhost:5173`; override with
 `E2E_BASE_URL=...` if you need to point at a deployed environment.
@@ -79,7 +79,7 @@ the cross-tenant 404 subtest also guards the
 Without the `-tags=integration` flag the test is invisible to `go test ./...`,
 so the default CI path stays fast. Frontend-side barcode-lookup coverage is
 currently NOWHERE — the Phase 65 scan-lookup Playwright spec was wiped with
-the v2.2 frontend2; when the scan feature is rebuilt (v3.0 Phase 11), a
+the v2.2 frontend; when the scan feature is rebuilt (v3.0 Phase 11), a
 browser-level spec for the by-barcode flow must be re-added.
 
 ## Skills auto-loaded for this project

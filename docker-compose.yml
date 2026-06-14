@@ -159,13 +159,13 @@ services:
     networks:
       - warehouse
 
-  # frontend2 — the v3.0 Retro OS SPA, served static by nginx on :3000. Angie
+  # frontend — the v3.0 Retro OS SPA, served static by nginx on :3000. Angie
   # owns /api/* → backend; this container only serves the bundle. (frontend1 was
   # retired 2026-06-14; the service name stays `frontend` so the Angie upstream
   # + healthcheck are unchanged.)
   frontend:
     build:
-      context: ./frontend2
+      context: ./frontend
       dockerfile: Dockerfile
     profiles: ["prod"]
     healthcheck:
