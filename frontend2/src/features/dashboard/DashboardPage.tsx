@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef } from "react";
+import { useCallback, useMemo } from "react";
 import { useNavigate } from "react-router";
 import { useQuery } from "@tanstack/react-query";
 import { Trans, useLingui } from "@lingui/react/macro";
@@ -40,13 +40,6 @@ const ACTION_BADGES: Record<string, RetroBadgeVariant> = {
 // in RequireAuth (the AppShell layout route).
 export function DashboardPage() {
   const { t } = useLingui();
-  // useLingui()'s `t` is NOT referentially stable. Read it through a live ref
-  // inside the shortcut-binding closures so the bindings memo depends on STABLE
-  // values only — otherwise every render rebuilds the bindings, re-registers
-  // them into the shortcuts SSOT and spins an infinite re-render loop (Pitfall
-  // 6 / the render-loop landmine this project has hit 4×). Mirrors ItemsListPage.
-  const tRef = useRef(t);
-  tRef.current = t;
   const navigate = useNavigate();
 
   // wsId is the D-12 SSOT — sourced from the WorkspaceProvider context, NOT a
@@ -69,19 +62,24 @@ export function DashboardPage() {
   });
 
   // ── Route shortcuts (DASH-05): N → new item, S → scan, L → loans. Each action
-  // is a stable useCallback over the stable `navigate`; the bindings array is
-  // useMemo'd over those stable callbacks only (labels read from tRef, NEVER
-  // `t`/`navigate`/a fresh object in deps) so the register effect never loops.
+  // is a stable useCallback over the stable `navigate`. Labels are translated
+  // with the `t` macro DIRECTLY (the prior `tRef.current`…`` indirection broke
+  // the macro transform → empty labels) and the bindings memo keys on those
+  // resolved label STRINGS — primitives that are stable across renders within a
+  // locale, so the register effect never loops, yet re-runs on a language switch.
   const goNew = useCallback(() => navigate("/items/new"), [navigate]);
   const goScan = useCallback(() => navigate("/scan"), [navigate]);
   const goLoans = useCallback(() => navigate("/loans"), [navigate]);
+  const labelNew = t`New item`;
+  const labelScan = t`Scan`;
+  const labelLoans = t`Loans`;
   const routeShortcuts = useMemo(
     () => [
-      { key: "N", label: tRef.current`New item`, action: goNew },
-      { key: "S", label: tRef.current`Scan`, action: goScan },
-      { key: "L", label: tRef.current`Loans`, action: goLoans },
+      { key: "N", label: labelNew, action: goNew },
+      { key: "S", label: labelScan, action: goScan },
+      { key: "L", label: labelLoans, action: goLoans },
     ],
-    [goNew, goScan, goLoans],
+    [goNew, goScan, goLoans, labelNew, labelScan, labelLoans],
   );
   useShortcuts("dashboard", routeShortcuts);
 

@@ -12,6 +12,9 @@ export interface ShortcutChipProps {
   danger?: Shortcut["danger"];
   /** The current/focused chip gets the blue accent face. */
   current?: boolean;
+  /** Native hover tooltip; falls back to `label` when omitted. Lets a bare
+   *  keycap (empty `label`) still explain itself on hover (e.g. Bottombar N/S/L). */
+  title?: string;
 }
 
 // Face colors are mutually exclusive: danger wins, then current, else panel.
@@ -37,11 +40,18 @@ export function ShortcutChip({
   onActivate,
   danger,
   current,
+  title,
 }: ShortcutChipProps) {
+  // One source for the human-readable purpose: an explicit `title`, else the
+  // visible `label`. Drives BOTH the hover tooltip AND the accessible name, so a
+  // bare keycap (empty label) still announces "New" rather than just "N".
+  const purpose = title ?? (label || undefined);
   return (
     <button
       type="button"
       aria-keyshortcuts={shortcutKey}
+      aria-label={purpose}
+      title={purpose}
       onClick={onActivate}
       className={`inline-flex cursor-pointer items-center gap-sp-1 border-2 border-border-ink px-sp-2 py-[2px] bevel-raised-ink hover:brightness-103 active:translate-x-px active:translate-y-px active:bg-bg-pressed active:bevel-pressed focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-border-ink ${faceClass(
         danger,

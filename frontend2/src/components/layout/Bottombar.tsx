@@ -57,7 +57,11 @@ export function Bottombar({ onOpenHelp, onBack }: BottombarProps) {
         <ShortcutChip
           key={`${s.key}-${i}`}
           shortcutKey={s.key}
-          label={s.label}
+          // Inline route chips stay bare (keycap only); the action name rides in
+          // the hover tooltip instead. The full label still shows in the F1 help
+          // dialog + the MORE overflow sheet.
+          label=""
+          title={s.label}
           danger={s.danger}
           onActivate={s.action}
         />
