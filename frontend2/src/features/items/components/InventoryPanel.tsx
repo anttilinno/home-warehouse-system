@@ -160,7 +160,7 @@ export function InventoryPanel({ wsId, itemId }: InventoryPanelProps) {
         <span className="text-[10px] font-bold uppercase tracking-[0.14em] text-fg-muted">
           <Trans>IN STOCK</Trans>
         </span>
-        <span className="font-mono text-[16px] font-semibold tabular-nums text-fg-ink">
+        <span className="font-display text-[16px] font-bold text-fg-ink">
           {total}
         </span>
       </div>

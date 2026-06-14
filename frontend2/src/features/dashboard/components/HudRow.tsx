@@ -113,7 +113,7 @@ export function HudRow({ stats }: HudRowProps) {
               x={GAUGE_CX}
               y={GAUGE_CY + 4}
               textAnchor="middle"
-              className="fill-fg-ink font-mono text-[15px]"
+              className="fill-fg-ink font-display text-[16px]"
             >
               {used}
             </text>
