@@ -85,3 +85,13 @@ export const GRID_PROPS = {
   stroke: GRID,
   strokeWidth: 1,
 } as const;
+
+/**
+ * Truncate a categorical axis label from the RIGHT (keep the head, append "…")
+ * so long names don't overflow the fixed YAxis width and get clipped on the
+ * LEFT — which hides the start of the name (bitten by long location codes).
+ * `max` is tuned per chart to its YAxis `width`.
+ */
+export function truncateLabel(value: string, max: number): string {
+  return value.length > max ? `${value.slice(0, max - 1)}…` : value;
+}

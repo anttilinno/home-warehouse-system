@@ -11,6 +11,7 @@ import {
   VALUE_LABEL_STYLE,
   GRID_PROPS,
   INK,
+  truncateLabel,
 } from "../charts/retroChartTheme";
 
 // ANL-01 — category inventory value as a horizontal bar, bars walking the
@@ -37,6 +38,7 @@ export function CategoryValueChart({ data }: { data: CategoryStats[] }) {
           type="category"
           dataKey="name"
           width={110}
+          tickFormatter={(v: string) => truncateLabel(v, 14)}
           tick={CATEGORY_LABEL_STYLE}
           axisLine={{ stroke: INK, strokeWidth: 2 }}
           tickLine={false}

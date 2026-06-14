@@ -11,6 +11,7 @@ import {
   VALUE_LABEL_STYLE,
   GRID_PROPS,
   INK,
+  truncateLabel,
 } from "../charts/retroChartTheme";
 
 // ANL-01 — location inventory value as a single-series horizontal bar. Per the
@@ -38,6 +39,7 @@ export function LocationValueChart({ data }: { data: LocationInventoryValue[] })
           type="category"
           dataKey="name"
           width={110}
+          tickFormatter={(v: string) => truncateLabel(v, 14)}
           tick={CATEGORY_LABEL_STYLE}
           axisLine={{ stroke: INK, strokeWidth: 2 }}
           tickLine={false}

@@ -10,6 +10,7 @@ import {
   VALUE_LABEL_STYLE,
   GRID_PROPS,
   INK,
+  truncateLabel,
 } from "../charts/retroChartTheme";
 
 // ANL-02 — top borrowers ranked by total_loans, single-series butter (the
@@ -37,6 +38,7 @@ export function TopBorrowersChart({ data }: { data: TopBorrower[] }) {
           type="category"
           dataKey="name"
           width={90}
+          tickFormatter={(v: string) => truncateLabel(v, 11)}
           tick={CATEGORY_LABEL_STYLE}
           axisLine={{ stroke: INK, strokeWidth: 2 }}
           tickLine={false}
