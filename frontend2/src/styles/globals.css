@@ -207,6 +207,11 @@ body {
    every other Window keep the full card frame. */
 .app-sidebar > section {
   border-top-width: 0;
+  /* Fill the full-height sidebar grid cell so the Navigator panel runs from the
+     TopBar to the Bottombar (no cream gap below the nav). min-height (not height)
+     lets it grow + the cell's overflow-y:auto scroll when the nav exceeds the
+     viewport — reactive vertically. */
+  min-height: 100%;
 }
 .app-sidebar > section > header {
   padding-block: 5px;
