@@ -36,7 +36,15 @@ export function PendingApprovalsPanel() {
   }
 
   return (
-    <Window title={<Trans>Pending approvals</Trans>} titlebarVariant="butter">
+    <Window
+      title={<Trans>Pending approvals</Trans>}
+      titlebarVariant="butter"
+      // Match the first-row StatCard height (titlebar + 30px value + sub) so the
+      // dashboard's top row reads as one homogeneous band. Body flexes to fill +
+      // centers its single content row vertically.
+      className="flex min-h-[119px] flex-col"
+      bodyClassName="flex flex-1 flex-col justify-center p-sp-4"
+    >
       {isLoading ? (
         <p className="font-mono text-[12px] text-fg-muted">
           <Trans>Loading…</Trans>

@@ -10,7 +10,7 @@ import { SystemAlertsPanel } from "./SystemAlertsPanel";
 // is the right column on wide layouts and drops below the main column when narrow.
 export function DashboardSideRail() {
   return (
-    <div className="flex flex-col gap-sp-4">
+    <div className="flex flex-col gap-sp-5">
       <PendingApprovalsPanel />
       <SystemAlertsPanel />
     </div>
