@@ -90,6 +90,7 @@ export function ItemLabels({ wsId, itemId }: ItemLabelsProps) {
             <button
               type="button"
               aria-label={t`Detach ${label?.name ?? id}`}
+              title={t`Detach ${label?.name ?? id}`}
               onClick={() => detachLabel(id)}
               className="cursor-pointer text-fg-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-border-ink"
             >

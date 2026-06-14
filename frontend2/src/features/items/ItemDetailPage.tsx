@@ -246,6 +246,7 @@ export function ItemDetailPage() {
               aria-haspopup="menu"
               aria-expanded={menuOpen}
               aria-label={t`More actions`}
+              title={t`More actions`}
               className="!px-[8px] !py-[2px] !text-[11px]"
               onClick={() => setMenuOpen((o) => !o)}
             >
