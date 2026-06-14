@@ -191,6 +191,27 @@ body {
   }
 }
 
+/* ---------- Docked Navigator ↔ PageHeader alignment ----------
+   The desktop Navigator is a Window card, but its 2px top edge is redundant
+   with the TopBar's bottom border: on the LEFT column they stack into a 4px
+   double ink line, AND the border pushes the Navigator titlebar 2px BELOW the
+   main PageHeader bar (whose top edge is flush — no top border). Drop the
+   Navigator's top border so its titlebar shares the TopBar's ink line (top
+   aligns with PageHeader at y=40), then shave 2px off the titlebar height so its
+   bottom border lands level with the 36px-tall PageHeader bar — one continuous
+   header band under the TopBar.
+
+   Kept UNLAYERED (not in @layer components) on purpose: Tailwind v4's utilities
+   layer outranks the components layer, so the Window's `border-2` utility would
+   otherwise win. Scoped to `.app-sidebar` only — the MobileDrawer Navigator and
+   every other Window keep the full card frame. */
+.app-sidebar > section {
+  border-top-width: 0;
+}
+.app-sidebar > section > header {
+  padding-block: 5px;
+}
+
 /* ---------- Table chrome (nth-child striping + hover + selection are
    descendant rules — cleaner as a component class than per-cell utilities;
    consumed by components/retro/RetroTable.tsx) ---------- */
