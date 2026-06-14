@@ -1,5 +1,5 @@
 import { lazy, Suspense, useMemo, useState } from "react";
-import { Outlet, useLocation } from "react-router";
+import { Outlet, useLocation, useNavigate } from "react-router";
 import { useQuery } from "@tanstack/react-query";
 import { Trans } from "@lingui/react/macro";
 import { TopBar } from "./TopBar";
@@ -94,6 +94,7 @@ export function AppShell() {
 // md:flex / md:hidden) so CSS, not JS, picks the surface.
 function ShellChrome() {
   const location = useLocation();
+  const navigate = useNavigate();
 
   // The ONLY collapse state — a single boolean, no measurement (SHELL-02).
   const [collapsed, setCollapsed] = useState(false);
@@ -164,7 +165,10 @@ function ShellChrome() {
       </main>
 
       <div className="app-bottombar">
-        <Bottombar onOpenHelp={() => setHelpOpen(true)} />
+        <Bottombar
+          onOpenHelp={() => setHelpOpen(true)}
+          onBack={() => navigate(-1)}
+        />
       </div>
 
       {/* Mobile-only surfaces (<768px): the off-canvas Navigator + the FAB. */}
