@@ -148,4 +148,69 @@ describe("AppShell", () => {
     // The breadcrumb shows the items route leaf.
     expect(screen.getByText("ITEMS")).toBeInTheDocument();
   });
+
+  it("ESC navigates back through history when no overlay is open", async () => {
+    const user = userEvent.setup();
+    const client = new QueryClient({
+      defaultOptions: { queries: { retry: false } },
+    });
+    render(
+      <I18nProvider i18n={i18n}>
+        <QueryClientProvider client={client}>
+          <MemoryRouter initialEntries={["/", "/items"]} initialIndex={1}>
+            <ShortcutsProvider>
+              <ModalStackProvider>
+                <Routes>
+                  <Route element={<AppShell />}>
+                    <Route path="/" element={<p>Route content here</p>} />
+                    <Route path="/items" element={<p>Items content</p>} />
+                  </Route>
+                </Routes>
+              </ModalStackProvider>
+            </ShortcutsProvider>
+          </MemoryRouter>
+        </QueryClientProvider>
+      </I18nProvider>,
+    );
+    expect(screen.getByText("Items content")).toBeInTheDocument();
+    // No overlay open → ESC pops history back to "/".
+    await user.keyboard("{Escape}");
+    expect(await screen.findByText("Route content here")).toBeInTheDocument();
+  });
+
+  it("ESC closes an open overlay instead of navigating back (modal-stack wins)", async () => {
+    const user = userEvent.setup();
+    const client = new QueryClient({
+      defaultOptions: { queries: { retry: false } },
+    });
+    render(
+      <I18nProvider i18n={i18n}>
+        <QueryClientProvider client={client}>
+          <MemoryRouter initialEntries={["/", "/items"]} initialIndex={1}>
+            <ShortcutsProvider>
+              <ModalStackProvider>
+                <Routes>
+                  <Route element={<AppShell />}>
+                    <Route path="/" element={<p>Route content here</p>} />
+                    <Route path="/items" element={<p>Items content</p>} />
+                  </Route>
+                </Routes>
+              </ModalStackProvider>
+            </ShortcutsProvider>
+          </MemoryRouter>
+        </QueryClientProvider>
+      </I18nProvider>,
+    );
+    // Open the F1 help dialog (an overlay on the modal stack).
+    await user.click(screen.getByRole("button", { name: /help/i }));
+    expect(
+      screen.getByRole("dialog", { name: /keyboard shortcuts/i }),
+    ).toBeInTheDocument();
+    // ESC closes the overlay (capture-phase preventDefault) — NO history-back.
+    await user.keyboard("{Escape}");
+    expect(
+      screen.queryByRole("dialog", { name: /keyboard shortcuts/i }),
+    ).not.toBeInTheDocument();
+    expect(screen.getByText("Items content")).toBeInTheDocument();
+  });
 });

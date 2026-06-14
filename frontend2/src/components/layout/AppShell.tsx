@@ -1,6 +1,7 @@
-import { lazy, Suspense, useMemo, useState } from "react";
+import { lazy, Suspense, useEffect, useMemo, useState } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router";
 import { useQuery } from "@tanstack/react-query";
+import { isEditableTarget } from "@/components/shortcuts";
 import { Trans } from "@lingui/react/macro";
 import { TopBar } from "./TopBar";
 import { Sidebar } from "./Sidebar";
@@ -106,6 +107,21 @@ function ShellChrome() {
   // setPaletteOpen setter via a plain inline arrow — usePaletteChord already
   // mounts its keydown listener once internally (no memo / dep-array here).
   usePaletteChord(() => setPaletteOpen(true));
+
+  // ESC = history-back when NO overlay is open (mirrors the Bottombar ESC chip).
+  // The ModalStackProvider owns a CAPTURE-phase ESC listener that pops the top
+  // overlay and preventDefault()s; this BUBBLE-phase listener runs after it and
+  // bails on `defaultPrevented`, so it only fires when the stack was empty.
+  // Skips editable targets so ESC can still cancel/blur inputs (BAR-03).
+  useEffect(() => {
+    const onEsc = (e: KeyboardEvent) => {
+      if (e.key !== "Escape" || e.defaultPrevented) return;
+      if (isEditableTarget(e.target)) return;
+      navigate(-1);
+    };
+    document.addEventListener("keydown", onEsc);
+    return () => document.removeEventListener("keydown", onEsc);
+  }, [navigate]);
 
   const segments = useMemo(
     () => segmentsForPath(location.pathname),
