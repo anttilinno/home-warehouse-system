@@ -69,6 +69,30 @@ describe("Sidebar", () => {
     expect(dashboard.className).not.toContain("bg-titlebar-blue");
   });
 
+  it("marks ONLY the matching ?tab taxonomy item active (not all three)", () => {
+    // All three point at /taxonomy with a different ?tab — NavLink would mark
+    // them all active; the tab-aware matcher must pick exactly one.
+    renderSidebar(<Sidebar stats={stats} user={user} />, {
+      route: "/taxonomy?tab=locations",
+    });
+    const locations = screen.getByRole("link", { name: /locations/i });
+    const containers = screen.getByRole("link", { name: /containers/i });
+    const categories = screen.getByRole("link", { name: /categories/i });
+    expect(locations).toHaveAttribute("aria-current", "page");
+    expect(containers).not.toHaveAttribute("aria-current", "page");
+    expect(categories).not.toHaveAttribute("aria-current", "page");
+  });
+
+  it("defaults /taxonomy (no ?tab) to the Categories item", () => {
+    renderSidebar(<Sidebar stats={stats} user={user} />, { route: "/taxonomy" });
+    expect(
+      screen.getByRole("link", { name: /categories/i }),
+    ).toHaveAttribute("aria-current", "page");
+    expect(
+      screen.getByRole("link", { name: /locations/i }),
+    ).not.toHaveAttribute("aria-current", "page");
+  });
+
   it("wires the Settings nav item to /settings (Phase 14 — no longer disabled)", () => {
     // Settings was disabled until Phase 14; 14-08 folds the still-unwired
     // Settings nav into the System group and points it at /settings.

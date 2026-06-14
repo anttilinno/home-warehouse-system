@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { NavLink } from "react-router";
+import { NavLink, Link, useLocation } from "react-router";
 import { Trans } from "@lingui/react/macro";
 import type { DashboardStats, User } from "@/lib/types";
 import { Window } from "@/components/retro";
@@ -54,17 +54,40 @@ function NavBody({ glyph, label, count }: NavItemProps) {
   );
 }
 
+const NAV_ACTIVE = `${NAV_BASE} border border-border-ink bg-titlebar-blue shadow-hard-ink`;
+const NAV_INACTIVE = `${NAV_BASE} border border-transparent text-fg-ink hover:border-border-ink hover:bg-bg-panel-2 active:bg-bg-pressed`;
+
+// /taxonomy with no ?tab renders the Categories tab (TaxonomyPage default).
+const TAXONOMY_DEFAULT_TAB = "categories";
+
 function NavItem({ glyph, label, count, to }: NavItemProps) {
+  const location = useLocation();
   if (to) {
+    // Query-tab links (e.g. /taxonomy?tab=locations) all share one pathname, so
+    // NavLink — which ignores the query string — would mark ALL of them active at
+    // once. Match the `tab` param explicitly instead.
+    const qIndex = to.indexOf("?");
+    if (qIndex !== -1) {
+      const path = to.slice(0, qIndex);
+      const linkTab = new URLSearchParams(to.slice(qIndex + 1)).get("tab");
+      const currentTab =
+        new URLSearchParams(location.search).get("tab") ?? TAXONOMY_DEFAULT_TAB;
+      const isActive = location.pathname === path && currentTab === linkTab;
+      return (
+        <Link
+          to={to}
+          aria-current={isActive ? "page" : undefined}
+          className={isActive ? NAV_ACTIVE : NAV_INACTIVE}
+        >
+          <NavBody glyph={glyph} label={label} count={count} />
+        </Link>
+      );
+    }
     return (
       <NavLink
         to={to}
         end={to === "/"}
-        className={({ isActive }) =>
-          isActive
-            ? `${NAV_BASE} border border-border-ink bg-titlebar-blue shadow-hard-ink`
-            : `${NAV_BASE} border border-transparent text-fg-ink hover:border-border-ink hover:bg-bg-panel-2 active:bg-bg-pressed`
-        }
+        className={({ isActive }) => (isActive ? NAV_ACTIVE : NAV_INACTIVE)}
       >
         <NavBody glyph={glyph} label={label} count={count} />
       </NavLink>
