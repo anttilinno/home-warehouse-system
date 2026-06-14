@@ -4,6 +4,7 @@ import { Navigate, useNavigate } from "react-router";
 import { Trans } from "@lingui/react/macro";
 import { get, HttpError } from "@/lib/api";
 import { BevelButton } from "@/components/retro";
+import { useApplyLocale } from "@/lib/useApplyLocale";
 import type { Workspace } from "@/lib/types";
 
 // Minimal route guard for the retro-os sample screens (full AuthProvider is
@@ -11,6 +12,9 @@ import type { Workspace } from "@/lib/types";
 // reuse the same ["workspaces"] cache entry, so this costs no extra request.
 export function RequireAuth({ children }: { children: ReactNode }) {
   const navigate = useNavigate();
+  // Activate the user's persisted interface language once the session is known
+  // (I18N-02 boot fix). Authed-only mount → the ["me"] probe never 401s on /login.
+  useApplyLocale();
   const workspaces = useQuery({
     queryKey: ["workspaces"],
     queryFn: () => get<Workspace[]>("/users/me/workspaces"),

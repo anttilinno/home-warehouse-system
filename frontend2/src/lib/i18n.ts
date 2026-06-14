@@ -16,6 +16,11 @@ export async function loadCatalog(locale: Locale): Promise<void> {
   const { messages } = await import(`../locales/${locale}/messages.po`);
   i18n.load(locale, messages);
   i18n.activate(locale);
+  // Keep <html lang> in sync with the active locale so assistive tech announces
+  // content in the right language (Lingui's activate does not touch the DOM).
+  if (typeof document !== "undefined") {
+    document.documentElement.lang = locale;
+  }
 }
 
 export { i18n };
