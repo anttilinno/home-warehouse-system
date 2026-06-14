@@ -62,7 +62,7 @@ function AlertCard({
       </span>
       <span className="flex items-center gap-sp-2">
         {trailing}
-        <span className="font-mono text-[18px] font-bold tabular-nums text-fg-ink">
+        <span className="font-display text-[18px] font-bold text-fg-ink">
           {display}
         </span>
       </span>

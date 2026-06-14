@@ -182,7 +182,7 @@ export function HudRow({ stats }: HudRowProps) {
               className="flex items-baseline justify-between gap-sp-2 text-[12px] font-semibold uppercase tracking-[0.06em] text-fg-muted"
             >
               {label}
-              <b className="font-mono text-[16px] text-fg-ink">
+              <b className="font-display text-[16px] text-fg-ink">
                 {value ?? "—"}
               </b>
             </div>

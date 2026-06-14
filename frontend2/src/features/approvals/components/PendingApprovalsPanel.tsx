@@ -44,7 +44,7 @@ export function PendingApprovalsPanel() {
       ) : total > 0 ? (
         <div className="flex items-center justify-between gap-sp-3">
           <div className="flex items-center gap-sp-2">
-            <span className="font-mono text-[24px] font-bold leading-none text-fg-ink">
+            <span className="font-display text-[24px] font-bold leading-none text-fg-ink">
               {total}
             </span>
             <RetroBadge variant="warn">
