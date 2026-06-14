@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef, useState, type ReactNode } from "react";
+import { useCallback, useMemo, useState, type ReactNode } from "react";
 import { useNavigate, useSearchParams } from "react-router";
 import { Trans, useLingui } from "@lingui/react/macro";
 import {
@@ -49,11 +49,6 @@ function isoDate(value?: string): string {
 
 export function LoansListPage() {
   const { t } = useLingui();
-  // useLingui()'s `t` is NOT referentially stable — read it through a live ref
-  // inside the shortcut closures so the shortcut memo depends on STABLE values
-  // only (the render-loop guard, hit 4x in prior phases).
-  const tRef = useRef(t);
-  tRef.current = t;
   const navigate = useNavigate();
   const [, setSearchParams] = useSearchParams();
   const { currentWorkspaceId: wsId, workspaces } = useWorkspace();
@@ -88,28 +83,33 @@ export function LoansListPage() {
     [setSearchParams],
   );
 
-  // ── Route shortcuts (N → new, / → focus search) — stable deps only.
+  // ── Route shortcuts (N → new, / → focus search). Labels via the `t` macro
+  // directly; the memo keys on the resolved strings (stable within a locale,
+  // re-runs on language switch) so the register effect never loops.
   const goNew = useCallback(() => navigate("/loans/new"), [navigate]);
   const focusSearch = useCallback(() => {
     document.querySelector<HTMLInputElement>('input[type="search"]')?.focus();
   }, []);
+  const labelNew = t`New loan`;
+  const labelSearch = t`Focus search`;
   const routeShortcuts = useMemo(
     () => [
-      { key: "N", label: tRef.current`New loan`, action: goNew },
-      { key: "/", label: tRef.current`Focus search`, action: focusSearch },
+      { key: "N", label: labelNew, action: goNew },
+      { key: "/", label: labelSearch, action: focusSearch },
     ],
-    [goNew, focusSearch],
+    [goNew, focusSearch, labelNew, labelSearch],
   );
   useShortcuts("loans", routeShortcuts);
 
   // ── Per-tab CSV export (override 3 — built in-memory from the current rows).
+  const nothingToExport = t`Nothing to export.`;
   const exportCsv = useCallback(() => {
     if (visible.length === 0) {
-      retroToast.error(tRef.current`Nothing to export.`);
+      retroToast.error(nothingToExport);
       return;
     }
     triggerCsvDownload(loansToCsvBlob(visible), `loans-${tab}.csv`);
-  }, [visible, tab]);
+  }, [visible, tab, nothingToExport]);
 
   function clearSearch() {
     setSearch("");

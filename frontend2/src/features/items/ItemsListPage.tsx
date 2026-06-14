@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router";
 import { Trans, useLingui } from "@lingui/react/macro";
 import {
@@ -43,13 +43,6 @@ const SAVED_FILTERS_KEY = "items-list-filters/v1";
 
 export function ItemsListPage() {
   const { t } = useLingui();
-  // useLingui()'s `t` is NOT referentially stable. Read it through a live ref
-  // inside the shortcut-binding closures so those memos can depend on STABLE
-  // values only — otherwise every render rebuilds the bindings, re-registers
-  // them into the shortcuts SSOT, and spins an infinite re-render loop
-  // (the DemoPage omits `t` from its bulk-action memo for the same reason).
-  const tRef = useRef(t);
-  tRef.current = t;
   const navigate = useNavigate();
   const { currentWorkspaceId: wsId, workspaces } = useWorkspace();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -115,35 +108,47 @@ export function ItemsListPage() {
     clearSelection();
   }, [selectedItems, archiveItem, restoreItem, clearSelection]);
 
+  const onlyArchivedMsg = t`Only archived items can be deleted.`;
   const bulkDelete = useCallback(() => {
     if (!allSelectedArchived) {
-      retroToast.error(tRef.current`Only archived items can be deleted.`);
+      retroToast.error(onlyArchivedMsg);
       return;
     }
     selectedItems.forEach((i) =>
       deleteItem({ id: i.id, isArchived: i.is_archived ?? false }),
     );
     clearSelection();
-  }, [allSelectedArchived, selectedItems, deleteItem, clearSelection]);
+  }, [
+    allSelectedArchived,
+    selectedItems,
+    deleteItem,
+    clearSelection,
+    onlyArchivedMsg,
+  ]);
 
+  // Labels via the `t` macro directly; memo keys on the resolved strings
+  // (stable within a locale, re-run on language switch) so the register effect
+  // never loops.
+  const archiveLabel = t`Archive ${selectedCount} selected`;
+  const deleteLabel = t`Delete ${selectedCount} selected`;
   const bulkActions = useMemo(
     () =>
       selectedCount > 0
         ? [
             {
               key: "A",
-              label: tRef.current`Archive ${selectedCount} selected`,
+              label: archiveLabel,
               action: bulkArchive,
             },
             {
               key: "X",
-              label: tRef.current`Delete ${selectedCount} selected`,
+              label: deleteLabel,
               action: bulkDelete,
               danger: true,
             },
           ]
         : [],
-    [selectedCount, bulkArchive, bulkDelete],
+    [selectedCount, bulkArchive, bulkDelete, archiveLabel, deleteLabel],
   );
   useShortcuts("bulk-actions", bulkActions);
 
@@ -156,13 +161,16 @@ export function ItemsListPage() {
     setParam("archived", state.archived ? null : "true");
   }, [setParam, state.archived]);
 
+  const labelNew = t`New item`;
+  const labelSearch = t`Focus search`;
+  const labelToggle = t`Toggle archived`;
   const routeShortcuts = useMemo(
     () => [
-      { key: "N", label: tRef.current`New item`, action: goNew },
-      { key: "/", label: tRef.current`Focus search`, action: focusSearch },
-      { key: "F", label: tRef.current`Toggle archived`, action: toggleArchived },
+      { key: "N", label: labelNew, action: goNew },
+      { key: "/", label: labelSearch, action: focusSearch },
+      { key: "F", label: labelToggle, action: toggleArchived },
     ],
-    [goNew, focusSearch, toggleArchived],
+    [goNew, focusSearch, toggleArchived, labelNew, labelSearch, labelToggle],
   );
   useShortcuts("items", routeShortcuts);
 

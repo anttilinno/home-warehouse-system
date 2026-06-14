@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router";
 import { Trans, useLingui } from "@lingui/react/macro";
 import {
@@ -34,10 +34,6 @@ import {
 
 export function BorrowersListPage() {
   const { t } = useLingui();
-  // `t` is not referentially stable — read it via a live ref in the shortcut
-  // closures so the memo deps stay STABLE (the render-loop guard).
-  const tRef = useRef(t);
-  tRef.current = t;
   const navigate = useNavigate();
   const [, setSearchParams] = useSearchParams();
   const { currentWorkspaceId: wsId, workspaces } = useWorkspace();
@@ -52,17 +48,21 @@ export function BorrowersListPage() {
   const { rows, page, pageCount, isLoading, isError } =
     useBorrowersQuery(search);
 
-  // ── Route shortcuts (N → new, / → focus search) — stable deps only.
+  // ── Route shortcuts (N → new, / → focus search). Labels via the `t` macro
+  // directly; the memo keys on the resolved strings (stable within a locale,
+  // re-runs on language switch) so the register effect never loops.
   const goNew = useCallback(() => navigate("/borrowers/new"), [navigate]);
   const focusSearch = useCallback(() => {
     document.querySelector<HTMLInputElement>('input[type="search"]')?.focus();
   }, []);
+  const labelNew = t`New borrower`;
+  const labelSearch = t`Focus search`;
   const routeShortcuts = useMemo(
     () => [
-      { key: "N", label: tRef.current`New borrower`, action: goNew },
-      { key: "/", label: tRef.current`Focus search`, action: focusSearch },
+      { key: "N", label: labelNew, action: goNew },
+      { key: "/", label: labelSearch, action: focusSearch },
     ],
-    [goNew, focusSearch],
+    [goNew, focusSearch, labelNew, labelSearch],
   );
   useShortcuts("borrowers", routeShortcuts);
 

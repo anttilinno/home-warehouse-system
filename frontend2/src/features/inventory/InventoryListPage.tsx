@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router";
 import { Trans, useLingui } from "@lingui/react/macro";
 import {
@@ -47,11 +47,6 @@ type SortKey = "qty" | "status" | "condition";
 
 export function InventoryListPage() {
   const { t } = useLingui();
-  // useLingui()'s `t` is NOT referentially stable — read it through a live ref
-  // inside the shortcut-binding closures so the memos depend on STABLE values
-  // only (render-loop guard, hit 3x in Phase 7).
-  const tRef = useRef(t);
-  tRef.current = t;
   const navigate = useNavigate();
   const [, setSearchParams] = useSearchParams();
   const { currentWorkspaceId: wsId, workspaces } = useWorkspace();
@@ -173,25 +168,28 @@ export function InventoryListPage() {
   const focusSearch = useCallback(() => {
     document.querySelector<HTMLInputElement>('input[type="search"]')?.focus();
   }, []);
+  const labelNew = t`New entry`;
+  const labelSearch = t`Focus search`;
   const routeShortcuts = useMemo(
     () => [
-      { key: "N", label: tRef.current`New entry`, action: goNew },
-      { key: "/", label: tRef.current`Focus search`, action: focusSearch },
+      { key: "N", label: labelNew, action: goNew },
+      { key: "/", label: labelSearch, action: focusSearch },
     ],
-    [goNew, focusSearch],
+    [goNew, focusSearch, labelNew, labelSearch],
   );
   useShortcuts("inventory", routeShortcuts);
 
   // ── Client CSV export (parity §4 — built in-memory from the current filtered
   // rows; no /export/inventory endpoint exists, so this is client-side like
   // loans). Deps = the visible-rows variable only (tRef is a stable ref).
+  const nothingToExport = t`Nothing to export.`;
   const exportCsv = useCallback(() => {
     if (visible.length === 0) {
-      retroToast.error(tRef.current`Nothing to export.`);
+      retroToast.error(nothingToExport);
       return;
     }
     triggerCsvDownload(inventoryToCsvBlob(visible), "inventory.csv");
-  }, [visible]);
+  }, [visible, nothingToExport]);
 
   function onSort(key: SortKey) {
     if (sortKey === key) {
