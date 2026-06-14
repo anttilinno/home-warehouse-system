@@ -43,7 +43,7 @@ function NavBody({ glyph, label, count }: NavItemProps) {
           />
         )}
       </span>
-      <span className="nav-label truncate">{label}</span>
+      <span className="nav-label truncate uppercase tracking-[0.04em]">{label}</span>
       {count !== undefined && (
         <span className="nav-count ml-auto font-mono text-[11px] tabular-nums text-fg-muted">
           {count}
