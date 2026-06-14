@@ -101,3 +101,6 @@ backend/uploads/
 
 # graphify knowledge-graph output (generated, 32M)
 graphify-out/
+
+# Local mise config (holds dev JWT_SECRET) — copy from .mise.toml.example
+.mise.toml

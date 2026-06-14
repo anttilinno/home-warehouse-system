@@ -12,6 +12,9 @@ DBMATE_DATABASE_URL = "postgresql://wh:wh@localhost:5432/warehouse_dev?sslmode=d
 GO_DATABASE_URL = "postgresql://wh:wh@localhost:5432/warehouse_dev?sslmode=disable"
 GO_TEST_DATABASE_URL = "postgresql://wh:wh@localhost:5432/warehouse_test?sslmode=disable"
 
+# Dev-only JWT signing secret (NEVER reuse in prod — generate a fresh one there)
+JWT_SECRET = "change-me-generate-with-openssl-rand-base64-48"
+
 [tasks.setup]
 description = "Full project setup from zero: install tools, deps, start containers, run migrations, seed DB"
 run = """
