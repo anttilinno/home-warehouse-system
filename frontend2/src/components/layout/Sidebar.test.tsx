@@ -83,6 +83,18 @@ describe("Sidebar", () => {
     expect(categories).not.toHaveAttribute("aria-current", "page");
   });
 
+  it("keeps Categories active on a taxonomy sub-route (/taxonomy/categories/new)", () => {
+    renderSidebar(<Sidebar stats={stats} user={user} />, {
+      route: "/taxonomy/categories/new",
+    });
+    expect(
+      screen.getByRole("link", { name: /categories/i }),
+    ).toHaveAttribute("aria-current", "page");
+    expect(
+      screen.getByRole("link", { name: /locations/i }),
+    ).not.toHaveAttribute("aria-current", "page");
+  });
+
   it("defaults /taxonomy (no ?tab) to the Categories item", () => {
     renderSidebar(<Sidebar stats={stats} user={user} />, { route: "/taxonomy" });
     expect(

@@ -72,7 +72,14 @@ function NavItem({ glyph, label, count, to }: NavItemProps) {
       const linkTab = new URLSearchParams(to.slice(qIndex + 1)).get("tab");
       const currentTab =
         new URLSearchParams(location.search).get("tab") ?? TAXONOMY_DEFAULT_TAB;
-      const isActive = location.pathname === path && currentTab === linkTab;
+      // Active on the tab itself (/taxonomy?tab=X) AND on that tab's sub-routes
+      // (e.g. /taxonomy/categories/new keeps Categories highlighted, the way
+      // /items/new keeps Items highlighted under NavLink's prefix match).
+      const subPath = `${path}/${linkTab}`;
+      const isActive =
+        (location.pathname === path && currentTab === linkTab) ||
+        location.pathname === subPath ||
+        location.pathname.startsWith(`${subPath}/`);
       return (
         <Link
           to={to}
