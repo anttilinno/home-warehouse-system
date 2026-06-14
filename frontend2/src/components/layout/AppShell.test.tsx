@@ -58,8 +58,8 @@ describe("AppShell", () => {
 
   it("renders the grid chrome (TopBar, Sidebar, Bottombar) and the route Outlet", () => {
     renderShell("/");
-    // TopBar: its user pill is unique chrome.
-    expect(screen.getByTestId("user-pill")).toBeInTheDocument(); // TopBar
+    // TopBar: its workspace pill is unique chrome.
+    expect(screen.getByTestId("workspace-pill")).toBeInTheDocument(); // TopBar
     expect(
       screen.getByRole("navigation", { name: /primary/i }),
     ).toBeInTheDocument(); // Sidebar
@@ -73,7 +73,7 @@ describe("AppShell", () => {
     // EventSource (the global MockEventSource stub). The shell must render its
     // chrome without throwing under the provider stack.
     renderShell("/");
-    expect(screen.getByTestId("user-pill")).toBeInTheDocument();
+    expect(screen.getByTestId("workspace-pill")).toBeInTheDocument();
     await vi.waitFor(() => {
       expect(MockEventSource.openCount).toBe(1);
     });

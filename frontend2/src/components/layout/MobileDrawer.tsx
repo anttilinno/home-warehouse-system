@@ -17,9 +17,17 @@ export interface MobileDrawerProps {
   onClose: () => void;
   stats?: DashboardStats;
   user?: User;
+  /** Logout handler for the Sidebar's bottom user menu (confirm-gated). */
+  onLogout?: () => void;
 }
 
-export function MobileDrawer({ open, onClose, stats, user }: MobileDrawerProps) {
+export function MobileDrawer({
+  open,
+  onClose,
+  stats,
+  user,
+  onLogout,
+}: MobileDrawerProps) {
   const panelRef = useRef<HTMLDivElement>(null);
   const invokerRef = useRef<HTMLElement | null>(null);
 
@@ -85,7 +93,7 @@ export function MobileDrawer({ open, onClose, stats, user }: MobileDrawerProps) 
         }}
         className="absolute inset-y-0 left-0 w-[min(280px,86vw)] overflow-y-auto bg-bg-panel outline-none transition-transform duration-[160ms] ease-out motion-reduce:transition-none"
       >
-        <Sidebar stats={stats} user={user} />
+        <Sidebar stats={stats} user={user} onLogout={onLogout} />
       </div>
     </div>
   );

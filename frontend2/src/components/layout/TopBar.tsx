@@ -1,20 +1,16 @@
-import { useEffect, useRef, useState } from "react";
 import { Trans } from "@lingui/react/macro";
-import type { User } from "@/lib/types";
 import { BrandMark } from "@/components/BrandMark";
 import { RetroStatusDot } from "@/components/retro";
 import { useSSEStatus } from "@/features/sse";
 import { NotificationsBell } from "@/features/notifications/components/NotificationsBell";
 import { WorkspaceSwitcher } from "./WorkspaceSwitcher";
-import { LogoutConfirm } from "./LogoutConfirm";
 
 // TopBar (SHELL-03): the slim 40px banner every authenticated route renders.
 // Brand + the live WorkspaceSwitcher pill (AUTH-06; reads the D-12 SSOT) +
 // ONLINE dot + sse-slot RetroStatusDot (both bound to live SSE — Phase 6) +
-// live notifications bell (Phase 13) + a user pill whose menu's only
-// enabled item is a confirm-before Log out (BAR-05 — logout is NEVER reachable
-// via bare ESC; the confirm pushes onto the modal stack so ESC closes the dialog
-// instead of logging out).
+// live notifications bell (Phase 13). The account menu (Profile / Settings /
+// confirm-before Log out) lives in the Sidebar/MobileDrawer user menu now — the
+// redundant TopBar account pill was removed.
 //
 // SSE binding (PROV-01, design choice): TopBar reads `useSSEStatus()` directly
 // and feeds the DUMB RetroStatusDot atom its `state` (Pitfall 6 — the atom never
@@ -31,42 +27,15 @@ export interface TopBarProps {
    * `useSSEStatus().connected` when omitted (AppShell passes it explicitly).
    */
   online?: boolean;
-  user?: User;
   /** Mobile hamburger toggle for the Navigator drawer (wired in Plan 06). */
   onToggleDrawer?: () => void;
-  /** Called only after the user confirms logout in the dialog. */
-  onLogout: () => void;
 }
 
-export function TopBar({
-  online,
-  user,
-  onToggleDrawer,
-  onLogout,
-}: TopBarProps) {
+export function TopBar({ online, onToggleDrawer }: TopBarProps) {
   // Live SSE connection status — drives BOTH the ONLINE dot (when no explicit
   // `online` prop) AND the sse-slot RetroStatusDot.
   const { connected } = useSSEStatus();
   const isOnline = online ?? connected;
-  const [menuOpen, setMenuOpen] = useState(false);
-  const [confirmOpen, setConfirmOpen] = useState(false);
-  const menuRef = useRef<HTMLDivElement>(null);
-
-  // Close the menu on outside click (the confirm dialog owns its own dismiss).
-  useEffect(() => {
-    if (!menuOpen) return;
-    function onPointerDown(e: PointerEvent) {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
-        setMenuOpen(false);
-      }
-    }
-    document.addEventListener("pointerdown", onPointerDown);
-    return () => document.removeEventListener("pointerdown", onPointerDown);
-  }, [menuOpen]);
-
-  const initial = (user?.full_name || user?.email || "?")
-    .charAt(0)
-    .toUpperCase();
 
   return (
     <header
@@ -123,75 +92,6 @@ export function TopBar({
       >
         <RetroStatusDot state={connected ? "live" : "idle"} />
       </span>
-
-      {/* User pill → menu (this phase: a single confirm-before Log out). */}
-      <div ref={menuRef} className="relative flex-none">
-        <button
-          type="button"
-          data-testid="user-pill"
-          aria-label={user?.full_name || user?.email || "Account menu"}
-          aria-haspopup="menu"
-          aria-expanded={menuOpen}
-          onClick={() => setMenuOpen((v) => !v)}
-          className={`flex items-center gap-sp-2 border-2 border-border-ink bg-bg-panel px-sp-1 py-[2px] bevel-raised-ink active:translate-x-px active:translate-y-px active:bg-bg-pressed active:bevel-pressed ${FOCUS_RING}`}
-        >
-          <span
-            aria-hidden="true"
-            className="grid h-[28px] w-[28px] flex-none place-items-center border-2 border-border-ink bg-titlebar-pink font-display text-[16px]"
-          >
-            {initial}
-          </span>
-          <span className="hidden max-w-[160px] truncate text-[13px] font-semibold sm:inline">
-            {user?.full_name}
-          </span>
-        </button>
-
-        {menuOpen && (
-          <div
-            role="menu"
-            className="absolute right-0 top-[calc(100%+4px)] z-20 min-w-[180px] border-2 border-border-ink bg-bg-panel bevel-raised-ink"
-          >
-            <MenuPlaceholder>
-              <Trans>Profile</Trans>
-            </MenuPlaceholder>
-            <MenuPlaceholder>
-              <Trans>Settings</Trans>
-            </MenuPlaceholder>
-            <button
-              type="button"
-              role="menuitem"
-              onClick={() => {
-                setMenuOpen(false);
-                setConfirmOpen(true);
-              }}
-              className={`block w-full border-t-2 border-border-ink px-sp-3 py-[6px] text-left text-[13px] font-semibold text-danger hover:bg-danger-bg ${FOCUS_RING}`}
-            >
-              <Trans>Log out</Trans>
-            </button>
-          </div>
-        )}
-      </div>
-
-      <LogoutConfirm
-        open={confirmOpen}
-        onCancel={() => setConfirmOpen(false)}
-        onConfirm={() => {
-          setConfirmOpen(false);
-          onLogout();
-        }}
-      />
     </header>
-  );
-}
-
-function MenuPlaceholder({ children }: { children: React.ReactNode }) {
-  return (
-    <span
-      aria-disabled="true"
-      title="Coming soon"
-      className="block cursor-default px-sp-3 py-[6px] text-[13px] font-semibold text-fg-muted opacity-50"
-    >
-      {children}
-    </span>
   );
 }

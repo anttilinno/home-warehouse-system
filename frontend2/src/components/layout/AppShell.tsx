@@ -142,7 +142,6 @@ function ShellChrome() {
         <TopBar
           online={connected}
           onToggleDrawer={() => setDrawerOpen((v) => !v)}
-          onLogout={logout}
         />
       </div>
 
@@ -169,7 +168,12 @@ function ShellChrome() {
       </div>
 
       {/* Mobile-only surfaces (<768px): the off-canvas Navigator + the FAB. */}
-      <MobileDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} />
+      <MobileDrawer
+        open={drawerOpen}
+        onClose={() => setDrawerOpen(false)}
+        user={me.data}
+        onLogout={logout}
+      />
       <Fab />
 
       {/* The F1 help dialog (its single F1/"?" keydown owner toggles it). */}
