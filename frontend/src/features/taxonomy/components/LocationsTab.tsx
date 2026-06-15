@@ -59,7 +59,9 @@ export function LocationsTab() {
   const nodes = useMemo(() => toTreeNodes(tree), [tree]);
   const rowsById = useMemo(() => {
     const m = new Map<string, Location>();
-    rows.forEach((r) => m.set(r.id, r));
+    rows.forEach((r) => {
+      m.set(r.id, r);
+    });
     return m;
   }, [rows]);
 

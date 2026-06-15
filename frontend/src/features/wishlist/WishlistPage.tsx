@@ -162,7 +162,7 @@ export function WishlistPage() {
               <th>{t`Price`}</th>
               <th>{t`Priority`}</th>
               <th>{t`Status`}</th>
-              <th aria-hidden="true" />
+              <th />
             </tr>
           </thead>
           <tbody>

@@ -416,13 +416,13 @@ export function DemoPage() {
                   onChange={() =>
                     allSelected
                       ? selection.clear()
-                      : DEMO_ROWS.forEach((r) =>
+                      : DEMO_ROWS.forEach((r) => {
                           selection.onRowClick(r.id, {
                             metaKey: true,
                             ctrlKey: false,
                             shiftKey: false,
-                          }),
-                        )
+                          });
+                        })
                   }
                 />
               </th>

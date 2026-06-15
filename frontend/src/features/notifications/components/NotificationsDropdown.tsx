@@ -90,7 +90,6 @@ export function NotificationsDropdown({
             {items.map((n) => (
               <li
                 key={n.id}
-                role="menuitem"
                 className={`flex items-start gap-sp-2 px-sp-3 py-sp-2 ${
                   n.is_read ? "opacity-60" : ""
                 }`}

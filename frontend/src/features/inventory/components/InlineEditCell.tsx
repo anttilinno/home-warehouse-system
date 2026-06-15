@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { type ReactNode, useEffect, useRef, useState } from "react";
 import { useLingui } from "@lingui/react/macro";
 import { RetroInput, RetroSelect, StatusPill } from "@/components/retro";
 import type { Condition, InventoryStatus } from "@/lib/types";
@@ -110,7 +110,7 @@ export function InlineEditCell(props: InlineEditCellProps) {
 
   // ── Rest state ───────────────────────────────────────────────────────────
   if (!editing) {
-    let display;
+    let display: ReactNode;
     if (field === "quantity") {
       display = <span className="font-mono tabular-nums">{props.value}</span>;
     } else if (field === "status") {

@@ -49,13 +49,10 @@ export function Bottombar({ onOpenHelp, onBack }: BottombarProps) {
   const overflowShortcuts = shortcuts.slice(inlineCount);
 
   return (
-    <footer
-      aria-label="Shortcuts"
-      className="hidden md:flex h-9 min-w-0 items-center gap-sp-2 overflow-hidden border-t-2 border-border-ink bg-bg-panel-2 px-sp-3"
-    >
-      {inlineShortcuts.map((s, i) => (
+    <footer className="hidden md:flex h-9 min-w-0 items-center gap-sp-2 overflow-hidden border-t-2 border-border-ink bg-bg-panel-2 px-sp-3">
+      {inlineShortcuts.map((s) => (
         <ShortcutChip
-          key={`${s.key}-${i}`}
+          key={s.key}
           shortcutKey={s.key}
           // Inline route chips stay bare (keycap only); the action name rides in
           // the hover tooltip instead. The full label still shows in the F1 help
@@ -123,10 +120,16 @@ function OverflowSheet({
   useModalStack(true, onClose);
 
   return (
+    // biome-ignore lint/a11y/useKeyWithClickEvents: click-outside backdrop is mouse-only; ESC dismissal is owned by useModalStack above.
+    // biome-ignore lint/a11y/noStaticElementInteractions: ditto — the scrim is a non-semantic dismissal surface, not a control.
     <div
       className="fixed inset-0 z-30 flex items-end justify-end bg-fg-ink/40 p-sp-4"
       onClick={onClose}
     >
+      {/* Stop scrim-close from firing when interacting inside the dialog; the
+          onClick is a stopPropagation guard, not a user action, so no keyboard
+          handler is warranted. */}
+      {/* biome-ignore lint/a11y/useKeyWithClickEvents: stopPropagation guard only, not an interactive control. */}
       <div
         role="dialog"
         aria-modal="true"
@@ -136,8 +139,8 @@ function OverflowSheet({
       >
         <Window title={<Trans>MORE SHORTCUTS</Trans>} titlebarVariant="blue">
           <ul className="flex flex-col gap-sp-2">
-            {shortcuts.map((s, i) => (
-              <li key={`${s.key}-${i}`}>
+            {shortcuts.map((s) => (
+              <li key={s.key}>
                 <ShortcutChip
                   shortcutKey={s.key}
                   label={s.label}

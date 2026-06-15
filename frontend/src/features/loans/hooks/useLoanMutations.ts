@@ -69,9 +69,9 @@ export function useLoanMutations() {
   }
 
   function restore(ctx: OptimisticContext | undefined) {
-    ctx?.snapshots.forEach(([key, data]) =>
-      queryClient.setQueryData(key, data),
-    );
+    ctx?.snapshots.forEach(([key, data]) => {
+      queryClient.setQueryData(key, data);
+    });
   }
 
   const returnLoan = useMutation<Loan, Error, string, OptimisticContext>({

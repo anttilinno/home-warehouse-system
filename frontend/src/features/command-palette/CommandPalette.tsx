@@ -63,6 +63,7 @@ export default function CommandPalette({ open, onClose }: CommandPaletteProps) {
 
   // Reset the selected row only when the QUERY changes (so a fresh result set
   // re-selects its first row) — NOT on every fetch settle (Pitfall 3).
+  // biome-ignore lint/correctness/useExhaustiveDependencies: query is the intentional re-run trigger (reset selection on query change), not read in the body.
   useEffect(() => {
     setValue("");
   }, [query]);
@@ -134,11 +135,14 @@ export default function CommandPalette({ open, onClose }: CommandPaletteProps) {
 
   return (
     // Full-screen retro scrim; clicking it closes the palette.
+    // biome-ignore lint/a11y/noStaticElementInteractions: presentational backdrop; click-to-close is a mouse convenience
+    // biome-ignore lint/a11y/useKeyWithClickEvents: keyboard users close via ESC (handled by the modal stack)
     <div
       data-testid="command-palette"
       className="fixed inset-0 z-50 flex items-start justify-center bg-fg-ink/40 p-sp-6 pt-[12vh]"
       onClick={onClose}
     >
+      {/* biome-ignore lint/a11y/useKeyWithClickEvents: mouse-only guard so backdrop click-to-close ignores clicks inside the dialog */}
       <div
         role="dialog"
         aria-modal="true"

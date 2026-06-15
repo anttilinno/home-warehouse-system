@@ -78,7 +78,7 @@ export function AvatarUploader() {
       {cacheBustedSrc ? (
         <img
           src={cacheBustedSrc}
-          alt={t`Profile photo`}
+          alt={t`Your profile`}
           width={150}
           height={150}
           className="h-[150px] w-[150px] flex-none border border-border-ink object-cover"

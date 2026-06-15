@@ -73,17 +73,18 @@ export function RetroCombobox({
 
   // Keep DOM focus on the input even though the Popover would otherwise move
   // focus into the floating panel — virtual focus (aria-activedescendant) only.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: filtered.length is an intentional re-trigger — refocus the input after the filtered list re-renders.
   useEffect(() => {
     if (open) inputRef.current?.focus();
   }, [open, filtered.length]);
 
   // Scroll the active option into view as the virtual highlight moves.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: optionId is a render-local helper (stable logic over baseId); excluded to avoid re-running every render.
   useEffect(() => {
     if (!open || activeIndex < 0) return;
     const el = document.getElementById(optionId(activeIndex));
     // scrollIntoView is unavailable under jsdom — guard so tests don't throw.
     el?.scrollIntoView?.({ block: "nearest" });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeIndex, open]);
 
   const openList = () => {
@@ -182,24 +183,27 @@ export function RetroCombobox({
       />
       <Popover open={open} onClose={close} anchorRef={inputRef} role="listbox">
         {/* The Popover panel carries role="listbox"; this inner list is a plain
-            container so there is exactly one listbox in the tree. */}
-        <ul
+            container so there is exactly one listbox in the tree. Options are
+            plain divs (not <li>) so role="option" sits on a generic element and
+            virtual focus (tabIndex={-1} + aria-activedescendant) stays valid. */}
+        <div
           id={listboxId}
           className="max-h-[240px] overflow-y-auto outline-none"
         >
           {filtered.length === 0 ? (
-            <li className="px-sp-2 py-sp-2 text-12 text-fg-muted">
+            <div className="px-sp-2 py-sp-2 text-12 text-fg-muted">
               <Trans>No matches.</Trans>
-            </li>
+            </div>
           ) : (
             filtered.map((opt, i) => {
               const isSelected = opt.value === value;
               const isActive = i === activeIndex;
               return (
-                <li
+                <div
                   key={opt.value}
                   id={optionId(i)}
                   role="option"
+                  tabIndex={-1}
                   aria-selected={isSelected}
                   onMouseEnter={() => setActiveIndex(i)}
                   onMouseDown={(e) => {
@@ -215,11 +219,11 @@ export function RetroCombobox({
                     {isSelected ? "✓" : ""}
                   </span>
                   <span>{opt.label}</span>
-                </li>
+                </div>
               );
             })
           )}
-        </ul>
+        </div>
       </Popover>
       {error && (
         <p id={errorId} className="mt-sp-1 text-12 font-semibold text-danger">

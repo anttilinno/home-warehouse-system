@@ -32,7 +32,8 @@ export function PageHeader({
         className="flex items-center gap-sp-1 text-11 font-bold uppercase tracking-10"
       >
         {segments.map((segment, i) => (
-          <Fragment key={`${segment}-${i}`}>
+          // Cumulative path is stable + unique even when a segment label repeats.
+          <Fragment key={segments.slice(0, i + 1).join("/")}>
             {i > 0 && (
               <span aria-hidden="true" className="text-fg-ink">
                 ›

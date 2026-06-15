@@ -71,13 +71,15 @@ export function Fab() {
         </button>
 
         {open && (
-          <ul
+          <div
             role="menu"
             aria-label="Quick actions"
             className="absolute bottom-full right-0 mb-sp-2 flex flex-col-reverse items-end gap-sp-2"
           >
             {actions.map((s, i) => (
-              <li key={`${s.key}-${i}`} role="none">
+              // Generic wrapper (no list semantics): a div parent can't carry a
+              // <li>, and the menuitem role lives on the inner button.
+              <div key={s.key}>
                 <button
                   type="button"
                   role="menuitem"
@@ -99,9 +101,9 @@ export function Fab() {
                     {s.label}
                   </span>
                 </button>
-              </li>
+              </div>
             ))}
-          </ul>
+          </div>
         )}
       </div>
     </div>

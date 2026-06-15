@@ -11,7 +11,7 @@ import {
   RetroDialog,
   type RetroComboboxOption,
 } from "@/components/retro";
-import { type Location, type CreateLocationBody } from "@/lib/api/location";
+import type { Location, CreateLocationBody } from "@/lib/api/location";
 import {
   locationSchema,
   type LocationFormInput,

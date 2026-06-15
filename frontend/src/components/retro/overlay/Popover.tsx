@@ -82,11 +82,15 @@ export function Popover({
   return (
     <>
       {/* Tap-outside sentinel: a transparent backdrop that closes on click. */}
+      {/* biome-ignore lint/a11y/useKeyWithClickEvents: tap-outside backdrop; Escape closes via the modal stack */}
+      {/* biome-ignore lint/a11y/noStaticElementInteractions: tap-outside backdrop; Escape closes via the modal stack */}
       <div
         data-testid="popover-backdrop"
         className="fixed inset-0 z-40"
         onClick={onClose}
       />
+      {/* biome-ignore lint/a11y/useKeyWithClickEvents: stops backdrop-click propagation only, not an interactive control */}
+      {/* biome-ignore lint/a11y/noStaticElementInteractions: dynamic role ("menu"/"listbox") is interactive; click only stops backdrop-close propagation */}
       <div
         ref={panelRef}
         role={role}

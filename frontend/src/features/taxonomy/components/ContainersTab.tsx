@@ -63,7 +63,9 @@ export function ContainersTab() {
 
   const locationNameById = useMemo(() => {
     const m = new Map<string, string>();
-    locationRows.forEach((l) => m.set(l.id, l.name));
+    locationRows.forEach((l) => {
+      m.set(l.id, l.name);
+    });
     return m;
   }, [locationRows]);
 
@@ -93,9 +95,9 @@ export function ContainersTab() {
       return a.name.localeCompare(b.name);
     });
     // Sort containers within each group alpha by name.
-    all.forEach((g) =>
-      g.containers.sort((a, b) => a.name.localeCompare(b.name)),
-    );
+    all.forEach((g) => {
+      g.containers.sort((a, b) => a.name.localeCompare(b.name));
+    });
     return all;
   }, [rows, locationNameById, noLocationLabel]);
 

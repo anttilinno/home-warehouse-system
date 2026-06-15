@@ -94,10 +94,13 @@ export function RetroDialog({
   );
 
   return (
+    // biome-ignore lint/a11y/useKeyWithClickEvents: tap-outside scrim; Escape closes via the modal stack
+    // biome-ignore lint/a11y/noStaticElementInteractions: tap-outside scrim; Escape closes via the modal stack
     <div
       className="fixed inset-0 z-40 flex items-center justify-center bg-fg-ink/40 p-sp-4"
       onClick={onClose}
     >
+      {/* biome-ignore lint/a11y/useKeyWithClickEvents: stops scrim-click propagation only, not an interactive control */}
       <div
         ref={dialogRef}
         role="dialog"

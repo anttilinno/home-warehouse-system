@@ -114,9 +114,9 @@ export function ItemsListPage() {
       retroToast.error(onlyArchivedMsg);
       return;
     }
-    selectedItems.forEach((i) =>
-      deleteItem({ id: i.id, isArchived: i.is_archived ?? false }),
-    );
+    selectedItems.forEach((i) => {
+      deleteItem({ id: i.id, isArchived: i.is_archived ?? false });
+    });
     clearSelection();
   }, [
     allSelectedArchived,
@@ -423,17 +423,17 @@ export function ItemsListPage() {
                       onChange={() =>
                         allSelected
                           ? clearSelection()
-                          : items.forEach((r) =>
+                          : items.forEach((r) => {
                               selection.onRowClick(r.id, {
                                 metaKey: true,
                                 ctrlKey: false,
                                 shiftKey: false,
-                              }),
-                            )
+                              });
+                            })
                       }
                     />
                   </th>
-                  <th aria-hidden="true" />
+                  <th />
                   {SORTABLE.map((col) => (
                     <th key={col.key}>
                       <button
@@ -450,7 +450,7 @@ export function ItemsListPage() {
                   <th>{t`Location`}</th>
                   <th className="text-right">{t`Qty`}</th>
                   <th>{t`Status`}</th>
-                  <th aria-hidden="true" />
+                  <th />
                 </tr>
               </thead>
               <tbody>
@@ -463,6 +463,7 @@ export function ItemsListPage() {
                       onClick={() => navigate(`/items/${item.id}`)}
                       className={`cursor-pointer ${archived ? "text-fg-muted" : ""}`}
                     >
+                      {/* biome-ignore lint/a11y/useKeyWithClickEvents: mouse-only guard to stop the row navigate; keyboard users focus the nested checkbox directly */}
                       <td onClick={(e) => e.stopPropagation()}>
                         <RetroCheckbox
                           label=""
@@ -510,6 +511,7 @@ export function ItemsListPage() {
                           </StatusPill>
                         )}
                       </td>
+                      {/* biome-ignore lint/a11y/useKeyWithClickEvents: mouse-only guard to stop the row navigate; keyboard users focus the nested action buttons directly */}
                       <td
                         className="actions text-right"
                         onClick={(e) => e.stopPropagation()}

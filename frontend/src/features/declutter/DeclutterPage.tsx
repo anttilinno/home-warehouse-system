@@ -224,7 +224,7 @@ export function DeclutterPage() {
                       <th>{t`Days unused`}</th>
                       <th>{t`Score`}</th>
                       <th>{t`Price`}</th>
-                      <th aria-hidden="true" />
+                      <th />
                     </tr>
                   </thead>
                   <tbody>{group.rows.map(renderRow)}</tbody>

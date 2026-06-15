@@ -128,6 +128,7 @@ export function RegionalFormatsPage() {
   // Once ME arrives, re-baseline so dirtyFields tracks against the loaded values
   // (not the initial defaults) — without this the first PATCH could include
   // fields the user never touched.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: re-baseline only when ME data arrives; reset is stable (react-hook-form) and intentionally excluded.
   useEffect(() => {
     if (me.data) {
       reset({
@@ -137,7 +138,6 @@ export function RegionalFormatsPage() {
         decimal_separator: me.data.decimal_separator ?? ",",
       });
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [me.data]);
 
   const values = watch();

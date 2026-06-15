@@ -107,10 +107,13 @@ export function PhotoLightbox({ photos, index, onClose }: PhotoLightboxProps) {
   const pct = Math.round(zoom * 100);
 
   const content = (
+    // biome-ignore lint/a11y/noStaticElementInteractions: presentational backdrop; click-to-close is a mouse convenience
+    // biome-ignore lint/a11y/useKeyWithClickEvents: keyboard users close via ESC (handled by the modal stack)
     <div
       className="fixed inset-0 z-40 flex flex-col bg-fg-ink/85"
       onClick={onClose}
     >
+      {/* biome-ignore lint/a11y/useKeyWithClickEvents: mouse-only guard so backdrop click-to-close ignores clicks inside the dialog */}
       <div
         ref={dialogRef}
         role="dialog"

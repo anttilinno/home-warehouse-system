@@ -341,9 +341,10 @@ it("does not re-subscribe useSSE when the consumer re-renders", () => {
     const r = useRef(0);
     r.current++;
     useSSE({ onEvent: (e) => received.push(e) });
-    // Force a re-render after mount to prove the subscription is stable.
+    // Touch the render counter each commit (the ref proves the subscription is
+    // stable across re-renders — see the single-delivery assertion below).
     useEffect(() => {
-      r.current = r.current;
+      void r.current;
     });
     return null;
   }

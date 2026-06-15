@@ -10,7 +10,7 @@ import {
   RetroDialog,
   type RetroComboboxOption,
 } from "@/components/retro";
-import { type Container, type CreateContainerBody } from "@/lib/api/container";
+import type { Container, CreateContainerBody } from "@/lib/api/container";
 import {
   containerSchema,
   type ContainerFormInput,

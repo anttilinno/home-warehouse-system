@@ -88,10 +88,7 @@ export function SavedFilters({
         minWidth={200}
       >
         {savedFilters.length === 0 ? (
-          <div
-            role="menuitem"
-            className="px-sp-2 py-[6px] text-14 text-fg-muted"
-          >
+          <div className="px-sp-2 py-[6px] text-14 text-fg-muted">
             <Trans>No saved filters yet.</Trans>
           </div>
         ) : (

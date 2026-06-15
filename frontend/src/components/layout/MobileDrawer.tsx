@@ -80,14 +80,15 @@ export function MobileDrawer({
         onClick={onClose}
         className="absolute inset-0 bg-fg-ink/40"
       />
+      {/* A nav selection (real NavLink click) also closes the drawer; capture
+          it at the panel so any nav-item activation dismisses the overlay. */}
+      {/* biome-ignore lint/a11y/useKeyWithClickEvents: delegated to child links — keyboard Enter on a NavLink already dispatches a click, which this captures; no separate key handler needed. */}
       <div
         ref={panelRef}
         role="dialog"
         aria-modal="true"
         aria-label="Navigator"
         tabIndex={-1}
-        // A nav selection (real NavLink click) also closes the drawer; capture
-        // it at the panel so any nav-item activation dismisses the overlay.
         onClick={(e) => {
           if ((e.target as HTMLElement).closest("a[href]")) onClose();
         }}

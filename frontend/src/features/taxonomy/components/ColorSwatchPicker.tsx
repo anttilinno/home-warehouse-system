@@ -55,8 +55,7 @@ export function ColorSwatchPicker({
   const groupLabel = label ?? t`Color`;
 
   return (
-    <div
-      role="group"
+    <fieldset
       aria-label={groupLabel}
       className="flex flex-wrap items-center gap-sp-2"
     >
@@ -111,6 +110,6 @@ export function ColorSwatchPicker({
           </button>
         );
       })}
-    </div>
+    </fieldset>
   );
 }

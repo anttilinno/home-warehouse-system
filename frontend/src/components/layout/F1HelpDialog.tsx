@@ -94,9 +94,9 @@ export function F1HelpDialog({ open, onClose, onToggle }: F1HelpDialogProps) {
             </p>
           </div>
         ) : (
-          routeShortcuts.map((s, i) => (
+          routeShortcuts.map((s) => (
             <Row
-              key={`${s.key}-${i}`}
+              key={s.key}
               shortcutKey={s.key}
               label={s.label}
               danger={s.danger}

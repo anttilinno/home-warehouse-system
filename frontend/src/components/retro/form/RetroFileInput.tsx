@@ -76,6 +76,7 @@ export function RetroFileInput({
       >
         {label}
       </label>
+      {/* biome-ignore lint/a11y/noStaticElementInteractions: drag-and-drop is a pointer-only enhancement; the BROWSE button is the keyboard-accessible path */}
       <div
         data-testid="file-drop-zone"
         className={`flex flex-col items-center gap-sp-2 border-2 border-dashed p-sp-4 text-center bevel-sunken ${
@@ -136,7 +137,7 @@ export function RetroFileInput({
         <ul className="flex flex-col gap-sp-1">
           {files.map((f, i) => (
             <li
-              key={`${f.name}-${i}`}
+              key={`${f.name}-${f.size}-${f.lastModified}`}
               className="flex items-center gap-sp-2 border-2 border-border-ink bg-bg-panel px-sp-2 py-[4px]"
             >
               <span className="flex-1 truncate font-mono text-12 text-fg-ink">

@@ -103,7 +103,6 @@ export function RetroTabs({ tabs, value, onChange }: RetroTabsProps) {
           role="tabpanel"
           id={panelId(active.id)}
           aria-labelledby={tabId(active.id)}
-          tabIndex={0}
           className="border-2 border-t-0 border-border-ink bg-bg-panel p-sp-4 focus-visible:outline focus-visible:outline-2 focus-visible:outline-border-ink focus-visible:outline-offset-2"
         >
           {active.content}

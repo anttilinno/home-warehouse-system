@@ -247,7 +247,7 @@ export function LoansListPage() {
               <th>{t`Loaned`}</th>
               <th>{t`Due`}</th>
               <th>{t`Status`}</th>
-              <th aria-hidden="true" />
+              <th />
             </tr>
           </thead>
           <tbody>
@@ -278,6 +278,7 @@ export function LoansListPage() {
                       )}
                     </StatusPill>
                   </td>
+                  {/* biome-ignore lint/a11y/useKeyWithClickEvents: stops row-click propagation only */}
                   <td
                     className="actions text-right"
                     onClick={(e) => e.stopPropagation()}

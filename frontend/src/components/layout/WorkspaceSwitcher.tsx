@@ -96,14 +96,14 @@ export function WorkspaceSwitcher() {
         </p>
 
         {list.length === 0 ? (
-          <p
-            role="option"
-            aria-selected="false"
-            aria-disabled="true"
+          <div
+            // Informational empty-state row — not a selectable option, so it
+            // carries no listbox option semantics (avoids a non-focusable
+            // interactive role inside the listbox).
             className="px-sp-3 py-sp-2 text-13 text-fg-muted"
           >
             <Trans>No workspaces. Contact an owner.</Trans>
-          </p>
+          </div>
         ) : (
           list.map((w) => {
             const isCurrent = w.id === currentWorkspaceId;

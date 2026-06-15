@@ -12,11 +12,11 @@ import {
   retroToast,
 } from "@/components/retro";
 import { HttpError } from "@/lib/api";
-import {
-  type WishlistCreate,
-  type WishlistItem,
-  type WishlistStatus,
-  type WishlistUpdate,
+import type {
+  WishlistCreate,
+  WishlistItem,
+  WishlistStatus,
+  WishlistUpdate,
 } from "@/lib/api/wishlist";
 import { useWishlistMutations } from "../hooks/useWishlistMutations";
 

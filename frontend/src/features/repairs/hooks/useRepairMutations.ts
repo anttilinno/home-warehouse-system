@@ -73,9 +73,9 @@ export function useRepairMutations() {
   }
 
   function restore(ctx: OptimisticContext | undefined) {
-    ctx?.snapshots.forEach(([key, data]) =>
-      queryClient.setQueryData(key, data),
-    );
+    ctx?.snapshots.forEach(([key, data]) => {
+      queryClient.setQueryData(key, data);
+    });
   }
 
   const startRepair = useMutation<Repair, Error, string, OptimisticContext>({

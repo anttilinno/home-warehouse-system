@@ -184,9 +184,12 @@ export function RetroTree({
             className="group flex cursor-default items-center gap-sp-1 py-[3px] pr-sp-2 hover:bg-bg-panel-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-border-ink focus-visible:outline-offset-[-2px]"
           >
             {/* Indent guides: one 1px sand rule per depth level. */}
-            {Array.from({ length: depth }).map((_, d) => (
+            {Array.from(
+              { length: depth },
+              (_, d) => `${node.id}-guide-${d}`,
+            ).map((guideKey) => (
               <span
-                key={d}
+                key={guideKey}
                 aria-hidden
                 className="self-stretch border-l border-table-rule"
                 style={{ width: INDENT_PX }}
@@ -241,6 +244,8 @@ export function RetroTree({
             {/* Row actions — reveal on hover/focus; always rendered for
                 keyboard reach. Cluster stops propagation so it never toggles
                 the row. */}
+            {/* biome-ignore lint/a11y/noStaticElementInteractions: stops row-click propagation only, not an interactive control */}
+            {/* biome-ignore lint/a11y/useKeyWithClickEvents: stops row-click propagation only, not an interactive control */}
             <div
               className="ml-auto flex items-center gap-sp-1 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100"
               onClick={(e) => e.stopPropagation()}

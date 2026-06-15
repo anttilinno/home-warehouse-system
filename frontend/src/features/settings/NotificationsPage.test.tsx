@@ -53,7 +53,9 @@ describe("NotificationsPage — preferences (SETT-07)", () => {
     renderPage();
     const boxes = await screen.findAllByRole("checkbox");
     expect(boxes).toHaveLength(5);
-    boxes.forEach((b) => expect(b).toBeChecked());
+    boxes.forEach((b) => {
+      expect(b).toBeChecked();
+    });
   });
 
   it("unchecking Low stock and saving sends the FULL map with low_stock=false", async () => {

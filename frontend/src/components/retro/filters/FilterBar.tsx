@@ -62,7 +62,6 @@ export function FilterBar({
       <div className="flex items-center gap-sp-2">
         <input
           type="search"
-          role="searchbox"
           aria-label={t`Filter items`}
           placeholder={
             typeof searchPlaceholder === "string"

@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { act, render, screen } from "@testing-library/react";
-import { type ReactNode } from "react";
+import type { ReactNode } from "react";
 import {
   ShortcutsProvider,
   useShortcutsContext,

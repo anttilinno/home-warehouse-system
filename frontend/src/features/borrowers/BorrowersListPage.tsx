@@ -145,7 +145,7 @@ export function BorrowersListPage() {
                   <th>{t`Name`}</th>
                   <th>{t`Contact`}</th>
                   <th>{t`Loans`}</th>
-                  <th aria-hidden="true" />
+                  <th />
                 </tr>
               </thead>
               <tbody>
@@ -166,6 +166,7 @@ export function BorrowersListPage() {
                           fan-out — the list shows a muted placeholder; the live
                           count lives on the detail page (plan 09-03). */}
                       <td className="text-fg-muted">—</td>
+                      {/* biome-ignore lint/a11y/useKeyWithClickEvents: stops row-click propagation only */}
                       <td
                         className="actions text-right"
                         onClick={(e) => e.stopPropagation()}

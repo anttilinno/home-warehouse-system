@@ -132,6 +132,7 @@ export function PhotoUpload({
   // Run the validate→compress→check-duplicate→upload pipeline for one queue
   // item. Stops at "duplicate" when check-duplicate hits, waiting for the
   // per-file decision; `proceed(id)` resumes the upload.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: commitUpload is declared below (TDZ — cannot be a dep here); t is locale-stable. wsId/itemId pin the closure deliberately; launchedRef guards against relaunch.
   const runFile = useCallback(
     async (item: QueueItem) => {
       const valid = validateUploadFile(item.file);
@@ -162,10 +163,10 @@ export function PhotoUpload({
         patch(item.id, { status: "failed", error: t`Upload failed.` });
       }
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [wsId, itemId, patch, runCheckDuplicate],
   );
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: t is locale-stable; only used in the failure path.
   const commitUpload = useCallback(
     async (id: string, file: File) => {
       patch(id, { status: "uploading", pct: 50 });
@@ -177,7 +178,6 @@ export function PhotoUpload({
         patch(id, { status: "failed", error: t`Upload failed.` });
       }
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [patch, upload, uploadVars],
   );
 
@@ -226,6 +226,7 @@ export function PhotoUpload({
     [patch, commitUpload],
   );
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: t is locale-stable; only used to build the skip message.
   const skip = useCallback(
     (id: string) =>
       patch(id, {
@@ -233,7 +234,6 @@ export function PhotoUpload({
         error: t`Skipped (possible duplicate).`,
         duplicates: undefined,
       }),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [patch],
   );
 

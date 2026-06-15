@@ -56,7 +56,7 @@ export function OutOfStockTable({
               <th>{t`Category`}</th>
               <th className="text-right">{t`Min stock`}</th>
               <th className="text-right">{t`Stock`}</th>
-              <th aria-hidden="true" />
+              <th />
             </tr>
           </thead>
           <tbody>

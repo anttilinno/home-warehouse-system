@@ -408,7 +408,7 @@ export function InventoryListPage() {
                     </button>
                   </th>
                   <th>{t`Expiry`}</th>
-                  <th aria-hidden="true" />
+                  <th />
                 </tr>
               </thead>
               <tbody>
@@ -427,6 +427,7 @@ export function InventoryListPage() {
                         {name ?? <span className="text-fg-muted">—</span>}
                       </td>
                       <td className="text-fg-muted">—</td>
+                      {/* biome-ignore lint/a11y/useKeyWithClickEvents: mouse-only guard to stop the row navigate; keyboard users focus the nested inline-edit control directly */}
                       <td
                         className="text-right"
                         onClick={(e) => e.stopPropagation()}
@@ -441,6 +442,7 @@ export function InventoryListPage() {
                           }
                         />
                       </td>
+                      {/* biome-ignore lint/a11y/useKeyWithClickEvents: mouse-only guard to stop the row navigate; keyboard users focus the nested inline-edit control directly */}
                       <td onClick={(e) => e.stopPropagation()}>
                         {archived && (
                           <RetroBadge variant="neutral">
@@ -457,6 +459,7 @@ export function InventoryListPage() {
                           }
                         />
                       </td>
+                      {/* biome-ignore lint/a11y/useKeyWithClickEvents: mouse-only guard to stop the row navigate; keyboard users focus the nested inline-edit control directly */}
                       <td onClick={(e) => e.stopPropagation()}>
                         <InlineEditCell
                           field="condition"
@@ -476,6 +479,7 @@ export function InventoryListPage() {
                       <td className="mono text-fg-muted">
                         {expiry ? expiry.slice(0, 10) : "—"}
                       </td>
+                      {/* biome-ignore lint/a11y/useKeyWithClickEvents: mouse-only guard to stop the row navigate; keyboard users focus the nested action buttons directly */}
                       <td
                         className="actions text-right"
                         onClick={(e) => e.stopPropagation()}

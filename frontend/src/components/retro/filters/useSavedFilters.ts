@@ -48,6 +48,7 @@ export function useSavedFilters({
   const [savedFilters, setSavedFilters] = useState<SavedFilter[]>([]);
 
   // Load on mount / storageKey change. Treat the persisted blob as untrusted.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: onApplyFilter omitted — re-run only on storageKey change (mount semantics); callers may pass an inline fn.
   useEffect(() => {
     let parsed: SavedFilter[] = [];
     try {
@@ -67,9 +68,6 @@ export function useSavedFilters({
     if (defaultFilter && onApplyFilter) {
       onApplyFilter(defaultFilter.filters);
     }
-    // onApplyFilter intentionally omitted: callers may pass an inline fn; we
-    // only re-run on storageKey change (mount semantics).
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [storageKey]);
 
   const persist = useCallback(

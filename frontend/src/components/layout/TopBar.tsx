@@ -38,10 +38,7 @@ export function TopBar({ online, onToggleDrawer }: TopBarProps) {
   const isOnline = online ?? connected;
 
   return (
-    <header
-      role="banner"
-      className="sticky top-0 z-10 flex h-[40px] items-center gap-sp-2 border-b-2 border-border-ink bg-bg-panel px-sp-3 py-sp-1 shadow-[inset_0_-2px_0_var(--bevel-shade)] md:gap-sp-4 md:px-sp-4"
-    >
+    <header className="sticky top-0 z-10 flex h-[40px] items-center gap-sp-2 border-b-2 border-border-ink bg-bg-panel px-sp-3 py-sp-1 shadow-[inset_0_-2px_0_var(--bevel-shade)] md:gap-sp-4 md:px-sp-4">
       {/* Mobile hamburger — hidden on desktop where the sidebar is persistent. */}
       <button
         type="button"

@@ -20,10 +20,16 @@ export function LogoutConfirm({
   if (!open) return null;
 
   return (
+    // biome-ignore lint/a11y/useKeyWithClickEvents: click-outside backdrop is mouse-only; ESC dismissal is owned by useModalStack above.
+    // biome-ignore lint/a11y/noStaticElementInteractions: ditto — the scrim is a non-semantic dismissal surface, not a control.
     <div
       className="fixed inset-0 z-40 grid place-items-center bg-fg-ink/40"
       onClick={onCancel}
     >
+      {/* Stop scrim-close from firing when interacting inside the dialog; the
+          onClick is a stopPropagation guard, not a user action, so no keyboard
+          handler is warranted. */}
+      {/* biome-ignore lint/a11y/useKeyWithClickEvents: stopPropagation guard only, not an interactive control. */}
       <div
         role="dialog"
         aria-modal="true"

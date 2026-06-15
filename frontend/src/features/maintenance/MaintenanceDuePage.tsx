@@ -100,7 +100,7 @@ export function MaintenanceDuePage() {
                 <th>{t`Schedule`}</th>
                 <th>{t`Next due`}</th>
                 <th>{t`Status`}</th>
-                <th aria-hidden="true" />
+                <th />
               </tr>
             </thead>
             <tbody>

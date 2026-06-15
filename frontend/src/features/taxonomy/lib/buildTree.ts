@@ -20,7 +20,9 @@ export function buildTree<T extends { id: string; name: string }>(
   parentIdOf: (row: T) => string | null | undefined,
 ): TreeNode<T>[] {
   const byId = new Map<string, TreeNode<T>>();
-  rows.forEach((r) => byId.set(r.id, { node: r, children: [], depth: 0 }));
+  rows.forEach((r) => {
+    byId.set(r.id, { node: r, children: [], depth: 0 });
+  });
 
   const roots: TreeNode<T>[] = [];
   rows.forEach((r) => {

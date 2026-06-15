@@ -173,6 +173,7 @@ export function ApprovalsPage() {
   // locale switch, which legitimately rebuilds these — not a render-loop).
   const approveLabel = t`Approve selected`;
   const rejectLabel = t`Reject selected`;
+  // biome-ignore lint/correctness/useExhaustiveDependencies: approveLabel/rejectLabel are locale-stable; the t macro returns a fresh string each call, so including them would re-register the shortcuts every render. bulkApprove/openReject are stable.
   const bindings = useMemo(
     () => [
       {
@@ -189,9 +190,6 @@ export function ApprovalsPage() {
         action: openReject,
       },
     ],
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- labels are locale-
-    // stable; including them would re-register on every render (the t macro
-    // returns a fresh string each call). bulkApprove/openReject are stable.
     [bulkApprove, openReject],
   );
   useShortcuts("approvals", bindings);

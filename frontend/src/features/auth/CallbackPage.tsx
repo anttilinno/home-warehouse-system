@@ -28,6 +28,7 @@ export function CallbackPage() {
   const [state, setState] = useState<CallbackState>("exchanging");
   const [errorMessage, setErrorMessage] = useState<string>("");
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: single-run by design — the exchanged ref latches the one-time OAuth exchange; navigate/params are read once on mount.
   useEffect(() => {
     // StrictMode double-invoke guard — exchange must fire exactly once.
     if (exchanged.current) return;
@@ -59,7 +60,6 @@ export function CallbackPage() {
         setState("error");
       });
     // Empty deps + ref latch — intentional single run.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   if (state === "error") {
