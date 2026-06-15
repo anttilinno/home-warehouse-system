@@ -4,9 +4,11 @@ WORKDIR /app
 COPY package.json bun.lock ./
 RUN --mount=type=cache,target=/root/.bun/install/cache bun install --frozen-lockfile
 COPY . .
-# vite build → dist/. prebuild runs the forbidden-imports gate; build runs tsc -b
-# then vite build (sourcemaps off in prod per vite.config).
-RUN bun run build
+# build runs tsc -b then vite build (sourcemaps off in prod per vite.config).
+# Run the two steps directly rather than `bun run build`: the package `prebuild`
+# lint gate invokes repo-root ../scripts/*.mjs, which live outside this
+# frontend-only build context. Those gates belong in CI, not the image build.
+RUN bunx tsc -b && bunx vite build
 
 # ---- Serve (static SPA on :3000 behind Angie) ----
 # Angie owns /api/* → backend and the s.go shortlink; this container only serves
