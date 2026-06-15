@@ -56,15 +56,12 @@ const EXPIRING = {
 };
 
 function expiringHandler(captureDays?: (d: string | null) => void) {
-  return http.get(
-    "/api/workspaces/:wsId/inventory/expiring",
-    ({ request }) => {
-      if (captureDays) {
-        captureDays(new URL(request.url).searchParams.get("days"));
-      }
-      return HttpResponse.json(EXPIRING);
-    },
-  );
+  return http.get("/api/workspaces/:wsId/inventory/expiring", ({ request }) => {
+    if (captureDays) {
+      captureDays(new URL(request.url).searchParams.get("days"));
+    }
+    return HttpResponse.json(EXPIRING);
+  });
 }
 
 function renderPage(initialEntries: string[] = ["/inventory/expiring"]) {
@@ -129,9 +126,9 @@ describe("ExpiringPage", () => {
     server.use(expiringHandler());
     renderPage();
     await screen.findByText("Cordless Drill");
-    const rows = screen.getAllByRole("row").filter((r) =>
-      within(r).queryByText(/Cordless Drill|Old Battery/),
-    );
+    const rows = screen
+      .getAllByRole("row")
+      .filter((r) => within(r).queryByText(/Cordless Drill|Old Battery/));
     // Past date (2020) sorts before the future date (2099).
     expect(within(rows[0]).getByText("Old Battery")).toBeInTheDocument();
     expect(within(rows[1]).getByText("Cordless Drill")).toBeInTheDocument();
@@ -144,10 +141,7 @@ describe("ExpiringPage", () => {
     renderPage();
     await screen.findByText("Cordless Drill");
 
-    await user.selectOptions(
-      screen.getByLabelText(/window/i),
-      "90",
-    );
+    await user.selectOptions(screen.getByLabelText(/window/i), "90");
     await waitFor(() => expect(lastSearch).toContain("days=90"));
     await waitFor(() => expect(seen).toContain("90"));
   });

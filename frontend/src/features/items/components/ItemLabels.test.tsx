@@ -58,7 +58,9 @@ describe("ItemLabels", () => {
         HttpResponse.json({ label_ids: ["lab-1"] }),
       ),
       http.get("/api/workspaces/:wsId/labels", () =>
-        HttpResponse.json({ items: [label("lab-1", "Tools"), label("lab-2", "Garage")] }),
+        HttpResponse.json({
+          items: [label("lab-1", "Tools"), label("lab-2", "Garage")],
+        }),
       ),
     );
     renderLabels();
@@ -84,7 +86,9 @@ describe("ItemLabels", () => {
       }),
     );
     renderLabels();
-    await user.click(await screen.findByRole("button", { name: /detach tools/i }));
+    await user.click(
+      await screen.findByRole("button", { name: /detach tools/i }),
+    );
     await waitFor(() => expect(detachHit).toBe(true));
   });
 

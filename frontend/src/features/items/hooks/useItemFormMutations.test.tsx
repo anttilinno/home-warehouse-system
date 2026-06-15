@@ -70,9 +70,9 @@ describe("itemFormSchema", () => {
     const result = itemFormSchema.safeParse({ sku: "   ", name: "Drill" });
     expect(result.success).toBe(false);
     if (!result.success) {
-      expect(result.error.issues.some((i) => /sku is required/i.test(i.message))).toBe(
-        true,
-      );
+      expect(
+        result.error.issues.some((i) => /sku is required/i.test(i.message)),
+      ).toBe(true);
     }
   });
 
@@ -87,9 +87,9 @@ describe("itemFormSchema", () => {
 
   it("coerces a numeric minStock string to a number and rejects negatives", () => {
     expect(resolve({ name: "X", minStock: "5" }).minStock).toBe(5);
-    expect(itemFormSchema.safeParse({ name: "X", minStock: "-1" }).success).toBe(
-      false,
-    );
+    expect(
+      itemFormSchema.safeParse({ name: "X", minStock: "-1" }).success,
+    ).toBe(false);
   });
 });
 
@@ -120,7 +120,11 @@ describe("buildPatchBody (Pitfall 4 — omit=unchanged, ''=clear, uuid never cle
   });
 
   it("never emits category/location (display-only stub, uuid never cleared)", () => {
-    const values = resolve({ name: "Drill", category: "Tools", location: "Garage" });
+    const values = resolve({
+      name: "Drill",
+      category: "Tools",
+      location: "Garage",
+    });
     const dirty: DirtyMap = { category: true, location: true, name: true };
     const patch = buildPatchBody(values, dirty);
     expect("category" in patch).toBe(false);
@@ -184,22 +188,19 @@ describe("useItemFormMutations", () => {
 
     let sentBody: unknown;
     server.use(
-      http.patch(
-        "/api/workspaces/:wsId/items/:id",
-        async ({ request }) => {
-          sentBody = await request.json();
-          return HttpResponse.json({
-            id: "it-1",
-            workspace_id: "ws-A",
-            sku: "SKU-1",
-            name: "Drill",
-            min_stock_level: 0,
-            short_code: "abc",
-            created_at: "2026-06-13T00:00:00Z",
-            updated_at: "2026-06-13T00:00:00Z",
-          });
-        },
-      ),
+      http.patch("/api/workspaces/:wsId/items/:id", async ({ request }) => {
+        sentBody = await request.json();
+        return HttpResponse.json({
+          id: "it-1",
+          workspace_id: "ws-A",
+          sku: "SKU-1",
+          name: "Drill",
+          min_stock_level: 0,
+          short_code: "abc",
+          created_at: "2026-06-13T00:00:00Z",
+          updated_at: "2026-06-13T00:00:00Z",
+        });
+      }),
     );
 
     const values = resolve({ name: "Drill", description: "" });

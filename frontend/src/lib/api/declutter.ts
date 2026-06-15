@@ -80,7 +80,10 @@ function buildQuery(opts: DeclutterListOpts): string {
 }
 
 export const declutterApi = {
-  list(ws: string, opts: DeclutterListOpts = {}): Promise<DeclutterListResponse> {
+  list(
+    ws: string,
+    opts: DeclutterListOpts = {},
+  ): Promise<DeclutterListResponse> {
     return get<DeclutterListResponse>(
       `/workspaces/${ws}/declutter${buildQuery(opts)}`,
     );

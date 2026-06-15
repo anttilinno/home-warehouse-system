@@ -32,7 +32,11 @@ describe("useScanHistory", () => {
     const { result } = renderHook(() => useScanHistory());
 
     act(() => {
-      result.current.add({ code: "BBB", format: "ean_13", entityType: "unknown" });
+      result.current.add({
+        code: "BBB",
+        format: "ean_13",
+        entityType: "unknown",
+      });
     });
 
     expect(result.current.entries[0].code).toBe("BBB");
@@ -43,7 +47,11 @@ describe("useScanHistory", () => {
   it("clear() empties both state and localStorage", () => {
     const { result } = renderHook(() => useScanHistory());
     act(() => {
-      result.current.add({ code: "CCC", format: "qr_code", entityType: "unknown" });
+      result.current.add({
+        code: "CCC",
+        format: "qr_code",
+        entityType: "unknown",
+      });
     });
     expect(result.current.entries).toHaveLength(1);
 

@@ -1,4 +1,12 @@
-import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
+import {
+  afterEach,
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { I18nProvider } from "@lingui/react";
@@ -16,8 +24,18 @@ function wrap(ui: React.ReactNode) {
 }
 
 const PRESETS: SavedFilter[] = [
-  { id: "1", name: "Low stock", filters: { qtyLt: 5 }, createdAt: "2026-01-01" },
-  { id: "2", name: "Tools", filters: { category: "tools" }, createdAt: "2026-01-02" },
+  {
+    id: "1",
+    name: "Low stock",
+    filters: { qtyLt: 5 },
+    createdAt: "2026-01-01",
+  },
+  {
+    id: "2",
+    name: "Tools",
+    filters: { category: "tools" },
+    createdAt: "2026-01-02",
+  },
 ];
 
 beforeAll(() => {
@@ -106,7 +124,9 @@ describe("SavedFilters", () => {
     );
 
     await user.click(screen.getByRole("button", { name: /presets/i }));
-    expect(await screen.findByText("No saved filters yet.")).toBeInTheDocument();
+    expect(
+      await screen.findByText("No saved filters yet."),
+    ).toBeInTheDocument();
   });
 
   it("per-preset delete opens a RetroConfirmDialog before removing", async () => {

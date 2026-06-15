@@ -70,7 +70,8 @@ export function useContainerMutations() {
   });
 
   const del = useMutation({
-    mutationFn: (a: DeleteContainerArg) => containerApi.del(wsId as string, a.id),
+    mutationFn: (a: DeleteContainerArg) =>
+      containerApi.del(wsId as string, a.id),
     onSuccess: (_data, a) => {
       // Double PREFIX-invalidate: containers (the list) AND inventory (the FK
       // SET NULL cascade unassigned the items) — T-10-05 / OQ2.

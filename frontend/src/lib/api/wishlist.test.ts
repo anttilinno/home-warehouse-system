@@ -79,7 +79,9 @@ describe("wishlistApi CRUD", () => {
   });
 
   it("update PATCHes /workspaces/{ws}/wishlist/{id} with { status }", async () => {
-    fetchMock.mockResolvedValueOnce(jsonResponse({ ...WISH, status: "ordered" }));
+    fetchMock.mockResolvedValueOnce(
+      jsonResponse({ ...WISH, status: "ordered" }),
+    );
 
     await wishlistApi.update("ws-1", "w-1", { status: "ordered" });
 

@@ -17,9 +17,10 @@ import { PhotoUpload } from "./PhotoUpload";
 // field name "photo" is asserted on the real request.
 
 vi.mock("@/lib/utils/image", async () => {
-  const actual = await vi.importActual<typeof import("@/lib/utils/image")>(
-    "@/lib/utils/image",
-  );
+  const actual =
+    await vi.importActual<typeof import("@/lib/utils/image")>(
+      "@/lib/utils/image",
+    );
   return {
     ...actual,
     // Pass-through: jsdom has no canvas. validateUploadFile stays real.

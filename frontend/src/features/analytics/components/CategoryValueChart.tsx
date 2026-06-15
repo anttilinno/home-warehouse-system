@@ -1,4 +1,12 @@
-import { BarChart, Bar, Cell, XAxis, YAxis, CartesianGrid, LabelList } from "recharts";
+import {
+  BarChart,
+  Bar,
+  Cell,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  LabelList,
+} from "recharts";
 import { Trans } from "@lingui/react/macro";
 import { formatCents } from "@/lib/utils/money";
 import type { CategoryStats } from "@/features/analytics/types";
@@ -25,7 +33,11 @@ export function CategoryValueChart({ data }: { data: CategoryStats[] }) {
       isEmpty={isEmpty}
       emptyLabel={<Trans>No category values for this range yet.</Trans>}
     >
-      <BarChart layout="vertical" data={data} margin={{ top: 8, right: 16, bottom: 8, left: 8 }}>
+      <BarChart
+        layout="vertical"
+        data={data}
+        margin={{ top: 8, right: 16, bottom: 8, left: 8 }}
+      >
         <CartesianGrid {...GRID_PROPS} horizontal={false} />
         <XAxis
           type="number"

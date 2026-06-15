@@ -78,7 +78,9 @@ describe("LabelsTab", () => {
     const dialog = await screen.findByRole("dialog");
     await user.type(within(dialog).getByLabelText(/name/i), "Fragile");
     // Pick an on-palette swatch (Deep pink).
-    await user.click(within(dialog).getByRole("button", { name: /deep pink/i }));
+    await user.click(
+      within(dialog).getByRole("button", { name: /deep pink/i }),
+    );
     await user.click(
       within(dialog).getByRole("button", { name: /save label/i }),
     );
@@ -97,7 +99,9 @@ describe("LabelsTab", () => {
     const row = (await screen.findByText("Power Tools")).closest(
       "li",
     ) as HTMLElement;
-    await user.click(within(row).getByRole("button", { name: /edit power tools/i }));
+    await user.click(
+      within(row).getByRole("button", { name: /edit power tools/i }),
+    );
 
     expect(await screen.findByText(/EDIT LABEL/i)).toBeInTheDocument();
     const dialog = screen.getByRole("dialog");

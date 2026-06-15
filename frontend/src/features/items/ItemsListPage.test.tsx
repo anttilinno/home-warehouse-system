@@ -56,7 +56,9 @@ let shortcutKeys: string[] = [];
 function Probe() {
   const loc = useLocation();
   lastSearch = loc.search;
-  shortcutKeys = useShortcutsContext().shortcuts.map((s) => s.key.toUpperCase());
+  shortcutKeys = useShortcutsContext().shortcuts.map((s) =>
+    s.key.toUpperCase(),
+  );
   return null;
 }
 
@@ -93,7 +95,11 @@ function renderPage(initialEntries: string[] = ["/items"]) {
   );
 }
 
-function listOf(items: ReturnType<typeof makeItem>[], page = 1, totalPages = 1) {
+function listOf(
+  items: ReturnType<typeof makeItem>[],
+  page = 1,
+  totalPages = 1,
+) {
   return { items, total: items.length, page, total_pages: totalPages };
 }
 

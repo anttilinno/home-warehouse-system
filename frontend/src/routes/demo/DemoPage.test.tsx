@@ -45,7 +45,9 @@ describe("DemoPage", () => {
   it("mounts at least one atom from the FORM family", () => {
     renderDemo();
     // RetroSelect renders a labelled native <select>.
-    expect(screen.getByRole("combobox", { name: /category/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole("combobox", { name: /category/i }),
+    ).toBeInTheDocument();
   });
 
   it("mounts at least one atom from the OVERLAY family", () => {

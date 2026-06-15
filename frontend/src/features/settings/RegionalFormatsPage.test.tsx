@@ -66,7 +66,9 @@ describe("RegionalFormatsPage — formats (SETT-06)", () => {
     );
 
     await userEvent.selectOptions(dateSel, "DD/MM/YYYY");
-    await userEvent.click(screen.getByRole("button", { name: /save changes/i }));
+    await userEvent.click(
+      screen.getByRole("button", { name: /save changes/i }),
+    );
 
     await waitFor(() => expect(patchedBody).not.toBeNull());
     expect(patchedBody).toEqual({ date_format: "DD/MM/YYYY" });
@@ -92,7 +94,9 @@ describe("RegionalFormatsPage — formats (SETT-06)", () => {
       expect((thousandSel as HTMLSelectElement).value).toBe(" "),
     );
     await userEvent.selectOptions(thousandSel, ",");
-    await userEvent.click(screen.getByRole("button", { name: /save changes/i }));
+    await userEvent.click(
+      screen.getByRole("button", { name: /save changes/i }),
+    );
 
     expect(
       await screen.findByText(

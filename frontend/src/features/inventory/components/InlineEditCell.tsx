@@ -112,9 +112,7 @@ export function InlineEditCell(props: InlineEditCellProps) {
   if (!editing) {
     let display;
     if (field === "quantity") {
-      display = (
-        <span className="font-mono tabular-nums">{props.value}</span>
-      );
+      display = <span className="font-mono tabular-nums">{props.value}</span>;
     } else if (field === "status") {
       const s = props.value as InventoryStatus;
       display = (

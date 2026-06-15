@@ -60,20 +60,25 @@ export function useMaintenanceMutations() {
   ): Promise<OptimisticContext> {
     await queryClient.cancelQueries({ queryKey: prefix });
     const snapshots = queryClient.getQueriesData({ queryKey: prefix });
-    queryClient.setQueriesData<ScheduleListLike>({ queryKey: prefix }, (old) => {
-      if (!old || !Array.isArray(old.items)) return old;
-      return {
-        ...old,
-        items: old.items.map((schedule) =>
-          schedule.id === id ? { ...schedule, ...patch } : schedule,
-        ),
-      };
-    });
+    queryClient.setQueriesData<ScheduleListLike>(
+      { queryKey: prefix },
+      (old) => {
+        if (!old || !Array.isArray(old.items)) return old;
+        return {
+          ...old,
+          items: old.items.map((schedule) =>
+            schedule.id === id ? { ...schedule, ...patch } : schedule,
+          ),
+        };
+      },
+    );
     return { snapshots };
   }
 
   function restore(ctx: OptimisticContext | undefined) {
-    ctx?.snapshots.forEach(([key, data]) => queryClient.setQueryData(key, data));
+    ctx?.snapshots.forEach(([key, data]) =>
+      queryClient.setQueryData(key, data),
+    );
   }
 
   const createSchedule = useMutation<

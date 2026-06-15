@@ -84,7 +84,10 @@ function renderPanel() {
                 path="/items/:id"
                 element={<InventoryPanel wsId={WS} itemId={ITEM} />}
               />
-              <Route path="/inventory/new" element={<div>NEW ENTRY PAGE</div>} />
+              <Route
+                path="/inventory/new"
+                element={<div>NEW ENTRY PAGE</div>}
+              />
               <Route
                 path="/inventory/:id/edit"
                 element={<div>EDIT ENTRY PAGE</div>}
@@ -111,8 +114,20 @@ describe("InventoryPanel", () => {
   it("shows the IN STOCK total summed across entries and one row per entry", async () => {
     installHandlers({
       entries: [
-        makeEntry({ id: "inv-1", quantity: 3, condition: "GOOD", status: "AVAILABLE", location_id: "loc-1" }),
-        makeEntry({ id: "inv-2", quantity: 5, condition: "NEW", status: "IN_USE", location_id: "loc-2" }),
+        makeEntry({
+          id: "inv-1",
+          quantity: 3,
+          condition: "GOOD",
+          status: "AVAILABLE",
+          location_id: "loc-1",
+        }),
+        makeEntry({
+          id: "inv-2",
+          quantity: 5,
+          condition: "NEW",
+          status: "IN_USE",
+          location_id: "loc-2",
+        }),
       ],
       locations: [
         { id: "loc-1", name: "Garage" },
@@ -138,9 +153,7 @@ describe("InventoryPanel", () => {
 
   it("renders the location/container path joined when a container is set", async () => {
     installHandlers({
-      entries: [
-        makeEntry({ location_id: "loc-1", container_id: "ct-1" }),
-      ],
+      entries: [makeEntry({ location_id: "loc-1", container_id: "ct-1" })],
       locations: [{ id: "loc-1", name: "Garage" }],
       containers: [{ id: "ct-1", name: "Bin 7" }],
     });

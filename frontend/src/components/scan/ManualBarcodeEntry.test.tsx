@@ -36,7 +36,10 @@ describe("ManualBarcodeEntry", () => {
 
   it("Enter inside the field submits", async () => {
     const onSubmit = renderEntry();
-    await userEvent.type(screen.getByLabelText("ENTER CODE"), "5901234123457{Enter}");
+    await userEvent.type(
+      screen.getByLabelText("ENTER CODE"),
+      "5901234123457{Enter}",
+    );
     expect(onSubmit).toHaveBeenCalledExactlyOnceWith("5901234123457", "manual");
   });
 

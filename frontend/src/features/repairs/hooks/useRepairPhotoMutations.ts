@@ -71,7 +71,8 @@ export function useRepairPhotoMutations(wsId: string, repairId: string) {
   });
 
   const del = useMutation({
-    mutationFn: (photoId: string) => repairPhotosApi.del(wsId, repairId, photoId),
+    mutationFn: (photoId: string) =>
+      repairPhotosApi.del(wsId, repairId, photoId),
     onSuccess: invalidate,
     onError: () => retroToast.error(t`Couldn't delete the photo.`),
   });

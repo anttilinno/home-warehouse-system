@@ -28,16 +28,34 @@ const SUMMARY = {
   dashboard: {},
   loan_stats: {},
   category_stats: [
-    { id: "c1", name: "Tools", item_count: 4, inventory_count: 9, total_value: 12345 },
+    {
+      id: "c1",
+      name: "Tools",
+      item_count: 4,
+      inventory_count: 9,
+      total_value: 12345,
+    },
   ],
   location_values: [
-    { id: "l1", name: "Garage", item_count: 2, total_quantity: 5, total_value: 6789 },
+    {
+      id: "l1",
+      name: "Garage",
+      item_count: 2,
+      total_quantity: 5,
+      total_value: 6789,
+    },
   ],
   recent_activity: [],
   condition_breakdown: [{ condition: "good", count: 7 }],
   status_breakdown: [{ status: "available", count: 3 }],
   top_borrowers: [
-    { id: "b1", name: "Alice", email: "a@x.io", total_loans: 5, active_loans: 1 },
+    {
+      id: "b1",
+      name: "Alice",
+      email: "a@x.io",
+      total_loans: 5,
+      active_loans: 1,
+    },
   ],
 };
 
@@ -67,9 +85,7 @@ describe("analyticsApi.summary (bare-body object)", () => {
 
 describe("analyticsApi.monthlyActivity (bare-body array, dedicated endpoint)", () => {
   it("hits /analytics/loans/monthly?months=12 by default and returns a bare array", async () => {
-    const series = [
-      { month: "2026-01", loans_created: 3, loans_returned: 2 },
-    ];
+    const series = [{ month: "2026-01", loans_created: 3, loans_returned: 2 }];
     fetchMock.mockResolvedValueOnce(jsonResponse(series));
 
     const res = await analyticsApi.monthlyActivity("ws-1");
@@ -109,7 +125,13 @@ describe("analyticsApi.monthlyActivity (bare-body array, dedicated endpoint)", (
 describe("analyticsApi.outOfStock (bare-body array)", () => {
   it("hits /analytics/out-of-stock and returns a bare ARRAY (not { items })", async () => {
     const rows = [
-      { id: "i1", name: "Drill", sku: "SKU-1", min_stock_level: 2, category_name: "Tools" },
+      {
+        id: "i1",
+        name: "Drill",
+        sku: "SKU-1",
+        min_stock_level: 2,
+        category_name: "Tools",
+      },
     ];
     fetchMock.mockResolvedValueOnce(jsonResponse(rows));
 

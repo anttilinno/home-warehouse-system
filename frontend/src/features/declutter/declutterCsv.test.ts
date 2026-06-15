@@ -46,9 +46,7 @@ describe("declutterToCsvBlob", () => {
   });
 
   it("prefixes a formula-injection cell (leading =) with a quote", async () => {
-    const blob = declutterToCsvBlob([
-      makeRow({ item_name: "=SUM(A1:A9)" }),
-    ]);
+    const blob = declutterToCsvBlob([makeRow({ item_name: "=SUM(A1:A9)" })]);
 
     const rows = await lines(blob);
     // escapeCell wraps in quotes and prefixes the guard: "'=SUM(A1:A9)"

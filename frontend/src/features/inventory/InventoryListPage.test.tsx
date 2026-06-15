@@ -65,7 +65,11 @@ function makeItem(id: string, name: string) {
   };
 }
 
-function listOf(items: ReturnType<typeof makeEntry>[], page = 1, totalPages = 1) {
+function listOf(
+  items: ReturnType<typeof makeEntry>[],
+  page = 1,
+  totalPages = 1,
+) {
   return { items, total: items.length, page, total_pages: totalPages };
 }
 
@@ -177,7 +181,9 @@ describe("InventoryListPage", () => {
     server.use(
       http.get("/api/workspaces/:wsId/inventory", () =>
         HttpResponse.json(
-          listOf([makeEntry("inv-1", { status: "ON_LOAN", condition: "FAIR" })]),
+          listOf([
+            makeEntry("inv-1", { status: "ON_LOAN", condition: "FAIR" }),
+          ]),
         ),
       ),
     );
@@ -189,10 +195,7 @@ describe("InventoryListPage", () => {
 
   it("a client status filter narrows the visible rows (no server round-trip)", async () => {
     const user = userEvent.setup();
-    seedItems([
-      makeItem("it-1", "Cordless Drill"),
-      makeItem("it-2", "Hammer"),
-    ]);
+    seedItems([makeItem("it-1", "Cordless Drill"), makeItem("it-2", "Hammer")]);
     let inventoryHits = 0;
     server.use(
       http.get("/api/workspaces/:wsId/inventory", () => {
@@ -212,9 +215,7 @@ describe("InventoryListPage", () => {
 
     // Open the STATUS facet and pick "On loan".
     await user.click(screen.getByRole("button", { name: /status ▾/i }));
-    await user.click(
-      await screen.findByRole("checkbox", { name: /on loan/i }),
-    );
+    await user.click(await screen.findByRole("checkbox", { name: /on loan/i }));
 
     await waitFor(() =>
       expect(screen.queryByText("Cordless Drill")).not.toBeInTheDocument(),
@@ -282,7 +283,9 @@ describe("InventoryListPage", () => {
     seedPickers();
     server.use(
       http.get("/api/workspaces/:wsId/inventory", () =>
-        HttpResponse.json(listOf([makeEntry("inv-1", { location_id: "loc-1" })])),
+        HttpResponse.json(
+          listOf([makeEntry("inv-1", { location_id: "loc-1" })]),
+        ),
       ),
     );
     renderPage();

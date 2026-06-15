@@ -39,8 +39,6 @@ export const analyticsApi = {
 
   /** Bare-body out-of-stock rows backing the table. */
   outOfStock(wsId: string): Promise<OutOfStockItem[]> {
-    return get<OutOfStockItem[]>(
-      `/workspaces/${wsId}/analytics/out-of-stock`,
-    );
+    return get<OutOfStockItem[]>(`/workspaces/${wsId}/analytics/out-of-stock`);
   },
 };

@@ -109,7 +109,11 @@ describe("WishlistFormDialog", () => {
     await user.click(screen.getByRole("button", { name: /add item/i }));
 
     await waitFor(() => expect(onClose).toHaveBeenCalled());
-    expect(body).toMatchObject({ name: "Heat Gun", priority: 3, status: "wanted" });
+    expect(body).toMatchObject({
+      name: "Heat Gun",
+      priority: 3,
+      status: "wanted",
+    });
   });
 
   it("edit mode PATCHes { status: 'ordered' } on a status transition", async () => {

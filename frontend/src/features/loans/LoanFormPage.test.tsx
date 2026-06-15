@@ -211,7 +211,10 @@ describe("LoanFormPage", () => {
       ).toBeGreaterThan(0),
     );
 
-    await user.selectOptions(screen.getByLabelText(/inventory entry/i), "inv-1");
+    await user.selectOptions(
+      screen.getByLabelText(/inventory entry/i),
+      "inv-1",
+    );
     await user.selectOptions(screen.getByLabelText(/borrower/i), "bor-1");
     const due = futureDate();
     await user.type(screen.getByLabelText(/due date/i), due);
@@ -237,7 +240,9 @@ describe("LoanFormPage", () => {
     // it-2 has exactly one matching entry (inv-3) → auto-select.
     renderForm(["/loans/new?itemId=it-2"]);
 
-    await waitFor(() => expect(screen.getByText(/from item/i)).toBeInTheDocument());
+    await waitFor(() =>
+      expect(screen.getByText(/from item/i)).toBeInTheDocument(),
+    );
 
     const invSelect = screen.getByLabelText(
       /inventory entry/i,
@@ -270,7 +275,10 @@ describe("LoanFormPage", () => {
       ).toBeGreaterThan(0),
     );
 
-    await user.selectOptions(screen.getByLabelText(/inventory entry/i), "inv-1");
+    await user.selectOptions(
+      screen.getByLabelText(/inventory entry/i),
+      "inv-1",
+    );
     await user.selectOptions(screen.getByLabelText(/borrower/i), "bor-1");
     await user.type(screen.getByLabelText(/due date/i), pastDate());
     await user.click(screen.getByRole("button", { name: /create loan/i }));

@@ -30,7 +30,10 @@ function buildQuery(params: InventoryListParams): string {
 
 export const inventoryApi = {
   // Top-level list — the ONLY endpoint with the full pagination envelope.
-  list(wsId: string, params: InventoryListParams): Promise<InventoryListResponse> {
+  list(
+    wsId: string,
+    params: InventoryListParams,
+  ): Promise<InventoryListResponse> {
     const qs = buildQuery(params);
     const suffix = qs ? `?${qs}` : "";
     return get<InventoryListResponse>(`/workspaces/${wsId}/inventory${suffix}`);
@@ -73,7 +76,11 @@ export const inventoryApi = {
 
   // Dedicated quantity route — allows quantity 0 (Pitfall 5), unlike create/
   // full-PATCH which enforce >= 1.
-  updateQuantity(wsId: string, id: string, quantity: number): Promise<Inventory> {
+  updateQuantity(
+    wsId: string,
+    id: string,
+    quantity: number,
+  ): Promise<Inventory> {
     return patch<Inventory>(`/workspaces/${wsId}/inventory/${id}/quantity`, {
       quantity,
     });

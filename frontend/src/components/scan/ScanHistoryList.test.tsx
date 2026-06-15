@@ -44,7 +44,10 @@ describe("ScanHistoryList", () => {
     await userEvent.click(
       screen.getByRole("button", { name: /0123456789012/ }),
     );
-    expect(onSelect).toHaveBeenCalledExactlyOnceWith("0123456789012", "history");
+    expect(onSelect).toHaveBeenCalledExactlyOnceWith(
+      "0123456789012",
+      "history",
+    );
   });
 
   it("CLEAR HISTORY confirms before clearing", async () => {

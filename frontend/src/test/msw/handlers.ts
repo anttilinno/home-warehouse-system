@@ -337,19 +337,33 @@ export const handlers = [
 
   // --- Sessions ---
   http.get("/api/users/me/sessions", () => HttpResponse.json(SESSIONS)),
-  http.delete("/api/users/me/sessions/:id", () => new HttpResponse(null, { status: 204 })),
-  http.delete("/api/users/me/sessions", () => new HttpResponse(null, { status: 204 })),
+  http.delete(
+    "/api/users/me/sessions/:id",
+    () => new HttpResponse(null, { status: 204 }),
+  ),
+  http.delete(
+    "/api/users/me/sessions",
+    () => new HttpResponse(null, { status: 204 }),
+  ),
 
   // --- Password / account ---
-  http.patch("/api/users/me/password", () => new HttpResponse(null, { status: 204 })),
+  http.patch(
+    "/api/users/me/password",
+    () => new HttpResponse(null, { status: 204 }),
+  ),
   http.get("/api/users/me/can-delete", () =>
     HttpResponse.json({ can_delete: true, blocking_workspaces: [] }),
   ),
   http.delete("/api/users/me", () => new HttpResponse(null, { status: 204 })),
 
   // --- Connected OAuth accounts ---
-  http.get("/api/auth/oauth/accounts", () => HttpResponse.json({ accounts: [] })),
-  http.delete("/api/auth/oauth/accounts/:provider", () => new HttpResponse(null, { status: 204 })),
+  http.get("/api/auth/oauth/accounts", () =>
+    HttpResponse.json({ accounts: [] }),
+  ),
+  http.delete(
+    "/api/auth/oauth/accounts/:provider",
+    () => new HttpResponse(null, { status: 204 }),
+  ),
 
   // --- Profile + preferences + avatar (Phase 12 Plan 02) ---
   http.patch("/api/users/me", () => HttpResponse.json(ME)),
@@ -371,7 +385,10 @@ export const handlers = [
   http.patch("/api/workspaces/:wsId/members/:userId", () =>
     HttpResponse.json(MEMBER_FIXTURE),
   ),
-  http.delete("/api/workspaces/:wsId/members/:userId", () => new HttpResponse(null, { status: 204 })),
+  http.delete(
+    "/api/workspaces/:wsId/members/:userId",
+    () => new HttpResponse(null, { status: 204 }),
+  ),
 
   // --- Workspace full export (Phase 12 Plan 02) ---
   http.get("/api/workspaces/:wsId/export/workspace", () =>
@@ -398,9 +415,19 @@ export const handlers = [
   http.get("/api/workspaces/:wsId/items", ({ request }) => {
     const url = new URL(request.url);
     if (url.searchParams.has("category_id")) {
-      return HttpResponse.json({ items: [], total: 0, page: 1, total_pages: 0 });
+      return HttpResponse.json({
+        items: [],
+        total: 0,
+        page: 1,
+        total_pages: 0,
+      });
     }
-    return HttpResponse.json({ items: [ITEM], total: 1, page: 1, total_pages: 1 });
+    return HttpResponse.json({
+      items: [ITEM],
+      total: 1,
+      page: 1,
+      total_pages: 1,
+    });
   }),
   http.post("/api/workspaces/:wsId/items", () => HttpResponse.json(ITEM)),
 
@@ -408,8 +435,14 @@ export const handlers = [
   http.get("/api/workspaces/:wsId/items/:id/labels", () =>
     HttpResponse.json({ label_ids: ["lbl-1"] }),
   ),
-  http.post("/api/workspaces/:wsId/items/:id/labels/:labelId", () => new HttpResponse(null, { status: 204 })),
-  http.delete("/api/workspaces/:wsId/items/:id/labels/:labelId", () => new HttpResponse(null, { status: 204 })),
+  http.post(
+    "/api/workspaces/:wsId/items/:id/labels/:labelId",
+    () => new HttpResponse(null, { status: 204 }),
+  ),
+  http.delete(
+    "/api/workspaces/:wsId/items/:id/labels/:labelId",
+    () => new HttpResponse(null, { status: 204 }),
+  ),
 
   // Item loans (specific) BEFORE item :id.
   http.get("/api/workspaces/:wsId/items/:id/loans", () =>
@@ -422,13 +455,22 @@ export const handlers = [
   ),
 
   // Item lifecycle (specific) BEFORE item :id.
-  http.post("/api/workspaces/:wsId/items/:id/archive", () => new HttpResponse(null, { status: 204 })),
-  http.post("/api/workspaces/:wsId/items/:id/restore", () => new HttpResponse(null, { status: 204 })),
+  http.post(
+    "/api/workspaces/:wsId/items/:id/archive",
+    () => new HttpResponse(null, { status: 204 }),
+  ),
+  http.post(
+    "/api/workspaces/:wsId/items/:id/restore",
+    () => new HttpResponse(null, { status: 204 }),
+  ),
 
   // Item by id (catch-all for the :id segment — registered last of the item GETs).
   http.get("/api/workspaces/:wsId/items/:id", () => HttpResponse.json(ITEM)),
   http.patch("/api/workspaces/:wsId/items/:id", () => HttpResponse.json(ITEM)),
-  http.delete("/api/workspaces/:wsId/items/:id", () => new HttpResponse(null, { status: 204 })),
+  http.delete(
+    "/api/workspaces/:wsId/items/:id",
+    () => new HttpResponse(null, { status: 204 }),
+  ),
 
   // Workspace labels — BARE { items } list (Pitfall 2) + TAX-07 manager CRUD.
   http.get("/api/workspaces/:wsId/labels", () =>
@@ -441,9 +483,18 @@ export const handlers = [
   http.patch("/api/workspaces/:wsId/labels/:id", ({ params }) =>
     HttpResponse.json({ ...LABEL, id: String(params.id) }),
   ),
-  http.post("/api/workspaces/:wsId/labels/:id/archive", () => new HttpResponse(null, { status: 204 })),
-  http.post("/api/workspaces/:wsId/labels/:id/restore", () => new HttpResponse(null, { status: 204 })),
-  http.delete("/api/workspaces/:wsId/labels/:id", () => new HttpResponse(null, { status: 204 })),
+  http.post(
+    "/api/workspaces/:wsId/labels/:id/archive",
+    () => new HttpResponse(null, { status: 204 }),
+  ),
+  http.post(
+    "/api/workspaces/:wsId/labels/:id/restore",
+    () => new HttpResponse(null, { status: 204 }),
+  ),
+  http.delete(
+    "/api/workspaces/:wsId/labels/:id",
+    () => new HttpResponse(null, { status: 204 }),
+  ),
 
   // --- Taxonomy: categories (BARE { items } list — Pitfall 2) ---
   // create returns 201 (categories); other domains return 200.
@@ -459,9 +510,18 @@ export const handlers = [
   http.patch("/api/workspaces/:wsId/categories/:id", ({ params }) =>
     HttpResponse.json({ ...CATEGORIES[0], id: String(params.id) }),
   ),
-  http.post("/api/workspaces/:wsId/categories/:id/archive", () => new HttpResponse(null, { status: 204 })),
-  http.post("/api/workspaces/:wsId/categories/:id/restore", () => new HttpResponse(null, { status: 204 })),
-  http.delete("/api/workspaces/:wsId/categories/:id", () => new HttpResponse(null, { status: 204 })),
+  http.post(
+    "/api/workspaces/:wsId/categories/:id/archive",
+    () => new HttpResponse(null, { status: 204 }),
+  ),
+  http.post(
+    "/api/workspaces/:wsId/categories/:id/restore",
+    () => new HttpResponse(null, { status: 204 }),
+  ),
+  http.delete(
+    "/api/workspaces/:wsId/categories/:id",
+    () => new HttpResponse(null, { status: 204 }),
+  ),
 
   // --- Taxonomy: locations (PAGINATED list; BARE /search — Pitfall 2) ---
   // /locations/search (literal) registered BEFORE /locations/:id (param).
@@ -485,9 +545,18 @@ export const handlers = [
   http.patch("/api/workspaces/:wsId/locations/:id", ({ params }) =>
     HttpResponse.json({ ...LOCATIONS[0], id: String(params.id) }),
   ),
-  http.post("/api/workspaces/:wsId/locations/:id/archive", () => new HttpResponse(null, { status: 204 })),
-  http.post("/api/workspaces/:wsId/locations/:id/restore", () => new HttpResponse(null, { status: 204 })),
-  http.delete("/api/workspaces/:wsId/locations/:id", () => new HttpResponse(null, { status: 204 })),
+  http.post(
+    "/api/workspaces/:wsId/locations/:id/archive",
+    () => new HttpResponse(null, { status: 204 }),
+  ),
+  http.post(
+    "/api/workspaces/:wsId/locations/:id/restore",
+    () => new HttpResponse(null, { status: 204 }),
+  ),
+  http.delete(
+    "/api/workspaces/:wsId/locations/:id",
+    () => new HttpResponse(null, { status: 204 }),
+  ),
 
   // --- Taxonomy: containers (PAGINATED list; BARE /search — Pitfall 2) ---
   // /containers/search (literal) registered BEFORE /containers/:id (param).
@@ -511,23 +580,51 @@ export const handlers = [
   http.patch("/api/workspaces/:wsId/containers/:id", ({ params }) =>
     HttpResponse.json({ ...CONTAINERS[0], id: String(params.id) }),
   ),
-  http.post("/api/workspaces/:wsId/containers/:id/archive", () => new HttpResponse(null, { status: 204 })),
-  http.post("/api/workspaces/:wsId/containers/:id/restore", () => new HttpResponse(null, { status: 204 })),
-  http.delete("/api/workspaces/:wsId/containers/:id", () => new HttpResponse(null, { status: 204 })),
+  http.post(
+    "/api/workspaces/:wsId/containers/:id/archive",
+    () => new HttpResponse(null, { status: 204 }),
+  ),
+  http.post(
+    "/api/workspaces/:wsId/containers/:id/restore",
+    () => new HttpResponse(null, { status: 204 }),
+  ),
+  http.delete(
+    "/api/workspaces/:wsId/containers/:id",
+    () => new HttpResponse(null, { status: 204 }),
+  ),
 
   // Photo JSON ops.
-  http.put("/api/workspaces/:wsId/photos/:id/primary", () => new HttpResponse(null, { status: 204 })),
-  http.put("/api/workspaces/:wsId/photos/:id/caption", () => HttpResponse.json(PHOTO)),
-  http.put("/api/workspaces/:wsId/items/:id/photos/order", () => new HttpResponse(null, { status: 204 })),
-  http.delete("/api/workspaces/:wsId/photos/:id", () => new HttpResponse(null, { status: 204 })),
+  http.put(
+    "/api/workspaces/:wsId/photos/:id/primary",
+    () => new HttpResponse(null, { status: 204 }),
+  ),
+  http.put("/api/workspaces/:wsId/photos/:id/caption", () =>
+    HttpResponse.json(PHOTO),
+  ),
+  http.put(
+    "/api/workspaces/:wsId/items/:id/photos/order",
+    () => new HttpResponse(null, { status: 204 }),
+  ),
+  http.delete(
+    "/api/workspaces/:wsId/photos/:id",
+    () => new HttpResponse(null, { status: 204 }),
+  ),
 
   // Photo multipart + bulk.
   http.post("/api/workspaces/:wsId/items/:id/photos/check-duplicate", () =>
     HttpResponse.json({ has_duplicates: false, duplicates: [] }),
   ),
-  http.post("/api/workspaces/:wsId/items/:id/photos/bulk-delete", () => new HttpResponse(null, { status: 204 })),
-  http.post("/api/workspaces/:wsId/items/:id/photos/bulk-caption", () => new HttpResponse(null, { status: 204 })),
-  http.post("/api/workspaces/:wsId/items/:id/photos", () => HttpResponse.json(PHOTO)),
+  http.post(
+    "/api/workspaces/:wsId/items/:id/photos/bulk-delete",
+    () => new HttpResponse(null, { status: 204 }),
+  ),
+  http.post(
+    "/api/workspaces/:wsId/items/:id/photos/bulk-caption",
+    () => new HttpResponse(null, { status: 204 }),
+  ),
+  http.post("/api/workspaces/:wsId/items/:id/photos", () =>
+    HttpResponse.json(PHOTO),
+  ),
 
   // --- Inventory + Movements (Phase 7b Plan 01) ---
   // Specific routes registered BEFORE the /inventory/:id catch-all so by-item /
@@ -554,8 +651,14 @@ export const handlers = [
   ),
 
   // Inventory lifecycle (specific) BEFORE /inventory/:id.
-  http.post("/api/workspaces/:wsId/inventory/:id/archive", () => new HttpResponse(null, { status: 204 })),
-  http.post("/api/workspaces/:wsId/inventory/:id/restore", () => new HttpResponse(null, { status: 204 })),
+  http.post(
+    "/api/workspaces/:wsId/inventory/:id/archive",
+    () => new HttpResponse(null, { status: 204 }),
+  ),
+  http.post(
+    "/api/workspaces/:wsId/inventory/:id/restore",
+    () => new HttpResponse(null, { status: 204 }),
+  ),
   http.post("/api/workspaces/:wsId/inventory/:id/move", ({ params }) =>
     HttpResponse.json({ ...INVENTORY[0], id: String(params.id) }),
   ),
@@ -573,7 +676,12 @@ export const handlers = [
   http.get("/api/workspaces/:wsId/inventory", ({ request }) => {
     const url = new URL(request.url);
     if (url.searchParams.has("container_id")) {
-      return HttpResponse.json({ items: [], total: 0, page: 1, total_pages: 0 });
+      return HttpResponse.json({
+        items: [],
+        total: 0,
+        page: 1,
+        total_pages: 0,
+      });
     }
     return HttpResponse.json({
       items: INVENTORY,

@@ -130,7 +130,10 @@ describe("useApprovalsList / useApprovalMutations", () => {
         "/api/workspaces/:ws/pending-changes/:id/approve",
         ({ params }) => {
           approved = String(params.id);
-          return HttpResponse.json({ ...pendingRow("pc-1"), status: "approved" });
+          return HttpResponse.json({
+            ...pendingRow("pc-1"),
+            status: "approved",
+          });
         },
       ),
     );
@@ -152,7 +155,10 @@ describe("useApprovalsList / useApprovalMutations", () => {
         "/api/workspaces/:ws/pending-changes/:id/reject",
         async ({ request }) => {
           body = await request.json();
-          return HttpResponse.json({ ...pendingRow("pc-1"), status: "rejected" });
+          return HttpResponse.json({
+            ...pendingRow("pc-1"),
+            status: "rejected",
+          });
         },
       ),
     );

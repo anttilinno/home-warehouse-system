@@ -75,14 +75,19 @@ describe("TaxonomyPage", () => {
   it("renders the mint TAXONOMY window with all four tabs, categories default", async () => {
     renderPage();
     // The four folder tabs.
-    expect(screen.getByRole("tab", { name: /categories/i })).toBeInTheDocument();
-    expect(screen.getByRole("tab", { name: /locations/i })).toBeInTheDocument();
-    expect(screen.getByRole("tab", { name: /containers/i })).toBeInTheDocument();
-    expect(screen.getByRole("tab", { name: /labels/i })).toBeInTheDocument();
-    // Categories selected by default → its tree (or toolbar) renders.
     expect(
       screen.getByRole("tab", { name: /categories/i }),
-    ).toHaveAttribute("aria-selected", "true");
+    ).toBeInTheDocument();
+    expect(screen.getByRole("tab", { name: /locations/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole("tab", { name: /containers/i }),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("tab", { name: /labels/i })).toBeInTheDocument();
+    // Categories selected by default → its tree (or toolbar) renders.
+    expect(screen.getByRole("tab", { name: /categories/i })).toHaveAttribute(
+      "aria-selected",
+      "true",
+    );
     // The categories toolbar action proves the live CategoriesTab mounted.
     expect(
       await screen.findByRole("button", { name: /add root category/i }),
@@ -91,9 +96,10 @@ describe("TaxonomyPage", () => {
 
   it("loading /taxonomy?tab=locations selects the live LocationsTab panel", async () => {
     renderPage(["/taxonomy?tab=locations"]);
-    expect(
-      screen.getByRole("tab", { name: /locations/i }),
-    ).toHaveAttribute("aria-selected", "true");
+    expect(screen.getByRole("tab", { name: /locations/i })).toHaveAttribute(
+      "aria-selected",
+      "true",
+    );
     // 10-03 filled the stub in-place; the live LocationsTab toolbar proves it.
     expect(
       await screen.findByRole("button", { name: /add root location/i }),
@@ -118,9 +124,10 @@ describe("TaxonomyPage", () => {
 
   it("an unknown ?tab= falls back to categories", async () => {
     renderPage(["/taxonomy?tab=bogus"]);
-    expect(
-      screen.getByRole("tab", { name: /categories/i }),
-    ).toHaveAttribute("aria-selected", "true");
+    expect(screen.getByRole("tab", { name: /categories/i })).toHaveAttribute(
+      "aria-selected",
+      "true",
+    );
     expect(
       await screen.findByRole("button", { name: /add root category/i }),
     ).toBeInTheDocument();

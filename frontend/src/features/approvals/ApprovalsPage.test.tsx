@@ -136,9 +136,9 @@ describe("ApprovalsPage", () => {
     const bar = screen.getByRole("toolbar", { name: /bulk actions/i });
     expect(within(bar).getByText(/3\s*SELECTED/i)).toBeInTheDocument();
     // The selection set is id-keyed — three rows carry aria-selected.
-    expect(
-      document.querySelectorAll('tr[aria-selected="true"]'),
-    ).toHaveLength(3);
+    expect(document.querySelectorAll('tr[aria-selected="true"]')).toHaveLength(
+      3,
+    );
   });
 
   it("bulk Approve with 2 selected POSTs approve for BOTH ids and drops the rows", async () => {
@@ -150,7 +150,10 @@ describe("ApprovalsPage", () => {
         "/api/workspaces/:ws/pending-changes/:id/approve",
         ({ params }) => {
           approved.push(String(params.id));
-          return HttpResponse.json({ id: String(params.id), status: "approved" });
+          return HttpResponse.json({
+            id: String(params.id),
+            status: "approved",
+          });
         },
       ),
     );
@@ -182,9 +185,7 @@ describe("ApprovalsPage", () => {
     );
     renderPage();
 
-    expect(
-      await screen.findByText(/owners and admins/i),
-    ).toBeInTheDocument();
+    expect(await screen.findByText(/owners and admins/i)).toBeInTheDocument();
     expect(screen.queryByRole("table")).not.toBeInTheDocument();
     expect(
       screen.queryByRole("toolbar", { name: /bulk actions/i }),
@@ -211,7 +212,10 @@ describe("ApprovalsPage", () => {
           if (String(params.id) === "pc-2") {
             return HttpResponse.json({ message: "boom" }, { status: 500 });
           }
-          return HttpResponse.json({ id: String(params.id), status: "approved" });
+          return HttpResponse.json({
+            id: String(params.id),
+            status: "approved",
+          });
         },
       ),
     );

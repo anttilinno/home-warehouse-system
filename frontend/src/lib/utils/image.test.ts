@@ -54,7 +54,9 @@ describe("validateUploadFile", () => {
   });
 
   it("accepts a file exactly at the 10MB boundary", () => {
-    expect(validateUploadFile(fileOf("image/jpeg", 10 * MB))).toEqual({ ok: true });
+    expect(validateUploadFile(fileOf("image/jpeg", 10 * MB))).toEqual({
+      ok: true,
+    });
   });
 
   it("rejects an empty / zero-byte file with the type message (no MIME)", () => {
@@ -71,7 +73,11 @@ describe("validateUploadFile", () => {
 // "imageOrientation: 'from-image'" assertion is the EXIF guard (Pitfall 3).
 // ---------------------------------------------------------------------------
 
-type BitmapStub = { width: number; height: number; close: ReturnType<typeof vi.fn> };
+type BitmapStub = {
+  width: number;
+  height: number;
+  close: ReturnType<typeof vi.fn>;
+};
 
 /** Install a createImageBitmap mock returning a bitmap of the given source dims. */
 function stubBitmap(width: number, height: number) {
@@ -158,11 +164,19 @@ describe("compressImage", () => {
 
     const png = await compressImage(fileOf("image/png", MB, "pic.png"));
     expect(png.type).toBe("image/png");
-    expect(toBlobSpy).toHaveBeenLastCalledWith(expect.any(Function), "image/png", 0.85);
+    expect(toBlobSpy).toHaveBeenLastCalledWith(
+      expect.any(Function),
+      "image/png",
+      0.85,
+    );
 
     const webp = await compressImage(fileOf("image/webp", MB, "pic.webp"));
     expect(webp.type).toBe("image/jpeg");
-    expect(toBlobSpy).toHaveBeenLastCalledWith(expect.any(Function), "image/jpeg", 0.85);
+    expect(toBlobSpy).toHaveBeenLastCalledWith(
+      expect.any(Function),
+      "image/jpeg",
+      0.85,
+    );
   });
 
   it("returns a File preserving the source name", async () => {
@@ -184,7 +198,11 @@ describe("compressImage", () => {
     stubBitmap(400, 400);
     const { toBlobSpy } = stubCanvas();
     await compressImage(fileOf("image/jpeg", MB), 1600, 0.5);
-    expect(toBlobSpy).toHaveBeenCalledWith(expect.any(Function), "image/jpeg", 0.5);
+    expect(toBlobSpy).toHaveBeenCalledWith(
+      expect.any(Function),
+      "image/jpeg",
+      0.5,
+    );
   });
 
   it("rejects with Error('no canvas ctx') when getContext returns null", async () => {

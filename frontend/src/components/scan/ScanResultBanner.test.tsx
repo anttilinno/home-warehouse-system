@@ -50,9 +50,7 @@ describe("ScanResultBanner", () => {
   });
 
   it("NOT-FOUND renders the word, ✕ and an encoded CREATE WITH CODE link", () => {
-    renderBanner(
-      <ScanResultBanner status="not-found" code="abc/../x?y=1" />,
-    );
+    renderBanner(<ScanResultBanner status="not-found" code="abc/../x?y=1" />);
     expect(screen.getByText("NOT FOUND")).toBeInTheDocument();
     const link = screen.getByRole("link", { name: /CREATE WITH CODE/ });
     // encodeURIComponent — Pitfall 5 / T-11-08: the code is escaped, no raw slash.

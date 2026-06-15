@@ -1,11 +1,4 @@
-import {
-  del,
-  downloadBlob,
-  get,
-  post,
-  postMultipart,
-  put,
-} from "@/lib/api";
+import { del, downloadBlob, get, post, postMultipart, put } from "@/lib/api";
 import type { DuplicateCheckResult, Photo } from "@/lib/types";
 import { toProxyUrl } from "./url";
 
@@ -30,9 +23,9 @@ export interface BulkCaptionUpdate {
 
 export const photosApi = {
   list(wsId: string, itemId: string): Promise<Photo[]> {
-    return get<Photo[]>(
-      `/workspaces/${wsId}/items/${itemId}/photos/list`,
-    ).then((photos) => photos.map(mapPhoto));
+    return get<Photo[]>(`/workspaces/${wsId}/items/${itemId}/photos/list`).then(
+      (photos) => photos.map(mapPhoto),
+    );
   },
 
   // Multipart upload. Field name MUST be "photo"; optional "caption".
@@ -74,7 +67,10 @@ export const photosApi = {
   },
 
   setPrimary(wsId: string, photoId: string): Promise<void> {
-    return put<void>(`/workspaces/${wsId}/photos/${photoId}/primary`, undefined);
+    return put<void>(
+      `/workspaces/${wsId}/photos/${photoId}/primary`,
+      undefined,
+    );
   },
 
   updateCaption(

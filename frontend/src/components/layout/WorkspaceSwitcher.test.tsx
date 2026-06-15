@@ -1,11 +1,4 @@
-import {
-  afterEach,
-  beforeAll,
-  describe,
-  expect,
-  it,
-  vi,
-} from "vitest";
+import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 import { useEffect } from "react";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
@@ -148,7 +141,11 @@ describe("WorkspaceSwitcher", () => {
   });
 
   it("renders an aria-busy skeleton while workspaces are loading", () => {
-    setContext({ currentWorkspaceId: null, workspaces: undefined, isLoading: true });
+    setContext({
+      currentWorkspaceId: null,
+      workspaces: undefined,
+      isLoading: true,
+    });
     renderSwitcher();
     const pill = screen.getByTestId("workspace-pill");
     expect(pill).toHaveAttribute("aria-busy", "true");

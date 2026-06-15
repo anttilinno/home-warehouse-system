@@ -29,7 +29,8 @@ export function useLocationsQuery(): UseLocationsQueryResult {
   const query = useQuery({
     queryKey: ["locations", wsId],
     // PAGINATED envelope — read .items (limit clamped to 100 in locationApi).
-    queryFn: () => locationApi.list(wsId as string, 1, 100).then((r) => r.items),
+    queryFn: () =>
+      locationApi.list(wsId as string, 1, 100).then((r) => r.items),
     enabled: !!wsId,
     retry: false,
   });
@@ -38,10 +39,7 @@ export function useLocationsQuery(): UseLocationsQueryResult {
 
   // Client-build the tree from the flat rows. parent_location (NOT
   // parent_location_id — Pitfall 6); buildTree surfaces orphans at root.
-  const tree = useMemo(
-    () => buildTree(rows, (l) => l.parent_location),
-    [rows],
-  );
+  const tree = useMemo(() => buildTree(rows, (l) => l.parent_location), [rows]);
 
   return {
     rows,

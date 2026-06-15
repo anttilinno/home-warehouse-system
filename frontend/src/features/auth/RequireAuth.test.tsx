@@ -48,29 +48,33 @@ afterEach(() => {
 
 describe("RequireAuth", () => {
   it("renders children when the workspaces probe succeeds", async () => {
-    server.use(
-      http.get(WS_PATH, () => HttpResponse.json([{ id: "ws-1" }])),
-    );
+    server.use(http.get(WS_PATH, () => HttpResponse.json([{ id: "ws-1" }])));
     renderGuard();
     expect(await screen.findByText("protected content")).toBeInTheDocument();
   });
 
   it("redirects to /login on 401", async () => {
-    server.use(http.get(WS_PATH, () => new HttpResponse(null, { status: 401 })));
+    server.use(
+      http.get(WS_PATH, () => new HttpResponse(null, { status: 401 })),
+    );
     renderGuard();
     expect(await screen.findByText("login sentinel")).toBeInTheDocument();
     expect(screen.queryByText("protected content")).not.toBeInTheDocument();
   });
 
   it("redirects to /login on 403 (never reaches retry surface)", async () => {
-    server.use(http.get(WS_PATH, () => new HttpResponse(null, { status: 403 })));
+    server.use(
+      http.get(WS_PATH, () => new HttpResponse(null, { status: 403 })),
+    );
     renderGuard();
     expect(await screen.findByText("login sentinel")).toBeInTheDocument();
     expect(screen.queryByRole("alert")).not.toBeInTheDocument();
   });
 
   it("shows a retry surface and does NOT log out on 5xx (v2.0 regression guard)", async () => {
-    server.use(http.get(WS_PATH, () => new HttpResponse(null, { status: 500 })));
+    server.use(
+      http.get(WS_PATH, () => new HttpResponse(null, { status: 500 })),
+    );
     renderGuard();
 
     const alert = await screen.findByRole("alert");

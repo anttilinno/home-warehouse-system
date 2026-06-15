@@ -161,15 +161,15 @@ describe("PhotoGallery", () => {
     await userEvent.click(within(bar).getByRole("button", { name: "DELETE" }));
     const dialog = await screen.findByRole("dialog");
     expect(within(dialog).getByText("DELETE PHOTOS?")).toBeInTheDocument();
-    await userEvent.click(within(dialog).getByRole("button", { name: "DELETE" }));
+    await userEvent.click(
+      within(dialog).getByRole("button", { name: "DELETE" }),
+    );
     await waitFor(() => expect(bulkBody).not.toBeNull());
     expect(bulkBody!.photo_ids.sort()).toEqual(["p-1", "p-3"]);
   });
 
   it("DOWNLOAD ALL triggers the zip endpoint", async () => {
-    const spy = vi
-      .spyOn(photosApi, "downloadZip")
-      .mockResolvedValue(undefined);
+    const spy = vi.spyOn(photosApi, "downloadZip").mockResolvedValue(undefined);
     renderGallery();
     await userEvent.click(
       screen.getByRole("button", { name: /download all/i }),

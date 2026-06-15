@@ -1,4 +1,12 @@
-import { BarChart, Bar, Cell, XAxis, YAxis, CartesianGrid, LabelList } from "recharts";
+import {
+  BarChart,
+  Bar,
+  Cell,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  LabelList,
+} from "recharts";
 import { Trans } from "@lingui/react/macro";
 import type { TopBorrower } from "@/features/analytics/types";
 import { RetroChartFrame } from "../charts/RetroChartFrame";
@@ -25,7 +33,11 @@ export function TopBorrowersChart({ data }: { data: TopBorrower[] }) {
       isEmpty={isEmpty}
       emptyLabel={<Trans>No borrower activity for this range yet.</Trans>}
     >
-      <BarChart layout="vertical" data={data} margin={{ top: 8, right: 16, bottom: 8, left: 8 }}>
+      <BarChart
+        layout="vertical"
+        data={data}
+        margin={{ top: 8, right: 16, bottom: 8, left: 8 }}
+      >
         <CartesianGrid {...GRID_PROPS} horizontal={false} />
         <XAxis
           type="number"
@@ -47,7 +59,11 @@ export function TopBorrowersChart({ data }: { data: TopBorrower[] }) {
           {data.map((b) => (
             <Cell key={b.id} fill={SERIES_BUTTER.fill} {...markProps} />
           ))}
-          <LabelList dataKey="total_loans" position="right" style={VALUE_LABEL_STYLE} />
+          <LabelList
+            dataKey="total_loans"
+            position="right"
+            style={VALUE_LABEL_STYLE}
+          />
         </Bar>
       </BarChart>
     </RetroChartFrame>

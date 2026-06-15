@@ -13,7 +13,11 @@ export interface ReturnLoanDialogProps {
   loan: Loan;
 }
 
-export function ReturnLoanDialog({ open, onClose, loan }: ReturnLoanDialogProps) {
+export function ReturnLoanDialog({
+  open,
+  onClose,
+  loan,
+}: ReturnLoanDialogProps) {
   const { t } = useLingui();
   const { returnLoan } = useLoanMutations();
 

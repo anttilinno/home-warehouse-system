@@ -139,7 +139,9 @@ describe("TopBar", () => {
     // The static '● live' placeholder is gone — the live RetroStatusDot renders
     // its `live` word + mint dot when the stream is connected (no more raw text).
     expect(within(slot).getByText("live")).toBeInTheDocument();
-    expect(within(slot).getByTestId("status-dot")).toHaveClass("bg-titlebar-mint");
+    expect(within(slot).getByTestId("status-dot")).toHaveClass(
+      "bg-titlebar-mint",
+    );
     expect(within(slot).queryByText("● live")).not.toBeInTheDocument();
   });
 

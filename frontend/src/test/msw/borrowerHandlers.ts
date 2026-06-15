@@ -69,15 +69,19 @@ export const borrowerHandlers = [
   http.get("/api/workspaces/:wsId/borrowers/:id", ({ params }) =>
     HttpResponse.json({ ...B1, id: String(params.id) }),
   ),
-  http.patch("/api/workspaces/:wsId/borrowers/:id", async ({ params, request }) => {
-    const body = (await request.json().catch(() => ({}))) as Record<
-      string,
-      unknown
-    >;
-    return HttpResponse.json({ ...B1, id: String(params.id), ...body });
-  }),
-  http.delete("/api/workspaces/:wsId/borrowers/:id", () =>
-    new HttpResponse(null, { status: 204 }),
+  http.patch(
+    "/api/workspaces/:wsId/borrowers/:id",
+    async ({ params, request }) => {
+      const body = (await request.json().catch(() => ({}))) as Record<
+        string,
+        unknown
+      >;
+      return HttpResponse.json({ ...B1, id: String(params.id), ...body });
+    },
+  ),
+  http.delete(
+    "/api/workspaces/:wsId/borrowers/:id",
+    () => new HttpResponse(null, { status: 204 }),
   ),
 
   // Bare list (BARE { items }) + create (returns the decorated B1).

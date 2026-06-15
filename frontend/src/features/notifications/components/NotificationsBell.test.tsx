@@ -8,10 +8,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { i18n } from "@/lib/i18n";
 import { server } from "@/test/msw/server";
 import { ModalStackProvider } from "@/components/modal";
-import {
-  ALL_NOTIFS,
-  NOTIF_UNREAD,
-} from "@/test/msw/notificationHandlers";
+import { ALL_NOTIFS, NOTIF_UNREAD } from "@/test/msw/notificationHandlers";
 import type { NotificationDTO } from "@/lib/api/notifications";
 import { NotificationsBell } from "./NotificationsBell";
 
@@ -104,9 +101,7 @@ describe("NotificationsBell", () => {
     renderBell();
 
     await user.click(screen.getByTestId("bell-slot"));
-    expect(
-      await screen.findByText(NOTIF_UNREAD.title),
-    ).toBeInTheDocument();
+    expect(await screen.findByText(NOTIF_UNREAD.title)).toBeInTheDocument();
   });
 
   it("shows the RetroEmptyState when the list is empty", async () => {

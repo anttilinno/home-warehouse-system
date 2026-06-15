@@ -115,9 +115,19 @@ describe("ContainersTab", () => {
       http.get("/api/workspaces/:wsId/inventory", ({ request }) => {
         const url = new URL(request.url);
         if (url.searchParams.has("container_id")) {
-          return HttpResponse.json({ items: [], total: 5, page: 1, total_pages: 1 });
+          return HttpResponse.json({
+            items: [],
+            total: 5,
+            page: 1,
+            total_pages: 1,
+          });
         }
-        return HttpResponse.json({ items: [], total: 0, page: 1, total_pages: 0 });
+        return HttpResponse.json({
+          items: [],
+          total: 0,
+          page: 1,
+          total_pages: 0,
+        });
       }),
     );
     const delSpy = vi.spyOn(containerApi, "del");
@@ -126,10 +136,14 @@ describe("ContainersTab", () => {
       "tr",
     ) as HTMLElement;
 
-    await user.click(within(row).getByRole("button", { name: /delete toolbox a/i }));
+    await user.click(
+      within(row).getByRole("button", { name: /delete toolbox a/i }),
+    );
     // The count-aware cascade copy appears once the count resolves.
     expect(await screen.findByText(/holds 5 items/i)).toBeInTheDocument();
-    expect(screen.getByText(/they stay in their location/i)).toBeInTheDocument();
+    expect(
+      screen.getByText(/they stay in their location/i),
+    ).toBeInTheDocument();
     // Confirm fires a single bare DELETE.
     const dialog = screen.getByRole("dialog");
     await user.click(within(dialog).getByRole("button", { name: /^delete$/i }));
@@ -146,8 +160,12 @@ describe("ContainersTab", () => {
       "tr",
     ) as HTMLElement;
 
-    await user.click(within(row).getByRole("button", { name: /delete toolbox a/i }));
-    expect(await screen.findByText(/This can't be undone/i)).toBeInTheDocument();
+    await user.click(
+      within(row).getByRole("button", { name: /delete toolbox a/i }),
+    );
+    expect(
+      await screen.findByText(/This can't be undone/i),
+    ).toBeInTheDocument();
     expect(screen.queryByText(/holds/i)).not.toBeInTheDocument();
     const dialog = screen.getByRole("dialog");
     await user.click(within(dialog).getByRole("button", { name: /^delete$/i }));

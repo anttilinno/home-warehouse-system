@@ -21,14 +21,19 @@ const n = (
 const TREE: RetroTreeNode[] = [
   n("electronics", "Electronics", {
     itemCount: 24,
-    children: [n("phones", "Phones", { itemCount: 5 }), n("laptops", "Laptops")],
+    children: [
+      n("phones", "Phones", { itemCount: 5 }),
+      n("laptops", "Laptops"),
+    ],
   }),
   n("tools", "Tools"),
 ];
 
 const noop = () => {};
 
-function renderTree(props: Partial<React.ComponentProps<typeof RetroTree>> = {}) {
+function renderTree(
+  props: Partial<React.ComponentProps<typeof RetroTree>> = {},
+) {
   return render(
     <RetroTree
       nodes={TREE}
@@ -83,13 +88,17 @@ describe("RetroTree", () => {
     const caret = screen.getByRole("button", { name: "Expand" });
     await user.click(caret);
     expect(screen.getByText("Phones")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Collapse" })).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Collapse" }),
+    ).toBeInTheDocument();
   });
 
   it("sets aria-expanded on branches and aria-level on rows", async () => {
     const user = userEvent.setup();
     renderTree();
-    const electronics = screen.getByText("Electronics").closest("[role=treeitem]")!;
+    const electronics = screen
+      .getByText("Electronics")
+      .closest("[role=treeitem]")!;
     expect(electronics).toHaveAttribute("aria-expanded", "false");
     expect(electronics).toHaveAttribute("aria-level", "1");
     // Leaf has no aria-expanded.
@@ -146,7 +155,9 @@ describe("RetroTree", () => {
     );
     // key:B never expanded → children hidden; key:A retains its expand state.
     expect(screen.queryByText("Phones")).not.toBeInTheDocument();
-    expect(JSON.parse(sessionStorage.getItem("key:A")!)).toContain("electronics");
+    expect(JSON.parse(sessionStorage.getItem("key:A")!)).toContain(
+      "electronics",
+    );
     expect(JSON.parse(sessionStorage.getItem("key:B")!)).not.toContain(
       "electronics",
     );
@@ -155,7 +166,9 @@ describe("RetroTree", () => {
   it("keyboard: ArrowRight expands, ArrowDown moves, Enter toggles", async () => {
     const user = userEvent.setup();
     renderTree();
-    const electronics = screen.getByText("Electronics").closest("[role=treeitem]") as HTMLElement;
+    const electronics = screen
+      .getByText("Electronics")
+      .closest("[role=treeitem]") as HTMLElement;
     electronics.focus();
     await user.keyboard("{ArrowRight}");
     expect(screen.getByText("Phones")).toBeInTheDocument();
@@ -179,7 +192,9 @@ describe("RetroTree", () => {
     expect(screen.getByText("(24)")).toBeInTheDocument();
     // Tools has count 0 → no badge.
     const tools = screen.getByText("Tools").closest("[role=treeitem]")!;
-    expect(within(tools as HTMLElement).queryByText("(0)")).not.toBeInTheDocument();
+    expect(
+      within(tools as HTMLElement).queryByText("(0)"),
+    ).not.toBeInTheDocument();
   });
 
   it("archived row shows ARCHIVED badge + RESTORE only (no EDIT/Archive)", () => {
@@ -196,8 +211,12 @@ describe("RetroTree", () => {
     );
     expect(screen.getByText("ARCHIVED")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "RESTORE" })).toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: "EDIT" })).not.toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: "Archive" })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: "EDIT" }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: "Archive" }),
+    ).not.toBeInTheDocument();
   });
 
   it("fires onEdit / onAddChild / onArchive with the right node", async () => {
@@ -208,7 +227,9 @@ describe("RetroTree", () => {
     renderTree({ onEdit, onAddChild, onArchive });
 
     // Scope to the Electronics row (Tools also renders an identical cluster).
-    const row = screen.getByText("Electronics").closest("[role=treeitem]") as HTMLElement;
+    const row = screen
+      .getByText("Electronics")
+      .closest("[role=treeitem]") as HTMLElement;
     await user.click(within(row).getByRole("button", { name: "EDIT" }));
     expect(onEdit).toHaveBeenCalledWith(
       expect.objectContaining({ id: "electronics" }),
@@ -227,7 +248,9 @@ describe("RetroTree", () => {
     const user = userEvent.setup();
     renderTree();
     // Electronics is collapsed; clicking EDIT must not expand it.
-    const row = screen.getByText("Electronics").closest("[role=treeitem]") as HTMLElement;
+    const row = screen
+      .getByText("Electronics")
+      .closest("[role=treeitem]") as HTMLElement;
     await user.click(within(row).getByRole("button", { name: "EDIT" }));
     expect(screen.queryByText("Phones")).not.toBeInTheDocument();
   });

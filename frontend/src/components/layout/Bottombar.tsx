@@ -112,7 +112,12 @@ function OverflowSheet({
   shortcuts,
   onClose,
 }: {
-  shortcuts: { key: string; label: string; action: () => void; danger?: boolean }[];
+  shortcuts: {
+    key: string;
+    label: string;
+    action: () => void;
+    danger?: boolean;
+  }[];
   onClose: () => void;
 }) {
   useModalStack(true, onClose);

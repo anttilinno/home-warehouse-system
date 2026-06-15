@@ -87,7 +87,13 @@ describe("ModalStackProvider — ESC pops the top entry only", () => {
 });
 
 describe("useModalStack — push on open, pop on close/unmount", () => {
-  function Overlay({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
+  function Overlay({
+    isOpen,
+    onClose,
+  }: {
+    isOpen: boolean;
+    onClose: () => void;
+  }) {
     useModalStack(isOpen, onClose);
     return <div>overlay isOpen={String(isOpen)}</div>;
   }

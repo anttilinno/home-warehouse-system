@@ -42,9 +42,8 @@ const DUE_UPCOMING = {
 
 export const maintenanceHandlers = [
   // --- Per-inventory list + due projection (specific routes BEFORE catch-all) ---
-  http.get(
-    "/api/workspaces/:wsId/inventory/:invId/maintenance",
-    () => HttpResponse.json({ items: ALL_SCHEDULES }),
+  http.get("/api/workspaces/:wsId/inventory/:invId/maintenance", () =>
+    HttpResponse.json({ items: ALL_SCHEDULES }),
   ),
   http.get("/api/workspaces/:wsId/maintenance/due", () =>
     HttpResponse.json({ items: [DUE_OVERDUE, DUE_UPCOMING] }),
@@ -66,8 +65,9 @@ export const maintenanceHandlers = [
   http.patch("/api/workspaces/:wsId/maintenance/:id", ({ params }) =>
     HttpResponse.json({ ...SCHEDULE_A, id: String(params.id) }),
   ),
-  http.delete("/api/workspaces/:wsId/maintenance/:id", () =>
-    new HttpResponse(null, { status: 204 }),
+  http.delete(
+    "/api/workspaces/:wsId/maintenance/:id",
+    () => new HttpResponse(null, { status: 204 }),
   ),
 
   // --- Top-level list (paginated → { items, total }) + create ---

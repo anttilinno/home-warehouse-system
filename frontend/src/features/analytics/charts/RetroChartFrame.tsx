@@ -1,7 +1,11 @@
 import type { ReactNode } from "react";
 import { ResponsiveContainer } from "recharts";
 import { Trans } from "@lingui/react/macro";
-import { Window, RetroEmptyState, type TitlebarVariant } from "@/components/retro";
+import {
+  Window,
+  RetroEmptyState,
+  type TitlebarVariant,
+} from "@/components/retro";
 
 export interface RetroChartFrameProps {
   /** Silkscreen panel title (rendered in the Window titlebar). */
@@ -40,7 +44,9 @@ export function RetroChartFrame({
         <RetroEmptyState
           glyph="▤"
           heading={<Trans>No data</Trans>}
-          body={emptyLabel ?? <Trans>Nothing to chart for this range yet.</Trans>}
+          body={
+            emptyLabel ?? <Trans>Nothing to chart for this range yet.</Trans>
+          }
         />
       ) : (
         <div style={{ width: "100%", height }}>

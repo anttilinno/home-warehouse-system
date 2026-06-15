@@ -56,7 +56,9 @@ describe("MaintenanceDuePage", () => {
     server.use(...maintenanceHandlers);
     renderPage();
     expect(await screen.findByText("Air Compressor")).toBeInTheDocument();
-    expect(screen.getByRole("columnheader", { name: "Item" })).toBeInTheDocument();
+    expect(
+      screen.getByRole("columnheader", { name: "Item" }),
+    ).toBeInTheDocument();
     expect(
       screen.getByRole("columnheader", { name: "Schedule" }),
     ).toBeInTheDocument();
@@ -125,9 +127,9 @@ describe("MaintenanceDuePage", () => {
     );
     renderPage();
     const flaggedRow = (await screen.findByText("Flagged Item")).closest("tr")!;
-    const unflaggedRow = (
-      await screen.findByText("Unflagged Item")
-    ).closest("tr")!;
+    const unflaggedRow = (await screen.findByText("Unflagged Item")).closest(
+      "tr",
+    )!;
     // Identical dates, divergent cues — only the flag drives the treatment.
     expect(within(flaggedRow).getByText("Overdue")).toBeInTheDocument();
     expect(within(flaggedRow).getByText(/⚠/)).toBeInTheDocument();
@@ -158,7 +160,9 @@ describe("MaintenanceDuePage", () => {
     ).toBeInTheDocument();
     // Confirm inside the dialog (the row button shares the COMPLETE label).
     const dialog = screen.getByRole("dialog");
-    await userEvent.click(within(dialog).getByRole("button", { name: "COMPLETE" }));
+    await userEvent.click(
+      within(dialog).getByRole("button", { name: "COMPLETE" }),
+    );
     await waitFor(() => expect(completed).toBe(true));
   });
 

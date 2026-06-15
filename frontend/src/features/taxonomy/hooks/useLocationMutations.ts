@@ -42,7 +42,8 @@ export function useLocationMutations() {
     qc.invalidateQueries({ queryKey: ["locations", wsId as string] });
 
   const create = useMutation({
-    mutationFn: (b: CreateLocationBody) => locationApi.create(wsId as string, b),
+    mutationFn: (b: CreateLocationBody) =>
+      locationApi.create(wsId as string, b),
     onSuccess: (loc) => {
       invalidate();
       retroToast.success(t`${loc.name} created.`);

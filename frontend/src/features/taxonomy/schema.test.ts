@@ -61,7 +61,10 @@ describe("containerSchema.location_id", () => {
   });
 
   it("accepts a non-empty location_id", () => {
-    const r = containerSchema.safeParse({ name: "Bin 3", location_id: "loc-1" });
+    const r = containerSchema.safeParse({
+      name: "Bin 3",
+      location_id: "loc-1",
+    });
     expect(r.success).toBe(true);
   });
 });
@@ -94,7 +97,10 @@ describe("short_code validation (locations/containers)", () => {
 
 describe("parent fields (optional = root)", () => {
   it("categorySchema accepts an empty parent_category_id (root)", () => {
-    const r = categorySchema.safeParse({ name: "Tools", parent_category_id: "" });
+    const r = categorySchema.safeParse({
+      name: "Tools",
+      parent_category_id: "",
+    });
     expect(r.success).toBe(true);
   });
 

@@ -42,14 +42,44 @@ function renderChart(ui: React.ReactNode) {
 }
 
 const categories: CategoryStats[] = [
-  { id: "c1", name: "Power tools", item_count: 412, inventory_count: 500, total_value: 1894000 },
-  { id: "c2", name: "Hand tools", item_count: 288, inventory_count: 300, total_value: 712000 },
-  { id: "c3", name: "Cables / AV", item_count: 196, inventory_count: 210, total_value: 348000 },
+  {
+    id: "c1",
+    name: "Power tools",
+    item_count: 412,
+    inventory_count: 500,
+    total_value: 1894000,
+  },
+  {
+    id: "c2",
+    name: "Hand tools",
+    item_count: 288,
+    inventory_count: 300,
+    total_value: 712000,
+  },
+  {
+    id: "c3",
+    name: "Cables / AV",
+    item_count: 196,
+    inventory_count: 210,
+    total_value: 348000,
+  },
 ];
 
 const locations: LocationInventoryValue[] = [
-  { id: "l1", name: "Garage", item_count: 120, total_quantity: 400, total_value: 1421000 },
-  { id: "l2", name: "Workshop", item_count: 80, total_quantity: 260, total_value: 984000 },
+  {
+    id: "l1",
+    name: "Garage",
+    item_count: 120,
+    total_quantity: 400,
+    total_value: 1421000,
+  },
+  {
+    id: "l2",
+    name: "Workshop",
+    item_count: 80,
+    total_quantity: 260,
+    total_value: 984000,
+  },
 ];
 
 const conditions: ConditionBreakdown[] = [
@@ -80,7 +110,9 @@ const months: MonthlyLoanActivity[] = [
 describe("CategoryValueChart", () => {
   it("renders its Window title and a labelled bar per category", () => {
     const { container } = renderChart(<CategoryValueChart data={categories} />);
-    expect(screen.getByRole("heading", { name: /category/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: /category/i }),
+    ).toBeInTheDocument();
     // recharts v3 renders each axis tick label twice (visible + a11y layer), so
     // assert on getAllByText.
     expect(screen.getAllByText("Power tools").length).toBeGreaterThan(0);
@@ -90,14 +122,18 @@ describe("CategoryValueChart", () => {
 
   it("renders the empty state for an empty dataset", () => {
     renderChart(<CategoryValueChart data={[]} />);
-    expect(screen.getByRole("heading", { name: /no data/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: /no data/i }),
+    ).toBeInTheDocument();
   });
 });
 
 describe("LocationValueChart", () => {
   it("renders bars and formats CENTS as currency (not the raw integer)", () => {
     renderChart(<LocationValueChart data={locations} />);
-    expect(screen.getByRole("heading", { name: /location/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: /location/i }),
+    ).toBeInTheDocument();
     expect(screen.getAllByText("Garage").length).toBeGreaterThan(0);
     // 1421000 cents → €14,210.00 style currency string; the raw integer must
     // never leak to the axis/label.
@@ -109,14 +145,20 @@ describe("LocationValueChart", () => {
 
   it("renders the empty state for an empty dataset", () => {
     renderChart(<LocationValueChart data={[]} />);
-    expect(screen.getByRole("heading", { name: /no data/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: /no data/i }),
+    ).toBeInTheDocument();
   });
 });
 
 describe("ConditionDonutChart", () => {
   it("renders a donut and a swatch legend per condition", () => {
-    const { container } = renderChart(<ConditionDonutChart data={conditions} />);
-    expect(screen.getByRole("heading", { name: /condition/i })).toBeInTheDocument();
+    const { container } = renderChart(
+      <ConditionDonutChart data={conditions} />,
+    );
+    expect(
+      screen.getByRole("heading", { name: /condition/i }),
+    ).toBeInTheDocument();
     const legend = screen.getByTestId("condition-legend");
     expect(within(legend).getByText("New")).toBeInTheDocument();
     expect(within(legend).getByText("Poor")).toBeInTheDocument();
@@ -126,14 +168,18 @@ describe("ConditionDonutChart", () => {
 
   it("renders the empty state for an empty dataset", () => {
     renderChart(<ConditionDonutChart data={[]} />);
-    expect(screen.getByRole("heading", { name: /no data/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: /no data/i }),
+    ).toBeInTheDocument();
   });
 });
 
 describe("StatusStackChart", () => {
   it("renders a 100%-stacked bar with a segment per status", () => {
     renderChart(<StatusStackChart data={statuses} />);
-    expect(screen.getByRole("heading", { name: /status/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: /status/i }),
+    ).toBeInTheDocument();
     const legend = screen.getByTestId("status-legend");
     expect(within(legend).getByText(/available/i)).toBeInTheDocument();
     expect(within(legend).getByText(/retired/i)).toBeInTheDocument();
@@ -141,14 +187,18 @@ describe("StatusStackChart", () => {
 
   it("renders the empty state for an empty dataset", () => {
     renderChart(<StatusStackChart data={[]} />);
-    expect(screen.getByRole("heading", { name: /no data/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: /no data/i }),
+    ).toBeInTheDocument();
   });
 });
 
 describe("TopBorrowersChart", () => {
   it("renders a bar per borrower", () => {
     const { container } = renderChart(<TopBorrowersChart data={borrowers} />);
-    expect(screen.getByRole("heading", { name: /borrower/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: /borrower/i }),
+    ).toBeInTheDocument();
     expect(screen.getAllByText("Mart").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Kati").length).toBeGreaterThan(0);
     expect(container.querySelector("svg")).toBeTruthy();
@@ -156,14 +206,20 @@ describe("TopBorrowersChart", () => {
 
   it("renders the empty state for an empty dataset", () => {
     renderChart(<TopBorrowersChart data={[]} />);
-    expect(screen.getByRole("heading", { name: /no data/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: /no data/i }),
+    ).toBeInTheDocument();
   });
 });
 
 describe("MonthlyLoanActivityChart", () => {
   it("renders an area + line over months", () => {
-    const { container } = renderChart(<MonthlyLoanActivityChart data={months} />);
-    expect(screen.getByRole("heading", { name: /monthly/i })).toBeInTheDocument();
+    const { container } = renderChart(
+      <MonthlyLoanActivityChart data={months} />,
+    );
+    expect(
+      screen.getByRole("heading", { name: /monthly/i }),
+    ).toBeInTheDocument();
     const legend = screen.getByTestId("monthly-legend");
     expect(within(legend).getByText(/loans out/i)).toBeInTheDocument();
     expect(within(legend).getByText(/returns/i)).toBeInTheDocument();
@@ -173,6 +229,8 @@ describe("MonthlyLoanActivityChart", () => {
 
   it("renders the empty state for an empty dataset", () => {
     renderChart(<MonthlyLoanActivityChart data={[]} />);
-    expect(screen.getByRole("heading", { name: /no data/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: /no data/i }),
+    ).toBeInTheDocument();
   });
 });

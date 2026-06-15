@@ -42,7 +42,12 @@ export const containerApi = {
   // PAGINATED { items, total, page, total_pages }. limit clamped to 100
   // (Pitfall 3).
   list: (ws: string, page = 1, limit = 100) =>
-    get<{ items: Container[]; total: number; page: number; total_pages: number }>(
+    get<{
+      items: Container[];
+      total: number;
+      page: number;
+      total_pages: number;
+    }>(
       `/workspaces/${ws}/containers?page=${page}&limit=${Math.min(limit, MAX_LIMIT)}`,
     ),
   // BARE { items } (Pitfall 2) — unwrap to Container[] for picker consumption.

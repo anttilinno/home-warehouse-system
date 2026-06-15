@@ -52,8 +52,7 @@ export interface PaperlessSearchResponse {
 const base = (ws: string) => `/workspaces/${ws}/paperless`;
 
 export const paperlessApi = {
-  getSettings: (ws: string) =>
-    get<PaperlessSettings>(`${base(ws)}/settings`),
+  getSettings: (ws: string) => get<PaperlessSettings>(`${base(ws)}/settings`),
 
   saveSettings: (ws: string, body: PaperlessSettingsInput) =>
     put<PaperlessSettings>(`${base(ws)}/settings`, body),
@@ -64,7 +63,9 @@ export const paperlessApi = {
     const params = new URLSearchParams({ query });
     if (page != null) params.set("page", String(page));
     if (pageSize != null) params.set("page_size", String(pageSize));
-    return get<PaperlessSearchResponse>(`${base(ws)}/search?${params.toString()}`);
+    return get<PaperlessSearchResponse>(
+      `${base(ws)}/search?${params.toString()}`,
+    );
   },
 
   resolve: (ws: string, id: number) =>

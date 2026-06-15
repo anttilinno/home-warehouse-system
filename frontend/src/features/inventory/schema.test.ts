@@ -61,9 +61,9 @@ describe("inventoryFormSchema — quantity", () => {
   });
 
   it("rejects quantity < 1 (create/full-PATCH enforce >= 1)", () => {
-    expect(inventoryFormSchema.safeParse(valid({ quantity: "0" })).success).toBe(
-      false,
-    );
+    expect(
+      inventoryFormSchema.safeParse(valid({ quantity: "0" })).success,
+    ).toBe(false);
     expect(
       inventoryFormSchema.safeParse(valid({ quantity: "-3" })).success,
     ).toBe(false);

@@ -60,9 +60,9 @@ describe("retro-os pastel tokens meet WCAG AA (>= 4.5:1)", () => {
   ];
 
   it.each(pairs)("%s on %s", (fgToken, bgToken) => {
-    expect(contrastRatio(token(fgToken), token(bgToken))).toBeGreaterThanOrEqual(
-      AA,
-    );
+    expect(
+      contrastRatio(token(fgToken), token(bgToken)),
+    ).toBeGreaterThanOrEqual(AA);
   });
 
   it("sanity: formula reproduces the canonical black/white ratio", () => {

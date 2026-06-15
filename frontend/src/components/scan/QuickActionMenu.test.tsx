@@ -69,9 +69,10 @@ describe("QuickActionMenu", () => {
   it("plain item: VIEW + LOAN + BACK, no UNARCHIVE / MARK REVIEWED", async () => {
     mockLoans([]);
     renderMenu(base as Item);
-    expect(
-      screen.getByRole("link", { name: /VIEW ITEM/ }),
-    ).toHaveAttribute("href", "/items/it-1");
+    expect(screen.getByRole("link", { name: /VIEW ITEM/ })).toHaveAttribute(
+      "href",
+      "/items/it-1",
+    );
     // LOAN appears once the byItem query resolves with no active loan.
     await waitFor(() =>
       expect(screen.getByRole("link", { name: /LOAN/ })).toHaveAttribute(

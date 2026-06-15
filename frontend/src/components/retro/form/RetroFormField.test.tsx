@@ -44,9 +44,17 @@ describe("RetroFormField", () => {
   it("replaces the hint with a ✕-prefixed danger error, wired via aria-describedby", () => {
     render(
       wrap(
-        <RetroFormField label="Category" hint="Pick one bucket" error="Required">
+        <RetroFormField
+          label="Category"
+          hint="Pick one bucket"
+          error="Required"
+        >
           {(id, describedBy) => (
-            <input id={id} aria-describedby={describedBy} aria-label="control" />
+            <input
+              id={id}
+              aria-describedby={describedBy}
+              aria-label="control"
+            />
           )}
         </RetroFormField>,
       ),

@@ -43,14 +43,14 @@ describe("useNotificationMutations", () => {
     server.use(...notificationHandlers);
     const spy = vi.spyOn(client, "invalidateQueries");
 
-    const { result } = renderHook(() => useNotificationMutations(), { wrapper });
+    const { result } = renderHook(() => useNotificationMutations(), {
+      wrapper,
+    });
     await act(async () => {
       await result.current.markRead.mutateAsync("notif-1");
     });
 
-    await waitFor(() =>
-      expect(result.current.markRead.isSuccess).toBe(true),
-    );
+    await waitFor(() => expect(result.current.markRead.isSuccess).toBe(true));
     // Prefix invalidate covers list + unread + unread/count.
     expect(spy).toHaveBeenCalledWith({ queryKey: ["notifications"] });
   });
@@ -60,7 +60,9 @@ describe("useNotificationMutations", () => {
     server.use(...notificationHandlers);
     const spy = vi.spyOn(client, "invalidateQueries");
 
-    const { result } = renderHook(() => useNotificationMutations(), { wrapper });
+    const { result } = renderHook(() => useNotificationMutations(), {
+      wrapper,
+    });
     await act(async () => {
       await result.current.markAllRead.mutateAsync();
     });
@@ -77,7 +79,9 @@ describe("useNotificationMutations", () => {
     // Seed the badge cache, then assert the prefix invalidate marks it stale.
     client.setQueryData(["notifications", "unread", "count"], { count: 1 });
 
-    const { result } = renderHook(() => useNotificationMutations(), { wrapper });
+    const { result } = renderHook(() => useNotificationMutations(), {
+      wrapper,
+    });
     await act(async () => {
       await result.current.markRead.mutateAsync("notif-1");
     });
@@ -94,7 +98,9 @@ describe("useNotificationMutations", () => {
       ),
     );
 
-    const { result } = renderHook(() => useNotificationMutations(), { wrapper });
+    const { result } = renderHook(() => useNotificationMutations(), {
+      wrapper,
+    });
     await act(async () => {
       await result.current.markRead
         .mutateAsync("notif-1")

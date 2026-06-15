@@ -151,12 +151,10 @@ function installHandlers(f: Fixtures) {
     http.get("/api/workspaces/:wsId/items/:id/attachments", () =>
       HttpResponse.json({ items: f.attachments ?? [] }),
     ),
-    http.get(
-      "/api/workspaces/:wsId/inventory/:invId/movements",
-      ({ params }) =>
-        HttpResponse.json({
-          items: f.movementsByInv?.[params.invId as string] ?? [],
-        }),
+    http.get("/api/workspaces/:wsId/inventory/:invId/movements", ({ params }) =>
+      HttpResponse.json({
+        items: f.movementsByInv?.[params.invId as string] ?? [],
+      }),
     ),
     http.get("/api/workspaces/:wsId/locations", () =>
       HttpResponse.json({ items: [{ id: "loc-1", name: "Garage" }] }),
@@ -171,8 +169,9 @@ function installHandlers(f: Fixtures) {
       f.onArchive?.();
       return new HttpResponse(null, { status: 204 });
     }),
-    http.delete("/api/workspaces/:wsId/items/:id", () =>
-      new HttpResponse(null, { status: 204 }),
+    http.delete(
+      "/api/workspaces/:wsId/items/:id",
+      () => new HttpResponse(null, { status: 204 }),
     ),
   ];
   server.use(...handlers);
@@ -215,7 +214,10 @@ describe("ItemDetailPage", () => {
   it("renders the item fields, the four tabs, and the live side-rail inventory panel", async () => {
     installHandlers({
       item: makeItem(),
-      inventory: [makeInventory({ quantity: 3 }), makeInventory({ id: "inv-2", quantity: 5 })],
+      inventory: [
+        makeInventory({ quantity: 3 }),
+        makeInventory({ id: "inv-2", quantity: 5 }),
+      ],
     });
     renderDetail();
     // Titlebar + fields.
@@ -235,10 +237,25 @@ describe("ItemDetailPage", () => {
     const user = userEvent.setup();
     installHandlers({
       item: makeItem(),
-      inventory: [makeInventory({ id: "inv-1" }), makeInventory({ id: "inv-2" })],
+      inventory: [
+        makeInventory({ id: "inv-1" }),
+        makeInventory({ id: "inv-2" }),
+      ],
       movementsByInv: {
-        "inv-1": [makeMovement({ id: "mv-a", inventory_id: "inv-1", created_at: "2026-06-01T00:00:00Z" })],
-        "inv-2": [makeMovement({ id: "mv-b", inventory_id: "inv-2", created_at: "2026-06-09T00:00:00Z" })],
+        "inv-1": [
+          makeMovement({
+            id: "mv-a",
+            inventory_id: "inv-1",
+            created_at: "2026-06-01T00:00:00Z",
+          }),
+        ],
+        "inv-2": [
+          makeMovement({
+            id: "mv-b",
+            inventory_id: "inv-2",
+            created_at: "2026-06-09T00:00:00Z",
+          }),
+        ],
       },
     });
     renderDetail();
@@ -344,7 +361,9 @@ describe("ItemDetailPage", () => {
 
     // The confirm dialog opens; DELETE stays disabled until the name is typed.
     const dialog = await screen.findByRole("dialog", { name: /delete item/i });
-    const confirmBtn = within(dialog).getByRole("button", { name: /^delete$/i });
+    const confirmBtn = within(dialog).getByRole("button", {
+      name: /^delete$/i,
+    });
     expect(confirmBtn).toBeDisabled();
 
     await user.type(

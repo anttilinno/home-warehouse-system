@@ -138,11 +138,15 @@ describe("escStack — TUI-02 composition (dialog → drawer → menu)", () => {
 
     expect(screen.getByText("Dialog body")).toBeInTheDocument();
     expect(screen.getByText("Drawer body")).toBeInTheDocument();
-    expect(screen.getByRole("menuitem", { name: /menu item/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole("menuitem", { name: /menu item/i }),
+    ).toBeInTheDocument();
 
     // First ESC → pops the MENU (topmost) only. Dialog + drawer remain.
     await user.keyboard("{Escape}");
-    expect(screen.queryByRole("menuitem", { name: /menu item/i })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("menuitem", { name: /menu item/i }),
+    ).not.toBeInTheDocument();
     expect(screen.getByText("Drawer body")).toBeInTheDocument();
     expect(screen.getByText("Dialog body")).toBeInTheDocument();
 

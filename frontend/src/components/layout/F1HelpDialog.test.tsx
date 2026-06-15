@@ -1,4 +1,12 @@
-import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
+import {
+  afterEach,
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from "vitest";
 import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { I18nProvider } from "@lingui/react";
@@ -42,7 +50,13 @@ import { useState, useEffect } from "react";
 
 function Controlled() {
   const [open, setOpen] = useState(false);
-  return <F1HelpDialog open={open} onClose={() => setOpen(false)} onToggle={() => setOpen((o) => !o)} />;
+  return (
+    <F1HelpDialog
+      open={open}
+      onClose={() => setOpen(false)}
+      onToggle={() => setOpen((o) => !o)}
+    />
+  );
 }
 
 // Simulates a route-level handler that would log out on a *bare* ESC — it must
@@ -98,7 +112,9 @@ describe("F1HelpDialog", () => {
     // Global group always lists F1 + ESC synthetics.
     expect(within(dialog).getByText(/global/i)).toBeInTheDocument();
     // The route shortcut shows up as a chip + description.
-    expect(within(dialog).getByRole("button", { name: /new item/i })).toBeInTheDocument();
+    expect(
+      within(dialog).getByRole("button", { name: /new item/i }),
+    ).toBeInTheDocument();
   });
 
   it("closes on ESC via the modal stack and does NOT log out", async () => {

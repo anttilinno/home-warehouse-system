@@ -40,7 +40,12 @@ export const locationApi = {
   // PAGINATED { items, total, page, total_pages }. limit clamped to 100
   // (Pitfall 3). Tree fetches use limit=100; page-2+ is out of parity scope.
   list: (ws: string, page = 1, limit = 100) =>
-    get<{ items: Location[]; total: number; page: number; total_pages: number }>(
+    get<{
+      items: Location[];
+      total: number;
+      page: number;
+      total_pages: number;
+    }>(
       `/workspaces/${ws}/locations?page=${page}&limit=${Math.min(limit, MAX_LIMIT)}`,
     ),
   // BARE { items } (Pitfall 2) — unwrap to Location[] for picker consumption.

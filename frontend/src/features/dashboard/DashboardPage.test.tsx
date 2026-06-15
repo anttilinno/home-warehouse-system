@@ -6,10 +6,7 @@ import { I18nProvider } from "@lingui/react";
 import { MemoryRouter } from "react-router";
 import { i18n } from "@/lib/i18n";
 import { server } from "@/test/msw/server";
-import {
-  ShortcutsProvider,
-  useShortcutsContext,
-} from "@/components/shortcuts";
+import { ShortcutsProvider, useShortcutsContext } from "@/components/shortcuts";
 import type { Workspace } from "@/lib/types";
 import type { WorkspaceContextValue } from "@/features/workspace/WorkspaceProvider";
 
@@ -89,7 +86,9 @@ function activityFixture() {
 // Surfaces the registered shortcut keys into the test scope.
 let shortcutKeys: string[] = [];
 function ShortcutProbe() {
-  shortcutKeys = useShortcutsContext().shortcuts.map((s) => s.key.toUpperCase());
+  shortcutKeys = useShortcutsContext().shortcuts.map((s) =>
+    s.key.toUpperCase(),
+  );
   return null;
 }
 
@@ -161,15 +160,15 @@ describe("DashboardPage (extended — W2)", () => {
     mountHandlers();
     renderDashboard();
 
-    const createRow = (await screen.findByText("Cordless drill")).closest("tr")!;
+    const createRow = (await screen.findByText("Cordless drill")).closest(
+      "tr",
+    )!;
     // The Status column carries an action-derived pill (CREATE → ok variant).
     // The action text appears twice in the row: once as the plain Action cell
     // and once inside the Status pill (a styled badge <span> with rounded-chip).
     const creates = within(createRow).getAllByText("CREATE");
     expect(creates.length).toBe(2);
-    const pill = creates.find((el) =>
-      el.className.includes("rounded-chip"),
-    );
+    const pill = creates.find((el) => el.className.includes("rounded-chip"));
     expect(pill).toBeDefined();
   });
 
@@ -178,7 +177,9 @@ describe("DashboardPage (extended — W2)", () => {
     mountHandlers();
     renderDashboard();
 
-    const createRow = (await screen.findByText("Cordless drill")).closest("tr")!;
+    const createRow = (await screen.findByText("Cordless drill")).closest(
+      "tr",
+    )!;
     // First 8 chars of the user_id.
     expect(within(createRow).getByText("abcd1234")).toBeInTheDocument();
 

@@ -7,7 +7,11 @@ import type { SSEEvent } from "./types";
 // deps): a consumer re-rendering with a new closure does NOT churn the
 // subscription (RESEARCH §"Subscribe hook contract"). Cleanup unsubscribes on
 // unmount. Throws outside SSEProvider.
-export function useSSE({ onEvent }: { onEvent: (event: SSEEvent) => void }): void {
+export function useSSE({
+  onEvent,
+}: {
+  onEvent: (event: SSEEvent) => void;
+}): void {
   const ctx = useContext(SSESubscribeContext);
   if (ctx === undefined) {
     throw new Error("useSSE must be used within an SSEProvider");
@@ -19,8 +23,5 @@ export function useSSE({ onEvent }: { onEvent: (event: SSEEvent) => void }): voi
     cbRef.current = onEvent;
   });
 
-  useEffect(
-    () => subscribe((event) => cbRef.current?.(event)),
-    [subscribe],
-  );
+  useEffect(() => subscribe((event) => cbRef.current?.(event)), [subscribe]);
 }

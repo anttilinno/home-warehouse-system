@@ -124,7 +124,12 @@ describe("photosApi.checkDuplicate", () => {
       jsonResponse({
         has_duplicates: false,
         duplicates: [
-          { photo_id: "p-9", item_id: "it-2", filename: "x", similarity_pct: 0 },
+          {
+            photo_id: "p-9",
+            item_id: "it-2",
+            filename: "x",
+            similarity_pct: 0,
+          },
         ],
       }),
     );
@@ -149,7 +154,9 @@ describe("photosApi JSON ops", () => {
     const [url, init] = fetchMock.mock.calls[0];
     expect(url).toContain("/photos/p-1/caption");
     expect((init as RequestInit).method).toBe("PUT");
-    expect((init as RequestInit).body).toBe(JSON.stringify({ caption: "hello" }));
+    expect((init as RequestInit).body).toBe(
+      JSON.stringify({ caption: "hello" }),
+    );
   });
 
   it("reorder PUTs /photos/order with the FULL {photo_ids} list", async () => {
@@ -210,7 +217,9 @@ describe("photosApi blob downloads", () => {
   });
 
   it("downloadZip hits /photos/download (no ids) with the item filename", async () => {
-    fetchMock.mockResolvedValueOnce(new Response(new Blob(["z"]), { status: 200 }));
+    fetchMock.mockResolvedValueOnce(
+      new Response(new Blob(["z"]), { status: 200 }),
+    );
     await photosApi.downloadZip("ws-1", "it-1");
     expect(fetchMock.mock.calls[0][0]).toContain(
       "/workspaces/ws-1/items/it-1/photos/download",
@@ -218,13 +227,17 @@ describe("photosApi blob downloads", () => {
   });
 
   it("downloadZip appends ?ids= when ids given", async () => {
-    fetchMock.mockResolvedValueOnce(new Response(new Blob(["z"]), { status: 200 }));
+    fetchMock.mockResolvedValueOnce(
+      new Response(new Blob(["z"]), { status: 200 }),
+    );
     await photosApi.downloadZip("ws-1", "it-1", ["p-1", "p-2"]);
     expect(fetchMock.mock.calls[0][0]).toContain("ids=p-1,p-2");
   });
 
   it("exportCsv hits /export/item?format=csv", async () => {
-    fetchMock.mockResolvedValueOnce(new Response(new Blob(["c"]), { status: 200 }));
+    fetchMock.mockResolvedValueOnce(
+      new Response(new Blob(["c"]), { status: 200 }),
+    );
     await photosApi.exportCsv("ws-1");
     expect(fetchMock.mock.calls[0][0]).toContain(
       "/workspaces/ws-1/export/item?format=csv",

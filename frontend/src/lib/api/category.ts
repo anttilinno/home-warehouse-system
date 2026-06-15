@@ -34,7 +34,8 @@ export const categoryApi = {
   // BARE { items } — no total (Pitfall 2). Categories list has no page/limit
   // param (returns all rows including archived — orphan handling lives in
   // buildTree, not here).
-  list: (ws: string) => get<{ items: Category[] }>(`/workspaces/${ws}/categories`),
+  list: (ws: string) =>
+    get<{ items: Category[] }>(`/workspaces/${ws}/categories`),
   get: (ws: string, id: string) =>
     get<Category>(`/workspaces/${ws}/categories/${id}`),
   create: (ws: string, body: CreateCategoryBody) =>

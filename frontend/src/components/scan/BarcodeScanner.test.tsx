@@ -77,7 +77,9 @@ describe("BarcodeScanner", () => {
 
   it("forwards scanner errors to onError", () => {
     const onError = vi.fn();
-    render(<BarcodeScanner paused={false} onDecode={vi.fn()} onError={onError} />);
+    render(
+      <BarcodeScanner paused={false} onDecode={vi.fn()} onError={onError} />,
+    );
 
     const err = new Error("NotAllowedError");
     triggerScannerError(err);
@@ -95,9 +97,9 @@ describe("BarcodeScanner", () => {
         torchEnabled={false}
       />,
     );
-    expect((lastScannerProps.current?.components as { torch?: boolean })?.torch).toBe(
-      false,
-    );
+    expect(
+      (lastScannerProps.current?.components as { torch?: boolean })?.torch,
+    ).toBe(false);
 
     rerender(
       <BarcodeScanner
@@ -107,9 +109,9 @@ describe("BarcodeScanner", () => {
         torchEnabled={true}
       />,
     );
-    expect((lastScannerProps.current?.components as { torch?: boolean })?.torch).toBe(
-      true,
-    );
+    expect(
+      (lastScannerProps.current?.components as { torch?: boolean })?.torch,
+    ).toBe(true);
 
     rerender(
       <BarcodeScanner
@@ -119,9 +121,9 @@ describe("BarcodeScanner", () => {
         torchEnabled={true}
       />,
     );
-    expect((lastScannerProps.current?.components as { torch?: boolean })?.torch).toBe(
-      false,
-    );
+    expect(
+      (lastScannerProps.current?.components as { torch?: boolean })?.torch,
+    ).toBe(false);
   });
 
   it("never unmounts the <Scanner> across a paused toggle (re-render, not remount)", () => {
@@ -139,7 +141,9 @@ describe("BarcodeScanner", () => {
     // Re-renders increment the call count but the same instance stays mounted:
     // the mock is a vi.fn, so a remount would reset via cleanup — assert the
     // decode trigger node is still the same element (only one in the DOM).
-    expect(screen.getAllByTestId("fake-scanner-decode-trigger")).toHaveLength(1);
+    expect(screen.getAllByTestId("fake-scanner-decode-trigger")).toHaveLength(
+      1,
+    );
     // Render calls increased (re-render), proving the component re-rendered
     // rather than being torn down and recreated as a fresh tree.
     expect(Scanner.mock.calls.length).toBeGreaterThan(callCountAfterMount);

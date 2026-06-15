@@ -137,7 +137,9 @@ describe("InventoryFormPage — create", () => {
 
     const itemSelect = screen.getByLabelText(/^item/i);
     await waitFor(() =>
-      expect(within(itemSelect).getByText(/cordless drill/i)).toBeInTheDocument(),
+      expect(
+        within(itemSelect).getByText(/cordless drill/i),
+      ).toBeInTheDocument(),
     );
     expect(
       within(screen.getByLabelText(/^location/i)).getByText(/garage/i),
@@ -189,9 +191,9 @@ describe("InventoryFormPage — create", () => {
     server.use(...pickerHandlers());
     renderForm(["/inventory/new?item=it-2"]);
     await waitFor(() =>
-      expect(
-        (screen.getByLabelText(/^item/i) as HTMLSelectElement).value,
-      ).toBe("it-2"),
+      expect((screen.getByLabelText(/^item/i) as HTMLSelectElement).value).toBe(
+        "it-2",
+      ),
     );
   });
 
@@ -242,13 +244,10 @@ describe("InventoryFormPage — edit", () => {
       http.get("/api/workspaces/:wsId/inventory/:id", () =>
         HttpResponse.json(ENTRY),
       ),
-      http.patch(
-        "/api/workspaces/:wsId/inventory/:id",
-        async ({ request }) => {
-          sentBody = (await request.json()) as Record<string, unknown>;
-          return HttpResponse.json(ENTRY);
-        },
-      ),
+      http.patch("/api/workspaces/:wsId/inventory/:id", async ({ request }) => {
+        sentBody = (await request.json()) as Record<string, unknown>;
+        return HttpResponse.json(ENTRY);
+      }),
     );
     renderForm(["/inventory/inv-9/edit"]);
     expect(

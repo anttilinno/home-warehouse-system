@@ -43,7 +43,13 @@ const SUMMARY = {
   dashboard: {},
   loan_stats: {},
   category_stats: [
-    { id: "c1", name: "Tools", item_count: 4, inventory_count: 9, total_value: 12345 },
+    {
+      id: "c1",
+      name: "Tools",
+      item_count: 4,
+      inventory_count: 9,
+      total_value: 12345,
+    },
   ],
   location_values: [],
   recent_activity: [],

@@ -99,11 +99,7 @@ function installLookup(f: Fixtures) {
 }
 
 // Default torch return: unsupported (toggle hidden).
-function setTorch(
-  supported = false,
-  enabled = false,
-  toggle = vi.fn(),
-) {
+function setTorch(supported = false, enabled = false, toggle = vi.fn()) {
   useTorchMock.mockReturnValue({ supported, enabled, toggle });
 }
 

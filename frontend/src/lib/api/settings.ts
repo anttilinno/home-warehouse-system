@@ -1,11 +1,4 @@
-import {
-  del,
-  downloadBlob,
-  get,
-  patch,
-  post,
-  postMultipart,
-} from "@/lib/api";
+import { del, downloadBlob, get, patch, post, postMultipart } from "@/lib/api";
 import type { Member, Preferences, User } from "@/lib/types";
 
 // Phase 12 Plan 02 — typed settingsApi over api.ts, the single contract surface

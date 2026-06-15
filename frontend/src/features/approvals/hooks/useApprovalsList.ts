@@ -34,7 +34,8 @@ export function useApprovalsList(): UseApprovalsListResult {
 
   const query = useQuery({
     queryKey: ["pending-changes", wsId, "pending"],
-    queryFn: () => pendingChangesApi.list(wsId as string, { status: "pending" }),
+    queryFn: () =>
+      pendingChangesApi.list(wsId as string, { status: "pending" }),
     enabled: Boolean(wsId),
     retry: false,
   });

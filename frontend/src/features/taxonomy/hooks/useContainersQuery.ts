@@ -28,7 +28,8 @@ export function useContainersQuery(): UseContainersQueryResult {
   const query = useQuery({
     queryKey: ["containers", wsId],
     // PAGINATED envelope — read .items (limit clamped to 100 in containerApi).
-    queryFn: () => containerApi.list(wsId as string, 1, 100).then((r) => r.items),
+    queryFn: () =>
+      containerApi.list(wsId as string, 1, 100).then((r) => r.items),
     enabled: !!wsId,
     retry: false,
   });

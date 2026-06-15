@@ -45,8 +45,7 @@ vi.mock("./declutterCsv", async () => {
     await vi.importActual<typeof import("./declutterCsv")>("./declutterCsv");
   return {
     ...actual,
-    triggerCsvDownload: (...args: unknown[]) =>
-      triggerCsvDownloadMock(...args),
+    triggerCsvDownload: (...args: unknown[]) => triggerCsvDownloadMock(...args),
   };
 });
 
@@ -220,8 +219,6 @@ describe("DeclutterPage", () => {
       expect(screen.getByText(/nothing to declutter/i)).toBeInTheDocument(),
     );
     // export disabled when empty
-    expect(
-      screen.getByRole("button", { name: /export csv/i }),
-    ).toBeDisabled();
+    expect(screen.getByRole("button", { name: /export csv/i })).toBeDisabled();
   });
 });

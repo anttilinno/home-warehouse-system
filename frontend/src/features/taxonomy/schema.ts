@@ -14,7 +14,11 @@ import { z } from "zod";
 //
 // Messages match the UI-SPEC validation copy.
 
-const name = z.string().trim().min(1, { message: "Name is required." }).max(255);
+const name = z
+  .string()
+  .trim()
+  .min(1, { message: "Name is required." })
+  .max(255);
 const description = z.string().max(10000).optional().default("");
 
 // Color validated ONLY when supplied (empty string = absent / no color).

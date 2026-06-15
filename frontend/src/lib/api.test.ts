@@ -169,9 +169,7 @@ describe("api.ts locked invariants", () => {
   });
 
   it("still throws HttpError with the status on a non-ok response", async () => {
-    fetchMock.mockResolvedValueOnce(
-      jsonResponse({ detail: "boom" }, 500),
-    );
+    fetchMock.mockResolvedValueOnce(jsonResponse({ detail: "boom" }, 500));
     await expect(get("/items")).rejects.toBeInstanceOf(HttpError);
   });
 });
@@ -201,7 +199,9 @@ describe("api.ts put (additive)", () => {
       .mockResolvedValueOnce(jsonResponse({ refresh_token: "rotated" })) // refresh ok
       .mockResolvedValueOnce(emptyResponse(204)); // retry ok
 
-    await expect(put("/photos/p-1/primary", undefined)).resolves.toBeUndefined();
+    await expect(
+      put("/photos/p-1/primary", undefined),
+    ).resolves.toBeUndefined();
     // initial + refresh + retry = 3 fetches
     expect(fetchMock).toHaveBeenCalledTimes(3);
   });
@@ -210,12 +210,8 @@ describe("api.ts put (additive)", () => {
 describe("api.ts downloadBlob (additive)", () => {
   it("fetches /api{endpoint} with credentials and triggers an anchor download", async () => {
     const blob = new Blob(["zipbytes"], { type: "application/zip" });
-    fetchMock.mockResolvedValueOnce(
-      new Response(blob, { status: 200 }),
-    );
-    const createObjectURL = vi
-      .fn()
-      .mockReturnValue("blob:mock");
+    fetchMock.mockResolvedValueOnce(new Response(blob, { status: 200 }));
+    const createObjectURL = vi.fn().mockReturnValue("blob:mock");
     const revokeObjectURL = vi.fn();
     vi.stubGlobal("URL", {
       ...URL,
@@ -223,12 +219,19 @@ describe("api.ts downloadBlob (additive)", () => {
       revokeObjectURL,
     });
     const click = vi.fn();
-    const anchor = { href: "", download: "", click } as unknown as HTMLAnchorElement;
+    const anchor = {
+      href: "",
+      download: "",
+      click,
+    } as unknown as HTMLAnchorElement;
     const createElement = vi
       .spyOn(document, "createElement")
       .mockReturnValue(anchor);
 
-    await downloadBlob("/workspaces/ws-1/items/it-1/photos/download", "photos.zip");
+    await downloadBlob(
+      "/workspaces/ws-1/items/it-1/photos/download",
+      "photos.zip",
+    );
 
     const [url, init] = fetchMock.mock.calls[0];
     expect(url).toBe("/api/workspaces/ws-1/items/it-1/photos/download");

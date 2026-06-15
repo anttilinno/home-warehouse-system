@@ -65,9 +65,7 @@ describe("inventoryToCsvBlob", () => {
   });
 
   it("doubles embedded quotes and wraps the cell", async () => {
-    const blob = inventoryToCsvBlob([
-      makeEntry({ location_id: 'Shelf "A"' }),
-    ]);
+    const blob = inventoryToCsvBlob([makeEntry({ location_id: 'Shelf "A"' })]);
     const [, row] = await blobToLines(blob);
     expect(row).toContain('"Shelf ""A"""');
   });

@@ -25,9 +25,7 @@ describe("RetroTextarea", () => {
   });
 
   it("toggles the mono font when mono is set", () => {
-    render(
-      wrap(<RetroTextarea label="Notes" aria-label="notes" mono />),
-    );
+    render(wrap(<RetroTextarea label="Notes" aria-label="notes" mono />));
     expect(screen.getByLabelText("notes").className).toContain("font-mono");
   });
 

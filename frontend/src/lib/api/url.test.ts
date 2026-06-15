@@ -16,8 +16,11 @@ describe("toProxyUrl", () => {
   });
 
   it("preserves the query string while dropping scheme+host", () => {
-    const input = "http://localhost:8080/workspaces/ws-1/photos/p-1/thumbnail?v=2";
-    expect(toProxyUrl(input)).toBe("/api/workspaces/ws-1/photos/p-1/thumbnail?v=2");
+    const input =
+      "http://localhost:8080/workspaces/ws-1/photos/p-1/thumbnail?v=2";
+    expect(toProxyUrl(input)).toBe(
+      "/api/workspaces/ws-1/photos/p-1/thumbnail?v=2",
+    );
   });
 
   it("drops a foreign attacker-controlled host (open-redirect guard)", () => {

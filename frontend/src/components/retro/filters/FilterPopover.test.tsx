@@ -66,7 +66,9 @@ describe("FilterPopover", () => {
 
     expect(onChange).toHaveBeenCalledWith(["tools"]);
     // The popover stays open after a toggle (multi-select).
-    expect(screen.getByRole("checkbox", { name: "Consumables" })).toBeInTheDocument();
+    expect(
+      screen.getByRole("checkbox", { name: "Consumables" }),
+    ).toBeInTheDocument();
   });
 
   it("Escape closes via the modal stack (no local document ESC listener)", async () => {
@@ -83,9 +85,13 @@ describe("FilterPopover", () => {
     );
 
     await user.click(screen.getByRole("button", { name: /category/i }));
-    expect(await screen.findByRole("checkbox", { name: "Tools" })).toBeInTheDocument();
+    expect(
+      await screen.findByRole("checkbox", { name: "Tools" }),
+    ).toBeInTheDocument();
 
     await user.keyboard("{Escape}");
-    expect(screen.queryByRole("checkbox", { name: "Tools" })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("checkbox", { name: "Tools" }),
+    ).not.toBeInTheDocument();
   });
 });

@@ -7,12 +7,7 @@ import { i18n } from "@/lib/i18n";
 import { ModalStackProvider } from "@/components/modal";
 import { MobileDrawer } from "./MobileDrawer";
 
-function renderDrawer(
-  props: {
-    open?: boolean;
-    onClose?: () => void;
-  } = {},
-) {
+function renderDrawer(props: { open?: boolean; onClose?: () => void } = {}) {
   const open = props.open ?? true;
   const onClose = props.onClose ?? vi.fn();
   const result = render(
@@ -42,7 +37,9 @@ describe("MobileDrawer", () => {
     const dialog = screen.getByRole("dialog");
     expect(dialog).toHaveAttribute("aria-modal", "true");
     // The Navigator nav landmark is inside the drawer.
-    expect(screen.getByRole("navigation", { name: /primary/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole("navigation", { name: /primary/i }),
+    ).toBeInTheDocument();
   });
 
   it("renders nothing when closed", () => {

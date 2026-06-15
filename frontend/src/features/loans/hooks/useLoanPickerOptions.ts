@@ -48,9 +48,7 @@ export interface LoanPickerOptions {
   isLoading: boolean;
 }
 
-export function useLoanPickerOptions(
-  itemIdFilter?: string,
-): LoanPickerOptions {
+export function useLoanPickerOptions(itemIdFilter?: string): LoanPickerOptions {
   const { currentWorkspaceId: wsId } = useWorkspace();
   const enabled = Boolean(wsId);
 

@@ -93,9 +93,7 @@ describe("useLoanMutations", () => {
     await waitFor(() =>
       expect(cached(client, "loan-1")?.is_active).toBe(false),
     );
-    await waitFor(() =>
-      expect(result.current.returnLoan.isSuccess).toBe(true),
-    );
+    await waitFor(() => expect(result.current.returnLoan.isSuccess).toBe(true));
   });
 
   it("returnLoan reverts the cache to the snapshot on a 4xx", async () => {
@@ -109,7 +107,9 @@ describe("useLoanMutations", () => {
 
     const { result } = renderHook(() => useLoanMutations(), { wrapper });
     await act(async () => {
-      await result.current.returnLoan.mutateAsync("loan-1").catch(() => undefined);
+      await result.current.returnLoan
+        .mutateAsync("loan-1")
+        .catch(() => undefined);
     });
 
     await waitFor(() => expect(result.current.returnLoan.isError).toBe(true));
@@ -143,9 +143,7 @@ describe("useLoanMutations", () => {
     await waitFor(() =>
       expect(cached(client, "loan-1")?.due_date).toBe("2026-08-15T00:00:00Z"),
     );
-    await waitFor(() =>
-      expect(result.current.extendLoan.isSuccess).toBe(true),
-    );
+    await waitFor(() => expect(result.current.extendLoan.isSuccess).toBe(true));
     expect(body).toEqual({ new_due_date: "2026-08-15T00:00:00Z" });
   });
 
@@ -154,9 +152,7 @@ describe("useLoanMutations", () => {
     const { client, wrapper } = makeHarness([makeLoan("loan-1")]);
     server.use(
       http.patch("/api/workspaces/:wsId/loans/:id", () =>
-        HttpResponse.json(
-          makeLoan("loan-1", { notes: "be careful" }),
-        ),
+        HttpResponse.json(makeLoan("loan-1", { notes: "be careful" })),
       ),
     );
 
@@ -173,9 +169,7 @@ describe("useLoanMutations", () => {
       expect(l?.due_date).toBe("2026-09-01T00:00:00Z");
       expect(l?.notes).toBe("be careful");
     });
-    await waitFor(() =>
-      expect(result.current.updateLoan.isSuccess).toBe(true),
-    );
+    await waitFor(() => expect(result.current.updateLoan.isSuccess).toBe(true));
   });
 
   it("returnLoan invalidates the ['loans', wsId] prefix on settle", async () => {

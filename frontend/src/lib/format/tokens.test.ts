@@ -56,19 +56,19 @@ describe("formatTimeToken", () => {
 
 describe("formatNumberToken", () => {
   it("groups with space + comma decimal", () => {
-    expect(
-      formatNumberToken(1234567.89, { thousand: " ", decimal: "," }),
-    ).toBe("1 234 567,89");
+    expect(formatNumberToken(1234567.89, { thousand: " ", decimal: "," })).toBe(
+      "1 234 567,89",
+    );
   });
   it("groups with comma + period decimal", () => {
-    expect(
-      formatNumberToken(1234567.89, { thousand: ",", decimal: "." }),
-    ).toBe("1,234,567.89");
+    expect(formatNumberToken(1234567.89, { thousand: ",", decimal: "." })).toBe(
+      "1,234,567.89",
+    );
   });
   it("renders an integer with no decimal portion", () => {
-    expect(
-      formatNumberToken(1234567, { thousand: ".", decimal: "," }),
-    ).toBe("1.234.567");
+    expect(formatNumberToken(1234567, { thousand: ".", decimal: "," })).toBe(
+      "1.234.567",
+    );
   });
   it("renders no grouping when thousand is empty", () => {
     expect(formatNumberToken(1234567.89, { thousand: "", decimal: "." })).toBe(
@@ -83,9 +83,9 @@ describe("formatNumberToken", () => {
     expect(formatNumberToken(NaN)).toBe("");
   });
   it("preserves a leading minus sign on negatives", () => {
-    expect(
-      formatNumberToken(-1234.5, { thousand: " ", decimal: "," }),
-    ).toBe("-1 234,5");
+    expect(formatNumberToken(-1234.5, { thousand: " ", decimal: "," })).toBe(
+      "-1 234,5",
+    );
   });
 });
 

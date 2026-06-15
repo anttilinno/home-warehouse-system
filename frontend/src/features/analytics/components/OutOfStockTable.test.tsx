@@ -47,7 +47,10 @@ function renderTable(props: { items: Fixture[]; isLoading?: boolean }) {
   // Cast: the component types `items` as the (merge-time) OutOfStockItem; the
   // local Fixture is structurally identical to the verified contract.
   return render(
-    <OutOfStockTable items={props.items as never} isLoading={props.isLoading} />,
+    <OutOfStockTable
+      items={props.items as never}
+      isLoading={props.isLoading}
+    />,
     { wrapper },
   );
 }
@@ -71,7 +74,9 @@ describe("OutOfStockTable", () => {
   it("shows min_stock_level and a danger-mono current-stock 0 per row", () => {
     renderTable({ items: FIXTURES });
 
-    const row = screen.getByRole("link", { name: "M3 Hex Bolts" }).closest("tr")!;
+    const row = screen
+      .getByRole("link", { name: "M3 Hex Bolts" })
+      .closest("tr")!;
     // min_stock_level value present in the row.
     expect(within(row).getByText("50")).toBeInTheDocument();
     // current stock renders an honest literal "0" carrying the danger/mono class.

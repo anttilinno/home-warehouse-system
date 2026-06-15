@@ -118,9 +118,7 @@ describe("ItemAttachmentPanel", () => {
       expect(screen.getByText("User manual")).toBeInTheDocument(),
     );
     // Clicking the row DELETE (DOM text "DELETE") opens a confirm — no call yet.
-    await userEvent.click(
-      screen.getByRole("button", { name: "DELETE" }),
-    );
+    await userEvent.click(screen.getByRole("button", { name: "DELETE" }));
     expect(screen.getByText(/delete file\?/i)).toBeInTheDocument();
     expect(deleteCalled).toBe(false);
     // The confirm-dialog button (DOM text "Delete", distinct from the row's

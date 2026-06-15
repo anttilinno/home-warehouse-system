@@ -59,9 +59,7 @@ describe("PendingApprovalsPanel", () => {
   it("renders the titled panel + count for an admin (total=3)", async () => {
     setWsId("ws-1");
     server.use(
-      http.get(ENDPOINT, () =>
-        HttpResponse.json({ changes: [], total: 3 }),
-      ),
+      http.get(ENDPOINT, () => HttpResponse.json({ changes: [], total: 3 })),
     );
     renderPanel();
     expect(await screen.findByText("Pending approvals")).toBeInTheDocument();
@@ -74,13 +72,13 @@ describe("PendingApprovalsPanel", () => {
   it("renders a calm 'Nothing pending' state when total=0 (no error)", async () => {
     setWsId("ws-1");
     server.use(
-      http.get(ENDPOINT, () =>
-        HttpResponse.json({ changes: [], total: 0 }),
-      ),
+      http.get(ENDPOINT, () => HttpResponse.json({ changes: [], total: 0 })),
     );
     renderPanel();
     expect(await screen.findByText("Nothing pending")).toBeInTheDocument();
-    expect(screen.queryByRole("link", { name: /review/i })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("link", { name: /review/i }),
+    ).not.toBeInTheDocument();
   });
 
   it("degrades SILENTLY on a 403 — renders nothing, no error banner", async () => {

@@ -72,10 +72,7 @@ export function useItemsQuery(): UseQueryResult<ItemListResponse> &
   const { currentWorkspaceId: wsId } = useWorkspace();
   const [searchParams] = useSearchParams();
 
-  const state = useMemo(
-    () => readItemsUrlState(searchParams),
-    [searchParams],
-  );
+  const state = useMemo(() => readItemsUrlState(searchParams), [searchParams]);
   const params = useMemo(() => toListParams(state), [state]);
 
   const query = useQuery({

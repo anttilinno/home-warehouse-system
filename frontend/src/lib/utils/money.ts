@@ -9,10 +9,7 @@
 // Default currency is "EUR" (A2). Intl.NumberFormat with style:"currency" emits
 // the locale-appropriate symbol/grouping; passing `undefined` as the first arg
 // lets the runtime pick the user's locale.
-export function formatCents(
-  cents: number,
-  currency?: string | null,
-): string {
+export function formatCents(cents: number, currency?: string | null): string {
   // The repair-cost rollup can return a null/empty currency_code (e.g. a
   // zero-cost repair); a default-param only guards `undefined`, so a literal
   // `null` would reach Intl.NumberFormat and throw RangeError. Coalesce here.

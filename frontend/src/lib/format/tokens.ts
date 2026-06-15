@@ -75,7 +75,9 @@ export function formatNumberToken(n: number, seps?: NumberSeparators): string {
   const abs = Math.abs(n);
   const [intPart, fracPart] = String(abs).split(".");
   const grouped = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, thousand || "");
-  return fracPart ? `${sign}${grouped}${decimal}${fracPart}` : `${sign}${grouped}`;
+  return fracPart
+    ? `${sign}${grouped}${decimal}${fracPart}`
+    : `${sign}${grouped}`;
 }
 
 /**

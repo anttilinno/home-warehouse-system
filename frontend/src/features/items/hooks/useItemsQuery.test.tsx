@@ -34,7 +34,9 @@ function makeWrapper(initialEntries: string[] = ["/items"]) {
     wrapper: ({ children }: { children: ReactNode }) => (
       <I18nProvider i18n={i18n}>
         <QueryClientProvider client={client}>
-          <MemoryRouter initialEntries={initialEntries}>{children}</MemoryRouter>
+          <MemoryRouter initialEntries={initialEntries}>
+            {children}
+          </MemoryRouter>
         </QueryClientProvider>
       </I18nProvider>
     ),
@@ -104,7 +106,12 @@ describe("useItemsQuery", () => {
     server.use(
       http.get("/api/workspaces/:wsId/items", ({ request }) => {
         listUrl = new URL(request.url);
-        return HttpResponse.json({ items: [], total: 0, page: 1, total_pages: 0 });
+        return HttpResponse.json({
+          items: [],
+          total: 0,
+          page: 1,
+          total_pages: 0,
+        });
       }),
     );
     const { wrapper } = makeWrapper(["/items"]);
@@ -120,7 +127,12 @@ describe("useItemsQuery", () => {
     server.use(
       http.get("/api/workspaces/:wsId/items", ({ request }) => {
         listUrl = new URL(request.url);
-        return HttpResponse.json({ items: [], total: 0, page: 1, total_pages: 0 });
+        return HttpResponse.json({
+          items: [],
+          total: 0,
+          page: 1,
+          total_pages: 0,
+        });
       }),
     );
     const { wrapper } = makeWrapper(["/items?archived=true"]);

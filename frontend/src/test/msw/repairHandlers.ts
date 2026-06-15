@@ -81,13 +81,11 @@ const REPAIR_ATTACHMENT = {
 
 export const repairHandlers = [
   // --- Per-inventory rollups (specific routes; no :id collision risk) ---
-  http.get(
-    "/api/workspaces/:wsId/inventory/:invId/repair-cost",
-    () => HttpResponse.json({ items: COST_SINGLE }),
+  http.get("/api/workspaces/:wsId/inventory/:invId/repair-cost", () =>
+    HttpResponse.json({ items: COST_SINGLE }),
   ),
-  http.get(
-    "/api/workspaces/:wsId/inventory/:invId/repairs",
-    () => HttpResponse.json({ items: ALL_REPAIRS, total: ALL_REPAIRS.length }),
+  http.get("/api/workspaces/:wsId/inventory/:invId/repairs", () =>
+    HttpResponse.json({ items: ALL_REPAIRS, total: ALL_REPAIRS.length }),
   ),
 
   // --- Repair sub-routes (photos + attachments) BEFORE the /repairs/:id
@@ -120,8 +118,9 @@ export const repairHandlers = [
   http.patch("/api/workspaces/:wsId/repairs/:id", ({ params }) =>
     HttpResponse.json({ ...PENDING_REPAIR, id: String(params.id) }),
   ),
-  http.delete("/api/workspaces/:wsId/repairs/:id", () =>
-    new HttpResponse(null, { status: 204 }),
+  http.delete(
+    "/api/workspaces/:wsId/repairs/:id",
+    () => new HttpResponse(null, { status: 204 }),
   ),
 
   // --- Create ---

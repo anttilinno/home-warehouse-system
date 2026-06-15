@@ -67,9 +67,8 @@ const RETURNED = {
 };
 
 function byBorrower(items: unknown[]) {
-  return http.get(
-    "/api/workspaces/:wsId/borrowers/:borrowerId/loans",
-    () => HttpResponse.json({ items }),
+  return http.get("/api/workspaces/:wsId/borrowers/:borrowerId/loans", () =>
+    HttpResponse.json({ items }),
   );
 }
 
@@ -135,9 +134,7 @@ describe("BorrowerLoanPanels", () => {
   it("renders the Loan History panel with returned loans", async () => {
     server.use(byBorrower([ACTIVE, RETURNED]));
     renderPanels();
-    expect(
-      await screen.findByText(/Pressure Washer/i),
-    ).toBeInTheDocument();
+    expect(await screen.findByText(/Pressure Washer/i)).toBeInTheDocument();
     expect(screen.getByText("RETURNED")).toBeInTheDocument();
   });
 

@@ -19,7 +19,10 @@ const plexMonoFilesDir = join(
   process.cwd(),
   "node_modules/@fontsource/ibm-plex-mono/files",
 );
-const silkscreenDir = join(process.cwd(), "node_modules/@fontsource/silkscreen");
+const silkscreenDir = join(
+  process.cwd(),
+  "node_modules/@fontsource/silkscreen",
+);
 
 const globalsCss = readFileSync(
   join(process.cwd(), "src/styles/globals.css"),

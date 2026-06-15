@@ -32,7 +32,9 @@ export const loanFormSchema = z
   .object({
     // Required ids — RetroSelect-backed, sourced from the workspace picker lists.
     // inventory_id is the inventory ENTRY id (NOT item_id — Pitfall 1).
-    inventory_id: z.string().min(1, { message: "Inventory entry is required." }),
+    inventory_id: z
+      .string()
+      .min(1, { message: "Inventory entry is required." }),
     borrower_id: z.string().min(1, { message: "Borrower is required." }),
     // Optional due date (YYYY-MM-DD). "" = absent.
     due_date: z.string().optional().default(""),

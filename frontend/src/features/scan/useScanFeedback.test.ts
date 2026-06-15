@@ -1,14 +1,7 @@
 // useScanFeedback — beep + haptic + visual-flash trigger, reduced-motion aware
 // (RESEARCH Pattern 5 / SCAN-03). renderHook with mocked beep + ios-haptics.
 
-import {
-  afterEach,
-  beforeEach,
-  describe,
-  expect,
-  it,
-  vi,
-} from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { renderHook, act } from "@testing-library/react";
 
 // Mock the 11-02 beep surface (the barrel) so we assert beep calls without audio.

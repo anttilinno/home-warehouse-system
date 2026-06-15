@@ -101,9 +101,7 @@ describe("ItemFormPage — create", () => {
     const barcode = screen.getByLabelText(/barcode/i) as HTMLInputElement;
     expect(barcode.value).toBe("ABC123");
     expect(screen.getByText(/^from scan$/i)).toBeInTheDocument();
-    expect(
-      screen.getByText(/prefilled from scan/i),
-    ).toBeInTheDocument();
+    expect(screen.getByText(/prefilled from scan/i)).toBeInTheDocument();
   });
 
   it("?name= prefills the Name field alongside ?barcode= (SCAN-10 USE ALL)", () => {
@@ -289,9 +287,7 @@ describe("ItemFormPage — create", () => {
     await user.type(screen.getByLabelText(/name/i), "Half-typed");
     await user.click(screen.getByRole("button", { name: /^cancel$/i }));
 
-    expect(
-      await screen.findByText(/discard changes\?/i),
-    ).toBeInTheDocument();
+    expect(await screen.findByText(/discard changes\?/i)).toBeInTheDocument();
     // Still on the form — the guard intercepted the navigation.
     expect(lastPath).toBe("/items/new");
 

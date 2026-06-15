@@ -49,9 +49,7 @@ describe("RepairAttachmentPanel", () => {
     );
     expect(screen.getByText("RECEIPT")).toBeInTheDocument();
     expect(screen.getByText("application/pdf")).toBeInTheDocument();
-    expect(
-      screen.getByRole("button", { name: /delete/i }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /delete/i })).toBeInTheDocument();
   });
 
   it("shows NO FILES empty state for an empty fixture", async () => {
@@ -72,9 +70,7 @@ describe("RepairAttachmentPanel", () => {
     await waitFor(() =>
       expect(screen.getByText("Parts receipt")).toBeInTheDocument(),
     );
-    await userEvent.click(
-      screen.getByRole("button", { name: /add file/i }),
-    );
+    await userEvent.click(screen.getByRole("button", { name: /add file/i }));
     // The dialog renders a File field + a type select unique to it. RetroSelect's
     // label IS associated (htmlFor), so getByLabelText finds the type picker.
     await waitFor(() =>

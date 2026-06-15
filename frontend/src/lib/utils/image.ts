@@ -31,7 +31,11 @@ export type UploadValidation = { ok: true } | { ok: false; reason: string };
  * the rejection `reason`.
  */
 export function validateUploadFile(file: File): UploadValidation {
-  if (!ALLOWED_MIME_TYPES.includes(file.type as (typeof ALLOWED_MIME_TYPES)[number])) {
+  if (
+    !ALLOWED_MIME_TYPES.includes(
+      file.type as (typeof ALLOWED_MIME_TYPES)[number],
+    )
+  ) {
     return { ok: false, reason: REASON_BAD_TYPE };
   }
   if (file.size > MAX_FILE_SIZE) {
@@ -63,7 +67,9 @@ export async function compressImage(
   quality = 0.85,
 ): Promise<File> {
   // createImageBitmap bakes EXIF orientation into the bitmap (native, zero-dep).
-  const bitmap = await createImageBitmap(file, { imageOrientation: "from-image" });
+  const bitmap = await createImageBitmap(file, {
+    imageOrientation: "from-image",
+  });
   const scale = Math.min(1, maxDim / Math.max(bitmap.width, bitmap.height));
   const w = Math.round(bitmap.width * scale);
   const h = Math.round(bitmap.height * scale);
@@ -78,7 +84,11 @@ export async function compressImage(
 
   const type = file.type === "image/png" ? "image/png" : "image/jpeg";
   const blob: Blob = await new Promise((res, rej) =>
-    canvas.toBlob((b) => (b ? res(b) : rej(new Error("toBlob failed"))), type, quality),
+    canvas.toBlob(
+      (b) => (b ? res(b) : rej(new Error("toBlob failed"))),
+      type,
+      quality,
+    ),
   );
   return new File([blob], file.name, { type, lastModified: Date.now() });
 }

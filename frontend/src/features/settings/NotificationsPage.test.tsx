@@ -71,7 +71,9 @@ describe("NotificationsPage — preferences (SETT-07)", () => {
       name: /low stock/i,
     });
     await userEvent.click(lowStock);
-    await userEvent.click(screen.getByRole("button", { name: /save changes/i }));
+    await userEvent.click(
+      screen.getByRole("button", { name: /save changes/i }),
+    );
 
     await waitFor(() => expect(patchedBody).not.toBeNull());
     expect(patchedBody).toEqual({

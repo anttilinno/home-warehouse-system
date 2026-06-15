@@ -92,7 +92,10 @@ describe("buildTree", () => {
   it("treats a wrong-field accessor as no nesting (guards Pitfall 6 regression)", () => {
     const rows = [loc("garage", "Garage"), loc("shelf", "Shelf", "garage")];
     // Accessing the categories field on a location yields undefined → all roots.
-    const roots = buildTree(rows, (l) => (l as { parent_category_id?: string }).parent_category_id);
+    const roots = buildTree(
+      rows,
+      (l) => (l as { parent_category_id?: string }).parent_category_id,
+    );
     expect(roots).toHaveLength(2);
   });
 });

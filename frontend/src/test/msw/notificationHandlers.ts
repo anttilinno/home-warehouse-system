@@ -55,5 +55,7 @@ export const notificationHandlers = [
   http.get("/api/notifications/unread", () =>
     HttpResponse.json(listEnvelope([NOTIF_UNREAD])),
   ),
-  http.get("/api/notifications", () => HttpResponse.json(listEnvelope(ALL_NOTIFS))),
+  http.get("/api/notifications", () =>
+    HttpResponse.json(listEnvelope(ALL_NOTIFS)),
+  ),
 ];

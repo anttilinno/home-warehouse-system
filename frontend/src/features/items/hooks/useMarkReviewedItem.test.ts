@@ -50,13 +50,10 @@ describe("useMarkReviewedItem", () => {
     setWsId("ws-A");
     let captured: unknown = null;
     server.use(
-      http.patch(
-        "*/workspaces/ws-A/items/it-1",
-        async ({ request }) => {
-          captured = await request.json();
-          return HttpResponse.json({ id: "it-1", name: "Drill", sku: "S1" });
-        },
-      ),
+      http.patch("*/workspaces/ws-A/items/it-1", async ({ request }) => {
+        captured = await request.json();
+        return HttpResponse.json({ id: "it-1", name: "Drill", sku: "S1" });
+      }),
     );
     const { wrapper } = makeHarness();
     const { result } = renderHook(() => useMarkReviewedItem(), { wrapper });

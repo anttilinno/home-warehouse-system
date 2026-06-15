@@ -66,8 +66,10 @@ function installListHandler() {
     http.get("/api/workspaces/:ws/wishlist", ({ request }) => {
       const status = new URL(request.url).searchParams.get("status");
       statusCalls.push(status);
-      if (status === "ordered") return HttpResponse.json({ items: [ORDERED], total: 1 });
-      if (status === "acquired") return HttpResponse.json({ items: [], total: 0 });
+      if (status === "ordered")
+        return HttpResponse.json({ items: [ORDERED], total: 1 });
+      if (status === "acquired")
+        return HttpResponse.json({ items: [], total: 0 });
       return HttpResponse.json({ items: [WANTED, WANTED_NULL_CCY], total: 2 });
     }),
   );

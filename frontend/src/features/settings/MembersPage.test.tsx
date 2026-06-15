@@ -141,7 +141,9 @@ describe("MembersPage — list / role / remove (SETT-10)", () => {
     renderPage();
 
     const otherRow = (await screen.findByText("Ada Lovelace")).closest("tr")!;
-    const select = within(otherRow).getByRole("combobox", { name: /role for/i });
+    const select = within(otherRow).getByRole("combobox", {
+      name: /role for/i,
+    });
     await userEvent.selectOptions(select, "admin");
 
     await waitFor(() => expect(patched).not.toBeNull());
@@ -273,8 +275,6 @@ describe("MembersPage — add by email (SETT-10)", () => {
     );
     await userEvent.click(screen.getByRole("button", { name: /^add$/i }));
 
-    expect(
-      await screen.findByText(/already a member/i),
-    ).toBeInTheDocument();
+    expect(await screen.findByText(/already a member/i)).toBeInTheDocument();
   });
 });

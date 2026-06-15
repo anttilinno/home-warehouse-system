@@ -61,7 +61,10 @@ export function useBorrowersQuery(search: string): UseBorrowersQueryResult {
     );
   }, [all, search]);
 
-  const pageCount = Math.max(1, Math.ceil(filtered.length / BORROWERS_PER_PAGE));
+  const pageCount = Math.max(
+    1,
+    Math.ceil(filtered.length / BORROWERS_PER_PAGE),
+  );
   const clampedPage = Math.min(page, pageCount);
   const start = (clampedPage - 1) * BORROWERS_PER_PAGE;
   const rows = filtered.slice(start, start + BORROWERS_PER_PAGE);

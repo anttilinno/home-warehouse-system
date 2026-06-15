@@ -119,7 +119,10 @@ describe("borrowersApi CRUD", () => {
   it("create POSTs to /borrowers with the body", async () => {
     fetchMock.mockResolvedValueOnce(jsonResponse(BORROWER));
 
-    await borrowersApi.create("ws-1", { name: "Alex", email: "alex@example.io" });
+    await borrowersApi.create("ws-1", {
+      name: "Alex",
+      email: "alex@example.io",
+    });
 
     const [url, init] = fetchMock.mock.calls[0];
     expect(url).toContain("/workspaces/ws-1/borrowers");

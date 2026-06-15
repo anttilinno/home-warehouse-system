@@ -60,7 +60,9 @@ describe("PhotoLightbox", () => {
   it("◂ / ▸ buttons navigate and clamp at the bounds", async () => {
     renderLightbox(0);
     // At the first photo, Previous is disabled.
-    expect(screen.getByRole("button", { name: /previous photo/i })).toBeDisabled();
+    expect(
+      screen.getByRole("button", { name: /previous photo/i }),
+    ).toBeDisabled();
     await userEvent.click(screen.getByRole("button", { name: /next photo/i }));
     expect(screen.getByText("2 / 3")).toBeInTheDocument();
     await userEvent.click(screen.getByRole("button", { name: /next photo/i }));

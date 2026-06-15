@@ -1,14 +1,7 @@
 // useTorch — capability probe + toggle (SCAN-04 / RESEARCH Pattern 4). Uses the
 // Wave-0 getUserMedia stub (MockMediaDevices.torchSupported) + UA override.
 
-import {
-  afterEach,
-  beforeEach,
-  describe,
-  expect,
-  it,
-  vi,
-} from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { renderHook, waitFor, act } from "@testing-library/react";
 import { MockMediaDevices } from "@/test/setup";
 import { useTorch } from "./useTorch";

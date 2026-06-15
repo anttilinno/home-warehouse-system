@@ -36,7 +36,10 @@ function isIOS(): boolean {
 }
 
 async function probeTorchSupport(): Promise<boolean> {
-  if (typeof navigator === "undefined" || !navigator.mediaDevices?.getUserMedia) {
+  if (
+    typeof navigator === "undefined" ||
+    !navigator.mediaDevices?.getUserMedia
+  ) {
     return false;
   }
   try {
@@ -44,7 +47,8 @@ async function probeTorchSupport(): Promise<boolean> {
       video: { facingMode: "environment" },
     });
     const track = stream.getVideoTracks()[0];
-    const caps = (track?.getCapabilities?.() ?? {}) as MediaTrackCapabilities & {
+    const caps = (track?.getCapabilities?.() ??
+      {}) as MediaTrackCapabilities & {
       torch?: boolean;
     };
     // Release the probe stream — stop EVERY track so the camera light goes off.

@@ -13,7 +13,10 @@ const root = createRoot(document.getElementById("root")!);
 
 loadCatalog(defaultLocale)
   .catch((error) => {
-    console.error("[i18n] catalog load failed, rendering with fallbacks", error);
+    console.error(
+      "[i18n] catalog load failed, rendering with fallbacks",
+      error,
+    );
     i18n.load(defaultLocale, {});
     i18n.activate(defaultLocale);
   })

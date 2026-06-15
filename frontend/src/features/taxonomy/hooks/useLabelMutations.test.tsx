@@ -86,7 +86,10 @@ describe("useLabelMutations", () => {
 
     const { result } = renderHook(() => useLabelMutations(), { wrapper });
     await act(async () => {
-      await result.current.archive.mutateAsync({ id: "lbl-1", name: "Fragile" });
+      await result.current.archive.mutateAsync({
+        id: "lbl-1",
+        name: "Fragile",
+      });
     });
 
     expect(apiSpy).toHaveBeenCalledWith("ws-1", "lbl-1");
@@ -101,7 +104,10 @@ describe("useLabelMutations", () => {
 
     const { result } = renderHook(() => useLabelMutations(), { wrapper });
     await act(async () => {
-      await result.current.restore.mutateAsync({ id: "lbl-1", name: "Fragile" });
+      await result.current.restore.mutateAsync({
+        id: "lbl-1",
+        name: "Fragile",
+      });
     });
 
     expect(apiSpy).toHaveBeenCalledWith("ws-1", "lbl-1");

@@ -87,7 +87,9 @@ export function triggerDecode(
 }
 
 /** Test-facing: fire `onError` with a synthetic error (drives the ERROR banner). */
-export function triggerScannerError(err: unknown = new Error("scan failed")): void {
+export function triggerScannerError(
+  err: unknown = new Error("scan failed"),
+): void {
   lastScannerProps.current?.onError?.(err);
 }
 

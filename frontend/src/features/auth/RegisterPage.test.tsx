@@ -46,10 +46,7 @@ async function fillValid(user: ReturnType<typeof userEvent.setup>) {
   await user.type(screen.getByLabelText(/full name/i), "Ada Lovelace");
   await user.type(screen.getByLabelText(/email/i), "ada@example.com");
   await user.type(screen.getByLabelText(/^password$/i), "supersecret");
-  await user.type(
-    screen.getByLabelText(/confirm password/i),
-    "supersecret",
-  );
+  await user.type(screen.getByLabelText(/confirm password/i), "supersecret");
 }
 
 afterEach(() => {
@@ -109,10 +106,7 @@ describe("RegisterPage", () => {
     await user.type(screen.getByLabelText(/full name/i), "Ada");
     await user.type(screen.getByLabelText(/email/i), "ada@example.com");
     await user.type(screen.getByLabelText(/^password$/i), "supersecret");
-    await user.type(
-      screen.getByLabelText(/confirm password/i),
-      "different123",
-    );
+    await user.type(screen.getByLabelText(/confirm password/i), "different123");
     await user.click(screen.getByRole("button", { name: /create account/i }));
 
     expect(

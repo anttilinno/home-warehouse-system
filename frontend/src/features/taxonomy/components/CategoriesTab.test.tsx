@@ -88,7 +88,9 @@ describe("CategoriesTab", () => {
     const user = userEvent.setup();
     renderTab();
     await screen.findByText("Electronics");
-    await user.click(screen.getByRole("button", { name: /add root category/i }));
+    await user.click(
+      screen.getByRole("button", { name: /add root category/i }),
+    );
     expect(await screen.findByText("NEW CATEGORY FORM")).toBeInTheDocument();
   });
 
@@ -106,7 +108,9 @@ describe("CategoriesTab", () => {
       '[role="treeitem"]',
     ) as HTMLElement;
 
-    await user.click(within(toolsRow).getByRole("button", { name: /archive/i }));
+    await user.click(
+      within(toolsRow).getByRole("button", { name: /archive/i }),
+    );
 
     // The count-aware copy appears once the count resolves.
     expect(await screen.findByText(/4 items assigned/i)).toBeInTheDocument();
@@ -126,17 +130,19 @@ describe("CategoriesTab", () => {
       '[role="treeitem"]',
     ) as HTMLElement;
 
-    await user.click(within(toolsRow).getByRole("button", { name: /archive/i }));
+    await user.click(
+      within(toolsRow).getByRole("button", { name: /archive/i }),
+    );
 
     expect(
       await screen.findByText(/You can restore it later/i),
     ).toBeInTheDocument();
-    expect(
-      screen.queryByText(/items assigned/i),
-    ).not.toBeInTheDocument();
+    expect(screen.queryByText(/items assigned/i)).not.toBeInTheDocument();
     // Scope to the dialog so the row's ⌫ ARCHIVE aria-label button is excluded.
     const dialog = screen.getByRole("dialog");
-    await user.click(within(dialog).getByRole("button", { name: /^archive$/i }));
+    await user.click(
+      within(dialog).getByRole("button", { name: /^archive$/i }),
+    );
     await waitFor(() =>
       expect(archiveSpy).toHaveBeenCalledWith("ws-1", "cat-tools"),
     );

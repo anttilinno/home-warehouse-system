@@ -52,18 +52,18 @@ export const loansApi = {
     get<{ items: Loan[] }>(`/workspaces/${ws}/loans/active`),
   overdue: (ws: string) =>
     get<{ items: Loan[] }>(`/workspaces/${ws}/loans/overdue`),
-  get: (ws: string, id: string) =>
-    get<Loan>(`/workspaces/${ws}/loans/${id}`),
+  get: (ws: string, id: string) => get<Loan>(`/workspaces/${ws}/loans/${id}`),
   create: (ws: string, body: CreateLoanBody) =>
     post<Loan>(`/workspaces/${ws}/loans`, body),
   return: (ws: string, id: string) =>
     post<Loan>(`/workspaces/${ws}/loans/${id}/return`),
-  update: (ws: string, id: string, body: { due_date?: string; notes?: string }) =>
-    patch<Loan>(`/workspaces/${ws}/loans/${id}`, body),
+  update: (
+    ws: string,
+    id: string,
+    body: { due_date?: string; notes?: string },
+  ) => patch<Loan>(`/workspaces/${ws}/loans/${id}`, body),
   extend: (ws: string, id: string, new_due_date: string) =>
     patch<Loan>(`/workspaces/${ws}/loans/${id}/extend`, { new_due_date }),
   byBorrower: (ws: string, borrowerId: string) =>
-    get<{ items: Loan[] }>(
-      `/workspaces/${ws}/borrowers/${borrowerId}/loans`,
-    ),
+    get<{ items: Loan[] }>(`/workspaces/${ws}/borrowers/${borrowerId}/loans`),
 };

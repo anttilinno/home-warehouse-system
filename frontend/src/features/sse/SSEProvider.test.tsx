@@ -355,7 +355,10 @@ it("does not re-subscribe useSSE when the consumer re-renders", () => {
   );
 
   act(() =>
-    MockEventSource.last!.emit("category.created", event({ entity_type: "category" })),
+    MockEventSource.last!.emit(
+      "category.created",
+      event({ entity_type: "category" }),
+    ),
   );
   // Exactly one delivery — no duplicate from a churned subscription.
   expect(received).toHaveLength(1);

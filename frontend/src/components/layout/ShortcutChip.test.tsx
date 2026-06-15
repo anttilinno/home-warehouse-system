@@ -16,7 +16,9 @@ describe("ShortcutChip", () => {
   });
 
   it("sets aria-keyshortcuts to its key", () => {
-    render(<ShortcutChip shortcutKey="F1" label="Help" onActivate={() => {}} />);
+    render(
+      <ShortcutChip shortcutKey="F1" label="Help" onActivate={() => {}} />,
+    );
     expect(screen.getByRole("button")).toHaveAttribute(
       "aria-keyshortcuts",
       "F1",
@@ -25,7 +27,9 @@ describe("ShortcutChip", () => {
 
   it("invokes the action once when clicked", async () => {
     const onActivate = vi.fn();
-    render(<ShortcutChip shortcutKey="N" label="New" onActivate={onActivate} />);
+    render(
+      <ShortcutChip shortcutKey="N" label="New" onActivate={onActivate} />,
+    );
     await userEvent.click(screen.getByRole("button"));
     expect(onActivate).toHaveBeenCalledTimes(1);
   });

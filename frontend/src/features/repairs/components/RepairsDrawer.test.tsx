@@ -8,10 +8,7 @@ import { I18nProvider } from "@lingui/react";
 import { ModalStackProvider } from "@/components/modal";
 import { i18n } from "@/lib/i18n";
 import { server } from "@/test/msw/server";
-import {
-  repairHandlers,
-  COST_MULTI_CURRENCY,
-} from "@/test/msw/repairHandlers";
+import { repairHandlers, COST_MULTI_CURRENCY } from "@/test/msw/repairHandlers";
 import { RepairsDrawer } from "./RepairsDrawer";
 
 const useWorkspaceMock = vi.fn();
@@ -84,9 +81,8 @@ describe("RepairsDrawer", () => {
   it("renders one stacked line per currency for a multi-currency rollup", async () => {
     setWsId("ws-1");
     server.use(
-      http.get(
-        "/api/workspaces/:wsId/inventory/:invId/repair-cost",
-        () => HttpResponse.json({ items: COST_MULTI_CURRENCY }),
+      http.get("/api/workspaces/:wsId/inventory/:invId/repair-cost", () =>
+        HttpResponse.json({ items: COST_MULTI_CURRENCY }),
       ),
       ...repairHandlers,
     );
@@ -194,13 +190,11 @@ describe("RepairsDrawer", () => {
   it("renders the NO REPAIRS empty state for an empty fixture", async () => {
     setWsId("ws-1");
     server.use(
-      http.get(
-        "/api/workspaces/:wsId/inventory/:invId/repair-cost",
-        () => HttpResponse.json({ items: [] }),
+      http.get("/api/workspaces/:wsId/inventory/:invId/repair-cost", () =>
+        HttpResponse.json({ items: [] }),
       ),
-      http.get(
-        "/api/workspaces/:wsId/inventory/:invId/repairs",
-        () => HttpResponse.json({ items: [], total: 0 }),
+      http.get("/api/workspaces/:wsId/inventory/:invId/repairs", () =>
+        HttpResponse.json({ items: [], total: 0 }),
       ),
     );
     renderDrawer();

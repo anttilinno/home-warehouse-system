@@ -39,7 +39,8 @@ export function useCategoryMutations() {
     qc.invalidateQueries({ queryKey: ["categories", wsId as string] });
 
   const create = useMutation({
-    mutationFn: (b: CreateCategoryBody) => categoryApi.create(wsId as string, b),
+    mutationFn: (b: CreateCategoryBody) =>
+      categoryApi.create(wsId as string, b),
     onSuccess: (cat) => {
       invalidate();
       retroToast.success(t`${cat.name} created.`);

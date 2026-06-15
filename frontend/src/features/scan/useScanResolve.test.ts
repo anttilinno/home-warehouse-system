@@ -2,14 +2,7 @@
 // Pattern 3). renderHook tests driving all 4 banner states off the MSW
 // item-by-barcode handler, plus the render-loop guard (Pitfall 6 / Phase 65 D-22).
 
-import {
-  afterEach,
-  beforeEach,
-  describe,
-  expect,
-  it,
-  vi,
-} from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { renderHook, waitFor, act } from "@testing-library/react";
 import { createElement, type ReactNode } from "react";
 import { http, HttpResponse } from "msw";
@@ -111,10 +104,9 @@ describe("useScanResolve", () => {
       ),
     );
     const { wrapper } = makeWrapper();
-    const { result } = renderHook(
-      () => useScanResolve({ feedback: vi.fn() }),
-      { wrapper },
-    );
+    const { result } = renderHook(() => useScanResolve({ feedback: vi.fn() }), {
+      wrapper,
+    });
 
     act(() => {
       result.current.handleResolveCode("CODE-MISS", "ean_13");
@@ -136,10 +128,9 @@ describe("useScanResolve", () => {
       ),
     );
     const { wrapper } = makeWrapper();
-    const { result } = renderHook(
-      () => useScanResolve({ feedback: vi.fn() }),
-      { wrapper },
-    );
+    const { result } = renderHook(() => useScanResolve({ feedback: vi.fn() }), {
+      wrapper,
+    });
 
     act(() => {
       result.current.handleResolveCode("CODE-ERR", "code_128");
@@ -150,10 +141,9 @@ describe("useScanResolve", () => {
 
   it("resume() clears the banner and unpauses (Back to Scan)", async () => {
     const { wrapper } = makeWrapper();
-    const { result } = renderHook(
-      () => useScanResolve({ feedback: vi.fn() }),
-      { wrapper },
-    );
+    const { result } = renderHook(() => useScanResolve({ feedback: vi.fn() }), {
+      wrapper,
+    });
 
     act(() => {
       result.current.handleResolveCode("CODE-MATCH", "qr_code");
@@ -187,10 +177,9 @@ describe("useScanResolve", () => {
       }),
     );
     const { wrapper } = makeWrapper();
-    const { result } = renderHook(
-      () => useScanResolve({ feedback: vi.fn() }),
-      { wrapper },
-    );
+    const { result } = renderHook(() => useScanResolve({ feedback: vi.fn() }), {
+      wrapper,
+    });
 
     act(() => {
       result.current.handleResolveCode("SAME", "qr_code");
@@ -211,10 +200,13 @@ describe("useScanResolve", () => {
   it("does not enter an infinite render loop (bounded render count)", async () => {
     const { wrapper } = makeWrapper();
     let renders = 0;
-    const { result } = renderHook(() => {
-      renders += 1;
-      return useScanResolve({ feedback: vi.fn() });
-    }, { wrapper });
+    const { result } = renderHook(
+      () => {
+        renders += 1;
+        return useScanResolve({ feedback: vi.fn() });
+      },
+      { wrapper },
+    );
 
     act(() => {
       result.current.handleResolveCode("CODE-MATCH", "qr_code");

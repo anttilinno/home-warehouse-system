@@ -29,10 +29,7 @@ export function LoanRowActions({ loan, tab }: LoanRowActionsProps) {
 
   return (
     // Row click navigates; keep the action cluster from bubbling into it.
-    <span
-      className="inline-flex gap-sp-1"
-      onClick={(e) => e.stopPropagation()}
-    >
+    <span className="inline-flex gap-sp-1" onClick={(e) => e.stopPropagation()}>
       <BevelButton onClick={() => setOpenDialog("return")}>
         <Trans>RETURN</Trans>
       </BevelButton>

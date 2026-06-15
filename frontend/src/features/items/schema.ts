@@ -54,10 +54,7 @@ export const itemFormSchema = z.object({
       return Number.isNaN(n) ? undefined : n;
     })
     .pipe(
-      z
-        .number()
-        .min(0, { message: "Quantity can't be negative." })
-        .optional(),
+      z.number().min(0, { message: "Quantity can't be negative." }).optional(),
     ),
 });
 

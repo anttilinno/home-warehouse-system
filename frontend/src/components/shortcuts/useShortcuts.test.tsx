@@ -12,20 +12,12 @@ import { useShortcuts } from "./useShortcuts";
 function MergedKeys() {
   const { shortcuts } = useShortcutsContext();
   return (
-    <span data-testid="merged">
-      {shortcuts.map((s) => s.key).join(",")}
-    </span>
+    <span data-testid="merged">{shortcuts.map((s) => s.key).join(",")}</span>
   );
 }
 
 /** A component that registers a group under a (stable) id. */
-function Register({
-  id,
-  bindings,
-}: {
-  id?: string;
-  bindings: Shortcut[];
-}) {
+function Register({ id, bindings }: { id?: string; bindings: Shortcut[] }) {
   useShortcuts(id, bindings);
   return null;
 }
@@ -33,7 +25,11 @@ function Register({
 const wrapper = (ui: ReactNode) =>
   render(<ShortcutsProvider>{ui}</ShortcutsProvider>);
 
-function dispatchKey(key: string, target?: EventTarget, modifiers: Partial<KeyboardEventInit> = {}) {
+function dispatchKey(
+  key: string,
+  target?: EventTarget,
+  modifiers: Partial<KeyboardEventInit> = {},
+) {
   const event = new KeyboardEvent("keydown", {
     key,
     bubbles: true,
@@ -54,9 +50,7 @@ describe("useShortcuts / ShortcutsProvider", () => {
   });
 
   it("registers on mount and unregisters on unmount", () => {
-    const bindings: Shortcut[] = [
-      { key: "N", label: "New", action: () => {} },
-    ];
+    const bindings: Shortcut[] = [{ key: "N", label: "New", action: () => {} }];
     const { rerender } = wrapper(
       <>
         <Register id="items" bindings={bindings} />
@@ -78,8 +72,14 @@ describe("useShortcuts / ShortcutsProvider", () => {
   it("merges distinct ids into the union of all groups", () => {
     wrapper(
       <>
-        <Register id="a" bindings={[{ key: "N", label: "New", action: () => {} }]} />
-        <Register id="b" bindings={[{ key: "E", label: "Edit", action: () => {} }]} />
+        <Register
+          id="a"
+          bindings={[{ key: "N", label: "New", action: () => {} }]}
+        />
+        <Register
+          id="b"
+          bindings={[{ key: "E", label: "Edit", action: () => {} }]}
+        />
         <MergedKeys />
       </>,
     );
@@ -90,7 +90,10 @@ describe("useShortcuts / ShortcutsProvider", () => {
   it("replaces (not appends) when the same id re-registers new bindings", () => {
     const { rerender } = wrapper(
       <>
-        <Register id="items" bindings={[{ key: "N", label: "New", action: () => {} }]} />
+        <Register
+          id="items"
+          bindings={[{ key: "N", label: "New", action: () => {} }]}
+        />
         <MergedKeys />
       </>,
     );
@@ -98,7 +101,10 @@ describe("useShortcuts / ShortcutsProvider", () => {
 
     rerender(
       <ShortcutsProvider>
-        <Register id="items" bindings={[{ key: "E", label: "Edit", action: () => {} }]} />
+        <Register
+          id="items"
+          bindings={[{ key: "E", label: "Edit", action: () => {} }]}
+        />
         <MergedKeys />
       </ShortcutsProvider>,
     );

@@ -92,10 +92,7 @@ describe("ProfilePage (SETT-02)", () => {
     server.use(
       http.get(ME_PATH, () => HttpResponse.json(ME)),
       http.patch(ME_PATH, () =>
-        HttpResponse.json(
-          { detail: "email already in use" },
-          { status: 409 },
-        ),
+        HttpResponse.json({ detail: "email already in use" }, { status: 409 }),
       ),
     );
 

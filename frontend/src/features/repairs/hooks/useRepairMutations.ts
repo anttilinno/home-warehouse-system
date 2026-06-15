@@ -2,10 +2,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type { QueryKey } from "@tanstack/react-query";
 import { useLingui } from "@lingui/react/macro";
 import { repairsApi } from "@/lib/api/repairs";
-import type {
-  CreateRepairBody,
-  UpdateRepairBody,
-} from "@/lib/api/repairs";
+import type { CreateRepairBody, UpdateRepairBody } from "@/lib/api/repairs";
 import { retroToast } from "@/components/retro";
 import { useWorkspace } from "@/features/workspace/useWorkspace";
 import type { Condition, Repair } from "@/lib/types";
@@ -76,7 +73,9 @@ export function useRepairMutations() {
   }
 
   function restore(ctx: OptimisticContext | undefined) {
-    ctx?.snapshots.forEach(([key, data]) => queryClient.setQueryData(key, data));
+    ctx?.snapshots.forEach(([key, data]) =>
+      queryClient.setQueryData(key, data),
+    );
   }
 
   const startRepair = useMutation<Repair, Error, string, OptimisticContext>({

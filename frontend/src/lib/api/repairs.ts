@@ -55,6 +55,5 @@ export const repairsApi = {
     post<Repair>(`/workspaces/${ws}/repairs/${id}/start`),
   complete: (ws: string, id: string, new_condition?: Condition) =>
     post<Repair>(`/workspaces/${ws}/repairs/${id}/complete`, { new_condition }),
-  del: (ws: string, id: string) =>
-    del<void>(`/workspaces/${ws}/repairs/${id}`),
+  del: (ws: string, id: string) => del<void>(`/workspaces/${ws}/repairs/${id}`),
 };

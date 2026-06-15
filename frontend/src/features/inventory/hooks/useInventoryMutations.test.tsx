@@ -78,7 +78,9 @@ describe("useInventoryMutations", () => {
 
   it("optimistically patches the quantity in the cached list", async () => {
     setWsId("ws-A");
-    const { client, wrapper } = makeHarness([makeEntry("inv-1", { quantity: 3 })]);
+    const { client, wrapper } = makeHarness([
+      makeEntry("inv-1", { quantity: 3 }),
+    ]);
     server.use(
       http.patch("/api/workspaces/:wsId/inventory/:id/quantity", () =>
         HttpResponse.json(makeEntry("inv-1", { quantity: 7 })),
@@ -102,7 +104,9 @@ describe("useInventoryMutations", () => {
 
   it("reverts the cached quantity to the prior value on a 4xx", async () => {
     setWsId("ws-A");
-    const { client, wrapper } = makeHarness([makeEntry("inv-1", { quantity: 3 })]);
+    const { client, wrapper } = makeHarness([
+      makeEntry("inv-1", { quantity: 3 }),
+    ]);
     server.use(
       http.patch("/api/workspaces/:wsId/inventory/:id/quantity", () =>
         HttpResponse.json({ message: "bad" }, { status: 422 }),
@@ -130,13 +134,10 @@ describe("useInventoryMutations", () => {
     const { wrapper } = makeHarness([makeEntry("inv-1")]);
     let body: Record<string, unknown> | null = null;
     server.use(
-      http.patch(
-        "/api/workspaces/:wsId/inventory/:id",
-        async ({ request }) => {
-          body = (await request.json()) as Record<string, unknown>;
-          return HttpResponse.json(makeEntry("inv-1", { condition: "POOR" }));
-        },
-      ),
+      http.patch("/api/workspaces/:wsId/inventory/:id", async ({ request }) => {
+        body = (await request.json()) as Record<string, unknown>;
+        return HttpResponse.json(makeEntry("inv-1", { condition: "POOR" }));
+      }),
     );
 
     const { result } = renderHook(() => useInventoryMutations(), { wrapper });

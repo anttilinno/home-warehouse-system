@@ -59,7 +59,10 @@ describe("pendingChangesApi", () => {
         ({ request, params }) => {
           method = request.method;
           url = request.url;
-          return HttpResponse.json({ id: String(params.id), status: "approved" });
+          return HttpResponse.json({
+            id: String(params.id),
+            status: "approved",
+          });
         },
       ),
     );
@@ -79,7 +82,10 @@ describe("pendingChangesApi", () => {
         async ({ request, params }) => {
           url = request.url;
           body = await request.json();
-          return HttpResponse.json({ id: String(params.id), status: "rejected" });
+          return HttpResponse.json({
+            id: String(params.id),
+            status: "rejected",
+          });
         },
       ),
     );

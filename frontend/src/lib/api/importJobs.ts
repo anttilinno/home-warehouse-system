@@ -108,9 +108,6 @@ export const importJobsApi = {
     const form = new FormData();
     form.append("entity_type", entityType);
     form.append("file", file);
-    return postMultipart<ImportJob>(
-      `/workspaces/${wsId}/imports/upload`,
-      form,
-    );
+    return postMultipart<ImportJob>(`/workspaces/${wsId}/imports/upload`, form);
   },
 };

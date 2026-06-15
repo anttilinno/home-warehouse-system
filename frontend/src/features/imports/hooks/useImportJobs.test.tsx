@@ -114,14 +114,11 @@ describe("useUploadImport", () => {
       // which inspects the outgoing body object directly. Here we only assert the
       // upload endpoint was hit with a multipart content-type, then that the
       // success invalidates the jobs list.
-      http.post(
-        "/api/workspaces/:wsId/imports/upload",
-        ({ request }) => {
-          uploadHit = true;
-          uploadContentType = request.headers.get("content-type");
-          return HttpResponse.json(JOB, { status: 201 });
-        },
-      ),
+      http.post("/api/workspaces/:wsId/imports/upload", ({ request }) => {
+        uploadHit = true;
+        uploadContentType = request.headers.get("content-type");
+        return HttpResponse.json(JOB, { status: 201 });
+      }),
     );
 
     const { wrapper } = makeHarness();

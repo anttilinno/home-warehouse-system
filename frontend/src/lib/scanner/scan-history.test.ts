@@ -92,7 +92,12 @@ describe("scan-history — malformed tolerance (T-11-03)", () => {
     localStorage.setItem(
       KEY,
       JSON.stringify([
-        { code: "GOOD", format: "qr_code", entityType: "unknown", timestamp: 1 },
+        {
+          code: "GOOD",
+          format: "qr_code",
+          entityType: "unknown",
+          timestamp: 1,
+        },
         { code: 123, timestamp: 2 }, // bad code type
         { format: "qr_code", timestamp: 3 }, // missing code
         { code: "NOTS", format: "qr_code" }, // missing timestamp

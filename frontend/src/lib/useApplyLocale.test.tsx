@@ -74,7 +74,9 @@ describe("useApplyLocale", () => {
   });
 
   it("does nothing while the session/me query is unresolved", async () => {
-    server.use(http.get(ME_PATH, () => new HttpResponse(null, { status: 401 })));
+    server.use(
+      http.get(ME_PATH, () => new HttpResponse(null, { status: 401 })),
+    );
     renderProbe();
     await new Promise((r) => setTimeout(r, 50));
     expect(loadCatalog).not.toHaveBeenCalled();

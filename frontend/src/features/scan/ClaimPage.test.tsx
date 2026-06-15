@@ -158,7 +158,9 @@ describe("ClaimPage (/claim/:code — PORT LEGACY create-entity, SCAN-12)", () =
     expect(alert).toBeInTheDocument();
     // Sonner renders the toast text into the DOM.
     await waitFor(() => {
-      expect(screen.getAllByText(/couldn't resolve|could not resolve/i).length).toBeGreaterThan(0);
+      expect(
+        screen.getAllByText(/couldn't resolve|could not resolve/i).length,
+      ).toBeGreaterThan(0);
     });
   });
 });

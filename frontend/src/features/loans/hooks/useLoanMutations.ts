@@ -69,7 +69,9 @@ export function useLoanMutations() {
   }
 
   function restore(ctx: OptimisticContext | undefined) {
-    ctx?.snapshots.forEach(([key, data]) => queryClient.setQueryData(key, data));
+    ctx?.snapshots.forEach(([key, data]) =>
+      queryClient.setQueryData(key, data),
+    );
   }
 
   const returnLoan = useMutation<Loan, Error, string, OptimisticContext>({
@@ -86,31 +88,35 @@ export function useLoanMutations() {
     onSettled: invalidate,
   });
 
-  const extendLoan = useMutation<Loan, Error, ExtendLoanArg, OptimisticContext>({
-    mutationFn: ({ id, new_due_date }) =>
-      loansApi.extend(wsId as string, id, new_due_date),
-    // Patch due_date only; the server recomputes is_overdue, surfaced by the
-    // onSettled re-invalidation (override 2 — never client date math).
-    onMutate: ({ id, new_due_date }) =>
-      optimisticPatch(id, { due_date: new_due_date }),
-    onError: (_err, _arg, ctx) => {
-      restore(ctx);
-      retroToast.error(t`Couldn't extend this loan.`);
+  const extendLoan = useMutation<Loan, Error, ExtendLoanArg, OptimisticContext>(
+    {
+      mutationFn: ({ id, new_due_date }) =>
+        loansApi.extend(wsId as string, id, new_due_date),
+      // Patch due_date only; the server recomputes is_overdue, surfaced by the
+      // onSettled re-invalidation (override 2 — never client date math).
+      onMutate: ({ id, new_due_date }) =>
+        optimisticPatch(id, { due_date: new_due_date }),
+      onError: (_err, _arg, ctx) => {
+        restore(ctx);
+        retroToast.error(t`Couldn't extend this loan.`);
+      },
+      onSettled: invalidate,
     },
-    onSettled: invalidate,
-  });
+  );
 
-  const updateLoan = useMutation<Loan, Error, UpdateLoanArg, OptimisticContext>({
-    mutationFn: ({ id, due_date, notes }) =>
-      loansApi.update(wsId as string, id, { due_date, notes }),
-    onMutate: ({ id, due_date, notes }) =>
-      optimisticPatch(id, { due_date, notes }),
-    onError: (_err, _arg, ctx) => {
-      restore(ctx);
-      retroToast.error(t`Couldn't save this loan.`);
+  const updateLoan = useMutation<Loan, Error, UpdateLoanArg, OptimisticContext>(
+    {
+      mutationFn: ({ id, due_date, notes }) =>
+        loansApi.update(wsId as string, id, { due_date, notes }),
+      onMutate: ({ id, due_date, notes }) =>
+        optimisticPatch(id, { due_date, notes }),
+      onError: (_err, _arg, ctx) => {
+        restore(ctx);
+        retroToast.error(t`Couldn't save this loan.`);
+      },
+      onSettled: invalidate,
     },
-    onSettled: invalidate,
-  });
+  );
 
   return { returnLoan, extendLoan, updateLoan };
 }

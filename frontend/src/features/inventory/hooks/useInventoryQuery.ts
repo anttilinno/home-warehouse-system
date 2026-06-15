@@ -30,7 +30,9 @@ export function readInventoryUrlState(
 }
 
 /** Map the decoded URL state to the inventoryApi list params. */
-export function toListParams(state: InventoryListUrlState): InventoryListParams {
+export function toListParams(
+  state: InventoryListUrlState,
+): InventoryListParams {
   return {
     page: state.page,
     limit: INVENTORY_LIMIT,

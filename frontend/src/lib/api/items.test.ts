@@ -87,7 +87,8 @@ describe("itemsApi.list", () => {
         items: [
           {
             ...ITEM,
-            primary_photo_url: "http://localhost:8080/workspaces/ws-1/items/it-1/photos/p-1",
+            primary_photo_url:
+              "http://localhost:8080/workspaces/ws-1/items/it-1/photos/p-1",
             primary_photo_thumbnail_url:
               "http://localhost:8080/workspaces/ws-1/items/it-1/photos/p-1/thumbnail",
           },
@@ -144,11 +145,12 @@ describe("itemsApi CRUD + lifecycle", () => {
     fetchMock.mockResolvedValueOnce(
       jsonResponse({
         ...ITEM,
-        primary_photo_url: "http://localhost:8080/workspaces/ws-1/items/it-1/photos/p-1",
+        primary_photo_url:
+          "http://localhost:8080/workspaces/ws-1/items/it-1/photos/p-1",
       }),
     );
     const item = await itemsApi.get("ws-1", "it-1");
-    expect((fetchMock.mock.calls[0][0] as string)).toContain(
+    expect(fetchMock.mock.calls[0][0] as string).toContain(
       "/workspaces/ws-1/items/it-1",
     );
     expect(item.primary_photo_url).toBe(
@@ -170,7 +172,9 @@ describe("itemsApi CRUD + lifecycle", () => {
     const [url, init] = fetchMock.mock.calls[0];
     expect(url).toContain("/workspaces/ws-1/items/it-1");
     expect((init as RequestInit).method).toBe("PATCH");
-    expect((init as RequestInit).body).toBe(JSON.stringify({ description: "" }));
+    expect((init as RequestInit).body).toBe(
+      JSON.stringify({ description: "" }),
+    );
   });
 
   it("archive/restore POST and del DELETEs", async () => {

@@ -121,7 +121,9 @@ describe("StatCard", () => {
         valueTone="danger"
       />,
     );
-    expect(screen.getByRole("heading", { name: "Overdue" })).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: "Overdue" }),
+    ).toBeInTheDocument();
     expect(screen.getByText("3")).toBeInTheDocument();
     expect(screen.getByText("action needed")).toBeInTheDocument();
   });

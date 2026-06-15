@@ -121,9 +121,7 @@ describe("importJobsApi.uploadImport", () => {
   });
 
   it("throws on a non-2xx upload response", async () => {
-    fetchMock.mockResolvedValueOnce(
-      jsonResponse({ detail: "forbidden" }, 403),
-    );
+    fetchMock.mockResolvedValueOnce(jsonResponse({ detail: "forbidden" }, 403));
     const file = new File(["x"], "items.csv", { type: "text/csv" });
     await expect(
       importJobsApi.uploadImport("ws-1", "items", file),

@@ -229,14 +229,18 @@ describe("SecurityPage — Password card (AUTH-08)", () => {
     // Wait for the set-password explainer to confirm we're in the OAuth-only mode.
     await screen.findByText(/haven't set a password yet/i);
     // No current-password field in set mode.
-    expect(screen.queryByLabelText(/current password/i)).not.toBeInTheDocument();
+    expect(
+      screen.queryByLabelText(/current password/i),
+    ).not.toBeInTheDocument();
 
     await userEvent.type(screen.getByLabelText(/^new password$/i), "newpass12");
     await userEvent.type(
       screen.getByLabelText(/confirm new password/i),
       "newpass12",
     );
-    await userEvent.click(screen.getByRole("button", { name: /set password/i }));
+    await userEvent.click(
+      screen.getByRole("button", { name: /set password/i }),
+    );
 
     await waitFor(() => expect(body).not.toBeNull());
     expect(body).toEqual({ new_password: "newpass12" });

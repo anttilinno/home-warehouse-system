@@ -29,15 +29,11 @@ export const labelsApi = {
   },
 
   attach(wsId: string, itemId: string, labelId: string): Promise<void> {
-    return post<void>(
-      `/workspaces/${wsId}/items/${itemId}/labels/${labelId}`,
-    );
+    return post<void>(`/workspaces/${wsId}/items/${itemId}/labels/${labelId}`);
   },
 
   detach(wsId: string, itemId: string, labelId: string): Promise<void> {
-    return del<void>(
-      `/workspaces/${wsId}/items/${itemId}/labels/${labelId}`,
-    );
+    return del<void>(`/workspaces/${wsId}/items/${itemId}/labels/${labelId}`);
   },
 
   // GET /labels → { items: LabelResponse[] }.

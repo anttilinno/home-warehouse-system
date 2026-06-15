@@ -87,19 +87,23 @@ describe("Sidebar", () => {
     renderSidebar(<Sidebar stats={stats} user={user} />, {
       route: "/taxonomy/categories/new",
     });
-    expect(
-      screen.getByRole("link", { name: /categories/i }),
-    ).toHaveAttribute("aria-current", "page");
+    expect(screen.getByRole("link", { name: /categories/i })).toHaveAttribute(
+      "aria-current",
+      "page",
+    );
     expect(
       screen.getByRole("link", { name: /locations/i }),
     ).not.toHaveAttribute("aria-current", "page");
   });
 
   it("defaults /taxonomy (no ?tab) to the Categories item", () => {
-    renderSidebar(<Sidebar stats={stats} user={user} />, { route: "/taxonomy" });
-    expect(
-      screen.getByRole("link", { name: /categories/i }),
-    ).toHaveAttribute("aria-current", "page");
+    renderSidebar(<Sidebar stats={stats} user={user} />, {
+      route: "/taxonomy",
+    });
+    expect(screen.getByRole("link", { name: /categories/i })).toHaveAttribute(
+      "aria-current",
+      "page",
+    );
     expect(
       screen.getByRole("link", { name: /locations/i }),
     ).not.toHaveAttribute("aria-current", "page");
@@ -116,24 +120,30 @@ describe("Sidebar", () => {
 
   it("wires the six Phase-14 System nav items to their routes", () => {
     renderSidebar(<Sidebar stats={stats} user={user} />);
-    expect(
-      screen.getByRole("link", { name: /approvals/i }),
-    ).toHaveAttribute("href", "/approvals");
-    expect(
-      screen.getByRole("link", { name: /my changes/i }),
-    ).toHaveAttribute("href", "/my-changes");
-    expect(
-      screen.getByRole("link", { name: /wishlist/i }),
-    ).toHaveAttribute("href", "/wishlist");
-    expect(
-      screen.getByRole("link", { name: /declutter/i }),
-    ).toHaveAttribute("href", "/declutter");
-    expect(
-      screen.getByRole("link", { name: /imports/i }),
-    ).toHaveAttribute("href", "/imports");
-    expect(
-      screen.getByRole("link", { name: /sync history/i }),
-    ).toHaveAttribute("href", "/sync-history");
+    expect(screen.getByRole("link", { name: /approvals/i })).toHaveAttribute(
+      "href",
+      "/approvals",
+    );
+    expect(screen.getByRole("link", { name: /my changes/i })).toHaveAttribute(
+      "href",
+      "/my-changes",
+    );
+    expect(screen.getByRole("link", { name: /wishlist/i })).toHaveAttribute(
+      "href",
+      "/wishlist",
+    );
+    expect(screen.getByRole("link", { name: /declutter/i })).toHaveAttribute(
+      "href",
+      "/declutter",
+    );
+    expect(screen.getByRole("link", { name: /imports/i })).toHaveAttribute(
+      "href",
+      "/imports",
+    );
+    expect(screen.getByRole("link", { name: /sync history/i })).toHaveAttribute(
+      "href",
+      "/sync-history",
+    );
   });
 
   it("carries .nav-label / .nav-count rail-mode hook classes", () => {

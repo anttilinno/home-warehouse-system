@@ -111,9 +111,7 @@ describe("useLocationMutations", () => {
     const { result } = renderHook(() => useLocationMutations(), { wrapper });
     // Locations are archive-only — del must be absent (location hard-delete is
     // dangerous: CASCADE/RESTRICT). T-10-07 mitigation.
-    expect(
-      (result.current as Record<string, unknown>).del,
-    ).toBeUndefined();
+    expect((result.current as Record<string, unknown>).del).toBeUndefined();
   });
 
   it("create error path surfaces isError (failure toast fires)", async () => {

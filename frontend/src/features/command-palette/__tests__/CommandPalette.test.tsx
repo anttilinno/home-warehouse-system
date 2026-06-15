@@ -135,9 +135,13 @@ describe("CommandPalette", () => {
 
     await user.type(screen.getByRole("combobox"), "wrench");
 
-    const itemRow = await screen.findByText(ENTITY_FIXTURES.item.name, {}, {
-      timeout: 2000,
-    });
+    const itemRow = await screen.findByText(
+      ENTITY_FIXTURES.item.name,
+      {},
+      {
+        timeout: 2000,
+      },
+    );
     await user.click(itemRow);
 
     await waitFor(() =>

@@ -88,7 +88,8 @@ export class MockEventSource {
    */
   emit(type: string, dataObj: unknown): void {
     if (this.readyState === MockEventSource.CLOSED) return;
-    const data = typeof dataObj === "string" ? dataObj : JSON.stringify(dataObj);
+    const data =
+      typeof dataObj === "string" ? dataObj : JSON.stringify(dataObj);
     for (const handler of this.handlers.get(type) ?? []) {
       handler({ data });
     }
@@ -162,7 +163,9 @@ class MockMediaDevices {
     MockMediaDevices.streams = [];
   }
 
-  getUserMedia(_constraints?: MediaStreamConstraints): Promise<FakeMediaStream> {
+  getUserMedia(
+    _constraints?: MediaStreamConstraints,
+  ): Promise<FakeMediaStream> {
     const stream = new FakeMediaStream();
     MockMediaDevices.streams.push(stream);
     return Promise.resolve(stream);

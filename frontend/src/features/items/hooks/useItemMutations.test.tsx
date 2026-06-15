@@ -117,9 +117,7 @@ describe("useItemMutations", () => {
     );
     const { result } = renderHook(() => useItemMutations(), { wrapper });
     await act(async () => {
-      await result.current.archive
-        .mutateAsync("it-1")
-        .catch(() => undefined);
+      await result.current.archive.mutateAsync("it-1").catch(() => undefined);
     });
     await waitFor(() => expect(result.current.archive.isError).toBe(true));
   });

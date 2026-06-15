@@ -114,7 +114,11 @@ describe("buildPatchBody (full PATCH — never status, Pitfall 6)", () => {
   });
 
   it("bundles location_id+quantity+condition when any PATCH-owned field is dirty", () => {
-    const values = resolve({ quantity: "7", condition: "FAIR", location_id: "loc-9" });
+    const values = resolve({
+      quantity: "7",
+      condition: "FAIR",
+      location_id: "loc-9",
+    });
     const patch = buildPatchBody(values, { quantity: true });
     // The full PATCH requires the whole bundle even if only one is dirty.
     expect(patch).toMatchObject({
@@ -154,7 +158,9 @@ describe("useInventoryFormMutations", () => {
         return HttpResponse.json({ id: "inv-1" });
       }),
     );
-    const { result } = renderHook(() => useInventoryFormMutations(), { wrapper });
+    const { result } = renderHook(() => useInventoryFormMutations(), {
+      wrapper,
+    });
     await act(async () => {
       await result.current.create.mutateAsync(
         resolve({ date_acquired: "2026-01-15" }),
@@ -180,7 +186,9 @@ describe("useInventoryFormMutations", () => {
     );
     const values = resolve({ status: "IN_USE", quantity: "9" });
     const dirty: DirtyMap = { status: true, quantity: true };
-    const { result } = renderHook(() => useInventoryFormMutations(), { wrapper });
+    const { result } = renderHook(() => useInventoryFormMutations(), {
+      wrapper,
+    });
     await act(async () => {
       await result.current.update.mutateAsync({ id: "inv-1", values, dirty });
     });
@@ -200,7 +208,9 @@ describe("useInventoryFormMutations", () => {
         HttpResponse.json({ message: "boom" }, { status: 500 }),
       ),
     );
-    const { result } = renderHook(() => useInventoryFormMutations(), { wrapper });
+    const { result } = renderHook(() => useInventoryFormMutations(), {
+      wrapper,
+    });
     await act(async () => {
       await result.current.create.mutateAsync(resolve()).catch(() => undefined);
     });

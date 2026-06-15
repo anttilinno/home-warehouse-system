@@ -23,7 +23,9 @@ const exportWorkspace = vi.fn<(wsId: string, format?: string) => Promise<void>>(
   () => Promise.resolve(),
 );
 vi.mock("@/lib/api/settings", () => ({
-  settingsApi: { exportWorkspace: (...a: [string, string?]) => exportWorkspace(...a) },
+  settingsApi: {
+    exportWorkspace: (...a: [string, string?]) => exportWorkspace(...a),
+  },
 }));
 
 let workspaceValue: WorkspaceContextValue;
@@ -125,7 +127,9 @@ describe("DataStoragePage — clear cached data (client-only)", () => {
       screen.getByRole("button", { name: /clear cached data/i }),
     );
     const dialog = await screen.findByRole("dialog");
-    await userEvent.click(within(dialog).getByRole("button", { name: /cancel/i }));
+    await userEvent.click(
+      within(dialog).getByRole("button", { name: /cancel/i }),
+    );
 
     await waitFor(() =>
       expect(screen.queryByRole("dialog")).not.toBeInTheDocument(),

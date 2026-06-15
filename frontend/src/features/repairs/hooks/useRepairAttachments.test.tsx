@@ -35,10 +35,9 @@ describe("useRepairAttachments", () => {
   it("lists attachments keyed [repairs,wsId,repairId,attachments]", async () => {
     server.use(...repairHandlers);
     const { wrapper } = makeHarness();
-    const { result } = renderHook(
-      () => useRepairAttachments(WS, REPAIR),
-      { wrapper },
-    );
+    const { result } = renderHook(() => useRepairAttachments(WS, REPAIR), {
+      wrapper,
+    });
     await waitFor(() => expect(result.current.items.length).toBe(1));
     expect(result.current.items[0].file_name).toBe("receipt.pdf");
   });
@@ -63,10 +62,9 @@ describe("useRepairAttachments", () => {
     );
     const { client, wrapper } = makeHarness();
     const invalidate = vi.spyOn(client, "invalidateQueries");
-    const { result } = renderHook(
-      () => useRepairAttachments(WS, REPAIR),
-      { wrapper },
-    );
+    const { result } = renderHook(() => useRepairAttachments(WS, REPAIR), {
+      wrapper,
+    });
 
     await act(async () => {
       await result.current.createAttachment.mutateAsync({
@@ -98,10 +96,9 @@ describe("useRepairAttachments", () => {
     );
     const { client, wrapper } = makeHarness();
     const invalidate = vi.spyOn(client, "invalidateQueries");
-    const { result } = renderHook(
-      () => useRepairAttachments(WS, REPAIR),
-      { wrapper },
-    );
+    const { result } = renderHook(() => useRepairAttachments(WS, REPAIR), {
+      wrapper,
+    });
 
     await act(async () => {
       await result.current.deleteAttachment.mutateAsync("ratt-1");

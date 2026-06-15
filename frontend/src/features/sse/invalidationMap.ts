@@ -11,19 +11,17 @@
 // (RESEARCH §Pitfall 3), so `prefixesFor` lowercases before the lookup — never
 // add an uppercase key here.
 
-export const INVALIDATION_MAP: Record<
-  string,
-  readonly (readonly unknown[])[]
-> = {
-  category: [["categories"]],
-  location: [["locations"]],
-  container: [["containers"]],
-  item: [["items"]],
-  inventory: [["inventory"]],
-  loan: [["loans"]],
-  borrower: [["borrowers"]],
-  // Phases 7-10 APPEND rows here (and document in sse-invalidation-contract.md).
-};
+export const INVALIDATION_MAP: Record<string, readonly (readonly unknown[])[]> =
+  {
+    category: [["categories"]],
+    location: [["locations"]],
+    container: [["containers"]],
+    item: [["items"]],
+    inventory: [["inventory"]],
+    loan: [["loans"]],
+    borrower: [["borrowers"]],
+    // Phases 7-10 APPEND rows here (and document in sse-invalidation-contract.md).
+  };
 
 // Full enumerated backend `type` strings (the SSE `event:` line names) from
 // RESEARCH §"Full enumerated type values", plus the open-frame "connected".

@@ -1,5 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
-import { wishlistApi, type WishlistItem, type WishlistStatus } from "@/lib/api/wishlist";
+import {
+  wishlistApi,
+  type WishlistItem,
+  type WishlistStatus,
+} from "@/lib/api/wishlist";
 import { useWorkspace } from "@/features/workspace/useWorkspace";
 
 // Phase 14 Plan 03 — the /wishlist status-filtered list query (WISH-01). The

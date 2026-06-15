@@ -74,7 +74,9 @@ describe("LocationsTab", () => {
     const user = userEvent.setup();
     renderTab();
     await screen.findByText("Garage");
-    await user.click(screen.getByRole("button", { name: /add root location/i }));
+    await user.click(
+      screen.getByRole("button", { name: /add root location/i }),
+    );
     expect(await screen.findByText(/NEW LOCATION/i)).toBeInTheDocument();
   });
 
@@ -113,7 +115,9 @@ describe("LocationsTab", () => {
       within(garageRow).getByRole("button", { name: /archive/i }),
     );
     const dialog = screen.getByRole("dialog");
-    await user.click(within(dialog).getByRole("button", { name: /^archive$/i }));
+    await user.click(
+      within(dialog).getByRole("button", { name: /^archive$/i }),
+    );
     await waitFor(() =>
       expect(archiveSpy).toHaveBeenCalledWith("ws-1", "loc-1"),
     );

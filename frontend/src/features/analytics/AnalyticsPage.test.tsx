@@ -71,11 +71,29 @@ const SUMMARY: AnalyticsSummary = {
   dashboard: null,
   loan_stats: null,
   category_stats: [
-    { id: "c1", name: "Power tools", item_count: 412, inventory_count: 500, total_value: 1894000 },
-    { id: "c2", name: "Hand tools", item_count: 288, inventory_count: 300, total_value: 712000 },
+    {
+      id: "c1",
+      name: "Power tools",
+      item_count: 412,
+      inventory_count: 500,
+      total_value: 1894000,
+    },
+    {
+      id: "c2",
+      name: "Hand tools",
+      item_count: 288,
+      inventory_count: 300,
+      total_value: 712000,
+    },
   ],
   location_values: [
-    { id: "l1", name: "Garage", item_count: 120, total_quantity: 400, total_value: 1421000 },
+    {
+      id: "l1",
+      name: "Garage",
+      item_count: 120,
+      total_quantity: 400,
+      total_value: 1421000,
+    },
   ],
   condition_breakdown: [
     { condition: "New", count: 295 },

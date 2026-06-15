@@ -46,9 +46,7 @@ export function useItemMutations() {
       // Defensive: delete is archived-only (ITEM-06). Reject BEFORE the call so
       // a UI bug can never hard-delete a live item.
       if (!isArchived) {
-        return Promise.reject(
-          new Error("Only archived items can be deleted."),
-        );
+        return Promise.reject(new Error("Only archived items can be deleted."));
       }
       return itemsApi.del(wsId as string, id);
     },

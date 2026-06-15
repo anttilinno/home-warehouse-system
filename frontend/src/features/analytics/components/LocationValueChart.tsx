@@ -1,4 +1,12 @@
-import { BarChart, Bar, Cell, XAxis, YAxis, CartesianGrid, LabelList } from "recharts";
+import {
+  BarChart,
+  Bar,
+  Cell,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  LabelList,
+} from "recharts";
 import { Trans } from "@lingui/react/macro";
 import { formatCents } from "@/lib/utils/money";
 import type { LocationInventoryValue } from "@/features/analytics/types";
@@ -17,7 +25,11 @@ import {
 // ANL-01 — location inventory value as a single-series horizontal bar. Per the
 // sketch-009 single-series rule, the whole series takes the title-bar's mint
 // accent. Value = total_value (CENTS → formatCents).
-export function LocationValueChart({ data }: { data: LocationInventoryValue[] }) {
+export function LocationValueChart({
+  data,
+}: {
+  data: LocationInventoryValue[];
+}) {
   const isEmpty = data.length === 0;
   return (
     <RetroChartFrame
@@ -26,7 +38,11 @@ export function LocationValueChart({ data }: { data: LocationInventoryValue[] })
       isEmpty={isEmpty}
       emptyLabel={<Trans>No location values for this range yet.</Trans>}
     >
-      <BarChart layout="vertical" data={data} margin={{ top: 8, right: 16, bottom: 8, left: 8 }}>
+      <BarChart
+        layout="vertical"
+        data={data}
+        margin={{ top: 8, right: 16, bottom: 8, left: 8 }}
+      >
         <CartesianGrid {...GRID_PROPS} horizontal={false} />
         <XAxis
           type="number"

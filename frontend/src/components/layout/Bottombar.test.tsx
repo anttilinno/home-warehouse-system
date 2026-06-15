@@ -1,4 +1,12 @@
-import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
+import {
+  afterEach,
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from "vitest";
 import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { I18nProvider } from "@lingui/react";
@@ -57,8 +65,12 @@ describe("Bottombar", () => {
       { key: "E", label: "Edit", action: () => {} },
     ]);
     const footer = screen.getByRole("contentinfo");
-    expect(within(footer).getByRole("button", { name: /new/i })).toBeInTheDocument();
-    expect(within(footer).getByRole("button", { name: /edit/i })).toBeInTheDocument();
+    expect(
+      within(footer).getByRole("button", { name: /new/i }),
+    ).toBeInTheDocument();
+    expect(
+      within(footer).getByRole("button", { name: /edit/i }),
+    ).toBeInTheDocument();
   });
 
   it("renders a right-anchored F1 HELP chip and an ESC BACK chip", () => {

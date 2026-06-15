@@ -16,9 +16,8 @@ import { server } from "@/test/msw/server";
 // touching the real lingui catalog import (et/ru .po files are Phase-15 stubs).
 const loadCatalog = vi.fn(async (_locale: string) => {});
 vi.mock("@/lib/i18n", async () => {
-  const actual = await vi.importActual<typeof import("@/lib/i18n")>(
-    "@/lib/i18n",
-  );
+  const actual =
+    await vi.importActual<typeof import("@/lib/i18n")>("@/lib/i18n");
   return { ...actual, loadCatalog: (locale: string) => loadCatalog(locale) };
 });
 

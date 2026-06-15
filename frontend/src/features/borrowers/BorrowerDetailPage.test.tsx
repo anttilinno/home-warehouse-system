@@ -154,7 +154,11 @@ describe("BorrowerDetailPage", () => {
 
   it("renders muted — for missing optional fields", async () => {
     installHandlers({
-      borrower: makeBorrower({ email: undefined, phone: undefined, notes: undefined }),
+      borrower: makeBorrower({
+        email: undefined,
+        phone: undefined,
+        notes: undefined,
+      }),
       loans: [],
     });
     renderDetail();
@@ -224,9 +228,7 @@ describe("BorrowerDetailPage", () => {
     await user.click(within(dialog).getByRole("button", { name: /^delete$/i }));
 
     // The 09-01 hook backstop maps the 400 to the active-loans toast.
-    expect(
-      await screen.findByText(/has active loans/i),
-    ).toBeInTheDocument();
+    expect(await screen.findByText(/has active loans/i)).toBeInTheDocument();
     // Did NOT navigate away.
     expect(lastPath).toBe(`/borrowers/${ID}`);
   });
@@ -235,10 +237,10 @@ describe("BorrowerDetailPage", () => {
     const user = userEvent.setup();
     installHandlers({ borrowerStatus: 404 });
     renderDetail();
-    expect(
-      await screen.findByText(/borrower not found/i),
-    ).toBeInTheDocument();
-    await user.click(screen.getByRole("button", { name: /back to borrowers/i }));
+    expect(await screen.findByText(/borrower not found/i)).toBeInTheDocument();
+    await user.click(
+      screen.getByRole("button", { name: /back to borrowers/i }),
+    );
     expect(await screen.findByText("BORROWERS LIST")).toBeInTheDocument();
   });
 

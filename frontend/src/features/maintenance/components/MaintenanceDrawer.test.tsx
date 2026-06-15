@@ -140,9 +140,8 @@ describe("MaintenanceDrawer", () => {
   it("renders the NO SCHEDULES empty state for an empty fixture", async () => {
     setWsId("ws-1");
     server.use(
-      http.get(
-        "/api/workspaces/:wsId/inventory/:invId/maintenance",
-        () => HttpResponse.json({ items: [] }),
+      http.get("/api/workspaces/:wsId/inventory/:invId/maintenance", () =>
+        HttpResponse.json({ items: [] }),
       ),
     );
     renderDrawer();

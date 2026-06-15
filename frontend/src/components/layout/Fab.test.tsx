@@ -58,8 +58,12 @@ describe("Fab", () => {
     ]);
     await user.click(screen.getByRole("button", { name: /quick actions/i }));
     const menu = screen.getByRole("menu");
-    expect(within(menu).getByRole("menuitem", { name: /new item/i })).toBeInTheDocument();
-    expect(within(menu).getByRole("menuitem", { name: /scan/i })).toBeInTheDocument();
+    expect(
+      within(menu).getByRole("menuitem", { name: /new item/i }),
+    ).toBeInTheDocument();
+    expect(
+      within(menu).getByRole("menuitem", { name: /scan/i }),
+    ).toBeInTheDocument();
   });
 
   it("invokes a shortcut's action and closes the menu when an item is selected", async () => {

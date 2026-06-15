@@ -55,7 +55,11 @@ describe("UpcSuggestionBanner", () => {
     const { container } = render(
       <I18nProvider i18n={i18n}>
         <QueryClientProvider client={new QueryClient()}>
-          <UpcSuggestionBanner code="ABC-128" onUse={vi.fn()} onDismiss={vi.fn()} />
+          <UpcSuggestionBanner
+            code="ABC-128"
+            onUse={vi.fn()}
+            onDismiss={vi.fn()}
+          />
         </QueryClientProvider>
       </I18nProvider>,
     );
@@ -73,7 +77,9 @@ describe("UpcSuggestionBanner", () => {
     expect(
       await screen.findByText("Bosch Cordless Drill — Bosch"),
     ).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /USE NAME/ })).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /USE NAME/ }),
+    ).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /USE ALL/ })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /DISMISS/ })).toBeInTheDocument();
   });
@@ -83,7 +89,9 @@ describe("UpcSuggestionBanner", () => {
     const { container } = render(
       <I18nProvider i18n={i18n}>
         <QueryClientProvider
-          client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}
+          client={
+            new QueryClient({ defaultOptions: { queries: { retry: false } } })
+          }
         >
           <UpcSuggestionBanner
             code="0123456789012"
@@ -105,7 +113,9 @@ describe("UpcSuggestionBanner", () => {
       found: true,
     });
     const { onUse } = renderBanner("0123456789012");
-    await userEvent.click(await screen.findByRole("button", { name: /USE NAME/ }));
+    await userEvent.click(
+      await screen.findByRole("button", { name: /USE NAME/ }),
+    );
     expect(onUse).toHaveBeenCalledExactlyOnceWith({
       name: "Bosch Cordless Drill",
     });
@@ -119,7 +129,9 @@ describe("UpcSuggestionBanner", () => {
       found: true,
     });
     const { onUse } = renderBanner("0123456789012");
-    await userEvent.click(await screen.findByRole("button", { name: /USE ALL/ }));
+    await userEvent.click(
+      await screen.findByRole("button", { name: /USE ALL/ }),
+    );
     expect(onUse).toHaveBeenCalledExactlyOnceWith({
       name: "Bosch Cordless Drill",
       brand: "Bosch",
@@ -133,7 +145,9 @@ describe("UpcSuggestionBanner", () => {
       found: true,
     });
     const { onDismiss } = renderBanner("0123456789012");
-    await userEvent.click(await screen.findByRole("button", { name: /DISMISS/ }));
+    await userEvent.click(
+      await screen.findByRole("button", { name: /DISMISS/ }),
+    );
     expect(onDismiss).toHaveBeenCalledOnce();
   });
 });
