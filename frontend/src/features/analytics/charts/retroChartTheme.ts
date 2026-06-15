@@ -39,52 +39,61 @@ export const SERIES_PINK = SERIES[1];
 export const SERIES_MINT = SERIES[2];
 export const SERIES_BUTTER = SERIES[3];
 
-/** Ink stroke (`--border-ink`) used on every mark and the baseline axis. */
-export const INK = "#26262e";
 /** Every mark carries a 2px ink stroke. */
 export const STROKE_WIDTH = 2;
-/** Gridlines = the 1px sand table rule. */
-export const GRID = "#e7ddca";
-/** Muted tick fill (`--fg-muted`). */
-export const MUTED = "#5b5b66";
+
+// Dark Mode P3 — the mark colors (ink stroke, grid rule, muted ticks) flip
+// between themes, so they're no longer module constants. Each chart reads them
+// from useChartColors() and feeds them to these builders; the look stays 1:1
+// with sketch-009 in light mode and inverts cleanly in dark. SERIES fills stay
+// fixed pastels in both themes (same logic as the titlebars).
 
 /** Shared mark props — spread onto every <Bar>/<Area>/<Cell>/marker. NO radius
- * (square caps), NO gradient defs. */
-export const markProps = {
-  stroke: INK,
-  strokeWidth: STROKE_WIDTH,
-} as const;
+ * (square caps), NO gradient defs. `ink` = the current `--chart-ink`. */
+export function markProps(ink: string) {
+  return { stroke: ink, strokeWidth: STROKE_WIDTH } as const;
+}
+
+/** recharts axisLine props — a 2px ink baseline. */
+export function axisLineProps(ink: string) {
+  return { stroke: ink, strokeWidth: STROKE_WIDTH } as const;
+}
 
 /** Axis tick label style: IBM Plex Mono, tabular-nums, muted fill. */
-export const AXIS_TICK_STYLE = {
-  fontFamily: "var(--font-mono)",
-  fontVariantNumeric: "tabular-nums" as const,
-  fontSize: 10,
-  fill: MUTED,
-};
+export function axisTickStyle(muted: string) {
+  return {
+    fontFamily: "var(--font-mono)",
+    fontVariantNumeric: "tabular-nums" as const,
+    fontSize: 10,
+    fill: muted,
+  };
+}
 
 /** Value label style: IBM Plex Mono, tabular-nums, ink fill (≥6px heavier). */
-export const VALUE_LABEL_STYLE = {
-  fontFamily: "var(--font-mono)",
-  fontVariantNumeric: "tabular-nums" as const,
-  fontSize: 12,
-  fontWeight: 600,
-  fill: INK,
-};
+export function valueLabelStyle(ink: string) {
+  return {
+    fontFamily: "var(--font-mono)",
+    fontVariantNumeric: "tabular-nums" as const,
+    fontSize: 12,
+    fontWeight: 600,
+    fill: ink,
+  };
+}
 
 /** Category (Plex Sans 12px) axis-label style for categorical axes. */
-export const CATEGORY_LABEL_STYLE = {
-  fontFamily: "var(--font-body)",
-  fontSize: 12,
-  fontWeight: 600,
-  fill: INK,
-};
+export function categoryLabelStyle(ink: string) {
+  return {
+    fontFamily: "var(--font-body)",
+    fontSize: 12,
+    fontWeight: 600,
+    fill: ink,
+  };
+}
 
 /** Props for the recharts <CartesianGrid> so the rule matches the table sand. */
-export const GRID_PROPS = {
-  stroke: GRID,
-  strokeWidth: 1,
-} as const;
+export function gridProps(grid: string) {
+  return { stroke: grid, strokeWidth: 1 } as const;
+}
 
 /**
  * Truncate a categorical axis label from the RIGHT (keep the head, append "…")

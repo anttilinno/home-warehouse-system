@@ -78,6 +78,49 @@ body {
   }
 }
 
+/* ---------- Dark Mode literal + on-pastel overrides (P2) ----------
+   tokens.css flips every var()-based utility and the bevel @utility rules. This
+   block handles the two things tokens can't reach:
+
+   1. Text on the PASTEL chrome fills. The pastels stay light in dark mode
+      (decision #3), so text on them must stay dark — but the components paint it
+      with .text-fg-ink (now flipped light → invisible). Route the four pastel bg
+      utilities (static + hover) and the selected table row to --fg-on-accent.
+   2. The .shadow-hard* utility CLASSES bake light literals in @theme inline
+      (they can't be var()-based — a same-name var() inside @theme resolves
+      circular and drops the utility). Flip them here. The .pinstripes utility
+      only ever paints over a (light) pastel titlebar, so it needs no override.
+
+   UNLAYERED on purpose — must outrank Tailwind's utilities layer (.text-fg-ink,
+   .shadow-hard*); same trick as the .app-sidebar rule below. */
+[data-theme="dark"] .bg-titlebar-blue,
+[data-theme="dark"] .bg-titlebar-pink,
+[data-theme="dark"] .bg-titlebar-mint,
+[data-theme="dark"] .bg-titlebar-butter,
+[data-theme="dark"] .hover\:bg-titlebar-blue:hover,
+[data-theme="dark"] .hover\:bg-titlebar-pink:hover,
+[data-theme="dark"] .hover\:bg-titlebar-mint:hover,
+[data-theme="dark"] .hover\:bg-titlebar-butter:hover,
+[data-theme="dark"] .rtable tbody tr[aria-selected="true"] td {
+  color: var(--fg-on-accent);
+}
+
+[data-theme="dark"] .shadow-hard {
+  box-shadow: 3px 3px 0 0 #101015;
+}
+[data-theme="dark"] .shadow-hard-ink {
+  box-shadow: 2px 2px 0 0 #e8e3d9;
+}
+
+/* Body dot-dither: a near-black dot vanishes on a dark desktop — invert to a
+   faint light dot so the desktop texture survives. */
+[data-theme="dark"] body {
+  background-image: radial-gradient(
+    rgba(242, 237, 227, 0.04) 1px,
+    transparent 1px
+  );
+}
+
 /* ---------- Bevel utilities (composite shadows don't compose from
    single-shadow Tailwind utilities, so they're named here) ---------- */
 @utility bevel-raised {
@@ -377,4 +420,13 @@ body {
 *:focus-visible {
   outline: 2px solid color-mix(in srgb, var(--border-ink) 100%, transparent);
   outline-offset: 2px;
+}
+
+/* ---------- Text selection (Dark Mode P4) ----------
+   Theme-aware via tokens: titlebar-blue stays a light pastel in both themes and
+   --fg-on-accent stays dark, so highlighted text is legible in light AND dark
+   (the default UA selection is invisible on the dark panels). */
+::selection {
+  background: var(--titlebar-blue);
+  color: var(--fg-on-accent);
 }

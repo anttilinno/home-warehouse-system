@@ -22,6 +22,23 @@ function token(name: string): string {
   return match[1].toLowerCase();
 }
 
+// Dark-block parser: scope the (non-global) regex to the `[data-theme="dark"]{…}`
+// substring so a dark override of a token resolves to the DARK value, not the
+// first (:root) occurrence. Tokens NOT overridden in the dark block (pastels,
+// fg-on-accent) are read from :root via token() — they deliberately don't flip.
+const darkStart = tokensCss.indexOf('[data-theme="dark"]');
+const darkBlock = darkStart === -1 ? "" : tokensCss.slice(darkStart);
+
+function darkToken(name: string): string {
+  const match = darkBlock.match(
+    new RegExp(`--${name}:\\s*(#[0-9a-fA-F]{6})\\b`),
+  );
+  if (!match) {
+    throw new Error(`token --${name} not found in [data-theme="dark"] block`);
+  }
+  return match[1].toLowerCase();
+}
+
 function relativeLuminance(hex: string): number {
   const channels = [1, 3, 5].map((i) => {
     const c = parseInt(hex.slice(i, i + 2), 16) / 255;
@@ -67,5 +84,82 @@ describe("retro-os pastel tokens meet WCAG AA (>= 4.5:1)", () => {
 
   it("sanity: formula reproduces the canonical black/white ratio", () => {
     expect(contrastRatio("#000000", "#ffffff")).toBeCloseTo(21, 5);
+  });
+});
+
+describe("dark-mode tokens meet WCAG AA (>= 4.5:1)", () => {
+  // [fg, bg] where each entry is [tokenName, scope]; "dark" reads the
+  // [data-theme="dark"] override, "root" reads the non-flipping :root value
+  // (pastels + on-accent stay light in dark mode by design).
+  type Ref = [name: string, scope: "dark" | "root"];
+  const get = ([name, scope]: Ref) =>
+    scope === "dark" ? darkToken(name) : token(name);
+
+  const pairs: Array<[fg: Ref, bg: Ref]> = [
+    // Body + secondary text on the dark surfaces.
+    [
+      ["fg-ink", "dark"],
+      ["bg-panel", "dark"],
+    ],
+    [
+      ["fg-ink", "dark"],
+      ["bg-desktop", "dark"],
+    ],
+    [
+      ["fg-ink", "dark"],
+      ["bg-panel-2", "dark"],
+    ],
+    [
+      ["fg-muted", "dark"],
+      ["bg-panel", "dark"],
+    ],
+    [
+      ["fg-muted", "dark"],
+      ["bg-desktop", "dark"],
+    ],
+    // Light deep companions as colored text on the dark panel.
+    [
+      ["accent-blue-deep", "dark"],
+      ["bg-panel", "dark"],
+    ],
+    [
+      ["accent-pink-deep", "dark"],
+      ["bg-panel", "dark"],
+    ],
+    [
+      ["accent-mint-deep", "dark"],
+      ["bg-panel", "dark"],
+    ],
+    [
+      ["warn-deep", "dark"],
+      ["bg-panel", "dark"],
+    ],
+    // Danger ink on its dark tint.
+    [
+      ["danger", "dark"],
+      ["danger-bg", "dark"],
+    ],
+    // On-accent ink (NON-flipping) on each (NON-flipping) pastel — the chrome
+    // and selected-row contract.
+    [
+      ["fg-on-accent", "root"],
+      ["titlebar-blue", "root"],
+    ],
+    [
+      ["fg-on-accent", "root"],
+      ["titlebar-pink", "root"],
+    ],
+    [
+      ["fg-on-accent", "root"],
+      ["titlebar-mint", "root"],
+    ],
+    [
+      ["fg-on-accent", "root"],
+      ["titlebar-butter", "root"],
+    ],
+  ];
+
+  it.each(pairs)("%s on %s", (fg, bg) => {
+    expect(contrastRatio(get(fg), get(bg))).toBeGreaterThanOrEqual(AA);
   });
 });

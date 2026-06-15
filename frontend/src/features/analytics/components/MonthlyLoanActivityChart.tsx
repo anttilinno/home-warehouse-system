@@ -10,13 +10,14 @@ import { Trans } from "@lingui/react/macro";
 import { formatMonthYearToken } from "@/lib/format";
 import type { MonthlyLoanActivity } from "@/features/analytics/types";
 import { Window, RetroEmptyState } from "@/components/retro";
+import { useChartColors } from "@/lib/useChartColors";
 import {
   SERIES_BLUE,
   SERIES_MINT,
-  INK,
   STROKE_WIDTH,
-  AXIS_TICK_STYLE,
-  GRID_PROPS,
+  axisLineProps,
+  axisTickStyle,
+  gridProps,
 } from "../charts/retroChartTheme";
 
 // Format an ISO-ish month string to a "YYYY-MM" tick (mono, tabular). I18N-03:
@@ -28,8 +29,10 @@ function monthTick(value: string): string {
 }
 
 // Square ink-stroked marker for the returns line (sketch-009 data points).
-function SquareDot(props: { cx?: number; cy?: number }) {
-  const { cx, cy } = props;
+// `ink` is threaded from useChartColors (recharts clones this element with
+// cx/cy, preserving the ink prop) so the stroke flips with the theme.
+function SquareDot(props: { cx?: number; cy?: number; ink?: string }) {
+  const { cx, cy, ink } = props;
   if (cx == null || cy == null) return null;
   return (
     <rect
@@ -38,7 +41,7 @@ function SquareDot(props: { cx?: number; cy?: number }) {
       width={8}
       height={8}
       fill={SERIES_MINT.fill}
-      stroke={INK}
+      stroke={ink ?? "#26262e"}
       strokeWidth={2}
     />
   );
@@ -53,6 +56,7 @@ export function MonthlyLoanActivityChart({
 }: {
   data: MonthlyLoanActivity[];
 }) {
+  const { ink, grid, muted } = useChartColors();
   const isEmpty = data.length === 0;
 
   return (
@@ -93,17 +97,17 @@ export function MonthlyLoanActivityChart({
               data={data}
               margin={{ top: 12, right: 24, bottom: 8, left: 8 }}
             >
-              <CartesianGrid {...GRID_PROPS} vertical={false} />
+              <CartesianGrid {...gridProps(grid)} vertical={false} />
               <XAxis
                 dataKey="month"
                 tickFormatter={monthTick}
-                tick={AXIS_TICK_STYLE}
-                axisLine={{ stroke: INK, strokeWidth: 2 }}
+                tick={axisTickStyle(muted)}
+                axisLine={axisLineProps(ink)}
                 tickLine={false}
               />
               <YAxis
-                tick={AXIS_TICK_STYLE}
-                axisLine={{ stroke: INK, strokeWidth: 2 }}
+                tick={axisTickStyle(muted)}
+                axisLine={axisLineProps(ink)}
                 tickLine={false}
                 allowDecimals={false}
               />
@@ -112,7 +116,7 @@ export function MonthlyLoanActivityChart({
                 dataKey="loans_created"
                 fill={SERIES_BLUE.fill}
                 fillOpacity={0.85}
-                stroke={INK}
+                stroke={ink}
                 strokeWidth={STROKE_WIDTH}
                 isAnimationActive={false}
               />
@@ -122,7 +126,7 @@ export function MonthlyLoanActivityChart({
                 stroke={SERIES_MINT.fill}
                 strokeWidth={4}
                 isAnimationActive={false}
-                dot={<SquareDot />}
+                dot={<SquareDot ink={ink} />}
               />
             </ComposedChart>
           </div>

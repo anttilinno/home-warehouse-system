@@ -3,6 +3,7 @@ import { BrowserRouter } from "react-router";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { I18nProvider } from "@lingui/react";
 import { i18n } from "@/lib/i18n";
+import { ThemeProvider } from "@/lib/useTheme";
 import { queryClient } from "@/lib/queryClient";
 import { ShortcutsProvider } from "@/components/shortcuts";
 import { ModalStackProvider } from "@/components/modal";
@@ -40,23 +41,25 @@ const ReactQueryDevtoolsLazy = lazy(() =>
 export default function App() {
   return (
     <I18nProvider i18n={i18n}>
-      <BrowserRouter>
-        <QueryClientProvider client={queryClient}>
-          <ShortcutsProvider>
-            <ModalStackProvider>
-              <AppRoutes />
-            </ModalStackProvider>
-          </ShortcutsProvider>
-          {/* Toast region — root-level sibling of the router subtree so toasts
+      <ThemeProvider>
+        <BrowserRouter>
+          <QueryClientProvider client={queryClient}>
+            <ShortcutsProvider>
+              <ModalStackProvider>
+                <AppRoutes />
+              </ModalStackProvider>
+            </ShortcutsProvider>
+            {/* Toast region — root-level sibling of the router subtree so toasts
               render on /login AND survive navigation (RESEARCH §1). */}
-          <RetroToaster />
-          {import.meta.env.DEV && (
-            <Suspense fallback={null}>
-              <ReactQueryDevtoolsLazy initialIsOpen={false} />
-            </Suspense>
-          )}
-        </QueryClientProvider>
-      </BrowserRouter>
+            <RetroToaster />
+            {import.meta.env.DEV && (
+              <Suspense fallback={null}>
+                <ReactQueryDevtoolsLazy initialIsOpen={false} />
+              </Suspense>
+            )}
+          </QueryClientProvider>
+        </BrowserRouter>
+      </ThemeProvider>
     </I18nProvider>
   );
 }

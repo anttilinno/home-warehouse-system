@@ -2,7 +2,13 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import "@/styles/globals.css";
 import { defaultLocale, i18n, loadCatalog } from "@/lib/i18n";
+import { applyTheme, readStoredPref } from "@/lib/theme";
 import App from "@/App";
+
+// Belt for the index.html boot script: re-assert the resolved theme before
+// React renders (covers the edge case where the inline script was stripped or
+// errored). Cheap + idempotent — just sets <html data-theme>.
+applyTheme(readStoredPref());
 
 // Catalog must be active before first render — Lingui's t/Trans throw on an
 // inactive i18n instance. The en catalog is tiny; awaiting it beats a

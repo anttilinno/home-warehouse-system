@@ -1,49 +1,71 @@
-import { describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { I18nProvider } from "@lingui/react";
 import { i18n } from "@/lib/i18n";
+import { THEME_STORAGE_KEY } from "@/lib/theme";
+import { ThemeProvider } from "@/lib/useTheme";
 import { AppearancePage } from "./AppearancePage";
 
-// Phase 12 Plan 03 — AppearancePage (SETT-04 / SETT-11). Light-only: a single
-// "Light" theme card marked CURRENT (selected treatment + badge + glyph) and a
-// butter role="note" backlog band. NO dark option, NO toggle, NO write
-// (presentational only — resolved OQ-R3). SETT-11 supersedes SETT-04's prose.
+// Dark Mode P1 — AppearancePage is now a Light / Dark / System selector wired to
+// useTheme (localStorage). Default pref is `system`; picking an option persists
+// it and re-applies <html data-theme>.
 
 function renderPage() {
   return render(
     <I18nProvider i18n={i18n}>
-      <AppearancePage />
+      <ThemeProvider>
+        <AppearancePage />
+      </ThemeProvider>
     </I18nProvider>,
   );
 }
 
-describe("AppearancePage (SETT-04 / SETT-11 light-only)", () => {
-  it("renders exactly one Light theme card marked CURRENT", () => {
+describe("AppearancePage (Dark Mode theme selector)", () => {
+  beforeEach(() => {
+    localStorage.clear();
+    document.documentElement.removeAttribute("data-theme");
+  });
+
+  it("renders Light, Dark and System radio options", () => {
     renderPage();
 
-    expect(screen.getByText("Light")).toBeInTheDocument();
+    expect(screen.getByRole("radio", { name: /light/i })).toBeInTheDocument();
+    expect(screen.getByRole("radio", { name: /dark/i })).toBeInTheDocument();
+    expect(screen.getByRole("radio", { name: /system/i })).toBeInTheDocument();
+  });
+
+  it("defaults to System selected (no stored pref)", () => {
+    renderPage();
+
+    expect(screen.getByRole("radio", { name: /system/i })).toHaveAttribute(
+      "aria-checked",
+      "true",
+    );
     expect(screen.getByText("CURRENT")).toBeInTheDocument();
   });
 
-  it("renders the butter backlog note with role='note'", () => {
+  it("selecting Dark persists the pref and applies data-theme", async () => {
+    const user = userEvent.setup();
     renderPage();
 
-    const note = screen.getByRole("note");
-    expect(note).toHaveTextContent(
-      /light only — a dark theme is on the backlog\./i,
+    await user.click(screen.getByRole("radio", { name: /dark/i }));
+
+    expect(screen.getByRole("radio", { name: /dark/i })).toHaveAttribute(
+      "aria-checked",
+      "true",
     );
+    expect(localStorage.getItem(THEME_STORAGE_KEY)).toBe("dark");
+    expect(document.documentElement.dataset.theme).toBe("dark");
   });
 
-  it("has no dark theme option or toggle (presentational, no write)", () => {
+  it("selecting Light applies the light theme", async () => {
+    const user = userEvent.setup();
     renderPage();
 
-    // No interactive control for picking/toggling a theme.
-    expect(screen.queryByRole("button")).not.toBeInTheDocument();
-    expect(screen.queryByRole("checkbox")).not.toBeInTheDocument();
-    expect(screen.queryByRole("switch")).not.toBeInTheDocument();
-    // The only "dark" mention is inside the backlog note (role=note), not a
-    // selectable option labelled "Dark".
-    const darkMentions = screen.queryAllByText(/^dark$/i);
-    expect(darkMentions).toHaveLength(0);
+    await user.click(screen.getByRole("radio", { name: /light/i }));
+
+    expect(localStorage.getItem(THEME_STORAGE_KEY)).toBe("light");
+    expect(document.documentElement.dataset.theme).toBe("light");
   });
 });

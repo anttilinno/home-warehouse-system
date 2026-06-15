@@ -24,6 +24,14 @@
                            (POL-02 — caught on /settings/members) */
   --fg-faint:  #8e8e99; /* decorative/disabled only — never running text */
 
+  /* ---------- On-accent ink (Dark Mode) ----------
+     Fixed dark ink for text painted ON the pastel chrome fills (titlebars,
+     selected rows, pastel buttons/badges). The pastel fills STAY light in dark
+     mode (decision #3, brand identity), so their text must NOT flip with
+     --fg-ink — it stays dark here in BOTH themes. globals.css routes the
+     chrome-on-pastel sites to this via unlayered rules. */
+  --fg-on-accent: #26262e;
+
   /* ---------- Pastel chrome fills (ink text only) ---------- */
   --titlebar-blue:   #b8d8e8;
   --titlebar-pink:   #f4b8c4;
@@ -53,6 +61,15 @@
   --shadow-hard-ink: 2px 2px 0 0 #26262e;
   --table-rule:   #e7ddca;
   --table-stripe: #fcf8f0;
+
+  /* ---------- Chart marks (Dark Mode) ----------
+     recharts takes JS color values, not CSS vars, so retroChartTheme.ts can't
+     read var()s directly. useChartColors() reads these off the computed root
+     style and re-reads on data-theme change; the dark block flips them. ink =
+     mark stroke + value labels + axis line, grid = gridlines, muted = ticks. */
+  --chart-ink:   #26262e;
+  --chart-grid:  #e7ddca;
+  --chart-muted: #5b5b66;
 
   /* ---------- Type ---------- */
   --font-display: "Silkscreen", monospace; /* >=16px, uppercase only */
@@ -88,6 +105,7 @@
   --color-fg-ink: var(--fg-ink);
   --color-fg-muted: var(--fg-muted);
   --color-fg-faint: var(--fg-faint);
+  --color-fg-on-accent: var(--fg-on-accent);
 
   --color-titlebar-blue: var(--titlebar-blue);
   --color-titlebar-pink: var(--titlebar-pink);
@@ -177,4 +195,59 @@
   --tracking-10: 0.1em;
   --tracking-12: 0.12em;
   --tracking-14: 0.14em;
+}
+
+/* ============================================================================
+   Dark Mode (P2). A dark VARIANT of the same Retro OS chrome — same bevels,
+   pinstripes, Silkscreen, square corners; only the palette inverts. Resolved by
+   index.html / theme.ts onto <html data-theme="dark">. Because every color
+   utility is var()-based (@theme inline → var(--token)), overriding the :root
+   tokens here flips the whole app automatically. The bevel @utility rules in
+   globals.css read these :root copies too, so they flip; the literal
+   .shadow-hard* / .pinstripes utilities are handled by globals.css overrides.
+
+   The PASTEL chrome fills (--titlebar-*) and --fg-on-accent are DELIBERATELY
+   NOT overridden — they stay light so the titlebars read as accent bars on dark
+   panels (decision #3), carrying fixed dark on-accent text.
+
+   Every text pair below clears WCAG AA (>=4.5:1) — enforced by tokens.test.ts.
+   ============================================================================ */
+[data-theme="dark"] {
+  /* ---------- Surfaces (inverted: backdrop darkest, panels float lighter) -- */
+  --bg-desktop: #15151b;
+  --bg-panel:   #2a2a33;
+  --bg-panel-2: #21212a; /* table headers / secondary — darker than panel */
+  --bg-pressed: #17171d; /* inset/pressed — darkest interactive surface */
+
+  /* ---------- Ink (light scale on dark) ---------- */
+  --fg-ink:   #f2ede3; /* warm off-white, mirrors the cream light theme */
+  --fg-muted: #b3aea4; /* secondary text — clears AA on panel + desktop */
+  --fg-faint: #76767f; /* decorative/disabled only */
+
+  /* ---------- Deep companions → light tints (colored text on dark panel) --- */
+  --accent-blue-deep: #82c4e4;
+  --accent-pink-deep: #f3a3b6;
+  --accent-mint-deep: #84d2a4;
+  --warn-deep:        #e6c879;
+
+  /* ---------- Status (lighter danger ink + dark tint fills) ---------- */
+  --danger:    #ff8a9c;
+  --danger-bg: #3a1f25;
+  --warn-bg:   #3a3220;
+  --ok-bg:     #1f3328;
+  --info-bg:   #1f2e3a;
+
+  /* ---------- Bevel system (light edge highlight, darker shade + shadows) -- */
+  --border-ink:  #e8e3d9; /* light ink border on dark */
+  --bevel-light: #45454f; /* subtle top-left highlight */
+  --bevel-shade: #101015; /* bottom-right shade */
+  --shadow-hard:     3px 3px 0 0 #101015;
+  --shadow-hard-ink: 2px 2px 0 0 #e8e3d9;
+  --table-rule:   #34343d;
+  --table-stripe: #24242c;
+
+  /* ---------- Chart marks (flip ink + grid + muted for recharts) ---------- */
+  --chart-ink:   #f2ede3;
+  --chart-grid:  #45454f;
+  --chart-muted: #b3aea4;
 }

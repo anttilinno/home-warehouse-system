@@ -2,6 +2,7 @@ import { BarChart, Bar, XAxis, YAxis } from "recharts";
 import { Trans } from "@lingui/react/macro";
 import type { StatusBreakdown } from "@/features/analytics/types";
 import { Window, RetroEmptyState } from "@/components/retro";
+import { useChartColors } from "@/lib/useChartColors";
 import { seriesAt, markProps } from "../charts/retroChartTheme";
 
 // ANL-01 — status distribution as a single 100%-STACKED horizontal bar. Each
@@ -9,6 +10,7 @@ import { seriesAt, markProps } from "../charts/retroChartTheme";
 // across one row, palette-walked + ink-stroked. A swatch legend names each
 // status with its raw count. NO default recharts tooltip skin.
 export function StatusStackChart({ data }: { data: StatusBreakdown[] }) {
+  const { ink } = useChartColors();
   const isEmpty = data.length === 0;
   const total = data.reduce((sum, d) => sum + d.count, 0);
 
@@ -47,7 +49,7 @@ export function StatusStackChart({ data }: { data: StatusBreakdown[] }) {
                   stackId="status"
                   fill={seriesAt(i).fill}
                   isAnimationActive={false}
-                  {...markProps}
+                  {...markProps(ink)}
                 />
               ))}
             </BarChart>

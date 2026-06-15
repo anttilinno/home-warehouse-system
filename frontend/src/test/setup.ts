@@ -1,6 +1,29 @@
 import { afterAll, afterEach, beforeAll } from "vitest";
 import { server } from "./msw/server";
 
+// ── matchMedia test stub ─────────────────────────────────────────────────────
+// jsdom ships NO `window.matchMedia`. The Dark Mode ThemeProvider calls it to
+// follow `prefers-color-scheme` while the pref is `system` (the default), so
+// without this stub every test that mounts the provider tree throws
+// `matchMedia is not a function`. Minimal: reports not-matched (→ light) with
+// no-op listener registration. Tests that need dark can override per-case.
+if (typeof window !== "undefined" && !window.matchMedia) {
+  Object.defineProperty(window, "matchMedia", {
+    configurable: true,
+    writable: true,
+    value: (query: string) => ({
+      matches: false,
+      media: query,
+      onchange: null,
+      addEventListener: () => {},
+      removeEventListener: () => {},
+      addListener: () => {},
+      removeListener: () => {},
+      dispatchEvent: () => false,
+    }),
+  });
+}
+
 // Register the shared MSW server for the whole jsdom unit-test run. Loaded via
 // vitest.config.ts `setupFiles` alongside test-utils.tsx. `onUnhandledRequest:
 // "error"` surfaces any endpoint a test forgot to handle, keeping fixtures

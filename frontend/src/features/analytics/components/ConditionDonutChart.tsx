@@ -2,6 +2,7 @@ import { PieChart, Pie, Cell } from "recharts";
 import { Trans } from "@lingui/react/macro";
 import type { ConditionBreakdown } from "@/features/analytics/types";
 import { Window, RetroEmptyState } from "@/components/retro";
+import { useChartColors } from "@/lib/useChartColors";
 import { seriesAt, markProps } from "../charts/retroChartTheme";
 
 // ANL-01 — condition distribution as a retro donut. Slices walk the ordered
@@ -10,6 +11,7 @@ import { seriesAt, markProps } from "../charts/retroChartTheme";
 // (it sits beside the legend, so it does not use the full-width responsive
 // frame). NO default recharts tooltip skin.
 export function ConditionDonutChart({ data }: { data: ConditionBreakdown[] }) {
+  const { ink } = useChartColors();
   const isEmpty = data.length === 0;
   const total = data.reduce((sum, d) => sum + d.count, 0);
 
@@ -41,7 +43,7 @@ export function ConditionDonutChart({ data }: { data: ConditionBreakdown[] }) {
                 <Cell
                   key={d.condition}
                   fill={seriesAt(i).fill}
-                  {...markProps}
+                  {...markProps(ink)}
                 />
               ))}
             </Pie>
