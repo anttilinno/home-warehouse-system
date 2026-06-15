@@ -41,7 +41,7 @@ export function UpcSuggestionBanner({
   // Suppress for non-numeric/short codes or an unknown product (found:false).
   if (!isUpc) return null;
   const product = query.data;
-  if (!product || !product.found) return null;
+  if (!product?.found) return null;
 
   return (
     <section className="flex flex-col gap-sp-2 border-2 border-border-ink bg-info-bg p-sp-3">

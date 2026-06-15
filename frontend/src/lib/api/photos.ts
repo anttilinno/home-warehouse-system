@@ -114,7 +114,7 @@ export const photosApi = {
 
   // Zip download — optional id subset via ?ids=uuid1,uuid2.
   downloadZip(wsId: string, itemId: string, ids?: string[]): Promise<void> {
-    const query = ids && ids.length ? `?ids=${ids.join(",")}` : "";
+    const query = ids?.length ? `?ids=${ids.join(",")}` : "";
     return downloadBlob(
       `/workspaces/${wsId}/items/${itemId}/photos/download${query}`,
       `photos-${itemId}.zip`,
