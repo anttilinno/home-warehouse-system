@@ -39,11 +39,11 @@ export function StatCard({
       bodyClassName="px-sp-4 py-sp-3"
     >
       <div
-        className={`font-display text-[30px] leading-[1.15] uppercase ${VALUE_TONES[valueTone]}`}
+        className={`font-display text-30 leading-[1.15] uppercase ${VALUE_TONES[valueTone]}`}
       >
         {value}
       </div>
-      {sub && <div className="text-[12px] text-fg-muted">{sub}</div>}
+      {sub && <div className="text-12 text-fg-muted">{sub}</div>}
     </Window>
   );
 }

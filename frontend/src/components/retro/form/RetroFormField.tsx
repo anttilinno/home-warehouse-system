@@ -38,7 +38,7 @@ export function RetroFormField({
     <div className="flex flex-col gap-sp-1">
       <label
         htmlFor={id}
-        className="text-[12px] font-bold uppercase tracking-[0.08em] text-fg-muted"
+        className="text-12 font-bold uppercase tracking-8 text-fg-muted"
       >
         {label}
         {required && (
@@ -49,14 +49,12 @@ export function RetroFormField({
       </label>
       {children(id, describedBy)}
       {error ? (
-        <p id={errorId} className="text-[12px] font-semibold text-danger">
+        <p id={errorId} className="text-12 font-semibold text-danger">
           <span aria-hidden="true">✕ </span>
           {error}
         </p>
       ) : (
-        hint && (
-          <p className="text-[12px] font-body text-fg-muted">{hint}</p>
-        )
+        hint && <p className="text-12 font-body text-fg-muted">{hint}</p>
       )}
     </div>
   );

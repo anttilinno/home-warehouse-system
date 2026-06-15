@@ -51,7 +51,9 @@ const wishlistFormSchema = z.object({
       const n = typeof v === "number" ? v : Number(v);
       return Number.isNaN(n) ? undefined : n;
     })
-    .pipe(z.number().min(0, { message: "Price can't be negative." }).optional()),
+    .pipe(
+      z.number().min(0, { message: "Price can't be negative." }).optional(),
+    ),
   // 3-letter ISO code or empty.
   currency_code: z
     .string()
@@ -96,7 +98,9 @@ function itemToDefaults(item: WishlistItem): WishlistFormInput {
     notes: item.notes ?? "",
     url: item.url ?? "",
     price:
-      item.price_estimate === undefined ? "" : String(item.price_estimate / 100),
+      item.price_estimate === undefined
+        ? ""
+        : String(item.price_estimate / 100),
     currency_code: item.currency_code ?? "",
     priority: item.priority,
     status: item.status,
@@ -139,7 +143,10 @@ export function WishlistFormDialog({
   async function onSubmit(raw: WishlistFormInput) {
     const values: WishlistFormValues = wishlistFormSchema.parse(raw);
     // Build the wire body. price (major unit) → CENTS. Empty optionals omitted.
-    const base: WishlistCreate = { name: values.name, priority: values.priority };
+    const base: WishlistCreate = {
+      name: values.name,
+      priority: values.priority,
+    };
     if (values.notes) base.notes = values.notes;
     if (values.url) base.url = values.url;
     if (values.price !== undefined) {
@@ -206,7 +213,7 @@ export function WishlistFormDialog({
         {errors.root?.message && (
           <div
             role="alert"
-            className="border-2 border-border-ink bg-danger-bg p-sp-3 text-[14px] text-danger"
+            className="border-2 border-border-ink bg-danger-bg p-sp-3 text-14 text-danger"
           >
             <span aria-hidden="true">✕ </span>
             {errors.root.message}

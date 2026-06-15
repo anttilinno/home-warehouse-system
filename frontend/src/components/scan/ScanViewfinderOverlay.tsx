@@ -33,7 +33,7 @@ export function ScanViewfinderOverlay() {
       </div>
 
       {/* Aim hint on an ink scrim, bottom-anchored, white text (AA holds). */}
-      <p className="absolute bottom-sp-3 left-1/2 -translate-x-1/2 whitespace-nowrap bg-fg-ink/55 px-sp-3 py-sp-1 font-body text-[13px] text-bg-panel">
+      <p className="absolute bottom-sp-3 left-1/2 -translate-x-1/2 whitespace-nowrap bg-fg-ink/55 px-sp-3 py-sp-1 font-body text-13 text-bg-panel">
         <Trans>Point the camera at a barcode or QR code.</Trans>
       </p>
     </div>

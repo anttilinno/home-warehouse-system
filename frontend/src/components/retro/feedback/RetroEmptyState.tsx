@@ -32,7 +32,7 @@ export function RetroEmptyState({
   return (
     <div className="flex flex-col items-center gap-sp-2 px-sp-4 py-sp-5 text-center">
       {eyebrow && (
-        <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-fg-muted">
+        <p className="text-10 font-bold uppercase tracking-14 text-fg-muted">
           {eyebrow}
         </p>
       )}
@@ -40,14 +40,12 @@ export function RetroEmptyState({
           here (decorative). */}
       <span
         aria-hidden="true"
-        className="flex h-12 w-12 items-center justify-center border border-border-ink bg-bg-panel-2 text-[32px] leading-none text-fg-faint"
+        className="flex h-12 w-12 items-center justify-center border border-border-ink bg-bg-panel-2 text-32 leading-none text-fg-faint"
       >
         {glyph}
       </span>
-      <h3 className="font-display text-[16px] uppercase text-fg-ink">
-        {heading}
-      </h3>
-      <p className="max-w-[42ch] text-[14px] text-fg-muted">{body}</p>
+      <h3 className="font-display text-16 uppercase text-fg-ink">{heading}</h3>
+      <p className="max-w-[42ch] text-14 text-fg-muted">{body}</p>
       {action && (
         <BevelButton variant="primary" onClick={action.onClick}>
           {action.label}

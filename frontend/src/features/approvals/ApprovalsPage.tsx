@@ -227,13 +227,13 @@ export function ApprovalsPage() {
     <div className="mx-auto min-w-0 max-w-[1280px]">
       <Window title={t`APPROVALS — ${workspaceName}`} titlebarVariant="butter">
         {isLoading && (
-          <p className="p-sp-4 font-mono text-[13px] text-fg-muted">
+          <p className="p-sp-4 font-mono text-13 text-fg-muted">
             <Trans>Loading…</Trans>
           </p>
         )}
 
         {isError && (
-          <p className="p-sp-4 text-[13px] font-semibold text-danger">
+          <p className="p-sp-4 text-13 font-semibold text-danger">
             <Trans>Couldn't load pending changes. Try again.</Trans>
           </p>
         )}
@@ -255,7 +255,7 @@ export function ApprovalsPage() {
 
         {!isLoading && !isError && rows.length > 0 && (
           <>
-            <p className="px-sp-4 pt-sp-3 font-mono text-[12px] tabular-nums text-fg-muted">
+            <p className="px-sp-4 pt-sp-3 font-mono text-12 tabular-nums text-fg-muted">
               {t`${total} pending`}
             </p>
             <RetroTable>
@@ -282,13 +282,15 @@ export function ApprovalsPage() {
                         {change.requester_name || "—"}
                       </span>
                       {change.requester_email && (
-                        <span className="block font-mono text-[11px] text-fg-muted">
+                        <span className="block font-mono text-11 text-fg-muted">
                           {change.requester_email}
                         </span>
                       )}
                     </td>
-                    <td className="font-mono text-[12px]">
-                      <span className="font-semibold">{change.entity_type}</span>
+                    <td className="font-mono text-12">
+                      <span className="font-semibold">
+                        {change.entity_type}
+                      </span>
                       <span className="text-fg-muted">
                         {" "}
                         {shortId(change.entity_id)}

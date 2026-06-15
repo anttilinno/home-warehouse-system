@@ -82,7 +82,7 @@ export function HudRow({ stats }: HudRowProps) {
     <Window
       title={<Trans>System rollups</Trans>}
       titlebarVariant="mint"
-      actions={<span className="font-mono text-[11px]">HUD</span>}
+      actions={<span className="font-mono text-11">HUD</span>}
     >
       <div className="grid grid-cols-1 gap-sp-4 md:grid-cols-3 [&>*]:min-w-0">
         {/* (1) Capacity gauge — hand-rolled SVG donut arc. */}
@@ -113,15 +113,15 @@ export function HudRow({ stats }: HudRowProps) {
               x={GAUGE_CX}
               y={GAUGE_CY + 4}
               textAnchor="middle"
-              className="fill-fg-ink font-display text-[16px]"
+              className="fill-fg-ink font-display text-16"
             >
               {used}
             </text>
           </svg>
-          <span className="text-[11px] font-semibold uppercase tracking-[0.06em] text-fg-muted">
+          <span className="text-11 font-semibold uppercase tracking-6 text-fg-muted">
             <Trans>Capacity</Trans>
           </span>
-          <span className="font-mono text-[10px] text-fg-muted">
+          <span className="font-mono text-10 text-fg-muted">
             {/* Target is a client placeholder — honestly flagged (gap #1). */}
             <Trans>target {CAPACITY_TARGET_PLACEHOLDER} · data pending</Trans>
           </span>
@@ -166,10 +166,10 @@ export function HudRow({ stats }: HudRowProps) {
               />
             )}
           </svg>
-          <span className="text-[11px] font-semibold uppercase tracking-[0.06em] text-fg-muted">
+          <span className="text-11 font-semibold uppercase tracking-6 text-fg-muted">
             <Trans>14-day activity</Trans>
           </span>
-          <span className="font-mono text-[10px] text-fg-muted">
+          <span className="font-mono text-10 text-fg-muted">
             <Trans>data pending</Trans>
           </span>
         </div>
@@ -179,12 +179,10 @@ export function HudRow({ stats }: HudRowProps) {
           {counts.map(([label, value]) => (
             <div
               key={label}
-              className="flex items-baseline justify-between gap-sp-2 text-[12px] font-semibold uppercase tracking-[0.06em] text-fg-muted"
+              className="flex items-baseline justify-between gap-sp-2 text-12 font-semibold uppercase tracking-6 text-fg-muted"
             >
               {label}
-              <b className="font-display text-[16px] text-fg-ink">
-                {value ?? "—"}
-              </b>
+              <b className="font-display text-16 text-fg-ink">{value ?? "—"}</b>
             </div>
           ))}
         </div>

@@ -53,16 +53,16 @@ function AlertCard({
       className="flex items-center justify-between gap-sp-3 border-2 border-border-ink bg-bg-panel-2 px-sp-3 py-sp-2 no-underline"
     >
       <span className="flex flex-col gap-px">
-        <span className="font-display text-[13px] uppercase tracking-[0.02em] text-fg-ink">
+        <span className="font-display text-13 uppercase tracking-2 text-fg-ink">
           {label}
         </span>
         {resolvedZero && (
-          <span className="text-[12px] text-fg-muted">{emptyText}</span>
+          <span className="text-12 text-fg-muted">{emptyText}</span>
         )}
       </span>
       <span className="flex items-center gap-sp-2">
         {trailing}
-        <span className="font-display text-[18px] font-bold text-fg-ink">
+        <span className="font-display text-18 font-bold text-fg-ink">
           {display}
         </span>
       </span>
@@ -74,7 +74,8 @@ export function SystemAlertsPanel() {
   const expiring = useExpiringQuery();
   const maintenance = useMaintenanceDueQuery();
 
-  const expiringCount = expiring.data?.total ?? expiring.data?.items.length ?? 0;
+  const expiringCount =
+    expiring.data?.total ?? expiring.data?.items.length ?? 0;
   const dueCount = maintenance.items.length;
   const overdueCount = maintenance.items.filter((i) => i.is_overdue).length;
 

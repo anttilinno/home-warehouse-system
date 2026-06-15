@@ -150,7 +150,7 @@ function ShellChrome() {
       {/* Skip link — first focusable element, jumps focus to #main. */}
       <a
         href="#main"
-        className="sr-only absolute left-sp-2 top-sp-2 z-50 border-2 border-border-ink bg-bg-panel px-sp-3 py-sp-1 text-[13px] font-semibold focus:not-sr-only focus-visible:outline focus-visible:outline-2 focus-visible:outline-border-ink focus-visible:outline-offset-2"
+        className="sr-only absolute left-sp-2 top-sp-2 z-50 border-2 border-border-ink bg-bg-panel px-sp-3 py-sp-1 text-13 font-semibold focus:not-sr-only focus-visible:outline focus-visible:outline-2 focus-visible:outline-border-ink focus-visible:outline-offset-2"
       >
         <Trans>Skip to content</Trans>
       </a>

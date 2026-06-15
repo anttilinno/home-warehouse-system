@@ -50,7 +50,7 @@ export function BulkActionBar({
       aria-label={t`Bulk actions`}
       className={`flex items-center gap-sp-2 border-2 border-border-ink bg-bg-panel-2 p-sp-3 bevel-raised ${className}`}
     >
-      <span aria-live="polite" className="font-mono text-[12px] tabular-nums">
+      <span aria-live="polite" className="font-mono text-12 tabular-nums">
         <RetroBadge className="bg-titlebar-blue">
           {selectedCount} <Trans>SELECTED</Trans>
         </RetroBadge>
@@ -59,10 +59,7 @@ export function BulkActionBar({
       {children}
 
       {destructiveAction && (
-        <BevelButton
-          variant="danger"
-          onClick={() => setConfirmOpen(true)}
-        >
+        <BevelButton variant="danger" onClick={() => setConfirmOpen(true)}>
           {destructiveAction.label}
         </BevelButton>
       )}

@@ -20,10 +20,7 @@ import {
 import { useRepairMutations } from "../hooks/useRepairMutations";
 import { RepairForm } from "./RepairForm";
 import { CompleteRepairDialog } from "./CompleteRepairDialog";
-import {
-  RepairRecordDialog,
-  type RepairRecordTab,
-} from "./RepairRecordDialog";
+import { RepairRecordDialog, type RepairRecordTab } from "./RepairRecordDialog";
 import type { Inventory, Repair } from "@/lib/types";
 
 // Phase 10b Plan 02 — the per-inventory-row Repairs drawer (RPR-01 + RPR-02). A
@@ -144,11 +141,11 @@ export function RepairsDrawer({
       >
         {/* (1) Cost-rollup header — recessed strip, one mono line per currency. */}
         <div className="bg-bg-panel-2 px-sp-3 py-sp-2">
-          <h4 className="mb-sp-1 text-[10px] font-bold uppercase tracking-[0.14em] text-fg-muted">
+          <h4 className="mb-sp-1 text-10 font-bold uppercase tracking-14 text-fg-muted">
             <Trans>Repair cost</Trans>
           </h4>
           {summaries.length === 0 ? (
-            <p className="font-mono text-[12px] text-fg-muted">
+            <p className="font-mono text-12 text-fg-muted">
               <Trans>No completed repairs yet.</Trans>
             </p>
           ) : (
@@ -156,7 +153,7 @@ export function RepairsDrawer({
               {summaries.map((s) => (
                 <li
                   key={s.currency_code ?? "default"}
-                  className="font-mono text-[12px] tabular-nums text-fg-ink"
+                  className="font-mono text-12 tabular-nums text-fg-ink"
                 >
                   {formatCents(s.total_cost_cents, s.currency_code)}{" "}
                   <span className="text-fg-muted">
@@ -177,11 +174,11 @@ export function RepairsDrawer({
 
         {/* (3) record list / loading / error / empty. */}
         {isLoading ? (
-          <p className="bg-bg-panel-2 p-sp-4 font-mono text-[12px] text-fg-muted">
+          <p className="bg-bg-panel-2 p-sp-4 font-mono text-12 text-fg-muted">
             <Trans>Loading…</Trans>
           </p>
         ) : isError ? (
-          <p className="bg-bg-panel-2 p-sp-4 text-[14px] text-danger">
+          <p className="bg-bg-panel-2 p-sp-4 text-14 text-danger">
             <Trans>Couldn't load repairs. Try again.</Trans>
           </p>
         ) : items.length === 0 ? (
@@ -215,7 +212,7 @@ export function RepairsDrawer({
                   className="flex flex-col gap-sp-1 border-b border-table-rule px-sp-3 py-sp-2"
                 >
                   <div className="flex items-baseline justify-between gap-sp-2">
-                    <span className="text-[14px] font-semibold text-fg-ink">
+                    <span className="text-14 font-semibold text-fg-ink">
                       {repair.description}
                     </span>
                     <StatusPill variant={status.variant}>
@@ -223,7 +220,7 @@ export function RepairsDrawer({
                     </StatusPill>
                   </div>
 
-                  <div className="flex flex-wrap items-baseline gap-sp-2 font-mono text-[12px] text-fg-muted">
+                  <div className="flex flex-wrap items-baseline gap-sp-2 font-mono text-12 text-fg-muted">
                     <span>{formatDate(repair.repair_date)}</span>
                     <span>·</span>
                     <span>
@@ -244,7 +241,8 @@ export function RepairsDrawer({
                     )}
                     {isCompleted && repair.completed_at && (
                       <span>
-                        <Trans>completed</Trans> {formatDate(repair.completed_at)}
+                        <Trans>completed</Trans>{" "}
+                        {formatDate(repair.completed_at)}
                       </span>
                     )}
                   </div>
@@ -253,7 +251,7 @@ export function RepairsDrawer({
                   <div className="flex flex-wrap justify-end gap-sp-1">
                     {isPending && (
                       <BevelButton
-                        className="!px-[8px] !py-[2px] !text-[11px]"
+                        className="!px-[8px] !py-[2px] !text-11"
                         onClick={() => handleStart(repair)}
                       >
                         <Trans>START</Trans>
@@ -261,7 +259,7 @@ export function RepairsDrawer({
                     )}
                     {isInProgress && (
                       <BevelButton
-                        className="!px-[8px] !py-[2px] !text-[11px]"
+                        className="!px-[8px] !py-[2px] !text-11"
                         onClick={() => setCompleteRepair(repair)}
                       >
                         <Trans>COMPLETE</Trans>
@@ -269,14 +267,14 @@ export function RepairsDrawer({
                     )}
                     {!isCompleted && (
                       <BevelButton
-                        className="!px-[8px] !py-[2px] !text-[11px]"
+                        className="!px-[8px] !py-[2px] !text-11"
                         onClick={() => openEdit(repair)}
                       >
                         <Trans>EDIT</Trans>
                       </BevelButton>
                     )}
                     <BevelButton
-                      className="!px-[8px] !py-[2px] !text-[11px]"
+                      className="!px-[8px] !py-[2px] !text-11"
                       onClick={() => setDeleteTarget(repair)}
                     >
                       <Trans>DELETE</Trans>
@@ -286,13 +284,13 @@ export function RepairsDrawer({
                         so the labels show no (n) and the list never blocks on a
                         per-record fetch. */}
                     <BevelButton
-                      className="!px-[8px] !py-[2px] !text-[11px]"
+                      className="!px-[8px] !py-[2px] !text-11"
                       onClick={() => openRecord(repair, "photos")}
                     >
                       <Trans>PHOTOS</Trans>
                     </BevelButton>
                     <BevelButton
-                      className="!px-[8px] !py-[2px] !text-[11px]"
+                      className="!px-[8px] !py-[2px] !text-11"
                       onClick={() => openRecord(repair, "files")}
                     >
                       <Trans>FILES</Trans>

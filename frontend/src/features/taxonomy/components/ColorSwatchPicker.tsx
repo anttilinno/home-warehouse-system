@@ -12,21 +12,27 @@ import { useLingui } from "@lingui/react/macro";
 // Controlled value/onChange so it drops into a RHF Controller.
 
 // The 8 on-palette swatches (UI-SPEC §Label manager) → resolved hex from
-// styles/tokens.css. Stored value is the hex, never the token name.
-interface Swatch {
+// styles/tokens.css. Stored value is the hex (backend wants #RRGGBB), never the
+// token name. `token` names the source CSS var: ColorSwatchPicker.test.ts parses
+// tokens.css and asserts hex === var, so the two copies cannot drift (the old
+// "Deep mint" had silently desynced to #1e6b43 after the AA nudge of
+// --accent-mint-deep — that class of regression now fails the test).
+export interface Swatch {
+  /** The `--<token>` CSS var in tokens.css this swatch mirrors. */
+  token: string;
   hex: string;
   label: string;
 }
 
-const SWATCHES: Swatch[] = [
-  { hex: "#b8d8e8", label: "Sky blue" }, // --titlebar-blue
-  { hex: "#f4b8c4", label: "Pink" }, // --titlebar-pink
-  { hex: "#b8e0c8", label: "Mint" }, // --titlebar-mint
-  { hex: "#f6e3a8", label: "Butter" }, // --titlebar-butter
-  { hex: "#19526f", label: "Deep blue" }, // --accent-blue-deep
-  { hex: "#a8334f", label: "Deep pink" }, // --accent-pink-deep
-  { hex: "#1e6b43", label: "Deep mint" }, // --accent-mint-deep
-  { hex: "#b73348", label: "Danger red" }, // --danger
+export const SWATCHES: Swatch[] = [
+  { token: "titlebar-blue", hex: "#b8d8e8", label: "Sky blue" },
+  { token: "titlebar-pink", hex: "#f4b8c4", label: "Pink" },
+  { token: "titlebar-mint", hex: "#b8e0c8", label: "Mint" },
+  { token: "titlebar-butter", hex: "#f6e3a8", label: "Butter" },
+  { token: "accent-blue-deep", hex: "#19526f", label: "Deep blue" },
+  { token: "accent-pink-deep", hex: "#a8334f", label: "Deep pink" },
+  { token: "accent-mint-deep", hex: "#1a5e3a", label: "Deep mint" },
+  { token: "danger", hex: "#b73348", label: "Danger red" },
 ];
 
 export interface ColorSwatchPickerProps {
@@ -70,7 +76,7 @@ export function ColorSwatchPicker({
             } border border-border-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-border-ink`}
           >
             {/* diagonal slash hints "none" without relying on color alone */}
-            <span aria-hidden="true" className="text-[14px] text-fg-muted">
+            <span aria-hidden="true" className="text-14 text-fg-muted">
               {selected ? "✓" : "∅"}
             </span>
           </button>
@@ -97,7 +103,7 @@ export function ColorSwatchPicker({
               // Ink check on a 1px panel chip so it reads on any swatch hue.
               <span
                 aria-hidden="true"
-                className="rounded-[2px] border border-border-ink bg-bg-panel px-[2px] text-[11px] leading-none text-fg-ink"
+                className="rounded-[2px] border border-border-ink bg-bg-panel px-[2px] text-11 leading-none text-fg-ink"
               >
                 ✓
               </span>

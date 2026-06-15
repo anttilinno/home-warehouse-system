@@ -48,7 +48,7 @@ export function TopBar({ online, onToggleDrawer }: TopBarProps) {
         onClick={onToggleDrawer}
         aria-label="Open navigation"
         title="Open navigation"
-        className={`grid h-[28px] w-[28px] flex-none place-items-center border-2 border-border-ink bg-bg-panel font-mono text-[14px] leading-none bevel-raised-ink active:translate-x-px active:translate-y-px active:bg-bg-pressed active:bevel-pressed md:hidden ${FOCUS_RING}`}
+        className={`grid h-[28px] w-[28px] flex-none place-items-center border-2 border-border-ink bg-bg-panel font-mono text-14 leading-none bevel-raised-ink active:translate-x-px active:translate-y-px active:bg-bg-pressed active:bevel-pressed md:hidden ${FOCUS_RING}`}
       >
         <span aria-hidden="true">☰</span>
       </button>
@@ -57,11 +57,11 @@ export function TopBar({ online, onToggleDrawer }: TopBarProps) {
       <span className="flex flex-none items-center gap-sp-2">
         <span
           aria-hidden="true"
-          className="grid h-[30px] w-[30px] place-items-center border-2 border-border-ink bg-bg-panel font-display text-[16px] bevel-raised-ink"
+          className="grid h-[30px] w-[30px] place-items-center border-2 border-border-ink bg-bg-panel font-display text-16 bevel-raised-ink"
         >
           ▦
         </span>
-        <BrandMark className="hidden text-[16px] sm:inline-block" />
+        <BrandMark className="hidden text-16 sm:inline-block" />
       </span>
 
       {/* Workspace pill — the live AUTH-06 switcher (D-12 SSOT). */}
@@ -75,7 +75,7 @@ export function TopBar({ online, onToggleDrawer }: TopBarProps) {
             isOnline ? "bg-titlebar-mint" : "bg-fg-faint"
           }`}
         />
-        <span className="hidden text-[11px] font-bold uppercase tracking-[0.1em] text-fg-ink sm:inline">
+        <span className="hidden text-11 font-bold uppercase tracking-10 text-fg-ink sm:inline">
           {isOnline ? <Trans>ONLINE</Trans> : <Trans>OFFLINE</Trans>}
         </span>
       </span>

@@ -205,14 +205,14 @@ export function RetroTree({
                   e.stopPropagation();
                   toggle(node.id);
                 }}
-                className="w-[12px] shrink-0 text-center text-[12px] leading-none text-fg-ink"
+                className="w-[12px] shrink-0 text-center text-12 leading-none text-fg-ink"
               >
                 {isOpen ? "▾" : "▸"}
               </button>
             ) : (
               <span
                 aria-hidden
-                className="w-[12px] shrink-0 text-center text-[12px] leading-none text-fg-faint"
+                className="w-[12px] shrink-0 text-center text-12 leading-none text-fg-faint"
               >
                 {"·"}
               </span>
@@ -220,7 +220,7 @@ export function RetroTree({
 
             {/* Name (archived → muted). */}
             <span
-              className={`truncate font-body text-[14px] ${
+              className={`truncate font-body text-14 ${
                 node.isArchived ? "text-fg-muted" : "text-fg-ink"
               }`}
             >
@@ -250,7 +250,7 @@ export function RetroTree({
                   type="button"
                   variant="mint"
                   tabIndex={-1}
-                  className="!px-[8px] !py-[2px] !text-[11px]"
+                  className="!px-[8px] !py-[2px] !text-11"
                   onClick={() => onRestore(node)}
                 >
                   RESTORE
@@ -260,7 +260,7 @@ export function RetroTree({
                   <BevelButton
                     type="button"
                     tabIndex={-1}
-                    className="!px-[8px] !py-[2px] !text-[11px]"
+                    className="!px-[8px] !py-[2px] !text-11"
                     onClick={() => onEdit(node)}
                   >
                     EDIT
@@ -270,7 +270,7 @@ export function RetroTree({
                     tabIndex={-1}
                     aria-label="Add child"
                     title="Add child"
-                    className="!px-[8px] !py-[2px] !text-[11px]"
+                    className="!px-[8px] !py-[2px] !text-11"
                     onClick={() => onAddChild(node)}
                   >
                     {"⊕"}
@@ -280,7 +280,7 @@ export function RetroTree({
                     tabIndex={-1}
                     aria-label="Archive"
                     title="Archive"
-                    className="!px-[8px] !py-[2px] !text-[11px]"
+                    className="!px-[8px] !py-[2px] !text-11"
                     onClick={() => onArchive(node)}
                   >
                     {"⌫"}

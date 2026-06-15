@@ -27,7 +27,7 @@ function LinkRow({ to, label, trailing }: LinkRowProps) {
     <li className="border-b border-table-rule last:border-b-0">
       <Link
         to={to}
-        className="flex min-h-[44px] items-center justify-between gap-sp-3 px-sp-4 py-sp-3 text-[14px] text-fg-ink hover:bg-bg-panel-2"
+        className="flex min-h-[44px] items-center justify-between gap-sp-3 px-sp-4 py-sp-3 text-14 text-fg-ink hover:bg-bg-panel-2"
       >
         <span>{label}</span>
         <span className="flex items-center gap-sp-2 text-fg-muted">

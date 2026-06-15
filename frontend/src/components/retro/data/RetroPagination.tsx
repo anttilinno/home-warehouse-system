@@ -15,7 +15,7 @@ export interface RetroPaginationProps {
 // Verbatim sketch-008 `.pager .pg` page button; current page takes the accent
 // fill + hard ink shadow (the accent-current rule).
 const PAGE_BTN =
-  "cursor-pointer border border-border-ink bg-bg-panel px-[9px] py-[2px] font-mono text-[12px] text-fg-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-border-ink focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:opacity-50";
+  "cursor-pointer border border-border-ink bg-bg-panel px-[9px] py-[2px] font-mono text-12 text-fg-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-border-ink focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:opacity-50";
 const PAGE_BTN_CURRENT = "bg-titlebar-blue font-bold shadow-hard-ink";
 
 /**
@@ -74,7 +74,7 @@ export function RetroPagination({
         {t`NEXT`} ▸
       </BevelButton>
 
-      <span className="ml-auto font-mono text-[12px] tabular-nums text-fg-muted">
+      <span className="ml-auto font-mono text-12 tabular-nums text-fg-muted">
         {t`page ${page} of ${pageCount} · ${perPage} / page`}
       </span>
     </nav>

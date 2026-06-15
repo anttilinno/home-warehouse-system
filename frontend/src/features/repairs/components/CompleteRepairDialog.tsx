@@ -65,7 +65,7 @@ export function CompleteRepairDialog({
         </>
       }
     >
-      <p className="text-[12px] text-fg-muted">
+      <p className="text-12 text-fg-muted">
         <Trans>Mark "{repair.description}" completed?</Trans>
       </p>
 
@@ -81,8 +81,10 @@ export function CompleteRepairDialog({
           </option>
         ))}
       </RetroSelect>
-      <p className="text-[12px] font-body text-fg-muted">
-        <Trans>Optionally update the item's condition now that it's fixed.</Trans>
+      <p className="text-12 font-body text-fg-muted">
+        <Trans>
+          Optionally update the item's condition now that it's fixed.
+        </Trans>
       </p>
     </RetroDialog>
   );

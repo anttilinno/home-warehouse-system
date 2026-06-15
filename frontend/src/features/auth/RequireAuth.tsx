@@ -42,7 +42,7 @@ export function RequireAuth({ children }: { children: ReactNode }) {
   if (workspaces.isPending) {
     return (
       <main className="grid min-h-screen place-items-center">
-        <p className="font-mono text-[13px] text-fg-muted">
+        <p className="font-mono text-13 text-fg-muted">
           <Trans>Loading…</Trans>
         </p>
       </main>
@@ -58,7 +58,7 @@ export function RequireAuth({ children }: { children: ReactNode }) {
           role="alert"
           className="flex max-w-sm flex-col items-center gap-sp-4 text-center"
         >
-          <p className="font-mono text-[13px] text-fg-muted">
+          <p className="font-mono text-13 text-fg-muted">
             <Trans>
               Couldn't reach the server. Check your connection and retry.
             </Trans>

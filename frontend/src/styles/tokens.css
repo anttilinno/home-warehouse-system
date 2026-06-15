@@ -59,7 +59,11 @@
   --font-body: "IBM Plex Sans", system-ui, sans-serif;
   --font-mono: "IBM Plex Mono", ui-monospace, monospace;
 
-  /* ---------- Spacing (4px grid) ---------- */
+  /* ---------- Spacing (4px grid) ----------
+     The grid is the default; a handful of sub-grid chrome paddings
+     (py-[2px]/[6px]/[7px]/[9px]) are a DELIBERATE density exception for dense
+     table/titlebar rows, kept as arbitraries on purpose (not promoted to
+     tokens, which would legitimise off-grid spacing app-wide). */
   --sp-1: 4px;
   --sp-2: 8px;
   --sp-3: 12px;
@@ -139,4 +143,38 @@
   --radius-2xl: 0;
   --radius-3xl: 0;
   --radius-chip: 2px;
+
+  /* ---------- Type scale (px — pixel-crisp for the retro display face).
+     Replaces the former scatter of text-[Npx] arbitraries (D-04: class names
+     mirror the value, so text-12 == 12px). The lint guard
+     scripts/check-arbitrary-typography.mjs blocks any new text-[ ] in *.tsx.
+     A future design pass may thin this scale; values are exact for now so the
+     migration carries zero visual change. */
+  --text-9: 9px;
+  --text-10: 10px;
+  --text-11: 11px;
+  --text-12: 12px;
+  --text-13: 13px;
+  --text-14: 14px;
+  --text-15: 15px;
+  --text-16: 16px;
+  --text-18: 18px;
+  --text-20: 20px;
+  --text-24: 24px;
+  --text-30: 30px;
+  --text-32: 32px;
+  --text-40: 40px;
+
+  /* ---------- Letter-spacing scale (hundredths of em → tracking-8 == 0.08em).
+     Exact values preserved from the prior tracking-[Nem] arbitraries; the
+     near-neighbours (0.06/0.07/0.08) are consolidation candidates for a later
+     design pass. Guarded alongside the type scale. */
+  --tracking-2: 0.02em;
+  --tracking-4: 0.04em;
+  --tracking-6: 0.06em;
+  --tracking-7: 0.07em;
+  --tracking-8: 0.08em;
+  --tracking-10: 0.1em;
+  --tracking-12: 0.12em;
+  --tracking-14: 0.14em;
 }

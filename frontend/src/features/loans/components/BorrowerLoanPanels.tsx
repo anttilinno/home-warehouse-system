@@ -55,7 +55,7 @@ function ActiveLoansPanel({ active }: ActiveLoansPanelProps) {
   if (active.length === 0) {
     return (
       <Window title={<Trans>ACTIVE LOANS</Trans>} titlebarVariant="mint">
-        <p className="text-[14px] font-semibold text-accent-mint-deep">
+        <p className="text-14 font-semibold text-accent-mint-deep">
           <span aria-hidden="true">● </span>
           <Trans>Nothing out</Trans>
         </p>
@@ -79,14 +79,16 @@ interface ActiveLoanRowProps {
 }
 
 function ActiveLoanRow({ loan }: ActiveLoanRowProps) {
-  const [openDialog, setOpenDialog] = useState<"return" | "extend" | null>(null);
+  const [openDialog, setOpenDialog] = useState<"return" | "extend" | null>(
+    null,
+  );
   const status = loanStatus(loan);
 
   return (
     <li className="flex flex-wrap items-center gap-sp-2 border-2 border-border-ink bg-bg-panel-2 px-sp-3 py-sp-2">
       <Link
         to={`/items/${loan.item.id}`}
-        className="text-[14px] font-semibold text-fg-ink underline-offset-2 hover:underline"
+        className="text-14 font-semibold text-fg-ink underline-offset-2 hover:underline"
       >
         {loan.item.name}
       </Link>
@@ -130,7 +132,7 @@ function DueChip({ loan }: { loan: Loan }) {
     );
   }
   return (
-    <span className="font-mono text-[12px] tabular-nums text-fg-muted">
+    <span className="font-mono text-12 tabular-nums text-fg-muted">
       <Trans>due in {Math.max(days, 0)}d</Trans>
     </span>
   );
@@ -167,12 +169,12 @@ function BorrowerLoanHistory({ history }: BorrowerLoanHistoryProps) {
             >
               <Link
                 to={`/items/${loan.item.id}`}
-                className="text-[14px] font-semibold text-fg-ink underline-offset-2 hover:underline"
+                className="text-14 font-semibold text-fg-ink underline-offset-2 hover:underline"
               >
                 {loan.item.name}
               </Link>
               <span className="flex-1" />
-              <span className="font-mono text-[12px] tabular-nums text-fg-muted">
+              <span className="font-mono text-12 tabular-nums text-fg-muted">
                 {formatDate(loan.loaned_at)}
                 {" → "}
                 {loan.returned_at ? (

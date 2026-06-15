@@ -60,7 +60,7 @@ export function ClaimPage() {
         <Window title={<Trans>Claim code</Trans>} titlebarVariant="mint">
           <p
             role="alert"
-            className="border-2 border-border-ink bg-danger-bg p-sp-3 text-[14px] text-danger"
+            className="border-2 border-border-ink bg-danger-bg p-sp-3 text-14 text-danger"
           >
             <Trans>
               Couldn't resolve this code. Check your connection and try again.
@@ -69,7 +69,7 @@ export function ClaimPage() {
           <div className="mt-sp-4 flex justify-end">
             <Link
               to="/scan"
-              className="inline-flex cursor-pointer items-center justify-center gap-sp-2 border-2 border-border-ink bg-bg-panel px-[14px] py-[6px] font-body text-[13px] font-semibold uppercase tracking-[0.04em] text-fg-ink bevel-raised-ink hover:brightness-103 active:translate-x-px active:translate-y-px active:bg-bg-pressed active:bevel-pressed"
+              className="inline-flex cursor-pointer items-center justify-center gap-sp-2 border-2 border-border-ink bg-bg-panel px-[14px] py-[6px] font-body text-13 font-semibold uppercase tracking-4 text-fg-ink bevel-raised-ink hover:brightness-103 active:translate-x-px active:translate-y-px active:bg-bg-pressed active:bevel-pressed"
             >
               <Trans>Back to scan</Trans>
             </Link>
@@ -99,10 +99,10 @@ export function ClaimPage() {
             />
           </div>
           <div role="status" className="text-center">
-            <p className="text-[14px] text-fg-muted">
+            <p className="text-14 text-fg-muted">
               <Trans>Resolving code…</Trans>
             </p>
-            <p className="mt-sp-1 break-all font-mono text-[12px] tabular-nums text-fg-faint">
+            <p className="mt-sp-1 break-all font-mono text-12 tabular-nums text-fg-faint">
               {code}
             </p>
           </div>
@@ -118,12 +118,12 @@ export function ClaimPage() {
   return (
     <main className="mx-auto w-full max-w-[480px] p-sp-4">
       <Window title={<Trans>Claim code</Trans>} titlebarVariant="mint">
-        <p className="text-[14px] text-fg-muted">
+        <p className="text-14 text-fg-muted">
           <Trans>
             No item matches this code yet. Create one with the code attached.
           </Trans>
         </p>
-        <p className="mt-sp-2 break-all font-mono text-[13px] tabular-nums text-fg-ink">
+        <p className="mt-sp-2 break-all font-mono text-13 tabular-nums text-fg-ink">
           {code}
         </p>
         <div className="mt-sp-4 flex flex-wrap gap-sp-3">
@@ -131,7 +131,7 @@ export function ClaimPage() {
               button-in-anchor would be invalid HTML and hide the link role. */}
           <Link
             to={createHref}
-            className="inline-flex cursor-pointer items-center justify-center gap-sp-2 border-2 border-border-ink bg-titlebar-mint px-[14px] py-[6px] font-body text-[13px] font-semibold uppercase tracking-[0.04em] text-fg-ink bevel-raised-ink hover:brightness-103 active:translate-x-px active:translate-y-px active:bg-bg-pressed active:bevel-pressed"
+            className="inline-flex cursor-pointer items-center justify-center gap-sp-2 border-2 border-border-ink bg-titlebar-mint px-[14px] py-[6px] font-body text-13 font-semibold uppercase tracking-4 text-fg-ink bevel-raised-ink hover:brightness-103 active:translate-x-px active:translate-y-px active:bg-bg-pressed active:bevel-pressed"
           >
             <Trans>Create item with this code</Trans>
           </Link>

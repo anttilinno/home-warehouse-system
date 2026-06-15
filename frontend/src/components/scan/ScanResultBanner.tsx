@@ -33,7 +33,7 @@ const STATE: Record<
 };
 
 const BEVEL_BTN =
-  "inline-flex cursor-pointer items-center justify-center gap-sp-2 border-2 border-border-ink px-[14px] py-[6px] font-body text-[13px] font-semibold uppercase tracking-[0.04em] bevel-raised-ink hover:brightness-103 active:translate-x-px active:translate-y-px active:bg-bg-pressed active:bevel-pressed";
+  "inline-flex cursor-pointer items-center justify-center gap-sp-2 border-2 border-border-ink px-[14px] py-[6px] font-body text-13 font-semibold uppercase tracking-4 bevel-raised-ink hover:brightness-103 active:translate-x-px active:translate-y-px active:bg-bg-pressed active:bevel-pressed";
 
 export function ScanResultBanner({
   status,
@@ -56,20 +56,20 @@ export function ScanResultBanner({
           {status === "not-found" && <Trans>NOT FOUND</Trans>}
           {status === "error" && <Trans>ERROR</Trans>}
         </StatusPill>
-        <span aria-hidden="true" className="text-[14px] text-fg-ink">
+        <span aria-hidden="true" className="text-14 text-fg-ink">
           {s.glyph}
         </span>
         {status === "match" && item ? (
-          <span className="font-body text-[14px] text-fg-ink">{item.name}</span>
+          <span className="font-body text-14 text-fg-ink">{item.name}</span>
         ) : status === "error" ? (
-          <span className="font-body text-[14px] text-fg-ink">
+          <span className="font-body text-14 text-fg-ink">
             <Trans>Couldn't look up that code.</Trans>
           </span>
         ) : null}
       </div>
 
       <div className="flex items-center justify-between gap-sp-3">
-        <span className="font-mono text-[14px] tabular-nums text-fg-ink">
+        <span className="font-mono text-14 tabular-nums text-fg-ink">
           {code}
           {status === "loading" && (
             <span

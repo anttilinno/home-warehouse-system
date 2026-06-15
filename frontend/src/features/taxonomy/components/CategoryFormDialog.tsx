@@ -25,7 +25,10 @@ import {
   type CategoryFormValues,
 } from "../schema";
 import { useCategoriesQuery } from "../hooks/useCategoriesQuery";
-import { useCategoryMutations, type UpdateCategoryArg } from "../hooks/useCategoryMutations";
+import {
+  useCategoryMutations,
+  type UpdateCategoryArg,
+} from "../hooks/useCategoryMutations";
 import { buildTree, type TreeNode } from "@/features/taxonomy/lib/buildTree";
 
 // Phase 10 Plan 02 — the category create/edit form (TAX-01). Despite the
@@ -184,7 +187,7 @@ export function CategoryFormDialog({ mode }: CategoryFormDialogProps) {
           {errors.root?.message && (
             <div
               role="alert"
-              className="border-2 border-border-ink bg-danger-bg p-sp-3 text-[14px] text-danger"
+              className="border-2 border-border-ink bg-danger-bg p-sp-3 text-14 text-danger"
             >
               <span aria-hidden="true">✕ </span>
               {errors.root.message}
@@ -210,7 +213,7 @@ export function CategoryFormDialog({ mode }: CategoryFormDialogProps) {
               placeholder={t`(Root — no parent)`}
               error={errors.parent_category_id?.message}
             />
-            <p className="text-[12px] text-fg-muted">
+            <p className="text-12 text-fg-muted">
               <Trans>Leave empty to create a top-level category.</Trans>
             </p>
           </div>
@@ -221,7 +224,7 @@ export function CategoryFormDialog({ mode }: CategoryFormDialogProps) {
               error={errors.description?.message}
               {...register("description")}
             />
-            <p className="text-[12px] text-fg-muted">
+            <p className="text-12 text-fg-muted">
               <Trans>Optional.</Trans>
             </p>
           </div>
@@ -234,7 +237,11 @@ export function CategoryFormDialog({ mode }: CategoryFormDialogProps) {
             >
               <Trans>Cancel</Trans>
             </BevelButton>
-            <BevelButton type="submit" variant="primary" disabled={isSubmitting}>
+            <BevelButton
+              type="submit"
+              variant="primary"
+              disabled={isSubmitting}
+            >
               {submitLabel}
             </BevelButton>
           </div>

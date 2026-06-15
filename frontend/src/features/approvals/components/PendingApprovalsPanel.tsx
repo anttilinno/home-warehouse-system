@@ -24,7 +24,7 @@ import { usePendingChangesQuery } from "../hooks/usePendingChangesQuery";
 // so the navigational affordance reuses its bevel chrome on an anchor to stay a
 // real link (role="link", open-in-tab). Mirrors InventoryPanel's BEVEL_LINK.
 const BEVEL_LINK =
-  "inline-flex cursor-pointer items-center justify-center gap-sp-2 border-2 border-border-ink px-[14px] py-[6px] font-body text-[13px] font-semibold uppercase tracking-[0.04em] bg-bg-panel text-fg-ink bevel-raised-ink hover:brightness-103 active:translate-x-px active:translate-y-px active:bg-bg-pressed active:bevel-pressed";
+  "inline-flex cursor-pointer items-center justify-center gap-sp-2 border-2 border-border-ink px-[14px] py-[6px] font-body text-13 font-semibold uppercase tracking-4 bg-bg-panel text-fg-ink bevel-raised-ink hover:brightness-103 active:translate-x-px active:translate-y-px active:bg-bg-pressed active:bevel-pressed";
 
 export function PendingApprovalsPanel() {
   const { total, isLoading, isError, isForbidden } = usePendingChangesQuery();
@@ -46,13 +46,13 @@ export function PendingApprovalsPanel() {
       bodyClassName="flex flex-1 flex-col justify-center p-sp-4"
     >
       {isLoading ? (
-        <p className="font-mono text-[12px] text-fg-muted">
+        <p className="font-mono text-12 text-fg-muted">
           <Trans>Loading…</Trans>
         </p>
       ) : total > 0 ? (
         <div className="flex items-center justify-between gap-sp-3">
           <div className="flex items-center gap-sp-2">
-            <span className="font-display text-[24px] font-bold leading-none text-fg-ink">
+            <span className="font-display text-24 font-bold leading-none text-fg-ink">
               {total}
             </span>
             <RetroBadge variant="warn">
@@ -64,7 +64,7 @@ export function PendingApprovalsPanel() {
           </Link>
         </div>
       ) : (
-        <p className="font-mono text-[12px] text-fg-muted">
+        <p className="font-mono text-12 text-fg-muted">
           <Trans>Nothing pending</Trans>
         </p>
       )}

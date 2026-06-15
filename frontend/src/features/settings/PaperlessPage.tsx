@@ -59,7 +59,7 @@ export function PaperlessPage() {
         bodyClassName="grid gap-sp-4 p-sp-4"
       >
         {isLoading ? (
-          <p className="text-[14px] text-fg-muted">
+          <p className="text-14 text-fg-muted">
             <Trans>Loading…</Trans>
           </p>
         ) : (
@@ -163,7 +163,7 @@ function PaperlessSearch({
       bodyClassName="grid gap-sp-4 p-sp-4"
     >
       {!enabled && (
-        <p className="text-[14px] text-fg-muted">
+        <p className="text-14 text-fg-muted">
           <Trans>Enable Paperless above to search documents.</Trans>
         </p>
       )}
@@ -193,20 +193,18 @@ function PaperlessSearch({
       </form>
 
       {search.isFetching && (
-        <p className="text-[14px] text-fg-muted">
+        <p className="text-14 text-fg-muted">
           <Trans>Searching…</Trans>
         </p>
       )}
 
-      {errorMessage && (
-        <p className="text-[14px] text-danger">{errorMessage}</p>
-      )}
+      {errorMessage && <p className="text-14 text-danger">{errorMessage}</p>}
 
       {!search.isFetching &&
         !errorMessage &&
         query.trim().length > 0 &&
         results.length === 0 && (
-          <p className="text-[14px] text-fg-muted">
+          <p className="text-14 text-fg-muted">
             <Trans>No documents matched.</Trans>
           </p>
         )}
@@ -218,11 +216,11 @@ function PaperlessSearch({
               key={doc.id}
               className="border-2 border-border-ink bg-bg-panel px-sp-3 py-sp-2"
             >
-              <span className="block text-[14px] font-bold text-fg-ink">
+              <span className="block text-14 font-bold text-fg-ink">
                 {doc.title}
               </span>
               {doc.created && (
-                <span className="block font-mono text-[12px] text-fg-muted">
+                <span className="block font-mono text-12 text-fg-muted">
                   {doc.created}
                 </span>
               )}

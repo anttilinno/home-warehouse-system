@@ -38,13 +38,17 @@ export function ConditionDonutChart({ data }: { data: ConditionBreakdown[] }) {
               stroke="none"
             >
               {data.map((d, i) => (
-                <Cell key={d.condition} fill={seriesAt(i).fill} {...markProps} />
+                <Cell
+                  key={d.condition}
+                  fill={seriesAt(i).fill}
+                  {...markProps}
+                />
               ))}
             </Pie>
           </PieChart>
           <ul
             data-testid="condition-legend"
-            className="flex flex-col gap-[6px] text-[12px] font-semibold"
+            className="flex flex-col gap-[6px] text-12 font-semibold"
           >
             {data.map((d, i) => (
               <li key={d.condition} className="flex items-center gap-sp-2">

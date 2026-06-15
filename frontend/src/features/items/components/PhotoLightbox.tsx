@@ -122,7 +122,7 @@ export function PhotoLightbox({ photos, index, onClose }: PhotoLightboxProps) {
       >
         {/* Top chrome on an opaque panel strip (ink-on-panel AA, NOT white-on-photo). */}
         <div className="flex items-center gap-sp-2 border-b-2 border-border-ink bg-bg-panel px-sp-3 py-sp-2">
-          <span className="font-mono text-[12px] tabular-nums text-fg-ink">
+          <span className="font-mono text-12 tabular-nums text-fg-ink">
             {current + 1} / {count}
           </span>
           <span className="flex-1" />
@@ -134,7 +134,7 @@ export function PhotoLightbox({ photos, index, onClose }: PhotoLightboxProps) {
           >
             ⊖
           </BevelButton>
-          <span className="font-mono text-[12px] tabular-nums text-fg-ink">
+          <span className="font-mono text-12 tabular-nums text-fg-ink">
             {pct}%
           </span>
           <BevelButton
@@ -187,7 +187,7 @@ export function PhotoLightbox({ photos, index, onClose }: PhotoLightboxProps) {
 
         {/* Caption strip (ink-on-panel). */}
         {photo.caption && (
-          <div className="border-t-2 border-border-ink bg-bg-panel p-sp-3 text-center text-[14px] text-fg-ink">
+          <div className="border-t-2 border-border-ink bg-bg-panel p-sp-3 text-center text-14 text-fg-ink">
             {photo.caption}
           </div>
         )}

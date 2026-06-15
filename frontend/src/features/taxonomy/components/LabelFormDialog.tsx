@@ -53,7 +53,11 @@ function labelToDefaults(l: Label): LabelFormInput {
   };
 }
 
-export function LabelFormDialog({ open, label, onClose }: LabelFormDialogProps) {
+export function LabelFormDialog({
+  open,
+  label,
+  onClose,
+}: LabelFormDialogProps) {
   const { t } = useLingui();
   const isEdit = Boolean(label);
 
@@ -118,11 +122,7 @@ export function LabelFormDialog({ open, label, onClose }: LabelFormDialogProps) 
         titlebarVariant="blue"
         footer={
           <>
-            <BevelButton
-              type="button"
-              variant="neutral"
-              onClick={attemptClose}
-            >
+            <BevelButton type="button" variant="neutral" onClick={attemptClose}>
               <Trans>Cancel</Trans>
             </BevelButton>
             <BevelButton
@@ -145,7 +145,7 @@ export function LabelFormDialog({ open, label, onClose }: LabelFormDialogProps) 
           {errors.root?.message && (
             <div
               role="alert"
-              className="border-2 border-border-ink bg-danger-bg p-sp-3 text-[14px] text-danger"
+              className="border-2 border-border-ink bg-danger-bg p-sp-3 text-14 text-danger"
             >
               <span aria-hidden="true">✕ </span>
               {errors.root.message}
@@ -161,7 +161,7 @@ export function LabelFormDialog({ open, label, onClose }: LabelFormDialogProps) 
           />
 
           <div className="flex flex-col gap-sp-2">
-            <span className="text-[11px] font-bold uppercase tracking-[0.08em] text-fg-muted">
+            <span className="text-11 font-bold uppercase tracking-8 text-fg-muted">
               <Trans>Color</Trans>
             </span>
             <Controller
@@ -171,16 +171,14 @@ export function LabelFormDialog({ open, label, onClose }: LabelFormDialogProps) 
                 <ColorSwatchPicker
                   label={t`Color`}
                   value={field.value}
-                  onChange={(hex) =>
-                    field.onChange(hex ?? "")
-                  }
+                  onChange={(hex) => field.onChange(hex ?? "")}
                 />
               )}
             />
             {errors.color?.message && (
-              <p className="text-[12px] text-danger">{errors.color.message}</p>
+              <p className="text-12 text-danger">{errors.color.message}</p>
             )}
-            <p className="text-[12px] text-fg-muted">
+            <p className="text-12 text-fg-muted">
               <Trans>Optional — pick an on-palette color, or none.</Trans>
             </p>
           </div>
@@ -191,7 +189,7 @@ export function LabelFormDialog({ open, label, onClose }: LabelFormDialogProps) 
               error={errors.description?.message}
               {...register("description")}
             />
-            <p className="text-[12px] text-fg-muted">
+            <p className="text-12 text-fg-muted">
               <Trans>Optional.</Trans>
             </p>
           </div>

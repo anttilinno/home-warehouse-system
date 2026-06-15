@@ -105,7 +105,7 @@ export function ItemLabels({ wsId, itemId }: ItemLabelsProps) {
         variant="neutral"
         aria-haspopup="menu"
         aria-expanded={open}
-        className="!px-[8px] !py-[2px] !text-[11px]"
+        className="!px-[8px] !py-[2px] !text-11"
         onClick={() => setOpen((o) => !o)}
       >
         <Trans>⊕ ADD LABEL</Trans>
@@ -120,7 +120,7 @@ export function ItemLabels({ wsId, itemId }: ItemLabelsProps) {
       >
         <div className="flex flex-col gap-sp-1 px-sp-2 py-sp-1">
           {workspaceLabels.length === 0 ? (
-            <p className="px-sp-1 py-sp-1 text-[12px] text-fg-muted">
+            <p className="px-sp-1 py-sp-1 text-12 text-fg-muted">
               <Trans>No labels yet — manage labels in Phase 10.</Trans>
             </p>
           ) : (

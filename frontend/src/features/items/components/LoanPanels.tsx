@@ -50,7 +50,9 @@ export interface ActiveLoanPanelProps {
  */
 export function ActiveLoanPanel({ active, itemId }: ActiveLoanPanelProps) {
   const navigate = useNavigate();
-  const [openDialog, setOpenDialog] = useState<"return" | "extend" | null>(null);
+  const [openDialog, setOpenDialog] = useState<"return" | "extend" | null>(
+    null,
+  );
   // I18N-03: due date honors the user's date_format preference.
   const formatDate = useDateFormat();
   const loan = active[0];
@@ -59,7 +61,7 @@ export function ActiveLoanPanel({ active, itemId }: ActiveLoanPanelProps) {
     return (
       <Window title={<Trans>LOAN</Trans>} titlebarVariant="mint">
         <div className="flex flex-col gap-sp-3">
-          <p className="text-[14px] font-semibold text-accent-mint-deep">
+          <p className="text-14 font-semibold text-accent-mint-deep">
             <span aria-hidden="true">● </span>
             <Trans>Available</Trans>
           </p>
@@ -77,12 +79,12 @@ export function ActiveLoanPanel({ active, itemId }: ActiveLoanPanelProps) {
   return (
     <Window title={<Trans>LOAN</Trans>} titlebarVariant="pink">
       <div className="flex flex-col gap-sp-3">
-        <p className="text-[14px] font-semibold text-accent-pink-deep">
+        <p className="text-14 font-semibold text-accent-pink-deep">
           <span aria-hidden="true">● </span>
           <Trans>On loan to {loan.borrower.name}</Trans>
         </p>
         {loan.due_date && (
-          <p className="font-mono text-[12px] tabular-nums text-fg-muted">
+          <p className="font-mono text-12 tabular-nums text-fg-muted">
             <Trans>Due {formatDate(loan.due_date)}</Trans>
           </p>
         )}
@@ -92,7 +94,7 @@ export function ActiveLoanPanel({ active, itemId }: ActiveLoanPanelProps) {
             <StatusPill variant="danger">
               <Trans>⚠ Overdue</Trans>
             </StatusPill>
-            <p className="text-[12px] text-danger">
+            <p className="text-12 text-danger">
               <Trans>This loan is overdue.</Trans>
             </p>
           </div>
@@ -154,11 +156,11 @@ export function LoanHistoryList({ history }: LoanHistoryListProps) {
             key={loan.id}
             className="flex flex-wrap items-center gap-sp-2 border-2 border-border-ink bg-bg-panel-2 px-sp-3 py-sp-2"
           >
-            <span className="text-[14px] font-semibold text-fg-ink">
+            <span className="text-14 font-semibold text-fg-ink">
               {loan.borrower.name}
             </span>
             <span className="flex-1" />
-            <span className="font-mono text-[12px] tabular-nums text-fg-muted">
+            <span className="font-mono text-12 tabular-nums text-fg-muted">
               {formatDate(loan.loaned_at)}
               {" → "}
               {loan.returned_at ? (

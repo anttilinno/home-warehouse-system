@@ -21,7 +21,7 @@ const FOCUS_RING =
   "focus-visible:outline focus-visible:outline-2 focus-visible:outline-border-ink focus-visible:outline-offset-2";
 
 const PILL_BASE =
-  "hidden select-none items-center gap-sp-1 border-2 border-border-ink bg-bg-panel-2 px-sp-2 py-[2px] text-[13px] font-semibold sm:inline-flex";
+  "hidden select-none items-center gap-sp-1 border-2 border-border-ink bg-bg-panel-2 px-sp-2 py-[2px] text-13 font-semibold sm:inline-flex";
 
 export function WorkspaceSwitcher() {
   const { t } = useLingui();
@@ -91,7 +91,7 @@ export function WorkspaceSwitcher() {
         role="listbox"
         minWidth={220}
       >
-        <p className="px-sp-3 py-[4px] text-[10px] font-bold uppercase tracking-[0.14em] text-fg-muted">
+        <p className="px-sp-3 py-[4px] text-10 font-bold uppercase tracking-14 text-fg-muted">
           <Trans>Workspaces</Trans>
         </p>
 
@@ -100,7 +100,7 @@ export function WorkspaceSwitcher() {
             role="option"
             aria-selected="false"
             aria-disabled="true"
-            className="px-sp-3 py-sp-2 text-[13px] text-fg-muted"
+            className="px-sp-3 py-sp-2 text-13 text-fg-muted"
           >
             <Trans>No workspaces. Contact an owner.</Trans>
           </p>
@@ -115,7 +115,7 @@ export function WorkspaceSwitcher() {
                 aria-selected={isCurrent}
                 aria-current={isCurrent ? "true" : undefined}
                 onClick={() => handleSelect(w.id, w.name)}
-                className={`flex w-full items-center justify-between gap-sp-3 px-sp-3 py-sp-2 text-left text-[14px] min-h-[44px] hover:bg-titlebar-blue focus-visible:bg-titlebar-blue ${FOCUS_RING} ${
+                className={`flex w-full items-center justify-between gap-sp-3 px-sp-3 py-sp-2 text-left text-14 min-h-[44px] hover:bg-titlebar-blue focus-visible:bg-titlebar-blue ${FOCUS_RING} ${
                   isCurrent ? "bg-titlebar-blue font-semibold" : ""
                 }`}
               >

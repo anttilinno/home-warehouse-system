@@ -23,7 +23,7 @@ function ProviderTile({ initial }: { initial: string }) {
   return (
     <span
       aria-hidden="true"
-      className="grid h-[18px] w-[18px] flex-none place-items-center border border-border-ink bg-bg-panel font-display text-[10px] uppercase leading-none text-fg-ink"
+      className="grid h-[18px] w-[18px] flex-none place-items-center border border-border-ink bg-bg-panel font-display text-10 uppercase leading-none text-fg-ink"
     >
       {initial}
     </span>

@@ -44,7 +44,7 @@ import { useShortcuts } from "@/components/shortcuts";
 
 // A muted caption naming an atom and its key states beneath each demo cell.
 function Caption({ children }: { children: React.ReactNode }) {
-  return <p className="text-[14px] text-fg-muted">{children}</p>;
+  return <p className="text-14 text-fg-muted">{children}</p>;
 }
 
 // A family section: a Window with the family's semantic titlebar mood, body
@@ -149,7 +149,7 @@ export function DemoPage() {
       <RetroToaster />
 
       <header className="flex flex-col gap-sp-1">
-        <h1 className="font-display text-[16px] uppercase text-fg-ink">
+        <h1 className="font-display text-16 uppercase text-fg-ink">
           <Trans>Atom Demo</Trans>
         </h1>
         <Caption>
@@ -224,12 +224,15 @@ export function DemoPage() {
           <Trans>RetroFileInput — click + drag-drop drop zone.</Trans>
         </Caption>
 
-        <RetroFormField label={<Trans>With hint</Trans>} hint={t`A helpful hint.`}>
+        <RetroFormField
+          label={<Trans>With hint</Trans>}
+          hint={t`A helpful hint.`}
+        >
           {(id, describedBy) => (
             <input
               id={id}
               aria-describedby={describedBy}
-              className="border-2 border-border-ink bg-bg-panel bevel-sunken px-[10px] py-[7px] text-[14px]"
+              className="border-2 border-border-ink bg-bg-panel bevel-sunken px-[10px] py-[7px] text-14"
             />
           )}
         </RetroFormField>
@@ -243,7 +246,7 @@ export function DemoPage() {
               id={id}
               aria-describedby={describedBy}
               aria-invalid="true"
-              className="border-2 border-danger bg-danger-bg px-[10px] py-[7px] text-[14px]"
+              className="border-2 border-danger bg-danger-bg px-[10px] py-[7px] text-14"
             />
           )}
         </RetroFormField>
@@ -267,13 +270,17 @@ export function DemoPage() {
           <BevelButton onClick={() => setConfirmOpen(true)}>
             <Trans>Confirm dialog</Trans>
           </BevelButton>
-          <BevelButton ref={menuAnchorRef} onClick={() => setMenuOpen((o) => !o)}>
+          <BevelButton
+            ref={menuAnchorRef}
+            onClick={() => setMenuOpen((o) => !o)}
+          >
             <Trans>Menu ▾</Trans>
           </BevelButton>
         </div>
         <Caption>
           <Trans>
-            RetroDialog (each titlebar variant), RetroConfirmDialog, Menu/Popover.
+            RetroDialog (each titlebar variant), RetroConfirmDialog,
+            Menu/Popover.
           </Trans>
         </Caption>
 
@@ -288,7 +295,7 @@ export function DemoPage() {
             </BevelButton>
           }
         >
-          <p className="text-[14px]">
+          <p className="text-14">
             <Trans>
               A centered-modal retro-os Window. ESC pops it via the modal stack.
             </Trans>
@@ -315,7 +322,7 @@ export function DemoPage() {
           <button
             type="button"
             role="menuitem"
-            className="flex items-center gap-sp-2 px-sp-2 py-[6px] text-[14px] text-fg-ink hover:bg-titlebar-blue"
+            className="flex items-center gap-sp-2 px-sp-2 py-[6px] text-14 text-fg-ink hover:bg-titlebar-blue"
             onClick={() => setMenuOpen(false)}
           >
             <Trans>Edit</Trans>
@@ -323,7 +330,7 @@ export function DemoPage() {
           <button
             type="button"
             role="menuitem"
-            className="flex items-center gap-sp-2 px-sp-2 py-[6px] text-[14px] text-danger hover:bg-danger-bg"
+            className="flex items-center gap-sp-2 px-sp-2 py-[6px] text-14 text-danger hover:bg-danger-bg"
             onClick={() => setMenuOpen(false)}
           >
             <Trans>Delete</Trans>
@@ -348,7 +355,9 @@ export function DemoPage() {
           </BevelButton>
         </div>
         <Caption>
-          <Trans>retroToast — all four types (error never auto-dismisses).</Trans>
+          <Trans>
+            retroToast — all four types (error never auto-dismisses).
+          </Trans>
         </Caption>
 
         <div className="flex flex-wrap items-center gap-sp-4">
@@ -373,7 +382,9 @@ export function DemoPage() {
         <RetroEmptyState
           heading={<Trans>Nothing here yet</Trans>}
           body={
-            <Trans>This list is empty. Add your first item to get started.</Trans>
+            <Trans>
+              This list is empty. Add your first item to get started.
+            </Trans>
           }
         />
         <RetroEmptyState
@@ -381,7 +392,8 @@ export function DemoPage() {
           heading={<Trans>No matches</Trans>}
           body={
             <Trans>
-              No items match these filters. Clear a filter or adjust your search.
+              No items match these filters. Clear a filter or adjust your
+              search.
             </Trans>
           }
         />
@@ -460,7 +472,9 @@ export function DemoPage() {
           onPageChange={setPage}
         />
         <Caption>
-          <Trans>RetroPagination — beveled pager with current-page accent.</Trans>
+          <Trans>
+            RetroPagination — beveled pager with current-page accent.
+          </Trans>
         </Caption>
 
         <RetroTabs
@@ -471,7 +485,7 @@ export function DemoPage() {
               id: "overview",
               label: "Overview",
               content: (
-                <p className="text-[14px]">
+                <p className="text-14">
                   <Trans>Overview tab panel.</Trans>
                 </p>
               ),
@@ -480,12 +494,17 @@ export function DemoPage() {
               id: "history",
               label: "History",
               content: (
-                <p className="text-[14px]">
+                <p className="text-14">
                   <Trans>History tab panel.</Trans>
                 </p>
               ),
             },
-            { id: "archived", label: "Archived", content: null, disabled: true },
+            {
+              id: "archived",
+              label: "Archived",
+              content: null,
+              disabled: true,
+            },
           ]}
         />
         <Caption>
@@ -532,7 +551,9 @@ export function DemoPage() {
           }
         />
         <Caption>
-          <Trans>FilterBar + FilterPopover — search, facets, chips, count, CTA.</Trans>
+          <Trans>
+            FilterBar + FilterPopover — search, facets, chips, count, CTA.
+          </Trans>
         </Caption>
 
         <BulkActionBar

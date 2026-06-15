@@ -48,7 +48,11 @@ function SquareDot(props: { cx?: number; cy?: number }) {
 // top stroke) layered with a LINE (loans_returned, mint stroke + square
 // ink-stroked markers) over the months. Full-width panel, blue accent. A custom
 // retro swatch legend names the two series.
-export function MonthlyLoanActivityChart({ data }: { data: MonthlyLoanActivity[] }) {
+export function MonthlyLoanActivityChart({
+  data,
+}: {
+  data: MonthlyLoanActivity[];
+}) {
   const isEmpty = data.length === 0;
 
   return (
@@ -63,7 +67,7 @@ export function MonthlyLoanActivityChart({ data }: { data: MonthlyLoanActivity[]
         <div className="flex flex-col gap-sp-2">
           <ul
             data-testid="monthly-legend"
-            className="flex gap-sp-4 text-[12px] font-semibold"
+            className="flex gap-sp-4 text-12 font-semibold"
           >
             <li className="flex items-center gap-sp-2">
               <span

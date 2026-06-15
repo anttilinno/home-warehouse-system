@@ -72,7 +72,7 @@ export function CaptionDialog({
           }
         }}
       />
-      <p className="text-right font-mono text-[12px] tabular-nums text-fg-muted">
+      <p className="text-right font-mono text-12 tabular-nums text-fg-muted">
         {value.length}/{MAX_CAPTION}
       </p>
     </RetroDialog>

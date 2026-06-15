@@ -114,11 +114,11 @@ const PaperlessPage = lazy(() =>
 
 function PlaceholderShell() {
   return (
-    <main style={{ padding: 16, fontFamily: "monospace" }}>
+    <main className="p-sp-4 font-mono">
       <h1>frontend2 — v3.0 placeholder shell</h1>
       <p>
-        Phase 1 scaffold OK. Tokens (Phase 2), chrome (Phase 3), atoms
-        (Phase 4) follow.
+        Phase 1 scaffold OK. Tokens (Phase 2), chrome (Phase 3), atoms (Phase 4)
+        follow.
       </p>
     </main>
   );
@@ -305,9 +305,7 @@ export function AppRoutes() {
         </Route>
         {/* /demo: the Phase 4 atom review surface. DEV-gated — it renders
             inside AppShell for review but never ships as a user route. */}
-        {import.meta.env.DEV && (
-          <Route path="demo" element={<DemoPage />} />
-        )}
+        {import.meta.env.DEV && <Route path="demo" element={<DemoPage />} />}
       </Route>
       <Route path="*" element={<PlaceholderShell />} />
     </Routes>

@@ -84,7 +84,8 @@ export function MaintenanceForm({
         // PATCH dirty fields only.
         const body: Record<string, unknown> = {};
         if (dirtyFields.title) body.title = values.title;
-        if (dirtyFields.interval_days) body.interval_days = values.interval_days;
+        if (dirtyFields.interval_days)
+          body.interval_days = values.interval_days;
         if (dirtyFields.next_due)
           body.next_due = toRfc3339Date(values.next_due);
         if (dirtyFields.notes) body.notes = values.notes || undefined;
@@ -152,7 +153,7 @@ export function MaintenanceForm({
           {errors.root?.message && (
             <div
               role="alert"
-              className="border-2 border-border-ink bg-danger-bg p-sp-3 text-[14px] text-danger"
+              className="border-2 border-border-ink bg-danger-bg p-sp-3 text-14 text-danger"
             >
               <span aria-hidden="true">✕ </span>
               {errors.root.message}
@@ -178,7 +179,7 @@ export function MaintenanceForm({
             error={errors.interval_days?.message}
             {...register("interval_days", { valueAsNumber: true })}
           />
-          <p className="-mt-sp-3 text-[12px] font-body text-fg-muted">
+          <p className="-mt-sp-3 text-12 font-body text-fg-muted">
             <Trans>How often this repeats, in days.</Trans>
           </p>
 

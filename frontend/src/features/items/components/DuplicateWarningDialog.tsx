@@ -46,7 +46,11 @@ export function DuplicateWarningDialog({
       width="min(460px,92vw)"
       footer={
         <>
-          <BevelButton variant="neutral" disabled={uploading} onClick={onCancel}>
+          <BevelButton
+            variant="neutral"
+            disabled={uploading}
+            onClick={onCancel}
+          >
             <Trans>CANCEL</Trans>
           </BevelButton>
           <BevelButton
@@ -60,12 +64,12 @@ export function DuplicateWarningDialog({
         </>
       }
     >
-      <p className="font-body text-[14px] text-fg-ink">
+      <p className="font-body text-14 text-fg-ink">
         <Trans>
           Found {duplicates.length} similar photo(s) already on this item.
         </Trans>
       </p>
-      <p className="truncate font-mono text-[12px] text-fg-muted">{filename}</p>
+      <p className="truncate font-mono text-12 text-fg-muted">{filename}</p>
       {shown.length > 0 && (
         <div className="flex flex-wrap gap-sp-2">
           {shown.map((d) => (
@@ -82,18 +86,18 @@ export function DuplicateWarningDialog({
               ) : (
                 <span
                   aria-hidden="true"
-                  className="flex h-full w-full items-center justify-center text-[20px] text-fg-faint"
+                  className="flex h-full w-full items-center justify-center text-20 text-fg-faint"
                 >
                   ◇
                 </span>
               )}
-              <span className="absolute bottom-[2px] right-[2px] rounded-chip border border-border-ink bg-bg-panel px-[4px] py-px font-mono text-[10px] tabular-nums text-fg-ink">
+              <span className="absolute bottom-[2px] right-[2px] rounded-chip border border-border-ink bg-bg-panel px-[4px] py-px font-mono text-10 tabular-nums text-fg-ink">
                 {d.similarity_pct}%
               </span>
             </div>
           ))}
           {overflow > 0 && (
-            <div className="flex h-[80px] w-[80px] flex-none items-center justify-center border-2 border-border-ink bg-bg-panel-2 font-mono text-[14px] text-fg-muted">
+            <div className="flex h-[80px] w-[80px] flex-none items-center justify-center border-2 border-border-ink bg-bg-panel-2 font-mono text-14 text-fg-muted">
               +{overflow}
             </div>
           )}

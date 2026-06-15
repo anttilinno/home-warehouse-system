@@ -90,11 +90,11 @@ export function MaintenanceDrawer({
 
         {/* (2) schedule list / loading / error / empty. */}
         {isLoading ? (
-          <p className="bg-bg-panel-2 p-sp-4 font-mono text-[12px] text-fg-muted">
+          <p className="bg-bg-panel-2 p-sp-4 font-mono text-12 text-fg-muted">
             <Trans>Loading…</Trans>
           </p>
         ) : isError ? (
-          <p className="bg-bg-panel-2 p-sp-4 text-[14px] text-danger">
+          <p className="bg-bg-panel-2 p-sp-4 text-14 text-danger">
             <Trans>Couldn't load maintenance. Try again.</Trans>
           </p>
         ) : items.length === 0 ? (
@@ -123,16 +123,16 @@ export function MaintenanceDrawer({
                 className="flex flex-col gap-sp-1 border-b border-table-rule px-sp-3 py-sp-2"
               >
                 <div className="flex items-baseline justify-between gap-sp-2">
-                  <span className="text-[14px] font-semibold text-fg-ink">
+                  <span className="text-14 font-semibold text-fg-ink">
                     {schedule.title}
                   </span>
-                  <span className="font-mono text-[12px] tabular-nums text-fg-muted">
+                  <span className="font-mono text-12 tabular-nums text-fg-muted">
                     {t`every ${schedule.interval_days}d`}
                   </span>
                 </div>
 
                 {/* Line 2: NEUTRAL mono next_due — NO overdue cue here (#3). */}
-                <div className="flex flex-wrap items-baseline gap-sp-2 font-mono text-[12px] tabular-nums text-fg-muted">
+                <div className="flex flex-wrap items-baseline gap-sp-2 font-mono text-12 tabular-nums text-fg-muted">
                   <span>
                     <Trans>Next due</Trans> {formatDate(schedule.next_due)}
                   </span>
@@ -148,19 +148,19 @@ export function MaintenanceDrawer({
                 {/* Actions — COMPLETE / EDIT / DELETE. */}
                 <div className="flex flex-wrap justify-end gap-sp-1">
                   <BevelButton
-                    className="!px-[8px] !py-[2px] !text-[11px]"
+                    className="!px-[8px] !py-[2px] !text-11"
                     onClick={() => setCompleteTarget(schedule)}
                   >
                     <Trans>COMPLETE</Trans>
                   </BevelButton>
                   <BevelButton
-                    className="!px-[8px] !py-[2px] !text-[11px]"
+                    className="!px-[8px] !py-[2px] !text-11"
                     onClick={() => openEdit(schedule)}
                   >
                     <Trans>EDIT</Trans>
                   </BevelButton>
                   <BevelButton
-                    className="!px-[8px] !py-[2px] !text-[11px]"
+                    className="!px-[8px] !py-[2px] !text-11"
                     onClick={() => setDeleteTarget(schedule)}
                   >
                     <Trans>DELETE</Trans>

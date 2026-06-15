@@ -233,7 +233,7 @@ export function RegionalFormatsPage() {
             no read-hook). mono 12px tabular-nums (UI-SPEC §6). */}
         <div
           data-testid="formats-preview"
-          className="grid gap-sp-1 border-2 border-border-ink bg-bg-panel-2 p-sp-3 mono text-[12px] tabular-nums text-fg-ink bevel-sunken"
+          className="grid gap-sp-1 border-2 border-border-ink bg-bg-panel-2 p-sp-3 mono text-12 tabular-nums text-fg-ink bevel-sunken"
         >
           <div className="flex gap-sp-3">
             <span className="w-[64px] text-fg-muted">

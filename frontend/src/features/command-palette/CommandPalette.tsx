@@ -112,19 +112,18 @@ export default function CommandPalette({ open, onClose }: CommandPaletteProps) {
     return (
       <CommandGroup
         heading={heading}
-        className="px-sp-2 py-sp-1 text-[11px] font-semibold uppercase tracking-wide text-fg-muted"
+        className="px-sp-2 py-sp-1 text-11 font-semibold uppercase tracking-wide text-fg-muted"
       >
         {rows.map((hit) => (
           <CommandItem
             key={hit.id}
             value={`${kind}:${hit.id}`}
             onSelect={() =>
-              run(
-                { id: hit.id, kind, label: hit.name, to: toFor(hit) },
-                () => navigate(toFor(hit)),
+              run({ id: hit.id, kind, label: hit.name, to: toFor(hit) }, () =>
+                navigate(toFor(hit)),
               )
             }
-            className="cursor-pointer px-sp-3 py-sp-2 font-body text-sm text-fg-ink data-[selected=true]:bg-titlebar-blue data-[selected=true]:text-fg-ink"
+            className="cursor-pointer px-sp-3 py-sp-2 font-body text-14 text-fg-ink data-[selected=true]:bg-titlebar-blue data-[selected=true]:text-fg-ink"
           >
             {hit.name}
           </CommandItem>
@@ -149,7 +148,7 @@ export default function CommandPalette({ open, onClose }: CommandPaletteProps) {
       >
         {/* Pinstriped powder-blue title bar (System 7), Silkscreen heading. */}
         <div className="flex items-center justify-between border-b-2 border-border-ink bg-titlebar-blue px-sp-3 py-sp-2">
-          <span className="font-display text-[16px] uppercase text-fg-ink">
+          <span className="font-display text-16 uppercase text-fg-ink">
             <Trans>Command Palette</Trans>
           </span>
           <button
@@ -157,7 +156,7 @@ export default function CommandPalette({ open, onClose }: CommandPaletteProps) {
             aria-label={t`Close`}
             title={t`Close`}
             onClick={onClose}
-            className="flex h-[14px] w-[14px] flex-none cursor-pointer items-center justify-center border-2 border-border-ink bg-bg-panel text-[10px] leading-none"
+            className="flex h-[14px] w-[14px] flex-none cursor-pointer items-center justify-center border-2 border-border-ink bg-bg-panel text-10 leading-none"
           >
             <span aria-hidden="true">✕</span>
           </button>
@@ -176,19 +175,19 @@ export default function CommandPalette({ open, onClose }: CommandPaletteProps) {
               value={query}
               onValueChange={setQuery}
               placeholder={t`Search routes, workspaces, items…`}
-              className="w-full border-2 border-border-ink bg-bg-panel px-sp-2 py-sp-1 font-body text-sm text-fg-ink shadow-[inset_1px_1px_var(--color-bevel-shade)] outline-none placeholder:text-fg-faint"
+              className="w-full border-2 border-border-ink bg-bg-panel px-sp-2 py-sp-1 font-body text-14 text-fg-ink shadow-[inset_1px_1px_var(--color-bevel-shade)] outline-none placeholder:text-fg-faint"
             />
           </div>
 
           <CommandList className="max-h-[50vh] overflow-y-auto px-sp-1 py-sp-2">
-            <CommandEmpty className="px-sp-3 py-sp-3 font-body text-sm text-fg-muted">
+            <CommandEmpty className="px-sp-3 py-sp-3 font-body text-14 text-fg-muted">
               <Trans>No results.</Trans>
             </CommandEmpty>
 
             {/* Routes — static, client substring-filtered. */}
             <CommandGroup
               heading={t`Routes`}
-              className="px-sp-2 py-sp-1 text-[11px] font-semibold uppercase tracking-wide text-fg-muted"
+              className="px-sp-2 py-sp-1 text-11 font-semibold uppercase tracking-wide text-fg-muted"
             >
               {paletteRoutes
                 .filter((r) => matches(t(r.label), query))
@@ -199,12 +198,11 @@ export default function CommandPalette({ open, onClose }: CommandPaletteProps) {
                       key={r.to}
                       value={`route:${r.to}`}
                       onSelect={() =>
-                        run(
-                          { id: r.to, kind: "route", label, to: r.to },
-                          () => navigate(r.to),
+                        run({ id: r.to, kind: "route", label, to: r.to }, () =>
+                          navigate(r.to),
                         )
                       }
-                      className="cursor-pointer px-sp-3 py-sp-2 font-body text-sm text-fg-ink data-[selected=true]:bg-titlebar-blue data-[selected=true]:text-fg-ink"
+                      className="cursor-pointer px-sp-3 py-sp-2 font-body text-14 text-fg-ink data-[selected=true]:bg-titlebar-blue data-[selected=true]:text-fg-ink"
                     >
                       {label}
                     </CommandItem>
@@ -215,7 +213,7 @@ export default function CommandPalette({ open, onClose }: CommandPaletteProps) {
             {/* Workspaces — client-filtered; select switches the workspace. */}
             <CommandGroup
               heading={t`Workspaces`}
-              className="px-sp-2 py-sp-1 text-[11px] font-semibold uppercase tracking-wide text-fg-muted"
+              className="px-sp-2 py-sp-1 text-11 font-semibold uppercase tracking-wide text-fg-muted"
             >
               {(workspaces ?? [])
                 .filter((ws) => matches(ws.name, query))
@@ -229,7 +227,7 @@ export default function CommandPalette({ open, onClose }: CommandPaletteProps) {
                         () => setWorkspace(ws.id),
                       )
                     }
-                    className="cursor-pointer px-sp-3 py-sp-2 font-body text-sm text-fg-ink data-[selected=true]:bg-titlebar-blue data-[selected=true]:text-fg-ink"
+                    className="cursor-pointer px-sp-3 py-sp-2 font-body text-14 text-fg-ink data-[selected=true]:bg-titlebar-blue data-[selected=true]:text-fg-ink"
                   >
                     {ws.name}
                   </CommandItem>
@@ -240,7 +238,7 @@ export default function CommandPalette({ open, onClose }: CommandPaletteProps) {
             {recent.length > 0 && (
               <CommandGroup
                 heading={t`Recent`}
-                className="px-sp-2 py-sp-1 text-[11px] font-semibold uppercase tracking-wide text-fg-muted"
+                className="px-sp-2 py-sp-1 text-11 font-semibold uppercase tracking-wide text-fg-muted"
               >
                 {recent
                   .filter((entry) => matches(entry.label, query))
@@ -257,7 +255,7 @@ export default function CommandPalette({ open, onClose }: CommandPaletteProps) {
                           }
                         })
                       }
-                      className="cursor-pointer px-sp-3 py-sp-2 font-body text-sm text-fg-ink data-[selected=true]:bg-titlebar-blue data-[selected=true]:text-fg-ink"
+                      className="cursor-pointer px-sp-3 py-sp-2 font-body text-14 text-fg-ink data-[selected=true]:bg-titlebar-blue data-[selected=true]:text-fg-ink"
                     >
                       {entry.label}
                     </CommandItem>
@@ -267,7 +265,7 @@ export default function CommandPalette({ open, onClose }: CommandPaletteProps) {
 
             {/* Live entity search — already filtered by the server. */}
             {entities.isFetching && (
-              <CommandLoading className="px-sp-3 py-sp-2 font-body text-sm text-fg-muted">
+              <CommandLoading className="px-sp-3 py-sp-2 font-body text-14 text-fg-muted">
                 <Trans>Searching…</Trans>
               </CommandLoading>
             )}

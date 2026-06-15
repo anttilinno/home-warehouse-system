@@ -13,10 +13,7 @@ import {
 } from "@/components/retro";
 import { useWorkspace } from "@/features/workspace/useWorkspace";
 import { formatCents } from "@/lib/utils/money";
-import type {
-  DeclutterGroupBy,
-  DeclutterItem,
-} from "@/lib/api/declutter";
+import type { DeclutterGroupBy, DeclutterItem } from "@/lib/api/declutter";
 import { useDeclutter, useMarkUsed } from "./hooks/useDeclutter";
 import { declutterToCsvBlob, triggerCsvDownload } from "./declutterCsv";
 
@@ -63,8 +60,8 @@ function groupRows(
   for (const row of rows) {
     const label =
       groupBy === "category"
-        ? row.category_name ?? "Uncategorized"
-        : row.location_name ?? "No location";
+        ? (row.category_name ?? "Uncategorized")
+        : (row.location_name ?? "No location");
     const key = `${groupBy}:${label}`;
     let idx = indexByKey.get(key);
     if (idx === undefined) {
@@ -128,7 +125,7 @@ export function DeclutterPage() {
         <td className="font-semibold">
           {row.item_name || "—"}
           {row.item_sku && (
-            <span className="ml-sp-2 font-mono text-[12px] text-fg-muted">
+            <span className="ml-sp-2 font-mono text-12 text-fg-muted">
               {row.item_sku}
             </span>
           )}
@@ -163,9 +160,7 @@ export function DeclutterPage() {
             <RetroSelect
               label={t`Group by`}
               value={groupBy}
-              onChange={(e) =>
-                setGroupBy(e.target.value as DeclutterGroupBy)
-              }
+              onChange={(e) => setGroupBy(e.target.value as DeclutterGroupBy)}
             >
               {GROUP_VALUES.map((value) => (
                 <option key={value} value={value}>
@@ -184,13 +179,13 @@ export function DeclutterPage() {
         </div>
 
         {isLoading && (
-          <p className="p-sp-4 font-mono text-[13px] text-fg-muted">
+          <p className="p-sp-4 font-mono text-13 text-fg-muted">
             <Trans>Loading…</Trans>
           </p>
         )}
 
         {isError && (
-          <p className="p-sp-4 text-[13px] font-semibold text-danger">
+          <p className="p-sp-4 text-13 font-semibold text-danger">
             <Trans>Couldn't load the declutter analysis. Try again.</Trans>
           </p>
         )}
@@ -216,7 +211,7 @@ export function DeclutterPage() {
             {groups.map((group) => (
               <div key={group.key} className="mb-sp-3">
                 {group.label && (
-                  <h2 className="mb-sp-1 text-[12px] font-bold uppercase tracking-[0.08em] text-fg-muted">
+                  <h2 className="mb-sp-1 text-12 font-bold uppercase tracking-8 text-fg-muted">
                     {group.label}
                   </h2>
                 )}

@@ -33,7 +33,7 @@ export function MovementsPanel({
   const formatTime = useTimeFormat();
   if (isLoading) {
     return (
-      <p className="bg-bg-panel-2 p-sp-4 font-mono text-[12px] text-fg-muted">
+      <p className="bg-bg-panel-2 p-sp-4 font-mono text-12 text-fg-muted">
         <Trans>Loading…</Trans>
       </p>
     );
@@ -57,20 +57,18 @@ export function MovementsPanel({
 
   return (
     <div className="bg-bg-panel-2">
-      <h4 className="mx-sp-3 mb-sp-1 pt-sp-2 text-[10px] font-bold uppercase tracking-[0.14em] text-fg-muted">
+      <h4 className="mx-sp-3 mb-sp-1 pt-sp-2 text-10 font-bold uppercase tracking-14 text-fg-muted">
         <Trans>Movements</Trans>
       </h4>
       <ul>
         {movements.map((m) => {
           const from = label(m.from_location_id);
           const to = label(m.to_location_id) ?? "—";
-          const who = m.moved_by
-            ? (resolveMember?.(m.moved_by) ?? null)
-            : null;
+          const who = m.moved_by ? (resolveMember?.(m.moved_by) ?? null) : null;
           return (
             <li
               key={m.id}
-              className="flex flex-wrap items-baseline gap-sp-2 border-b border-table-rule px-sp-3 py-sp-2 font-mono text-[12px] tabular-nums"
+              className="flex flex-wrap items-baseline gap-sp-2 border-b border-table-rule px-sp-3 py-sp-2 font-mono text-12 tabular-nums"
             >
               <span className="text-fg-muted">
                 {formatDate(m.created_at)} {formatTime(m.created_at)}

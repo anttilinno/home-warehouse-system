@@ -100,7 +100,7 @@ export function MembersPage() {
   if (wsId == null) {
     return (
       <Window title={<Trans>Members</Trans>} bodyClassName="p-sp-4">
-        <p className="text-[13px] text-fg-muted">
+        <p className="text-13 text-fg-muted">
           <Trans>Select a workspace to manage its members.</Trans>
         </p>
       </Window>
@@ -113,7 +113,7 @@ export function MembersPage() {
   return (
     <Window title={<Trans>Members</Trans>} bodyClassName="">
       {members.isPending ? (
-        <p className="p-sp-4 text-[13px] text-fg-muted">
+        <p className="p-sp-4 text-13 text-fg-muted">
           <Trans>Loading members…</Trans>
         </p>
       ) : rows.length === 0 ? (
@@ -151,7 +151,7 @@ export function MembersPage() {
                 <tr key={m.id} aria-selected={isSelf || undefined}>
                   <td className="py-sp-3">
                     <span className="flex items-center gap-sp-2">
-                      <span className="text-[14px] text-fg-ink">{name}</span>
+                      <span className="text-14 text-fg-ink">{name}</span>
                       {isSelf && (
                         <RetroBadge variant="info">
                           <Trans>YOU</Trans>
@@ -159,7 +159,7 @@ export function MembersPage() {
                       )}
                     </span>
                   </td>
-                  <td className="mono py-sp-3 text-[12px] text-fg-muted">
+                  <td className="mono py-sp-3 text-12 text-fg-muted">
                     {m.email ?? "—"}
                   </td>
                   <td className="py-sp-3">
@@ -289,7 +289,7 @@ function AddMemberStrip({
       {bandMessage && (
         <p
           role="alert"
-          className="mb-sp-3 border-2 border-danger bg-danger-bg px-sp-3 py-sp-2 text-[13px] font-semibold text-danger"
+          className="mb-sp-3 border-2 border-danger bg-danger-bg px-sp-3 py-sp-2 text-13 font-semibold text-danger"
         >
           {bandMessage}
         </p>

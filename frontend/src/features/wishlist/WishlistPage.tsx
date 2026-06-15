@@ -117,19 +117,22 @@ export function WishlistPage() {
   const tableContent = (
     <>
       <div className="mb-sp-3 flex items-center justify-end">
-        <BevelButton variant="mint" onClick={() => setDialog({ mode: "create" })}>
+        <BevelButton
+          variant="mint"
+          onClick={() => setDialog({ mode: "create" })}
+        >
           <Trans>⊕ ADD</Trans>
         </BevelButton>
       </div>
 
       {isLoading && (
-        <p className="p-sp-4 font-mono text-[13px] text-fg-muted">
+        <p className="p-sp-4 font-mono text-13 text-fg-muted">
           <Trans>Loading…</Trans>
         </p>
       )}
 
       {isError && (
-        <p className="p-sp-4 text-[13px] font-semibold text-danger">
+        <p className="p-sp-4 text-13 font-semibold text-danger">
           <Trans>Couldn't load the wishlist. Try again.</Trans>
         </p>
       )}
@@ -140,7 +143,9 @@ export function WishlistPage() {
             eyebrow={<Trans>Wishlist</Trans>}
             glyph="◇"
             heading={<Trans>NOTHING HERE YET</Trans>}
-            body={<Trans>No items in this list. Add something you're after.</Trans>}
+            body={
+              <Trans>No items in this list. Add something you're after.</Trans>
+            }
             action={{
               label: <Trans>⊕ ADD ITEM</Trans>,
               onClick: () => setDialog({ mode: "create" }),

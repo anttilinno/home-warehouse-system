@@ -46,13 +46,13 @@ export function NotificationsBell() {
         aria-expanded={open}
         aria-label={t`Notifications`}
         onClick={() => setOpen((v) => !v)}
-        className={`grid h-[28px] w-[28px] place-items-center border-2 border-border-ink bg-bg-panel font-mono text-[14px] leading-none bevel-raised-ink active:translate-x-px active:translate-y-px active:bg-bg-pressed active:bevel-pressed ${FOCUS_RING}`}
+        className={`grid h-[28px] w-[28px] place-items-center border-2 border-border-ink bg-bg-panel font-mono text-14 leading-none bevel-raised-ink active:translate-x-px active:translate-y-px active:bg-bg-pressed active:bevel-pressed ${FOCUS_RING}`}
       >
         <span aria-hidden="true">▦</span>
         {hasUnread && (
           <RetroBadge
             variant="danger"
-            className="!absolute -right-[6px] -top-[6px] !px-sp-1 !py-0 !text-[9px] !leading-none"
+            className="!absolute -right-[6px] -top-[6px] !px-sp-1 !py-0 !text-9 !leading-none"
           >
             {badgeLabel}
           </RetroBadge>

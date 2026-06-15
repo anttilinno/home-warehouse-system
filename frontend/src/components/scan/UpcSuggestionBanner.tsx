@@ -53,7 +53,7 @@ export function UpcSuggestionBanner({
             UI-SPEC is omitted rather than fabricated (deviation, see SUMMARY). */}
       </div>
 
-      <p className="font-body text-[14px] text-fg-ink">
+      <p className="font-body text-14 text-fg-ink">
         {product.name}
         {product.brand ? ` — ${product.brand}` : ""}
       </p>
@@ -67,9 +67,7 @@ export function UpcSuggestionBanner({
         </BevelButton>
         <BevelButton
           variant="primary"
-          onClick={() =>
-            onUse({ name: product.name, brand: product.brand })
-          }
+          onClick={() => onUse({ name: product.name, brand: product.brand })}
         >
           <Trans>USE ALL</Trans>
         </BevelButton>

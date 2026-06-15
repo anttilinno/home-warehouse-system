@@ -41,7 +41,7 @@ function TitlebarLabel({
 }) {
   return (
     <span
-      className={`flex w-full items-center gap-sp-1 border-b-2 border-border-ink ${tint} pinstripes px-sp-2 py-[2px] font-display text-[16px] uppercase leading-none text-fg-ink`}
+      className={`flex w-full items-center gap-sp-1 border-b-2 border-border-ink ${tint} pinstripes px-sp-2 py-[2px] font-display text-16 uppercase leading-none text-fg-ink`}
     >
       <span aria-hidden="true">{glyph}</span>
       <span>{label}</span>
@@ -64,12 +64,16 @@ export function RetroToaster() {
       closeButton
       // Per-type titlebar label nodes — the semantic stripe + Silkscreen label.
       icons={{
-        success: <TitlebarLabel tint="bg-titlebar-mint" glyph="✓" label="DONE" />,
+        success: (
+          <TitlebarLabel tint="bg-titlebar-mint" glyph="✓" label="DONE" />
+        ),
         info: <TitlebarLabel tint="bg-titlebar-blue" glyph="●" label="INFO" />,
         warning: (
           <TitlebarLabel tint="bg-titlebar-butter" glyph="⚠" label="WARN" />
         ),
-        error: <TitlebarLabel tint="bg-titlebar-pink" glyph="✕" label="ERROR" />,
+        error: (
+          <TitlebarLabel tint="bg-titlebar-pink" glyph="✕" label="ERROR" />
+        ),
       }}
       toastOptions={{
         unstyled: true,
@@ -81,21 +85,21 @@ export function RetroToaster() {
           // The toast panel = a mini Window. Column layout so the titlebar
           // label (icon slot) sits ABOVE the body. radius 0 — square corners.
           toast:
-            "retro-toast flex w-[min(360px,calc(100vw-2*var(--sp-4)))] flex-col gap-0 overflow-hidden border-2 border-border-ink bg-bg-panel bevel-raised p-0 font-body text-[14px] text-fg-ink",
+            "retro-toast flex w-[min(360px,calc(100vw-2*var(--sp-4)))] flex-col gap-0 overflow-hidden border-2 border-border-ink bg-bg-panel bevel-raised p-0 font-body text-14 text-fg-ink",
           // Icon slot is the full-width titlebar bar (TitlebarLabel fills it).
           icon: "retro-toast__titlebar m-0 w-full",
           // Body content sits below the titlebar with panel padding.
           content: "flex flex-col gap-sp-1 p-sp-2",
-          title: "font-body text-[14px] leading-snug text-fg-ink",
-          description: "font-body text-[14px] text-fg-muted",
+          title: "font-body text-14 leading-snug text-fg-ink",
+          description: "font-body text-14 text-fg-muted",
           // Close box: ink-bordered square (radius 0), ≥24px hit target.
           closeButton:
             "retro-toast__close border-2 border-border-ink bg-bg-panel bevel-raised text-fg-ink",
           // Optional action (e.g. UNDO) reuses the bevel button language.
           actionButton:
-            "border-2 border-border-ink bg-bg-panel bevel-raised px-sp-2 py-[2px] font-body text-[12px] uppercase text-fg-ink",
+            "border-2 border-border-ink bg-bg-panel bevel-raised px-sp-2 py-[2px] font-body text-12 uppercase text-fg-ink",
           cancelButton:
-            "border-2 border-border-ink bg-bg-panel bevel-raised px-sp-2 py-[2px] font-body text-[12px] uppercase text-fg-ink",
+            "border-2 border-border-ink bg-bg-panel bevel-raised px-sp-2 py-[2px] font-body text-12 uppercase text-fg-ink",
         },
       }}
     />

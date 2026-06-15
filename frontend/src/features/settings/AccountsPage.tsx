@@ -2,11 +2,7 @@ import { useState } from "react";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { del, get, HttpError } from "@/lib/api";
-import type {
-  OAuthAccount,
-  OAuthAccountsResponse,
-  User,
-} from "@/lib/types";
+import type { OAuthAccount, OAuthAccountsResponse, User } from "@/lib/types";
 import {
   BevelButton,
   RetroBadge,
@@ -45,7 +41,7 @@ function ProviderTile({ initial }: { initial: string }) {
   return (
     <span
       aria-hidden="true"
-      className="grid h-[28px] w-[28px] flex-none place-items-center border border-border-ink bg-bg-panel font-display text-[12px] uppercase leading-none text-fg-ink"
+      className="grid h-[28px] w-[28px] flex-none place-items-center border border-border-ink bg-bg-panel font-display text-12 uppercase leading-none text-fg-ink"
     >
       {initial}
     </span>
@@ -67,8 +63,7 @@ export function AccountsPage() {
   });
 
   const unlink = useMutation({
-    mutationFn: (provider: string) =>
-      del(`/auth/oauth/accounts/${provider}`),
+    mutationFn: (provider: string) => del(`/auth/oauth/accounts/${provider}`),
     onSuccess: (_data, provider) => {
       const label = PROVIDERS.find((p) => p.id === provider)?.label ?? provider;
       retroToast.success(t`${label} unlinked.`);
@@ -100,7 +95,7 @@ export function AccountsPage() {
   return (
     <Window title={<Trans>Connected Accounts</Trans>} bodyClassName="p-sp-4">
       {accounts.isPending ? (
-        <p className="text-[13px] text-fg-muted">
+        <p className="text-13 text-fg-muted">
           <Trans>Loading accounts…</Trans>
         </p>
       ) : (
@@ -115,11 +110,9 @@ export function AccountsPage() {
               >
                 <ProviderTile initial={provider.initial} />
                 <span className="flex flex-col">
-                  <span className="text-[14px] text-fg-ink">
-                    {provider.label}
-                  </span>
+                  <span className="text-14 text-fg-ink">{provider.label}</span>
                   {account?.email || account?.display_name ? (
-                    <span className="font-mono text-[12px] text-fg-muted">
+                    <span className="font-mono text-12 text-fg-muted">
                       {account.email ?? account.display_name}
                     </span>
                   ) : null}
@@ -142,9 +135,7 @@ export function AccountsPage() {
                   />
                 ) : (
                   <BevelButton
-                    onClick={() =>
-                      navigateTo(`/api/auth/oauth/${provider.id}`)
-                    }
+                    onClick={() => navigateTo(`/api/auth/oauth/${provider.id}`)}
                   >
                     <Trans>Link</Trans>
                   </BevelButton>
@@ -194,9 +185,11 @@ function UnlinkAction({
         </BevelButton>
         <span
           id={noteId}
-          className="max-w-[220px] text-right text-[12px] text-warn-deep"
+          className="max-w-[220px] text-right text-12 text-warn-deep"
         >
-          <Trans>This is your only way to sign in. Set a password first to unlink.</Trans>
+          <Trans>
+            This is your only way to sign in. Set a password first to unlink.
+          </Trans>
         </span>
       </span>
     );

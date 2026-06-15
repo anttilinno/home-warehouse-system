@@ -51,7 +51,7 @@ export function LoginPage() {
         <div className="text-center">
           <BrandMark />
 
-          <div className="mt-sp-1 font-mono text-[11px] uppercase tracking-[0.12em] text-fg-muted">
+          <div className="mt-sp-1 font-mono text-11 uppercase tracking-12 text-fg-muted">
             <Trans>home inventory terminal · v3.0</Trans>
           </div>
         </div>
@@ -59,7 +59,7 @@ export function LoginPage() {
         {authError && (
           <p
             role="alert"
-            className="border-2 border-danger bg-danger-bg px-sp-3 py-sp-2 text-[13px] font-semibold text-danger"
+            className="border-2 border-danger bg-danger-bg px-sp-3 py-sp-2 text-13 font-semibold text-danger"
           >
             <Trans>Wrong email or password. Try again.</Trans>
           </p>
@@ -95,7 +95,7 @@ export function LoginPage() {
         {/* OR divider — sketch 007 .divider (dotted rules either side of OR). */}
         <div
           aria-hidden="true"
-          className="flex items-center gap-sp-2 text-[11px] font-bold uppercase tracking-[0.14em] text-fg-muted"
+          className="flex items-center gap-sp-2 text-11 font-bold uppercase tracking-14 text-fg-muted"
         >
           <span className="h-px flex-1 border-t border-dotted border-fg-faint" />
           <Trans>OR</Trans>
@@ -104,7 +104,7 @@ export function LoginPage() {
 
         <SocialLoginButtons mode="login" />
 
-        <p className="text-center text-[13px] text-fg-muted">
+        <p className="text-center text-13 text-fg-muted">
           <Trans>New here?</Trans>{" "}
           <Link
             to="/register"

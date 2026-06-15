@@ -29,7 +29,7 @@ export function PageHeader({
     <div className="flex items-baseline justify-between gap-sp-4 border-b-2 border-border-ink bg-bg-panel-2 px-sp-3 py-sp-2">
       <nav
         aria-label="Breadcrumb"
-        className="flex items-center gap-sp-1 text-[11px] font-bold uppercase tracking-[0.1em]"
+        className="flex items-center gap-sp-1 text-11 font-bold uppercase tracking-10"
       >
         {segments.map((segment, i) => (
           <Fragment key={`${segment}-${i}`}>
@@ -51,11 +51,11 @@ export function PageHeader({
       {/* SESSION · LAST SYNC is decorative chrome; hidden below lg so the
           breadcrumb + content column never overflow on narrow viewports
           (POL-05 — the meta cluster is ~410px and won't shrink). */}
-      <div className="hidden items-center gap-sp-3 font-mono text-[12px] tabular-nums text-fg-muted lg:flex">
+      <div className="hidden items-center gap-sp-3 font-mono text-12 tabular-nums text-fg-muted lg:flex">
         {/* SESSION readout reuses the isolated Clock leaf (no second timer). */}
         <Clock local={false} />
         <span className="inline-flex items-center gap-sp-1">
-          <span className="text-[11px] font-bold uppercase tracking-[0.1em] text-fg-muted">
+          <span className="text-11 font-bold uppercase tracking-10 text-fg-muted">
             <Trans>LAST SYNC</Trans>
           </span>
           <span

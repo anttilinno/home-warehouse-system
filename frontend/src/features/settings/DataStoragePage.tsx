@@ -53,10 +53,10 @@ export function DataStoragePage() {
     <Window title={<Trans>Data & Storage</Trans>} bodyClassName="p-sp-4">
       {/* 1. CACHED DATA — client-only clear */}
       <section className="flex flex-col gap-sp-2 border-b border-table-rule pb-sp-4">
-        <h2 className="font-display text-[12px] uppercase tracking-[0.06em] text-fg-muted">
+        <h2 className="font-display text-12 uppercase tracking-6 text-fg-muted">
           <Trans>Cached data</Trans>
         </h2>
-        <p className="text-[13px] text-fg-ink">
+        <p className="text-13 text-fg-ink">
           <Trans>
             Clears locally cached lists. Your inventory data stays safe.
           </Trans>
@@ -70,10 +70,10 @@ export function DataStoragePage() {
 
       {/* 2. EXPORT — real, admin-gated blob download */}
       <section className="flex flex-col gap-sp-2 border-b border-table-rule py-sp-4">
-        <h2 className="font-display text-[12px] uppercase tracking-[0.06em] text-fg-muted">
+        <h2 className="font-display text-12 uppercase tracking-6 text-fg-muted">
           <Trans>Export</Trans>
         </h2>
-        <p className="text-[13px] text-fg-ink">
+        <p className="text-13 text-fg-ink">
           <Trans>Download a backup copy of this workspace.</Trans>
         </p>
         {canExport ? (
@@ -91,7 +91,7 @@ export function DataStoragePage() {
             </BevelButton>
           </div>
         ) : (
-          <p className="text-[12px] text-warn-deep">
+          <p className="text-12 text-warn-deep">
             <Trans>Exporting a workspace backup requires admin rights.</Trans>
           </p>
         )}
@@ -99,11 +99,11 @@ export function DataStoragePage() {
 
       {/* 3. IMPORT — pointer to Phase-14 imports (COMING SOON: no route yet) */}
       <section className="flex flex-col gap-sp-2 pt-sp-4">
-        <h2 className="font-display text-[12px] uppercase tracking-[0.06em] text-fg-muted">
+        <h2 className="font-display text-12 uppercase tracking-6 text-fg-muted">
           <Trans>Import</Trans>
         </h2>
         <div className="flex items-center justify-between gap-sp-3">
-          <p className="text-[13px] text-fg-ink">
+          <p className="text-13 text-fg-ink">
             <Trans>Bring data in from a file.</Trans>
           </p>
           <RetroBadge variant="info" aria-disabled="true">

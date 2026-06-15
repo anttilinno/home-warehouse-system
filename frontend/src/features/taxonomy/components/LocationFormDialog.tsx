@@ -11,10 +11,7 @@ import {
   RetroDialog,
   type RetroComboboxOption,
 } from "@/components/retro";
-import {
-  type Location,
-  type CreateLocationBody,
-} from "@/lib/api/location";
+import { type Location, type CreateLocationBody } from "@/lib/api/location";
 import {
   locationSchema,
   type LocationFormInput,
@@ -174,7 +171,7 @@ export function LocationFormDialog({
           {errors.root?.message && (
             <div
               role="alert"
-              className="border-2 border-border-ink bg-danger-bg p-sp-3 text-[14px] text-danger"
+              className="border-2 border-border-ink bg-danger-bg p-sp-3 text-14 text-danger"
             >
               <span aria-hidden="true">✕ </span>
               {errors.root.message}
@@ -200,7 +197,7 @@ export function LocationFormDialog({
               placeholder={t`(Root — no parent)`}
               error={errors.parent_location?.message}
             />
-            <p className="text-[12px] text-fg-muted">
+            <p className="text-12 text-fg-muted">
               <Trans>Leave empty to create a top-level location.</Trans>
             </p>
           </div>
@@ -211,7 +208,7 @@ export function LocationFormDialog({
               error={errors.description?.message}
               {...register("description")}
             />
-            <p className="text-[12px] text-fg-muted">
+            <p className="text-12 text-fg-muted">
               <Trans>Optional.</Trans>
             </p>
           </div>
@@ -222,20 +219,20 @@ export function LocationFormDialog({
               error={errors.short_code?.message}
               {...register("short_code")}
             />
-            <p className="text-[12px] text-fg-muted">
+            <p className="text-12 text-fg-muted">
               <Trans>Optional — auto-generated if left blank.</Trans>
             </p>
           </div>
 
           <div className="flex justify-end gap-sp-2 border-t-2 border-border-ink pt-sp-3">
-            <BevelButton
-              type="button"
-              variant="neutral"
-              onClick={attemptClose}
-            >
+            <BevelButton type="button" variant="neutral" onClick={attemptClose}>
               <Trans>Cancel</Trans>
             </BevelButton>
-            <BevelButton type="submit" variant="primary" disabled={isSubmitting}>
+            <BevelButton
+              type="submit"
+              variant="primary"
+              disabled={isSubmitting}
+            >
               {submitLabel}
             </BevelButton>
           </div>

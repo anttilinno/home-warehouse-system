@@ -167,7 +167,7 @@ export function BorrowerFormPage() {
           {errors.root?.message && (
             <div
               role="alert"
-              className="border-2 border-border-ink bg-danger-bg p-sp-3 text-[14px] text-danger"
+              className="border-2 border-border-ink bg-danger-bg p-sp-3 text-14 text-danger"
             >
               <span aria-hidden="true">✕ </span>
               {errors.root.message}
@@ -192,7 +192,7 @@ export function BorrowerFormPage() {
               error={errors.email?.message}
               {...register("email")}
             />
-            <p className="text-[12px] text-fg-muted">
+            <p className="text-12 text-fg-muted">
               <Trans>Optional — used to identify the borrower.</Trans>
             </p>
           </div>
@@ -205,7 +205,7 @@ export function BorrowerFormPage() {
               error={errors.phone?.message}
               {...register("phone")}
             />
-            <p className="text-[12px] text-fg-muted">
+            <p className="text-12 text-fg-muted">
               <Trans>Optional.</Trans>
             </p>
           </div>
@@ -217,7 +217,7 @@ export function BorrowerFormPage() {
               error={errors.notes?.message}
               {...register("notes")}
             />
-            <p className="text-[12px] text-fg-muted">
+            <p className="text-12 text-fg-muted">
               <Trans>Optional.</Trans>
             </p>
           </div>
@@ -227,7 +227,11 @@ export function BorrowerFormPage() {
             <BevelButton type="button" variant="neutral" onClick={handleCancel}>
               <Trans>Cancel</Trans>
             </BevelButton>
-            <BevelButton type="submit" variant="primary" disabled={isSubmitting}>
+            <BevelButton
+              type="submit"
+              variant="primary"
+              disabled={isSubmitting}
+            >
               {submitLabel}
             </BevelButton>
           </div>

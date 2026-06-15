@@ -70,7 +70,7 @@ export function RegisterPage() {
       >
         <div className="text-center">
           <BrandMark />
-          <div className="mt-sp-1 font-mono text-[11px] uppercase tracking-[0.12em] text-fg-muted">
+          <div className="mt-sp-1 font-mono text-11 uppercase tracking-12 text-fg-muted">
             <Trans>home inventory terminal · v3.0</Trans>
           </div>
         </div>
@@ -78,7 +78,7 @@ export function RegisterPage() {
         {emailTaken && (
           <p
             role="alert"
-            className="border-2 border-danger bg-danger-bg px-sp-3 py-sp-2 text-[13px] font-semibold text-danger"
+            className="border-2 border-danger bg-danger-bg px-sp-3 py-sp-2 text-13 font-semibold text-danger"
           >
             <Trans>That email is already registered.</Trans>{" "}
             <Link
@@ -115,7 +115,7 @@ export function RegisterPage() {
             {...register("password")}
           />
           {!errors.password && (
-            <p className="-mt-sp-2 text-[12px] text-fg-muted">
+            <p className="-mt-sp-2 text-12 text-fg-muted">
               <Trans>At least 8 characters.</Trans>
             </p>
           )}
@@ -139,7 +139,7 @@ export function RegisterPage() {
 
         <div
           aria-hidden="true"
-          className="flex items-center gap-sp-2 text-[11px] font-bold uppercase tracking-[0.14em] text-fg-muted"
+          className="flex items-center gap-sp-2 text-11 font-bold uppercase tracking-14 text-fg-muted"
         >
           <span className="h-px flex-1 border-t border-dotted border-fg-faint" />
           <Trans>OR</Trans>
@@ -148,7 +148,7 @@ export function RegisterPage() {
 
         <SocialLoginButtons mode="register" />
 
-        <p className="text-center text-[13px] text-fg-muted">
+        <p className="text-center text-13 text-fg-muted">
           <Trans>Already have an account?</Trans>{" "}
           <Link
             to="/login"

@@ -30,7 +30,7 @@ export function RetroSelect({
     <div>
       <label
         htmlFor={id}
-        className="mb-sp-1 block text-[12px] font-bold uppercase tracking-[0.08em] text-fg-muted"
+        className="mb-sp-1 block text-12 font-bold uppercase tracking-8 text-fg-muted"
       >
         {label}
       </label>
@@ -39,7 +39,7 @@ export function RetroSelect({
           id={id}
           aria-invalid={error ? true : undefined}
           aria-describedby={error ? errorId : undefined}
-          className={`w-full appearance-none border-2 px-[10px] py-[7px] pr-[28px] font-body text-[14px] text-fg-ink bevel-sunken focus:outline-3 focus:outline-offset-1 focus:outline-titlebar-blue disabled:cursor-not-allowed disabled:opacity-50 ${
+          className={`w-full appearance-none border-2 px-[10px] py-[7px] pr-[28px] font-body text-14 text-fg-ink bevel-sunken focus:outline-3 focus:outline-offset-1 focus:outline-titlebar-blue disabled:cursor-not-allowed disabled:opacity-50 ${
             error
               ? "border-danger bg-danger-bg"
               : "border-border-ink bg-bg-panel"
@@ -50,13 +50,13 @@ export function RetroSelect({
         </select>
         <span
           aria-hidden="true"
-          className="pointer-events-none absolute right-[10px] top-1/2 -translate-y-1/2 text-[12px] text-fg-ink"
+          className="pointer-events-none absolute right-[10px] top-1/2 -translate-y-1/2 text-12 text-fg-ink"
         >
           ▾
         </span>
       </div>
       {error && (
-        <p id={errorId} className="mt-sp-1 text-[12px] font-semibold text-danger">
+        <p id={errorId} className="mt-sp-1 text-12 font-semibold text-danger">
           {error}
         </p>
       )}

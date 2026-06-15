@@ -57,7 +57,8 @@ export function MoveDialog({
   const currentContainer = entry.container_id ?? "";
   // A no-op move = unchanged location AND unchanged container.
   const isNoop =
-    targetLocation === entry.location_id && targetContainer === currentContainer;
+    targetLocation === entry.location_id &&
+    targetContainer === currentContainer;
 
   const locationLabel = useMemo(
     () =>
@@ -68,8 +69,8 @@ export function MoveDialog({
   const containerLabel = useMemo(
     () =>
       currentContainer
-        ? containerOptions.find((o) => o.id === currentContainer)?.label ??
-          currentContainer
+        ? (containerOptions.find((o) => o.id === currentContainer)?.label ??
+          currentContainer)
         : "",
     [containerOptions, currentContainer],
   );
@@ -87,8 +88,12 @@ export function MoveDialog({
       ),
     onSuccess: () => {
       // Both prefixes — inventory + movements (movements have no SSE; manual).
-      queryClient.invalidateQueries({ queryKey: ["inventory", wsId as string] });
-      queryClient.invalidateQueries({ queryKey: ["movements", wsId as string] });
+      queryClient.invalidateQueries({
+        queryKey: ["inventory", wsId as string],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["movements", wsId as string],
+      });
       const dest =
         locationOptions.find((o) => o.id === targetLocation)?.label ??
         targetLocation;
@@ -130,7 +135,7 @@ export function MoveDialog({
       }
     >
       {/* Context line: where the entry currently lives. */}
-      <p className="text-[12px] text-fg-muted">
+      <p className="text-12 text-fg-muted">
         <Trans>Currently in {currentPath}.</Trans>
       </p>
 
@@ -165,7 +170,7 @@ export function MoveDialog({
       </div>
 
       {isNoop && (
-        <p className="text-[12px] text-fg-muted">
+        <p className="text-12 text-fg-muted">
           <Trans>Pick a different location or container.</Trans>
         </p>
       )}
@@ -173,7 +178,7 @@ export function MoveDialog({
       {move.isError && (
         <div
           role="alert"
-          className="border-2 border-border-ink bg-danger-bg p-sp-3 text-[14px] text-danger"
+          className="border-2 border-border-ink bg-danger-bg p-sp-3 text-14 text-danger"
         >
           <span aria-hidden="true">✕ </span>
           <Trans>Couldn't move this entry.</Trans>

@@ -57,7 +57,7 @@ export function RetroCheckbox({
 
   return (
     <label
-      className={`inline-flex min-h-[24px] cursor-pointer items-center gap-sp-1 text-[14px] text-fg-ink has-[:disabled]:cursor-not-allowed has-[:disabled]:opacity-50 ${className}`}
+      className={`inline-flex min-h-[24px] cursor-pointer items-center gap-sp-1 text-14 text-fg-ink has-[:disabled]:cursor-not-allowed has-[:disabled]:opacity-50 ${className}`}
     >
       <input
         ref={setRefs}
@@ -73,7 +73,7 @@ export function RetroCheckbox({
       />
       <span
         aria-hidden="true"
-        className={`flex h-[16px] w-[16px] flex-none items-center justify-center border-2 text-[12px] leading-none text-fg-ink ${boxState}`}
+        className={`flex h-[16px] w-[16px] flex-none items-center justify-center border-2 text-12 leading-none text-fg-ink ${boxState}`}
       >
         {indeterminate ? "–" : isChecked ? "✓" : ""}
       </span>

@@ -7,11 +7,7 @@ import { Trans, useLingui } from "@lingui/react/macro";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { del, get, patch, HttpError, setRefreshToken } from "@/lib/api";
 import { useDateFormat, useTimeFormat } from "@/lib/format";
-import type {
-  CanDeleteResponse,
-  SessionResponse,
-  User,
-} from "@/lib/types";
+import type { CanDeleteResponse, SessionResponse, User } from "@/lib/types";
 import {
   BevelButton,
   RetroBadge,
@@ -97,7 +93,7 @@ function SessionsCard() {
   return (
     <Window title={<Trans>Sessions</Trans>} bodyClassName="">
       {sessions.isPending ? (
-        <p className="p-sp-4 text-[13px] text-fg-muted">
+        <p className="p-sp-4 text-13 text-fg-muted">
           <Trans>Loading sessions…</Trans>
         </p>
       ) : rows.length === 0 ? (
@@ -132,9 +128,7 @@ function SessionsCard() {
               <tr key={s.id} aria-selected={s.is_current || undefined}>
                 <td className="py-sp-3">
                   <span className="flex items-center gap-sp-2">
-                    <span className="text-[14px] text-fg-ink">
-                      {s.device_info}
-                    </span>
+                    <span className="text-14 text-fg-ink">{s.device_info}</span>
                     {s.is_current && (
                       <RetroBadge variant="info">
                         <Trans>THIS DEVICE</Trans>
@@ -142,11 +136,11 @@ function SessionsCard() {
                     )}
                   </span>
                 </td>
-                <td className="mono py-sp-3 text-[12px] text-fg-muted">
+                <td className="mono py-sp-3 text-12 text-fg-muted">
                   {s.ip_address ?? "—"}
                 </td>
                 <td
-                  className="mono py-sp-3 text-[12px]"
+                  className="mono py-sp-3 text-12"
                   title={`${formatDate(s.last_active_at)} ${formatTime(
                     s.last_active_at,
                   )}`}
@@ -256,15 +250,18 @@ function PasswordCard({ hasPassword }: { hasPassword: boolean }) {
   });
 
   return (
-    <Window title={<Trans>Password</Trans>} bodyClassName="grid gap-sp-4 p-sp-4">
+    <Window
+      title={<Trans>Password</Trans>}
+      bodyClassName="grid gap-sp-4 p-sp-4"
+    >
       {!hasPassword && (
         <p
           role="note"
-          className="border-2 border-border-ink bg-titlebar-butter px-sp-3 py-sp-2 text-[13px] text-fg-ink"
+          className="border-2 border-border-ink bg-titlebar-butter px-sp-3 py-sp-2 text-13 text-fg-ink"
         >
           <Trans>
-            You signed in with a provider and haven't set a password yet. Add one
-            to enable email + password login.
+            You signed in with a provider and haven't set a password yet. Add
+            one to enable email + password login.
           </Trans>
         </p>
       )}
@@ -272,7 +269,7 @@ function PasswordCard({ hasPassword }: { hasPassword: boolean }) {
       {wrongCurrent && (
         <p
           role="alert"
-          className="border-2 border-danger bg-danger-bg px-sp-3 py-sp-2 text-[13px] font-semibold text-danger"
+          className="border-2 border-danger bg-danger-bg px-sp-3 py-sp-2 text-13 font-semibold text-danger"
         >
           <Trans>Current password is incorrect.</Trans>
         </p>
@@ -300,7 +297,7 @@ function PasswordCard({ hasPassword }: { hasPassword: boolean }) {
               type="password"
               aria-invalid={errors.new_password ? true : undefined}
               aria-describedby={describedBy}
-              className="w-full border-2 border-border-ink bg-bg-panel px-[10px] py-[7px] font-mono text-[14px] text-fg-ink bevel-sunken focus:outline-3 focus:outline-offset-1 focus:outline-titlebar-blue"
+              className="w-full border-2 border-border-ink bg-bg-panel px-[10px] py-[7px] font-mono text-14 text-fg-ink bevel-sunken focus:outline-3 focus:outline-offset-1 focus:outline-titlebar-blue"
               {...register("new_password")}
             />
           )}
@@ -317,7 +314,7 @@ function PasswordCard({ hasPassword }: { hasPassword: boolean }) {
               type="password"
               aria-invalid={errors.confirm_password ? true : undefined}
               aria-describedby={describedBy}
-              className="w-full border-2 border-border-ink bg-bg-panel px-[10px] py-[7px] font-mono text-[14px] text-fg-ink bevel-sunken focus:outline-3 focus:outline-offset-1 focus:outline-titlebar-blue"
+              className="w-full border-2 border-border-ink bg-bg-panel px-[10px] py-[7px] font-mono text-14 text-fg-ink bevel-sunken focus:outline-3 focus:outline-offset-1 focus:outline-titlebar-blue"
               {...register("confirm_password")}
             />
           )}
@@ -370,17 +367,17 @@ function DangerZoneCard() {
 
   return (
     <Window title={<Trans>Danger Zone</Trans>} titlebarVariant="pink">
-      <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-warn-deep">
+      <p className="text-11 font-bold uppercase tracking-14 text-warn-deep">
         <Trans>Delete account</Trans>
       </p>
-      <p className="mt-sp-2 text-[14px] text-fg-ink">
+      <p className="mt-sp-2 text-14 text-fg-ink">
         <Trans>Deleting your account is permanent and cannot be undone.</Trans>
       </p>
 
       {blocked && (
         <p
           role="alert"
-          className="mt-sp-3 border-2 border-danger bg-danger-bg px-sp-3 py-sp-2 text-[13px] font-semibold text-danger"
+          className="mt-sp-3 border-2 border-danger bg-danger-bg px-sp-3 py-sp-2 text-13 font-semibold text-danger"
         >
           <Trans>
             You're the sole owner of: {blockingNames}. Transfer ownership or
@@ -425,7 +422,7 @@ function DangerZoneCard() {
             aria-label={t`Type DELETE to confirm`}
             value={typed}
             onChange={(e) => setTyped(e.target.value)}
-            className="w-full border-2 border-border-ink bg-bg-panel px-[10px] py-[7px] font-mono text-[14px] text-fg-ink bevel-sunken focus:outline-3 focus:outline-offset-1 focus:outline-titlebar-blue"
+            className="w-full border-2 border-border-ink bg-bg-panel px-[10px] py-[7px] font-mono text-14 text-fg-ink bevel-sunken focus:outline-3 focus:outline-offset-1 focus:outline-titlebar-blue"
           />
         </span>
       </RetroConfirmDialog>

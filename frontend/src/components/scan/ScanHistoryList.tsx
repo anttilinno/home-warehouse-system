@@ -50,7 +50,7 @@ export function ScanHistoryList({
     return (
       <div className="flex flex-col gap-sp-3">
         <div className="flex items-center justify-between">
-          <p className="text-[11px] font-bold uppercase tracking-[0.08em] text-fg-muted">
+          <p className="text-11 font-bold uppercase tracking-8 text-fg-muted">
             <Trans>RECENT SCANS</Trans>
           </p>
           <BevelButton variant="danger" disabled aria-disabled>
@@ -69,7 +69,7 @@ export function ScanHistoryList({
   return (
     <div className="flex flex-col gap-sp-3">
       <div className="flex items-center justify-between">
-        <p className="text-[11px] font-bold uppercase tracking-[0.08em] text-fg-muted">
+        <p className="text-11 font-bold uppercase tracking-8 text-fg-muted">
           <Trans>RECENT SCANS</Trans>
         </p>
         <BevelButton variant="danger" onClick={() => setConfirmOpen(true)}>
@@ -87,11 +87,11 @@ export function ScanHistoryList({
                 i % 2 === 1 ? "bg-table-stripe" : ""
               }`}
             >
-              <span className="font-mono text-[13px] tabular-nums text-fg-ink">
+              <span className="font-mono text-13 tabular-nums text-fg-ink">
                 {entry.code}
               </span>
               <span className="flex items-center gap-sp-2">
-                <span className="text-[11px] text-fg-muted">
+                <span className="text-11 text-fg-muted">
                   {relativeTime(entry.timestamp, now)}
                 </span>
                 <span aria-hidden="true" className="text-fg-muted">

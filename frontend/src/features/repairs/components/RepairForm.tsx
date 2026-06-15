@@ -141,7 +141,11 @@ export function RepairForm({ open, onClose, invId, repair }: RepairFormProps) {
               form="repair-form"
               disabled={isSubmitting}
             >
-              {isEdit ? <Trans>SAVE CHANGES</Trans> : <Trans>SAVE REPAIR</Trans>}
+              {isEdit ? (
+                <Trans>SAVE CHANGES</Trans>
+              ) : (
+                <Trans>SAVE REPAIR</Trans>
+              )}
             </BevelButton>
           </>
         }
@@ -155,7 +159,7 @@ export function RepairForm({ open, onClose, invId, repair }: RepairFormProps) {
           {errors.root?.message && (
             <div
               role="alert"
-              className="border-2 border-border-ink bg-danger-bg p-sp-3 text-[14px] text-danger"
+              className="border-2 border-border-ink bg-danger-bg p-sp-3 text-14 text-danger"
             >
               <span aria-hidden="true">✕ </span>
               {errors.root.message}
@@ -186,7 +190,7 @@ export function RepairForm({ open, onClose, invId, repair }: RepairFormProps) {
             error={errors.cost?.message}
             {...register("cost")}
           />
-          <p className="-mt-sp-3 text-[12px] font-body text-fg-muted">
+          <p className="-mt-sp-3 text-12 font-body text-fg-muted">
             <Trans>Amount in your workspace currency.</Trans>
           </p>
 
@@ -209,7 +213,7 @@ export function RepairForm({ open, onClose, invId, repair }: RepairFormProps) {
             error={errors.reminder_date?.message}
             {...register("reminder_date")}
           />
-          <p className="-mt-sp-3 text-[12px] font-body text-fg-muted">
+          <p className="-mt-sp-3 text-12 font-body text-fg-muted">
             <Trans>Optional — a follow-up maintenance reminder.</Trans>
           </p>
         </form>

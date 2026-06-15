@@ -37,7 +37,7 @@ export interface InventoryPanelProps {
 // so navigational affordances (ADD / EDIT) reuse its bevel chrome on an anchor
 // to stay real links (right-click/open-in-tab + role="link" for the spec).
 const BEVEL_LINK =
-  "inline-flex cursor-pointer items-center justify-center gap-sp-2 border-2 border-border-ink px-[8px] py-[2px] font-body text-[11px] font-semibold uppercase tracking-[0.04em] bg-bg-panel text-fg-ink bevel-raised-ink hover:brightness-103 active:translate-x-px active:translate-y-px active:bg-bg-pressed active:bevel-pressed";
+  "inline-flex cursor-pointer items-center justify-center gap-sp-2 border-2 border-border-ink px-[8px] py-[2px] font-body text-11 font-semibold uppercase tracking-4 bg-bg-panel text-fg-ink bevel-raised-ink hover:brightness-103 active:translate-x-px active:translate-y-px active:bg-bg-pressed active:bevel-pressed";
 
 /** Format an RFC3339 date to a days-ahead chip (UI-SPEC §5 near/past rule). */
 function expiryChip(iso: string): {
@@ -50,7 +50,11 @@ function expiryChip(iso: string): {
   const today = new Date();
   const msPerDay = 24 * 60 * 60 * 1000;
   // Normalize both to UTC midnight so a same-day expiry reads `in 0d`.
-  const t0 = Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate());
+  const t0 = Date.UTC(
+    today.getUTCFullYear(),
+    today.getUTCMonth(),
+    today.getUTCDate(),
+  );
   const t1 = Date.UTC(
     target.getUTCFullYear(),
     target.getUTCMonth(),
@@ -73,10 +77,7 @@ export function InventoryPanel({ wsId, itemId }: InventoryPanelProps) {
   // already cached workspace-wide, so the move dialog and the panel share it.
   const { locations, containers } = usePickerOptions();
 
-  const entries = useMemo(
-    () => entriesQuery.data ?? [],
-    [entriesQuery.data],
-  );
+  const entries = useMemo(() => entriesQuery.data ?? [], [entriesQuery.data]);
 
   // Local move-target: the entry currently being relocated (null = dialog closed).
   const [moveEntry, setMoveEntry] = useState<Inventory | null>(null);
@@ -104,10 +105,10 @@ export function InventoryPanel({ wsId, itemId }: InventoryPanelProps) {
         aria-label="Inventory"
         className="flex flex-col items-center gap-sp-2 border-2 border-border-ink bg-bg-panel-2 bevel-sunken px-sp-4 py-sp-5 text-center"
       >
-        <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-fg-muted">
+        <p className="text-10 font-bold uppercase tracking-14 text-fg-muted">
           <Trans>INVENTORY</Trans>
         </p>
-        <p className="font-mono text-[12px] text-fg-muted">
+        <p className="font-mono text-12 text-fg-muted">
           <Trans>Loading…</Trans>
         </p>
       </section>
@@ -121,16 +122,13 @@ export function InventoryPanel({ wsId, itemId }: InventoryPanelProps) {
         aria-label="Inventory"
         className="flex flex-col items-center gap-sp-2 border-2 border-border-ink bg-bg-panel-2 bevel-sunken px-sp-4 py-sp-5 text-center"
       >
-        <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-fg-muted">
+        <p className="text-10 font-bold uppercase tracking-14 text-fg-muted">
           <Trans>INVENTORY</Trans>
         </p>
-        <span
-          aria-hidden="true"
-          className="text-[32px] leading-none text-fg-faint"
-        >
+        <span aria-hidden="true" className="text-32 leading-none text-fg-faint">
           ◇
         </span>
-        <p className="text-[14px] text-fg-muted">
+        <p className="text-14 text-fg-muted">
           <Trans>No stock entries yet.</Trans>
         </p>
         <Link to={newHref} className={BEVEL_LINK}>
@@ -147,7 +145,7 @@ export function InventoryPanel({ wsId, itemId }: InventoryPanelProps) {
     >
       {/* Header: INVENTORY eyebrow + ⊕ ADD. */}
       <div className="flex items-center justify-between gap-sp-2">
-        <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-fg-muted">
+        <p className="text-10 font-bold uppercase tracking-14 text-fg-muted">
           <Trans>INVENTORY</Trans>
         </p>
         <Link to={newHref} className={BEVEL_LINK}>
@@ -157,10 +155,10 @@ export function InventoryPanel({ wsId, itemId }: InventoryPanelProps) {
 
       {/* IN STOCK total summary. */}
       <div className="flex items-baseline gap-sp-2 border-b-2 border-border-ink pb-sp-2">
-        <span className="text-[10px] font-bold uppercase tracking-[0.14em] text-fg-muted">
+        <span className="text-10 font-bold uppercase tracking-14 text-fg-muted">
           <Trans>IN STOCK</Trans>
         </span>
-        <span className="font-display text-[16px] font-bold text-fg-ink">
+        <span className="font-display text-16 font-bold text-fg-ink">
           {total}
         </span>
       </div>
@@ -170,11 +168,7 @@ export function InventoryPanel({ wsId, itemId }: InventoryPanelProps) {
         {entries.map((entry) => {
           const loc = locationLabel(entry.location_id);
           const ct = containerLabel(entry.container_id);
-          const path = loc
-            ? ct
-              ? `${loc} / ${ct}`
-              : loc
-            : "—";
+          const path = loc ? (ct ? `${loc} / ${ct}` : loc) : "—";
           const expiryIso = entry.expiration_date ?? entry.warranty_expires;
           const chip = expiryIso ? expiryChip(expiryIso) : null;
           return (
@@ -184,7 +178,7 @@ export function InventoryPanel({ wsId, itemId }: InventoryPanelProps) {
             >
               {/* Line 1: qty + status + condition pills. */}
               <div className="flex flex-wrap items-center gap-sp-1">
-                <span className="font-mono text-[14px] font-semibold tabular-nums text-fg-ink">
+                <span className="font-mono text-14 font-semibold tabular-nums text-fg-ink">
                   ×{entry.quantity}
                 </span>
                 <StatusPill variant={STATUS_VARIANT[entry.status]}>
@@ -198,7 +192,7 @@ export function InventoryPanel({ wsId, itemId }: InventoryPanelProps) {
               {/* Line 2: location / container path. */}
               <p
                 data-testid={`entry-path-${entry.id}`}
-                className={`text-[14px] ${loc ? "text-fg-ink" : "text-fg-muted"}`}
+                className={`text-14 ${loc ? "text-fg-ink" : "text-fg-muted"}`}
               >
                 {loc ? (
                   <Link
@@ -216,7 +210,7 @@ export function InventoryPanel({ wsId, itemId }: InventoryPanelProps) {
               {chip && (
                 <span
                   title={chip.title}
-                  className={`w-fit rounded-chip px-[6px] py-[1px] font-mono text-[11px] ${
+                  className={`w-fit rounded-chip px-[6px] py-[1px] font-mono text-11 ${
                     chip.past
                       ? "bg-danger-bg text-danger"
                       : "bg-titlebar-butter text-fg-ink"
@@ -229,15 +223,12 @@ export function InventoryPanel({ wsId, itemId }: InventoryPanelProps) {
               {/* Row actions: MOVE + EDIT. */}
               <div className="flex items-center gap-sp-1">
                 <BevelButton
-                  className="!px-[8px] !py-[2px] !text-[11px]"
+                  className="!px-[8px] !py-[2px] !text-11"
                   onClick={() => setMoveEntry(entry)}
                 >
                   <Trans>MOVE</Trans>
                 </BevelButton>
-                <Link
-                  to={`/inventory/${entry.id}/edit`}
-                  className={BEVEL_LINK}
-                >
+                <Link to={`/inventory/${entry.id}/edit`} className={BEVEL_LINK}>
                   <Trans>EDIT</Trans>
                 </Link>
               </div>

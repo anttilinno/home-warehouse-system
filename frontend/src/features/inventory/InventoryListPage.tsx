@@ -52,13 +52,8 @@ export function InventoryListPage() {
   const { currentWorkspaceId: wsId, workspaces } = useWorkspace();
 
   const { data, isLoading, isError, state } = useInventoryQuery();
-  const {
-    updateQuantity,
-    updateStatus,
-    updateCondition,
-    archive,
-    restore,
-  } = useInventoryMutations();
+  const { updateQuantity, updateStatus, updateCondition, archive, restore } =
+    useInventoryMutations();
   // RQ v5 returns a NEW mutation wrapper each render; the `.mutate` identity is
   // stable. Destructure the stable mutates so the shortcut memos never churn.
   const setQuantity = updateQuantity.mutate;
@@ -232,7 +227,11 @@ export function InventoryListPage() {
         displayValue: conditionFilter.map((c) => CONDITION_LABEL[c]).join(", "),
       });
     if (showArchived)
-      chips.push({ key: "archived", label: t`Archived`, displayValue: t`shown` });
+      chips.push({
+        key: "archived",
+        label: t`Archived`,
+        displayValue: t`shown`,
+      });
     return chips;
   }, [statusFilter, conditionFilter, showArchived, t]);
 
@@ -277,8 +276,7 @@ export function InventoryListPage() {
 
   // After client filtering, the page can be visibly empty even when the loaded
   // page carried rows (a filter narrowed them all out).
-  const showEmpty =
-    !isLoading && !isError && visible.length === 0;
+  const showEmpty = !isLoading && !isError && visible.length === 0;
 
   return (
     <div className="mx-auto min-w-0 max-w-[1280px]">
@@ -356,13 +354,13 @@ export function InventoryListPage() {
         />
 
         {isLoading && (
-          <p className="p-sp-4 font-mono text-[13px] text-fg-muted">
+          <p className="p-sp-4 font-mono text-13 text-fg-muted">
             <Trans>Loading…</Trans>
           </p>
         )}
 
         {isError && (
-          <p className="p-sp-4 text-[13px] font-semibold text-danger">
+          <p className="p-sp-4 text-13 font-semibold text-danger">
             <Trans>Couldn't load inventory. Try again.</Trans>
           </p>
         )}
@@ -381,7 +379,7 @@ export function InventoryListPage() {
                       type="button"
                       aria-label={t`Sort by quantity`}
                       onClick={() => onSort("qty")}
-                      className="cursor-pointer font-bold uppercase tracking-[0.07em] focus-visible:outline focus-visible:outline-2 focus-visible:outline-border-ink"
+                      className="cursor-pointer font-bold uppercase tracking-7 focus-visible:outline focus-visible:outline-2 focus-visible:outline-border-ink"
                     >
                       {t`Qty`}
                       <span aria-hidden="true">{sortGlyph("qty")}</span>
@@ -392,7 +390,7 @@ export function InventoryListPage() {
                       type="button"
                       aria-label={t`Sort by status`}
                       onClick={() => onSort("status")}
-                      className="cursor-pointer font-bold uppercase tracking-[0.07em] focus-visible:outline focus-visible:outline-2 focus-visible:outline-border-ink"
+                      className="cursor-pointer font-bold uppercase tracking-7 focus-visible:outline focus-visible:outline-2 focus-visible:outline-border-ink"
                     >
                       {t`Status`}
                       <span aria-hidden="true">{sortGlyph("status")}</span>
@@ -403,7 +401,7 @@ export function InventoryListPage() {
                       type="button"
                       aria-label={t`Sort by condition`}
                       onClick={() => onSort("condition")}
-                      className="cursor-pointer font-bold uppercase tracking-[0.07em] focus-visible:outline focus-visible:outline-2 focus-visible:outline-border-ink"
+                      className="cursor-pointer font-bold uppercase tracking-7 focus-visible:outline focus-visible:outline-2 focus-visible:outline-border-ink"
                     >
                       {t`Condition`}
                       <span aria-hidden="true">{sortGlyph("condition")}</span>
@@ -564,9 +562,7 @@ export function InventoryListPage() {
         invId={movementsId}
         itemName={
           movementsId
-            ? itemName(
-                entries.find((e) => e.id === movementsId)?.item_id ?? "",
-              )
+            ? itemName(entries.find((e) => e.id === movementsId)?.item_id ?? "")
             : undefined
         }
         onClose={() => setMovementsId(null)}
@@ -576,9 +572,7 @@ export function InventoryListPage() {
         invId={repairsId}
         itemName={
           repairsId
-            ? itemName(
-                entries.find((e) => e.id === repairsId)?.item_id ?? "",
-              )
+            ? itemName(entries.find((e) => e.id === repairsId)?.item_id ?? "")
             : undefined
         }
         onClose={() => setRepairsId(null)}

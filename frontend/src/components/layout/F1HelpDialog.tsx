@@ -83,10 +83,10 @@ export function F1HelpDialog({ open, onClose, onToggle }: F1HelpDialogProps) {
       <Group label={<Trans>ROUTE</Trans>}>
         {routeShortcuts.length === 0 ? (
           <div className="flex flex-col gap-sp-1">
-            <p className="font-body text-[13px] font-semibold uppercase tracking-[0.1em] text-fg-ink">
+            <p className="font-body text-13 font-semibold uppercase tracking-10 text-fg-ink">
               <Trans>NO SHORTCUTS HERE</Trans>
             </p>
-            <p className="font-body text-[14px] text-fg-muted">
+            <p className="font-body text-14 text-fg-muted">
               <Trans>
                 This route has no quick actions yet. Press F1 anytime for the
                 full list.
@@ -122,7 +122,7 @@ function Group({
 }) {
   return (
     <section className="flex flex-col gap-sp-2">
-      <h3 className="border-b border-dotted border-fg-faint pb-[3px] font-body text-[10px] font-bold uppercase tracking-[0.14em] text-fg-muted">
+      <h3 className="border-b border-dotted border-fg-faint pb-[3px] font-body text-10 font-bold uppercase tracking-14 text-fg-muted">
         {label}
       </h3>
       <div className="flex flex-col gap-sp-1">{children}</div>
@@ -151,7 +151,7 @@ function Row({
         danger={danger}
         onActivate={onActivate}
       />
-      <span className="font-body text-[14px] text-fg-ink">{description}</span>
+      <span className="font-body text-14 text-fg-ink">{description}</span>
     </div>
   );
 }

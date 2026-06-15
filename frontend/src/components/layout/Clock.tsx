@@ -70,12 +70,12 @@ function Readout({
 }) {
   return (
     <span className="inline-flex items-center gap-sp-1">
-      <span className="font-body text-[11px] font-bold uppercase tracking-[0.1em] text-fg-muted">
+      <span className="font-body text-11 font-bold uppercase tracking-10 text-fg-muted">
         {children}
       </span>
       <span
         data-testid={testid}
-        className="font-mono text-[12px] tabular-nums text-fg-ink"
+        className="font-mono text-12 tabular-nums text-fg-ink"
       >
         {value}
       </span>

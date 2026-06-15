@@ -11,8 +11,11 @@ import { RetroBadge, Window } from "@/components/retro";
 
 export function AppearancePage() {
   return (
-    <Window title={<Trans>Appearance</Trans>} bodyClassName="grid gap-sp-4 p-sp-4">
-      <p className="text-[12px] font-bold uppercase tracking-[0.08em] text-fg-muted">
+    <Window
+      title={<Trans>Appearance</Trans>}
+      bodyClassName="grid gap-sp-4 p-sp-4"
+    >
+      <p className="text-12 font-bold uppercase tracking-8 text-fg-muted">
         <Trans>Theme</Trans>
       </p>
 
@@ -20,20 +23,20 @@ export function AppearancePage() {
       <div className="flex items-start gap-sp-3 border-2 border-border-ink bg-titlebar-blue px-sp-3 py-sp-3 bevel-pressed">
         <span
           aria-hidden="true"
-          className="mt-px flex-none text-[16px] leading-none text-fg-ink"
+          className="mt-px flex-none text-16 leading-none text-fg-ink"
         >
           ◉
         </span>
         <span className="flex flex-1 flex-col gap-sp-1">
           <span className="flex items-center gap-sp-2">
-            <span className="text-[14px] font-bold text-fg-ink">
+            <span className="text-14 font-bold text-fg-ink">
               <Trans>Light</Trans>
             </span>
             <RetroBadge variant="info">
               <Trans>CURRENT</Trans>
             </RetroBadge>
           </span>
-          <span className="text-[12px] text-fg-ink/80">
+          <span className="text-12 text-fg-ink/80">
             <Trans>Retro OS Pastel — the only theme.</Trans>
           </span>
         </span>
@@ -42,7 +45,7 @@ export function AppearancePage() {
       {/* Butter backlog band (PasswordCard note pattern). */}
       <p
         role="note"
-        className="border-2 border-border-ink bg-titlebar-butter px-sp-3 py-sp-2 text-[13px] text-fg-ink"
+        className="border-2 border-border-ink bg-titlebar-butter px-sp-3 py-sp-2 text-13 text-fg-ink"
       >
         <Trans>Light only — a dark theme is on the backlog.</Trans>
       </p>

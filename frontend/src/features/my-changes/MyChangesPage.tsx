@@ -56,13 +56,13 @@ export function MyChangesPage() {
     <div className="mx-auto min-w-0 max-w-[1280px]">
       <Window title={t`MY CHANGES — ${workspaceName}`}>
         {isLoading && (
-          <p className="p-sp-4 font-mono text-[13px] text-fg-muted">
+          <p className="p-sp-4 font-mono text-13 text-fg-muted">
             <Trans>Loading…</Trans>
           </p>
         )}
 
         {isError && (
-          <p className="p-sp-4 text-[13px] font-semibold text-danger">
+          <p className="p-sp-4 text-13 font-semibold text-danger">
             <Trans>Couldn't load your changes. Try again.</Trans>
           </p>
         )}
@@ -99,7 +99,7 @@ export function MyChangesPage() {
                     {change.entity_type}
                     {change.entity_id && (
                       <span
-                        className="ml-sp-2 font-mono text-[12px] font-normal text-fg-muted"
+                        className="ml-sp-2 font-mono text-12 font-normal text-fg-muted"
                         title={change.entity_id}
                       >
                         {shortId(change.entity_id)}

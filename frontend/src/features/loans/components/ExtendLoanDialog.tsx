@@ -22,12 +22,17 @@ export interface ExtendLoanDialogProps {
 /** YYYY-MM-DD for the date input — from an ISO timestamp, or N days from base. */
 function toDateInput(iso: string | undefined, plusDays = 0): string {
   const base = iso ? new Date(iso) : new Date();
-  if (Number.isNaN(base.getTime())) return new Date().toISOString().slice(0, 10);
+  if (Number.isNaN(base.getTime()))
+    return new Date().toISOString().slice(0, 10);
   base.setUTCDate(base.getUTCDate() + plusDays);
   return base.toISOString().slice(0, 10);
 }
 
-export function ExtendLoanDialog({ open, onClose, loan }: ExtendLoanDialogProps) {
+export function ExtendLoanDialog({
+  open,
+  onClose,
+  loan,
+}: ExtendLoanDialogProps) {
   const { t } = useLingui();
   const { extendLoan } = useLoanMutations();
 
@@ -83,7 +88,7 @@ export function ExtendLoanDialog({ open, onClose, loan }: ExtendLoanDialogProps)
         </>
       }
     >
-      <p className="text-[12px] text-fg-muted">
+      <p className="text-12 text-fg-muted">
         <Trans>
           {loan.item.name} — currently due {currentDue}.
         </Trans>

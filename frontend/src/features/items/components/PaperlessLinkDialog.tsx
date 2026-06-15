@@ -146,18 +146,18 @@ export function PaperlessLinkDialog({
       </form>
 
       {search.isFetching && (
-        <p className="text-[14px] text-fg-muted">
+        <p className="text-14 text-fg-muted">
           <Trans>Searching…</Trans>
         </p>
       )}
 
-      {searchError && <p className="text-[14px] text-danger">{searchError}</p>}
+      {searchError && <p className="text-14 text-danger">{searchError}</p>}
 
       {!search.isFetching &&
         !searchError &&
         query.trim().length > 0 &&
         results.length === 0 && (
-          <p className="text-[14px] text-fg-muted">
+          <p className="text-14 text-fg-muted">
             <Trans>No documents matched.</Trans>
           </p>
         )}
@@ -178,11 +178,11 @@ export function PaperlessLinkDialog({
                       : "border-border-ink bg-bg-panel"
                   }`}
                 >
-                  <span className="block text-[14px] font-bold text-fg-ink">
+                  <span className="block text-14 font-bold text-fg-ink">
                     {doc.title}
                   </span>
                   {doc.created && (
-                    <span className="block font-mono text-[12px] text-fg-muted">
+                    <span className="block font-mono text-12 text-fg-muted">
                       {doc.created}
                     </span>
                   )}

@@ -33,7 +33,10 @@ const BADGE_VARIANT: Record<AttachmentType, RetroBadgeVariant> = {
   PHOTO: "info",
 };
 
-export function ItemAttachmentPanel({ wsId, itemId }: ItemAttachmentPanelProps) {
+export function ItemAttachmentPanel({
+  wsId,
+  itemId,
+}: ItemAttachmentPanelProps) {
   const { t } = useLingui();
   const { items, isLoading, isError, setPrimary, deleteAttachment } =
     useItemAttachments(wsId, itemId);
@@ -59,11 +62,11 @@ export function ItemAttachmentPanel({ wsId, itemId }: ItemAttachmentPanelProps) 
   return (
     <div className="flex flex-col gap-sp-2">
       {isLoading ? (
-        <p className="bg-bg-panel-2 p-sp-4 font-mono text-[12px] text-fg-muted">
+        <p className="bg-bg-panel-2 p-sp-4 font-mono text-12 text-fg-muted">
           <Trans>Loading…</Trans>
         </p>
       ) : isError ? (
-        <p className="bg-bg-panel-2 p-sp-4 text-[14px] text-danger">
+        <p className="bg-bg-panel-2 p-sp-4 text-14 text-danger">
           <Trans>Couldn't load files. Try again.</Trans>
         </p>
       ) : items.length === 0 ? (
@@ -100,19 +103,19 @@ export function ItemAttachmentPanel({ wsId, itemId }: ItemAttachmentPanelProps) 
                 href={itemAttachmentsApi.downloadUrl(wsId, att.id)}
                 target="_blank"
                 rel="noreferrer"
-                className="flex-1 truncate text-[14px] font-semibold text-fg-ink underline-offset-2 hover:underline"
+                className="flex-1 truncate text-14 font-semibold text-fg-ink underline-offset-2 hover:underline"
               >
                 {att.title || att.file_name || t`Untitled`}
               </a>
               {att.file_mime_type && (
-                <span className="font-mono text-[12px] text-fg-muted">
+                <span className="font-mono text-12 text-fg-muted">
                   {att.file_mime_type}
                 </span>
               )}
               {!att.is_primary && (
                 <BevelButton
                   variant="mint"
-                  className="!px-[8px] !py-[2px] !text-[11px]"
+                  className="!px-[8px] !py-[2px] !text-11"
                   disabled={setPrimary.isPending}
                   onClick={() => handleSetPrimary(att)}
                 >
@@ -121,7 +124,7 @@ export function ItemAttachmentPanel({ wsId, itemId }: ItemAttachmentPanelProps) 
               )}
               <BevelButton
                 variant="danger"
-                className="!px-[8px] !py-[2px] !text-[11px]"
+                className="!px-[8px] !py-[2px] !text-11"
                 onClick={() => setDeleteTarget(att)}
               >
                 <Trans>DELETE</Trans>

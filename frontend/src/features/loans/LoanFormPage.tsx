@@ -94,8 +94,7 @@ export function LoanFormPage() {
   }, [fromItem, inventoryOptions, setValue]);
 
   const createLoan = useMutation({
-    mutationFn: (body: CreateLoanBody) =>
-      loansApi.create(wsId as string, body),
+    mutationFn: (body: CreateLoanBody) => loansApi.create(wsId as string, body),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["loans", wsId as string] });
       if (fromItem) {
@@ -173,7 +172,7 @@ export function LoanFormPage() {
           {errors.root?.message && (
             <div
               role="alert"
-              className="border-2 border-border-ink bg-danger-bg p-sp-3 text-[14px] text-danger"
+              className="border-2 border-border-ink bg-danger-bg p-sp-3 text-14 text-danger"
             >
               <span aria-hidden="true">✕ </span>
               {errors.root.message}
@@ -213,12 +212,12 @@ export function LoanFormPage() {
               )}
             />
             {inventoryEmpty && (
-              <p className="text-[12px] text-fg-muted">
+              <p className="text-12 text-fg-muted">
                 <Trans>No inventory entries yet — add one first.</Trans>
               </p>
             )}
             {fromItem && !inventoryEmpty && (
-              <p className="text-[12px] text-fg-muted">
+              <p className="text-12 text-fg-muted">
                 <Trans>Loaning this item — pick a borrower.</Trans>
               </p>
             )}
@@ -249,7 +248,7 @@ export function LoanFormPage() {
               )}
             />
             {borrowersEmpty && (
-              <p className="text-[12px] text-fg-muted">
+              <p className="text-12 text-fg-muted">
                 <Trans>No borrowers yet — add one first.</Trans>
               </p>
             )}
@@ -264,7 +263,7 @@ export function LoanFormPage() {
               error={errors.due_date?.message}
               {...register("due_date")}
             />
-            <p className="text-[12px] text-fg-muted">
+            <p className="text-12 text-fg-muted">
               <Trans>Optional — leave blank for no due date.</Trans>
             </p>
           </div>
@@ -281,7 +280,11 @@ export function LoanFormPage() {
             <BevelButton type="button" variant="neutral" onClick={handleCancel}>
               <Trans>Cancel</Trans>
             </BevelButton>
-            <BevelButton type="submit" variant="primary" disabled={isSubmitting}>
+            <BevelButton
+              type="submit"
+              variant="primary"
+              disabled={isSubmitting}
+            >
               <Trans>Create loan</Trans>
             </BevelButton>
           </div>

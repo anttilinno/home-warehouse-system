@@ -60,7 +60,7 @@ export function SavedFilters({
             type="button"
             aria-pressed={active}
             onClick={() => onApply(preset.id)}
-            className={`inline-flex items-center gap-[6px] rounded-chip border border-border-ink px-sp-2 py-px text-[11px] font-bold uppercase tracking-[0.07em] text-fg-ink cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-border-ink focus-visible:outline-offset-2 ${
+            className={`inline-flex items-center gap-[6px] rounded-chip border border-border-ink px-sp-2 py-px text-11 font-bold uppercase tracking-7 text-fg-ink cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-border-ink focus-visible:outline-offset-2 ${
               active ? "bg-titlebar-blue" : "bg-bg-panel-2"
             }`}
           >
@@ -90,7 +90,7 @@ export function SavedFilters({
         {savedFilters.length === 0 ? (
           <div
             role="menuitem"
-            className="px-sp-2 py-[6px] text-[14px] text-fg-muted"
+            className="px-sp-2 py-[6px] text-14 text-fg-muted"
           >
             <Trans>No saved filters yet.</Trans>
           </div>
@@ -98,7 +98,7 @@ export function SavedFilters({
           savedFilters.map((preset) => (
             <div
               key={preset.id}
-              className="flex items-center gap-sp-2 px-sp-2 py-[6px] text-[14px] text-fg-ink hover:bg-titlebar-blue"
+              className="flex items-center gap-sp-2 px-sp-2 py-[6px] text-14 text-fg-ink hover:bg-titlebar-blue"
             >
               <button
                 type="button"
@@ -135,7 +135,7 @@ export function SavedFilters({
             setMenuOpen(false);
             setSaveOpen(true);
           }}
-          className="cursor-pointer px-sp-2 py-[6px] text-left text-[14px] text-fg-ink hover:bg-titlebar-blue focus-visible:outline focus-visible:outline-2 focus-visible:outline-border-ink"
+          className="cursor-pointer px-sp-2 py-[6px] text-left text-14 text-fg-ink hover:bg-titlebar-blue focus-visible:outline focus-visible:outline-2 focus-visible:outline-border-ink"
         >
           <Trans>SAVE CURRENT…</Trans>
         </button>

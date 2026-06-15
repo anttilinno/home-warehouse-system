@@ -94,7 +94,7 @@ export function ProfilePage() {
         {emailTaken && (
           <p
             role="alert"
-            className="border-2 border-danger bg-danger-bg px-sp-3 py-sp-2 text-[13px] font-semibold text-danger"
+            className="border-2 border-danger bg-danger-bg px-sp-3 py-sp-2 text-13 font-semibold text-danger"
           >
             <Trans>That email is already in use.</Trans>
           </p>
@@ -103,9 +103,7 @@ export function ProfilePage() {
         <form onSubmit={submit} className="grid gap-sp-4" noValidate>
           <RetroInput
             label={<Trans>Full name</Trans>}
-            error={
-              errors.full_name && <Trans>Enter your name.</Trans>
-            }
+            error={errors.full_name && <Trans>Enter your name.</Trans>}
             {...register("full_name")}
           />
           <RetroInput

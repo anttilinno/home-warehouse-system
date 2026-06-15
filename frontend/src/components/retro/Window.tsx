@@ -51,7 +51,7 @@ export function Window({
           className={`flex select-none items-center gap-sp-3 border-b-2 border-border-ink px-sp-3 py-[6px] pinstripes ${TITLEBAR_VARIANTS[titlebarVariant]}`}
         >
           <CornerBox />
-          <h2 className="flex-1 truncate text-center font-display text-[16px] uppercase tracking-[0.02em]">
+          <h2 className="flex-1 truncate text-center font-display text-16 uppercase tracking-2">
             {title}
           </h2>
           {actions ?? <CornerBox />}

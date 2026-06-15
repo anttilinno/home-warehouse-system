@@ -12,16 +12,13 @@ export function InventoryPanelStub() {
       aria-label="Inventory"
       className="flex flex-col items-center gap-sp-2 border-2 border-border-ink bg-bg-panel-2 bevel-sunken px-sp-4 py-sp-5 text-center"
     >
-      <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-fg-muted">
+      <p className="text-10 font-bold uppercase tracking-14 text-fg-muted">
         <Trans>INVENTORY</Trans>
       </p>
-      <span
-        aria-hidden="true"
-        className="text-[32px] leading-none text-fg-faint"
-      >
+      <span aria-hidden="true" className="text-32 leading-none text-fg-faint">
         ◇
       </span>
-      <p className="text-[14px] text-fg-muted">
+      <p className="text-14 text-fg-muted">
         <Trans>Stock entries arrive in 7b.</Trans>
       </p>
     </section>

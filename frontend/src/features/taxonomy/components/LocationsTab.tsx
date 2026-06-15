@@ -63,7 +63,9 @@ export function LocationsTab() {
     return m;
   }, [rows]);
 
-  const [archiveTarget, setArchiveTarget] = useState<ArchiveTarget | null>(null);
+  const [archiveTarget, setArchiveTarget] = useState<ArchiveTarget | null>(
+    null,
+  );
   const [form, setForm] = useState<FormState>({ open: false });
 
   const openCreateRoot = () => setForm({ open: true });
@@ -90,10 +92,10 @@ export function LocationsTab() {
   if (isError) {
     return (
       <div className="flex flex-col items-start gap-sp-3">
-        <p className="text-[14px] font-semibold text-danger">
+        <p className="text-14 font-semibold text-danger">
           <Trans>COULDN'T LOAD LOCATIONS</Trans>
         </p>
-        <p className="text-[13px] text-fg-muted">
+        <p className="text-13 text-fg-muted">
           <Trans>Something went wrong. Try again.</Trans>
         </p>
         <BevelButton onClick={() => refetch()}>
@@ -105,7 +107,7 @@ export function LocationsTab() {
 
   if (isLoading) {
     return (
-      <p className="font-mono text-[13px] text-fg-muted">
+      <p className="font-mono text-13 text-fg-muted">
         <Trans>Loading…</Trans>
       </p>
     );

@@ -24,7 +24,7 @@ interface NavItemProps {
 
 // Shared base layout; `relative` anchors the rail-mode badge dot.
 const NAV_BASE =
-  "relative flex items-center gap-sp-2 px-sp-2 py-[5px] text-[13px] font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-border-ink focus-visible:outline-offset-2";
+  "relative flex items-center gap-sp-2 px-sp-2 py-[5px] text-13 font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-border-ink focus-visible:outline-offset-2";
 
 function NavBody({ glyph, label, count }: NavItemProps) {
   return (
@@ -44,9 +44,9 @@ function NavBody({ glyph, label, count }: NavItemProps) {
           />
         )}
       </span>
-      <span className="nav-label truncate uppercase tracking-[0.04em]">{label}</span>
+      <span className="nav-label truncate uppercase tracking-4">{label}</span>
       {count !== undefined && (
-        <span className="nav-count ml-auto font-mono text-[11px] tabular-nums text-fg-muted">
+        <span className="nav-count ml-auto font-mono text-11 tabular-nums text-fg-muted">
           {count}
         </span>
       )}
@@ -111,10 +111,16 @@ function NavItem({ glyph, label, count, to }: NavItemProps) {
   );
 }
 
-function NavGroup({ title, children }: { title: ReactNode; children: ReactNode }) {
+function NavGroup({
+  title,
+  children,
+}: {
+  title: ReactNode;
+  children: ReactNode;
+}) {
   return (
     <div className="mb-sp-3">
-      <h3 className="nav-label mx-sp-2 mb-sp-1 border-b border-dotted border-fg-faint pb-[3px] text-[10px] font-bold uppercase tracking-[0.14em] text-fg-muted">
+      <h3 className="nav-label mx-sp-2 mb-sp-1 border-b border-dotted border-fg-faint pb-[3px] text-10 font-bold uppercase tracking-14 text-fg-muted">
         {title}
       </h3>
       {children}
@@ -140,7 +146,6 @@ export function Sidebar({
   onToggleCollapse,
   onLogout,
 }: SidebarProps) {
-
   const collapseToggle = (
     <button
       type="button"
@@ -148,7 +153,7 @@ export function Sidebar({
       aria-expanded={!collapsed}
       aria-label={collapsed ? "Expand navigator" : "Collapse navigator"}
       title={collapsed ? "Expand navigator" : "Collapse navigator"}
-      className="grid h-[16px] w-[16px] flex-none place-items-center border-2 border-border-ink bg-bg-panel font-mono text-[12px] leading-none bevel-raised-ink hover:brightness-103 active:translate-x-px active:translate-y-px active:bg-bg-pressed active:bevel-pressed focus-visible:outline focus-visible:outline-2 focus-visible:outline-border-ink focus-visible:outline-offset-2"
+      className="grid h-[16px] w-[16px] flex-none place-items-center border-2 border-border-ink bg-bg-panel font-mono text-12 leading-none bevel-raised-ink hover:brightness-103 active:translate-x-px active:translate-y-px active:bg-bg-pressed active:bevel-pressed focus-visible:outline focus-visible:outline-2 focus-visible:outline-border-ink focus-visible:outline-offset-2"
     >
       <span aria-hidden="true">{collapsed ? "›" : "‹"}</span>
     </button>
@@ -168,14 +173,48 @@ export function Sidebar({
           <NavItem glyph="▤" label={<Trans>Analytics</Trans>} to="/analytics" />
         </NavGroup>
         <NavGroup title={<Trans>Inventory</Trans>}>
-          <NavItem glyph="▣" label={<Trans>Items</Trans>} count={stats?.total_items} to="/items" />
+          <NavItem
+            glyph="▣"
+            label={<Trans>Items</Trans>}
+            count={stats?.total_items}
+            to="/items"
+          />
           <NavItem glyph="⬚" label={<Trans>Inventory</Trans>} to="/inventory" />
-          <NavItem glyph="⊞" label={<Trans>Maintenance</Trans>} to="/maintenance/due" />
-          <NavItem glyph="▢" label={<Trans>Locations</Trans>} count={stats?.total_locations} to="/taxonomy?tab=locations" />
-          <NavItem glyph="▥" label={<Trans>Containers</Trans>} count={stats?.total_containers} to="/taxonomy?tab=containers" />
-          <NavItem glyph="◇" label={<Trans>Categories</Trans>} count={stats?.total_categories} to="/taxonomy?tab=categories" />
-          <NavItem glyph="↧" label={<Trans>Loans</Trans>} count={stats?.active_loans} to="/loans" />
-          <NavItem glyph="☺" label={<Trans>Borrowers</Trans>} count={stats?.total_borrowers} to="/borrowers" />
+          <NavItem
+            glyph="⊞"
+            label={<Trans>Maintenance</Trans>}
+            to="/maintenance/due"
+          />
+          <NavItem
+            glyph="▢"
+            label={<Trans>Locations</Trans>}
+            count={stats?.total_locations}
+            to="/taxonomy?tab=locations"
+          />
+          <NavItem
+            glyph="▥"
+            label={<Trans>Containers</Trans>}
+            count={stats?.total_containers}
+            to="/taxonomy?tab=containers"
+          />
+          <NavItem
+            glyph="◇"
+            label={<Trans>Categories</Trans>}
+            count={stats?.total_categories}
+            to="/taxonomy?tab=categories"
+          />
+          <NavItem
+            glyph="↧"
+            label={<Trans>Loans</Trans>}
+            count={stats?.active_loans}
+            to="/loans"
+          />
+          <NavItem
+            glyph="☺"
+            label={<Trans>Borrowers</Trans>}
+            count={stats?.total_borrowers}
+            to="/borrowers"
+          />
         </NavGroup>
         <NavGroup title={<Trans>System</Trans>}>
           <NavItem glyph="⌗" label={<Trans>Scan</Trans>} to="/scan" />
@@ -183,11 +222,19 @@ export function Sidebar({
               all labels via <Trans>. Wiring stays side-effect-free — no new
               query is added here just for a count badge. */}
           <NavItem glyph="✓" label={<Trans>Approvals</Trans>} to="/approvals" />
-          <NavItem glyph="≣" label={<Trans>My Changes</Trans>} to="/my-changes" />
+          <NavItem
+            glyph="≣"
+            label={<Trans>My Changes</Trans>}
+            to="/my-changes"
+          />
           <NavItem glyph="♡" label={<Trans>Wishlist</Trans>} to="/wishlist" />
           <NavItem glyph="⊘" label={<Trans>Declutter</Trans>} to="/declutter" />
           <NavItem glyph="↥" label={<Trans>Imports</Trans>} to="/imports" />
-          <NavItem glyph="⇄" label={<Trans>Sync History</Trans>} to="/sync-history" />
+          <NavItem
+            glyph="⇄"
+            label={<Trans>Sync History</Trans>}
+            to="/sync-history"
+          />
           <NavItem glyph="⚙" label={<Trans>Settings</Trans>} to="/settings" />
           {/* DEV-only atom review surface (Phase 4). Gated so it never appears
               as a user nav entry; the matching /demo route is DEV-gated too. */}

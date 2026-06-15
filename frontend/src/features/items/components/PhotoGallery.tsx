@@ -39,10 +39,7 @@ export interface PhotoGalleryMutations {
   };
   del: { mutate: (photoId: string) => void };
   bulkDelete?: {
-    mutate: (
-      photoIds: string[],
-      opts?: { onSuccess?: () => void },
-    ) => void;
+    mutate: (photoIds: string[], opts?: { onSuccess?: () => void }) => void;
   };
   bulkCaption?: {
     mutate: (
@@ -134,7 +131,7 @@ export function PhotoGallery({
 
   if (order.length === 0) {
     return (
-      <p className="text-[14px] text-fg-muted">
+      <p className="text-14 text-fg-muted">
         <Trans>No photos yet.</Trans>
       </p>
     );
@@ -259,7 +256,7 @@ export function PhotoGallery({
                 setPrimary &&
                 !selecting && (
                   <BevelButton
-                    className="absolute left-[2px] top-[2px] !px-[6px] !py-[1px] !text-[10px] opacity-0 focus-visible:opacity-100 group-hover:opacity-100"
+                    className="absolute left-[2px] top-[2px] !px-[6px] !py-[1px] !text-10 opacity-0 focus-visible:opacity-100 group-hover:opacity-100"
                     onClick={() => setPrimary.mutate(photo.id)}
                   >
                     <Trans>★ SET PRIMARY</Trans>
@@ -274,7 +271,7 @@ export function PhotoGallery({
                     {canReorder && reorder && (
                       <>
                         <BevelButton
-                          className="!px-[5px] !py-px !text-[10px]"
+                          className="!px-[5px] !py-px !text-10"
                           aria-label={t`Move ${photo.caption ?? photo.filename} earlier`}
                           title={t`Move ${photo.caption ?? photo.filename} earlier`}
                           disabled={index === 0}
@@ -283,7 +280,7 @@ export function PhotoGallery({
                           ◂
                         </BevelButton>
                         <BevelButton
-                          className="!px-[5px] !py-px !text-[10px]"
+                          className="!px-[5px] !py-px !text-10"
                           aria-label={t`Move ${photo.caption ?? photo.filename} later`}
                           title={t`Move ${photo.caption ?? photo.filename} later`}
                           disabled={index === order.length - 1}
@@ -296,7 +293,7 @@ export function PhotoGallery({
                   </span>
                   <span className="flex gap-[2px]">
                     <BevelButton
-                      className="!px-[5px] !py-px !text-[10px]"
+                      className="!px-[5px] !py-px !text-10"
                       aria-label={t`Edit caption for ${photo.filename}`}
                       title={t`Edit caption for ${photo.filename}`}
                       onClick={() => setCaptionTarget(photo)}
@@ -305,7 +302,7 @@ export function PhotoGallery({
                     </BevelButton>
                     <BevelButton
                       variant="danger"
-                      className="!px-[5px] !py-px !text-[10px]"
+                      className="!px-[5px] !py-px !text-10"
                       aria-label={t`Delete ${photo.filename}`}
                       title={t`Delete ${photo.filename}`}
                       onClick={() => setDeleteTarget(photo)}

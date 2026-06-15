@@ -70,7 +70,7 @@ export function RepairPhotoPanel({ wsId, repairId }: RepairPhotoPanelProps) {
       </div>
 
       {photosQuery.isError ? (
-        <p className="bg-bg-panel-2 p-sp-4 text-[14px] text-danger">
+        <p className="bg-bg-panel-2 p-sp-4 text-14 text-danger">
           <Trans>Couldn't load photos. Try again.</Trans>
         </p>
       ) : (
@@ -105,9 +105,7 @@ export function RepairPhotoPanel({ wsId, repairId }: RepairPhotoPanelProps) {
           <RetroSelect
             label={<Trans>Stage</Trans>}
             value={photoType}
-            onChange={(e) =>
-              setPhotoType(e.target.value as RepairPhotoType)
-            }
+            onChange={(e) => setPhotoType(e.target.value as RepairPhotoType)}
             aria-label={t`Photo stage`}
           >
             {PHOTO_TYPES.map((pt) => (

@@ -55,10 +55,10 @@ export function LabelsTab() {
   if (isError) {
     return (
       <div className="flex flex-col items-start gap-sp-3">
-        <p className="text-[14px] font-semibold text-danger">
+        <p className="text-14 font-semibold text-danger">
           <Trans>COULDN'T LOAD LABELS</Trans>
         </p>
-        <p className="text-[13px] text-fg-muted">
+        <p className="text-13 text-fg-muted">
           <Trans>Something went wrong. Try again.</Trans>
         </p>
         <BevelButton onClick={() => refetch()}>
@@ -70,7 +70,7 @@ export function LabelsTab() {
 
   if (isLoading) {
     return (
-      <p className="font-mono text-[13px] text-fg-muted">
+      <p className="font-mono text-13 text-fg-muted">
         <Trans>Loading…</Trans>
       </p>
     );
@@ -117,11 +117,11 @@ export function LabelsTab() {
                   backgroundColor: label.color || "var(--bg-panel-2)",
                 }}
               />
-              <span className="text-[14px] font-semibold text-fg-ink">
+              <span className="text-14 font-semibold text-fg-ink">
                 {label.name}
               </span>
               {label.description && (
-                <span className="truncate text-[13px] text-fg-muted">
+                <span className="truncate text-13 text-fg-muted">
                   {label.description}
                 </span>
               )}

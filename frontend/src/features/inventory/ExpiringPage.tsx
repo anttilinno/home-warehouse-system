@@ -47,14 +47,14 @@ function WhenChip({ delta }: { delta: number }) {
   if (delta >= 0) {
     // Near future (and today) — butter warning chip.
     return (
-      <span className="inline-flex items-center rounded-chip border border-border-ink bg-titlebar-butter px-sp-2 py-px font-mono text-[11px] font-bold tabular-nums text-fg-ink">
+      <span className="inline-flex items-center rounded-chip border border-border-ink bg-titlebar-butter px-sp-2 py-px font-mono text-11 font-bold tabular-nums text-fg-ink">
         in {delta}d
       </span>
     );
   }
   // Past / overdue — danger chip with the ⚠ glyph + leading − sign.
   return (
-    <span className="inline-flex items-center gap-[4px] rounded-chip border border-border-ink bg-danger-bg px-sp-2 py-px font-mono text-[11px] font-bold tabular-nums text-danger">
+    <span className="inline-flex items-center gap-[4px] rounded-chip border border-border-ink bg-danger-bg px-sp-2 py-px font-mono text-11 font-bold tabular-nums text-danger">
       <span aria-hidden="true">⚠</span>
       {/* U+2212 MINUS SIGN — the textual past-signal (not color alone). */}−
       {Math.abs(delta)}d
@@ -73,9 +73,9 @@ export function ExpiringPage() {
   // sort is order-correct.
   const rows = useMemo(() => {
     const today = new Date();
-    const items: (ExpiringEntry & { delta: number })[] = (data?.items ?? []).map(
-      (e) => ({ ...e, delta: daysDeltaFrom(e.date, today) }),
-    );
+    const items: (ExpiringEntry & { delta: number })[] = (
+      data?.items ?? []
+    ).map((e) => ({ ...e, delta: daysDeltaFrom(e.date, today) }));
     items.sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0));
     return items;
   }, [data]);
@@ -111,19 +111,19 @@ export function ExpiringPage() {
             </RetroSelect>
           </div>
           <div className="flex-1" />
-          <span className="font-mono text-[13px] tabular-nums text-fg-muted">
+          <span className="font-mono text-13 tabular-nums text-fg-muted">
             {t`${count} expiring`}
           </span>
         </div>
 
         {isLoading && (
-          <p className="p-sp-4 font-mono text-[13px] text-fg-muted">
+          <p className="p-sp-4 font-mono text-13 text-fg-muted">
             <Trans>Loading…</Trans>
           </p>
         )}
 
         {isError && (
-          <p className="p-sp-4 text-[13px] font-semibold text-danger">
+          <p className="p-sp-4 text-13 font-semibold text-danger">
             <Trans>Couldn't load expiring entries. Try again.</Trans>
           </p>
         )}

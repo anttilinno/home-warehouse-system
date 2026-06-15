@@ -47,7 +47,10 @@ export function LanguagePage() {
   });
 
   return (
-    <Window title={<Trans>Language</Trans>} bodyClassName="grid gap-sp-3 p-sp-4">
+    <Window
+      title={<Trans>Language</Trans>}
+      bodyClassName="grid gap-sp-3 p-sp-4"
+    >
       <RetroSelect
         label={<Trans>Interface language</Trans>}
         value={current}
@@ -60,7 +63,7 @@ export function LanguagePage() {
           </option>
         ))}
       </RetroSelect>
-      <p className="text-[14px] text-fg-muted">
+      <p className="text-14 text-fg-muted">
         <Trans>Changes apply immediately.</Trans>
       </p>
     </Window>

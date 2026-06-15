@@ -51,19 +51,22 @@ export function SidebarUserMenu({ user, onLogout }: SidebarUserMenuProps) {
       >
         <span
           aria-hidden="true"
-          className="grid h-[28px] w-[28px] flex-none place-items-center border-2 border-border-ink bg-titlebar-pink font-display text-[16px]"
+          className="grid h-[28px] w-[28px] flex-none place-items-center border-2 border-border-ink bg-titlebar-pink font-display text-16"
         >
           {initial}
         </span>
         <span className="nav-label min-w-0 flex-1">
-          <span className="block truncate text-[13px] font-semibold uppercase tracking-[0.04em]">
+          <span className="block truncate text-13 font-semibold uppercase tracking-4">
             {user.full_name}
           </span>
-          <span className="block truncate text-[11px] text-fg-muted">
+          <span className="block truncate text-11 text-fg-muted">
             {user.email}
           </span>
         </span>
-        <span aria-hidden="true" className="nav-label flex-none font-mono text-[12px] text-fg-muted">
+        <span
+          aria-hidden="true"
+          className="nav-label flex-none font-mono text-12 text-fg-muted"
+        >
           {menuOpen ? "▾" : "▴"}
         </span>
       </button>
@@ -77,7 +80,7 @@ export function SidebarUserMenu({ user, onLogout }: SidebarUserMenuProps) {
             to="/settings/profile"
             role="menuitem"
             onClick={() => setMenuOpen(false)}
-            className={`block px-sp-3 py-[6px] text-[13px] font-semibold uppercase tracking-[0.04em] text-fg-ink hover:bg-bg-panel-2 ${FOCUS_RING}`}
+            className={`block px-sp-3 py-[6px] text-13 font-semibold uppercase tracking-4 text-fg-ink hover:bg-bg-panel-2 ${FOCUS_RING}`}
           >
             <Trans>Profile</Trans>
           </Link>
@@ -85,7 +88,7 @@ export function SidebarUserMenu({ user, onLogout }: SidebarUserMenuProps) {
             to="/settings"
             role="menuitem"
             onClick={() => setMenuOpen(false)}
-            className={`block px-sp-3 py-[6px] text-[13px] font-semibold uppercase tracking-[0.04em] text-fg-ink hover:bg-bg-panel-2 ${FOCUS_RING}`}
+            className={`block px-sp-3 py-[6px] text-13 font-semibold uppercase tracking-4 text-fg-ink hover:bg-bg-panel-2 ${FOCUS_RING}`}
           >
             <Trans>Settings</Trans>
           </Link>
@@ -96,7 +99,7 @@ export function SidebarUserMenu({ user, onLogout }: SidebarUserMenuProps) {
               setMenuOpen(false);
               setConfirmOpen(true);
             }}
-            className={`block w-full border-t-2 border-border-ink px-sp-3 py-[6px] text-left text-[13px] font-semibold uppercase tracking-[0.04em] text-danger hover:bg-danger-bg ${FOCUS_RING}`}
+            className={`block w-full border-t-2 border-border-ink px-sp-3 py-[6px] text-left text-13 font-semibold uppercase tracking-4 text-danger hover:bg-danger-bg ${FOCUS_RING}`}
           >
             <Trans>Log out</Trans>
           </button>

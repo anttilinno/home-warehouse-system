@@ -20,7 +20,7 @@ export interface RetroTabsProps {
 }
 
 const TAB_BASE =
-  "cursor-pointer border-2 border-border-ink border-b-0 px-sp-3 py-[5px] font-body text-[11px] font-bold uppercase tracking-[0.07em] text-fg-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-border-ink focus-visible:outline-offset-2";
+  "cursor-pointer border-2 border-border-ink border-b-0 px-sp-3 py-[5px] font-body text-11 font-bold uppercase tracking-7 text-fg-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-border-ink focus-visible:outline-offset-2";
 const TAB_INACTIVE = "bg-bg-panel-2";
 const TAB_ACTIVE = "bg-titlebar-blue bevel-raised-ink";
 const TAB_DISABLED = "text-fg-muted opacity-50 cursor-not-allowed";
@@ -61,7 +61,10 @@ export function RetroTabs({ tabs, value, onChange }: RetroTabsProps) {
 
   return (
     <div>
-      <div role="tablist" className="flex items-end gap-sp-1 border-b-2 border-border-ink">
+      <div
+        role="tablist"
+        className="flex items-end gap-sp-1 border-b-2 border-border-ink"
+      >
         {tabs.map((tab) => {
           const isActive = tab.id === active?.id;
           return (
@@ -80,7 +83,11 @@ export function RetroTabs({ tabs, value, onChange }: RetroTabsProps) {
               tabIndex={isActive ? 0 : -1}
               disabled={tab.disabled}
               className={`${TAB_BASE} ${
-                tab.disabled ? TAB_DISABLED : isActive ? TAB_ACTIVE : TAB_INACTIVE
+                tab.disabled
+                  ? TAB_DISABLED
+                  : isActive
+                    ? TAB_ACTIVE
+                    : TAB_INACTIVE
               }`}
               onClick={() => !tab.disabled && onChange(tab.id)}
               onKeyDown={(e) => onKeyDown(e, tab.id)}

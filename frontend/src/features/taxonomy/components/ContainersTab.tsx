@@ -133,10 +133,10 @@ export function ContainersTab() {
   if (isError) {
     return (
       <div className="flex flex-col items-start gap-sp-3">
-        <p className="text-[14px] font-semibold text-danger">
+        <p className="text-14 font-semibold text-danger">
           <Trans>COULDN'T LOAD CONTAINERS</Trans>
         </p>
-        <p className="text-[13px] text-fg-muted">
+        <p className="text-13 text-fg-muted">
           <Trans>Something went wrong. Try again.</Trans>
         </p>
         <BevelButton onClick={() => refetch()}>
@@ -148,7 +148,7 @@ export function ContainersTab() {
 
   if (isLoading) {
     return (
-      <p className="font-mono text-[13px] text-fg-muted">
+      <p className="font-mono text-13 text-fg-muted">
         <Trans>Loading…</Trans>
       </p>
     );
@@ -185,7 +185,7 @@ export function ContainersTab() {
         <div className="flex flex-col gap-sp-5">
           {groups.map((group) => (
             <div key={group.key} className="flex flex-col">
-              <div className="bg-bg-panel-2 px-sp-2 py-sp-1 text-[11px] font-bold uppercase tracking-[0.08em] text-fg-muted">
+              <div className="bg-bg-panel-2 px-sp-2 py-sp-1 text-11 font-bold uppercase tracking-8 text-fg-muted">
                 {group.name}
               </div>
               <RetroTable>
@@ -194,14 +194,14 @@ export function ContainersTab() {
                     <tr key={c.id}>
                       <td>
                         <span
-                          className={`font-body text-[14px] ${
+                          className={`font-body text-14 ${
                             c.is_archived ? "text-fg-muted" : "text-fg-ink"
                           }`}
                         >
                           {c.name}
                         </span>
                         {c.is_archived && (
-                          <span className="ml-sp-2 text-[11px] uppercase text-fg-muted">
+                          <span className="ml-sp-2 text-11 uppercase text-fg-muted">
                             <Trans>archived</Trans>
                           </span>
                         )}
@@ -210,7 +210,7 @@ export function ContainersTab() {
                         <span className="inline-flex items-center gap-sp-1">
                           <BevelButton
                             type="button"
-                            className="!px-[8px] !py-[2px] !text-[11px]"
+                            className="!px-[8px] !py-[2px] !text-11"
                             onClick={() => openEdit(c)}
                           >
                             EDIT
@@ -220,7 +220,7 @@ export function ContainersTab() {
                             variant="danger"
                             aria-label={t`Delete ${c.name}`}
                             title={t`Delete ${c.name}`}
-                            className="!px-[8px] !py-[2px] !text-[11px]"
+                            className="!px-[8px] !py-[2px] !text-11"
                             onClick={() => openDelete(c)}
                           >
                             {"⌫"}

@@ -1,6 +1,10 @@
 import { useEffect, useRef, type ReactNode } from "react";
 import { Trans } from "@lingui/react/macro";
-import { BevelButton, type BevelButtonVariant, type TitlebarVariant } from "@/components/retro";
+import {
+  BevelButton,
+  type BevelButtonVariant,
+  type TitlebarVariant,
+} from "@/components/retro";
 import { RetroDialog } from "./RetroDialog";
 
 export interface RetroConfirmDialogProps {
@@ -87,7 +91,7 @@ export function RetroConfirmDialog({
         </>
       }
     >
-      <div className="font-body text-[14px] text-fg-ink">{children}</div>
+      <div className="font-body text-14 text-fg-ink">{children}</div>
     </RetroDialog>
   );
 }

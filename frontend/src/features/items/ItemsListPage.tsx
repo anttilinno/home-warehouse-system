@@ -189,7 +189,10 @@ export function ItemsListPage() {
     [setSearchParams],
   );
   const { savedFilters, saveFilter, deleteFilter, applyFilter } =
-    useSavedFilters({ storageKey: SAVED_FILTERS_KEY, onApplyFilter: applyPreset });
+    useSavedFilters({
+      storageKey: SAVED_FILTERS_KEY,
+      onApplyFilter: applyPreset,
+    });
 
   const onSaveCurrent = useCallback(
     (name: string) => {
@@ -231,9 +234,17 @@ export function ItemsListPage() {
   const filterChips = useMemo(() => {
     const chips: { key: string; label: string; displayValue: string }[] = [];
     if (state.category)
-      chips.push({ key: "category", label: t`Category`, displayValue: state.category });
+      chips.push({
+        key: "category",
+        label: t`Category`,
+        displayValue: state.category,
+      });
     if (state.archived)
-      chips.push({ key: "archived", label: t`Archived`, displayValue: t`shown` });
+      chips.push({
+        key: "archived",
+        label: t`Archived`,
+        displayValue: t`shown`,
+      });
     return chips;
   }, [state.category, state.archived, t]);
 
@@ -251,7 +262,8 @@ export function ItemsListPage() {
           heading={<Trans>NO MATCHES</Trans>}
           body={
             <Trans>
-              No items match these filters. Clear a filter or adjust your search.
+              No items match these filters. Clear a filter or adjust your
+              search.
             </Trans>
           }
           action={{
@@ -382,13 +394,13 @@ export function ItemsListPage() {
         )}
 
         {isLoading && (
-          <p className="p-sp-4 font-mono text-[13px] text-fg-muted">
+          <p className="p-sp-4 font-mono text-13 text-fg-muted">
             <Trans>Loading…</Trans>
           </p>
         )}
 
         {isError && (
-          <p className="p-sp-4 text-[13px] font-semibold text-danger">
+          <p className="p-sp-4 text-13 font-semibold text-danger">
             <Trans>Couldn't load items. Try again.</Trans>
           </p>
         )}
@@ -428,7 +440,7 @@ export function ItemsListPage() {
                         type="button"
                         aria-label={t`Sort by ${col.label}`}
                         onClick={() => onSort(col.sort)}
-                        className="cursor-pointer font-bold uppercase tracking-[0.07em] focus-visible:outline focus-visible:outline-2 focus-visible:outline-border-ink"
+                        className="cursor-pointer font-bold uppercase tracking-7 focus-visible:outline focus-visible:outline-2 focus-visible:outline-border-ink"
                       >
                         {col.label}
                         <span aria-hidden="true">{sortGlyph(col.sort)}</span>
@@ -582,7 +594,7 @@ export function ItemsListPage() {
             aria-label={t`Confirm item name`}
             value={confirmName}
             onChange={(e) => setConfirmName(e.target.value)}
-            className="border-2 border-border-ink bg-bg-panel bevel-sunken px-[10px] py-[7px] text-[14px]"
+            className="border-2 border-border-ink bg-bg-panel bevel-sunken px-[10px] py-[7px] text-14"
           />
         </div>
       </RetroConfirmDialog>

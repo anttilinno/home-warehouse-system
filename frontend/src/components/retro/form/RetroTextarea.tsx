@@ -1,7 +1,6 @@
 import { useId, type ComponentPropsWithRef, type ReactNode } from "react";
 
-export interface RetroTextareaProps
-  extends ComponentPropsWithRef<"textarea"> {
+export interface RetroTextareaProps extends ComponentPropsWithRef<"textarea"> {
   label: ReactNode;
   /** Validation message; also flips the field to the danger treatment. */
   error?: ReactNode;
@@ -30,7 +29,7 @@ export function RetroTextarea({
     <div>
       <label
         htmlFor={id}
-        className="mb-sp-1 block text-[12px] font-bold uppercase tracking-[0.08em] text-fg-muted"
+        className="mb-sp-1 block text-12 font-bold uppercase tracking-8 text-fg-muted"
       >
         {label}
       </label>
@@ -38,7 +37,7 @@ export function RetroTextarea({
         id={id}
         aria-invalid={error ? true : undefined}
         aria-describedby={error ? errorId : undefined}
-        className={`min-h-[88px] w-full resize-y border-2 px-[10px] py-[7px] text-[14px] text-fg-ink bevel-sunken focus:outline-3 focus:outline-offset-1 focus:outline-titlebar-blue disabled:cursor-not-allowed disabled:opacity-50 ${
+        className={`min-h-[88px] w-full resize-y border-2 px-[10px] py-[7px] text-14 text-fg-ink bevel-sunken focus:outline-3 focus:outline-offset-1 focus:outline-titlebar-blue disabled:cursor-not-allowed disabled:opacity-50 ${
           mono ? "font-mono" : "font-body"
         } ${
           error ? "border-danger bg-danger-bg" : "border-border-ink bg-bg-panel"
@@ -46,7 +45,7 @@ export function RetroTextarea({
         {...props}
       />
       {error && (
-        <p id={errorId} className="mt-sp-1 text-[12px] font-semibold text-danger">
+        <p id={errorId} className="mt-sp-1 text-12 font-semibold text-danger">
           {error}
         </p>
       )}

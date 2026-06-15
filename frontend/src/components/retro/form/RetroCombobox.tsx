@@ -123,9 +123,7 @@ export function RetroCombobox({
       case "ArrowUp":
         e.preventDefault();
         setActiveIndex((i) =>
-          filtered.length
-            ? (i <= 0 ? filtered.length : i) - 1
-            : -1,
+          filtered.length ? (i <= 0 ? filtered.length : i) - 1 : -1,
         );
         break;
       case "Enter":
@@ -146,7 +144,7 @@ export function RetroCombobox({
     <div>
       <label
         htmlFor={baseId}
-        className="mb-sp-1 block text-[12px] font-bold uppercase tracking-[0.08em] text-fg-muted"
+        className="mb-sp-1 block text-12 font-bold uppercase tracking-8 text-fg-muted"
       >
         {label}
       </label>
@@ -178,16 +176,11 @@ export function RetroCombobox({
         onFocus={openList}
         onClick={openList}
         onKeyDown={onKeyDown}
-        className={`w-full border-2 px-[10px] py-[7px] font-body text-[14px] text-fg-ink bevel-sunken focus:outline-3 focus:outline-offset-1 focus:outline-titlebar-blue disabled:cursor-not-allowed disabled:opacity-50 ${
+        className={`w-full border-2 px-[10px] py-[7px] font-body text-14 text-fg-ink bevel-sunken focus:outline-3 focus:outline-offset-1 focus:outline-titlebar-blue disabled:cursor-not-allowed disabled:opacity-50 ${
           error ? "border-danger bg-danger-bg" : "border-border-ink bg-bg-panel"
         }`}
       />
-      <Popover
-        open={open}
-        onClose={close}
-        anchorRef={inputRef}
-        role="listbox"
-      >
+      <Popover open={open} onClose={close} anchorRef={inputRef} role="listbox">
         {/* The Popover panel carries role="listbox"; this inner list is a plain
             container so there is exactly one listbox in the tree. */}
         <ul
@@ -195,7 +188,7 @@ export function RetroCombobox({
           className="max-h-[240px] overflow-y-auto outline-none"
         >
           {filtered.length === 0 ? (
-            <li className="px-sp-2 py-sp-2 text-[12px] text-fg-muted">
+            <li className="px-sp-2 py-sp-2 text-12 text-fg-muted">
               <Trans>No matches.</Trans>
             </li>
           ) : (
@@ -214,7 +207,7 @@ export function RetroCombobox({
                     e.preventDefault();
                     commit(i);
                   }}
-                  className={`flex cursor-pointer items-center gap-sp-1 px-sp-2 py-[5px] text-[14px] text-fg-ink ${
+                  className={`flex cursor-pointer items-center gap-sp-1 px-sp-2 py-[5px] text-14 text-fg-ink ${
                     isActive ? "bg-titlebar-blue" : ""
                   }`}
                 >
@@ -229,7 +222,7 @@ export function RetroCombobox({
         </ul>
       </Popover>
       {error && (
-        <p id={errorId} className="mt-sp-1 text-[12px] font-semibold text-danger">
+        <p id={errorId} className="mt-sp-1 text-12 font-semibold text-danger">
           {error}
         </p>
       )}

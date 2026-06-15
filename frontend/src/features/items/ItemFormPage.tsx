@@ -15,10 +15,7 @@ import {
   RetroConfirmDialog,
   retroToast,
 } from "@/components/retro";
-import {
-  UpcSuggestionBanner,
-  type UpcSuggestion,
-} from "@/components/scan";
+import { UpcSuggestionBanner, type UpcSuggestion } from "@/components/scan";
 import { useWorkspace } from "@/features/workspace/useWorkspace";
 import { itemsApi } from "@/lib/api/items";
 import type { Item } from "@/lib/types";
@@ -129,7 +126,13 @@ export function ItemFormPage() {
     reset,
     setValue,
     setError,
-    formState: { errors, dirtyFields, isDirty, isSubmitting, isSubmitSuccessful },
+    formState: {
+      errors,
+      dirtyFields,
+      isDirty,
+      isSubmitting,
+      isSubmitSuccessful,
+    },
   } = useForm<ItemFormInput>({
     resolver: zodResolver(itemFormSchema),
     defaultValues,
@@ -260,7 +263,7 @@ export function ItemFormPage() {
                   readOnly={isEdit}
                   aria-invalid={errors.sku ? true : undefined}
                   aria-describedby={describedBy}
-                  className={`w-full border-2 px-[10px] py-[7px] font-mono text-[14px] text-fg-ink bevel-sunken focus:outline-3 focus:outline-offset-1 focus:outline-titlebar-blue disabled:cursor-not-allowed disabled:text-fg-muted ${
+                  className={`w-full border-2 px-[10px] py-[7px] font-mono text-14 text-fg-ink bevel-sunken focus:outline-3 focus:outline-offset-1 focus:outline-titlebar-blue disabled:cursor-not-allowed disabled:text-fg-muted ${
                     errors.sku
                       ? "border-danger bg-danger-bg"
                       : "border-border-ink bg-bg-panel"
@@ -340,7 +343,7 @@ export function ItemFormPage() {
                   type="text"
                   aria-invalid={errors.barcode ? true : undefined}
                   aria-describedby={describedBy}
-                  className={`w-full border-2 px-[10px] py-[7px] font-mono text-[14px] text-fg-ink bevel-sunken focus:outline-3 focus:outline-offset-1 focus:outline-titlebar-blue ${
+                  className={`w-full border-2 px-[10px] py-[7px] font-mono text-14 text-fg-ink bevel-sunken focus:outline-3 focus:outline-offset-1 focus:outline-titlebar-blue ${
                     errors.barcode
                       ? "border-danger bg-danger-bg"
                       : "border-border-ink bg-bg-panel"
@@ -375,7 +378,7 @@ export function ItemFormPage() {
           {errors.root?.message && (
             <div
               role="alert"
-              className="border-2 border-border-ink bg-danger-bg p-sp-3 text-[14px] text-danger"
+              className="border-2 border-border-ink bg-danger-bg p-sp-3 text-14 text-danger"
             >
               <span aria-hidden="true">✕ </span>
               {errors.root.message}
@@ -387,7 +390,11 @@ export function ItemFormPage() {
             <BevelButton type="button" variant="neutral" onClick={handleCancel}>
               <Trans>Cancel</Trans>
             </BevelButton>
-            <BevelButton type="submit" variant="primary" disabled={isSubmitting}>
+            <BevelButton
+              type="submit"
+              variant="primary"
+              disabled={isSubmitting}
+            >
               {submitLabel}
             </BevelButton>
           </div>

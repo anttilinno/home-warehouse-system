@@ -35,13 +35,15 @@ export function MaintenanceDuePage() {
   const workspaceName =
     workspaces?.find((w) => w.id === wsId)?.name ?? t`Workspace`;
 
-  const [completeTarget, setCompleteTarget] = useState<DueSchedule | null>(null);
+  const [completeTarget, setCompleteTarget] = useState<DueSchedule | null>(
+    null,
+  );
 
   // Next-due cell — the server flag picks the cue (the third, ⚠-chip cue).
   function renderNextDue(row: DueSchedule): ReactNode {
     if (row.is_overdue) {
       return (
-        <span className="inline-flex items-center gap-[4px] rounded-chip border border-border-ink bg-danger-bg px-sp-2 py-px font-mono text-[12px] font-bold tabular-nums text-danger">
+        <span className="inline-flex items-center gap-[4px] rounded-chip border border-border-ink bg-danger-bg px-sp-2 py-px font-mono text-12 font-bold tabular-nums text-danger">
           <span aria-hidden="true">⚠</span>
           {isoDate(row.next_due)}
         </span>
@@ -64,13 +66,13 @@ export function MaintenanceDuePage() {
         bodyClassName=""
       >
         {isLoading && (
-          <p className="p-sp-4 font-mono text-[13px] text-fg-muted">
+          <p className="p-sp-4 font-mono text-13 text-fg-muted">
             <Trans>Loading…</Trans>
           </p>
         )}
 
         {isError && (
-          <p className="p-sp-4 text-[13px] font-semibold text-danger">
+          <p className="p-sp-4 text-13 font-semibold text-danger">
             <Trans>Couldn't load maintenance. Try again.</Trans>
           </p>
         )}
@@ -121,7 +123,7 @@ export function MaintenanceDuePage() {
                   </td>
                   <td className="actions text-right">
                     <BevelButton
-                      className="!px-[8px] !py-[2px] !text-[11px]"
+                      className="!px-[8px] !py-[2px] !text-11"
                       onClick={() => setCompleteTarget(row)}
                     >
                       <Trans>COMPLETE</Trans>

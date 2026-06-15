@@ -81,7 +81,7 @@ export function EditLoanDialog({ open, onClose, loan }: EditLoanDialogProps) {
         </>
       }
     >
-      <p className="text-[12px] text-fg-muted">
+      <p className="text-12 text-fg-muted">
         <Trans>
           {loan.item.name} — loaned to {loan.borrower.name}.
         </Trans>

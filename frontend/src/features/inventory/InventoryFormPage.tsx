@@ -104,8 +104,7 @@ export function InventoryFormPage() {
   // disjoint). Keyed under the inventory detail prefix.
   const entryQuery = useQuery({
     queryKey: ["inventory", wsId as string, "detail", id],
-    queryFn: () =>
-      get<Inventory>(`/workspaces/${wsId}/inventory/${id}`),
+    queryFn: () => get<Inventory>(`/workspaces/${wsId}/inventory/${id}`),
     enabled: isEdit && Boolean(wsId) && Boolean(id),
   });
 
@@ -127,7 +126,13 @@ export function InventoryFormPage() {
     control,
     reset,
     setError,
-    formState: { errors, dirtyFields, isDirty, isSubmitting, isSubmitSuccessful },
+    formState: {
+      errors,
+      dirtyFields,
+      isDirty,
+      isSubmitting,
+      isSubmitSuccessful,
+    },
   } = useForm<InventoryFormInput>({
     resolver: zodResolver(inventoryFormSchema),
     defaultValues,
@@ -209,7 +214,7 @@ export function InventoryFormPage() {
           {errors.root?.message && (
             <div
               role="alert"
-              className="border-2 border-border-ink bg-danger-bg p-sp-3 text-[14px] text-danger"
+              className="border-2 border-border-ink bg-danger-bg p-sp-3 text-14 text-danger"
             >
               <span aria-hidden="true">✕ </span>
               {errors.root.message}
@@ -240,7 +245,7 @@ export function InventoryFormPage() {
               )}
             />
             {itemsEmpty && (
-              <p className="text-[12px] text-fg-muted">
+              <p className="text-12 text-fg-muted">
                 <Trans>No items yet — add one first.</Trans>
               </p>
             )}
@@ -267,7 +272,7 @@ export function InventoryFormPage() {
               )}
             />
             {locationsEmpty && (
-              <p className="text-[12px] text-fg-muted">
+              <p className="text-12 text-fg-muted">
                 <Trans>No locations yet — add one first.</Trans>
               </p>
             )}
@@ -385,7 +390,11 @@ export function InventoryFormPage() {
             <BevelButton type="button" variant="neutral" onClick={handleCancel}>
               <Trans>Cancel</Trans>
             </BevelButton>
-            <BevelButton type="submit" variant="primary" disabled={isSubmitting}>
+            <BevelButton
+              type="submit"
+              variant="primary"
+              disabled={isSubmitting}
+            >
               {submitLabel}
             </BevelButton>
           </div>

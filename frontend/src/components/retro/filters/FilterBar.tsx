@@ -71,7 +71,7 @@ export function FilterBar({
           }
           value={searchValue}
           onChange={(e) => onSearchChange(e.target.value)}
-          className="w-[260px] border-2 border-border-ink bg-bg-panel px-[10px] py-[7px] text-[14px] text-fg-ink bevel-sunken focus:outline-3 focus:outline-offset-1 focus:outline-titlebar-blue"
+          className="w-[260px] border-2 border-border-ink bg-bg-panel px-[10px] py-[7px] text-14 text-fg-ink bevel-sunken focus:outline-3 focus:outline-offset-1 focus:outline-titlebar-blue"
         />
 
         {facets.map((facet) => (
@@ -80,7 +80,7 @@ export function FilterBar({
 
         <span className="flex-1" />
 
-        <span className="font-mono text-[12px] tabular-nums text-fg-muted">
+        <span className="font-mono text-12 tabular-nums text-fg-muted">
           {itemCount} <Trans>items</Trans>
         </span>
 
@@ -92,7 +92,7 @@ export function FilterBar({
           {filterChips.map((chip) => (
             <span
               key={chip.key}
-              className="inline-flex items-center gap-[6px] rounded-chip border border-border-ink bg-titlebar-blue px-sp-2 py-px text-[11px] font-bold uppercase tracking-[0.07em] text-fg-ink"
+              className="inline-flex items-center gap-[6px] rounded-chip border border-border-ink bg-titlebar-blue px-sp-2 py-px text-11 font-bold uppercase tracking-7 text-fg-ink"
             >
               <span className="text-fg-muted">{chip.label}:</span>
               <span>{chip.displayValue}</span>
@@ -110,7 +110,7 @@ export function FilterBar({
           <button
             type="button"
             onClick={onClearAll}
-            className="cursor-pointer px-sp-1 text-[11px] font-bold uppercase tracking-[0.07em] text-fg-muted hover:text-fg-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-border-ink"
+            className="cursor-pointer px-sp-1 text-11 font-bold uppercase tracking-7 text-fg-muted hover:text-fg-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-border-ink"
           >
             <Trans>CLEAR ALL</Trans>
           </button>

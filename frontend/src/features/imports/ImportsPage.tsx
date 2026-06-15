@@ -96,13 +96,17 @@ export function ImportsPage() {
       { entityType, file },
       {
         onSuccess: () => {
-          retroToast.success(<Trans>Import started. Watch its progress below.</Trans>);
+          retroToast.success(
+            <Trans>Import started. Watch its progress below.</Trans>,
+          );
           setFile(null);
         },
         onError: () => {
           // Defense in depth (T-14-14): even with the form gated, a 403 (or any
           // failure) surfaces a calm danger toast — never a storm.
-          retroToast.error(<Trans>Couldn't start the import. Try again.</Trans>);
+          retroToast.error(
+            <Trans>Couldn't start the import. Try again.</Trans>,
+          );
         },
       },
     );
@@ -127,7 +131,7 @@ export function ImportsPage() {
         <div className="p-sp-4">
           {/* 1. IMPORT — admin-gated multipart upload (the async job path). */}
           <section className="flex flex-col gap-sp-3 border-b border-table-rule pb-sp-4">
-            <h2 className="font-display text-[12px] uppercase tracking-[0.06em] text-fg-muted">
+            <h2 className="font-display text-12 uppercase tracking-6 text-fg-muted">
               <Trans>Import from CSV</Trans>
             </h2>
             {isAdmin ? (
@@ -167,7 +171,7 @@ export function ImportsPage() {
                 </div>
               </>
             ) : (
-              <p className="text-[12px] text-warn-deep">
+              <p className="text-12 text-warn-deep">
                 <Trans>Importing data requires admin rights.</Trans>
               </p>
             )}
@@ -175,10 +179,10 @@ export function ImportsPage() {
 
           {/* 2. EXPORT — reuse settingsApi.exportWorkspace (no re-implementation). */}
           <section className="flex flex-col gap-sp-2 border-b border-table-rule py-sp-4">
-            <h2 className="font-display text-[12px] uppercase tracking-[0.06em] text-fg-muted">
+            <h2 className="font-display text-12 uppercase tracking-6 text-fg-muted">
               <Trans>Export</Trans>
             </h2>
-            <p className="text-[13px] text-fg-ink">
+            <p className="text-13 text-fg-ink">
               <Trans>Download a backup copy of this workspace.</Trans>
             </p>
             {isAdmin ? (
@@ -195,26 +199,28 @@ export function ImportsPage() {
                 </BevelButton>
               </div>
             ) : (
-              <p className="text-[12px] text-warn-deep">
-                <Trans>Exporting a workspace backup requires admin rights.</Trans>
+              <p className="text-12 text-warn-deep">
+                <Trans>
+                  Exporting a workspace backup requires admin rights.
+                </Trans>
               </p>
             )}
           </section>
 
           {/* 3. HISTORY — the import-jobs activity table. */}
           <section className="flex flex-col gap-sp-2 pt-sp-4">
-            <h2 className="font-display text-[12px] uppercase tracking-[0.06em] text-fg-muted">
+            <h2 className="font-display text-12 uppercase tracking-6 text-fg-muted">
               <Trans>Import history</Trans>
             </h2>
 
             {isLoading && (
-              <p className="p-sp-2 font-mono text-[13px] text-fg-muted">
+              <p className="p-sp-2 font-mono text-13 text-fg-muted">
                 <Trans>Loading…</Trans>
               </p>
             )}
 
             {isError && (
-              <p className="p-sp-2 text-[13px] font-semibold text-danger">
+              <p className="p-sp-2 text-13 font-semibold text-danger">
                 <Trans>Couldn't load import history. Try again.</Trans>
               </p>
             )}
@@ -254,7 +260,7 @@ export function ImportsPage() {
                       <td>
                         <StatusBadge status={job.status} />
                         {job.status === "failed" && job.error_message && (
-                          <span className="ml-sp-2 text-[12px] text-danger">
+                          <span className="ml-sp-2 text-12 text-danger">
                             {job.error_message}
                           </span>
                         )}
@@ -263,7 +269,9 @@ export function ImportsPage() {
                         {job.progress}%
                       </td>
                       <td className="font-mono tabular-nums">
-                        <span className="text-ok-deep">{job.success_count}</span>
+                        <span className="text-ok-deep">
+                          {job.success_count}
+                        </span>
                         <span className="text-fg-muted"> / </span>
                         <span
                           className={

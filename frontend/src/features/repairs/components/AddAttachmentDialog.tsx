@@ -157,11 +157,11 @@ export function AddAttachmentDialog({
           {/* Per-file mint status — PhotoUpload idiom (✓ DONE / ✕ FAILED + RETRY). */}
           {file && mint !== "idle" && (
             <div className="flex items-center gap-sp-2">
-              <span className="flex-1 truncate font-mono text-[12px] text-fg-ink">
+              <span className="flex-1 truncate font-mono text-12 text-fg-ink">
                 {file.name}
               </span>
               {mint === "uploading" && (
-                <span className="font-mono text-[12px] text-fg-muted">
+                <span className="font-mono text-12 text-fg-muted">
                   <Trans>uploading…</Trans>
                 </span>
               )}
@@ -178,7 +178,7 @@ export function AddAttachmentDialog({
                     <Trans>FAILED</Trans>
                   </RetroBadge>
                   <BevelButton
-                    className="!px-[8px] !py-[2px] !text-[11px]"
+                    className="!px-[8px] !py-[2px] !text-11"
                     onClick={() => file && void mintFileId(file)}
                   >
                     <Trans>RETRY</Trans>

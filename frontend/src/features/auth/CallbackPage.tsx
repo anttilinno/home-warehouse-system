@@ -73,7 +73,7 @@ export function CallbackPage() {
         >
           <p
             role="alert"
-            className="border-2 border-danger bg-danger-bg px-sp-3 py-sp-2 text-[13px] font-semibold text-danger"
+            className="border-2 border-danger bg-danger-bg px-sp-3 py-sp-2 text-13 font-semibold text-danger"
           >
             {errorMessage}
           </p>
@@ -117,10 +117,10 @@ export function CallbackPage() {
           />
         </div>
         <div role="status" className="text-center">
-          <p className="text-[14px] text-fg-muted">
+          <p className="text-14 text-fg-muted">
             <Trans>Completing sign-in…</Trans>
           </p>
-          <p className="mt-sp-1 font-mono text-[12px] tabular-nums text-fg-faint">
+          <p className="mt-sp-1 font-mono text-12 tabular-nums text-fg-faint">
             <Trans>exchanging credentials</Trans>
           </p>
         </div>

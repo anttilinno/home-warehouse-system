@@ -59,7 +59,7 @@ export function Fab() {
           aria-haspopup="menu"
           aria-expanded={open}
           onClick={() => setOpen((o) => !o)}
-          className="flex h-14 w-14 items-center justify-center border-2 border-border-ink bg-titlebar-blue font-display text-[16px] bevel-raised-ink active:translate-x-px active:translate-y-px active:bg-bg-pressed active:bevel-pressed focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-border-ink"
+          className="flex h-14 w-14 items-center justify-center border-2 border-border-ink bg-titlebar-blue font-display text-16 bevel-raised-ink active:translate-x-px active:translate-y-px active:bg-bg-pressed active:bevel-pressed focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-border-ink"
         >
           <span
             aria-hidden="true"
@@ -92,10 +92,10 @@ export function Fab() {
                       : "bg-bg-panel text-fg-ink"
                   }`}
                 >
-                  <span className="inline-flex items-center justify-center border border-border-ink bg-bg-panel-2 px-1 font-mono text-[12px] font-semibold">
+                  <span className="inline-flex items-center justify-center border border-border-ink bg-bg-panel-2 px-1 font-mono text-12 font-semibold">
                     {s.key}
                   </span>
-                  <span className="font-body text-[11px] font-bold uppercase tracking-[0.1em]">
+                  <span className="font-body text-11 font-bold uppercase tracking-10">
                     {s.label}
                   </span>
                 </button>

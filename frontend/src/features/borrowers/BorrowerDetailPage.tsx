@@ -129,7 +129,7 @@ export function BorrowerDetailPage() {
     return (
       <div className="mx-auto max-w-[1280px]">
         <Window title={t`BORROWER`} titlebarVariant="mint">
-          <p className="p-sp-4 font-mono text-[13px] text-fg-muted">
+          <p className="p-sp-4 font-mono text-13 text-fg-muted">
             <Trans>Loading…</Trans>
           </p>
         </Window>
@@ -152,14 +152,14 @@ export function BorrowerDetailPage() {
               </RetroBadge>
             )}
             <BevelButton
-              className="!px-[8px] !py-[2px] !text-[11px]"
+              className="!px-[8px] !py-[2px] !text-11"
               onClick={() => navigate(`/borrowers/${borrower.id}/edit`)}
             >
               <Trans>EDIT</Trans>
             </BevelButton>
             <BevelButton
               variant="danger"
-              className="!px-[8px] !py-[2px] !text-[11px]"
+              className="!px-[8px] !py-[2px] !text-11"
               disabled={blocked}
               aria-disabled={blocked || undefined}
               onClick={() => {
@@ -198,7 +198,7 @@ export function BorrowerDetailPage() {
           {blocked && (
             <div
               role="status"
-              className="flex items-center gap-sp-2 border-2 border-border-ink bg-danger-bg p-sp-3 text-[14px] text-danger"
+              className="flex items-center gap-sp-2 border-2 border-border-ink bg-danger-bg p-sp-3 text-14 text-danger"
             >
               <span aria-hidden="true">⚠</span>
               <span>
@@ -217,7 +217,10 @@ export function BorrowerDetailPage() {
 
           {/* The shipped Phase-8 loan panels — DO NOT MODIFY, only mount. */}
           <div id="active-loans">
-            <BorrowerLoanPanels wsId={wsId as string} borrowerId={borrower.id} />
+            <BorrowerLoanPanels
+              wsId={wsId as string}
+              borrowerId={borrower.id}
+            />
           </div>
         </div>
       </Window>
@@ -260,11 +263,11 @@ function Field({
 }) {
   return (
     <>
-      <dt className="text-[12px] font-bold uppercase tracking-[0.08em] text-fg-muted">
+      <dt className="text-12 font-bold uppercase tracking-8 text-fg-muted">
         {label}
       </dt>
       <dd
-        className={`text-[14px] ${mono ? "font-mono tabular-nums" : ""} ${
+        className={`text-14 ${mono ? "font-mono tabular-nums" : ""} ${
           muted ? "text-fg-muted" : "text-fg-ink"
         }`}
       >

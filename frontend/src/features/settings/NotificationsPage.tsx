@@ -76,7 +76,7 @@ export function NotificationsPage() {
       title={<Trans>Notifications</Trans>}
       bodyClassName="grid gap-sp-4 p-sp-4"
     >
-      <p className="text-[14px] text-fg-ink">
+      <p className="text-14 text-fg-ink">
         <Trans>Email & in-app alerts for:</Trans>
       </p>
 

@@ -157,7 +157,7 @@ export function ItemDetailPage() {
     return (
       <div className="mx-auto max-w-[1280px]">
         <Window title={t`ITEM`} titlebarVariant="mint">
-          <p className="p-sp-4 font-mono text-[13px] text-fg-muted">
+          <p className="p-sp-4 font-mono text-13 text-fg-muted">
             <Trans>Loading…</Trans>
           </p>
         </Window>
@@ -236,7 +236,7 @@ export function ItemDetailPage() {
         actions={
           <span className="flex items-center gap-sp-1">
             <BevelButton
-              className="!px-[8px] !py-[2px] !text-[11px]"
+              className="!px-[8px] !py-[2px] !text-11"
               onClick={() => navigate(`/items/${item.id}/edit`)}
             >
               <Trans>EDIT</Trans>
@@ -247,7 +247,7 @@ export function ItemDetailPage() {
               aria-expanded={menuOpen}
               aria-label={t`More actions`}
               title={t`More actions`}
-              className="!px-[8px] !py-[2px] !text-[11px]"
+              className="!px-[8px] !py-[2px] !text-11"
               onClick={() => setMenuOpen((o) => !o)}
             >
               ↧
@@ -375,7 +375,7 @@ export function ItemDetailPage() {
             aria-label={t`Confirm item name`}
             value={confirmName}
             onChange={(e) => setConfirmName(e.target.value)}
-            className="border-2 border-border-ink bg-bg-panel bevel-sunken px-[10px] py-[7px] text-[14px]"
+            className="border-2 border-border-ink bg-bg-panel bevel-sunken px-[10px] py-[7px] text-14"
           />
         </div>
       </RetroConfirmDialog>
@@ -408,7 +408,7 @@ function DetailsTab({
             <span className="flex items-center gap-sp-2">
               <span>{item.barcode}</span>
               <BevelButton
-                className="!px-[8px] !py-[2px] !text-[11px]"
+                className="!px-[8px] !py-[2px] !text-11"
                 onClick={onCopyBarcode}
               >
                 <Trans>COPY</Trans>
@@ -435,7 +435,7 @@ function DetailsTab({
 
       {/* Labels row. */}
       <div className="flex flex-col gap-sp-2 border-t-2 border-border-ink pt-sp-3">
-        <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-fg-muted">
+        <p className="text-10 font-bold uppercase tracking-14 text-fg-muted">
           <Trans>Labels</Trans>
         </p>
         <ItemLabels wsId={wsId} itemId={item.id} />
@@ -459,11 +459,11 @@ function Field({
 }) {
   return (
     <>
-      <dt className="text-[12px] font-bold uppercase tracking-[0.08em] text-fg-muted">
+      <dt className="text-12 font-bold uppercase tracking-8 text-fg-muted">
         {label}
       </dt>
       <dd
-        className={`${full ? "col-span-1" : ""} text-[14px] ${
+        className={`${full ? "col-span-1" : ""} text-14 ${
           mono ? "font-mono tabular-nums" : ""
         } ${muted ? "text-fg-muted" : "text-fg-ink"}`}
       >

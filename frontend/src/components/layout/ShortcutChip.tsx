@@ -58,10 +58,10 @@ export function ShortcutChip({
         current,
       )}`}
     >
-      <span className="inline-flex items-center justify-center border border-border-ink bg-bg-panel-2 px-1 font-mono text-[12px] font-semibold">
+      <span className="inline-flex items-center justify-center border border-border-ink bg-bg-panel-2 px-1 font-mono text-12 font-semibold">
         {shortcutKey}
       </span>
-      <span className="font-body text-[11px] font-bold uppercase tracking-[0.1em]">
+      <span className="font-body text-11 font-bold uppercase tracking-10">
         {label}
       </span>
     </button>

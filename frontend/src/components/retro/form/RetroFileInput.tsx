@@ -72,7 +72,7 @@ export function RetroFileInput({
     <div className="flex flex-col gap-sp-1">
       <label
         htmlFor={inputId}
-        className="text-[12px] font-bold uppercase tracking-[0.08em] text-fg-muted"
+        className="text-12 font-bold uppercase tracking-8 text-fg-muted"
       >
         {label}
       </label>
@@ -97,7 +97,7 @@ export function RetroFileInput({
           addFiles(Array.from(e.dataTransfer.files));
         }}
       >
-        <p className="text-[14px] text-fg-muted">
+        <p className="text-14 text-fg-muted">
           {dragging ? (
             <Trans>Release to add</Trans>
           ) : (
@@ -127,7 +127,7 @@ export function RetroFileInput({
         />
       </div>
       {error && (
-        <p className="text-[12px] font-semibold text-danger">
+        <p className="text-12 font-semibold text-danger">
           <span aria-hidden="true">✕ </span>
           {error}
         </p>
@@ -139,17 +139,17 @@ export function RetroFileInput({
               key={`${f.name}-${i}`}
               className="flex items-center gap-sp-2 border-2 border-border-ink bg-bg-panel px-sp-2 py-[4px]"
             >
-              <span className="flex-1 truncate font-mono text-[12px] text-fg-ink">
+              <span className="flex-1 truncate font-mono text-12 text-fg-ink">
                 {f.name}
               </span>
-              <span className="font-mono text-[12px] tabular-nums text-fg-muted">
+              <span className="font-mono text-12 tabular-nums text-fg-muted">
                 {formatSize(f.size)}
               </span>
               <BevelButton
                 type="button"
                 aria-label={t`Remove ${f.name}`}
                 title={t`Remove ${f.name}`}
-                className="!px-[8px] !py-[2px] !text-[11px]"
+                className="!px-[8px] !py-[2px] !text-11"
                 onClick={() => removeAt(i)}
               >
                 ✕

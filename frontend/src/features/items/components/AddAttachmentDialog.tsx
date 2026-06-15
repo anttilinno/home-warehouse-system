@@ -118,7 +118,7 @@ export function AddAttachmentDialog({
           />
           {file && (
             <div className="flex items-center gap-sp-2">
-              <span className="flex-1 truncate font-mono text-[12px] text-fg-ink">
+              <span className="flex-1 truncate font-mono text-12 text-fg-ink">
                 {file.name}
               </span>
               <RetroBadge variant="ok">

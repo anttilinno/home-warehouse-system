@@ -131,7 +131,7 @@ export function LoansListPage() {
     if (loan.is_overdue) {
       const overdueBy = Math.abs(daysUntil(loan.due_date));
       return (
-        <span className="inline-flex items-center gap-[4px] rounded-chip border border-border-ink bg-danger-bg px-sp-2 py-px font-mono text-[12px] font-bold tabular-nums text-danger">
+        <span className="inline-flex items-center gap-[4px] rounded-chip border border-border-ink bg-danger-bg px-sp-2 py-px font-mono text-12 font-bold tabular-nums text-danger">
           <span aria-hidden="true">⚠</span>
           {t`−${overdueBy}d`}
         </span>
@@ -225,13 +225,13 @@ export function LoansListPage() {
       />
 
       {isLoading && (
-        <p className="p-sp-4 font-mono text-[13px] text-fg-muted">
+        <p className="p-sp-4 font-mono text-13 text-fg-muted">
           <Trans>Loading…</Trans>
         </p>
       )}
 
       {isError && (
-        <p className="p-sp-4 text-[13px] font-semibold text-danger">
+        <p className="p-sp-4 text-13 font-semibold text-danger">
           <Trans>Couldn't load loans. Try again.</Trans>
         </p>
       )}

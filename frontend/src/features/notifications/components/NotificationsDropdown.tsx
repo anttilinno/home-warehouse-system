@@ -59,11 +59,11 @@ export function NotificationsDropdown({
         className="absolute right-0 top-[calc(100%+4px)] z-40 max-h-[420px] w-[320px] overflow-y-auto border-2 border-border-ink bg-bg-panel bevel-raised-ink"
       >
         <header className="flex items-center justify-between gap-sp-2 border-b-2 border-border-ink bg-titlebar-blue px-sp-3 py-[6px] pinstripes">
-          <h2 className="font-display text-[14px] uppercase tracking-[0.02em] text-fg-ink">
+          <h2 className="font-display text-14 uppercase tracking-2 text-fg-ink">
             <Trans>Notifications</Trans>
           </h2>
           <BevelButton
-            className="!px-sp-2 !py-[2px] !text-[11px]"
+            className="!px-sp-2 !py-[2px] !text-11"
             disabled={!hasUnread || markAllRead.isPending}
             onClick={() => markAllRead.mutate()}
           >
@@ -72,11 +72,11 @@ export function NotificationsDropdown({
         </header>
 
         {isLoading ? (
-          <p className="px-sp-3 py-sp-3 font-mono text-[12px] text-fg-muted">
+          <p className="px-sp-3 py-sp-3 font-mono text-12 text-fg-muted">
             <Trans>Loading…</Trans>
           </p>
         ) : isError ? (
-          <p className="px-sp-3 py-sp-3 text-[13px] font-semibold text-danger">
+          <p className="px-sp-3 py-sp-3 text-13 font-semibold text-danger">
             <Trans>Couldn't load notifications.</Trans>
           </p>
         ) : items.length === 0 ? (
@@ -96,11 +96,11 @@ export function NotificationsDropdown({
                 }`}
               >
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-[13px] font-semibold text-fg-ink">
+                  <p className="truncate text-13 font-semibold text-fg-ink">
                     {n.title}
                   </p>
-                  <p className="text-[12px] text-fg-muted">{n.message}</p>
-                  <p className="mt-px font-mono text-[10px] uppercase tracking-[0.08em] text-fg-faint">
+                  <p className="text-12 text-fg-muted">{n.message}</p>
+                  <p className="mt-px font-mono text-10 uppercase tracking-8 text-fg-faint">
                     {formatDate(n.created_at)} {formatTime(n.created_at)}
                   </p>
                 </div>
@@ -111,7 +111,7 @@ export function NotificationsDropdown({
                     title={t`Mark read`}
                     disabled={markRead.isPending}
                     onClick={() => markRead.mutate(n.id)}
-                    className="flex-none border-2 border-border-ink bg-bg-panel px-sp-1 py-px font-mono text-[11px] leading-none bevel-raised-ink active:translate-x-px active:translate-y-px active:bg-bg-pressed active:bevel-pressed disabled:opacity-50"
+                    className="flex-none border-2 border-border-ink bg-bg-panel px-sp-1 py-px font-mono text-11 leading-none bevel-raised-ink active:translate-x-px active:translate-y-px active:bg-bg-pressed active:bevel-pressed disabled:opacity-50"
                   >
                     <Trans>Mark read</Trans>
                   </button>

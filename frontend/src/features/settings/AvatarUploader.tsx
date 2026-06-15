@@ -86,7 +86,7 @@ export function AvatarUploader() {
       ) : (
         <span
           aria-hidden="true"
-          className="grid h-[150px] w-[150px] flex-none place-items-center border border-border-ink bg-bg-panel-2 font-display text-[40px] uppercase leading-none text-fg-ink"
+          className="grid h-[150px] w-[150px] flex-none place-items-center border border-border-ink bg-bg-panel-2 font-display text-40 uppercase leading-none text-fg-ink"
         >
           {initialsOf(fullName)}
         </span>
@@ -104,7 +104,7 @@ export function AvatarUploader() {
             if (file) upload.mutate(file);
           }}
         />
-        <p className="text-[12px] text-fg-muted">
+        <p className="text-12 text-fg-muted">
           <Trans>PNG/JPG · max 5 MB</Trans>
         </p>
         {avatarUrl != null && (

@@ -58,9 +58,7 @@ export interface PhotoUploadProps {
    * When undefined-by-override (repair scope passes `null`) the dup gate is
    * skipped — the repair backend has no check-duplicate route.
    */
-  checkDuplicate?:
-    | ((file: File) => Promise<DuplicateCheckResult>)
-    | null;
+  checkDuplicate?: ((file: File) => Promise<DuplicateCheckResult>) | null;
   /** SEAM: extra upload payload merged into every upload (e.g. `{ photoType }`). */
   uploadVars?: { caption?: string; photoType?: string };
   /** SEAM: dialog title override (defaults to ADD PHOTOS). */
@@ -117,7 +115,9 @@ export function PhotoUpload({
   const upload = (mutations ?? itemMutations).upload;
   // SEAM: `checkDuplicate === null` ⇒ skip the gate (repair scope); `undefined`
   // ⇒ fall back to the items api; a function ⇒ use it directly.
-  const runCheckDuplicate: ((file: File) => Promise<DuplicateCheckResult>) | null =
+  const runCheckDuplicate:
+    | ((file: File) => Promise<DuplicateCheckResult>)
+    | null =
     checkDuplicate === undefined
       ? (file: File) => photosApi.checkDuplicate(wsId, itemId, file)
       : checkDuplicate;
@@ -125,9 +125,7 @@ export function PhotoUpload({
 
   const patch = useCallback(
     (id: string, next: Partial<QueueItem>) =>
-      setQueue((q) =>
-        q.map((it) => (it.id === id ? { ...it, ...next } : it)),
-      ),
+      setQueue((q) => q.map((it) => (it.id === id ? { ...it, ...next } : it))),
     [],
   );
 
@@ -251,7 +249,7 @@ export function PhotoUpload({
       width="min(560px,92vw)"
       footer={
         <>
-          <span className="mr-auto font-mono text-[12px] tabular-nums text-fg-muted">
+          <span className="mr-auto font-mono text-12 tabular-nums text-fg-muted">
             <Trans>
               {done}/{queue.length} uploaded
             </Trans>
@@ -281,16 +279,16 @@ export function PhotoUpload({
               className="flex flex-col gap-sp-1 border-2 border-border-ink bg-bg-panel-2 px-sp-2 py-sp-1"
             >
               <div className="flex items-center gap-sp-2">
-                <span className="flex-1 truncate font-mono text-[12px] text-fg-ink">
+                <span className="flex-1 truncate font-mono text-12 text-fg-ink">
                   {item.file.name}
                 </span>
-                <span className="font-mono text-[12px] tabular-nums text-fg-muted">
+                <span className="font-mono text-12 tabular-nums text-fg-muted">
                   {(item.file.size / (1024 * 1024)).toFixed(1)} MB
                 </span>
                 <PhotoUploadStatus item={item} onRetry={() => retry(item)} />
               </div>
               {item.status === "failed" && item.error && (
-                <p className="text-[12px] font-semibold text-danger">
+                <p className="text-12 font-semibold text-danger">
                   <span aria-hidden="true">✕ </span>
                   {item.error}
                 </p>
@@ -336,7 +334,7 @@ function PhotoUploadStatus({
             <Trans>FAILED</Trans>
           </RetroBadge>
           <BevelButton
-            className="!px-[8px] !py-[2px] !text-[11px]"
+            className="!px-[8px] !py-[2px] !text-11"
             onClick={onRetry}
           >
             <Trans>RETRY</Trans>
@@ -351,14 +349,14 @@ function PhotoUploadStatus({
         <span
           role="progressbar"
           aria-valuenow={item.pct}
-          className="font-mono text-[12px] tabular-nums text-fg-muted"
+          className="font-mono text-12 tabular-nums text-fg-muted"
         >
           {item.pct}%
         </span>
       );
     default:
       return (
-        <span className="font-mono text-[12px] tabular-nums text-fg-muted">
+        <span className="font-mono text-12 tabular-nums text-fg-muted">
           <Trans>pending</Trans>
         </span>
       );

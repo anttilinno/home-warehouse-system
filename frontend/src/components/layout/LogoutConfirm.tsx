@@ -11,7 +11,11 @@ export interface LogoutConfirmProps {
 // Confirm-before-logout dialog (BAR-05). Shared by the TopBar account menu AND
 // the Sidebar user menu so logout is NEVER reachable in one click and ESC always
 // closes THIS dialog (it pushes onto the modal stack) rather than logging out.
-export function LogoutConfirm({ open, onCancel, onConfirm }: LogoutConfirmProps) {
+export function LogoutConfirm({
+  open,
+  onCancel,
+  onConfirm,
+}: LogoutConfirmProps) {
   useModalStack(open, onCancel);
   if (!open) return null;
 
@@ -30,13 +34,13 @@ export function LogoutConfirm({ open, onCancel, onConfirm }: LogoutConfirmProps)
         <header className="border-b-2 border-border-ink bg-titlebar-pink px-sp-3 py-[6px] pinstripes">
           <h2
             id="logout-confirm-title"
-            className="text-center font-display text-[16px] uppercase tracking-[0.02em]"
+            className="text-center font-display text-16 uppercase tracking-2"
           >
             <Trans>Log out</Trans>
           </h2>
         </header>
         <div className="p-sp-4">
-          <p className="text-[14px] text-fg-ink">
+          <p className="text-14 text-fg-ink">
             <Trans>End this session? You will need to sign in again.</Trans>
           </p>
           <div className="mt-sp-4 flex justify-end gap-sp-2">

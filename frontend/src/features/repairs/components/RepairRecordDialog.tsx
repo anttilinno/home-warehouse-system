@@ -41,7 +41,7 @@ function formatDate(rfc?: string): string {
 function RecordSummary({ repair }: { repair: Repair }) {
   const status = repairStatus(repair);
   return (
-    <dl className="flex flex-col gap-sp-2 text-[14px] text-fg-ink">
+    <dl className="flex flex-col gap-sp-2 text-14 text-fg-ink">
       <div className="flex items-baseline justify-between gap-sp-2">
         <span className="font-semibold">{repair.description}</span>
         <StatusPill variant={status.variant}>{status.label}</StatusPill>
@@ -83,10 +83,10 @@ function Row({
 }) {
   return (
     <div className="flex items-baseline gap-sp-2">
-      <dt className="w-[140px] shrink-0 text-[12px] font-bold uppercase tracking-[0.08em] text-fg-muted">
+      <dt className="w-[140px] shrink-0 text-12 font-bold uppercase tracking-8 text-fg-muted">
         {label}
       </dt>
-      <dd className="flex-1 font-mono text-[13px]">{children}</dd>
+      <dd className="flex-1 font-mono text-13">{children}</dd>
     </div>
   );
 }

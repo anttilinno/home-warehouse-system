@@ -54,7 +54,7 @@ export function StatusStackChart({ data }: { data: StatusBreakdown[] }) {
           </div>
           <ul
             data-testid="status-legend"
-            className="flex flex-wrap gap-sp-2 gap-x-sp-4 text-[12px] font-semibold"
+            className="flex flex-wrap gap-sp-2 gap-x-sp-4 text-12 font-semibold"
           >
             {data.map((d, i) => (
               <li key={d.status} className="flex items-center gap-sp-2">

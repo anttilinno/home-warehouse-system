@@ -124,13 +124,13 @@ export function BorrowersListPage() {
         />
 
         {isLoading && (
-          <p className="p-sp-4 font-mono text-[13px] text-fg-muted">
+          <p className="p-sp-4 font-mono text-13 text-fg-muted">
             <Trans>Loading…</Trans>
           </p>
         )}
 
         {isError && (
-          <p className="p-sp-4 text-[13px] font-semibold text-danger">
+          <p className="p-sp-4 text-13 font-semibold text-danger">
             <Trans>Couldn't load borrowers. Try again.</Trans>
           </p>
         )}
@@ -159,10 +159,8 @@ export function BorrowersListPage() {
                       className="cursor-pointer"
                     >
                       <td className="font-semibold">{borrower.name}</td>
-                      <td className="font-mono text-[13px]">
-                        {contact ?? (
-                          <span className="text-fg-muted">—</span>
-                        )}
+                      <td className="font-mono text-13">
+                        {contact ?? <span className="text-fg-muted">—</span>}
                       </td>
                       {/* OQ7 / binding override #2: NO per-row loan-count
                           fan-out — the list shows a muted placeholder; the live

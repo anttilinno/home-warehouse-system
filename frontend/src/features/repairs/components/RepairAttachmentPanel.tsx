@@ -61,11 +61,11 @@ export function RepairAttachmentPanel({
   return (
     <div className="flex flex-col gap-sp-2">
       {isLoading ? (
-        <p className="bg-bg-panel-2 p-sp-4 font-mono text-[12px] text-fg-muted">
+        <p className="bg-bg-panel-2 p-sp-4 font-mono text-12 text-fg-muted">
           <Trans>Loading…</Trans>
         </p>
       ) : isError ? (
-        <p className="bg-bg-panel-2 p-sp-4 text-[14px] text-danger">
+        <p className="bg-bg-panel-2 p-sp-4 text-14 text-danger">
           <Trans>Couldn't load files. Try again.</Trans>
         </p>
       ) : items.length === 0 ? (
@@ -75,9 +75,7 @@ export function RepairAttachmentPanel({
             glyph="◇"
             heading={<Trans>NO FILES</Trans>}
             body={
-              <Trans>
-                No manuals, receipts, or warranties attached yet.
-              </Trans>
+              <Trans>No manuals, receipts, or warranties attached yet.</Trans>
             }
             action={{
               label: <Trans>⊕ ADD FILE</Trans>,
@@ -95,17 +93,17 @@ export function RepairAttachmentPanel({
               <RetroBadge variant={BADGE_VARIANT[att.attachment_type]}>
                 {att.attachment_type}
               </RetroBadge>
-              <span className="flex-1 truncate text-[14px] font-semibold text-fg-ink">
+              <span className="flex-1 truncate text-14 font-semibold text-fg-ink">
                 {att.title || att.file_name || t`Untitled`}
               </span>
               {att.file_mime_type && (
-                <span className="font-mono text-[12px] text-fg-muted">
+                <span className="font-mono text-12 text-fg-muted">
                   {att.file_mime_type}
                 </span>
               )}
               <BevelButton
                 variant="danger"
-                className="!px-[8px] !py-[2px] !text-[11px]"
+                className="!px-[8px] !py-[2px] !text-11"
                 onClick={() => setDeleteTarget(att)}
               >
                 <Trans>DELETE</Trans>

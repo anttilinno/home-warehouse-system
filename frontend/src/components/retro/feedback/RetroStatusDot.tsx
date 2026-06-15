@@ -26,7 +26,7 @@ export function RetroStatusDot({ state }: RetroStatusDotProps) {
   }`;
 
   return (
-    <span className="inline-flex items-center gap-sp-1 font-mono text-[12px]">
+    <span className="inline-flex items-center gap-sp-1 font-mono text-12">
       <span className="text-fg-muted">sse:</span>
       <span data-testid="status-dot" aria-hidden="true" className={dotClass} />
       {state === "live" && (

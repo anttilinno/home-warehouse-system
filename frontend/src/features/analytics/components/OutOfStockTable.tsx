@@ -30,7 +30,7 @@ export function OutOfStockTable({
   return (
     <Window title={t`Out of stock`} titlebarVariant="pink" bodyClassName="">
       {isLoading ? (
-        <p className="p-sp-4 font-mono text-[13px] text-fg-muted">
+        <p className="p-sp-4 font-mono text-13 text-fg-muted">
           <Trans>Loading…</Trans>
         </p>
       ) : items.length === 0 ? (
