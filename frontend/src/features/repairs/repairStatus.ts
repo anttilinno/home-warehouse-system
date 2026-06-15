@@ -18,8 +18,7 @@ export function repairStatus(r: { status: RepairStatus }): {
       return { variant: "warn", label: "In progress" };
     case "COMPLETED":
       return { variant: "ok", label: "Completed" };
-    case "PENDING":
-    default:
+    default: // "PENDING"
       return { variant: "info", label: "Pending" };
   }
 }

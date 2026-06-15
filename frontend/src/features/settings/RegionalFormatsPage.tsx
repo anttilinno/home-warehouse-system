@@ -76,8 +76,7 @@ function formatDate(token: string): string {
       return `${pad(mo)}/${pad(d)}/${y}`;
     case "DD.MM.YYYY":
       return `${pad(d)}.${pad(mo)}.${y}`;
-    case "YYYY-MM-DD":
-    default:
+    default: // "YYYY-MM-DD"
       return `${y}-${pad(mo)}-${pad(d)}`;
   }
 }
