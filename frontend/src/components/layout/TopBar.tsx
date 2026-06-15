@@ -1,6 +1,7 @@
 import { Trans } from "@lingui/react/macro";
 import { BrandMark } from "@/components/BrandMark";
 import { RetroStatusDot } from "@/components/retro";
+import { useTheme } from "@/lib/useTheme";
 import { useSSEStatus } from "@/features/sse";
 import { NotificationsBell } from "@/features/notifications/components/NotificationsBell";
 import { WorkspaceSwitcher } from "./WorkspaceSwitcher";
@@ -36,6 +37,12 @@ export function TopBar({ online, onToggleDrawer }: TopBarProps) {
   // `online` prop) AND the sse-slot RetroStatusDot.
   const { connected } = useSSEStatus();
   const isOnline = online ?? connected;
+
+  // Quick theme toggle: flip to the OPPOSITE of what's currently painted (a
+  // `system` pref resolves to one of the two, so the click always lands on a
+  // concrete light|dark). Settings → Appearance keeps the full 3-way selector.
+  const { resolved, setPref } = useTheme();
+  const goingDark = resolved === "light";
 
   return (
     <header className="sticky top-0 z-10 flex h-[40px] items-center gap-sp-2 border-b-2 border-border-ink bg-bg-panel px-sp-3 py-sp-1 shadow-[inset_0_-2px_0_var(--bevel-shade)] md:gap-sp-4 md:px-sp-4">
@@ -78,6 +85,20 @@ export function TopBar({ online, onToggleDrawer }: TopBarProps) {
       </span>
 
       <span className="flex-1" />
+
+      {/* Theme quick-toggle — moon to go dark, sun to go light. Mirrors the
+          hamburger's beveled-square chrome. Full 3-way pref in Settings. */}
+      <button
+        type="button"
+        onClick={() => setPref(goingDark ? "dark" : "light")}
+        aria-label={
+          goingDark ? "Switch to dark theme" : "Switch to light theme"
+        }
+        title={goingDark ? "Switch to dark theme" : "Switch to light theme"}
+        className={`grid h-[28px] w-[28px] flex-none place-items-center border-2 border-border-ink bg-bg-panel font-mono text-14 leading-none bevel-raised-ink active:translate-x-px active:translate-y-px active:bg-bg-pressed active:bevel-pressed ${FOCUS_RING}`}
+      >
+        <span aria-hidden="true">{goingDark ? "☾" : "☀"}</span>
+      </button>
 
       {/* Live notifications bell — bell button + unread badge + dropdown (Phase 13). */}
       <NotificationsBell />

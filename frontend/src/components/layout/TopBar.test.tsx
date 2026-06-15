@@ -1,8 +1,10 @@
 import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { render, screen, within } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { I18nProvider } from "@lingui/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { i18n } from "@/lib/i18n";
+import { ThemeProvider } from "@/lib/useTheme";
 import { server } from "@/test/msw/server";
 import { notificationHandlers } from "@/test/msw/notificationHandlers";
 import { ModalStackProvider } from "@/components/modal";
@@ -61,9 +63,11 @@ function renderTopBar(ui: React.ReactElement) {
   });
   return render(
     <I18nProvider i18n={i18n}>
-      <QueryClientProvider client={client}>
-        <ModalStackProvider>{ui}</ModalStackProvider>
-      </QueryClientProvider>
+      <ThemeProvider>
+        <QueryClientProvider client={client}>
+          <ModalStackProvider>{ui}</ModalStackProvider>
+        </QueryClientProvider>
+      </ThemeProvider>
     </I18nProvider>,
   );
 }
@@ -104,11 +108,13 @@ describe("TopBar", () => {
     expect(screen.getByText("ONLINE")).toBeInTheDocument();
     rerender(
       <I18nProvider i18n={i18n}>
-        <QueryClientProvider client={new QueryClient()}>
-          <ModalStackProvider>
-            <TopBar online={false} />
-          </ModalStackProvider>
-        </QueryClientProvider>
+        <ThemeProvider>
+          <QueryClientProvider client={new QueryClient()}>
+            <ModalStackProvider>
+              <TopBar online={false} />
+            </ModalStackProvider>
+          </QueryClientProvider>
+        </ThemeProvider>
       </I18nProvider>,
     );
     expect(screen.getByText("OFFLINE")).toBeInTheDocument();
@@ -156,5 +162,27 @@ describe("TopBar", () => {
   it("no longer renders an account pill — the user menu moved to the Sidebar", () => {
     renderTopBar(<TopBar />);
     expect(screen.queryByTestId("user-pill")).not.toBeInTheDocument();
+  });
+
+  it("toggles the theme: default (light) shows a moon → switching to dark", async () => {
+    const user = userEvent.setup();
+    localStorage.clear();
+    document.documentElement.removeAttribute("data-theme");
+    renderTopBar(<TopBar />);
+
+    // matchMedia stub reports not-dark → `system` resolves light → offer dark.
+    const toggle = screen.getByRole("button", {
+      name: /switch to dark theme/i,
+    });
+    expect(toggle).toHaveTextContent("☾");
+
+    await user.click(toggle);
+
+    expect(document.documentElement.dataset.theme).toBe("dark");
+    expect(localStorage.getItem("hws-theme")).toBe("dark");
+    // Now painted dark → the control offers the way back (sun).
+    expect(
+      screen.getByRole("button", { name: /switch to light theme/i }),
+    ).toHaveTextContent("☀");
   });
 });

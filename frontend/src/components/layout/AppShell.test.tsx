@@ -15,6 +15,7 @@ import { MemoryRouter, Routes, Route } from "react-router";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { I18nProvider } from "@lingui/react";
 import { i18n } from "@/lib/i18n";
+import { ThemeProvider } from "@/lib/useTheme";
 import { ShortcutsProvider } from "@/components/shortcuts";
 import { ModalStackProvider } from "@/components/modal";
 import { MockEventSource } from "@/test/setup";
@@ -31,20 +32,22 @@ function renderShell(initialPath = "/") {
   });
   return render(
     <I18nProvider i18n={i18n}>
-      <QueryClientProvider client={client}>
-        <MemoryRouter initialEntries={[initialPath]}>
-          <ShortcutsProvider>
-            <ModalStackProvider>
-              <Routes>
-                <Route element={<AppShell />}>
-                  <Route path="/" element={<p>Route content here</p>} />
-                  <Route path="/items" element={<p>Items content</p>} />
-                </Route>
-              </Routes>
-            </ModalStackProvider>
-          </ShortcutsProvider>
-        </MemoryRouter>
-      </QueryClientProvider>
+      <ThemeProvider>
+        <QueryClientProvider client={client}>
+          <MemoryRouter initialEntries={[initialPath]}>
+            <ShortcutsProvider>
+              <ModalStackProvider>
+                <Routes>
+                  <Route element={<AppShell />}>
+                    <Route path="/" element={<p>Route content here</p>} />
+                    <Route path="/items" element={<p>Items content</p>} />
+                  </Route>
+                </Routes>
+              </ModalStackProvider>
+            </ShortcutsProvider>
+          </MemoryRouter>
+        </QueryClientProvider>
+      </ThemeProvider>
     </I18nProvider>,
   );
 }
@@ -164,20 +167,22 @@ describe("AppShell", () => {
     });
     render(
       <I18nProvider i18n={i18n}>
-        <QueryClientProvider client={client}>
-          <MemoryRouter initialEntries={["/", "/items"]} initialIndex={1}>
-            <ShortcutsProvider>
-              <ModalStackProvider>
-                <Routes>
-                  <Route element={<AppShell />}>
-                    <Route path="/" element={<p>Route content here</p>} />
-                    <Route path="/items" element={<p>Items content</p>} />
-                  </Route>
-                </Routes>
-              </ModalStackProvider>
-            </ShortcutsProvider>
-          </MemoryRouter>
-        </QueryClientProvider>
+        <ThemeProvider>
+          <QueryClientProvider client={client}>
+            <MemoryRouter initialEntries={["/", "/items"]} initialIndex={1}>
+              <ShortcutsProvider>
+                <ModalStackProvider>
+                  <Routes>
+                    <Route element={<AppShell />}>
+                      <Route path="/" element={<p>Route content here</p>} />
+                      <Route path="/items" element={<p>Items content</p>} />
+                    </Route>
+                  </Routes>
+                </ModalStackProvider>
+              </ShortcutsProvider>
+            </MemoryRouter>
+          </QueryClientProvider>
+        </ThemeProvider>
       </I18nProvider>,
     );
     expect(screen.getByText("Items content")).toBeInTheDocument();
@@ -193,20 +198,22 @@ describe("AppShell", () => {
     });
     render(
       <I18nProvider i18n={i18n}>
-        <QueryClientProvider client={client}>
-          <MemoryRouter initialEntries={["/", "/items"]} initialIndex={1}>
-            <ShortcutsProvider>
-              <ModalStackProvider>
-                <Routes>
-                  <Route element={<AppShell />}>
-                    <Route path="/" element={<p>Route content here</p>} />
-                    <Route path="/items" element={<p>Items content</p>} />
-                  </Route>
-                </Routes>
-              </ModalStackProvider>
-            </ShortcutsProvider>
-          </MemoryRouter>
-        </QueryClientProvider>
+        <ThemeProvider>
+          <QueryClientProvider client={client}>
+            <MemoryRouter initialEntries={["/", "/items"]} initialIndex={1}>
+              <ShortcutsProvider>
+                <ModalStackProvider>
+                  <Routes>
+                    <Route element={<AppShell />}>
+                      <Route path="/" element={<p>Route content here</p>} />
+                      <Route path="/items" element={<p>Items content</p>} />
+                    </Route>
+                  </Routes>
+                </ModalStackProvider>
+              </ShortcutsProvider>
+            </MemoryRouter>
+          </QueryClientProvider>
+        </ThemeProvider>
       </I18nProvider>,
     );
     // Open the F1 help dialog (an overlay on the modal stack).
