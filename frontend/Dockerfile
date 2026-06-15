@@ -4,6 +4,13 @@ WORKDIR /app
 COPY package.json bun.lock ./
 RUN --mount=type=cache,target=/root/.bun/install/cache bun install --frozen-lockfile
 COPY . .
+# Authelia SSO button gate (SocialLoginButtons.tsx). Vite inlines VITE_*-prefixed
+# vars from the build-stage process env at `vite build` time; .env* is gitignored
+# so it can't be committed. Default ON (the homelab deploy fronts the app with
+# Authelia); override with `--build-arg VITE_AUTHELIA_ENABLED=false` where there
+# is no SSO. ENV must be set BEFORE the build RUN so vite sees it.
+ARG VITE_AUTHELIA_ENABLED=true
+ENV VITE_AUTHELIA_ENABLED=${VITE_AUTHELIA_ENABLED}
 # build runs tsc -b then vite build (sourcemaps off in prod per vite.config).
 # Run the two steps directly rather than `bun run build`: the package `prebuild`
 # lint gate invokes repo-root ../scripts/*.mjs, which live outside this
