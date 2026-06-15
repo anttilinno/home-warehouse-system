@@ -206,48 +206,64 @@
    globals.css read these :root copies too, so they flip; the literal
    .shadow-hard* / .pinstripes utilities are handled by globals.css overrides.
 
-   The PASTEL chrome fills (--titlebar-*) and --fg-on-accent are DELIBERATELY
-   NOT overridden — they stay light so the titlebars read as accent bars on dark
-   panels (decision #3), carrying fixed dark on-accent text.
+   TERMINAL REVISION (2026-06-15, validated on /demo): the chrome fills
+   (--titlebar-*) and --fg-on-accent ARE now overridden dark — superseding the
+   earlier "pastel stays light" decision #3. Titlebars/selected rows read as
+   dark terminal chrome; their on-accent text flips light to match.
 
    Every text pair below clears WCAG AA (>=4.5:1) — enforced by tokens.test.ts.
    ============================================================================ */
 [data-theme="dark"] {
-  /* ---------- Surfaces (inverted: backdrop darkest, panels float lighter) -- */
-  --bg-desktop: #15151b;
-  --bg-panel:   #2a2a33;
-  --bg-panel-2: #21212a; /* table headers / secondary — darker than panel */
-  --bg-pressed: #17171d; /* inset/pressed — darkest interactive surface */
+  /* ---------- Surfaces (near-black terminal; panels lift via white border) -- */
+  --bg-desktop: #060608;
+  --bg-panel:   #0b0b0e;
+  --bg-panel-2: #131317; /* table headers / titlebars / secondary chrome */
+  --bg-pressed: #1a1a1f; /* inset/pressed interactive surface */
 
   /* ---------- Ink (light scale on dark) ---------- */
-  --fg-ink:   #f2ede3; /* warm off-white, mirrors the cream light theme */
-  --fg-muted: #b3aea4; /* secondary text — clears AA on panel + desktop */
-  --fg-faint: #76767f; /* decorative/disabled only */
+  --fg-ink:   #f4f4f6; /* primary text / values */
+  --fg-muted: #cfcfd6; /* secondary text — bright enough for dense nav/labels */
+  --fg-faint: #9a9aa3; /* decorative/disabled + timestamps */
 
-  /* ---------- Deep companions → light tints (colored text on dark panel) --- */
-  --accent-blue-deep: #82c4e4;
-  --accent-pink-deep: #f3a3b6;
-  --accent-mint-deep: #84d2a4;
-  --warn-deep:        #e6c879;
+  /* ---------- On-accent ink → LIGHT in this theme ----------
+     Terminal supersedes the "pastel chrome stays light" decision: the chrome
+     fills below go DARK, so text painted on them flips light to stay legible.
+     globals.css routes the chrome-on-accent sites here. */
+  --fg-on-accent: #f4f4f6;
 
-  /* ---------- Status (lighter danger ink + dark tint fills) ---------- */
-  --danger:    #ff8a9c;
-  --danger-bg: #3a1f25;
-  --warn-bg:   #3a3220;
-  --ok-bg:     #1f3328;
-  --info-bg:   #1f2e3a;
+  /* ---------- Chrome fills (NEUTRAL in dark terminal) ----------
+     Window/dialog titlebars read as neutral dark bars (matches the screenshot —
+     only the 4 dashboard stat cards carry color, painted by the .stat-card
+     rules in globals.css). Kept as 4 tokens so the variant API is unchanged. */
+  --titlebar-blue:   #131317;
+  --titlebar-pink:   #131317;
+  --titlebar-mint:   #131317;
+  --titlebar-butter: #131317;
 
-  /* ---------- Bevel system (light edge highlight, darker shade + shadows) -- */
-  --border-ink:  #e8e3d9; /* light ink border on dark */
-  --bevel-light: #45454f; /* subtle top-left highlight */
-  --bevel-shade: #101015; /* bottom-right shade */
-  --shadow-hard:     3px 3px 0 0 #101015;
-  --shadow-hard-ink: 2px 2px 0 0 #e8e3d9;
-  --table-rule:   #34343d;
-  --table-stripe: #24242c;
+  /* ---------- Deep companions → bright accents (colored text on dark) --- */
+  --accent-blue-deep: #56b4e4;
+  --accent-pink-deep: #ef7593;
+  --accent-mint-deep: #3fe3a4;
+  --warn-deep:        #ffba5a;
+
+  /* ---------- Status (bright ink + dark saturated tint fills) ---------- */
+  --danger:    #ff6363;
+  --danger-bg: #3a141b;
+  --warn-bg:   #2e2412;
+  --ok-bg:     #0d3326;
+  --info-bg:   #103247;
+
+  /* ---------- Bevel system (near-flat: faint light edge, black shade) -- */
+  --border-ink:  #d7d7dd; /* white-ish hairline border on dark */
+  --bevel-light: #26262d; /* faint top-left highlight (near-flat) */
+  --bevel-shade: #000000; /* bottom-right shade → pure black */
+  --shadow-hard:     3px 3px 0 0 #000000;
+  --shadow-hard-ink: 2px 2px 0 0 #d7d7dd;
+  --table-rule:   #24242b;
+  --table-stripe: #101013;
 
   /* ---------- Chart marks (flip ink + grid + muted for recharts) ---------- */
-  --chart-ink:   #f2ede3;
-  --chart-grid:  #45454f;
-  --chart-muted: #b3aea4;
+  --chart-ink:   #f4f4f6;
+  --chart-grid:  #26262d;
+  --chart-muted: #cfcfd6;
 }

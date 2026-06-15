@@ -1,31 +1,6 @@
 import { lazy, Suspense } from "react";
-import { Routes, Route } from "react-router";
-import { LoginPage } from "@/features/auth/LoginPage";
-import { RegisterPage } from "@/features/auth/RegisterPage";
-import { CallbackPage } from "@/features/auth/CallbackPage";
-import { RequireAuth } from "@/features/auth/RequireAuth";
+import { Route, Routes } from "react-router";
 import { AppShell } from "@/components/layout/AppShell";
-import { DashboardPage } from "@/features/dashboard/DashboardPage";
-import { SettingsLayout } from "@/features/settings/SettingsLayout";
-import { SettingsLandingPage } from "@/features/settings/SettingsLandingPage";
-import { SecurityPage } from "@/features/settings/SecurityPage";
-import { AccountsPage } from "@/features/settings/AccountsPage";
-import { DemoPage } from "@/routes/demo/DemoPage";
-import { ItemsListPage } from "@/features/items/ItemsListPage";
-import { ItemFormPage } from "@/features/items/ItemFormPage";
-import { ItemDetailPage } from "@/features/items/ItemDetailPage";
-import { InventoryListPage } from "@/features/inventory/InventoryListPage";
-import { InventoryFormPage } from "@/features/inventory/InventoryFormPage";
-import { ExpiringPage } from "@/features/inventory/ExpiringPage";
-import { MaintenanceDuePage } from "@/features/maintenance/MaintenanceDuePage";
-import { LoansListPage } from "@/features/loans/LoansListPage";
-import { LoanFormPage } from "@/features/loans/LoanFormPage";
-import { BorrowersListPage } from "@/features/borrowers/BorrowersListPage";
-import { BorrowerFormPage } from "@/features/borrowers/BorrowerFormPage";
-import { BorrowerDetailPage } from "@/features/borrowers/BorrowerDetailPage";
-import { TaxonomyPage } from "@/features/taxonomy/TaxonomyPage";
-import { CategoryFormDialog } from "@/features/taxonomy/components/CategoryFormDialog";
-import { ClaimPage } from "@/features/scan/ClaimPage";
 // Phase 14 System group (14-01..14-06). Imported EAGERLY (tables + forms, no
 // heavy chart/scanner chunk) so a wrong path/name fails at tsc/build time, not
 // at runtime (T-14-22). SyncHistoryPage lives at features/system-history/Page —
@@ -33,11 +8,36 @@ import { ClaimPage } from "@/features/scan/ClaimPage";
 // matches `sync` in any import specifier (14-06-SUMMARY); the route URL string
 // `/sync-history` is fine (it is a Route path, not an import specifier).
 import { ApprovalsPage } from "@/features/approvals/ApprovalsPage";
-import { MyChangesPage } from "@/features/my-changes/MyChangesPage";
-import { WishlistPage } from "@/features/wishlist/WishlistPage";
+import { CallbackPage } from "@/features/auth/CallbackPage";
+import { LoginPage } from "@/features/auth/LoginPage";
+import { RegisterPage } from "@/features/auth/RegisterPage";
+import { RequireAuth } from "@/features/auth/RequireAuth";
+import { BorrowerDetailPage } from "@/features/borrowers/BorrowerDetailPage";
+import { BorrowerFormPage } from "@/features/borrowers/BorrowerFormPage";
+import { BorrowersListPage } from "@/features/borrowers/BorrowersListPage";
+import { DashboardPage } from "@/features/dashboard/DashboardPage";
 import { DeclutterPage } from "@/features/declutter/DeclutterPage";
 import { ImportsPage } from "@/features/imports/ImportsPage";
+import { ExpiringPage } from "@/features/inventory/ExpiringPage";
+import { InventoryFormPage } from "@/features/inventory/InventoryFormPage";
+import { InventoryListPage } from "@/features/inventory/InventoryListPage";
+import { ItemDetailPage } from "@/features/items/ItemDetailPage";
+import { ItemFormPage } from "@/features/items/ItemFormPage";
+import { ItemsListPage } from "@/features/items/ItemsListPage";
+import { LoanFormPage } from "@/features/loans/LoanFormPage";
+import { LoansListPage } from "@/features/loans/LoansListPage";
+import { MaintenanceDuePage } from "@/features/maintenance/MaintenanceDuePage";
+import { MyChangesPage } from "@/features/my-changes/MyChangesPage";
+import { ClaimPage } from "@/features/scan/ClaimPage";
+import { AccountsPage } from "@/features/settings/AccountsPage";
+import { SecurityPage } from "@/features/settings/SecurityPage";
+import { SettingsLandingPage } from "@/features/settings/SettingsLandingPage";
+import { SettingsLayout } from "@/features/settings/SettingsLayout";
 import { SyncHistoryPage } from "@/features/system-history/Page";
+import { CategoryFormDialog } from "@/features/taxonomy/components/CategoryFormDialog";
+import { TaxonomyPage } from "@/features/taxonomy/TaxonomyPage";
+import { WishlistPage } from "@/features/wishlist/WishlistPage";
+import { DemoPage } from "@/routes/demo/DemoPage";
 
 // /scan is React.lazy so the camera scanner library lands in its own manualChunk
 // (11-01) and only downloads when the user actually visits /scan (T-11-16 DoS —
@@ -303,10 +303,10 @@ export function AppRoutes() {
             }
           />
         </Route>
-        {/* /demo: the Phase 4 atom review surface. DEV-gated — it renders
-            inside AppShell for review but never ships as a user route. */}
-        {import.meta.env.DEV && <Route path="demo" element={<DemoPage />} />}
       </Route>
+      {/* /demo: standalone dark-terminal dashboard mockup. DEV-gated — renders
+          full-screen OUTSIDE the AppShell (own chrome) and never ships. */}
+      {import.meta.env.DEV && <Route path="/demo" element={<DemoPage />} />}
       <Route path="*" element={<PlaceholderShell />} />
     </Routes>
   );

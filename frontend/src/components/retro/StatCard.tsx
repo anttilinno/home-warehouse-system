@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { Window, type TitlebarVariant } from "./Window";
+import { type TitlebarVariant, Window } from "./Window";
 
 const VALUE_TONES = {
   ink: "text-fg-ink",
@@ -35,11 +35,14 @@ export function StatCard({
     <Window
       title={label}
       titlebarVariant={titlebarVariant}
-      className={className}
+      // `stat-card stat-{variant}` markers let globals.css paint the WHOLE card
+      // (body + header tint + number) in dark terminal mode — the only colored
+      // panels in dark (other Windows keep the neutral titlebar).
+      className={`stat-card stat-${titlebarVariant} ${className}`.trim()}
       bodyClassName="px-sp-4 py-sp-3"
     >
       <div
-        className={`font-display text-30 leading-[1.15] uppercase ${VALUE_TONES[valueTone]}`}
+        className={`stat-card__value font-display text-30 leading-[1.15] uppercase ${VALUE_TONES[valueTone]}`}
       >
         {value}
       </div>

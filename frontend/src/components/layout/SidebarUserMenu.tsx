@@ -99,7 +99,7 @@ export function SidebarUserMenu({ user, onLogout }: SidebarUserMenuProps) {
               setMenuOpen(false);
               setConfirmOpen(true);
             }}
-            className={`block w-full border-t-2 border-border-ink px-sp-3 py-[6px] text-left text-13 font-semibold uppercase tracking-4 text-danger hover:bg-danger-bg ${FOCUS_RING}`}
+            className={`block w-full px-sp-3 py-[6px] text-left text-13 font-semibold uppercase tracking-4 text-danger hover:bg-danger-bg ${FOCUS_RING}`}
           >
             <Trans>Log out</Trans>
           </button>

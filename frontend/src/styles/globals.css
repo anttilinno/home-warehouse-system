@@ -106,11 +106,36 @@ body {
 }
 
 [data-theme="dark"] .shadow-hard {
-  box-shadow: 3px 3px 0 0 #101015;
+  box-shadow: 3px 3px 0 0 #000000;
 }
 [data-theme="dark"] .shadow-hard-ink {
-  box-shadow: 2px 2px 0 0 #e8e3d9;
+  box-shadow: 2px 2px 0 0 #d7d7dd;
 }
+
+/* Terminal headers are FLAT (validated on /demo): the titlebar fills go dark,
+   so the System 7 white pinstripes would streak the dark chrome. Drop them. */
+[data-theme="dark"] .pinstripes {
+  background-image: none;
+}
+
+/* Dashboard stat cards: the ONLY colored panels in dark terminal mode. Full
+   body fill + a darker header tint + a bright matching number. Unlayered so it
+   beats the Tailwind bg-bg-panel / text-* utilities. Markers from StatCard. */
+[data-theme="dark"] .stat-card.stat-blue { background: #103247; }
+[data-theme="dark"] .stat-card.stat-blue > header { background: #0c2636; }
+[data-theme="dark"] .stat-card.stat-blue .stat-card__value { color: #56b4e4; }
+
+[data-theme="dark"] .stat-card.stat-mint { background: #0d3326; }
+[data-theme="dark"] .stat-card.stat-mint > header { background: #0a281d; }
+[data-theme="dark"] .stat-card.stat-mint .stat-card__value { color: #3fe3a4; }
+
+[data-theme="dark"] .stat-card.stat-pink { background: #311623; }
+[data-theme="dark"] .stat-card.stat-pink > header { background: #29111c; }
+[data-theme="dark"] .stat-card.stat-pink .stat-card__value { color: #ef7593; }
+
+[data-theme="dark"] .stat-card.stat-butter { background: #2e2412; }
+[data-theme="dark"] .stat-card.stat-butter > header { background: #261d0e; }
+[data-theme="dark"] .stat-card.stat-butter .stat-card__value { color: #ffba5a; }
 
 /* Body dot-dither: a near-black dot vanishes on a dark desktop — invert to a
    faint light dot so the desktop texture survives. */
@@ -262,6 +287,30 @@ body {
 }
 .app-sidebar > section > header {
   padding-block: 5px;
+}
+/* Beige sidebar test — repaint the Navigator panel + its titlebar one warm
+   beige, scoped to .app-sidebar so every other Window keeps the white fill.
+   Unlayered rule beats the Tailwind bg-bg-panel / bg-bg-panel-2 utilities.
+   LIGHT ONLY — dark terminal mode keeps the near-black sidebar tokens. */
+:root:not([data-theme="dark"]) .app-sidebar > section,
+:root:not([data-theme="dark"]) .app-sidebar > section > header,
+:root:not([data-theme="dark"]) .app-sidebar [data-testid="sidebar-user-menu"],
+:root:not([data-theme="dark"]) .app-sidebar [role="menu"] {
+  background: #efe5cf;
+}
+/* Popover items (Profile/Settings) mirror the nav items' hover: bg-bg-panel-2
+   fill + a black 1px border rectangle. Transparent border reserved in the base
+   so the row doesn't shift 1px on hover. Log out keeps its danger-bg. */
+.app-sidebar [role="menu"] a,
+.app-sidebar [role="menu"] button {
+  border: 1px solid transparent;
+}
+.app-sidebar [role="menu"] a:hover {
+  background: var(--bg-panel-2);
+  border-color: var(--border-ink);
+}
+.app-sidebar [role="menu"] button:hover {
+  border-color: var(--border-ink);
 }
 
 /* ---------- Table chrome (nth-child striping + hover + selection are
