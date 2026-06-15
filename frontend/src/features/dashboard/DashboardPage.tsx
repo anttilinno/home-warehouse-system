@@ -1,18 +1,18 @@
+import { Trans, useLingui } from "@lingui/react/macro";
+import { useQuery } from "@tanstack/react-query";
 import { useCallback, useMemo } from "react";
 import { useNavigate } from "react-router";
-import { useQuery } from "@tanstack/react-query";
-import { Trans, useLingui } from "@lingui/react/macro";
-import { get } from "@/lib/api";
-import { useWorkspace } from "@/features/workspace/useWorkspace";
-import { useShortcuts } from "@/components/shortcuts";
-import type { DashboardStats, RecentActivity } from "@/lib/types";
 import {
   RetroBadge,
+  type RetroBadgeVariant,
   RetroTable,
   StatCard,
   Window,
-  type RetroBadgeVariant,
 } from "@/components/retro";
+import { useShortcuts } from "@/components/shortcuts";
+import { useWorkspace } from "@/features/workspace/useWorkspace";
+import { get } from "@/lib/api";
+import type { DashboardStats, RecentActivity } from "@/lib/types";
 import { DashboardSideRail } from "./components/DashboardSideRail";
 import { HudRow } from "./components/HudRow";
 import { formatRelativeTime } from "./relativeTime";
@@ -143,10 +143,17 @@ export function DashboardPage() {
           ).map(([label, count]) => (
             <div
               key={label}
-              className="flex items-baseline justify-between gap-sp-2 border-2 border-border-ink bg-bg-panel px-sp-3 py-sp-2 text-12 font-semibold uppercase tracking-6 text-fg-muted bevel-raised-ink"
+              title={label}
+              // pr-sp-4 (not px-sp-3 both sides): the Silkscreen count is right-
+              // aligned and was clipping on the right bevel/border — give it extra
+              // right room. Label truncates (min-w-0) if the cell ever gets narrow
+              // so the count stays whole instead of the word shoving it off-edge.
+              className="flex items-baseline justify-between gap-sp-2 border-2 border-border-ink bg-bg-panel py-sp-2 pl-sp-3 pr-sp-4 text-12 font-semibold uppercase tracking-6 text-fg-muted bevel-raised-ink"
             >
-              {label}
-              <b className="font-display text-16 text-fg-ink">{count ?? "—"}</b>
+              <span className="min-w-0 truncate">{label}</span>
+              <b className="flex-none font-display text-16 leading-none text-fg-ink">
+                {count ?? "—"}
+              </b>
             </div>
           ))}
         </section>
