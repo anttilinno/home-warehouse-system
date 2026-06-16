@@ -25,6 +25,10 @@ const MaintenanceReminderWindowDays = 7
 // maintenance-due alerts. Missing key means enabled.
 const maintenancePrefKey = "maintenance_alerts"
 
+// maintenanceDateFormat is the date layout used in maintenance reminder
+// dedup keys and notification messages.
+const maintenanceDateFormat = "2006-01-02"
+
 // MaintenanceReminderPayload is the payload for maintenance reminder tasks.
 type MaintenanceReminderPayload struct {
 	ScheduleID  uuid.UUID `json:"schedule_id"`
@@ -42,7 +46,7 @@ type MaintenanceReminderPayload struct {
 // occurrence is notified exactly once per user (same notification-exists
 // dedupe approach as the expiry reminder job).
 func (p MaintenanceReminderPayload) DedupeKey() string {
-	return fmt.Sprintf("maintenance:%s:%s", p.ScheduleID, p.NextDue.Format("2006-01-02"))
+	return fmt.Sprintf("maintenance:%s:%s", p.ScheduleID, p.NextDue.Format(maintenanceDateFormat))
 }
 
 // MaintenanceReminderProcessor handles maintenance reminder tasks: creates
@@ -69,7 +73,7 @@ func (p *MaintenanceReminderProcessor) ProcessTask(ctx context.Context, t *asynq
 	}
 
 	log.Printf("Processing maintenance reminder for schedule %s (item: %s, due: %s, overdue: %t)",
-		payload.ScheduleID, payload.ItemName, payload.NextDue.Format("2006-01-02"), payload.IsOverdue)
+		payload.ScheduleID, payload.ItemName, payload.NextDue.Format(maintenanceDateFormat), payload.IsOverdue)
 
 	q := queries.New(p.pool)
 
@@ -92,7 +96,7 @@ func (p *MaintenanceReminderProcessor) ProcessTask(ctx context.Context, t *asynq
 		"inventory_id": payload.InventoryID.String(),
 		"item_id":      payload.ItemID.String(),
 		"item_name":    payload.ItemName,
-		"next_due":     payload.NextDue.Format("2006-01-02"),
+		"next_due":     payload.NextDue.Format(maintenanceDateFormat),
 		"is_overdue":   payload.IsOverdue,
 	})
 

@@ -20,6 +20,12 @@ import (
 	"github.com/antti/home-warehouse/go-backend/internal/infra/events"
 )
 
+const (
+	msgWorkspaceContextRequired = "workspace context required"
+	msgPhotoNotFound            = "photo not found"
+	msgFailedGetPhoto           = "failed to get photo"
+)
+
 // PhotoURLGenerator is a function that generates URLs for photos
 type PhotoURLGenerator func(workspaceID, repairLogID, photoID uuid.UUID, isThumbnail bool) string
 
@@ -34,7 +40,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 	huma.Get(api, "/repairs/{repair_log_id}/photos/list", func(ctx context.Context, input *ListPhotosInput) (*ListPhotosOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
+			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 		}
 
 		photos, err := svc.ListPhotos(ctx, input.RepairLogID, workspaceID)
@@ -56,20 +62,20 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 	huma.Get(api, "/repairs/{repair_log_id}/photos/{id}", func(ctx context.Context, input *GetPhotoInput) (*GetPhotoOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
+			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 		}
 
 		photo, err := svc.GetPhoto(ctx, input.ID, workspaceID)
 		if err != nil {
 			if errors.Is(err, ErrPhotoNotFound) {
-				return nil, huma.Error404NotFound("photo not found")
+				return nil, huma.Error404NotFound(msgPhotoNotFound)
 			}
-			return nil, huma.Error500InternalServerError("failed to get photo")
+			return nil, huma.Error500InternalServerError(msgFailedGetPhoto)
 		}
 
 		// Verify photo belongs to the repair log
 		if photo.RepairLogID != input.RepairLogID {
-			return nil, huma.Error404NotFound("photo not found")
+			return nil, huma.Error404NotFound(msgPhotoNotFound)
 		}
 
 		return &GetPhotoOutput{
@@ -81,7 +87,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 	huma.Put(api, "/repairs/{repair_log_id}/photos/{id}/caption", func(ctx context.Context, input *UpdateCaptionInput) (*UpdateCaptionOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
+			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 		}
 
 		authUser, _ := appMiddleware.GetAuthUser(ctx)
@@ -90,18 +96,18 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 		existingPhoto, err := svc.GetPhoto(ctx, input.ID, workspaceID)
 		if err != nil {
 			if errors.Is(err, ErrPhotoNotFound) {
-				return nil, huma.Error404NotFound("photo not found")
+				return nil, huma.Error404NotFound(msgPhotoNotFound)
 			}
-			return nil, huma.Error500InternalServerError("failed to get photo")
+			return nil, huma.Error500InternalServerError(msgFailedGetPhoto)
 		}
 		if existingPhoto.RepairLogID != input.RepairLogID {
-			return nil, huma.Error404NotFound("photo not found")
+			return nil, huma.Error404NotFound(msgPhotoNotFound)
 		}
 
 		photo, err := svc.UpdateCaption(ctx, input.ID, workspaceID, input.Body.Caption)
 		if err != nil {
 			if errors.Is(err, ErrPhotoNotFound) {
-				return nil, huma.Error404NotFound("photo not found")
+				return nil, huma.Error404NotFound(msgPhotoNotFound)
 			}
 			return nil, huma.Error500InternalServerError("failed to update caption")
 		}
@@ -132,7 +138,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 	huma.Delete(api, "/repairs/{repair_log_id}/photos/{id}", func(ctx context.Context, input *DeletePhotoInput) (*struct{}, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
+			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 		}
 
 		authUser, _ := appMiddleware.GetAuthUser(ctx)
@@ -141,18 +147,18 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 		existingPhoto, err := svc.GetPhoto(ctx, input.ID, workspaceID)
 		if err != nil {
 			if errors.Is(err, ErrPhotoNotFound) {
-				return nil, huma.Error404NotFound("photo not found")
+				return nil, huma.Error404NotFound(msgPhotoNotFound)
 			}
-			return nil, huma.Error500InternalServerError("failed to get photo")
+			return nil, huma.Error500InternalServerError(msgFailedGetPhoto)
 		}
 		if existingPhoto.RepairLogID != input.RepairLogID {
-			return nil, huma.Error404NotFound("photo not found")
+			return nil, huma.Error404NotFound(msgPhotoNotFound)
 		}
 
 		err = svc.DeletePhoto(ctx, input.ID, workspaceID)
 		if err != nil {
 			if errors.Is(err, ErrPhotoNotFound) {
-				return nil, huma.Error404NotFound("photo not found")
+				return nil, huma.Error404NotFound(msgPhotoNotFound)
 			}
 			return nil, huma.Error500InternalServerError("failed to delete photo")
 		}
@@ -211,7 +217,7 @@ func (h *UploadHandler) HandleUpload(w http.ResponseWriter, r *http.Request) {
 	// Get workspace and user from context
 	workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 	if !ok {
-		http.Error(w, "workspace context required", http.StatusUnauthorized)
+		http.Error(w, msgWorkspaceContextRequired, http.StatusUnauthorized)
 		return
 	}
 
@@ -321,7 +327,7 @@ func (h *ServePhotoHandler) servePhoto(w http.ResponseWriter, r *http.Request, t
 	// Get workspace from context (for authorization)
 	workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 	if !ok {
-		http.Error(w, "workspace context required", http.StatusUnauthorized)
+		http.Error(w, msgWorkspaceContextRequired, http.StatusUnauthorized)
 		return
 	}
 
@@ -337,10 +343,10 @@ func (h *ServePhotoHandler) servePhoto(w http.ResponseWriter, r *http.Request, t
 	photo, err := h.svc.GetPhoto(ctx, photoID, workspaceID)
 	if err != nil {
 		if errors.Is(err, ErrPhotoNotFound) {
-			http.Error(w, "photo not found", http.StatusNotFound)
+			http.Error(w, msgPhotoNotFound, http.StatusNotFound)
 			return
 		}
-		http.Error(w, "failed to get photo", http.StatusInternalServerError)
+		http.Error(w, msgFailedGetPhoto, http.StatusInternalServerError)
 		return
 	}
 

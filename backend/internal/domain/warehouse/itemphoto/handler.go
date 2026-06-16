@@ -22,6 +22,14 @@ import (
 	"github.com/antti/home-warehouse/go-backend/internal/infra/events"
 )
 
+const (
+	msgInvalidItemID            = "invalid item_id"
+	msgWorkspaceContextRequired = "workspace context required"
+	headerContentType           = "Content-Type"
+	msgPhotoNotFound            = "photo not found"
+	msgPhotoNotInWorkspace      = "photo does not belong to workspace"
+)
+
 // PhotoURLGenerator is a function that generates URLs for photos
 type PhotoURLGenerator func(workspaceID, itemID, photoID uuid.UUID, isThumbnail bool) string
 
@@ -37,7 +45,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 	huma.Get(api, "/items/{item_id}/photos/list", func(ctx context.Context, input *ListPhotosInput) (*ListPhotosOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
+			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 		}
 
 		photos, err := svc.ListPhotos(ctx, input.ItemID, workspaceID)
@@ -59,20 +67,20 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 	huma.Get(api, "/photos/{id}", func(ctx context.Context, input *GetPhotoInput) (*GetPhotoOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
+			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 		}
 
 		photo, err := svc.GetPhoto(ctx, input.ID)
 		if err != nil {
 			if errors.Is(err, ErrPhotoNotFound) {
-				return nil, huma.Error404NotFound("photo not found")
+				return nil, huma.Error404NotFound(msgPhotoNotFound)
 			}
 			return nil, huma.Error500InternalServerError("failed to get photo")
 		}
 
 		// Verify photo belongs to workspace
 		if photo.WorkspaceID != workspaceID {
-			return nil, huma.Error404NotFound("photo not found")
+			return nil, huma.Error404NotFound(msgPhotoNotFound)
 		}
 
 		return &GetPhotoOutput{
@@ -84,7 +92,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 	huma.Put(api, "/photos/{id}/primary", func(ctx context.Context, input *SetPrimaryInput) (*struct{}, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
+			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 		}
 
 		authUser, _ := appMiddleware.GetAuthUser(ctx)
@@ -92,10 +100,10 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 		err := svc.SetPrimaryPhoto(ctx, input.ID, workspaceID)
 		if err != nil {
 			if errors.Is(err, ErrPhotoNotFound) {
-				return nil, huma.Error404NotFound("photo not found")
+				return nil, huma.Error404NotFound(msgPhotoNotFound)
 			}
 			if errors.Is(err, ErrUnauthorized) {
-				return nil, huma.Error403Forbidden("photo does not belong to workspace")
+				return nil, huma.Error403Forbidden(msgPhotoNotInWorkspace)
 			}
 			return nil, huma.Error500InternalServerError("failed to set primary photo")
 		}
@@ -123,7 +131,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 	huma.Put(api, "/photos/{id}/caption", func(ctx context.Context, input *UpdateCaptionInput) (*UpdateCaptionOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
+			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 		}
 
 		authUser, _ := appMiddleware.GetAuthUser(ctx)
@@ -131,10 +139,10 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 		err := svc.UpdateCaption(ctx, input.ID, workspaceID, input.Body.Caption)
 		if err != nil {
 			if errors.Is(err, ErrPhotoNotFound) {
-				return nil, huma.Error404NotFound("photo not found")
+				return nil, huma.Error404NotFound(msgPhotoNotFound)
 			}
 			if errors.Is(err, ErrUnauthorized) {
-				return nil, huma.Error403Forbidden("photo does not belong to workspace")
+				return nil, huma.Error403Forbidden(msgPhotoNotInWorkspace)
 			}
 			return nil, huma.Error500InternalServerError("failed to update caption")
 		}
@@ -170,7 +178,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 	huma.Put(api, "/items/{item_id}/photos/order", func(ctx context.Context, input *ReorderPhotosInput) (*struct{}, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
+			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 		}
 
 		authUser, _ := appMiddleware.GetAuthUser(ctx)
@@ -205,7 +213,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 	huma.Delete(api, "/photos/{id}", func(ctx context.Context, input *GetPhotoInput) (*struct{}, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
+			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 		}
 
 		authUser, _ := appMiddleware.GetAuthUser(ctx)
@@ -216,10 +224,10 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 		err := svc.DeletePhoto(ctx, input.ID, workspaceID)
 		if err != nil {
 			if errors.Is(err, ErrPhotoNotFound) {
-				return nil, huma.Error404NotFound("photo not found")
+				return nil, huma.Error404NotFound(msgPhotoNotFound)
 			}
 			if errors.Is(err, ErrUnauthorized) {
-				return nil, huma.Error403Forbidden("photo does not belong to workspace")
+				return nil, huma.Error403Forbidden(msgPhotoNotInWorkspace)
 			}
 			return nil, huma.Error500InternalServerError("failed to delete photo")
 		}
@@ -285,7 +293,7 @@ func (h *BulkPhotoHandler) HandleBulkDelete(w http.ResponseWriter, r *http.Reque
 	// Get workspace from context
 	workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 	if !ok {
-		http.Error(w, "workspace context required", http.StatusUnauthorized)
+		http.Error(w, msgWorkspaceContextRequired, http.StatusUnauthorized)
 		return
 	}
 
@@ -295,7 +303,7 @@ func (h *BulkPhotoHandler) HandleBulkDelete(w http.ResponseWriter, r *http.Reque
 	itemIDStr := chi.URLParam(r, "item_id")
 	itemID, err := uuid.Parse(itemIDStr)
 	if err != nil {
-		http.Error(w, "invalid item_id", http.StatusBadRequest)
+		http.Error(w, msgInvalidItemID, http.StatusBadRequest)
 		return
 	}
 
@@ -344,7 +352,7 @@ func (h *BulkPhotoHandler) HandleBulkCaption(w http.ResponseWriter, r *http.Requ
 	// Get workspace from context
 	workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 	if !ok {
-		http.Error(w, "workspace context required", http.StatusUnauthorized)
+		http.Error(w, msgWorkspaceContextRequired, http.StatusUnauthorized)
 		return
 	}
 
@@ -354,7 +362,7 @@ func (h *BulkPhotoHandler) HandleBulkCaption(w http.ResponseWriter, r *http.Requ
 	itemIDStr := chi.URLParam(r, "item_id")
 	itemID, err := uuid.Parse(itemIDStr)
 	if err != nil {
-		http.Error(w, "invalid item_id", http.StatusBadRequest)
+		http.Error(w, msgInvalidItemID, http.StatusBadRequest)
 		return
 	}
 
@@ -411,7 +419,7 @@ func (h *BulkPhotoHandler) HandleDownload(w http.ResponseWriter, r *http.Request
 	// Get workspace from context
 	workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 	if !ok {
-		http.Error(w, "workspace context required", http.StatusUnauthorized)
+		http.Error(w, msgWorkspaceContextRequired, http.StatusUnauthorized)
 		return
 	}
 
@@ -419,7 +427,7 @@ func (h *BulkPhotoHandler) HandleDownload(w http.ResponseWriter, r *http.Request
 	itemIDStr := chi.URLParam(r, "item_id")
 	itemID, err := uuid.Parse(itemIDStr)
 	if err != nil {
-		http.Error(w, "invalid item_id", http.StatusBadRequest)
+		http.Error(w, msgInvalidItemID, http.StatusBadRequest)
 		return
 	}
 
@@ -469,7 +477,7 @@ func (h *BulkPhotoHandler) HandleDownload(w http.ResponseWriter, r *http.Request
 	storage := h.storageGetter.GetStorage()
 
 	// Set headers for zip download
-	w.Header().Set("Content-Type", "application/zip")
+	w.Header().Set(headerContentType, "application/zip")
 	w.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=\"photos-%s.zip\"", itemID.String()[:8]))
 
 	// Create zip writer
@@ -518,7 +526,7 @@ func (h *BulkPhotoHandler) HandleCheckDuplicate(w http.ResponseWriter, r *http.R
 	// Get workspace from context
 	workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 	if !ok {
-		http.Error(w, "workspace context required", http.StatusUnauthorized)
+		http.Error(w, msgWorkspaceContextRequired, http.StatusUnauthorized)
 		return
 	}
 
@@ -526,7 +534,7 @@ func (h *BulkPhotoHandler) HandleCheckDuplicate(w http.ResponseWriter, r *http.R
 	itemIDStr := chi.URLParam(r, "item_id")
 	_, err := uuid.Parse(itemIDStr)
 	if err != nil {
-		http.Error(w, "invalid item_id", http.StatusBadRequest)
+		http.Error(w, msgInvalidItemID, http.StatusBadRequest)
 		return
 	}
 
@@ -555,7 +563,7 @@ func (h *BulkPhotoHandler) HandleCheckDuplicate(w http.ResponseWriter, r *http.R
 	defer file.Close()
 
 	// Check file type
-	contentType := header.Header.Get("Content-Type")
+	contentType := header.Header.Get(headerContentType)
 	if !isValidMimeType(contentType) {
 		http.Error(w, "invalid file type", http.StatusBadRequest)
 		return
@@ -599,7 +607,7 @@ func (h *BulkPhotoHandler) HandleCheckDuplicate(w http.ResponseWriter, r *http.R
 		}
 	}
 
-	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set(headerContentType, "application/json")
 	json.NewEncoder(w).Encode(DuplicateCheckResponse{
 		HasDuplicates: len(duplicates) > 0,
 		Duplicates:    duplicates,
@@ -651,7 +659,7 @@ func (h *UploadHandler) HandleUpload(w http.ResponseWriter, r *http.Request) {
 	// Get workspace and user from context
 	workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 	if !ok {
-		http.Error(w, "workspace context required", http.StatusUnauthorized)
+		http.Error(w, msgWorkspaceContextRequired, http.StatusUnauthorized)
 		return
 	}
 
@@ -665,7 +673,7 @@ func (h *UploadHandler) HandleUpload(w http.ResponseWriter, r *http.Request) {
 	itemIDStr := chi.URLParam(r, "item_id")
 	itemID, err := uuid.Parse(itemIDStr)
 	if err != nil {
-		http.Error(w, "invalid item_id", http.StatusBadRequest)
+		http.Error(w, msgInvalidItemID, http.StatusBadRequest)
 		return
 	}
 
@@ -722,7 +730,7 @@ func (h *UploadHandler) HandleUpload(w http.ResponseWriter, r *http.Request) {
 
 	// Return response
 	response := toPhotoResponse(photo, h.urlGenerator)
-	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set(headerContentType, "application/json")
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(response)
 }
@@ -749,7 +757,7 @@ func (h *ServePhotoHandler) servePhoto(w http.ResponseWriter, r *http.Request, t
 	// Get workspace from context (for authorization)
 	workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 	if !ok {
-		http.Error(w, "workspace context required", http.StatusUnauthorized)
+		http.Error(w, msgWorkspaceContextRequired, http.StatusUnauthorized)
 		return
 	}
 
@@ -765,7 +773,7 @@ func (h *ServePhotoHandler) servePhoto(w http.ResponseWriter, r *http.Request, t
 	photo, err := h.svc.GetPhoto(ctx, photoID)
 	if err != nil {
 		if errors.Is(err, ErrPhotoNotFound) {
-			http.Error(w, "photo not found", http.StatusNotFound)
+			http.Error(w, msgPhotoNotFound, http.StatusNotFound)
 			return
 		}
 		http.Error(w, "failed to get photo", http.StatusInternalServerError)
@@ -774,7 +782,7 @@ func (h *ServePhotoHandler) servePhoto(w http.ResponseWriter, r *http.Request, t
 
 	// Verify photo belongs to workspace
 	if photo.WorkspaceID != workspaceID {
-		http.Error(w, "photo not found", http.StatusNotFound)
+		http.Error(w, msgPhotoNotFound, http.StatusNotFound)
 		return
 	}
 
@@ -807,7 +815,7 @@ func (h *ServePhotoHandler) servePhoto(w http.ResponseWriter, r *http.Request, t
 			mimeType = "application/octet-stream"
 		}
 	}
-	w.Header().Set("Content-Type", mimeType)
+	w.Header().Set(headerContentType, mimeType)
 
 	// Set cache headers (1 year)
 	w.Header().Set("Cache-Control", "public, max-age=31536000, immutable")

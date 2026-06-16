@@ -72,6 +72,8 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
+const apiTitle = "Home Warehouse API"
+
 // sessionResolverAdapter adapts *session.Service to the
 // appMiddleware.SessionResolver interface. The middleware package cannot
 // import the session package (session/handler.go already imports middleware),
@@ -156,7 +158,7 @@ func NewRouter(pool *pgxpool.Pool, cfg *config.Config) chi.Router {
 	asynqClient := asynq.NewClient(asynq.RedisClientOpt{Addr: redisOpts.Addr, Password: redisOpts.Password, DB: redisOpts.DB})
 
 	// Create Huma API with OpenAPI configuration
-	humaAPIConfig := huma.DefaultConfig("Home Warehouse API", "1.0.0")
+	humaAPIConfig := huma.DefaultConfig(apiTitle, "1.0.0")
 	humaAPIConfig.Info.Description = "Go backend for Home Warehouse System - a comprehensive inventory management solution for home and small business use. Features include item tracking, location management, loan tracking, and PWA offline support."
 	humaAPIConfig.Info.Contact = &huma.Contact{
 		Name:  "Home Warehouse Team",
@@ -370,7 +372,7 @@ func NewRouter(pool *pgxpool.Pool, cfg *config.Config) chi.Router {
 	// Register public routes with rate limiting for auth endpoints
 	r.Group(func(r chi.Router) {
 		r.Use(appMiddleware.RateLimit(authRateLimiter))
-		rateLimitedConfig := huma.DefaultConfig("Home Warehouse API", "1.0.0")
+		rateLimitedConfig := huma.DefaultConfig(apiTitle, "1.0.0")
 		rateLimitedConfig.DocsPath = ""
 		rateLimitedConfig.OpenAPIPath = ""
 		rateLimitedAPI := humachi.New(r, rateLimitedConfig)
@@ -390,7 +392,7 @@ func NewRouter(pool *pgxpool.Pool, cfg *config.Config) chi.Router {
 	// OAuth exchange (public, rate-limited with auth rate limiter)
 	r.Group(func(r chi.Router) {
 		r.Use(appMiddleware.RateLimit(authRateLimiter))
-		oauthExchangeConfig := huma.DefaultConfig("Home Warehouse API", "1.0.0")
+		oauthExchangeConfig := huma.DefaultConfig(apiTitle, "1.0.0")
 		oauthExchangeConfig.DocsPath = ""
 		oauthExchangeConfig.OpenAPIPath = ""
 		oauthExchangeAPI := humachi.New(r, oauthExchangeConfig)
@@ -409,7 +411,7 @@ func NewRouter(pool *pgxpool.Pool, cfg *config.Config) chi.Router {
 			// headers and redirects through the one-time-code exchange.
 			r.Get("/auth/authelia/login", autheliaHandler.LoginRedirect)
 			// Trusted-header exchange for programmatic callers (JSON response).
-			autheliaConfig := huma.DefaultConfig("Home Warehouse API", "1.0.0")
+			autheliaConfig := huma.DefaultConfig(apiTitle, "1.0.0")
 			autheliaConfig.DocsPath = ""
 			autheliaConfig.OpenAPIPath = ""
 			autheliaAPI := humachi.New(r, autheliaConfig)
@@ -438,7 +440,7 @@ func NewRouter(pool *pgxpool.Pool, cfg *config.Config) chi.Router {
 		r.Use(appMiddleware.CurrentSession(sessionResolverAdapter{sessionSvc}))
 
 		// Create protected API config without docs (docs are already registered publicly)
-		protectedConfig := huma.DefaultConfig("Home Warehouse API", "1.0.0")
+		protectedConfig := huma.DefaultConfig(apiTitle, "1.0.0")
 		protectedConfig.DocsPath = ""
 		protectedConfig.OpenAPIPath = ""
 		protectedAPI := humachi.New(r, protectedConfig)
@@ -482,7 +484,7 @@ func NewRouter(pool *pgxpool.Pool, cfg *config.Config) chi.Router {
 			eventsHandler.RegisterRoutes(r)
 
 			// Create workspace API config without docs
-			wsConfig := huma.DefaultConfig("Home Warehouse API", "1.0.0")
+			wsConfig := huma.DefaultConfig(apiTitle, "1.0.0")
 			wsConfig.DocsPath = ""
 			wsConfig.OpenAPIPath = ""
 			wsAPI := humachi.New(r, wsConfig)

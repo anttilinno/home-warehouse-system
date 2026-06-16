@@ -11,6 +11,11 @@ import (
 	infrapaperless "github.com/antti/home-warehouse/go-backend/internal/infra/paperless"
 )
 
+const (
+	pathPaperlessSettings       = "/paperless/settings"
+	msgWorkspaceContextRequired = "workspace context required"
+)
+
 // RegisterRoutes registers Paperless integration routes on the workspace tree.
 //
 // Attach/detach of a Paperless document to an item is intentionally NOT here:
@@ -19,10 +24,10 @@ import (
 func RegisterRoutes(api huma.API, svc ServiceInterface) {
 	// Get workspace Paperless settings. Always 200; configured=false when the
 	// workspace has no settings row yet.
-	huma.Get(api, "/paperless/settings", func(ctx context.Context, _ *struct{}) (*GetSettingsOutput, error) {
+	huma.Get(api, pathPaperlessSettings, func(ctx context.Context, _ *struct{}) (*GetSettingsOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
+			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 		}
 
 		settings, err := svc.GetSettings(ctx, workspaceID)
@@ -38,10 +43,10 @@ func RegisterRoutes(api huma.API, svc ServiceInterface) {
 
 	// Create or update workspace Paperless settings. The token is write-only:
 	// omit api_token to keep the stored one; the response never includes it.
-	huma.Put(api, "/paperless/settings", func(ctx context.Context, input *SaveSettingsInputBody) (*GetSettingsOutput, error) {
+	huma.Put(api, pathPaperlessSettings, func(ctx context.Context, input *SaveSettingsInputBody) (*GetSettingsOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
+			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 		}
 
 		settings, err := svc.SaveSettings(ctx, workspaceID, SaveSettingsInput{
@@ -64,10 +69,10 @@ func RegisterRoutes(api huma.API, svc ServiceInterface) {
 	})
 
 	// Remove the workspace's Paperless configuration entirely.
-	huma.Delete(api, "/paperless/settings", func(ctx context.Context, _ *struct{}) (*struct{}, error) {
+	huma.Delete(api, pathPaperlessSettings, func(ctx context.Context, _ *struct{}) (*struct{}, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
+			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 		}
 
 		if err := svc.DeleteSettings(ctx, workspaceID); err != nil {
@@ -80,7 +85,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface) {
 	huma.Get(api, "/paperless/search", func(ctx context.Context, input *SearchInput) (*SearchOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
+			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 		}
 
 		result, err := svc.Search(ctx, workspaceID, input.Query, input.Page, input.PageSize)
@@ -105,7 +110,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface) {
 	huma.Get(api, "/paperless/documents/{id}", func(ctx context.Context, input *ResolveDocumentInput) (*ResolveDocumentOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
+			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 		}
 
 		details, err := svc.ResolveDocument(ctx, workspaceID, input.ID)

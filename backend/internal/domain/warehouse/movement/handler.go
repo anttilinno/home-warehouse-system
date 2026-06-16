@@ -11,19 +11,24 @@ import (
 	"github.com/antti/home-warehouse/go-backend/internal/shared"
 )
 
+const (
+	msgWorkspaceContextRequired = "workspace context required"
+	msgFailedToListMovements    = "failed to list movements"
+)
+
 // RegisterRoutes registers movement routes (read-only, movements are created via inventory service).
 func RegisterRoutes(api huma.API, svc ServiceInterface) {
 	// List all movements in workspace
 	huma.Get(api, "/movements", func(ctx context.Context, input *ListWorkspaceMovementsInput) (*ListMovementsOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
+			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 		}
 
 		pagination := shared.Pagination{Page: input.Page, PageSize: input.Limit}
 		movements, err := svc.ListByWorkspace(ctx, workspaceID, pagination)
 		if err != nil {
-			return nil, huma.Error500InternalServerError("failed to list movements")
+			return nil, huma.Error500InternalServerError(msgFailedToListMovements)
 		}
 
 		items := make([]MovementResponse, len(movements))
@@ -40,13 +45,13 @@ func RegisterRoutes(api huma.API, svc ServiceInterface) {
 	huma.Get(api, "/inventory/{inventory_id}/movements", func(ctx context.Context, input *ListMovementsInput) (*ListMovementsOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
+			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 		}
 
 		pagination := shared.Pagination{Page: input.Page, PageSize: input.Limit}
 		movements, err := svc.ListByInventory(ctx, input.InventoryID, workspaceID, pagination)
 		if err != nil {
-			return nil, huma.Error500InternalServerError("failed to list movements")
+			return nil, huma.Error500InternalServerError(msgFailedToListMovements)
 		}
 
 		items := make([]MovementResponse, len(movements))
@@ -63,13 +68,13 @@ func RegisterRoutes(api huma.API, svc ServiceInterface) {
 	huma.Get(api, "/locations/{location_id}/movements", func(ctx context.Context, input *ListLocationMovementsInput) (*ListMovementsOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
+			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 		}
 
 		pagination := shared.Pagination{Page: input.Page, PageSize: input.Limit}
 		movements, err := svc.ListByLocation(ctx, input.LocationID, workspaceID, pagination)
 		if err != nil {
-			return nil, huma.Error500InternalServerError("failed to list movements")
+			return nil, huma.Error500InternalServerError(msgFailedToListMovements)
 		}
 
 		items := make([]MovementResponse, len(movements))

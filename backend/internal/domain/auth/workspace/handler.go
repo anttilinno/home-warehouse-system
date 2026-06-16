@@ -11,13 +11,19 @@ import (
 	appMiddleware "github.com/antti/home-warehouse/go-backend/internal/api/middleware"
 )
 
+const (
+	msgAuthenticationRequired   = "authentication required"
+	msgWorkspaceNotFound        = "workspace not found"
+	msgWorkspaceContextRequired = "workspace context required"
+)
+
 // RegisterRoutes registers workspace routes at user-level (list, create, get by slug).
 func RegisterRoutes(api huma.API, svc ServiceInterface) {
 	// List user's workspaces
 	huma.Get(api, "/workspaces", func(ctx context.Context, input *struct{}) (*ListWorkspacesOutput, error) {
 		authUser, ok := appMiddleware.GetAuthUser(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("authentication required")
+			return nil, huma.Error401Unauthorized(msgAuthenticationRequired)
 		}
 
 		workspaces, err := svc.GetUserWorkspaces(ctx, authUser.ID)
@@ -39,12 +45,12 @@ func RegisterRoutes(api huma.API, svc ServiceInterface) {
 	huma.Get(api, "/workspaces/by-slug/{slug}", func(ctx context.Context, input *GetWorkspaceBySlugInput) (*GetWorkspaceOutput, error) {
 		_, ok := appMiddleware.GetAuthUser(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("authentication required")
+			return nil, huma.Error401Unauthorized(msgAuthenticationRequired)
 		}
 
 		workspace, err := svc.GetBySlug(ctx, input.Slug)
 		if err != nil || workspace == nil {
-			return nil, huma.Error404NotFound("workspace not found")
+			return nil, huma.Error404NotFound(msgWorkspaceNotFound)
 		}
 
 		return &GetWorkspaceOutput{
@@ -56,7 +62,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface) {
 	huma.Post(api, "/workspaces", func(ctx context.Context, input *CreateWorkspaceRequest) (*CreateWorkspaceOutput, error) {
 		authUser, ok := appMiddleware.GetAuthUser(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("authentication required")
+			return nil, huma.Error401Unauthorized(msgAuthenticationRequired)
 		}
 
 		workspace, err := svc.Create(ctx, CreateWorkspaceInput{
@@ -86,12 +92,12 @@ func RegisterWorkspaceScopedRoutes(api huma.API, svc ServiceInterface) {
 	huma.Get(api, "/", func(ctx context.Context, input *struct{}) (*GetWorkspaceOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
+			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 		}
 
 		workspace, err := svc.GetByID(ctx, workspaceID)
 		if err != nil || workspace == nil {
-			return nil, huma.Error404NotFound("workspace not found")
+			return nil, huma.Error404NotFound(msgWorkspaceNotFound)
 		}
 
 		return &GetWorkspaceOutput{
@@ -103,7 +109,7 @@ func RegisterWorkspaceScopedRoutes(api huma.API, svc ServiceInterface) {
 	huma.Patch(api, "/", func(ctx context.Context, input *UpdateWorkspaceBodyInput) (*UpdateWorkspaceOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
+			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 		}
 
 		updateInput := UpdateWorkspaceInput{
@@ -116,7 +122,7 @@ func RegisterWorkspaceScopedRoutes(api huma.API, svc ServiceInterface) {
 		workspace, err := svc.Update(ctx, workspaceID, updateInput)
 		if err != nil {
 			if errors.Is(err, ErrWorkspaceNotFound) {
-				return nil, huma.Error404NotFound("workspace not found")
+				return nil, huma.Error404NotFound(msgWorkspaceNotFound)
 			}
 			return nil, appMiddleware.MapDomainError(err)
 		}
@@ -130,13 +136,13 @@ func RegisterWorkspaceScopedRoutes(api huma.API, svc ServiceInterface) {
 	huma.Delete(api, "/", func(ctx context.Context, input *struct{}) (*struct{}, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
+			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 		}
 
 		err := svc.Delete(ctx, workspaceID)
 		if err != nil {
 			if errors.Is(err, ErrWorkspaceNotFound) {
-				return nil, huma.Error404NotFound("workspace not found")
+				return nil, huma.Error404NotFound(msgWorkspaceNotFound)
 			}
 			if errors.Is(err, ErrCannotDeletePersonal) {
 				return nil, huma.Error400BadRequest("cannot delete personal workspace")

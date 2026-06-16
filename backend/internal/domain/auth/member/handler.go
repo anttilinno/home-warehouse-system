@@ -11,13 +11,19 @@ import (
 	appMiddleware "github.com/antti/home-warehouse/go-backend/internal/api/middleware"
 )
 
+const (
+	msgWorkspaceContextRequired = "workspace context required"
+	msgMemberNotFound           = "member not found"
+	routeMemberByUserID         = "/members/{user_id}"
+)
+
 // RegisterRoutes registers member routes.
 func RegisterRoutes(api huma.API, svc ServiceInterface) {
 	// List workspace members
 	huma.Get(api, "/members", func(ctx context.Context, input *struct{}) (*ListMembersOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
+			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 		}
 
 		members, err := svc.ListWorkspaceMembers(ctx, workspaceID)
@@ -36,15 +42,15 @@ func RegisterRoutes(api huma.API, svc ServiceInterface) {
 	})
 
 	// Get member (workspace + user ID)
-	huma.Get(api, "/members/{user_id}", func(ctx context.Context, input *GetMemberInput) (*GetMemberOutput, error) {
+	huma.Get(api, routeMemberByUserID, func(ctx context.Context, input *GetMemberInput) (*GetMemberOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
+			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 		}
 
 		member, err := svc.GetMember(ctx, workspaceID, input.UserID)
 		if err != nil || member == nil {
-			return nil, huma.Error404NotFound("member not found")
+			return nil, huma.Error404NotFound(msgMemberNotFound)
 		}
 
 		return &GetMemberOutput{
@@ -56,7 +62,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface) {
 	huma.Post(api, "/members", func(ctx context.Context, input *AddMemberRequest) (*AddMemberOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
+			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 		}
 
 		authUser, ok := appMiddleware.GetAuthUser(ctx)
@@ -87,10 +93,10 @@ func RegisterRoutes(api huma.API, svc ServiceInterface) {
 	})
 
 	// Update member role
-	huma.Patch(api, "/members/{user_id}", func(ctx context.Context, input *UpdateMemberRoleRequest) (*UpdateMemberRoleOutput, error) {
+	huma.Patch(api, routeMemberByUserID, func(ctx context.Context, input *UpdateMemberRoleRequest) (*UpdateMemberRoleOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
+			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 		}
 
 		authUser, ok := appMiddleware.GetAuthUser(ctx)
@@ -109,7 +115,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface) {
 				return nil, huma.Error400BadRequest("cannot change your own role")
 			}
 			if errors.Is(err, ErrMemberNotFound) {
-				return nil, huma.Error404NotFound("member not found")
+				return nil, huma.Error404NotFound(msgMemberNotFound)
 			}
 			return nil, appMiddleware.MapDomainError(err)
 		}
@@ -120,10 +126,10 @@ func RegisterRoutes(api huma.API, svc ServiceInterface) {
 	})
 
 	// Remove member from workspace
-	huma.Delete(api, "/members/{user_id}", func(ctx context.Context, input *GetMemberInput) (*struct{}, error) {
+	huma.Delete(api, routeMemberByUserID, func(ctx context.Context, input *GetMemberInput) (*struct{}, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
+			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 		}
 
 		err := svc.RemoveMember(ctx, RemoveMemberInput{
@@ -135,7 +141,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface) {
 				return nil, huma.Error400BadRequest("cannot remove the last owner from workspace")
 			}
 			if errors.Is(err, ErrMemberNotFound) {
-				return nil, huma.Error404NotFound("member not found")
+				return nil, huma.Error404NotFound(msgMemberNotFound)
 			}
 			return nil, appMiddleware.MapDomainError(err)
 		}

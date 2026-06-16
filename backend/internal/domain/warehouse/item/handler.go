@@ -15,6 +15,12 @@ import (
 	"github.com/antti/home-warehouse/go-backend/internal/shared"
 )
 
+const (
+	msgItemNotFound             = "item not found"
+	msgWorkspaceContextRequired = "workspace context required"
+	routeItemByID               = "/items/{id}"
+)
+
 // PrimaryPhotoLookup is the narrow interface the item handler needs from the
 // itemphoto service to decorate ItemResponse with thumbnail URLs. Defined here
 // so RegisterRoutes can accept nil (degrades gracefully) and tests don't need
@@ -80,7 +86,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 	huma.Get(api, "/items", func(ctx context.Context, input *ListItemsInput) (*ListItemsOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
+			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 		}
 
 		pagination := shared.Pagination{Page: input.Page, PageSize: input.Limit}
@@ -145,7 +151,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 	huma.Get(api, "/items/search", func(ctx context.Context, input *SearchItemsInput) (*SearchItemsOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
+			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 		}
 
 		items, err := svc.Search(ctx, workspaceID, input.Query, input.Limit)
@@ -192,13 +198,13 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 	huma.Get(api, "/items/by-barcode/{code}", func(ctx context.Context, input *LookupItemByBarcodeInput) (*LookupItemByBarcodeOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
+			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 		}
 
 		itm, err := svc.LookupByBarcode(ctx, workspaceID, input.Code)
 		if err != nil {
 			if errors.Is(err, ErrItemNotFound) {
-				return nil, huma.Error404NotFound("item not found")
+				return nil, huma.Error404NotFound(msgItemNotFound)
 			}
 			return nil, huma.Error500InternalServerError("failed to lookup item by barcode")
 		}
@@ -222,16 +228,16 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 	})
 
 	// Get item by ID
-	huma.Get(api, "/items/{id}", func(ctx context.Context, input *GetItemInput) (*GetItemOutput, error) {
+	huma.Get(api, routeItemByID, func(ctx context.Context, input *GetItemInput) (*GetItemOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
+			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 		}
 
 		item, err := svc.GetByID(ctx, input.ID, workspaceID)
 		if err != nil {
 			if errors.Is(err, ErrItemNotFound) {
-				return nil, huma.Error404NotFound("item not found")
+				return nil, huma.Error404NotFound(msgItemNotFound)
 			}
 			return nil, huma.Error500InternalServerError("failed to get item")
 		}
@@ -257,7 +263,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 	huma.Get(api, "/items/by-category/{category_id}", func(ctx context.Context, input *ListItemsByCategoryInput) (*ListItemsOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
+			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 		}
 
 		pagination := shared.Pagination{Page: input.Page, PageSize: input.Limit}
@@ -290,7 +296,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 	huma.Post(api, "/items", func(ctx context.Context, input *CreateItemInput) (*CreateItemOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
+			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 		}
 
 		authUser, _ := appMiddleware.GetAuthUser(ctx)
@@ -380,10 +386,10 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 	// is a no-op — to clear a string field a client must send "" explicitly.
 	// That trade-off is deliberate: a partial PATCH must never silently
 	// destroy data it did not mention.
-	huma.Patch(api, "/items/{id}", func(ctx context.Context, input *UpdateItemInput) (*UpdateItemOutput, error) {
+	huma.Patch(api, routeItemByID, func(ctx context.Context, input *UpdateItemInput) (*UpdateItemOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
+			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 		}
 
 		authUser, _ := appMiddleware.GetAuthUser(ctx)
@@ -392,7 +398,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 		currentItem, err := svc.GetByID(ctx, input.ID, workspaceID)
 		if err != nil {
 			if errors.Is(err, ErrItemNotFound) {
-				return nil, huma.Error404NotFound("item not found")
+				return nil, huma.Error404NotFound(msgItemNotFound)
 			}
 			return nil, huma.Error500InternalServerError("failed to get item")
 		}
@@ -468,7 +474,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 	huma.Post(api, "/items/{id}/archive", func(ctx context.Context, input *GetItemInput) (*struct{}, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
+			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 		}
 
 		authUser, _ := appMiddleware.GetAuthUser(ctx)
@@ -476,7 +482,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 		err := svc.Archive(ctx, input.ID, workspaceID)
 		if err != nil {
 			if errors.Is(err, ErrItemNotFound) {
-				return nil, huma.Error404NotFound("item not found")
+				return nil, huma.Error404NotFound(msgItemNotFound)
 			}
 			return nil, appMiddleware.MapDomainError(err)
 		}
@@ -502,7 +508,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 	huma.Post(api, "/items/{id}/restore", func(ctx context.Context, input *GetItemInput) (*struct{}, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
+			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 		}
 
 		authUser, _ := appMiddleware.GetAuthUser(ctx)
@@ -510,7 +516,7 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 		err := svc.Restore(ctx, input.ID, workspaceID)
 		if err != nil {
 			if errors.Is(err, ErrItemNotFound) {
-				return nil, huma.Error404NotFound("item not found")
+				return nil, huma.Error404NotFound(msgItemNotFound)
 			}
 			return nil, appMiddleware.MapDomainError(err)
 		}
@@ -533,17 +539,17 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 	})
 
 	// Delete item (hard delete; archive endpoint is separate)
-	huma.Delete(api, "/items/{id}", func(ctx context.Context, input *GetItemInput) (*struct{}, error) {
+	huma.Delete(api, routeItemByID, func(ctx context.Context, input *GetItemInput) (*struct{}, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
+			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 		}
 
 		authUser, _ := appMiddleware.GetAuthUser(ctx)
 
 		if err := svc.Delete(ctx, input.ID, workspaceID); err != nil {
 			if errors.Is(err, ErrItemNotFound) {
-				return nil, huma.Error404NotFound("item not found")
+				return nil, huma.Error404NotFound(msgItemNotFound)
 			}
 			return nil, appMiddleware.MapDomainError(err)
 		}
@@ -567,13 +573,13 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 	huma.Get(api, "/items/{id}/labels", func(ctx context.Context, input *GetItemInput) (*GetItemLabelsOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
+			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 		}
 
 		labelIDs, err := svc.GetItemLabels(ctx, input.ID, workspaceID)
 		if err != nil {
 			if errors.Is(err, ErrItemNotFound) {
-				return nil, huma.Error404NotFound("item not found")
+				return nil, huma.Error404NotFound(msgItemNotFound)
 			}
 			return nil, huma.Error500InternalServerError("failed to get item labels")
 		}
@@ -587,13 +593,13 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 	huma.Post(api, "/items/{id}/labels/{label_id}", func(ctx context.Context, input *ItemLabelInput) (*struct{}, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
+			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 		}
 
 		err := svc.AttachLabel(ctx, input.ID, input.LabelID, workspaceID)
 		if err != nil {
 			if errors.Is(err, ErrItemNotFound) {
-				return nil, huma.Error404NotFound("item not found")
+				return nil, huma.Error404NotFound(msgItemNotFound)
 			}
 			return nil, appMiddleware.MapDomainError(err)
 		}
@@ -605,13 +611,13 @@ func RegisterRoutes(api huma.API, svc ServiceInterface, broadcaster *events.Broa
 	huma.Delete(api, "/items/{id}/labels/{label_id}", func(ctx context.Context, input *ItemLabelInput) (*struct{}, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
+			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 		}
 
 		err := svc.DetachLabel(ctx, input.ID, input.LabelID, workspaceID)
 		if err != nil {
 			if errors.Is(err, ErrItemNotFound) {
-				return nil, huma.Error404NotFound("item not found")
+				return nil, huma.Error404NotFound(msgItemNotFound)
 			}
 			return nil, appMiddleware.MapDomainError(err)
 		}

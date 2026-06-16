@@ -15,6 +15,11 @@ import (
 // (per-handler limit, tighter than the global body cap).
 const maxImportPayloadBytes = 32 << 20 // 32MB of base64 text (~24MB decoded)
 
+const (
+	msgWorkspaceContextRequired = "workspace context required"
+	tagImportExport             = "Import/Export"
+)
+
 // requireAdminRole ensures the caller is a workspace owner or admin. Import
 // and full-workspace export/restore perform bulk writes that bypass the
 // member approval pipeline, so members must not reach them.
@@ -78,7 +83,7 @@ func (h *Handler) RegisterRoutes(api huma.API) {
 		Path:        "/export/{entity_type}",
 		Summary:     "Export entities",
 		Description: "Exports entities of the specified type to CSV or JSON format.",
-		Tags:        []string{"Import/Export"},
+		Tags:        []string{tagImportExport},
 	}, h.Export)
 
 	huma.Register(api, huma.Operation{
@@ -87,7 +92,7 @@ func (h *Handler) RegisterRoutes(api huma.API) {
 		Path:          "/import/{entity_type}",
 		Summary:       "Import entities",
 		Description:   "Imports entities of the specified type from CSV or JSON data. Data should be base64 encoded.",
-		Tags:          []string{"Import/Export"},
+		Tags:          []string{tagImportExport},
 		DefaultStatus: http.StatusOK,
 	}, h.Import)
 
@@ -97,7 +102,7 @@ func (h *Handler) RegisterRoutes(api huma.API) {
 		Path:        "/export/workspace",
 		Summary:     "Export complete workspace",
 		Description: "Exports all workspace data (items, inventory, locations, etc.) to Excel or JSON format.",
-		Tags:        []string{"Import/Export", "Workspace Backup"},
+		Tags:        []string{tagImportExport, "Workspace Backup"},
 	}, h.ExportWorkspaceFull)
 
 	huma.Register(api, huma.Operation{
@@ -106,7 +111,7 @@ func (h *Handler) RegisterRoutes(api huma.API) {
 		Path:          "/import/workspace",
 		Summary:       "Import complete workspace",
 		Description:   "Imports workspace data from Excel or JSON format. Restores all entities with proper dependency resolution.",
-		Tags:          []string{"Import/Export", "Workspace Backup"},
+		Tags:          []string{tagImportExport, "Workspace Backup"},
 		DefaultStatus: http.StatusOK,
 	}, h.ImportWorkspaceFull)
 }
@@ -115,7 +120,7 @@ func (h *Handler) RegisterRoutes(api huma.API) {
 func (h *Handler) Export(ctx context.Context, input *ExportRequest) (*ExportResponse, error) {
 	workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 	if !ok {
-		return nil, huma.Error401Unauthorized("workspace context required")
+		return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 	}
 
 	// Validate entity type
@@ -162,7 +167,7 @@ func (h *Handler) Export(ctx context.Context, input *ExportRequest) (*ExportResp
 func (h *Handler) Import(ctx context.Context, input *ImportRequest) (*ImportResponse, error) {
 	workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 	if !ok {
-		return nil, huma.Error401Unauthorized("workspace context required")
+		return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 	}
 
 	if err := requireAdminRole(ctx); err != nil {
@@ -215,7 +220,7 @@ type WorkspaceExportRequest struct {
 func (h *Handler) ExportWorkspaceFull(ctx context.Context, input *WorkspaceExportRequest) (*ExportResponse, error) {
 	workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 	if !ok {
-		return nil, huma.Error401Unauthorized("workspace context required")
+		return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 	}
 
 	authUser, ok := appMiddleware.GetAuthUser(ctx)
@@ -259,7 +264,7 @@ type WorkspaceImportRequest struct {
 func (h *Handler) ImportWorkspaceFull(ctx context.Context, input *WorkspaceImportRequest) (*ImportResponse, error) {
 	workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 	if !ok {
-		return nil, huma.Error401Unauthorized("workspace context required")
+		return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 	}
 
 	if err := requireAdminRole(ctx); err != nil {

@@ -10,6 +10,8 @@ import (
 	appMiddleware "github.com/antti/home-warehouse/go-backend/internal/api/middleware"
 )
 
+const msgNotAuthenticated = "not authenticated"
+
 // Handler holds dependencies for session HTTP handlers.
 type Handler struct {
 	svc ServiceInterface
@@ -44,7 +46,7 @@ type ListSessionsOutput struct {
 func (h *Handler) listSessions(ctx context.Context, input *struct{}) (*ListSessionsOutput, error) {
 	authUser, ok := appMiddleware.GetAuthUser(ctx)
 	if !ok {
-		return nil, huma.Error401Unauthorized("not authenticated")
+		return nil, huma.Error401Unauthorized(msgNotAuthenticated)
 	}
 
 	// Get current session ID from context (set by auth middleware)
@@ -77,7 +79,7 @@ type RevokeSessionInput struct {
 func (h *Handler) revokeSession(ctx context.Context, input *RevokeSessionInput) (*struct{}, error) {
 	authUser, ok := appMiddleware.GetAuthUser(ctx)
 	if !ok {
-		return nil, huma.Error401Unauthorized("not authenticated")
+		return nil, huma.Error401Unauthorized(msgNotAuthenticated)
 	}
 
 	// Prevent revoking current session
@@ -96,7 +98,7 @@ func (h *Handler) revokeSession(ctx context.Context, input *RevokeSessionInput) 
 func (h *Handler) revokeAllOtherSessions(ctx context.Context, input *struct{}) (*struct{}, error) {
 	authUser, ok := appMiddleware.GetAuthUser(ctx)
 	if !ok {
-		return nil, huma.Error401Unauthorized("not authenticated")
+		return nil, huma.Error401Unauthorized(msgNotAuthenticated)
 	}
 
 	currentSessionID, ok := appMiddleware.GetCurrentSessionID(ctx)

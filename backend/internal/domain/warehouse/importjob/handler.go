@@ -21,6 +21,12 @@ const (
 	AllowedCSVExt = ".csv"
 )
 
+const (
+	msgWorkspaceContextRequired = "workspace context required"
+	msgImportJobNotFound        = "import job not found"
+	msgFailedToGetImportJob     = "failed to get import job"
+)
+
 var (
 	UploadDir = getUploadDir()
 )
@@ -125,7 +131,7 @@ func RegisterRoutes(api huma.API, repo Repository, importQueue *queue.Queue, bro
 	huma.Get(api, "/imports/jobs", func(ctx context.Context, input *ListImportJobsInput) (*ListImportJobsOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
+			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 		}
 
 		pagination := shared.Pagination{Page: input.Page, PageSize: input.Limit}
@@ -153,15 +159,15 @@ func RegisterRoutes(api huma.API, repo Repository, importQueue *queue.Queue, bro
 	huma.Get(api, "/imports/jobs/{id}", func(ctx context.Context, input *GetImportJobInput) (*GetImportJobOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
+			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 		}
 
 		job, err := repo.FindJobByID(ctx, input.ID, workspaceID)
 		if err != nil {
 			if errors.Is(err, ErrImportJobNotFound) {
-				return nil, huma.Error404NotFound("import job not found")
+				return nil, huma.Error404NotFound(msgImportJobNotFound)
 			}
-			return nil, huma.Error500InternalServerError("failed to get import job")
+			return nil, huma.Error500InternalServerError(msgFailedToGetImportJob)
 		}
 
 		return &GetImportJobOutput{
@@ -173,16 +179,16 @@ func RegisterRoutes(api huma.API, repo Repository, importQueue *queue.Queue, bro
 	huma.Get(api, "/imports/jobs/{id}/errors", func(ctx context.Context, input *GetImportJobErrorsInput) (*GetImportJobErrorsOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
+			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 		}
 
 		// Verify job exists and belongs to workspace
 		_, err := repo.FindJobByID(ctx, input.ID, workspaceID)
 		if err != nil {
 			if errors.Is(err, ErrImportJobNotFound) {
-				return nil, huma.Error404NotFound("import job not found")
+				return nil, huma.Error404NotFound(msgImportJobNotFound)
 			}
-			return nil, huma.Error500InternalServerError("failed to get import job")
+			return nil, huma.Error500InternalServerError(msgFailedToGetImportJob)
 		}
 
 		errors, err := repo.FindErrorsByJobID(ctx, input.ID)
@@ -207,16 +213,16 @@ func RegisterRoutes(api huma.API, repo Repository, importQueue *queue.Queue, bro
 	huma.Delete(api, "/imports/jobs/{id}", func(ctx context.Context, input *DeleteImportJobInput) (*DeleteImportJobOutput, error) {
 		workspaceID, ok := appMiddleware.GetWorkspaceID(ctx)
 		if !ok {
-			return nil, huma.Error401Unauthorized("workspace context required")
+			return nil, huma.Error401Unauthorized(msgWorkspaceContextRequired)
 		}
 
 		// Verify job exists and belongs to workspace
 		job, err := repo.FindJobByID(ctx, input.ID, workspaceID)
 		if err != nil {
 			if errors.Is(err, ErrImportJobNotFound) {
-				return nil, huma.Error404NotFound("import job not found")
+				return nil, huma.Error404NotFound(msgImportJobNotFound)
 			}
-			return nil, huma.Error500InternalServerError("failed to get import job")
+			return nil, huma.Error500InternalServerError(msgFailedToGetImportJob)
 		}
 
 		// Delete errors first
