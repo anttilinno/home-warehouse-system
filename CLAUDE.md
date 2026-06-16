@@ -82,6 +82,21 @@ currently NOWHERE — the Phase 65 scan-lookup Playwright spec was wiped with
 the v2.2 frontend; when the scan feature is rebuilt (v3.0 Phase 11), a
 browser-level spec for the by-barcode flow must be re-added.
 
+## Pre-push quality gate
+
+A git `pre-push` hook (`.githooks/pre-push`) gates new-code quality before it
+reaches master. `mise run setup` enables it; otherwise run once:
+`git config core.hooksPath .githooks`.
+
+- **Backend:** `golangci-lint run --new-from-merge-base=origin/master`
+  (config `backend/.golangci.yml`: goconst/gocognit/dupl/gosec + standard) plus
+  `go build`. Only NEW regressions vs. master block; legacy findings don't. A
+  bare `golangci-lint run` audits the whole tree on demand.
+- **Frontend:** `biome lint --diagnostic-level=error` (blocks correctness
+  errors; pre-existing style warnings don't) plus `tsc`.
+- Runs only for the changed side of the tree. Bypass: `git push --no-verify`.
+- Rationale + the full SonarQube remediation context: `docs/sonarqube/`.
+
 ## Skills auto-loaded for this project
 
 - **Sketch findings** → `Skill("sketch-findings-home-warehouse-system")`. Direction under revision (2026-06-11): Premium Terminal scrapped, replaced by Retro OS pastel — see `.planning/sketches/MANIFEST.md` for the current canonical direction.

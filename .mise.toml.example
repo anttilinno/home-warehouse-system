@@ -34,6 +34,9 @@ docker compose up -d --wait
 echo "==> Running database migrations..."
 DATABASE_URL=$DBMATE_DATABASE_URL dbmate -d backend/db/migrations up
 
+echo "==> Enabling git pre-push quality hook (.githooks/)..."
+git config core.hooksPath .githooks
+
 echo "==> Setup complete! Run 'mise run dev' for backend or 'mise run start' for everything."
 """
 
