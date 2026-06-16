@@ -19,7 +19,7 @@ export function BevelButton({
   className = "",
   type = "button",
   ...props
-}: BevelButtonProps) {
+}: Readonly<BevelButtonProps>) {
   return (
     <button
       type={type}

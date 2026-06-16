@@ -41,7 +41,7 @@ export function ShortcutChip({
   danger,
   current,
   title,
-}: ShortcutChipProps) {
+}: Readonly<ShortcutChipProps>) {
   // One source for the human-readable purpose: an explicit `title`, else the
   // visible `label`. Drives BOTH the hover tooltip AND the accessible name, so a
   // bare keycap (empty label) still announces "New" rather than just "N".

@@ -33,7 +33,7 @@ const TAB_DISABLED = "text-fg-muted opacity-50 cursor-not-allowed";
  * Full ARIA: `role="tablist"/"tab"/"tabpanel"` with `aria-selected`,
  * `aria-controls`, and `aria-labelledby` wiring.
  */
-export function RetroTabs({ tabs, value, onChange }: RetroTabsProps) {
+export function RetroTabs({ tabs, value, onChange }: Readonly<RetroTabsProps>) {
   const baseId = useId();
   const tabRefs = useRef<Map<string, HTMLButtonElement>>(new Map());
 

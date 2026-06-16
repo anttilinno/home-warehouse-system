@@ -30,7 +30,7 @@ export function StatCard({
   titlebarVariant = "blue",
   valueTone = "ink",
   className = "",
-}: StatCardProps) {
+}: Readonly<StatCardProps>) {
   return (
     <Window
       title={label}

@@ -91,7 +91,7 @@ export function PhotoGallery({
   canReorder = true,
   canBulk = true,
   canDownloadZip = true,
-}: PhotoGalleryProps) {
+}: Readonly<PhotoGalleryProps>) {
   const { t } = useLingui();
   const itemMutations = usePhotoMutations(wsId, itemId);
   // SEAM: injected mutations win; default to the item photo hook.

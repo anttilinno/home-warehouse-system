@@ -81,7 +81,7 @@ export function LocationFormDialog({
   location,
   parentId,
   onClose,
-}: LocationFormDialogProps) {
+}: Readonly<LocationFormDialogProps>) {
   const { t } = useLingui();
   const isEdit = Boolean(location);
 

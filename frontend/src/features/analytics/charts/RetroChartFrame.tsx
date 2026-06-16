@@ -37,7 +37,7 @@ export function RetroChartFrame({
   actions,
   height = 220,
   children,
-}: RetroChartFrameProps) {
+}: Readonly<RetroChartFrameProps>) {
   return (
     <Window title={title} titlebarVariant={accent} actions={actions}>
       {isEmpty ? (

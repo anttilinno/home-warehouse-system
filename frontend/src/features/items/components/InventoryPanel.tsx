@@ -66,7 +66,7 @@ function expiryChip(iso: string): {
   return { label, past, title: iso };
 }
 
-export function InventoryPanel({ wsId, itemId }: InventoryPanelProps) {
+export function InventoryPanel({ wsId, itemId }: Readonly<InventoryPanelProps>) {
   const entriesQuery = useQuery({
     queryKey: ["inventory", wsId, "by-item", itemId],
     queryFn: () => inventoryApi.byItem(wsId, itemId),

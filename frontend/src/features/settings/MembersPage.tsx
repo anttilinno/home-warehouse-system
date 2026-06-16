@@ -242,10 +242,10 @@ type AddForm = z.infer<typeof addSchema>;
 function AddMemberStrip({
   wsId,
   onAdded,
-}: {
+}: Readonly<{
   wsId: string;
   onAdded: () => void;
-}) {
+}>) {
   const { t } = useLingui();
   // Inline danger band for the 404 / 400 server responses (existence oracle
   // T-12-14 accepted; surfaced only to an authenticated admin).

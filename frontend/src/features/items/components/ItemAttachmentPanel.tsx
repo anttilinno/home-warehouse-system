@@ -36,7 +36,7 @@ const BADGE_VARIANT: Record<AttachmentType, RetroBadgeVariant> = {
 export function ItemAttachmentPanel({
   wsId,
   itemId,
-}: ItemAttachmentPanelProps) {
+}: Readonly<ItemAttachmentPanelProps>) {
   const { t } = useLingui();
   const { items, isLoading, isError, setPrimary, deleteAttachment } =
     useItemAttachments(wsId, itemId);

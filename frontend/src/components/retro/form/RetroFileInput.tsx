@@ -36,7 +36,7 @@ export function RetroFileInput({
   multiple = true,
   maxSize,
   disabled = false,
-}: RetroFileInputProps) {
+}: Readonly<RetroFileInputProps>) {
   const { t } = useLingui();
   const inputId = useId();
   const inputRef = useRef<HTMLInputElement>(null);

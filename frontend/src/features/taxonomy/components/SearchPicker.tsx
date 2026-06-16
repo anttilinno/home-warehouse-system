@@ -41,7 +41,7 @@ export function SearchPicker({
   error,
   disabled = false,
   placeholder,
-}: SearchPickerProps) {
+}: Readonly<SearchPickerProps>) {
   // The typed query drives the debounced /search. RetroCombobox owns the input
   // display; this mirror lets the hook fire as the user types.
   const [query, setQuery] = useState("");

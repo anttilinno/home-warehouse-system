@@ -114,12 +114,12 @@ export function InlineEditCell(props: InlineEditCellProps) {
     if (field === "quantity") {
       display = <span className="font-mono tabular-nums">{props.value}</span>;
     } else if (field === "status") {
-      const s = props.value as InventoryStatus;
+      const s = props.value;
       display = (
         <StatusPill variant={STATUS_VARIANT[s]}>{STATUS_LABEL[s]}</StatusPill>
       );
     } else {
-      const c = props.value as Condition;
+      const c = props.value;
       display = (
         <StatusPill variant={CONDITION_VARIANT[c]}>
           {CONDITION_LABEL[c]}

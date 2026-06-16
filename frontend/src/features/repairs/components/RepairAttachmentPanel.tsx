@@ -37,7 +37,7 @@ export function RepairAttachmentPanel({
   wsId,
   repairId,
   itemId,
-}: RepairAttachmentPanelProps) {
+}: Readonly<RepairAttachmentPanelProps>) {
   const { t } = useLingui();
   const { items, isLoading, isError, deleteAttachment } = useRepairAttachments(
     wsId,

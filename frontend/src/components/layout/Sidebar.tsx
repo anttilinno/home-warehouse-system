@@ -26,7 +26,7 @@ interface NavItemProps {
 const NAV_BASE =
   "relative flex items-center gap-sp-2 px-sp-2 py-[5px] text-13 font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-border-ink focus-visible:outline-offset-2";
 
-function NavBody({ glyph, label, count }: NavItemProps) {
+function NavBody({ glyph, label, count }: Readonly<NavItemProps>) {
   return (
     <>
       <span
@@ -60,7 +60,7 @@ const NAV_INACTIVE = `${NAV_BASE} border border-transparent text-fg-ink hover:bo
 // /taxonomy with no ?tab renders the Categories tab (TaxonomyPage default).
 const TAXONOMY_DEFAULT_TAB = "categories";
 
-function NavItem({ glyph, label, count, to }: NavItemProps) {
+function NavItem({ glyph, label, count, to }: Readonly<NavItemProps>) {
   const location = useLocation();
   if (to) {
     // Query-tab links (e.g. /taxonomy?tab=locations) all share one pathname, so
@@ -114,10 +114,10 @@ function NavItem({ glyph, label, count, to }: NavItemProps) {
 function NavGroup({
   title,
   children,
-}: {
+}: Readonly<{
   title: ReactNode;
   children: ReactNode;
-}) {
+}>) {
   return (
     <div className="mb-sp-3">
       <h3 className="nav-label mx-sp-2 mb-sp-1 border-b border-dotted border-fg-faint pb-[3px] text-10 font-bold uppercase tracking-14 text-fg-muted">
@@ -145,7 +145,7 @@ export function Sidebar({
   collapsed = false,
   onToggleCollapse,
   onLogout,
-}: SidebarProps) {
+}: Readonly<SidebarProps>) {
   const collapseToggle = (
     <button
       type="button"

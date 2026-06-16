@@ -29,7 +29,7 @@ export function CaptionDialog({
   title,
   onSave,
   onClose,
-}: CaptionDialogProps) {
+}: Readonly<CaptionDialogProps>) {
   const { t } = useLingui();
   const [value, setValue] = useState(initial);
 

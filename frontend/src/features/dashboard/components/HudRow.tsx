@@ -55,7 +55,7 @@ export interface HudRowProps {
   stats?: DashboardStats;
 }
 
-export function HudRow({ stats }: HudRowProps) {
+export function HudRow({ stats }: Readonly<HudRowProps>) {
   const { t } = useLingui();
 
   // Build-time flag gate — default off (gap-honest HUD ships hidden).

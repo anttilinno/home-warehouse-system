@@ -47,7 +47,7 @@ const STATUS_VARIANT: Record<ImportJobStatus, StatusPillVariant> = {
   cancelled: "warn",
 };
 
-function StatusBadge({ status }: { status: ImportJobStatus }) {
+function StatusBadge({ status }: Readonly<{ status: ImportJobStatus }>) {
   const variant = STATUS_VARIANT[status] ?? "info";
   return (
     <StatusPill variant={variant}>

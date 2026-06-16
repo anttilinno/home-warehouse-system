@@ -19,7 +19,7 @@ import { BevelButton } from "@/components/retro";
 
 export type SocialLoginMode = "login" | "register";
 
-function ProviderTile({ initial }: { initial: string }) {
+function ProviderTile({ initial }: Readonly<{ initial: string }>) {
   return (
     <span
       aria-hidden="true"
@@ -33,10 +33,10 @@ function ProviderTile({ initial }: { initial: string }) {
 function navigate(href: string): void {
   // Full-page redirect — OAuth/SSO cannot use the api client (needs a top-level
   // navigation, not an XHR). Assigning `.href` is the testable seam.
-  window.location.href = href;
+  globalThis.location.href = href;
 }
 
-export function SocialLoginButtons({ mode }: { mode: SocialLoginMode }) {
+export function SocialLoginButtons({ mode }: Readonly<{ mode: SocialLoginMode }>) {
   const autheliaEnabled = import.meta.env.VITE_AUTHELIA_ENABLED === "true";
 
   return (

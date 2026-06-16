@@ -22,7 +22,7 @@ interface LinkRowProps {
 
 // One grouped-row link. The whole row is the link (>=44px hit height); the
 // trailing slot holds an optional current-value/count, then the chevron.
-function LinkRow({ to, label, trailing }: LinkRowProps) {
+function LinkRow({ to, label, trailing }: Readonly<LinkRowProps>) {
   return (
     <li className="border-b border-table-rule last:border-b-0">
       <Link
@@ -96,11 +96,11 @@ export function SettingsLandingPage() {
             to="members"
             label={<Trans>Members</Trans>}
             trailing={
-              memberCount != null ? (
+              memberCount == null ? undefined : (
                 <RetroBadge variant="info">
                   {memberCount} <Trans>members</Trans>
                 </RetroBadge>
-              ) : undefined
+              )
             }
           />
           <LinkRow to="data" label={<Trans>Data &amp; Storage</Trans>} />

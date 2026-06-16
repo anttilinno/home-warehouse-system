@@ -32,7 +32,7 @@ export interface TopBarProps {
   onToggleDrawer?: () => void;
 }
 
-export function TopBar({ online, onToggleDrawer }: TopBarProps) {
+export function TopBar({ online, onToggleDrawer }: Readonly<TopBarProps>) {
   // Live SSE connection status — drives BOTH the ONLINE dot (when no explicit
   // `online` prop) AND the sse-slot RetroStatusDot.
   const { connected } = useSSEStatus();

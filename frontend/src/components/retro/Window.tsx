@@ -41,7 +41,7 @@ export function Window({
   className = "",
   bodyClassName = "p-sp-4",
   children,
-}: WindowProps) {
+}: Readonly<WindowProps>) {
   return (
     <section
       className={`border-2 border-border-ink bg-bg-panel bevel-raised ${className}`}

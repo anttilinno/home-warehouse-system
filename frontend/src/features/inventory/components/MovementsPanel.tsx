@@ -24,7 +24,7 @@ export function MovementsPanel({
   resolveMember,
   resolveLocation,
   isLoading,
-}: MovementsPanelProps) {
+}: Readonly<MovementsPanelProps>) {
   // I18N-03: the movement timestamp (was a hand-rolled UTC `YYYY-MM-DD HH:mm`)
   // now honors the user's date_format + time_format preference. The format hooks
   // still decompose in UTC under the hood (tokens.ts), preserving this panel's

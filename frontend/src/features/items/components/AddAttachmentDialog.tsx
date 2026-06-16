@@ -40,7 +40,7 @@ export function AddAttachmentDialog({
   itemId,
   open,
   onClose,
-}: AddAttachmentDialogProps) {
+}: Readonly<AddAttachmentDialogProps>) {
   const { t } = useLingui();
   const { upload } = useItemAttachments(wsId, itemId);
 

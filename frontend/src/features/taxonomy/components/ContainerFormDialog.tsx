@@ -61,7 +61,7 @@ export function ContainerFormDialog({
   open,
   container,
   onClose,
-}: ContainerFormDialogProps) {
+}: Readonly<ContainerFormDialogProps>) {
   const { t } = useLingui();
   const isEdit = Boolean(container);
 

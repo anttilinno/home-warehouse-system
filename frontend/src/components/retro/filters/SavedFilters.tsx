@@ -33,7 +33,7 @@ export function SavedFilters({
   onDelete,
   onSaveCurrent,
   className = "",
-}: SavedFiltersProps) {
+}: Readonly<SavedFiltersProps>) {
   const { t } = useLingui();
   const triggerRef = useRef<HTMLButtonElement>(null);
   const [menuOpen, setMenuOpen] = useState(false);

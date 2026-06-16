@@ -39,7 +39,9 @@ const ShortcutsContext = createContext<ShortcutsContextValue | null>(null);
  * always returns its `removeEventListener` cleanup — making React 19 StrictMode
  * double-invoke a no-op rather than a double-fire.
  */
-export function ShortcutsProvider({ children }: { children: ReactNode }) {
+export function ShortcutsProvider({
+  children,
+}: Readonly<{ children: ReactNode }>) {
   const [groups, setGroups] = useState<Record<string, Shortcut[]>>({});
 
   const register = useCallback((id: string, shortcuts: Shortcut[]) => {

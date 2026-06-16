@@ -115,12 +115,12 @@ export function ContainersTab() {
     fetchCount("container", c.id)
       .then((count) =>
         setDeleteTarget((prev) =>
-          prev && prev.id === c.id ? { ...prev, count } : prev,
+          prev?.id === c.id ? { ...prev, count } : prev,
         ),
       )
       .catch(() =>
         setDeleteTarget((prev) =>
-          prev && prev.id === c.id ? { ...prev, count: 0 } : prev,
+          prev?.id === c.id ? { ...prev, count: 0 } : prev,
         ),
       );
   }

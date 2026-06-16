@@ -34,12 +34,12 @@ export interface UseScanFeedbackResult {
 
 function prefersReducedMotion(): boolean {
   if (
-    typeof window === "undefined" ||
-    typeof window.matchMedia !== "function"
+    typeof globalThis.window === "undefined" ||
+    typeof globalThis.matchMedia !== "function"
   ) {
     return false;
   }
-  return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  return globalThis.matchMedia("(prefers-reduced-motion: reduce)").matches;
 }
 
 export function useScanFeedback(): UseScanFeedbackResult {

@@ -38,7 +38,7 @@ function formatDate(rfc?: string): string {
   return rfc ? rfc.slice(0, 10) : "—";
 }
 
-function RecordSummary({ repair }: { repair: Repair }) {
+function RecordSummary({ repair }: Readonly<{ repair: Repair }>) {
   const status = repairStatus(repair);
   return (
     <dl className="flex flex-col gap-sp-2 text-14 text-fg-ink">
@@ -77,10 +77,10 @@ function RecordSummary({ repair }: { repair: Repair }) {
 function Row({
   label,
   children,
-}: {
+}: Readonly<{
   label: React.ReactNode;
   children: React.ReactNode;
-}) {
+}>) {
   return (
     <div className="flex items-baseline gap-sp-2">
       <dt className="w-[140px] shrink-0 text-12 font-bold uppercase tracking-8 text-fg-muted">
@@ -98,7 +98,7 @@ export function RepairRecordDialog({
   initialTab,
   open,
   onClose,
-}: RepairRecordDialogProps) {
+}: Readonly<RepairRecordDialogProps>) {
   const [tab, setTab] = useState<RepairRecordTab>(initialTab);
 
   return (

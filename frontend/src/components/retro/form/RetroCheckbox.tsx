@@ -29,7 +29,7 @@ export function RetroCheckbox({
   ref,
   onChange,
   ...props
-}: RetroCheckboxProps) {
+}: Readonly<RetroCheckboxProps>) {
   const innerRef = useRef<HTMLInputElement>(null);
   // Mirror the native checked state so the visual box stays correct whether the
   // checkbox is controlled (`checked` prop) or uncontrolled (RHF/native).

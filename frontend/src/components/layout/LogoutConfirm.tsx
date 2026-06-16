@@ -15,7 +15,7 @@ export function LogoutConfirm({
   open,
   onCancel,
   onConfirm,
-}: LogoutConfirmProps) {
+}: Readonly<LogoutConfirmProps>) {
   useModalStack(open, onCancel);
   if (!open) return null;
 

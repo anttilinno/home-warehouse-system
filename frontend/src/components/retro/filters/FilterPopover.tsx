@@ -31,7 +31,7 @@ export function FilterPopover({
   selected,
   onChange,
   className = "",
-}: FilterPopoverProps) {
+}: Readonly<FilterPopoverProps>) {
   const triggerRef = useRef<HTMLButtonElement>(null);
   const [open, setOpen] = useState(false);
 

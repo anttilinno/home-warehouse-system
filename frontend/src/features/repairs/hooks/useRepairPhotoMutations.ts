@@ -27,10 +27,14 @@ export interface RepairPhotoUploadVars {
   photoType?: string;
 }
 
-const PHOTO_TYPES: readonly RepairPhotoType[] = ["BEFORE", "DURING", "AFTER"];
+const PHOTO_TYPES: ReadonlySet<RepairPhotoType> = new Set([
+  "BEFORE",
+  "DURING",
+  "AFTER",
+]);
 
 function asPhotoType(v: string | undefined): RepairPhotoType {
-  return PHOTO_TYPES.includes(v as RepairPhotoType)
+  return PHOTO_TYPES.has(v as RepairPhotoType)
     ? (v as RepairPhotoType)
     : "BEFORE";
 }

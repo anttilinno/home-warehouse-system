@@ -20,7 +20,7 @@ export function RetroTextarea({
   className = "",
   id: idProp,
   ...props
-}: RetroTextareaProps) {
+}: Readonly<RetroTextareaProps>) {
   const autoId = useId();
   const id = idProp ?? autoId;
   const errorId = `${id}-error`;

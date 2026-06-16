@@ -36,7 +36,7 @@ export const WorkspaceContext = createContext<WorkspaceContextValue | null>(
   null,
 );
 
-export function WorkspaceProvider({ children }: { children: ReactNode }) {
+export function WorkspaceProvider({ children }: Readonly<{ children: ReactNode }>) {
   const queryClient = useQueryClient();
 
   // Reuse the existing ["workspaces"] key so RequireAuth's cache is shared.

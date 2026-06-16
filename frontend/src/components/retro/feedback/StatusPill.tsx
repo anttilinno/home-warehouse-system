@@ -13,6 +13,6 @@ export interface StatusPillProps {
 // which already maps ok/warn/info/danger to the LOCKED pastel fills with ink
 // text (the "pastel fills carry ink text ONLY" rule). No new tokens, no
 // *-deep companion text inside the fill, no new contrast pairing.
-export function StatusPill({ variant, children }: StatusPillProps) {
+export function StatusPill({ variant, children }: Readonly<StatusPillProps>) {
   return <RetroBadge variant={variant}>{children}</RetroBadge>;
 }

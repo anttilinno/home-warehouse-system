@@ -34,7 +34,7 @@ export function PaperlessLinkDialog({
   itemId,
   open,
   onClose,
-}: PaperlessLinkDialogProps) {
+}: Readonly<PaperlessLinkDialogProps>) {
   const { t } = useLingui();
   const queryClient = useQueryClient();
 

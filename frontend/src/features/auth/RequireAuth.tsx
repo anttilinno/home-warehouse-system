@@ -10,7 +10,7 @@ import type { Workspace } from "@/lib/types";
 // Minimal route guard for the retro-os sample screens (full AuthProvider is
 // Phase 5). Probes the session via the workspaces query — pages underneath
 // reuse the same ["workspaces"] cache entry, so this costs no extra request.
-export function RequireAuth({ children }: { children: ReactNode }) {
+export function RequireAuth({ children }: Readonly<{ children: ReactNode }>) {
   const navigate = useNavigate();
   // Activate the user's persisted interface language once the session is known
   // (I18N-02 boot fix). Authed-only mount → the ["me"] probe never 401s on /login.
@@ -26,8 +26,8 @@ export function RequireAuth({ children }: { children: ReactNode }) {
   // no scattered logout. Cleanup avoids a leaked listener / double-navigation.
   useEffect(() => {
     const handler = () => navigate("/login", { replace: true });
-    window.addEventListener("auth-expired", handler);
-    return () => window.removeEventListener("auth-expired", handler);
+    globalThis.addEventListener("auth-expired", handler);
+    return () => globalThis.removeEventListener("auth-expired", handler);
   }, [navigate]);
 
   // 401/403 → the session is genuinely gone: redirect. This MUST be the first

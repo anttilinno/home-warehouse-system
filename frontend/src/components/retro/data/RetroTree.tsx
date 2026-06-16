@@ -75,7 +75,7 @@ export function RetroTree({
   onArchive,
   onRestore,
   emptyState,
-}: RetroTreeProps) {
+}: Readonly<RetroTreeProps>) {
   const [expanded, setExpanded] = useState<Set<string>>(
     () => new Set(getSet(storageKey)),
   );

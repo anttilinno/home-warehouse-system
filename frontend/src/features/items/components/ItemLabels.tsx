@@ -21,7 +21,7 @@ export interface ItemLabelsProps {
   itemId: string;
 }
 
-export function ItemLabels({ wsId, itemId }: ItemLabelsProps) {
+export function ItemLabels({ wsId, itemId }: Readonly<ItemLabelsProps>) {
   const { t } = useLingui();
   const queryClient = useQueryClient();
   const triggerRef = useRef<HTMLButtonElement>(null);

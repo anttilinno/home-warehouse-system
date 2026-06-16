@@ -39,7 +39,7 @@ export function MaintenanceDrawer({
   invId,
   itemName,
   onClose,
-}: MaintenanceDrawerProps) {
+}: Readonly<MaintenanceDrawerProps>) {
   const { t } = useLingui();
   const { items, isLoading, isError } = useSchedulesByInventoryQuery(invId);
   const { deleteSchedule } = useMaintenanceMutations();

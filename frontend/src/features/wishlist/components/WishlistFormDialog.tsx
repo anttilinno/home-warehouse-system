@@ -112,7 +112,7 @@ export function WishlistFormDialog({
   mode,
   item,
   onClose,
-}: WishlistFormDialogProps) {
+}: Readonly<WishlistFormDialogProps>) {
   const { t } = useLingui();
   const isEdit = mode === "edit";
   const { create, update } = useWishlistMutations();

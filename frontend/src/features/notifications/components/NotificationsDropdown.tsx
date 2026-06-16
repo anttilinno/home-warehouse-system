@@ -25,7 +25,7 @@ export interface NotificationsDropdownProps {
 export function NotificationsDropdown({
   open,
   onClose,
-}: NotificationsDropdownProps) {
+}: Readonly<NotificationsDropdownProps>) {
   const { t } = useLingui();
   // I18N-03: route the notification timestamp through the user's regional-format
   // preference (replaced a raw locale-string render).

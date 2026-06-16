@@ -25,7 +25,7 @@ export interface QuickActionMenuProps {
 const BEVEL_LINK =
   "inline-flex w-full cursor-pointer items-center justify-center gap-sp-2 border-2 border-border-ink px-[14px] py-[6px] font-body text-13 font-semibold uppercase tracking-4 bevel-raised-ink hover:brightness-103 active:translate-x-px active:translate-y-px active:bg-bg-pressed active:bevel-pressed";
 
-export function QuickActionMenu({ item, onClose }: QuickActionMenuProps) {
+export function QuickActionMenu({ item, onClose }: Readonly<QuickActionMenuProps>) {
   const { currentWorkspaceId: wsId } = useWorkspace();
   const { t } = useLingui();
   const queryClient = useQueryClient();

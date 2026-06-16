@@ -48,7 +48,7 @@ export function useInventoryMutations() {
   const queryClient = useQueryClient();
   const { t } = useLingui();
 
-  const prefix: QueryKey = ["inventory", wsId as string];
+  const prefix: QueryKey = ["inventory", wsId];
 
   function invalidate() {
     // Prefix-match (default exact:false) — covers every page/param variant.

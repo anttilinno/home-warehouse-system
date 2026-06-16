@@ -41,7 +41,7 @@ export function useLoanMutations() {
   const queryClient = useQueryClient();
   const { t } = useLingui();
 
-  const prefix: QueryKey = ["loans", wsId as string];
+  const prefix: QueryKey = ["loans", wsId];
 
   function invalidate() {
     // Prefix-match (default exact:false) — covers list + by-item + by-borrower.

@@ -75,7 +75,7 @@ function flattenExcluding(
   return out;
 }
 
-export function CategoryFormDialog({ mode }: CategoryFormDialogProps) {
+export function CategoryFormDialog({ mode }: Readonly<CategoryFormDialogProps>) {
   const { t } = useLingui();
   const navigate = useNavigate();
   const { currentWorkspaceId: wsId } = useWorkspace();

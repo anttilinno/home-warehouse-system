@@ -25,7 +25,7 @@ const FALLBACK: ChartColors = {
 };
 
 function readChartColors(): ChartColors {
-  if (typeof window === "undefined") return FALLBACK;
+  if (typeof globalThis.window === "undefined") return FALLBACK;
   const s = getComputedStyle(document.documentElement);
   const read = (name: string, fallback: string) =>
     s.getPropertyValue(name).trim() || fallback;

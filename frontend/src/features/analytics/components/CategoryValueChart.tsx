@@ -25,7 +25,7 @@ import {
 
 // ANL-01 — category inventory value as a horizontal bar, bars walking the
 // ordered sketch-009 palette. Value axis is total_value (CENTS → formatCents).
-export function CategoryValueChart({ data }: { data: CategoryStats[] }) {
+export function CategoryValueChart({ data }: Readonly<{ data: CategoryStats[] }>) {
   const { ink, grid, muted } = useChartColors();
   const isEmpty = data.length === 0;
   return (

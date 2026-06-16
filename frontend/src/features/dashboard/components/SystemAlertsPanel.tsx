@@ -35,7 +35,7 @@ function AlertCard({
   isError,
   emptyText,
   trailing,
-}: AlertCardProps) {
+}: Readonly<AlertCardProps>) {
   const { t } = useLingui();
 
   // Loading → calm mono "Loading…"; error → calm "—" (no error spam).

@@ -37,7 +37,7 @@ const OVERFLOW_THRESHOLD = 6;
  *
  * Desktop-only via `hidden md:flex` (D-06); the FAB is the <768px counterpart.
  */
-export function Bottombar({ onOpenHelp, onBack }: BottombarProps) {
+export function Bottombar({ onOpenHelp, onBack }: Readonly<BottombarProps>) {
   const { shortcuts } = useShortcutsContext();
   const [sheetOpen, setSheetOpen] = useState(false);
 
@@ -108,7 +108,7 @@ export function Bottombar({ onOpenHelp, onBack }: BottombarProps) {
 function OverflowSheet({
   shortcuts,
   onClose,
-}: {
+}: Readonly<{
   shortcuts: {
     key: string;
     label: string;
@@ -116,7 +116,7 @@ function OverflowSheet({
     danger?: boolean;
   }[];
   onClose: () => void;
-}) {
+}>) {
   useModalStack(true, onClose);
 
   return (

@@ -214,7 +214,7 @@ const passwordSchema = z
 
 type PasswordForm = z.infer<typeof passwordSchema>;
 
-function PasswordCard({ hasPassword }: { hasPassword: boolean }) {
+function PasswordCard({ hasPassword }: Readonly<{ hasPassword: boolean }>) {
   const { t } = useLingui();
   // Inline band shown when the backend rejects the current password (400).
   const [wrongCurrent, setWrongCurrent] = useState(false);

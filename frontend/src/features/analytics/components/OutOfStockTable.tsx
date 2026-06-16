@@ -21,10 +21,10 @@ import type { OutOfStockItem } from "@/features/analytics/types";
 export function OutOfStockTable({
   items,
   isLoading,
-}: {
+}: Readonly<{
   items: OutOfStockItem[];
   isLoading?: boolean;
-}) {
+}>) {
   const { t } = useLingui();
 
   return (

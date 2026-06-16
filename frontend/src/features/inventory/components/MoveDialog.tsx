@@ -43,7 +43,7 @@ export function MoveDialog({
   entry,
   locationOptions,
   containerOptions,
-}: MoveDialogProps) {
+}: Readonly<MoveDialogProps>) {
   const { t } = useLingui();
   const { currentWorkspaceId: wsId } = useWorkspace();
   const queryClient = useQueryClient();

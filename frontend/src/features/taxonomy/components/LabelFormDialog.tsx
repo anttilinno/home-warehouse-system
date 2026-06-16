@@ -57,7 +57,7 @@ export function LabelFormDialog({
   open,
   label,
   onClose,
-}: LabelFormDialogProps) {
+}: Readonly<LabelFormDialogProps>) {
   const { t } = useLingui();
   const isEdit = Boolean(label);
 

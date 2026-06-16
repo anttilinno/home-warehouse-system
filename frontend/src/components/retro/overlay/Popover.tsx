@@ -37,7 +37,7 @@ export function Popover({
   role,
   minWidth = 160,
   children,
-}: PopoverProps) {
+}: Readonly<PopoverProps>) {
   const panelRef = useRef<HTMLDivElement>(null);
   const invokerRef = useRef<HTMLElement | null>(null);
   const [pos, setPos] = useState<{ top: number; left: number }>({

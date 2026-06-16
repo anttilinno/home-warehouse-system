@@ -84,7 +84,7 @@ export function DashboardPage() {
   );
   useShortcuts("dashboard", routeShortcuts);
 
-  if (workspaces && workspaces.length === 0) {
+  if (workspaces?.length === 0) {
     return (
       <main className="grid min-h-screen place-items-center p-sp-4">
         <Window title={<Trans>No workspace</Trans>} titlebarVariant="butter">

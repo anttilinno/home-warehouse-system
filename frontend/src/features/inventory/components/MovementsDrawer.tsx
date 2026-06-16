@@ -25,7 +25,7 @@ export function MovementsDrawer({
   onClose,
   resolveLocation,
   resolveMember,
-}: MovementsDrawerProps) {
+}: Readonly<MovementsDrawerProps>) {
   const { t } = useLingui();
   const { data, isLoading } = useMovementsQuery(invId);
 

@@ -54,7 +54,7 @@ export function FilterBar({
   onClearAll,
   primaryAction,
   className = "",
-}: FilterBarProps) {
+}: Readonly<FilterBarProps>) {
   const { t } = useLingui();
 
   return (

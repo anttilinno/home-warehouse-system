@@ -255,12 +255,12 @@ function Field({
   children,
   mono,
   muted,
-}: {
+}: Readonly<{
   label: ReactNode;
   children: ReactNode;
   mono?: boolean;
   muted?: boolean;
-}) {
+}>) {
   return (
     <>
       <dt className="text-12 font-bold uppercase tracking-8 text-fg-muted">
@@ -277,6 +277,6 @@ function Field({
   );
 }
 
-function Muted({ children }: { children: ReactNode }) {
+function Muted({ children }: Readonly<{ children: ReactNode }>) {
   return <span className="text-fg-muted">{children}</span>;
 }

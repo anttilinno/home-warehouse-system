@@ -22,7 +22,7 @@ export interface PageHeaderProps {
 export function PageHeader({
   segments,
   lastSync = LAST_SYNC_PLACEHOLDER,
-}: PageHeaderProps) {
+}: Readonly<PageHeaderProps>) {
   const lastIndex = segments.length - 1;
 
   return (

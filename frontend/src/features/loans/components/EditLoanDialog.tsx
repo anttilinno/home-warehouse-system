@@ -28,7 +28,11 @@ function toDateInput(iso: string | undefined): string {
   return Number.isNaN(d.getTime()) ? "" : d.toISOString().slice(0, 10);
 }
 
-export function EditLoanDialog({ open, onClose, loan }: EditLoanDialogProps) {
+export function EditLoanDialog({
+  open,
+  onClose,
+  loan,
+}: Readonly<EditLoanDialogProps>) {
   const { t } = useLingui();
   const { updateLoan } = useLoanMutations();
 

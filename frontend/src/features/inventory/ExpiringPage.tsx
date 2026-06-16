@@ -43,7 +43,7 @@ function daysDeltaFrom(dateStr: string, today: Date): number {
   return Math.round((target - now) / 86_400_000);
 }
 
-function WhenChip({ delta }: { delta: number }) {
+function WhenChip({ delta }: Readonly<{ delta: number }>) {
   if (delta >= 0) {
     // Near future (and today) — butter warning chip.
     return (

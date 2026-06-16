@@ -29,7 +29,7 @@ export function ScanTorchToggle({
   supported,
   enabled,
   onToggle,
-}: ScanTorchToggleProps) {
+}: Readonly<ScanTorchToggleProps>) {
   if (!supported) return null;
 
   return (

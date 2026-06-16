@@ -388,11 +388,11 @@ function DetailsTab({
   item,
   wsId,
   onCopyBarcode,
-}: {
+}: Readonly<{
   item: Item;
   wsId: string;
   onCopyBarcode: () => void;
-}) {
+}>) {
   return (
     <div className="flex flex-col gap-sp-4">
       <dl className="grid grid-cols-[minmax(0,140px)_1fr] gap-x-sp-4 gap-y-sp-3">
@@ -450,13 +450,13 @@ function Field({
   mono,
   muted,
   full,
-}: {
+}: Readonly<{
   label: ReactNode;
   children: ReactNode;
   mono?: boolean;
   muted?: boolean;
   full?: boolean;
-}) {
+}>) {
   return (
     <>
       <dt className="text-12 font-bold uppercase tracking-8 text-fg-muted">
@@ -473,6 +473,6 @@ function Field({
   );
 }
 
-function Muted({ children }: { children: ReactNode }) {
+function Muted({ children }: Readonly<{ children: ReactNode }>) {
   return <span className="text-fg-muted">{children}</span>;
 }

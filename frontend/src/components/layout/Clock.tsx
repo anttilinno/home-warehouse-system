@@ -29,7 +29,7 @@ function formatElapsed(ms: number): string {
  * LOCAL = a locale-fixed et-EE wall clock (sketch-006 locale); decorative chrome,
  * not user data — see the i18n-format-ignore note on the call below.
  */
-export function Clock({ local = true }: ClockProps) {
+export function Clock({ local = true }: Readonly<ClockProps>) {
   // Mount timestamp is stable across renders; only `now` ticks.
   const startRef = useRef(Date.now());
   const [now, setNow] = useState(() => Date.now());
@@ -63,11 +63,11 @@ function Readout({
   children,
   value,
   testid,
-}: {
+}: Readonly<{
   children: React.ReactNode;
   value: string;
   testid: string;
-}) {
+}>) {
   return (
     <span className="inline-flex items-center gap-sp-1">
       <span className="font-body text-11 font-bold uppercase tracking-10 text-fg-muted">

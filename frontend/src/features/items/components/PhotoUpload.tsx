@@ -108,7 +108,7 @@ export function PhotoUpload({
   title,
   extraFields,
   uploadDisabled = false,
-}: PhotoUploadProps) {
+}: Readonly<PhotoUploadProps>) {
   const { t } = useLingui();
   const itemMutations = usePhotoMutations(wsId, itemId);
   // SEAM: injected mutations win; default to the item photo hook.
@@ -314,10 +314,10 @@ export function PhotoUpload({
 function PhotoUploadStatus({
   item,
   onRetry,
-}: {
+}: Readonly<{
   item: QueueItem;
   onRetry: () => void;
-}) {
+}>) {
   switch (item.status) {
     case "done":
       return (

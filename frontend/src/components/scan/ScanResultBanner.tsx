@@ -41,7 +41,7 @@ export function ScanResultBanner({
   item,
   onOpenActions,
   onRetry,
-}: ScanResultBannerProps) {
+}: Readonly<ScanResultBannerProps>) {
   const s = STATE[status];
 
   return (

@@ -46,7 +46,7 @@ export function useRepairMutations() {
   const queryClient = useQueryClient();
   const { t } = useLingui();
 
-  const prefix: QueryKey = ["repairs", wsId as string];
+  const prefix: QueryKey = ["repairs", wsId];
 
   function invalidate() {
     // Prefix-match (default exact:false) — covers by-inventory + cost + by-id.
@@ -126,7 +126,7 @@ export function useRepairMutations() {
   >({
     mutationFn: ({ id, body }) => repairsApi.update(wsId as string, id, body),
     // Patch the editable metadata in place (NO status — lifecycle is start/complete).
-    onMutate: ({ id, body }) => optimisticPatch(id, body as Partial<Repair>),
+    onMutate: ({ id, body }) => optimisticPatch(id, body),
     onError: (_err, _arg, ctx) => {
       restore(ctx);
       retroToast.error(t`Couldn't save this repair.`);

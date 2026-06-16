@@ -38,7 +38,7 @@ export function RetroDialog({
   footer,
   width = "min(520px,92vw)",
   children,
-}: RetroDialogProps) {
+}: Readonly<RetroDialogProps>) {
   const { t } = useLingui();
   const titleId = useId();
   const dialogRef = useRef<HTMLDivElement>(null);

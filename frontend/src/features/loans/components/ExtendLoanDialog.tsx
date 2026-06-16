@@ -32,7 +32,7 @@ export function ExtendLoanDialog({
   open,
   onClose,
   loan,
-}: ExtendLoanDialogProps) {
+}: Readonly<ExtendLoanDialogProps>) {
   const { t } = useLingui();
   const { extendLoan } = useLoanMutations();
 

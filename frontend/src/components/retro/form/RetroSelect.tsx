@@ -21,7 +21,7 @@ export function RetroSelect({
   id: idProp,
   children,
   ...props
-}: RetroSelectProps) {
+}: Readonly<RetroSelectProps>) {
   const autoId = useId();
   const id = idProp ?? autoId;
   const errorId = `${id}-error`;

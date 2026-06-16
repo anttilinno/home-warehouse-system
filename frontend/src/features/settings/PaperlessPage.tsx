@@ -129,10 +129,10 @@ export function PaperlessPage() {
 function PaperlessSearch({
   wsId,
   enabled,
-}: {
+}: Readonly<{
   wsId: string | null;
   enabled: boolean;
-}) {
+}>) {
   const [draft, setDraft] = useState("");
   const [query, setQuery] = useState("");
 

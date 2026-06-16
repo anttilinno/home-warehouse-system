@@ -20,12 +20,16 @@ import { useWorkspace } from "@/features/workspace/useWorkspace";
 
 export type LoansTab = "active" | "overdue" | "history";
 
-const VALID_TABS: readonly LoansTab[] = ["active", "overdue", "history"];
+const VALID_TABS: ReadonlySet<LoansTab> = new Set([
+  "active",
+  "overdue",
+  "history",
+]);
 
 /** Decode the active tab from `?tab=` (default "active", unknown → "active"). */
 export function readLoansTab(params: URLSearchParams): LoansTab {
   const raw = params.get("tab");
-  return VALID_TABS.includes(raw as LoansTab) ? (raw as LoansTab) : "active";
+  return VALID_TABS.has(raw as LoansTab) ? (raw as LoansTab) : "active";
 }
 
 export interface UseLoansQueryResult {

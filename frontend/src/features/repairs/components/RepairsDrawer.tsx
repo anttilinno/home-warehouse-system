@@ -66,7 +66,7 @@ export function RepairsDrawer({
   itemId,
   onClose,
   onOpenRecord,
-}: RepairsDrawerProps) {
+}: Readonly<RepairsDrawerProps>) {
   const { t } = useLingui();
   const { currentWorkspaceId: wsId } = useWorkspace();
   const queryClient = useQueryClient();

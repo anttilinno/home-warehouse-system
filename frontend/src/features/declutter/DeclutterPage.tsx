@@ -139,9 +139,9 @@ export function DeclutterPage() {
           <RetroBadge variant={scoreVariant(row.score)}>{row.score}</RetroBadge>
         </td>
         <td className="font-mono tabular-nums text-fg-muted">
-          {row.purchase_price != null
-            ? formatCents(row.purchase_price, row.currency_code ?? undefined)
-            : "—"}
+          {row.purchase_price == null
+            ? "—"
+            : formatCents(row.purchase_price, row.currency_code ?? undefined)}
         </td>
         <td className="actions text-right">
           <BevelButton onClick={() => setPendingUse(row)}>

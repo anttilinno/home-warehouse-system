@@ -40,7 +40,7 @@ export function BulkActionBar({
   children,
   destructiveAction,
   className = "",
-}: BulkActionBarProps) {
+}: Readonly<BulkActionBarProps>) {
   const { t } = useLingui();
   const [confirmOpen, setConfirmOpen] = useState(false);
 

@@ -35,7 +35,9 @@ export interface ModalStackValue {
 
 const ModalStackContext = createContext<ModalStackValue | null>(null);
 
-export function ModalStackProvider({ children }: { children: ReactNode }) {
+export function ModalStackProvider({
+  children,
+}: Readonly<{ children: ReactNode }>) {
   // The stack lives in a ref, not state: pushing/popping an overlay must not
   // re-render the whole subtree, and the keydown listener (installed once) reads
   // the current stack synchronously via the ref.
