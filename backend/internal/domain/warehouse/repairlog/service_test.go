@@ -58,8 +58,7 @@ func (m *MockRepository) Delete(ctx context.Context, id, workspaceID uuid.UUID) 
 }
 
 func (m *MockRepository) UpdateWarrantyClaim(ctx context.Context, id, workspaceID uuid.UUID, isWarrantyClaim bool) error {
-	args := m.Called(ctx, id, workspaceID, isWarrantyClaim)
-	return args.Error(0)
+	return m.Called(ctx, id, workspaceID, isWarrantyClaim).Error(0)
 }
 
 func (m *MockRepository) UpdateReminderDate(ctx context.Context, id, workspaceID uuid.UUID, reminderDate *time.Time) error {
@@ -115,9 +114,13 @@ func (m *MockInventoryRepository) FindByContainer(ctx context.Context, workspace
 	return args.Get(0).([]*inventory.Inventory), args.Error(1)
 }
 
+func mockSliceErr[T any](args mock.Arguments) ([]T, error) {
+	return args.Get(0).([]T), args.Error(1)
+}
+
 func (m *MockInventoryRepository) FindAvailable(ctx context.Context, workspaceID, itemID uuid.UUID) ([]*inventory.Inventory, error) {
 	args := m.Called(ctx, workspaceID, itemID)
-	return args.Get(0).([]*inventory.Inventory), args.Error(1)
+	return mockSliceErr[*inventory.Inventory](args)
 }
 
 func (m *MockInventoryRepository) FindExpiring(ctx context.Context, workspaceID uuid.UUID, withinDays int) ([]inventory.ExpiringInventory, error) {

@@ -69,12 +69,14 @@ export function PaperlessLinkDialog({
       handleClose();
     },
     onError: (err) => {
-      const reason =
-        err instanceof HttpError && err.status === 409
-          ? t`Configure and enable Paperless first.`
-          : err instanceof HttpError && err.status === 502
-            ? t`Paperless is unreachable.`
-            : t`Try again.`;
+      let reason: string;
+      if (err instanceof HttpError && err.status === 409) {
+        reason = t`Configure and enable Paperless first.`;
+      } else if (err instanceof HttpError && err.status === 502) {
+        reason = t`Paperless is unreachable.`;
+      } else {
+        reason = t`Try again.`;
+      }
       retroToast.error(t`Couldn't link this document. ${reason}`);
     },
   });

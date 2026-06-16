@@ -75,8 +75,7 @@ func (m *MockService) Archive(ctx context.Context, id, workspaceID uuid.UUID) er
 }
 
 func (m *MockService) Restore(ctx context.Context, id, workspaceID uuid.UUID) error {
-	args := m.Called(ctx, id, workspaceID)
-	return args.Error(0)
+	return m.Called(ctx, id, workspaceID).Error(0)
 }
 
 func (m *MockService) ListByItem(ctx context.Context, workspaceID, itemID uuid.UUID) ([]*inventory.Inventory, error) {
@@ -94,9 +93,13 @@ func (m *MockService) ListByContainer(ctx context.Context, workspaceID, containe
 	return args.Get(0).([]*inventory.Inventory), args.Error(1)
 }
 
+func mockSliceErr[T any](args mock.Arguments) ([]T, error) {
+	return args.Get(0).([]T), args.Error(1)
+}
+
 func (m *MockService) GetAvailable(ctx context.Context, workspaceID, itemID uuid.UUID) ([]*inventory.Inventory, error) {
 	args := m.Called(ctx, workspaceID, itemID)
-	return args.Get(0).([]*inventory.Inventory), args.Error(1)
+	return mockSliceErr[*inventory.Inventory](args)
 }
 
 func (m *MockService) GetTotalQuantity(ctx context.Context, workspaceID, itemID uuid.UUID) (int, error) {

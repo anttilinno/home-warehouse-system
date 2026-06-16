@@ -163,8 +163,9 @@ export function ItemFormPage() {
   useEffect(() => {
     if (!guardActive) return;
     const handler = (e: BeforeUnloadEvent) => {
+      // preventDefault() alone triggers the browser's unsaved-changes prompt
+      // (the legacy returnValue assignment is deprecated).
       e.preventDefault();
-      e.returnValue = "";
     };
     window.addEventListener("beforeunload", handler);
     return () => window.removeEventListener("beforeunload", handler);

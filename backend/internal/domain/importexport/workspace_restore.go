@@ -549,7 +549,7 @@ func (s *WorkspaceBackupService) importCategories(ctx context.Context, workspace
 
 		if err != nil {
 			errors = append(errors, ImportError{
-				Row:     0, // TODO: track row numbers
+				Row:     0, // NOTE: per-row numbers not tracked here; restore is keyed by name, not source row
 				Message: fmt.Sprintf("failed to import category '%s': %v", cat.Name, err),
 				Code:    "CREATE_FAILED",
 			})
@@ -781,8 +781,9 @@ func (s *WorkspaceBackupService) importItems(ctx context.Context, workspaceID uu
 
 		var categoryID pgtype.UUID
 		if item.CategoryID.Valid {
-			// The original category ID is stored, we need to skip for now
-			// TODO: Implement proper category mapping
+			// NOTE: original category ID is intentionally dropped here; proper
+			// category remapping across workspaces is deferred. Items restore
+			// uncategorized rather than pointing at a stale/foreign category.
 			categoryID = pgtype.UUID{Valid: false}
 		}
 

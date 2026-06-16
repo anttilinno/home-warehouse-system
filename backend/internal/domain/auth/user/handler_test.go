@@ -89,8 +89,7 @@ func (m *MockService) Deactivate(ctx context.Context, id uuid.UUID) error {
 }
 
 func (m *MockService) Activate(ctx context.Context, id uuid.UUID) error {
-	args := m.Called(ctx, id)
-	return args.Error(0)
+	return m.Called(ctx, id).Error(0)
 }
 
 func (m *MockService) UpdateAvatar(ctx context.Context, id uuid.UUID, avatarPath *string) (*user.User, error) {

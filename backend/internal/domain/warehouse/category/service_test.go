@@ -17,6 +17,14 @@ type MockRepository struct {
 	mock.Mock
 }
 
+// mockRepoSliceErr unwraps a 2-value (slice, error) testify return with a nil-guard.
+func mockRepoSliceErr[T any](args mock.Arguments) ([]T, error) {
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).([]T), args.Error(1)
+}
+
 func (m *MockRepository) Save(ctx context.Context, category *Category) error {
 	args := m.Called(ctx, category)
 	return args.Error(0)
@@ -47,11 +55,7 @@ func (m *MockRepository) FindByParent(ctx context.Context, workspaceID, parentID
 }
 
 func (m *MockRepository) FindRootCategories(ctx context.Context, workspaceID uuid.UUID) ([]*Category, error) {
-	args := m.Called(ctx, workspaceID)
-	if args.Get(0) == nil {
-		return nil, args.Error(1)
-	}
-	return args.Get(0).([]*Category), args.Error(1)
+	return mockRepoSliceErr[*Category](m.Called(ctx, workspaceID))
 }
 
 func (m *MockRepository) Delete(ctx context.Context, id, workspaceID uuid.UUID) error {

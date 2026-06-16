@@ -117,45 +117,49 @@ export function RetroTree({
     rowRefs.current.get(id)?.focus();
   }
 
+  function moveFocus(node: RetroTreeNode, delta: number) {
+    const idx = rows.findIndex((r) => r.node.id === node.id);
+    const target = rows[idx + delta];
+    if (target) focusRow(target.node.id);
+  }
+
+  function onArrowRight(node: RetroTreeNode, hasChildren: boolean) {
+    if (!hasChildren) return;
+    if (!expanded.has(node.id)) {
+      expand(node.id);
+      return;
+    }
+    const first = node.children[0];
+    if (first) focusRow(first.id);
+  }
+
   function onKeyDown(e: KeyboardEvent<HTMLDivElement>, row: FlatRow) {
     const { node } = row;
     const hasChildren = node.children.length > 0;
     const isOpen = expanded.has(node.id);
-    const idx = rows.findIndex((r) => r.node.id === node.id);
 
     switch (e.key) {
-      case "ArrowDown": {
+      case "ArrowDown":
         e.preventDefault();
-        const next = rows[idx + 1];
-        if (next) focusRow(next.node.id);
+        moveFocus(node, 1);
         break;
-      }
-      case "ArrowUp": {
+      case "ArrowUp":
         e.preventDefault();
-        const prev = rows[idx - 1];
-        if (prev) focusRow(prev.node.id);
+        moveFocus(node, -1);
         break;
-      }
-      case "ArrowRight": {
+      case "ArrowRight":
         e.preventDefault();
-        if (hasChildren && !isOpen) expand(node.id);
-        else if (hasChildren && isOpen) {
-          const first = node.children[0];
-          if (first) focusRow(first.id);
-        }
+        onArrowRight(node, hasChildren);
         break;
-      }
-      case "ArrowLeft": {
+      case "ArrowLeft":
         e.preventDefault();
         if (hasChildren && isOpen) collapse(node.id);
         break;
-      }
       case "Enter":
-      case " ": {
+      case " ":
         e.preventDefault();
         if (hasChildren) toggle(node.id);
         break;
-      }
     }
   }
 

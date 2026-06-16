@@ -69,12 +69,14 @@ export function InlineEditCell(props: InlineEditCellProps) {
     }
   }, [editing, field]);
 
-  const ariaLabel =
-    field === "quantity"
-      ? t`Edit quantity for ${itemName}`
-      : field === "status"
-        ? t`Edit status for ${itemName}`
-        : t`Edit condition for ${itemName}`;
+  let ariaLabel: string;
+  if (field === "quantity") {
+    ariaLabel = t`Edit quantity for ${itemName}`;
+  } else if (field === "status") {
+    ariaLabel = t`Edit status for ${itemName}`;
+  } else {
+    ariaLabel = t`Edit condition for ${itemName}`;
+  }
 
   function enterEdit() {
     if (disabled) return;
@@ -86,26 +88,31 @@ export function InlineEditCell(props: InlineEditCellProps) {
     setEditing(false);
   }
 
-  function commit() {
-    if (field === "quantity") {
-      const n = Number(draft);
-      // Qty empty or < 0 (or non-numeric) does NOT commit — revert instead of
-      // firing a doomed request (UI-SPEC §3 Validation row).
-      if (draft.trim() === "" || !Number.isFinite(n) || n < 0) {
-        cancel();
-        return;
-      }
-      setEditing(false);
-      if (n !== props.value) props.onCommit(n);
-      return;
-    }
-    if (field === "status") {
-      setEditing(false);
-      if (draft !== props.value) props.onCommit(draft as InventoryStatus);
+  function commitQuantity() {
+    if (props.field !== "quantity") return;
+    const n = Number(draft);
+    // Qty empty or < 0 (or non-numeric) does NOT commit — revert instead of
+    // firing a doomed request (UI-SPEC §3 Validation row).
+    if (draft.trim() === "" || !Number.isFinite(n) || n < 0) {
+      cancel();
       return;
     }
     setEditing(false);
-    if (draft !== props.value) props.onCommit(draft as Condition);
+    if (n !== props.value) props.onCommit(n);
+  }
+
+  function commit() {
+    if (props.field === "quantity") {
+      commitQuantity();
+      return;
+    }
+    setEditing(false);
+    if (draft === props.value) return;
+    if (props.field === "status") {
+      props.onCommit(draft as InventoryStatus);
+    } else {
+      props.onCommit(draft as Condition);
+    }
   }
 
   // ── Rest state ───────────────────────────────────────────────────────────
@@ -127,6 +134,15 @@ export function InlineEditCell(props: InlineEditCellProps) {
       );
     }
 
+    let cursorClass: string;
+    if (disabled) {
+      cursorClass = "cursor-not-allowed";
+    } else if (field === "quantity") {
+      cursorClass = "cursor-text hover:border-table-rule";
+    } else {
+      cursorClass = "cursor-pointer hover:border-table-rule";
+    }
+
     return (
       <button
         type="button"
@@ -139,13 +155,7 @@ export function InlineEditCell(props: InlineEditCellProps) {
             enterEdit();
           }
         }}
-        className={`inline-flex items-center gap-sp-1 border border-transparent bg-transparent px-[2px] text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-border-ink ${
-          disabled
-            ? "cursor-not-allowed"
-            : field === "quantity"
-              ? "cursor-text hover:border-table-rule"
-              : "cursor-pointer hover:border-table-rule"
-        }`}
+        className={`inline-flex items-center gap-sp-1 border border-transparent bg-transparent px-[2px] text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-border-ink ${cursorClass}`}
       >
         {display}
       </button>

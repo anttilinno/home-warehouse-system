@@ -1,21 +1,21 @@
-import { useCallback, useMemo, useState } from "react";
 import { Trans, useLingui } from "@lingui/react/macro";
+import { useCallback, useMemo, useState } from "react";
 import {
-  Window,
   BevelButton,
-  RetroTable,
   RetroBadge,
-  RetroSelect,
-  RetroEmptyState,
-  RetroConfirmDialog,
-  retroToast,
   type RetroBadgeVariant,
+  RetroConfirmDialog,
+  RetroEmptyState,
+  RetroSelect,
+  RetroTable,
+  retroToast,
+  Window,
 } from "@/components/retro";
 import { useWorkspace } from "@/features/workspace/useWorkspace";
-import { formatCents } from "@/lib/utils/money";
 import type { DeclutterGroupBy, DeclutterItem } from "@/lib/api/declutter";
-import { useDeclutter, useMarkUsed } from "./hooks/useDeclutter";
+import { formatCents } from "@/lib/utils/money";
 import { declutterToCsvBlob, triggerCsvDownload } from "./declutterCsv";
+import { useDeclutter, useMarkUsed } from "./hooks/useDeclutter";
 
 // Phase 14 Plan 04 (DECL-01/02) — the /declutter page. An unused-inventory
 // analysis table with a score badge + group_by grouping (DECL-01), a
@@ -92,12 +92,15 @@ export function DeclutterPage() {
   const groups = useMemo(() => groupRows(rows, groupBy), [rows, groupBy]);
 
   const groupLabel = useCallback(
-    (value: DeclutterGroupBy): string =>
-      value === "category"
-        ? t`By category`
-        : value === "location"
-          ? t`By location`
-          : t`No grouping`,
+    (value: DeclutterGroupBy): string => {
+      if (value === "category") {
+        return t`By category`;
+      }
+      if (value === "location") {
+        return t`By location`;
+      }
+      return t`No grouping`;
+    },
     [t],
   );
 

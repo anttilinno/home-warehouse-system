@@ -20,10 +20,19 @@ const HEADER = [
 // Chars that trigger formula evaluation when they lead a spreadsheet cell.
 const INJECTION_PREFIXES = new Set(["=", "+", "-", "@", "\t", "\r"]);
 
+// stringifyCell coerces a cell value to a string. Primitives keep their plain
+// String() form (the only shape current callers pass); objects are JSON-encoded
+// so they never collapse to the useless "[object Object]".
+function stringifyCell(value: unknown): string {
+  if (value == null) return "";
+  if (typeof value === "object") return JSON.stringify(value);
+  return String(value);
+}
+
 // escapeCell: coerce to string → guard formula-injection prefix with a leading
 // `'` → double embedded quotes → wrap the whole cell in double quotes.
 function escapeCell(value: unknown): string {
-  let cell = value == null ? "" : String(value);
+  let cell = stringifyCell(value);
   if (cell.length > 0 && INJECTION_PREFIXES.has(cell[0])) {
     cell = `'${cell}`;
   }

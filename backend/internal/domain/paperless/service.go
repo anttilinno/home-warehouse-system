@@ -7,9 +7,9 @@
 // existing Paperless document id, which lands in
 // warehouse.attachments.external_doc_id (dms_type = 'paperless').
 //
-// TODO(tag-sync): warehouse labels <-> Paperless tags sync is a deliberate
-// later step (docs/ROADMAP.md "DMS Migration"); sync_tags_enabled is stored
-// but not yet consumed.
+// NOTE: warehouse labels <-> Paperless tags sync is a deliberate later step
+// (see docs/ROADMAP.md "DMS Migration"); sync_tags_enabled is stored but not
+// yet consumed.
 package paperless
 
 import (

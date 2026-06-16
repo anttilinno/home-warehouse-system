@@ -24,8 +24,7 @@ func (m *MockRepository) Create(ctx context.Context, borrower *Borrower) error {
 }
 
 func (m *MockRepository) Save(ctx context.Context, borrower *Borrower) error {
-	args := m.Called(ctx, borrower)
-	return args.Error(0)
+	return m.Called(ctx, borrower).Error(0)
 }
 
 func (m *MockRepository) FindByID(ctx context.Context, id, workspaceID uuid.UUID) (*Borrower, error) {
@@ -50,13 +49,11 @@ func (m *MockRepository) Archive(ctx context.Context, id, workspaceID uuid.UUID)
 }
 
 func (m *MockRepository) Restore(ctx context.Context, id, workspaceID uuid.UUID) error {
-	args := m.Called(ctx, id)
-	return args.Error(0)
+	return m.Called(ctx, id).Error(0)
 }
 
 func (m *MockRepository) Delete(ctx context.Context, id, workspaceID uuid.UUID) error {
-	args := m.Called(ctx, id)
-	return args.Error(0)
+	return m.Called(ctx, id).Error(0)
 }
 
 func (m *MockRepository) HasActiveLoans(ctx context.Context, id uuid.UUID) (bool, error) {

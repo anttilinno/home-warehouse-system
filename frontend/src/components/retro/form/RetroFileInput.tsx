@@ -1,6 +1,5 @@
-import { useId, useRef, useState, type ReactNode } from "react";
-import { useLingui } from "@lingui/react/macro";
-import { Trans } from "@lingui/react/macro";
+import { Trans, useLingui } from "@lingui/react/macro";
+import { type ReactNode, useId, useRef, useState } from "react";
 import { BevelButton } from "../BevelButton";
 
 export interface RetroFileInputProps {
@@ -68,6 +67,15 @@ export function RetroFileInput({
     onChange(next);
   };
 
+  let dropZoneState: string;
+  if (disabled) {
+    dropZoneState = "cursor-not-allowed opacity-50";
+  } else if (dragging) {
+    dropZoneState = "border-titlebar-blue bg-info-bg";
+  } else {
+    dropZoneState = "border-border-ink bg-bg-panel-2";
+  }
+
   return (
     <div className="flex flex-col gap-sp-1">
       <label
@@ -79,13 +87,7 @@ export function RetroFileInput({
       {/* biome-ignore lint/a11y/noStaticElementInteractions: drag-and-drop is a pointer-only enhancement; the BROWSE button is the keyboard-accessible path */}
       <div
         data-testid="file-drop-zone"
-        className={`flex flex-col items-center gap-sp-2 border-2 border-dashed p-sp-4 text-center bevel-sunken ${
-          disabled
-            ? "cursor-not-allowed opacity-50"
-            : dragging
-              ? "border-titlebar-blue bg-info-bg"
-              : "border-border-ink bg-bg-panel-2"
-        }`}
+        className={`flex flex-col items-center gap-sp-2 border-2 border-dashed p-sp-4 text-center bevel-sunken ${dropZoneState}`}
         onDragOver={(e) => {
           e.preventDefault();
           if (!disabled) setDragging(true);

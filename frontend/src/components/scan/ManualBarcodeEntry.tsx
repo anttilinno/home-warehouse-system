@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from "react";
+import { useState, type SyntheticEvent } from "react";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { BevelButton, RetroInput } from "@/components/retro";
 
@@ -14,7 +14,7 @@ export function ManualBarcodeEntry({ onSubmit }: Readonly<ManualBarcodeEntryProp
   const [value, setValue] = useState("");
   const trimmed = value.trim();
 
-  function handleSubmit(e: FormEvent) {
+  function handleSubmit(e: SyntheticEvent) {
     e.preventDefault();
     if (!trimmed) return; // no-op on blank
     onSubmit(trimmed, "manual");

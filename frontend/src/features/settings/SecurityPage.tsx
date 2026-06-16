@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -90,21 +90,25 @@ function SessionsCard() {
   // Disable revoke-all when there is nothing but the current session.
   const revokeAllDisabled = others.length === 0 || revokeAllOthers.isPending;
 
-  return (
-    <Window title={<Trans>Sessions</Trans>} bodyClassName="">
-      {sessions.isPending ? (
-        <p className="p-sp-4 text-13 text-fg-muted">
-          <Trans>Loading sessions…</Trans>
-        </p>
-      ) : rows.length === 0 ? (
-        <div className="p-sp-4">
-          <RetroEmptyState
-            heading={<Trans>No sessions</Trans>}
-            body={<Trans>No other sessions.</Trans>}
-          />
-        </div>
-      ) : (
-        <RetroTable>
+  let sessionsContent: ReactNode;
+  if (sessions.isPending) {
+    sessionsContent = (
+      <p className="p-sp-4 text-13 text-fg-muted">
+        <Trans>Loading sessions…</Trans>
+      </p>
+    );
+  } else if (rows.length === 0) {
+    sessionsContent = (
+      <div className="p-sp-4">
+        <RetroEmptyState
+          heading={<Trans>No sessions</Trans>}
+          body={<Trans>No other sessions.</Trans>}
+        />
+      </div>
+    );
+  } else {
+    sessionsContent = (
+      <RetroTable>
           <thead>
             <tr>
               <th scope="col" className="text-left">
@@ -168,7 +172,12 @@ function SessionsCard() {
             ))}
           </tbody>
         </RetroTable>
-      )}
+    );
+  }
+
+  return (
+    <Window title={<Trans>Sessions</Trans>} bodyClassName="">
+      {sessionsContent}
 
       {/* Revoke-all-others footer strip (recessed). */}
       <div className="flex justify-end border-t-2 border-border-ink bg-bg-panel-2 px-sp-4 py-sp-3">

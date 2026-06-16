@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useState, type ReactNode } from "react";
 import { useSearchParams } from "react-router";
 import { Trans, useLingui } from "@lingui/react/macro";
 import {
@@ -166,20 +166,21 @@ export function WishlistPage() {
             </tr>
           </thead>
           <tbody>
-            {rows.map((row) => (
+            {rows.map((row) => {
+              let statusLabel: ReactNode = <Trans>Acquired</Trans>;
+              if (row.status === "wanted") {
+                statusLabel = <Trans>Wanted</Trans>;
+              } else if (row.status === "ordered") {
+                statusLabel = <Trans>Ordered</Trans>;
+              }
+              return (
               <tr key={row.id}>
                 <td>{renderName(row)}</td>
                 <td>{renderPrice(row)}</td>
                 <td className="font-mono tabular-nums">{row.priority}</td>
                 <td>
                   <RetroBadge variant={STATUS_VARIANT[row.status]}>
-                    {row.status === "wanted" ? (
-                      <Trans>Wanted</Trans>
-                    ) : row.status === "ordered" ? (
-                      <Trans>Ordered</Trans>
-                    ) : (
-                      <Trans>Acquired</Trans>
-                    )}
+                    {statusLabel}
                   </RetroBadge>
                 </td>
                 <td className="actions text-right">
@@ -199,27 +200,28 @@ export function WishlistPage() {
                   </span>
                 </td>
               </tr>
-            ))}
+              );
+            })}
           </tbody>
         </RetroTable>
       )}
     </>
   );
 
-  const tabs = STATUSES.map((id) => ({
-    id,
-    label:
-      id === "wanted" ? (
-        <Trans>WANTED</Trans>
-      ) : id === "ordered" ? (
-        <Trans>ORDERED</Trans>
-      ) : (
-        <Trans>ACQUIRED</Trans>
-      ),
-    // All tabs render the SAME table chrome — useWishlist keys on the active
-    // status, so only the selected panel mounts (RetroTabs renders one).
-    content: tableContent,
-  }));
+  const statusLabel = (id: (typeof STATUSES)[number]): ReactNode => {
+    if (id === "wanted") return <Trans>WANTED</Trans>;
+    if (id === "ordered") return <Trans>ORDERED</Trans>;
+    return <Trans>ACQUIRED</Trans>;
+  };
+  const tabs = STATUSES.map((id) => {
+    return {
+      id,
+      label: statusLabel(id),
+      // All tabs render the SAME table chrome — useWishlist keys on the active
+      // status, so only the selected panel mounts (RetroTabs renders one).
+      content: tableContent,
+    };
+  });
 
   return (
     <div className="mx-auto min-w-0 max-w-[1280px]">

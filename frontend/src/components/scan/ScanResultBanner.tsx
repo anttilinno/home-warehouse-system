@@ -1,5 +1,6 @@
-import { Link } from "react-router";
 import { Trans } from "@lingui/react/macro";
+import type { ReactNode } from "react";
+import { Link } from "react-router";
 import { StatusPill, type StatusPillVariant } from "@/components/retro";
 import type { Item } from "@/lib/types";
 
@@ -44,6 +45,19 @@ export function ScanResultBanner({
 }: Readonly<ScanResultBannerProps>) {
   const s = STATE[status];
 
+  let headline: ReactNode = null;
+  if (status === "match" && item) {
+    headline = (
+      <span className="font-body text-14 text-fg-ink">{item.name}</span>
+    );
+  } else if (status === "error") {
+    headline = (
+      <span className="font-body text-14 text-fg-ink">
+        <Trans>Couldn't look up that code.</Trans>
+      </span>
+    );
+  }
+
   return (
     <section
       aria-live="polite"
@@ -59,13 +73,7 @@ export function ScanResultBanner({
         <span aria-hidden="true" className="text-14 text-fg-ink">
           {s.glyph}
         </span>
-        {status === "match" && item ? (
-          <span className="font-body text-14 text-fg-ink">{item.name}</span>
-        ) : status === "error" ? (
-          <span className="font-body text-14 text-fg-ink">
-            <Trans>Couldn't look up that code.</Trans>
-          </span>
-        ) : null}
+        {headline}
       </div>
 
       <div className="flex items-center justify-between gap-sp-3">

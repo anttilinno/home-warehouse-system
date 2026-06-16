@@ -112,12 +112,12 @@ export function AddAttachmentDialog({
       retroToast.success(t`DONE · File attached.`);
       handleClose();
     } catch (err) {
-      const reason =
-        err instanceof HttpError && err.status === 404
-          ? t`That file no longer exists.`
-          : err instanceof HttpError && err.status === 400
-            ? t`The file belongs to a different workspace.`
-            : t`Try again.`;
+      let reason = t`Try again.`;
+      if (err instanceof HttpError && err.status === 404) {
+        reason = t`That file no longer exists.`;
+      } else if (err instanceof HttpError && err.status === 400) {
+        reason = t`The file belongs to a different workspace.`;
+      }
       retroToast.error(t`Couldn't attach this file. ${reason}`);
     }
   }

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { Trans, useLingui } from "@lingui/react/macro";
 import {
   BevelButton,
@@ -58,60 +58,71 @@ export function RepairAttachmentPanel({
     });
   }
 
+  let listContent: ReactNode;
+  if (isLoading) {
+    listContent = (
+      <p className="bg-bg-panel-2 p-sp-4 font-mono text-12 text-fg-muted">
+        <Trans>Loading…</Trans>
+      </p>
+    );
+  } else if (isError) {
+    listContent = (
+      <p className="bg-bg-panel-2 p-sp-4 text-14 text-danger">
+        <Trans>Couldn't load files. Try again.</Trans>
+      </p>
+    );
+  } else if (items.length === 0) {
+    listContent = (
+      <div className="bg-bg-panel-2 p-sp-3">
+        <RetroEmptyState
+          eyebrow={<Trans>Files</Trans>}
+          glyph="◇"
+          heading={<Trans>NO FILES</Trans>}
+          body={
+            <Trans>No manuals, receipts, or warranties attached yet.</Trans>
+          }
+          action={{
+            label: <Trans>⊕ ADD FILE</Trans>,
+            onClick: () => setAddOpen(true),
+          }}
+        />
+      </div>
+    );
+  } else {
+    listContent = (
+      <ul className="bg-bg-panel-2">
+        {items.map((att) => (
+          <li
+            key={att.id}
+            className="flex items-center gap-sp-2 border-b border-table-rule px-sp-3 py-sp-2"
+          >
+            <RetroBadge variant={BADGE_VARIANT[att.attachment_type]}>
+              {att.attachment_type}
+            </RetroBadge>
+            <span className="flex-1 truncate text-14 font-semibold text-fg-ink">
+              {att.title || att.file_name || t`Untitled`}
+            </span>
+            {att.file_mime_type && (
+              <span className="font-mono text-12 text-fg-muted">
+                {att.file_mime_type}
+              </span>
+            )}
+            <BevelButton
+              variant="danger"
+              className="!px-[8px] !py-[2px] !text-11"
+              onClick={() => setDeleteTarget(att)}
+            >
+              <Trans>DELETE</Trans>
+            </BevelButton>
+          </li>
+        ))}
+      </ul>
+    );
+  }
+
   return (
     <div className="flex flex-col gap-sp-2">
-      {isLoading ? (
-        <p className="bg-bg-panel-2 p-sp-4 font-mono text-12 text-fg-muted">
-          <Trans>Loading…</Trans>
-        </p>
-      ) : isError ? (
-        <p className="bg-bg-panel-2 p-sp-4 text-14 text-danger">
-          <Trans>Couldn't load files. Try again.</Trans>
-        </p>
-      ) : items.length === 0 ? (
-        <div className="bg-bg-panel-2 p-sp-3">
-          <RetroEmptyState
-            eyebrow={<Trans>Files</Trans>}
-            glyph="◇"
-            heading={<Trans>NO FILES</Trans>}
-            body={
-              <Trans>No manuals, receipts, or warranties attached yet.</Trans>
-            }
-            action={{
-              label: <Trans>⊕ ADD FILE</Trans>,
-              onClick: () => setAddOpen(true),
-            }}
-          />
-        </div>
-      ) : (
-        <ul className="bg-bg-panel-2">
-          {items.map((att) => (
-            <li
-              key={att.id}
-              className="flex items-center gap-sp-2 border-b border-table-rule px-sp-3 py-sp-2"
-            >
-              <RetroBadge variant={BADGE_VARIANT[att.attachment_type]}>
-                {att.attachment_type}
-              </RetroBadge>
-              <span className="flex-1 truncate text-14 font-semibold text-fg-ink">
-                {att.title || att.file_name || t`Untitled`}
-              </span>
-              {att.file_mime_type && (
-                <span className="font-mono text-12 text-fg-muted">
-                  {att.file_mime_type}
-                </span>
-              )}
-              <BevelButton
-                variant="danger"
-                className="!px-[8px] !py-[2px] !text-11"
-                onClick={() => setDeleteTarget(att)}
-              >
-                <Trans>DELETE</Trans>
-              </BevelButton>
-            </li>
-          ))}
-        </ul>
-      )}
+      {listContent}
 
       {/* ⊕ ADD FILE — shown below a non-empty list (the empty state has its own). */}
       {items.length > 0 && (

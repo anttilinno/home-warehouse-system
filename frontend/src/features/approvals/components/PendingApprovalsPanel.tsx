@@ -1,6 +1,6 @@
-import { Link } from "react-router";
 import { Trans } from "@lingui/react/macro";
-import { Window, RetroBadge } from "@/components/retro";
+import { Link } from "react-router";
+import { RetroBadge, Window } from "@/components/retro";
 import { usePendingChangesQuery } from "../hooks/usePendingChangesQuery";
 
 // Phase 13 Plan 02 — the Pending Approvals side-rail card (DASH-03). STANDALONE:
@@ -35,6 +35,37 @@ export function PendingApprovalsPanel() {
     return null;
   }
 
+  let body: React.ReactNode;
+  if (isLoading) {
+    body = (
+      <p className="font-mono text-12 text-fg-muted">
+        <Trans>Loading…</Trans>
+      </p>
+    );
+  } else if (total > 0) {
+    body = (
+      <div className="flex items-center justify-between gap-sp-3">
+        <div className="flex items-center gap-sp-2">
+          <span className="font-display text-24 font-bold leading-none text-fg-ink">
+            {total}
+          </span>
+          <RetroBadge variant="warn">
+            <Trans>pending</Trans>
+          </RetroBadge>
+        </div>
+        <Link to="/approvals" className={BEVEL_LINK}>
+          <Trans>Review</Trans>
+        </Link>
+      </div>
+    );
+  } else {
+    body = (
+      <p className="font-mono text-12 text-fg-muted">
+        <Trans>Nothing pending</Trans>
+      </p>
+    );
+  }
+
   return (
     <Window
       title={<Trans>Pending approvals</Trans>}
@@ -45,29 +76,7 @@ export function PendingApprovalsPanel() {
       className="flex min-h-[119px] flex-col"
       bodyClassName="flex flex-1 flex-col justify-center p-sp-4"
     >
-      {isLoading ? (
-        <p className="font-mono text-12 text-fg-muted">
-          <Trans>Loading…</Trans>
-        </p>
-      ) : total > 0 ? (
-        <div className="flex items-center justify-between gap-sp-3">
-          <div className="flex items-center gap-sp-2">
-            <span className="font-display text-24 font-bold leading-none text-fg-ink">
-              {total}
-            </span>
-            <RetroBadge variant="warn">
-              <Trans>pending</Trans>
-            </RetroBadge>
-          </div>
-          <Link to="/approvals" className={BEVEL_LINK}>
-            <Trans>Review</Trans>
-          </Link>
-        </div>
-      ) : (
-        <p className="font-mono text-12 text-fg-muted">
-          <Trans>Nothing pending</Trans>
-        </p>
-      )}
+      {body}
     </Window>
   );
 }

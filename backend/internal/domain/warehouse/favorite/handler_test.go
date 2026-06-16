@@ -43,9 +43,13 @@ func (m *MockService) ListFavorites(ctx context.Context, userID, workspaceID uui
 	return args.Get(0).([]*favorite.Favorite), args.Error(1)
 }
 
+func mockBoolErr(args mock.Arguments) (bool, error) {
+	return args.Bool(0), args.Error(1)
+}
+
 func (m *MockService) IsFavorite(ctx context.Context, userID, workspaceID uuid.UUID, favoriteType favorite.FavoriteType, targetID uuid.UUID) (bool, error) {
 	args := m.Called(ctx, userID, workspaceID, favoriteType, targetID)
-	return args.Bool(0), args.Error(1)
+	return mockBoolErr(args)
 }
 
 // Tests

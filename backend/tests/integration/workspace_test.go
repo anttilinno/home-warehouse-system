@@ -22,12 +22,9 @@ func (ts *TestServer) AuthHelper(t *testing.T, email string) string {
 		"full_name": "Test User",
 		"password":  "password123",
 	})
-	if resp.StatusCode != http.StatusOK {
-		// User might already exist, try login
-		resp.Body.Close()
-	} else {
-		resp.Body.Close()
-	}
+	// Registration may succeed, or fail because the user already exists; either
+	// way we drop the response and fall through to login.
+	resp.Body.Close()
 
 	// Login
 	resp = ts.Post("/auth/login", map[string]string{

@@ -46,12 +46,16 @@ func (m *MockService) Update(ctx context.Context, id, workspaceID uuid.UUID, inp
 	return args.Get(0).(*repairlog.RepairLog), args.Error(1)
 }
 
-func (m *MockService) StartRepair(ctx context.Context, id, workspaceID uuid.UUID) (*repairlog.RepairLog, error) {
-	args := m.Called(ctx, id, workspaceID)
+func mockPtrErr[T any](args mock.Arguments) (*T, error) {
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}
-	return args.Get(0).(*repairlog.RepairLog), args.Error(1)
+	return args.Get(0).(*T), args.Error(1)
+}
+
+func (m *MockService) StartRepair(ctx context.Context, id, workspaceID uuid.UUID) (*repairlog.RepairLog, error) {
+	args := m.Called(ctx, id, workspaceID)
+	return mockPtrErr[repairlog.RepairLog](args)
 }
 
 func (m *MockService) Complete(ctx context.Context, id, workspaceID uuid.UUID, newCondition *string) (*repairlog.RepairLog, error) {

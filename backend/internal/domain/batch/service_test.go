@@ -920,12 +920,23 @@ func (m *MockItemRepository) FindByWorkspaceFiltered(ctx context.Context, worksp
 	return args.Get(0).([]*item.Item), args.Int(1), args.Error(2)
 }
 
-func (m *MockItemRepository) FindNeedingReview(ctx context.Context, workspaceID uuid.UUID, pagination shared.Pagination) ([]*item.Item, int, error) {
-	args := m.Called(ctx, workspaceID, pagination)
+func mockSliceIntErr[T any](args mock.Arguments) ([]*T, int, error) {
 	if args.Get(0) == nil {
 		return nil, args.Int(1), args.Error(2)
 	}
-	return args.Get(0).([]*item.Item), args.Int(1), args.Error(2)
+	return args.Get(0).([]*T), args.Int(1), args.Error(2)
+}
+
+func mockSliceErr[T any](args mock.Arguments) ([]T, error) {
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).([]T), args.Error(1)
+}
+
+func (m *MockItemRepository) FindNeedingReview(ctx context.Context, workspaceID uuid.UUID, pagination shared.Pagination) ([]*item.Item, int, error) {
+	args := m.Called(ctx, workspaceID, pagination)
+	return mockSliceIntErr[item.Item](args)
 }
 
 func (m *MockItemRepository) FindByCategory(ctx context.Context, workspaceID, categoryID uuid.UUID, pagination shared.Pagination) ([]*item.Item, error) {
@@ -965,8 +976,7 @@ func (m *MockItemRepository) AttachLabel(ctx context.Context, itemID, labelID uu
 }
 
 func (m *MockItemRepository) DetachLabel(ctx context.Context, itemID, labelID uuid.UUID) error {
-	args := m.Called(ctx, itemID, labelID)
-	return args.Error(0)
+	return m.Called(ctx, itemID, labelID).Error(0)
 }
 
 func (m *MockItemRepository) GetItemLabels(ctx context.Context, itemID uuid.UUID) ([]uuid.UUID, error) {
@@ -1133,10 +1143,7 @@ func (m *MockCategoryRepository) FindByParent(ctx context.Context, workspaceID, 
 
 func (m *MockCategoryRepository) FindRootCategories(ctx context.Context, workspaceID uuid.UUID) ([]*category.Category, error) {
 	args := m.Called(ctx, workspaceID)
-	if args.Get(0) == nil {
-		return nil, args.Error(1)
-	}
-	return args.Get(0).([]*category.Category), args.Error(1)
+	return mockSliceErr[*category.Category](args)
 }
 
 func (m *MockCategoryRepository) Delete(ctx context.Context, id, workspaceID uuid.UUID) error {

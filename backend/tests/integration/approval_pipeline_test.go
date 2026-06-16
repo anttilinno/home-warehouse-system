@@ -43,7 +43,7 @@ func addMemberToWorkspace(t *testing.T, ts *TestServer, workspaceID uuid.UUID, u
 
 func TestApprovalPipeline_CompleteWorkflow_CreateApproveVerify(t *testing.T) {
 	t.Skip("Skipping: Approval middleware not yet integrated with Huma routes. See approval_middleware_integration_test.go for middleware unit tests.")
-	// TODO: This test should be enabled once approval middleware is properly integrated with Huma routing
+	// NOTE: enable this test once approval middleware is integrated with Huma routing.
 	// Currently the middleware works in isolation (see approval_integration_test.go) but doesn't intercept Huma routes
 	// The pending change API endpoints themselves work correctly (tested in handler_integration_test.go)
 }

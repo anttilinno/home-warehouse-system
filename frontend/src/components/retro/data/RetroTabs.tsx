@@ -1,4 +1,4 @@
-import { useId, useRef, type KeyboardEvent, type ReactNode } from "react";
+import { type KeyboardEvent, type ReactNode, useId, useRef } from "react";
 
 export interface RetroTab {
   /** Stable tab id (also used to derive ARIA ids and `value`). */
@@ -67,6 +67,14 @@ export function RetroTabs({ tabs, value, onChange }: Readonly<RetroTabsProps>) {
       >
         {tabs.map((tab) => {
           const isActive = tab.id === active?.id;
+          let tabState: string;
+          if (tab.disabled) {
+            tabState = TAB_DISABLED;
+          } else if (isActive) {
+            tabState = TAB_ACTIVE;
+          } else {
+            tabState = TAB_INACTIVE;
+          }
           return (
             <button
               key={tab.id}
@@ -82,13 +90,7 @@ export function RetroTabs({ tabs, value, onChange }: Readonly<RetroTabsProps>) {
               aria-disabled={tab.disabled || undefined}
               tabIndex={isActive ? 0 : -1}
               disabled={tab.disabled}
-              className={`${TAB_BASE} ${
-                tab.disabled
-                  ? TAB_DISABLED
-                  : isActive
-                    ? TAB_ACTIVE
-                    : TAB_INACTIVE
-              }`}
+              className={`${TAB_BASE} ${tabState}`}
               onClick={() => !tab.disabled && onChange(tab.id)}
               onKeyDown={(e) => onKeyDown(e, tab.id)}
             >

@@ -164,13 +164,22 @@ func TestScheduler_RegisterHandlers(t *testing.T) {
 }
 
 func TestScheduler_RegisterHandlers_WithNilEmailSender(t *testing.T) {
+	// Should work with nil email sender.
+	assertRegisterHandlersReturnsMux(t)
+}
+
+// assertRegisterHandlersReturnsMux registers handlers on a fresh scheduler
+// (all nil dependencies, default cleanup config) and asserts the returned mux
+// is non-nil. Shared by the RegisterHandlers constructor tests to avoid
+// duplicated bodies.
+func assertRegisterHandlersReturnsMux(t *testing.T) {
+	t.Helper()
 	config := jobs.DefaultSchedulerConfig("localhost:6379")
 	scheduler := jobs.NewScheduler(nil, config)
 
 	cleanupConfig := jobs.DefaultCleanupConfig()
 	mux := scheduler.RegisterHandlers(nil, nil, cleanupConfig, nil)
 
-	// Should work with nil email sender
 	assert.NotNil(t, mux)
 }
 

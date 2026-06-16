@@ -37,12 +37,20 @@ func (m *MockService) GetByID(ctx context.Context, id, workspaceID uuid.UUID) (*
 	return args.Get(0).(*loan.Loan), args.Error(1)
 }
 
-func (m *MockService) Return(ctx context.Context, id, workspaceID uuid.UUID) (*loan.Loan, error) {
-	args := m.Called(ctx, id, workspaceID)
+func mockPtrErr[T any](args mock.Arguments) (*T, error) {
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}
-	return args.Get(0).(*loan.Loan), args.Error(1)
+	return args.Get(0).(*T), args.Error(1)
+}
+
+func mockSliceErr[T any](args mock.Arguments) ([]T, error) {
+	return args.Get(0).([]T), args.Error(1)
+}
+
+func (m *MockService) Return(ctx context.Context, id, workspaceID uuid.UUID) (*loan.Loan, error) {
+	args := m.Called(ctx, id, workspaceID)
+	return mockPtrErr[loan.Loan](args)
 }
 
 func (m *MockService) ExtendDueDate(ctx context.Context, id, workspaceID uuid.UUID, newDueDate time.Time) (*loan.Loan, error) {
@@ -83,7 +91,7 @@ func (m *MockService) GetActiveLoans(ctx context.Context, workspaceID uuid.UUID)
 
 func (m *MockService) GetOverdueLoans(ctx context.Context, workspaceID uuid.UUID) ([]*loan.Loan, error) {
 	args := m.Called(ctx, workspaceID)
-	return args.Get(0).([]*loan.Loan), args.Error(1)
+	return mockSliceErr[*loan.Loan](args)
 }
 
 func (m *MockService) ListByItem(ctx context.Context, workspaceID, itemID uuid.UUID) ([]*loan.Loan, error) {

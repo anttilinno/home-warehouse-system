@@ -110,6 +110,10 @@ export default function CommandPalette({ open, onClose }: Readonly<CommandPalett
     toFor: (hit: EntityHit) => string,
   ) => {
     if (rows.length === 0) return null;
+    const selectHit = (hit: EntityHit) => {
+      const to = toFor(hit);
+      run({ id: hit.id, kind, label: hit.name, to }, () => navigate(to));
+    };
     return (
       <CommandGroup
         heading={heading}
@@ -119,11 +123,7 @@ export default function CommandPalette({ open, onClose }: Readonly<CommandPalett
           <CommandItem
             key={hit.id}
             value={`${kind}:${hit.id}`}
-            onSelect={() =>
-              run({ id: hit.id, kind, label: hit.name, to: toFor(hit) }, () =>
-                navigate(toFor(hit)),
-              )
-            }
+            onSelect={() => selectHit(hit)}
             className="cursor-pointer px-sp-3 py-sp-2 font-body text-14 text-fg-ink data-[selected=true]:bg-titlebar-blue data-[selected=true]:text-fg-ink"
           >
             {hit.name}

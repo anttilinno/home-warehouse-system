@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useRef, type ReactNode } from "react";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { BevelButton, RetroEmptyState } from "@/components/retro";
 import { useModalStack } from "@/components/modal";
@@ -43,6 +43,64 @@ export function NotificationsDropdown({
 
   const hasUnread = items.some((n) => !n.is_read);
 
+  let body: ReactNode;
+  if (isLoading) {
+    body = (
+      <p className="px-sp-3 py-sp-3 font-mono text-12 text-fg-muted">
+        <Trans>Loading…</Trans>
+      </p>
+    );
+  } else if (isError) {
+    body = (
+      <p className="px-sp-3 py-sp-3 text-13 font-semibold text-danger">
+        <Trans>Couldn't load notifications.</Trans>
+      </p>
+    );
+  } else if (items.length === 0) {
+    body = (
+      <RetroEmptyState
+        glyph="◇"
+        heading={<Trans>No notifications</Trans>}
+        body={<Trans>You're all caught up.</Trans>}
+      />
+    );
+  } else {
+    body = (
+      <ul className="divide-y-2 divide-border-ink">
+        {items.map((n) => (
+          <li
+            key={n.id}
+            className={`flex items-start gap-sp-2 px-sp-3 py-sp-2 ${
+              n.is_read ? "opacity-60" : ""
+            }`}
+          >
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-13 font-semibold text-fg-ink">
+                {n.title}
+              </p>
+              <p className="text-12 text-fg-muted">{n.message}</p>
+              <p className="mt-px font-mono text-10 uppercase tracking-8 text-fg-faint">
+                {formatDate(n.created_at)} {formatTime(n.created_at)}
+              </p>
+            </div>
+            {!n.is_read && (
+              <button
+                type="button"
+                aria-label={t`Mark read`}
+                title={t`Mark read`}
+                disabled={markRead.isPending}
+                onClick={() => markRead.mutate(n.id)}
+                className="flex-none border-2 border-border-ink bg-bg-panel px-sp-1 py-px font-mono text-11 leading-none bevel-raised-ink active:translate-x-px active:translate-y-px active:bg-bg-pressed active:bevel-pressed disabled:opacity-50"
+              >
+                <Trans>Mark read</Trans>
+              </button>
+            )}
+          </li>
+        ))}
+      </ul>
+    );
+  }
+
   return (
     <>
       {/* Transparent backdrop — click-outside closes (mirrors user-menu dismiss). */}
@@ -71,54 +129,7 @@ export function NotificationsDropdown({
           </BevelButton>
         </header>
 
-        {isLoading ? (
-          <p className="px-sp-3 py-sp-3 font-mono text-12 text-fg-muted">
-            <Trans>Loading…</Trans>
-          </p>
-        ) : isError ? (
-          <p className="px-sp-3 py-sp-3 text-13 font-semibold text-danger">
-            <Trans>Couldn't load notifications.</Trans>
-          </p>
-        ) : items.length === 0 ? (
-          <RetroEmptyState
-            glyph="◇"
-            heading={<Trans>No notifications</Trans>}
-            body={<Trans>You're all caught up.</Trans>}
-          />
-        ) : (
-          <ul className="divide-y-2 divide-border-ink">
-            {items.map((n) => (
-              <li
-                key={n.id}
-                className={`flex items-start gap-sp-2 px-sp-3 py-sp-2 ${
-                  n.is_read ? "opacity-60" : ""
-                }`}
-              >
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-13 font-semibold text-fg-ink">
-                    {n.title}
-                  </p>
-                  <p className="text-12 text-fg-muted">{n.message}</p>
-                  <p className="mt-px font-mono text-10 uppercase tracking-8 text-fg-faint">
-                    {formatDate(n.created_at)} {formatTime(n.created_at)}
-                  </p>
-                </div>
-                {!n.is_read && (
-                  <button
-                    type="button"
-                    aria-label={t`Mark read`}
-                    title={t`Mark read`}
-                    disabled={markRead.isPending}
-                    onClick={() => markRead.mutate(n.id)}
-                    className="flex-none border-2 border-border-ink bg-bg-panel px-sp-1 py-px font-mono text-11 leading-none bevel-raised-ink active:translate-x-px active:translate-y-px active:bg-bg-pressed active:bevel-pressed disabled:opacity-50"
-                  >
-                    <Trans>Mark read</Trans>
-                  </button>
-                )}
-              </li>
-            ))}
-          </ul>
-        )}
+        {body}
       </div>
     </>
   );

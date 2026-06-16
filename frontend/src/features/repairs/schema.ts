@@ -22,7 +22,7 @@ const costToCents = z
     const major = Number(trimmed);
     if (!Number.isFinite(major) || major < 0) {
       ctx.addIssue({
-        code: z.ZodIssueCode.custom,
+        code: "custom",
         message: "Cost must be a non-negative amount.",
       });
       return z.NEVER;

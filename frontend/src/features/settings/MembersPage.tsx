@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -110,21 +110,25 @@ export function MembersPage() {
   const rows = members.data?.items ?? [];
   const meId = me.data?.id;
 
-  return (
-    <Window title={<Trans>Members</Trans>} bodyClassName="">
-      {members.isPending ? (
-        <p className="p-sp-4 text-13 text-fg-muted">
-          <Trans>Loading members…</Trans>
-        </p>
-      ) : rows.length === 0 ? (
-        <div className="p-sp-4">
-          <RetroEmptyState
-            heading={<Trans>No members yet</Trans>}
-            body={<Trans>Invite someone to share this workspace.</Trans>}
-          />
-        </div>
-      ) : (
-        <RetroTable>
+  let membersContent: ReactNode;
+  if (members.isPending) {
+    membersContent = (
+      <p className="p-sp-4 text-13 text-fg-muted">
+        <Trans>Loading members…</Trans>
+      </p>
+    );
+  } else if (rows.length === 0) {
+    membersContent = (
+      <div className="p-sp-4">
+        <RetroEmptyState
+          heading={<Trans>No members yet</Trans>}
+          body={<Trans>Invite someone to share this workspace.</Trans>}
+        />
+      </div>
+    );
+  } else {
+    membersContent = (
+      <RetroTable>
           <thead>
             <tr>
               <th scope="col" className="text-left">
@@ -204,7 +208,12 @@ export function MembersPage() {
             })}
           </tbody>
         </RetroTable>
-      )}
+    );
+  }
+
+  return (
+    <Window title={<Trans>Members</Trans>} bodyClassName="">
+      {membersContent}
 
       <AddMemberStrip wsId={wsId} onAdded={invalidateMembers} />
 
@@ -233,7 +242,7 @@ export function MembersPage() {
 
 // --- Add-by-email footer strip ---
 const addSchema = z.object({
-  email: z.string().email(),
+  email: z.email(),
   role: z.enum(ROLES),
 });
 

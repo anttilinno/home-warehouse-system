@@ -1,9 +1,9 @@
 import {
+  type ComponentPropsWithRef,
+  type ReactNode,
   useEffect,
   useRef,
   useState,
-  type ComponentPropsWithRef,
-  type ReactNode,
 } from "react";
 
 export interface RetroCheckboxProps
@@ -49,11 +49,23 @@ export function RetroCheckbox({
   };
 
   const isChecked = checked ?? internalChecked;
-  const boxState = indeterminate
-    ? "border-border-ink bg-bg-panel-2"
-    : isChecked
-      ? "border-border-ink bg-titlebar-blue bevel-pressed"
-      : "border-border-ink bg-bg-panel bevel-sunken";
+  let boxState: string;
+  if (indeterminate) {
+    boxState = "border-border-ink bg-bg-panel-2";
+  } else if (isChecked) {
+    boxState = "border-border-ink bg-titlebar-blue bevel-pressed";
+  } else {
+    boxState = "border-border-ink bg-bg-panel bevel-sunken";
+  }
+
+  let boxGlyph: string;
+  if (indeterminate) {
+    boxGlyph = "–";
+  } else if (isChecked) {
+    boxGlyph = "✓";
+  } else {
+    boxGlyph = "";
+  }
 
   return (
     <label
@@ -75,7 +87,7 @@ export function RetroCheckbox({
         aria-hidden="true"
         className={`flex h-[16px] w-[16px] flex-none items-center justify-center border-2 text-12 leading-none text-fg-ink ${boxState}`}
       >
-        {indeterminate ? "–" : isChecked ? "✓" : ""}
+        {boxGlyph}
       </span>
       <span>{label}</span>
     </label>
