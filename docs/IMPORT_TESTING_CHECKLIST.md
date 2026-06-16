@@ -14,7 +14,7 @@ This checklist documents manual testing procedures for the CSV import feature.
 
 1. Note your workspace ID: `________________`
 2. Note your auth token (from login): `________________`
-3. Base URL: `http://localhost:8000`
+3. Base URL: `http://localhost:8080`
 
 ## Supported Entity Types
 
@@ -299,26 +299,26 @@ data: {
 
 ### Start Import
 ```bash
-curl -X POST "http://localhost:8000/workspaces/{workspace_id}/import/items" \
+curl -X POST "http://localhost:8080/workspaces/{workspace_id}/import/items" \
   -H "Authorization: Bearer {token}" \
   -F "file=@test-items.csv"
 ```
 
 ### Check Job Status
 ```bash
-curl "http://localhost:8000/import-jobs/{job_id}" \
+curl "http://localhost:8080/import-jobs/{job_id}" \
   -H "Authorization: Bearer {token}"
 ```
 
 ### Get Import Errors
 ```bash
-curl "http://localhost:8000/import-jobs/{job_id}/errors" \
+curl "http://localhost:8080/import-jobs/{job_id}/errors" \
   -H "Authorization: Bearer {token}"
 ```
 
 ### Connect to SSE
 ```bash
-curl -N "http://localhost:8000/workspaces/{workspace_id}/events" \
+curl -N "http://localhost:8080/workspaces/{workspace_id}/events" \
   -H "Authorization: Bearer {token}" \
   -H "Accept: text/event-stream"
 ```

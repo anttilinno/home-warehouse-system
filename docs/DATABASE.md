@@ -21,12 +21,18 @@ Stores user authentication information.
 | `id` | UUID | Primary key (uuidv7) |
 | `email` | VARCHAR(255) | Unique email address |
 | `full_name` | VARCHAR(100) | User's full name (required) |
-| `password_hash` | VARCHAR(255) | Hashed password |
+| `password_hash` | VARCHAR(255) | Hashed password (nullable; null for OAuth-only accounts) |
+| `has_password` | BOOLEAN | Whether the account has a local password (default: true) |
 | `is_active` | BOOLEAN | Account active status (default: true) |
 | `is_superuser` | BOOLEAN | Superuser flag (default: false) |
 | `date_format` | VARCHAR(20) | User's preferred date format (default: 'DD.MM.YYYY') |
+| `time_format` | VARCHAR(10) | User's preferred time format: '12h' or '24h' (default: '24h') |
+| `thousand_separator` | VARCHAR(5) | Preferred thousands separator for number display (default: ',') |
+| `decimal_separator` | VARCHAR(5) | Preferred decimal separator for number display (default: '.') |
 | `language` | VARCHAR(5) | User's preferred language code (default: 'en') |
 | `theme` | VARCHAR(20) | User's preferred theme: 'light', 'dark', or 'system' (default: 'system') |
+| `avatar_path` | VARCHAR(500) | Storage path to user avatar image (null if no custom avatar) |
+| `notification_preferences` | JSONB | Notification preferences by category; empty object = all enabled (default: '{}') |
 | `created_at` | TIMESTAMPTZ | Creation timestamp |
 | `updated_at` | TIMESTAMPTZ | Last update timestamp |
 
@@ -428,6 +434,7 @@ Physical instances of items stored at locations or in containers.
 | `warranty_expires` | DATE | Warranty expiration date |
 | `expiration_date` | DATE | Item expiration date |
 | `notes` | TEXT | Additional notes |
+| `last_used_at` | TIMESTAMPTZ | Last time the instance was used; drives declutter/unused-since reports (nullable, falls back to `created_at`) |
 | `is_archived` | BOOLEAN | Soft delete flag (default: false) |
 | `created_at` | TIMESTAMPTZ | Creation timestamp |
 | `updated_at` | TIMESTAMPTZ | Last update timestamp |
