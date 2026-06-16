@@ -85,7 +85,7 @@ export function useSavedFilters({
   const saveFilter = useCallback(
     (name: string, filters: Record<string, unknown>, isDefault = false) => {
       const newFilter: SavedFilter = {
-        id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+        id: crypto.randomUUID(),
         name,
         filters,
         createdAt: new Date().toISOString(),

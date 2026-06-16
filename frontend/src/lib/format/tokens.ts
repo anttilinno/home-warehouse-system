@@ -65,6 +65,19 @@ export interface NumberSeparators {
  * tokens. Groups the integer part every 3 digits (mirrors RegionalFormatsPage's
  * regex) and joins the fractional part with the decimal separator. NaN → "".
  */
+// Insert a thousands separator every 3 digits from the right, in linear time.
+// Replaces the regex /\B(?=(\d{3})+(?!\d))/ which Sonar S5852 flags as
+// vulnerable to super-linear backtracking (ReDoS).
+export function groupThousands(intPart: string, separator: string): string {
+  if (!separator) return intPart;
+  let out = "";
+  for (let i = 0; i < intPart.length; i++) {
+    if (i > 0 && (intPart.length - i) % 3 === 0) out += separator;
+    out += intPart[i];
+  }
+  return out;
+}
+
 export function formatNumberToken(n: number, seps?: NumberSeparators): string {
   if (Number.isNaN(n)) return "";
   const thousand = seps?.thousand ?? DEFAULT_FORMAT_TOKENS.thousand_separator;
@@ -73,7 +86,7 @@ export function formatNumberToken(n: number, seps?: NumberSeparators): string {
   const sign = n < 0 ? "-" : "";
   const abs = Math.abs(n);
   const [intPart, fracPart] = String(abs).split(".");
-  const grouped = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, thousand || "");
+  const grouped = groupThousands(intPart, thousand || "");
   return fracPart
     ? `${sign}${grouped}${decimal}${fracPart}`
     : `${sign}${grouped}`;

@@ -5,3 +5,8 @@ tmp/
 *_test.go
 tests/
 .air.toml
+# Keep VCS metadata and local-only files out of the build context (S6470):
+# `COPY . .` in the builder stage must not pull in secrets or git history.
+.git
+.gitignore
+*.md

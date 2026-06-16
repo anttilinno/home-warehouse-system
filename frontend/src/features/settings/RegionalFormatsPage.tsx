@@ -5,6 +5,7 @@ import { z } from "zod";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { settingsApi } from "@/lib/api/settings";
+import { groupThousands } from "@/lib/format/tokens";
 import type { Preferences, User } from "@/lib/types";
 import {
   BevelButton,
@@ -92,10 +93,7 @@ function formatTime(token: string): string {
 }
 
 function formatNumber(thousand: string, decimal: string): string {
-  const grouped = SAMPLE_NUMBER.int.replace(
-    /\B(?=(\d{3})+(?!\d))/g,
-    thousand || "",
-  );
+  const grouped = groupThousands(SAMPLE_NUMBER.int, thousand || "");
   return `${grouped}${decimal}${SAMPLE_NUMBER.frac}`;
 }
 
