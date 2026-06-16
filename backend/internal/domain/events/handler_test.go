@@ -34,9 +34,13 @@ func TestHandler_StreamEvents_SuccessfulConnection(t *testing.T) {
 	workspaceID := uuid.New()
 	userID := uuid.New()
 
-	// Create request with proper context
+	// Create request with a cancellable context so we can stop the handler
+	// and read the recorder safely (httptest.ResponseRecorder is not safe for
+	// concurrent read/write).
+	ctx, cancel := context.WithCancel(createTestContext(workspaceID, userID))
+	defer cancel()
 	req := httptest.NewRequest(http.MethodGet, "/sse", nil)
-	req = req.WithContext(createTestContext(workspaceID, userID))
+	req = req.WithContext(ctx)
 
 	// Use ResponseRecorder that supports Flusher
 	rec := httptest.NewRecorder()
@@ -51,9 +55,18 @@ func TestHandler_StreamEvents_SuccessfulConnection(t *testing.T) {
 	// Wait briefly for initial message
 	time.Sleep(50 * time.Millisecond)
 
-	// Cancel the context to stop the handler
-	// Note: httptest.NewRequest creates a context that we can't cancel directly,
-	// but the goroutine will handle cleanup when we verify the results
+	// Client should be registered while the handler is still running.
+	// GetStats is mutex-protected, so this read is safe mid-flight.
+	stats := broadcaster.GetStats()
+	assert.Equal(t, 1, stats["total_clients"])
+
+	// Stop the handler and wait for it to finish before touching the recorder.
+	cancel()
+	select {
+	case <-done:
+	case <-time.After(1 * time.Second):
+		t.Fatal("Handler did not finish within timeout")
+	}
 
 	// Verify response headers
 	assert.Equal(t, "text/event-stream", rec.Header().Get("Content-Type"))
@@ -65,11 +78,6 @@ func TestHandler_StreamEvents_SuccessfulConnection(t *testing.T) {
 	body := rec.Body.String()
 	assert.Contains(t, body, "event: connected")
 	assert.Contains(t, body, "client_id")
-
-	// Cleanup: broadcaster will clean up when handler returns
-	stats := broadcaster.GetStats()
-	// Client should be registered (handler is still running)
-	assert.Equal(t, 1, stats["total_clients"])
 }
 
 func TestHandler_StreamEvents_MissingWorkspaceContext(t *testing.T) {
@@ -186,8 +194,10 @@ func TestHandler_StreamEvents_SSEMessageFormat(t *testing.T) {
 	rec := httptest.NewRecorder()
 
 	// Start handler
+	done := make(chan bool)
 	go func() {
 		handler.StreamEvents(rec, req)
+		done <- true
 	}()
 
 	// Wait for connection
@@ -208,9 +218,14 @@ func TestHandler_StreamEvents_SSEMessageFormat(t *testing.T) {
 	// Wait for event
 	time.Sleep(50 * time.Millisecond)
 
-	// Stop handler
+	// Stop handler and wait for it to finish before reading the recorder —
+	// httptest.ResponseRecorder is not safe for concurrent read/write.
 	cancel()
-	time.Sleep(50 * time.Millisecond)
+	select {
+	case <-done:
+	case <-time.After(1 * time.Second):
+		t.Fatal("Handler did not finish within timeout")
+	}
 
 	// Verify SSE format: event: <type>\ndata: <json>\n\n
 	body := rec.Body.String()
